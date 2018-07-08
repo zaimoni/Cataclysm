@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{373B6E6B-AD01-4E84-8065-37E3CC01C640}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Cataclysm</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="action.h" />
+    <ClInclude Include="addiction.h" />
+    <ClInclude Include="artifact.h" />
+    <ClInclude Include="artifactdata.h" />
+    <ClInclude Include="bionics.h" />
+    <ClInclude Include="bodypart.h" />
+    <ClInclude Include="calendar.h" />
+    <ClInclude Include="catacurse.h" />
+    <ClInclude Include="color.h" />
+    <ClInclude Include="computer.h" />
+    <ClInclude Include="construction.h" />
+    <ClInclude Include="crafting.h" />
+    <ClInclude Include="dialogue.h" />
+    <ClInclude Include="disease.h" />
+    <ClInclude Include="enums.h" />
+    <ClInclude Include="event.h" />
+    <ClInclude Include="facdata.h" />
+    <ClInclude Include="faction.h" />
+    <ClInclude Include="game.h" />
+    <ClInclude Include="gamemode.h" />
+    <ClInclude Include="inventory.h" />
+    <ClInclude Include="item.h" />
+    <ClInclude Include="itype.h" />
+    <ClInclude Include="iuse.h" />
+    <ClInclude Include="keypress.h" />
+    <ClInclude Include="line.h" />
+    <ClInclude Include="map.h" />
+    <ClInclude Include="mapbuffer.h" />
+    <ClInclude Include="mapdata.h" />
+    <ClInclude Include="mapitems.h" />
+    <ClInclude Include="mission.h" />
+    <ClInclude Include="monattack.h" />
+    <ClInclude Include="mondeath.h" />
+    <ClInclude Include="mongroup.h" />
+    <ClInclude Include="monster.h" />
+    <ClInclude Include="morale.h" />
+    <ClInclude Include="moraledata.h" />
+    <ClInclude Include="mtype.h" />
+    <ClInclude Include="mutation.h" />
+    <ClInclude Include="npc.h" />
+    <ClInclude Include="omdata.h" />
+    <ClInclude Include="options.h" />
+    <ClInclude Include="output.h" />
+    <ClInclude Include="overmap.h" />
+    <ClInclude Include="player.h" />
+    <ClInclude Include="pldata.h" />
+    <ClInclude Include="posix_time.h" />
+    <ClInclude Include="rng.h" />
+    <ClInclude Include="settlement.h" />
+    <ClInclude Include="setvector.h" />
+    <ClInclude Include="skill.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="texthash.h" />
+    <ClInclude Include="tileray.h" />
+    <ClInclude Include="trap.h" />
+    <ClInclude Include="tutorial.h" />
+    <ClInclude Include="vehicle.h" />
+    <ClInclude Include="veh_interact.h" />
+    <ClInclude Include="veh_type.h" />
+    <ClInclude Include="weather.h" />
+    <ClInclude Include="weather_data.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="action.cpp" />
+    <ClCompile Include="artifact.cpp" />
+    <ClCompile Include="bionics.cpp" />
+    <ClCompile Include="bodypart.cpp" />
+    <ClCompile Include="calendar.cpp" />
+    <ClCompile Include="catacurse.cpp" />
+    <ClCompile Include="color.cpp" />
+    <ClCompile Include="computer.cpp" />
+    <ClCompile Include="construction.cpp" />
+    <ClCompile Include="crafting.cpp" />
+    <ClCompile Include="defense.cpp" />
+    <ClCompile Include="event.cpp" />
+    <ClCompile Include="faction.cpp" />
+    <ClCompile Include="field.cpp" />
+    <ClCompile Include="game.cpp" />
+    <ClCompile Include="gamemode.cpp" />
+    <ClCompile Include="help.cpp" />
+    <ClCompile Include="inventory.cpp" />
+    <ClCompile Include="inventory_ui.cpp" />
+    <ClCompile Include="item.cpp" />
+    <ClCompile Include="itypedef.cpp" />
+    <ClCompile Include="iuse.cpp" />
+    <ClCompile Include="keypress.cpp" />
+    <ClCompile Include="line.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="map.cpp" />
+    <ClCompile Include="mapbuffer.cpp" />
+    <ClCompile Include="mapgen.cpp" />
+    <ClCompile Include="mapitemsdef.cpp" />
+    <ClCompile Include="melee.cpp" />
+    <ClCompile Include="mission.cpp" />
+    <ClCompile Include="missiondef.cpp" />
+    <ClCompile Include="mission_end.cpp" />
+    <ClCompile Include="mission_fail.cpp" />
+    <ClCompile Include="mission_place.cpp" />
+    <ClCompile Include="mission_start.cpp" />
+    <ClCompile Include="monattack.cpp" />
+    <ClCompile Include="mondeath.cpp" />
+    <ClCompile Include="mongroupdef.cpp" />
+    <ClCompile Include="monitemsdef.cpp" />
+    <ClCompile Include="monmove.cpp" />
+    <ClCompile Include="monster.cpp" />
+    <ClCompile Include="mtypedef.cpp" />
+    <ClCompile Include="mutation.cpp" />
+    <ClCompile Include="mutation_data.cpp" />
+    <ClCompile Include="newcharacter.cpp" />
+    <ClCompile Include="npc.cpp" />
+    <ClCompile Include="npcmove.cpp" />
+    <ClCompile Include="npctalk.cpp" />
+    <ClCompile Include="options.cpp" />
+    <ClCompile Include="output.cpp" />
+    <ClCompile Include="overmap.cpp" />
+    <ClCompile Include="player.cpp" />
+    <ClCompile Include="posix_time.cpp" />
+    <ClCompile Include="ranged.cpp" />
+    <ClCompile Include="rng.cpp" />
+    <ClCompile Include="settlement.cpp" />
+    <ClCompile Include="setvector.cpp" />
+    <ClCompile Include="skill.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="texthash.cpp" />
+    <ClCompile Include="tileray.cpp" />
+    <ClCompile Include="trapdef.cpp" />
+    <ClCompile Include="trapfunc.cpp" />
+    <ClCompile Include="tutorial.cpp" />
+    <ClCompile Include="vehicle.cpp" />
+    <ClCompile Include="veh_interact.cpp" />
+    <ClCompile Include="veh_typedef.cpp" />
+    <ClCompile Include="weather.cpp" />
+    <ClCompile Include="wish.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
