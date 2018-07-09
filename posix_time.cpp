@@ -1,6 +1,19 @@
 #include "posix_time.h"
 
 #if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+/* GPLv3 per posix_time.h */
+
+enum { BILLION = 1000 * 1000 * 1000 };
+
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+
+/* The Win32 function Sleep() has a resolution of about 15 ms and takes
+at least 5 ms to execute.  We use this function for longer time periods.
+Additionally, we use busy-looping over short time periods, to get a
+resolution of about 0.01 ms.  In order to measure such short timespans,
+we use the QueryPerformanceCounter() function.  */
+
 int
 nanosleep (const struct timespec *requested_delay,
            struct timespec *remaining_delay)
