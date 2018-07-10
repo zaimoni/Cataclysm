@@ -15,6 +15,9 @@
 #define LEADS_TO(...) \
 	setvector(mutation_data[id].additions, __VA_ARGS__, NULL)
 
+// Zaimoni, 2018-07-10: looks like all of the MSVC-breaking setvector calls 
+// were replaced by externally loaded configuration in C:DDA prior to the Coolthulu fork.
+// no direct guidance for immediately bringing up the build.
 void game::init_mutations()
 {
  int id = 0;
