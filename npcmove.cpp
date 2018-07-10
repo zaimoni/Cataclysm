@@ -1423,7 +1423,7 @@ void npc::alt_attack(game *g, int target)
  }
 
  int index;
- item *used;
+ item *used = NULL;
  if (weapon.type->id == which) {
   used = &weapon;
   index = -1;
@@ -1435,6 +1435,8 @@ void npc::alt_attack(game *g, int target)
    }
   }
  }
+
+ if (!used) return;	// XXX plausible invariant violation
 
 // Are we going to throw this item?
  if (!thrown_item(used))

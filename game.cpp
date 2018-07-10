@@ -138,7 +138,7 @@ bool game::opening_screen()
  mvwprintz(w_open, 0, 1, c_blue, "Welcome to Cataclysm!");
  mvwprintz(w_open, 1, 0, c_red, "\
 This alpha release is highly unstable. Please report any crashes or bugs to\n\
-fivedozenwhales@gmail.com.");
+http://github.com/zaimoni/Cataclysm .");
  refresh();
  wrefresh(w_open);
  refresh();
@@ -232,7 +232,7 @@ fivedozenwhales@gmail.com.");
      mvwprintz(w_open, 0, 1, c_blue, "Welcome to Cataclysm!");
      mvwprintz(w_open, 1, 0, c_red, "\
 This alpha release is highly unstable. Please report any crashes or bugs to\n\
-fivedozenwhales@gmail.com.");
+http://github.com/zaimoni/Cataclysm .");
      refresh();
      wrefresh(w_open);
      refresh();

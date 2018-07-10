@@ -1711,9 +1711,9 @@ void player::power_bionics(game *g)
  wrefresh(wBio);
  char ch;
  bool activating = true;
- bionic *tmp;
- int b;
  do {
+  bionic *tmp = NULL;
+  int b;
   ch = getch();
   if (ch == '!') {
    activating = !activating;
@@ -1733,7 +1733,7 @@ void player::power_bionics(game *g)
      ch = KEY_ESCAPE;
     }
    }
-   if (ch == KEY_ESCAPE) {
+   if (tmp) {
     if (activating) {
      if (bionics[tmp->id].activated) {
       if (tmp->powered) {

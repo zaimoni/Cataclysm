@@ -8029,7 +8029,7 @@ void map::add_extra(map_extra type, game *g)
  case mx_drugdeal: {
 // Decide on a drug type
   int num_drugs;
-  itype* drugtype;
+  itype* drugtype = NULL;
   switch (rng(1, 10)) {
    case 1: // Weed
     num_drugs = rng(20, 30);
@@ -8054,6 +8054,8 @@ void map::add_extra(map_extra type, game *g)
     drugtype = (*itypes)[itm_heroin];
     break;
   }
+  if (!drugtype) return;	// XXX invariant violation
+
   int num_bodies_a = dice(3, 3);
   int num_bodies_b = dice(3, 3);
   bool north_south = one_in(2);

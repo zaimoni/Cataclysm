@@ -261,12 +261,11 @@ WINDOW *initscr(void)
     lastchar=-1;
     inputdelay=-1;
     std::string typeface;
-char * typeface_c;
+char * typeface_c = NULL;
 std::ifstream fin;
 fin.open("data\\FONTDATA");
  if (!fin.is_open()){
-     MessageBox(WindowHandle, "Failed to open FONTDATA, loading defaults.",
-                NULL, NULL);
+     MessageBox(WindowHandle, "Failed to open FONTDATA, loading defaults.", NULL, NULL);
      fontheight=16;
      fontwidth=8;
  } else {
@@ -276,8 +275,7 @@ fin.open("data\\FONTDATA");
      fin >> fontwidth;
      fin >> fontheight;
      if ((fontwidth <= 4) || (fontheight <=4)){
-         MessageBox(WindowHandle, "Invalid font size specified!",
-                    NULL, NULL);
+         MessageBox(WindowHandle, "Invalid font size specified!", NULL, NULL);
         fontheight=16;
         fontwidth=8;
      }
@@ -305,15 +303,14 @@ fin.open("data\\FONTDATA");
     backbit = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, (void**)&dcbits, NULL, 0);
     DeleteObject(SelectObject(backbuffer, backbit));//load the buffer into DC
 
- int nResults = AddFontResourceExA("data\\termfont",FR_PRIVATE,NULL);
+ int nResults = (typeface_c ? AddFontResourceExA("data\\termfont",FR_PRIVATE,NULL) : 0);
    if (nResults>0){
     font = CreateFont(fontheight, fontwidth, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
                       ANSI_CHARSET, OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,
                       PROOF_QUALITY, FF_MODERN, typeface_c);   //Create our font
 
   } else {
-      MessageBox(WindowHandle, "Failed to load default font, using FixedSys.",
-                NULL, NULL);
+      MessageBox(WindowHandle, "Failed to load default font, using FixedSys.", NULL, NULL);
        font = CreateFont(fontheight, fontwidth, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
                       ANSI_CHARSET, OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,
                       PROOF_QUALITY, FF_MODERN, "FixedSys");   //Create our font
