@@ -12,8 +12,13 @@
 #include <fstream>
 #include <sstream>
 #include <math.h>
+#ifdef ZAIMONI_HAS_MICROSOFT_IO_H
+#include <io.h>
+#include <direct.h>
+#else
 #include <unistd.h>
 #include <dirent.h>
+#endif
 #include <sys/stat.h>
 
 #define MAX_MONSTERS_MOVING 40 // Efficiency!
@@ -144,6 +149,78 @@ http://github.com/zaimoni/Cataclysm .");
  refresh();
  std::vector<std::string> savegames, templates;
  std::string tmp;
+#ifdef ZAIMONI_HAS_MICROSOFT_IO_H
+ // Zaimoni: total reimplementation for MSVC.
+ _finddata_t file_found;
+ intptr_t search_handle = _findfirst("save",&file_found);
+ if (-1 == search_handle) {
+	 if (ENOENT != errno) {
+		 debugmsg("unplanned file system state, not practical to open './save' directory");
+		 endwin();
+		 exit(EXIT_FAILURE);
+	 }
+	 // know we are on the Microsoft version of mkdir
+	 if (0 > mkdir("save")) {
+		 debugmsg("Could not make './save' directory");
+		 endwin();
+		 exit(EXIT_FAILURE);
+	 }
+	 search_handle = _findfirst("save", &file_found);
+	 if (-1 == search_handle) {
+		 debugmsg("Could not find './save' directory after making it.");
+		 endwin();
+		 exit(EXIT_FAILURE);
+	 }
+ }
+ if (!(_A_SUBDIR | file_found.attrib)) {
+	 delwin(w_open);
+	 uquit = QUIT_MENU;
+	 return false;
+ }
+ _findclose(search_handle);	// while this *can* fail, we have no good recovery method if it does.
+ search_handle = _findfirst("save/*.sav", &file_found);
+ if (-1 == search_handle) {
+	 if (ENOENT != errno) {
+		 debugmsg("unplanned file system state, not practical to locate save files");
+		 endwin();
+		 exit(EXIT_FAILURE);
+	 }
+ } else {
+   std::string tmp(file_found.name);
+   savegames.push_back(tmp.substr(0, tmp.find(".sav")));
+   while(0 <= _findnext(search_handle, &file_found)) {
+	 tmp = file_found.name;
+	 savegames.push_back(tmp.substr(0, tmp.find(".sav")));
+   }
+   if (ENOENT != errno) {
+	   debugmsg("unplanned file system state, not practical to locate save files");
+	   endwin();
+	   exit(EXIT_FAILURE);
+   }
+   _findclose(search_handle);
+ }
+ search_handle = _findfirst("data/*.template", &file_found);
+ if (-1 == search_handle) {
+	 if (ENOENT != errno) {
+		 debugmsg("unplanned file system state, not practical to locate template files");
+		 endwin();
+		 exit(EXIT_FAILURE);
+	 }
+ } else {
+   std::string tmp(file_found.name);
+   savegames.push_back(tmp.substr(0, tmp.find(".template")));
+   while(0 <= _findnext(search_handle, &file_found)) {
+	 tmp = file_found.name;
+	 savegames.push_back(tmp.substr(0, tmp.find(".template")));
+   }
+   if (ENOENT != errno) {
+	   debugmsg("unplanned file system state, not practical to locate template files");
+	   endwin();
+	   exit(EXIT_FAILURE);
+   }
+   _findclose(search_handle);
+ }
+#else
  dirent *dp;
  DIR *dir = opendir("save");
  if (!dir) {
@@ -171,6 +248,7 @@ http://github.com/zaimoni/Cataclysm .");
   if (tmp.find(".template") != std::string::npos)
    templates.push_back(tmp.substr(0, tmp.find(".template")));
  }
+#endif
  int sel1 = 0, sel2 = 1, layer = 1;
  char ch;
  bool start = false;
