@@ -2,6 +2,11 @@
 #include <math.h>
 #include <stdlib.h>
 
+// math.h need not be XOPEN
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 static const int sx[4] = { 1, -1, -1, 1 };
 static const int sy[4] = { 1, 1, -1, -1 };
 
