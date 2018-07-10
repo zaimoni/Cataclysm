@@ -2090,10 +2090,12 @@ std::vector<point> map::route(int Fx, int Fy, int Tx, int Ty, bool bash)
            tername(Fx, Fy).c_str(), Tx, Ty);
 */
  std::vector<point> open;
- astar_list list[SEEX * my_MAPSIZE][SEEY * my_MAPSIZE];
- int score	[SEEX * my_MAPSIZE][SEEY * my_MAPSIZE];
- int gscore	[SEEX * my_MAPSIZE][SEEY * my_MAPSIZE];
- point parent	[SEEX * my_MAPSIZE][SEEY * my_MAPSIZE];
+ // Zaimoni: we're taking a memory management hit converting from C99 stack-allocated arrays to std::vector here.
+ std::vector<std::vector<astar_list> > list(SEEX * my_MAPSIZE, std::vector<astar_list>(SEEY * my_MAPSIZE, ASL_NONE)); // Init to not being on any list
+ std::vector<std::vector<int> > score(SEEX * my_MAPSIZE, std::vector<int>(SEEY * my_MAPSIZE, 0));	// No score!
+ std::vector<std::vector<int> > gscore(SEEX * my_MAPSIZE, std::vector<int>(SEEY * my_MAPSIZE, 0));	// No score!
+ std::vector<std::vector<point> > parent(SEEX * my_MAPSIZE, std::vector<point>(SEEY * my_MAPSIZE, point(-1, -1)));
+
  int startx = Fx - 4, endx = Tx + 4, starty = Fy - 4, endy = Ty + 4;
  if (Tx < Fx) {
   startx = Tx - 4;
@@ -2112,14 +2114,6 @@ std::vector<point> map::route(int Fx, int Fy, int Tx, int Ty, bool bash)
  if (endy > SEEY * my_MAPSIZE - 1)
   endy = SEEY * my_MAPSIZE - 1;
 
- for (int x = startx; x <= endx; x++) {
-  for (int y = starty; y <= endy; y++) {
-   list  [x][y] = ASL_NONE; // Init to not being on any list
-   score [x][y] = 0;        // No score!
-   gscore[x][y] = 0;        // No score!
-   parent[x][y] = point(-1, -1);
-  }
- }
  list[Fx][Fy] = ASL_OPEN;
  open.push_back(point(Fx, Fy));
 

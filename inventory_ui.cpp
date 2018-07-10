@@ -172,9 +172,7 @@ std::vector<item> game::multidrop()
  u.inv.restack(&u);
  WINDOW* w_inv = newwin(25, 80, 0, 0);
  const int maxitems = 20;    // Number of items to show at one time.
- int dropping[u.inv.size()]; // Count of how many we'll drop from each stack
- for (int i = 0; i < u.inv.size(); i++)
-  dropping[i] = 0;
+ std::vector<int> dropping(u.inv.size(), 0);
  int count = 0; // The current count
  std::vector<char> weapon_and_armor; // Always single, not counted
  bool warned_about_bionic = false; // Printed add_msg re: dropping bionics

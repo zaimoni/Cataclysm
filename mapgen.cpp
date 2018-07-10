@@ -6629,7 +6629,7 @@ void map::rotate(int turns)
  ter_id rotated         [SEEX*2][SEEY*2];
  trap_id traprot        [SEEX*2][SEEY*2];
  std::vector<item> itrot[SEEX*2][SEEY*2];
- std::vector<spawn_point> sprot[my_MAPSIZE * my_MAPSIZE];
+ std::vector<std::vector<spawn_point> > sprot(my_MAPSIZE * my_MAPSIZE);
  computer tmpcomp;
  std::vector<vehicle> tmpveh;
 

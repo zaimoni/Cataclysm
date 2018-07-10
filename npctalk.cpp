@@ -1702,18 +1702,17 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
  std::vector<int> theirs, their_price, yours, your_price;
  p->init_selling(theirs, their_price);
  p->init_buying(g->u.inv, yours, your_price);
- bool getting_theirs[theirs.size()], getting_yours[yours.size()];
+ std::vector<bool> getting_theirs(theirs.size(),false);
+ std::vector<bool> getting_yours(yours.size(),false);
 
 // Adjust the prices based on your barter skill.
  for (int i = 0; i < their_price.size(); i++) {
   their_price[i] *= (price_adjustment(g->u.sklevel[sk_barter]) +
                      (p->int_cur - g->u.int_cur) / 15);
-  getting_theirs[i] = false;
  }
  for (int i = 0; i < your_price.size(); i++) {
   your_price[i] /= (price_adjustment(g->u.sklevel[sk_barter]) +
                     (p->int_cur - g->u.int_cur) / 15);
-  getting_yours[i] = false;
  }
 
  int  cash = cost;// How much cash you get in the deal (negative = losing money)
