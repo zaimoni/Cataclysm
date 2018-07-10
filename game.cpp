@@ -4771,9 +4771,7 @@ void game::pickup(int posx, int posy, int min)
  WINDOW* w_item_info = newwin(12, 48, 12, SEEX * 2 + 8);
  int maxitems = 9;	 // Number of items to show at one time.
  std::vector <item> here = from_veh? veh->parts[veh_part].items : m.i_at(posx, posy);
- bool getitem[here.size()];
- for (int i = 0; i < here.size(); i++)
-  getitem[i] = false;
+ std::vector<bool> getitem(here.size(),false);
  char ch = ' ';
  int start = 0, cur_it, iter;
  int new_weight = u.weight_carried(), new_volume = u.volume_carried();
