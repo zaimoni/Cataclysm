@@ -86,17 +86,17 @@ inventory& inventory::operator+= (const item &rhs)
  return *this;
 }
 
-inventory inventory::operator+ (const inventory &rhs)
+inventory inventory::operator+ (const inventory &rhs) const
 {
  return inventory(*this) += rhs;
 }
 
-inventory inventory::operator+ (const std::vector<item> &rhs)
+inventory inventory::operator+ (const std::vector<item> &rhs) const
 {
  return inventory(*this) += rhs;
 }
 
-inventory inventory::operator+ (const item &rhs)
+inventory inventory::operator+ (const item &rhs) const
 {
  return inventory(*this) += rhs;
 }

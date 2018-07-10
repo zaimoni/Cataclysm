@@ -176,19 +176,17 @@ struct npc_opinion
  npc_opinion(signed char T, signed char F, signed char V, signed char A, int O):
              trust (T), fear (F), value (V), anger(A), owed (O) { };
 
- npc_opinion(npc_opinion &copy)
+ npc_opinion(const npc_opinion &copy)
  {
   trust = copy.trust;
   fear = copy.fear;
   value = copy.value;
   anger = copy.anger;
   owed = copy.owed;
-  favors.clear();
-  for (int i = 0; i < copy.favors.size(); i++)
-   favors.push_back( copy.favors[i] );
+  favors = copy.favors;
  };
 
- npc_opinion& operator+= (npc_opinion &rhs)
+ npc_opinion& operator+= (const npc_opinion &rhs)
  {
   trust += rhs.trust;
   fear  += rhs.fear;
@@ -198,19 +196,7 @@ struct npc_opinion
   return *this;
  };
 
-/*
- npc_opinion& operator+= (npc_opinion rhs)
- {
-  trust += rhs.trust;
-  fear  += rhs.fear;
-  value += rhs.value;
-  anger += rhs.anger;
-  owed  += rhs.owed;
-  return *this;
- };
-*/
-
- npc_opinion& operator+ (npc_opinion &rhs)
+ npc_opinion& operator+ (const npc_opinion &rhs) const
  {
   return (npc_opinion(*this) += rhs);
  };

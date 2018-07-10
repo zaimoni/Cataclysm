@@ -54,14 +54,14 @@ class calendar
   operator int() const; // Returns get_turn() for backwards compatibility
   calendar& operator = (const calendar &rhs);
   calendar& operator = (int rhs);
-  calendar& operator -=(calendar &rhs);
+  calendar& operator -=(const calendar &rhs);
   calendar& operator -=(int rhs);
-  calendar& operator +=(calendar &rhs);
+  calendar& operator +=(const calendar &rhs);
   calendar& operator +=(int rhs);
-  calendar  operator - (calendar &rhs);
-  calendar  operator - (int rhs);
-  calendar  operator + (calendar &rhs);
-  calendar  operator + (int rhs);
+  calendar  operator - (const calendar &rhs) const;
+  calendar  operator - (int rhs) const;
+  calendar  operator + (const calendar &rhs) const;
+  calendar  operator + (int rhs) const;
 
   void increment();   // Add one turn / 6 seconds
 

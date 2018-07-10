@@ -24,9 +24,9 @@ class inventory
   inventory& operator+= (const inventory &rhs);
   inventory& operator+= (const item &rhs);
   inventory& operator+= (const std::vector<item> &rhs);
-  inventory  operator+  (const inventory &rhs);
-  inventory  operator+  (const item &rhs);
-  inventory  operator+  (const std::vector<item> &rhs);
+  inventory  operator+  (const inventory &rhs) const;
+  inventory  operator+  (const item &rhs) const;
+  inventory  operator+  (const std::vector<item> &rhs) const;
 
   void clear();
   void add_stack(std::vector<item> newits);

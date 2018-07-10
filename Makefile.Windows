@@ -5,10 +5,13 @@
 #WARNINGS = -Wall -Wextra -Wno-switch -Wno-sign-compare -Wno-missing-braces -Wno-unused-parameter -Wno-char-subscripts
 #DEBUG = -g
 #PROFILE = -pg
-OTHERS = -O3 -std=c++11
+OTHERS = -O3 -std=c++11 -MD
+
+SUFFIXES += .d
 
 ODIR = objwin
 DDIR = .deps
+NODEPS:=clean
 
 TARGET = cataclysm.exe
 
@@ -30,6 +33,11 @@ LDFLAGS = -static -lgdi32
 SOURCES = $(subst stdafx.cpp,,$(wildcard *.cpp))
 _OBJS = $(SOURCES:.cpp=.o)
 OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
+
+ifeq (0, $(words $(findstring $(MAKECMDGOALS), $(NODEPS))))
+	DEPFILES:=(shell find ($DDIR)/ -name "*.d")
+	-include $(DEPFILES)
+endif
 
 all: $(TARGET)
 	@

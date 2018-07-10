@@ -23,7 +23,7 @@ else
 LDFLAGS = -lncurses
 endif
 
-SOURCES = $(wildcard *.cpp)
+SOURCES = $(subst stdafx.cpp,,$(wildcard *.cpp))
 _OBJS = $(SOURCES:.cpp=.o)
 OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
 
