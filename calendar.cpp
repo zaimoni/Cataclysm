@@ -69,10 +69,9 @@ calendar::operator int() const
  return ret;
 }
 
-calendar& calendar::operator =(calendar &rhs)
+calendar& calendar::operator=(const calendar &rhs)
 {
- if (this == &rhs)
-  return *this;
+ if (this == &rhs) return *this;
 
  second = rhs.second;
  minute = rhs.minute;

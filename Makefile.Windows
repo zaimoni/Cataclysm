@@ -5,16 +5,16 @@
 #WARNINGS = -Wall -Wextra -Wno-switch -Wno-sign-compare -Wno-missing-braces -Wno-unused-parameter -Wno-char-subscripts
 #DEBUG = -g
 #PROFILE = -pg
-OTHERS = -O3
+OTHERS = -O3 -std=c++11
 
 ODIR = objwin
 DDIR = .deps
 
 TARGET = cataclysm.exe
 
-CXX = i486-mingw32-g++
+CXX = -g++
 
-LINKER = i486-mingw32-ld
+LINKER = ld
 LINKERFLAGS = -Wl,-stack,12000000,-subsystem,windows
 
 CFLAGS = $(WARNINGS) $(DEBUG) $(PROFILE) $(OTHERS)
