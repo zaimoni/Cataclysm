@@ -16,8 +16,8 @@
 
 class monster;
 class game;
-class trap;
-class mission;
+struct trap;
+struct mission;
 
 struct special_attack
 {

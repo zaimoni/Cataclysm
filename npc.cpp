@@ -62,78 +62,7 @@ npc::~npc()
 
 }
 
-npc& npc::operator= (npc &rhs)
-{
- id = rhs.id;
- name = rhs.name;
- attitude = rhs.attitude;
- wandx = rhs.wandx;
- wandy = rhs.wandy;
- wandf = rhs.wandf;
- omx = rhs.omx;
- omy = rhs.omy;
- omz = rhs.omz;
- mapx = rhs.mapx;
- mapy = rhs.mapy;
- plx = rhs.plx;
- ply = rhs.ply;
- plt = rhs.plt;
- itx = rhs.itx;
- ity = rhs.ity;
- goalx = rhs.goalx;
- goaly = rhs.goaly;
- fetching_item = rhs.fetching_item;
- has_new_items = rhs.has_new_items;
- worst_item_value = rhs.worst_item_value;
- fac_id = rhs.fac_id;
- my_fac = rhs.my_fac;
- mission = rhs.mission;
- personality = rhs.personality;
- op_of_u = rhs.op_of_u;
- flags = rhs.flags;
- posx = rhs.posx;
- posy = rhs.posy;
- chatbin = rhs.chatbin;
- myclass = rhs.myclass;
- patience = rhs.patience;
- male = rhs.male;
-
- weapon = rhs.weapon;
- ret_null = rhs.ret_null;
- inv = rhs.inv;
- worn.clear();
- for (int i = 0; i < rhs.worn.size(); i++)
-  worn.push_back(rhs.worn[i]);
-
- needs.clear();
- for (int i = 0; i < rhs.needs.size(); i++)
-  needs.push_back(rhs.needs[i]);
-
- path.clear();
- for (int i = 0; i < rhs.path.size(); i++)
-  path.push_back(rhs.path[i]);
-
- for (int i = 0; i < num_hp_parts; i++) {
-  hp_cur[i] = rhs.hp_cur[i];
-  hp_max[i] = rhs.hp_max[i];
- }
-
- for (int i = 0; i < num_skill_types; i++)
-  sklevel[i] = rhs.sklevel[i];
-
- styles.clear();
- for (int i = 0; i < rhs.styles.size(); i++)
-  styles.push_back(rhs.styles[i]);
-
- combat_rules = rhs.combat_rules;
- 
- marked_for_death = rhs.marked_for_death;
- dead = rhs.dead;
-
- return *this;
-}
-
-npc& npc::operator= (const npc &rhs)
+npc& npc::operator=(const npc &rhs)
 {
  id = rhs.id;
  name = rhs.name;
@@ -171,17 +100,9 @@ npc& npc::operator= (const npc &rhs)
  weapon = rhs.weapon;
  ret_null = rhs.ret_null;
  inv = rhs.inv;
- worn.clear();
- for (int i = 0; i < rhs.worn.size(); i++)
-  worn.push_back(rhs.worn[i]);
-
- needs.clear();
- for (int i = 0; i < rhs.needs.size(); i++)
-  needs.push_back(rhs.needs[i]);
-
- path.clear();
- for (int i = 0; i < rhs.path.size(); i++)
-  path.push_back(rhs.path[i]);
+ worn = rhs.worn;
+ needs = rhs.needs;
+ path = rhs.path;
 
  for (int i = 0; i < num_hp_parts; i++) {
   hp_cur[i] = rhs.hp_cur[i];
@@ -191,10 +112,7 @@ npc& npc::operator= (const npc &rhs)
  for (int i = 0; i < num_skill_types; i++)
   sklevel[i] = rhs.sklevel[i];
 
- styles.clear();
- for (int i = 0; i < rhs.styles.size(); i++)
-  styles.push_back(rhs.styles[i]);
-
+ styles = rhs.styles;
  combat_rules = rhs.combat_rules;
  
  marked_for_death = rhs.marked_for_death;
@@ -768,8 +686,8 @@ void npc::make_shopkeep(game *g, oter_id type)
  item tmp;
  std::vector<items_location> pool;
  bool done = false;
+ /*
  switch (type) {
-/*
  case ot_set_food:
   pool.push_back(mi_snacks);
   for (int i = 0; i < 4; i++)	// Weighted to be more likely
@@ -815,8 +733,8 @@ void npc::make_shopkeep(game *g, oter_id type)
   pool.push_back(mi_electronics);
   pool.push_back(mi_bionics);
   break;
-*/
  }
+ */
 
  if (pool.size() > 0) {
   do {

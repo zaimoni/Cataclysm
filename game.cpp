@@ -4271,6 +4271,7 @@ bool game::pl_refill_vehicle (vehicle &veh, int part, bool test)
                 u.inv.remove_item (i_itm);
         }
     }
+	return true;
 }
 
 void game::handbrake ()

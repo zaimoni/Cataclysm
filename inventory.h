@@ -20,7 +20,6 @@ class inventory
   int size() const;
   int num_items() const;
 
-  inventory& operator=  (inventory &rhs);
   inventory& operator=  (const inventory &rhs);
   inventory& operator+= (const inventory &rhs);
   inventory& operator+= (const item &rhs);

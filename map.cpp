@@ -165,8 +165,6 @@ void map::destroy_vehicle (vehicle *veh)
 
 bool map::displace_vehicle (game *g, int &x, int &y, int dx, int dy, bool test=false)
 {
- char ss[256];
-
  int x2 = x + dx;
  int y2 = y + dy;
  int srcx = x;

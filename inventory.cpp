@@ -58,25 +58,11 @@ int inventory::num_items() const
  return ret;
 }
 
-inventory& inventory::operator= (inventory &rhs)
+inventory& inventory::operator=(const inventory &rhs)
 {
- if (this == &rhs)
-  return *this; // No self-assignment
+ if (this == &rhs) return *this; // No self-assignment
 
- clear();
- for (int i = 0; i < rhs.size(); i++)
-  items.push_back(rhs.stack_at(i));
- return *this;
-}
-
-inventory& inventory::operator= (const inventory &rhs)
-{
- if (this == &rhs)
-  return *this; // No self-assignment
-
- clear();
- for (int i = 0; i < rhs.size(); i++)
-  items.push_back(rhs.const_stack(i));
+ items = rhs.items;
  return *this;
 }
 
