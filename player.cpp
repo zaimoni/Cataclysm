@@ -4308,7 +4308,7 @@ void player::read(game *g, char ch)
 
 // Some macguffins can be read, but they aren't treated like books.
  it_macguffin* mac = NULL;
- item *used;
+ item *used = NULL;
  if (index == -2 && weapon.is_macguffin()) {
   mac = dynamic_cast<it_macguffin*>(weapon.type);
   used = &weapon;
