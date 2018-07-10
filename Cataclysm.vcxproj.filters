@@ -201,6 +201,9 @@
     <ClInclude Include="weather_data.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Zaimoni.STL\Pure.C\comptest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

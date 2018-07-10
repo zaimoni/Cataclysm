@@ -1,9 +1,11 @@
 #include "posix_time.h"
-
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
 /* GPLv3 per posix_time.h */
 
+#ifndef ZAIMONI_HAVE_POSIX_NANOSLEEP_IN_TIME_H
+
 enum { BILLION = 1000 * 1000 * 1000 };
+
+#if defined _WIN32 || defined __WIN32__
 
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>
@@ -14,9 +16,7 @@ Additionally, we use busy-looping over short time periods, to get a
 resolution of about 0.01 ms.  In order to measure such short timespans,
 we use the QueryPerformanceCounter() function.  */
 
-int
-nanosleep (const struct timespec *requested_delay,
-           struct timespec *remaining_delay)
+int nanosleep (const struct timespec *requested_delay, struct timespec *remaining_delay)
 {
   static bool initialized;
   /* Number of performance counter increments per nanosecond,
@@ -95,4 +95,8 @@ nanosleep (const struct timespec *requested_delay,
     }
   return 0;
 }
+#else
+#error Nanosleep implementation required
+#endif
+
 #endif

@@ -1,0 +1,13 @@
+/* comptest.h */
+/* compile test summary */
+/* (C)2009,2010 Kenneth Boyd, license: MIT.txt */
+
+/* ZAIMONI_HAVE_MICROSOFT_IO_H: #include <io.h> works and allows compiling 
+   Microsoft-specific idioms */
+/* ZAIMONI_HAVE_POSIX_TIMESPEC_IN_TIME_H */
+/* ZAIMONI_HAVE_POSIX_NANOSLEEP_IN_TIME_H */
+/* ZAIMONI_REALLOC_TO_ZERO_IS_NULL: realloc(x,0) is NULL.  Prohibited by C99,
+   but allowed as an implementation-specific decision by C90 and very useful
+   for optimization purposes. */
+
+

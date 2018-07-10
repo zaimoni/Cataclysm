@@ -1,0 +1,31 @@
+# Makefile for pure.C directory
+# assumes M$ NMake
+
+.SUFFIXES:
+.SUFFIXES: .c .lib .obj
+
+!INCLUDE ..\..\NMake.inc
+
+# /Wall warns on system headers in VC 2008, not good
+CFLAGS = /O1 /EHsc /MD /W3
+
+LIBS = z_stdio_log.lib
+
+# GNU targets we know about
+all: $(LIBS)
+
+clean:
+	del *.lib *.obj
+
+install: $(libdir)\z_stdio_log.lib
+
+uninstall:
+	del $(libdir)\z_stdio_log.lib
+
+# rules (defaulting .c.obj)
+z_stdio_log.lib: fatal.obj fatal_code.obj inform.obj inc_inform.obj log.obj
+	$(AR) /OUT:z_stdio_log.lib fatal.obj fatal_code.obj inform.obj inc_inform.obj log.obj
+
+$(libdir)/z_stdio_log.lib: z_stdio_log.lib
+	copy /Y z_stdio_log.lib $(libdir)\z_stdio_log.lib
+

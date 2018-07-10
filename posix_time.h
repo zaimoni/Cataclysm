@@ -5,9 +5,13 @@
    licensed under the GPLv3. */
 #include <time.h>
 #include <errno.h>
+#include "Zaimoni.STL/Pure.C/comptest.h"	/* for C library test results */
 
-#if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
-/* Windows platforms.  */
+#ifndef ZAIMONI_HAVE_POSIX_NANOSLEEP_IN_TIME_H
+/* Above should exclude Sufficiently POSIX Systems, including Cygwin */
+
+#ifndef ZAIMONI_HAVE_POSIX_TIMESPEC_IN_TIME_H
+/* MingWin 5.4- and older MSVC's don't have this.  MSVC 2017 does.  */
 
 #   ifdef __cplusplus
 extern "C" {
@@ -22,10 +26,9 @@ struct timespec
 #   ifdef __cplusplus
 }
 #   endif
+#endif
 
-int
-nanosleep (const struct timespec *requested_delay,
-           struct timespec *remaining_delay);
+int nanosleep (const struct timespec *requested_delay, struct timespec *remaining_delay);
 
 #endif
 #endif

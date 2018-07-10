@@ -1,0 +1,57 @@
+# Makefile for pure.C directory
+# assumes M$ NMake
+
+.SUFFIXES:
+.SUFFIXES: .c .lib .obj
+
+!INCLUDE ..\NMake.inc
+
+# /Wall warns on system headers in VC 2008, not good
+CFLAGS = /O1 /EHsc /MD /W3
+
+# don't want to pull in Logging.h just yet (not exactly lightweight)
+# LIBS = z_format_util.lib z_stdio_c.lib
+LIBS = z_format_util.lib
+
+# GNU targets we know about
+all: auto_int.h comptest.h $(LIBS)
+
+clean:
+	del *.lib *.obj auto_int.h comptest.h
+
+# rules
+format_util.obj: format_util.c format_util.h
+stdio_c.obj: stdio_c.c stdio_c.h
+
+auto_int.h : int_probe.c
+	-$(CC) $(CFLAGS) int_probe.c
+	-.\int_probe.exe > auto_int.h
+	-del int_probe.exe
+
+comptest.h : comptest.in compile.test/exists_MS_io_h.c compile.test/realloc_0.c compile.test/exists_timespec.c compile.test/exists_nanosleep.c
+	copy comptest.in comptest.h
+	-$(CC) $(CFLAGS) compile.test/exists_MS_io_h.c
+	-.\exists_MS_io_h.exe >> comptest.h
+	-del exists_MS_io_h.exe
+	-$(CC) $(CFLAGS) compile.test/exists_timespec.c
+	-.\exists_timespec.exe >> comptest.h
+	-del exists_timespec.exe
+	-$(CC) $(CFLAGS) /WX compile.test/exists_nanosleep.c
+	-.\exists_nanosleep.exe >> comptest.h
+	-del exists_nanosleep.exe
+	-$(CC) $(CFLAGS) compile.test/realloc_0.c
+	-.\realloc_0.exe >> comptest.h
+	-del realloc_0.exe
+
+# defaulting .c.obj
+z_format_util.lib: format_util.obj
+	$(AR) /OUT:z_format_util.lib format_util.obj
+
+z_stdio_c.lib: stdio_c.obj
+	$(AR) /OUT:z_stdio_c.lib stdio_c.obj
+
+../../$(host_libdir)/libz_format_util.lib: libz_format_util.lib
+	copy /Y libz_format_util.lib ..\..\$(host_libdir)\libz_format_util.lib
+	
+../../$(host_libdir)/libz_stdio_c.lib: libz_stdio_c.lib
+	copy /Y libz_stdio_c.lib ..\..\$(host_libdir)\libz_stdio_c.lib
