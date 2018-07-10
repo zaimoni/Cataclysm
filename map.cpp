@@ -1912,6 +1912,7 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
   mvwputch    (w, j, k, tercol, sym);
 }
 
+#if 0
 //WIP: faster map::sees
 bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc)
 {
@@ -1927,6 +1928,7 @@ bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc)
  }
  for (int x = Fx; x <= Tx; x++) {
   int Yhl = 
+#endif
 
 /*
 map::sees based off code by Steve Register [arns@arns.freeservers.com]
