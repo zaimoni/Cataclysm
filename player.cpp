@@ -81,7 +81,7 @@ player::~player()
 {
 }
 
-player& player::operator=(player rhs)
+player& player::operator=(const player& rhs)
 {
  str_cur = rhs.str_cur;
  str_max = rhs.str_max;
@@ -126,13 +126,8 @@ player& player::operator=(player rhs)
  for (int i = 0; i < NUM_MUTATION_CATEGORIES; i++)
   mutation_category_level[i] = rhs.mutation_category_level[i];
 
- inv.clear();
- for (int i = 0; i < rhs.inv.size(); i++)
-  inv.add_stack(rhs.inv.stack_at(i));
-
- worn.clear();
- for (int i = 0; i < rhs.worn.size(); i++)
-  worn.push_back(rhs.worn[i]);
+ inv = rhs.inv;
+ worn = rhs.worn;
 
  style_selected = rhs.style_selected;
  weapon = rhs.weapon;
