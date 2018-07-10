@@ -12,6 +12,7 @@
 #include <fstream>
 #include <sstream>
 #include <math.h>
+#include "posix_time.h"
 #ifdef ZAIMONI_HAS_MICROSOFT_IO_H
 #include <io.h>
 #include <direct.h>

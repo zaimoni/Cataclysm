@@ -7,6 +7,7 @@
 #include <cmath>
 #include <stdlib.h>
 #include <fstream>
+#include "posix_time.h"
 
 #define SGN(a) (((a)<0) ? -1 : 1)
 #define INBOUNDS(x, y) \

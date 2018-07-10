@@ -8,6 +8,7 @@
 #include "rng.h"
 #include "item.h"
 #include "options.h"
+#include "posix_time.h"
 
 int time_to_fire(player &p, it_gun* firing);
 int recoil_add(player &p);

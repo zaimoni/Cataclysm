@@ -17,7 +17,6 @@
 #include "weather.h"
 #include "construction.h"
 #include "calendar.h"
-#include "posix_time.h"
 #include "artifact.h"
 #include "mutation.h"
 #include "gamemode.h"
