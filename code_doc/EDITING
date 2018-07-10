@@ -1,6 +1,8 @@
 Zaimoni.STL directory
-Tested elsewhere.  This is providing some C library (mis(feature detection.
-  MSVC
+Tested elsewhere.  This is providing some C library (mis(feature detection.  To
+set up the configuration headers, run within the Pure.C subdirectory:
+  MSVC: nmake -f NMakefile
+  *NIX envinoments, including MingWin: GNU make
 
 ADDITIONS
 
