@@ -5,11 +5,6 @@
 
 mapbuffer MAPBUFFER;
 
-bool pcomp(point lhs, point rhs)
-{
-};
-
-
 // g defaults to NULL
 mapbuffer::mapbuffer(game *g)
 {
