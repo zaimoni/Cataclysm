@@ -81,7 +81,7 @@ player::~player()
 {
 }
 
-player& player::operator= (player rhs)
+player& player::operator=(player rhs)
 {
  str_cur = rhs.str_cur;
  str_max = rhs.str_max;

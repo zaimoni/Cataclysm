@@ -810,7 +810,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
   if (z != NULL && !z->has_flag(MF_FLIES)) {
    z->add_effect(ME_DOWNED, rng(1, 2));
    bash_dam += z->fall_damage();
-  } else if (p != NULL && !p->weapon.type->id == itm_style_judo) {
+  } else if (p != NULL && p->weapon.type->id != itm_style_judo) {
    p->add_disease(DI_DOWNED, rng(1, 2), g);
    bash_dam += 3;
   }
@@ -842,7 +842,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
    z->knock_back_from(g, posx + rng(-1, 1), posy + rng(-1, 1));
   } else if (p != NULL) {
    p->knock_back_from(g, posx + rng(-1, 1), posy + rng(-1, 1));
-   if (!p->weapon.type->id == itm_style_judo)
+   if (p->weapon.type->id != itm_style_judo)
     p->add_disease(DI_DOWNED, rng(1, 2), g);
   }
   break;

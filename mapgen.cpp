@@ -8404,7 +8404,6 @@ void rough_circle(map *m, ter_id type, int x, int y, int rad)
 void add_corpse(game *g, map *m, int x, int y)
 {
  item body;
- itype_id /* shoes, pants, shirt, */ extra;
  body.make_corpse(g->itypes[itm_corpse], g->mtypes[mon_null], 0);
  m->add_item(x, y, body);
  m->put_items_from(mi_shoes,  1, x, y);

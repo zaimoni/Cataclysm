@@ -5993,7 +5993,6 @@ void game::plmove(int x, int y)
   if (!active_npc[npcdex].is_enemy() &&
       !query_yn("Really attack %s?", active_npc[npcdex].name.c_str()))
    return;	// Cancel the attack
-  body_part bphit;
   int hitdam = 0, hitcut = 0;
   u.hit_player(this, active_npc[npcdex]);
   active_npc[npcdex].make_angry();
