@@ -3,7 +3,6 @@
 #define _WIN32_WINNT 0x0500
 #define WIN32_LEAN_AND_MEAN
 //#define VC_EXTRALEAN
-#include <windows.h>
 #include <stdio.h>
 typedef int	chtype;
 typedef unsigned short	attr_t;
@@ -143,10 +142,4 @@ int getmaxy(WINDOW *win);
 int move(int y, int x);
 void timeout(int delay);//PORTABILITY, DUMMY FUNCTION
 
-//Window Functions, Do not call these outside of catacurse.cpp
-void WinDestroy();
-bool WinCreate(bool initgl);
-void CheckMessages();
-int FindWin(WINDOW *wnd);
-LRESULT CALLBACK ProcessMessages(HWND__ *hWnd,u_int32_t Msg,WPARAM wParam, LPARAM lParam);
 #endif

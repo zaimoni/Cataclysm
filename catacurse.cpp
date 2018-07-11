@@ -3,6 +3,15 @@
 #include <cstdlib>
 #include <fstream>
 #include <string>
+#include <windows.h>
+
+//Window Functions, Do not call these outside of catacurse.cpp
+void WinDestroy();
+bool WinCreate(bool initgl);
+void CheckMessages();
+int FindWin(WINDOW *wnd);
+LRESULT CALLBACK ProcessMessages(HWND__ *hWnd, u_int32_t Msg, WPARAM wParam, LPARAM lParam);
+
 //***********************************
 //Globals                           *
 //***********************************

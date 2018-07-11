@@ -7,8 +7,6 @@
 #PROFILE = -pg
 OTHERS = -O3 -std=c++11 -MD
 
-SUFFIXES += .d
-
 ODIR = objwin
 DDIR = .deps
 NODEPS:=clean
@@ -57,4 +55,4 @@ $(ODIR)/%.o: %.cpp
 clean:
 	rm -f $(TARGET) $(ODIR)/*.o
 
--include $(SOURCES:%.cpp=$(DEPDIR)/%.P)
+-include $(SOURCES:%.cpp=$(DDIR)/%.d)

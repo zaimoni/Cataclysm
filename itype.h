@@ -12,6 +12,7 @@
 #include "skill.h"
 #include "bionics.h"
 #include "artifact.h"
+#include <stdarg.h>
 
 // mfb(n) converts a flag to its appropriate position in covers's bitfield
 #ifndef mfb
