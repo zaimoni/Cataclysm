@@ -1,19 +1,21 @@
 #include "game.h"
 #include "setvector.h"
 
-#define MUTATION(mut) id = mut; mutation_data[id].valid = true
+mutation_branch mutation_branch::data[PF_MAX2]; // Mutation data
+
+#define MUTATION(mut) id = mut; mutation_branch::data[id].valid = true
 
 #define PREREQS(...) \
-	setvector(mutation_data[id].prereqs, __VA_ARGS__, NULL)
+	setvector(mutation_branch::data[id].prereqs, __VA_ARGS__, NULL)
 
 #define CANCELS(...) \
-	setvector(mutation_data[id].cancels, __VA_ARGS__, NULL)
+	setvector(mutation_branch::data[id].cancels, __VA_ARGS__, NULL)
 
 #define CHANGES_TO(...) \
-	setvector(mutation_data[id].replacements, __VA_ARGS__, NULL)
+	setvector(mutation_branch::data[id].replacements, __VA_ARGS__, NULL)
 
 #define LEADS_TO(...) \
-	setvector(mutation_data[id].additions, __VA_ARGS__, NULL)
+	setvector(mutation_branch::data[id].additions, __VA_ARGS__, NULL)
 
 // Zaimoni, 2018-07-10: looks like all of the MSVC-breaking setvector calls 
 // were replaced by externally loaded configuration in C:DDA prior to the Coolthulu fork.
@@ -23,9 +25,9 @@ void game::init_mutations()
  int id = 0;
 // Set all post-PF_MAX to valid
  for (int i = PF_MAX + 1; i < PF_MAX2; i++)
-  mutation_data[i].valid = true;
+  mutation_branch::data[i].valid = true;
 
- mutation_data[PF_MARLOSS].valid = false; // Never valid!
+ mutation_branch::data[PF_MARLOSS].valid = false; // Never valid!
 
  MUTATION(PF_FLEET);
   CANCELS (PF_PONDEROUS1, PF_PONDEROUS2, PF_PONDEROUS3);

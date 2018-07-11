@@ -432,26 +432,26 @@ void game::mutation_wish()
     col = h_white;
    mvwprintz(w_list, i, 0, col, traits[i-1+shift].name.c_str());
   }
-  mvwprintw(w_info, 1, 0, mutation_data[a+shift].valid ? "Valid" : "Nonvalid");
+  mvwprintw(w_info, 1, 0, mutation_branch::data[a+shift].valid ? "Valid" : "Nonvalid");
   int line2 = 2;
   mvwprintw(w_info, line2, 0, "Prereqs:");
-  for (int j = 0; j < mutation_data[a+shift].prereqs.size(); j++) {
-   mvwprintw(w_info, line2, 9, traits[ mutation_data[a+shift].prereqs[j] ].name.c_str());
+  for(const auto tmp : mutation_branch::data[a + shift].prereqs) {
+   mvwprintw(w_info, line2, 9, traits[tmp].name.c_str());
    line2++;
   }
   mvwprintw(w_info, line2, 0, "Cancels:");
-  for (int j = 0; j < mutation_data[a+shift].cancels.size(); j++) {
-   mvwprintw(w_info, line2, 9, traits[ mutation_data[a+shift].cancels[j] ].name.c_str());
+  for(const auto tmp : mutation_branch::data[a + shift].cancels) {
+   mvwprintw(w_info, line2, 9, traits[tmp].name.c_str());
    line2++;
   }
   mvwprintw(w_info, line2, 0, "Becomes:");
-  for (int j = 0; j < mutation_data[a+shift].replacements.size(); j++) {
-   mvwprintw(w_info, line2, 9, traits[ mutation_data[a+shift].replacements[j] ].name.c_str());
+  for(const auto tmp : mutation_branch::data[a + shift].replacements) {
+   mvwprintw(w_info, line2, 9, traits[tmp].name.c_str());
    line2++;
   }
   mvwprintw(w_info, line2, 0, "Add-ons:");
-  for (int j = 0; j < mutation_data[a+shift].additions.size(); j++) {
-   mvwprintw(w_info, line2, 9, traits[ mutation_data[a+shift].additions[j] ].name.c_str());
+  for(const auto tmp : mutation_branch::data[a + shift].additions) {
+   mvwprintw(w_info, line2, 9, traits[tmp].name.c_str());
    line2++;
   }
   wrefresh(w_info);

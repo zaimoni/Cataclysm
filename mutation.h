@@ -30,6 +30,8 @@ std::vector<pl_flag> mutations_from_category(mutation_category cat);
 // to prepare for a constructor that takes a JSON representation.
 struct mutation_branch
 {
+ static mutation_branch data[PF_MAX2]; // Mutation data
+
  bool valid = false; // True if this is a valid mutation (only used for flags < PF_MAX)
  std::vector<pl_flag> prereqs; // Prerequisites; Only one is required
  std::vector<pl_flag> cancels; // Mutations that conflict with this one
