@@ -16,15 +16,8 @@ auto tmp = { __VA_ARGS__ };	\
 (DEST).assign(std::begin(tmp), std::end(tmp));	\
 }
 
-void setvector(std::vector <itype_id> &vec, ... );
-void setvector(std::vector <component> &vec, ... );
-void setvector(std::vector <mon_id> &vec, ... );
-void setvector(std::vector <items_location_and_chance> &vec, ... );
-void setvector(std::vector <mission_origin> &vec, ... );
-void setvector(std::vector <std::string> &vec, ... );
-void setvector(std::vector <m_flag> &vec, ... );
-void setvector(std::vector <monster_trigger> &vec, ... );
-void setvector(std::vector <moncat_id> &vec, ... );
-void setvector(std::vector <style_move> &vec, ... );
+void setvector(std::vector <component> &vec, ... );	// auto fails: initializing struct, not scalar data.  itypedef.cpp
+void setvector(std::vector <items_location_and_chance> &vec, ... );	// auto fails: initializing struct, not scalar data.  itypedef.cpp
+void setvector(std::vector <style_move> &vec, ... );	// auto fails: initializing struct, not scalar data.  itypedef.cpp
 template <class T> void setvec(std::vector<T> &vec, ... );
 #endif
