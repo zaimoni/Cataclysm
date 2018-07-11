@@ -64,6 +64,7 @@ npc::~npc()
 
 npc& npc::operator=(const npc &rhs)
 {
+ player::operator=(rhs);
  id = rhs.id;
  name = rhs.name;
  attitude = rhs.attitude;
