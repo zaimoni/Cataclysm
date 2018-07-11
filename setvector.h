@@ -10,6 +10,12 @@
 // Zaimoni, 2018-07-10: looks like all of the MSVC-breaking setvector calls 
 // were replaced by externally loaded configuration in C:DDA prior to the Coolthulu fork.
 // no direct guidance for immediately bringing up the build.
+#define SET_VECTOR(DEST,...)	\
+{	\
+auto tmp = { __VA_ARGS__ };	\
+(DEST).assign(std::begin(tmp), std::end(tmp));	\
+}
+
 void setvector(std::vector <itype_id> &vec, ... );
 void setvector(std::vector <component> &vec, ... );
 void setvector(std::vector <mon_id> &vec, ... );

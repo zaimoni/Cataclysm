@@ -5,12 +5,6 @@ mutation_branch mutation_branch::data[PF_MAX2]; // Mutation data
 
 #define MUTATION(mut) id = mut; mutation_branch::data[id].valid = true
 
-#define SET_VECTOR(DEST,...)	\
-{	\
-pl_flag tmp[] = { __VA_ARGS__ };	\
-(DEST).assign(std::begin(tmp), std::end(tmp));	\
-}
-
 #define PREREQS(...) SET_VECTOR(mutation_branch::data[id].prereqs, __VA_ARGS__)
 #define CANCELS(...) SET_VECTOR(mutation_branch::data[id].cancels, __VA_ARGS__)
 #define CHANGES_TO(...) SET_VECTOR(mutation_branch::data[id].replacements, __VA_ARGS__)
