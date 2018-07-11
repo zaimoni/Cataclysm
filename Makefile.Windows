@@ -32,11 +32,6 @@ SOURCES = $(subst stdafx.cpp,,$(wildcard *.cpp))
 _OBJS = $(SOURCES:.cpp=.o)
 OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
 
-ifeq (0, $(words $(findstring $(MAKECMDGOALS), $(NODEPS))))
-	DEPFILES:=(shell find ($DDIR)/ -name "*.d")
-	-include $(DEPFILES)
-endif
-
 all: $(TARGET)
 	@
 
@@ -50,9 +45,9 @@ $(DDIR):
 	@mkdir $(DDIR)
 
 $(ODIR)/%.o: %.cpp
-	$(CXX) $(CFLAGS) -c $< -o $@
+	$(CXX) $(CFLAGS) -MMD -c $< -o $@
 
 clean:
 	rm -f $(TARGET) $(ODIR)/*.o
 
--include $(SOURCES:%.cpp=$(DDIR)/%.d)
+include $(wildcard $(ODIR)/*.d)
