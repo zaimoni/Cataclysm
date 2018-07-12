@@ -21,8 +21,8 @@ struct component
 {
  itype_id type;
  int count;
- component() { type = itm_null; count = 0; }
- component(itype_id TYPE, int COUNT) : type (TYPE), count (COUNT) {}
+
+ component(itype_id TYPE = itm_null, int COUNT = 0) : type (TYPE), count (COUNT) {}
 };
 
 struct recipe

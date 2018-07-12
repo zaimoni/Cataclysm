@@ -3420,231 +3420,184 @@ GUN("fusion blaster",	 0,0,c_magenta,	STEEL,	PLASTIC,
 
 // Unarmed Styles
 
-#define STYLE(name, dam, description, ...) \
-index++; \
-itypes.push_back(new it_style(index, 0, 0, name, description, '$', \
-                              c_white, MNULL, MNULL, 0, 0, dam, 0, 0, 0)); \
-setvector((static_cast<it_style*>(itypes[index]))->moves, __VA_ARGS__, NULL); \
-itypes[index]->item_flags |= mfb(IF_UNARMED_WEAPON)
-
-/*
-#define STYLE(name, description)\
-index++; \
-itypes.push_back(new it_style(index, 0, 0, name, description, '$', \
-                              c_white, MNULL, MNULL, 0, 0, 0, 0, 0, 0))
-
-STYLE("karate", "karate is cool");
-*/
+#define STYLE(name,dam,description,...)	\
+{	\
+	index++; \
+	auto style = new it_style(index, 0, 0, name, description, '$',  c_white, MNULL, MNULL, 0, 0, dam, 0, 0, 0);	\
+	style->item_flags |= mfb(IF_UNARMED_WEAPON);	\
+	SET_VECTOR_STRUCT(style->moves, style_move, __VA_ARGS__); \
+	itypes.push_back(style); \
+}
 
 STYLE("karate", 2, "\
 Karate is a popular martial art, originating from Japan.  It focuses on\n\
 rapid, precise attacks, blocks, and fluid movement.  A successful hit allows\n\
 you an extra dodge and two extra blocks on the following round.",
-
-"quickly punch", TEC_RAPID, 0,
-"block", TEC_BLOCK, 2,
-"karate chop", TEC_PRECISE, 4
-);
+	{ { "quickly punch", TEC_RAPID, 0 },
+	  { "block", TEC_BLOCK, 2 },
+	  { "karate chop", TEC_PRECISE, 4 } });
 
 STYLE("aikido", 0, "\
 Aikido is a Japanese martial art focused on self-defense, while minimizing\n\
 injury to the attacker.  It uses defense throws and disarms.  Damage done\n\
 while using this technique is halved, but pain inflicted is doubled.",
-
-"feint at", TEC_FEINT, 2,
-"throw", TEC_DEF_THROW, 2,
-"disarm", TEC_DISARM, 3,
-"disarm", TEC_DEF_DISARM, 4
-);
+	{ { "feint at", TEC_FEINT, 2 },
+	  { "throw", TEC_DEF_THROW, 2 },
+	  { "disarm", TEC_DISARM, 3 },
+	  { "disarm", TEC_DEF_DISARM, 4 } });
 
 STYLE("judo", 0, "\
 Judo is a martial art which focuses on grabs and throws, both defensive and\n\
 offensive.  It also focuses on recovering from throws; while using judo, you\n\
 will not lose any turns to being thrown or knocked down.",
-
-"grab", TEC_GRAB, 2,
-"throw", TEC_THROW, 3,
-"throw", TEC_DEF_THROW, 4
-);
+	{ { "grab", TEC_GRAB, 2 },
+	  { "throw", TEC_THROW, 3 },
+	  { "throw", TEC_DEF_THROW, 4 } });
 
 STYLE("tai chi", 0, "\
 Though tai chi is often seen as a form of mental and physical exercise, it is\n\
 a legitimate martial art, focused on self-defense.  Its ability to absorb the\n\
 force of an attack makes your Perception decrease damage further on a block.",
-
-"block", TEC_BLOCK, 1,
-"disarm", TEC_DEF_DISARM, 3,
-"strike", TEC_PRECISE, 4
-);
+	{ { "block", TEC_BLOCK, 1 },
+	  { "disarm", TEC_DEF_DISARM, 3 },
+	  { "strike", TEC_PRECISE, 4 } });
 
 STYLE("capoeira", 1, "\
 A dance-like style with its roots in Brazilian slavery, capoeira is focused\n\
 on fluid movement and sweeping kicks.  Moving a tile will boost attack and\n\
 dodge; attacking boosts dodge, and dodging boosts attack.",
-
-"bluff", TEC_FEINT, 1,
-"low kick", TEC_SWEEP, 3,
-"spin and hit", TEC_COUNTER, 4,
-"spin-kick", TEC_WIDE, 5
-);
+	{ { "bluff", TEC_FEINT, 1 },
+	  { "low kick", TEC_SWEEP, 3 },
+	  { "spin and hit", TEC_COUNTER, 4 },
+	  { "spin-kick", TEC_WIDE, 5 } });
 
 STYLE("krav maga", 4, "\
 Originating in Israel, Krav Maga is based on taking down an enemy quickly and\n\
 effectively.  It focuses on applicable attacks rather than showy or complex\n\
 moves.  Popular among police and armed forces everywhere.",
-
-"quickly punch", TEC_RAPID, 2,
-"block", TEC_BLOCK, 2,
-"feint at", TEC_FEINT, 3,
-"jab", TEC_PRECISE, 3,
-"disarm", TEC_DISARM, 3,
-"block", TEC_BLOCK_LEGS, 4,
-"counter-attack", TEC_COUNTER, 4,
-"disarm", TEC_DEF_DISARM, 4,
-"", TEC_BREAK, 4,
-"grab", TEC_GRAB, 5
-);
+	{ { "quickly punch", TEC_RAPID, 2 },
+	  { "block", TEC_BLOCK, 2 },
+	  { "feint at", TEC_FEINT, 3 },
+	  { "jab", TEC_PRECISE, 3 },
+	  { "disarm", TEC_DISARM, 3 },
+	  { "block", TEC_BLOCK_LEGS, 4 },
+	  { "counter-attack", TEC_COUNTER, 4 },
+	  { "disarm", TEC_DEF_DISARM, 4 },
+	  { "", TEC_BREAK, 4 },
+	  { "grab", TEC_GRAB, 5 } });
 
 STYLE("muay thai", 4, "\
 Also referred to as the \"Art of 8 Limbs,\" Muay Thai is a popular fighting\n\
 technique from Thailand which uses powerful strikes.  It does extra damage\n\
 against large or strong opponents.",
-
-"slap", TEC_RAPID, 2,
-"block", TEC_BLOCK, 3,
-"block", TEC_BLOCK_LEGS, 4, 
-"power-kick", TEC_BRUTAL, 4,
-"counter-attack", TEC_COUNTER, 5
-);
+	{ { "slap", TEC_RAPID, 2 },
+	  { "block", TEC_BLOCK, 3 },
+	  { "block", TEC_BLOCK_LEGS, 4 },
+	  { "power-kick", TEC_BRUTAL, 4 },
+	  { "counter-attack", TEC_COUNTER, 5 } });
 
 STYLE("ninjutsu", 1, "\
 Ninjutsu is a martial art and set of tactics used by ninja in feudal Japan.\n\
 It focuses on rapid, precise, silent strikes.  Ninjutsu is entirely silent.\n\
 It also provides small combat bonuses the turn after moving a tile.",
-
-"quickly punch", TEC_RAPID, 3,
-"jab", TEC_PRECISE, 4,
-"block", TEC_BLOCK, 4
-);
+	{ { "quickly punch", TEC_RAPID, 3 },
+	  { "jab", TEC_PRECISE, 4 },
+	  { "block", TEC_BLOCK, 4 } });
 
 STYLE("taekwondo", 2, "\
 Taekwondo is the national sport of Korea, and was used by the South Korean\n\
 army in the 20th century.  Focused on kicks and punches, it also includes\n\
 strength training; your blocks absorb extra damage the stronger you are.",
-
-"block", TEC_BLOCK, 2,
-"block", TEC_BLOCK_LEGS, 3,
-"jab", TEC_PRECISE, 4,
-"brutally kick", TEC_BRUTAL, 4,
-"spin-kick", TEC_SWEEP, 5
-);
+	{ { "block", TEC_BLOCK, 2 },
+	  { "block", TEC_BLOCK_LEGS, 3 },
+	  { "jab", TEC_PRECISE, 4 },
+	  { "brutally kick", TEC_BRUTAL, 4 },
+	  { "spin-kick", TEC_SWEEP, 5 } });
 
 STYLE("tiger style", 4, "\
 One of the five Shaolin animal styles.  Tiger style focuses on relentless\n\
 attacks above all else.  Strength, not Dexterity, is used to determine hits;\n\
 you also receive an accumulating bonus for several turns of sustained attack.",
-
-"grab", TEC_GRAB, 4
-);
+	{ { "grab", TEC_GRAB, 4 } });
 
 STYLE("crane style", 0, "\
 One of the five Shaolin animal styles.  Crane style uses intricate hand\n\
 techniques and jumping dodges.  Dexterity, not Strength, is used to determine\n\
 damage; you also receive a dodge bonus the turn after moving a tile.",
-
-"feint at", TEC_FEINT, 2,
-"block", TEC_BLOCK, 3,
-"", TEC_BREAK, 3,
-"hand-peck", TEC_PRECISE, 4
-);
+	{ { "feint at", TEC_FEINT, 2 },
+	  { "block", TEC_BLOCK, 3 },
+	  { "", TEC_BREAK, 3 },
+	  { "hand-peck", TEC_PRECISE, 4 } });
 
 STYLE("leopard style", 3, "\
 One of the five Shaolin animal styles.  Leopard style focuses on rapid,\n\
 strategic strikes.  Your Perception and Intelligence boost your accuracy, and\n\
 moving a single tile provides an increased boost for one turn.",
-
-"swiftly jab", TEC_RAPID, 2,
-"counter-attack", TEC_COUNTER, 4,
-"leopard fist", TEC_PRECISE, 5
-);
+	{ { "swiftly jab", TEC_RAPID, 2 },
+	  { "counter-attack", TEC_COUNTER, 4 },
+	  { "leopard fist", TEC_PRECISE, 5 } });
 
 STYLE("snake style", 1, "\
 One of the five Shaolin animal styles.  Snake style uses sinuous movement and\n\
 precision strikes.  Perception increases your chance to hit as well as the\n\
 damage you deal.",
-
-"swiftly jab", TEC_RAPID, 2,
-"feint at", TEC_FEINT, 3,
-"snakebite", TEC_PRECISE, 4,
-"writhe free from", TEC_BREAK, 4
-);
+	{ { "swiftly jab", TEC_RAPID, 2 },
+	  { "feint at", TEC_FEINT, 3 },
+	  { "snakebite", TEC_PRECISE, 4 },
+	  { "writhe free from", TEC_BREAK, 4 } });
 
 STYLE("dragon style", 2, "\
 One of the five Shaolin animal styles.  Dragon style uses fluid movements and\n\
 hard strikes.  Intelligence increases your chance to hit as well as the\n\
 damage you deal.  Moving a tile will boost damage further for one turn.",
-
-"", TEC_BLOCK, 2,
-"grab", TEC_GRAB, 4,
-"counter-attack", TEC_COUNTER, 4,
-"spin-kick", TEC_SWEEP, 5,
-"dragon strike", TEC_BRUTAL, 6
-);
+	{ { "", TEC_BLOCK, 2 },
+	  { "grab", TEC_GRAB, 4 },
+	  { "counter-attack", TEC_COUNTER, 4 },
+	  { "spin-kick", TEC_SWEEP, 5 },
+	  { "dragon strike", TEC_BRUTAL, 6 } });
 
 STYLE("centipede style", 0, "\
 One of the Five Deadly Venoms.  Centipede style uses an onslaught of rapid\n\
 strikes.  Every strike you make reduces the movement cost of attacking by 4;\n\
 this is cumulative, but is reset entirely if you are hit even once.",
-
-"swiftly hit", TEC_RAPID, 2,
-"block", TEC_BLOCK, 3
-);
+	{ { "swiftly hit", TEC_RAPID, 2 },
+	  { "block", TEC_BLOCK, 3 } });
 
 STYLE("viper style", 2, "\
 One of the Five Deadly Venoms.  Viper Style has a unique three-hit combo; if\n\
 you score a critical hit, it is initiated.  The second hit uses a coned hand\n\
 to deal piercing damage, and the 3rd uses both hands in a devastating strike.",
-
-"", TEC_RAPID, 3,
-"feint at", TEC_FEINT, 3,
-"writhe free from", TEC_BREAK, 4
-);
+	{ { "", TEC_RAPID, 3 },
+	  { "feint at", TEC_FEINT, 3 },
+	  { "writhe free from", TEC_BREAK, 4 } });
 
 STYLE("scorpion style", 3, "\
 One of the Five Deadly Venoms.  Scorpion Style is a mysterious art which uses\n\
 pincer-like fists and a stinger-like kick, which is used when you score a\n\
 critical hit, and does massive damage, knocking your target far back.",
-
-"block", TEC_BLOCK, 3,
-"pincer fist", TEC_PRECISE, 4
-);
+	{ { "block", TEC_BLOCK, 3 },
+	  { "pincer fist", TEC_PRECISE, 4 } });
 
 STYLE("lizard style", 1, "\
 One of the Five Deadly Venoms.  Lizard Style focuses on using walls to one's\n\
 advantage.  Moving alongside a wall will make you run up along it, giving you\n\
 a large to-hit bonus.  Standing by a wall allows you to use it to boost dodge.",
-
-"block", TEC_BLOCK, 2,
-"counter-attack", TEC_COUNTER, 4
-);
+	{ { "block", TEC_BLOCK, 2 },
+	  { "counter-attack", TEC_COUNTER, 4 } });
 
 STYLE("toad style", 0, "\
 One of the Five Deadly Venoms.  Immensely powerful, and immune to nearly any\n\
 weapon.  You may meditate by pausing for a turn; this will give you temporary\n\
 armor, proportional to your Intelligence and Perception.",
-
-"block", TEC_BLOCK, 3,
-"grab", TEC_GRAB, 4
-);
+	{ { "block", TEC_BLOCK, 3 },
+	  { "grab", TEC_GRAB, 4 } });
 
 STYLE("zui quan", 1, "\
 Also known as \"drunken boxing,\" Zui Quan imitates the movement of a drunk\n\
 to confuse the enemy.  The turn after you attack, you may dodge any number of\n\
 attacks with no penalty.",
-
-"stumble and leer at", TEC_FEINT, 3,
-"counter-attack", TEC_COUNTER, 4
-);
+	{ { "stumble and leer at", TEC_FEINT, 3 },
+	  { "counter-attack", TEC_COUNTER, 4 } });
 
 
  if (itypes.size() != num_all_items)

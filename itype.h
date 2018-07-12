@@ -286,16 +286,6 @@ struct style_move
  std::string name;
  technique_id tech;
  int level;
-
- style_move(std::string N, technique_id T, int L) :
-  name (N), tech (T), level (L) { };
-
- style_move()
- {
-  name = "";
-  tech = TEC_NULL;
-  level = 0;
- }
 };
 
 // Returns the name of a category of ammo (e.g. "shot")
