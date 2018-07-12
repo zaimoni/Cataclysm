@@ -50,14 +50,11 @@ bool WinCreate()
 {
     int success;
     WNDCLASSEXW WindowClassType;
-    int WinBorderHeight;
-    int WinBorderWidth;
-    int WinTitleSize;
     unsigned int WindowStyle;
     const WCHAR *szTitle=  (L"Cataclysm");
-    WinTitleSize = GetSystemMetrics(SM_CYCAPTION);      //These lines ensure
-    WinBorderWidth = GetSystemMetrics(SM_CXDLGFRAME) * 2;  //that our window will
-    WinBorderHeight = GetSystemMetrics(SM_CYDLGFRAME) * 2; // be a perfect size
+    int WinTitleSize = GetSystemMetrics(SM_CYCAPTION);      //These lines ensure
+    int WinBorderWidth = GetSystemMetrics(SM_CXDLGFRAME) * 2;  //that our window will
+    int WinBorderHeight = GetSystemMetrics(SM_CYDLGFRAME) * 2; // be a perfect size
     WindowClassType.cbSize = sizeof(WNDCLASSEXW);
     WindowClassType.style = 0;//No point in having a custom style, no mouse, etc
     WindowClassType.lpfnWndProc = ProcessMessages;//the procedure that gets msgs
@@ -77,9 +74,10 @@ bool WinCreate()
     WindowStyle = WS_OVERLAPPEDWINDOW & ~(WS_THICKFRAME) & ~(WS_MAXIMIZEBOX);
     WindowHandle = CreateWindowExW(WS_EX_APPWINDOW || WS_EX_TOPMOST * 0,
                                    szWindowClass , szTitle,WindowStyle, WindowX,
-                                   WindowY, WindowWidth + (WinBorderWidth) * 1,
-                                   WindowHeight + (WinBorderHeight +
-                                   WinTitleSize) * 1, 0, 0, WindowINST, NULL);
+	// XXX cargo cult programming -- the multipliers to border width, height should not be needed if they were retrieved correctly
+                                   WindowY, WindowWidth + WinBorderWidth*2,
+                                   WindowHeight + WinBorderHeight*3 + WinTitleSize,
+		                           0, 0, WindowINST, NULL);
     if (WindowHandle == 0){
         return false;
     }
