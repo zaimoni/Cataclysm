@@ -79,10 +79,19 @@ bool WinCreate()
     WindowStyle = WS_OVERLAPPEDWINDOW & ~(WS_THICKFRAME) & ~(WS_MAXIMIZEBOX);
     WindowHandle = CreateWindowExW(WS_EX_APPWINDOW || WS_EX_TOPMOST * 0,
                                    szWindowClass , szTitle,WindowStyle, WindowX,
-    // XXX cargo cult programming -- the multipliers to border width, height should not be needed if they were retrieved correctly
+	// XXX cargo cult programming -- the multipliers to border width, height should not be needed if they were retrieved correctly
+#if _MSC_VER
+// MSVC is empirically broken (following is correct for _MSC_VER 1913)
+#define BORDERWIDTH_SCALE 2
+#define BORDERHEIGHT_SCALE 3
+#else
+// assume we are on a working WinAPI (e.g., MingWin)
+#define BORDERWIDTH_SCALE 1
+#define BORDERHEIGHT_SCALE 1
+#endif
 	// \todo lock these corrections down to MSVC, they are wrong for MingWin
-                                   WindowY, WindowWidth + WinBorderWidth*2,
-                                   WindowHeight + WinBorderHeight*3 + WinTitleSize,
+                                   WindowY, WindowWidth + WinBorderWidth* BORDERWIDTH_SCALE,
+                                   WindowHeight + WinBorderHeight* BORDERHEIGHT_SCALE + WinTitleSize,
 		                           0, 0, WindowINST, NULL);
     if (WindowHandle == 0){
         return false;
