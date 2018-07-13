@@ -1,8 +1,13 @@
 #if (defined _WIN32 || defined WINDOWS)
 #include "catacurse.h"
+#include <stdio.h>
 #include <cstdlib>
 #include <fstream>
 #include <string>
+
+// requests W2K baseline Windows API ... unsure if this has link-time consequences w/posix_time.cpp which does not specify
+#define _WIN32_WINNT 0x0500
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 //Window Functions, Do not call these outside of catacurse.cpp
@@ -74,7 +79,8 @@ bool WinCreate()
     WindowStyle = WS_OVERLAPPEDWINDOW & ~(WS_THICKFRAME) & ~(WS_MAXIMIZEBOX);
     WindowHandle = CreateWindowExW(WS_EX_APPWINDOW || WS_EX_TOPMOST * 0,
                                    szWindowClass , szTitle,WindowStyle, WindowX,
-	// XXX cargo cult programming -- the multipliers to border width, height should not be needed if they were retrieved correctly
+    // XXX cargo cult programming -- the multipliers to border width, height should not be needed if they were retrieved correctly
+	// \todo lock these corrections down to MSVC, they are wrong for MingWin
                                    WindowY, WindowWidth + WinBorderWidth*2,
                                    WindowHeight + WinBorderHeight*3 + WinTitleSize,
 		                           0, 0, WindowINST, NULL);
@@ -272,7 +278,7 @@ char * typeface_c = NULL;
 std::ifstream fin;
 fin.open("data\\FONTDATA");
  if (!fin.is_open()){
-     MessageBox(WindowHandle, "Failed to open FONTDATA, loading defaults.", NULL, NULL);
+     MessageBox(WindowHandle, "Failed to open FONTDATA, loading defaults.", NULL, 0);
      fontheight=16;
      fontwidth=8;
  } else {
@@ -282,7 +288,7 @@ fin.open("data\\FONTDATA");
      fin >> fontwidth;
      fin >> fontheight;
      if ((fontwidth <= 4) || (fontheight <=4)){
-         MessageBox(WindowHandle, "Invalid font size specified!", NULL, NULL);
+         MessageBox(WindowHandle, "Invalid font size specified!", NULL, 0);
         fontheight=16;
         fontwidth=8;
      }
@@ -317,7 +323,7 @@ fin.open("data\\FONTDATA");
                       PROOF_QUALITY, FF_MODERN, typeface_c);   //Create our font
 
   } else {
-      MessageBox(WindowHandle, "Failed to load default font, using FixedSys.", NULL, NULL);
+      MessageBox(WindowHandle, "Failed to load default font, using FixedSys.", NULL, 0);
        font = CreateFont(fontheight, fontwidth, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
                       ANSI_CHARSET, OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,
                       PROOF_QUALITY, FF_MODERN, "FixedSys");   //Create our font
@@ -328,6 +334,7 @@ fin.open("data\\FONTDATA");
 //    WindowCount=0;
 
     delete typeface_c;
+	// cf mapdata.h: typical value of SEEX/SEEY is 12 so the console is 25x25 display, 55x25 readout
     mainwin = newwin(25,80,0,0);
     return mainwin;   //create the 'stdscr' window and return its ref
 };

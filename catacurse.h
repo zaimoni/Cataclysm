@@ -1,9 +1,13 @@
 #ifndef __CATACURSE__
 #define __CATACURSE__
-#define _WIN32_WINNT 0x0500
-#define WIN32_LEAN_AND_MEAN
-//#define VC_EXTRALEAN
-#include <stdio.h>
+
+// CBI tileset port
+// * assumes wide PDCurses (32-bit chtype)
+// * worked by overriding A_INVIS as A_TILESET
+// * does not react to color, instead it replaces code points
+
+// mappling tiles to char,color pairs would allow a more transparent override scheme
+
 typedef int	chtype;
 typedef unsigned short	attr_t;
 typedef unsigned int u_int32_t;
