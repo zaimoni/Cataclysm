@@ -140,36 +140,6 @@ OMS_FLAG_PARKING_LOT,	// Add a road_point to the north of here
 NUM_OMS_FLAGS
 };
 
-struct omspec_place
-{
-// Able functions - true if p is valid
- bool never      (overmap *om, point p) { return false; }
- bool always     (overmap *om, point p) { return true;  }
- bool water      (overmap *om, point p); // Only on rivers
- bool land       (overmap *om, point p); // Only on land (no rivers)
- bool forest     (overmap *om, point p); // Forest
- bool wilderness (overmap *om, point p); // Forest or fields
- bool by_highway (overmap *om, point p); // Next to existing highways
-};
-
-struct overmap_special
-{
- oter_id ter;           // Terrain placed
- int min_appearances;	// Min number in an overmap
- int max_appearances;   // Max number in an overmap
- int min_dist_from_city;// Min distance from city limits
- int max_dist_from_city;// Max distance from city limits
-
- moncat_id monsters;    // Type of monsters that appear here
- int monster_pop_min;   // Minimum monster population
- int monster_pop_max;   // Maximum monster population
- int monster_rad_min;   // Minimum monster radius
- int monster_rad_max;   // Maximum monster radius
-
- bool (omspec_place::*able) (overmap *om, point p); // See above
- unsigned flags : NUM_OMS_FLAGS; // See above
-};
-
 enum omspec_id
 {
  OMSPEC_CRATER,
@@ -201,94 +171,26 @@ enum omspec_id
  NUM_OMSPECS
 };
 
-// Set min or max to -1 to ignore them
+struct overmap_special
+{
+	static const overmap_special specials[NUM_OMSPECS];
 
-const overmap_special overmap_specials[NUM_OMSPECS] = {
+	oter_id ter;           // Terrain placed
+	int min_appearances;	// Min number in an overmap
+	int max_appearances;   // Max number in an overmap
+	int min_dist_from_city;// Min distance from city limits
+	int max_dist_from_city;// Max distance from city limits
 
-// Terrain	 MIN MAX DISTANCE
-{ot_crater,	   0, 10,  0, -1, mcat_null, 0, 0, 0, 0,
- &omspec_place::land, mfb(OMS_FLAG_BLOB)},
+	moncat_id monsters;    // Type of monsters that appear here
+	int monster_pop_min;   // Minimum monster population
+	int monster_pop_max;   // Maximum monster population
+	int monster_rad_min;   // Minimum monster radius
+	int monster_rad_max;   // Maximum monster radius
 
-{ot_hive, 	   0, 50, 10, -1, mcat_bee, 20, 60, 2, 4,
- &omspec_place::forest, mfb(OMS_FLAG_3X3)},
-
-{ot_house_north,   0,100,  0, -1, mcat_null, 0, 0, 0, 0,
- &omspec_place::by_highway, mfb(OMS_FLAG_ROTATE_ROAD)},
-
-{ot_s_gas_north,   0,100,  0, -1, mcat_null, 0, 0, 0, 0,
- &omspec_place::by_highway, mfb(OMS_FLAG_ROTATE_ROAD)},
-
-{ot_house_north,   0, 50, 20, -1, mcat_null, 0, 0, 0, 0,  // Woods cabin
- &omspec_place::forest, mfb(OMS_FLAG_ROTATE_RANDOM)|mfb(OMS_FLAG_ROTATE_ROAD)},
-
-{ot_temple_stairs, 0,  3, 20, -1, mcat_null, 0, 0, 0, 0,
- &omspec_place::forest, 0},
-
-{ot_lab_stairs,	   0, 30,  8, -1, mcat_null, 0, 0, 0, 0,
- &omspec_place::land, mfb(OMS_FLAG_ROAD)},
-
-// Terrain	 MIN MAX DISTANCE
-{ot_bunker,	   2, 10,  4, -1, mcat_null, 0, 0, 0, 0,
- &omspec_place::land, mfb(OMS_FLAG_ROAD)},
-
-{ot_outpost,	   0, 10,  4, -1, mcat_null, 0, 0, 0, 0,
- &omspec_place::wilderness, 0},
-
-{ot_silo,	   0,  1, 30, -1, mcat_null, 0, 0, 0, 0,
- &omspec_place::wilderness, mfb(OMS_FLAG_ROAD)},
-
-{ot_radio_tower,   1,  5,  0, 20, mcat_null, 0, 0, 0, 0,
- &omspec_place::by_highway, 0},
-
-{ot_mansion_entrance, 0, 8, 0, -1, mcat_null, 0, 0, 0, 0,
- &omspec_place::by_highway, mfb(OMS_FLAG_3X3_SECOND)},
-
-{ot_mansion_entrance, 0, 4, 10, -1, mcat_null, 0, 0, 0, 0,
- &omspec_place::wilderness, mfb(OMS_FLAG_3X3_SECOND)},
-
-{ot_megastore_entrance, 0, 5, 0, 10, mcat_null, 0, 0, 0, 0,
- &omspec_place::by_highway, mfb(OMS_FLAG_3X3_SECOND)},
-
-{ot_hospital_entrance, 1, 5, 3, 15, mcat_null, 0, 0, 0, 0,
- &omspec_place::by_highway, mfb(OMS_FLAG_3X3_SECOND)},
-
-{ot_sewage_treatment, 1,  5, 10, 20, mcat_null, 0, 0, 0, 0,
- &omspec_place::land, mfb(OMS_FLAG_PARKING_LOT)},
-
-{ot_mine_entrance,  0,  5,  15, -1, mcat_null, 0, 0, 0, 0,
- &omspec_place::wilderness, mfb(OMS_FLAG_PARKING_LOT)},
-
-// Terrain	 MIN MAX DISTANCE
-{ot_anthill,	   0, 30,  10, -1, mcat_ant, 10, 30, 1000, 2000,
- &omspec_place::wilderness, 0},
-
-{ot_spider_pit,	   0,500,  0, -1, mcat_null, 0, 0, 0, 0,
- &omspec_place::forest, 0},
-
-{ot_slimepit,	   0,  4,  0, -1, mcat_goo, 2, 10, 100, 200,
- &omspec_place::land, 0},
-
-{ot_fungal_bloom,  0,  3,  5, -1, mcat_fungi, 600, 1200, 30, 50,
- &omspec_place::wilderness, 0},
-
-{ot_triffid_grove, 0,  4,  0, -1, mcat_triffid, 800, 1300, 12, 20,
- &omspec_place::forest, 0},
-
-{ot_river_center,  0, 10, 10, -1, mcat_null, 0, 0, 0, 0,
- &omspec_place::always, mfb(OMS_FLAG_BLOB)},
-
-// Terrain	 MIN MAX DISTANCE
-{ot_shelter,       5, 10,  5, 10, mcat_null, 0, 0, 0, 0,
- &omspec_place::wilderness, mfb(OMS_FLAG_ROAD)},
-
-{ot_cave,	   0, 30,  0, -1, mcat_null, 0, 0, 0, 0,
- &omspec_place::wilderness, 0},
-
-{ot_toxic_dump,	   0,  5, 15, -1, mcat_null, 0, 0, 0, 0,
- &omspec_place::wilderness,0}
-
+	bool (*able) (overmap *om, point p); // See above
+	unsigned flags : NUM_OMS_FLAGS; // See above
 };
- 
+
 // Overmap "Zones"
 // Areas which have special post-generation processing attached to them
 

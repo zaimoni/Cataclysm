@@ -259,6 +259,105 @@ const oter_t oter_t::list[num_ter_types] = {
 { "tutorial room",	'O',	c_cyan,		5, no_extras, false, false }
 };
 
+struct omspec_place
+{
+	// Able functions - true if p is valid
+	static bool never(overmap *om, point p) { return false; }
+	static bool always(overmap *om, point p) { return true; }
+	static bool water(overmap *om, point p); // Only on rivers
+	static bool land(overmap *om, point p); // Only on land (no rivers)
+	static bool forest(overmap *om, point p); // Forest
+	static bool wilderness(overmap *om, point p); // Forest or fields
+	static bool by_highway(overmap *om, point p); // Next to existing highways
+};
+
+// Set min or max to -1 to ignore them
+
+const overmap_special overmap_special::specials[NUM_OMSPECS] = {
+
+// Terrain	 MIN MAX DISTANCE
+{ ot_crater,	   0, 10,  0, -1, mcat_null, 0, 0, 0, 0,
+&omspec_place::land, mfb(OMS_FLAG_BLOB) },
+
+{ ot_hive, 	   0, 50, 10, -1, mcat_bee, 20, 60, 2, 4,
+&omspec_place::forest, mfb(OMS_FLAG_3X3) },
+
+{ ot_house_north,   0,100,  0, -1, mcat_null, 0, 0, 0, 0,
+&omspec_place::by_highway, mfb(OMS_FLAG_ROTATE_ROAD) },
+
+{ ot_s_gas_north,   0,100,  0, -1, mcat_null, 0, 0, 0, 0,
+&omspec_place::by_highway, mfb(OMS_FLAG_ROTATE_ROAD) },
+
+{ ot_house_north,   0, 50, 20, -1, mcat_null, 0, 0, 0, 0,  // Woods cabin
+&omspec_place::forest, mfb(OMS_FLAG_ROTATE_RANDOM) | mfb(OMS_FLAG_ROTATE_ROAD) },
+
+{ ot_temple_stairs, 0,  3, 20, -1, mcat_null, 0, 0, 0, 0,
+&omspec_place::forest, 0 },
+
+{ ot_lab_stairs,	   0, 30,  8, -1, mcat_null, 0, 0, 0, 0,
+&omspec_place::land, mfb(OMS_FLAG_ROAD) },
+
+// Terrain	 MIN MAX DISTANCE
+{ ot_bunker,	   2, 10,  4, -1, mcat_null, 0, 0, 0, 0,
+&omspec_place::land, mfb(OMS_FLAG_ROAD) },
+
+{ ot_outpost,	   0, 10,  4, -1, mcat_null, 0, 0, 0, 0,
+&omspec_place::wilderness, 0 },
+
+{ ot_silo,	   0,  1, 30, -1, mcat_null, 0, 0, 0, 0,
+&omspec_place::wilderness, mfb(OMS_FLAG_ROAD) },
+
+{ ot_radio_tower,   1,  5,  0, 20, mcat_null, 0, 0, 0, 0,
+&omspec_place::by_highway, 0 },
+
+{ ot_mansion_entrance, 0, 8, 0, -1, mcat_null, 0, 0, 0, 0,
+&omspec_place::by_highway, mfb(OMS_FLAG_3X3_SECOND) },
+
+{ ot_mansion_entrance, 0, 4, 10, -1, mcat_null, 0, 0, 0, 0,
+&omspec_place::wilderness, mfb(OMS_FLAG_3X3_SECOND) },
+
+{ ot_megastore_entrance, 0, 5, 0, 10, mcat_null, 0, 0, 0, 0,
+&omspec_place::by_highway, mfb(OMS_FLAG_3X3_SECOND) },
+
+{ ot_hospital_entrance, 1, 5, 3, 15, mcat_null, 0, 0, 0, 0,
+&omspec_place::by_highway, mfb(OMS_FLAG_3X3_SECOND) },
+
+{ ot_sewage_treatment, 1,  5, 10, 20, mcat_null, 0, 0, 0, 0,
+&omspec_place::land, mfb(OMS_FLAG_PARKING_LOT) },
+
+{ ot_mine_entrance,  0,  5,  15, -1, mcat_null, 0, 0, 0, 0,
+&omspec_place::wilderness, mfb(OMS_FLAG_PARKING_LOT) },
+
+// Terrain	 MIN MAX DISTANCE
+{ ot_anthill,	   0, 30,  10, -1, mcat_ant, 10, 30, 1000, 2000,
+&omspec_place::wilderness, 0 },
+
+{ ot_spider_pit,	   0,500,  0, -1, mcat_null, 0, 0, 0, 0,
+&omspec_place::forest, 0 },
+
+{ ot_slimepit,	   0,  4,  0, -1, mcat_goo, 2, 10, 100, 200,
+&omspec_place::land, 0 },
+
+{ ot_fungal_bloom,  0,  3,  5, -1, mcat_fungi, 600, 1200, 30, 50,
+&omspec_place::wilderness, 0 },
+
+{ ot_triffid_grove, 0,  4,  0, -1, mcat_triffid, 800, 1300, 12, 20,
+&omspec_place::forest, 0 },
+
+{ ot_river_center,  0, 10, 10, -1, mcat_null, 0, 0, 0, 0,
+&omspec_place::always, mfb(OMS_FLAG_BLOB) },
+
+// Terrain	 MIN MAX DISTANCE
+{ ot_shelter,       5, 10,  5, 10, mcat_null, 0, 0, 0, 0,
+&omspec_place::wilderness, mfb(OMS_FLAG_ROAD) },
+
+{ ot_cave,	   0, 30,  0, -1, mcat_null, 0, 0, 0, 0,
+&omspec_place::wilderness, 0 },
+
+{ ot_toxic_dump,	   0,  5, 15, -1, mcat_null, 0, 0, 0, 0,
+&omspec_place::wilderness,0 }
+
+};
 
 void settlement_building(settlement &set, int x, int y);
 
@@ -2273,13 +2372,12 @@ void overmap::place_specials()
    if (p.y == 0)
     p.y = 1;
    for (int i = 0; i < NUM_OMSPECS; i++) {
-    omspec_place place;
-    overmap_special special = overmap_specials[i];
+    overmap_special special = overmap_special::specials[i];
     int min = special.min_dist_from_city, max = special.max_dist_from_city;
     if ((placed[i] < special.max_appearances || special.max_appearances <= 0) &&
         (min == -1 || dist_from_city(p) >= min) &&
         (max == -1 || dist_from_city(p) <= max) &&
-        (place.*special.able)(this, p))
+        (special.able)(this, p))
      valid.push_back( omspec_id(i) );
    }
    tries++;
@@ -2289,17 +2387,17 @@ void overmap::place_specials()
 // Place the MUST HAVE ones first, to try and guarantee that they appear
    std::vector<omspec_id> must_place;
    for (int i = 0; i < valid.size(); i++) {
-    if (placed[i] < overmap_specials[ valid[i] ].min_appearances)
+    if (placed[i] < overmap_special::specials[ valid[i] ].min_appearances)
      must_place.push_back(valid[i]);
    }
    if (must_place.empty()) {
     int selection = rng(0, valid.size() - 1);
-    overmap_special special = overmap_specials[ valid[selection] ];
+    overmap_special special = overmap_special::specials[ valid[selection] ];
     placed[ valid[selection] ]++;
     place_special(special, p);
    } else {
     int selection = rng(0, must_place.size() - 1);
-    overmap_special special = overmap_specials[ must_place[selection] ];
+    overmap_special special = overmap_special::specials[ must_place[selection] ];
     placed[ must_place[selection] ]++;
     place_special(special, p);
    }
@@ -2372,9 +2470,8 @@ void overmap::place_special(overmap_special special, point p)
    for (int y = -2; y <= 2; y++) {
     if (x == 0 && y == 0)
      y++; // Already handled
-    omspec_place place;
     point np(p.x + x, p.y + y);
-    if (one_in(1 + abs(x) + abs(y)) && (place.*special.able)(this, np))
+    if (one_in(1 + abs(x) + abs(y)) && (special.able)(this, np))
      ter(p.x + x, p.y + y) = special.ter;
    }
   }
@@ -2385,9 +2482,8 @@ void overmap::place_special(overmap_special special, point p)
    for (int y = -3; y <= 3; y++) {
     if (x == 0 && y == 0)
      y++; // Already handled
-    omspec_place place;
     point np(p.x + x, p.y + y);
-    if ((place.*special.able)(this, np))
+    if ((special.able)(this, np))
      ter(p.x + x, p.y + y) = special.ter;
      ter(p.x + x, p.y + y) = special.ter;
    }
