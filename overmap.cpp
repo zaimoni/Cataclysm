@@ -1135,8 +1135,9 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
      } else {
       if (cur_ter >= num_ter_types || cur_ter < 0)
        debugmsg("Bad ter %d (%d, %d)", cur_ter, omx, omy);
-      ter_color = oter_t::list[0].color;	// certainly don't use an invalid array dereference
-      ter_sym = oter_t::list[0].sym;
+	  decltype(oter_t::list[0])& terrain = oter_t::list[0];
+      ter_color = terrain.color;	// certainly don't use an invalid array dereference
+      ter_sym = terrain.sym;
      }
     } else { // We haven't explored this tile yet
      ter_color = c_dkgray;
@@ -1190,8 +1191,9 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
    }
 
    if (csee) {
-    mvwputch(w, 1, 51, oter_t::list[ccur_ter].color, oter_t::list[ccur_ter].sym);
-    mvwprintz(w, 1, 53, oter_t::list[ccur_ter].color, "%s", oter_t::list[ccur_ter].name.c_str());
+	decltype(oter_t::list[ccur_ter])& terrain = oter_t::list[ccur_ter];
+    mvwputch(w, 1, 51, terrain.color, terrain.sym);
+    mvwprintz(w, 1, 53, terrain.color, "%s", terrain.name.c_str());
    } else
     mvwprintz(w, 1, 51, c_dkgray, "# Unexplored");
 

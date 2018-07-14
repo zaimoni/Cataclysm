@@ -2482,12 +2482,15 @@ void game::draw()
 // TODO: Allow for a 24-hour option--already supported by calendar turn
  mvwprintz(w_status, 1, 41, c_white, turn.print_time().c_str());
 
+ {
  oter_id cur_ter = cur_om.ter((levx + int(MAPSIZE / 2)) / 2,
                               (levy + int(MAPSIZE / 2)) / 2);
- std::string tername = oter_t::list[cur_ter].name;
+ decltype(oter_t::list[cur_ter])& terrain = oter_t::list[cur_ter];
+ std::string tername = terrain.name;
  if (tername.length() > 14)
   tername = tername.substr(0, 14);
- mvwprintz(w_status, 0,  0, oter_t::list[cur_ter].color, tername.c_str());
+ mvwprintz(w_status, 0,  0, terrain.color, tername.c_str());
+ }
  if (levz < 0)
   mvwprintz(w_status, 0, 18, c_ltgray, "Underground");
  else
@@ -2674,7 +2677,7 @@ void game::draw_minimap()
    int omx = cursx + i;
    int omy = cursy + j;
    bool seen = false;
-   oter_id cur_ter;
+   oter_id cur_ter = ot_null;
    if (omx >= 0 && omx < OMAPX && omy >= 0 && omy < OMAPY) {
     cur_ter = cur_om.ter(omx, omy);
     seen    = cur_om.seen(omx, omy);

@@ -173,8 +173,9 @@ void map::generate(game *g, overmap *om, int x, int y, int turn)
   }
  draw_map(terrain_type, t_north, t_east, t_south, t_west, t_above, turn, g);
 
- if ( one_in(oter_t::list[terrain_type].embellishments.chance ))
-  add_extra( random_map_extra(oter_t::list[terrain_type].embellishments ), g);
+ decltype(oter_t::list[terrain_type].embellishments)& embellish = oter_t::list[terrain_type].embellishments;
+ if ( one_in(embellish.chance ))
+  add_extra( random_map_extra(embellish), g);
 
  post_process(g, zones);
 
