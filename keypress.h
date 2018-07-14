@@ -1,10 +1,5 @@
 #ifndef _KEYPRESS_H_
 #define _KEYPRESS_H_
-#if (defined _WIN32 || defined WINDOWS)
-	#include "catacurse.h"
-#else
-	#include <curses.h>
-#endif
 
 #include <string>
 
