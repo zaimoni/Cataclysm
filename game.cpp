@@ -2070,7 +2070,7 @@ Current turn: %d; Next spawn %d.\n\
 NPCs are %s spawn.\n\
 %d monsters exist.\n\
 %d events planned.", u.posx, u.posy, levx, levy,
-oterlist[cur_om.ter(levx / 2, levy / 2)].name.c_str(),
+oter_t::list[cur_om.ter(levx / 2, levy / 2)].name.c_str(),
 int(turn), int(nextspawn), (no_npc ? "NOT going to" : "going to"),
 z.size(), events.size());
 
@@ -2126,7 +2126,7 @@ z.size(), events.size());
             npc_attitude_name(p->attitude) << std::endl;
     if (p->has_destination())
      data << "Destination: " << p->goalx << ":" << p->goaly << "(" <<
-             oterlist[ cur_om.ter(p->goalx, p->goaly) ].name << ")" <<
+		     oter_t::list[ cur_om.ter(p->goalx, p->goaly) ].name << ")" <<
              std::endl;
     else
      data << "No destination." << std::endl;
@@ -2484,10 +2484,10 @@ void game::draw()
 
  oter_id cur_ter = cur_om.ter((levx + int(MAPSIZE / 2)) / 2,
                               (levy + int(MAPSIZE / 2)) / 2);
- std::string tername = oterlist[cur_ter].name;
+ std::string tername = oter_t::list[cur_ter].name;
  if (tername.length() > 14)
   tername = tername.substr(0, 14);
- mvwprintz(w_status, 0,  0, oterlist[cur_ter].color, tername.c_str());
+ mvwprintz(w_status, 0,  0, oter_t::list[cur_ter].color, tername.c_str());
  if (levz < 0)
   mvwprintz(w_status, 0, 18, c_ltgray, "Underground");
  else
@@ -2697,8 +2697,8 @@ void game::draw_minimap()
     seen    = om_vert->seen(omx, omy);
    } else
     debugmsg("No data loaded! omx: %d omy: %d", omx, omy);
-   nc_color ter_color = oterlist[cur_ter].color;
-   long ter_sym = oterlist[cur_ter].sym;
+   nc_color ter_color = oter_t::list[cur_ter].color;
+   long ter_sym = oter_t::list[cur_ter].sym;
    if (seen) {
     if (!drew_mission && target.x == omx && target.y == omy) {
      drew_mission = true;
@@ -6528,8 +6528,8 @@ void game::vertical_move(int movez, bool force)
  for (int x = 0; x < OMAPX; x++) {
   for (int y = 0; y < OMAPY; y++) {
    if (cur_om.seen(x, y) &&
-       ((movez ==  1 && oterlist[ cur_om.ter(x, y) ].known_up) ||
-        (movez == -1 && oterlist[ cur_om.ter(x, y) ].known_down) ))
+       ((movez ==  1 && oter_t::list[ cur_om.ter(x, y) ].known_up) ||
+        (movez == -1 && oter_t::list[ cur_om.ter(x, y) ].known_down) ))
     discover.push_back( point(x, y) );
   }
  }
@@ -6541,10 +6541,10 @@ void game::vertical_move(int movez, bool force)
  for (int i = 0; i < discover.size(); i++) {
   int x = discover[i].x, y = discover[i].y;
   cur_om.seen(x, y) = true;
-  if (movez ==  1 && !oterlist[ cur_om.ter(x, y) ].known_down &&
+  if (movez ==  1 && !oter_t::list[ cur_om.ter(x, y) ].known_down &&
       !cur_om.has_note(x, y))
    cur_om.add_note(x, y, "AUTO: goes down");
-  if (movez == -1 && !oterlist[ cur_om.ter(x, y) ].known_up &&
+  if (movez == -1 && !oter_t::list[ cur_om.ter(x, y) ].known_up &&
       !cur_om.has_note(x, y))
    cur_om.add_note(x, y, "AUTO: goes up");
  }
@@ -6790,21 +6790,21 @@ void game::update_overmap_seen()
    for (int i = 0; i < line.size() && sight_points >= 0; i++) {
     int lx = line[i].x, ly = line[i].y;
     if (lx >= 0 && lx < OMAPX && ly >= 0 && ly < OMAPY)
-     cost = oterlist[cur_om.ter(lx, ly)].see_cost;
+     cost = oter_t::list[cur_om.ter(lx, ly)].see_cost;
     else if ((lx < 0 || lx >= OMAPX) && (ly < 0 || ly >= OMAPY)) {
      if (lx < 0) lx += OMAPX;
      else        lx -= OMAPX;
      if (ly < 0) ly += OMAPY;
      else        ly -= OMAPY;
-     cost = oterlist[om_diag->ter(lx, ly)].see_cost;
+     cost = oter_t::list[om_diag->ter(lx, ly)].see_cost;
     } else if (lx < 0 || lx >= OMAPX) {
      if (lx < 0) lx += OMAPX;
      else        lx -= OMAPX;
-     cost = oterlist[om_hori->ter(lx, ly)].see_cost;
+     cost = oter_t::list[om_hori->ter(lx, ly)].see_cost;
     } else if (ly < 0 || ly >= OMAPY) {
      if (ly < 0) ly += OMAPY;
      else        ly -= OMAPY;
-     cost = oterlist[om_vert->ter(lx, ly)].see_cost;
+     cost = oter_t::list[om_vert->ter(lx, ly)].see_cost;
     }
     sight_points -= cost;
    }

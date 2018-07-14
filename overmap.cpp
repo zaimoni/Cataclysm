@@ -33,6 +33,232 @@
 #define SWAMPINESS 8	//Affects the size of a swamp
 #define SWAMPCHANCE 850	// Chance that a swamp will spawn instead of forest
 
+const map_extras no_extras(0);
+const map_extras road_extras(
+	// %%% HEL MIL SCI STA DRG SUP PRT MIN WLF PUD CRT FUM 1WY ART
+	50, 40, 50, 120, 200, 30, 10, 5, 80, 20, 200, 10, 8, 2, 3);
+const map_extras field_extras(
+	60, 40, 15, 40, 80, 10, 10, 3, 50, 30, 300, 10, 8, 1, 3);
+const map_extras subway_extras(
+	// %%% HEL MIL SCI STA DRG SUP PRT MIN WLF PUD CRT FUM 1WY ART
+	75, 0, 5, 12, 5, 5, 0, 7, 0, 0, 120, 0, 20, 1, 3);
+const map_extras build_extras(
+	90, 0, 5, 12, 0, 10, 0, 5, 5, 0, 0, 60, 8, 1, 3);
+
+// LINE_**** corresponds to the ACS_**** macros in ncurses, and are patterned
+// the same way; LINE_NESW, where X indicates a line and O indicates no line
+// (thus, LINE_OXXX looks like 'T'). LINE_ is defined in output.h.  The ACS_
+// macros can't be used here, since ncurses hasn't been initialized yet.
+
+// Order MUST match enum oter_id above!
+
+const oter_t oter_t::list[num_ter_types] = {
+	{ "nothing",		'%',	c_white,	0, no_extras, false, false },
+{ "crater",		'O',	c_red,		2, field_extras, false, false },
+{ "field",		'.',	c_brown,	2, field_extras, false, false },
+{ "forest",		'F',	c_green,	3, field_extras, false, false },
+{ "forest",		'F',	c_green,	4, field_extras, false, false },
+{ "swamp",		'F',	c_cyan,		4, field_extras, false, false },
+{ "bee hive",		'8',	c_yellow,	3, field_extras, false, false },
+{ "forest",		'F',	c_green,	3, field_extras, false, false },
+/* The tile above is a spider pit. */
+{ "fungal bloom",	'T',	c_ltgray,	2, field_extras, false, false },
+{ "highway",		'H',	c_dkgray,	2, road_extras, false, false },
+{ "highway",		'=',	c_dkgray,	2, road_extras, false, false },
+{ "BUG",			'%',	c_magenta,	0, no_extras, false, false },
+{ "road",          LINE_XOXO,	c_dkgray,	2, road_extras, false, false },
+{ "road",          LINE_OXOX,	c_dkgray,	2, road_extras, false, false },
+{ "road",          LINE_XXOO,	c_dkgray,	2, road_extras, false, false },
+{ "road",          LINE_OXXO,	c_dkgray,	2, road_extras, false, false },
+{ "road",          LINE_OOXX,	c_dkgray,	2, road_extras, false, false },
+{ "road",          LINE_XOOX,	c_dkgray,	2, road_extras, false, false },
+{ "road",          LINE_XXXO,	c_dkgray,	2, road_extras, false, false },
+{ "road",          LINE_XXOX,	c_dkgray,	2, road_extras, false, false },
+{ "road",          LINE_XOXX,	c_dkgray,	2, road_extras, false, false },
+{ "road",          LINE_OXXX,	c_dkgray,	2, road_extras, false, false },
+{ "road",          LINE_XXXX,	c_dkgray,	2, road_extras, false, false },
+{ "road, manhole", LINE_XXXX,	c_yellow,	2, road_extras, true, false },
+{ "bridge",		'|',	c_dkgray,	2, road_extras, false, false },
+{ "bridge",		'-',	c_dkgray,	2, road_extras, false, false },
+{ "river",		'R',	c_blue,		1, no_extras, false, false },
+{ "river bank",		'R',	c_ltblue,	1, no_extras, false, false },
+{ "river bank",		'R',	c_ltblue,	1, no_extras, false, false },
+{ "river bank",		'R',	c_ltblue,	1, no_extras, false, false },
+{ "river bank",		'R',	c_ltblue,	1, no_extras, false, false },
+{ "river bank",		'R',	c_ltblue,	1, no_extras, false, false },
+{ "river bank",		'R',	c_ltblue,	1, no_extras, false, false },
+{ "river bank",		'R',	c_ltblue,	1, no_extras, false, false },
+{ "river bank",		'R',	c_ltblue,	1, no_extras, false, false },
+{ "river bank",		'R',	c_ltblue,	1, no_extras, false, false },
+{ "river bank",		'R',	c_ltblue,	1, no_extras, false, false },
+{ "river bank",		'R',	c_ltblue,	1, no_extras, false, false },
+{ "river bank",		'R',	c_ltblue,	1, no_extras, false, false },
+{ "house",		'^',	c_ltgreen,	5, build_extras, false, false },
+{ "house",		'>',	c_ltgreen,	5, build_extras, false, false },
+{ "house",		'v',	c_ltgreen,	5, build_extras, false, false },
+{ "house",		'<',	c_ltgreen,	5, build_extras, false, false },
+{ "house",		'^',	c_ltgreen,	5, build_extras, false, false },
+{ "house",		'>',	c_ltgreen,	5, build_extras, false, false },
+{ "house",		'v',	c_ltgreen,	5, build_extras, false, false },
+{ "house",		'<',	c_ltgreen,	5, build_extras, false, false },
+{ "parking lot",		'O',	c_dkgray,	1, build_extras, false, false },
+{ "park",		'O',	c_green,	2, build_extras, false, false },
+{ "gas station",		'^',	c_ltblue,	5, build_extras, false, false },
+{ "gas station",		'>',	c_ltblue,	5, build_extras, false, false },
+{ "gas station",		'v',	c_ltblue,	5, build_extras, false, false },
+{ "gas station",		'<',	c_ltblue,	5, build_extras, false, false },
+{ "pharmacy",		'^',	c_ltred,	5, build_extras, false, false },
+{ "pharmacy",		'>',	c_ltred,	5, build_extras, false, false },
+{ "pharmacy",		'v',	c_ltred,	5, build_extras, false, false },
+{ "pharmacy",		'<',	c_ltred,	5, build_extras, false, false },
+{ "grocery store",	'^',	c_green,	5, build_extras, false, false },
+{ "grocery store",	'>',	c_green,	5, build_extras, false, false },
+{ "grocery store",	'v',	c_green,	5, build_extras, false, false },
+{ "grocery store",	'<',	c_green,	5, build_extras, false, false },
+{ "hardware store",	'^',	c_cyan,		5, build_extras, false, false },
+{ "hardware store",	'>',	c_cyan,		5, build_extras, false, false },
+{ "hardware store",	'v',	c_cyan,		5, build_extras, false, false },
+{ "hardware store",	'<',	c_cyan,		5, build_extras, false, false },
+{ "electronics store",   '^',	c_yellow,	5, build_extras, false, false },
+{ "electronics store",   '>',	c_yellow,	5, build_extras, false, false },
+{ "electronics store",   'v',	c_yellow,	5, build_extras, false, false },
+{ "electronics store",   '<',	c_yellow,	5, build_extras, false, false },
+{ "sporting goods store",'^',	c_ltcyan,	5, build_extras, false, false },
+{ "sporting goods store",'>',	c_ltcyan,	5, build_extras, false, false },
+{ "sporting goods store",'v',	c_ltcyan,	5, build_extras, false, false },
+{ "sporting goods store",'<',	c_ltcyan,	5, build_extras, false, false },
+{ "liquor store",	'^',	c_magenta,	5, build_extras, false, false },
+{ "liquor store",	'>',	c_magenta,	5, build_extras, false, false },
+{ "liquor store",	'v',	c_magenta,	5, build_extras, false, false },
+{ "liquor store",	'<',	c_magenta,	5, build_extras, false, false },
+{ "gun store",		'^',	c_red,		5, build_extras, false, false },
+{ "gun store",		'>',	c_red,		5, build_extras, false, false },
+{ "gun store",		'v',	c_red,		5, build_extras, false, false },
+{ "gun store",		'<',	c_red,		5, build_extras, false, false },
+{ "clothing store",	'^',	c_blue,		5, build_extras, false, false },
+{ "clothing store",	'>',	c_blue,		5, build_extras, false, false },
+{ "clothing store",	'v',	c_blue,		5, build_extras, false, false },
+{ "clothing store",	'<',	c_blue,		5, build_extras, false, false },
+{ "library",		'^',	c_brown,	5, build_extras, false, false },
+{ "library",		'>',	c_brown,	5, build_extras, false, false },
+{ "library",		'v',	c_brown,	5, build_extras, false, false },
+{ "library",		'<',	c_brown,	5, build_extras, false, false },
+{ "restaurant",		'^',	c_pink,		5, build_extras, false, false },
+{ "restaurant",		'>',	c_pink,		5, build_extras, false, false },
+{ "restaurant",		'v',	c_pink,		5, build_extras, false, false },
+{ "restaurant",		'<',	c_pink,		5, build_extras, false, false },
+{ "subway station",	'S',	c_yellow,	5, build_extras, true, false },
+{ "subway station",	'S',	c_yellow,	5, build_extras, true, false },
+{ "subway station",	'S',	c_yellow,	5, build_extras, true, false },
+{ "subway station",	'S',	c_yellow,	5, build_extras, true, false },
+{ "police station",	'^',	c_dkgray,	5, build_extras, false, false },
+{ "police station",	'>',	c_dkgray,	5, build_extras, false, false },
+{ "police station",	'v',	c_dkgray,	5, build_extras, false, false },
+{ "police station",	'<',	c_dkgray,	5, build_extras, false, false },
+{ "bank",		'^',	c_ltgray,	5, no_extras, false, false },
+{ "bank",		'>',	c_ltgray,	5, no_extras, false, false },
+{ "bank",		'v',	c_ltgray,	5, no_extras, false, false },
+{ "bank",		'<',	c_ltgray,	5, no_extras, false, false },
+{ "bar",			'^',	c_pink,		5, build_extras, false, false },
+{ "bar",			'>',	c_pink,		5, build_extras, false, false },
+{ "bar",			'v',	c_pink,		5, build_extras, false, false },
+{ "bar",			'<',	c_pink,		5, build_extras, false, false },
+{ "pawn shop",		'^',	c_white,	5, build_extras, false, false },
+{ "pawn shop",		'>',	c_white,	5, build_extras, false, false },
+{ "pawn shop",		'v',	c_white,	5, build_extras, false, false },
+{ "pawn shop",		'<',	c_white,	5, build_extras, false, false },
+{ "mil. surplus",	'^',	c_white,	5, build_extras, false, false },
+{ "mil. surplus",	'>',	c_white,	5, build_extras, false, false },
+{ "mil. surplus",	'v',	c_white,	5, build_extras, false, false },
+{ "mil. surplus",	'<',	c_white,	5, build_extras, false, false },
+{ "megastore",		'M',	c_ltblue,	5, build_extras, false, false },
+{ "megastore",		'M',	c_blue,		5, build_extras, false, false },
+{ "hospital",		'H',	c_ltred,	5, build_extras, false, false },
+{ "hospital",		'H',	c_red,		5, build_extras, false, false },
+{ "mansion",		'M',	c_ltgreen,	5, build_extras, false, false },
+{ "mansion",		'M',	c_green,	5, build_extras, false, false },
+{ "evac shelter",	'+',	c_white,	2, no_extras, true, false },
+{ "evac shelter",	'+',	c_white,	2, no_extras, false, true },
+{ "science lab",		'L',	c_ltblue,	5, no_extras, false, false },
+{ "science lab",		'L',	c_blue,		5, no_extras, true, false },
+{ "science lab",		'L',	c_ltblue,	5, no_extras, false, false },
+{ "science lab",		'L',	c_cyan,		5, no_extras, false, false },
+{ "nuclear plant",	'P',	c_ltgreen,	5, no_extras, false, false },
+{ "nuclear plant",	'P',	c_ltgreen,	5, no_extras, false, false },
+{ "military bunker",	'B',	c_dkgray,	2, no_extras, true, true },
+{ "military outpost",	'M',	c_dkgray,	2, build_extras, false, false },
+{ "missile silo",	'0',	c_ltgray,	2, no_extras, false, false },
+{ "missile silo",	'0',	c_ltgray,	2, no_extras, false, false },
+{ "strange temple",	'T',	c_magenta,	5, no_extras, true, false },
+{ "strange temple",	'T',	c_pink,		5, no_extras, true, false },
+{ "strange temple",	'T',	c_pink,		5, no_extras, false, false },
+{ "strange temple",	'T',	c_yellow,	5, no_extras, false, false },
+{ "sewage treatment",	'P',	c_red,		5, no_extras, true, false },
+{ "sewage treatment",	'P',	c_green,	5, no_extras, false, true },
+{ "sewage treatment",	'P',	c_green,	5, no_extras, false, false },
+{ "mine entrance",	'M',	c_ltgray,	5, no_extras, true, false },
+{ "mine shaft",		'O',	c_dkgray,	5, no_extras, true, true },
+{ "mine",		'M',	c_brown,	2, no_extras, false, false },
+{ "mine",		'M',	c_brown,	2, no_extras, false, false },
+{ "mine",		'M',	c_brown,	2, no_extras, false, false },
+{ "spiral cavern",	'@',	c_pink,		2, no_extras, false, false },
+{ "spiral cavern",	'@',	c_pink,		2, no_extras, false, false },
+{ "radio tower",         'X',    c_ltgray,       2, no_extras, false, false },
+{ "toxic waste dump",	'D',	c_pink,		2, no_extras, false, false },
+{ "cave",		'C',	c_brown,	2, field_extras, false, false },
+{ "rat cave",		'C',	c_dkgray,	2, no_extras, true, false },
+{ "cavern",		'0',	c_ltgray,	2, no_extras, false, false },
+{ "anthill",		'%',	c_brown,	2, no_extras, true, false },
+{ "solid rock",		'%',	c_dkgray,	5, no_extras, false, false },
+{ "rift",		'^',	c_red,		2, no_extras, false, false },
+{ "hellmouth",		'^',	c_ltred,	2, no_extras, true, false },
+{ "slime pit",		'~',	c_ltgreen,	2, no_extras, true, false },
+{ "slime pit",		'~',	c_ltgreen,	2, no_extras, false, false },
+{ "triffid grove",	'T',	c_ltred,	5, no_extras, true, false },
+{ "triffid roots",	'T',	c_ltred,	5, no_extras, true, true },
+{ "triffid heart",	'T',	c_red,		5, no_extras, false, true },
+{ "basement",		'O',	c_dkgray,	5, no_extras, false, true },
+{ "subway station",	'S',	c_yellow,	5, subway_extras, false, true },
+{ "subway",        LINE_XOXO,	c_dkgray,	5, subway_extras, false, false },
+{ "subway",        LINE_OXOX,	c_dkgray,	5, subway_extras, false, false },
+{ "subway",        LINE_XXOO,	c_dkgray,	5, subway_extras, false, false },
+{ "subway",        LINE_OXXO,	c_dkgray,	5, subway_extras, false, false },
+{ "subway",        LINE_OOXX,	c_dkgray,	5, subway_extras, false, false },
+{ "subway",        LINE_XOOX,	c_dkgray,	5, subway_extras, false, false },
+{ "subway",        LINE_XXXO,	c_dkgray,	5, subway_extras, false, false },
+{ "subway",        LINE_XXOX,	c_dkgray,	5, subway_extras, false, false },
+{ "subway",        LINE_XOXX,	c_dkgray,	5, subway_extras, false, false },
+{ "subway",        LINE_OXXX,	c_dkgray,	5, subway_extras, false, false },
+{ "subway",        LINE_XXXX,	c_dkgray,	5, subway_extras, false, false },
+{ "sewer",         LINE_XOXO,	c_green,	5, no_extras, false, false },
+{ "sewer",         LINE_OXOX,	c_green,	5, no_extras, false, false },
+{ "sewer",         LINE_XXOO,	c_green,	5, no_extras, false, false },
+{ "sewer",         LINE_OXXO,	c_green,	5, no_extras, false, false },
+{ "sewer",         LINE_OOXX,	c_green,	5, no_extras, false, false },
+{ "sewer",         LINE_XOOX,	c_green,	5, no_extras, false, false },
+{ "sewer",         LINE_XXXO,	c_green,	5, no_extras, false, false },
+{ "sewer",         LINE_XXOX,	c_green,	5, no_extras, false, false },
+{ "sewer",         LINE_XOXX,	c_green,	5, no_extras, false, false },
+{ "sewer",         LINE_OXXX,	c_green,	5, no_extras, false, false },
+{ "sewer",         LINE_XXXX,	c_green,	5, no_extras, false, false },
+{ "ant tunnel",    LINE_XOXO,	c_brown,	5, no_extras, false, false },
+{ "ant tunnel",    LINE_OXOX,	c_brown,	5, no_extras, false, false },
+{ "ant tunnel",    LINE_XXOO,	c_brown,	5, no_extras, false, false },
+{ "ant tunnel",    LINE_OXXO,	c_brown,	5, no_extras, false, false },
+{ "ant tunnel",    LINE_OOXX,	c_brown,	5, no_extras, false, false },
+{ "ant tunnel",    LINE_XOOX,	c_brown,	5, no_extras, false, false },
+{ "ant tunnel",    LINE_XXXO,	c_brown,	5, no_extras, false, false },
+{ "ant tunnel",    LINE_XXOX,	c_brown,	5, no_extras, false, false },
+{ "ant tunnel",    LINE_XOXX,	c_brown,	5, no_extras, false, false },
+{ "ant tunnel",    LINE_OXXX,	c_brown,	5, no_extras, false, false },
+{ "ant tunnel",    LINE_XXXX,	c_brown,	5, no_extras, false, false },
+{ "ant food storage",	'O',	c_green,	5, no_extras, false, false },
+{ "ant larva chamber",	'O',	c_white,	5, no_extras, false, false },
+{ "ant queen chamber",	'O',	c_red,		5, no_extras, false, false },
+{ "cavern",		'0',	c_ltgray,	5, no_extras, false, false },
+{ "tutorial room",	'O',	c_cyan,		5, no_extras, false, false }
+};
+
 
 void settlement_building(settlement &set, int x, int y);
 
@@ -731,7 +957,7 @@ std::vector<point> overmap::find_terrain(std::string term, int cursx, int cursy)
  std::vector<point> found;
  for (int x = 0; x < OMAPX; x++) {
   for (int y = 0; y < OMAPY; y++) {
-   if (seen(x, y) && oterlist[ter(x, y)].name.find(term) != std::string::npos)
+   if (seen(x, y) && oter_t::list[ter(x, y)].name.find(term) != std::string::npos)
     found.push_back( point(x, y) );
   }
  }
@@ -909,8 +1135,8 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
      } else {
       if (cur_ter >= num_ter_types || cur_ter < 0)
        debugmsg("Bad ter %d (%d, %d)", cur_ter, omx, omy);
-      ter_color = oterlist[cur_ter].color;
-      ter_sym = oterlist[cur_ter].sym;
+      ter_color = oter_t::list[0].color;	// certainly don't use an invalid array dereference
+      ter_sym = oter_t::list[0].sym;
      }
     } else { // We haven't explored this tile yet
      ter_color = c_dkgray;
@@ -964,9 +1190,8 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
    }
 
    if (csee) {
-    mvwputch(w, 1, 51, oterlist[ccur_ter].color, oterlist[ccur_ter].sym);
-    mvwprintz(w, 1, 53, oterlist[ccur_ter].color, "%s",
-              oterlist[ccur_ter].name.c_str());
+    mvwputch(w, 1, 51, oter_t::list[ccur_ter].color, oter_t::list[ccur_ter].sym);
+    mvwprintz(w, 1, 53, oter_t::list[ccur_ter].color, "%s", oter_t::list[ccur_ter].name.c_str());
    } else
     mvwprintz(w, 1, 51, c_dkgray, "# Unexplored");
 
@@ -1884,7 +2109,7 @@ bool overmap::is_road(oter_id base, int x, int y)
   min = ot_ants_ns;
   max = ot_ants_queen;
  } else	{ // Didn't plan for this!
-  debugmsg("Bad call to is_road, %s", oterlist[base].name.c_str());
+  debugmsg("Bad call to is_road, %s", oter_t::list[base].name.c_str());
   return false;
  }
  if (x < 0 || x >= OMAPX || y < 0 || y >= OMAPY) {
@@ -2197,7 +2422,7 @@ void overmap::place_special(overmap_special special, point p)
   if (special.monster_pop_min == 0 || special.monster_pop_max == 0 ||
       special.monster_rad_min == 0 || special.monster_rad_max == 0   ) {
    debugmsg("Overmap special %s has bad spawn: pop(%d, %d) rad(%d, %d)",
-            oterlist[special.ter].name.c_str(), special.monster_pop_min,
+            oter_t::list[special.ter].name.c_str(), special.monster_pop_min,
             special.monster_pop_max, special.monster_rad_min,
             special.monster_rad_max);
    return;

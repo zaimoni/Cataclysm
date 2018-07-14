@@ -173,8 +173,8 @@ void map::generate(game *g, overmap *om, int x, int y, int turn)
   }
  draw_map(terrain_type, t_north, t_east, t_south, t_west, t_above, turn, g);
 
- if ( one_in( oterlist[terrain_type].embellishments.chance ))
-  add_extra( random_map_extra( oterlist[terrain_type].embellishments ), g);
+ if ( one_in(oter_t::list[terrain_type].embellishments.chance ))
+  add_extra( random_map_extra(oter_t::list[terrain_type].embellishments ), g);
 
  post_process(g, zones);
 
@@ -6305,7 +6305,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
  default:
   debugmsg("Error: tried to generate map for omtype %d, \"%s\"", terrain_type,
-           oterlist[terrain_type].name.c_str());
+           oter_t::list[terrain_type].name.c_str());
   for (int i = 0; i < SEEX * 2; i++) {
    for (int j = 0; j < SEEY * 2; j++)
     ter(i, j) = t_floor;
