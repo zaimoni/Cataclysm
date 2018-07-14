@@ -126,6 +126,8 @@ enum oter_id {
  num_ter_types
 };
 
+static_assert((unsigned char)(-1) + 1 >= num_ter_types, "save/load of game will fail");
+
 // LINE_**** corresponds to the ACS_**** macros in ncurses, and are patterned
 // the same way; LINE_NESW, where X indicates a line and O indicates no line
 // (thus, LINE_OXXX looks like 'T'). LINE_ is defined in output.h.  The ACS_

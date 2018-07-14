@@ -124,14 +124,10 @@ overmap::overmap()
  posx = 999;
  posy = 999;
  posz = 999;
- if (num_ter_types > 256)
-  debugmsg("More than 256 oterid!  Saving won't work!");
 }
 
 overmap::overmap(game *g, int x, int y, int z)
 {
- if (num_ter_types > 256)
-  debugmsg("More than 256 oterid!  Saving won't work!");
  nullret = ot_null;
  open(g, x, y, z);
 }

@@ -17,6 +17,10 @@ void CheckMessages();
 int FindWin(WINDOW *wnd);
 LRESULT CALLBACK ProcessMessages(HWND__ *hWnd, u_int32_t Msg, WPARAM wParam, LPARAM lParam);
 
+/*
+ Optimal tileset modification target is DrawWindow, with a mapping from codepoint,(foreground) color pairs to tiles with a transparent background.
+*/
+
 //***********************************
 //Globals                           *
 //***********************************
