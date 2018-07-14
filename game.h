@@ -6,7 +6,6 @@
 #include "map.h"
 #include "player.h"
 #include "overmap.h"
-#include "omdata.h"
 #include "mapitems.h"
 #include "crafting.h"
 #include "trap.h"

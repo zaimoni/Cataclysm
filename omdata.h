@@ -171,6 +171,9 @@ enum omspec_id
  NUM_OMSPECS
 };
 
+// Zaimoni, 2018-07-14: C:DDA has this here (as a proper class rather than a struct),
+// so leave this here until the architecture stabilizes rather than convert 
+// to a forward declaration.
 struct overmap_special
 {
 	static const overmap_special specials[NUM_OMSPECS];

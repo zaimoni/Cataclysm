@@ -3,7 +3,6 @@
 #include "rng.h"
 #include "math.h"
 #include "output.h"
-#include "omdata.h"
 #include "game.h"
 
 #include <sstream>
