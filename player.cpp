@@ -2,7 +2,6 @@
 #include "bionics.h"
 #include "mission.h"
 #include "game.h"
-#include "disease.h"
 #include "addiction.h"
 #include "keypress.h"
 #include "moraledata.h"
@@ -10,14 +9,17 @@
 #include "artifact.h"
 #include "options.h"
 
+#include "disease.h"	// XXX the function definitions, at least, should be inlined somewhere around here
+
 #if (defined _WIN32 || defined WINDOWS)
 	#include "catacurse.h"
 #else
 	#include <curses.h>
 #endif
 
-#include <sstream>
+
 #include <stdlib.h>
+#include <sstream>
 #include <fstream>
 
 nc_color encumb_color(int level);
