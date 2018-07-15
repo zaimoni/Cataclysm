@@ -2,7 +2,6 @@
 #define _MUTATION_H_
 
 #include "pldata.h"	// See pldata.h for mutations--they're actually pl_flags
-#include <vector>
 
 enum mutation_category
 {
@@ -37,6 +36,8 @@ struct mutation_branch
  std::vector<pl_flag> cancels; // Mutations that conflict with this one
  std::vector<pl_flag> replacements; // Mutations that replace this one
  std::vector<pl_flag> additions; // Mutations that add to this one
+
+ static void init();
 };
  
 

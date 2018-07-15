@@ -1,23 +1,22 @@
-#include "game.h"
+#include "mutation.h"
 #include "setvector.h"
 
 mutation_branch mutation_branch::data[PF_MAX2]; // Mutation data
 
-#define MUTATION(mut) id = mut; mutation_branch::data[id].valid = true
+#define MUTATION(mut) id = mut; data[id].valid = true
 
-#define PREREQS(...) SET_VECTOR(mutation_branch::data[id].prereqs, __VA_ARGS__)
-#define CANCELS(...) SET_VECTOR(mutation_branch::data[id].cancels, __VA_ARGS__)
-#define CHANGES_TO(...) SET_VECTOR(mutation_branch::data[id].replacements, __VA_ARGS__)
-#define LEADS_TO(...) SET_VECTOR(mutation_branch::data[id].additions, __VA_ARGS__)
+#define PREREQS(...) SET_VECTOR(data[id].prereqs, __VA_ARGS__)
+#define CANCELS(...) SET_VECTOR(data[id].cancels, __VA_ARGS__)
+#define CHANGES_TO(...) SET_VECTOR(data[id].replacements, __VA_ARGS__)
+#define LEADS_TO(...) SET_VECTOR(data[id].additions, __VA_ARGS__)
 
-void game::init_mutations()
+void mutation_branch::init()
 {
  int id = 0;
 // Set all post-PF_MAX to valid
- for (int i = PF_MAX + 1; i < PF_MAX2; i++)
-  mutation_branch::data[i].valid = true;
+ for (int i = PF_MAX + 1; i < PF_MAX2; i++) data[i].valid = true;
 
- mutation_branch::data[PF_MARLOSS].valid = false; // Never valid!
+ data[PF_MARLOSS].valid = false; // Never valid!
 
  MUTATION(PF_FLEET);
   CANCELS (PF_PONDEROUS1, PF_PONDEROUS2, PF_PONDEROUS3);

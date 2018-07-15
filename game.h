@@ -230,7 +230,6 @@ class game
   void init_recipes();      // Initializes crafting recipes
   void init_construction(); // Initializes construction "recipes"
   void init_missions();     // Initializes mission templates
-  void init_mutations();    // Initializes mutation "tech tree"
   void init_vehicles();     // Initializes vehicle types
 
   void load_keyboard_settings(); // Load keybindings from disk
