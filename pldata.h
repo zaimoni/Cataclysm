@@ -69,8 +69,9 @@ struct disease
  dis_type type;
  int intensity;
  int duration;
- disease() { type = DI_NULL; duration = 0; intensity = 0; }
- disease(dis_type t, int d, int i = 0) { type = t; duration = d; intensity = i;}
+ disease(dis_type t = DI_NULL, int d = 0, int i = 0) : type(t),intensity(i),duration(d) {}
+
+ int speed_boost() const;
 };
 
 struct addiction

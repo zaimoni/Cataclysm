@@ -22,6 +22,28 @@
 #include <sstream>
 #include <fstream>
 
+// start prototype for disease.cpp
+int disease::speed_boost() const
+{
+	switch (type) {
+	case DI_COLD:		return 0 - duration/5;
+	case DI_HEATSTROKE:	return -15;
+	case DI_INFECTION:	return -80;
+	case DI_SAP:		return -25;
+	case DI_SPORES:	return -15;
+	case DI_SLIMED:	return -25;
+	case DI_BADPOISON:	return -10;
+	case DI_FOODPOISON:	return -20;
+	case DI_WEBBED:	return -25;
+	case DI_ADRENALINE:	return (duration > 150 ? 40 : -10);
+	case DI_ASTHMA:	return 0 - duration/5;
+	case DI_METH:		return (duration > 600 ? 50 : -40);
+	default:		return 0;
+	}
+}
+// end prototype for disease.cpp
+
+// XXX inappropriate forward declares \todo lift definitions above uses
 nc_color encumb_color(int level);
 bool activity_is_suspendable(activity_type type);
 
@@ -333,8 +355,8 @@ int player::current_speed(game *g)
 
  newmoves += (stim > 40 ? 40 : stim);
 
- for (int i = 0; i < illness.size(); i++)
-  newmoves += disease_speed_boost(illness[i]);
+ for (const auto& cond : illness)
+  newmoves += cond.speed_boost();
 
  if (has_trait(PF_QUICK))
   newmoves = int(newmoves * 1.10);
@@ -990,16 +1012,15 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
   line++;
  }
 
- for (int i = 0; i < illness.size(); i++) {
-  int move_adjust = disease_speed_boost(illness[i]);
-  if (move_adjust != 0) {
-   nc_color col = (move_adjust > 0 ? c_green : c_red);
-   mvwprintz(w_speed, line,  1, col, dis_name(illness[i]).c_str());
-   mvwprintz(w_speed, line, 21, col, (move_adjust > 0 ? "+" : "-"));
-   move_adjust = abs(move_adjust);
-   mvwprintz(w_speed, line, (move_adjust >= 10 ? 22 : 23), col, "%d%%%%",
-             move_adjust);
-  }
+ for(const auto& cond : illness) {
+  int move_adjust = cond.speed_boost();
+  if (0 == move_adjust) continue;
+  const bool good = move_adjust > 0;
+  const nc_color col = (good ? c_green : c_red);
+  mvwprintz(w_speed, line,  1, col, dis_name(cond).c_str());
+  mvwprintz(w_speed, line, 21, col, (good ? "+" : "-"));
+  if (good) move_adjust = -move_adjust;
+  mvwprintz(w_speed, line, (move_adjust >= 10 ? 22 : 23), col, "%d%%%%", move_adjust);
  }
  if (has_trait(PF_QUICK)) {
   pen = int(newmoves * .1);

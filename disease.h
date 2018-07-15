@@ -761,25 +761,6 @@ void dis_effect(game *g, player &p, disease &dis)
  }
 }
 
-int disease_speed_boost(disease dis)
-{
- switch (dis.type) {
- case DI_COLD:		return 0 - int(dis.duration / 5);
- case DI_HEATSTROKE:	return -15;
- case DI_INFECTION:	return -80;
- case DI_SAP:		return -25;
- case DI_SPORES:	return -15;
- case DI_SLIMED:	return -25;
- case DI_BADPOISON:	return -10;
- case DI_FOODPOISON:	return -20;
- case DI_WEBBED:	return -25;
- case DI_ADRENALINE:	return (dis.duration > 150 ? 40 : -10);
- case DI_ASTHMA:	return 0 - int(dis.duration / 5);
- case DI_METH:		return (dis.duration > 600 ? 50 : -40);
- default:		return 0;
- }
-}
-
 std::string dis_name(disease dis)
 {
  switch (dis.type) {
