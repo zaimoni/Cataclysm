@@ -42,3 +42,13 @@ void game::init_moncats()
 	mon_manhack, mon_skitterbot, mon_secubot, mon_copbot, mon_molebot,
 	mon_tripod, mon_chickenbot, mon_tankbot);
 }
+
+moncat_id mongroup::to_mc(mon_id type)
+{
+	for (int i = 0; i < num_moncats; i++) {
+		for (auto tmp_monid : moncats[i]) {
+			if (tmp_monid == type) return (moncat_id)(i);
+		}
+	}
+	return mcat_null;
+}

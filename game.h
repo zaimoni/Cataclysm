@@ -303,7 +303,6 @@ class game
   void spawn_mon(int shift, int shifty); // Called by update_map, sometimes
   mon_id valid_monster_from(std::vector<mon_id> group);
   int valid_group(mon_id type, int x, int y);// Picks a group from cur_om
-  moncat_id mt_to_mc(mon_id type);// Monster type to monster category
   void set_adjacent_overmaps(bool from_scratch = false);
 
 // Routine loop functions, approximately in order of execution

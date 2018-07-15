@@ -26,7 +26,6 @@
 
 void intro();
 nc_color sev(int a);	// Right now, ONLY used for scent debugging....
-moncat_id mt_to_mc(mon_id type);	// Pick the moncat that contains type
 
 // This is the main game set-up process.
 game::game()
@@ -3278,10 +3277,13 @@ void game::monmove()
      cur_om.zg[group].population++;
      if (cur_om.zg[group].population / pow(cur_om.zg[group].radius, 2.0) > 5)
       cur_om.zg[group].radius++;
-    } else if (mt_to_mc((mon_id)(z[i].type->id)) != mcat_null) {
-     cur_om.zg.push_back(mongroup(mt_to_mc((mon_id)(z[i].type->id)),
+    } else if (mongroup::to_mc((mon_id)(z[i].type->id)) != mcat_null) {
+     cur_om.zg.push_back(mongroup(mongroup::to_mc((mon_id)(z[i].type->id)),
                                   levx, levy, 1, 1));
-    }
+	} else {
+	  const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id));
+	  if (m_cat != mcat_null) cur_om.zg.push_back(mongroup(m_cat, levx, levy, 1, 1));
+	}
     z[i].dead = true;
     //z.erase(z.begin()+i);
     //build_monmap();
@@ -6657,10 +6659,11 @@ void game::update_map(int &x, int &y)
       cur_om.zg[group].radius++;
     }
 /*  Removing adding new groups for now.  Haha!
- else if (mt_to_mc((mon_id)(z[i].type->id)) != mcat_null)
-     cur_om.zg.push_back(mongroup(mt_to_mc((mon_id)(z[i].type->id)),
-                                  levx + shiftx, levy + shifty, 1, 1));
-*/
+	else {
+		const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id));
+		if (m_cat != mcat_null) cur_om.zg.push_back(mongroup(m_cat, levx, levy, 1, 1));
+	}
+}*/
    }
    z.erase(z.begin()+i);
    i--;
@@ -7300,16 +7303,6 @@ oter_id game::ter_at(int omx, int omy, bool& mark_as_seen)
    mark_as_seen = cur_om.seen(omx, omy);
  }
  return ret;
-}
-
-moncat_id game::mt_to_mc(mon_id type)
-{
- for (int i = 0; i < num_moncats; i++) {
-  for(auto tmp_monid : mongroup::moncats[i]) {
-   if (tmp_monid == type) return (moncat_id)(i);
-  }
- }
- return mcat_null;
 }
 
 nc_color sev(int a)

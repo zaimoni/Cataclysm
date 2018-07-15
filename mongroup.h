@@ -44,6 +44,8 @@ struct mongroup {
   dying = false;
  }
  bool is_safe() const { return mcat_null == type || mcat_forest == type; }
+
+ static moncat_id to_mc(mon_id type);	// Monster type to monster category
 };
 
 #endif
