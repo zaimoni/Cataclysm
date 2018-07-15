@@ -29,6 +29,8 @@ enum moncat_id {
 bool moncat_is_safe(moncat_id id);
 
 struct mongroup {
+ static std::vector<mon_id> moncats[num_moncats];
+
  moncat_id type;
  int posx, posy;
  unsigned char radius;

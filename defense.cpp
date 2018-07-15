@@ -1236,8 +1236,9 @@ void defense_game::spawn_wave(game *g)
 
 std::vector<mon_id> defense_game::pick_monster_wave(game *g)
 {
- std::vector<moncat_id> valid;
  std::vector<mon_id> ret;
+ {
+ std::vector<moncat_id> valid;
 
  if (zombies || specials) {
   if (specials)
@@ -1245,20 +1246,16 @@ std::vector<mon_id> defense_game::pick_monster_wave(game *g)
   else
    valid.push_back(mcat_vanilla_zombie);
  }
- if (spiders)
-  valid.push_back(mcat_spider);
- if (triffids)
-  valid.push_back(mcat_triffid);
- if (robots)
-  valid.push_back(mcat_robot);
- if (subspace)
-  valid.push_back(mcat_nether);
+ if (spiders) valid.push_back(mcat_spider);
+ if (triffids) valid.push_back(mcat_triffid);
+ if (robots) valid.push_back(mcat_robot);
+ if (subspace) valid.push_back(mcat_nether);
 
  if (valid.empty())
   debugmsg("Couldn't find a valid monster group for defense!");
  else
-  ret = g->moncats[ valid[rng(0, valid.size() - 1)] ];
-
+  ret = mongroup::moncats[ valid[rng(0, valid.size() - 1)] ];
+ }
  return ret;
 }
 

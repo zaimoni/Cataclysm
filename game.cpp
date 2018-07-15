@@ -3710,8 +3710,6 @@ void game::resonance_cascade(int x, int y)
 {
  int maxglow = 100 - 5 * trig_dist(x, y, u.posx, u.posy);
  int minglow =  60 - 5 * trig_dist(x, y, u.posx, u.posy);
- mon_id spawn;
- monster invader;
  if (minglow < 0)
   minglow = 0;
  if (maxglow > 0)
@@ -3759,9 +3757,7 @@ void game::resonance_cascade(int x, int y)
    case 13:
    case 14:
    case 15:
-    spawn = moncats[mcat_nether][rng(0, moncats[mcat_nether].size() - 1)];
-    invader = monster(mtypes[spawn], i, j);
-    z.push_back(invader);
+    z.push_back(monster(mtypes[mongroup::moncats[mcat_nether][rng(0, mongroup::moncats[mcat_nether].size() - 1)]], i, j));
     break;
    case 16:
    case 17:
@@ -6908,14 +6904,8 @@ void game::update_stair_monsters()
 
 void game::spawn_mon(int shiftx, int shifty)
 {
- int nlevx = levx + shiftx;
- int nlevy = levy + shifty;
- int group;
- int monx, mony;
- int dist;
- int pop, rad;
- int iter;
- int t;
+ const int nlevx = levx + shiftx;
+ const int nlevy = levy + shifty;
  // Create a new NPC?
  if (!no_npc && one_in(100 + 15 * cur_om.npcs.size())) {
   npc tmp;
@@ -6936,12 +6926,11 @@ void game::spawn_mon(int shiftx, int shifty)
  }
 
 // Now, spawn monsters (perhaps)
- monster zom;
  for (int i = 0; i < cur_om.zg.size(); i++) { // For each valid group...
-  group = 0;
-  dist = trig_dist(nlevx, nlevy, cur_om.zg[i].posx, cur_om.zg[i].posy);
-  pop = cur_om.zg[i].population;
-  rad = cur_om.zg[i].radius;
+  int group = 0;
+  int dist = trig_dist(nlevx, nlevy, cur_om.zg[i].posx, cur_om.zg[i].posy);
+  int pop = cur_om.zg[i].population;
+  int rad = cur_om.zg[i].radius;
   if (dist <= rad) {
 // (The area of the group's territory) in (population/square at this range)
 // chance of adding one monster; cap at the population OR 16
@@ -6955,13 +6944,13 @@ void game::spawn_mon(int shiftx, int shifty)
     nextspawn += rng(group * 4 + z.size() * 4, group * 10 + z.size() * 10);
 
    for (int j = 0; j < group; j++) {	// For each monster in the group...
-    mon_id type = valid_monster_from(moncats[cur_om.zg[i].type]);
-    if (type == mon_null)
-     j = group;	// No monsters may be spawned; not soon enough?
-    else {
-     zom = monster(mtypes[type]);
-     iter = 0;
-     do {
+    mon_id type = valid_monster_from(mongroup::moncats[cur_om.zg[i].type]);
+	if (type == mon_null) break;	// No monsters may be spawned; not soon enough?
+    monster zom = monster(mtypes[type]);
+    int iter = 0;
+	int monx, mony;
+	int t;
+	do {
       monx = rng(0, SEEX * MAPSIZE - 1);
       mony = rng(0, SEEY * MAPSIZE - 1);
       if (shiftx == 0 && shifty == 0) {
@@ -6989,7 +6978,6 @@ void game::spawn_mon(int shiftx, int shifty)
       zom.spawn(monx, mony);
       z.push_back(zom);
      }
-    }
    }	// Placing monsters of this group is done!
    if (cur_om.zg[i].population <= 0) { // Last monster in the group spawned...
     cur_om.zg.erase(cur_om.zg.begin() + i); // ...so remove that group
@@ -7028,35 +7016,32 @@ int game::valid_group(mon_id type, int x, int y)
 {
  std::vector <int> valid_groups;
  std::vector <int> semi_valid;	// Groups that're ALMOST big enough
- int dist;
  for (int i = 0; i < cur_om.zg.size(); i++) {
-  dist = trig_dist(x, y, cur_om.zg[i].posx, cur_om.zg[i].posy);
+  const int dist = trig_dist(x, y, cur_om.zg[i].posx, cur_om.zg[i].posy);
+  const auto& tmp_ids = mongroup::moncats[cur_om.zg[i].type];
   if (dist < cur_om.zg[i].radius) {
-   for (int j = 0; j < (moncats[cur_om.zg[i].type]).size(); j++) {
-    if (type == (moncats[cur_om.zg[i].type])[j]) {
+   for(auto tmp_monid : tmp_ids) {
+    if (type == tmp_monid) {
      valid_groups.push_back(i);
-     j = (moncats[cur_om.zg[i].type]).size();
+	 break;
     }
    }
   } else if (dist < cur_om.zg[i].radius + 3) {
-   for (int j = 0; j < (moncats[cur_om.zg[i].type]).size(); j++) {
-    if (type == (moncats[cur_om.zg[i].type])[j]) {
+   for(auto tmp_monid : tmp_ids) {
+    if (type == tmp_monid) {
      semi_valid.push_back(i);
-     j = (moncats[cur_om.zg[i].type]).size();
-    }
+	 break;
+	}
    }
   }
  }
  if (valid_groups.size() == 0) {
-  if (semi_valid.size() == 0)
-   return -1;
-  else {
+  if (semi_valid.empty()) return -1;
 // If there's a group that's ALMOST big enough, expand that group's radius
 // by one and absorb into that group.
-   int semi = rng(0, semi_valid.size() - 1);
-   cur_om.zg[semi_valid[semi]].radius++;
-   return semi_valid[semi];
-  }
+  const int semi = rng(0, semi_valid.size() - 1);
+  cur_om.zg[semi_valid[semi]].radius++;
+  return semi_valid[semi];
  }
  return valid_groups[rng(0, valid_groups.size() - 1)];
 }
@@ -7320,9 +7305,8 @@ oter_id game::ter_at(int omx, int omy, bool& mark_as_seen)
 moncat_id game::mt_to_mc(mon_id type)
 {
  for (int i = 0; i < num_moncats; i++) {
-  for (int j = 0; j < (moncats[i]).size(); j++) {
-   if ((moncats[i])[j] == type)
-    return (moncat_id)(i);
+  for(auto tmp_monid : mongroup::moncats[i]) {
+   if (tmp_monid == type) return (moncat_id)(i);
   }
  }
  return mcat_null;
