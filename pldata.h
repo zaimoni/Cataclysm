@@ -73,6 +73,7 @@ struct disease
 
  int speed_boost() const;
  const char* name() const;
+ std::string description() const;
 };
 
 struct addiction
