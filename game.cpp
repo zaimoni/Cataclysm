@@ -39,7 +39,7 @@ game::game()
  init_traps();	      // Set up the trap types            (SEE trapdef.cpp)
  init_mapitems();     // Set up which items appear where  (SEE mapitemsdef.cpp)
  init_recipes();      // Set up crafting reciptes         (SEE crafting.cpp)
- init_moncats();      // Set up monster categories        (SEE mongroupdef.cpp)
+ mongroup::init();      // Set up monster categories        (SEE mongroupdef.cpp)
  init_missions();     // Set up mission templates         (SEE missiondef.cpp)
  init_construction(); // Set up constructables            (SEE construction.cpp)
  init_mutations();
