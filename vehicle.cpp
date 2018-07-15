@@ -89,13 +89,7 @@ void vehicle::load (std::ifstream &stin)
         int pid, pdx, pdy, php, pam, pbld, pnit;
         stin >> pid >> pdx >> pdy >> php >> pam >> pbld >> pnit;
         getline(stin, databuff); // Clear EoL
-        vehicle_part new_part;
-        new_part.id = (vpart_id) pid;
-        new_part.mount_dx = pdx;
-        new_part.mount_dy = pdy;
-        new_part.hp = php;
-        new_part.blood = pbld;
-        new_part.amount = pam;
+        vehicle_part new_part((vpart_id)pid,pdx,pdy,php,pbld,pam);
         for (int j = 0; j < pnit; j++)
         {
             itms++;
@@ -302,14 +296,7 @@ int vehicle::install_part (int dx, int dy, vpart_id id, int hp, bool force)
     // if this is first part, add this part to list of external parts
     if (parts_at_relative (dx, dy).size () < 1)
         external_parts.push_back (parts.size());
-    vehicle_part new_part;
-    new_part.id = id;
-    new_part.mount_dx = dx;
-    new_part.mount_dy = dy;
-    new_part.hp = hp < 0? vpart_list[id].durability : hp;
-    new_part.amount = 0;
-    new_part.blood = 0;
-    parts.push_back (new_part);
+    parts.push_back(vehicle_part(id,dx,dy, hp < 0 ? vpart_list[id].durability : hp));
     find_exhaust ();
     precalc_mounts (0, face.dir());
     insides_dirty = true;
