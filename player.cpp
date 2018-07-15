@@ -41,6 +41,81 @@ int disease::speed_boost() const
 	default:		return 0;
 	}
 }
+
+const char* disease::name() const
+{
+	switch (type) {
+	case DI_GLARE:		return "Glare";
+	case DI_COLD:		return "Cold";
+	case DI_COLD_FACE:	return "Cold face";
+	case DI_COLD_HANDS:	return "Cold hands";
+	case DI_COLD_LEGS:	return "Cold legs";
+	case DI_COLD_FEET:	return "Cold feet";
+	case DI_HOT:		return "Hot";
+	case DI_HEATSTROKE:	return "Heatstroke";
+	case DI_FBFACE:	return "Frostbite - Face";
+	case DI_FBHANDS:	return "Frostbite - Hands";
+	case DI_FBFEET:	return "Frostbite - Feet";
+	case DI_COMMON_COLD:	return "Common Cold";
+	case DI_FLU:		return "Influenza";
+	case DI_SMOKE:		return "Smoke";
+	case DI_TEARGAS:	return "Tear gas";
+	case DI_ONFIRE:	return "On Fire";
+	case DI_BOOMERED:	return "Boomered";
+	case DI_SAP:		return "Sap-coated";
+	case DI_SPORES:	return "Spores";
+	case DI_SLIMED:	return "Slimed";
+	case DI_DEAF:		return "Deaf";
+	case DI_BLIND:		return "Blind";
+	case DI_STUNNED:	return "Stunned";
+	case DI_DOWNED:	return "Downed";
+	case DI_POISON:	return "Poisoned";
+	case DI_BADPOISON:	return "Badly Poisoned";
+	case DI_FOODPOISON:	return "Food Poisoning";
+	case DI_SHAKES:	return "Shakes";
+	case DI_FORMICATION:	return "Bugs Under Skin";
+	case DI_WEBBED:	return "Webbed";
+	case DI_RAT:		return "Ratting";
+	case DI_DRUNK:
+		if (duration > 2200) return "Wasted";
+		if (duration > 1400) return "Trashed";
+		if (duration > 800)  return "Drunk";
+		return "Tipsy";
+
+	case DI_CIG:		return "Cigarette";
+	case DI_HIGH:		return "High";
+	case DI_VISUALS:	return "Hallucinating";
+
+	case DI_ADRENALINE:
+		if (duration > 150) return "Adrenaline Rush";
+		return "Adrenaline Comedown";
+
+	case DI_ASTHMA:
+		if (duration > 800) return "Heavy Asthma";
+		return "Asthma";
+
+	case DI_METH:
+		if (duration > 600) return "High on Meth";
+		return "Meth Comedown";
+
+	case DI_IN_PIT:	return "Stuck in Pit";
+
+	case DI_ATTACK_BOOST:  return "Hit Bonus";
+	case DI_DAMAGE_BOOST:  return "Damage Bonus";
+	case DI_DODGE_BOOST:   return "Dodge Bonus";
+	case DI_ARMOR_BOOST:   return "Armor Bonus";
+	case DI_SPEED_BOOST:   return "Attack Speed Bonus";
+	case DI_VIPER_COMBO:
+		switch (intensity) {
+		case 1: return "Snakebite Unlocked!";
+		case 2: return "Viper Strike Unlocked!";
+		default: return "VIPER BUG!!!!";
+		}
+
+//	case DI_NULL:		return "";
+	default:		return NULL;
+	}
+}
 // end prototype for disease.cpp
 
 // XXX inappropriate forward declares \todo lift definitions above uses
@@ -663,10 +738,11 @@ void player::disp_info(game *g)
  int line;
  std::vector<std::string> effect_name;
  std::vector<std::string> effect_text;
- for (int i = 0; i < illness.size(); i++) {
-  if (dis_name(illness[i]).size() > 0) {
-   effect_name.push_back(dis_name(illness[i]));
-   effect_text.push_back(dis_description(illness[i]));
+ for(const auto& cond : illness) {
+  const auto name = cond.name();
+  if (name) {
+   effect_name.push_back(name);
+   effect_text.push_back(dis_description(cond));
   }
  }
  if (abs(morale_level()) >= 100) {
@@ -1017,7 +1093,7 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
   if (0 == move_adjust) continue;
   const bool good = move_adjust > 0;
   const nc_color col = (good ? c_green : c_red);
-  mvwprintz(w_speed, line,  1, col, dis_name(cond).c_str());
+  mvwprintz(w_speed, line,  1, col, cond.name());
   mvwprintz(w_speed, line, 21, col, (good ? "+" : "-"));
   if (good) move_adjust = -move_adjust;
   mvwprintz(w_speed, line, (move_adjust >= 10 ? 22 : 23), col, "%d%%%%", move_adjust);

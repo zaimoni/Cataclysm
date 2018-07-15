@@ -72,6 +72,7 @@ struct disease
  disease(dis_type t = DI_NULL, int d = 0, int i = 0) : type(t),intensity(i),duration(d) {}
 
  int speed_boost() const;
+ const char* name() const;
 };
 
 struct addiction
