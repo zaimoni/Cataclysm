@@ -42,10 +42,3 @@ void game::init_moncats()
 	mon_manhack, mon_skitterbot, mon_secubot, mon_copbot, mon_molebot,
 	mon_tripod, mon_chickenbot, mon_tankbot);
 }
-
-bool moncat_is_safe(moncat_id id)
-{
- if (id == mcat_null || id == mcat_forest)
-  return true;
- return false;
-}

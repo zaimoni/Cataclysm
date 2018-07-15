@@ -26,8 +26,6 @@ enum moncat_id {
  num_moncats
 };
 
-bool moncat_is_safe(moncat_id id);
-
 struct mongroup {
  static std::vector<mon_id> moncats[num_moncats];
 
@@ -45,7 +43,7 @@ struct mongroup {
   population = ppop;
   dying = false;
  }
- bool is_safe() { return moncat_is_safe(type); };
+ bool is_safe() const { return mcat_null == type || mcat_forest == type; }
 };
 
 #endif
