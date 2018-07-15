@@ -86,7 +86,7 @@ bool WinCreate()
 	// XXX cargo cult programming -- the multipliers to border width, height should not be needed if they were retrieved correctly
 #if _MSC_VER
 // MSVC is empirically broken (following is correct for _MSC_VER 1913)
-#define BORDERWIDTH_SCALE 2
+#define BORDERWIDTH_SCALE 3
 #define BORDERHEIGHT_SCALE 3
 #else
 // assume we are on a working WinAPI (e.g., MingWin)
