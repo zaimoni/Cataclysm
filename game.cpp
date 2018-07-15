@@ -2094,8 +2094,8 @@ z.size(), events.size());
    if (m.veh_at(u.posx, u.posy))
     debugmsg ("There's already vehicle here");
    else {
-    for (int i = 2; i < vtypes.size(); i++)
-     opts.push_back (vtypes[i]->name);
+	for(auto v_type : vehicle::vtypes) 
+     opts.push_back (v_type->name);
     opts.push_back (std::string("Cancel"));
     veh_num = menu_vec ("Choose vehicle to spawn", opts) + 1;
     if (veh_num > 1 && veh_num < num_vehicles)

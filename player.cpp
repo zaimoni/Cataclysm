@@ -9,14 +9,16 @@
 #include "inventory.h"
 #include "artifact.h"
 #include "options.h"
-#include <sstream>
-#include <stdlib.h>
 
 #if (defined _WIN32 || defined WINDOWS)
 	#include "catacurse.h"
 #else
 	#include <curses.h>
 #endif
+
+#include <sstream>
+#include <stdlib.h>
+#include <fstream>
 
 nc_color encumb_color(int level);
 bool activity_is_suspendable(activity_type type);

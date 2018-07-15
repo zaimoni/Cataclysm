@@ -31,12 +31,13 @@ void game::init_vehicles()
     vehicle *veh;
     int index = 0;
     int pi;
-    vtypes.push_back(new vehicle(this, (vhtype_id)index++)); // veh_null
-    vtypes.push_back(new vehicle(this, (vhtype_id)index++)); // veh_custom
+	bool ok = true;
+	vehicle::vtypes.push_back(new vehicle(this, (vhtype_id)index++)); // veh_null
+	vehicle::vtypes.push_back(new vehicle(this, (vhtype_id)index++)); // veh_custom
 
-#define VEHICLE(nm) { veh = new vehicle(this, (vhtype_id)index++); veh->name = nm; vtypes.push_back(veh); }
+#define VEHICLE(nm) { veh = new vehicle(this, (vhtype_id)index++); veh->name = nm; vehicle::vtypes.push_back(veh); }
 #define PART(mdx, mdy, id) { pi = veh->install_part(mdx, mdy, id); \
-    if (pi < 0) debugmsg("init_vehicles: '%s' part '%s'(%d) can't be installed to %d,%d", veh->name.c_str(), vpart_list[id].name, veh->parts.size(), mdx, mdy); }
+    if (pi < 0) { debugmsg("init_vehicles: '%s' part '%s'(%d) can't be installed to %d,%d", veh->name.c_str(), vpart_list[id].name, veh->parts.size(), mdx, mdy); ok = false; } }
 
     //        name
     VEHICLE ("motorcycle");
@@ -208,7 +209,13 @@ void game::init_vehicles()
     PART (-3, -2,   vp_wheel_large);
     PART (-3, 2,    vp_wheel_large);
 
-    if (vtypes.size() != num_vehicles)
-        debugmsg("%d vehicles, %d types", vtypes.size(), num_vehicles);
+	if (vehicle::vtypes.size() != num_vehicles) {
+		debugmsg("%d vehicles, %d types: fatal", vehicle::vtypes.size(), num_vehicles);
+		exit(EXIT_FAILURE);
+	}
+	if (!ok) {
+		debugmsg("errors in stock vehicle configuration: fatal", vehicle::vtypes.size(), num_vehicles);
+		exit(EXIT_FAILURE);
+	}
 }
 

@@ -2,12 +2,10 @@
 #define _VEHICLE_H_
 
 #include "tileray.h"
-#include "color.h"
-#include "item.h"
 #include "veh_type.h"
 #include <vector>
 #include <string>
-#include <fstream>
+#include <iosfwd>
 
 class map;
 class player;
@@ -107,6 +105,8 @@ private:
     game *g;
 
 public:
+	static std::vector <vehicle*> vtypes;
+
     vehicle (game *ag=0, vhtype_id type_id = veh_null);
     ~vehicle ();
 

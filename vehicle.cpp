@@ -3,13 +3,18 @@
 #include "output.h"
 #include "game.h"
 #include "item.h"
-#include <sstream>
-#include <stdlib.h>
+
 #if (defined _WIN32 || defined WINDOWS)
     #include "catacurse.h"
 #else
     #include <curses.h>
 #endif
+
+#include <stdlib.h>
+#include <sstream>
+#include <fstream>
+
+std::vector <vehicle*> vehicle::vtypes;
 
 vehicle::vehicle(game *ag, vhtype_id type_id): g(ag), type(type_id)
 {
@@ -28,9 +33,9 @@ vehicle::vehicle(game *ag, vhtype_id type_id): g(ag), type(type_id)
         type = 0;
     if (type > veh_custom)
     {   // get a copy of sample vehicle of this type
-        if (type < g->vtypes.size())
+        if (type < vehicle::vtypes.size())
         {
-            *this = *(g->vtypes[type]);
+            *this = *(vehicle::vtypes[type]);
             init_state();
         }
     }
