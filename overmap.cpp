@@ -1232,10 +1232,12 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
       ter_color = c_red;
       ter_sym = '*';
      } else {
-      if (cur_ter >= num_ter_types || cur_ter < 0)
+      if (cur_ter >= num_ter_types || cur_ter < 0) {
        debugmsg("Bad ter %d (%d, %d)", cur_ter, omx, omy);
-	  decltype(oter_t::list[0])& terrain = oter_t::list[0];
-      ter_color = terrain.color;	// certainly don't use an invalid array dereference
+	   cur_ter = ot_null;	// certainly don't use an invalid array dereference
+	  }
+	  decltype(oter_t::list[0])& terrain = oter_t::list[cur_ter];
+      ter_color = terrain.color;
       ter_sym = terrain.sym;
      }
     } else { // We haven't explored this tile yet
