@@ -3,7 +3,6 @@
 
 #include "item.h"
 #include "monster.h"
-#include "pldata.h"
 #include "skill.h"
 #include "bionics.h"
 #include "trap.h"
