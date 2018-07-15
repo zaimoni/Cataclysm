@@ -85,7 +85,7 @@ bool WinCreate()
                                    szWindowClass , szTitle,WindowStyle, WindowX,
 	// XXX cargo cult programming -- the multipliers to border width, height should not be needed if they were retrieved correctly
 #if _MSC_VER
-// MSVC is empirically broken (following is correct for _MSC_VER 1913)
+// MSVC is empirically broken (following is correct for _MSC_VER 1913 ... 1914)
 #define BORDERWIDTH_SCALE 3
 #define BORDERHEIGHT_SCALE 3
 #else

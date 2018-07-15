@@ -2404,11 +2404,45 @@ void player::infect(dis_type type, body_part vector, int strength,
   add_disease(type, duration, g);
 }
 
+// 2nd person singular.  Would need 3rd person for npcs
+const char* describe(dis_type type)
+{
+	switch (type) {
+	case DI_GLARE: return "The sunlight's glare makes it hard to see.";
+	case DI_WET: return "You're getting soaked!";
+	case DI_HEATSTROKE: "You have heatstroke!";
+	case DI_FBFACE: return "Your face is frostbitten.";
+	case DI_FBHANDS: return "Your hands are frostbitten.";
+	case DI_FBFEET: return "Your feet are frostbitten.";
+	case DI_COMMON_COLD: "You feel a cold coming on...";
+	case DI_FLU: return "You feel a flu coming on...";
+	case DI_ONFIRE: return "You're on fire!";
+	case DI_SMOKE: return "You inhale a lungful of thick smoke.";
+	case DI_TEARGAS: return "You inhale a lungful of tear gas.";
+	case DI_BOOMERED: return "You're covered in bile!";
+	case DI_SAP: return "You're coated in sap!";
+	case DI_SPORES: return "You're covered in tiny spores!";
+	case DI_SLIMED: return "You're covered in thick goo!";
+	case DI_LYING_DOWN: return "You lie down to go to sleep...";
+	case DI_FORMICATION: return "There's bugs crawling under your skin!";
+	case DI_WEBBED: return "You're covered in webs!";
+	case DI_DRUNK:
+	case DI_HIGH: return "You feel lightheaded.";
+	case DI_ADRENALINE: return "You feel a surge of adrenaline!";
+	case DI_ASTHMA: return "You can't breathe... asthma attack!";
+	case DI_DEAF: return "You're deafened!";
+	case DI_BLIND: return "You're blinded!";
+	case DI_STUNNED: return "You're stunned!";
+	case DI_DOWNED: return "You're knocked to the floor!";
+	case DI_AMIGARA: return "You can't look away from the fautline...";
+	default: return NULL;
+	}
+}
+
 void player::add_disease(dis_type type, int duration, game *g,
                          int intensity, int max_intensity)
 {
- if (duration == 0)
-  return;
+ if (duration == 0) return;
  bool found = false;
  int i = 0;
  while ((i < illness.size()) && !found) {
@@ -2422,8 +2456,10 @@ void player::add_disease(dis_type type, int duration, game *g,
   i++;
  }
  if (!found) {   
-  if (!is_npc())
-   dis_msg(g, type);
+  if (!is_npc()) {
+	if (DI_ADRENALINE == type) g->u.moves += 800;
+	g->add_msg(describe(type));
+  }
   disease tmp(type, duration, intensity);
   illness.push_back(tmp);
  }

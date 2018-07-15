@@ -1945,6 +1945,8 @@ void game::decrease_nextinv()
 
 void game::add_msg(const char* msg, ...)
 {
+ if (!msg || !*msg) return;	// reject NULL and empty-string
+
  char buff[1024];
  va_list ap;
  va_start(ap, msg);
