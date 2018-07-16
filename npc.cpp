@@ -740,7 +740,7 @@ void npc::make_shopkeep(game *g, oter_id type)
  if (pool.size() > 0) {
   do {
    items_location place = pool[rng(0, pool.size() - 1)];
-   item_type = g->mapitems[place][rng(0, g->mapitems[place].size() - 1)];
+   item_type = map::items[place][rng(0, map::items[place].size() - 1)];
    tmp = item(g->itypes[item_type], g->turn);
    if (volume_carried() + tmp.volume() > volume_capacity() ||
        weight_carried() + tmp.weight() > weight_capacity()   )
@@ -970,8 +970,8 @@ std::vector<item> starting_inv(npc *me, npc_class type, game *g)
  if (type == NC_HACKER) {
   from = mi_npc_hacker;
   while(total_space > 0 && !one_in(10)) {
-   index = rng(0, g->mapitems[from].size() - 1);
-   tmp = g->mapitems[from][index];
+   index = rng(0, map::items[from].size() - 1);
+   tmp = map::items[from][index];
    item tmpit(g->itypes[tmp], 0);
    tmpit = tmpit.in_its_container(&g->itypes);
    if (total_space >= tmpit.volume()) {
@@ -982,12 +982,9 @@ std::vector<item> starting_inv(npc *me, npc_class type, game *g)
  }
  if (type == NC_DOCTOR) {
   while(total_space > 0 && !one_in(10)) {
-   if (one_in(3))
-    from = mi_softdrugs;
-   else
-    from = mi_harddrugs;
-   index = rng(0, g->mapitems[from].size() - 1);
-   tmp = g->mapitems[from][index];
+   from = (one_in(3) ? mi_softdrugs : mi_harddrugs);
+   index = rng(0, map::items[from].size() - 1);
+   tmp = map::items[from][index];
    item tmpit(g->itypes[tmp], 0);
    tmpit = tmpit.in_its_container(&g->itypes);
    if (total_space >= tmpit.volume()) {
@@ -1007,14 +1004,16 @@ std::vector<item> starting_inv(npc *me, npc_class type, game *g)
   }
  }
 
- for (int i = 0; i < ret.size(); i++) {
-  for (int j = 0; j < g->mapitems[mi_trader_avoid].size(); j++) {
-   if (ret[i].type->id == g->mapitems[mi_trader_avoid][j]) {
+ {
+ int i = ret.size();
+ while(0 < i--) {
+  for (const auto type : map::items[mi_trader_avoid]) {
+   if (ret[i].type->id == type) {
     ret.erase(ret.begin() + i);
-    i--;
-    j = 0;
+	break;
    }
   }
+ }
  }
  
  return ret;
@@ -1088,20 +1087,20 @@ void npc::starting_weapon(game *g)
 // TODO: Some throwing weapons... grenades?
   break;
  case sk_pistol:
-  index = rng(0, g->mapitems[mi_pistols].size() - 1);
-  weapon.make(g->itypes[(g->mapitems[mi_pistols])[index]]);
+  index = rng(0, map::items[mi_pistols].size() - 1);
+  weapon.make(g->itypes[(map::items[mi_pistols])[index]]);
   break;
  case sk_shotgun:
-  index = rng(0, g->mapitems[mi_shotguns].size() - 1);
-  weapon.make(g->itypes[(g->mapitems[mi_shotguns])[index]]);
+  index = rng(0, map::items[mi_shotguns].size() - 1);
+  weapon.make(g->itypes[(map::items[mi_shotguns])[index]]);
   break;
  case sk_smg:
-  index = rng(0, g->mapitems[mi_smg].size() - 1);
-  weapon.make(g->itypes[(g->mapitems[mi_smg])[index]]);
+  index = rng(0, map::items[mi_smg].size() - 1);
+  weapon.make(g->itypes[(map::items[mi_smg])[index]]);
   break;
  case sk_rifle:
-  index = rng(0, g->mapitems[mi_rifles].size() - 1);
-  weapon.make(g->itypes[(g->mapitems[mi_rifles])[index]]);
+  index = rng(0, map::items[mi_rifles].size() - 1);
+  weapon.make(g->itypes[(map::items[mi_rifles])[index]]);
   break;
  }
  if (weapon.is_gun()) {

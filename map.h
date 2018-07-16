@@ -22,9 +22,11 @@ struct itype;
 class map
 {
  public:
+ static std::vector <itype_id> items[num_itloc]; // Items at various map types
+
 // Constructors & Initialization
  map();
- map(std::vector<itype*> *itptr, std::vector<itype_id> (*miptr)[num_itloc]);
+ map(std::vector<itype*> *itptr);
 
 // Visual Output
  void draw(game *g, WINDOW* w, point center);
@@ -148,6 +150,7 @@ class map
  
  std::vector <itype*> *itypes;
 
+ static void init();
 protected:
  void saven(overmap *om, unsigned int turn, int x, int y, int gridx, int gridy);
  bool loadn(game *g, int x, int y, int gridx, int gridy);
@@ -180,7 +183,7 @@ class tinymap : public map	// XXX direct subclassing defeats the point of this c
 {
 public:
  tinymap();
- tinymap(std::vector<itype*> *itptr, std::vector<itype_id> (*miptr)[num_itloc]);
+ tinymap(std::vector<itype*> *itptr);
  ~tinymap();
 
 protected:

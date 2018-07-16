@@ -639,7 +639,7 @@ void monster::die(game *g)
     cur_chance -= it[selected_location].chance;
    }
    total_it_chance = 0;
-   mapit = g->mapitems[it[selected_location].loc];
+   mapit = map::items[it[selected_location].loc];
    for (int i = 0; i < mapit.size(); i++)
     total_it_chance += g->itypes[mapit[i]]->rarity;
    cur_chance = rng(1, total_it_chance);
@@ -649,8 +649,7 @@ void monster::die(game *g)
     cur_chance -= g->itypes[mapit[selected_item]]->rarity;
    }
    g->m.add_item(posx, posy, g->itypes[mapit[selected_item]], 0);
-   if (type->item_chance < 0)
-    animal_done = true;	// Only drop ONE item.
+   if (type->item_chance < 0) animal_done = true;	// Only drop ONE item.
   }
  } // Done dropping items
 

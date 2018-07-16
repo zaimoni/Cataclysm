@@ -37,7 +37,7 @@ game::game()
  mtype::init();	      // Set up monster types             (SEE mtypedef.cpp)
  mtype::init_items();     // Set up the items monsters carry  (SEE monitemsdef.cpp)
  trap::init();	      // Set up the trap types            (SEE trapdef.cpp)
- init_mapitems();     // Set up which items appear where  (SEE mapitemsdef.cpp)
+ map::init();     // Set up which items appear where  (SEE mapitemsdef.cpp)
  init_recipes();      // Set up crafting reciptes         (SEE crafting.cpp)
  mongroup::init();      // Set up monster categories        (SEE mongroupdef.cpp)
  init_missions();     // Set up mission templates         (SEE missiondef.cpp)
@@ -78,7 +78,7 @@ game::~game()
 void game::setup()
 {
  u = player();
- m = map(&itypes, &mapitems); // Init the root map with our vectors
+ m = map(&itypes); // Init the root map with our vectors
  z.reserve(1000); // Reserve some space
 
 // Even though we may already have 'd', nextinv will be incremented as needed
@@ -589,8 +589,7 @@ void game::create_starting_npcs()
  tmp.attitude = NPCATT_NULL;
  tmp.mission = NPC_MISSION_SHELTER;
  tmp.chatbin.first_topic = TALK_SHELTER;
- tmp.chatbin.missions.push_back( 
-     reserve_random_mission(ORIGIN_OPENER_NPC, om_location(), tmp.id) );
+ tmp.chatbin.missions.push_back(reserve_random_mission(ORIGIN_OPENER_NPC, om_location(), tmp.id) );
 
  active_npc.push_back(tmp);
 }
@@ -605,7 +604,7 @@ bool game::do_turn()
 // Save the monsters before we die!
   for (int i = 0; i < z.size(); i++) {
    if (z[i].spawnmapx != -1) {	// Static spawn, move them back there
-    tinymap tmp(&itypes, &mapitems);
+    tinymap tmp(&itypes);
     tmp.load(this, z[i].spawnmapx, z[i].spawnmapy);
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, turn, z[i].spawnmapx, z[i].spawnmapy);
@@ -618,10 +617,8 @@ bool game::do_turn()
     }
    }
   }
-  if (uquit == QUIT_DIED)
-   popup_top("Game over! Press spacebar...");
-  if (uquit == QUIT_DIED || uquit == QUIT_SUICIDE)
-   death_screen();
+  if (uquit == QUIT_DIED) popup_top("Game over! Press spacebar...");
+  if (uquit == QUIT_DIED || uquit == QUIT_SUICIDE) death_screen();
   return true;
  }
 // Actual stuff
@@ -6428,7 +6425,7 @@ void game::vertical_move(int movez, bool force)
  cur_om.save(u.name);
  //m.save(&cur_om, turn, levx, levy);
  cur_om = overmap(this, cur_om.posx, cur_om.posy, cur_om.posz + movez);
- map tmpmap(&itypes, &mapitems);
+ map tmpmap(&itypes);
  tmpmap.load(this, levx, levy);
  cur_om = overmap(this, cur_om.posx, cur_om.posy, original_z);
 // Find the corresponding staircase
@@ -6487,18 +6484,16 @@ void game::vertical_move(int movez, bool force)
     if (turns < 999)
      coming_to_stairs.push_back( monster_and_count(z[i], 1 + turns) );
    } else if (z[i].spawnmapx != -1) { // Static spawn, move them back there
-    tinymap tmp(&itypes, &mapitems);
+    tinymap tmp(&itypes);
     tmp.load(this, z[i].spawnmapx, z[i].spawnmapy);
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, turn, z[i].spawnmapx, z[i].spawnmapy);
    } else if (z[i].friendly < 0) { // Friendly, make it into a static spawn
-    tinymap tmp(&itypes, &mapitems);
+    tinymap tmp(&itypes);
     tmp.load(this, levx, levy);
     int spawnx = z[i].posx, spawny = z[i].posy;
-    while (spawnx < 0)
-     spawnx += SEEX;
-    while (spawny < 0)
-     spawny += SEEY;
+    while (spawnx < 0) spawnx += SEEX;
+    while (spawny < 0) spawny += SEEY;
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, turn, levx, levy);
    } else {
@@ -6632,7 +6627,7 @@ void game::update_map(int &x, int &y)
       z[i].posx > SEEX * (MAPSIZE + 1) || z[i].posy > SEEY * (MAPSIZE + 1)) {
 // Despawn; we're out of bounds
    if (z[i].spawnmapx != -1) {	// Static spawn, move them back there
-    map tmp(&itypes, &mapitems);
+    map tmp(&itypes);
     tmp.load(this, z[i].spawnmapx, z[i].spawnmapy);
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, turn, z[i].spawnmapx, z[i].spawnmapy);
@@ -7224,7 +7219,7 @@ void game::nuke(int x, int y)
  if (x < 0 || y < 0 || x >= OMAPX || y >= OMAPY)
   return;
  int mapx = x * 2, mapy = y * 2;
- map tmpmap(&itypes, &mapitems);
+ map tmpmap(&itypes);
  tmpmap.load(this, mapx, mapy);
  for (int i = 0; i < SEEX * 2; i++) {
   for (int j = 0; j < SEEY * 2; j++) {

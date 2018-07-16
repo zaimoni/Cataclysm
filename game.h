@@ -175,7 +175,6 @@ class game
   std::vector<recipe*> recipes;	// The list of valid recipes
   std::vector<constructable*> constructions; // The list of constructions
 
-  std::vector <itype_id> mapitems[num_itloc]; // Items at various map types
   std::vector <mission_type> mission_types; // The list of mission templates
   std::map<char, action_id> keymap;
 
@@ -217,7 +216,6 @@ class game
 
 // Data Initialization
   void init_itypes();       // Initializes item types
-  void init_mapitems();     // Initializes item placement
   void init_traps();        // Initializes trap types
   void init_recipes();      // Initializes crafting recipes
   void init_construction(); // Initializes construction "recipes"

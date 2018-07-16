@@ -26,12 +26,11 @@ map::map()
  my_MAPSIZE = MAPSIZE;
 }
 
-map::map(std::vector<itype*> *itptr, std::vector<itype_id> (*miptr)[num_itloc])
+map::map(std::vector<itype*> *itptr)
 {
  nulter = t_null;
  nultrap = tr_null;
  itypes = itptr;
- mapitems = miptr;
  my_MAPSIZE = MAPSIZE;
  for (int n = 0; n < my_MAPSIZE * my_MAPSIZE; n++)
   grid[n] = NULL;
@@ -2293,7 +2292,7 @@ bool map::loadn(game *g, int worldx, int worldy, int gridx, int gridy)
    grid[gridn]->vehicles[i].smy = gridy;
   }
  } else { // It doesn't exist; we must generate it!
-  map tmp_map(itypes, mapitems);
+  map tmp_map(itypes);
 // overx, overy is where in the overmap we need to pull data from
 // Each overmap square is two nonants; to prevent overlap, generate only at
 //  squares divisible by 2.
@@ -2393,9 +2392,8 @@ tinymap::tinymap()
  my_MAPSIZE = 2;
 }
 
-tinymap::tinymap(std::vector<itype*> *itptr,
-                 std::vector<itype_id> (*miptr)[num_itloc])
-: map(itptr,miptr)
+tinymap::tinymap(std::vector<itype*> *itptr)
+: map(itptr)
 {
  my_MAPSIZE = 2;
  for (int n = 0; n < 4; n++)
