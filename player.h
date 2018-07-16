@@ -10,12 +10,8 @@
 #include "inventory.h"
 #include "artifact.h"
 #include "mutation.h"
-#include <vector>
-#include <string>
 
-class monster;
 class game;
-struct trap;
 struct mission;
 
 struct special_attack

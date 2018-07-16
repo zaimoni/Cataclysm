@@ -1,6 +1,6 @@
-#include "game.h"
 #include "trap.h"
 #include "rng.h"
+#include "game.h"
 
 void trapfunc::bubble(game *g, int x, int y)
 {

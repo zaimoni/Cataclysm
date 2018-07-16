@@ -1,18 +1,13 @@
 #ifndef _MAPDATA_H_
 #define _MAPDATA_H_
 
-#include <vector>
-#include <string>
-#include "color.h"
 #include "item.h"
 #include "trap.h"
 #include "monster.h"
-#include "enums.h"
 #include "computer.h"
 #include "vehicle.h"
 
 class game;
-class monster;
 
 #ifndef SEEX 	// SEEX is how far the player can see in the X direction (at
 #define SEEX 12	// least, without scrolling).  All map segments will need to be

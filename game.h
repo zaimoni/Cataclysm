@@ -15,7 +15,6 @@
 #include "weather.h"
 #include "construction.h"
 #include "calendar.h"
-#include "artifact.h"
 #include "mutation.h"
 #include "gamemode.h"
 #include "action.h"

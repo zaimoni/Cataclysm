@@ -1,10 +1,10 @@
 #ifndef _TRAP_H_
 #define _TRAP_H_
 
-#include "color.h"
-#include "monster.h"
 #include "itype.h"
-#include <string>
+
+class monster;
+class game;
 
 enum trap_id {
  tr_null,
