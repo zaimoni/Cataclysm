@@ -21,6 +21,7 @@
 #include <dirent.h>
 #endif
 #include <sys/stat.h>
+#include <utility>
 
 #define MAX_MONSTERS_MOVING 40 // Efficiency!
 
@@ -132,12 +133,35 @@ void game::setup()
  }
 }
 
+// range of sel2 is 0..
+static void _main_menu(WINDOW* const w_open, const int sel1)
+{
+	static const std::pair<int, const char*> menu[] = {
+		{ 4, "MOTD" },
+		{ 5, "New Game" },
+		{ 6, "Load Game" },
+		{ 7, "Special..." },
+		{ 8, "Help" },
+		{ 9, "Quit" } };
+	for (auto x : menu) {
+		mvwprintz(w_open, x.first, 1, (sel1 == x.first - 4 ? h_white : c_white), x.second);
+	}
+}
+
+// range of sel2 is 1..3
+static void _game_type_menu(WINDOW* const w_open,const int sel2)
+{
+	static const std::pair<int, const char*> menu[PLTYPE_MAX] = {
+		{5, "Custom Character" },
+		{6,"Random Character" },
+		{7,"Template Character" } };
+	for (auto x : menu) {
+		mvwprintz(w_open, x.first, 12, (sel2 == x.first-4 ? h_white : c_white), x.second);
+	}
+}
+
 bool game::opening_screen()
 {
-#if PROTOTYPE
- const char* const pltype_name[PLTYPE_MAX] = {"Custom Character", "Random Character", "Template Character" };
- const int pltype_y[PLTYPE_MAX] = { 5, 6, 7 };
-#endif
 
  WINDOW* w_open = newwin(25, 80, 0, 0);
  erase();
@@ -273,13 +297,8 @@ http://github.com/zaimoni/Cataclysm .");
 
  do {
   if (layer == 1) {
-   mvwprintz(w_open, 4, 1, (sel1 == 0 ? h_white : c_white), "MOTD");
-   mvwprintz(w_open, 5, 1, (sel1 == 1 ? h_white : c_white), "New Game");
-   mvwprintz(w_open, 6, 1, (sel1 == 2 ? h_white : c_white), "Load Game");
-   mvwprintz(w_open, 7, 1, (sel1 == 3 ? h_white : c_white), "Special...");
-   mvwprintz(w_open, 8, 1, (sel1 == 4 ? h_white : c_white), "Help");
-   mvwprintz(w_open, 9, 1, (sel1 == 5 ? h_white : c_white), "Quit");
-
+   _main_menu(w_open, sel1);
+   
    if (sel1 == 0) {	// Print the MOTD.
     for (int i = 0; i < motd.size() && i < 16; i++)
      mvwprintz(w_open, i + 4, 12, c_ltred, motd[i].c_str());
@@ -321,21 +340,11 @@ http://github.com/zaimoni/Cataclysm .");
      sel2 = 1;
      layer = 2;
     }
-    mvwprintz(w_open, 4, 1, (sel1 == 0 ? c_white : c_dkgray), "MOTD");
-    mvwprintz(w_open, 5, 1, (sel1 == 1 ? c_white : c_dkgray), "New Game");
-    mvwprintz(w_open, 6, 1, (sel1 == 2 ? c_white : c_dkgray), "Load Game");
-    mvwprintz(w_open, 7, 1, (sel1 == 3 ? c_white : c_dkgray), "Special...");
-    mvwprintz(w_open, 8, 1, (sel1 == 4 ? c_white : c_dkgray), "Help");
-    mvwprintz(w_open, 9, 1, (sel1 == 5 ? c_white : c_dkgray), "Quit");
+	_main_menu(w_open, sel1);
    }
   } else if (layer == 2) {
    if (sel1 == 1) {	// New Character
-    mvwprintz(w_open, 5, 12, (sel2 == 1 ? h_white : c_white),
-              "Custom Character");
-    mvwprintz(w_open, 6, 12, (sel2 == 2 ? h_white : c_white),
-              "Preset Character");
-    mvwprintz(w_open, 7, 12, (sel2 == 3 ? h_white : c_white),
-              "Random Character");
+	_game_type_menu(w_open,sel2);
     wrefresh(w_open);
     refresh();
     ch = input();
@@ -370,9 +379,7 @@ http://github.com/zaimoni/Cataclysm .");
      if (sel2 == 2) {
       layer = 3;
       sel1 = 0;
-      mvwprintz(w_open, 5, 12, c_dkgray, "Custom Character");
-      mvwprintz(w_open, 6, 12, c_white,  "Preset Character");
-      mvwprintz(w_open, 7, 12, c_dkgray, "Random Character");
+	  _game_type_menu(w_open, sel2);
      }
      if (sel2 == 3) {
       if (!u.create(this, PLTYPE_RANDOM)) {
