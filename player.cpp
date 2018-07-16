@@ -2094,7 +2094,7 @@ bool player::has_two_arms()
  return true;
 }
 
-bool player::avoid_trap(trap* tr)
+bool player::avoid_trap(const trap* const tr)
 {
  int myroll = dice(3, dex_cur + sklevel[sk_dodge] * 1.5);
  int traproll;
@@ -2102,11 +2102,8 @@ bool player::avoid_trap(trap* tr)
   traproll = dice(3, tr->avoidance);
  else
   traproll = dice(6, tr->avoidance);
- if (has_trait(PF_LIGHTSTEP))
-  myroll += dice(2, 6);
- if (myroll >= traproll)
-  return true;
- return false;
+ if (has_trait(PF_LIGHTSTEP)) myroll += dice(2, 6);
+ return myroll >= traproll;
 }
 
 void player::pause(game *g)

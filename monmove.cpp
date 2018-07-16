@@ -598,8 +598,7 @@ void monster::move_to(game *g, int x, int y)
       g->m.tr_at(posx, posy) != tr_null) { // Monster stepped on a trap!
    trap* const tr = trap::traps[g->m.tr_at(posx, posy)];
    if (dice(3, sk_dodge + 1) < dice(3, tr->avoidance)) {
-    trapfuncm f;
-    (f.*(tr->actm))(g, this, posx, posy);
+    (tr->actm)(g, this, posx, posy);
    }
   }
 // Diggers turn the dirt into dirtmound

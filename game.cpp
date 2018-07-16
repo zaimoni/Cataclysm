@@ -6140,12 +6140,9 @@ void game::plmove(int x, int y)
    update_map(x, y);
   u.posx = x;
   u.posy = y;
-  if (m.tr_at(x, y) != tr_null) { // We stepped on a trap!
-   trap* const tr = trap::traps[m.tr_at(x, y)];
-   if (!u.avoid_trap(tr)) {
-    trapfunc f;
-    (f.*(tr->act))(this, x, y);
-   }
+  if (tr_id != tr_null) { // We stepped on a trap!
+   const trap* const tr = trap::traps[tr_id];
+   if (!u.avoid_trap(tr)) (*tr->act)(this, x, y);
   }
 
 // Some martial art styles have special effects that trigger when we move
@@ -6573,10 +6570,9 @@ void game::vertical_move(int movez, bool force)
  }
 
  if (m.tr_at(u.posx, u.posy) != tr_null) { // We stepped on a trap!
-  trap* const tr = trap::traps[m.tr_at(u.posx, u.posy)];
+  const trap* const tr = trap::traps[m.tr_at(u.posx, u.posy)];
   if (force || !u.avoid_trap(tr)) {
-   trapfunc f;
-   (f.*(tr->act))(this, u.posx, u.posy);
+   (tr->act)(this, u.posx, u.posy);
   }
  }
 

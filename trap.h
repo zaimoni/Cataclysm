@@ -41,60 +41,60 @@ enum trap_id {
 };
 
 struct trapfunc {
- void none		(game *g, int x, int y) { };
- void bubble		(game *g, int x, int y);
- void beartrap		(game *g, int x, int y);
- void snare		(game *g, int x, int y) { };
- void board		(game *g, int x, int y);
- void tripwire		(game *g, int x, int y);
- void crossbow		(game *g, int x, int y);
- void shotgun		(game *g, int x, int y);
- void blade		(game *g, int x, int y);
- void landmine		(game *g, int x, int y);
- void telepad		(game *g, int x, int y);
- void goo		(game *g, int x, int y);
- void dissector		(game *g, int x, int y);
- void sinkhole		(game *g, int x, int y);
- void pit		(game *g, int x, int y);
- void pit_spikes	(game *g, int x, int y);
- void lava		(game *g, int x, int y);
- void portal		(game *g, int x, int y) { };
- void ledge		(game *g, int x, int y);
- void boobytrap		(game *g, int x, int y);
- void temple_flood	(game *g, int x, int y);
- void temple_toggle	(game *g, int x, int y);
- void glow		(game *g, int x, int y);
- void hum		(game *g, int x, int y);
- void shadow		(game *g, int x, int y);
- void drain		(game *g, int x, int y);
- void snake		(game *g, int x, int y);
+ static void none		(game *g, int x, int y) { };
+ static void bubble		(game *g, int x, int y);
+ static void beartrap		(game *g, int x, int y);
+ static void snare		(game *g, int x, int y) { };
+ static void board		(game *g, int x, int y);
+ static void tripwire		(game *g, int x, int y);
+ static void crossbow		(game *g, int x, int y);
+ static void shotgun		(game *g, int x, int y);
+ static void blade		(game *g, int x, int y);
+ static void landmine		(game *g, int x, int y);
+ static void telepad		(game *g, int x, int y);
+ static void goo		(game *g, int x, int y);
+ static void dissector		(game *g, int x, int y);
+ static void sinkhole		(game *g, int x, int y);
+ static void pit		(game *g, int x, int y);
+ static void pit_spikes	(game *g, int x, int y);
+ static void lava		(game *g, int x, int y);
+ static void portal		(game *g, int x, int y) { };
+ static void ledge		(game *g, int x, int y);
+ static void boobytrap		(game *g, int x, int y);
+ static void temple_flood	(game *g, int x, int y);
+ static void temple_toggle	(game *g, int x, int y);
+ static void glow		(game *g, int x, int y);
+ static void hum		(game *g, int x, int y);
+ static void shadow		(game *g, int x, int y);
+ static void drain		(game *g, int x, int y);
+ static void snake		(game *g, int x, int y);
 };
 
 struct trapfuncm {
- void none	(game *g, monster *z, int x, int y) { };
- void bubble	(game *g, monster *z, int x, int y);
- void beartrap	(game *g, monster *z, int x, int y);
- void board	(game *g, monster *z, int x, int y);
- void tripwire	(game *g, monster *z, int x, int y);
- void crossbow	(game *g, monster *z, int x, int y);
- void shotgun	(game *g, monster *z, int x, int y);
- void blade	(game *g, monster *z, int x, int y);
- void snare	(game *g, monster *z, int x, int y) { };
- void landmine	(game *g, monster *z, int x, int y);
- void telepad	(game *g, monster *z, int x, int y);
- void goo	(game *g, monster *z, int x, int y);
- void dissector	(game *g, monster *z, int x, int y);
- void sinkhole	(game *g, monster *z, int x, int y) { };
- void pit	(game *g, monster *z, int x, int y);
- void pit_spikes(game *g, monster *z, int x, int y);
- void lava	(game *g, monster *z, int x, int y);
- void portal	(game *g, monster *z, int x, int y) { };
- void ledge	(game *g, monster *z, int x, int y);
- void boobytrap (game *g, monster *z, int x, int y);
- void glow	(game *g, monster *z, int x, int y);
- void hum	(game *g, monster *z, int x, int y);
- void drain	(game *g, monster *z, int x, int y);
- void snake	(game *g, monster *z, int x, int y);
+ static void none	(game *g, monster *z, int x, int y) { };
+ static void bubble	(game *g, monster *z, int x, int y);
+ static void beartrap	(game *g, monster *z, int x, int y);
+ static void board	(game *g, monster *z, int x, int y);
+ static void tripwire	(game *g, monster *z, int x, int y);
+ static void crossbow	(game *g, monster *z, int x, int y);
+ static void shotgun	(game *g, monster *z, int x, int y);
+ static void blade	(game *g, monster *z, int x, int y);
+ static void snare	(game *g, monster *z, int x, int y) { };
+ static void landmine	(game *g, monster *z, int x, int y);
+ static void telepad	(game *g, monster *z, int x, int y);
+ static void goo	(game *g, monster *z, int x, int y);
+ static void dissector	(game *g, monster *z, int x, int y);
+ static void sinkhole	(game *g, monster *z, int x, int y) { };
+ static void pit	(game *g, monster *z, int x, int y);
+ static void pit_spikes(game *g, monster *z, int x, int y);
+ static void lava	(game *g, monster *z, int x, int y);
+ static void portal	(game *g, monster *z, int x, int y) { };
+ static void ledge	(game *g, monster *z, int x, int y);
+ static void boobytrap (game *g, monster *z, int x, int y);
+ static void glow	(game *g, monster *z, int x, int y);
+ static void hum	(game *g, monster *z, int x, int y);
+ static void drain	(game *g, monster *z, int x, int y);
+ static void snake	(game *g, monster *z, int x, int y);
 };
 
 struct trap {
@@ -111,14 +111,14 @@ struct trap {
  std::vector<itype_id> components;	// For disassembly?
  
 // You stepped on it
- void (trapfunc::*act)(game *, int x, int y);
+ void (*act)(game *, int x, int y);
 // Monster stepped on it
- void (trapfuncm::*actm)(game *, monster *, int x, int y);
+ void (*actm)(game *, monster *, int x, int y);
  
  trap(int pid, char psym, nc_color pcolor, std::string pname,
       int pvisibility, int pavoidance, int pdifficulty, 
-      void (trapfunc::*pact)(game *, int x, int y),
-      void (trapfuncm::*pactm)(game *, monster *, int x, int y), itype_id part = itm_null, itype_id part2 = itm_null, itype_id part3 = itm_null)
+      void (*pact)(game *, int x, int y),
+      void (*pactm)(game *, monster *, int x, int y), itype_id part = itm_null, itype_id part2 = itm_null, itype_id part3 = itm_null)
  : id(pid),sym(psym),color(pcolor),name(pname),visibility(pvisibility),avoidance(pavoidance),difficulty(pdifficulty),act(pact),actm(pactm)
  {
   if (part) components.push_back(part);

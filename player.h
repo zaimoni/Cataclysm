@@ -87,7 +87,7 @@ public:
  bool can_wear_boots();
  bool is_armed();	// True if we're wielding something; true for bionics
  bool unarmed_attack(); // False if we're wielding something; true for bionics
- bool avoid_trap(trap *tr);
+ bool avoid_trap(const trap *tr);
 
  void pause(game *g); // '.' command; pauses & reduces recoil
 
