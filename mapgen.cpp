@@ -4,10 +4,6 @@
 #include "rng.h"
 #include "line.h"
 
-#ifndef sgn
-#define sgn(x) (((x) < 0) ? -1 : 1)
-#endif
-
 ter_id grass_or_dirt()
 {
  if (one_in(4))

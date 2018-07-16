@@ -5,8 +5,6 @@
 #include <string>
 #include "enums.h"
 
-#define SLOPE_VERTICAL 999999
-
 enum direction {
 NORTH = 0,
 NORTHEAST,

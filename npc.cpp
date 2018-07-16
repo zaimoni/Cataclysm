@@ -680,10 +680,15 @@ void npc::randomize_from_faction(game *g, faction *fac)
  }
 }
 
+// XXX really should be a template choose function, but doesn't belong in rng.h, which is a thin header
+static itype_id _get_itype(const std::vector<itype_id>& src)
+{
+	return src[rng(0, src.size() - 1)];
+}
+
 void npc::make_shopkeep(game *g, oter_id type)
 {
  randomize(g, NC_TRADER);
- itype_id item_type;
  item tmp;
  std::vector<items_location> pool;
  bool done = false;
@@ -740,8 +745,7 @@ void npc::make_shopkeep(game *g, oter_id type)
  if (pool.size() > 0) {
   do {
    items_location place = pool[rng(0, pool.size() - 1)];
-   item_type = map::items[place][rng(0, map::items[place].size() - 1)];
-   tmp = item(g->itypes[item_type], g->turn);
+   tmp = item(g->itypes[_get_itype(map::items[place])], g->turn);
    if (volume_carried() + tmp.volume() > volume_capacity() ||
        weight_carried() + tmp.weight() > weight_capacity()   )
     done = true;
@@ -970,9 +974,7 @@ std::vector<item> starting_inv(npc *me, npc_class type, game *g)
  if (type == NC_HACKER) {
   from = mi_npc_hacker;
   while(total_space > 0 && !one_in(10)) {
-   index = rng(0, map::items[from].size() - 1);
-   tmp = map::items[from][index];
-   item tmpit(g->itypes[tmp], 0);
+   item tmpit(g->itypes[_get_itype(map::items[from])], 0);
    tmpit = tmpit.in_its_container(&g->itypes);
    if (total_space >= tmpit.volume()) {
     ret.push_back(tmpit);
@@ -983,9 +985,7 @@ std::vector<item> starting_inv(npc *me, npc_class type, game *g)
  if (type == NC_DOCTOR) {
   while(total_space > 0 && !one_in(10)) {
    from = (one_in(3) ? mi_softdrugs : mi_harddrugs);
-   index = rng(0, map::items[from].size() - 1);
-   tmp = map::items[from][index];
-   item tmpit(g->itypes[tmp], 0);
+   item tmpit(g->itypes[_get_itype(map::items[from])], 0);
    tmpit = tmpit.in_its_container(&g->itypes);
    if (total_space >= tmpit.volume()) {
     ret.push_back(tmpit);
@@ -1060,9 +1060,7 @@ void npc::starting_weapon(game *g)
   weapon.make(g->itypes[styles[rng(0, styles.size() - 1)]]);
   return;
  }
- skill best = best_skill();
- int index;
- switch (best) {
+ switch (best_skill()) {
  case sk_bashing:
   switch (rng(0, 5)) {
    case 0: weapon.make(g->itypes[itm_hammer]);        break;
@@ -1087,20 +1085,16 @@ void npc::starting_weapon(game *g)
 // TODO: Some throwing weapons... grenades?
   break;
  case sk_pistol:
-  index = rng(0, map::items[mi_pistols].size() - 1);
-  weapon.make(g->itypes[(map::items[mi_pistols])[index]]);
+  weapon.make(g->itypes[_get_itype(map::items[mi_pistols])]);
   break;
  case sk_shotgun:
-  index = rng(0, map::items[mi_shotguns].size() - 1);
-  weapon.make(g->itypes[(map::items[mi_shotguns])[index]]);
+  weapon.make(g->itypes[_get_itype(map::items[mi_shotguns])]);
   break;
  case sk_smg:
-  index = rng(0, map::items[mi_smg].size() - 1);
-  weapon.make(g->itypes[(map::items[mi_smg])[index]]);
+  weapon.make(g->itypes[_get_itype(map::items[mi_smg])]);
   break;
  case sk_rifle:
-  index = rng(0, map::items[mi_rifles].size() - 1);
-  weapon.make(g->itypes[(map::items[mi_rifles])[index]]);
+  weapon.make(g->itypes[_get_itype(map::items[mi_rifles])]);
   break;
  }
  if (weapon.is_gun()) {
