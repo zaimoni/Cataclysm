@@ -5,7 +5,6 @@
 #include "mtype.h"
 
 class map;
-class player;
 class game;
 class item;
 

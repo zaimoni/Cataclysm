@@ -40,8 +40,6 @@ enum trap_id {
  num_trap_types
 };
 
-struct trap;
-
 struct trapfunc {
  void none		(game *g, int x, int y) { };
  void bubble		(game *g, int x, int y);
