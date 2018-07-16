@@ -4,8 +4,8 @@
 #include "game.h"
 #include "output.h"
 #include "crafting.h"
-#include "setvector.h"
 #include "inventory.h"
+#include "setvector.h"
 
 void draw_recipe_tabs(WINDOW *w, craft_cat tab);
 

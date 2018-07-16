@@ -1,6 +1,6 @@
 #include "mission.h"
-#include "setvector.h"
 #include "game.h"
+#include "setvector.h"
 
 void game::init_missions()
 {

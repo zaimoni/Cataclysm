@@ -1,5 +1,4 @@
 #include "game.h"
-#include "setvector.h"
 #include "output.h"
 #include "keypress.h"
 #include "player.h"
@@ -7,6 +6,7 @@
 #include "mapdata.h"
 #include "skill.h"
 #include "crafting.h" // For the use_comps use_tools functions
+#include "setvector.h"
 
 
 bool will_flood_stop(map *m, bool (&fill)[SEEX * MAPSIZE][SEEY * MAPSIZE],
