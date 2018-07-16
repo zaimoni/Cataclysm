@@ -35,7 +35,7 @@ game::game()
 // Gee, it sure is init-y around here!
  init_itypes();	      // Set up item types                (SEE itypedef.cpp)
  mtype::init();	      // Set up monster types             (SEE mtypedef.cpp)
- init_monitems();     // Set up the items monsters carry  (SEE monitemsdef.cpp)
+ mtype::init_items();     // Set up the items monsters carry  (SEE monitemsdef.cpp)
  init_traps();	      // Set up the trap types            (SEE trapdef.cpp)
  init_mapitems();     // Set up which items appear where  (SEE mapitemsdef.cpp)
  init_recipes();      // Set up crafting reciptes         (SEE crafting.cpp)

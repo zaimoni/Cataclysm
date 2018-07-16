@@ -5,6 +5,7 @@
 
 #include "mondeath.h"
 #include "monattack.h"
+#include "mapitems.h"
 #include "enums.h"
 #include "color.h"
 #include <string>
@@ -159,7 +160,8 @@ MF_MAX		// Sets the length of the flags - obviously MUST be last
 
 struct mtype {
  static std::vector <mtype*> types;
-	
+ static std::vector <items_location_and_chance> items[num_monsters];
+
  int id;
  std::string name;
  std::string description;
@@ -278,6 +280,7 @@ struct mtype {
  nc_color danger() const;
 
  static void init();
+ static void init_items();
 };
 
 #endif

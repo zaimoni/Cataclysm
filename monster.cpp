@@ -617,13 +617,12 @@ int monster::fall_damage()
 
 void monster::die(game *g)
 {
- if (!dead)
-  dead = true;
+ if (!dead) dead = true;
 // Drop goodies
  int total_chance = 0, total_it_chance, cur_chance, selected_location,
      selected_item;
  bool animal_done = false;
- std::vector<items_location_and_chance> it = g->monitems[type->id];
+ std::vector<items_location_and_chance> it = mtype::items[type->id];
  std::vector<itype_id> mapit;
  if (type->item_chance != 0 && it.size() == 0)
   debugmsg("Type %s has item_chance %d but no items assigned!",
