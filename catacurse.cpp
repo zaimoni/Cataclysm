@@ -10,6 +10,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+// #define TILES 1
+
 // struct definitions
 //a pair of colors[] indexes, foreground and background
 struct pairs
@@ -28,12 +30,41 @@ struct pairs
 
 //Individual lines, so that we can track changed lines
 struct curseline {
-	bool touched;
 	char *chars;
 	char *FG;
 	char *BG;
-	//cursechar chars [80];
+#ifdef TILES
+	unsigned short* tiles;
+#endif
+	bool touched;
+
+	// would not want to use destructor in pure C mode
+	~curseline();
+
+	void init(int ncols);
 };
+
+void curseline::init(const int ncols)
+{
+	chars = (char*)calloc(ncols, sizeof(char));
+	FG = (char*)calloc(ncols, sizeof(char));
+	BG = (char*)calloc(ncols, sizeof(char));
+#ifdef TILES
+	tiles = (unsigned short*)calloc(ncols, sizeof(unsigned short));
+#endif
+	touched = true;
+}
+
+curseline::~curseline()
+{	// this should not be on a critical path; be nice to archaic, not-remotely-ISO compilers that splat on free(NULL)
+	if (chars) { free(chars); chars = 0; }
+	if (FG) { free(FG); FG = 0; }
+	if (BG) { free(BG); BG = 0; }
+#if TILES
+	if (tiles) { free(tiles); BG = 0; }
+#endif
+}
+
 //The curses window struct
 struct WINDOW {
 	int x;//left side of window
@@ -134,13 +165,10 @@ bool WinCreate()
 #define BORDERWIDTH_SCALE 1
 #define BORDERHEIGHT_SCALE 1
 #endif
-	// \todo lock these corrections down to MSVC, they are wrong for MingWin
                                    WindowY, WindowWidth + WinBorderWidth* BORDERWIDTH_SCALE,
                                    WindowHeight + WinBorderHeight* BORDERHEIGHT_SCALE + WinTitleSize,
 		                           0, 0, WindowINST, NULL);
-    if (WindowHandle == 0){
-        return false;
-    }
+    if (WindowHandle == 0) return false;
     ShowWindow(WindowHandle,5);
     return true;
 };
@@ -243,6 +271,11 @@ void DrawWindow(WINDOW *win)
                 FillRectDIB(drawx,drawy,fontwidth,fontheight,BG);
 
 				// \todo interpose tile drawing here
+#if 0
+				if (unsigned short t_index = win->line[j].tiles[i]) {
+
+				}
+#endif
 
                 if ( tmp > 0){
                 //if (tmp==95){//If your font doesnt draw underscores..uncomment
@@ -412,19 +445,7 @@ WINDOW *newwin(int nlines, int ncols, int begin_y, int begin_x)
     newwindow->cursory=0;
     newwindow->line = new curseline[nlines];
 
-    for (j=0; j<nlines; j++)
-    {
-        newwindow->line[j].chars= new char[ncols];
-        newwindow->line[j].FG= new char[ncols];
-        newwindow->line[j].BG= new char[ncols];
-        newwindow->line[j].touched=true;//Touch them all !?
-        for (i=0; i<ncols; i++)
-        {
-          newwindow->line[j].chars[i]=0;
-          newwindow->line[j].FG[i]=0;
-          newwindow->line[j].BG[i]=0;
-        }
-    }
+    for (j=0; j<nlines; j++) newwindow->line[j].init(ncols);
     //WindowCount++;
     return newwindow;
 };
@@ -436,12 +457,7 @@ int delwin(WINDOW *win)
     int j;
     win->inuse=false;
     win->draw=false;
-    for (j=0; j<win->height; j++){
-        delete win->line[j].chars;
-        delete win->line[j].FG;
-        delete win->line[j].BG;
-        }
-    delete win->line;
+    delete [] win->line;
     delete win;
     return 1;
 };
@@ -452,7 +468,7 @@ inline int newline(WINDOW *win){
         win->cursorx=0;
         return 1;
     }
-return 0;
+	return 0;
 };
 
 inline void addedchar(WINDOW *win){
