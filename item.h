@@ -1,11 +1,8 @@
 #ifndef _ITEM_H_
 #define _ITEM_H_
 
-#include <string>
-#include <vector>
 #include "itype.h"
 #include "mtype.h"
-//#include "npc.h"
 
 class player;
 class npc;

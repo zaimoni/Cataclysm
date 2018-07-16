@@ -1,6 +1,4 @@
-#include "game.h"
-#include "mondeath.h"
-#include "monattack.h"
+#include "mtype.h"
 #include "itype.h"
 #include "setvector.h"
 

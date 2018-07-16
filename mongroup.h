@@ -2,7 +2,6 @@
 #define _MONGROUP_H_
 
 #include "mtype.h"
-#include <vector>
 
 enum moncat_id {
  mcat_null = 0,

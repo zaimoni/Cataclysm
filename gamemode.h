@@ -1,8 +1,6 @@
 #ifndef _GAMEMODE_H_
 #define _GAMEMODE_H_
 
-#include <vector>
-#include <string>
 #include "action.h"
 #include "itype.h"
 #include "mtype.h"

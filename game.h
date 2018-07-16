@@ -1,7 +1,6 @@
 #ifndef _GAME_H_
 #define _GAME_H_
 
-#include "mtype.h"
 #include "monster.h"
 #include "map.h"
 #include "player.h"
@@ -20,7 +19,6 @@
 #include "mutation.h"
 #include "gamemode.h"
 #include "action.h"
-#include <vector>
 #include <map>
 
 #define LONG_RANGE 10

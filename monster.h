@@ -3,8 +3,6 @@
 
 #include "player.h"
 #include "mtype.h"
-#include "enums.h"
-#include <vector>
 
 class map;
 class player;

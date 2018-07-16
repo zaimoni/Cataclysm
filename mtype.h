@@ -3,13 +3,13 @@
 // SEE ALSO: monitemsdef.cpp, which defines data on which items any given
 // monster may carry.
 
-#include <string>
-#include <vector>
-#include <math.h>
 #include "mondeath.h"
 #include "monattack.h"
 #include "enums.h"
 #include "color.h"
+#include <string>
+#include <vector>
+#include <math.h>
 
 class mdeath;
 

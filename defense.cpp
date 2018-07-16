@@ -1,11 +1,9 @@
 #include "gamemode.h"
 #include "game.h"
-#include "setvector.h"
 #include "keypress.h"
 #include "itype.h"
 #include "mtype.h"
-#include <string>
-#include <vector>
+#include "setvector.h"
 #include <sstream>
 
 #define SPECIAL_WAVE_CHANCE 5 // One in X chance of single-flavor wave

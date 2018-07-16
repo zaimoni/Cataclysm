@@ -1,14 +1,12 @@
 #ifndef _OMDATA_H_
 #define _OMDATA_H_
 
-#include <string>
-#include <vector>
-#include <bitset>
 #include "mtype.h"
 #include "itype.h"
 #include "output.h"
 #include "mongroup.h"
 #include "mapdata.h"
+#include <bitset>
 
 #define OMAPX 180
 #define OMAPY 180
