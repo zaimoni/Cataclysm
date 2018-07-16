@@ -1,5 +1,5 @@
-#include "output.h"
 #include "rng.h"
+#include <stdlib.h>
 
 long rng(long low, long high)
 {
