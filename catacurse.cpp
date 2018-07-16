@@ -10,6 +10,45 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+// struct definitions
+//a pair of colors[] indexes, foreground and background
+struct pairs
+{
+	int FG;//foreground index in colors[]
+	int BG;//foreground index in colors[]
+};
+
+//The curse character struct, just a char, attribute, and color pair
+//typedef struct
+//{
+// char character;//the ascii actual character
+// int attrib;//attributes, mostly for A_BLINK and A_BOLD
+// pairs color;//pair of foreground/background, indexed into colors[]
+//} cursechar;
+
+//Individual lines, so that we can track changed lines
+struct curseline {
+	bool touched;
+	char *chars;
+	char *FG;
+	char *BG;
+	//cursechar chars [80];
+};
+//The curses window struct
+struct WINDOW {
+	int x;//left side of window
+	int y;//top side of window
+	int width;//width of the curses window
+	int height;//height of the curses window
+	int FG;//current foreground color from attron
+	int BG;//current background color from attron
+	bool inuse;// Does this window actually exist?
+	bool draw;//Tracks if the window text has been changed
+	int cursorx;//x location of the cursor
+	int cursory;//y location of the cursor
+	curseline *line;
+};
+
 //Window Functions, Do not call these outside of catacurse.cpp
 void WinDestroy();
 bool WinCreate(bool initgl);
@@ -49,6 +88,8 @@ RGBQUAD *windowsPalette;  //The coor palette, 16 colors emulates a terminal
 pairs *colorpairs;   //storage for pair'ed colored, should be dynamic, meh
 unsigned char *dcbits;  //the bits of the screen image, for direct access
 char szDirectory[MAX_PATH] = "";
+
+// 
 
 //***********************************
 //Non-curses, Window functions      *
@@ -188,7 +229,7 @@ inline void FillRectDIB(int x, int y, int width, int height, unsigned char color
 void DrawWindow(WINDOW *win)
 {
     int i,j,drawx,drawy;
-    char tmp;
+    char tmp;	// following assumes char is signed
     for (j=0; j<win->height; j++){
         if (win->line[j].touched)
             for (i=0; i<win->width; i++){
@@ -196,10 +237,12 @@ void DrawWindow(WINDOW *win)
                 drawx=((win->x+i)*fontwidth);
                 drawy=((win->y+j)*fontheight);//-j;
                 if (((drawx+fontwidth)<=WindowWidth) && ((drawy+fontheight)<=WindowHeight)){
-                tmp = win->line[j].chars[i];
+                tmp = win->line[j].chars[i];	// \todo alternate data source here for tiles
                 int FG = win->line[j].FG[i];
                 int BG = win->line[j].BG[i];
                 FillRectDIB(drawx,drawy,fontwidth,fontheight,BG);
+
+				// \todo interpose tile drawing here
 
                 if ( tmp > 0){
                 //if (tmp==95){//If your font doesnt draw underscores..uncomment

@@ -27,43 +27,7 @@ typedef unsigned int u_int32_t;
 #define __COLOR		0x03fe0000	/* Color bits */
 #define __ATTRIBUTES	0x03ffff00	/* All 8-bit attribute bits */          //<---------not used
 
-//a pair of colors[] indexes, foreground and background
-typedef struct
-{
-    int FG;//foreground index in colors[]
-    int BG;//foreground index in colors[]
-} pairs;
-
-//The curse character struct, just a char, attribute, and color pair
-//typedef struct
-//{
-// char character;//the ascii actual character
-// int attrib;//attributes, mostly for A_BLINK and A_BOLD
-// pairs color;//pair of foreground/background, indexed into colors[]
-//} cursechar;
-
-//Individual lines, so that we can track changed lines
-typedef struct{
-bool touched;
-char *chars;
-char *FG;
-char *BG;
-//cursechar chars [80];
-} curseline;
-//The curses window struct
-typedef struct {
-  int x;//left side of window
-  int y;//top side of window
-  int width;//width of the curses window
-  int height;//height of the curses window
-  int FG;//current foreground color from attron
-  int BG;//current background color from attron
-  bool inuse;// Does this window actually exist?
-  bool draw;//Tracks if the window text has been changed
-  int cursorx;//x location of the cursor
-  int cursory;//y location of the cursor
-  curseline *line;
-} WINDOW;
+struct WINDOW;
 
 #define	A_NORMAL	__NORMAL
 #define	A_STANDOUT	__STANDOUT
