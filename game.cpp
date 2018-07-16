@@ -134,6 +134,11 @@ void game::setup()
 
 bool game::opening_screen()
 {
+#if PROTOTYPE
+ const char* const pltype_name[PLTYPE_MAX] = {"Custom Character", "Random Character", "Template Character" };
+ const int pltype_y[PLTYPE_MAX] = { 5, 6, 7 };
+#endif
+
  WINDOW* w_open = newwin(25, 80, 0, 0);
  erase();
  for (int i = 0; i < 80; i++)

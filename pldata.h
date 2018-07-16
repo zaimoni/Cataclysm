@@ -13,18 +13,6 @@ enum character_type {
  PLTYPE_MAX
 };
 
-const std::string pltype_name[PLTYPE_MAX] = {
-"Custom Character", "Random Character", "Template Character"};
-
-const std::string pltype_desc[PLTYPE_MAX] = { "\
-A custom character you design yourself.  A pool of points is used for\n\
-statistics, traits, and skills.",
-"\
-A character with stats, traits, and skills chosen randomly.",
-"\
-A character loaded from a template file.",
-};
-
 enum dis_type {
  DI_NULL,
 // Temperature and weather
@@ -105,27 +93,9 @@ struct player_activity
  std::vector<int> values;
  point placement;
 
- player_activity() { type = ACT_NULL; moves_left = 0; index = -1;
-                     placement = point(-1, -1); }
-
- player_activity(activity_type t, int turns, int Index)
- {
-  type = t;
-  moves_left = turns;
-  index = Index;
-  placement = point(-1, -1);
- }
-
- player_activity(player_activity &copy)
- {
-  type = copy.type;
-  moves_left = copy.moves_left;
-  index = copy.index;
-  placement = copy.placement;
-  values.clear();
-  for (int i = 0; i < copy.values.size(); i++)
-   values.push_back(copy.values[i]);
- }
+ player_activity(activity_type t = ACT_NULL, int turns = 0, int Index = -1)
+ : type(t),moves_left(turns),index(Index),placement(-1,-1) {}
+ player_activity(const player_activity &copy) = default;
 
  std::string save_info()
  {
