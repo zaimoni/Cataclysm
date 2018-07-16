@@ -6,6 +6,15 @@
 
 std::vector <mtype*> mtype::types;
 
+nc_color mtype::danger() const
+{
+	if (30 <= difficulty) return c_red;
+	if (15 <= difficulty) return c_ltred;
+	if (8 <= difficulty) return c_white;
+	if (0 < agro) return c_ltgray;
+	return c_dkgray;
+}
+
 // This function populates the master list of monster types.
 // If you edit this function, you'll also need to edit:
 //  * mtype.h - enum mon_id MUST match the order of this list!

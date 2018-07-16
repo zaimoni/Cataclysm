@@ -3132,16 +3132,7 @@ void game::mon_info()
    }
    if (pr.y < 12) { // Don't print if we've overflowed
     mvwputch (w_moninfo, pr.y, pr.x, type->color, type->sym);
-    nc_color danger = c_dkgray;
-    if (type->difficulty >= 30)
-     danger = c_red;
-    else if (type->difficulty >= 16)
-     danger = c_ltred;
-    else if (type->difficulty >= 8)
-     danger = c_white;
-    else if (type->agro > 0)
-     danger = c_ltgray;
-    mvwprintz(w_moninfo, pr.y, pr.x + 2, danger, name.c_str());
+    mvwprintz(w_moninfo, pr.y, pr.x + 2, type->danger(), name.c_str());
    }
 // +4 for the "Z " and two trailing spaces
    pr.x += 4 + name.length();
@@ -3163,16 +3154,7 @@ void game::mon_info()
     }
     if (pr.y < 12) { // Don't print if we've overflowed
      mvwputch (w_moninfo, pr.y, pr.x, type->color, type->sym);
-     nc_color danger = c_dkgray;
-     if (type->difficulty >= 30)
-      danger = c_red;
-     else if (type->difficulty >= 15)
-      danger = c_ltred;
-     else if (type->difficulty >= 8)
-      danger = c_white;
-     else if (type->agro > 0)
-      danger = c_ltgray;
-     mvwprintz(w_moninfo, pr.y, pr.x + 2, danger, name.c_str());
+     mvwprintz(w_moninfo, pr.y, pr.x + 2, type->danger(), name.c_str());
     }
 // +3 for the "Z " and a trailing space
     pr.x += 3 + name.length();

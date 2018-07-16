@@ -275,6 +275,8 @@ struct mtype {
   return false;
  }
 
+ nc_color danger() const;
+
  static void init();
 };
 
