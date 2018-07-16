@@ -4,8 +4,6 @@
 #include "monster.h"
 #include "map.h"
 #include "player.h"
-#include "overmap.h"
-#include "mapitems.h"
 #include "crafting.h"
 #include "trap.h"
 #include "npc.h"

@@ -1,5 +1,4 @@
 #include "map.h"
-#include "mapitems.h"
 #include "output.h"
 #include "game.h"
 #include "rng.h"

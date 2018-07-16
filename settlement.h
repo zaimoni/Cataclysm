@@ -2,7 +2,6 @@
 #define _SETTLEMENT_H_
 
 #include "npc.h"
-#include "overmap.h"
 #include "faction.h"
 
 struct settlement {

@@ -1,5 +1,4 @@
 #include "map.h"
-#include "itype.h"
 #include "setvector.h"
 
 std::vector <itype_id> map::items[num_itloc]; // Items at various map types

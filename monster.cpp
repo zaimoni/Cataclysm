@@ -4,7 +4,6 @@
 #include "output.h"
 #include "game.h"
 #include "rng.h"
-#include "item.h"
 #include <sstream>
 #include <fstream>
 #include <stdlib.h>

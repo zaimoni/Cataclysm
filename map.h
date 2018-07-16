@@ -1,23 +1,20 @@
 #ifndef _MAP_H_
 #define _MAP_H_
 
-#include <stdlib.h>
-#include <vector>
-#include <string>
-
 #include "mapdata.h"
 #include "mapitems.h"
 #include "overmap.h"
 #include "item.h"
-#include "monster.h"
-#include "npc.h"
-#include "vehicle.h"
+
+#include <vector>
+#include <string>
 
 #define MAPSIZE 11
 
 class player;
-class item;
-struct itype;
+class monster;
+class vehicle;
+class overmap;
 
 class map
 {
