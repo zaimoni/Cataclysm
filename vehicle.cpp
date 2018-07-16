@@ -1341,13 +1341,10 @@ void vehicle::handle_trap (int x, int y, int part)
     }
     int dummy;
     if (msg.size() > 0 && g->u_see(x, y, dummy))
-        g->add_msg (msg.c_str(), name.c_str(), part_info(part).name, g->traps[t]->name.c_str());
-    if (noise > 0)
-        g->sound (x, y, noise, snd);
-    if (wreckit && chance >= rng (1, 100))
-        damage (part, 500);
-    if (expl > 0)
-        g->explosion(x, y, expl, shrap, false);
+        g->add_msg (msg.c_str(), name.c_str(), part_info(part).name, trap::traps[t]->name.c_str());
+    if (noise > 0) g->sound (x, y, noise, snd);
+    if (wreckit && chance >= rng (1, 100)) damage (part, 500);
+    if (expl > 0) g->explosion(x, y, expl, shrap, false);
 }
 
 bool vehicle::add_item (int part, item itm)

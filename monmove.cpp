@@ -596,7 +596,7 @@ void monster::move_to(game *g, int x, int y)
   footsteps(g, x, y);
   if (!has_flag(MF_DIGS) && !has_flag(MF_FLIES) &&
       g->m.tr_at(posx, posy) != tr_null) { // Monster stepped on a trap!
-   trap* tr = g->traps[g->m.tr_at(posx, posy)];
+   trap* const tr = trap::traps[g->m.tr_at(posx, posy)];
    if (dice(3, sk_dodge + 1) < dice(3, tr->avoidance)) {
     trapfuncm f;
     (f.*(tr->actm))(g, this, posx, posy);

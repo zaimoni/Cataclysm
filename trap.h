@@ -98,6 +98,8 @@ struct trapfuncm {
 };
 
 struct trap {
+ static std::vector <trap*> traps;
+
  int id;
  char sym;
  nc_color color;
@@ -116,23 +118,15 @@ struct trap {
  trap(int pid, char psym, nc_color pcolor, std::string pname,
       int pvisibility, int pavoidance, int pdifficulty, 
       void (trapfunc::*pact)(game *, int x, int y),
-      void (trapfuncm::*pactm)(game *, monster *, int x, int y), ...) {
-  id = pid;
-  sym = psym;
-  color = pcolor;
-  name = pname;
-  visibility = pvisibility;
-  avoidance = pavoidance;
-  difficulty = pdifficulty;
-  act = pact;
-  actm = pactm;
-  va_list ap;
-  va_start(ap, pactm);
-  itype_id tmp;
-  while ((tmp = (itype_id)va_arg(ap, int)))
-   components.push_back(tmp);
-  va_end(ap);
+      void (trapfuncm::*pactm)(game *, monster *, int x, int y), itype_id part = itm_null, itype_id part2 = itm_null, itype_id part3 = itm_null)
+ : id(pid),sym(psym),color(pcolor),name(pname),visibility(pvisibility),avoidance(pavoidance),difficulty(pdifficulty),act(pact),actm(pactm)
+ {
+  if (part) components.push_back(part);
+  if (part2) components.push_back(part2);
+  if (part3) components.push_back(part3);
  };
+
+ static void init();
 };
 
 #endif

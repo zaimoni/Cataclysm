@@ -24,9 +24,7 @@ class map
  public:
 // Constructors & Initialization
  map();
- map(std::vector<itype*> *itptr, std::vector<itype_id> (*miptr)[num_itloc],
-     std::vector<trap*> *trptr);
- ~map();
+ map(std::vector<itype*> *itptr, std::vector<itype_id> (*miptr)[num_itloc]);
 
 // Visual Output
  void draw(game *g, WINDOW* w, point center);
@@ -172,19 +170,17 @@ protected:
  vehicle nulveh; // Returned when &veh_at() is asked for an OOB value
  int nulrad;	// OOB &radiation()
 
- std::vector <trap*> *traps;
  std::vector <itype_id> (*mapitems)[num_itloc];
 
 private:
  submap* grid[MAPSIZE * MAPSIZE];
 };
 
-class tinymap : public map
+class tinymap : public map	// XXX direct subclassing defeats the point of this class \todo fix this
 {
 public:
  tinymap();
- tinymap(std::vector<itype*> *itptr, std::vector<itype_id> (*miptr)[num_itloc],
-     std::vector<trap*> *trptr);
+ tinymap(std::vector<itype*> *itptr, std::vector<itype_id> (*miptr)[num_itloc]);
  ~tinymap();
 
 protected:

@@ -36,7 +36,7 @@ game::game()
  init_itypes();	      // Set up item types                (SEE itypedef.cpp)
  mtype::init();	      // Set up monster types             (SEE mtypedef.cpp)
  mtype::init_items();     // Set up the items monsters carry  (SEE monitemsdef.cpp)
- init_traps();	      // Set up the trap types            (SEE trapdef.cpp)
+ trap::init();	      // Set up the trap types            (SEE trapdef.cpp)
  init_mapitems();     // Set up which items appear where  (SEE mapitemsdef.cpp)
  init_recipes();      // Set up crafting reciptes         (SEE crafting.cpp)
  mongroup::init();      // Set up monster categories        (SEE mongroupdef.cpp)
@@ -78,7 +78,7 @@ game::~game()
 void game::setup()
 {
  u = player();
- m = map(&itypes, &mapitems, &traps); // Init the root map with our vectors
+ m = map(&itypes, &mapitems); // Init the root map with our vectors
  z.reserve(1000); // Reserve some space
 
 // Even though we may already have 'd', nextinv will be incremented as needed
@@ -605,7 +605,7 @@ bool game::do_turn()
 // Save the monsters before we die!
   for (int i = 0; i < z.size(); i++) {
    if (z[i].spawnmapx != -1) {	// Static spawn, move them back there
-    tinymap tmp(&itypes, &mapitems, &traps);
+    tinymap tmp(&itypes, &mapitems);
     tmp.load(this, z[i].spawnmapx, z[i].spawnmapy);
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, turn, z[i].spawnmapx, z[i].spawnmapy);
@@ -4594,12 +4594,14 @@ shape, but with long, twisted, distended limbs.");
   add_event(EVENT_TEMPLE_SPAWN, turn + 3);
  }
 
- if (m.tr_at(examx, examy) != tr_null &&
-      traps[m.tr_at(examx, examy)]->difficulty < 99 &&
-     u.per_cur-u.encumb(bp_eyes) >= traps[m.tr_at(examx, examy)]->visibility &&
-     query_yn("There is a %s there.  Disarm?",
-              traps[m.tr_at(examx, examy)]->name.c_str()))
-  m.disarm_trap(this, examx, examy);
+ const auto tr_id = m.tr_at(examx, examy);
+ if (tr_id != tr_null) {
+   const trap* const tr = trap::traps[tr_id];
+   if (tr->difficulty < 99
+       && u.per_cur-u.encumb(bp_eyes) >= tr->visibility
+       && query_yn("There is a %s there.  Disarm?", tr->name.c_str()))
+     m.disarm_trap(this, examx, examy);
+ }
 }
 
 point game::look_around()
@@ -4652,10 +4654,12 @@ point game::look_around()
    if (tmpfield.type != fd_null)
     mvwprintz(w_look, 4, 1, fieldlist[tmpfield.type].color[tmpfield.density-1],
               "%s", fieldlist[tmpfield.type].name[tmpfield.density-1].c_str());
-   if (m.tr_at(lx, ly) != tr_null &&
-       u.per_cur - u.encumb(bp_eyes) >= traps[m.tr_at(lx, ly)]->visibility)
-    mvwprintz(w_look, 5, 1, traps[m.tr_at(lx, ly)]->color, "%s",
-              traps[m.tr_at(lx, ly)]->name.c_str());
+   const auto tr_id = m.tr_at(lx, ly);
+   if (tr_id != tr_null) {
+	 const trap* const tr = trap::traps[m.tr_at(lx, ly)];
+     if (u.per_cur - u.encumb(bp_eyes) >= tr->visibility)
+       mvwprintz(w_look, 5, 1, tr->color, "%s", tr->name.c_str());
+   }
 
    int dex = mon_at(lx, ly);
    if (dex != -1 && u_see(&(z[dex]), junk)) {
@@ -6056,10 +6060,13 @@ void game::plmove(int x, int y)
   if (m.field_at(x, y).is_dangerous() &&
       !query_yn("Really step into that %s?", m.field_at(x, y).name().c_str()))
    return;
-  if (m.tr_at(x, y) != tr_null &&
-      u.per_cur - u.encumb(bp_eyes) >= traps[m.tr_at(x, y)]->visibility &&
-      !query_yn("Really step onto that %s?",traps[m.tr_at(x, y)]->name.c_str()))
-   return;
+  const auto tr_id = m.tr_at(x, y);
+  if (tr_id != tr_null) {
+	 const trap* const tr = trap::traps[tr_id];
+     if (    u.per_cur - u.encumb(bp_eyes) >= tr->visibility
+         && !query_yn("Really step onto that %s?", tr->name.c_str()))
+     return;
+  }
 
 // Calculate cost of moving
   u.moves -= u.run_cost(m.move_cost(x, y) * 50);
@@ -6134,7 +6141,7 @@ void game::plmove(int x, int y)
   u.posx = x;
   u.posy = y;
   if (m.tr_at(x, y) != tr_null) { // We stepped on a trap!
-   trap* tr = traps[m.tr_at(x, y)];
+   trap* const tr = trap::traps[m.tr_at(x, y)];
    if (!u.avoid_trap(tr)) {
     trapfunc f;
     (f.*(tr->act))(this, x, y);
@@ -6424,7 +6431,7 @@ void game::vertical_move(int movez, bool force)
  cur_om.save(u.name);
  //m.save(&cur_om, turn, levx, levy);
  cur_om = overmap(this, cur_om.posx, cur_om.posy, cur_om.posz + movez);
- map tmpmap(&itypes, &mapitems, &traps);
+ map tmpmap(&itypes, &mapitems);
  tmpmap.load(this, levx, levy);
  cur_om = overmap(this, cur_om.posx, cur_om.posy, original_z);
 // Find the corresponding staircase
@@ -6483,12 +6490,12 @@ void game::vertical_move(int movez, bool force)
     if (turns < 999)
      coming_to_stairs.push_back( monster_and_count(z[i], 1 + turns) );
    } else if (z[i].spawnmapx != -1) { // Static spawn, move them back there
-    tinymap tmp(&itypes, &mapitems, &traps);
+    tinymap tmp(&itypes, &mapitems);
     tmp.load(this, z[i].spawnmapx, z[i].spawnmapy);
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, turn, z[i].spawnmapx, z[i].spawnmapy);
    } else if (z[i].friendly < 0) { // Friendly, make it into a static spawn
-    tinymap tmp(&itypes, &mapitems, &traps);
+    tinymap tmp(&itypes, &mapitems);
     tmp.load(this, levx, levy);
     int spawnx = z[i].posx, spawny = z[i].posy;
     while (spawnx < 0)
@@ -6566,7 +6573,7 @@ void game::vertical_move(int movez, bool force)
  }
 
  if (m.tr_at(u.posx, u.posy) != tr_null) { // We stepped on a trap!
-  trap* tr = traps[m.tr_at(u.posx, u.posy)];
+  trap* const tr = trap::traps[m.tr_at(u.posx, u.posy)];
   if (force || !u.avoid_trap(tr)) {
    trapfunc f;
    (f.*(tr->act))(this, u.posx, u.posy);
@@ -6629,7 +6636,7 @@ void game::update_map(int &x, int &y)
       z[i].posx > SEEX * (MAPSIZE + 1) || z[i].posy > SEEY * (MAPSIZE + 1)) {
 // Despawn; we're out of bounds
    if (z[i].spawnmapx != -1) {	// Static spawn, move them back there
-    map tmp(&itypes, &mapitems, &traps);
+    map tmp(&itypes, &mapitems);
     tmp.load(this, z[i].spawnmapx, z[i].spawnmapy);
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, turn, z[i].spawnmapx, z[i].spawnmapy);
@@ -7221,14 +7228,12 @@ void game::nuke(int x, int y)
  if (x < 0 || y < 0 || x >= OMAPX || y >= OMAPY)
   return;
  int mapx = x * 2, mapy = y * 2;
- map tmpmap(&itypes, &mapitems, &traps);
+ map tmpmap(&itypes, &mapitems);
  tmpmap.load(this, mapx, mapy);
  for (int i = 0; i < SEEX * 2; i++) {
   for (int j = 0; j < SEEY * 2; j++) {
-   if (!one_in(10))
-    tmpmap.ter(i, j) = t_rubble;
-   if (one_in(3))
-    tmpmap.add_field(NULL, i, j, fd_nuke_gas, 3);
+   if (!one_in(10)) tmpmap.ter(i, j) = t_rubble;
+   if (one_in(3)) tmpmap.add_field(NULL, i, j, fd_nuke_gas, 3);
    tmpmap.radiation(i, j) += rng(20, 80);
   }
  }

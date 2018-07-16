@@ -23,36 +23,23 @@ map::map()
 {
  nulter = t_null;
  nultrap = tr_null;
- if (is_tiny())
-  my_MAPSIZE = 2;
- else
-  my_MAPSIZE = MAPSIZE;
+ my_MAPSIZE = MAPSIZE;
 }
 
-map::map(std::vector<itype*> *itptr, std::vector<itype_id> (*miptr)[num_itloc],
-         std::vector<trap*> *trptr)
+map::map(std::vector<itype*> *itptr, std::vector<itype_id> (*miptr)[num_itloc])
 {
  nulter = t_null;
  nultrap = tr_null;
  itypes = itptr;
  mapitems = miptr;
- traps = trptr;
- if (is_tiny())
-  my_MAPSIZE = 2;
- else
-  my_MAPSIZE = MAPSIZE;
+ my_MAPSIZE = MAPSIZE;
  for (int n = 0; n < my_MAPSIZE * my_MAPSIZE; n++)
   grid[n] = NULL;
 }
 
-map::~map()
-{
-}
-
 vehicle* map::veh_at(int x, int y, int &part_num)
 {
- if (!inbounds(x, y))
-  return NULL;    // Out-of-bounds - null vehicle
+ if (!inbounds(x, y)) return NULL;    // Out-of-bounds - null vehicle
  int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
 
  x %= SEEX;
@@ -1672,20 +1659,20 @@ void map::add_trap(int x, int y, trap_id t)
 
 void map::disarm_trap(game *g, int x, int y)
 {
- if (tr_at(x, y) == tr_null) {
+ const auto tr_id = tr_at(x, y);
+ if (tr_id == tr_null) {
   debugmsg("Tried to disarm a trap where there was none (%d %d)", x, y);
   return;
  }
- int diff = g->traps[tr_at(x, y)]->difficulty;
+ const trap* const tr = trap::traps[tr_id];
+ int diff = tr->difficulty;
  int roll = rng(g->u.sklevel[sk_traps], 4 * g->u.sklevel[sk_traps]);
  while ((rng(5, 20) < g->u.per_cur || rng(1, 20) < g->u.dex_cur) && roll < 50)
   roll++;
  if (roll >= diff) {
   g->add_msg("You disarm the trap!");
-  std::vector<itype_id> comp = g->traps[tr_at(x, y)]->components;
-  for (int i = 0; i < comp.size(); i++) {
-   if (comp[i] != itm_null)
-    add_item(x, y, g->itypes[comp[i]], 0);
+  for (const auto item_id : tr->components) {
+   if (item_id != itm_null) add_item(x, y, g->itypes[item_id], 0);
   }
   tr_at(x, y) = tr_null;
   if(diff > 1.25*g->u.sklevel[sk_traps]) // failure might have set off trap
@@ -1694,10 +1681,8 @@ void map::disarm_trap(game *g, int x, int y)
   g->add_msg("You fail to disarm the trap.");
   if(diff > 1.25*g->u.sklevel[sk_traps])
    g->u.practice(sk_traps, 1.5*(diff - g->u.sklevel[sk_traps]));
- }
- else {
+ } else {
   g->add_msg("You fail to disarm the trap, and you set it off!");
-  trap* tr = g->traps[tr_at(x, y)];
   trapfunc f;
   (f.*(tr->act))(g, x, y);
   if(diff - roll <= 6)
@@ -1851,22 +1836,24 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
  if (move_cost(x, y) == 0 && has_flag(swimmable, x, y) && !u.underwater)
   show_items = false;	// Can only see underwater items if WE are underwater
 // If there's a trap here, and we have sufficient perception, draw that instead
- if (tr_at(x, y) != tr_null &&
-     u.per_cur - u.encumb(bp_eyes) >= (*traps)[tr_at(x, y)]->visibility) {
-  tercol = (*traps)[tr_at(x, y)]->color;
-  if ((*traps)[tr_at(x, y)]->sym == '%') {
-   switch(rng(1, 5)) {
-    case 1: sym = '*'; break;
-    case 2: sym = '0'; break;
-    case 3: sym = '8'; break;
-    case 4: sym = '&'; break;
-    case 5: sym = '+'; break;
+ const auto tr_id = tr_at(x, y);
+ if (tr_id != tr_null){
+   const trap* const tr = trap::traps[tr_id];
+   if (u.per_cur - u.encumb(bp_eyes) >= tr->visibility) {
+     tercol = tr->color;
+     if (tr->sym == '%') {
+       switch(rng(1, 5)) {
+       case 1: sym = '*'; break;
+       case 2: sym = '0'; break;
+       case 3: sym = '8'; break;
+       case 4: sym = '&'; break;
+       case 5: sym = '+'; break;
+       }
+     } else sym = tr->sym;
    }
-  } else
-   sym = (*traps)[tr_at(x, y)]->sym;
  }
-// If there's a field here, draw that instead (unless its symbol is %)
- if (field_at(x, y).type != fd_null &&
+   // If there's a field here, draw that instead (unless its symbol is %)
+   if (field_at(x, y).type != fd_null &&
      fieldlist[field_at(x, y).type].sym != '&') {
   tercol = fieldlist[field_at(x, y).type].color[field_at(x, y).density - 1];
   drew_field = true;
@@ -2307,7 +2294,7 @@ bool map::loadn(game *g, int worldx, int worldy, int gridx, int gridy)
    grid[gridn]->vehicles[i].smy = gridy;
   }
  } else { // It doesn't exist; we must generate it!
-  map tmp_map(itypes, mapitems, traps);
+  map tmp_map(itypes, mapitems);
 // overx, overy is where in the overmap we need to pull data from
 // Each overmap square is two nonants; to prevent overlap, generate only at
 //  squares divisible by 2.
@@ -2404,19 +2391,13 @@ bool map::inbounds(int x, int y)
 
 tinymap::tinymap()
 {
- nulter = t_null;
- nultrap = tr_null;
+ my_MAPSIZE = 2;
 }
 
 tinymap::tinymap(std::vector<itype*> *itptr,
-                 std::vector<itype_id> (*miptr)[num_itloc],
-                 std::vector<trap*> *trptr)
+                 std::vector<itype_id> (*miptr)[num_itloc])
+: map(itptr,miptr)
 {
- nulter = t_null;
- nultrap = tr_null;
- itypes = itptr;
- mapitems = miptr;
- traps = trptr;
  my_MAPSIZE = 2;
  for (int n = 0; n < 4; n++)
   grid[n] = NULL;

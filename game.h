@@ -173,7 +173,6 @@ class game
   void remove_item(item *it);
 
   std::vector <itype*> itypes;
-  std::vector <trap*> traps;
   std::vector<recipe*> recipes;	// The list of valid recipes
   std::vector<constructable*> constructions; // The list of constructions
 
