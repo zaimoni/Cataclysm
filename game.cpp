@@ -34,7 +34,7 @@ game::game()
  intro();	// Print an intro screen, make sure we're at least 80x25
 // Gee, it sure is init-y around here!
  init_itypes();	      // Set up item types                (SEE itypedef.cpp)
- init_mtypes();	      // Set up monster types             (SEE mtypedef.cpp)
+ mtype::init();	      // Set up monster types             (SEE mtypedef.cpp)
  init_monitems();     // Set up the items monsters carry  (SEE monitemsdef.cpp)
  init_traps();	      // Set up the trap types            (SEE trapdef.cpp)
  init_mapitems();     // Set up which items appear where  (SEE mapitemsdef.cpp)
@@ -67,8 +67,6 @@ game::~game()
  delete gamemode;
  for (int i = 0; i < itypes.size(); i++)
   delete itypes[i];
- for (int i = 0; i < mtypes.size(); i++)
-  delete mtypes[i];
  delwin(w_terrain);
  delwin(w_minimap);
  delwin(w_HP);
@@ -1522,7 +1520,7 @@ void game::get_input()
     u.moves = 0;
     std::vector<item> tmp = u.inv_dump();
     item your_body;
-    your_body.make_corpse(itypes[itm_corpse], mtypes[mon_null], turn);
+    your_body.make_corpse(itypes[itm_corpse], mtype::types[mon_null], turn);
     your_body.name = u.name;
     m.add_item(u.posx, u.posy, your_body);
     for (int i = 0; i < tmp.size(); i++)
@@ -1634,13 +1632,12 @@ void game::update_scent()
 
 bool game::is_game_over()
 {
- if (uquit != QUIT_NO)
-  return true;
+ if (uquit != QUIT_NO) return true;
  for (int i = 0; i <= hp_torso; i++) {
   if (u.hp_cur[i] < 1) {
    std::vector<item> tmp = u.inv_dump();
    item your_body;
-   your_body.make_corpse(itypes[itm_corpse], mtypes[mon_null], turn);
+   your_body.make_corpse(itypes[itm_corpse], mtype::types[mon_null], turn);
    your_body.name = u.name;
    m.add_item(u.posx, u.posy, your_body);
    for (int i = 0; i < tmp.size(); i++)
@@ -1674,8 +1671,7 @@ void game::death_screen()
  while (line < 40 && mon < num_monsters) {
   if (kills[mon] > 0) {
    int y = line % 20 + 3, x = int(line / 20) * 40 + 1;
-   mvwprintz(w_death, y, x, c_white, "%s: %d", mtypes[mon]->name.c_str(),
-             kills[mon]);
+   mvwprintz(w_death, y, x, c_white, "%s: %d", mtype::types[mon]->name.c_str(), kills[mon]);
    line++;
   }
   mon++;
@@ -1814,7 +1810,7 @@ void game::load(std::string name)
   fin.get(junk); // Chomp that pesky endline
  for (int i = 0; i < nummon; i++) {
   getline(fin, data);
-  montmp.load_info(data, &mtypes);
+  montmp.load_info(data);
   z.push_back(montmp);
  }
 // And the kill counts;
@@ -2206,7 +2202,7 @@ void game::disp_kills()
  std::vector<int> count;
  for (int i = 0; i < num_monsters; i++) {
   if (kills[i] > 0) {
-   types.push_back(mtypes[i]);
+   types.push_back(mtype::types[i]);
    count.push_back(kills[i]);
   }
  }
@@ -3104,7 +3100,7 @@ void game::mon_info()
     mvwputch (w_moninfo, pr.y, pr.x, tmpcol, '@');
 
    } else // It's a monster!  easier.
-    mvwputch (w_moninfo, pr.y, pr.x, mtypes[buff]->color, mtypes[buff]->sym);
+    mvwputch (w_moninfo, pr.y, pr.x, mtype::types[buff]->color, mtype::types[buff]->sym);
 
    pr.x++;
   }
@@ -3127,22 +3123,23 @@ void game::mon_info()
 // buff < 0 means an NPC!  Don't list those.
   if (buff >= 0 && !listed_it[buff]) {
    listed_it[buff] = true;
-   std::string name = mtypes[buff]->name;
+   const mtype* const type = mtype::types[buff];
+   std::string name = type->name;
 // + 2 for the "Z "
    if (pr.x + 2 + name.length() >= 48) { // We're too long!
     pr.y++;
     pr.x = 0;
    }
    if (pr.y < 12) { // Don't print if we've overflowed
-    mvwputch (w_moninfo, pr.y, pr.x, mtypes[buff]->color, mtypes[buff]->sym);
+    mvwputch (w_moninfo, pr.y, pr.x, type->color, type->sym);
     nc_color danger = c_dkgray;
-    if (mtypes[buff]->difficulty >= 30)
+    if (type->difficulty >= 30)
      danger = c_red;
-    else if (mtypes[buff]->difficulty >= 16)
+    else if (type->difficulty >= 16)
      danger = c_ltred;
-    else if (mtypes[buff]->difficulty >= 8)
+    else if (type->difficulty >= 8)
      danger = c_white;
-    else if (mtypes[buff]->agro > 0)
+    else if (type->agro > 0)
      danger = c_ltgray;
     mvwprintz(w_moninfo, pr.y, pr.x + 2, danger, name.c_str());
    }
@@ -3157,22 +3154,23 @@ void game::mon_info()
 // buff < 0 means an NPC!  Don't list those.
    if (buff >= 0 && !listed_it[buff]) {
     listed_it[buff] = true;
-    std::string name = mtypes[buff]->name;
+	const mtype* const type = mtype::types[buff];
+    std::string name = type->name;
 // + 2 for the "Z "
     if (pr.x + 2 + name.length() >= 48) { // We're too long!
      pr.y++;
      pr.x = 0;
     }
     if (pr.y < 12) { // Don't print if we've overflowed
-     mvwputch (w_moninfo, pr.y, pr.x, mtypes[buff]->color, mtypes[buff]->sym);
+     mvwputch (w_moninfo, pr.y, pr.x, type->color, type->sym);
      nc_color danger = c_dkgray;
-     if (mtypes[buff]->difficulty >= 30)
+     if (type->difficulty >= 30)
       danger = c_red;
-     else if (mtypes[buff]->difficulty >= 15)
+     else if (type->difficulty >= 15)
       danger = c_ltred;
-     else if (mtypes[buff]->difficulty >= 8)
+     else if (type->difficulty >= 8)
       danger = c_white;
-     else if (mtypes[buff]->agro > 0)
+     else if (type->agro > 0)
       danger = c_ltgray;
      mvwprintz(w_moninfo, pr.y, pr.x + 2, danger, name.c_str());
     }
@@ -3761,7 +3759,7 @@ void game::resonance_cascade(int x, int y)
    case 13:
    case 14:
    case 15:
-    z.push_back(monster(mtypes[mongroup::moncats[mcat_nether][rng(0, mongroup::moncats[mcat_nether].size() - 1)]], i, j));
+    z.push_back(monster(mtype::types[mongroup::moncats[mcat_nether][rng(0, mongroup::moncats[mcat_nether].size() - 1)]], i, j));
     break;
    case 16:
    case 17:
@@ -6951,27 +6949,21 @@ void game::spawn_mon(int shiftx, int shifty)
    for (int j = 0; j < group; j++) {	// For each monster in the group...
     mon_id type = valid_monster_from(mongroup::moncats[cur_om.zg[i].type]);
 	if (type == mon_null) break;	// No monsters may be spawned; not soon enough?
-    monster zom = monster(mtypes[type]);
+    monster zom = monster(mtype::types[type]);
     int iter = 0;
 	int monx, mony;
 	int t;
 	do {
-      monx = rng(0, SEEX * MAPSIZE - 1);
-      mony = rng(0, SEEY * MAPSIZE - 1);
       if (shiftx == 0 && shifty == 0) {
-       if (one_in(2))
-        shiftx = 1 - 2 * rng(0, 1);
-       else
-        shifty = 1 - 2 * rng(0, 1);
+       if (one_in(2)) shiftx = 1 - 2 * rng(0, 1);
+       else shifty = 1 - 2 * rng(0, 1);
       }
-      if (shiftx == -1)
-       monx = (SEEX * MAPSIZE) / 6;
-      else if (shiftx == 1)
-       monx = (SEEX * MAPSIZE * 5) / 6;
-      if (shifty == -1)
-       mony = (SEEY * MAPSIZE) / 6;
-      if (shifty == 1)
-       mony = (SEEY * MAPSIZE * 5) / 6;
+      if (shiftx == -1) monx = (SEEX * MAPSIZE) / 6;
+      else if (shiftx == 1) monx = (SEEX * MAPSIZE * 5) / 6;
+	  else monx = rng(0, SEEX * MAPSIZE - 1);
+      if (shifty == -1) mony = (SEEY * MAPSIZE) / 6;
+      else if (shifty == 1) mony = (SEEY * MAPSIZE * 5) / 6;
+	  else mony = rng(0, SEEY * MAPSIZE - 1);
       monx += rng(-5, 5);
       mony += rng(-5, 5);
       iter++;
@@ -6996,22 +6988,22 @@ mon_id game::valid_monster_from(std::vector<mon_id> group)
 {
  std::vector<mon_id> valid;
  int rntype = 0;
- for (int i = 0; i < group.size(); i++) {
-  if (mtypes[group[i]]->frequency > 0 &&
+ for(auto m_id : group) {
+  const mtype* const type = mtype::types[m_id];
+  if (type->frequency > 0 &&
       int(turn) + 900 >=
-          MINUTES(STARTING_MINUTES) + HOURS(mtypes[group[i]]->difficulty)){
-   valid.push_back(group[i]);
-   rntype += mtypes[group[i]]->frequency;
+          MINUTES(STARTING_MINUTES) + HOURS(type->difficulty)){
+   valid.push_back(m_id);
+   rntype += type->frequency;
   }
  }
- if (valid.size() == 0)
-  return mon_null;
+ if (valid.empty()) return mon_null;
  int curmon = -1;
  if (rntype > 0)
   rntype = rng(0, rntype - 1);	// rntype set to [0, rntype)
  do {
   curmon++;
-  rntype -= mtypes[valid[curmon]]->frequency;
+  rntype -= mtype::types[valid[curmon]]->frequency;
  } while (rntype > 0);
  return valid[curmon];
 }

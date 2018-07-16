@@ -2314,7 +2314,7 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
    g->add_msg("A snake sprouts from your body!");
   else if (snakes >= 2)
    g->add_msg("Some snakes sprout from your body!");
-  monster snake(g->mtypes[mon_shadow_snake]);
+  monster snake(mtype::types[mon_shadow_snake]);
   for (int i = 0; i < snakes; i++) {
    int index = rng(0, valid.size() - 1);
    point sp = valid[index];
@@ -2956,7 +2956,7 @@ void player::suffer(game *g)
      break;
     case 7:
      for (i = 0; i < 10; i++) {
-      phantasm = monster(g->mtypes[mon_hallu_zom + rng(0, 3)]);
+      phantasm = monster(mtype::types[mon_hallu_zom + rng(0, 3)]);
       phantasm.spawn(posx + rng(-10, 10), posy + rng(-10, 10));
       if (g->mon_at(phantasm.posx, phantasm.posy) == -1)
        g->z.push_back(phantasm);

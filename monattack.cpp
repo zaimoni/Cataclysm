@@ -36,9 +36,9 @@ void mattack::antqueen(game *g, monster *z)
    g->add_msg("The %s feeds an %s and it grows!", z->name().c_str(),
               ant->name().c_str());
   if (ant->type->id == mon_ant_larva)
-   ant->poly(g->mtypes[mon_ant]);
+   ant->poly(mtype::types[mon_ant]);
   else
-   ant->poly(g->mtypes[mon_ant_soldier]);
+   ant->poly(mtype::types[mon_ant_soldier]);
  } else if (egg_points.size() == 0) {	// There's no eggs nearby--lay one.
   int junk;
   if (g->u_see(z->posx, z->posy, junk))
@@ -55,7 +55,7 @@ void mattack::antqueen(game *g, monster *z)
     if (g->m.i_at(x, y)[j].type->id == itm_ant_egg) {
      g->m.i_rem(x, y, j);
      j = g->m.i_at(x, y).size();	// Max one hatch per tile.
-     monster tmp(g->mtypes[mon_ant_larva], x, y);
+     monster tmp(mtype::types[mon_ant_larva], x, y);
      g->z.push_back(tmp);
     }
    }
@@ -243,11 +243,9 @@ void mattack::science(game *g, monster *z)	// I said SCIENCE again!
  }
  std::vector<int> valid;// List of available attacks
  int index;
- monster tmp(g->mtypes[mon_manhack]);
- if (dist == 1)
-  valid.push_back(1);	// Shock
- if (dist <= 2)
-  valid.push_back(2);	// Radiation
+ monster tmp(mtype::types[mon_manhack]);
+ if (dist == 1) valid.push_back(1);	// Shock
+ if (dist <= 2) valid.push_back(2);	// Radiation
  if (!free.empty()) {
   valid.push_back(3);	// Manhack
   valid.push_back(4);	// Acid pool
@@ -424,14 +422,14 @@ void mattack::grow_vine(game *g, monster *z)
 {
  z->sp_timeout = z->type->sp_freq;
  z->moves -= 100;
- monster vine(g->mtypes[mon_creeper_vine]);
+ monster vine(mtype::types[mon_creeper_vine]);
  int xshift = rng(0, 2), yshift = rng(0, 2);
  for (int x = 0; x < 3; x++) {
   for (int y = 0; y < 3; y++) {
    int xvine = z->posx + (x + xshift) % 3 - 1,
        yvine = z->posy + (y + yshift) % 3 - 1;
    if (g->is_empty(xvine, yvine)) {
-    monster vine(g->mtypes[mon_creeper_vine]);
+    monster vine(mtype::types[mon_creeper_vine]);
     vine.sp_timeout = 5;
     vine.spawn(xvine, yvine);
     g->z.push_back(vine);
@@ -478,7 +476,7 @@ void mattack::vine(game *g, monster *z)
      !one_in(dist_from_hub))
   return;
  int index = rng(0, grow.size() - 1);
- monster vine(g->mtypes[mon_creeper_vine]);
+ monster vine(mtype::types[mon_creeper_vine]);
  vine.sp_timeout = 5;
  vine.spawn(grow[index].x, grow[index].y);
  g->z.push_back(vine);
@@ -567,11 +565,9 @@ void mattack::triffid_heartbeat(game *g, monster *z)
    if (rl_dist(x, y, g->u.posx, g->u.posy > 3 && g->z.size() < 30 &&
        g->mon_at(x, y) == -1 && one_in(20))) { // Spawn an extra monster
     mon_id montype = mon_triffid;
-    if (one_in(4))
-     montype = mon_creeper_hub;
-    else if (one_in(3))
-     montype = mon_biollante;
-    monster plant(g->mtypes[montype]);
+    if (one_in(4)) montype = mon_creeper_hub;
+    else if (one_in(3)) montype = mon_biollante;
+    monster plant(mtype::types[montype]);
     plant.spawn(x, y);
     g->z.push_back(plant);
    }
@@ -579,7 +575,7 @@ void mattack::triffid_heartbeat(game *g, monster *z)
 
  } else { // The player is close enough for a fight!
 
-  monster triffid(g->mtypes[mon_triffid]);
+  monster triffid(mtype::types[mon_triffid]);
   for (int x = z->posx - 1; x <= z->posx + 1; x++) {
    for (int y = z->posy - 1; y <= z->posy + 1; y++) {
     if (g->is_empty(x, y) && one_in(2)) {
@@ -594,12 +590,11 @@ void mattack::triffid_heartbeat(game *g, monster *z)
 
 void mattack::fungus(game *g, monster *z)
 {
- if (g->z.size() > 100)
-  return; // Prevent crowding the monster list.
+ if (g->z.size() > 100) return; // Prevent crowding the monster list.
 // TODO: Infect NPCs?
  z->moves = -200;			// It takes a while
  z->sp_timeout = z->type->sp_freq;	// Reset timer
- monster spore(g->mtypes[mon_spore]);
+ monster spore(mtype::types[mon_spore]);
  int sporex, sporey;
  int moncount = 0, mondex;
  int j;
@@ -630,7 +625,7 @@ void mattack::fungus(game *g, monster *z)
   }
  }
  if (moncount >= 7)	// If we're surrounded by monsters, go dormant
-  z->poly(g->mtypes[mon_fungaloid_dormant]);
+  z->poly(mtype::types[mon_fungaloid_dormant]);
 }
 
 void mattack::fungus_sprout(game *g, monster *z)
@@ -642,7 +637,7 @@ void mattack::fungus_sprout(game *g, monster *z)
     g->teleport();
    }
    if (g->is_empty(x, y)) {
-    monster wall(g->mtypes[mon_fungal_wall]);
+    monster wall(mtype::types[mon_fungal_wall]);
     wall.spawn(x, y);
     g->z.push_back(wall);
    }
@@ -760,7 +755,7 @@ void mattack::plant(game *g, monster *z)
   if (g->u_see(z->posx, z->posy, j))
    g->add_msg("The %s takes seed and becomes a young fungaloid!",
               z->name().c_str());
-  z->poly(g->mtypes[mon_fungaloid_young]);
+  z->poly(mtype::types[mon_fungaloid_young]);
   z->moves = -1000;	// It takes a while
  }
 }
@@ -793,11 +788,11 @@ void mattack::formblob(game *g, monster *z)
      z->speed -= 5;
      g->z[thatmon].speed += 5;
      if (g->z[thatmon].speed >= 60)
-      g->z[thatmon].poly(g->mtypes[mon_blob]);
+      g->z[thatmon].poly(mtype::types[mon_blob]);
     } else if ((g->z[thatmon].made_of(FLESH) || g->z[thatmon].made_of(VEGGY)) &&
                rng(0, z->hp) > rng(0, g->z[thatmon].hp)) {	// Blobify!
      didit = true;
-     g->z[thatmon].poly(g->mtypes[mon_blob]);
+     g->z[thatmon].poly(mtype::types[mon_blob]);
      g->z[thatmon].speed = z->speed - rng(5, 25);
      g->z[thatmon].hp = g->z[thatmon].speed;
     }
@@ -805,7 +800,7 @@ void mattack::formblob(game *g, monster *z)
 // If we're big enough, spawn a baby blob.
     didit = true;
     z->speed -= 15;
-    monster blob(g->mtypes[mon_blob_small]);
+    monster blob(mtype::types[mon_blob_small]);
     blob.spawn(z->posx + i, z->posy + j);
     blob.speed = z->speed - rng(30, 60);
     blob.hp = blob.speed;
@@ -814,7 +809,7 @@ void mattack::formblob(game *g, monster *z)
   }
   if (didit) {	// We did SOMEthing.
    if (z->type->id == mon_blob && z->speed <= 50)	// We shrank!
-    z->poly(g->mtypes[mon_blob]);
+    z->poly(mtype::types[mon_blob]);
    z->moves = -500;
    z->sp_timeout = z->type->sp_freq;	// Reset timer
    return;
@@ -822,11 +817,10 @@ void mattack::formblob(game *g, monster *z)
  }
 }
 
-void mattack::dogthing(game *g, monster *z)
+void mattack::dogthing(game *g, monster *z)	// XXX only happens when PC can see it?
 {
  int t;
- if (!one_in(3) || !g->u_see(z, t))
-  return;
+ if (!g->u_see(z, t) || !one_in(3)) return;
 
  g->add_msg("The %s's head explodes in a mass of roiling tentacles!",
             z->name().c_str());
@@ -839,14 +833,13 @@ void mattack::dogthing(game *g, monster *z)
  }
 
  z->friendly = 0;
- z->poly(g->mtypes[mon_headless_dog_thing]);
+ z->poly(mtype::types[mon_headless_dog_thing]);
 }
 
 void mattack::tentacle(game *g, monster *z)
 {
  int t;
- if (!g->sees_u(z->posx, z->posy, t))
-  return;
+ if (!g->sees_u(z->posx, z->posy, t)) return;
 
  g->add_msg("The %s lashes its tentacle at you!", z->name().c_str());
  z->moves -= 100;
@@ -1318,7 +1311,7 @@ void mattack::upgrade(game *g, monster *z)
            break;
  }
 
- target->poly(g->mtypes[newtype]);
+ target->poly(mtype::types[newtype]);
  int junk;
  if (g->u_see(z->posx, z->posy, junk))
   g->add_msg("The black mist around the %s grows...", z->name().c_str());
@@ -1341,20 +1334,18 @@ void mattack::breathe(game *g, monster *z)
    }
   }
  }
- if (!able)
-  return;
+ if (!able) return;
 
  std::vector<point> valid;
  for (int x = z->posx - 1; x <= z->posx + 1; x++) {
   for (int y = z->posy - 1; y <= z->posy + 1; y++) {
-   if (g->is_empty(x, y))
-    valid.push_back( point(x, y) );
+   if (g->is_empty(x, y)) valid.push_back( point(x, y) );
   }
  }
 
  if (!valid.empty()) {
   point place = valid[ rng(0, valid.size() - 1) ];
-  monster spawned(g->mtypes[mon_breather]);
+  monster spawned(mtype::types[mon_breather]);
   spawned.sp_timeout = 12;
   spawned.spawn(place.x, place.y);
   g->z.push_back(spawned);

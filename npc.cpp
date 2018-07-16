@@ -2025,7 +2025,7 @@ void npc::die(game *g, bool your_fault)
  }
 
  item my_body;
- my_body.make_corpse(g->itypes[itm_corpse], g->mtypes[mon_null], g->turn);
+ my_body.make_corpse(g->itypes[itm_corpse], mtype::types[mon_null], g->turn);
  my_body.name = name;
  g->m.add_item(posx, posy, my_body);
  for (int i = 0; i < inv.size(); i++)

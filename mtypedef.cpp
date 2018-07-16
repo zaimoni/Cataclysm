@@ -4,6 +4,8 @@
 #include "itype.h"
 #include "setvector.h"
 
+std::vector <mtype*> mtype::types;
+
 // This function populates the master list of monster types.
 // If you edit this function, you'll also need to edit:
 //  * mtype.h - enum mon_id MUST match the order of this list!
@@ -13,26 +15,26 @@
 //                      spawns with the proper group
 // PLEASE NOTE: The description is AT MAX 4 lines of 46 characters each.
 
-void game::init_mtypes ()
+void mtype::init()
 {
  int id = 0;
 // Null monster named "None".
- mtypes.push_back(new mtype);
+ types.push_back(new mtype);
 
 #define mon(name, species, sym, color, size, mat, \
             freq, diff, agro, morale, speed, melee_skill, melee_dice,\
             melee_sides, melee_cut, dodge, arm_bash, arm_cut, item_chance, HP,\
             sp_freq, death, sp_att, desc) \
 id++;\
-mtypes.push_back(new mtype(id, name, species, sym, color, size, mat,\
+types.push_back(new mtype(id, name, species, sym, color, size, mat,\
 freq, diff, agro, morale, speed, melee_skill, melee_dice, melee_sides,\
 melee_cut, dodge, arm_bash, arm_cut, item_chance, HP, sp_freq, death, sp_att,\
 desc))
 
-#define FLAGS(...)   SET_VECTOR(mtypes[id]->flags,   __VA_ARGS__)
-#define ANGER(...)   SET_VECTOR(mtypes[id]->anger,   __VA_ARGS__)
-#define FEARS(...)   SET_VECTOR(mtypes[id]->fear,    __VA_ARGS__)
-#define PLACATE(...) SET_VECTOR(mtypes[id]->placate, __VA_ARGS__)
+#define FLAGS(...)   SET_VECTOR(types[id]->flags,   __VA_ARGS__)
+#define ANGER(...)   SET_VECTOR(types[id]->anger,   __VA_ARGS__)
+#define FEARS(...)   SET_VECTOR(types[id]->fear,    __VA_ARGS__)
+#define PLACATE(...) SET_VECTOR(types[id]->placate, __VA_ARGS__)
 
 // PLEASE NOTE: The description is AT MAX 4 lines of 46 characters each.
 

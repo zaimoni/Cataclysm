@@ -123,7 +123,7 @@ void mdeath::triffid_heart(game *g, monster *z)
 
 void mdeath::fungus(game *g, monster *z)
 {
- monster spore(g->mtypes[mon_spore]);
+ monster spore(mtype::types[mon_spore]);
  int sporex, sporey;
  g->sound(z->posx, z->posy, 10, "Pouf!");
  for (int i = -1; i <= 1; i++) {
@@ -150,7 +150,7 @@ void mdeath::fungus(game *g, monster *z)
 
 void mdeath::fungusawake(game *g, monster *z)
 {
- monster newfung(g->mtypes[mon_fungaloid]);
+ monster newfung(mtype::types[mon_fungaloid]);
  newfung.spawn(z->posx, z->posy);
  g->z.push_back(newfung);
 }
@@ -181,7 +181,7 @@ void mdeath::worm(game *g, monster *z)
   }
  }
  int rn;
- monster worm(g->mtypes[mon_halfworm]);
+ monster worm(mtype::types[mon_halfworm]);
  for (int worms = 0; worms < 2 && wormspots.size() > 0; worms++) {
   rn = rng(0, wormspots.size() - 1);
   worm.spawn(wormspots[rn].x, wormspots[rn].y);
@@ -216,7 +216,7 @@ void mdeath::blobsplit(game *g, monster *z)
    g->add_msg("The %s splatters into tiny, dead pieces.", z->name().c_str());
   return;
  }
- monster blob(g->mtypes[(speed < 50 ? mon_blob_small : mon_blob)]);
+ monster blob(mtype::types[(speed < 50 ? mon_blob_small : mon_blob)]);
  blob.speed = speed;
  blob.friendly = z->friendly; // If we're tame, our kids are too
  if (g->u_see(z, j))
@@ -269,7 +269,7 @@ void mdeath::amigara(game *g, monster *z)
 
 void mdeath::thing(game *g, monster *z)
 {
- monster thing(g->mtypes[mon_thing]);
+ monster thing(mtype::types[mon_thing]);
  thing.spawn(z->posx, z->posy);
  g->z.push_back(thing);
 }

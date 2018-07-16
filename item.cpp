@@ -237,12 +237,11 @@ void item::load_info(std::string data, game *g)
  dump >> lettmp >> idtmp >> charges >> damtmp >> burntmp >> poison >> ammotmp >>
          owned >> bday >> acttmp >> corp >> mission_id >> player_id;
  if (corp != -1)
-  corpse = g->mtypes[corp];
+  corpse = mtype::types[corp];
  else
   corpse = NULL;
  getline(dump, name);
- if (name == " ''")
-  name = "";
+ if (name == " ''") name = "";
  else {
   size_t pos = name.find_first_of("@@");
   while (pos != std::string::npos)  {
@@ -255,9 +254,7 @@ void item::load_info(std::string data, game *g)
  invlet = char(lettmp);
  damage = damtmp;
  burnt = burntmp;
- active = false;
- if (acttmp == 1)
-  active = true;
+ active = (acttmp == 1);
  if (ammotmp > 0)
   curammo = dynamic_cast<it_ammo*>(g->itypes[ammotmp]);
  else

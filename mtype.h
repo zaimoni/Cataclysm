@@ -158,6 +158,8 @@ MF_MAX		// Sets the length of the flags - obviously MUST be last
 };
 
 struct mtype {
+ static std::vector <mtype*> types;
+	
  int id;
  std::string name;
  std::string description;
@@ -272,6 +274,8 @@ struct mtype {
   }
   return false;
  }
+
+ static void init();
 };
 
 #endif

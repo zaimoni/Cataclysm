@@ -134,7 +134,7 @@ private:
  void setup();
  void refresh_setup(WINDOW *w, int selection);
  void init_itypes(game *g);
- void init_mtypes(game *g);
+ void init_mtypes();
  void init_constructions(game *g);
  void init_recipes(game *g);
  void init_map(game *g);

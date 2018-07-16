@@ -308,7 +308,7 @@ void trapfuncm::goo(game *g, monster *z, int x, int y)
   z->speed += 15;
   z->hp = z->speed;
  } else {
-  z->poly(g->mtypes[mon_blob]);
+  z->poly(mtype::types[mon_blob]);
   z->speed -= 15;
   z->hp = z->speed;
  }
@@ -619,14 +619,10 @@ void trapfuncm::hum(game *g, monster *z, int x, int y)
 {
  int volume = rng(1, 200);
  std::string sfx;
- if (volume <= 10)
-  sfx = "hrm";
- else if (volume <= 50)
-  sfx = "hrmmm";
- else if (volume <= 100)
-  sfx = "HRMMM";
- else
-  sfx = "VRMMMMMM";
+ if (volume <= 10) sfx = "hrm";
+ else if (volume <= 50) sfx = "hrmmm";
+ else if (volume <= 100) sfx = "HRMMM";
+ else sfx = "VRMMMMMM";
 
  if (volume >= 150)
   z->add_effect(ME_DEAF, volume - 140);
@@ -636,7 +632,7 @@ void trapfuncm::hum(game *g, monster *z, int x, int y)
 
 void trapfunc::shadow(game *g, int x, int y)
 {
- monster spawned(g->mtypes[mon_shadow]);
+ monster spawned(mtype::types[mon_shadow]);
  int tries = 0, monx, mony, junk;
  do {
   if (one_in(2)) {
@@ -672,7 +668,7 @@ void trapfuncm::drain(game *g, monster *z, int x, int y)
 void trapfunc::snake(game *g, int x, int y)
 {
  if (one_in(3)) {
-  monster spawned(g->mtypes[mon_shadow_snake]);
+  monster spawned(mtype::types[mon_shadow_snake]);
   int tries = 0, monx, mony, junk;
   do {
    if (one_in(2)) {

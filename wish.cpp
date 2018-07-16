@@ -16,7 +16,7 @@ void game::wish()
  std::string info;
  std::vector<int> search_results;
  item tmp;
- tmp.corpse = mtypes[0];
+ tmp.corpse = mtype::types[0];
  do {
   werase(w_info);
   werase(w_list);
@@ -192,9 +192,9 @@ void game::monster_wish()
       result_selected = 0;
      shift = search_results[result_selected];
      a = 0;
-     if (shift + 23 > mtypes.size()) {
-      a = shift + 23 - mtypes.size();
-      shift = mtypes.size() - 23;
+     if (shift + 23 > mtype::types.size()) {
+      a = shift + 23 - mtype::types.size();
+      shift = mtype::types.size() - 23;
      }
     }
    } else if (ch == '<') {
@@ -205,9 +205,9 @@ void game::monster_wish()
       result_selected = search_results.size() - 1;
      shift = search_results[result_selected];
      a = 0;
-     if (shift + 23 > mtypes.size()) {
-      a = shift + 23 - mtypes.size();
-      shift = mtypes.size() - 23;
+     if (shift + 23 > mtype::types.size()) {
+      a = shift + 23 - mtype::types.size();
+      shift = mtype::types.size() - 23;
      }
     }
    } else {
@@ -216,14 +216,14 @@ void game::monster_wish()
    }
 
    if (search) {
-    for (int i = 1; i < mtypes.size(); i++) {
-     if (mtypes[i]->name.find(pattern) != std::string::npos) {
+    for (int i = 1; i < mtype::types.size(); i++) {
+     if (mtype::types[i]->name.find(pattern) != std::string::npos) {
       shift = i;
       a = 0;
       result_selected = 0;
-      if (shift + 23 > mtypes.size()) {
-       a = shift + 23 - mtypes.size();
-       shift = mtypes.size() - 23;
+      if (shift + 23 > mtype::types.size()) {
+       a = shift + 23 - mtype::types.size();
+       shift = mtype::types.size() - 23;
       }
       found = true;
       search_results.push_back(i);
@@ -247,9 +247,9 @@ void game::monster_wish()
      result_selected = 0;
     shift = search_results[result_selected];
     a = 0;
-    if (shift + 23 > mtypes.size()) {
-     a = shift + 23 - mtypes.size();
-     shift = mtypes.size() - 23;
+    if (shift + 23 > mtype::types.size()) {
+     a = shift + 23 - mtype::types.size();
+     shift = mtype::types.size() - 23;
     }
    } else if (ch == '<' && !search_results.empty()) {
     result_selected--;
@@ -257,9 +257,9 @@ void game::monster_wish()
      result_selected = search_results.size() - 1;
     shift = search_results[result_selected];
     a = 0;
-    if (shift + 23 > mtypes.size()) {
-     a = shift + 23 - mtypes.size();
-     shift = mtypes.size() - 23;
+    if (shift + 23 > mtype::types.size()) {
+     a = shift + 23 - mtype::types.size();
+     shift = mtype::types.size() - 23;
     }
    }
   }
@@ -275,25 +275,20 @@ void game::monster_wish()
   if (a > 22) {
    a = 22;
    shift++;
-   if (shift + 23 > mtypes.size()) shift = mtypes.size() - 23;
+   if (shift + 23 > mtype::types.size()) shift = mtype::types.size() - 23;
   }
   for (int i = 1; i < 24; i++) {
-   nc_color col = c_white;
-   if (i == a + 1)
-    col = h_white;
-   mvwprintz(w_list, i, 0, col, mtypes[i-1+shift]->name.c_str());
-   wprintz(w_list, mtypes[i-1+shift]->color, " %c%", mtypes[i-1+shift]->sym);
+   const nc_color col = (i == a + 1 ? h_white : c_white);
+   const mtype* const type = mtype::types[i - 1 + shift];
+   mvwprintz(w_list, i, 0, col, type->name.c_str());
+   wprintz(w_list, type->color, " %c%", type->sym);
   }
-  tmp = monster(mtypes[a + shift]);
-  if (friendly)
-   tmp.friendly = -1;
+  tmp = monster(mtype::types[a + shift]);
+  if (friendly) tmp.friendly = -1;
   tmp.print_info(this, w_info);
   wrefresh(w_info);
   wrefresh(w_list);
-  if (search)
-   ch = getch();
-  else
-   ch = input();
+  ch = (search ? getch() : input());
  } while (ch != '\n');
  clear();
  delwin(w_info);
@@ -301,8 +296,7 @@ void game::monster_wish()
  refresh_all();
  wrefresh(w_terrain);
  point spawn = look_around();
- if (spawn.x == -1)
-  return;
+ if (spawn.x == -1) return;
  tmp.spawn(spawn.x, spawn.y);
  z.push_back(tmp);
 }

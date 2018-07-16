@@ -61,7 +61,7 @@ bool defense_game::init(game *g)
  g->u.int_cur = g->u.int_max;
  g->u.dex_cur = g->u.dex_max;
  init_itypes(g);
- init_mtypes(g);
+ init_mtypes();
  init_constructions(g);
  init_recipes(g);
  current_wave = 0;
@@ -161,15 +161,15 @@ void defense_game::init_itypes(game *g)
  g->itypes[itm_bot_turret]->price = 6000;
 }
 
-void defense_game::init_mtypes(game *g)
+void defense_game::init_mtypes()
 {
- for (int i = 0; i < num_monsters; i++) {
-  g->mtypes[i]->difficulty *= 1.5;
-  g->mtypes[i]->difficulty += int(g->mtypes[i]->difficulty / 5);
-  g->mtypes[i]->flags.push_back(MF_BASHES);
-  g->mtypes[i]->flags.push_back(MF_SMELLS);
-  g->mtypes[i]->flags.push_back(MF_HEARS);
-  g->mtypes[i]->flags.push_back(MF_SEES);
+ for(const auto m_type : mtype::types) {
+  m_type->difficulty *= 1.5;
+  m_type->difficulty += int(m_type->difficulty / 5);
+  m_type->flags.push_back(MF_BASHES);
+  m_type->flags.push_back(MF_SMELLS);
+  m_type->flags.push_back(MF_HEARS);
+  m_type->flags.push_back(MF_SEES);
  }
 }
 
@@ -261,7 +261,7 @@ void defense_game::init_map(game *g)
  g->m.load(g, g->levx, g->levy);
 
  g->update_map(g->u.posx, g->u.posy);
- monster generator(g->mtypes[mon_generator], g->u.posx + 1, g->u.posy + 1);
+ monster generator(mtype::types[mon_generator], g->u.posx + 1, g->u.posy + 1);
 // Find a valid spot to spawn the generator
  std::vector<point> valid;
  for (int x = g->u.posx - 1; x <= g->u.posx + 1; x++) {
@@ -1198,23 +1198,19 @@ void defense_game::spawn_wave(game *g)
  int diff = initial_difficulty + current_wave * wave_difficulty;
  bool themed_wave = one_in(SPECIAL_WAVE_CHANCE); // All a single monster type
  g->u.cash += cash_per_wave + (current_wave - 1) * cash_increase;
- std::vector<mon_id> valid;
- valid = pick_monster_wave(g);
+ std::vector<mon_id> valid(pick_monster_wave(g));
  while (diff > 0) {
 // Clear out any monsters that exceed our remaining difficulty
-  for (int i = 0; i < valid.size(); i++) {
-   if (g->mtypes[valid[i]]->difficulty > diff) {
-    valid.erase(valid.begin() + i);
-    i--;
-   }
+  int i = valid.size();
+  while(0 < i--) {
+	if (mtype::types[valid[i]]->difficulty > diff) valid.erase(valid.begin() + i);
   }
   if (valid.size() == 0) {
    g->add_msg("Welcome to Wave %d!", current_wave);
    g->add_msg("********");
    return;
   }
-  int rn = rng(0, valid.size() - 1);
-  mtype *type = g->mtypes[valid[rn]];
+  mtype *type = mtype::types[valid[rng(0, valid.size() - 1)]];
   if (themed_wave) {
    int num = diff / type->difficulty;
    if (num >= SPECIAL_WAVE_MIN) {

@@ -569,15 +569,14 @@ void iuse::purifier(game *g, player *p, item *it, bool t)
 
 void iuse::marloss(game *g, player *p, item *it, bool t)
 {
- if (p->is_npc())
-  return;
+ if (p->is_npc()) return;
 // If we have the marloss in our veins, we are a "breeder" and will spread
 // alien lifeforms.
  if (p->has_trait(PF_MARLOSS)) {
   g->add_msg("As you eat the berry, you have a near-religious experience, feeling at one with your surroundings...");
   p->add_morale(MORALE_MARLOSS, 100, 1000);
   p->hunger = -100;
-  monster goo(g->mtypes[mon_blob]);
+  monster goo(mtype::types[mon_blob]);
   goo.friendly = -1;
   int goo_spawned = 0;
   for (int x = p->posx - 4; x <= p->posx + 4; x++) {
@@ -1453,20 +1452,19 @@ void iuse::can_goo(game *g, player *p, item *it, bool t)
   gooy = p->posy + rng(-2, 2);
   tries++;
  } while (g->m.move_cost(goox, gooy) == 0 && tries < 10);
- if (tries == 10)
-  return;
+ if (tries == 10) return;
  int mondex = g->mon_at(goox, gooy);
  if (mondex != -1) {
   if (g->u_see(goox, gooy, junk))
    g->add_msg("Black goo emerges from the canister and envelopes a %s!",
               g->z[mondex].name().c_str());
-  g->z[mondex].poly(g->mtypes[mon_blob]);
+  g->z[mondex].poly(mtype::types[mon_blob]);
   g->z[mondex].speed -= rng(5, 25);
   g->z[mondex].hp = g->z[mondex].speed;
  } else {
   if (g->u_see(goox, gooy, junk))
    g->add_msg("Living black goo emerges from the canister!");
-  monster goo(g->mtypes[mon_blob]);
+  monster goo(mtype::types[mon_blob]);
   goo.friendly = -1;
   goo.spawn(goox, gooy);
   g->z.push_back(goo);
@@ -1829,7 +1827,7 @@ void iuse::manhack(game *g, player *p, item *it, bool t)
  int index = rng(0, valid.size() - 1);
  p->moves -= 60;
  it->invlet = 0; // Remove the manhack from the player's inv
- monster manhack(g->mtypes[mon_manhack], valid[index].x, valid[index].y);
+ monster manhack(mtype::types[mon_manhack], valid[index].x, valid[index].y);
  if (rng(0, p->int_cur / 2) + p->sklevel[sk_electronics] / 2 +
      p->sklevel[sk_computer] < rng(0, 4))
   g->add_msg("You misprogram the manhack; it's hostile!");
@@ -1856,7 +1854,7 @@ void iuse::turret(game *g, player *p, item *it, bool t)
   return;
  }
  it->invlet = 0; // Remove the turret from the player's inv
- monster turret(g->mtypes[mon_turret], dirx, diry);
+ monster turret(mtype::types[mon_turret], dirx, diry);
  if (rng(0, p->int_cur / 2) + p->sklevel[sk_electronics] / 2 +
      p->sklevel[sk_computer] < rng(0, 6))
   g->add_msg("You misprogram the turret; it's hostile!");
@@ -2021,7 +2019,7 @@ void iuse::vortex(game *g, player *p, item *it, bool t)
  int index = rng(0, spawn.size() - 1);
  p->moves -= 100;
  it->make(g->itypes[itm_spiral_stone]);
- monster vortex(g->mtypes[mon_vortex], spawn[index].x, spawn[index].y);
+ monster vortex(mtype::types[mon_vortex], spawn[index].x, spawn[index].y);
  vortex.friendly = -1;
  g->z.push_back(vortex);
 }
@@ -2313,7 +2311,7 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
     num = rng(1, 2);
    }
    if (bug != mon_null) {
-    monster spawned(g->mtypes[bug]);
+    monster spawned(mtype::types[bug]);
     spawned.friendly = -1;
     for (int i = 0; i < num && !empty.empty(); i++) {
      int index = rng(0, empty.size() - 1);
@@ -2335,7 +2333,7 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
    break;
 
   case AEA_GROWTH: {
-   monster tmptriffid(g->mtypes[0], p->posx, p->posy);
+   monster tmptriffid(mtype::types[0], p->posx, p->posy);
    mattack tmpattack;
    tmpattack.growplants(g, &tmptriffid);
   } break;
@@ -2418,7 +2416,7 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
 
   case AEA_SHADOWS: {
    int num_shadows = rng(4, 8);
-   monster spawned(g->mtypes[mon_shadow]);
+   monster spawned(mtype::types[mon_shadow]);
    int num_spawned = 0;
    for (int i = 0; i < num_shadows; i++) {
     int tries = 0, monx, mony, junk;

@@ -175,7 +175,6 @@ class game
   void remove_item(item *it);
 
   std::vector <itype*> itypes;
-  std::vector <mtype*> mtypes;
   std::vector <trap*> traps;
   std::vector<recipe*> recipes;	// The list of valid recipes
   std::vector<constructable*> constructions; // The list of constructions
@@ -224,7 +223,6 @@ class game
 // Data Initialization
   void init_itypes();       // Initializes item types
   void init_mapitems();     // Initializes item placement
-  void init_mtypes();       // Initializes monster types
   void init_monitems();     // Initializes monster inventory selection
   void init_traps();        // Initializes trap types
   void init_recipes();      // Initializes crafting recipes

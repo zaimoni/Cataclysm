@@ -680,7 +680,7 @@ void computer::activate_failure(game *g, computer_failure fail)
     } while (!g->is_empty(mx, my) && tries < 10);
     if (tries != 10) {
      g->add_msg("Manhacks drop from compartments in the ceiling.");
-     monster robot(g->mtypes[mon_manhack]);
+     monster robot(mtype::types[mon_manhack]);
      robot.spawn(mx, my);
      g->z.push_back(robot);
     }
@@ -698,7 +698,7 @@ void computer::activate_failure(game *g, computer_failure fail)
     } while (!g->is_empty(mx, my) && tries < 10);
     if (tries != 10) {
      g->add_msg("Secubots emerge from compartments in the floor.");
-     monster robot(g->mtypes[mon_secubot]);
+     monster robot(mtype::types[mon_secubot]);
      robot.spawn(mx, my);
      g->z.push_back(robot);
     }

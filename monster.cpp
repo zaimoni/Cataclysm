@@ -268,7 +268,7 @@ bool monster::made_of(material m)
  return false;
 }
  
-void monster::load_info(std::string data, std::vector <mtype*> *mtypes)
+void monster::load_info(std::string data)
 {
  std::stringstream dump;
  int idtmp, plansize;
@@ -276,7 +276,7 @@ void monster::load_info(std::string data, std::vector <mtype*> *mtypes)
  dump >> idtmp >> posx >> posy >> wandx >> wandy >> wandf >> moves >> speed >>
          hp >> sp_timeout >> plansize >> friendly >> faction_id >> mission_id >>
          dead >> anger >> morale;
- type = (*mtypes)[idtmp];
+ type = mtype::types[idtmp];
  point ptmp;
  for (int i = 0; i < plansize; i++) {
   dump >> ptmp.x >> ptmp.y;
@@ -791,7 +791,7 @@ bool monster::make_fungus(game *g)
  case mon_fly:
  case mon_bee:
  case mon_dermatik:
-  poly(g->mtypes[mon_ant_fungus]);
+  poly(mtype::types[mon_ant_fungus]);
   return true;
  case mon_zombie:
  case mon_zombie_shrieker:
@@ -800,15 +800,15 @@ bool monster::make_fungus(game *g)
  case mon_zombie_fast:
  case mon_zombie_brute:
  case mon_zombie_hulk:
-  poly(g->mtypes[mon_zombie_fungus]);
+  poly(mtype::types[mon_zombie_fungus]);
   return true;
  case mon_boomer:
-  poly(g->mtypes[mon_boomer_fungus]);
+  poly(mtype::types[mon_boomer_fungus]);
   return true;
  case mon_triffid:
  case mon_triffid_young:
  case mon_triffid_queen:
-  poly(g->mtypes[mon_fungaloid]);
+  poly(mtype::types[mon_fungaloid]);
   return true;
  default:
   return true;

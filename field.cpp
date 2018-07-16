@@ -518,7 +518,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
      cur->density++;
     else if (cur->density == 3 && one_in(600)) { // Spawn nether creature!
      mon_id type = mon_id(rng(mon_flying_polyp, mon_blank));
-     monster creature(g->mtypes[type]);
+     monster creature(mtype::types[type]);
      creature.spawn(x + rng(-3, 3), y + rng(-3, 3));
      g->z.push_back(creature);
     }

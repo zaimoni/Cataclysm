@@ -231,7 +231,7 @@ void dis_effect(game *g, player &p, disease &dis)
      g->add_msg("%s coughs up a stream of live spores!", p.name.c_str());
     p.moves = -500;
     int sporex, sporey;
-    monster spore(g->mtypes[mon_spore]);
+    monster spore(mtype::types[mon_spore]);
     for (int i = -1; i <= 1; i++) {
      for (int j = -1; j <= 1; j++) {
       sporex = p.posx + i;
@@ -469,25 +469,20 @@ void dis_effect(game *g, player &p, disease &dis)
     else if (g->u_see(p.posx, p.posy, t))
      g->add_msg("Insects erupt from %s's skin!", p.name.c_str());
     p.moves -= 600;
-    monster grub(g->mtypes[mon_dermatik_larva]);
+    monster grub(mtype::types[mon_dermatik_larva]);
     while (valid_spawns.size() > 0 && num_insects > 0) {
      num_insects--;
 // Hurt the player
      body_part burst = bp_torso;
-     if (one_in(3))
-      burst = bp_arms;
-     else if (one_in(3))
-      burst = bp_legs;
+     if (one_in(3)) burst = bp_arms;
+     else if (one_in(3)) burst = bp_legs;
      p.hurt(g, burst, rng(0, 1), rng(4, 8));
 // Spawn a larva
      int sel = rng(0, valid_spawns.size() - 1);
      grub.spawn(valid_spawns[sel].x, valid_spawns[sel].y);
      valid_spawns.erase(valid_spawns.begin() + sel);
 // Sometimes it's a friendly larva!
-     if (one_in(3))
-      grub.friendly = -1;
-     else
-      grub.friendly =  0;
+	 grub.friendly = (one_in(3) ? -1 : 0);
      g->z.push_back(grub);
     }
    }
@@ -556,7 +551,7 @@ void dis_effect(game *g, player &p, disease &dis)
    p.dex_cur -= 2;
    p.str_cur -= 1;
    if (one_in(50)) {	// Generate phantasm
-    monster phantasm(g->mtypes[mon_hallu_zom + rng(0, 3)]);
+    monster phantasm(mtype::types[mon_hallu_zom + rng(0, 3)]);
     phantasm.spawn(p.posx + rng(-10, 10), p.posy + rng(-10, 10));
     g->z.push_back(phantasm);
    }
@@ -635,8 +630,7 @@ void dis_effect(game *g, player &p, disease &dis)
   }
   if (dis.duration > 3600) { // 12 teles
    if (one_in(4000 - int(.25 * (dis.duration - 3600)))) {
-    mon_id type = (mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)];
-    monster beast(g->mtypes[type]);
+    monster beast(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]]);
     int x, y, tries = 0;
     do {
      x = p.posx + rng(-4, 4);
@@ -695,10 +689,8 @@ void dis_effect(game *g, player &p, disease &dis)
   break;
 
  case DI_ATTENTION:
-  if (one_in( 100000 / dis.duration ) && one_in( 100000 / dis.duration ) &&
-      one_in(250)) {
-   mon_id type = (mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)];
-   monster beast(g->mtypes[type]);
+  if (one_in( 100000 / dis.duration ) && one_in( 100000 / dis.duration ) && one_in(250)) {
+   monster beast(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]]);
    int x, y, tries = 0, junk;
    do {
     x = p.posx + rng(-4, 4);
