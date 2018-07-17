@@ -17,10 +17,34 @@
 	#include <curses.h>
 #endif
 
-
 #include <stdlib.h>
 #include <sstream>
 #include <fstream>
+
+// start prototype for player_activity.cpp
+std::string player_activity::save_info() const
+{
+	std::stringstream ret;
+	ret << type << " " << moves_left << " " << index << " " << placement.x <<
+		" " << placement.y << " " << values.size();
+	for (int i = 0; i < values.size(); i++)
+		ret << " " << values[i];
+
+	return ret.str();
+}
+
+void player_activity::load_info(std::stringstream &dump)
+{
+	int tmp, tmptype;
+	dump >> tmptype >> moves_left >> index >> placement.x >> placement.y >> tmp;
+	type = activity_type(tmptype);
+	for (int i = 0; i < tmp; i++) {
+		int tmp2;
+		dump >> tmp2;
+		values.push_back(tmp2);
+	}
+}
+// end prototype for player_activity.cpp
 
 // start prototype for disease.cpp
 int disease::speed_boost() const

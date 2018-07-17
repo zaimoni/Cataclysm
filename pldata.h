@@ -4,7 +4,7 @@
 #include "enums.h"
 
 #include <vector>
-#include <sstream>
+#include <iosfwd>
 
 enum character_type {
  PLTYPE_CUSTOM,
@@ -97,28 +97,8 @@ struct player_activity
  : type(t),moves_left(turns),index(Index),placement(-1,-1) {}
  player_activity(const player_activity &copy) = default;
 
- std::string save_info()
- {
-  std::stringstream ret;
-  ret << type << " " << moves_left << " " << index << " " << placement.x <<
-         " " << placement.y << " " << values.size();
-  for (int i = 0; i < values.size(); i++)
-   ret << " " << values[i];
-
-  return ret.str();
- }
-
- void load_info(std::stringstream &dump)
- {
-  int tmp, tmptype;
-  dump >> tmptype >> moves_left >> index >> placement.x >> placement.y >> tmp;
-  type = activity_type(tmptype);
-  for (int i = 0; i < tmp; i++) {
-   int tmp2;
-   dump >> tmp2;
-   values.push_back(tmp2);
-  }
- }
+ std::string save_info() const;
+ void load_info(std::stringstream &dump);
 };
  
 enum pl_flag {
