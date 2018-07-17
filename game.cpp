@@ -1050,18 +1050,16 @@ void game::give_mission(mission_id type)
  active_missions.push_back(tmp);
  u.active_missions.push_back(tmp.uid);
  u.active_mission = u.active_missions.size() - 1;
- mission_start m_s;
  mission *miss = find_mission(tmp.uid);
- (m_s.*miss->type->start)(this, miss);
+ (*miss->type->start)(this, miss);
 }
 
 void game::assign_mission(int id)
 {
  u.active_missions.push_back(id);
  u.active_mission = u.active_missions.size() - 1;
- mission_start m_s;
  mission *miss = find_mission(id);
- (m_s.*miss->type->start)(this, miss);
+ (*miss->type->start)(this, miss);
 }
  
 int game::reserve_mission(mission_id type, int npc_id)
@@ -1074,11 +1072,10 @@ int game::reserve_mission(mission_id type, int npc_id)
 int game::reserve_random_mission(mission_origin origin, point p, int npc_id)
 {
  std::vector<int> valid;
- mission_place place;
  for (int i = 0; i < mission_types.size(); i++) {
   for (int j = 0; j < mission_types[i].origins.size(); j++) {
    if (mission_types[i].origins[j] == origin &&
-       (place.*mission_types[i].place)(this, p.x, p.y)) {
+       (*mission_types[i].place)(this, p.x, p.y)) {
     valid.push_back(i);
     j = mission_types[i].origins.size();
    }
@@ -1196,8 +1193,7 @@ void game::wrap_up_mission(int id)
    u.remove_mission_items(miss->uid);
    break;
  }
- mission_end endfunc;
- (endfunc.*miss->type->end)(this, miss);
+ (*miss->type->end)(this, miss);
 }
 
 void game::fail_mission(int id)
@@ -1211,8 +1207,7 @@ void game::fail_mission(int id)
    i--;
   }
  }
- mission_fail failfunc;
- (failfunc.*miss->type->fail)(this, miss);
+ (*miss->type->fail)(this, miss);
 }
 
 void game::mission_step_complete(int id, int step)
