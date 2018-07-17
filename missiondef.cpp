@@ -2,6 +2,39 @@
 #include "game.h"
 #include "setvector.h"
 
+struct mission_place {	// Return true if [posx,posy] is valid in overmap
+	static bool never(game *g, int posx, int posy) { return false; }
+	static bool always(game *g, int posx, int posy) { return true; }
+	static bool near_town(game *g, int posx, int posy);
+};
+
+/* mission_start functions are first run when a mission is accepted; this
+* initializes the mission's key values, like the target and description.
+* These functions are also run once a turn for each active mission, to check
+* if the current goal has been reached.  At that point they either start the
+* goal, or run the appropriate mission_end function.
+*/
+struct mission_start {
+	static void standard(game *, mission *); // Standard for its goal type
+	static void infect_npc(game *, mission *); // DI_INFECTION, remove antibiotics
+	static void place_dog(game *, mission *); // Put a dog in a house!
+	static void place_zombie_mom(game *, mission *); // Put a zombie mom in a house!
+	static void place_npc_software(game *, mission *); // Put NPC-type-dependent software
+	static void reveal_hospital(game *, mission *); // Reveal the nearest hospital
+	static void find_safety(game *, mission *); // Goal is set to non-spawn area
+	static void place_book(game *, mission *); // Place a book to retrieve
+};
+
+struct mission_end {	// These functions are run when a mission ends
+	static void standard(game *, mission *) {}; // Nothing special happens
+	static void heal_infection(game *, mission *);
+};
+
+struct mission_fail {
+	static void standard(game *, mission *) {}; // Nothing special happens
+	static void kill_npc(game *, mission *); // Kill the NPC who assigned it!
+};
+
 bool mission_place::near_town(game *g, int posx, int posy)
 {
 	return (g->cur_om.dist_from_city(point(posx, posy)) <= 40);
