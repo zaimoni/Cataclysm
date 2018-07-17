@@ -4,6 +4,7 @@
 #include "enums.h"
 
 #include <vector>
+#include <string>
 #include <iosfwd>
 
 enum character_type {
