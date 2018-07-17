@@ -357,7 +357,7 @@ void game::mutation_wish()
 
    if (search) {
     for (int i = 0; i < PF_MAX2; i++) {
-     if (traits[i].name.find(pattern) != std::string::npos) {
+     if (mutation_branch::traits[i].name.find(pattern) != std::string::npos) {
       shift = i;
       a = 0;
       result_selected = 0;
@@ -421,45 +421,38 @@ void game::mutation_wish()
    if (shift + 23 > PF_MAX2) shift = PF_MAX2 - 23;
   }
   for (int i = 1; i < 24; i++) {
-   nc_color col = c_white;
-   if (i == a + 1)
-    col = h_white;
-   mvwprintz(w_list, i, 0, col, traits[i-1+shift].name.c_str());
+   const nc_color col = (i == a + 1 ? h_white : c_white);
+   mvwprintz(w_list, i, 0, col, mutation_branch::traits[i-1+shift].name.c_str());
   }
   mvwprintw(w_info, 1, 0, mutation_branch::data[a+shift].valid ? "Valid" : "Nonvalid");
   int line2 = 2;
   mvwprintw(w_info, line2, 0, "Prereqs:");
   for(const auto tmp : mutation_branch::data[a + shift].prereqs) {
-   mvwprintw(w_info, line2, 9, traits[tmp].name.c_str());
+   mvwprintw(w_info, line2, 9, mutation_branch::traits[tmp].name.c_str());
    line2++;
   }
   mvwprintw(w_info, line2, 0, "Cancels:");
   for(const auto tmp : mutation_branch::data[a + shift].cancels) {
-   mvwprintw(w_info, line2, 9, traits[tmp].name.c_str());
+   mvwprintw(w_info, line2, 9, mutation_branch::traits[tmp].name.c_str());
    line2++;
   }
   mvwprintw(w_info, line2, 0, "Becomes:");
   for(const auto tmp : mutation_branch::data[a + shift].replacements) {
-   mvwprintw(w_info, line2, 9, traits[tmp].name.c_str());
+   mvwprintw(w_info, line2, 9, mutation_branch::traits[tmp].name.c_str());
    line2++;
   }
   mvwprintw(w_info, line2, 0, "Add-ons:");
   for(const auto tmp : mutation_branch::data[a + shift].additions) {
-   mvwprintw(w_info, line2, 9, traits[tmp].name.c_str());
+   mvwprintw(w_info, line2, 9, mutation_branch::traits[tmp].name.c_str());
    line2++;
   }
   wrefresh(w_info);
   wrefresh(w_list);
-  if (search)
-   ch = getch();
-  else
-   ch = input();
+  ch = (search ? getch() : input());
  } while (ch != '\n');
  clear();
- if (a+shift == 0)
-  u.mutate(this);
- else
-  u.mutate_towards(this, pl_flag(a + shift));
+ if (a+shift == 0) u.mutate(this);
+ else u.mutate_towards(this, pl_flag(a + shift));
  delwin(w_info);
  delwin(w_list);
 }

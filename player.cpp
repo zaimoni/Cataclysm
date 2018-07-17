@@ -1138,14 +1138,9 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
  for (int i = 0; i < PF_MAX2; i++) {
   if (my_traits[i]) {
    traitslist.push_back(pl_flag(i));
-   if (i > PF_MAX2)
-    status = c_ltblue;
-   else if (traits[i].points > 0)
-    status = c_ltgreen;
-   else
-    status = c_ltred;
    if (line < 9) {
-    mvwprintz(w_traits, line, 1, status, traits[i].name.c_str());
+    const auto& tr = mutation_branch::traits[i];
+    mvwprintz(w_traits, line, 1, (0 < tr.points ? c_ltgreen : c_ltred), tr.name.c_str());
     line++;
    }
   }
@@ -1441,27 +1436,21 @@ encumb(bp_feet) * 5);
    } else {
     min = line - 3;
     max = line + 4;
-    if (traitslist.size() < max)
-     max = traitslist.size();
+    if (traitslist.size() < max) max = traitslist.size();
    }
    for (int i = min; i < max; i++) {
     mvwprintz(w_traits, 2 + i - min, 1, c_ltgray, "                         ");
-    if (traitslist[i] > PF_MAX2)
-     status = c_ltblue;
-    else if (traits[traitslist[i]].points > 0)
-     status = c_ltgreen;
-    else
-     status = c_ltred;
+	if (traitslist[i] >= PF_MAX2) continue;	// XXX out of bounds dereference \todo better recovery strategy
+	const auto& tr = mutation_branch::traits[traitslist[i]];
+	status = (tr.points > 0 ? c_ltgreen : c_ltred);
     if (i == line)
-     mvwprintz(w_traits, 2 + i - min, 1, hilite(status),
-               traits[traitslist[i]].name.c_str());
+     mvwprintz(w_traits, 2 + i - min, 1, hilite(status), tr.name.c_str());
     else
-     mvwprintz(w_traits, 2 + i - min, 1, status,
-               traits[traitslist[i]].name.c_str());
+     mvwprintz(w_traits, 2 + i - min, 1, status, tr.name.c_str());
    }
    if (line >= 0 && line < traitslist.size())
     mvwprintz(w_info, 0, 0, c_magenta, "%s",
-              traits[traitslist[line]].description.c_str());
+		mutation_branch::traits[traitslist[line]].description.c_str());
    wrefresh(w_traits);
    wrefresh(w_info);
    switch (input()) {
@@ -1477,13 +1466,9 @@ encumb(bp_feet) * 5);
      mvwprintz(w_traits, 0, 0, c_ltgray, "         TRAITS           ");
      for (int i = 0; i < traitslist.size() && i < 7; i++) {
       mvwprintz(w_traits, i + 2, 1, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxx");
-      if (traitslist[i] > PF_MAX2)
-       status = c_ltblue;
-      else if (traits[traitslist[i]].points > 0)
-       status = c_ltgreen;
-      else
-       status = c_ltred;
-      mvwprintz(w_traits, i + 2, 1, status, traits[traitslist[i]].name.c_str());
+	  if (traitslist[i] >= PF_MAX2) continue;	// XXX out of bounds dereference \todo better recovery strategy
+	  const auto& tr = mutation_branch::traits[traitslist[i]];
+      mvwprintz(w_traits, i + 2, 1, (0 < tr.points ? c_ltgreen : c_ltred), tr.name.c_str());
      }
      wrefresh(w_traits);
      line = 0;

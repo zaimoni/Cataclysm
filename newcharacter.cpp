@@ -59,14 +59,10 @@ bool player::create(game *g, character_type type, std::string tempname)
     int_max = rng(6, 12);
     per_max = rng(6, 12);
     points = points - str_max - dex_max - int_max - per_max;
-    if (str_max > HIGH_STAT)
-     points -= (str_max - HIGH_STAT);
-    if (dex_max > HIGH_STAT)
-     points -= (dex_max - HIGH_STAT);
-    if (int_max > HIGH_STAT)
-     points -= (int_max - HIGH_STAT);
-    if (per_max > HIGH_STAT)
-     points -= (per_max - HIGH_STAT);
+    if (str_max > HIGH_STAT) points -= (str_max - HIGH_STAT);
+    if (dex_max > HIGH_STAT) points -= (dex_max - HIGH_STAT);
+    if (int_max > HIGH_STAT) points -= (int_max - HIGH_STAT);
+    if (per_max > HIGH_STAT) points -= (per_max - HIGH_STAT);
  
     int num_gtraits = 0, num_btraits = 0, rn, tries;
     while (points < 0 || rng(-3, 20) > points) {
@@ -76,11 +72,11 @@ bool player::create(game *g, character_type type, std::string tempname)
        rn = random_bad_trait();
        tries++;
       } while ((has_trait(rn) ||
-              num_btraits - traits[rn].points > MAX_TRAIT_POINTS) && tries < 5);
+              num_btraits - mutation_branch::traits[rn].points > MAX_TRAIT_POINTS) && tries < 5);
       if (tries < 5) {
        toggle_trait(rn);
-       points -= traits[rn].points;
-       num_btraits -= traits[rn].points;
+       points -= mutation_branch::traits[rn].points;
+       num_btraits -= mutation_branch::traits[rn].points;
       }
      } else {
       switch (rng(1, 4)) {
@@ -98,12 +94,14 @@ bool player::create(game *g, character_type type, std::string tempname)
      case 3:
      case 4:
       rn = random_good_trait();
-      if (!has_trait(rn) && points >= traits[rn].points &&
-          num_gtraits + traits[rn].points <= MAX_TRAIT_POINTS) {
-       toggle_trait(rn);
-       points -= traits[rn].points;
-       num_gtraits += traits[rn].points;
-      }
+	  if (!has_trait(rn)) {
+		const int cost = mutation_branch::traits[rn].points;
+        if (points >= cost && num_gtraits + cost <= MAX_TRAIT_POINTS) {
+          toggle_trait(rn);
+          points -= cost;
+          num_gtraits += cost;
+        }
+	  }
       break;
      case 5:
       switch (rng(1, 4)) {
@@ -113,6 +111,7 @@ bool player::create(game *g, character_type type, std::string tempname)
        case 4: if (per_max < HIGH_STAT) { per_max++; points--; } break;
       }
       break;
+
      case 6:
      case 7:
      case 8:
@@ -474,11 +473,11 @@ int set_traits(WINDOW* w, player *u, int &points)
  int num_good = 0, num_bad = 0;
  for (int i = 0; i < PF_SPLIT; i++) {
   if (u->has_trait(i))
-   num_good += traits[i].points;
+   num_good += mutation_branch::traits[i].points;
  }
  for (int i = PF_SPLIT + 1; i < PF_MAX; i++) {
   if (u->has_trait(i))
-   num_bad += abs(traits[i].points);
+   num_bad += abs(mutation_branch::traits[i].points);
  }
 // Draw horizontal lines, with a gap for the active tab
  for (int i = 0; i < 80; i++) {
@@ -501,9 +500,8 @@ int set_traits(WINDOW* w, player *u, int &points)
  mvwprintz(w, 1,22, h_ltgray, "  TRAITS  ");
 
  for (int i = 0; i < 16; i++) {
-  mvwprintz(w, 5 + i, 40, c_dkgray, "\
-                                   ");
-  mvwprintz(w, 5 + i, 40, c_dkgray, traits[PF_SPLIT + 1 + i].name.c_str());
+  mvwprintz(w, 5 + i, 40, c_dkgray, "                                   ");
+  mvwprintz(w, 5 + i, 40, c_dkgray, mutation_branch::traits[PF_SPLIT + 1 + i].name.c_str());
  }
  mvwprintz(w,11,32, c_ltgray, "h   l");
  mvwprintz(w,12,32, c_ltgray, "<   >");
@@ -518,17 +516,12 @@ int set_traits(WINDOW* w, player *u, int &points)
 
  do {
   mvwprintz(w,  3, 2, c_ltgray, "Points left: %d  ", points);
-  mvwprintz(w,  3,20, c_ltgreen, "%s%d/%d", (num_good < 10 ? " " : ""),
-                                 num_good, MAX_TRAIT_POINTS);
-  mvwprintz(w,  3,33, c_ltred, "%s%d/%d", (num_bad < 10 ? " " : ""),
-                               num_bad, MAX_TRAIT_POINTS);
+  mvwprintz(w,  3,20, c_ltgreen, "%s%d/%d", (num_good < 10 ? " " : ""), num_good, MAX_TRAIT_POINTS);
+  mvwprintz(w,  3,33, c_ltred, "%s%d/%d", (num_bad < 10 ? " " : ""), num_bad, MAX_TRAIT_POINTS);
 // Clear the bottom of the screen.
-  mvwprintz(w, 22, 0, c_ltgray, "\
-                                                                             ");
-  mvwprintz(w, 23, 0, c_ltgray, "\
-                                                                             ");
-  mvwprintz(w, 24, 0, c_ltgray, "\
-                                                                             ");
+  mvwprintz(w, 22, 0, c_ltgray, "                                                                             ");
+  mvwprintz(w, 23, 0, c_ltgray, "                                                                             ");
+  mvwprintz(w, 24, 0, c_ltgray, "                                                                             ");
   if (using_adv) {
    col_on  = COL_TR_GOOD_ON;
    col_off = COL_TR_GOOD_OFF;
@@ -540,8 +533,8 @@ int set_traits(WINDOW* w, player *u, int &points)
    traitmax = PF_SPLIT;
    mvwprintz(w,  3, 40, c_ltgray, "                                       ");
    mvwprintz(w,  3, 40, COL_TR_GOOD, "%s costs %d points",
-             traits[cur_adv].name.c_str(), traits[cur_adv].points);
-   mvwprintz(w, 22, 0, COL_TR_GOOD, "%s", traits[cur_adv].description.c_str());
+	   mutation_branch::traits[cur_adv].name.c_str(), mutation_branch::traits[cur_adv].points);
+   mvwprintz(w, 22, 0, COL_TR_GOOD, "%s", mutation_branch::traits[cur_adv].description.c_str());
   } else {
    col_on  = COL_TR_BAD_ON;
    col_off = COL_TR_BAD_OFF;
@@ -553,55 +546,34 @@ int set_traits(WINDOW* w, player *u, int &points)
    traitmax = PF_MAX;
    mvwprintz(w,  3, 40, c_ltgray, "                                       ");
    mvwprintz(w,  3, 40, COL_TR_BAD, "%s earns %d points",
-             traits[cur_dis].name.c_str(), traits[cur_dis].points * -1);
-   mvwprintz(w, 22, 0, COL_TR_BAD, "%s", traits[cur_dis].description.c_str());
+	   mutation_branch::traits[cur_dis].name.c_str(), mutation_branch::traits[cur_dis].points * -1);
+   mvwprintz(w, 22, 0, COL_TR_BAD, "%s", mutation_branch::traits[cur_dis].description.c_str());
   }
   if (cur_trait <= traitmin + 7) {
    for (int i = traitmin; i < traitmin + 16; i++) {
-    mvwprintz(w, 5 + i - traitmin, xoff, c_ltgray, "\
-                                       ");	// Clear the line
+    mvwprintz(w, 5 + i - traitmin, xoff, c_ltgray, "                                       ");	// Clear the line
     if (i == cur_trait) {
-     if (u->has_trait(i))
-      mvwprintz(w, 5 + i - traitmin, xoff, hi_on, traits[i].name.c_str());
-     else
-      mvwprintz(w, 5 + i - traitmin, xoff, hi_off, traits[i].name.c_str());
+     mvwprintz(w, 5 + i - traitmin, xoff, (u->has_trait(i) ? hi_on : hi_off), mutation_branch::traits[i].name.c_str());
     } else {
-     if (u->has_trait(i))
-      mvwprintz(w, 5 + i - traitmin, xoff, col_on, traits[i].name.c_str());
-     else
-      mvwprintz(w, 5 + i - traitmin, xoff, col_off, traits[i].name.c_str());
+     mvwprintz(w, 5 + i - traitmin, xoff, (u->has_trait(i) ? col_on : col_off), mutation_branch::traits[i].name.c_str());
     }
    }
   } else if (cur_trait >= traitmax - 9) {
    for (int i = traitmax - 16; i < traitmax; i++) {
-    mvwprintz(w, 21 + i - traitmax, xoff, c_ltgray, "\
-                                       ");	// Clear the line
+    mvwprintz(w, 21 + i - traitmax, xoff, c_ltgray, "                                       ");	// Clear the line
     if (i == cur_trait) {
-     if (u->has_trait(i))
-      mvwprintz(w, 21 + i - traitmax, xoff, hi_on, traits[i].name.c_str());
-     else
-      mvwprintz(w, 21 + i - traitmax, xoff, hi_off, traits[i].name.c_str());
+     mvwprintz(w, 21 + i - traitmax, xoff, (u->has_trait(i) ? hi_on : hi_off), mutation_branch::traits[i].name.c_str());
     } else {
-     if (u->has_trait(i))
-      mvwprintz(w, 21 + i - traitmax, xoff, col_on, traits[i].name.c_str());
-     else
-      mvwprintz(w, 21 + i - traitmax, xoff, col_off, traits[i].name.c_str());
+     mvwprintz(w, 21 + i - traitmax, xoff, (u->has_trait(i) ? col_on : col_off), mutation_branch::traits[i].name.c_str());
     }
    }
   } else {
    for (int i = cur_trait - 7; i < cur_trait + 9; i++) {
-    mvwprintz(w, 12 + i - cur_trait, xoff, c_ltgray, "\
-                                      ");	// Clear the line
+    mvwprintz(w, 12 + i - cur_trait, xoff, c_ltgray, "                                      ");	// Clear the line
     if (i == cur_trait) {
-     if (u->has_trait(i))
-      mvwprintz(w, 12 + i - cur_trait, xoff, hi_on, traits[i].name.c_str());
-     else
-      mvwprintz(w, 12 + i - cur_trait, xoff, hi_off, traits[i].name.c_str());
+     mvwprintz(w, 12 + i - cur_trait, xoff, (u->has_trait(i) ? hi_on : hi_off), mutation_branch::traits[i].name.c_str());
     } else {
-     if (u->has_trait(i))
-      mvwprintz(w, 12 + i - cur_trait, xoff, col_on, traits[i].name.c_str());
-     else
-      mvwprintz(w, 12 + i - cur_trait, xoff, col_off, traits[i].name.c_str());
+     mvwprintz(w, 12 + i - cur_trait, xoff, (u->has_trait(i) ? col_on : col_off), mutation_branch::traits[i].name.c_str());
     }
    }
   }
@@ -613,15 +585,13 @@ int set_traits(WINDOW* w, player *u, int &points)
    case '\t':
     if (!using_adv) {
      for (int i = 0; i < 16; i++) {
-      mvwprintz(w, 5 + i, 40, c_dkgray, "\
-                                       ");
-      mvwprintz(w, 5 + i, 40, c_dkgray, traits[PF_SPLIT + 1 + i].name.c_str());
+      mvwprintz(w, 5 + i, 40, c_dkgray, "                                       ");
+      mvwprintz(w, 5 + i, 40, c_dkgray, mutation_branch::traits[PF_SPLIT + 1 + i].name.c_str());
      }
     } else {
      for (int i = 0; i < 16; i++) {
-      mvwprintz(w, 5 + i, 0, c_dkgray, "\
-                                       ");
-      mvwprintz(w, 5 + i, 0, c_dkgray, traits[i + 1].name.c_str());
+      mvwprintz(w, 5 + i, 0, c_dkgray, "                                       ");
+      mvwprintz(w, 5 + i, 0, c_dkgray, mutation_branch::traits[i + 1].name.c_str());
      }
     }
     using_adv = !using_adv;
@@ -647,37 +617,30 @@ int set_traits(WINDOW* w, player *u, int &points)
     break;
    case ' ':
    case '\n':
+    {
+    const int cost = mutation_branch::traits[cur_trait].points;
     if (u->has_trait(cur_trait)) {
-     if (points + traits[cur_trait].points >= 0) {
+     if (points + cost >= 0) {
       u->toggle_trait(cur_trait);
-      points += traits[cur_trait].points;
-      if (using_adv)
-       num_good -= traits[cur_trait].points;
-      else
-       num_bad += traits[cur_trait].points;
+      points += cost;
+      if (using_adv) num_good -= cost;
+      else num_bad += cost;
      } else
       mvwprintz(w,  3, 2, c_red, "Points left: %d  ", points);
-    } else if (using_adv && num_good + traits[cur_trait].points >
-                            MAX_TRAIT_POINTS)
-     popup("Sorry, but you can only take %d points of advantages.",
-           MAX_TRAIT_POINTS);
-    else if (!using_adv && num_bad - traits[cur_trait].points >
-                           MAX_TRAIT_POINTS)
-     popup("Sorry, but you can only take %d points of disadvantages.",
-           MAX_TRAIT_POINTS);
-    else if (points >= traits[cur_trait].points) {
+    } else if (using_adv && num_good + cost > MAX_TRAIT_POINTS)
+     popup("Sorry, but you can only take %d points of advantages.", MAX_TRAIT_POINTS);
+    else if (!using_adv && num_bad - cost > MAX_TRAIT_POINTS)
+     popup("Sorry, but you can only take %d points of disadvantages.", MAX_TRAIT_POINTS);
+    else if (points >= cost) {
      u->toggle_trait(cur_trait);
-     points -= traits[cur_trait].points;
-     if (using_adv)
-      num_good += traits[cur_trait].points;
-     else
-      num_bad -= traits[cur_trait].points;
+     points -= cost;
+     if (using_adv) num_good += cost;
+     else num_bad -= cost;
     }
+	}
     break;
-   case '<':
-    return -1;
-   case '>':
-    return 1;
+   case '<': return -1;
+   case '>': return 1;
   }
  } while (true);
 }

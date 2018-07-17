@@ -30,6 +30,7 @@ std::vector<pl_flag> mutations_from_category(mutation_category cat);
 struct mutation_branch
 {
  static mutation_branch data[PF_MAX2]; // Mutation data
+ static const trait traits[PF_MAX2];	// descriptions for above
 
  bool valid = false; // True if this is a valid mutation (only used for flags < PF_MAX)
  std::vector<pl_flag> prereqs; // Prerequisites; Only one is required

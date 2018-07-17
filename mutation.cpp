@@ -19,12 +19,12 @@ void player::mutate(game *g)
   if (has_trait(i)) {
    for(const auto tmp : mutation_branch::data[i].replacements) {
     if (!has_trait(tmp) && !has_child_flag(g, tmp) &&
-        (!force_bad || traits[tmp].points <= 0))
+        (!force_bad || mutation_branch::traits[tmp].points <= 0))
      upgrades.push_back(tmp);
    }
    for(const auto tmp : mutation_branch::data[i].additions) {
     if (!has_trait(tmp) && !has_child_flag(g, tmp) &&
-        (!force_bad || traits[tmp].points <= 0))
+        (!force_bad || mutation_branch::traits[tmp].points <= 0))
      upgrades.push_back(tmp);
    }
   }
@@ -71,7 +71,7 @@ void player::mutate(game *g)
 // positive and we're forcing bad
   for (int i = 0; i < valid.size(); i++) {
    if (has_trait(valid[i]) || has_child_flag(g, valid[i]) ||
-       (force_bad && traits[ valid[i] ].points > 0)) {
+       (force_bad && mutation_branch::traits[ valid[i] ].points > 0)) {
     valid.erase(valid.begin() + i);
     i--;
    }
@@ -140,11 +140,11 @@ void player::mutate_towards(game *g, pl_flag mut)
 
  toggle_trait(mut);
  if (replacing != PF_NULL) {
-  g->add_msg("Your %s turns into %s!", traits[replacing].name.c_str(),
-             traits[mut].name.c_str());
+  g->add_msg("Your %s turns into %s!", mutation_branch::traits[replacing].name.c_str(),
+	  mutation_branch::traits[mut].name.c_str());
   toggle_trait(replacing);
  } else
-  g->add_msg("You gain %s!", traits[mut].name.c_str());
+  g->add_msg("You gain %s!", mutation_branch::traits[mut].name.c_str());
  mutation_effect(g, *this, mut);
 
 // Weight us towards any categories that include this mutation
@@ -178,13 +178,13 @@ void player::remove_mutation(game *g, pl_flag mut)
 
  toggle_trait(mut);
  if (replacing != PF_NULL) {
-  g->add_msg("Your %s turns into %s.", traits[mut].name.c_str(),
-             traits[replacing].name.c_str());
+  g->add_msg("Your %s turns into %s.", mutation_branch::traits[mut].name.c_str(),
+	  mutation_branch::traits[replacing].name.c_str());
   toggle_trait(replacing);
   mutation_loss_effect(g, *this, mut);
   mutation_effect(g, *this, replacing);
  } else {
-  g->add_msg("You lose your %s.", traits[mut].name.c_str());
+  g->add_msg("You lose your %s.", mutation_branch::traits[mut].name.c_str());
   mutation_loss_effect(g, *this, mut);
  }
 
