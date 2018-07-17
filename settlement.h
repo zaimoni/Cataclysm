@@ -1,19 +1,18 @@
 #ifndef _SETTLEMENT_H_
 #define _SETTLEMENT_H_
 
-#include "npc.h"
+#include "omdata.h"
 #include "faction.h"
 
 struct settlement {
  settlement();
  settlement(int mapx, int mapy);
- void pick_faction(game *g, int omx, int omy);
+// void pick_faction(game *g, int omx, int omy);
  void set_population();
  void populate(game *g) { };
 
  int num(oter_id ter);
  void add_building(oter_id ter);
-
 
  faction fact;
  int posx;

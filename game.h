@@ -1,13 +1,10 @@
 #ifndef _GAME_H_
 #define _GAME_H_
 
-#include "monster.h"
 #include "map.h"
-#include "player.h"
 #include "crafting.h"
 #include "trap.h"
 #include "npc.h"
-#include "faction.h"
 #include "event.h"
 #include "mission.h"
 #include "weather.h"
