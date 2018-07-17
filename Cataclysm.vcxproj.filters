@@ -174,9 +174,6 @@
     <ClInclude Include="skill.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="texthash.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="tileray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -369,9 +366,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="skill.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="texthash.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="tileray.cpp">
