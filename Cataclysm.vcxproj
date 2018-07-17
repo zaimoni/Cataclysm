@@ -249,10 +249,6 @@
     <ClCompile Include="melee.cpp" />
     <ClCompile Include="mission.cpp" />
     <ClCompile Include="missiondef.cpp" />
-    <ClCompile Include="mission_end.cpp" />
-    <ClCompile Include="mission_fail.cpp" />
-    <ClCompile Include="mission_place.cpp" />
-    <ClCompile Include="mission_start.cpp" />
     <ClCompile Include="monattack.cpp" />
     <ClCompile Include="mondeath.cpp" />
     <ClCompile Include="mongroupdef.cpp" />

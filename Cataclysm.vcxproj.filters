@@ -302,18 +302,6 @@
     <ClCompile Include="mission.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mission_end.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mission_fail.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mission_place.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mission_start.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="missiondef.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
