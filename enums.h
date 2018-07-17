@@ -26,4 +26,13 @@ struct tripoint {
  tripoint(const tripoint &p) = default;
 };
 
+inline bool operator<(const tripoint& lhs, const tripoint& rhs)
+{
+	if (lhs.x < rhs.x) return true;
+	if (lhs.x > rhs.x) return false;
+	if (lhs.y < rhs.y) return true;
+	if (lhs.y > rhs.y) return false;
+	return lhs.z < rhs.z;
+}
+
 #endif

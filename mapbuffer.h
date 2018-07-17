@@ -5,20 +5,6 @@
 
 class game;
 
-struct pointcomp
-{
- bool operator() (const tripoint &lhs, const tripoint &rhs) const
- {
-  if (lhs.x < rhs.x) return true;
-  if (lhs.x > rhs.x) return false;
-  if (lhs.y < rhs.y) return true;
-  if (lhs.y > rhs.y) return false;
-  if (lhs.z < rhs.z) return true;
-  if (lhs.z > rhs.z) return false;
-  return false;
- };
-};
-
 class mapbuffer
 {
  public:
@@ -36,7 +22,7 @@ class mapbuffer
   int size();
 
  private:
-  std::map<tripoint, submap*, pointcomp> submaps;
+  std::map<tripoint, submap*> submaps;
   std::list<submap*> submap_list;
   game *master_game;
 };
