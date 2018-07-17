@@ -3,7 +3,7 @@
 #include "game.h"
 #include "rng.h"
 
-void event::actualize(game *g)
+void event::actualize(game *g) const
 {
  switch (type) {
 

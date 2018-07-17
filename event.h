@@ -25,26 +25,13 @@ enum event_type {
 struct event {
  event_type type;
  int turn;
- int faction_id;
+ int faction_id;	// -1 (no faction) is legal
  point map_point;
 
- event() {
-  type = EVENT_NULL;
-  turn = 0;
-  faction_id = -1;
-  map_point.x = -1;
-  map_point.y = -1;
- }
+ event(event_type e_t=EVENT_NULL, int t=0, int f_id= -1, int x= -1, int y = -1)
+ : type(e_t),turn(t),faction_id(f_id),map_point(-1,-1) {}
 
- event(event_type e_t, int t, int f_id, int x, int y) {
-  type = e_t;
-  turn = t;
-  faction_id = f_id;
-  map_point.x = x;
-  map_point.y = y;
- }
-
- void actualize(game *g); // When the time runs out
+ void actualize(game *g) const; // When the time runs out
  void per_turn(game *g);  // Every turn
 };
 
