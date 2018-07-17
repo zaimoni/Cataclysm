@@ -41,7 +41,7 @@ game::game()
  map::init();     // Set up which items appear where  (SEE mapitemsdef.cpp)
  init_recipes();      // Set up crafting reciptes         (SEE crafting.cpp)
  mongroup::init();      // Set up monster categories        (SEE mongroupdef.cpp)
- init_missions();     // Set up mission templates         (SEE missiondef.cpp)
+ mission_type::init();     // Set up mission templates         (SEE missiondef.cpp)
  init_construction(); // Set up constructables            (SEE construction.cpp)
  mutation_branch::init();
  init_vehicles();     // Set up vehicles                  (SEE veh_typedef.cpp)
@@ -1010,14 +1010,12 @@ void game::update_weather()
                    weather_data[new_weather].maxtime);
  nextweather = turn + MINUTES(minutes);
  weather = new_weather;
- if (weather == WEATHER_SUNNY && turn.is_night())
-  weather = WEATHER_CLEAR;
+ if (weather == WEATHER_SUNNY && turn.is_night()) weather = WEATHER_CLEAR;
 
  if (weather != old_weather && weather_data[weather].dangerous &&
      levz >= 0 && m.is_outside(u.posx, u.posy)) {
   std::stringstream weather_text;
-  weather_text << "The weather changed to " << weather_data[weather].name <<
-                  "!";
+  weather_text << "The weather changed to " << weather_data[weather].name << "!";
   cancel_activity_query(weather_text.str().c_str());
  }
 
@@ -1046,7 +1044,7 @@ int game::assign_mission_id()
 
 void game::give_mission(mission_id type)
 {
- mission tmp = mission_types[type].create(this);
+ mission tmp = mission_type::types[type].create(this);
  active_missions.push_back(tmp);
  u.active_missions.push_back(tmp.uid);
  u.active_mission = u.active_missions.size() - 1;
@@ -1064,7 +1062,7 @@ void game::assign_mission(int id)
  
 int game::reserve_mission(mission_id type, int npc_id)
 {
- mission tmp = mission_types[type].create(this, npc_id);
+ mission tmp = mission_type::types[type].create(this, npc_id);
  active_missions.push_back(tmp);
  return tmp.uid;
 }
@@ -1072,12 +1070,12 @@ int game::reserve_mission(mission_id type, int npc_id)
 int game::reserve_random_mission(mission_origin origin, point p, int npc_id)
 {
  std::vector<int> valid;
- for (int i = 0; i < mission_types.size(); i++) {
-  for (int j = 0; j < mission_types[i].origins.size(); j++) {
-   if (mission_types[i].origins[j] == origin &&
-       (*mission_types[i].place)(this, p.x, p.y)) {
+ for (int i = 0; i < mission_type::types.size(); i++) {
+  const auto& miss_type = mission_type::types[i];
+  for(const auto x0 : miss_type.origins) {
+   if (x0 == origin && (*miss_type.place)(this, p.x, p.y)) {
     valid.push_back(i);
-    j = mission_types[i].origins.size();
+	break;
    }
   }
  }

@@ -2,6 +2,8 @@
 #include "game.h"
 #include "setvector.h"
 
+std::vector <mission_type> mission_type::types; // The list of mission templates
+
 struct mission_place {	// Return true if [posx,posy] is valid in overmap
 	static bool never(game *g, int posx, int posy) { return false; }
 	static bool always(game *g, int posx, int posy) { return true; }
@@ -326,19 +328,19 @@ void mission_fail::kill_npc(game *g, mission *miss)
 	}
 }
 
-void game::init_missions()
+void mission_type::init()
 {
  #define MISSION(name, goal, diff, val, urgent, place, start, end, fail) \
- id++; mission_types.push_back( \
+ id++; types.push_back( \
 mission_type(id, name, goal, diff, val, urgent, place, start, end, fail) )
 
- #define ORIGINS(...) SET_VECTOR(mission_types[id].origins, __VA_ARGS__)
- #define ITEM(itid)     mission_types[id].item_id = itid
+ #define ORIGINS(...) SET_VECTOR(types[id].origins, __VA_ARGS__)
+ #define ITEM(itid)     types[id].item_id = itid
 
 // DEADLINE defines the low and high end time limits, in hours
 // Omitting DEADLINE means the mission never times out
- #define DEADLINE(low, high) mission_types[id].deadline_low  = low  * 600;\
-                             mission_types[id].deadline_high = high * 600
+ #define DEADLINE(low, high) types[id].deadline_low  = low  * 600;\
+                             types[id].deadline_high = high * 600
  //#define NPCS   (...) setvector(missions[id].npc
 
 

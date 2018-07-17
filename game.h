@@ -170,7 +170,6 @@ class game
   std::vector<recipe*> recipes;	// The list of valid recipes
   std::vector<constructable*> constructions; // The list of constructions
 
-  std::vector <mission_type> mission_types; // The list of mission templates
   std::map<char, action_id> keymap;
 
   calendar turn;

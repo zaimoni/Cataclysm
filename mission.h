@@ -40,6 +40,8 @@ enum mission_goal {
 };
 
 struct mission_type {
+ static std::vector <mission_type> types; // The list of mission templates
+
  int id;		// Matches it to a mission_id above
  std::string name;	// The name the mission is given in menus
  mission_goal goal;	// The basic goal type
@@ -74,6 +76,8 @@ struct mission_type {
   };
 
  mission create(game *g, int npc_id = -1); // Create a mission
+
+ static void init();
 };
 
 struct mission {
