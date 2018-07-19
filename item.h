@@ -13,7 +13,7 @@ public:
  item();
  item(const itype* it, unsigned int turn);
  item(const itype* it, unsigned int turn, char let);
- void make_corpse(const itype* it,const mtype* mt, unsigned int turn);	// Corpse
+ explicit item(unsigned int turn, int id = 0);	// corpse constructor; 0 is the value of mon_null
  item(std::string itemdata, game *g);
  ~item();
  void make(itype* it);

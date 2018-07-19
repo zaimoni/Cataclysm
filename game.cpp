@@ -1511,8 +1511,7 @@ void game::get_input()
    if (query_yn("Commit suicide?")) {
     u.moves = 0;
     std::vector<item> tmp = u.inv_dump();
-    item your_body;
-    your_body.make_corpse(itype::types[itm_corpse], mtype::types[mon_null], turn);
+    item your_body(turn);
     your_body.name = u.name;
     m.add_item(u.posx, u.posy, your_body);
     for (int i = 0; i < tmp.size(); i++)
@@ -1625,8 +1624,7 @@ bool game::is_game_over()
  for (int i = 0; i <= hp_torso; i++) {
   if (u.hp_cur[i] < 1) {
    std::vector<item> tmp = u.inv_dump();
-   item your_body;
-   your_body.make_corpse(itype::types[itm_corpse], mtype::types[mon_null], turn);
+   item your_body(turn);
    your_body.name = u.name;
    m.add_item(u.posx, u.posy, your_body);
    for (int i = 0; i < tmp.size(); i++)

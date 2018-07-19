@@ -86,19 +86,24 @@ item::item(const itype* const it, unsigned int turn, char let)
  player_id = -1;
 }
 
-void item::make_corpse(const itype* it, const mtype* mt, unsigned int turn)
+// corpse constructor
+item::item(unsigned int turn, int id)
 {
- name = "";
- charges = -1;
- invlet = 0;
- damage = 0;
- burnt = 0;
- poison = 0;
- curammo = NULL;
- active = false;
- type = it;
- corpse = mt;
- bday = turn;
+	name = "";
+	charges = -1;
+	invlet = 0;
+	damage = 0;
+	burnt = 0;
+	poison = 0;
+	curammo = NULL;
+	active = false;
+	owned = -1;
+	mission_id = -1;
+	player_id = -1;
+
+	type = itype::types[itm_corpse];
+	corpse = mtype::types[id];
+	bday = turn;
 }
 
 item::item(std::string itemdata, game *g)

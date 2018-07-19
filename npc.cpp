@@ -1952,8 +1952,7 @@ void npc::die(game *g, bool your_fault)
    g->u.add_morale(MORALE_KILLED_INNOCENT, -100);
  }
 
- item my_body;
- my_body.make_corpse(itype::types[itm_corpse], mtype::types[mon_null], g->turn);
+ item my_body(g->turn);
  my_body.name = name;
  g->m.add_item(posx, posy, my_body);
  for (int i = 0; i < inv.size(); i++)

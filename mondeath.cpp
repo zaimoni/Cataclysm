@@ -21,9 +21,8 @@ void mdeath::normal(game *g, monster *z)
 // If their hp is less than -50, we destroyed them so badly no corpse was left
  if ((z->hp >= -50 || z->hp >= 0 - 2 * z->type->hp) &&
      (z->made_of(FLESH) || z->made_of(VEGGY))) {
-  item tmp;
-  tmp.make_corpse(itype::types[itm_corpse], z->type, g->turn);
-  g->m.add_item(z->posx, z->posy, tmp);
+  item body(g->turn, z->type->id);
+  g->m.add_item(z->posx, z->posy, body);
  }
 }
 
