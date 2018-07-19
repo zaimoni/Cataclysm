@@ -1,9 +1,6 @@
 #ifndef _ARTIFACT_H_
 #define _ARTIFACT_H_
 
-#include <string>
-#include <vector>
-
 enum art_effect_passive {
  AEP_NULL = 0,
 // Good
