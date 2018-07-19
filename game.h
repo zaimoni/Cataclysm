@@ -111,7 +111,7 @@ class game
                   std::vector<point> &trajectory);
   void cancel_activity();
   void cancel_activity_query(const char* message, ...);
-  int assign_mission_id(); // Just returns the next available one
+  int assign_mission_id() { return next_mission_id++; } // Just returns the next available one
   void give_mission(mission_id type); // Create the mission and assign it
   void assign_mission(int id); // Just assign an existing mission
 // reserve_mission() creates a new mission of the given type and pushes it to
@@ -139,8 +139,8 @@ class game
   std::vector<faction *> factions_at(int x, int y);
   int& scent(int x, int y);
   unsigned char light_level();
-  int assign_npc_id();
-  int assign_faction_id();
+  int assign_npc_id() { return next_npc_id++; }
+  int assign_faction_id() { return next_faction_id++; }
   faction* faction_by_id(int it);
   bool sees_u(int x, int y, int &t);
   bool u_see (int x, int y, int &t);
@@ -205,13 +205,10 @@ class game
   bool load_master();	// Load the master data file, with factions &c
   void load(std::string name);	// Load a player-specific save file
   void start_game();	// Starts a new game
-  void start_special_game(special_game_id gametype); // See gamemode.cpp
-
+  
 // Data Initialization
-  void init_traps();        // Initializes trap types
   void init_recipes();      // Initializes crafting recipes
   void init_construction(); // Initializes construction "recipes"
-  void init_missions();     // Initializes mission templates
   void init_vehicles();     // Initializes vehicle types
 
   void load_keyboard_settings(); // Load keybindings from disk
@@ -337,7 +334,6 @@ class game
   calendar nextspawn; // The turn on which monsters will spawn next.
   calendar nextweather; // The turn on which weather will shift next.
   overmap *om_hori, *om_vert, *om_diag; // Adjacent overmaps
-  int next_npc_id, next_faction_id, next_mission_id; // Keep track of UIDs
   std::vector <game_message> messages;   // Messages to be printed
   int curmes;	  // The last-seen message.
   int grscent[SEEX * MAPSIZE][SEEY * MAPSIZE];	// The scent map
@@ -348,6 +344,8 @@ class game
   std::string last_action;		// The keypresses of last turn
 
   special_game *gamemode;
+private:
+  int next_npc_id, next_faction_id, next_mission_id; // Keep track of UIDs
 };
 
 #endif

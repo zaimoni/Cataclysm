@@ -1025,13 +1025,6 @@ void game::update_weather()
   temperature += rng(-1, 2);
 }
 
-int game::assign_mission_id()
-{
- int ret = next_mission_id;
- next_mission_id++;
- return ret;
-}
-
 void game::give_mission(mission_id type)
 {
  mission tmp = mission_type::types[type].create(this);
@@ -2791,20 +2784,6 @@ unsigned char game::light_level()
   ret = 1;
 // The EVENT_DIM event slowly dims the sky, then relights it
 // EVENT_DIM has an occurance date of turn + 50, so the first 25 dim it
- return ret;
-}
-
-int game::assign_npc_id()
-{
- int ret = next_npc_id;
- next_npc_id++;
- return ret;
-}
-
-int game::assign_faction_id()
-{
- int ret = next_faction_id;
- next_faction_id++;
  return ret;
 }
 
