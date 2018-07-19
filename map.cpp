@@ -9,6 +9,8 @@
 #include <fstream>
 #include "posix_time.h"
 
+using namespace cataclysm;
+
 #define SGN(a) (((a)<0) ? -1 : 1)
 #define INBOUNDS(x, y) \
  (x >= 0 && x < SEEX * my_MAPSIZE && y >= 0 && y < SEEY * my_MAPSIZE)
@@ -1357,10 +1359,7 @@ bool map::close_door(int x, int y)
 
 int& map::radiation(int x, int y)
 {
- if (!INBOUNDS(x, y)) {
-  nulrad = 0;
-  return nulrad;
- }
+ if (!INBOUNDS(x, y)) return discard<int>::x = 0;
 /*
  int nonant;
  cast_to_nonant(x, y, nonant);

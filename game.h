@@ -338,7 +338,6 @@ class game
   std::vector <game_message> messages;   // Messages to be printed
   int curmes;	  // The last-seen message.
   //int monmap[SEEX * MAPSIZE][SEEY * MAPSIZE]; // Temp monster map, for mon_at()
-  int nulscent;				// Returned for OOB scent checks
   std::vector<event> events;	        // Game events to be processed
   int kills[num_monsters];	        // Player's kill count
   std::string last_action;		// The keypresses of last turn

@@ -35,4 +35,15 @@ inline bool operator<(const tripoint& lhs, const tripoint& rhs)
 	return lhs.z < rhs.z;
 }
 
+namespace cataclysm {
+
+// exceptionally un-threadsafe; intent is to provide a standard "overflow" for reference returns
+template<class T>
+struct discard
+{
+	static T x;
+};
+
+}
+
 #endif

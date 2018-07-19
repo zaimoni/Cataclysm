@@ -167,7 +167,6 @@ protected:
  trap_id nultrap; // Returned when &tr_at() is asked for an OOB value
  field nulfield; // Returned when &field_at() is asked for an OOB value
  vehicle nulveh; // Returned when &veh_at() is asked for an OOB value
- int nulrad;	// OOB &radiation()
 
  std::vector <itype_id> (*mapitems)[num_itloc];
 

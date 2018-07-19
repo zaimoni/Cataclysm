@@ -23,6 +23,9 @@
 #include <sys/stat.h>
 #include <utility>
 
+using namespace cataclysm;
+int discard<int>::x;
+
 #define MAX_MONSTERS_MOVING 40 // Efficiency!
 
 void intro();
@@ -1562,19 +1565,15 @@ void game::get_input()
 int& game::scent(int x, int y)
 {
  if (x < 0 || x >= SEEX * MAPSIZE || y < 0 || y >= SEEY * MAPSIZE) {
-  nulscent = 0;
-  return nulscent;	// Out-of-bounds - null scent
+  return discard<int>::x = 0;	// Out-of-bounds - null scent
  }
  return grscent[x][y];
 }
 
 void game::update_scent()
 {
- signed int newscent[SEEX * MAPSIZE][SEEY * MAPSIZE];
- if (!u.has_active_bionic(bio_scent_mask))
-  grscent[u.posx][u.posy] = u.scent;
- else
-  grscent[u.posx][u.posy] = 0;
+ decltype(grscent) newscent;
+ grscent[u.posx][u.posy] = !u.has_active_bionic(bio_scent_mask) ? u.scent : 0;	// bionic actively erases scent, not just suppressing yours
 
  for (int x = u.posx - 18; x <= u.posx + 18; x++) {
   for (int y = u.posy - 18; y <= u.posy + 18; y++) {
