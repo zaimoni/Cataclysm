@@ -8,9 +8,7 @@
 #include "mapitems.h"
 #include "enums.h"
 #include "color.h"
-#include <string>
-#include <vector>
-#include <math.h>
+#include "itype.h"
 
 class mdeath;
 
@@ -277,6 +275,8 @@ struct mtype {
   return false;
  }
 
+ int chunk_count() const;
+ const itype* chunk_material() const;
  nc_color danger() const;
 
  static void init();

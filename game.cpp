@@ -3888,58 +3888,45 @@ void game::explode_mon(int index)
   kills[z[index].type->id]++;	// Increment our kill counter
 // Send body parts and blood all over!
   const mtype* const corpse = z[index].type;
-  if (corpse->mat == FLESH || corpse->mat == VEGGY) { // No chunks otherwise
-   int num_chunks;
-   switch (corpse->size) {
-    case MS_TINY:   num_chunks =  1; break;
-    case MS_SMALL:  num_chunks =  2; break;
-    case MS_MEDIUM: num_chunks =  4; break;
-    case MS_LARGE:  num_chunks =  8; break;
-    case MS_HUGE:   num_chunks = 16; break;
-   }
-   const itype* meat;
-   if (corpse->has_flag(MF_POISON)) {
-	meat = itype::types[FLESH == corpse->mat ? itm_meat_tainted : itm_veggy_tainted];
-   } else {
-	meat = itype::types[FLESH == corpse->mat ? itm_meat : itm_veggy];
-   }
+  const itype* const meat = corpse->chunk_material();
+  if (!meat) return;	// no chunks when return value is NULL
+  const int num_chunks = corpse->chunk_count();
 
-   int posx = z[index].posx, posy = z[index].posy;
-   for (int i = 0; i < num_chunks; i++) {
-    int tarx = posx + rng(-3, 3), tary = posy + rng(-3, 3);
-    std::vector<point> traj = line_to(posx, posy, tarx, tary, 0);
+  int posx = z[index].posx, posy = z[index].posy;
+  for (int i = 0; i < num_chunks; i++) {
+   int tarx = posx + rng(-3, 3), tary = posy + rng(-3, 3);
+   std::vector<point> traj = line_to(posx, posy, tarx, tary, 0);
  
-    bool done = false;
-    for (int j = 0; j < traj.size() && !done; j++) {
-     tarx = traj[j].x;
-     tary = traj[j].y;
+   bool done = false;
+   for (int j = 0; j < traj.size() && !done; j++) {
+    tarx = traj[j].x;
+    tary = traj[j].y;
 // Choose a blood type and place it
-     field_id blood_type = fd_blood;
-     if (corpse->dies == &mdeath::boomer)
-      blood_type = fd_bile;
-     else if (corpse->dies == &mdeath::acid)
-      blood_type = fd_acid;
-     if (m.field_at(tarx, tary).type == blood_type &&
-         m.field_at(tarx, tary).density < 3)
-      m.field_at(tarx, tary).density++;
-     else
-      m.add_field(this, tarx, tary, blood_type, 1);
+    field_id blood_type = fd_blood;
+    if (corpse->dies == &mdeath::boomer)
+     blood_type = fd_bile;
+    else if (corpse->dies == &mdeath::acid)
+     blood_type = fd_acid;
+    if (m.field_at(tarx, tary).type == blood_type &&
+        m.field_at(tarx, tary).density < 3)
+     m.field_at(tarx, tary).density++;
+    else
+     m.add_field(this, tarx, tary, blood_type, 1);
 
-     if (m.move_cost(tarx, tary) == 0) {
-      std::string tmp = "";
-      if (m.bash(tarx, tary, 3, tmp))
-       sound(tarx, tary, 18, tmp);
-      else {
-       if (j > 0) {
-        tarx = traj[j - 1].x;
-        tary = traj[j - 1].y;
-       }
-       done = true;
+    if (m.move_cost(tarx, tary) == 0) {
+     std::string tmp = "";
+     if (m.bash(tarx, tary, 3, tmp))
+      sound(tarx, tary, 18, tmp);
+     else {
+      if (j > 0) {
+       tarx = traj[j - 1].x;
+       tary = traj[j - 1].y;
       }
+      done = true;
      }
     }
-    m.add_item(tarx, tary, meat, turn);
    }
+   m.add_item(tarx, tary, meat, turn);
   }
  }
 
@@ -5559,14 +5546,15 @@ void game::complete_butcher(int index)
  int age = m.i_at(u.posx, u.posy)[index].bday;
  m.i_rem(u.posx, u.posy, index);
  int factor = u.butcher_factor();
- int pieces, pelts;
+ int pelts;
  double skill_shift = 0.;
+ int pieces = corpse->chunk_count();
  switch (corpse->size) {
-  case MS_TINY:   pieces =  1; pelts =  1; break;
-  case MS_SMALL:  pieces =  2; pelts =  3; break;
-  case MS_MEDIUM: pieces =  4; pelts =  6; break;
-  case MS_LARGE:  pieces =  8; pelts = 10; break;
-  case MS_HUGE:   pieces = 16; pelts = 18; break;
+  case MS_TINY:   pelts =  1; break;
+  case MS_SMALL:  pelts =  3; break;
+  case MS_MEDIUM: pelts =  6; break;
+  case MS_LARGE:  pelts = 10; break;
+  case MS_HUGE:   pelts = 18; break;
  }
  if (u.sklevel[sk_survival] < 3)
   skill_shift -= rng(0, 8 - u.sklevel[sk_survival]);
@@ -5607,12 +5595,7 @@ void game::complete_butcher(int index)
  }
  if (pieces <= 0) add_msg("Your clumsy butchering destroys the meat!");
  else {
-  const itype* meat;
-  if (corpse->has_flag(MF_POISON)) {
-   meat = itype::types[FLESH == corpse->mat ? itm_meat_tainted : itm_veggy_tainted];
-  } else {
-   meat = itype::types[FLESH == corpse->mat ? itm_meat : itm_veggy];
-  }
+  const itype* const meat = corpse->chunk_material();	// assumed non-NULL: precondition
   for (int i = 0; i < pieces; i++)
    m.add_item(u.posx, u.posy, meat, age);
   add_msg("You butcher the corpse.");

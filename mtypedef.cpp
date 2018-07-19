@@ -1,5 +1,4 @@
 #include "mtype.h"
-#include "itype.h"
 #include "setvector.h"
 
 std::vector <mtype*> mtype::types;
@@ -11,6 +10,28 @@ nc_color mtype::danger() const
 	if (8 <= difficulty) return c_white;
 	if (0 < agro) return c_ltgray;
 	return c_dkgray;
+}
+
+const itype* mtype::chunk_material() const
+{
+	switch (mat)
+	{
+	case FLESH: return itype::types[has_flag(MF_POISON) ? itm_meat_tainted : itm_meat];
+	case VEGGY: return itype::types[has_flag(MF_POISON) ? itm_veggy_tainted : itm_veggy];
+	default: return NULL;	// no other materials have chunks: inherited from C:Whales
+	}
+}
+
+int mtype::chunk_count() const
+{
+	switch(size) {
+	case MS_TINY:   return 1;
+	case MS_SMALL:  return 2;
+	case MS_MEDIUM: return 4;
+	case MS_LARGE:  return 8;
+	case MS_HUGE:   return 16;
+	default: return 0;
+	}
 }
 
 // This function populates the master list of monster types.
