@@ -1566,8 +1566,7 @@ void game::get_input()
 int& game::scent(int x, int y)
 {
  if (x < 0 || x >= SEEX * MAPSIZE || y < 0 || y >= SEEY * MAPSIZE) {
-  nulscent = 0;
-  return nulscent;	// Out-of-bounds - null scent
+  return 0;	// Out-of-bounds - null scent
  }
  return grscent[x][y];
 }
