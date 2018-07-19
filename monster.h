@@ -44,8 +44,8 @@ struct monster_effect
 class monster {
  public:
  monster();
- monster(mtype *t);
- monster(mtype *t, int x, int y);
+ monster(const mtype *t);
+ monster(const mtype *t, int x, int y);
  ~monster();
  void poly(mtype *t);
  void spawn(int x, int y); // All this does is moves the monster to x,y
@@ -58,7 +58,7 @@ class monster {
  void draw(WINDOW* w, int plx, int ply, bool inv);
  nc_color color_with_effects();	// Color with fire, beartrapped, etc.
 				// Inverts color if inv==true
- bool has_flag(m_flag f);	// Returns true if f is set (see mtype.h)
+ bool has_flag(m_flag f) const { return type->has_flag(f); };
  bool can_see();		// MF_SEES and no ME_BLIND
  bool can_hear();		// MF_HEARS and no ME_DEAF
  bool made_of(material m);	// Returns true if it's made of m
@@ -98,7 +98,7 @@ class monster {
  int morale_level(player &u);	// Looks at our HP etc.
  void process_triggers(game *g);// Process things that anger/scare us
  void process_trigger(monster_trigger trig, int amount);// Single trigger
- int trigger_sum(game *g, std::vector<monster_trigger> *triggers);
+ int trigger_sum(game *g, const std::vector<monster_trigger>& triggers);
  int  hit(game *g, player &p, body_part &bp_hit); // Returns a damage
  void hit_monster(game *g, int i);
  bool hurt(int dam); 	// Deals this dam damage; returns true if we dead
@@ -137,7 +137,7 @@ class monster {
  int anger, morale;
  int faction_id; // If we belong to a faction
  int mission_id; // If we're related to a mission
- mtype *type;
+ const mtype *type;
  bool dead;
  bool made_footstep;
  std::string unique_name; // If we're unique

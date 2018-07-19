@@ -171,7 +171,7 @@ struct mtype {
 
  m_size size;
  material mat;	// See enums.h for material list.  Generally, flesh; veggy?
- std::vector<m_flag> flags;
+ std::vector<m_flag> flags;	// XXX should be unsigned long long	\todo fix
  std::vector<monster_trigger> anger;   // What angers us?
  std::vector<monster_trigger> placate; // What reduces our anger?
  std::vector<monster_trigger> fear;    // What are we afraid of?
@@ -268,7 +268,7 @@ struct mtype {
   fear = default_fears(species);
  }
 
- bool has_flag(m_flag flag)
+ bool has_flag(m_flag flag) const
  {
   for (int i = 0; i < flags.size(); i++) {
    if (flags[i] == flag)

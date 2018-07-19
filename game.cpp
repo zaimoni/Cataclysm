@@ -3889,7 +3889,7 @@ void game::explode_mon(int index)
   z[index].dead = true;
   kills[z[index].type->id]++;	// Increment our kill counter
 // Send body parts and blood all over!
-  mtype* corpse = z[index].type;
+  const mtype* const corpse = z[index].type;
   if (corpse->mat == FLESH || corpse->mat == VEGGY) { // No chunks otherwise
    int num_chunks;
    switch (corpse->size) {
@@ -5534,7 +5534,7 @@ void game::butcher()
 // We do it backwards to prevent the deletion of a corpse from corrupting our
 // vector of indices.
  for (int i = corpses.size() - 1; i >= 0; i--) {
-  mtype *corpse = m.i_at(u.posx, u.posy)[corpses[i]].corpse;
+  const mtype* const corpse = m.i_at(u.posx, u.posy)[corpses[i]].corpse;
   if (query_yn("Butcher the %s corpse?", corpse->name.c_str())) {
    int time_to_cut;
    switch (corpse->size) {	// Time in turns to cut up te corpse
@@ -5557,7 +5557,7 @@ void game::butcher()
 
 void game::complete_butcher(int index)
 {
- mtype* corpse = m.i_at(u.posx, u.posy)[index].corpse;
+ const mtype* const corpse = m.i_at(u.posx, u.posy)[index].corpse;
  int age = m.i_at(u.posx, u.posy)[index].bday;
  m.i_rem(u.posx, u.posy, index);
  int factor = u.butcher_factor();
@@ -5584,8 +5584,7 @@ void game::complete_butcher(int index)
   skill_shift -= rng(0, factor / 5);
 
  int practice = 4 + pieces;
- if (practice > 20)
-  practice = 20;
+ if (practice > 20) practice = 20;
  u.practice(sk_survival, practice);
 
  pieces += int(skill_shift);

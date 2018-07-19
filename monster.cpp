@@ -24,6 +24,7 @@ monster::monster()
  wandx = -1;
  wandy = -1;
  wandf = 0;
+ type = NULL;
  hp = 60;
  moves = 0;
  sp_timeout = 0;
@@ -41,7 +42,7 @@ monster::monster()
  unique_name = "";
 }
 
-monster::monster(mtype *t)
+monster::monster(const mtype *t)
 {
  posx = 20;
  posy = 10;
@@ -67,7 +68,7 @@ monster::monster(mtype *t)
  unique_name = "";
 }
 
-monster::monster(mtype *t, int x, int y)
+monster::monster(const mtype *t, int x, int y)
 {
  posx = x;
  posy = y;
@@ -241,15 +242,6 @@ nc_color monster::color_with_effects()
  return ret;
 }
 
-bool monster::has_flag(m_flag f)
-{
- for (int i = 0; i < type->flags.size(); i++) {
-  if (type->flags[i] == f)
-   return true;
- }
- return false;
-}
-
 bool monster::can_see()
 {
  return has_flag(MF_SEES) && !has_effect(ME_BLIND);
@@ -376,13 +368,13 @@ monster_attitude monster::attitude(player *u)
 
 void monster::process_triggers(game *g)
 {
- anger += trigger_sum(g, &(type->anger));
- anger -= trigger_sum(g, &(type->placate));
+ anger += trigger_sum(g, type->anger);
+ anger -= trigger_sum(g, type->placate);
  if (morale < 0) {
   if (morale < type->morale && one_in(20))
   morale++;
  } else
-  morale -= trigger_sum(g, &(type->fear));
+  morale -= trigger_sum(g, type->fear);
 }
 
 // This Adjustes anger/morale levels given a single trigger.
@@ -403,13 +395,13 @@ void monster::process_trigger(monster_trigger trig, int amount)
 }
 
 
-int monster::trigger_sum(game *g, std::vector<monster_trigger> *triggers)
+int monster::trigger_sum(game *g, const std::vector<monster_trigger>& triggers)
 {
  int ret = 0;
  bool check_terrain = false, check_meat = false, check_fire = false;
- for (int i = 0; i < triggers->size(); i++) {
+ for (const auto trigger : triggers) {
 
-  switch ((*triggers)[i]) {
+  switch (trigger) {
   case MTRIG_TIME:
    if (one_in(20))
     ret++;

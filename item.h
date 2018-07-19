@@ -13,7 +13,7 @@ public:
  item();
  item(const itype* it, unsigned int turn);
  item(const itype* it, unsigned int turn, char let);
- void make_corpse(itype* it, mtype* mt, unsigned int turn);	// Corpse
+ void make_corpse(const itype* it,const mtype* mt, unsigned int turn);	// Corpse
  item(std::string itemdata, game *g);
  ~item();
  void make(itype* it);
@@ -100,7 +100,7 @@ public:
  bool is_artifact() const;
 
  const itype*   type;
- mtype*   corpse;
+ const mtype*   corpse;
  const it_ammo* curammo;
 
  std::vector<item> contents;

@@ -86,7 +86,7 @@ item::item(const itype* const it, unsigned int turn, char let)
  player_id = -1;
 }
 
-void item::make_corpse(itype* it, mtype* mt, unsigned int turn)
+void item::make_corpse(const itype* it, const mtype* mt, unsigned int turn)
 {
  name = "";
  charges = -1;
