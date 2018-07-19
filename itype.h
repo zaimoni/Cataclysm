@@ -401,7 +401,7 @@ struct it_comest : public itype
  virtual bool is_food() const { return true; }
  virtual bool count_by_charges() const { return charges > 1; }
 
- void (iuse::*use)(game *, player *, item *, bool);// Special effects of use
+ void (*use)(game *, player *, item *, bool);// Special effects of use
  add_type add;				// Effects of addiction
 
  it_comest(int pid, unsigned char prarity, unsigned int pprice,
@@ -414,7 +414,7 @@ struct it_comest : public itype
            signed char pquench, unsigned char pnutr, signed char pspoils,
            signed char pstim, signed char phealthy, unsigned char paddict,
            unsigned char pcharges, signed char pfun, itype_id pcontainer,
-           itype_id ptool, void (iuse::*puse)(game *, player *, item *, bool),
+           itype_id ptool, void (*puse)(game *, player *, item *, bool),
            add_type padd) 
 :itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL,
        pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags) {
@@ -660,7 +660,7 @@ struct it_tool : public itype
  unsigned char charges_per_use;
  unsigned char turns_per_charge;
  itype_id revert_to;
- void (iuse::*use)(game *, player *, item *, bool);
+ void (*use)(game *, player *, item *, bool);
 
  virtual bool is_tool() const    { return true; }
  virtual std::string save_data() { return std::string(); }
@@ -686,7 +686,7 @@ struct it_tool : public itype
          unsigned int pmax_charges, unsigned int pdef_charges,
          unsigned char pcharges_per_use, unsigned char pturns_per_charge,
          ammotype pammo, itype_id prevert_to,
-	 void (iuse::*puse)(game *, player *, item *, bool))
+	 void (*puse)(game *, player *, item *, bool))
 :itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2,
        pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags) {
   max_charges = pmax_charges;
@@ -729,7 +729,7 @@ struct it_bionic : public itype
 struct it_macguffin : public itype
 {
  bool readable; // If true, activated with 'R'
- void (iuse::*use)(game *, player *, item *, bool);
+ void (*use)(game *, player *, item *, bool);
  
  virtual bool is_macguffin() const { return true; }
 
@@ -741,7 +741,7 @@ struct it_macguffin : public itype
               signed char pm_to_hit, unsigned pitem_flags,
 
               bool preadable,
-              void (iuse::*puse)(game *, player *, item *, bool))
+              void (*puse)(game *, player *, item *, bool))
 :itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2,
        pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags) {
   readable = preadable;

@@ -1498,7 +1498,6 @@ void map::process_active_items(game *g)
      
 void map::process_active_items_in_submap(game *g, int nonant)
 {
- iuse use;
  for (int i = 0; i < SEEX; i++) {
   for (int j = 0; j < SEEY; j++) {
    std::vector<item>& items = grid[nonant]->itm[i][j];
@@ -1509,11 +1508,11 @@ void map::process_active_items_in_submap(game *g, int nonant)
       items[n].charges = 0;
      } else { 
       const it_tool* const tmp = dynamic_cast<const it_tool*>(items[n].type);
-      (use.*tmp->use)(g, &(g->u), &(items[n]), true);
+      (*tmp->use)(g, &(g->u), &(items[n]), true);
       if (tmp->turns_per_charge > 0 && int(g->turn) % tmp->turns_per_charge ==0)
        items[n].charges--;
       if (items[n].charges <= 0) {
-       (use.*tmp->use)(g, &(g->u), &(items[n]), false);
+       (*tmp->use)(g, &(g->u), &(items[n]), false);
        if (tmp->revert_to == itm_null || items[n].charges == -1) {
         items.erase(items.begin() + n);
         grid[nonant]->active_item_count--;

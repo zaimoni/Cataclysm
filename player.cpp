@@ -3370,7 +3370,6 @@ int player::active_item_charges(itype_id id)
 void player::process_active_items(game *g)
 {
  const it_tool* tmp;
- iuse use;
  if (weapon.is_artifact() && weapon.is_tool())
   g->process_artifact(&weapon, this, true);
  else if (weapon.active) {
@@ -3422,11 +3421,11 @@ void player::process_active_items(game *g)
    return;
   }
   tmp = dynamic_cast<const it_tool*>(weapon.type);
-  (use.*tmp->use)(g, this, &weapon, true);
+  (*tmp->use)(g, this, &weapon, true);
   if (tmp->turns_per_charge > 0 && int(g->turn) % tmp->turns_per_charge == 0)
    weapon.charges--;
   if (weapon.charges <= 0) {
-   (use.*tmp->use)(g, this, &weapon, false);
+   (*tmp->use)(g, this, &weapon, false);
    if (tmp->revert_to == itm_null)
     weapon = ret_null;
    else
@@ -3440,11 +3439,11 @@ void player::process_active_items(game *g)
     g->process_artifact(tmp_it, this);
    if (tmp_it->active) {
     tmp = dynamic_cast<const it_tool*>(tmp_it->type);
-    (use.*tmp->use)(g, this, tmp_it, true);
+    (*tmp->use)(g, this, tmp_it, true);
     if (tmp->turns_per_charge > 0 && int(g->turn) % tmp->turns_per_charge == 0)
     tmp_it->charges--;
     if (tmp_it->charges <= 0) {
-     (use.*tmp->use)(g, this, tmp_it, false);
+     (*tmp->use)(g, this, tmp_it, false);
      if (tmp->revert_to == itm_null) {
       if (inv.stack_at(i).size() == 1) {
        inv.remove_stack(i);
@@ -4004,8 +4003,7 @@ bool player::eat(game *g, int index)
    } else if (comest->stim >= 10 && stim < comest->stim * 3) stim += comest->stim;
   }
  
-  iuse use;
-  (use.*comest->use)(g, this, eaten, false);
+  (*comest->use)(g, this, eaten, false);
   add_addiction(comest->add, comest->addict);
   if (has_bionic(bio_ethanol) && comest->use == &iuse::alcohol)
    charge_power(rng(2, 8));
@@ -4319,8 +4317,7 @@ void player::use(game *g, char let)
 
   const it_tool* const tool = dynamic_cast<const it_tool*>(used->type);
   if (tool->charges_per_use == 0 || used->charges >= tool->charges_per_use) {
-   iuse use;
-   (use.*tool->use)(g, this, used, false);
+   (*tool->use)(g, this, used, false);
    used->charges -= tool->charges_per_use;
   } else
    g->add_msg("Your %s has %d charges but needs %d.", used->tname(g).c_str(),
@@ -4500,8 +4497,7 @@ void player::read(game *g, char ch)
   used = &(inv[index]);
  }
  if (mac != NULL) {
-  iuse use;
-  (use.*mac->use)(g, this, used, false);
+  (*mac->use)(g, this, used, false);
   return;
  }
 

@@ -601,7 +601,7 @@ void iuse::marloss(game *g, player *p, item *it, bool t)
  } else if (effect <= 6) { // Radiation cleanse is below
   g->add_msg("This berry makes you feel better all over.");
   p->pkill += 30;
-  this->purifier(g, p, it, t);
+  purifier(g, p, it, t);
  } else if (effect == 7) {
   g->add_msg("This berry is delicious, and very filling!");
   p->hunger = -100;

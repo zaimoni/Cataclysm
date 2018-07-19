@@ -652,8 +652,7 @@ void npc::use_escape_item(game *g, int index, int target)
 
  if (used->is_tool()) {
   const it_tool* const tool = dynamic_cast<const it_tool*>(used->type);
-  iuse use;
-  (use.*tool->use)(g, this, used, false);
+  (*tool->use)(g, this, used, false);
   used->charges -= tool->charges_per_use;
   if (used->invlet == 0) inv.remove_item(index);
   return;
@@ -1490,13 +1489,12 @@ void npc::alt_attack(game *g, int target)
 void npc::activate_item(game *g, int index)
 {
  item& it = inv[index];
- iuse use;
  if (it.is_tool()) {
   const it_tool* const tool = dynamic_cast<const it_tool*>(it.type);
-  (use.*tool->use)(g, this, &it, false);
+  (*tool->use)(g, this, &it, false);
  } else if (it.is_food()) {
   const it_comest* const comest = dynamic_cast<const it_comest*>(it.type);
-  (use.*comest->use)(g, this, &it, false);
+  (*comest->use)(g, this, &it, false);
  }
 }
 
