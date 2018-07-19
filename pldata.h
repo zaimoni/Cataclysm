@@ -300,14 +300,6 @@ enum pl_flag {
  PF_MAX2
 };
 
-struct trait {
- std::string name;
- int points;		// How many points it costs in character creation
- int visiblity;		// How visible it is--see below, at PF_MAX
- int ugliness;		// How ugly it is--see below, at PF_MAX
- std::string description;
-};
-
 enum hp_part {
  hp_head = 0,
  hp_torso,

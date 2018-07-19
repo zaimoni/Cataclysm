@@ -1,9 +1,13 @@
 #ifndef _DISEASE_H_
 #define _DISEASE_H_
 
-#include "game.h"
-#include "bodypart.h"
-#include <sstream>
+// This is not a normal include file; it "should be" inlined into player.cpp.  Just check that required headers we contraol are in place.
+#ifndef _GAME_H_
+#error need to include game.h
+#endif
+#ifndef _BODYPART_H_
+#error need to include bodypart.h
+#endif
 
 #define MIN_DISEASE_AGE (-43200) // Permanent disease capped @ 3 days
   
@@ -716,21 +720,12 @@ void dis_effect(game *g, player &p, disease &dis)
   bool lesser = false; // Worn or wielded; diminished effects
   if (p.weapon.is_artifact() && p.weapon.is_tool()) {
    const it_artifact_tool* const tool = dynamic_cast<const it_artifact_tool*>(p.weapon.type);
-   for (const auto effect : tool->effects_carried) {
-     if (AEP_EVIL == effect)
-       lesser = true;
-   }
-   for (const auto effect : tool->effects_wielded) {
-     if (AEP_EVIL == effect)
-       lesser = true;
-   }
+   lesser = any(tool->effects_carried, AEP_EVIL) || any(tool->effects_wielded, AEP_EVIL);
   }
-  for (int i = 0; !lesser && i < p.worn.size(); i++) {
-   if (p.worn[i].is_artifact()) {
-	for (const auto effect : dynamic_cast<const it_artifact_armor*>(p.worn[i].type)->effects_worn) {
-     if (AEP_EVIL == effect)
-      lesser = true;
-    }
+  if (!lesser) {
+   for(const auto& it : p.worn) {
+    if (!it.is_artifact()) continue;
+    if (lesser = any(dynamic_cast<const it_artifact_armor*>(it.type)->effects_worn, AEP_EVIL)) break;
    }
   }
 

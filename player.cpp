@@ -8,6 +8,9 @@
 #include "inventory.h"
 #include "artifact.h"
 #include "options.h"
+#include "stl_typetraits.h"
+
+using namespace cataclysm;
 
 #include "disease.h"	// XXX the function definitions, at least, should be inlined somewhere around here
 
@@ -17,8 +20,6 @@
 	#include <curses.h>
 #endif
 
-#include <stdlib.h>
-#include <sstream>
 #include <fstream>
 
 // start prototype for player_activity.cpp
@@ -3736,26 +3737,18 @@ bool player::has_artifact_with(art_effect_passive effect)
 {
  if (weapon.is_artifact() && weapon.is_tool()) {
   const it_artifact_tool* const tool = dynamic_cast<const it_artifact_tool*>(weapon.type);
-  for (const auto tool_effect : tool->effects_wielded) {
-   if (tool_effect == effect) return true;
-  }
-  for (const auto tool_effect : tool->effects_carried) {
-   if (tool_effect == effect) return true;
-  }
+  if (any(tool->effects_wielded, effect)) return true;
+  if (any(tool->effects_carried, effect)) return true;
  }
  for (int i = 0; i < inv.size(); i++) {
   const auto& it = inv[i];
   if (it.is_artifact() && it.is_tool()) {
-   for (const auto tool_effect : dynamic_cast<const it_artifact_tool*>(it.type)->effects_carried) {
-    if (tool_effect == effect) return true;
-   }
+   if (any(dynamic_cast<const it_artifact_tool*>(it.type)->effects_carried, effect)) return true;
   }
  }
  for (const auto& it : worn) {
   if (!it.is_artifact()) continue;
-  for (const auto armor_effect : dynamic_cast<const it_artifact_armor*>(it.type)->effects_worn) {
-   if (armor_effect == effect) return true;
-  }
+  if (any(dynamic_cast<const it_artifact_armor*>(it.type)->effects_worn, effect)) return true;
  }
  return false;
 }

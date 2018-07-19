@@ -21,6 +21,14 @@ enum mutation_category
  NUM_MUTATION_CATEGORIES
 };
 
+struct trait {
+	std::string name;
+	int points;		// How many points it costs in character creation
+	int visiblity;		// How visible it is--see below, at PF_MAX
+	int ugliness;		// How ugly it is--see below, at PF_MAX
+	std::string description;
+};
+
 // mutations_from_category() defines the lists; see mutation_data.cpp
 std::vector<pl_flag> mutations_from_category(mutation_category cat);
 
