@@ -34,7 +34,7 @@ game::game()
  clear();	// Clear the screen
  intro();	// Print an intro screen, make sure we're at least 80x25
 // Gee, it sure is init-y around here!
- itype::init();	      // Set up item types                (SEE itypedef.cpp)
+ item::init();	      // Set up item types                (SEE itypedef.cpp)
  mtype::init();	      // Set up monster types             (SEE mtypedef.cpp)
  mtype::init_items();     // Set up the items monsters carry  (SEE monitemsdef.cpp)
  trap::init();	      // Set up the trap types            (SEE trapdef.cpp)
@@ -879,7 +879,7 @@ void game::process_activity()
 
    case ACT_TRAIN:
     if (u.activity.index < 0) {
-     add_msg("You learn %s.", itype::types[0 - u.activity.index]->name.c_str());
+     add_msg("You learn %s.", item::types[0 - u.activity.index]->name.c_str());
      u.styles.push_back( itype_id(0 - u.activity.index) );
     } else {
      u.sklevel[ u.activity.index ]++;
@@ -1392,7 +1392,7 @@ void game::get_input()
   case ACTION_PICK_STYLE:
    u.pick_style(this);
    if (u.weapon.type->id == 0 || u.weapon.is_style()) {
-    u.weapon = item(itype::types[u.style_selected], 0);
+    u.weapon = item(item::types[u.style_selected], 0);
     u.weapon.invlet = ':';
    }
    refresh_all();
@@ -1751,8 +1751,8 @@ void game::load(std::string name)
  }
  u = player();
  u.name = name;
- u.ret_null = item(itype::types[0], 0);
- u.weapon = item(itype::types[0], 0);
+ u.ret_null = item(item::types[0], 0);
+ u.weapon = item(item::types[0], 0);
  int tmpturn, tmpspawn, tmpnextweather, tmprun, tmptar, tmpweather, tmptemp,
      comx, comy;
  fin >> tmpturn >> tmptar >> tmprun >> mostseen >> nextinv >> next_npc_id >>
@@ -1886,10 +1886,10 @@ void game::save()
  fout.close();
 
 // Finally, save artifacts.
- if (itype::types.size() > num_all_items) {
+ if (item::types.size() > num_all_items) {
   fout.open("save/artifacts.gsav");
-  for (int i = num_all_items; i < itype::types.size(); i++)
-   fout << itype::types[i]->save_data() << "\n";
+  for (int i = num_all_items; i < item::types.size(); i++)
+   fout << item::types[i]->save_data() << "\n";
   fout.close();
  }
 // aaaand the overmap, and the local map.
@@ -4409,7 +4409,7 @@ void game::examine()
   }
   refresh_all();
  } else if (m.ter(examx, examy) == t_gas_pump && query_yn("Pump gas?")) {
-  item gas(itype::types[itm_gasoline], turn);
+  item gas(item::types[itm_gasoline], turn);
   if (one_in(10 + u.dex_cur)) {
    add_msg("You accidentally spill the gasoline.");
    m.add_item(u.posx, u.posy, gas);
@@ -5377,7 +5377,7 @@ void game::plfire(bool burst)
   if (u.has_charges(itm_UPS_on, 1) || u.has_charges(itm_UPS_off, 1)) {
    add_msg("Your %s starts charging.", u.weapon.tname().c_str());
    u.weapon.charges = 0;
-   u.weapon.curammo = dynamic_cast<it_ammo*>(itype::types[itm_charge_shot]);
+   u.weapon.curammo = dynamic_cast<it_ammo*>(item::types[itm_charge_shot]);
    u.weapon.active = true;
    return;
   } else {
@@ -5561,13 +5561,13 @@ void game::complete_butcher(int index)
    const itype* pelt;
    if (corpse->has_flag(MF_FUR) && corpse->has_flag(MF_LEATHER)) {
     if (one_in(2))
-     pelt = itype::types[itm_fur];
+     pelt = item::types[itm_fur];
     else
-     pelt = itype::types[itm_leather];
+     pelt = item::types[itm_leather];
    } else if (corpse->has_flag(MF_FUR))
-    pelt = itype::types[itm_fur];
+    pelt = item::types[itm_fur];
    else
-    pelt = itype::types[itm_leather];
+    pelt = item::types[itm_leather];
    m.add_item(u.posx, u.posy, pelt, age);
   }
  }
@@ -5730,7 +5730,7 @@ void game::unload()
  if (u.weapon.is_gun() && u.weapon.curammo != NULL)
   newam = item(u.weapon.curammo, turn);
  else
-  newam = item(itype::types[default_ammo(u.weapon.ammo_type())], turn);
+  newam = item(item::types[default_ammo(u.weapon.ammo_type())], turn);
  while (u.weapon.charges > 0) {
   int iter = 0;
   while ((newam.invlet == 0 || u.has_item(newam.invlet)) && iter < 52) {
@@ -6041,7 +6041,7 @@ void game::plmove(int x, int y)
      if (query_yn("Deactivate the turret?")) {
       z.erase(z.begin() + mondex);
       u.moves -= 100;
-      m.add_item(z[mondex].posx, z[mondex].posy, itype::types[itm_bot_turret], turn);
+      m.add_item(z[mondex].posx, z[mondex].posy, item::types[itm_bot_turret], turn);
      }
      return;
     } else {
@@ -6459,7 +6459,7 @@ void game::vertical_move(int movez, bool force)
  if (rope_ladder)
   m.ter(u.posx, u.posy) = t_rope_up;
  if (m.ter(stairx, stairy) == t_manhole_cover) {
-  m.add_item(stairx + rng(-1, 1), stairy + rng(-1, 1), itype::types[itm_manhole_cover], 0);
+  m.add_item(stairx + rng(-1, 1), stairy + rng(-1, 1), item::types[itm_manhole_cover], 0);
   m.ter(stairx, stairy) = t_manhole;
  }
 

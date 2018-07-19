@@ -3886,7 +3886,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   line(this, t_counter, buildx - 3, buildy - 3, buildx + 3, buildy - 3);
   place_items(mi_toxic_dump_equipment, 80,
               buildx - 3, buildy - 3, buildx + 3, buildy - 3, false, 0);
-  add_item(buildx, buildy, itype::types[itm_id_military], 0);
+  add_item(buildx, buildy, item::types[itm_id_military], 0);
   ter(buildx, buildy + 4) = t_door_locked;
 
   rotate(rng(0, 3));

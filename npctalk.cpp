@@ -329,7 +329,7 @@ std::string dynamic_line(talk_topic topic, game *g, npc *p)
       if (!p->styles.empty()) {
        std::stringstream ret;
        ret << "I am a wandering master of " <<
-		   itype::types[p->styles[0]]->name.c_str() << ".";
+		   item::types[p->styles[0]]->name.c_str() << ".";
        return ret.str();
       } else
        return "I am looking for a master to train my fighting techniques.";
@@ -687,7 +687,7 @@ std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *p)
    resume << "Yes, let's resume training " <<
              (g->u.backlog.index > 0 ?
               skill_name(g->u.backlog.index) :
-              itype::types[ 0 - g->u.backlog.index ]->name);
+              item::types[ 0 - g->u.backlog.index ]->name);
    SELECT_TEMP( resume.str(), g->u.backlog.index);
     SUCCESS(TALK_TRAIN_START);
   }
@@ -716,7 +716,7 @@ std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *p)
    shift = 0;
   for (int i = 0; i < styles.size() && printed < 9; i++) {
    printed++;
-   SELECT_TEMP(itype::types[styles[i]]->name + " (cost 800)",
+   SELECT_TEMP(item::types[styles[i]]->name + " (cost 800)",
                0 - styles[i] );
     SUCCESS(TALK_TRAIN_START);
   }

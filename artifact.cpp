@@ -140,8 +140,8 @@ It may have unknown powers; use 'a' to activate them.";
   if (one_in(8) && num_bad + num_good >= 4)
    art->charge_type = ARTC_NULL; // 1 in 8 chance that it can't recharge!
 
-  art->id = itype::types.size();
-  itype::types.push_back(art);
+  art->id = item::types.size();
+  item::types.push_back(art);
   return art;
 
  } else { // Generate an armor artifact
@@ -244,8 +244,8 @@ It may have unknown powers; use 'a' to activate them.";
    art->effects_worn.push_back(passive_tmp);
   }
 
-  art->id = itype::types.size();
-  itype::types.push_back(art);
+  art->id = item::types.size();
+  item::types.push_back(art);
   return art;
  }
 }
@@ -358,8 +358,8 @@ itype* game::new_natural_artifact(artifact_natural_property prop)
   art->charge_type = art_charge( rng(ARTC_NULL + 1, NUM_ARTCS - 1) );
  }
 
- art->id = itype::types.size();
- itype::types.push_back(art);
+ art->id = item::types.size();
+ item::types.push_back(art);
  return art;
 }
 

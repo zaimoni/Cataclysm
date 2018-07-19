@@ -48,7 +48,7 @@ void save_template(player *u);
 
 bool player::create(game *g, character_type type, std::string tempname)
 {
- weapon = item(itype::types[0], 0);
+ weapon = item(item::types[0], 0);
  WINDOW* w = newwin(25, 80, 0, 0);
  int tab = 0, points = 38;
  if (type != PLTYPE_CUSTOM) {
@@ -208,23 +208,23 @@ End of cheatery */
    if (choice == 3) ma_type = itm_style_aikido;
    if (choice == 4) ma_type = itm_style_tai_chi;
    if (choice == 5) ma_type = itm_style_taekwando;
-   item tmpitem = item(itype::types[ma_type], 0);
+   item tmpitem = item(item::types[ma_type], 0);
    full_screen_popup(tmpitem.info(true).c_str());
   } while (!query_yn("Use this style?"));
   styles.push_back(ma_type);
  }
  if (!styles.empty())
-  weapon = item(itype::types[ styles[0] ], 0, ':');
+  weapon = item(item::types[ styles[0] ], 0, ':');
  else
-  weapon = item(itype::types[0], 0);
+  weapon = item(item::types[0], 0);
 // Nice to start out less than naked.
- worn.push_back(item(itype::types[itm_jeans], 0, 'a'));
- worn.push_back(item(itype::types[itm_tshirt], 0, 'b'));
- worn.push_back(item(itype::types[itm_sneakers], 0, 'c'));
+ worn.push_back(item(item::types[itm_jeans], 0, 'a'));
+ worn.push_back(item(item::types[itm_tshirt], 0, 'b'));
+ worn.push_back(item(item::types[itm_sneakers], 0, 'c'));
 // The near-sighted get to start with glasses.
- if (has_trait(PF_MYOPIC)) worn.push_back(item(itype::types[itm_glasses_eye], 0, 'd'));
+ if (has_trait(PF_MYOPIC)) worn.push_back(item(item::types[itm_glasses_eye], 0, 'd'));
 // Likewise, the asthmatic start with their medication.
- if (has_trait(PF_ASTHMA)) inv.push_back(item(itype::types[itm_inhaler], 0, 'a' + worn.size()));
+ if (has_trait(PF_ASTHMA)) inv.push_back(item(item::types[itm_inhaler], 0, 'a' + worn.size()));
 // make sure we have no mutations
  for (int i = 0; i < PF_MAX2; i++) my_mutations[i] = false;
  return true;

@@ -71,11 +71,11 @@ void veh_interact::exec (game *gm, vehicle *v, int x, int y)
     crafting_inv += g->u.inv;
     crafting_inv += g->u.weapon;
     if (g->u.has_bionic(bio_tools))  {
-        item tools(itype::types[itm_toolset], g->turn);
+        item tools(item::types[itm_toolset], g->turn);
         tools.charges = g->u.power_level;
         crafting_inv += tools;
     }
-    int charges = dynamic_cast<it_tool*>(itype::types[itm_welder])->charges_per_use;
+    int charges = dynamic_cast<it_tool*>(item::types[itm_welder])->charges_per_use;
     has_wrench = crafting_inv.has_amount(itm_wrench, 1) ||
                  crafting_inv.has_amount(itm_toolset, 1);
     has_hacksaw = crafting_inv.has_amount(itm_hacksaw, 1) ||
@@ -196,10 +196,10 @@ void veh_interact::do_install(int reason)
         bool has_comps = crafting_inv.has_amount(itm, 1);
         bool has_skill = g->u.sklevel[sk_mechanics] >= vpart_list[sel_part].difficulty;
         werase (w_msg);
-        int slen = itype::types[itm]->name.length();
+        int slen = item::types[itm]->name.length();
         mvwprintz(w_msg, 0, 1, c_ltgray, "Needs %s and level %d skill in mechanics.", 
-                  itype::types[itm]->name.c_str(), vpart_list[sel_part].difficulty);
-        mvwprintz(w_msg, 0, 7, has_comps? c_ltgreen : c_red, itype::types[itm]->name.c_str());
+                  item::types[itm]->name.c_str(), vpart_list[sel_part].difficulty);
+        mvwprintz(w_msg, 0, 7, has_comps? c_ltgreen : c_red, item::types[itm]->name.c_str());
         mvwprintz(w_msg, 0, 18+slen, has_skill? c_ltgreen : c_red, "%d", vpart_list[sel_part].difficulty);
         bool eng = vpart_list[sel_part].flags & mfb (vpf_engine);
         bool has_skill2 = !eng || (g->u.sklevel[sk_mechanics] >= dif_eng);
@@ -276,9 +276,9 @@ void veh_interact::do_repair(int reason)
             itype_id itm = veh->part_info(sel_part).item;
             has_comps = crafting_inv.has_amount(itm, 1);
             mvwprintz(w_msg, 1, 1, c_ltgray, "You also need a wrench and %s to replace broken one.", 
-                    itype::types[itm]->name.c_str());
+                    item::types[itm]->name.c_str());
             mvwprintz(w_msg, 1, 17, has_wrench? c_ltgreen : c_red, "wrench");
-            mvwprintz(w_msg, 1, 28, has_comps? c_ltgreen : c_red, itype::types[itm]->name.c_str());            
+            mvwprintz(w_msg, 1, 28, has_comps? c_ltgreen : c_red, item::types[itm]->name.c_str());            
         }
         wrefresh (w_msg);
         char ch = input(); // See keypress.h
@@ -624,7 +624,7 @@ void complete_vehicle (game *g)
     int part = g->u.activity.values[6];
     std::vector<component> comps;
     std::vector<component> tools;
-    int welder_charges = dynamic_cast<it_tool*>(itype::types[itm_welder])->charges_per_use;
+    int welder_charges = dynamic_cast<it_tool*>(item::types[itm_welder])->charges_per_use;
     itype_id itm;
     bool broken;
 
@@ -682,7 +682,7 @@ void complete_vehicle (game *g)
                         veh->part_info(part).name, veh->name.c_str());
             veh->remove_part (part);
         }
-        if (!broken) g->m.add_item (g->u.posx, g->u.posy, itype::types[itm], g->turn);
+        if (!broken) g->m.add_item (g->u.posx, g->u.posy, item::types[itm], g->turn);
         g->u.practice (sk_mechanics, 2 * 5 + 20);
         break;
     default:;

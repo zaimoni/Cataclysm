@@ -153,10 +153,10 @@ void defense_game::game_over(game *g)
 
 void defense_game::init_itypes()
 {
- itype::types[itm_2x4]->volume = 0;
- itype::types[itm_2x4]->weight = 0;
- itype::types[itm_landmine]->price = 300;
- itype::types[itm_bot_turret]->price = 6000;
+ item::types[itm_2x4]->volume = 0;
+ item::types[itm_2x4]->weight = 0;
+ item::types[itm_landmine]->price = 300;
+ item::types[itm_bot_turret]->price = 6000;
 }
 
 void defense_game::init_mtypes()
@@ -887,7 +887,7 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
     if (current_window == 1 && items[category_selected].size() > 0) {
      item_count[category_selected][item_selected]++;
      const itype_id tmp_itm = items[category_selected][item_selected];
-     total_price += caravan_price(g->u, itype::types[tmp_itm]->price);
+     total_price += caravan_price(g->u, item::types[tmp_itm]->price);
      if (category_selected == CARAVAN_CART) { // Find the item in its category
       for (int i = 1; i < NUM_CARAVAN_CATEGORIES; i++) {
        for (int j = 0; j < items[i].size(); j++) {
@@ -921,7 +921,7 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
         item_count[category_selected][item_selected] > 0) {
      item_count[category_selected][item_selected]--;
      const itype_id tmp_itm = items[category_selected][item_selected];
-     total_price -= caravan_price(g->u, itype::types[tmp_itm]->price);
+     total_price -= caravan_price(g->u, item::types[tmp_itm]->price);
      if (category_selected == CARAVAN_CART) { // Find the item in its category
       for (int i = 1; i < NUM_CARAVAN_CATEGORIES; i++) {
        for (int j = 0; j < items[i].size(); j++) {
@@ -989,7 +989,7 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
   g->u.cash -= total_price;
   bool dropped_some = false;
   for (int i = 0; i < items[0].size(); i++) {
-   item tmp(itype::types[ items[0][i] ], g->turn);
+   item tmp(item::types[ items[0][i] ], g->turn);
    tmp = tmp.in_its_container();
    for (int j = 0; j < item_count[0][i]; j++) {
     if (g->u.volume_carried() + tmp.volume() <= g->u.volume_capacity() &&
@@ -1161,7 +1161,7 @@ void draw_caravan_items(WINDOW *w, game *g, std::vector<itype_id> *items,
   mvwprintz(w, i, 1, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 // THEN print it--if item_selected is valid
  if (item_selected < items->size()) {
-  item tmp(itype::types[ (*items)[item_selected] ], 0); // Dummy item to get info
+  item tmp(item::types[ (*items)[item_selected] ], 0); // Dummy item to get info
   mvwprintz(w, 12, 0, c_white, tmp.info().c_str());
  }
 // Next, clear the item list on the right
@@ -1169,7 +1169,7 @@ void draw_caravan_items(WINDOW *w, game *g, std::vector<itype_id> *items,
   mvwprintz(w, i, 40, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 // Finally, print the item list on the right
  for (int i = offset; i <= offset + 23 && i < items->size(); i++) {
-  const itype* const i_type = itype::types[(*items)[i]];
+  const itype* const i_type = item::types[(*items)[i]];
   mvwprintz(w, i - offset + 1, 40, (item_selected == i ? h_white : c_white), i_type->name.c_str());
   wprintz(w, c_white, " x %s%d", ((*counts)[i] >= 10 ? "" : " "), (*counts)[i]);
   if ((*counts)[i] > 0) {

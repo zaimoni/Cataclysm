@@ -76,7 +76,7 @@ void mission_start::place_dog(game *g, mission *miss)
 		debugmsg("Couldn't find NPC! %d", miss->npc_id);
 		return;
 	}
-	g->u.i_add(item(itype::types[itm_dog_whistle], 0));
+	g->u.i_add(item(item::types[itm_dog_whistle], 0));
 	g->add_msg("%s gave you a dog whistle.", dev->name.c_str());
 
 	miss->target = house;
@@ -115,7 +115,7 @@ void mission_start::place_npc_software(game *g, mission *miss)
 		debugmsg("Couldn't find NPC! %d", miss->npc_id);
 		return;
 	}
-	g->u.i_add(item(itype::types[itm_usb_drive], 0));
+	g->u.i_add(item(item::types[itm_usb_drive], 0));
 	g->add_msg("%s gave you a USB drive.", dev->name.c_str());
 
 	oter_id ter = ot_house_north;
@@ -240,7 +240,7 @@ void mission_start::reveal_hospital(game *g, mission *miss)
 {
 	const npc* const dev = g->find_npc(miss->npc_id);
 	if (dev != NULL) {
-		g->u.i_add(item(itype::types[itm_vacutainer], 0));
+		g->u.i_add(item(item::types[itm_vacutainer], 0));
 		g->add_msg("%s gave you a vacutainer.", dev->name.c_str());
 	}
 	int dist = 0;

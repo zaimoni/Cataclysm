@@ -101,7 +101,7 @@ item::item(unsigned int turn, int id)
 	mission_id = -1;
 	player_id = -1;
 
-	type = itype::types[itm_corpse];
+	type = item::types[itm_corpse];
 	corpse = mtype::types[id];
 	bday = turn;
 }
@@ -129,7 +129,7 @@ bool item::is_null() const
 item item::in_its_container()
 {
  if (is_software()) {
-  item ret(itype::types[itm_usb_drive], 0);
+  item ret(item::types[itm_usb_drive], 0);
   ret.contents.push_back(*this);
   ret.invlet = invlet;
   return ret;
@@ -137,7 +137,7 @@ item item::in_its_container()
  if (!is_food()) return *this;
  const it_comest* const food = dynamic_cast<const it_comest*>(type);
  if (!food) return *this;	// XXX dead code \todo verify
- item ret(itype::types[food->container], bday);
+ item ret(item::types[food->container], bday);
  ret.contents.push_back(*this);
  ret.invlet = invlet;
  return ret;
@@ -230,12 +230,12 @@ void item::load_info(std::string data, game *g)
   }
   name = name.substr(2, name.size() - 3); // s/^ '(.*)'$/\1/
  }
- make(itype::types[idtmp]);
+ make(item::types[idtmp]);
  invlet = char(lettmp);
  damage = damtmp;
  burnt = burntmp;
  active = (acttmp == 1);
- curammo = (0 < ammotmp) ? dynamic_cast<it_ammo*>(itype::types[ammotmp]) : NULL;
+ curammo = (0 < ammotmp) ? dynamic_cast<it_ammo*>(item::types[ammotmp]) : NULL;
 }
  
 std::string item::info(bool showtext)

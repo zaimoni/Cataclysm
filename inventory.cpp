@@ -209,7 +209,7 @@ void inventory::form_from_map(game *g, point origin, int range)
      add_item(g->m.i_at(x, y)[i]);
 // Kludge for now!
    if (g->m.field_at(x, y).type == fd_fire) {
-    item fire(itype::types[itm_fire], 0);
+    item fire(item::types[itm_fire], 0);
     fire.charges = 1;
     add_item(fire);
    }

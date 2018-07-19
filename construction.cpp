@@ -166,7 +166,7 @@ void game::construction_menu()
  total_inv.form_from_map(this, point(u.posx, u.posy), PICKUP_RANGE);
  total_inv.add_stack(u.inv_dump());
  if (u.has_bionic(bio_tools)) {
-  item tools(itype::types[itm_toolset], turn);
+  item tools(item::types[itm_toolset], turn);
   tools.charges = u.power_level;
   total_inv += tools;
  }
@@ -228,7 +228,7 @@ void game::construction_menu()
        has_tool[i] = true;
        col = c_green;
       }
-	  const itype* const t_type = itype::types[tool];
+	  const itype* const t_type = item::types[tool];
       const int length = t_type->name.length();
       if (posx + length > 79) {
        posy++;
@@ -258,17 +258,17 @@ void game::construction_menu()
      for (int j = 0; j < stage.components[i].size() && i < 3; j++) {
       nc_color col = c_red;
       const component& comp = stage.components[i][j];
-	  if (itype::types[comp.type]->is_ammo() ? total_inv.has_charges(comp.type, comp.count) : total_inv.has_amount(comp.type, comp.count)) {
+	  if (item::types[comp.type]->is_ammo() ? total_inv.has_charges(comp.type, comp.count) : total_inv.has_amount(comp.type, comp.count)) {
        has_component[i] = true;
        col = c_green;
       }
-      int length = itype::types[comp.type]->name.length();
+      int length = item::types[comp.type]->name.length();
       if (posx + length > 79) {
        posy++;
        posx = 33;
       }
       mvwprintz(w_con, posy, posx, col, "%s x%d",
-                itype::types[comp.type]->name.c_str(), comp.count);
+                item::types[comp.type]->name.c_str(), comp.count);
       posx += length + 3; // + 2 for " x", + 1 for an empty space
 // Add more space for the length of the count
       if (comp.count < 10)
@@ -353,7 +353,7 @@ bool game::player_can_build(player &p, inventory inv, constructable* con,
    if (stage.components[j].size() > 0) {
     bool has_component = false;
 	for(const auto& part : stage.components[j]) {
-	 if (itype::types[part.type]->is_ammo() ? inv.has_charges(part.type, part.count) : inv.has_amount(part.type, part.count)) {
+	 if (item::types[part.type]->is_ammo() ? inv.has_charges(part.type, part.count) : inv.has_amount(part.type, part.count)) {
        has_component = true;
 	   break;
 	 }
@@ -575,7 +575,7 @@ bool will_flood_stop(map *m, bool (&fill)[SEEX * MAPSIZE][SEEY * MAPSIZE],
 
 void construct::done_window_pane(game *g, point p)
 {
- g->m.add_item(g->u.posx, g->u.posy, itype::types[itm_glass_sheet], 0);
+ g->m.add_item(g->u.posx, g->u.posy, item::types[itm_glass_sheet], 0);
 }
 
 void construct::done_tree(game *g, point p)
@@ -598,7 +598,7 @@ void construct::done_log(game *g, point p)
 {
  int num_sticks = rng(10, 20);
  for (int i = 0; i < num_sticks; i++)
-  g->m.add_item(p.x, p.y, itype::types[itm_2x4], int(g->turn));
+  g->m.add_item(p.x, p.y, item::types[itm_2x4], int(g->turn));
 }
 
 void construct::done_vehicle(game *g, point p)

@@ -444,8 +444,8 @@ player& player::operator=(const player& rhs)
 
 void player::normalize(game *g)
 {
- ret_null = item(itype::types[0], 0);
- weapon   = item(itype::types[0], 0);
+ ret_null = item(item::types[0], 0);
+ weapon   = item(item::types[0], 0);
  style_selected = itm_null;
  for (int i = 0; i < num_hp_parts; i++) {
   hp_max[i] = 60 + str_max * 3;
@@ -822,7 +822,7 @@ void player::load_info(game *g, std::string data)
   int item_id;
   dump >> mortmp.bonus >> mortype >> item_id;
   mortmp.type = morale_type(mortype);
-  mortmp.item_type = (0 >= item_id) ? NULL : itype::types[item_id];
+  mortmp.item_type = (0 >= item_id) ? NULL : item::types[item_id];
   morale.push_back(mortmp);
  }
 
@@ -3430,7 +3430,7 @@ void player::process_active_items(game *g)
    if (tmp->revert_to == itm_null)
     weapon = ret_null;
    else
-    weapon.type = itype::types[tmp->revert_to];
+    weapon.type = item::types[tmp->revert_to];
   }
  }
  for (int i = 0; i < inv.size(); i++) {
@@ -3455,7 +3455,7 @@ void player::process_active_items(game *g)
        j--;
       }
      } else
-      tmp_it->type = itype::types[tmp->revert_to];
+      tmp_it->type = item::types[tmp->revert_to];
     }
    }
   }
@@ -3923,12 +3923,12 @@ bool player::eat(game *g, int index)
   }
   if (comest->tool != itm_null) {
    bool has = has_amount(comest->tool, 1);
-   if (itype::types[comest->tool]->count_by_charges())
+   if (item::types[comest->tool]->count_by_charges())
     has = has_charges(comest->tool, 1);
    if (!has) {
     if (!is_npc())
      g->add_msg("You need a %s to consume that!",
-                itype::types[comest->tool]->name.c_str());
+                item::types[comest->tool]->name.c_str());
     return false;
    }
   }
@@ -3988,7 +3988,7 @@ bool player::eat(game *g, int index)
    else if (comest->nutr >= 5) g->add_msg("You eat your %s.", eaten->tname(g).c_str());
   } else if (g->u_see(posx, posy, linet)) g->add_msg("%s eats a %s.", name.c_str(), eaten->tname(g).c_str());
 
-  if (itype::types[comest->tool]->is_tool()) use_charges(comest->tool, 1); // Tools like lighters get used
+  if (item::types[comest->tool]->is_tool()) use_charges(comest->tool, 1); // Tools like lighters get used
   if (comest->stim > 0) {
    if (comest->stim < 10 && stim < comest->stim) {
     stim += comest->stim;
@@ -4088,7 +4088,7 @@ bool player::wield(game *g, int index)
   } else return false;
 
   if (pickstyle) {
-   weapon = item(itype::types[style_selected], 0 );
+   weapon = item(item::types[style_selected], 0 );
    weapon.invlet = ':';
    return true;
   }
@@ -4148,7 +4148,7 @@ void player::pick_style(game *g) // Style selection menu
 {
  std::vector<std::string> options;
  options.push_back("No style");
- for (const auto style : styles) options.push_back(itype::types[style]->name);
+ for (const auto style : styles) options.push_back(item::types[style]->name);
  int selection = menu_vec("Select a style", options);
  style_selected = (2 <= selection) ? styles[selection - 2] : itm_null;
 }

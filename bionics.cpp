@@ -164,7 +164,7 @@ void player::activate_bionic(int b, game *g)
 
  case bio_evap:
   if (query_yn("Drink directly? Otherwise you will need a container.")) {
-   tmp_item = item(itype::types[itm_water], 0);
+   tmp_item = item(item::types[itm_water], 0);
    thirst -= 50;
    if (has_trait(PF_GOURMAND) && thirst < -60) {
      g->add_msg("You can't finish it all!");
@@ -192,7 +192,7 @@ void player::activate_bionic(int b, game *g)
      power_level += bionics[bio_evap].power_cost;
     } else {
      g->add_msg("You pour water into your %s.", it.tname().c_str());
-	 it.put_in(item(itype::types[itm_water], 0));
+	 it.put_in(item(item::types[itm_water], 0));
     }
    }
   }
@@ -221,19 +221,19 @@ void player::activate_bionic(int b, game *g)
    g->add_msg("Your claws extend, forcing you to drop your %s.",
               weapon.tname().c_str());
    g->m.add_item(posx, posy, weapon);
-   weapon = item(itype::types[itm_bio_claws], 0);
+   weapon = item(item::types[itm_bio_claws], 0);
    weapon.invlet = '#';
   } else {
    g->add_msg("Your claws extend!");
-   weapon = item(itype::types[itm_bio_claws], 0);
+   weapon = item(item::types[itm_bio_claws], 0);
    weapon.invlet = '#';
   }
   break;
 
  case bio_blaster:
   tmp_item = weapon;
-  weapon = item(itype::types[itm_bio_blaster], 0);
-  weapon.curammo = dynamic_cast<it_ammo*>(itype::types[itm_bio_fusion]);
+  weapon = item(item::types[itm_bio_blaster], 0);
+  weapon.curammo = dynamic_cast<it_ammo*>(item::types[itm_bio_fusion]);
   weapon.charges = 1;
   g->refresh_all();
   g->plfire(false);
@@ -242,8 +242,8 @@ void player::activate_bionic(int b, game *g)
 
  case bio_laser:
   tmp_item = weapon;
-  weapon = item(itype::types[itm_v29], 0);
-  weapon.curammo = dynamic_cast<it_ammo*>(itype::types[itm_laser_pack]);
+  weapon = item(item::types[itm_v29], 0);
+  weapon.curammo = dynamic_cast<it_ammo*>(item::types[itm_laser_pack]);
   weapon.charges = 1;
   g->refresh_all();
   g->plfire(false);
@@ -289,7 +289,7 @@ void player::activate_bionic(int b, game *g)
       power_level += bionics[bio_water_extractor].power_cost;
      } else {
       g->add_msg("You pour water into your %s.", it.tname().c_str());
-      i_at(t).put_in(item(itype::types[itm_water], 0));
+      i_at(t).put_in(item(item::types[itm_water], 0));
      }
     }
    }

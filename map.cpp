@@ -1029,9 +1029,9 @@ void map::destroy(game *g, int x, int y, bool makesound)
    for (int i = x - 2; i <= x + 2; i++) {
     for (int j = y - 2; j <= y + 2; j++) {
      if (move_cost(i, j) > 0 && one_in(3))
-      add_item(i, j, itype::types[itm_gasoline], 0);
+      add_item(i, j, item::types[itm_gasoline], 0);
      if (move_cost(i, j) > 0 && one_in(6))
-      add_item(i, j, itype::types[itm_steel_chunk], 0);
+      add_item(i, j, item::types[itm_steel_chunk], 0);
     }
    }
   }
@@ -1046,7 +1046,7 @@ void map::destroy(game *g, int x, int y, bool makesound)
   for (int i = x - 2; i <= x + 2; i++) {
    for (int j = y - 2; j <= y + 2; j++) {
     if (move_cost(i, j) > 0 && one_in(6))
-     add_item(i, j, itype::types[itm_2x4], 0);
+     add_item(i, j, item::types[itm_2x4], 0);
    }
   }
   break;
@@ -1056,9 +1056,9 @@ void map::destroy(game *g, int x, int y, bool makesound)
   for (int i = x - 2; i <= x + 2; i++) {
    for (int j = y - 2; j <= y + 2; j++) {
     if (move_cost(i, j) > 0 && one_in(5))
-     add_item(i, j, itype::types[itm_rock], 0);
+     add_item(i, j, item::types[itm_rock], 0);
     if (move_cost(i, j) > 0 && one_in(4))
-     add_item(i, j, itype::types[itm_2x4], 0);
+     add_item(i, j, item::types[itm_2x4], 0);
    }
   }
   ter(x, y) = t_rubble;
@@ -1155,7 +1155,7 @@ void map::shoot(game *g, int x, int y, int &dam, bool hit_items, unsigned flags)
      for (int i = x - 2; i <= x + 2; i++) {
       for (int j = y - 2; j <= y + 2; j++) {
        if (move_cost(i, j) > 0 && one_in(3))
-        add_item(i, j, itype::types[itm_gasoline], 0);
+        add_item(i, j, item::types[itm_gasoline], 0);
       }
      }
     }
@@ -1518,7 +1518,7 @@ void map::process_active_items_in_submap(game *g, int nonant)
         grid[nonant]->active_item_count--;
         n--;
        } else
-        items[n].type = itype::types[tmp->revert_to];
+        items[n].type = item::types[tmp->revert_to];
       }
      }
     }
@@ -1659,7 +1659,7 @@ void map::disarm_trap(game *g, int x, int y)
  if (roll >= diff) {
   g->add_msg("You disarm the trap!");
   for (const auto item_id : tr->components) {
-   if (item_id != itm_null) add_item(x, y, itype::types[item_id], 0);
+   if (item_id != itm_null) add_item(x, y, item::types[item_id], 0);
   }
   tr_at(x, y) = tr_null;
   if(diff > 1.25*g->u.sklevel[sk_traps]) // failure might have set off trap

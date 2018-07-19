@@ -1,4 +1,5 @@
 #include "mtype.h"
+#include "item.h"
 #include "setvector.h"
 
 std::vector <mtype*> mtype::types;
@@ -16,8 +17,8 @@ const itype* mtype::chunk_material() const
 {
 	switch (mat)
 	{
-	case FLESH: return itype::types[has_flag(MF_POISON) ? itm_meat_tainted : itm_meat];
-	case VEGGY: return itype::types[has_flag(MF_POISON) ? itm_veggy_tainted : itm_veggy];
+	case FLESH: return item::types[has_flag(MF_POISON) ? itm_meat_tainted : itm_meat];
+	case VEGGY: return item::types[has_flag(MF_POISON) ? itm_veggy_tainted : itm_veggy];
 	default: return NULL;	// no other materials have chunks: inherited from C:Whales
 	}
 }

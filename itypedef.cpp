@@ -1,9 +1,10 @@
-#include "itype.h"
-#include "game.h"
+#include "item.h"
+#include "output.h"
 #include "setvector.h"
-#include <fstream>
 
-std::vector <itype*> itype::types;
+#include <fstream>	// for artifacts
+
+std::vector <itype*> item::types;
 
 // Armor colors
 #define C_SHOES  c_blue
@@ -25,7 +26,7 @@ std::vector <itype*> itype::types;
 //  at the top of itype.h!
 //  Additionally, you should check mapitemsdef.cpp and insert the new item in
 //  any appropriate lists.
-void itype::init()
+void item::init()
 {
 // First, the null object.  NOT REALLY AN OBJECT AT ALL.  More of a concept.
  types.push_back(

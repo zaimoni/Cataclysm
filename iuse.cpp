@@ -774,7 +774,7 @@ void iuse::scissors(game *g, player *p, item *it, bool t)
   g->add_msg("You cut the %s into %d smaller pieces.",
              (is_string ? "string" : "rope"), pieces);
   itype_id piece_id = (is_string ? itm_string_6 : itm_rope_6);
-  item string(itype::types[piece_id], int(g->turn), g->nextinv);
+  item string(item::types[piece_id], int(g->turn), g->nextinv);
   p->i_rem(ch);
   bool drop = false;
   for (int i = 0; i < pieces; i++) {
@@ -811,7 +811,7 @@ void iuse::scissors(game *g, player *p, item *it, bool t)
  }
  g->add_msg("You slice the %s into %d rag%s.", cut->tname().c_str(), count,
             (count == 1 ? "" : "s"));
- item rag(itype::types[itm_rag], int(g->turn), g->nextinv);
+ item rag(item::types[itm_rag], int(g->turn), g->nextinv);
  p->i_rem(ch);
  bool drop = false;
  for (int i = 0; i < count; i++) {
@@ -908,10 +908,10 @@ void iuse::hammer(game *g, player *p, item *it, bool t)
   return;
  }
  p->moves -= 500;
- item it_nails(itype::types[itm_nail], 0, g->nextinv);
+ item it_nails(item::types[itm_nail], 0, g->nextinv);
  it_nails.charges = nails;
  g->m.add_item(p->posx, p->posy, it_nails);
- item board(itype::types[itm_2x4], 0, g->nextinv);
+ item board(item::types[itm_2x4], 0, g->nextinv);
  for (int i = 0; i < boards; i++)
   g->m.add_item(p->posx, p->posy, board);
  g->m.ter(dirx, diry) = newter;
@@ -922,7 +922,7 @@ void iuse::light_off(game *g, player *p, item *it, bool t)
  if (it->charges == 0) g->add_msg("The flashlight's batteries are dead.");
  else {
   g->add_msg("You turn the flashlight on.");
-  it->make(itype::types[itm_flashlight_on]);
+  it->make(item::types[itm_flashlight_on]);
   it->active = true;
  }
 }
@@ -933,7 +933,7 @@ void iuse::light_on(game *g, player *p, item *it, bool t)
 // Do nothing... game::light_level() handles this
  } else {	// Turning it off
   g->add_msg("The flashlight flicks off.");
-  it->make(itype::types[itm_flashlight]);
+  it->make(item::types[itm_flashlight]);
   it->active = false;
  }
 }
@@ -955,7 +955,7 @@ void iuse::water_purifier(game *g, player *p, item *it, bool t)
   return;
  }
  p->moves -= 150;
- pure->make(itype::types[itm_water]);
+ pure->make(item::types[itm_water]);
  pure->poison = 0;
 }
 
@@ -1039,7 +1039,7 @@ void iuse::radio_off(game *g, player *p, item *it, bool t)
  if (it->charges == 0) g->add_msg("It's dead.");
  else {
   g->add_msg("You turn the radio on.");
-  it->make(itype::types[itm_radio_on]);
+  it->make(item::types[itm_radio_on]);
   it->active = true;
  }
 }
@@ -1086,7 +1086,7 @@ void iuse::radio_on(game *g, player *p, item *it, bool t)
   g->sound(p.x, p.y, 6, message.c_str());
  } else {	// Turning it off
   g->add_msg("The radio dies.");
-  it->make(itype::types[itm_radio]);
+  it->make(item::types[itm_radio]);
   it->active = false;
  }
 }
@@ -1118,7 +1118,7 @@ void iuse::crowbar(game *g, player *p, item *it, bool t)
    g->add_msg("You lift the manhole cover.");
    p->moves -= (500 - (p->str_cur * 5));
    g->m.ter(dirx, diry) = t_manhole;
-   g->m.add_item(p->posx, p->posy, itype::types[itm_manhole_cover], 0);
+   g->m.add_item(p->posx, p->posy, item::types[itm_manhole_cover], 0);
   } else {
    g->add_msg("You pry, but cannot lift the manhole cover.");
    p->moves -= 100;
@@ -1151,10 +1151,10 @@ void iuse::crowbar(game *g, player *p, item *it, bool t)
    return;
   }
   p->moves -= 500;
-  item it_nails(itype::types[itm_nail], 0, g->nextinv);
+  item it_nails(item::types[itm_nail], 0, g->nextinv);
   it_nails.charges = nails;
   g->m.add_item(p->posx, p->posy, it_nails);
-  item board(itype::types[itm_2x4], 0, g->nextinv);
+  item board(item::types[itm_2x4], 0, g->nextinv);
   for (int i = 0; i < boards; i++)
    g->m.add_item(p->posx, p->posy, board);
   g->m.ter(dirx, diry) = newter;
@@ -1201,7 +1201,7 @@ void iuse::chainsaw_off(game *g, player *p, item *it, bool t)
  if (rng(0, 10) - it->damage > 5 && it->charges > 0) {
   g->sound(p->posx, p->posy, 20,
            "With a roar, the chainsaw leaps to life!");
-  it->make(itype::types[itm_chainsaw_on]);
+  it->make(item::types[itm_chainsaw_on]);
   it->active = true;
  } else
   g->add_msg("You yank the cord, but nothing happens.");
@@ -1214,7 +1214,7 @@ void iuse::chainsaw_on(game *g, player *p, item *it, bool t)
    g->sound(p->posx, p->posy, 12, "Your chainsaw rumbles.");
  } else {	// Toggling
   g->add_msg("Your chainsaw dies.");
-  it->make(itype::types[itm_chainsaw_off]);
+  it->make(item::types[itm_chainsaw_off]);
   it->active = false;
  }
 }
@@ -1388,7 +1388,7 @@ void iuse::geiger(game *g, player *p, item *it, bool t)
  bool is_on = (type->id == itm_geiger_on);
  if (is_on) {
   g->add_msg("The geiger counter's SCANNING LED flicks off.");
-  it->make(itype::types[itm_geiger_off]);
+  it->make(item::types[itm_geiger_off]);
   it->active = false;
   return;
  }
@@ -1402,7 +1402,7 @@ void iuse::geiger(game *g, player *p, item *it, bool t)
                      g->m.radiation(p->posx, p->posy));		break;
   case 3:
    g->add_msg("The geiger counter's scan LED flicks on.");
-   it->make(itype::types[itm_geiger_on]);
+   it->make(item::types[itm_geiger_on]);
    it->active = true;
    break;
   case 4:
@@ -1419,7 +1419,7 @@ void iuse::teleport(game *g, player *p, item *it, bool t)
 
 void iuse::can_goo(game *g, player *p, item *it, bool t)
 {
- it->make(itype::types[itm_canister_empty]);
+ it->make(item::types[itm_canister_empty]);
  int tries = 0, goox, gooy, junk;
  do {
   goox = p->posx + rng(-2, 2);
@@ -1468,7 +1468,7 @@ void iuse::pipebomb(game *g, player *p, item *it, bool t)
  }
  p->use_charges(itm_lighter, 1);
  g->add_msg("You light the fuse on the pipe bomb.");
- it->make(itype::types[itm_pipebomb_act]);
+ it->make(item::types[itm_pipebomb_act]);
  it->charges = 3;
  it->active = true;
 }
@@ -1491,7 +1491,7 @@ void iuse::pipebomb_act(game *g, player *p, item *it, bool t)
 void iuse::grenade(game *g, player *p, item *it, bool t)
 {
  g->add_msg("You pull the pin on the grenade.");
- it->make(itype::types[itm_grenade_act]);
+ it->make(item::types[itm_grenade_act]);
  it->charges = 5;
  it->active = true;
 }
@@ -1509,7 +1509,7 @@ void iuse::grenade_act(game *g, player *p, item *it, bool t)
 void iuse::flashbang(game *g, player *p, item *it, bool t)
 {
  g->add_msg("You pull the pin on the flashbang.");
- it->make(itype::types[itm_flashbang_act]);
+ it->make(item::types[itm_flashbang_act]);
  it->charges = 5;
  it->active = true;
 }
@@ -1532,7 +1532,7 @@ void iuse::c4(game *g, player *p, item *it, bool t)
   return;
  }
  g->add_msg("You set the timer to %d.", time);
- it->make(itype::types[itm_c4armed]);
+ it->make(item::types[itm_c4armed]);
  it->charges = time;
  it->active = true;
 }
@@ -1550,7 +1550,7 @@ void iuse::c4armed(game *g, player *p, item *it, bool t)
 void iuse::EMPbomb(game *g, player *p, item *it, bool t)
 {
  g->add_msg("You pull the pin on the EMP grenade.");
- it->make(itype::types[itm_EMPbomb_act]);
+ it->make(item::types[itm_EMPbomb_act]);
  it->charges = 3;
  it->active = true;
 }
@@ -1572,7 +1572,7 @@ void iuse::EMPbomb_act(game *g, player *p, item *it, bool t)
 void iuse::gasbomb(game *g, player *p, item *it, bool t)
 {
  g->add_msg("You pull the pin on the teargas canister.");
- it->make(itype::types[itm_gasbomb_act]);
+ it->make(item::types[itm_gasbomb_act]);
  it->charges = 20;
  it->active = true;
 }
@@ -1595,13 +1595,13 @@ void iuse::gasbomb_act(game *g, player *p, item *it, bool t)
    }
   }
  } else
-  it->make(itype::types[itm_canister_empty]);
+  it->make(item::types[itm_canister_empty]);
 }
 
 void iuse::smokebomb(game *g, player *p, item *it, bool t)
 {
  g->add_msg("You pull the pin on the smoke bomb.");
- it->make(itype::types[itm_smokebomb_act]);
+ it->make(item::types[itm_smokebomb_act]);
  it->charges = 20;
  it->active = true;
 }
@@ -1624,14 +1624,14 @@ void iuse::smokebomb_act(game *g, player *p, item *it, bool t)
    }
   }
  } else
-  it->make(itype::types[itm_canister_empty]);
+  it->make(item::types[itm_canister_empty]);
 }
 
 void iuse::acidbomb(game *g, player *p, item *it, bool t)
 {
  g->add_msg("You remove the divider, and the chemicals mix.");
  p->moves -= 150;
- it->make(itype::types[itm_acidbomb_act]);
+ it->make(item::types[itm_acidbomb_act]);
  it->charges = 1;
  it->bday = int(g->turn);
  it->active = true;
@@ -1660,7 +1660,7 @@ void iuse::molotov(game *g, player *p, item *it, bool t)
  p->use_charges(itm_lighter, 1);
  g->add_msg("You light the molotov cocktail.");
  p->moves -= 150;
- it->make(itype::types[itm_molotov_lit]);
+ it->make(item::types[itm_molotov_lit]);
  it->charges = 1;
  it->bday = int(g->turn);
  it->active = true;
@@ -1676,7 +1676,7 @@ void iuse::molotov_lit(game *g, player *p, item *it, bool t)
  } else if (age >= 5) { // More than 5 turns old = chance of going out
   if (rng(1, 50) < age) {
    g->add_msg("Your lit molotov goes out.");
-   it->make(itype::types[itm_molotov]);
+   it->make(item::types[itm_molotov]);
    it->charges = 0;
    it->active = false;
   }
@@ -1691,7 +1691,7 @@ void iuse::dynamite(game *g, player *p, item *it, bool t)
  }
  p->use_charges(itm_lighter, 1);
  g->add_msg("You light the dynamite.");
- it->make(itype::types[itm_dynamite_act]);
+ it->make(item::types[itm_dynamite_act]);
  it->charges = 20;
  it->active = true;
 }
@@ -1709,7 +1709,7 @@ void iuse::dynamite_act(game *g, player *p, item *it, bool t)
 void iuse::mininuke(game *g, player *p, item *it, bool t)
 {
  g->add_msg("You activate the mininuke.");
- it->make(itype::types[itm_mininuke_act]);
+ it->make(item::types[itm_mininuke_act]);
  it->charges = 10;
  it->active = true;
 }
@@ -1834,7 +1834,7 @@ void iuse::UPS_off(game *g, player *p, item *it, bool t)
  else {
   g->add_msg("You turn the power supply on.");
   if (p->is_wearing(itm_goggles_nv)) g->add_msg("Your light amp goggles power on.");
-  it->make(itype::types[itm_UPS_on]);
+  it->make(item::types[itm_UPS_on]);
   it->active = true;
  }
 }
@@ -1845,7 +1845,7 @@ void iuse::UPS_on(game *g, player *p, item *it, bool t)
 	// Does nothing
  } else {	// Turning it off
   g->add_msg("The UPS powers off with a soft hum.");
-  it->make(itype::types[itm_UPS_off]);
+  it->make(item::types[itm_UPS_off]);
   it->active = false;
  }
 }
@@ -1925,7 +1925,7 @@ void iuse::mp3(game *g, player *p, item *it, bool t)
   g->add_msg("You are already listening to an mp3 player!");
  else {
   g->add_msg("You put in the earbuds and start listening to music.");
-  it->make(itype::types[itm_mp3_on]);
+  it->make(item::types[itm_mp3_on]);
   it->active = true;
  }
 }
@@ -1951,7 +1951,7 @@ void iuse::mp3_on(game *g, player *p, item *it, bool t)
   }
  } else {	// Turning it off
   g->add_msg("The mp3 player turns off.");
-  it->make(itype::types[itm_mp3]);
+  it->make(item::types[itm_mp3]);
   it->active = false;
  }
 }
@@ -1971,14 +1971,14 @@ void iuse::vortex(game *g, player *p, item *it, bool t)
  }
  if (spawn.empty()) {
   if (!p->is_npc()) g->add_msg("Air swirls around you for a moment.");
-  it->make(itype::types[itm_spiral_stone]);
+  it->make(item::types[itm_spiral_stone]);
   return;
  }
 
  g->add_msg("Air swirls all over...");
  int index = rng(0, spawn.size() - 1);
  p->moves -= 100;
- it->make(itype::types[itm_spiral_stone]);
+ it->make(item::types[itm_spiral_stone]);
  monster vortex(mtype::types[mon_vortex], spawn[index].x, spawn[index].y);
  vortex.friendly = -1;
  g->z.push_back(vortex);
@@ -2013,7 +2013,7 @@ void iuse::vacutainer(game *g, player *p, item *it, bool t)	// XXX disabled for 
   return;
  }
 
- item blood(itype::types[itm_blood], g->turn);
+ item blood(item::types[itm_blood], g->turn);
  bool drew_blood = false;
  for (int i = 0; i < g->m.i_at(p->posx, p->posy).size() && !drew_blood; i++) {
   item *it = &(g->m.i_at(p->posx, p->posy)[i]);

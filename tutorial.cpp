@@ -30,7 +30,7 @@ bool tutorial_game::init(game *g)
  g->cur_om = overmap(g, 0, 0, TUTORIAL_Z);
  g->cur_om.make_tutorial();
  g->u.toggle_trait(PF_QUICK);
- g->u.inv.push_back(item(itype::types[itm_lighter], 0, 'e'));
+ g->u.inv.push_back(item(item::types[itm_lighter], 0, 'e'));
  g->u.sklevel[sk_gun] = 5;
  g->u.sklevel[sk_melee] = 5;
 // Init the starting map at g location.
@@ -157,7 +157,7 @@ void tutorial_game::post_action(game *g, action_id act)
   break;
 
  case ACTION_WEAR: {
-  const itype* const it = itype::types[ g->u.last_item];
+  const itype* const it = item::types[ g->u.last_item];
   if (it->is_armor()) {
    const it_armor* const armor = dynamic_cast<const it_armor*>(it);
    if (armor->dmg_resist >= 2 || armor->cut_resist >= 4) add_message(g, LESSON_WORE_ARMOR);
@@ -174,7 +174,7 @@ void tutorial_game::post_action(game *g, action_id act)
   add_message(g, LESSON_INTERACT);
 // Fall through to...
  case ACTION_PICKUP: {
-  const itype* const it = itype::types[ g->u.last_item ];
+  const itype* const it = item::types[ g->u.last_item ];
   if (it->is_armor()) add_message(g, LESSON_GOT_ARMOR);
   else if (it->is_gun()) add_message(g, LESSON_GOT_GUN);
   else if (it->is_ammo()) add_message(g, LESSON_GOT_AMMO);

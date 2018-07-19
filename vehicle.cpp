@@ -530,7 +530,7 @@ int vehicle::total_mass ()
     int m = 0;
     for (int i = 0; i < parts.size(); i++)
     {
-        m += itype::types[part_info(i).item]->weight;
+        m += item::types[part_info(i).item]->weight;
 		for (const auto& it : parts[i].items) m += it.type->weight;
         if (part_flag(i,vpf_seat) && parts[i].passenger)
             m += 520; // TODO: get real weight
@@ -812,7 +812,7 @@ bool vehicle::valid_wheel_config ()
     float wo = 0, w2;
     for (int p = 0; p < parts.size(); p++)
     { // lets find vehicle's center of masses
-        w2 = itype::types[part_info(p).item]->weight;
+        w2 = item::types[part_info(p).item]->weight;
         if (w2 < 1) continue;
         xo = xo * wo / (wo + w2) + parts[p].mount_dx * w2 / (wo + w2);
         yo = yo * wo / (wo + w2) + parts[p].mount_dy * w2 / (wo + w2);
@@ -1263,7 +1263,7 @@ void vehicle::handle_trap (int x, int y, int part)
             snd = "SNAP!";
             wreckit = true;
             g->m.tr_at(x, y) = tr_null;
-            g->m.add_item(x, y, itype::types[itm_beartrap], 0);
+            g->m.add_item(x, y, item::types[itm_beartrap], 0);
             break;
         case tr_nailboard:
             wreckit = true;
@@ -1279,9 +1279,9 @@ void vehicle::handle_trap (int x, int y, int part)
             snd = "Clank!";
             wreckit = true;
             g->m.tr_at(x, y) = tr_null;
-            g->m.add_item(x, y, itype::types[itm_crossbow], 0);
-            g->m.add_item(x, y, itype::types[itm_string_6], 0);
-            if (!one_in(10)) g->m.add_item(x, y, itype::types[itm_bolt_steel], 0);
+            g->m.add_item(x, y, item::types[itm_crossbow], 0);
+            g->m.add_item(x, y, item::types[itm_string_6], 0);
+            if (!one_in(10)) g->m.add_item(x, y, item::types[itm_bolt_steel], 0);
             break;
         case tr_shotgun_2:
         case tr_shotgun_1:
@@ -1293,8 +1293,8 @@ void vehicle::handle_trap (int x, int y, int part)
             else
             {
                 g->m.tr_at(x, y) = tr_null;
-                g->m.add_item(x, y, itype::types[itm_shotgun_sawn], 0);
-                g->m.add_item(x, y, itype::types[itm_string_6], 0);
+                g->m.add_item(x, y, item::types[itm_shotgun_sawn], 0);
+                g->m.add_item(x, y, item::types[itm_string_6], 0);
             }
             break;
         case tr_landmine:
@@ -1601,7 +1601,7 @@ int vehicle::damage_direct (int p, int dmg, int type)
         {
             g->m.add_item (global_x() + parts[p].precalc_dx[0], 
                            global_y() + parts[p].precalc_dy[0], 
-                           itype::types[part_info(p).item], g->turn);
+                           item::types[part_info(p).item], g->turn);
             remove_part (p);
         }
     }
@@ -1626,7 +1626,7 @@ void vehicle::leak_fuel (int p)
                         parts[p].amount = 0;
                         return;
                     }
-                    g->m.add_item(i, j, itype::types[itm_gasoline], 0);
+                    g->m.add_item(i, j, item::types[itm_gasoline], 0);
                     parts[p].amount -= 100;
                 }
     }
@@ -1636,7 +1636,7 @@ void vehicle::leak_fuel (int p)
 void vehicle::fire_turret (int p, bool burst)
 {
     if (!part_flag (p, vpf_turret)) return;
-    it_gun *gun = dynamic_cast<it_gun*> (itype::types[part_info(p).item]);
+    it_gun *gun = dynamic_cast<it_gun*> (item::types[part_info(p).item]);
     if (!gun) return;
     int charges = burst? gun->burst : 1;
     if (!charges) charges = 1;
@@ -1646,7 +1646,7 @@ void vehicle::fire_turret (int p, bool burst)
         if (amt == AT_GAS) charges = 20; // hacky
         int fleft = fuel_left (amt);
         if (fleft < 1) return;
-        const it_ammo* const ammo = dynamic_cast<it_ammo*>(itype::types[amt == AT_GAS? itm_gasoline : itm_plasma]);
+        const it_ammo* const ammo = dynamic_cast<it_ammo*>(item::types[amt == AT_GAS? itm_gasoline : itm_plasma]);
         if (!ammo) return;
         if (fire_turret_internal (p, *gun, *ammo, charges))
         { // consume fuel

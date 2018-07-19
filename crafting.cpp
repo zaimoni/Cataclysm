@@ -676,7 +676,7 @@ void game::craft()
  crafting_inv += u.inv;
  crafting_inv += u.weapon;
  if (u.has_bionic(bio_tools)) {
-  item tools(itype::types[itm_toolset], turn);
+  item tools(item::types[itm_toolset], turn);
   tools.charges = u.power_level;
   crafting_inv += tools;
  }
@@ -699,10 +699,10 @@ void game::craft()
   for (int i = 0; i < current.size() && i < 23; i++) {
    if (i == line)
     mvwprintz(w_data, i, 0, (available[i] ? h_white : h_dkgray),
-		itype::types[current[i]->result]->name.c_str());
+		item::types[current[i]->result]->name.c_str());
    else
     mvwprintz(w_data, i, 0, (available[i] ? c_white : c_dkgray),
-		itype::types[current[i]->result]->name.c_str());
+		item::types[current[i]->result]->name.c_str());
   }
   if (current.size() > 0) {
    nc_color col = (available[line] ? c_white : c_dkgray);
@@ -747,7 +747,7 @@ void game::craft()
        toolcol = c_green;
 
       std::stringstream toolinfo;
-      toolinfo << itype::types[type]->name + " ";
+      toolinfo << item::types[type]->name + " ";
       if (charges > 0)
        toolinfo << "(" << charges << " charges) ";
       std::string toolname = toolinfo.str();
@@ -781,7 +781,7 @@ void game::craft()
 	 const component& comp = current[line]->components[i][j];
      const int count = comp.count;
      const itype_id type = comp.type;
-	 const itype* const i_type = itype::types[type];
+	 const itype* const i_type = item::types[type];
      nc_color compcol = c_red;
      if (i_type->count_by_charges() && count > 0)  {
       if (crafting_inv.has_charges(type, count))
@@ -834,7 +834,7 @@ void game::craft()
    break;
   case '\n':
    if (!available[line]) popup("You can't do that!");
-   else if (itype::types[current[line]->result]->m1 == LIQUID &&
+   else if (item::types[current[line]->result]->m1 == LIQUID &&
             !u.has_watertight_container())
     popup("You don't have anything to store that liquid in!");
    else {
@@ -843,7 +843,7 @@ void game::craft()
    }
    break;
   case '?':
-   tmp = item(itype::types[current[line]->result], 0);
+   tmp = item(item::types[current[line]->result], 0);
    full_screen_popup(tmp.info(true).c_str());
    redraw = true;
    break;
@@ -965,7 +965,7 @@ void game::pick_recipes(std::vector<recipe*> &current,
  crafting_inv += u.inv;
  crafting_inv += u.weapon;
  if (u.has_bionic(bio_tools)) {
-  item tools(itype::types[itm_toolset], turn);
+  item tools(item::types[itm_toolset], turn);
   tools.charges = u.power_level;
   crafting_inv += tools;
  }
@@ -1005,7 +1005,7 @@ void game::pick_recipes(std::vector<recipe*> &current,
 	for(const component& comp : current[i]->components[j]) {
      const itype_id type = comp.type;
      const int count = comp.count;
-     if (itype::types[type]->count_by_charges() && count > 0) {
+     if (item::types[type]->count_by_charges() && count > 0) {
       if (crafting_inv.has_charges(type, count)) {
        have_comp[j] = true;
 	   break;
@@ -1053,7 +1053,7 @@ void game::complete_craft()
 
 // Messed up badly; waste some components.
  if (making->difficulty != 0 && diff_roll > skill_roll * (1 + 0.1 * rng(1, 5))) {
-  add_msg("You fail to make the %s, and waste some materials.", itype::types[making->result]->name.c_str());
+  add_msg("You fail to make the %s, and waste some materials.", item::types[making->result]->name.c_str());
   for (int i = 0; i < 5; i++) {
    if (making->components[i].size() > 0) {
     std::vector<component> copy = making->components[i];
@@ -1068,7 +1068,7 @@ void game::complete_craft()
   return;
   // Messed up slightly; no components wasted.
  } else if (diff_roll > skill_roll) {
-  add_msg("You fail to make the %s, but don't waste any materials.", itype::types[making->result]->name.c_str());
+  add_msg("You fail to make the %s, but don't waste any materials.", item::types[making->result]->name.c_str());
   u.activity.type = ACT_NULL;
   return;
  }
@@ -1083,7 +1083,7 @@ void game::complete_craft()
 
   // Set up the new item, and pick an inventory letter
  int iter = 0;
- item newit(itype::types[making->result], turn, nextinv);
+ item newit(item::types[making->result], turn, nextinv);
  if (!newit.craft_has_charges())
   newit.charges = 0;
  do {
@@ -1129,7 +1129,7 @@ void consume_items(game *g, const std::vector<component>& components)
   const int count = abs(comp.count);
   bool pl = false, mp = false;
 
-  if (itype::types[type]->count_by_charges() && count > 0) {
+  if (item::types[type]->count_by_charges() && count > 0) {
 
    if (g->u.has_charges(type, count)) {
     player_has.push_back(comp);
@@ -1171,11 +1171,11 @@ void consume_items(game *g, const std::vector<component>& components)
   std::vector<std::string> options; // List for the menu_vec below
 // Populate options with the names of the items
   for(const component& comp : map_has)
-   options.push_back(itype::types[comp.type]->name + " (nearby)");
+   options.push_back(item::types[comp.type]->name + " (nearby)");
   for(const component& comp : player_has)
-   options.push_back(itype::types[comp.type]->name);
+   options.push_back(item::types[comp.type]->name);
   for(const component& comp : mixed)
-   options.push_back(itype::types[comp.type]->name + " (on person & nearby)");
+   options.push_back(item::types[comp.type]->name + " (on person & nearby)");
 
   if (options.size() == 0) // This SHOULD only happen if cooking with a fire,
    return;                 // and the fire goes out.
@@ -1194,19 +1194,19 @@ void consume_items(game *g, const std::vector<component>& components)
  }
 
  for(const component& comp : player_use) {
-  if (itype::types[comp.type]->count_by_charges() && 0 < comp.count)
+  if (item::types[comp.type]->count_by_charges() && 0 < comp.count)
    g->u.use_charges(comp.type, comp.count);
   else
    g->u.use_amount(comp.type, abs(comp.count), (comp.count < 0));
  }
  for(const component& comp : map_use) {
-  if (itype::types[comp.type]->count_by_charges() && 0 < comp.count)
+  if (item::types[comp.type]->count_by_charges() && 0 < comp.count)
    g->m.use_charges(point(g->u.posx, g->u.posy), PICKUP_RANGE, comp.type, comp.count);
   else
    g->m.use_amount(point(g->u.posx, g->u.posy), PICKUP_RANGE, comp.type, abs(comp.count), (comp.count < 0));
  }
  for(const component& comp : mixed_use) {
-  if (itype::types[comp.type]->count_by_charges() && 0 < comp.count) {
+  if (item::types[comp.type]->count_by_charges() && 0 < comp.count) {
    const int from_map = comp.count - g->u.charges_of(comp.type);
    g->u.use_charges(comp.type, g->u.charges_of(comp.type));
    g->m.use_charges(point(g->u.posx, g->u.posy), PICKUP_RANGE, comp.type, from_map);
@@ -1250,10 +1250,10 @@ void consume_tools(game *g, const std::vector<component>& tools)
 // Populate the list
   std::vector<std::string> options;
   for(const component& tool : map_has)
-   options.push_back(itype::types[tool.type]->name + " (nearby)");
+   options.push_back(item::types[tool.type]->name + " (nearby)");
 
   for(const component& tool : player_has)
-   options.push_back(itype::types[tool.type]->name);
+   options.push_back(item::types[tool.type]->name);
 
   if (options.size() == 0) // This SHOULD only happen if cooking with a fire,
    return;                 // and the fire goes out.

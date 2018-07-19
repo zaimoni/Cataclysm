@@ -29,7 +29,7 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory,
  item ammotmp;
  if (p.weapon.has_flag(IF_CHARGE)) { // It's a charger gun, so make up a type
 // Charges maxes out at 8.
-  it_ammo* const tmpammo = dynamic_cast<it_ammo*>(itype::types[itm_charge_shot]);	// XXX should be copy-construction \todo fix
+  it_ammo* const tmpammo = dynamic_cast<it_ammo*>(item::types[itm_charge_shot]);	// XXX should be copy-construction \todo fix
   tmpammo->damage = p.weapon.charges * p.weapon.charges;
   tmpammo->pierce = (p.weapon.charges >= 4 ? (p.weapon.charges - 3) * 2.5 : 0);
   tmpammo->range = 5 + p.weapon.charges * 5;

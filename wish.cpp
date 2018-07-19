@@ -7,7 +7,7 @@
 
 void game::wish()
 {
- const auto t_size = itype::types.size();
+ const auto t_size = item::types.size();
  WINDOW* w_list = newwin(25, 30, 0,  0);
  WINDOW* w_info = newwin(25, 50, 0, 30);
  int a = 0, shift = 0, result_selected = 0;
@@ -64,7 +64,7 @@ void game::wish()
 
    if (search) {
     for (int i = 0; i < t_size; i++) {
-     if (itype::types[i]->name.find(pattern) != std::string::npos) {
+     if (item::types[i]->name.find(pattern) != std::string::npos) {
       shift = i;
       a = 0;
       result_selected = 0;
@@ -129,11 +129,11 @@ void game::wish()
   }
   for (int i = 1; i < 24 && i-1+shift < t_size; i++) {
    const nc_color col = (a + 1 == i) ? h_white : c_white;
-   const itype* const it = itype::types[i - 1 + shift];
+   const itype* const it = item::types[i - 1 + shift];
    mvwprintz(w_list, i, 0, col, it->name.c_str());
    wprintz(w_list, it->color, "%c%", it->sym);
   }
-  tmp.make(itype::types[a + shift]);
+  tmp.make(item::types[a + shift]);
   tmp.bday = turn;
   if (tmp.is_tool()) tmp.charges = dynamic_cast<const it_tool*>(tmp.type)->max_charges;
   else if (tmp.is_ammo()) tmp.charges = 100;

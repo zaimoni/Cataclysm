@@ -10,6 +10,27 @@ class npc;
 class item
 {
 public:
+ static std::vector <itype*> types;
+
+ const itype*   type;
+ const mtype*   corpse;
+ const it_ammo* curammo;
+
+ std::vector<item> contents;
+
+ std::string name;
+ char invlet;           // Inventory letter
+ int charges;
+ bool active;           // If true, it has active effects to be processed
+ signed char damage;    // How much damage it's sustained; generally, max is 5
+ char burnt;		// How badly we're burnt
+ unsigned int bday;     // The turn on which it was created
+ int owned;		// UID of NPC owner; 0 = player, -1 = unowned
+ int poison;		// How badly poisoned is it?
+
+ int mission_id;// Refers to a mission in game's master list
+ int player_id;	// Only give a mission to the right player!
+
  item();
  item(const itype* it, unsigned int turn);
  item(const itype* it, unsigned int turn, char let);
@@ -99,25 +120,7 @@ public:
  bool is_other(); // Doesn't belong in other categories
  bool is_artifact() const;
 
- const itype*   type;
- const mtype*   corpse;
- const it_ammo* curammo;
-
- std::vector<item> contents;
-
- std::string name;
- char invlet;           // Inventory letter
- int charges;
- bool active;           // If true, it has active effects to be processed
- signed char damage;    // How much damage it's sustained; generally, max is 5
- char burnt;		// How badly we're burnt
- unsigned int bday;     // The turn on which it was created
- int owned;		// UID of NPC owner; 0 = player, -1 = unowned
- int poison;		// How badly poisoned is it?
-
- int mission_id;// Refers to a mission in game's master list
- int player_id;	// Only give a mission to the right player!
-
+ static void init();
 };
 
 

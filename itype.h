@@ -296,8 +296,6 @@ itype_id default_ammo(ammotype guntype);
 
 struct itype
 {
- static std::vector <itype*> types;
-
  int id;		// ID # that matches its place in master itype list
  			// Used for save files; aligns to itype_id above.
  unsigned char rarity;	// How often it's found
@@ -378,8 +376,6 @@ struct itype
   item_flags  = pitem_flags;
   techniques  = ptechniques;
  }
-
- static void init();
 };
 
 // Includes food drink and drugs
