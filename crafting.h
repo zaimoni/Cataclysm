@@ -46,7 +46,7 @@ struct recipe
   difficulty (pdiff), time (ptime) {}
 };
 
-void consume_items(game *g, std::vector<component> components);
-void consume_tools(game *g, std::vector<component> tools);
+void consume_items(game *g, const std::vector<component>& components);
+void consume_tools(game *g, const std::vector<component>& tools);
 
 #endif

@@ -7,6 +7,7 @@
 
 void game::wish()
 {
+ const auto t_size = itype::types.size();
  WINDOW* w_list = newwin(25, 30, 0,  0);
  WINDOW* w_info = newwin(25, 50, 0, 30);
  int a = 0, shift = 0, result_selected = 0;
@@ -38,9 +39,9 @@ void game::wish()
       result_selected = 0;
      shift = search_results[result_selected];
      a = 0;
-     if (shift + 23 > itypes.size()) {
-      a = shift + 23 - itypes.size();
-      shift = itypes.size() - 23;
+     if (shift + 23 > t_size) {
+      a = shift + 23 - t_size;
+      shift = t_size - 23;
      }
     }
    } else if (ch == '<') {
@@ -51,9 +52,9 @@ void game::wish()
       result_selected = search_results.size() - 1;
      shift = search_results[result_selected];
      a = 0;
-     if (shift + 23 > itypes.size()) {
-      a = shift + 23 - itypes.size();
-      shift = itypes.size() - 23;
+     if (shift + 23 > t_size) {
+      a = shift + 23 - t_size;
+      shift = t_size - 23;
      }
     }
    } else {
@@ -62,14 +63,14 @@ void game::wish()
    }
 
    if (search) {
-    for (int i = 0; i < itypes.size(); i++) {
-     if (itypes[i]->name.find(pattern) != std::string::npos) {
+    for (int i = 0; i < t_size; i++) {
+     if (itype::types[i]->name.find(pattern) != std::string::npos) {
       shift = i;
       a = 0;
       result_selected = 0;
-      if (shift + 23 > itypes.size()) {
-       a = shift + 23 - itypes.size();
-       shift = itypes.size() - 23;
+      if (shift + 23 > t_size) {
+       a = shift + 23 - t_size;
+       shift = t_size - 23;
       }
       found = true;
       search_results.push_back(i);
@@ -96,9 +97,9 @@ void game::wish()
      result_selected = 0;
     shift = search_results[result_selected];
     a = 0;
-    if (shift + 23 > itypes.size()) {
-     a = shift + 23 - itypes.size();
-     shift = itypes.size() - 23;
+    if (shift + 23 > t_size) {
+     a = shift + 23 - t_size;
+     shift = t_size - 23;
     }
    } else if (ch == '<' && !search_results.empty()) {
     result_selected--;
@@ -106,9 +107,9 @@ void game::wish()
      result_selected = search_results.size() - 1;
     shift = search_results[result_selected];
     a = 0;
-    if (shift + 23 > itypes.size()) {
-     a = shift + 23 - itypes.size();
-     shift = itypes.size() - 23;
+    if (shift + 23 > t_size) {
+     a = shift + 23 - t_size;
+     shift = t_size - 23;
     }
    }
   }
@@ -124,31 +125,24 @@ void game::wish()
   if (a > 22) {
    a = 22;
    shift++;
-   if (shift + 23 > itypes.size()) shift = itypes.size() - 23;
+   if (shift + 23 > t_size) shift = t_size - 23;
   }
-  for (int i = 1; i < 24 && i-1+shift < itypes.size(); i++) {
-   nc_color col = c_white;
-   if (i == a + 1)
-    col = h_white;
-   mvwprintz(w_list, i, 0, col, itypes[i-1+shift]->name.c_str());
-   wprintz(w_list, itypes[i-1+shift]->color, "%c%", itypes[i-1+shift]->sym);
+  for (int i = 1; i < 24 && i-1+shift < t_size; i++) {
+   const nc_color col = (a + 1 == i) ? h_white : c_white;
+   const itype* const it = itype::types[i - 1 + shift];
+   mvwprintz(w_list, i, 0, col, it->name.c_str());
+   wprintz(w_list, it->color, "%c%", it->sym);
   }
-  tmp.make(itypes[a + shift]);
+  tmp.make(itype::types[a + shift]);
   tmp.bday = turn;
-  if (tmp.is_tool())
-   tmp.charges = dynamic_cast<it_tool*>(tmp.type)->max_charges;
-  else if (tmp.is_ammo())
-   tmp.charges = 100;
-  else
-   tmp.charges = -1;
+  if (tmp.is_tool()) tmp.charges = dynamic_cast<const it_tool*>(tmp.type)->max_charges;
+  else if (tmp.is_ammo()) tmp.charges = 100;
+  else tmp.charges = -1;
   info = tmp.info(true);
   mvwprintw(w_info, 1, 0, info.c_str());
   wrefresh(w_info);
   wrefresh(w_list);
-  if (search)
-   ch = getch();
-  else
-   ch = input();
+  ch = search ? getch() : input();
  } while (ch != '\n');
  clear();
  mvprintw(0, 0, "\nWish granted - %d (%d).", tmp.type->id, itm_antibiotics);

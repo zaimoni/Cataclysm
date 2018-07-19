@@ -164,7 +164,7 @@ void player::activate_bionic(int b, game *g)
 
  case bio_evap:
   if (query_yn("Drink directly? Otherwise you will need a container.")) {
-   tmp_item = item(g->itypes[itm_water], 0);
+   tmp_item = item(itype::types[itm_water], 0);
    thirst -= 50;
    if (has_trait(PF_GOURMAND) && thirst < -60) {
      g->add_msg("You can't finish it all!");
@@ -175,23 +175,24 @@ void player::activate_bionic(int b, game *g)
    }
   } else {
    t = g->inv("Choose a container:");
-   if (i_at(t).type == 0) {
+   auto& it = i_at(t);
+   if (it.type == 0) {
     g->add_msg("You don't have that item!");
     power_level += bionics[bio_evap].power_cost;
-   } else if (!i_at(t).is_container()) {
+   } else if (!it.is_container()) {
     g->add_msg("That %s isn't a container!", i_at(t).tname().c_str());
     power_level += bionics[bio_evap].power_cost;
    } else {
-    it_container *cont = dynamic_cast<it_container*>(i_at(t).type);
-    if (i_at(t).volume_contained() + 1 > cont->contains) {
-     g->add_msg("There's no space left in your %s.", i_at(t).tname().c_str());
+    const it_container* const cont = dynamic_cast<const it_container*>(it.type);
+    if (it.volume_contained() + 1 > cont->contains) {
+     g->add_msg("There's no space left in your %s.", it.tname().c_str());
      power_level += bionics[bio_evap].power_cost;
     } else if (!(cont->flags & con_wtight)) {
-     g->add_msg("Your %s isn't watertight!", i_at(t).tname().c_str());
+     g->add_msg("Your %s isn't watertight!", it.tname().c_str());
      power_level += bionics[bio_evap].power_cost;
     } else {
-     g->add_msg("You pour water into your %s.", i_at(t).tname().c_str());
-     i_at(t).put_in(item(g->itypes[itm_water], 0));
+     g->add_msg("You pour water into your %s.", it.tname().c_str());
+	 it.put_in(item(itype::types[itm_water], 0));
     }
    }
   }
@@ -220,19 +221,19 @@ void player::activate_bionic(int b, game *g)
    g->add_msg("Your claws extend, forcing you to drop your %s.",
               weapon.tname().c_str());
    g->m.add_item(posx, posy, weapon);
-   weapon = item(g->itypes[itm_bio_claws], 0);
+   weapon = item(itype::types[itm_bio_claws], 0);
    weapon.invlet = '#';
   } else {
    g->add_msg("Your claws extend!");
-   weapon = item(g->itypes[itm_bio_claws], 0);
+   weapon = item(itype::types[itm_bio_claws], 0);
    weapon.invlet = '#';
   }
   break;
 
  case bio_blaster:
   tmp_item = weapon;
-  weapon = item(g->itypes[itm_bio_blaster], 0);
-  weapon.curammo = dynamic_cast<it_ammo*>(g->itypes[itm_bio_fusion]);
+  weapon = item(itype::types[itm_bio_blaster], 0);
+  weapon.curammo = dynamic_cast<it_ammo*>(itype::types[itm_bio_fusion]);
   weapon.charges = 1;
   g->refresh_all();
   g->plfire(false);
@@ -241,8 +242,8 @@ void player::activate_bionic(int b, game *g)
 
  case bio_laser:
   tmp_item = weapon;
-  weapon = item(g->itypes[itm_v29], 0);
-  weapon.curammo = dynamic_cast<it_ammo*>(g->itypes[itm_laser_pack]);
+  weapon = item(itype::types[itm_v29], 0);
+  weapon.curammo = dynamic_cast<it_ammo*>(itype::types[itm_laser_pack]);
   weapon.charges = 1;
   g->refresh_all();
   g->plfire(false);
@@ -274,20 +275,21 @@ void player::activate_bionic(int b, game *g)
                                               tmp.tname().c_str())) {
     i = g->m.i_at(posx, posy).size() + 1;	// Loop is finished
     t = g->inv("Choose a container:");
-    if (i_at(t).type == 0) {
+	auto& it = i_at(t);
+    if (0 == it.type) {
      g->add_msg("You don't have that item!");
      power_level += bionics[bio_water_extractor].power_cost;
-    } else if (!i_at(t).is_container()) {
-     g->add_msg("That %s isn't a container!", i_at(t).tname().c_str());
+    } else if (!it.is_container()) {
+     g->add_msg("That %s isn't a container!", it.tname().c_str());
      power_level += bionics[bio_water_extractor].power_cost;
     } else {
-     it_container *cont = dynamic_cast<it_container*>(i_at(t).type);
+     const it_container* const cont = dynamic_cast<const it_container*>(it.type);
      if (i_at(t).volume_contained() + 1 > cont->contains) {
-      g->add_msg("There's no space left in your %s.", i_at(t).tname().c_str());
+      g->add_msg("There's no space left in your %s.", it.tname().c_str());
       power_level += bionics[bio_water_extractor].power_cost;
      } else {
-      g->add_msg("You pour water into your %s.", i_at(t).tname().c_str());
-      i_at(t).put_in(item(g->itypes[itm_water], 0));
+      g->add_msg("You pour water into your %s.", it.tname().c_str());
+      i_at(t).put_in(item(itype::types[itm_water], 0));
      }
     }
    }
@@ -356,7 +358,7 @@ void player::activate_bionic(int b, game *g)
  }
 }
 
-bool player::install_bionics(game *g, it_bionic* type)
+bool player::install_bionics(game *g, const it_bionic* type)
 {
  if (type == NULL) {
   debugmsg("Tried to install NULL bionic");

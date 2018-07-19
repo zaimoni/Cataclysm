@@ -126,7 +126,7 @@ public:
     void save (std::ofstream &stout);
 
 // get vpart type info for part number (part at given vector index)
-    const vpart_info& part_info (int index);
+    const vpart_info& part_info(int index) const;
 
 // check if certain part can be mounted at certain position (not accounting frame direction)
     bool can_mount (int dx, int dy, vpart_id id);
@@ -143,13 +143,13 @@ public:
     std::vector<int> parts_at_relative (int dx, int dy);
 
 // returns the list of indeces of parts inside (or over) given
-    std::vector<int> internal_parts (int p);
+    std::vector<int> internal_parts(int p) const;
 
 // returns index of part, inner to given, with certain flag (WARNING: without mfb!), or -1
-    int part_with_feature (int p, unsigned int f, bool unbroken = true);
+    int part_with_feature(int p, unsigned int f, bool unbroken = true) const;
 
 // returns true if given flag is present for given part index (WARNING: without mfb!)
-    bool part_flag (int p, unsigned int f);
+    bool part_flag(int p, unsigned int f) const;
 
 // Translate seat-relative mount coords into tile coords
     void coord_translate (int reldx, int reldy, int &dx, int &dy);
@@ -303,7 +303,7 @@ public:
     void fire_turret (int p, bool burst = true);
 
     // internal procedure of turret firing
-    bool fire_turret_internal (int p, it_gun &gun, it_ammo &ammo, int charges);
+    bool fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int charges);
 
     // upgrades/refilling/etc. see veh_interact.cpp
     void interact ();

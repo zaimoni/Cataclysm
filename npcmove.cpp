@@ -194,9 +194,10 @@ void npc::execute_action(game *g, npc_action action, int target)
   bool ammo_found = false;
   int index = -1;
   for (int i = 0; i < inv.size(); i++) {
-   bool am = (inv[i].is_gun() &&
-             has_ammo( (dynamic_cast<it_gun*>(inv[i].type))->ammo ).size() > 0);
-   if (inv[i].is_gun() && (!ammo_found || am)) {
+   const item& it = inv[i];
+   if (!it.is_gun()) continue;
+   bool am = (0 < has_ammo((dynamic_cast<const it_gun*>(it.type))->ammo).size());
+   if (!ammo_found || am) {
     index = i;
     ammo_found = (ammo_found || am);
    }
@@ -204,8 +205,7 @@ void npc::execute_action(game *g, npc_action action, int target)
   if (index == -1) {
    debugmsg("NPC tried to wield a gun, but has none!");
    move_pause();
-  } else
-   wield(g, index);
+  } else wield(g, index);
  } break;
 
  case npc_heal:
@@ -437,26 +437,22 @@ npc_action npc::method_of_attack(game *g, int target, int danger)
   target_HP = g->z[target].hp;
 
  if (can_use_gun) {
-  if (need_to_reload() && can_reload())
-   return npc_reload;
-  if (emergency(danger_assessment(g)) && alt_attack_available(g))
-   return npc_alt_attack;
+  if (need_to_reload() && can_reload()) return npc_reload;
+  if (emergency(danger_assessment(g)) && alt_attack_available(g)) return npc_alt_attack;
   if (weapon.is_gun() && weapon.charges > 0) {
-   it_gun* gun = dynamic_cast<it_gun*>(weapon.type);
    if (dist > confident_range()) {
     if (can_reload() && enough_time_to_reload(g, target, weapon))
      return npc_reload;
     else
      return npc_melee;
    }
-   if (!wont_hit_friend(g, tarx, tary))
-    return npc_avoid_friendly_fire;
+   const it_gun* const gun = dynamic_cast<const it_gun*>(weapon.type);
+   if (!wont_hit_friend(g, tarx, tary)) return npc_avoid_friendly_fire;
    else if (dist <= confident_range() / 3 && weapon.charges >= gun->burst &&
             gun->burst > 1 &&
             (target_HP >= weapon.curammo->damage * 3 || emergency(danger * 2)))
     return npc_shoot_burst;
-   else
-    return npc_shoot;
+   else return npc_shoot;
   }
  }
 
@@ -583,7 +579,7 @@ npc_action npc::address_player(game *g)
  return npc_undecided;
 }
 
-npc_action npc::long_term_goal_action(game *g)
+npc_action npc::long_term_goal_action(game *g)	// XXX this was being prototyped
 {
  if (g->debugmon)
   debugmsg("long_term_goal_action()");
@@ -595,8 +591,7 @@ npc_action npc::long_term_goal_action(game *g)
 // TODO: Follow / look for player
  
 
- if (!has_destination())
-  set_destination(g);
+ if (!has_destination()) set_destination(g);
  return npc_goto_destination;
 
  return npc_undecided;
@@ -607,7 +602,7 @@ bool npc::alt_attack_available(game *g)
 {
  for (int i = 0; i < NUM_ALT_ATTACK_ITEMS; i++) {
   if ((!is_following() || combat_rules.use_grenades ||
-       !(g->itypes[ALT_ATTACK_ITEMS[i]]->item_flags & mfb(IF_GRENADE))) &&
+       !(itype::types[ALT_ATTACK_ITEMS[i]]->item_flags & mfb(IF_GRENADE))) &&
       has_amount(ALT_ATTACK_ITEMS[i], 1))
    return true;
  }
@@ -619,9 +614,9 @@ int npc::choose_escape_item()
  int best = -1, ret = -1;
  for (int i = 0; i < inv.size(); i++) {
   for (int j = 0; j < NUM_ESCAPE_ITEMS; j++) {
-   it_comest* food = NULL;
+   const it_comest* food = NULL;
    if (inv[i].is_food())
-    food = dynamic_cast<it_comest*>(inv[i].type);
+    food = dynamic_cast<const it_comest*>(inv[i].type);
    if (inv[i].type->id == ESCAPE_ITEMS[j] &&
        (food == NULL || stim < food->stim ||            // Avoid guzzling down
         (food->stim >= 10 && stim < food->stim * 2)) && //  Adderall etc.
@@ -638,8 +633,7 @@ int npc::choose_escape_item()
 void npc::use_escape_item(game *g, int index, int target)
 {
  if (index < 0 || index >= inv.size()) {
-  debugmsg("%s tried to use item %d (%d in inv)", name.c_str(), index,
-           inv.size());
+  debugmsg("%s tried to use item %d (%d in inv)", name.c_str(), index, inv.size());
   move_pause();
   return;
  }
@@ -657,56 +651,43 @@ void npc::use_escape_item(game *g, int index, int target)
  }
 
  if (used->is_tool()) {
-  it_tool* tool = dynamic_cast<it_tool*>(used->type);
+  const it_tool* const tool = dynamic_cast<const it_tool*>(used->type);
   iuse use;
   (use.*tool->use)(g, this, used, false);
   used->charges -= tool->charges_per_use;
-  if (used->invlet == 0)
-   inv.remove_item(index);
+  if (used->invlet == 0) inv.remove_item(index);
   return;
  }
 
- debugmsg("NPC tried to use %s (%d) but it has no use?", used->tname().c_str(),
-          index);
+ debugmsg("NPC tried to use %s (%d) but it has no use?", used->tname().c_str(), index);
  move_pause();
 }
 
 // Index defaults to -1, i.e., wielded weapon
 int npc::confident_range(int index)
 {
- 
- if (index == -1 && (!weapon.is_gun() || weapon.charges <= 0))
-  return 1;
+ if (index == -1 && (!weapon.is_gun() || weapon.charges <= 0)) return 1;
 
  double deviation = 0;
  int max = 0;
  if (index == -1) {
-  it_gun* firing = dynamic_cast<it_gun*>(weapon.type);
+  const it_gun* const firing = dynamic_cast<const it_gun*>(weapon.type);
 // We want at least 50% confidence that missed_by will be < .5.
 // missed_by = .00325 * deviation * range <= .5; deviation * range <= 156
 // (range <= 156 / deviation) is okay, so confident range is (156 / deviation)
 // Here we're using median values for deviation, for a around-50% estimate.
 // See game::fire (ranged.cpp) for where these computations come from
 
-  if (sklevel[firing->skill_used] < 5)
-   deviation += 3.5 * (5 - sklevel[firing->skill_used]);
-  else
-   deviation -= 2.5 * (sklevel[firing->skill_used] - 5);
-  if (sklevel[sk_gun] < 3)
-   deviation += 1.5 * (3 - sklevel[sk_gun]);
-  else
-   deviation -= .5 * (sklevel[sk_gun] - 3);
+  if (sklevel[firing->skill_used] < 5) deviation += 3.5 * (5 - sklevel[firing->skill_used]);
+  else deviation -= 2.5 * (sklevel[firing->skill_used] - 5);
+  if (sklevel[sk_gun] < 3) deviation += 1.5 * (3 - sklevel[sk_gun]);
+  else deviation -= .5 * (sklevel[sk_gun] - 3);
 
-  if (per_cur < 8)
-   deviation += 2 * (9 - per_cur);
-  else
-   deviation -= (per_cur > 16 ? 8 : per_cur - 8);
-  if (dex_cur < 6)
-   deviation += 4 * (6 - dex_cur);
-  else if (dex_cur < 8)
-   deviation += 8 - dex_cur;
-  else if (dex_cur > 8)
-   deviation -= .5 * (dex_cur - 8);
+  if (per_cur < 8) deviation += 2 * (9 - per_cur);
+  else deviation -= (per_cur > 16 ? 8 : per_cur - 8);
+  if (dex_cur < 6) deviation += 4 * (6 - dex_cur);
+  else if (dex_cur < 8) deviation += 8 - dex_cur;
+  else if (dex_cur > 8) deviation -= .5 * (dex_cur - 8);
 
   deviation += .5 * encumb(bp_torso) + 2 * encumb(bp_eyes);
 
@@ -721,34 +702,27 @@ int npc::confident_range(int index)
 
  } else { // We aren't firing a gun, we're throwing something!
 
-  item *thrown = &(inv[index]);
+  const item& thrown = inv[index];
   max = throw_range(index); // The max distance we can throw
   int deviation = 0;
-  if (sklevel[sk_throw] < 8)
-   deviation += rng(0, 8 - sklevel[sk_throw]);
-  else
-   deviation -= sklevel[sk_throw] - 6;
+  if (sklevel[sk_throw] < 8) deviation += rng(0, 8 - sklevel[sk_throw]);
+  else deviation -= sklevel[sk_throw] - 6;
 
   deviation += throw_dex_mod();
 
-  if (per_cur < 6)
-   deviation += rng(0, 8 - per_cur);
-  else if (per_cur > 8)
-   deviation -= per_cur - 8;
+  if (per_cur < 6) deviation += rng(0, 8 - per_cur);
+  else if (per_cur > 8) deviation -= per_cur - 8;
 
   deviation += rng(0, encumb(bp_hands) * 2 + encumb(bp_eyes) + 1);
-  if (thrown->volume() > 5)
-   deviation += rng(0, 1 + (thrown->volume() - 5) / 4);
-  if (thrown->volume() == 0)
-   deviation += rng(0, 3);
+  if (thrown.volume() > 5) deviation += rng(0, 1 + (thrown.volume() - 5) / 4);
+  if (thrown.volume() == 0) deviation += rng(0, 3);
 
-  deviation += rng(0, 1 + abs(str_cur - thrown->weight()));
+  deviation += rng(0, 1 + abs(str_cur - thrown.weight()));
  }
 
 // Using 180 for now for extra-confident NPCs.
  int ret = (max > int(180 / deviation) ? max : int(180 / deviation));
- if (ret > weapon.curammo->range)
-  return weapon.curammo->range;
+ if (ret > weapon.curammo->range) return weapon.curammo->range;
  return ret;
 }
 
@@ -798,19 +772,17 @@ bool npc::wont_hit_friend(game *g, int tarx, int tary, int index)
  
 bool npc::can_reload()
 {
- if (!weapon.is_gun())
-  return false;
- it_gun* gun = dynamic_cast<it_gun*> (weapon.type);
+ if (!weapon.is_gun()) return false;
+
+ const it_gun* const gun = dynamic_cast<const it_gun*>(weapon.type);
  return (weapon.charges < gun->clip && has_ammo(gun->ammo).size() > 0);
 }
 
 bool npc::need_to_reload()
 {
- if (!weapon.is_gun())
-  return false;
- it_gun* gun = dynamic_cast<it_gun*> (weapon.type);
+ if (!weapon.is_gun()) return false;
 
- return (weapon.charges < gun->clip * .1);
+ return (weapon.charges < dynamic_cast<const it_gun*>(weapon.type)->clip * .1);
 }
 
 bool npc::enough_time_to_reload(game *g, int target, item &gun)
@@ -1405,7 +1377,7 @@ void npc::alt_attack(game *g, int target)
  */
  for (int i = 0; i < NUM_ALT_ATTACK_ITEMS; i++) {
   if ((!is_following() || combat_rules.use_grenades ||
-       !(g->itypes[ALT_ATTACK_ITEMS[i]]->item_flags & mfb(IF_GRENADE))) &&
+       !(itype::types[ALT_ATTACK_ITEMS[i]]->item_flags & mfb(IF_GRENADE))) &&
       has_amount(ALT_ATTACK_ITEMS[i], 1))
    which = ALT_ATTACK_ITEMS[i];
  }
@@ -1414,12 +1386,9 @@ void npc::alt_attack(game *g, int target)
 // Not sure if this should ever occur.  For now, let's warn with a debug msg
   debugmsg("npc::alt_attack() couldn't find an alt attack item!");
   if (dist == 1) {
-   if (target == TARGET_PLAYER)
-    melee_player(g, g->u);
-   else
-    melee_monster(g, target);
-  } else
-   move_to(g, tarx, tary);
+   if (target == TARGET_PLAYER) melee_player(g, g->u);
+   else melee_monster(g, target);
+  } else move_to(g, tarx, tary);
  }
 
  int index;
@@ -1520,14 +1489,14 @@ void npc::alt_attack(game *g, int target)
 
 void npc::activate_item(game *g, int index)
 {
- item *it = &(inv[index]);
+ item& it = inv[index];
  iuse use;
- if (it->is_tool()) {
-  it_tool* tool = dynamic_cast<it_tool*>(it->type);
-  (use.*tool->use)(g, this, it, false);
- } else if (it->is_food()) {
-  it_comest* comest = dynamic_cast<it_comest*>(it->type);
-  (use.*comest->use)(g, this, it, false);
+ if (it.is_tool()) {
+  const it_tool* const tool = dynamic_cast<const it_tool*>(it.type);
+  (use.*tool->use)(g, this, &it, false);
+ } else if (it.is_food()) {
+  const it_comest* const comest = dynamic_cast<const it_comest*>(it.type);
+  (use.*comest->use)(g, this, &it, false);
  }
 }
 
@@ -1695,11 +1664,10 @@ void npc::pick_and_eat(game *g)
  bool thirst_more_important = (thirst > hunger * 1.5);
  for (int i = 0; i < inv.size(); i++) {
   int eaten_hunger = -1, eaten_thirst = -1;
-  it_comest* food = NULL;
-  if (inv[i].is_food())
-   food = dynamic_cast<it_comest*>(inv[i].type);
-  else if (inv[i].is_food_container())
-   food = dynamic_cast<it_comest*>(inv[i].contents[0].type);
+  const item& it = inv[i];
+  const it_comest* food = NULL;
+  if (it.is_food()) food = dynamic_cast<const it_comest*>(it.type);
+  else if (it.is_food_container()) food = dynamic_cast<const it_comest*>(it.contents[0].type);
   if (food != NULL) {
    eaten_hunger = hunger - food->nutr;
    eaten_thirst = thirst - food->quench;

@@ -48,7 +48,7 @@ void save_template(player *u);
 
 bool player::create(game *g, character_type type, std::string tempname)
 {
- weapon = item(g->itypes[0], 0);
+ weapon = item(itype::types[0], 0);
  WINDOW* w = newwin(25, 80, 0, 0);
  int tab = 0, points = 38;
  if (type != PLTYPE_CUSTOM) {
@@ -203,46 +203,30 @@ End of cheatery */
   do {
    int choice = menu("Pick your style:",
                      "Karate", "Judo", "Aikido", "Tai Chi", "Taekwando", NULL);
-   if (choice == 1)
-    ma_type = itm_style_karate;
-   if (choice == 2)
-    ma_type = itm_style_judo;
-   if (choice == 3)
-    ma_type = itm_style_aikido;
-   if (choice == 4)
-    ma_type = itm_style_tai_chi;
-   if (choice == 5)
-    ma_type = itm_style_taekwando;
-   item tmpitem = item(g->itypes[ma_type], 0);
+   if (choice == 1) ma_type = itm_style_karate;
+   if (choice == 2) ma_type = itm_style_judo;
+   if (choice == 3) ma_type = itm_style_aikido;
+   if (choice == 4) ma_type = itm_style_tai_chi;
+   if (choice == 5) ma_type = itm_style_taekwando;
+   item tmpitem = item(itype::types[ma_type], 0);
    full_screen_popup(tmpitem.info(true).c_str());
   } while (!query_yn("Use this style?"));
   styles.push_back(ma_type);
  }
- ret_null = item(g->itypes[0], 0);
  if (!styles.empty())
-  weapon = item(g->itypes[ styles[0] ], 0, ':');
+  weapon = item(itype::types[ styles[0] ], 0, ':');
  else
-  weapon   = item(g->itypes[0], 0);
+  weapon = item(itype::types[0], 0);
 // Nice to start out less than naked.
- item tmp(g->itypes[itm_jeans], 0, 'a');
- worn.push_back(tmp);
- tmp = item(g->itypes[itm_tshirt], 0, 'b');
- worn.push_back(tmp);
- tmp = item(g->itypes[itm_sneakers], 0, 'c');
- worn.push_back(tmp);
+ worn.push_back(item(itype::types[itm_jeans], 0, 'a'));
+ worn.push_back(item(itype::types[itm_tshirt], 0, 'b'));
+ worn.push_back(item(itype::types[itm_sneakers], 0, 'c'));
 // The near-sighted get to start with glasses.
- if (has_trait(PF_MYOPIC)) {
-  tmp = item(g->itypes[itm_glasses_eye], 0, 'd');
-  worn.push_back(tmp);
- }
+ if (has_trait(PF_MYOPIC)) worn.push_back(item(itype::types[itm_glasses_eye], 0, 'd'));
 // Likewise, the asthmatic start with their medication.
- if (has_trait(PF_ASTHMA)) {
-  tmp = item(g->itypes[itm_inhaler], 0, 'a' + worn.size());
-  inv.push_back(tmp);
- }
+ if (has_trait(PF_ASTHMA)) inv.push_back(item(itype::types[itm_inhaler], 0, 'a' + worn.size()));
 // make sure we have no mutations
- for (int i = 0; i < PF_MAX2; i++)
-  my_mutations[i] = false;
+ for (int i = 0; i < PF_MAX2; i++) my_mutations[i] = false;
  return true;
 }
 

@@ -260,12 +260,12 @@ void computer::activate_function(game *g, computer_action action)
          for (int i = 0; i < g->m.i_at(x1, y1).size(); i++) {
           item *it = &(g->m.i_at(x1, y1)[i]);
           if (it->is_container() && it->contents.empty()) {
-           it->put_in( item(g->itypes[itm_sewage], g->turn) );
+           it->put_in( item(itype::types[itm_sewage], g->turn) );
            found_item = true;
           }
          }
          if (!found_item) {
-          item sewage(g->itypes[itm_sewage], g->turn);
+          item sewage(itype::types[itm_sewage], g->turn);
           g->m.add_item(x1, y1, sewage);
          }
         }
@@ -440,7 +440,7 @@ void computer::activate_function(game *g, computer_action action)
    for (int level = g->cur_om.posz; level < 0; level++) {
     tmp_om = g->cur_om;
     g->cur_om = overmap(g, tmp_om.posx, tmp_om.posy, level);
-    tinymap tmpmap(&g->itypes);
+    tinymap tmpmap;
     tmpmap.load(g, g->levx, g->levy);
     tmpmap.translate(t_missile, t_hole);
     tmpmap.save(&tmp_om, g->turn, g->levx, g->levy);
@@ -586,7 +586,7 @@ INITIATING STANDARD TREMOR TEST...");
      debugmsg("Computer couldn't find its mission!");
      return;
     }
-    item software(g->itypes[miss->item_id], 0);
+    item software(itype::types[miss->item_id], 0);
     software.mission_id = mission_id;
     int index = g->u.pick_usb();
     g->u.inv[index].contents.clear();
@@ -620,7 +620,7 @@ INITIATING STANDARD TREMOR TEST...");
          if (!g->u.has_amount(itm_usb_drive, 1))
           print_error("USB drive required!");
          else {
-          item software(g->itypes[itm_software_blood_data], 0);
+          item software(itype::types[itm_software_blood_data], 0);
           int index = g->u.pick_usb();
           g->u.inv[index].contents.clear();
           g->u.inv[index].put_in(software);

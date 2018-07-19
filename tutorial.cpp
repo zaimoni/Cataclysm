@@ -30,13 +30,13 @@ bool tutorial_game::init(game *g)
  g->cur_om = overmap(g, 0, 0, TUTORIAL_Z);
  g->cur_om.make_tutorial();
  g->u.toggle_trait(PF_QUICK);
- g->u.inv.push_back(item(g->itypes[itm_lighter], 0, 'e'));
+ g->u.inv.push_back(item(itype::types[itm_lighter], 0, 'e'));
  g->u.sklevel[sk_gun] = 5;
  g->u.sklevel[sk_melee] = 5;
 // Init the starting map at g location.
  for (int i = 0; i <= MAPSIZE; i += 2) {
   for (int j = 0; j <= MAPSIZE; j += 2) {
-   tinymap tm(&g->itypes);
+   tinymap tm;
    tm.generate(g, &(g->cur_om), g->levx + i - 1, g->levy + j - 1, int(g->turn));
   }
  }
@@ -151,49 +151,36 @@ void tutorial_game::post_action(game *g, action_id act)
   break;
 
  case ACTION_EAT:
-  if (g->u.last_item == itm_codeine)
-   add_message(g, LESSON_TOOK_PAINKILLER);
-  else if (g->u.last_item == itm_cig)
-   add_message(g, LESSON_TOOK_CIG);
-  else if (g->u.last_item == itm_water)
-   add_message(g, LESSON_DRANK_WATER);
+  if (g->u.last_item == itm_codeine) add_message(g, LESSON_TOOK_PAINKILLER);
+  else if (g->u.last_item == itm_cig) add_message(g, LESSON_TOOK_CIG);
+  else if (g->u.last_item == itm_water) add_message(g, LESSON_DRANK_WATER);
   break;
 
  case ACTION_WEAR: {
-  itype *it = g->itypes[ g->u.last_item];
+  const itype* const it = itype::types[ g->u.last_item];
   if (it->is_armor()) {
-   it_armor *armor = dynamic_cast<it_armor*>(it);
-   if (armor->dmg_resist >= 2 || armor->cut_resist >= 4)
-    add_message(g, LESSON_WORE_ARMOR);
-   if (armor->storage >= 20)
-    add_message(g, LESSON_WORE_STORAGE);
-   if (armor->env_resist >= 2)
-    add_message(g, LESSON_WORE_MASK);
+   const it_armor* const armor = dynamic_cast<const it_armor*>(it);
+   if (armor->dmg_resist >= 2 || armor->cut_resist >= 4) add_message(g, LESSON_WORE_ARMOR);
+   if (armor->storage >= 20) add_message(g, LESSON_WORE_STORAGE);
+   if (armor->env_resist >= 2) add_message(g, LESSON_WORE_MASK);
   }
  } break;
 
  case ACTION_WIELD:
-  if (g->u.weapon.is_gun())
-   add_message(g, LESSON_GUN_LOAD);
+  if (g->u.weapon.is_gun()) add_message(g, LESSON_GUN_LOAD);
   break;
 
  case ACTION_EXAMINE:
   add_message(g, LESSON_INTERACT);
 // Fall through to...
  case ACTION_PICKUP: {
-  itype *it = g->itypes[ g->u.last_item ];
-  if (it->is_armor())
-   add_message(g, LESSON_GOT_ARMOR);
-  else if (it->is_gun())
-   add_message(g, LESSON_GOT_GUN);
-  else if (it->is_ammo())
-   add_message(g, LESSON_GOT_AMMO);
-  else if (it->is_tool())
-   add_message(g, LESSON_GOT_TOOL);
-  else if (it->is_food())
-   add_message(g, LESSON_GOT_FOOD);
-  else if (it->melee_dam > 7 || it->melee_cut > 5)
-   add_message(g, LESSON_GOT_WEAPON);
+  const itype* const it = itype::types[ g->u.last_item ];
+  if (it->is_armor()) add_message(g, LESSON_GOT_ARMOR);
+  else if (it->is_gun()) add_message(g, LESSON_GOT_GUN);
+  else if (it->is_ammo()) add_message(g, LESSON_GOT_AMMO);
+  else if (it->is_tool()) add_message(g, LESSON_GOT_TOOL);
+  else if (it->is_food()) add_message(g, LESSON_GOT_FOOD);
+  else if (it->melee_dam > 7 || it->melee_cut > 5) add_message(g, LESSON_GOT_WEAPON);
 
   if (g->u.volume_carried() > g->u.volume_capacity() - 2)
    add_message(g, LESSON_OVERLOADED);

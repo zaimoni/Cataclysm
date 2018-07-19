@@ -24,14 +24,6 @@ map::map()
  nulter = t_null;
  nultrap = tr_null;
  my_MAPSIZE = MAPSIZE;
-}
-
-map::map(std::vector<itype*> *itptr)
-{
- nulter = t_null;
- nultrap = tr_null;
- itypes = itptr;
- my_MAPSIZE = MAPSIZE;
  for (int n = 0; n < my_MAPSIZE * my_MAPSIZE; n++)
   grid[n] = NULL;
 }
@@ -1037,9 +1029,9 @@ void map::destroy(game *g, int x, int y, bool makesound)
    for (int i = x - 2; i <= x + 2; i++) {
     for (int j = y - 2; j <= y + 2; j++) {
      if (move_cost(i, j) > 0 && one_in(3))
-      add_item(i, j, g->itypes[itm_gasoline], 0);
+      add_item(i, j, itype::types[itm_gasoline], 0);
      if (move_cost(i, j) > 0 && one_in(6))
-      add_item(i, j, g->itypes[itm_steel_chunk], 0);
+      add_item(i, j, itype::types[itm_steel_chunk], 0);
     }
    }
   }
@@ -1054,7 +1046,7 @@ void map::destroy(game *g, int x, int y, bool makesound)
   for (int i = x - 2; i <= x + 2; i++) {
    for (int j = y - 2; j <= y + 2; j++) {
     if (move_cost(i, j) > 0 && one_in(6))
-     add_item(i, j, g->itypes[itm_2x4], 0);
+     add_item(i, j, itype::types[itm_2x4], 0);
    }
   }
   break;
@@ -1064,9 +1056,9 @@ void map::destroy(game *g, int x, int y, bool makesound)
   for (int i = x - 2; i <= x + 2; i++) {
    for (int j = y - 2; j <= y + 2; j++) {
     if (move_cost(i, j) > 0 && one_in(5))
-     add_item(i, j, g->itypes[itm_rock], 0);
+     add_item(i, j, itype::types[itm_rock], 0);
     if (move_cost(i, j) > 0 && one_in(4))
-     add_item(i, j, g->itypes[itm_2x4], 0);
+     add_item(i, j, itype::types[itm_2x4], 0);
    }
   }
   ter(x, y) = t_rubble;
@@ -1163,7 +1155,7 @@ void map::shoot(game *g, int x, int y, int &dam, bool hit_items, unsigned flags)
      for (int i = x - 2; i <= x + 2; i++) {
       for (int j = y - 2; j <= y + 2; j++) {
        if (move_cost(i, j) > 0 && one_in(3))
-        add_item(i, j, g->itypes[itm_gasoline], 0);
+        add_item(i, j, itype::types[itm_gasoline], 0);
       }
      }
     }
@@ -1440,14 +1432,12 @@ point map::find_item(item *it)
  return ret;
 }
 
-void map::add_item(int x, int y, itype* type, int birthday)
+void map::add_item(int x, int y, const itype* type, int birthday)
 {
- if (type->is_style())
-  return;
+ if (type->is_style()) return;
  item tmp(type, birthday);
- tmp = tmp.in_its_container(itypes);
- if (tmp.made_of(LIQUID) && has_flag(swimmable, x, y))
-  return;
+ tmp = tmp.in_its_container();
+ if (tmp.made_of(LIQUID) && has_flag(swimmable, x, y)) return;
  add_item(x, y, tmp);
 }
 
@@ -1508,29 +1498,28 @@ void map::process_active_items(game *g)
      
 void map::process_active_items_in_submap(game *g, int nonant)
 {
- it_tool* tmp;
  iuse use;
  for (int i = 0; i < SEEX; i++) {
   for (int j = 0; j < SEEY; j++) {
-   std::vector<item> *items = &(grid[nonant]->itm[i][j]);
-   for (int n = 0; n < items->size(); n++) {
-    if ((*items)[n].active) {
-     if (!(*items)[n].is_tool()) { // It's probably a charger gun
-      (*items)[n].active = false;
-      (*items)[n].charges = 0;
+   std::vector<item>& items = grid[nonant]->itm[i][j];
+   for (int n = 0; n < items.size(); n++) {
+    if (items[n].active) {
+     if (!items[n].is_tool()) { // It's probably a charger gun
+      items[n].active = false;
+      items[n].charges = 0;
      } else { 
-      tmp = dynamic_cast<it_tool*>((*items)[n].type);
-      (use.*tmp->use)(g, &(g->u), &((*items)[n]), true);
+      const it_tool* const tmp = dynamic_cast<const it_tool*>(items[n].type);
+      (use.*tmp->use)(g, &(g->u), &(items[n]), true);
       if (tmp->turns_per_charge > 0 && int(g->turn) % tmp->turns_per_charge ==0)
-       (*items)[n].charges--;
-      if ((*items)[n].charges <= 0) {
-       (use.*tmp->use)(g, &(g->u), &((*items)[n]), false);
-       if (tmp->revert_to == itm_null || (*items)[n].charges == -1) {
-        items->erase(items->begin() + n);
+       items[n].charges--;
+      if (items[n].charges <= 0) {
+       (use.*tmp->use)(g, &(g->u), &(items[n]), false);
+       if (tmp->revert_to == itm_null || items[n].charges == -1) {
+        items.erase(items.begin() + n);
         grid[nonant]->active_item_count--;
         n--;
        } else
-        (*items)[n].type = g->itypes[tmp->revert_to];
+        items[n].type = itype::types[tmp->revert_to];
       }
      }
     }
@@ -1671,7 +1660,7 @@ void map::disarm_trap(game *g, int x, int y)
  if (roll >= diff) {
   g->add_msg("You disarm the trap!");
   for (const auto item_id : tr->components) {
-   if (item_id != itm_null) add_item(x, y, g->itypes[item_id], 0);
+   if (item_id != itm_null) add_item(x, y, itype::types[item_id], 0);
   }
   tr_at(x, y) = tr_null;
   if(diff > 1.25*g->u.sklevel[sk_traps]) // failure might have set off trap
@@ -2292,7 +2281,7 @@ bool map::loadn(game *g, int worldx, int worldy, int gridx, int gridy)
    grid[gridn]->vehicles[i].smy = gridy;
   }
  } else { // It doesn't exist; we must generate it!
-  map tmp_map(itypes);
+  map tmp_map;
 // overx, overy is where in the overmap we need to pull data from
 // Each overmap square is two nonants; to prevent overlap, generate only at
 //  squares divisible by 2.
@@ -2388,12 +2377,6 @@ bool map::inbounds(int x, int y)
 }
 
 tinymap::tinymap()
-{
- my_MAPSIZE = 2;
-}
-
-tinymap::tinymap(std::vector<itype*> *itptr)
-: map(itptr)
 {
  my_MAPSIZE = 2;
  for (int n = 0; n < 4; n++)

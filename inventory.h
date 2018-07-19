@@ -12,6 +12,7 @@ class inventory
 {
  public:
   item& operator[] (int i);
+  const item& operator[] (int i) const;
   std::vector<item>& stack_at(int i);
   std::vector<item> const_stack(int i) const;
   std::vector<item> as_vector();

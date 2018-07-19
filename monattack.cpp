@@ -43,7 +43,7 @@ void mattack::antqueen(game *g, monster *z)
   int junk;
   if (g->u_see(z->posx, z->posy, junk))
    g->add_msg("The %s lays an egg!", z->name().c_str());
-  g->m.add_item(z->posx, z->posy, g->itypes[itm_ant_egg], g->turn);
+  g->m.add_item(z->posx, z->posy, itype::types[itm_ant_egg], g->turn);
  } else { // There are eggs nearby.  Let's hatch some.
   z->moves -= 20 * egg_points.size(); // It takes a while
   int junk;
@@ -1146,8 +1146,8 @@ void mattack::smg(game *g, monster *z)
   tmp.str_cur = 16;
   tmp.dex_cur =  6;
   tmp.per_cur =  8;
-  tmp.weapon = item(g->itypes[itm_smg_9mm], 0);
-  tmp.weapon.curammo = dynamic_cast<it_ammo*>(g->itypes[itm_9mm]);
+  tmp.weapon = item(itype::types[itm_smg_9mm], 0);
+  tmp.weapon.curammo = dynamic_cast<const it_ammo*>(itype::types[itm_9mm]);
   tmp.weapon.charges = 10;
   std::vector<point> traj = line_to(z->posx, z->posy,
                                     target->posx, target->posy, fire_t);
@@ -1183,8 +1183,8 @@ void mattack::smg(game *g, monster *z)
  tmp.str_cur = 16;
  tmp.dex_cur =  6;
  tmp.per_cur =  8;
- tmp.weapon = item(g->itypes[itm_smg_9mm], 0);
- tmp.weapon.curammo = dynamic_cast<it_ammo*>(g->itypes[itm_9mm]);
+ tmp.weapon = item(itype::types[itm_smg_9mm], 0);
+ tmp.weapon.curammo = dynamic_cast<const it_ammo*>(itype::types[itm_9mm]);
  tmp.weapon.charges = 10;
  std::vector<point> traj = line_to(z->posx, z->posy, g->u.posx, g->u.posy, t);
  g->fire(tmp, g->u.posx, g->u.posy, traj, true);

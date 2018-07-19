@@ -70,13 +70,12 @@ void veh_interact::exec (game *gm, vehicle *v, int x, int y)
     crafting_inv.form_from_map(g, point(g->u.posx, g->u.posy), PICKUP_RANGE);
     crafting_inv += g->u.inv;
     crafting_inv += g->u.weapon;
-    if (g->u.has_bionic(bio_tools)) 
-    {
-        item tools(g->itypes[itm_toolset], g->turn);
+    if (g->u.has_bionic(bio_tools))  {
+        item tools(itype::types[itm_toolset], g->turn);
         tools.charges = g->u.power_level;
         crafting_inv += tools;
     }
-    int charges = ((it_tool *) g->itypes[itm_welder])->charges_per_use;
+    int charges = dynamic_cast<it_tool*>(itype::types[itm_welder])->charges_per_use;
     has_wrench = crafting_inv.has_amount(itm_wrench, 1) ||
                  crafting_inv.has_amount(itm_toolset, 1);
     has_hacksaw = crafting_inv.has_amount(itm_hacksaw, 1) ||
@@ -190,18 +189,17 @@ void veh_interact::do_install(int reason)
             engines++;
             dif_eng = dif_eng / 2 + 12;
         }
-    while (true)
-    {
+    while (true) {
         sel_part = can_mount[pos];
         display_list (pos);
         itype_id itm = vpart_list[sel_part].item;
         bool has_comps = crafting_inv.has_amount(itm, 1);
         bool has_skill = g->u.sklevel[sk_mechanics] >= vpart_list[sel_part].difficulty;
         werase (w_msg);
-        int slen = g->itypes[itm]->name.length();
+        int slen = itype::types[itm]->name.length();
         mvwprintz(w_msg, 0, 1, c_ltgray, "Needs %s and level %d skill in mechanics.", 
-                  g->itypes[itm]->name.c_str(), vpart_list[sel_part].difficulty);
-        mvwprintz(w_msg, 0, 7, has_comps? c_ltgreen : c_red, g->itypes[itm]->name.c_str());
+                  itype::types[itm]->name.c_str(), vpart_list[sel_part].difficulty);
+        mvwprintz(w_msg, 0, 7, has_comps? c_ltgreen : c_red, itype::types[itm]->name.c_str());
         mvwprintz(w_msg, 0, 18+slen, has_skill? c_ltgreen : c_red, "%d", vpart_list[sel_part].difficulty);
         bool eng = vpart_list[sel_part].flags & mfb (vpf_engine);
         bool has_skill2 = !eng || (g->u.sklevel[sk_mechanics] >= dif_eng);
@@ -220,10 +218,7 @@ void veh_interact::do_install(int reason)
         {
             sel_cmd = 'i';
             return;
-        }
-        else
-        if (ch == KEY_ESCAPE)
-        {
+        } else if (ch == KEY_ESCAPE) {
             werase (w_list);
             wrefresh (w_list);
             werase (w_msg);
@@ -266,8 +261,7 @@ void veh_interact::do_repair(int reason)
     mvwprintz(w_mode, 0, 1, c_ltgray, "Choose a part here to repair:");
     wrefresh (w_mode);
     int pos = 0;
-    while (true)
-    {
+    while (true) {
         sel_part = parts_here[need_repair[pos]];
         werase (w_parts);
         veh->print_part_desc (w_parts, 0, winw2, cpart, need_repair[pos]);
@@ -278,14 +272,13 @@ void veh_interact::do_repair(int reason)
         bool has_skill = dif <= g->u.sklevel[sk_mechanics];
         mvwprintz(w_msg, 0, 1, c_ltgray, "You need level %d skill in mechanics.", dif);
         mvwprintz(w_msg, 0, 16, has_skill? c_ltgreen : c_red, "%d", dif);
-        if (veh->parts[sel_part].hp <= 0)
-        {
+        if (veh->parts[sel_part].hp <= 0) {
             itype_id itm = veh->part_info(sel_part).item;
             has_comps = crafting_inv.has_amount(itm, 1);
             mvwprintz(w_msg, 1, 1, c_ltgray, "You also need a wrench and %s to replace broken one.", 
-                    g->itypes[itm]->name.c_str());
+                    itype::types[itm]->name.c_str());
             mvwprintz(w_msg, 1, 17, has_wrench? c_ltgreen : c_red, "wrench");
-            mvwprintz(w_msg, 1, 28, has_comps? c_ltgreen : c_red, g->itypes[itm]->name.c_str());            
+            mvwprintz(w_msg, 1, 28, has_comps? c_ltgreen : c_red, itype::types[itm]->name.c_str());            
         }
         wrefresh (w_msg);
         char ch = input(); // See keypress.h
@@ -295,10 +288,7 @@ void veh_interact::do_repair(int reason)
         {
             sel_cmd = 'r';
             return;
-        }
-        else
-        if (ch == KEY_ESCAPE)
-        {
+        } else if (ch == KEY_ESCAPE) {
             werase (w_parts);
             veh->print_part_desc (w_parts, 0, winw2, cpart, -1);
             wrefresh (w_parts);
@@ -634,7 +624,7 @@ void complete_vehicle (game *g)
     int part = g->u.activity.values[6];
     std::vector<component> comps;
     std::vector<component> tools;
-    int welder_charges = ((it_tool *) g->itypes[itm_welder])->charges_per_use;
+    int welder_charges = dynamic_cast<it_tool*>(itype::types[itm_welder])->charges_per_use;
     itype_id itm;
     bool broken;
 
@@ -678,25 +668,21 @@ void complete_vehicle (game *g)
         g->pl_refill_vehicle(*veh, part);        
         break;
     case 'o':
-        for (int i = 0; i < veh->parts[part].items.size(); i++)
-            g->m.add_item (g->u.posx, g->u.posy, veh->parts[part].items[i]);
+		for (const auto& it : veh->parts[part].items)
+            g->m.add_item (g->u.posx, g->u.posy, it);
         veh->parts[part].items.clear();
         itm = veh->part_info(part).item;
         broken = veh->parts[part].hp <= 0;
-        if (veh->parts.size() < 2)
-        {
+        if (veh->parts.size() < 2) {
             g->add_msg ("You completely dismantle %s.", veh->name.c_str());
             g->u.activity.type = ACT_NULL;
             g->m.destroy_vehicle (veh);
-        }
-        else
-        {
+        } else {
             g->add_msg ("You remove %s%s from %s.", broken? "broken " : "",
                         veh->part_info(part).name, veh->name.c_str());
             veh->remove_part (part);
         }
-        if (!broken)
-            g->m.add_item (g->u.posx, g->u.posy, g->itypes[itm], g->turn);
+        if (!broken) g->m.add_item (g->u.posx, g->u.posy, itype::types[itm], g->turn);
         g->u.practice (sk_mechanics, 2 * 5 + 20);
         break;
     default:;

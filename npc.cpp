@@ -290,8 +290,8 @@ void npc::randomize(game *g, npc_class type)
  dex_max = dice(4, 3);
  int_max = dice(4, 3);
  per_max = dice(4, 3);
- ret_null = item(g->itypes[0], 0);
- weapon   = item(g->itypes[0], 0);
+ ret_null = item(itype::types[0], 0);
+ weapon   = item(itype::types[0], 0);
  inv.clear();
  personality.aggression = rng(-10, 10);
  personality.bravery =    rng( -3, 10);
@@ -301,24 +301,18 @@ void npc::randomize(game *g, npc_class type)
  cash = 0;
  moves = 100;
  mission = NPC_MISSION_NULL;
- if (one_in(2))
-  male = true;
- else
-  male = false;
+ male = one_in(2);
  pick_name();
 
- if (type == NC_NONE)
-  type = npc_class(rng(0, NC_MAX - 1));
- if (one_in(5))
-  type = NC_NONE;
+ if (type == NC_NONE) type = npc_class(rng(0, NC_MAX - 1));
+ if (one_in(5)) type = NC_NONE;
 
  myclass = type;
  switch (type) {	// Type of character
  case NC_NONE:	// Untyped; no particular specialization
   for (int i = 1; i < num_skill_types; i++) {
    sklevel[i] = dice(4, 2) - rng(1, 4);
-   if (!one_in(3))
-    sklevel[i] = 0;
+   if (!one_in(3)) sklevel[i] = 0;
   }
   break;
 
@@ -691,7 +685,6 @@ void npc::make_shopkeep(game *g, oter_id type)
  randomize(g, NC_TRADER);
  item tmp;
  std::vector<items_location> pool;
- bool done = false;
  /*
  switch (type) {
  case ot_set_food:
@@ -745,13 +738,12 @@ void npc::make_shopkeep(game *g, oter_id type)
  if (pool.size() > 0) {
   do {
    items_location place = pool[rng(0, pool.size() - 1)];
-   tmp = item(g->itypes[_get_itype(map::items[place])], g->turn);
-   if (volume_carried() + tmp.volume() > volume_capacity() ||
-       weight_carried() + tmp.weight() > weight_capacity()   )
-    done = true;
-   else
-    inv.push_back(tmp);
-  } while (!done);
+   item it(itype::types[_get_itype(map::items[place])], g->turn);
+   if (volume_carried() + it.volume() > volume_capacity() ||
+       weight_carried() + it.weight() > weight_capacity()   )
+    break;
+   inv.push_back(it);
+  } while(true);
  }
  mission = NPC_MISSION_SHOPKEEP;
  update_worst_item_value();
@@ -818,23 +810,16 @@ std::vector<item> starting_clothes(npc_class type, bool male, game *g)
 // Now, more specific stuff for certain classes.
  switch (type) {
  case NC_DOCTOR:
-  if (one_in(2))
-   pants = itm_pants;
-  if (one_in(3))
-   shirt = (one_in(2) ? itm_polo_shirt : itm_dress_shirt);
-  if (!one_in(8))
-   coat = itm_coat_lab;
-  if (one_in(3))
-   mask = itm_mask_dust;
-  if (one_in(4))
-   glasses = itm_glasses_safety;
-  if (gloves != itm_null || one_in(3))
-   gloves = itm_gloves_medical;
+  if (one_in(2)) pants = itm_pants;
+  if (one_in(3)) shirt = (one_in(2) ? itm_polo_shirt : itm_dress_shirt);
+  if (!one_in(8)) coat = itm_coat_lab;
+  if (one_in(3)) mask = itm_mask_dust;
+  if (one_in(4)) glasses = itm_glasses_safety;
+  if (gloves != itm_null || one_in(3)) gloves = itm_gloves_medical;
   break;
 
  case NC_TRADER:
-  if (one_in(2))
-   pants = itm_pants_cargo;
+  if (one_in(2)) pants = itm_pants_cargo;
   switch (rng(0, 8)) {
    case 1: coat = itm_hoodie; break;
    case 2: coat = itm_jacket_jean; break;
@@ -844,53 +829,34 @@ std::vector<item> starting_clothes(npc_class type, bool male, game *g)
   break;
 
  case NC_NINJA:
-  if (one_in(4))
-   shirt = itm_null;
-  else if (one_in(3))
-   shirt = itm_tank_top;
-  if (one_in(5))
-   gloves = itm_gloves_leather;
-  if (one_in(2))
-   mask = itm_bandana;
-  if (one_in(3))
-   hat = itm_null;
+  if (one_in(4)) shirt = itm_null;
+  else if (one_in(3)) shirt = itm_tank_top;
+  if (one_in(5)) gloves = itm_gloves_leather;
+  if (one_in(2)) mask = itm_bandana;
+  if (one_in(3)) hat = itm_null;
   break;
 
  case NC_COWBOY:
-  if (one_in(2))
-   shoes = itm_boots;
-  if (one_in(2))
-   pants = itm_jeans;
-  if (one_in(3))
-   shirt = itm_tshirt;
-  if (one_in(4))
-   gloves = itm_gloves_leather;
-  if (one_in(4))
-   coat = itm_jacket_jean;
-  if (one_in(3))
-   hat = itm_hat_boonie;
+  if (one_in(2)) shoes = itm_boots;
+  if (one_in(2)) pants = itm_jeans;
+  if (one_in(3)) shirt = itm_tshirt;
+  if (one_in(4)) gloves = itm_gloves_leather;
+  if (one_in(4)) coat = itm_jacket_jean;
+  if (one_in(3)) hat = itm_hat_boonie;
   break;
 
  case NC_SCIENTIST:
-  if (one_in(4))
-   glasses = itm_glasses_eye;
-  else if (one_in(2))
-   glasses = itm_glasses_safety;
-  if (one_in(5))
-   coat = itm_coat_lab;
+  if (one_in(4)) glasses = itm_glasses_eye;
+  else if (one_in(2)) glasses = itm_glasses_safety;
+  if (one_in(5)) coat = itm_coat_lab;
   break;
 
  case NC_BOUNTY_HUNTER:
-  if (one_in(3))
-   pants = itm_pants_cargo;
-  if (one_in(2))
-   shoes = itm_boots_steel;
-  if (one_in(4))
-   coat = itm_jacket_leather;
-  if (one_in(4))
-   mask = itm_mask_filter;
-  if (one_in(5))
-   glasses = itm_goggles_ski;
+  if (one_in(3)) pants = itm_pants_cargo;
+  if (one_in(2)) shoes = itm_boots_steel;
+  if (one_in(4)) coat = itm_jacket_leather;
+  if (one_in(4)) mask = itm_mask_filter;
+  if (one_in(5)) glasses = itm_goggles_ski;
   if (one_in(3)) {
    mask = itm_null;
    hat = itm_helmet_motor;
@@ -898,40 +864,29 @@ std::vector<item> starting_clothes(npc_class type, bool male, game *g)
   break;
  }
 // Fill in the standard things we wear
- if (shoes != itm_null)
-  ret.push_back(item(g->itypes[shoes], 0));
- if (pants != itm_null)
-  ret.push_back(item(g->itypes[pants], 0));
- if (shirt != itm_null)
-  ret.push_back(item(g->itypes[shirt], 0));
- if (coat != itm_null)
-  ret.push_back(item(g->itypes[coat], 0));
- if (gloves != itm_null)
-  ret.push_back(item(g->itypes[gloves], 0));
+ if (shoes != itm_null) ret.push_back(item(itype::types[shoes], 0));
+ if (pants != itm_null) ret.push_back(item(itype::types[pants], 0));
+ if (shirt != itm_null) ret.push_back(item(itype::types[shirt], 0));
+ if (coat != itm_null) ret.push_back(item(itype::types[coat], 0));
+ if (gloves != itm_null) ret.push_back(item(itype::types[gloves], 0));
 // Bad to wear a mask under a motorcycle helmet
- if (mask != itm_null && hat != itm_helmet_motor)
-  ret.push_back(item(g->itypes[mask], 0));
- if (glasses != itm_null)
-  ret.push_back(item(g->itypes[glasses], 0));
- if (hat != itm_null)
-  ret.push_back(item(g->itypes[hat], 0));
+ if (mask != itm_null && hat != itm_helmet_motor) ret.push_back(item(itype::types[mask], 0));
+ if (glasses != itm_null) ret.push_back(item(itype::types[glasses], 0));
+ if (hat != itm_null) ret.push_back(item(itype::types[hat], 0));
 
 // Second pass--for extra stuff like backpacks, etc
  switch (type) {
  case NC_NONE:
  case NC_DOCTOR:
  case NC_SCIENTIST:
-  if (one_in(10))
-   ret.push_back(item(g->itypes[itm_backpack], 0));
+  if (one_in(10)) ret.push_back(item(itype::types[itm_backpack], 0));
   break;
  case NC_COWBOY:
  case NC_BOUNTY_HUNTER:
-  if (one_in(2))
-   ret.push_back(item(g->itypes[itm_backpack], 0));
+  if (one_in(2)) ret.push_back(item(itype::types[itm_backpack], 0));
   break;
  case NC_TRADER:
-  if (!one_in(15))
-   ret.push_back(item(g->itypes[itm_backpack], 0));
+  if (!one_in(15)) ret.push_back(item(itype::types[itm_backpack], 0));
   break;
  }
 
@@ -942,30 +897,31 @@ std::vector<item> starting_inv(npc *me, npc_class type, game *g)
 {
  int total_space = me->volume_capacity() - 2;
  std::vector<item> ret;
- ret.push_back( item(g->itypes[itm_lighter], 0) );
+ ret.push_back(item(itype::types[itm_lighter], 0));
  itype_id tmp;
 
 // First, if we're wielding a gun, get some ammo for it
  if (me->weapon.is_gun()) {
-  it_gun *gun = dynamic_cast<it_gun*>(me->weapon.type);
-  tmp = default_ammo(gun->ammo);
-  if (total_space >= g->itypes[tmp]->volume) {
-   ret.push_back(item(g->itypes[tmp], 0));
+  const it_gun* const gun = dynamic_cast<const it_gun*>(me->weapon.type);
+  const itype* const i_type = itype::types[default_ammo(gun->ammo)];
+  if (total_space >= i_type->volume) {
+   ret.push_back(item(i_type, 0));
    total_space -= ret[ret.size() - 1].volume();
   }
   while ((type == NC_COWBOY || type == NC_BOUNTY_HUNTER || !one_in(3)) &&
-         !one_in(4) && total_space >= g->itypes[tmp]->volume) {
-   ret.push_back(item(g->itypes[tmp], 0));
+         !one_in(4) && total_space >= i_type->volume) {
+   ret.push_back(item(i_type, 0));
    total_space -= ret[ret.size() - 1].volume();
   }
  }
  if (type == NC_TRADER) {	// Traders just have tons of random junk
   while (total_space > 0 && !one_in(50)) {
-   tmp = itype_id(rng(2, num_items - 1));
-   if (total_space >= g->itypes[tmp]->volume) {
-    ret.push_back(item(g->itypes[tmp], 0));
-    ret[ret.size() - 1] = ret[ret.size() - 1].in_its_container(&g->itypes);
-    total_space -= ret[ret.size() - 1].volume();
+   const itype* const i_type = itype::types[rng(2, num_items - 1)];
+   if (total_space >= i_type->volume) {
+	const auto n = ret.size();
+    ret.push_back(item(i_type, 0));
+    ret[n] = ret[n].in_its_container();
+    total_space -= ret[n].volume();
    }
   }
  }
@@ -974,8 +930,8 @@ std::vector<item> starting_inv(npc *me, npc_class type, game *g)
  if (type == NC_HACKER) {
   from = mi_npc_hacker;
   while(total_space > 0 && !one_in(10)) {
-   item tmpit(g->itypes[_get_itype(map::items[from])], 0);
-   tmpit = tmpit.in_its_container(&g->itypes);
+   item tmpit(itype::types[_get_itype(map::items[from])], 0);
+   tmpit = tmpit.in_its_container();
    if (total_space >= tmpit.volume()) {
     ret.push_back(tmpit);
     total_space -= tmpit.volume();
@@ -985,8 +941,8 @@ std::vector<item> starting_inv(npc *me, npc_class type, game *g)
  if (type == NC_DOCTOR) {
   while(total_space > 0 && !one_in(10)) {
    from = (one_in(3) ? mi_softdrugs : mi_harddrugs);
-   item tmpit(g->itypes[_get_itype(map::items[from])], 0);
-   tmpit = tmpit.in_its_container(&g->itypes);
+   item tmpit(itype::types[_get_itype(map::items[from])], 0);
+   tmpit = tmpit.in_its_container();
    if (total_space >= tmpit.volume()) {
     ret.push_back(tmpit);
     total_space -= tmpit.volume();
@@ -996,11 +952,12 @@ std::vector<item> starting_inv(npc *me, npc_class type, game *g)
 // TODO: More specifics.
 
  while (total_space > 0 && !one_in(8)) {
-  tmp = itype_id(rng(4, num_items - 1));
-  if (total_space >= g->itypes[tmp]->volume) {
-   ret.push_back(item(g->itypes[tmp], 0));
-   ret[ret.size() - 1] = ret[ret.size() - 1].in_its_container(&g->itypes);
-   total_space -= ret[ret.size() - 1].volume();
+  const itype* const i_type = itype::types[rng(4, num_items - 1)];
+  if (total_space >= i_type->volume) {
+   const auto n = ret.size();
+   ret.push_back(item(i_type, 0));
+   ret[n] = ret[n].in_its_container();
+   total_space -= ret[n].volume();
   }
  }
 
@@ -1057,64 +1014,50 @@ skill npc::best_skill()
 void npc::starting_weapon(game *g)
 {
  if (!styles.empty()) {
-  weapon.make(g->itypes[styles[rng(0, styles.size() - 1)]]);
+  weapon.make(itype::types[styles[rng(0, styles.size() - 1)]]);
   return;
  }
+ static const itype_id weapons_bash[6] = { itm_hammer, itm_wrench, itm_hammer_sledge, itm_pipe, itm_bat, itm_crowbar };
+ static const itype_id weapons_cut[6] = { itm_knife_butcher, itm_hatchet, itm_ax, itm_machete, itm_knife_combat,itm_katana };
  switch (best_skill()) {
  case sk_bashing:
-  switch (rng(0, 5)) {
-   case 0: weapon.make(g->itypes[itm_hammer]);        break;
-   case 1: weapon.make(g->itypes[itm_wrench]);        break;
-   case 2: weapon.make(g->itypes[itm_hammer_sledge]); break;
-   case 3: weapon.make(g->itypes[itm_pipe]);          break;
-   case 4: weapon.make(g->itypes[itm_bat]);           break;
-   case 5: weapon.make(g->itypes[itm_crowbar]);       break;
-  }
+  weapon.make(itype::types[weapons_bash[rng(0, 5)]]);
   break;
  case sk_cutting:
-  switch (rng(0, 5)) {
-   case 0: weapon.make(g->itypes[itm_knife_butcher]); break;
-   case 1: weapon.make(g->itypes[itm_hatchet]);       break;
-   case 2: weapon.make(g->itypes[itm_ax]);            break;
-   case 3: weapon.make(g->itypes[itm_machete]);       break;
-   case 4: weapon.make(g->itypes[itm_knife_combat]);  break;
-   case 5: weapon.make(g->itypes[itm_katana]);        break;
-  }
+  weapon.make(itype::types[weapons_cut[rng(0, 5)]]);
   break;
  case sk_throw:
 // TODO: Some throwing weapons... grenades?
   break;
  case sk_pistol:
-  weapon.make(g->itypes[_get_itype(map::items[mi_pistols])]);
+  weapon.make(itype::types[_get_itype(map::items[mi_pistols])]);
   break;
  case sk_shotgun:
-  weapon.make(g->itypes[_get_itype(map::items[mi_shotguns])]);
+  weapon.make(itype::types[_get_itype(map::items[mi_shotguns])]);
   break;
  case sk_smg:
-  weapon.make(g->itypes[_get_itype(map::items[mi_smg])]);
+  weapon.make(itype::types[_get_itype(map::items[mi_smg])]);
   break;
  case sk_rifle:
-  weapon.make(g->itypes[_get_itype(map::items[mi_rifles])]);
+  weapon.make(itype::types[_get_itype(map::items[mi_rifles])]);
   break;
  }
  if (weapon.is_gun()) {
-  it_gun* gun = dynamic_cast<it_gun*>(weapon.type);
+  const it_gun* const gun = dynamic_cast<const it_gun*>(weapon.type);
   weapon.charges = gun->clip;
-  weapon.curammo = dynamic_cast<it_ammo*>(g->itypes[default_ammo(gun->ammo)]);
+  weapon.curammo = dynamic_cast<const it_ammo*>(itype::types[default_ammo(gun->ammo)]);
  }
 }
 
 bool npc::wear_if_wanted(item it)
 {
- if (!it.is_armor())
-  return false;
+ if (!it.is_armor()) return false;
 
- it_armor* armor = dynamic_cast<it_armor*>(it.type);
+ const it_armor* const armor = dynamic_cast<const it_armor*>(it.type);
  int max_encumb[num_bp] = {2, 3, 3, 4, 3, 3, 3, 2};
  bool encumb_ok = true;
  for (int i = 0; i < num_bp && encumb_ok; i++) {
-  if (armor->covers & mfb(i) && encumb(body_part(i)) + armor->encumber >
-       max_encumb[i])
+  if (armor->covers & mfb(i) && encumb(body_part(i)) + armor->encumber > max_encumb[i])
    encumb_ok = false;
  }
  if (encumb_ok) {
@@ -1125,8 +1068,7 @@ bool npc::wear_if_wanted(item it)
  std::vector<int> removal;
  for (int i = 0; i < worn.size(); i++) {
   for (int j = 0; j < num_bp; j++) {
-   if (armor->covers & mfb(j) &&
-       dynamic_cast<it_armor*>(worn[i].type)->covers & mfb(j)) {
+   if (armor->covers & mfb(j) && dynamic_cast<const it_armor*>(worn[i].type)->covers & mfb(j)) {
     removal.push_back(i);
     j = num_bp;
    }
@@ -1157,7 +1099,7 @@ bool npc::wield(game *g, int index)
   } else // No room for weapon, so we drop it
    g->m.add_item(posx, posy, remove_weapon());
   moves -= 15;
-  weapon.make( g->itypes[styles[index]] );
+  weapon.make(itype::types[styles[index]] );
   int linet;
   if (g->u_see(posx, posy, linet))
    g->add_msg("%s assumes a %s stance.", name.c_str(), weapon.tname().c_str());
@@ -1459,8 +1401,7 @@ void npc::decide_needs()
  for (int i = 0; i < num_needs; i++)
   needrank[i] = 20;
  if (weapon.is_gun()) {
-  it_gun* gun = dynamic_cast<it_gun*>(weapon.type);
-  needrank[need_ammo] = 5 * has_ammo(gun->ammo).size();
+  needrank[need_ammo] = 5 * has_ammo(dynamic_cast<const it_gun*>(weapon.type)->ammo).size();
  }
  if (weapon.type->id == 0 && sklevel[sk_unarmed] < 4)
   needrank[need_weapon] = 1;
@@ -1474,11 +1415,11 @@ void npc::decide_needs()
  needrank[need_food] = 15 - hunger;
  needrank[need_drink] = 15 - thirst;
  for (int i = 0; i < inv.size(); i++) {
-  it_comest* food = NULL;
+  const it_comest* food = NULL;
   if (inv[i].is_food())
-   food = dynamic_cast<it_comest*>(inv[i].type);
+   food = dynamic_cast<const it_comest*>(inv[i].type);
   else if (inv[i].is_food_container())
-   food = dynamic_cast<it_comest*>(inv[i].contents[0].type);
+   food = dynamic_cast<const it_comest*>(inv[i].contents[0].type);
   if (food != NULL) {
    needrank[need_food] += food->nutr / 4;
    needrank[need_drink] += food->quench / 4;
@@ -1583,42 +1524,38 @@ void npc::update_worst_item_value()
 int npc::value(item &it)
 {
  int ret = it.price() / 50;
- skill best = best_skill();
+ {
+ const skill best = best_skill();
  if (best != sk_unarmed) {
-  int weapon_val = it.weapon_value(sklevel) - weapon.weapon_value(sklevel);
-  if (weapon_val > 0)
-   ret += weapon_val;
+  const int weapon_val = it.weapon_value(sklevel) - weapon.weapon_value(sklevel);
+  if (weapon_val > 0) ret += weapon_val;
+ }
  }
 
  if (it.is_food()) {
-  it_comest* comest = dynamic_cast<it_comest*>(it.type);
-  if (comest->nutr > 0 || comest->quench > 0)
-   ret++;
-  if (hunger > 40)
-   ret += (comest->nutr + hunger - 40) / 6;
-  if (thirst > 40)
-   ret += (comest->quench + thirst - 40) / 4;
+  const it_comest* const comest = dynamic_cast<const it_comest*>(it.type);
+  if (comest->nutr > 0 || comest->quench > 0) ret++;
+  if (hunger > 40) ret += (comest->nutr + hunger - 40) / 6;
+  if (thirst > 40) ret += (comest->quench + thirst - 40) / 4;
  }
 
  if (it.is_ammo()) {
-  it_ammo* ammo = dynamic_cast<it_ammo*>(it.type);
-  it_gun* gun;
+  const it_ammo* const ammo = dynamic_cast<const it_ammo*>(it.type);
+  const it_gun* gun;
   if (weapon.is_gun()) {
-   gun = dynamic_cast<it_gun*>(weapon.type);
-   if (ammo->type == gun->ammo)
-    ret += 14;
+   gun = dynamic_cast<const it_gun*>(weapon.type);
+   if (ammo->type == gun->ammo) ret += 14;
   }
   for (int i = 0; i < inv.size(); i++) {
    if (inv[i].is_gun()) {
-    gun = dynamic_cast<it_gun*>(inv[i].type);
-    if (ammo->type == gun->ammo)
-     ret += 14;
+    gun = dynamic_cast<const it_gun*>(inv[i].type);
+    if (ammo->type == gun->ammo) ret += 14;
    }
   }
  }
 
  if (it.is_book()) {
-  it_book* book = dynamic_cast<it_book*>(it.type);
+  const it_book* const book = dynamic_cast<const it_book*>(it.type);
   if (book->intel <= int_cur) {
    ret += book->fun;
    if (sklevel[book->type] < book->level && sklevel[book->type] >= book->req)
@@ -1633,11 +1570,9 @@ int npc::value(item &it)
 
 // TODO: Artifact hunting from relevant factions
 // ALSO TODO: Bionics hunting from relevant factions
- if (fac_has_job(FACJOB_DRUGS) && it.is_food() &&
-     (dynamic_cast<it_comest*>(it.type))->addict >= 5)
+ if (fac_has_job(FACJOB_DRUGS) && it.is_food() && (dynamic_cast<const it_comest*>(it.type))->addict >= 5)
   ret += 10;
- if (fac_has_job(FACJOB_DOCTORS) && it.type->id >= itm_bandages &&
-     it.type->id <= itm_prozac)
+ if (fac_has_job(FACJOB_DOCTORS) && it.type->id >= itm_bandages && it.type->id <= itm_prozac)
   ret += 10;
  if (fac_has_value(FACVAL_BOOKS) && it.is_book())
   ret += 14;
@@ -2018,13 +1953,12 @@ void npc::die(game *g, bool your_fault)
  }
 
  item my_body;
- my_body.make_corpse(g->itypes[itm_corpse], mtype::types[mon_null], g->turn);
+ my_body.make_corpse(itype::types[itm_corpse], mtype::types[mon_null], g->turn);
  my_body.name = name;
  g->m.add_item(posx, posy, my_body);
  for (int i = 0; i < inv.size(); i++)
   g->m.add_item(posx, posy, inv[i]);
- for (int i = 0; i < worn.size(); i++)
-  g->m.add_item(posx, posy, worn[i]);
+ for (const auto& it : worn) g->m.add_item(posx, posy, it);
  if (weapon.type->id != itm_null)
   g->m.add_item(posx, posy, weapon);
 

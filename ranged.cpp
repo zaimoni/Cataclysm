@@ -10,7 +10,7 @@
 #include "options.h"
 #include "posix_time.h"
 
-int time_to_fire(player &p, it_gun* firing);
+int time_to_fire(player &p, const it_gun* firing);
 int recoil_add(player &p);
 void make_gun_sound_effect(game *g, player &p, bool burst);
 int calculate_range(player &p, int tarx, int tary);
@@ -29,7 +29,7 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory,
  item ammotmp;
  if (p.weapon.has_flag(IF_CHARGE)) { // It's a charger gun, so make up a type
 // Charges maxes out at 8.
-  it_ammo *tmpammo = dynamic_cast<it_ammo*>(itypes[itm_charge_shot]);
+  it_ammo* const tmpammo = dynamic_cast<it_ammo*>(itype::types[itm_charge_shot]);	// XXX should be copy-construction \todo fix
   tmpammo->damage = p.weapon.charges * p.weapon.charges;
   tmpammo->pierce = (p.weapon.charges >= 4 ? (p.weapon.charges - 3) * 2.5 : 0);
   tmpammo->range = 5 + p.weapon.charges * 5;
@@ -75,7 +75,7 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory,
  }
 
  int x = p.posx, y = p.posy;
- it_gun* firing = dynamic_cast<it_gun*>(p.weapon.type);
+ const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
  if (p.has_trait(PF_TRIGGERHAPPY) && one_in(30))
   burst = true;
  if (burst && p.weapon.burst_size() < 2)
@@ -644,57 +644,22 @@ void game::hit_monster_with_flags(monster &z, unsigned int flags)
  }
 }
 
-int time_to_fire(player &p, it_gun* firing)
+int time_to_fire(player &p, const it_gun* const firing)
 {
  int time = 0;
+
  switch (firing->skill_used) {
-
- case sk_pistol:
-  if (p.sklevel[sk_pistol] > 6)
-   time = 10;
-  else
-   time = (80 - 10 * p.sklevel[sk_pistol]);
-  break;
-
- case sk_shotgun:
-  if (p.sklevel[sk_shotgun] > 3)
-   time = 70;
-  else
-   time = (150 - 25 * p.sklevel[sk_shotgun]);
-  break;
-
- case sk_smg:
-  if (p.sklevel[sk_smg] > 5)
-   time = 20;
-  else
-   time = (80 - 10 * p.sklevel[sk_smg]);
-  break;
-
- case sk_rifle:
-  if (p.sklevel[sk_rifle] > 8)
-   time = 30;
-  else
-   time = (150 - 15 * p.sklevel[sk_rifle]);
-  break;
-
- case sk_archery:
-  if (p.sklevel[sk_archery] > 8)
-   time = 20;
-  else
-   time = (220 - 25 * p.sklevel[sk_archery]);
-  break;
-
- case sk_launcher:
-  if (p.sklevel[sk_launcher] > 8)
-   time = 30;
-  else
-   time = (200 - 20 * p.sklevel[sk_launcher]);
-  break;
+ case sk_pistol: return (6 < p.sklevel[sk_pistol]) ? 10 : (80 - 10 * p.sklevel[sk_pistol]);
+ case sk_shotgun: return (3 < p.sklevel[sk_shotgun]) ? 70 : (150 - 25 * p.sklevel[sk_shotgun]);
+ case sk_smg: return (5 < p.sklevel[sk_smg]) ? 20 : (80 - 10 * p.sklevel[sk_smg]);
+ case sk_rifle: return (8 < p.sklevel[sk_rifle]) ? 30 : (150 - 15 * p.sklevel[sk_rifle]);
+ case sk_archery: return (8 < p.sklevel[sk_archery]) ? 20 : (220 - 25 * p.sklevel[sk_archery]);
+ case sk_launcher: return (8 < p.sklevel[sk_launcher]) ? 30 : (200 - 20 * p.sklevel[sk_launcher]);
 
  default:
   debugmsg("Why is shooting %s using %s skill?", (firing->name).c_str(),
 		skill_name(firing->skill_used).c_str());
-  time =  0;
+  return 0;
  }
 
  return time;
@@ -705,49 +670,32 @@ void make_gun_sound_effect(game *g, player &p, bool burst)
  std::string gunsound;
  int noise = p.weapon.noise();
  if (noise < 5) {
-  if (burst)
-   gunsound = "Brrrip!";
-  else
-   gunsound = "plink!";
+  gunsound = burst ? "Brrrip!" : "plink!";
  } else if (noise < 25) {
-  if (burst)
-   gunsound = "Brrrap!";
-  else
-   gunsound = "bang!";
+  gunsound = burst ? "Brrrap!" : "bang!";
  } else if (noise < 60) {
-  if (burst)
-   gunsound = "P-p-p-pow!";
-  else
-   gunsound = "blam!";
+  gunsound = burst ? "P-p-p-pow!" : "blam!";
  } else {
-  if (burst)
-   gunsound = "Kaboom!!";
-  else
-   gunsound = "kerblam!";
+  gunsound = burst ? "Kaboom!!" : "kerblam!";
  }
- if (p.weapon.curammo->type == AT_FUSION || p.weapon.curammo->type == AT_BATT ||
-     p.weapon.curammo->type == AT_PLUT)
+ if (p.weapon.curammo->type == AT_FUSION || p.weapon.curammo->type == AT_BATT || p.weapon.curammo->type == AT_PLUT)
   g->sound(p.posx, p.posy, 8, "Fzzt!");
  else if (p.weapon.curammo->type == AT_40MM)
   g->sound(p.posx, p.posy, 8, "Thunk!");
  else if (p.weapon.curammo->type == AT_GAS)
   g->sound(p.posx, p.posy, 4, "Fwoosh!");
- else if (p.weapon.curammo->type != AT_BOLT &&
-          p.weapon.curammo->type != AT_ARROW)
+ else if (p.weapon.curammo->type != AT_BOLT && p.weapon.curammo->type != AT_ARROW)
   g->sound(p.posx, p.posy, noise, gunsound);
 }
 
 int calculate_range(player &p, int tarx, int tary)
 {
  int trange = rl_dist(p.posx, p.posy, tarx, tary);
- it_gun* firing = dynamic_cast<it_gun*>(p.weapon.type);
+ const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
  if (trange < int(firing->volume / 3) && firing->ammo != AT_SHOT)
   trange = int(firing->volume / 3);
  else if (p.has_bionic(bio_targeting)) {
-  if (trange > LONG_RANGE)
-   trange = int(trange * .65);
-  else
-   trange = int(trange * .8);
+  trange = int(trange * ((LONG_RANGE < trange) ? .65 : .8));
  }
 
  if (firing->skill_used == sk_rifle && trange > LONG_RANGE)
@@ -756,9 +704,9 @@ int calculate_range(player &p, int tarx, int tary)
  return trange;
 }
 
-double calculate_missed_by(player &p, int trange)
+double calculate_missed_by(player &p, int trange)	// XXX real-world deviation is normal distribution with arithmetic mean zero \todo fix
 {
- it_gun* firing = dynamic_cast<it_gun*>(p.weapon.type);
+  const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
 // Calculate deviation from intended target (assuming we shoot for the head)
   double deviation = 0.; // Measured in quarter-degrees
 // Up to 1.5 degrees for each skill point < 4; up to 1.25 for each point > 4
@@ -791,18 +739,16 @@ double calculate_missed_by(player &p, int trange)
 
 int recoil_add(player &p)
 {
- it_gun* firing = dynamic_cast<it_gun*>(p.weapon.type);
+ const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
  int ret = p.weapon.recoil();
  ret -= rng(p.str_cur / 2, p.str_cur);
  ret -= rng(0, p.sklevel[firing->skill_used] / 2);
- if (ret > 0)
-  return ret;
- return 0;
+ return (0 < ret) ? ret : 0;
 }
 
 void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit)
 {
- it_gun* firing = dynamic_cast<it_gun*>(p.weapon.type);
+ const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
  std::string message;
  int junk;
  bool u_see_mon = g->u_see(&(mon), junk);
@@ -817,12 +763,10 @@ void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit)
 // Armor blocks BEFORE any critical effects.
   int zarm = mon.armor_cut();
   zarm -= p.weapon.curammo->pierce;
-  if (p.weapon.curammo->m1 == LIQUID)
-   zarm = 0;
+  if (p.weapon.curammo->m1 == LIQUID) zarm = 0;
   else if (p.weapon.curammo->accuracy < 4) // Shot doesn't penetrate armor well
    zarm *= rng(2, 4);
-  if (zarm > 0)
-   dam -= zarm;
+  if (zarm > 0) dam -= zarm;
   if (dam <= 0) {
    if (u_see_mon)
     g->add_msg("The shot reflects off the %s!",
@@ -844,8 +788,8 @@ void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit)
   } else if (goodhit <= .7) {
    message = "Grazing hit.";
    dam = rng(0, dam);
-  } else
-   dam = 0;
+  } else dam = 0;
+
 // Find the zombie at (x, y) and hurt them, MAYBE kill them!
   if (dam > 0) {
    mon.moves -= dam * 5;
@@ -866,7 +810,7 @@ void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit)
 
 void shoot_player(game *g, player &p, player *h, int &dam, double goodhit)
 {
- it_gun* firing = dynamic_cast<it_gun*>(p.weapon.type);
+ const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
  body_part hit;
  int side = rng(0, 1), junk;
  if (goodhit < .05) {
@@ -874,12 +818,9 @@ void shoot_player(game *g, player &p, player *h, int &dam, double goodhit)
   dam = rng(3 * dam, 5 * dam);
   p.practice(firing->skill_used, 5);
  } else if (goodhit < .1) {
-  if (one_in(6))
-   hit = bp_eyes;
-  else if (one_in(4))
-   hit = bp_mouth;
-  else
-   hit = bp_head;
+  if (one_in(6)) hit = bp_eyes;
+  else if (one_in(4)) hit = bp_mouth;
+  else hit = bp_head;
   dam = rng(2 * dam, 5 * dam);
   p.practice(firing->skill_used, 5);
  } else if (goodhit < .2) {
@@ -887,23 +828,16 @@ void shoot_player(game *g, player &p, player *h, int &dam, double goodhit)
   dam = rng(dam, 2 * dam);
   p.practice(firing->skill_used, 2);
  } else if (goodhit < .4) {
-  if (one_in(3))
-   hit = bp_torso;
-  else if (one_in(2))
-   hit = bp_arms;
-  else
-   hit = bp_legs;
+  if (one_in(3)) hit = bp_torso;
+  else if (one_in(2)) hit = bp_arms;
+  else hit = bp_legs;
   dam = rng(int(dam * .9), int(dam * 1.5));
   p.practice(firing->skill_used, rng(0, 1));
  } else if (goodhit < .5) {
-  if (one_in(2))
-   hit = bp_arms;
-  else
-   hit = bp_legs;
+  hit = one_in(2) ? bp_arms : bp_legs;
   dam = rng(dam / 2, dam);
- } else {
-  dam = 0;
- }
+ } else dam = 0;
+
  if (dam > 0) {
   h->moves -= rng(0, dam);
   if (h == &(g->u))

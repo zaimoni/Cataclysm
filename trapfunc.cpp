@@ -22,20 +22,19 @@ void trapfunc::beartrap(game *g, int x, int y)
  g->u.hit(g, bp_legs, rng(0, 1), 10, 16);
  g->u.add_disease(DI_BEARTRAP, -1, g);
  g->m.tr_at(x, y) = tr_null;
- g->m.add_item(x, y, g->itypes[itm_beartrap], g->turn);
+ g->m.add_item(x, y, itype::types[itm_beartrap], g->turn);
 }
 
 void trapfuncm::beartrap(game *g, monster *z, int x, int y)
 {
  g->sound(x, y, 8, "SNAP!");
- if (z->hurt(35))
-  g->kill_mon(g->mon_at(x, y));
+ if (z->hurt(35)) g->kill_mon(g->mon_at(x, y));
  else {
   z->moves = 0;
   z->add_effect(ME_BEARTRAP, rng(8, 15));
  }
  g->m.tr_at(x, y) = tr_null;
- item beartrap(g->itypes[itm_beartrap], 0);
+ item beartrap(itype::types[itm_beartrap], 0);
  z->add_item(beartrap);
 }
 
@@ -49,12 +48,9 @@ void trapfunc::board(game *g, int x, int y)
 void trapfuncm::board(game *g, monster *z, int x, int y)
 {
  int t;
- if (g->u_see(z, t))
-  g->add_msg("The %s steps on a spiked board!", z->name().c_str());
- if (z->hurt(rng(6, 10)))
-  g->kill_mon(g->mon_at(x, y));
- else
-  z->moves -= 80;
+ if (g->u_see(z, t)) g->add_msg("The %s steps on a spiked board!", z->name().c_str());
+ if (z->hurt(rng(6, 10))) g->kill_mon(g->mon_at(x, y));
+ else z->moves -= 80;
 }
 
 void trapfunc::tripwire(game *g, int x, int y)
@@ -109,41 +105,34 @@ void trapfunc::crossbow(game *g, int x, int y)
   g->add_msg("Your %s is hit!", body_part_name(hit, side).c_str());
   g->u.hit(g, hit, side, 0, rng(20, 30));
   add_bolt = !one_in(10);
- } else
-  g->add_msg("You dodge the shot!");
+ } else g->add_msg("You dodge the shot!");
  g->m.tr_at(x, y) = tr_null;
- g->m.add_item(x, y, g->itypes[itm_crossbow], 0);
- g->m.add_item(x, y, g->itypes[itm_string_6], 0);
- if (add_bolt)
-  g->m.add_item(x, y, g->itypes[itm_bolt_steel], 0);
+ g->m.add_item(x, y, itype::types[itm_crossbow], 0);
+ g->m.add_item(x, y, itype::types[itm_string_6], 0);
+ if (add_bolt) g->m.add_item(x, y, itype::types[itm_bolt_steel], 0);
 }
   
 void trapfuncm::crossbow(game *g, monster *z, int x, int y)
 {
  int t;
  bool add_bolt = true;
- bool seen = g->u_see(z, t);
+ const bool seen = g->u_see(z, t);
  if (!one_in(4)) {
-  if (seen)
-   g->add_msg("A bolt shoots out and hits the %s!", z->name().c_str());
-  if (z->hurt(rng(20, 30)))
-   g->kill_mon(g->mon_at(x, y));
+  if (seen) g->add_msg("A bolt shoots out and hits the %s!", z->name().c_str());
+  if (z->hurt(rng(20, 30))) g->kill_mon(g->mon_at(x, y));
   add_bolt = !one_in(10);
- } else if (seen)
-  g->add_msg("A bolt shoots out, but misses the %s.", z->name().c_str());
+ } else if (seen) g->add_msg("A bolt shoots out, but misses the %s.", z->name().c_str());
  g->m.tr_at(x, y) = tr_null;
- g->m.add_item(x, y, g->itypes[itm_crossbow], 0);
- g->m.add_item(x, y, g->itypes[itm_string_6], 0);
- if (add_bolt)
-  g->m.add_item(x, y, g->itypes[itm_bolt_steel], 0);
+ g->m.add_item(x, y, itype::types[itm_crossbow], 0);
+ g->m.add_item(x, y, itype::types[itm_string_6], 0);
+ if (add_bolt) g->m.add_item(x, y, itype::types[itm_bolt_steel], 0);
 }
 
 void trapfunc::shotgun(game *g, int x, int y)
 {
  g->add_msg("You trigger a shotgun trap!");
- int shots = (one_in(8) || one_in(20 - g->u.str_max) ? 2 : 1);
- if (g->m.tr_at(x, y) == tr_shotgun_1)
-  shots = 1;
+ int shots = ((one_in(8) || one_in(20 - g->u.str_max)) ? 2 : 1);
+ if (g->m.tr_at(x, y) == tr_shotgun_1) shots = 1;
  if (rng(5, 50) > g->u.dodge(g)) {
   body_part hit;
   switch (rng(1, 10)) {
@@ -164,8 +153,8 @@ void trapfunc::shotgun(game *g, int x, int y)
  } else
   g->add_msg("You dodge the shot!");
  if (shots == 2 || g->m.tr_at(x, y) == tr_shotgun_1) {
-  g->m.add_item(x, y, g->itypes[itm_shotgun_sawn], 0);
-  g->m.add_item(x, y, g->itypes[itm_string_6], 0);
+  g->m.add_item(x, y, itype::types[itm_shotgun_sawn], 0);
+  g->m.add_item(x, y, itype::types[itm_string_6], 0);
   g->m.tr_at(x, y) = tr_null;
  } else
   g->m.tr_at(x, y) = tr_shotgun_1;
@@ -183,19 +172,15 @@ void trapfuncm::shotgun(game *g, monster *z, int x, int y)
   case MS_LARGE:  chance =   8; break;
   case MS_HUGE:   chance =   2; break;
  }
- int shots = (one_in(8) || one_in(chance) ? 2 : 1);
- if (g->m.tr_at(x, y) == tr_shotgun_1)
-  shots = 1;
- if (seen)
-  g->add_msg("A shotgun fires and hits the %s!", z->name().c_str());
- if (z->hurt(rng(40 * shots, 60 * shots)))
-  g->kill_mon(g->mon_at(x, y));
+ int shots = ((one_in(8) || one_in(chance)) ? 2 : 1);
+ if (g->m.tr_at(x, y) == tr_shotgun_1) shots = 1;
+ if (seen) g->add_msg("A shotgun fires and hits the %s!", z->name().c_str());
+ if (z->hurt(rng(40 * shots, 60 * shots))) g->kill_mon(g->mon_at(x, y));
  if (shots == 2 || g->m.tr_at(x, y) == tr_shotgun_1) {
   g->m.tr_at(x, y) = tr_null;
-  g->m.add_item(x, y, g->itypes[itm_shotgun_sawn], 0);
-  g->m.add_item(x, y, g->itypes[itm_string_6], 0);
- } else
-  g->m.tr_at(x, y) = tr_shotgun_1;
+  g->m.add_item(x, y, itype::types[itm_shotgun_sawn], 0);
+  g->m.add_item(x, y, itype::types[itm_string_6], 0);
+ } else g->m.tr_at(x, y) = tr_shotgun_1;
 }
 
 
@@ -208,16 +193,12 @@ void trapfunc::blade(game *g, int x, int y)
 void trapfuncm::blade(game *g, monster *z, int x, int y)
 {
  int t;
- if (g->u_see(z, t))
-  g->add_msg("A machete swings out and hacks the %s!", z->name().c_str());
+ if (g->u_see(z, t)) g->add_msg("A machete swings out and hacks the %s!", z->name().c_str());
  int cutdam = 30 - z->armor_cut();
  int bashdam = 12 - z->armor_bash();
- if (cutdam < 0)
-  cutdam = 0;
- if (bashdam < 0)
-  bashdam = 0;
- if (z->hurt(bashdam + cutdam))
-  g->kill_mon(g->mon_at(x, y));
+ if (cutdam < 0) cutdam = 0;
+ if (bashdam < 0) bashdam = 0;
+ if (z->hurt(bashdam + cutdam)) g->kill_mon(g->mon_at(x, y));
 }
 
 void trapfunc::landmine(game *g, int x, int y)
@@ -373,10 +354,8 @@ void trapfunc::pit_spikes(game *g, int x, int y)
  g->add_msg("You fall in a pit!");
  int dodge = g->u.dodge(g);
  int damage = rng(20, 50);
- if (g->u.has_trait(PF_WINGS_BIRD))
-  g->add_msg("You flap your wings and flutter down gracefully.");
- else if (rng(5, 30) < dodge)
-  g->add_msg("You avoid the spikes within.");
+ if (g->u.has_trait(PF_WINGS_BIRD)) g->add_msg("You flap your wings and flutter down gracefully.");
+ else if (rng(5, 30) < dodge) g->add_msg("You avoid the spikes within.");
  else {
   body_part hit;
   switch (rng(1, 10)) {
@@ -399,8 +378,7 @@ void trapfunc::pit_spikes(game *g, int x, int y)
    g->m.ter(x, y) = t_pit;
    g->m.tr_at(x, y) = tr_pit;
    for (int i = 0; i < 4; i++) { // 4 spears to a pit
-    if (one_in(3))
-     g->m.add_item(x, y, g->itypes[itm_spear_wood], g->turn);
+    if (one_in(3)) g->m.add_item(x, y, itype::types[itm_spear_wood], g->turn);
    }
   }
  }
@@ -410,22 +388,17 @@ void trapfunc::pit_spikes(game *g, int x, int y)
 void trapfuncm::pit_spikes(game *g, monster *z, int x, int y)
 {
  int junk;
- bool sees = g->u_see(z, junk);
- if (sees)
-  g->add_msg("The %s falls in a spiked pit!", z->name().c_str());
- if (z->hurt(rng(20, 50)))
-  g->kill_mon(g->mon_at(x, y));
- else
-  z->moves = -1000;
+ const bool sees = g->u_see(z, junk);
+ if (sees) g->add_msg("The %s falls in a spiked pit!", z->name().c_str());
+ if (z->hurt(rng(20, 50))) g->kill_mon(g->mon_at(x, y));
+ else z->moves = -1000;
 
  if (one_in(4)) {
-  if (sees)
-   g->add_msg("The spears break!");
+  if (sees) g->add_msg("The spears break!");
   g->m.ter(x, y) = t_pit;
   g->m.tr_at(x, y) = tr_pit;
   for (int i = 0; i < 4; i++) { // 4 spears to a pit
-   if (one_in(3))
-    g->m.add_item(x, y, g->itypes[itm_spear_wood], g->turn);
+   if (one_in(3)) g->m.add_item(x, y, itype::types[itm_spear_wood], g->turn);
   }
  }
 }
@@ -487,7 +460,7 @@ void trapfunc::sinkhole(game *g, int x, int y)
      g->add_msg("There's nowhere to pull yourself to, and you sink!");
      g->u.use_amount(itm_rope_30, 1);
      g->m.add_item(g->u.posx + rng(-1, 1), g->u.posy + rng(-1, 1),
-                   g->itypes[itm_rope_30], g->turn);
+		           itype::types[itm_rope_30], g->turn);
      g->m.tr_at(g->u.posx, g->u.posy) = tr_pit;
      g->vertical_move(-1, true);
     } else {
@@ -503,7 +476,7 @@ void trapfunc::sinkhole(game *g, int x, int y)
     g->u.moves -= 100;
     g->u.use_amount(itm_rope_30, 1);
     g->m.add_item(g->u.posx + rng(-1, 1), g->u.posy + rng(-1, 1),
-                  g->itypes[itm_rope_30], g->turn);
+				  itype::types[itm_rope_30], g->turn);
     g->vertical_move(-1, true);
    }
   } else {
@@ -511,7 +484,7 @@ void trapfunc::sinkhole(game *g, int x, int y)
    if (one_in((g->u.str_cur + g->u.dex_cur) / 3)) {
     g->u.use_amount(itm_rope_30, 1);
     g->m.add_item(g->u.posx + rng(-1, 1), g->u.posy + rng(-1, 1),
-                  g->itypes[itm_rope_30], g->turn);
+                  itype::types[itm_rope_30], g->turn);
    }
    g->m.tr_at(g->u.posx, g->u.posy) = tr_pit;
    g->vertical_move(-1, true);

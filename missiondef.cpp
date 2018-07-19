@@ -71,22 +71,21 @@ void mission_start::place_dog(game *g, mission *miss)
 {
 	int city_id = g->cur_om.closest_city(g->om_location());
 	point house = g->cur_om.random_house_in_city(city_id);
-	npc* dev = g->find_npc(miss->npc_id);
+	const npc* const dev = g->find_npc(miss->npc_id);
 	if (dev == NULL) {
 		debugmsg("Couldn't find NPC! %d", miss->npc_id);
 		return;
 	}
-	g->u.i_add(item(g->itypes[itm_dog_whistle], 0));
+	g->u.i_add(item(itype::types[itm_dog_whistle], 0));
 	g->add_msg("%s gave you a dog whistle.", dev->name.c_str());
 
 	miss->target = house;
 	// Make it seen on our map
 	for (int x = house.x - 6; x <= house.x + 6; x++) {
-		for (int y = house.y - 6; y <= house.y + 6; y++)
-			g->cur_om.seen(x, y) = true;
+		for (int y = house.y - 6; y <= house.y + 6; y++) g->cur_om.seen(x, y) = true;
 	}
 
-	tinymap doghouse(&(g->itypes));
+	tinymap doghouse;
 	doghouse.load(g, house.x * 2, house.y * 2);
 	doghouse.add_spawn(mon_dog, 1, SEEX, SEEY, true, -1, miss->uid);
 	doghouse.save(&(g->cur_om), int(g->turn), house.x * 2, house.y * 2);
@@ -100,14 +99,12 @@ void mission_start::place_zombie_mom(game *g, mission *miss)
 	miss->target = house;
 	// Make it seen on our map
 	for (int x = house.x - 6; x <= house.x + 6; x++) {
-		for (int y = house.y - 6; y <= house.y + 6; y++)
-			g->cur_om.seen(x, y) = true;
+		for (int y = house.y - 6; y <= house.y + 6; y++) g->cur_om.seen(x, y) = true;
 	}
 
-	tinymap zomhouse(&(g->itypes));
+	tinymap zomhouse;
 	zomhouse.load(g, house.x * 2, house.y * 2);
-	zomhouse.add_spawn(mon_zombie, 1, SEEX, SEEY, false, -1, miss->uid,
-		random_first_name(false));
+	zomhouse.add_spawn(mon_zombie, 1, SEEX, SEEY, false, -1, miss->uid, random_first_name(false));
 	zomhouse.save(&(g->cur_om), int(g->turn), house.x * 2, house.y * 2);
 }
 
@@ -118,7 +115,7 @@ void mission_start::place_npc_software(game *g, mission *miss)
 		debugmsg("Couldn't find NPC! %d", miss->npc_id);
 		return;
 	}
-	g->u.i_add(item(g->itypes[itm_usb_drive], 0));
+	g->u.i_add(item(itype::types[itm_usb_drive], 0));
 	g->add_msg("%s gave you a USB drive.", dev->name.c_str());
 
 	oter_id ter = ot_house_north;
@@ -153,7 +150,7 @@ void mission_start::place_npc_software(game *g, mission *miss)
 		for (int y = place.y - 6; y <= place.y + 6; y++)
 			g->cur_om.seen(x, y) = true;
 	}
-	tinymap compmap(&(g->itypes));
+	tinymap compmap;
 	compmap.load(g, place.x * 2, place.y * 2);
 	point comppoint;
 
@@ -232,8 +229,7 @@ void mission_start::place_npc_software(game *g, mission *miss)
 	std::stringstream compname;
 	compname << dev->name << "'s Terminal";
 	compmap.ter(comppoint.x, comppoint.y) = t_console;
-	computer *tmpcomp = compmap.add_computer(comppoint.x, comppoint.y,
-		compname.str(), 0);
+	computer* const tmpcomp = compmap.add_computer(comppoint.x, comppoint.y, compname.str(), 0);
 	tmpcomp->mission_id = miss->uid;
 	tmpcomp->add_option("Download Software", COMPACT_DOWNLOAD_SOFTWARE, 0);
 
@@ -242,17 +238,15 @@ void mission_start::place_npc_software(game *g, mission *miss)
 
 void mission_start::reveal_hospital(game *g, mission *miss)
 {
-	npc* dev = g->find_npc(miss->npc_id);
+	const npc* const dev = g->find_npc(miss->npc_id);
 	if (dev != NULL) {
-		g->u.i_add(item(g->itypes[itm_vacutainer], 0));
+		g->u.i_add(item(itype::types[itm_vacutainer], 0));
 		g->add_msg("%s gave you a vacutainer.", dev->name.c_str());
 	}
 	int dist = 0;
-	point place = g->cur_om.find_closest(g->om_location(), ot_hospital, 1, dist,
-		false);
+	point place = g->cur_om.find_closest(g->om_location(), ot_hospital, 1, dist, false);
 	for (int x = place.x - 3; x <= place.x + 3; x++) {
-		for (int y = place.y - 3; y <= place.y + 3; y++)
-			g->cur_om.seen(x, y) = true;
+		for (int y = place.y - 3; y <= place.y + 3; y++) g->cur_om.seen(x, y) = true;
 	}
 	miss->target = place;
 }

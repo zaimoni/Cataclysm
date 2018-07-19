@@ -140,8 +140,8 @@ It may have unknown powers; use 'a' to activate them.";
   if (one_in(8) && num_bad + num_good >= 4)
    art->charge_type = ARTC_NULL; // 1 in 8 chance that it can't recharge!
 
-  art->id = itypes.size();
-  itypes.push_back(art);
+  art->id = itype::types.size();
+  itype::types.push_back(art);
   return art;
 
  } else { // Generate an armor artifact
@@ -244,8 +244,8 @@ It may have unknown powers; use 'a' to activate them.";
    art->effects_worn.push_back(passive_tmp);
   }
 
-  art->id = itypes.size();
-  itypes.push_back(art);
+  art->id = itype::types.size();
+  itype::types.push_back(art);
   return art;
  }
 }
@@ -358,8 +358,8 @@ itype* game::new_natural_artifact(artifact_natural_property prop)
   art->charge_type = art_charge( rng(ARTC_NULL + 1, NUM_ARTCS - 1) );
  }
 
- art->id = itypes.size();
- itypes.push_back(art);
+ art->id = itype::types.size();
+ itype::types.push_back(art);
  return art;
 }
 
@@ -412,11 +412,9 @@ std::string artifact_name(std::string type)
 void game::process_artifact(item *it, player *p, bool wielded)
 {
  std::vector<art_effect_passive> effects;
- if (it->is_armor()) {
-  it_artifact_armor* armor = dynamic_cast<it_artifact_armor*>(it->type);
-  effects = armor->effects_worn;
- } else if (it->is_tool()) {
-  it_artifact_tool* tool = dynamic_cast<it_artifact_tool*>(it->type);
+ if (it->is_armor()) effects = dynamic_cast<const it_artifact_armor*>(it->type)->effects_worn;
+ else if (it->is_tool()) {
+  const it_artifact_tool* const tool = dynamic_cast<const it_artifact_tool*>(it->type);
   effects = tool->effects_carried;
   if (wielded) {
    for (int i = 0; i < tool->effects_wielded.size(); i++)

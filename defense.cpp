@@ -58,7 +58,7 @@ bool defense_game::init(game *g)
  g->u.per_cur = g->u.per_max;
  g->u.int_cur = g->u.int_max;
  g->u.dex_cur = g->u.dex_max;
- init_itypes(g);
+ init_itypes();
  init_mtypes();
  init_constructions(g);
  init_recipes(g);
@@ -151,12 +151,12 @@ void defense_game::game_over(game *g)
  popup("You managed to survive through wave %d!", current_wave);
 }
 
-void defense_game::init_itypes(game *g)
+void defense_game::init_itypes()
 {
- g->itypes[itm_2x4]->volume = 0;
- g->itypes[itm_2x4]->weight = 0;
- g->itypes[itm_landmine]->price = 300;
- g->itypes[itm_bot_turret]->price = 6000;
+ itype::types[itm_2x4]->volume = 0;
+ itype::types[itm_2x4]->weight = 0;
+ itype::types[itm_landmine]->price = 300;
+ itype::types[itm_bot_turret]->price = 6000;
 }
 
 void defense_game::init_mtypes()
@@ -248,7 +248,7 @@ void defense_game::init_map(game *g)
 // Round down to the nearest even number
    mx -= mx % 2;
    my -= my % 2;
-   tinymap tm(&g->itypes);
+   tinymap tm;
    tm.generate(g, &(g->cur_om), mx, my, int(g->turn));
    tm.clear_spawns();
    tm.clear_traps();
@@ -886,8 +886,8 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
    case 'l':
     if (current_window == 1 && items[category_selected].size() > 0) {
      item_count[category_selected][item_selected]++;
-     itype_id tmp_itm = items[category_selected][item_selected];
-     total_price += caravan_price(g->u, g->itypes[tmp_itm]->price);
+     const itype_id tmp_itm = items[category_selected][item_selected];
+     total_price += caravan_price(g->u, itype::types[tmp_itm]->price);
      if (category_selected == CARAVAN_CART) { // Find the item in its category
       for (int i = 1; i < NUM_CARAVAN_CATEGORIES; i++) {
        for (int j = 0; j < items[i].size(); j++) {
@@ -920,8 +920,8 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
     if (current_window == 1 && items[category_selected].size() > 0 &&
         item_count[category_selected][item_selected] > 0) {
      item_count[category_selected][item_selected]--;
-     itype_id tmp_itm = items[category_selected][item_selected];
-     total_price -= caravan_price(g->u, g->itypes[tmp_itm]->price);
+     const itype_id tmp_itm = items[category_selected][item_selected];
+     total_price -= caravan_price(g->u, itype::types[tmp_itm]->price);
      if (category_selected == CARAVAN_CART) { // Find the item in its category
       for (int i = 1; i < NUM_CARAVAN_CATEGORIES; i++) {
        for (int j = 0; j < items[i].size(); j++) {
@@ -989,8 +989,8 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
   g->u.cash -= total_price;
   bool dropped_some = false;
   for (int i = 0; i < items[0].size(); i++) {
-   item tmp(g->itypes[ items[0][i] ], g->turn);
-   tmp = tmp.in_its_container(&(g->itypes));
+   item tmp(itype::types[ items[0][i] ], g->turn);
+   tmp = tmp.in_its_container();
    for (int j = 0; j < item_count[0][i]; j++) {
     if (g->u.volume_carried() + tmp.volume() <= g->u.volume_capacity() &&
         g->u.weight_carried() + tmp.weight() <= g->u.weight_capacity() &&
@@ -1161,7 +1161,7 @@ void draw_caravan_items(WINDOW *w, game *g, std::vector<itype_id> *items,
   mvwprintz(w, i, 1, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 // THEN print it--if item_selected is valid
  if (item_selected < items->size()) {
-  item tmp(g->itypes[ (*items)[item_selected] ], 0); // Dummy item to get info
+  item tmp(itype::types[ (*items)[item_selected] ], 0); // Dummy item to get info
   mvwprintz(w, 12, 0, c_white, tmp.info().c_str());
  }
 // Next, clear the item list on the right
@@ -1169,11 +1169,11 @@ void draw_caravan_items(WINDOW *w, game *g, std::vector<itype_id> *items,
   mvwprintz(w, i, 40, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 // Finally, print the item list on the right
  for (int i = offset; i <= offset + 23 && i < items->size(); i++) {
-  mvwprintz(w, i - offset + 1, 40, (item_selected == i ? h_white : c_white),
-            g->itypes[ (*items)[i] ]->name.c_str());
+  const itype* const i_type = itype::types[(*items)[i]];
+  mvwprintz(w, i - offset + 1, 40, (item_selected == i ? h_white : c_white), i_type->name.c_str());
   wprintz(w, c_white, " x %s%d", ((*counts)[i] >= 10 ? "" : " "), (*counts)[i]);
   if ((*counts)[i] > 0) {
-   int price = caravan_price(g->u, g->itypes[(*items)[i]]->price *(*counts)[i]);
+   int price = caravan_price(g->u, i_type->price *(*counts)[i]);
    wprintz(w, (price > g->u.cash ? c_red : c_green),
               "($%s%d)", (price >= 100000 ? "" : (price >= 10000 ? " " :
                           (price >= 1000 ? "  " : (price >= 100 ? "   " :

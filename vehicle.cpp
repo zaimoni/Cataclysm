@@ -166,7 +166,7 @@ void vehicle::init_state()
     }
 }
 
-const vpart_info& vehicle::part_info (int index)
+const vpart_info& vehicle::part_info(int index) const
 {
     vpart_id id = vp_null;
     if (index < 0 || index >= parts.size())
@@ -321,31 +321,30 @@ std::vector<int> vehicle::parts_at_relative (int dx, int dy)
     return res;
 }
 
-std::vector<int> vehicle::internal_parts (int p)
+std::vector<int> vehicle::internal_parts(int p) const
 {
     std::vector<int> res;
+	const auto& ref_part = parts[p];
     for (int i = p + 1; i < parts.size(); i++)
-        if (parts[i].mount_dx == parts[p].mount_dx && parts[i].mount_dy == parts[p].mount_dy)
+        if (parts[i].mount_dx == ref_part.mount_dx && parts[i].mount_dy == ref_part.mount_dy)
             res.push_back (i);
     return res;
 }
 
-int vehicle::part_with_feature (int p, unsigned int f, bool unbroken)
+int vehicle::part_with_feature(int p, unsigned int f, bool unbroken) const
 {
-    if (part_flag(p, f))
-        return p;
-    std::vector<int> parts_here = internal_parts (p);
-    for (int i = 0; i < parts_here.size(); i++)
-        if (part_flag(parts_here[i], f) && (!unbroken || parts[parts_here[i]].hp > 0))
-            return parts_here[i];
+    if (part_flag(p, f)) return p;
+    std::vector<int> parts_here = internal_parts(p);
+	for (const auto n : parts_here)
+        if (part_flag(n, f) && (!unbroken || parts[n].hp > 0))
+            return n;
     return -1;
 }
 
-bool vehicle::part_flag (int p, unsigned int f)
+bool vehicle::part_flag(int p, unsigned int f) const
 {
-    if (p < 0 || p >= parts.size())
-        return false;
-    return (bool) (part_info(p).flags & mfb (f));
+    if (p < 0 || p >= parts.size()) return false;
+    return part_info(p).flags & mfb(f);
 }
 
 int vehicle::part_at(int dx, int dy)
@@ -531,9 +530,8 @@ int vehicle::total_mass ()
     int m = 0;
     for (int i = 0; i < parts.size(); i++)
     {
-        m += g->itypes[part_info(i).item]->weight;
-        for (int j = 0; j < parts[i].items.size(); j++)
-            m += parts[i].items[j].type->weight;
+        m += itype::types[part_info(i).item]->weight;
+		for (const auto& it : parts[i].items) m += it.type->weight;
         if (part_flag(i,vpf_seat) && parts[i].passenger)
             m += 520; // TODO: get real weight
     }
@@ -794,36 +792,28 @@ bool vehicle::valid_wheel_config ()
 {
     int x1, y1, x2, y2;
     int count = 0;
-    for (int i = 0; i < external_parts.size(); i++)
-    {
-        int p = external_parts[i];
-        if (!part_flag(p, vpf_wheel) ||
-            parts[p].hp <= 0)
-            continue;
+	for (const auto p : external_parts) {
+		if (!part_flag(p, vpf_wheel)) continue;
+		const auto& part = parts[p];
+        if (part.hp <= 0) continue;
         if (!count)
         {
-            x1 = x2 = parts[p].mount_dx;
-            y1 = y2 = parts[p].mount_dy;
+            x1 = x2 = part.mount_dx;
+            y1 = y2 = part.mount_dy;
         }
-        if (parts[p].mount_dx < x1)
-            x1 = parts[p].mount_dx;
-        if (parts[p].mount_dx > x2)
-            x2 = parts[p].mount_dx;
-        if (parts[p].mount_dy < y1)
-            y1 = parts[p].mount_dy;
-        if (parts[p].mount_dy > y2)
-            y2 = parts[p].mount_dy;
+        if (part.mount_dx < x1) x1 = part.mount_dx;
+        if (part.mount_dx > x2) x2 = part.mount_dx;
+        if (part.mount_dy < y1) y1 = part.mount_dy;
+        if (part.mount_dy > y2) y2 = part.mount_dy;
         count++;
     }
-    if (count < 2)
-        return false;
+    if (count < 2) return false;
     float xo = 0, yo = 0;
     float wo = 0, w2;
     for (int p = 0; p < parts.size(); p++)
     { // lets find vehicle's center of masses
-        w2 = g->itypes[part_info(p).item]->weight;
-        if (w2 < 1)
-            continue;
+        w2 = itype::types[part_info(p).item]->weight;
+        if (w2 < 1) continue;
         xo = xo * wo / (wo + w2) + parts[p].mount_dx * w2 / (wo + w2);
         yo = yo * wo / (wo + w2) + parts[p].mount_dy * w2 / (wo + w2);
         wo += w2;
@@ -1251,11 +1241,9 @@ int vehicle::part_collision (int vx, int vy, int part, int x, int y)
 void vehicle::handle_trap (int x, int y, int part)
 {
     int pwh = part_with_feature (part, vpf_wheel);
-    if (pwh < 0)
-        return;
+    if (pwh < 0) return;
     trap_id t = g->m.tr_at(x, y);
-    if (t == tr_null)
-        return;
+    if (t == tr_null) return;
     int noise = 0;
     int chance = 100;
     int expl = 0;
@@ -1275,7 +1263,7 @@ void vehicle::handle_trap (int x, int y, int part)
             snd = "SNAP!";
             wreckit = true;
             g->m.tr_at(x, y) = tr_null;
-            g->m.add_item(x, y, g->itypes[itm_beartrap], 0);
+            g->m.add_item(x, y, itype::types[itm_beartrap], 0);
             break;
         case tr_nailboard:
             wreckit = true;
@@ -1291,10 +1279,9 @@ void vehicle::handle_trap (int x, int y, int part)
             snd = "Clank!";
             wreckit = true;
             g->m.tr_at(x, y) = tr_null;
-            g->m.add_item(x, y, g->itypes[itm_crossbow], 0);
-            g->m.add_item(x, y, g->itypes[itm_string_6], 0);
-            if (!one_in(10))
-                g->m.add_item(x, y, g->itypes[itm_bolt_steel], 0);
+            g->m.add_item(x, y, itype::types[itm_crossbow], 0);
+            g->m.add_item(x, y, itype::types[itm_string_6], 0);
+            if (!one_in(10)) g->m.add_item(x, y, itype::types[itm_bolt_steel], 0);
             break;
         case tr_shotgun_2:
         case tr_shotgun_1:
@@ -1302,13 +1289,12 @@ void vehicle::handle_trap (int x, int y, int part)
             snd = "Bang!";
             chance = 70;
             wreckit = true;
-            if (t == tr_shotgun_2)
-                g->m.tr_at(x, y) = tr_shotgun_1;
+            if (t == tr_shotgun_2) g->m.tr_at(x, y) = tr_shotgun_1;
             else
             {
                 g->m.tr_at(x, y) = tr_null;
-                g->m.add_item(x, y, g->itypes[itm_shotgun_sawn], 0);
-                g->m.add_item(x, y, g->itypes[itm_string_6], 0);
+                g->m.add_item(x, y, itype::types[itm_shotgun_sawn], 0);
+                g->m.add_item(x, y, itype::types[itm_string_6], 0);
             }
             break;
         case tr_landmine:
@@ -1348,14 +1334,14 @@ void vehicle::handle_trap (int x, int y, int part)
 
 bool vehicle::add_item (int part, item itm)
 {
-    if (!part_flag(part, vpf_cargo) || parts[part].items.size() >= 26)
-        return false;
-    it_ammo *ammo = dynamic_cast<it_ammo*> (itm.type);
-    if (part_flag(part, vpf_turret))
-        if (!ammo || (ammo->type != part_info(part).fuel_type ||
-                 ammo->type == AT_GAS ||
-                 ammo->type == AT_PLASMA))
-            return false;
+    if (!part_flag(part, vpf_cargo) || parts[part].items.size() >= 26) return false;
+	if (part_flag(part, vpf_turret)) {
+		const it_ammo* const ammo = dynamic_cast<const it_ammo*>(itm.type);
+		if (!ammo || (ammo->type != part_info(part).fuel_type ||
+			ammo->type == AT_GAS ||
+			ammo->type == AT_PLASMA))
+			return false;
+	}
     parts[part].items.push_back (itm);
     return true;
 }
@@ -1601,8 +1587,7 @@ int vehicle::damage_direct (int p, int dmg, int type)
             {
                 int pow = parts[p].amount / 40;
     //            debugmsg ("damage check dmg=%d pow=%d", dmg, pow);
-                if (parts[p].hp <= 0)
-                    leak_fuel (p);
+                if (parts[p].hp <= 0) leak_fuel (p);
                 if (type == 2 ||
                     (one_in (ft == AT_GAS? 2 : 4) && pow > 5 && rng (75, 150) < dmg))
                 {
@@ -1612,24 +1597,21 @@ int vehicle::damage_direct (int p, int dmg, int type)
                 }
             }
         }
-        else
-        if (parts[p].hp <= 0 && part_flag(p, vpf_unmount_on_damage))
+        else if (parts[p].hp <= 0 && part_flag(p, vpf_unmount_on_damage))
         {
             g->m.add_item (global_x() + parts[p].precalc_dx[0], 
                            global_y() + parts[p].precalc_dy[0], 
-                           g->itypes[part_info(p).item], g->turn);
+                           itype::types[part_info(p).item], g->turn);
             remove_part (p);
         }
     }
-    if (dres < 0)
-        dres = 0;
+    if (dres < 0) dres = 0;
     return dres;
 }
 
 void vehicle::leak_fuel (int p)
 {
-    if (!part_flag(p, vpf_fuel_tank))
-        return;
+    if (!part_flag(p, vpf_fuel_tank)) return;
     int ft = part_info(p).fuel_type;
     if (ft == AT_GAS)
     {
@@ -1644,7 +1626,7 @@ void vehicle::leak_fuel (int p)
                         parts[p].amount = 0;
                         return;
                     }
-                    g->m.add_item(i, j, g->itypes[itm_gasoline], 0);
+                    g->m.add_item(i, j, itype::types[itm_gasoline], 0);
                     parts[p].amount -= 100;
                 }
     }
@@ -1653,29 +1635,22 @@ void vehicle::leak_fuel (int p)
 
 void vehicle::fire_turret (int p, bool burst)
 {
-    if (!part_flag (p, vpf_turret))
-        return;
-    it_gun *gun = dynamic_cast<it_gun*> (g->itypes[part_info(p).item]);
-    if (!gun)
-        return;
+    if (!part_flag (p, vpf_turret)) return;
+    it_gun *gun = dynamic_cast<it_gun*> (itype::types[part_info(p).item]);
+    if (!gun) return;
     int charges = burst? gun->burst : 1;
-    if (!charges)
-        charges = 1;
+    if (!charges) charges = 1;
     int amt = part_info (p).fuel_type;
     if (amt == AT_GAS || amt == AT_PLASMA)
     {
-        if (amt == AT_GAS)
-            charges = 20; // hacky
+        if (amt == AT_GAS) charges = 20; // hacky
         int fleft = fuel_left (amt);
-        if (fleft < 1)
-            return;
-        it_ammo *ammo = dynamic_cast<it_ammo*>(g->itypes[amt == AT_GAS? itm_gasoline : itm_plasma]);
-        if (!ammo)
-            return;
+        if (fleft < 1) return;
+        const it_ammo* const ammo = dynamic_cast<it_ammo*>(itype::types[amt == AT_GAS? itm_gasoline : itm_plasma]);
+        if (!ammo) return;
         if (fire_turret_internal (p, *gun, *ammo, charges))
         { // consume fuel
-            if (amt == AT_PLASMA)
-                charges *= 10; // hacky, too
+            if (amt == AT_PLASMA) charges *= 10; // hacky, too
             for (int p = 0; p < parts.size(); p++)
             {
                 if (part_flag(p, vpf_fuel_tank) &&
@@ -1693,10 +1668,8 @@ void vehicle::fire_turret (int p, bool burst)
     {
         if (parts[p].items.size() > 0)
         {
-            it_ammo *ammo = dynamic_cast<it_ammo*> (parts[p].items[0].type);
-            if (!ammo || ammo->type != amt ||
-                parts[p].items[0].charges < 1)
-                return;
+            const it_ammo* const ammo = dynamic_cast<const it_ammo*> (parts[p].items[0].type);	// XXX expected to crash if not ammo \todo fix
+            if (!ammo || ammo->type != amt || parts[p].items[0].charges < 1) return;
             if (charges > parts[p].items[0].charges)
                 charges = parts[p].items[0].charges;
             if (fire_turret_internal (p, *gun, *ammo, charges))
@@ -1710,7 +1683,7 @@ void vehicle::fire_turret (int p, bool burst)
     }
 }
 
-bool vehicle::fire_turret_internal (int p, it_gun &gun, it_ammo &ammo, int charges)
+bool vehicle::fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int charges)
 {
     int x = global_x() + parts[p].precalc_dx[0];
     int y = global_y() + parts[p].precalc_dy[0];

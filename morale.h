@@ -40,10 +40,10 @@ enum morale_type
 struct morale_point
 {
  morale_type type;
- itype* item_type;
+ const itype* item_type;
  int bonus;
 
- morale_point(morale_type T = MORALE_NULL, itype* I = NULL, int B = 0) :
+ morale_point(morale_type T = MORALE_NULL, const itype* I = NULL, int B = 0) :
               type (T), item_type (I), bonus (B) {};
 
  std::string name(std::string morale_data[])

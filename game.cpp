@@ -34,7 +34,7 @@ game::game()
  clear();	// Clear the screen
  intro();	// Print an intro screen, make sure we're at least 80x25
 // Gee, it sure is init-y around here!
- init_itypes();	      // Set up item types                (SEE itypedef.cpp)
+ itype::init();	      // Set up item types                (SEE itypedef.cpp)
  mtype::init();	      // Set up monster types             (SEE mtypedef.cpp)
  mtype::init_items();     // Set up the items monsters carry  (SEE monitemsdef.cpp)
  trap::init();	      // Set up the trap types            (SEE trapdef.cpp)
@@ -63,11 +63,9 @@ game::game()
  gamemode = new special_game;	// Nothing, basically.
 }
 
-game::~game()
+game::~game()	// XXX cf main() no delete call, OS cleanup (thus destructor not called and issues with dynamic memory allocation from init functions also not handled) \todo fix
 {
  delete gamemode;
- for (int i = 0; i < itypes.size(); i++)
-  delete itypes[i];
  delwin(w_terrain);
  delwin(w_minimap);
  delwin(w_HP);
@@ -79,7 +77,7 @@ game::~game()
 void game::setup()
 {
  u = player();
- m = map(&itypes); // Init the root map with our vectors
+ m = map(); // Init the root map with our vectors
  z.reserve(1000); // Reserve some space
 
 // Even though we may already have 'd', nextinv will be incremented as needed
@@ -99,8 +97,7 @@ void game::setup()
 
 // ... Unless data/no_npc.txt exists.
  std::ifstream ifile("data/no_npc.txt");
- if (ifile)
-  no_npc = true;
+ if (ifile) no_npc = true;
 
  weather = WEATHER_CLEAR; // Start with some nice weather...
  nextweather = MINUTES(STARTING_MINUTES + 30); // Weather shift in 30
@@ -616,7 +613,7 @@ bool game::do_turn()
 // Save the monsters before we die!
   for (int i = 0; i < z.size(); i++) {
    if (z[i].spawnmapx != -1) {	// Static spawn, move them back there
-    tinymap tmp(&itypes);
+    tinymap tmp;
     tmp.load(this, z[i].spawnmapx, z[i].spawnmapy);
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, turn, z[i].spawnmapx, z[i].spawnmapy);
@@ -803,7 +800,6 @@ void game::process_events()
 
 void game::process_activity()
 {
- it_book* reading;
  if (u.activity.type != ACT_NULL) {
   if (int(turn) % 150 == 0)
    draw();
@@ -833,10 +829,8 @@ void game::process_activity()
     if (u.weapon.is_gun() && u.weapon.has_flag(IF_RELOAD_ONE)) {
      add_msg("You insert a cartridge into your %s.",
              u.weapon.tname(this).c_str());
-     if (u.recoil < 8)
-      u.recoil = 8;
-     if (u.recoil > 8)
-      u.recoil = (8 + u.recoil) / 2;
+     if (u.recoil < 8) u.recoil = 8;
+     if (u.recoil > 8) u.recoil = (8 + u.recoil) / 2;
     } else {
      add_msg("You reload your %s.", u.weapon.tname(this).c_str());
      u.recoil = 6;
@@ -844,10 +838,8 @@ void game::process_activity()
     break;
 
    case ACT_READ:
-    if (u.activity.index == -2)
-     reading = dynamic_cast<it_book*>(u.weapon.type);
-    else
-     reading = dynamic_cast<it_book*>(u.inv[u.activity.index].type);
+    {
+    const it_book* reading = dynamic_cast<const it_book*>(-2 == u.activity.index ? u.weapon.type : u.inv[u.activity.index].type);
 
     if (reading->fun != 0) {
      std::stringstream morale_text;
@@ -858,17 +850,15 @@ void game::process_activity()
      add_msg("You learn a little about %s!", skill_name(reading->type).c_str());
      int min_ex = reading->time / 10 + u.int_cur / 4,
          max_ex = reading->time /  5 + u.int_cur / 2 - u.sklevel[reading->type];
-     if (min_ex < 1)
-      min_ex = 1;
-     if (max_ex < 2)
-      max_ex = 2;
-     if (max_ex > 10)
-      max_ex = 10;
+     if (min_ex < 1) min_ex = 1;
+     if (max_ex < 2) max_ex = 2;
+     if (max_ex > 10) max_ex = 10;
      u.skexercise[reading->type] += rng(min_ex, max_ex);
      if (u.sklevel[reading->type] +
         (u.skexercise[reading->type] >= 100 ? 1 : 0) >= reading->level)
       add_msg("You can no longer learn from this %s.", reading->name.c_str());
     }
+	}
     break;
 
    case ACT_WAIT:
@@ -889,7 +879,7 @@ void game::process_activity()
 
    case ACT_TRAIN:
     if (u.activity.index < 0) {
-     add_msg("You learn %s.", itypes[0 - u.activity.index]->name.c_str());
+     add_msg("You learn %s.", itype::types[0 - u.activity.index]->name.c_str());
      u.styles.push_back( itype_id(0 - u.activity.index) );
     } else {
      u.sklevel[ u.activity.index ]++;
@@ -1409,7 +1399,7 @@ void game::get_input()
   case ACTION_PICK_STYLE:
    u.pick_style(this);
    if (u.weapon.type->id == 0 || u.weapon.is_style()) {
-    u.weapon = item(itypes[u.style_selected], 0);
+    u.weapon = item(itype::types[u.style_selected], 0);
     u.weapon.invlet = ':';
    }
    refresh_all();
@@ -1522,7 +1512,7 @@ void game::get_input()
     u.moves = 0;
     std::vector<item> tmp = u.inv_dump();
     item your_body;
-    your_body.make_corpse(itypes[itm_corpse], mtype::types[mon_null], turn);
+    your_body.make_corpse(itype::types[itm_corpse], mtype::types[mon_null], turn);
     your_body.name = u.name;
     m.add_item(u.posx, u.posy, your_body);
     for (int i = 0; i < tmp.size(); i++)
@@ -1626,10 +1616,7 @@ void game::update_scent()
   for (int y = u.posy - 18; y <= u.posy + 18; y++)
    grscent[x][y] = newscent[x][y];
  }
- if (!u.has_active_bionic(bio_scent_mask))
-  grscent[u.posx][u.posy] = u.scent;
- else
-  grscent[u.posx][u.posy] = 0;
+ grscent[u.posx][u.posy] = (!u.has_active_bionic(bio_scent_mask) ? u.scent : 0);
 }
 
 bool game::is_game_over()
@@ -1639,7 +1626,7 @@ bool game::is_game_over()
   if (u.hp_cur[i] < 1) {
    std::vector<item> tmp = u.inv_dump();
    item your_body;
-   your_body.make_corpse(itypes[itm_corpse], mtype::types[mon_null], turn);
+   your_body.make_corpse(itype::types[itm_corpse], mtype::types[mon_null], turn);
    your_body.name = u.name;
    m.add_item(u.posx, u.posy, your_body);
    for (int i = 0; i < tmp.size(); i++)
@@ -1774,8 +1761,8 @@ void game::load(std::string name)
  }
  u = player();
  u.name = name;
- u.ret_null = item(itypes[0], 0);
- u.weapon = item(itypes[0], 0);
+ u.ret_null = item(itype::types[0], 0);
+ u.weapon = item(itype::types[0], 0);
  int tmpturn, tmpspawn, tmpnextweather, tmprun, tmptar, tmpweather, tmptemp,
      comx, comy;
  fin >> tmpturn >> tmptar >> tmprun >> mostseen >> nextinv >> next_npc_id >>
@@ -1909,10 +1896,10 @@ void game::save()
  fout.close();
 
 // Finally, save artifacts.
- if (itypes.size() > num_all_items) {
+ if (itype::types.size() > num_all_items) {
   fout.open("save/artifacts.gsav");
-  for (int i = num_all_items; i < itypes.size(); i++)
-   fout << itypes[i]->save_data() << "\n";
+  for (int i = num_all_items; i < itype::types.size(); i++)
+   fout << itype::types[i]->save_data() << "\n";
   fout.close();
  }
 // aaaand the overmap, and the local map.
@@ -3809,10 +3796,8 @@ void game::emp_blast(int x, int y)
 // TODO: More effects?
  }
 // Drain any items of their battery charge
- for (int i = 0; i < m.i_at(x, y).size(); i++) {
-  if (m.i_at(x, y)[i].is_tool() &&
-      (dynamic_cast<it_tool*>(m.i_at(x, y)[i].type))->ammo == AT_BATT)
-   m.i_at(x, y)[i].charges = 0;
+ for(auto& it : m.i_at(x, y)) {
+  if (it.is_tool() && (dynamic_cast<const it_tool*>(it.type))->ammo == AT_BATT) it.charges = 0;
  }
 // TODO: Drain NPC energy reserves
 }
@@ -3914,17 +3899,11 @@ void game::explode_mon(int index)
     case MS_LARGE:  num_chunks =  8; break;
     case MS_HUGE:   num_chunks = 16; break;
    }
-   itype* meat;
+   const itype* meat;
    if (corpse->has_flag(MF_POISON)) {
-    if (corpse->mat == FLESH)
-     meat = itypes[itm_meat_tainted];
-    else
-     meat = itypes[itm_veggy_tainted];
+	meat = itype::types[FLESH == corpse->mat ? itm_meat_tainted : itm_veggy_tainted];
    } else {
-    if (corpse->mat == FLESH)
-     meat = itypes[itm_meat];
-    else
-     meat = itypes[itm_veggy];
+	meat = itype::types[FLESH == corpse->mat ? itm_meat : itm_veggy];
    }
 
    int posx = z[index].posx, posy = z[index].posy;
@@ -4467,7 +4446,7 @@ void game::examine()
   }
   refresh_all();
  } else if (m.ter(examx, examy) == t_gas_pump && query_yn("Pump gas?")) {
-  item gas(itypes[itm_gasoline], turn);
+  item gas(itype::types[itm_gasoline], turn);
   if (one_in(10 + u.dex_cur)) {
    add_msg("You accidentally spill the gasoline.");
    m.add_item(u.posx, u.posy, gas);
@@ -4476,12 +4455,10 @@ void game::examine()
    handle_liquid(gas, false, true);
   }
  } else if (m.ter(examx, examy) == t_slot_machine) {
-  if (u.cash < 10)
-   add_msg("You need $10 to play.");
+  if (u.cash < 10) add_msg("You need $10 to play.");
   else if (query_yn("Insert $10?")) {
    do {
-    if (one_in(5))
-     popup("Three cherries... you get your money back!");
+    if (one_in(5)) popup("Three cherries... you get your money back!");
     else if (one_in(20)) {
      popup("Three bells... you win $50!");
      u.cash += 40;	// Minus the $10 we wagered
@@ -5106,11 +5083,11 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
    int max = 0;
 
    if (cont->is_tool()) {
-    it_tool* tool = dynamic_cast<it_tool*>(cont->type);
+    const it_tool* const tool = dynamic_cast<const it_tool*>(cont->type);
     ammo = tool->ammo;
     max = tool->max_charges;
    } else {
-    it_gun* gun = dynamic_cast<it_gun*>(cont->type);
+    const it_gun* const gun = dynamic_cast<const it_gun*>(cont->type);
     ammo = gun->ammo;
     max = gun->clip;
    }
@@ -5136,9 +5113,8 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
 
    add_msg("You pour %s into your %s.", liquid.tname(this).c_str(),
                                         cont->tname(this).c_str());
-   cont->curammo = dynamic_cast<it_ammo*>(liquid.type);
-   if (infinite)
-    cont->charges = max;
+   cont->curammo = dynamic_cast<const it_ammo*>(liquid.type);
+   if (infinite) cont->charges = max;
    else {
     cont->charges += liquid.charges;
     if (cont->charges > max) {
@@ -5162,7 +5138,7 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
 
   } else {
 
-   it_container* container = dynamic_cast<it_container*>(cont->type);
+   const it_container* const container = dynamic_cast<const it_container*>(cont->type);
 
    if (!(container->flags & mfb(con_wtight))) {
     add_msg("That %s isn't water-tight.", cont->tname(this).c_str());
@@ -5175,11 +5151,9 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
    int default_charges = 1;
 
    if (liquid.is_food()) {
-    it_comest* comest = dynamic_cast<it_comest*>(liquid.type);
-    default_charges = comest->charges;
+    default_charges = dynamic_cast<const it_comest*>(liquid.type)->charges;
    } else if (liquid.is_ammo()) {
-    it_ammo* ammo = dynamic_cast<it_ammo*>(liquid.type);
-    default_charges = ammo->count;
+    default_charges = dynamic_cast<const it_ammo*>(liquid.type)->count;
    }
 
    if (liquid.charges > container->contains * default_charges) {
@@ -5430,8 +5404,7 @@ void game::plthrow()
 void game::plfire(bool burst)
 {
  int reload_index = -1;
- if (!u.weapon.is_gun())
-  return;
+ if (!u.weapon.is_gun()) return;
  vehicle *veh = m.veh_at(u.posx, u.posy);
  if (veh && veh->player_in_control(&u) && u.weapon.is_two_handed(&u)) {
   add_msg ("You need free arm to drive!");
@@ -5441,7 +5414,7 @@ void game::plfire(bool burst)
   if (u.has_charges(itm_UPS_on, 1) || u.has_charges(itm_UPS_off, 1)) {
    add_msg("Your %s starts charging.", u.weapon.tname().c_str());
    u.weapon.charges = 0;
-   u.weapon.curammo = dynamic_cast<it_ammo*>(itypes[itm_charge_shot]);
+   u.weapon.curammo = dynamic_cast<it_ammo*>(itype::types[itm_charge_shot]);
    u.weapon.active = true;
    return;
   } else {
@@ -5516,32 +5489,25 @@ void game::plfire(bool burst)
  std::vector <point> trajectory = target(x, y, x0, y0, x1, y1, mon_targets,
                                          passtarget, &u.weapon);
  draw_ter(); // Recenter our view
- if (trajectory.size() == 0)
-  return;
+ if (trajectory.size() == 0) return;
  if (passtarget != -1) { // We picked a real live target
   last_target = targetindices[passtarget]; // Make it our default for next time
   z[targetindices[passtarget]].add_effect(ME_HIT_BY_PLAYER, 100);
  }
 
  if (u.weapon.has_flag(IF_USE_UPS)) {
-  if (u.has_charges(itm_UPS_off, 5))
-   u.use_charges(itm_UPS_off, 5);
-  else if (u.has_charges(itm_UPS_on, 5))
-   u.use_charges(itm_UPS_on, 5);
+  if (u.has_charges(itm_UPS_off, 5)) u.use_charges(itm_UPS_off, 5);
+  else if (u.has_charges(itm_UPS_on, 5)) u.use_charges(itm_UPS_on, 5);
  }
 
 // Train up our skill
- it_gun* firing = dynamic_cast<it_gun*>(u.weapon.type);
+ const it_gun* const firing = dynamic_cast<const it_gun*>(u.weapon.type);
  int num_shots = 1;
- if (burst)
-  num_shots = u.weapon.burst_size();
- if (num_shots > u.weapon.charges)
-  num_shots = u.weapon.charges;
- if (u.sklevel[firing->skill_used] == 0 ||
-     (firing->ammo != AT_BB && firing->ammo != AT_NAIL))
+ if (burst) num_shots = u.weapon.burst_size();
+ if (num_shots > u.weapon.charges) num_shots = u.weapon.charges;
+ if (u.sklevel[firing->skill_used] == 0 || (firing->ammo != AT_BB && firing->ammo != AT_NAIL))
   u.practice(firing->skill_used, 4 + (num_shots / 2));
- if (u.sklevel[sk_gun] == 0 ||
-     (firing->ammo != AT_BB && firing->ammo != AT_NAIL))
+ if (u.sklevel[sk_gun] == 0 || (firing->ammo != AT_BB && firing->ammo != AT_NAIL))
   u.practice(sk_gun, 5);
 
  fire(u, x, y, trajectory, burst);
@@ -5550,9 +5516,11 @@ void game::plfire(bool burst)
 void game::butcher()
 {
  std::vector<int> corpses;
- for (int i = 0; i < m.i_at(u.posx, u.posy).size(); i++) {
-  if (m.i_at(u.posx, u.posy)[i].type->id == itm_corpse)
-   corpses.push_back(i);
+ {
+ const auto& items = m.i_at(u.posx, u.posy);
+ for (int i = 0; i < items.size(); i++) {
+  if (items[i].type->id == itm_corpse) corpses.push_back(i);
+ }
  }
  if (corpses.size() == 0) {
   add_msg("There are no corpses here to butcher.");
@@ -5624,37 +5592,29 @@ void game::complete_butcher(int index)
  if (skill_shift < 5)	// Lose some pelts
   pelts += (skill_shift - 5);
 
- if ((corpse->has_flag(MF_FUR) || corpse->has_flag(MF_LEATHER)) &&
-     pelts > 0) {
+ if ((corpse->has_flag(MF_FUR) || corpse->has_flag(MF_LEATHER)) && 0 < pelts) {
   add_msg("You manage to skin the %s!", corpse->name.c_str());
   for (int i = 0; i < pelts; i++) {
-   itype* pelt;
+   const itype* pelt;
    if (corpse->has_flag(MF_FUR) && corpse->has_flag(MF_LEATHER)) {
     if (one_in(2))
-     pelt = itypes[itm_fur];
+     pelt = itype::types[itm_fur];
     else
-     pelt = itypes[itm_leather];
+     pelt = itype::types[itm_leather];
    } else if (corpse->has_flag(MF_FUR))
-    pelt = itypes[itm_fur];
+    pelt = itype::types[itm_fur];
    else
-    pelt = itypes[itm_leather];
+    pelt = itype::types[itm_leather];
    m.add_item(u.posx, u.posy, pelt, age);
   }
  }
- if (pieces <= 0)
-  add_msg("Your clumsy butchering destroys the meat!");
+ if (pieces <= 0) add_msg("Your clumsy butchering destroys the meat!");
  else {
-  itype* meat;
+  const itype* meat;
   if (corpse->has_flag(MF_POISON)) {
-    if (corpse->mat == FLESH)
-     meat = itypes[itm_meat_tainted];
-    else
-     meat = itypes[itm_veggy_tainted];
+   meat = itype::types[FLESH == corpse->mat ? itm_meat_tainted : itm_veggy_tainted];
   } else {
-   if (corpse->mat == FLESH)
-    meat = itypes[itm_meat];
-   else
-    meat = itypes[itm_veggy];
+   meat = itype::types[FLESH == corpse->mat ? itm_meat : itm_veggy];
   }
   for (int i = 0; i < pieces; i++)
    m.add_item(u.posx, u.posy, meat, age);
@@ -5726,7 +5686,7 @@ single action.", u.weapon.tname().c_str());
   u.assign_activity(ACT_RELOAD, u.weapon.reload_time(u), index);
   u.moves = 0;
  } else if (u.weapon.is_tool()) {
-  it_tool* tool = dynamic_cast<it_tool*>(u.weapon.type);
+  const it_tool* const tool = dynamic_cast<const it_tool*>(u.weapon.type);
   if (tool->ammo == AT_NULL) {
    add_msg("You can't reload a %s!", u.weapon.tname(this).c_str());
    return;
@@ -5739,10 +5699,8 @@ single action.", u.weapon.tname().c_str());
   }
   u.assign_activity(ACT_RELOAD, u.weapon.reload_time(u), index);
   u.moves = 0;
- } else if (!u.is_armed())
-  add_msg("You're not wielding anything.");
- else
-  add_msg("You can't reload a %s!", u.weapon.tname(this).c_str());
+ } else if (!u.is_armed()) add_msg("You're not wielding anything.");
+ else add_msg("You can't reload a %s!", u.weapon.tname(this).c_str());
  refresh_all();
 }
 
@@ -5794,11 +5752,10 @@ void game::unload()
  }
 // Unloading a gun or tool!
  u.moves -= int(u.weapon.reload_time(u) / 2);
- it_ammo* tmpammo;
  if (u.weapon.is_gun()) {	// Gun ammo is combined with existing items
   for (int i = 0; i < u.inv.size() && u.weapon.charges > 0; i++) {
    if (u.inv[i].is_ammo()) {
-    tmpammo = dynamic_cast<it_ammo*>(u.inv[i].type);
+    const it_ammo* tmpammo = dynamic_cast<const it_ammo*>(u.inv[i].type);
     if (tmpammo->id == u.weapon.curammo->id &&
         u.inv[i].charges < tmpammo->count) {
      u.weapon.charges -= (tmpammo->count - u.inv[i].charges);
@@ -5815,7 +5772,7 @@ void game::unload()
  if (u.weapon.is_gun() && u.weapon.curammo != NULL)
   newam = item(u.weapon.curammo, turn);
  else
-  newam = item(itypes[default_ammo(u.weapon.ammo_type())], turn);
+  newam = item(itype::types[default_ammo(u.weapon.ammo_type())], turn);
  while (u.weapon.charges > 0) {
   int iter = 0;
   while ((newam.invlet == 0 || u.has_item(newam.invlet)) && iter < 52) {
@@ -6126,7 +6083,7 @@ void game::plmove(int x, int y)
      if (query_yn("Deactivate the turret?")) {
       z.erase(z.begin() + mondex);
       u.moves -= 100;
-      m.add_item(z[mondex].posx, z[mondex].posy, itypes[itm_bot_turret], turn);
+      m.add_item(z[mondex].posx, z[mondex].posy, itype::types[itm_bot_turret], turn);
      }
      return;
     } else {
@@ -6430,7 +6387,7 @@ void game::vertical_move(int movez, bool force)
  cur_om.save(u.name);
  //m.save(&cur_om, turn, levx, levy);
  cur_om = overmap(this, cur_om.posx, cur_om.posy, cur_om.posz + movez);
- map tmpmap(&itypes);
+ map tmpmap;
  tmpmap.load(this, levx, levy);
  cur_om = overmap(this, cur_om.posx, cur_om.posy, original_z);
 // Find the corresponding staircase
@@ -6489,12 +6446,12 @@ void game::vertical_move(int movez, bool force)
     if (turns < 999)
      coming_to_stairs.push_back( monster_and_count(z[i], 1 + turns) );
    } else if (z[i].spawnmapx != -1) { // Static spawn, move them back there
-    tinymap tmp(&itypes);
+    tinymap tmp;
     tmp.load(this, z[i].spawnmapx, z[i].spawnmapy);
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, turn, z[i].spawnmapx, z[i].spawnmapy);
    } else if (z[i].friendly < 0) { // Friendly, make it into a static spawn
-    tinymap tmp(&itypes);
+    tinymap tmp;
     tmp.load(this, levx, levy);
     int spawnx = z[i].posx, spawny = z[i].posy;
     while (spawnx < 0) spawnx += SEEX;
@@ -6502,7 +6459,7 @@ void game::vertical_move(int movez, bool force)
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, turn, levx, levy);
    } else {
-    int group = valid_group( (mon_id)(z[i].type->id), levx, levy);
+    const int group = valid_group( (mon_id)(z[i].type->id), levx, levy);
     if (group != -1)
      cur_om.zg[group].population++;
    }
@@ -6544,13 +6501,11 @@ void game::vertical_move(int movez, bool force)
  if (rope_ladder)
   m.ter(u.posx, u.posy) = t_rope_up;
  if (m.ter(stairx, stairy) == t_manhole_cover) {
-  m.add_item(stairx + rng(-1, 1), stairy + rng(-1, 1),
-             itypes[itm_manhole_cover], 0);
+  m.add_item(stairx + rng(-1, 1), stairy + rng(-1, 1), itype::types[itm_manhole_cover], 0);
   m.ter(stairx, stairy) = t_manhole;
  }
 
- if (replace_monsters)
-  replace_stair_monsters();
+ if (replace_monsters) replace_stair_monsters();
 
  m.spawn_monsters(this);
 
@@ -6632,7 +6587,7 @@ void game::update_map(int &x, int &y)
       z[i].posx > SEEX * (MAPSIZE + 1) || z[i].posy > SEEY * (MAPSIZE + 1)) {
 // Despawn; we're out of bounds
    if (z[i].spawnmapx != -1) {	// Static spawn, move them back there
-    map tmp(&itypes);
+    map tmp;
     tmp.load(this, z[i].spawnmapx, z[i].spawnmapy);
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, turn, z[i].spawnmapx, z[i].spawnmapy);
@@ -7221,10 +7176,9 @@ void game::nuke(int x, int y)
 {
  overmap tmp_om = cur_om;
  cur_om = overmap(this, tmp_om.posx, tmp_om.posy, 0);
- if (x < 0 || y < 0 || x >= OMAPX || y >= OMAPY)
-  return;
+ if (x < 0 || y < 0 || x >= OMAPX || y >= OMAPY) return;
  int mapx = x * 2, mapy = y * 2;
- map tmpmap(&itypes);
+ map tmpmap;
  tmpmap.load(this, mapx, mapy);
  for (int i = 0; i < SEEX * 2; i++) {
   for (int j = 0; j < SEEY * 2; j++) {

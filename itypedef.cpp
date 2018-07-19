@@ -3,6 +3,8 @@
 #include "setvector.h"
 #include <fstream>
 
+std::vector <itype*> itype::types;
+
 // Armor colors
 #define C_SHOES  c_blue
 #define C_PANTS  c_brown
@@ -16,33 +18,33 @@
 #define C_DECOR  c_ltgreen
 
 // Special function for setting melee techniques
-#define TECH(t) itypes[index]->techniques = t
+#define TECH(t) types[index]->techniques = t
 
 // GENERAL GUIDELINES
 // When adding a new item, you MUST REMEMBER to insert it in the itype_id enum
 //  at the top of itype.h!
 //  Additionally, you should check mapitemsdef.cpp and insert the new item in
 //  any appropriate lists.
-void game::init_itypes ()
+void itype::init()
 {
 // First, the null object.  NOT REALLY AN OBJECT AT ALL.  More of a concept.
- itypes.push_back(
+ types.push_back(
   new itype(0, 0, 0, "none", "", '#', c_white, MNULL, MNULL, 0, 0, 0, 0, 0, 0));
 // Corpse - a special item
- itypes.push_back(
+ types.push_back(
   new itype(1, 0, 0, "corpse", "A dead body.", '%', c_white, MNULL, MNULL, 0, 0,
             0, 0, 0, 0));
 // Fire - only appears in crafting recipes
- itypes.push_back(
+ types.push_back(
   new itype(2, 0, 0, "nearby fire",
             "Some fire - if you are reading this it's a bug!",
             '$', c_red, MNULL, MNULL, 0, 0, 0, 0, 0, 0));
 // Integrated toolset - ditto
- itypes.push_back(
+ types.push_back(
   new itype(3, 0, 0, "integrated toolset",
             "A fake item.  If you are reading this it's a bug!",
             '$', c_red, MNULL, MNULL, 0, 0, 0, 0, 0, 0));
- int index = 3;
+ int index = types.size()-1;
  
 // Drinks
 // Stim should be -8 to 8.
@@ -51,7 +53,7 @@ void game::init_itypes ()
 
 #define DRINK(name,rarity,price,color,container,quench,nutr,spoils,stim,\
 healthy,addict,charges,fun,use_func,addict_func,des) \
-	index++;itypes.push_back(new it_comest(index,rarity,price,name,des,'~',\
+	index++;types.push_back(new it_comest(index,rarity,price,name,des,'~',\
 color,LIQUID,2,1,0,0,0,0,quench,nutr,spoils,stim,healthy,addict,charges,\
 fun,container,itm_null,use_func,addict_func));
 
@@ -167,7 +169,7 @@ Blood, possibly that of a human.  Disgusting!");
 
 #define FOOD(name,rarity,price,color,mat1,container,volume,weight,quench,\
 nutr,spoils,stim,healthy,addict,charges,fun,use_func,addict_func,des) \
-	index++;itypes.push_back(new it_comest(index,rarity,price,name,des,'%',\
+	index++;types.push_back(new it_comest(index,rarity,price,name,des,'%',\
 color,mat1,volume,weight,0,0,0,0,quench,nutr,spoils,stim,healthy,addict,charges,\
 fun,container,itm_null,use_func,addict_func));
 // FOOD
@@ -450,7 +452,7 @@ or swallow it raw for a lesser stimulative boost.");
 // MEDS
 #define MED(name,rarity,price,color,tool,mat,stim,healthy,addict,\
 charges,fun,use_func,addict_func,des) \
-	index++;itypes.push_back(new it_comest(index,rarity,price,name,des,'!',\
+	index++;types.push_back(new it_comest(index,rarity,price,name,des,'!',\
 color,mat,1,1,0,0,0,0,0,0,0,stim,healthy,addict,charges,\
 fun,itm_null,tool,use_func,addict_func));
 
@@ -581,7 +583,7 @@ Medication designed to stop the spread of, and kill, bacteria infections.");
 // Note that do-nothing objects (e.g. superglue) belong here too!
 #define MELEE(name,rarity,price,sym,color,mat1,mat2,volume,wgt,dam,cut,to_hit,\
               flags, des)\
-	index++;itypes.push_back(new itype(index,rarity,price,name,des,sym,\
+	index++;types.push_back(new itype(index,rarity,price,name,des,sym,\
 color,mat1,mat2,volume,wgt,dam,cut,to_hit,flags))
 
 //    NAME		RAR PRC SYM  COLOR	MAT1	MAT2
@@ -1111,7 +1113,7 @@ A piece of very thick armor plating made of steel.");
 // ARMOR
 #define ARMOR(name,rarity,price,color,mat1,mat2,volume,wgt,dam,to_hit,\
 encumber,dmg_resist,cut_resist,env,warmth,storage,covers,des)\
-	index++;itypes.push_back(new it_armor(index,rarity,price,name,des,'[',\
+	index++;types.push_back(new it_armor(index,rarity,price,name,des,'[',\
 color,mat1,mat2,volume,wgt,dam,0,to_hit,0,covers,encumber,dmg_resist,cut_resist,\
 env,warmth,storage))
 
@@ -1555,7 +1557,7 @@ any effects.");
 //   at the end of this file.
 #define AMMO(name,rarity,price,ammo_type,color,mat,volume,wgt,dmg,AP,range,\
 accuracy,recoil,count,des,flags) \
-	index++;itypes.push_back(new it_ammo(index,rarity,price,name,des,'=',\
+	index++;types.push_back(new it_ammo(index,rarity,price,name,des,'=',\
 color,mat,volume,wgt,1,0,0,flags,ammo_type,dmg,AP,accuracy,recoil,range,count))
 
 //  NAME		RAR PRC TYPE		COLOR		MAT
@@ -1908,7 +1910,7 @@ A weak plasma charge.",
 // Fuel is just a special type of ammo; liquid
 #define FUEL(name,rarity,price,ammo_type,color,dmg,AP,range,accuracy,recoil,\
              count,des,flags) \
-	index++;itypes.push_back(new it_ammo(index,rarity,price,name,des,'~',\
+	index++;types.push_back(new it_ammo(index,rarity,price,name,des,'~',\
 color,LIQUID,1,1,0,0,0,flags,ammo_type,dmg,AP,accuracy,recoil,range,count))
 FUEL("gasoline",	0,  50,   AT_GAS,	c_ltred,
 //	DMG  AP RNG ACC REC COUNT
@@ -1927,7 +1929,7 @@ mfb(IF_AMMO_FLAME)|mfb(IF_AMMO_STREAM));
 
 #define GUN(name,rarity,price,color,mat1,mat2,skill,ammo,volume,wgt,melee_dam,\
 to_hit,dmg,accuracy,recoil,durability,burst,clip,reload_time,des,flags) \
-	index++;itypes.push_back(new it_gun(index,rarity,price,name,des,'(',\
+	index++;types.push_back(new it_gun(index,rarity,price,name,des,'(',\
 color,mat1,mat2,volume,wgt,melee_dam,0,to_hit,flags,skill,ammo,dmg,accuracy,\
 recoil,durability,burst,clip,reload_time))
 
@@ -2442,7 +2444,7 @@ mfb(IF_USE_UPS));
 #define GUNMOD(name, rare, value, color, mat1, mat2, volume, weight, meleedam,\
                meleecut, meleehit, acc, damage, loudness, clip, recoil, burst,\
                newtype, pistol, shotgun, smg, rifle, a_a_t, des, flags)\
-  index++; itypes.push_back(new it_gunmod(index, rare, value, name, des, ':',\
+  index++; types.push_back(new it_gunmod(index, rare, value, name, des, ':',\
                             color, mat1, mat2, volume, weight, meleedam,\
                             meleecut, meleehit, flags, acc, damage, loudness,\
                             clip, recoil, burst, newtype, a_a_t, pistol,\
@@ -2642,7 +2644,7 @@ mfb(IF_STAB));
 // TIME is the time, in minutes (10 turns), taken to gain the fun/skill bonus.
 #define BOOK(name,rarity,price,color,mat1,mat2,volume,wgt,melee_dam,to_hit,\
 type,level,req,fun,intel,time,des) \
-	index++;itypes.push_back(new it_book(index,rarity,price,name,des,'?',\
+	index++;types.push_back(new it_book(index,rarity,price,name,des,'?',\
 color,mat1,mat2,volume,wgt,melee_dam,0,to_hit,0,type,level,req,fun,intel,time))
 //	NAME			RAR PRC	COLOR		MAT1	MAT2
 
@@ -2791,7 +2793,7 @@ A rare book on the design of robots, with lots of helpful step-by-step guides."
 //  * Others??
 #define CONT(name,rarity,price,color,mat1,mat2,volume,wgt,melee_dam,to_hit,\
 contains,flags,des) \
-	index++;itypes.push_back(new it_container(index,rarity,price,name,des,\
+	index++;types.push_back(new it_container(index,rarity,price,name,des,\
 ')',color,mat1,mat2,volume,wgt,melee_dam,0,to_hit,0,contains,flags))
 //	NAME		RAR PRC	COLOR		MAT1	MAT2
 
@@ -2840,7 +2842,7 @@ A small cardboard box.  No bigger than a foot in any dimension.");
 #define TOOL(name,rarity,price,sym,color,mat1,mat2,volume,wgt,melee_dam,\
 melee_cut,to_hit,max_charge,def_charge,charge_per_use,charge_per_sec,fuel,\
 revert,func,flags,des) \
-	index++;itypes.push_back(new it_tool(index,rarity,price,name,des,sym,\
+	index++;types.push_back(new it_tool(index,rarity,price,name,des,sym,\
 color,mat1,mat2,volume,wgt,melee_dam,melee_cut,to_hit,flags,max_charge,\
 def_charge,charge_per_use,charge_per_sec,fuel,revert,func))
 
@@ -3256,7 +3258,7 @@ A tool for welding metal pieces together.  Useful for construction.");
 // very simple and straightforward; a difficulty, followed by a NULL-terminated
 // list of options.
 #define BIO(name, rarity, price, color, difficulty, des, ...) \
-	index++;itypes.push_back(new it_bionic(index,rarity,price,name,des,':',\
+	index++;types.push_back(new it_bionic(index,rarity,price,name,des,':',\
 color, STEEL, PLASTIC, 10, 18, 8, 0, 0, 0, difficulty, __VA_ARGS__))
 //  Name			RAR PRICE	COLOR		DIFFICULTY
 
@@ -3361,7 +3363,7 @@ heavy ammunition and weapons.",
 // SOFTWARE
 
 #define SOFTWARE(name, price, swtype, power, description) \
-index++; itypes.push_back(new it_software(index, 0, price, name, description,\
+index++; types.push_back(new it_software(index, 0, price, name, description,\
 	' ', c_white, MNULL, MNULL, 0, 0, 0, 0, 0, 0, swtype, power))
 SOFTWARE("misc software", 300, SW_USELESS, 0, "\
 A miscellaneous piece of hobby software.  Probably useless.");
@@ -3381,15 +3383,17 @@ Medical data on zombie blood.");
 
 #define MACGUFFIN(name, price, sym, color, mat1, mat2, volume, wgt, dam, cut,\
                   to_hit, readable, function, description) \
-index++; itypes.push_back(new it_macguffin(index, 0, price, name, description,\
+index++; types.push_back(new it_macguffin(index, 0, price, name, description,\
 	sym, color, mat1, mat2, volume, wgt, dam, cut, to_hit, 0, readable,\
 	function))
 MACGUFFIN("paper note", 0, '?', c_white, PAPER, MNULL, 1, 0, 0, 0, 0,
 	true, &iuse::mcg_note, "\
 A hand-written paper note.");
 
- if (itypes.size() > num_items)
-  debugmsg("%d items, %d itypes", itypes.size(), num_all_items);
+if (types.size() != num_items) {
+  debugmsg("%d items, %d itypes: fatal", types.size(), num_all_items);
+  exit(EXIT_FAILURE);
+}
 
 
 MELEE("Null 2 - num_items",0,0,'#',c_white,MNULL,MNULL,0,0,0,0,0,0,"");
@@ -3426,7 +3430,7 @@ GUN("fusion blaster",	 0,0,c_magenta,	STEEL,	PLASTIC,
 	auto style = new it_style(index, 0, 0, name, description, '$',  c_white, MNULL, MNULL, 0, 0, dam, 0, 0, 0);	\
 	style->item_flags |= mfb(IF_UNARMED_WEAPON);	\
 	SET_VECTOR_STRUCT(style->moves, style_move, __VA_ARGS__); \
-	itypes.push_back(style); \
+	types.push_back(style); \
 }
 
 STYLE("karate", 2, "\
@@ -3600,8 +3604,10 @@ attacks with no penalty.",
 	  { "counter-attack", TEC_COUNTER, 4 } });
 
 
- if (itypes.size() != num_all_items)
-  debugmsg("%d items, %d itypes (+bio)", itypes.size(), num_all_items - 1);
+ if (types.size() != num_all_items) {
+  debugmsg("%d items, %d itypes (+bio): fatal", types.size(), num_all_items - 1);
+  exit(EXIT_FAILURE);
+ }
 
 // Finally, load up artifacts!
  std::ifstream fin;
@@ -3683,8 +3689,8 @@ attacks with no penalty.",
    } while (namepart.find("-") == std::string::npos && !fin.eof());
    art->description = descdata.str();
 
-   art->id = itypes.size();
-   itypes.push_back(art);
+   art->id = types.size();
+   types.push_back(art);
 
   } else if (arttype == 'A') {
    it_artifact_armor *art = new it_artifact_armor();
@@ -3749,17 +3755,15 @@ attacks with no penalty.",
    } while (namepart.find("-") == std::string::npos && !fin.eof());
    art->description = descdata.str();
 
-   art->id = itypes.size();
-   itypes.push_back(art);
-
+   art->id = types.size();
+   types.push_back(art);
   }
 
 /*
   std::string chomper;
   getline(fin, chomper);
 */
-  if (fin.eof())
-   done = true;
+  if (fin.eof()) done = true;
  } // Done reading the file
  fin.close();
 }

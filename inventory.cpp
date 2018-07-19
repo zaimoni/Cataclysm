@@ -6,12 +6,21 @@
 item& inventory::operator[] (int i)
 {
  if (i < 0 || i > items.size()) {
-  debugmsg("Attempted to access item %d in an inventory (size %d)",
-           i, items.size());
+  debugmsg("Attempted to access item %d in an inventory (size %d)", i, items.size());
   return nullitem;
  }
 
  return items[i][0];
+}
+
+const item& inventory::operator[] (int i) const
+{
+	if (i < 0 || i > items.size()) {
+		debugmsg("Attempted to access item %d in an inventory (size %d)", i, items.size());
+		return nullitem;
+	}
+
+	return items[i][0];
 }
 
 std::vector<item>& inventory::stack_at(int i)
@@ -200,7 +209,7 @@ void inventory::form_from_map(game *g, point origin, int range)
      add_item(g->m.i_at(x, y)[i]);
 // Kludge for now!
    if (g->m.field_at(x, y).type == fd_fire) {
-    item fire(g->itypes[itm_fire], 0);
+    item fire(itype::types[itm_fire], 0);
     fire.charges = 1;
     add_item(fire);
    }

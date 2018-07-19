@@ -676,7 +676,7 @@ void game::craft()
  crafting_inv += u.inv;
  crafting_inv += u.weapon;
  if (u.has_bionic(bio_tools)) {
-  item tools(itypes[itm_toolset], turn);
+  item tools(itype::types[itm_toolset], turn);
   tools.charges = u.power_level;
   crafting_inv += tools;
  }
@@ -694,16 +694,15 @@ void game::craft()
 
 // Clear the screen of recipe data, and draw it anew
   werase(w_data);
-   mvwprintz(w_data, 20, 0, c_white, "\
-Press ? to describe object.  Press <ENTER> to attempt to craft object.");
+  mvwprintz(w_data, 20, 0, c_white, "Press ? to describe object.  Press <ENTER> to attempt to craft object.");
   wrefresh(w_data);
   for (int i = 0; i < current.size() && i < 23; i++) {
    if (i == line)
     mvwprintz(w_data, i, 0, (available[i] ? h_white : h_dkgray),
-              itypes[current[i]->result]->name.c_str());
+		itype::types[current[i]->result]->name.c_str());
    else
     mvwprintz(w_data, i, 0, (available[i] ? c_white : c_dkgray),
-              itypes[current[i]->result]->name.c_str());
+		itype::types[current[i]->result]->name.c_str());
   }
   if (current.size() > 0) {
    nc_color col = (available[line] ? c_white : c_dkgray);
@@ -739,17 +738,16 @@ Press ? to describe object.  Press <ENTER> to attempt to craft object.");
      mvwputch(w_data, ypos, 30, col, '>');
 
      for (int j = 0; j < current[line]->tools[i].size(); j++) {
-      itype_id type = current[line]->tools[i][j].type;
-      int charges = current[line]->tools[i][j].count;
+	  const component& tool = current[line]->tools[i][j];
+      const itype_id type = tool.type;
+	  const int charges = tool.count;
       nc_color toolcol = c_red;
 
-      if (charges < 0 && crafting_inv.has_amount(type, 1))
-       toolcol = c_green;
-      else if (charges > 0 && crafting_inv.has_charges(type, charges))
+	  if (charges <= 0 ? crafting_inv.has_amount(type, 1) : crafting_inv.has_charges(type, charges))
        toolcol = c_green;
 
       std::stringstream toolinfo;
-      toolinfo << itypes[type]->name + " ";
+      toolinfo << itype::types[type]->name + " ";
       if (charges > 0)
        toolinfo << "(" << charges << " charges) ";
       std::string toolname = toolinfo.str();
@@ -780,16 +778,18 @@ Press ? to describe object.  Press <ENTER> to attempt to craft object.");
     }
     xpos = 32;
     for (int j = 0; j < current[line]->components[i].size(); j++) {
-     int count = current[line]->components[i][j].count;
-     itype_id type = current[line]->components[i][j].type;
+	 const component& comp = current[line]->components[i][j];
+     const int count = comp.count;
+     const itype_id type = comp.type;
+	 const itype* const i_type = itype::types[type];
      nc_color compcol = c_red;
-     if (itypes[type]->count_by_charges() && count > 0)  {
+     if (i_type->count_by_charges() && count > 0)  {
       if (crafting_inv.has_charges(type, count))
        compcol = c_green;
      } else if (crafting_inv.has_amount(type, abs(count)))
       compcol = c_green;
      std::stringstream dump;
-     dump << abs(count) << "x " << itypes[type]->name << " ";
+     dump << abs(count) << "x " << i_type->name << " ";
      std::string compname = dump.str();
      if (xpos + compname.length() >= 80) {
       ypos++;
@@ -833,9 +833,8 @@ Press ? to describe object.  Press <ENTER> to attempt to craft object.");
    line--;
    break;
   case '\n':
-   if (!available[line])
-    popup("You can't do that!");
-   else if (itypes[current[line]->result]->m1 == LIQUID &&
+   if (!available[line]) popup("You can't do that!");
+   else if (itype::types[current[line]->result]->m1 == LIQUID &&
             !u.has_watertight_container())
     popup("You don't have anything to store that liquid in!");
    else {
@@ -844,7 +843,7 @@ Press ? to describe object.  Press <ENTER> to attempt to craft object.");
    }
    break;
   case '?':
-   tmp = item(itypes[current[line]->result], 0);
+   tmp = item(itype::types[current[line]->result], 0);
    full_screen_popup(tmp.info(true).c_str());
    redraw = true;
    break;
@@ -966,7 +965,7 @@ void game::pick_recipes(std::vector<recipe*> &current,
  crafting_inv += u.inv;
  crafting_inv += u.weapon;
  if (u.has_bionic(bio_tools)) {
-  item tools(itypes[itm_toolset], turn);
+  item tools(itype::types[itm_toolset], turn);
   tools.charges = u.power_level;
   crafting_inv += tools;
  }
@@ -990,34 +989,31 @@ void game::pick_recipes(std::vector<recipe*> &current,
   for (int j = 0; j < 5; j++) {
    have_tool[j] = false;
    have_comp[j] = false;
-   if (current[i]->tools[j].size() == 0)
-    have_tool[j] = true;
+   if (current[i]->tools[j].empty()) have_tool[j] = true;
    else {
-    for (int k = 0; k < current[i]->tools[j].size(); k++) {
-     itype_id type = current[i]->tools[j][k].type;
-     int req = current[i]->tools[j][k].count;	// -1 => 1
-     if ((req <= 0 && crafting_inv.has_amount (type,   1)) ||
-         (req >  0 && crafting_inv.has_charges(type, req))   ) {
+	for (const component& tool : current[i]->tools[j]) {
+     const itype_id type = tool.type;
+     const int req = tool.count;	// -1 => 1
+	 if (req <= 0 ? crafting_inv.has_amount(type, 1) : crafting_inv.has_charges(type, req)) {
       have_tool[j] = true;
-      k = current[i]->tools[j].size();
+	  break;
      }
     }
    }
-   if (current[i]->components[j].size() == 0)
-    have_comp[j] = true;
+   if (current[i]->components[j].empty()) have_comp[j] = true;
    else {
-    for (int k = 0; k < current[i]->components[j].size() && !have_comp[j]; k++){
-     itype_id type = current[i]->components[j][k].type;
-     int count = current[i]->components[j][k].count;
-     if (itypes[type]->count_by_charges() && count > 0) {
+	for(const component& comp : current[i]->components[j]) {
+     const itype_id type = comp.type;
+     const int count = comp.count;
+     if (itype::types[type]->count_by_charges() && count > 0) {
       if (crafting_inv.has_charges(type, count)) {
        have_comp[j] = true;
-       k = current[i]->components[j].size();
+	   break;
       }
      } else if (crafting_inv.has_amount(type, abs(count))) {
       have_comp[j] = true;
-      k = current[i]->components[j].size();
-     }
+	  break;
+	 }
     }
    }
   }
@@ -1036,14 +1032,11 @@ void game::make_craft(recipe *making)
 
 void game::complete_craft()
 {
- recipe* making = recipes[u.activity.index]; // Which recipe is it?
+ const recipe* const making = recipes[u.activity.index]; // Which recipe is it?
 
 // # of dice is 75% primary skill, 25% secondary (unless secondary is null)
  int skill_dice = u.sklevel[making->sk_primary] * 3;
- if (making->sk_secondary == sk_null)
-  skill_dice += u.sklevel[making->sk_primary];
- else
-  skill_dice += u.sklevel[making->sk_secondary];
+ skill_dice += u.sklevel[sk_null == making->sk_secondary ? making->sk_primary : making->sk_secondary];
 // Sides on dice is 16 plus your current intelligence
  int skill_sides = 16 + u.int_cur;
 
@@ -1060,8 +1053,7 @@ void game::complete_craft()
 
 // Messed up badly; waste some components.
  if (making->difficulty != 0 && diff_roll > skill_roll * (1 + 0.1 * rng(1, 5))) {
-  add_msg("You fail to make the %s, and waste some materials.",
-          itypes[making->result]->name.c_str());
+  add_msg("You fail to make the %s, and waste some materials.", itype::types[making->result]->name.c_str());
   for (int i = 0; i < 5; i++) {
    if (making->components[i].size() > 0) {
     std::vector<component> copy = making->components[i];
@@ -1076,8 +1068,7 @@ void game::complete_craft()
   return;
   // Messed up slightly; no components wasted.
  } else if (diff_roll > skill_roll) {
-  add_msg("You fail to make the %s, but don't waste any materials.",
-          itypes[making->result]->name.c_str());
+  add_msg("You fail to make the %s, but don't waste any materials.", itype::types[making->result]->name.c_str());
   u.activity.type = ACT_NULL;
   return;
  }
@@ -1092,7 +1083,7 @@ void game::complete_craft()
 
   // Set up the new item, and pick an inventory letter
  int iter = 0;
- item newit(itypes[making->result], turn, nextinv);
+ item newit(itype::types[making->result], turn, nextinv);
  if (!newit.craft_has_charges())
   newit.charges = 0;
  do {
@@ -1100,7 +1091,7 @@ void game::complete_craft()
   advance_nextinv();
   iter++;
  } while (u.has_item(newit.invlet) && iter < 52);
- //newit = newit.in_its_container(&itypes);
+ //newit = newit.in_its_container();
  if (newit.made_of(LIQUID))
   handle_liquid(newit, false, false);
  else {
@@ -1120,7 +1111,7 @@ void game::complete_craft()
  }
 }
 
-void consume_items(game *g, std::vector<component> components)
+void consume_items(game *g, const std::vector<component>& components)
 {
 // For each set of components in the recipe, fill you_have with the list of all
 // matching ingredients the player has.
@@ -1133,36 +1124,36 @@ void consume_items(game *g, std::vector<component> components)
  inventory map_inv;
  map_inv.form_from_map(g, point(g->u.posx, g->u.posy), PICKUP_RANGE);
 
- for (int i = 0; i < components.size(); i++) {
-  itype_id type = components[i].type;
-  int count = abs(components[i].count);
+ for(const component& comp : components) {
+  const itype_id type = comp.type;
+  const int count = abs(comp.count);
   bool pl = false, mp = false;
 
-  if (g->itypes[type]->count_by_charges() && count > 0) {
+  if (itype::types[type]->count_by_charges() && count > 0) {
 
    if (g->u.has_charges(type, count)) {
-    player_has.push_back(components[i]);
+    player_has.push_back(comp);
     pl = true;
    }
    if (map_inv.has_charges(type, count)) {
-    map_has.push_back(components[i]);
+    map_has.push_back(comp);
     mp = true;
    }
    if (!pl && !mp && g->u.charges_of(type) + map_inv.charges_of(type) >= count)
-    mixed.push_back(components[i]);
+    mixed.push_back(comp);
 
   } else { // Counting by units, not charges
 
    if (g->u.has_amount(type, count)) {
-    player_has.push_back(components[i]);
+    player_has.push_back(comp);
     pl = true;
    }
    if (map_inv.has_amount(type, count)) {
-    map_has.push_back(components[i]);
+    map_has.push_back(comp);
     mp = true;
    }
    if (!pl && !mp && g->u.amount_of(type) + map_inv.amount_of(type) >= count)
-    mixed.push_back(components[i]);
+    mixed.push_back(comp);
 
   }
  }
@@ -1179,16 +1170,12 @@ void consume_items(game *g, std::vector<component> components)
  } else { // Let the player pick which component they want to use
   std::vector<std::string> options; // List for the menu_vec below
 // Populate options with the names of the items
-  for (int i = 0; i < map_has.size(); i++) {
-   std::string tmpStr = g->itypes[map_has[i].type]->name + " (nearby)";
-   options.push_back(tmpStr);
-  }
-  for (int i = 0; i < player_has.size(); i++)
-   options.push_back(g->itypes[player_has[i].type]->name);
-  for (int i = 0; i < mixed.size(); i++) {
-   std::string tmpStr = g->itypes[mixed[i].type]->name +" (on person & nearby)";
-   options.push_back(tmpStr);
-  }
+  for(const component& comp : map_has)
+   options.push_back(itype::types[comp.type]->name + " (nearby)");
+  for(const component& comp : player_has)
+   options.push_back(itype::types[comp.type]->name);
+  for(const component& comp : mixed)
+   options.push_back(itype::types[comp.type]->name + " (on person & nearby)");
 
   if (options.size() == 0) // This SHOULD only happen if cooking with a fire,
    return;                 // and the fire goes out.
@@ -1206,43 +1193,33 @@ void consume_items(game *g, std::vector<component> components)
   }
  }
 
- for (int i = 0; i < player_use.size(); i++) {
-  if (g->itypes[player_use[i].type]->count_by_charges() &&
-      player_use[i].count > 0)
-   g->u.use_charges(player_use[i].type, player_use[i].count);
+ for(const component& comp : player_use) {
+  if (itype::types[comp.type]->count_by_charges() && 0 < comp.count)
+   g->u.use_charges(comp.type, comp.count);
   else
-   g->u.use_amount(player_use[i].type, abs(player_use[i].count),
-                   (player_use[i].count < 0));
+   g->u.use_amount(comp.type, abs(comp.count), (comp.count < 0));
  }
- for (int i = 0; i < map_use.size(); i++) {
-  if (g->itypes[map_use[i].type]->count_by_charges() &&
-      map_use[i].count > 0)
-   g->m.use_charges(point(g->u.posx, g->u.posy), PICKUP_RANGE,
-                    map_use[i].type, map_use[i].count);
+ for(const component& comp : map_use) {
+  if (itype::types[comp.type]->count_by_charges() && 0 < comp.count)
+   g->m.use_charges(point(g->u.posx, g->u.posy), PICKUP_RANGE, comp.type, comp.count);
   else
-   g->m.use_amount(point(g->u.posx, g->u.posy), PICKUP_RANGE,
-                   map_use[i].type, abs(map_use[i].count),
-                   (map_use[i].count < 0));
+   g->m.use_amount(point(g->u.posx, g->u.posy), PICKUP_RANGE, comp.type, abs(comp.count), (comp.count < 0));
  }
- for (int i = 0; i < mixed_use.size(); i++) {
-  if (g->itypes[mixed_use[i].type]->count_by_charges() &&
-      mixed_use[i].count > 0) {
-   int from_map = mixed_use[i].count - g->u.charges_of(mixed_use[i].type);
-   g->u.use_charges(mixed_use[i].type, g->u.charges_of(mixed_use[i].type));
-   g->m.use_charges(point(g->u.posx, g->u.posy), PICKUP_RANGE,
-                    mixed_use[i].type, from_map);
+ for(const component& comp : mixed_use) {
+  if (itype::types[comp.type]->count_by_charges() && 0 < comp.count) {
+   const int from_map = comp.count - g->u.charges_of(comp.type);
+   g->u.use_charges(comp.type, g->u.charges_of(comp.type));
+   g->m.use_charges(point(g->u.posx, g->u.posy), PICKUP_RANGE, comp.type, from_map);
   } else {
-   bool in_container = (mixed_use[i].count < 0);
-   int from_map = abs(mixed_use[i].count) - g->u.amount_of(mixed_use[i].type);
-   g->u.use_amount(mixed_use[i].type, g->u.amount_of(mixed_use[i].type),
-                   in_container);
-   g->m.use_amount(point(g->u.posx, g->u.posy), PICKUP_RANGE,
-                   mixed_use[i].type, from_map, in_container);
+   const bool in_container = (comp.count < 0);
+   const int from_map = abs(comp.count) - g->u.amount_of(comp.type);
+   g->u.use_amount(comp.type, g->u.amount_of(comp.type), in_container);
+   g->m.use_amount(point(g->u.posx, g->u.posy), PICKUP_RANGE, comp.type, from_map, in_container);
   }
  }
 }
 
-void consume_tools(game *g, std::vector<component> tools)
+void consume_tools(game *g, const std::vector<component>& tools)
 {
  bool found_nocharge = false;
  inventory map_inv;
@@ -1261,35 +1238,34 @@ void consume_tools(game *g, std::vector<component> tools)
   } else if (g->u.has_amount(type, 1) || map_inv.has_amount(type, 1))
    found_nocharge = true;
  }
- if (found_nocharge)
-  return; // Default to using a tool that doesn't require charges
+ if (found_nocharge) return; // Default to using a tool that doesn't require charges
 
- if (player_has.size() == 1 && map_has.size() == 0)
-  g->u.use_charges(player_has[0].type, player_has[0].count);
- else if (map_has.size() == 1 && player_has.size() == 0)
-  g->m.use_charges(point(g->u.posx, g->u.posy), PICKUP_RANGE,
-                   map_has[0].type, map_has[0].count);
- else { // Variety of options, list them and pick one
+ if (player_has.size() == 1 && map_has.size() == 0) {
+  const component& use = player_has[0];
+  g->u.use_charges(use.type, use.count);
+ } else if (map_has.size() == 1 && player_has.size() == 0) {
+  const component& use = map_has[0];
+  g->m.use_charges(point(g->u.posx, g->u.posy), PICKUP_RANGE, use.type, use.count);
+ } else { // Variety of options, list them and pick one
 // Populate the list
   std::vector<std::string> options;
-  for (int i = 0; i < map_has.size(); i++) {
-   std::string tmpStr = g->itypes[map_has[i].type]->name + " (nearby)";
-   options.push_back(tmpStr);
-  }
-  for (int i = 0; i < player_has.size(); i++)
-   options.push_back(g->itypes[player_has[i].type]->name);
+  for(const component& tool : map_has)
+   options.push_back(itype::types[tool.type]->name + " (nearby)");
+
+  for(const component& tool : player_has)
+   options.push_back(itype::types[tool.type]->name);
 
   if (options.size() == 0) // This SHOULD only happen if cooking with a fire,
    return;                 // and the fire goes out.
 
 // Get selection via a popup menu
   int selection = menu_vec("Use which tool?", options) - 1;
-  if (selection < map_has.size())
-   g->m.use_charges(point(g->u.posx, g->u.posy), PICKUP_RANGE,
-                    map_has[selection].type, map_has[selection].count);
-  else {
-   selection -= map_has.size();
-   g->u.use_charges(player_has[selection].type, player_has[selection].count);
+  if (selection < map_has.size()) {
+   const component& use = map_has[selection];
+   g->m.use_charges(point(g->u.posx, g->u.posy), PICKUP_RANGE, use.type, use.count);
+  } else {
+   const component& use = player_has[selection - map_has.size()];
+   g->u.use_charges(use.type, use.count);
   }
  }
 }

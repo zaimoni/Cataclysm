@@ -186,7 +186,7 @@ public:
  bool wear_item(game *g, item *to_wear);
  bool takeoff(game *g, char let);// Take off item; returns false on fail
  void use(game *g, char let);	// Use a tool
- bool install_bionics(game *g, it_bionic* type);	// Install bionics
+ bool install_bionics(game *g, const it_bionic* type);	// Install bionics
  void read(game *g, char let);	// Read a book
  void try_to_sleep(game *g);	// '$' command; adds DIS_LYING_DOWN
  bool can_sleep(game *g);	// Checked each turn during DIS_LYING_DOWN
@@ -208,8 +208,7 @@ public:
  int weight_capacity(bool real_life = true);
  int volume_capacity();
  int morale_level();	// Modified by traits, &c
- void add_morale(morale_type type, int bonus, int max_bonus = 0,
-                 itype* item_type = NULL);
+ void add_morale(morale_type type, int bonus, int max_bonus = 0, const itype* item_type = NULL);
 
  void sort_inv();	// Sort inventory by type
  std::string weapname(bool charges = true);

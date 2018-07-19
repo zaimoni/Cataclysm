@@ -166,7 +166,6 @@ class game
   point find_item(item *it);
   void remove_item(item *it);
 
-  std::vector <itype*> itypes;
   std::vector<recipe*> recipes;	// The list of valid recipes
   std::vector<constructable*> constructions; // The list of constructions
 
@@ -209,7 +208,6 @@ class game
   void start_special_game(special_game_id gametype); // See gamemode.cpp
 
 // Data Initialization
-  void init_itypes();       // Initializes item types
   void init_traps();        // Initializes trap types
   void init_recipes();      // Initializes crafting recipes
   void init_construction(); // Initializes construction "recipes"

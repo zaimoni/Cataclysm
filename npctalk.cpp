@@ -136,10 +136,8 @@ std::string dynamic_line(talk_topic topic, game *g, npc *p)
 // First, a sanity test for mission stuff
  if (topic >= TALK_MISSION_START && topic <= TALK_MISSION_END) {
 
-  if (topic == TALK_MISSION_START)
-   return "Used TALK_MISSION_START - not meant to be used!";
-  if (topic == TALK_MISSION_END)
-   return "Used TALK_MISSION_END - not meant to be used!";
+  if (topic == TALK_MISSION_START) return "Used TALK_MISSION_START - not meant to be used!";
+  if (topic == TALK_MISSION_END) return "Used TALK_MISSION_END - not meant to be used!";
 
   if (p->chatbin.mission_selected == -1)
    return "mission_selected = -1; BUG!";
@@ -195,8 +193,7 @@ std::string dynamic_line(talk_topic topic, game *g, npc *p)
   else
    return "Which job?";
 
- case TALK_MISSION_REWARD:
-  return "Sure, here you go!";
+ case TALK_MISSION_REWARD: return "Sure, here you go!";
 
  case TALK_SHELTER:
   switch (rng(1, 2)) {
@@ -204,16 +201,14 @@ std::string dynamic_line(talk_topic topic, game *g, npc *p)
    case 2: return "At least we've got shelter.";
   }
 
- case TALK_SHELTER_PLANS:
-  return "I don't know, look for supplies and other survivors I guess.";
+ case TALK_SHELTER_PLANS: return "I don't know, look for supplies and other survivors I guess.";
 
  case TALK_SHARE_EQUIPMENT:
   if (p->has_disease(DI_ASKED_FOR_ITEM))
    return "You just asked me for stuff; ask later.";
   return "Why should I share my equipment with you?";
 
- case TALK_GIVE_EQUIPMENT:
-  return "Okay, here you go.";
+ case TALK_GIVE_EQUIPMENT: return "Okay, here you go.";
 
  case TALK_DENY_EQUIPMENT:
   if (p->op_of_u.anger >= p->hostile_anger_level() - 4)
@@ -239,8 +234,7 @@ std::string dynamic_line(talk_topic topic, game *g, npc *p)
    return "It's not safe here.  Let's get to safety first.";
  break;
   
- case TALK_TRAIN_FORCE:
-  return "Alright, let's begin.";
+ case TALK_TRAIN_FORCE: return "Alright, let's begin.";
 
  case TALK_SUGGEST_FOLLOW:
   if (p->has_disease(DI_INFECTION))
@@ -249,23 +243,12 @@ std::string dynamic_line(talk_topic topic, game *g, npc *p)
    return "You asked me recently; ask again later.";
   return "Why should I travel with you?";
 
- case TALK_AGREE_FOLLOW:
-  return "You got it, I'm with you!";
-
- case TALK_DENY_FOLLOW:
-  return "Yeah... I don't think so.";
-
- case TALK_LEADER:
-  return "What is it?";
-
- case TALK_LEAVE:
-  return "You're really leaving?";
-
- case TALK_PLAYER_LEADS:
-  return "Alright.  You can lead now.";
-
- case TALK_LEADER_STAYS:
-  return "No.  I'm the leader here.";
+ case TALK_AGREE_FOLLOW: return "You got it, I'm with you!";
+ case TALK_DENY_FOLLOW: return "Yeah... I don't think so.";
+ case TALK_LEADER: return "What is it?";
+ case TALK_LEAVE: return "You're really leaving?";
+ case TALK_PLAYER_LEADS: return "Alright.  You can lead now.";
+ case TALK_LEADER_STAYS: return "No.  I'm the leader here.";
 
  case TALK_HOW_MUCH_FURTHER: {
   int dist = rl_dist(g->om_location(), point(p->goalx, p->goaly));
@@ -283,8 +266,7 @@ std::string dynamic_line(talk_topic topic, game *g, npc *p)
   return response.str();
  }
 
- case TALK_FRIEND:
-  return "What is it?";
+ case TALK_FRIEND: return "What is it?";
 
  case TALK_COMBAT_COMMANDS: {
   std::stringstream status;
@@ -304,19 +286,15 @@ std::string dynamic_line(talk_topic topic, game *g, npc *p)
   return status.str();
  }
 
- case TALK_COMBAT_ENGAGEMENT:
-  return "What should I do?";
+ case TALK_COMBAT_ENGAGEMENT: return "What should I do?";
 
  case TALK_STRANGER_NEUTRAL:
   if (p->myclass == NC_TRADER)
    return "Hello!  Would you care to see my goods?";
   return "Hello there.";
 
- case TALK_STRANGER_WARY:
-  return "Okay, no sudden movements...";
-
- case TALK_STRANGER_SCARED:
-  return "Keep your distance!";
+ case TALK_STRANGER_WARY: return "Okay, no sudden movements...";
+ case TALK_STRANGER_SCARED: return "Keep your distance!";
 
  case TALK_STRANGER_FRIENDLY:
   if (p->myclass == NC_TRADER)
@@ -337,45 +315,31 @@ std::string dynamic_line(talk_topic topic, game *g, npc *p)
 
  case TALK_DESCRIBE_MISSION:
   switch (p->mission) {
-   case NPC_MISSION_RESCUE_U:
-    return "I'm here to save you!";
-   case NPC_MISSION_SHELTER:
-    return "I'm holing up here for safety.";
-   case NPC_MISSION_SHOPKEEP:
-    return "I run the shop here.";
-   case NPC_MISSION_MISSING:
-    return "Well, I was lost, but you found me...";
-   case NPC_MISSION_KIDNAPPED:
-    return "Well, I was kidnapped, but you saved me...";
+   case NPC_MISSION_RESCUE_U: return "I'm here to save you!";
+   case NPC_MISSION_SHELTER: return "I'm holing up here for safety.";
+   case NPC_MISSION_SHOPKEEP: return "I run the shop here.";
+   case NPC_MISSION_MISSING: return "Well, I was lost, but you found me...";
+   case NPC_MISSION_KIDNAPPED: return "Well, I was kidnapped, but you saved me...";
    case NPC_MISSION_NULL:
     switch (p->myclass) {
-     case NC_HACKER:
-      return "I'm looking for some choice systems to hack.";
-     case NC_DOCTOR:
-      return "I'm looking for wounded to help.";
-     case NC_TRADER:
-      return "I'm collecting gear and selling it.";
+     case NC_HACKER: return "I'm looking for some choice systems to hack.";
+     case NC_DOCTOR: return "I'm looking for wounded to help.";
+     case NC_TRADER: return "I'm collecting gear and selling it.";
      case NC_NINJA:
       if (!p->styles.empty()) {
        std::stringstream ret;
        ret << "I am a wandering master of " <<
-              g->itypes[p->styles[0]]->name.c_str() << ".";
+		   itype::types[p->styles[0]]->name.c_str() << ".";
        return ret.str();
       } else
        return "I am looking for a master to train my fighting techniques.";
-     case NC_COWBOY:
-      return "Just looking for some wrongs to right.";
-     case NC_SCIENTIST:
-      return "I'm looking for clues concerning these monsters' origins...";
-     case NC_BOUNTY_HUNTER:
-      return "I'm a killer for hire.";
-     case NC_NONE:
-      return "I'm just wandering.";
-     default:
-      return "ERROR: Someone forgot to code an npc_class text.";
+     case NC_COWBOY: return "Just looking for some wrongs to right.";
+     case NC_SCIENTIST: return "I'm looking for clues concerning these monsters' origins...";
+     case NC_BOUNTY_HUNTER: return "I'm a killer for hire.";
+     case NC_NONE: return "I'm just wandering.";
+     default: return "ERROR: Someone forgot to code an npc_class text.";
     } // switch (p->myclass)
-   default:
-    return "ERROR: Someone forgot to code an npc_mission text.";
+   default: return "ERROR: Someone forgot to code an npc_mission text.";
   } // switch (p->mission)
   break;
 
@@ -723,7 +687,7 @@ std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *p)
    resume << "Yes, let's resume training " <<
              (g->u.backlog.index > 0 ?
               skill_name(g->u.backlog.index) :
-              g->itypes[ 0 - g->u.backlog.index ]->name);
+              itype::types[ 0 - g->u.backlog.index ]->name);
    SELECT_TEMP( resume.str(), g->u.backlog.index);
     SUCCESS(TALK_TRAIN_START);
   }
@@ -752,8 +716,8 @@ std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *p)
    shift = 0;
   for (int i = 0; i < styles.size() && printed < 9; i++) {
    printed++;
-   SELECT_TEMP( g->itypes[styles[i]]->name + " (cost 800)",
-                0 - styles[i] );
+   SELECT_TEMP(itype::types[styles[i]]->name + " (cost 800)",
+               0 - styles[i] );
     SUCCESS(TALK_TRAIN_START);
   }
   if (more) {
@@ -1487,12 +1451,7 @@ void parse_tags(std::string &phrase, player *u, npc *me)
     else
      phrase.replace(fa, l, me->weapon.tname());
    } else if (tag == "<ammo>") {
-    if (!me->weapon.is_gun())
-     phrase.replace(fa, l, "BADAMMO");
-    else {
-     it_gun* gun = dynamic_cast<it_gun*>(me->weapon.type);
-     phrase.replace(fa, l, ammo_name(gun->ammo));
-    }
+	phrase.replace(fa, l,(!me->weapon.is_gun() ? "BADAMMO" : ammo_name(dynamic_cast<const it_gun*>(me->weapon.type)->ammo)));
    } else if (tag == "<punc>") {
     switch (rng(0, 2)) {
      case 0: phrase.replace(fa, l, ".");   break;

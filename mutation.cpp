@@ -315,13 +315,11 @@ void mutation_effect(game *g, player &p, pl_flag mut)
 
  for (int i = 0; i < p.worn.size(); i++) {
   for (int j = 0; j < bps.size(); j++) {
-   if ((dynamic_cast<it_armor*>(p.worn[i].type))->covers & mfb(bps[j])) {
+   if ((dynamic_cast<const it_armor*>(p.worn[i].type))->covers & mfb(bps[j])) {
     if (destroy) {
-     if (is_u)
-      g->add_msg("Your %s is destroyed!", p.worn[i].tname().c_str());
+     if (is_u) g->add_msg("Your %s is destroyed!", p.worn[i].tname().c_str());
     } else {
-     if (is_u)
-      g->add_msg("Your %s is pushed off.", p.worn[i].tname().c_str());
+     if (is_u) g->add_msg("Your %s is pushed off.", p.worn[i].tname().c_str());
      g->m.add_item(p.posx, p.posy, p.worn[i]);
     }
     p.worn.erase(p.worn.begin() + i);

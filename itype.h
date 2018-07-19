@@ -13,6 +13,8 @@
 #include <vector>
 #include <sstream>
 
+class game;
+
 // mfb(n) converts a flag to its appropriate position in covers's bitfield
 #ifndef mfb
 #define mfb(n) long(1 << (n))
@@ -294,6 +296,8 @@ itype_id default_ammo(ammotype guntype);
 
 struct itype
 {
+ static std::vector <itype*> types;
+
  int id;		// ID # that matches its place in master itype list
  			// Used for save files; aligns to itype_id above.
  unsigned char rarity;	// How often it's found
@@ -319,20 +323,20 @@ struct itype
  unsigned item_flags : NUM_ITEM_FLAGS;
  unsigned techniques : NUM_TECHNIQUES;
  
- virtual bool is_food()          { return false; }
- virtual bool is_ammo()          { return false; }
- virtual bool is_gun()           { return false; }
- virtual bool is_gunmod()        { return false; }
- virtual bool is_bionic()        { return false; }
- virtual bool is_armor()         { return false; }
- virtual bool is_book()          { return false; }
- virtual bool is_tool()          { return false; }
- virtual bool is_container()     { return false; }
- virtual bool is_software()      { return false; }
- virtual bool is_macguffin()     { return false; }
- virtual bool is_style()         { return false; }
- virtual bool is_artifact()      { return false; }
- virtual bool count_by_charges() { return false; }
+ virtual bool is_food() const    { return false; }
+ virtual bool is_ammo() const    { return false; }
+ virtual bool is_gun() const     { return false; }
+ virtual bool is_gunmod() const  { return false; }
+ virtual bool is_bionic() const  { return false; }
+ virtual bool is_armor() const   { return false; }
+ virtual bool is_book() const    { return false; }
+ virtual bool is_tool() const    { return false; }
+ virtual bool is_container() const { return false; }
+ virtual bool is_software() const { return false; }
+ virtual bool is_macguffin() const { return false; }
+ virtual bool is_style() const   { return false; }
+ virtual bool is_artifact() const { return false; }
+ virtual bool count_by_charges() const { return false; }
  virtual std::string save_data() { return std::string(); }
 
  itype() {
@@ -374,6 +378,8 @@ struct itype
   item_flags  = pitem_flags;
   techniques  = ptechniques;
  }
+
+ static void init();
 };
 
 // Includes food drink and drugs
@@ -392,8 +398,8 @@ struct it_comest : public itype
  itype_id container;	// The container it comes in
  itype_id tool;		// Tool needed to consume (e.g. lighter for cigarettes)
 
- virtual bool is_food() { return true; }
- virtual bool count_by_charges() { return charges > 1; }
+ virtual bool is_food() const { return true; }
+ virtual bool count_by_charges() const { return charges > 1; }
 
  void (iuse::*use)(game *, player *, item *, bool);// Special effects of use
  add_type add;				// Effects of addiction
@@ -437,8 +443,8 @@ struct it_ammo : public itype
  unsigned char recoil;	// Recoil; modified by strength
  unsigned char count;	// Default charges
 
- virtual bool is_ammo() { return true; }
- virtual bool count_by_charges() { return id != itm_gasoline; }
+ virtual bool is_ammo() const { return true; }
+ virtual bool count_by_charges() const { return id != itm_gasoline; }
 
  it_ammo(int pid, unsigned char prarity, unsigned int pprice,
         std::string pname, std::string pdes,
@@ -474,7 +480,7 @@ struct it_gun : public itype
  int clip;
  int reload_time;
 
- virtual bool is_gun() { return true; }
+ virtual bool is_gun() const { return true; }
 
  it_gun(int pid, unsigned char prarity, unsigned int pprice,
         std::string pname, std::string pdes,
@@ -552,8 +558,7 @@ struct it_armor : public itype
  signed char warmth;
  unsigned char storage;
 
- virtual bool is_armor() { return true; }
- virtual bool is_artifact() { return false; }
+ virtual bool is_armor() const { return true; }
  virtual std::string save_data() { return std::string(); }
 
  it_armor()
@@ -599,7 +604,7 @@ struct it_book : public itype
  unsigned char intel;	// Intelligence required to read, at all
  unsigned char time;	// How long, in 10-turns (aka minutes), it takes to read
 			// "To read" means getting 1 skill point, not all of em
- virtual bool is_book() { return true; }
+ virtual bool is_book() const { return true; }
  it_book(int pid, unsigned char prarity, unsigned int pprice,
          std::string pname, std::string pdes,
          char psym, nc_color pcolor, material pm1, material pm2,
@@ -631,7 +636,7 @@ struct it_container : public itype
 {
  unsigned char contains;	// Internal volume
  unsigned flags : num_con_flags;
- virtual bool is_container() { return true; }
+ virtual bool is_container() const { return true; }
  it_container(int pid, unsigned char prarity, unsigned int pprice,
               std::string pname, std::string pdes,
               char psym, nc_color pcolor, material pm1, material pm2,
@@ -657,8 +662,7 @@ struct it_tool : public itype
  itype_id revert_to;
  void (iuse::*use)(game *, player *, item *, bool);
 
- virtual bool is_tool()          { return true; }
- virtual bool is_artifact()      { return false; }
+ virtual bool is_tool() const    { return true; }
  virtual std::string save_data() { return std::string(); }
 
  it_tool()
@@ -727,7 +731,7 @@ struct it_macguffin : public itype
  bool readable; // If true, activated with 'R'
  void (iuse::*use)(game *, player *, item *, bool);
  
- virtual bool is_macguffin() { return true; }
+ virtual bool is_macguffin() const { return true; }
 
  it_macguffin(int pid, unsigned char prarity, unsigned int pprice,
               std::string pname, std::string pdes,
@@ -750,7 +754,7 @@ struct it_software : public itype
  software_type swtype;
  int power;
 
- virtual bool is_software()      { return true; }
+ virtual bool is_software() const { return true; }
 
  it_software(int pid, unsigned char prarity, unsigned int pprice,
              std::string pname, std::string pdes,
@@ -769,7 +773,7 @@ struct it_software : public itype
 
 struct it_style : public itype
 {
- virtual bool is_style()         { return true; }
+ virtual bool is_style() const { return true; }
 
  std::vector<style_move> moves;
  
@@ -791,7 +795,7 @@ struct it_artifact_tool : public it_tool
  std::vector<art_effect_active>  effects_activated;
  std::vector<art_effect_passive> effects_carried;
 
- virtual bool is_artifact()  { return true; }
+ virtual bool is_artifact() const { return true; }
  virtual std::string save_data()
  {
   std::stringstream data;
@@ -849,7 +853,7 @@ struct it_artifact_armor : public it_armor
 {
  std::vector<art_effect_passive> effects_worn;
 
- virtual bool is_artifact()  { return true; }
+ virtual bool is_artifact() const { return true; }
 
  virtual std::string save_data()
  {

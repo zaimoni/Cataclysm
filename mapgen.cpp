@@ -2819,7 +2819,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      add_spawn(mon_zombie_soldier, 1, rnx, rny);
     else if (one_in(2)) {
      item body;
-     body.make_corpse(g->itypes[itm_corpse], mtype::types[mon_null], 0);
+     body.make_corpse(itype::types[itm_corpse], mtype::types[mon_null], 0);
      add_item(rnx, rny, body);
      place_items(mi_launchers,  10, rnx, rny, rnx, rny, true, 0);
      place_items(mi_mil_rifles, 30, rnx, rny, rnx, rny, true, 0);
@@ -3532,7 +3532,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
       } while (body.x == -1 && tries < 10);
       if (tries < 10) {
        item miner;
-       miner.make_corpse(g->itypes[itm_corpse], mtype::types[mon_null], 0);
+       miner.make_corpse(itype::types[itm_corpse], mtype::types[mon_null], 0);
        add_item(body.x, body.y, miner);
        place_items(mi_mine_equipment, 60, body.x, body.y, body.x, body.y, false, 0);
       }
@@ -3574,7 +3574,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      line(this, t_rock, orx + 1, ory + 2, orx + 3, ory + 2);
      ter(orx + 3, ory + 3) = t_rock;
      item miner;
-     miner.make_corpse(g->itypes[itm_corpse], mtype::types[mon_null], 0);
+     miner.make_corpse(itype::types[itm_corpse], mtype::types[mon_null], 0);
      add_item(orx + 2, ory + 3, miner);
      place_items(mi_mine_equipment, 60, orx + 2, ory + 3, orx + 2, ory + 3, false, 0);
     } break;
@@ -3722,7 +3722,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
    case 2: { // The Thing dog
     item miner;
-    miner.make_corpse(g->itypes[itm_corpse], mtype::types[mon_null], 0);
+    miner.make_corpse(itype::types[itm_corpse], mtype::types[mon_null], 0);
     int num_bodies = rng(4, 8);
     for (int i = 0; i < num_bodies; i++) {
      int x = rng(4, SEEX * 2 - 5), y = rng(4, SEEX * 2 - 5);
@@ -3890,7 +3890,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   line(this, t_counter, buildx - 3, buildy - 3, buildx + 3, buildy - 3);
   place_items(mi_toxic_dump_equipment, 80,
               buildx - 3, buildy - 3, buildx + 3, buildy - 3, false, 0);
-  add_item(buildx, buildy, g->itypes[itm_id_military], 0);
+  add_item(buildx, buildy, itype::types[itm_id_military], 0);
   ter(buildx, buildy + 4) = t_door_locked;
 
   rotate(rng(0, 3));
@@ -3930,7 +3930,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     for (int ii = 0; ii < bloodline.size(); ii++)
      add_field(g, bloodline[ii].x, bloodline[ii].y, fd_blood, 2);
     item body;
-    body.make_corpse(g->itypes[itm_corpse], mtype::types[mon_null], g->turn);
+    body.make_corpse(itype::types[itm_corpse], mtype::types[mon_null], g->turn);
     add_item(hermx, hermy, body);
     place_items(mi_rare, 25, hermx - 1, hermy - 1, hermx + 1, hermy + 1,true,0);
    } break;
@@ -4684,7 +4684,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   rn = rng(10, 15);
   for (int i = 0; i < rn; i++) {
    item body;
-   body.make_corpse(g->itypes[itm_corpse], mtype::types[mon_null], g->turn);
+   body.make_corpse(itype::types[itm_corpse], mtype::types[mon_null], g->turn);
    int zx = rng(0, SEEX * 2 - 1), zy = rng(0, SEEY * 2 - 1);
    if (ter(zx, zy) == t_bed || one_in(3))
     add_item(zx, zy, body);
@@ -5003,7 +5003,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   rn = rng(15, 20);
   for (int i = 0; i < rn; i++) {
    item body;
-   body.make_corpse(g->itypes[itm_corpse], mtype::types[mon_null], g->turn);
+   body.make_corpse(itype::types[itm_corpse], mtype::types[mon_null], g->turn);
    int zx = rng(0, SEEX * 2 - 1), zy = rng(0, SEEY * 2 - 1);
    if (ter(zx, zy) == t_bed || one_in(3))
     add_item(zx, zy, body);
@@ -7852,7 +7852,7 @@ void mansion_room(map *m, int x1, int y1, int x2, int y2)
 void map::add_extra(map_extra type, game *g)
 {
  item body;
- body.make_corpse(g->itypes[itm_corpse], mtype::types[mon_null], g->turn);
+ body.make_corpse(itype::types[itm_corpse], mtype::types[mon_null], g->turn);
  
  switch (type) {
 
@@ -8360,7 +8360,7 @@ void rough_circle(map *m, ter_id type, int x, int y, int rad)
 void add_corpse(game *g, map *m, int x, int y)
 {
  item body;
- body.make_corpse(g->itypes[itm_corpse], mtype::types[mon_null], 0);
+ body.make_corpse(itype::types[itm_corpse], mtype::types[mon_null], 0);
  m->add_item(x, y, body);
  m->put_items_from(mi_shoes,  1, x, y);
  m->put_items_from(mi_pants,  1, x, y);
