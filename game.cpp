@@ -113,16 +113,12 @@ void game::setup()
  items_dragged.clear();
  messages.clear();
  events.clear();
+ clear_scents();
 
  turn.season = SUMMER;    // ... with winter conveniently a long ways off
 
  for (int i = 0; i < num_monsters; i++)	// Reset kill counts to 0
   kills[i] = 0;
-// Set the scent map to 0
- for (int i = 0; i < SEEX * MAPSIZE; i++) {
-  for (int j = 0; j < SEEX * MAPSIZE; j++)
-   grscent[i][j] = 0;
- }
  if (opening_screen()) {// Opening menu
 // Finally, draw the screen!
   refresh_all();
@@ -6622,15 +6618,12 @@ void game::update_map(int &x, int &y)
  if (turn >= nextspawn)
   spawn_mon(shiftx, shifty);
 // Shift scent
- unsigned int newscent[SEEX * MAPSIZE][SEEY * MAPSIZE];
+ decltype(grscent) newscent;
  for (int i = 0; i < SEEX * MAPSIZE; i++) {
   for (int j = 0; j < SEEY * MAPSIZE; j++)
    newscent[i][j] = scent(i + (shiftx * SEEX), j + (shifty * SEEY));
  }
- for (int i = 0; i < SEEX * MAPSIZE; i++) {
-  for (int j = 0; j < SEEY * MAPSIZE; j++)
-   scent(i, j) = newscent[i][j];
- }
+ memmove(grscent, newscent, sizeof(newscent));
 // Update what parts of the world map we can see
  update_overmap_seen();
  draw_minimap();

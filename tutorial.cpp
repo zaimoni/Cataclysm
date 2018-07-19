@@ -8,11 +8,7 @@ bool tutorial_game::init(game *g)
  g->turn = HOURS(12); // Start at noon
  for (int i = 0; i < NUM_LESSONS; i++)
   tutorials_seen[i] = false;
-// Set the scent map to 0
- for (int i = 0; i < SEEX * MAPSIZE; i++) {
-  for (int j = 0; j < SEEX * MAPSIZE; j++)
-   g->scent(i, j) = 0;
- }
+ g->clear_scents();
  g->temperature = 65;
 // We use a Z-factor of 10 so that we don't plop down tutorial rooms in the
 // middle of the "real" game world

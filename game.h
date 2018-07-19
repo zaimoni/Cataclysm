@@ -138,6 +138,7 @@ class game
   void nuke(int x, int y);
   std::vector<faction *> factions_at(int x, int y);
   int& scent(int x, int y);
+  void clear_scents() { memset(grscent, 0, sizeof(grscent)); }
   unsigned char light_level();
   int assign_npc_id() { return next_npc_id++; }
   int assign_faction_id() { return next_faction_id++; }
@@ -336,7 +337,6 @@ class game
   overmap *om_hori, *om_vert, *om_diag; // Adjacent overmaps
   std::vector <game_message> messages;   // Messages to be printed
   int curmes;	  // The last-seen message.
-  int grscent[SEEX * MAPSIZE][SEEY * MAPSIZE];	// The scent map: updated only for viewpoint player u
   //int monmap[SEEX * MAPSIZE][SEEY * MAPSIZE]; // Temp monster map, for mon_at()
   std::vector<event> events;	        // Game events to be processed
   int kills[num_monsters];	        // Player's kill count
@@ -345,6 +345,7 @@ class game
   special_game *gamemode;
 private:
   int next_npc_id, next_faction_id, next_mission_id; // Keep track of UIDs
+  int grscent[SEEX * MAPSIZE][SEEY * MAPSIZE];	// The scent map
 };
 
 #endif
