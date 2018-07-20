@@ -167,8 +167,6 @@ class game
   point find_item(item *it);
   void remove_item(item *it);
 
-  std::vector<constructable*> constructions; // The list of constructions
-
   std::map<char, action_id> keymap;
 
   calendar turn;
@@ -207,7 +205,6 @@ class game
   void start_game();	// Starts a new game
   
 // Data Initialization
-  void init_construction(); // Initializes construction "recipes"
   void init_vehicles();     // Initializes vehicle types
 
   void load_keyboard_settings(); // Load keybindings from disk
@@ -235,9 +232,9 @@ class game
   void pick_recipes(std::vector<const recipe*> &current,
                     std::vector<bool> &available, craft_cat tab);// crafting.cpp
   void construction_menu();                   // See construction.cpp
-  bool player_can_build(player &p, inventory inv, constructable* con,
+  bool player_can_build(player &p, inventory inv, const constructable* con,
                         int level = -1, bool cont = false);
-  void place_construction(constructable *con); // See construction.cpp
+  void place_construction(const constructable *con); // See construction.cpp
   void complete_construction();               // See construction.cpp
   bool pl_choose_vehicle (int &x, int &y);
   bool vehicle_near ();

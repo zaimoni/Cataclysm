@@ -45,7 +45,7 @@ game::game()
  recipe::init();      // Set up crafting reciptes         (SEE crafting.cpp)
  mongroup::init();      // Set up monster categories        (SEE mongroupdef.cpp)
  mission_type::init();     // Set up mission templates         (SEE missiondef.cpp)
- init_construction(); // Set up constructables            (SEE construction.cpp)
+ constructable::init(); // Set up constructables            (SEE construction.cpp)
  mutation_branch::init();
  init_vehicles();     // Set up vehicles                  (SEE veh_typedef.cpp)
  load_keyboard_settings();

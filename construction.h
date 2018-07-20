@@ -17,6 +17,8 @@ struct construction_stage
 
 struct constructable
 {
+ static std::vector<constructable*> constructions; // The list of constructions
+
  int id;
  std::string name; // Name as displayed
  int difficulty; // Carpentry skill level required
@@ -28,6 +30,8 @@ struct constructable
                bool (construct::*Able) (game *, point),
                void (construct::*Done) (game *, point)) :
   id (Id), name (Name), difficulty (Diff), able (Able), done (Done) {};
+
+ static void init();
 };
 
 struct construct // Construction functions.

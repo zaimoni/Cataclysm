@@ -8,11 +8,12 @@
 #include "crafting.h" // For the use_comps use_tools functions
 #include "setvector.h"
 
+std::vector<constructable*> constructable::constructions; // The list of constructions
 
 bool will_flood_stop(map *m, bool (&fill)[SEEX * MAPSIZE][SEEY * MAPSIZE],
                      int x, int y);
 
-void game::init_construction()
+void constructable::init()
 {
  int id = -1;
  int tl, cl, sl;
@@ -145,6 +146,7 @@ void game::init_construction()
 
 void game::construction_menu()
 {
+ const auto c_size = constructable::constructions.size();
  WINDOW *w_con = newwin(25, 80, 0, 0);
  wborder(w_con, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                 LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
@@ -179,23 +181,20 @@ void game::construction_menu()
   }
 // Determine where in the master list to start printing
   int offset = select - 11;
-  if (offset > constructions.size() - 22)
-   offset = constructions.size() - 22;
-  if (offset < 0)
-   offset = 0;
+  if (offset > c_size - 22) offset = c_size - 22;
+  if (offset < 0) offset = 0;
 // Print the constructions between offset and max (or how many will fit)
-  for (int i = 0; i < 22 && i + offset < constructions.size(); i++) {
+  for (int i = 0; i < 22 && i + offset < c_size; i++) {
    int current = i + offset;
-   nc_color col = (player_can_build(u, total_inv, constructions[current], 0) ?
-                   c_white : c_dkgray);
-   if (current == select)
-    col = hilite(col);
-   mvwprintz(w_con, 1 + i, 1, col, constructions[current]->name.c_str());
+   const constructable* const cur = constructable::constructions[current];
+   nc_color col = (player_can_build(u, total_inv, cur, 0) ? c_white : c_dkgray);
+   if (current == select) col = hilite(col);
+   mvwprintz(w_con, 1 + i, 1, col, cur->name.c_str());
   }
 
   if (update_info) {
    update_info = false;
-   constructable* current_con = constructions[select];
+   const constructable* const current_con = constructable::constructions[select];
 // Print difficulty
    int pskill = u.sklevel[sk_carpentry], diff = current_con->difficulty;
    mvwprintz(w_con, 1, 43, (pskill >= diff ? c_white : c_red),
@@ -297,22 +296,20 @@ void game::construction_menu()
   switch (ch) {
    case 'j':
     update_info = true;
-    if (select < constructions.size() - 1)
-     select++;
-    else
-     select = 0;
+    if (select < c_size - 1) select++;
+    else select = 0;
     break;
    case 'k':
     update_info = true;
-    if (select > 0)
-     select--;
-    else
-     select = constructions.size() - 1;
+    if (select > 0) select--;
+    else select = c_size - 1;
     break;
    case '\n':
    case 'l':
-    if (player_can_build(u, total_inv, constructions[select], 0)) {
-     place_construction(constructions[select]);
+    {
+    const constructable* const current_con = constructable::constructions[select];
+    if (player_can_build(u, total_inv, current_con, 0)) {
+     place_construction(current_con);
      ch = 'q';
     } else {
      popup("You can't build that!");
@@ -320,35 +317,33 @@ void game::construction_menu()
       mvwputch(w_con, i, 30, c_white, LINE_XOXO);
      update_info = true;
     }
+	}
     break;
   }
  } while (ch != 'q' && ch != 'Q' && ch != KEY_ESCAPE);
  refresh_all();
 }
 
-bool game::player_can_build(player &p, inventory inv, constructable* con,
+bool game::player_can_build(player &p, inventory inv, const constructable* con,
                             int level, bool cont)
 {
- if (p.sklevel[sk_carpentry] < con->difficulty)
-  return false;
+ if (p.sklevel[sk_carpentry] < con->difficulty) return false;
 
- if (level < 0)
-  level = con->stages.size();
+ if (level < 0) level = con->stages.size();
 
- int start = 0;
- if (cont)
-  start = level;
+ int start = cont ? level : 0;
  for (int i = start; i < con->stages.size() && i <= level; i++) {
   construction_stage stage = con->stages[i];
   for (int j = 0; j < 3; j++) {
    if (stage.tools[j].size() > 0) {
     bool has_tool = false;
-    for (int k = 0; k < stage.tools[j].size() && !has_tool; k++) {
-     if (inv.has_amount(stage.tools[j][k], 1))
-      has_tool = true;
+	for (const auto tool : stage.tools[j]) {
+     if (inv.has_amount(tool, 1)) {
+	  has_tool = true;
+	  break;
+	 }
     }
-    if (!has_tool)
-     return false;
+    if (!has_tool) return false;
    }
    if (stage.components[j].size() > 0) {
     bool has_component = false;
@@ -365,7 +360,7 @@ bool game::player_can_build(player &p, inventory inv, constructable* con,
  return true;
 }
 
-void game::place_construction(constructable *con)
+void game::place_construction(const constructable * const con)
 {
  refresh_all();
  inventory total_inv;
@@ -445,7 +440,7 @@ void game::complete_construction()
  inventory map_inv;
  map_inv.form_from_map(this, point(u.posx, u.posy), PICKUP_RANGE);
  int stage_num = u.activity.values[0];
- constructable *built = constructions[u.activity.index];
+ const constructable* const built = constructable::constructions[u.activity.index];
  construction_stage stage = built->stages[stage_num];
  std::vector<component> player_use;
  std::vector<component> map_use;

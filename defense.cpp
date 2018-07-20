@@ -60,7 +60,7 @@ bool defense_game::init(game *g)
  g->u.dex_cur = g->u.dex_max;
  init_itypes();
  init_mtypes();
- init_constructions(g);
+ init_constructions();
  init_recipes();
  current_wave = 0;
  hunger = false;
@@ -171,12 +171,10 @@ void defense_game::init_mtypes()
  }
 }
 
-void defense_game::init_constructions(game *g)
+void defense_game::init_constructions()
 {
- for (int i = 0; i < g->constructions.size(); i++) {
-  for (int j = 0; j < g->constructions[i]->stages.size(); j++) {
-   g->constructions[i]->stages[j].time = 1; // Everything takes 1 minute
-  }
+ for (const auto construct : constructable::constructions) {
+  for (auto& stage : construct->stages) stage.time = 1; // Everything takes 1 minute
  }
 }
 
