@@ -10,6 +10,41 @@
 
 std::vector<constructable*> constructable::constructions; // The list of constructions
 
+struct construct // Construction functions.
+{
+	// Bools - able to build at the given point?
+	static bool able_always(game *, point) { return true; }
+	static bool able_never(game *, point) { return false; }
+
+	static bool able_empty(game *, point); // Able if tile is empty
+
+	static bool able_window(game *, point); // Any window tile
+	static bool able_window_pane(game *, point); // Only intact windows
+	static bool able_broken_window(game *, point); // Able if tile is broken window
+
+	static bool able_door(game *, point); // Any door tile
+	static bool able_door_broken(game *, point); // Broken door
+
+	static bool able_wall(game *, point); // Able if tile is wall
+	static bool able_wall_wood(game *g, point); // Only player-built walls
+
+	static bool able_between_walls(game *, point); // Flood-fill contained by walls
+
+	static bool able_dig(game *, point); // Able if diggable terrain
+	static bool able_pit(game *, point); // Able only on pits
+
+	static bool able_tree(game *, point); // Able on trees
+	static bool able_log(game *, point); // Able on logs
+
+										 // Does anything special happen when we're finished?
+	static void done_nothing(game *, point) { }
+	static void done_window_pane(game *, point);
+	static void done_vehicle(game *, point);
+	static void done_tree(game *, point);
+	static void done_log(game *, point);
+
+};
+
 bool will_flood_stop(map *m, bool (&fill)[SEEX * MAPSIZE][SEEY * MAPSIZE],
                      int x, int y);
 
@@ -372,8 +407,7 @@ void game::place_construction(const constructable * const con)
   for (int y = u.posy - 1; y <= u.posy + 1; y++) {
    if (x == u.posx && y == u.posy)
     y++;
-   construct test;
-   bool place_okay = (test.*(con->able))(this, point(x, y));
+   bool place_okay = (*(con->able))(this, point(x, y));
    for (int i = 0; i < con->stages.size() && !place_okay; i++) {
     if (m.ter(x, y) == con->stages[i].terrain)
      place_okay = true;
@@ -383,10 +417,8 @@ void game::place_construction(const constructable * const con)
 // Make sure we're not trying to continue a construction that we can't finish
     int starting_stage = 0, max_stage = 0;
     for (int i = 0; i < con->stages.size(); i++) {
-     if (m.ter(x, y) == con->stages[i].terrain)
-      starting_stage = i + 1;
-     if (player_can_build(u, total_inv, con, i, true))
-      max_stage = i;
+     if (m.ter(x, y) == con->stages[i].terrain) starting_stage = i + 1;
+     if (player_can_build(u, total_inv, con, i, true)) max_stage = i;
     }
 
     if (max_stage >= starting_stage) {
@@ -469,8 +501,7 @@ void game::complete_construction()
 
 // This comes after clearing the activity, in case the function interrupts
 // activities
- construct effects;
- (effects.*(built->done))(this, point(terx, tery));
+ (*(built->done))(this, point(terx, tery));
 }
 
 bool construct::able_empty(game *g, point p)
