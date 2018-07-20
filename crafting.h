@@ -27,6 +27,8 @@ struct component
 
 struct recipe
 {
+ static std::vector<recipe*> recipes;	// The list of valid recipes; const recipe* won't work due to defense subgame
+
  int id;
  itype_id result;
  craft_cat category;
@@ -44,6 +46,8 @@ struct recipe
         int ptime) :
   id (pid), result (pres), category (cat), sk_primary (p1), sk_secondary (p2),
   difficulty (pdiff), time (ptime) {}
+
+ static void init();
 };
 
 void consume_items(game *g, const std::vector<component>& components);

@@ -1,5 +1,3 @@
-#include <string>
-#include <sstream>
 #include "keypress.h"
 #include "game.h"
 #include "output.h"
@@ -7,10 +5,12 @@
 #include "inventory.h"
 #include "setvector.h"
 
+std::vector<recipe*> recipe::recipes;
+
 void draw_recipe_tabs(WINDOW *w, craft_cat tab);
 
 // This function just defines the recipes used throughout the game.
-void game::init_recipes()
+void recipe::init()
 {
  int id = -1;
  int tl, cl;
@@ -663,7 +663,7 @@ void game::craft()
  WINDOW *w_head = newwin( 3, 80, 0, 0);
  WINDOW *w_data = newwin(22, 80, 3, 0);
  craft_cat tab = CC_WEAPON;
- std::vector<recipe*> current;
+ std::vector<const recipe*> current;
  std::vector<bool> available;
  item tmp;
  int line = 0, xpos, ypos;
@@ -957,7 +957,7 @@ void draw_recipe_tabs(WINDOW *w, craft_cat tab)
  wrefresh(w);
 }
 
-void game::pick_recipes(std::vector<recipe*> &current,
+void game::pick_recipes(std::vector<const recipe*> &current,
                         std::vector<bool> &available, craft_cat tab)
 {
  inventory crafting_inv;
@@ -974,14 +974,12 @@ void game::pick_recipes(std::vector<recipe*> &current,
 
  current.clear();
  available.clear();
- for (int i = 0; i < recipes.size(); i++) {
+ for (const recipe* const tmp : recipe::recipes) {
 // Check if the category matches the tab, and we have the requisite skills
-  if (recipes[i]->category == tab &&
-      (recipes[i]->sk_primary == sk_null ||
-       u.sklevel[recipes[i]->sk_primary] >= recipes[i]->difficulty) &&
-      (recipes[i]->sk_secondary == sk_null ||
-       u.sklevel[recipes[i]->sk_secondary] > 0))
-  current.push_back(recipes[i]);
+  if (    tmp->category == tab
+      && (sk_null == tmp->sk_primary   || u.sklevel[tmp->sk_primary] >= tmp->difficulty)
+      && (sk_null == tmp->sk_secondary || 0 < u.sklevel[tmp->sk_secondary]))
+  current.push_back(tmp);
   available.push_back(false);
  }
  for (int i = 0; i < current.size() && i < 22; i++) {
@@ -1024,7 +1022,7 @@ void game::pick_recipes(std::vector<recipe*> &current,
  }
 }
 
-void game::make_craft(recipe *making)
+void game::make_craft(const recipe* const making)
 {
  u.assign_activity(ACT_CRAFT, making->time, making->id);
  u.moves = 0;
@@ -1032,7 +1030,7 @@ void game::make_craft(recipe *making)
 
 void game::complete_craft()
 {
- const recipe* const making = recipes[u.activity.index]; // Which recipe is it?
+ const recipe* const making = recipe::recipes[u.activity.index]; // Which recipe is it?
 
 // # of dice is 75% primary skill, 25% secondary (unless secondary is null)
  int skill_dice = u.sklevel[making->sk_primary] * 3;

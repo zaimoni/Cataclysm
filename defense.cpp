@@ -61,7 +61,7 @@ bool defense_game::init(game *g)
  init_itypes();
  init_mtypes();
  init_constructions(g);
- init_recipes(g);
+ init_recipes();
  current_wave = 0;
  hunger = false;
  thirst = false;
@@ -180,11 +180,9 @@ void defense_game::init_constructions(game *g)
  }
 }
 
-void defense_game::init_recipes(game *g)
+void defense_game::init_recipes()
 {
- for (int i = 0; i < g->recipes.size(); i++) {
-  g->recipes[i]->time /= 10; // Things take turns, not minutes
- }
+ for (const auto& tmp : recipe::recipes) tmp->time /= 10; // Things take turns, not minutes
 }
 
 void defense_game::init_map(game *g)

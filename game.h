@@ -167,7 +167,6 @@ class game
   point find_item(item *it);
   void remove_item(item *it);
 
-  std::vector<recipe*> recipes;	// The list of valid recipes
   std::vector<constructable*> constructions; // The list of constructions
 
   std::map<char, action_id> keymap;
@@ -208,7 +207,6 @@ class game
   void start_game();	// Starts a new game
   
 // Data Initialization
-  void init_recipes();      // Initializes crafting recipes
   void init_construction(); // Initializes construction "recipes"
   void init_vehicles();     // Initializes vehicle types
 
@@ -232,9 +230,9 @@ class game
   void close();	// Close a door			'c'
   void smash();	// Smash terrain
   void craft();                    // See crafting.cpp
-  void make_craft(recipe *making); // See crafting.cpp
+  void make_craft(const recipe *making); // See crafting.cpp
   void complete_craft();           // See crafting.cpp
-  void pick_recipes(std::vector<recipe*> &current,
+  void pick_recipes(std::vector<const recipe*> &current,
                     std::vector<bool> &available, craft_cat tab);// crafting.cpp
   void construction_menu();                   // See construction.cpp
   bool player_can_build(player &p, inventory inv, constructable* con,
