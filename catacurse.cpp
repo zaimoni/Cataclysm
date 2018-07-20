@@ -52,7 +52,6 @@ struct str_compare
 	int operator()(const char* lhs, const char* rhs) const { return strcmp(lhs, rhs); }
 };
 
-
 std::map<unsigned short, OS_Image> _cache;
 std::map<const char*, unsigned short, str_compare> _translate;
 

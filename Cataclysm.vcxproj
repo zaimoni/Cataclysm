@@ -176,6 +176,7 @@
     <ClInclude Include="item.h" />
     <ClInclude Include="itype.h" />
     <ClInclude Include="iuse.h" />
+    <ClInclude Include="json.h" />
     <ClInclude Include="keypress.h" />
     <ClInclude Include="line.h" />
     <ClInclude Include="map.h" />
@@ -240,6 +241,7 @@
     <ClCompile Include="item.cpp" />
     <ClCompile Include="itypedef.cpp" />
     <ClCompile Include="iuse.cpp" />
+    <ClCompile Include="json.cpp" />
     <ClCompile Include="keypress.cpp" />
     <ClCompile Include="line.cpp" />
     <ClCompile Include="main.cpp" />
