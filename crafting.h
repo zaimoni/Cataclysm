@@ -1,8 +1,6 @@
 #ifndef _CRAFTING_H_
 #define _CRAFTING_H_
 
-#include <string>
-#include <vector>
 #include "itype.h"
 #include "skill.h"
 #include "rng.h"

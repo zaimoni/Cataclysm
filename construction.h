@@ -1,5 +1,6 @@
-#include <vector>
-#include <string>
+#ifndef _CONSTRUCTION_H_ 
+#define _CONSTRUCTION_H_
+
 #include "crafting.h"
 
 struct construct;
@@ -68,3 +69,5 @@ struct construct // Construction functions.
  void done_log(game *, point);
 
 };
+
+#endif
