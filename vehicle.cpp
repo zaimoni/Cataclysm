@@ -1,13 +1,5 @@
 #include "vehicle.h"
-#include "map.h"
-#include "output.h"
 #include "game.h"
-
-#if (defined _WIN32 || defined WINDOWS)
-    #include "catacurse.h"
-#else
-    #include <curses.h>
-#endif
 
 #include <stdlib.h>
 #include <math.h>

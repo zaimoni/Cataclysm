@@ -1,18 +1,8 @@
 #include "monster.h"
-#include "map.h"
-#include "mondeath.h"
-#include "output.h"
 #include "game.h"
-#include "rng.h"
 #include <sstream>
 #include <fstream>
 #include <stdlib.h>
-
-#if (defined _WIN32 || defined WINDOWS)
-	#include "catacurse.h"
-#else
-	#include <curses.h>
-#endif
 
 #define SGN(a) (((a)<0) ? -1 : 1)
 #define SQR(a) ((a)*(a))

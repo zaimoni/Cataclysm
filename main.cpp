@@ -4,17 +4,10 @@
  * Who knows
  */
 
-#if (defined _WIN32 || defined WINDOWS)
-	#include "catacurse.h"
-#else
-	#include <curses.h>
-#endif
-
-#include <ctime>
 #include "game.h"
-#include "color.h"
 #include "options.h"
 #include "mapbuffer.h"
+#include <time.h>
 
 int main(int argc, char *argv[])
 {

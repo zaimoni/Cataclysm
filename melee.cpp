@@ -1,15 +1,7 @@
 #include "player.h"
-#include "bionics.h"
 #include "game.h"
-#include "keypress.h"
 #include <sstream>
 #include <stdlib.h>
-
-#if (defined _WIN32 || defined WINDOWS)
-	#include "catacurse.h"
-#else
-	#include <curses.h>
-#endif
 
 void hit_message(game *g, std::string subject, std::string verb,
                  std::string target, int dam, bool crit);

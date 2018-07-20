@@ -1,11 +1,7 @@
 #ifndef _COLOR_H_
 #define _COLOR_H
 
-#if (defined _WIN32 || defined WINDOWS)
-	#include "catacurse.h"
-#else
-	#include <curses.h>
-#endif
+#include "wrap_curses.h"
 
 #ifndef _COLOR_LIST_
 #define _COLOR_LIST_
@@ -91,7 +87,7 @@ c_yellow_red  = COLOR_PAIR(29) | A_BOLD
 int color_to_int(nc_color col);
 nc_color int_to_color(int key);
 
-void setattr(nc_color &col, col_attribute attr);
+// void setattr(nc_color &col, col_attribute attr);	// dead function but looks useful
 
 #endif
 

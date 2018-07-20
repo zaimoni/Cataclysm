@@ -1,20 +1,13 @@
 
-#if (defined _WIN32 || defined WINDOWS)
-	#include "catacurse.h"
-#else
-	#include <curses.h>
-#endif
-
-#include <string>
-#include <vector>
-#include <cstdarg>
-#include <cstring>
-#include <stdlib.h>
-#include "color.h"
 #include "output.h"
+#include "options.h"
 #include "rng.h"
 #include "keypress.h"
-#include "options.h"
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
+#include <string>
+#include <vector>
 
 #define LINE_XOXO 4194424
 #define LINE_OXOX 4194417

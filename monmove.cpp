@@ -1,18 +1,8 @@
 // Monster movement code; essentially, the AI
 
 #include "monster.h"
-#include "map.h"
 #include "game.h"
-#include "line.h"
-#include "rng.h"
-#include "pldata.h"
 #include <stdlib.h>
-
-#if (defined _WIN32 || defined WINDOWS)
-	#include "catacurse.h"
-#else
-	#include <curses.h>
-#endif
 
 #ifndef SGN
 #define SGN(a) (((a)<0) ? -1 : 1)

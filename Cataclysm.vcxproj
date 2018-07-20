@@ -214,6 +214,7 @@
     <ClInclude Include="veh_type.h" />
     <ClInclude Include="weather.h" />
     <ClInclude Include="weather_data.h" />
+    <ClInclude Include="wrap_curses.h" />
     <ClInclude Include="Zaimoni.STL\Pure.C\comptest.h" />
   </ItemGroup>
   <ItemGroup>

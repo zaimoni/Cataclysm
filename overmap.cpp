@@ -1,22 +1,12 @@
-#if (defined _WIN32 || defined WINDOWS)
-	#include "catacurse.h"
-#else
-	#include <curses.h>
-#endif
-
+#include "overmap.h"
+#include "game.h"
+#include "keypress.h"
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-#include <fstream>
 #include <vector>
+#include <fstream>
 #include <sstream>
-#include "overmap.h"
-#include "rng.h"
-#include "line.h"
-#include "settlement.h"
-#include "game.h"
-#include "npc.h"
-#include "keypress.h"
 
 #define STREETCHANCE 2
 #define NUM_FOREST 250

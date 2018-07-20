@@ -1,15 +1,6 @@
 #include "item.h"
-#include "player.h"
-#include "output.h"
-#include "skill.h"
 #include "game.h"
 #include <sstream>
-
-#if (defined _WIN32 || defined WINDOWS)
-	#include "catacurse.h"
-#else
-	#include <curses.h>
-#endif
 
 bool is_flammable(material m);
 
