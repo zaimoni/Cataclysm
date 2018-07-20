@@ -22,4 +22,10 @@
 #error curses library should provide ERR macro
 #endif
 
+#ifndef CURSES_HAS_TILESET
+// stock curses library does not have tileset extensions; no-op them
+inline bool load_tile(const char* src) {}
+#endif
+
+
 #endif

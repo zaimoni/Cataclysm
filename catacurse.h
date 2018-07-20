@@ -6,7 +6,7 @@
 // * worked by overriding A_INVIS as A_TILESET
 // * does not react to color, instead it replaces code points
 
-// mappling tiles to char,color pairs would allow a more transparent override scheme
+// mappling tiles to char,color pairs would allow a more transparent override scheme (but won't work for other reasons)
 
 typedef int	chtype;
 typedef unsigned short	attr_t;
@@ -109,5 +109,9 @@ int getmaxx(WINDOW *win);
 int getmaxy(WINDOW *win);
 int move(int y, int x);
 void timeout(int delay);//PORTABILITY, DUMMY FUNCTION
+
+#define CURSES_HAS_TILESET 1
+// tileset extensions
+bool load_tile(const char* src);
 
 #endif

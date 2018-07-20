@@ -1,8 +1,4 @@
-/* Main Loop for cataclysm
- * Linux only I guess
- * But maybe not
- * Who knows
- */
+/* Main Loop for cataclysm */
 
 #include "game.h"
 #include "options.h"
@@ -15,6 +11,8 @@ int main(int argc, char *argv[])
 
  // XXX want to load tiles before initscr; implies errors before initscr() go to C stderr or C stdout	\todo IMPLEMENT
  // want a stderr.txt as well (cf. Wesnoth 1.12- (went away in Wesnoth 1.14)
+
+ // C:DDA retained the data directory, but has a very different layout
 
 // ncurses stuff
  initscr(); // Initialize ncurses
