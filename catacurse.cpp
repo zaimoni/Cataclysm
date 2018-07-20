@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <string>
+#include <map>
 
 // requests W2K baseline Windows API ... unsure if this has link-time consequences w/posix_time.cpp which does not specify
 #define _WIN32_WINNT 0x0500
@@ -11,6 +12,63 @@
 #include <windows.h>
 
 // #define TILES 1
+
+// we allow move construction/assignment but not copy construction/assignment
+class OS_Image
+{
+private:
+	HANDLE _x;
+public:
+	OS_Image() : _x(0) {}
+	OS_Image(const char* src, int width = 0, int height = 0) : _x(LoadImageA(0, src, IMAGE_BITMAP, width, height, LR_LOADFROMFILE)) {}
+	OS_Image(const wchar_t* src, int width = 0, int height = 0) : _x(LoadImageW(0, src, IMAGE_BITMAP, width, height, LR_LOADFROMFILE)) {}
+	OS_Image(const OS_Image& src) = delete;
+	OS_Image(OS_Image&& src) : _x(src._x) { src._x = 0; }
+
+	~OS_Image() { clear(); }
+
+	OS_Image& operator=(const OS_Image& src) = delete;
+	OS_Image& operator=(OS_Image&& src)
+	{
+		_x = src._x;
+		src._x = 0;
+		return *this;
+	}
+
+	HANDLE handle() const { return _x; }
+
+	void clear()
+	{
+		if (_x) {
+			DeleteObject(_x);
+			_x = 0;
+		}
+	}
+};
+
+// function object
+struct str_compare
+{
+	int operator()(const char* lhs, const char* rhs) const { return strcmp(lhs, rhs); }
+};
+
+
+std::map<unsigned short, OS_Image> _cache;
+std::map<const char*, unsigned short, str_compare> _translate;
+
+bool load_tile(const char* src)
+{
+	static unsigned short _next = 0;
+
+	if (!src || !src[0]) return false;	// nothing to load
+	if ((unsigned short)(-1) == _next) return false;	// at implementation limit
+	if (_translate.count(src)) return true;	// already loaded
+	OS_Image image(src);
+	if (!image.handle()) return false;	// failed to load
+	_translate[src] = ++_next;
+	_cache[_next] = std::move(image);
+	return true;
+}
 
 // struct definitions
 //a pair of colors[] indexes, foreground and background
