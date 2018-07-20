@@ -24,7 +24,8 @@
 #include <utility>
 
 using namespace cataclysm;
-int discard<int>::x;
+
+template<> int discard<int>::x = 0;
 
 #define MAX_MONSTERS_MOVING 40 // Efficiency!
 

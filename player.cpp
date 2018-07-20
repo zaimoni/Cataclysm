@@ -9,6 +9,7 @@
 #include "artifact.h"
 #include "options.h"
 #include "stl_typetraits.h"
+#include <math.h>
 
 using namespace cataclysm;
 
