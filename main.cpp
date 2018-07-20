@@ -13,6 +13,9 @@ int main(int argc, char *argv[])
 {
  srand(time(NULL));
 
+ // XXX want to load tiles before initscr; implies errors before initscr() go to C stderr or C stdout	\todo IMPLEMENT
+ // want a stderr.txt as well (cf. Wesnoth 1.12- (went away in Wesnoth 1.14)
+
 // ncurses stuff
  initscr(); // Initialize ncurses
  noecho();  // Don't echo keypresses

@@ -56,6 +56,9 @@ struct str_compare
 std::map<unsigned short, OS_Image> _cache;
 std::map<const char*, unsigned short, str_compare> _translate;
 
+int fontwidth = 0;          //the width of the font, background is always this size
+int fontheight = 0;         //the height of the font, background is always this size
+
 bool load_tile(const char* src)
 {
 	static unsigned short _next = 0;
@@ -63,7 +66,9 @@ bool load_tile(const char* src)
 	if (!src || !src[0]) return false;	// nothing to load
 	if ((unsigned short)(-1) == _next) return false;	// at implementation limit
 	if (_translate.count(src)) return true;	// already loaded
-	OS_Image image(src);
+	if (0 >= fontwidth) fontwidth = 16;
+	if (0 >= fontheight) fontheight = 16;
+	OS_Image image(src, fontwidth, fontheight);
 	if (!image.handle()) return false;	// failed to load
 	_translate[src] = ++_next;
 	_cache[_next] = std::move(image);
@@ -168,8 +173,6 @@ int inputdelay;         //How long getch will wait for a character to be typed
 //int WindowCount;        //The number of curses windows currently in use
 HDC backbuffer;         //an off-screen DC to prevent flickering, lower cpu
 HBITMAP backbit;        //the bitmap that is used in conjunction wth the above
-int fontwidth;          //the width of the font, background is always this size
-int fontheight;         //the height of the font, background is always this size
 int halfwidth;          //half of the font width, used for centering lines
 int halfheight;          //half of the font height, used for centering lines
 HFONT font;             //Handle to the font created by CreateFont
@@ -426,19 +429,25 @@ std::ifstream fin;
 fin.open("data\\FONTDATA");
  if (!fin.is_open()){
      MessageBox(WindowHandle, "Failed to open FONTDATA, loading defaults.", NULL, 0);
-     fontheight=16;
-     fontwidth=8;
+	 if (0 >= fontwidth)  fontwidth = 8;
+	 if (0 >= fontheight) fontheight = 16;
  } else {
      getline(fin, typeface);
      typeface_c= new char [typeface.size()+1];
      strcpy (typeface_c, typeface.c_str());
-     fin >> fontwidth;
-     fin >> fontheight;
-     if ((fontwidth <= 4) || (fontheight <=4)){
+	 int tmp_width;
+	 int tmp_height;
+
+     fin >> tmp_width;
+     fin >> tmp_height;
+	 if (   (0 >= fontwidth && 4 >= tmp_width)
+		 || (0 >= fontheight && 4 >= tmp_height)) {
          MessageBox(WindowHandle, "Invalid font size specified!", NULL, 0);
-        fontheight=16;
-        fontwidth=8;
+		 tmp_width  = 8;
+		 tmp_height = 16;
      }
+	 if (0 >= fontwidth)  fontwidth = tmp_width;
+	 if (0 >= fontheight) fontheight = tmp_height;
  }
     halfwidth=fontwidth / 2;
     halfheight=fontheight / 2;
