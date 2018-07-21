@@ -3,7 +3,14 @@
 #include "game.h"
 #include "options.h"
 #include "mapbuffer.h"
+#include "file.h"
+#include "JSON.h"
 #include <time.h>
+#include <fstream>
+#include <iostream>
+#include <exception>
+
+using namespace cataclysm;
 
 int main(int argc, char *argv[])
 {
@@ -13,6 +20,27 @@ int main(int argc, char *argv[])
  // want a stderr.txt as well (cf. Wesnoth 1.12- [went away in Wesnoth 1.14])
 
  // C:DDA retained the data directory, but has a very different layout
+#ifdef OS_dir
+ {
+ OS_dir working;
+ std::ifstream fin;
+ if (working.exists("data/json/tiles.json"))	// base game tiles specification
+	{
+	fin.open("data/json/tiles.json");
+	if (fin.is_open())
+		{
+		try {
+			JSON incoming(fin);
+			fin.close();
+			// XXX put the JSON where it belongs
+		} catch (const std::exception& e) {
+			std::cerr << "tiles.json: " << e.what();
+		}
+		fin.close();
+		}
+	}
+ }
+#endif
 
 // ncurses stuff
  initscr(); // Initialize ncurses

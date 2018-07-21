@@ -37,6 +37,9 @@ public:
 
 	void close() { if (-1 != search_handle) { _findclose(search_handle); search_handle = -1; }; }
 };
+
+// signal that we have the class
+#define OS_dir OS_dir
 #else
 #endif
 
