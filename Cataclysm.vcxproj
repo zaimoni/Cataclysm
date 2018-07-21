@@ -170,6 +170,7 @@
     <ClInclude Include="event.h" />
     <ClInclude Include="facdata.h" />
     <ClInclude Include="faction.h" />
+    <ClInclude Include="file.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="gamemode.h" />
     <ClInclude Include="inventory.h" />
@@ -233,6 +234,7 @@
     <ClCompile Include="event.cpp" />
     <ClCompile Include="faction.cpp" />
     <ClCompile Include="field.cpp" />
+    <ClCompile Include="file.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="gamemode.cpp" />
     <ClCompile Include="help.cpp" />
