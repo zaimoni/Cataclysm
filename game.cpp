@@ -13,13 +13,7 @@
 #include <sstream>
 #include <math.h>
 #include "posix_time.h"
-#ifdef ZAIMONI_HAS_MICROSOFT_IO_H
-#include <io.h>
-#include <direct.h>
-#else
-#include <unistd.h>
-#include <dirent.h>
-#endif
+#include "file.h"
 #include <sys/stat.h>
 #include <utility>
 
@@ -175,74 +169,28 @@ http://github.com/zaimoni/Cataclysm .");
  std::string tmp;
 #ifdef ZAIMONI_HAS_MICROSOFT_IO_H
  // Zaimoni: total reimplementation for MSVC.
- _finddata_t file_found;
- intptr_t search_handle = _findfirst("save",&file_found);
- if (-1 == search_handle) {
-	 if (ENOENT != errno) {
-		 debugmsg("unplanned file system state, not practical to open './save' directory");
+ {
+	 OS_dir working;
+	 try {
+		 if (!working.force_dir("save")) {
+			 debugmsg("Could not make './save' directory");
+			 endwin();
+			 exit(EXIT_FAILURE);
+		 }
+		 if (working.exists("save/*.sav")) {
+			 working.get_filenames(savegames);
+			 for (auto& name : savegames) name = name.substr(0, name.find(".sav"));
+		 }
+		 if (working.exists("data/*.template")) {
+			 working.get_filenames(templates);
+			 for (auto& name : templates) name = name.substr(0, name.find(".template"));
+		 }
+	 }
+	 catch (int e) {
+		 debugmsg("unplanned file system state, not practical to open required directories.");
 		 endwin();
 		 exit(EXIT_FAILURE);
 	 }
-	 // know we are on the Microsoft version of mkdir
-	 if (0 > mkdir("save")) {
-		 debugmsg("Could not make './save' directory");
-		 endwin();
-		 exit(EXIT_FAILURE);
-	 }
-	 search_handle = _findfirst("save", &file_found);
-	 if (-1 == search_handle) {
-		 debugmsg("Could not find './save' directory after making it.");
-		 endwin();
-		 exit(EXIT_FAILURE);
-	 }
- }
- if (!(_A_SUBDIR | file_found.attrib)) {
-	 delwin(w_open);
-	 uquit = QUIT_MENU;
-	 return false;
- }
- _findclose(search_handle);	// while this *can* fail, we have no good recovery method if it does.
- search_handle = _findfirst("save/*.sav", &file_found);
- if (-1 == search_handle) {
-	 if (ENOENT != errno) {
-		 debugmsg("unplanned file system state, not practical to locate save files");
-		 endwin();
-		 exit(EXIT_FAILURE);
-	 }
- } else {
-   std::string tmp(file_found.name);
-   savegames.push_back(tmp.substr(0, tmp.find(".sav")));
-   while(0 <= _findnext(search_handle, &file_found)) {
-	 tmp = file_found.name;
-	 savegames.push_back(tmp.substr(0, tmp.find(".sav")));
-   }
-   if (ENOENT != errno) {
-	   debugmsg("unplanned file system state, not practical to locate save files");
-	   endwin();
-	   exit(EXIT_FAILURE);
-   }
-   _findclose(search_handle);
- }
- search_handle = _findfirst("data/*.template", &file_found);
- if (-1 == search_handle) {
-	 if (ENOENT != errno) {
-		 debugmsg("unplanned file system state, not practical to locate template files");
-		 endwin();
-		 exit(EXIT_FAILURE);
-	 }
- } else {
-   std::string tmp(file_found.name);
-   savegames.push_back(tmp.substr(0, tmp.find(".template")));
-   while(0 <= _findnext(search_handle, &file_found)) {
-	 tmp = file_found.name;
-	 savegames.push_back(tmp.substr(0, tmp.find(".template")));
-   }
-   if (ENOENT != errno) {
-	   debugmsg("unplanned file system state, not practical to locate template files");
-	   endwin();
-	   exit(EXIT_FAILURE);
-   }
-   _findclose(search_handle);
  }
 #else
  dirent *dp;
