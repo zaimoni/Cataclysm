@@ -6,6 +6,8 @@
 
 namespace cataclysm {
 
+std::map<std::string, JSON, str_compare> JSON::cache;
+
 bool JSON::syntax_ok() const
 {
 	switch(_mode)

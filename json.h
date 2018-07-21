@@ -25,6 +25,8 @@ struct str_compare
 class JSON
 {
 public:
+	static std::map<std::string, JSON, str_compare> cache;
+
 	enum mode : unsigned char {
 		none = 0,
 		object,
