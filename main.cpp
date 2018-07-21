@@ -12,6 +12,19 @@
 
 using namespace cataclysm;
 
+static bool scalar_on_hard_drive(const JSON& x)
+{
+	if (!x.is_scalar()) return false;
+	OS_dir working;
+	return working.exists(x.scalar().c_str());
+}
+
+static bool preload_image(const JSON& x)
+{
+	if (!x.is_scalar() || x.empty()) return false;
+	return load_tile(x.scalar().c_str());
+}
+
 int main(int argc, char *argv[])
 {
  srand(time(NULL));
@@ -32,25 +45,23 @@ int main(int argc, char *argv[])
 		try {
 			JSON incoming(fin);
 			fin.close();
-			// XXX put the JSON where it belongs
-			if (JSON::object == incoming.mode() && !incoming.empty()) JSON::cache["tiles"] = std::move(incoming);
+			// specification for tiles: all values are to be valid relative paths to images on the hard drive
+			if (   JSON::object == incoming.mode()
+				&& !incoming.empty()
+				&& incoming.destructive_grep(scalar_on_hard_drive)) {
+				JSON::cache["tiles"] = std::move(incoming);
+			}
 		} catch (const std::exception& e) {
+			fin.close();
 			std::cerr << "tiles.json: " << e.what();
 		}
-		fin.close();
 		}
 	}
  }
 #endif
- // XXX \todo check that tiles exist on hard drive
  // when we support mods, we load their tiles configuration from tiles.json as well (and check their filepaths are ok
- // XXX preload tiles into the currses extensions
- if (JSON::cache.count("tiles"))
-	{
-	JSON tmp = JSON::cache["tiles"];
-	// \todo filter out all non-scalar values
-	// \todo filter out all values that fail to preload
-	}
+ // value null could be used to unset a pre-existing value
+ if (JSON::cache.count("tiles") && !JSON::cache["tiles"].destructive_grep(preload_image)) JSON::cache.erase("tiles");
 
 // ncurses stuff
  initscr(); // Initialize ncurses

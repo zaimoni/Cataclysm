@@ -62,7 +62,43 @@ bool JSON::empty() const
 	}
 }
 
+bool JSON::destructive_grep(bool (ok)(const JSON&))
+{
+	switch (_mode)
+	{
+	case string:
+	case literal: return ok(*const_cast<const JSON*>(this));
+	case object:
+		if (empty()) return false;
+		{
+			std::vector<std::string> doomed;
+			for (const auto& tmp : *_object) {
+				if (!ok(tmp.second)) doomed.push_back(tmp.first);
+			}
+			for (const auto& tmp : doomed) _object->erase(tmp);
+		}
+		if (!_object->empty()) return true;
+		delete _object;
+		_object = 0;
+		return false;
+	case array:
+		if (empty()) return false;
+		{
+			size_t i = _array->size();
+			do {
+				--i;
+				if (!ok((*_array)[i])) _array->erase(_array->begin() + i);
+			} while (0 < i);
+		}
+		if (!_array->empty()) return true;
+		delete _array;
+		_array = 0;
+		return false;
+	}
+	return !empty();
+}
 
+// constructor and support thereof
 JSON::JSON(const JSON& src)
 : _mode(src._mode),_scalar(0)
 {

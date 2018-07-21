@@ -57,6 +57,8 @@ public:
 	bool empty() const;
 
 	std::string scalar() const { return _mode <= string ? *_scalar : std::string(); }
+	bool is_scalar() const { return string <= _mode; }
+	bool destructive_grep(bool (ok)(const JSON&));	// 2018-07-21: not only do not need to allow for function objects, they converted compile-time errors to run-time errors.
 
 	bool syntax_ok() const;
 protected:
