@@ -738,9 +738,8 @@ bool map::bash(int x, int y, int str, std::string &sound, int *res)
   if (str >= result && str >= rng(0, 120)) {
    sound += "crunch!";
    ter(x, y) = t_wall_wood_chipped;
-   int num_boards = rng(0, 2);
-   for (int i = 0; i < num_boards; i++)
-    add_item(x, y, (*itypes)[itm_2x4], 0);
+   const int num_boards = rng(0, 2);
+   for (int i = 0; i < num_boards; i++) add_item(x, y, item::types[itm_2x4], 0);
    return true;
   } else {
    sound += "whump!";
@@ -754,9 +753,8 @@ bool map::bash(int x, int y, int str, std::string &sound, int *res)
   if (str >= result && str >= rng(0, 100)) {
    sound += "crunch!";
    ter(x, y) = t_wall_wood_broken;
-   int num_boards = rng(3, 8);
-   for (int i = 0; i < num_boards; i++)
-    add_item(x, y, (*itypes)[itm_2x4], 0);
+   const int num_boards = rng(3, 8);
+   for (int i = 0; i < num_boards; i++) add_item(x, y, item::types[itm_2x4], 0);
    return true;
   } else {
    sound += "whump!";
@@ -770,9 +768,8 @@ bool map::bash(int x, int y, int str, std::string &sound, int *res)
   if (str >= result && str >= rng(0, 80)) {
    sound += "crash!";
    ter(x, y) = t_dirt;
-   int num_boards = rng(4, 10);
-   for (int i = 0; i < num_boards; i++)
-    add_item(x, y, (*itypes)[itm_2x4], 0);
+   const int num_boards = rng(4, 10);
+   for (int i = 0; i < num_boards; i++) add_item(x, y, item::types[itm_2x4], 0);
    return true;
   } else {
    sound += "whump!";
@@ -801,9 +798,8 @@ bool map::bash(int x, int y, int str, std::string &sound, int *res)
   if (str >= result) {
    sound += "crash!";
    ter(x, y) = t_door_frame;
-   int num_boards = rng(2, 6);
-   for (int i = 0; i < num_boards; i++)
-    add_item(x, y, (*itypes)[itm_2x4], 0);
+   const int num_boards = rng(2, 6);
+   for (int i = 0; i < num_boards; i++) add_item(x, y, item::types[itm_2x4], 0);
    return true;
   } else {
    sound += "wham!";
@@ -831,9 +827,8 @@ bool map::bash(int x, int y, int str, std::string &sound, int *res)
   if (str >= result) {
    sound += "crash!";
    ter(x, y) = t_door_frame;
-   int num_boards = rng(0, 2);
-   for (int i = 0; i < num_boards; i++)
-    add_item(x, y, (*itypes)[itm_2x4], 0);
+   const int num_boards = rng(0, 2);
+   for (int i = 0; i < num_boards; i++) add_item(x, y, item::types[itm_2x4], 0);
    return true;
   } else {
    sound += "wham!";
@@ -847,9 +842,8 @@ bool map::bash(int x, int y, int str, std::string &sound, int *res)
   if (str >= result) {
    sound += "crash!";
    ter(x, y) = t_window_frame;
-   int num_boards = rng(0, 2) * rng(0, 1);
-   for (int i = 0; i < num_boards; i++)
-    add_item(x, y, (*itypes)[itm_2x4], 0);
+   const int num_boards = rng(0, 2) * rng(0, 1);
+   for (int i = 0; i < num_boards; i++) add_item(x, y, item::types[itm_2x4], 0);
    return true;
   } else {
    sound += "wham!";
@@ -890,9 +884,8 @@ bool map::bash(int x, int y, int str, std::string &sound, int *res)
   if (str >= result) {
    sound += "smash!";
    ter(x, y) = t_floor;
-   int num_boards = rng(4, 12);
-   for (int i = 0; i < num_boards; i++)
-    add_item(x, y, (*itypes)[itm_2x4], 0);
+   const int num_boards = rng(4, 12);
+   for (int i = 0; i < num_boards; i++) add_item(x, y, item::types[itm_2x4], 0);
    return true;
   } else {
    sound += "whump.";
@@ -937,9 +930,8 @@ bool map::bash(int x, int y, int str, std::string &sound, int *res)
   if (str >= result) {
    sound += "crunch!";
    ter(x, y) = t_underbrush;
-   int num_sticks = rng(0, 3);
-   for (int i = 0; i < num_sticks; i++)
-    add_item(x, y, (*itypes)[itm_stick], 0);
+   const int num_sticks = rng(0, 3);
+   for (int i = 0; i < num_sticks; i++) add_item(x, y, item::types[itm_stick], 0);
    return true;
   } else {
    sound += "whack!";
@@ -1002,9 +994,8 @@ bool map::bash(int x, int y, int str, std::string &sound, int *res)
   if (str >= result) {
    sound += "smash";
    ter(x, y) = t_dirt;
-   int num_boards = rng(1, 5);
-   for (int i = 0; i < num_boards; i++)
-    add_item(x, y, (*itypes)[itm_2x4], 0);
+   const int num_boards = rng(1, 5);
+   for (int i = 0; i < num_boards; i++) add_item(x, y, item::types[itm_2x4], 0);
    return true;
   } else {
    sound += "wham!";
@@ -1390,7 +1381,7 @@ std::vector<item>& map::i_at(int x, int y)
 
 item map::water_from(int x, int y)
 {
- item ret((*itypes)[itm_water], 0);
+ item ret(item::types[itm_water], 0);
  if (ter(x, y) == t_water_sh && one_in(3))
   ret.poison = rng(1, 4);
  else if (ter(x, y) == t_water_dp && one_in(4))

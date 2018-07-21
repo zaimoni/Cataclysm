@@ -105,7 +105,7 @@ class map
  void add_item(int x, int y, item new_item);
  void process_active_items(game *g);
  void process_active_items_in_submap(game *g, int nonant);
- void process_vehicles(game *g);
+// void process_vehicles(game *g);	// undefined function
 
  void use_amount(point origin, int range, itype_id type, int quantity,
                  bool use_container = false);
@@ -144,8 +144,6 @@ class map
  vehicle *add_vehicle(game *g, vhtype_id type, int x, int y, int dir);
  computer* add_computer(int x, int y, std::string name, int security);
  
- std::vector <itype*> *itypes;
-
  static void init();
 protected:
  void saven(overmap *om, unsigned int turn, int x, int y, int gridx, int gridy);
