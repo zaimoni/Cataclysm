@@ -175,6 +175,8 @@ static unsigned char scan_for_data_start(std::istream& src, char& result, unsign
 	return JSON::none;
 }
 
+static const std::string JSON_read_failed("JSON read failed before end of file, line: ");
+
 JSON::JSON(std::istream& src)
 : _mode(none), _scalar(0)
 {
@@ -192,8 +194,8 @@ JSON::JSON(std::istream& src)
 		return;
 	default:
 		if (!src.eof() || !strchr(" \r\n\t\v\f", last_read)) {
-			std::stringstream msg("JSON read failed before end of file, line: ");
-			msg << line;
+			std::stringstream msg;
+			msg << JSON_read_failed << line;
 			throw std::runtime_error(msg.str());
 		}
 		return;
@@ -222,8 +224,8 @@ JSON::JSON(std::istream& src, unsigned long& line, char& last_read, bool must_be
 		return;
 	default:
 		if (!src.eof() || !strchr(" \r\n\t\v\f", last_read)) {
-			std::stringstream msg("JSON read failed before end of file, line: ");
-			msg << line;
+			std::stringstream msg;
+			msg << JSON_read_failed << line;
 			throw std::runtime_error(msg.str());
 		}
 		return;
@@ -265,12 +267,14 @@ static bool next_is(std::istream& src, char test)
 	return false;
 }
 
+static const std::string  JSON_object_read_failed("JSON read of object failed before end of file, line: ");
+
 void JSON::finish_reading_object(std::istream& src, unsigned long& line)
 {
 	if (!consume_whitespace(src, line))
 		{
-		std::stringstream msg("JSON read of object failed before end of file, line: ");
-		msg << line;
+		std::stringstream msg;
+		msg << JSON_object_read_failed << line;
 		throw std::runtime_error(msg.str());
 		}
 	if (next_is(src,'}')) {
@@ -284,8 +288,8 @@ void JSON::finish_reading_object(std::istream& src, unsigned long& line)
 	do {
 		JSON _key(src, line, _last, true);
 		if (none == _key.mode()) {	// no valid data
-			std::stringstream msg("JSON read of object failed before end of file, line: ");
-			msg << line;
+			std::stringstream msg;
+			msg << JSON_object_read_failed << line;
 			throw std::runtime_error(msg.str());
 		}
 		if (!consume_whitespace(src, line)) {	// oops, at end prematurely
@@ -305,8 +309,8 @@ void JSON::finish_reading_object(std::istream& src, unsigned long& line)
 		}
 		JSON _value(src, line, _last);
 		if (none == _value.mode()) {	// no valid data
-			std::stringstream msg("JSON read of object failed before end of file, line: ");
-			msg << line;
+			std::stringstream msg;
+			msg << JSON_object_read_failed << line;
 			throw std::runtime_error(msg.str());
 		}
 		dest[std::move(_key.scalar())] = std::move(_value);
@@ -328,12 +332,14 @@ void JSON::finish_reading_object(std::istream& src, unsigned long& line)
 	} while (true);
 }
 
+static const std::string JSON_array_read_failed("JSON read of array failed before end of file, line: ");
+
 void JSON::finish_reading_array(std::istream& src, unsigned long& line)
 {
 	if (!consume_whitespace(src, line))
 	{
-		std::stringstream msg("JSON read of array failed before end of file, line: ");
-		msg << line;
+		std::stringstream msg;
+		msg << JSON_array_read_failed << line;
 		throw std::runtime_error(msg.str());
 	}
 	if (next_is(src, ']')) {
@@ -348,8 +354,8 @@ void JSON::finish_reading_array(std::istream& src, unsigned long& line)
 		{
 		JSON _next(src, line, _last);
 		if (none == _next.mode()) {	// no valid data
-			std::stringstream msg(src.eof() ? "JSON read of array truncated, line: " : "JSON read of array failed before end of file, line: ");
-			msg << line;
+			std::stringstream msg;
+			msg << JSON_array_read_failed << line;
 			throw std::runtime_error(msg.str());
 		}
 		dest.push_back(std::move(_next));
