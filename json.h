@@ -54,6 +54,7 @@ public:
 
 	unsigned char mode() const { return _mode; };
 	void reset();
+	bool empty() const;
 
 	std::string scalar() const { return _mode <= string ? *_scalar : std::string(); }
 

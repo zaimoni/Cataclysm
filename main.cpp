@@ -33,6 +33,7 @@ int main(int argc, char *argv[])
 			JSON incoming(fin);
 			fin.close();
 			// XXX put the JSON where it belongs
+			if (JSON::object == incoming.mode() && !incoming.empty()) JSON::cache["tiles"] = std::move(incoming);
 		} catch (const std::exception& e) {
 			std::cerr << "tiles.json: " << e.what();
 		}
@@ -41,6 +42,15 @@ int main(int argc, char *argv[])
 	}
  }
 #endif
+ // XXX \todo check that tiles exist on hard drive
+ // when we support mods, we load their tiles configuration from tiles.json as well (and check their filepaths are ok
+ // XXX preload tiles into the currses extensions
+ if (JSON::cache.count("tiles"))
+	{
+	JSON tmp = JSON::cache["tiles"];
+	// \todo filter out all non-scalar values
+	// \todo filter out all values that fail to preload
+	}
 
 // ncurses stuff
  initscr(); // Initialize ncurses

@@ -50,6 +50,18 @@ void JSON::reset()
 	_scalar = 0;
 }
 
+bool JSON::empty() const
+{
+	switch (_mode)
+	{
+	case object: return !_object;
+	case array: return !_array;
+	case string:
+	case literal: return !_scalar;
+	default: return true;	// invalid, so no useful data anyway
+	}
+}
+
 
 JSON::JSON(const JSON& src)
 : _mode(src._mode),_scalar(0)
