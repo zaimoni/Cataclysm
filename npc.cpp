@@ -898,7 +898,6 @@ std::vector<item> starting_inv(npc *me, npc_class type, game *g)
  int total_space = me->volume_capacity() - 2;
  std::vector<item> ret;
  ret.push_back(item(item::types[itm_lighter], 0));
- itype_id tmp;
 
 // First, if we're wielding a gun, get some ammo for it
  if (me->weapon.is_gun()) {
@@ -925,7 +924,6 @@ std::vector<item> starting_inv(npc *me, npc_class type, game *g)
    }
   }
  }
- int index;
  items_location from;
  if (type == NC_HACKER) {
   from = mi_npc_hacker;

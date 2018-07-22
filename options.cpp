@@ -112,10 +112,11 @@ std::string option_name(option_key key)
 
 bool option_is_bool(option_key id)
 {
+#if 0
  switch (id) {
-  default:
-   return true;
+  default: return true;
  }
+#endif
  return true;
 }
 
@@ -123,8 +124,7 @@ void create_default_options()
 {
  std::ofstream fout;
  fout.open("data/options.txt");
- if (!fout.is_open())
-  return;
+ if (!fout.is_open()) return;
 
  fout << options_header() << "\n\
 # If true, use C not F\n\
