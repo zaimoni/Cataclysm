@@ -195,7 +195,7 @@ JSON::JSON(std::istream& src)
 	default:
 		if (!src.eof() || !strchr(" \r\n\t\v\f", last_read)) {
 			std::stringstream msg;
-			msg << JSON_read_failed << line;
+			msg << JSON_read_failed << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
 		return;
@@ -225,7 +225,7 @@ JSON::JSON(std::istream& src, unsigned long& line, char& last_read, bool must_be
 	default:
 		if (!src.eof() || !strchr(" \r\n\t\v\f", last_read)) {
 			std::stringstream msg;
-			msg << JSON_read_failed << line;
+			msg << JSON_read_failed << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
 		return;
@@ -268,13 +268,14 @@ static bool next_is(std::istream& src, char test)
 }
 
 static const std::string  JSON_object_read_failed("JSON read of object failed before end of file, line: ");
+static const std::string  JSON_object_read_truncated("JSON read of object truncated, line: ");
 
 void JSON::finish_reading_object(std::istream& src, unsigned long& line)
 {
 	if (!consume_whitespace(src, line))
 		{
 		std::stringstream msg;
-		msg << JSON_object_read_failed << line;
+		msg << JSON_object_read_failed << line << '\n';
 		throw std::runtime_error(msg.str());
 		}
 	if (next_is(src,'}')) {
@@ -289,28 +290,28 @@ void JSON::finish_reading_object(std::istream& src, unsigned long& line)
 		JSON _key(src, line, _last, true);
 		if (none == _key.mode()) {	// no valid data
 			std::stringstream msg;
-			msg << JSON_object_read_failed << line;
+			msg << JSON_object_read_failed << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
 		if (!consume_whitespace(src, line)) {	// oops, at end prematurely
-			std::stringstream msg("JSON read of object truncated, line: ");
-			msg << line;
+			std::stringstream msg;
+			msg << JSON_object_read_truncated << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
 		if (!next_is(src, ':')) {
-			std::stringstream msg("JSON read of object failed, expected :, line: ");
-			msg << line;
+			std::stringstream msg;
+			msg << "JSON read of object failed, expected :, line: " << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
 		if (!consume_whitespace(src, line)) {	// oops, at end prematurely
-			std::stringstream msg("JSON read of object truncated, line: ");
-			msg << line;
+			std::stringstream msg;
+			msg << JSON_object_read_truncated << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
 		JSON _value(src, line, _last);
 		if (none == _value.mode()) {	// no valid data
 			std::stringstream msg;
-			msg << JSON_object_read_failed << line;
+			msg << JSON_object_read_failed << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
 		dest[std::move(_key.scalar())] = std::move(_value);
@@ -325,8 +326,8 @@ void JSON::finish_reading_object(std::istream& src, unsigned long& line)
 			return;
 		}
 		if (!next_is(src, ',')) {
-			std::stringstream msg("JSON read of object failed, expected , or }, line: ");
-			msg << line;
+			std::stringstream msg;
+			msg << "JSON read of object failed, expected , or }, line: " << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
 	} while (true);
@@ -339,7 +340,7 @@ void JSON::finish_reading_array(std::istream& src, unsigned long& line)
 	if (!consume_whitespace(src, line))
 	{
 		std::stringstream msg;
-		msg << JSON_array_read_failed << line;
+		msg << JSON_array_read_failed << line << '\n';
 		throw std::runtime_error(msg.str());
 	}
 	if (next_is(src, ']')) {
@@ -355,7 +356,7 @@ void JSON::finish_reading_array(std::istream& src, unsigned long& line)
 		JSON _next(src, line, _last);
 		if (none == _next.mode()) {	// no valid data
 			std::stringstream msg;
-			msg << JSON_array_read_failed << line;
+			msg << JSON_array_read_failed << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
 		dest.push_back(std::move(_next));
@@ -371,8 +372,8 @@ void JSON::finish_reading_array(std::istream& src, unsigned long& line)
 			return;
 		}
 		if (!next_is(src, ',')) {
-			std::stringstream msg("JSON read of array failed, expected , or ], line: ");
-			msg << line;
+			std::stringstream msg;
+			msg << "JSON read of array failed, expected , or ], line: " << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
 	} while (true);
