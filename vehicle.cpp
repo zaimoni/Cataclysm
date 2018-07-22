@@ -161,15 +161,15 @@ const vpart_info& vehicle::part_info(int index) const
         id = parts[index].id;
     if (id < vp_null || id >= num_vparts)
         id = vp_null;
-    return vpart_list[id];
+    return vpart_info::list[id];
 }
 
 bool vehicle::can_mount (int dx, int dy, vpart_id id)
 {
     if (id <= 0 || id >= num_vparts)
         return false;
-    bool n3ar = parts.size() < 1 || (vpart_list[id].flags & mfb(vpf_internal))
-                                 || (vpart_list[id].flags & mfb(vpf_over)); // first and internal parts needs no mount point
+	const auto& p_info = vpart_info::list[id];
+    bool n3ar = parts.empty() || (p_info.flags & (mfb(vpf_internal) | mfb(vpf_over))); // first and internal parts needs no mount point
     if (!n3ar)
         for (int i = 0; i < 4; i++)
         {
@@ -184,50 +184,30 @@ bool vehicle::can_mount (int dx, int dy, vpart_id id)
                 break;
             }
         }
-    if (!n3ar)
-    {
-//         debugmsg ("can_mount%d(%d,%d): no point to mount", id, dx, dy);
-        return false; // no point to mount
-    }
+    if (!n3ar) return false; // no point to mount
 
 // TODO: seatbelts must require an obstacle part n3arby
 
     std::vector<int> parts_here = parts_at_relative (dx, dy);
-    if (parts_here.size() < 1)
-    {
-        int res = vpart_list[id].flags & mfb(vpf_external);
-//         if (!res)
-//             debugmsg ("can_mount: not first or external");
-        return vpart_list[id].flags & mfb(vpf_external); // can be mounted if first and external
-    }
+    if (parts_here.empty()) return p_info.flags & mfb(vpf_external); // can be mounted if first and external
 
-    int flags1 = part_info(parts_here[0]).flags;
-    if ((vpart_list[id].flags & mfb(vpf_armor)) && flags1 & mfb(vpf_no_reinforce))
-    {
-//         debugmsg ("can_mount: armor plates on non-reinforcable part");
-        return false;   // trying to put armor plates on non-reinforcable part
-    }
+    const int flags1 = part_info(parts_here[0]).flags;
+    if (    (p_info.flags & mfb(vpf_armor))
+		 && (flags1 & mfb(vpf_no_reinforce)))
+		return false;   // trying to put armor plates on non-reinforcable part
 
     for (int vf = vpf_func_begin; vf <= vpf_func_end; vf++)
-        if ((vpart_list[id].flags & mfb(vf)) && part_with_feature(parts_here[0], vf, false) >= 0)
-        {
-//             debugmsg ("can_mount%d(%d,%d): already has inner part with same unique feature",id, dx, dy);
+        if (    (p_info.flags & mfb(vf))
+			 && 0 <= part_with_feature(parts_here[0], vf, false)) {
             return false;   // this part already has inner part with same unique feature
         }
 
-    bool allow_inner = flags1 & mfb(vpf_mount_inner);
-    bool allow_over  = flags1 & mfb(vpf_mount_over);
-    bool this_inner  = vpart_list[id].flags & mfb(vpf_internal);
-    bool this_over   = (vpart_list[id].flags & mfb(vpf_over)) || (vpart_list[id].flags & mfb(vpf_armor));
-    if (allow_inner && (this_inner || this_over))
-        return true; // can mount as internal part or over it
-    if (allow_over && this_over)
-        return true; // can mount as part over
-//     debugmsg ("can_mount%d(%d,%d): allow_i=%c allow_o=%c this_i=%c this_o=%c", id, dx, dy,
-//               allow_inner? 'y' : 'n',
-//               allow_over? 'y' : 'n',
-//               this_inner? 'y' : 'n',
-//               this_over? 'y' : 'n');
+    const bool allow_inner = flags1 & mfb(vpf_mount_inner);
+	const bool allow_over  = flags1 & mfb(vpf_mount_over);
+	const bool this_inner  = p_info.flags & mfb(vpf_internal);
+	const bool this_over   = p_info.flags & (mfb(vpf_over) | mfb(vpf_armor));
+    if (allow_inner && (this_inner || this_over)) return true; // can mount as internal part or over it
+    if (allow_over && this_over) return true; // can mount as part over
     return false;
 }
 
@@ -244,18 +224,15 @@ bool vehicle::can_unmount (int p)
                 is_ext = true;
                 break;
             }
-        if (external_parts.size() > 1 && is_ext)
-            return false; // unmounting 0, 0 part anly allowed as last part
+        if (external_parts.size() > 1 && is_ext) return false; // unmounting 0, 0 part anly allowed as last part
     }
 
-    if (!part_flag (p, vpf_mount_point))
-        return true;
+    if (!part_flag (p, vpf_mount_point)) return true;
     for (int i = 0; i < 4; i++)
     {
         int ndx = i < 2? (i == 0? -1 : 1) : 0;
         int ndy = i < 2? 0 : (i == 2? - 1: 1);
-        if (!(dx + ndx) && !(dy + ndy))
-            continue; // 0, 0 point is main mount
+        if (!(dx + ndx) && !(dy + ndy)) continue; // 0, 0 point is main mount
         if (parts_at_relative (dx + ndx, dy + ndy).size() > 0)
         {
             int cnt = 0;
@@ -267,8 +244,7 @@ bool vehicle::can_unmount (int p)
                 if (pc.size() > 0 && part_with_feature (pc[0], vpf_mount_point) >= 0)
                     cnt++;
             }
-            if (cnt < 2)
-                return false;
+            if (cnt < 2) return false;
         }
     }
     return true;
@@ -281,7 +257,7 @@ int vehicle::install_part (int dx, int dy, vpart_id id, int hp, bool force)
     // if this is first part, add this part to list of external parts
     if (parts_at_relative (dx, dy).size () < 1)
         external_parts.push_back (parts.size());
-    parts.push_back(vehicle_part(id,dx,dy, hp < 0 ? vpart_list[id].durability : hp));
+    parts.push_back(vehicle_part(id,dx,dy, hp < 0 ? vpart_info::list[id].durability : hp));
     find_exhaust ();
     precalc_mounts (0, face.dir());
     insides_dirty = true;

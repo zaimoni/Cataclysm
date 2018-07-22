@@ -192,17 +192,18 @@ void veh_interact::do_install(int reason)
     while (true) {
         sel_part = can_mount[pos];
         display_list (pos);
-        itype_id itm = vpart_list[sel_part].item;
-        bool has_comps = crafting_inv.has_amount(itm, 1);
-        bool has_skill = g->u.sklevel[sk_mechanics] >= vpart_list[sel_part].difficulty;
+		const auto& p_info = vpart_info::list[sel_part];
+		const itype_id itm = p_info.item;
+		const bool has_comps = crafting_inv.has_amount(itm, 1);
+		const bool has_skill = g->u.sklevel[sk_mechanics] >= p_info.difficulty;
         werase (w_msg);
-        int slen = item::types[itm]->name.length();
+		const int slen = item::types[itm]->name.length();
         mvwprintz(w_msg, 0, 1, c_ltgray, "Needs %s and level %d skill in mechanics.", 
-                  item::types[itm]->name.c_str(), vpart_list[sel_part].difficulty);
+                  item::types[itm]->name.c_str(), p_info.difficulty);
         mvwprintz(w_msg, 0, 7, has_comps? c_ltgreen : c_red, item::types[itm]->name.c_str());
-        mvwprintz(w_msg, 0, 18+slen, has_skill? c_ltgreen : c_red, "%d", vpart_list[sel_part].difficulty);
-        bool eng = vpart_list[sel_part].flags & mfb (vpf_engine);
-        bool has_skill2 = !eng || (g->u.sklevel[sk_mechanics] >= dif_eng);
+        mvwprintz(w_msg, 0, 18+slen, has_skill? c_ltgreen : c_red, "%d", p_info.difficulty);
+		const bool eng = p_info.flags & mfb (vpf_engine);
+        const bool has_skill2 = !eng || (g->u.sklevel[sk_mechanics] >= dif_eng);
         if (engines && eng) // already has engine
         {
             mvwprintz(w_msg, 1, 1, c_ltgray, 
@@ -593,14 +594,14 @@ void veh_interact::display_list (int pos)
     int page = pos / page_size;
     for (int i = page * page_size; i < (page + 1) * page_size && i < can_mount.size(); i++)
     {
-        int y = i - page * page_size;
-        itype_id itm = vpart_list[can_mount[i]].item;
-        bool has_comps = crafting_inv.has_amount(itm, 1);
-        bool has_skill = g->u.sklevel[sk_mechanics] >= vpart_list[can_mount[i]].difficulty;
-        nc_color col = has_comps && has_skill? c_white : c_dkgray;
-        mvwprintz(w_list, y, 3, pos == i? hilite (col) : col, vpart_list[can_mount[i]].name);
-        mvwputch (w_list, y, 1, 
-                  vpart_list[can_mount[i]].color, special_symbol (vpart_list[can_mount[i]].sym));
+        const int y = i - page * page_size;
+		const auto& p_info = vpart_info::list[can_mount[i]];
+        const itype_id itm = p_info.item;
+        const bool has_comps = crafting_inv.has_amount(itm, 1);
+        const bool has_skill = g->u.sklevel[sk_mechanics] >= p_info.difficulty;
+        const nc_color col = (has_comps && has_skill) ? c_white : c_dkgray;
+        mvwprintz(w_list, y, 3, pos == i ? hilite (col) : col, p_info.name);
+        mvwputch (w_list, y, 1,  p_info.color, special_symbol (p_info.sym));
     }
     wrefresh (w_list);
 }
@@ -634,14 +635,14 @@ void complete_vehicle (game *g)
     case 'i':
         if (veh->install_part (dx, dy, (vpart_id) part) < 0)
             debugmsg ("complete_vehicle install part fails dx=%d dy=%d id=%d", dx, dy, part);
-        comps.push_back(component(vpart_list[part].item, 1));
+        comps.push_back(component(vpart_info::list[part].item, 1));
         consume_items(g, comps);
         tools.push_back(component(itm_welder, welder_charges));
         tools.push_back(component(itm_toolset, welder_charges/5));
         consume_tools(g, tools);
         g->add_msg ("You install a %s into the %s.", 
-                   vpart_list[part].name, veh->name.c_str());
-        g->u.practice (sk_mechanics, vpart_list[part].difficulty * 5 + 20);
+                   vpart_info::list[part].name, veh->name.c_str());
+        g->u.practice (sk_mechanics, vpart_info::list[part].difficulty * 5 + 20);
         break;
     case 'r':
         if (veh->parts[part].hp <= 0)
@@ -660,7 +661,7 @@ void complete_vehicle (game *g)
         veh->parts[part].hp = veh->part_info(part).durability;
         g->add_msg ("You repair the %s's %s.", 
                     veh->name.c_str(), veh->part_info(part).name);
-        g->u.practice (sk_mechanics, (vpart_list[part].difficulty + dd) * 5 + 20);
+        g->u.practice (sk_mechanics, (vpart_info::list[part].difficulty + dd) * 5 + 20);
         break;
     case 'f':
         if (!g->pl_refill_vehicle(*veh, part, true))
