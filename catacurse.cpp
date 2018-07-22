@@ -103,6 +103,10 @@ public:
 			DeleteObject(_x);
 			_x = 0;
 		}
+		if (_pixels) {
+			free(_pixels);
+			_pixels = 0;
+		}
 	}
 private:
 	void init() {
@@ -125,7 +129,16 @@ private:
 #ifdef FULL_IMAGE_INFO
 	RGBQUAD* pixels() const
 	{
-		return 0;
+		if (!_have_info) return 0;
+		if (_pixels) return _pixels;
+		RGBQUAD* const tmp = (RGBQUAD*)calloc(width()*height(), sizeof(RGBQUAD));
+		if (!tmp) return 0;
+		if (!GetDIBits(0, (HBITMAP)_x, 0, 0, NULL, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS))
+			{
+			free(tmp);
+			return 0;
+			}
+		return _pixels = tmp;
 	}
 #endif
 };
