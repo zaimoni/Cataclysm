@@ -52,21 +52,44 @@ struct str_compare
 	int operator()(const char* lhs, const char* rhs) const { return strcmp(lhs, rhs); }
 };
 
+// tiles support
 std::map<unsigned short, OS_Image> _cache;
 std::map<const char*, unsigned short, str_compare> _translate;
 
+// tilesheet support
+std::map<std::string, OS_Image> _tilesheets;
+std::map<std::string, std::pair<int,int> > _tilesheet_physical;
+std::map<std::string, int > _tilesheet_tile;
+
+// globals used by the main curses simulation
 int fontwidth = 0;          //the width of the font, background is always this size
 int fontheight = 0;         //the height of the font, background is always this size
+HWND WindowHandle = 0;      //the handle of the window
 
 bool load_tile(const char* src)
 {
 	static unsigned short _next = 0;
 
 	if (!src || !src[0]) return false;	// nothing to load
+	if (WindowHandle && fontwidth != fontheight) return false;	// sorry, window already loaded as pure text
 	if ((unsigned short)(-1) == _next) return false;	// at implementation limit
 	if (_translate.count(src)) return true;	// already loaded
-	if (0 >= fontwidth) fontwidth = 16;
+	if (0 >= fontwidth) fontwidth = 16;	// \todo allow this to be an option after know where tiles are/are not allowed and can size the window properly; 32x32 is simply too large
 	if (0 >= fontheight) fontheight = 16;
+	const char* const is_from_tilesheet = strchr(src,'#');
+	if (is_from_tilesheet)
+		{
+		std::string tilesheet(src, is_from_tilesheet - src);
+		if (!_tilesheets.count(tilesheet)) {
+			OS_Image relay(tilesheet.c_str());
+			if (!relay.handle()) return false;	// failed to load
+			// \todo: set up physical dimensions here
+			// \todo: read off the tilesheet size from the filename ...#.png
+			// we have to handle the per-sheet configuration elsewhere
+			_tilesheets[tilesheet] = std::move(relay);
+		}
+
+		}
 	OS_Image image(src, fontwidth, fontheight);
 	if (!image.handle()) return false;	// failed to load
 	_translate[src] = ++_next;
@@ -160,7 +183,6 @@ LRESULT CALLBACK ProcessMessages(HWND__ *hWnd, u_int32_t Msg, WPARAM wParam, LPA
 WINDOW *mainwin;
 const WCHAR *szWindowClass = (L"CataCurseWindow");    //Class name :D
 HINSTANCE WindowINST;   //the instance of the window
-HWND WindowHandle;      //the handle of the window
 HDC WindowDC;           //Device Context of the window, used for backbuffer
 int WindowX;            //X pos of the actual window, not the curses window
 int WindowY;            //Y pos of the actual window, not the curses window

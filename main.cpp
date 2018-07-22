@@ -16,7 +16,10 @@ static bool scalar_on_hard_drive(const JSON& x)
 {
 	if (!x.is_scalar()) return false;
 	OS_dir working;
-	return working.exists(x.scalar().c_str());
+	// we use a hashtag to cope with tilesheets.
+	const char* const test = x.scalar().c_str();
+	const char* const index = strchr(test, '#');
+	return working.exists(!index ? test : std::string(test,index-test).c_str());
 }
 
 static bool preload_image(const JSON& x)
@@ -33,6 +36,7 @@ int main(int argc, char *argv[])
  // want a stderr.txt as well (cf. Wesnoth 1.12- [went away in Wesnoth 1.14])
 
  // C:DDA retained the data directory, but has a very different layout
+ // following code was based on one file/tile, but C:DDA has pre-prepared tilesheets
 #ifdef OS_dir
  {
  OS_dir working;
@@ -62,6 +66,7 @@ int main(int argc, char *argv[])
  // when we support mods, we load their tiles configuration from tiles.json as well (and check their filepaths are ok
  // value null could be used to unset a pre-existing value
  if (JSON::cache.count("tiles") && !JSON::cache["tiles"].destructive_grep(preload_image)) JSON::cache.erase("tiles");
+ // now: wire tiles to types.  For now just do terrain (ter_t indexed by ter_id)  Cf. C:DDA for ideas
 
 // ncurses stuff
  initscr(); // Initialize ncurses
