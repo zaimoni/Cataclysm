@@ -18,10 +18,11 @@ class OS_Image
 {
 private:
 	HANDLE _x;
+	BITMAPCOREHEADER _data;
 public:
 	OS_Image() : _x(0) {}
-	OS_Image(const char* src, int width = 0, int height = 0) : _x(LoadImageA(0, src, IMAGE_BITMAP, width, height, LR_LOADFROMFILE)) {}
-	OS_Image(const wchar_t* src, int width = 0, int height = 0) : _x(LoadImageW(0, src, IMAGE_BITMAP, width, height, LR_LOADFROMFILE)) {}
+	OS_Image(const char* src, int width = 0, int height = 0) : _x(LoadImageA(0, src, IMAGE_BITMAP, width, height, LR_LOADFROMFILE)) { init(); }
+	OS_Image(const wchar_t* src, int width = 0, int height = 0) : _x(LoadImageW(0, src, IMAGE_BITMAP, width, height, LR_LOADFROMFILE)) { init(); }
 	OS_Image(const OS_Image& src) = delete;
 	OS_Image(OS_Image&& src) : _x(src._x) { src._x = 0; }
 
@@ -32,16 +33,26 @@ public:
 	{
 		_x = src._x;
 		src._x = 0;
+		_data = src._data;
 		return *this;
 	}
 
 	HANDLE handle() const { return _x; }
+	unsigned long width() const { return _data.bcWidth; }
+	unsigned long height() const { return _data.bcHeight; }
 
 	void clear()
 	{
 		if (_x) {
 			DeleteObject(_x);
 			_x = 0;
+		}
+	}
+private:
+	void init() {
+		if (_x) {
+			_data.bcSize = sizeof(_data);
+			GetDIBits(0, (HBITMAP)_x, 0, 0, NULL, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS);	// XXX needs testing
 		}
 	}
 };
@@ -58,13 +69,25 @@ std::map<const char*, unsigned short, str_compare> _translate;
 
 // tilesheet support
 std::map<std::string, OS_Image> _tilesheets;
-std::map<std::string, std::pair<int,int> > _tilesheet_physical;
 std::map<std::string, int > _tilesheet_tile;
 
 // globals used by the main curses simulation
 int fontwidth = 0;          //the width of the font, background is always this size
 int fontheight = 0;         //the height of the font, background is always this size
 HWND WindowHandle = 0;      //the handle of the window
+
+std::string extract_file_infix(std::string src)
+{
+	{
+	const char* x = src.c_str();
+	const char* test = strrchr(x, '.');
+	if (!test) return std::string();
+	src = std::string(x, test - x);
+	}
+	const char* test = strrchr(src.c_str(), '.');
+	if (!test) return std::string();
+	return std::string(test);
+}
 
 bool load_tile(const char* src)
 {
@@ -83,8 +106,16 @@ bool load_tile(const char* src)
 		if (!_tilesheets.count(tilesheet)) {
 			OS_Image relay(tilesheet.c_str());
 			if (!relay.handle()) return false;	// failed to load
-			// \todo: set up physical dimensions here
-			// \todo: read off the tilesheet size from the filename ...#.png
+			// read off the tilesheet size from the filename ...#.png
+			std::string infix = extract_file_infix(tilesheet);
+			if (!infix.empty()) {
+				try {
+					int dim = std::stoi(infix);
+					if (0 < dim) _tilesheet_tile[tilesheet] = dim;
+				} catch (std::exception& e) {
+					return false;
+				}
+			}
 			// we have to handle the per-sheet configuration elsewhere
 			_tilesheets[tilesheet] = std::move(relay);
 		}
@@ -167,10 +198,9 @@ struct WINDOW {
 
 //Window Functions, Do not call these outside of catacurse.cpp
 void WinDestroy();
-bool WinCreate(bool initgl);
 void CheckMessages();
-int FindWin(WINDOW *wnd);
-LRESULT CALLBACK ProcessMessages(HWND__ *hWnd, u_int32_t Msg, WPARAM wParam, LPARAM lParam);
+/// int FindWin(WINDOW *wnd);	// may want this at some point
+LRESULT CALLBACK ProcessMessages(HWND__ *hWnd, unsigned int Msg, WPARAM wParam, LPARAM lParam);
 
 /*
  Optimal tileset modification target is DrawWindow, with a mapping from codepoint,(foreground) color pairs to tiles with a transparent background.
@@ -270,8 +300,7 @@ void WinDestroy()
 };
 
 //This function processes any Windows messages we get. Keyboard, OnClose, etc
-LRESULT CALLBACK ProcessMessages(HWND__ *hWnd,unsigned int Msg,
-                                 WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK ProcessMessages(HWND__ *hWnd,unsigned int Msg, WPARAM wParam, LPARAM lParam)
 {
     switch (Msg){
         case WM_CHAR:               //This handles most key presses
