@@ -34,7 +34,7 @@ class player {
 public:
  player();
  player(const player &rhs);
- ~player();
+ virtual ~player() = default;
 
  player& operator=(const player& rhs);
 

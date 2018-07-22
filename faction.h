@@ -72,7 +72,7 @@ enum faction_value {
 struct faction {
  faction();
  faction(int uid);
- ~faction();
+ ~faction() = default;
 
  std::string save_info();
  void load_info(std::string data);

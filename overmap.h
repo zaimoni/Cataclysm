@@ -41,7 +41,7 @@ class overmap
  public:
   overmap();
   overmap(game *g, int x, int y, int z);
-  ~overmap();
+  ~overmap() = default;
   void save(std::string name);
   void save(std::string name, int x, int y, int z);
   void open(game *g, int x, int y, int z);

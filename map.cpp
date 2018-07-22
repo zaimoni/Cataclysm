@@ -2637,7 +2637,3 @@ tinymap::tinymap()
   grid[n] = NULL;
 }
 
-tinymap::~tinymap()
-{
-}
-

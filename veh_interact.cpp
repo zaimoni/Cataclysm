@@ -612,7 +612,7 @@ void complete_vehicle (game *g)
         debugmsg ("Invalid activity ACT_VEHICLE values:%d", g->u.activity.values.size());
         return;
     }
-    vehicle *veh = g->m.veh_at (g->u.activity.values[0], g->u.activity.values[1]);
+    vehicle* const veh = g->m.veh_at (g->u.activity.values[0], g->u.activity.values[1]);
     if (!veh)
     {
         debugmsg ("Activity ACT_VEHICLE: vehicle not found");

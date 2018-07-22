@@ -102,10 +102,6 @@ item::item(std::string itemdata, game *g)
  load_info(itemdata, g);
 }
 
-item::~item()
-{
-}
-
 void item::make(itype* it)
 {
  type = it;

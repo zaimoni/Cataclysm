@@ -161,30 +161,15 @@ struct npc_opinion
  int owed;
  std::vector<npc_favor> favors;
 
- int total_owed() {
+ int total_owed() {	// plausibly a placeholder
   int ret = owed;
   return ret;
  }
 
- npc_opinion() {
-  trust = 0;
-  fear  = 0;
-  value = 0;
-  anger = 0;
-  owed = 0;
- };
- npc_opinion(signed char T, signed char F, signed char V, signed char A, int O):
+ npc_opinion(signed char T = 0, signed char F = 0, signed char V = 0, signed char A = 0, int O = 0):
              trust (T), fear (F), value (V), anger(A), owed (O) { };
 
- npc_opinion(const npc_opinion &copy)
- {
-  trust = copy.trust;
-  fear = copy.fear;
-  value = copy.value;
-  anger = copy.anger;
-  owed = copy.owed;
-  favors = copy.favors;
- };
+ npc_opinion(const npc_opinion &copy) = default;
 
  npc_opinion& operator+= (const npc_opinion &rhs)
  {
@@ -382,7 +367,7 @@ public:
  npc();
  //npc(npc& rhs);
  npc(const npc &rhs);
- ~npc();
+ ~npc() = default;
  virtual bool is_npc() { return true; }
 
  npc& operator= (const npc &rhs);

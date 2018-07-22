@@ -376,6 +376,8 @@ struct itype
   item_flags  = pitem_flags;
   techniques  = ptechniques;
  }
+
+ virtual ~itype() = default;
 };
 
 // Includes food drink and drugs

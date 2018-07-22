@@ -111,7 +111,7 @@ public:
 	static std::vector <vehicle*> vtypes;
 
     vehicle (game *ag=0, vhtype_id type_id = veh_null);
-    ~vehicle ();
+	~vehicle() = default;
 
 // check if given player controls this vehicle
     bool player_in_control (player *p);

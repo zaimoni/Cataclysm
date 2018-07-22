@@ -57,11 +57,6 @@ npc::npc(const npc &rhs)
  *this = rhs;
 }
 
-npc::~npc()
-{
-
-}
-
 npc& npc::operator=(const npc &rhs)
 {
  player::operator=(rhs);

@@ -371,10 +371,6 @@ player::player(const player &rhs)
  *this = rhs;
 }
 
-player::~player()
-{
-}
-
 player& player::operator=(const player& rhs)
 {
  str_cur = rhs.str_cur;

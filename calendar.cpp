@@ -13,16 +13,6 @@ calendar::calendar()
  year = 0;
 }
 
-calendar::calendar(const calendar &copy)
-{
- second = copy.second;
- minute = copy.minute;
- hour   = copy.hour;
- day    = copy.day;
- season = copy.season;
- year   = copy.year;
-}
-
 calendar::calendar(int Minute, int Hour, int Day, season_type Season, int Year)
 {
  second = 0;
@@ -67,20 +57,6 @@ calendar::operator int() const
  ret += int(season) * 14400 * DAYS_IN_SEASON;
  ret += year * 14400 * 4 * DAYS_IN_SEASON;
  return ret;
-}
-
-calendar& calendar::operator=(const calendar &rhs)
-{
- if (this == &rhs) return *this;
-
- second = rhs.second;
- minute = rhs.minute;
- hour = rhs.hour;
- day = rhs.day;
- season = rhs.season;
- year = rhs.year;
-
- return *this;
 }
 
 calendar& calendar::operator =(int rhs)
@@ -146,34 +122,6 @@ calendar& calendar::operator +=(int rhs)
  second += rhs * 6;
  standardize();
  return *this;
-}
-
-/*
-calendar& calendar::operator ++()
-{
- *this += 1;
- return *this;
-}
-*/
-
-calendar calendar::operator -(const calendar &rhs) const
-{
- return calendar(*this) -= rhs;
-}
-
-calendar calendar::operator -(int rhs) const
-{
- return calendar(*this) -= rhs;
-}
-
-calendar calendar::operator +(const calendar &rhs) const
-{
- return calendar(*this) += rhs;
-}
-
-calendar calendar::operator +(int rhs) const
-{
- return calendar(*this) += rhs;
 }
 
 void calendar::increment()

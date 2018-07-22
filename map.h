@@ -23,6 +23,7 @@ class map
 
 // Constructors & Initialization
  map();
+ virtual ~map() = default;
  
 // Visual Output
  void draw(game *g, WINDOW* w, point center);
@@ -176,7 +177,7 @@ class tinymap : public map	// XXX direct subclassing defeats the point of this c
 {
 public:
  tinymap();
- ~tinymap();
+ ~tinymap() = default;
 
 protected:
  virtual bool is_tiny() { return true; };

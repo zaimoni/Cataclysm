@@ -36,7 +36,7 @@ public:
  item(const itype* it, unsigned int turn, char let);
  explicit item(unsigned int turn, int id = 0);	// corpse constructor; 0 is the value of mon_null
  item(std::string itemdata, game *g);
- ~item();
+ ~item() = default;
  void make(itype* it);
 
 // returns the default container of this item, with this item in it

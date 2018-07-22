@@ -447,10 +447,6 @@ overmap::overmap(game *g, int x, int y, int z)
  open(g, x, y, z);
 }
 
-overmap::~overmap()
-{
-}
-
 oter_id& overmap::ter(int x, int y)
 {
  if (x < 0 || x >= OMAPX || y < 0 || y >= OMAPY) {

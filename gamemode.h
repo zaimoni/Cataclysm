@@ -20,6 +20,8 @@ special_game* get_special_game(special_game_id id);
 
 struct special_game
 {
+ virtual ~special_game() = default;
+
  virtual special_game_id id() { return SGAME_NULL; };
 // init is run when the game begins
  virtual bool init(game *g) { return true; };

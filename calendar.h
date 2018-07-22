@@ -47,21 +47,21 @@ class calendar
 // End data
 
   calendar();
-  calendar(const calendar &copy);
+  calendar(const calendar &copy) = default;
   calendar(int Minute, int Hour, int Day, season_type Season, int Year);
   calendar(int turn);
   int get_turn();
   operator int() const; // Returns get_turn() for backwards compatibility
-  calendar& operator = (const calendar &rhs);
+  calendar& operator = (const calendar &rhs) = default;
   calendar& operator = (int rhs);
   calendar& operator -=(const calendar &rhs);
   calendar& operator -=(int rhs);
   calendar& operator +=(const calendar &rhs);
   calendar& operator +=(int rhs);
-  calendar  operator - (const calendar &rhs) const;
-  calendar  operator - (int rhs) const;
-  calendar  operator + (const calendar &rhs) const;
-  calendar  operator + (int rhs) const;
+  calendar  operator - (const calendar &rhs) const { return calendar(*this) -= rhs; };
+  calendar  operator - (int rhs) const { return calendar(*this) -= rhs; };
+  calendar  operator + (const calendar &rhs) const { return calendar(*this) += rhs; };
+  calendar  operator + (int rhs) const { return calendar(*this) += rhs; };
 
   void increment();   // Add one turn / 6 seconds
 

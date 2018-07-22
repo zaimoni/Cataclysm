@@ -21,8 +21,7 @@ vehicle::vehicle(game *ag, vhtype_id type_id): g(ag), type(type_id)
     skidding = false;
     cruise_on = true;
     insides_dirty = true;
-    if (type >= num_vehicles)
-        type = 0;
+    if (type >= num_vehicles) type = 0;
     if (type > veh_custom)
     {   // get a copy of sample vehicle of this type
         if (type < vehicle::vtypes.size())
@@ -34,18 +33,12 @@ vehicle::vehicle(game *ag, vhtype_id type_id): g(ag), type(type_id)
     precalc_mounts(0, face.dir());
 }
 
-vehicle::~vehicle()
-{
-}
-
 bool vehicle::player_in_control (player *p)
 {
-    if (type == veh_null)
-        return false;
+    if (type == veh_null) return false;
     int veh_part;
-    vehicle *veh = g->m.veh_at (p->posx, p->posy, veh_part);
-    if (veh && veh != this)
-        return false;
+    vehicle* const veh = g->m.veh_at (p->posx, p->posy, veh_part);
+    if (veh && veh != this) return false;
     return part_with_feature(veh_part, vpf_controls, false) >= 0 && p->in_vehicle;
 }
 

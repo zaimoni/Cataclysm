@@ -59,11 +59,6 @@ faction::faction(int uid)
  uid = id;
 }
 
-
-faction::~faction()
-{
-}
-
 std::string faction::save_info()
 {
  std::stringstream dump;
