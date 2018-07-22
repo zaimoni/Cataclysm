@@ -129,9 +129,6 @@
     <ClInclude Include="morale.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="moraledata.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="mtype.h">
       <Filter>Header Files</Filter>
     </ClInclude>

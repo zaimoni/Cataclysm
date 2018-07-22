@@ -39,6 +39,8 @@ enum morale_type
 
 struct morale_point
 {
+ static const std::string data[NUM_MORALE_TYPES];
+
  morale_type type;
  const itype* item_type;
  int bonus;
@@ -46,19 +48,7 @@ struct morale_point
  morale_point(morale_type T = MORALE_NULL, const itype* I = NULL, int B = 0) :
               type (T), item_type (I), bonus (B) {};
 
- std::string name(std::string morale_data[])
- {
-  std::string ret = morale_data[type];
-  std::string item_name = "";
-  if (item_type != NULL)
-   item_name = item_type->name;
-  size_t it = ret.find("%i");
-  while (it != std::string::npos) {
-   ret.replace(it, 2, item_name);
-   it = ret.find("%i");
-  }
-  return ret;
- }
+ std::string name() const;
 };
  
 #endif

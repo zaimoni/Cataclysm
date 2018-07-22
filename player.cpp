@@ -2,7 +2,6 @@
 #include "game.h"
 #include "keypress.h"
 #include "options.h"
-#include "moraledata.h"
 #include "stl_typetraits.h"
 #include <math.h>
 
@@ -12,6 +11,47 @@ using namespace cataclysm;
 #include "disease.h"	// XXX the function definitions, at least, should be inlined somewhere around here
 
 #include <fstream>
+
+// start prototype for morale.cpp
+const std::string morale_point::data[NUM_MORALE_TYPES] = {
+	"This is a bug",
+	"Enjoyed %i",
+	"Music",
+	"Marloss Bliss",
+	"Good Feeling",
+
+	"Nicotine Craving",
+	"Caffeine Craving",
+	"Alcohol Craving",
+	"Opiate Craving",
+	"Speed Craving",
+	"Cocaine Craving",
+
+	"Disliked %i",
+	"Ate Meat",
+	"Wet",
+	"Bad Feeling",
+	"Killed Innocent",
+	"Killed Friend",
+	"Killed Mother",
+
+	"Moodswing",
+	"Read %i",
+	"Heard Disturbing Scream"
+};
+
+std::string morale_point::name() const
+{
+	std::string ret(data[type]);
+	std::string item_name(item_type ? item_type->name : "");
+	size_t it = ret.find("%i");
+	while (it != std::string::npos) {
+		ret.replace(it, 2, item_name);
+		it = ret.find("%i");
+	}
+	return ret;
+}
+// end prototype for morale.cpp
 
 // start prototype for player_activity.cpp
 std::string player_activity::save_info() const
@@ -1665,26 +1705,19 @@ void player::disp_morale()
   int b = morale[i].bonus;
 
   int bpos = 24;
-  if (abs(b) >= 10)
-   bpos--;
-  if (abs(b) >= 100)
-   bpos--;
-  if (b < 0)
-   bpos--;
+  if (abs(b) >= 10) bpos--;
+  if (abs(b) >= 100) bpos--;
+  if (b < 0) bpos--;
 
-  mvwprintz(w, i + 3,  1, (b < 0 ? c_red : c_green),
-            morale[i].name(morale_data).c_str());
+  mvwprintz(w, i + 3,  1, (b < 0 ? c_red : c_green), morale[i].name().c_str());
   mvwprintz(w, i + 3, bpos, (b < 0 ? c_red : c_green), "%d", b);
  }
 
  int mor = morale_level();
  int bpos = 24;
-  if (abs(mor) >= 10)
-   bpos--;
-  if (abs(mor) >= 100)
-   bpos--;
-  if (mor < 0)
-   bpos--;
+ if (abs(mor) >= 10) bpos--;
+ if (abs(mor) >= 100) bpos--;
+ if (mor < 0) bpos--;
  mvwprintz(w, 20, 1, (mor < 0 ? c_red : c_green), "Total:");
  mvwprintz(w, 20, bpos, (mor < 0 ? c_red : c_green), "%d", mor);
 

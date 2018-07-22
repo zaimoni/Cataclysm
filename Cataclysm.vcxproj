@@ -191,7 +191,6 @@
     <ClInclude Include="mongroup.h" />
     <ClInclude Include="monster.h" />
     <ClInclude Include="morale.h" />
-    <ClInclude Include="moraledata.h" />
     <ClInclude Include="mtype.h" />
     <ClInclude Include="mutation.h" />
     <ClInclude Include="npc.h" />
