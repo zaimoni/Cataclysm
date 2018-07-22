@@ -1,7 +1,7 @@
 #if (defined _WIN32 || defined WINDOWS)
 #include "catacurse.h"
 #include <stdio.h>
-#include <cstdlib>
+#include <stdlib.h>
 #include <fstream>
 #include <string>
 #include <map>
@@ -22,13 +22,13 @@ private:
 	HANDLE _x;
 #ifdef FULL_IMAGE_INFO
 	BITMAPINFOHEADER _data;
-	RGBQUAD* _pixels;
+	mutable RGBQUAD* _pixels;
 #else
 	BITMAPCOREHEADER _data;
 #endif
 	bool _have_info;
 public:
-	OS_Image() : _x(0) {}
+	OS_Image() : _x(0), _pixels(0), _have_info(false) { memset(&_data, 0, sizeof(_data)); }
 	OS_Image(const char* src, int width = 0, int height = 0) : _x(LoadImageA(0, src, IMAGE_BITMAP, width, height, LR_LOADFROMFILE)),_pixels(0),_have_info(false) { init(); }
 	OS_Image(const wchar_t* src, int width = 0, int height = 0) : _x(LoadImageW(0, src, IMAGE_BITMAP, width, height, LR_LOADFROMFILE)), _pixels(0),_have_info(false) { init(); }
 	OS_Image(const OS_Image& src) = delete;
@@ -39,6 +39,38 @@ public:
 		src._pixels = 0;
 #endif
 	}
+#ifdef FULL_IMAGE_INFO
+	// clipping constructor
+	OS_Image(const OS_Image& src, const size_t origin_x, const size_t origin_y, const size_t width, const size_t height)
+	: _x(0), _data(src._data), _pixels(0), _have_info(false)
+	{
+		if (0 >= width) throw std::logic_error("OS_Image::OS_Image: 0 >= width");
+		if (0 >= height) throw std::logic_error("OS_Image::OS_Image: 0 >= height");
+		if (((size_t)(-1)/sizeof(_pixels[0]))/width < height) throw std::logic_error("OS_Image::OS_Image: ((size_t)(-1)/sizeof(_pixels[0]))/width < height");
+		if (src.width() <= origin_x) throw std::logic_error("OS_Image::OS_Image: src.width() <= origin_x");
+		if (src.height() <= origin_y) throw std::logic_error("OS_Image::OS_Image: src.height() <= origin_y");
+		if (src.width() - origin_x < width) throw std::logic_error("OS_Image::OS_Image: src.width() - origin_x < width");
+		if (src.height() - origin_y < height) throw std::logic_error("OS_Image::OS_Image: src.height() - origin_y < height");
+		RGBQUAD* const incoming = src.pixels();
+
+		_data.biWidth = width;
+		_data.biHeight = -((signed long)height);
+		RGBQUAD* working = (RGBQUAD*)calloc(width*height, sizeof(RGBQUAD));
+		if (!working) throw std::bad_alloc();
+
+		// would like static assertion here but not needed
+		for (size_t scan_y = 0; scan_y < height; scan_y++) {
+			memmove(working + (scan_y*width), incoming + ((scan_y + origin_y)*src.width()), sizeof(RGBQUAD)*width);
+		}
+		_x = CreateCompatibleBitmap(0,width,height);
+		if (!_x) throw std::bad_alloc();
+		if (!SetDIBits(NULL, (HBITMAP)_x, 0, height, working, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS)) {
+			free(working);
+			throw std::bad_alloc();
+		}
+		free(working);
+	}
+#endif
 
 	~OS_Image() { clear(); }
 
@@ -58,11 +90,11 @@ public:
 
 	HANDLE handle() const { return _x; }
 #ifdef FULL_IMAGE_INFO
-	unsigned long width() const { return _data.biWidth; }
-	unsigned long height() const { return -_data.biHeight; }
+	size_t width() const { return _data.biWidth; }
+	size_t height() const { return -_data.biHeight; }
 #else
-	unsigned long width() const { return _data.bcWidth; }
-	unsigned long height() const { return _data.bcHeight; }
+	size_t width() const { return _data.bcWidth; }
+	size_t height() const { return _data.bcHeight; }
 #endif
 
 	void clear()
@@ -89,6 +121,13 @@ private:
 #endif
 		}
 	}
+
+#ifdef FULL_IMAGE_INFO
+	RGBQUAD* pixels() const
+	{
+		return 0;
+	}
+#endif
 };
 
 // function object
