@@ -55,7 +55,6 @@ void science_room(map *m, int x1, int y1, int x2, int y2, int rotate);
 void set_science_room(map *m, int x1, int y1, bool faces_right, int turn);
 void silo_rooms(map *m);
 void build_mine_room(map *m, room_type type, int x1, int y1, int x2, int y2);
-map_extra random_map_extra(map_extras);
 
 room_type pick_mansion_room(int x1, int y1, int x2, int y2);
 void build_mansion_room(map *m, room_type type, int x1, int y1, int x2, int y2);
@@ -65,6 +64,18 @@ void line(map *m, ter_id type, int x1, int y1, int x2, int y2);
 void square(map *m, ter_id type, int x1, int y1, int x2, int y2);
 void rough_circle(map *m, ter_id type, int x, int y, int rad);
 void add_corpse(game *g, map *m, int x, int y);
+
+static map_extra random_map_extra(const map_extras& embellishments)
+{
+	int pick = 0;
+	// Set pick to the total of all the chances for map extras
+	for (const auto it : embellishments.chances) pick += it;
+	// Set pick to a number between 0 and the total
+	pick = rng(0, pick - 1);
+	int choice = -1;
+	while (pick >= 0) pick -= embellishments.chances[++choice];
+	return map_extra(choice);
+}
 
 void map::generate(game *g, overmap *om, int x, int y, int turn)
 {
@@ -7490,23 +7501,6 @@ void build_mine_room(map *m, room_type type, int x1, int y1, int x2, int y2)
    m->ter(door_point.x, door_point.y) = t_door_c;
  }
 }
-
-map_extra random_map_extra(map_extras embellishments)
-{
- int pick = 0;
-// Set pick to the total of all the chances for map extras
- for (int i = 0; i < num_map_extras; i++)
-  pick += embellishments.chances[i];
-// Set pick to a number between 0 and the total
- pick = rng(0, pick - 1);
- int choice = -1;
- while (pick >= 0) {
-  choice++;
-  pick -= embellishments.chances[choice];
- }
- return map_extra(choice);
-}
-
 
 room_type pick_mansion_room(int x1, int y1, int x2, int y2)
 {

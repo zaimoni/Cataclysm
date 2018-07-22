@@ -151,50 +151,30 @@ enum map_extra {
 
 // Chances are relative to eachother; e.g. a 200 chance is twice as likely
 // as a 100 chance to appear.
-const int map_extra_chance[num_map_extras + 1] = {
-  0,	// Null - 0 chance
- 40,	// Helicopter
- 50,	// Military
-120,	// Science
-200,	// Stash
- 20,	// Drug deal
- 10,    // Supply drop
-  5,	// Portal
- 70,	// Minefield
- 30,	// Wolf pack
-250,	// Puddle
- 10,	// Crater
-  8,	// Fumarole
-  7,	// One-way portal into this world
- 10,	// Anomaly
-  0	// Just a cap value; leave this as the last one
-};
-
 struct map_extras {
  unsigned int chance;
- int chances[num_map_extras + 1];
+ int chances[num_map_extras];
  map_extras(unsigned int embellished, int helicopter = 0, int mili = 0,
             int sci = 0, int stash = 0, int drug = 0, int supply = 0,
             int portal = 0, int minefield = 0, int wolves = 0, int puddle = 0, 
             int crater = 0, int lava = 0, int marloss = 0, int anomaly = 0)
             : chance(embellished)
  {
-  chances[ 0] = 0;
-  chances[ 1] = helicopter;
-  chances[ 2] = mili;
-  chances[ 3] = sci;
-  chances[ 4] = stash;
-  chances[ 5] = drug;
-  chances[ 6] = supply;
-  chances[ 7] = portal;
-  chances[ 8] = minefield;
-  chances[ 9] = wolves;
-  chances[10] = puddle;
-  chances[11] = crater;
-  chances[12] = lava;
-  chances[13] = marloss;
-  chances[14] = anomaly;
-  chances[15] = 0;
+  chances[mx_null] = 0;
+  chances[mx_helicopter] = helicopter;
+  chances[mx_military] = mili;
+  chances[mx_science] = sci;
+  chances[mx_stash] = stash;
+  chances[mx_drugdeal] = drug;
+  chances[mx_supplydrop] = supply;
+  chances[mx_portal] = portal;
+  chances[mx_minefield] = minefield;
+  chances[mx_wolfpack] = wolves;
+  chances[mx_puddle] = puddle;
+  chances[mx_crater] = crater;
+  chances[mx_fumarole] = lava;
+  chances[mx_portal_in] = marloss;
+  chances[mx_anomaly] = anomaly;
  }
 };
 
