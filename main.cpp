@@ -28,6 +28,28 @@ static bool preload_image(const JSON& x)
 	return load_tile(x.scalar().c_str());
 }
 
+static void load_JSON(const char* const src, const char* const key, bool (ok)(const JSON&))
+{
+#ifdef OS_dir
+	OS_dir working;
+	if (!working.exists(src)) return;
+
+	std::ifstream fin;
+	fin.open(src);
+	if (!fin.is_open()) return;
+	try {
+		JSON incoming(fin);
+		fin.close();
+		if (incoming.empty()) return;
+		if (!incoming.destructive_grep(ok)) return;
+		JSON::cache[key] = std::move(incoming);
+	} catch (const std::exception& e) {
+		fin.close();
+		std::cerr << src << ": " << e.what();
+	}
+#endif
+}
+
 int main(int argc, char *argv[])
 {
  srand(time(NULL));
@@ -37,36 +59,15 @@ int main(int argc, char *argv[])
 
  // C:DDA retained the data directory, but has a very different layout
  // following code was based on one file/tile, but C:DDA has pre-prepared tilesheets
-#ifdef OS_dir
- {
- OS_dir working;
- std::ifstream fin;
- if (working.exists("data/json/tiles.json"))	// base game tiles specification
-	{
-	fin.open("data/json/tiles.json");
-	if (fin.is_open())
-		{
-		try {
-			JSON incoming(fin);
-			fin.close();
-			// specification for tiles: all values are to be valid relative paths to images on the hard drive
-			if (   JSON::object == incoming.mode()
-				&& !incoming.empty()
-				&& incoming.destructive_grep(scalar_on_hard_drive)) {
-				JSON::cache["tiles"] = std::move(incoming);
-			}
-		} catch (const std::exception& e) {
-			fin.close();
-			std::cerr << "tiles.json: " << e.what();
-		}
-		}
-	}
- }
-#endif
+
+// final format is an object of key-id, value-image filepath pairs  To fully support C:DDA tilesheets, 
+// we have to specify what order tilesets are to be checked in (array) and then merge the objects accordingly
+ load_JSON("data/json/tilespec.json", "tilespec", scalar_on_hard_drive);	// expected format array of JSON files
+ load_JSON("data/json/tiles.json", "tiles", scalar_on_hard_drive);	// authoritative destination, but not how this is to be set up.
+
  // when we support mods, we load their tiles configuration from tiles.json as well (and check their filepaths are ok
  // value null could be used to unset a pre-existing value
- if (JSON::cache.count("tiles") && !JSON::cache["tiles"].destructive_grep(preload_image)) JSON::cache.erase("tiles");
- // now: wire tiles to types.  For now just do terrain (ter_t indexed by ter_id)  Cf. C:DDA for ideas
+ if (JSON::cache.count("tiles") && !JSON::cache["tiles"].destructive_grep(preload_image)) JSON::cache.erase("tiles");	// wires tiles to types
 
 // ncurses stuff
  initscr(); // Initialize ncurses

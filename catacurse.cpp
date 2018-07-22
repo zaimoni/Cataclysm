@@ -18,11 +18,12 @@ class OS_Image
 {
 private:
 	HANDLE _x;
-	BITMAPCOREHEADER _data;
+	BITMAPINFOHEADER _data;
+	bool _have_info;
 public:
 	OS_Image() : _x(0) {}
-	OS_Image(const char* src, int width = 0, int height = 0) : _x(LoadImageA(0, src, IMAGE_BITMAP, width, height, LR_LOADFROMFILE)) { init(); }
-	OS_Image(const wchar_t* src, int width = 0, int height = 0) : _x(LoadImageW(0, src, IMAGE_BITMAP, width, height, LR_LOADFROMFILE)) { init(); }
+	OS_Image(const char* src, int width = 0, int height = 0) : _x(LoadImageA(0, src, IMAGE_BITMAP, width, height, LR_LOADFROMFILE)),_have_info(false) { init(); }
+	OS_Image(const wchar_t* src, int width = 0, int height = 0) : _x(LoadImageW(0, src, IMAGE_BITMAP, width, height, LR_LOADFROMFILE)), _have_info(false) { init(); }
 	OS_Image(const OS_Image& src) = delete;
 	OS_Image(OS_Image&& src) : _x(src._x) { src._x = 0; }
 
@@ -34,12 +35,13 @@ public:
 		_x = src._x;
 		src._x = 0;
 		_data = src._data;
+		_have_info = src._have_info;
 		return *this;
 	}
 
 	HANDLE handle() const { return _x; }
-	unsigned long width() const { return _data.bcWidth; }
-	unsigned long height() const { return _data.bcHeight; }
+	unsigned long width() const { return _data.biWidth; }
+	unsigned long height() const { return _data.biHeight; }
 
 	void clear()
 	{
@@ -50,9 +52,11 @@ public:
 	}
 private:
 	void init() {
+		_have_info = false;
 		if (_x) {
-			_data.bcSize = sizeof(_data);
-			GetDIBits(0, (HBITMAP)_x, 0, 0, NULL, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS);	// XXX needs testing
+			memset(&_data, 0, sizeof(_data));
+			_data.biSize = sizeof(_data);
+			_have_info = GetDIBits(0, (HBITMAP)_x, 0, 0, NULL, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS);	// XXX needs testing
 		}
 	}
 };
