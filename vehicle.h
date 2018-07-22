@@ -161,10 +161,10 @@ public:
     int part_at (int dx, int dy);
 
 // get symbol for map
-    char part_sym (int p);
+    char part_sym (int p) const;
 
 // get color for map
-    nc_color part_color (int p);
+    nc_color part_color (int p) const;
 
 // Vehicle parts description
     void print_part_desc (void *w, int y1, int width, int p, int hl = -1);

@@ -352,40 +352,30 @@ int vehicle::part_at(int dx, int dy)
     return -1;
 }
 
-char vehicle::part_sym (int p)
+char vehicle::part_sym (int p) const
 {
-    if (p < 0 || p >= parts.size())
-        return 0;
+    if (p < 0 || p >= parts.size()) return 0;
     std::vector<int> ph = internal_parts (p);
     int po = part_with_feature(p, vpf_over, false);
     int pd = po < 0? p : po;
-    if (part_flag (pd, vpf_openable) && parts[pd].open)
-        return '\''; // open door
+    if (part_flag (pd, vpf_openable) && parts[pd].open) return '\''; // open door
     return parts[pd].hp <= 0? part_info(pd).sym_broken : part_info(pd).sym;
 }
 
-nc_color vehicle::part_color (int p)
+nc_color vehicle::part_color (int p) const
 {
-    if (p < 0 || p >= parts.size())
-        return c_black;
+    if (p < 0 || p >= parts.size()) return c_black;
     int parm = part_with_feature(p, vpf_armor, false);
     int po = part_with_feature(p, vpf_over, false);
     int pd = po < 0? p : po;
-    if (parts[p].blood > 200)
-        return c_red;
-    else
-    if (parts[p].blood > 0)
-        return c_ltred;
+    if (parts[p].blood > 200) return c_red;
+    else if (parts[p].blood > 0) return c_ltred;
     
-    if (parts[pd].hp <= 0)
-        return part_info(pd).color_broken;
+    if (parts[pd].hp <= 0) return part_info(pd).color_broken;
 
     // first, check if there's a part over. then, if armor here (projects its color on part)
-    if (po >= 0)
-        return part_info(po).color;
-    else
-    if (parm >= 0)
-        return part_info(parm).color;
+    if (po >= 0) return part_info(po).color;
+    else if (parm >= 0) return part_info(parm).color;
 
     return part_info(pd).color;
 }

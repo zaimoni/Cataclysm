@@ -177,8 +177,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
     }
 
     veh = veh_at(x, y, part);
-    if (veh)
-     veh->damage (part, cur->density * 10, false);
+    if (veh) veh->damage (part, cur->density * 10, false);
 // Consume the terrain we're on
     if (has_flag(explodes, x, y)) {
      ter(x, y) = ter_id(int(ter(x, y)) + 1);
@@ -189,16 +188,14 @@ bool map::process_fields_in_submap(game *g, int gridn)
     } else if (has_flag(flammable, x, y) && one_in(32 - cur->density * 10)) {
      cur->age -= cur->density * cur->density * 40;
      smoke += 15;
-     if (cur->density == 3)
-      ter(x, y) = t_rubble;
+     if (cur->density == 3) ter(x, y) = t_rubble;
 
     } else if (has_flag(l_flammable, x, y) && one_in(62 - cur->density * 10)) {
      cur->age -= cur->density * cur->density * 30;
      smoke += 10;
-     if (cur->density == 3)
-      ter(x, y) = t_rubble;
+     if (cur->density == 3) ter(x, y) = t_rubble;
 
-    } else if (terlist[ter(x, y)].flags & mfb(swimmable))
+    } else if (ter_t::list[ter(x, y)].flags & mfb(swimmable))
      cur->age += 800;	// Flames die quickly on water
 
 // If we consumed a lot, the flames grow higher

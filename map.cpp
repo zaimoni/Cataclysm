@@ -9,6 +9,286 @@
 #include <fstream>
 #include "posix_time.h"
 
+const ter_t ter_t::list[num_terrain_types] = {  // MUST match enum ter_id!
+	{ "nothing",	     ' ', c_white,   2, tr_null,
+	mfb(transparent) | mfb(diggable) },
+{ "empty space",      '#', c_black,   2, tr_ledge,
+mfb(transparent) },
+{ "dirt",	     '.', c_brown,   2, tr_null,
+mfb(transparent) | mfb(diggable) },
+{ "mound of dirt",    '#', c_brown,   3, tr_null,
+mfb(transparent) | mfb(diggable) },
+{ "shallow pit",	     '0', c_yellow,  8, tr_null,
+mfb(transparent) | mfb(diggable) },
+{ "pit",              '0', c_brown,  10, tr_pit,
+mfb(transparent) | mfb(diggable) },
+{ "spiked pit",       '0', c_ltred,  10, tr_spike_pit,
+mfb(transparent) | mfb(diggable) },
+{ "rock floor",       '.', c_ltgray,  2, tr_null,
+mfb(transparent) },
+{ "pile of rubble",   '#', c_ltgray,  4, tr_null,
+mfb(transparent) | mfb(rough) | mfb(diggable) },
+{ "metal wreckage",   '#', c_cyan,    5, tr_null,
+mfb(transparent) | mfb(rough) | mfb(sharp) | mfb(container) },
+{ "grass",	     '.', c_green,   2, tr_null,
+mfb(transparent) | mfb(diggable) },
+{ "metal floor",      '.', c_ltcyan,  2, tr_null,
+mfb(transparent) },
+{ "pavement",	     '.', c_dkgray,  2, tr_null,
+mfb(transparent) },
+{ "yellow pavement",  '.', c_yellow,  2, tr_null,
+mfb(transparent) },
+{ "sidewalk",         '.', c_ltgray,  2, tr_null,
+mfb(transparent) },
+{ "floor",	     '.', c_cyan,    2, tr_null,
+mfb(transparent) | mfb(l_flammable) },
+{ "metal grate",      '#', c_dkgray,  2, tr_null,
+mfb(transparent) },
+{ "slime",            '~', c_green,   6, tr_null,
+mfb(transparent) | mfb(container) | mfb(flammable) },
+{ "walkway",          '#', c_yellow,  2, tr_null,
+mfb(transparent) },
+{ "half-built wall",  '#', c_ltred,   4, tr_null,
+mfb(transparent) | mfb(bashable) | mfb(flammable) | mfb(noitem) },
+{ "wooden wall",      '#', c_ltred,   0, tr_null,
+mfb(bashable) | mfb(flammable) | mfb(noitem) | mfb(supports_roof) },
+{ "chipped wood wall",'#', c_ltred,   0, tr_null,
+mfb(bashable) | mfb(flammable) | mfb(noitem) | mfb(supports_roof) },
+{ "broken wood wall", '&', c_ltred,   0, tr_null,
+mfb(transparent) | mfb(bashable) | mfb(flammable) | mfb(noitem) |
+mfb(supports_roof) },
+{ "wall",             '|', c_ltgray,  0, tr_null,
+mfb(flammable) | mfb(noitem) | mfb(supports_roof) },
+{ "wall",             '-', c_ltgray,  0, tr_null,
+mfb(flammable) | mfb(noitem) | mfb(supports_roof) },
+{ "metal wall",       '|', c_cyan,    0, tr_null,
+mfb(noitem) | mfb(noitem) | mfb(supports_roof) },
+{ "metal wall",       '-', c_cyan,    0, tr_null,
+mfb(noitem) | mfb(noitem) | mfb(supports_roof) },
+{ "glass wall",       '|', c_ltcyan,  0, tr_null,
+mfb(transparent) | mfb(bashable) | mfb(noitem) | mfb(supports_roof) },
+{ "glass wall",       '-', c_ltcyan,  0, tr_null,
+mfb(transparent) | mfb(bashable) | mfb(noitem) | mfb(supports_roof) },
+{ "glass wall",       '|', c_ltcyan,  0, tr_null, // Alarmed
+mfb(transparent) | mfb(bashable) | mfb(alarmed) | mfb(noitem) |
+mfb(supports_roof) },
+{ "glass wall",       '-', c_ltcyan,  0, tr_null, // Alarmed
+mfb(transparent) | mfb(bashable) | mfb(alarmed) | mfb(noitem) |
+mfb(supports_roof) },
+{ "reinforced glass", '|', c_ltcyan,  0, tr_null,
+mfb(transparent) | mfb(bashable) | mfb(noitem) | mfb(supports_roof) },
+{ "reinforced glass", '-', c_ltcyan,  0, tr_null,
+mfb(transparent) | mfb(bashable) | mfb(noitem) | mfb(supports_roof) },
+{ "metal bars",       '"', c_ltgray,  0, tr_null,
+mfb(transparent) | mfb(noitem) },
+{ "closed wood door", '+', c_brown,   0, tr_null,
+mfb(bashable) | mfb(flammable) | mfb(door) | mfb(noitem) | mfb(supports_roof) },
+{ "damaged wood door",'&', c_brown,   0, tr_null,
+mfb(transparent) | mfb(bashable) | mfb(flammable) | mfb(noitem) |
+mfb(supports_roof) },
+{ "open wood door",  '\'', c_brown,   2, tr_null,
+mfb(flammable) | mfb(transparent) | mfb(supports_roof) },
+{ "closed wood door", '+', c_brown,   0, tr_null,	// Actually locked
+mfb(bashable) | mfb(flammable) | mfb(noitem) | mfb(supports_roof) },
+{ "closed wood door", '+', c_brown,   0, tr_null, // Locked and alarmed
+mfb(bashable) | mfb(flammable) | mfb(alarmed) | mfb(noitem) |
+mfb(supports_roof) },
+{ "empty door frame", '.', c_brown,   2, tr_null,
+mfb(flammable) | mfb(transparent) | mfb(supports_roof) },
+{ "boarded up door",  '#', c_brown,   0, tr_null,
+mfb(bashable) | mfb(flammable) | mfb(noitem) | mfb(supports_roof) },
+{ "closed metal door",'+', c_cyan,    0, tr_null,
+mfb(noitem) | mfb(supports_roof) },
+{ "open metal door", '\'', c_cyan,    2, tr_null,
+mfb(transparent) | mfb(supports_roof) },
+{ "closed metal door",'+', c_cyan,    0, tr_null, // Actually locked
+mfb(noitem) | mfb(supports_roof) },
+{ "closed glass door",'+', c_ltcyan,  0, tr_null,
+mfb(transparent) | mfb(bashable) | mfb(door) | mfb(noitem) | mfb(supports_roof) },
+{ "open glass door", '\'', c_ltcyan,  2, tr_null,
+mfb(transparent) | mfb(supports_roof) },
+{ "bulletin board",   '6', c_blue,    0, tr_null,
+mfb(flammable) | mfb(noitem) },
+{ "makeshift portcullis", '&', c_cyan, 0, tr_null,
+mfb(noitem) },
+{ "window",	     '"', c_ltcyan,  0, tr_null,
+mfb(transparent) | mfb(bashable) | mfb(flammable) | mfb(noitem) |
+mfb(supports_roof) },
+{ "window",	     '"', c_ltcyan,  0, tr_null, // Actually alarmed
+mfb(transparent) | mfb(bashable) | mfb(flammable) | mfb(alarmed) | mfb(noitem) |
+mfb(supports_roof) },
+{ "empty window",     '0', c_yellow,  8, tr_null,
+mfb(transparent) | mfb(flammable) | mfb(noitem) | mfb(supports_roof) },
+{ "window frame",     '0', c_ltcyan,  8, tr_null,
+mfb(transparent) | mfb(sharp) | mfb(flammable) | mfb(noitem) |
+mfb(supports_roof) },
+{ "boarded up window",'#', c_brown,   0, tr_null,
+mfb(bashable) | mfb(flammable) | mfb(noitem) | mfb(supports_roof) },
+{ "solid rock",       '#', c_white,   0, tr_null,
+mfb(noitem) | mfb(supports_roof) },
+{ "odd fault",        '#', c_magenta, 0, tr_null,
+mfb(noitem) | mfb(supports_roof) },
+{ "paper wall",       '#', c_white,   0, tr_null,
+mfb(bashable) | mfb(flammable) | mfb(noitem) },
+{ "tree",	     '7', c_green,   0, tr_null,
+mfb(flammable) | mfb(noitem) | mfb(supports_roof) },
+{ "young tree",       '1', c_green,   0, tr_null,
+mfb(transparent) | mfb(bashable) | mfb(flammable) | mfb(noitem) },
+{ "underbrush",       '#', c_ltgreen, 6, tr_null,
+mfb(transparent) | mfb(bashable) | mfb(diggable) | mfb(container) | mfb(rough) |
+mfb(flammable) },
+{ "shrub",            '#', c_green,   0, tr_null,
+mfb(transparent) | mfb(bashable) | mfb(container) | mfb(flammable) },
+{ "log",              '1', c_brown,   4, tr_null,
+mfb(transparent) | mfb(flammable) | mfb(diggable) },
+{ "root wall",        '#', c_brown,   0, tr_null,
+mfb(noitem) | mfb(supports_roof) },
+{ "wax wall",         '#', c_yellow,  0, tr_null,
+mfb(container) | mfb(flammable) | mfb(noitem) | mfb(supports_roof) },
+{ "wax floor",        '.', c_yellow,  2, tr_null,
+mfb(transparent) | mfb(l_flammable) },
+{ "picket fence",     '|', c_brown,   3, tr_null,
+mfb(transparent) | mfb(diggable) | mfb(flammable) | mfb(noitem) | mfb(thin_obstacle) },
+{ "picket fence",     '-', c_brown,   3, tr_null,
+mfb(transparent) | mfb(diggable) | mfb(flammable) | mfb(noitem) | mfb(thin_obstacle) },
+{ "railing",          '|', c_yellow,  3, tr_null,
+mfb(transparent) | mfb(noitem) | mfb(thin_obstacle) },
+{ "railing",          '-', c_yellow,  3, tr_null,
+mfb(transparent) | mfb(noitem) | mfb(thin_obstacle) },
+{ "marloss bush",     '1', c_dkgray,  0, tr_null,
+mfb(transparent) | mfb(bashable) | mfb(flammable) },
+{ "fungal bed",       '#', c_dkgray,  3, tr_null,
+mfb(transparent) | mfb(l_flammable) | mfb(diggable) },
+{ "fungal tree",      '7', c_dkgray,  0, tr_null,
+mfb(flammable) | mfb(noitem) },
+{ "shallow water",    '~', c_ltblue,  5, tr_null,
+mfb(transparent) | mfb(liquid) | mfb(swimmable) },
+{ "deep water",       '~', c_blue,    0, tr_null,
+mfb(transparent) | mfb(liquid) | mfb(swimmable) },
+{ "sewage",           '~', c_ltgreen, 6, tr_null,
+mfb(transparent) | mfb(swimmable) },
+{ "lava",             '~', c_red,     4, tr_lava,
+mfb(transparent) | mfb(liquid) },
+{ "bed",              '#', c_magenta, 5, tr_null,
+mfb(transparent) | mfb(container) | mfb(flammable) },
+{ "toilet",           '&', c_white,   0, tr_null,
+mfb(transparent) | mfb(bashable) | mfb(l_flammable) },
+{ "sandbox",          '#', c_yellow,  3, tr_null,
+mfb(transparent) },
+{ "slide",            '#', c_ltcyan,  4, tr_null,
+mfb(transparent) },
+{ "monkey bars",      '#', c_cyan,    4, tr_null,
+mfb(transparent) },
+{ "backboard",        '7', c_red,     0, tr_null,
+mfb(transparent) },
+{ "bench",            '#', c_brown,   3, tr_null,
+mfb(transparent) | mfb(flammable) },
+{ "table",            '#', c_red,     4, tr_null,
+mfb(transparent) | mfb(flammable) },
+{ "pool table",       '#', c_green,   4, tr_null,
+mfb(transparent) | mfb(flammable) },
+{ "gasoline pump",    '&', c_red,     0, tr_null,
+mfb(transparent) | mfb(explodes) | mfb(noitem) },
+{ "smashed gas pump", '&', c_ltred,   0, tr_null,
+mfb(transparent) | mfb(noitem) },
+{ "missile",          '#', c_ltblue,  0, tr_null,
+mfb(explodes) | mfb(noitem) },
+{ "blown-out missile",'#', c_ltgray,  0, tr_null,
+mfb(noitem) },
+{ "counter",	     '#', c_blue,    4, tr_null,
+mfb(transparent) | mfb(flammable) },
+{ "radio tower",      '&', c_ltgray,  0, tr_null,
+mfb(noitem) },
+{ "radio controls",   '6', c_green,   0, tr_null,
+mfb(transparent) | mfb(bashable) | mfb(noitem) },
+{ "broken console",   '6', c_ltgray,  0, tr_null,
+mfb(transparent) | mfb(noitem) },
+{ "computer console", '6', c_blue,    0, tr_null,
+mfb(transparent) | mfb(console) | mfb(noitem) },
+{ "sewage pipe",      '1', c_ltgray,  0, tr_null,
+mfb(transparent) },
+{ "sewage pump",      '&', c_ltgray,  0, tr_null,
+mfb(noitem) },
+{ "centrifuge",       '{', c_magenta, 0, tr_null,
+mfb(transparent) },
+{ "column",           '1', c_ltgray,  0, tr_null,
+mfb(flammable) },
+{ "refrigerator",     '{', c_ltcyan,  0, tr_null,
+mfb(container) },
+{ "dresser",          '{', c_brown,   0, tr_null,
+mfb(transparent) | mfb(container) | mfb(flammable) },
+{ "display rack",     '{', c_ltgray,  0, tr_null,
+mfb(transparent) | mfb(container) | mfb(l_flammable) },
+{ "book case",        '{', c_brown,   0, tr_null,
+mfb(container) | mfb(flammable) },
+{ "dumpster",	     '{', c_green,   0, tr_null,
+mfb(container) },
+{ "cloning vat",      '0', c_ltcyan,  0, tr_null,
+mfb(transparent) | mfb(bashable) | mfb(container) | mfb(sealed) },
+{ "crate",            '{', c_brown,   0, tr_null,
+mfb(transparent) | mfb(bashable) | mfb(container) | mfb(sealed) |
+mfb(flammable) },
+{ "open crate",       '{', c_brown,   0, tr_null,
+mfb(transparent) | mfb(bashable) | mfb(container) | mfb(flammable) },
+{ "stairs down",      '>', c_yellow,  2, tr_null,
+mfb(transparent) | mfb(goes_down) | mfb(container) },
+{ "stairs up",        '<', c_yellow,  2, tr_null,
+mfb(transparent) | mfb(goes_up) | mfb(container) },
+{ "manhole",          '>', c_dkgray,  2, tr_null,
+mfb(transparent) | mfb(goes_down) | mfb(container) },
+{ "ladder",           '<', c_dkgray,  2, tr_null,
+mfb(transparent) | mfb(goes_up) | mfb(container) },
+{ "ladder",           '>', c_dkgray,  2, tr_null,
+mfb(transparent) | mfb(goes_down) | mfb(container) },
+{ "downward slope",   '>', c_brown,   2, tr_null,
+mfb(transparent) | mfb(goes_down) | mfb(container) },
+{ "upward slope",     '<', c_brown,   2, tr_null,
+mfb(transparent) | mfb(goes_up) | mfb(container) },
+{ "rope leading up",  '<', c_white,   2, tr_null,
+mfb(transparent) | mfb(goes_up) },
+{ "manhole cover",    '0', c_dkgray,  2, tr_null,
+mfb(transparent) },
+{ "card reader",	     '6', c_pink,    0, tr_null,	// Science
+mfb(noitem) },
+{ "card reader",	     '6', c_pink,    0, tr_null,	// Military
+mfb(noitem) },
+{ "broken card reader",'6',c_ltgray,  0, tr_null,
+mfb(noitem) },
+{ "slot machine",     '6', c_green,   0, tr_null,
+mfb(bashable) | mfb(noitem) },
+{ "elevator controls",'6', c_ltblue,  0, tr_null,
+mfb(noitem) },
+{ "powerless controls",'6',c_ltgray,  0, tr_null,
+mfb(noitem) },
+{ "elevator",         '.', c_magenta, 2, tr_null,
+0 },
+{ "dark pedestal",    '&', c_dkgray,  0, tr_null,
+mfb(transparent) },
+{ "light pedestal",   '&', c_white,   0, tr_null,
+mfb(transparent) },
+{ "red stone",        '#', c_red,     0, tr_null,
+0 },
+{ "green stone",      '#', c_green,   0, tr_null,
+0 },
+{ "blue stone",       '#', c_blue,    0, tr_null,
+0 },
+{ "red floor",        '.', c_red,     2, tr_null,
+mfb(transparent) },
+{ "green floor",      '.', c_green,   2, tr_null,
+mfb(transparent) },
+{ "blue floor",       '.', c_blue,    2, tr_null,
+mfb(transparent) },
+{ "yellow switch",    '6', c_yellow,  0, tr_null,
+mfb(transparent) },
+{ "cyan switch",      '6', c_cyan,    0, tr_null,
+mfb(transparent) },
+{ "purple switch",    '6', c_magenta, 0, tr_null,
+mfb(transparent) },
+{ "checkered switch", '6', c_white,   0, tr_null,
+mfb(transparent) }
+
+};
+
 using namespace cataclysm;
 
 #define SGN(a) (((a)<0) ? -1 : 1)
@@ -551,7 +831,7 @@ ter_id& map::ter(int x, int y)
 
 std::string map::tername(int x, int y)
 {
- return terlist[ter(x, y)].name;
+ return ter_t::list[ter(x, y)].name;
 }
 
 std::string map::features(int x, int y)
@@ -582,12 +862,12 @@ int map::move_cost(int x, int y)
   else
    return 8;
  }
- return terlist[ter(x, y)].movecost;
+ return ter_t::list[ter(x, y)].movecost;
 }
 
 int map::move_cost_ter_only(int x, int y)
 {
- return terlist[ter(x, y)].movecost;
+ return ter_t::list[ter(x, y)].movecost;
 }
 
 bool map::trans(int x, int y)
@@ -606,7 +886,7 @@ bool map::trans(int x, int y)
     tertr = true; // open opaque door
   }
  } else
-  tertr = terlist[ter(x, y)].flags & mfb(transparent);
+  tertr = ter_t::list[ter(x, y)].flags & mfb(transparent);
  return tertr &&
         (field_at(x, y).type == 0 ||	// Fields may obscure the view, too
         fieldlist[field_at(x, y).type].transparent[field_at(x, y).density - 1]);
@@ -624,12 +904,12 @@ bool map::has_flag(t_flag flag, int x, int y)
     return true;
   }
  }
- return terlist[ter(x, y)].flags & mfb(flag);
+ return ter_t::list[ter(x, y)].flags & mfb(flag);
 }
 
 bool map::has_flag_ter_only(t_flag flag, int x, int y)
 {
- return terlist[ter(x, y)].flags & mfb(flag);
+ return ter_t::list[ter(x, y)].flags & mfb(flag);
 }
 
 bool map::is_destructable(int x, int y)
@@ -1321,8 +1601,7 @@ bool map::open_door(int x, int y, bool inside)
 void map::translate(ter_id from, ter_id to)
 {
  if (from == to) {
-  debugmsg("map::translate %s => %s", terlist[from].name.c_str(),
-                                      terlist[from].name.c_str());
+  debugmsg("map::translate %s => %s", ter_t::list[from].name.c_str(), ter_t::list[from].name.c_str());
   return;
  }
  for (int x = 0; x < SEEX * my_MAPSIZE; x++) {
@@ -1615,8 +1894,8 @@ trap_id& map::tr_at(int x, int y)
   return nultrap;	// Out-of-bounds, return our null trap
  }
 
- if (terlist[ grid[nonant]->ter[x][y] ].trap != tr_null) {
-  nultrap = terlist[ grid[nonant]->ter[x][y] ].trap;
+ if (ter_t::list[ grid[nonant]->ter[x][y] ].trap != tr_null) {
+  nultrap = ter_t::list[ grid[nonant]->ter[x][y] ].trap;
   return nultrap;
  }
  
@@ -1625,8 +1904,7 @@ trap_id& map::tr_at(int x, int y)
 
 void map::add_trap(int x, int y, trap_id t)
 {
- if (!INBOUNDS(x, y))
-  return;
+ if (!INBOUNDS(x, y)) return;
  int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
 
  x %= SEEX;
@@ -1767,12 +2045,9 @@ void map::draw(game *g, WINDOW* w, point center)
  int light = g->u.sight_range(g->light_level());
  for  (int realx = center.x - SEEX; realx <= center.x + SEEX; realx++) {
   for (int realy = center.y - SEEY; realy <= center.y + SEEY; realy++) {
-   int dist = rl_dist(g->u.posx, g->u.posy, realx, realy);
+   const int dist = rl_dist(g->u.posx, g->u.posy, realx, realy);
    if (dist > light) {
-    if (g->u.has_disease(DI_BOOMERED))
-     mvwputch(w, realy+SEEY - center.y, realx+SEEX - center.x, c_magenta,'#');
-    else
-     mvwputch(w, realy+SEEY - center.y, realx+SEEX - center.x, c_dkgray, '#');
+    mvwputch(w, realy+SEEY - center.y, realx+SEEX - center.x, (g->u.has_disease(DI_BOOMERED) ? c_magenta : c_dkgray),'#');
    } else if (dist <= g->u.clairvoyance() ||
               sees(g->u.posx, g->u.posy, realx, realy, light, t))
     drawsq(w, g->u, realx, realy, false, true, center.x, center.y);
@@ -1788,16 +2063,13 @@ void map::draw(game *g, WINDOW* w, point center)
 void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
                  bool show_items, int cx, int cy)
 {
- if (!INBOUNDS(x, y))
-  return;	// Out of bounds
- if (cx == -1)
-  cx = u.posx;
- if (cy == -1)
-  cy = u.posy;
+ if (!INBOUNDS(x, y)) return;	// Out of bounds
+ if (cx == -1) cx = u.posx;
+ if (cy == -1) cy = u.posy;
  int k = x + SEEX - cx;
  int j = y + SEEY - cy;
  nc_color tercol;
- long sym = terlist[ter(x, y)].sym;
+ long sym = ter_t::list[ter(x, y)].sym;
  bool hi = false;
  bool normal_tercol = false, drew_field = false; 
  if (u.has_disease(DI_BOOMERED))
@@ -1807,7 +2079,7 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
   tercol = c_ltgreen;
  else {
   normal_tercol = true;
-  tercol = terlist[ter(x, y)].color;
+  tercol = ter_t::list[ter(x, y)].color;
  }
  if (move_cost(x, y) == 0 && has_flag(swimmable, x, y) && !u.underwater)
   show_items = false;	// Can only see underwater items if WE are underwater
@@ -1829,8 +2101,7 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
    }
  }
    // If there's a field here, draw that instead (unless its symbol is %)
-   if (field_at(x, y).type != fd_null &&
-     fieldlist[field_at(x, y).type].sym != '&') {
+   if (field_at(x, y).type != fd_null && fieldlist[field_at(x, y).type].sym != '&') {
   tercol = fieldlist[field_at(x, y).type].color[field_at(x, y).density - 1];
   drew_field = true;
   if (fieldlist[field_at(x, y).type].sym == '*') {
@@ -1848,30 +2119,24 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
  }
 // If there's items here, draw those instead
  if (show_items && i_at(x, y).size() > 0 && !drew_field) {
-  if ((terlist[ter(x, y)].sym != '.'))
-   hi = true;
+  if ((ter_t::list[ter(x, y)].sym != '.')) hi = true;
   else {
    tercol = i_at(x, y)[i_at(x, y).size() - 1].color();
-   if (i_at(x, y).size() > 1)
-    invert = !invert;
+   if (i_at(x, y).size() > 1) invert = !invert;
    sym = i_at(x, y)[i_at(x, y).size() - 1].symbol();
   }
  }
 
  int veh_part = 0;
- vehicle *veh = veh_at(x, y, veh_part);
+ const vehicle* const veh = veh_at(x, y, veh_part);
  if (veh) {
   sym = special_symbol (veh->face.dir_symbol(veh->part_sym(veh_part)));
-  if (normal_tercol)
-   tercol = veh->part_color(veh_part);
+  if (normal_tercol) tercol = veh->part_color(veh_part);
  }
 
- if (invert)
-  mvwputch_inv(w, j, k, tercol, sym);
- else if (hi)
-  mvwputch_hi (w, j, k, tercol, sym);
- else
-  mvwputch    (w, j, k, tercol, sym);
+ if (invert) mvwputch_inv(w, j, k, tercol, sym);
+ else if (hi) mvwputch_hi (w, j, k, tercol, sym);
+ else mvwputch    (w, j, k, tercol, sym);
 }
 
 #if 0

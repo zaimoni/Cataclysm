@@ -244,11 +244,11 @@ void game::construction_menu()
    int posx = 33, posy = 2;
    for (int n = 0; n < current_con->stages.size(); n++) {
     const nc_color color_stage = (player_can_build(u, total_inv, current_con, n) ? c_white : c_dkgray);
-    mvwprintz(w_con, posy, 31, color_stage, "Stage %d: %s", n + 1,
-              current_con->stages[n].terrain == t_null? "" : terlist[current_con->stages[n].terrain].name.c_str());
+	const construction_stage& stage = current_con->stages[n];
+	mvwprintz(w_con, posy, 31, color_stage, "Stage %d: %s", n + 1,
+              stage.terrain == t_null? "" : ter_t::list[stage.terrain].name.c_str());
     posy++;
 // Print tools
-    const construction_stage& stage = current_con->stages[n];
     bool has_tool[3] = {stage.tools[0].empty(),
                         stage.tools[1].empty(),
                         stage.tools[2].empty()};

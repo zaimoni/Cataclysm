@@ -2677,8 +2677,8 @@ void game::hallucinate()
  for (int i = 0; i <= SEEX * 2 + 1; i++) {
   for (int j = 0; j <= SEEY * 2 + 1; j++) {
    if (one_in(10)) {
-    char ter_sym = terlist[m.ter(i + rng(-2, 2), j + rng(-2, 2))].sym;
-    nc_color ter_col = terlist[m.ter(i + rng(-2, 2), j + rng(-2, 2))].color;
+    char ter_sym = ter_t::list[m.ter(i + rng(-2, 2), j + rng(-2, 2))].sym;
+    nc_color ter_col = ter_t::list[m.ter(i + rng(-2, 2), j + rng(-2, 2))].color;
     mvwputch(w_terrain, j, i, ter_col, ter_sym);
    }
   }

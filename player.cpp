@@ -4516,12 +4516,19 @@ void player::read(game *g, char ch)
  
 void player::try_to_sleep(game *g)
 {
- if (g->m.ter(posx, posy) == t_bed)
-  g->add_msg("This bed is a comfortable place to sleep.");
- else if (g->m.ter(posx, posy) != t_floor)
-  g->add_msg("It's %shard to get to sleep on this %s.",
-             terlist[g->m.ter(posx, posy)].movecost <= 2 ? "a little " : "",
-             terlist[g->m.ter(posx, posy)].name.c_str());
+ const auto terrain = g->m.ter(posx, posy);
+ switch (terrain)
+ {
+ case t_floor: break;
+ case t_bed:
+	 g->add_msg("This bed is a comfortable place to sleep.");
+	 break;
+ default:
+	{
+	const auto& t_data = ter_t::list[terrain];
+    g->add_msg("It's %shard to get to sleep on this %s.", t_data.movecost <= 2 ? "a little " : "", t_data.name.c_str());
+	}
+ }
  add_disease(DI_LYING_DOWN, 300, g);
 }
 

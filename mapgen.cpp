@@ -6421,7 +6421,7 @@ void map::place_items(items_location loc, int chance, int x1, int y1,
 // Only place on valid terrain
    const auto terrain = ter(px, py);
    if (!ongrass && (t_dirt == terrain || t_grass == terrain)) continue;
-   const auto& t_data = terlist[terrain];
+   const auto& t_data = ter_t::list[terrain];
    if (t_data.movecost == 0 && !(t_data.flags & mfb(container))) continue;
   } while (false);
   add_item(px, py, item::types[eligible[selection]], turn);
