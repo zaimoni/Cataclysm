@@ -192,9 +192,6 @@
     <ClInclude Include="weather.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="weather_data.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Zaimoni.STL\Pure.C\comptest.h">
       <Filter>Header Files</Filter>
     </ClInclude>

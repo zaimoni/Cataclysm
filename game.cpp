@@ -5,7 +5,6 @@
 #include "skill.h"
 #include "line.h"
 #include "computer.h"
-#include "weather_data.h"
 #include "veh_interact.h"
 #include "options.h"
 #include "mapbuffer.h"
@@ -662,10 +661,8 @@ bool game::do_turn()
    draw();
   get_input();
   if (is_game_over()) {
-   if (uquit == QUIT_DIED)
-    popup_top("Game over! Press spacebar...");
-   if (uquit == QUIT_DIED || uquit == QUIT_SUICIDE)
-    death_screen();
+   if (uquit == QUIT_DIED) popup_top("Game over! Press spacebar...");
+   if (uquit == QUIT_DIED || uquit == QUIT_SUICIDE) death_screen();
    return true;
   }
  }
@@ -684,7 +681,7 @@ bool game::do_turn()
 
  if (levz >= 0) {
   weather_effect weffect;
-  (weffect.*(weather_data[weather].effect))(this);
+  (weffect.*(weather_datum::data[weather].effect))(this);
   check_warmth();
  }
 
@@ -694,8 +691,7 @@ bool game::do_turn()
  }
 
  update_skills();
- if (turn % 10 == 0)
-  u.update_morale();
+ if (turn % 10 == 0) u.update_morale();
  return false;
 }
 
@@ -916,19 +912,101 @@ void game::cancel_activity_query(const char* message, ...)
 
 void game::update_weather()
 {
+	/* Chances for each season, for the weather listed on the left to shift to the
+	* weather listed across the top.
+	*/
+	static const int weather_shift[4][NUM_WEATHER_TYPES][NUM_WEATHER_TYPES] = {
+		{ // SPRING
+		  //         NUL CLR SUN CLD DRZ RAI THN LGT AC1 AC2 SN1 SN2 SN3
+			/* NUL */{ 1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
+			/* CLR */{ 0,  5,  2,  3,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
+			/* SUN */{ 0,  4,  7,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
+			/* CLD */{ 0,  3,  0,  4,  3,  1,  0,  0,  1,  0,  1,  0,  0 },
+			/* DRZ */{ 0,  1,  0,  3,  6,  3,  1,  0,  2,  0,  0,  0,  0 },
+			/* RAI */{ 0,  0,  0,  4,  5,  7,  3,  1,  0,  0,  0,  0,  0 },
+			//         NUL CLR SUN CLD DRZ RAI THN LGT AC1 AC2 SN1 SN2 SN3
+			/* TND */{ 0,  0,  0,  2,  2,  4,  5,  3,  0,  0,  0,  0,  0 },
+			/* LGT */{ 0,  0,  0,  1,  1,  4,  5,  5,  0,  0,  0,  0,  0 },
+			/* AC1 */{ 0,  1,  0,  1,  1,  1,  0,  0,  3,  3,  0,  0,  0 },
+			/* AC2 */{ 0,  0,  0,  1,  1,  1,  0,  0,  4,  2,  0,  0,  0 },
+			/* SN1 */{ 0,  1,  0,  3,  2,  1,  1,  0,  0,  0,  2,  1,  0 },
+			//         NUL CLR SUN CLD DRZ RAI THN LGT AC1 AC2 SN1 SN2 SN3
+			/* SN2 */{ 0,  0,  0,  1,  1,  2,  1,  0,  0,  0,  3,  1,  1 },
+			/* SN3 */{ 0,  0,  0,  0,  1,  3,  2,  1,  0,  0,  1,  1,  1 }
+		},
+
+{ // SUMMER
+  //         NUL CLR SUN CLD DRZ RAI THN LGT AC1 AC2 SN1 SN2 SN3
+	/* NUL */{ 1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
+	/* CLR */{ 0,  5,  5,  2,  2,  1,  1,  0,  1,  0,  1,  0,  0 },
+	/* SUN */{ 0,  3,  7,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
+	/* CLD */{ 0,  1,  1,  6,  5,  2,  1,  0,  2,  0,  1,  0,  0 },
+	/* DRZ */{ 0,  2,  2,  3,  6,  3,  1,  0,  2,  0,  0,  0,  0 },
+	//         NUL CLR SUN CLD DRZ RAI THN LGT AC1 AC2 SN1 SN2 SN3
+	/* RAI */{ 0,  1,  1,  3,  4,  5,  4,  2,  0,  0,  0,  0,  0 },
+	/* TND */{ 0,  0,  0,  2,  3,  5,  4,  5,  0,  0,  0,  0,  0 },
+	/* LGT */{ 0,  0,  0,  0,  0,  3,  3,  5,  0,  0,  0,  0,  0 },
+	/* AC1 */{ 0,  1,  1,  2,  1,  1,  0,  0,  3,  4,  0,  0,  0 },
+	/* AC2 */{ 0,  1,  0,  1,  1,  1,  0,  0,  5,  3,  0,  0,  0 },
+	//         NUL CLR SUN CLD DRZ RAI THN LGT AC1 AC2 SN1 SN2 SN3
+	/* SN1 */{ 0,  4,  0,  4,  2,  2,  1,  0,  0,  0,  2,  1,  0 },
+	/* SN2 */{ 0,  0,  0,  2,  2,  4,  2,  0,  0,  0,  3,  1,  1 },
+	/* SN3 */{ 0,  0,  0,  2,  1,  3,  3,  1,  0,  0,  2,  2,  0 }
+},
+
+{ // AUTUMN
+  //         NUL CLR SUN CLD DRZ RAI THN LGT AC1 AC2 SN1 SN2 SN3
+	/* NUL */{ 1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
+	/* CLR */{ 0,  6,  3,  3,  3,  1,  1,  0,  1,  0,  1,  0,  0 },
+	/* SUN */{ 0,  4,  5,  2,  1,  0,  0,  0,  0,  0,  0,  0,  0 },
+	/* CLD */{ 0,  1,  1,  8,  5,  2,  0,  0,  2,  0,  1,  0,  0 },
+	/* DRZ */{ 0,  1,  0,  3,  6,  3,  1,  0,  2,  0,  0,  0,  0 },
+	//         NUL CLR SUN CLD DRZ RAI THN LGT AC1 AC2 SN1 SN2 SN3
+	/* RAI */{ 0,  1,  1,  3,  4,  5,  4,  2,  0,  0,  0,  0,  0 },
+	/* TND */{ 0,  0,  0,  2,  3,  5,  4,  5,  0,  0,  0,  0,  0 },
+	/* LGT */{ 0,  0,  0,  0,  0,  3,  3,  5,  0,  0,  0,  0,  0 },
+	/* AC1 */{ 0,  1,  1,  2,  1,  1,  0,  0,  3,  4,  0,  0,  0 },
+	/* AC2 */{ 0,  0,  0,  1,  1,  1,  0,  0,  4,  4,  0,  0,  0 },
+	//         NUL CLR SUN CLD DRZ RAI THN LGT AC1 AC2 SN1 SN2 SN3
+	/* SN1 */{ 0,  2,  0,  4,  2,  1,  0,  0,  0,  0,  2,  1,  0 },
+	/* SN2 */{ 0,  0,  0,  2,  2,  5,  2,  0,  0,  0,  2,  1,  1 },
+	/* SN3 */{ 0,  0,  0,  2,  1,  5,  2,  0,  0,  0,  2,  1,  1 }
+},
+
+{ // WINTER
+  //         NUL CLR SUN CLD DRZ RAI THN LGT AC1 AC2 SN1 SN2 SN3
+	/* NUL */{ 1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 },
+	/* CLR */{ 0,  9,  3,  4,  1,  0,  0,  0,  1,  0,  2,  0,  0 },
+	/* SUN */{ 0,  4,  8,  1,  0,  0,  0,  0,  0,  0,  1,  0,  0 },
+	/* CLD */{ 0,  1,  1,  8,  1,  0,  0,  0,  1,  0,  4,  2,  1 },
+	/* DRZ */{ 0,  1,  0,  4,  3,  1,  0,  0,  1,  0,  3,  0,  0 },
+	//         NUL CLR SUN CLD DRZ RAI THN LGT AC1 AC2 SN1 SN2 SN3
+	/* RAI */{ 0,  0,  0,  3,  2,  2,  1,  1,  0,  0,  4,  4,  0 },
+	/* TND */{ 0,  0,  0,  2,  1,  2,  2,  1,  0,  0,  2,  4,  1 },
+	/* LGT */{ 0,  0,  0,  3,  0,  3,  3,  1,  0,  0,  2,  4,  4 },
+	/* AC1 */{ 0,  1,  1,  4,  1,  0,  0,  0,  3,  1,  1,  0,  0 },
+	/* AC2 */{ 0,  0,  0,  2,  1,  1,  0,  0,  4,  1,  1,  1,  0 },
+	//         NUL CLR SUN CLD DRZ RAI THN LGT AC1 AC2 SN1 SN2 SN3
+	/* SN1 */{ 0,  1,  0,  5,  1,  0,  0,  0,  0,  0,  7,  2,  0 },
+	/* SN2 */{ 0,  0,  0,  1,  0,  0,  0,  0,  0,  0,  2,  7,  3 },
+	/* SN3 */{ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  4,  6 }
+}
+	};
+
  season_type season = turn.season;
 // Pick a new weather type (most likely the same one)
  int chances[NUM_WEATHER_TYPES];
  int total = 0;
  for (int i = 0; i < NUM_WEATHER_TYPES; i++) {
+  const auto& w_data = weather_datum::data[i];
 // Reduce the chance for freezing-temp-only weather to 0 if it's above freezing
 // and vice versa.
-  if ((weather_data[i].avg_temperature[season] < 32 && temperature > 32) ||
-      (weather_data[i].avg_temperature[season] > 32 && temperature < 32)   )
+  if (   (w_data.avg_temperature[season] < 32 && temperature > 32)
+      || (w_data.avg_temperature[season] > 32 && temperature < 32))
    chances[i] = 0;
   else {
    chances[i] = weather_shift[season][weather][i];
-   if (weather_data[i].dangerous && u.has_artifact_with(AEP_BAD_WEATHER))
+   if (w_data.dangerous && u.has_artifact_with(AEP_BAD_WEATHER))
     chances[i] = chances[i] * 4 + 10;
    total += chances[i];
   }
@@ -944,22 +1022,23 @@ void game::update_weather()
   }
  }
 // Advance the weather timer
- int minutes = rng(weather_data[new_weather].mintime,
-                   weather_data[new_weather].maxtime);
+ int minutes = rng(weather_datum::data[new_weather].mintime,
+                   weather_datum::data[new_weather].maxtime);
  nextweather = turn + MINUTES(minutes);
  weather = new_weather;
  if (weather == WEATHER_SUNNY && turn.is_night()) weather = WEATHER_CLEAR;
 
- if (weather != old_weather && weather_data[weather].dangerous &&
+ const auto& w_data = weather_datum::data[weather];
+ if (weather != old_weather && w_data.dangerous &&
      levz >= 0 && m.is_outside(u.posx, u.posy)) {
   std::stringstream weather_text;
-  weather_text << "The weather changed to " << weather_data[weather].name << "!";
+  weather_text << "The weather changed to " << w_data.name << "!";
   cancel_activity_query(weather_text.str().c_str());
  }
 
 // Now update temperature
  if (!one_in(4)) { // 3 in 4 chance of respecting avg temp for the weather
-  int average = weather_data[weather].avg_temperature[season];
+  int average = w_data.avg_temperature[season];
   if (temperature < average)
    temperature++;
   else if (temperature > average)
@@ -967,10 +1046,7 @@ void game::update_weather()
  } else // 1 in 4 chance of random walk
   temperature += rng(-1, 1);
 
- if (turn.is_night())
-  temperature += rng(-2, 1);
- else
-  temperature += rng(-1, 2);
+ temperature += turn.is_night() ? rng(-2, 1) : rng(-1, 2);
 }
 
 void game::give_mission(mission_id type)
@@ -2391,6 +2467,8 @@ void game::list_missions()
 
 void game::draw()
 {
+ static const char* const season_name[4] = { "Spring", "Summer", "Autumn", "Winter" };
+
  // Draw map
  werase(w_terrain);
  draw_ter();
@@ -2406,17 +2484,16 @@ void game::draw()
  {
  oter_id cur_ter = cur_om.ter((levx + int(MAPSIZE / 2)) / 2,
                               (levy + int(MAPSIZE / 2)) / 2);
- decltype(oter_t::list[cur_ter])& terrain = oter_t::list[cur_ter];
- std::string tername = terrain.name;
- if (tername.length() > 14)
-  tername = tername.substr(0, 14);
+ const auto& terrain = oter_t::list[cur_ter];
+ std::string tername(terrain.name);
+ if (tername.length() > 14) tername = tername.substr(0, 14);
  mvwprintz(w_status, 0,  0, terrain.color, tername.c_str());
  }
  if (levz < 0)
   mvwprintz(w_status, 0, 18, c_ltgray, "Underground");
  else
-  mvwprintz(w_status, 0, 18, weather_data[weather].color,
-                             weather_data[weather].name.c_str());
+  mvwprintz(w_status, 0, 18, weather_datum::data[weather].color,
+                             weather_datum::data[weather].name.c_str());
  nc_color col_temp = c_blue;
  if (temperature >= 90)
   col_temp = c_red;
@@ -2433,9 +2510,8 @@ void game::draw()
  else
   wprintz(w_status, col_temp, " %dF", temperature);
  mvwprintz(w_status, 0, 41, c_white, "%s, day %d",
-           season_name[turn.season].c_str(), turn.day + 1);
- if (run_mode != 0)
-  mvwprintz(w_status, 2, 51, c_red, "SAFE");
+           season_name[turn.season], turn.day + 1);
+ if (run_mode != 0) mvwprintz(w_status, 2, 51, c_red, "SAFE");
  wrefresh(w_status);
  // Draw messages
  write_msg();
@@ -2697,7 +2773,7 @@ unsigned char game::light_level()
   ret = 1;
  else {
   ret = turn.sunlight();
-  ret -= weather_data[weather].sight_penalty;
+  ret -= weather_datum::data[weather].sight_penalty;
  }
  for (int i = 0; i < events.size(); i++) {
   if (events[i].type == EVENT_DIM) {

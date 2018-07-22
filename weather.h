@@ -48,6 +48,8 @@ struct weather_effect
 
 struct weather_datum
 {
+ static const weather_datum data[NUM_WEATHER_TYPES];
+
  std::string name;
  nc_color color;
  int avg_temperature[4]; // Spring, Summer, Winter, Fall

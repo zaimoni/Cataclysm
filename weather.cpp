@@ -2,6 +2,54 @@
 #include "game.h"
 #include <vector>
 
+/* Name, color in UI, {seasonal temperatures}, ranged penalty, sight penalty,
+* minimum time (in minutes), max time (in minutes), warn player?
+* Note that max time is NOT when the weather is guaranteed to stop; it is
+*  simply when the weather is guaranteed to be recalculated.  Most weather
+*  patterns have "stay the same" as a highly likely transition; see below
+*/
+const weather_datum weather_datum::data[NUM_WEATHER_TYPES] = {
+	{ "NULL Weather - BUG", c_magenta,
+{ 0, 0, 0, 0 }, 0, 0, 0, 0, false,
+&weather_effect::none },
+{ "Clear", c_cyan,
+{ 55, 85, 60, 30 }, 0, 0, 30, 120, false,
+&weather_effect::none },
+{ "Sunny", c_ltcyan,
+{ 70, 100, 70, 40 }, 0, 0, 60, 300, false,
+&weather_effect::glare },
+{ "Cloudy", c_ltgray,
+{ 50, 75, 60, 20 }, 0, 2, 60, 300, false,
+&weather_effect::none },
+{ "Drizzle", c_ltblue,
+{ 45, 70, 45, 35 }, 1, 3, 10, 60, true,
+&weather_effect::wet },
+{ "Rain", c_blue,
+{ 42, 65, 40, 30 }, 3, 5, 30, 180, true,
+&weather_effect::very_wet },
+{ "Thunder Storm", c_dkgray,
+{ 42, 70, 40, 30 }, 4, 7, 30, 120, true,
+&weather_effect::thunder },
+{ "Lightning Storm", c_yellow,
+{ 45, 52, 42, 32 }, 4, 8, 10, 30, true,
+&weather_effect::lightning },
+{ "Acidic Drizzle", c_ltgreen,
+{ 45, 70, 45, 35 }, 2, 3, 10, 30, true,
+&weather_effect::light_acid },
+{ "Acid Rain", c_green,
+{ 45, 70, 45, 30 }, 4, 6, 10, 30, true,
+&weather_effect::acid },
+{ "Flurries", c_white,
+{ 30, 30, 30, 20 }, 2, 4, 10, 60, true,
+&weather_effect::flurry },
+{ "Snowing", c_white,
+{ 25, 25, 20, 10 }, 4, 7, 30, 360, true,
+&weather_effect::snow },
+{ "Snowstorm", c_white,
+{ 20, 20, 20,  5 }, 6, 10, 60, 180, true,
+&weather_effect::snowstorm }
+};
+
 #define PLAYER_OUTSIDE (g->m.is_outside(g->u.posx, g->u.posy) && g->levz >= 0)
 #define THUNDER_CHANCE 50
 #define LIGHTNING_CHANCE 600
