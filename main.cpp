@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
  // when we support mods, we load their tiles configuration from tiles.json as well (and check their filepaths are ok
  // value null could be used to unset a pre-existing value
  if (JSON::cache.count("tiles") && !JSON::cache["tiles"].destructive_grep(preload_image)) JSON::cache.erase("tiles");	// wires tiles to types
+ flush_tilesheets();	// don't want to pay RAM overhead for tilesheets after we've extracted the tiles from them
 
 // ncurses stuff
  initscr(); // Initialize ncurses

@@ -113,5 +113,6 @@ void timeout(int delay);//PORTABILITY, DUMMY FUNCTION
 #define CURSES_HAS_TILESET 1
 // tileset extensions
 bool load_tile(const char* src);
+void flush_tilesheets();
 
 #endif

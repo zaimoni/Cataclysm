@@ -25,6 +25,7 @@
 #ifndef CURSES_HAS_TILESET
 // stock curses library does not have tileset extensions; no-op them
 inline bool load_tile(const char* src) { return false; }	// automatic failure
+void flush_tilesheets() {}
 #endif
 
 
