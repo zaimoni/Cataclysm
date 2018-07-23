@@ -64,12 +64,15 @@ public:
 	}
 
 	// use for testing values of array or object.
-	JSON grep(bool (ok)(const JSON&)) const;	// Cf. Perl4+
-	bool destructive_grep(bool (ok)(const JSON&));	// 2018-07-21: not only do not need to allow for function objects, they converted compile-time errors to run-time errors.
+	// 2018-07-21: not only do not need to allow for function objects, they converted compile-time errors to run-time errors.
+	JSON grep(bool (ok)(const JSON&)) const;	// Cf. Perl4+; evaluated in order for arrays
+	bool destructive_grep(bool (ok)(const JSON&));	// evaluated in reverse order for arrays
 	// key-value pair that is ok is not changed; a not-ok key-value pair that fails post-processing is deleted
 	bool destructive_grep(bool (ok)(const std::string& key,const JSON&),bool (postprocess)(const std::string& key, JSON&));	// use for testing object
-	bool destructive_merge(JSON& src,bool (ok)(const JSON&));	// keys of src end up in ourselves, the destination.  Cf PHP3+
+	bool destructive_merge(JSON& src);	// keys of src end up in ourselves, the destination.  Cf PHP3+
+	bool destructive_merge(JSON& src, bool (ok)(const JSON&));	// keys of src end up in ourselves, the destination.  Cf PHP3+
 	std::vector<std::string> keys() const;	// Cf. Perl
+	void unset(const std::vector<std::string>& src);	// cf PHP 3+ -- clears keys from object
 
 	bool syntax_ok() const;
 protected:

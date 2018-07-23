@@ -18,10 +18,9 @@ static bool scalar_on_hard_drive(const JSON& x)
 	if (!x.is_scalar()) return false;
 	if (x.empty()) return false;
 	OS_dir working;
+	const auto hash_tag = x.scalar().find('#');
 	// we use a hashtag to cope with tilesheets.
-	const char* const test = x.scalar().c_str();
-	const char* const index = strchr(test, '#');
-	return working.exists(!index ? test : std::string(test,index-test).c_str());
+	return working.exists((hash_tag == std::string::npos ? x.scalar() : std::string(x.scalar(), hash_tag)).c_str());
 }
 
 static bool preload_image(const JSON& x)
@@ -52,28 +51,33 @@ static void load_JSON(const char* const src, const char* const key, bool (ok)(co
 #endif
 }
 
-static void load_tiles(const JSON& src)
+// goes into destructive_grep of a JSON array so being applied in reverse order
+static bool load_tiles(const JSON& src)
 {
-	if (!src.is_scalar()) return;
+	if (!src.is_scalar()) return false;
 	std::ifstream fin;
 	fin.open(src.scalar());
-	if (!fin.is_open()) return;
+	if (!fin.is_open()) return false;
 	try {
 		JSON incoming(fin);
 		fin.close();
 		// key we need to know about here is tiles
-		if (!incoming.become_key("tiles")) return;
-		if (JSON::object != incoming.mode()) return;
-		std::vector<std::string> null_keys;
-		const auto amending = JSON::cache.count("tiles");
-		if (amending) null_keys = incoming.grep(JSON::is_null).keys();
+		if (!incoming.become_key("tiles")) return false;
+		if (JSON::object != incoming.mode()) return false;
+		const std::vector<std::string> null_keys(incoming.grep(JSON::is_null).keys());
+		incoming.unset(null_keys);
 		incoming.destructive_grep(scalar_on_hard_drive);
-//		if (amending) incoming.destructive_merge(JSON::cache["tiles"], ...);
-		JSON::cache["tiles"] = std::move(incoming);
+		if (JSON::cache.count("tiles")) {
+			auto& tiles = JSON::cache["tiles"];
+			tiles.unset(null_keys);
+			tiles.destructive_merge(incoming);	// assumes reverse order of iteration
+		} else JSON::cache["tiles"] = std::move(incoming);
+		return true;
 	}
 	catch (const std::exception& e) {
 		fin.close();
 		std::cerr << src.scalar() << ": " << e.what();
+		return false;
 	}
 }
 
@@ -97,9 +101,7 @@ int main(int argc, char *argv[])
  // so ....32.png[#index][!rotate|!flip]
  // index says which image in tilesheet to extract
  // ! notation says what operations to apply to the image
-//	JSON::cache["tilespec"].destructive_grep(init_tiles);
-
- load_JSON("data/json/tiles.json", "tiles", scalar_on_hard_drive);	// authoritative destination, but not how this is to be set up.
+ if (JSON::cache.count("tilespec") && !JSON::cache["tilespec"].destructive_grep(load_tiles)) JSON::cache.erase("tilespec");
 
  // when we support mods, we load their tiles configuration from tiles.json as well (and check their filepaths are ok
  // value null could be used to unset a pre-existing value

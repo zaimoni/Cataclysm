@@ -155,6 +155,33 @@ bool JSON::destructive_grep(bool (ok)(const std::string& key, const JSON&), bool
 	return true;
 }
 
+bool JSON::destructive_merge(JSON& src)
+{
+	if (object != src._mode) return false;
+	if (none == _mode) {	// we are blank.  retype as empty object.
+		_mode = object;
+		_object = 0;	// leak rather than crash
+	}
+	if (object != _mode) return false;
+	if (!src._object) return true;	// no keys
+	std::map<std::string, JSON>* working = (_object ? _object : new std::map<std::string, JSON>());
+	// assume we have RAM, etc.
+#if OBSOLETE
+	std::vector<std::string> keys = src.keys();
+	for (const auto& key : keys) {
+		(*working)[key] = std::move((*src._object)[key]);
+		src._object->erase(key);
+	}
+#else
+	for (auto& iter : *src._object) {
+		(*working)[iter.first] = std::move(iter.second);
+	}
+	delete src._object;
+	src._object = 0;
+#endif
+	if (!working->empty()) _object = working;
+	return true;
+}
 
 bool JSON::destructive_merge(JSON& src, bool (ok)(const JSON&))
 {
@@ -187,6 +214,19 @@ std::vector<std::string> JSON::keys() const
 	}
 	return ret;
 }
+
+void JSON::unset(const std::vector<std::string>& src)
+{
+	if (object != _mode || !_object || src.empty()) return;
+	for (const auto& key : src) {
+		if (_object->count(key)) _object->erase(key);
+	}
+	if (_object->empty()) {
+		delete _object;
+		_object = 0;
+	}
+}
+
 
 // constructor and support thereof
 JSON::JSON(const JSON& src)
@@ -390,7 +430,7 @@ void JSON::finish_reading_object(std::istream& src, unsigned long& line)
 		}
 		if (!next_is(src, ':')) {
 			std::stringstream msg;
-			msg << "JSON read of object failed, expected :, line: " << line << '\n';
+			msg << "JSON read of object failed, expected : got '" << (char)src.peek() << "' code point " << src.peek() << ", line: " << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
 		if (!consume_whitespace(src, line)) {	// oops, at end prematurely
@@ -473,7 +513,6 @@ void JSON::finish_reading_string(std::istream& src, unsigned long& line, char& f
 {
 	std::string dest;
 	bool in_escape = false;
-	dest += first;
 
 	do {
 		int test = src.peek();
@@ -538,8 +577,8 @@ void JSON::finish_reading_literal(std::istream& src, unsigned long& line, char& 
 	do {
 		int test = src.peek();
 		if (EOF == test) break;
+		if (strchr(" \r\n\t\v\f{}[],:\"", test)) break;	// done
 		src.get(first);
-		if (strchr(" \r\n\t\v\f{}[],:\"", first)) break;	// done
 		dest += first;
 	} while(!src.eof());
 	// done
