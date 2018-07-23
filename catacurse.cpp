@@ -198,7 +198,7 @@ bool WinResize()
 {
 	RECT tmp;
 	if (!GetWindowRect(WindowHandle, &tmp)) return false;
-	return MoveWindow(WindowHandle, tmp.left, tmp.top, WindowWidth + WinBorderWidth, WindowHeight + WinBorderHeight + WinTitleSize,true);
+	return MoveWindow(WindowHandle, tmp.left, tmp.top, WindowWidth + WinBorderWidth, WindowHeight + WinBorderHeight + WinTitleSize,true);	// \todo test whether this handles the backbuffer and WindowDC
 }
 
 std::string extract_file_infix(std::string src)
@@ -221,7 +221,6 @@ bool load_tile(const char* src)
 	if (!src || !src[0]) return false;	// nothing to load
 	if ((unsigned short)(-1) == _next) return false;	// at implementation limit
 	if (_translate.count(src)) return true;	// already loaded
-	if (WindowHandle && SetFontSize(16, 16)) WinResize();
 	const char* const has_rotation_specification = strchr(src, ':');
 	std::string base_tile(has_rotation_specification ? std::string(src, has_rotation_specification-src) : src);
 	if (!_translate.count(base_tile.c_str())) {
@@ -263,11 +262,13 @@ bool load_tile(const char* src)
 			if (!image.handle()) return false;	// failed to load
 			_translate[base_tile] = ++_next;
 			_cache[_next] = std::move(image);
+			if (SetFontSize(16, 16) && WindowHandle) WinResize();
 		} else {
 			OS_Image image(base_tile.c_str(), fontwidth, fontheight);
 			if (!image.handle()) return false;	// failed to load
 			_translate[base_tile] = ++_next;
 			_cache[_next] = std::move(image);
+			if (SetFontSize(16, 16) && WindowHandle) WinResize();
 		}
 	}
 	if (!has_rotation_specification) return true;
@@ -420,15 +421,10 @@ bool WinCreate()
 //Unregisters, releases the DC if needed, and destroys the window.
 void WinDestroy()
 {
-    if ((WindowDC > 0) && (ReleaseDC(WindowHandle, WindowDC) == 0)){
-        WindowDC = 0;
-    }
-    if ((!WindowHandle == 0) && (!(DestroyWindow(WindowHandle)))){
-        WindowHandle = 0;
-    }
-    if (!(UnregisterClassW(szWindowClass, WindowINST))){
-        WindowINST = 0;
-    }
+	if (backbuffer && DeleteDC(backbuffer)) backbuffer = 0;
+	if (WindowDC && ReleaseDC(WindowHandle, WindowDC)) WindowDC = 0;
+	if (WindowHandle && DestroyWindow(WindowHandle)) WindowHandle = 0;
+	UnregisterClassW(szWindowClass, WindowINST);	// would happen on program termination anyway
 };
 
 //This function processes any Windows messages we get. Keyboard, OnClose, etc
