@@ -143,15 +143,9 @@ private:
 #endif
 };
 
-// function object
-struct str_compare
-{
-	int operator()(const char* lhs, const char* rhs) const { return strcmp(lhs, rhs); }
-};
-
 // tiles support
 std::map<unsigned short, OS_Image> _cache;
-std::map<const char*, unsigned short, str_compare> _translate;
+std::map<std::string, unsigned short> _translate;	// const char* won't work -- may need to store base names seen first time with a rotation specifier
 
 // tilesheet support
 std::map<std::string, OS_Image> _tilesheets;
@@ -184,10 +178,11 @@ const int ScreenHeight = GetSystemMetrics(SM_CYSCREEN);
 #undef BORDERWIDTH_SCALE
 #undef BORDERHEIGHT_SCALE
 
-bool SetFontSize(int x, int y)
+bool SetFontSize(const int x, const int y)
 {
-	if (4 >= x) return false;
-	if (4 >= y) return false;
+	if (4 >= x) return false;	// illegible
+	if (4 >= y) return false;	// illegible
+	if (x == fontwidth && y == fontheight) return false;	// no-op
 	fontwidth = x;
 	fontheight = y;
 	halfwidth = fontwidth / 2;
@@ -224,37 +219,59 @@ bool load_tile(const char* src)
 	static unsigned short _next = 0;
 
 	if (!src || !src[0]) return false;	// nothing to load
-	if (WindowHandle && fontwidth != fontheight) return false;	// sorry, window already loaded as pure text
 	if ((unsigned short)(-1) == _next) return false;	// at implementation limit
 	if (_translate.count(src)) return true;	// already loaded
-	SetFontSize(16, 16);	// \todo allow this to be an option after know where tiles are/are not allowed and can size the window properly; 32x32 is simply too large
-	const char* const is_from_tilesheet = strchr(src,'#');
-	if (is_from_tilesheet)
-		{
-		std::string tilesheet(src, is_from_tilesheet - src);
-		if (!_tilesheets.count(tilesheet)) {
-			OS_Image relay(tilesheet.c_str());
-			if (!relay.handle()) return false;	// failed to load
-			// read off the tilesheet size from the filename ...#.png
-			std::string infix = extract_file_infix(tilesheet);
-			if (!infix.empty()) {
+	if (WindowHandle && SetFontSize(16, 16)) WinResize();
+	const char* const has_rotation_specification = strchr(src, ':');
+	std::string base_tile(has_rotation_specification ? std::string(src, has_rotation_specification-src) : src);
+	if (!_translate.count(base_tile.c_str())) {
+		const char* const is_from_tilesheet = strchr(base_tile.c_str(), '#');
+		if (is_from_tilesheet) {
+			std::string tilesheet(src, is_from_tilesheet - src);
+			std::string offset(is_from_tilesheet +1);
+			int index = 0;
+			try {
+				index = std::stoi(offset);
+				if (0 > index) return false;
+			} catch (std::exception& e) {
+				return false;
+			}
+			if (!_tilesheets.count(tilesheet)) {
+				OS_Image relay(tilesheet.c_str());
+				if (!relay.handle()) return false;	// failed to load
+				// read off the tilesheet size from the filename ...#.png
+				std::string infix = extract_file_infix(tilesheet);
+				if (infix.empty()) return false;
 				try {
 					int dim = std::stoi(infix);
-					if (0 < dim) _tilesheet_tile[tilesheet] = dim;
+					if (0 >= dim) return false;
+					_tilesheet_tile[tilesheet] = dim;
 				} catch (std::exception& e) {
 					return false;
 				}
+				// we have to handle the per-sheet configuration elsewhere
+				_tilesheets[tilesheet] = std::move(relay);
 			}
-			// we have to handle the per-sheet configuration elsewhere
-			_tilesheets[tilesheet] = std::move(relay);
+			const int dim = _tilesheet_tile[tilesheet];
+			const OS_Image& src = _tilesheets[tilesheet];
+			const size_t scaled_x = src.width() / dim;
+			const size_t scaled_y = src.height() / dim;
+			const int index_y = index / scaled_x;
+			if (index_y <= scaled_y) return false;
+			const int index_x = index - index_y * scaled_x;
+			OS_Image image(src, dim*index_x, dim*index_y, dim, dim);	// clipping constructor
+			if (!image.handle()) return false;	// failed to load
+			_translate[base_tile] = ++_next;
+			_cache[_next] = std::move(image);
+		} else {
+			OS_Image image(base_tile.c_str(), fontwidth, fontheight);
+			if (!image.handle()) return false;	// failed to load
+			_translate[base_tile] = ++_next;
+			_cache[_next] = std::move(image);
 		}
-		// \todo use the clipping constructor, if needed
-		// \todo use the rotation specifier, if needed
-		}
-	OS_Image image(src, fontwidth, fontheight);
-	if (!image.handle()) return false;	// failed to load
-	_translate[src] = ++_next;
-	_cache[_next] = std::move(image);
+	}
+	if (!has_rotation_specification) return true;
+	// \todo use the rotation specifier
 	return true;
 }
 
@@ -351,7 +368,7 @@ LRESULT CALLBACK ProcessMessages(HWND__ *hWnd, unsigned int Msg, WPARAM wParam, 
 
 WINDOW *mainwin;
 const WCHAR *szWindowClass = (L"CataCurseWindow");    //Class name :D
-HINSTANCE WindowINST;   //the instance of the window
+HINSTANCE WindowINST = 0;   //the instance of the window...normally obtained from WinMain but we don't have WinMain
 HDC WindowDC;           //Device Context of the window, used for backbuffer
 int lastchar;          //the last character that was pressed, resets in getch
 int inputdelay;         //How long getch will wait for a character to be typed
@@ -363,6 +380,7 @@ RGBQUAD *windowsPalette;  //The coor palette, 16 colors emulates a terminal
 pairs *colorpairs;   //storage for pair'ed colored, should be dynamic, meh
 unsigned char *dcbits;  //the bits of the screen image, for direct access
 char szDirectory[MAX_PATH] = "";
+int haveCustomFont = 0;	// custom font was there and loaded
 
 // 
 
@@ -620,8 +638,8 @@ WINDOW *initscr(void)
     DeleteObject(SelectObject(backbuffer, backbit));//load the buffer into DC
 	SetBkMode(backbuffer, TRANSPARENT);//Transparent font backgrounds
 
- int nResults = (!typeface.empty() ? AddFontResourceExA("data\\termfont",FR_PRIVATE,NULL) : 0);
-   if (nResults>0){
+	haveCustomFont = (!typeface.empty() ? AddFontResourceExA("data\\termfont",FR_PRIVATE,NULL) : 0);
+   if (0 < haveCustomFont){
     font = CreateFont(fontheight, fontwidth, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
                       ANSI_CHARSET, OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,
                       PROOF_QUALITY, FF_MODERN, typeface.c_str());   //Create our font
