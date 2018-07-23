@@ -12,9 +12,11 @@
 
 using namespace cataclysm;
 
+// case for function objects is here:
 static bool scalar_on_hard_drive(const JSON& x)
 {
 	if (!x.is_scalar()) return false;
+	if (x.empty()) return false;
 	OS_dir working;
 	// we use a hashtag to cope with tilesheets.
 	const char* const test = x.scalar().c_str();
@@ -48,6 +50,31 @@ static void load_JSON(const char* const src, const char* const key, bool (ok)(co
 		std::cerr << src << ": " << e.what();
 	}
 #endif
+}
+
+static void load_tiles(const JSON& src)
+{
+	if (!src.is_scalar()) return;
+	std::ifstream fin;
+	fin.open(src.scalar());
+	if (!fin.is_open()) return;
+	try {
+		JSON incoming(fin);
+		fin.close();
+		// key we need to know about here is tiles
+		if (!incoming.become_key("tiles")) return;
+		if (JSON::object != incoming.mode()) return;
+		std::vector<std::string> null_keys;
+		const auto amending = JSON::cache.count("tiles");
+		if (amending) null_keys = incoming.grep(JSON::is_null).keys();
+		incoming.destructive_grep(scalar_on_hard_drive);
+//		if (amending) incoming.destructive_merge(JSON::cache["tiles"], ...);
+		JSON::cache["tiles"] = std::move(incoming);
+	}
+	catch (const std::exception& e) {
+		fin.close();
+		std::cerr << src.scalar() << ": " << e.what();
+	}
 }
 
 int main(int argc, char *argv[])

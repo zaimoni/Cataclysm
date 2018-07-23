@@ -14,18 +14,10 @@
 
 namespace cataclysm {
 
-// function object
-struct str_compare
-{
-	int operator()(const char* lhs, const char* rhs) const { return strcmp(lhs, rhs); }
-	int operator()(const std::string& lhs, const std::string& rhs) const { return strcmp(lhs.c_str(), rhs.c_str()); }
-};
-
-
 class JSON
 {
 public:
-	static std::map<std::string, JSON, str_compare> cache;
+	static std::map<std::string, JSON> cache;
 
 	enum mode : unsigned char {
 		none = 0,
@@ -39,7 +31,7 @@ private:
 	union {
 		std::string* _scalar;
 		std::vector<JSON>* _array;
-		std::map<std::string,JSON, str_compare> * _object;
+		std::map<std::string,JSON> * _object;
 	};
 	unsigned char _mode;
 public:
@@ -56,13 +48,28 @@ public:
 	void reset();
 	bool empty() const;
 
-	std::string scalar() const { return _mode <= string ? *_scalar : std::string(); }
+	// reserved literal values in strict JSON
+	static bool is_null(const JSON& src) { return literal == src._mode && src._scalar && !strcmp("null", src._scalar->c_str()); };
+
+	// scalar evaluation
 	bool is_scalar() const { return string <= _mode; }
-	// use for testing values of array or object
+	std::string scalar() const { return _mode <= string ? *_scalar : std::string(); }
+	// object evaluation
+	bool has_key(const std::string& key) const { return object == _mode && _object && _object->count(key); }
+	bool become_key(const std::string& key) {
+		if (!has_key(key)) return false;
+		JSON tmp(std::move((*_object)[key]));
+		*this = std::move(tmp);
+		return true;
+	}
+
+	// use for testing values of array or object.
+	JSON grep(bool (ok)(const JSON&)) const;	// Cf. Perl4+
 	bool destructive_grep(bool (ok)(const JSON&));	// 2018-07-21: not only do not need to allow for function objects, they converted compile-time errors to run-time errors.
 	// key-value pair that is ok is not changed; a not-ok key-value pair that fails post-processing is deleted
 	bool destructive_grep(bool (ok)(const std::string& key,const JSON&),bool (postprocess)(const std::string& key, JSON&));	// use for testing object
 	bool destructive_merge(JSON& src,bool (ok)(const JSON&));	// keys of src end up in ourselves, the destination.  Cf PHP3+
+	std::vector<std::string> keys() const;	// Cf. Perl
 
 	bool syntax_ok() const;
 protected:
