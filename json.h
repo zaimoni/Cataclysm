@@ -58,7 +58,11 @@ public:
 
 	std::string scalar() const { return _mode <= string ? *_scalar : std::string(); }
 	bool is_scalar() const { return string <= _mode; }
+	// use for testing values of array or object
 	bool destructive_grep(bool (ok)(const JSON&));	// 2018-07-21: not only do not need to allow for function objects, they converted compile-time errors to run-time errors.
+	// key-value pair that is ok is not changed; a not-ok key-value pair that fails post-processing is deleted
+	bool destructive_grep(bool (ok)(const std::string& key,const JSON&),bool (postprocess)(const std::string& key, JSON&));	// use for testing object
+	bool destructive_merge(JSON& src,bool (ok)(const JSON&));	// keys of src end up in ourselves, the destination.  Cf PHP3+
 
 	bool syntax_ok() const;
 protected:

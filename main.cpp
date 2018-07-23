@@ -63,6 +63,15 @@ int main(int argc, char *argv[])
 // final format is an object of key-id, value-image filepath pairs  To fully support C:DDA tilesheets, 
 // we have to specify what order tilesets are to be checked in (array) and then merge the objects accordingly
  load_JSON("data/json/tilespec.json", "tilespec", scalar_on_hard_drive);	// expected format array of JSON files
+ // expected format of the files named by tilespec are
+ // key name: value is display name of tileset
+ // key tiles: value is an object, keys are enumeration values, values are tile images.  For the DeonApocalypse tileset we need to
+ // use hashtag notation, and possibly also a CSS-like syntax for specifying rotations and flips
+ // so ....32.png[#index][!rotate|!flip]
+ // index says which image in tilesheet to extract
+ // ! notation says what operations to apply to the image
+//	JSON::cache["tilespec"].destructive_grep(init_tiles);
+
  load_JSON("data/json/tiles.json", "tiles", scalar_on_hard_drive);	// authoritative destination, but not how this is to be set up.
 
  // when we support mods, we load their tiles configuration from tiles.json as well (and check their filepaths are ok

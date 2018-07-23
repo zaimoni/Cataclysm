@@ -98,6 +98,50 @@ bool JSON::destructive_grep(bool (ok)(const JSON&))
 	return !empty();
 }
 
+bool JSON::destructive_grep(bool (ok)(const std::string& key, const JSON&), bool (postprocess)(const std::string& key, JSON&))
+{
+	if (object != _mode) return false;
+	if (!_object) return true;
+
+	// assume we have RAM, etc.
+	std::vector<std::string> keys;
+	for (const auto& iter : *_object) {
+		if (!ok(iter.first,iter.second)) keys.push_back(iter.first);
+	}
+	for (const auto& key : keys) {
+		if (!postprocess(key, (*_object)[key])) _object->erase(key);
+	}
+	if (_object->empty()) {
+		delete _object;
+		_object = 0;
+	}
+}
+
+
+bool JSON::destructive_merge(JSON& src, bool (ok)(const JSON&))
+{
+	if (object != src._mode) return false;
+	if (none == _mode) {	// we are blank.  retype as empty object.
+		_mode = object;
+		_object = 0;	// leak rather than crash
+	}
+	if (object != _mode) return false;
+	if (!src._object) return true;	// no keys
+	std::map<std::string, JSON, str_compare>* working = (_object ? _object : new std::map<std::string, JSON, str_compare>());
+	// assume we have RAM, etc.
+	std::vector<std::string> keys;
+	for (const auto& iter : *src._object) {
+		if (ok(iter.second)) keys.push_back(iter.first);
+	}
+	for (const auto& key : keys) {
+		(*working)[key] = std::move((*src._object)[key]);
+		src._object->erase(key);
+	}
+	if (!working->empty()) _object = working;
+	return true;
+}
+
+
 // constructor and support thereof
 JSON::JSON(const JSON& src)
 : _mode(src._mode),_scalar(0)

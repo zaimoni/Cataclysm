@@ -242,6 +242,7 @@ struct curseline {
 	char *FG;
 	char *BG;
 #ifdef TILES
+	unsigned short* background_tiles;
 	unsigned short* tiles;
 #endif
 	bool touched;
@@ -258,6 +259,7 @@ void curseline::init(const int ncols)
 	FG = (char*)calloc(ncols, sizeof(char));
 	BG = (char*)calloc(ncols, sizeof(char));
 #ifdef TILES
+	background_tiles = (unsigned short*)calloc(ncols, sizeof(unsigned short));
 	tiles = (unsigned short*)calloc(ncols, sizeof(unsigned short));
 #endif
 	touched = true;
@@ -269,7 +271,8 @@ curseline::~curseline()
 	if (FG) { free(FG); FG = 0; }
 	if (BG) { free(BG); BG = 0; }
 #if TILES
-	if (tiles) { free(tiles); BG = 0; }
+	if (background_tiles) { free(background_tiles); background_tiles = 0; }
+	if (tiles) { free(tiles); tiles = 0; }
 #endif
 }
 
