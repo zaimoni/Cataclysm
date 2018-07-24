@@ -28,6 +28,7 @@ private:
 #endif
 	bool _have_info;
 public:
+	// XXX LoadImage only works for *BMP.  SetDIBits required for JPEG and PNG, but that requires an HDC
 	OS_Image() : _x(0), _pixels(0), _have_info(false) { memset(&_data, 0, sizeof(_data)); }
 	OS_Image(const char* src, int width = 0, int height = 0) : _x(LoadImageA(0, src, IMAGE_BITMAP, width, height, LR_LOADFROMFILE)),_pixels(0),_have_info(false) { init(); }
 	OS_Image(const wchar_t* src, int width = 0, int height = 0) : _x(LoadImageW(0, src, IMAGE_BITMAP, width, height, LR_LOADFROMFILE)), _pixels(0),_have_info(false) { init(); }
@@ -223,10 +224,10 @@ bool load_tile(const char* src)
 	if (_translate.count(src)) return true;	// already loaded
 	const char* const has_rotation_specification = strchr(src, ':');
 	std::string base_tile(has_rotation_specification ? std::string(src, 0, has_rotation_specification-src) : src);
-	if (!_translate.count(base_tile.c_str())) {
+	if (!_translate.count(base_tile)) {
 		const char* const is_from_tilesheet = strchr(base_tile.c_str(), '#');
 		if (is_from_tilesheet) {
-			std::string tilesheet(src, 0, is_from_tilesheet - src);
+			std::string tilesheet(base_tile.c_str(), 0, is_from_tilesheet - base_tile.c_str());
 			std::string offset(is_from_tilesheet +1);
 			int index = 0;
 			try {
@@ -369,7 +370,7 @@ LRESULT CALLBACK ProcessMessages(HWND__ *hWnd, unsigned int Msg, WPARAM wParam, 
 
 WINDOW *mainwin;
 const WCHAR *szWindowClass = (L"CataCurseWindow");    //Class name :D
-HINSTANCE WindowINST = 0;   //the instance of the window...normally obtained from WinMain but we don't have WinMain
+HINSTANCE WindowINST = GetModuleHandle(0);   //the instance of the window...normally obtained from WinMain but we don't have WinMain
 HDC WindowDC;           //Device Context of the window, used for backbuffer
 int lastchar;          //the last character that was pressed, resets in getch
 int inputdelay;         //How long getch will wait for a character to be typed
