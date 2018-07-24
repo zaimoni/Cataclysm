@@ -15,6 +15,97 @@
 
 #define FULL_IMAGE_INFO 1
 
+class OS_Window
+{
+private:
+	HWND _window;
+	RECT _dim;
+	HDC _dc;
+	HDC _backbuffer;
+	unsigned char* _dcbits;
+public:
+	static const int TitleSize;
+	static const int BorderWidth;
+	static const int BorderHeight;
+	static const int ScreenWidth;
+	static const int ScreenHeight;
+
+	OS_Window() : _window(0), _dc(0), _backbuffer(0) { memset(&_dim, 0, sizeof(_dim)); };
+	OS_Window(const OS_Window& src) = delete;
+	OS_Window(OS_Window&& src) : _window(src._window), _dim(src._dim), _dc(src._dc), _backbuffer(src._backbuffer) { src._window = 0; _dc = 0; _backbuffer = 0; memset(&_dim, 0, sizeof(_dim)); }
+	~OS_Window() { clear(); }
+
+	OS_Window& operator=(const OS_Window& src) = delete;
+	OS_Window& operator=(OS_Window&& src) {
+		_window = src._window;
+		src._window = 0;
+		_dim = src._dim;
+		memset(&src._dim, 0, sizeof(_dim));
+		_dc = src._dc;
+		src._dc = 0;
+		_backbuffer = src._backbuffer;
+		src._backbuffer = 0;
+		return *this;
+	};
+	operator HWND() const { return _window; }
+	HDC backbuffer() const { return _backbuffer; }
+
+	int X() const { return _dim.left; };
+	int Y() const { return _dim.top; };
+	int width() const { return _dim.right-_dim.left; }
+	int height() const { return _dim.bottom - _dim.top; }
+	void center(int w, int h) {
+		_dim.left = (OS_Window::ScreenWidth - w) / 2;
+		_dim.top = (OS_Window::ScreenHeight - h) / 2;
+		_dim.right = _dim.left + w;
+		_dim.bottom = _dim.top + h;
+	}
+
+	void clear() {
+		if (_backbuffer && DeleteDC(_backbuffer)) _backbuffer = 0;
+		if (_dc && ReleaseDC(_window, _dc)) _dc = 0;
+		if (_window && DestroyWindow(_window)) _window = 0;
+	}
+
+	bool SetWindow(HWND src, BITMAPINFO& buffer_spec)
+	{
+		clear();
+		_window = src;
+		_dc = GetDC(_window);
+		_backbuffer = CreateCompatibleDC(_dc);
+		HBITMAP backbit = CreateDIBSection(0, &buffer_spec, DIB_RGB_COLORS, (void**)&_dcbits, NULL, 0);
+		DeleteObject(SelectObject(_backbuffer, backbit));//load the buffer into DC
+		SetBkMode(_backbuffer, TRANSPARENT);//Transparent font backgrounds
+	}
+
+	static void CheckMessages()	//Check for any window messages (keypress, paint, mousemove, etc)
+	{
+		MSG msg;
+		while (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	};
+
+};
+
+#if _MSC_VER
+// MSVC is empirically broken (following is correct for _MSC_VER 1913 ... 1914)
+#define BORDERWIDTH_SCALE 5
+#define BORDERHEIGHT_SCALE 5
+#else
+// assume we are on a working WinAPI (e.g., MingWin)
+#define BORDERWIDTH_SCALE 2
+#define BORDERHEIGHT_SCALE 2
+#endif
+const int OS_Window::TitleSize = GetSystemMetrics(SM_CYCAPTION);      //These lines ensure
+const int OS_Window::BorderWidth = GetSystemMetrics(SM_CXDLGFRAME) * BORDERWIDTH_SCALE;  //that our window will
+const int OS_Window::BorderHeight = GetSystemMetrics(SM_CYDLGFRAME) * BORDERHEIGHT_SCALE; // be a perfect size
+const int OS_Window::ScreenWidth = GetSystemMetrics(SM_CXSCREEN);
+const int OS_Window::ScreenHeight = GetSystemMetrics(SM_CYSCREEN);
+#undef BORDERWIDTH_SCALE
+#undef BORDERHEIGHT_SCALE
+
 // we allow move construction/assignment but not copy construction/assignment
 class OS_Image
 {
@@ -30,7 +121,7 @@ private:
 public:
 	// XXX LoadImage only works for *BMP.  SetDIBits required for JPEG and PNG, but that requires an HDC
 	OS_Image() : _x(0), _pixels(0), _have_info(false) { memset(&_data, 0, sizeof(_data)); }
-	OS_Image(const char* src, int width = 0, int height = 0) : _x(LoadImageA(0, src, IMAGE_BITMAP, width, height, LR_LOADFROMFILE)),_pixels(0),_have_info(false) { init(); }
+	OS_Image(const char* src, int width = 0, int height = 0) : _x(loadFromFile(src,width,height)),_pixels(0),_have_info(false) { init(); }
 	OS_Image(const wchar_t* src, int width = 0, int height = 0) : _x(LoadImageW(0, src, IMAGE_BITMAP, width, height, LR_LOADFROMFILE)), _pixels(0),_have_info(false) { init(); }
 	OS_Image(const OS_Image& src) = delete;
 	OS_Image(OS_Image&& src) : _x(src._x),_data(src._data),_have_info(src._have_info) {
@@ -142,6 +233,17 @@ private:
 		return _pixels = tmp;
 	}
 #endif
+
+	static HANDLE loadFromFile(const std::string src, int width, int height)
+	{
+		HANDLE ret = 0;
+		if (5<=src.size() && !stricmp(".bmp",src.c_str()+src.size()-4)) {
+			ret = LoadImageA(0, src.c_str(), IMAGE_BITMAP, width, height, LR_LOADFROMFILE);	// \todo may need a real Hinstance (at least that's available globally)
+			if (ret) return ret;
+		}
+		// doesn't look like a bitmap...try SetDIBits instead
+		return ret;
+	}
 };
 
 // tiles support
@@ -153,31 +255,12 @@ std::map<std::string, OS_Image> _tilesheets;
 std::map<std::string, int > _tilesheet_tile;
 
 // globals used by the main curses simulation
+OS_Window _win;				// proxy for actual window
 int fontwidth = 0;          //the width of the font, background is always this size
 int fontheight = 0;         //the height of the font, background is always this size
 int halfwidth = 0;          //half of the font width, used for centering lines
 int halfheight = 0;          //half of the font height, used for centering lines
-int WindowWidth = 0;        //Width of the actual window, not the curses window
-int WindowHeight = 0;       //Height of the actual window, not the curses window
-int WindowX = 0;            //X pos of the actual window, not the curses window
-int WindowY = 0;            //Y pos of the actual window, not the curses window
 HWND WindowHandle = 0;      //the handle of the window
-#if _MSC_VER
-							// MSVC is empirically broken (following is correct for _MSC_VER 1913 ... 1914)
-#define BORDERWIDTH_SCALE 5
-#define BORDERHEIGHT_SCALE 5
-#else
-							// assume we are on a working WinAPI (e.g., MingWin)
-#define BORDERWIDTH_SCALE 2
-#define BORDERHEIGHT_SCALE 2
-#endif
-const int WinTitleSize = GetSystemMetrics(SM_CYCAPTION);      //These lines ensure
-const int WinBorderWidth = GetSystemMetrics(SM_CXDLGFRAME) * BORDERWIDTH_SCALE;  //that our window will
-const int WinBorderHeight = GetSystemMetrics(SM_CYDLGFRAME) * BORDERHEIGHT_SCALE; // be a perfect size
-const int ScreenWidth = GetSystemMetrics(SM_CXSCREEN);
-const int ScreenHeight = GetSystemMetrics(SM_CYSCREEN);
-#undef BORDERWIDTH_SCALE
-#undef BORDERHEIGHT_SCALE
 
 bool SetFontSize(const int x, const int y)
 {
@@ -188,10 +271,7 @@ bool SetFontSize(const int x, const int y)
 	fontheight = y;
 	halfwidth = fontwidth / 2;
 	halfheight = fontheight / 2;
-	WindowWidth = 80 * fontwidth;
-	WindowHeight = 25 * fontheight;
-	WindowX = (ScreenWidth / 2) - WindowWidth / 2;    //center this
-	WindowY = (ScreenHeight / 2) - WindowHeight / 2;   //sucker
+	_win.center(80 * fontwidth, 25 * fontheight);
 	return true;
 }
 
@@ -199,7 +279,7 @@ bool WinResize()
 {
 	RECT tmp;
 	if (!GetWindowRect(WindowHandle, &tmp)) return false;
-	return MoveWindow(WindowHandle, tmp.left, tmp.top, WindowWidth + WinBorderWidth, WindowHeight + WinBorderHeight + WinTitleSize,true);	// \todo test whether this handles the backbuffer and WindowDC
+	return MoveWindow(WindowHandle, tmp.left, tmp.top, _win.width() + OS_Window::BorderWidth, _win.height() + OS_Window::BorderHeight + OS_Window::TitleSize,true);
 }
 
 std::string extract_file_infix(std::string src)
@@ -356,7 +436,6 @@ struct WINDOW {
 
 //Window Functions, Do not call these outside of catacurse.cpp
 void WinDestroy();
-void CheckMessages();
 /// int FindWin(WINDOW *wnd);	// may want this at some point
 LRESULT CALLBACK ProcessMessages(HWND__ *hWnd, unsigned int Msg, WPARAM wParam, LPARAM lParam);
 
@@ -377,7 +456,7 @@ int inputdelay;         //How long getch will wait for a character to be typed
 //WINDOW *_windows;  //Probably need to change this to dynamic at some point
 //int WindowCount;        //The number of curses windows currently in use
 HDC backbuffer;         //an off-screen DC to prevent flickering, lower cpu
-HFONT font;             //Handle to the font created by CreateFont
+HFONT font = 0;             //Handle to the font created by CreateFont
 RGBQUAD *windowsPalette;  //The coor palette, 16 colors emulates a terminal
 pairs *colorpairs;   //storage for pair'ed colored, should be dynamic, meh
 unsigned char *dcbits;  //the bits of the screen image, for direct access
@@ -410,13 +489,14 @@ bool WinCreate()
     if (!RegisterClassExW(&WindowClassType)) return false;
 	const unsigned int WindowStyle = WS_OVERLAPPEDWINDOW & ~(WS_THICKFRAME) & ~(WS_MAXIMIZEBOX);
     WindowHandle = CreateWindowExW(WS_EX_APPWINDOW || WS_EX_TOPMOST * 0,
-                                   szWindowClass , szTitle,WindowStyle, WindowX,
-                                   WindowY, WindowWidth + WinBorderWidth,
-                                   WindowHeight + WinBorderHeight + WinTitleSize,
+                                   szWindowClass , szTitle,WindowStyle, _win.X(),
+                                   _win.Y(), _win.width() + OS_Window::BorderWidth,
+                                   _win.height() + OS_Window::BorderHeight + OS_Window::TitleSize,
 		                           0, 0, WindowINST, NULL);
     if (WindowHandle == 0) return false;
-    ShowWindow(WindowHandle,5);
-    return true;
+    ShowWindow(WindowHandle,SW_SHOW);
+	OS_Window::CheckMessages();    //Let the message queue handle setting up the window
+	return true;
 };
 
 //Unregisters, releases the DC if needed, and destroys the window.
@@ -463,7 +543,7 @@ LRESULT CALLBACK ProcessMessages(HWND__ *hWnd,unsigned int Msg, WPARAM wParam, L
         case WM_ERASEBKGND:
             return 1;               //We don't want to erase our background
         case WM_PAINT:              //Pull from our backbuffer, onto the screen
-            BitBlt(WindowDC, 0, 0, WindowWidth, WindowHeight, backbuffer, 0, 0,SRCCOPY);
+            BitBlt(WindowDC, 0, 0, _win.width(), _win.height(), backbuffer, 0, 0,SRCCOPY);
             ValidateRect(WindowHandle,NULL);
             break;
         case WM_DESTROY:
@@ -477,15 +557,15 @@ LRESULT CALLBACK ProcessMessages(HWND__ *hWnd,unsigned int Msg, WPARAM wParam, L
 //The following 3 methods use mem functions for fast drawing
 inline void VertLineDIB(int x, int y, int y2,int thickness, unsigned char color)
 {
-    for (int j=y; j<y2; j++) memset(&dcbits[x+j*WindowWidth],color,thickness);
+    for (int j=y; j<y2; j++) memset(&dcbits[x+j*_win.width()],color,thickness);
 };
 inline void HorzLineDIB(int x, int y, int x2,int thickness, unsigned char color)
 {
-    for (int j=y; j<y+thickness; j++) memset(&dcbits[x+j*WindowWidth],color,x2-x);
+    for (int j=y; j<y+thickness; j++) memset(&dcbits[x+j* _win.width()],color,x2-x);
 };
 inline void FillRectDIB(int x, int y, int width, int height, unsigned char color)
 {
-    for (int j=y; j<y+height; j++) memset(&dcbits[x+j*WindowWidth],color,width);
+    for (int j=y; j<y+height; j++) memset(&dcbits[x+j* _win.width()],color,width);
 };
 
 void DrawWindow(WINDOW *win)
@@ -498,7 +578,7 @@ void DrawWindow(WINDOW *win)
                 win->line[j].touched=false;
                 drawx=((win->x+i)*fontwidth);
                 drawy=((win->y+j)*fontheight);//-j;
-                if (((drawx+fontwidth)<=WindowWidth) && ((drawy+fontheight)<=WindowHeight)){
+                if (((drawx+fontwidth)<= _win.width()) && ((drawy+fontheight)<= _win.height())){
                 tmp = win->line[j].chars[i];	// \todo alternate data source here for tiles
                 int FG = win->line[j].FG[i];
                 int BG = win->line[j].BG[i];
@@ -575,16 +655,6 @@ void DrawWindow(WINDOW *win)
     win->draw=false;                //We drew the window, mark it as so
 };
 
-//Check for any window messages (keypress, paint, mousemove, etc)
-void CheckMessages()
-{
-    MSG msg;
-    while (PeekMessage(&msg, 0 , 0, 0, PM_REMOVE)){
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
-};
-
 //***********************************
 //Psuedo-Curses Functions           *
 //***********************************
@@ -617,37 +687,32 @@ WINDOW *initscr(void)
      }
 	 if (0 >= fontwidth) SetFontSize(tmp_width, tmp_height);
  }
+ haveCustomFont = (!typeface.empty() ? AddFontResourceExA("data\\termfont", FR_PRIVATE, NULL) : 0);
+ if (!haveCustomFont) MessageBox(WindowHandle, "Failed to load default font, using FixedSys.", NULL, 0);
+ {
+	 const char const* t_face = haveCustomFont ? typeface.c_str() : "FixedSys";	//FixedSys will be user-changable at some point in time??
+	 font = CreateFont(fontheight, fontwidth, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+		 ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+		 PROOF_QUALITY, FF_MODERN, t_face);
+ }
+
     WinCreate();    //Create the actual window, register it, etc
-    CheckMessages();    //Let the message queue handle setting up the window
     WindowDC = GetDC(WindowHandle);
     backbuffer = CreateCompatibleDC(WindowDC);
     ZeroMemory(&bmi, sizeof(BITMAPINFO));
     bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bmi.bmiHeader.biWidth = WindowWidth;
-    bmi.bmiHeader.biHeight = -WindowHeight;
+    bmi.bmiHeader.biWidth = _win.width();
+    bmi.bmiHeader.biHeight = -_win.height();
     bmi.bmiHeader.biPlanes = 1;
     bmi.bmiHeader.biBitCount=8;
     bmi.bmiHeader.biCompression = BI_RGB;   //store it in uncompressed bytes
-    bmi.bmiHeader.biSizeImage = WindowWidth * WindowHeight * 1;
+    bmi.bmiHeader.biSizeImage = _win.width() * _win.height() * 1;
     bmi.bmiHeader.biClrUsed=16;         //the number of colors in our palette
     bmi.bmiHeader.biClrImportant=16;    //the number of colors in our palette
 	HBITMAP backbit = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, (void**)&dcbits, NULL, 0);
     DeleteObject(SelectObject(backbuffer, backbit));//load the buffer into DC
 	SetBkMode(backbuffer, TRANSPARENT);//Transparent font backgrounds
-
-	haveCustomFont = (!typeface.empty() ? AddFontResourceExA("data\\termfont",FR_PRIVATE,NULL) : 0);
-   if (0 < haveCustomFont){
-    font = CreateFont(fontheight, fontwidth, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
-                      ANSI_CHARSET, OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,
-                      PROOF_QUALITY, FF_MODERN, typeface.c_str());   //Create our font
-
-  } else {
-      MessageBox(WindowHandle, "Failed to load default font, using FixedSys.", NULL, 0);
-       font = CreateFont(fontheight, fontwidth, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
-                      ANSI_CHARSET, OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,
-                      PROOF_QUALITY, FF_MODERN, "FixedSys");   //Create our font
-   }
-    //FixedSys will be user-changable at some point in time??
+    
     SelectObject(backbuffer, font);//Load our font into the DC
 //    WindowCount=0;
 
@@ -766,7 +831,7 @@ int getch(void)
     {
         do
         {
-            CheckMessages();
+			OS_Window::CheckMessages();
             if (lastchar!=ERR) break;
             MsgWaitForMultipleObjects(0, NULL, FALSE, 50, QS_ALLEVENTS);//low cpu wait!
         }
@@ -778,7 +843,7 @@ int getch(void)
         unsigned long endtime;
         do
         {
-            CheckMessages();        //MsgWaitForMultipleObjects won't work very good here
+			OS_Window::CheckMessages();        //MsgWaitForMultipleObjects won't work very good here
             endtime=GetTickCount(); //it responds to mouse movement, and WM_PAINT, not good
             if (lastchar!=ERR) break;
             Sleep(2);
@@ -787,7 +852,7 @@ int getch(void)
     }
     else
     {
-        CheckMessages();
+		OS_Window::CheckMessages();
     };
     Sleep(25);
     return lastchar;
