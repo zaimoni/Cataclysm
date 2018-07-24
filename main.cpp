@@ -20,7 +20,7 @@ static bool scalar_on_hard_drive(const JSON& x)
 	OS_dir working;
 	const auto hash_tag = x.scalar().find('#');
 	// we use a hashtag to cope with tilesheets.
-	return working.exists((hash_tag == std::string::npos ? x.scalar() : std::string(x.scalar(), hash_tag)).c_str());
+	return working.exists((hash_tag == std::string::npos ? x.scalar() : std::string(x.scalar(), 0, hash_tag)).c_str());
 }
 
 static bool preload_image(const JSON& x)
@@ -67,6 +67,7 @@ static bool load_tiles(const JSON& src)
 		const std::vector<std::string> null_keys(incoming.grep(JSON::is_null).keys());
 		incoming.unset(null_keys);
 		incoming.destructive_grep(scalar_on_hard_drive);
+		if (incoming.empty()) return false;
 		if (JSON::cache.count("tiles")) {
 			auto& tiles = JSON::cache["tiles"];
 			tiles.unset(null_keys);

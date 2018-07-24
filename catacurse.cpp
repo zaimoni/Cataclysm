@@ -207,7 +207,7 @@ std::string extract_file_infix(std::string src)
 	const char* x = src.c_str();
 	const char* test = strrchr(x, '.');
 	if (!test) return std::string();
-	src = std::string(x, test - x);
+	src = std::string(x, 0, test - x);
 	}
 	const char* test = strrchr(src.c_str(), '.');
 	if (!test) return std::string();
@@ -222,11 +222,11 @@ bool load_tile(const char* src)
 	if ((unsigned short)(-1) == _next) return false;	// at implementation limit
 	if (_translate.count(src)) return true;	// already loaded
 	const char* const has_rotation_specification = strchr(src, ':');
-	std::string base_tile(has_rotation_specification ? std::string(src, has_rotation_specification-src) : src);
+	std::string base_tile(has_rotation_specification ? std::string(src, 0, has_rotation_specification-src) : src);
 	if (!_translate.count(base_tile.c_str())) {
 		const char* const is_from_tilesheet = strchr(base_tile.c_str(), '#');
 		if (is_from_tilesheet) {
-			std::string tilesheet(src, is_from_tilesheet - src);
+			std::string tilesheet(src, 0, is_from_tilesheet - src);
 			std::string offset(is_from_tilesheet +1);
 			int index = 0;
 			try {

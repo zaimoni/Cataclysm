@@ -53,9 +53,11 @@ public:
 
 	// scalar evaluation
 	bool is_scalar() const { return string <= _mode; }
-	std::string scalar() const { return _mode <= string ? *_scalar : std::string(); }
+	std::string scalar() const { return string <= _mode ? *_scalar : std::string(); }
 	// object evaluation
 	bool has_key(const std::string& key) const { return object == _mode && _object && _object->count(key); }
+	JSON& operator[](const std::string& key) { return (*_object)[key]; };
+	const JSON& operator[](const std::string& key) const { return (*_object)[key]; };
 	bool become_key(const std::string& key) {
 		if (!has_key(key)) return false;
 		JSON tmp(std::move((*_object)[key]));
