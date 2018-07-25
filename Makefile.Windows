@@ -5,7 +5,7 @@
 #WARNINGS = -Wall -Wextra -Wno-switch -Wno-sign-compare -Wno-missing-braces -Wno-unused-parameter -Wno-char-subscripts
 #DEBUG = -g
 #PROFILE = -pg
-OTHERS = -O3 -std=c++11 -MD
+OTHERS = -O3 -std=gnu++11 -MD
 
 ODIR = objwin
 DDIR = .deps
@@ -20,7 +20,7 @@ LINKERFLAGS = -Wl,-stack,12000000,-subsystem,windows
 
 CFLAGS = $(WARNINGS) $(DEBUG) $(PROFILE) $(OTHERS)
 
-LDFLAGS = -static -lgdi32
+LDFLAGS = -static -lgdi32 -Llib/host -lz_format_util -lz_stdio_log -lz_stdio_c
 
 #ifeq ($(OS), Msys)
 #LDFLAGS = -static -lpdcurses

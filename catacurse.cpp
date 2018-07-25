@@ -697,7 +697,7 @@ WINDOW *initscr(void)
  haveCustomFont = (!typeface.empty() ? AddFontResourceExA("data\\termfont", FR_PRIVATE, NULL) : 0);
  if (!haveCustomFont) MessageBox(WindowHandle, "Failed to load default font, using FixedSys.", NULL, 0);
  {
-	 const char const* t_face = haveCustomFont ? typeface.c_str() : "FixedSys";	//FixedSys will be user-changable at some point in time??
+	 const char* const t_face = haveCustomFont ? typeface.c_str() : "FixedSys";	//FixedSys will be user-changable at some point in time??
 	 font = CreateFont(fontheight, fontwidth, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
 		 ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
 		 PROOF_QUALITY, FF_MODERN, t_face);
