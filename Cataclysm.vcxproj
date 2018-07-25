@@ -216,6 +216,10 @@
     <ClInclude Include="veh_type.h" />
     <ClInclude Include="weather.h" />
     <ClInclude Include="wrap_curses.h" />
+    <ClInclude Include="Zaimoni.STL\Compiler.h" />
+    <ClInclude Include="Zaimoni.STL\Logging.h" />
+    <ClInclude Include="Zaimoni.STL\MetaRAM.hpp" />
+    <ClInclude Include="Zaimoni.STL\polymorphic.hpp" />
     <ClInclude Include="Zaimoni.STL\Pure.C\comptest.h" />
   </ItemGroup>
   <ItemGroup>
@@ -290,6 +294,14 @@
     <ClCompile Include="veh_typedef.cpp" />
     <ClCompile Include="weather.cpp" />
     <ClCompile Include="wish.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Zaimoni.STL\cstdio" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\host\z_format_util.lib" />
+    <Library Include="lib\host\z_stdio_c.lib" />
+    <Library Include="lib\host\z_stdio_log.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -6,7 +6,7 @@
 # libdir = $(exec_prefix)/lib
 
 # install host-built libraries here
-host_libdir = lib
+host_libdir = lib/host
 
 AR = ar
 CC = gcc -std=gnu11

@@ -1,7 +1,5 @@
 #if (defined _WIN32 || defined WINDOWS)
 #include "catacurse.h"
-#include <stdio.h>
-#include <stdlib.h>
 #include <fstream>
 #include <string>
 #include <map>
@@ -10,6 +8,8 @@
 #define _WIN32_WINNT 0x0500
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+
+#include "Zaimoni.STL/cstdio"
 
 // #define TILES 1
 
@@ -242,6 +242,13 @@ private:
 			if (ret) return ret;
 		}
 		// doesn't look like a bitmap...try SetDIBits instead
+		char* raw_image = 0;
+		size_t raw_image_size = 0;
+		if (!zaimoni::GetBinaryFileImage(src.c_str(), raw_image, raw_image_size)) {
+			free(raw_image);
+			return ret;
+		}
+		free(raw_image); raw_image = 0;	// XXX since we're a mockup
 		return ret;
 	}
 };

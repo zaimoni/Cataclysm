@@ -6,7 +6,6 @@
 #ifndef ZAIMONI_METARAM_HPP
 #define ZAIMONI_METARAM_HPP 1
 
-#include "flat_alg.h"
 #include <string.h>
 #include <stdlib.h>
 #include <new>
@@ -298,7 +297,7 @@ namespace zaimoni {
 inline void
 copy_c_string(char*& dest, const char* src)
 {
-	if (is_empty_string(src))
+	if (!src || !src[0])
 		FREE_AND_NULL(dest);
 	else{
 		char* Tmp2 = REALLOC(dest,strlen(src)+1);

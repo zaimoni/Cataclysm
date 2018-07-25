@@ -1,0 +1,94 @@
+// cstdio
+// header for file convenience functions
+// (C)2009,2018 Kenneth Boyd, license: MIT.txt
+
+#ifndef ZAIMONI_CSTDIO
+#define ZAIMONI_CSTDIO 1
+
+#include "Logging.h"
+#include "MetaRAM.hpp"
+#ifdef ZAIMONI_HAVE_ACCURATE_MSIZE
+#include "z_memory.h"
+#endif
+#include "Pure.C/stdio_c.h"
+
+namespace zaimoni {
+
+template<class T>
+inline typename std::enable_if<std::is_trivially_copy_assignable<T>::value, void>::type
+ConvertBinaryModeToTextMode(T*& buf ZAIMONI_ISO_PARAM(size_t& buf_len))
+{
+	if (buf)
+		{
+		ZAIMONI_ISO_FAILOVER(const size_t buf_len = ArraySize(buf),assert(0<buf_len));
+		size_t Displace = 0;
+		size_t i = 0;
+		do	if ('\r'==buf[i])
+				{	// oops.  We're either Windows ['\r\n'] or wrong-platform ['\r': UNIX on Mac, or Mac on Unix; '\n\r': Windows on UNIX]
+				const bool WindowsOnMac = (1<=i && '\n'==buf[i-1]);
+				const bool Windows = buf_len>i+1 && '\n'==buf[i+1];
+				const bool WrongPlatform = !WindowsOnMac && !Windows;	// no problem if both
+				if (WrongPlatform)
+					buf[i]='\n';
+				else{
+					if (buf_len>(i+1)) memmove(&buf[i],&buf[i+1],buf_len-(i+1));
+					++Displace;
+					--i;
+					}
+				}
+		while(buf_len-Displace> ++i);
+		if (0<Displace)
+			buf = REALLOC(buf,ZAIMONI_ISO_FAILOVER(_msize(buf)-Displace,(buf_len -= Displace)));
+		}
+}
+
+template<class T>
+inline typename std::enable_if<std::is_trivially_copy_assignable<T>::value, bool>::type
+GetBinaryFileImage(const char* const Filename,T*& Buffer ZAIMONI_ISO_PARAM(size_t& Buffer_size))
+{	// FORMALLY CORRECT: Kenneth Boyd, 11/10/2004
+	assert(Filename);
+	assert(!Buffer);
+	ZAIMONI_ISO_ONLY(assert(0==Buffer_size);)
+
+	FILE* TargetFile = fopen(Filename, "rb");
+	if (!TargetFile) return false;
+
+	// Want to know the file length *BEFORE* inhaling it
+	long ScriptLength = get_filelength(TargetFile);
+	if (-1==ScriptLength)
+		{
+		fclose(TargetFile);
+		return false;
+		}
+
+	assert(0==ScriptLength%sizeof(T));
+	size_t ActuallyRead = 0;
+	if (0<ScriptLength)
+	{
+		Buffer = REALLOC(Buffer,ScriptLength);
+		ZAIMONI_ISO_ONLY(Buffer_size = ScriptLength;)
+		ActuallyRead = fread(Buffer,sizeof(T),ScriptLength/sizeof(T),TargetFile);
+	}
+
+	fclose(TargetFile);
+	return ActuallyRead==ScriptLength/sizeof(T);
+}
+
+template<class T>
+inline typename std::enable_if<std::is_trivially_copy_assignable<T>::value, bool>::type
+SaveBinaryFileImage(const char* const Filename,const T* const Buffer,size_t BufferLength)
+{	// FORMALLY CORRECT: Kenneth Boyd, 1/14/2007
+	assert(Filename);
+	assert(Buffer);
+	assert(0!=BufferLength);
+
+	FILE* TargetFile = fopen(Filename, "wb");
+	if (!TargetFile) return false;
+	size_t ActualWrite = fwrite(Buffer,sizeof(T),BufferLength,TargetFile);
+	fclose(TargetFile);
+	return ActualWrite==BufferLength;
+}
+
+}	// end namespace zaimoni
+
+#endif
