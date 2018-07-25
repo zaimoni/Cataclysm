@@ -48,6 +48,7 @@ public:
 		return *this;
 	};
 	operator HWND() const { return _window; }
+	HDC dc() const { return _dc; }
 	HDC backbuffer() const { return _backbuffer; }
 
 	int X() const { return _dim.left; };
@@ -234,22 +235,99 @@ private:
 	}
 #endif
 
+	// header: 8 bytes; each chunk is strictly bounded below by 12 bytes and three are required.
+	static bool LooksLikePNGHeader(const unsigned char* src, size_t len, long& incoming_width, long& incoming_height)
+	{
+		if (!src || 24 > len) return false;	// not correct for a PNG-class file parser.
+		// Cf https://en.wikipedia.org/wiki/Portable_Network_Graphics
+		// the network-order/big-endian 4-byte width and height are at offsets 16 and 20
+		static_assert(0x50 == 'P', "source code encoding not close to ASCII");
+		static_assert(0x4E == 'N', "source code encoding not close to ASCII");
+		static_assert(0x47 == 'G', "source code encoding not close to ASCII");
+		if (!(   0x89 == src[0]	// high-bit set: binary file, 
+			  && 'P'  == src[1]	// ASCII: P
+			  && 'N'  == src[2]	// N
+			  && 'G'  == src[3]	// G
+			  && 0x0D == src[4]	// DOS CR-LF (can be trashed by text-mode FTP)
+			  && 0x0A == src[5]
+			  && 0x1A == src[6]	// DOS EOF character, stops TYPE
+			  && 0x0A == src[7]))	// UNIX LF (can be trashed by text-mode FTP)
+			return false;
+		// should be an IHDR chunk immediately afterwards
+		if (  !('I' == src[12]	// ASCII: IHDR
+			&&  'H' == src[13]
+			&&  'D' == src[14]
+			&&  'R' == src[15]))
+			return false;
+		incoming_height = (((src[16] * 256) + src[17]) * 256 + src[18]) * 256 + src[19];
+		incoming_width = (((src[20] * 256) + src[21]) * 256 + src[22]) * 256 + src[23];
+		return true;
+	}
+
+	static bool LooksLikeBMPFileHeader(const unsigned char* src, size_t len)
+	{
+		if (!src || 24 > len) return false;
+		// Cf https://en.wikipedia.org/wiki/BMP_file_format
+		static_assert(0x42 == 'B', "source code encoding not close to ASCII");
+		static_assert(0x4D == 'M', "source code encoding not close to ASCII");
+		return (   'B' == src[0]	// ASCII: B
+			    && 'M' == src[1]);	// M
+	}
+
+	static bool LooksLikeJPEGHeader(const unsigned char* src, size_t len)
+	{
+		if (!src || 14 > len) return false;
+		// Cf https://en.wikipedia.org/wiki/JPEG
+		return (   0xFF == src[0]	// Start of Image (SOI) block
+			    && 0xD8 == src[1]);
+	}
+
 	static HANDLE loadFromFile(const std::string src, int width, int height)
 	{
-		HANDLE ret = 0;
-		if (5<=src.size() && !stricmp(".bmp",src.c_str()+src.size()-4)) {
-			ret = LoadImageA(0, src.c_str(), IMAGE_BITMAP, width, height, LR_LOADFROMFILE);	// \todo may need a real Hinstance (at least that's available globally)
-			if (ret) return ret;
-		}
+		HANDLE ret = LoadImageA(0, src.c_str(), IMAGE_BITMAP, width, height, LR_LOADFROMFILE);
+		if (ret) return ret;	// was a fully legal BMP for the current version of Windows
+
 		// doesn't look like a bitmap...try SetDIBits instead
-		char* raw_image = 0;
+		unsigned char* raw_image = 0;	// \todo ideally would be wrapped in an object
 		size_t raw_image_size = 0;
 		if (!zaimoni::GetBinaryFileImage(src.c_str(), raw_image, raw_image_size)) {
 			free(raw_image);
-			return ret;
+			return 0;
 		}
-		free(raw_image); raw_image = 0;	// XXX since we're a mockup
-		return ret;
+		if (LooksLikeBMPFileHeader(raw_image, raw_image_size))
+			{
+			free(raw_image); raw_image = 0;
+			return 0;	// in theory we could try to recover but we know format is "off"
+			}
+		long incoming_width = 0;	// XXX need image dimensions from somewhere or else \todo fix
+		long incoming_height = 0;
+		
+		BITMAPINFOHEADER working;
+		memset(&working, 0, sizeof(working));
+		if (LooksLikePNGHeader(raw_image, raw_image_size, incoming_width, incoming_height)) working.biCompression = BI_PNG;
+		else if (LooksLikeJPEGHeader(raw_image, raw_image_size)) working.biCompression = BI_JPEG;
+		else {
+			free(raw_image); raw_image = 0;
+			return 0;
+		}
+		working.biSize = sizeof(working);
+		working.biWidth = incoming_width;
+		working.biHeight = incoming_height;	// both JPEG and PNG are bottom-up
+		working.biBitCount = 32;
+		working.biSizeImage = raw_image_size;	// both PNG and JPEG use image buffer size
+		// image dimensions must be accurate
+		HBITMAP tmp = CreateCompatibleBitmap(0, incoming_width, incoming_height);	// DeonApocalypse fails here: need real HDC?
+		if (!tmp) {
+			free(raw_image); raw_image = 0;
+			return 0;
+		}
+		bool test = SetDIBits(0,tmp,0,0,raw_image,(BITMAPINFO*)(&working),DIB_RGB_COLORS);	// likely need a real HDC
+		free(raw_image); raw_image = 0;
+		if (test) return tmp;
+		else {
+			DeleteObject(tmp);
+			return 0;
+		}
 	}
 };
 
