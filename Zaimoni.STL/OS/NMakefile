@@ -1,0 +1,32 @@
+# Makefile for OS directory
+# assumes M$ NMake
+
+.SUFFIXES:
+.SUFFIXES: .cpp .lib .obj
+
+!INCLUDE ..\NMake.inc
+
+# /Wall warns on system headers in VC 2008, not good
+CFLAGS = /O1 /EHsc /MD /W3
+
+LIBS = z_log_adapter.lib
+
+# GNU targets we know about
+all: $(LIBS)
+
+clean:
+	del *.lib *.obj
+
+host_install: ..\..\$(host_libdir)\z_log_adapter.lib
+
+# rules
+log_adapter_inform.obj: log_adapter_inform.cpp ../Pure.C/format_util.c
+log_adapter_inc_inform.obj: log_adapter_inc_inform.cpp ../Pure.C/format_util.c
+log_adapter_log.obj: log_adapter_log.cpp ../Pure.C/format_util.c
+
+# defaulting .cpp.obj
+z_log_adapter.lib: log_adapter_inc_inform.obj log_adapter_inform.obj log_adapter_log.obj
+	$(AR) /OUT:z_log_adapter.lib log_adapter_inc_inform.obj log_adapter_inform.obj log_adapter_log.obj
+
+..\..\$(host_libdir)\z_log_adapter.lib: z_log_adapter.lib
+	copy /Y z_log_adapter.lib ..\..\$(host_libdir)\z_log_adapter.lib
