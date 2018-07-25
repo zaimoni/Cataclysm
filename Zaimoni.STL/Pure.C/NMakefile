@@ -50,8 +50,8 @@ z_format_util.lib: format_util.obj
 z_stdio_c.lib: stdio_c.obj
 	$(AR) /OUT:z_stdio_c.lib stdio_c.obj
 
-../../$(host_libdir)/libz_format_util.lib: libz_format_util.lib
+..\..\$(host_libdir)\libz_format_util.lib: libz_format_util.lib
 	copy /Y libz_format_util.lib ..\..\$(host_libdir)\libz_format_util.lib
 	
-../../$(host_libdir)/libz_stdio_c.lib: libz_stdio_c.lib
+..\..\$(host_libdir)\libz_stdio_c.lib: libz_stdio_c.lib
 	copy /Y libz_stdio_c.lib ..\..\$(host_libdir)\libz_stdio_c.lib

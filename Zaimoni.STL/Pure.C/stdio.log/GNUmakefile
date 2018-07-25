@@ -16,11 +16,7 @@ all: $(LIBS)
 clean:
 	rm -f *.a *.o
 
-install: $(addprefix $(libdir)/, $(LIBS))
 host_install: $(addprefix ../../../$(host_libdir)/, $(LIBS))
-
-uninstall:
-	rm -f $(addprefix $(libdir)/, $(LIBS))
 
 # rules
 .c.o:
@@ -28,9 +24,6 @@ uninstall:
 
 libz_stdio_log.a: fatal.o fatal_code.o inform.o inc_inform.o log.o
 	$(AR) $(ARFLAGS) libz_stdio_log.a fatal.o fatal_code.o inform.o inc_inform.o log.o
-
-../../../$(libdir)/libz_stdio_log.a: libz_stdio_log.a
-	cp libz_stdio_log.a ../../../$(libdir)/libz_stdio_log.a
 
 ../../../$(host_libdir)/libz_stdio_log.a: libz_stdio_log.a
 	cp libz_stdio_log.a ../../../$(host_libdir)/libz_stdio_log.a
