@@ -20,6 +20,7 @@ host_install: auto_int.h comptest.h $(addprefix ../../$(host_libdir)/, $(LIBS))
 
 # rules
 format_util.o: format_util.c format_util.h
+stdio_c.o: stdio_c.c stdio_c.h comptest.h ../Logging.h ../Compiler.h
 
 auto_int.h : int_probe.c
 	$(CC) -oint_probe.exe $(CFLAGS) $(ARCH_FLAGS) int_probe.c
