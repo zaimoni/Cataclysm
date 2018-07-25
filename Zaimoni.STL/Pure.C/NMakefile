@@ -19,6 +19,8 @@ all: auto_int.h comptest.h $(LIBS)
 clean:
 	del *.lib *.obj auto_int.h comptest.h
 
+host_install: auto_int.h comptest.h ../../$(host_libdir)/libz_format_util.lib ..\..\$(host_libdir)\libz_stdio_c.lib
+
 # rules
 format_util.obj: format_util.c format_util.h
 stdio_c.obj: stdio_c.c stdio_c.h
@@ -50,8 +52,8 @@ z_format_util.lib: format_util.obj
 z_stdio_c.lib: stdio_c.obj
 	$(AR) /OUT:z_stdio_c.lib stdio_c.obj
 
-..\..\$(host_libdir)\libz_format_util.lib: libz_format_util.lib
-	copy /Y libz_format_util.lib ..\..\$(host_libdir)\libz_format_util.lib
+..\..\$(host_libdir)\libz_format_util.lib: z_format_util.lib
+	copy /Y z_format_util.lib ..\..\$(host_libdir)\z_format_util.lib
 	
-..\..\$(host_libdir)\libz_stdio_c.lib: libz_stdio_c.lib
-	copy /Y libz_stdio_c.lib ..\..\$(host_libdir)\libz_stdio_c.lib
+..\..\$(host_libdir)\libz_stdio_c.lib: z_stdio_c.lib
+	copy /Y z_stdio_c.lib ..\..\$(host_libdir)\z_stdio_c.lib
