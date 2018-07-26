@@ -31,6 +31,9 @@
 // #define USING_RGBA32 1
 #endif
 
+// this isn't working cleanly
+// #define PALETTE_KILL 1
+
 class OS_Window
 {
 private:
@@ -177,6 +180,7 @@ public:
 		return true;
 	}
 
+	static RGBQUAD* CreateNewColorTable(size_t n) { return zaimoni::_new_buffer_nonNULL_throws<RGBQUAD>(n); }
 	bool SetColorTable(RGBQUAD*& colors, size_t n)	// probably should capture the color table instead and use it as a translation device
 	{
 		if (_color_table) free(_color_table);
@@ -505,8 +509,8 @@ private:
 		working.biCompression = BI_RGB;
 		working.biWidth = native_width;
 		working.biHeight = native_height;	// both JPEG and PNG are bottom-up
-		working.biBitCount = 32;	// JPEG and PNG manage this themselves
-		working.biSizeImage = 4*native_width*native_height;	// both PNG and JPEG use image buffer size
+		working.biBitCount = 32;
+		working.biSizeImage = sizeof(RGBQUAD)*native_width*native_height;	// both PNG and JPEG use image buffer size
 
 		HBITMAP tmp = CreateCompatibleBitmap(OS_Window::last_dc(), native_width, native_height);
 		if (!tmp) {
@@ -772,7 +776,10 @@ int inputdelay;         //How long getch will wait for a character to be typed
 //WINDOW *_windows;  //Probably need to change this to dynamic at some point
 //int WindowCount;        //The number of curses windows currently in use
 HFONT font = 0;             //Handle to the font created by CreateFont
+#if PALETTE_KILL
+#else
 RGBQUAD *windowsPalette;  //The coor palette, 16 colors emulates a terminal
+#endif
 char szDirectory[MAX_PATH] = "";
 int haveCustomFont = 0;	// custom font was there and loaded
 
@@ -909,7 +916,12 @@ void DrawWindow(WINDOW *win)
                 //if (tmp==95){//If your font doesnt draw underscores..uncomment
                 //        HorzLineDIB(drawx,drawy+fontheight-2,drawx+fontwidth,1,FG);
                 //    } else { // all the wa to here
-                    int color = RGB(windowsPalette[FG].rgbRed,windowsPalette[FG].rgbGreen,windowsPalette[FG].rgbBlue);
+#if PALETTE_KILL
+					const auto fg = _win.color(FG);
+					int color = RGB(fg.rgbRed, fg.rgbGreen, fg.rgbBlue);
+#else
+					int color = RGB(windowsPalette[FG].rgbRed,windowsPalette[FG].rgbGreen,windowsPalette[FG].rgbBlue);
+#endif
                     SetTextColor(_win.backbuffer(),color);
                     ExtTextOut(_win.backbuffer(),drawx,drawy,0,NULL,&tmp,1,NULL);
                 //    }     //and this line too.
@@ -1343,7 +1355,10 @@ int getmaxy(WINDOW *win)
 
 int start_color(void)
 {
- windowsPalette= zaimoni::_new_buffer_nonNULL_throws<RGBQUAD>(16);     //Colors in the struct are BGR!! not RGB!!
+#if PALETTE_KILL
+	RGBQUAD* 
+#endif
+ windowsPalette = OS_Window::CreateNewColorTable(16);     //Colors in the struct are BGR!! not RGB!!
  windowsPalette[0]= BGR(0,0,0);
  windowsPalette[1]= BGR(0, 0, 196);
  windowsPalette[2]= BGR(0,196,0);
@@ -1360,7 +1375,11 @@ int start_color(void)
  windowsPalette[13]= BGR(240, 0, 255);
  windowsPalette[14]= BGR(255, 240, 0);
  windowsPalette[15]= BGR(255, 255, 255);
+#if PALETTE_KILL
+ return _win.SetColorTable(windowsPalette, 16);
+#else
  return SetDIBColorTable(_win.backbuffer(), 0, 16, windowsPalette);
+#endif
 };
 #undef BGR
 
