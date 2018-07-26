@@ -10,6 +10,9 @@
 #include <windows.h>
 
 #include "Zaimoni.STL/cstdio"
+#ifndef NDEBUG
+#include <iostream>
+#endif
 
 // #define TILES 1
 
@@ -18,25 +21,35 @@
 class OS_Window
 {
 private:
+	static HWND _last;
+	BITMAPINFOHEADER _backbuffer_stats;
+	RGBQUAD* _color_table;
 	HWND _window;
 	RECT _dim;
 	HDC _dc;
 	HDC _backbuffer;
-	unsigned char* _dcbits;
+//	unsigned char* _dcbits;	//the bits of the screen image, for direct access
 public:
+	static unsigned char* _dcbits;	// XXX should be private per-instance; trying to transition legacy code
+	static const HINSTANCE program;
+
 	static const int TitleSize;
 	static const int BorderWidth;
 	static const int BorderHeight;
 	static const int ScreenWidth;
 	static const int ScreenHeight;
 
-	OS_Window() : _window(0), _dc(0), _backbuffer(0) { memset(&_dim, 0, sizeof(_dim)); };
+	OS_Window() : _color_table(0),_window(0), _dc(0), _backbuffer(0) { memset(&_dim, 0, sizeof(_dim)); memset(&_backbuffer_stats, 0, sizeof(_backbuffer_stats)); };
 	OS_Window(const OS_Window& src) = delete;
-	OS_Window(OS_Window&& src) : _window(src._window), _dim(src._dim), _dc(src._dc), _backbuffer(src._backbuffer) { src._window = 0; _dc = 0; _backbuffer = 0; memset(&_dim, 0, sizeof(_dim)); }
-	~OS_Window() { clear(); }
+	OS_Window(OS_Window&& src) : _color_table(src._color_table), _window(src._window), _dim(src._dim), _dc(src._dc), _backbuffer(src._backbuffer) {
+		src._color_table = 0; src._window = 0; _dc = 0; src._backbuffer = 0; memset(&src._dim, 0, sizeof(src._dim)); memset(&src._backbuffer_stats, 0, sizeof(src._backbuffer_stats));
+	}
+	~OS_Window() { clear(); delete _color_table; }
 
 	OS_Window& operator=(const OS_Window& src) = delete;
 	OS_Window& operator=(OS_Window&& src) {
+		_color_table = src._color_table;
+		src._color_table = 0;
 		_window = src._window;
 		src._window = 0;
 		_dim = src._dim;
@@ -45,9 +58,24 @@ public:
 		src._dc = 0;
 		_backbuffer = src._backbuffer;
 		src._backbuffer = 0;
+		_backbuffer_stats = src._backbuffer_stats;
 		return *this;
 	};
+	// lock defensible here
+	OS_Window& operator=(HWND src)
+	{
+		if (_last == _window) _last = 0;
+		clear();
+		_window = src;
+		if (!_window) return *this;
+		ShowWindow(_window, SW_SHOW);
+		CheckMessages();    //Let the message queue handle setting up the window
+		_last = _window;
+		return *this;
+	}
+
 	operator HWND() const { return _window; }
+	static HWND last() { return _last; }
 	HDC dc() const { return _dc; }
 	HDC backbuffer() const { return _backbuffer; }
 
@@ -68,15 +96,44 @@ public:
 		if (_window && DestroyWindow(_window)) _window = 0;
 	}
 
-	bool SetWindow(HWND src, BITMAPINFO& buffer_spec)
+	bool SetBackbuffer(const BITMAPINFO& buffer_spec)
 	{
-		clear();
-		_window = src;
-		_dc = GetDC(_window);
-		_backbuffer = CreateCompatibleDC(_dc);
-		HBITMAP backbit = CreateDIBSection(0, &buffer_spec, DIB_RGB_COLORS, (void**)&_dcbits, NULL, 0);
+		if (!_window) return false;
+		if (!_dc && !(_dc = GetDC(_window))) return false;
+		if (!_backbuffer && !(_backbuffer = CreateCompatibleDC(_dc))) return false;
+		_backbuffer_stats = buffer_spec.bmiHeader;
+		// handle invariant parts here
+		_backbuffer_stats.biSize = sizeof(BITMAPINFOHEADER);
+		_backbuffer_stats.biWidth = width();
+		_backbuffer_stats.biHeight = -height();
+		_backbuffer_stats.biPlanes = 1;
+		// we only handle 8 and 32 bits
+		if (32 == _backbuffer_stats.biBitCount) {
+			_backbuffer_stats.biClrUsed = 0;
+			_backbuffer_stats.biClrImportant = 0;
+			_backbuffer_stats.biSizeImage = width()*height()*4;
+		} else if (8 == _backbuffer_stats.biBitCount) {
+			// reality checks
+			if (_backbuffer_stats.biClrUsed != _backbuffer_stats.biClrImportant) throw std::logic_error("inconsistent color table");
+			if (1 > _backbuffer_stats.biClrUsed || 256 < _backbuffer_stats.biClrUsed) throw std::logic_error("color table has unreasonable number of entries");
+			_backbuffer_stats.biSizeImage = width()*height();
+		} else throw std::logic_error("unhandled color depth");
+
+		_backbuffer_stats.biCompression = BI_RGB;   //store it in uncompressed bytes
+
+		HBITMAP backbit = CreateDIBSection(0, (BITMAPINFO*)&_backbuffer_stats, DIB_RGB_COLORS, (void**)&_dcbits, NULL, 0);
 		DeleteObject(SelectObject(_backbuffer, backbit));//load the buffer into DC
 		SetBkMode(_backbuffer, TRANSPARENT);//Transparent font backgrounds
+		return true;
+	}
+
+	bool SetColorTable(RGBQUAD*& colors, size_t n)	// probably should capture the color table instead and use it as a translation device
+	{
+		if (_color_table) free(_color_table);
+		_color_table = colors;
+		colors = 0;
+		if (8 >= _backbuffer_stats.biBitCount) return SetDIBColorTable(_backbuffer, 0, n, colors);	// actually need this
+		return true;
 	}
 
 	static void CheckMessages()	//Check for any window messages (keypress, paint, mousemove, etc)
@@ -99,6 +156,10 @@ public:
 #define BORDERWIDTH_SCALE 2
 #define BORDERHEIGHT_SCALE 2
 #endif
+unsigned char* OS_Window::_dcbits = 0;
+HWND OS_Window::_last = 0;	// the most recently created, valid window
+const HINSTANCE OS_Window::program = GetModuleHandle(0);	// available from WinMain as well
+
 const int OS_Window::TitleSize = GetSystemMetrics(SM_CYCAPTION);      //These lines ensure
 const int OS_Window::BorderWidth = GetSystemMetrics(SM_CXDLGFRAME) * BORDERWIDTH_SCALE;  //that our window will
 const int OS_Window::BorderHeight = GetSystemMetrics(SM_CYDLGFRAME) * BORDERHEIGHT_SCALE; // be a perfect size
@@ -244,23 +305,23 @@ private:
 		static_assert(0x50 == 'P', "source code encoding not close to ASCII");
 		static_assert(0x4E == 'N', "source code encoding not close to ASCII");
 		static_assert(0x47 == 'G', "source code encoding not close to ASCII");
-		if (!(   0x89 == src[0]	// high-bit set: binary file, 
-			  && 'P'  == src[1]	// ASCII: P
-			  && 'N'  == src[2]	// N
-			  && 'G'  == src[3]	// G
-			  && 0x0D == src[4]	// DOS CR-LF (can be trashed by text-mode FTP)
-			  && 0x0A == src[5]
-			  && 0x1A == src[6]	// DOS EOF character, stops TYPE
-			  && 0x0A == src[7]))	// UNIX LF (can be trashed by text-mode FTP)
+#if REFERENCE
+		if (!(0x89 == src[0]	// high-bit set: binary file, 
+			&& 'P' == src[1]	// ASCII: P
+			&& 'N' == src[2]	// N
+			&& 'G' == src[3]	// G
+			&& 0x0D == src[4]	// DOS CR-LF (can be trashed by text-mode FTP)
+			&& 0x0A == src[5]
+			&& 0x1A == src[6]	// DOS EOF character, stops TYPE
+			&& 0x0A == src[7]))	// UNIX LF (can be trashed by text-mode FTP)
 			return false;
+#else
+		if (strncmp(reinterpret_cast<const char*>(src), "\x89PNG\x0D\x0A\x1A\x0A", 8)) return false;
+#endif
 		// should be an IHDR chunk immediately afterwards
-		if (  !('I' == src[12]	// ASCII: IHDR
-			&&  'H' == src[13]
-			&&  'D' == src[14]
-			&&  'R' == src[15]))
-			return false;
-		incoming_height = (((src[16] * 256) + src[17]) * 256 + src[18]) * 256 + src[19];
-		incoming_width = (((src[20] * 256) + src[21]) * 256 + src[22]) * 256 + src[23];
+		if (strncmp(reinterpret_cast<const char*>(src+12), "IHDR", 4)) return false;
+		incoming_width = (((src[16] * 256) + src[17]) * 256 + src[18]) * 256 + src[19];
+		incoming_height = (((src[20] * 256) + src[21]) * 256 + src[22]) * 256 + src[23];
 		return true;
 	}
 
@@ -313,10 +374,13 @@ private:
 		working.biSize = sizeof(working);
 		working.biWidth = incoming_width;
 		working.biHeight = incoming_height;	// both JPEG and PNG are bottom-up
-		working.biBitCount = 32;
+		working.biBitCount = 0;	// JPEG and PNG manage this themselves
 		working.biSizeImage = raw_image_size;	// both PNG and JPEG use image buffer size
 		// image dimensions must be accurate
 		HBITMAP tmp = CreateCompatibleBitmap(0, incoming_width, incoming_height);	// DeonApocalypse fails here: need real HDC?
+#ifndef NDEBUG
+		std::cerr << src << "; " << incoming_width << " x " << incoming_height << '\n';
+#endif
 		if (!tmp) {
 			free(raw_image); raw_image = 0;
 			return 0;
@@ -534,7 +598,6 @@ LRESULT CALLBACK ProcessMessages(HWND__ *hWnd, unsigned int Msg, WPARAM wParam, 
 
 WINDOW *mainwin;
 const WCHAR *szWindowClass = (L"CataCurseWindow");    //Class name :D
-HINSTANCE WindowINST = GetModuleHandle(0);   //the instance of the window...normally obtained from WinMain but we don't have WinMain
 HDC WindowDC;           //Device Context of the window, used for backbuffer
 int lastchar;          //the last character that was pressed, resets in getch
 int inputdelay;         //How long getch will wait for a character to be typed
@@ -544,7 +607,6 @@ HDC backbuffer;         //an off-screen DC to prevent flickering, lower cpu
 HFONT font = 0;             //Handle to the font created by CreateFont
 RGBQUAD *windowsPalette;  //The coor palette, 16 colors emulates a terminal
 pairs *colorpairs;   //storage for pair'ed colored, should be dynamic, meh
-unsigned char *dcbits;  //the bits of the screen image, for direct access
 char szDirectory[MAX_PATH] = "";
 int haveCustomFont = 0;	// custom font was there and loaded
 
@@ -564,9 +626,9 @@ bool WinCreate()
     WindowClassType.lpfnWndProc = ProcessMessages;//the procedure that gets msgs
     WindowClassType.cbClsExtra = 0;
     WindowClassType.cbWndExtra = 0;
-    WindowClassType.hInstance = WindowINST;// hInstance
-    WindowClassType.hIcon = LoadIcon(WindowINST, IDI_APPLICATION);//Default Icon
-    WindowClassType.hIconSm = LoadIcon(WindowINST, IDI_APPLICATION);//Default Icon
+    WindowClassType.hInstance = OS_Window::program;// hInstance
+    WindowClassType.hIcon = LoadIcon(NULL, IDI_APPLICATION);//Default Icon
+    WindowClassType.hIconSm = LoadIcon(NULL, IDI_APPLICATION);//Default Icon
     WindowClassType.hCursor = LoadCursor(NULL, IDC_ARROW);//Default Pointer
     WindowClassType.lpszMenuName = NULL;
     WindowClassType.hbrBackground = 0;//Thanks jday! Remove background brush
@@ -577,7 +639,7 @@ bool WinCreate()
                                    szWindowClass , szTitle,WindowStyle, _win.X(),
                                    _win.Y(), _win.width() + OS_Window::BorderWidth,
                                    _win.height() + OS_Window::BorderHeight + OS_Window::TitleSize,
-		                           0, 0, WindowINST, NULL);
+		                           0, 0, OS_Window::program, NULL);
     if (WindowHandle == 0) return false;
     ShowWindow(WindowHandle,SW_SHOW);
 	OS_Window::CheckMessages();    //Let the message queue handle setting up the window
@@ -590,7 +652,7 @@ void WinDestroy()
 	if (backbuffer && DeleteDC(backbuffer)) backbuffer = 0;
 	if (WindowDC && ReleaseDC(WindowHandle, WindowDC)) WindowDC = 0;
 	if (WindowHandle && DestroyWindow(WindowHandle)) WindowHandle = 0;
-	UnregisterClassW(szWindowClass, WindowINST);	// would happen on program termination anyway
+	UnregisterClassW(szWindowClass, OS_Window::program);	// would happen on program termination anyway
 };
 
 //This function processes any Windows messages we get. Keyboard, OnClose, etc
@@ -642,15 +704,15 @@ LRESULT CALLBACK ProcessMessages(HWND__ *hWnd,unsigned int Msg, WPARAM wParam, L
 //The following 3 methods use mem functions for fast drawing
 inline void VertLineDIB(int x, int y, int y2,int thickness, unsigned char color)
 {
-    for (int j=y; j<y2; j++) memset(&dcbits[x+j*_win.width()],color,thickness);
+    for (int j=y; j<y2; j++) memset(&OS_Window::_dcbits[x+j*_win.width()],color,thickness);
 };
 inline void HorzLineDIB(int x, int y, int x2,int thickness, unsigned char color)
 {
-    for (int j=y; j<y+thickness; j++) memset(&dcbits[x+j* _win.width()],color,x2-x);
+    for (int j=y; j<y+thickness; j++) memset(&OS_Window::_dcbits[x+j* _win.width()],color,x2-x);
 };
 inline void FillRectDIB(int x, int y, int width, int height, unsigned char color)
 {
-    for (int j=y; j<y+height; j++) memset(&dcbits[x+j* _win.width()],color,width);
+    for (int j=y; j<y+height; j++) memset(&OS_Window::_dcbits[x+j* _win.width()],color,width);
 };
 
 void DrawWindow(WINDOW *win)
@@ -794,7 +856,7 @@ WINDOW *initscr(void)
     bmi.bmiHeader.biSizeImage = _win.width() * _win.height() * 1;
     bmi.bmiHeader.biClrUsed=16;         //the number of colors in our palette
     bmi.bmiHeader.biClrImportant=16;    //the number of colors in our palette
-	HBITMAP backbit = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, (void**)&dcbits, NULL, 0);
+	HBITMAP backbit = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, (void**)&OS_Window::_dcbits, NULL, 0);
     DeleteObject(SelectObject(backbuffer, backbit));//load the buffer into DC
 	SetBkMode(backbuffer, TRANSPARENT);//Transparent font backgrounds
     
