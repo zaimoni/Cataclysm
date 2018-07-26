@@ -12,6 +12,8 @@
 #include <wincodec.h>
 #include <locale>
 #include <codecvt>
+
+#include "Zaimoni.STL/MetaRAM.hpp"
 #else
 // lower-tech pathway that ectually exists on MingWin
 #include "Zaimoni.STL/cstdio"
@@ -98,6 +100,13 @@ public:
 	static HDC last_dc() { return _last_dc; }
 	HDC dc() const { return _dc; }
 	HDC backbuffer() const { return _backbuffer; }
+	const RGBQUAD& color(size_t n) {
+#ifndef NDEBUG
+		if (_color_table_size <= n || !_color_table) throw std::logic_error("invalid color table access");
+#endif
+		return _color_table[n];
+	}
+	size_t color_table_size() const { return _color_table_size; }
 
 	void PrepareToDraw(HGDIOBJ src) {	// \todo should be taking an OS_Image object
 		if (!_staging_0) _staging_0 = SelectObject(_staging, src);
@@ -261,8 +270,7 @@ public:
 		_data.biWidth = width;
 //		_data.biHeight = -((signed long)height);
 		_data.biHeight = height;
-		_pixels = (RGBQUAD*)calloc(width*height, sizeof(RGBQUAD));
-		if (!_pixels) throw std::bad_alloc();
+		_pixels = zaimoni::_new_buffer_nonNULL_throws<RGBQUAD>(width*height);
 
 		// would like static assertion here but not needed
 		for (size_t scan_y = 0; scan_y < height; scan_y++) {
@@ -325,7 +333,7 @@ private:
 	{
 		if (_pixels) return _pixels;
 		if (!_have_info) return 0;
-		RGBQUAD* const tmp = (RGBQUAD*)calloc(width()*height(), sizeof(RGBQUAD));
+		RGBQUAD* const tmp = zaimoni::_new_buffer<RGBQUAD>(width()*height());
 		if (!tmp) return 0;
 		if (!GetDIBits(OS_Window::last_dc(), (HBITMAP)_x, 0, 0, NULL, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS))	// may need an HDC
 			{
@@ -451,7 +459,7 @@ private:
 		// want target format to be GUID_WICPixelFormat32bppBGRA
 		static_assert(4 == sizeof(RGBQUAD), "nonstandard definition of RGBQUAD");
 		const size_t buf_len = sizeof(RGBQUAD) * width * height;
-		buffer = reinterpret_cast<RGBQUAD*>(calloc(buf_len, 1));
+		buffer = zaimoni::_new_buffer<RGBQUAD>(width * height);
 		if (!buffer) {
 			conv->Release();
 			pFrame->Release();
@@ -708,12 +716,12 @@ struct curseline {
 
 void curseline::init(const int ncols)
 {
-	chars = (char*)calloc(ncols, sizeof(char));
-	FG = (char*)calloc(ncols, sizeof(char));
-	BG = (char*)calloc(ncols, sizeof(char));
+	chars = zaimoni::_new_buffer_nonNULL_throws<char>(ncols);
+	FG = zaimoni::_new_buffer_nonNULL_throws<char>(ncols);
+	BG = zaimoni::_new_buffer_nonNULL_throws<char>(ncols);
 #ifdef TILES
-	background_tiles = (unsigned short*)calloc(ncols, sizeof(unsigned short));
-	tiles = (unsigned short*)calloc(ncols, sizeof(unsigned short));
+	background_tiles = zaimoni::_new_buffer_nonNULL_throws<unsigned short>(ncols);
+	tiles = zaimoni::_new_buffer_nonNULL_throws<unsigned short>(ncols);
 #endif
 	touched = true;
 }
@@ -1331,19 +1339,11 @@ int getmaxy(WINDOW *win)
     return win->height;
 };
 
-inline RGBQUAD BGR(int b, int g, int r)
-{
-    RGBQUAD result;
-    result.rgbBlue=b;    //Blue
-    result.rgbGreen=g;    //Green
-    result.rgbRed=r;    //Red
-    result.rgbReserved=0;//The Alpha, isnt used, so just set it to 0
-    return result;
-};
+#define BGR(B,G,R) {B, G, R, 0}
 
 int start_color(void)
 {
- windowsPalette=new RGBQUAD[16];     //Colors in the struct are BGR!! not RGB!!
+ windowsPalette= zaimoni::_new_buffer_nonNULL_throws<RGBQUAD>(16);     //Colors in the struct are BGR!! not RGB!!
  windowsPalette[0]= BGR(0,0,0);
  windowsPalette[1]= BGR(0, 0, 196);
  windowsPalette[2]= BGR(0,196,0);
@@ -1362,6 +1362,7 @@ int start_color(void)
  windowsPalette[15]= BGR(255, 255, 255);
  return SetDIBColorTable(_win.backbuffer(), 0, 16, windowsPalette);
 };
+#undef BGR
 
 int keypad(WINDOW *faux, bool bf)
 {
