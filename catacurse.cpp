@@ -23,11 +23,11 @@
 #endif
 
 #if HAVE_MS_COM
-#define TILES 1
+#define HAVE_TILES 1
 #endif
-// #define TILES 1
+// #define HAVE_TILES 1
 
-#if TILES
+#if HAVE_TILES
 // #define USING_RGBA32 1
 #endif
 
@@ -703,7 +703,7 @@ struct curseline {
 	char *chars;
 	char *FG;
 	char *BG;
-#ifdef TILES
+#if HAVE_TILES
 	unsigned short* background_tiles;
 	unsigned short* tiles;
 #endif
@@ -720,7 +720,7 @@ void curseline::init(const int ncols)
 	chars = zaimoni::_new_buffer_nonNULL_throws<char>(ncols);
 	FG = zaimoni::_new_buffer_nonNULL_throws<char>(ncols);
 	BG = zaimoni::_new_buffer_nonNULL_throws<char>(ncols);
-#ifdef TILES
+#if HAVE_TILES
 	background_tiles = zaimoni::_new_buffer_nonNULL_throws<unsigned short>(ncols);
 	tiles = zaimoni::_new_buffer_nonNULL_throws<unsigned short>(ncols);
 #endif
@@ -732,7 +732,7 @@ curseline::~curseline()
 	if (chars) { free(chars); chars = 0; }
 	if (FG) { free(FG); FG = 0; }
 	if (BG) { free(BG); BG = 0; }
-#if TILES
+#if HAVE_TILES
 	if (background_tiles) { free(background_tiles); background_tiles = 0; }
 	if (tiles) { free(tiles); tiles = 0; }
 #endif
@@ -907,6 +907,7 @@ void DrawWindow(WINDOW *win)
 				}
 #endif
 				if (' ' == tmp) continue; // do not waste CPU on ASCII space, any sane font will be blank
+				if (FG == BG) continue;		// likewise do not waste CPU on foreground=background color (affected by tiles support)
 
                 if ( tmp > 0){
                 //if (tmp==95){//If your font doesnt draw underscores..uncomment
@@ -1397,13 +1398,11 @@ int mvaddch(int y, int x, const chtype ch)
 
 int wattron(WINDOW *win, int attrs)
 {
-    bool isBold = !!(attrs & A_BOLD);
-    bool isBlink = !!(attrs & A_BLINK);
-    int pairNumber = (attrs & A_COLOR) >> 17;
+    const int pairNumber = (attrs & A_COLOR) >> 17;
     win->FG=colorpairs[pairNumber].FG;
     win->BG=colorpairs[pairNumber].BG;
-    if (isBold) win->FG += 8;
-    if (isBlink) win->BG += 8;
+    if (attrs & A_BOLD) win->FG += 8;
+    if (attrs & A_BLINK) win->BG += 8;
     return 1;
 };
 int wattroff(WINDOW *win, int attrs)
