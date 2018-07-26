@@ -38,6 +38,7 @@ private:
 	static HDC _last_dc;
 
 	BITMAPINFOHEADER _backbuffer_stats;
+	void (OS_Window::*_fillRect)(int x, int y, int w, int h, unsigned char c);
 	RGBQUAD* _color_table;
 	size_t _color_table_size;
 	HWND _window;
@@ -116,6 +117,23 @@ public:
 		if (!_staging_0) return false;
 		// \todo bounds-checking
 		return StretchBlt(_backbuffer, xDest, yDest, wDest, hDest, _staging, xSrc, ySrc, wSrc, hSrc,SRCCOPY);
+	}
+
+	void FillRect(int x, int y, int w, int h, unsigned char c)
+	{
+		if (_fillRect) {
+			(this->*_fillRect)(x, y, w, h, c);
+			return;
+		}
+		if (!_dcbits) throw std::logic_error("invalid call");
+		switch (_backbuffer_stats.biBitCount)
+		{
+		case 8: _fillRect = &OS_Window::FillRect_8bit;
+			break;
+		case 32: _fillRect = &OS_Window::FillRect_32bit;
+			break;
+		default: throw std::logic_error("invalid call");
+		}
 	}
 
 	int X() const { return _dim.left; };
