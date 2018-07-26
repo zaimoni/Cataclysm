@@ -36,7 +36,9 @@ private:
 	HWND _window;
 	RECT _dim;
 	HDC _dc;
-	HDC _backbuffer;
+	HDC _backbuffer;	// backbuffer for the physical device context
+	HDC _staging;	// the current tile to draw would go here, for instance
+	HGDIOBJ _staging_0;	// where the original bitmap for _staging goes
 //	unsigned char* _dcbits;	//the bits of the screen image, for direct access
 public:
 	static unsigned char* _dcbits;	// XXX should be private per-instance; trying to transition legacy code
@@ -48,10 +50,10 @@ public:
 	static const int ScreenWidth;
 	static const int ScreenHeight;
 
-	OS_Window() : _color_table(0),_window(0), _dc(0), _backbuffer(0) { memset(&_dim, 0, sizeof(_dim)); memset(&_backbuffer_stats, 0, sizeof(_backbuffer_stats)); };
+	OS_Window() : _color_table(0),_window(0), _dc(0), _backbuffer(0),_staging(0), _staging_0(0) { memset(&_dim, 0, sizeof(_dim)); memset(&_backbuffer_stats, 0, sizeof(_backbuffer_stats)); };
 	OS_Window(const OS_Window& src) = delete;
-	OS_Window(OS_Window&& src) : _color_table(src._color_table), _window(src._window), _dim(src._dim), _dc(src._dc), _backbuffer(src._backbuffer) {
-		src._color_table = 0; src._window = 0; _dc = 0; src._backbuffer = 0; memset(&src._dim, 0, sizeof(src._dim)); memset(&src._backbuffer_stats, 0, sizeof(src._backbuffer_stats));
+	OS_Window(OS_Window&& src) : _color_table(src._color_table), _window(src._window), _dim(src._dim), _dc(src._dc), _backbuffer(src._backbuffer), _staging(src._staging), _staging_0(src._staging_0) {
+		src._color_table = 0; src._window = 0; _dc = 0; src._backbuffer = 0; src._staging = 0; src._staging_0 = 0; memset(&src._dim, 0, sizeof(src._dim)); memset(&src._backbuffer_stats, 0, sizeof(src._backbuffer_stats));
 	}
 	~OS_Window() { clear(); delete _color_table; }
 
@@ -68,6 +70,10 @@ public:
 		_backbuffer = src._backbuffer;
 		src._backbuffer = 0;
 		_backbuffer_stats = src._backbuffer_stats;
+		_staging = src._staging;
+		src._staging = 0;
+		_staging_0 = src._staging_0;
+		src._staging_0 = 0;
 		return *this;
 	};
 	// lock defensible here
@@ -89,6 +95,20 @@ public:
 	HDC dc() const { return _dc; }
 	HDC backbuffer() const { return _backbuffer; }
 
+	void PrepareToDraw(HGDIOBJ src) {	// \todo should be taking an OS_Image object
+		if (!_staging_0) _staging_0 = SelectObject(_staging, src);
+		else SelectObject(_staging, src);
+	}
+	void UnpreparedToDraw() {
+		if (_staging_0) SelectObject(_staging, _staging_0);
+	}
+	bool Draw(int xDest, int yDest, int wDest, int hDest, int xSrc, int ySrc, int wSrc, int hSrc)
+	{
+		if (!_staging_0) return false;
+		// \todo bounds-checking
+		return StretchBlt(_backbuffer, xDest, yDest, wDest, hDest, _staging, xSrc, ySrc, wSrc, hSrc,SRCCOPY);
+	}
+
 	int X() const { return _dim.left; };
 	int Y() const { return _dim.top; };
 	int width() const { return _dim.right-_dim.left; }
@@ -101,6 +121,8 @@ public:
 	}
 
 	void clear() {
+		if (_staging_0 && SelectObject(_staging, _staging_0)) _staging_0 = 0;
+		if (_staging && DeleteDC(_staging)) _staging = 0;
 		if (_backbuffer && DeleteDC(_backbuffer)) _backbuffer = 0;
 		if (_last_dc == _dc) _last_dc = 0;
 		if (_dc && ReleaseDC(_window, _dc)) _dc = 0;
@@ -114,6 +136,7 @@ public:
 		if (!_dc && !(_dc = GetDC(_window))) return false;
 		_last_dc = _dc;
 		if (!_backbuffer && !(_backbuffer = CreateCompatibleDC(_dc))) return false;
+		if (!_staging && !(_staging = CreateCompatibleDC(_dc))) return false;
 		_backbuffer_stats = buffer_spec.bmiHeader;
 		// handle invariant parts here
 		_backbuffer_stats.biSize = sizeof(BITMAPINFOHEADER);
