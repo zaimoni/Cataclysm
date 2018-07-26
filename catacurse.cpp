@@ -409,7 +409,6 @@ int fontwidth = 0;          //the width of the font, background is always this s
 int fontheight = 0;         //the height of the font, background is always this size
 int halfwidth = 0;          //half of the font width, used for centering lines
 int halfheight = 0;          //half of the font height, used for centering lines
-HWND WindowHandle = 0;      //the handle of the window
 
 bool SetFontSize(const int x, const int y)
 {
@@ -427,8 +426,8 @@ bool SetFontSize(const int x, const int y)
 bool WinResize()
 {
 	RECT tmp;
-	if (!GetWindowRect(WindowHandle, &tmp)) return false;
-	return MoveWindow(WindowHandle, tmp.left, tmp.top, _win.width() + OS_Window::BorderWidth, _win.height() + OS_Window::BorderHeight + OS_Window::TitleSize,true);
+	if (!GetWindowRect(_win, &tmp)) return false;
+	return MoveWindow(_win, tmp.left, tmp.top, _win.width() + OS_Window::BorderWidth, _win.height() + OS_Window::BorderHeight + OS_Window::TitleSize,true);
 }
 
 std::string extract_file_infix(std::string src)
@@ -492,13 +491,13 @@ bool load_tile(const char* src)
 			if (!image.handle()) return false;	// failed to load
 			_translate[base_tile] = ++_next;
 			_cache[_next] = std::move(image);
-			if (SetFontSize(16, 16) && WindowHandle) WinResize();
+			if (SetFontSize(16, 16) && _win) WinResize();
 		} else {
 			OS_Image image(base_tile.c_str(), fontwidth, fontheight);
 			if (!image.handle()) return false;	// failed to load
 			_translate[base_tile] = ++_next;
 			_cache[_next] = std::move(image);
-			if (SetFontSize(16, 16) && WindowHandle) WinResize();
+			if (SetFontSize(16, 16) && _win) WinResize();
 		}
 	}
 	if (!has_rotation_specification) return true;
@@ -635,23 +634,19 @@ bool WinCreate()
     WindowClassType.lpszClassName = szWindowClass;
     if (!RegisterClassExW(&WindowClassType)) return false;
 	const unsigned int WindowStyle = WS_OVERLAPPEDWINDOW & ~(WS_THICKFRAME) & ~(WS_MAXIMIZEBOX);
-    WindowHandle = CreateWindowExW(WS_EX_APPWINDOW || WS_EX_TOPMOST * 0,
+	return (_win = CreateWindowExW(WS_EX_APPWINDOW || WS_EX_TOPMOST * 0,
                                    szWindowClass , szTitle,WindowStyle, _win.X(),
                                    _win.Y(), _win.width() + OS_Window::BorderWidth,
                                    _win.height() + OS_Window::BorderHeight + OS_Window::TitleSize,
-		                           0, 0, OS_Window::program, NULL);
-    if (WindowHandle == 0) return false;
-    ShowWindow(WindowHandle,SW_SHOW);
-	OS_Window::CheckMessages();    //Let the message queue handle setting up the window
-	return true;
+		                           0, 0, OS_Window::program, NULL));
 };
 
 //Unregisters, releases the DC if needed, and destroys the window.
 void WinDestroy()
 {
 	if (backbuffer && DeleteDC(backbuffer)) backbuffer = 0;
-	if (WindowDC && ReleaseDC(WindowHandle, WindowDC)) WindowDC = 0;
-	if (WindowHandle && DestroyWindow(WindowHandle)) WindowHandle = 0;
+	if (WindowDC && ReleaseDC(_win, WindowDC)) WindowDC = 0;
+	_win.clear();
 	UnregisterClassW(szWindowClass, OS_Window::program);	// would happen on program termination anyway
 };
 
@@ -691,7 +686,7 @@ LRESULT CALLBACK ProcessMessages(HWND__ *hWnd,unsigned int Msg, WPARAM wParam, L
             return 1;               //We don't want to erase our background
         case WM_PAINT:              //Pull from our backbuffer, onto the screen
             BitBlt(WindowDC, 0, 0, _win.width(), _win.height(), backbuffer, 0, 0,SRCCOPY);
-            ValidateRect(WindowHandle,NULL);
+            ValidateRect(_win,NULL);
             break;
         case WM_DESTROY:
             exit(0);//A messy exit, but easy way to escape game loop
@@ -817,7 +812,7 @@ WINDOW *initscr(void)
 	std::ifstream fin;
 	fin.open("data\\FONTDATA");
  if (!fin.is_open()){
-     MessageBox(WindowHandle, "Failed to open FONTDATA, loading defaults.", NULL, 0);
+     MessageBox(_win, "Failed to open FONTDATA, loading defaults.", NULL, 0);
 	 if (0 >= fontwidth) SetFontSize(8, 16);
  } else {
      getline(fin, typeface);
@@ -828,14 +823,14 @@ WINDOW *initscr(void)
      fin >> tmp_height;
 	 if (   (0 >= fontwidth && 4 >= tmp_width)
 		 || (0 >= fontheight && 4 >= tmp_height)) {
-         MessageBox(WindowHandle, "Invalid font size specified!", NULL, 0);
+         MessageBox(_win, "Invalid font size specified!", NULL, 0);
 		 tmp_width  = 8;
 		 tmp_height = 16;
      }
 	 if (0 >= fontwidth) SetFontSize(tmp_width, tmp_height);
  }
  haveCustomFont = (!typeface.empty() ? AddFontResourceExA("data\\termfont", FR_PRIVATE, NULL) : 0);
- if (!haveCustomFont) MessageBox(WindowHandle, "Failed to load default font, using FixedSys.", NULL, 0);
+ if (!haveCustomFont) MessageBox(_win, "Failed to load default font, using FixedSys.", NULL, 0);
  {
 	 const char* const t_face = haveCustomFont ? typeface.c_str() : "FixedSys";	//FixedSys will be user-changable at some point in time??
 	 font = CreateFont(fontheight, fontwidth, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
@@ -844,7 +839,7 @@ WINDOW *initscr(void)
  }
 
     WinCreate();    //Create the actual window, register it, etc
-    WindowDC = GetDC(WindowHandle);
+    WindowDC = GetDC(_win);
     backbuffer = CreateCompatibleDC(WindowDC);
     ZeroMemory(&bmi, sizeof(BITMAPINFO));
     bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -972,7 +967,7 @@ int refresh(void)
 int getch(void)
 {
  refresh();
- InvalidateRect(WindowHandle,NULL,true);
+ InvalidateRect(_win,NULL,true);
  lastchar=ERR;//ERR=-1
     if (inputdelay < 0)
     {
