@@ -25,7 +25,9 @@
 #endif
 // #define TILES 1
 
-#define FULL_IMAGE_INFO 1
+#if TILES
+// #define USING_RGBA32 1
+#endif
 
 class OS_Window
 {
@@ -34,6 +36,7 @@ private:
 	static HDC _last_dc;
 	BITMAPINFOHEADER _backbuffer_stats;
 	RGBQUAD* _color_table;
+	size_t _color_table_size;
 	HWND _window;
 	RECT _dim;
 	HDC _dc;
@@ -51,12 +54,12 @@ public:
 	static const int ScreenWidth;
 	static const int ScreenHeight;
 
-	OS_Window() : _color_table(0),_window(0), _dc(0), _backbuffer(0),_staging(0), _staging_0(0) { memset(&_dim, 0, sizeof(_dim)); memset(&_backbuffer_stats, 0, sizeof(_backbuffer_stats)); };
+	OS_Window() : _color_table(0), _color_table_size(0),_window(0), _dc(0), _backbuffer(0),_staging(0), _staging_0(0) { memset(&_dim, 0, sizeof(_dim)); memset(&_backbuffer_stats, 0, sizeof(_backbuffer_stats)); };
 	OS_Window(const OS_Window& src) = delete;
-	OS_Window(OS_Window&& src) : _color_table(src._color_table), _window(src._window), _dim(src._dim), _dc(src._dc), _backbuffer(src._backbuffer), _staging(src._staging), _staging_0(src._staging_0) {
-		src._color_table = 0; src._window = 0; _dc = 0; src._backbuffer = 0; src._staging = 0; src._staging_0 = 0; memset(&src._dim, 0, sizeof(src._dim)); memset(&src._backbuffer_stats, 0, sizeof(src._backbuffer_stats));
+	OS_Window(OS_Window&& src) : _color_table(src._color_table), _color_table_size(src._color_table_size), _window(src._window), _dim(src._dim), _dc(src._dc), _backbuffer(src._backbuffer), _staging(src._staging), _staging_0(src._staging_0) {
+		src._color_table = 0; src._color_table_size = 0; src._window = 0; _dc = 0; src._backbuffer = 0; src._staging = 0; src._staging_0 = 0; memset(&src._dim, 0, sizeof(src._dim)); memset(&src._backbuffer_stats, 0, sizeof(src._backbuffer_stats));
 	}
-	~OS_Window() { clear(); delete _color_table; }
+	~OS_Window() { clear();  free(_color_table); _color_table = 0;  }
 
 	OS_Window& operator=(const OS_Window& src) = delete;
 	OS_Window& operator=(OS_Window&& src) {
@@ -161,6 +164,7 @@ public:
 		HBITMAP backbit = CreateDIBSection(0, (BITMAPINFO*)&_backbuffer_stats, DIB_RGB_COLORS, (void**)&_dcbits, NULL, 0);
 		DeleteObject(SelectObject(_backbuffer, backbit));//load the buffer into DC
 		SetBkMode(_backbuffer, TRANSPARENT);//Transparent font backgrounds
+		if (8 >= _backbuffer_stats.biBitCount && _color_table && 256 >= _color_table_size) return SetDIBColorTable(_backbuffer, 0, _color_table_size, _color_table);	// actually need this
 		return true;
 	}
 
@@ -168,8 +172,9 @@ public:
 	{
 		if (_color_table) free(_color_table);
 		_color_table = colors;
+		_color_table_size = n;
 		colors = 0;
-		if (8 >= _backbuffer_stats.biBitCount) return SetDIBColorTable(_backbuffer, 0, n, colors);	// actually need this
+		if (8 >= _backbuffer_stats.biBitCount && 256>=n) return SetDIBColorTable(_backbuffer, 0, n, colors);	// actually need this
 		return true;
 	}
 
@@ -256,20 +261,23 @@ public:
 		_data.biWidth = width;
 //		_data.biHeight = -((signed long)height);
 		_data.biHeight = height;
-		RGBQUAD* working = (RGBQUAD*)calloc(width*height, sizeof(RGBQUAD));
-		if (!working) throw std::bad_alloc();
+		_pixels = (RGBQUAD*)calloc(width*height, sizeof(RGBQUAD));
+		if (!_pixels) throw std::bad_alloc();
 
 		// would like static assertion here but not needed
 		for (size_t scan_y = 0; scan_y < height; scan_y++) {
-			memmove(working + (scan_y*width), incoming + ((scan_y + origin_y)*src.width()), sizeof(RGBQUAD)*width);
+			memmove(_pixels + (scan_y*width), incoming + ((scan_y + origin_y)*src.width()), sizeof(RGBQUAD)*width);
 		}
 		_x = CreateCompatibleBitmap(OS_Window::last_dc(),width,height);
-		if (!_x) throw std::bad_alloc();
-		if (!SetDIBits(OS_Window::last_dc(), (HBITMAP)_x, 0, height, working, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS)) {
-			free(working);
+		if (!_x) {
+			free(_pixels);
 			throw std::bad_alloc();
 		}
-		free(working);
+		if (!SetDIBits(OS_Window::last_dc(), (HBITMAP)_x, 0, height, _pixels, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS)) {
+			free(_pixels);
+			throw std::bad_alloc();
+		}
+		_have_info = true;
 	}
 
 	~OS_Image() { clear(); }
@@ -845,6 +853,8 @@ LRESULT CALLBACK ProcessMessages(HWND__ *hWnd,unsigned int Msg, WPARAM wParam, L
     return 0;
 };
 
+#if USING_RGBA32
+#else
 //The following 3 methods use mem functions for fast drawing
 inline void VertLineDIB(int x, int y, int y2,int thickness, unsigned char color)
 {
@@ -858,6 +868,7 @@ inline void FillRectDIB(int x, int y, int width, int height, unsigned char color
 {
     for (int j=y; j<y+height; j++) memset(&OS_Window::_dcbits[x+j* _win.width()],color,width);
 };
+#endif
 
 void DrawWindow(WINDOW *win)
 {
@@ -873,7 +884,11 @@ void DrawWindow(WINDOW *win)
                 tmp = win->line[j].chars[i];	// \todo alternate data source here for tiles
                 int FG = win->line[j].FG[i];
                 int BG = win->line[j].BG[i];
-                FillRectDIB(drawx,drawy,fontwidth,fontheight,BG);
+#if USING_RGBA32
+#error need to implement DrawWindow
+#else
+				FillRectDIB(drawx,drawy,fontwidth,fontheight,BG);
+#endif
 
 				// \todo interpose tile drawing here
 #if 0
@@ -892,6 +907,9 @@ void DrawWindow(WINDOW *win)
                 //    }     //and this line too.
                 } else if (  tmp < 0 ) {
                     switch (tmp) {
+#if USING_RGBA32
+#error need to implement DrawWindow
+#else
                     case -60://box bottom/top side (horizontal line)
                         HorzLineDIB(drawx,drawy+halfheight,drawx+fontwidth,1,FG);
                         break;
@@ -934,6 +952,7 @@ void DrawWindow(WINDOW *win)
                         VertLineDIB(drawx+halfwidth,drawy,drawy+fontheight,2,FG);
                         HorzLineDIB(drawx,drawy+halfheight,drawx+halfwidth,1,FG);
                         break;
+#endif
                     default:
                         // SetTextColor(DC,_windows[w].line[j].chars[i].color.FG);
                         // TextOut(DC,drawx,drawy,&tmp,1);
