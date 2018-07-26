@@ -367,8 +367,7 @@ JSON::JSON(JSON&& src)
 {
 	static_assert(std::is_standard_layout<JSON>::value, "JSON move constructor is invalid");
 	memmove(this, &src, sizeof(JSON));
-	src._mode = none;
-	src._scalar = 0;
+	memset(&src, 0, sizeof(JSON));
 }
 
 JSON& JSON::operator=(const JSON& src)
@@ -382,8 +381,7 @@ JSON& JSON::operator=(JSON&& src)
 	static_assert(std::is_standard_layout<JSON>::value, "JSON move assignment is invalid");
 	reset();
 	memmove(this, &src, sizeof(JSON));
-	src._mode = none;
-	src._scalar = 0;
+	memset(&src, 0, sizeof(JSON));
 	return *this;
 }
 

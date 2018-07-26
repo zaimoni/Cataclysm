@@ -57,30 +57,24 @@ public:
 	static const int ScreenWidth;
 	static const int ScreenHeight;
 
-	OS_Window() : _color_table(0), _color_table_size(0),_window(0), _dc(0), _backbuffer(0),_staging(0), _staging_0(0) { memset(&_dim, 0, sizeof(_dim)); memset(&_backbuffer_stats, 0, sizeof(_backbuffer_stats)); };
+	OS_Window() {
+		static_assert(std::is_standard_layout<OS_Window>::value, "OS_Window constructor is invalid");
+		memset(this, 0, sizeof(OS_Window));
+	};
 	OS_Window(const OS_Window& src) = delete;
-	OS_Window(OS_Window&& src) : _color_table(src._color_table), _color_table_size(src._color_table_size), _window(src._window), _dim(src._dim), _dc(src._dc), _backbuffer(src._backbuffer), _staging(src._staging), _staging_0(src._staging_0) {
-		src._color_table = 0; src._color_table_size = 0; src._window = 0; _dc = 0; src._backbuffer = 0; src._staging = 0; src._staging_0 = 0; memset(&src._dim, 0, sizeof(src._dim)); memset(&src._backbuffer_stats, 0, sizeof(src._backbuffer_stats));
+	OS_Window(OS_Window&& src) {
+		static_assert(std::is_standard_layout<OS_Window>::value, "OS_Window move constructor is invalid");
+		memmove(this, &src, sizeof(OS_Window));
+		memset(&src, 0, sizeof(OS_Window));
 	}
-	~OS_Window() { clear();  free(_color_table); _color_table = 0;  }
+	~OS_Window() { destroy();  }
 
 	OS_Window& operator=(const OS_Window& src) = delete;
 	OS_Window& operator=(OS_Window&& src) {
-		_color_table = src._color_table;
-		src._color_table = 0;
-		_window = src._window;
-		src._window = 0;
-		_dim = src._dim;
-		memset(&src._dim, 0, sizeof(_dim));
-		_dc = src._dc;
-		src._dc = 0;
-		_backbuffer = src._backbuffer;
-		src._backbuffer = 0;
-		_backbuffer_stats = src._backbuffer_stats;
-		_staging = src._staging;
-		src._staging = 0;
-		_staging_0 = src._staging_0;
-		src._staging_0 = 0;
+		static_assert(std::is_standard_layout<OS_Window>::value, "OS_Window move assignment is invalid");
+		destroy();
+		memmove(this, &src, sizeof(OS_Window));
+		memset(&src, 0, sizeof(OS_Window));
 		return *this;
 	};
 	// lock defensible here
@@ -215,6 +209,12 @@ public:
 		return SetBackbuffer(working);
 	}
 private:
+	void destroy() { 
+		clear();
+		free(_color_table);
+		_color_table = 0;
+	}
+
 	// note non-use of HBRUSH
 	void FillRect_8bit(int x, int y, int w, int h, unsigned char c)
 	{
@@ -262,19 +262,24 @@ private:
 	bool _have_info;
 public:
 	// XXX LoadImage only works for *BMP.  SetDIBits required for JPEG and PNG, but that requires an HDC
-	OS_Image() : _x(0), _pixels(0), _have_info(false) { memset(&_data, 0, sizeof(_data)); }
-	OS_Image(const char* src) : _x(0), _pixels(0), _have_info(false) { _x = loadFromFile(src, _pixels, _data, _have_info); init(); }
-	OS_Image(const wchar_t* src, int width = 0, int height = 0) : _x(LoadImageW(0, src, IMAGE_BITMAP, width, height, LR_LOADFROMFILE)), _pixels(0),_have_info(false) { init(); }
+	OS_Image() {
+		static_assert(std::is_standard_layout<OS_Window>::value, "OS_Window constructor is invalid");
+		memset(this, 0, sizeof(OS_Image));
+	}
+	OS_Image(const char* src) {
+		static_assert(std::is_standard_layout<OS_Window>::value, "OS_Window filename constructor is invalid");
+		memset(this, 0, sizeof(OS_Image));
+		_x = loadFromFile(src, _pixels, _data, _have_info); init();
+	}
+	// OS_Image(const wchar_t* src)
 	OS_Image(const OS_Image& src) = delete;
-	OS_Image(OS_Image&& src) : _x(src._x),_data(src._data),_have_info(src._have_info) {
-		src._x = 0;
-		_pixels = src._pixels;
-		src._pixels = 0;
+	OS_Image(OS_Image&& src) {
+		static_assert(std::is_standard_layout<OS_Window>::value, "OS_Window move constructor is invalid");
+		memmove(this,&src,sizeof(OS_Image));
+		memset(&src, 0, sizeof(OS_Image));
 	}
 	// clipping constructor
-	OS_Image(const OS_Image& src, const size_t origin_x, const size_t origin_y, const size_t width, const size_t height)
-	: _x(0), _data(src._data), _pixels(0), _have_info(false)
-	{
+	OS_Image(const OS_Image& src, const size_t origin_x, const size_t origin_y, const size_t width, const size_t height) {
 		if (0 >= width) throw std::logic_error("OS_Image::OS_Image: 0 >= width");
 		if (0 >= height) throw std::logic_error("OS_Image::OS_Image: 0 >= height");
 		if (((size_t)(-1)/sizeof(_pixels[0]))/width < height) throw std::logic_error("OS_Image::OS_Image: ((size_t)(-1)/sizeof(_pixels[0]))/width < height");
@@ -282,6 +287,9 @@ public:
 		if (src.height() <= origin_y) throw std::logic_error("OS_Image::OS_Image: src.height() <= origin_y");
 		if (src.width() - origin_x < width) throw std::logic_error("OS_Image::OS_Image: src.width() - origin_x < width");
 		if (src.height() - origin_y < height) throw std::logic_error("OS_Image::OS_Image: src.height() - origin_y < height");
+		static_assert(std::is_standard_layout<OS_Window>::value, "OS_Window filename constructor is invalid");
+		memset(this, 0, sizeof(OS_Image));
+		_data = src._data;
 		RGBQUAD* const incoming = src.pixels();
 
 		_data.biWidth = width;
@@ -310,12 +318,10 @@ public:
 	OS_Image& operator=(const OS_Image& src) = delete;
 	OS_Image& operator=(OS_Image&& src)
 	{
-		_x = src._x;
-		src._x = 0;
-		_data = src._data;
-		_have_info = src._have_info;
-		_pixels = src._pixels;
-		src._pixels = 0;
+		static_assert(std::is_standard_layout<OS_Window>::value, "OS_Window move constructor is invalid");
+		clear();
+		memmove(this, &src, sizeof(OS_Image));
+		memset(&src, 0, sizeof(OS_Image));
 		return *this;
 	}
 
