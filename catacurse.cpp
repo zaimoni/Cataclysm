@@ -8,15 +8,20 @@
 #define _WIN32_WINNT 0x0500
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#if HAVE_MS_COM
 #include <wincodec.h>
 #include <locale>
 #include <codecvt>
+#endif
 
 #include "Zaimoni.STL/cstdio"
 #ifndef NDEBUG
 #include <iostream>
 #endif
 
+#if HAVE_MS_COM
+#define TILES 1
+#endif
 // #define TILES 1
 
 #define FULL_IMAGE_INFO 1
@@ -197,12 +202,8 @@ class OS_Image
 {
 private:
 	HANDLE _x;
-#ifdef FULL_IMAGE_INFO
 	BITMAPINFOHEADER _data;
 	mutable RGBQUAD* _pixels;
-#else
-	BITMAPCOREHEADER _data;
-#endif
 	bool _have_info;
 public:
 	// XXX LoadImage only works for *BMP.  SetDIBits required for JPEG and PNG, but that requires an HDC
@@ -212,12 +213,9 @@ public:
 	OS_Image(const OS_Image& src) = delete;
 	OS_Image(OS_Image&& src) : _x(src._x),_data(src._data),_have_info(src._have_info) {
 		src._x = 0;
-#ifdef FULL_IMAGE_INFO
 		_pixels = src._pixels;
 		src._pixels = 0;
-#endif
 	}
-#ifdef FULL_IMAGE_INFO
 	// clipping constructor
 	OS_Image(const OS_Image& src, const size_t origin_x, const size_t origin_y, const size_t width, const size_t height)
 	: _x(0), _data(src._data), _pixels(0), _have_info(false)
@@ -249,7 +247,6 @@ public:
 		}
 		free(working);
 	}
-#endif
 
 	~OS_Image() { clear(); }
 
@@ -260,21 +257,14 @@ public:
 		src._x = 0;
 		_data = src._data;
 		_have_info = src._have_info;
-#ifdef FULL_IMAGE_INFO
 		_pixels = src._pixels;
 		src._pixels = 0;
-#endif
 		return *this;
 	}
 
 	HANDLE handle() const { return _x; }
-#ifdef FULL_IMAGE_INFO
 	size_t width() const { return _data.biWidth; }
 	size_t height() const { return 0 < _data.biHeight ? _data.biHeight : -_data.biHeight; }
-#else
-	size_t width() const { return _data.bcWidth; }
-	size_t height() const { return _data.bcHeight; }
-#endif
 
 	void clear()
 	{
@@ -291,25 +281,18 @@ private:
 	void init() {
 		if (_x && !_have_info) {
 			memset(&_data, 0, sizeof(_data));
-#ifdef FULL_IMAGE_INFO
 			_data.biSize = sizeof(_data);
-#else
-			_data.bcSize = sizeof(_data);
-#endif
 			_have_info = GetDIBits(OS_Window::last_dc(), (HBITMAP)_x, 0, 0, NULL, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS);	// XXX needs testing, may need an HDC
-#ifdef FULL_IMAGE_INFO
 			_data.biBitCount = 32;	// force alpha channel in (no padding bytes)
 			_data.biCompression = BI_RGB;
 			_data.biHeight = (0 < _data.biHeight) ? -_data.biHeight : _data.biHeight;	// force bottom-up
-#endif
 		}
 	}
 
-#ifdef FULL_IMAGE_INFO
 	RGBQUAD* pixels() const
 	{
-		if (!_have_info) return 0;
 		if (_pixels) return _pixels;
+		if (!_have_info) return 0;
 		RGBQUAD* const tmp = (RGBQUAD*)calloc(width()*height(), sizeof(RGBQUAD));
 		if (!tmp) return 0;
 		if (!GetDIBits(OS_Window::last_dc(), (HBITMAP)_x, 0, 0, NULL, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS))	// may need an HDC
@@ -319,7 +302,6 @@ private:
 			}
 		return _pixels = tmp;
 	}
-#endif
 
 	// header: 8 bytes; each chunk is strictly bounded below by 12 bytes and three are required.
 	static bool LooksLikePNGHeader(const unsigned char* src, size_t len, long& incoming_width, long& incoming_height)
@@ -371,6 +353,7 @@ private:
 	// buffer is owned by the caller
 	static bool Get32BRGAbuffer(const std::string src,  RGBQUAD*& buffer, unsigned int& width, unsigned int& height)
 	{	// this implementation requires COM classes
+#if HAVE_MS_COM
 		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t> > widen;
 		const auto w_src = widen.from_bytes(src);
 
@@ -456,15 +439,14 @@ private:
 			return false;
 		}
 
-#ifndef NDEBUG
-		std::cerr << src << "; " << width << " x " << height << '\n';
-#endif
-
 		conv->Release();
 		pFrame->Release();
 		parser->Release();
 		factory->Release();
 		return true;
+#else
+		return false;
+#endif
 	}
 
 	static HANDLE loadFromFile(const std::string src, RGBQUAD*& pixels, BITMAPINFOHEADER& working,bool& got_stats)
@@ -474,8 +456,10 @@ private:
 		memset(&working, 0, sizeof(working));
 		working.biSize = sizeof(working);
 		working.biPlanes = 1;
+#if PROTOTYPE
 		HANDLE ret = LoadImageA(OS_Window::program, src.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 		if (ret) return ret;	// was a fully legal BMP for the current version of Windows (untested)
+#endif
 
 #if 1
 		unsigned int native_width = 0;
@@ -617,27 +601,15 @@ bool load_tile(const char* src)
 			}
 			if (!_tilesheets.count(tilesheet)) {
 				OS_Image relay(tilesheet.c_str());
-#ifndef NDEBUG
-				std::cerr << relay.handle() << '\n';
-#endif
 				if (!relay.handle()) return false;	// failed to load
 				// read off the tilesheet size from the filename ...#.png
 				std::string infix = extract_file_infix(tilesheet);
-#ifndef NDEBUG
-				std::cerr << '"' << infix << '"' << '\n';
-#endif
 				if (infix.empty()) return false;
 				try {
 					int dim = std::stoi(infix);
-#ifndef NDEBUG
-					std::cerr << '"' << dim << '"' << '\n';
-#endif
 					if (0 >= dim) return false;
 					_tilesheet_tile[tilesheet] = dim;
 				} catch (std::exception& e) {
-#ifndef NDEBUG
-					std::cerr << '"' << e.what() << '"' << '\n';
-#endif
 					return false;
 				}
 				// we have to handle the per-sheet configuration elsewhere
@@ -648,18 +620,9 @@ bool load_tile(const char* src)
 			const size_t scaled_x = src.width() / dim;
 			const size_t scaled_y = src.height() / dim;
 			const int index_y = index / scaled_x;
-#ifndef NDEBUG
-			std::cerr << scaled_x << ',' << scaled_y << ',' << index_y << ',' << index << '\n';
-#endif
 			if (scaled_y <= index_y) return false;
 			const int index_x = index - index_y * scaled_x;
-#ifndef NDEBUG
-			std::cerr << '"' << index_x << ',' << index_y << '"' << '\n';
-#endif
 			OS_Image image(src, dim*index_x, dim*index_y, dim, dim);	// clipping constructor
-#ifndef NDEBUG
-			std::cerr << image.handle() << '\n';
-#endif
 			if (!image.handle()) return false;	// failed to load
 			_translate[base_tile] = ++_next;
 			_cache[_next] = std::move(image);

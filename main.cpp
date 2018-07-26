@@ -9,7 +9,7 @@
 #include <fstream>
 #include <iostream>
 #include <exception>
-#if (defined _WIN32 || defined WINDOWS)
+#if HAVE_MS_COM
 #include <combaseapi.h>
 #endif
 
@@ -87,7 +87,7 @@ static bool load_tiles(const JSON& src)
 
 int main(int argc, char *argv[])
 {
-#if (defined _WIN32 || defined WINDOWS)
+#if HAVE_MS_COM
 	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);	// probably should be in main()
 	if (!SUCCEEDED(hr)) exit(EXIT_FAILURE);	// fail
 #endif
@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
  erase(); // Clear screen
  endwin(); // End ncurses
  system("clear"); // Tell the terminal to clear itself
-#if (defined _WIN32 || defined WINDOWS)
+#if HAVE_MS_COM
  CoUninitialize();
 #endif
  return 0;
