@@ -605,7 +605,6 @@ int inputdelay;         //How long getch will wait for a character to be typed
 HDC backbuffer;         //an off-screen DC to prevent flickering, lower cpu
 HFONT font = 0;             //Handle to the font created by CreateFont
 RGBQUAD *windowsPalette;  //The coor palette, 16 colors emulates a terminal
-pairs *colorpairs;   //storage for pair'ed colored, should be dynamic, meh
 char szDirectory[MAX_PATH] = "";
 int haveCustomFont = 0;	// custom font was there and loaded
 
@@ -1095,9 +1094,12 @@ int erase(void)
     return werase(mainwin);
 };
 
+pairs colorpairs[((A_COLOR) >> 17)+1];   //storage for pair'ed colored, should be dynamic, meh
+
 //pairs up a foreground and background color and puts it into the array of pairs
 int init_pair(short pair, short f, short b)
 {
+	if (sizeof(colorpairs) / sizeof(*colorpairs) <= pair || 0 > pair) return 0;	// out of range
     colorpairs[pair].FG=f;
     colorpairs[pair].BG=b;
     return 1;
@@ -1175,7 +1177,6 @@ inline RGBQUAD BGR(int b, int g, int r)
 
 int start_color(void)
 {
- colorpairs=new pairs[50];
  windowsPalette=new RGBQUAD[16];     //Colors in the struct are BGR!! not RGB!!
  windowsPalette[0]= BGR(0,0,0);
  windowsPalette[1]= BGR(0, 0, 196);
