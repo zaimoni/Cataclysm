@@ -8,6 +8,9 @@
 #define _WIN32_WINNT 0x0500
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <wincodec.h>
+#include <locale>
+#include <codecvt>
 
 #include "Zaimoni.STL/cstdio"
 #ifndef NDEBUG
@@ -22,6 +25,7 @@ class OS_Window
 {
 private:
 	static HWND _last;
+	static HDC _last_dc;
 	BITMAPINFOHEADER _backbuffer_stats;
 	RGBQUAD* _color_table;
 	HWND _window;
@@ -76,6 +80,7 @@ public:
 
 	operator HWND() const { return _window; }
 	static HWND last() { return _last; }
+	static HDC last_dc() { return _last_dc; }
 	HDC dc() const { return _dc; }
 	HDC backbuffer() const { return _backbuffer; }
 
@@ -92,7 +97,9 @@ public:
 
 	void clear() {
 		if (_backbuffer && DeleteDC(_backbuffer)) _backbuffer = 0;
+		if (_last_dc == _dc) _last_dc = 0;
 		if (_dc && ReleaseDC(_window, _dc)) _dc = 0;
+		if (_last == _window) _last = 0;
 		if (_window && DestroyWindow(_window)) _window = 0;
 	}
 
@@ -100,6 +107,7 @@ public:
 	{
 		if (!_window) return false;
 		if (!_dc && !(_dc = GetDC(_window))) return false;
+		_last_dc = _dc;
 		if (!_backbuffer && !(_backbuffer = CreateCompatibleDC(_dc))) return false;
 		_backbuffer_stats = buffer_spec.bmiHeader;
 		// handle invariant parts here
@@ -145,6 +153,21 @@ public:
 		}
 	};
 
+	bool Resize()
+	{
+		RECT tmp;
+		if (!GetWindowRect(_window, &tmp)) return false;
+		if (!MoveWindow(_window, tmp.left, tmp.top, width() + OS_Window::BorderWidth, height() + OS_Window::BorderHeight + OS_Window::TitleSize, true)) return false;	// this does not handle the backbuffer bitmap
+		// problem...probably have to undo both the backbuffer and its device context
+		if (_backbuffer && DeleteDC(_backbuffer)) _backbuffer = 0;
+		if (_last_dc == _dc) _last_dc = 0;
+		if (_dc && ReleaseDC(_window, _dc)) _dc = 0;
+		_dcbits = 0;
+		BITMAPINFO working;
+		memset(&working, 0, sizeof(working));
+		working.bmiHeader = _backbuffer_stats;
+		return SetBackbuffer(working);
+	}
 };
 
 #if _MSC_VER
@@ -158,6 +181,7 @@ public:
 #endif
 unsigned char* OS_Window::_dcbits = 0;
 HWND OS_Window::_last = 0;	// the most recently created, valid window
+HDC OS_Window::_last_dc = 0;	// the most recently created, valid physical device context
 const HINSTANCE OS_Window::program = GetModuleHandle(0);	// available from WinMain as well
 
 const int OS_Window::TitleSize = GetSystemMetrics(SM_CYCAPTION);      //These lines ensure
@@ -183,7 +207,7 @@ private:
 public:
 	// XXX LoadImage only works for *BMP.  SetDIBits required for JPEG and PNG, but that requires an HDC
 	OS_Image() : _x(0), _pixels(0), _have_info(false) { memset(&_data, 0, sizeof(_data)); }
-	OS_Image(const char* src, int width = 0, int height = 0) : _x(loadFromFile(src,width,height)),_pixels(0),_have_info(false) { init(); }
+	OS_Image(const char* src) : _x(0), _pixels(0), _have_info(false) { _x = loadFromFile(src, _pixels, _data, _have_info); init(); }
 	OS_Image(const wchar_t* src, int width = 0, int height = 0) : _x(LoadImageW(0, src, IMAGE_BITMAP, width, height, LR_LOADFROMFILE)), _pixels(0),_have_info(false) { init(); }
 	OS_Image(const OS_Image& src) = delete;
 	OS_Image(OS_Image&& src) : _x(src._x),_data(src._data),_have_info(src._have_info) {
@@ -208,7 +232,8 @@ public:
 		RGBQUAD* const incoming = src.pixels();
 
 		_data.biWidth = width;
-		_data.biHeight = -((signed long)height);
+//		_data.biHeight = -((signed long)height);
+		_data.biHeight = height;
 		RGBQUAD* working = (RGBQUAD*)calloc(width*height, sizeof(RGBQUAD));
 		if (!working) throw std::bad_alloc();
 
@@ -216,9 +241,9 @@ public:
 		for (size_t scan_y = 0; scan_y < height; scan_y++) {
 			memmove(working + (scan_y*width), incoming + ((scan_y + origin_y)*src.width()), sizeof(RGBQUAD)*width);
 		}
-		_x = CreateCompatibleBitmap(0,width,height);
+		_x = CreateCompatibleBitmap(OS_Window::last_dc(),width,height);
 		if (!_x) throw std::bad_alloc();
-		if (!SetDIBits(NULL, (HBITMAP)_x, 0, height, working, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS)) {
+		if (!SetDIBits(OS_Window::last_dc(), (HBITMAP)_x, 0, height, working, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS)) {
 			free(working);
 			throw std::bad_alloc();
 		}
@@ -245,7 +270,7 @@ public:
 	HANDLE handle() const { return _x; }
 #ifdef FULL_IMAGE_INFO
 	size_t width() const { return _data.biWidth; }
-	size_t height() const { return -_data.biHeight; }
+	size_t height() const { return 0 < _data.biHeight ? _data.biHeight : -_data.biHeight; }
 #else
 	size_t width() const { return _data.bcWidth; }
 	size_t height() const { return _data.bcHeight; }
@@ -271,11 +296,11 @@ private:
 #else
 			_data.bcSize = sizeof(_data);
 #endif
-			_have_info = GetDIBits(0, (HBITMAP)_x, 0, 0, NULL, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS);	// XXX needs testing
+			_have_info = GetDIBits(OS_Window::last_dc(), (HBITMAP)_x, 0, 0, NULL, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS);	// XXX needs testing, may need an HDC
 #ifdef FULL_IMAGE_INFO
 			_data.biBitCount = 32;	// force alpha channel in (no padding bytes)
 			_data.biCompression = BI_RGB;
-			_data.biHeight = (0 < _data.biHeight) ? -_data.biHeight : _data.biHeight;	// force top-down
+			_data.biHeight = (0 < _data.biHeight) ? -_data.biHeight : _data.biHeight;	// force bottom-up
 #endif
 		}
 	}
@@ -287,7 +312,7 @@ private:
 		if (_pixels) return _pixels;
 		RGBQUAD* const tmp = (RGBQUAD*)calloc(width()*height(), sizeof(RGBQUAD));
 		if (!tmp) return 0;
-		if (!GetDIBits(0, (HBITMAP)_x, 0, 0, NULL, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS))
+		if (!GetDIBits(OS_Window::last_dc(), (HBITMAP)_x, 0, 0, NULL, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS))	// may need an HDC
 			{
 			free(tmp);
 			return 0;
@@ -343,11 +368,139 @@ private:
 			    && 0xD8 == src[1]);
 	}
 
-	static HANDLE loadFromFile(const std::string src, int width, int height)
-	{
-		HANDLE ret = LoadImageA(0, src.c_str(), IMAGE_BITMAP, width, height, LR_LOADFROMFILE);
-		if (ret) return ret;	// was a fully legal BMP for the current version of Windows
+	// buffer is owned by the caller
+	static bool Get32BRGAbuffer(const std::string src,  RGBQUAD*& buffer, unsigned int& width, unsigned int& height)
+	{	// this implementation requires COM classes
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t> > widen;
+		const auto w_src = widen.from_bytes(src);
 
+		// plan B
+		// Create a decoder
+		// XXX research how to not leak these COM objects
+		IWICImagingFactory* factory = NULL;
+		HRESULT hr = CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
+		if (!SUCCEEDED(hr)) return false;
+
+		IWICBitmapDecoder* parser = 0;
+		hr = factory->CreateDecoderFromFilename(w_src.c_str(), NULL, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &parser);
+		if (!SUCCEEDED(hr)) {
+			factory->Release();
+			return false;
+		}
+
+		// Retrieve the first frame of the image from the decoder
+		IWICBitmapFrameDecode *pFrame = NULL;
+		hr = parser->GetFrame(0, &pFrame);
+		if (!SUCCEEDED(hr)) {
+			parser->Release();
+			factory->Release();
+			return false;
+		}
+
+		hr = pFrame->GetSize(&width, &height);
+		if (!SUCCEEDED(hr)) {
+			pFrame->Release();
+			parser->Release();
+			factory->Release();
+			return false;
+		}
+		if ((size_t)(-1) / 4 <= width) {
+			pFrame->Release();
+			parser->Release();
+			factory->Release();
+			return false;
+		}
+		if (((size_t)(-1) / 4) / width < height) {
+			pFrame->Release();
+			parser->Release();
+			factory->Release();
+			return false;
+		}
+
+		IWICFormatConverter* conv = NULL;
+		hr = factory->CreateFormatConverter(&conv);
+		if (!SUCCEEDED(hr)) {
+			pFrame->Release();
+			parser->Release();
+			factory->Release();
+			return 0;
+		}
+		hr = conv->Initialize(pFrame, GUID_WICPixelFormat32bppBGRA, WICBitmapDitherTypeNone, NULL, 0.0f, WICBitmapPaletteTypeCustom);
+		if (!SUCCEEDED(hr)) {
+			conv->Release();
+			pFrame->Release();
+			parser->Release();
+			factory->Release();
+			return false;
+		}
+		// want target format to be GUID_WICPixelFormat32bppBGRA
+		static_assert(4 == sizeof(RGBQUAD), "nonstandard definition of RGBQUAD");
+		const size_t buf_len = sizeof(RGBQUAD) * width * height;
+		buffer = reinterpret_cast<RGBQUAD*>(calloc(buf_len, 1));
+		if (!buffer) {
+			conv->Release();
+			pFrame->Release();
+			parser->Release();
+			factory->Release();
+			return false;
+		}
+
+		hr = conv->CopyPixels(NULL, 4 * width, buf_len, reinterpret_cast<unsigned char*>(buffer));
+		if (!SUCCEEDED(hr)) {
+			free(buffer);
+			buffer = 0;
+			conv->Release();
+			pFrame->Release();
+			parser->Release();
+			factory->Release();
+			return false;
+		}
+
+#ifndef NDEBUG
+		std::cerr << src << "; " << width << " x " << height << '\n';
+#endif
+
+		conv->Release();
+		pFrame->Release();
+		parser->Release();
+		factory->Release();
+		return true;
+	}
+
+	static HANDLE loadFromFile(const std::string src, RGBQUAD*& pixels, BITMAPINFOHEADER& working,bool& got_stats)
+	{
+		pixels = NULL;
+		got_stats - false;
+		memset(&working, 0, sizeof(working));
+		working.biSize = sizeof(working);
+		working.biPlanes = 1;
+		HANDLE ret = LoadImageA(OS_Window::program, src.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		if (ret) return ret;	// was a fully legal BMP for the current version of Windows (untested)
+
+#if 1
+		unsigned int native_width = 0;
+		unsigned int native_height = 0;
+		if (!Get32BRGAbuffer(src, pixels, native_width, native_height)) return 0;
+
+		working.biCompression = BI_RGB;
+		working.biWidth = native_width;
+		working.biHeight = native_height;	// both JPEG and PNG are bottom-up
+		working.biBitCount = 32;	// JPEG and PNG manage this themselves
+		working.biSizeImage = 4*native_width*native_height;	// both PNG and JPEG use image buffer size
+
+		HBITMAP tmp = CreateCompatibleBitmap(OS_Window::last_dc(), native_width, native_height);
+		if (!tmp) {
+			free(pixels); pixels = 0;
+			return 0;
+		}
+		got_stats = SetDIBits(OS_Window::last_dc(), tmp, 0, native_height, pixels, (BITMAPINFO*)(&working), DIB_RGB_COLORS);
+		if (got_stats) return tmp;
+		DeleteObject(tmp);
+		return 0;
+#endif
+
+#if PROTOTYPE
+		// Plan C
 		// doesn't look like a bitmap...try SetDIBits instead
 		unsigned char* raw_image = 0;	// \todo ideally would be wrapped in an object
 		size_t raw_image_size = 0;
@@ -362,7 +515,7 @@ private:
 			}
 		long incoming_width = 0;	// XXX need image dimensions from somewhere or else \todo fix
 		long incoming_height = 0;
-		
+
 		BITMAPINFOHEADER working;
 		memset(&working, 0, sizeof(working));
 		if (LooksLikePNGHeader(raw_image, raw_image_size, incoming_width, incoming_height)) working.biCompression = BI_PNG;
@@ -374,24 +527,29 @@ private:
 		working.biSize = sizeof(working);
 		working.biWidth = incoming_width;
 		working.biHeight = incoming_height;	// both JPEG and PNG are bottom-up
+		working.biPlanes = 1;
 		working.biBitCount = 0;	// JPEG and PNG manage this themselves
 		working.biSizeImage = raw_image_size;	// both PNG and JPEG use image buffer size
 		// image dimensions must be accurate
-		HBITMAP tmp = CreateCompatibleBitmap(0, incoming_width, incoming_height);	// DeonApocalypse fails here: need real HDC?
+		HBITMAP tmp = CreateCompatibleBitmap(OS_Window::last_dc(), incoming_width, incoming_height);
 #ifndef NDEBUG
-		std::cerr << src << "; " << incoming_width << " x " << incoming_height << '\n';
+		std::cerr << src << "; " << incoming_width << " x " << incoming_height << "; " << tmp << '\n';
 #endif
 		if (!tmp) {
 			free(raw_image); raw_image = 0;
 			return 0;
 		}
-		bool test = SetDIBits(0,tmp,0,0,raw_image,(BITMAPINFO*)(&working),DIB_RGB_COLORS);	// likely need a real HDC
+		bool test = SetDIBits(OS_Window::last_dc(),tmp,0, incoming_height,raw_image,(BITMAPINFO*)(&working),DIB_RGB_COLORS);	// DeonApocalypse fails here
 		free(raw_image); raw_image = 0;
+#ifndef NDEBUG
+		std::cerr << test << '\n';
+#endif
 		if (test) return tmp;
 		else {
 			DeleteObject(tmp);
 			return 0;
 		}
+#endif
 	}
 };
 
@@ -423,13 +581,6 @@ bool SetFontSize(const int x, const int y)
 	return true;
 }
 
-bool WinResize()
-{
-	RECT tmp;
-	if (!GetWindowRect(_win, &tmp)) return false;
-	return MoveWindow(_win, tmp.left, tmp.top, _win.width() + OS_Window::BorderWidth, _win.height() + OS_Window::BorderHeight + OS_Window::TitleSize,true);
-}
-
 std::string extract_file_infix(std::string src)
 {
 	{
@@ -440,7 +591,7 @@ std::string extract_file_infix(std::string src)
 	}
 	const char* test = strrchr(src.c_str(), '.');
 	if (!test) return std::string();
-	return std::string(test);
+	return std::string(test+1);
 }
 
 bool load_tile(const char* src)
@@ -466,15 +617,27 @@ bool load_tile(const char* src)
 			}
 			if (!_tilesheets.count(tilesheet)) {
 				OS_Image relay(tilesheet.c_str());
+#ifndef NDEBUG
+				std::cerr << relay.handle() << '\n';
+#endif
 				if (!relay.handle()) return false;	// failed to load
 				// read off the tilesheet size from the filename ...#.png
 				std::string infix = extract_file_infix(tilesheet);
+#ifndef NDEBUG
+				std::cerr << '"' << infix << '"' << '\n';
+#endif
 				if (infix.empty()) return false;
 				try {
 					int dim = std::stoi(infix);
+#ifndef NDEBUG
+					std::cerr << '"' << dim << '"' << '\n';
+#endif
 					if (0 >= dim) return false;
 					_tilesheet_tile[tilesheet] = dim;
 				} catch (std::exception& e) {
+#ifndef NDEBUG
+					std::cerr << '"' << e.what() << '"' << '\n';
+#endif
 					return false;
 				}
 				// we have to handle the per-sheet configuration elsewhere
@@ -485,19 +648,28 @@ bool load_tile(const char* src)
 			const size_t scaled_x = src.width() / dim;
 			const size_t scaled_y = src.height() / dim;
 			const int index_y = index / scaled_x;
-			if (index_y <= scaled_y) return false;
+#ifndef NDEBUG
+			std::cerr << scaled_x << ',' << scaled_y << ',' << index_y << ',' << index << '\n';
+#endif
+			if (scaled_y <= index_y) return false;
 			const int index_x = index - index_y * scaled_x;
+#ifndef NDEBUG
+			std::cerr << '"' << index_x << ',' << index_y << '"' << '\n';
+#endif
 			OS_Image image(src, dim*index_x, dim*index_y, dim, dim);	// clipping constructor
+#ifndef NDEBUG
+			std::cerr << image.handle() << '\n';
+#endif
 			if (!image.handle()) return false;	// failed to load
 			_translate[base_tile] = ++_next;
 			_cache[_next] = std::move(image);
-			if (SetFontSize(16, 16) && _win) WinResize();
+			if (SetFontSize(16, 16) && _win) _win.Resize();
 		} else {
-			OS_Image image(base_tile.c_str(), fontwidth, fontheight);
+			OS_Image image(base_tile.c_str());
 			if (!image.handle()) return false;	// failed to load
 			_translate[base_tile] = ++_next;
 			_cache[_next] = std::move(image);
-			if (SetFontSize(16, 16) && _win) WinResize();
+			if (SetFontSize(16, 16) && _win) _win.Resize();
 		}
 	}
 	if (!has_rotation_specification) return true;
@@ -597,12 +769,10 @@ LRESULT CALLBACK ProcessMessages(HWND__ *hWnd, unsigned int Msg, WPARAM wParam, 
 
 WINDOW *mainwin;
 const WCHAR *szWindowClass = (L"CataCurseWindow");    //Class name :D
-HDC WindowDC;           //Device Context of the window, used for backbuffer
 int lastchar;          //the last character that was pressed, resets in getch
 int inputdelay;         //How long getch will wait for a character to be typed
 //WINDOW *_windows;  //Probably need to change this to dynamic at some point
 //int WindowCount;        //The number of curses windows currently in use
-HDC backbuffer;         //an off-screen DC to prevent flickering, lower cpu
 HFONT font = 0;             //Handle to the font created by CreateFont
 RGBQUAD *windowsPalette;  //The coor palette, 16 colors emulates a terminal
 char szDirectory[MAX_PATH] = "";
@@ -643,8 +813,6 @@ bool WinCreate()
 //Unregisters, releases the DC if needed, and destroys the window.
 void WinDestroy()
 {
-	if (backbuffer && DeleteDC(backbuffer)) backbuffer = 0;
-	if (WindowDC && ReleaseDC(_win, WindowDC)) WindowDC = 0;
 	_win.clear();
 	UnregisterClassW(szWindowClass, OS_Window::program);	// would happen on program termination anyway
 };
@@ -684,7 +852,7 @@ LRESULT CALLBACK ProcessMessages(HWND__ *hWnd,unsigned int Msg, WPARAM wParam, L
         case WM_ERASEBKGND:
             return 1;               //We don't want to erase our background
         case WM_PAINT:              //Pull from our backbuffer, onto the screen
-            BitBlt(WindowDC, 0, 0, _win.width(), _win.height(), backbuffer, 0, 0,SRCCOPY);
+            BitBlt(_win.dc(), 0, 0, _win.width(), _win.height(), _win.backbuffer(), 0, 0,SRCCOPY);
             ValidateRect(_win,NULL);
             break;
         case WM_DESTROY:
@@ -737,8 +905,8 @@ void DrawWindow(WINDOW *win)
                 //        HorzLineDIB(drawx,drawy+fontheight-2,drawx+fontwidth,1,FG);
                 //    } else { // all the wa to here
                     int color = RGB(windowsPalette[FG].rgbRed,windowsPalette[FG].rgbGreen,windowsPalette[FG].rgbBlue);
-                    SetTextColor(backbuffer,color);
-                    ExtTextOut(backbuffer,drawx,drawy,0,NULL,&tmp,1,NULL);
+                    SetTextColor(_win.backbuffer(),color);
+                    ExtTextOut(_win.backbuffer(),drawx,drawy,0,NULL,&tmp,1,NULL);
                 //    }     //and this line too.
                 } else if (  tmp < 0 ) {
                     switch (tmp) {
@@ -838,8 +1006,6 @@ WINDOW *initscr(void)
  }
 
     WinCreate();    //Create the actual window, register it, etc
-    WindowDC = GetDC(_win);
-    backbuffer = CreateCompatibleDC(WindowDC);
     ZeroMemory(&bmi, sizeof(BITMAPINFO));
     bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
     bmi.bmiHeader.biWidth = _win.width();
@@ -850,11 +1016,10 @@ WINDOW *initscr(void)
     bmi.bmiHeader.biSizeImage = _win.width() * _win.height() * 1;
     bmi.bmiHeader.biClrUsed=16;         //the number of colors in our palette
     bmi.bmiHeader.biClrImportant=16;    //the number of colors in our palette
-	HBITMAP backbit = CreateDIBSection(0, &bmi, DIB_RGB_COLORS, (void**)&OS_Window::_dcbits, NULL, 0);
-    DeleteObject(SelectObject(backbuffer, backbit));//load the buffer into DC
-	SetBkMode(backbuffer, TRANSPARENT);//Transparent font backgrounds
+
+	_win.SetBackbuffer(bmi);
     
-    SelectObject(backbuffer, font);//Load our font into the DC
+    SelectObject(_win.backbuffer(), font);//Load our font into the DC
 //    WindowCount=0;
 
 	// cf mapdata.h: typical value of SEEX/SEEY is 12 so the console is 25x25 display, 55x25 readout
@@ -1194,7 +1359,7 @@ int start_color(void)
  windowsPalette[13]= BGR(240, 0, 255);
  windowsPalette[14]= BGR(255, 240, 0);
  windowsPalette[15]= BGR(255, 255, 255);
- return SetDIBColorTable(backbuffer, 0, 16, windowsPalette);
+ return SetDIBColorTable(_win.backbuffer(), 0, 16, windowsPalette);
 };
 
 int keypad(WINDOW *faux, bool bf)

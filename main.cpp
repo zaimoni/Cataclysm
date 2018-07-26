@@ -9,6 +9,9 @@
 #include <fstream>
 #include <iostream>
 #include <exception>
+#if (defined _WIN32 || defined WINDOWS)
+#include <combaseapi.h>
+#endif
 
 using namespace cataclysm;
 
@@ -84,6 +87,11 @@ static bool load_tiles(const JSON& src)
 
 int main(int argc, char *argv[])
 {
+#if (defined _WIN32 || defined WINDOWS)
+	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);	// probably should be in main()
+	if (!SUCCEEDED(hr)) exit(EXIT_FAILURE);	// fail
+#endif
+
  srand(time(NULL));
 
  // XXX want to load tiles before initscr; implies errors before initscr() go to C stderr or C stdout	\todo IMPLEMENT
@@ -106,11 +114,14 @@ int main(int argc, char *argv[])
 
  // when we support mods, we load their tiles configuration from tiles.json as well (and check their filepaths are ok
  // value null could be used to unset a pre-existing value
- if (JSON::cache.count("tiles") && !JSON::cache["tiles"].destructive_grep(preload_image)) JSON::cache.erase("tiles");	// wires tiles to types
- flush_tilesheets();	// don't want to pay RAM overhead for tilesheets after we've extracted the tiles from them
 
 // ncurses stuff
  initscr(); // Initialize ncurses
+
+ // need some sort of screen to complete image preloading on Windows
+ if (JSON::cache.count("tiles") && !JSON::cache["tiles"].destructive_grep(preload_image)) JSON::cache.erase("tiles");	// wires tiles to types
+ flush_tilesheets();	// don't want to pay RAM overhead for tilesheets after we've extracted the tiles from them
+
  noecho();  // Don't echo keypresses
  cbreak();  // C-style breaks (e.g. ^C to SIGINT)
  keypad(stdscr, true); // Numpad is numbers
@@ -134,6 +145,9 @@ int main(int argc, char *argv[])
  erase(); // Clear screen
  endwin(); // End ncurses
  system("clear"); // Tell the terminal to clear itself
+#if (defined _WIN32 || defined WINDOWS)
+ CoUninitialize();
+#endif
  return 0;
 }
 
