@@ -12,9 +12,10 @@
 #include <wincodec.h>
 #include <locale>
 #include <codecvt>
-#endif
-
+#else
+// lower-tech pathway that ectually exists on MingWin
 #include "Zaimoni.STL/cstdio"
+#endif
 #ifndef NDEBUG
 #include <iostream>
 #endif
@@ -479,10 +480,6 @@ private:
 		memset(&working, 0, sizeof(working));
 		working.biSize = sizeof(working);
 		working.biPlanes = 1;
-#if PROTOTYPE
-		HANDLE ret = LoadImageA(OS_Window::program, src.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-		if (ret) return ret;	// was a fully legal BMP for the current version of Windows (untested)
-#endif
 
 #if 1
 		unsigned int native_width = 0;
@@ -507,6 +504,9 @@ private:
 #endif
 
 #if PROTOTYPE
+		HANDLE ret = LoadImageA(OS_Window::program, src.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		if (ret) return ret;	// was a fully legal BMP for the current version of Windows (untested)
+
 		// Plan C
 		// doesn't look like a bitmap...try SetDIBits instead
 		unsigned char* raw_image = 0;	// \todo ideally would be wrapped in an object
@@ -523,18 +523,14 @@ private:
 		long incoming_width = 0;	// XXX need image dimensions from somewhere or else \todo fix
 		long incoming_height = 0;
 
-		BITMAPINFOHEADER working;
-		memset(&working, 0, sizeof(working));
 		if (LooksLikePNGHeader(raw_image, raw_image_size, incoming_width, incoming_height)) working.biCompression = BI_PNG;
 		else if (LooksLikeJPEGHeader(raw_image, raw_image_size)) working.biCompression = BI_JPEG;
 		else {
 			free(raw_image); raw_image = 0;
 			return 0;
 		}
-		working.biSize = sizeof(working);
 		working.biWidth = incoming_width;
 		working.biHeight = incoming_height;	// both JPEG and PNG are bottom-up
-		working.biPlanes = 1;
 		working.biBitCount = 0;	// JPEG and PNG manage this themselves
 		working.biSizeImage = raw_image_size;	// both PNG and JPEG use image buffer size
 		// image dimensions must be accurate
