@@ -36,6 +36,7 @@ class OS_Window
 private:
 	static HWND _last;
 	static HDC _last_dc;
+
 	BITMAPINFOHEADER _backbuffer_stats;
 	RGBQUAD* _color_table;
 	size_t _color_table_size;
@@ -100,7 +101,7 @@ public:
 	static HDC last_dc() { return _last_dc; }
 	HDC dc() const { return _dc; }
 	HDC backbuffer() const { return _backbuffer; }
-	const RGBQUAD& color(size_t n) {
+	RGBQUAD color(size_t n) {
 #ifndef NDEBUG
 		if (_color_table_size <= n || !_color_table) throw std::logic_error("invalid color table access");
 #endif
@@ -108,6 +109,7 @@ public:
 	}
 	size_t color_table_size() const { return _color_table_size; }
 
+	// these three are to draw tiles in a fairly high-level way
 	void PrepareToDraw(HGDIOBJ src) {	// \todo should be taking an OS_Image object
 		if (!_staging_0) _staging_0 = SelectObject(_staging, src);
 		else SelectObject(_staging, src);
@@ -212,6 +214,20 @@ public:
 		working.bmiHeader = _backbuffer_stats;
 		return SetBackbuffer(working);
 	}
+private:
+	// note non-use of HBRUSH
+	void FillRect_8bit(int x, int y, int w, int h, unsigned char c)
+	{
+		for (int j = y; j<y + h; j++) memset(_dcbits+(x + j *width()), c, w);
+	};
+	void FillRect_32bit(int x, int y, int w, int h, unsigned char c)
+	{
+		const RGBQUAD rgba = color(c);
+		for (int j = y; j < y + h; j++) {
+			RGBQUAD* const dest = reinterpret_cast<RGBQUAD*>(_dcbits + sizeof(RGBQUAD)*(x + j * width()));
+			for (int i = 0; i < w; i++) dest[i] = rgba;
+		}
+	};
 };
 
 #if _MSC_VER
