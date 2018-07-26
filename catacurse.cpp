@@ -31,9 +31,6 @@
 // #define USING_RGBA32 1
 #endif
 
-// this isn't working cleanly
-// #define PALETTE_KILL 1
-
 class OS_Window
 {
 private:
@@ -187,7 +184,7 @@ public:
 		_color_table = colors;
 		_color_table_size = n;
 		colors = 0;
-		if (8 >= _backbuffer_stats.biBitCount && 256>=n) return SetDIBColorTable(_backbuffer, 0, n, colors);	// actually need this
+		if (8 >= _backbuffer_stats.biBitCount && 256>=n) return SetDIBColorTable(_backbuffer, 0, n, _color_table);	// actually need this
 		return true;
 	}
 
@@ -776,10 +773,6 @@ int inputdelay;         //How long getch will wait for a character to be typed
 //WINDOW *_windows;  //Probably need to change this to dynamic at some point
 //int WindowCount;        //The number of curses windows currently in use
 HFONT font = 0;             //Handle to the font created by CreateFont
-#if PALETTE_KILL
-#else
-RGBQUAD *windowsPalette;  //The coor palette, 16 colors emulates a terminal
-#endif
 char szDirectory[MAX_PATH] = "";
 int haveCustomFont = 0;	// custom font was there and loaded
 
@@ -887,41 +880,40 @@ inline void FillRectDIB(int x, int y, int width, int height, unsigned char color
 
 void DrawWindow(WINDOW *win)
 {
-    int i,j,drawx,drawy;
+    int i,j;
     char tmp;	// following assumes char is signed
     for (j=0; j<win->height; j++){
-        if (win->line[j].touched)
-            for (i=0; i<win->width; i++){
-                win->line[j].touched=false;
-                drawx=((win->x+i)*fontwidth);
-                drawy=((win->y+j)*fontheight);//-j;
-                if (((drawx+fontwidth)<= _win.width()) && ((drawy+fontheight)<= _win.height())){
+		if (!win->line[j].touched) continue;
+		win->line[j].touched = false;
+		const int drawy = ((win->y + j)*fontheight);//-j;
+		if ((drawy + fontheight) > _win.height()) continue;	// reject out of bounds
+		for (i=0; i<win->width; i++){
+			const int drawx=((win->x+i)*fontwidth);
+			if ((drawx + fontwidth) > _win.width()) continue;	// reject out of bounds
+                {
                 tmp = win->line[j].chars[i];	// \todo alternate data source here for tiles
                 int FG = win->line[j].FG[i];
                 int BG = win->line[j].BG[i];
+				// \todo interpose background tile drawing here
 #if USING_RGBA32
 #error need to implement DrawWindow
 #else
 				FillRectDIB(drawx,drawy,fontwidth,fontheight,BG);
 #endif
 
-				// \todo interpose tile drawing here
+				// \todo interpose foreground tile drawing here
 #if 0
 				if (unsigned short t_index = win->line[j].tiles[i]) {
-
 				}
 #endif
+				if (' ' == tmp) continue; // do not waste CPU on ASCII space, any sane font will be blank
 
                 if ( tmp > 0){
                 //if (tmp==95){//If your font doesnt draw underscores..uncomment
                 //        HorzLineDIB(drawx,drawy+fontheight-2,drawx+fontwidth,1,FG);
                 //    } else { // all the wa to here
-#if PALETTE_KILL
 					const auto fg = _win.color(FG);
 					int color = RGB(fg.rgbRed, fg.rgbGreen, fg.rgbBlue);
-#else
-					int color = RGB(windowsPalette[FG].rgbRed,windowsPalette[FG].rgbGreen,windowsPalette[FG].rgbBlue);
-#endif
                     SetTextColor(_win.backbuffer(),color);
                     ExtTextOut(_win.backbuffer(),drawx,drawy,0,NULL,&tmp,1,NULL);
                 //    }     //and this line too.
@@ -1355,10 +1347,7 @@ int getmaxy(WINDOW *win)
 
 int start_color(void)
 {
-#if PALETTE_KILL
-	RGBQUAD* 
-#endif
- windowsPalette = OS_Window::CreateNewColorTable(16);     //Colors in the struct are BGR!! not RGB!!
+ RGBQUAD* windowsPalette = OS_Window::CreateNewColorTable(16);     //Colors in the struct are BGR!! not RGB!!
  windowsPalette[0]= BGR(0,0,0);
  windowsPalette[1]= BGR(0, 0, 196);
  windowsPalette[2]= BGR(0,196,0);
@@ -1375,11 +1364,7 @@ int start_color(void)
  windowsPalette[13]= BGR(240, 0, 255);
  windowsPalette[14]= BGR(255, 240, 0);
  windowsPalette[15]= BGR(255, 255, 255);
-#if PALETTE_KILL
  return _win.SetColorTable(windowsPalette, 16);
-#else
- return SetDIBColorTable(_win.backbuffer(), 0, 16, windowsPalette);
-#endif
 };
 #undef BGR
 
