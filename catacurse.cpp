@@ -27,10 +27,6 @@
 #endif
 // #define HAVE_TILES 1
 
-#if HAVE_TILES
-// #define USING_RGBA32 1
-#endif
-
 class OS_Window
 {
 private:
@@ -163,6 +159,28 @@ public:
 		if (_window && DestroyWindow(_window)) _window = 0;
 	}
 
+	static void SetColorDepth(BITMAPINFOHEADER& dest, unsigned char bits, unsigned long important_colors=0)
+	{
+		const unsigned long w = (0 < dest.biWidth ? dest.biWidth : -dest.biWidth);
+		const unsigned long h = (0 < dest.biHeight ? dest.biHeight : -dest.biHeight);
+		switch (bits)
+		{
+		case 32:
+			dest.biClrUsed = 0;
+			dest.biClrImportant = 0;
+			dest.biSizeImage = 4*w*h;
+			break;
+		case 8:
+			if (1 > important_colors || (UCHAR_MAX + 1) < important_colors) throw std::logic_error("color table has unreasonable number of entries");
+			dest.biClrUsed = important_colors;
+			dest.biClrImportant = important_colors;
+			dest.biSizeImage = w*h;
+			break;
+		default: throw std::logic_error("unsupported color depth");
+		}
+		dest.biBitCount = bits;
+	}
+
 	bool SetBackbuffer(const BITMAPINFO& buffer_spec)
 	{
 		if (!_window) return false;
@@ -217,7 +235,7 @@ public:
 		}
 	};
 
-	bool Resize()
+	bool Resize(int new_color_depth = 0)
 	{
 		RECT tmp;
 		if (!GetWindowRect(_window, &tmp)) return false;
@@ -227,6 +245,9 @@ public:
 		if (_last_dc == _dc) _last_dc = 0;
 		if (_dc && ReleaseDC(_window, _dc)) _dc = 0;
 		_dcbits = 0;
+
+		if (new_color_depth && new_color_depth != _backbuffer_stats.biBitCount) SetColorDepth(_backbuffer_stats, new_color_depth);
+
 		BITMAPINFO working;
 		memset(&working, 0, sizeof(working));
 		working.bmiHeader = _backbuffer_stats;
@@ -369,9 +390,9 @@ private:
 			memset(&_data, 0, sizeof(_data));
 			_data.biSize = sizeof(_data);
 			_have_info = GetDIBits(OS_Window::last_dc(), (HBITMAP)_x, 0, 0, NULL, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS);	// XXX needs testing, may need an HDC
-			_data.biBitCount = 32;	// force alpha channel in (no padding bytes)
 			_data.biCompression = BI_RGB;
 			_data.biHeight = (0 < _data.biHeight) ? -_data.biHeight : _data.biHeight;	// force bottom-up
+			OS_Window::SetColorDepth(_data,32);	// force alpha channel in (no padding bytes)
 		}
 	}
 
@@ -708,13 +729,13 @@ bool load_tile(const char* src)
 			if (!image.handle()) return false;	// failed to load
 			_translate[base_tile] = ++_next;
 			_cache[_next] = std::move(image);
-			if (SetFontSize(16, 16) && _win) _win.Resize();
+			if (SetFontSize(16, 16) && _win) _win.Resize(32);
 		} else {
 			OS_Image image(base_tile.c_str());
 			if (!image.handle()) return false;	// failed to load
 			_translate[base_tile] = ++_next;
 			_cache[_next] = std::move(image);
-			if (SetFontSize(16, 16) && _win) _win.Resize();
+			if (SetFontSize(16, 16) && _win) _win.Resize(32);
 		}
 	}
 	if (!has_rotation_specification) return true;
@@ -1050,11 +1071,8 @@ WINDOW *initscr(void)
     bmi.bmiHeader.biWidth = _win.width();
     bmi.bmiHeader.biHeight = -_win.height();
     bmi.bmiHeader.biPlanes = 1;
-    bmi.bmiHeader.biBitCount=8;
-    bmi.bmiHeader.biCompression = BI_RGB;   //store it in uncompressed bytes
-    bmi.bmiHeader.biSizeImage = _win.width() * _win.height() * 1;
-    bmi.bmiHeader.biClrUsed=16;         //the number of colors in our palette
-    bmi.bmiHeader.biClrImportant=16;    //the number of colors in our palette
+	bmi.bmiHeader.biCompression = BI_RGB;   //store it in uncompressed bytes
+	OS_Window::SetColorDepth(bmi.bmiHeader, 8, 16);
 
 	_win.SetBackbuffer(bmi);
     
