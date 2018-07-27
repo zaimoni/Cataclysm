@@ -47,9 +47,8 @@ private:
 	HDC _backbuffer;	// backbuffer for the physical device context
 	HDC _staging;	// the current tile to draw would go here, for instance
 	HGDIOBJ _staging_0;	// where the original bitmap for _staging goes
-//	unsigned char* _dcbits;	//the bits of the screen image, for direct access
+	unsigned char* _dcbits;	//the bits of the screen image, for direct access
 public:
-	static unsigned char* _dcbits;	// XXX should be private per-instance; trying to transition legacy code
 	static const HINSTANCE program;
 
 	static const int TitleSize;
@@ -66,6 +65,9 @@ public:
 	OS_Window(OS_Window&& src) {
 		static_assert(std::is_standard_layout<OS_Window>::value, "OS_Window move constructor is invalid");
 		memmove(this, &src, sizeof(OS_Window));
+		HBITMAP backbit = CreateDIBSection(0, (BITMAPINFO*)&_backbuffer_stats, DIB_RGB_COLORS, (void**)&_dcbits, NULL, 0);	// _dcbits doesn't play nice w/move constructor; would have to rebuild this
+		DeleteObject(SelectObject(_backbuffer, backbit));//load the buffer into DC
+		SetBkMode(_backbuffer, TRANSPARENT);//Transparent font backgrounds
 		memset(&src, 0, sizeof(OS_Window));
 	}
 	~OS_Window() { destroy();  }
@@ -75,6 +77,9 @@ public:
 		static_assert(std::is_standard_layout<OS_Window>::value, "OS_Window move assignment is invalid");
 		destroy();
 		memmove(this, &src, sizeof(OS_Window));
+		HBITMAP backbit = CreateDIBSection(0, (BITMAPINFO*)&_backbuffer_stats, DIB_RGB_COLORS, (void**)&_dcbits, NULL, 0);	// _dcbits doesn't play nice w/move constructor; would have to rebuild this
+		DeleteObject(SelectObject(_backbuffer, backbit));//load the buffer into DC
+		SetBkMode(_backbuffer, TRANSPARENT);//Transparent font backgrounds
 		memset(&src, 0, sizeof(OS_Window));
 		return *this;
 	};
@@ -151,6 +156,7 @@ public:
 		if (_staging_0 && SelectObject(_staging, _staging_0)) _staging_0 = 0;
 		if (_staging && DeleteDC(_staging)) _staging = 0;
 		if (_backbuffer && DeleteDC(_backbuffer)) _backbuffer = 0;
+		_dcbits = 0;
 		if (_last_dc == _dc) _last_dc = 0;
 		if (_dc && ReleaseDC(_window, _dc)) _dc = 0;
 		if (_last == _window) _last = 0;
@@ -257,7 +263,6 @@ private:
 #define BORDERWIDTH_SCALE 2
 #define BORDERHEIGHT_SCALE 2
 #endif
-unsigned char* OS_Window::_dcbits = 0;
 HWND OS_Window::_last = 0;	// the most recently created, valid window
 HDC OS_Window::_last_dc = 0;	// the most recently created, valid physical device context
 const HINSTANCE OS_Window::program = GetModuleHandle(0);	// available from WinMain as well
