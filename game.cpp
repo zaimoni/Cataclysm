@@ -143,8 +143,8 @@ static void _game_type_menu(WINDOW* const w_open,const int sel2)
 {
 	static const std::pair<int, const char*> menu[PLTYPE_MAX] = {
 		{5, "Custom Character" },
-		{6,"Random Character" },
-		{7,"Template Character" } };
+		{6, "Template Character" },
+		{7, "Random Character"} };
 	for (auto x : menu) {
 		mvwprintz(w_open, x.first, 12, (sel2 == x.first-4 ? h_white : c_white), x.second);
 	}
