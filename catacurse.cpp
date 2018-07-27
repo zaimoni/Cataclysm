@@ -178,7 +178,7 @@ public:
 		} else if (8 == _backbuffer_stats.biBitCount) {
 			// reality checks
 			if (_backbuffer_stats.biClrUsed != _backbuffer_stats.biClrImportant) throw std::logic_error("inconsistent color table");
-			if (1 > _backbuffer_stats.biClrUsed || 256 < _backbuffer_stats.biClrUsed) throw std::logic_error("color table has unreasonable number of entries");
+			if (1 > _backbuffer_stats.biClrUsed || (UCHAR_MAX+1) < _backbuffer_stats.biClrUsed) throw std::logic_error("color table has unreasonable number of entries");
 			_backbuffer_stats.biSizeImage = width()*height();
 		} else throw std::logic_error("unhandled color depth");
 
@@ -187,7 +187,7 @@ public:
 		HBITMAP backbit = CreateDIBSection(0, (BITMAPINFO*)&_backbuffer_stats, DIB_RGB_COLORS, (void**)&_dcbits, NULL, 0);
 		DeleteObject(SelectObject(_backbuffer, backbit));//load the buffer into DC
 		SetBkMode(_backbuffer, TRANSPARENT);//Transparent font backgrounds
-		if (8 >= _backbuffer_stats.biBitCount && _color_table && 256 >= _color_table_size) return SetDIBColorTable(_backbuffer, 0, _color_table_size, _color_table);	// actually need this
+		if (8 >= _backbuffer_stats.biBitCount && _color_table && (1U << _backbuffer_stats.biBitCount) >= _color_table_size) return SetDIBColorTable(_backbuffer, 0, _color_table_size, _color_table);	// actually need this
 		return true;
 	}
 
@@ -198,7 +198,7 @@ public:
 		_color_table = colors;
 		_color_table_size = n;
 		colors = 0;
-		if (8 >= _backbuffer_stats.biBitCount && 256>=n) return SetDIBColorTable(_backbuffer, 0, n, _color_table);	// actually need this
+		if (8 >= _backbuffer_stats.biBitCount && (1U << _backbuffer_stats.biBitCount) >=n) return SetDIBColorTable(_backbuffer, 0, n, _color_table);	// actually need this
 		return true;
 	}
 
@@ -408,6 +408,7 @@ private:
 #endif
 		// should be an IHDR chunk immediately afterwards
 		if (strncmp(reinterpret_cast<const char*>(src+12), "IHDR", 4)) return false;
+		static_assert(256 == (UCHAR_MAX + 1), "hard to read PNG on not-8-bit hardware");
 		incoming_width = (((src[16] * 256) + src[17]) * 256 + src[18]) * 256 + src[19];
 		incoming_height = (((src[20] * 256) + src[21]) * 256 + src[22]) * 256 + src[23];
 		return true;
@@ -901,23 +902,6 @@ LRESULT CALLBACK ProcessMessages(HWND__ *hWnd,unsigned int Msg, WPARAM wParam, L
     return 0;
 };
 
-#if USING_RGBA32
-#else
-//The following 3 methods use mem functions for fast drawing
-inline void VertLineDIB(int x, int y, int y2,int thickness, unsigned char color)
-{
-    for (int j=y; j<y2; j++) memset(&OS_Window::_dcbits[x+j*_win.width()],color,thickness);
-};
-inline void HorzLineDIB(int x, int y, int x2,int thickness, unsigned char color)
-{
-    for (int j=y; j<y+thickness; j++) memset(&OS_Window::_dcbits[x+j* _win.width()],color,x2-x);
-};
-inline void FillRectDIB(int x, int y, int width, int height, unsigned char color)
-{
-    for (int j=y; j<y+height; j++) memset(&OS_Window::_dcbits[x+j* _win.width()],color,width);
-};
-#endif
-
 void DrawWindow(WINDOW *win)
 {
     int i,j;
@@ -935,11 +919,7 @@ void DrawWindow(WINDOW *win)
                 int FG = win->line[j].FG[i];
                 int BG = win->line[j].BG[i];
 				// \todo interpose background tile drawing here
-#if USING_RGBA32
-#error need to implement DrawWindow
-#else
-				FillRectDIB(drawx,drawy,fontwidth,fontheight,BG);
-#endif
+				_win.FillRect(drawx,drawy,fontwidth,fontheight,BG);
 
 				// \todo interpose foreground tile drawing here
 #if 0
@@ -960,9 +940,8 @@ void DrawWindow(WINDOW *win)
                 //    }     //and this line too.
                 } else if (  tmp < 0 ) {
                     switch (tmp) {
-#if USING_RGBA32
-#error need to implement DrawWindow
-#else
+#define VertLineDIB(X,Y,Y2,THICKNESS,COLOR) _win.FillRect(X,Y,THICKNESS,(Y2)-(Y),COLOR)
+#define HorzLineDIB(X,Y,X2,THICKNESS,COLOR) _win.FillRect(X,Y,(X2)-(X),THICKNESS,COLOR)
                     case -60://box bottom/top side (horizontal line)
                         HorzLineDIB(drawx,drawy+halfheight,drawx+fontwidth,1,FG);
                         break;
@@ -1005,8 +984,9 @@ void DrawWindow(WINDOW *win)
                         VertLineDIB(drawx+halfwidth,drawy,drawy+fontheight,2,FG);
                         HorzLineDIB(drawx,drawy+halfheight,drawx+halfwidth,1,FG);
                         break;
-#endif
-                    default:
+#undef VertLineDIB
+#undef HorzLineDIB
+					default:
                         // SetTextColor(DC,_windows[w].line[j].chars[i].color.FG);
                         // TextOut(DC,drawx,drawy,&tmp,1);
                         break;
