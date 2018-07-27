@@ -4993,43 +4993,51 @@ bool activity_is_suspendable(activity_type type)
  return true;
 }
 
+static bool file_to_string_vector(const char* src, std::vector<std::string>& dest)
+{
+	if (!src || !src[0]) return false;
+	std::ifstream fin;
+	fin.exceptions(std::ios::badbit);	// throw on hardware failure
+	fin.open(src);
+	if (!fin.is_open()) {
+		debugmsg((std::string("Could not open ")+std::string(src)).c_str());
+		return false;
+	}
+	std::string x;
+	do {
+		getline(fin, x);
+		if (!x.empty()) dest.push_back(x);
+	} while (!fin.eof());
+	fin.close();
+	return !dest.empty();
+}
+
 std::string random_first_name(bool male)
 {
- std::ifstream fin;
- std::string name;
- char buff[256];
- if (male)
-  fin.open("data/NAMES_MALE");
- else
-  fin.open("data/NAMES_FEMALE");
- if (!fin.is_open()) {
-  debugmsg("Could not open npc first names list (%s)",
-           (male ? "NAMES_MALE" : "NAMES_FEMALE"));
-  return "";
- }
- int line = rng(1, NUM_FIRST_NAMES);
- for (int i = 0; i < line; i++)
-  fin.getline(buff, 256);
- name = buff;
- fin.close();
- return name;
+	static std::vector<std::string> mr;
+	static std::vector<std::string> mrs;
+	static bool have_tried_to_read_mr_file = false;
+	static bool have_tried_to_read_mrs_file = false;
+
+	std::vector<std::string>& first_names = male ? mr : mrs;
+	if (!first_names.empty()) return first_names[rng(0, first_names.size() - 1)];
+	if (male ? have_tried_to_read_mr_file : have_tried_to_read_mrs_file) return "";
+	if (male) have_tried_to_read_mr_file = true;
+	else have_tried_to_read_mrs_file = true;
+
+	if (!file_to_string_vector(male ? "data/NAMES_MALE" : "data/NAMES_FEMALE", first_names)) return "";
+	return first_names[rng(0, first_names.size() - 1)];
 }
 
 std::string random_last_name()
 {
- std::string lastname;
- std::ifstream fin;
- fin.open("data/NAMES_LAST");
- if (!fin.is_open()) {
-  debugmsg("Could not open npc last names list (NAMES_LAST)");
-  return "";
- }
- int line = rng(1, NUM_LAST_NAMES);
- char buff[256];
- for (int i = 0; i < line; i++)
-  fin.getline(buff, 256);
- lastname = buff;
- fin.close();
- return lastname;
+ static std::vector<std::string> last_names;
+ static bool have_tried_to_read_file = false;
+
+ if (!last_names.empty()) return last_names[rng(0, last_names.size() - 1)];
+ if (have_tried_to_read_file) return "";
+ have_tried_to_read_file = true;
+ if (!file_to_string_vector("data/NAMES_LAST", last_names)) return "";
+ return last_names[rng(0, last_names.size() - 1)];
 }
 

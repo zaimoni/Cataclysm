@@ -184,7 +184,7 @@ public:
 
 		_backbuffer_stats.biCompression = BI_RGB;   //store it in uncompressed bytes
 
-		HBITMAP backbit = CreateDIBSection(0, (BITMAPINFO*)&_backbuffer_stats, DIB_RGB_COLORS, (void**)&_dcbits, NULL, 0);
+		HBITMAP backbit = CreateDIBSection(0, (BITMAPINFO*)&_backbuffer_stats, DIB_RGB_COLORS, (void**)&_dcbits, NULL, 0);	// _dcbits doesn't play nice w/move constructor; would have to rebuild this
 		DeleteObject(SelectObject(_backbuffer, backbit));//load the buffer into DC
 		SetBkMode(_backbuffer, TRANSPARENT);//Transparent font backgrounds
 		if (8 >= _backbuffer_stats.biBitCount && _color_table && (1U << _backbuffer_stats.biBitCount) >= _color_table_size) return SetDIBColorTable(_backbuffer, 0, _color_table_size, _color_table);	// actually need this
