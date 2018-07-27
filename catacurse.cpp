@@ -6,6 +6,7 @@
 
 // requests W2K baseline Windows API ... unsure if this has link-time consequences w/posix_time.cpp which does not specify
 #define _WIN32_WINNT 0x0500
+#define WINVER 0x0500
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #if HAVE_MS_COM
@@ -16,6 +17,7 @@
 #include "Zaimoni.STL/MetaRAM.hpp"
 #else
 // lower-tech pathway that ectually exists on MingWin
+#include <wingdi.h>
 #include "Zaimoni.STL/cstdio"
 #endif
 #ifndef NDEBUG
@@ -26,6 +28,8 @@
 #define HAVE_TILES 1
 #endif
 // #define HAVE_TILES 1
+
+#pragma comment(lib,"msimg32")
 
 class OS_Window
 {
@@ -119,7 +123,7 @@ public:
 
 		if (!_staging_0) return false;
 		// \todo bounds-checking
-		return GdiAlphaBlend(_backbuffer, xDest, yDest, wDest, hDest, _staging, xSrc, ySrc, wSrc, hSrc, alpha);	// AlphaBlend equivalent, but requires unusual linking to msimg32.dll
+		return AlphaBlend(_backbuffer, xDest, yDest, wDest, hDest, _staging, xSrc, ySrc, wSrc, hSrc, alpha);	// AlphaBlend equivalent, but requires unusual linking to msimg32.dll
 	}
 
 	void FillRect(int x, int y, int w, int h, unsigned char c)
@@ -947,21 +951,23 @@ void DrawWindow(WINDOW *win)
                 tmp = line.chars[i];	// \todo alternate data source here for tiles
                 int FG = line.FG[i];
                 int BG = line.BG[i];
-				// \todo interpose background tile drawing here
+#if HAVE_TILES
 				if (const unsigned short bg_tile = line.background_tiles[i]) {
 					const OS_Image& tile = _cache[bg_tile];
 					_win.PrepareToDraw(tile.handle());
 					_win.Draw(drawx,drawy,fontwidth,fontheight,0,0, tile.width(),tile.height());
-				} else {
+				} else
+#endif
 					_win.FillRect(drawx, drawy, fontwidth, fontheight, BG);
-				}
 
+#if HAVE_TILES
 				if (const unsigned short fg_tile = line.tiles[i]) {
 					const OS_Image& tile = _cache[fg_tile];
 					_win.PrepareToDraw(tile.handle());
 					_win.Draw(drawx, drawy, fontwidth, fontheight, 0, 0, tile.width(), tile.height());
 					continue;
 				}
+#endif
 				if (' ' == tmp) continue; // do not waste CPU on ASCII space, any sane font will be blank
 				if (FG == BG) continue;		// likewise do not waste CPU on foreground=background color (affected by tiles support)
 
