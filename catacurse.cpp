@@ -115,9 +115,11 @@ public:
 	}
 	bool Draw(int xDest, int yDest, int wDest, int hDest, int xSrc, int ySrc, int wSrc, int hSrc)
 	{
+		static const BLENDFUNCTION alpha = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+
 		if (!_staging_0) return false;
 		// \todo bounds-checking
-		return StretchBlt(_backbuffer, xDest, yDest, wDest, hDest, _staging, xSrc, ySrc, wSrc, hSrc,SRCCOPY);
+		return AlphaBlend(_backbuffer, xDest, yDest, wDest, hDest, _staging, xSrc, ySrc, wSrc, hSrc, alpha);
 	}
 
 	void FillRect(int x, int y, int w, int h, unsigned char c)
