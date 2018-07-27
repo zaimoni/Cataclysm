@@ -119,7 +119,7 @@ public:
 
 		if (!_staging_0) return false;
 		// \todo bounds-checking
-		return AlphaBlend(_backbuffer, xDest, yDest, wDest, hDest, _staging, xSrc, ySrc, wSrc, hSrc, alpha);
+		return GdiAlphaBlend(_backbuffer, xDest, yDest, wDest, hDest, _staging, xSrc, ySrc, wSrc, hSrc, alpha);	// AlphaBlend equivalent, but requires unusual linking to msimg32.dll
 	}
 
 	void FillRect(int x, int y, int w, int h, unsigned char c)
@@ -935,25 +935,33 @@ void DrawWindow(WINDOW *win)
     int i,j;
     char tmp;	// following assumes char is signed
     for (j=0; j<win->height; j++){
-		if (!win->line[j].touched) continue;
-		win->line[j].touched = false;
+		auto& line = win->line[j];
+		if (!line.touched) continue;
+		line.touched = false;
 		const int drawy = ((win->y + j)*fontheight);//-j;
 		if ((drawy + fontheight) > _win.height()) continue;	// reject out of bounds
 		for (i=0; i<win->width; i++){
 			const int drawx=((win->x+i)*fontwidth);
 			if ((drawx + fontwidth) > _win.width()) continue;	// reject out of bounds
                 {
-                tmp = win->line[j].chars[i];	// \todo alternate data source here for tiles
-                int FG = win->line[j].FG[i];
-                int BG = win->line[j].BG[i];
+                tmp = line.chars[i];	// \todo alternate data source here for tiles
+                int FG = line.FG[i];
+                int BG = line.BG[i];
 				// \todo interpose background tile drawing here
-				_win.FillRect(drawx,drawy,fontwidth,fontheight,BG);
-
-				// \todo interpose foreground tile drawing here
-#if 0
-				if (unsigned short t_index = win->line[j].tiles[i]) {
+				if (const unsigned short bg_tile = line.background_tiles[i]) {
+					const OS_Image& tile = _cache[bg_tile];
+					_win.PrepareToDraw(tile.handle());
+					_win.Draw(drawx,drawy,fontwidth,fontheight,0,0, tile.width(),tile.height());
+				} else {
+					_win.FillRect(drawx, drawy, fontwidth, fontheight, BG);
 				}
-#endif
+
+				if (const unsigned short fg_tile = line.tiles[i]) {
+					const OS_Image& tile = _cache[fg_tile];
+					_win.PrepareToDraw(tile.handle());
+					_win.Draw(drawx, drawy, fontwidth, fontheight, 0, 0, tile.width(), tile.height());
+					continue;
+				}
 				if (' ' == tmp) continue; // do not waste CPU on ASCII space, any sane font will be blank
 				if (FG == BG) continue;		// likewise do not waste CPU on foreground=background color (affected by tiles support)
 
