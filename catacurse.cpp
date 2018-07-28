@@ -143,6 +143,15 @@ public:
 		}
 	}
 
+	void FillRect(int x, int y, int w, int h, unsigned char c, unsigned char alpha)
+	{
+		if (UCHAR_MAX == alpha) return FillRect(x, y, w, h, c);
+		if (0 == alpha) return;
+		if (!_dcbits) throw std::logic_error("invalid call");
+		if (32 != _backbuffer_stats.biBitCount) throw std::logic_error("invalid call");
+		FillRect_transparent(x, y, w, h, c, alpha);
+	}
+
 	int X() const { return _dim.left; };
 	int Y() const { return _dim.top; };
 	int width() const { return _dim.right-_dim.left; }
@@ -277,6 +286,23 @@ private:
 		for (int j = y; j < y + h; j++) {
 			RGBQUAD* const dest = reinterpret_cast<RGBQUAD*>(_dcbits + sizeof(RGBQUAD)*(x + j * width()));
 			for (int i = 0; i < w; i++) dest[i] = rgba;
+		}
+	};
+	void FillRect_transparent(int x, int y, int w, int h, unsigned char c,unsigned char alpha)
+	{
+		const RGBQUAD rgba = color(c);
+		const unsigned short red_in = (unsigned short)rgba.rgbRed*(unsigned short)alpha;
+		const unsigned short blue_in = (unsigned short)rgba.rgbBlue*(unsigned short)alpha;
+		const unsigned short green_in = (unsigned short)rgba.rgbGreen*(unsigned short)alpha;
+		const unsigned short inv_alpha = UCHAR_MAX - alpha;
+		for (int j = y; j < y + h; j++) {
+			RGBQUAD* const dest = reinterpret_cast<RGBQUAD*>(_dcbits + sizeof(RGBQUAD)*(x + j * width()));
+			for (int i = 0; i < w; i++)
+				{
+				dest[i].rgbBlue = (unsigned char)((blue_in + inv_alpha * (unsigned short)(dest[i].rgbBlue)) / UCHAR_MAX);
+				dest[i].rgbGreen = (unsigned char)((green_in + inv_alpha * (unsigned short)(dest[i].rgbGreen)) / UCHAR_MAX);
+				dest[i].rgbRed = (unsigned char)((red_in + inv_alpha * (unsigned short)(dest[i].rgbRed)) / UCHAR_MAX);
+				}
 		}
 	};
 };
@@ -956,8 +982,8 @@ void DrawWindow(WINDOW *win)
 					const OS_Image& tile = _cache[bg_tile];
 					_win.PrepareToDraw(tile.handle());
 					_win.Draw(drawx,drawy,fontwidth,fontheight,0,0, tile.width(),tile.height());
-					// \todo check for non-black background color; if present, do an alpha-transparent background color rectangle
-					// this handles nightvision and boomered statuses, at least
+					// if background color is not black, draw it as translucent (this handles nightvision and boomered statuses, at least)
+					if (0 != BG) _win.FillRect(drawx, drawy, fontwidth, fontheight, BG, UCHAR_MAX / 2);
 				} else
 #endif
 					_win.FillRect(drawx, drawy, fontwidth, fontheight, BG);
