@@ -8,6 +8,9 @@
 #include <stdlib.h>
 #include <fstream>
 #include "posix_time.h"
+#include "JSON.h"
+
+std::map<ter_id, std::string> ter_t::tiles;
 
 const ter_t ter_t::list[num_terrain_types] = {  // MUST match enum ter_id!
 	{ "nothing",	     ' ', c_white,   2, tr_null,
@@ -442,6 +445,25 @@ ter_id JSON_parse<ter_id>::operator()(const char* const src)
 		if (!strcmp(JSON_transcode[i], src)) return (ter_id)(i);
 	}
 	return t_null;
+}
+
+void ter_t::init()
+{
+	if (!JSON::cache.count("tiles")) return;
+	auto& j_tiles = JSON::cache["tiles"];
+	auto keys = j_tiles.keys();
+	JSON_parse<ter_id> parse;
+	while (!keys.empty()) {
+		auto& k = keys.back();
+		if (const auto terrain_id = parse(k)) {
+			auto& src = j_tiles[k];
+			// invariant: src.is_scalar()
+			tiles[terrain_id] = src.scalar();	// XXX \todo would be nice if this was a non-const reference return so std::move was an option
+			j_tiles.unset(k);
+		}
+		keys.pop_back();	// reference k dies
+	}
+	if (j_tiles.empty()) JSON::cache.erase("tiles");	// reference j_tiles dies
 }
 
 #define SGN(a) (((a)<0) ? -1 : 1)

@@ -47,6 +47,7 @@ public:
 	unsigned char mode() const { return _mode; };
 	void reset();
 	bool empty() const;
+	size_t size() const;
 
 	// reserved literal values in strict JSON
 	static bool is_null(const JSON& src) { return literal == src._mode && src._scalar && !strcmp("null", src._scalar->c_str()); };
@@ -75,6 +76,7 @@ public:
 	bool destructive_merge(JSON& src, bool (ok)(const JSON&));	// keys of src end up in ourselves, the destination.  Cf PHP3+
 	std::vector<std::string> keys() const;	// Cf. Perl
 	void unset(const std::vector<std::string>& src);	// cf PHP 3+ -- clears keys from object
+	void unset(const std::string& src);
 
 	bool syntax_ok() const;
 protected:

@@ -6,6 +6,7 @@
 #include "monster.h"
 #include "computer.h"
 #include "vehicle.h"
+#include <map>
 
 class game;
 
@@ -130,6 +131,7 @@ struct cataclysm::JSON_parse<ter_id>
 
 struct ter_t {
 	static const ter_t list[num_terrain_types];
+	static std::map<ter_id, std::string> tiles;
 
 	std::string name;
 	char sym;
@@ -137,6 +139,8 @@ struct ter_t {
 	unsigned char movecost;
 	trap_id trap;
 	unsigned long flags;// : num_t_flags;
+
+	static void init();
 };
 
 enum map_extra {

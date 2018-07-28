@@ -31,6 +31,7 @@ game::game()
  clear();	// Clear the screen
  intro();	// Print an intro screen, make sure we're at least 80x25
 // Gee, it sure is init-y around here!
+ ter_t::init();		// for terrain tiles (map.cpp)
  item::init();	      // Set up item types                (SEE itypedef.cpp)
  mtype::init();	      // Set up monster types             (SEE mtypedef.cpp)
  mtype::init_items();     // Set up the items monsters carry  (SEE monitemsdef.cpp)

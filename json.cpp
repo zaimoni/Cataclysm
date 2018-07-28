@@ -62,6 +62,18 @@ bool JSON::empty() const
 	}
 }
 
+size_t JSON::size() const
+{
+	switch (_mode)
+	{
+	case object: return _object ? _object->size() : 0;
+	case array: return _array ? _array->size() : 0;
+	case string:
+	case literal: return _scalar ? 1 : 0;
+	default: return 0;	// invalid, so no useful data anyway
+	}
+}
+
 JSON JSON::grep(bool (ok)(const JSON&)) const
 {
 	JSON ret;
@@ -221,6 +233,16 @@ void JSON::unset(const std::vector<std::string>& src)
 	for (const auto& key : src) {
 		if (_object->count(key)) _object->erase(key);
 	}
+	if (_object->empty()) {
+		delete _object;
+		_object = 0;
+	}
+}
+
+void JSON::unset(const std::string& src)
+{
+	if (object != _mode || !_object || src.empty()) return;
+	if (_object->count(src)) _object->erase(src);
 	if (_object->empty()) {
 		delete _object;
 		_object = 0;
