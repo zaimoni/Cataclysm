@@ -13,7 +13,6 @@
 #include "mutation.h"
 #include "gamemode.h"
 #include "action.h"
-#include <map>
 
 #define LONG_RANGE 10
 #define BLINK_SPEED 300

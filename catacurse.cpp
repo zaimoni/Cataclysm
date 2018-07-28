@@ -956,6 +956,8 @@ void DrawWindow(WINDOW *win)
 					const OS_Image& tile = _cache[bg_tile];
 					_win.PrepareToDraw(tile.handle());
 					_win.Draw(drawx,drawy,fontwidth,fontheight,0,0, tile.width(),tile.height());
+					// \todo check for non-black background color; if present, do an alpha-transparent background color rectangle
+					// this handles nightvision and boomered statuses, at least
 				} else
 #endif
 					_win.FillRect(drawx, drawy, fontwidth, fontheight, BG);

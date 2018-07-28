@@ -1,8 +1,6 @@
 #ifndef _MONATTACK_H_
 #define _MONATTACK_H_
 
-//#include "game.h"
-
 class game;
 
 class mattack

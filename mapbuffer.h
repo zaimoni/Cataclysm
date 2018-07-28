@@ -1,6 +1,5 @@
 #include "map.h"
 #include "line.h"
-#include <map>
 #include <list>
 
 class game;
