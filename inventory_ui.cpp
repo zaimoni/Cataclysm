@@ -1,7 +1,6 @@
 #include "game.h"
 #include "output.h"
 #include "keypress.h"
-#include <string>
 #include <vector>
 
 std::string CATEGORIES[8] =

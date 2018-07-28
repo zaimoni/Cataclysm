@@ -4,7 +4,6 @@
 #include "overmap.h"
 #include "output.h"
 #include <fstream>
-#include <string>
 #include <sstream>
 
 computer::computer()

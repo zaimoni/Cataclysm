@@ -2,7 +2,6 @@
 #include "output.h"
 
 #include <fstream>
-#include <string>
 
 option_table OPTIONS;
 

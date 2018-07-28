@@ -1,5 +1,3 @@
-#include <vector>
-#include <string>
 #include "game.h"
 #include "keypress.h"
 #include "output.h"
@@ -10,6 +8,7 @@
 #include "options.h"
 #include "posix_time.h"
 #include <math.h>
+#include <vector>
 
 int time_to_fire(player &p, const it_gun* firing);
 int recoil_add(player &p);

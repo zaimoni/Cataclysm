@@ -6,7 +6,6 @@
 #include "line.h"
 #include "keypress.h"
 #include <vector>
-#include <string>
 #include <sstream>
 #include <fstream>
 
