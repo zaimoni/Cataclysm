@@ -6405,7 +6405,7 @@ void map::post_process(game *g, unsigned zones)
 void map::place_items(items_location loc, int chance, int x1, int y1,
                       int x2, int y2, bool ongrass, int turn)
 {
- std::vector<itype_id> eligible = (*mapitems)[loc];
+ const auto& eligible = map::items[loc];
 
  if (chance >= 100 || chance <= 0) {
   debugmsg("map::place_items() called with an invalid chance (%d)", chance);
@@ -6446,7 +6446,7 @@ void map::place_items(items_location loc, int chance, int x1, int y1,
 
 void map::put_items_from(items_location loc, int num, int x, int y, int turn)
 {
- std::vector<itype_id> eligible = (*mapitems)[loc];
+ const auto& eligible = map::items[loc];
  int item_chance = 0;	// # of items
  for (const auto id : eligible) item_chance += item::types[id]->rarity;
 
