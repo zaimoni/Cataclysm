@@ -44,6 +44,12 @@ struct discard
 	static T x;
 };
 
+template<class T>
+struct JSON_parse
+{
+	T operator()(const char* src);	// fails unless specialized at link-time
+};
+
 }
 
 #endif
