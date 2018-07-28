@@ -5,8 +5,6 @@
 #include <vector>
 #include <string>
 
-#define DEFAULT_COMPUTER_NAME ""
-
 class game;
 class player;
 
@@ -54,21 +52,26 @@ struct computer_option
  computer_action action;
  int security;
 
- computer_option() { name = "Unknown", action = COMPACT_NULL, security = 0; };
- computer_option(std::string N, computer_action A, int S) :
+ computer_option(std::string N = "Unknown", computer_action A = COMPACT_NULL, int S = 0) :
    name (N), action (A), security (S) {};
 };
 
 class computer
 {
+private:
+ std::vector<computer_option> options;   // Things we can do
+ std::vector<computer_failure> failures; // Things that happen if we fail a hack
+ int security; // Difficulty of simply logging in
+ WINDOW *w_terminal; // Output window
 public:
- computer();
- computer(std::string Name, int Security);
+ std::string name; // "Jon's Computer", "Lab 6E77-B Terminal Omega"
+ int mission_id; // Linked to a mission?
+
+ computer(std::string Name = "", int Security = 0) : name(Name), security(Security), w_terminal(NULL), mission_id(-1) {}
  ~computer();
 
  computer & operator=(const computer &rhs);
 // Initialization
- void set_security(int Security);
  void add_option(std::string opt_name, computer_action action, int Security);
  void add_failure(computer_failure failure);
 // Basic usage
@@ -79,15 +82,9 @@ public:
  std::string save_data();
  void load_data(std::string data);
 
- std::string name; // "Jon's Computer", "Lab 6E77-B Terminal Omega"
- int mission_id; // Linked to a mission?
 
 private:
- int security; // Difficulty of simply logging in
- std::vector<computer_option> options;   // Things we can do
- std::vector<computer_failure> failures; // Things that happen if we fail a hack
- WINDOW *w_terminal; // Output window
-
+ 
 // Called by use()
  void activate_function      (game *g, computer_action action);
 // Generally called when we fail a hack attempt

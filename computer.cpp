@@ -6,22 +6,6 @@
 #include <fstream>
 #include <sstream>
 
-computer::computer()
-{
- security = 0;
- name = DEFAULT_COMPUTER_NAME;
- w_terminal = NULL;
- mission_id = -1;
-}
-
-computer::computer(std::string Name, int Security)
-{
- security = Security;
- name = Name;
- w_terminal = NULL;
- mission_id = -1;
-}
-
 computer::~computer()
 {
  if (w_terminal != NULL)
@@ -33,19 +17,10 @@ computer& computer::operator=(const computer &rhs)
  security = rhs.security;
  name = rhs.name;
  mission_id = rhs.mission_id;
- options.clear();
- for (int i = 0; i < rhs.options.size(); i++) 
-  options.push_back(rhs.options[i]);
- failures.clear();
- for (int i = 0; i < rhs.failures.size(); i++)
-   failures.push_back(rhs.failures[i]);
- w_terminal = NULL;
+ options = rhs.options;
+ failures = rhs.failures;
+ w_terminal = NULL;	// does not value-copy
  return *this;
-}
-
-void computer::set_security(int Security)
-{
- security = Security;
 }
 
 void computer::add_option(std::string opt_name, computer_action action,
