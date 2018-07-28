@@ -2241,10 +2241,11 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
  if (!INBOUNDS(x, y)) return;	// Out of bounds
  if (cx == -1) cx = u.posx;
  if (cy == -1) cy = u.posy;
- int k = x + SEEX - cx;
- int j = y + SEEY - cy;
+ const int k = x + SEEX - cx;
+ const int j = y + SEEY - cy;
  nc_color tercol;
- long sym = ter_t::list[ter(x, y)].sym;
+ const auto terrain = ter(x, y);
+ long sym = ter_t::list[terrain].sym;
  bool hi = false;
  bool normal_tercol = false, drew_field = false; 
  if (u.has_disease(DI_BOOMERED))
@@ -2254,8 +2255,13 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
   tercol = c_ltgreen;
  else {
   normal_tercol = true;
-  tercol = ter_t::list[ter(x, y)].color;
+  tercol = ter_t::list[terrain].color;
  }
+ // background tile should show no matter what
+ if (ter_t::tiles.count(terrain)) {
+	 mvwaddbgtile(w, j, k, ter_t::tiles[terrain].c_str());
+ }
+
  if (move_cost(x, y) == 0 && has_flag(swimmable, x, y) && !u.underwater)
   show_items = false;	// Can only see underwater items if WE are underwater
 // If there's a trap here, and we have sufficient perception, draw that instead

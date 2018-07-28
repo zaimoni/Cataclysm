@@ -26,6 +26,7 @@
 // stock curses library does not have tileset extensions; no-op them
 inline bool load_tile(const char* src) { return false; }	// automatic failure
 void flush_tilesheets() {}
+bool mvwaddbgtile(WINDOW *win, int y, int x, const char* bgtile) { return false; };
 #endif
 
 

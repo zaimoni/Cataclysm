@@ -1178,6 +1178,24 @@ inline void addedchar(WINDOW *win){
         newline(win);
 };
 
+bool mvwaddbgtile(WINDOW *win, int y, int x, const char* bgtile)
+{
+#if HAVE_TILES
+	if (!bgtile || !bgtile[0]) return false;
+	std::string tmp(bgtile);
+	if (!_translate.count(tmp)) return false;
+	if (!wmove(win, y, x)) return false;
+	// win->cursorx,cursory now set to x,y
+	const unsigned short t_index = _translate[tmp];	// invariant: tile index at least 1
+
+	win->line[y].background_tiles[x] = t_index;
+	win->draw = true;
+	addedchar(win);
+	return true;
+#else
+	return false;
+#endif
+}
 
 //Borders the window with fancy lines!
 int wborder(WINDOW *win, chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br)
