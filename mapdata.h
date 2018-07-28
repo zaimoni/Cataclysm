@@ -122,12 +122,16 @@ num_terrain_types
 
 const char* JSON_key(ter_id src);
 
+namespace cataclysm {
+
 template<>
-struct cataclysm::JSON_parse<ter_id>
+struct JSON_parse<ter_id>
 {
 	ter_id operator()(const char* src);
 	ter_id operator()(const std::string& src) { return operator()(src.c_str()); };
 };
+
+}
 
 struct ter_t {
 	static const ter_t list[num_terrain_types];
