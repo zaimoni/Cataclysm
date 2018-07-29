@@ -375,7 +375,7 @@ public:
 
 		// would like static assertion here but not needed
 		for (size_t scan_y = 0; scan_y < height; scan_y++) {
-			memmove(_pixels + (scan_y*width), incoming + ((scan_y + origin_y)*src.width()), sizeof(RGBQUAD)*width);
+			memmove(_pixels + (scan_y*width), incoming + ((scan_y + origin_y)*src.width()+origin_x), sizeof(RGBQUAD)*width);
 		}
 		_x = CreateCompatibleBitmap(OS_Window::last_dc(),width,height);
 		if (!_x) {
@@ -1357,14 +1357,16 @@ int printw(const char *fmt, ...)
 int werase(WINDOW *win)
 {
     int j,i;
-    for (j=0; j<win->height; j++)
-    {
-     for (i=0; i<win->width; i++)   {
-     win->line[j].chars[i]=0;
-     win->line[j].FG[i]=0;
-     win->line[j].BG[i]=0;
-     }
-        win->line[j].touched=true;
+    for (j=0; j<win->height; j++) {
+		auto& line = win->line[j];
+		memset(line.chars, 0, win->width*sizeof(*line.chars));
+		memset(line.FG, 0, win->width * sizeof(*line.FG));
+		memset(line.BG, 0, win->width * sizeof(*line.BG));
+#if HAVE_TILES
+		memset(line.background_tiles, 0, win->width * sizeof(*line.background_tiles));
+		memset(line.tiles, 0, win->width * sizeof(*line.tiles));
+#endif
+		line.touched=true;
     }
     win->draw=true;
     wmove(win,0,0);
@@ -1576,6 +1578,12 @@ int cury=win->cursory;
    win->line[cury].chars[curx]=charcode;
    win->line[cury].FG[curx]=win->FG;
    win->line[cury].BG[curx]=win->BG;
+#if HAVE_TILES
+   if (!win->BG && (!win->FG || ' ' == ch)) {	// true display blank: erase the tile assignments
+	   win->line[cury].background_tiles[curx] = 0;
+	   win->line[cury].tiles[curx] = 0;
+   }
+#endif
 
 
     win->draw=true;

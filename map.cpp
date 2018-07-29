@@ -9,6 +9,7 @@
 #include <fstream>
 #include "posix_time.h"
 #include "JSON.h"
+#include <iostream>
 
 std::map<ter_id, std::string> ter_t::tiles;
 
@@ -2247,7 +2248,9 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
  const auto terrain = ter(x, y);
  long sym = ter_t::list[terrain].sym;
  bool hi = false;
- bool normal_tercol = false, drew_field = false; 
+ bool normal_tercol = false;
+ bool drew_field = false; 
+ mvwputch(w, j, k, c_black, ' ');	// actively clear
  if (u.has_disease(DI_BOOMERED))
   tercol = c_magenta;
  else if ((u.is_wearing(itm_goggles_nv) && u.has_active_item(itm_UPS_on)) ||
@@ -2259,7 +2262,7 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
  }
  // background tile should show no matter what
  if (ter_t::tiles.count(terrain)) {
-	 mvwaddbgtile(w, j, k, ter_t::tiles[terrain].c_str());
+	 if (mvwaddbgtile(w, j, k, ter_t::tiles[terrain].c_str())) sym = 0;
  }
 
  if (move_cost(x, y) == 0 && has_flag(swimmable, x, y) && !u.underwater)
@@ -2315,9 +2318,11 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
   if (normal_tercol) tercol = veh->part_color(veh_part);
  }
 
- if (invert) mvwputch_inv(w, j, k, tercol, sym);
- else if (hi) mvwputch_hi (w, j, k, tercol, sym);
- else mvwputch    (w, j, k, tercol, sym);
+ if (sym) {
+	 if (invert) mvwputch_inv(w, j, k, tercol, sym);
+	 else if (hi) mvwputch_hi(w, j, k, tercol, sym);
+	 else mvwputch(w, j, k, tercol, sym);
+ }
 }
 
 #if 0
