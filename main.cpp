@@ -64,18 +64,38 @@ static bool load_tiles(const JSON& src)
 	try {
 		JSON incoming(fin);
 		fin.close();
+		// secondary keys: tint, bg_tile
+#if PROTOTYPE
+		JSON tint;
+		JSON bg_tile;
+		incoming.extract_key("tint", tint);
+		incoming.extract_key("bg_tile", bg_tile);
+#endif
+		// syntax checks as follows:
+		// keys of tint, bg_tile must be keys of JSON::cache["tiles"]
+		// values of tint must be a curses color
+		// values of bg_tiles are tile keys that are "background"
+
 		// key we need to know about here is tiles
 		if (!incoming.become_key("tiles")) return false;
 		if (JSON::object != incoming.mode()) return false;
+		{
 		const std::vector<std::string> null_keys(incoming.grep(JSON::is_null).keys());
-		incoming.unset(null_keys);
+		if (!null_keys.empty())
+			{
+			incoming.unset(null_keys);
+			if (JSON::cache.count("tiles")) JSON::cache["tiles"].unset(null_keys);
+#if PROTOTYPE
+			if (JSON::cache.count("tint")) JSON::cache["tint"].unset(null_keys);
+			if (JSON::cache.count("bg_tile")) JSON::cache["bg_tile"].unset(null_keys);
+#endif
+		}
+		}	// null_keys is destroyed here
 		incoming.destructive_grep(scalar_on_hard_drive);
+//		tint.destructive_grep(...);
 		if (incoming.empty()) return false;
-		if (JSON::cache.count("tiles")) {
-			auto& tiles = JSON::cache["tiles"];
-			tiles.unset(null_keys);
-			tiles.destructive_merge(incoming);	// assumes reverse order of iteration
-		} else JSON::cache["tiles"] = std::move(incoming);
+		if (JSON::cache.count("tiles")) JSON::cache["tiles"].destructive_merge(incoming);	// assumes reverse order of iteration
+		else JSON::cache["tiles"] = std::move(incoming);
 		return true;
 	}
 	catch (const std::exception& e) {

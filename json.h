@@ -65,6 +65,12 @@ public:
 		*this = std::move(tmp);
 		return true;
 	}
+	bool extract_key(const std::string& key, JSON& dest) {
+		if (!has_key(key)) return false;
+		dest = std::move((*_object)[key]);
+		unset(key);
+		return true;
+	}
 
 	// use for testing values of array or object.
 	// 2018-07-21: not only do not need to allow for function objects, they converted compile-time errors to run-time errors.
