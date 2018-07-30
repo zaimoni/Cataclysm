@@ -137,17 +137,16 @@ int main(int argc, char *argv[])
 
 // ncurses stuff
  initscr(); // Initialize ncurses
-
- // need some sort of screen to complete image preloading on Windows
- if (JSON::cache.count("tiles") && !JSON::cache["tiles"].destructive_grep(preload_image)) JSON::cache.erase("tiles");	// wires tiles to types
- flush_tilesheets();	// don't want to pay RAM overhead for tilesheets after we've extracted the tiles from them
-
  noecho();  // Don't echo keypresses
  cbreak();  // C-style breaks (e.g. ^C to SIGINT)
  keypad(stdscr, true); // Numpad is numbers
  init_colors(); // See color.cpp
  curs_set(0); // Invisible cursor
 
+ // need some sort of screen to complete image preloading on Windows; also, color table needed
+ if (JSON::cache.count("tiles") && !JSON::cache["tiles"].destructive_grep(preload_image)) JSON::cache.erase("tiles");	// wires tiles to types
+ flush_tilesheets();	// don't want to pay RAM overhead for tilesheets after we've extracted the tiles from them
+  
  rand();  // For some reason a call to rand() seems to be necessary to avoid
           // repetion.
  bool quit_game = false;

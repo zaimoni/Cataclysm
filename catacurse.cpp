@@ -416,6 +416,29 @@ public:
 			_pixels = 0;
 		}
 	}
+
+	bool tint(const RGBQUAD rgba, unsigned char alpha)
+	{
+		if (0 == alpha) return true;
+		if (32 != _data.biBitCount) throw std::logic_error("32 != _data.biBitCount");	// invariant failure
+		RGBQUAD* const dest = pixels();
+		if (!dest) throw std::bad_alloc();
+		if (UCHAR_MAX == alpha) throw std::logic_error("UCHAR_MAX == alpha");	// not what we're supposed to do here
+		const unsigned short red_in = (unsigned short)rgba.rgbRed*(unsigned short)alpha;
+		const unsigned short blue_in = (unsigned short)rgba.rgbBlue*(unsigned short)alpha;
+		const unsigned short green_in = (unsigned short)rgba.rgbGreen*(unsigned short)alpha;
+		const unsigned short inv_alpha = UCHAR_MAX - alpha;
+		size_t i = width()*height();
+		do	{
+			--i;
+			if (0 == dest[i].rgbReserved) continue;	// ignore transparent pixels
+			dest[i].rgbBlue = (unsigned char)((blue_in + inv_alpha * (unsigned short)(dest[i].rgbBlue)) / UCHAR_MAX);
+			dest[i].rgbGreen = (unsigned char)((green_in + inv_alpha * (unsigned short)(dest[i].rgbGreen)) / UCHAR_MAX);
+			dest[i].rgbRed = (unsigned char)((red_in + inv_alpha * (unsigned short)(dest[i].rgbRed)) / UCHAR_MAX);
+			}
+		while(0 < i);
+		return SetDIBits(OS_Window::last_dc(), (HBITMAP)_x, 0, height(), dest, (BITMAPINFO*)(&_data), DIB_RGB_COLORS);
+	}
 private:
 	void init() {
 		if (_x && !_have_info) {
@@ -811,22 +834,21 @@ bool load_tile(const char* src)
 	}
 	if (!has_rotation_specification) return true;
 	// use the rotation specifier.  For now, assume only one specifier total (one of tint, rotation, or background)
-#if PROTOTYPE
 	{
 	int color_code = -1;
 	if (parse_JSON_color(has_rotation_specification+1, color_code))
 		{	// this triggers an alpha-transparent tint
-		const OS_Image& src = _cache[_translate[base_tile]];
-		OS_Image working(src, 0, 0, src.width(), src.height());
-//		need to apply color as alpha-transparent tint only to pisels that already exist
-//		working.tint(color_code,UCHAR_MAX/2);
-		_translate[base_tile] = ++_next;
+		const OS_Image& tmp = _cache[_translate[base_tile]];
+		OS_Image working(tmp, 0, 0, tmp.width(), tmp.height());
+//		need to apply color as alpha-transparent tint only to pixels that already exist
+		working.tint(_win.color(color_code),UCHAR_MAX/2);
+		_translate[src] = ++_next;
 		_cache[_next] = std::move(working);
+		return true;
 	}
 	}
-#endif
 	// todo rotation case
-	return true;
+	return false;
 }
 
 void flush_tilesheets()

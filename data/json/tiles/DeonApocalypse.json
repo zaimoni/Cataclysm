@@ -4,7 +4,7 @@
 			t_sand:"data/images/tiles/deontiles.32.png#2",
 			t_sidewalk:"data/images/tiles/deontiles.32.png#3",
 			t_pavement:"data/images/tiles/deontiles.32.png#4",
-			t_pavement_y:"data/images/tiles/deontiles.32.png#4",
+			t_pavement_y:"data/images/tiles/deontiles.32.png#4:BOLD YELLOW",
 			t_dirtmound:"data/images/tiles/deontiles.32.png#16",
 			t_pit_shallow:"data/images/tiles/deontiles.32.png#17",
             t_pit:"data/images/tiles/deontiles.32.png#18",
