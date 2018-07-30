@@ -713,14 +713,53 @@ std::string extract_file_infix(std::string src)
 	return std::string(test+1);
 }
 
+static const char* JSON_transcode_color[] = {
+	"BLACK",
+	"RED",
+	"GREEN",
+	"YELLOW",
+	"BLUE",
+	"MAGENTA",
+	"CYAN",
+	"WHITE",
+	"BOLD BLACK",
+	"BOLD RED",
+	"BOLD GREEN",
+	"BOLD YELLOW",
+	"BOLD BLUE",
+	"BOLD MAGENTA",
+	"BOLD CYAN",
+	"BOLD WHITE",
+};
+
+bool parse_JSON_color(const char* src, int& color)
+{
+	size_t i = sizeof(JSON_transcode_color) / sizeof(*JSON_transcode_color);
+	do {
+		--i;
+		if (!strcmp(src, JSON_transcode_color[i])) {
+			color = i;
+			return true;
+		}
+	}
+	while(0<i);
+	return false;
+}
+
 bool load_tile(const char* src)
 {
 	static unsigned short _next = 0;
 
-	if (!src || !src[0]) return false;	// nothing to load
+	if (!src || !src[0] || ':' == src[0]) return false;	// nothing to load
 	if ((unsigned short)(-1) == _next) return false;	// at implementation limit
 	if (_translate.count(src)) return true;	// already loaded
 	const char* const has_rotation_specification = strchr(src, ':');
+	if (has_rotation_specification)
+		{	// reject pathological syntax now
+		std::string test(src);
+		if (':' == test.back() || std::string::npos != test.find("::")) return false;
+		}
+
 	std::string base_tile(has_rotation_specification ? std::string(src, 0, has_rotation_specification-src) : src);
 	if (!_translate.count(base_tile)) {
 		const char* const is_from_tilesheet = strchr(base_tile.c_str(), '#');
@@ -771,7 +810,22 @@ bool load_tile(const char* src)
 		}
 	}
 	if (!has_rotation_specification) return true;
-	// \todo use the rotation specifier
+	// use the rotation specifier.  For now, assume only one specifier total (one of tint, rotation, or background)
+#if PROTOTYPE
+	{
+	int color_code = -1;
+	if (parse_JSON_color(has_rotation_specification+1, color_code))
+		{	// this triggers an alpha-transparent tint
+		const OS_Image& src = _cache[_translate[base_tile]];
+		OS_Image working(src, 0, 0, src.width(), src.height());
+//		need to apply color as alpha-transparent tint only to pisels that already exist
+//		working.tint(color_code,UCHAR_MAX/2);
+		_translate[base_tile] = ++_next;
+		_cache[_next] = std::move(working);
+	}
+	}
+#endif
+	// todo rotation case
 	return true;
 }
 
