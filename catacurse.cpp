@@ -1,5 +1,6 @@
 #if (defined _WIN32 || defined WINDOWS)
 #include "catacurse.h"
+#include "JSON.h"
 #include <fstream>
 #include <string>
 #include <map>
@@ -439,6 +440,30 @@ public:
 		while(0 < i);
 		return SetDIBits(OS_Window::last_dc(), (HBITMAP)_x, 0, height(), dest, (BITMAPINFO*)(&_data), DIB_RGB_COLORS);
 	}
+
+	bool overlay(const OS_Image& src)
+	{
+	if (32 != _data.biBitCount) throw std::logic_error("32 != _data.biBitCount");	// invariant failure
+	if (width() != src.width()) throw std::logic_error("width() != src.width()");	// invariant failure
+	if (height() != src.height()) throw std::logic_error("height() != src.height()");	// invariant failure
+	RGBQUAD* const dest = pixels();
+	const RGBQUAD* const src_px = src.pixels();
+	size_t i = width()*height();
+	do {
+		--i;
+		if (0 == src_px[i].rgbReserved) continue;	// ignore transparent pixels
+		if (UCHAR_MAX == src_px[i].rgbReserved) {	// opaque: copy
+			dest[i] = src_px[i];
+			continue;
+		}
+		const unsigned short inv_alpha = 255 - src_px[i].rgbReserved;
+		dest[i].rgbBlue = (unsigned char)((src_px[i].rgbReserved*(unsigned short)(src_px[i].rgbBlue) + inv_alpha * (unsigned short)(dest[i].rgbBlue)) / UCHAR_MAX);
+		dest[i].rgbGreen = (unsigned char)((src_px[i].rgbReserved*(unsigned short)(src_px[i].rgbGreen) + inv_alpha * (unsigned short)(dest[i].rgbGreen)) / UCHAR_MAX);
+		dest[i].rgbRed = (unsigned char)((src_px[i].rgbReserved*(unsigned short)(src_px[i].rgbRed) + inv_alpha * (unsigned short)(dest[i].rgbRed)) / UCHAR_MAX);
+		dest[i].rgbReserved = UCHAR_MAX - (inv_alpha*(unsigned short)(UCHAR_MAX- dest[i].rgbReserved)) / UCHAR_MAX;
+	} while (0 < i);
+	return SetDIBits(OS_Window::last_dc(), (HBITMAP)_x, 0, height(), dest, (BITMAPINFO*)(&_data), DIB_RGB_COLORS);
+	}
 private:
 	void init() {
 		if (_x && !_have_info) {
@@ -847,7 +872,17 @@ bool load_tile(const char* src)
 		return true;
 	}
 	}
-	// todo rotation case
+	// \todo rotation case
+	// background tile case
+	if (cataclysm::JSON::cache.count("tiles") && cataclysm::JSON::cache["tiles"].has_key(has_rotation_specification + 1)) {
+		// tile requested as background has been configured
+		if (!load_tile(cataclysm::JSON::cache["tiles"][has_rotation_specification + 1].scalar().c_str())) return false;
+		const OS_Image& background = _cache[_translate[has_rotation_specification + 1]];
+		OS_Image working(background, 0, 0, background.width(), background.height());
+		working.overlay(_cache[_translate[base_tile]]);
+		_translate[src] = ++_next;
+		_cache[_next] = std::move(working);
+	}
 	return false;
 }
 
