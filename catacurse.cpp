@@ -15,6 +15,7 @@
 #include <locale>
 #include <codecvt>
 
+#include "Zaimoni.STL/Logging.h"
 #include "Zaimoni.STL/MetaRAM.hpp"
 #else
 // lower-tech pathway that ectually exists on MingWin
@@ -347,6 +348,12 @@ public:
 		static_assert(std::is_standard_layout<OS_Window>::value, "OS_Window filename constructor is invalid");
 		memset(this, 0, sizeof(OS_Image));
 		_x = loadFromFile(src, _pixels, _data, _have_info); init();
+#ifndef NDEBUG
+		if (_x) {
+		  if (0 >= width()) throw std::logic_error("0 >= width()");
+		  if (0 >= height()) throw std::logic_error("0 >= width()");
+		}
+#endif
 	}
 	// OS_Image(const wchar_t* src)
 	OS_Image(const OS_Image& src) = delete;
@@ -857,7 +864,8 @@ bool load_tile(const char* src)
 			if (SetFontSize(16, 16) && _win) _win.Resize(32);
 		}
 	}
-	if (!has_rotation_specification) return true;
+//	if (!has_rotation_specification) return true;
+	if (!has_rotation_specification) return _translate.count(src);
 	// use the rotation specifier.  For now, assume only one specifier total (one of tint, rotation, or background)
 	{
 	int color_code = -1;
@@ -876,8 +884,10 @@ bool load_tile(const char* src)
 	// background tile case
 	if (cataclysm::JSON::cache.count("tiles") && cataclysm::JSON::cache["tiles"].has_key(has_rotation_specification + 1)) {
 		// tile requested as background has been configured
-		if (!load_tile(cataclysm::JSON::cache["tiles"][has_rotation_specification + 1].scalar().c_str())) return false;
-		const OS_Image& background = _cache[_translate[has_rotation_specification + 1]];
+		const std::string& bg = cataclysm::JSON::cache["tiles"][has_rotation_specification + 1].scalar();
+		if (!load_tile(bg.c_str())) return false;
+		SUCCEED_OR_DIE(_translate.count(bg.c_str()));
+		const OS_Image& background = _cache[_translate[bg.c_str()]];
 		OS_Image working(background, 0, 0, background.width(), background.height());
 		working.overlay(_cache[_translate[base_tile]]);
 		_translate[src] = ++_next;

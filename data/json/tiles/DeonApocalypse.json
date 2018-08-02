@@ -19,6 +19,14 @@
             t_metal_floor:"data/images/tiles/deontiles.32.png#65",
             t_floor:"data/images/tiles/deontiles.32.png#64",
             t_grate:"data/images/tiles/deontiles.32.png#96",
-            t_slime:"data/images/tiles/deontiles.32.png#97"
+            t_slime:"data/images/tiles/deontiles.32.png#97",
+            t_wall_half:"data/images/tiles/deontiles.32.png#85:t_dirt",
+            t_wall_wood:"data/images/tiles/deontiles.32.png#86",
+            t_wall_wood_chipped:"data/images/tiles/deontiles.32.png#86",
+            t_wall_wood_broken:"data/images/tiles/deontiles.32.png#86",
+			t_wall_v:"data/images/tiles/deontiles.32.png#87",
+			t_wall_h:"data/images/tiles/deontiles.32.png#87",
+			t_wall_metal_v:"data/images/tiles/deontiles.32.png#88",
+			t_wall_metal_h:"data/images/tiles/deontiles.32.png#88"
 			}
 }

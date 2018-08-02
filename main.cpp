@@ -151,6 +151,13 @@ int main(int argc, char *argv[])
           // repetion.
  bool quit_game = false;
  game *g = new game;
+#if 0
+// #ifndef NDEBUG
+ if (JSON::cache.count("tiles")) {
+   const auto keys = JSON::cache["tiles"].keys();
+   for (const auto& it : keys) std::cerr << it << '\n';
+ }
+#endif
  MAPBUFFER = mapbuffer(g);
  MAPBUFFER.load();
  load_options();
