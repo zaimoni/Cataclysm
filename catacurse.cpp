@@ -218,10 +218,10 @@ public:
 			_backbuffer_stats.biSizeImage = width()*height()*4;
 		} else if (8 == _backbuffer_stats.biBitCount) {
 			// reality checks
-			if (_backbuffer_stats.biClrUsed != _backbuffer_stats.biClrImportant) throw std::logic_error("inconsistent color table");
-			if (1 > _backbuffer_stats.biClrUsed || (UCHAR_MAX+1) < _backbuffer_stats.biClrUsed) throw std::logic_error("color table has unreasonable number of entries");
+			SUCCEED_OR_DIE(_backbuffer_stats.biClrUsed == _backbuffer_stats.biClrImportant);
+			SUCCEED_OR_DIE(1 <= _backbuffer_stats.biClrUsed && (UCHAR_MAX+1) >= _backbuffer_stats.biClrUsed);
 			_backbuffer_stats.biSizeImage = width()*height();
-		} else throw std::logic_error("unhandled color depth");
+		} else SUCCEED_OR_DIE(!"unhandled color depth");
 
 		_backbuffer_stats.biCompression = BI_RGB;   //store it in uncompressed bytes
 
@@ -348,12 +348,8 @@ public:
 		static_assert(std::is_standard_layout<OS_Window>::value, "OS_Window filename constructor is invalid");
 		memset(this, 0, sizeof(OS_Image));
 		_x = loadFromFile(src, _pixels, _data, _have_info); init();
-#ifndef NDEBUG
-		if (_x) {
-		  if (0 >= width()) throw std::logic_error("0 >= width()");
-		  if (0 >= height()) throw std::logic_error("0 >= width()");
-		}
-#endif
+		assert(!_x || 0 < width());
+		assert(!_x || 0 < height());
 	}
 	// OS_Image(const wchar_t* src)
 	OS_Image(const OS_Image& src) = delete;
@@ -364,13 +360,13 @@ public:
 	}
 	// clipping constructor
 	OS_Image(const OS_Image& src, const size_t origin_x, const size_t origin_y, const size_t width, const size_t height) {
-		if (0 >= width) throw std::logic_error("OS_Image::OS_Image: 0 >= width");
-		if (0 >= height) throw std::logic_error("OS_Image::OS_Image: 0 >= height");
-		if (((size_t)(-1)/sizeof(_pixels[0]))/width < height) throw std::logic_error("OS_Image::OS_Image: ((size_t)(-1)/sizeof(_pixels[0]))/width < height");
-		if (src.width() <= origin_x) throw std::logic_error("OS_Image::OS_Image: src.width() <= origin_x");
-		if (src.height() <= origin_y) throw std::logic_error("OS_Image::OS_Image: src.height() <= origin_y");
-		if (src.width() - origin_x < width) throw std::logic_error("OS_Image::OS_Image: src.width() - origin_x < width");
-		if (src.height() - origin_y < height) throw std::logic_error("OS_Image::OS_Image: src.height() - origin_y < height");
+		SUCCEED_OR_DIE(0 < width);
+		SUCCEED_OR_DIE(0 < height);
+		SUCCEED_OR_DIE(((size_t)(-1)/sizeof(_pixels[0]))/width >= height);
+		SUCCEED_OR_DIE(src.width() > origin_x);
+		SUCCEED_OR_DIE(src.height() > origin_y);
+		SUCCEED_OR_DIE(src.width() - origin_x >= width);
+		SUCCEED_OR_DIE(src.height() - origin_y >= height);
 		static_assert(std::is_standard_layout<OS_Window>::value, "OS_Window filename constructor is invalid");
 		memset(this, 0, sizeof(OS_Image));
 		_data = src._data;
@@ -428,10 +424,10 @@ public:
 	bool tint(const RGBQUAD rgba, unsigned char alpha)
 	{
 		if (0 == alpha) return true;
-		if (32 != _data.biBitCount) throw std::logic_error("32 != _data.biBitCount");	// invariant failure
+		SUCCEED_OR_DIE(32 == _data.biBitCount);	// invariant failure
 		RGBQUAD* const dest = pixels();
 		if (!dest) throw std::bad_alloc();
-		if (UCHAR_MAX == alpha) throw std::logic_error("UCHAR_MAX == alpha");	// not what we're supposed to do here
+		SUCCEED_OR_DIE(UCHAR_MAX != alpha);	// not what we're supposed to do here
 		const unsigned short red_in = (unsigned short)rgba.rgbRed*(unsigned short)alpha;
 		const unsigned short blue_in = (unsigned short)rgba.rgbBlue*(unsigned short)alpha;
 		const unsigned short green_in = (unsigned short)rgba.rgbGreen*(unsigned short)alpha;
@@ -450,9 +446,9 @@ public:
 
 	bool overlay(const OS_Image& src)
 	{
-	if (32 != _data.biBitCount) throw std::logic_error("32 != _data.biBitCount");	// invariant failure
-	if (width() != src.width()) throw std::logic_error("width() != src.width()");	// invariant failure
-	if (height() != src.height()) throw std::logic_error("height() != src.height()");	// invariant failure
+	SUCCEED_OR_DIE(32 == _data.biBitCount);	// invariant failure
+	SUCCEED_OR_DIE(width() == src.width());	// invariant failure
+	SUCCEED_OR_DIE(height() == src.height());	// invariant failure
 	RGBQUAD* const dest = pixels();
 	const RGBQUAD* const src_px = src.pixels();
 	size_t i = width()*height();
