@@ -45,5 +45,12 @@
             t_door_metal_c:"data/images/tiles/deontiles.32.png#72",
             t_door_metal_o:"data/images/tiles/deontiles.32.png#73:t_metal_floor",
             t_door_metal_locked:"data/images/tiles/deontiles.32.png#72"
+			t_door_glass_c:"data/images/tiles/deontiles.32.png#105:t_floor",
+            t_door_glass_o:"data/images/tiles/deontiles.32.png#106:t_floor",
+            t_window:"data/images/tiles/deontiles.32.png#74:t_floor",
+            t_window_alarm:"data/images/tiles/deontiles.32.png#74:t_floor",
+            t_window_empty:"data/images/tiles/deontiles.32.png#95:t_floor",
+            t_window_frame:"data/images/tiles/deontiles.32.png#77:t_floor",
+            t_window_boarded:"data/images/tiles/deontiles.32.png#78:t_floor",
 			}
 }
