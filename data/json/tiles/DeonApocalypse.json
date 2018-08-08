@@ -44,7 +44,7 @@
             t_door_boarded:"data/images/tiles/deontiles.32.png#71",
             t_door_metal_c:"data/images/tiles/deontiles.32.png#72",
             t_door_metal_o:"data/images/tiles/deontiles.32.png#73:t_metal_floor",
-            t_door_metal_locked:"data/images/tiles/deontiles.32.png#72"
+            t_door_metal_locked:"data/images/tiles/deontiles.32.png#72",
 			t_door_glass_c:"data/images/tiles/deontiles.32.png#105:t_floor",
             t_door_glass_o:"data/images/tiles/deontiles.32.png#106:t_floor",
             t_window:"data/images/tiles/deontiles.32.png#74:t_floor",
@@ -52,5 +52,12 @@
             t_window_empty:"data/images/tiles/deontiles.32.png#95:t_floor",
             t_window_frame:"data/images/tiles/deontiles.32.png#77:t_floor",
             t_window_boarded:"data/images/tiles/deontiles.32.png#78:t_floor",
+            t_rock:"data/images/tiles/deontiles.32.png#78:t_rock_floor",
+            t_tree:"data/images/tiles/deontiles.32.png#10:t_dirt",
+            t_tree_young:"data/images/tiles/deontiles.32.png#11:t_dirt",
+            t_underbrush:"data/images/tiles/deontiles.32.png#8:t_dirt",
+            t_shrub:"data/images/tiles/deontiles.32.png#8:t_dirt",
+            t_fence_v:"data/images/tiles/deontiles.32.png#92:t_dirt",
+            t_fence_h:"data/images/tiles/deontiles.32.png#91:t_dirt"
 			}
 }
