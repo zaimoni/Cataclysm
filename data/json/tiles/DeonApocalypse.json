@@ -58,6 +58,12 @@
             t_underbrush:"data/images/tiles/deontiles.32.png#8:t_dirt",
             t_shrub:"data/images/tiles/deontiles.32.png#8:t_dirt",
             t_fence_v:"data/images/tiles/deontiles.32.png#92:t_dirt",
-            t_fence_h:"data/images/tiles/deontiles.32.png#91:t_dirt"
+            t_fence_h:"data/images/tiles/deontiles.32.png#91:t_dirt",
+            t_marloss:"data/images/tiles/deontiles.32.png#100",
+            t_fungus:"data/images/tiles/deontiles.32.png#101",
+            t_tree_fungal:"data/images/tiles/deontiles.32.png#102",
+            t_sewage:"data/images/tiles/deontiles.32.png#97",
+            t_toilet:"data/images/tiles/deontiles.32.png#35:t_floor",
+            t_bench:"data/images/tiles/deontiles.32.png#30:t_floor",
 			}
 }
