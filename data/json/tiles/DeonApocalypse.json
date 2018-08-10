@@ -65,5 +65,10 @@
             t_sewage:"data/images/tiles/deontiles.32.png#97",
             t_toilet:"data/images/tiles/deontiles.32.png#35:t_floor",
             t_bench:"data/images/tiles/deontiles.32.png#30:t_floor",
+            t_gas_pump:"data/images/tiles/deontiles.32.png#33:t_pavement",
+            t_gas_pump_smashed:"data/images/tiles/deontiles.32.png#34:t_pavement",
+            t_radio_tower:"data/images/tiles/deontiles.32.png#164:t_pavement",
+            t_console_broken:"data/images/tiles/deontiles.32.png#161:t_floor",
+            t_console:"data/images/tiles/deontiles.32.png#160:t_floor"
 			}
 }
