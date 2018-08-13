@@ -888,6 +888,7 @@ bool load_tile(const char* src)
 		working.overlay(_cache[_translate[base_tile]]);
 		_translate[src] = ++_next;
 		_cache[_next] = std::move(working);
+		return true;
 	}
 	return false;
 }
