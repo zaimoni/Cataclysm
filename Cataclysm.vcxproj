@@ -202,6 +202,7 @@
     <ClInclude Include="pldata.h" />
     <ClInclude Include="posix_time.h" />
     <ClInclude Include="rng.h" />
+    <ClInclude Include="saveload.h" />
     <ClInclude Include="settlement.h" />
     <ClInclude Include="setvector.h" />
     <ClInclude Include="skill.h" />
@@ -277,6 +278,7 @@
     <ClCompile Include="posix_time.cpp" />
     <ClCompile Include="ranged.cpp" />
     <ClCompile Include="rng.cpp" />
+    <ClCompile Include="saveload.cpp" />
     <ClCompile Include="settlement.cpp" />
     <ClCompile Include="skill.cpp" />
     <ClCompile Include="stdafx.cpp">
