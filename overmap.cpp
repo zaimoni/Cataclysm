@@ -23,6 +23,12 @@
 #define SWAMPINESS 8	//Affects the size of a swamp
 #define SWAMPCHANCE 850	// 1/SWAMPCHANCE Chance that a swamp will spawn instead of forest
 
+namespace cataclysm {
+	bool discard<bool>::x = false;
+}
+
+using namespace cataclysm;
+
 const map_extras no_extras(0);
 const map_extras road_extras(
 	// %%% HEL MIL SCI STA DRG SUP PRT MIN WLF PUD CRT FUM 1WY ART
@@ -484,10 +490,7 @@ bool overmap::is_safe(int x, int y)
 
 bool& overmap::seen(int x, int y)
 {
- if (x < 0 || x >= OMAPX || y < 0 || y >= OMAPY) {
-  nullbool = false;
-  return nullbool;
- }
+ if (x < 0 || x >= OMAPX || y < 0 || y >= OMAPY) return (discard<bool>::x = false);
  return s[x][y];
 }
 

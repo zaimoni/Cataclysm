@@ -97,7 +97,6 @@ class overmap
   oter_id t[OMAPX][OMAPY];
   oter_id nullret;
   bool s[OMAPX][OMAPY];
-  bool nullbool;
   std::vector<om_note> notes;
   //Drawing
   void draw(WINDOW *w, game *g, int &cursx, int &cursy, 
