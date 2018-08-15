@@ -26,6 +26,7 @@
 
 namespace cataclysm {
 	bool discard<bool>::x = false;
+	oter_id discard<oter_id>::x = ot_null;
 }
 
 using namespace cataclysm;
@@ -442,7 +443,6 @@ oter_id house(int dir)
 overmap::overmap()
 {
 // debugmsg("Warning - null overmap!");
- nullret = ot_null;
  posx = 999;
  posy = 999;
  posz = 999;
@@ -450,16 +450,12 @@ overmap::overmap()
 
 overmap::overmap(game *g, int x, int y, int z)
 {
- nullret = ot_null;
  open(g, x, y, z);
 }
 
 oter_id& overmap::ter(int x, int y)
 {
- if (x < 0 || x >= OMAPX || y < 0 || y >= OMAPY) {
-  nullret = ot_null;
-  return nullret;
- }
+ if (x < 0 || x >= OMAPX || y < 0 || y >= OMAPY) return (discard<oter_id>::x = ot_null);
  return t[x][y];
 }
 

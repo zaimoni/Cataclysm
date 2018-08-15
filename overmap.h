@@ -94,7 +94,6 @@ class overmap
 
  private:
   oter_id t[OMAPX][OMAPY];
-  oter_id nullret;
   bool s[OMAPX][OMAPY];
   std::vector<om_note> notes;
   std::vector<city> roads_out;
