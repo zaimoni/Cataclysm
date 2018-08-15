@@ -39,9 +39,8 @@ class overmap
   overmap() : pos(999, 999, 999) {};
   overmap(game *g, int x, int y, int z);
   ~overmap() = default;
-  void save(std::string name);
-  void save(std::string name, int x, int y, int z);
-  void open(game *g, int x, int y, int z);
+  void save(const std::string& name, int x, int y, int z);
+  void save(const std::string& name) { save(name, pos.x, pos.y, pos.z); }
   void generate(game *g, overmap* north, overmap* east, overmap* south,
                 overmap* west);
   void generate_sub(overmap* above);
@@ -96,6 +95,8 @@ class overmap
   bool s[OMAPX][OMAPY];
   std::vector<om_note> notes;
   std::vector<city> roads_out;
+
+  void open(game *g, int x, int y, int z);
   //Drawing
   void draw(WINDOW *w, game *g, int &cursx, int &cursy, 
                    int &origx, int &origy, char &ch, bool blink);

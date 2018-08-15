@@ -2563,12 +2563,7 @@ to your designated evacuation point."));
  }
 }
 
-void overmap::save(std::string name)
-{
- save(name, pos.x, pos.y, pos.z);
-}
-
-void overmap::save(std::string name, int x, int y, int z)
+void overmap::save(const std::string& name, int x, int y, int z)
 {
  std::stringstream plrfilename, terfilename;
  std::ofstream fout;
@@ -2731,7 +2726,7 @@ void overmap::open(game *g, int x, int y, int z)
 // Fetch the terrain above
   overmap* above = new overmap(g, x, y, z + 1);
   generate_sub(above);
-  save(g->u.name, x, y, z);
+  save(g->u.name);
   delete above;
  } else {	// No map exists!  Prepare neighbors, and generate one.
   std::vector<overmap*> pointers;
@@ -2761,7 +2756,7 @@ void overmap::open(game *g, int x, int y, int z)
   generate(g, pointers[0], pointers[3], pointers[1], pointers[2]);
   for (int i = 0; i < 4; i++)
    delete pointers[i];
-  save(g->u.name, x, y, z);
+  save(g->u.name);
  }
 }
 

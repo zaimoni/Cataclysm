@@ -364,7 +364,7 @@ void computer::activate_function(game *g, computer_action action)
     for (int j = miny; j <= maxy; j++)
      tmp.seen(i, j) = true;
    }
-   tmp.save(g->u.name, g->cur_om.pos.x, g->cur_om.pos.y, 0);
+   tmp.save(g->u.name);
    print_line("Surface map data downloaded.");
   } break;
 
