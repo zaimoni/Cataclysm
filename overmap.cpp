@@ -24,12 +24,10 @@
 #define SWAMPINESS 8	//Affects the size of a swamp
 #define SWAMPCHANCE 850	// 1/SWAMPCHANCE Chance that a swamp will spawn instead of forest
 
-namespace cataclysm {
-	bool discard<bool>::x = false;
-	oter_id discard<oter_id>::x = ot_null;
-}
-
 using namespace cataclysm;
+
+template<> bool discard<bool>::x = false;
+template<> oter_id discard<oter_id>::x = ot_null;
 
 const map_extras no_extras(0);
 const map_extras road_extras(
