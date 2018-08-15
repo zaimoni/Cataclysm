@@ -439,14 +439,6 @@ oter_id house(int dir)
 
 // *** BEGIN overmap FUNCTIONS ***
 
-overmap::overmap()
-{
-// debugmsg("Warning - null overmap!");
- posx = 999;
- posy = 999;
- posz = 999;
-}
-
 overmap::overmap(game *g, int x, int y, int z)
 {
  open(g, x, y, z);
@@ -864,13 +856,10 @@ void overmap::generate_sub(overmap* above)
    } else if (above->ter(i, j) == ot_spider_pit)
     ter(i, j) = ot_spider_pit_under;
 
-   else if (above->ter(i, j) == ot_cave && posz == -1) {
-    if (one_in(3))
-     ter(i, j) = ot_cave_rat;
-    else
-     ter(i, j) = ot_cave;
+   else if (above->ter(i, j) == ot_cave && pos.z == -1) {
+	ter(i, j) = one_in(3) ? ot_cave_rat : ot_cave;
 
-   } else if (above->ter(i, j) == ot_cave_rat && posz == -2)
+   } else if (above->ter(i, j) == ot_cave_rat && pos.z == -2)
     ter(i, j) = ot_cave_rat;
 
    else if (above->ter(i, j) == ot_anthill) {
@@ -893,13 +882,13 @@ void overmap::generate_sub(overmap* above)
     temple_points.push_back( point(i, j) );
 
    else if (above->ter(i, j) == ot_lab_core ||
-            (posz == -1 && above->ter(i, j) == ot_lab_stairs))
-    lab_points.push_back(city(i, j, rng(1, 5 + posz)));
+            (pos.z == -1 && above->ter(i, j) == ot_lab_stairs))
+    lab_points.push_back(city(i, j, rng(1, 5 + pos.z)));
 
    else if (above->ter(i, j) == ot_lab_stairs)
     ter(i, j) = ot_lab;
 
-   else if (above->ter(i, j) == ot_bunker && posz == -1)
+   else if (above->ter(i, j) == ot_bunker && pos.z == -1)
     bunker_points.push_back( point(i, j) );
 
    else if (above->ter(i, j) == ot_shelter)
@@ -911,7 +900,7 @@ void overmap::generate_sub(overmap* above)
    else if (above->ter(i, j) == ot_mine_shaft ||
             above->ter(i, j) == ot_mine_down    ) {
     ter(i, j) = ot_mine;
-    mine_points.push_back(city(i, j, rng(6 + posz, 10 + posz)));
+    mine_points.push_back(city(i, j, rng(6 + pos.z, 10 + pos.z)));
 
    } else if (above->ter(i, j) == ot_mine_finale) {
     for (int x = i - 1; x <= i + 1; x++) {
@@ -922,12 +911,9 @@ void overmap::generate_sub(overmap* above)
     zg.push_back(mongroup(mcat_spiral, i * 2, j * 2, 2, 200));
 
    } else if (above->ter(i, j) == ot_silo) {
-    if (rng(2, 7) < abs(posz) || rng(2, 7) < abs(posz))
-     ter(i, j) = ot_silo_finale;
-    else
-     ter(i, j) = ot_silo;
+	const auto abs_z = (0<pos.z) ? pos.z : -pos.z;
+	ter(i, j) = (rng(2, 7) < abs_z || rng(2, 7) < abs_z) ? ot_silo_finale : ot_silo;
    }
-
   }
  }
 
@@ -976,24 +962,18 @@ void overmap::generate_sub(overmap* above)
   ter(shelter_points[i].x, shelter_points[i].y) = ot_shelter_under;
 
  for (int i = 0; i < triffid_points.size(); i++) {
-  if (posz == -1)
-   ter( triffid_points[i].x, triffid_points[i].y ) = ot_triffid_roots;
-  else
-   ter( triffid_points[i].x, triffid_points[i].y ) = ot_triffid_finale;
+  ter( triffid_points[i].x, triffid_points[i].y ) = (pos.z == -1) ? ot_triffid_roots : ot_triffid_finale;
  }
 
  for (int i = 0; i < temple_points.size(); i++) {
-  if (posz == -5)
-   ter( temple_points[i].x, temple_points[i].y ) = ot_temple_finale;
-  else
-   ter( temple_points[i].x, temple_points[i].y ) = ot_temple_stairs;
+  ter( temple_points[i].x, temple_points[i].y ) = (pos.z == -5) ? ot_temple_finale : ot_temple_stairs;
  }
 
 }
 
 void overmap::make_tutorial()
 {
- if (posz == 9) {
+ if (pos.z == 9) {
   for (int i = 0; i < OMAPX; i++) {
    for (int j = 0; j < OMAPY; j++)
     ter(i, j) = ot_rock;
@@ -1117,23 +1097,23 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
 /* First, determine if we're close enough to the edge to need to load an
  * adjacent overmap, and load it/them. */
   if (cursx < 25) {
-   hori = overmap(g, posx - 1, posy, posz);
+   hori = overmap(g, pos.x - 1, pos.y, pos.z);
    if (cursy < 12)
-    diag = overmap(g, posx - 1, posy - 1, posz);
+    diag = overmap(g, pos.x - 1, pos.y - 1, pos.z);
    if (cursy > OMAPY - 14)
-    diag = overmap(g, posx - 1, posy + 1, posz);
+    diag = overmap(g, pos.x - 1, pos.y + 1, pos.z);
   }
   if (cursx > OMAPX - 26) {
-   hori = overmap(g, posx + 1, posy, posz);
+   hori = overmap(g, pos.x + 1, pos.y, pos.z);
    if (cursy < 12)
-    diag = overmap(g, posx + 1, posy - 1, posz);
+    diag = overmap(g, pos.x + 1, pos.y - 1, pos.z);
    if (cursy > OMAPY - 14)
-    diag = overmap(g, posx + 1, posy + 1, posz);
+    diag = overmap(g, pos.x + 1, pos.y + 1, pos.z);
   }
   if (cursy < 12)
-   vert = overmap(g, posx, posy - 1, posz);
+   vert = overmap(g, pos.x, pos.y - 1, pos.z);
   if (cursy > OMAPY - 14)
-   vert = overmap(g, posx, posy + 1, posz);
+   vert = overmap(g, pos.x, pos.y + 1, pos.z);
 
 // Now actually draw the map
   bool csee = false;
@@ -2585,7 +2565,7 @@ to your designated evacuation point."));
 
 void overmap::save(std::string name)
 {
- save(name, posx, posy, posz);
+ save(name, pos.x, pos.y, pos.z);
 }
 
 void overmap::save(std::string name, int x, int y, int z)
@@ -2645,9 +2625,9 @@ void overmap::open(game *g, int x, int y, int z)
  plrfilename << "save/" << g->u.name << ".seen." << x << "." << y << "." << z;
  terfilename << "save/o." << x << "." << y << "." << z;
 // Set position IDs
- posx = x;
- posy = y;
- posz = z;
+ pos.x = x;
+ pos.y = y;
+ pos.z = z;
  fin.open(terfilename.str().c_str());
 // DEBUG VARS
  int nummg = 0;
@@ -2698,17 +2678,17 @@ void overmap::open(game *g, int x, int y, int z)
     getline(fin, itemdata);
     if (npcs.empty()) {
      debugmsg("Overmap %d:%d:%d tried to load object data, without an NPC!",
-              posx, posy, posz);
+              pos.x, pos.y, pos.z);
      debugmsg(itemdata.c_str());
     } else {
      item tmp(itemdata, g);
-     npc* last = &(npcs.back());
+     npc& last = npcs.back();
      switch (datatype) {
       case 'I': npc_inventory.push_back(tmp);                 break;
       case 'C': npc_inventory.back().contents.push_back(tmp); break;
-      case 'W': last->worn.push_back(tmp);                    break;
-      case 'w': last->weapon = tmp;                           break;
-      case 'c': last->weapon.contents.push_back(tmp);         break;
+      case 'W': last.worn.push_back(tmp);                    break;
+      case 'w': last.weapon = tmp;                           break;
+      case 'c': last.weapon.contents.push_back(tmp);         break;
      }
     }
    }

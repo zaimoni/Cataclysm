@@ -1868,8 +1868,8 @@ void game::save()
          mostseen << " " << nextinv << " " << next_npc_id << " " <<
          next_faction_id << " " << next_mission_id << " " << int(nextspawn) <<
          " " << int(nextweather) << " " << weather << " " << int(temperature) <<
-         " " << levx << " " << levy << " " << levz << " " << cur_om.posx <<
-         " " << cur_om.posy << " " << std::endl;
+         " " << levx << " " << levy << " " << levz << " " << cur_om.pos.x <<
+         " " << cur_om.pos.y << " " << std::endl;
 // Next, the scent map.
  for (int i = 0; i < SEEX * MAPSIZE; i++) {
   for (int j = 0; j < SEEY * MAPSIZE; j++)
@@ -1877,8 +1877,7 @@ void game::save()
  }
 // Now save all monsters.
  fout << std::endl << z.size() << std::endl;
- for (int i = 0; i < z.size(); i++)
-  fout << z[i].save_info() << std::endl;
+ for (const auto& mon : z) fout << mon.save_info() << std::endl;
  for (int i = 0; i < num_monsters; i++)	// Save the kill counts, too.
   fout << kills[i] << " ";
 // And finally the player.
@@ -2176,7 +2175,7 @@ void game::mondebug()
 void game::groupdebug()
 {
  erase();
- mvprintw(0, 0, "OM %d : %d    M %d : %d", cur_om.posx, cur_om.posy, levx,
+ mvprintw(0, 0, "OM %d : %d    M %d : %d", cur_om.pos.x, cur_om.pos.y, levx,
                                            levy);
  int dist, linenum = 1;
  for (int i = 0; i < cur_om.zg.size(); i++) {
@@ -4417,8 +4416,8 @@ void game::examine()
   levz += movez;
   cur_om.save(u.name);
   //m.save(&cur_om, turn, levx, levy);
-  overmap(this, cur_om.posx, cur_om.posy, -1);
-  cur_om = overmap(this, cur_om.posx, cur_om.posy, cur_om.posz + movez);
+  overmap(this, cur_om.pos.x, cur_om.pos.y, -1);
+  cur_om = overmap(this, cur_om.pos.x, cur_om.pos.y, cur_om.pos.z + movez);
   m.load(this, levx, levy);
   update_map(u.posx, u.posy);
   for (int x = 0; x < SEEX * MAPSIZE; x++) {
@@ -6363,13 +6362,13 @@ void game::vertical_move(int movez, bool force)
   return;
  }
 
- int original_z = cur_om.posz;
+ int original_z = cur_om.pos.z;
  cur_om.save(u.name);
  //m.save(&cur_om, turn, levx, levy);
- cur_om = overmap(this, cur_om.posx, cur_om.posy, cur_om.posz + movez);
+ cur_om = overmap(this, cur_om.pos.x, cur_om.pos.y, cur_om.pos.z + movez);
  map tmpmap;
  tmpmap.load(this, levx, levy);
- cur_om = overmap(this, cur_om.posx, cur_om.posy, original_z);
+ cur_om = overmap(this, cur_om.pos.x, cur_om.pos.y, original_z);
 // Find the corresponding staircase
  int stairx = -1, stairy = -1;
  bool rope_ladder = false;
@@ -6459,7 +6458,7 @@ void game::vertical_move(int movez, bool force)
  }
 
 // We moved!  Load the new map.
- cur_om = overmap(this, cur_om.posx, cur_om.posy, cur_om.posz + movez);
+ cur_om = overmap(this, cur_om.pos.x, cur_om.pos.y, cur_om.pos.z + movez);
 
 // Fill in all the tiles we know about (e.g. subway stations)
  for (int i = 0; i < discover.size(); i++) {
@@ -6556,7 +6555,7 @@ void game::update_map(int &x, int &y)
  }
  if (olevx != 0 || olevy != 0) {
   cur_om.save(u.name);
-  cur_om = overmap(this, cur_om.posx + olevx, cur_om.posy + olevy, cur_om.posz);
+  cur_om = overmap(this, cur_om.pos.x + olevx, cur_om.pos.y + olevy, cur_om.pos.z);
  }
  set_adjacent_overmaps();
 
@@ -6660,36 +6659,36 @@ void game::set_adjacent_overmaps(bool from_scratch)
 {
  if (levx == OMAPX - 1 || levx == 0 || (from_scratch && levx <= OMAPX)) {
   delete om_hori;
-  om_hori = new overmap(this, cur_om.posx - 1, cur_om.posy, cur_om.posz);
+  om_hori = new overmap(this, cur_om.pos.x - 1, cur_om.pos.y, cur_om.pos.z);
   if (levy == OMAPY - 1 || levy == 0 || (from_scratch && levy <= OMAPY)) {
    delete om_diag;
-   om_diag = new overmap(this, cur_om.posx - 1, cur_om.posy - 1, cur_om.posz);
+   om_diag = new overmap(this, cur_om.pos.x - 1, cur_om.pos.y - 1, cur_om.pos.z);
   } else if (levy == OMAPY || levy == OMAPY * 2 - 1 ||
              (from_scratch && levy > OMAPY)) {
    delete om_diag;
-   om_diag = new overmap(this, cur_om.posx - 1, cur_om.posy + 1, cur_om.posz);
+   om_diag = new overmap(this, cur_om.pos.x - 1, cur_om.pos.y + 1, cur_om.pos.z);
   }
  } else if (levx == OMAPX || levx == OMAPX * 2 - 1 ||
             (from_scratch && levx > OMAPX)) {
   delete om_hori;
-  om_hori = new overmap(this, cur_om.posx + 1, cur_om.posy, cur_om.posz);
+  om_hori = new overmap(this, cur_om.pos.x + 1, cur_om.pos.y, cur_om.pos.z);
   if (levy == OMAPY - 1 || levy == 0 || (from_scratch && levy <= OMAPY)) {
    delete om_diag;
-   om_diag = new overmap(this, cur_om.posx + 1, cur_om.posy - 1, cur_om.posz);
+   om_diag = new overmap(this, cur_om.pos.x + 1, cur_om.pos.y - 1, cur_om.pos.z);
   } else if (levy == OMAPY || levy == OMAPY * 2 - 1 ||
              (from_scratch && levy > OMAPY)) {
    delete om_diag;
-   om_diag = new overmap(this, cur_om.posx + 1, cur_om.posy + 1, cur_om.posz);
+   om_diag = new overmap(this, cur_om.pos.x + 1, cur_om.pos.y + 1, cur_om.pos.z);
   }
  }
 
  if (levy == OMAPY - 1 || levy == 0 || (from_scratch && levy <= OMAPY)) {
   delete om_vert;
-  om_vert = new overmap(this, cur_om.posx    , cur_om.posy - 1, cur_om.posz);
+  om_vert = new overmap(this, cur_om.pos.x    , cur_om.pos.y - 1, cur_om.pos.z);
  } else if (levy == OMAPY || levy == OMAPY * 2 - 1 ||
             (from_scratch && levy > OMAPY)) {
   delete om_vert;
-  om_vert = new overmap(this, cur_om.posx    , cur_om.posy + 1, cur_om.posz);
+  om_vert = new overmap(this, cur_om.pos.x    , cur_om.pos.y + 1, cur_om.pos.z);
  }
 }
 
@@ -7145,14 +7144,13 @@ void game::teleport(player *p)
    explode_mon(i);
   }
  }
- if (is_u)
-  update_map(u.posx, u.posy);
+ if (is_u) update_map(u.posx, u.posy);
 }
 
 void game::nuke(int x, int y)
 {
  overmap tmp_om = cur_om;
- cur_om = overmap(this, tmp_om.posx, tmp_om.posy, 0);
+ cur_om = overmap(this, tmp_om.pos.x, tmp_om.pos.y, 0);
  if (x < 0 || y < 0 || x >= OMAPX || y >= OMAPY) return;
  int mapx = x * 2, mapy = y * 2;
  map tmpmap;
@@ -7173,7 +7171,7 @@ std::vector<faction *> game::factions_at(int x, int y)
 {
  std::vector<faction *> ret;
  for (int i = 0; i < factions.size(); i++) {
-  if (factions[i].omx == cur_om.posx && factions[i].omy == cur_om.posy &&
+  if (factions[i].omx == cur_om.pos.x && factions[i].omy == cur_om.pos.y &&
       trig_dist(x, y, factions[i].mapx, factions[i].mapy) <= factions[i].size)
    ret.push_back(&(factions[i]));
  }
@@ -7184,21 +7182,17 @@ oter_id game::ter_at(int omx, int omy, bool& mark_as_seen)
 {
  oter_id ret;
  int sx = 0, sy = 0;
- if (omx >= OMAPX)
-  sx = 1;
- if (omx < 0)
-  sx = -1;
- if (omy >= OMAPY)
-  sy = 1;
- if (omy < 0)
-  sy = -1;
+ if (omx >= OMAPX) sx = 1;
+ else if (omx < 0) sx = -1;
+ if (omy >= OMAPY) sy = 1;
+ else if (omy < 0) sy = -1;
  if (sx != 0 || sy != 0) {
   omx -= sx * OMAPX;
   omy -= sy * OMAPY;
-  overmap tmp(this, cur_om.posx + sx, cur_om.posy + sy, 0);
+  overmap tmp(this, cur_om.pos.x + sx, cur_om.pos.y + sy, 0);
   if (mark_as_seen) {
    tmp.seen(omx, omy) = true;
-   tmp.save(u.name, tmp.posx, tmp.posy, cur_om.posz);
+   tmp.save(u.name, tmp.pos.x, tmp.pos.y, cur_om.pos.z);
   } else {
    mark_as_seen = tmp.seen(omx, omy);
   }

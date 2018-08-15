@@ -972,8 +972,8 @@ std::vector<item> starting_inv(npc *me, npc_class type, game *g)
 void npc::spawn_at(overmap *o, int x, int y)
 {
 // First, specify that we are in this overmap!
- omx = o->posx;
- omy = o->posy;
+ omx = o->pos.x;
+ omy = o->pos.y;
  mapx = x;
  mapy = y;
  if (x == -1 || y == -1) {

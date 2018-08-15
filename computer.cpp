@@ -359,12 +359,12 @@ void computer::activate_function(game *g, computer_action action)
    if (maxx >= OMAPX) maxx = OMAPX - 1;
    if (miny < 0)             miny = 0;
    if (maxy >= OMAPY) maxy = OMAPY - 1;
-   overmap tmp(g, g->cur_om.posx, g->cur_om.posy, 0);
+   overmap tmp(g, g->cur_om.pos.x, g->cur_om.pos.y, 0);
    for (int i = minx; i <= maxx; i++) {
     for (int j = miny; j <= maxy; j++)
      tmp.seen(i, j) = true;
    }
-   tmp.save(g->u.name, g->cur_om.posx, g->cur_om.posy, 0);
+   tmp.save(g->u.name, g->cur_om.pos.x, g->cur_om.pos.y, 0);
    print_line("Surface map data downloaded.");
   } break;
 
@@ -390,7 +390,7 @@ void computer::activate_function(game *g, computer_action action)
 
 
   case COMPACT_MISS_LAUNCH: {
-   overmap tmp_om(g, g->cur_om.posx, g->cur_om.posy, 0);
+   overmap tmp_om(g, g->cur_om.pos.x, g->cur_om.pos.y, 0);
 // Target Acquisition.
    point target = tmp_om.choose_point(g);
    if (target.x == -1) {
@@ -411,9 +411,9 @@ void computer::activate_function(game *g, computer_action action)
     }
    }
 // For each level between here and the surface, remove the missile
-   for (int level = g->cur_om.posz; level < 0; level++) {
+   for (int level = g->cur_om.pos.z; level < 0; level++) {
     tmp_om = g->cur_om;
-    g->cur_om = overmap(g, tmp_om.posx, tmp_om.posy, level);
+    g->cur_om = overmap(g, tmp_om.pos.x, tmp_om.pos.y, level);
     tinymap tmpmap;
     tmpmap.load(g, g->levx, g->levy);
     tmpmap.translate(t_missile, t_hole);
@@ -527,7 +527,7 @@ know that's sort of a big deal, but come on, these guys can't handle it?\n");
    print_line("\
 SITE %d%d%d%d%d\n\
 PERTINANT FOREMAN LOGS WILL BE PREPENDED TO NOTES",
-g->cur_om.posx, g->cur_om.posy, g->levx, g->levy, abs(g->levz));
+g->cur_om.pos.x, g->cur_om.pos.y, g->levx, g->levy, abs(g->levz));
    print_line("\n\
 MINE OPERATIONS SUSPENDED; CONTROL TRANSFERRED TO AMIGARA PROJECT UNDER\n\
    IMPERATIVE 2:07B\n\

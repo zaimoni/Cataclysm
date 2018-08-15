@@ -5,9 +5,8 @@
 #include "omdata.h"
 #include "mongroup.h"
 #include "output.h"
+#include "npc.h"
 #include <vector>
-
-class npc;
 
 struct city {
  int x;
@@ -37,7 +36,7 @@ struct radio_tower {
 class overmap
 {
  public:
-  overmap();
+  overmap() : pos(999, 999, 999) {};
   overmap(game *g, int x, int y, int z);
   ~overmap() = default;
   void save(std::string name);
@@ -83,13 +82,13 @@ class overmap
   void delete_note(int x, int y);
   point display_notes();
   
+  tripoint pos;
   std::vector<city> cities;
 #if PROTOTYPE
   std::vector<settlement> towns;	// prototyping variable; #include "settlement.h" rather than overmap.cpp when taking live
 #endif
   std::vector<mongroup> zg;
   std::vector<radio_tower> radios;
-  int posx, posy, posz;
   std::vector<npc> npcs;
 
  private:

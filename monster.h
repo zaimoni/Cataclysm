@@ -64,7 +64,7 @@ class monster {
  bool made_of(material m);	// Returns true if it's made of m
  
  void load_info(std::string data);
- std::string save_info();	// String of all data, for save files
+ std::string save_info() const;	// String of all data, for save files
  void debug(player &u); 	// Gives debug info
 
 // Movement

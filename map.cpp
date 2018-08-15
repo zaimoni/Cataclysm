@@ -2693,14 +2693,13 @@ void map::shift(game *g, int wx, int wy, int sx, int sy)
 void map::saven(overmap *om, unsigned int turn, int worldx, int worldy,
                 int gridx, int gridy)
 {
- int n = gridx + gridy * my_MAPSIZE;
+ const int n = gridx + gridy * my_MAPSIZE;
 
- if (grid[n]->ter[0][0] == t_null)
-  return;
- int abs_x = om->posx * OMAPX * 2 + worldx + gridx,
-     abs_y = om->posy * OMAPY * 2 + worldy + gridy;
+ if (grid[n]->ter[0][0] == t_null) return;
+ int abs_x = om->pos.x * OMAPX * 2 + worldx + gridx,
+     abs_y = om->pos.y * OMAPY * 2 + worldy + gridy;
 
- MAPBUFFER.add_submap(abs_x, abs_y, om->posz, grid[n]);
+ MAPBUFFER.add_submap(abs_x, abs_y, om->pos.z, grid[n]);
 }
 
 // worldx & worldy specify where in the world this is;
@@ -2710,10 +2709,10 @@ void map::saven(overmap *om, unsigned int turn, int worldx, int worldy,
 // 0,2  1,2  2,2 etc
 bool map::loadn(game *g, int worldx, int worldy, int gridx, int gridy)
 {
- int absx = g->cur_om.posx * OMAPX * 2 + worldx + gridx,
-     absy = g->cur_om.posy * OMAPY * 2 + worldy + gridy,
+ int absx = g->cur_om.pos.x * OMAPX * 2 + worldx + gridx,
+     absy = g->cur_om.pos.y * OMAPY * 2 + worldy + gridy,
      gridn = gridx + gridy * my_MAPSIZE;
- submap *tmpsub = MAPBUFFER.lookup_submap(absx, absy, g->cur_om.posz);
+ submap * const tmpsub = MAPBUFFER.lookup_submap(absx, absy, g->cur_om.pos.z);
  if (tmpsub) {
   grid[gridn] = tmpsub;
   for (int i = 0; i < grid[gridn]->vehicles.size(); i++) {

@@ -261,7 +261,7 @@ void monster::load_info(std::string data)
  }
 }
 
-std::string monster::save_info()
+std::string monster::save_info() const
 {
  std::stringstream pack;
  pack << int(type->id) << " " << posx << " " << posy << " " << wandx << " " <<
@@ -641,11 +641,7 @@ void monster::die(game *g)
    }
   }
 // Do it for overmap above/below too
-  overmap tmp;
-  if (g->cur_om.posz == 0)
-   tmp = overmap(g, g->cur_om.posx, g->cur_om.posy, -1);
-  else
-   tmp = overmap(g, g->cur_om.posx, g->cur_om.posy, 0);
+  overmap tmp(g, g->cur_om.pos.x, g->cur_om.pos.y,(g->cur_om.pos.z == 0 ? -1 : 0));
 
   for(mongroup* const mon_gr : tmp.monsters_at(g->levx, g->levy)) {
    for(const auto tmp_id : mongroup::moncats[mon_gr->type]) {

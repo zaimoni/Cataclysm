@@ -108,27 +108,24 @@ void map::generate(game *g, overmap *om, int x, int y, int turn)
 // terrain for the adjacent overmap.
   int sx = 0, sy = 0;
   overx = (x % (OMAPX * 2)) / 2;
-  if (x >= OMAPX * 2)
-   sx = 1;
-  if (x < 0) {
+  if (x >= OMAPX * 2) sx = 1;
+  else if (x < 0) {
    sx = -1;
    overx = (OMAPX * 2 + x) / 2;
   }
   overy = (y % (OMAPY * 2)) / 2;
-  if (y >= OMAPY * 2)
-   sy = 1;
-  if (y < 0) {
+  if (y >= OMAPY * 2) sy = 1;
+  else if (y < 0) {
    overy = (OMAPY * 2 + y) / 2;
    sy = -1;
   }
-  overmap tmp(g, om->posx + sx, om->posy + sy, om->posz);
+  overmap tmp(g, om->pos.x + sx, om->pos.y + sy, om->pos.z);
   terrain_type = tmp.ter(overx, overy);
   //zones = tmp.zones(overx, overy);
-  if (om->posz < 0 || om->posz == 9) {	// 9 is for tutorial overmap
-   overmap tmp2 = overmap(g, om->posx, om->posy, om->posz + 1);
+  if (om->pos.z < 0 || om->pos.z == 9) {	// 9 is for tutorial overmap
+   overmap tmp2 = overmap(g, om->pos.x, om->pos.y, om->pos.z + 1);
    t_above = tmp2.ter(overx, overy);
-  } else
-   t_above = ot_null;
+  } else t_above = ot_null;
   if (overy - 1 >= 0)
    t_north = tmp.ter(overx, overy - 1);
   else
@@ -146,34 +143,29 @@ void map::generate(game *g, overmap *om, int x, int y, int turn)
   else
    t_west = om->ter(OMAPX - 1, overy);
  } else {
-  if (om->posz < 0 || om->posz == 9) {	// 9 is for tutorials
-   overmap tmp = overmap(g, om->posx, om->posy, om->posz + 1);
+  if (om->pos.z < 0 || om->pos.z == 9) {	// 9 is for tutorials
+   overmap tmp = overmap(g, om->pos.x, om->pos.y, om->pos.z + 1);
    t_above = tmp.ter(overx, overy);
-  } else
-   t_above = ot_null;
+  } else t_above = ot_null;
   terrain_type = om->ter(overx, overy);
-  if (overy - 1 >= 0)
-   t_north = om->ter(overx, overy - 1);
+  if (overy - 1 >= 0) t_north = om->ter(overx, overy - 1);
   else {
-   overmap tmp(g, om->posx, om->posy - 1, 0);
+   overmap tmp(g, om->pos.x, om->pos.y - 1, 0);
    t_north = tmp.ter(overx, OMAPY - 1);
   }
-  if (overx + 1 < OMAPX)
-   t_east = om->ter(overx + 1, overy);
+  if (overx + 1 < OMAPX) t_east = om->ter(overx + 1, overy);
   else {
-   overmap tmp(g, om->posx + 1, om->posy, 0);
+   overmap tmp(g, om->pos.x + 1, om->pos.y, 0);
    t_east = tmp.ter(0, overy);
   }
-  if (overy + 1 < OMAPY)
-   t_south = om->ter(overx, overy + 1);
+  if (overy + 1 < OMAPY) t_south = om->ter(overx, overy + 1);
   else {
-   overmap tmp(g, om->posx, om->posy + 1, 0);
+   overmap tmp(g, om->pos.x, om->pos.y + 1, 0);
    t_south = tmp.ter(overx, 0);
   }
-  if (overx - 1 >= 0)
-   t_west = om->ter(overx - 1, overy);
+  if (overx - 1 >= 0) t_west = om->ter(overx - 1, overy);
   else {
-   overmap tmp(g, om->posx - 1, om->posy, 0);
+   overmap tmp(g, om->pos.x - 1, om->pos.y, 0);
    t_west = tmp.ter(OMAPX - 1, overy);
   }
  draw_map(terrain_type, t_north, t_east, t_south, t_west, t_above, turn, g);
