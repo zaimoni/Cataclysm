@@ -4,6 +4,8 @@
 #include "omdata.h"
 #include "faction.h"
 
+// looks like a very early prototype
+// \todo check C:DDA for current status of this
 struct settlement {
  settlement();
  settlement(int mapx, int mapy);

@@ -1,7 +1,6 @@
 #include "overmap.h"
 #include "game.h"
 #include "keypress.h"
-#include "settlement.h"
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
@@ -355,7 +354,9 @@ const overmap_special overmap_special::specials[NUM_OMSPECS] = {
 
 };
 
-void settlement_building(settlement &set, int x, int y);
+#if PROTOTYPE
+void settlement_building(settlement &set, int x, int y);	// #include "settlement.h" when bringing this up
+#endif
 
 double dist(int x1, int y1, int x2, int y2)
 {
