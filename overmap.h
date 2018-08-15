@@ -37,7 +37,7 @@ class overmap
 {
  public:
   overmap() : pos(999, 999, 999) {};
-  overmap(game *g, int x, int y, int z);
+  overmap(game *g, int x, int y, int z) : pos(x,y,z) { open(g); };
   ~overmap() = default;
   void save(const std::string& name, int x, int y, int z);
   void save(const std::string& name) { save(name, pos.x, pos.y, pos.z); }
@@ -77,7 +77,7 @@ class overmap
   bool has_note(int x, int y);
   std::string note(int x, int y);
   void add_note(int x, int y, std::string message);
-  point find_note(point origin, std::string text);
+  point find_note(point origin, const std::string& text);
   void delete_note(int x, int y);
   point display_notes();
   
@@ -96,7 +96,7 @@ class overmap
   std::vector<om_note> notes;
   std::vector<city> roads_out;
 
-  void open(game *g, int x, int y, int z);
+  void open(game *g);
   //Drawing
   void draw(WINDOW *w, game *g, int &cursx, int &cursy, 
                    int &origx, int &origy, char &ch, bool blink);

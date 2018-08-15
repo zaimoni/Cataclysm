@@ -439,11 +439,6 @@ oter_id house(int dir)
 
 // *** BEGIN overmap FUNCTIONS ***
 
-overmap::overmap(game *g, int x, int y, int z)
-{
- open(g, x, y, z);
-}
-
 oter_id& overmap::ter(int x, int y)
 {
  if (x < 0 || x >= OMAPX || y < 0 || y >= OMAPY) return (discard<oter_id>::x = ot_null);
@@ -515,7 +510,7 @@ void overmap::add_note(int x, int y, std::string message)
   notes.push_back(om_note(x, y, notes.size(), message));
 }
 
-point overmap::find_note(point origin, std::string text)
+point overmap::find_note(point origin, const std::string& text)
 {
  int closest = 9999;
  point ret(-1, -1);
@@ -2608,7 +2603,7 @@ void overmap::save(const std::string& name, int x, int y, int z)
  fout.close();
 }
 
-void overmap::open(game *g, int x, int y, int z)
+void overmap::open(game *g)	// only called from constructor
 {
  std::stringstream plrfilename, terfilename;
  std::ifstream fin;
@@ -2617,12 +2612,9 @@ void overmap::open(game *g, int x, int y, int z)
  city tmp;
  std::vector<item> npc_inventory;
 
- plrfilename << "save/" << g->u.name << ".seen." << x << "." << y << "." << z;
- terfilename << "save/o." << x << "." << y << "." << z;
-// Set position IDs
- pos.x = x;
- pos.y = y;
- pos.z = z;
+ plrfilename << "save/" << g->u.name << ".seen." << pos.x << "." << pos.y << "." << pos.z;
+ terfilename << "save/o." << pos.x << "." << pos.y << "." << pos.z;
+
  fin.open(terfilename.str().c_str());
 // DEBUG VARS
  int nummg = 0;
@@ -2722,9 +2714,9 @@ void overmap::open(game *g, int x, int y, int z)
     seen(i, j) = false;
    }
   }
- } else if (z <= -1) {	// No map exists, and we are underground!
+ } else if (pos.z <= -1) {	// No map exists, and we are underground!
 // Fetch the terrain above
-  overmap* above = new overmap(g, x, y, z + 1);
+  overmap* above = new overmap(g, pos.x, pos.y, pos.z + 1);
   generate_sub(above);
   save(g->u.name);
   delete above;
@@ -2733,22 +2725,22 @@ void overmap::open(game *g, int x, int y, int z)
 // Fetch north and south
   for (int i = -1; i <= 1; i+=2) {
    std::stringstream tmpfilename;
-   tmpfilename << "save/o." << x << "." << y + i << "." << z;
+   tmpfilename << "save/o." << pos.x << "." << pos.y + i << "." << pos.z;
    fin.open(tmpfilename.str().c_str());
    if (fin.is_open()) {
     fin.close();
-    pointers.push_back(new overmap(g, x, y+i, z));
+    pointers.push_back(new overmap(g, pos.x, pos.y+i, pos.z));
    } else
     pointers.push_back(NULL);
   }
 // Fetch east and west
   for (int i = -1; i <= 1; i+=2) {
    std::stringstream tmpfilename;
-   tmpfilename << "save/o." << x + i << "." << y << "." << z;
+   tmpfilename << "save/o." << pos.x + i << "." << pos.y << "." << pos.z;
    fin.open(tmpfilename.str().c_str());
    if (fin.is_open()) {
     fin.close();
-    pointers.push_back(new overmap(g, x+i, y, z));
+    pointers.push_back(new overmap(g, pos.x-+i, pos.y, pos.z));
    } else
     pointers.push_back(NULL);
   }
