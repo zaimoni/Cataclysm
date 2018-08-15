@@ -1,6 +1,7 @@
 #include "overmap.h"
 #include "game.h"
 #include "keypress.h"
+#include "settlement.h"
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>

@@ -4,12 +4,10 @@
 #include "string.h"
 #include "omdata.h"
 #include "mongroup.h"
-#include "settlement.h"
 #include "output.h"
 #include <vector>
 
 class npc;
-struct settlement;
 
 struct city {
  int x;
@@ -86,8 +84,9 @@ class overmap
   point display_notes();
   
   std::vector<city> cities;
-  std::vector<city> roads_out;
-  std::vector<settlement> towns;
+#if PROTOTYPE
+  std::vector<settlement> towns;	// prototyping variable; #include "settlement.h" rather than overmap.cpp when taking live
+#endif
   std::vector<mongroup> zg;
   std::vector<radio_tower> radios;
   int posx, posy, posz;
@@ -98,6 +97,7 @@ class overmap
   oter_id nullret;
   bool s[OMAPX][OMAPY];
   std::vector<om_note> notes;
+  std::vector<city> roads_out;
   //Drawing
   void draw(WINDOW *w, game *g, int &cursx, int &cursy, 
                    int &origx, int &origy, char &ch, bool blink);
