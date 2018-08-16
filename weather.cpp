@@ -50,7 +50,7 @@ const weather_datum weather_datum::data[NUM_WEATHER_TYPES] = {
 &weather_effect::snowstorm }
 };
 
-#define PLAYER_OUTSIDE (g->m.is_outside(g->u.posx, g->u.posy) && g->levz >= 0)
+#define PLAYER_OUTSIDE (g->m.is_outside(g->u.posx, g->u.posy) && g->lev.z >= 0)
 #define THUNDER_CHANCE 50
 #define LIGHTNING_CHANCE 600
 
@@ -102,9 +102,9 @@ void weather_effect::thunder(game *g)
 {
  very_wet(g);
  if (one_in(THUNDER_CHANCE)) {
-  if (g->levz >= 0)
+  if (g->lev.z >= 0)
    g->add_msg("You hear a distant rumble of thunder.");
-  else if (!g->u.has_trait(PF_BADHEARING) && one_in(1 - 3 * g->levz))
+  else if (!g->u.has_trait(PF_BADHEARING) && one_in(1 - 3 * g->lev.z))
    g->add_msg("You hear a rumble of thunder from above.");
  }
 }
@@ -157,7 +157,7 @@ void weather_effect::acid(game *g)
    g->u.hit(g, bp_arms, 1, 0, 1);
   }
  }
- if (g->levz >= 0) {
+ if (g->lev.z >= 0) {
   for (int x = g->u.posx - SEEX * 2; x <= g->u.posx + SEEX * 2; x++) {
    for (int y = g->u.posy - SEEY * 2; y <= g->u.posy + SEEY * 2; y++) {
     if (!g->m.has_flag(diggable, x, y) && !g->m.has_flag(noitem, x, y) &&

@@ -321,9 +321,9 @@ std::string faction::describe()
 
 int faction::response_time(game *g)
 {
- int base = abs(mapx - g->levx);
- if (abs(mapy - g->levy) > base)
-  base = abs(mapy - g->levy);
+ int base = abs(mapx - g->lev.x);
+ if (abs(mapy - g->lev.y) > base)
+  base = abs(mapy - g->lev.y);
  if (base > size)	// Out of our sphere of influence
   base *= 2.5;
  base *= 24;	// 24 turns to move one overmap square

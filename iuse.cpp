@@ -1015,7 +1015,7 @@ void iuse::two_way_radio(game *g, player *p, item *it, bool t)
   std::vector<npc*> in_range;
   for (int i = 0; i < g->cur_om.npcs.size(); i++) {
    if (g->cur_om.npcs[i].op_of_u.value >= 4 &&
-       rl_dist(g->levx, g->levy, g->cur_om.npcs[i].mapx,
+       rl_dist(g->lev.x, g->lev.y, g->cur_om.npcs[i].mapx,
                                    g->cur_om.npcs[i].mapy) <= 30)
     in_range.push_back(&(g->cur_om.npcs[i]));
   }
@@ -1052,7 +1052,7 @@ void iuse::radio_on(game *g, player *p, item *it, bool t)
   for (int k = 0; k < g->cur_om.radios.size(); k++) {
    int signal = g->cur_om.radios[k].strength -
                 rl_dist(g->cur_om.radios[k].x, g->cur_om.radios[k].y,
-                          g->levx, g->levy);
+                          g->lev.x, g->lev.y);
    if (signal > best_signal) {
     best_signal = signal;
     message = g->cur_om.radios[k].message;
@@ -2149,8 +2149,8 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
 
   case AEA_MAP: {
    bool new_map = false;
-   for (int x = int(g->levx / 2) - 20; x <= int(g->levx / 2) + 20; x++) {
-    for (int y = int(g->levy / 2) - 20; y <= int(g->levy / 2) + 20; y++) {
+   for (int x = int(g->lev.x / 2) - 20; x <= int(g->lev.x / 2) + 20; x++) {
+    for (int y = int(g->lev.y / 2) - 20; y <= int(g->lev.y / 2) + 20; y++) {
      if (!g->cur_om.seen(x, y)) {
       new_map = true;
       g->cur_om.seen(x, y) = true;

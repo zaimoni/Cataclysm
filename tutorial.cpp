@@ -18,8 +18,8 @@ bool tutorial_game::init(game *g)
  g->u.int_cur = g->u.int_max;
  g->u.dex_cur = g->u.dex_max;
  g->u.name = "John Smith";
- g->levx = 100;
- g->levy = 100;
+ g->lev.x = 100;
+ g->lev.y = 100;
  g->cur_om = overmap(g, 0, 0, TUTORIAL_Z - 1);
  g->cur_om.make_tutorial();
  g->cur_om.save(g->u.name, 0, 0, TUTORIAL_Z - 1);
@@ -33,7 +33,7 @@ bool tutorial_game::init(game *g)
  for (int i = 0; i <= MAPSIZE; i += 2) {
   for (int j = 0; j <= MAPSIZE; j += 2) {
    tinymap tm;
-   tm.generate(g, &(g->cur_om), g->levx + i - 1, g->levy + j - 1, int(g->turn));
+   tm.generate(g, &(g->cur_om), g->lev.x + i - 1, g->lev.y + j - 1, int(g->turn));
   }
  }
 // Start with the overmap revealed
@@ -41,8 +41,8 @@ bool tutorial_game::init(game *g)
   for (int y = 0; y < OMAPY; y++)
    g->cur_om.seen(x, y) = true;
  }
- g->m.load(g, g->levx, g->levy);
- g->levz = 0;
+ g->m.load(g, g->lev.x, g->lev.y);
+ g->lev.z = 0;
  g->u.posx = SEEX + 2;
  g->u.posy = SEEY + 4;
 

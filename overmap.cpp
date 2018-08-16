@@ -1281,8 +1281,8 @@ point overmap::choose_point(game *g)
  WINDOW* w_search = newwin(13, 27, 3, 51);
  timeout(BLINK_SPEED);	// Enable blinking!
  bool blink = true;
- int cursx = (g->levx + int(MAPSIZE / 2)) / 2,
-     cursy = (g->levy + int(MAPSIZE / 2)) / 2;
+ int cursx = (g->lev.x + int(MAPSIZE / 2)) / 2,
+     cursy = (g->lev.y + int(MAPSIZE / 2)) / 2;
  int origx = cursx, origy = cursy;
  char ch = 0;
  point ret(-1, -1);

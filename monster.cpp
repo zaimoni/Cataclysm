@@ -632,7 +632,7 @@ void monster::die(game *g)
 
 // If we're a queen, make nearby groups of our type start to die out
  if (has_flag(MF_QUEEN)) {
-  for(mongroup* const mon_gr : g->cur_om.monsters_at(g->levx, g->levy)) {
+  for(mongroup* const mon_gr : g->cur_om.monsters_at(g->lev.x, g->lev.y)) {
    for(const auto tmp_id : mongroup::moncats[mon_gr->type]) {
     if (tmp_id == type->id) {
 	 mon_gr->dying = true;
@@ -643,7 +643,7 @@ void monster::die(game *g)
 // Do it for overmap above/below too
   overmap tmp(g, g->cur_om.pos.x, g->cur_om.pos.y,(g->cur_om.pos.z == 0 ? -1 : 0));
 
-  for(mongroup* const mon_gr : tmp.monsters_at(g->levx, g->levy)) {
+  for(mongroup* const mon_gr : tmp.monsters_at(g->lev.x, g->lev.y)) {
    for(const auto tmp_id : mongroup::moncats[mon_gr->type]) {
     if (tmp_id == type->id) {
 	 mon_gr->dying = true;

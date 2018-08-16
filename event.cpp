@@ -29,20 +29,20 @@ void event::actualize(game *g) const
   } break;
 
   case EVENT_ROBOT_ATTACK: {
-   if (rl_dist(g->levx, g->levy, map_point.x, map_point.y) <= 4) {
+   if (rl_dist(g->lev.x, g->lev.y, map_point.x, map_point.y) <= 4) {
     mtype *robot_type = mtype::types[mon_tripod];
     if (faction_id == 0) // The cops!
      robot_type = mtype::types[mon_copbot];
     monster robot(robot_type);
-    int robx = (g->levx > map_point.x ? 0 - SEEX * 2 : SEEX * 4),
-        roby = (g->levy > map_point.y ? 0 - SEEY * 2 : SEEY * 4);
+    int robx = (g->lev.x > map_point.x ? 0 - SEEX * 2 : SEEX * 4),
+        roby = (g->lev.y > map_point.y ? 0 - SEEY * 2 : SEEY * 4);
     robot.spawn(robx, roby);
     g->z.push_back(robot);
    }
   } break;
 
   case EVENT_SPAWN_WYRMS: {
-   if (g->levz >= 0) return;
+   if (g->lev.z >= 0) return;
    monster wyrm(mtype::types[mon_dark_wyrm]);
    int num_wyrms = rng(1, 4);
    for (int i = 0; i < num_wyrms; i++) {
@@ -215,7 +215,7 @@ void event::per_turn(game *g)
 {
  switch (type) {
   case EVENT_WANTED: {
-   if (g->levz >= 0 && one_in(100)) { // About once every 10 minutes
+   if (g->lev.z >= 0 && one_in(100)) { // About once every 10 minutes
     monster eyebot(mtype::types[mon_eyebot]);
     eyebot.faction_id = faction_id;
     point place = g->m.random_outdoor_tile();
@@ -230,7 +230,7 @@ void event::per_turn(game *g)
   } break;
 
   case EVENT_SPAWN_WYRMS:
-   if (g->levz >= 0) {
+   if (g->lev.z >= 0) {
     turn--;
     return;
    }

@@ -2931,7 +2931,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    square(this, t_rock_floor, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1);
 // We always start at the south and go north.
 // We use (g->levx / 2 + g->levz) % 5 to guarantee that rooms don't repeat.
-   switch (1 + int(g->levy / 2 + g->levz) % 4) {// TODO: More varieties!
+   switch (1 + int(g->lev.y / 2 + g->lev.z) % 4) {// TODO: More varieties!
 
     case 1: // Flame bursts
      square(this, t_rock, 0, 0, SEEX - 1, SEEY * 2 - 1);

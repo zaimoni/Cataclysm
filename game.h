@@ -174,7 +174,7 @@ class game
   char nextinv;	// Determines which letter the next inv item will have
   overmap cur_om;
   map m;
-  int levx, levy, levz;	// Placement inside the overmap
+  tripoint lev;	// Placement inside the overmap; is the position of the player and could be lifted into that object
   player u;
   std::vector<monster> z;
   std::vector<monster_and_count> coming_to_stairs;

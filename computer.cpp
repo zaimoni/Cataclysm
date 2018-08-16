@@ -351,10 +351,10 @@ void computer::activate_function(game *g, computer_action action)
   } break;
 
   case COMPACT_MAPS: {
-   int minx = int((g->levx + int(MAPSIZE / 2)) / 2) - 40;
-   int maxx = int((g->levx + int(MAPSIZE / 2)) / 2) + 40;
-   int miny = int((g->levy + int(MAPSIZE / 2)) / 2) - 40;
-   int maxy = int((g->levy + int(MAPSIZE / 2)) / 2) + 40;
+   int minx = int((g->lev.x + int(MAPSIZE / 2)) / 2) - 40;
+   int maxx = int((g->lev.x + int(MAPSIZE / 2)) / 2) + 40;
+   int miny = int((g->lev.y + int(MAPSIZE / 2)) / 2) - 40;
+   int maxy = int((g->lev.y + int(MAPSIZE / 2)) / 2) + 40;
    if (minx < 0)             minx = 0;
    if (maxx >= OMAPX) maxx = OMAPX - 1;
    if (miny < 0)             miny = 0;
@@ -369,10 +369,10 @@ void computer::activate_function(game *g, computer_action action)
   } break;
 
   case COMPACT_MAP_SEWER: {
-   int minx = int((g->levx + int(MAPSIZE / 2)) / 2) - 60;
-   int maxx = int((g->levx + int(MAPSIZE / 2)) / 2) + 60;
-   int miny = int((g->levy + int(MAPSIZE / 2)) / 2) - 60;
-   int maxy = int((g->levy + int(MAPSIZE / 2)) / 2) + 60;
+   int minx = int((g->lev.x + int(MAPSIZE / 2)) / 2) - 60;
+   int maxx = int((g->lev.x + int(MAPSIZE / 2)) / 2) + 60;
+   int miny = int((g->lev.y + int(MAPSIZE / 2)) / 2) - 60;
+   int maxy = int((g->lev.y + int(MAPSIZE / 2)) / 2) + 60;
    if (minx < 0)      minx = 0;
    if (maxx >= OMAPX) maxx = OMAPX - 1;
    if (miny < 0)      miny = 0;
@@ -415,9 +415,9 @@ void computer::activate_function(game *g, computer_action action)
     tmp_om = g->cur_om;
     g->cur_om = overmap(g, tmp_om.pos.x, tmp_om.pos.y, level);
     tinymap tmpmap;
-    tmpmap.load(g, g->levx, g->levy);
+    tmpmap.load(g, g->lev.x, g->lev.y);
     tmpmap.translate(t_missile, t_hole);
-    tmpmap.save(&tmp_om, g->turn, g->levx, g->levy);
+    tmpmap.save(&tmp_om, g->turn, g->lev.x, g->lev.y);
    }
    g->cur_om = tmp_om;
    for (int x = target.x - 2; x <= target.x + 2; x++) {
@@ -461,7 +461,7 @@ void computer::activate_function(game *g, computer_action action)
    break;
 
   case COMPACT_AMIGARA_LOG: // TODO: This is static, move to data file?
-   print_line("NEPower Mine(%d:%d) Log", g->levx, g->levy);
+   print_line("NEPower Mine(%d:%d) Log", g->lev.x, g->lev.y);
    print_line("\
 ENTRY 47:\n\
 Our normal mining routine has unearthed a hollow chamber.  This would not be\n\
@@ -477,7 +477,7 @@ themselves.\n");
    if (!query_bool("Continue reading?"))
     return;
    reset_terminal();
-   print_line("NEPower Mine(%d:%d) Log", g->levx, g->levy);
+   print_line("NEPower Mine(%d:%d) Log", g->lev.x, g->lev.y);
    print_line("\
 ENTRY 49:\n\
 We've stopped mining operations in this area, obviously, until archaeologists\n\
@@ -494,7 +494,7 @@ for such narrow tunnels, so it's hard to say exactly how far back they go.\n");
    if (!query_bool("Continue reading?"))
     return;
    reset_terminal();
-   print_line("NEPower Mine(%d:%d) Log", g->levx, g->levy);
+   print_line("NEPower Mine(%d:%d) Log", g->lev.x, g->lev.y);
    print_line("\
 ENTRY 54:\n\
 I noticed a couple of the guys down in the chamber with a chisel, breaking\n\
@@ -527,7 +527,7 @@ know that's sort of a big deal, but come on, these guys can't handle it?\n");
    print_line("\
 SITE %d%d%d%d%d\n\
 PERTINANT FOREMAN LOGS WILL BE PREPENDED TO NOTES",
-g->cur_om.pos.x, g->cur_om.pos.y, g->levx, g->levy, abs(g->levz));
+g->cur_om.pos.x, g->cur_om.pos.y, g->lev.x, g->lev.y, abs(g->lev.z));
    print_line("\n\
 MINE OPERATIONS SUSPENDED; CONTROL TRANSFERRED TO AMIGARA PROJECT UNDER\n\
    IMPERATIVE 2:07B\n\
@@ -639,8 +639,8 @@ void computer::activate_failure(game *g, computer_failure fail)
 
   case COMPFAIL_ALARM:
    g->sound(g->u.posx, g->u.posy, 60, "An alarm sounds!");
-   if (g->levz > 0 && !g->event_queued(EVENT_WANTED))
-    g->add_event(EVENT_WANTED, int(g->turn) + 300, 0, g->levx, g->levy);
+   if (g->lev.z > 0 && !g->event_queued(EVENT_WANTED))
+    g->add_event(EVENT_WANTED, int(g->turn) + 300, 0, g->lev.x, g->lev.y);
    break;
 
   case COMPFAIL_MANHACKS: {

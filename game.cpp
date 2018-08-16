@@ -8,6 +8,7 @@
 #include "veh_interact.h"
 #include "options.h"
 #include "mapbuffer.h"
+#include "saveload.h"
 #include <fstream>
 #include <sstream>
 #include <math.h>
@@ -482,10 +483,10 @@ void game::start_game()
   create_factions();
  cur_om = overmap(this, 0, 0, 0);	// We start in the (0,0,0) overmap.
 // Find a random house on the map, and set us there.
- cur_om.first_house(levx, levy);
- levx -= int(int(MAPSIZE / 2) / 2);
- levy -= int(int(MAPSIZE / 2) / 2);
- levz = 0;
+ cur_om.first_house(lev.x, lev.y);
+ lev.x -= int(int(MAPSIZE / 2) / 2);
+ lev.y -= int(int(MAPSIZE / 2) / 2);
+ lev.z = 0;
 // Start the overmap out with none of it seen by the player...
  for (int i = 0; i < OMAPX; i++) {
   for (int j = 0; j < OMAPX; j++)
@@ -494,15 +495,15 @@ void game::start_game()
 // ...except for our immediate neighborhood.
  for (int i = -15; i <= 15; i++) {
   for (int j = -15; j <= 15; j++)
-   cur_om.seen(levx + i, levy + j) = true;
+   cur_om.seen(lev.x + i, lev.y + j) = true;
  }
 // Convert the overmap coordinates to submap coordinates
- levx = levx * 2 - 1;
- levy = levy * 2 - 1;
+ lev.x = lev.x * 2 - 1;
+ lev.y = lev.y * 2 - 1;
  set_adjacent_overmaps(true);
 // Init the starting map at this location.
  //MAPBUFFER.load();
- m.load(this, levx, levy);
+ m.load(this, lev.x, lev.y);
 // Start us off somewhere in the shelter.
  u.posx = SEEX * int(MAPSIZE / 2) + 5;
  u.posy = SEEY * int(MAPSIZE / 2) + 5;
@@ -539,7 +540,7 @@ void game::create_starting_npcs()
  npc tmp;
  tmp.normalize(this);
  tmp.randomize(this, (one_in(2) ? NC_DOCTOR : NC_NONE));
- tmp.spawn_at(&cur_om, levx, levy);
+ tmp.spawn_at(&cur_om, lev.x, lev.y);
  tmp.posx = SEEX * int(MAPSIZE / 2) + SEEX;
  tmp.posy = SEEY * int(MAPSIZE / 2) + 6;
  tmp.form_opinion(&u);
@@ -566,7 +567,7 @@ bool game::do_turn()
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, turn, z[i].spawnmapx, z[i].spawnmapy);
    } else {	// Absorb them back into a group
-    int group = valid_group((mon_id)(z[i].type->id), levx, levy);
+    int group = valid_group((mon_id)(z[i].type->id), lev.x, lev.y);
     if (group != -1) {
      cur_om.zg[group].population++;
      if (cur_om.zg[group].population / pow(cur_om.zg[group].radius, 2.0) > 5)
@@ -680,7 +681,7 @@ bool game::do_turn()
  u.process_active_items(this);
  u.suffer(this);
 
- if (levz >= 0) {
+ if (lev.z >= 0) {
   weather_effect weffect;
   (weffect.*(weather_datum::data[weather].effect))(this);
   check_warmth();
@@ -1031,7 +1032,7 @@ void game::update_weather()
 
  const auto& w_data = weather_datum::data[weather];
  if (weather != old_weather && w_data.dangerous &&
-     levz >= 0 && m.is_outside(u.posx, u.posy)) {
+     lev.z >= 0 && m.is_outside(u.posx, u.posy)) {
   std::stringstream weather_text;
   weather_text << "The weather changed to " << w_data.name << "!";
   cancel_activity_query(weather_text.str().c_str());
@@ -1137,7 +1138,7 @@ bool game::mission_complete(int id, int npc_id)
  mission_type* type = miss->type;
  switch (type->goal) {
   case MGOAL_GO_TO: {
-   point cur_pos(levx + int(MAPSIZE / 2), levy + int(MAPSIZE / 2));
+   point cur_pos(lev.x + int(MAPSIZE / 2), lev.y + int(MAPSIZE / 2));
    if (rl_dist(cur_pos.x, cur_pos.y, miss->target.x, miss->target.y) <= 1)
     return true;
    return false;
@@ -1779,14 +1780,14 @@ void game::load(std::string name)
      comx, comy;
  fin >> tmpturn >> tmptar >> tmprun >> mostseen >> nextinv >> next_npc_id >>
         next_faction_id >> next_mission_id >> tmpspawn >> tmpnextweather >>
-        tmpweather >> tmptemp >> levx >> levy >> levz >> comx >> comy;
+        tmpweather >> tmptemp >> lev >> comx >> comy;
  turn = tmpturn;
  nextspawn = tmpspawn;
  nextweather = tmpnextweather;
- cur_om = overmap(this, comx, comy, levz);
+ cur_om = overmap(this, comx, comy, lev.z);
 // m = map(&itypes, &mapitems, &traps); // Init the root map with our vectors
  //MAPBUFFER.load();
- m.load(this, levx, levy);
+ m.load(this, lev.x, lev.y);
  run_mode = tmprun;
  if (OPTIONS[OPT_SAFEMODE] && run_mode == 0)
   run_mode = 1;
@@ -1868,7 +1869,7 @@ void game::save()
          mostseen << " " << nextinv << " " << next_npc_id << " " <<
          next_faction_id << " " << next_mission_id << " " << int(nextspawn) <<
          " " << int(nextweather) << " " << weather << " " << int(temperature) <<
-         " " << levx << " " << levy << " " << levz << " " << cur_om.pos.x <<
+         " " << lev << " " << cur_om.pos.x <<
          " " << cur_om.pos.y << " " << std::endl;
 // Next, the scent map.
  for (int i = 0; i < SEEX * MAPSIZE; i++) {
@@ -1899,8 +1900,8 @@ void game::save()
 
  fout << active_npc.size() << std::endl;
  for (int i = 0; i < active_npc.size(); i++) {
-  active_npc[i].mapx = levx;
-  active_npc[i].mapy = levy;
+  active_npc[i].mapx = lev.x;
+  active_npc[i].mapy = lev.y;
   fout << active_npc[i].save_info() << std::endl;
  }
 
@@ -2024,9 +2025,9 @@ void game::debug()
    if (tmp.x != -1) {
     z.clear();
     //m.save(&cur_om, turn, levx, levy);
-    levx = tmp.x * 2 - int(MAPSIZE / 2);
-    levy = tmp.y * 2 - int(MAPSIZE / 2);
-    m.load(this, levx, levy);
+    lev.x = tmp.x * 2 - int(MAPSIZE / 2);
+    lev.y = tmp.y * 2 - int(MAPSIZE / 2);
+    m.load(this, lev.x, lev.y);
    }
   } break;
 
@@ -2043,7 +2044,7 @@ void game::debug()
    temp.normalize(this);
    temp.randomize(this);
    temp.attitude = NPCATT_TALK;
-   temp.spawn_at(&cur_om, levx + (1 * rng(-2, 2)), levy + (1 * rng(-2, 2)));
+   temp.spawn_at(&cur_om, lev.x + (1 * rng(-2, 2)), lev.y + (1 * rng(-2, 2)));
    temp.posx = u.posx - 4;
    temp.posy = u.posy - 4;
    temp.form_opinion(&u);
@@ -2066,8 +2067,8 @@ Location %d:%d in %d:%d, %s\n\
 Current turn: %d; Next spawn %d.\n\
 NPCs are %s spawn.\n\
 %d monsters exist.\n\
-%d events planned.", u.posx, u.posy, levx, levy,
-oter_t::list[cur_om.ter(levx / 2, levy / 2)].name.c_str(),
+%d events planned.", u.posx, u.posy, lev.x, lev.y,
+oter_t::list[cur_om.ter(lev.x / 2, lev.y / 2)].name.c_str(),
 int(turn), int(nextspawn), (no_npc ? "NOT going to" : "going to"),
 z.size(), events.size());
 
@@ -2175,11 +2176,10 @@ void game::mondebug()
 void game::groupdebug()
 {
  erase();
- mvprintw(0, 0, "OM %d : %d    M %d : %d", cur_om.pos.x, cur_om.pos.y, levx,
-                                           levy);
- int dist, linenum = 1;
+ mvprintw(0, 0, "OM %d : %d    M %d : %d", cur_om.pos.x, cur_om.pos.y, lev.x, lev.y);
+ int linenum = 1;
  for (int i = 0; i < cur_om.zg.size(); i++) {
-  dist = trig_dist(levx, levy, cur_om.zg[i].posx, cur_om.zg[i].posy);
+  const int dist = trig_dist(lev.x, lev.y, cur_om.zg[i].posx, cur_om.zg[i].posy);
   if (dist <= cur_om.zg[i].radius) {
    mvprintw(linenum, 0, "Zgroup %d: Centered at %d:%d, radius %d, pop %d",
             i, cur_om.zg[i].posx, cur_om.zg[i].posy, cur_om.zg[i].radius,
@@ -2257,17 +2257,17 @@ void game::disp_kills()
 void game::disp_NPCs()
 {
  WINDOW* w = newwin(25, 80, 0, 0);
- mvwprintz(w, 0, 0, c_white, "Your position: %d:%d", levx, levy);
+ mvwprintz(w, 0, 0, c_white, "Your position: %d:%d", lev.x, lev.y);
  std::vector<npc*> closest;
  closest.push_back(&cur_om.npcs[0]);
  for (int i = 1; i < cur_om.npcs.size(); i++) {
   if (closest.size() < 20)
    closest.push_back(&cur_om.npcs[i]);
-  else if (rl_dist(levx, levy, cur_om.npcs[i].mapx, cur_om.npcs[i].mapy) <
-           rl_dist(levx, levy, closest[19]->mapx, closest[19]->mapy)) {
+  else if (rl_dist(lev.x, lev.y, cur_om.npcs[i].mapx, cur_om.npcs[i].mapy) <
+           rl_dist(lev.x, lev.y, closest[19]->mapx, closest[19]->mapy)) {
    for (int j = 0; j < 20; j++) {
-    if (rl_dist(levx, levy, closest[j]->mapx, closest[j]->mapy) >
-        rl_dist(levx, levy, cur_om.npcs[i].mapx, cur_om.npcs[i].mapy)) {
+    if (rl_dist(lev.x, lev.y, closest[j]->mapx, closest[j]->mapy) >
+        rl_dist(lev.x, lev.y, cur_om.npcs[i].mapx, cur_om.npcs[i].mapy)) {
      closest.insert(closest.begin() + j, &cur_om.npcs[i]);
      closest.erase(closest.end() - 1);
      j = 20;
@@ -2399,14 +2399,9 @@ void game::list_missions()
   for (int y = 3; y < 25; y++)
    mvwputch(w_missions, y, 30, c_white, LINE_XOXO);
   for (int i = 0; i < umissions.size(); i++) {
-   mission *miss = find_mission(umissions[i]);
-   nc_color col = c_white;
-   if (i == u.active_mission && tab == 0) 
-    col = c_ltred;
-   if (selection == i)
-    mvwprintz(w_missions, 3 + i, 0, hilite(col), miss->name().c_str());
-   else
-    mvwprintz(w_missions, 3 + i, 0, col, miss->name().c_str());
+   mission * const miss = find_mission(umissions[i]);
+   const nc_color col = (i == u.active_mission && tab == 0) ? c_ltred : c_white;
+   mvwprintz(w_missions, 3 + i, 0, ((selection == i) ? hilite(col) : col), miss->name().c_str());
   }
 
   if (selection >= 0 && selection < umissions.size()) {
@@ -2418,7 +2413,7 @@ void game::list_missions()
               miss->deadline, int(turn));
    mvwprintz(w_missions, 6, 31, c_white, "Target: (%d, %d)   You: (%d, %d)",
              miss->target.x, miss->target.y,
-             (levx + int (MAPSIZE / 2)) / 2, (levy + int (MAPSIZE / 2)) / 2);
+             (lev.x + int (MAPSIZE / 2)) / 2, (lev.y + int (MAPSIZE / 2)) / 2);
   } else {
    std::string nope;
    switch (tab) {
@@ -2434,13 +2429,11 @@ void game::list_missions()
   switch (ch) {
   case '>':
    tab++;
-   if (tab == 3)
-    tab = 0;
+   if (tab == 3) tab = 0;
    break;
   case '<':
    tab--;
-   if (tab < 0)
-    tab = 2;
+   if (tab < 0) tab = 2;
    break;
   case 'j':
    selection++;
@@ -2482,14 +2475,14 @@ void game::draw()
  mvwprintz(w_status, 1, 41, c_white, turn.print_time().c_str());
 
  {
- oter_id cur_ter = cur_om.ter((levx + int(MAPSIZE / 2)) / 2,
-                              (levy + int(MAPSIZE / 2)) / 2);
+ oter_id cur_ter = cur_om.ter((lev.x + int(MAPSIZE / 2)) / 2,
+                              (lev.y + int(MAPSIZE / 2)) / 2);
  const auto& terrain = oter_t::list[cur_ter];
  std::string tername(terrain.name);
  if (tername.length() > 14) tername = tername.substr(0, 14);
  mvwprintz(w_status, 0,  0, terrain.color, tername.c_str());
  }
- if (levz < 0)
+ if (lev.z < 0)
   mvwprintz(w_status, 0, 18, c_ltgray, "Underground");
  else
   mvwprintz(w_status, 0, 18, weather_datum::data[weather].color,
@@ -2656,8 +2649,8 @@ void game::draw_minimap()
   mvwputch(w_minimap, 6, i, c_white, LINE_OXOX);
  }
 
- int cursx = (levx + int(MAPSIZE / 2)) / 2;
- int cursy = (levy + int(MAPSIZE / 2)) / 2;
+ int cursx = (lev.x + int(MAPSIZE / 2)) / 2;
+ int cursy = (lev.y + int(MAPSIZE / 2)) / 2;
 
  bool drew_mission = false;
  point target(-1, -1);
@@ -2765,11 +2758,7 @@ void game::hallucinate()
 unsigned char game::light_level()
 {
  int ret;
-/*
- debugmsg("mins: %d hour: %d past midnight: %d", turn.minute, turn.hour,
-          turn.minutes_past_midnight());
-*/
- if (levz < 0)	// Underground!
+ if (lev.z < 0)	// Underground!
   ret = 1;
  else {
   ret = turn.sunlight();
@@ -3240,17 +3229,17 @@ void game::monmove()
        z[i].posx > (SEEX * MAPSIZE * 7) / 6 ||
        z[i].posy > (SEEY * MAPSIZE * 7) / 6   ) {
 // Re-absorb into local group, if applicable
-    int group = valid_group((mon_id)(z[i].type->id), levx, levy);
+    int group = valid_group((mon_id)(z[i].type->id), lev.x, lev.y);
     if (group != -1) {
      cur_om.zg[group].population++;
      if (cur_om.zg[group].population / pow(cur_om.zg[group].radius, 2.0) > 5)
       cur_om.zg[group].radius++;
     } else if (mongroup::to_mc((mon_id)(z[i].type->id)) != mcat_null) {
      cur_om.zg.push_back(mongroup(mongroup::to_mc((mon_id)(z[i].type->id)),
-                                  levx, levy, 1, 1));
+                                  lev.x, lev.y, 1, 1));
 	} else {
 	  const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id));
-	  if (m_cat != mcat_null) cur_om.zg.push_back(mongroup(m_cat, levx, levy, 1, 1));
+	  if (m_cat != mcat_null) cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
 	}
     z[i].dead = true;
     //z.erase(z.begin()+i);
@@ -4038,7 +4027,7 @@ void game::smash()
  if (m.has_flag(alarmed, u.posx + smashx, u.posy + smashy) &&
      !event_queued(EVENT_WANTED)) {
   sound(u.posx, u.posy, 30, "An alarm sounds!");
-  add_event(EVENT_WANTED, int(turn) + 300, 0, levx, levy);
+  add_event(EVENT_WANTED, int(turn) + 300, 0, lev.x, lev.y);
  }
  if (smashx != -2 && smashy != -2)
   didit = m.bash(u.posx + smashx, u.posy + smashy, smashskill, bashsound);
@@ -4412,13 +4401,13 @@ void game::examine()
   }
  } else if (m.ter(examx, examy) == t_elevator_control &&
             query_yn("Activate elevator?")) {
-  int movez = (levz < 0 ? 2 : -2);
-  levz += movez;
+  int movez = (lev.z < 0 ? 2 : -2);
+  lev.z += movez;
   cur_om.save(u.name);
   //m.save(&cur_om, turn, levx, levy);
   overmap(this, cur_om.pos.x, cur_om.pos.y, -1);
   cur_om = overmap(this, cur_om.pos.x, cur_om.pos.y, cur_om.pos.z + movez);
-  m.load(this, levx, levy);
+  m.load(this, lev.x, lev.y);
   update_map(u.posx, u.posy);
   for (int x = 0; x < SEEX * MAPSIZE; x++) {
    for (int y = 0; y < SEEY * MAPSIZE; y++) {
@@ -6367,7 +6356,7 @@ void game::vertical_move(int movez, bool force)
  //m.save(&cur_om, turn, levx, levy);
  cur_om = overmap(this, cur_om.pos.x, cur_om.pos.y, cur_om.pos.z + movez);
  map tmpmap;
- tmpmap.load(this, levx, levy);
+ tmpmap.load(this, lev.x, lev.y);
  cur_om = overmap(this, cur_om.pos.x, cur_om.pos.y, original_z);
 // Find the corresponding staircase
  int stairx = -1, stairy = -1;
@@ -6411,13 +6400,12 @@ void game::vertical_move(int movez, bool force)
  
  bool replace_monsters = false;
 // Replace the stair monsters if we just came back
- if (abs(monstairx - levx) <= 1 && abs(monstairy - levy) <= 1 &&
-     monstairz == levz + movez)
+ if (abs(monstairx - lev.x) <= 1 && abs(monstairy - lev.y) <= 1 && monstairz == lev.z + movez)
   replace_monsters = true;
  
  if (!force) {
-  monstairx = levx;
-  monstairy = levy;
+  monstairx = lev.x;
+  monstairy = lev.y;
   monstairz = original_z;
   for (int i = 0; i < z.size(); i++) {
    if (z[i].will_reach(this, u.posx, u.posy)) {
@@ -6431,16 +6419,15 @@ void game::vertical_move(int movez, bool force)
     tmp.save(&cur_om, turn, z[i].spawnmapx, z[i].spawnmapy);
    } else if (z[i].friendly < 0) { // Friendly, make it into a static spawn
     tinymap tmp;
-    tmp.load(this, levx, levy);
+    tmp.load(this, lev.x, lev.y);
     int spawnx = z[i].posx, spawny = z[i].posy;
     while (spawnx < 0) spawnx += SEEX;
     while (spawny < 0) spawny += SEEY;
     tmp.add_spawn(&(z[i]));
-    tmp.save(&cur_om, turn, levx, levy);
+    tmp.save(&cur_om, turn, lev.x, lev.y);
    } else {
-    const int group = valid_group( (mon_id)(z[i].type->id), levx, levy);
-    if (group != -1)
-     cur_om.zg[group].population++;
+    const int group = valid_group( (mon_id)(z[i].type->id), lev.x, lev.y);
+    if (group != -1) cur_om.zg[group].population++;
    }
   }
  }
@@ -6472,9 +6459,9 @@ void game::vertical_move(int movez, bool force)
    cur_om.add_note(x, y, "AUTO: goes up");
  }
 
- levz += movez;
+ lev.z += movez;
  u.moves -= 100;
- m.load(this, levx, levy);
+ m.load(this, lev.x, lev.y);
  u.posx = stairx;
  u.posy = stairy;
  if (rope_ladder)
@@ -6536,21 +6523,21 @@ void game::update_map(int &x, int &y)
   y -= SEEY;
   shifty++;
  }
- m.shift(this, levx, levy, shiftx, shifty);
- levx += shiftx;
- levy += shifty;
- if (levx < 0) {
-  levx += OMAPX * 2;
+ m.shift(this, lev.x, lev.y, shiftx, shifty);
+ lev.x += shiftx;
+ lev.y += shifty;
+ if (lev.x < 0) {
+  lev.x += OMAPX * 2;
   olevx = -1;
- } else if (levx > OMAPX * 2 - 1) {
-  levx -= OMAPX * 2;
+ } else if (lev.x > OMAPX * 2 - 1) {
+  lev.x -= OMAPX * 2;
   olevx = 1;
  }
- if (levy < 0) {
-  levy += OMAPY * 2;
+ if (lev.y < 0) {
+  lev.y += OMAPY * 2;
   olevy = -1;
- } else if (levy > OMAPY * 2 - 1) {
-  levy -= OMAPY * 2;
+ } else if (lev.y > OMAPY * 2 - 1) {
+  lev.y -= OMAPY * 2;
   olevy = 1;
  }
  if (olevx != 0 || olevy != 0) {
@@ -6571,7 +6558,7 @@ void game::update_map(int &x, int &y)
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, turn, z[i].spawnmapx, z[i].spawnmapy);
    } else {	// Absorb them back into a group
-    group = valid_group((mon_id)(z[i].type->id), levx + shiftx, levy + shifty);
+    group = valid_group((mon_id)(z[i].type->id), lev.x + shiftx, lev.y + shifty);
     if (group != -1) {
      cur_om.zg[group].population++;
      if (cur_om.zg[group].population / pow(cur_om.zg[group].radius, 2.0) > 5)
@@ -6595,8 +6582,8 @@ void game::update_map(int &x, int &y)
       active_npc[i].posy < 0 - SEEX * 2 ||
       active_npc[i].posx >     SEEX * (MAPSIZE + 2) ||
       active_npc[i].posy >     SEEY * (MAPSIZE + 2)   ) {
-   active_npc[i].mapx = levx + (active_npc[i].posx / SEEX);
-   active_npc[i].mapy = levy + (active_npc[i].posy / SEEY);
+   active_npc[i].mapx = lev.x + (active_npc[i].posx / SEEX);
+   active_npc[i].mapy = lev.y + (active_npc[i].posy / SEEY);
    active_npc[i].posx %= SEEX;
    active_npc[i].posy %= SEEY;
    cur_om.npcs.push_back(active_npc[i]);
@@ -6608,12 +6595,12 @@ void game::update_map(int &x, int &y)
 // Spawn static NPCs?
  npc temp;
  for (int i = 0; i < cur_om.npcs.size(); i++) {
-  if (rl_dist(levx + int(MAPSIZE / 2), levy + int(MAPSIZE / 2),
+  if (rl_dist(lev.x + int(MAPSIZE / 2), lev.y + int(MAPSIZE / 2),
               cur_om.npcs[i].mapx, cur_om.npcs[i].mapy) <= 
               int(MAPSIZE / 2) + 1) {
-   int dx = cur_om.npcs[i].mapx - levx, dy = cur_om.npcs[i].mapy - levy;
+   int dx = cur_om.npcs[i].mapx - lev.x, dy = cur_om.npcs[i].mapy - lev.y;
    if (debugmon)
-    debugmsg("Spawning static NPC, %d:%d (%d:%d)", levx, levy,
+    debugmsg("Spawning static NPC, %d:%d (%d:%d)", lev.x, lev.y,
              cur_om.npcs[i].mapx, cur_om.npcs[i].mapy);
    temp = cur_om.npcs[i];
    if (temp.posx == -1 || temp.posy == -1) {
@@ -6621,8 +6608,8 @@ void game::update_map(int &x, int &y)
     debugmsg("Static NPC with no fine location data (%d:%d).",
              temp.posx, temp.posy);
 */
-    temp.posx = SEEX * 2 * (temp.mapx - levx) + rng(0 - SEEX, SEEX);
-    temp.posy = SEEY * 2 * (temp.mapy - levy) + rng(0 - SEEY, SEEY);
+    temp.posx = SEEX * 2 * (temp.mapx - lev.x) + rng(0 - SEEX, SEEX);
+    temp.posy = SEEY * 2 * (temp.mapy - lev.y) + rng(0 - SEEY, SEEY);
    } else {
     if (debugmon)
      debugmsg("Static NPC fine location %d:%d (%d:%d)", temp.posx, temp.posy,
@@ -6657,36 +6644,32 @@ void game::update_map(int &x, int &y)
 
 void game::set_adjacent_overmaps(bool from_scratch)
 {
- if (levx == OMAPX - 1 || levx == 0 || (from_scratch && levx <= OMAPX)) {
+ if (lev.x == OMAPX - 1 || lev.x == 0 || (from_scratch && lev.x <= OMAPX)) {
   delete om_hori;
   om_hori = new overmap(this, cur_om.pos.x - 1, cur_om.pos.y, cur_om.pos.z);
-  if (levy == OMAPY - 1 || levy == 0 || (from_scratch && levy <= OMAPY)) {
+  if (lev.y == OMAPY - 1 || lev.y == 0 || (from_scratch && lev.y <= OMAPY)) {
    delete om_diag;
    om_diag = new overmap(this, cur_om.pos.x - 1, cur_om.pos.y - 1, cur_om.pos.z);
-  } else if (levy == OMAPY || levy == OMAPY * 2 - 1 ||
-             (from_scratch && levy > OMAPY)) {
+  } else if (lev.y == OMAPY || lev.y == OMAPY * 2 - 1 || (from_scratch && lev.y > OMAPY)) {
    delete om_diag;
    om_diag = new overmap(this, cur_om.pos.x - 1, cur_om.pos.y + 1, cur_om.pos.z);
   }
- } else if (levx == OMAPX || levx == OMAPX * 2 - 1 ||
-            (from_scratch && levx > OMAPX)) {
+ } else if (lev.x == OMAPX || lev.x == OMAPX * 2 - 1 || (from_scratch && lev.x > OMAPX)) {
   delete om_hori;
   om_hori = new overmap(this, cur_om.pos.x + 1, cur_om.pos.y, cur_om.pos.z);
-  if (levy == OMAPY - 1 || levy == 0 || (from_scratch && levy <= OMAPY)) {
+  if (lev.y == OMAPY - 1 || lev.y == 0 || (from_scratch && lev.y <= OMAPY)) {
    delete om_diag;
    om_diag = new overmap(this, cur_om.pos.x + 1, cur_om.pos.y - 1, cur_om.pos.z);
-  } else if (levy == OMAPY || levy == OMAPY * 2 - 1 ||
-             (from_scratch && levy > OMAPY)) {
+  } else if (lev.y == OMAPY || lev.y == OMAPY * 2 - 1 || (from_scratch && lev.y > OMAPY)) {
    delete om_diag;
    om_diag = new overmap(this, cur_om.pos.x + 1, cur_om.pos.y + 1, cur_om.pos.z);
   }
  }
 
- if (levy == OMAPY - 1 || levy == 0 || (from_scratch && levy <= OMAPY)) {
+ if (lev.y == OMAPY - 1 || lev.y == 0 || (from_scratch && lev.y <= OMAPY)) {
   delete om_vert;
   om_vert = new overmap(this, cur_om.pos.x    , cur_om.pos.y - 1, cur_om.pos.z);
- } else if (levy == OMAPY || levy == OMAPY * 2 - 1 ||
-            (from_scratch && levy > OMAPY)) {
+ } else if (lev.y == OMAPY || lev.y == OMAPY * 2 - 1 || (from_scratch && lev.y > OMAPY)) {
   delete om_vert;
   om_vert = new overmap(this, cur_om.pos.x    , cur_om.pos.y + 1, cur_om.pos.z);
  }
@@ -6694,7 +6677,7 @@ void game::set_adjacent_overmaps(bool from_scratch)
 
 void game::update_overmap_seen()
 {
- int omx = (levx + int(MAPSIZE / 2)) / 2, omy = (levy + int(MAPSIZE / 2)) / 2;
+ int omx = (lev.x + int(MAPSIZE / 2)) / 2, omy = (lev.y + int(MAPSIZE / 2)) / 2;
  int dist = u.overmap_sight_range(light_level());
  cur_om.seen(omx, omy) = true; // We can always see where we're standing
  if (dist == 0)
@@ -6762,8 +6745,8 @@ void game::update_overmap_seen()
 point game::om_location()
 {
  point ret;
- ret.x = int( (levx + int(MAPSIZE / 2)) / 2);
- ret.y = int( (levy + int(MAPSIZE / 2)) / 2);
+ ret.x = int( (lev.x + int(MAPSIZE / 2)) / 2);
+ ret.y = int( (lev.y + int(MAPSIZE / 2)) / 2);
  return ret;
 }
 
@@ -6776,7 +6759,7 @@ void game::replace_stair_monsters()
 
 void game::update_stair_monsters()
 {
- if (abs(levx - monstairx) > 1 || abs(levy - monstairy) > 1)
+ if (abs(lev.x - monstairx) > 1 || abs(lev.y - monstairy) > 1)
   return;
 
  for (int i = 0; i < coming_to_stairs.size(); i++) {
@@ -6823,17 +6806,17 @@ void game::update_stair_monsters()
 
 void game::spawn_mon(int shiftx, int shifty)
 {
- const int nlevx = levx + shiftx;
- const int nlevy = levy + shifty;
+ const int nlevx = lev.x + shiftx;
+ const int nlevy = lev.y + shifty;
  // Create a new NPC?
  if (!no_npc && one_in(100 + 15 * cur_om.npcs.size())) {
   npc tmp;
   tmp.normalize(this);
   tmp.randomize(this);
   //tmp.stock_missions(this);
-  tmp.spawn_at(&cur_om, levx + (1 * rng(-5, 5)), levy + (1 * rng(-5, 5)));
-  tmp.posx = SEEX * 2 * (tmp.mapx - levx) + rng(0 - SEEX, SEEX);
-  tmp.posy = SEEY * 2 * (tmp.mapy - levy) + rng(0 - SEEY, SEEY);
+  tmp.spawn_at(&cur_om, lev.x + (1 * rng(-5, 5)), lev.y + (1 * rng(-5, 5)));
+  tmp.posx = SEEX * 2 * (tmp.mapx - lev.x) + rng(0 - SEEX, SEEX);
+  tmp.posy = SEEY * 2 * (tmp.mapy - lev.y) + rng(0 - SEEY, SEEY);
   tmp.form_opinion(&u);
   tmp.attitude = NPCATT_TALK;
   tmp.mission = NPC_MISSION_NULL;

@@ -112,32 +112,23 @@ void defense_game::pre_action(game *g, action_id &act)
  }
 
 // Big ugly block for movement
- if ((act == ACTION_MOVE_N && g->u.posy == SEEX * int(MAPSIZE / 2) &&
-      g->levy <= 93) ||
-     (act == ACTION_MOVE_NE && ((g->u.posy == SEEY * int(MAPSIZE / 2) &&
-                                 g->levy <=  93) ||
-                                (g->u.posx == SEEX * (1 + int(MAPSIZE / 2))-1 &&
-                                 g->levx >= 98))) ||
-     (act == ACTION_MOVE_E && g->u.posx == SEEX * (1 + int(MAPSIZE / 2)) - 1 &&
-      g->levx >= 98) ||
-     (act == ACTION_MOVE_SE && ((g->u.posy == SEEY * (1 + int(MAPSIZE / 2))-1 &&
-                                 g->levy >= 98) ||
-                                (g->u.posx == SEEX * (1 + int(MAPSIZE / 2))-1 &&
-                                 g->levx >= 98))) ||
-     (act == ACTION_MOVE_S && g->u.posy == SEEY * (1 + int(MAPSIZE / 2))-1 &&
-      g->levy >= 98) ||
-     (act == ACTION_MOVE_SW && ((g->u.posy == SEEY * (1 + int(MAPSIZE / 2))-1 &&
-                                 g->levy >= 98) ||
-                                (g->u.posx == SEEX * int(MAPSIZE / 2) &&
-                                 g->levx <=  93))) ||
-     (act == ACTION_MOVE_W && g->u.posx == SEEX * int(MAPSIZE / 2) &&
-      g->levx <= 93) ||
-     (act == ACTION_MOVE_NW && ((g->u.posy == SEEY * int(MAPSIZE / 2) &&
-                                 g->levy <=  93) ||
-                                (g->u.posx == SEEX * int(MAPSIZE / 2) &&
-                                 g->levx <=  93)))) {
-  g->add_msg("You cannot leave the %s behind!",
-             defense_location_name(location).c_str());
+ if (   (act == ACTION_MOVE_N && g->u.posy == SEEX * int(MAPSIZE / 2) && g->lev.y <= 93)
+	 || (act == ACTION_MOVE_NE && 
+	     (   (g->u.posy == SEEY * int(MAPSIZE / 2) && g->lev.y <=  93)
+	      || (g->u.posx == SEEX * (1 + int(MAPSIZE / 2))-1 && g->lev.x >= 98)))
+	 || (act == ACTION_MOVE_E && g->u.posx == SEEX * (1 + int(MAPSIZE / 2)) - 1 && g->lev.x >= 98)
+	 || (act == ACTION_MOVE_SE && 
+	     (   (g->u.posy == SEEY * (1 + int(MAPSIZE / 2))-1 && g->lev.y >= 98)
+		  || (g->u.posx == SEEX * (1 + int(MAPSIZE / 2))-1 && g->lev.x >= 98)))
+	 || (act == ACTION_MOVE_S && g->u.posy == SEEY * (1 + int(MAPSIZE / 2))-1 && g->lev.y >= 98)
+	 || (act == ACTION_MOVE_SW && 
+	     (   (g->u.posy == SEEY * (1 + int(MAPSIZE / 2))-1 && g->lev.y >= 98)
+		  || (g->u.posx == SEEX * int(MAPSIZE / 2) && g->lev.x <=  93)))
+	 || (act == ACTION_MOVE_W && g->u.posx == SEEX * int(MAPSIZE / 2) && g->lev.x <= 93)
+	 || (act == ACTION_MOVE_NW &&
+	     (   (g->u.posy == SEEY * int(MAPSIZE / 2) && g->lev.y <=  93)
+		  || (g->u.posx == SEEX * int(MAPSIZE / 2) && g->lev.x <=  93)))) {
+  g->add_msg("You cannot leave the %s behind!", defense_location_name(location).c_str());
   act = ACTION_NULL;
  }
 }
@@ -193,9 +184,7 @@ void defense_game::init_map(game *g)
  }
 
  g->cur_om.save(g->u.name, 0, 0, DEFENSE_Z);
- g->levx = 100;
- g->levy = 100;
- g->levz = 0;
+ g->lev = tripoint(100,100,0);
  g->u.posx = SEEX;
  g->u.posy = SEEY;
 
@@ -233,7 +222,7 @@ void defense_game::init_map(game *g)
  int old_percent = 0;
  for (int i = 0; i <= MAPSIZE * 2; i += 2) {
   for (int j = 0; j <= MAPSIZE * 2; j += 2) {
-   int mx = g->levx - MAPSIZE + i, my = g->levy - MAPSIZE + j;
+   int mx = g->lev.x - MAPSIZE + i, my = g->lev.y - MAPSIZE + j;
    int percent = 100 * ((j / 2 + MAPSIZE * (i / 2))) /
                        ((MAPSIZE) * (MAPSIZE + 1));
    if (percent >= old_percent + 1) {
@@ -252,7 +241,7 @@ void defense_game::init_map(game *g)
   }
  }
 
- g->m.load(g, g->levx, g->levy);
+ g->m.load(g, g->lev.x, g->lev.y);
 
  g->update_map(g->u.posx, g->u.posy);
  monster generator(mtype::types[mon_generator], g->u.posx + 1, g->u.posy + 1);

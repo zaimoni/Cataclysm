@@ -1122,14 +1122,10 @@ void npc::perform_mission(game *g)
  switch (mission) {
  case NPC_MISSION_RESCUE_U:
   if (int(g->turn) % 24 == 0) {
-   if (mapx > g->levx)
-    mapx--;
-   else if (mapx < g->levx)
-    mapx++;
-   if (mapy > g->levy)
-    mapy--;
-   else if (mapy < g->levy)
-    mapy++;
+   if (mapx > g->lev.x) mapx--;
+   else if (mapx < g->lev.x) mapx++;
+   if (mapy > g->lev.y) mapy--;
+   else if (mapy < g->lev.y) mapy++;
    attitude = NPCATT_DEFEND;
   }
   break;
@@ -1363,9 +1359,9 @@ std::vector<itype_id> npc::styles_offered_to(player *p)
 
 int npc::minutes_to_u(game *g)
 {
- int ret = abs(mapx - g->levx);
- if (abs(mapy - g->levy) < ret)
-  ret = abs(mapy - g->levy);
+ int ret = abs(mapx - g->lev.x);
+ if (abs(mapy - g->lev.y) < ret)
+  ret = abs(mapy - g->lev.y);
  ret *= 24;
  ret /= 10;
  while (ret % 5 != 0)	// Round up to nearest five-minute interval
