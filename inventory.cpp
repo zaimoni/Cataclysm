@@ -10,7 +10,7 @@ const std::vector<item> inventory::nullstack(0);
 
 item& inventory::operator[] (int i)
 {
- if (i < 0 || i > items.size()) {
+ if (i < 0 || i >= items.size()) {
   debugmsg("Attempted to access item %d in an inventory (size %d)", i, items.size());
   return (discard<item>::x = item::null);
  }
@@ -20,7 +20,7 @@ item& inventory::operator[] (int i)
 
 const item& inventory::operator[] (int i) const
 {
-	if (i < 0 || i > items.size()) {
+	if (i < 0 || i >= items.size()) {
 		debugmsg("Attempted to access item %d in an inventory (size %d)", i, items.size());
 		return (discard<item>::x = item::null);
 	}
@@ -30,7 +30,7 @@ const item& inventory::operator[] (int i) const
 
 std::vector<item>& inventory::stack_at(int i)
 {
- if (i < 0 || i > items.size()) {
+ if (i < 0 || i >= items.size()) {
   debugmsg("Attempted to access stack %d in an inventory (size %d)",
            i, items.size());
   return (discard<std::vector<item> >::x = nullstack);
@@ -40,7 +40,7 @@ std::vector<item>& inventory::stack_at(int i)
 
 std::vector<item> inventory::const_stack(int i) const
 {
- if (i < 0 || i > items.size()) {
+ if (i < 0 || i >= items.size()) {
   debugmsg("Attempted to access stack %d in an inventory (size %d)",
            i, items.size());
   return nullstack;
@@ -51,46 +51,29 @@ std::vector<item> inventory::const_stack(int i) const
 std::vector<item> inventory::as_vector()
 {
  std::vector<item> ret;
- for (int i = 0; i < size(); i++) {
-  for (int j = 0; j < stack_at(i).size(); j++)
-   ret.push_back(items[i][j]);
+ for (const auto& stack : items) {
+  for (const auto& it : stack) ret.push_back(it);
  }
  return ret;
-}
-
-int inventory::size() const
-{
- return items.size();
 }
 
 int inventory::num_items() const
 {
  int ret = 0;
- for (int i = 0; i < items.size(); i++)
-  ret += items[i].size();
+ for (const auto& stack : items) ret += stack.size();
 
  return ret;
 }
 
-inventory& inventory::operator=(const inventory &rhs)
-{
- if (this == &rhs) return *this; // No self-assignment
-
- items = rhs.items;
- return *this;
-}
-
 inventory& inventory::operator+= (const inventory &rhs)
 {
- for (int i = 0; i < rhs.size(); i++)
-  add_stack(rhs.const_stack(i));
+ for (int i = 0; i < rhs.size(); i++) add_stack(rhs.const_stack(i));
  return *this;
 }
 
 inventory& inventory::operator+= (const std::vector<item> &rhs)
 {
- for (int i = 0; i < rhs.size(); i++)
-  add_item(rhs[i]);
+ for (const auto& it : rhs) add_item(it);
  return *this;
 }
 
@@ -100,6 +83,7 @@ inventory& inventory::operator+= (const item &rhs)
  return *this;
 }
 
+// 2018-08-16: leave these out-of-line for now (until we have a speed problem prioritize executable size)
 inventory inventory::operator+ (const inventory &rhs) const
 {
  return inventory(*this) += rhs;
@@ -115,47 +99,29 @@ inventory inventory::operator+ (const item &rhs) const
  return inventory(*this) += rhs;
 }
 
-void inventory::clear()
+void inventory::add_stack(const std::vector<item>& newits)
 {
-/*
- for (int i = 0; i < items.size(); i++) {
-  for (int j = 0; j < items[j].size(); j++)
-   delete items[i][j];
- }
-*/
- items.clear();
+ for (const auto& it : newits) add_item(it, true);
 }
 
-void inventory::add_stack(const std::vector<item> newits)
-{
- for (int i = 0; i < newits.size(); i++)
-  add_item(newits[i], true);
-}
-
-void inventory::push_back(std::vector<item> newits)
-{
- add_stack(newits);
-}
- 
 void inventory::add_item(item newit, bool keep_invlet)
 {
- if (keep_invlet && !newit.invlet_is_okay())
-  assign_empty_invlet(newit); // Keep invlet is true, but invlet is invalid!
+ if (keep_invlet && !newit.invlet_is_okay()) assign_empty_invlet(newit); // Keep invlet is true, but invlet is invalid!
+ if (newit.is_style()) return; // Styles never belong in our inventory.
 
- if (newit.is_style())
-  return; // Styles never belong in our inventory.
- for (int i = 0; i < items.size(); i++) {
-  if (items[i][0].stacks_with(newit)) {
+ for (auto& stack : items) {
+  item& first = stack[0];
+  if (first.stacks_with(newit)) {
 /*
    if (keep_invlet)
-    items[i][0].invlet = newit.invlet;
+    first.invlet = newit.invlet;
    else
 */
-    newit.invlet = items[i][0].invlet;
-   items[i].push_back(newit);
+    newit.invlet = first.invlet;
+   stack.push_back(newit);
    return;
-  } else if (keep_invlet && items[i][0].invlet == newit.invlet)
-   assign_empty_invlet(items[i][0]);
+  } else if (keep_invlet && first.invlet == newit.invlet)
+   assign_empty_invlet(first);
  }
  if (!newit.invlet_is_okay() || index_by_letter(newit.invlet) != -1) 
   assign_empty_invlet(newit);
@@ -165,22 +131,11 @@ void inventory::add_item(item newit, bool keep_invlet)
  items.push_back(newstack);
 }
 
-void inventory::add_item_keep_invlet(item newit)
-{
- add_item(newit, true);
-}
-
-void inventory::push_back(item newit)
-{
- add_item(newit);
-}
-
 void inventory::restack(player *p)
 {
  inventory tmp;
  for (int i = 0; i < size(); i++) {
-  for (int j = 0; j < items[i].size(); j++)
-   tmp.add_item(items[i][j]);
+  for (const auto& it : items[i]) tmp.add_item(it);
  }
  clear();
  if (p) {
@@ -195,13 +150,12 @@ void inventory::restack(player *p)
    if (!tmp[i].invlet_is_okay() || p->has_weapon_or_armor(tmp[i].invlet)) {
     //debugmsg("Restacking item %d (invlet %c)", i, tmp[i].invlet);
     tmp.assign_empty_invlet(tmp[i], p);
-    for (int j = 1; j < tmp.stack_at(i).size(); j++)
-     tmp.stack_at(i)[j].invlet = tmp[i].invlet;
+	for (auto& it : tmp.items[i]) it.invlet = tmp[i].invlet;
    }
   }
  }
  for (int i = 0; i < tmp.size(); i++)
-  items.push_back(tmp.stack_at(i));
+  items.push_back(tmp.items[i]);
 }
 
 void inventory::form_from_map(game *g, point origin, int range)
@@ -227,10 +181,9 @@ std::vector<item> inventory::remove_stack(int index)
  if (index < 0 || index >= items.size()) {
   debugmsg("Tried to remove_stack(%d) from an inventory (size %d)",
            index, items.size());
-  std::vector<item> nullvector;
-  return nullvector;
+  return nullstack;
  }
- std::vector<item> ret = stack_at(index);
+ std::vector<item> ret(std::move(items[index]));
  items.erase(items.begin() + index);
  return ret;
 }
@@ -293,51 +246,37 @@ item& inventory::item_by_letter(char ch)
  return (discard<item>::x = item::null);
 }
 
-int inventory::index_by_letter(char ch)
+int inventory::index_by_letter(char ch) const
 {
- if (ch == KEY_ESCAPE)
-  return -1;
+ if (ch == KEY_ESCAPE) return -1;
  for (int i = 0; i < items.size(); i++) {
-  if (items[i][0].invlet == ch)
-   return i;
+  if (items[i][0].invlet == ch) return i;
  }
  return -1;
 }
 
-int inventory::amount_of(itype_id it)
+int inventory::amount_of(itype_id it) const
 {
  int count = 0;
- for (int i = 0; i < items.size(); i++) {
-  for (int j = 0; j < items[i].size(); j++) {
-   if (items[i][j].type->id == it)
-    count++;
-   for (int k = 0; k < items[i][j].contents.size(); k++) {
-    if (items[i][j].contents[k].type->id == it)
-     count++;
+ for (const auto& stack : items) {
+  for (const auto& obj : stack) {
+   if (obj.type->id == it) count++;
+   for (const auto& within : obj.contents) {
+    if (within.type->id == it) count++;
    }
   }
  }
  return count;
 }
 
-int inventory::charges_of(itype_id it)
+int inventory::charges_of(itype_id it) const
 {
  int count = 0;
- for (int i = 0; i < items.size(); i++) {
-  for (int j = 0; j < items[i].size(); j++) {
-   if (items[i][j].type->id == it) {
-    if (items[i][j].charges < 0)
-     count++;
-    else
-     count += items[i][j].charges;
-   }
-   for (int k = 0; k < items[i][j].contents.size(); k++) {
-    if (items[i][j].contents[k].type->id == it) {
-     if (items[i][j].contents[k].charges < 0)
-      count++;
-     else
-      count += items[i][j].contents[k].charges;
-    }
+ for (const auto& stack : items) {
+  for (const auto& obj : stack) {
+   if (obj.type->id == it) count += (obj.charges < 0) ? 1 : obj.charges;
+   for (const auto& within : obj.contents) {
+    if (within.type->id == it) count += (within.charges < 0) ? 1 : within.charges;
    }
   }
  }
@@ -393,8 +332,7 @@ void inventory::use_charges(itype_id it, int quantity)
       if (items[i][j].contents[k].destroyed_at_zero_charges()) {
        items[i][j].contents.erase(items[i][j].contents.begin() + k);
        k--;
-      } else
-       items[i][j].contents[k].charges = 0;
+      } else items[i][j].contents[k].charges = 0;
      } else {
       items[i][j].contents[k].charges -= quantity;
       return;
@@ -413,8 +351,7 @@ void inventory::use_charges(itype_id it, int quantity)
        i--;
        j = 0;
       }
-     } else
-      items[i][j].charges = 0;
+     } else items[i][j].charges = 0;
     } else {
      items[i][j].charges -= quantity;
      return;
@@ -424,25 +361,13 @@ void inventory::use_charges(itype_id it, int quantity)
  }
 }
  
-bool inventory::has_amount(itype_id it, int quantity)
-{
- return (amount_of(it) >= quantity);
-}
-
-bool inventory::has_charges(itype_id it, int quantity)
-{
- return (charges_of(it) >= quantity);
-}
-
 bool inventory::has_item(item *it)
 {
  for (int i = 0; i < items.size(); i++) {
   for (int j = 0; j < items[i].size(); j++) {
-   if (it == &(items[i][j]))
-    return true;
+   if (it == &(items[i][j])) return true;
    for (int k = 0; k < items[i][j].contents.size(); k++) {
-    if (it == &(items[i][j].contents[k]))
-     return true;
+    if (it == &(items[i][j].contents[k])) return true;
    }
   }
  }
@@ -452,21 +377,16 @@ bool inventory::has_item(item *it)
 void inventory::assign_empty_invlet(item &it, player *p)
 {
  for (int ch = 'a'; ch <= 'z'; ch++) {
-  //debugmsg("Trying %c", ch);
   if (index_by_letter(ch) == -1 && (!p || !p->has_weapon_or_armor(ch))) {
    it.invlet = ch;
-   //debugmsg("Using %c", ch);
    return;
   }
  }
  for (int ch = 'A'; ch <= 'Z'; ch++) {
-  //debugmsg("Trying %c", ch);
   if (index_by_letter(ch) == -1 && (!p || !p->has_weapon_or_armor(ch))) {
-   //debugmsg("Using %c", ch);
    it.invlet = ch;
    return;
   }
  }
  it.invlet = '`';
- //debugmsg("Couldn't find empty invlet");
 }
