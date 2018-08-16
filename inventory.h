@@ -68,10 +68,11 @@ class inventory
   void load(std::string data);
 */
 
-  std::vector<item> nullstack;
  private:
-  void assign_empty_invlet(item &it, player *p = NULL);
+  static const std::vector<item> nullstack;
   std::vector< std::vector<item> > items;
+
+  void assign_empty_invlet(item &it, player *p = NULL);
 };
 
 #endif

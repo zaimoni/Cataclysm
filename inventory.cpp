@@ -5,6 +5,9 @@
 
 using namespace cataclysm;
 
+template<> std::vector<item> discard<std::vector<item> >::x(0);
+const std::vector<item> inventory::nullstack(0);
+
 item& inventory::operator[] (int i)
 {
  if (i < 0 || i > items.size()) {
@@ -30,7 +33,7 @@ std::vector<item>& inventory::stack_at(int i)
  if (i < 0 || i > items.size()) {
   debugmsg("Attempted to access stack %d in an inventory (size %d)",
            i, items.size());
-  return nullstack;
+  return (discard<std::vector<item> >::x = nullstack);
  }
  return items[i];
 }
