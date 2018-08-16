@@ -3,11 +3,13 @@
 #include "game.h"
 #include "keypress.h"
 
+using namespace cataclysm;
+
 item& inventory::operator[] (int i)
 {
  if (i < 0 || i > items.size()) {
   debugmsg("Attempted to access item %d in an inventory (size %d)", i, items.size());
-  return nullitem;
+  return (discard<item>::x = item::null);
  }
 
  return items[i][0];
@@ -17,7 +19,7 @@ const item& inventory::operator[] (int i) const
 {
 	if (i < 0 || i > items.size()) {
 		debugmsg("Attempted to access item %d in an inventory (size %d)", i, items.size());
-		return nullitem;
+		return (discard<item>::x = item::null);
 	}
 
 	return items[i][0];
@@ -235,7 +237,7 @@ item inventory::remove_item(int index)
  if (index < 0 || index >= items.size()) {
   debugmsg("Tried to remove_item(%d) from an inventory (size %d)",
            index, items.size());
-  return nullitem;
+  return item::null;
  }
 
  item ret = items[index][0];
@@ -251,11 +253,11 @@ item inventory::remove_item(int stack, int index)
  if (stack < 0 || stack >= items.size()) {
   debugmsg("Tried to remove_item(%d, %d) from an inventory (size %d)",
            stack, index, items.size());
-  return nullitem;
+  return item::null;
  } else if (index < 0 || index >= items[stack].size()) {
   debugmsg("Tried to remove_item(%d, %d) from an inventory (stack is size %d)",
            stack, index, items[stack].size());
-  return nullitem;
+  return item::null;
  }
 
  item ret = items[stack][index];
@@ -276,16 +278,16 @@ item inventory::remove_item_by_letter(char ch)
   }
  }
 
- return nullitem;
+ return item::null;
 }
 
 item& inventory::item_by_letter(char ch)
 {
- for (int i = 0; i < items.size(); i++) {
-  if (items[i][0].invlet == ch)
-   return items[i][0];
+ for(auto& stack : items) { 
+  auto& it = stack[0];
+  if (it.invlet == ch) return it;
  }
- return nullitem;
+ return (discard<item>::x = item::null);
 }
 
 int inventory::index_by_letter(char ch)
