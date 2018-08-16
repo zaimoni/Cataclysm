@@ -216,7 +216,7 @@ void player::activate_bionic(int b, game *g)
  case bio_claws:
   if (weapon.type->id == itm_bio_claws) {
    g->add_msg("You withdraw your claws.");
-   weapon = ret_null;
+   weapon = item::null;
   } else if (weapon.type->id != 0) {
    g->add_msg("Your claws extend, forcing you to drop your %s.",
               weapon.tname().c_str());

@@ -94,7 +94,6 @@ npc& npc::operator=(const npc &rhs)
  patience = rhs.patience;
 
  weapon = rhs.weapon;
- ret_null = rhs.ret_null;
  inv = rhs.inv;
  worn = rhs.worn;
  needs = rhs.needs;
@@ -285,8 +284,7 @@ void npc::randomize(game *g, npc_class type)
  dex_max = dice(4, 3);
  int_max = dice(4, 3);
  per_max = dice(4, 3);
- ret_null = item(item::types[0], 0);
- weapon   = item(item::types[0], 0);
+ weapon   = item::null;
  inv.clear();
  personality.aggression = rng(-10, 10);
  personality.bravery =    rng( -3, 10);

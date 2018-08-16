@@ -295,8 +295,7 @@ public:
  std::vector<itype_id> styles;
  itype_id style_selected;
  item weapon;
- item ret_null;	// Null item, sometimes returns by weapon() etc
-
+ 
  std::vector <disease> illness;
  std::vector <addiction> addictions;
 };

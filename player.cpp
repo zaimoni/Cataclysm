@@ -12,6 +12,8 @@ using namespace cataclysm;
 
 #include <fstream>
 
+template<> item discard<item>::x = item();
+
 // start prototype for morale.cpp
 const std::string morale_point::data[NUM_MORALE_TYPES] = {
 	"This is a bug",
@@ -471,8 +473,7 @@ player& player::operator=(const player& rhs)
 
 void player::normalize(game *g)
 {
- ret_null = item(item::types[0], 0);
- weapon   = item(item::types[0], 0);
+ weapon   = item::null;
  style_selected = itm_null;
  for (int i = 0; i < num_hp_parts; i++) {
   hp_max[i] = 60 + str_max * 3;
@@ -3448,7 +3449,7 @@ void player::process_active_items(game *g)
   if (weapon.charges <= 0) {
    (*tmp->use)(g, this, &weapon, false);
    if (tmp->revert_to == itm_null)
-    weapon = ret_null;
+    weapon = item::null;
    else
     weapon.type = item::types[tmp->revert_to];
   }
@@ -3488,7 +3489,7 @@ void player::process_active_items(game *g)
 item player::remove_weapon()
 {
  item tmp = weapon;
- weapon = ret_null;
+ weapon = item::null;
 // We need to remove any boosts related to our style
  rem_disease(DI_ATTACK_BOOST);
  rem_disease(DI_DODGE_BOOST);
@@ -3546,9 +3547,9 @@ item player::i_rem(char let)
  item tmp;
  if (weapon.invlet == let) {
   if (weapon.type->id > num_items && weapon.type->id < num_all_items)
-   return ret_null;
+   return item::null;
   tmp = weapon;
-  weapon = ret_null;
+  weapon = item::null;
   return tmp;
  }
  for (int i = 0; i < worn.size(); i++) {
@@ -3560,50 +3561,42 @@ item player::i_rem(char let)
  }
  if (inv.index_by_letter(let) != -1)
   return inv.remove_item_by_letter(let);
- return ret_null;
+ return item::null;
 }
 
 item player::i_rem(itype_id type)
 {
- item ret;
- if (weapon.type->id == type)
-  return remove_weapon();
+ if (weapon.type->id == type) return remove_weapon();
  for (int i = 0; i < inv.size(); i++) {
   if (inv[i].type->id == type)
    return inv.remove_item(i);
  }
- return ret_null;
+ return item::null;
 }
 
 item& player::i_at(char let)
 {
- if (let == KEY_ESCAPE)
-  return ret_null;
- if (weapon.invlet == let)
-  return weapon;
- for (int i = 0; i < worn.size(); i++) {
-  if (worn[i].invlet == let)
-   return worn[i];
+ if (let == KEY_ESCAPE) return (discard<item>::x = item::null);
+ if (weapon.invlet == let) return weapon;
+ for (auto& it : worn) {
+  if (it.invlet == let) return it;
  }
  int index = inv.index_by_letter(let);
- if (index == -1)
-  return ret_null;
+ if (index == -1) return (discard<item>::x = item::null);
  return inv[index];
 }
 
 item& player::i_of_type(itype_id type)
 {
- if (weapon.type->id == type)
-  return weapon;
- for (int i = 0; i < worn.size(); i++) {
-  if (worn[i].type->id == type)
-   return worn[i];
+ if (weapon.type->id == type) return weapon;
+ for(auto& it : worn) {
+  if (it.type->id == type) return it;
  }
  for (int i = 0; i < inv.size(); i++) {
   if (inv[i].type->id == type)
    return inv[i];
  }
- return ret_null;
+ return (discard<item>::x = item::null);
 }
 
 std::vector<item> player::inv_dump()
@@ -3611,19 +3604,16 @@ std::vector<item> player::inv_dump()
  std::vector<item> ret;
  if (weapon.type->id != 0 && weapon.type->id < num_items)
   ret.push_back(weapon);
- for (int i = 0; i < worn.size(); i++)
-  ret.push_back(worn[i]);
+ for(const auto& it : worn) ret.push_back(it);
  for(int i = 0; i < inv.size(); i++) {
-  for (int j = 0; j < inv.stack_at(i).size(); j++)
-   ret.push_back(inv.stack_at(i)[j]);
+  for (const auto& it : inv.stack_at(i)) ret.push_back(it);
  }
  return ret;
 }
 
 item player::i_remn(int index)
 {
- if (index > inv.size() || index < 0)
-  return ret_null;
+ if (index > inv.size() || index < 0) return item::null;
  return inv.remove_item(index);
 }
 
@@ -4058,7 +4048,7 @@ bool player::eat(game *g, int index)
  eaten->charges--;
  if (eaten->charges <= 0) {
   if (which == -1)
-   weapon = ret_null;
+   weapon = item::null;
   else if (which == -2) {
    weapon.contents.erase(weapon.contents.begin());
    if (!is_npc())
@@ -4197,7 +4187,7 @@ bool player::wear(game *g, char let)
 
  if (!wear_item(g, to_wear)) return false;
 
- if (-2 == index) weapon = ret_null;
+ if (-2 == index) weapon = item::null;
  else inv.remove_item(index);
 
  return true;

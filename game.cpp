@@ -1774,8 +1774,7 @@ void game::load(std::string name)
  }
  u = player();
  u.name = name;
- u.ret_null = item(item::types[0], 0);
- u.weapon = item(item::types[0], 0);
+ u.weapon = item::null;
  int tmpturn, tmpspawn, tmpnextweather, tmprun, tmptar, tmpweather, tmptemp,
      comx, comy;
  fin >> tmpturn >> tmptar >> tmprun >> mostseen >> nextinv >> next_npc_id >>

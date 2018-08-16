@@ -10,7 +10,8 @@ class npc;
 class item
 {
 public:
- static std::vector <itype*> types;
+ static std::vector<itype*> types;
+ static const item null;
 
  const itype*   type;
  const mtype*   corpse;

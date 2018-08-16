@@ -4,7 +4,10 @@
 
 #include <fstream>	// for artifacts
 
+static itype* const null_type = new itype(0, 0, 0, "none", "", '#', c_white, MNULL, MNULL, 0, 0, 0, 0, 0, 0);
+
 std::vector <itype*> item::types;
+const item item::null(null_type ,0);
 
 // Armor colors
 #define C_SHOES  c_blue
@@ -29,8 +32,7 @@ std::vector <itype*> item::types;
 void item::init()
 {
 // First, the null object.  NOT REALLY AN OBJECT AT ALL.  More of a concept.
- types.push_back(
-  new itype(0, 0, 0, "none", "", '#', c_white, MNULL, MNULL, 0, 0, 0, 0, 0, 0));
+ types.push_back(null_type);
 // Corpse - a special item
  types.push_back(
   new itype(1, 0, 0, "corpse", "A dead body.", '%', c_white, MNULL, MNULL, 0, 0,
