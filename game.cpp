@@ -73,7 +73,7 @@ game::~game()	// XXX cf main() no delete call, OS cleanup (thus destructor not c
  delwin(w_status);
 }
 
-void game::setup()
+void game::setup()	// early part looks like it belongs in game::game (but we return to the start screen rather than completely drop out
 {
  u = player();
  m = map(); // Init the root map with our vectors
@@ -85,9 +85,7 @@ void game::setup()
  next_faction_id = 1;
  next_mission_id = 1;
 // Clear monstair values
- monstairx = -1;
- monstairy = -1;
- monstairz = -1;
+ monstair = tripoint(-1,-1,-1);
  last_target = -1;	// We haven't targeted any monsters yet
  curmes = 0;		// We haven't read any messages yet
  uquit = QUIT_NO;	// We haven't quit the game
@@ -6397,15 +6395,13 @@ void game::vertical_move(int movez, bool force)
   }
  }
  
- bool replace_monsters = false;
 // Replace the stair monsters if we just came back
- if (abs(monstairx - lev.x) <= 1 && abs(monstairy - lev.y) <= 1 && monstairz == lev.z + movez)
-  replace_monsters = true;
+ bool replace_monsters = (abs(monstair.x - lev.x) <= 1 && abs(monstair.y - lev.y) <= 1 && monstair.z == lev.z + movez);
  
  if (!force) {
-  monstairx = lev.x;
-  monstairy = lev.y;
-  monstairz = original_z;
+  monstair.x = lev.x;
+  monstair.y = lev.y;
+  monstair.z = original_z;
   for (int i = 0; i < z.size(); i++) {
    if (z[i].will_reach(this, u.posx, u.posy)) {
     int turns = z[i].turns_to_reach(this, u.posx, u.posy);
@@ -6758,8 +6754,7 @@ void game::replace_stair_monsters()
 
 void game::update_stair_monsters()
 {
- if (abs(lev.x - monstairx) > 1 || abs(lev.y - monstairy) > 1)
-  return;
+ if (abs(lev.x - monstair.x) > 1 || abs(lev.y - monstair.y) > 1) return;
 
  for (int i = 0; i < coming_to_stairs.size(); i++) {
   coming_to_stairs[i].count--;
@@ -6796,11 +6791,7 @@ void game::update_stair_monsters()
    i--;
   }
  }
- if (coming_to_stairs.empty()) {
-  monstairx = -1;
-  monstairy = -1;
-  monstairz = 999;
- }
+ if (coming_to_stairs.empty()) monstair = tripoint(-1,-1,999);
 }
 
 void game::spawn_mon(int shiftx, int shifty)

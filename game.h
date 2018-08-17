@@ -178,7 +178,7 @@ class game
   player u;
   std::vector<monster> z;
   std::vector<monster_and_count> coming_to_stairs;
-  int monstairx, monstairy, monstairz;
+  tripoint monstair;
   std::vector<npc> active_npc;
   std::vector<faction> factions;
   std::vector<mission> active_missions; // Missions which may be assigned
