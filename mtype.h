@@ -82,6 +82,19 @@ mon_generator,
 num_monsters
 };
 
+const char* JSON_key(mon_id src);
+
+namespace cataclysm {
+
+	template<>
+	struct JSON_parse<mon_id>
+	{
+		mon_id operator()(const char* src);
+		mon_id operator()(const std::string& src) { return operator()(src.c_str()); };
+	};
+
+}
+
 enum m_size {
 MS_TINY = 0,	// Rodent
 MS_SMALL,	// Half human
