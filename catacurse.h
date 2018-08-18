@@ -115,5 +115,6 @@ void timeout(int delay);//PORTABILITY, DUMMY FUNCTION
 bool load_tile(const char* src);
 void flush_tilesheets();
 bool mvwaddbgtile(WINDOW *win, int y, int x, const char* bgtile);
+bool mvwaddfgtile(WINDOW *win, int y, int x, const char* fgtile);
 
 #endif

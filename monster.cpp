@@ -208,13 +208,19 @@ void monster::draw(WINDOW *w, int plx, int ply, bool inv)
  int x = SEEX + posx - plx;
  int y = SEEY + posy - ply;
  nc_color color = type->color;
+ char sym = type->sym;
+
+ if (mtype::tiles.count(type->id)) {
+	 if (mvwaddfgtile(w, y, x, mtype::tiles[type->id].c_str())) sym = ' ';	// we still want any background color effects
+ }
+
  if (friendly != 0 && !inv)
-  mvwputch_hi(w, y, x, color, type->sym);
+  mvwputch_hi(w, y, x, color, sym);
  else if (inv)
-  mvwputch_inv(w, y, x, color, type->sym);
+  mvwputch_inv(w, y, x, color, sym);
  else {
   color = color_with_effects();
-  mvwputch(w, y, x, color, type->sym);
+  mvwputch(w, y, x, color, sym);
  }
 }
 

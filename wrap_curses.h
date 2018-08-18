@@ -27,6 +27,7 @@
 inline bool load_tile(const char* src) { return false; }	// automatic failure
 void flush_tilesheets() {}
 bool mvwaddbgtile(WINDOW *win, int y, int x, const char* bgtile) { return false; };
+bool mvwaddfgtile(WINDOW *win, int y, int x, const char* fgtile) { return false; };
 #endif
 
 

@@ -3,6 +3,7 @@
 #include "setvector.h"
 
 std::vector <mtype*> mtype::types;
+std::map<int, std::string> mtype::tiles;
 
 nc_color mtype::danger() const
 {

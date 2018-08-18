@@ -1315,6 +1315,25 @@ bool mvwaddbgtile(WINDOW *win, int y, int x, const char* bgtile)
 #endif
 }
 
+bool mvwaddfgtile(WINDOW *win, int y, int x, const char* fgtile)
+{
+#if HAVE_TILES
+	if (!fgtile || !fgtile[0]) return false;
+	std::string tmp(fgtile);
+	if (!_translate.count(tmp)) return false;
+	if (!wmove(win, y, x)) return false;
+	// win->cursorx,cursory now set to x,y
+	const unsigned short t_index = _translate[tmp];	// invariant: tile index at least 1
+
+	win->line[y].tiles[x] = t_index;
+	win->draw = true;
+	addedchar(win);
+	return true;
+#else
+	return false;
+#endif
+}
+
 //Borders the window with fancy lines!
 int wborder(WINDOW *win, chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, chtype tr, chtype bl, chtype br)
 {
