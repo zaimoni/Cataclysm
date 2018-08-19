@@ -9,15 +9,15 @@
 #include "skill.h"
 #include "output.h"
 #include "line.h"
+#include "saveload.h"
 
 std::vector<item> starting_clothes(npc_class type, bool male, game *g);
 std::vector<item> starting_inv(npc *me, npc_class type, game *g);
 
 npc::npc()
+: om(0,0,0)
 {
  id = -1;
- omx = 0;
- omy = 0;
  mapx = 0;
  mapy = 0;
  posx = -1;
@@ -66,9 +66,7 @@ npc& npc::operator=(const npc &rhs)
  wandx = rhs.wandx;
  wandy = rhs.wandy;
  wandf = rhs.wandf;
- omx = rhs.omx;
- omy = rhs.omy;
- omz = rhs.omz;
+ om = rhs.om;
  mapx = rhs.mapx;
  mapy = rhs.mapy;
  plx = rhs.plx;
@@ -158,9 +156,8 @@ std::string npc::save_info()
  dump << int(personality.aggression) << " " << int(personality.bravery) <<
          " " << int(personality.collector) << " " <<
          int(personality.altruism) << " " << wandx << " " << wandy << " " <<
-         wandf << " " << omx << " " << omy << " " << omz << " " << mapx <<
-         " " << mapy << " " << plx << " " << ply << " " <<  goalx << " " <<
-         goaly << " " << int(mission) << " " << int(flags) << " ";
+         wandf << " " << om << " " << mapx << " " << mapy << " " << plx << " " 
+		 << ply << " " <<  goalx << " " << goaly << " " << int(mission) << " " << int(flags) << " ";
  if (my_fac == NULL)
   dump << -1;
  else
@@ -261,8 +258,8 @@ void npc::load_info(game *g, std::string data)
  }
 // Special NPC stuff
  int misstmp, flagstmp, tmpatt, agg, bra, col, alt;
- dump >> agg >> bra >> col >> alt >> wandx >> wandy >> wandf >> omx >> omy >>
-         omz >> mapx >> mapy >> plx >> ply >> goalx >> goaly >> misstmp >>
+ dump >> agg >> bra >> col >> alt >> wandx >> wandy >> wandf >> om >> 
+	     mapx >> mapy >> plx >> ply >> goalx >> goaly >> misstmp >>
          flagstmp >> fac_id >> tmpatt;
  personality.aggression = agg;
  personality.bravery = bra;
@@ -970,8 +967,7 @@ std::vector<item> starting_inv(npc *me, npc_class type, game *g)
 void npc::spawn_at(overmap *o, int x, int y)
 {
 // First, specify that we are in this overmap!
- omx = o->pos.x;
- omy = o->pos.y;
+ om = o->pos;
  mapx = x;
  mapy = y;
  if (x == -1 || y == -1) {

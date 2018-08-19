@@ -531,7 +531,7 @@ public:
  int wandx, wandy, wandf;	// Location of heard sound, etc.
 
 // Location:
- int omx, omy, omz;	// Which overmap (e.g., o.0.0.0)
+ tripoint om;	// which overmap (e.g., o.0.0.0) 
  int mapx, mapy;// Which square in that overmap (e.g., m.0.0)
  int plx, ply, plt;// Where we last saw the player, timeout to forgetting
  int itx, ity;	// The square containing an item we want
