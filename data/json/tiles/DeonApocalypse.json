@@ -81,6 +81,23 @@
             t_slope_up:"data/images/tiles/deontiles.32.png#98",
             t_card_science:"data/images/tiles/deontiles.32.png#45:t_wall_metal_h",
             t_card_military:"data/images/tiles/deontiles.32.png#45:t_wall_metal_h",
-            t_card_reader_broken:"data/images/tiles/deontiles.32.png#45:t_wall_metal_h"
+            t_card_reader_broken:"data/images/tiles/deontiles.32.png#45:t_wall_metal_h",
+            mon_squirrel:"data/images/tiles/deontiles.32.png#195",
+            mon_rabbit:"data/images/tiles/deontiles.32.png#196",
+            mon_deer:"data/images/tiles/deontiles.32.png#197",
+            mon_wolf:"data/images/tiles/deontiles.32.png#199",
+            mon_bear:"data/images/tiles/deontiles.32.png#201",
+            mon_dog:"data/images/tiles/deontiles.32.png#204",
+            mon_ant_larva:"data/images/tiles/deontiles.32.png#206",
+            mon_ant:"data/images/tiles/deontiles.32.png#207",
+            mon_ant_soldier:"data/images/tiles/deontiles.32.png#208",
+            mon_ant_queen:"data/images/tiles/deontiles.32.png#209",
+            mon_ant_fungus:"data/images/tiles/deontiles.32.png#210",
+            mon_fly:"data/images/tiles/deontiles.32.png#211",
+            mon_bee:"data/images/tiles/deontiles.32.png#212",
+            mon_wasp:"data/images/tiles/deontiles.32.png#213",
+            mon_graboid:"data/images/tiles/deontiles.32.png#214",
+            mon_worm:"data/images/tiles/deontiles.32.png#215",
+            mon_halfworm:"data/images/tiles/deontiles.32.png#216"
 			}
 }
