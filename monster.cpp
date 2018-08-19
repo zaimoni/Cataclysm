@@ -8,6 +8,7 @@
 #define SQR(a) ((a)*(a))
 
 monster::monster()
+: spawnpos(-1,-1)
 {
  posx = 20;
  posy = 10;
@@ -20,8 +21,6 @@ monster::monster()
  sp_timeout = 0;
  spawnmapx = -1;
  spawnmapy = -1;
- spawnposx = -1;
- spawnposy = -1;
  friendly = 0;
  anger = 0;
  morale = 2;
@@ -33,6 +32,7 @@ monster::monster()
 }
 
 monster::monster(const mtype *t)
+: spawnpos(-1,-1)
 {
  posx = 20;
  posy = 10;
@@ -46,8 +46,6 @@ monster::monster(const mtype *t)
  sp_timeout = rng(0, type->sp_freq);
  spawnmapx = -1;
  spawnmapy = -1;
- spawnposx = -1;
- spawnposy = -1;
  friendly = 0;
  anger = t->agro;
  morale = t->morale;
@@ -59,6 +57,7 @@ monster::monster(const mtype *t)
 }
 
 monster::monster(const mtype *t, int x, int y)
+: spawnpos(-1,-1)
 {
  posx = x;
  posy = y;
@@ -72,8 +71,6 @@ monster::monster(const mtype *t, int x, int y)
  sp_timeout = type->sp_freq;
  spawnmapx = -1;
  spawnmapy = -1;
- spawnposx = -1;
- spawnposy = -1;
  friendly = 0;
  anger = type->agro;
  morale = type->morale;

@@ -127,7 +127,8 @@ class monster {
  std::vector<monster_effect> effects; // Active effects, e.g. on fire
 
 // If we were spawned by the map, store our origin for later use
- int spawnmapx, spawnmapy, spawnposx, spawnposy;
+ int spawnmapx, spawnmapy;	// overmap source; z coordinate lost
+ point spawnpos;  // normal map position
 
 // DEFINING VALUES
  int moves, speed;

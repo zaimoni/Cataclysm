@@ -2761,27 +2761,21 @@ void map::spawn_monsters(game *g)
      tmp.spawnmapy = g->lev.y + gy;
      tmp.faction_id = grid[n]->spawns[i].faction_id;
      tmp.mission_id = grid[n]->spawns[i].mission_id;
-     if (grid[n]->spawns[i].name != "NONE")
-      tmp.unique_name = grid[n]->spawns[i].name;
-     if (grid[n]->spawns[i].friendly)
-      tmp.friendly = -1;
+     if (grid[n]->spawns[i].name != "NONE") tmp.unique_name = grid[n]->spawns[i].name;
+     if (grid[n]->spawns[i].friendly) tmp.friendly = -1;
      int fx = mx + gx * SEEX, fy = my + gy * SEEY;
 
-     while ((!g->is_empty(fx, fy) || !tmp.can_move_to(g->m, fx, fy)) && 
-            tries < 10) {
+     while ((!g->is_empty(fx, fy) || !tmp.can_move_to(g->m, fx, fy)) &&  tries < 10) {
       mx = (grid[n]->spawns[i].posx + rng(-3, 3)) % SEEX;
       my = (grid[n]->spawns[i].posy + rng(-3, 3)) % SEEY;
-      if (mx < 0)
-       mx += SEEX;
-      if (my < 0)
-       my += SEEY;
+      if (mx < 0) mx += SEEX;
+      if (my < 0) my += SEEY;
       fx = mx + gx * SEEX;
       fy = my + gy * SEEY;
       tries++;
      }
      if (tries != 10) {
-      tmp.spawnposx = fx;
-      tmp.spawnposy = fy;
+      tmp.spawnpos = point(fx,fy);
       tmp.spawn(fx, fy);
       g->z.push_back(tmp);
      }

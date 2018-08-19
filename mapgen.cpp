@@ -6469,16 +6469,14 @@ void map::add_spawn(monster *mon)
  int spawnx, spawny;
  std::string spawnname = (mon->unique_name == "" ? "NONE" : mon->unique_name);
  if (mon->spawnmapx != -1) {
-  spawnx = mon->spawnposx;
-  spawny = mon->spawnposy;
+  spawnx = mon->spawnpos.x;
+  spawny = mon->spawnpos.y;
  } else {
   spawnx = mon->posx;
   spawny = mon->posy;
  }
- while (spawnx < 0)
-  spawnx += SEEX;
- while (spawny < 0)
-  spawny += SEEY;
+ while (spawnx < 0) spawnx += SEEX;
+ while (spawny < 0) spawny += SEEY;
  spawnx %= SEEX;
  spawny %= SEEY;
  add_spawn(mon_id(mon->type->id), 1, spawnx, spawny, (mon->friendly < 0),
