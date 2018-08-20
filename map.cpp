@@ -1819,8 +1819,8 @@ int& map::radiation(int x, int y)
 std::vector<item>& map::i_at(int x, int y)
 {
  if (!INBOUNDS(x, y)) {
-  nulitems.clear();
-  return nulitems;
+  discard<std::vector<item> >::x.clear();
+  return discard<std::vector<item> >::x;
  }
 /*
  int nonant;

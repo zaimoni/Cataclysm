@@ -16,6 +16,7 @@ class monster;
 class vehicle;
 class overmap;
 
+// We do not want to use the Curiously Recurring Template Pattern to deal with the submap grid
 class map
 {
  public:
@@ -161,7 +162,6 @@ protected:
  int my_MAPSIZE;
  virtual bool is_tiny() { return false; };
 
- std::vector<item> nulitems; // Returned when &i_at() is asked for an OOB value
  ter_id nulter;	// Returned when &ter() is asked for an OOB value
  trap_id nultrap; // Returned when &tr_at() is asked for an OOB value
  field nulfield; // Returned when &field_at() is asked for an OOB value
