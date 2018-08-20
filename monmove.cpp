@@ -53,11 +53,10 @@ void monster::set_dest(int x, int y, int &t)
 // "Stupid" movement; "if (wandx < posx) posx--;" etc.
 void monster::wander_to(int x, int y, int f)
 {
- wandx = x;
- wandy = y;
+ wand.x = x;
+ wand.y = y;
  wandf = f;
- if (has_flag(MF_GOODHEARING))
-  wandf *= 6;
+ if (has_flag(MF_GOODHEARING)) wandf *= 6;
 }
 
 void monster::plan(game *g)
@@ -77,8 +76,7 @@ void monster::plan(game *g)
     stc = tc;
    }
   }
-  if (has_effect(ME_DOCILE))
-   closest = -1;
+  if (has_effect(ME_DOCILE)) closest = -1;
   if (closest >= 0)
    set_dest(g->z[closest].posx, g->z[closest].posy, stc);
   else if (friendly > 0 && one_in(3))	// Grow restless with no targets
@@ -93,8 +91,8 @@ void monster::plan(game *g)
  }
  if (is_fleeing(g->u) && can_see() && g->sees_u(posx, posy, tc)) {
   fleeing = true;
-  wandx = posx * 2 - g->u.posx;
-  wandy = posy * 2 - g->u.posy;
+  wand.x = posx * 2 - g->u.posx;
+  wand.y = posy * 2 - g->u.posy;
   wandf = 40;
   dist = rl_dist(posx, posy, g->u.posx, g->u.posy);
  }
@@ -112,8 +110,8 @@ void monster::plan(game *g)
        g->m.sees(posx, posy, me->posx, me->posy, sightrange, tc))) {
    if (is_fleeing(*me)) {
     fleeing = true;
-    wandx = posx * 2 - me->posx;
-    wandy = posy * 2 - me->posy;
+    wand.x = posx * 2 - me->posx;
+    wand.y = posy * 2 - me->posy;
     wandf = 40;
     dist = medist;
    } else if (can_see() &&
@@ -133,8 +131,8 @@ void monster::plan(game *g)
        g->m.sees(posx, posy, mon->posx, mon->posy, sightrange, tc)) {
     dist = mondist;
     if (fleeing) {
-     wandx = posx * 2 - mon->posx;
-     wandy = posy * 2 - mon->posy;
+     wand.x = posx * 2 - mon->posx;
+     wand.y = posy * 2 - mon->posy;
      wandf = 40;
     } else {
      closest = -3 - i;
@@ -394,17 +392,15 @@ point monster::sound_move(game *g)
 {
  plans.clear();
  point next;
- bool xbest = true;
- if (abs(wandy - posy) > abs(wandx - posx))// which is more important
-  xbest = false;
+ const bool xbest = (abs(wand.y - posy) <= abs(wand.x - posx));	// which is more important
  next.x = posx;
  next.y = posy;
  int x = posx, x2 = posx - 1, x3 = posx + 1;
  int y = posy, y2 = posy - 1, y3 = posy + 1;
- if (wandx < posx) { x--; x2++;          }
- if (wandx > posx) { x++; x2++; x3 -= 2; }
- if (wandy < posy) { y--; y2++;          }
- if (wandy > posy) { y++; y2++; y3 -= 2; }
+ if (wand.x < posx) { x--; x2++;          }
+ if (wand.x > posx) { x++; x2++; x3 -= 2; }
+ if (wand.y < posy) { y--; y2++;          }
+ if (wand.y > posy) { y++; y2++; y3 -= 2; }
  if (xbest) {
   if (can_move_to(g->m, x, y) || (x == g->u.posx && y == g->u.posy) ||
       (has_flag(MF_BASHES) && g->m.has_flag(bashable, x, y))) {
@@ -736,26 +732,20 @@ void monster::knock_back_from(game *g, int x, int y)
 bool monster::will_reach(game *g, int x, int y)
 {
  monster_attitude att = attitude(&(g->u));
- if (att != MATT_FOLLOW && att != MATT_ATTACK && att != MATT_FRIEND)
-  return false;
-
- if (has_flag(MF_DIGS))
-  return false;
-
- if (has_flag(MF_IMMOBILE) && (posx != x || posy != y))
-  return false;
+ if (att != MATT_FOLLOW && att != MATT_ATTACK && att != MATT_FRIEND) return false;
+ if (has_flag(MF_DIGS)) return false;
+ if (has_flag(MF_IMMOBILE) && (posx != x || posy != y)) return false;
 
  if (has_flag(MF_SMELLS) && g->scent(posx, posy) > 0 &&
      g->scent(x, y) > g->scent(posx, posy))
   return true;
 
- if (can_hear() && wandf > 0 && rl_dist(wandx, wandy, x, y) <= 2 &&
-     rl_dist(posx, posy, wandx, wandy) <= wandf)
+ if (can_hear() && wandf > 0 && rl_dist(wand.x, wand.y, x, y) <= 2 &&
+     rl_dist(posx, posy, wand.x, wand.y) <= wandf)
   return true;
 
  int t;
- if (can_see() && g->m.sees(posx, posy, x, y, g->light_level(), t))
-  return true;
+ if (can_see() && g->m.sees(posx, posy, x, y, g->light_level(), t)) return true;
 
  return false;
 }
@@ -763,15 +753,13 @@ bool monster::will_reach(game *g, int x, int y)
 int monster::turns_to_reach(game *g, int x, int y)
 {
  std::vector<point> path = g->m.route(posx, posy, x, y, has_flag(MF_BASHES));
- if (path.size() == 0)
-  return 999;
+ if (path.size() == 0) return 999;
 
  double turns = 0.;
- for (int i = 0; i < path.size(); i++) {
-  if (g->m.move_cost(path[i].x, path[i].y) == 0) // We have to bash through
-   turns += 5;
-  else
-   turns += double(50 * g->m.move_cost(path[i].x, path[i].y)) / speed;
+ for(const auto& step : path) {
+  const auto cost = g->m.move_cost(step.x, step.y);
+  turns += (0 >= cost) ? 5	// We have to bash through
+		 : double(50 * cost) / speed;
  }
  return int(turns + .9); // Round up
 }

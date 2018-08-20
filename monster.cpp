@@ -1,5 +1,6 @@
 #include "monster.h"
 #include "game.h"
+#include "saveload.h"
 #include <sstream>
 #include <fstream>
 #include <stdlib.h>
@@ -8,12 +9,10 @@
 #define SQR(a) ((a)*(a))
 
 monster::monster()
-: spawnmap(-1, -1), spawnpos(-1,-1)
+: wand(-1, -1), spawnmap(-1, -1), spawnpos(-1,-1)
 {
  posx = 20;
  posy = 10;
- wandx = -1;
- wandy = -1;
  wandf = 0;
  type = NULL;
  hp = 60;
@@ -30,12 +29,10 @@ monster::monster()
 }
 
 monster::monster(const mtype *t)
-: spawnmap(-1, -1), spawnpos(-1,-1)
+: wand(-1, -1), spawnmap(-1, -1), spawnpos(-1,-1)
 {
  posx = 20;
  posy = 10;
- wandx = -1;
- wandy = -1;
  wandf = 0;
  type = t;
  moves = type->speed;
@@ -53,12 +50,10 @@ monster::monster(const mtype *t)
 }
 
 monster::monster(const mtype *t, int x, int y)
-: spawnmap(-1, -1), spawnpos(-1,-1)
+: wand(-1, -1), spawnmap(-1, -1), spawnpos(-1,-1)
 {
  posx = x;
  posy = y;
- wandx = -1;
- wandy = -1;
  wandf = 0;
  type = t;
  moves = type->speed;
@@ -247,8 +242,8 @@ void monster::load_info(std::string data)
  std::stringstream dump;
  int idtmp, plansize;
  dump << data;
- dump >> idtmp >> posx >> posy >> wandx >> wandy >> wandf >> moves >> speed >>
-         hp >> sp_timeout >> plansize >> friendly >> faction_id >> mission_id >>
+ dump >> idtmp >> posx >> posy >> wand >> wandf >> moves >> speed >> hp >> 
+	     sp_timeout >> plansize >> friendly >> faction_id >> mission_id >>
          dead >> anger >> morale;
  type = mtype::types[idtmp];
  point ptmp;
@@ -261,11 +256,11 @@ void monster::load_info(std::string data)
 std::string monster::save_info() const
 {
  std::stringstream pack;
- pack << int(type->id) << " " << posx << " " << posy << " " << wandx << " " <<
-         wandy << " " << wandf << " " << moves << " " << speed << " " << hp <<
-         " " << sp_timeout << " " << plans.size() << " " << friendly << " " <<
-          faction_id << " " << mission_id << " " << dead << " " << anger <<
-         " " << morale;
+ pack << int(type->id) << " " << posx << " " << posy << " " << wand << " " << 
+	     wandf << " " << moves << " " << speed << " " << hp << " " << 
+	     sp_timeout << " " << plans.size() << " " << friendly << " " <<
+         faction_id << " " << mission_id << " " << dead << " " << anger << " " <<
+	     morale;
  for (int i = 0; i < plans.size(); i++) {
   pack << " " << plans[i].x << " " << plans[i].y;
  }

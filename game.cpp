@@ -3365,7 +3365,7 @@ void game::check_warmth()
 
 void game::sound(int x, int y, int vol, std::string description)
 {
- vol *= 1.5; // Scale it a little
+ vol *= 1.5; // Scale it a little	\todo looks like this doesn't work; try *=3 /=2 instead
 // First, alert all monsters (that can hear) to the sound
  for (int i = 0; i < z.size(); i++) {
   if (z[i].can_hear()) {

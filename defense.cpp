@@ -1253,8 +1253,8 @@ void defense_game::spawn_wave_monster(game *g, mtype *type)
   if (one_in(2))
    tmp.posx = SEEX * MAPSIZE - 1 - tmp.posx;
  }
- tmp.wandx = g->u.posx;
- tmp.wandy = g->u.posy;
+ tmp.wand.x = g->u.posx;
+ tmp.wand.y = g->u.posy;
  tmp.wandf = 150;
 // We wanna kill!
  tmp.anger = 100;
