@@ -439,6 +439,8 @@ const char* JSON_key(ter_id src)
 using namespace cataclysm;
 
 template<> ter_id discard<ter_id>::x = t_null;
+template<> trap_id discard<trap_id>::x = tr_null;
+template<> field discard<field>::x = field();
 
 ter_id JSON_parse<ter_id>::operator()(const char* const src)
 {
@@ -481,7 +483,6 @@ enum astar_list {
 
 map::map()
 {
- nultrap = tr_null;
  my_MAPSIZE = MAPSIZE;
  for (int n = 0; n < my_MAPSIZE * my_MAPSIZE; n++)
   grid[n] = NULL;
@@ -2049,10 +2050,7 @@ void map::use_charges(point origin, int range, itype_id type, int quantity)
  
 trap_id& map::tr_at(int x, int y)
 {
- if (!INBOUNDS(x, y)) {
-  nultrap = tr_null;
-  return nultrap;	// Out-of-bounds, return our null trap
- }
+ if (!INBOUNDS(x, y)) return (discard<trap_id>::x = tr_null);	// Out-of-bounds, return our null trap
 /*
  int nonant;
  cast_to_nonant(x, y, nonant);
@@ -2063,14 +2061,10 @@ trap_id& map::tr_at(int x, int y)
  y %= SEEY;
  if (x < 0 || x >= SEEX || y < 0 || y >= SEEY) {
   debugmsg("tr_at contained bad x:y %d:%d", x, y);
-  nultrap = tr_null;
-  return nultrap;	// Out-of-bounds, return our null trap
+  return (discard<trap_id>::x = tr_null);	// Out-of-bounds, return our null trap
  }
 
- if (ter_t::list[ grid[nonant]->ter[x][y] ].trap != tr_null) {
-  nultrap = ter_t::list[ grid[nonant]->ter[x][y] ].trap;
-  return nultrap;
- }
+ if (ter_t::list[ grid[nonant]->ter[x][y] ].trap != tr_null) return (discard<trap_id>::x = ter_t::list[ grid[nonant]->ter[x][y] ].trap);
  
  return grid[nonant]->trp[x][y];
 }
@@ -2121,10 +2115,7 @@ void map::disarm_trap(game *g, int x, int y)
  
 field& map::field_at(int x, int y)
 {
- if (!INBOUNDS(x, y)) {
-  nulfield = field();
-  return nulfield;
- }
+ if (!INBOUNDS(x, y)) return (discard<field>::x = field());
 /*
  int nonant;
  cast_to_nonant(x, y, nonant);
