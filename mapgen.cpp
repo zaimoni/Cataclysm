@@ -6468,7 +6468,7 @@ void map::add_spawn(monster *mon)
 {
  int spawnx, spawny;
  std::string spawnname = (mon->unique_name == "" ? "NONE" : mon->unique_name);
- if (mon->spawnmapx != -1) {
+ if (mon->is_static_spawn()) {
   spawnx = mon->spawnpos.x;
   spawny = mon->spawnpos.y;
  } else {

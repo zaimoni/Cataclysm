@@ -119,6 +119,8 @@ class monster {
  void make_friendly();
  void add_item(item it);	// Add an item to inventory
 
+ bool is_static_spawn() const { return -1 != spawnmap.x; }
+
 // TEMP VALUES
  int posx, posy;
  int wandx, wandy; // Wander destination - Just try to move in that direction
@@ -127,7 +129,7 @@ class monster {
  std::vector<monster_effect> effects; // Active effects, e.g. on fire
 
 // If we were spawned by the map, store our origin for later use
- int spawnmapx, spawnmapy;	// overmap source; z coordinate lost
+ point spawnmap;	// game::lev-based source; z coordinate lost
  point spawnpos;  // normal map position
 
 // DEFINING VALUES

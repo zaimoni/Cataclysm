@@ -2757,8 +2757,8 @@ void map::spawn_monsters(game *g)
      int tries = 0;
      int mx = grid[n]->spawns[i].posx, my = grid[n]->spawns[i].posy;
      monster tmp(mtype::types[grid[n]->spawns[i].type]);
-     tmp.spawnmapx = g->lev.x + gx;
-     tmp.spawnmapy = g->lev.y + gy;
+     tmp.spawnmap.x = g->lev.x + gx;
+     tmp.spawnmap.y = g->lev.y + gy;
      tmp.faction_id = grid[n]->spawns[i].faction_id;
      tmp.mission_id = grid[n]->spawns[i].mission_id;
      if (grid[n]->spawns[i].name != "NONE") tmp.unique_name = grid[n]->spawns[i].name;

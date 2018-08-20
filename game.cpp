@@ -559,11 +559,11 @@ bool game::do_turn()
   write_msg();
 // Save the monsters before we die!
   for (int i = 0; i < z.size(); i++) {
-   if (z[i].spawnmapx != -1) {	// Static spawn, move them back there
+   if (z[i].is_static_spawn()) {	// Static spawn, move them back there
     tinymap tmp;
-    tmp.load(this, z[i].spawnmapx, z[i].spawnmapy);
+    tmp.load(this, z[i].spawnmap.x, z[i].spawnmap.y);
     tmp.add_spawn(&(z[i]));
-    tmp.save(&cur_om, turn, z[i].spawnmapx, z[i].spawnmapy);
+    tmp.save(&cur_om, turn, z[i].spawnmap.x, z[i].spawnmap.y);
    } else {	// Absorb them back into a group
     int group = valid_group((mon_id)(z[i].type->id), lev.x, lev.y);
     if (group != -1) {
@@ -6407,11 +6407,11 @@ void game::vertical_move(int movez, bool force)
     int turns = z[i].turns_to_reach(this, u.posx, u.posy);
     if (turns < 999)
      coming_to_stairs.push_back( monster_and_count(z[i], 1 + turns) );
-   } else if (z[i].spawnmapx != -1) { // Static spawn, move them back there
+   } else if (z[i].is_static_spawn()) { // Static spawn, move them back there
     tinymap tmp;
-    tmp.load(this, z[i].spawnmapx, z[i].spawnmapy);
+    tmp.load(this, z[i].spawnmap.x, z[i].spawnmap.y);
     tmp.add_spawn(&(z[i]));
-    tmp.save(&cur_om, turn, z[i].spawnmapx, z[i].spawnmapy);
+    tmp.save(&cur_om, turn, z[i].spawnmap.x, z[i].spawnmap.y);
    } else if (z[i].friendly < 0) { // Friendly, make it into a static spawn
     tinymap tmp;
     tmp.load(this, lev.x, lev.y);
@@ -6547,11 +6547,11 @@ void game::update_map(int &x, int &y)
   if (z[i].posx < 0 - SEEX             || z[i].posy < 0 - SEEX ||
       z[i].posx > SEEX * (MAPSIZE + 1) || z[i].posy > SEEY * (MAPSIZE + 1)) {
 // Despawn; we're out of bounds
-   if (z[i].spawnmapx != -1) {	// Static spawn, move them back there
+   if (z[i].is_static_spawn()) {	// Static spawn, move them back there
     map tmp;
-    tmp.load(this, z[i].spawnmapx, z[i].spawnmapy);
+    tmp.load(this, z[i].spawnmap.x, z[i].spawnmap.y);
     tmp.add_spawn(&(z[i]));
-    tmp.save(&cur_om, turn, z[i].spawnmapx, z[i].spawnmapy);
+    tmp.save(&cur_om, turn, z[i].spawnmap.x, z[i].spawnmap.y);
    } else {	// Absorb them back into a group
     group = valid_group((mon_id)(z[i].type->id), lev.x + shiftx, lev.y + shifty);
     if (group != -1) {
