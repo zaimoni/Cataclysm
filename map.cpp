@@ -481,13 +481,6 @@ enum astar_list {
  ASL_CLOSED
 };
 
-map::map()
-{
- my_MAPSIZE = MAPSIZE;
- for (int n = 0; n < my_MAPSIZE * my_MAPSIZE; n++)
-  grid[n] = NULL;
-}
-
 vehicle* map::veh_at(int x, int y, int &part_num)
 {
  if (!inbounds(x, y)) return NULL;    // Out-of-bounds - null vehicle
@@ -2795,12 +2788,5 @@ void map::clear_traps()
 bool map::inbounds(int x, int y)
 {
  return (x >= 0 && x < SEEX * my_MAPSIZE && y >= 0 && y < SEEY * my_MAPSIZE);
-}
-
-tinymap::tinymap()
-{
- my_MAPSIZE = 2;
- for (int n = 0; n < 4; n++)
-  grid[n] = NULL;
 }
 

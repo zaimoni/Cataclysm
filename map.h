@@ -23,7 +23,7 @@ class map
  static std::vector <itype_id> items[num_itloc]; // Items at various map types
 
 // Constructors & Initialization
- map();
+ map(int map_size = MAPSIZE) : my_MAPSIZE(map_size), grid(map_size*map_size, NULL) {};
  virtual ~map() = default;
  
 // Visual Output
@@ -33,8 +33,8 @@ class map
              int cx = -1, int cy = -1);
 
 // File I/O
- virtual void save(overmap *om, unsigned int turn, int x, int y);
- virtual void load(game *g, int wx, int wy);
+ void save(overmap *om, unsigned int turn, int x, int y);
+ void load(game *g, int wx, int wy);
  void shift(game *g, int wx, int wy, int x, int y);
  void spawn_monsters(game *g);
  void clear_spawns();
@@ -159,24 +159,17 @@ protected:
 			// Useful for houses, shops, etc
 
  bool inbounds(int x, int y);
- int my_MAPSIZE;
- virtual bool is_tiny() { return false; };
+ bool is_tiny() const { return 2== my_MAPSIZE; };
 
-private:
- submap* grid[MAPSIZE * MAPSIZE];
+ int my_MAPSIZE;
+ std::vector<submap*> grid;
 };
 
 class tinymap : public map	// XXX direct subclassing defeats the point of this class \todo fix this
 {
 public:
- tinymap();
+ tinymap() : map(2) {};
  ~tinymap() = default;
-
-protected:
- virtual bool is_tiny() { return true; };
-
-private:
- submap* grid[4];
 };
 
 #endif
