@@ -2737,7 +2737,7 @@ void map::spawn_monsters(game *g)
    for (int i = 0; i < grid[n]->spawns.size(); i++) {
     for (int j = 0; j < grid[n]->spawns[i].count; j++) {
      int tries = 0;
-     int mx = grid[n]->spawns[i].posx, my = grid[n]->spawns[i].posy;
+	 point m(grid[n]->spawns[i].pos);
      monster tmp(mtype::types[grid[n]->spawns[i].type]);
      tmp.spawnmap.x = g->lev.x + gx;
      tmp.spawnmap.y = g->lev.y + gy;
@@ -2745,15 +2745,15 @@ void map::spawn_monsters(game *g)
      tmp.mission_id = grid[n]->spawns[i].mission_id;
      if (grid[n]->spawns[i].name != "NONE") tmp.unique_name = grid[n]->spawns[i].name;
      if (grid[n]->spawns[i].friendly) tmp.friendly = -1;
-     int fx = mx + gx * SEEX, fy = my + gy * SEEY;
+     int fx = m.x + gx * SEEX, fy = m.y + gy * SEEY;
 
      while ((!g->is_empty(fx, fy) || !tmp.can_move_to(g->m, fx, fy)) &&  tries < 10) {
-      mx = (grid[n]->spawns[i].posx + rng(-3, 3)) % SEEX;
-      my = (grid[n]->spawns[i].posy + rng(-3, 3)) % SEEY;
-      if (mx < 0) mx += SEEX;
-      if (my < 0) my += SEEY;
-      fx = mx + gx * SEEX;
-      fy = my + gy * SEEY;
+      m.x = (grid[n]->spawns[i].pos.x + rng(-3, 3)) % SEEX;
+      m.y = (grid[n]->spawns[i].pos.y + rng(-3, 3)) % SEEY;
+      if (m.x < 0) m.x += SEEX;
+      if (m.y < 0) m.y += SEEY;
+      fx = m.x + gx * SEEX;
+      fy = m.y + gy * SEEY;
       tries++;
      }
      if (tries != 10) {

@@ -1,37 +1,22 @@
 #include "mapbuffer.h"
 #include "game.h"
 #include "output.h"
+#include "saveload.h"
 #include <fstream>
 
 mapbuffer MAPBUFFER;
 
-// g defaults to NULL
-mapbuffer::mapbuffer(game *g)
-{
- master_game = g;
-}
-
 mapbuffer::~mapbuffer()
 {
- std::list<submap*>::iterator it;
-
- for (it = submap_list.begin(); it != submap_list.end(); it++)
-  delete *it;
-}
-
-void mapbuffer::set_game(game *g)
-{
- master_game = g;
+ for(auto it : submap_list) delete it;
 }
 
 bool mapbuffer::add_submap(int x, int y, int z, submap *sm)
 {
  tripoint p(x, y, z);
- if (submaps.count(p) != 0)
-  return false;
+ if (submaps.count(p) != 0) return false;
 
- if (master_game)
-  sm->turn_last_touched = int(master_game->turn);
+ if (master_game) sm->turn_last_touched = int(master_game->turn);
  submap_list.push_back(sm);
  submaps[p] = sm;
  return true;
@@ -41,10 +26,7 @@ submap* mapbuffer::lookup_submap(int x, int y, int z)
 {
  tripoint p(x, y, z);
 
- if (submaps.count(p) == 0)
-  return NULL;
-
- return submaps[p];
+ return (0 < submaps.count(p)) ? submaps[p] : NULL;
 }
 
 void mapbuffer::save()
@@ -118,9 +100,8 @@ void mapbuffer::save()
   spawn_point tmpsp;
   for (int i = 0; i < sm->spawns.size(); i++) {
    tmpsp = sm->spawns[i];
-   fout << "S " << int(tmpsp.type) << " " << tmpsp.count << " " << tmpsp.posx <<
-           " " << tmpsp.posy << " " << tmpsp.faction_id << " " <<
-           tmpsp.mission_id << (tmpsp.friendly ? " 1 " : " 0 ") <<
+   fout << "S " << int(tmpsp.type) << " " << tmpsp.count << " " << tmpsp.pos << " " << 
+	       tmpsp.faction_id << " " << tmpsp.mission_id << (tmpsp.friendly ? " 1 " : " 0 ") <<
            tmpsp.name << std::endl;
   }
  // Output the vehicles
@@ -244,9 +225,4 @@ void mapbuffer::load()
   submaps[ tripoint(locx, locy, locz) ] = sm;
  }
  fin.close();
-}
-
-int mapbuffer::size()
-{
- return submap_list.size();
 }

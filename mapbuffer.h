@@ -7,10 +7,10 @@ class game;
 class mapbuffer
 {
  public:
-  mapbuffer(game *g = NULL);
+  mapbuffer(game *g = NULL) : master_game(g) {};
   ~mapbuffer();
 
-  void set_game(game *g);
+  void set_game(game *g) { master_game = g; }
 
   void load();
   void save();
@@ -18,7 +18,7 @@ class mapbuffer
   bool add_submap(int x, int y, int z, submap *sm);
   submap* lookup_submap(int x, int y, int z);
 
-  int size();
+  int size() const { return submap_list.size(); };
 
  private:
   std::map<tripoint, submap*> submaps;

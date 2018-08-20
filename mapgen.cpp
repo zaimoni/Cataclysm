@@ -6548,9 +6548,7 @@ void map::rotate(int turns)
     int gridto = sx * my_MAPSIZE + 1 - sy;
     for (int j = 0; j < grid[gridfrom]->spawns.size(); j++) {
      spawn_point tmp = grid[gridfrom]->spawns[j];
-     int tmpy = tmp.posy;
-     tmp.posy = tmp.posx;
-     tmp.posx = SEEY - 1 - tmpy;
+	 tmp.pos = point(SEEY - 1 - tmp.pos.y, tmp.pos.x);	// depends on SEEX==SEEY
      sprot[gridto].push_back(tmp);
     }
    }
@@ -6585,9 +6583,7 @@ void map::rotate(int turns)
     int gridto = (1 - sy) * my_MAPSIZE + 1 - sx;
     for (int j = 0; j < grid[gridfrom]->spawns.size(); j++) {
      spawn_point tmp = grid[gridfrom]->spawns[j];
-     int tmpy = tmp.posy;
-     tmp.posy = SEEY - 1 - tmp.posy;
-     tmp.posx = SEEX - 1 - tmp.posx;
+	 tmp.pos = point(SEEX - 1 - tmp.pos.x, SEEY - 1 - tmp.pos.y);
      sprot[gridto].push_back(tmp);
     }
    }
@@ -6623,9 +6619,7 @@ void map::rotate(int turns)
     int gridto = (1 - sx) * my_MAPSIZE + sy;
     for (int j = 0; j < grid[gridfrom]->spawns.size(); j++) {
      spawn_point tmp = grid[gridfrom]->spawns[j];
-     int tmpy = tmp.posy;
-     tmp.posy = SEEX - 1 - tmp.posx;
-     tmp.posx = tmpy;
+	 tmp.pos = point(tmp.pos.y, SEEX - 1 - tmp.pos.x);	// depends on SEEX==SEEY
      sprot[gridto].push_back(tmp);
     }
    }

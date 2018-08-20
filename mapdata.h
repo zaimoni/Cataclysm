@@ -320,7 +320,7 @@ struct field {
 };
 
 struct spawn_point {
- int posx, posy;
+ point pos;
  int count;
  mon_id type;
  int faction_id;
@@ -330,7 +330,7 @@ struct spawn_point {
  spawn_point(mon_id T = mon_null, int C = 0, int X = -1, int Y = -1,
              int FAC = -1, int MIS = -1, bool F = false,
              std::string N = "NONE") :
-             posx (X), posy (Y), count (C), type (T), faction_id (FAC),
+             pos(X,Y), count (C), type (T), faction_id (FAC),
              mission_id (MIS), friendly (F), name (N) {}
 };
 
