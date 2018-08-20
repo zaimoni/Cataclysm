@@ -438,6 +438,8 @@ const char* JSON_key(ter_id src)
 
 using namespace cataclysm;
 
+template<> ter_id discard<ter_id>::x = t_null;
+
 ter_id JSON_parse<ter_id>::operator()(const char* const src)
 {
 	if (!src || !src[0]) return t_null;
@@ -479,7 +481,6 @@ enum astar_list {
 
 map::map()
 {
- nulter = t_null;
  nultrap = tr_null;
  my_MAPSIZE = MAPSIZE;
  for (int n = 0; n < my_MAPSIZE * my_MAPSIZE; n++)
@@ -990,10 +991,7 @@ bool map::displace_water (int x, int y)
 
 ter_id& map::ter(int x, int y)
 {
- if (!INBOUNDS(x, y)) {
-  nulter = t_null;
-  return nulter;	// Out-of-bounds - null terrain 
- }
+ if (!INBOUNDS(x, y)) return (discard<ter_id>::x = t_null);	// Out-of-bounds - null terrain 
 /*
  int nonant;
  cast_to_nonant(x, y, nonant);

@@ -162,10 +162,8 @@ protected:
  int my_MAPSIZE;
  virtual bool is_tiny() { return false; };
 
- ter_id nulter;	// Returned when &ter() is asked for an OOB value
  trap_id nultrap; // Returned when &tr_at() is asked for an OOB value
  field nulfield; // Returned when &field_at() is asked for an OOB value
- vehicle nulveh; // Returned when &veh_at() is asked for an OOB value
 
 private:
  submap* grid[MAPSIZE * MAPSIZE];
