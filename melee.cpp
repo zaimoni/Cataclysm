@@ -765,8 +765,7 @@ technique_id player::pick_technique(game *g, monster *z, player *p,
 
  } // if (possible.empty())
   
- if (possible.empty())
-  return TEC_NULL;
+ if (possible.empty()) return TEC_NULL;
 
  possible.push_back(TEC_NULL); // Always a chance to not use any technique
 
@@ -782,7 +781,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
  std::string target = (mon ? "the " + z->name() :
                        (p->is_npc() ? p->name : "you"));
  std::string s = (is_npc() ? "s" : "");
- int tarx = (mon ? z->posx : p->posx), tary = (mon ? z->posy : p->posy);
+ int tarx = (mon ? z->pos.x : p->posx), tary = (mon ? z->pos.y : p->posy);
 
  int junk;
  bool u_see = (!is_npc() || g->u_see(posx, posy, junk));
@@ -1092,8 +1091,7 @@ void player::perform_special_attacks(game *g, monster *z, player *p,
 void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
                                    int &bash_dam, int &cut_dam, int &stab_dam)
 {
- if (z == NULL && p == NULL)
-  return;
+ if (z == NULL && p == NULL) return;
  bool mon = (z != NULL);
  int junk;
  bool is_u = (!is_npc());
@@ -1105,19 +1103,16 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
                        (p->is_npc() ? p->name : "you"));
  std::string target_possessive = (mon ? "the " + z->name() + "'s" :
                                   (p->is_npc() ? p->name + "'s" : your));
- int tarposx = (mon ? z->posx : p->posx), tarposy = (mon ? z->posy : p->posy);
+ int tarposx = (mon ? z->pos.x : p->posx), tarposy = (mon ? z->pos.y : p->posy);
 
 // Bashing effecs
- if (mon)
-  z->moves -= rng(0, bash_dam * 2);
- else
-  p->moves -= rng(0, bash_dam * 2);
+ if (mon) z->moves -= rng(0, bash_dam * 2);
+ else p->moves -= rng(0, bash_dam * 2);
 
 // Bashing crit
  if (crit && !unarmed_attack()) {
   int turns_stunned = int(bash_dam / 20) + rng(0, int(sklevel[sk_bashing] / 2));
-  if (turns_stunned > 6)
-   turns_stunned = 6;
+  if (turns_stunned > 6) turns_stunned = 6;
   if (turns_stunned > 0) {
    if (mon)
     z->add_effect(ME_STUNNED, turns_stunned);
@@ -1128,8 +1123,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
 
 // Stabbing effects
  int stab_moves = rng(stab_dam / 2, stab_dam * 1.5);
- if (crit)
-  stab_moves *= 1.5;
+ if (crit) stab_moves *= 1.5;
  if (stab_moves >= 150) {
   if (can_see)
    g->add_msg("%s force%s the %s to the ground!", You.c_str(),
@@ -1311,14 +1305,12 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
 
   case itm_style_scorpion:
    if (crit) {
-    if (!is_npc())
-     g->add_msg("Stinger Strike!");
+    if (!is_npc()) g->add_msg("Stinger Strike!");
     if (mon) {
      z->add_effect(ME_STUNNED, 3);
-     int zposx = z->posx, zposy = z->posy;
+	 const point zpos(z->pos);
      z->knock_back_from(g, posx, posy);
-     if (z->posx != zposx || z->posy != zposy)
-      z->knock_back_from(g, posx, posy); // Knock a 2nd time if the first worked
+	 if (zpos != z->pos) z->knock_back_from(g, posx, posy); // Knock a 2nd time if the first worked
     } else {
      p->add_disease(DI_STUNNED, 2, g);
      int pposx = p->posx, pposy = p->posy;

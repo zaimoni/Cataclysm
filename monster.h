@@ -68,10 +68,10 @@ class monster {
  void debug(player &u); 	// Gives debug info
 
 // Movement
- void receive_moves();		// Gives us movement points
+ void receive_moves() { moves += speed; }		// Gives us movement points
  void shift(int sx, int sy); 	// Shifts the monster to the appropriate submap
 			     	// Updates current pos AND our plans
- bool wander(); 		// Returns true if we have no plans
+ bool wander() const { return plans.empty(); } 		// Returns true if we have no plans
  bool can_move_to(map &m, int x, int y); // Can we move to (x, y)?
  bool will_reach(game *g, int x, int y); // Do we have plans to get to (x, y)?
  int  turns_to_reach(game *g, int x, int y); // How long will it take?
@@ -122,7 +122,7 @@ class monster {
  bool is_static_spawn() const { return -1 != spawnmap.x; }
 
 // TEMP VALUES
- int posx, posy;
+ point pos;
  point wand; // Wander destination - Just try to move in that direction
  int wandf;	   // Urge to wander - Increased by sound, decrements each move
  std::vector<item> inv; // Inventory

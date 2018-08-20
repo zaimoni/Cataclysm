@@ -6466,20 +6466,13 @@ void map::add_spawn(mon_id type, int count, int x, int y, bool friendly,
 
 void map::add_spawn(monster *mon)
 {
- int spawnx, spawny;
  std::string spawnname = (mon->unique_name == "" ? "NONE" : mon->unique_name);
- if (mon->is_static_spawn()) {
-  spawnx = mon->spawnpos.x;
-  spawny = mon->spawnpos.y;
- } else {
-  spawnx = mon->posx;
-  spawny = mon->posy;
- }
- while (spawnx < 0) spawnx += SEEX;
- while (spawny < 0) spawny += SEEY;
- spawnx %= SEEX;
- spawny %= SEEY;
- add_spawn(mon_id(mon->type->id), 1, spawnx, spawny, (mon->friendly < 0),
+ point spawn = mon->is_static_spawn() ? mon->spawnpos : mon->pos;
+ while (spawn.x < 0) spawn.x += SEEX;
+ while (spawn.y < 0) spawn.y += SEEY;
+ spawn.x %= SEEX;
+ spawn.y %= SEEY;
+ add_spawn(mon_id(mon->type->id), 1, spawn.x, spawn.y, (mon->friendly < 0),
            mon->faction_id, mon->mission_id, spawnname);
 }
 

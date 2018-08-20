@@ -9,10 +9,8 @@
 #define SQR(a) ((a)*(a))
 
 monster::monster()
-: wand(-1, -1), spawnmap(-1, -1), spawnpos(-1,-1)
+: pos(20, 10), wand(-1, -1), spawnmap(-1, -1), spawnpos(-1,-1)
 {
- posx = 20;
- posy = 10;
  wandf = 0;
  type = NULL;
  hp = 60;
@@ -29,10 +27,8 @@ monster::monster()
 }
 
 monster::monster(const mtype *t)
-: wand(-1, -1), spawnmap(-1, -1), spawnpos(-1,-1)
+: pos(20, 10), wand(-1, -1), spawnmap(-1, -1), spawnpos(-1,-1)
 {
- posx = 20;
- posy = 10;
  wandf = 0;
  type = t;
  moves = type->speed;
@@ -50,10 +46,8 @@ monster::monster(const mtype *t)
 }
 
 monster::monster(const mtype *t, int x, int y)
-: wand(-1, -1), spawnmap(-1, -1), spawnpos(-1,-1)
+: pos(x, y), wand(-1, -1), spawnmap(-1, -1), spawnpos(-1,-1)
 {
- posx = x;
- posy = y;
  wandf = 0;
  type = t;
  moves = type->speed;
@@ -84,8 +78,7 @@ void monster::poly(mtype *t)
 
 void monster::spawn(int x, int y)
 {
- posx = x;
- posy = y;
+ pos = point(x,y);
 }
 
 std::string monster::name()
@@ -191,8 +184,8 @@ char monster::symbol()
 
 void monster::draw(WINDOW *w, int plx, int ply, bool inv)
 {
- int x = SEEX + posx - plx;
- int y = SEEY + posy - ply;
+ int x = SEEX + pos.x - plx;
+ int y = SEEY + pos.y - ply;
  nc_color color = type->color;
  char sym = type->sym;
 
@@ -242,13 +235,13 @@ void monster::load_info(std::string data)
  std::stringstream dump;
  int idtmp, plansize;
  dump << data;
- dump >> idtmp >> posx >> posy >> wand >> wandf >> moves >> speed >> hp >> 
-	     sp_timeout >> plansize >> friendly >> faction_id >> mission_id >>
-         dead >> anger >> morale;
+ dump >> idtmp >> pos >> wand >> wandf >> moves >> speed >> hp >>  sp_timeout >>
+	     plansize >> friendly >> faction_id >> mission_id >> dead >> anger >> 
+	     morale;
  type = mtype::types[idtmp];
  point ptmp;
  for (int i = 0; i < plansize; i++) {
-  dump >> ptmp.x >> ptmp.y;
+  dump >> ptmp;
   plans.push_back(ptmp);
  }
 }
@@ -256,13 +249,12 @@ void monster::load_info(std::string data)
 std::string monster::save_info() const
 {
  std::stringstream pack;
- pack << int(type->id) << " " << posx << " " << posy << " " << wand << " " << 
-	     wandf << " " << moves << " " << speed << " " << hp << " " << 
-	     sp_timeout << " " << plans.size() << " " << friendly << " " <<
-         faction_id << " " << mission_id << " " << dead << " " << anger << " " <<
-	     morale;
+ pack << int(type->id) << " " << pos << " " << wand << " " <<  wandf << " " <<
+	     moves << " " << speed << " " << hp << " " <<  sp_timeout << " " << 
+	     plans.size() << " " << friendly << " " << faction_id << " " << 
+	     mission_id << " " << dead << " " << anger << " " << morale;
  for (int i = 0; i < plans.size(); i++) {
-  pack << " " << plans[i].x << " " << plans[i].y;
+  pack << " " << plans[i];
  }
  return pack.str();
 }
@@ -283,8 +275,8 @@ void monster::debug(player &u)
 
 void monster::shift(int sx, int sy)
 {
- posx -= sx * SEEX;
- posy -= sy * SEEY;
+ pos.x -= sx * SEEX;
+ pos.y -= sy * SEEY;
  for (int i = 0; i < plans.size(); i++) {
   plans[i].x -= sx * SEEX;
   plans[i].y -= sy * SEEY;
@@ -293,19 +285,16 @@ void monster::shift(int sx, int sy)
 
 bool monster::is_fleeing(player &u)
 {
- if (has_effect(ME_RUN))
-  return true;
+ if (has_effect(ME_RUN)) return true;
  monster_attitude att = attitude(&u);
  return (att == MATT_FLEE ||
-         (att == MATT_FOLLOW && rl_dist(posx, posy, u.posx, u.posy) <= 4));
+         (att == MATT_FOLLOW && rl_dist(pos.x, pos.y, u.posx, u.posy) <= 4));
 }
 
 monster_attitude monster::attitude(player *u)
 {
- if (friendly != 0)
-  return MATT_FRIEND;
- if (has_effect(ME_RUN))
-  return MATT_FLEE;
+ if (friendly != 0) return MATT_FRIEND;
+ if (has_effect(ME_RUN)) return MATT_FLEE;
 
  int effective_anger  = anger;
  int effective_morale = morale;
@@ -381,8 +370,7 @@ int monster::trigger_sum(game *g, const std::vector<monster_trigger>& triggers)
 
   switch (trigger) {
   case MTRIG_TIME:
-   if (one_in(20))
-    ret++;
+   if (one_in(20)) ret++;
    break;
 
   case MTRIG_MEAT:
@@ -391,10 +379,9 @@ int monster::trigger_sum(game *g, const std::vector<monster_trigger>& triggers)
    break;
 
   case MTRIG_PLAYER_CLOSE:
-   if (rl_dist(posx, posy, g->u.posx, g->u.posy) <= 5)
-    ret += 5;
+   if (rl_dist(pos.x, pos.y, g->u.posx, g->u.posy) <= 5) ret += 5;
    for (int i = 0; i < g->active_npc.size(); i++) {
-    if (rl_dist(posx, posy, g->active_npc[i].posx, g->active_npc[i].posy) <= 5)
+    if (rl_dist(pos.x, pos.y, g->active_npc[i].posx, g->active_npc[i].posy) <= 5)
      ret += 5;
    }
    break;
@@ -415,8 +402,8 @@ int monster::trigger_sum(game *g, const std::vector<monster_trigger>& triggers)
  }
 
  if (check_terrain) {
-  for (int x = posx - 3; x <= posx + 3; x++) {
-   for (int y = posy - 3; y <= posy + 3; y++) {
+  for (int x = pos.x - 3; x <= pos.x + 3; x++) {
+   for (int y = pos.y - 3; y <= pos.y + 3; y++) {
     if (check_meat) {
      std::vector<item> *items = &(g->m.i_at(x, y));
      for (int n = 0; n < items->size(); n++) {
@@ -617,7 +604,7 @@ void monster::die(game *g)
     selected_item++;
     cur_chance -= item::types[mapit[selected_item]]->rarity;
    }
-   g->m.add_item(posx, posy, item::types[mapit[selected_item]], 0);
+   g->m.add_item(pos.x, pos.y, item::types[mapit[selected_item]], 0);
    if (type->item_chance < 0) animal_done = true;	// Only drop ONE item.
   }
  } // Done dropping items
@@ -673,7 +660,7 @@ void monster::die(game *g)
   int light = g->light_level();
   for (int i = 0; i < g->z.size(); i++) {
    int t = 0;
-   if (g->m.sees(g->z[i].posx, g->z[i].posy, posx, posy, light, t)) {
+   if (g->m.sees(g->z[i].pos.x, g->z[i].pos.y, pos.x, pos.y, light, t)) {
     g->z[i].morale += morale_adjust;
     g->z[i].anger += anger_adjust;
    }

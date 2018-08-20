@@ -1242,19 +1242,18 @@ void defense_game::spawn_wave_monster(game *g, mtype *type)
 {
  monster tmp(type);
  if (location == DEFLOC_HOSPITAL || location == DEFLOC_MALL) {
-  tmp.posy = SEEY; // Always spawn to the north!
-  tmp.posx = rng(SEEX * (MAPSIZE / 2), SEEX * (1 + MAPSIZE / 2));
+  tmp.pos.y = SEEY; // Always spawn to the north!
+  tmp.pos.x = rng(SEEX * (MAPSIZE / 2), SEEX * (1 + MAPSIZE / 2));
  } else if (one_in(2)) {
   tmp.spawn(rng(SEEX * (MAPSIZE / 2), SEEX * (1 + MAPSIZE / 2)), rng(1, SEEY));
   if (one_in(2))
-   tmp.posy = SEEY * MAPSIZE - 1 - tmp.posy;
+   tmp.pos.y = SEEY * MAPSIZE - 1 - tmp.pos.y;
  } else {
   tmp.spawn(rng(1, SEEX), rng(SEEY * (MAPSIZE / 2), SEEY * (1 + MAPSIZE / 2)));
   if (one_in(2))
-   tmp.posx = SEEX * MAPSIZE - 1 - tmp.posx;
+   tmp.pos.x = SEEX * MAPSIZE - 1 - tmp.pos.x;
  }
- tmp.wand.x = g->u.posx;
- tmp.wand.y = g->u.posy;
+ tmp.wand = g->u.posx;
  tmp.wandf = 150;
 // We wanna kill!
  tmp.anger = 100;

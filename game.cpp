@@ -2162,8 +2162,7 @@ void game::mondebug()
  int tc;
  for (int i = 0; i < z.size(); i++) {
   z[i].debug(u);
-  if (z[i].has_flag(MF_SEES) &&
-      m.sees(z[i].posx, z[i].posy, u.posx, u.posy, -1, tc))
+  if (z[i].has_flag(MF_SEES) && m.sees(z[i].pos.x, z[i].pos.y, u.posx, u.posy, -1, tc))
    debugmsg("The %s can see you.", z[i].name().c_str());
   else
    debugmsg("The %s can't see you...", z[i].name().c_str());
@@ -2516,31 +2515,24 @@ bool game::isBetween(int test, int down, int up)
 void game::draw_ter(int posx, int posy)
 {
 // posx/posy default to -999
- if (posx == -999)
-  posx = u.posx;
- if (posy == -999)
-  posy = u.posy;
+ if (posx == -999) posx = u.posx;
+ if (posy == -999) posy = u.posy;
  int t = 0;
  m.draw(this, w_terrain, point(posx, posy));
 
  // Draw monsters
- int distx, disty;
  for (int i = 0; i < z.size(); i++) {
-  disty = abs(z[i].posy - posy);
-  distx = abs(z[i].posx - posx);
-  if (distx <= SEEX && disty <= SEEY && u_see(&(z[i]), t))
+  point dist(abs(z[i].pos.x - posx), abs(z[i].pos.y - posy));
+  if (dist.x <= SEEX && dist.y <= SEEY && u_see(&(z[i]), t))
    z[i].draw(w_terrain, posx, posy, false);
-  else if (z[i].has_flag(MF_WARM) && distx <= SEEX && disty <= SEEY &&
+  else if (z[i].has_flag(MF_WARM) && dist.x <= SEEX && dist.y <= SEEY &&
            (u.has_active_bionic(bio_infrared) || u.has_trait(PF_INFRARED)))
-   mvwputch(w_terrain, SEEY + z[i].posy - posy, SEEX + z[i].posx - posx,
-            c_red, '?');
+   mvwputch(w_terrain, SEEY + z[i].pos.y - posy, SEEX + z[i].pos.x - posx, c_red, '?');
  }
  // Draw NPCs
  for (int i = 0; i < active_npc.size(); i++) {
-  disty = abs(active_npc[i].posy - posy);
-  distx = abs(active_npc[i].posx - posx);
-  if (distx <= SEEX && disty <= SEEY &&
-      u_see(active_npc[i].posx, active_npc[i].posy, t))
+  point dist(abs(active_npc[i].posx - posx), abs(active_npc[i].posy - posy));
+  if (dist.x <= SEEX && dist.y <= SEEY && u_see(active_npc[i].posx, active_npc[i].posy, t))
    active_npc[i].draw(w_terrain, posx, posy, false);
  }
  if (u.has_active_bionic(bio_scent_vision)) {
@@ -2550,11 +2542,9 @@ void game::draw_ter(int posx, int posy)
      int tempx = posx - realx, tempy = posy - realy;
      if (!(isBetween(tempx, -2, 2) && isBetween(tempy, -2, 2))) {
       if (mon_at(realx, realy) != -1)
-       mvwputch(w_terrain, realy + SEEY - posy, realx + SEEX - posx,
-                c_white, '?');
+       mvwputch(w_terrain, realy + SEEY - posy, realx + SEEX - posx, c_white, '?');
       else
-       mvwputch(w_terrain, realy + SEEY - posy, realx + SEEX - posx,
-                c_magenta, '#');
+       mvwputch(w_terrain, realy + SEEY - posy, realx + SEEX - posx, c_magenta, '#');
      }
     }
    }
@@ -2864,37 +2854,32 @@ bool game::u_see(int x, int y, int &t)
 
 bool game::u_see(monster *mon, int &t)
 {
- int dist = rl_dist(u.posx, u.posy, mon->posx, mon->posy);
- if (u.has_trait(PF_ANTENNAE) && dist <= 3)
-  return true;
- if (mon->has_flag(MF_DIGS) && !u.has_active_bionic(bio_ground_sonar) &&
-     dist > 1)
+ int dist = rl_dist(u.posx, u.posy, mon->pos.x, mon->pos.y);
+ if (u.has_trait(PF_ANTENNAE) && dist <= 3) return true;
+ if (mon->has_flag(MF_DIGS) && !u.has_active_bionic(bio_ground_sonar) && dist > 1)
   return false;	// Can't see digging monsters until we're right next to them
- int range = u.sight_range(light_level());
+ const int range = u.sight_range(light_level());
  if (u.has_artifact_with(AEP_CLAIRVOYANCE)) {
   int crange = (range > u.clairvoyance() ? u.clairvoyance() : range);
-  if (dist <= crange)
-   return true;
+  if (dist <= crange) return true;
  }
- return m.sees(u.posx, u.posy, mon->posx, mon->posy, range, t);
+ return m.sees(u.posx, u.posy, mon->pos.x, mon->pos.y, range, t);
 }
 
 bool game::pl_sees(player *p, monster *mon, int &t)
 {
  if (mon->has_flag(MF_DIGS) && !p->has_active_bionic(bio_ground_sonar) &&
-     rl_dist(p->posx, p->posy, mon->posx, mon->posy) > 1)
+     rl_dist(p->posx, p->posy, mon->pos.x, mon->pos.y) > 1)
   return false;	// Can't see digging monsters until we're right next to them
  int range = p->sight_range(light_level());
- return m.sees(p->posx, p->posy, mon->posx, mon->posy, range, t);
+ return m.sees(p->posx, p->posy, mon->pos.x, mon->pos.y, range, t);
 }
 
 point game::find_item(item *it)
 {
- if (u.has_item(it))
-  return point(u.posx, u.posy);
+ if (u.has_item(it)) return point(u.posx, u.posy);
  point ret = m.find_item(it);
- if (ret.x != -1 && ret.y != -1)
-  return ret;
+ if (ret.x != -1 && ret.y != -1) return ret;
  for (int i = 0; i < active_npc.size(); i++) {
   for (int j = 0; j < active_npc[i].inv.size(); j++) {
    if (it == &(active_npc[i].inv[j]))
@@ -2984,11 +2969,10 @@ void game::mon_info()
     newseen++;
    }
 
-   dir_to_mon = direction_from(u.posx, u.posy, z[i].posx, z[i].posy);
-   int index = (rl_dist(u.posx, u.posy, z[i].posx, z[i].posy) <= SEEX ?
+   dir_to_mon = direction_from(u.posx, u.posy, z[i].pos.x, z[i].pos.y);
+   int index = (rl_dist(u.posx, u.posy, z[i].pos.x, z[i].pos.y) <= SEEX ?
                 8 : dir_to_mon);
-   if (mon_dangerous && index < 8)
-    dangerous[index] = true;
+   if (mon_dangerous && index < 8) dangerous[index] = true;
 
    if (!vector_has(unique_types[dir_to_mon], z[i].type->id))
     unique_types[index].push_back(z[i].type->id);
@@ -3009,12 +2993,10 @@ void game::mon_info()
  if (newseen > mostseen) {
   cancel_activity_query("Monster spotted!");
   turnssincelastmon = 0;
-  if (run_mode == 1)
-   run_mode = 2;	// Stop movement!
+  if (run_mode == 1) run_mode = 2;	// Stop movement!
  } else if (autosafemode) { // Auto-safemode
   turnssincelastmon++;
-  if(turnssincelastmon >= 50 && run_mode == 0)
-   run_mode = 1;
+  if(turnssincelastmon >= 50 && run_mode == 0) run_mode = 1;
  }
 
 
@@ -3163,38 +3145,32 @@ void game::monmove()
 {
  cleanup_dead();
  for (int i = 0; i < z.size(); i++) {
-  if (i < 0 || i > z.size())
-   debugmsg("Moving out of bounds monster! i %d, z.size() %d", i, z.size());
-  while (!z[i].dead && !z[i].can_move_to(m, z[i].posx, z[i].posy)) {
+  while (!z[i].dead && !z[i].can_move_to(m, z[i].pos.x, z[i].pos.y)) {
 // If we can't move to our current position, assign us to a new one
    if (debugmon)
     debugmsg("%s can't move to its location! (%d:%d), %s", z[i].name().c_str(),
-             z[i].posx, z[i].posy, m.tername(z[i].posx, z[i].posy).c_str());
+             z[i].pos.x, z[i].pos.y, m.tername(z[i].pos.x, z[i].pos.y).c_str());
    bool okay = false;
    int xdir = rng(1, 2) * 2 - 3, ydir = rng(1, 2) * 2 - 3; // -1 or 1
-   int startx = z[i].posx - 3 * xdir, endx = z[i].posx + 3 * xdir;
-   int starty = z[i].posy - 3 * ydir, endy = z[i].posy + 3 * ydir;
+   int startx = z[i].pos.x - 3 * xdir, endx = z[i].pos.x + 3 * xdir;
+   int starty = z[i].pos.y - 3 * ydir, endy = z[i].pos.y + 3 * ydir;
    for (int x = startx; x != endx && !okay; x += xdir) {
     for (int y = starty; y != endy && !okay; y += ydir){
      if (z[i].can_move_to(m, x, y)) {
-      z[i].posx = x;
-      z[i].posy = y;
+      z[i].pos = point(x, y);
       okay = true;
      }
     }
    }
-   if (!okay)
-    z[i].dead = true;
-    //build_monmap();
+   if (!okay) z[i].dead = true;
   }
 
   if (!z[i].dead) {
    z[i].process_effects(this);
-   if (z[i].hurt(0))
-    kill_mon(i, false);
+   if (z[i].hurt(0)) kill_mon(i, false);
   }
 
-  m.mon_in_field(z[i].posx, z[i].posy, this, &(z[i]));
+  m.mon_in_field(z[i].pos.x, z[i].pos.y, this, &(z[i]));
 
   while (z[i].moves > 0 && !z[i].dead) {
    z[i].made_footstep = false;
@@ -3202,7 +3178,7 @@ void game::monmove()
    z[i].move(this);	// Move one square, possibly hit u
    //build_monmap();
    z[i].process_triggers(this);
-   m.mon_in_field(z[i].posx, z[i].posy, this, &(z[i]));
+   m.mon_in_field(z[i].pos.x, z[i].pos.y, this, &(z[i]));
    if (z[i].hurt(0)) {	// Maybe we died...
     kill_mon(i, false);
     z[i].dead = true;
@@ -3211,7 +3187,7 @@ void game::monmove()
 
   if (!z[i].dead) {
    if (u.has_active_bionic(bio_alarm) && u.power_level >= 1 &&
-       rl_dist(u.posx, u.posy, z[i].posx, z[i].posy) <= 5) {
+       rl_dist(u.posx, u.posy, z[i].pos.x, z[i].pos.y) <= 5) {
     u.power_level--;
     add_msg("Your motion alarm goes off!");
     cancel_activity_query("Your motion alarm goes off!");
@@ -3221,10 +3197,10 @@ void game::monmove()
     }
    }
 // We might have stumbled out of range of the player; if so, kill us
-   if (z[i].posx < 0 - (SEEX * MAPSIZE) / 6 ||
-       z[i].posy < 0 - (SEEY * MAPSIZE) / 6 ||
-       z[i].posx > (SEEX * MAPSIZE * 7) / 6 ||
-       z[i].posy > (SEEY * MAPSIZE * 7) / 6   ) {
+   if (z[i].pos.x < 0 - (SEEX * MAPSIZE) / 6 ||
+       z[i].pos.y < 0 - (SEEY * MAPSIZE) / 6 ||
+       z[i].pos.x > (SEEX * MAPSIZE * 7) / 6 ||
+       z[i].pos.y > (SEEY * MAPSIZE * 7) / 6   ) {
 // Re-absorb into local group, if applicable
     int group = valid_group((mon_id)(z[i].type->id), lev.x, lev.y);
     if (group != -1) {
@@ -3242,8 +3218,7 @@ void game::monmove()
     //z.erase(z.begin()+i);
     //build_monmap();
     //i--;
-   } else
-    z[i].receive_moves();
+   } else z[i].receive_moves();
   }
  }
 
@@ -3369,7 +3344,7 @@ void game::sound(int x, int y, int vol, std::string description)
 // First, alert all monsters (that can hear) to the sound
  for (int i = 0; i < z.size(); i++) {
   if (z[i].can_hear()) {
-   int dist = rl_dist(x, y, z[i].posx, z[i].posy);
+   int dist = rl_dist(x, y, z[i].pos.x, z[i].pos.y);
    int volume = vol - (z[i].has_flag(MF_GOODHEARING) ? int(dist / 2) : dist);
    z[i].wander_to(x, y, volume);
    z[i].process_trigger(MTRIG_SOUND, volume);
@@ -3380,31 +3355,21 @@ void game::sound(int x, int y, int vol, std::string description)
  if (vol >= spawn_range) {
   int max = (vol - spawn_range);
   int min = int(max / 6);
-  if (max > spawn_range * 4)
-   max = spawn_range * 4;
-  if (min > spawn_range * 4)
-   min = spawn_range * 4;
+  if (max > spawn_range * 4) max = spawn_range * 4;
+  if (min > spawn_range * 4) min = spawn_range * 4;
   int change = rng(min, max);
-  if (nextspawn < change)
-   nextspawn = 0;
-  else
-   nextspawn -= change;
+  if (nextspawn < change) nextspawn = 0;
+  else nextspawn -= change;
  }
 // Next, display the sound as the player hears it
- if (description == "")
-  return;	// No description (e.g., footsteps)
- if (u.has_disease(DI_DEAF))
-  return;	// We're deaf, can't hear it
+ if (description == "") return;	// No description (e.g., footsteps)
+ if (u.has_disease(DI_DEAF)) return;	// We're deaf, can't hear it
 
- if (u.has_bionic(bio_ears))
-  vol *= 3.5;
- if (u.has_trait(PF_BADHEARING))
-  vol *= .5;
- if (u.has_trait(PF_CANINE_EARS))
-  vol *= 1.5;
+ if (u.has_bionic(bio_ears)) vol *= 3.5;
+ if (u.has_trait(PF_BADHEARING)) vol *= .5;
+ if (u.has_trait(PF_CANINE_EARS)) vol *= 1.5;
  int dist = rl_dist(x, y, u.posx, u.posy);
- if (dist > vol)
-  return;	// Too far away, we didn't hear it!
+ if (dist > vol) return;	// Too far away, we didn't hear it!
  if (u.has_disease(DI_SLEEP) &&
      ((!u.has_trait(PF_HEAVYSLEEPER) && dice(2, 20) < vol - dist) ||
       ( u.has_trait(PF_HEAVYSLEEPER) && dice(3, 20) < vol - dist)   )) {
@@ -3414,13 +3379,11 @@ void game::sound(int x, int y, int vol, std::string description)
  }
  if (!u.has_bionic(bio_ears) && rng( (vol - dist) / 2, (vol - dist) ) >= 150) {
   int duration = (vol - dist - 130) / 4;
-  if (duration > 40)
-   duration = 40;
+  if (duration > 40) duration = 40;
   u.add_disease(DI_DEAF, duration, this);
  }
  if (x != u.posx || y != u.posy)
-  cancel_activity_query("Heard %s!",
-                        (description == "" ? "a noise" : description.c_str()));
+  cancel_activity_query("Heard %s!", (description == "" ? "a noise" : description.c_str()));
 // We need to figure out where it was coming from, relative to the player
  int dx = x - u.posx;
  int dy = y - u.posy;
@@ -3630,11 +3593,11 @@ void game::flashbang(int x, int y)
    u.infect(DI_BLIND, bp_eyes, (12 - dist) / 2, 10 - dist, this);
  }
  for (int i = 0; i < z.size(); i++) {
-  dist = rl_dist(z[i].posx, z[i].posy, x, y);
+  dist = rl_dist(z[i].pos.x, z[i].pos.y, x, y);
   if (dist <= 4)
    z[i].add_effect(ME_STUNNED, 10 - dist);
   if (dist <= 8) {
-   if (z[i].has_flag(MF_SEES) && m.sees(z[i].posx, z[i].posy, x, y, 8, t))
+   if (z[i].has_flag(MF_SEES) && m.sees(z[i].pos.x, z[i].pos.y, x, y, 8, t))
     z[i].add_effect(ME_BLIND, 18 - dist);
    if (z[i].has_flag(MF_HEARS))
     z[i].add_effect(ME_DEAF, 60 - dist * 4);
@@ -3808,19 +3771,12 @@ void game::build_monmap()
 
 int game::mon_at(int x, int y)
 {
-/*
- if (monmap[x][y] != -2)
-  return monmap[x][y];
-*/
  for (int i = 0; i < z.size(); i++) {
-  if (z[i].posx == x && z[i].posy == y) {
-   if (z[i].dead)
-    return -1;
-   else
-    return i;
+  if (z[i].pos.x == x && z[i].pos.y == y) {
+   if (z[i].dead) return -1;
+   else return i;
   }
  }
- //monmap[x][y] = -1;
  return -1;
 }
 
@@ -3854,7 +3810,7 @@ void game::kill_mon(int index, bool u_did_it)
     kills[z[index].type->id]++;	// Increment our kill counter
   }
   for (int i = 0; i < z[index].inv.size(); i++)
-   m.add_item(z[index].posx, z[index].posy, z[index].inv[i]);
+   m.add_item(z[index].pos.x, z[index].pos.y, z[index].inv[i]);
   z[index].die(this);
  }
 /*
@@ -3877,49 +3833,40 @@ void game::explode_mon(int index)
   if (!meat) return;	// no chunks when return value is NULL
   const int num_chunks = corpse->chunk_count();
 
-  int posx = z[index].posx, posy = z[index].posy;
+  point pos(z[index].pos);
   for (int i = 0; i < num_chunks; i++) {
-   int tarx = posx + rng(-3, 3), tary = posy + rng(-3, 3);
-   std::vector<point> traj = line_to(posx, posy, tarx, tary, 0);
+   point tar(pos.x + rng(-3, 3), pos.y + rng(-3, 3));
+   std::vector<point> traj = line_to(pos.x, pos.y, tar.x, tar.y, 0);
  
    bool done = false;
    for (int j = 0; j < traj.size() && !done; j++) {
-    tarx = traj[j].x;
-    tary = traj[j].y;
+    tar = traj[j];
 // Choose a blood type and place it
     field_id blood_type = fd_blood;
-    if (corpse->dies == &mdeath::boomer)
-     blood_type = fd_bile;
-    else if (corpse->dies == &mdeath::acid)
-     blood_type = fd_acid;
-    if (m.field_at(tarx, tary).type == blood_type &&
-        m.field_at(tarx, tary).density < 3)
-     m.field_at(tarx, tary).density++;
-    else
-     m.add_field(this, tarx, tary, blood_type, 1);
+    if (corpse->dies == &mdeath::boomer) blood_type = fd_bile;
+    else if (corpse->dies == &mdeath::acid) blood_type = fd_acid;
+	{
+	auto& f = m.field_at(tar.x, tar.y);
+    if (f.type == blood_type && f.density < 3) f.density++;
+    else m.add_field(this, tar.x, tar.y, blood_type, 1);
+	}
 
-    if (m.move_cost(tarx, tary) == 0) {
+    if (m.move_cost(tar.x, tar.y) == 0) {
      std::string tmp = "";
-     if (m.bash(tarx, tary, 3, tmp))
-      sound(tarx, tary, 18, tmp);
+     if (m.bash(tar.x, tar.y, 3, tmp)) sound(tar.x, tar.y, 18, tmp);
      else {
-      if (j > 0) {
-       tarx = traj[j - 1].x;
-       tary = traj[j - 1].y;
-      }
+      if (j > 0) tar = traj[j - 1];
       done = true;
      }
     }
    }
-   m.add_item(tarx, tary, meat, turn);
+   m.add_item(tar.x, tar.y, meat, turn);
   }
  }
 
  z.erase(z.begin()+index);
- if (last_target == index)
-  last_target = -1;
- else if (last_target > index)
-   last_target--;
+ if (last_target == index) last_target = -1;
+ else if (last_target > index) last_target--;
 }
 
 void game::open()
@@ -5346,23 +5293,19 @@ void game::plthrow()
  std::vector <int> targetindices;
  int passtarget = -1;
  for (int i = 0; i < z.size(); i++) {
-  if (u_see(&(z[i]), junk) && z[i].posx >= x0 && z[i].posx <= x1 &&
-                              z[i].posy >= y0 && z[i].posy <= y1) {
+  if (u_see(&(z[i]), junk) && z[i].pos.x >= x0 && z[i].pos.x <= x1 &&
+                              z[i].pos.y >= y0 && z[i].pos.y <= y1) {
    mon_targets.push_back(z[i]);
    targetindices.push_back(i);
-   if (i == last_target)
-    passtarget = mon_targets.size() - 1;
+   if (i == last_target) passtarget = mon_targets.size() - 1;
    z[i].draw(w_terrain, u.posx, u.posy, true);
   }
  }
 
  // target() sets x and y, or returns false if we canceled (by pressing Esc)
- std::vector <point> trajectory = target(x, y, x0, y0, x1, y1, mon_targets,
-                                         passtarget, &thrown);
- if (trajectory.size() == 0)
-  return;
- if (passtarget != -1)
-  last_target = targetindices[passtarget];
+ std::vector <point> trajectory = target(x, y, x0, y0, x1, y1, mon_targets, passtarget, &thrown);
+ if (trajectory.empty()) return;
+ if (passtarget != -1) last_target = targetindices[passtarget];
 
  u.i_rem(ch);
  u.moves -= 125;
@@ -5444,8 +5387,8 @@ void game::plfire(bool burst)
  std::vector <int> targetindices;
  int passtarget = -1;
  for (int i = 0; i < z.size(); i++) {
-  if (z[i].posx >= x0 && z[i].posx <= x1 &&
-      z[i].posy >= y0 && z[i].posy <= y1 &&
+  if (z[i].pos.x >= x0 && z[i].pos.x <= x1 &&
+      z[i].pos.y >= y0 && z[i].pos.y <= y1 &&
       z[i].friendly == 0 && u_see(&(z[i]), junk)) {
    mon_targets.push_back(z[i]);
    targetindices.push_back(i);
@@ -6007,10 +5950,8 @@ void game::plmove(int x, int y)
   if ((!u.has_trait(PF_PARKOUR) && m.move_cost(x, y) > 2) ||
       ( u.has_trait(PF_PARKOUR) && m.move_cost(x, y) > 4    ))
   {
-   if (veh)
-    add_msg("Moving past this %s is slow!", veh->part_info(vpart).name);
-   else
-    add_msg("Moving past this %s is slow!", m.tername(x, y).c_str());
+   if (veh) add_msg("Moving past this %s is slow!", veh->part_info(vpart).name);
+   else add_msg("Moving past this %s is slow!", m.tername(x, y).c_str());
   }
   if (m.has_flag(rough, x, y)) {
    if (one_in(5) && u.armor_bash(bp_feet) < rng(1, 5)) {
@@ -6026,10 +5967,7 @@ void game::plmove(int x, int y)
    }
   }
   if (!u.has_artifact_with(AEP_STEALTH) && !u.has_trait(PF_LEG_TENTACLES)) {
-   if (u.has_trait(PF_LIGHTSTEP))
-    sound(x, y, 2, "");	// Sound of footsteps may awaken nearby monsters
-   else
-    sound(x, y, 6, "");	// Sound of footsteps may awaken nearby monsters
+   sound(x, y, (u.has_trait(PF_LIGHTSTEP) ? 2 : 6), "");	// Sound of footsteps may awaken nearby monsters
   }
   if (one_in(20) && u.has_artifact_with(AEP_MOVEMENT_NOISE))
    sound(x, y, 40, "You emit a rattling sound.");
@@ -6048,7 +5986,7 @@ void game::plmove(int x, int y)
      if (query_yn("Deactivate the turret?")) {
       z.erase(z.begin() + mondex);
       u.moves -= 100;
-      m.add_item(z[mondex].posx, z[mondex].posy, item::types[itm_bot_turret], turn);
+      m.add_item(z[mondex].pos.x, z[mondex].pos.y, item::types[itm_bot_turret], turn);
      }
      return;
     } else {
@@ -6202,11 +6140,8 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
     int dam1, dam2;
 
     bool is_player;
-    if (p)
-        is_player = true;
-    else
-    if (zz)
-        is_player = false;
+    if (p) is_player = true;
+    else if (zz) is_player = false;
     else
     {
         debugmsg ("game::fling neither player nor monster");
@@ -6217,22 +6152,19 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
     std::string sname, snd;
     if (p)
     {
-        if (is_u)
-            sname = std::string ("You are");
-        else
-            sname = p->name + " is";
+        if (is_u) sname = std::string ("You are");
+        else sname = p->name + " is";
     }
-    else
-        sname = zz->name() + " is";
+    else sname = zz->name() + " is";
     int range = flvel / 10;
     int vel1 = flvel;
-    int x = (is_player? p->posx : zz->posx);
-    int y = (is_player? p->posy : zz->posy);
+    int x = (is_player? p->posx : zz->pos.x);
+    int y = (is_player? p->posy : zz->pos.y);
     while (range > 0)
     {
         tdir.advance();
-        x = (is_player? p->posx : zz->posx) + tdir.dx();
-        y = (is_player? p->posy : zz->posy) + tdir.dy();
+        x = (is_player? p->posx : zz->pos.x) + tdir.dx();
+        y = (is_player? p->posy : zz->pos.y) + tdir.dy();
         std::string dname;
         bool thru = true;
         bool slam = false;
@@ -6243,48 +6175,30 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
             slam = true;
             dname = z[mondex].name();
             dam2 = flvel / 3 + rng (0, flvel * 1 / 3);
-            if (z[mondex].hurt(dam2))
-             kill_mon(mondex, false);
-            else
-             thru = false;
-            if (is_player)
-             p->hitall (this, dam1, 40);
-            else
-                zz->hurt(dam1);
+            if (z[mondex].hurt(dam2)) kill_mon(mondex, false);
+            else thru = false;
+            if (is_player) p->hitall (this, dam1, 40);
+            else zz->hurt(dam1);
         } else if (m.move_cost(x, y) == 0 && !m.has_flag(swimmable, x, y)) {
             slam = true;
             int vpart;
             vehicle *veh = m.veh_at(x, y, vpart);
             dname = veh ? veh->part_info(vpart).name : m.tername(x, y).c_str();
-            if (m.has_flag(bashable, x, y))
-                thru = m.bash(x, y, flvel, snd);
-            else
-                thru = false;
-            if (snd.length() > 0)
-                add_msg ("You hear a %s", snd.c_str());
-            if (is_player)
-                p->hitall (this, dam1, 40);
-            else
-                zz->hurt (dam1);
+            if (m.has_flag(bashable, x, y)) thru = m.bash(x, y, flvel, snd);
+            else thru = false;
+            if (snd.length() > 0) add_msg ("You hear a %s", snd.c_str());
+            if (is_player) p->hitall (this, dam1, 40);
+            else zz->hurt (dam1);
             flvel = flvel / 2;
         }
-        if (slam)
-            add_msg ("%s slammed against the %s for %d damage!", sname.c_str(), dname.c_str(), dam1);
-        if (thru)
+        if (slam) add_msg ("%s slammed against the %s for %d damage!", sname.c_str(), dname.c_str(), dam1);
+		if (!thru) break;
+        if (is_player)
         {
-            if (is_player)
-            {
-                p->posx = x;
-                p->posy = y;
-            }
-            else
-            {
-                zz->posx = x;
-                zz->posy = y;
-            }
+            p->posx = x;
+            p->posy = y;
         }
-        else
-            break;
+        else zz->pos = point(x, y);
         range--;
         steps++;
         timespec ts;   // Timespec for the animation
@@ -6301,22 +6215,17 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
         {
             int dex_reduce = p->dex_cur < 4? 4 : p->dex_cur;
             dam1 = dam1 * 8 / dex_reduce;
-            if (p->has_trait(PF_PARKOUR))
-                dam1 /= 2;
-            if (dam1 > 0)
-                p->hitall (this, dam1, 40);
+            if (p->has_trait(PF_PARKOUR)) dam1 /= 2;
+            if (dam1 > 0) p->hitall (this, dam1, 40);
         }
-        else
-            zz->hurt (dam1);
+        else zz->hurt (dam1);
         if (is_u)
             if (dam1 > 0)
                 add_msg ("You fall on the ground for %d damage.", dam1);
             else
                 add_msg ("You fall on the ground.");
     }
-    else
-    if (is_u)
-        add_msg ("You fall into water.");
+    else if (is_u) add_msg ("You fall into water.");
 }
 
 void game::vertical_move(int movez, bool force)
@@ -6415,9 +6324,9 @@ void game::vertical_move(int movez, bool force)
    } else if (z[i].friendly < 0) { // Friendly, make it into a static spawn
     tinymap tmp;
     tmp.load(this, lev.x, lev.y);
-    int spawnx = z[i].posx, spawny = z[i].posy;
-    while (spawnx < 0) spawnx += SEEX;
-    while (spawny < 0) spawny += SEEY;
+	point spawn = z[i].pos;
+    while (spawn.x < 0) spawn.x += SEEX;
+    while (spawn.y < 0) spawn.y += SEEY;
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, turn, lev.x, lev.y);
    } else {
@@ -6544,8 +6453,8 @@ void game::update_map(int &x, int &y)
  // Shift monsters
  for (int i = 0; i < z.size(); i++) {
   z[i].shift(shiftx, shifty);
-  if (z[i].posx < 0 - SEEX             || z[i].posy < 0 - SEEX ||
-      z[i].posx > SEEX * (MAPSIZE + 1) || z[i].posy > SEEY * (MAPSIZE + 1)) {
+  if (z[i].pos.x < 0 - SEEX             || z[i].pos.y < 0 - SEEX ||
+      z[i].pos.x > SEEX * (MAPSIZE + 1) || z[i].pos.y > SEEY * (MAPSIZE + 1)) {
 // Despawn; we're out of bounds
    if (z[i].is_static_spawn()) {	// Static spawn, move them back there
     map tmp;
@@ -6775,8 +6684,8 @@ void game::update_stair_monsters()
        tries++;
       }
       if (tries < 10) {
-       coming_to_stairs[i].mon.posx = sx;
-       coming_to_stairs[i].mon.posy = sy;
+       coming_to_stairs[i].mon.pos.x = sx;
+       coming_to_stairs[i].mon.pos.y = sy;
        z.push_back( coming_to_stairs[i].mon );
        int t;
        if (u_see(sx, sy, t))

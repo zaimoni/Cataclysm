@@ -118,8 +118,8 @@ void npc::execute_action(game *g, npc_action action, int target)
   tarx = g->u.posx;
   tary = g->u.posy;
  } else if (target >= 0) {
-  tarx = g->z[target].posx;
-  tary = g->z[target].posy;
+  tarx = g->z[target].pos.x;
+  tary = g->z[target].pos.y;
  }
 /*
   debugmsg("%s ran execute_action() with target = %d! Action %s",
@@ -331,13 +331,11 @@ void npc::choose_monster_target(game *g, int &enemy, int &danger,
  for (int i = 0; i < g->z.size(); i++) {
   monster *mon = &(g->z[i]);
   if (g->pl_sees(this, mon, linet)) {
-   int distance = (100 * rl_dist(posx, posy, mon->posx, mon->posy)) /
-                  mon->speed;
+   int distance = (100 * rl_dist(posx, posy, mon->pos.x, mon->pos.y)) / mon->speed;
    double hp_percent = (mon->type->hp - mon->hp) / mon->type->hp;
    int priority = mon->type->difficulty * (1 + hp_percent) - distance;
    int monster_danger = (mon->type->difficulty * mon->hp) / mon->type->hp;
-   if (!mon->is_fleeing(*this))
-    monster_danger++;
+   if (!mon->is_fleeing(*this)) monster_danger++;
 
    if (mon->friendly != 0) {
     priority = -999;
@@ -381,13 +379,10 @@ void npc::choose_monster_target(game *g, int &enemy, int &danger,
     enemy = i;
    } else if (okay_by_rules && defend_u) {
     priority = mon->type->difficulty * (1 + hp_percent);
-    distance = (100 * rl_dist(g->u.posx, g->u.posy, mon->posx, mon->posy)) /
-               mon->speed;
+    distance = (100 * rl_dist(g->u.posx, g->u.posy, mon->pos.x, mon->pos.y)) / mon->speed;
     priority -= distance;
-    if (mon->speed < current_speed(g))
-     priority -= 10;
-    priority *= (personality.bravery + personality.altruism + op_of_u.value) /
-                15;
+    if (mon->speed < current_speed(g)) priority -= 10;
+    priority *= (personality.bravery + personality.altruism + op_of_u.value) / 15;
     if (priority > highest_priority) {
      highest_priority = priority;
      enemy = i;
@@ -402,7 +397,7 @@ npc_action npc::method_of_fleeing(game *g, int enemy)
  int speed = (enemy == TARGET_PLAYER ? g->u.current_speed(g) :
                                        g->z[enemy].speed);
  point enemy_loc = (enemy == TARGET_PLAYER ? point(g->u.posx, g->u.posy) :
-                    point(g->z[enemy].posx, g->z[enemy].posy));
+                    g->z[enemy].pos);
  int distance = rl_dist(posx, posy, enemy_loc.x, enemy_loc.y);
 
  if (choose_escape_item() >= 0) // We have an escape item!
@@ -423,8 +418,8 @@ npc_action npc::method_of_attack(game *g, int target, int danger)
   tarx = g->u.posx;
   tary = g->u.posy;
  } else if (target >= 0) {
-  tarx = g->z[target].posx;
-  tary = g->z[target].posy;
+  tarx = g->z[target].pos.x;
+  tary = g->z[target].pos.y;
  } else { // This function shouldn't be called...
   debugmsg("Ran npc::method_of_attack without a target!");
   return npc_pause;
@@ -796,7 +791,7 @@ bool npc::enough_time_to_reload(game *g, int target, item &gun)
   dist = rl_dist(posx, posy, g->u.posx, g->u.posy);
   speed = speed_estimate(g->u.current_speed(g));
  } else if (target >= 0) {
-  dist = rl_dist(posx, posy, g->z[target].posx, g->z[target].posy);
+  dist = rl_dist(posx, posy, g->z[target].pos.x, g->z[target].pos.y);
   speed = speed_estimate(g->z[target].speed);
  } else
   return true; // No target, plenty of time to reload
@@ -904,13 +899,12 @@ void npc::move_to_next(game *g)
 // TODO: Rewrite this.  It doesn't work well and is ugly.
 void npc::avoid_friendly_fire(game *g, int target)
 {
- int tarx, tary;
+ point tar;
  if (target == TARGET_PLAYER) {
-  tarx = g->u.posx;
-  tary = g->u.posy;
+  tar.x = g->u.posx;
+  tar.y = g->u.posy;
  } else if (target >= 0) {
-  tarx = g->z[target].posx;
-  tary = g->z[target].posy;
+  tar = g->z[target].pos;
   if (!one_in(3))
    say(g, "<move> so I can shoot that %s!", g->z[target].name().c_str());
  } else {
@@ -919,8 +913,8 @@ void npc::avoid_friendly_fire(game *g, int target)
   return;
  }
 
- int xdir = (tarx > posx ? 1 : -1), ydir = (tary > posy ? 1 : -1);
- direction dir_to_target = direction_from(posx, posy, tarx, tary);
+ int xdir = (tar.x > posx ? 1 : -1), ydir = (tar.y > posy ? 1 : -1);
+ direction dir_to_target = direction_from(posx, posy, tar.x, tar.y);
  std::vector<point> valid_moves;
 /* Ugh, big ugly switch.  This fills valid_moves with a list of moves from most
  * desirable to least; the only two moves excluded are those along the line of
@@ -1357,19 +1351,18 @@ void npc::wield_best_melee(game *g)
 void npc::alt_attack(game *g, int target)
 {
  itype_id which = itm_null;
- int tarx, tary;
+ point tar;
  if (target == TARGET_PLAYER) {
-  tarx = g->u.posx;
-  tary = g->u.posy;
+  tar.x = g->u.posx;
+  tar.y = g->u.posx;
  } else if (target >= 0) {
-  tarx = g->z[target].posx;
-  tary = g->z[target].posy;
+  tar = g->z[target].pos;
  } else {
   debugmsg("npc::alt_attack() called with target = %d", target);
   move_pause();
   return;
  }
- int dist = rl_dist(posx, posy, tarx, tary);
+ int dist = rl_dist(posx, posy, tar.x, tar.y);
 /* ALT_ATTACK_ITEMS is an array which stores the itype_id of all alternate
  * items, from least to most important.
  * See npc.h for definition of ALT_ATTACK_ITEMS
@@ -1387,7 +1380,7 @@ void npc::alt_attack(game *g, int target)
   if (dist == 1) {
    if (target == TARGET_PLAYER) melee_player(g, g->u);
    else melee_monster(g, target);
-  } else move_to(g, tarx, tary);
+  } else move_to(g, tar.x, tar.y);
  }
 
  int index;
@@ -1414,19 +1407,19 @@ void npc::alt_attack(game *g, int target)
   std::vector<point> trajectory;
   int linet, light = g->light_level();
 
-  if (dist <= confident_range(index) && wont_hit_friend(g, tarx, tary, index)) {
+  if (dist <= confident_range(index) && wont_hit_friend(g, tar.x, tar.y, index)) {
 
-   if (g->m.sees(posx, posy, tarx, tary, light, linet))
-    trajectory = line_to(posx, posy, tarx, tary, linet);
+   if (g->m.sees(posx, posy, tar.x, tar.y, light, linet))
+    trajectory = line_to(posx, posy, tar.x, tar.y, linet);
    else
-    trajectory = line_to(posx, posy, tarx, tary, 0);
+    trajectory = line_to(posx, posy, tar.x, tar.y, 0);
    moves -= 125;
    if (g->u_see(posx, posy, linet))
     g->add_msg("%s throws a %s.", name.c_str(), used->tname().c_str());
-   g->throw_item(*this, tarx, tary, *used, trajectory);
+   g->throw_item(*this, tar.x, tar.y, *used, trajectory);
    i_remn(index);
 
-  } else if (!wont_hit_friend(g, tarx, tary, index)) {// Danger of friendly fire
+  } else if (!wont_hit_friend(g, tar.x, tar.y, index)) {// Danger of friendly fire
 
    if (!used->active || used->charges > 2) // Safe to hold on to, for now
     avoid_friendly_fire(g, target); // Maneuver around player
@@ -1458,8 +1451,7 @@ void npc::alt_attack(game *g, int target)
        int new_dist = rl_dist(posx, posy, x, y);
        if (new_dist > best_dist && wont_hit_friend(g, x, y, index)) {
         best_dist = new_dist;
-        tarx = x;
-        tary = y;
+		tar = point(x, y);
        }
       }
      }
@@ -1468,19 +1460,16 @@ void npc::alt_attack(game *g, int target)
  * should be equal to the original location of our target, and risking friendly
  * fire is better than holding on to a live grenade / whatever.
  */
-    if (g->m.sees(posx, posy, tarx, tary, light, linet))
-     trajectory = line_to(posx, posy, tarx, tary, linet);
-    else
-     trajectory = line_to(posx, posy, tarx, tary, 0);
+	trajectory = line_to(posx, posy, tar.x, tar.y, ((g->m.sees(posx, posy, tar.x, tar.y, light, linet)) ? linet : 0));
     moves -= 125;
     if (g->u_see(posx, posy, linet))
      g->add_msg("%s throws a %s.", name.c_str(), used->tname().c_str());
-    g->throw_item(*this, tarx, tary, *used, trajectory);
+    g->throw_item(*this, tar.x, tar.y, *used, trajectory);
     i_remn(index);
    }
 
   } else { // Within this block, our chosen target is outside of our range
-   update_path(g, tarx, tary);
+   update_path(g, tar.x, tar.y);
    move_to_next(g); // Move towards the target
   }
  } // Done with throwing-item block

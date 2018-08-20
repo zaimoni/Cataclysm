@@ -227,8 +227,7 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory,
         ((p.weapon.curammo->m1 == WOOD && !one_in(4)) ||
          (p.weapon.curammo->m1 != WOOD && !one_in(15))))
      m.add_item(trajectory[i].x, trajectory[i].y, ammotmp);
-    if (p.weapon.charges == 0)
-     p.weapon.curammo = NULL;
+    if (p.weapon.charges == 0) p.weapon.curammo = NULL;
     return;
    }
 
@@ -238,7 +237,7 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory,
    int mondex = mon_at(tx, ty);
 // If we shot us a monster...
    if (mondex != -1 && (!z[mondex].has_flag(MF_DIGS) ||
-       rl_dist(p.posx, p.posy, z[mondex].posx, z[mondex].posy) <= 1) &&
+       rl_dist(p.posx, p.posy, z[mondex].pos.x, z[mondex].pos.y) <= 1) &&
        ((!missed && i == trajectory.size() - 1) ||
         one_in((5 - int(z[mon_at(tx, ty)].type->size))))) {
 
@@ -463,15 +462,15 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
    double closest = -1;
    double dist;
    for (int i = 0; i < t.size(); i++) {
-    dist = rl_dist(t[i].posx, t[i].posy, u.posx, u.posy);
+    dist = rl_dist(t[i].pos.x, t[i].pos.y, u.posx, u.posy);
     if (closest < 0 || dist < closest) {
      closest = dist;
      target = i;
     }
    }
   }
-  x = t[target].posx;
-  y = t[target].posy;
+  x = t[target].pos.x;
+  y = t[target].pos.y;
  } else
   target = -1;	// No monsters in range, don't use target, reset to -1
 
@@ -514,8 +513,8 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
   m.draw(this, w_terrain, center);
 // Draw the Monsters
   for (int i = 0; i < z.size(); i++) {
-   if (u_see(&(z[i]), tart) && z[i].posx >= lowx && z[i].posy >= lowy &&
-                               z[i].posx <=  hix && z[i].posy <=  hiy)
+   if (u_see(&(z[i]), tart) && z[i].pos.x >= lowx && z[i].pos.y >= lowy &&
+                               z[i].pos.x <=  hix && z[i].pos.y <=  hiy)
     z[i].draw(w_terrain, center.x, center.y, false);
   }
 // Draw the NPCs
@@ -598,16 +597,16 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
   } else if ((ch == '<') && (target != -1)) {
    target--;
    if (target == -1) target = t.size() - 1;
-   x = t[target].posx;
-   y = t[target].posy;
+   x = t[target].pos.x;
+   y = t[target].pos.y;
   } else if ((ch == '>') && (target != -1)) {
    target++;
    if (target == t.size()) target = 0;
-   x = t[target].posx;
-   y = t[target].posy;
+   x = t[target].pos.x;
+   y = t[target].pos.y;
   } else if (ch == '.' || ch == 'f' || ch == 'F' || ch == '\n') {
    for (int i = 0; i < t.size(); i++) {
-    if (t[i].posx == x && t[i].posy == y)
+    if (t[i].pos.x == x && t[i].pos.y == y)
      target = i;
    }
    return ret;
@@ -794,13 +793,11 @@ void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit)
   if (dam > 0) {
    mon.moves -= dam * 5;
    if (&p == &(g->u) && u_see_mon)
-    g->add_msg("%s You hit the %s for %d damage.", message.c_str(),
-            mon.name().c_str(), dam);
+    g->add_msg("%s You hit the %s for %d damage.", message.c_str(), mon.name().c_str(), dam);
    else if (u_see_mon)
-    g->add_msg("%s %s shoots the %s.", message.c_str(), p.name.c_str(),
-            mon.name().c_str());
+    g->add_msg("%s %s shoots the %s.", message.c_str(), p.name.c_str(), mon.name().c_str());
    if (mon.hurt(dam))
-    g->kill_mon(g->mon_at(mon.posx, mon.posy), (&p == &(g->u)));
+    g->kill_mon(g->mon_at(mon.pos.x, mon.pos.y), (&p == &(g->u)));
    else if (p.weapon.curammo->item_flags != 0)
     g->hit_monster_with_flags(mon, p.weapon.curammo->item_flags);
    dam = 0;

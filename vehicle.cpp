@@ -1646,19 +1646,18 @@ bool vehicle::fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int
     int closest = range + 1;
     for (int i = 0; i < g->z.size(); i++)
     {
-        int dist = rl_dist(x, y, g->z[i].posx, g->z[i].posy);
+        int dist = rl_dist(x, y, g->z[i].pos.x, g->z[i].pos.y);
         if (g->z[i].friendly == 0 && dist < closest &&
-            g->m.sees(x, y, g->z[i].posx, g->z[i].posy, range, t))
+            g->m.sees(x, y, g->z[i].pos.x, g->z[i].pos.y, range, t))
         {
             target = &(g->z[i]);
             closest = dist;
             fire_t = t;
         }
     }
-    if (!target)
-        return false;
+    if (!target) return false;
 
-    std::vector<point> traj = line_to(x, y, target->posx, target->posy, fire_t);
+    std::vector<point> traj = line_to(x, y, target->pos.x, target->pos.y, fire_t);
     for (int i = 0; i < traj.size(); i++)
         if (traj[i].x == g->u.posx && traj[i].y == g->u.posy)
             return false; // won't shoot at player
@@ -1678,7 +1677,7 @@ bool vehicle::fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int
     it_ammo curam = ammo;
     tmp.weapon.curammo = &curam;
     tmp.weapon.charges = charges;
-    g->fire(tmp, target->posx, target->posy, traj, true);
+    g->fire(tmp, target->pos.x, target->pos.y, traj, true);
     if (ammo.type == AT_GAS)
     {
         for (int i = 0; i < traj.size(); i++)

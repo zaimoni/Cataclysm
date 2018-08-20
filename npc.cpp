@@ -1637,7 +1637,7 @@ int npc::danger_assessment(game *g)
  int ret = 0;
  int sightdist = g->light_level(), junk;
  for (int i = 0; i < g->z.size(); i++) {
-  if (g->m.sees(posx, posy, g->z[i].posx, g->z[i].posy, sightdist, junk))
+  if (g->m.sees(posx, posy, g->z[i].pos.x, g->z[i].pos.y, sightdist, junk))
    ret += g->z[i].type->difficulty;
  }
  ret /= 10;

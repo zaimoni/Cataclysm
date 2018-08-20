@@ -18,6 +18,9 @@ struct point {
  point(const point &p) = default;
 };
 
+inline bool operator==(const point& lhs, const point& rhs) { return lhs.x == rhs.x && lhs.y == rhs.y; }
+inline bool operator!=(const point& lhs, const point& rhs) { return lhs.x != rhs.x || lhs.y != rhs.y; }
+
 struct tripoint {
  int x;
  int y;
