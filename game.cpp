@@ -2175,10 +2175,10 @@ void game::groupdebug()
  mvprintw(0, 0, "OM %d : %d    M %d : %d", cur_om.pos.x, cur_om.pos.y, lev.x, lev.y);
  int linenum = 1;
  for (int i = 0; i < cur_om.zg.size(); i++) {
-  const int dist = trig_dist(lev.x, lev.y, cur_om.zg[i].posx, cur_om.zg[i].posy);
+  const int dist = trig_dist(lev.x, lev.y, cur_om.zg[i].pos.x, cur_om.zg[i].pos.y);
   if (dist <= cur_om.zg[i].radius) {
    mvprintw(linenum, 0, "Zgroup %d: Centered at %d:%d, radius %d, pop %d",
-            i, cur_om.zg[i].posx, cur_om.zg[i].posy, cur_om.zg[i].radius,
+            i, cur_om.zg[i].pos.x, cur_om.zg[i].pos.y, cur_om.zg[i].radius,
             cur_om.zg[i].population);
    linenum++;
   }
@@ -6729,7 +6729,7 @@ void game::spawn_mon(int shiftx, int shifty)
 // Now, spawn monsters (perhaps)
  for (int i = 0; i < cur_om.zg.size(); i++) { // For each valid group...
   int group = 0;
-  int dist = trig_dist(nlevx, nlevy, cur_om.zg[i].posx, cur_om.zg[i].posy);
+  int dist = trig_dist(nlevx, nlevy, cur_om.zg[i].pos.x, cur_om.zg[i].pos.y);
   int pop = cur_om.zg[i].population;
   int rad = cur_om.zg[i].radius;
   if (dist <= rad) {
@@ -6812,7 +6812,7 @@ int game::valid_group(mon_id type, int x, int y)
  std::vector <int> valid_groups;
  std::vector <int> semi_valid;	// Groups that're ALMOST big enough
  for (int i = 0; i < cur_om.zg.size(); i++) {
-  const int dist = trig_dist(x, y, cur_om.zg[i].posx, cur_om.zg[i].posy);
+  const int dist = trig_dist(x, y, cur_om.zg[i].pos.x, cur_om.zg[i].pos.y);
   const auto& tmp_ids = mongroup::moncats[cur_om.zg[i].type];
   if (dist < cur_om.zg[i].radius) {
    for(auto tmp_monid : tmp_ids) {

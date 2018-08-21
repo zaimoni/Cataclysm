@@ -18,5 +18,10 @@ std::istream& operator>>(std::istream& is, tripoint& dest);
 std::ostream& operator<<(std::ostream& os, const tripoint& src);
 
 #endif
+#ifdef _MONGROUP_H_
+
+std::ostream& operator<<(std::ostream& os, const mongroup& src);
+
+#endif
 
 #endif

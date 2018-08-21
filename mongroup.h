@@ -29,23 +29,18 @@ struct mongroup {
  static std::vector<mon_id> moncats[num_moncats];
 
  moncat_id type;
- int posx, posy;
+ point pos;
  unsigned char radius;
  unsigned int population;
  bool dying;
- mongroup(moncat_id ptype, int pposx, int pposy, unsigned char prad,
-          unsigned int ppop) {
-  type = ptype;
-  posx = pposx;
-  posy = pposy;
-  radius = prad;
-  population = ppop;
-  dying = false;
- }
+
+ mongroup(moncat_id ptype, int pposx, int pposy, unsigned char prad, unsigned int ppop)
+ : type(ptype),pos(pposx,pposy),radius(prad),population(ppop),dying(false) {}
+ 
+ mongroup(std::istream& is);
+
  bool is_safe() const { return mcat_null == type || mcat_forest == type; }
-
  static moncat_id to_mc(mon_id type);	// Monster type to monster category
-
  static void init();
 };
 

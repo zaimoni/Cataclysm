@@ -1,6 +1,7 @@
 #include "overmap.h"
 #include "game.h"
 #include "keypress.h"
+#include "saveload.h"
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
@@ -448,10 +449,9 @@ oter_id& overmap::ter(int x, int y)
 std::vector<mongroup*> overmap::monsters_at(int x, int y)
 {
  std::vector<mongroup*> ret;
- if (x < 0 || x >= OMAPX || y < 0 || y >= OMAPY)
-  return ret;
+ if (x < 0 || x >= OMAPX || y < 0 || y >= OMAPY) return ret;
  for (int i = 0; i < zg.size(); i++) {
-  if (trig_dist(x, y, zg[i].posx, zg[i].posy) <= zg[i].radius)
+  if (trig_dist(x, y, zg[i].pos.x, zg[i].pos.y) <= zg[i].radius)
    ret.push_back(&(zg[i]));
  }
  return ret;
@@ -2584,9 +2584,7 @@ void overmap::save(const std::string& name, int x, int y, int z)
    fout << char(int(ter(i, j)) + 32);
  }
  fout << std::endl;
- for (int i = 0; i < zg.size(); i++)
-  fout << "Z " << zg[i].type << " " << zg[i].posx << " " << zg[i].posy << " " <<
-          int(zg[i].radius) << " " << zg[i].population << std::endl;
+ for(const auto& zgroup : zg) fout << "Z " << zgroup;
  for (int i = 0; i < cities.size(); i++)
   fout << "t " << cities[i].x << " " << cities[i].y << " " << cities[i].s <<
           std::endl;
@@ -2608,7 +2606,7 @@ void overmap::open(game *g)	// only called from constructor
  std::stringstream plrfilename, terfilename;
  std::ifstream fin;
  char datatype;
- int ct, cx, cy, cs, cp;
+ int cx, cy, cs;
  city tmp;
  std::vector<item> npc_inventory;
 
@@ -2616,8 +2614,6 @@ void overmap::open(game *g)	// only called from constructor
  terfilename << "save/o." << pos.x << "." << pos.y << "." << pos.z;
 
  fin.open(terfilename.str().c_str());
-// DEBUG VARS
- int nummg = 0;
  if (fin.is_open()) {
   for (int j = 0; j < OMAPY; j++) {
    for (int i = 0; i < OMAPX; i++) {
@@ -2628,11 +2624,8 @@ void overmap::open(game *g)	// only called from constructor
    }
   }
   while (fin >> datatype) {
-          if (datatype == 'Z') {	// Monster group
-    fin >> ct >> cx >> cy >> cs >> cp;
-    zg.push_back(mongroup(moncat_id(ct), cx, cy, cs, cp));
-    nummg++;
-   } else if (datatype == 't') {	// City
+   if (datatype == 'Z') zg.push_back(mongroup(fin));	// Monster group
+   else if (datatype == 't') {	// City
     fin >> cx >> cy >> cs;
     tmp.x = cx; tmp.y = cy; tmp.s = cs;
     cities.push_back(tmp);

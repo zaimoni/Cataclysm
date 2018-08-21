@@ -102,7 +102,7 @@ enum oter_id {
  num_ter_types
 };
 
-static_assert((unsigned char)(-1) + 1 >= num_ter_types, "save/load of game will fail");
+static_assert((unsigned char)(-1) + 1 - 32 >= num_ter_types, "save/load of game will fail");	// must fit in byte with origin 32
 
 struct oter_t {
 	static const oter_t list[num_ter_types];
