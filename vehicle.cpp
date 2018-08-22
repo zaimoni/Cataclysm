@@ -866,7 +866,7 @@ void vehicle::thrust (int thd)
         if (smk > 0)
         {
             int rdx, rdy;
-            coord_translate (exhaust_dx, exhaust_dy, rdx, rdy);
+            coord_translate (exhaust_d.x, exhaust_d.y, rdx, rdy);
             g->m.add_field(g, global_x() + rdx, global_y() + rdy, fd_smoke, (smk / 50) + 1);
         }
         g->sound(global_x(), global_y(), noise(), "");
@@ -1369,24 +1369,19 @@ void vehicle::find_exhaust ()
 {
     int en = -1;
     for (int p = 0; p < parts.size(); p++)
-        if (part_flag(p, vpf_engine) && part_info(p).fuel_type == AT_GAS)
-        {
+        if (part_flag(p, vpf_engine) && part_info(p).fuel_type == AT_GAS) {
             en = p;
             break;
         }
-    if (en < 0)
-    {
-        exhaust_dy = 0;
-        exhaust_dx = 0;
+    if (en < 0) {
+		exhaust_d = point(0, 0);
         return;
     }
-    exhaust_dy = parts[en].mount_d.y;
-    exhaust_dx = parts[en].mount_d.x;
+    exhaust_d = parts[en].mount_d;
     for (int p = 0; p < parts.size(); p++)
-        if (parts[p].mount_d.y == exhaust_dy &&
-            parts[p].mount_d.x < exhaust_dx)
-            exhaust_dx = parts[p].mount_d.x;
-    exhaust_dx--;
+        if (parts[p].mount_d.y == exhaust_d.y && parts[p].mount_d.x < exhaust_d.x)
+            exhaust_d.x = parts[p].mount_d.x;
+    exhaust_d.x--;
 }
 
 void vehicle::refresh_insides ()

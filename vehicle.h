@@ -312,8 +312,7 @@ public:
     int type;           // vehicle type
     std::vector<vehicle_part> parts;   // Parts which occupy different tiles
     std::vector<int> external_parts;   // List of external parts indeces
-    int exhaust_dx;
-    int exhaust_dy;
+	point exhaust_d;
 
     // temp values
     int smx, smy;   // submap coords. WARNING: must ALWAYS correspond to sumbap coords in grid, or i'm out
