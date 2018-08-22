@@ -240,7 +240,7 @@ class game
   void handbrake ();
   void examine();// Examine nearby terrain	'e'
   // open vehicle interaction screen
-  void exam_vehicle(vehicle &veh, int examx, int examy, int cx=0, int cy=0);
+  void exam_vehicle(vehicle &veh, int cx=0, int cy=0);
   void pickup(int posx, int posy, int min);// Pickup items; ',' or via examine()
 // Pick where to put liquid; false if it's left where it was
   bool handle_liquid(item &liquid, bool from_ground, bool infinite);

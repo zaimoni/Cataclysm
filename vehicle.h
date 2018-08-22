@@ -304,8 +304,10 @@ public:
     // internal procedure of turret firing
     bool fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int charges);
 
+#if DEAD_FUNC
     // upgrades/refilling/etc. see veh_interact.cpp
     void interact ();
+#endif
 
     // config values
     std::string name;   // vehicle name

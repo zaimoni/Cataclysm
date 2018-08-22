@@ -15,35 +15,34 @@ veh_interact::veh_interact ()
     sel_cmd = ' ';
 }
 
-void veh_interact::exec (game *gm, vehicle *v, int x, int y)
+void veh_interact::exec (game *gm, vehicle *v)
 {
     g = gm;
     veh = v;
-    ex = x;
-    ey = y;
     //        x1      x2
     // y1 ----+------+--
     //        |      |
     // y2 ----+------+
     //               |
     //               |
-    winw1 = 12;
-    winw2 = 35;
-    winh1 = 3;
-    winh2 = 12;
-    winw12 = winw1 + winw2 + 1;
-    winw3 = 80 - winw1 - winw2 - 2;
-    winh3 = 25 - winh1 - winh2 - 2;
-    winh23 = winh2 + winh3 + 1;
-    winx1 = winw1;
-    winx2 = winw1 + winw2 + 1;
-    winy1 = winh1;
-    winy2 = winh1 + winh2 + 1;
+    const int winw1 = 12;
+// XXX probably should do something more auditable
+#define winw2 35
+    const int winh1 = 3;
+    const int winh2 = 12;
+    const int winw12 = winw1 + winw2 + 1;
+    const int winw3 = 80 - winw1 - winw2 - 2;
+    const int winh3 = 25 - winh1 - winh2 - 2;
+    const int winh23 = winh2 + winh3 + 1;
+    const int winx1 = winw1;
+    const int winx2 = winw1 + winw2 + 1;
+    const int winy1 = winh1;
+    const int winy2 = winh1 + winh2 + 1;
 
     page_size = winh23;
     //               h   w    y     x
-    w_grid  = newwin(25, 80,  0,    0);
-    w_mode  = newwin(1,  80, 0,    0);
+	WINDOW* const w_grid  = newwin(25, 80,  0,    0);
+	w_mode  = newwin(1,  80, 0,    0);
     w_msg   = newwin(winh1 - 1, 80, 1,    0);
     w_disp  = newwin(winh2, winw1,  winy1 + 1, 0);
     w_parts = newwin(winh2, winw2,  winy1 + 1, winx1 + 1);

@@ -844,10 +844,9 @@ void game::process_activity()
      debugmsg ("process_activity invalid ACT_VEHICLE values:%d",
                 u.activity.values.size());
     else {
-     vehicle *veh = m.veh_at(u.activity.values[0], u.activity.values[1]);
+     vehicle* const veh = m.veh_at(u.activity.values[0], u.activity.values[1]);
      if (veh) {
-      exam_vehicle(*veh, u.activity.values[0], u.activity.values[1],
-                         u.activity.values[2], u.activity.values[3]);
+      exam_vehicle(*veh, u.activity.values[2], u.activity.values[3]);
       return;
      } else
       debugmsg ("process_activity ACT_VEHICLE: vehicle not found");
@@ -4177,11 +4176,11 @@ void game::handbrake ()
  u.moves = 0;
 }
 
-void game::exam_vehicle(vehicle &veh, int examx, int examy, int cx, int cy)
+void game::exam_vehicle(vehicle &veh, int cx, int cy)
 {
     veh_interact vehint;
     vehint.c = point(cx,cy);
-    vehint.exec(this, &veh, examx, examy);
+    vehint.exec(this, &veh);
 //    debugmsg ("exam_vehicle cmd=%c %d", vehint.sel_cmd, (int) vehint.sel_cmd);
     if (vehint.sel_cmd != ' ')
     {                                                        // TODO: different activity times
