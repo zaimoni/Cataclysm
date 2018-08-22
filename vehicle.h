@@ -19,8 +19,7 @@ const int k_mvel = 200;
 struct vehicle_part
 {
     vpart_id id;            // id in list of parts (vpart_list index)
-    int mount_dx;           // mount point on the forward/backward axis
-    int mount_dy;           // mount point on the left/right axis
+	point mount_d;			// mount point (coordinates flipped like curses, vertical x horizontal y)
     int precalc_dx[2];      // mount_dx translated to face.dir [0] and turn_dir [1]
     int precalc_dy[2];      // mount_dy translated to face.dir [0] and turn_dir [1]
     int hp;                 // current durability, if 0, then broken
@@ -35,7 +34,7 @@ struct vehicle_part
     std::vector<item> items;// inventory
 
 	vehicle_part(vpart_id _id, int _mdx, int _mdy, int _hp, int _blood=0, int _amount=0)
-	: id(_id),mount_dx(_mdx), mount_dy(_mdy),hp(_hp),blood(_blood),amount(_amount) {};
+	: id(_id),mount_d(_mdx,_mdy),hp(_hp),blood(_blood),amount(_amount) {};
 };
 
 // Facts you need to know about implementation:

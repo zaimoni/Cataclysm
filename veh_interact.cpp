@@ -397,8 +397,7 @@ int veh_interact::part_at (point d)
 {
 	point vd(-dd.x - d.y, d.x - dd.y);
 	for (const auto p : veh->external_parts) {
-        if (veh->parts[p].mount_dx == vd.x && veh->parts[p].mount_dy == vd.y)
-            return p;
+        if (veh->parts[p].mount_d == vd) return p;
     }
     return -1;
 }
@@ -463,14 +462,10 @@ void veh_interact::display_veh ()
     for (int ep = 0; ep < veh->external_parts.size(); ep++)
     {
         int p = veh->external_parts[ep];
-        if (veh->parts[p].mount_dx < x1)
-            x1 = veh->parts[p].mount_dx;
-        if (veh->parts[p].mount_dy < y1)
-            y1 = veh->parts[p].mount_dy;
-        if (veh->parts[p].mount_dx > x2)
-            x2 = veh->parts[p].mount_dx;
-        if (veh->parts[p].mount_dy > y2)
-            y2 = veh->parts[p].mount_dy;
+        if (veh->parts[p].mount_d.x < x1) x1 = veh->parts[p].mount_d.x;
+        if (veh->parts[p].mount_d.y < y1) y1 = veh->parts[p].mount_d.y;
+        if (veh->parts[p].mount_d.x > x2) x2 = veh->parts[p].mount_d.x;
+        if (veh->parts[p].mount_d.y > y2) y2 = veh->parts[p].mount_d.y;
     }
 	dd = point(0, 0);
     if (x2 - x1 < 11) { x1--; x2++; }
@@ -485,8 +480,8 @@ void veh_interact::display_veh ()
         int p = veh->external_parts[ep];
         char sym = veh->part_sym (p);
         nc_color col = veh->part_color (p);
-        int y = -(veh->parts[p].mount_dx + dd.x);
-        int x = veh->parts[p].mount_dy + dd.y;
+        int y = -(veh->parts[p].mount_d.x + dd.x);
+        int x = veh->parts[p].mount_d.y + dd.y;
         mvwputch (w_disp, 6+y, 6+x, c.x == x && c.y == y? hilite(col) : col, special_symbol(sym));
         if (c.x == x && c.y == y) cpart = p;
     }

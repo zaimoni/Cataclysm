@@ -1,5 +1,6 @@
 #include "vehicle.h"
 #include "game.h"
+#include "saveload.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -123,8 +124,7 @@ void vehicle::save (std::ofstream &stout)
     {
         stout <<
             parts[p].id << " " <<
-            parts[p].mount_dx << " " <<
-            parts[p].mount_dy << " " <<
+            parts[p].mount_d << " " <<
             parts[p].hp << " " <<
             parts[p].amount << " " <<
             parts[p].blood << " " <<
@@ -213,8 +213,8 @@ bool vehicle::can_mount (int dx, int dy, vpart_id id)
 
 bool vehicle::can_unmount (int p)
 {
-    int dx = parts[p].mount_dx;
-    int dy = parts[p].mount_dy;
+    int dx = parts[p].mount_d.x;
+    int dy = parts[p].mount_d.y;
     if (!dx && !dy)
     { // central point
         bool is_ext = false;
@@ -278,7 +278,7 @@ std::vector<int> vehicle::parts_at_relative (int dx, int dy)
 {
     std::vector<int> res;
     for (int i = 0; i < parts.size(); i++)
-        if (parts[i].mount_dx == dx && parts[i].mount_dy == dy)
+        if (parts[i].mount_d.x == dx && parts[i].mount_d.y == dy)
             res.push_back (i);
     return res;
 }
@@ -288,7 +288,7 @@ std::vector<int> vehicle::internal_parts(int p) const
     std::vector<int> res;
 	const auto& ref_part = parts[p];
     for (int i = p + 1; i < parts.size(); i++)
-        if (parts[i].mount_dx == ref_part.mount_dx && parts[i].mount_dy == ref_part.mount_dy)
+        if (parts[i].mount_d == ref_part.mount_d)
             res.push_back (i);
     return res;
 }
@@ -426,13 +426,11 @@ void vehicle::coord_translate (int dir, int reldx, int reldy, int &dx, int &dy)
 
 void vehicle::precalc_mounts (int idir, int dir)
 {
-    if (idir < 0 || idir > 1)
-        idir = 0;
-    int ps = parts.size();
+    if (idir < 0 || idir > 1) idir = 0;
     for (int p = 0; p < parts.size(); p++)
     {
         int dx, dy;
-        coord_translate (dir, parts[p].mount_dx, parts[p].mount_dy, dx, dy);
+        coord_translate (dir, parts[p].mount_d.x, parts[p].mount_d.y, dx, dy);
         parts[p].precalc_dx[idir] = dx;
         parts[p].precalc_dy[idir] = dy;
     }
@@ -693,13 +691,10 @@ float vehicle::k_dynamics ()
     {
         int p = external_parts[i];
         int frame_size = part_flag(p, vpf_obstacle)? 30 : 10;
-        int pos = parts[p].mount_dy + max_obst / 2;
-        if (pos < 0)
-            pos = 0;
-        if (pos >= max_obst)
-            pos = max_obst -1;
-        if (obst[pos] < frame_size)
-            obst[pos] = frame_size;
+        int pos = parts[p].mount_d.y + max_obst / 2;
+        if (pos < 0) pos = 0;
+        if (pos >= max_obst) pos = max_obst -1;
+        if (obst[pos] < frame_size) obst[pos] = frame_size;
     }
     int frame_obst = 0;
     for (int o = 0; o < max_obst; o++)
@@ -750,13 +745,13 @@ bool vehicle::valid_wheel_config ()
         if (part.hp <= 0) continue;
         if (!count)
         {
-            x1 = x2 = part.mount_dx;
-            y1 = y2 = part.mount_dy;
+            x1 = x2 = part.mount_d.x;
+            y1 = y2 = part.mount_d.y;
         }
-        if (part.mount_dx < x1) x1 = part.mount_dx;
-        if (part.mount_dx > x2) x2 = part.mount_dx;
-        if (part.mount_dy < y1) y1 = part.mount_dy;
-        if (part.mount_dy > y2) y2 = part.mount_dy;
+        if (part.mount_d.x < x1) x1 = part.mount_d.x;
+        if (part.mount_d.x > x2) x2 = part.mount_d.x;
+        if (part.mount_d.y < y1) y1 = part.mount_d.y;
+        if (part.mount_d.y > y2) y2 = part.mount_d.y;
         count++;
     }
     if (count < 2) return false;
@@ -766,8 +761,8 @@ bool vehicle::valid_wheel_config ()
     { // lets find vehicle's center of masses
         w2 = item::types[part_info(p).item]->weight;
         if (w2 < 1) continue;
-        xo = xo * wo / (wo + w2) + parts[p].mount_dx * w2 / (wo + w2);
-        yo = yo * wo / (wo + w2) + parts[p].mount_dy * w2 / (wo + w2);
+        xo = xo * wo / (wo + w2) + parts[p].mount_d.x * w2 / (wo + w2);
+        yo = yo * wo / (wo + w2) + parts[p].mount_d.y * w2 / (wo + w2);
         wo += w2;
     }
 //    g->add_msg("cm x=%.3f y=%.3f m=%d  x1=%d y1=%d x2=%d y2=%d", xo, yo, (int) wo, x1, y1, x2, y2);
@@ -1361,14 +1356,12 @@ void vehicle::find_external_parts ()
     {
         bool ex = false;
         for (int i = 0; i < external_parts.size(); i++)
-            if (parts[external_parts[i]].mount_dx == parts[p].mount_dx &&
-                parts[external_parts[i]].mount_dy == parts[p].mount_dy)
+            if (parts[external_parts[i]].mount_d == parts[p].mount_d)
             {
                 ex = true;
                 break;
             }
-        if (!ex)
-            external_parts.push_back (p);
+        if (!ex) external_parts.push_back (p);
     }
 }
 
@@ -1387,12 +1380,12 @@ void vehicle::find_exhaust ()
         exhaust_dx = 0;
         return;
     }
-    exhaust_dy = parts[en].mount_dy;
-    exhaust_dx = parts[en].mount_dx;
+    exhaust_dy = parts[en].mount_d.y;
+    exhaust_dx = parts[en].mount_d.x;
     for (int p = 0; p < parts.size(); p++)
-        if (parts[p].mount_dy == exhaust_dy &&
-            parts[p].mount_dx < exhaust_dx)
-            exhaust_dx = parts[p].mount_dx;
+        if (parts[p].mount_d.y == exhaust_dy &&
+            parts[p].mount_d.x < exhaust_dx)
+            exhaust_dx = parts[p].mount_d.x;
     exhaust_dx--;
 }
 
@@ -1415,7 +1408,7 @@ void vehicle::refresh_insides ()
         { // let's check four neighbour parts
             int ndx = i < 2? (i == 0? -1 : 1) : 0;
             int ndy = i < 2? 0 : (i == 2? - 1: 1);
-            std::vector<int> parts_n3ar = parts_at_relative (parts[p].mount_dx + ndx, parts[p].mount_dy + ndy);
+            std::vector<int> parts_n3ar = parts_at_relative (parts[p].mount_d.x + ndx, parts[p].mount_d.y + ndy);
             bool cover = false; // if we aren't covered from sides, the roof at p won't save us
             for (int j = 0; j < parts_n3ar.size(); j++)
             {
