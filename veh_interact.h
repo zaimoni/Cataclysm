@@ -11,8 +11,7 @@ class game;
 class veh_interact
 {
 public:
-    int cx;
-    int cy;
+	point c;
 	point dd;
     int sel_part;
     char sel_cmd;
@@ -48,7 +47,7 @@ private:
     bool has_hacksaw;
     inventory crafting_inv;
 
-    int part_at (int dx, int dy);
+    int part_at (point d);
     void move_cursor (int dx, int dy);
     int cant_do (char mode);
 

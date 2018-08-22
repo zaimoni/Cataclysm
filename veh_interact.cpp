@@ -9,10 +9,8 @@
 
 
 veh_interact::veh_interact ()
-: dd(0, 0)
+: c(0, 0), dd(0, 0)
 {
-    cx = 0;
-    cy = 0;
     cpart = -1;
     sel_cmd = ' ';
 }
@@ -93,12 +91,10 @@ void veh_interact::exec (game *gm, vehicle *v, int x, int y)
         char ch = input(); // See keypress.h
         int dx, dy;
         get_direction (dx, dy, ch);
-        if (ch == KEY_ESCAPE)
-            finish = true;
-        else
-        if (dx != -2 && (dx || dy) &&
-            cx + dx >= -6 && cx + dx < 6 &&
-            cy + dy >= -6 && cy + dy < 6)
+        if (ch == KEY_ESCAPE) finish = true;
+        else if (dx != -2 && (dx || dy) &&
+            c.x + dx >= -6 && c.x + dx < 6 &&
+            c.y + dy >= -6 && c.y + dy < 6)
             move_cursor(dx, dy);
         else
         {
@@ -397,14 +393,11 @@ void veh_interact::do_remove(int reason)
     }
 }
 
-int veh_interact::part_at (int dx, int dy)
+int veh_interact::part_at (point d)
 {
-    int vdx = -dd.x - dy;
-    int vdy = dx - dd.y;
-    for (int ep = 0; ep < veh->external_parts.size(); ep++)
-    {
-        int p = veh->external_parts[ep];
-        if (veh->parts[p].mount_dx == vdx && veh->parts[p].mount_dy == vdy)
+	point vd(-dd.x - d.y, d.x - dd.y);
+	for (const auto p : veh->external_parts) {
+        if (veh->parts[p].mount_dx == vd.x && veh->parts[p].mount_dy == vd.y)
             return p;
     }
     return -1;
@@ -412,12 +405,12 @@ int veh_interact::part_at (int dx, int dy)
 
 void veh_interact::move_cursor (int dx, int dy)
 {
-    mvwputch (w_disp, cy+6, cx+6, cpart >= 0? veh->part_color (cpart) : c_black, special_symbol(cpart >= 0? veh->part_sym (cpart) : ' '));
-    cx += dx;
-    cy += dy;
-    cpart = part_at (cx, cy);
-    int vdx = -dd.x - cy;
-    int vdy = cx - dd.y;
+    mvwputch (w_disp, c.y+6, c.x+6, cpart >= 0? veh->part_color (cpart) : c_black, special_symbol(cpart >= 0? veh->part_sym (cpart) : ' '));
+    c.x += dx;
+    c.y += dy;
+    cpart = part_at (c);
+    int vdx = -dd.x - c.y;
+    int vdy = c.x - dd.y;
     int vx, vy;
     veh->coord_translate (vdx, vdy, vx, vy);
     int vehx = veh->global_x() + vx;
@@ -427,7 +420,7 @@ void veh_interact::move_cursor (int dx, int dy)
     if (oveh && oveh != veh)
         obstruct = true;
     nc_color col = cpart >= 0? veh->part_color (cpart) : c_black;
-    mvwputch (w_disp, cy+6, cx+6, obstruct? red_background(col) : hilite(col),
+    mvwputch (w_disp, c.y+6, c.x+6, obstruct? red_background(col) : hilite(col),
                       special_symbol(cpart >= 0? veh->part_sym (cpart) : ' '));
     wrefresh (w_disp);
     werase (w_parts);
@@ -494,8 +487,8 @@ void veh_interact::display_veh ()
         nc_color col = veh->part_color (p);
         int y = -(veh->parts[p].mount_dx + dd.x);
         int x = veh->parts[p].mount_dy + dd.y;
-        mvwputch (w_disp, 6+y, 6+x, cx == x && cy == y? hilite(col) : col, special_symbol(sym));
-        if (cx == x && cy == y) cpart = p;
+        mvwputch (w_disp, 6+y, 6+x, c.x == x && c.y == y? hilite(col) : col, special_symbol(sym));
+        if (c.x == x && c.y == y) cpart = p;
     }
     wrefresh (w_disp);
 }
