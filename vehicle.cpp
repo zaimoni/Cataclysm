@@ -408,12 +408,11 @@ void vehicle::print_fuel_indicator (void *w, int y, int x)
     }
 }
 
-void vehicle::coord_translate (int reldx, int reldy, int &dx, int &dy)
+point vehicle::coord_translate (point reld) const
 {
     tileray tdir (face.dir());
-    tdir.advance (reldx);
-    dx = tdir.dx() + tdir.ortho_dx(reldy);
-    dy = tdir.dy() + tdir.ortho_dy(reldy);
+    tdir.advance (reld.x);
+	return point(tdir.dx() + tdir.ortho_dx(reld.y), tdir.dy() + tdir.ortho_dy(reld.y));
 }
 
 void vehicle::coord_translate (int dir, int reldx, int reldy, int &dx, int &dy)
@@ -865,9 +864,8 @@ void vehicle::thrust (int thd)
         int smk = noise (true, true);
         if (smk > 0)
         {
-            int rdx, rdy;
-            coord_translate (exhaust_d.x, exhaust_d.y, rdx, rdy);
-            g->m.add_field(g, global_x() + rdx, global_y() + rdy, fd_smoke, (smk / 50) + 1);
+            point rd(coord_translate(exhaust_d));
+            g->m.add_field(g, global_x() + rd.x, global_y() + rd.y, fd_smoke, (smk / 50) + 1);
         }
         g->sound(global_x(), global_y(), noise(), "");
     }

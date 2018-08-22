@@ -151,7 +151,7 @@ public:
     bool part_flag(int p, unsigned int f) const;
 
 // Translate seat-relative mount coords into tile coords
-    void coord_translate (int reldx, int reldy, int &dx, int &dy);
+    point coord_translate (point reld) const;
 
 // Translate seat-relative mount coords into tile coords using given face direction
     void coord_translate (int dir, int reldx, int reldy, int &dx, int &dy);

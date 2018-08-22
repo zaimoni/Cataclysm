@@ -408,14 +408,12 @@ void veh_interact::move_cursor (int dx, int dy)
     c.x += dx;
     c.y += dy;
     cpart = part_at (c);
-    int vdx = -dd.x - c.y;
-    int vdy = c.x - dd.y;
-    int vx, vy;
-    veh->coord_translate (vdx, vdy, vx, vy);
-    int vehx = veh->global_x() + vx;
-    int vehy = veh->global_y() + vy;
+	point vd(-dd.x - c.y, c.x - dd.y);
+    point v(veh->coord_translate(vd));
+    int vehx = veh->global_x() + v.x;
+    int vehy = veh->global_y() + v.y;
     bool obstruct = g->m.move_cost_ter_only (vehx, vehy) == 0;
-    vehicle *oveh = g->m.veh_at (vehx, vehy);
+    vehicle * const oveh = g->m.veh_at (vehx, vehy);
     if (oveh && oveh != veh)
         obstruct = true;
     nc_color col = cpart >= 0? veh->part_color (cpart) : c_black;
@@ -431,7 +429,7 @@ void veh_interact::move_cursor (int dx, int dy)
     if (!obstruct)
         for (int i = 1; i < num_vparts; i++)
         {
-            if (veh->can_mount (vdx, vdy, (vpart_id) i))
+            if (veh->can_mount (vd.x, vd.y, (vpart_id) i))
                 can_mount.push_back (i);
         }
     need_repair.clear();
