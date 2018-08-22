@@ -4193,8 +4193,8 @@ void game::exam_vehicle(vehicle &veh, int examx, int examy, int cx, int cy)
         u.activity.values.push_back (veh.global_y());    // values[1]
         u.activity.values.push_back (vehint.cx);   // values[2]
         u.activity.values.push_back (vehint.cy);   // values[3]
-        u.activity.values.push_back (-vehint.ddx - vehint.cy);   // values[4]
-        u.activity.values.push_back (vehint.cx - vehint.ddy);   // values[5]
+        u.activity.values.push_back (-vehint.dd.x - vehint.cy);   // values[4]
+        u.activity.values.push_back (vehint.cx - vehint.dd.y);   // values[5]
         u.activity.values.push_back (vehint.sel_part); // values[6]
         u.moves = 0;
     }

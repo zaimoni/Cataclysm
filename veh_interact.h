@@ -13,8 +13,7 @@ class veh_interact
 public:
     int cx;
     int cy;
-    int ddx;
-    int ddy;
+	point dd;
     int sel_part;
     char sel_cmd;
 private:

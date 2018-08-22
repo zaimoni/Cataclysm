@@ -9,12 +9,11 @@
 
 
 veh_interact::veh_interact ()
+: dd(0, 0)
 {
     cx = 0;
     cy = 0;
     cpart = -1;
-    ddx = 0;
-    ddy = 0;
     sel_cmd = ' ';
 }
 
@@ -400,8 +399,8 @@ void veh_interact::do_remove(int reason)
 
 int veh_interact::part_at (int dx, int dy)
 {
-    int vdx = -ddx - dy;
-    int vdy = dx - ddy;
+    int vdx = -dd.x - dy;
+    int vdy = dx - dd.y;
     for (int ep = 0; ep < veh->external_parts.size(); ep++)
     {
         int p = veh->external_parts[ep];
@@ -417,8 +416,8 @@ void veh_interact::move_cursor (int dx, int dy)
     cx += dx;
     cy += dy;
     cpart = part_at (cx, cy);
-    int vdx = -ddx - cy;
-    int vdy = cx - ddy;
+    int vdx = -dd.x - cy;
+    int vdy = cx - dd.y;
     int vx, vy;
     veh->coord_translate (vdx, vdy, vx, vy);
     int vehx = veh->global_x() + vx;
@@ -480,31 +479,23 @@ void veh_interact::display_veh ()
         if (veh->parts[p].mount_dy > y2)
             y2 = veh->parts[p].mount_dy;
     }
-    ddx = 0;
-    ddy = 0;
+	dd = point(0, 0);
     if (x2 - x1 < 11) { x1--; x2++; }
     if (y2 - y1 < 11 ) { y1--; y2++; }
-    if (x1 < -5)
-        ddx = -5 - x1;
-    else
-    if (x2 > 6)
-        ddx = 6 - x2;
-    if (y1 < -6)
-        ddy = -6 - y1;
-    else
-    if (y2 > 5)
-        ddy = 5 - y2;
+    if (x1 < -5) dd.x = -5 - x1;
+    else if (x2 > 6) dd.x = 6 - x2;
+    if (y1 < -6) dd.y = -6 - y1;
+    else if (y2 > 5) dd.y = 5 - y2;
 
     for (int ep = 0; ep < veh->external_parts.size(); ep++)
     {
         int p = veh->external_parts[ep];
         char sym = veh->part_sym (p);
         nc_color col = veh->part_color (p);
-        int y = -(veh->parts[p].mount_dx + ddx);
-        int x = veh->parts[p].mount_dy + ddy;
+        int y = -(veh->parts[p].mount_dx + dd.x);
+        int x = veh->parts[p].mount_dy + dd.y;
         mvwputch (w_disp, 6+y, 6+x, cx == x && cy == y? hilite(col) : col, special_symbol(sym));
-        if (cx == x && cy == y)
-            cpart = p;
+        if (cx == x && cy == y) cpart = p;
     }
     wrefresh (w_disp);
 }
