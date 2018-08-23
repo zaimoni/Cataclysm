@@ -8,11 +8,9 @@
 #include "options.h"
 
 
-veh_interact::veh_interact ()
-: c(0, 0), dd(0, 0)
+veh_interact::veh_interact (int cx, int cy)
+: c(cx, cy), dd(0, 0), sel_cmd(' '), cpart(-1)
 {
-    cpart = -1;
-    sel_cmd = ' ';
 }
 
 void veh_interact::exec (game *gm, vehicle *v)
