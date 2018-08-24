@@ -4178,9 +4178,8 @@ void game::handbrake ()
 
 void game::exam_vehicle(vehicle &veh, int cx, int cy)
 {
-    veh_interact vehint(cx,cy);	// if this breaks try 0,0 instead
-    vehint.exec(this, &veh);
-//    debugmsg ("exam_vehicle cmd=%c %d", vehint.sel_cmd, (int) vehint.sel_cmd);
+    veh_interact vehint(cx, cy, this, &veh);	// if this breaks try 0,0 instead
+    vehint.exec();
     if (vehint.sel_cmd != ' ')
     {                                                        // TODO: different activity times
         u.activity = player_activity(ACT_VEHICLE,

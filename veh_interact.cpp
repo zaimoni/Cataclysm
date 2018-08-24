@@ -8,15 +8,13 @@
 #include "options.h"
 
 
-veh_interact::veh_interact (int cx, int cy)
-: c(cx, cy), dd(0, 0), sel_cmd(' '), cpart(-1)
+veh_interact::veh_interact (int cx, int cy, game *gm, vehicle *v)
+: c(cx, cy), dd(0, 0), sel_cmd(' '), cpart(-1), veh(v), _g(gm)
 {
 }
 
-void veh_interact::exec (game *gm, vehicle *v)
+void veh_interact::exec ()
 {
-    g = gm;
-    veh = v;
     //        x1      x2
     // y1 ----+------+--
     //        |      |
@@ -61,12 +59,12 @@ void veh_interact::exec (game *gm, vehicle *v)
     }
     wrefresh(w_grid);
 
-    crafting_inv.form_from_map(g, point(g->u.posx, g->u.posy), PICKUP_RANGE);
-    crafting_inv += g->u.inv;
-    crafting_inv += g->u.weapon;
-    if (g->u.has_bionic(bio_tools))  {
-        item tools(item::types[itm_toolset], g->turn);
-        tools.charges = g->u.power_level;
+    crafting_inv.form_from_map(_g, point(_g->u.posx, _g->u.posy), PICKUP_RANGE);
+    crafting_inv += _g->u.inv;
+    crafting_inv += _g->u.weapon;
+    if (_g->u.has_bionic(bio_tools))  {
+        item tools(item::types[itm_toolset], _g->turn);
+        tools.charges = _g->u.power_level;
         crafting_inv += tools;
     }
     int charges = dynamic_cast<it_tool*>(item::types[itm_welder])->charges_per_use;
@@ -141,7 +139,7 @@ int veh_interact::cant_do (char mode)
         return cpart < 0? 1 : 
                (parts_here.size() < 2 && !veh->can_unmount(cpart)? 2 : 
                (!has_wrench || !has_hacksaw? 3 :
-               (g->u.sklevel[sk_mechanics] < 2 ? 4 : 0)));
+               (_g->u.sklevel[sk_mechanics] < 2 ? 4 : 0)));
     default:
         return -1;
     }
@@ -150,7 +148,7 @@ int veh_interact::cant_do (char mode)
 void veh_interact::do_install(int reason)
 {
     werase (w_msg);
-    if (g->u.morale_level() < MIN_MORALE_CRAFT) 
+    if (_g->u.morale_level() < MIN_MORALE_CRAFT) 
     { // See morale.h
         mvwprintz(w_msg, 0, 1, c_ltred, "Your morale is too low to construct...");
         wrefresh (w_msg);
@@ -187,7 +185,7 @@ void veh_interact::do_install(int reason)
 		const auto& p_info = vpart_info::list[sel_part];
 		const itype_id itm = p_info.item;
 		const bool has_comps = crafting_inv.has_amount(itm, 1);
-		const bool has_skill = g->u.sklevel[sk_mechanics] >= p_info.difficulty;
+		const bool has_skill = _g->u.sklevel[sk_mechanics] >= p_info.difficulty;
         werase (w_msg);
 		const int slen = item::types[itm]->name.length();
         mvwprintz(w_msg, 0, 1, c_ltgray, "Needs %s and level %d skill in mechanics.", 
@@ -195,7 +193,7 @@ void veh_interact::do_install(int reason)
         mvwprintz(w_msg, 0, 7, has_comps? c_ltgreen : c_red, item::types[itm]->name.c_str());
         mvwprintz(w_msg, 0, 18+slen, has_skill? c_ltgreen : c_red, "%d", p_info.difficulty);
 		const bool eng = p_info.flags & mfb (vpf_engine);
-        const bool has_skill2 = !eng || (g->u.sklevel[sk_mechanics] >= dif_eng);
+        const bool has_skill2 = !eng || (_g->u.sklevel[sk_mechanics] >= dif_eng);
         if (engines && eng) // already has engine
         {
             mvwprintz(w_msg, 1, 1, c_ltgray, 
@@ -232,7 +230,7 @@ void veh_interact::do_install(int reason)
 void veh_interact::do_repair(int reason)
 {
     werase (w_msg);
-    if (g->u.morale_level() < MIN_MORALE_CRAFT) 
+    if (_g->u.morale_level() < MIN_MORALE_CRAFT) 
     { // See morale.h
         mvwprintz(w_msg, 0, 1, c_ltred, "Your morale is too low to construct...");
         wrefresh (w_msg);
@@ -262,7 +260,7 @@ void veh_interact::do_repair(int reason)
         werase (w_msg);
         bool has_comps = true;
         int dif = veh->part_info(sel_part).difficulty + (veh->parts[sel_part].hp <= 0? 0 : 2);
-        bool has_skill = dif <= g->u.sklevel[sk_mechanics];
+        bool has_skill = dif <= _g->u.sklevel[sk_mechanics];
         mvwprintz(w_msg, 0, 1, c_ltgray, "You need level %d skill in mechanics.", dif);
         mvwprintz(w_msg, 0, 16, has_skill? c_ltgreen : c_red, "%d", dif);
         if (veh->parts[sel_part].hp <= 0) {
@@ -323,7 +321,7 @@ void veh_interact::do_refill(int reason)
 void veh_interact::do_remove(int reason)
 {
     werase (w_msg);
-    if (g->u.morale_level() < MIN_MORALE_CRAFT) 
+    if (_g->u.morale_level() < MIN_MORALE_CRAFT) 
     { // See morale.h
         mvwprintz(w_msg, 0, 1, c_ltred, "Your morale is too low to construct...");
         wrefresh (w_msg);
@@ -409,8 +407,8 @@ void veh_interact::move_cursor (int dx, int dy)
     point v(veh->coord_translate(vd));
     int vehx = veh->global_x() + v.x;
     int vehy = veh->global_y() + v.y;
-    bool obstruct = g->m.move_cost_ter_only (vehx, vehy) == 0;
-    vehicle * const oveh = g->m.veh_at (vehx, vehy);
+    bool obstruct = _g->m.move_cost_ter_only (vehx, vehy) == 0;
+    vehicle * const oveh = _g->m.veh_at (vehx, vehy);
     if (oveh && oveh != veh)
         obstruct = true;
     nc_color col = cpart >= 0? veh->part_color (cpart) : c_black;
@@ -445,7 +443,7 @@ void veh_interact::move_cursor (int dx, int dy)
                 ptank = p;
         }
     }
-    has_fuel = ptank >= 0? g->pl_refill_vehicle(*veh, ptank, true) : false;
+    has_fuel = ptank >= 0? _g->pl_refill_vehicle(*veh, ptank, true) : false;
     werase (w_msg);
     wrefresh (w_msg);
     display_mode (' ');
@@ -572,7 +570,7 @@ void veh_interact::display_list (int pos)
 		const auto& p_info = vpart_info::list[can_mount[i]];
         const itype_id itm = p_info.item;
         const bool has_comps = crafting_inv.has_amount(itm, 1);
-        const bool has_skill = g->u.sklevel[sk_mechanics] >= p_info.difficulty;
+        const bool has_skill = _g->u.sklevel[sk_mechanics] >= p_info.difficulty;
         const nc_color col = (has_comps && has_skill) ? c_white : c_dkgray;
         mvwprintz(w_list, y, 3, pos == i ? hilite (col) : col, p_info.name);
         mvwputch (w_list, y, 1,  p_info.color, special_symbol (p_info.sym));

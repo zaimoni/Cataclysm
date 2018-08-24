@@ -25,8 +25,8 @@ private:
     WINDOW *w_stats;
     WINDOW *w_list;
 
-    vehicle *veh;
-    game *g;
+    vehicle* const veh;
+    game* const _g;
     bool has_wrench;
     bool has_welder;
     bool has_hacksaw;
@@ -54,14 +54,14 @@ private:
     bool obstruct;
     bool has_fuel;
 public:
-    veh_interact (int cx, int cy);
+    veh_interact (int cx, int cy, game *gm, vehicle *v);
 	veh_interact() = delete;
 	veh_interact(const veh_interact& src) = delete;
 	veh_interact(veh_interact&& src) = delete;
 	veh_interact& operator=(const veh_interact& src) = delete;
 	veh_interact& operator=(veh_interact&& src) = delete;
 
-    void exec (game *gm, vehicle *v);
+    void exec ();
 };
 
 void complete_vehicle (game *g);
