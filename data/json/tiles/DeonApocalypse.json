@@ -179,6 +179,11 @@
             mon_tripod:"data/images/tiles/deontiles.32.png#183",
             mon_chickenbot:"data/images/tiles/deontiles.32.png#184",
             mon_tankbot:"data/images/tiles/deontiles.32.png#185",
-            mon_turret:"data/images/tiles/deontiles.32.png#239"
+            mon_turret:"data/images/tiles/deontiles.32.png#239",
+            mon_hallu_zom:"data/images/tiles/deontiles.32.png#218",
+            mon_hallu_bee:"data/images/tiles/deontiles.32.png#212",
+            mon_hallu_ant:"data/images/tiles/deontiles.32.png#207",
+            mon_hallu_mom:"data/images/tiles/deontiles.32.png#241",
+            mon_generator:"data/images/tiles/deontiles.32.png#240"
 			}
 }
