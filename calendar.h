@@ -1,5 +1,15 @@
+#ifndef CALENDAR_H
+#define CALENDAR_H 1
+
 #include <string>
-#include "weather.h"
+
+enum season_type {
+	SPRING = 0,
+	SUMMER = 1,
+	AUTUMN = 2,
+	WINTER = 3
+#define FALL AUTUMN
+};
 
 // How many minutes exist when the game starts - 8:00 AM
 #define STARTING_MINUTES 480
@@ -49,7 +59,7 @@ class calendar
   calendar();
   calendar(const calendar &copy) = default;
   calendar(int Minute, int Hour, int Day, season_type Season, int Year);
-  calendar(int turn);
+  calendar(int turn);	// this constructor requires the others to exist
   int get_turn();
   operator int() const; // Returns get_turn() for backwards compatibility
   calendar& operator = (const calendar &rhs) = default;
@@ -79,3 +89,5 @@ class calendar
   std::string print_time(bool twentyfour = false);
   std::string textify_period(); // "1 second" "2 hours" "two days"
 };
+
+#endif

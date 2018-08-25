@@ -6,14 +6,6 @@
 
 class game;
 
-enum season_type {
- SPRING = 0,
- SUMMER = 1,
- AUTUMN = 2,
- WINTER = 3
-#define FALL AUTUMN
-};
-
 enum weather_type {
  WEATHER_NULL,		// For data and stuff
  WEATHER_CLEAR,		// No effects
