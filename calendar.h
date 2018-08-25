@@ -90,4 +90,13 @@ class calendar
   std::string textify_period(); // "1 second" "2 hours" "two days"
 };
 
+struct game_message
+{
+	calendar turn;
+	int count;
+	std::string message;
+
+	game_message(calendar T =0, std::string M="") : turn(T), count(1), message(M) {}
+};
+
 #endif

@@ -42,21 +42,6 @@ struct monster_and_count
  monster_and_count(monster M, int C) : mon (M), count (C) {};
 };
 
-struct game_message
-{
- calendar turn;
- int count;
- std::string message;
- game_message() { turn = 0; count = 1; message = ""; };
- game_message(calendar T, std::string M) : turn (T), message (M) { count = 1; };
-};
-
-struct mtype;
-struct mission_type;
-class map;
-class player;
-class calendar;
-
 class game
 {
  public:
