@@ -160,16 +160,6 @@ void game::save_keymap()
  fout.close();
 }
 
-std::vector<char> game::keys_bound_to(action_id act)
-{
- return keys.translate(act);
-}
-
-void game::clear_bindings(action_id act)
-{
- keys.unset(act);
-}
-
 std::string action_ident(action_id act)
 {
  switch (act) {

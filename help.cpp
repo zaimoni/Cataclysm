@@ -438,16 +438,15 @@ easily drop unwanted items on the floor.");
      mvprintz(i, 0, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
     for (int i = 0; i < 25 && offset + i < NUM_ACTIONS; i++) {
-     std::vector<char> keys = keys_bound_to( action_id(offset + i) );
-     nc_color col = (keys.empty() ? c_ltred : c_white);
+     std::vector<char> k = keys.translate(action_id(offset + i));
+     nc_color col = (k.empty() ? c_ltred : c_white);
      mvprintz(i, 3, col, "%s: ", action_name( action_id(offset + i) ).c_str());
-     if (keys.empty())
+     if (k.empty())
       printz(c_red, "Unbound!");
      else {
-      for (int j = 0; j < keys.size(); j++) {
-       printz(c_yellow, "%c", keys[j]);
-       if (j < keys.size() - 1)
-        printz(c_white, " or ");
+      for (int j = 0; j < k.size(); j++) {
+       printz(c_yellow, "%c", k[j]);
+       if (j < k.size() - 1) printz(c_white, " or ");
       }
      }
     }
@@ -471,7 +470,7 @@ easily drop unwanted items on the floor.");
          actch - 'a' + offset < NUM_ACTIONS) {
       action_id act = action_id(actch - 'a' + offset);
       if (ch == '-' && query_yn("Clear keys for %s?",action_name(act).c_str())){
-       clear_bindings(act);
+	   keys.unset(act);
        changed_keymap = true;
       } else if (ch == '+') {
        const char newbind = popup_getkey("New key for %s:", action_name(act).c_str());
