@@ -452,11 +452,10 @@ easily drop unwanted items on the floor.");
     }
     refresh();
     ch = input();
-    int sx = 0, sy = 0;
-    get_direction(this, sx, sy, ch);
-    if (sy == -1 && offset > 1)
+	point s(get_direction(ch));
+    if (s.y == -1 && offset > 1)
      offset--;
-    if (sy == 1 && offset + 20 < NUM_ACTIONS)
+    if (s.y == 1 && offset + 20 < NUM_ACTIONS)
      offset++;
     if (ch == '-' || ch == '+') {
      needs_refresh = true;
@@ -513,11 +512,10 @@ easily drop unwanted items on the floor.");
     }
     refresh();
     ch = input();
-    int sx = 0, sy = 0;
-    get_direction(this, sx, sy, ch);
-    if (sy == -1 && offset > 1)
+	point s(get_direction(ch));
+    if (s.y == -1 && offset > 1)
      offset--;
-    if (sy == 1 && offset + 20 < NUM_OPTION_KEYS)
+    if (s.y == 1 && offset + 20 < NUM_OPTION_KEYS)
      offset++;
     if (ch == '-' || ch == '+') {
      needs_refresh = true;
@@ -527,8 +525,7 @@ easily drop unwanted items on the floor.");
      }
      refresh();
      char actch = getch();
-     if (actch >= 'a' && actch <= 'a' + 24 &&
-         actch - 'a' + offset < NUM_OPTION_KEYS) {
+     if (actch >= 'a' && actch <= 'a' + 24 && actch - 'a' + offset < NUM_OPTION_KEYS) {
       OPTIONS[ option_key(actch - 'a' + offset) ] = (ch == '+');
       changed_options = true;
      }

@@ -1281,61 +1281,47 @@ point overmap::choose_point(game *g)
  WINDOW* w_search = newwin(13, 27, 3, 51);
  timeout(BLINK_SPEED);	// Enable blinking!
  bool blink = true;
- int cursx = (g->lev.x + int(MAPSIZE / 2)) / 2,
-     cursy = (g->lev.y + int(MAPSIZE / 2)) / 2;
- int origx = cursx, origy = cursy;
+ point curs((g->lev.x + int(MAPSIZE / 2)), (g->lev.y + int(MAPSIZE / 2)));
+ curs /= 2;
+ point orig(curs);
  char ch = 0;
  point ret(-1, -1);
  
  do {  
-  draw(w_map, g, cursx, cursy, origx, origy, ch, blink);
+  draw(w_map, g, curs.x, curs.y, orig.x, orig.y, ch, blink);
   ch = input();
-  int dirx, diry;
-  if (ch != ERR)
-   blink = true;	// If any input is detected, make the blinkies on
-  get_direction(g, dirx, diry, ch);
-  if (dirx != -2 && diry != -2) {
-   cursx += dirx;
-   cursy += diry;
-  } else if (ch == '0') {
-   cursx = origx;
-   cursy = origy;
-  } else if (ch == '\n')
-   ret = point(cursx, cursy);
-  else if (ch == KEY_ESCAPE || ch == 'q' || ch == 'Q')
-   ret = point(-1, -1);
+  if (ch != ERR) blink = true;	// If any input is detected, make the blinkies on
+  point dir(get_direction(ch));
+  if (dir.x != -2 && dir.y != -2) curs += dir;
+  else if (ch == '0') curs = orig;
+  else if (ch == '\n') ret = curs;
+  else if (ch == KEY_ESCAPE || ch == 'q' || ch == 'Q') ret = point(-1, -1);
   else if (ch == 'N') {
    timeout(-1);
-   add_note(cursx, cursy, string_input_popup(49, "Enter note")); // 49 char max
+   add_note(curs.x, curs.y, string_input_popup(49, "Enter note")); // 49 char max
    timeout(BLINK_SPEED);
   } else if(ch == 'D'){
    timeout(-1);
-   if (has_note(cursx, cursy)){
-    bool res = query_yn("Really delete note?");
-    if (res == true)
-     delete_note(cursx, cursy);
+   if (has_note(curs.x, curs.y)){
+    if (query_yn("Really delete note?")) delete_note(curs.x, curs.y);
    }
    timeout(BLINK_SPEED);
   } else if (ch == 'L'){
    timeout(-1);
-   point p = display_notes();
-   if (p.x != -1){
-    cursx = p.x;
-    cursy = p.y;
-   }
+   point p(display_notes());
+   if (p.x != -1) curs = p;
    timeout(BLINK_SPEED);
    wrefresh(w_map);
   } else if (ch == '/') {
-   int tmpx = cursx, tmpy = cursy;
+   point tmp(curs);
    timeout(-1);
    std::string term = string_input_popup("Search term:");
    timeout(BLINK_SPEED);
-   draw(w_map, g, cursx, cursy, origx, origy, ch, blink);
-   point found = find_note(point(cursx, cursy), term);
+   draw(w_map, g, curs.x, curs.y, orig.x, orig.y, ch, blink);
+   point found = find_note(curs, term);
    if (found.x == -1) {	// Didn't find a note
-    std::vector<point> terlist;
-    terlist = find_terrain(term, origx, origy);
-    if (terlist.size() != 0){
+    std::vector<point> terlist(find_terrain(term, orig.x, orig.y));
+    if (!terlist.empty()){
      int i = 0;
      //Navigate through results
      do {
@@ -1350,35 +1336,23 @@ point overmap::choose_point(game *g)
       mvwprintz(w_search, 10, 1, c_white, "Enter/Spacebar to select.");
       mvwprintz(w_search, 11, 1, c_white, "q to return.");
       ch = input();
-      if (ch == ERR)
-       blink = !blink;
+      if (ch == ERR) blink = !blink;
       else if (ch == '<') {
-       i++;
-       if(i > terlist.size() - 1)
-        i = 0;
+       if(++i > terlist.size() - 1) i = 0;
       } else if(ch == '>'){
-       i--;
-       if(i < 0)
-        i = terlist.size() - 1;
+       if(--i < 0) i = terlist.size() - 1;
       }
-      cursx = terlist[i].x;
-      cursy = terlist[i].y;       
-      draw(w_map, g, cursx, cursy, origx, origy, ch, blink);
+      curs = terlist[i];
+      draw(w_map, g, curs.x, curs.y, orig.x, orig.y, ch, blink);
       wrefresh(w_search);
       timeout(BLINK_SPEED);
      } while(ch != '\n' && ch != ' ' && ch != 'q'); 
      //If q is hit, return to the last position
-     if(ch == 'q'){
-      cursx = tmpx;
-      cursy = tmpy;
-     }
+     if(ch == 'q') curs = tmp;
      ch = '.';
     }
    }
-   if (found.x != -1) {
-    cursx = found.x;
-    cursy = found.y;
-   }
+   if (found.x != -1) curs = found;
   }/* else if (ch == 't')  *** Legend always on for now! ***
    legend = !legend;
 */

@@ -451,7 +451,7 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
                                 item *relevent)
 {
  std::vector<point> ret;
- int tarx, tary, tart, junk;
+ int tart, junk;
  int sight_dist = u.sight_range(light_level());
 
 // First, decide on a target among the monsters, if there are any in range
@@ -573,8 +573,8 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
   wrefresh(w_status);
   refresh();
   ch = input();
-  get_direction(this, tarx, tary, ch);
-  if (tarx != -2 && tary != -2 && ch != '.') {	// Direction character pressed
+  point tar(get_direction(ch));
+  if (tar.x != -2 && tar.y != -2 && ch != '.') {	// Direction character pressed
    int mondex = mon_at(x, y), npcdex = npc_at(x, y);
    if (mondex != -1 && u_see(&(z[mondex]), tart))
     z[mondex].draw(w_terrain, center.x, center.y, false);
@@ -584,16 +584,12 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
     m.drawsq(w_terrain, u, x, y, false, true, center.x, center.y);
    else
     mvwputch(w_terrain, SEEY, SEEX, c_black, 'X');
-   x += tarx;
-   y += tary;
-   if (x < lowx)
-    x = lowx;
-   else if (x > hix)
-    x = hix;
-   if (y < lowy)
-    y = lowy;
-   else if (y > hiy)
-    y = hiy;
+   x += tar.x;
+   y += tar.y;
+   if (x < lowx) x = lowx;
+   else if (x > hix) x = hix;
+   if (y < lowy) y = lowy;
+   else if (y > hiy) y = hiy;
   } else if ((ch == '<') && (target != -1)) {
    target--;
    if (target == -1) target = t.size() - 1;

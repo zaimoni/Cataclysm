@@ -1,5 +1,5 @@
 #include "keypress.h"
-#include "game.h"
+#include "wrap_curses.h"
 
 keymap<action_id> keys;
 
@@ -61,48 +61,19 @@ void get_direction(int &x, int &y, char ch)
  }
 }
 
-void get_direction(game *g, int &x, int &y, char ch)
+point get_direction(char ch)
 {
- x = 0;
- y = 0;
- const action_id act = keys.translate(ch);
-
- switch (act) {
- case ACTION_MOVE_NW:
-  x = -1;
-  y = -1;
-  return;
- case ACTION_MOVE_NE:
-  x = 1;
-  y = -1;
-  return;
- case ACTION_MOVE_W:
-  x = -1;
-  return;
- case ACTION_MOVE_S:
-  y = 1;
-  return;
- case ACTION_MOVE_N:
-  y = -1;
-  return;
- case ACTION_MOVE_E:
-  x = 1;
-  return;
- case ACTION_MOVE_SW:
-  x = -1;
-  y = 1;
-  return;
- case ACTION_MOVE_SE:
-  x = 1;
-  y = 1;
-  return;
+ switch (keys.translate(ch)) {
+ case ACTION_MOVE_NW: return point(-1, -1);
+ case ACTION_MOVE_NE: return point(1, -1);
+ case ACTION_MOVE_W: return point(-1, 0);
+ case ACTION_MOVE_S: return point(0, 1);
+ case ACTION_MOVE_N: return point(0, -1);
+ case ACTION_MOVE_E: return point(1, 0);
+ case ACTION_MOVE_SW: return point(-1, 1);
+ case ACTION_MOVE_SE: return point(1, 1);
  case ACTION_PAUSE:
- case ACTION_PICKUP:
-  x = 0;
-  y = 0;
-  return;
- default:
-  x = -2;
-  y = -2;
+ case ACTION_PICKUP: return point(0, 0);
+ default: return point(-2, -2);
  }
 }

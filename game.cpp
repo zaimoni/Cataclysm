@@ -3872,14 +3872,13 @@ void game::open()
  bool didit = false;
  mvwprintw(w_terrain, 0, 0, "Open where? (hjklyubn) ");
  wrefresh(w_terrain);
- int openx, openy;
  char ch = input();
  last_action += ch;
- get_direction(this, openx, openy, ch);
- if (openx != -2 && openy != -2)
+ point open(get_direction(ch));
+ if (open.x != -2 && open.y != -2)
  {
   int vpart;
-  vehicle *veh = m.veh_at(u.posx + openx, u.posy + openy, vpart);
+  vehicle * const veh = m.veh_at(u.posx + open.x, u.posy + open.y, vpart);
   if (veh && veh->part_flag(vpart, vpf_openable)) {
    if (veh->parts[vpart].open) {
     add_msg("That door is already open.");
@@ -3892,14 +3891,14 @@ void game::open()
   }
 
   if (m.ter(u.posx, u.posy) == t_floor)
-   didit = m.open_door(u.posx + openx, u.posy + openy, true);
+   didit = m.open_door(u.posx + open.x, u.posy + open.y, true);
   else
-   didit = m.open_door(u.posx + openx, u.posy + openy, false);
+   didit = m.open_door(u.posx + open.x, u.posy + open.y, false);
  }
  else
   add_msg("Invalid direction.");
  if (!didit) {
-  switch(m.ter(u.posx + openx, u.posy + openy)) {
+  switch(m.ter(u.posx + open.x, u.posy + open.y)) {
   case t_door_locked:
   case t_door_locked_alarm:
    add_msg("The door is locked!");
@@ -3920,33 +3919,32 @@ void game::close()
  bool didit = false;
  mvwprintw(w_terrain, 0, 0, "Close where? (hjklyubn) ");
  wrefresh(w_terrain);
- int closex, closey;
  char ch = input();
  last_action += ch;
- get_direction(this, closex, closey, ch);
- if (closex != -2 && closey != -2) {
-  closex += u.posx;
-  closey += u.posy;
-  int vpart;
-  vehicle *veh = m.veh_at(closex, closey, vpart);
-  if (mon_at(closex, closey) != -1)
-   add_msg("There's a %s in the way!",z[mon_at(closex, closey)].name().c_str());
-  else if (veh && veh->part_flag(vpart, vpf_openable) &&
-          veh->parts[vpart].open) {
+ point close(get_direction(ch));
+ if (-2 == close.x && -2 == close.y) { add_msg("Invalid direction."); return; }
+ close.x += u.posx;
+ close.y += u.posy;
+ {
+ const auto mon = mon_at(close.x, close.y);
+ if (mon != -1) { add_msg("There's a %s in the way!", z[mon].name().c_str()); return; }
+ }
+ int vpart;
+ vehicle * const veh = m.veh_at(close.x, close.y, vpart);
+ if (veh && veh->part_flag(vpart, vpf_openable) && veh->parts[vpart].open) {
    veh->parts[vpart].open = 0;
    veh->insides_dirty = true;
    didit = true;
-  } else if (m.i_at(closex, closey).size() > 0)
-   add_msg("There's %s in the way!", m.i_at(closex, closey).size() == 1 ?
-           m.i_at(closex, closey)[0].tname(this).c_str() : "some stuff");
-  else if (closex == u.posx && closey == u.posy)
-   add_msg("There's some buffoon in the way!");
-  else
-   didit = m.close_door(closex, closey);
- } else
-  add_msg("Invalid direction.");
- if (didit)
-  u.moves -= 90;
+ } else {
+   const auto& stack = m.i_at(close.x, close.y);
+   if (!stack.empty()) {
+     add_msg("There's %s in the way!", stack.size() == 1 ? stack[0].tname(this).c_str() : "some stuff");
+	 return;
+   }
+   if (close.x == u.posx && close.y == u.posy) { add_msg("There's some buffoon in the way!"); return; }
+   didit = m.close_door(close.x, close.y);
+ }
+ if (didit) u.moves -= 90;
 }
 
 void game::smash()
@@ -3962,27 +3960,22 @@ void game::smash()
   add_msg("Never mind.");
   return;
  }
- int smashx, smashy;
- get_direction(this, smashx, smashy, ch);
-// TODO: Move this elsewhere.
- if (m.has_flag(alarmed, u.posx + smashx, u.posy + smashy) &&
-     !event_queued(EVENT_WANTED)) {
-  sound(u.posx, u.posy, 30, "An alarm sounds!");
-  add_event(EVENT_WANTED, int(turn) + 300, 0, lev.x, lev.y);
+ point smash(get_direction(ch));
+ if (smash.x == -2 || smash.y == -2) add_msg("Invalid direction.");
+ else {
+   // TODO: Move this elsewhere.
+   if (m.has_flag(alarmed, u.posx + smash.x, u.posy + smash.y) && !event_queued(EVENT_WANTED)) {
+     sound(u.posx, u.posy, 30, "An alarm sounds!");
+     add_event(EVENT_WANTED, int(turn) + 300, 0, lev.x, lev.y);
+   }
+   didit = m.bash(u.posx + smash.x, u.posy + smash.y, smashskill, bashsound);
  }
- if (smashx != -2 && smashy != -2)
-  didit = m.bash(u.posx + smashx, u.posy + smashy, smashskill, bashsound);
- else
-  add_msg("Invalid direction.");
  if (didit) {
-  if (extra != "")
-   add_msg(extra.c_str());
+  if (extra != "") add_msg(extra.c_str());
   sound(u.posx, u.posy, 18, bashsound);
   u.moves -= 80;
-  if (u.sklevel[sk_melee] == 0)
-   u.practice(sk_melee, rng(0, 1) * rng(0, 1));
-  if (u.weapon.made_of(GLASS) &&
-      rng(0, u.weapon.volume() + 3) < u.weapon.volume()) {
+  if (u.sklevel[sk_melee] == 0) u.practice(sk_melee, rng(0, 1) * rng(0, 1));
+  if (u.weapon.made_of(GLASS) && rng(0, u.weapon.volume() + 3) < u.weapon.volume()) {
    add_msg("Your %s shatters!", u.weapon.tname(this).c_str());
    for (int i = 0; i < u.weapon.contents.size(); i++)
     m.add_item(u.posx, u.posy, u.weapon.contents[i]);
@@ -4011,14 +4004,13 @@ bool game::pl_choose_vehicle (int &x, int &y)
 {
  refresh_all();
  mvprintz(0, 0, c_red, "Choose a vehicle at direction:");
- int dirx, diry;
- get_direction(this, dirx, diry, input());
- if (dirx == -2) {
+ point dir(get_direction(input()));
+ if (dir.x == -2) {
   add_msg("Invalid direction!");
   return false;
  }
- x += dirx;
- y += diry;
+ x += dir.x;
+ y += dir.y;
  return true;
 /*
 int junk;
@@ -4215,74 +4207,66 @@ void game::examine()
  }
  mvwprintw(w_terrain, 0, 0, "Examine where? (Direction button) ");
  wrefresh(w_terrain);
- int examx, examy;
  char ch = input();
  last_action += ch;
- if (ch == KEY_ESCAPE || ch == 'e' || ch == 'q')
-  return;
- get_direction(this, examx, examy, ch);
- if (examx == -2 || examy == -2) {
+ if (ch == KEY_ESCAPE || ch == 'e' || ch == 'q') return;
+ point exam(get_direction(ch));
+ if (exam.x == -2 || exam.y == -2) {
   add_msg("Invalid direction.");
   return;
  }
- examx += u.posx;
- examy += u.posy;
- add_msg("That is a %s.", m.tername(examx, examy).c_str());
+ exam.x += u.posx;
+ exam.y += u.posy;
+ add_msg("That is a %s.", m.tername(exam.x, exam.y).c_str());
 
  int veh_part = 0;
- vehicle *veh = m.veh_at (examx, examy, veh_part);
+ vehicle *veh = m.veh_at (exam.x, exam.y, veh_part);
  if (veh) {
   int vpcargo = veh->part_with_feature(veh_part, vpf_cargo, false);
-  if (vpcargo >= 0 && veh->parts[vpcargo].items.size() > 0)
-   pickup(examx, examy, 0);
-  else if (u.in_vehicle)
-   add_msg ("You can't do that while onboard.");
-  else if (abs(veh->velocity) > 0)
-   add_msg ("You can't do that on moving vehicle.");
-  else
-   exam_vehicle (*veh, examx, examy);
- } else if (m.has_flag(sealed, examx, examy)) {
-  if (m.trans(examx, examy)) {
+  if (vpcargo >= 0 && veh->parts[vpcargo].items.size() > 0) pickup(exam.x, exam.y, 0);
+  else if (u.in_vehicle) add_msg ("You can't do that while onboard.");
+  else if (abs(veh->velocity) > 0) add_msg ("You can't do that on moving vehicle.");
+  else exam_vehicle (*veh, exam.x, exam.y);
+ } else if (m.has_flag(sealed, exam.x, exam.y)) {
+  if (m.trans(exam.x, exam.y)) {
+   const auto& stack = m.i_at(exam.x, exam.y);
    std::string buff;
-   if (m.i_at(examx, examy).size() <= 3 && m.i_at(examx, examy).size() != 0) {
+   if (stack.size() <= 3 && !stack.empty()) {
     buff = "It contains ";
-    for (int i = 0; i < m.i_at(examx, examy).size(); i++) {
-     buff += m.i_at(examx, examy)[i].tname(this);
-     if (i + 2 < m.i_at(examx, examy).size())
-      buff += ", ";
-     else if (i + 1 < m.i_at(examx, examy).size())
-      buff += ", and ";
+    for (int i = 0; i < stack.size(); i++) {
+     buff += stack[i].tname(this);
+     if (i + 2 < stack.size()) buff += ", ";
+     else if (i + 1 < stack.size()) buff += ", and ";
     }
     buff += ",";
-   } else if (m.i_at(examx, examy).size() != 0)
-    buff = "It contains many items,";
+   } else if (!stack.empty()) buff = "It contains many items,";
    buff += " but is firmly sealed.";
    add_msg(buff.c_str());
   } else {
    add_msg("There's something in there, but you can't see what it is, and the\
- %s is firmly sealed.", m.tername(examx, examy).c_str());
+ %s is firmly sealed.", m.tername(exam.x, exam.y).c_str());
   }
  } else {
-  if (m.i_at(examx, examy).size() == 0 && m.has_flag(container, examx, examy) &&
-      !(m.has_flag(swimmable, examx, examy) || m.ter(examx, examy) == t_toilet))
+  if (m.i_at(exam.x, exam.y).size() == 0 && m.has_flag(container, exam.x, exam.y) &&
+      !(m.has_flag(swimmable, exam.x, exam.y) || m.ter(exam.x, exam.y) == t_toilet))
    add_msg("It is empty.");
   else
-   pickup(examx, examy, 0);
+   pickup(exam.x, exam.y, 0);
  }
- if (m.has_flag(console, examx, examy)) {
-  use_computer(examx, examy);
+ if (m.has_flag(console, exam.x, exam.y)) {
+  use_computer(exam.x, exam.y);
   return;
  }
- if (m.ter(examx, examy) == t_card_science ||
-     m.ter(examx, examy) == t_card_military  ) {
-  itype_id card_type = (m.ter(examx, examy) == t_card_science ? itm_id_science :
+ if (m.ter(exam.x, exam.y) == t_card_science ||
+     m.ter(exam.x, exam.y) == t_card_military  ) {
+  itype_id card_type = (m.ter(exam.x, exam.y) == t_card_science ? itm_id_science :
                                                                itm_id_military);
   if (u.has_amount(card_type, 1) && query_yn("Swipe your ID card?")) {
    u.moves -= 100;
    for (int i = -3; i <= 3; i++) {
     for (int j = -3; j <= 3; j++) {
-     if (m.ter(examx + i, examy + j) == t_door_metal_locked)
-      m.ter(examx + i, examy + j) = t_floor;
+     if (m.ter(exam.x + i, exam.y + j) == t_door_metal_locked)
+      m.ter(exam.x + i, exam.y + j) = t_floor;
     }
    }
    for (int i = 0; i < z.size(); i++) {
@@ -4322,22 +4306,22 @@ void game::examine()
       u.charge_power(0 - rng(0, u.power_level));
      }
     }
-    m.ter(examx, examy) = t_card_reader_broken;
+    m.ter(exam.x, exam.y) = t_card_reader_broken;
    } else if (success < 6)
     add_msg("Nothing happens.");
    else {
     add_msg("You activate the panel!");
     add_msg("The nearby doors slide into the floor.");
-    m.ter(examx, examy) = t_card_reader_broken;
+    m.ter(exam.x, exam.y) = t_card_reader_broken;
     for (int i = -3; i <= 3; i++) {
      for (int j = -3; j <= 3; j++) {
-      if (m.ter(examx + i, examy + j) == t_door_metal_locked)
-       m.ter(examx + i, examy + j) = t_floor;
+      if (m.ter(exam.x + i, exam.y + j) == t_door_metal_locked)
+       m.ter(exam.x + i, exam.y + j) = t_floor;
      }
     }
    }
   }
- } else if (m.ter(examx, examy) == t_elevator_control &&
+ } else if (m.ter(exam.x, exam.y) == t_elevator_control &&
             query_yn("Activate elevator?")) {
   int movez = (lev.z < 0 ? 2 : -2);
   lev.z += movez;
@@ -4356,7 +4340,7 @@ void game::examine()
    }
   }
   refresh_all();
- } else if (m.ter(examx, examy) == t_gas_pump && query_yn("Pump gas?")) {
+ } else if (m.ter(exam.x, exam.y) == t_gas_pump && query_yn("Pump gas?")) {
   item gas(item::types[itm_gasoline], turn);
   if (one_in(10 + u.dex_cur)) {
    add_msg("You accidentally spill the gasoline.");
@@ -4365,7 +4349,7 @@ void game::examine()
    u.moves -= 300;
    handle_liquid(gas, false, true);
   }
- } else if (m.ter(examx, examy) == t_slot_machine) {
+ } else if (m.ter(exam.x, exam.y) == t_slot_machine) {
   if (u.cash < 10) add_msg("You need $10 to play.");
   else if (query_yn("Insert $10?")) {
    do {
@@ -4385,7 +4369,7 @@ void game::examine()
     }
    } while (u.cash >= 10 && query_yn("Play again?"));
   }
- } else if (m.ter(examx, examy) == t_bulletin) {
+ } else if (m.ter(exam.x, exam.y) == t_bulletin) {
 // TODO: Bulletin Boards
   switch (menu("Bulletin Board", "Check jobs", "Check events",
                "Check other notices", "Post notice", "Cancel", NULL)) {
@@ -4398,39 +4382,39 @@ void game::examine()
    case 4:
     break;
   }
- } else if (m.ter(examx, examy) == t_fault) {
+ } else if (m.ter(exam.x, exam.y) == t_fault) {
   popup("\
 This wall is perfectly vertical.  Odd, twisted holes are set in it, leading\n\
 as far back into the solid rock as you can see.  The holes are humanoid in\n\
 shape, but with long, twisted, distended limbs.");
- } else if (m.ter(examx, examy) == t_pedestal_wyrm &&
-            m.i_at(examx, examy).empty()) {
+ } else if (m.ter(exam.x, exam.y) == t_pedestal_wyrm &&
+            m.i_at(exam.x, exam.y).empty()) {
   add_msg("The pedestal sinks into the ground...");
-  m.ter(examx, examy) = t_rock_floor;
+  m.ter(exam.x, exam.y) = t_rock_floor;
   add_event(EVENT_SPAWN_WYRMS, int(turn) + rng(5, 10));
- } else if (m.ter(examx, examy) == t_pedestal_temple) {
-  if (m.i_at(examx, examy).size() == 1 &&
-      m.i_at(examx, examy)[0].type->id == itm_petrified_eye) {
+ } else if (m.ter(exam.x, exam.y) == t_pedestal_temple) {
+  if (m.i_at(exam.x, exam.y).size() == 1 &&
+      m.i_at(exam.x, exam.y)[0].type->id == itm_petrified_eye) {
    add_msg("The pedestal sinks into the ground...");
-   m.ter(examx, examy) = t_dirt;
-   m.i_at(examx, examy).clear();
+   m.ter(exam.x, exam.y) = t_dirt;
+   m.i_at(exam.x, exam.y).clear();
    add_event(EVENT_TEMPLE_OPEN, int(turn) + 4);
   } else if (u.has_amount(itm_petrified_eye, 1) &&
              query_yn("Place your petrified eye on the pedestal?")) {
    u.use_amount(itm_petrified_eye, 1);
    add_msg("The pedestal sinks into the ground...");
-   m.ter(examx, examy) = t_dirt;
+   m.ter(exam.x, exam.y) = t_dirt;
    add_event(EVENT_TEMPLE_OPEN, int(turn) + 4);
   } else
    add_msg("This pedestal is engraved in eye-shaped diagrams, and has a large\
  semi-spherical indentation at the top.");
- } else if (m.ter(examx, examy) >= t_switch_rg &&
-            m.ter(examx, examy) <= t_switch_even &&
-            query_yn("Flip the %s?", m.tername(examx, examy).c_str())) {
+ } else if (m.ter(exam.x, exam.y) >= t_switch_rg &&
+            m.ter(exam.x, exam.y) <= t_switch_even &&
+            query_yn("Flip the %s?", m.tername(exam.x, exam.y).c_str())) {
   u.moves -= 100;
-  for (int y = examy; y <= examy + 5; y++) {
+  for (int y = exam.y; y <= exam.y + 5; y++) {
    for (int x = 0; x < SEEX * MAPSIZE; x++) {
-    switch (m.ter(examx, examy)) {
+    switch (m.ter(exam.x, exam.y)) {
      case t_switch_rg:
       if (m.ter(x, y) == t_rock_red)
        m.ter(x, y) = t_floor_red;
@@ -4462,7 +4446,7 @@ shape, but with long, twisted, distended limbs.");
        m.ter(x, y) = t_rock_red;
       break;
      case t_switch_even:
-      if ((y - examy) % 2 == 1) {
+      if ((y - exam.y) % 2 == 1) {
        if (m.ter(x, y) == t_rock_red)
         m.ter(x, y) = t_floor_red;
        else if (m.ter(x, y) == t_floor_red)
@@ -4484,13 +4468,13 @@ shape, but with long, twisted, distended limbs.");
   add_event(EVENT_TEMPLE_SPAWN, turn + 3);
  }
 
- const auto tr_id = m.tr_at(examx, examy);
+ const auto tr_id = m.tr_at(exam.x, exam.y);
  if (tr_id != tr_null) {
    const trap* const tr = trap::traps[tr_id];
    if (tr->difficulty < 99
        && u.per_cur-u.encumb(bp_eyes) >= tr->visibility
        && query_yn("There is a %s there.  Disarm?", tr->name.c_str()))
-     m.disarm_trap(this, examx, examy);
+     m.disarm_trap(this, exam.x, exam.y);
  }
 }
 
@@ -4498,7 +4482,7 @@ point game::look_around()
 {
  draw_ter();
  int lx = u.posx, ly = u.posy;
- int mx, my, junk;
+ int junk;
  char ch;
  WINDOW* w_look = newwin(13, 48, 12, SEEX * 2 + 8);
  wborder(w_look, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
@@ -4511,10 +4495,10 @@ point game::look_around()
   ch = input();
   if (!u_see(lx, ly, junk))
    mvwputch(w_terrain, ly - u.posy + SEEY, lx - u.posx + SEEX, c_black, ' ');
-  get_direction(this, mx, my, ch);
-  if (mx != -2 && my != -2) {	// Directional key pressed
-   lx += mx;
-   ly += my;
+  point dir(get_direction(ch));
+  if (dir.x != -2 && dir.y != -2) {	// Directional key pressed
+   lx += dir.x;
+   ly += dir.y;
 /*
    if (lx < u.posx - SEEX)
     lx = u.posx - SEEX;
@@ -5146,33 +5130,33 @@ void game::drop_in_direction()
 {
  refresh_all();
  mvprintz(0, 0, c_red, "Choose a direction:");
- int dirx, diry;
- get_direction(this, dirx, diry, input());
- if (dirx == -2) {
+ point dir(get_direction(input()));
+ if (dir.x == -2) {
   add_msg("Invalid direction!");
   return;
  }
- dirx += u.posx;
- diry += u.posy;
+ dir.x += u.posx;
+ dir.y += u.posy;
  int veh_part = 0;
  bool to_veh = false;
- vehicle *veh = m.veh_at(dirx, diry, veh_part);
+ vehicle *veh = m.veh_at(dir.x, dir.y, veh_part);
  if (veh) {
   veh_part = veh->part_with_feature (veh_part, vpf_cargo);
   to_veh = veh->type != veh_null && veh_part >= 0;
  }
 
- if (m.has_flag(noitem, dirx, diry) || m.has_flag(sealed, dirx, diry)) {
+ if (m.has_flag(noitem, dir.x, dir.y) || m.has_flag(sealed, dir.x, dir.y)) {
   add_msg("You can't place items there!");
   return;
  }
 
- std::string verb = (m.move_cost(dirx, diry) == 0 ? "put" : "drop");
- std::string prep = (m.move_cost(dirx, diry) == 0 ? "in"  : "on"  );
+ const auto cost = m.move_cost(dir.x, dir.y);
+ std::string verb = (0 >= cost ? "put" : "drop");
+ std::string prep = (0 >= cost ? "in"  : "on"  );
 
  std::vector<item> dropped = multidrop();
 
- if (dropped.size() == 0) {
+ if (dropped.empty()) {
   add_msg("Never mind.");
   return;
  }
@@ -5193,27 +5177,25 @@ void game::drop_in_direction()
    add_msg("You %s your %s%s %s the %s.", verb.c_str(),
            dropped[0].tname(this).c_str(),
            (dropped.size() == 1 ? "" : "s"), prep.c_str(),
-           m.tername(dirx, diry).c_str());
+           m.tername(dir.x, dir.y).c_str());
  } else {
   if (to_veh)
    add_msg("You put several items in the %s's %s.", veh->name.c_str(),
            veh->part_info(veh_part).name);
   else
    add_msg("You %s several items %s the %s.", verb.c_str(), prep.c_str(),
-           m.tername(dirx, diry).c_str());
+           m.tername(dir.x, dir.y).c_str());
  }
  if (to_veh) {
   bool vh_overflow = false;
   for (int i = 0; i < dropped.size(); i++) {
    vh_overflow = vh_overflow || !veh->add_item (veh_part, dropped[i]);
-   if (vh_overflow)
-    m.add_item(dirx, diry, dropped[i]);
+   if (vh_overflow) m.add_item(dir.x, dir.y, dropped[i]);
   }
-  if (vh_overflow)
-   add_msg ("Trunk is full, so some items fall on the ground.");
+  if (vh_overflow) add_msg ("Trunk is full, so some items fall on the ground.");
  } else {
   for (int i = 0; i < dropped.size(); i++)
-   m.add_item(dirx, diry, dropped[i]);
+   m.add_item(dir.x, dir.y, dropped[i]);
  }
 }
 
@@ -6975,13 +6957,9 @@ void game::msg_buffer()
   wrefresh(w);
 
   ch = input();
-  int dirx = 0, diry = 0;
-   
-  get_direction(this, dirx, diry, ch);
-  if (diry == -1 && offset > 0)
-   offset--;
-  if (diry == 1 && offset < messages.size())
-   offset++;
+  point dir(get_direction(ch));
+  if (dir.y == -1 && offset > 0) offset--;
+  if (dir.y == 1 && offset < messages.size()) offset++;
 
  } while (ch != 'q' && ch != 'Q' && ch != ' ');
 

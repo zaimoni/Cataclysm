@@ -1,8 +1,7 @@
 #ifndef _KEYPRESS_H_
 #define _KEYPRESS_H_
 
-class game;
-
+#include "enums.h"
 #include "action.h"
 #include "keymap.h"
 
@@ -11,7 +10,7 @@ long input();
 // If ch is vikey, x & y are set to corresponding direction; ch=='y'->x=-1,y=-1
 void get_direction(int &x, int &y, char ch);
 // Uses the keymap to figure out direction properly
-void get_direction(game *g, int &x, int &y, char ch);
+point get_direction(char ch);
 
 extern keymap<action_id> keys;
 

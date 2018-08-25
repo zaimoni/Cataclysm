@@ -430,18 +430,19 @@ void game::place_construction(const constructable * const con)
   }
  }
  mvprintz(0, 0, c_red, "Pick a direction in which to construct:");
- int dirx, diry;
- get_direction(this, dirx, diry, input());
- if (dirx == -2) {
+ point dir = get_direction(input());
+ if (dir.x == -2) {
   add_msg("Invalid direction.");
   return;
  }
- dirx += u.posx;
- diry += u.posy;
+ dir.x += u.posx;
+ dir.y += u.posy;
  bool point_is_okay = false;
- for (int i = 0; i < valid.size() && !point_is_okay; i++) {
-  if (valid[i].x == dirx && valid[i].y == diry)
+ for (const auto& pt : valid) {
+  if (pt == dir) {
    point_is_okay = true;
+   break;
+  }
  }
  if (!point_is_okay) {
   add_msg("You cannot build there!");
@@ -451,7 +452,7 @@ void game::place_construction(const constructable * const con)
 // Figure out what stage to start at, and what stage is the maximum
  int starting_stage = 0, max_stage = 0;
  for (int i = 0; i < con->stages.size(); i++) {
-  if (m.ter(dirx, diry) == con->stages[i].terrain)
+  if (m.ter(dir.x, dir.y) == con->stages[i].terrain)
    starting_stage = i + 1;
   if (player_can_build(u, total_inv, con, i, true))
    max_stage = i;
@@ -464,7 +465,7 @@ void game::place_construction(const constructable * const con)
  for (int i = starting_stage; i <= max_stage; i++)
   stages.push_back(i);
  u.activity.values = stages;
- u.activity.placement = point(dirx, diry);
+ u.activity.placement = dir;
 }
 
 void game::complete_construction()
@@ -607,13 +608,10 @@ void construct::done_window_pane(game *g, point p)
 void construct::done_tree(game *g, point p)
 {
  mvprintz(0, 0, c_red, "Press a direction for the tree to fall in:");
- int x = 0, y = 0;
- do
-  get_direction(g, x, y, input());
- while (x == -2 || y == -2);
- x = p.x + x * 3 + rng(-1, 1);
- y = p.y + y * 3 + rng(-1, 1);
- std::vector<point> tree = line_to(p.x, p.y, x, y, rng(1, 8));
+ point dest(-2, -2);
+ while (-2 == dest.x) dest = get_direction(input());
+ ((dest *= 3) += p) += point(rng(-1, 1), rng(-1, 1));
+ std::vector<point> tree = line_to(p.x, p.y, dest.x, dest.y, rng(1, 8));
  for (int i = 0; i < tree.size(); i++) {
   g->m.destroy(g, tree[i].x, tree[i].y, true);
   g->m.ter(tree[i].x, tree[i].y) = t_log;

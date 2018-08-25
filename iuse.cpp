@@ -618,18 +618,17 @@ void iuse::marloss(game *g, player *p, item *it, bool t)
 
 void iuse::dogfood(game *g, player *p, item *it, bool t)
 {
- int dirx, diry;
  g->draw();
  mvprintw(0, 0, "Which direction?");
- get_direction(g, dirx, diry, input());
- if (dirx == -2) {
+ point dir(get_direction(input()));
+ if (dir.x == -2) {
   g->add_msg("Invalid direction.");
   return;
  }
  p->moves -= 15;
- dirx += p->posx;
- diry += p->posy;
- int mon_dex = g->mon_at(dirx,diry);
+ dir.x += p->posx;
+ dir.y += p->posy;
+ int mon_dex = g->mon_at(dir.x,dir.y);
  if (mon_dex != -1) {
   if (g->z[mon_dex].type->id == mon_dog) {
    g->add_msg("The dog seems to like you!");
@@ -647,21 +646,20 @@ void iuse::dogfood(game *g, player *p, item *it, bool t)
 
 void iuse::lighter(game *g, player *p, item *it, bool t)
 {
- int dirx, diry;
  g->draw();
  mvprintw(0, 0, "Light where?");
- get_direction(g, dirx, diry, input());
- if (dirx == -2) {
+ point dir(get_direction(input()));
+ if (dir.x == -2) {
   g->add_msg("Invalid direction.");
   it->charges++;
   return;
  }
  p->moves -= 15;
- dirx += p->posx;
- diry += p->posy;
- if (g->m.flammable_items_at(dirx, diry)) {
-  if (g->m.add_field(g, dirx, diry, fd_fire, 1))
-   g->m.field_at(dirx, diry).age = 30;
+ dir.x += p->posx;
+ dir.y += p->posy;
+ if (g->m.flammable_items_at(dir.x, dir.y)) {
+  if (g->m.add_field(g, dir.x, dir.y, fd_fire, 1))
+   g->m.field_at(dir.x, dir.y).age = 30;
  } else {
   g->add_msg("There's nothing to light there.");
   it->charges++;
@@ -832,16 +830,15 @@ void iuse::extinguisher(game *g, player *p, item *it, bool t)
 {
  g->draw();
  mvprintz(0, 0, c_red, "Pick a direction to spray:");
- int dirx, diry;
- get_direction(g, dirx, diry, input());
- if (dirx == -2) {
+ point dir(get_direction(input()));
+ if (dir.x == -2) {
   g->add_msg("Invalid direction!");
   it->charges++;
   return;
  }
  p->moves -= 140;
- int x = dirx + p->posx;
- int y = diry + p->posy;
+ int x = dir.x + p->posx;
+ int y = dir.y + p->posy;
  if (g->m.field_at(x, y).type == fd_fire) {
   g->m.field_at(x, y).density -= rng(2, 3);
   if (g->m.field_at(x, y).density <= 0) {
@@ -865,8 +862,8 @@ void iuse::extinguisher(game *g, player *p, item *it, bool t)
   }
  }
  if (g->m.move_cost(x, y) != 0) {
-  x += dirx;
-  y += diry;
+  x += dir.x;
+  y += dir.y;
   if (g->m.field_at(x, y).type == fd_fire) {
    g->m.field_at(x, y).density -= rng(0, 1) + rng(0, 1);
    if (g->m.field_at(x, y).density <= 0) {
@@ -881,17 +878,16 @@ void iuse::hammer(game *g, player *p, item *it, bool t)
 {
  g->draw();
  mvprintz(0, 0, c_red, "Pick a direction in which to pry:");
- int dirx, diry;
- get_direction(g, dirx, diry, input());
- if (dirx == -2) {
+ point dir(get_direction(input()));
+ if (dir.x == -2) {
   g->add_msg("Invalid direction!");
   return;
  }
- dirx += p->posx;
- diry += p->posy;
+ dir.x += p->posx;
+ dir.y += p->posy;
  int nails = 0, boards = 0;
  ter_id newter;
- switch (g->m.ter(dirx, diry)) {
+ switch (g->m.ter(dir.x, dir.y)) {
  case t_window_boarded:
   nails =  8;
   boards = 3;
@@ -914,7 +910,7 @@ void iuse::hammer(game *g, player *p, item *it, bool t)
  item board(item::types[itm_2x4], 0, g->nextinv);
  for (int i = 0; i < boards; i++)
   g->m.add_item(p->posx, p->posy, board);
- g->m.ter(dirx, diry) = newter;
+ g->m.ter(dir.x, dir.y) = newter;
 }
  
 void iuse::light_off(game *g, player *p, item *it, bool t)
@@ -1093,41 +1089,40 @@ void iuse::radio_on(game *g, player *p, item *it, bool t)
 
 void iuse::crowbar(game *g, player *p, item *it, bool t)
 {
- int dirx, diry;
  g->draw();
  mvprintw(0, 0, "Pry where?");
- get_direction(g, dirx, diry, input());
- if (dirx == -2) {
+ point dir(get_direction(input()));
+ if (dir.x == -2) {
   g->add_msg("Invalid direction.");
   return;
  }
- dirx += p->posx;
- diry += p->posy;
- ter_id type = g->m.ter(dirx, diry);
+ dir.x += p->posx;
+ dir.y += p->posy;
+ ter_id type = g->m.ter(dir.x, dir.y);
  if (type == t_door_c || type == t_door_locked || type == t_door_locked_alarm) {
   if (dice(4, 6) < dice(4, p->str_cur)) {
    g->add_msg("You pry the door open.");
    p->moves -= (150 - (p->str_cur * 5));
-   g->m.ter(dirx, diry) = t_door_o;
+   g->m.ter(dir.x, dir.y) = t_door_o;
   } else {
    g->add_msg("You pry, but cannot open the door.");
    p->moves -= 100;
   }
- } else if (g->m.ter(dirx, diry) == t_manhole_cover) {
+ } else if (g->m.ter(dir.x, dir.y) == t_manhole_cover) {
   if (dice(8, 8) < dice(8, p->str_cur)) {
    g->add_msg("You lift the manhole cover.");
    p->moves -= (500 - (p->str_cur * 5));
-   g->m.ter(dirx, diry) = t_manhole;
+   g->m.ter(dir.x, dir.y) = t_manhole;
    g->m.add_item(p->posx, p->posy, item::types[itm_manhole_cover], 0);
   } else {
    g->add_msg("You pry, but cannot lift the manhole cover.");
    p->moves -= 100;
   }
- } else if (g->m.ter(dirx, diry) == t_crate_c) {
+ } else if (g->m.ter(dir.x, dir.y) == t_crate_c) {
   if (p->str_cur >= rng(3, 30)) {
    g->add_msg("You pop the crate open.");
    p->moves -= (150 - (p->str_cur * 5));
-   g->m.ter(dirx, diry) = t_crate_o;
+   g->m.ter(dir.x, dir.y) = t_crate_o;
   } else {
    g->add_msg("You pry, but cannot open the crate.");
    p->moves -= 100;
@@ -1135,7 +1130,7 @@ void iuse::crowbar(game *g, player *p, item *it, bool t)
  } else {
   int nails = 0, boards = 0;
   ter_id newter;
-  switch (g->m.ter(dirx, diry)) {
+  switch (g->m.ter(dir.x, dir.y)) {
   case t_window_boarded:
    nails =  8;
    boards = 3;
@@ -1157,7 +1152,7 @@ void iuse::crowbar(game *g, player *p, item *it, bool t)
   item board(item::types[itm_2x4], 0, g->nextinv);
   for (int i = 0; i < boards; i++)
    g->m.add_item(p->posx, p->posy, board);
-  g->m.ter(dirx, diry) = newter;
+  g->m.ter(dir.x, dir.y) = newter;
  }
 }
 
@@ -1221,20 +1216,19 @@ void iuse::chainsaw_on(game *g, player *p, item *it, bool t)
 
 void iuse::jackhammer(game *g, player *p, item *it, bool t)
 {
- int dirx, diry;
  g->draw();
  mvprintw(0, 0, "Drill in which direction?");
- get_direction(g, dirx, diry, input());
- if (dirx == -2) {
+ point dir(get_direction(input()));
+ if (dir.x == -2) {
   g->add_msg("Invalid direction.");
   return;
  }
- dirx += p->posx;
- diry += p->posy;
- if (g->m.is_destructable(dirx, diry)) {
-  g->m.destroy(g, dirx, diry, false);
+ dir.x += p->posx;
+ dir.y += p->posy;
+ if (g->m.is_destructable(dir.x, dir.y)) {
+  g->m.destroy(g, dir.x, dir.y, false);
   p->moves -= 500;
-  g->sound(dirx, diry, 45, "TATATATATATATAT!");
+  g->sound(dir.x, dir.y, 45, "TATATATATATATAT!");
  } else {
   g->add_msg("You can't drill there.");
   it->charges += (dynamic_cast<const it_tool*>(it->type))->charges_per_use;
@@ -1243,16 +1237,15 @@ void iuse::jackhammer(game *g, player *p, item *it, bool t)
 
 void iuse::set_trap(game *g, player *p, item *it, bool t)
 {
- int dirx, diry;
  g->draw();
  mvprintw(0, 0, "Place where?");
- get_direction(g, dirx, diry, input());
- if (dirx == -2) {
+ point dir(get_direction(input()));
+ if (dir.x == -2) {
   g->add_msg("Invalid direction.");
   return;
  }
- int posx = dirx + p->posx;
- int posy = diry + p->posy;
+ int posx = dir.x + p->posx;
+ int posy = dir.y + p->posy;
  if (g->m.move_cost(posx, posy) != 2) {
   g->add_msg("You can't place a %s there.", it->tname().c_str());
   return;
@@ -1317,8 +1310,8 @@ void iuse::set_trap(game *g, player *p, item *it, bool t)
   practice = 5;
   break;
  case itm_blade_trap:
-  posx += dirx;
-  posy += diry;
+  posx += dir.x;
+  posy += dir.y;
   for (int i = -1; i <= 1; i++) {
    for (int j = -1; j <= 1; j++) {
     if (g->m.move_cost(posx + i, posy + j) != 2) {
@@ -1803,23 +1796,22 @@ void iuse::manhack(game *g, player *p, item *it, bool t)
 
 void iuse::turret(game *g, player *p, item *it, bool t)
 {
- int dirx, diry;
  g->draw();
  mvprintw(0, 0, "Place where?");
- get_direction(g, dirx, diry, input());
- if (dirx == -2) {
+ point dir(get_direction(input()));
+ if (dir.x == -2) {
   g->add_msg("Invalid direction.");
   return;
  }
  p->moves -= 100;
- dirx += p->posx;
- diry += p->posy;
- if (!g->is_empty(dirx, diry)) {
+ dir.x += p->posx;
+ dir.y += p->posy;
+ if (!g->is_empty(dir.x, dir.y)) {
   g->add_msg("You cannot place a turret there.");
   return;
  }
  it->invlet = 0; // Remove the turret from the player's inv
- monster turret(mtype::types[mon_turret], dirx, diry);
+ monster turret(mtype::types[mon_turret], dir.x, dir.y);
  if (rng(0, p->int_cur / 2) + p->sklevel[sk_electronics] / 2 +
      p->sklevel[sk_computer] < rng(0, 6))
   g->add_msg("You misprogram the turret; it's hostile!");
@@ -1852,16 +1844,15 @@ void iuse::UPS_on(game *g, player *p, item *it, bool t)
 
 void iuse::tazer(game *g, player *p, item *it, bool t)
 {
- int dirx, diry;
  g->draw();
  mvprintw(0, 0, "Shock in which direction?");
- get_direction(g, dirx, diry, input());
- if (dirx == -2) {
+ point dir(get_direction(input()));
+ if (dir.x == -2) {
   g->add_msg("Invalid direction.");
   it->charges += (dynamic_cast<const it_tool*>(it->type))->charges_per_use;
   return;
  }
- int sx = dirx + p->posx, sy = diry + p->posy;
+ int sx = dir.x + p->posx, sy = dir.y + p->posy;
  int mondex = g->mon_at(sx, sy);
  int npcdex = g->npc_at(sx, sy);
  if (mondex == -1 && npcdex == -1) {

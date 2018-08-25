@@ -16,6 +16,22 @@ struct point {
  int y;
  point(int X = 0, int Y = 0) : x (X), y (Y) {}
  point(const point &p) = default;
+
+ point& operator+=(const point& rhs) {
+	 x += rhs.x;
+	 y += rhs.y;
+	 return *this;
+ }
+ point& operator*=(int rhs) {
+	 x *= rhs;
+	 y *= rhs;
+	 return *this;
+ }
+ point& operator/=(int rhs) {
+	 x /= rhs;
+	 y /= rhs;
+	 return *this;
+ }
 };
 
 inline bool operator==(const point& lhs, const point& rhs) { return lhs.x == rhs.x && lhs.y == rhs.y; }

@@ -48,7 +48,7 @@ void player::activate_bionic(int b, game *g)
  std::vector<std::string> good;
  std::vector<std::string> bad;
  WINDOW* w;
- int dirx, diry, t, l, index;
+ int t, l, index;
  item tmp_item;
 
  switch (bio.id) {
@@ -201,16 +201,18 @@ void player::activate_bionic(int b, game *g)
  case bio_lighter:
   g->draw();
   mvprintw(0, 0, "Torch in which direction?");
-  get_direction(g, dirx, diry, input());
-  if (dirx == -2) {
+  {
+  point dir(get_direction(input()));
+  if (dir.x == -2) {
    g->add_msg("Invalid direction.");
    power_level += bionics[bio_lighter].power_cost;
    return;
   }
-  dirx += posx;
-  diry += posy;
-  if (!g->m.add_field(g, dirx, diry, fd_fire, 1))	// Unsuccessful.
+  dir.x += posx;
+  dir.y += posy;
+  if (!g->m.add_field(g, dir.x, dir.y, fd_fire, 1))	// Unsuccessful.
    g->add_msg("You can't light a fire there.");
+  }
   break;
 
  case bio_claws:
@@ -253,15 +255,17 @@ void player::activate_bionic(int b, game *g)
  case bio_emp:
   g->draw();
   mvprintw(0, 0, "Fire EMP in which direction?");
-  get_direction(g, dirx, diry, input());
-  if (dirx == -2) {
+  {
+  point dir(get_direction(input()));
+  if (dir.x == -2) {
    g->add_msg("Invalid direction.");
    power_level += bionics[bio_emp].power_cost;
    return;
   }
-  dirx += posx;
-  diry += posy;
-  g->emp_blast(dirx, diry);
+  dir.x += posx;
+  dir.y += posy;
+  g->emp_blast(dir.x, dir.y);
+  }
   break;
 
  case bio_hydraulics:
@@ -339,20 +343,22 @@ void player::activate_bionic(int b, game *g)
  case bio_lockpick:
   g->draw();
   mvprintw(0, 0, "Unlock in which direction?");
-  get_direction(g, dirx, diry, input());
-  if (dirx == -2) {
+  {
+  point dir(get_direction(input()));
+  if (dir.x == -2) {
    g->add_msg("Invalid direction.");
    power_level += bionics[bio_lockpick].power_cost;
    return;
   }
-  dirx += posx;
-  diry += posy;
-  if (g->m.ter(dirx, diry) == t_door_locked) {
+  dir.x += posx;
+  dir.y += posy;
+  if (g->m.ter(dir.x, dir.y) == t_door_locked) {
    moves -= 40;
    g->add_msg("You unlock the door.");
-   g->m.ter(dirx, diry) = t_door_c;
+   g->m.ter(dir.x, dir.y) = t_door_c;
   } else
-   g->add_msg("You can't unlock that %s.", g->m.tername(dirx, diry).c_str());
+   g->add_msg("You can't unlock that %s.", g->m.tername(dir.x, dir.y).c_str());
+  }
   break;
 
  }
