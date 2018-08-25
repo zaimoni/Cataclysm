@@ -179,6 +179,7 @@
     <ClInclude Include="itype.h" />
     <ClInclude Include="iuse.h" />
     <ClInclude Include="json.h" />
+    <ClInclude Include="keymap.h" />
     <ClInclude Include="keypress.h" />
     <ClInclude Include="line.h" />
     <ClInclude Include="map.h" />

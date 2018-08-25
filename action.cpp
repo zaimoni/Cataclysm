@@ -132,13 +132,11 @@ Fix data/keymap.txt at your next chance!", id.c_str());
     while (fin.peek() != '\n' && !fin.eof()) {
      char ch;
      fin >> ch;
-     if (keymap.find(ch) != keymap.end())
+	 if (!keys.set(ch,act))
       debugmsg("\
 Warning!  '%c' assigned twice in the keymap!\n\
 %s is being ignored.\n\
 Fix data/keymap.txt at your next chance!", ch, id.c_str());
-     else
-      keymap[ ch ] = act;
     }
    }
   } else {
@@ -156,34 +154,20 @@ void game::save_keymap()
   fout.close();
   return;
  }
- std::map<char, action_id>::iterator it;
- for (it = keymap.begin(); it != keymap.end(); it++)
-  fout << action_ident( (*it).second ) << " " << (*it).first << std::endl;
+
+ keys.forall([&fout](char key, action_id act) { fout << action_ident(act) << " " << key << std::endl; });
 
  fout.close();
 }
 
 std::vector<char> game::keys_bound_to(action_id act)
 {
- std::vector<char> ret;
- std::map<char, action_id>::iterator it;
- for (it = keymap.begin(); it != keymap.end(); it++) {
-  if ( (*it).second == act )
-   ret.push_back( (*it).first );
- }
-
- return ret;
+ return keys.translate(act);
 }
 
 void game::clear_bindings(action_id act)
 {
- std::map<char, action_id>::iterator it;
- for (it = keymap.begin(); it != keymap.end(); it++) {
-  if ( (*it).second == act ) {
-   keymap.erase(it);
-   it = keymap.begin();
-  }
- }
+ keys.unset(act);
 }
 
 std::string action_ident(action_id act)

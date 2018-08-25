@@ -1248,13 +1248,11 @@ void game::get_input()
 {
  char ch = input(); // See keypress.h - translates keypad and arrows to vikeys
 
- if (keymap.find(ch) == keymap.end()) {
-  if (ch != ' ' && ch != KEY_ESCAPE && ch != '\n')
-   add_msg("Unknown command: '%c'", ch);
+ action_id act = keys.translate(ch);
+ if (!act) {
+  if (ch != ' ' && ch != KEY_ESCAPE && ch != '\n') add_msg("Unknown command: '%c'", ch);
   return;
  }
-
- action_id act = keymap[ch];
 
 // This has no action unless we're in a special game mode.
  gamemode->pre_action(this, act);

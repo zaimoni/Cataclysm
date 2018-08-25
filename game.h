@@ -166,8 +166,6 @@ class game
   point find_item(item *it);
   void remove_item(item *it);
 
-  std::map<char, action_id> keymap;
-
   calendar turn;
   signed char temperature;              // The air temperature
   weather_type weather;			// Weather pattern--SEE weather.h

@@ -1,6 +1,7 @@
 #include "keypress.h"
-#include "action.h"
 #include "game.h"
+
+keymap<action_id> keys;
 
 long input()
 {
@@ -64,11 +65,7 @@ void get_direction(game *g, int &x, int &y, char ch)
 {
  x = 0;
  y = 0;
- action_id act;
- if (g->keymap.find(ch) == g->keymap.end())
-  act = ACTION_NULL;
- else
-  act = g->keymap[ch];
+ const action_id act = keys.translate(ch);
 
  switch (act) {
  case ACTION_MOVE_NW:

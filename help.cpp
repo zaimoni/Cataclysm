@@ -474,13 +474,9 @@ easily drop unwanted items on the floor.");
        clear_bindings(act);
        changed_keymap = true;
       } else if (ch == '+') {
-       char newbind = popup_getkey("New key for %s:", action_name(act).c_str());
-       if (keymap.find(newbind) == keymap.end()) { // It's not in use!  Good.
-        keymap[ newbind ] = act;
-        changed_keymap = true;
-       } else
-        popup("%c is used for %s.", newbind,
-              action_name( keymap[newbind] ).c_str());
+       const char newbind = popup_getkey("New key for %s:", action_name(act).c_str());
+	   if (keys.set(newbind, act)) changed_keymap = true;
+	   else popup("%c is used for %s.", newbind, action_name(keys.translate(newbind)).c_str());
       }
      }
     }
