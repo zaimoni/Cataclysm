@@ -5,6 +5,8 @@
 #include "rng.h"
 #include "line.h"
 #include "keypress.h"
+#include "recent_msg.h"
+
 #include <vector>
 #include <sstream>
 #include <fstream>
@@ -53,13 +55,12 @@ bool trade(game *g, npc *p, int cost, std::string deal);
 void npc::talk_to_u(game *g)
 {
 // This is necessary so that we don't bug the player over and over
- if (attitude == NPCATT_TALK)
-  attitude = NPCATT_NULL;
+ if (attitude == NPCATT_TALK) attitude = NPCATT_NULL;
  else if (attitude == NPCATT_FLEE) {
-  g->add_msg("%s is fleeing you!", name.c_str());
+  messages.add("%s is fleeing you!", name.c_str());
   return;
  } else if (attitude == NPCATT_KILL) {
-  g->add_msg("%s is hostile!", name.c_str());
+  messages.add("%s is hostile!", name.c_str());
   return;
  }
  dialogue d;
@@ -1273,11 +1274,9 @@ void talk_function::give_equipment(game *g, npc *p)
   popup("%s has nothing to give!", p->name.c_str());
   return;
  }
- if (chosen == -1)
-  chosen = 0;
+ if (chosen == -1) chosen = 0;
  int item_index = giving[chosen];
- popup("%s gives you a %s.", p->name.c_str(),
-       p->inv[item_index].tname().c_str());
+ popup("%s gives you a %s.", p->name.c_str(), p->inv[item_index].tname().c_str());
  g->u.i_add( p->i_remn(item_index) );
  p->op_of_u.owed -= prices[chosen];
  p->add_disease(DI_ASKED_FOR_ITEM, 1800, g);
@@ -1305,27 +1304,26 @@ void talk_function::deny_equipment(game *g, npc *p)
 
 void talk_function::hostile(game *g, npc *p)
 {
- g->add_msg("%s turns hostile!", p->name.c_str());
+ messages.add("%s turns hostile!", p->name.c_str());
  p->attitude = NPCATT_KILL;
 }
 
 void talk_function::flee(game *g, npc *p)
 {
- g->add_msg("%s turns to flee!", p->name.c_str());
+ messages.add("%s turns to flee!", p->name.c_str());
  p->attitude = NPCATT_FLEE;
 }
 
 void talk_function::leave(game *g, npc *p)
 {
- g->add_msg("%s leaves.", p->name.c_str());
+ messages.add("%s leaves.", p->name.c_str());
  p->attitude = NPCATT_NULL;
 }
 
 void talk_function::start_mugging(game *g, npc *p)
 {
  p->attitude = NPCATT_MUG;
- g->add_msg("Pause to stay still.  Any movement may cause %s to attack.",
-            p->name.c_str());
+ messages.add("Pause to stay still.  Any movement may cause %s to attack.", p->name.c_str());
 }
 
 void talk_function::player_leaving(game *g, npc *p)

@@ -9,6 +9,8 @@
 #include "skill.h"
 #include "output.h"
 #include "line.h"
+#include "recent_msg.h"
+
 #include "saveload.h"
 
 std::vector<item> starting_clothes(npc_class type, bool male, game *g);
@@ -728,7 +730,7 @@ void npc::make_shopkeep(game *g, oter_id type)
  if (pool.size() > 0) {
   do {
    items_location place = pool[rng(0, pool.size() - 1)];
-   item it(item::types[_get_itype(map::items[place])], g->turn);
+   item it(item::types[_get_itype(map::items[place])], messages.turn);
    if (volume_carried() + it.volume() > volume_capacity() ||
        weight_carried() + it.weight() > weight_capacity()   )
     break;
@@ -1088,8 +1090,7 @@ bool npc::wield(game *g, int index)
   moves -= 15;
   weapon.make(item::types[styles[index]] );
   int linet;
-  if (g->u_see(posx, posy, linet))
-   g->add_msg("%s assumes a %s stance.", name.c_str(), weapon.tname().c_str());
+  if (g->u_see(posx, posy, linet)) messages.add("%s assumes a %s stance.", name.c_str(), weapon.tname().c_str());
   return true;
  }
 
@@ -1106,8 +1107,7 @@ bool npc::wield(game *g, int index)
  weapon = inv[index];
  i_remn(index);
  int linet;
- if (g->u_see(posx, posy, linet))
-  g->add_msg("%s wields a %s.", name.c_str(), weapon.tname().c_str());
+ if (g->u_see(posx, posy, linet)) messages.add("%s wields a %s.", name.c_str(), weapon.tname().c_str());
  return true;
 }
 
@@ -1115,7 +1115,7 @@ void npc::perform_mission(game *g)
 {
  switch (mission) {
  case NPC_MISSION_RESCUE_U:
-  if (int(g->turn) % 24 == 0) {
+  if (int(messages.turn) % 24 == 0) {
    if (mapx > g->lev.x) mapx--;
    else if (mapx < g->lev.x) mapx++;
    if (mapy > g->lev.y) mapy--;
@@ -1126,7 +1126,7 @@ void npc::perform_mission(game *g)
  case NPC_MISSION_SHOPKEEP:
   break;	// Just stay where we are
  default:	// Random Walk
-  if (int(g->turn) % 24 == 0) {
+  if (int(messages.turn) % 24 == 0) {
    mapx += rng(-1, 1);
    mapy += rng(-1, 1);
   }
@@ -1137,10 +1137,7 @@ void npc::form_opinion(player *u)
 {
 // FEAR
  if (u->weapon.is_gun()) {
-  if (weapon.is_gun())
-   op_of_u.fear += 2;
-  else
-   op_of_u.fear += 6;
+  op_of_u.fear += weapon.is_gun() ? 2 : 6;
  } else if (u->weapon.type->melee_dam >= 12 || u->weapon.type->melee_cut >= 12)
   op_of_u.fear += 2;
  else if (u->unarmed_attack())	// Unarmed
@@ -1412,8 +1409,7 @@ void npc::decide_needs()
  int j;
  bool serious = false;
  for (int i = 1; i < num_needs; i++) {
-  if (needrank[i] < 10)
-   serious = true;
+  if (needrank[i] < 10) serious = true;
  }
  if (!serious) {
   needs.push_back(need_none);
@@ -1444,7 +1440,7 @@ void npc::say(game *g, std::string line, ...)
  int junk;
  parse_tags(line, &(g->u), this);
  if (g->u_see(posx, posy, junk)) {
-  g->add_msg("%s says, \"%s\"", name.c_str(), line.c_str());
+  messages.add("%s says, \"%s\"", name.c_str(), line.c_str());
   g->sound(posx, posy, 16, "");
  } else {
   std::string sound = name + " saying, \"" + line + "\"";
@@ -1922,12 +1918,10 @@ void npc::shift(int sx, int sy)
 
 void npc::die(game *g, bool your_fault)
 {
- if (dead)
-  return;
+ if (dead) return;
  dead = true;
  int j;
- if (g->u_see(posx, posy, j))
-  g->add_msg("%s dies!", name.c_str());
+ if (g->u_see(posx, posy, j)) messages.add("%s dies!", name.c_str());
  if (your_fault && !g->u.has_trait(PF_HEARTLESS)) {
   if (is_friend())
    g->u.add_morale(MORALE_KILLED_FRIEND, -500);
@@ -1935,7 +1929,7 @@ void npc::die(game *g, bool your_fault)
    g->u.add_morale(MORALE_KILLED_INNOCENT, -100);
  }
 
- item my_body(g->turn);
+ item my_body(messages.turn);
  my_body.name = name;
  g->m.add_item(posx, posy, my_body);
  for (int i = 0; i < inv.size(); i++)

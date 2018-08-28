@@ -1,11 +1,10 @@
 #include "map.h"
 #include "rng.h"
 #include "game.h"
+#include "recent_msg.h"
 
 #define INBOUNDS(x, y) \
  (x >= 0 && x < SEEX * my_MAPSIZE && y >= 0 && y < SEEY * my_MAPSIZE)
-
-bool vector_has(std::vector <item> vec, itype_id type);
 
 bool map::process_fields(game *g)
 {
@@ -511,7 +510,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
     break;
 
    case fd_fatigue:
-    if (cur->density < 3 && int(g->turn) % 3600 == 0 && one_in(10))
+    if (cur->density < 3 && int(messages.turn) % 3600 == 0 && one_in(10))
      cur->density++;
     else if (cur->density == 3 && one_in(600)) { // Spawn nether creature!
      mon_id type = mon_id(rng(mon_flying_polyp, mon_blank));
@@ -524,11 +523,11 @@ bool map::process_fields_in_submap(game *g, int gridn)
    case fd_push_items: {
     std::vector<item> *it = &(i_at(x, y));
     for (int i = 0; i < it->size(); i++) {
-     if ((*it)[i].type->id != itm_rock || (*it)[i].bday >= int(g->turn) - 1)
+     if ((*it)[i].type->id != itm_rock || (*it)[i].bday >= int(messages.turn) - 1)
       i++;
      else {
       item tmp = (*it)[i];
-      tmp.bday = int(g->turn);
+      tmp.bday = int(messages.turn);
       it->erase(it->begin() + i);
       i--;
       std::vector<point> valid;
@@ -542,7 +541,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
        point newp = valid[rng(0, valid.size() - 1)];
        add_item(newp.x, newp.y, tmp);
        if (g->u.posx == newp.x && g->u.posy == newp.y) {
-        g->add_msg("A %s hits you!", tmp.tname().c_str());
+        messages.add("A %s hits you!", tmp.tname().c_str());
         g->u.hit(g, random_body_part(), rng(0, 1), 6, 0);
        }
        int npcdex = g->npc_at(newp.x, newp.y),
@@ -553,7 +552,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
         npc *p = &(g->active_npc[npcdex]);
         p->hit(g, random_body_part(), rng(0, 1), 6, 0);
         if (g->u_see(newp.x, newp.y, junk))
-         g->add_msg("A %s hits %s!", tmp.tname().c_str(), p->name.c_str());
+         messages.add("A %s hits %s!", tmp.tname().c_str(), p->name.c_str());
        }
 
        if (mondex != -1) {
@@ -561,8 +560,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
         monster *mon = &(g->z[mondex]);
         mon->hurt(6 - mon->armor_bash());
         if (g->u_see(newp.x, newp.y, junk))
-         g->add_msg("A %s hits the %s!", tmp.tname().c_str(),
-                                         mon->name().c_str());
+         messages.add("A %s hits the %s!", tmp.tname().c_str(), mon->name().c_str());
        }
       }
      }
@@ -571,8 +569,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
 
    case fd_shock_vent:
     if (cur->density > 1) {
-     if (one_in(5))
-      cur->density--;
+     if (one_in(5)) cur->density--;
     } else {
      cur->density = 3;
      int num_bolts = rng(3, 6);
@@ -666,20 +663,20 @@ void map::step_in_field(int x, int y, game *g)
 
   case fd_acid:
    if (cur->density == 3) {
-    g->add_msg("The acid burns your legs and feet!");
+    messages.add("The acid burns your legs and feet!");
     g->u.hit(g, bp_feet, 0, 0, rng(4, 10));
     g->u.hit(g, bp_feet, 1, 0, rng(4, 10));
     g->u.hit(g, bp_legs, 0, 0, rng(2,  8));
     g->u.hit(g, bp_legs, 1, 0, rng(2,  8));
    } else {
-    g->add_msg("The acid burns your feet!");
+    messages.add("The acid burns your feet!");
     g->u.hit(g, bp_feet, 0, 0, rng(cur->density, 4 * cur->density));
     g->u.hit(g, bp_feet, 1, 0, rng(cur->density, 4 * cur->density));
    }
    break;
 
  case fd_sap:
-  g->add_msg("The sap sticks to you!");
+  messages.add("The sap sticks to you!");
   g->u.add_disease(DI_SAP, cur->density * 2, g);
   if (cur->density == 1)
    remove_field(x, y);
@@ -690,18 +687,18 @@ void map::step_in_field(int x, int y, game *g)
   case fd_fire:
    if (!g->u.has_active_bionic(bio_heatsink)) {
     if (cur->density == 1) {
-     g->add_msg("You burn your legs and feet!");
+     messages.add("You burn your legs and feet!");
      g->u.hit(g, bp_feet, 0, 0, rng(2, 6));
      g->u.hit(g, bp_feet, 1, 0, rng(2, 6));
      g->u.hit(g, bp_legs, 0, 0, rng(1, 4));
      g->u.hit(g, bp_legs, 1, 0, rng(1, 4));
     } else if (cur->density == 2) {
-     g->add_msg("You're burning up!");
+     messages.add("You're burning up!");
      g->u.hit(g, bp_legs, 0, 0,  rng(2, 6));
      g->u.hit(g, bp_legs, 1, 0,  rng(2, 6));
      g->u.hit(g, bp_torso, 0, 4, rng(4, 9));
     } else if (cur->density == 3) {
-     g->add_msg("You're set ablaze!");
+     messages.add("You're set ablaze!");
      g->u.hit(g, bp_legs, 0, 0, rng(2, 6));
      g->u.hit(g, bp_legs, 1, 0, rng(2, 6));
      g->u.hit(g, bp_torso, 0, 4, rng(4, 9));
@@ -736,29 +733,29 @@ void map::step_in_field(int x, int y, game *g)
   case fd_nuke_gas:
    g->u.radiation += rng(0, cur->density * (cur->density + 1));
    if (cur->density == 3) {
-    g->add_msg("This radioactive gas burns!");
+    messages.add("This radioactive gas burns!");
     g->u.hurtall(rng(1, 3));
    }
    break;
 
   case fd_flame_burst:
    if (!g->u.has_active_bionic(bio_heatsink)) {
-    g->add_msg("You're torched by flames!");
+    messages.add("You're torched by flames!");
     g->u.hit(g, bp_legs, 0, 0,  rng(2, 6));
     g->u.hit(g, bp_legs, 1, 0,  rng(2, 6));
     g->u.hit(g, bp_torso, 0, 4, rng(4, 9));
    } else
-    g->add_msg("These flames do not burn you.");
+    messages.add("These flames do not burn you.");
    break;
 
   case fd_electricity:
    if (g->u.has_artifact_with(AEP_RESIST_ELECTRICITY))
-    g->add_msg("The electricity flows around you.");
+    messages.add("The electricity flows around you.");
    else {
-    g->add_msg("You're electrocuted!");
+    messages.add("You're electrocuted!");
     g->u.hurtall(rng(1, cur->density));
     if (one_in(8 - cur->density) && !one_in(30 - g->u.str_cur)) {
-     g->add_msg("You're paralyzed!");
+     messages.add("You're paralyzed!");
      g->u.moves -= rng(cur->density * 50, cur->density * 150);
     }
    }
@@ -766,7 +763,7 @@ void map::step_in_field(int x, int y, game *g)
 
   case fd_fatigue:
    if (rng(0, 2) < cur->density) {
-    g->add_msg("You're violently teleported!");
+    messages.add("You're violently teleported!");
     g->u.hurtall(cur->density);
     g->teleport();
    }
@@ -781,8 +778,7 @@ void map::step_in_field(int x, int y, game *g)
     
 void map::mon_in_field(int x, int y, game *g, monster *z)
 {
- if (z->has_flag(MF_DIGS))
-  return;	// Digging monsters are immune to fields
+ if (z->has_flag(MF_DIGS)) return;	// Digging monsters are immune to fields
  field *cur = &field_at(x, y);
  int dam = 0;
  switch (cur->type) {
@@ -932,7 +928,7 @@ void map::mon_in_field(int x, int y, game *g, monster *z)
      int mon_hit = g->mon_at(newpos.x, newpos.y), t;
      if (mon_hit != -1) {
       if (g->u_see(z, t))
-       g->add_msg("The %s teleports into a %s, killing them both!",
+       messages.add("The %s teleports into a %s, killing them both!",
                   z->name().c_str(), g->z[mon_hit].name().c_str());
       g->explode_mon(mon_hit);
      } else {
@@ -943,15 +939,15 @@ void map::mon_in_field(int x, int y, game *g, monster *z)
    break;
      
  }
- if (dam > 0)
-  z->hurt(dam);
+ if (dam > 0) z->hurt(dam);
 }
 
-bool vector_has(std::vector <item> vec, itype_id type)
+#if DEAD_FUNC
+bool vector_has(std::vector<item> vec, itype_id type)
 {
  for (int i = 0; i < vec.size(); i++) {
-  if (vec[i].type->id == type)
-   return true;
+  if (vec[i].type->id == type) return true;
  }
  return false;
 }
+#endif

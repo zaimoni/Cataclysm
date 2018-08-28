@@ -1,5 +1,6 @@
 #include "vehicle.h"
 #include "game.h"
+#include "recent_msg.h"
 #include "saveload.h"
 
 #include <stdlib.h>
@@ -799,8 +800,7 @@ void vehicle::consume_fuel ()
                     found = true;
                     break;
                 }
-            if (found)
-                break;
+            if (found) break;
         }
     }
 }
@@ -817,15 +817,13 @@ void vehicle::thrust (int thd)
         skidding = false;
     }
 
-    if (!thd)
-        return;
+    if (!thd) return;
 
     bool pl_ctrl = player_in_control(&g->u);
 
     if (!valid_wheel_config() && velocity == 0)
     {
-        if (pl_ctrl)
-            g->add_msg ("The %s don't have enough wheels to move!", name.c_str());
+        if (pl_ctrl) messages.add("The %s don't have enough wheels to move!", name.c_str());
         return;
     }
 
@@ -839,9 +837,9 @@ void vehicle::thrust (int thd)
             if (pl_ctrl)
             {
                 if (total_power (false) < 1)
-                    g->add_msg ("The %s don't have engine!", name.c_str());
+					messages.add("The %s don't have engine!", name.c_str());
                 else
-                    g->add_msg ("The %s's engine emits sneezing sound.", name.c_str());
+					messages.add("The %s's engine emits sneezing sound.", name.c_str());
             }
             cruise_velocity = 0;
             return;
@@ -1061,59 +1059,42 @@ int vehicle::part_collision (int vx, int vy, int part, int x, int y)
         if (pl_ctrl)
         {
             if (snd.length() > 0)
-                g->add_msg ("Your %s's %s rams into %s with a %s", name.c_str(), part_info(part).name, obs_name.c_str(), snd.c_str());
+				messages.add("Your %s's %s rams into %s with a %s", name.c_str(), part_info(part).name, obs_name.c_str(), snd.c_str());
             else
-                g->add_msg ("Your %s's %s rams into %s.", name.c_str(), part_info(part).name, obs_name.c_str());
+				messages.add("Your %s's %s rams into %s.", name.c_str(), part_info(part).name, obs_name.c_str());
         }
-        else
-        if (snd.length() > 0)
-            g->add_msg ("You hear a %s", snd.c_str());
+        else if (snd.length() > 0)
+			messages.add("You hear a %s", snd.c_str());
     }
-    if (part_flag(part, vpf_sharp) && smashed)
-        imp2 /= 2;
+    if (part_flag(part, vpf_sharp) && smashed) imp2 /= 2;
     int imp1 = imp - imp2;
     int vel1 = imp1 * k_mvel * 100 / mass;
     int vel2 = imp2 * k_mvel * 100 / mass2;
 
-//     g->add_msg ("Col t=%s i=%d i1=%d i2=%d v=%d v1=%d v2=%d m1=%d m2=%d",
-//                 obs_name.c_str(), imp, imp1, imp2, abs(velocity), vel1, vel2, mass, mass2);
-//
     if (collision_type == 1)
     {
         int dam = imp1 * dmg_mod / 100;
-//        g->add_msg("dam=%d imp=%d dm=%d", dam, imp, parts[part].dmg_mod);
         if (z)
         {
             int z_armor = part_flag(part, vpf_sharp)? z->type->armor_cut : z->type->armor_bash;
-            if (z_armor < 0)
-                z_armor = 0;
-            if (z)
-                dam -= z_armor;
+            if (z_armor < 0) z_armor = 0;
+            if (z) dam -= z_armor;
         }
-        if (dam < 0)
-            dam = 0;
+        if (dam < 0) dam = 0;
 
         if (part_flag(part, vpf_sharp))
             parts[part].blood += (20 + dam) * 5;
-        else
-        if (dam > rng (10, 30))
+        else if (dam > rng (10, 30))
             parts[part].blood += (10 + dam / 2) * 5;
 
         int turns_stunned = rng (0, dam) > 10? rng (1, 2) + (dam > 40? rng (1, 2) : 0) : 0;
-        if (part_flag(part, vpf_sharp))
-            turns_stunned = 0;
-        if (turns_stunned > 6)
-            turns_stunned = 6;
-        if (turns_stunned > 0 && z)
-            z->add_effect(ME_STUNNED, turns_stunned);
+        if (part_flag(part, vpf_sharp)) turns_stunned = 0;
+        if (turns_stunned > 6) turns_stunned = 6;
+        if (turns_stunned > 0 && z) z->add_effect(ME_STUNNED, turns_stunned);
 
-        std::string dname;
-        if (z)
-            dname = z->name().c_str();
-        else
-            dname = ph->name;
+        std::string dname(z ? z->name().c_str() : ph->name);
         if (pl_ctrl)
-            g->add_msg ("Your %s's %s rams into %s, inflicting %d damage%s!",
+			messages.add("Your %s's %s rams into %s, inflicting %d damage%s!",
                     name.c_str(), part_info(part).name, dname.c_str(), dam,
                     turns_stunned > 0 && z? " and stunning it" : "");
 
@@ -1123,8 +1104,7 @@ int vehicle::part_collision (int vx, int vy, int part, int x, int y)
             z->hurt(dam);
             if (vel2 > rng (5, 30))
                 g->fling_player_or_monster (0, z, move.dir() + angle, vel2 / 100);
-            if (z->hp < 1)
-                g->kill_mon (mondex, pl_ctrl);
+            if (z->hp < 1) g->kill_mon (mondex, pl_ctrl);
         }
         else
         {
@@ -1271,7 +1251,7 @@ void vehicle::handle_trap (int x, int y, int part)
     }
     int dummy;
     if (msg.size() > 0 && g->u_see(x, y, dummy))
-        g->add_msg (msg.c_str(), name.c_str(), part_info(part).name, trap::traps[t]->name.c_str());
+		messages.add(msg.c_str(), name.c_str(), part_info(part).name, trap::traps[t]->name.c_str());
     if (noise > 0) g->sound (x, y, noise, snd);
     if (wreckit && chance >= rng (1, 100)) damage (part, 500);
     if (expl > 0) g->explosion(x, y, expl, shrap, false);
@@ -1539,7 +1519,7 @@ int vehicle::damage_direct (int p, int dmg, int type)
         {
             g->m.add_item (global_x() + parts[p].precalc_dx[0], 
                            global_y() + parts[p].precalc_dy[0], 
-                           item::types[part_info(p).item], g->turn);
+                           item::types[part_info(p).item], messages.turn);
             remove_part (p);
         }
     }
@@ -1648,7 +1628,7 @@ bool vehicle::fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int
         if (traj[i].x == g->u.posx && traj[i].y == g->u.posy)
             return false; // won't shoot at player
     if (g->u_see(x, y, t))
-        g->add_msg("The %s fires its %s!", name.c_str(), part_info(p).name);
+        messages.add("The %s fires its %s!", name.c_str(), part_info(p).name);
     player tmp;
     tmp.name = std::string("The ") + part_info(p).name;
     tmp.sklevel[gun.skill_used] = 1;

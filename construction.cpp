@@ -6,6 +6,7 @@
 #include "mapdata.h"
 #include "skill.h"
 #include "crafting.h" // For the use_comps use_tools functions
+#include "recent_msg.h"
 #include "setvector.h"
 
 std::vector<constructable*> constructable::constructions; // The list of constructions
@@ -203,7 +204,7 @@ void game::construction_menu()
  total_inv.form_from_map(this, point(u.posx, u.posy), PICKUP_RANGE);
  total_inv.add_stack(u.inv_dump());
  if (u.has_bionic(bio_tools)) {
-  item tools(item::types[itm_toolset], turn);
+  item tools(item::types[itm_toolset], messages.turn);
   tools.charges = u.power_level;
   total_inv += tools;
  }
@@ -409,8 +410,7 @@ void game::place_construction(const constructable * const con)
     y++;
    bool place_okay = (*(con->able))(this, point(x, y));
    for (int i = 0; i < con->stages.size() && !place_okay; i++) {
-    if (m.ter(x, y) == con->stages[i].terrain)
-     place_okay = true;
+    if (m.ter(x, y) == con->stages[i].terrain) place_okay = true;
    }
 
    if (place_okay) {
@@ -432,7 +432,7 @@ void game::place_construction(const constructable * const con)
  mvprintz(0, 0, c_red, "Pick a direction in which to construct:");
  point dir = get_direction(input());
  if (dir.x == -2) {
-  add_msg("Invalid direction.");
+  messages.add("Invalid direction.");
   return;
  }
  dir.x += u.posx;
@@ -445,7 +445,7 @@ void game::place_construction(const constructable * const con)
   }
  }
  if (!point_is_okay) {
-  add_msg("You cannot build there!");
+  messages.add("You cannot build there!");
   return;
  }
 
@@ -622,7 +622,7 @@ void construct::done_log(game *g, point p)
 {
  int num_sticks = rng(10, 20);
  for (int i = 0; i < num_sticks; i++)
-  g->m.add_item(p.x, p.y, item::types[itm_2x4], int(g->turn));
+  g->m.add_item(p.x, p.y, item::types[itm_2x4], int(messages.turn));
 }
 
 void construct::done_vehicle(game *g, point p)

@@ -48,14 +48,13 @@ class game
   game();
   ~game();
   void setup();
-  bool game_quit(); // True if we actually quit the game - used in main.cpp
+  bool game_quit() const { return QUIT_MENU == uquit; }; // True if we actually quit the game - used in main.cpp
   void save();
   bool do_turn();
   void draw();
   void draw_ter(int posx = -999, int posy = -999);
   void advance_nextinv();	// Increment the next inventory letter
   void decrease_nextinv();	// Decrement the next inventory letter
-  void add_msg(const char* msg, ...);
   void add_event(event_type type, int on_turn, int faction_id = -1,
                  int x = -1, int y = -1);
   bool event_queued(event_type type);
@@ -142,7 +141,7 @@ class game
   itype* new_artifact();
   itype* new_natural_artifact(artifact_natural_property prop = ARTPROP_NULL);
   void process_artifact(item *it, player *p, bool wielded = false);
-  void add_artifact_messages(std::vector<art_effect_passive> effects);
+  static void add_artifact_messages(const std::vector<art_effect_passive>& effects);
 
   point look_around();// Look at nearby terrain	';'
   char inv(std::string title = "Inventory:");
@@ -151,7 +150,6 @@ class game
   point find_item(item *it);
   void remove_item(item *it);
 
-  calendar turn;
   signed char temperature;              // The air temperature
   weather_type weather;			// Weather pattern--SEE weather.h
   char nextinv;	// Determines which letter the next inv item will have
@@ -310,8 +308,6 @@ class game
   calendar nextspawn; // The turn on which monsters will spawn next.
   calendar nextweather; // The turn on which weather will shift next.
   overmap *om_hori, *om_vert, *om_diag; // Adjacent overmaps
-  std::vector <game_message> messages;   // Messages to be printed
-  int curmes;	  // The last-seen message.
   //int monmap[SEEX * MAPSIZE][SEEY * MAPSIZE]; // Temp monster map, for mon_at()
   std::vector<event> events;	        // Game events to be processed
   int kills[num_monsters];	        // Player's kill count

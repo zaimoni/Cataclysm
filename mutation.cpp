@@ -1,6 +1,7 @@
 #include "player.h"
 #include "mutation.h"
 #include "game.h"
+#include "recent_msg.h"
 
 // mutation_effect handles things like destruction of armor, etc.
 void mutation_effect(game *g, player &p, pl_flag mut);
@@ -140,11 +141,10 @@ void player::mutate_towards(game *g, pl_flag mut)
 
  toggle_trait(mut);
  if (replacing != PF_NULL) {
-  g->add_msg("Your %s turns into %s!", mutation_branch::traits[replacing].name.c_str(),
-	  mutation_branch::traits[mut].name.c_str());
+  messages.add("Your %s turns into %s!", mutation_branch::traits[replacing].name.c_str(), mutation_branch::traits[mut].name.c_str());
   toggle_trait(replacing);
  } else
-  g->add_msg("You gain %s!", mutation_branch::traits[mut].name.c_str());
+  messages.add("You gain %s!", mutation_branch::traits[mut].name.c_str());
  mutation_effect(g, *this, mut);
 
 // Weight us towards any categories that include this mutation
@@ -178,13 +178,12 @@ void player::remove_mutation(game *g, pl_flag mut)
 
  toggle_trait(mut);
  if (replacing != PF_NULL) {
-  g->add_msg("Your %s turns into %s.", mutation_branch::traits[mut].name.c_str(),
-	  mutation_branch::traits[replacing].name.c_str());
+  messages.add("Your %s turns into %s.", mutation_branch::traits[mut].name.c_str(), mutation_branch::traits[replacing].name.c_str());
   toggle_trait(replacing);
   mutation_loss_effect(g, *this, mut);
   mutation_effect(g, *this, replacing);
  } else {
-  g->add_msg("You lose your %s.", mutation_branch::traits[mut].name.c_str());
+  messages.add("You lose your %s.", mutation_branch::traits[mut].name.c_str());
   mutation_loss_effect(g, *this, mut);
  }
 
@@ -317,9 +316,9 @@ void mutation_effect(game *g, player &p, pl_flag mut)
   for (int j = 0; j < bps.size(); j++) {
    if ((dynamic_cast<const it_armor*>(p.worn[i].type))->covers & mfb(bps[j])) {
     if (destroy) {
-     if (is_u) g->add_msg("Your %s is destroyed!", p.worn[i].tname().c_str());
+     if (is_u) messages.add("Your %s is destroyed!", p.worn[i].tname().c_str());
     } else {
-     if (is_u) g->add_msg("Your %s is pushed off.", p.worn[i].tname().c_str());
+     if (is_u) messages.add("Your %s is pushed off.", p.worn[i].tname().c_str());
      g->m.add_item(p.posx, p.posy, p.worn[i]);
     }
     p.worn.erase(p.worn.begin() + i);

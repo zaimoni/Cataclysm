@@ -3,6 +3,7 @@
 #include "output.h"
 #include "crafting.h"
 #include "inventory.h"
+#include "recent_msg.h"
 #include "setvector.h"
 
 std::vector<recipe*> recipe::recipes;
@@ -657,7 +658,7 @@ RECIPE(itm_boobytrap, CC_MISC, sk_mechanics, sk_traps,3,5000);
 void game::craft()
 {
  if (u.morale_level() < MIN_MORALE_CRAFT) {	// See morale.h
-  add_msg("Your morale is too low to craft...");
+  messages.add("Your morale is too low to craft...");
   return;
  }
  WINDOW *w_head = newwin( 3, 80, 0, 0);
@@ -676,7 +677,7 @@ void game::craft()
  crafting_inv += u.inv;
  crafting_inv += u.weapon;
  if (u.has_bionic(bio_tools)) {
-  item tools(item::types[itm_toolset], turn);
+  item tools(item::types[itm_toolset], messages.turn);
   tools.charges = u.power_level;
   crafting_inv += tools;
  }
@@ -965,7 +966,7 @@ void game::pick_recipes(std::vector<const recipe*> &current,
  crafting_inv += u.inv;
  crafting_inv += u.weapon;
  if (u.has_bionic(bio_tools)) {
-  item tools(item::types[itm_toolset], turn);
+  item tools(item::types[itm_toolset], messages.turn);
   tools.charges = u.power_level;
   crafting_inv += tools;
  }
@@ -1044,14 +1045,12 @@ void game::complete_craft()
  int skill_roll = dice(skill_dice, skill_sides);
  int diff_roll  = dice(diff_dice,  diff_sides);
 
- if (making->sk_primary != sk_null)
-  u.practice(making->sk_primary, making->difficulty * 5 + 20);
- if (making->sk_secondary != sk_null)
-  u.practice(making->sk_secondary, 5);
+ if (making->sk_primary != sk_null) u.practice(making->sk_primary, making->difficulty * 5 + 20);
+ if (making->sk_secondary != sk_null) u.practice(making->sk_secondary, 5);
 
 // Messed up badly; waste some components.
  if (making->difficulty != 0 && diff_roll > skill_roll * (1 + 0.1 * rng(1, 5))) {
-  add_msg("You fail to make the %s, and waste some materials.", item::types[making->result]->name.c_str());
+  messages.add("You fail to make the %s, and waste some materials.", item::types[making->result]->name.c_str());
   for (int i = 0; i < 5; i++) {
    if (making->components[i].size() > 0) {
     std::vector<component> copy = making->components[i];
@@ -1059,31 +1058,27 @@ void game::complete_craft()
      copy[j].count = rng(0, copy[j].count);
     consume_items(this, copy);
    }
-   if (making->tools[i].size() > 0)
-    consume_tools(this, making->tools[i]);
+   if (making->tools[i].size() > 0) consume_tools(this, making->tools[i]);
   }
   u.activity.type = ACT_NULL;
   return;
   // Messed up slightly; no components wasted.
  } else if (diff_roll > skill_roll) {
-  add_msg("You fail to make the %s, but don't waste any materials.", item::types[making->result]->name.c_str());
+  messages.add("You fail to make the %s, but don't waste any materials.", item::types[making->result]->name.c_str());
   u.activity.type = ACT_NULL;
   return;
  }
 // If we're here, the craft was a success!
 // Use up the components and tools
  for (int i = 0; i < 5; i++) {
-  if (making->components[i].size() > 0)
-   consume_items(this, making->components[i]);
-  if (making->tools[i].size() > 0)
-   consume_tools(this, making->tools[i]);
+  if (making->components[i].size() > 0) consume_items(this, making->components[i]);
+  if (making->tools[i].size() > 0) consume_tools(this, making->tools[i]);
  }
 
   // Set up the new item, and pick an inventory letter
  int iter = 0;
- item newit(item::types[making->result], turn, nextinv);
- if (!newit.craft_has_charges())
-  newit.charges = 0;
+ item newit(item::types[making->result], messages.turn, nextinv);
+ if (!newit.craft_has_charges()) newit.charges = 0;
  do {
   newit.invlet = nextinv;
   advance_nextinv();
@@ -1095,16 +1090,16 @@ void game::complete_craft()
  else {
 // We might not have space for the item
   if (iter == 52 || u.volume_carried()+newit.volume() > u.volume_capacity()) {
-   add_msg("There's no room in your inventory for the %s, so you drop it.",
+   messages.add("There's no room in your inventory for the %s, so you drop it.",
              newit.tname().c_str());
    m.add_item(u.posx, u.posy, newit);
   } else if (u.weight_carried() + newit.volume() > u.weight_capacity()) {
-   add_msg("The %s is too heavy to carry, so you drop it.",
+   messages.add("The %s is too heavy to carry, so you drop it.",
            newit.tname().c_str());
    m.add_item(u.posx, u.posy, newit);
   } else {
    u.i_add(newit);
-   add_msg("%c - %s", newit.invlet, newit.tname().c_str());
+   messages.add("%c - %s", newit.invlet, newit.tname().c_str());
   }
  }
 }

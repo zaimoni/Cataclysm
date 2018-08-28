@@ -1,6 +1,8 @@
 #include "game.h"
 #include "output.h"
 #include "keypress.h"
+#include "recent_msg.h"
+
 #include <vector>
 
 std::string CATEGORIES[8] =
@@ -252,7 +254,7 @@ std::vector<item> game::multidrop()
      if (ch == u.weapon.invlet && u.weapon.type->id > num_items &&
          u.weapon.type->id < num_all_items) {
       if (!warned_about_bionic)
-       add_msg("You cannot drop your %s.", u.weapon.tname(this).c_str());
+       messages.add("You cannot drop your %s.", u.weapon.tname(this).c_str());
       warned_about_bionic = true;
      } else {
       weapon_and_armor.push_back(ch);

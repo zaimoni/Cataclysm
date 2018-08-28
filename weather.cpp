@@ -1,5 +1,6 @@
 #include "weather.h"
 #include "game.h"
+#include "recent_msg.h"
 #include <vector>
 
 /* Name, color in UI, {seasonal temperatures}, ranged penalty, sight penalty,
@@ -103,9 +104,9 @@ void weather_effect::thunder(game *g)
  very_wet(g);
  if (one_in(THUNDER_CHANCE)) {
   if (g->lev.z >= 0)
-   g->add_msg("You hear a distant rumble of thunder.");
+   messages.add("You hear a distant rumble of thunder.");
   else if (!g->u.has_trait(PF_BADHEARING) && one_in(1 - 3 * g->lev.z))
-   g->add_msg("You hear a rumble of thunder from above.");
+   messages.add("You hear a rumble of thunder from above.");
  }
 }
 
@@ -123,7 +124,7 @@ void weather_effect::lightning(game *g)
   point hit;
   if (strike.size() > 0) {
    hit = strike[rng(0, strike.size() - 1)];
-   g->add_msg("Lightning strikes nearby!");
+   messages.add("Lightning strikes nearby!");
    g->explosion(hit.x, hit.y, 10, 0, one_in(4));
   }
  }
@@ -132,14 +133,14 @@ void weather_effect::lightning(game *g)
 void weather_effect::light_acid(game *g)
 {
  wet(g);
- if (int(g->turn) % 10 == 0 && PLAYER_OUTSIDE)
-  g->add_msg("The acid rain stings, but is harmless for now...");
+ if (int(messages.turn) % 10 == 0 && PLAYER_OUTSIDE)
+  messages.add("The acid rain stings, but is harmless for now...");
 }
 
 void weather_effect::acid(game *g)
 {
  if (PLAYER_OUTSIDE) {
-  g->add_msg("The acid rain burns!");
+  messages.add("The acid rain burns!");
   if (one_in(6))
    g->u.hit(g, bp_head, 0, 0, 1);
   if (one_in(10)) {

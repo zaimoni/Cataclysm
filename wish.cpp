@@ -1,6 +1,7 @@
 #include "game.h"
 #include "output.h"
 #include "keypress.h"
+#include "recent_msg.h"
 #include <sstream>
 
 #define LESS(a, b) ((a)<(b)?(a):(b))
@@ -134,7 +135,7 @@ void game::wish()
    wprintz(w_list, it->color, "%c%", it->sym);
   }
   tmp.make(item::types[a + shift]);
-  tmp.bday = turn;
+  tmp.bday = messages.turn;
   if (tmp.is_tool()) tmp.charges = dynamic_cast<const it_tool*>(tmp.type)->max_charges;
   else if (tmp.is_ammo()) tmp.charges = 100;
   else tmp.charges = -1;

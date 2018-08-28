@@ -3,6 +3,7 @@
 #include "rng.h"
 #include "game.h"
 #include "line.h"
+#include "recent_msg.h"
 
 #define TARGET_PLAYER -2
 
@@ -121,18 +122,11 @@ void npc::execute_action(game *g, npc_action action, int target)
   tarx = g->z[target].pos.x;
   tary = g->z[target].pos.y;
  }
-/*
-  debugmsg("%s ran execute_action() with target = %d! Action %s",
-           name.c_str(), target, npc_action_name(action).c_str());
-*/
 
  std::vector<point> line;
  if (tarx != posx || tary != posy) {
   int linet, dist = sight_range(g->light_level());
-  if (g->m.sees(posx, posy, tarx, tary, dist, linet))
-   line = line_to(posx, posy, tarx, tary, linet);
-  else
-   line = line_to(posx, posy, tarx, tary, 0);
+  line = line_to(posx, posy, tarx, tary, (g->m.sees(posx, posy, tarx, tary, dist, linet) ? linet : 0));
  }
 
  switch (action) {
@@ -148,8 +142,7 @@ void npc::execute_action(game *g, npc_action action, int target)
    debugmsg("NPC reload failed.");
   recoil = 6;
   if (g->u_see(posx, posy, linet))
-   g->add_msg("%s reloads %s %s.", name.c_str(), (male ? "his" : "her"),
-              weapon.tname().c_str());
+   messages.add("%s reloads %s %s.", name.c_str(), (male ? "his" : "her"), weapon.tname().c_str());
   } break;
 
  case npc_sleep:
@@ -1127,42 +1120,33 @@ void npc::pick_up_item(game *g)
    total_weight += wgt;
   }
  }
-/*
- if (total_volume + volume_carried() > volume_capacity() ||
-     total_weight + weight_carried() > weight_capacity() / 4) {
-  int wgt_to_drop = weight_carried() + total_weight - weight_capacity() / 4;
-  int vol_to_drop = volume_carried() + total_volume - volume_capacity();
-  drop_items(g, wgt_to_drop, vol_to_drop);
- }
-*/
 // Describe the pickup to the player
  int t;
  bool u_see_me = g->u_see(posx, posy, t), u_see_items = g->u_see(itx, ity, t);
  if (u_see_me) {
   if (pickup.size() == 1) {
    if (u_see_items)
-    g->add_msg("%s picks up a %s.", name.c_str(),
-               (*items)[pickup[0]].tname().c_str());
+    messages.add("%s picks up a %s.", name.c_str(), (*items)[pickup[0]].tname().c_str());
    else
-    g->add_msg("%s picks something up.", name.c_str());
+    messages.add("%s picks something up.", name.c_str());
   } else if (pickup.size() == 2) {
    if (u_see_items)
-    g->add_msg("%s picks up a %s and a %s.", name.c_str(),
+    messages.add("%s picks up a %s and a %s.", name.c_str(),
                (*items)[pickup[0]].tname().c_str(),
                (*items)[pickup[1]].tname().c_str());
    else
-    g->add_msg("%s picks up a couple of items.", name.c_str());
+    messages.add("%s picks up a couple of items.", name.c_str());
   } else
-   g->add_msg("%s picks up several items.", name.c_str());
+   messages.add("%s picks up several items.", name.c_str());
  } else if (u_see_items) {
   if (pickup.size() == 1)
-   g->add_msg("Someone picks up a %s.", (*items)[pickup[0]].tname().c_str());
+   messages.add("Someone picks up a %s.", (*items)[pickup[0]].tname().c_str());
   else if (pickup.size() == 2)
-   g->add_msg("Someone picks up a %s and a %s", 
+   messages.add("Someone picks up a %s and a %s", 
               (*items)[pickup[0]].tname().c_str(),
               (*items)[pickup[1]].tname().c_str());
   else
-   g->add_msg("Someone picks up several items.");
+   messages.add("Someone picks up several items.");
  }
   
  for (int i = 0; i < pickup.size(); i++) {
@@ -1239,20 +1223,15 @@ void npc::drop_items(game *g, int weight, int volume)
    index = rWgt[0].index;
    rWgt.erase(rWgt.begin());
 // Fix the rest of those indices.
-   for (int i = 0; i < rWgt.size(); i++) {
-    if (rWgt[i].index > index)
-     rWgt[i].index--;
+   for (auto& w_ratio : rWgt) {
+    if (w_ratio.index > index) w_ratio.index--;
    }
   } else {
    index = rVol[0].index;
    rVol.erase(rVol.begin());
 // Fix the rest of those indices.
-   for (int i = 0; i < rVol.size(); i++) {
-    if (i > rVol.size())
-     debugmsg("npc::drop_items() - looping through rVol - Size is %d, i is %d",
-              rVol.size(), i);
-    if (rVol[i].index > index)
-     rVol[i].index--;
+   for (auto& vol_ratio : rVol) {
+    if (vol_ratio.index > index) vol_ratio.index--;
    }
   }
   weight_dropped += inv[index].weight();
@@ -1270,9 +1249,9 @@ void npc::drop_items(game *g, int weight, int volume)
  std::string item_name_str = item_name.str();
  if (g->u_see(posx, posy, linet)) {
   if (num_items_dropped >= 3)
-   g->add_msg("%s drops %d items.", name.c_str(), num_items_dropped);
+   messages.add("%s drops %d items.", name.c_str(), num_items_dropped);
   else
-   g->add_msg("%s drops a %s.", name.c_str(), item_name_str.c_str());
+   messages.add("%s drops a %s.", name.c_str(), item_name_str.c_str());
  }
  update_worst_item_value();
 }
@@ -1409,13 +1388,10 @@ void npc::alt_attack(game *g, int target)
 
   if (dist <= confident_range(index) && wont_hit_friend(g, tar.x, tar.y, index)) {
 
-   if (g->m.sees(posx, posy, tar.x, tar.y, light, linet))
-    trajectory = line_to(posx, posy, tar.x, tar.y, linet);
-   else
-    trajectory = line_to(posx, posy, tar.x, tar.y, 0);
+   trajectory = line_to(posx, posy, tar.x, tar.y, (g->m.sees(posx, posy, tar.x, tar.y, light, linet) ? linet : 0));
    moves -= 125;
    if (g->u_see(posx, posy, linet))
-    g->add_msg("%s throws a %s.", name.c_str(), used->tname().c_str());
+    messages.add("%s throws a %s.", name.c_str(), used->tname().c_str());
    g->throw_item(*this, tar.x, tar.y, *used, trajectory);
    i_remn(index);
 
@@ -1463,7 +1439,7 @@ void npc::alt_attack(game *g, int target)
 	trajectory = line_to(posx, posy, tar.x, tar.y, ((g->m.sees(posx, posy, tar.x, tar.y, light, linet)) ? linet : 0));
     moves -= 125;
     if (g->u_see(posx, posy, linet))
-     g->add_msg("%s throws a %s.", name.c_str(), used->tname().c_str());
+     messages.add("%s throws a %s.", name.c_str(), used->tname().c_str());
     g->throw_item(*this, tar.x, tar.y, *used, trajectory);
     i_remn(index);
    }
@@ -1527,15 +1503,15 @@ void npc::heal_player(game *g, player &patient)
   if (patient.is_npc()) {
    if (u_see_me) {
     if (u_see_patient)
-     g->add_msg("%s heals %s.",  name.c_str(), patient.name.c_str());
+     messages.add("%s heals %s.",  name.c_str(), patient.name.c_str());
     else
-     g->add_msg("%s heals someone.", name.c_str());
+     messages.add("%s heals someone.", name.c_str());
    } else if (u_see_patient)
-    g->add_msg("Someone heals %s.", patient.name.c_str());
+    messages.add("Someone heals %s.", patient.name.c_str());
   } else if (u_see_me)
-   g->add_msg("%s heals you.", name.c_str());
+   messages.add("%s heals you.", name.c_str());
   else
-   g->add_msg("Someone heals you.");
+   messages.add("Someone heals you.");
 
   int amount_healed;
   if (has_amount(itm_1st_aid, 1)) {
@@ -1608,7 +1584,7 @@ void npc::heal_self(game *g)
  }
  int t;
  if (g->u_see(posx, posy, t))
-  g->add_msg("%s heals %sself.", name.c_str(), (male ? "him" : "her"));
+  messages.add("%s heals %sself.", name.c_str(), (male ? "him" : "her"));
  heal(worst, amount_healed);
  moves -= 250;
 }
@@ -1700,16 +1676,16 @@ void npc::mug_player(game *g, player &mark)
    if (mark.is_npc()) {
     if (u_see_me) {
      if (u_see_mark)
-      g->add_msg("%s takes %s's money!", name.c_str(), mark.name.c_str());
+      messages.add("%s takes %s's money!", name.c_str(), mark.name.c_str());
      else
-      g->add_msg("%s takes someone's money!", name.c_str());
+      messages.add("%s takes someone's money!", name.c_str());
     } else if (u_see_mark)
-     g->add_msg("Someone takes %s's money!", mark.name.c_str());
+     messages.add("Someone takes %s's money!", mark.name.c_str());
    } else {
     if (u_see_me)
-     g->add_msg("%s takes your money!", name.c_str());
+     messages.add("%s takes your money!", name.c_str());
     else
-     g->add_msg("Someone takes your money!");
+     messages.add("Someone takes your money!");
    }
   } else { // We already have their money; take some goodies!
 // value_mod affects at what point we "take the money and run"
@@ -1732,8 +1708,7 @@ void npc::mug_player(game *g, player &mark)
    }
    if (index == -1) { // Didn't find anything worthwhile!
     attitude = NPCATT_FLEE;
-    if (!one_in(3))
-     say(g, "<done_mugging>");
+    if (!one_in(3)) say(g, "<done_mugging>");
     moves -= 100;
    } else {
     int t;
@@ -1743,23 +1718,20 @@ void npc::mug_player(game *g, player &mark)
     if (mark.is_npc()) {
      if (u_see_me) {
       if (u_see_mark)
-       g->add_msg("%s takes %s's %s.", name.c_str(), mark.name.c_str(),
-                  stolen.tname().c_str());
+       messages.add("%s takes %s's %s.", name.c_str(), mark.name.c_str(), stolen.tname().c_str());
       else
-       g->add_msg("%s takes something from somebody.", name.c_str());
+       messages.add("%s takes something from somebody.", name.c_str());
      } else if (u_see_mark)
-      g->add_msg("Someone takes %s's %s.", mark.name.c_str(),
-                 stolen.tname().c_str());
+      messages.add("Someone takes %s's %s.", mark.name.c_str(), stolen.tname().c_str());
     } else {
      if (u_see_me)
-      g->add_msg("%s takes your %s.", name.c_str(), stolen.tname().c_str());
+      messages.add("%s takes your %s.", name.c_str(), stolen.tname().c_str());
      else
-      g->add_msg("Someone takes your %s.", stolen.tname().c_str());
+      messages.add("Someone takes your %s.", stolen.tname().c_str());
     }
     i_add(stolen);
     moves -= 100;
-    if (!mark.is_npc())
-     op_of_u.value -= rng(0, 1); // Decrease the value of the player
+    if (!mark.is_npc()) op_of_u.value -= rng(0, 1); // Decrease the value of the player
    }
   }
  }

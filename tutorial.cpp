@@ -2,10 +2,11 @@
 #include "output.h"
 #include "action.h"
 #include "tutorial.h"
+#include "recent_msg.h"
 
 bool tutorial_game::init(game *g)
 {
- g->turn = HOURS(12); // Start at noon
+ messages.turn = HOURS(12); // Start at noon
  for (int i = 0; i < NUM_LESSONS; i++)
   tutorials_seen[i] = false;
  g->clear_scents();
@@ -33,7 +34,7 @@ bool tutorial_game::init(game *g)
  for (int i = 0; i <= MAPSIZE; i += 2) {
   for (int j = 0; j <= MAPSIZE; j += 2) {
    tinymap tm;
-   tm.generate(g, &(g->cur_om), g->lev.x + i - 1, g->lev.y + j - 1, int(g->turn));
+   tm.generate(g, &(g->cur_om), g->lev.x + i - 1, g->lev.y + j - 1, int(messages.turn));
   }
  }
 // Start with the overmap revealed
@@ -51,10 +52,10 @@ bool tutorial_game::init(game *g)
 
 void tutorial_game::per_turn(game *g)
 {
- if (g->turn == HOURS(12)) {
+ if (messages.turn == HOURS(12)) {
   add_message(g, LESSON_INTRO);
   add_message(g, LESSON_INTRO);
- } else if (g->turn == HOURS(12) + 3)
+ } else if (messages.turn == HOURS(12) + 3)
   add_message(g, LESSON_INTRO);
 
  if (g->light_level() == 1) {

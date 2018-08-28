@@ -7,6 +7,8 @@
 #include "item.h"
 #include "options.h"
 #include "posix_time.h"
+#include "recent_msg.h"
+
 #include <math.h>
 #include <vector>
 
@@ -62,24 +64,20 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory,
                                                p.weapon.tname().c_str());
   return;
  }
- bool is_bolt = false;
  unsigned int flags = p.weapon.curammo->item_flags;
 // Bolts and arrows are silent
- if (p.weapon.curammo->type == AT_BOLT || p.weapon.curammo->type == AT_ARROW)
-  is_bolt = true;
+ const bool is_bolt = (p.weapon.curammo->type == AT_BOLT || p.weapon.curammo->type == AT_ARROW);
 // TODO: Move this check to game::plfire
  if ((p.weapon.has_flag(IF_STR8_DRAW)  && p.str_cur <  4) ||
      (p.weapon.has_flag(IF_STR10_DRAW) && p.str_cur <  5)   ) {
-  add_msg("You're not strong enough to draw the bow!");
+  messages.add("You're not strong enough to draw the bow!");
   return;
  }
 
  int x = p.posx, y = p.posy;
  const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
- if (p.has_trait(PF_TRIGGERHAPPY) && one_in(30))
-  burst = true;
- if (burst && p.weapon.burst_size() < 2)
-  burst = false; // Can't burst fire a semi-auto
+ if (p.has_trait(PF_TRIGGERHAPPY) && one_in(30)) burst = true;
+ if (burst && p.weapon.burst_size() < 2) burst = false; // Can't burst fire a semi-auto
 
  int junk = 0;
  bool u_see_shooter = u_see(p.posx, p.posy, junk);
@@ -165,13 +163,11 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory,
   int target_index = mon_at(tarx, tary);
   if (target_index != -1) {
    monster_speed_penalty = double(z[target_index].speed) / 80.;
-   if (monster_speed_penalty < 1.)
-    monster_speed_penalty = 1.;
+   if (monster_speed_penalty < 1.) monster_speed_penalty = 1.;
   }
 
   if (curshot > 0) {
-   if (recoil_add(p) % 2 == 1)
-    p.recoil++;
+   if (recoil_add(p) % 2 == 1) p.recoil++;
    p.recoil += recoil_add(p) / 2;
   } else
    p.recoil += recoil_add(p);
@@ -179,33 +175,26 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory,
   if (missed_by >= 1.) {
 // We missed D:
 // Shoot a random nearby space?
-   tarx += rng(0 - int(sqrt(double(missed_by))), int(sqrt(double(missed_by))));
-   tary += rng(0 - int(sqrt(double(missed_by))), int(sqrt(double(missed_by))));
-   if (m.sees(p.posx, p.posy, x, y, -1, tart))
-    trajectory = line_to(p.posx, p.posy, tarx, tary, tart);
-   else
-    trajectory = line_to(p.posx, p.posy, tarx, tary, 0);
+   const int delta = int(sqrt(double(missed_by)));
+   tarx += rng(-delta, delta);
+   tary += rng(-delta, delta);
+   trajectory = line_to(p.posx, p.posy, tarx, tary, (m.sees(p.posx, p.posy, x, y, -1, tart) ? tart : 0));
    missed = true;
    if (!burst) {
-    if (&p == &u)
-     add_msg("You miss!");
-    else if (u_see_shooter)
-     add_msg("%s misses!", p.name.c_str());
+    if (&p == &u) messages.add("You miss!");
+    else if (u_see_shooter) messages.add("%s misses!", p.name.c_str());
    }
   } else if (missed_by >= .7 / monster_speed_penalty) {
 // Hit the space, but not necessarily the monster there
    missed = true;
    if (!burst) {
-    if (&p == &u)
-     add_msg("You barely miss!");
-    else if (u_see_shooter)
-     add_msg("%s barely misses!", p.name.c_str());
+    if (&p == &u) messages.add("You barely miss!");
+    else if (u_see_shooter) messages.add("%s barely misses!", p.name.c_str());
    }
   }
 
   int dam = p.weapon.gun_damage();
-  for (int i = 0; i < trajectory.size() &&
-       (dam > 0 || (flags & IF_AMMO_FLAME)); i++) {
+  for (int i = 0; i < trajectory.size() && (dam > 0 || (flags & IF_AMMO_FLAME)); i++) {
    if (i > 0)
     m.drawsq(w_terrain, u, trajectory[i-1].x, trajectory[i-1].y, false, true);
 // Drawing the bullet uses player u, and not player p, because it's drawn
@@ -330,22 +319,17 @@ void game::throw_item(player &p, int tarx, int tary, item &thrown,
  if (missed_by >= 1) {
 // We missed D:
 // Shoot a random nearby space?
-  if (missed_by > 9)
-   missed_by = 9;
-  tarx += rng(0 - int(sqrt(double(missed_by))), int(sqrt(double(missed_by))));
-  tary += rng(0 - int(sqrt(double(missed_by))), int(sqrt(double(missed_by))));
-  if (m.sees(p.posx, p.posy, tarx, tary, -1, tart))
-   trajectory = line_to(p.posx, p.posy, tarx, tary, tart);
-  else
-   trajectory = line_to(p.posx, p.posy, tarx, tary, 0);
+  if (missed_by > 9) missed_by = 9;
+  const int delta = int(sqrt(double(missed_by)));
+  tarx += rng(-delta, delta);
+  tary += rng(-delta, delta);
+  trajectory = line_to(p.posx, p.posy, tarx, tary, (m.sees(p.posx, p.posy, tarx, tary, -1, tart) ? tart : 0));
   missed = true;
-  if (!p.is_npc())
-   add_msg("You miss!");
+  if (!p.is_npc()) messages.add("You miss!");
  } else if (missed_by >= .6) {
 // Hit the space, but not necessarily the monster there
   missed = true;
-  if (!p.is_npc())
-   add_msg("You barely miss!");
+  if (!p.is_npc()) messages.add("You barely miss!");
  }
 
  std::string message;
@@ -376,8 +360,7 @@ void game::throw_item(player &p, int tarx, int tary, item &thrown,
    }
    if (thrown.made_of(GLASS) && !thrown.active && // active = molotov, etc.
        rng(0, thrown.volume() + 8) - rng(0, p.str_cur) < thrown.volume()) {
-    if (u_see(tx, ty, tart))
-     add_msg("The %s shatters!", thrown.tname().c_str());
+    if (u_see(tx, ty, tart)) messages.add("The %s shatters!", thrown.tname().c_str());
     for (int i = 0; i < thrown.contents.size(); i++)
      m.add_item(tx, ty, thrown.contents[i]);
     sound(tx, ty, 16, "glass breaking!");
@@ -403,13 +386,12 @@ void game::throw_item(player &p, int tarx, int tary, item &thrown,
     dam = rng(0, dam);
    }
    if (!p.is_npc())
-    add_msg("%s You hit the %s for %d damage.",
+    messages.add("%s You hit the %s for %d damage.",
             message.c_str(), z[mon_at(tx, ty)].name().c_str(), dam);
    else if (u_see(tx, ty, tart))
-    add_msg("%s hits the %s for %d damage.", message.c_str(),
+    messages.add("%s hits the %s for %d damage.", message.c_str(),
             z[mon_at(tx, ty)].name().c_str(), dam);
-   if (z[mon_at(tx, ty)].hurt(dam))
-    kill_mon(mon_at(tx, ty), !p.is_npc());
+   if (z[mon_at(tx, ty)].hurt(dam)) kill_mon(mon_at(tx, ty), !p.is_npc());
    return;
   } else // No monster hit, but the terrain might be.
    m.shoot(this, tx, ty, dam, false, 0);
@@ -435,8 +417,7 @@ void game::throw_item(player &p, int tarx, int tary, item &thrown,
  }
  if (thrown.made_of(GLASS) && !thrown.active && // active means molotov, etc
      rng(0, thrown.volume() + 8) - rng(0, p.str_cur) < thrown.volume()) {
-  if (u_see(tx, ty, tart))
-   add_msg("The %s shatters!", thrown.tname().c_str());
+  if (u_see(tx, ty, tart)) messages.add("The %s shatters!", thrown.tname().c_str());
   for (int i = 0; i < thrown.contents.size(); i++)
    m.add_item(tx, ty, thrown.contents[i]);
   sound(tx, ty, 16, "glass breaking!");
@@ -751,8 +732,7 @@ void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit)
      !p.weapon.curammo->m1 == LIQUID && 
      p.weapon.curammo->accuracy >= 4) { // Buckshot hits anyway
   if (u_see_mon)
-   g->add_msg("The shot passes through the %s without hitting.",
-           mon.name().c_str());
+   messages.add("The shot passes through the %s without hitting.", mon.name().c_str());
   goodhit = 1;
  } else { // Not HARDTOSHOOT
 // Armor blocks BEFORE any critical effects.
@@ -764,8 +744,7 @@ void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit)
   if (zarm > 0) dam -= zarm;
   if (dam <= 0) {
    if (u_see_mon)
-    g->add_msg("The shot reflects off the %s!",
-            mon.name_with_armor().c_str());
+    messages.add("The shot reflects off the %s!", mon.name_with_armor().c_str());
    dam = 0;
    goodhit = 1;
   }
@@ -789,9 +768,9 @@ void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit)
   if (dam > 0) {
    mon.moves -= dam * 5;
    if (&p == &(g->u) && u_see_mon)
-    g->add_msg("%s You hit the %s for %d damage.", message.c_str(), mon.name().c_str(), dam);
+    messages.add("%s You hit the %s for %d damage.", message.c_str(), mon.name().c_str(), dam);
    else if (u_see_mon)
-    g->add_msg("%s %s shoots the %s.", message.c_str(), p.name.c_str(), mon.name().c_str());
+    messages.add("%s %s shoots the %s.", message.c_str(), p.name.c_str(), mon.name().c_str());
    if (mon.hurt(dam))
     g->kill_mon(g->mon_at(mon.pos.x, mon.pos.y), (&p == &(g->u)));
    else if (p.weapon.curammo->item_flags != 0)
@@ -834,14 +813,12 @@ void shoot_player(game *g, player &p, player *h, int &dam, double goodhit)
  if (dam > 0) {
   h->moves -= rng(0, dam);
   if (h == &(g->u))
-   g->add_msg("%s shoots your %s for %d damage!", p.name.c_str(),
-              body_part_name(hit, side).c_str(), dam);
+   messages.add("%s shoots your %s for %d damage!", p.name.c_str(), body_part_name(hit, side).c_str(), dam);
   else {
    if (&p == &(g->u))
-    g->add_msg("You shoot %s's %s.", h->name.c_str(),
-               body_part_name(hit, side).c_str());
+    messages.add("You shoot %s's %s.", h->name.c_str(), body_part_name(hit, side).c_str());
    else if (g->u_see(h->posx, h->posy, junk))
-    g->add_msg("%s shoots %s's %s.",
+    messages.add("%s shoots %s's %s.",
                (g->u_see(p.posx, p.posy, junk) ? p.name.c_str() : "Someone"),
                h->name.c_str(), body_part_name(hit, side).c_str());
   }

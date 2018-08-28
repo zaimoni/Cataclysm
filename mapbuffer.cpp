@@ -1,6 +1,7 @@
 #include "mapbuffer.h"
 #include "game.h"
 #include "output.h"
+#include "recent_msg.h"
 #include "saveload.h"
 #include <fstream>
 
@@ -16,7 +17,7 @@ bool mapbuffer::add_submap(int x, int y, int z, submap *sm)
  tripoint p(x, y, z);
  if (submaps.count(p) != 0) return false;
 
- if (master_game) sm->turn_last_touched = int(master_game->turn);
+ if (master_game) sm->turn_last_touched = int(messages.turn);
  submap_list.push_back(sm);
  submaps[p] = sm;
  return true;
@@ -147,9 +148,8 @@ void mapbuffer::load()
   submap* sm = new submap;
   fin >> locx >> locy >> locz >> turn;
   sm->turn_last_touched = turn;
-  int turndif = (master_game ? int(master_game->turn) - turn : 0);
-  if (turndif < 0)
-   turndif = 0;
+  int turndif = int(messages.turn);
+  if (turndif < 0) turndif = 0;
 // Load terrain
   for (int j = 0; j < SEEY; j++) {
    for (int i = 0; i < SEEX; i++) {

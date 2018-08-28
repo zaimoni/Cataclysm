@@ -6,6 +6,7 @@
 #include "output.h"
 #include "crafting.h"
 #include "options.h"
+#include "recent_msg.h"
 
 
 veh_interact::veh_interact (int cx, int cy, game *gm, vehicle *v)
@@ -63,7 +64,7 @@ void veh_interact::exec ()
     crafting_inv += _g->u.inv;
     crafting_inv += _g->u.weapon;
     if (_g->u.has_bionic(bio_tools))  {
-        item tools(item::types[itm_toolset], _g->turn);
+        item tools(item::types[itm_toolset], messages.turn);
         tools.charges = _g->u.power_level;
         crafting_inv += tools;
     }
@@ -612,8 +613,7 @@ void complete_vehicle (game *g)
         tools.push_back(component(itm_welder, welder_charges));
         tools.push_back(component(itm_toolset, welder_charges/5));
         consume_tools(g, tools);
-        g->add_msg ("You install a %s into the %s.", 
-                   vpart_info::list[part].name, veh->name.c_str());
+		messages.add("You install a %s into the %s.", vpart_info::list[part].name, veh->name.c_str());
         g->u.practice (sk_mechanics, vpart_info::list[part].difficulty * 5 + 20);
         break;
     case 'r':
@@ -631,8 +631,7 @@ void complete_vehicle (game *g)
         tools.push_back(component(itm_toolset, welder_charges/5));
         consume_tools(g, tools);
         veh->parts[part].hp = veh->part_info(part).durability;
-        g->add_msg ("You repair the %s's %s.", 
-                    veh->name.c_str(), veh->part_info(part).name);
+		messages.add("You repair the %s's %s.", veh->name.c_str(), veh->part_info(part).name);
         g->u.practice (sk_mechanics, (vpart_info::list[part].difficulty + dd) * 5 + 20);
         break;
     case 'f':
@@ -647,15 +646,15 @@ void complete_vehicle (game *g)
         itm = veh->part_info(part).item;
         broken = veh->parts[part].hp <= 0;
         if (veh->parts.size() < 2) {
-            g->add_msg ("You completely dismantle %s.", veh->name.c_str());
+			messages.add("You completely dismantle %s.", veh->name.c_str());
             g->u.activity.type = ACT_NULL;
             g->m.destroy_vehicle (veh);
         } else {
-            g->add_msg ("You remove %s%s from %s.", broken? "broken " : "",
+            messages.add("You remove %s%s from %s.", broken? "broken " : "",
                         veh->part_info(part).name, veh->name.c_str());
             veh->remove_part (part);
         }
-        if (!broken) g->m.add_item (g->u.posx, g->u.posy, item::types[itm], g->turn);
+        if (!broken) g->m.add_item (g->u.posx, g->u.posy, item::types[itm], messages.turn);
         g->u.practice (sk_mechanics, 2 * 5 + 20);
         break;
     default:;

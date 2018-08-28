@@ -166,17 +166,17 @@ public:
  void add_disease(dis_type type, int duration, game *g, int intensity = 0,
                   int max_intensity = -1);
  void rem_disease(dis_type type);
- bool has_disease(dis_type type);
- int  disease_level(dis_type type);
- int  disease_intensity(dis_type type);
+ bool has_disease(dis_type type) const;
+ int  disease_level(dis_type type) const;
+ int  disease_intensity(dis_type type) const;
 
  void add_addiction(add_type type, int strength);
  void rem_addiction(add_type type);
- bool has_addiction(add_type type);
- int  addiction_level(add_type type);
+ bool has_addiction(add_type type) const;
+ int  addiction_level(add_type type) const;
 
  void suffer(game *g);
- void vomit(game *g);
+ void vomit();
  
  int  lookup_item(char let);
  bool eat(game *g, int index);	// Eat item; returns false on fail

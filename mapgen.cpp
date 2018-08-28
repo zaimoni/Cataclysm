@@ -3,6 +3,7 @@
 #include "game.h"
 #include "rng.h"
 #include "line.h"
+#include "recent_msg.h"
 
 ter_id grass_or_dirt()
 {
@@ -3921,8 +3922,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     std::vector<point> bloodline = line_to(origx, origy, hermx, hermy, 0);
     for (int ii = 0; ii < bloodline.size(); ii++)
      add_field(g, bloodline[ii].x, bloodline[ii].y, fd_blood, 2);
-    item body(g->turn);
-    add_item(hermx, hermy, body);
+    add_item(hermx, hermy, item(messages.turn));
     place_items(mi_rare, 25, hermx - 1, hermy - 1, hermx + 1, hermy + 1,true,0);
    } break;
    }
@@ -4674,7 +4674,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 // Generate bodies / zombies
   rn = rng(10, 15);
   for (int i = 0; i < rn; i++) {
-   item body(g->turn);
+   item body(messages.turn);
    int zx = rng(0, SEEX * 2 - 1), zy = rng(0, SEEY * 2 - 1);
    if (ter(zx, zy) == t_bed || one_in(3))
     add_item(zx, zy, body);
@@ -4992,7 +4992,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 // Generate bodies / zombies
   rn = rng(15, 20);
   for (int i = 0; i < rn; i++) {
-   item body(g->turn);
+   item body(messages.turn);
    int zx = rng(0, SEEX * 2 - 1), zy = rng(0, SEEY * 2 - 1);
    if (ter(zx, zy) == t_bed || one_in(3))
     add_item(zx, zy, body);
@@ -7748,13 +7748,12 @@ x: %d - %d, dx: %d cx: %d/%d", x1, x2, dx, cx_low, cx_hi,
 
 void mansion_room(map *m, int x1, int y1, int x2, int y2)
 {
- room_type type = pick_mansion_room(x1, y1, x2, y2);
- build_mansion_room(m, type, x1, y1, x2, y2);
+ build_mansion_room(m, pick_mansion_room(x1, y1, x2, y2), x1, y1, x2, y2);
 }
 
 void map::add_extra(map_extra type, game *g)
 {
- item body(g->turn);
+ item body(messages.turn);
  
  switch (type) {
 
@@ -8087,7 +8086,7 @@ void map::add_extra(map_extra type, game *g)
    for (int j = y - 5; j <= y + 5; j++) {
     if (rng(0, 9) > trig_dist(x, y, i, j)) {
      marlossify(i, j);
-     if (ter(i, j) == t_marloss) add_item(x, y, item::types[itm_marloss_berry], g->turn);
+     if (ter(i, j) == t_marloss) add_item(x, y, item::types[itm_marloss_berry], messages.turn);
      if (one_in(15)) {
       monster creature(mtype::types[mon_id(rng(mon_gelatin, mon_blank))]);
       creature.spawn(i, j);

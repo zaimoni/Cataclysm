@@ -1,6 +1,8 @@
 #include "monster.h"
 #include "game.h"
+#include "recent_msg.h"
 #include "saveload.h"
+
 #include <sstream>
 #include <fstream>
 #include <stdlib.h>
@@ -496,12 +498,10 @@ void monster::hit_monster(game *g, int i)
  }
 
  if (dice(numdice, 10) <= dice(dodgedice, 10)) {
-  if (g->u_see(this, junk))
-   g->add_msg("The %s misses the %s!", name().c_str(), target->name().c_str());
+  if (g->u_see(this, junk)) messages.add("The %s misses the %s!", name().c_str(), target->name().c_str());
   return;
  }
- if (g->u_see(this, junk))
-  g->add_msg("The %s hits the %s!", name().c_str(), target->name().c_str());
+ if (g->u_see(this, junk)) messages.add("The %s hits the %s!", name().c_str(), target->name().c_str());
  int damage = dice(type->melee_dice, type->melee_sides);
  if (target->hurt(damage))
   g->kill_mon(i, (friendly != 0));

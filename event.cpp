@@ -2,6 +2,7 @@
 #include "npc.h"
 #include "game.h"
 #include "rng.h"
+#include "recent_msg.h"
 
 void event::actualize(game *g) const
 {
@@ -60,7 +61,7 @@ void event::actualize(game *g) const
     }
    }
    if (!one_in(25)) // They just keep coming!
-    g->add_event(EVENT_SPAWN_WYRMS, int(g->turn) + rng(15, 25));
+    g->add_event(EVENT_SPAWN_WYRMS, int(messages.turn) + rng(15, 25));
   } break;
 
   case EVENT_AMIGARA: {
@@ -107,8 +108,7 @@ void event::actualize(game *g) const
   case EVENT_ROOTS_DIE:
    for (int x = 0; x < SEEX * MAPSIZE; x++) {
     for (int y = 0; y < SEEY * MAPSIZE; y++) {
-     if (g->m.ter(x, y) == t_root_wall && one_in(3))
-      g->m.ter(x, y) = t_underbrush;
+     if (g->m.ter(x, y) == t_root_wall && one_in(3)) g->m.ter(x, y) = t_underbrush;
     }
    }
    break;
@@ -120,13 +120,11 @@ void event::actualize(game *g) const
      if (g->m.ter(x, y) == t_grate) {
       g->m.ter(x, y) = t_stairs_down;
       int j;
-      if (!saw_grate && g->u_see(x, y, j))
-       saw_grate = true;
+      if (!saw_grate && g->u_see(x, y, j)) saw_grate = true;
      }
     }
    }
-   if (saw_grate)
-    g->add_msg("The nearby grates open to reveal a staircase!");
+   if (saw_grate) messages.add("The nearby grates open to reveal a staircase!");
   } break;
 
   case EVENT_TEMPLE_FLOOD: {
@@ -142,8 +140,7 @@ void event::actualize(game *g) const
       bool deepen = false;
       for (int wx = x - 1;  wx <= x + 1 && !deepen; wx++) {
        for (int wy = y - 1;  wy <= y + 1 && !deepen; wy++) {
-        if (g->m.ter(wx, wy) == t_water_dp)
-         deepen = true;
+        if (g->m.ter(wx, wy) == t_water_dp) deepen = true;
        }
       }
       if (deepen) {
@@ -154,8 +151,7 @@ void event::actualize(game *g) const
       bool flood = false;
       for (int wx = x - 1;  wx <= x + 1 && !flood; wx++) {
        for (int wy = y - 1;  wy <= y + 1 && !flood; wy++) {
-        if (g->m.ter(wx, wy) == t_water_dp || g->m.ter(wx, wy) == t_water_sh)
-         flood = true;
+        if (g->m.ter(wx, wy) == t_water_dp || g->m.ter(wx, wy) == t_water_sh) flood = true;
        }
       }
       if (flood) {
@@ -165,14 +161,13 @@ void event::actualize(game *g) const
      }
     }
    }
-   if (!flooded)
-    return; // We finished flooding the entire chamber!
+   if (!flooded) return; // We finished flooding the entire chamber!
 // Check if we should print a message
    if (copy.ter(g->u.posx, g->u.posy) != g->m.ter(g->u.posx, g->u.posy)) {
     if (copy.ter(g->u.posx, g->u.posy) == t_water_sh)
-     g->add_msg("Water quickly floods up to your knees.");
+     messages.add("Water quickly floods up to your knees.");
     else { // Must be deep water!
-     g->add_msg("Water fills nearly to the ceiling!");
+     messages.add("Water fills nearly to the ceiling!");
      g->plswim(g->u.posx, g->u.posy);
     }
    }
@@ -181,7 +176,7 @@ void event::actualize(game *g) const
     for (int y = 0; y < SEEY * MAPSIZE; y++)
      g->m.ter(x, y) = copy.ter(x, y);
    }
-   g->add_event(EVENT_TEMPLE_FLOOD, int(g->turn) + rng(2, 3));
+   g->add_event(EVENT_TEMPLE_FLOOD, int(messages.turn) + rng(2, 3));
   } break;
 
   case EVENT_TEMPLE_SPAWN: {
@@ -219,13 +214,12 @@ void event::per_turn(game *g)
     monster eyebot(mtype::types[mon_eyebot]);
     eyebot.faction_id = faction_id;
     point place = g->m.random_outdoor_tile();
-    if (place.x == -1 && place.y == -1)
-     return; // We're safely indoors!
+    if (place.x == -1 && place.y == -1) return; // We're safely indoors!
     eyebot.spawn(place.x, place.y);
     g->z.push_back(eyebot);
     int t;
     if (g->u_see(place.x, place.y, t))
-     g->add_msg("An eyebot swoops down nearby!");
+     messages.add("An eyebot swoops down nearby!");
    }
   } break;
 
@@ -234,16 +228,15 @@ void event::per_turn(game *g)
     turn--;
     return;
    }
-   if (int(g->turn) % 3 == 0)
-    g->add_msg("You hear screeches from the rock above and around you!");
+   if (int(messages.turn) % 3 == 0) messages.add("You hear screeches from the rock above and around you!");
    break;
 
   case EVENT_AMIGARA:
-   g->add_msg("The entire cavern shakes!");
+   messages.add("The entire cavern shakes!");
    break;
 
   case EVENT_TEMPLE_OPEN:
-   g->add_msg("The earth rumbles.");
+   messages.add("The earth rumbles.");
    break;
 
 

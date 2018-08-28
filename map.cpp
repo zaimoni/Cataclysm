@@ -9,6 +9,8 @@
 #include <fstream>
 #include "posix_time.h"
 #include "JSON.h"
+#include "recent_msg.h"
+
 #include <iostream>
 
 std::map<ter_id, std::string> ter_t::tiles;
@@ -744,8 +746,7 @@ void map::vehmove(game *g)
       int y = veh->posy + j * SEEY;
       if (has_flag(swimmable, x, y) &&
           move_cost_ter_only(x, y) == 0) { // deep water
-       if (pl_ctrl)
-        g->add_msg ("Your %s sank.", veh->name.c_str());
+       if (pl_ctrl) messages.add("Your %s sank.", veh->name.c_str());
        veh->unboard_all ();
 // destroy vehicle (sank to nowhere)
        grid[sm]->vehicles.erase (grid[sm]->vehicles.begin() + v);
@@ -773,7 +774,7 @@ void map::vehmove(game *g)
        veh->move.init (veh->move.dir() +
                        (one_in(2) ? -15 * rng(1, 3) : 15 * rng(1, 3)));
       else if (pl_ctrl && rng(0, 4) > g->u.sklevel[sk_driving] && one_in(20)) {
-       g->add_msg("You fumble with the %s's controls.", veh->name.c_str());
+       messages.add("You fumble with the %s's controls.", veh->name.c_str());
        veh->turn (one_in(2) ? -15 : 15);
       }
  // eventually send it skidding if no control
@@ -840,7 +841,7 @@ void map::vehmove(game *g)
         }
         if (throw_it) {
          if (psgname.length())
-          g->add_msg("%s %s hurled from the %s's seat by the power of impact!",
+          messages.add("%s %s hurled from the %s's seat by the power of impact!",
                       psgname.c_str(), psgverb.c_str(), veh->name.c_str());
          g->m.unboard_vehicle(g, x + veh->parts[ppl[ps]].precalc_dx[0],
                                  y + veh->parts[ppl[ps]].precalc_dy[0]);
@@ -851,14 +852,12 @@ void map::vehmove(game *g)
          int lose_ctrl_roll = rng (0, imp);
          if (lose_ctrl_roll > psg->dex_cur * 2 + psg->sklevel[sk_driving] * 3) {
           if (psgname.length())
-           g->add_msg ("%s lose%s control of the %s.", psgname.c_str(),
+           messages.add("%s lose%s control of the %s.", psgname.c_str(),
                        (psg == &g->u ? "" : "s"), veh->name.c_str());
           int turn_amount = (rng (1, 3) * sqrt (vel2) / 2) / 15;
-          if (turn_amount < 1)
-           turn_amount = 1;
+          if (turn_amount < 1) turn_amount = 1;
           turn_amount *= 15;
-          if (turn_amount > 120)
-           turn_amount = 120;
+          if (turn_amount > 120) turn_amount = 120;
           //veh->skidding = true;
           //veh->turn (one_in (2)? turn_amount : -turn_amount);
           coll_turn = one_in (2)? turn_amount : -turn_amount;
@@ -875,7 +874,7 @@ void map::vehmove(game *g)
         int p = veh->external_parts[ep];
         if (veh->part_flag(p, vpf_wheel) && one_in(2))
          if (displace_water (x + veh->parts[p].precalc_dx[0], y + veh->parts[p].precalc_dy[0]) && pl_ctrl)
-          g->add_msg ("You hear a splash!");
+          messages.add("You hear a splash!");
         veh->handle_trap(x + veh->parts[p].precalc_dx[0],
                          y + veh->parts[p].precalc_dy[0], p);
        }
@@ -884,12 +883,10 @@ void map::vehmove(game *g)
       int last_turn_dec = 1;
       if (veh->last_turn < 0) {
        veh->last_turn += last_turn_dec;
-       if (veh->last_turn > -last_turn_dec)
-        veh->last_turn = 0;
+       if (veh->last_turn > -last_turn_dec) veh->last_turn = 0;
       } else if (veh->last_turn > 0) {
        veh->last_turn -= last_turn_dec;
-       if (veh->last_turn < last_turn_dec)
-        veh->last_turn = 0;
+       if (veh->last_turn < last_turn_dec) veh->last_turn = 0;
       }
       int slowdown = veh->skidding? 200 : 20; // mph lost per tile when coasting
       float kslw = (0.1 + veh->k_dynamics()) / ((0.1) + veh->k_mass());
@@ -1511,8 +1508,7 @@ void map::destroy(game *g, int x, int y, bool makesound)
   ter(x, y) = t_rubble;
  }
 
- if (makesound)
-  g->sound(x, y, 40, "SMASH!!");
+ if (makesound) g->sound(x, y, 40, "SMASH!!");
 }
 
 void map::shoot(game *g, int x, int y, int &dam, bool hit_items, unsigned flags)
@@ -1521,7 +1517,7 @@ void map::shoot(game *g, int x, int y, int &dam, bool hit_items, unsigned flags)
 
  if (has_flag(alarmed, x, y) && !g->event_queued(EVENT_WANTED)) {
   g->sound(g->u.posx, g->u.posy, 30, "An alarm sounds!");
-  g->add_event(EVENT_WANTED, int(g->turn) + 300, 0, g->lev.x, g->lev.y);
+  g->add_event(EVENT_WANTED, int(messages.turn) + 300, 0, g->lev.x, g->lev.y);
  }
 
  int vpart;
@@ -1945,7 +1941,7 @@ void map::process_active_items_in_submap(game *g, int nonant)
      } else { 
       const it_tool* const tmp = dynamic_cast<const it_tool*>(items[n].type);
       (*tmp->use)(g, &(g->u), &(items[n]), true);
-      if (tmp->turns_per_charge > 0 && int(g->turn) % tmp->turns_per_charge ==0)
+      if (tmp->turns_per_charge > 0 && int(messages.turn) % tmp->turns_per_charge ==0)
        items[n].charges--;
       if (items[n].charges <= 0) {
        (*tmp->use)(g, &(g->u), &(items[n]), false);
@@ -2085,7 +2081,7 @@ void map::disarm_trap(game *g, int x, int y)
  while ((rng(5, 20) < g->u.per_cur || rng(1, 20) < g->u.dex_cur) && roll < 50)
   roll++;
  if (roll >= diff) {
-  g->add_msg("You disarm the trap!");
+  messages.add("You disarm the trap!");
   for (const auto item_id : tr->components) {
    if (item_id != itm_null) add_item(x, y, item::types[item_id], 0);
   }
@@ -2093,11 +2089,11 @@ void map::disarm_trap(game *g, int x, int y)
   if(diff > 1.25*g->u.sklevel[sk_traps]) // failure might have set off trap
    g->u.practice(sk_traps, 1.5*(diff - g->u.sklevel[sk_traps]));
  } else if (roll >= diff * .8) {
-  g->add_msg("You fail to disarm the trap.");
+  messages.add("You fail to disarm the trap.");
   if(diff > 1.25*g->u.sklevel[sk_traps])
    g->u.practice(sk_traps, 1.5*(diff - g->u.sklevel[sk_traps]));
  } else {
-  g->add_msg("You fail to disarm the trap, and you set it off!");
+  messages.add("You fail to disarm the trap, and you set it off!");
   (*tr->act)(g, x, y);
   if(diff - roll <= 6)
    // Give xp for failing, but not if we failed terribly (in which
@@ -2707,13 +2703,10 @@ bool map::loadn(game *g, int worldx, int worldy, int gridx, int gridy)
 //  squares divisible by 2.
   int newmapx = worldx + gridx - ((worldx + gridx) % 2);
   int newmapy = worldy + gridy - ((worldy + gridy) % 2);
-  if (worldx + gridx < 0)
-   newmapx = worldx + gridx;
-  if (worldy + gridy < 0)
-   newmapy = worldy + gridy;
-  if (worldx + gridx < 0)
-   newmapx = worldx + gridx;
-  tmp_map.generate(g, &(g->cur_om), newmapx, newmapy, int(g->turn));
+  if (worldx + gridx < 0) newmapx = worldx + gridx;
+  if (worldy + gridy < 0) newmapy = worldy + gridy;
+  if (worldx + gridx < 0) newmapx = worldx + gridx;
+  tmp_map.generate(g, &(g->cur_om), newmapx, newmapy, int(messages.turn));
   return false;
  }
  return true;

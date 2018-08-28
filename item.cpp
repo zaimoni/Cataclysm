@@ -1,5 +1,7 @@
 #include "item.h"
 #include "game.h"
+#include "recent_msg.h"
+
 #include <sstream>
 
 bool is_flammable(material m);
@@ -512,7 +514,7 @@ std::string item::tname(game *g) const
  const it_comest* food = NULL;
  if (is_food()) food = dynamic_cast<const it_comest*>(type);
  else if (is_food_container()) food = dynamic_cast<const it_comest*>(contents[0].type);
- if (food != NULL && g != NULL && food->spoils != 0 && int(g->turn) - bday > food->spoils * 600)
+ if (food != NULL && g != NULL && food->spoils != 0 && int(messages.turn) - bday > food->spoils * 600)
   ret << " (rotten)";
 
  if (owned > 0) ret << " (owned)";
@@ -641,7 +643,7 @@ bool item::rotten(game *g)
 {
  if (!is_food() || g == NULL) return false;
  const it_comest* const food = dynamic_cast<const it_comest*>(type);
- return (food->spoils != 0 && int(g->turn) - bday > food->spoils * 600);
+ return (food->spoils != 0 && int(messages.turn) - bday > food->spoils * 600);
 }
 
 bool item::goes_bad()

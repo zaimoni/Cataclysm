@@ -225,6 +225,9 @@
     <ClInclude Include="keymap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="recent_msg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -426,6 +429,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="saveload.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="recent_msg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

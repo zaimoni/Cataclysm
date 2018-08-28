@@ -3,6 +3,8 @@
 #include "monster.h"
 #include "overmap.h"
 #include "output.h"
+#include "recent_msg.h"
+
 #include <fstream>
 #include <sstream>
 
@@ -234,14 +236,11 @@ void computer::activate_function(game *g, computer_action action)
          for (int i = 0; i < g->m.i_at(x1, y1).size(); i++) {
           item *it = &(g->m.i_at(x1, y1)[i]);
           if (it->is_container() && it->contents.empty()) {
-           it->put_in( item(item::types[itm_sewage], g->turn) );
+           it->put_in( item(item::types[itm_sewage], messages.turn) );
            found_item = true;
           }
          }
-         if (!found_item) {
-          item sewage(item::types[itm_sewage], g->turn);
-          g->m.add_item(x1, y1, sewage);
-         }
+         if (!found_item) g->m.add_item(x1, y1, item(item::types[itm_sewage], messages.turn));
         }
        }
       }
@@ -400,14 +399,12 @@ void computer::activate_function(game *g, computer_action action)
 // Figure out where the glass wall is...
    int wall_spot = 0;
    for (int i = g->u.posx; i < g->u.posx + SEEX * 2 && wall_spot == 0; i++) {
-    if (g->m.ter(i, 10) == t_wall_glass_v)
-     wall_spot = i;
+    if (g->m.ter(i, 10) == t_wall_glass_v) wall_spot = i;
    }
 // ...and put radioactive to the right of it
    for (int i = wall_spot + 1; i < SEEX * 2 - 1; i++) {
     for (int j = 1; j < SEEY * 2 - 1; j++) {
-     if (one_in(3))
-      g->m.add_field(NULL, i, j, fd_nuke_gas, 3);
+     if (one_in(3)) g->m.add_field(NULL, i, j, fd_nuke_gas, 3);
     }
    }
 // For each level between here and the surface, remove the missile
@@ -417,7 +414,7 @@ void computer::activate_function(game *g, computer_action action)
     tinymap tmpmap;
     tmpmap.load(g, g->lev.x, g->lev.y);
     tmpmap.translate(t_missile, t_hole);
-    tmpmap.save(&tmp_om, g->turn, g->lev.x, g->lev.y);
+    tmpmap.save(&tmp_om, messages.turn, g->lev.x, g->lev.y);
    }
    g->cur_om = tmp_om;
    for (int x = target.x - 2; x <= target.x + 2; x++) {
@@ -546,9 +543,8 @@ INITIATING STANDARD TREMOR TEST...");
    break;
 
   case COMPACT_AMIGARA_START:
-   g->add_event(EVENT_AMIGARA, int(g->turn) + 10, 0, 0, 0);
-   if (!g->u.has_artifact_with(AEP_PSYSHIELD))
-    g->u.add_disease(DI_AMIGARA, 20, g);
+   g->add_event(EVENT_AMIGARA, int(messages.turn) + 10, 0, 0, 0);
+   if (!g->u.has_artifact_with(AEP_PSYSHIELD)) g->u.add_disease(DI_AMIGARA, 20, g);
    break;
 
   case COMPACT_DOWNLOAD_SOFTWARE:
@@ -631,8 +627,7 @@ void computer::activate_failure(game *g, computer_failure fail)
   case COMPFAIL_SHUTDOWN:
    for (int x = 0; x < SEEX * MAPSIZE; x++) {
     for (int y = 0; y < SEEY * MAPSIZE; y++) {
-     if (g->m.has_flag(console, x, y))
-      g->m.ter(x, y) = t_console_broken;
+     if (g->m.has_flag(console, x, y)) g->m.ter(x, y) = t_console_broken;
     }
    }
    break;
@@ -640,7 +635,7 @@ void computer::activate_failure(game *g, computer_failure fail)
   case COMPFAIL_ALARM:
    g->sound(g->u.posx, g->u.posy, 60, "An alarm sounds!");
    if (g->lev.z > 0 && !g->event_queued(EVENT_WANTED))
-    g->add_event(EVENT_WANTED, int(g->turn) + 300, 0, g->lev.x, g->lev.y);
+    g->add_event(EVENT_WANTED, int(messages.turn) + 300, 0, g->lev.x, g->lev.y);
    break;
 
   case COMPFAIL_MANHACKS: {
@@ -653,7 +648,7 @@ void computer::activate_failure(game *g, computer_failure fail)
      tries++;
     } while (!g->is_empty(mx, my) && tries < 10);
     if (tries != 10) {
-     g->add_msg("Manhacks drop from compartments in the ceiling.");
+     messages.add("Manhacks drop from compartments in the ceiling.");
      monster robot(mtype::types[mon_manhack]);
      robot.spawn(mx, my);
      g->z.push_back(robot);
@@ -671,7 +666,7 @@ void computer::activate_failure(game *g, computer_failure fail)
      tries++;
     } while (!g->is_empty(mx, my) && tries < 10);
     if (tries != 10) {
-     g->add_msg("Secubots emerge from compartments in the floor.");
+     messages.add("Secubots emerge from compartments in the floor.");
      monster robot(mtype::types[mon_secubot]);
      robot.spawn(mx, my);
      g->z.push_back(robot);
@@ -680,12 +675,12 @@ void computer::activate_failure(game *g, computer_failure fail)
   } break;
 
   case COMPFAIL_DAMAGE:
-   g->add_msg("The console electrocutes you!");
+   messages.add("The console electrocutes you!");
    g->u.hurtall(rng(1, 10));
    break;
 
   case COMPFAIL_PUMP_EXPLODE:
-   g->add_msg("The pump explodes!");
+   messages.add("The pump explodes!");
    for (int x = 0; x < SEEX * MAPSIZE; x++) {
     for (int y = 0; y < SEEY * MAPSIZE; y++) {
      if (g->m.ter(x, y) == t_sewage_pump) {
@@ -697,7 +692,7 @@ void computer::activate_failure(game *g, computer_failure fail)
    break;
 
   case COMPFAIL_PUMP_LEAK:
-   g->add_msg("Sewage leaks!");
+   messages.add("Sewage leaks!");
    for (int x = 0; x < SEEX * MAPSIZE; x++) {
     for (int y = 0; y < SEEY * MAPSIZE; y++) {
      if (g->m.ter(x, y) == t_sewage_pump) {
@@ -705,17 +700,12 @@ void computer::activate_failure(game *g, computer_failure fail)
       int leak_size = rng(4, 10);
       for (int i = 0; i < leak_size; i++) {
        std::vector<point> next_move;
-       if (g->m.move_cost(p.x, p.y - 1) > 0)
-        next_move.push_back( point(p.x, p.y - 1) );
-       if (g->m.move_cost(p.x + 1, p.y) > 0)
-        next_move.push_back( point(p.x + 1, p.y) );
-       if (g->m.move_cost(p.x, p.y + 1) > 0)
-        next_move.push_back( point(p.x, p.y + 1) );
-       if (g->m.move_cost(p.x - 1, p.y) > 0)
-        next_move.push_back( point(p.x - 1, p.y) );
+       if (g->m.move_cost(p.x, p.y - 1) > 0) next_move.push_back( point(p.x, p.y - 1) );
+       if (g->m.move_cost(p.x + 1, p.y) > 0) next_move.push_back( point(p.x + 1, p.y) );
+       if (g->m.move_cost(p.x, p.y + 1) > 0) next_move.push_back( point(p.x, p.y + 1) );
+       if (g->m.move_cost(p.x - 1, p.y) > 0) next_move.push_back( point(p.x - 1, p.y) );
 
-       if (next_move.empty())
-        i = leak_size;
+       if (next_move.empty()) i = leak_size;
        else {
         p = next_move[rng(0, next_move.size() - 1)];
         g->m.ter(p.x, p.y) = t_sewage;
@@ -727,7 +717,7 @@ void computer::activate_failure(game *g, computer_failure fail)
    break;
 
   case COMPFAIL_AMIGARA:
-   g->add_event(EVENT_AMIGARA, int(g->turn) + 5, 0, 0, 0);
+   g->add_event(EVENT_AMIGARA, int(messages.turn) + 5, 0, 0, 0);
    g->u.add_disease(DI_AMIGARA, 20, g);
    g->explosion(rng(0, SEEX * MAPSIZE), rng(0, SEEY * MAPSIZE), 10, 10, false);
    g->explosion(rng(0, SEEX * MAPSIZE), rng(0, SEEY * MAPSIZE), 10, 10, false);

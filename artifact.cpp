@@ -3,6 +3,7 @@
 #include "game.h"
 #include "artifact.h"
 #include "artifactdata.h"
+#include "recent_msg.h"
 
 std::vector<art_effect_passive> fill_good_passive();
 std::vector<art_effect_passive> fill_bad_passive();
@@ -424,24 +425,24 @@ void game::process_artifact(item *it, player *p, bool wielded)
   if (it->charges < tool->max_charges) {
    switch (tool->charge_type) {
     case ARTC_TIME:
-     if (turn.second == 0 && turn.minute == 0) // Once per hour
+     if (messages.turn.second == 0 && messages.turn.minute == 0) // Once per hour
       it->charges++;
      break;
     case ARTC_SOLAR:
-     if (turn.second == 0 && turn.minute % 10 == 0 &&
+     if (messages.turn.second == 0 && messages.turn.minute % 10 == 0 &&
          is_in_sunlight(p->posx, p->posy))
       it->charges++;
      break;
     case ARTC_PAIN:
-     if (turn.second == 0) {
-      add_msg("You suddenly feel sharp pain for no reason.");
+     if (messages.turn.second == 0) {
+      messages.add("You suddenly feel sharp pain for no reason.");
       p->pain += 3 * rng(1, 3);
       it->charges++;
      }
      break;
     case ARTC_HP:
-     if (turn.second == 0) {
-      add_msg("You feel your body decaying.");
+     if (messages.turn.second == 0) {
+      messages.add("You feel your body decaying.");
       p->hurtall(1);
       it->charges++;
      }
@@ -474,15 +475,14 @@ void game::process_artifact(item *it, player *p, bool wielded)
    break;
 
   case AEP_IODINE:
-   if (p->radiation > 0)
-    p->radiation--;
+   if (p->radiation > 0) p->radiation--;
    break;
 
   case AEP_SMOKE:
    if (one_in(10)) {
     int x = p->posx + rng(-1, 1), y = p->posy + rng(-1, 1);
     if (m.add_field(this, x, y, fd_smoke, rng(1, 3)))
-     add_msg("The %s emits some smoke.", it->tname().c_str());
+     messages.add("The %s emits some smoke.", it->tname().c_str());
    }
    break;
 
@@ -508,15 +508,14 @@ void game::process_artifact(item *it, player *p, bool wielded)
    break;
 
   case AEP_THIRST:
-   if (one_in(120))
-    p->thirst++;
+   if (one_in(120)) p->thirst++;
    break;
 
   case AEP_EVIL:
    if (one_in(150)) { // Once every 15 minutes, on average
     p->add_disease(DI_EVIL, 300, this);
     if (!wielded && !it->is_armor())
-     add_msg("You have an urge to %s the %s.",
+     messages.add("You have an urge to %s the %s.",
              (it->is_armor() ? "wear" : "wield"), it->tname().c_str());
    }
    break;
@@ -525,8 +524,7 @@ void game::process_artifact(item *it, player *p, bool wielded)
    break; // Handled in player::suffer()
 
   case AEP_RADIOACTIVE:
-   if (one_in(4))
-    p->radiation++;
+   if (one_in(4)) p->radiation++;
    break;
 
   case AEP_STR_DOWN:
@@ -558,7 +556,7 @@ void game::process_artifact(item *it, player *p, bool wielded)
  }
 }
 
-void game::add_artifact_messages(std::vector<art_effect_passive> effects)
+void game::add_artifact_messages(const std::vector<art_effect_passive>& effects)
 {
  int net_str = 0, net_dex = 0, net_per = 0, net_int = 0, net_speed = 0;
  for (int i = 0; i < effects.size(); i++) {
@@ -587,75 +585,75 @@ void game::add_artifact_messages(std::vector<art_effect_passive> effects)
     break; // No message
 
    case AEP_SNAKES:
-    add_msg("Your skin feels slithery.");
+    messages.add("Your skin feels slithery.");
     break;
 
    case AEP_INVISIBLE:
-    add_msg("You fade into invisibility!");
+    messages.add("You fade into invisibility!");
     break;
 
    case AEP_CLAIRVOYANCE:
-    add_msg("You can see through walls!");
+    messages.add("You can see through walls!");
     break;
 
    case AEP_STEALTH:
-    add_msg("Your steps stop making noise.");
+    messages.add("Your steps stop making noise.");
     break;
 
    case AEP_GLOW:
-    add_msg("A glow of light forms around you.");
+    messages.add("A glow of light forms around you.");
     break;
 
    case AEP_PSYSHIELD:
-    add_msg("Your mental state feels protected.");
+    messages.add("Your mental state feels protected.");
     break;
 
    case AEP_RESIST_ELECTRICITY:
-    add_msg("You feel insulated.");
+    messages.add("You feel insulated.");
     break;
 
    case AEP_CARRY_MORE:
-    add_msg("Your back feels strengthened.");
+    messages.add("Your back feels strengthened.");
     break;
 
    case AEP_HUNGER:
-    add_msg("You feel hungry.");
+    messages.add("You feel hungry.");
     break;
 
    case AEP_THIRST:
-    add_msg("You feel thirsty.");
+    messages.add("You feel thirsty.");
     break;
 
    case AEP_EVIL:
-    add_msg("You feel an evil presence...");
+    messages.add("You feel an evil presence...");
     break;
 
    case AEP_SCHIZO:
-    add_msg("You feel a tickle of insanity.");
+    messages.add("You feel a tickle of insanity.");
     break;
 
    case AEP_RADIOACTIVE:
-    add_msg("Your skin prickles with radiation.");
+    messages.add("Your skin prickles with radiation.");
     break;
 
    case AEP_MUTAGENIC:
-    add_msg("You feel your genetic makeup degrading.");
+    messages.add("You feel your genetic makeup degrading.");
     break;
 
    case AEP_ATTENTION:
-    add_msg("You feel an otherworldly attention upon you...");
+    messages.add("You feel an otherworldly attention upon you...");
     break;
 
    case AEP_FORCE_TELEPORT:
-    add_msg("You feel a force pulling you inwards.");
+    messages.add("You feel a force pulling you inwards.");
     break;
 
    case AEP_MOVEMENT_NOISE:
-    add_msg("You hear a rattling noise coming from inside yourself.");
+    messages.add("You hear a rattling noise coming from inside yourself.");
     break;
 
    case AEP_BAD_WEATHER:
-    add_msg("You feel storms coming.");
+    messages.add("You feel storms coming.");
     break;
   }
  }
@@ -671,8 +669,8 @@ void game::add_artifact_messages(std::vector<art_effect_passive> effects)
   stat_info << "Per " << (net_per > 0 ? "+" : "") << net_per << "! ";
 
  if (stat_info.str().length() > 0)
-  add_msg(stat_info.str().c_str());
+  messages.add(stat_info.str().c_str());
 
  if (net_speed != 0)
-  add_msg("Speed %s%d", (net_speed > 0 ? "+" : ""), net_speed);
+  messages.add("Speed %s%d", (net_speed > 0 ? "+" : ""), net_speed);
 }

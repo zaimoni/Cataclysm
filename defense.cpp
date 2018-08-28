@@ -3,6 +3,7 @@
 #include "keypress.h"
 #include "itype.h"
 #include "mtype.h"
+#include "recent_msg.h"
 #include "setvector.h"
 #include <sstream>
 
@@ -50,10 +51,9 @@ defense_game::defense_game()
 
 bool defense_game::init(game *g)
 {
- g->turn = HOURS(12); // Start at noon
+ messages.turn = HOURS(12); // Start at noon
  g->temperature = 65;
- if (!g->u.create(g, PLTYPE_CUSTOM))
-  return false;
+ if (!g->u.create(g, PLTYPE_CUSTOM)) return false;
  g->u.str_cur = g->u.str_max;
  g->u.per_cur = g->u.per_max;
  g->u.int_cur = g->u.int_max;
@@ -84,13 +84,10 @@ bool defense_game::init(game *g)
 
 void defense_game::per_turn(game *g)
 {
- if (!thirst)
-  g->u.thirst = 0;
- if (!hunger)
-  g->u.hunger = 0;
- if (!sleep)
-  g->u.fatigue = 0;
- if (int(g->turn) % (time_between_waves * 10) == 0) {
+ if (!thirst) g->u.thirst = 0;
+ if (!hunger) g->u.hunger = 0;
+ if (!sleep) g->u.fatigue = 0;
+ if (int(messages.turn) % (time_between_waves * 10) == 0) {
   current_wave++;
   if (current_wave > 1 && current_wave % waves_between_caravans == 0) {
    popup("A caravan approaches!  Press spacebar...");
@@ -103,11 +100,11 @@ void defense_game::per_turn(game *g)
 void defense_game::pre_action(game *g, action_id &act)
 {
  if (act == ACTION_SLEEP && !sleep) {
-  g->add_msg("You don't need to sleep!");
+  messages.add("You don't need to sleep!");
   act = ACTION_NULL;
  }
  if (act == ACTION_SAVE) {
-  g->add_msg("You cannot save in defense mode!");
+  messages.add("You cannot save in defense mode!");
   act = ACTION_NULL;
  }
 
@@ -128,7 +125,7 @@ void defense_game::pre_action(game *g, action_id &act)
 	 || (act == ACTION_MOVE_NW &&
 	     (   (g->u.posy == SEEY * int(MAPSIZE / 2) && g->lev.y <=  93)
 		  || (g->u.posx == SEEX * int(MAPSIZE / 2) && g->lev.x <=  93)))) {
-  g->add_msg("You cannot leave the %s behind!", defense_location_name(location).c_str());
+  messages.add("You cannot leave the %s behind!", defense_location_name(location).c_str());
   act = ACTION_NULL;
  }
 }
@@ -234,10 +231,10 @@ void defense_game::init_map(game *g)
    mx -= mx % 2;
    my -= my % 2;
    tinymap tm;
-   tm.generate(g, &(g->cur_om), mx, my, int(g->turn));
+   tm.generate(g, &(g->cur_om), mx, my, int(messages.turn));
    tm.clear_spawns();
    tm.clear_traps();
-   tm.save(&g->cur_om, int(g->turn), mx, my);
+   tm.save(&g->cur_om, int(messages.turn), mx, my);
   }
  }
 
@@ -974,7 +971,7 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
   g->u.cash -= total_price;
   bool dropped_some = false;
   for (int i = 0; i < items[0].size(); i++) {
-   item tmp(item::types[ items[0][i] ], g->turn);
+   item tmp(item::types[ items[0][i] ], messages.turn);
    tmp = tmp.in_its_container();
    for (int j = 0; j < item_count[0][i]; j++) {
     if (g->u.volume_carried() + tmp.volume() <= g->u.volume_capacity() &&
@@ -987,8 +984,7 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
     }
    }
   }
-  if (dropped_some)
-   g->add_msg("You drop some items.");
+  if (dropped_some) messages.add("You drop some items.");
  }
 }
 
@@ -1177,7 +1173,7 @@ int caravan_price(player &u, int price)
 
 void defense_game::spawn_wave(game *g)
 {
- g->add_msg("********");
+ messages.add("********");
  int diff = initial_difficulty + current_wave * wave_difficulty;
  bool themed_wave = one_in(SPECIAL_WAVE_CHANCE); // All a single monster type
  g->u.cash += cash_per_wave + (current_wave - 1) * cash_increase;
@@ -1188,29 +1184,27 @@ void defense_game::spawn_wave(game *g)
   while(0 < i--) {
 	if (mtype::types[valid[i]]->difficulty > diff) valid.erase(valid.begin() + i);
   }
-  if (valid.size() == 0) {
-   g->add_msg("Welcome to Wave %d!", current_wave);
-   g->add_msg("********");
+  if (valid.empty()) {
+   messages.add("Welcome to Wave %d!", current_wave);
+   messages.add("********");
    return;
   }
-  mtype *type = mtype::types[valid[rng(0, valid.size() - 1)]];
+  mtype * const type = mtype::types[valid[rng(0, valid.size() - 1)]];
   if (themed_wave) {
    int num = diff / type->difficulty;
    if (num >= SPECIAL_WAVE_MIN) {
 // TODO: Do we want a special message here?
-    for (int i = 0; i < num; i++)
-     spawn_wave_monster(g, type);
-    g->add_msg( special_wave_message(type->name).c_str() );
-    g->add_msg("********");
+    for (int i = 0; i < num; i++) spawn_wave_monster(g, type);
+	messages.add( special_wave_message(type->name).c_str() );
+	messages.add("********");
     return;
-   } else
-    themed_wave = false; // No partially-themed waves
+   } else themed_wave = false; // No partially-themed waves
   }
   diff -= type->difficulty;
   spawn_wave_monster(g, type);
  }
- g->add_msg("Welcome to Wave %d!", current_wave);
- g->add_msg("********");
+ messages.add("Welcome to Wave %d!", current_wave);
+ messages.add("********");
 }
 
 std::vector<mon_id> defense_game::pick_monster_wave(game *g)
