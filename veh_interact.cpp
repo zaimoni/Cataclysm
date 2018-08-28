@@ -444,7 +444,7 @@ void veh_interact::move_cursor (int dx, int dy)
                 ptank = p;
         }
     }
-    has_fuel = ptank >= 0? _g->pl_refill_vehicle(*veh, ptank, true) : false;
+    has_fuel = (ptank >= 0) ? veh->refill(_g->u, ptank, true) : false;
     werase (w_msg);
     wrefresh (w_msg);
     display_mode (' ');
@@ -635,9 +635,9 @@ void complete_vehicle (game *g)
         g->u.practice (sk_mechanics, (vpart_info::list[part].difficulty + dd) * 5 + 20);
         break;
     case 'f':
-        if (!g->pl_refill_vehicle(*veh, part, true))
+        if (!veh->refill(g->u, part, true))
             debugmsg ("complete_vehicle refill broken");
-        g->pl_refill_vehicle(*veh, part);        
+        veh->refill(g->u, part);
         break;
     case 'o':
 		for (const auto& it : veh->parts[part].items)

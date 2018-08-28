@@ -585,7 +585,7 @@ int vehicle::total_power (bool fueled)
     return pwr;
 }
 
-int vehicle::solar_power ()
+int vehicle::solar_power() const
 {
     int pwr = 0;
     for (int p = 0; p < parts.size(); p++)
@@ -1291,17 +1291,11 @@ void vehicle::gain_moves (int mp)
             thrust (cruise_velocity > velocity? 1 : -1);
     }
 
-    if (g->is_in_sunlight(global_x(), global_y()))
-    {
-        int spw = solar_power ();
-        if (spw)
-        {
+    if (g->is_in_sunlight(global_x(), global_y())) {
+        if (const int spw = solar_power()) {
             int fl = spw / 100;
-            int prob = spw % 100;
-            if (rng (0, 100) <= prob)
-                fl++;
-            if (fl)
-                refill (AT_BATT, fl);
+            if (rng (0, 100) <= (spw % 100)) fl++;
+            if (fl) refill (AT_BATT, fl);
         }
     }
     // check for smoking parts
@@ -1549,6 +1543,96 @@ void vehicle::leak_fuel (int p)
                 }
     }
     parts[p].amount = 0;
+}
+
+bool vehicle::refill(player& u, const int part, const bool test)
+{
+    if (!part_flag(part, vpf_fuel_tank)) return false;
+	auto& p_info = part_info(part);
+	const int ftype = p_info.fuel_type;
+
+    int i_itm = -1;
+    item *p_itm = 0;
+    int min_charges = -1;
+    bool i_cont = false;
+
+    itype_id itid = default_ammo((ammotype)ftype);
+    if (u.weapon.is_container() && u.weapon.contents.size() > 0 && u.weapon.contents[0].type->id == itid)
+    {
+        i_itm = -2;
+        p_itm = &u.weapon.contents[0];
+        min_charges = u.weapon.contents[0].charges;
+        i_cont = true;
+    } else if (u.weapon.type->id == itid)
+    {
+        i_itm = -2;
+        p_itm = &u.weapon;
+        min_charges = u.weapon.charges;
+    } else
+     for (int i = 0; i < u.inv.size(); i++) {
+        item *itm = &u.inv[i];
+        bool cont = false;
+        if (itm->is_container() && itm->contents.size() > 0)
+        {
+            cont = true;
+            itm = &(itm->contents[0]);
+        }
+        if (itm->type->id != itid) continue;
+        if (i_itm < 0 || min_charges > itm->charges)
+        {
+            i_itm = i;
+            p_itm = itm;
+            i_cont = cont;
+            min_charges = itm->charges;
+        }
+     }
+
+    if (i_itm == -1) return false;
+    else if (test) return true;
+
+    int fuel_per_charge = 1;
+    switch (ftype)
+    {
+    case AT_PLUT:
+        fuel_per_charge = 1000;
+        break;
+    case AT_PLASMA:
+        fuel_per_charge = 100;
+        break;
+    default:;
+    }
+
+	const int max_fuel = p_info.size;
+	auto& v_part = parts[part];
+    int dch = (max_fuel - v_part.amount) / fuel_per_charge;
+    if (dch < 1) dch = 1;
+    const bool rem_itm = min_charges <= dch;
+    const int used_charges = rem_itm? min_charges : dch;
+    if (max_fuel > (v_part.amount += used_charges * fuel_per_charge)) v_part.amount = max_fuel;
+
+	messages.add("You %s %s's %s%s.", ftype == AT_BATT? "recharge" : "refill", name.c_str(),	// XXX \todo augment to handle NPCs
+             ftype == AT_BATT? "battery" : (ftype == AT_PLUT? "reactor" : "fuel tank"),
+             v_part.amount == max_fuel? " to its maximum" : "");
+
+    p_itm->charges -= used_charges;
+    if (rem_itm)
+    {
+        if (i_itm == -2)
+        {
+            if (i_cont)
+                u.weapon.contents.erase (u.weapon.contents.begin());
+            else
+                u.remove_weapon ();
+        }
+        else
+        {
+            if (i_cont)
+                u.inv[i_itm].contents.erase (u.inv[i_itm].contents.begin());
+            else
+                u.inv.remove_item (i_itm);
+        }
+    }
+	return true;
 }
 
 void vehicle::fire_turret (int p, bool burst)

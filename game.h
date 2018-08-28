@@ -72,7 +72,6 @@ class game
 // Move the player vertically, if (force) then they fell
   void vertical_move(int z, bool force);
   void use_computer(int x, int y);
-  bool pl_refill_vehicle (vehicle &veh, int part, bool test=false);
   void resonance_cascade(int x, int y);
   void emp_blast(int x, int y);
   int  npc_at(int x, int y);	// Index of the npc at (x, y); -1 for none

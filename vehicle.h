@@ -193,6 +193,8 @@ public:
     // returns amount of leftover fuel
     int refill (int ftype, int amount);
 
+	bool refill(player& u, int part, bool test=false);
+
 // vehicle's fuel type name
     std::string fuel_name(int ftype);
 
@@ -209,7 +211,7 @@ public:
     int total_power (bool fueled = true);
 
 // Get combined power of solar panels
-    int solar_power ();
+    int solar_power () const;
     
 // Get acceleration gained by combined power of all engines. If fueled == true, then only engines which
 // vehicle have fuel for are accounted
