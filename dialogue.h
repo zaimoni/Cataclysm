@@ -29,41 +29,41 @@ struct dialogue {
 
 struct talk_function
 {
- void nothing			(game *g, npc *p) {};
- void assign_mission		(game *g, npc *p);
- void mission_success		(game *g, npc *p);
- void mission_failure		(game *g, npc *p);
- void clear_mission		(game *g, npc *p);
- void mission_reward		(game *g, npc *p);
- void mission_favor		(game *g, npc *p);
- void give_equipment		(game *g, npc *p);
- void start_trade		(game *g, npc *p);
- void follow			(game *g, npc *p); // p follows u
- void deny_follow		(game *g, npc *p); // p gets DI_ASKED_TO_FOLLOW
- void deny_lead			(game *g, npc *p); // p gets DI_ASKED_TO_LEAD
- void deny_equipment		(game *g, npc *p); // p gets DI_ASKED_FOR_ITEM
- void enslave			(game *g, npc *p) {}; // p becomes slave of u
- void hostile			(game *g, npc *p); // p turns hostile to u
- void flee			(game *g, npc *p);
- void leave			(game *g, npc *p); // p becomes indifferant
+ static void nothing		(game *g, npc *p) {};
+ static void assign_mission	(game *g, npc *p);
+ static void mission_success	(game *g, npc *p);
+ static void mission_failure	(game *g, npc *p);
+ static void clear_mission	(game *g, npc *p);
+ static void mission_reward	(game *g, npc *p);
+ static void mission_favor	(game *g, npc *p);
+ static void give_equipment	(game *g, npc *p);
+ static void start_trade	(game *g, npc *p);
+ static void follow			(game *g, npc *p); // p follows u
+ static void deny_follow	(game *g, npc *p); // p gets DI_ASKED_TO_FOLLOW
+ static void deny_lead		(game *g, npc *p); // p gets DI_ASKED_TO_LEAD
+ static void deny_equipment	(game *g, npc *p); // p gets DI_ASKED_FOR_ITEM
+ static void enslave		(game *g, npc *p) {}; // p becomes slave of u
+ static void hostile		(game *g, npc *p); // p turns hostile to u
+ static void flee			(game *g, npc *p);
+ static void leave			(game *g, npc *p); // p becomes indifferant
 
- void start_mugging		(game *g, npc *p);
- void player_leaving		(game *g, npc *p);
+ static void start_mugging		(game *g, npc *p);
+ static void player_leaving		(game *g, npc *p);
 
- void drop_weapon		(game *g, npc *p);
- void player_weapon_away	(game *g, npc *p);
- void player_weapon_drop	(game *g, npc *p);
+ static void drop_weapon		(game *g, npc *p);
+ static void player_weapon_away	(game *g, npc *p);
+ static void player_weapon_drop	(game *g, npc *p);
 
- void lead_to_safety		(game *g, npc *p);
- void start_training		(game *g, npc *p);
+ static void lead_to_safety		(game *g, npc *p);
+ static void start_training		(game *g, npc *p);
 
- void toggle_use_guns		(game *g, npc *p);
- void toggle_use_grenades	(game *g, npc *p);
- void set_engagement_none	(game *g, npc *p);
- void set_engagement_close	(game *g, npc *p);
- void set_engagement_weak	(game *g, npc *p);
- void set_engagement_hit	(game *g, npc *p);
- void set_engagement_all	(game *g, npc *p);
+ static void toggle_use_guns	(game *g, npc *p);
+ static void toggle_use_grenades	(game *g, npc *p);
+ static void set_engagement_none	(game *g, npc *p);
+ static void set_engagement_close	(game *g, npc *p);
+ static void set_engagement_weak	(game *g, npc *p);
+ static void set_engagement_hit	(game *g, npc *p);
+ static void set_engagement_all	(game *g, npc *p);
 };
 
 enum talk_trial
@@ -85,8 +85,8 @@ struct talk_response
  int tempvalue;		// Used for various stuff
  npc_opinion opinion_success;
  npc_opinion opinion_failure;
- void (talk_function::*effect_success)(game *, npc *);
- void (talk_function::*effect_failure)(game *, npc *);
+ void (*effect_success)(game *, npc *);
+ void (*effect_failure)(game *, npc *);
  talk_topic success;
  talk_topic failure;
 

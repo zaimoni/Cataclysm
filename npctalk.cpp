@@ -1466,7 +1466,7 @@ void parse_tags(std::string &phrase, player *u, npc *me)
  
 talk_topic dialogue::opt(talk_topic topic, game *g)
 {
- static std::string talk_trial_text[NUM_TALK_TRIALS] = { "", "LIE", "PERSUADE", "INTIMIDATE" };	// we probably want the constructor overhead to disable the operator<<(void*) overload
+ static std::string talk_trial_text[NUM_TALK_TRIALS] = { "", "LIE", "PERSUADE", "INTIMIDATE" };	// constructor disables the operator<<(void*) overload
 
  std::string challenge = dynamic_line(topic, g, beta);
  std::vector<talk_response> responses = gen_responses(topic, g, beta);
@@ -1528,13 +1528,8 @@ talk_topic dialogue::opt(talk_topic topic, game *g)
  }
 
  int curline = 23, curhist = 1;
- nc_color col;
  while (curhist <= history.size() && curline > 0) {
-  if (curhist <= hilight_lines)
-   col = c_red;
-  else
-   col = c_dkgray;
-  mvwprintz(win, curline, 1, col, history[history.size() - curhist].c_str());
+  mvwprintz(win, curline, 1, ((curhist <= hilight_lines) ? c_red : c_dkgray), history[history.size() - curhist].c_str());
   curline--;
   curhist++;
  }
@@ -1575,8 +1570,7 @@ talk_topic dialogue::opt(talk_topic topic, game *g)
  } while (!okay);
  history.push_back("");
 
- if (special_talk(ch) != TALK_NONE)
-  return special_talk(ch);
+ if (special_talk(ch) != TALK_NONE) return special_talk(ch);
 
  std::string response_printed = "You: " + responses[ch].text;
  while (response_printed.length() > 40) {
@@ -1588,17 +1582,13 @@ talk_topic dialogue::opt(talk_topic topic, game *g)
  history.push_back(response_printed);
 
  talk_response chosen = responses[ch];
- if (chosen.mission_index != -1)
-  beta->chatbin.mission_selected = chosen.mission_index;
- if (chosen.tempvalue != -1)
-  beta->chatbin.tempvalue = chosen.tempvalue;
+ if (chosen.mission_index != -1) beta->chatbin.mission_selected = chosen.mission_index;
+ if (chosen.tempvalue != -1) beta->chatbin.tempvalue = chosen.tempvalue;
 
- talk_function effect;
- if (chosen.trial == TALK_TRIAL_NONE ||
-     rng(0, 99) < trial_chance(chosen, alpha, beta)) {
+ if (chosen.trial == TALK_TRIAL_NONE || rng(0, 99) < trial_chance(chosen, alpha, beta)) {
   if (chosen.trial != TALK_TRIAL_NONE)
    alpha->practice(sk_speech, (100 - trial_chance(chosen, alpha, beta)) / 10);
-  (effect.*chosen.effect_success)(g, beta);
+  (chosen.effect_success)(g, beta);
   beta->op_of_u += chosen.opinion_success;
   if (beta->turned_hostile()) {
    beta->make_angry();
@@ -1607,7 +1597,7 @@ talk_topic dialogue::opt(talk_topic topic, game *g)
   return chosen.success;
  } else {
   alpha->practice(sk_speech, (100 - trial_chance(chosen, alpha, beta)) / 7);
-  (effect.*chosen.effect_failure)(g, beta);
+  (chosen.effect_failure)(g, beta);
   beta->op_of_u += chosen.opinion_failure;
   if (beta->turned_hostile()) {
    beta->make_angry();
