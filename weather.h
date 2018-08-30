@@ -25,17 +25,17 @@ enum weather_type {
 
 struct weather_effect
 {
- void none		(game *) {};
- void glare		(game *);
- void wet		(game *);
- void very_wet		(game *);
- void thunder		(game *);
- void lightning		(game *);
- void light_acid	(game *);
- void acid		(game *);
- void flurry		(game *) {};
- void snow		(game *) {};
- void snowstorm		(game *) {};
+ static void none		(game *) {};
+ static void glare		(game *);
+ static void wet		(game *);
+ static void very_wet	(game *);
+ static void thunder	(game *);
+ static void lightning	(game *);
+ static void light_acid	(game *);
+ static void acid		(game *);
+ static void flurry		(game *) {};
+ static void snow		(game *) {};
+ static void snowstorm	(game *) {};
 };
 
 struct weather_datum
@@ -49,7 +49,7 @@ struct weather_datum
  int sight_penalty; // Penalty to max sight range
  int mintime, maxtime; // min/max time it lasts, in minutes
  bool dangerous; // If true, our activity gets interrupted
- void (weather_effect::*effect)(game *);
+ void (*effect)(game *);
 };
 
 #endif // _WEATHER_H_

@@ -670,8 +670,7 @@ bool game::do_turn()
  u.suffer(this);
 
  if (lev.z >= 0) {
-  weather_effect weffect;
-  (weffect.*(weather_datum::data[weather].effect))(this);
+  (weather_datum::data[weather].effect)(this);
   check_warmth();
  }
 
