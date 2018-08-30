@@ -75,10 +75,6 @@ enum talk_trial
  NUM_TALK_TRIALS
 };
 
-std::string talk_trial_text[NUM_TALK_TRIALS] = {
-"", "LIE", "PERSUADE", "INTIMIDATE"
-};
-
 struct talk_response
 {
  std::string text;

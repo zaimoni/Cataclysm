@@ -1466,6 +1466,8 @@ void parse_tags(std::string &phrase, player *u, npc *me)
  
 talk_topic dialogue::opt(talk_topic topic, game *g)
 {
+ static std::string talk_trial_text[NUM_TALK_TRIALS] = { "", "LIE", "PERSUADE", "INTIMIDATE" };	// we probably want the constructor overhead to disable the operator<<(void*) overload
+
  std::string challenge = dynamic_line(topic, g, beta);
  std::vector<talk_response> responses = gen_responses(topic, g, beta);
 // Put quotes around challenge (unless it's an action)
