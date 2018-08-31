@@ -63,9 +63,8 @@ void npc::talk_to_u(game *g)
   messages.add("%s is hostile!", name.c_str());
   return;
  }
- dialogue d;
- d.alpha = &g->u;
- d.beta = this;
+ {	// scoping brace
+ dialogue d(&g->u,this);
 
  d.topic_stack.push_back(chatbin.first_topic);
 
@@ -127,7 +126,7 @@ void npc::talk_to_u(game *g)
   else if (next != TALK_NONE)
    d.topic_stack.push_back(next);
  } while (!d.done);
- delwin(d.win);
+ }	// trigger dialogue d destructor
  g->refresh_all();
 }
 

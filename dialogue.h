@@ -18,13 +18,17 @@ struct dialogue {
  int opt(std::string challenge, ...);
  talk_topic opt(talk_topic topic, game *g);
 
- dialogue()
- {
-  alpha = NULL;
-  beta = NULL;
-  win = NULL;
-  done = false;
- }
+ dialogue(player* _alpha, npc* _beta)
+ : alpha(_alpha),beta(_beta),win(NULL),done(false) {}
+ ~dialogue() { if (win) { 
+	 delwin(win);
+	 win = NULL;
+ } }
+
+ dialogue(const dialogue& src) = delete;
+ dialogue(dialogue&& src) = delete;
+ dialogue& operator=(const dialogue& src) = delete;
+ dialogue& operator=(dialogue&& src) = delete;
 };
 
 struct talk_function
