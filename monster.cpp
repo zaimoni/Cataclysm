@@ -634,57 +634,42 @@ void monster::die(game *g)
 // If we're a mission monster, update the mission
  if (mission_id != -1) {
   mission_type *misstype = g->find_mission_type(mission_id);
-  if (misstype->goal == MGOAL_FIND_MONSTER)
-   g->fail_mission(mission_id);
-  if (misstype->goal == MGOAL_KILL_MONSTER)
-   g->mission_step_complete(mission_id, 1);
+  if (misstype->goal == MGOAL_FIND_MONSTER) g->fail_mission(mission_id);
+  if (misstype->goal == MGOAL_KILL_MONSTER) g->mission_step_complete(mission_id, 1);
  }
 // Also, perform our death function
- mdeath md;
- (md.*type->dies)(g, this);
+ (type->dies)(g, this);
 // If our species fears seeing one of our own die, process that
  int anger_adjust = 0, morale_adjust = 0;
- for (int i = 0; i < type->anger.size(); i++) {
-  if (type->anger[i] == MTRIG_FRIEND_DIED)
-   anger_adjust += 15;
- }
- for (int i = 0; i < type->placate.size(); i++) {
-  if (type->placate[i] == MTRIG_FRIEND_DIED)
-   anger_adjust -= 15;
- }
- for (int i = 0; i < type->fear.size(); i++) {
-  if (type->fear[i] == MTRIG_FRIEND_DIED)
-   morale_adjust -= 15;
- }
- if (anger_adjust != 0 && morale_adjust != 0) {
+ for (const auto tr : type->anger) if (tr == MTRIG_FRIEND_DIED) anger_adjust += 15;
+ for (const auto tr : type->placate) if (tr == MTRIG_FRIEND_DIED) anger_adjust -= 15;
+ for (const auto tr : type->fear) if (tr == MTRIG_FRIEND_DIED) morale_adjust -= 15;
+ if (anger_adjust != 0 || morale_adjust != 0) {
   int light = g->light_level();
-  for (int i = 0; i < g->z.size(); i++) {
+  for (auto& critter : g->z) {
    int t = 0;
-   if (g->m.sees(g->z[i].pos.x, g->z[i].pos.y, pos.x, pos.y, light, t)) {
-    g->z[i].morale += morale_adjust;
-    g->z[i].anger += anger_adjust;
-   }
+   if (critter.type->species != type->species) continue;
+   if (!g->m.sees(critter.pos.x, critter.pos.y, pos.x, pos.y, light, t)) continue;
+   critter.morale += morale_adjust;
+   critter.anger += anger_adjust;
   }
  }
 }
 
 void monster::add_effect(monster_effect_type effect, int duration)
 {
- for (int i = 0; i < effects.size(); i++) {
-  if (effects[i].type == effect) {
-   effects[i].duration += duration;
+ for (auto& e : effects) {
+  if (e.type == effect) {
+   e.duration += duration;
    return;
   }
  }
  effects.push_back(monster_effect(effect, duration));
 }
 
-bool monster::has_effect(monster_effect_type effect)
+bool monster::has_effect(monster_effect_type effect) const
 {
- for (int i = 0; i < effects.size(); i++) {
-  if (effects[i].type == effect)
-   return true;
- }
+ for (const auto& e : effects) if (e.type == effect) return true;
  return false;
 }
 
@@ -693,7 +678,7 @@ void monster::rem_effect(monster_effect_type effect)
  for (int i = 0; i < effects.size(); i++) {
   if (effects[i].type == effect) {
    effects.erase(effects.begin() + i);
-   i--;
+   i--;	// \todo micro-optimize: return here since add effect guarantees only one effect of any given type?
   }
  }
 }

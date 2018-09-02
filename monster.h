@@ -111,7 +111,7 @@ class monster {
 
 // Other
  void add_effect(monster_effect_type effect, int duration);
- bool has_effect(monster_effect_type effect); // True if we have the effect
+ bool has_effect(monster_effect_type effect) const; // True if we have the effect
  void rem_effect(monster_effect_type effect); // Remove a given effect
  void process_effects(game *g);	// Process long-term effects
  bool make_fungus(game *g);	// Makes this monster into a fungus version

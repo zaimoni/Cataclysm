@@ -11,8 +11,6 @@
 #include "itype.h"
 #include <map>
 
-class mdeath;
-
 enum monster_species {
 species_none = 0,
 species_mammal,
@@ -207,7 +205,7 @@ struct mtype {
  int hp;
 
  unsigned char sp_freq;			// How long sp_attack takes to charge
- void (mdeath::*dies)(game *, monster *); // What happens when this monster dies
+ void (*dies)(game *, monster *); // What happens when this monster dies
  void (mattack::*sp_attack)(game *, monster *); // This monster's special attack
  
 
@@ -248,7 +246,7 @@ struct mtype {
         unsigned char pdodge, unsigned char parmor_bash,
         unsigned char parmor_cut, signed char pitem_chance, int php,
         unsigned char psp_freq,
-        void (mdeath::*pdies)      (game *, monster *),
+        void (*pdies)      (game *, monster *),
         void (mattack::*psp_attack)(game *, monster *),
         std::string pdescription ) { 
   id = pid; 
