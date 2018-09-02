@@ -6,42 +6,42 @@ class game;
 class mattack
 {
  public:
-  void none		(game *g, monster *z) { };
-  void antqueen		(game *g, monster *z);
-  void shriek		(game *g, monster *z);
-  void acid		(game *g, monster *z);
-  void shockstorm	(game *g, monster *z);
-  void boomer		(game *g, monster *z);
-  void resurrect        (game *g, monster *z);
-  void science		(game *g, monster *z);
-  void growplants	(game *g, monster *z);
-  void grow_vine	(game *g, monster *z);
-  void vine		(game *g, monster *z);
-  void spit_sap		(game *g, monster *z);
-  void triffid_heartbeat(game *g, monster *z);
-  void fungus		(game *g, monster *z);
-  void fungus_sprout	(game *g, monster *z);
-  void leap		(game *g, monster *z);
-  void dermatik		(game *g, monster *z);
-  void plant		(game *g, monster *z);
-  void disappear	(game *g, monster *z);
-  void formblob		(game *g, monster *z);
-  void dogthing		(game *g, monster *z);
-  void tentacle		(game *g, monster *z);
-  void vortex		(game *g, monster *z);
-  void gene_sting	(game *g, monster *z);
-  void stare		(game *g, monster *z);
-  void fear_paralyze	(game *g, monster *z);
-  void photograph	(game *g, monster *z);
-  void tazer		(game *g, monster *z);
-  void smg		(game *g, monster *z);
-  void flamethrower	(game *g, monster *z);
-  void copbot		(game *g, monster *z);
-  void multi_robot	(game *g, monster *z); // Pick from tazer, smg, flame
-  void ratking		(game *g, monster *z);
-  void generator	(game *g, monster *z);
-  void upgrade		(game *g, monster *z);
-  void breathe		(game *g, monster *z);
+  static void none		(game *g, monster *z) { };
+  static void antqueen	(game *g, monster *z);
+  static void shriek	(game *g, monster *z);
+  static void acid		(game *g, monster *z);
+  static void shockstorm	(game *g, monster *z);
+  static void boomer		(game *g, monster *z);
+  static void resurrect     (game *g, monster *z);
+  static void science		(game *g, monster *z);
+  static void growplants	(game *g, monster *z);
+  static void grow_vine	(game *g, monster *z);
+  static void vine		(game *g, monster *z);
+  static void spit_sap	(game *g, monster *z);
+  static void triffid_heartbeat(game *g, monster *z);
+  static void fungus		(game *g, monster *z);
+  static void fungus_sprout	(game *g, monster *z);
+  static void leap		(game *g, monster *z);
+  static void dermatik	(game *g, monster *z);
+  static void plant		(game *g, monster *z);
+  static void disappear	(game *g, monster *z);
+  static void formblob	(game *g, monster *z);
+  static void dogthing	(game *g, monster *z);
+  static void tentacle	(game *g, monster *z);
+  static void vortex	(game *g, monster *z);
+  static void gene_sting	(game *g, monster *z);
+  static void stare		(game *g, monster *z);
+  static void fear_paralyze	(game *g, monster *z);
+  static void photograph	(game *g, monster *z);
+  static void tazer		(game *g, monster *z);
+  static void smg		(game *g, monster *z);
+  static void flamethrower	(game *g, monster *z);
+  static void copbot		(game *g, monster *z);
+  static void multi_robot	(game *g, monster *z); // Pick from tazer, smg, flame
+  static void ratking	(game *g, monster *z);
+  static void generator	(game *g, monster *z);
+  static void upgrade	(game *g, monster *z);
+  static void breathe	(game *g, monster *z);
 };
 
 #endif

@@ -151,18 +151,14 @@ void monster::move(game *g)
 {
 // We decrement wandf no matter what.  We'll save our wander_to plans until
 // after we finish out set_dest plans, UNLESS they time out first.
- if (wandf > 0)
-  wandf--;
+ if (wandf > 0) wandf--;
 
 // First, use the special attack, if we can!
- if (sp_timeout > 0)
-  sp_timeout--;
+ if (sp_timeout > 0) sp_timeout--;
  if (sp_timeout == 0 && (friendly == 0 || has_flag(MF_FRIENDLY_SPECIAL))) {
-  mattack ma;
-  (ma.*type->sp_attack)(g, this);
+  (type->sp_attack)(g, this);
  }
- if (moves < 0)
-  return;
+ if (moves < 0) return;
  if (has_flag(MF_IMMOBILE)) {
   moves = 0;
   return;

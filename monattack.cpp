@@ -1134,8 +1134,7 @@ void mattack::copbot(game *g, monster *z)
    g->sound(z->pos.x, z->pos.y, 18, "a police siren, whoop WHOOP");
   return;
  }
- mattack tmp;
- tmp.tazer(g, z);
+ tazer(g, z);
 }
 
 void mattack::multi_robot(game *g, monster *z)
@@ -1152,9 +1151,9 @@ void mattack::multi_robot(game *g, monster *z)
  if (mode == 0) return;	// No attacks were valid!
 
  switch (mode) {
-  case 1: this->tazer(g, z);        break;
-  case 2: this->flamethrower(g, z); break;
-  case 3: this->smg(g, z);          break;
+  case 1: tazer(g, z);        break;
+  case 2: flamethrower(g, z); break;
+  case 3: smg(g, z);          break;
  }
 }
 

@@ -206,7 +206,7 @@ struct mtype {
 
  unsigned char sp_freq;			// How long sp_attack takes to charge
  void (*dies)(game *, monster *); // What happens when this monster dies
- void (mattack::*sp_attack)(game *, monster *); // This monster's special attack
+ void (*sp_attack)(game *, monster *); // This monster's special attack
  
 
  // Default constructor
@@ -247,7 +247,7 @@ struct mtype {
         unsigned char parmor_cut, signed char pitem_chance, int php,
         unsigned char psp_freq,
         void (*pdies)      (game *, monster *),
-        void (mattack::*psp_attack)(game *, monster *),
+        void (*psp_attack)(game *, monster *),
         std::string pdescription ) { 
   id = pid; 
   name = pname; 
