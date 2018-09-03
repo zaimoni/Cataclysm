@@ -136,7 +136,7 @@ class monster {
  int moves, speed;
  int hp;
  int sp_timeout;
- int friendly;
+ int friendly;	// -1: indefinitely friendly; positive: times out
  int anger, morale;
  int faction_id; // If we belong to a faction
  int mission_id; // If we're related to a mission

@@ -74,9 +74,8 @@ class game
   void use_computer(int x, int y);
   void resonance_cascade(int x, int y);
   void emp_blast(int x, int y);
-  int  npc_at(int x, int y);	// Index of the npc at (x, y); -1 for none
- // void build_monmap();		// Caches data for mon_at()
-  int  mon_at(int x, int y);	// Index of the monster at (x, y); -1 for none
+  int  npc_at(int x, int y) const;	// Index of the npc at (x, y); -1 for none
+  int  mon_at(int x, int y) const;	// Index of the monster at (x, y); -1 for none
   bool is_empty(int x, int y);	// True if no PC, no monster, move cost > 0
   bool isBetween(int test, int down, int up);
   bool is_in_sunlight(int x, int y); // Checks outdoors + sunny
@@ -307,7 +306,6 @@ class game
   calendar nextspawn; // The turn on which monsters will spawn next.
   calendar nextweather; // The turn on which weather will shift next.
   overmap *om_hori, *om_vert, *om_diag; // Adjacent overmaps
-  //int monmap[SEEX * MAPSIZE][SEEY * MAPSIZE]; // Temp monster map, for mon_at()
   std::vector<event> events;	        // Game events to be processed
   int kills[num_monsters];	        // Player's kill count
   std::string last_action;		// The keypresses of last turn

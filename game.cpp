@@ -578,7 +578,6 @@ bool game::do_turn()
   return true;
  }
 // Actual stuff
- //build_monmap();
  gamemode->per_turn(this);
  messages.turn.increment();
  process_events();
@@ -3104,7 +3103,6 @@ void game::monmove()
    z[i].made_footstep = false;
    z[i].plan(this);	// Formulate a path to follow
    z[i].move(this);	// Move one square, possibly hit u
-   //build_monmap();
    z[i].process_triggers(this);
    m.mon_in_field(z[i].pos.x, z[i].pos.y, this, &(z[i]));
    if (z[i].hurt(0)) {	// Maybe we died...
@@ -3143,9 +3141,6 @@ void game::monmove()
 	  if (m_cat != mcat_null) cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
 	}
     z[i].dead = true;
-    //z.erase(z.begin()+i);
-    //build_monmap();
-    //i--;
    } else z[i].receive_moves();
   }
  }
@@ -3160,10 +3155,9 @@ void game::monmove()
   else {
    active_npc[i].reset(this);
    active_npc[i].suffer(this);
-   while (!active_npc[i].dead && active_npc[i].moves > 0 && turns < 10) {
+   while (!active_npc[i].dead && active_npc[i].moves > 0 && turns < 10) {	// 10 moves in one turn is lethal; assuming this is a bug intercept
     turns++;
     active_npc[i].move(this);
-    //build_monmap();
    }
    if (turns == 10) {
     messages.add("%s's brain explodes!", active_npc[i].name.c_str());
@@ -3663,7 +3657,7 @@ void game::emp_blast(int x, int y)
 // TODO: Drain NPC energy reserves
 }
 
-int game::npc_at(int x, int y)
+int game::npc_at(int x, int y) const
 {
  for (int i = 0; i < active_npc.size(); i++) {
   if (active_npc[i].posx == x && active_npc[i].posy == y && !active_npc[i].dead)
@@ -3672,24 +3666,11 @@ int game::npc_at(int x, int y)
  return -1;
 }
 
-/*
-void game::build_monmap()
-{
- for (int x = 0; x < SEEX * MAPSIZE; x++) {
-  for (int y = 0; y < SEEY * MAPSIZE; y++)
-   monmap[x][y] = -1;
- }
- for (int i = 0; i < z.size(); i++)
-  monmap[ z[i].posx ][ z[i].posy ] = i;
-}
-*/
-
-int game::mon_at(int x, int y)
+int game::mon_at(int x, int y) const
 {
  for (int i = 0; i < z.size(); i++) {
   if (z[i].pos.x == x && z[i].pos.y == y) {
-   if (z[i].dead) return -1;
-   else return i;
+   return z[i].dead ? -1 : i;
   }
  }
  return -1;
