@@ -2907,8 +2907,7 @@ void player::suffer(game *g)
      break;
     case 7:
      for (i = 0; i < 10; i++) {
-      monster phantasm(mtype::types[mon_hallu_zom + rng(0, 3)]);
-      phantasm.spawn(posx + rng(-10, 10), posy + rng(-10, 10));
+      monster phantasm(mtype::types[mon_hallu_zom + rng(0, 3)], posx + rng(-10, 10), posy + rng(-10, 10));
       if (g->mon_at(phantasm.pos.x, phantasm.pos.y) == -1) g->z.push_back(phantasm);
      }
      break;

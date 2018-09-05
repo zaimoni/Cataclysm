@@ -34,11 +34,9 @@ void event::actualize(game *g) const
     mtype *robot_type = mtype::types[mon_tripod];
     if (faction_id == 0) // The cops!
      robot_type = mtype::types[mon_copbot];
-    monster robot(robot_type);
     int robx = (g->lev.x > map_point.x ? 0 - SEEX * 2 : SEEX * 4),
         roby = (g->lev.y > map_point.y ? 0 - SEEY * 2 : SEEY * 4);
-    robot.spawn(robx, roby);
-    g->z.push_back(robot);
+    g->z.push_back(monster(robot_type, robx, roby));
    }
   } break;
 
@@ -211,11 +209,10 @@ void event::per_turn(game *g)
  switch (type) {
   case EVENT_WANTED: {
    if (g->lev.z >= 0 && one_in(100)) { // About once every 10 minutes
-    monster eyebot(mtype::types[mon_eyebot]);
-    eyebot.faction_id = faction_id;
     point place = g->m.random_outdoor_tile();
     if (place.x == -1 && place.y == -1) return; // We're safely indoors!
-    eyebot.spawn(place.x, place.y);
+    monster eyebot(mtype::types[mon_eyebot], place.x, place.y);
+    eyebot.faction_id = faction_id;
     g->z.push_back(eyebot);
     int t;
     if (g->u_see(place.x, place.y, t))

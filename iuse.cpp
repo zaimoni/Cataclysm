@@ -1358,9 +1358,8 @@ void iuse::can_goo(game *g, player *p, item *it, bool t)
  } else {
   if (g->u_see(goox, gooy, junk))
    messages.add("Living black goo emerges from the canister!");
-  monster goo(mtype::types[mon_blob]);
+  monster goo(mtype::types[mon_blob], goox, gooy);
   goo.friendly = -1;
-  goo.spawn(goox, gooy);
   g->z.push_back(goo);
  }
  tries = 0;

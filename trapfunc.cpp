@@ -588,7 +588,6 @@ void trapfuncm::hum(game *g, monster *z, int x, int y)
 
 void trapfunc::shadow(game *g, int x, int y)
 {
- monster spawned(mtype::types[mon_shadow]);
  int tries = 0, monx, mony, junk;
  do {
   if (one_in(2)) {
@@ -603,8 +602,8 @@ void trapfunc::shadow(game *g, int x, int y)
 
  if (tries < 5) {
   messages.add("A shadow forms nearby.");
+  monster spawned(mtype::types[mon_shadow], monx, mony);
   spawned.sp_timeout = rng(2, 10);
-  spawned.spawn(monx, mony);
   g->z.push_back(spawned);
   g->m.tr_at(x, y) = tr_null;
  }
@@ -624,7 +623,6 @@ void trapfuncm::drain(game *g, monster *z, int x, int y)
 void trapfunc::snake(game *g, int x, int y)
 {
  if (one_in(3)) {
-  monster spawned(mtype::types[mon_shadow_snake]);
   int tries = 0, monx, mony, junk;
   do {
    if (one_in(2)) {
@@ -639,8 +637,7 @@ void trapfunc::snake(game *g, int x, int y)
 
   if (tries < 5) {
    messages.add("A shadowy snake forms nearby.");
-   spawned.spawn(monx, mony);
-   g->z.push_back(spawned);
+   g->z.push_back(monster(mtype::types[mon_shadow_snake], monx, mony));
    g->m.tr_at(x, y) = tr_null;
    return;
   }

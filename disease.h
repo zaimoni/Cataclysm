@@ -505,11 +505,7 @@ void dis_effect(game *g, player &p, disease &dis)
    p.int_cur -= 1;
    p.dex_cur -= 2;
    p.str_cur -= 1;
-   if (one_in(50)) {	// Generate phantasm
-    monster phantasm(mtype::types[mon_hallu_zom + rng(0, 3)]);
-    phantasm.spawn(p.posx + rng(-10, 10), p.posy + rng(-10, 10));
-    g->z.push_back(phantasm);
-   }
+   if (one_in(50)) g->z.push_back(monster(mtype::types[mon_hallu_zom + rng(0, 3)], p.posx + rng(-10, 10), p.posy + rng(-10, 10)));	// Generate phantasm
   }
   break;
 
@@ -578,7 +574,6 @@ void dis_effect(game *g, player &p, disease &dis)
   }
   if (dis.duration > 3600) { // 12 teles
    if (one_in(4000 - int(.25 * (dis.duration - 3600)))) {
-    monster beast(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]]);
     int x, y, tries = 0;
     do {
      x = p.posx + rng(-4, 4);
@@ -588,8 +583,7 @@ void dis_effect(game *g, player &p, disease &dis)
              tries < 10);
     if (tries < 10) {
      if (g->m.move_cost(x, y) == 0) g->m.ter(x, y) = t_rubble;
-     beast.spawn(x, y);
-     g->z.push_back(beast);
+     g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], x, y));
      if (g->u_see(x, y, junk)) {
       g->cancel_activity_query("A monster appears nearby!");
 	  messages.add("A portal opens nearby, and a monster crawls through!");
@@ -628,7 +622,6 @@ void dis_effect(game *g, player &p, disease &dis)
 
  case DI_ATTENTION:
   if (one_in( 100000 / dis.duration ) && one_in( 100000 / dis.duration ) && one_in(250)) {
-   monster beast(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]]);
    int x, y, tries = 0, junk;
    do {
     x = p.posx + rng(-4, 4);
@@ -638,8 +631,7 @@ void dis_effect(game *g, player &p, disease &dis)
             tries < 10);
    if (tries < 10) {
     if (g->m.move_cost(x, y) == 0) g->m.ter(x, y) = t_rubble;
-    beast.spawn(x, y);
-    g->z.push_back(beast);
+    g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], x, y));
     if (g->u_see(x, y, junk)) {
      g->cancel_activity_query("A monster appears nearby!");
      messages.add("A portal opens nearby, and a monster crawls through!");
