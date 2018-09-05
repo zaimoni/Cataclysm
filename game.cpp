@@ -3774,7 +3774,7 @@ void game::open()
  char ch = input();
  last_action += ch;
  point open(get_direction(ch));
- if (open.x != -2 && open.y != -2)
+ if (open.x != -2)
  {
   int vpart;
   vehicle * const veh = m.veh_at(u.posx + open.x, u.posy + open.y, vpart);
@@ -3818,7 +3818,7 @@ void game::close()
  char ch = input();
  last_action += ch;
  point close(get_direction(ch));
- if (-2 == close.x && -2 == close.y) { messages.add("Invalid direction."); return; }
+ if (-2 == close.x) { messages.add("Invalid direction."); return; }
  close.x += u.posx;
  close.y += u.posy;
  {
@@ -3857,7 +3857,7 @@ void game::smash()
   return;
  }
  point smash(get_direction(ch));
- if (smash.x == -2 || smash.y == -2) messages.add("Invalid direction.");
+ if (smash.x == -2) messages.add("Invalid direction.");
  else {
    // TODO: Move this elsewhere.
    if (m.has_flag(alarmed, u.posx + smash.x, u.posy + smash.y) && !event_queued(EVENT_WANTED)) {
@@ -4007,7 +4007,7 @@ void game::examine()
  last_action += ch;
  if (ch == KEY_ESCAPE || ch == 'e' || ch == 'q') return;
  point exam(get_direction(ch));
- if (exam.x == -2 || exam.y == -2) {
+ if (exam.x == -2) {
   messages.add("Invalid direction.");
   return;
  }
@@ -4288,7 +4288,7 @@ point game::look_around()
   if (!u_see(lx, ly, junk))
    mvwputch(w_terrain, ly - u.posy + SEEY, lx - u.posx + SEEX, c_black, ' ');
   point dir(get_direction(ch));
-  if (dir.x != -2 && dir.y != -2) {	// Directional key pressed
+  if (dir.x != -2) {	// Directional key pressed
    lx += dir.x;
    ly += dir.y;
 /*

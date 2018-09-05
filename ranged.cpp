@@ -555,7 +555,7 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
   refresh();
   ch = input();
   point tar(get_direction(ch));
-  if (tar.x != -2 && tar.y != -2 && ch != '.') {	// Direction character pressed
+  if (tar.x != -2 && ch != '.') {	// Direction character pressed
    int mondex = mon_at(x, y), npcdex = npc_at(x, y);
    if (mondex != -1 && u_see(&(z[mondex]), tart))
     z[mondex].draw(w_terrain, center.x, center.y, false);

@@ -1292,7 +1292,7 @@ point overmap::choose_point(game *g)
   ch = input();
   if (ch != ERR) blink = true;	// If any input is detected, make the blinkies on
   point dir(get_direction(ch));
-  if (dir.x != -2 && dir.y != -2) curs += dir;
+  if (dir.x != -2) curs += dir;
   else if (ch == '0') curs = orig;
   else if (ch == '\n') ret = curs;
   else if (ch == KEY_ESCAPE || ch == 'q' || ch == 'Q') ret = point(-1, -1);
