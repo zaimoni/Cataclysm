@@ -129,8 +129,7 @@ int player::hit_mon(game *g, monster *z, bool allow_grab) // defaults to true
  bool is_u = (this == &(g->u));	// Affects how we'll display messages
  if (is_u)
   z->add_effect(ME_HIT_BY_PLAYER, 100); // Flag as attacked by us
- int j;
- bool can_see = (is_u || g->u_see(posx, posy, j));
+ const bool can_see = (is_u || g->u_see(posx, posy));	// XXX this non-use suggests this function is never called by npcs
 
  std::string You  = (is_u ? "You"  : name);
  std::string Your = (is_u ? "Your" : name + "'s");
@@ -226,9 +225,8 @@ int player::hit_mon(game *g, monster *z, bool allow_grab) // defaults to true
 
 void player::hit_player(game *g, player &p, bool allow_grab)
 {
- int j;
- bool is_u = (this == &(g->u));	// Affects how we'll display messages
- bool can_see = (is_u || g->u_see(posx, posy, j));
+ const bool is_u = (this == &(g->u));	// Affects how we'll display messages
+ const bool can_see = (is_u || g->u_see(posx, posy));
  if (is_u && p.is_npc()) {
   npc* npcPtr = dynamic_cast<npc*>(&p);
   npcPtr->make_angry();
@@ -789,8 +787,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
  std::string s = (is_npc() ? "s" : "");
  int tarx = (mon ? z->pos.x : p->posx), tary = (mon ? z->pos.y : p->posy);
 
- int junk;
- bool u_see = (!is_npc() || g->u_see(posx, posy, junk));
+ const bool u_see = (!is_npc() || g->u_see(posx, posy));
 
  if (technique == TEC_RAPID) {
   moves += int( attack_speed(*this, false) / 2);
@@ -957,12 +954,11 @@ void player::perform_defensive_technique(
   body_part &bp_hit, int &side, int &bash_dam, int &cut_dam, int &stab_dam)
 
 {
- int junk;
  bool mon = (z != NULL);
  std::string You = (is_npc() ? name : "You");
- std::string your = (is_npc() ? (male ? "his" : "her") : "your");
+ const char* const your = (is_npc() ? (male ? "his" : "her") : "your");
  std::string target = (mon ? "the " + z->name() : p->name);
- bool u_see = (!is_npc() || g->u_see(posx, posy, junk));
+ const bool u_see = (!is_npc() || g->u_see(posx, posy));
 
  switch (technique) {
   case TEC_BLOCK:
@@ -976,7 +972,7 @@ void player::perform_defensive_technique(
    }
    if (u_see)
     messages.add("%s block%s with %s %s.", You.c_str(), (is_npc() ? "s" : ""),
-               your.c_str(), body_part_name(bp_hit, side).c_str());
+               your, body_part_name(bp_hit, side).c_str());
    bash_dam *= .5;
    double reduction = 1.0;
 // Special reductions for certain styles
@@ -997,7 +993,7 @@ void player::perform_defensive_technique(
    stab_dam = 0;
    if (u_see)
     messages.add("%s block%s with %s %s.", You.c_str(), (is_npc() ? "s" : ""),
-               your.c_str(), weapon.tname().c_str());
+               your, weapon.tname().c_str());
 
   case TEC_COUNTER:
    break; // Handled elsewhere
@@ -1079,9 +1075,8 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
 {
  if (z == NULL && p == NULL) return;
  bool mon = (z != NULL);
- int junk;
  bool is_u = (!is_npc());
- bool can_see = (is_u || g->u_see(posx, posy, junk));
+ bool can_see = (is_u || g->u_see(posx, posy));
  std::string You = (is_u ? "You" : name);
  std::string Your = (is_u ? "Your" : name + "'s");
  std::string your = (is_u ? "your" : name + "'s");

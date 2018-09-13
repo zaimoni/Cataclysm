@@ -943,8 +943,6 @@ int vehicle::part_collision (int vx, int vy, int part, int x, int y)
     bool veh_collision = oveh && (oveh->posx != posx || oveh->posy != posy);
     bool body_collision = (g->u.posx == x && g->u.posy == y && !g->u.in_vehicle) ||
                            mondex >= 0 || npcind >= 0;
-    int dummy;
-    bool can_see = g->u_see(x, y, dummy);
 
     // 0 - nothing, 1 - monster/player/npc, 2 - vehicle,
     // 3 - thin_obstacle, 4 - bashable, 5 - destructible, 6 - other
@@ -1249,8 +1247,7 @@ void vehicle::handle_trap (int x, int y, int part)
             msg.clear();
         default:;
     }
-    int dummy;
-    if (msg.size() > 0 && g->u_see(x, y, dummy))
+    if (msg.size() > 0 && g->u_see(x, y))
 		messages.add(msg.c_str(), name.c_str(), part_info(part).name, trap::traps[t]->name.c_str());
     if (noise > 0) g->sound (x, y, noise, snd);
     if (wreckit && chance >= rng (1, 100)) damage (part, 500);
@@ -1711,7 +1708,7 @@ bool vehicle::fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int
     for (int i = 0; i < traj.size(); i++)
         if (traj[i].x == g->u.posx && traj[i].y == g->u.posy)
             return false; // won't shoot at player
-    if (g->u_see(x, y, t))
+    if (g->u_see(x, y))
         messages.add("The %s fires its %s!", name.c_str(), part_info(p).name);
     player tmp;
     tmp.name = std::string("The ") + part_info(p).name;

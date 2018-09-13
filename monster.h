@@ -94,7 +94,7 @@ class monster {
 
 // Combat
  bool is_fleeing(player &u);	// True if we're fleeing
- monster_attitude attitude(player *u = NULL);	// See the enum above
+ monster_attitude attitude(player *u = NULL) const;	// See the enum above
  int morale_level(player &u);	// Looks at our HP etc.
  void process_triggers(game *g);// Process things that anger/scare us
  void process_trigger(monster_trigger trig, int amount);// Single trigger

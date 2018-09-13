@@ -2090,10 +2090,9 @@ z.size(), events.size());
 
 void game::mondebug()
 {
- int tc;
  for (int i = 0; i < z.size(); i++) {
   z[i].debug(u);
-  if (z[i].has_flag(MF_SEES) && m.sees(z[i].pos.x, z[i].pos.y, u.posx, u.posy, -1, tc))
+  if (z[i].has_flag(MF_SEES) && m.sees(z[i].pos.x, z[i].pos.y, u.posx, u.posy, -1))
    debugmsg("The %s can see you.", z[i].name().c_str());
   else
    debugmsg("The %s can't see you...", z[i].name().c_str());
@@ -2442,13 +2441,12 @@ void game::draw_ter(int posx, int posy)
 // posx/posy default to -999
  if (posx == -999) posx = u.posx;
  if (posy == -999) posy = u.posy;
- int t = 0;
  m.draw(this, w_terrain, point(posx, posy));
 
  // Draw monsters
  for (int i = 0; i < z.size(); i++) {
   point dist(abs(z[i].pos.x - posx), abs(z[i].pos.y - posy));
-  if (dist.x <= SEEX && dist.y <= SEEY && u_see(&(z[i]), t))
+  if (dist.x <= SEEX && dist.y <= SEEY && u_see(&(z[i])))
    z[i].draw(w_terrain, posx, posy, false);
   else if (z[i].has_flag(MF_WARM) && dist.x <= SEEX && dist.y <= SEEY &&
            (u.has_active_bionic(bio_infrared) || u.has_trait(PF_INFRARED)))
@@ -2457,7 +2455,7 @@ void game::draw_ter(int posx, int posy)
  // Draw NPCs
  for (int i = 0; i < active_npc.size(); i++) {
   point dist(abs(active_npc[i].posx - posx), abs(active_npc[i].posy - posy));
-  if (dist.x <= SEEX && dist.y <= SEEY && u_see(active_npc[i].posx, active_npc[i].posy, t))
+  if (dist.x <= SEEX && dist.y <= SEEY && u_see(active_npc[i].posx, active_npc[i].posy))
    active_npc[i].draw(w_terrain, posx, posy, false);
  }
  if (u.has_active_bionic(bio_scent_vision)) {
@@ -2759,14 +2757,21 @@ faction* game::random_evil_faction()
  return &(factions[factions.size() - 1]);
 }
 
-bool game::sees_u(int x, int y, int &t)
+bool game::sees_u(int x, int y)
 {
  return (!u.has_active_bionic(bio_cloak) &&
          !u.has_artifact_with(AEP_INVISIBLE) && 
-         m.sees(x, y, u.posx, u.posy, light_level(), t));
+         m.sees(x, y, u.posx, u.posy, light_level()));
 }
 
-bool game::u_see(int x, int y, int &t)
+bool game::sees_u(int x, int y, int &t)
+{
+	return (!u.has_active_bionic(bio_cloak) &&
+		!u.has_artifact_with(AEP_INVISIBLE) &&
+		m.sees(x, y, u.posx, u.posy, light_level(), t));
+}
+
+bool game::u_see(int x, int y)
 {
  int range = u.sight_range(light_level());
  if (u.has_artifact_with(AEP_CLAIRVOYANCE)) {
@@ -2774,10 +2779,22 @@ bool game::u_see(int x, int y, int &t)
   if (rl_dist(u.posx, u.posy, x, y) <= crange)
    return true;
  }
- return m.sees(u.posx, u.posy, x, y, range, t);
+ return m.sees(u.posx, u.posy, x, y, range);
 }
 
-bool game::u_see(monster *mon, int &t)
+bool game::u_see(int x, int y, int &t)
+{
+	t = 0;	// safe default in case of clairvoyance
+	int range = u.sight_range(light_level());
+	if (u.has_artifact_with(AEP_CLAIRVOYANCE)) {
+		int crange = (range > u.clairvoyance() ? u.clairvoyance() : range);
+		if (rl_dist(u.posx, u.posy, x, y) <= crange)
+			return true;
+	}
+	return m.sees(u.posx, u.posy, x, y, range, t);
+}
+
+bool game::u_see(const monster *mon)
 {
  int dist = rl_dist(u.posx, u.posy, mon->pos.x, mon->pos.y);
  if (u.has_trait(PF_ANTENNAE) && dist <= 3) return true;
@@ -2788,16 +2805,15 @@ bool game::u_see(monster *mon, int &t)
   int crange = (range > u.clairvoyance() ? u.clairvoyance() : range);
   if (dist <= crange) return true;
  }
- return m.sees(u.posx, u.posy, mon->pos.x, mon->pos.y, range, t);
+ return m.sees(u.posx, u.posy, mon->pos.x, mon->pos.y, range);
 }
 
-bool game::pl_sees(player *p, monster *mon, int &t)
+bool game::pl_sees(player *p, monster *mon)
 {
  if (mon->has_flag(MF_DIGS) && !p->has_active_bionic(bio_ground_sonar) &&
      rl_dist(p->posx, p->posy, mon->pos.x, mon->pos.y) > 1)
   return false;	// Can't see digging monsters until we're right next to them
- int range = p->sight_range(light_level());
- return m.sees(p->posx, p->posy, mon->pos.x, mon->pos.y, range, t);
+ return m.sees(p->posx, p->posy, mon->pos.x, mon->pos.y, p->sight_range(light_level()));
 }
 
 point game::find_item(item *it)
@@ -2885,31 +2901,28 @@ void game::mon_info()
   dangerous[i] = false;
 
  direction dir_to_mon, dir_to_npc;
- for (int i = 0; i < z.size(); i++) {
-  if (u_see(&(z[i]), buff)) {
+ for (const auto& mon : z) {
+  if (u_see(&mon)) {
    bool mon_dangerous = false;
-   if (z[i].attitude(&u) == MATT_ATTACK || z[i].attitude(&u) == MATT_FOLLOW) {
+   if (mon.attitude(&u) == MATT_ATTACK || mon.attitude(&u) == MATT_FOLLOW) {
     mon_dangerous = true;
     newseen++;
    }
 
-   dir_to_mon = direction_from(u.posx, u.posy, z[i].pos.x, z[i].pos.y);
-   int index = (rl_dist(u.posx, u.posy, z[i].pos.x, z[i].pos.y) <= SEEX ?
-                8 : dir_to_mon);
+   dir_to_mon = direction_from(u.posx, u.posy, mon.pos.x, mon.pos.y);
+   int index = (rl_dist(u.posx, u.posy, mon.pos.x, mon.pos.y) <= SEEX ? 8 : dir_to_mon);
    if (mon_dangerous && index < 8) dangerous[index] = true;
 
-   if (!vector_has(unique_types[dir_to_mon], z[i].type->id))
-    unique_types[index].push_back(z[i].type->id);
+   if (!vector_has(unique_types[dir_to_mon], mon.type->id))
+    unique_types[index].push_back(mon.type->id);
   }
  }
  for (int i = 0; i < active_npc.size(); i++) {
-  if (u_see(active_npc[i].posx, active_npc[i].posy, buff)) { // TODO: NPC invis
-   if (active_npc[i].attitude == NPCATT_KILL)
-    newseen++;
+  if (u_see(active_npc[i].posx, active_npc[i].posy)) { // TODO: NPC invis
+   if (active_npc[i].attitude == NPCATT_KILL) newseen++;
    point npcp(active_npc[i].posx, active_npc[i].posy);
    dir_to_npc = direction_from ( u.posx, u.posy, npcp.x, npcp.y );
-   int index = (rl_dist(u.posx, u.posy, npcp.x, npcp.y) <= SEEX ?
-                8 : dir_to_npc);
+   int index = (rl_dist(u.posx, u.posy, npcp.x, npcp.y) <= SEEX ? 8 : dir_to_npc);
    unique_types[index].push_back(-1 - i);
   }
  }
@@ -3322,9 +3335,8 @@ void game::sound(int x, int y, int vol, std::string description)
 // characters hearing and how close they are
 void game::add_footstep(int x, int y, int volume, int distance)
 {
- int t = 0;
  if (x == u.posx && y == u.posy) return;
- else if (u_see(x, y, t)) return;
+ else if (u_see(x, y)) return;
  int err_offset;
  if (volume / distance < 2)
   err_offset = 3;
@@ -3341,7 +3353,7 @@ void game::add_footstep(int x, int y, int volume, int distance)
    tries++;
    x = origx + rng(-err_offset, err_offset);
    y = origy + rng(-err_offset, err_offset);
-  } while (tries < 10 && (u_see(x, y, t) || (x == u.posx && y == u.posy)));
+  } while (tries < 10 && ((x == u.posx && y == u.posy)) || u_see(x, y));
  }
  if (tries < 10)
   footsteps.push_back(point(x, y));
@@ -3445,7 +3457,7 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
 
 // The rest of the function is shrapnel
  if (shrapnel <= 0) return;
- int sx, sy, t, ijunk, tx, ty;
+ int sx, sy, t, tx, ty;
  std::vector<point> traj;
  ts.tv_sec = 0;
  ts.tv_nsec = BULLET_SPEED;	// Reset for animation of bullets
@@ -3455,9 +3467,9 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
   traj = line_to(x, y, sx, sy, (m.sees(x, y, sx, sy, 50, t) ? t : 0));
   dam = rng(20, 60);
   for (int j = 0; j < traj.size(); j++) {
-   if (j > 0 && u_see(traj[j - 1].x, traj[j - 1].y, ijunk))
+   if (j > 0 && u_see(traj[j - 1].x, traj[j - 1].y))
     m.drawsq(w_terrain, u, traj[j - 1].x, traj[j - 1].y, false, true);
-   if (u_see(traj[j].x, traj[j].y, ijunk)) {
+   if (u_see(traj[j].x, traj[j].y)) {
     mvwputch(w_terrain, traj[j].y + SEEY - u.posy,
                         traj[j].x + SEEX - u.posx, c_red, '`');
     wrefresh(w_terrain);
@@ -3494,18 +3506,18 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
 
 void game::flashbang(int x, int y)
 {
- int dist = rl_dist(u.posx, u.posy, x, y), t;
+ int dist = rl_dist(u.posx, u.posy, x, y);
  if (dist <= 8) {
   if (!u.has_bionic(bio_ears))
    u.add_disease(DI_DEAF, 40 - dist * 4, this);
-  if (m.sees(u.posx, u.posy, x, y, 8, t))
+  if (m.sees(u.posx, u.posy, x, y, 8))
    u.infect(DI_BLIND, bp_eyes, (12 - dist) / 2, 10 - dist, this);
  }
  for (int i = 0; i < z.size(); i++) {
   dist = rl_dist(z[i].pos.x, z[i].pos.y, x, y);
   if (dist <= 4) z[i].add_effect(ME_STUNNED, 10 - dist);
   if (dist <= 8) {
-   if (z[i].has_flag(MF_SEES) && m.sees(z[i].pos.x, z[i].pos.y, x, y, 8, t))
+   if (z[i].has_flag(MF_SEES) && m.sees(z[i].pos.x, z[i].pos.y, x, y, 8))
     z[i].add_effect(ME_BLIND, 18 - dist);
    if (z[i].has_flag(MF_HEARS)) z[i].add_effect(ME_DEAF, 60 - dist * 4);
   }
@@ -4271,7 +4283,6 @@ point game::look_around()
 {
  draw_ter();
  int lx = u.posx, ly = u.posy;
- int junk;
  char ch;
  WINDOW* w_look = newwin(13, 48, 12, SEEX * 2 + 8);
  wborder(w_look, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
@@ -4282,7 +4293,7 @@ point game::look_around()
  wrefresh(w_look);
  do {
   ch = input();
-  if (!u_see(lx, ly, junk))
+  if (!u_see(lx, ly))
    mvwputch(w_terrain, ly - u.posy + SEEY, lx - u.posx + SEEX, c_black, ' ');
   point dir(get_direction(ch));
   if (dir.x != -2) {	// Directional key pressed
@@ -4306,7 +4317,7 @@ point game::look_around()
   }
   int veh_part = 0;
   vehicle *veh = m.veh_at(lx, ly, veh_part);
-  if (u_see(lx, ly, junk)) {
+  if (u_see(lx, ly)) {
    if (m.move_cost(lx, ly) == 0)
     mvwprintw(w_look, 1, 1, "%s; Impassable", m.tername(lx, ly).c_str());
    else
@@ -4325,7 +4336,7 @@ point game::look_around()
    }
 
    int dex = mon_at(lx, ly);
-   if (dex != -1 && u_see(&(z[dex]), junk)) {
+   if (dex != -1 && u_see(&(z[dex]))) {
     z[mon_at(lx, ly)].draw(w_terrain, lx, ly, true);
     z[mon_at(lx, ly)].print_info(this, w_look);
     if (m.i_at(lx, ly).size() > 1)
@@ -5034,11 +5045,10 @@ void game::plthrow()
  int y0 = y - range;
  int x1 = x + range;
  int y1 = y + range;
- int junk;
 
  for (int j = u.posx - SEEX; j <= u.posx + SEEX; j++) {
   for (int k = u.posy - SEEY; k <= u.posy + SEEY; k++) {
-   if (u_see(j, k, junk)) {
+   if (u_see(j, k)) {
     if (k >= y0 && k <= y1 && j >= x0 && j <= x1)
      m.drawsq(w_terrain, u, j, k, false, true);
     else
@@ -5051,8 +5061,8 @@ void game::plthrow()
  std::vector <int> targetindices;
  int passtarget = -1;
  for (int i = 0; i < z.size(); i++) {
-  if (u_see(&(z[i]), junk) && z[i].pos.x >= x0 && z[i].pos.x <= x1 &&
-                              z[i].pos.y >= y0 && z[i].pos.y <= y1) {
+  if (u_see(&(z[i])) && z[i].pos.x >= x0 && z[i].pos.x <= x1 &&
+                        z[i].pos.y >= y0 && z[i].pos.y <= y1) {
    mon_targets.push_back(z[i]);
    targetindices.push_back(i);
    if (i == last_target) passtarget = mon_targets.size() - 1;
@@ -5120,7 +5130,6 @@ void game::plfire(bool burst)
   return;
  }
 
- int junk;
  int range = u.weapon.range(&u);
  int sight_range = u.sight_range(light_level());
  if (range > sight_range) range = sight_range;
@@ -5131,7 +5140,7 @@ void game::plfire(bool burst)
  int y1 = y + range;
  for (int j = x - SEEX; j <= x + SEEX; j++) {
   for (int k = y - SEEY; k <= y + SEEY; k++) {
-   if (u_see(j, k, junk)) {
+   if (u_see(j, k)) {
     if (k >= y0 && k <= y1 && j >= x0 && j <= x1)
      m.drawsq(w_terrain, u, j, k, false, true);
     else
@@ -5146,7 +5155,7 @@ void game::plfire(bool burst)
  for (int i = 0; i < z.size(); i++) {
   if (z[i].pos.x >= x0 && z[i].pos.x <= x1 &&
       z[i].pos.y >= y0 && z[i].pos.y <= y1 &&
-      z[i].friendly == 0 && u_see(&(z[i]), junk)) {
+      z[i].friendly == 0 && u_see(&(z[i]))) {
    mon_targets.push_back(z[i]);
    targetindices.push_back(i);
    if (i == last_target) passtarget = mon_targets.size() - 1;
@@ -5476,9 +5485,8 @@ void game::chat()
   return;
  }
  std::vector<npc*> available;
- int junk;
  for (int i = 0; i < active_npc.size(); i++) {
-  if (u_see(active_npc[i].posx, active_npc[i].posy, junk) &&
+  if (u_see(active_npc[i].posx, active_npc[i].posy) &&
       rl_dist(u.posx, u.posy, active_npc[i].posx, active_npc[i].posy) <= 24)
    available.push_back(&active_npc[i]);
  }
@@ -6392,8 +6400,7 @@ void game::update_stair_monsters()
        coming_to_stairs[i].mon.pos.x = sx;
        coming_to_stairs[i].mon.pos.y = sy;
        z.push_back( coming_to_stairs[i].mon );
-       int t;
-       if (u_see(sx, sy, t))
+       if (u_see(sx, sy))
         messages.add("A %s comes %s the %s!", coming_to_stairs[i].mon.name().c_str(),
                 (m.has_flag(goes_up, sx, sy) ? "down" : "up"),
                 m.tername(sx, sy).c_str());
@@ -6455,7 +6462,6 @@ void game::spawn_mon(int shiftx, int shifty)
     monster zom = monster(mtype::types[type]);
     int iter = 0;
 	int monx, mony;
-	int t;
 	do {
       if (shiftx == 0 && shifty == 0) {
        if (one_in(2)) shiftx = 1 - 2 * rng(0, 1);
@@ -6472,7 +6478,7 @@ void game::spawn_mon(int shiftx, int shifty)
       iter++;
 
      } while ((!zom.can_move_to(m, monx, mony) || !is_empty(monx, mony) ||
-                m.sees(u.posx, u.posy, monx, mony, SEEX, t) ||
+                m.sees(u.posx, u.posy, monx, mony, SEEX) ||
                 rl_dist(u.posx, u.posy, monx, mony) < 8) && iter < 50);
      if (iter < 50) {
       zom.spawn(monx, mony);
@@ -6586,15 +6592,15 @@ void game::msg_buffer()
 void game::teleport(player *p)
 {
  if (p == NULL) p = &u;
- int newx, newy, t, tries = 0;
- bool is_u = (p == &u);
+ int newx, newy, tries = 0;
+ const bool is_u = (p == &u);
  p->add_disease(DI_TELEGLOW, 300, this);
  do {
   newx = p->posx + rng(0, SEEX * 2) - SEEX;
   newy = p->posy + rng(0, SEEY * 2) - SEEY;
   tries++;
  } while (tries < 15 && !is_empty(newx, newy));
- bool can_see = (is_u || u_see(newx, newy, t));
+ const bool can_see = (is_u || u_see(newx, newy));
  std::string You = (is_u ? "You" : p->name);
  p->posx = newx;
  p->posy = newy;

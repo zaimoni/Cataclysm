@@ -2531,23 +2531,17 @@ void player::hitall(game *g, int dam, int vary)
 
 void player::knock_back_from(game *g, int x, int y)
 {
- if (x == posx && y == posy)
-  return; // No effect
+ if (x == posx && y == posy) return; // No effect
  point to(posx, posy);
- if (x < posx)
-  to.x++;
- if (x > posx)
-  to.x--;
- if (y < posy)
-  to.y++;
- if (y > posy)
-  to.y--;
+ if (x < posx) to.x++;
+ else if (x > posx) to.x--;
+ if (y < posy) to.y++;
+ else if (y > posy) to.y--;
 
- int t = 0;
- bool u_see = (!is_npc() || g->u_see(to.x, to.y, t));
+ bool u_see = (!is_npc() || g->u_see(to.x, to.y));
 
  std::string You = (is_npc() ? name : "You");
- std::string s = (is_npc() ? "s" : "");
+ const char* const s = (is_npc() ? "s" : "");
 
 // First, see if we hit a monster
  int mondex = g->mon_at(to.x, to.y);
@@ -2564,7 +2558,7 @@ void player::knock_back_from(game *g, int x, int y)
    z->add_effect(ME_STUNNED, 1);
   }
 
-  if (u_see) messages.add("%s bounce%s off a %s!", You.c_str(), s.c_str(), z->name().c_str());
+  if (u_see) messages.add("%s bounce%s off a %s!", You.c_str(), s, z->name().c_str());
 
   return;
  }
@@ -2575,7 +2569,7 @@ void player::knock_back_from(game *g, int x, int y)
   hit(g, bp_torso, 0, 3, 0);
   add_disease(DI_STUNNED, 1, g);
   p->hit(g, bp_torso, 0, 3, 0);
-  if (u_see) messages.add("%s bounce%s off %s!", You.c_str(), s.c_str(), p->name.c_str());
+  if (u_see) messages.add("%s bounce%s off %s!", You.c_str(), s, p->name.c_str());
   return;
  }
 
@@ -2589,7 +2583,7 @@ void player::knock_back_from(game *g, int x, int y)
   } else { // It's some kind of wall.
    hurt(g, bp_torso, 0, 3);
    add_disease(DI_STUNNED, 2, g);
-   if (u_see) messages.add("%s bounce%s off a %s.", name.c_str(), s.c_str(), g->m.tername(to.x, to.y).c_str());
+   if (u_see) messages.add("%s bounce%s off a %s.", name.c_str(), s, g->m.tername(to.x, to.y).c_str());
   }
 
  } else { // It's no wall
@@ -3777,7 +3771,6 @@ bool player::eat(game *g, int index)
  const it_comest *comest = NULL;
  item *eaten = NULL;
  int which = -3; // Helps us know how to delete the item which got eaten
- int linet;
  if (index == -2) {
   messages.add("You do not have that item.");
   return false;
@@ -3885,7 +3878,7 @@ bool player::eat(game *g, int index)
   if (!is_npc()) {
    if (eaten->made_of(LIQUID)) messages.add("You drink your %s.", eaten->tname(g).c_str());
    else if (comest->nutr >= 5) messages.add("You eat your %s.", eaten->tname(g).c_str());
-  } else if (g->u_see(posx, posy, linet)) messages.add("%s eats a %s.", name.c_str(), eaten->tname(g).c_str());
+  } else if (g->u_see(posx, posy)) messages.add("%s eats a %s.", name.c_str(), eaten->tname(g).c_str());
 
   if (item::types[comest->tool]->is_tool()) use_charges(comest->tool, 1); // Tools like lighters get used
   if (comest->stim > 0) {
@@ -4552,9 +4545,8 @@ void player::absorb(game *g, body_part bp, int &dam, int &cut)
        rng(0, tmp->dmg_resist * 2) < dam && !one_in(dam))
     worn[i].damage++;
    if (worn[i].damage >= 5) {
-    int linet;
     if (!is_npc()) messages.add("Your %s is completely destroyed!", worn[i].tname(g).c_str());
-    else if (g->u_see(posx, posy, linet))
+    else if (g->u_see(posx, posy))
      messages.add("%s's %s is destroyed!", name.c_str(), worn[i].tname(g).c_str());
     worn.erase(worn.begin() + i);
    }

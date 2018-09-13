@@ -9,8 +9,7 @@
 
 void mdeath::normal(game *g, monster *z)
 {
- int junk;
- if (g->u_see(z, junk)) messages.add("It dies!");
+ if (g->u_see(z)) messages.add("It dies!");
  if (z->made_of(FLESH) && z->has_flag(MF_WARM)) {
   auto& f = g->m.field_at(z->pos.x, z->pos.y);
   if (f.type == fd_blood && f.density < 3) f.density++;
@@ -25,8 +24,7 @@ void mdeath::normal(game *g, monster *z)
 
 void mdeath::acid(game *g, monster *z)
 {
- int tmp;
- if (g->u_see(z, tmp)) messages.add("The %s's corpse melts into a pool of acid.", z->name().c_str());
+ if (g->u_see(z)) messages.add("The %s's corpse melts into a pool of acid.", z->name().c_str());
  g->m.add_field(g, z->pos.x, z->pos.y, fd_acid, 3);
 }
 
@@ -122,7 +120,7 @@ void mdeath::fungus(game *g, monster *z)
    sporey = z->pos.y + j;
    if (g->m.move_cost(sporex, sporey) > 0 && one_in(5)) {
     if (g->mon_at(sporex, sporey) >= 0) {	// Spores hit a monster
-     if (g->u_see(sporex, sporey, j))
+     if (g->u_see(sporex, sporey))
       messages.add("The %s is covered in tiny spores!",
                  g->z[g->mon_at(sporex, sporey)].name().c_str());
      if (!g->z[g->mon_at(sporex, sporey)].make_fungus(g))
@@ -145,14 +143,12 @@ void mdeath::fungusawake(game *g, monster *z)
 
 void mdeath::disintegrate(game *g, monster *z)
 {
- int junk;
- if (g->u_see(z, junk)) messages.add("It disintegrates!");
+ if (g->u_see(z)) messages.add("It disintegrates!");
 }
 
 void mdeath::worm(game *g, monster *z)
 {
- int j;
- if (g->u_see(z, j)) messages.add("The %s splits in two!", z->name().c_str());
+ if (g->u_see(z)) messages.add("The %s splits in two!", z->name().c_str());
 
  std::vector <point> wormspots;
  int wormx, wormy;
@@ -191,17 +187,15 @@ void mdeath::guilt(game *g, monster *z)
 
 void mdeath::blobsplit(game *g, monster *z)
 {
- int j;
- int speed = z->speed - rng(30, 50);
+ const int speed = z->speed - rng(30, 50);
  if (speed <= 0) {
-  if (g->u_see(z, j))
-   messages.add("The %s splatters into tiny, dead pieces.", z->name().c_str());
+  if (g->u_see(z)) messages.add("The %s splatters into tiny, dead pieces.", z->name().c_str());
   return;
  }
  monster blob(mtype::types[(speed < 50 ? mon_blob_small : mon_blob)]);
  blob.speed = speed;
  blob.friendly = z->friendly; // If we're tame, our kids are too
- if (g->u_see(z, j)) messages.add("The %s splits!", z->name().c_str());
+ if (g->u_see(z)) messages.add("The %s splits!", z->name().c_str());
  blob.hp = blob.speed;
  std::vector <point> valid;
 
@@ -224,9 +218,7 @@ void mdeath::blobsplit(game *g, monster *z)
 
 void mdeath::melt(game *g, monster *z)
 {
- int j;
- if (g->u_see(z, j))
-  messages.add("The %s melts away!", z->name().c_str());
+ if (g->u_see(z)) messages.add("The %s melts away!", z->name().c_str());
 }
 
 void mdeath::amigara(game *g, monster *z)

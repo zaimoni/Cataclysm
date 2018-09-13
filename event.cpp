@@ -117,8 +117,7 @@ void event::actualize(game *g) const
     for (int y = 0; y < SEEY * MAPSIZE; y++) {
      if (g->m.ter(x, y) == t_grate) {
       g->m.ter(x, y) = t_stairs_down;
-      int j;
-      if (!saw_grate && g->u_see(x, y, j)) saw_grate = true;
+      if (!saw_grate && g->u_see(x, y)) saw_grate = true;
      }
     }
    }
@@ -214,8 +213,7 @@ void event::per_turn(game *g)
     monster eyebot(mtype::types[mon_eyebot], place.x, place.y);
     eyebot.faction_id = faction_id;
     g->z.push_back(eyebot);
-    int t;
-    if (g->u_see(place.x, place.y, t))
+    if (g->u_see(place.x, place.y))
      messages.add("An eyebot swoops down nearby!");
    }
   } break;

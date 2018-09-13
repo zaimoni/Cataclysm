@@ -546,18 +546,16 @@ bool map::process_fields_in_submap(game *g, int gridn)
            mondex = g->mon_at(newp.x, newp.y);
 
        if (npcdex != -1) {
-        int junk;
         npc *p = &(g->active_npc[npcdex]);
         p->hit(g, random_body_part(), rng(0, 1), 6, 0);
-        if (g->u_see(newp.x, newp.y, junk))
+        if (g->u_see(newp.x, newp.y))
          messages.add("A %s hits %s!", tmp.tname().c_str(), p->name.c_str());
        }
 
        if (mondex != -1) {
-        int junk;
         monster *mon = &(g->z[mondex]);
         mon->hurt(6 - mon->armor_bash());
-        if (g->u_see(newp.x, newp.y, junk))
+        if (g->u_see(newp.x, newp.y))
          messages.add("A %s hits the %s!", tmp.tname().c_str(), mon->name().c_str());
        }
       }
@@ -923,9 +921,9 @@ void map::mon_in_field(int x, int y, game *g, monster *z)
     if (tries == 10)
      g->explode_mon(g->mon_at(z->pos.x, z->pos.y));
     else {
-     int mon_hit = g->mon_at(newpos.x, newpos.y), t;
+     const int mon_hit = g->mon_at(newpos.x, newpos.y);
      if (mon_hit != -1) {
-      if (g->u_see(z, t))
+      if (g->u_see(z))
        messages.add("The %s teleports into a %s, killing them both!",
                   z->name().c_str(), g->z[mon_hit].name().c_str());
       g->explode_mon(mon_hit);

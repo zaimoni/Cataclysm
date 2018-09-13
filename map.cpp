@@ -2194,7 +2194,6 @@ void map::draw(game *g, WINDOW* w, point center)
    debugmsg("grid %d (%d, %d) is null! mapbuffer size = %d",
             i, i % my_MAPSIZE, i / my_MAPSIZE, MAPBUFFER.size());
  }
- int t = 0;
  int light = g->u.sight_range(g->light_level());
  for  (int realx = center.x - SEEX; realx <= center.x + SEEX; realx++) {
   for (int realy = center.y - SEEY; realy <= center.y + SEEY; realy++) {
@@ -2202,7 +2201,7 @@ void map::draw(game *g, WINDOW* w, point center)
    if (dist > light) {
     mvwputch(w, realy+SEEY - center.y, realx+SEEX - center.x, (g->u.has_disease(DI_BOOMERED) ? c_magenta : c_dkgray),'#');
    } else if (dist <= g->u.clairvoyance() ||
-              sees(g->u.posx, g->u.posy, realx, realy, light, t))
+              sees(g->u.posx, g->u.posy, realx, realy, light))
     drawsq(w, g->u, realx, realy, false, true, center.x, center.y);
    else
     mvwputch(w, realy+SEEY - center.y, realx+SEEX - center.x, c_black,'#');
@@ -2319,6 +2318,12 @@ bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc)
  for (int x = Fx; x <= Tx; x++) {
   int Yhl = 
 #endif
+
+bool map::sees(int Fx, int Fy, int Tx, int Ty, int range)
+{
+  int tc = 0;
+  return sees(Fx, Fy, Tx, Ty, range, tc);
+}
 
 /*
 map::sees based off code by Steve Register [arns@arns.freeservers.com]
@@ -2463,8 +2468,7 @@ std::vector<point> map::route(int Fx, int Fy, int Tx, int Ty, bool bash)
   if (sees(Fx, Fy, Tx, Ty, -1, linet))
    return line_to(Fx, Fy, Tx, Ty, linet);
   else {
-   std::vector<point> empty;
-   return empty;
+   return std::vector<point>();
   }
  }
 // First, check for a simple straight line on flat ground

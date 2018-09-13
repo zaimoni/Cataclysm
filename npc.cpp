@@ -1089,8 +1089,7 @@ bool npc::wield(game *g, int index)
    g->m.add_item(posx, posy, remove_weapon());
   moves -= 15;
   weapon.make(item::types[styles[index]] );
-  int linet;
-  if (g->u_see(posx, posy, linet)) messages.add("%s assumes a %s stance.", name.c_str(), weapon.tname().c_str());
+  if (g->u_see(posx, posy)) messages.add("%s assumes a %s stance.", name.c_str(), weapon.tname().c_str());
   return true;
  }
 
@@ -1106,8 +1105,7 @@ bool npc::wield(game *g, int index)
  moves -= 15;
  weapon = inv[index];
  i_remn(index);
- int linet;
- if (g->u_see(posx, posy, linet)) messages.add("%s wields a %s.", name.c_str(), weapon.tname().c_str());
+ if (g->u_see(posx, posy)) messages.add("%s wields a %s.", name.c_str(), weapon.tname().c_str());
  return true;
 }
 
@@ -1437,9 +1435,8 @@ void npc::say(game *g, std::string line, ...)
  vsprintf(buff, line.c_str(), ap);
  va_end(ap);
  line = buff;
- int junk;
  parse_tags(line, &(g->u), this);
- if (g->u_see(posx, posy, junk)) {
+ if (g->u_see(posx, posy)) {
   messages.add("%s says, \"%s\"", name.c_str(), line.c_str());
   g->sound(posx, posy, 16, "");
  } else {
@@ -1631,9 +1628,9 @@ bool npc::is_defending()
 int npc::danger_assessment(game *g)
 {
  int ret = 0;
- int sightdist = g->light_level(), junk;
+ int sightdist = g->light_level();
  for (int i = 0; i < g->z.size(); i++) {
-  if (g->m.sees(posx, posy, g->z[i].pos.x, g->z[i].pos.y, sightdist, junk))
+  if (g->m.sees(posx, posy, g->z[i].pos.x, g->z[i].pos.y, sightdist))
    ret += g->z[i].type->difficulty;
  }
  ret /= 10;
@@ -1920,8 +1917,7 @@ void npc::die(game *g, bool your_fault)
 {
  if (dead) return;
  dead = true;
- int j;
- if (g->u_see(posx, posy, j)) messages.add("%s dies!", name.c_str());
+ if (g->u_see(posx, posy)) messages.add("%s dies!", name.c_str());
  if (your_fault && !g->u.has_trait(PF_HEARTLESS)) {
   if (is_friend())
    g->u.add_morale(MORALE_KILLED_FRIEND, -500);

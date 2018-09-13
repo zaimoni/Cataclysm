@@ -124,10 +124,12 @@ class game
   int assign_npc_id() { return next_npc_id++; }
   int assign_faction_id() { return next_faction_id++; }
   faction* faction_by_id(int it);
+  bool sees_u(int x, int y);
   bool sees_u(int x, int y, int &t);
+  bool u_see (int x, int y);
   bool u_see (int x, int y, int &t);
-  bool u_see (monster *mon, int &t);
-  bool pl_sees(player *p, monster *mon, int &t);
+  bool u_see (const monster *mon);
+  bool pl_sees(player *p, monster *mon);
   void refresh_all();
   void update_map(int &x, int &y);  // Called by plmove when the map updates
   void update_overmap_seen(); // Update which overmap tiles we can see

@@ -293,7 +293,7 @@ bool monster::is_fleeing(player &u)
          (att == MATT_FOLLOW && rl_dist(pos.x, pos.y, u.posx, u.posy) <= 4));
 }
 
-monster_attitude monster::attitude(player *u)
+monster_attitude monster::attitude(player *u) const
 {
  if (friendly != 0) return MATT_FRIEND;
  if (has_effect(ME_RUN)) return MATT_FLEE;
@@ -485,7 +485,6 @@ int monster::hit(game *g, player &p, body_part &bp_hit)
 
 void monster::hit_monster(game *g, int i)
 {
- int junk;
  monster* target = &(g->z[i]);
  
  int numdice = type->melee_skill;
@@ -498,10 +497,10 @@ void monster::hit_monster(game *g, int i)
  }
 
  if (dice(numdice, 10) <= dice(dodgedice, 10)) {
-  if (g->u_see(this, junk)) messages.add("The %s misses the %s!", name().c_str(), target->name().c_str());
+  if (g->u_see(this)) messages.add("The %s misses the %s!", name().c_str(), target->name().c_str());
   return;
  }
- if (g->u_see(this, junk)) messages.add("The %s hits the %s!", name().c_str(), target->name().c_str());
+ if (g->u_see(this)) messages.add("The %s hits the %s!", name().c_str(), target->name().c_str());
  int damage = dice(type->melee_dice, type->melee_sides);
  if (target->hurt(damage))
   g->kill_mon(i, (friendly != 0));
@@ -647,9 +646,8 @@ void monster::die(game *g)
  if (anger_adjust != 0 || morale_adjust != 0) {
   int light = g->light_level();
   for (auto& critter : g->z) {
-   int t = 0;
    if (critter.type->species != type->species) continue;
-   if (!g->m.sees(critter.pos.x, critter.pos.y, pos.x, pos.y, light, t)) continue;
+   if (!g->m.sees(critter.pos.x, critter.pos.y, pos.x, pos.y, light)) continue;
    critter.morale += morale_adjust;
    critter.anger += anger_adjust;
   }

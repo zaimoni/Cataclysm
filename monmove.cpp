@@ -79,7 +79,7 @@ void monster::plan(game *g)
   }
   return;
  }
- if (is_fleeing(g->u) && can_see() && g->sees_u(pos.x, pos.y, tc)) {
+ if (is_fleeing(g->u) && can_see() && g->sees_u(pos.x, pos.y)) {
   fleeing = true;
   wand.x = pos.x * 2 - g->u.posx;
   wand.y = pos.y * 2 - g->u.posy;
@@ -97,7 +97,7 @@ void monster::plan(game *g)
   int medist = rl_dist(pos.x, pos.y, me->posx, me->posy);
   if ((medist < dist || (!fleeing && is_fleeing(*me))) &&
       (can_see() &&
-       g->m.sees(pos.x, pos.y, me->posx, me->posy, sightrange, tc))) {
+       g->m.sees(pos.x, pos.y, me->posx, me->posy, sightrange))) {
    if (is_fleeing(*me)) {
     fleeing = true;
     wand.x = pos.x * 2 - me->posx;
@@ -439,8 +439,7 @@ void monster::hit_player(game *g, player &p, bool can_grab)
  add_effect(ME_HIT_BY_PLAYER, 3); // Make us a valid target for a few turns
  if (has_flag(MF_HIT_AND_RUN)) add_effect(ME_RUN, 4);
  bool is_npc = p.is_npc();
- int  junk;
- bool u_see = (!is_npc || g->u_see(p.posx, p.posy, junk));
+ bool u_see = (!is_npc || g->u_see(p.posx, p.posy));
  std::string you  = (is_npc ? p.name : "you");
  std::string You  = (is_npc ? p.name : "You");
  std::string your = (is_npc ? p.name + "'s" : "your");
@@ -614,8 +613,7 @@ void monster::knock_back_from(game *g, int x, int y)
  if (y < pos.y) to.y++;
  else if (y > pos.y) to.y--;
 
- int t = 0;
- bool u_see = g->u_see(to.x, to.y, t);
+ bool u_see = g->u_see(to.x, to.y);
 
 // First, see if we hit another monster
  int mondex = g->mon_at(to.x, to.y);
@@ -696,8 +694,7 @@ bool monster::will_reach(game *g, int x, int y)
      rl_dist(pos.x, pos.y, wand.x, wand.y) <= wandf)
   return true;
 
- int t;
- if (can_see() && g->m.sees(pos.x, pos.y, x, y, g->light_level(), t)) return true;
+ if (can_see() && g->m.sees(pos.x, pos.y, x, y, g->light_level())) return true;
 
  return false;
 }

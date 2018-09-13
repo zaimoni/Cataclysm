@@ -807,12 +807,11 @@ void iuse::extinguisher(game *g, player *p, item *it, bool t)
  }
  int mondex = g->mon_at(x, y);
  if (mondex != -1) {
-  int linet;
   g->z[mondex].moves -= 150;
-  if (g->u_see(&(g->z[mondex]), linet))
+  if (g->u_see(&(g->z[mondex])))
    messages.add("The %s is sprayed!", g->z[mondex].name().c_str());
   if (g->z[mondex].made_of(LIQUID)) {
-   if (g->u_see(&(g->z[mondex]), linet))
+   if (g->u_see(&(g->z[mondex])))
     messages.add("The %s is frozen!", g->z[mondex].name().c_str());
    if (g->z[mondex].hurt(rng(20, 60)))
     g->kill_mon(mondex, (p == &(g->u)));
@@ -1340,7 +1339,7 @@ void iuse::teleport(game *g, player *p, item *it, bool t)
 void iuse::can_goo(game *g, player *p, item *it, bool t)
 {
  it->make(item::types[itm_canister_empty]);
- int tries = 0, goox, gooy, junk;
+ int tries = 0, goox, gooy;
  do {
   goox = p->posx + rng(-2, 2);
   gooy = p->posy + rng(-2, 2);
@@ -1349,14 +1348,14 @@ void iuse::can_goo(game *g, player *p, item *it, bool t)
  if (tries == 10) return;
  int mondex = g->mon_at(goox, gooy);
  if (mondex != -1) {
-  if (g->u_see(goox, gooy, junk))
+  if (g->u_see(goox, gooy))
    messages.add("Black goo emerges from the canister and envelopes a %s!",
               g->z[mondex].name().c_str());
   g->z[mondex].poly(mtype::types[mon_blob]);
   g->z[mondex].speed -= rng(5, 25);
   g->z[mondex].hp = g->z[mondex].speed;
  } else {
-  if (g->u_see(goox, gooy, junk))
+  if (g->u_see(goox, gooy))
    messages.add("Living black goo emerges from the canister!");
   monster goo(mtype::types[mon_blob], goox, gooy);
   goo.friendly = -1;
@@ -1372,7 +1371,7 @@ void iuse::can_goo(game *g, player *p, item *it, bool t)
   } while (g->m.move_cost(goox, gooy) == 0 &&
            g->m.tr_at(goox, gooy) == tr_null && tries < 10);
   if (tries < 10) {
-   if (g->u_see(goox, gooy, junk))
+   if (g->u_see(goox, gooy))
     messages.add("A nearby splatter of goo forms into a goo pit.");
    g->m.tr_at(goox, gooy) = tr_goo;
   }
@@ -1394,13 +1393,12 @@ void iuse::pipebomb(game *g, player *p, item *it, bool t)
 
 void iuse::pipebomb_act(game *g, player *p, item *it, bool t)
 {
- int linet;
  point pos = g->find_item(it);
  if (pos.x == -999 || pos.y == -999) return;
  if (t) // Simple timer effects
   g->sound(pos.x, pos.y, 0, "Ssssss");	// Vol 0 = only heard if you hold it
  else {	// The timer has run down
-  if (one_in(10) && g->u_see(pos.x, pos.y, linet))
+  if (one_in(10) && g->u_see(pos.x, pos.y))
    messages.add("The pipe bomb fizzles out.");
   else
    g->explosion(pos.x, pos.y, rng(6, 14), rng(0, 4), false);
@@ -1504,10 +1502,9 @@ void iuse::gasbomb_act(game *g, player *p, item *it, bool t)
   if (it->charges > 15)
    g->sound(pos.x, pos.y, 0, "Tick.");	// Vol 0 = only heard if you hold it
   else {
-   int junk;
    for (int i = -2; i <= 2; i++) {
     for (int j = -2; j <= 2; j++) {
-     if (g->m.sees(pos.x, pos.y, pos.x + i, pos.y + j, 3, junk) &&
+     if (g->m.sees(pos.x, pos.y, pos.x + i, pos.y + j, 3) &&
          g->m.move_cost(pos.x + i, pos.y + j) > 0)
       g->m.add_field(g, pos.x + i, pos.y + j, fd_tear_gas, 3);
     }
@@ -1533,10 +1530,9 @@ void iuse::smokebomb_act(game *g, player *p, item *it, bool t)
   if (it->charges > 17)
    g->sound(pos.x, pos.y, 0, "Tick.");	// Vol 0 = only heard if you hold it
   else {
-   int junk;
    for (int i = -2; i <= 2; i++) {
     for (int j = -2; j <= 2; j++) {
-     if (g->m.sees(pos.x, pos.y, pos.x + i, pos.y + j, 3, junk) &&
+     if (g->m.sees(pos.x, pos.y, pos.x + i, pos.y + j, 3) &&
          g->m.move_cost(pos.x + i, pos.y + j) > 0)
       g->m.add_field(g, pos.x + i, pos.y + j, fd_smoke, rng(1, 2) + rng(0, 1));
     }
@@ -1640,10 +1636,9 @@ void iuse::mininuke_act(game *g, player *p, item *it, bool t)
   g->sound(pos.x, pos.y, 2, "Tick.");
  else {	// When that timer runs down...
   g->explosion(pos.x, pos.y, 200, 0, false);
-  int junk;
   for (int i = -4; i <= 4; i++) {
    for (int j = -4; j <= 4; j++) {
-    if (g->m.sees(pos.x, pos.y, pos.x + i, pos.y + j, 3, junk) &&
+    if (g->m.sees(pos.x, pos.y, pos.x + i, pos.y + j, 3) &&
         g->m.move_cost(pos.x + i, pos.y + j) > 0)
      g->m.add_field(g, pos.x + i, pos.y + j, fd_nuke_gas, 3);
    }
@@ -1655,8 +1650,7 @@ void iuse::pheromone(game *g, player *p, item *it, bool t)
 {
  point pos(p->posx, p->posy);
 
- int junk;
- bool is_u = !p->is_npc(), can_see = (is_u || g->u_see(p->posx, p->posy, junk));
+ bool is_u = !p->is_npc(), can_see = (is_u || g->u_see(p->posx, p->posy));
  if (pos.x == -999 || pos.y == -999) return;
 
  if (is_u)
@@ -1896,8 +1890,7 @@ void iuse::dog_whistle(game *g, player *p, item *it, bool t)
  if (!p->is_npc()) messages.add("You blow your dog whistle.");
  for (int i = 0; i < g->z.size(); i++) {
   if (g->z[i].friendly != 0 && g->z[i].type->id == mon_dog) {
-   int linet;
-   bool u_see = g->u_see(&(g->z[i]), linet);
+   const bool u_see = g->u_see(&(g->z[i]));
    if (g->z[i].has_effect(ME_DOCILE)) {
     if (u_see) messages.add("Your %s looks ready to attack.", g->z[i].name().c_str());
     g->z[i].rem_effect(ME_DOCILE);
@@ -2060,11 +2053,10 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
 
   case AEA_BLOOD: {
    bool blood = false;
-   int j;
    for (int x = p->posx - 4; x <= p->posx + 4; x++) {
     for (int y = p->posy - 4; y <= p->posy + 4; y++) {
      if (!one_in(4) && g->m.add_field(g, x, y, fd_blood, 3) &&
-         (blood || g->u_see(x, y, j)))
+         (blood || g->u_see(x, y)))
       blood = true;
     }
    }
@@ -2268,7 +2260,7 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
    monster spawned(mtype::types[mon_shadow]);
    int num_spawned = 0;
    for (int i = 0; i < num_shadows; i++) {
-    int tries = 0, monx, mony, junk;
+    int tries = 0, monx, mony;
     do {
      if (one_in(2)) {
       monx = rng(p->posx - 5, p->posx + 5);
@@ -2278,7 +2270,7 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
       mony = rng(p->posy - 5, p->posy + 5);
      }
     } while (tries < 5 && !g->is_empty(monx, mony) &&
-             !g->m.sees(monx, mony, p->posx, p->posy, 10, junk));
+             !g->m.sees(monx, mony, p->posx, p->posy, 10));
     if (tries < 5) {
      num_spawned++;
      spawned.sp_timeout = rng(8, 20);
