@@ -155,13 +155,8 @@ void vehicle::init_state()
 
 const vpart_info& vehicle::part_info(int index) const
 {
-    vpart_id id = vp_null;
-    if (index < 0 || index >= parts.size())
-        id = vp_null;
-    else
-        id = parts[index].id;
-    if (id < vp_null || id >= num_vparts)
-        id = vp_null;
+    vpart_id id = (index < 0 || index >= parts.size()) ? vp_null : parts[index].id;
+    if (id < vp_null || id >= num_vparts) id = vp_null;
     return vpart_info::list[id];
 }
 
