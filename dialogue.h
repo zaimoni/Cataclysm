@@ -110,21 +110,7 @@ struct talk_response
   failure = TALK_NONE;
  }
 
- talk_response(const talk_response &rhs)
- {
-  text = rhs.text;
-  trial = rhs.trial;
-  difficulty = rhs.difficulty;
-  mission_index = rhs.mission_index;
-  miss = rhs.miss;
-  tempvalue = rhs.tempvalue;
-  effect_success = rhs.effect_success;
-  effect_failure = rhs.effect_failure;
-  opinion_success = rhs.opinion_success;
-  opinion_failure = rhs.opinion_failure;
-  success = rhs.success;
-  failure = rhs.failure;
- }
+ talk_response(const talk_response &rhs) = default;
 };
 
 struct talk_response_list
