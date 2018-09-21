@@ -6485,15 +6485,13 @@ vehicle *map::add_vehicle(game *g, vhtype_id type, int x, int y, int dir)
 // debugmsg("add_vehicle t=%d d=%d x=%d y=%d", type, dir, x, y);
  int smx = x / SEEX;
  int smy = y / SEEY;
- int nonant = smx + smy * my_MAPSIZE;
+ int nonant = smx + smy * my_MAPSIZE;	// XXX \todo fix this -- can fail because MAPSIZE defaults to 11 i.e. SEEX-1; (11,n) and (0,n+1) will be assigned to the same nonant
  x %= SEEX;
  y %= SEEY;
 // debugmsg("n=%d x=%d y=%d MAPSIZE=%d ^2=%d", nonant, x, y, MAPSIZE, MAPSIZE*MAPSIZE);
  vehicle veh(g, type);
- veh.posx = x;
- veh.posy = y;
- veh.smx = smx;
- veh.smy = smy;
+ veh.pos = point(x,y);
+ veh.sm = point(smx,smy);
  veh.face.init(dir);
  veh.turn_dir = dir;
  veh.precalc_mounts (0, dir);

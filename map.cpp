@@ -500,8 +500,8 @@ vehicle* map::veh_at(int x, int y, int &part_num)
     continue; // out of grid
    for (int i = 0; i < grid[nonant1]->vehicles.size(); i++) {
     vehicle *veh = &(grid[nonant1]->vehicles[i]);
-    int part = veh->part_at (x - (veh->posx + mx * SEEX),
-                             y - (veh->posy + my * SEEY));
+    int part = veh->part_at (x - (veh->pos.x + mx * SEEX),
+                             y - (veh->pos.y + my * SEEY));
     if (part >= 0) {
      part_num = part;
      return veh;
@@ -587,7 +587,7 @@ void map::destroy_vehicle (vehicle *veh)
   debugmsg("map::destroy_vehicle was passed NULL");
   return;
  }
- int sm = veh->smx + veh->smy * my_MAPSIZE;
+ int sm = veh->sm.x + veh->sm.y * my_MAPSIZE;
  for (int i = 0; i < grid[sm]->vehicles.size(); i++) {
   if (&(grid[sm]->vehicles[i]) == veh) {
    grid[sm]->vehicles.erase (grid[sm]->vehicles.begin() + i);
@@ -620,14 +620,13 @@ bool map::displace_vehicle (game *g, int &x, int &y, int dx, int dy, bool test=f
  dstx %= SEEX;
  dsty %= SEEY;
 
- if (test)
-  return src_na != dst_na;
+ if (test) return src_na != dst_na;
 
  // first, let's find our position in current vehicles vector
  int our_i = -1;
  for (int i = 0; i < grid[src_na]->vehicles.size(); i++) {
-  if (grid[src_na]->vehicles[i].posx == srcx &&
-      grid[src_na]->vehicles[i].posy == srcy) {
+  if (grid[src_na]->vehicles[i].pos.x == srcx &&
+      grid[src_na]->vehicles[i].pos.y == srcy) {
    our_i = i;
    break;
   }
@@ -683,12 +682,11 @@ bool map::displace_vehicle (game *g, int &x, int &y, int dx, int dy, bool test=f
   veh->parts[p].precalc_dy[0] = veh->parts[p].precalc_dy[1];
  }
 
- veh->posx = dstx;
- veh->posy = dsty;
+ veh->pos.x = dstx;
+ veh->pos.y = dsty;
  if (src_na != dst_na) {
   vehicle veh1 = *veh;
-  veh1.smx = int(x2 / SEEX);
-  veh1.smy = int(y2 / SEEY);
+  veh1.sm = point(int(x2 / SEEX),int(y2 / SEEY));
   grid[dst_na]->vehicles.push_back (veh1);
   grid[src_na]->vehicles.erase (grid[src_na]->vehicles.begin() + our_i);
  }
@@ -742,8 +740,8 @@ void map::vehmove(game *g)
      vehicle *veh = &(grid[sm]->vehicles[v]);
      bool pl_ctrl = veh->player_in_control(&g->u);
      while (!sm_change && veh->moves > 0 && veh->velocity != 0) {
-      int x = veh->posx + i * SEEX;
-      int y = veh->posy + j * SEEY;
+      int x = veh->pos.x + i * SEEX;
+      int y = veh->pos.y + j * SEEY;
       if (has_flag(swimmable, x, y) &&
           move_cost_ter_only(x, y) == 0) { // deep water
        if (pl_ctrl) messages.add("Your %s sank.", veh->name.c_str());
@@ -754,8 +752,8 @@ void map::vehmove(game *g)
        break;
       }
 // one-tile step take some of movement
-      int mpcost = 500 * move_cost_ter_only(i * SEEX + veh->posx,
-                                            j * SEEY + veh->posy);
+      int mpcost = 500 * move_cost_ter_only(i * SEEX + veh->pos.x,
+                                            j * SEEY + veh->pos.y);
       veh->moves -= mpcost;
 
       if (!veh->valid_wheel_config()) { // not enough wheels
@@ -2697,8 +2695,7 @@ bool map::loadn(game *g, int worldx, int worldy, int gridx, int gridy)
  if (tmpsub) {
   grid[gridn] = tmpsub;
   for (int i = 0; i < grid[gridn]->vehicles.size(); i++) {
-   grid[gridn]->vehicles[i].smx = gridx;
-   grid[gridn]->vehicles[i].smy = gridy;
+   grid[gridn]->vehicles[i].sm = point(gridx,gridy);
   }
  } else { // It doesn't exist; we must generate it!
   map tmp_map;
@@ -2721,8 +2718,8 @@ void map::copy_grid(int to, int from)
  grid[to] = grid[from];
  for (int i = 0; i < grid[to]->vehicles.size(); i++) {
   int ind = grid[to]->vehicles.size() - 1;
-  grid[to]->vehicles[ind].smx = to % my_MAPSIZE;
-  grid[to]->vehicles[ind].smy = to / my_MAPSIZE;
+  grid[to]->vehicles[ind].sm.x = to % my_MAPSIZE;
+  grid[to]->vehicles[ind].sm.y = to / my_MAPSIZE;
  }
 }
 

@@ -319,11 +319,11 @@ public:
 	point exhaust_d;
 
     // temp values
-    int smx, smy;   // submap coords. WARNING: must ALWAYS correspond to sumbap coords in grid, or i'm out
+    point sm;   // submap coords. WARNING: must ALWAYS correspond to sumbap coords in grid, or i'm out
     bool insides_dirty; // if true, then parts' "inside" flags are outdated and need refreshing
 
     // save values
-    int posx, posy;
+    point pos;		// position within submap: valid values 0...SEEX/SEEY-1
     tileray face;       // frame direction
     tileray move;       // direction we are moving
     int velocity;       // vehicle current velocity, mph * 100

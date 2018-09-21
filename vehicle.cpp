@@ -10,10 +10,8 @@
 
 std::vector <vehicle*> vehicle::vtypes;
 
-vehicle::vehicle(game *ag, vhtype_id type_id): g(ag), type(type_id)
+vehicle::vehicle(game *ag, vhtype_id type_id): g(ag), type(type_id), pos(0,0)
 {
-    posx = 0;
-    posy = 0;
     velocity = 0;
     turn_dir = 0;
     last_turn = 0;
@@ -50,8 +48,7 @@ void vehicle::load (std::ifstream &stin)
     int fdir, mdir, skd, prts, cr_on;
     stin >>
         t >>
-        posx >>
-        posy >>
+        pos >>
         fdir >>
         mdir >>
         turn_dir >>
@@ -107,8 +104,7 @@ void vehicle::save (std::ofstream &stout)
 {
     stout <<
         int(type) << " " <<
-        posx << " " <<
-        posy << " " <<
+        pos << " " <<
         face.dir() << " " <<
         move.dir() << " " <<
         turn_dir << " " <<
@@ -462,12 +458,12 @@ player *vehicle::get_passenger (int p)
 
 int vehicle::global_x ()
 {
-    return smx * SEEX + posx;
+    return sm.x * SEEX + pos.x;
 }
 
 int vehicle::global_y ()
 {
-    return smy * SEEY + posy;
+    return sm.y * SEEY + pos.y;
 }
 
 int vehicle::total_mass ()
@@ -935,7 +931,7 @@ int vehicle::part_collision (int vx, int vy, int part, int x, int y)
     monster *z = mondex >= 0? &g->z[mondex] : 0;
     player *ph = (npcind >= 0? &g->active_npc[npcind] : (u_here? &g->u : 0));
     vehicle *oveh = g->m.veh_at (x, y);
-    bool veh_collision = oveh && (oveh->posx != posx || oveh->posy != posy);
+    bool veh_collision = oveh && oveh->pos != pos;
     bool body_collision = (g->u.posx == x && g->u.posy == y && !g->u.in_vehicle) ||
                            mondex >= 0 || npcind >= 0;
 
