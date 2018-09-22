@@ -214,6 +214,7 @@
     <ClInclude Include="tileray.h" />
     <ClInclude Include="trap.h" />
     <ClInclude Include="tutorial.h" />
+    <ClInclude Include="ui.h" />
     <ClInclude Include="vehicle.h" />
     <ClInclude Include="veh_interact.h" />
     <ClInclude Include="veh_type.h" />
