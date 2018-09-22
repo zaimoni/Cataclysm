@@ -36,6 +36,9 @@ struct point {
 
 inline bool operator==(const point& lhs, const point& rhs) { return lhs.x == rhs.x && lhs.y == rhs.y; }
 inline bool operator!=(const point& lhs, const point& rhs) { return lhs.x != rhs.x || lhs.y != rhs.y; }
+inline point operator+(const point& lhs, const point& rhs) { return point(lhs) += rhs; }
+inline point operator*(int s, const point& pt) { return point(pt) *= s; }
+inline point operator*(const point& pt, int s) { return point(pt) *= s; }
 
 struct tripoint {
  int x;

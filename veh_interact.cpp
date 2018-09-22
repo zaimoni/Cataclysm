@@ -404,14 +404,11 @@ void veh_interact::move_cursor (int dx, int dy)
     c.x += dx;
     c.y += dy;
     cpart = part_at (c);
-	point vd(-dd.x - c.y, c.x - dd.y);
-    point v(veh->coord_translate(vd));
-    int vehx = veh->global_x() + v.x;
-    int vehy = veh->global_y() + v.y;
-    bool obstruct = _g->m.move_cost_ter_only (vehx, vehy) == 0;
-    vehicle * const oveh = _g->m.veh_at (vehx, vehy);
-    if (oveh && oveh != veh)
-        obstruct = true;
+	const point vd(-dd.x - c.y, c.x - dd.y);
+	const point vpos(veh->global() + veh->coord_translate(vd));
+    bool obstruct = _g->m.move_cost_ter_only (vpos.x, vpos.y) == 0;
+    vehicle * const oveh = _g->m.veh_at (vpos.x, vpos.y);
+    if (oveh && oveh != veh) obstruct = true;
     nc_color col = cpart >= 0? veh->part_color (cpart) : c_black;
     mvwputch (w_disp, c.y+6, c.x+6, obstruct? red_background(col) : hilite(col),
                       special_symbol(cpart >= 0? veh->part_sym (cpart) : ' '));

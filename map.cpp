@@ -638,10 +638,9 @@ bool map::displace_vehicle (game *g, int &x, int &y, int dx, int dy, bool test=f
  // move the vehicle
  vehicle *veh = &(grid[src_na]->vehicles[our_i]);
  // don't let it go off grid
- if (!inbounds(x2, y2))
-  veh->stop();
+ if (!inbounds(x2, y2)) veh->stop();
 
-    // record every passenger inside
+ // record every passenger inside
  std::vector<int> psg_parts = veh->boarded_parts();
  std::vector<player *> psgs;
  for (int p = 0; p < psg_parts.size(); p++)
@@ -656,10 +655,9 @@ bool map::displace_vehicle (game *g, int &x, int &y, int dx, int dy, bool test=f
   player *psg = psgs[i];
   int p = psg_parts[i];
   if (!psg) {
+   const point origin(veh->global() + veh->parts[p].precalc_d[0]);
    debugmsg ("empty passenger part %d pcoord=%d,%d u=%d,%d?", p, 
-             veh->global_x() + veh->parts[p].precalc_dx[0],
-             veh->global_y() + veh->parts[p].precalc_dy[0],
-                      g->u.posx, g->u.posy);
+             origin.x, origin.y, g->u.posx, g->u.posy);
    continue;
   }
   int trec = rec - psgs[i]->sklevel[sk_driving];
@@ -669,18 +667,15 @@ bool map::displace_vehicle (game *g, int &x, int &y, int dx, int dy, bool test=f
   // displace passenger taking in account vehicle movement (dx, dy)
   // and turning: precalc_dx/dy [0] contains previous frame direction,
   // and precalc_dx/dy[1] should contain next direction
-  psg->posx += dx + veh->parts[p].precalc_dx[1] - veh->parts[p].precalc_dx[0];
-  psg->posy += dy + veh->parts[p].precalc_dy[1] - veh->parts[p].precalc_dy[0];
+  psg->posx += dx + veh->parts[p].precalc_d[1].x - veh->parts[p].precalc_d[0].x;
+  psg->posy += dy + veh->parts[p].precalc_d[1].y - veh->parts[p].precalc_d[0].y;
   if (psg == &g->u) { // if passemger is you, we need to update the map
    need_update = true;
    upd_x = psg->posx;
    upd_y = psg->posy;
   }
  }
- for (int p = 0; p < veh->parts.size(); p++) {
-  veh->parts[p].precalc_dx[0] = veh->parts[p].precalc_dx[1];
-  veh->parts[p].precalc_dy[0] = veh->parts[p].precalc_dy[1];
- }
+ for (auto& part : veh->parts) part.precalc_d[0] = part.precalc_d[1];
 
  veh->pos.x = dstx;
  veh->pos.y = dsty;
@@ -760,9 +755,8 @@ void map::vehmove(game *g)
        veh->velocity += veh->velocity < 0 ? 2000 : -2000;
        for (int ep = 0; ep < veh->external_parts.size(); ep++) {
         int p = veh->external_parts[ep];
-        int px = x + veh->parts[p].precalc_dx[0];
-        int py = y + veh->parts[p].precalc_dy[0];
-        ter_id &pter = ter(px, py);
+		const point origin(x + veh->parts[p].precalc_d[0].x, y + veh->parts[p].precalc_d[0].y);
+        ter_id &pter = ter(origin.x, origin.y);
         if (pter == t_dirt || pter == t_grass)
          pter = t_dirtmound;
        }
@@ -798,21 +792,15 @@ void map::vehmove(game *g)
        int p = veh->external_parts[ep];
 // coords of where part will go due to movement (dx/dy)
 // and turning (precalc_dx/dy [1])
-       int dsx = x + dx + veh->parts[p].precalc_dx[1];
-       int dsy = y + dy + veh->parts[p].precalc_dy[1];
-       if (can_move)
-        imp += veh->part_collision (x, y, p, dsx, dsy);
-       if (veh->velocity == 0)
-        can_move = false;
-       if (!can_move)
-        break;
+	   const point ds(x + dx + veh->parts[p].precalc_d[1].x, y + dy + veh->parts[p].precalc_d[1].y);
+       if (can_move) imp += veh->part_collision (x, y, p, ds);
+       if (veh->velocity == 0) can_move = false;
+       if (!can_move) break;
       }
 
       int coll_turn = 0;
       if (imp > 0) {
-// debugmsg ("collision imp=%d dam=%d-%d", imp, imp/10, imp/6);
-       if (imp > 100)
-        veh->damage_all(imp / 20, imp / 10, 1);// shake veh because of collision
+       if (imp > 100) veh->damage_all(imp / 20, imp / 10, 1);// shake veh because of collision
        std::vector<int> ppl = veh->boarded_parts();
        int vel2 = imp * k_mvel * 100 / (veh->total_mass() / 8);
        for (int ps = 0; ps < ppl.size(); ps++) {
@@ -825,11 +813,8 @@ void map::vehmove(game *g)
         int psblt = veh->part_with_feature (ppl[ps], vpf_seatbelt);
         int sb_bonus = psblt >= 0? veh->part_info(psblt).bonus : 0;
         bool throw_it = throw_roll > (psg->str_cur + sb_bonus) * 3;
-/*
-        debugmsg ("throw vel2=%d roll=%d bonus=%d", vel2, throw_roll,
-                  (psg->str_cur + sb_bonus) * 3);
-*/
-        std::string psgname, psgverb;
+        std::string psgname;
+		const char* psgverb;
         if (psg == &g->u) {
          psgname = "You";
          psgverb = "were";
@@ -840,9 +825,9 @@ void map::vehmove(game *g)
         if (throw_it) {
          if (psgname.length())
           messages.add("%s %s hurled from the %s's seat by the power of impact!",
-                      psgname.c_str(), psgverb.c_str(), veh->name.c_str());
-         g->m.unboard_vehicle(g, x + veh->parts[ppl[ps]].precalc_dx[0],
-                                 y + veh->parts[ppl[ps]].precalc_dy[0]);
+                      psgname.c_str(), psgverb, veh->name.c_str());
+		 const point origin(x + veh->parts[ppl[ps]].precalc_d[0].x, y + veh->parts[ppl[ps]].precalc_d[0].y);
+         g->m.unboard_vehicle(g, origin.x, origin.y);
          g->fling_player_or_monster(psg, 0, mdir.dir() + rng(0, 60) - 30,
                                     (vel2/100 - sb_bonus < 10 ? 10 :
                                      vel2/100 - sb_bonus));
@@ -870,11 +855,11 @@ void map::vehmove(game *g)
       if (can_move) {
        for (int ep = 0; ep < veh->external_parts.size(); ep++) {
         int p = veh->external_parts[ep];
+		const point origin(x + veh->parts[p].precalc_d[0].x, y + veh->parts[p].precalc_d[0].y);
         if (veh->part_flag(p, vpf_wheel) && one_in(2))
-         if (displace_water (x + veh->parts[p].precalc_dx[0], y + veh->parts[p].precalc_dy[0]) && pl_ctrl)
+         if (displace_water (origin.x, origin.y) && pl_ctrl)
           messages.add("You hear a splash!");
-        veh->handle_trap(x + veh->parts[p].precalc_dx[0],
-                         y + veh->parts[p].precalc_dy[0], p);
+        veh->handle_trap(origin.x, origin.y, p);
        }
       }
 

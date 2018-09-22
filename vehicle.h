@@ -20,8 +20,7 @@ struct vehicle_part
 {
     vpart_id id;            // id in list of parts (vpart_list index)
 	point mount_d;			// mount point (coordinates flipped like curses, vertical x horizontal y)
-    int precalc_dx[2];      // mount_dx translated to face.dir [0] and turn_dir [1]
-    int precalc_dy[2];      // mount_dy translated to face.dir [0] and turn_dir [1]
+    point precalc_d[2];     // mount_dx/mount_dy translated to face.dir [0] and turn_dir [1]
     int hp;                 // current durability, if 0, then broken
     int blood;              // how much blood covers part (in turns). only useful for external
     bool inside;            // if tile provides cover. WARNING: do not read it directly, use vehicle::is_inside() instead
@@ -128,7 +127,8 @@ public:
     const vpart_info& part_info(int index) const;
 
 // check if certain part can be mounted at certain position (not accounting frame direction)
-    bool can_mount (int dx, int dy, vpart_id id);
+    bool can_mount(int dx, int dy, vpart_id id) const;
+	bool can_mount(point d, vpart_id id) const { return can_mount(d.x, d.y, id); };
 
 // check if certain external part can be unmounted
     bool can_unmount (int p);
@@ -139,7 +139,7 @@ public:
     void remove_part (int p);
 
 // returns the list of indeces of parts at certain position (not accounting frame direction)
-    std::vector<int> parts_at_relative (int dx, int dy);
+    std::vector<int> parts_at_relative (int dx, int dy) const;
 
 // returns the list of indeces of parts inside (or over) given
     std::vector<int> internal_parts(int p) const;
@@ -154,7 +154,7 @@ public:
     point coord_translate (point reld) const;
 
 // Translate seat-relative mount coords into tile coords using given face direction
-    void coord_translate (int dir, int reldx, int reldy, int &dx, int &dy);
+    static point coord_translate (int dir, point reld);
     
 // Seek a vehicle part which obstructs tile with given coords relative to vehicle position
     int part_at (int dx, int dy);
@@ -181,8 +181,7 @@ public:
     player *get_passenger (int p);
 
 // get global coords for vehicle
-    int global_x ();
-    int global_y ();
+	point global() const;
 
 // Checks how much certain fuel left in tanks. If for_engine == true that means
 // ftype == AT_BATT is also takes in account AT_PLUT fuel (electric motors can use both)
@@ -255,7 +254,7 @@ public:
 
 // handle given part collision with vehicle, monster/NPC/player or terrain obstacle
 // return impulse (damage) applied on vehicle for that collision
-    int part_collision (int vx, int vy, int part, int x, int y);
+    int part_collision (int vx, int vy, int part, point dest);
 
 // Process the trap beneath
     void handle_trap (int x, int y, int part);

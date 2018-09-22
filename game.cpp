@@ -3976,12 +3976,13 @@ void game::exam_vehicle(vehicle &veh, int cx, int cy)
     veh_interact vehint(cx, cy, this, &veh);	// if this breaks try 0,0 instead
     vehint.exec();
     if (vehint.sel_cmd != ' ')
-    {                                                        // TODO: different activity times
+    {   // TODO: different activity times
+		const point o(veh.global());
         u.activity = player_activity(ACT_VEHICLE,
                                      vehint.sel_cmd == 'f'? 200 : 20000,
                                      (int) vehint.sel_cmd);
-        u.activity.values.push_back (veh.global_x());    // values[0]
-        u.activity.values.push_back (veh.global_y());    // values[1]
+        u.activity.values.push_back (o.x);    // values[0]
+        u.activity.values.push_back (o.y);    // values[1]
         u.activity.values.push_back (vehint.c.x);   // values[2]
         u.activity.values.push_back (vehint.c.y);   // values[3]
         u.activity.values.push_back (-vehint.dd.x - vehint.c.y);   // values[4]
