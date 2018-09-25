@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include "enums.h"
 
 // TODO: Redefine?
 #define MAX_FAC_NAME_SIZE 40
@@ -70,8 +71,7 @@ enum faction_value {
 
 
 struct faction {
- faction();
- faction(int uid);
+ faction(int uid = -1);
  ~faction() = default;
 
  std::string save_info();
@@ -79,12 +79,12 @@ struct faction {
 
  void randomize();
  void make_army();
- bool has_job(faction_job j);
- bool has_value(faction_value v);
+ bool has_job(faction_job j) const;
+ bool has_value(faction_value v) const;
  bool matches_us(faction_value v);
  std::string describe();
 
- int response_time(game *g);	// Time it takes for them to get to u
+ int response_time(tripoint dest) const;	// Time it takes for them to get to u
 
  std::string name;
  unsigned values : NUM_FACVALS; // Bitfield of values
@@ -96,8 +96,8 @@ struct faction {
  bool known_by_u;
  int id;
  int strength, sneak, crime, cult, good;	// Defining values
- int omx, omy;	// Which overmap are we based in?
- int mapx, mapy;// Where in that overmap are we?
+ point om;	// Which overmap are we based in?
+ point map; // Where in that overmap are we? (coordinate ranges 0...OMAPX/Y)
  int size;	// How big is our sphere of influence?
  int power;	// General measure of our power
 };

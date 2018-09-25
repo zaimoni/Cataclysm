@@ -6646,8 +6646,8 @@ std::vector<faction *> game::factions_at(int x, int y)
 {
  std::vector<faction *> ret;
  for (int i = 0; i < factions.size(); i++) {
-  if (factions[i].omx == cur_om.pos.x && factions[i].omy == cur_om.pos.y &&
-      trig_dist(x, y, factions[i].mapx, factions[i].mapy) <= factions[i].size)
+  if (factions[i].om.x == cur_om.pos.x && factions[i].om.y == cur_om.pos.y &&
+      trig_dist(x, y, factions[i].map.x, factions[i].map.y) <= factions[i].size)
    ret.push_back(&(factions[i]));
  }
  return ret;

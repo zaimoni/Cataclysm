@@ -29,7 +29,7 @@ struct mongroup {
  static std::vector<mon_id> moncats[num_moncats];
 
  moncat_id type;
- point pos;
+ point pos;		// coordinate range 0...OMAPX/Y-1
  unsigned char radius;
  unsigned int population;
  bool dying;

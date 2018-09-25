@@ -9,15 +9,15 @@
 #include <vector>
 
 struct city {
- int x;
- int y;
+ int x;	// legal range 0...OMAPX-1
+ int y;	// legal range 0...OMAPY-1
  int s;
  city(int X = -1, int Y = -1, int S = -1) : x (X), y (Y), s (S) {}
 };
 
 struct om_note {
- int x;
- int y;
+ int x;	// legal range 0...OMAPX-1
+ int y;	// legal range 0...OMAPY-1
  int num;
  std::string text;
  om_note(int X = -1, int Y = -1, int N = -1, std::string T = "") :
@@ -25,8 +25,8 @@ struct om_note {
 };
 
 struct radio_tower {
- int x;
- int y;
+ int x;	// legal range 0...OMAPX-1
+ int y;	// legal range 0...OMAPY-1
  int strength;
  std::string message;
  radio_tower(int X = -1, int Y = -1, int S = -1, std::string M = "") :

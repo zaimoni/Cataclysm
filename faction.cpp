@@ -4,36 +4,12 @@
 #include "math.h"
 #include "output.h"
 #include "game.h"
+#include "saveload.h"
 
 #include <sstream>
 
 std::string invent_name();
 std::string invent_adj();
-
-faction::faction()
-{
-// debugmsg("Warning: Faction created without UID!");
- name = "";
- values = 0;
- likes_u = 0;
- respects_u = 0;
- known_by_u = false;
- goal = FACGOAL_NULL;
- job1 = FACJOB_NULL;
- job2 = FACJOB_NULL;
- strength = 0;
- sneak = 0;
- crime = 0;
- cult = 0;
- good = 0;
- omx = 0;
- omy = 0;
- mapx = 0;
- mapy = 0;
- size = 0;
- power = 0;
- id = -1;
-}
 
 faction::faction(int uid)
 {
@@ -50,13 +26,11 @@ faction::faction(int uid)
  crime = 0;
  cult = 0;
  good = 0;
- omx = 0;
- omy = 0;
- mapx = 0;
- mapy = 0;
+ om = point(0, 0);
+ map = point(0, 0);
  size = 0;
  power = 0;
- uid = id;
+ id = uid;
 }
 
 std::string faction::save_info()
@@ -65,7 +39,7 @@ std::string faction::save_info()
  dump << id << " " << values << " " << goal << " " << job1 << " " << job2 <<
          " " << likes_u << " " << respects_u << " " << known_by_u << " " <<
          strength << " " << sneak << " " << crime << " " << cult << " " <<
-         good << " " << omx << " " << omy << " " << mapx << " " << mapy <<
+         good << " " << om << " " << map <<
          " " << size << " " << power << " ";
  dump << opinion_of.size() << " ";
  for (int i = 0; i < opinion_of.size(); i++)
@@ -81,7 +55,7 @@ void faction::load_info(std::string data)
  dump << data;
  dump >> id >> valuetmp >> goaltmp >> jobtmp1 >> jobtmp2 >> likes_u >>
          respects_u >> known_by_u >> strength >> sneak >> crime >> cult >>
-         good >> omx >> omy >> mapx >> mapy >> size >> power;
+         good >> om >> map >> size >> power;
  values = valuetmp;
  goal = faction_goal(goaltmp);
  job1 = faction_job(jobtmp1);
@@ -101,22 +75,18 @@ void faction::randomize()
 {
 // Set up values
 // TODO: Not always in overmap 0,0
- omx = 0;
- omy = 0;
- mapx = rng(OMAPX / 10, OMAPX - OMAPX / 10);
- mapy = rng(OMAPY / 10, OMAPY - OMAPY / 10);
+ om = point(0,0);
+ map = point(rng(OMAPX / 10, OMAPX - OMAPX / 10), rng(OMAPY / 10, OMAPY - OMAPY / 10));
 // Pick an overall goal.
  goal = faction_goal(rng(1, NUM_FACGOALS - 1));
- if (one_in(4))
-  goal = FACGOAL_NONE;	// Slightly more likely to not have a real goal
+ if (one_in(4)) goal = FACGOAL_NONE;	// Slightly more likely to not have a real goal
  good     = facgoal_data[goal].good;
  strength = facgoal_data[goal].strength;
  sneak    = facgoal_data[goal].sneak;
  crime    = facgoal_data[goal].crime;
  cult     = facgoal_data[goal].cult;
  job1 = faction_job(rng(1, NUM_FACJOBS - 1));
- do
-  job2 = faction_job(rng(0, NUM_FACJOBS - 1));
+ do job2 = faction_job(rng(0, NUM_FACJOBS - 1));
  while (job2 == job1);
  good     += facjob_data[job1].good     + facjob_data[job2].good;
  strength += facjob_data[job1].strength + facjob_data[job2].strength;
@@ -213,40 +183,30 @@ void faction::randomize()
 void faction::make_army()
 {
  name = "The army";
- omx = 0;
- omy = 0;
- mapx = OMAPX / 2;
- mapy = OMAPY / 2;
+ om = point(0, 0);
+ map = point(OMAPX / 2, OMAPY / 2);
  size = OMAPX * 2;
  power = OMAPX;
  goal = FACGOAL_DOMINANCE;
  job1 = FACJOB_MERCENARIES;
  job2 = FACJOB_NULL;
- if (one_in(4))
-  values |= mfb(FACVAL_CHARITABLE);
- if (!one_in(4))
-  values |= mfb(FACVAL_EXPLORATION);
- if (one_in(3))
-  values |= mfb(FACVAL_BIONICS);
- if (one_in(3))
-  values |= mfb(FACVAL_ROBOTS);
- if (one_in(4))
-  values |= mfb(FACVAL_TREACHERY);
- if (one_in(4))
-  values |= mfb(FACVAL_STRAIGHTEDGE);
- if (!one_in(3))
-  values |= mfb(FACVAL_LAWFUL);
- if (one_in(8))
-  values |= mfb(FACVAL_CRUELTY);
+ if (one_in(4)) values |= mfb(FACVAL_CHARITABLE);
+ if (!one_in(4)) values |= mfb(FACVAL_EXPLORATION);
+ if (one_in(3)) values |= mfb(FACVAL_BIONICS);
+ if (one_in(3)) values |= mfb(FACVAL_ROBOTS);
+ if (one_in(4)) values |= mfb(FACVAL_TREACHERY);
+ if (one_in(4)) values |= mfb(FACVAL_STRAIGHTEDGE);
+ if (!one_in(3)) values |= mfb(FACVAL_LAWFUL);
+ if (one_in(8)) values |= mfb(FACVAL_CRUELTY);
  id = 0;
 }
 
-bool faction::has_job(faction_job j)
+bool faction::has_job(faction_job j) const
 {
  return (job1 == j || job2 == j);
 }
 
-bool faction::has_value(faction_value v)
+bool faction::has_value(faction_value v) const
 {
  return values & mfb(v);
 }
@@ -319,36 +279,25 @@ std::string faction::describe()
  return ret;
 }
 
-int faction::response_time(game *g)
+int faction::response_time(tripoint dest) const
 {
- int base = abs(mapx - g->lev.x);
- if (abs(mapy - g->lev.y) > base)
-  base = abs(mapy - g->lev.y);
- if (base > size)	// Out of our sphere of influence
-  base *= 2.5;
+ int base = abs(map.x - dest.x);
+ if (abs(map.y - dest.y) > base) base = abs(map.y - dest.y);
+ if (base > size) base *= 2.5;	// Out of our sphere of influence
  base *= 24;	// 24 turns to move one overmap square
  int maxdiv = 10;
- if (goal == FACGOAL_DOMINANCE)
-  maxdiv += 2;
- if (has_job(FACJOB_CARAVANS))
-  maxdiv += 2;
- if (has_job(FACJOB_SCAVENGE))
-  maxdiv++;
- if (has_job(FACJOB_MERCENARIES))
-  maxdiv += 2;
- if (has_job(FACJOB_FARMERS))
-  maxdiv -= 2;
- if (has_value(FACVAL_EXPLORATION))
-  maxdiv += 2;
- if (has_value(FACVAL_LONERS))
-  maxdiv -= 3;
- if (has_value(FACVAL_TREACHERY))
-  maxdiv -= rng(0, 3);
+ if (goal == FACGOAL_DOMINANCE) maxdiv += 2;
+ if (has_job(FACJOB_CARAVANS)) maxdiv += 2;
+ if (has_job(FACJOB_SCAVENGE)) maxdiv++;
+ if (has_job(FACJOB_MERCENARIES)) maxdiv += 2;
+ if (has_job(FACJOB_FARMERS)) maxdiv -= 2;
+ if (has_value(FACVAL_EXPLORATION)) maxdiv += 2;
+ if (has_value(FACVAL_LONERS)) maxdiv -= 3;
+ if (has_value(FACVAL_TREACHERY)) maxdiv -= rng(0, 3);
  int mindiv = (maxdiv > 9 ? maxdiv - 9 : 1);
  base /= rng(mindiv, maxdiv);// We might be in the field
  base -= likes_u;	// We'll hurry, if we like you
- if (base < 100)
-  base = 100;
+ if (base < 100) base = 100;
  return base;
 }
 
