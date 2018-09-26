@@ -17,16 +17,13 @@ std::vector<item> starting_clothes(npc_class type, bool male, game *g);
 std::vector<item> starting_inv(npc *me, npc_class type, game *g);
 
 npc::npc()
-: om(0,0,0)
+: wand(0,0),wandf(0),om(0,0,0)
 {
  id = -1;
  mapx = 0;
  mapy = 0;
  posx = -1;
  posy = -1;
- wandx = 0;
- wandy = 0;
- wandf = 0;
  plx = 999;
  ply = 999;
  itx = -1;
@@ -65,8 +62,7 @@ npc& npc::operator=(const npc &rhs)
  id = rhs.id;
  name = rhs.name;
  attitude = rhs.attitude;
- wandx = rhs.wandx;
- wandy = rhs.wandy;
+ wand = rhs.wand;
  wandf = rhs.wandf;
  om = rhs.om;
  mapx = rhs.mapx;
@@ -157,13 +153,10 @@ std::string npc::save_info()
 // NPC-specific stuff
  dump << int(personality.aggression) << " " << int(personality.bravery) <<
          " " << int(personality.collector) << " " <<
-         int(personality.altruism) << " " << wandx << " " << wandy << " " <<
+         int(personality.altruism) << " " << wand << " " <<
          wandf << " " << om << " " << mapx << " " << mapy << " " << plx << " " 
 		 << ply << " " <<  goalx << " " << goaly << " " << int(mission) << " " << int(flags) << " ";
- if (my_fac == NULL)
-  dump << -1;
- else
-  dump << my_fac->id;
+ dump << (my_fac == NULL ? -1 : my_fac->id);
  dump << " " << attitude << " " << " " << op_of_u.save_info() << " " <<
          chatbin.save_info() << " ";
 
@@ -260,7 +253,7 @@ void npc::load_info(game *g, std::string data)
  }
 // Special NPC stuff
  int misstmp, flagstmp, tmpatt, agg, bra, col, alt;
- dump >> agg >> bra >> col >> alt >> wandx >> wandy >> wandf >> om >> 
+ dump >> agg >> bra >> col >> alt >> wand >> wandf >> om >> 
 	     mapx >> mapy >> plx >> ply >> goalx >> goaly >> misstmp >>
          flagstmp >> fac_id >> tmpatt;
  personality.aggression = agg;
