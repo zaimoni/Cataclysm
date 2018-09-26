@@ -459,7 +459,7 @@ public:
  * from one submap to an adjacent submap.  It updates our position (shifting by
  * 12 tiles), as well as our plans.
  */
- void shift(int sx, int sy); 
+ void shift(point delta); 
 
 
 // Movement; the following are defined in npcmove.cpp
@@ -511,7 +511,7 @@ public:
  void pick_and_eat	(game *g);
  void mug_player	(game *g, player &mark);
  void look_for_player	(game *g, player &sought);
- bool saw_player_recently();// Do we have an idea of where u are?
+ bool saw_player_recently() const;// Do we have an idea of where u are?
 
 // Movement on the overmap scale
  bool has_destination();	// Do we have a long-term destination?
@@ -528,14 +528,16 @@ public:
  int id;	// A unique ID number, assigned by the game class
  npc_attitude attitude;	// What we want to do to the player
  npc_class myclass; // What's our archetype?
- // last heard sound: dead data, in savefile but no users
+ // last heard sound: dead data, in savefile but no users (same intended semantics as monster::wand,wandf?)
  point wand;	// location
- int wandf;		// recency
+ int wandf;		// recency (timeout)
 
 // Location:
  tripoint om;	// which overmap (e.g., o.0.0.0) 
  int mapx, mapy;// Which square in that overmap (e.g., m.0.0)
- int plx, ply, plt;// Where we last saw the player, timeout to forgetting
+ // last seen player data (assumes player is singleton)
+ point pl;	// last saw player at; legal coordinates 0.. (SEEX/Y * MAPSIZE-1)
+ int plt;	// timeout to forgetting
  int itx, ity;	// The square containing an item we want
  int goalx, goaly;// Which mapx:mapy square we want to get to
 

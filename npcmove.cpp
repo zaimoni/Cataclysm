@@ -253,9 +253,9 @@ void npc::execute_action(game *g, npc_action action, int target)
 
  case npc_look_for_player:
   {
-  if (saw_player_recently() && g->m.sees(posx, posy, plx, ply, light)) {
-// (plx, ply) is the point where we last saw the player
-   update_path(g, plx, ply);
+  if (saw_player_recently() && g->m.sees(posx, posy, pl.x, pl.y, light)) {
+// npc::pl is the point where we last saw the player
+   update_path(g, pl.x, pl.y);
    move_to_next(g);
   } else
    look_for_player(g, g->u);
@@ -1767,10 +1767,9 @@ void npc::look_for_player(game *g, player &sought)
  }
 }
 
-bool npc::saw_player_recently()
+bool npc::saw_player_recently() const
 {
- return (plx >= 0 && plx < SEEX * MAPSIZE && ply >= 0 && ply < SEEY * MAPSIZE &&
-         plt > 0);
+ return (pl.x >= 0 && pl.x < SEEX * MAPSIZE && pl.y >= 0 && pl.y < SEEY * MAPSIZE && plt > 0);
 }
 
 bool npc::has_destination()

@@ -2582,66 +2582,66 @@ void map::load(game *g, int wx, int wy)
  }
 }
 
-void map::shift(game *g, int wx, int wy, int sx, int sy)
+void map::shift(game *g, int wx, int wy, const point delta)
 {
 // Special case of 0-shift; refresh the map
- if (sx == 0 && sy == 0) {
+ if (delta.x == 0 && delta.y == 0) {
   return; // Skip this?
   for (int gridx = 0; gridx < my_MAPSIZE; gridx++) {
    for (int gridy = 0; gridy < my_MAPSIZE; gridy++) {
-    if (!loadn(g, wx+sx, wy+sy, gridx, gridy))
-     loadn(g, wx+sx, wy+sy, gridx, gridy);
+    if (!loadn(g, wx+ delta.x, wy+ delta.y, gridx, gridy))
+     loadn(g, wx+ delta.x, wy+ delta.y, gridx, gridy);
    }
   }
   return;
  }
 
 // if player is driving vehicle, (s)he must be shifted with vehicle too
- if (g->u.in_vehicle && (sx !=0 || sy != 0)) {
-  g->u.posx -= sx * SEEX;
-  g->u.posy -= sy * SEEY;
+ if (g->u.in_vehicle) {
+  g->u.posx -= delta.x * SEEX;
+  g->u.posy -= delta.y * SEEY;
  }
 
 // Shift the map sx submaps to the right and sy submaps down.
 // sx and sy should never be bigger than +/-1.
 // wx and wy are our position in the world, for saving/loading purposes.
- if (sx >= 0) {
+ if (delta.x >= 0) {
   for (int gridx = 0; gridx < my_MAPSIZE; gridx++) {
-   if (sy >= 0) {
+   if (delta.y >= 0) {
     for (int gridy = 0; gridy < my_MAPSIZE; gridy++) {
-     if (gridx + sx < my_MAPSIZE && gridy + sy < my_MAPSIZE)
+     if (gridx + delta.x < my_MAPSIZE && gridy + delta.y < my_MAPSIZE)
       copy_grid(gridx + gridy * my_MAPSIZE,
-                gridx + sx + (gridy + sy) * my_MAPSIZE);
-     else if (!loadn(g, wx + sx, wy + sy, gridx, gridy))
-      loadn(g, wx + sx, wy + sy, gridx, gridy);
+                gridx + delta.x + (gridy + delta.y) * my_MAPSIZE);
+     else if (!loadn(g, wx + delta.x, wy + delta.y, gridx, gridy))
+      loadn(g, wx + delta.x, wy + delta.y, gridx, gridy);
     }
    } else { // sy < 0; work through it backwards
     for (int gridy = my_MAPSIZE - 1; gridy >= 0; gridy--) {
-     if (gridx + sx < my_MAPSIZE && gridy + sy >= 0)
+     if (gridx + delta.x < my_MAPSIZE && gridy + delta.y >= 0)
       copy_grid(gridx + gridy * my_MAPSIZE,
-                gridx + sx + (gridy + sy) * my_MAPSIZE);
-     else if (!loadn(g, wx + sx, wy + sy, gridx, gridy))
-      loadn(g, wx + sx, wy + sy, gridx, gridy);
+                gridx + delta.x + (gridy + delta.y) * my_MAPSIZE);
+     else if (!loadn(g, wx + delta.x, wy + delta.y, gridx, gridy))
+      loadn(g, wx + delta.x, wy + delta.y, gridx, gridy);
     }
    }
   }
  } else { // sx < 0; work through it backwards
   for (int gridx = my_MAPSIZE - 1; gridx >= 0; gridx--) {
-   if (sy >= 0) {
+   if (delta.y >= 0) {
     for (int gridy = 0; gridy < my_MAPSIZE; gridy++) {
-     if (gridx + sx >= 0 && gridy + sy < my_MAPSIZE)
+     if (gridx + delta.x >= 0 && gridy + delta.y < my_MAPSIZE)
       copy_grid(gridx + gridy * my_MAPSIZE,
-                gridx + sx + (gridy + sy) * my_MAPSIZE);
-     else if (!loadn(g, wx + sx, wy + sy, gridx, gridy))
-      loadn(g, wx + sx, wy + sy, gridx, gridy);
+                gridx + delta.x + (gridy + delta.y) * my_MAPSIZE);
+     else if (!loadn(g, wx + delta.x, wy + delta.y, gridx, gridy))
+      loadn(g, wx + delta.x, wy + delta.y, gridx, gridy);
     }
    } else { // sy < 0; work through it backwards
     for (int gridy = my_MAPSIZE - 1; gridy >= 0; gridy--) {
-     if (gridx + sx >= 0 && gridy + sy >= 0)
+     if (gridx + delta.x >= 0 && gridy + delta.y >= 0)
       copy_grid(gridx + gridy * my_MAPSIZE,
-                gridx + sx + (gridy + sy) * my_MAPSIZE);
-     else if (!loadn(g, wx + sx, wy + sy, gridx, gridy))
-      loadn(g, wx + sx, wy + sy, gridx, gridy);
+                gridx + delta.x + (gridy + delta.y) * my_MAPSIZE);
+     else if (!loadn(g, wx + delta.x, wy + delta.y, gridx, gridy))
+      loadn(g, wx + delta.x, wy + delta.y, gridx, gridy);
     }
    }
   }

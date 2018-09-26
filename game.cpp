@@ -6131,51 +6131,51 @@ void game::vertical_move(int movez, bool force)
 
 void game::update_map(int &x, int &y)
 {
- int shiftx = 0, shifty = 0;
+ point shift(0,0);
  int group = 0;
- int olevx = 0, olevy = 0;
+ point olev(0, 0);
  while (x < SEEX * int(MAPSIZE / 2)) {
   x += SEEX;
-  shiftx--;
+  shift.x--;
  }
  while (x >= SEEX * (1 + int(MAPSIZE / 2))) {
   x -= SEEX;
-  shiftx++;
+  shift.x++;
  }
  while (y < SEEY * int(MAPSIZE / 2)) {
   y += SEEY;
-  shifty--;
+  shift.y--;
  }
  while (y >= SEEY * (1 + int(MAPSIZE / 2))) {
   y -= SEEY;
-  shifty++;
+  shift.y++;
  }
- m.shift(this, lev.x, lev.y, shiftx, shifty);
- lev.x += shiftx;
- lev.y += shifty;
+ m.shift(this, lev.x, lev.y, shift);
+ lev.x += shift.x;
+ lev.y += shift.y;
  if (lev.x < 0) {
   lev.x += OMAPX * 2;
-  olevx = -1;
+  olev.x = -1;
  } else if (lev.x > OMAPX * 2 - 1) {
   lev.x -= OMAPX * 2;
-  olevx = 1;
+  olev.x = 1;
  }
  if (lev.y < 0) {
   lev.y += OMAPY * 2;
-  olevy = -1;
+  olev.y = -1;
  } else if (lev.y > OMAPY * 2 - 1) {
   lev.y -= OMAPY * 2;
-  olevy = 1;
+  olev.y = 1;
  }
- if (olevx != 0 || olevy != 0) {
+ if (olev.x != 0 || olev.y != 0) {
   cur_om.save(u.name);
-  cur_om = overmap(this, cur_om.pos.x + olevx, cur_om.pos.y + olevy, cur_om.pos.z);
+  cur_om = overmap(this, cur_om.pos.x + olev.x, cur_om.pos.y + olev.y, cur_om.pos.z);
  }
  set_adjacent_overmaps();
 
  // Shift monsters
  for (int i = 0; i < z.size(); i++) {
-  z[i].shift(shiftx, shifty);
+  z[i].shift(shift.x, shift.y);
   if (z[i].pos.x < 0 - SEEX             || z[i].pos.y < 0 - SEEX ||
       z[i].pos.x > SEEX * (MAPSIZE + 1) || z[i].pos.y > SEEY * (MAPSIZE + 1)) {
 // Despawn; we're out of bounds
@@ -6185,7 +6185,7 @@ void game::update_map(int &x, int &y)
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, messages.turn, z[i].spawnmap.x, z[i].spawnmap.y);
    } else {	// Absorb them back into a group
-    group = valid_group((mon_id)(z[i].type->id), lev.x + shiftx, lev.y + shifty);
+    group = valid_group((mon_id)(z[i].type->id), lev.x + shift.x, lev.y + shift.y);
     if (group != -1) {
      cur_om.zg[group].population++;
      if (cur_om.zg[group].population / pow(cur_om.zg[group].radius, 2.0) > 5)
@@ -6204,7 +6204,7 @@ void game::update_map(int &x, int &y)
  }
 // Shift NPCs
  for (int i = 0; i < active_npc.size(); i++) {
-  active_npc[i].shift(shiftx, shifty);
+  active_npc[i].shift(shift);
   if (active_npc[i].posx < 0 - SEEX * 2 ||
       active_npc[i].posy < 0 - SEEX * 2 ||
       active_npc[i].posx >     SEEX * (MAPSIZE + 2) ||
@@ -6250,12 +6250,12 @@ void game::update_map(int &x, int &y)
  }
 // Spawn monsters if appropriate
  m.spawn_monsters(this);	// Static monsters
- if (messages.turn >= nextspawn) spawn_mon(shiftx, shifty);
+ if (messages.turn >= nextspawn) spawn_mon(shift.x, shift.y);
 // Shift scent
  decltype(grscent) newscent;
  for (int i = 0; i < SEEX * MAPSIZE; i++) {
   for (int j = 0; j < SEEY * MAPSIZE; j++)
-   newscent[i][j] = scent(i + (shiftx * SEEX), j + (shifty * SEEY));
+   newscent[i][j] = scent(i + (shift.x * SEEX), j + (shift.y * SEEY));
  }
  memmove(grscent, newscent, sizeof(newscent));
 // Update what parts of the world map we can see

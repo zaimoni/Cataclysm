@@ -17,15 +17,13 @@ std::vector<item> starting_clothes(npc_class type, bool male, game *g);
 std::vector<item> starting_inv(npc *me, npc_class type, game *g);
 
 npc::npc()
-: wand(0,0),wandf(0),om(0,0,0)
+: wand(0,0),wandf(0),om(0,0,0),pl(-1,-1),plt(0)
 {
  id = -1;
  mapx = 0;
  mapy = 0;
  posx = -1;
  posy = -1;
- plx = 999;
- ply = 999;
  itx = -1;
  ity = -1;
  goalx = 999;
@@ -67,8 +65,7 @@ npc& npc::operator=(const npc &rhs)
  om = rhs.om;
  mapx = rhs.mapx;
  mapy = rhs.mapy;
- plx = rhs.plx;
- ply = rhs.ply;
+ pl = rhs.pl;
  plt = rhs.plt;
  itx = rhs.itx;
  ity = rhs.ity;
@@ -154,8 +151,8 @@ std::string npc::save_info()
  dump << int(personality.aggression) << " " << int(personality.bravery) <<
          " " << int(personality.collector) << " " <<
          int(personality.altruism) << " " << wand << " " <<
-         wandf << " " << om << " " << mapx << " " << mapy << " " << plx << " " 
-		 << ply << " " <<  goalx << " " << goaly << " " << int(mission) << " " << int(flags) << " ";
+         wandf << " " << om << " " << mapx << " " << mapy << " " << pl << " " 
+		 <<  goalx << " " << goaly << " " << int(mission) << " " << int(flags) << " ";
  dump << (my_fac == NULL ? -1 : my_fac->id);
  dump << " " << attitude << " " << " " << op_of_u.save_info() << " " <<
          chatbin.save_info() << " ";
@@ -254,7 +251,7 @@ void npc::load_info(game *g, std::string data)
 // Special NPC stuff
  int misstmp, flagstmp, tmpatt, agg, bra, col, alt;
  dump >> agg >> bra >> col >> alt >> wand >> wandf >> om >> 
-	     mapx >> mapy >> plx >> ply >> goalx >> goaly >> misstmp >>
+	     mapx >> mapy >> pl >> goalx >> goaly >> misstmp >>
          flagstmp >> fac_id >> tmpatt;
  personality.aggression = agg;
  personality.bravery = bra;
@@ -1893,16 +1890,16 @@ std::string npc::opinion_text()
  return ret.str();
 }
 
-void npc::shift(int sx, int sy)
+void npc::shift(const point delta)
 {
- posx -= sx * SEEX;
- posy -= sy * SEEY;
- mapx += sx;
- mapy += sy;
- itx -= sx * SEEX;
- ity -= sy * SEEY;
- plx -= sx * SEEX;
- ply -= sy * SEEY;
+ const point block_delta(delta*SEE);
+ posx -= delta.x * SEEX;
+ posy -= delta.y * SEEY;
+ mapx += delta.x;
+ mapy += delta.y;
+ itx -= delta.x * SEEX;
+ ity -= delta.y * SEEY;
+ pl -= block_delta;
  path.clear();
 }
 

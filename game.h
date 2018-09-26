@@ -156,6 +156,7 @@ class game
   overmap cur_om;
   map m;
   tripoint lev;	// Placement inside the overmap; x/y should be in 0...OMAPX/Y; is the position of the player and could be lifted into that object
+	// but game::update_map thinks legal values are 0..2*OMAPX/Y
   player u;
   std::vector<monster> z;
   std::vector<monster_and_count> coming_to_stairs;

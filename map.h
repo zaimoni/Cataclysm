@@ -35,7 +35,7 @@ class map
 // File I/O
  void save(overmap *om, unsigned int turn, int x, int y);
  void load(game *g, int wx, int wy);
- void shift(game *g, int wx, int wy, int x, int y);
+ void shift(game *g, int wx, int wy, point delta);
  void spawn_monsters(game *g);
  void clear_spawns();
  void clear_traps();
