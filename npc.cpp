@@ -17,96 +17,27 @@ std::vector<item> starting_clothes(npc_class type, bool male, game *g);
 std::vector<item> starting_inv(npc *me, npc_class type, game *g);
 
 npc::npc()
-: wand(0,0),wandf(0),om(0,0,0),pl(-1,-1),plt(0)
+: wand(0,0),wandf(0),om(0,0,0),pl(-1,-1),plt(0),goal(-1,-1)
 {
  id = -1;
  mapx = 0;
  mapy = 0;
- posx = -1;
- posy = -1;
  itx = -1;
  ity = -1;
- goalx = 999;
- goaly = 999;
- fatigue = 0;
- hunger = 0;
- thirst = 0;
  fetching_item = false;
  has_new_items = false;
  worst_item_value = 0;
+ my_fac = NULL;
+ marked_for_death = false;
+ dead = false;
+ mission = NPC_MISSION_NULL;
+ myclass = NC_NONE;
+ patience = 0;
+ // overrides of player::player()
  str_max = 0;
  dex_max = 0;
  int_max = 0;
  per_max = 0;
- my_fac = NULL;
- marked_for_death = false;
- dead = false;
- moves = 100;
- mission = NPC_MISSION_NULL;
- myclass = NC_NONE;
- patience = 0;
- for (int i = 0; i < num_skill_types; i++)
-  sklevel[i] = 0;
-}
-
-npc::npc(const npc &rhs)
-{
- *this = rhs;
-}
-
-npc& npc::operator=(const npc &rhs)
-{
- player::operator=(rhs);
- id = rhs.id;
- name = rhs.name;
- attitude = rhs.attitude;
- wand = rhs.wand;
- wandf = rhs.wandf;
- om = rhs.om;
- mapx = rhs.mapx;
- mapy = rhs.mapy;
- pl = rhs.pl;
- plt = rhs.plt;
- itx = rhs.itx;
- ity = rhs.ity;
- goalx = rhs.goalx;
- goaly = rhs.goaly;
- fetching_item = rhs.fetching_item;
- has_new_items = rhs.has_new_items;
- worst_item_value = rhs.worst_item_value;
- fac_id = rhs.fac_id;
- my_fac = rhs.my_fac;
- mission = rhs.mission;
- personality = rhs.personality;
- op_of_u = rhs.op_of_u;
- flags = rhs.flags;
- posx = rhs.posx;
- posy = rhs.posy;
- chatbin = rhs.chatbin;
- myclass = rhs.myclass;
- patience = rhs.patience;
-
- weapon = rhs.weapon;
- inv = rhs.inv;
- worn = rhs.worn;
- needs = rhs.needs;
- path = rhs.path;
-
- for (int i = 0; i < num_hp_parts; i++) {
-  hp_cur[i] = rhs.hp_cur[i];
-  hp_max[i] = rhs.hp_max[i];
- }
-
- for (int i = 0; i < num_skill_types; i++)
-  sklevel[i] = rhs.sklevel[i];
-
- styles = rhs.styles;
- combat_rules = rhs.combat_rules;
- 
- marked_for_death = rhs.marked_for_death;
- dead = rhs.dead;
-
- return *this;
 }
 
 std::string npc::save_info()
@@ -152,7 +83,7 @@ std::string npc::save_info()
          " " << int(personality.collector) << " " <<
          int(personality.altruism) << " " << wand << " " <<
          wandf << " " << om << " " << mapx << " " << mapy << " " << pl << " " 
-		 <<  goalx << " " << goaly << " " << int(mission) << " " << int(flags) << " ";
+		 <<  goal << " " << int(mission) << " " << int(flags) << " ";
  dump << (my_fac == NULL ? -1 : my_fac->id);
  dump << " " << attitude << " " << " " << op_of_u.save_info() << " " <<
          chatbin.save_info() << " ";
@@ -251,7 +182,7 @@ void npc::load_info(game *g, std::string data)
 // Special NPC stuff
  int misstmp, flagstmp, tmpatt, agg, bra, col, alt;
  dump >> agg >> bra >> col >> alt >> wand >> wandf >> om >> 
-	     mapx >> mapy >> pl >> goalx >> goaly >> misstmp >>
+	     mapx >> mapy >> pl >> goal >> misstmp >>
          flagstmp >> fac_id >> tmpatt;
  personality.aggression = agg;
  personality.bravery = bra;

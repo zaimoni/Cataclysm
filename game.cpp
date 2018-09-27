@@ -2051,8 +2051,8 @@ z.size(), events.size());
     data << npc_class_name(p->myclass) << "; " <<
             npc_attitude_name(p->attitude) << std::endl;
     if (p->has_destination())
-     data << "Destination: " << p->goalx << ":" << p->goaly << "(" <<
-		     oter_t::list[ cur_om.ter(p->goalx, p->goaly) ].name << ")" <<
+     data << "Destination: " << p->goal.x << ":" << p->goal.y << "(" <<
+		     oter_t::list[ cur_om.ter(p->goal.x, p->goal.y) ].name << ")" <<
              std::endl;
     else
      data << "No destination." << std::endl;

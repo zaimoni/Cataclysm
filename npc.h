@@ -365,12 +365,12 @@ class npc : public player {
 public:
 
  npc();
- //npc(npc& rhs);
- npc(const npc &rhs);
+ npc(const npc &rhs) = default;
  ~npc() = default;
- virtual bool is_npc() { return true; }
 
- npc& operator= (const npc &rhs);
+ npc& operator=(const npc &rhs) = default;
+
+ virtual bool is_npc() { return true; }
 
 // Generating our stats, etc.
  void randomize(game *g, npc_class type = NC_NONE);
@@ -514,10 +514,10 @@ public:
  bool saw_player_recently() const;// Do we have an idea of where u are?
 
 // Movement on the overmap scale
- bool has_destination();	// Do we have a long-term destination?
+ bool has_destination() const;	// Do we have a long-term destination?
  void set_destination(game *g);	// Pick a place to go
  void go_to_destination(game *g); // Move there; on the micro scale
- void reach_destination(game *g); // We made it!
+ void reach_destination() { goal = point(-1, -1); } // We made it!
 
 // The preceding are in npcmove.cpp
 
@@ -539,7 +539,7 @@ public:
  point pl;	// last saw player at; legal coordinates 0.. (SEEX/Y * MAPSIZE-1)
  int plt;	// timeout to forgetting
  int itx, ity;	// The square containing an item we want
- int goalx, goaly;// Which mapx:mapy square we want to get to
+ point goal;	// Which mapx:mapy square we want to get to (legal coordinates 0...OMAPX/Y)
 
  bool fetching_item;
  bool has_new_items; // If true, we have something new and should re-equip

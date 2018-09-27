@@ -1772,15 +1772,9 @@ bool npc::saw_player_recently() const
  return (pl.x >= 0 && pl.x < SEEX * MAPSIZE && pl.y >= 0 && pl.y < SEEY * MAPSIZE && plt > 0);
 }
 
-bool npc::has_destination()
+bool npc::has_destination() const
 {
- return (goalx >= 0 && goalx < OMAPX && goaly >= 0 && goaly < OMAPY);
-}
-
-void npc::reach_destination(game *g)
-{
- goalx = -1;
- goaly = -1;
+ return (goal.x >= 0 && goal.x < OMAPX && goal.y >= 0 && goal.y < OMAPY);
 }
 
 void npc::set_destination(game *g)
@@ -1826,20 +1820,18 @@ void npc::set_destination(game *g)
  oter_id dest_type = options[rng(0, options.size() - 1)];
 
  int dist = 0;
- point p = g->cur_om.find_closest(point(mapx, mapy),dest_type,4, dist, false);
- goalx = p.x;
- goaly = p.y;
+ goal = g->cur_om.find_closest(point(mapx, mapy), dest_type, 4, dist, false);
 }
 
 void npc::go_to_destination(game *g)
 {
- int sx = (goalx > mapx ? 1 : -1), sy = (goaly > mapy ? 1 : -1);
- if (goalx == mapx && goaly == mapy) {	// We're at our desired map square!
+ int sx = (goal.x > mapx ? 1 : -1), sy = (goal.y > mapy ? 1 : -1);
+ if (goal.x == mapx && goal.y == mapy) {	// We're at our desired map square!
   move_pause();
-  reach_destination(g);
+  reach_destination();
  } else {
-  if (goalx == mapx) sx = 0;
-  if (goaly == mapy) sy = 0;
+  if (goal.x == mapx) sx = 0;
+  if (goal.y == mapy) sy = 0;
 // sx and sy are now equal to the direction we need to move in
   int x = posx + 8 * sx, y = posy + 8 * sy, light = g->light_level();
 // x and y are now equal to a local square that's close by

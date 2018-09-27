@@ -361,6 +361,8 @@ bool activity_is_suspendable(activity_type type);
 
 player::player()
 {
+ posx = -1;
+ posy = -1;
  str_cur = 8;
  str_max = 8;
  dex_cur = 8;
