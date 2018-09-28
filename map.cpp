@@ -1821,9 +1821,9 @@ item map::water_from(int x, int y)
 
 void map::i_rem(int x, int y, int index)
 {
- if (index > i_at(x, y).size() - 1)
-  return;
- i_at(x, y).erase(i_at(x, y).begin() + index);
+ auto& stack = i_at(x, y);
+ if (index > stack.size() - 1) return;
+ stack.erase(stack.begin() + index);
 }
 
 void map::i_clear(int x, int y)

@@ -1063,8 +1063,8 @@ void npc::find_item(game *g)
          //(itval > worst_item_value ||
           (weight_carried() + wgt <= weight_capacity() / 4 &&
            volume_carried() + vol <= volume_capacity()       )) {
-      itx = x;
-      ity = y;
+      it.x = x;
+      it.y = y;
       index = i;
       best_value = itval;
       fetching_item = true;
@@ -1075,28 +1075,23 @@ void npc::find_item(game *g)
  }
 
  if (fetching_item && is_following())
-  say(g, "Hold on, I want to pick up that %s.",
-      g->m.i_at(itx, ity)[index].tname().c_str());
+  say(g, "Hold on, I want to pick up that %s.", g->m.i_at(it.x, it.y)[index].tname().c_str());
 }
 
 void npc::pick_up_item(game *g)
 {
- if (g->debugmon) {
-  debugmsg("%s::pick_up_item(); [%d, %d] => [%d, %d]", name.c_str(), posx, posy,
-           itx, ity);
- }
- update_path(g, itx, ity);
+ if (g->debugmon) debugmsg("%s::pick_up_item(); [%d, %d] => [%d, %d]", name.c_str(), posx, posy, it.x, it.y);
+ update_path(g, it.x, it.y);
 
  if (path.size() > 1) {
-  if (g->debugmon)
-   debugmsg("Moving; [%d, %d] => [%d, %d]", posx, posy, path[0].x, path[0].y);
+  if (g->debugmon) debugmsg("Moving; [%d, %d] => [%d, %d]", posx, posy, path[0].x, path[0].y);
   move_to_next(g);
   return;
  }
 // We're adjacent to the item; grab it!
  moves -= 100;
  fetching_item = false;
- std::vector<item> *items = &(g->m.i_at(itx, ity));
+ std::vector<item> *items = &(g->m.i_at(it.x, it.y));
  int total_volume = 0, total_weight = 0; // How much the items will add
  std::vector<int> pickup; // Indices of items we want
 
@@ -1112,7 +1107,7 @@ void npc::pick_up_item(game *g)
   }
  }
 // Describe the pickup to the player
- bool u_see_me = g->u_see(posx, posy), u_see_items = g->u_see(itx, ity);
+ bool u_see_me = g->u_see(posx, posy), u_see_items = g->u_see(it.x, it.y);
  if (u_see_me) {
   if (pickup.size() == 1) {
    if (u_see_items)
@@ -1146,7 +1141,7 @@ void npc::pick_up_item(game *g)
   i_add((*items)[pickup[i]]);
  }
  for (int i = 0; i < pickup.size(); i++) {
-  g->m.i_rem(itx, ity, pickup[i]);
+  g->m.i_rem(it.x, it.y, pickup[i]);
   for (int j = i + 1; j < pickup.size(); j++) // Fix indices
    pickup[j]--;
  }

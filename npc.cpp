@@ -17,13 +17,11 @@ std::vector<item> starting_clothes(npc_class type, bool male, game *g);
 std::vector<item> starting_inv(npc *me, npc_class type, game *g);
 
 npc::npc()
-: wand(0,0),wandf(0),om(0,0,0),pl(-1,-1),plt(0),goal(-1,-1)
+: wand(0,0),wandf(0),om(0,0,0),pl(-1,-1),plt(0),it(-1,-1),goal(-1,-1)
 {
  id = -1;
  mapx = 0;
  mapy = 0;
- itx = -1;
- ity = -1;
  fetching_item = false;
  has_new_items = false;
  worst_item_value = 0;
@@ -83,7 +81,7 @@ std::string npc::save_info()
          " " << int(personality.collector) << " " <<
          int(personality.altruism) << " " << wand << " " <<
          wandf << " " << om << " " << mapx << " " << mapy << " " << pl << " " 
-		 <<  goal << " " << int(mission) << " " << int(flags) << " ";
+		 <<  goal << " " << int(mission) << " " << int(flags) << " ";	// XXX \todo npc::it missing here
  dump << (my_fac == NULL ? -1 : my_fac->id);
  dump << " " << attitude << " " << " " << op_of_u.save_info() << " " <<
          chatbin.save_info() << " ";
@@ -1828,8 +1826,7 @@ void npc::shift(const point delta)
  posy -= delta.y * SEEY;
  mapx += delta.x;
  mapy += delta.y;
- itx -= delta.x * SEEX;
- ity -= delta.y * SEEY;
+ it -= block_delta;
  pl -= block_delta;
  path.clear();
 }

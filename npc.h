@@ -538,7 +538,7 @@ public:
  // last seen player data (assumes player is singleton)
  point pl;	// last saw player at; legal coordinates 0.. (SEEX/Y * MAPSIZE-1)
  int plt;	// timeout to forgetting
- int itx, ity;	// The square containing an item we want
+ point it;	// The square containing an item we want
  point goal;	// Which mapx:mapy square we want to get to (legal coordinates 0...OMAPX/Y)
 
  bool fetching_item;
