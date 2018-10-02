@@ -33,10 +33,10 @@ std::string random_last_name();
 class player {
 public:
  player();
- player(const player &rhs);
+ player(const player &rhs) = default;
  virtual ~player() = default;
 
- player& operator=(const player& rhs);
+ player& operator=(const player& rhs) = default;
 
 // newcharacter.cpp 
  bool create(game *g, character_type type, std::string tempname = "");

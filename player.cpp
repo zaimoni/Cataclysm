@@ -412,69 +412,6 @@ player::player()
   mutation_category_level[i] = 0;
 }
 
-player::player(const player &rhs)
-{
- *this = rhs;
-}
-
-player& player::operator=(const player& rhs)
-{
- str_cur = rhs.str_cur;
- str_max = rhs.str_max;
- dex_cur = rhs.dex_cur;
- dex_max = rhs.dex_max;
- int_cur = rhs.int_cur;
- int_max = rhs.int_max;
- per_cur = rhs.per_cur;
- per_max = rhs.per_max;
- underwater = rhs.underwater;
- dodges_left = rhs.dodges_left;
- blocks_left = rhs.blocks_left;
- power_level = rhs.power_level;
- max_power_level = rhs.max_power_level;
- hunger = rhs.hunger;
- thirst = rhs.thirst;
- fatigue = rhs.fatigue;
- stim = rhs.stim;
- pain = rhs.pain;
- pkill = rhs.pkill;
- radiation = rhs.radiation;
- cash = rhs.cash;
- recoil = rhs.recoil;
- driving_recoil = rhs.driving_recoil;
- in_vehicle = rhs.in_vehicle;
- scent = rhs.scent;
- name = rhs.name;
- male = rhs.male;
- inv_sorted = rhs.inv_sorted;
- moves = rhs.moves;
- oxygen = rhs.oxygen;
- active_mission = rhs.active_mission;
- xp_pool = rhs.xp_pool;
- for (int i = 0; i < num_skill_types; i++) {
-  sklevel[i] = rhs.sklevel[i];
-  skexercise[i] = rhs.skexercise[i];
- }
- for (int i = 0; i < PF_MAX2; i++)
-  my_traits[i] = rhs.my_traits[i];
- for (int i = 0; i < PF_MAX2; i++)
-  my_mutations[i] = rhs.my_mutations[i];
- for (int i = 0; i < NUM_MUTATION_CATEGORIES; i++)
-  mutation_category_level[i] = rhs.mutation_category_level[i];
-
- inv = rhs.inv;
- worn = rhs.worn;
-
- style_selected = rhs.style_selected;
- weapon = rhs.weapon;
-
- active_missions = rhs.active_missions;
- completed_missions = rhs.completed_missions;
- failed_missions = rhs.failed_missions;
-
- return (*this);
-}
-
 void player::normalize(game *g)
 {
  weapon   = item::null;
