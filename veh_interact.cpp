@@ -29,7 +29,7 @@ void veh_interact::exec ()
     const int winh2 = 12;
     const int winw12 = winw1 + winw2 + 1;
     const int winw3 = 80 - winw1 - winw2 - 2;
-    const int winh3 = 25 - winh1 - winh2 - 2;
+    const int winh3 = VIEW - winh1 - winh2 - 2;
     const int winh23 = winh2 + winh3 + 1;
     const int winx1 = winw1;
     const int winx2 = winw1 + winw2 + 1;
@@ -38,7 +38,7 @@ void veh_interact::exec ()
 
     page_size = winh23;
     //               h   w    y     x
-	WINDOW* const w_grid  = newwin(25, 80,  0,    0);
+	WINDOW* const w_grid  = newwin(VIEW, 80,  0,    0);
 	w_mode  = newwin(1,  80, 0,    0);
     w_msg   = newwin(winh1 - 1, 80, 1,    0);
     w_disp  = newwin(winh2, winw1,  winy1 + 1, 0);
@@ -46,7 +46,7 @@ void veh_interact::exec ()
     w_stats = newwin(winh3, winw12, winy2 + 1, 0);
     w_list  = newwin(winh23, winw3, winy1 + 1, winx2 + 1);
 
-    for (int i = 0; i < 25; i++)
+    for (int i = 0; i < VIEW; i++)
     {
         mvwputch(w_grid, i, winx2, c_ltgray, i == winy1 || i == winy2? LINE_XOXX : LINE_XOXO);
         if (i >= winy1 && i < winy2)

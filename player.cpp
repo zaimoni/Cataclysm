@@ -983,7 +983,7 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
   }
  }
 
- WINDOW* w_grid    = newwin(25, 80,  0,  0);
+ WINDOW* w_grid    = newwin(VIEW, 80,  0,  0);
  WINDOW* w_stats   = newwin( 9, 26,  2,  0);
  WINDOW* w_encumb  = newwin( 9, 26, 12,  0);
  WINDOW* w_traits  = newwin( 9, 26,  2, 27);
@@ -1623,7 +1623,7 @@ encumb(bp_feet) * 5);
 
 void player::disp_morale()
 {
- WINDOW *w = newwin(25, 80, 0, 0);
+ WINDOW *w = newwin(VIEW, 80, 0, 0);
  wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
             LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  mvwprintz(w, 1,  1, c_white, "Morale Modifiers:");
@@ -1888,7 +1888,7 @@ void player::charge_power(int amount)
 
 void player::power_bionics(game *g)
 {
- WINDOW *wBio = newwin(25, 80, 0, 0);
+ WINDOW *wBio = newwin(VIEW, 80, 0, 0);
  werase(wBio);
  std::vector <bionic> passive;
  std::vector <bionic> active;
@@ -1911,10 +1911,7 @@ void player::power_bionics(game *g)
  if (passive.size() > 0) {
   mvwprintz(wBio, 2, 0, c_ltblue, "Passive:");
   for (int i = 0; i < passive.size(); i++) {
-   if (bionics[passive[i].id].power_source)
-    type = c_ltcyan;
-   else
-    type = c_cyan;
+   type = (bionics[passive[i].id].power_source ? c_ltcyan : c_cyan);
    mvwputch(wBio, 3 + i, 0, type, passive[i].invlet);
    mvwprintz(wBio, 3 + i, 2, type, bionics[passive[i].id].name.c_str());
   }
@@ -1922,10 +1919,7 @@ void player::power_bionics(game *g)
  if (active.size() > 0) {
   mvwprintz(wBio, 2, 32, c_ltblue, "Active:");
   for (int i = 0; i < active.size(); i++) {
-   if (active[i].powered)
-    type = c_red;
-   else
-    type = c_ltred;
+   type = (active[i].powered ? c_red : c_ltred);
    mvwputch(wBio, 3 + i, 32, type, active[i].invlet);
    mvwprintz(wBio, 3 + i, 34, type,
              (active[i].powered ? "%s - ON" : "%s - %d PU / %d trns"),

@@ -154,7 +154,7 @@ static void _game_type_menu(WINDOW* const w_open,const int sel2)
 bool game::opening_screen()
 {
 
- WINDOW* w_open = newwin(25, 80, 0, 0);
+ WINDOW* w_open = newwin(VIEW, 80, 0, 0);
  erase();
  for (int i = 0; i < 80; i++)
   mvwputch(w_open, 21, i, c_white, LINE_OXOX);
@@ -448,7 +448,7 @@ http://github.com/zaimoni/Cataclysm .");
     layer = 2;
     for (int i = 0; i < templates.size() && i < 21; i++)
      mvwprintz(w_open, 6 + i, 12, c_black, "                                 ");
-    for (int i = 22; i < 25; i++)
+    for (int i = 22; i < VIEW; i++)
      mvwprintw(w_open, i, 0, "                                                 \
                                 ");
    }
@@ -1633,7 +1633,7 @@ void game::death_screen()
  for (int i = 0; i < num_monsters; i++)
   num_kills += kills[i];
 
- WINDOW* w_death = newwin(25, 80, 0, 0);
+ WINDOW* w_death = newwin(VIEW, 80, 0, 0);
  mvwprintz(w_death, 0, 35, c_red, "GAME OVER - Press Spacebar to Quit");
  mvwprintz(w_death, 2, 0, c_white, "Number of kills: %d", num_kills);
  int line = 0, mon = 0;
@@ -2123,7 +2123,7 @@ void game::draw_overmap()
 
 void game::disp_kills()
 {
- WINDOW* w = newwin(25, 80, 0, 0);
+ WINDOW* w = newwin(VIEW, 80, 0, 0);
  std::vector<mtype *> types;
  std::vector<int> count;
  for (int i = 0; i < num_monsters; i++) {
@@ -2147,7 +2147,7 @@ void game::disp_kills()
  }
 
  for (int i = 0; i < types.size(); i++) {
-  if (i < 24) {
+  if (i < VIEW - 1) {
    mvwprintz(w, i + 1,  0, types[i]->color, "%c %s", types[i]->sym,
              types[i]->name.c_str());
    int hori = 25;
@@ -2176,26 +2176,26 @@ void game::disp_kills()
 
 void game::disp_NPCs()
 {
- WINDOW* w = newwin(25, 80, 0, 0);
+ WINDOW* w = newwin(VIEW, 80, 0, 0);
  mvwprintz(w, 0, 0, c_white, "Your position: %d:%d", lev.x, lev.y);
  std::vector<npc*> closest;
  closest.push_back(&cur_om.npcs[0]);
  for (int i = 1; i < cur_om.npcs.size(); i++) {
-  if (closest.size() < 20)
+  if (closest.size() < VIEW-5)
    closest.push_back(&cur_om.npcs[i]);
   else if (rl_dist(lev.x, lev.y, cur_om.npcs[i].mapx, cur_om.npcs[i].mapy) <
-           rl_dist(lev.x, lev.y, closest[19]->mapx, closest[19]->mapy)) {
-   for (int j = 0; j < 20; j++) {
+           rl_dist(lev.x, lev.y, closest[VIEW - 6]->mapx, closest[VIEW - 6]->mapy)) {
+   for (int j = 0; j < VIEW - 5; j++) {
     if (rl_dist(lev.x, lev.y, closest[j]->mapx, closest[j]->mapy) >
         rl_dist(lev.x, lev.y, cur_om.npcs[i].mapx, cur_om.npcs[i].mapy)) {
      closest.insert(closest.begin() + j, &cur_om.npcs[i]);
      closest.erase(closest.end() - 1);
-     j = 20;
+     j = VIEW - 5;
     }
    }
   }
  }
- for (int i = 0; i < 20; i++)
+ for (int i = 0; i < VIEW - 5; i++)
   mvwprintz(w, i + 2, 0, c_white, "%s: %d:%d", closest[i]->name.c_str(),
             closest[i]->mapx, closest[i]->mapy);
 
@@ -2217,8 +2217,8 @@ faction* game::list_factions(std::string title)
   popup("You don't know of any factions.  Press Spacebar...");
   return NULL;
  }
- WINDOW* w_list = newwin(25,      MAX_FAC_NAME_SIZE, 0, 0);
- WINDOW* w_info = newwin(25, 80 - MAX_FAC_NAME_SIZE, 0, MAX_FAC_NAME_SIZE);
+ WINDOW* w_list = newwin(VIEW,      MAX_FAC_NAME_SIZE, 0, 0);
+ WINDOW* w_info = newwin(VIEW, 80 - MAX_FAC_NAME_SIZE, 0, MAX_FAC_NAME_SIZE);
  int maxlength = 79 - MAX_FAC_NAME_SIZE;
  int sel = 0;
 
@@ -2296,14 +2296,13 @@ faction* game::list_factions(std::string title)
  delwin(w_list);
  delwin(w_info);
  refresh_all();
- if (sel == -1)
-  return NULL;
+ if (sel == -1) return NULL;
  return &(factions[valfac[sel].id]);
 }
 
 void game::list_missions()
 {
- WINDOW *w_missions = newwin(25, 80, 0, 0);
+ WINDOW *w_missions = newwin(VIEW, 80, 0, 0);
  int tab = 0, selection = 0;
  char ch;
  do {
@@ -2316,7 +2315,7 @@ void game::list_missions()
    case 1: umissions = u.completed_missions;	break;
    case 2: umissions = u.failed_missions;	break;
   }
-  for (int y = 3; y < 25; y++)
+  for (int y = 3; y < VIEW; y++)
    mvwputch(w_missions, y, 30, c_white, LINE_XOXO);
   for (int i = 0; i < umissions.size(); i++) {
    mission * const miss = find_mission(umissions[i]);
@@ -5225,8 +5224,7 @@ void game::butcher()
    }
    time_to_cut *= 100;	// Convert to movement points
    time_to_cut += factor * 5;	// Penalty for poor tool
-   if (time_to_cut < 250)
-    time_to_cut = 250;
+   if (time_to_cut < 250) time_to_cut = 250;
    u.assign_activity(ACT_BUTCHER, time_to_cut, corpses[i]);
    u.moves = 0;
    return;
@@ -6715,11 +6713,10 @@ void intro()
 {
  int maxx, maxy;
  getmaxyx(stdscr, maxy, maxx);
- WINDOW* tmp = newwin(25, 80, 0, 0);
- while (maxy < 25 || maxx < 80) {
+ WINDOW* tmp = newwin(VIEW, 80, 0, 0);
+ while (maxy < VIEW || maxx < 80) {
   werase(tmp);
-  wprintw(tmp, "\
-Whoa. Whoa. Hey. This game requires a minimum terminal size of 80x25. I'm\n\
+  wprintw(tmp, "Whoa. Whoa. Hey. This game requires a minimum terminal size of 80x25. I'm\n\
 sorry if your graphical terminal emulator went with the woefully-diminuitive\n\
 80x24 as its default size, but that just won't work here.  Now stretch the\n\
 bottom of your window downward so you get an extra line.\n");

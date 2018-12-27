@@ -350,7 +350,7 @@ bool player::install_bionics(game *g, const it_bionic* type)
   return false;
  }
  std::string bio_name = type->name.substr(5);	// Strip off "CBM: "
- WINDOW* w = newwin(25, 80, 0, 0);
+ WINDOW* w = newwin(VIEW, 80, 0, 0);
 
  int pl_skill = int_cur + sklevel[sk_electronics] * 4 +
                           sklevel[sk_firstaid]    * 3 +

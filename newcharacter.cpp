@@ -49,7 +49,7 @@ void save_template(player *u);
 bool player::create(game *g, character_type type, std::string tempname)
 {
  weapon = item(item::types[0], 0);
- WINDOW* w = newwin(25, 80, 0, 0);
+ WINDOW* w = newwin(VIEW, 80, 0, 0);
  int tab = 0, points = 38;
  if (type != PLTYPE_CUSTOM) {
   switch (type) {

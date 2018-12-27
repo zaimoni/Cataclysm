@@ -34,10 +34,10 @@ void recent_msg::add(const char* msg, ...)
 
 void recent_msg::buffer()
 {
- WINDOW *w = newwin(25, 80, 0, 0);
+ WINDOW *w = newwin(VIEW, 80, 0, 0);
  wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
             LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
- mvwprintz(w, 24, 32, c_red, "Press q to return");
+ mvwprintz(w, VIEW - 1, 32, c_red, "Press q to return");
 
  int offset = 0;
  char ch;
@@ -45,7 +45,7 @@ void recent_msg::buffer()
   werase(w);
   wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
              LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
-  mvwprintz(w, 24, 32, c_red, "Press q to return");
+  mvwprintz(w, VIEW - 1, 32, c_red, "Press q to return");
 
   int line = 1;
   int lasttime = -1;

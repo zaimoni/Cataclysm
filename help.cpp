@@ -434,10 +434,10 @@ easily drop unwanted items on the floor.");
      needs_refresh = false;
     }
 // Clear the lines
-    for (int i = 0; i < 25; i++)
+    for (int i = 0; i < VIEW; i++)
      mvprintz(i, 0, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
-    for (int i = 0; i < 25 && offset + i < NUM_ACTIONS; i++) {
+    for (int i = 0; i < VIEW && offset + i < NUM_ACTIONS; i++) {
      std::vector<char> k = keys.translate(action_id(offset + i));
      nc_color col = (k.empty() ? c_ltred : c_white);
      mvprintz(i, 3, col, "%s: ", action_name( action_id(offset + i) ).c_str());
@@ -453,13 +453,10 @@ easily drop unwanted items on the floor.");
     refresh();
     ch = input();
 	point s(get_direction(ch));
-    if (s.y == -1 && offset > 1)
-     offset--;
-    if (s.y == 1 && offset + 20 < NUM_ACTIONS)
-     offset++;
-    if (ch == '-' || ch == '+') {
-     needs_refresh = true;
-     for (int i = 0; i < 25 && i + offset < NUM_ACTIONS; i++) {
+    if (s.y == -1 && offset > 1) offset--;
+    if (s.y == 1 && offset + 20 < NUM_ACTIONS) offset++;
+    if (ch == '-' || ch == '+') { needs_refresh = true;
+     for (int i = 0; i < VIEW && i + offset < NUM_ACTIONS; i++) {
       mvprintz(i, 0, c_ltblue, "%c", 'a' + i);
       mvprintz(i, 1, c_white, ":");
      }
@@ -501,10 +498,10 @@ easily drop unwanted items on the floor.");
      needs_refresh = false;
     }
 // Clear the lines
-    for (int i = 0; i < 25; i++)
+    for (int i = 0; i < VIEW; i++)
      mvprintz(i, 0, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
-    for (int i = 0; i < 25 && offset + i < NUM_OPTION_KEYS; i++) {
+    for (int i = 0; i < VIEW && offset + i < NUM_OPTION_KEYS; i++) {
      mvprintz(i, 3, c_white, "%s: ",
               option_name( option_key(offset + i) ).c_str());
      bool on = OPTIONS[ option_key(offset + i) ];
@@ -519,7 +516,7 @@ easily drop unwanted items on the floor.");
      offset++;
     if (ch == '-' || ch == '+') {
      needs_refresh = true;
-     for (int i = 0; i < 25 && i + offset < NUM_OPTION_KEYS; i++) {
+     for (int i = 0; i < VIEW && i + offset < NUM_OPTION_KEYS; i++) {
       mvprintz(i, 0, c_ltblue, "%c", 'a' + i);
       mvprintz(i, 1, c_white, ":");
      }

@@ -183,13 +183,13 @@ void constructable::init()
 void game::construction_menu()
 {
  const auto c_size = constructable::constructions.size();
- WINDOW *w_con = newwin(25, 80, 0, 0);
+ WINDOW *w_con = newwin(VIEW, 80, 0, 0);
  wborder(w_con, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                 LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  mvwprintz(w_con, 0, 1, c_red, "Construction");
  mvwputch(w_con,  0, 30, c_white, LINE_OXXX);
- mvwputch(w_con, 24, 30, c_white, LINE_XXOX);
- for (int i = 1; i < 24; i++)
+ mvwputch(w_con, VIEW-1, 30, c_white, LINE_XXOX);
+ for (int i = 1; i < VIEW-1; i++)
   mvwputch(w_con, i, 30, c_white, LINE_XOXO);
 
  mvwprintz(w_con,  1, 31, c_white, "Difficulty:");
@@ -211,7 +211,7 @@ void game::construction_menu()
 
  do {
 // Erase existing list of constructions
-  for (int i = 1; i < 24; i++) {
+  for (int i = 1; i < VIEW-1; i++) {
    for (int j = 1; j < 29; j++)
     mvwputch(w_con, i, j, c_black, 'x');
   }

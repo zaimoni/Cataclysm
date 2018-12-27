@@ -537,24 +537,23 @@ void overmap::delete_note(int x, int y)
 point overmap::display_notes()
 {
  std::string title = "Notes:";
- WINDOW* w_notes = newwin(25, 80, 0, 0);
+ WINDOW* w_notes = newwin(VIEW, 80, 0, 0);
  const int maxitems = 20;	// Number of items to show at one time.
  char ch = '.';
  int start = 0, cur_it;
  mvwprintz(w_notes, 0, 0, c_ltgray, title.c_str());
  do{
   if (ch == '<' && start > 0) {
-   for (int i = 1; i < 25; i++)
+   for (int i = 1; i < VIEW; i++)
     mvwprintz(w_notes, i, 0, c_black, "                                                     ");
    start -= maxitems;
-   if (start < 0)
-    start = 0;
+   if (start < 0) start = 0;
    mvwprintw(w_notes, maxitems + 2, 0, "         ");
   }
   if (ch == '>' && cur_it < notes.size()) {
    start = cur_it;
    mvwprintw(w_notes, maxitems + 2, 12, "            ");
-   for (int i = 1; i < 25; i++)
+   for (int i = 1; i < VIEW; i++)
     mvwprintz(w_notes, i, 0, c_black, "                                                     ");
   }
   int cur_line = 2;
@@ -571,8 +570,7 @@ point overmap::display_notes()
    cur_line++;
   }
 
-  if(last_line == -1)
-   last_line = 23;
+  if(last_line == -1) last_line = 23;
   if (start > 0)
    mvwprintw(w_notes, maxitems + 4, 0, "< Go Back");
   if (cur_it < notes.size())
@@ -1243,11 +1241,11 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
   if (legend) {
    cur_ter = ter(cursx, cursy);
 // Draw the vertical line
-   for (int j = 0; j < 25; j++)
+   for (int j = 0; j < VIEW; j++)
     mvwputch(w, j, 51, c_white, LINE_XOXO);
 // Clear the legend
    for (int i = 51; i < 80; i++) {
-    for (int j = 0; j < 25; j++)
+    for (int j = 0; j < VIEW; j++)
      mvwputch(w, j, i, c_black, 'x');
    }
 
@@ -1277,7 +1275,7 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
 
 point overmap::choose_point(game *g)
 {
- WINDOW* w_map = newwin(25, 80, 0, 0);
+ WINDOW* w_map = newwin(VIEW, 80, 0, 0);
  WINDOW* w_search = newwin(13, 27, 3, 51);
  timeout(BLINK_SPEED);	// Enable blinking!
  bool blink = true;

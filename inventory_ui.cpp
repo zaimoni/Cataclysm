@@ -102,7 +102,7 @@ std::vector<int> find_firsts(inventory &inv)
 // Display current inventory.
 char game::inv(std::string title)
 {
- WINDOW* w_inv = newwin(25, 80, 0, 0);
+ WINDOW* w_inv = newwin(VIEW, 80, 0, 0);
  const int maxitems = 20;	// Number of items to show at one time.
  char ch = '.';
  int start = 0, cur_it;
@@ -115,17 +115,16 @@ char game::inv(std::string title)
 
  do {
   if (ch == '<' && start > 0) { // Clear lines and shift
-   for (int i = 1; i < 25; i++)
+   for (int i = 1; i < VIEW; i++)
     mvwprintz(w_inv, i, 0, c_black, "                                        ");
    start -= maxitems;
-   if (start < 0)
-    start = 0;
+   if (start < 0) start = 0;
    mvwprintw(w_inv, maxitems + 2, 0, "         ");
   }
   if (ch == '>' && cur_it < u.inv.size()) { // Clear lines and shift
    start = cur_it;
    mvwprintw(w_inv, maxitems + 2, 12, "            ");
-   for (int i = 1; i < 25; i++)
+   for (int i = 1; i < VIEW; i++)
     mvwprintz(w_inv, i, 0, c_black, "                                        ");
   }
   int cur_line = 2;
@@ -171,7 +170,7 @@ std::vector<item> game::multidrop()
 {
  u.sort_inv();
  u.inv.restack(&u);
- WINDOW* w_inv = newwin(25, 80, 0, 0);
+ WINDOW* w_inv = newwin(VIEW, 80, 0, 0);
  const int maxitems = 20;    // Number of items to show at one time.
  std::vector<int> dropping(u.inv.size(), 0);
  int count = 0; // The current count
@@ -185,7 +184,7 @@ std::vector<item> game::multidrop()
  int start = 0, cur_it;
  do {
   if (ch == '<' && start > 0) {
-   for (int i = 1; i < 25; i++)
+   for (int i = 1; i < VIEW; i++)
     mvwprintz(w_inv, i, 0, c_black, "                                        ");
    start -= maxitems;
    if (start < 0)
@@ -195,7 +194,7 @@ std::vector<item> game::multidrop()
   if (ch == '>' && cur_it < u.inv.size()) {
    start = cur_it;
    mvwprintw(w_inv, maxitems + 2, 12, "            ");
-   for (int i = 1; i < 25; i++)
+   for (int i = 1; i < VIEW; i++)
     mvwprintz(w_inv, i, 0, c_black, "                                        ");
   }
   int cur_line = 2;

@@ -102,10 +102,10 @@ void npc::talk_to_u(game *g)
  moves -= 100;
  decide_needs();
 
- d.win = newwin(25, 80, 0, 0);
+ d.win = newwin(VIEW, 80, 0, 0);
  wborder(d.win, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                 LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
- for (int i = 1; i < 24; i++)
+ for (int i = 1; i < VIEW-1; i++)
   mvwputch(d.win, i, 41, c_ltgray, LINE_XOXO);
  mvwputch(d.win,  0, 41, c_ltgray, LINE_OXXX);
  mvwputch(d.win, 24, 41, c_ltgray, LINE_XXOX);

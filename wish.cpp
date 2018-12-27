@@ -9,8 +9,8 @@
 void game::wish()
 {
  const auto t_size = item::types.size();
- WINDOW* w_list = newwin(25, 30, 0,  0);
- WINDOW* w_info = newwin(25, 50, 0, 30);
+ WINDOW* const w_list = newwin(VIEW, 30, 0,  0);
+ WINDOW* const w_info = newwin(VIEW, 50, 0, 30);
  int a = 0, shift = 0, result_selected = 0;
  char ch = '.';
  bool search = false, found = false;
@@ -157,8 +157,8 @@ void game::wish()
 
 void game::monster_wish()
 {
- WINDOW* w_list = newwin(25, 30, 0,  0);
- WINDOW* w_info = newwin(25, 50, 0, 30);
+ WINDOW* const w_list = newwin(VIEW, 30, 0,  0);
+ WINDOW* const w_info = newwin(VIEW, 50, 0, 30);
  int a = 0, shift = 1, result_selected = 0;
  char ch = '.';
  bool search = false, found = false, friendly = false;
@@ -298,8 +298,8 @@ void game::monster_wish()
 
 void game::mutation_wish()
 {
- WINDOW* w_list = newwin(25, 30, 0,  0);
- WINDOW* w_info = newwin(25, 50, 0, 30);
+ WINDOW* const w_list = newwin(VIEW, 30, 0,  0);
+ WINDOW* const w_info = newwin(VIEW, 50, 0, 30);
  int a = 0, shift = 0, result_selected = 0;
  long ch = '.';
  bool search = false, found = false;
