@@ -350,7 +350,7 @@ bool player::install_bionics(game *g, const it_bionic* type)
   return false;
  }
  std::string bio_name = type->name.substr(5);	// Strip off "CBM: "
- WINDOW* w = newwin(VIEW, 80, 0, 0);
+ WINDOW* w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
 
  int pl_skill = int_cur + sklevel[sk_electronics] * 4 +
                           sklevel[sk_firstaid]    * 3 +
@@ -364,7 +364,7 @@ bool player::install_bionics(game *g, const it_bionic* type)
  mvwprintz(w, 0, 20, type->color, bio_name.c_str());
 
 // Dividing bars
- for (int i = 0; i < 80; i++) {
+ for (int i = 0; i < SCREEN_WIDTH; i++) {
   mvwputch(w,  1, i, c_ltgray, LINE_OXOX);
   mvwputch(w, 21, i, c_ltgray, LINE_OXOX);
  }

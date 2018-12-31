@@ -413,7 +413,7 @@ void defense_game::init_to_style(defense_style new_style)
 
 void defense_game::setup()
 {
- WINDOW* w = newwin(VIEW, 80, 0, 0);
+ WINDOW* w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  int selection = 1;
  refresh_setup(w, selection);
 
@@ -775,7 +775,7 @@ void defense_game::caravan(game *g)
 
  int total_price = 0;
 
- WINDOW *w = newwin(VIEW, 80, 0, 0);
+ WINDOW *w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
 
  int offset = 0, item_selected = 0, category_selected = 0;
 

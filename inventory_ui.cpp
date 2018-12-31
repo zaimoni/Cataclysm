@@ -102,7 +102,7 @@ std::vector<int> find_firsts(inventory &inv)
 // Display current inventory.
 char game::inv(std::string title)
 {
- WINDOW* w_inv = newwin(VIEW, 80, 0, 0);
+ WINDOW* w_inv = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  const int maxitems = 20;	// Number of items to show at one time.
  char ch = '.';
  int start = 0, cur_it;
@@ -170,7 +170,7 @@ std::vector<item> game::multidrop()
 {
  u.sort_inv();
  u.inv.restack(&u);
- WINDOW* w_inv = newwin(VIEW, 80, 0, 0);
+ WINDOW* w_inv = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  const int maxitems = 20;    // Number of items to show at one time.
  std::vector<int> dropping(u.inv.size(), 0);
  int count = 0; // The current count

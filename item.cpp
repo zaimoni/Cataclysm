@@ -1037,7 +1037,7 @@ int item::pick_reload_ammo(player &u, bool interactive)
  int index = -1;
 
  if (am.size() > 1 && interactive) {// More than one option; list 'em and pick
-  WINDOW* w_ammo = newwin(am.size() + 1, 80, 0, 0);
+  WINDOW* w_ammo = newwin(am.size() + 1, SCREEN_WIDTH, 0, 0);
   if (charges == 0) {
    char ch;
    clear();

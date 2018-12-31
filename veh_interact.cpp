@@ -28,7 +28,7 @@ void veh_interact::exec ()
     const int winh1 = 3;
     const int winh2 = 12;
     const int winw12 = winw1 + winw2 + 1;
-    const int winw3 = 80 - winw1 - winw2 - 2;
+    const int winw3 = SCREEN_WIDTH - winw1 - winw2 - 2;
     const int winh3 = VIEW - winh1 - winh2 - 2;
     const int winh23 = winh2 + winh3 + 1;
     const int winx1 = winw1;
@@ -38,9 +38,9 @@ void veh_interact::exec ()
 
     page_size = winh23;
     //               h   w    y     x
-	WINDOW* const w_grid  = newwin(VIEW, 80,  0,    0);
-	w_mode  = newwin(1,  80, 0,    0);
-    w_msg   = newwin(winh1 - 1, 80, 1,    0);
+	WINDOW* const w_grid  = newwin(VIEW, SCREEN_WIDTH,  0,    0);
+	w_mode  = newwin(1, SCREEN_WIDTH, 0,    0);
+    w_msg   = newwin(winh1 - 1, SCREEN_WIDTH, 1,    0);
     w_disp  = newwin(winh2, winw1,  winy1 + 1, 0);
     w_parts = newwin(winh2, winw2,  winy1 + 1, winx1 + 1);
     w_stats = newwin(winh3, winw12, winy2 + 1, 0);
@@ -52,7 +52,7 @@ void veh_interact::exec ()
         if (i >= winy1 && i < winy2)
             mvwputch(w_grid, i, winx1, c_ltgray, LINE_XOXO);
     }
-    for (int i = 0; i < 80; i++)
+    for (int i = 0; i < SCREEN_WIDTH; i++)
     {
         mvwputch(w_grid, winy1, i, c_ltgray, i == winx1? LINE_OXXX : (i == winx2? LINE_OXXX : LINE_OXOX));
         if (i < winx2)

@@ -183,7 +183,7 @@ void constructable::init()
 void game::construction_menu()
 {
  const auto c_size = constructable::constructions.size();
- WINDOW *w_con = newwin(VIEW, 80, 0, 0);
+ WINDOW *w_con = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  wborder(w_con, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                 LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  mvwprintz(w_con, 0, 1, c_red, "Construction");

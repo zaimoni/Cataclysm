@@ -983,19 +983,19 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
   }
  }
 
- WINDOW* w_grid    = newwin(VIEW, 80,  0,  0);
- WINDOW* w_stats   = newwin( 9, 26,  2,  0);
- WINDOW* w_encumb  = newwin( 9, 26, 12,  0);
- WINDOW* w_traits  = newwin( 9, 26,  2, 27);
- WINDOW* w_effects = newwin( 9, 26, 12, 27);
- WINDOW* w_skills  = newwin( 9, 26,  2, 54);
- WINDOW* w_speed   = newwin( 9, 26, 12, 54);
- WINDOW* w_info    = newwin( 3, 80, 22,  0);
+ WINDOW* w_grid    = newwin(VIEW, SCREEN_WIDTH,  0,  0);
+ WINDOW* w_stats   = newwin( 9, VIEW + 1,  2,  0);
+ WINDOW* w_encumb  = newwin( 9, VIEW + 1, 12,  0);
+ WINDOW* w_traits  = newwin( 9, VIEW + 1,  2, 27);
+ WINDOW* w_effects = newwin( 9, VIEW + 1, 12, 27);
+ WINDOW* w_skills  = newwin( 9, VIEW + 1,  2, 54);
+ WINDOW* w_speed   = newwin( 9, VIEW + 1, 12, 54);
+ WINDOW* w_info    = newwin( 3, SCREEN_WIDTH, 22,  0);
 // Print name and header
  mvwprintw(w_grid, 0, 0, "%s - %s", name.c_str(), (male ? "Male" : "Female"));
  mvwprintz(w_grid, 0, 39, c_ltred, "| Press TAB to cycle, ESC or q to return.");
 // Main line grid
- for (int i = 0; i < 80; i++) {
+ for (int i = 0; i < SCREEN_WIDTH; i++) {
   mvwputch(w_grid,  1, i, c_ltgray, LINE_OXOX);
   mvwputch(w_grid, 21, i, c_ltgray, LINE_OXOX);
   mvwputch(w_grid, 11, i, c_ltgray, LINE_OXOX);
@@ -1623,7 +1623,7 @@ encumb(bp_feet) * 5);
 
 void player::disp_morale()
 {
- WINDOW *w = newwin(VIEW, 80, 0, 0);
+ WINDOW *w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
             LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  mvwprintz(w, 1,  1, c_white, "Morale Modifiers:");
@@ -1888,7 +1888,7 @@ void player::charge_power(int amount)
 
 void player::power_bionics(game *g)
 {
- WINDOW *wBio = newwin(VIEW, 80, 0, 0);
+ WINDOW *wBio = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  werase(wBio);
  std::vector <bionic> passive;
  std::vector <bionic> active;
@@ -1896,7 +1896,7 @@ void player::power_bionics(game *g)
  mvwprintz(wBio, 0,10, c_white,
            "Activating.  Press '!' to examine your implants.");
 
- for (int i = 0; i < 80; i++) {
+ for (int i = 0; i < SCREEN_WIDTH; i++) {
   mvwputch(wBio,  1, i, c_ltgray, LINE_OXOX);
   mvwputch(wBio, 21, i, c_ltgray, LINE_OXOX);
  }

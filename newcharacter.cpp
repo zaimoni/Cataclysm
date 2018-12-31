@@ -49,7 +49,7 @@ void save_template(player *u);
 bool player::create(game *g, character_type type, std::string tempname)
 {
  weapon = item(item::types[0], 0);
- WINDOW* w = newwin(VIEW, 80, 0, 0);
+ WINDOW* w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  int tab = 0, points = 38;
  if (type != PLTYPE_CUSTOM) {
   switch (type) {
@@ -269,7 +269,7 @@ int set_stats(WINDOW* w, player *u, int &points)
  unsigned char sel = 1;
  char ch;
 // Draw horizontal lines, with a gap for the active tab
- for (int i = 0; i < 80; i++) {
+ for (int i = 0; i < SCREEN_WIDTH; i++) {
   if (i < 4 || i > 14)
    mvwputch(w,  2, i, c_ltgray, LINE_OXOX);
   mvwputch(w,  4, i, c_ltgray, LINE_OXOX);
@@ -464,7 +464,7 @@ int set_traits(WINDOW* w, player *u, int &points)
    num_bad += abs(mutation_branch::traits[i].points);
  }
 // Draw horizontal lines, with a gap for the active tab
- for (int i = 0; i < 80; i++) {
+ for (int i = 0; i < SCREEN_WIDTH; i++) {
   if (i < 21 || i > 32)
    mvwputch(w,  2, i, c_ltgray, LINE_OXOX);
   mvwputch(w,  4, i, c_ltgray, LINE_OXOX);
@@ -632,7 +632,7 @@ int set_traits(WINDOW* w, player *u, int &points)
 int set_skills(WINDOW* w, player *u, int &points)
 {
 // Draw horizontal lines, with a gap for the active tab
- for (int i = 0; i < 80; i++) {
+ for (int i = 0; i < SCREEN_WIDTH; i++) {
   if (i < 39 || i > 50)
    mvwputch(w,  2, i, c_ltgray, LINE_OXOX);
   mvwputch(w,  4, i, c_ltgray, LINE_OXOX);
@@ -750,7 +750,7 @@ int set_skills(WINDOW* w, player *u, int &points)
 int set_description(WINDOW* w, player *u, int &points)
 {
 // Draw horizontal lines, with a gap for the active tab
- for (int i = 0; i < 80; i++) {
+ for (int i = 0; i < SCREEN_WIDTH; i++) {
   if (i < 57 || i > 73)
    mvwputch(w,  2, i, c_ltgray, LINE_OXOX);
   mvwputch(w,  4, i, c_ltgray, LINE_OXOX);

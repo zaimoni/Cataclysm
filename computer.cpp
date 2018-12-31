@@ -45,7 +45,7 @@ void computer::shutdown_terminal()
 
 void computer::use(game *g)
 {
- if (w_terminal == NULL) w_terminal = newwin(VIEW, 80, 0, 0);
+ if (w_terminal == NULL) w_terminal = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  wborder(w_terminal, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                      LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  

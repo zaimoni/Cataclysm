@@ -661,8 +661,8 @@ void game::craft()
   messages.add("Your morale is too low to craft...");
   return;
  }
- WINDOW *w_head = newwin( 3, 80, 0, 0);
- WINDOW *w_data = newwin(22, 80, 3, 0);
+ WINDOW *w_head = newwin( 3, SCREEN_WIDTH, 0, 0);
+ WINDOW *w_data = newwin(22, SCREEN_WIDTH, 3, 0);
  craft_cat tab = CC_WEAPON;
  std::vector<const recipe*> current;
  std::vector<bool> available;
@@ -752,7 +752,7 @@ void game::craft()
       if (charges > 0)
        toolinfo << "(" << charges << " charges) ";
       std::string toolname = toolinfo.str();
-      if (xpos + toolname.length() >= 80) {
+      if (xpos + toolname.length() >= SCREEN_WIDTH) {
        xpos = 32;
        ypos++;
       }
@@ -792,7 +792,7 @@ void game::craft()
      std::stringstream dump;
      dump << abs(count) << "x " << i_type->name << " ";
      std::string compname = dump.str();
-     if (xpos + compname.length() >= 80) {
+     if (xpos + compname.length() >= SCREEN_WIDTH) {
       ypos++;
       xpos = 32;
      }
@@ -865,7 +865,7 @@ void game::craft()
 void draw_recipe_tabs(WINDOW *w, craft_cat tab)
 {
  werase(w);
- for (int i = 0; i < 80; i++) {
+ for (int i = 0; i < SCREEN_WIDTH; i++) {
   mvwputch(w, 2, i, c_ltgray, LINE_OXOX);
   if ((i >  4 && i < 14) || (i > 20 && i < 27) || (i > 33 && i < 47) ||
       (i > 53 && i < 61) || (i > 67 && i < 74))

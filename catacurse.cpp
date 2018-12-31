@@ -748,7 +748,7 @@ bool SetFontSize(const int x, const int y)
 	fontheight = y;
 	halfwidth = fontwidth / 2;
 	halfheight = fontheight / 2;
-	_win.center(80 * fontwidth, VIEW * fontheight);
+	_win.center(SCREEN_WIDTH * fontwidth, VIEW * fontheight);
 	return true;
 }
 
@@ -1243,7 +1243,7 @@ WINDOW *initscr(void)
 //    WindowCount=0;
 
 	// cf mapdata.h: typical value of SEEX/SEEY is 12 so the console is 25x25 display, 55x25 readout
-    mainwin = newwin(VIEW,80,0,0);
+    mainwin = newwin(VIEW, SCREEN_WIDTH,0,0);
     return mainwin;   //create the 'stdscr' window and return its ref
 };
 

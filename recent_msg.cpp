@@ -34,7 +34,7 @@ void recent_msg::add(const char* msg, ...)
 
 void recent_msg::buffer()
 {
- WINDOW *w = newwin(VIEW, 80, 0, 0);
+ WINDOW *w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
             LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  mvwprintz(w, VIEW - 1, 32, c_red, "Press q to return");
@@ -108,7 +108,7 @@ void recent_msg::buffer()
 void recent_msg::write(WINDOW* w_messages)
 {
  werase(w_messages);
- int maxlength = 80 - (SEEX * 2 + 10);	// Matches size of w_messages
+ int maxlength = SCREEN_WIDTH - (SEEX * 2 + 10);	// Matches size of w_messages
  int line = 8;
  for (int i = messages.size() - 1; i >= 0 && line < 9; i--) {
   std::string mes = messages[i].message;

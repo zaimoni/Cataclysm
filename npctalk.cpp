@@ -102,15 +102,15 @@ void npc::talk_to_u(game *g)
  moves -= 100;
  decide_needs();
 
- d.win = newwin(VIEW, 80, 0, 0);
+ d.win = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  wborder(d.win, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                 LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  for (int i = 1; i < VIEW-1; i++)
-  mvwputch(d.win, i, 41, c_ltgray, LINE_XOXO);
- mvwputch(d.win,  0, 41, c_ltgray, LINE_OXXX);
- mvwputch(d.win, 24, 41, c_ltgray, LINE_XXOX);
+  mvwputch(d.win, i, SCREEN_WIDTH / 2 + 1, c_ltgray, LINE_XOXO);
+ mvwputch(d.win,  0, SCREEN_WIDTH / 2 + 1, c_ltgray, LINE_OXXX);
+ mvwputch(d.win, VIEW-1, SCREEN_WIDTH / 2 + 1, c_ltgray, LINE_XXOX);
  mvwprintz(d.win, 1,  1, c_white, "Dialogue with %s", name.c_str());
- mvwprintz(d.win, 1, 43, c_white, "Your response:");
+ mvwprintz(d.win, 1, SCREEN_WIDTH / 2 + 3, c_white, "Your response:");
 
 // Main dialogue loop
  do { 
@@ -1625,9 +1625,9 @@ talk_topic special_talk(char ch)
 
 bool trade(game *g, npc *p, int cost, std::string deal)
 {
- WINDOW* w_head = newwin( 4, 80,  0,  0);
- WINDOW* w_them = newwin(21, 40,  4,  0);
- WINDOW* w_you  = newwin(21, 40,  4, 40);
+ WINDOW* w_head = newwin( 4, SCREEN_WIDTH,  0,  0);
+ WINDOW* w_them = newwin(21, SCREEN_WIDTH / 2,  4,  0);
+ WINDOW* w_you  = newwin(21, SCREEN_WIDTH / 2,  4, SCREEN_WIDTH / 2);
  WINDOW* w_tmp;
  mvwprintz(w_head, 0, 0, c_white, "\
 Trading with %s\n\
@@ -1635,7 +1635,7 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
 ? to get information on an item", p->name.c_str());
 
 // Set up line drawings
- for (int i = 0; i < 80; i++)
+ for (int i = 0; i < SCREEN_WIDTH; i++)
   mvwputch(w_head,  3, i, c_white, LINE_OXOX);
  wrefresh(w_head);
  
@@ -1672,7 +1672,7 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
 // Draw borders, one of which is highlighted
    werase(w_them);
    werase(w_you);
-   for (int i = 1; i < 80; i++)
+   for (int i = 1; i < SCREEN_WIDTH; i++)
     mvwputch(w_head, 3, i, c_white, LINE_OXOX);
    mvwprintz(w_head, 3, 30, ((cash <  0 && g->u.cash >= cash * -1) ||
                              (cash >= 0 && p->cash  >= cash) ?

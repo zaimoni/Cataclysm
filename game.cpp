@@ -154,9 +154,9 @@ static void _game_type_menu(WINDOW* const w_open,const int sel2)
 bool game::opening_screen()
 {
 
- WINDOW* w_open = newwin(VIEW, 80, 0, 0);
+ WINDOW* w_open = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  erase();
- for (int i = 0; i < 80; i++)
+ for (int i = 0; i < SCREEN_WIDTH; i++)
   mvwputch(w_open, 21, i, c_white, LINE_OXOX);
  mvwprintz(w_open, 0, 1, c_blue, "Welcome to Cataclysm!");
  mvwprintz(w_open, 1, 0, c_red, "\
@@ -1633,7 +1633,7 @@ void game::death_screen()
  for (int i = 0; i < num_monsters; i++)
   num_kills += kills[i];
 
- WINDOW* w_death = newwin(VIEW, 80, 0, 0);
+ WINDOW* w_death = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  mvwprintz(w_death, 0, 35, c_red, "GAME OVER - Press Spacebar to Quit");
  mvwprintz(w_death, 2, 0, c_white, "Number of kills: %d", num_kills);
  int line = 0, mon = 0;
@@ -2123,7 +2123,7 @@ void game::draw_overmap()
 
 void game::disp_kills()
 {
- WINDOW* w = newwin(VIEW, 80, 0, 0);
+ WINDOW* w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  std::vector<mtype *> types;
  std::vector<int> count;
  for (int i = 0; i < num_monsters; i++) {
@@ -2176,7 +2176,7 @@ void game::disp_kills()
 
 void game::disp_NPCs()
 {
- WINDOW* w = newwin(VIEW, 80, 0, 0);
+ WINDOW* w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  mvwprintz(w, 0, 0, c_white, "Your position: %d:%d", lev.x, lev.y);
  std::vector<npc*> closest;
  closest.push_back(&cur_om.npcs[0]);
@@ -2218,7 +2218,7 @@ faction* game::list_factions(std::string title)
   return NULL;
  }
  WINDOW* w_list = newwin(VIEW,      MAX_FAC_NAME_SIZE, 0, 0);
- WINDOW* w_info = newwin(VIEW, 80 - MAX_FAC_NAME_SIZE, 0, MAX_FAC_NAME_SIZE);
+ WINDOW* w_info = newwin(VIEW, SCREEN_WIDTH - MAX_FAC_NAME_SIZE, 0, MAX_FAC_NAME_SIZE);
  int maxlength = 79 - MAX_FAC_NAME_SIZE;
  int sel = 0;
 
@@ -2302,7 +2302,7 @@ faction* game::list_factions(std::string title)
 
 void game::list_missions()
 {
- WINDOW *w_missions = newwin(VIEW, 80, 0, 0);
+ WINDOW *w_missions = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  int tab = 0, selection = 0;
  char ch;
  do {
@@ -6713,8 +6713,8 @@ void intro()
 {
  int maxx, maxy;
  getmaxyx(stdscr, maxy, maxx);
- WINDOW* tmp = newwin(VIEW, 80, 0, 0);
- while (maxy < VIEW || maxx < 80) {
+ WINDOW* tmp = newwin(VIEW, SCREEN_WIDTH, 0, 0);
+ while (maxy < VIEW || maxx < SCREEN_WIDTH) {
   werase(tmp);
   wprintw(tmp, "Whoa. Whoa. Hey. This game requires a minimum terminal size of 80x25. I'm\n\
 sorry if your graphical terminal emulator went with the woefully-diminuitive\n\

@@ -537,7 +537,7 @@ void overmap::delete_note(int x, int y)
 point overmap::display_notes()
 {
  std::string title = "Notes:";
- WINDOW* w_notes = newwin(VIEW, 80, 0, 0);
+ WINDOW* w_notes = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  const int maxitems = 20;	// Number of items to show at one time.
  char ch = '.';
  int start = 0, cur_it;
@@ -1244,7 +1244,7 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
    for (int j = 0; j < VIEW; j++)
     mvwputch(w, j, 51, c_white, LINE_XOXO);
 // Clear the legend
-   for (int i = 51; i < 80; i++) {
+   for (int i = 51; i < SCREEN_WIDTH; i++) {
     for (int j = 0; j < VIEW; j++)
      mvwputch(w, j, i, c_black, 'x');
    }
@@ -1275,7 +1275,7 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
 
 point overmap::choose_point(game *g)
 {
- WINDOW* w_map = newwin(VIEW, 80, 0, 0);
+ WINDOW* w_map = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  WINDOW* w_search = newwin(13, 27, 3, 51);
  timeout(BLINK_SPEED);	// Enable blinking!
  bool blink = true;

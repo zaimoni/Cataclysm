@@ -8,7 +8,10 @@ enum {
 	SEE = 12,	// for when it matters that they are explicitly equal
 	SEEX = SEE,
 	SEEY = SEE,
-	VIEW = 2*SEEX+1	// required curses view window height.  Default 25.  Fatcat graphical clients can resize as needed.
+	VIEW = 2 * SEEX + 1,	// required curses view window height.  Default 25.  Fatcat graphical clients can resize as needed.
+	// the canonical view with the player-scale map had a 55-wide "control panel", for a total width of 25+55=80
+	PANELX = 55,
+	SCREEN_WIDTH = VIEW+PANELX
 };
 
 #endif
