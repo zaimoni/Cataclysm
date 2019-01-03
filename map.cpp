@@ -1831,7 +1831,7 @@ void map::i_clear(int x, int y)
  i_at(x, y).clear();
 }
 
-point map::find_item(item *it)
+point map::find_item(item *it) const
 {
  point ret;
  for (ret.x = 0; ret.x < SEEX * my_MAPSIZE; ret.x++) {

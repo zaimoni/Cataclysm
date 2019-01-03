@@ -69,14 +69,13 @@ void print_inv_statics(game *g, WINDOW* w_inv, std::string title,
  }
 }
  
-std::vector<int> find_firsts(inventory &inv)
+std::vector<int> find_firsts(const inventory &inv)
 {
  std::vector<int> firsts;
- for (int i = 0; i < 8; i++)
-  firsts.push_back(-1);
+ for (int i = 0; i < 8; i++) firsts.push_back(-1);
 
- for (int i = 0; i < inv.size(); i++) {
-       if (firsts[0] == -1 && inv[i].is_gun())
+ for (size_t i = 0; i < inv.size(); i++) {
+  if (firsts[0] == -1 && inv[i].is_gun())
    firsts[0] = i;
   else if (firsts[1] == -1 && inv[i].is_ammo())
    firsts[1] = i;
@@ -181,14 +180,14 @@ std::vector<item> game::multidrop()
  std::vector<int> firsts = find_firsts(u.inv);
 
  char ch = '.';
- int start = 0, cur_it;
+ int start = 0;
+ size_t cur_it = 0;
  do {
   if (ch == '<' && start > 0) {
    for (int i = 1; i < VIEW; i++)
     mvwprintz(w_inv, i, 0, c_black, "                                        ");
    start -= maxitems;
-   if (start < 0)
-    start = 0;
+   if (start < 0) start = 0;
    mvwprintw(w_inv, maxitems + 2, 0, "         ");
   }
   if (ch == '>' && cur_it < u.inv.size()) {
@@ -228,10 +227,8 @@ std::vector<item> game::multidrop()
    }
    cur_line++;
   }
-  if (start > 0)
-   mvwprintw(w_inv, maxitems + 4, 0, "< Go Back");
-  if (cur_it < u.inv.size())
-   mvwprintw(w_inv, maxitems + 4, 12, "> More items");
+  if (start > 0) mvwprintw(w_inv, maxitems + 4, 0, "< Go Back");
+  if (cur_it < u.inv.size()) mvwprintw(w_inv, maxitems + 4, 12, "> More items");
   wrefresh(w_inv);
   ch = getch();
   if (ch >= '0' && ch <= '9') {
@@ -282,12 +279,11 @@ std::vector<item> game::multidrop()
 
  std::vector<item> ret;
 
- if (ch != '\n')
-  return ret; // Canceled!
+ if (ch != '\n') return ret; // Canceled!
 
  int current_stack = 0;
- int max_size = u.inv.size();
- for (int i = 0; i < max_size; i++) {
+ size_t max_size = u.inv.size();
+ for (size_t i = 0; i < max_size; i++) {
   for (int j = 0; j < dropping[i]; j++) {
    if (current_stack >= 0) {
     if (u.inv.stack_at(current_stack).size() == 1) {

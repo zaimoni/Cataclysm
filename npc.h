@@ -377,7 +377,7 @@ public:
  void randomize_from_faction(game *g, faction *fac);
  void make_shopkeep(game *g, oter_id type);
  void spawn_at(overmap *o, int posx, int posy);
- skill best_skill();
+ skill best_skill() const;
  void starting_weapon(game *g);
 
 
@@ -396,8 +396,8 @@ public:
  void pick_long_term_goal(game *g);
  void perform_mission(game *g);
  int  minutes_to_u(game *g); // Time in minutes it takes to reach player
- bool fac_has_value(faction_value value);
- bool fac_has_job(faction_job job);
+ bool fac_has_value(faction_value value) const;
+ bool fac_has_job(faction_job job) const;
 
 // Interaction with the player
  void form_opinion(player *u);
@@ -411,9 +411,9 @@ public:
  std::vector<skill> skills_offered_to(player *p); // Skills that're higher
  std::vector<itype_id> styles_offered_to(player *p); // Martial Arts
 // State checks
- bool is_enemy(); // We want to kill/mug/etc the player
- bool is_following(); // Traveling w/ player (whether as a friend or a slave)
- bool is_friend(); // Allies with the player
+ bool is_enemy() const; // We want to kill/mug/etc the player
+ bool is_following() const; // Traveling w/ player (whether as a friend or a slave)
+ bool is_friend() const; // Allies with the player
  bool is_leader(); // Leading the player
  bool is_defending(); // Putting the player's safety ahead of ours
 // What happens when the player makes a request
@@ -421,7 +421,7 @@ public:
  void told_to_wait(game *g);
  void told_to_leave(game *g);
  int  follow_distance();	// How closely do we follow the player?
- int  speed_estimate(int speed); // Estimate of a target's speed, usually player
+ int  speed_estimate(int speed) const; // Estimate of a target's speed, usually player
 
 
 // Dialogue and bartering--see npctalk.cpp
@@ -438,20 +438,20 @@ public:
 // Use and assessment of items
  int  minimum_item_value(); // The minimum value to want to pick up an item
  void update_worst_item_value(); // Find the worst value in our inventory
- int  value(item &it);
+ int  value(item &it) const;
  bool wear_if_wanted(item it);
  virtual bool wield(game *g, int index);
- bool has_healing_item();
- bool has_painkiller();
+ bool has_healing_item() const;
+ bool has_painkiller() const;
  bool took_painkiller();
  void use_painkiller(game *g);
  void activate_item(game *g, int index);
 
 // Interaction and assessment of the world around us
- int  danger_assessment(game *g);
+ int  danger_assessment(game *g) const;
  int  average_damage_dealt(); // Our guess at how much damage we can deal
  bool bravery_check(int diff);
- bool emergency(int danger);
+ bool emergency(int danger) const;
  void say(game *g, std::string line, ...);
  void decide_needs();
  void die(game *g, bool your_fault = false);
@@ -470,19 +470,19 @@ public:
  void choose_monster_target(game *g, int &enemy, int &danger,
                             int &total_danger);
  npc_action method_of_fleeing	(game *g, int enemy);
- npc_action method_of_attack	(game *g, int enemy, int danger);
+ npc_action method_of_attack	(game *g, int enemy, int danger) const;
  npc_action address_needs	(game *g, int danger);
  npc_action address_player	(game *g);
  npc_action long_term_goal_action(game *g);
- bool alt_attack_available(game *g);	// Do we have grenades, molotov, etc?
- int  choose_escape_item(); // Returns index of our best escape aid
+ bool alt_attack_available(game *g) const;	// Do we have grenades, molotov, etc?
+ int  choose_escape_item() const; // Returns index of our best escape aid
 
 // Helper functions for ranged combat
- int  confident_range(int index = -1); // >= 50% chance to hit
- bool wont_hit_friend(game *g, int tarx, int tary, int index = -1);
- bool can_reload(); // Wielding a gun that is not fully loaded
- bool need_to_reload(); // Wielding a gun that is empty
- bool enough_time_to_reload(game *g, int target, item &gun);
+ int  confident_range(int index = -1) const; // >= 50% chance to hit
+ bool wont_hit_friend(game *g, int tarx, int tary, int index = -1) const;
+ bool can_reload() const; // Wielding a gun that is not fully loaded
+ bool need_to_reload() const; // Wielding a gun that is empty
+ bool enough_time_to_reload(game *g, int target, const item &gun) const;
 
 // Physical movement from one tile to the next
  void update_path	(game *g, int x, int y);

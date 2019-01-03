@@ -54,13 +54,13 @@ void mission_start::standard(game *g, mission *miss)
 
 void mission_start::infect_npc(game *g, mission *miss)
 {
-	npc *p = g->find_npc(miss->npc_id);
+	npc* const p = g->find_npc(miss->npc_id);
 	if (p == NULL) {
 		debugmsg("mission_start::infect_npc() couldn't find an NPC!");
 		return;
 	}
 	p->add_disease(DI_INFECTION, -1, g);
-	for (int i = 0; i < p->inv.size(); i++) {
+	for (size_t i = 0; i < p->inv.size(); i++) {
 		if (p->inv[i].type->id == itm_antibiotics) {
 			p->inv.remove_stack(i);
 			i--;

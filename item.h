@@ -43,29 +43,29 @@ public:
 // returns the default container of this item, with this item in it
  item in_its_container();
 
- nc_color color(player *u);
+ nc_color color(player *u) const;
  nc_color color_in_inventory(player *u);
  std::string tname(game *g = NULL) const; // g needed for rotten-test
  void use(player &u);
  bool burn(int amount = 1); // Returns true if destroyed
 
 // Firearm specifics
- int reload_time(player &u);
+ int reload_time(const player &u) const;
  int clip_size();
  int accuracy();
  int gun_damage(bool with_ammo = true);
  int noise();
  int burst_size();
  int recoil(bool with_ammo = true);
- int range(player *p = NULL);
- ammotype ammo_type();
- int pick_reload_ammo(player &u, bool interactive);
+ int range(const player *p = NULL) const;
+ ammotype ammo_type() const;
+ int pick_reload_ammo(player &u, bool interactive) const;
  bool reload(player &u, int index);
 
  std::string save_info();	// Formatted for save files
  void load_info(std::string data, game *g);
  std::string info(bool showtext = false);	// Formatted for human viewing
- char symbol();
+ char symbol() const { return type->sym; }
  nc_color color();
  int price() const;
 
@@ -77,9 +77,9 @@ public:
  int volume() const;
  int volume_contained();
  int attack_time();
- int damage_bash();
- int damage_cut();
- bool has_flag(item_flag f);
+ int damage_bash() const { return type->melee_dam; }
+ int damage_cut() const;
+ bool has_flag(item_flag f) const;
  bool has_technique(technique_id t, player *p = NULL);
  std::vector<technique_id> techniques();
  bool goes_bad();
@@ -88,9 +88,9 @@ public:
  bool rotten(game *g);
 
 // Our value as a weapon, given particular skills
- int  weapon_value(int skills[num_skill_types]);
+ int  weapon_value(const int skills[num_skill_types]) const;
 // As above, but discounts its use as a ranged weapon
- int  melee_value (int skills[num_skill_types]);
+ int  melee_value (const int skills[num_skill_types]) const;
 // Returns the data associated with tech, if we are an it_style
  style_move style_data(technique_id tech);
  bool is_two_handed(player *u);
@@ -118,7 +118,7 @@ public:
  bool is_software() const;
  bool is_macguffin() const;
  bool is_style() const;
- bool is_other(); // Doesn't belong in other categories
+ bool is_other() const; // Doesn't belong in other categories
  bool is_artifact() const;
 
  static void init();

@@ -169,7 +169,7 @@ void npc::execute_action(game *g, npc_action action, int target)
  case npc_wield_loaded_gun:
  {
   int index = -1, max = 0;
-  for (int i = 0; i < inv.size(); i++) {
+  for (size_t i = 0; i < inv.size(); i++) {
    if (inv[i].is_gun() && inv[i].charges > max) {
     max = inv[i].charges;
     index = i;
@@ -186,7 +186,7 @@ void npc::execute_action(game *g, npc_action action, int target)
  {
   bool ammo_found = false;
   int index = -1;
-  for (int i = 0; i < inv.size(); i++) {
+  for (size_t i = 0; i < inv.size(); i++) {
    const item& it = inv[i];
    if (!it.is_gun()) continue;
    bool am = (0 < has_ammo((dynamic_cast<const it_gun*>(it.type))->ammo).size());
@@ -403,7 +403,7 @@ npc_action npc::method_of_fleeing(game *g, int enemy)
  return npc_flee;
 }
 
-npc_action npc::method_of_attack(game *g, int target, int danger)
+npc_action npc::method_of_attack(game *g, int target, int danger) const
 {
  int tarx = posx, tary = posy;
  bool can_use_gun =      (!is_following() || combat_rules.use_guns),
@@ -448,7 +448,7 @@ npc_action npc::method_of_attack(game *g, int target, int danger)
 // Check if there's something better to wield
  bool has_empty_gun = false, has_better_melee = false;
  std::vector<int> empty_guns;
- for (int i = 0; i < inv.size(); i++) {
+ for (size_t i = 0; i < inv.size(); i++) {
   if (can_use_gun && inv[i].is_gun() && inv[i].charges > 0)
    return npc_wield_loaded_gun;
   else if (can_use_gun && inv[i].is_gun() &&
@@ -461,7 +461,7 @@ npc_action npc::method_of_attack(game *g, int target, int danger)
 
  bool has_ammo_for_empty_gun = false;
  for (int i = 0; i < empty_guns.size(); i++) {
-  for (int j = 0; j < inv.size(); j++) {
+  for (size_t j = 0; j < inv.size(); j++) {
    if (inv[j].is_ammo() &&
        inv[j].ammo_type() == inv[ empty_guns[i] ].ammo_type())
     has_ammo_for_empty_gun = true;
@@ -584,7 +584,7 @@ npc_action npc::long_term_goal_action(game *g)	// XXX this was being prototyped
 }
  
  
-bool npc::alt_attack_available(game *g)
+bool npc::alt_attack_available(game *g) const
 {
  for (int i = 0; i < NUM_ALT_ATTACK_ITEMS; i++) {
   if ((!is_following() || combat_rules.use_grenades ||
@@ -595,10 +595,10 @@ bool npc::alt_attack_available(game *g)
  return false;
 }
 
-int npc::choose_escape_item()
+int npc::choose_escape_item() const
 {
  int best = -1, ret = -1;
- for (int i = 0; i < inv.size(); i++) {
+ for (size_t i = 0; i < inv.size(); i++) {
   for (int j = 0; j < NUM_ESCAPE_ITEMS; j++) {
    const it_comest* food = NULL;
    if (inv[i].is_food())
@@ -649,7 +649,7 @@ void npc::use_escape_item(game *g, int index, int target)
 }
 
 // Index defaults to -1, i.e., wielded weapon
-int npc::confident_range(int index)
+int npc::confident_range(int index) const
 {
  if (index == -1 && (!weapon.is_gun() || weapon.charges <= 0)) return 1;
 
@@ -712,10 +712,9 @@ int npc::confident_range(int index)
 }
 
 // Index defaults to -1, i.e., wielded weapon
-bool npc::wont_hit_friend(game *g, int tarx, int tary, int index)
+bool npc::wont_hit_friend(game *g, int tarx, int tary, int index) const
 {
- if (rl_dist(posx, posy, tarx, tary) == 1)
-  return true; // If we're *really* sure that our aim is dead-on
+ if (rl_dist(posx, posy, tarx, tary) == 1) return true; // If we're *really* sure that our aim is dead-on
 
  int linet = 0, dist = sight_range(g->light_level());
  int confident = confident_range(index);
@@ -752,7 +751,7 @@ bool npc::wont_hit_friend(game *g, int tarx, int tary, int index)
  return true;
 }
  
-bool npc::can_reload()
+bool npc::can_reload() const
 {
  if (!weapon.is_gun()) return false;
 
@@ -760,14 +759,14 @@ bool npc::can_reload()
  return (weapon.charges < gun->clip && has_ammo(gun->ammo).size() > 0);
 }
 
-bool npc::need_to_reload()
+bool npc::need_to_reload() const
 {
  if (!weapon.is_gun()) return false;
 
  return (weapon.charges < dynamic_cast<const it_gun*>(weapon.type)->clip * .1);
 }
 
-bool npc::enough_time_to_reload(game *g, int target, item &gun)
+bool npc::enough_time_to_reload(game *g, int target, const item &gun) const
 {
  int rltime = gun.reload_time(*this);
  double turns_til_reloaded = rltime / current_speed(g);
@@ -1154,7 +1153,7 @@ void npc::drop_items(game *g, int weight, int volume)
            name.c_str(), weight, volume, inv.size(), weight_carried(),
            weight_capacity() / 4, volume_carried(), volume_capacity());
   int wgtTotal = 0, volTotal = 0;
-  for (int i = 0; i < inv.size(); i++) {
+  for (size_t i = 0; i < inv.size(); i++) {
    wgtTotal += inv[i].volume();
    volTotal += inv[i].weight();
    debugmsg("%s (%d of %d): %d/%d, total %d/%d", inv[i].tname().c_str(), i,
@@ -1166,7 +1165,7 @@ void npc::drop_items(game *g, int weight, int volume)
  std::vector<ratio_index> rWgt, rVol; // Weight/Volume to value ratios
 
 // First fill our ratio vectors, so we know which things to drop first
- for (int i = 0; i < inv.size(); i++) {
+ for (size_t i = 0; i < inv.size(); i++) {
   double wgt_ratio, vol_ratio;
   if (value(inv[i]) == 0) {
    wgt_ratio = 99999;
@@ -1246,7 +1245,7 @@ npc_action npc::scan_new_items(game *g, int target)
 // Check if there's something better to wield
  bool has_empty_gun = false, has_better_melee = false;
  std::vector<int> empty_guns;
- for (int i = 0; i < inv.size(); i++) {
+ for (size_t i = 0; i < inv.size(); i++) {
   if (can_use_gun && inv[i].is_gun() && inv[i].charges > 0)
    return npc_wield_loaded_gun;
   else if (can_use_gun && inv[i].is_gun() &&
@@ -1259,7 +1258,7 @@ npc_action npc::scan_new_items(game *g, int target)
 
  bool has_ammo_for_empty_gun = false;
  for (int i = 0; i < empty_guns.size(); i++) {
-  for (int j = 0; j < inv.size(); j++) {
+  for (size_t j = 0; j < inv.size(); j++) {
    if (inv[j].is_ammo() &&
        inv[j].ammo_type() == inv[ empty_guns[i] ].ammo_type())
     has_ammo_for_empty_gun = true;
@@ -1290,7 +1289,7 @@ void npc::melee_player(game *g, player &foe)
 void npc::wield_best_melee(game *g)
 {
  int best_score = 0, index = -999;
- for (int i = 0; i < inv.size(); i++) {
+ for (size_t i = 0; i < inv.size(); i++) {
   int score = inv[i].melee_value(sklevel);
   if (score > best_score) {
    best_score = score;
@@ -1352,7 +1351,7 @@ void npc::alt_attack(game *g, int target)
   used = &weapon;
   index = -1;
  } else {
-  for (int i = 0; i < inv.size(); i++) {
+  for (size_t i = 0; i < inv.size(); i++) {
    if (inv[i].type->id == which) {
     used = &(inv[i]);
     index = i;
@@ -1580,7 +1579,7 @@ void npc::use_painkiller(game *g)
 {
 // First, find the best painkiller for our pain level
  int difference = 9999, index = -1;
- for (int i = 0; i < inv.size(); i++) {
+ for (size_t i = 0; i < inv.size(); i++) {
   int diff = 9999;
   if (inv[i].type->id == itm_aspirin)
    diff = abs(pain - 15);
@@ -1612,7 +1611,7 @@ void npc::pick_and_eat(game *g)
 {
  int best_hunger = 999, best_thirst = 999, index = -1;
  bool thirst_more_important = (thirst > hunger * 1.5);
- for (int i = 0; i < inv.size(); i++) {
+ for (size_t i = 0; i < inv.size(); i++) {
   int eaten_hunger = -1, eaten_thirst = -1;
   const item& it = inv[i];
   const it_comest* food = NULL;
@@ -1684,7 +1683,7 @@ void npc::mug_player(game *g, player &mark)
     value_mod -= double((8 - op_of_u.value) * .07);
    }
    int best_value = minimum_item_value() * value_mod, index = -1;
-   for (int i = 0; i < mark.inv.size(); i++) {
+   for (size_t i = 0; i < mark.inv.size(); i++) {
     if (value(mark.inv[i]) >= best_value &&
         volume_carried() + mark.inv[i].volume() <= volume_capacity() && 
         weight_carried() + mark.inv[i].weight() <= weight_capacity()   ) {

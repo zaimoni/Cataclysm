@@ -100,10 +100,11 @@ class map
 
 // Items
  std::vector<item>& i_at(int x, int y);
+ std::vector<item>& i_at(int x, int y) const { return const_cast<map*>(this)->i_at(x,y); };
  item water_from(int x, int y);
  void i_clear(int x, int y);
  void i_rem(int x, int y, int index);
- point find_item(item *it);
+ point find_item(item *it) const;
  void add_item(int x, int y, const itype* type, int birthday);
  void add_item(int x, int y, item new_item);
  void process_active_items(game *g);

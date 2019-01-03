@@ -6,7 +6,6 @@
 #include <vector>
 
 class game;
-// class map;
 
 class inventory
 {
@@ -20,9 +19,10 @@ class inventory
   item& operator[] (int i);
   const item& operator[] (int i) const;
   std::vector<item>& stack_at(int i);
+  const std::vector<item>& stack_at(int i) const { return const_cast<inventory*>(this)->stack_at(i); };
   std::vector<item> const_stack(int i) const;
   std::vector<item> as_vector();
-  int size() const { return items.size(); }
+  size_t size() const { return items.size(); }
   int num_items() const;
 
   inventory& operator+= (const inventory &rhs);
@@ -64,7 +64,7 @@ class inventory
 
   bool has_amount(itype_id it, int quantity) { return (amount_of(it) >= quantity); }
   bool has_charges(itype_id it, int quantity) { return (charges_of(it) >= quantity); }
-  bool has_item(item *it); // Looks for a specific item
+  bool has_item(item *it) const; // Looks for a specific item
 
 /* TODO: This stuff, I guess?
   std::string save();

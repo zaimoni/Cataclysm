@@ -2815,13 +2815,13 @@ bool game::pl_sees(player *p, monster *mon)
  return m.sees(p->posx, p->posy, mon->pos.x, mon->pos.y, p->sight_range(light_level()));
 }
 
-point game::find_item(item *it)
+point game::find_item(item *it) const
 {
  if (u.has_item(it)) return point(u.posx, u.posy);
  point ret = m.find_item(it);
  if (ret.x != -1 && ret.y != -1) return ret;
  for (int i = 0; i < active_npc.size(); i++) {
-  for (int j = 0; j < active_npc[i].inv.size(); j++) {
+  for (size_t j = 0; j < active_npc[i].inv.size(); j++) {
    if (it == &(active_npc[i].inv[j]))
     return point(active_npc[i].posx, active_npc[i].posy);
   }
@@ -2836,7 +2836,7 @@ void game::remove_item(item *it)
   u.remove_weapon();
   return;
  }
- for (int i = 0; i < u.inv.size(); i++) {
+ for (size_t i = 0; i < u.inv.size(); i++) {
   if (it == &u.inv[i]) {
    u.i_remn(i);
    return;
@@ -2857,20 +2857,20 @@ void game::remove_item(item *it)
    }
   }
  }
- for (int i = 0; i < active_npc.size(); i++) {
-  if (it == &active_npc[i].weapon) {
-   active_npc[i].remove_weapon();
+ for (auto& n_pc : active_npc) {
+  if (it == &n_pc.weapon) {
+   n_pc.remove_weapon();
    return;
   }
-  for (int j = 0; j < active_npc[i].inv.size(); j++) {
-   if (it == &active_npc[i].inv[j]) {
-    active_npc[i].i_remn(j);
+  for (size_t j = 0; j < n_pc.inv.size(); j++) {
+   if (it == &n_pc.inv[j]) {
+    n_pc.i_remn(j);
     return;
    }
   }
-  for (int j = 0; j < active_npc[i].worn.size(); j++) {
-   if (it == &active_npc[i].worn[j]) {
-    active_npc[i].worn.erase(active_npc[i].worn.begin() + j);
+  for (int j = 0; j < n_pc.worn.size(); j++) {
+   if (it == &n_pc.worn[j]) {
+    n_pc.worn.erase(n_pc.worn.begin() + j);
     return;
    }
   }
@@ -5416,7 +5416,7 @@ void game::unload()
 // Unloading a gun or tool!
  u.moves -= int(u.weapon.reload_time(u) / 2);
  if (u.weapon.is_gun()) {	// Gun ammo is combined with existing items
-  for (int i = 0; i < u.inv.size() && u.weapon.charges > 0; i++) {
+  for (size_t i = 0; i < u.inv.size() && u.weapon.charges > 0; i++) {
    if (u.inv[i].is_ammo()) {
     const it_ammo* tmpammo = dynamic_cast<const it_ammo*>(u.inv[i].type);
     if (tmpammo->id == u.weapon.curammo->id && u.inv[i].charges < tmpammo->count) {
@@ -5853,7 +5853,7 @@ void game::plswim(int x, int y)
    popup("You need to breathe but you can't swim!  Get to dry land, quick!");
  }
  u.moves -= (movecost > 200 ? 200 : movecost);
- for (int i = 0; i < u.inv.size(); i++) {
+ for (size_t i = 0; i < u.inv.size(); i++) {
   if (u.inv[i].type->m1 == IRON && u.inv[i].damage < 5 && one_in(8))
    u.inv[i].damage++;
  }
@@ -5868,16 +5868,14 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
     bool is_player;
     if (p) is_player = true;
     else if (zz) is_player = false;
-    else
-    {
+    else {
         debugmsg ("game::fling neither player nor monster");
         return;
     }
 
     tileray tdir(dir);
     std::string sname, snd;
-    if (p)
-    {
+    if (p) {
         if (is_u) sname = std::string ("You are");
         else sname = p->name + " is";
     }
@@ -5886,8 +5884,7 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
     int vel1 = flvel;
     int x = (is_player? p->posx : zz->pos.x);
     int y = (is_player? p->posy : zz->pos.y);
-    while (range > 0)
-    {
+    while (range > 0) {
         tdir.advance();
         x = (is_player? p->posx : zz->pos.x) + tdir.dx();
         y = (is_player? p->posy : zz->pos.y) + tdir.dy();

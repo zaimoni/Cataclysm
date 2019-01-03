@@ -67,7 +67,7 @@ int inventory::num_items() const
 
 inventory& inventory::operator+= (const inventory &rhs)
 {
- for (int i = 0; i < rhs.size(); i++) add_stack(rhs.const_stack(i));
+ for (size_t i = 0; i < rhs.size(); i++) add_stack(rhs.const_stack(i));
  return *this;
 }
 
@@ -134,27 +134,26 @@ void inventory::add_item(item newit, bool keep_invlet)
 void inventory::restack(player *p)
 {
  inventory tmp;
- for (int i = 0; i < size(); i++) {
+ for (size_t i = 0; i < size(); i++) {
   for (const auto& it : items[i]) tmp.add_item(it);
  }
  clear();
  if (p) {
 // Doing it backwards will preserve older items' invlet
 /*
-  for (int i = tmp.size() - 1; i >= 0; i--) {
+  for (size_t i = tmp.size() - 1; i >= 0; i--) {
    if (p->has_weapon_or_armor(tmp[i].invlet)) 
     tmp.assign_empty_invlet(tmp[i], p);
   }
 */
-  for (int i = 0; i < tmp.size(); i++) {
+  for (size_t i = 0; i < tmp.size(); i++) {
    if (!tmp[i].invlet_is_okay() || p->has_weapon_or_armor(tmp[i].invlet)) {
-    //debugmsg("Restacking item %d (invlet %c)", i, tmp[i].invlet);
     tmp.assign_empty_invlet(tmp[i], p);
 	for (auto& it : tmp.items[i]) it.invlet = tmp[i].invlet;
    }
   }
  }
- for (int i = 0; i < tmp.size(); i++)
+ for (size_t i = 0; i < tmp.size(); i++)
   items.push_back(tmp.items[i]);
 }
 
@@ -361,7 +360,7 @@ void inventory::use_charges(itype_id it, int quantity)
  }
 }
  
-bool inventory::has_item(item *it)
+bool inventory::has_item(item *it) const
 {
  for (int i = 0; i < items.size(); i++) {
   for (int j = 0; j < items[i].size(); j++) {

@@ -1443,29 +1443,25 @@ bool vehicle::refill(player& u, const int part, const bool test)
     bool i_cont = false;
 
     itype_id itid = default_ammo((ammotype)ftype);
-    if (u.weapon.is_container() && u.weapon.contents.size() > 0 && u.weapon.contents[0].type->id == itid)
-    {
+    if (u.weapon.is_container() && u.weapon.contents.size() > 0 && u.weapon.contents[0].type->id == itid) {
         i_itm = -2;
         p_itm = &u.weapon.contents[0];
         min_charges = u.weapon.contents[0].charges;
         i_cont = true;
-    } else if (u.weapon.type->id == itid)
-    {
+    } else if (u.weapon.type->id == itid) {
         i_itm = -2;
         p_itm = &u.weapon;
         min_charges = u.weapon.charges;
     } else
-     for (int i = 0; i < u.inv.size(); i++) {
+     for (size_t i = 0; i < u.inv.size(); i++) {
         item *itm = &u.inv[i];
         bool cont = false;
-        if (itm->is_container() && itm->contents.size() > 0)
-        {
+        if (itm->is_container() && itm->contents.size() > 0) {
             cont = true;
             itm = &(itm->contents[0]);
         }
         if (itm->type->id != itid) continue;
-        if (i_itm < 0 || min_charges > itm->charges)
-        {
+        if (i_itm < 0 || min_charges > itm->charges) {
             i_itm = i;
             p_itm = itm;
             i_cont = cont;

@@ -382,12 +382,7 @@ std::string item::info(bool showtext)
  return dump.str();
 }
 
-char item::symbol()
-{
- return type->sym;
-}
-
-nc_color item::color(player *u)
+nc_color item::color(player *u) const
 {
  nc_color ret = c_ltgray;
 
@@ -402,10 +397,10 @@ nc_color item::color(player *u)
   if (u->weapon.is_gun() && u->weapon.ammo_type() == amtype)
    ret = c_green;
   else {
-   for (int i = 0; i < u->inv.size(); i++) {
+   for (size_t i = 0; i < u->inv.size(); i++) {
     if (u->inv[i].is_gun() && u->inv[i].ammo_type() == amtype) {
-     i = u->inv.size();
      ret = c_green;
+	 break;
     }
    }
   }
@@ -591,29 +586,18 @@ int item::attack_time()
  return ret;
 }
 
-int item::damage_bash()
-{
- return type->melee_dam;
-}
-
-int item::damage_cut()
+int item::damage_cut() const
 {
  if (is_gun()) {
-  for (int i = 0; i < contents.size(); i++) {
-   if (contents[i].type->id == itm_bayonet)
-    return contents[i].type->melee_cut;
-  }
+  for (const auto& it : contents) if (it.type->id == itm_bayonet) return it.type->melee_cut;
  }
  return type->melee_cut;
 }
 
-bool item::has_flag(item_flag f)
+bool item::has_flag(item_flag f) const
 {
  if (is_gun()) {
-  for (int i = 0; i < contents.size(); i++) {
-   if (contents[i].has_flag(f))
-    return true;
-  }
+  for(const auto& it : contents) if (it.has_flag(f)) return true;
  }
  return (type->item_flags & mfb(f));
 }
@@ -666,7 +650,7 @@ bool item::craft_has_charges()
  return false;
 }
 
-int item::weapon_value(int skills[num_skill_types])
+int item::weapon_value(const int skills[num_skill_types]) const
 {
  int my_value = 0;
  if (is_gun()) {
@@ -695,19 +679,16 @@ int item::weapon_value(int skills[num_skill_types])
  return my_value;
 }
 
-int item::melee_value(int skills[num_skill_types])
+int item::melee_value(const int skills[num_skill_types]) const
 {
  int my_value = 0;
  my_value += int(type->melee_dam * (1   + .3 * skills[sk_bashing] +
                                           .1 * skills[sk_melee]    ));
- //debugmsg("My value: (+bash) %d", my_value);
 
  my_value += int(type->melee_cut * (1   + .4 * skills[sk_cutting] +
                                           .1 * skills[sk_melee]    ));
- //debugmsg("My value: (+cut) %d", my_value);
 
  my_value += int(type->m_to_hit  * (1.2 + .3 * skills[sk_melee]));
- //debugmsg("My value: (+hit) %d", my_value);
 
  if (is_style())
   my_value += 15 * skills[sk_unarmed] + 8 * skills[sk_melee];
@@ -862,7 +843,7 @@ bool item::is_style() const
  return type->is_style();
 }
 
-bool item::is_other()
+bool item::is_other() const
 {
  return (!is_gun() && !is_ammo() && !is_armor() && !is_food() &&
          !is_food_container() && !is_tool() && !is_gunmod() && !is_bionic() &&
@@ -874,7 +855,7 @@ bool item::is_artifact() const
  return type->is_artifact();
 }
 
-int item::reload_time(player &u)
+int item::reload_time(const player &u) const
 {
  int ret = 0;
 
@@ -968,7 +949,7 @@ int item::recoil(bool with_ammo)
  return ret;
 }
 
-int item::range(player *p)
+int item::range(const player *p) const
 {
  if (!is_gun()) return 0;
  int ret = 0;
@@ -986,7 +967,7 @@ int item::range(player *p)
 }
  
 
-ammotype item::ammo_type()
+ammotype item::ammo_type() const
 {
  if (is_gun()) {
   ammotype ret = dynamic_cast<const it_gun*>(type)->ammo;
@@ -1003,7 +984,7 @@ ammotype item::ammo_type()
  return AT_NULL;
 }
  
-int item::pick_reload_ammo(player &u, bool interactive)
+int item::pick_reload_ammo(player &u, bool interactive) const
 {
  if (!type->is_gun() && !type->is_tool()) {
   debugmsg("RELOADING NON-GUN NON-TOOL");
@@ -1021,7 +1002,7 @@ int item::pick_reload_ammo(player &u, bool interactive)
   if (charges > 0) {
    const itype_id aid = itype_id(curammo->id);
    const auto& inv = u.inv;
-   for (int i = 0; i < inv.size(); i++) {
+   for (size_t i = 0; i < inv.size(); i++) {
     if (inv[i].type->id == aid) am.push_back(i);
    }
   } else {
@@ -1060,10 +1041,7 @@ Choose ammo type:         Damage     Armor Pierce     Range     Accuracy");
    werase(w_ammo);
    delwin(w_ammo);
    erase();
-   if (ch == ' ' || ch == 27)
-    index = -1;
-   else
-    index = am[ch - 'a'];
+   index = (ch == ' ' || ch == 27) ? -1 : am[ch - 'a'];
   } else {
    int smallest = 500;
    for (int i = 0; i < am.size(); i++) {

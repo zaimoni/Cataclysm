@@ -90,7 +90,7 @@ std::string npc::save_info()
  
 // Inventory size, plus armor size, plus 1 for the weapon
  dump << std::endl << inv.num_items() + worn.size() + 1 << std::endl;
- for (int i = 0; i < inv.size(); i++) {
+ for (size_t i = 0; i < inv.size(); i++) {
   for (int j = 0; j < inv.stack_at(i).size(); j++) {
    dump << "I " << inv.stack_at(i)[j].save_info() << std::endl;
    for (int k = 0; k < inv.stack_at(i)[j].contents.size(); k++)
@@ -903,7 +903,7 @@ void npc::spawn_at(overmap *o, int x, int y)
  }
 }
 
-skill npc::best_skill()
+skill npc::best_skill() const
 {
  std::vector<int> best_skills;
  int highest = 0;
@@ -1277,17 +1277,15 @@ int npc::minutes_to_u(game *g)
  return ret;
 }
 
-bool npc::fac_has_value(faction_value value)
+bool npc::fac_has_value(faction_value value) const
 {
- if (my_fac == NULL)
-  return false;
+ if (my_fac == NULL) return false;
  return my_fac->has_value(value);
 }
 
-bool npc::fac_has_job(faction_job job)
+bool npc::fac_has_job(faction_job job) const
 {
- if (my_fac == NULL)
-  return false;
+ if (my_fac == NULL) return false;
  return my_fac->has_job(job);
 }
 
@@ -1311,7 +1309,7 @@ void npc::decide_needs()
                        sklevel[sk_gun] * 2 + 5;
  needrank[need_food] = 15 - hunger;
  needrank[need_drink] = 15 - thirst;
- for (int i = 0; i < inv.size(); i++) {
+ for (size_t i = 0; i < inv.size(); i++) {
   const it_comest* food = NULL;
   if (inv[i].is_food())
    food = dynamic_cast<const it_comest*>(inv[i].type);
@@ -1368,7 +1366,7 @@ void npc::init_selling(std::vector<int> &indices, std::vector<int> &prices)
 {
  int val, price;
  bool found_lighter = false;
- for (int i = 0; i < inv.size(); i++) {
+ for (size_t i = 0; i < inv.size(); i++) {
   if (inv[i].type->id == itm_lighter && !found_lighter)
    found_lighter = true;
   else {
@@ -1386,7 +1384,7 @@ void npc::init_buying(inventory you, std::vector<int> &indices,
                       std::vector<int> &prices)
 {
  int val, price;
- for (int i = 0; i < you.size(); i++) {
+ for (size_t i = 0; i < you.size(); i++) {
   val = value(you[i]);
   if (val >= NPC_HI_VALUE) {
    indices.push_back(i);
@@ -1409,14 +1407,14 @@ int npc::minimum_item_value()
 void npc::update_worst_item_value()
 {
  worst_item_value = 99999;
- for (int i = 0; i < inv.size(); i++) {
+ for (size_t i = 0; i < inv.size(); i++) {
   int itval = value(inv[i]);
   if (itval < worst_item_value)
    worst_item_value = itval;
  }
 }
 
-int npc::value(item &it)
+int npc::value(item &it) const
 {
  int ret = it.price() / 50;
  {
@@ -1441,7 +1439,7 @@ int npc::value(item &it)
    gun = dynamic_cast<const it_gun*>(weapon.type);
    if (ammo->type == gun->ammo) ret += 14;
   }
-  for (int i = 0; i < inv.size(); i++) {
+  for (size_t i = 0; i < inv.size(); i++) {
    if (inv[i].is_gun()) {
     gun = dynamic_cast<const it_gun*>(inv[i].type);
     if (ammo->type == gun->ammo) ret += 14;
@@ -1478,18 +1476,18 @@ int npc::value(item &it)
  return ret;
 }
 
-bool npc::has_healing_item()
+bool npc::has_healing_item() const
 {
- for (int i = 0; i < inv.size(); i++) {
+ for (size_t i = 0; i < inv.size(); i++) {
   if (inv[i].type->id == itm_bandages || inv[i].type->id == itm_1st_aid)
    return true;
  }
  return false;
 }
 
-bool npc::has_painkiller()
+bool npc::has_painkiller() const
 {
- for (int i = 0; i < inv.size(); i++) {
+ for (size_t i = 0; i < inv.size(); i++) {
   if ((pain <= 35 && inv[i].type->id == itm_aspirin) ||
       (pain >= 50 && inv[i].type->id == itm_oxycodone) ||
       inv[i].type->id == itm_tramadol || inv[i].type->id == itm_codeine)
@@ -1504,7 +1502,7 @@ bool npc::took_painkiller()
          has_disease(DI_PKILL3) || has_disease(DI_PKILL_L));
 }
 
-bool npc::is_friend()
+bool npc::is_friend() const
 {
  if (attitude == NPCATT_FOLLOW || attitude == NPCATT_DEFEND ||
      attitude == NPCATT_LEAD)
@@ -1512,7 +1510,7 @@ bool npc::is_friend()
  return false;
 }
 
-bool npc::is_following()
+bool npc::is_following() const
 {
  switch (attitude) {
  case NPCATT_FOLLOW:
@@ -1531,7 +1529,7 @@ bool npc::is_leader()
  return (attitude == NPCATT_LEAD);
 }
 
-bool npc::is_enemy()
+bool npc::is_enemy() const
 {
  if (attitude == NPCATT_KILL || attitude == NPCATT_MUG ||
      attitude == NPCATT_FLEE)
@@ -1544,7 +1542,7 @@ bool npc::is_defending()
  return (attitude == NPCATT_DEFEND);
 }
 
-int npc::danger_assessment(game *g)
+int npc::danger_assessment(game *g) const
 {
  int ret = 0;
  int sightdist = g->light_level();
@@ -1605,7 +1603,7 @@ bool npc::bravery_check(int diff)
  return (dice(10 + personality.bravery, 6) >= dice(diff, 4));
 }
 
-bool npc::emergency(int danger)
+bool npc::emergency(int danger) const
 {
  return (danger > (personality.bravery * 3 * hp_percentage()) / 100);
 }
@@ -1671,10 +1669,9 @@ int npc::follow_distance()
  return 4; // TODO: Modify based on bravery, weapon wielded, etc.
 }
 
-int npc::speed_estimate(int speed)
+int npc::speed_estimate(int speed) const
 {
- if (per_cur == 0)
-  return rng(0, speed * 2);
+ if (0 == per_cur) return rng(0, speed * 2);
 // Up to 80% deviation if per_cur is 1;
 // Up to 10% deviation if per_cur is 8;
 // Up to 4% deviation if per_cur is 20;
@@ -1846,7 +1843,7 @@ void npc::die(game *g, bool your_fault)
  item my_body(messages.turn);
  my_body.name = name;
  g->m.add_item(posx, posy, my_body);
- for (int i = 0; i < inv.size(); i++)
+ for (size_t i = 0; i < inv.size(); i++)
   g->m.add_item(posx, posy, inv[i]);
  for (const auto& it : worn) g->m.add_item(posx, posy, it);
  if (weapon.type->id != itm_null)
