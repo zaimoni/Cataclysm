@@ -258,13 +258,16 @@ void computer::activate_function(game *g, computer_action action)
   case COMPACT_TERMINATE:
    for (int x = 0; x < SEEX * MAPSIZE; x++) {
     for (int y = 0; y < SEEY * MAPSIZE; y++) {
-     int mondex = g->mon_at(x, y);
-     if (mondex != -1 &&
-         ((g->m.ter(x, y - 1) == t_reinforced_glass_h &&
-           g->m.ter(x, y + 1) == t_wall_h) ||
-          (g->m.ter(x, y + 1) == t_reinforced_glass_h &&
-           g->m.ter(x, y - 1) == t_wall_h)))
-      g->kill_mon(mondex, true);
+	 monster* const z = g->mon(x,y);
+	 if (!z) continue;
+	 const auto terrain = g->m.ter(x, y + 1);
+	 switch(terrain)
+	 {
+	 case t_wall_h:
+	 case t_reinforced_glass_h:
+		 // abuse auto-conversion of enumerations to int and automatic type promotion
+		 if ((t_wall_h + t_reinforced_glass_h)-terrain == g->m.ter(x, y - 1)) g->kill_mon(*z, true);
+	 }
     }
    }
    print_line("Subjects terminated.");

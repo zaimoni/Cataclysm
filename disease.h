@@ -222,13 +222,12 @@ void dis_effect(game *g, player &p, disease &dis)
      for (int j = -1; j <= 1; j++) {
       sporex = p.posx + i;
       sporey = p.posy + j;
+	  monster* const m_at = g->mon(sporex, sporey);
       if (g->m.move_cost(sporex, sporey) > 0 && one_in(5)) {
-       if (g->mon_at(sporex, sporey) >= 0) {	// Spores hit a monster
-        if (g->u_see(sporex, sporey))
-         messages.add("The %s is covered in tiny spores!", g->z[g->mon_at(sporex, sporey)].name().c_str());
-        if (!g->z[g->mon_at(sporex, sporey)].make_fungus(g))
-         g->kill_mon(g->mon_at(sporex, sporey));
-       } else {
+       if (m_at) {	// Spores hit a monster
+        if (g->u_see(sporex, sporey)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
+        if (!m_at->make_fungus(g)) g->kill_mon(*m_at);
+       } else {	// \todo infect npcs
         spore.spawn(sporex, sporey);
         g->z.push_back(spore);
        }

@@ -48,7 +48,7 @@ void player::activate_bionic(int b, game *g)
  std::vector<std::string> good;
  std::vector<std::string> bad;
  WINDOW* w;
- int t, l, index;
+ int t, l;
  item tmp_item;
 
  switch (bio.id) {
@@ -296,10 +296,9 @@ void player::activate_bionic(int b, game *g)
       tmp_item = g->m.i_at(i, j)[k];
       g->m.i_rem(i, j, k);
       for (l = 0; l < traj.size(); l++) {
-       index = g->mon_at(traj[l].x, traj[l].y);
-       if (index != -1) {
-        if (g->z[index].hurt(tmp_item.weight() * 2))
-         g->kill_mon(index, true);
+	   monster* const z = g->mon(traj[l]);
+       if (z) {
+        if (z->hurt(tmp_item.weight() * 2)) g->kill_mon(*z, true);
         g->m.add_item(traj[l].x, traj[l].y, tmp_item);
         l = traj.size() + 1;
        } else if (l > 0 && g->m.move_cost(traj[l].x, traj[l].y) == 0) {

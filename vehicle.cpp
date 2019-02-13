@@ -888,15 +888,14 @@ void vehicle::stop ()
 int vehicle::part_collision (int vx, int vy, int part, point dest)
 {
     bool pl_ctrl = player_in_control (&g->u);
-    int mondex = g->mon_at(dest.x, dest.y);
     int npcind = g->npc_at(dest.x, dest.y);
     bool u_here = dest.x == g->u.posx && dest.y == g->u.posy && !g->u.in_vehicle;
-    monster *z = mondex >= 0? &g->z[mondex] : 0;
+    monster *z = g->mon(dest);
     player *ph = (npcind >= 0? &g->active_npc[npcind] : (u_here? &g->u : 0));
     vehicle *oveh = g->m.veh_at (dest.x, dest.y);
     bool veh_collision = oveh && oveh->pos != pos;
     bool body_collision = (g->u.posx == dest.x && g->u.posy == dest.y && !g->u.in_vehicle) ||
-                           mondex >= 0 || npcind >= 0;
+                           z || npcind >= 0;
 
     // 0 - nothing, 1 - monster/player/npc, 2 - vehicle,
     // 3 - thin_obstacle, 4 - bashable, 5 - destructible, 6 - other
@@ -1036,7 +1035,7 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
             z->hurt(dam);
             if (vel2 > rng (5, 30))
                 g->fling_player_or_monster (0, z, move.dir() + angle, vel2 / 100);
-            if (z->hp < 1) g->kill_mon (mondex, pl_ctrl);
+            if (z->hp < 1) g->kill_mon (*z, pl_ctrl);
         } else {
             ph->hitall (g, dam, 40);
             if (vel2 > rng (5, 30))

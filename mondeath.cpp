@@ -119,13 +119,12 @@ void mdeath::fungus(game *g, monster *z)
    sporex = z->pos.x + i;
    sporey = z->pos.y + j;
    if (g->m.move_cost(sporex, sporey) > 0 && one_in(5)) {
-    if (g->mon_at(sporex, sporey) >= 0) {	// Spores hit a monster
+	monster* const m_at = g->mon(sporex, sporey);
+    if (m_at) {	// Spores hit a monster
      if (g->u_see(sporex, sporey))
-      messages.add("The %s is covered in tiny spores!",
-                 g->z[g->mon_at(sporex, sporey)].name().c_str());
-     if (!g->z[g->mon_at(sporex, sporey)].make_fungus(g))
-      g->kill_mon(g->mon_at(sporex, sporey), (z->friendly != 0));
-    } else if (g->u.posx == sporex && g->u.posy == sporey)
+      messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
+     if (!m_at->make_fungus(g)) g->kill_mon(*m_at, (z->friendly != 0));
+    } else if (g->u.posx == sporex && g->u.posy == sporey)	// \todo infect npcs
      g->u.infect(DI_SPORES, bp_mouth, 4, 30, g);
     else {
      spore.spawn(sporex, sporey);

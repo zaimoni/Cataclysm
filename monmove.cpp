@@ -613,12 +613,11 @@ void monster::knock_back_from(game *g, int x, int y)
  if (y < pos.y) to.y++;
  else if (y > pos.y) to.y--;
 
- bool u_see = g->u_see(to.x, to.y);
+ const bool u_see = g->u_see(to.x, to.y);
 
 // First, see if we hit another monster
- int mondex = g->mon_at(to.x, to.y);
- if (mondex != -1) {
-  monster *z = &(g->z[mondex]);
+ monster* const z = g->mon(to);
+ if (z) {
   hurt(z->type->size);
   add_effect(ME_STUNNED, 1);
   if (type->size > 1 + z->type->size) {
@@ -630,9 +629,7 @@ void monster::knock_back_from(game *g, int x, int y)
    z->add_effect(ME_STUNNED, 1);
   }
 
-  if (u_see)
-   messages.add("The %s bounces off a %s!", name().c_str(), z->name().c_str());
-
+  if (u_see) messages.add("The %s bounces off a %s!", name().c_str(), z->name().c_str());
   return;
  }
 

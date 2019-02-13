@@ -805,18 +805,14 @@ void iuse::extinguisher(game *g, player *p, item *it, bool t)
    g->m.remove_field(x, y);
   }
  }
- int mondex = g->mon_at(x, y);
- if (mondex != -1) {
-  g->z[mondex].moves -= 150;
-  if (g->u_see(&(g->z[mondex])))
-   messages.add("The %s is sprayed!", g->z[mondex].name().c_str());
-  if (g->z[mondex].made_of(LIQUID)) {
-   if (g->u_see(&(g->z[mondex])))
-    messages.add("The %s is frozen!", g->z[mondex].name().c_str());
-   if (g->z[mondex].hurt(rng(20, 60)))
-    g->kill_mon(mondex, (p == &(g->u)));
-   else
-    g->z[mondex].speed /= 2;
+ monster* const m_at = g->mon(x,y);
+ if (m_at) {
+  m_at->moves -= 150;
+  if (g->u_see(m_at)) messages.add("The %s is sprayed!", m_at->name().c_str());
+  if (m_at->made_of(LIQUID)) {
+   if (g->u_see(m_at)) messages.add("The %s is frozen!", m_at->name().c_str());
+   if (m_at->hurt(rng(20, 60))) g->kill_mon(*m_at, (p == &(g->u)));
+   else m_at->speed /= 2;
   }
  }
  if (g->m.move_cost(x, y) != 0) {
@@ -1770,9 +1766,9 @@ void iuse::tazer(game *g, player *p, item *it, bool t)
   return;
  }
  int sx = dir.x + p->posx, sy = dir.y + p->posy;
- int mondex = g->mon_at(sx, sy);
+ monster* const z = g->mon(sx,sy);
  int npcdex = g->npc_at(sx, sy);
- if (mondex == -1 && npcdex == -1) {
+ if (!z && npcdex == -1) {
   messages.add("Your tazer crackles in the air.");
   return;
  }
@@ -1780,8 +1776,7 @@ void iuse::tazer(game *g, player *p, item *it, bool t)
  int numdice = 3 + (p->dex_cur / 2.5) + p->sklevel[sk_melee] * 2;
  p->moves -= 100;
 
- if (mondex != -1) {
-  monster *z = &(g->z[mondex]);
+ if (z) {
   switch (z->type->size) {
    case MS_TINY:  numdice -= 2; break;
    case MS_SMALL: numdice -= 1; break;
@@ -1796,7 +1791,7 @@ void iuse::tazer(game *g, player *p, item *it, bool t)
   messages.add("You shock the %s!", z->name().c_str());
   int shock = rng(5, 25);
   z->moves -= shock * 100;
-  if (z->hurt(shock)) g->kill_mon(mondex, (p == &(g->u)));
+  if (z->hurt(shock)) g->kill_mon(*z, (p == &(g->u)));
   return;
  }
  

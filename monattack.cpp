@@ -289,23 +289,19 @@ void mattack::growplants(game *g, monster *z)
     g->m.ter(z->pos.x + i, z->pos.y + j) = t_dirtmound; // Destroy walls, &c
    else {
     if (one_in(4)) {	// 1 in 4 chance to grow a tree
-     int mondex = g->mon_at(z->pos.x + i, z->pos.y + j);
-     if (mondex != -1) {
+	 monster* const m_at = g->mon(z->pos.x + i, z->pos.y + j);
+     if (m_at) {
       if (g->u_see(z->pos.x + i, z->pos.y + j))
-       messages.add("A tree bursts forth from the earth and pierces the %s!",
-                  g->z[mondex].name().c_str());
-      int rn = rng(10, 30);
-      rn -= g->z[mondex].armor_cut();
+       messages.add("A tree bursts forth from the earth and pierces the %s!", m_at->name().c_str());
+      int rn = rng(10, 30) - m_at->armor_cut();
       if (rn < 0) rn = 0;
-      if (g->z[mondex].hurt(rn)) g->kill_mon(mondex, (z->friendly != 0));
+      if (m_at->hurt(rn)) g->kill_mon(*m_at, (z->friendly != 0));
      } else if (g->u.posx == z->pos.x + i && g->u.posy == z->pos.y + j) {
 // Player is hit by a growing tree
       body_part hit = bp_legs;
       int side = rng(1, 2);
-      if (one_in(4))
-       hit = bp_torso;
-      else if (one_in(2))
-       hit = bp_feet;
+      if (one_in(4)) hit = bp_torso;
+      else if (one_in(2)) hit = bp_feet;
 	  messages.add("A tree bursts forth from the earth and pierces your %s!",
                  body_part_name(hit, side).c_str());
       g->u.hit(g, hit, side, 0, rng(10, 30));
@@ -314,10 +310,8 @@ void mattack::growplants(game *g, monster *z)
       if (npcdex != -1) {	// An NPC got hit
        body_part hit = bp_legs;
        int side = rng(1, 2);
-       if (one_in(4))
-        hit = bp_torso;
-       else if (one_in(2))
-        hit = bp_feet;
+       if (one_in(4)) hit = bp_torso;
+       else if (one_in(2)) hit = bp_feet;
        if (g->u_see(z->pos.x + i, z->pos.y + j))
         messages.add("A tree bursts forth from the earth and pierces %s's %s!",
                    g->active_npc[npcdex].name.c_str(),
@@ -340,22 +334,18 @@ void mattack::growplants(game *g, monster *z)
       g->m.ter(z->pos.x + i, z->pos.y + j) = t_tree; // Young tree => tree
      else if (g->m.ter(z->pos.x + i, z->pos.y + j) == t_underbrush) {
 // Underbrush => young tree
-      int mondex = g->mon_at(z->pos.x + i, z->pos.y + j);
-      if (mondex != -1) {
+	  monster* const m_at = g->mon(z->pos.x + i, z->pos.y + j);
+      if (m_at) {
        if (g->u_see(z->pos.x + i, z->pos.y + j))
-        messages.add("Underbrush forms into a tree, and it pierces the %s!",
-                   g->z[mondex].name().c_str());
-       int rn = rng(10, 30);
-       rn -= g->z[mondex].armor_cut();
+        messages.add("Underbrush forms into a tree, and it pierces the %s!", m_at->name().c_str());
+       int rn = rng(10, 30) - m_at->armor_cut();
        if (rn < 0) rn = 0;
-       if (g->z[mondex].hurt(rn)) g->kill_mon(mondex, (z->friendly != 0));
+       if (m_at->hurt(rn)) g->kill_mon(*m_at, (z->friendly != 0));
       } else if (g->u.posx == z->pos.x + i && g->u.posy == z->pos.y + j) {
        body_part hit = bp_legs;
        int side = rng(1, 2);
-       if (one_in(4))
-        hit = bp_torso;
-       else if (one_in(2))
-        hit = bp_feet;
+       if (one_in(4)) hit = bp_torso;
+       else if (one_in(2)) hit = bp_feet;
 	   messages.add("The underbrush beneath your feet grows and pierces your %s!",
                   body_part_name(hit, side).c_str());
        g->u.hit(g, hit, side, 0, rng(10, 30));
@@ -364,10 +354,8 @@ void mattack::growplants(game *g, monster *z)
        if (npcdex != -1) {
         body_part hit = bp_legs;
         int side = rng(1, 2);
-        if (one_in(4))
-         hit = bp_torso;
-        else if (one_in(2))
-         hit = bp_feet;
+        if (one_in(4)) hit = bp_torso;
+        else if (one_in(2)) hit = bp_feet;
         if (g->u_see(z->pos.x + i, z->pos.y + j))
          messages.add("Underbrush grows into a tree, and it pierces %s's %s!",
                     g->active_npc[npcdex].name.c_str(),
@@ -545,7 +533,7 @@ void mattack::fungus(game *g, monster *z)
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  monster spore(mtype::types[mon_spore]);
  int sporex, sporey;
- int moncount = 0, mondex;
+ int moncount = 0;
  g->sound(z->pos.x, z->pos.y, 10, "Pouf!");
  if (g->u_see(z->pos.x, z->pos.y)) messages.add("Spores are released from the %s!", z->name().c_str());
  for (int i = -1; i <= 1; i++) {
@@ -553,13 +541,11 @@ void mattack::fungus(game *g, monster *z)
    if (i == 0 && j == 0) j++;	// No need to check 0, 0
    sporex = z->pos.x + i;
    sporey = z->pos.y + j;
-   mondex = g->mon_at(sporex, sporey);
    if (g->m.move_cost(sporex, sporey) > 0 && one_in(5)) {
-    if (mondex != -1) {	// Spores hit a monster
-     if (g->u_see(sporex, sporey))
-      messages.add("The %s is covered in tiny spores!", g->z[mondex].name().c_str());
-     if (!g->z[mondex].make_fungus(g))
-      g->kill_mon(mondex, (z->friendly != 0));
+	monster* const m_at = g->mon(sporex, sporey);
+    if (m_at) {	// Spores hit a monster
+     if (g->u_see(sporex, sporey)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
+     if (!m_at->make_fungus(g)) g->kill_mon(*m_at, (z->friendly != 0));
     } else if (g->u.posx == sporex && g->u.posy == sporey)
      g->u.infect(DI_SPORES, bp_mouth, 4, 30, g); // Spores hit the player
     else { // Spawn a spore
@@ -815,10 +801,9 @@ void mattack::vortex(game *g, monster *z)
      std::vector<point> traj = continue_line(from_monster, distance);
      for (int i = 0; i < traj.size() && dam > 0; i++) {
       g->m.shoot(g, traj[i].x, traj[i].y, dam, false, 0);
-      int mondex = g->mon_at(traj[i].x, traj[i].y);
-      if (mondex != -1) {
-       if (g->z[mondex].hurt(dam))
-        g->kill_mon(mondex, (z->friendly != 0));
+	  monster* const m_at = g->mon(traj[i]);
+      if (m_at) {
+       if (m_at->hurt(dam)) g->kill_mon(*m_at, (z->friendly != 0));
        dam = 0;
       }
       if (g->m.move_cost(traj[i].x, traj[i].y) == 0) {
@@ -881,11 +866,10 @@ void mattack::vortex(game *g, monster *z)
      std::vector<point> traj = continue_line(from_monster, distance);
      bool hit_wall = false;
      for (int i = 0; i < traj.size() && !hit_wall; i++) {
-      int monhit = g->mon_at(traj[i].x, traj[i].y);
-      if (i > 0 && monhit != -1 && !g->z[monhit].has_flag(MF_DIGS)) {
-       if (g->u_see(traj[i].x, traj[i].y))
-        messages.add("The %s hits a %s!", thrown->name().c_str(), g->z[monhit].name().c_str());
-       if (g->z[monhit].hurt(damage)) g->kill_mon(monhit, (z->friendly != 0));
+      monster* const m_hit = g->mon(traj[i]);
+      if (i > 0 && m_hit && !m_hit->has_flag(MF_DIGS)) {
+       if (g->u_see(traj[i].x, traj[i].y)) messages.add("The %s hits a %s!", thrown->name().c_str(), m_hit->name().c_str());
+       if (m_hit->hurt(damage)) g->kill_mon(*m_hit, (z->friendly != 0));
        hit_wall = true;
        thrown->pos = traj[i - 1];
       } else if (g->m.move_cost(traj[i].x, traj[i].y) == 0) {
@@ -898,7 +882,7 @@ void mattack::vortex(game *g, monster *z)
      }
      if (hit_wall) damage *= 2;
      else  thrown->pos = traj[traj.size() - 1];
-     if (thrown->hurt(damage)) g->kill_mon(g->mon_at(thrown->pos.x, thrown->pos.y), (z->friendly != 0));
+     if (thrown->hurt(damage)) g->kill_mon(g->mon(thrown->pos), (z->friendly != 0));
     } // if (distance > 0)
    } // if (mondex != -1)
 
@@ -908,12 +892,10 @@ void mattack::vortex(game *g, monster *z)
     bool hit_wall = false;
     int damage = rng(5, 10);
     for (int i = 0; i < traj.size() && !hit_wall; i++) {
-     int monhit = g->mon_at(traj[i].x, traj[i].y);
-     if (i > 0 && monhit != -1 && !g->z[monhit].has_flag(MF_DIGS)) {
-      if (g->u_see(traj[i].x, traj[i].y))
-       messages.add("You hit a %s!", g->z[monhit].name().c_str());
-      if (g->z[monhit].hurt(damage))
-       g->kill_mon(monhit, true); // We get the kill :)
+	 monster* const m_hit = g->mon(traj[i]);
+     if (i > 0 && m_hit && !m_hit->has_flag(MF_DIGS)) {
+      if (g->u_see(traj[i].x, traj[i].y)) messages.add("You hit a %s!", m_hit->name().c_str());
+      if (m_hit->hurt(damage)) g->kill_mon(*m_hit, true); // We get the kill :)
       hit_wall = true;
       g->u.posx = traj[i - 1].x;
       g->u.posy = traj[i - 1].y;

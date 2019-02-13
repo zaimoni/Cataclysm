@@ -13,6 +13,7 @@
 #include "mutation.h"
 #include "gamemode.h"
 #include "action.h"
+#include "Zaimoni.STL/Logging.h"
 
 #define LONG_RANGE 10
 #define BLINK_SPEED 300
@@ -76,11 +77,16 @@ class game
   void emp_blast(int x, int y);
   int  npc_at(int x, int y) const;	// Index of the npc at (x, y); -1 for none
   int  mon_at(int x, int y) const;	// Index of the monster at (x, y); -1 for none
+  monster* mon(int x, int y);
+  monster* mon(const point& pt);
+
   bool is_empty(int x, int y);	// True if no PC, no monster, move cost > 0
   bool isBetween(int test, int down, int up);
   bool is_in_sunlight(int x, int y); // Checks outdoors + sunny
 // Kill that monster; fixes any pointers etc
-  void kill_mon(int index, bool player_did_it = false);
+  void kill_mon(monster& target, bool u_did_it = false);
+  void kill_mon(monster* target, bool u_did_it = false) { if (target) kill_mon(*target, u_did_it); };
+  void kill_mon(int index, bool u_did_it = false) { assert(0 <= index && index<z.size()); kill_mon(z[index], u_did_it); };
   void explode_mon(int index);	// Explode a monster; like kill_mon but messier
 // hit_monster_with_flags processes ammo flags (e.g. incendiary, etc)
   void hit_monster_with_flags(monster &z, unsigned int flags);

@@ -84,13 +84,10 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory,
  p.moves -= time_to_fire(p, firing);
 // Decide how many shots to fire
  int num_shots = 1;
- if (burst)
-  num_shots = p.weapon.burst_size();
- if (num_shots > p.weapon.charges && !p.weapon.has_flag(IF_CHARGE))
-  num_shots = p.weapon.charges;
+ if (burst) num_shots = p.weapon.burst_size();
+ if (num_shots > p.weapon.charges && !p.weapon.has_flag(IF_CHARGE)) num_shots = p.weapon.charges;
 
- if (num_shots == 0)
-  debugmsg("game::fire() - num_shots = 0!");
+ if (num_shots == 0) debugmsg("game::fire() - num_shots = 0!");
  
  // Make a sound at our location - Zombies will chase it
  make_gun_sound_effect(this, p, burst);
@@ -103,36 +100,26 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory,
  int tart;
  for (int curshot = 0; curshot < num_shots; curshot++) {
 // Burst-fire weapons allow us to pick a new target after killing the first
-  if (curshot > 0 &&
-      (mon_at(tarx, tary) == -1 || z[mon_at(tarx, tary)].hp <= 0)) {
+  monster* m_at = mon(tarx,tary);	// code below assumes kill processing is not "immediate"
+  if (curshot > 0 && (!m_at || m_at->hp <= 0)) {
    std::vector<point> new_targets;
-   int mondex;
-   for (int radius = 1; radius <= 2 + p.sklevel[sk_gun] && new_targets.empty();
-        radius++) {
+   for (int radius = 1; radius <= 2 + p.sklevel[sk_gun] && new_targets.empty(); radius++) {
     for (int diff = 0 - radius; diff <= radius; diff++) {
-     mondex = mon_at(tarx + diff, tary - radius);
-     if (z[mondex].hp <= 0)
-      mondex = -1;
-     if (mondex != -1 && z[mondex].friendly == 0)
+     m_at = mon(tarx + diff, tary - radius);
+     if (m_at && 0 < m_at->hp && m_at->friendly == 0)
       new_targets.push_back( point(tarx + diff, tary - radius) );
 
-     mondex = mon_at(tarx + diff, tary + radius);
-     if (z[mondex].hp <= 0)
-      mondex = -1;
-     if (mondex != -1 && z[mondex].friendly == 0)
+	 m_at = mon(tarx + diff, tary + radius);
+     if (m_at && 0 < m_at->hp && m_at->friendly == 0)
       new_targets.push_back( point(tarx + diff, tary + radius) );
 
      if (diff != 0 - radius && diff != radius) { // Corners were already checked
-      mondex = mon_at(tarx - radius, tary + diff);
-      if (z[mondex].hp <= 0)
-       mondex = -1;
-      if (mondex != -1 && z[mondex].friendly == 0)
+      m_at = mon(tarx - radius, tary + diff);
+      if (m_at && 0 < m_at->hp && m_at->friendly == 0)
        new_targets.push_back( point(tarx - radius, tary + diff) );
 
-      mondex = mon_at(tarx + radius, tary + diff);
-      if (z[mondex].hp <= 0)
-       mondex = -1;
-      if (mondex != -1 && z[mondex].friendly == 0)
+	  m_at = mon(tarx + radius, tary + diff);
+      if (m_at && 0 < m_at->hp && m_at->friendly == 0)
        new_targets.push_back( point(tarx + radius, tary + diff) );
      }
     }
@@ -156,10 +143,12 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory,
   double missed_by = calculate_missed_by(p, trange);
 // Calculate a penalty based on the monster's speed
   double monster_speed_penalty = 1.;
-  int target_index = mon_at(tarx, tary);
-  if (target_index != -1) {
-   monster_speed_penalty = double(z[target_index].speed) / 80.;
+  {
+  monster* const m_at = mon(tarx, tary);
+  if (m_at) {
+   monster_speed_penalty = double(m_at->speed) / 80.;
    if (monster_speed_penalty < 1.) monster_speed_penalty = 1.;
+  }
   }
 
   if (curshot > 0) {
@@ -216,25 +205,24 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory,
    int tx = trajectory[i].x, ty = trajectory[i].y;
 // If there's a monster in the path of our bullet, and either our aim was true,
 //  OR it's not the monster we were aiming at and we were lucky enough to hit it
-   int mondex = mon_at(tx, ty);
+   monster* const m_at = mon(trajectory[i]);
 // If we shot us a monster...
-   if (mondex != -1 && (!z[mondex].has_flag(MF_DIGS) ||
-       rl_dist(p.posx, p.posy, z[mondex].pos.x, z[mondex].pos.y) <= 1) &&
+   if (m_at && (!m_at->has_flag(MF_DIGS) ||
+       rl_dist(p.posx, p.posy, m_at->pos.x, m_at->pos.y) <= 1) &&
        ((!missed && i == trajectory.size() - 1) ||
-        one_in((5 - int(z[mon_at(tx, ty)].type->size))))) {
+        one_in((5 - int(m_at->type->size))))) {
 
     double goodhit = missed_by;
     if (i < trajectory.size() - 1) // Unintentional hit
      goodhit = double(rand() / (RAND_MAX + 1.0)) / 2;
 
 // Penalize for the monster's speed
-    if (z[mondex].speed > 80)
-     goodhit *= double( double(z[mondex].speed) / 80.);
+    if (m_at->speed > 80) goodhit *= double( double(m_at->speed) / 80.);
     
     std::vector<point> blood_traj = trajectory;
     blood_traj.insert(blood_traj.begin(), point(p.posx, p.posy));
-    splatter(this, blood_traj, dam, &z[mondex]);
-    shoot_monster(this, p, z[mondex], dam, goodhit);
+    splatter(this, blood_traj, dam, m_at);
+    shoot_monster(this, p, *m_at, dam, goodhit);
 
    } else if ((!missed || one_in(3)) &&
               (npc_at(tx, ty) != -1 || (u.posx == tx && u.posy == ty)))  {
@@ -337,19 +325,19 @@ void game::throw_item(player &p, int tarx, int tary, item &thrown,
   double goodhit = missed_by;
   tx = trajectory[i].x;
   ty = trajectory[i].y;
+  monster* const m_at = mon(trajectory[i]);
 // If there's a monster in the path of our item, and either our aim was true,
 //  OR it's not the monster we were aiming at and we were lucky enough to hit it
-  if (mon_at(tx, ty) != -1 &&
-      (!missed || one_in(7 - int(z[mon_at(tx, ty)].type->size)))) {
-   if (rng(0, 100) < 20 + p.sklevel[sk_throw] * 12 &&
-       thrown.type->melee_cut > 0) {
+  if (m_at &&
+      (!missed || one_in(7 - int(m_at->type->size)))) {
+   if (0 < thrown.type->melee_cut && rng(0, 100) < 20 + p.sklevel[sk_throw] * 12) {
     if (!p.is_npc()) {
      message += " You cut the ";
-     message += z[mon_at(tx, ty)].name();
+     message += m_at->name();
      message += "!";
     }
-    if (thrown.type->melee_cut > z[mon_at(tx, ty)].armor_cut())
-     dam += (thrown.type->melee_cut - z[mon_at(tx, ty)].armor_cut());
+	const auto c_armor = m_at->armor_cut();
+    if (thrown.type->melee_cut > c_armor) dam += (thrown.type->melee_cut - c_armor);
    }
    if (thrown.made_of(GLASS) && !thrown.active && // active = molotov, etc.
        rng(0, thrown.volume() + 8) - rng(0, p.str_cur) < thrown.volume()) {
@@ -357,14 +345,14 @@ void game::throw_item(player &p, int tarx, int tary, item &thrown,
     for (int i = 0; i < thrown.contents.size(); i++)
      m.add_item(tx, ty, thrown.contents[i]);
     sound(tx, ty, 16, "glass breaking!");
-    int glassdam = rng(0, thrown.volume() * 2);
-    if (glassdam > z[mon_at(tx, ty)].armor_cut())
-     dam += (glassdam - z[mon_at(tx, ty)].armor_cut());
+    const int glassdam = rng(0, thrown.volume() * 2);
+	const auto c_armor = m_at->armor_cut();
+	if (glassdam > c_armor) dam += (glassdam - c_armor);
    } else
     m.add_item(tx, ty, thrown);
    if (i < trajectory.size() - 1)
     goodhit = double(double(rand() / RAND_MAX) / 2);
-   if (goodhit < .1 && !z[mon_at(tx, ty)].has_flag(MF_NOHEAD)) {
+   if (goodhit < .1 && !m_at->has_flag(MF_NOHEAD)) {
     message = "Headshot!";
     dam = rng(dam, dam * 3);
     p.practice(sk_throw, 5);
@@ -379,12 +367,10 @@ void game::throw_item(player &p, int tarx, int tary, item &thrown,
     dam = rng(0, dam);
    }
    if (!p.is_npc())
-    messages.add("%s You hit the %s for %d damage.",
-            message.c_str(), z[mon_at(tx, ty)].name().c_str(), dam);
+    messages.add("%s You hit the %s for %d damage.", message.c_str(), m_at->name().c_str(), dam);
    else if (u_see(tx, ty))
-    messages.add("%s hits the %s for %d damage.", message.c_str(),
-            z[mon_at(tx, ty)].name().c_str(), dam);
-   if (z[mon_at(tx, ty)].hurt(dam)) kill_mon(mon_at(tx, ty), !p.is_npc());
+    messages.add("%s hits the %s for %d damage.", message.c_str(), m_at->name().c_str(), dam);
+   if (m_at->hurt(dam)) kill_mon(*m_at, !p.is_npc());
    return;
   } else // No monster hit, but the terrain might be.
    m.shoot(this, tx, ty, dam, false, 0);
@@ -513,11 +499,10 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
     for (int i = 0; i < ret.size(); i++) {
      if (abs(ret[i].x - u.posx) <= sight_dist &&
          abs(ret[i].y - u.posy) <= sight_dist   ) {
-      int mondex = mon_at(ret[i].x, ret[i].y),
-          npcdex = npc_at(ret[i].x, ret[i].y);
+      monster* const m_at = mon(ret[i]);
+      int npcdex = npc_at(ret[i].x, ret[i].y);
 // NPCs and monsters get drawn with inverted colors
-      if (mondex != -1 && u_see(&(z[mondex])))
-       z[mondex].draw(w_terrain, center.x, center.y, true);
+      if (m_at && u_see(m_at)) m_at->draw(w_terrain, center.x, center.y, true);
       else if (npcdex != -1)
        active_npc[npcdex].draw(w_terrain, center.x, center.y, true);
       else
@@ -533,14 +518,14 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
    } else
     mvwprintw(w_target, 5, 1, "Range: %d", rl_dist(u.posx, u.posy, x, y));
 
-   if (mon_at(x, y) == -1) {
+   monster* const m_at = mon(x, y);
+   if (!m_at) {
     mvwprintw(w_status, 0, 9, "                             ");
     if (snap_to_target)
      mvwputch(w_terrain, SEEY, SEEX, c_red, '*');
     else
      mvwputch(w_terrain, y + SEEY - u.posy, x + SEEX - u.posx, c_red, '*');
-   } else if (u_see(&(z[mon_at(x, y)])))
-    z[mon_at(x, y)].print_info(this, w_target);
+   } else if (u_see(m_at)) m_at->print_info(this, w_target);
   }
   wrefresh(w_target);
   wrefresh(w_terrain);
@@ -549,9 +534,10 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
   ch = input();
   point tar(get_direction(ch));
   if (tar.x != -2 && ch != '.') {	// Direction character pressed
-   int mondex = mon_at(x, y), npcdex = npc_at(x, y);
-   if (mondex != -1 && u_see(&(z[mondex])))
-    z[mondex].draw(w_terrain, center.x, center.y, false);
+   monster* const m_at = mon(x,y);
+   int npcdex = npc_at(x, y);
+   if (m_at && u_see(m_at))
+    m_at->draw(w_terrain, center.x, center.y, false);
    else if (npcdex != -1)
     active_npc[npcdex].draw(w_terrain, center.x, center.y, false);
    else if (m.sees(u.posx, u.posy, x, y, -1))
@@ -763,8 +749,7 @@ void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit)
     messages.add("%s You hit the %s for %d damage.", message.c_str(), mon.name().c_str(), dam);
    else if (u_see_mon)
     messages.add("%s %s shoots the %s.", message.c_str(), p.name.c_str(), mon.name().c_str());
-   if (mon.hurt(dam))
-    g->kill_mon(g->mon_at(mon.pos.x, mon.pos.y), (&p == &(g->u)));
+   if (mon.hurt(dam)) g->kill_mon(mon, (&p == &(g->u)));
    else if (p.weapon.curammo->item_flags != 0)
     g->hit_monster_with_flags(mon, p.weapon.curammo->item_flags);
    dam = 0;

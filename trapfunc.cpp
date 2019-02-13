@@ -476,7 +476,7 @@ void trapfunc::ledge(game *g, int x, int y)
 void trapfuncm::ledge(game *g, monster *z, int x, int y)
 {
  messages.add("The %s falls down a level!", z->name().c_str());
- g->kill_mon(g->mon_at(x, y));
+ g->kill_mon(g->mon(x, y));
 }
 
 void trapfunc::temple_flood(game *g, int x, int y)

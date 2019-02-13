@@ -2442,9 +2442,8 @@ void player::knock_back_from(game *g, int x, int y)
  const char* const s = (is_npc() ? "s" : "");
 
 // First, see if we hit a monster
- int mondex = g->mon_at(to.x, to.y);
- if (mondex != -1) {
-  monster *z = &(g->z[mondex]);
+ monster* const z = g->mon(to);
+ if (z) {
   hit(g, bp_torso, 0, z->type->size, 0);
   add_disease(DI_STUNNED, 1, g);
   if ((str_max - 6) / 4 > z->type->size) {
@@ -2800,7 +2799,7 @@ void player::suffer(game *g)
     case 7:
      for (i = 0; i < 10; i++) {
       monster phantasm(mtype::types[mon_hallu_zom + rng(0, 3)], posx + rng(-10, 10), posy + rng(-10, 10));
-      if (g->mon_at(phantasm.pos.x, phantasm.pos.y) == -1) g->z.push_back(phantasm);
+      if (!g->mon(phantasm.pos)) g->z.push_back(phantasm);
      }
      break;
     case 8:

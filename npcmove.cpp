@@ -845,8 +845,6 @@ void npc::move_to(game *g, int x, int y)
  if (x == posx && y == posy)	// We're just pausing!
   moves -= 100;
  else if (g->mon_at(x, y) != -1) {	// Shouldn't happen, but it might.
-  monster *m = &(g->z[g->mon_at(x, y)]);
-  //debugmsg("Bumped into a monster, %d, a %s",g->mon_at(x, y),m->name().c_str());
   melee_monster(g, g->mon_at(x, y));
  } else if (g->u.posx == x && g->u.posy == y) {
   say(g, "<let_me_pass>");
@@ -1277,8 +1275,7 @@ void npc::melee_monster(game *g, int target)
 {
  monster* monhit = &(g->z[target]);
  int dam = hit_mon(g, monhit);
- if (monhit->hurt(dam))
-  g->kill_mon(target, false);
+ if (monhit->hurt(dam)) g->kill_mon(*monhit);
 }
 
 void npc::melee_player(game *g, player &foe)

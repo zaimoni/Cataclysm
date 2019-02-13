@@ -3103,7 +3103,7 @@ void game::monmove()
 
   if (!z[i].dead) {
    z[i].process_effects(this);
-   if (z[i].hurt(0)) kill_mon(i, false);
+   if (z[i].hurt(0)) kill_mon(i);
   }
 
   m.mon_in_field(z[i].pos.x, z[i].pos.y, this, &(z[i]));
@@ -3114,10 +3114,7 @@ void game::monmove()
    z[i].move(this);	// Move one square, possibly hit u
    z[i].process_triggers(this);
    m.mon_in_field(z[i].pos.x, z[i].pos.y, this, &(z[i]));
-   if (z[i].hurt(0)) {	// Maybe we died...
-    kill_mon(i, false);
-    z[i].dead = true;
-   }
+   if (z[i].hurt(0)) kill_mon(i);	// Maybe we died...
   }
 
   if (!z[i].dead) {
@@ -3396,17 +3393,17 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
    if (m.is_destructable(i, j) && rng(25, 100) < dam)
     m.destroy(this, i, j, false);
 
-   int mon_hit = mon_at(i, j), npc_hit = npc_at(i, j);
+   int mon_hit = mon_at(i, j);
+   int npc_hit = npc_at(i, j);
    if (mon_hit != -1 && !z[mon_hit].dead && z[mon_hit].hurt(rng(dam / 2, dam * 1.5))) {
     if (z[mon_hit].hp < 0 - 1.5 * z[mon_hit].type->hp)
      explode_mon(mon_hit); // Explode them if it was big overkill
     else
-     kill_mon(mon_hit); // TODO: player's fault?
+     kill_mon(z[mon_hit]); // TODO: player's fault?
 
     int vpart;
-    vehicle *veh = m.veh_at(i, j, vpart);
-    if (veh)
-     veh->damage (vpart, dam, false);
+    vehicle* const veh = m.veh_at(i, j, vpart);
+    if (veh) veh->damage (vpart, dam, false);
    }
 
    if (npc_hit != -1) {
@@ -3476,15 +3473,14 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
    }
    tx = traj[j].x;
    ty = traj[j].y;
-   if (mon_at(tx, ty) != -1) {
-    dam -= z[mon_at(tx, ty)].armor_cut();
-    if (z[mon_at(tx, ty)].hurt(dam)) kill_mon(mon_at(tx, ty));
+   monster* const m_at = mon(traj[j]);
+   if (m_at) {
+    dam -= m_at->armor_cut();
+    if (m_at->hurt(dam)) kill_mon(*m_at);
    } else if (npc_at(tx, ty) != -1) {
     body_part hit = random_body_part();
-    if (hit == bp_eyes || hit == bp_mouth || hit == bp_head)
-     dam = rng(2 * dam, 5 * dam);
-    else if (hit == bp_torso)
-     dam = rng(1.5 * dam, 3 * dam);
+    if (hit == bp_eyes || hit == bp_mouth || hit == bp_head) dam = rng(2 * dam, 5 * dam);
+    else if (hit == bp_torso) dam = rng(1.5 * dam, 3 * dam);
     int npcdex = npc_at(tx, ty);
     active_npc[npcdex].hit(this, hit, rng(0, 1), 0, dam);
     if (active_npc[npcdex].hp_cur[hp_head] <= 0 ||
@@ -3638,17 +3634,17 @@ void game::emp_blast(int x, int y)
   if (rn >= 40 && rn <= 80) messages.add("Nothing happens.");
   break;
  }
- int mondex = mon_at(x, y);
- if (mondex != -1) {
-  if (z[mondex].has_flag(MF_ELECTRONIC)) {
-   messages.add("The EMP blast fries the %s!", z[mondex].name().c_str());
+ monster* const m_at = mon(x, y);
+ if (m_at) {
+  if (m_at->has_flag(MF_ELECTRONIC)) {
+   messages.add("The EMP blast fries the %s!", m_at->name().c_str());
    int dam = dice(10, 10);
-   if (z[mondex].hurt(dam))
-    kill_mon(mondex); // TODO: Player's fault?
+   if (m_at->hurt(dam))
+    kill_mon(*m_at); // \todo Player's fault?
    else if (one_in(6))
-    z[mondex].make_friendly();
+    m_at->make_friendly();
   } else
-   messages.add("The %s is unaffected by the EMP blast.", z[mondex].name().c_str());
+   messages.add("The %s is unaffected by the EMP blast.", m_at->name().c_str());
  }
  if (u.posx == x && u.posy == y) {
   if (u.power_level > 0) {
@@ -3684,6 +3680,22 @@ int game::mon_at(int x, int y) const
  return -1;
 }
 
+monster* game::mon(int x, int y)
+{
+	for (auto& m : z) {
+		if (m.pos.x == x && m.pos.y == y) return m.dead ? 0 : &m;
+	}
+	return 0;
+}
+
+monster* game::mon(const point& pt)
+{
+	for (auto& m : z) {
+		if (m.pos == pt) return m.dead ? 0 : &m;
+	}
+	return 0;
+}
+
 bool game::is_empty(int x, int y)
 {
  return ((m.move_cost(x, y) > 0 || m.has_flag(liquid, x, y)) &&
@@ -3697,29 +3709,23 @@ bool game::is_in_sunlight(int x, int y)
          (weather == WEATHER_CLEAR || weather == WEATHER_SUNNY));
 }
 
-void game::kill_mon(int index, bool u_did_it)
+void game::kill_mon(monster& target, bool u_did_it)
 {
- if (index < 0 || index >= z.size()) {
-  debugmsg("Tried to kill monster %d! (%d in play)", index, z.size());
-  return;
- }
- if (!z[index].dead) {
-  z[index].dead = true;
+ if (!target.dead) {
+  target.dead = true;
   if (u_did_it) {
-   if (z[index].has_flag(MF_GUILT)) {
+   if (target.has_flag(MF_GUILT)) {
     mdeath tmpdeath;
-    tmpdeath.guilt(this, &(z[index]));
+    tmpdeath.guilt(this, &target);
    }
-   if (z[index].type->species != species_hallu)
-    kills[z[index].type->id]++;	// Increment our kill counter
+   if (target.type->species != species_hallu)
+    kills[target.type->id]++;	// Increment our kill counter
   }
-  for (int i = 0; i < z[index].inv.size(); i++)
-   m.add_item(z[index].pos.x, z[index].pos.y, z[index].inv[i]);
-  z[index].die(this);
+  for (int i = 0; i < target.inv.size(); i++)
+   m.add_item(target.pos.x, target.pos.y, target.inv[i]);
+  target.die(this);
  }
-/*
- z.erase(z.begin()+index);
-*/
+// z.erase(z.begin()+index);	// highly unsafe, do this compaction at end-of-turn
 }
 
 void game::explode_mon(int index)
@@ -5567,15 +5573,14 @@ void game::plmove(int x, int y)
   y += u.posy;
  }
 // Check if our movement is actually an attack on a monster
- int mondex = mon_at(x, y);
+ monster* const m_at = mon(x, y);
  bool displace = false;	// Are we displacing a monster?
- if (mondex != -1) {
-  if (z[mondex].friendly == 0) {
-   int udam = u.hit_mon(this, &z[mondex]);
-   if (z[mondex].hurt(udam)) kill_mon(mondex, true);
+ if (m_at) {
+  if (m_at->friendly == 0) {
+   int udam = u.hit_mon(this, m_at);
+   if (m_at->hurt(udam)) kill_mon(*m_at, true);
    return;
-  } else
-   displace = true;
+  } else displace = true;
  }
 // If not a monster, maybe there's an NPC there
  int npcdex = npc_at(x, y);
@@ -5709,23 +5714,24 @@ void game::plmove(int x, int y)
 // displace is set at the top of this function.
   if (displace) { // We displaced a friendly monster!
 // Immobile monsters can't be displaced.
-   if (z[mondex].has_flag(MF_IMMOBILE)) {
+   if (m_at->has_flag(MF_IMMOBILE)) {
 // ...except that turrets can be picked up.
 // TODO: Make there a flag, instead of hard-coded to mon_turret
-    if (z[mondex].type->id == mon_turret) {
+    if (m_at->type->id == mon_turret) {
      if (query_yn("Deactivate the turret?")) {
-      z.erase(z.begin() + mondex);
+      m.add_item(m_at->pos.x, m_at->pos.y, item::types[itm_bot_turret], messages.turn);
+//    z.erase(z.begin()+(m_at-z.begin()));	// doesn't work: typesystem issues
+      z.erase(z.begin()+mon_at(x,y));
       u.moves -= 100;
-      m.add_item(z[mondex].pos.x, z[mondex].pos.y, item::types[itm_bot_turret], messages.turn);
      }
      return;
     } else {
-     messages.add("You can't displace your %s.", z[mondex].name().c_str());
+     messages.add("You can't displace your %s.", m_at->name().c_str());
      return;
     }
    }
-   z[mondex].move_to(this, u.posx, u.posy);
-   messages.add("You displace the %s.", z[mondex].name().c_str());
+   m_at->move_to(this, u.posx, u.posy);
+   messages.add("You displace the %s.", m_at->name().c_str());
   }
   if (x < SEEX * int(MAPSIZE / 2) || y < SEEY * int(MAPSIZE / 2) ||
       x >= SEEX * (1 + int(MAPSIZE / 2)) || y >= SEEY * (1 + int(MAPSIZE / 2)))
@@ -5891,14 +5897,13 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
         std::string dname;
         bool thru = true;
         bool slam = false;
-        int mondex = mon_at(x, y);
+		monster* const m_at = mon(x, y);
         dam1 = flvel / 3 + rng (0, flvel * 1 / 3);
-        if (mondex >= 0)
-        {
+        if (m_at) {
             slam = true;
-            dname = z[mondex].name();
+            dname = m_at->name();
             dam2 = flvel / 3 + rng (0, flvel * 1 / 3);
-            if (z[mondex].hurt(dam2)) kill_mon(mondex, false);
+            if (m_at->hurt(dam2)) kill_mon(*m_at);
             else thru = false;
             if (is_player) p->hitall (this, dam1, 40);
             else zz->hurt(dam1);
