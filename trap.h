@@ -71,34 +71,36 @@ struct trapfunc {
 };
 
 struct trapfuncm {
- static void none	(game *g, monster *z, int x, int y) { };
- static void bubble	(game *g, monster *z, int x, int y);
- static void beartrap	(game *g, monster *z, int x, int y);
- static void board	(game *g, monster *z, int x, int y);
- static void tripwire	(game *g, monster *z, int x, int y);
- static void crossbow	(game *g, monster *z, int x, int y);
- static void shotgun	(game *g, monster *z, int x, int y);
- static void blade	(game *g, monster *z, int x, int y);
- static void snare	(game *g, monster *z, int x, int y) { };
- static void landmine	(game *g, monster *z, int x, int y);
- static void telepad	(game *g, monster *z, int x, int y);
- static void goo	(game *g, monster *z, int x, int y);
- static void dissector	(game *g, monster *z, int x, int y);
- static void sinkhole	(game *g, monster *z, int x, int y) { };
- static void pit	(game *g, monster *z, int x, int y);
- static void pit_spikes(game *g, monster *z, int x, int y);
- static void lava	(game *g, monster *z, int x, int y);
- static void portal	(game *g, monster *z, int x, int y) { };
- static void ledge	(game *g, monster *z, int x, int y);
- static void boobytrap (game *g, monster *z, int x, int y);
- static void glow	(game *g, monster *z, int x, int y);
- static void hum	(game *g, monster *z, int x, int y);
- static void drain	(game *g, monster *z, int x, int y);
- static void snake	(game *g, monster *z, int x, int y);
+ static void none	(game *g, monster *z) { };
+ static void bubble	(game *g, monster *z);
+ static void beartrap	(game *g, monster *z);
+ static void board	(game *g, monster *z);
+ static void tripwire	(game *g, monster *z);
+ static void crossbow	(game *g, monster *z);
+ static void shotgun	(game *g, monster *z);
+ static void blade	(game *g, monster *z);
+ static void snare	(game *g, monster *z) { };
+ static void landmine	(game *g, monster *z);
+ static void telepad	(game *g, monster *z);
+ static void goo	(game *g, monster *z);
+ static void dissector	(game *g, monster *z);
+ static void sinkhole	(game *g, monster *z) { };
+ static void pit	(game *g, monster *z);
+ static void pit_spikes(game *g, monster *z);
+ static void lava	(game *g, monster *z);
+ static void portal	(game *g, monster *z) { };
+ static void ledge	(game *g, monster *z);
+ static void boobytrap (game *g, monster *z);
+ static void glow	(game *g, monster *z);
+ static void hum	(game *g, monster *z);
+ static void drain	(game *g, monster *z);
+ static void snake	(game *g, monster *z);
 };
 
 struct trap {
  static std::vector <trap*> traps;
+
+ // don't worry about typedefs for trap actions
 
  int id;
  char sym;
@@ -110,15 +112,14 @@ struct trap {
  int difficulty; // 0 to ??, difficulty of assembly & disassembly
  std::vector<itype_id> components;	// For disassembly?
  
-// You stepped on it
- void (*act)(game *, int x, int y);
-// Monster stepped on it
- void (*actm)(game *, monster *, int x, int y);
+ // \todo trap action for npcs
+ void (*act)(game *, int x, int y);	// You stepped on it
+ void (*actm)(game *, monster *);	// Monster stepped on it
  
  trap(int pid, char psym, nc_color pcolor, std::string pname,
       int pvisibility, int pavoidance, int pdifficulty, 
       void (*pact)(game *, int x, int y),
-      void (*pactm)(game *, monster *, int x, int y), itype_id part = itm_null, itype_id part2 = itm_null, itype_id part3 = itm_null)
+      void (*pactm)(game *, monster *), itype_id part = itm_null, itype_id part2 = itm_null, itype_id part3 = itm_null)
  : id(pid),sym(psym),color(pcolor),name(pname),visibility(pvisibility),avoidance(pavoidance),difficulty(pdifficulty),act(pact),actm(pactm)
  {
   if (part) components.push_back(part);
