@@ -918,18 +918,13 @@ void map::mon_in_field(int x, int y, game *g, monster *z)
      tries++;
     } while (g->m.move_cost(newpos.x, newpos.y) == 0 && tries != 10);
 
-    if (tries == 10)
-     g->explode_mon(g->mon_at(z->pos.x, z->pos.y));
-    else {
-     const int mon_hit = g->mon_at(newpos.x, newpos.y);
-     if (mon_hit != -1) {
-      if (g->u_see(z))
-       messages.add("The %s teleports into a %s, killing them both!",
-                  z->name().c_str(), g->z[mon_hit].name().c_str());
-      g->explode_mon(mon_hit);
-     } else {
+    if (tries == 10) g->explode_mon(*z);
+    else if (monster* const m_hit = g->mon(newpos)) {
+     if (g->u_see(z))
+       messages.add("The %s teleports into a %s, killing them both!", z->name().c_str(), m_hit->name().c_str());
+      g->explode_mon(*m_hit);
+    } else {
 	  z->pos = newpos;
-     }
     }
    }
    break;

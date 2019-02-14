@@ -87,7 +87,7 @@ class game
   void kill_mon(monster& target, bool u_did_it = false);
   void kill_mon(monster* target, bool u_did_it = false) { if (target) kill_mon(*target, u_did_it); };
   void kill_mon(int index, bool u_did_it = false) { assert(0 <= index && index<z.size()); kill_mon(z[index], u_did_it); };
-  void explode_mon(int index);	// Explode a monster; like kill_mon but messier
+  void explode_mon(monster& target);	// Explode a monster; like kill_mon but messier
 // hit_monster_with_flags processes ammo flags (e.g. incendiary, etc)
   void hit_monster_with_flags(monster &z, unsigned int flags);
   void plfire(bool burst);	// Player fires a gun (target selection)...

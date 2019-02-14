@@ -3392,13 +3392,13 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
    if (m.is_destructable(i, j) && rng(25, 100) < dam)
     m.destroy(this, i, j, false);
 
-   int mon_hit = mon_at(i, j);
+   monster* const m_hit = mon(i, j);
    int npc_hit = npc_at(i, j);
-   if (mon_hit != -1 && !z[mon_hit].dead && z[mon_hit].hurt(rng(dam / 2, dam * 1.5))) {
-    if (z[mon_hit].hp < 0 - 1.5 * z[mon_hit].type->hp)
-     explode_mon(mon_hit); // Explode them if it was big overkill
+   if (m_hit && !m_hit->dead && m_hit->hurt(rng(dam / 2, dam * 1.5))) {
+    if (m_hit->hp < 0 - 1.5 * m_hit->type->hp)
+     explode_mon(*m_hit); // Explode them if it was big overkill
     else
-     kill_mon(z[mon_hit]); // TODO: player's fault?
+     kill_mon(*m_hit); // TODO: player's fault?
 
     int vpart;
     vehicle* const veh = m.veh_at(i, j, vpart);
@@ -3727,28 +3727,23 @@ void game::kill_mon(monster& target, bool u_did_it)
 // z_erase(index);	// highly unsafe, do this compaction at end-of-turn
 }
 
-void game::explode_mon(int index)
+void game::explode_mon(monster& target)
 {
- if (index < 0 || index >= z.size()) {
-  debugmsg("Tried to explode monster %d! (%d in play)", index, z.size());
-  return;
- }
- if (!z[index].dead) {
-  z[index].dead = true;
-  kills[z[index].type->id]++;	// Increment our kill counter
+ if (!target.dead) {
+  target.dead = true;
 // Send body parts and blood all over!
-  const mtype* const corpse = z[index].type;
+  const mtype* const corpse = target.type;
+  kills[corpse->id]++;	// Increment our kill counter
   const itype* const meat = corpse->chunk_material();
   if (!meat) return;	// no chunks when return value is NULL
   const int num_chunks = corpse->chunk_count();
 
-  point pos(z[index].pos);
+  point pos(target.pos);
   for (int i = 0; i < num_chunks; i++) {
    point tar(pos.x + rng(-3, 3), pos.y + rng(-3, 3));
    std::vector<point> traj = line_to(pos.x, pos.y, tar.x, tar.y, 0);
  
-   bool done = false;
-   for (int j = 0; j < traj.size() && !done; j++) {
+   for (int j = 0; j < traj.size(); j++) {
     tar = traj[j];
 // Choose a blood type and place it
     field_id blood_type = fd_blood;
@@ -3765,7 +3760,7 @@ void game::explode_mon(int index)
      if (m.bash(tar.x, tar.y, 3, tmp)) sound(tar.x, tar.y, 18, tmp);
      else {
       if (j > 0) tar = traj[j - 1];
-      done = true;
+	  break;
      }
     }
    }
@@ -3773,7 +3768,7 @@ void game::explode_mon(int index)
   }
  }
 
- z_erase(index);	// unclear whether this is a good idea (mon_kill postpones this)
+// z_erase(index);	// unclear whether this is a good idea (mon_kill postpones this)
 }
 
 void game::open()
@@ -4080,7 +4075,6 @@ void game::examine()
    int i = z.size();
    while (0 < i--) {
      if (mon_turret == z[i].type->id) z_erase(i);
-   }
    }
    }
    messages.add("You insert your ID card.");
@@ -6608,13 +6602,12 @@ void game::teleport(player *p)
     messages.add("%s teleport%s into the middle of a %s!", You.c_str(),
             (is_u ? "" : "s"), m.tername(newx, newy).c_str());
    p->hurt(this, bp_torso, 0, 500);
-  } else if (mon_at(newx, newy) != -1) {
-   int i = mon_at(newx, newy);
-   if (can_see)
-    messages.add("%s teleport%s into the middle of a %s!", You.c_str(),
-            (is_u ? "" : "s"), z[i].name().c_str());
-   explode_mon(i);
-  }
+  } else if (monster* const m_at = mon(newx, newy)) {
+     if (can_see)
+       messages.add("%s teleport%s into the middle of a %s!", You.c_str(),
+              (is_u ? "" : "s"), m_at->name().c_str());
+     explode_mon(*m_at);
+   }
  }
  if (is_u) update_map(u.posx, u.posy);
 }
