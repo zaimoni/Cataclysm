@@ -427,7 +427,7 @@ npc_action npc::method_of_attack(game *g, int target, int danger) const
 
  if (can_use_gun) {
   if (need_to_reload() && can_reload()) return npc_reload;
-  if (emergency(danger_assessment(g)) && alt_attack_available(g)) return npc_alt_attack;
+  if (emergency(danger_assessment(g)) && alt_attack_available()) return npc_alt_attack;
   if (weapon.is_gun() && weapon.charges > 0) {
    if (dist > confident_range()) {
     if (can_reload() && enough_time_to_reload(g, target, weapon))
@@ -584,15 +584,15 @@ npc_action npc::long_term_goal_action(game *g)	// XXX this was being prototyped
 }
  
  
-bool npc::alt_attack_available(game *g) const
+itype_id npc::alt_attack_available() const
 {
  for (int i = 0; i < NUM_ALT_ATTACK_ITEMS; i++) {
   if ((!is_following() || combat_rules.use_grenades ||
        !(item::types[ALT_ATTACK_ITEMS[i]]->item_flags & mfb(IF_GRENADE))) &&
       has_amount(ALT_ATTACK_ITEMS[i], 1))
-   return true;
+   return ALT_ATTACK_ITEMS[i];
  }
- return false;
+ return itm_null;
 }
 
 int npc::choose_escape_item() const
@@ -1309,7 +1309,6 @@ void npc::wield_best_melee(game *g)
 
 void npc::alt_attack(game *g, int target)
 {
- itype_id which = itm_null;
  point tar;
  if (target == TARGET_PLAYER) {
   tar.x = g->u.posx;
@@ -1322,25 +1321,8 @@ void npc::alt_attack(game *g, int target)
   return;
  }
  int dist = rl_dist(posx, posy, tar.x, tar.y);
-/* ALT_ATTACK_ITEMS is an array which stores the itype_id of all alternate
- * items, from least to most important.
- * See npc.h for definition of ALT_ATTACK_ITEMS
- */
- for (int i = 0; i < NUM_ALT_ATTACK_ITEMS; i++) {
-  if ((!is_following() || combat_rules.use_grenades ||
-       !(item::types[ALT_ATTACK_ITEMS[i]]->item_flags & mfb(IF_GRENADE))) &&
-      has_amount(ALT_ATTACK_ITEMS[i], 1))
-   which = ALT_ATTACK_ITEMS[i];
- }
-
- if (which == itm_null) { // We ain't got shit!
-// Not sure if this should ever occur.  For now, let's warn with a debug msg
-  debugmsg("npc::alt_attack() couldn't find an alt attack item!");
-  if (dist == 1) {
-   if (target == TARGET_PLAYER) melee_player(g, g->u);
-   else melee_monster(g, target);
-  } else move_to(g, tar.x, tar.y);
- }
+ const itype_id which = alt_attack_available();
+ DEBUG_FAIL_OR_LEAVE(itm_null == which, return);	// We ain't got shit!  Definitely should not happen.
 
  int index;
  item *used = NULL;
@@ -1355,8 +1337,7 @@ void npc::alt_attack(game *g, int target)
    }
   }
  }
-
- if (!used) return;	// XXX plausible invariant violation
+ DEBUG_FAIL_OR_LEAVE(!used, return);	// invariant violation
 
 // Are we going to throw this item?
  if (!thrown_item(used))
