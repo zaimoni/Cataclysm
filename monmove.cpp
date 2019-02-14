@@ -234,15 +234,14 @@ void monster::move(game *g)
 // Finished logic section.  By this point, we should have chosen a square to
 //  move to (moved = true).
  if (moved) {	// Actual effects of moving to the square we've chosen
-  mondex = g->mon_at(next.x, next.y);
+  monster* const m_at = g->mon(next);
   int npcdex = g->npc_at(next.x, next.y);
   if (next.x == g->u.posx && next.y == g->u.posy && type->melee_dice > 0)
    hit_player(g, g->u);
-  else if (mondex != -1 && g->z[mondex].type->species == species_hallu)
+  else if (m_at && m_at->type->species == species_hallu)
    g->kill_mon(mondex);
-  else if (mondex != -1 && type->melee_dice > 0 &&
-           (g->z[mondex].friendly != 0 || has_flag(MF_ATTACKMON)))
-   hit_monster(g, mondex);
+  else if (m_at && type->melee_dice > 0 && (m_at->friendly != 0 || has_flag(MF_ATTACKMON)))
+   hit_monster(g, *m_at);
   else if (npcdex != -1 && type->melee_dice > 0)
    hit_player(g, g->active_npc[npcdex]);
   else if ((!can_move_to(g->m, next.x, next.y) || one_in(3)) &&
@@ -313,13 +312,13 @@ void monster::friendly_move(game *g)
  } else
   stumble(g, moved);
  if (moved) {
-  int mondex = g->mon_at(next.x, next.y);
+  monster* m_at = g->mon(next);
   int npcdex = g->npc_at(next.x, next.y);
-  if (mondex != -1 && g->z[mondex].friendly == 0 && type->melee_dice > 0)
-   hit_monster(g, mondex);
+  if (m_at && m_at->friendly == 0 && type->melee_dice > 0)
+   hit_monster(g, *m_at);
   else if (npcdex != -1 && type->melee_dice > 0)
    hit_player(g, g->active_npc[g->npc_at(next.x, next.y)]);
-  else if (mondex == -1 && npcdex == -1 && can_move_to(g->m, next.x, next.y))
+  else if (!m_at && npcdex == -1 && can_move_to(g->m, next.x, next.y))
    move_to(g, next.x, next.y);
   else if ((!can_move_to(g->m, next.x, next.y) || one_in(3)) &&
            g->m.has_flag(bashable, next.x, next.y) && has_flag(MF_BASHES)) {
@@ -530,8 +529,8 @@ void monster::hit_player(game *g, player &p, bool can_grab)
 
 void monster::move_to(game *g, int x, int y)
 {
- int mondex = g->mon_at(x, y);
- if (mondex == -1) { //...assuming there's no monster there
+ monster* const m_at = g->mon(x,y);
+ if (!m_at) { //...assuming there's no monster there
   if (has_effect(ME_BEARTRAP)) {
    moves = 0;
    return;
@@ -553,9 +552,9 @@ void monster::move_to(game *g, int x, int y)
   if (has_flag(MF_DIGS)) g->m.ter(pos.x, pos.y) = t_dirtmound;
 // Acid trail monsters leave... a trail of acid
   if (has_flag(MF_ACIDTRAIL)) g->m.add_field(g, pos.x, pos.y, fd_acid, 1);
- } else if (has_flag(MF_ATTACKMON) || g->z[mondex].friendly != 0)
+ } else if (has_flag(MF_ATTACKMON) || m_at->friendly != 0)
 // If there IS a monster there, and we fight monsters, fight it!
-  hit_monster(g, mondex);
+  hit_monster(g, *m_at);
 }
 
 /* Random walking even when we've moved

@@ -483,13 +483,11 @@ int monster::hit(game *g, player &p, body_part &bp_hit)
  return ret;
 }
 
-void monster::hit_monster(game *g, int i)
+void monster::hit_monster(game *g, monster& target)
 {
- monster* target = &(g->z[i]);
- 
  int numdice = type->melee_skill;
- int dodgedice = target->dodge() * 2;
- switch (target->type->size) {
+ int dodgedice = target.dodge() * 2;	// decidedly more agile than a typical dodge roll
+ switch (target.type->size) {
   case MS_TINY:  dodgedice += 6; break;
   case MS_SMALL: dodgedice += 3; break;
   case MS_LARGE: dodgedice -= 2; break;
@@ -497,50 +495,43 @@ void monster::hit_monster(game *g, int i)
  }
 
  if (dice(numdice, 10) <= dice(dodgedice, 10)) {
-  if (g->u_see(this)) messages.add("The %s misses the %s!", name().c_str(), target->name().c_str());
+  if (g->u_see(this)) messages.add("The %s misses the %s!", name().c_str(), target.name().c_str());
   return;
  }
- if (g->u_see(this)) messages.add("The %s hits the %s!", name().c_str(), target->name().c_str());
+ if (g->u_see(this)) messages.add("The %s hits the %s!", name().c_str(), target.name().c_str());
  int damage = dice(type->melee_dice, type->melee_sides);
- if (target->hurt(damage))
-  g->kill_mon(*target, (friendly != 0));
+ if (target.hurt(damage)) g->kill_mon(target, (friendly != 0));
 }
  
 
 bool monster::hurt(int dam)
 {
  hp -= dam;
- if (hp < 1)
-  return true;
- if (dam > 0)
-  process_trigger(MTRIG_HURT, 1 + int(dam / 3));
+ if (hp < 1) return true;
+ if (dam > 0) process_trigger(MTRIG_HURT, 1 + int(dam / 3));
  return false;
 }
 
-int monster::armor_cut()
+int monster::armor_cut() const
 {
-// TODO: Add support for worn armor?
- return int(type->armor_cut);
+ return int(type->armor_cut);	// \todo worn armor
 }
 
-int monster::armor_bash()
+int monster::armor_bash() const
 {
- return int(type->armor_bash);
+ return int(type->armor_bash);	// \todo worn armor
 }
 
-int monster::dodge()
+int monster::dodge() const
 {
- if (has_effect(ME_DOWNED))
-  return 0;
+ if (has_effect(ME_DOWNED)) return 0;
  int ret = type->sk_dodge;
- if (has_effect(ME_BEARTRAP))
-  ret /= 2;
- if (moves <= 0 - 100 - type->speed)
-  ret = rng(0, ret);
+ if (has_effect(ME_BEARTRAP)) ret /= 2;
+ if (moves <= 0 - 100 - type->speed) ret = rng(0, ret);
  return ret;
 }
 
-int monster::dodge_roll()
+int monster::dodge_roll() const
 {
  int numdice = dodge();
  
@@ -555,10 +546,9 @@ int monster::dodge_roll()
  return dice(numdice, 10);
 }
 
-int monster::fall_damage()
+int monster::fall_damage() const
 {
- if (has_flag(MF_FLIES))
-  return 0;
+ if (has_flag(MF_FLIES)) return 0;
  switch (type->size) {
   case MS_TINY:   return rng(0, 4);  break;
   case MS_SMALL:  return rng(0, 6);  break;

@@ -100,13 +100,13 @@ class monster {
  void process_trigger(monster_trigger trig, int amount);// Single trigger
  int trigger_sum(game *g, const std::vector<monster_trigger>& triggers);
  int  hit(game *g, player &p, body_part &bp_hit); // Returns a damage
- void hit_monster(game *g, int i);
+ void hit_monster(game *g, monster& target);
  bool hurt(int dam); 	// Deals this dam damage; returns true if we dead
- int  armor_cut();	// Natural armor, plus any worn armor
- int  armor_bash();	// Natural armor, plus any worn armor
- int  dodge();		// Natural dodge, or 0 if we're occupied
- int  dodge_roll();	// For the purposes of comparing to player::hit_roll()
- int  fall_damage();	// How much a fall hurts us
+ int  armor_cut() const;	// Natural armor, plus any worn armor
+ int  armor_bash() const;	// Natural armor, plus any worn armor
+ int  dodge() const;		// Natural dodge, or 0 if we're occupied
+ int  dodge_roll() const;	// For the purposes of comparing to player::hit_roll()
+ int  fall_damage() const;	// How much a fall hurts us
  void die(game *g);
 
 // Other
