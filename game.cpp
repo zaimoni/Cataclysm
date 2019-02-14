@@ -3056,24 +3056,23 @@ void game::mon_info()
  refresh();
 }
 
+void game::z_erase(int z_index)
+{
+   z.erase(z.begin() + z_index);
+   if (last_target == z_index) last_target = -1;
+   else if (last_target > z_index) last_target--;
+}
+
 void game::cleanup_dead()
 {
- for (int i = 0; i < z.size(); i++) {
-  if (z[i].dead || z[i].hp <= 0) {
-   z.erase(z.begin() + i);
-   i--;
-  }
-  if (last_target == i)
-   last_target = -1;
-  else if (last_target > i)
-    last_target--;
+ int i = z.size();
+ while(0 < i--) {
+   if (z[i].dead || z[i].hp <= 0) z_erase(i);
  }
 
- for (int i = 0; i < active_npc.size(); i++) {
-  if (active_npc[i].dead) {
-   active_npc.erase( active_npc.begin() + i );
-   i--;
-  }
+ i = active_npc.size();
+ while(0 < i--) {
+   if (active_npc[i].dead) active_npc.erase(active_npc.begin() + i);
  }
 }
 
@@ -3725,7 +3724,7 @@ void game::kill_mon(monster& target, bool u_did_it)
    m.add_item(target.pos.x, target.pos.y, target.inv[i]);
   target.die(this);
  }
-// z.erase(z.begin()+index);	// highly unsafe, do this compaction at end-of-turn
+// z_erase(index);	// highly unsafe, do this compaction at end-of-turn
 }
 
 void game::explode_mon(int index)
@@ -3774,9 +3773,7 @@ void game::explode_mon(int index)
   }
  }
 
- z.erase(z.begin()+index);
- if (last_target == index) last_target = -1;
- else if (last_target > index) last_target--;
+ z_erase(index);	// unclear whether this is a good idea (mon_kill postpones this)
 }
 
 void game::open()
@@ -4079,11 +4076,12 @@ void game::examine()
       m.ter(exam.x + i, exam.y + j) = t_floor;
     }
    }
-   for (int i = 0; i < z.size(); i++) {
-    if (z[i].type->id == mon_turret) {
-     z.erase(z.begin() + i);
-     i--;
-    }
+   {
+   int i = z.size();
+   while (0 < i--) {
+     if (mon_turret == z[i].type->id) z_erase(i);
+   }
+   }
    }
    messages.add("You insert your ID card.");
    messages.add("The nearby doors slide into the floor.");
@@ -5720,8 +5718,7 @@ void game::plmove(int x, int y)
     if (m_at->type->id == mon_turret) {
      if (query_yn("Deactivate the turret?")) {
       m.add_item(m_at->pos.x, m_at->pos.y, item::types[itm_bot_turret], messages.turn);
-//    z.erase(z.begin()+(m_at-z.begin()));	// doesn't work: typesystem issues
-      z.erase(z.begin()+mon_at(x,y));
+	  z_erase(mon_at(x, y));
       u.moves -= 100;
      }
      return;
@@ -6198,7 +6195,7 @@ void game::update_map(int &x, int &y)
 	}
 }*/
    }
-   z.erase(z.begin()+i);
+   z_erase(i);
    i--;
   }
  }

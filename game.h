@@ -300,11 +300,12 @@ class game
   void mondebug();        // Debug monster behavior directly
   void groupdebug();      // Get into on monster groups
 
-
+  // data integrity
+  void z_erase(int z_index);	// morally z.erase(z.begin()+z_index), with required side effects
 
 // ########################## DATA ################################
 
-  signed char last_target;// The last monster targeted
+  int last_target;// The last monster targeted. -1, or a positional index in z
   char run_mode; // 0 - Normal run always; 1 - Running allowed, but if a new
 		 //  monsters spawns, go to 2 - No movement allowed
   int mostseen;	 // # of mons seen last turn; if this increases, run_mode++
