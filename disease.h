@@ -440,7 +440,7 @@ void dis_effect(game *g, player &p, disease &dis)
      p.hurt(g, burst, rng(0, 1), rng(4, 8));
 // Spawn a larva
      int sel = rng(0, valid_spawns.size() - 1);
-     grub.spawn(valid_spawns[sel].x, valid_spawns[sel].y);
+     grub.spawn(valid_spawns[sel]);
      valid_spawns.erase(valid_spawns.begin() + sel);
 // Sometimes it's a friendly larva!
 	 grub.friendly = (one_in(3) ? -1 : 0);

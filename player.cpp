@@ -2207,7 +2207,7 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
    int index = rng(0, valid.size() - 1);
    point sp = valid[index];
    valid.erase(valid.begin() + index);
-   snake.spawn(sp.x, sp.y);
+   snake.spawn(sp);
    snake.friendly = -1;
    g->z.push_back(snake);
   }

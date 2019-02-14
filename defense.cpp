@@ -251,8 +251,7 @@ void defense_game::init_map(game *g)
   }
  }
  if (!valid.empty()) {
-  point p = valid[rng(0, valid.size() - 1)];
-  generator.spawn(p.x, p.y);
+  generator.spawn(valid[rng(0, valid.size() - 1)]);
  }
  generator.friendly = -1;
  g->z.push_back(generator);

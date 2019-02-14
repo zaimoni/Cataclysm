@@ -161,7 +161,7 @@ void mdeath::worm(game *g, monster *z)
  monster worm(mtype::types[mon_halfworm]);
  for (int worms = 0; worms < 2 && wormspots.size() > 0; worms++) {
   const int rn = rng(0, wormspots.size() - 1);
-  worm.spawn(wormspots[rn].x, wormspots[rn].y);
+  worm.spawn(wormspots[rn]);
   g->z.push_back(worm);
   wormspots.erase(wormspots.begin() + rn);
  }
@@ -207,7 +207,7 @@ void mdeath::blobsplit(game *g, monster *z)
  
  for (int s = 0; s < 2 && valid.size() > 0; s++) {
   const int rn = rng(0, valid.size() - 1);
-  blob.spawn(valid[rn].x, valid[rn].y);
+  blob.spawn(valid[rn]);
   g->z.push_back(blob);
   valid.erase(valid.begin() + rn);
  }

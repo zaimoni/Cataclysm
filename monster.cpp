@@ -78,9 +78,15 @@ void monster::poly(mtype *t)
  sp_timeout = type->sp_freq;
 }
 
+// definitely could be a complex implementation, so retain out-of-line definition
 void monster::spawn(int x, int y)
 {
  pos = point(x,y);
+}
+
+void monster::spawn(const point& pt)
+{
+	pos = pt;
 }
 
 std::string monster::name() const

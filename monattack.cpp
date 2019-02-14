@@ -504,8 +504,7 @@ void mattack::triffid_heartbeat(game *g, monster *z)
     mon_id montype = mon_triffid;
     if (one_in(4)) montype = mon_creeper_hub;
     else if (one_in(3)) montype = mon_biollante;
-    monster plant(mtype::types[montype]);
-    plant.spawn(x, y);
+    monster plant(mtype::types[montype], x, y);
     g->z.push_back(plant);
    }
   }

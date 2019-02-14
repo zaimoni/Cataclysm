@@ -49,6 +49,7 @@ class monster {
  ~monster() = default;
  void poly(mtype *t);
  void spawn(int x, int y); // All this does is moves the monster to x,y
+ void spawn(const point& pt);
 
 // Access
  std::string name() const; 		// Returns the monster's formal name

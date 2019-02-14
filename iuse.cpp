@@ -2147,10 +2147,9 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
     spawned.friendly = -1;
     for (int i = 0; i < num && !empty.empty(); i++) {
      int index = rng(0, empty.size() - 1);
-     point spawnp = empty[index];
-     empty.erase(empty.begin() + index);
-     spawned.spawn(spawnp.x, spawnp.y);
-     g->z.push_back(spawned);
+     spawned.spawn(empty[index]);
+	 empty.erase(empty.begin() + index);
+	 g->z.push_back(spawned);
     }
    }
   } break;

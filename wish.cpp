@@ -292,7 +292,7 @@ void game::monster_wish()
  wrefresh(w_terrain);
  point spawn = look_around();
  if (spawn.x == -1) return;
- tmp.spawn(spawn.x, spawn.y);
+ tmp.spawn(spawn);
  z.push_back(tmp);
 }
 
