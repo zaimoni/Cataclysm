@@ -239,7 +239,7 @@ void monster::move(game *g)
   if (next.x == g->u.posx && next.y == g->u.posy && type->melee_dice > 0)
    hit_player(g, g->u);
   else if (m_at && m_at->type->species == species_hallu)
-   g->kill_mon(mondex);
+   g->kill_mon(*m_at);
   else if (m_at && type->melee_dice > 0 && (m_at->friendly != 0 || has_flag(MF_ATTACKMON)))
    hit_monster(g, *m_at);
   else if (npcdex != -1 && type->melee_dice > 0)
@@ -339,37 +339,30 @@ point monster::scent_move(game *g)
  std::vector<point> smoves;
  int maxsmell = 1; // Squares with smell 0 are not eligable targets
  int minsmell = 9999;
- point pbuff, next(-1, -1);
+ point next(-1, -1);
  for (int x = -1; x <= 1; x++) {
   for (int y = -1; y <= 1; y++) {
-   const auto smell = g->scent(pos.x + x, pos.y + y);
-   int mon = g->mon_at(pos.x + x, pos.y + y);
-   if ((mon == -1 || g->z[mon].friendly != 0 || has_flag(MF_ATTACKMON)) &&
-       (can_move_to(g->m, pos.x + x, pos.y + y) ||
-        (pos.x + x == g->u.posx && pos.x + y == g->u.posy) ||
-        (g->m.has_flag(bashable, pos.x + x, pos.y + y) && has_flag(MF_BASHES)))) {
+   point test(pos.x + x, pos.y + y);
+   const auto smell = g->scent(test.x, test.y);
+   monster* const m_at = g->mon(test);
+   if ((!m_at || m_at->friendly != 0 || has_flag(MF_ATTACKMON)) &&
+       (can_move_to(g->m, test.x, test.y) ||
+        (test.x == g->u.posx && test.y == g->u.posy) ||
+        (g->m.has_flag(bashable, test.x, test.y) && has_flag(MF_BASHES)))) {
 	const auto fleeing = is_fleeing(g->u);
     if (   (!fleeing && smell > maxsmell)
 		|| ( fleeing && smell < minsmell)) {
      smoves.clear();
-     pbuff.x = pos.x + x;
-     pbuff.y = pos.y + y;
-     smoves.push_back(pbuff);
+     smoves.push_back(test);
      maxsmell = smell;
      minsmell = smell;
-    } else if (   (!fleeing && smell == maxsmell)
-		       || ( fleeing && smell == minsmell)) {
-     pbuff.x = pos.x + x;
-     pbuff.y = pos.y + y;
-     smoves.push_back(pbuff);
+    } else if (smell == (fleeing ? minsmell : maxsmell)) {
+     smoves.push_back(test);
     }
    }
   }
  }
- if (!smoves.empty()) {
-  int nextsq = rng(0, smoves.size() - 1);
-  next = smoves[nextsq];
- }
+ if (!smoves.empty()) next = smoves[rng(0, smoves.size() - 1)];
  return next;
 }
 
