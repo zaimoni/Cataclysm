@@ -746,13 +746,12 @@ technique_id player::pick_technique(game *g, monster *z, player *p,
    int enemy_count = 0;
    for (int x = posx - 1; x <= posx + 1; x++) {
     for (int y = posy - 1; y <= posy + 1; y++) {
-     int mondex = g->mon_at(x, y);
-     if (mondex != -1) {
-      if (g->z[mondex].friendly == 0)
+	 if (const monster* const m_at = g->mon(x,y)) {
+      if (0 == m_at->friendly)
        enemy_count++;
       else
        enemy_count -= 2;
-     }
+	 }
      int npcdex = g->npc_at(x, y);
      if (npcdex != -1) {
       if (g->active_npc[npcdex].attitude == NPCATT_KILL)
@@ -846,12 +845,12 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
   for (int x = posx - 1; x <= posx + 1; x++) {
    for (int y = posy - 1; y <= posy + 1; y++) {
     if (x != tarx || y != tary) { // Don't double-hit our target
-     int mondex = g->mon_at(x, y);
-     if (mondex != -1 && hit_roll() >= rng(0, 5) + g->z[mondex].dodge_roll()) {
+	 monster* const m_at = g->mon(x,y);
+     if (m_at && hit_roll() >= rng(0, 5) + m_at->dodge_roll()) {
       count_hit++;
-      int dam = roll_bash_damage(&(g->z[mondex]), false) +
-                roll_cut_damage (&(g->z[mondex]), false);
-      g->z[mondex].hurt(dam);
+      int dam = roll_bash_damage(m_at, false) +
+                roll_cut_damage (m_at, false);
+	  m_at->hurt(dam);
       if (u_see)
        messages.add("%s hit%s %s for %d damage!", You.c_str(), s.c_str(),
                                                 target.c_str(), dam);

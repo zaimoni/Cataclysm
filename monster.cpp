@@ -83,7 +83,7 @@ void monster::spawn(int x, int y)
  pos = point(x,y);
 }
 
-std::string monster::name()
+std::string monster::name() const
 {
  if (!type) {
   debugmsg ("monster::name empty type!");
@@ -94,7 +94,7 @@ std::string monster::name()
  return type->name;
 }
 
-std::string monster::name_with_armor()
+std::string monster::name_with_armor() const
 {
  std::string ret = type->name;
  if (type->species == species_insect)

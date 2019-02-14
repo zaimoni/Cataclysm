@@ -596,13 +596,12 @@ void iuse::dogfood(game *g, player *p, item *it, bool t)
  p->moves -= 15;
  dir.x += p->posx;
  dir.y += p->posy;
- int mon_dex = g->mon_at(dir.x,dir.y);
- if (mon_dex != -1) {
-  if (g->z[mon_dex].type->id == mon_dog) {
+ if (monster* const m_at = g->mon(dir)) {
+  if (m_at->type->id == mon_dog) {
    messages.add("The dog seems to like you!");
-   g->z[mon_dex].friendly = -1;
+   m_at->friendly = -1;
   } else
-   messages.add("The %s seems quit unimpressed!",g->z[mon_dex].type->name.c_str());
+   messages.add("The %s seems quit unimpressed!", m_at->type->name.c_str());
  } else
   messages.add("You spill the dogfood all over the ground.");
 
@@ -1342,14 +1341,12 @@ void iuse::can_goo(game *g, player *p, item *it, bool t)
   tries++;
  } while (g->m.move_cost(goox, gooy) == 0 && tries < 10);
  if (tries == 10) return;
- int mondex = g->mon_at(goox, gooy);
- if (mondex != -1) {
+ if (monster* const m_at = g->mon(goox, gooy)) {
   if (g->u_see(goox, gooy))
-   messages.add("Black goo emerges from the canister and envelopes a %s!",
-              g->z[mondex].name().c_str());
-  g->z[mondex].poly(mtype::types[mon_blob]);
-  g->z[mondex].speed -= rng(5, 25);
-  g->z[mondex].hp = g->z[mondex].speed;
+   messages.add("Black goo emerges from the canister and envelopes a %s!", m_at->name().c_str());
+  m_at->poly(mtype::types[mon_blob]);
+  m_at->speed -= rng(5, 25);
+  m_at->hp = m_at->speed;
  } else {
   if (g->u_see(goox, gooy))
    messages.add("Living black goo emerges from the canister!");
@@ -1658,11 +1655,11 @@ void iuse::pheromone(game *g, player *p, item *it, bool t)
  int converts = 0;
  for (int x = pos.x - 4; x <= pos.x + 4; x++) {
   for (int y = pos.y - 4; y <= pos.y + 4; y++) {
-   int mondex = g->mon_at(x, y);
-   if (mondex != -1 && g->z[mondex].symbol() == 'Z' &&
-       g->z[mondex].friendly == 0 && rng(0, 500) > g->z[mondex].hp) {
-    converts++;
-    g->z[mondex].make_friendly();
+   if (monster* const m_at = g->mon(x,y)) {
+     if (m_at->symbol() == 'Z' && m_at->friendly == 0 && rng(0, 500) > m_at->hp) {
+      converts++;
+	  m_at->make_friendly();
+     }
    }
   }
  }
@@ -2105,19 +2102,16 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
   case AEA_CONFUSED:
    for (int x = p->posx - 8; x <= p->posx + 8; x++) {
     for (int y = p->posy - 8; y <= p->posy + 8; y++) {
-     int mondex = g->mon_at(x, y);
-     if (mondex != -1)
-      g->z[mondex].add_effect(ME_STUNNED, rng(5, 15));
+	 if (monster* const m_at = g->mon(x,y)) m_at->add_effect(ME_STUNNED, rng(5, 15));
     }
    }
 
   case AEA_ENTRANCE:
    for (int x = p->posx - 8; x <= p->posx + 8; x++) {
     for (int y = p->posy - 8; y <= p->posy + 8; y++) {
-     int mondex = g->mon_at(x, y);
-     if (mondex != -1 &&  g->z[mondex].friendly == 0 &&
-         rng(0, 600) > g->z[mondex].hp)
-      g->z[mondex].make_friendly();
+	 if (monster* const m_at = g->mon(x,y)) {
+	   if (0 == m_at->friendly && rng(0, 600) > m_at->hp) m_at->make_friendly();
+	 }
     }
    }
    break;

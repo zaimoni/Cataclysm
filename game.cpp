@@ -3827,10 +3827,9 @@ void game::close()
  if (-2 == close.x) { messages.add("Invalid direction."); return; }
  close.x += u.posx;
  close.y += u.posy;
- {
- const auto mon = mon_at(close.x, close.y);
- if (mon != -1) { messages.add("There's a %s in the way!", z[mon].name().c_str()); return; }
- }
+
+ if (const monster* const m_at = mon(close)) { messages.add("There's a %s in the way!", m_at->name().c_str()); return; }
+
  int vpart;
  vehicle * const veh = m.veh_at(close.x, close.y, vpart);
  if (veh && veh->part_flag(vpart, vpf_openable) && veh->parts[vpart].open) {
@@ -4333,10 +4332,10 @@ point game::look_around()
        mvwprintz(w_look, 5, 1, tr->color, "%s", tr->name.c_str());
    }
 
-   int dex = mon_at(lx, ly);
-   if (dex != -1 && u_see(&(z[dex]))) {
-    z[mon_at(lx, ly)].draw(w_terrain, lx, ly, true);
-    z[mon_at(lx, ly)].print_info(this, w_look);
+   monster* const m_at = mon(lx, ly);
+   if (m_at && u_see(m_at)) {
+    m_at->draw(w_terrain, lx, ly, true);
+    m_at->print_info(this, w_look);
     if (m.i_at(lx, ly).size() > 1)
      mvwprintw(w_look, 3, 1, "There are several items there.");
     else if (m.i_at(lx, ly).size() == 1)

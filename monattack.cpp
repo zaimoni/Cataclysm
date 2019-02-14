@@ -405,10 +405,10 @@ void mattack::vine(game *g, monster *z)
     z->sp_timeout = z->type->sp_freq;
     z->moves -= 100;
     return;
-   } else if (g->is_empty(x, y))
-    grow.push_back(point(x, y));
-   else if (g->mon_at(x, y) > -1 && g->z[g->mon_at(x, y)].type->id == mon_creeper_vine)
-    vine_neighbors++;
+   } else if (g->is_empty(x, y)) grow.push_back(point(x, y));
+   else if (monster* const m_at = g->mon(x, y)) {
+    if (m_at->type->id == mon_creeper_vine) vine_neighbors++;
+   }
   }
  }
 // Calculate distance from nearest hub
@@ -686,41 +686,41 @@ void mattack::formblob(game *g, monster *z)
  int thatmon = -1;
  for (int i = -1; i <= 1; i++) {
   for (int j = -1; j <= 1; j++) {
-   thatmon = g->mon_at(z->pos.x + i, z->pos.y + j);
-   if (g->u.posx == z->pos.x + i && g->u.posy == z->pos.y + i) {
+   point test(z->pos.x + i, z->pos.y + j);
+   if (g->u.posx == test.x && g->u.posy == test.y) {
 // If we hit the player, cover them with slime
     didit = true;
     g->u.add_disease(DI_SLIMED, rng(0, z->hp), g);
-   } else if (thatmon != -1) {
+   } else if (monster* const m_at = g->mon(test)) {
 // Hit a monster.  If it's a blob, give it our speed.  Otherwise, blobify it?
-    if (z->speed > 20 && g->z[thatmon].type->id == mon_blob && g->z[thatmon].speed < 85) {
+    if (z->speed > 20 && m_at->type->id == mon_blob && m_at->speed < 85) {
      didit = true;
-     g->z[thatmon].speed += 5;
+	 m_at->speed += 5;
      z->speed -= 5;
-    } else if (z->speed > 20 && g->z[thatmon].type->id == mon_blob_small) {
+    } else if (z->speed > 20 && m_at->type->id == mon_blob_small) {
      didit = true;
      z->speed -= 5;
-     g->z[thatmon].speed += 5;
-     if (g->z[thatmon].speed >= 60) g->z[thatmon].poly(mtype::types[mon_blob]);
-    } else if ((g->z[thatmon].made_of(FLESH) || g->z[thatmon].made_of(VEGGY)) &&
+	 m_at->speed += 5;
+     if (m_at->speed >= 60) g->z[thatmon].poly(mtype::types[mon_blob]);
+    } else if ((m_at->made_of(FLESH) || m_at->made_of(VEGGY)) &&
                rng(0, z->hp) > rng(0, g->z[thatmon].hp)) {	// Blobify!
      didit = true;
-     g->z[thatmon].poly(mtype::types[mon_blob]);
-     g->z[thatmon].speed = z->speed - rng(5, 25);
-     g->z[thatmon].hp = g->z[thatmon].speed;
+	 m_at->poly(mtype::types[mon_blob]);
+	 m_at->speed = z->speed - rng(5, 25);
+	 m_at->hp = g->z[thatmon].speed;
     }
    } else if (z->speed >= 85 && rng(0, 250) < z->speed) {
 // If we're big enough, spawn a baby blob.
     didit = true;
     z->speed -= 15;
-    monster blob(mtype::types[mon_blob_small], z->pos.x + i, z->pos.y + j);
+    monster blob(mtype::types[mon_blob_small], test.x, test.y);
     blob.speed = z->speed - rng(30, 60);
     blob.hp = blob.speed;
     g->z.push_back(blob);
    }
   }
   if (didit) {	// We did SOMEthing.
-   if (z->type->id == mon_blob && z->speed <= 50) z->poly(mtype::types[mon_blob]);	// We shrank!
+   if (z->type->id == mon_blob && z->speed <= 50) z->poly(mtype::types[mon_blob_small]);	// We shrank!
    z->moves = -500;
    z->sp_timeout = z->type->sp_freq;	// Reset timer
    return;
@@ -832,10 +832,9 @@ void mattack::vortex(game *g, monster *z)
     } // Done throwing item
    } // Done getting items
 // Throw monsters
-   int mondex = g->mon_at(x, y);
-   if (mondex != -1) {
+   monster* const thrown = g->mon(x,y);
+   if (thrown) {
     int distance = 0, damage = 0;
-    monster *thrown = &(g->z[mondex]);
     switch (thrown->type->size) {
      case MS_TINY:   distance = 5; break;
      case MS_SMALL:  distance = 3; break;
@@ -882,9 +881,9 @@ void mattack::vortex(game *g, monster *z)
      }
      if (hit_wall) damage *= 2;
      else  thrown->pos = traj[traj.size() - 1];
-     if (thrown->hurt(damage)) g->kill_mon(g->mon(thrown->pos), (z->friendly != 0));
+     if (thrown->hurt(damage)) g->kill_mon(*thrown, (z->friendly != 0));
     } // if (distance > 0)
-   } // if (mondex != -1)
+   } // if (thrown)
 
    if (g->u.posx == x && g->u.posy == y) { // Throw... the player?! D:
     std::vector<point> traj = continue_line(from_monster, rng(2, 3));
@@ -1185,9 +1184,9 @@ void mattack::breathe(game *g, monster *z)
  if (!able) {
   for (int x = z->pos.x - 3; x <= z->pos.x + 3 && !able; x++) {
    for (int y = z->pos.y - 3; y <= z->pos.y + 3 && !able; y++) {
-    int mondex = g->mon_at(x, y);
-    if (mondex != -1 && g->z[mondex].type->id == mon_breather_hub)
-     able = true;
+    if (monster* const m_at = g->mon(x, y)) {
+	  if (m_at->type->id == mon_breather_hub) able = true;
+	}
    }
   }
  }

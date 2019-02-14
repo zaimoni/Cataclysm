@@ -40,10 +40,9 @@ void mdeath::boomer(game *g, monster *z)
    if (f.type == fd_bile && f.density < 3) f.density++;
    else g->m.add_field(g, z->pos.x + i, z->pos.y + j, fd_bile, 1);
    }
-   int mondex = g->mon_at(z->pos.x + i, z->pos.y +j);
-   if (mondex != -1) {
-    g->z[mondex].stumble(g, false);
-    g->z[mondex].moves -= 250;
+   if (monster* const m_at = g->mon(z->pos.x + i, z->pos.y + j)) {
+	m_at->stumble(g, false);
+	m_at->moves -= 250;
    }
   }
  }
@@ -92,9 +91,9 @@ void mdeath::vine_cut(game *g, monster *z)
   for (int x = vine->pos.x - 1; x <= vine->pos.x + 1 && !found_neighbor; x++) {
    for (int y = vine->pos.y - 1; y <= vine->pos.y + 1 && !found_neighbor; y++) {
     if (x != z->pos.x || y != z->pos.y) { // Not the dying vine
-     int mondex = g->mon_at(x, y);
-     if (mondex != -1 && (g->z[mondex].type->id == mon_creeper_hub ||
-                          g->z[mondex].type->id == mon_creeper_vine  ))
+	 monster* const m_at = g->mon(x,y);
+     if (m_at && (m_at->type->id == mon_creeper_hub ||
+		          m_at->type->id == mon_creeper_vine  ))
       found_neighbor = true;
     }
    }
@@ -150,14 +149,12 @@ void mdeath::worm(game *g, monster *z)
  if (g->u_see(z)) messages.add("The %s splits in two!", z->name().c_str());
 
  std::vector <point> wormspots;
- int wormx, wormy;
  for (int i = -1; i <= 1; i++) {
   for (int j = -1; j <= 1; j++) {
-   wormx = z->pos.x + i;
-   wormy = z->pos.y + j;
-   if (g->m.has_flag(diggable, wormx, wormy) && g->mon_at(wormx, wormy) == -1 &&
-       !(g->u.posx == wormx && g->u.posy == wormy)) {
-    wormspots.push_back(point(wormx, wormy));
+   point worm(z->pos.x + i, z->pos.y + j);
+   if (g->m.has_flag(diggable, worm.x, worm.y) && !g->mon(worm) &&
+       !(g->u.posx == worm.x && g->u.posy == worm.y)) {
+    wormspots.push_back(worm);
    }
   }
  }
@@ -200,9 +197,10 @@ void mdeath::blobsplit(game *g, monster *z)
 
  for (int i = -1; i <= 1; i++) {
   for (int j = -1; j <= 1; j++) {
-   if (g->m.move_cost(z->pos.x+i, z->pos.y+j) > 0 &&
-       g->mon_at(z->pos.x+i, z->pos.y+j) == -1 &&
-       (g->u.posx != z->pos.x+i || g->u.posy != z->pos.y + j))
+   point test(z->pos.x + i, z->pos.y + j);
+   if (g->m.move_cost(test.x, test.y) > 0 &&
+       !g->mon(test) &&
+       (g->u.posx != test.x || g->u.posy != test.y))
     valid.push_back(point(z->pos.x+i, z->pos.y+j));
   }
  }

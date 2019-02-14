@@ -51,8 +51,8 @@ class monster {
  void spawn(int x, int y); // All this does is moves the monster to x,y
 
 // Access
- std::string name(); 		// Returns the monster's formal name
- std::string name_with_armor(); // Name, with whatever our armor is called
+ std::string name() const; 		// Returns the monster's formal name
+ std::string name_with_armor() const; // Name, with whatever our armor is called
  void print_info(game *g, WINDOW* w); // Prints information to w.
  char symbol();			// Just our type's symbol; no context
  void draw(WINDOW* w, int plx, int ply, bool inv);

@@ -173,20 +173,14 @@ void monster::move(game *g)
   return;
  }
  if (friendly != 0) {
-  if (friendly > 0)
-   friendly--;
+  if (friendly > 0) friendly--;
   friendly_move(g);
   return;
  }
 
  moves -= 100;
- bool moved = false;
- point next;
- int mondex = (plans.size() > 0 ? g->mon_at(plans[0].x, plans[0].y) : -1);
 
- monster_attitude current_attitude = attitude();
- if (friendly == 0)
-  current_attitude = attitude(&(g->u));
+ monster_attitude current_attitude = attitude(0 == friendly ? &(g->u) : 0);
 // If our plans end in a player, set our attitude to consider that player
  if (plans.size() > 0) {
   if (plans.back().x == g->u.posx && plans.back().y == g->u.posy)
@@ -206,8 +200,12 @@ void monster::move(game *g)
   return;
  }
 
+ bool moved = false;
+ point next;
+ monster* const m_plan = (plans.size() > 0 ? g->mon(plans[0]) : 0);
+
  if (plans.size() > 0 && !is_fleeing(g->u) &&
-     (mondex == -1 || g->z[mondex].friendly != 0 || has_flag(MF_ATTACKMON)) &&
+     (!m_plan || m_plan->friendly != 0 || has_flag(MF_ATTACKMON)) &&
      (can_move_to(g->m, plans[0].x, plans[0].y) ||
       (plans[0].x == g->u.posx && plans[0].y == g->u.posy) || 
      (g->m.has_flag(bashable, plans[0].x, plans[0].y) && has_flag(MF_BASHES)))){

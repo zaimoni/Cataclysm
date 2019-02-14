@@ -542,8 +542,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
         messages.add("A %s hits you!", tmp.tname().c_str());
         g->u.hit(g, random_body_part(), rng(0, 1), 6, 0);
        }
-       int npcdex = g->npc_at(newp.x, newp.y),
-           mondex = g->mon_at(newp.x, newp.y);
+       int npcdex = g->npc_at(newp.x, newp.y);
 
        if (npcdex != -1) {
         npc *p = &(g->active_npc[npcdex]);
@@ -552,8 +551,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
          messages.add("A %s hits %s!", tmp.tname().c_str(), p->name.c_str());
        }
 
-       if (mondex != -1) {
-        monster *mon = &(g->z[mondex]);
+       if (monster* const mon = g->mon(newp)) {
         mon->hurt(6 - mon->armor_bash());
         if (g->u_see(newp.x, newp.y))
          messages.add("A %s hits the %s!", tmp.tname().c_str(), mon->name().c_str());
