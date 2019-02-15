@@ -289,8 +289,7 @@ void mattack::growplants(game *g, monster *z)
     g->m.ter(z->pos.x + i, z->pos.y + j) = t_dirtmound; // Destroy walls, &c
    else {
     if (one_in(4)) {	// 1 in 4 chance to grow a tree
-	 monster* const m_at = g->mon(z->pos.x + i, z->pos.y + j);
-     if (m_at) {
+     if (monster* const m_at = g->mon(z->pos.x + i, z->pos.y + j)) {
       if (g->u_see(z->pos.x + i, z->pos.y + j))
        messages.add("A tree bursts forth from the earth and pierces the %s!", m_at->name().c_str());
       int rn = rng(10, 30) - m_at->armor_cut();
@@ -305,19 +304,15 @@ void mattack::growplants(game *g, monster *z)
 	  messages.add("A tree bursts forth from the earth and pierces your %s!",
                  body_part_name(hit, side).c_str());
       g->u.hit(g, hit, side, 0, rng(10, 30));
-     } else {
-      int npcdex = g->npc_at(z->pos.x + i, z->pos.y + j);
-      if (npcdex != -1) {	// An NPC got hit
+     } else if (npc* const nPC = g->nPC(z->pos.x + i, z->pos.y + j)) {	// An NPC got hit
        body_part hit = bp_legs;
        int side = rng(1, 2);
        if (one_in(4)) hit = bp_torso;
        else if (one_in(2)) hit = bp_feet;
        if (g->u_see(z->pos.x + i, z->pos.y + j))
         messages.add("A tree bursts forth from the earth and pierces %s's %s!",
-                   g->active_npc[npcdex].name.c_str(),
-                   body_part_name(hit, side).c_str());
-       g->active_npc[npcdex].hit(g, hit, side, 0, rng(10, 30));
-      }
+			nPC->name.c_str(), body_part_name(hit, side).c_str());
+	   nPC->hit(g, hit, side, 0, rng(10, 30));
      }
      g->m.ter(z->pos.x + i, z->pos.y + j) = t_tree_young;
     } else if (one_in(3)) // If no tree, perhaps underbrush
@@ -350,17 +345,15 @@ void mattack::growplants(game *g, monster *z)
                   body_part_name(hit, side).c_str());
        g->u.hit(g, hit, side, 0, rng(10, 30));
       } else {
-       int npcdex = g->npc_at(z->pos.x + i, z->pos.y + j);
-       if (npcdex != -1) {
+       if (npc* const nPC = g->nPC(z->pos.x + i, z->pos.y + j)) {
         body_part hit = bp_legs;
         int side = rng(1, 2);
         if (one_in(4)) hit = bp_torso;
         else if (one_in(2)) hit = bp_feet;
         if (g->u_see(z->pos.x + i, z->pos.y + j))
          messages.add("Underbrush grows into a tree, and it pierces %s's %s!",
-                    g->active_npc[npcdex].name.c_str(),
-                    body_part_name(hit, side).c_str());
-        g->active_npc[npcdex].hit(g, hit, side, 0, rng(10, 30));
+			 nPC->name.c_str(), body_part_name(hit, side).c_str());
+		nPC->hit(g, hit, side, 0, rng(10, 30));
        }
       }
      }

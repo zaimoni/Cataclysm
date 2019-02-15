@@ -752,9 +752,8 @@ technique_id player::pick_technique(game *g, monster *z, player *p,
       else
        enemy_count -= 2;
 	 }
-     int npcdex = g->npc_at(x, y);
-     if (npcdex != -1) {
-      if (g->active_npc[npcdex].attitude == NPCATT_KILL)
+     if (npc* const nPC = g->nPC(x,y)) {
+      if (nPC->attitude == NPCATT_KILL)
        enemy_count++;
       else
        enemy_count -= 2;
@@ -855,16 +854,15 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
        messages.add("%s hit%s %s for %d damage!", You.c_str(), s.c_str(),
                                                 target.c_str(), dam);
      }
-     int npcdex = g->npc_at(x, y);
-     if (npcdex != -1 &&
-         hit_roll() >= rng(0, 5) + g->active_npc[npcdex].dodge_roll(g)) {
+	 npc* const nPC = g->nPC(x, y);
+     if (nPC && hit_roll() >= rng(0, 5) + nPC->dodge_roll(g)) {
       count_hit++;
-      int dam = roll_bash_damage(NULL, false);
+      int dam = roll_bash_damage(NULL, false);	// looks like (n)PC armor won't work, but covered in the hit function
       int cut = roll_cut_damage (NULL, false);
-      g->active_npc[npcdex].hit(g, bp_legs, 3, dam, cut);
+	  nPC->hit(g, bp_legs, 3, dam, cut);
       if (u_see)
        messages.add("%s hit%s %s for %d damage!", You.c_str(), s.c_str(),
-                  g->active_npc[npcdex].name.c_str(), dam + cut);
+		   nPC->name.c_str(), dam + cut);
      }
     }
    }

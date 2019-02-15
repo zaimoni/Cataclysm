@@ -233,15 +233,15 @@ void monster::move(game *g)
 //  move to (moved = true).
  if (moved) {	// Actual effects of moving to the square we've chosen
   monster* const m_at = g->mon(next);
-  int npcdex = g->npc_at(next.x, next.y);
+  npc* const nPC = g->nPC(next);
   if (next.x == g->u.posx && next.y == g->u.posy && type->melee_dice > 0)
    hit_player(g, g->u);
   else if (m_at && m_at->type->species == species_hallu)
    g->kill_mon(*m_at);
   else if (m_at && type->melee_dice > 0 && (m_at->friendly != 0 || has_flag(MF_ATTACKMON)))
    hit_monster(g, *m_at);
-  else if (npcdex != -1 && type->melee_dice > 0)
-   hit_player(g, g->active_npc[npcdex]);
+  else if (nPC && type->melee_dice > 0)
+   hit_player(g, *nPC);
   else if ((!can_move_to(g->m, next.x, next.y) || one_in(3)) &&
              g->m.has_flag(bashable, next.x, next.y) && has_flag(MF_BASHES)) {
    std::string bashsound = "NOBASH"; // If we hear "NOBASH" it's time to debug!
@@ -310,13 +310,13 @@ void monster::friendly_move(game *g)
  } else
   stumble(g, moved);
  if (moved) {
-  monster* m_at = g->mon(next);
-  int npcdex = g->npc_at(next.x, next.y);
+  monster* const m_at = g->mon(next);
+  npc* const nPC = g->nPC(next);
   if (m_at && m_at->friendly == 0 && type->melee_dice > 0)
    hit_monster(g, *m_at);
-  else if (npcdex != -1 && type->melee_dice > 0)
-   hit_player(g, g->active_npc[g->npc_at(next.x, next.y)]);
-  else if (!m_at && npcdex == -1 && can_move_to(g->m, next.x, next.y))
+  else if (nPC && type->melee_dice > 0)
+   hit_player(g, *nPC);
+  else if (!m_at && !nPC && can_move_to(g->m, next.x, next.y))
    move_to(g, next.x, next.y);
   else if ((!can_move_to(g->m, next.x, next.y) || one_in(3)) &&
            g->m.has_flag(bashable, next.x, next.y) && has_flag(MF_BASHES)) {
@@ -487,30 +487,17 @@ void monster::hit_player(game *g, player &p, bool can_grab)
  } // if dam > 0
  if (is_npc) {
   if (p.hp_cur[hp_head] <= 0 || p.hp_cur[hp_torso] <= 0) {
-   npc* tmp = dynamic_cast<npc*>(&p);
-   tmp->die(g);
-   int index = g->npc_at(p.posx, p.posy);
-   if (index != -1 && index < g->active_npc.size())
-    g->active_npc.erase(g->active_npc.begin() + index);
+   dynamic_cast<npc*>(&p)->die(g);
    plans.clear();
   }
  }
 // Adjust anger/morale of same-species monsters, if appropriate
  int anger_adjust = 0, morale_adjust = 0;
- for (int i = 0; i < type->anger.size(); i++) {
-  if (type->anger[i] == MTRIG_FRIEND_ATTACKED)
-   anger_adjust += 15;
- }
- for (int i = 0; i < type->placate.size(); i++) {
-  if (type->placate[i] == MTRIG_FRIEND_ATTACKED)
-   anger_adjust -= 15;
- }
- for (int i = 0; i < type->fear.size(); i++) {
-  if (type->fear[i] == MTRIG_FRIEND_ATTACKED)
-   morale_adjust -= 15;
- }
- if (anger_adjust != 0 && morale_adjust != 0) {
-  int light = g->light_level();
+ for (const auto trigger : type->anger) if (MTRIG_FRIEND_ATTACKED == trigger) anger_adjust += 15;
+ for (const auto trigger : type->placate) if (MTRIG_FRIEND_ATTACKED == trigger) anger_adjust -= 15;
+ for (const auto trigger : type->fear) if (MTRIG_FRIEND_ATTACKED == trigger) morale_adjust -= 15;
+
+ if (anger_adjust != 0 && morale_adjust != 0) {	// XXX \todo this is not locked down to the same species, as suggested by the above comment
   for (int i = 0; i < g->z.size(); i++) {
    g->z[i].morale += morale_adjust;
    g->z[i].anger += anger_adjust;
@@ -621,15 +608,11 @@ void monster::knock_back_from(game *g, int x, int y)
   return;
  }
 
- int npcdex = g->npc_at(to.x, to.y);
- if (npcdex != -1) {
-  npc *p = &(g->active_npc[npcdex]);
+ if (npc* const p = g->nPC(to)) {
   hurt(3);
   add_effect(ME_STUNNED, 1);
   p->hit(g, bp_torso, 0, type->size, 0);
-  if (u_see)
-   messages.add("The %s bounces off %s!", name().c_str(), p->name.c_str());
-
+  if (u_see) messages.add("The %s bounces off %s!", name().c_str(), p->name.c_str());
   return;
  }
 

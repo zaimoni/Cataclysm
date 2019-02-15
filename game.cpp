@@ -2041,30 +2041,26 @@ z.size(), events.size());
 
   case 13: {
    point p = look_around();
-   int npcdex = npc_at(p.x, p.y);
-   if (npcdex == -1)
-    popup("No NPC there.");
-   else {
+   if (npc* const _npc = nPC(p)) {
     std::stringstream data;
-    npc *p = &(active_npc[npcdex]);
-    data << p->name << " " << (p->male ? "Male" : "Female") << std::endl;
-    data << npc_class_name(p->myclass) << "; " <<
-            npc_attitude_name(p->attitude) << std::endl;
-    if (p->has_destination())
-     data << "Destination: " << p->goal.x << ":" << p->goal.y << "(" <<
-		     oter_t::list[ cur_om.ter(p->goal.x, p->goal.y) ].name << ")" <<
+    data << _npc->name << " " << (_npc->male ? "Male" : "Female") << std::endl;
+    data << npc_class_name(_npc->myclass) << "; " <<
+            npc_attitude_name(_npc->attitude) << std::endl;
+    if (_npc->has_destination())
+     data << "Destination: " << _npc->goal.x << ":" << _npc->goal.y << "(" <<
+		     oter_t::list[ cur_om.ter(_npc->goal.x, _npc->goal.y) ].name << ")" <<
              std::endl;
     else
      data << "No destination." << std::endl;
-    data << "Trust: " << p->op_of_u.trust << " Fear: " << p->op_of_u.fear <<
-            " Value: " << p->op_of_u.value << " Anger: " << p->op_of_u.anger <<
-            " Owed: " << p->op_of_u.owed << std::endl;
-    data << "Aggression: " << int(p->personality.aggression) << " Bravery: " <<
-            int(p->personality.bravery) << " Collector: " <<
-            int(p->personality.collector) << " Altruism: " <<
-            int(p->personality.altruism) << std::endl;
+    data << "Trust: " << _npc->op_of_u.trust << " Fear: " << _npc->op_of_u.fear <<
+            " Value: " << _npc->op_of_u.value << " Anger: " << _npc->op_of_u.anger <<
+            " Owed: " << _npc->op_of_u.owed << std::endl;
+    data << "Aggression: " << int(_npc->personality.aggression) << " Bravery: " <<
+            int(_npc->personality.bravery) << " Collector: " <<
+            int(_npc->personality.collector) << " Altruism: " <<
+            int(_npc->personality.altruism) << std::endl;
     for (int i = 0; i < num_skill_types; i++) {
-     data << skill_name( skill(i) ) << ": " << p->sklevel[i];
+     data << skill_name( skill(i) ) << ": " << _npc->sklevel[i];
      if (i % 2 == 1)
       data << std::endl;
      else
@@ -2072,6 +2068,8 @@ z.size(), events.size());
     }
 
     full_screen_popup(data.str().c_str());
+   } else {
+    popup("No NPC there.");
    }
   } break;
 
@@ -3389,8 +3387,7 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
    if (m.is_destructable(i, j) && rng(25, 100) < dam) m.destroy(this, i, j, false);
 
    monster* const m_hit = mon(i, j);
-   int npc_hit = npc_at(i, j);
-   if (m_hit && !m_hit->dead && m_hit->hurt(rng(dam / 2, dam * 1.5))) {
+   if (m_hit && m_hit->hurt(rng(dam / 2, dam * 1.5))) {
     if (m_hit->hp < 0 - 1.5 * m_hit->type->hp)
      explode_mon(*m_hit); // Explode them if it was big overkill
     else
@@ -3401,18 +3398,14 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
     if (veh) veh->damage (vpart, dam, false);
    }
 
-   if (npc_hit != -1) {
-    active_npc[npc_hit].hit(this, bp_torso, 0, rng(dam / 2, dam * 1.5), 0);
-    active_npc[npc_hit].hit(this, bp_head,  0, rng(dam / 3, dam),       0);
-    active_npc[npc_hit].hit(this, bp_legs,  0, rng(dam / 3, dam),       0);
-    active_npc[npc_hit].hit(this, bp_legs,  1, rng(dam / 3, dam),       0);
-    active_npc[npc_hit].hit(this, bp_arms,  0, rng(dam / 3, dam),       0);
-    active_npc[npc_hit].hit(this, bp_arms,  1, rng(dam / 3, dam),       0);
-    if (active_npc[npc_hit].hp_cur[hp_head]  <= 0 ||
-        active_npc[npc_hit].hp_cur[hp_torso] <= 0   ) {
-     active_npc[npc_hit].die(this, true);
-     //active_npc.erase(active_npc.begin() + npc_hit);
-    }
+   if (npc* const _npc = nPC(i,j)) {
+    _npc->hit(this, bp_torso, 0, rng(dam / 2, dam * 1.5), 0);
+	_npc->hit(this, bp_head,  0, rng(dam / 3, dam),       0);
+	_npc->hit(this, bp_legs,  0, rng(dam / 3, dam),       0);
+	_npc->hit(this, bp_legs,  1, rng(dam / 3, dam),       0);
+	_npc->hit(this, bp_arms,  0, rng(dam / 3, dam),       0);
+	_npc->hit(this, bp_arms,  1, rng(dam / 3, dam),       0);
+    if (_npc->hp_cur[hp_head]  <= 0 || _npc->hp_cur[hp_torso] <= 0) _npc->die(this, true);
    }
    if (u.posx == i && u.posy == j) {
     messages.add("You're caught in the explosion!");
@@ -3468,21 +3461,15 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
    }
    tx = traj[j].x;
    ty = traj[j].y;
-   monster* const m_at = mon(traj[j]);
-   if (m_at) {
+   if (monster* const m_at = mon(traj[j])) {
     dam -= m_at->armor_cut();
     if (m_at->hurt(dam)) kill_mon(*m_at);
-   } else if (npc_at(tx, ty) != -1) {
+   } else if (npc* const _npc = nPC(traj[j])) {
     body_part hit = random_body_part();
     if (hit == bp_eyes || hit == bp_mouth || hit == bp_head) dam = rng(2 * dam, 5 * dam);
     else if (hit == bp_torso) dam = rng(1.5 * dam, 3 * dam);
-    int npcdex = npc_at(tx, ty);
-    active_npc[npcdex].hit(this, hit, rng(0, 1), 0, dam);
-    if (active_npc[npcdex].hp_cur[hp_head] <= 0 ||
-        active_npc[npcdex].hp_cur[hp_torso] <= 0) {
-     active_npc[npcdex].die(this);
-     //active_npc.erase(active_npc.begin() + npcdex);
-    }
+	_npc->hit(this, hit, rng(0, 1), 0, dam);
+    if (_npc->hp_cur[hp_head] <= 0 || _npc->hp_cur[hp_torso] <= 0) _npc->die(this);
    } else if (tx == u.posx && ty == u.posy) {
     body_part hit = random_body_part();
     int side = rng(0, 1);
@@ -4352,9 +4339,9 @@ point game::look_around()
      mvwprintw(w_look, 3, 1, "There are several items there.");
     else if (m.i_at(lx, ly).size() == 1)
      mvwprintw(w_look, 3, 1, "There is an item there.");
-   } else if (npc_at(lx, ly) != -1) {
-    active_npc[npc_at(lx, ly)].draw(w_terrain, lx, ly, true);
-    active_npc[npc_at(lx, ly)].print_info(w_look);
+   } else if (npc* const _npc = nPC(lx,ly)) {
+    _npc->draw(w_terrain, lx, ly, true);
+	_npc->print_info(w_look);
     if (m.i_at(lx, ly).size() > 1)
      mvwprintw(w_look, 3, 1, "There are several items there.");
     else if (m.i_at(lx, ly).size() == 1)
@@ -5586,19 +5573,11 @@ void game::plmove(int x, int y)
   } else displace = true;
  }
 // If not a monster, maybe there's an NPC there
- int npcdex = npc_at(x, y);
- if (npcdex != -1) {
-  if (!active_npc[npcdex].is_enemy() &&
-      !query_yn("Really attack %s?", active_npc[npcdex].name.c_str()))
-   return;	// Cancel the attack
-  int hitdam = 0, hitcut = 0;
-  u.hit_player(this, active_npc[npcdex]);
-  active_npc[npcdex].make_angry();
-  if (active_npc[npcdex].hp_cur[hp_head]  <= 0 ||
-      active_npc[npcdex].hp_cur[hp_torso] <= 0   ) {
-   active_npc[npcdex].die(this, true);
-   //active_npc.erase(active_npc.begin() + npcdex);
-  }
+ if (npc* const _npc = nPC(x,y)) { 
+  if (!_npc->is_enemy() && !query_yn("Really attack %s?", _npc->name.c_str())) return;	// Cancel the attack
+  u.hit_player(this, *_npc);
+  _npc->make_angry();
+  if (_npc->hp_cur[hp_head]  <= 0 || _npc->hp_cur[hp_torso] <= 0) _npc->die(this, true);
   return;
  }
 

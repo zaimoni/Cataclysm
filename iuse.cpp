@@ -1764,8 +1764,8 @@ void iuse::tazer(game *g, player *p, item *it, bool t)
  }
  int sx = dir.x + p->posx, sy = dir.y + p->posy;
  monster* const z = g->mon(sx,sy);
- int npcdex = g->npc_at(sx, sy);
- if (!z && npcdex == -1) {
+ npc* const foe = g->nPC(sx, sy);
+ if (!z && !foe) {
   messages.add("Your tazer crackles in the air.");
   return;
  }
@@ -1792,10 +1792,8 @@ void iuse::tazer(game *g, player *p, item *it, bool t)
   return;
  }
  
- if (npcdex != -1) {
-  npc *foe = dynamic_cast<npc*>(&g->active_npc[npcdex]);
-  if (foe->attitude != NPCATT_FLEE)
-   foe->attitude = NPCATT_KILL;
+ if (foe) {
+  if (foe->attitude != NPCATT_FLEE) foe->attitude = NPCATT_KILL;
   if (foe->str_max >= 17) numdice++;	// Minor bonus against huge people
   else if (foe->str_max <= 5) numdice--;	// Minor penalty against tiny people
   if (dice(numdice, 10) <= dice(foe->dodge(g), 6)) {
@@ -1806,10 +1804,7 @@ void iuse::tazer(game *g, player *p, item *it, bool t)
   int shock = rng(5, 20);
   foe->moves -= shock * 100;
   foe->hurtall(shock);
-  if (foe->hp_cur[hp_head]  <= 0 || foe->hp_cur[hp_torso] <= 0) {
-   foe->die(g, true);
-   g->active_npc.erase(g->active_npc.begin() + npcdex);
-  }
+  if (foe->hp_cur[hp_head]  <= 0 || foe->hp_cur[hp_torso] <= 0) foe->die(g, true);
  }
 
 }
