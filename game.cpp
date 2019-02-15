@@ -3665,11 +3665,27 @@ int game::npc_at(int x, int y) const
  return -1;
 }
 
+npc* game::nPC(int x, int y)
+{
+	for (auto& m : active_npc) {
+		if (m.posx == x && m.posy == y && !m.dead) return &m;
+	}
+	return 0;
+}
+
+npc* game::nPC(const point& pt)
+{
+	for (auto& m : active_npc) {
+		if (m.posx == pt.x && m.posy == pt.y && !m.dead) return &m;
+	}
+	return 0;
+}
+
 int game::mon_at(int x, int y) const
 {
  for (int i = 0; i < z.size(); i++) {
   if (z[i].pos.x == x && z[i].pos.y == y) {
-   return z[i].dead ? -1 : i;
+   return z[i].dead ? -1 : i;	// unclear whether this is correct (cf npc_at and nPC, above
   }
  }
  return -1;

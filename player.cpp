@@ -2442,8 +2442,7 @@ void player::knock_back_from(game *g, int x, int y)
  const char* const s = (is_npc() ? "s" : "");
 
 // First, see if we hit a monster
- monster* const z = g->mon(to);
- if (z) {
+ if (monster* const z = g->mon(to)) {
   hit(g, bp_torso, 0, z->type->size, 0);
   add_disease(DI_STUNNED, 1, g);
   if ((str_max - 6) / 4 > z->type->size) {
@@ -2460,9 +2459,7 @@ void player::knock_back_from(game *g, int x, int y)
   return;
  }
 
- int npcdex = g->npc_at(to.x, to.y);
- if (npcdex != -1) {
-  npc *p = &(g->active_npc[npcdex]);
+ if (npc* const p = g->nPC(to)) {
   hit(g, bp_torso, 0, 3, 0);
   add_disease(DI_STUNNED, 1, g);
   p->hit(g, bp_torso, 0, 3, 0);

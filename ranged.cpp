@@ -23,7 +23,33 @@ void shoot_player(game *g, player &p, player *h, int &dam, double goodhit);
 void splatter(game *g, std::vector<point> trajectory, int dam,
               monster* mon = NULL);
 
-void ammo_effects(game *g, int x, int y, long flags);
+void ammo_effects(game *g, point pt, long flags)
+{
+	if (flags & mfb(IF_AMMO_EXPLOSIVE)) g->explosion(pt.x, pt.y, 24, 0, false);
+	if (flags & mfb(IF_AMMO_FRAG)) g->explosion(pt.x, pt.y, 12, 28, false);
+	if (flags & mfb(IF_AMMO_NAPALM)) g->explosion(pt.x, pt.y, 18, 0, true);
+	if (flags & mfb(IF_AMMO_EXPLOSIVE_BIG)) g->explosion(pt.x, pt.y, 40, 0, false);
+
+	if (flags & mfb(IF_AMMO_TEARGAS)) {
+		for (int i = -2; i <= 2; i++) {
+			for (int j = -2; j <= 2; j++)
+				g->m.add_field(g, pt.x + i, pt.y + j, fd_tear_gas, 3);
+		}
+	}
+
+	if (flags & mfb(IF_AMMO_SMOKE)) {
+		for (int i = -1; i <= 1; i++) {
+			for (int j = -1; j <= 1; j++)
+				g->m.add_field(g, pt.x + i, pt.y + j, fd_smoke, 3);
+		}
+	}
+
+	if (flags & mfb(IF_AMMO_FLASHBANG)) g->flashbang(pt.x, pt.y);
+
+	if (flags & mfb(IF_AMMO_FLAME)) {
+		if (g->m.add_field(g, pt.x, pt.y, fd_fire, 1)) g->m.field_at(pt.x, pt.y).age = 800;
+	}
+}
 
 void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory,
                 bool burst)
@@ -193,7 +219,7 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory,
    }
    
    if (dam <= 0) { // Ran out of momentum.
-    ammo_effects(this, trajectory[i].x, trajectory[i].y, flags);
+    ammo_effects(this, trajectory[i], flags);
     if (is_bolt &&
         ((p.weapon.curammo->m1 == WOOD && !one_in(4)) ||
          (p.weapon.curammo->m1 != WOOD && !one_in(15))))
@@ -206,6 +232,7 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory,
 // If there's a monster in the path of our bullet, and either our aim was true,
 //  OR it's not the monster we were aiming at and we were lucky enough to hit it
    monster* const m_at = mon(trajectory[i]);
+   player* const h = (u.posx == tx && u.posy == ty) ? &u : nPC(tx, ty);	// XXX would prefer not to pay CPU here when monster case processes
 // If we shot us a monster...
    if (m_at && (!m_at->has_flag(MF_DIGS) ||
        rl_dist(p.posx, p.posy, m_at->pos.x, m_at->pos.y) <= 1) &&
@@ -224,16 +251,10 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory,
     splatter(this, blood_traj, dam, m_at);
     shoot_monster(this, p, *m_at, dam, goodhit);
 
-   } else if ((!missed || one_in(3)) &&
-              (npc_at(tx, ty) != -1 || (u.posx == tx && u.posy == ty)))  {
+   } else if ((!missed || one_in(3)) && h)  {
     double goodhit = missed_by;
     if (i < trajectory.size() - 1) // Unintentional hit
      goodhit = double(rand() / (RAND_MAX + 1.0)) / 2;
-    player *h;
-    if (u.posx == tx && u.posy == ty)
-     h = &u;
-    else
-     h = &(active_npc[npc_at(tx, ty)]);
 
     std::vector<point> blood_traj = trajectory;
     blood_traj.insert(blood_traj.begin(), point(p.posx, p.posy));
@@ -244,22 +265,17 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory,
     m.shoot(this, tx, ty, dam, i == trajectory.size() - 1, flags);
   } // Done with the trajectory!
 
-  int lastx = trajectory[trajectory.size() - 1].x;
-  int lasty = trajectory[trajectory.size() - 1].y;
-  ammo_effects(this, lastx, lasty, flags);
+  point last(trajectory.back());
+  ammo_effects(this, last, flags);
 
-  if (m.move_cost(lastx, lasty) == 0) {
-   lastx = trajectory[trajectory.size() - 2].x;
-   lasty = trajectory[trajectory.size() - 2].y;
-  }
+  if (m.move_cost(last.x, last.y) == 0) last = trajectory[trajectory.size() - 2];
   if (is_bolt &&
-      ((p.weapon.curammo->m1 == WOOD && !one_in(5)) ||
+      ((p.weapon.curammo->m1 == WOOD && !one_in(5)) ||	// leave this verbose in case we want additional complexity
        (p.weapon.curammo->m1 != WOOD && !one_in(15))  ))
-    m.add_item(lastx, lasty, ammotmp);
+    m.add_item(last.x, last.y, ammotmp);
  }
 
- if (p.weapon.charges == 0)
-  p.weapon.curammo = NULL;
+ if (p.weapon.charges == 0) p.weapon.curammo = NULL;
 }
 
 
@@ -500,11 +516,10 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
      if (abs(ret[i].x - u.posx) <= sight_dist &&
          abs(ret[i].y - u.posy) <= sight_dist   ) {
       monster* const m_at = mon(ret[i]);
-      int npcdex = npc_at(ret[i].x, ret[i].y);
 // NPCs and monsters get drawn with inverted colors
       if (m_at && u_see(m_at)) m_at->draw(w_terrain, center.x, center.y, true);
-      else if (npcdex != -1)
-       active_npc[npcdex].draw(w_terrain, center.x, center.y, true);
+      else if (npc* const _npc = nPC(ret[i]))
+       _npc->draw(w_terrain, center.x, center.y, true);
       else
        m.drawsq(w_terrain, u, ret[i].x, ret[i].y, true,true,center.x, center.y);
      }
@@ -535,11 +550,10 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
   point tar(get_direction(ch));
   if (tar.x != -2 && ch != '.') {	// Direction character pressed
    monster* const m_at = mon(x,y);
-   int npcdex = npc_at(x, y);
    if (m_at && u_see(m_at))
     m_at->draw(w_terrain, center.x, center.y, false);
-   else if (npcdex != -1)
-    active_npc[npcdex].draw(w_terrain, center.x, center.y, false);
+   else if (npc* const _npc = nPC(x,y))
+	_npc->draw(w_terrain, center.x, center.y, false);
    else if (m.sees(u.posx, u.posy, x, y, -1))
     m.drawsq(w_terrain, u, x, y, false, true, center.x, center.y);
    else
@@ -817,19 +831,14 @@ void splatter(game *g, std::vector<point> trajectory, int dam, monster* mon)
 {
  field_id blood = fd_blood;
  if (mon != NULL) {
-  if (!mon->made_of(FLESH))
-   return;
-  if (mon->type->dies == &mdeath::boomer)
-   blood = fd_bile;
-  else if (mon->type->dies == &mdeath::acid)
-   blood = fd_acid;
+  if (!mon->made_of(FLESH)) return;
+  if (mon->type->dies == &mdeath::boomer) blood = fd_bile;
+  else if (mon->type->dies == &mdeath::acid) blood = fd_acid;
  }
 
  int distance = 1;
- if (dam > 50)
-  distance = 3;
- else if (dam > 20)
-  distance = 2;
+ if (dam > 50) distance = 3;
+ else if (dam > 20) distance = 2;
 
  std::vector<point> spurt = continue_line(trajectory, distance);
 
@@ -841,42 +850,4 @@ void splatter(game *g, std::vector<point> trajectory, int dam, monster* mon)
   else
    g->m.add_field(g, tarx, tary, blood, 1);
  }
-}
-
-void ammo_effects(game *g, int x, int y, long flags)
-{
- if (flags & mfb(IF_AMMO_EXPLOSIVE))
-  g->explosion(x, y, 24, 0, false);
-
- if (flags & mfb(IF_AMMO_FRAG))
-  g->explosion(x, y, 12, 28, false);
-
- if (flags & mfb(IF_AMMO_NAPALM))
-  g->explosion(x, y, 18, 0, true);
-
- if (flags & mfb(IF_AMMO_EXPLOSIVE_BIG))
-  g->explosion(x, y, 40, 0, false);
-
- if (flags & mfb(IF_AMMO_TEARGAS)) {
-  for (int i = -2; i <= 2; i++) {
-   for (int j = -2; j <= 2; j++)
-    g->m.add_field(g, x + i, y + j, fd_tear_gas, 3);
-  }
- }
- 
- if (flags & mfb(IF_AMMO_SMOKE)) {
-  for (int i = -1; i <= 1; i++) {
-   for (int j = -1; j <= 1; j++)
-    g->m.add_field(g, x + i, y + j, fd_smoke, 3);
-  }
- }
-
- if (flags & mfb(IF_AMMO_FLASHBANG))
-  g->flashbang(x, y);
-
- if (flags & mfb(IF_AMMO_FLAME)) {
-  if (g->m.add_field(g, x, y, fd_fire, 1))
-   g->m.field_at(x, y).age = 800;
- }
-
 }

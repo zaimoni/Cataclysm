@@ -431,8 +431,7 @@ player *vehicle::get_passenger (int p)
     if (p >= 0 && parts[p].passenger) {
 		const point origin(global() + parts[p].precalc_d[0]);
         if (g->u.posx == origin.x && g->u.posy == origin.y && g->u.in_vehicle) return &g->u;
-        int npcdex = g->npc_at(origin.x, origin.y);
-        if (npcdex >= 0) return &g->active_npc[npcdex];
+		if (npc* const nPC = g->nPC(origin)) return nPC;	// \todo why not require in_vehicle?
     }
     return 0;
 }
@@ -887,15 +886,14 @@ void vehicle::stop ()
 
 int vehicle::part_collision (int vx, int vy, int part, point dest)
 {
-    bool pl_ctrl = player_in_control (&g->u);
-    int npcind = g->npc_at(dest.x, dest.y);
-    bool u_here = dest.x == g->u.posx && dest.y == g->u.posy && !g->u.in_vehicle;
-    monster *z = g->mon(dest);
-    player *ph = (npcind >= 0? &g->active_npc[npcind] : (u_here? &g->u : 0));
-    vehicle *oveh = g->m.veh_at (dest.x, dest.y);
-    bool veh_collision = oveh && oveh->pos != pos;
-    bool body_collision = (g->u.posx == dest.x && g->u.posy == dest.y && !g->u.in_vehicle) ||
-                           z || npcind >= 0;
+    const bool pl_ctrl = player_in_control (&g->u);
+	npc* const nPC = g->nPC(dest);
+    const bool u_here = dest.x == g->u.posx && dest.y == g->u.posy && !g->u.in_vehicle;
+    monster * const z = g->mon(dest);
+    player * const ph = (nPC ? nPC : (u_here? &g->u : 0));
+    vehicle * const oveh = g->m.veh_at (dest.x, dest.y);
+    const bool veh_collision = oveh && oveh->pos != pos;
+    bool body_collision = u_here || z || nPC;
 
     // 0 - nothing, 1 - monster/player/npc, 2 - vehicle,
     // 3 - thin_obstacle, 4 - bashable, 5 - destructible, 6 - other
