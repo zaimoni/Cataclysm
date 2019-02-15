@@ -691,6 +691,11 @@ void monster::process_effects(game *g)
 
 bool monster::make_fungus(game *g)
 {
+ if (species_hallu == type->species) return true;
+ if (species_fungus == type->species) return true;	// No friendly-fungalizing ;-)
+ if (!made_of(FLESH) && !made_of(VEGGY)) return true;	// No fungalizing robots or weird stuff
+
+ // we have significant coverage holes below
  switch (mon_id(type->id)) {
  case mon_ant:
  case mon_ant_soldier:
@@ -698,7 +703,10 @@ bool monster::make_fungus(game *g)
  case mon_fly:
  case mon_bee:
  case mon_dermatik:
-  poly(mtype::types[mon_ant_fungus]);
+  poly(mtype::types[mon_ant_fungus]);	// description is actually "fungal insect" so tolerable (more detail would be useful)
+  return true;
+ case mon_zombie_master:	// have enough Goo to resist conversion
+ case mon_zombie_necro:
   return true;
  case mon_zombie:
  case mon_zombie_shrieker:
