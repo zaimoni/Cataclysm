@@ -314,30 +314,18 @@ monster_attitude monster::attitude(player *u) const
       effective_anger >= 10)
    effective_anger -= 20;
 
-  if (u->has_trait(PF_TERRIFYING))
-   effective_morale -= 10;
+  if (u->has_trait(PF_TERRIFYING)) effective_morale -= 10;
 
   if (u->has_trait(PF_ANIMALEMPATH) && has_flag(MF_ANIMAL)) {
-   if (effective_anger >= 10)
-    effective_anger -= 10;
-   if (effective_anger < 10)
-    effective_morale += 5;
+   if (effective_anger >= 10) effective_anger -= 10;
+   if (effective_anger < 10) effective_morale += 5;
   }
 
  }
 
- if (effective_morale < 0) {
-  if (effective_morale + effective_anger > 0)
-   return MATT_FOLLOW;
-  return MATT_FLEE;
- }
-
- if (effective_anger < 0)
-  return MATT_IGNORE;
-
- if (effective_anger < 10)
-  return MATT_FOLLOW;
-
+ if (effective_morale < 0) return (effective_morale + effective_anger > 0) ? MATT_FOLLOW : MATT_FLEE;
+ if (effective_anger < 0) return MATT_IGNORE;
+ if (effective_anger < 10) return MATT_FOLLOW;
  return MATT_ATTACK;
 }
 
@@ -355,20 +343,10 @@ void monster::process_triggers(game *g)
 // This Adjustes anger/morale levels given a single trigger.
 void monster::process_trigger(monster_trigger trig, int amount)
 {
- for (int i = 0; i < type->anger.size(); i++) {
-  if (type->anger[i] == trig)
-   anger += amount;
- }
- for (int i = 0; i < type->placate.size(); i++) {
-  if (type->placate[i] == trig)
-   anger -= amount;
- }
- for (int i = 0; i < type->fear.size(); i++) {
-  if (type->fear[i] == trig)
-   morale -= amount;
- }
+ for (const auto trigger : type->anger) if (trigger == trig) anger += amount;
+ for (const auto trigger : type->placate) if (trigger == trig) anger -= amount;
+ for (const auto trigger : type->fear) if (trigger == trig) morale -= amount;
 }
-
 
 int monster::trigger_sum(game *g, const std::vector<monster_trigger>& triggers)
 {

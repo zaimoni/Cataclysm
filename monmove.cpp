@@ -232,6 +232,7 @@ void monster::move(game *g)
 // Finished logic section.  By this point, we should have chosen a square to
 //  move to (moved = true).
  if (moved) {	// Actual effects of moving to the square we've chosen
+  // \todo start C:DDA refactor target monster::attack_at
   monster* const m_at = g->mon(next);
   npc* const nPC = g->nPC(next);
   if (next.x == g->u.posx && next.y == g->u.posy && type->melee_dice > 0)
@@ -242,6 +243,8 @@ void monster::move(game *g)
    hit_monster(g, *m_at);
   else if (nPC && type->melee_dice > 0)
    hit_player(g, *nPC);
+  // end C:DDA refactor target monster::attack_at
+  // \todo C:DDA refactor target monster::bash_at
   else if ((!can_move_to(g->m, next.x, next.y) || one_in(3)) &&
              g->m.has_flag(bashable, next.x, next.y) && has_flag(MF_BASHES)) {
    std::string bashsound = "NOBASH"; // If we hear "NOBASH" it's time to debug!
@@ -251,6 +254,7 @@ void monster::move(game *g)
   } else if (g->m.move_cost(next.x, next.y) == 0 && has_flag(MF_DESTROYS)) {
    g->m.destroy(g, next.x, next.y, true);
    moves -= 250;
+  // end C:DDA refactor target monster::bash_at
   } else if (can_move_to(g->m, next.x, next.y) && g->is_empty(next.x, next.y))
    move_to(g, next.x, next.y);
   else
@@ -492,15 +496,18 @@ void monster::hit_player(game *g, player &p, bool can_grab)
   }
  }
 // Adjust anger/morale of same-species monsters, if appropriate
+// we do not use monster::process_trigger here as we're bulk-updating
  int anger_adjust = 0, morale_adjust = 0;
  for (const auto trigger : type->anger) if (MTRIG_FRIEND_ATTACKED == trigger) anger_adjust += 15;
  for (const auto trigger : type->placate) if (MTRIG_FRIEND_ATTACKED == trigger) anger_adjust -= 15;
  for (const auto trigger : type->fear) if (MTRIG_FRIEND_ATTACKED == trigger) morale_adjust -= 15;
 
- if (anger_adjust != 0 && morale_adjust != 0) {	// XXX \todo this is not locked down to the same species, as suggested by the above comment
-  for (int i = 0; i < g->z.size(); i++) {
-   g->z[i].morale += morale_adjust;
-   g->z[i].anger += anger_adjust;
+ // No FOV/hearing/... in-communication check (inherited from C:Whales)
+ if (anger_adjust != 0 || morale_adjust != 0) {
+  for(auto& _mon : g->z) {
+   if (type->species != _mon.type->species) continue;
+   _mon.morale += morale_adjust;
+   _mon.anger += anger_adjust;
   }
  }
 }
