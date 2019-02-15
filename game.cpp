@@ -3643,6 +3643,13 @@ void game::emp_blast(int x, int y)
 // TODO: Drain NPC energy reserves
 }
 
+// 2019-02-15
+// C:DDA analog for this family is game::critter_at<npc> for game::nPC, game::critter_at<monster> for game::mon; this is based on tripoint rather than global location
+// C:DDA has no raw index returns
+// C:DDA has a new Creature subclass
+// it is much clearer what is obtained from the Creature class than the Character class (cf. visitor pattern template at visitable.h)
+// diagram: Creature -> monster
+//						Character -> player -> npc
 int game::npc_at(int x, int y) const
 {
  for (int i = 0; i < active_npc.size(); i++) {
@@ -3671,9 +3678,7 @@ npc* game::nPC(const point& pt)
 int game::mon_at(int x, int y) const
 {
  for (int i = 0; i < z.size(); i++) {
-  if (z[i].pos.x == x && z[i].pos.y == y) {
-   return z[i].dead ? -1 : i;	// unclear whether this is correct (cf npc_at and nPC, above
-  }
+  if (z[i].pos.x == x && z[i].pos.y == y && !z[i].dead) return i;
  }
  return -1;
 }
@@ -3681,7 +3686,7 @@ int game::mon_at(int x, int y) const
 monster* game::mon(int x, int y)
 {
 	for (auto& m : z) {
-		if (m.pos.x == x && m.pos.y == y) return m.dead ? 0 : &m;
+		if (m.pos.x == x && m.pos.y == y && !m.dead) return &m;
 	}
 	return 0;
 }
@@ -3689,7 +3694,7 @@ monster* game::mon(int x, int y)
 monster* game::mon(const point& pt)
 {
 	for (auto& m : z) {
-		if (m.pos == pt) return m.dead ? 0 : &m;
+		if (m.pos == pt && !m.dead) return &m;
 	}
 	return 0;
 }
