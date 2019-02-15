@@ -3374,7 +3374,6 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
  ts.tv_nsec = EXPLOSION_SPEED;
  int radius = sqrt(double(power / 4));
  int dam;
- std::string junk;
  if (power >= 30)
   sound(x, y, power * 10, "a huge explosion!");
  else
@@ -3385,12 +3384,9 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
     dam = 3 * power;
    else
     dam = 3 * power / (rl_dist(x, y, i, j));
-   if (m.has_flag(bashable, i, j))
-    m.bash(i, j, dam, junk);
-   if (m.has_flag(bashable, i, j))	// Double up for tough doors, etc.
-    m.bash(i, j, dam, junk);
-   if (m.is_destructable(i, j) && rng(25, 100) < dam)
-    m.destroy(this, i, j, false);
+   if (m.has_flag(bashable, i, j)) m.bash(i, j, dam);
+   if (m.has_flag(bashable, i, j)) m.bash(i, j, dam); // Double up for tough doors, etc.
+   if (m.is_destructable(i, j) && rng(25, 100) < dam) m.destroy(this, i, j, false);
 
    monster* const m_hit = mon(i, j);
    int npc_hit = npc_at(i, j);

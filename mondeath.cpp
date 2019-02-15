@@ -30,11 +30,10 @@ void mdeath::acid(game *g, monster *z)
 
 void mdeath::boomer(game *g, monster *z)
 {
- std::string tmp;
  g->sound(z->pos.x, z->pos.y, 24, "a boomer explode!");
  for (int i = -1; i <= 1; i++) {
   for (int j = -1; j <= 1; j++) {
-   g->m.bash(z->pos.x + i, z->pos.y + j, 10, tmp);
+   g->m.bash(z->pos.x + i, z->pos.y + j, 10);	// no need to spam player with sounds
    {
    auto& f = g->m.field_at(z->pos.x + i, z->pos.y + j);
    if (f.type == fd_bile && f.density < 3) f.density++;

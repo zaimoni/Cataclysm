@@ -6361,12 +6361,11 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
 void map::post_process(game *g, unsigned zones)
 {
- std::string junk;
  if (zones & mfb(OMZONE_CITY)) {
   if (!one_in(10)) { // 90% chance of smashing stuff up
    for (int x = 0; x < 24; x++) {
     for (int y = 0; y < 24; y++)
-     bash(x, y, 20, junk);
+     bash(x, y, 20);
    }
   }
   if (one_in(10)) { // 10% chance of corpses
@@ -7768,9 +7767,8 @@ void map::add_extra(map_extra type, game *g)
      if (!one_in(5))
       ter(x, y) = t_wreckage;
      else if (has_flag(bashable, x, y)) {
-      std::string junk;
-      bash(x, y, 500, junk);	// Smash the fuck out of it
-      bash(x, y, 500, junk);	// Smash the fuck out of it some more
+      bash(x, y, 500);	// Smash the fuck out of it
+      bash(x, y, 500);	// Smash the fuck out of it some more
      }
     } else if (one_in(10))	// 1 in 10 chance of being wreckage anyway
      ter(x, y) = t_wreckage;

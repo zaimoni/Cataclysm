@@ -43,7 +43,6 @@ void player::activate_bionic(int b, game *g)
   power_level -= power_cost;
  }
 
- std::string junk;
  std::vector<point> traj;
  std::vector<std::string> good;
  std::vector<std::string> bad;
@@ -56,8 +55,7 @@ void player::activate_bionic(int b, game *g)
  case bio_painkiller:
   pkill += 6;
   pain -= 2;
-  if (pkill > pain)
-   pkill = pain;
+  if (pkill > pain) pkill = pain;
   break;
 
  case bio_nanobots:
@@ -68,9 +66,9 @@ void player::activate_bionic(int b, game *g)
   g->sound(posx, posy, 30, "VRRRRMP!");
   for (int i = posx - 1; i <= posx + 1; i++) {
    for (int j = posy - 1; j <= posy + 1; j++) {
-    g->m.bash(i, j, 40, junk);
-    g->m.bash(i, j, 40, junk);	// Multibash effect, so that doors &c will fall
-    g->m.bash(i, j, 40, junk);
+    g->m.bash(i, j, 40);
+    g->m.bash(i, j, 40);	// Multibash effect, so that doors &c will fall
+    g->m.bash(i, j, 40);
     if (g->m.is_destructable(i, j) && rng(1, 10) >= 4)
      g->m.ter(i, j) = t_rubble;
    }
@@ -302,8 +300,9 @@ void player::activate_bionic(int b, game *g)
         g->m.add_item(traj[l].x, traj[l].y, tmp_item);
         l = traj.size() + 1;
        } else if (l > 0 && g->m.move_cost(traj[l].x, traj[l].y) == 0) {
-        g->m.bash(traj[l].x, traj[l].y, tmp_item.weight() * 2, junk);
-        g->sound(traj[l].x, traj[l].y, 12, junk);
+		std::string snd;
+        g->m.bash(traj[l].x, traj[l].y, tmp_item.weight() * 2, snd);
+        g->sound(traj[l].x, traj[l].y, 12, snd);
         if (g->m.move_cost(traj[l].x, traj[l].y) == 0) {
          g->m.add_item(traj[l - 1].x, traj[l - 1].y, tmp_item);
          l = traj.size() + 1;

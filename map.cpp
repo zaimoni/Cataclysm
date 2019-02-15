@@ -1127,6 +1127,12 @@ point map::random_outdoor_tile()
  return options[rng(0, options.size() - 1)];
 }
 
+bool map::bash(int x, int y, int str, int *res)
+{
+	std::string discard;
+	return bash(x, y, str, discard, res);
+}
+
 bool map::bash(int x, int y, int str, std::string &sound, int *res)
 {
  sound = "";

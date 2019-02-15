@@ -2084,10 +2084,9 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
    g->sound(p->posx, p->posy, 30, "The earth shakes!");
    for (int x = p->posx - 2; x <= p->posx + 2; x++) {
     for (int y = p->posy - 2; y <= p->posy + 2; y++) {
-     std::string junk;
-     g->m.bash(x, y, 40, junk);
-     g->m.bash(x, y, 40, junk);  // Multibash effect, so that doors &c will fall
-     g->m.bash(x, y, 40, junk);
+     g->m.bash(x, y, 40);
+     g->m.bash(x, y, 40);  // Multibash effect, so that doors &c will fall
+     g->m.bash(x, y, 40);
      if (g->m.is_destructable(x, y) && rng(1, 10) >= 3)
       g->m.ter(x, y) = t_rubble;
     }
