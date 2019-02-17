@@ -1213,7 +1213,7 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
   if (target.x != -1 && target.y != -1 && blink &&
       (target.x < cursx - 25 || target.x > cursx + 25  ||
        target.y < cursy - 12 || target.y > cursy + 12    )) {
-   switch (direction_from(cursx, cursy, target.x, target.y)) {
+   switch (direction_from(cursx, cursy, target)) {
     case NORTH:      mvwputch(w,  0, 25, c_red, '^');       break;
     case NORTHEAST:  mvwputch(w,  0, 49, c_red, LINE_OOXX); break;
     case EAST:       mvwputch(w, 12, 49, c_red, '>');       break;

@@ -899,80 +899,22 @@ void npc::avoid_friendly_fire(game *g, int target)
   return;
  }
 
+ const point pos(posx, posy);	// temporary mockup
+
  int xdir = (tar.x > posx ? 1 : -1), ydir = (tar.y > posy ? 1 : -1);
  direction dir_to_target = direction_from(posx, posy, tar.x, tar.y);
  std::vector<point> valid_moves;
-/* Ugh, big ugly switch.  This fills valid_moves with a list of moves from most
- * desirable to least; the only two moves excluded are those along the line of
- * sight.
- * TODO: Use some math instead of a big ugly switch.
- */
- switch (dir_to_target) {
- case NORTH:
-  valid_moves.push_back(point(posx + xdir, posy));
-  valid_moves.push_back(point(posx - xdir, posy));
-  valid_moves.push_back(point(posx + xdir, posy + 1));
-  valid_moves.push_back(point(posx - xdir, posy + 1));
-  valid_moves.push_back(point(posx + xdir, posy - 1));
-  valid_moves.push_back(point(posx - xdir, posy - 1));
-  break;
- case NORTHEAST:
-  valid_moves.push_back(point(posx + 1, posy + 1));
-  valid_moves.push_back(point(posx - 1, posy - 1));
-  valid_moves.push_back(point(posx - 1, posy    ));
-  valid_moves.push_back(point(posx    , posy + 1));
-  valid_moves.push_back(point(posx + 1, posy    ));
-  valid_moves.push_back(point(posx    , posy - 1));
-  break;
- case EAST:
-  valid_moves.push_back(point(posx, posy - 1));
-  valid_moves.push_back(point(posx, posy + 1));
-  valid_moves.push_back(point(posx - 1, posy - 1));
-  valid_moves.push_back(point(posx - 1, posy + 1));
-  valid_moves.push_back(point(posx + 1, posy - 1));
-  valid_moves.push_back(point(posx + 1, posy + 1));
-  break;
- case SOUTHEAST:
-  valid_moves.push_back(point(posx + 1, posy - 1));
-  valid_moves.push_back(point(posx - 1, posy + 1));
-  valid_moves.push_back(point(posx + 1, posy    ));
-  valid_moves.push_back(point(posx    , posy + 1));
-  valid_moves.push_back(point(posx - 1, posy    ));
-  valid_moves.push_back(point(posx    , posy - 1));
-  break;
- case SOUTH:
-  valid_moves.push_back(point(posx + xdir, posy));
-  valid_moves.push_back(point(posx - xdir, posy));
-  valid_moves.push_back(point(posx + xdir, posy - 1));
-  valid_moves.push_back(point(posx - xdir, posy - 1));
-  valid_moves.push_back(point(posx + xdir, posy + 1));
-  valid_moves.push_back(point(posx - xdir, posy + 1));
-  break;
- case SOUTHWEST:
-  valid_moves.push_back(point(posx + 1, posy + 1));
-  valid_moves.push_back(point(posx - 1, posy - 1));
-  valid_moves.push_back(point(posx + 1, posy    ));
-  valid_moves.push_back(point(posx    , posy - 1));
-  valid_moves.push_back(point(posx - 1, posy    ));
-  valid_moves.push_back(point(posx    , posy + 1));
-  break;
- case WEST:
-  valid_moves.push_back(point(posx    , posy + ydir));
-  valid_moves.push_back(point(posx    , posy - ydir));
-  valid_moves.push_back(point(posx + 1, posy + ydir));
-  valid_moves.push_back(point(posx + 1, posy - ydir));
-  valid_moves.push_back(point(posx - 1, posy + ydir));
-  valid_moves.push_back(point(posx - 1, posy - ydir));
-  break;
- case NORTHWEST:
-  valid_moves.push_back(point(posx + 1, posy - 1));
-  valid_moves.push_back(point(posx - 1, posy + 1));
-  valid_moves.push_back(point(posx - 1, posy    ));
-  valid_moves.push_back(point(posx    , posy - 1));
-  valid_moves.push_back(point(posx + 1, posy    ));
-  valid_moves.push_back(point(posx    , posy + 1));
-  break;
- }
+
+ // 2019-02-16: re-implemented along Angband lines
+ int delta = 4 * rng(0, 1) - 2;	// sideways
+ valid_moves.push_back(pos + direction_vector(rotate_clockwise(dir_to_target, delta)));
+ valid_moves.push_back(pos + direction_vector(rotate_clockwise(dir_to_target, -delta)));
+ delta = 6 * rng(0, 1) - 3;	// backward
+ valid_moves.push_back(pos + direction_vector(rotate_clockwise(dir_to_target, delta)));
+ valid_moves.push_back(pos + direction_vector(rotate_clockwise(dir_to_target, -delta)));
+ delta = 2 * rng(0, 1) - 1;	// towards
+ valid_moves.push_back(pos + direction_vector(rotate_clockwise(dir_to_target, delta)));
+ valid_moves.push_back(pos + direction_vector(rotate_clockwise(dir_to_target, -delta)));
 
  for (int i = 0; i < valid_moves.size(); i++) {
   if (can_move_to(g, valid_moves[i].x, valid_moves[i].y)) {
@@ -987,8 +929,7 @@ void npc::avoid_friendly_fire(game *g, int target)
  * eating food (or, god help us, sleeping).
  */
  npc_action action = address_needs(g, NPC_DANGER_VERY_LOW + 1);
- if (action == npc_undecided)
-  move_pause();
+ if (action == npc_undecided) move_pause();
  execute_action(g, action, target);
 }
 

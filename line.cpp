@@ -148,3 +148,28 @@ const char* direction_name(direction dir)
 	DEBUG_FAIL_OR_LEAVE(0 > dir || sizeof(translate) / sizeof(*translate) <= dir, return "WEIRD DIRECTION_NAME() BUG");
 	return translate[dir];
 }
+
+point direction_vector(direction dir)
+{
+	static const point _dir_vectors[] = {
+		point(-1,0),
+		point(-1,1),
+		point(0,1),
+		point(1,1),
+		point(1,0),
+		point(-1,1),
+		point(-1,0),
+		point(-1,-1)
+	};
+	
+	DEBUG_FAIL_OR_LEAVE(0 > dir || sizeof(_dir_vectors) / sizeof(*_dir_vectors) <= dir, return point((unsigned int)(-1) / 2, (unsigned int)(-1) / 2));
+	return _dir_vectors[dir];
+}
+
+direction rotate_clockwise(direction dir, int steps)
+{
+	steps = steps % 8;	// magic constant
+	if (0 > steps) steps += 8;
+	if (0 == steps) return dir;
+	return direction((dir + steps) % 8);
+}
