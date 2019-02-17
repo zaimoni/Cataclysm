@@ -3446,9 +3446,9 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
   traj = line_to(x, y, sx, sy, (m.sees(x, y, sx, sy, 50, t) ? t : 0));
   dam = rng(20, 60);
   for (int j = 0; j < traj.size(); j++) {
-   if (j > 0 && u_see(traj[j - 1].x, traj[j - 1].y))
+   if (j > 0 && u_see(traj[j - 1]))
     m.drawsq(w_terrain, u, traj[j - 1].x, traj[j - 1].y, false, true);
-   if (u_see(traj[j].x, traj[j].y)) {
+   if (u_see(traj[j])) {
     mvwputch(w_terrain, traj[j].y + SEEY - u.posy,
                         traj[j].x + SEEX - u.posx, c_red, '`');
     wrefresh(w_terrain);

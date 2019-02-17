@@ -591,7 +591,7 @@ void monster::knock_back_from(game *g, int x, int y)
  if (y < pos.y) to.y++;
  else if (y > pos.y) to.y--;
 
- const bool u_see = g->u_see(to.x, to.y);
+ const bool u_see = g->u_see(to);
 
 // First, see if we hit another monster
  monster* const z = g->mon(to);

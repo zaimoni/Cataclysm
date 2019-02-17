@@ -545,14 +545,12 @@ bool map::process_fields_in_submap(game *g, int gridn)
 
        if (npc* const p = g->nPC(newp)) {
         p->hit(g, random_body_part(), rng(0, 1), 6, 0);
-        if (g->u_see(newp.x, newp.y))
-         messages.add("A %s hits %s!", tmp.tname().c_str(), p->name.c_str());
+        if (g->u_see(newp)) messages.add("A %s hits %s!", tmp.tname().c_str(), p->name.c_str());
        }
 
        if (monster* const mon = g->mon(newp)) {
         mon->hurt(6 - mon->armor_bash());
-        if (g->u_see(newp.x, newp.y))
-         messages.add("A %s hits the %s!", tmp.tname().c_str(), mon->name().c_str());
+        if (g->u_see(newp)) messages.add("A %s hits the %s!", tmp.tname().c_str(), mon->name().c_str());
        }
       }
      }

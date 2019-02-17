@@ -213,8 +213,7 @@ void event::per_turn(game *g)
     monster eyebot(mtype::types[mon_eyebot], place.x, place.y);
     eyebot.faction_id = faction_id;
     g->z.push_back(eyebot);
-    if (g->u_see(place.x, place.y))
-     messages.add("An eyebot swoops down nearby!");
+    if (g->u_see(place)) messages.add("An eyebot swoops down nearby!");
    }
   } break;
 

@@ -2436,7 +2436,7 @@ void player::knock_back_from(game *g, int x, int y)
  if (y < posy) to.y++;
  else if (y > posy) to.y--;
 
- bool u_see = (!is_npc() || g->u_see(to.x, to.y));
+ bool u_see = (!is_npc() || g->u_see(to));
 
  std::string You = (is_npc() ? name : "You");
  const char* const s = (is_npc() ? "s" : "");

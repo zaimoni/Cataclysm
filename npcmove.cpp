@@ -1034,59 +1034,55 @@ void npc::pick_up_item(game *g)
 // We're adjacent to the item; grab it!
  moves -= 100;
  fetching_item = false;
- std::vector<item> *items = &(g->m.i_at(it.x, it.y));
+ std::vector<item>& items = g->m.i_at(it.x, it.y);
  int total_volume = 0, total_weight = 0; // How much the items will add
  std::vector<int> pickup; // Indices of items we want
 
- for (int i = 0; i < items->size(); i++) {
-  int itval = value((*items)[i]), vol = (*items)[i].volume(),
-      wgt = (*items)[i].weight();
+ for (int i = 0; i < items.size(); i++) {
+  auto& it = items[i];
+  int itval = value(it), vol = it.volume(), wgt = it.weight();
   if (itval >= minimum_item_value() &&// (itval >= worst_item_value ||
       (volume_carried() + total_volume + vol <= volume_capacity() &&
        weight_carried() + total_weight + wgt <= weight_capacity() / 4)) {
    pickup.push_back(i);
    total_volume += vol;
    total_weight += wgt;
+   if (itval < worst_item_value) worst_item_value = itval;
   }
  }
 // Describe the pickup to the player
- bool u_see_me = g->u_see(posx, posy), u_see_items = g->u_see(it.x, it.y);
+ bool u_see_me = g->u_see(posx, posy), u_see_items = g->u_see(it);
+ // \todo good use case for std::string or std::strstream here
  if (u_see_me) {
   if (pickup.size() == 1) {
    if (u_see_items)
-    messages.add("%s picks up a %s.", name.c_str(), (*items)[pickup[0]].tname().c_str());
+    messages.add("%s picks up a %s.", name.c_str(), items[pickup[0]].tname().c_str());
    else
     messages.add("%s picks something up.", name.c_str());
   } else if (pickup.size() == 2) {
    if (u_see_items)
     messages.add("%s picks up a %s and a %s.", name.c_str(),
-               (*items)[pickup[0]].tname().c_str(),
-               (*items)[pickup[1]].tname().c_str());
+               items[pickup[0]].tname().c_str(),
+               items[pickup[1]].tname().c_str());
    else
     messages.add("%s picks up a couple of items.", name.c_str());
   } else
    messages.add("%s picks up several items.", name.c_str());
  } else if (u_see_items) {
   if (pickup.size() == 1)
-   messages.add("Someone picks up a %s.", (*items)[pickup[0]].tname().c_str());
+   messages.add("Someone picks up a %s.", items[pickup[0]].tname().c_str());
   else if (pickup.size() == 2)
    messages.add("Someone picks up a %s and a %s", 
-              (*items)[pickup[0]].tname().c_str(),
-              (*items)[pickup[1]].tname().c_str());
+              items[pickup[0]].tname().c_str(),
+              items[pickup[1]].tname().c_str());
   else
    messages.add("Someone picks up several items.");
  }
   
- for (int i = 0; i < pickup.size(); i++) {
-  int itval = value((*items)[pickup[i]]);
-  if (itval < worst_item_value)
-   worst_item_value = itval;
-  i_add((*items)[pickup[i]]);
- }
- for (int i = 0; i < pickup.size(); i++) {
-  g->m.i_rem(it.x, it.y, pickup[i]);
-  for (int j = i + 1; j < pickup.size(); j++) // Fix indices
-   pickup[j]--;
+ for (int i = 0; i < pickup.size(); i++) i_add(items[pickup[i]]);
+ {	// indexes are added in strictly increasing order.  Doing this separately as we are not guaranteed this does not invalidate our pointer
+ int i = pickup.size();
+ while (0 < i--) g->m.i_rem(it.x, it.y, pickup[i]);
  }
 }
 

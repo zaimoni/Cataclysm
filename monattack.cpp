@@ -32,17 +32,14 @@ void mattack::antqueen(game *g, monster *z)
   z->moves -= 100; // It takes a while
   int mondex = ants[ rng(0, ants.size() - 1) ];
   monster *const ant = &(g->z[mondex]);
-  if (g->u_see(z->pos.x, z->pos.y) && g->u_see(ant->pos.x, ant->pos.y))
-   messages.add("The %s feeds an %s and it grows!", z->name().c_str(), ant->name().c_str());
+  if (g->u_see(z->pos) && g->u_see(ant->pos)) messages.add("The %s feeds an %s and it grows!", z->name().c_str(), ant->name().c_str());
   ant->poly(mtype::types[ant->type->id == mon_ant_larva ? mon_ant : mon_ant_soldier]);
  } else if (egg_points.empty()) {	// There's no eggs nearby--lay one.
-  if (g->u_see(z->pos.x, z->pos.y))
-   messages.add("The %s lays an egg!", z->name().c_str());
+  if (g->u_see(z->pos)) messages.add("The %s lays an egg!", z->name().c_str());
   g->m.add_item(z->pos.x, z->pos.y, item::types[itm_ant_egg], messages.turn);
  } else { // There are eggs nearby.  Let's hatch some.
   z->moves -= 20 * egg_points.size(); // It takes a while
-  if (g->u_see(z->pos.x, z->pos.y))
-   messages.add("The %s tends nearby eggs, and they hatch!", z->name().c_str());
+  if (g->u_see(z->pos)) messages.add("The %s tends nearby eggs, and they hatch!", z->name().c_str());
   for (int i = 0; i < egg_points.size(); i++) {
    int x = egg_points[i].x, y = egg_points[i].y;
    for (int j = 0; j < g->m.i_at(x, y).size(); j++) {
@@ -75,7 +72,7 @@ void mattack::acid(game *g, monster *z)
  std::vector<point> line = line_to(z->pos.x, z->pos.y, hitx, hity, junk);
  for (int i = 0; i < line.size(); i++) {
   if (g->m.hit_with_acid(g, line[i].x, line[i].y)) {
-   if (g->u_see(line[i].x, line[i].y))
+   if (g->u_see(line[i]))
     messages.add("A glob of acid hits the %s!", g->m.tername(line[i].x, line[i].y).c_str());
    return;
   }
@@ -125,7 +122,7 @@ void mattack::boomer(game *g, monster *z)
  std::vector<point> line = line_to(z->pos.x, z->pos.y, g->u.posx, g->u.posy, j);
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  z->moves = -250;			// It takes a while
- bool u_see = g->u_see(z->pos.x, z->pos.y);
+ bool u_see = g->u_see(z->pos.x);
  if (u_see) messages.add("The %s spews bile!", z->name().c_str());
  for (int i = 0; i < line.size(); i++) {
   if (g->m.field_at(line[i].x, line[i].y).type == fd_blood) {
@@ -139,7 +136,7 @@ void mattack::boomer(game *g, monster *z)
 // If bile hit a solid tile, return.
   if (g->m.move_cost(line[i].x, line[i].y) == 0) {
    g->m.add_field(g, line[i].x, line[i].y, fd_bile, 3);
-   if (g->u_see(line[i].x, line[i].y))
+   if (g->u_see(line[i]))
     messages.add("Bile splatters on the %s!", g->m.tername(line[i].x, line[i].y).c_str());
    return;
   }
@@ -432,8 +429,7 @@ void mattack::spit_sap(game *g, monster *z)
  double missed_by = (.0325 * deviation * dist);
 
  if (missed_by > 1.) {
-  if (g->u_see(z->pos.x, z->pos.y))
-   messages.add("The %s spits sap, but misses you.", z->name().c_str());
+  if (g->u_see(z->pos)) messages.add("The %s spits sap, but misses you.", z->name().c_str());
 
   int hitx = g->u.posx + rng(0 - int(missed_by), int(missed_by)),
       hity = g->u.posy + rng(0 - int(missed_by), int(missed_by));
@@ -441,7 +437,7 @@ void mattack::spit_sap(game *g, monster *z)
   int dam = 5;
   for (int i = 0; i < line.size() && dam > 0; i++) {
    g->m.shoot(g, line[i].x, line[i].y, dam, false, 0);
-   if (dam == 0 && g->u_see(line[i].x, line[i].y)) {
+   if (dam == 0 && g->u_see(line[i])) {
     messages.add("A glob of sap hits the %s!", g->m.tername(line[i].x, line[i].y).c_str());
     return;
    }
@@ -456,7 +452,7 @@ void mattack::spit_sap(game *g, monster *z)
  int dam = 5;
  for (int i = 0; i < line.size() && dam > 0; i++) {
   g->m.shoot(g, line[i].x, line[i].y, dam, false, 0);
-  if (dam == 0 && g->u_see(line[i].x, line[i].y)) {
+  if (dam == 0 && g->u_see(line[i])) {
    messages.add("A glob of sap hits the %s!", g->m.tername(line[i].x, line[i].y).c_str());
    return;
   }
@@ -527,7 +523,7 @@ void mattack::fungus(game *g, monster *z)
  int sporex, sporey;
  int moncount = 0;
  g->sound(z->pos, 10, "Pouf!");
- if (g->u_see(z->pos.x, z->pos.y)) messages.add("Spores are released from the %s!", z->name().c_str());
+ if (g->u_see(z->pos)) messages.add("Spores are released from the %s!", z->name().c_str());
  for (int i = -1; i <= 1; i++) {
   for (int j = -1; j <= 1; j++) {
    if (i == 0 && j == 0) j++;	// No need to check 0, 0
@@ -660,8 +656,7 @@ void mattack::plant(game *g, monster *z)
 {
 // Spores taking seed and growing into a fungaloid
  if (g->m.has_flag(diggable, z->pos.x, z->pos.y)) {
-  if (g->u_see(z->pos.x, z->pos.y))
-   messages.add("The %s takes seed and becomes a young fungaloid!", z->name().c_str());
+  if (g->u_see(z->pos)) messages.add("The %s takes seed and becomes a young fungaloid!", z->name().c_str());
   z->poly(mtype::types[mon_fungaloid_young]);
   z->moves = -1000;	// It takes a while
  }
@@ -812,8 +807,7 @@ void mattack::vortex(game *g, monster *z)
 // TODO: Hit NPCs
       if (dam == 0 || i == traj.size() - 1) {
        if (thrown.made_of(GLASS)) {
-        if (g->u_see(traj[i].x, traj[i].y))
-         messages.add("The %s shatters!", thrown.tname().c_str());
+        if (g->u_see(traj[i])) messages.add("The %s shatters!", thrown.tname().c_str());
         for (int n = 0; n < thrown.contents.size(); n++)
          g->m.add_item(traj[i].x, traj[i].y, thrown.contents[n]);
         g->sound(traj[i], 16, "glass breaking!");
@@ -859,7 +853,7 @@ void mattack::vortex(game *g, monster *z)
      for (int i = 0; i < traj.size() && !hit_wall; i++) {
       monster* const m_hit = g->mon(traj[i]);
       if (i > 0 && m_hit && !m_hit->has_flag(MF_DIGS)) {
-       if (g->u_see(traj[i].x, traj[i].y)) messages.add("The %s hits a %s!", thrown->name().c_str(), m_hit->name().c_str());
+       if (g->u_see(traj[i])) messages.add("The %s hits a %s!", thrown->name().c_str(), m_hit->name().c_str());
        if (m_hit->hurt(damage)) g->kill_mon(*m_hit, (z->friendly != 0));
        hit_wall = true;
        thrown->pos = traj[i - 1];
@@ -885,7 +879,7 @@ void mattack::vortex(game *g, monster *z)
     for (int i = 0; i < traj.size() && !hit_wall; i++) {
 	 monster* const m_hit = g->mon(traj[i]);
      if (i > 0 && m_hit && !m_hit->has_flag(MF_DIGS)) {
-      if (g->u_see(traj[i].x, traj[i].y)) messages.add("You hit a %s!", m_hit->name().c_str());
+      if (g->u_see(traj[i])) messages.add("You hit a %s!", m_hit->name().c_str());
       if (m_hit->hurt(damage)) g->kill_mon(*m_hit, true); // We get the kill :)
       hit_wall = true;
       g->u.posx = traj[i - 1].x;
@@ -945,7 +939,7 @@ void mattack::stare(game *g, monster *z)
 
 void mattack::fear_paralyze(game *g, monster *z)
 {
- if (g->u_see(z->pos.x, z->pos.y)) {
+ if (g->u_see(z->pos)) {
   z->sp_timeout = z->type->sp_freq;	// Reset timer
   if (g->u.has_artifact_with(AEP_PSYSHIELD)) {
    messages.add("The %s probes your mind, but is rebuffed!", z->name().c_str());
@@ -999,7 +993,7 @@ void mattack::smg(game *g, monster *z)
   z->sp_timeout = z->type->sp_freq;	// Reset timer
   if (target == NULL) return; // Couldn't find any targets!
   z->moves = -150;			// It takes a while
-  if (g->u_see(z->pos.x, z->pos.y)) messages.add("The %s fires its smg!", z->name().c_str());
+  if (g->u_see(z->pos)) messages.add("The %s fires its smg!", z->name().c_str());
   player tmp;
   tmp.name = "The " + z->name();
   tmp.sklevel[sk_smg] = 1;
@@ -1031,7 +1025,7 @@ void mattack::smg(game *g, monster *z)
  }
  z->moves = -150;			// It takes a while
 
- if (g->u_see(z->pos.x, z->pos.y)) messages.add("The %s fires its smg!", z->name().c_str());
+ if (g->u_see(z->pos)) messages.add("The %s fires its smg!", z->name().c_str());
 // Set up a temporary player to fire this gun
  player tmp;
  tmp.name = "The " + z->name();
@@ -1160,10 +1154,8 @@ void mattack::upgrade(game *g, monster *z)
  }
 
  target->poly(mtype::types[newtype]);
- if (g->u_see(z->pos.x, z->pos.y))
-  messages.add("The black mist around the %s grows...", z->name().c_str());
- if (g->u_see(target->pos.x, target->pos.y))
-  messages.add("...a zombie becomes a %s!", target->name().c_str());
+ if (g->u_see(z->pos)) messages.add("The black mist around the %s grows...", z->name().c_str());
+ if (g->u_see(target->pos)) messages.add("...a zombie becomes a %s!", target->name().c_str());
 }
 
 void mattack::breathe(game *g, monster *z)

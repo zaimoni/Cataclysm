@@ -204,7 +204,7 @@ void trapfunc::landmine(game *g, int x, int y)
 
 void trapfuncm::landmine(game *g, monster *z)
 {
- if (g->u_see(z->pos.x, z->pos.y)) messages.add("The %s steps on a landmine!", z->name().c_str());
+ if (g->u_see(z->pos)) messages.add("The %s steps on a landmine!", z->name().c_str());
  g->explosion(z->pos.x, z->pos.y, 10, 8, false);
  g->m.tr_at(z->pos.x, z->pos.y) = tr_null;
 }
@@ -218,7 +218,7 @@ void trapfunc::boobytrap(game *g, int x, int y)
 
 void trapfuncm::boobytrap(game *g, monster *z)
 {
- if (g->u_see(z->pos.x, z->pos.y)) messages.add("The %s triggers a boobytrap!", z->name().c_str());
+ if (g->u_see(z->pos)) messages.add("The %s triggers a boobytrap!", z->name().c_str());
  g->explosion(z->pos.x, z->pos.y, 18, 12, false);
  g->m.tr_at(z->pos.x, z->pos.y) = tr_null;
 }
@@ -320,7 +320,7 @@ void trapfunc::pit(game *g, int x, int y)
 
 void trapfuncm::pit(game *g, monster *z)
 {
- if (g->u_see(z->pos.x, z->pos.y)) messages.add("The %s falls in a pit!", z->name().c_str());	// the trap is visible, even if the monster normally isn't
+ if (g->u_see(z->pos)) messages.add("The %s falls in a pit!", z->name().c_str());	// the trap is visible, even if the monster normally isn't
  if (z->hurt(rng(10, 20))) g->kill_mon(*z);
  else z->moves = -1000;
 }

@@ -142,9 +142,10 @@ class game
   bool sees_u(const point& pt) { return sees_u(pt.x, pt.y); };
   bool sees_u(int x, int y, int &t);
   bool sees_u(const point& pt, int &t) { return sees_u(pt.x, pt.y, t); };
-  bool u_see (int x, int y);
-  bool u_see (int x, int y, int &t);
-  bool u_see (const monster *mon);
+  bool u_see(int x, int y);
+  bool u_see(const point& pt) { return u_see(pt.x, pt.y); };
+  bool u_see(int x, int y, int &t);
+  bool u_see(const monster *mon);
   bool pl_sees(player *p, monster *mon);
   void refresh_all();
   void update_map(int &x, int &y);  // Called by plmove when the map updates

@@ -1582,8 +1582,7 @@ bool vehicle::fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int
     for (int i = 0; i < traj.size(); i++)
         if (traj[i].x == g->u.posx && traj[i].y == g->u.posy)
             return false; // won't shoot at player
-    if (g->u_see(origin.x, origin.y))
-        messages.add("The %s fires its %s!", name.c_str(), part_info(p).name);
+    if (g->u_see(origin)) messages.add("The %s fires its %s!", name.c_str(), part_info(p).name);
     player tmp;
     tmp.name = std::string("The ") + part_info(p).name;
     tmp.sklevel[gun.skill_used] = 1;

@@ -209,7 +209,7 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, b
     m.drawsq(w_terrain, u, trajectory[i-1].x, trajectory[i-1].y, false, true);
 // Drawing the bullet uses player u, and not player p, because it's drawn
 // relative to YOUR position, which may not be the gunman's position.
-   if (u_see(trajectory[i].x, trajectory[i].y)) {
+   if (u_see(trajectory[i])) {
     char bullet = (flags & mfb(IF_AMMO_FLAME)) ? '#' : '*';
     mvwputch(w_terrain, trajectory[i].y + SEEY - u.posy,
                         trajectory[i].x + SEEX - u.posx, c_red, bullet);
