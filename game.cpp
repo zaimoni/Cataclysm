@@ -3755,8 +3755,8 @@ void game::explode_mon(monster& target)
 	}
 
     if (m.move_cost(tar.x, tar.y) == 0) {
-     std::string tmp = "";
-     if (m.bash(tar.x, tar.y, 3, tmp)) sound(tar.x, tar.y, 18, tmp);
+     std::string tmp;
+     if (m.bash(tar.x, tar.y, 3, tmp)) sound(tar, 18, tmp);
      else {
       if (j > 0) tar = traj[j - 1];
 	  break;

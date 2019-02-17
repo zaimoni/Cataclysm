@@ -1020,7 +1020,7 @@ void iuse::radio_on(game *g, player *p, item *it, bool t)
    message = messtream.str();
   }
   point p = g->find_item(it);
-  g->sound(p.x, p.y, 6, message.c_str());
+  g->sound(p, 6, message.c_str());
  } else {	// Turning it off
   messages.add("The radio dies.");
   it->make(item::types[itm_radio]);
@@ -1150,7 +1150,7 @@ void iuse::jackhammer(game *g, player *p, item *it, bool t)
  if (g->m.is_destructable(dir.x, dir.y)) {
   g->m.destroy(g, dir.x, dir.y, false);
   p->moves -= 500;
-  g->sound(dir.x, dir.y, 45, "TATATATATATATAT!");
+  g->sound(dir, 45, "TATATATATATATAT!");
  } else {
   messages.add("You can't drill there.");
   it->charges += (dynamic_cast<const it_tool*>(it->type))->charges_per_use;
@@ -1389,7 +1389,7 @@ void iuse::pipebomb_act(game *g, player *p, item *it, bool t)
  point pos = g->find_item(it);
  if (pos.x == -999 || pos.y == -999) return;
  if (t) // Simple timer effects
-  g->sound(pos.x, pos.y, 0, "Ssssss");	// Vol 0 = only heard if you hold it
+  g->sound(pos, 0, "Ssssss");	// Vol 0 = only heard if you hold it
  else {	// The timer has run down
   if (one_in(10) && g->u_see(pos.x, pos.y))
    messages.add("The pipe bomb fizzles out.");
@@ -1411,7 +1411,7 @@ void iuse::grenade_act(game *g, player *p, item *it, bool t)
  point pos = g->find_item(it);
  if (pos.x == -999 || pos.y == -999) return;
  if (t) // Simple timer effects
-  g->sound(pos.x, pos.y, 0, "Tick.");	// Vol 0 = only heard if you hold it
+  g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
  else	// When that timer runs down...
   g->explosion(pos.x, pos.y, 12, 28, false);
 }
@@ -1429,7 +1429,7 @@ void iuse::flashbang_act(game *g, player *p, item *it, bool t)
  point pos = g->find_item(it);
  if (pos.x == -999 || pos.y == -999) return;
  if (t) // Simple timer effects
-  g->sound(pos.x, pos.y, 0, "Tick.");	// Vol 0 = only heard if you hold it
+  g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
  else	// When that timer runs down...
   g->flashbang(pos.x, pos.y);
 }
@@ -1452,7 +1452,7 @@ void iuse::c4armed(game *g, player *p, item *it, bool t)
  point pos = g->find_item(it);
  if (pos.x == -999 || pos.y == -999) return;
  if (t) // Simple timer effects
-  g->sound(pos.x, pos.y, 0, "Tick.");	// Vol 0 = only heard if you hold it
+  g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
  else	// When that timer runs down...
   g->explosion(pos.x, pos.y, 40, 3, false);
 }
@@ -1470,7 +1470,7 @@ void iuse::EMPbomb_act(game *g, player *p, item *it, bool t)
  point pos = g->find_item(it);
  if (pos.x == -999 || pos.y == -999) return;
  if (t)	// Simple timer effects
-  g->sound(pos.x, pos.y, 0, "Tick.");	// Vol 0 = only heard if you hold it
+  g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
  else {	// When that timer runs down...
   for (int x = pos.x - 4; x <= pos.x + 4; x++) {
    for (int y = pos.y - 4; y <= pos.y + 4; y++)
@@ -1492,8 +1492,7 @@ void iuse::gasbomb_act(game *g, player *p, item *it, bool t)
  point pos = g->find_item(it);
  if (pos.x == -999 || pos.y == -999) return;
  if (t) {
-  if (it->charges > 15)
-   g->sound(pos.x, pos.y, 0, "Tick.");	// Vol 0 = only heard if you hold it
+  if (it->charges > 15) g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
   else {
    for (int i = -2; i <= 2; i++) {
     for (int j = -2; j <= 2; j++) {
@@ -1503,8 +1502,7 @@ void iuse::gasbomb_act(game *g, player *p, item *it, bool t)
     }
    }
   }
- } else
-  it->make(item::types[itm_canister_empty]);
+ } else it->make(item::types[itm_canister_empty]);
 }
 
 void iuse::smokebomb(game *g, player *p, item *it, bool t)
@@ -1520,8 +1518,7 @@ void iuse::smokebomb_act(game *g, player *p, item *it, bool t)
  point pos = g->find_item(it);
  if (pos.x == -999 || pos.y == -999) return;
  if (t) {
-  if (it->charges > 17)
-   g->sound(pos.x, pos.y, 0, "Tick.");	// Vol 0 = only heard if you hold it
+  if (it->charges > 17) g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
   else {
    for (int i = -2; i <= 2; i++) {
     for (int j = -2; j <= 2; j++) {
@@ -1531,8 +1528,7 @@ void iuse::smokebomb_act(game *g, player *p, item *it, bool t)
     }
    }
   }
- } else
-  it->make(item::types[itm_canister_empty]);
+ } else it->make(item::types[itm_canister_empty]);
 }
 
 void iuse::acidbomb(game *g, player *p, item *it, bool t)
@@ -1607,10 +1603,8 @@ void iuse::dynamite_act(game *g, player *p, item *it, bool t)
 {
  point pos = g->find_item(it);
  if (pos.x == -999 || pos.y == -999) return;
- if (t) // Simple timer effects
-  g->sound(pos.x, pos.y, 0, "ssss...");
- else	// When that timer runs down...
-  g->explosion(pos.x, pos.y, 60, 0, false);
+ if (t) g->sound(pos, 0, "ssss...");	 // Simple timer effects
+ else g->explosion(pos.x, pos.y, 60, 0, false);		// When that timer runs down...
 }
 
 void iuse::mininuke(game *g, player *p, item *it, bool t)
@@ -1626,7 +1620,7 @@ void iuse::mininuke_act(game *g, player *p, item *it, bool t)
  point pos = g->find_item(it);
  if (pos.x == -999 || pos.y == -999) return;
  if (t) 	// Simple timer effects
-  g->sound(pos.x, pos.y, 2, "Tick.");
+  g->sound(pos, 2, "Tick.");
  else {	// When that timer runs down...
   g->explosion(pos.x, pos.y, 200, 0, false);
   for (int i = -4; i <= 4; i++) {

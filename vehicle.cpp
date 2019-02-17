@@ -823,7 +823,7 @@ void vehicle::thrust (int thd)
             point rd(origin + coord_translate(exhaust_d));
             g->m.add_field(g, rd.x, rd.y, fd_smoke, (smk / 50) + 1);
         }
-        g->sound(origin.x, origin.y, noise(), "");
+        g->sound(origin, noise(), "");
     }
 
     if (skidding) return;
@@ -986,7 +986,7 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
                 break;
             default:;
             }
-        g->sound (dest.x, dest.y, smashed? 80 : 50, "");
+        g->sound(dest, smashed? 80 : 50, "");
     }
     if (!body_collision) {
         if (pl_ctrl) {
@@ -1047,11 +1047,10 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
             else
                 g->m.add_field(g, dest.x, dest.y, fd_blood, 1);
         } else
-            g->sound (dest.x, dest.y, 20, "");
+            g->sound(dest, 20, "");
     }
 
-    if (!smashed || collision_type == 2) // vehicles shouldn't intersect
-    {
+    if (!smashed || collision_type == 2) { // vehicles shouldn't intersect
         cruise_on = false;
         stop();
         imp2 = imp;

@@ -250,7 +250,7 @@ void monster::move(game *g)
    std::string bashsound = "NOBASH"; // If we hear "NOBASH" it's time to debug!
    int bashskill = int(type->melee_dice * type->melee_sides);
    g->m.bash(next.x, next.y, bashskill, bashsound);
-   g->sound(next.x, next.y, 18, bashsound);
+   g->sound(next, 18, bashsound);
   } else if (g->m.move_cost(next.x, next.y) == 0 && has_flag(MF_DESTROYS)) {
    g->m.destroy(g, next.x, next.y, true);
    moves -= 250;
@@ -327,7 +327,7 @@ void monster::friendly_move(game *g)
    std::string bashsound = "NOBASH"; // If we hear "NOBASH" it's time to debug!
    int bashskill = int(type->melee_dice * type->melee_sides);
    g->m.bash(next.x, next.y, bashskill, bashsound);
-   g->sound(next.x, next.y, 18, bashsound);
+   g->sound(next, 18, bashsound);
   } else if (g->m.move_cost(next.x, next.y) == 0 && has_flag(MF_DESTROYS)) {
    g->m.destroy(g, next.x, next.y, true);
    moves -= 250;

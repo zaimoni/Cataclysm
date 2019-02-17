@@ -302,7 +302,7 @@ void player::activate_bionic(int b, game *g)
        } else if (l > 0 && g->m.move_cost(traj[l].x, traj[l].y) == 0) {
 		std::string snd;
         g->m.bash(traj[l].x, traj[l].y, tmp_item.weight() * 2, snd);
-        g->sound(traj[l].x, traj[l].y, 12, snd);
+        g->sound(traj[l], 12, snd);
         if (g->m.move_cost(traj[l].x, traj[l].y) == 0) {
          g->m.add_item(traj[l - 1].x, traj[l - 1].y, tmp_item);
          l = traj.size() + 1;

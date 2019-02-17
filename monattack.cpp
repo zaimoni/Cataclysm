@@ -61,7 +61,7 @@ void mattack::shriek(game *g, monster *z)
  if (rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 4 || !g->sees_u(z->pos.x, z->pos.y)) return;	// Out of range
  z->moves = -240;			// It takes a while
  z->sp_timeout = z->type->sp_freq;	// Reset timer
- g->sound(z->pos.x, z->pos.y, 50, "a terrible shriek!");
+ g->sound(z->pos, 50, "a terrible shriek!");
 }
 
 void mattack::acid(game *g, monster *z)
@@ -70,7 +70,7 @@ void mattack::acid(game *g, monster *z)
  if (rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 10 || !g->sees_u(z->pos.x, z->pos.y, junk)) return;	// Out of range
  z->moves = -300;			// It takes a while
  z->sp_timeout = z->type->sp_freq;	// Reset timer
- g->sound(z->pos.x, z->pos.y, 4, "a spitting noise.");
+ g->sound(z->pos, 4, "a spitting noise.");
  int hitx = g->u.posx + rng(-2, 2), hity = g->u.posy + rng(-2, 2);
  std::vector<point> line = line_to(z->pos.x, z->pos.y, hitx, hity, junk);
  for (int i = 0; i < line.size(); i++) {
@@ -469,7 +469,7 @@ void mattack::spit_sap(game *g, monster *z)
 
 void mattack::triffid_heartbeat(game *g, monster *z)
 {
- g->sound(z->pos.x, z->pos.y, 14, "thu-THUMP.");
+ g->sound(z->pos, 14, "thu-THUMP.");
  z->moves -= 300;
  z->sp_timeout = z->type->sp_freq;
  if ((z->pos.x < 0 || z->pos.x >= SEEX * MAPSIZE) &&
@@ -526,7 +526,7 @@ void mattack::fungus(game *g, monster *z)
  monster spore(mtype::types[mon_spore]);
  int sporex, sporey;
  int moncount = 0;
- g->sound(z->pos.x, z->pos.y, 10, "Pouf!");
+ g->sound(z->pos, 10, "Pouf!");
  if (g->u_see(z->pos.x, z->pos.y)) messages.add("Spores are released from the %s!", z->name().c_str());
  for (int i = -1; i <= 1; i++) {
   for (int j = -1; j <= 1; j++) {
@@ -816,7 +816,7 @@ void mattack::vortex(game *g, monster *z)
          messages.add("The %s shatters!", thrown.tname().c_str());
         for (int n = 0; n < thrown.contents.size(); n++)
          g->m.add_item(traj[i].x, traj[i].y, thrown.contents[n]);
-        g->sound(traj[i].x, traj[i].y, 16, "glass breaking!");
+        g->sound(traj[i], 16, "glass breaking!");
        } else
         g->m.add_item(traj[i].x, traj[i].y, thrown);
       }
@@ -1024,7 +1024,7 @@ void mattack::smg(game *g, monster *z)
  z->sp_timeout = z->type->sp_freq;	// Reset timer
 
  if (!z->has_effect(ME_TARGETED)) {
-  g->sound(z->pos.x, z->pos.y, 6, "beep-beep-beep!");
+  g->sound(z->pos, 6, "beep-beep-beep!");
   z->add_effect(ME_TARGETED, 8);
   z->moves -= 100;
   return;
@@ -1071,13 +1071,13 @@ void mattack::copbot(game *g, monster *z)
   if (one_in(3)) {
    if (sees_u) {
     if (g->u.unarmed_attack())
-     g->sound(z->pos.x, z->pos.y, 18, "a robotic voice boom, \"Citizen, Halt!\"");
+     g->sound(z->pos, 18, "a robotic voice boom, \"Citizen, Halt!\"");
     else
-     g->sound(z->pos.x, z->pos.y, 18, "a robotic voice boom, \"Please put down your weapon.\"");
+     g->sound(z->pos, 18, "a robotic voice boom, \"Please put down your weapon.\"");
    } else
-    g->sound(z->pos.x, z->pos.y, 18, "a robotic voice boom, \"Come out with your hands up!\"");
+    g->sound(z->pos, 18, "a robotic voice boom, \"Come out with your hands up!\"");
   } else
-   g->sound(z->pos.x, z->pos.y, 18, "a police siren, whoop WHOOP");
+   g->sound(z->pos, 18, "a police siren, whoop WHOOP");
   return;
  }
  tazer(g, z);
@@ -1121,7 +1121,7 @@ void mattack::ratking(game *g, monster *z)
 
 void mattack::generator(game *g, monster *z)
 {
- g->sound(z->pos.x, z->pos.y, 100, "");
+ g->sound(z->pos, 100, "");
  if (int(messages.turn) % 10 == 0 && z->hp < z->type->hp) z->hp++;
 }
 

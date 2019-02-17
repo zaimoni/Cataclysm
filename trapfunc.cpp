@@ -12,7 +12,7 @@ void trapfunc::bubble(game *g, int x, int y)
 
 void trapfuncm::bubble(game *g, monster *z)
 {	// \todo possibly should not trigger for monsters not visible due to flags?
- g->sound(z->pos.x, z->pos.y, 18, "Pop!");
+ g->sound(z->pos, 18, "Pop!");
  g->m.tr_at(z->pos.x, z->pos.y) = tr_null;
 }
 
@@ -28,7 +28,7 @@ void trapfunc::beartrap(game *g, int x, int y)
 
 void trapfuncm::beartrap(game *g, monster *z)
 {
- g->sound(z->pos.x, z->pos.y, 8, "SNAP!");	// \todo possibly should not trigger for monsters not visible due to flags?
+ g->sound(z->pos, 8, "SNAP!");	// \todo possibly should not trigger for monsters not visible due to flags?
  if (z->hurt(35)) g->kill_mon(*z);
  else {
   z->moves = 0;
@@ -232,7 +232,7 @@ void trapfunc::telepad(game *g, int x, int y)
 
 void trapfuncm::telepad(game *g, monster *z)
 {
- g->sound(z->pos.x, z->pos.y, 6, "vvrrrRRMM*POP!*");
+ g->sound(z->pos, 6, "vvrrrRRMM*POP!*");
  if (g->u_see(z)) messages.add("The air shimmers around the %s...", z->name().c_str());
 
  int tries = 0;
@@ -296,7 +296,7 @@ void trapfunc::dissector(game *g, int x, int y)
 
 void trapfuncm::dissector(game *g, monster *z)
 {
- g->sound(z->pos.x, z->pos.y, 10, "BRZZZAP!");
+ g->sound(z->pos, 10, "BRZZZAP!");
  if (z->hurt(60)) g->explode_mon(*z);
 }
 
@@ -567,7 +567,7 @@ void trapfuncm::hum(game *g, monster *z)
 
  if (volume >= 150) z->add_effect(ME_DEAF, volume - 140);
 
- g->sound(z->pos.x, z->pos.y, volume, sfx);
+ g->sound(z->pos, volume, sfx);
 }
 
 void trapfunc::shadow(game *g, int x, int y)
@@ -632,6 +632,6 @@ void trapfunc::snake(game *g, int x, int y)
 
 void trapfuncm::snake(game *g, monster *z)
 {
- g->sound(z->pos.x, z->pos.y, 10, "ssssssss");
+ g->sound(z->pos, 10, "ssssssss");
  if (one_in(6)) g->m.tr_at(z->pos.x, z->pos.y) = tr_null;
 }

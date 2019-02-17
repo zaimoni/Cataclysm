@@ -30,7 +30,7 @@ void mdeath::acid(game *g, monster *z)
 
 void mdeath::boomer(game *g, monster *z)
 {
- g->sound(z->pos.x, z->pos.y, 24, "a boomer explode!");
+ g->sound(z->pos, 24, "a boomer explode!");
  for (int i = -1; i <= 1; i++) {
   for (int j = -1; j <= 1; j++) {
    g->m.bash(z->pos.x + i, z->pos.y + j, 10);	// no need to spam player with sounds
@@ -111,7 +111,7 @@ void mdeath::fungus(game *g, monster *z)
 {
  monster spore(mtype::types[mon_spore]);
  int sporex, sporey;
- g->sound(z->pos.x, z->pos.y, 10, "Pouf!");
+ g->sound(z->pos, 10, "Pouf!");
  for (int i = -1; i <= 1; i++) {
   for (int j = -1; j <= 1; j++) {
    sporex = z->pos.x + i;

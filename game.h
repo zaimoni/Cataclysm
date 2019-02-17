@@ -61,7 +61,9 @@ class game
   bool event_queued(event_type type);
 // Sound at (x, y) of intensity (vol), described to the player is (description)
   void sound(int x, int y, int vol, std::string description);
-// creates a list of coordinates to draw footsteps
+  void sound(const point& pt, int vol, const std::string& description) { sound(pt.x, pt.y, vol, description); };
+  void sound(const point& pt, int vol, const char* description) { sound(pt.x, pt.y, vol, description); };
+  // creates a list of coordinates to draw footsteps
   void add_footstep(int x, int y, int volume, int distance);
   std::vector<point> footsteps;
 // visual cue to monsters moving out of the players sight
