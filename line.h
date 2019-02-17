@@ -27,9 +27,9 @@ int rl_dist(point a, point b);
 double slope_of(std::vector<point> line);
 std::vector<point> continue_line(std::vector<point> line, int distance);
 direction direction_from(int x1, int y1, int x2, int y2);
-direction direction_from(const point& pt, int x2, int y2) { return direction_from(pt.x, pt.y, x2, y2); };
-direction direction_from(const point& pt, const point& pt2) { return direction_from(pt.x, pt.y, pt2.x, pt2.y); };
-direction direction_from(int x1, int y1, const point& pt2) { return direction_from(x1, y1, pt2.x, pt2.y); };
+inline direction direction_from(const point& pt, int x2, int y2) { return direction_from(pt.x, pt.y, x2, y2); };
+inline direction direction_from(const point& pt, const point& pt2) { return direction_from(pt.x, pt.y, pt2.x, pt2.y); };
+inline direction direction_from(int x1, int y1, const point& pt2) { return direction_from(x1, y1, pt2.x, pt2.y); };
 
 // more direction APIs
 const char* direction_name(direction dir);

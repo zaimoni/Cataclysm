@@ -946,16 +946,21 @@ void npc::move_away_from(game *g, int x, int y)
  else if (y < posy)
   dy = -1;
 
- options.push_back( point(posx + dx, posy + dy) );
- if (abs(x - posx) > abs(y - posy)) {
-  options.push_back( point(posx + dx, posy) );
-  options.push_back( point(posx, posy + dy) );
-  options.push_back( point(posx + dx, posy - dy) );
- } else {
-  options.push_back( point(posx, posy + dy) );
-  options.push_back( point(posx + dx, posy) );
-  options.push_back( point(posx - dx, posy + dy) );
- }
+ const point pos(posx, posy);	// temporary mockup
+
+ // 2019-02-16: re-implemented along Angband lines
+ direction best = direction_from(0, 0, dx, dy);
+ options.push_back(pos + direction_vector(best));	// consistency
+ int delta = 2 * rng(0, 1) - 1;
+ options.push_back(pos + direction_vector(rotate_clockwise(best, delta)));	// 45 degrees off
+ options.push_back(pos + direction_vector(rotate_clockwise(best, -delta)));
+
+ delta = 4 * rng(0, 1) - 2;
+ options.push_back(pos + direction_vector(rotate_clockwise(best, delta)));	// 90 degrees off
+ options.push_back(pos + direction_vector(rotate_clockwise(best, -delta)));
+
+ // looks strange to go the other way when backed against a wall
+ if (trig_dist(x, y, options[4].x, options[4].y) < trig_dist(x, y, options[3].x, options[3].y)) std::swap(options[3], options[4]);
 
  for (int i = 0; i < options.size(); i++) {
   if (can_move_to(g, options[i].x, options[i].y))
