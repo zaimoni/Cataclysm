@@ -72,7 +72,8 @@ class game
   void explosion(int x, int y, int power, int shrapnel, bool fire);
 // Flashback at (x, y)
   void flashbang(int x, int y);
-// Move the player vertically, if (force) then they fell
+  void flashbang(const point& pt) { flashbang(pt.x, pt.y); };
+  // Move the player vertically, if (force) then they fell
   void vertical_move(int z, bool force);
   void use_computer(int x, int y);
   void resonance_cascade(int x, int y);
@@ -96,8 +97,8 @@ class game
   void hit_monster_with_flags(monster &z, unsigned int flags);
   void plfire(bool burst);	// Player fires a gun (target selection)...
 // ... a gun is fired, maybe by an NPC (actual damage, etc.).
-  void fire(player &p, int tarx, int tary, std::vector<point> &trajectory,
-            bool burst);
+  void fire(player &p, int tarx, int tary, std::vector<point> &trajectory, bool burst);
+  void fire(player &p, const point& tar, std::vector<point> &trajectory, bool burst) { fire(p,tar.x,tar.y,trajectory,burst); }
   void throw_item(player &p, int tarx, int tary, item &thrown,
                   std::vector<point> &trajectory);
   void cancel_activity();

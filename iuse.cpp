@@ -1431,7 +1431,7 @@ void iuse::flashbang_act(game *g, player *p, item *it, bool t)
  if (t) // Simple timer effects
   g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
  else	// When that timer runs down...
-  g->flashbang(pos.x, pos.y);
+  g->flashbang(pos);
 }
 
 void iuse::c4(game *g, player *p, item *it, bool t)

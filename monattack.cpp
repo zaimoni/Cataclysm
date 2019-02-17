@@ -1013,8 +1013,8 @@ void mattack::smg(game *g, monster *z)
   tmp.weapon = item(item::types[itm_smg_9mm], 0);
   tmp.weapon.curammo = dynamic_cast<const it_ammo*>(item::types[itm_9mm]);
   tmp.weapon.charges = 10;
-  std::vector<point> traj = line_to(z->pos.x, z->pos.y, target->pos.x, target->pos.y, fire_t);
-  g->fire(tmp, target->pos.x, target->pos.y, traj, true);
+  std::vector<point> traj = line_to(z->pos, target->pos, fire_t);
+  g->fire(tmp, target->pos, traj, true);
 
   return;
  }

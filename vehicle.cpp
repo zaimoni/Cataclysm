@@ -1598,7 +1598,7 @@ bool vehicle::fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int
     it_ammo curam = ammo;
     tmp.weapon.curammo = &curam;
     tmp.weapon.charges = charges;
-    g->fire(tmp, target->pos.x, target->pos.y, traj, true);
+    g->fire(tmp, target->pos, traj, true);
     if (ammo.type == AT_GAS) {
         for (int i = 0; i < traj.size(); i++)
             g->m.add_field(g, traj[i].x, traj[i].y, fd_fire, 1);

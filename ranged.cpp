@@ -44,15 +44,14 @@ void ammo_effects(game *g, point pt, long flags)
 		}
 	}
 
-	if (flags & mfb(IF_AMMO_FLASHBANG)) g->flashbang(pt.x, pt.y);
+	if (flags & mfb(IF_AMMO_FLASHBANG)) g->flashbang(pt);
 
 	if (flags & mfb(IF_AMMO_FLAME)) {
 		if (g->m.add_field(g, pt.x, pt.y, fd_fire, 1)) g->m.field_at(pt.x, pt.y).age = 800;
 	}
 }
 
-void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory,
-                bool burst)
+void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, bool burst)
 {
  item ammotmp;
  if (p.weapon.has_flag(IF_CHARGE)) { // It's a charger gun, so make up a type

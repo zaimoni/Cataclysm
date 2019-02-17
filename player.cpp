@@ -3195,7 +3195,7 @@ void player::process_active_items(game *g)
       messages.add("Your %s discharges!", weapon.tname().c_str());
       point target(posx + rng(-12, 12), posy + rng(-12, 12));
       std::vector<point> traj = line_to(posx, posy, target.x, target.y, 0);
-      g->fire(*this, target.x, target.y, traj, false);
+      g->fire(*this, target, traj, false);
      } else
       messages.add("Your %s beeps alarmingly.", weapon.tname().c_str());
     }

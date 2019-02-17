@@ -262,8 +262,7 @@ void monster::move(game *g)
  }
 
 // If we're close to our target, we get focused and don't stumble
- if ((has_flag(MF_STUMBLES) && (plans.size() > 3 || plans.size() == 0)) ||
-     !moved)
+ if ((has_flag(MF_STUMBLES) && (plans.size() > 3 || plans.size() == 0)) || !moved)
   stumble(g, moved);
 }
 
@@ -271,14 +270,11 @@ void monster::move(game *g)
 // and create a sound in the monsters location when they move
 void monster::footsteps(game *g, int x, int y)
 {
- if (made_footstep)
-  return;
- if (has_flag(MF_FLIES))
-  return; // Flying monsters don't have footsteps!
+ if (made_footstep) return;
+ if (has_flag(MF_FLIES)) return; // Flying monsters don't have footsteps!
  made_footstep = true;
  int volume = 6; // same as player's footsteps
- if (has_flag(MF_DIGS))
-  volume = 10;
+ if (has_flag(MF_DIGS)) volume = 10;
  switch (type->size) {
   case MS_TINY:
    return; // No sound for the tinies
