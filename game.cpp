@@ -3319,8 +3319,7 @@ void game::sound(int x, int y, int vol, std::string description)
   messages.add("%s", description.c_str());
   return;
  }
- std::string direction = direction_name(direction_from(u.posx, u.posy, x, y));
- messages.add("From the %s you hear %s", direction.c_str(), description.c_str());
+ messages.add("From the %s you hear %s", direction_name(direction_from(u.posx, u.posy, x, y)), description.c_str());
 }
 
 // add_footstep will create a list of locations to draw monster

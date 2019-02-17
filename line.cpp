@@ -1,6 +1,7 @@
 #include "line.h"
 #include "map.h"
 #include <math.h>
+#include "Zaimoni.STL/Logging.h"
 
 #define SGN(a) (((a)<0) ? -1 : 1)
 #define SLOPE_VERTICAL 999999
@@ -115,47 +116,35 @@ direction direction_from(int x1, int y1, int x2, int y2)
  int dx = x2 - x1;
  int dy = y2 - y1;
  if (dx < 0) {
-  if (abs(dx) / 2 > abs(dy) || dy == 0) {
-   return WEST;
-  } else if (abs(dy) / 2 > abs(dx)) {
-   if (dy < 0)
-    return NORTH;
-   else
-    return SOUTH;
+  if (abs(dx) / 2 > abs(dy) || dy == 0) return WEST;
+  else if (abs(dy) / 2 > abs(dx)) {
+   return (dy < 0) ? NORTH : SOUTH;
   } else {
-   if (dy < 0)
-    return NORTHWEST;
-   else
-    return SOUTHWEST;
+   return (dy < 0) ? NORTHWEST : SOUTHWEST;
   }
  } else {
-  if (dx / 2 > abs(dy) || dy == 0) {
-   return EAST;
-  } else if (abs(dy) / 2 > dx || dx == 0) {
-   if (dy < 0)
-    return NORTH;
-   else
-    return SOUTH;
+  if (dx / 2 > abs(dy) || dy == 0) return EAST;
+  else if (abs(dy) / 2 > dx || dx == 0) {
+   return (dy < 0) ? NORTH : SOUTH;
   } else {
-   if (dy < 0)
-    return NORTHEAST;
-   else
-    return SOUTHEAST;
+   return (dy < 0) ? NORTHEAST : SOUTHEAST;
   }
  }
 }
 
-std::string direction_name(direction dir)
+const char* direction_name(direction dir)
 {
- switch (dir) {
-  case NORTH:     return "north";
-  case NORTHEAST: return "northeast";
-  case EAST:      return "east";
-  case SOUTHEAST: return "southeast";
-  case SOUTH:     return "south";
-  case SOUTHWEST: return "southwest";
-  case WEST:      return "west";
-  case NORTHWEST: return "northwest";
- }
- return "WEIRD DIRECTION_NAME() BUG";
+	static const char* translate[] = {
+		"north",
+		"northeast",
+		"east",
+		"southeast",
+		"south",
+		"southwest",
+		"west",
+		"northwest"
+	};
+
+	DEBUG_FAIL_OR_LEAVE(0 > dir || sizeof(translate) / sizeof(*translate) <= dir, return "WEIRD DIRECTION_NAME() BUG");
+	return translate[dir];
 }

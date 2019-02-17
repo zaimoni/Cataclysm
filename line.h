@@ -1,10 +1,11 @@
 #ifndef _LINE_H_
 #define _LINE_H_
 
-#include <vector>
-#include <string>
 #include "enums.h"
 
+#include <vector>
+
+// this is the canonical XCOM-like enumeration
 enum direction {
 NORTH = 0,
 NORTHEAST,
@@ -26,7 +27,7 @@ int rl_dist(point a, point b);
 double slope_of(std::vector<point> line);
 std::vector<point> continue_line(std::vector<point> line, int distance);
 direction direction_from(int x1, int y1, int x2, int y2);
-std::string direction_name(direction dir);
+const char* direction_name(direction dir);
 
 
 #endif
