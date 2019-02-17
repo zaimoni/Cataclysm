@@ -21,6 +21,10 @@ NORTHWEST
 std::vector <point> line_to(int x1, int y1, int x2, int y2, int t);
 // sqrt(dX^2 + dY^2)
 int trig_dist(int x1, int y1, int x2, int y2);
+inline int trig_dist(const point& pt, int x2, int y2) { return trig_dist(pt.x, pt.y, x2, y2); };
+inline int trig_dist(const point& pt, const point& pt2) { return trig_dist(pt.x, pt.y, pt2.x, pt2.y); };
+inline int trig_dist(int x1, int y1, const point& pt2) { return trig_dist(x1, y1, pt2.x, pt2.y); };
+
 // Roguelike distance; maximum of dX and dY
 int rl_dist(int x1, int y1, int x2, int y2);
 inline int rl_dist(const point& pt, int x2, int y2) { return rl_dist(pt.x, pt.y, x2, y2); };

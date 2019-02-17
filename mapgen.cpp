@@ -7311,7 +7311,7 @@ void silo_rooms(map *m)
  while (rooms.size() > 1) {
   int best_dist = 999, closest = 0;
   for (int i = 1; i < rooms.size(); i++) {
-   int dist = trig_dist(rooms[0].x, rooms[0].y, rooms[i].x, rooms[i].y);
+   int dist = trig_dist(rooms[0], rooms[i]);
    if (dist < best_dist) {
     best_dist = dist;
     closest = i;

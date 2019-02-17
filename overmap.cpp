@@ -451,7 +451,7 @@ std::vector<mongroup*> overmap::monsters_at(int x, int y)
  std::vector<mongroup*> ret;
  if (x < 0 || x >= OMAPX || y < 0 || y >= OMAPY) return ret;
  for (int i = 0; i < zg.size(); i++) {
-  if (trig_dist(x, y, zg[i].pos.x, zg[i].pos.y) <= zg[i].radius)
+  if (trig_dist(x, y, zg[i].pos) <= zg[i].radius)
    ret.push_back(&(zg[i]));
  }
  return ret;
