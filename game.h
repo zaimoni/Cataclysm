@@ -300,7 +300,7 @@ class game
 
 // If x & y are OOB, creates a new overmap and returns the proper terrain; also,
 // may mark the square as seen by the player
-  oter_id ter_at(int x, int y, bool& mark_as_seen);
+  oter_id ter_at(int x, int y, bool& mark_as_seen);	// dead function?
 
 // Debug functions
   void debug();           // All-encompassing debug screen.  TODO: This.

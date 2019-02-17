@@ -3754,7 +3754,7 @@ void game::explode_mon(monster& target)
     else m.add_field(this, tar.x, tar.y, blood_type, 1);
 	}
 
-    if (m.move_cost(tar.x, tar.y) == 0) {
+    if (m.move_cost(tar) == 0) {
      std::string tmp;
      if (m.bash(tar.x, tar.y, 3, tmp)) sound(tar, 18, tmp);
      else {
@@ -4940,7 +4940,7 @@ void game::drop_in_direction()
   return;
  }
 
- const auto cost = m.move_cost(dir.x, dir.y);
+ const auto cost = m.move_cost(dir);
  std::string verb = (0 >= cost ? "put" : "drop");
  std::string prep = (0 >= cost ? "in"  : "on"  );
 

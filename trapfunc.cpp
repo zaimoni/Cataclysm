@@ -240,14 +240,14 @@ void trapfuncm::telepad(game *g, monster *z)
  do {
   newpos = point(rng(z->pos.x - SEEX, z->pos.x + SEEX), rng(z->pos.y - SEEY, z->pos.y + SEEY));
   tries++;
- } while (g->m.move_cost(newpos.x, newpos.y) == 0 && tries != 10);
+ } while (g->m.move_cost(newpos) == 0 && tries != 10);
 
  if (tries == 10) g->explode_mon(*z);
- else if (monster* const m_hit = g->mon(newpos)) {
+ else if (monster* const m_hit = g->mon(newpos)) {	// must agree with LAB_NOTES
    if (g->u_see(z))
-    messages.add("The %s teleports into a %s, killing them both!",
-               z->name().c_str(), m_hit->name().c_str());
+    messages.add("The %s teleports into a %s, killing the %s!", z->name().c_str(), m_hit->name().c_str(), m_hit->name().c_str());
    g->explode_mon(*m_hit);
+   z->pos = newpos;
  } else {
    z->pos = newpos;
  }

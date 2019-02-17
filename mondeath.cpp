@@ -110,22 +110,19 @@ void mdeath::triffid_heart(game *g, monster *z)
 void mdeath::fungus(game *g, monster *z)
 {
  monster spore(mtype::types[mon_spore]);
- int sporex, sporey;
  g->sound(z->pos, 10, "Pouf!");
  for (int i = -1; i <= 1; i++) {
   for (int j = -1; j <= 1; j++) {
-   sporex = z->pos.x + i;
-   sporey = z->pos.y + j;
-   if (g->m.move_cost(sporex, sporey) > 0 && one_in(5)) {
-	monster* const m_at = g->mon(sporex, sporey);
+   point dest(z->pos.x + i, z->pos.y + j);
+   if (g->m.move_cost(dest) > 0 && one_in(5)) {
+	monster* const m_at = g->mon(dest);
     if (m_at) {	// Spores hit a monster
-     if (g->u_see(sporex, sporey))
-      messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
+     if (g->u_see(dest)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
      if (!m_at->make_fungus(g)) g->kill_mon(*m_at, (z->friendly != 0));
-    } else if (g->u.posx == sporex && g->u.posy == sporey)	// \todo infect npcs
+    } else if (g->u.posx == dest.x && g->u.posy == dest.y)	// \todo infect npcs
      g->u.infect(DI_SPORES, bp_mouth, 4, 30, g);
     else {
-     spore.spawn(sporex, sporey);
+     spore.spawn(dest);
      g->z.push_back(spore);
     }
    }
@@ -197,7 +194,7 @@ void mdeath::blobsplit(game *g, monster *z)
  for (int i = -1; i <= 1; i++) {
   for (int j = -1; j <= 1; j++) {
    point test(z->pos.x + i, z->pos.y + j);
-   if (g->m.move_cost(test.x, test.y) > 0 &&
+   if (g->m.move_cost(test) > 0 &&
        !g->mon(test) &&
        (g->u.posx != test.x || g->u.posy != test.y))
     valid.push_back(point(z->pos.x+i, z->pos.y+j));

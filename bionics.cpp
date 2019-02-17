@@ -299,11 +299,11 @@ void player::activate_bionic(int b, game *g)
         if (z->hurt(tmp_item.weight() * 2)) g->kill_mon(*z, true);
         g->m.add_item(traj[l].x, traj[l].y, tmp_item);
         l = traj.size() + 1;
-       } else if (l > 0 && g->m.move_cost(traj[l].x, traj[l].y) == 0) {
+       } else if (l > 0 && g->m.move_cost(traj[l]) == 0) {
 		std::string snd;
         g->m.bash(traj[l].x, traj[l].y, tmp_item.weight() * 2, snd);
         g->sound(traj[l], 12, snd);
-        if (g->m.move_cost(traj[l].x, traj[l].y) == 0) {
+        if (g->m.move_cost(traj[l]) == 0) {
          g->m.add_item(traj[l - 1].x, traj[l - 1].y, tmp_item);
          l = traj.size() + 1;
         }

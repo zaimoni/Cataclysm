@@ -42,6 +42,7 @@ class map
 
 // Movement and LOS
  int move_cost(int x, int y); // Cost to move through; 0 = impassible
+ int move_cost(const point& pt) { return move_cost(pt.x, pt.y); };
  int move_cost_ter_only(int x, int y); // same as above, but don't take vehicles into account
  bool trans(int x, int y); // Transparent?
  // (Fx, Fy) sees (Tx, Ty), within a range of (range)?

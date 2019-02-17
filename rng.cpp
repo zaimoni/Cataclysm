@@ -8,9 +8,7 @@ long rng(long low, long high)
 
 bool one_in(int chance)
 {
- if (chance <= 1 || rng(0, chance - 1) == 0)
-  return true;
- return false;
+ return (chance <= 1 || rng(0, chance - 1) == 0);
 }
 
 int dice(int number, int sides)

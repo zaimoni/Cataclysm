@@ -2813,27 +2813,29 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
 // Finally, scatter dead bodies / mil zombies
   for (int i = 0; i < 20; i++) {
+   point dest(rng(3, 20), rng(3, 20));
    int rnx = rng(3, 20), rny = rng(3, 20);
-   if (move_cost(rnx, rny) != 0) {
+   if (move_cost(dest) != 0) {
     if (one_in(5)) // Military zombie
-     add_spawn(mon_zombie_soldier, 1, rnx, rny);
+     add_spawn(mon_zombie_soldier, 1, dest.x, dest.y);
     else if (one_in(2)) {
      item body(0);
-     add_item(rnx, rny, body);
-     place_items(mi_launchers,  10, rnx, rny, rnx, rny, true, 0);
-     place_items(mi_mil_rifles, 30, rnx, rny, rnx, rny, true, 0);
-     place_items(mi_mil_armor,  70, rnx, rny, rnx, rny, true, 0);
-     place_items(mi_mil_food,   40, rnx, rny, rnx, rny, true, 0);
-     add_item(rnx, rny, item::types[itm_id_military], 0);
+     add_item(dest.x, dest.y, body);
+     place_items(mi_launchers,  10, dest.x, dest.y, dest.x, dest.y, true, 0);
+     place_items(mi_mil_rifles, 30, dest.x, dest.y, dest.x, dest.y, true, 0);
+     place_items(mi_mil_armor,  70, dest.x, dest.y, dest.x, dest.y, true, 0);
+     place_items(mi_mil_food,   40, dest.x, dest.y, dest.x, dest.y, true, 0);
+     add_item(dest.x, dest.y, item::types[itm_id_military], 0);
     } else if (one_in(20))
-     rough_circle(this, t_rubble, rnx, rny, rng(3, 6));
+     rough_circle(this, t_rubble, dest.x, dest.y, rng(3, 6));
    }
   }
 // Oh wait--let's also put radiation in any rubble
   for (int i = 0; i < SEEX * 2; i++) {
    for (int j = 0; j < SEEY * 2; j++) {
-    radiation(i, j) += (one_in(5) ? rng(1, 2) : 0);
-    if (ter(i, j) == t_rubble) radiation(i, j) += rng(1, 3);
+	auto& rad = radiation(i,j);
+	rad += (one_in(5) ? rng(1, 2) : 0);
+    if (ter(i, j) == t_rubble) rad += rng(1, 3);
    }
   }
 

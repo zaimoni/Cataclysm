@@ -507,7 +507,7 @@ void game::complete_construction()
 
 bool construct::able_empty(game *g, point p)
 {
- return (g->m.move_cost(p.x, p.y) == 2);
+ return g->m.move_cost(p) == 2;
 }
 
 bool construct::able_tree(game *g, point p)

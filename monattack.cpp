@@ -79,14 +79,13 @@ void mattack::acid(game *g, monster *z)
  }
  for (int i = -3; i <= 3; i++) {
   for (int j = -3; j <= 3; j++) {
-   if (g->m.move_cost(hitx + i, hity +j) > 0 &&
-       g->m.sees(hitx + i, hity + j, hitx, hity, 6) &&
-       ((one_in(abs(j)) && one_in(abs(i))) || (i == 0 && j == 0))) {
-    if (g->m.field_at(hitx + i, hity + j).type == fd_acid &&
-        g->m.field_at(hitx + i, hity + j).density < 3)
-     g->m.field_at(hitx + i, hity + j).density++;
-    else
-     g->m.add_field(g, hitx + i, hity + j, fd_acid, 2);
+   point dest(hitx + i, hity + j);
+   if (g->m.move_cost(dest) > 0 &&
+       g->m.sees(dest.x, dest.y, hitx, hity, 6) &&
+       one_in(abs(j)) && one_in(abs(i))) {
+	 auto& f = g->m.field_at(dest.x, dest.y);
+     if (f.type == fd_acid && f.density < 3) f.density++;
+     else g->m.add_field(g, dest.x, dest.y, fd_acid, 2);
    }
   }
  }
@@ -134,7 +133,7 @@ void mattack::boomer(game *g, monster *z)
   else
    g->m.add_field(g, line[i].x, line[i].y, fd_bile, 1);
 // If bile hit a solid tile, return.
-  if (g->m.move_cost(line[i].x, line[i].y) == 0) {
+  if (g->m.move_cost(line[i]) == 0) {
    g->m.add_field(g, line[i].x, line[i].y, fd_bile, 3);
    if (g->u_see(line[i]))
     messages.add("Bile splatters on the %s!", g->m.tername(line[i].x, line[i].y).c_str());
@@ -520,24 +519,23 @@ void mattack::fungus(game *g, monster *z)
  z->moves = -200;			// It takes a while
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  monster spore(mtype::types[mon_spore]);
- int sporex, sporey;
  int moncount = 0;
  g->sound(z->pos, 10, "Pouf!");
  if (g->u_see(z->pos)) messages.add("Spores are released from the %s!", z->name().c_str());
  for (int i = -1; i <= 1; i++) {
   for (int j = -1; j <= 1; j++) {
    if (i == 0 && j == 0) j++;	// No need to check 0, 0
-   sporex = z->pos.x + i;
-   sporey = z->pos.y + j;
-   if (g->m.move_cost(sporex, sporey) > 0 && one_in(5)) {
-	monster* const m_at = g->mon(sporex, sporey);
+   point dest(z->pos.x + i, z->pos.y + j);
+   if (g->m.move_cost(dest) > 0 && one_in(5)) {
+	monster* const m_at = g->mon(dest);
     if (m_at) {	// Spores hit a monster
-     if (g->u_see(sporex, sporey)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
+     if (g->u_see(dest)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
      if (!m_at->make_fungus(g)) g->kill_mon(*m_at, (z->friendly != 0));
-    } else if (g->u.posx == sporex && g->u.posy == sporey)
+	// \todo infect NPCs
+    } else if (g->u.posx == dest.x && g->u.posy == dest.y)
      g->u.infect(DI_SPORES, bp_mouth, 4, 30, g); // Spores hit the player
     else { // Spawn a spore
-     spore.spawn(sporex, sporey);
+     spore.spawn(dest);
      g->z.push_back(spore);
     }
    }
@@ -793,7 +791,7 @@ void mattack::vortex(game *g, monster *z)
        if (m_at->hurt(dam)) g->kill_mon(*m_at, (z->friendly != 0));
        dam = 0;
       }
-      if (g->m.move_cost(traj[i].x, traj[i].y) == 0) {
+      if (g->m.move_cost(traj[i]) == 0) {
        dam = 0;
        i--;
       } else if (traj[i].x == g->u.posx && traj[i].y == g->u.posy) {
@@ -857,7 +855,7 @@ void mattack::vortex(game *g, monster *z)
        if (m_hit->hurt(damage)) g->kill_mon(*m_hit, (z->friendly != 0));
        hit_wall = true;
        thrown->pos = traj[i - 1];
-      } else if (g->m.move_cost(traj[i].x, traj[i].y) == 0) {
+      } else if (g->m.move_cost(traj[i]) == 0) {
        hit_wall = true;
        thrown->pos = traj[i - 1];
       }
@@ -884,7 +882,7 @@ void mattack::vortex(game *g, monster *z)
       hit_wall = true;
       g->u.posx = traj[i - 1].x;
       g->u.posy = traj[i - 1].y;
-     } else if (g->m.move_cost(traj[i].x, traj[i].y) == 0) {
+     } else if (g->m.move_cost(traj[i]) == 0) {
       messages.add("You slam into a %s", g->m.tername(traj[i].x, traj[i].y).c_str());
       hit_wall = true;
       g->u.posx = traj[i - 1].x;

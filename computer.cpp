@@ -698,16 +698,19 @@ void computer::activate_failure(game *g, computer_failure fail)
       int leak_size = rng(4, 10);
       for (int i = 0; i < leak_size; i++) {
        std::vector<point> next_move;
-       if (g->m.move_cost(p.x, p.y - 1) > 0) next_move.push_back( point(p.x, p.y - 1) );
-       if (g->m.move_cost(p.x + 1, p.y) > 0) next_move.push_back( point(p.x + 1, p.y) );
-       if (g->m.move_cost(p.x, p.y + 1) > 0) next_move.push_back( point(p.x, p.y + 1) );
-       if (g->m.move_cost(p.x - 1, p.y) > 0) next_move.push_back( point(p.x - 1, p.y) );
+	   point dest(p + direction_vector(EAST));
+       if (g->m.move_cost(dest) > 0) next_move.push_back(dest);
+	   dest = p + direction_vector(SOUTH);
+	   if (g->m.move_cost(dest) > 0) next_move.push_back(dest);
+	   dest = p + direction_vector(WEST);
+	   if (g->m.move_cost(dest) > 0) next_move.push_back(dest);
+	   dest = p + direction_vector(NORTH);
+	   if (g->m.move_cost(dest) > 0) next_move.push_back(dest);
 
-       if (next_move.empty()) i = leak_size;
-       else {
-        p = next_move[rng(0, next_move.size() - 1)];
-        g->m.ter(p.x, p.y) = t_sewage;
-       }
+	   if (next_move.empty()) break;
+       
+       p = next_move[rng(0, next_move.size() - 1)];
+       g->m.ter(p.x, p.y) = t_sewage;
       }
      }
     }

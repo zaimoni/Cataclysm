@@ -216,19 +216,17 @@ void dis_effect(game *g, player &p, disease &dis)
     if (!p.is_npc()) messages.add("You double over, spewing live spores from your mouth!");
     else if (g->u_see(p.posx, p.posy)) messages.add("%s coughs up a stream of live spores!", p.name.c_str());
     p.moves = -500;
-    int sporex, sporey;
     monster spore(mtype::types[mon_spore]);
     for (int i = -1; i <= 1; i++) {
      for (int j = -1; j <= 1; j++) {
-      sporex = p.posx + i;
-      sporey = p.posy + j;
-	  monster* const m_at = g->mon(sporex, sporey);
-      if (g->m.move_cost(sporex, sporey) > 0 && one_in(5)) {
+	  point dest(p.posx + i, p.posy + j);
+	  monster* const m_at = g->mon(dest);
+      if (g->m.move_cost(dest) > 0 && one_in(5)) {
        if (m_at) {	// Spores hit a monster
-        if (g->u_see(sporex, sporey)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
+        if (g->u_see(dest)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
         if (!m_at->make_fungus(g)) g->kill_mon(*m_at);
        } else {	// \todo infect npcs
-        spore.spawn(sporex, sporey);
+        spore.spawn(dest);
         g->z.push_back(spore);
        }
       }

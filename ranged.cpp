@@ -267,7 +267,7 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, b
   point last(trajectory.back());
   ammo_effects(this, last, flags);
 
-  if (m.move_cost(last.x, last.y) == 0) last = trajectory[trajectory.size() - 2];
+  if (m.move_cost(last) == 0) last = trajectory[trajectory.size() - 2];
   if (is_bolt &&
       ((p.weapon.curammo->m1 == WOOD && !one_in(5)) ||	// leave this verbose in case we want additional complexity
        (p.weapon.curammo->m1 != WOOD && !one_in(15))  ))

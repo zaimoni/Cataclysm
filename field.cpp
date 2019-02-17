@@ -230,8 +230,8 @@ bool map::process_fields_in_submap(game *g, int gridn)
       int fx = x + ((i + starti) % 3) - 1, fy = y + ((j + startj) % 3) - 1;
       if (INBOUNDS(fx, fy)) {
        int spread_chance = 20 * (cur->density - 1) + 10 * smoke;
-       if (field_at(fx, fy).type == fd_web)
-        spread_chance = 50 + spread_chance / 2;
+	   auto& f = field_at(fx, fy);
+       if (f.type == fd_web) spread_chance = 50 + spread_chance / 2;
        if (has_flag(explodes, fx, fy) && one_in(8 - cur->density)) {
         ter(fx, fy) = ter_id(int(ter(fx, fy)) + 1);
         g->explosion(fx, fy, 40, 0, true);
@@ -242,21 +242,18 @@ bool map::process_fields_in_submap(game *g, int gridn)
                    (cur->density == 3 &&
                     (has_flag(l_flammable, fx, fy) && one_in(10))) ||
                    flammable_items_at(fx, fy) ||
-                   field_at(fx, fy).type == fd_web)) {
-        if (field_at(fx, fy).type == fd_smoke ||
-            field_at(fx, fy).type == fd_web)
-         field_at(fx, fy) = field(fd_fire, 1, 0);
+                   f.type == fd_web)) {
+        if (f.type == fd_smoke || f.type == fd_web)
+         f = field(fd_fire, 1, 0);
         else
          add_field(g, fx, fy, fd_fire, 1);
        } else {
         bool nosmoke = true;
         for (int ii = -1; ii <= 1; ii++) {
          for (int jj = -1; jj <= 1; jj++) {
-          if (field_at(x+ii, y+jj).type == fd_fire &&
-              field_at(x+ii, y+jj).density == 3)
-           smoke++;
-          else if (field_at(x+ii, y+jj).type == fd_smoke)
-           nosmoke = false;
+		  auto& f = field_at(x + ii, y + jj);
+          if (f.type == fd_fire && f.density == 3) smoke++;
+          else if (f.type == fd_smoke) nosmoke = false;
          }
         }
 // If we're not spreading, maybe we'll stick out some smoke, huh?
@@ -277,26 +274,25 @@ bool map::process_fields_in_submap(game *g, int gridn)
      for (int j = -1; j <= 1; j++)
       g->scent(x+i, y+j) = 0;
     }
-    if (is_outside(x, y))
-     cur->age += 50;
+    if (is_outside(x, y)) cur->age += 50;
     if (one_in(2)) {
      std::vector <point> spread;
      for (int a = -1; a <= 1; a++) {
       for (int b = -1; b <= 1; b++) {
-       if ((field_at(x+a, y+b).type == fd_smoke &&
-             field_at(x+a, y+b).density < 3       ) ||
-           (field_at(x+a, y+b).is_null() && move_cost(x+a, y+b) > 0))
-        spread.push_back(point(x+a, y+b));
+	   point dest(x + a, y + b);
+	   auto& f = field_at(dest.x, dest.y);
+       if ((f.type == fd_smoke && f.density < 3) ||
+           (f.is_null() && move_cost(dest) > 0))
+        spread.push_back(dest);
       }
      }
      if (cur->density > 0 && cur->age > 0 && spread.size() > 0) {
       point p = spread[rng(0, spread.size() - 1)];
-      if (field_at(p.x, p.y).type == fd_smoke &&
-          field_at(p.x, p.y).density < 3) {
-        field_at(p.x, p.y).density++;
+	  auto& f = field_at(p.x, p.y);
+      if (f.type == fd_smoke) {
+		f.density++;
         cur->density--;
-      } else if (cur->density > 0 && move_cost(p.x, p.y) > 0 &&
-                 add_field(g, p.x, p.y, fd_smoke, 1)){
+      } else if (add_field(g, p.x, p.y, fd_smoke, 1)){
        cur->density--;
        field_at(p.x, p.y).age = cur->age;
       }
@@ -310,38 +306,40 @@ bool map::process_fields_in_submap(game *g, int gridn)
      for (int j = -1; j <= 1; j++)
       g->scent(x+i, y+j) = 0;
     }
-    if (is_outside(x, y))
-     cur->age += 30;
+    if (is_outside(x, y)) cur->age += 30;
 // One in three chance that it spreads (less than smoke!)
     if (one_in(3)) {
      std::vector <point> spread;
 // Pick all eligible points to spread to
      for (int a = -1; a <= 1; a++) {
       for (int b = -1; b <= 1; b++) {
-       if (((field_at(x+a, y+b).type == fd_smoke ||
-             field_at(x+a, y+b).type == fd_tear_gas) &&
-             field_at(x+a, y+b).density < 3            )      ||
-           (field_at(x+a, y+b).is_null() && move_cost(x+a, y+b) > 0))
-        spread.push_back(point(x+a, y+b));
+	   point dest(x + a, y + b);
+	   auto& f = field_at(dest.x, dest.y);
+       if (((f.type == fd_smoke ||
+		     f.type == fd_tear_gas) &&
+		     f.density < 3            )      ||
+           (f.is_null() && move_cost(dest) > 0))
+        spread.push_back(dest);
       }
      }
 // Then, spread to a nearby point
      if (cur->density > 0 && cur->age > 0 && spread.size() > 0) {
       point p = spread[rng(0, spread.size() - 1)];
-// Nearby teargas grows thicker
-      if (field_at(p.x, p.y).type == fd_tear_gas &&
-          field_at(p.x, p.y).density < 3) {
-        field_at(p.x, p.y).density++;
-        cur->density--;
-// Nearby smoke is converted into teargas
-      } else if (field_at(p.x, p.y).type == fd_smoke) {
-       field_at(p.x, p.y).type = fd_tear_gas;
-// Or, just create a new field.
-      } else if (cur->density > 0 && move_cost(p.x, p.y) > 0 &&
-                 add_field(g, p.x, p.y, fd_tear_gas, 1)) {
-       cur->density--;
-       field_at(p.x, p.y).age = cur->age;
-      }
+	  auto& f = field_at(p.x, p.y);
+	  switch (f.type) {
+	  case fd_tear_gas:	// Nearby teargas grows thicker
+		  f.density++;
+		  cur->density--;
+		  break;
+	  case fd_smoke:	// Nearby smoke is converted into teargas
+		  f.type = fd_tear_gas;
+		  break;
+	  default:	// Or, just create a new field.
+		  if (add_field(g, p.x, p.y, fd_tear_gas, 1)) {
+			  cur->density--;
+			  field_at(p.x, p.y).age = cur->age;
+		  }
+	  }
      }
     }
     break;
@@ -352,40 +350,41 @@ bool map::process_fields_in_submap(game *g, int gridn)
      for (int j = -1; j <= 1; j++)
       g->scent(x+i, y+j) = 0;
     }
-    if (is_outside(x, y))
-     cur->age += 40;
-    if (one_in(2)) {
+    if (is_outside(x, y)) cur->age += 40;
+    if (cur->density > 0 && cur->age > 0 && one_in(2)) {
      std::vector <point> spread;
 // Pick all eligible points to spread to
      for (int a = -1; a <= 1; a++) {
       for (int b = -1; b <= 1; b++) {
-       if (((field_at(x+a, y+b).type == fd_smoke ||
-             field_at(x+a, y+b).type == fd_tear_gas ||
-             field_at(x+a, y+b).type == fd_toxic_gas ||
-             field_at(x+a, y+b).type == fd_nuke_gas   ) &&
-             field_at(x+a, y+b).density < 3            )      ||
-           (field_at(x+a, y+b).is_null() && move_cost(x+a, y+b) > 0))
-        spread.push_back(point(x+a, y+b));
+	   point dest(x + a, y + b);
+	   auto& f = field_at(dest.x, dest.y);
+       if (((f.type == fd_smoke ||
+		     f.type == fd_tear_gas ||
+		     f.type == fd_toxic_gas) &&
+		     f.density < 3            )      ||
+           (f.is_null() && move_cost(dest) > 0))
+        spread.push_back(dest);
       }
      }
 // Then, spread to a nearby point
-     if (cur->density > 0 && cur->age > 0 && spread.size() > 0) {
+     if (!spread.empty()) {
       point p = spread[rng(0, spread.size() - 1)];
-// Nearby toxic gas grows thicker
-      if (field_at(p.x, p.y).type == fd_toxic_gas &&
-          field_at(p.x, p.y).density < 3) {
-        field_at(p.x, p.y).density++;
-        cur->density--;
-// Nearby smoke & teargas is converted into toxic gas
-      } else if (field_at(p.x, p.y).type == fd_smoke ||
-                 field_at(p.x, p.y).type == fd_tear_gas) {
-       field_at(p.x, p.y).type = fd_toxic_gas;
-// Or, just create a new field.
-      } else if (cur->density > 0 && move_cost(p.x, p.y) > 0 &&
-                 add_field(g, p.x, p.y, fd_toxic_gas, 1)) {
-       cur->density--;
-       field_at(p.x, p.y).age = cur->age;
-      }
+	  auto& f = field_at(p.x, p.y);
+	  switch (f.type) {
+	  case fd_toxic_gas:	// Nearby toxic gas grows thicker
+		  f.density++;
+		  cur->density--;
+		  break;
+	  case fd_smoke:	// Nearby smoke & teargas is converted into toxic gas
+	  case fd_tear_gas:
+		  f.type = fd_toxic_gas;
+		  break;
+	  default:	// Or, just create a new field.
+		  if (add_field(g, p.x, p.y, fd_toxic_gas, 1)) {
+			  cur->density--;
+			  field_at(p.x, p.y).age = cur->age;
+		  }
+	  }
      }
     }
     break;
@@ -397,43 +396,46 @@ bool map::process_fields_in_submap(game *g, int gridn)
      for (int j = -1; j <= 1; j++)
       g->scent(x+i, y+j) = 0;
     }
-    if (is_outside(x, y))
-     cur->age += 40;
+    if (is_outside(x, y)) cur->age += 40;
 // Increase long-term radiation in the land underneath
     radiation(x, y) += rng(0, cur->density);
-    if (one_in(2)) {
+    if (cur->density > 0 && cur->age > 0 && one_in(2)) {
      std::vector <point> spread;
 // Pick all eligible points to spread to
      for (int a = -1; a <= 1; a++) {
       for (int b = -1; b <= 1; b++) {
-       if (((field_at(x+a, y+b).type == fd_smoke ||
-             field_at(x+a, y+b).type == fd_tear_gas ||
-             field_at(x+a, y+b).type == fd_toxic_gas ||
-             field_at(x+a, y+b).type == fd_nuke_gas   ) &&
-             field_at(x+a, y+b).density < 3            )      ||
-           (field_at(x+a, y+b).is_null() && move_cost(x+a, y+b) > 0))
-        spread.push_back(point(x+a, y+b));
+	   point dest(x + a, y + b);
+	   auto& f = field_at(dest.x, dest.y);
+       if (((f.type == fd_smoke ||
+		     f.type == fd_tear_gas ||
+		     f.type == fd_toxic_gas ||
+		     f.type == fd_nuke_gas   ) &&
+		     f.density < 3            )      ||
+           (f.is_null() && move_cost(dest) > 0))
+        spread.push_back(dest);
       }
      }
 // Then, spread to a nearby point
-     if (cur->density > 0 && cur->age > 0 && spread.size() > 0) {
+     if (!spread.empty()) {
       point p = spread[rng(0, spread.size() - 1)];
-// Nearby nukegas grows thicker
-      if (field_at(p.x, p.y).type == fd_nuke_gas &&
-          field_at(p.x, p.y).density < 3) {
-        field_at(p.x, p.y).density++;
-        cur->density--;
-// Nearby smoke, tear, and toxic gas is converted into nukegas
-      } else if (field_at(p.x, p.y).type == fd_smoke ||
-                 field_at(p.x, p.y).type == fd_toxic_gas ||
-                 field_at(p.x, p.y).type == fd_tear_gas) {
-       field_at(p.x, p.y).type = fd_nuke_gas;
-// Or, just create a new field.
-      } else if (cur->density > 0 && move_cost(p.x, p.y) > 0 &&
-                 add_field(g, p.x, p.y, fd_nuke_gas, 1)) {
-       cur->density--;
-       field_at(p.x, p.y).age = cur->age;
-      }
+	  auto& f = field_at(p.x, p.y);
+	  switch(f.type) {
+	  case fd_nuke_gas:	// Nearby nukegas grows thicker
+		if (f.density < 3) {
+          f.density++;
+          cur->density--;
+        } break;
+	  case fd_smoke:	// Nearby smoke, tear, and toxic gas is converted into nukegas
+	  case fd_toxic_gas:
+	  case fd_tear_gas:
+		  f.type = fd_nuke_gas;
+		  break;
+	  default:	// Or, just create a new field.
+		if (add_field(g, p.x, p.y, fd_nuke_gas, cur->age)) {
+			cur->density--;
+			field_at(p.x, p.y).age = cur->age;
+		}
+	  }
      }
     }
     break;
@@ -474,29 +476,28 @@ bool map::process_fields_in_submap(game *g, int gridn)
      if (move_cost(x, y) == 0 && cur->density > 1) { // We're grounded
       int tries = 0;
       while (tries < 10 && cur->age < 50) {
-       int cx = x + rng(-1, 1), cy = y + rng(-1, 1);
-       if (move_cost(cx, cy) != 0 && field_at(cx, cy).is_null()) {
-        add_field(g, cx, cy, fd_electricity, 1);
+	   point dest(x + rng(-1, 1), y + rng(-1, 1));
+       if (move_cost(dest) != 0 && field_at(dest.x, dest.y).is_null()) {
+        add_field(g, dest.x, dest.y, fd_electricity, 1);
         cur->density--;
         tries = 0;
-       } else
-        tries++;
+       } else tries++;
       }
      } else {	// We're not grounded; attempt to ground
       for (int a = -1; a <= 1; a++) {
        for (int b = -1; b <= 1; b++) {
-        if (move_cost(x + a, y + b) == 0 && // Grounded tiles first
-            field_at(x + a, y + b).is_null())
-         valid.push_back(point(x + a, y + b));
+		point dest(x + a, y + b);
+        if (move_cost(dest) == 0 && field_at(dest.x, dest.y).is_null())	// Grounded tiles first
+         valid.push_back(dest);
        }
       }
       if (valid.size() == 0) {	// Spread to adjacent space, then
-       int px = x + rng(-1, 1), py = y + rng(-1, 1);
-       if (move_cost(px, py) > 0 && field_at(px, py).type == fd_electricity &&
-           field_at(px, py).density < 3)
-        field_at(px, py).density++;
-       else if (move_cost(px, py) > 0)
-        add_field(g, px, py, fd_electricity, 1);
+	   point dest(x + rng(-1, 1), y + rng(-1, 1));
+	   if (move_cost(dest) > 0) {
+		   auto& f = field_at(dest.x, dest.y);
+		   if (f.type == fd_electricity && f.density < 3) f.density++;
+		   else add_field(g, dest.x, dest.y, fd_electricity, 1);
+	   }
        cur->density--;
       }
       while (valid.size() > 0 && cur->density > 0) {
@@ -910,7 +911,7 @@ void map::mon_in_field(int x, int y, game *g, monster *z)
     do {
 	 newpos = point(rng(z->pos.x - SEEX, z->pos.x + SEEX), rng(z->pos.y - SEEY, z->pos.y + SEEY));
      tries++;
-    } while (g->m.move_cost(newpos.x, newpos.y) == 0 && tries != 10);
+    } while (g->m.move_cost(newpos) == 0 && tries != 10);
 
     if (tries == 10) g->explode_mon(*z);
     else if (monster* const m_hit = g->mon(newpos)) {

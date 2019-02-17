@@ -285,31 +285,20 @@ const field_t fieldlist[] = {
 
 struct field {
  field_id type;
- signed char density;
+ signed char density;	// only 1..3 valid; 0 is useful to signal "expired"
  int age;
- field() { type = fd_null; density = 1; age = 0; };
- field(field_id t, unsigned char d, unsigned int a) {
-  type = t;
-  density = d;
-  age = a;
- }
 
- bool is_null()
+ field(field_id t = fd_null, unsigned char d=1, unsigned int a=0)
+ : type(t),density(d),age(a)
+ { }
+
+ bool is_null() const
  {
-  return (type == fd_null || type == fd_blood || type == fd_bile ||
-          type == fd_slime);
+  return (type == fd_null || type == fd_blood || type == fd_bile || type == fd_slime);
  }
 
- bool is_dangerous()
- {
-  return fieldlist[type].dangerous[density - 1];
- }
-
- std::string name()
- {
-  return fieldlist[type].name[density - 1];
- }
-
+ bool is_dangerous() const { return fieldlist[type].dangerous[density - 1]; }
+ std::string name() const { return fieldlist[type].name[density - 1]; }
 };
 
 struct spawn_point {

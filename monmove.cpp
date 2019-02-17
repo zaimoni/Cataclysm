@@ -251,7 +251,7 @@ void monster::move(game *g)
    int bashskill = int(type->melee_dice * type->melee_sides);
    g->m.bash(next.x, next.y, bashskill, bashsound);
    g->sound(next, 18, bashsound);
-  } else if (g->m.move_cost(next.x, next.y) == 0 && has_flag(MF_DESTROYS)) {
+  } else if (g->m.move_cost(next) == 0 && has_flag(MF_DESTROYS)) {
    g->m.destroy(g, next.x, next.y, true);
    moves -= 250;
   // end C:DDA refactor target monster::bash_at
@@ -324,7 +324,7 @@ void monster::friendly_move(game *g)
    int bashskill = int(type->melee_dice * type->melee_sides);
    g->m.bash(next.x, next.y, bashskill, bashsound);
    g->sound(next, 18, bashsound);
-  } else if (g->m.move_cost(next.x, next.y) == 0 && has_flag(MF_DESTROYS)) {
+  } else if (g->m.move_cost(next) == 0 && has_flag(MF_DESTROYS)) {
    g->m.destroy(g, next.x, next.y, true);
    moves -= 250;
   }
@@ -561,18 +561,17 @@ void monster::stumble(game *g, bool moved)
   int choice = rng(0, valid_stumbles.size() - 1);
   pos = valid_stumbles[choice];
   if (!has_flag(MF_DIGS) || !has_flag(MF_FLIES))
-   moves -= (g->m.move_cost(pos.x, pos.y) - 2) * 50;
+   moves -= (g->m.move_cost(pos) - 2) * 50;
 // Here we have to fix our plans[] list, trying to get back to the last point
 // Otherwise the stumble will basically have no effect!
   if (plans.size() > 0) {
    int tc;
    if (g->m.sees(pos.x, pos.y, plans[0].x, plans[0].y, -1, tc)) {
 // Copy out old plans...
-    std::vector <point> plans2;
-    for (int i = 0; i < plans.size(); i++)
-     plans2.push_back(plans[i]);
+    std::vector<point> plans2;
+	std::swap(plans2, plans);
 // Set plans to a route between where we are now, and where we were
-    set_dest(plans[0].x, plans[0].y, tc);
+    set_dest(plans2[0].x, plans2[0].y, tc);
 // Append old plans to the new plans
     for (int index = 0; index < plans2.size(); index++)
      plans.push_back(plans2[index]);
@@ -620,7 +619,7 @@ void monster::knock_back_from(game *g, int x, int y)
  }
 
 // If we're still in the function at this point, we're actually moving a tile!
- if (g->m.move_cost(to.x, to.y) == 0) { // Wait, it's a wall (or water)
+ if (g->m.move_cost(to) == 0) { // Wait, it's a wall (or water)
 
   if (g->m.has_flag(liquid, to.x, to.y)) {
    if (!has_flag(MF_SWIMS) && !has_flag(MF_AQUATIC)) {
@@ -676,7 +675,7 @@ int monster::turns_to_reach(game *g, int x, int y)
 
  double turns = 0.;
  for(const auto& step : path) {
-  const auto cost = g->m.move_cost(step.x, step.y);
+  const auto cost = g->m.move_cost(step);
   turns += (0 >= cost) ? 5	// We have to bash through
 		 : double(50 * cost) / speed;
  }
