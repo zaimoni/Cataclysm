@@ -244,7 +244,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
                    flammable_items_at(fx, fy) ||
                    f.type == fd_web)) {
         if (f.type == fd_smoke || f.type == fd_web)
-         f = field(fd_fire, 1, 0);
+         f = field(fd_fire);
         else
          add_field(g, fx, fy, fd_fire, 1);
        } else {

@@ -373,29 +373,27 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      i = 20;
     x += rng(-2, 2);
     y += rng(-2, 2);
-    if (x < 0 || x >= SEEX * 2)
-     x = SEEX / 2 + rng(0, SEEX);
-    if (y < 0 || y >= SEEY * 2)
-     y = SEEY / 2 + rng(0, SEEY);
+    if (x < 0 || x >= SEEX * 2) x = SEEX / 2 + rng(0, SEEX);
+    if (y < 0 || y >= SEEY * 2) y = SEEY / 2 + rng(0, SEEY);
     for (int j = 0; j < n_fac; j++) {
      int wx = rng(0, SEEX * 2 -1), wy = rng(0, SEEY - 1);
-     if (ter(wx, wy) == t_dirt || ter(wx, wy) == t_underbrush)
-      ter(wx, wy) = t_water_sh;
-    }
+	 auto& t = ter(wx, wy);
+	 if (t_dirt == t || t_underbrush == t) t = t_water_sh;
+	}
     for (int j = 0; j < e_fac; j++) {
      int wx = rng(SEEX, SEEX * 2 - 1), wy = rng(0, SEEY * 2 - 1);
-     if (ter(wx, wy) == t_dirt || ter(wx, wy) == t_underbrush)
-      ter(wx, wy) = t_water_sh;
-    }
+	 auto& t = ter(wx, wy);
+	 if (t_dirt == t || t_underbrush == t) t = t_water_sh;
+	}
     for (int j = 0; j < s_fac; j++) {
      int wx = rng(0, SEEX * 2 - 1), wy = rng(SEEY, SEEY * 2 - 1);
-     if (ter(wx, wy) == t_dirt || ter(wx, wy) == t_underbrush)
-      ter(wx, wy) = t_water_sh;
-    }
+	 auto& t = ter(wx, wy);
+	 if (t_dirt == t || t_underbrush == t) t = t_water_sh;
+	}
     for (int j = 0; j < w_fac; j++) {
      int wx = rng(0, SEEX - 1), wy = rng(0, SEEY * 2 - 1);
-     if (ter(wx, wy) == t_dirt || ter(wx, wy) == t_underbrush)
-      ter(wx, wy) = t_water_sh;
+	 auto& t = ter(wx, wy);
+	 if (t_dirt == t ||  t_underbrush == t) t = t_water_sh;
     }
    }
    rn = rng(0, 2) * rng(0, 1) * (rng(0, 1) + rng(0, 1));// Good chance of 0
@@ -403,16 +401,17 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     x = rng(0, SEEX * 2 - 1);
     y = rng(0, SEEY * 2 - 1);
     add_trap(x, y, tr_sinkhole);
-    if (ter(x, y) != t_water_sh)
-     ter(x, y) = t_dirt;
+	auto& t = ter(x, y);
+	if (t_water_sh != t) t = t_dirt;
    }
   }
 
   if (one_in(100)) { // One in 100 forests has a spider living in it :o
    for (int i = 0; i < SEEX * 2; i++) {
     for (int j = 0; j < SEEX * 2; j++) {
-     if ((ter(i, j) == t_dirt || ter(i, j) == t_underbrush) && !one_in(3))
-      field_at(i, j) = field(fd_web, rng(1, 3), 0);
+	 auto& t = ter(i, j);
+     if ((t_dirt == t || t_underbrush == t) && !one_in(3))
+      field_at(i, j) = field(fd_web, rng(1, 3));
     }
    }
    add_spawn(mon_spider_web, rng(1, 2), SEEX, SEEY);
@@ -586,10 +585,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      forest_chance += w_fac - i;
      num++;
     }
-    if (num > 0)
-     forest_chance /= num;
+    if (num > 0) forest_chance /= num;
     rn = rng(0, forest_chance);
-         if ((forest_chance > 0 && rn > 13) || one_in(100 - forest_chance))
+    if ((forest_chance > 0 && rn > 13) || one_in(100 - forest_chance))
      ter(i, j) = t_tree;
     else if ((forest_chance > 0 && rn > 10) || one_in(100 - forest_chance))
      ter(i, j) = t_tree_young;
@@ -611,9 +609,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    }
    for (int x1 = x - 3; x1 <= x + 3; x1++) {
     for (int y1 = y - 3; y1 <= y + 3; y1++) {
-     field_at(x1, y1) = field(fd_web, rng(2, 3), 0);
-     if (ter(x1, y1) != t_slope_down)
-      ter(x1, y1) = t_dirt;
+     field_at(x1, y1) = field(fd_web, rng(2, 3));
+	 auto& t = ter(x1, y1);
+     if (t_slope_down != t) t = t_dirt;
     }
    }
   }
@@ -1187,12 +1185,11 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
        add_spawn(mon_spider_widow, rng(1, 2), i, j);
        for (int x = i - 1; x <= i + 1; x++) {
         for (int y = j - 1; y <= j + 1; y++) {
-         if (ter(x, y) == t_floor)
-          field_at(x, y) = field(fd_web, rng(2, 3), 0);
+         if (ter(x, y) == t_floor) field_at(x, y) = field(fd_web, rng(2, 3));
         }
        }
       } else if (move_cost(i, j) > 0 && field_at(i, j).is_null() && one_in(5))
-       field_at(i, j) = field(fd_web, 1, 0);
+       field_at(i, j) = field(fd_web);
      }
     }
    }
@@ -5227,8 +5224,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     if ((i >= 3 && i <= SEEX * 2 - 4 && j >= 3 && j <= SEEY * 2 - 4) ||
         one_in(4)) {
      ter(i, j) = t_rock_floor;
-     if (!one_in(3))
-      field_at(i, j) = field(fd_web, rng(1, 3), 0);
+     if (!one_in(3)) field_at(i, j) = field(fd_web, rng(1, 3));
     } else
      ter(i, j) = t_rock;
    }

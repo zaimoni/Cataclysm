@@ -3412,8 +3412,8 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
     u.hit(this, bp_arms,  1, rng(dam / 3, dam),       0);
    }
    if (fire) {
-    if (m.field_at(i, j).type == fd_smoke)
-     m.field_at(i, j) = field(fd_fire, 1, 0);
+	auto& f = m.field_at(i, j);
+    if (f.type == fd_smoke) f = field(fd_fire);
     m.add_field(this, i, j, fd_fire, dam / 10);
    }
   }
@@ -3548,8 +3548,8 @@ void game::resonance_cascade(int x, int y)
        case 6:
        case 7: type = fd_nuke_gas;
       }
-      if (m.field_at(k, l).type == fd_null || !one_in(3))
-       m.field_at(k, l) = field(type, 3, 0);
+	  auto& f = m.field_at(k, l);
+      if (f.type == fd_null || !one_in(3)) f = field(type, 3);
      }
     }
     break;
@@ -4320,10 +4320,10 @@ point game::look_around()
     mvwprintw(w_look, 1, 1, "%s; Movement cost %d", m.tername(lx, ly).c_str(),
                                                     m.move_cost(lx, ly) * 50);
    mvwprintw(w_look, 2, 1, "%s", m.features(lx, ly).c_str());
-   field tmpfield = m.field_at(lx, ly);
-   if (tmpfield.type != fd_null)
-    mvwprintz(w_look, 4, 1, fieldlist[tmpfield.type].color[tmpfield.density-1],
-              "%s", fieldlist[tmpfield.type].name[tmpfield.density-1].c_str());
+   const auto& f = m.field_at(lx, ly);
+   if (f.type != fd_null)
+    mvwprintz(w_look, 4, 1, fieldlist[f.type].color[f.density-1],
+              "%s", f.name().c_str());
    const auto tr_id = m.tr_at(lx, ly);
    if (tr_id != tr_null) {
 	 const trap* const tr = trap::traps[m.tr_at(lx, ly)];

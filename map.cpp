@@ -2106,46 +2106,36 @@ field& map::field_at(int x, int y)
 
 bool map::add_field(game *g, int x, int y, field_id t, unsigned char density)
 {
- if (!INBOUNDS(x, y))
-  return false;
- if (field_at(x, y).type == fd_web && t == fd_fire)
-  density++;
+ if (!INBOUNDS(x, y)) return false;
+ if (field_at(x, y).type == fd_web && t == fd_fire) density++;
  else if (!field_at(x, y).is_null()) // Blood & bile are null too
   return false;
- if (density > 3)
-  density = 3;
- if (density <= 0)
-  return false;
+ if (density > 3) density = 3;
+ if (density <= 0) return false;
  int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
  x %= SEEX;
  y %= SEEY;
- if (grid[nonant]->fld[x][y].type == fd_null)
-  grid[nonant]->field_count++;
- grid[nonant]->fld[x][y] = field(t, density, 0);
- if (g != NULL && x == g->u.posx && y == g->u.posy &&
-     grid[nonant]->fld[x][y].is_dangerous()) {
-  g->cancel_activity_query("You're in a %s!",
-                           fieldlist[t].name[density - 1].c_str());
+ if (grid[nonant]->fld[x][y].type == fd_null) grid[nonant]->field_count++;
+ grid[nonant]->fld[x][y] = field(t, density);
+ if (g != NULL && x == g->u.posx && y == g->u.posy && grid[nonant]->fld[x][y].is_dangerous()) {
+  g->cancel_activity_query("You're in a %s!", fieldlist[t].name[density - 1].c_str());
  }
  return true;
 }
 
 void map::remove_field(int x, int y)
 {
- if (!INBOUNDS(x, y))
-  return;
+ if (!INBOUNDS(x, y)) return;
  int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
  x %= SEEX;
  y %= SEEY;
- if (grid[nonant]->fld[x][y].type != fd_null)
-  grid[nonant]->field_count--;
+ if (grid[nonant]->fld[x][y].type != fd_null) grid[nonant]->field_count--;
  grid[nonant]->fld[x][y] = field();
 }
 
 computer* map::computer_at(int x, int y)
 {
- if (!INBOUNDS(x, y))
-  return NULL;
+ if (!INBOUNDS(x, y)) return NULL;
 /*
  int nonant;
  cast_to_nonant(x, y, nonant);
@@ -2154,8 +2144,7 @@ computer* map::computer_at(int x, int y)
 
  x %= SEEX;
  y %= SEEY;
- if (grid[nonant]->comp.name == "")
-  return NULL;
+ if (grid[nonant]->comp.name == "") return NULL;
  return &(grid[nonant]->comp);
 }
 
