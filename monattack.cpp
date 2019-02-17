@@ -408,7 +408,7 @@ void mattack::vine(game *g, monster *z)
  int dist_from_hub = 999;
  for (int i = 0; i < g->z.size(); i++) {
   if (g->z[i].type->id == mon_creeper_hub) {
-   int dist = rl_dist(z->pos.x, z->pos.y, g->z[i].pos.x, g->z[i].pos.y);
+   int dist = rl_dist(z->pos, g->z[i].pos);
    if (dist < dist_from_hub) dist_from_hub = dist;
   }
  }
@@ -728,7 +728,7 @@ void mattack::dogthing(game *g, monster *z)	// XXX only happens when PC can see 
 
  for (int x = z->pos.x - 2; x <= z->pos.x + 2; x++) {
   for (int y = z->pos.y - 2; y <= z->pos.y + 2; y++) {
-   if (rng(0, 2) >= rl_dist(z->pos.x, z->pos.y, x, y))
+   if (rng(0, 2) >= rl_dist(z->pos, x, y))
     g->m.add_field(g, x, y, fd_blood, 2);
   }
  }
@@ -988,7 +988,7 @@ void mattack::smg(game *g, monster *z)
   monster* target = NULL;
   int closest = 19;
   for (int i = 0; i < g->z.size(); i++) {
-   int dist = rl_dist(z->pos.x, z->pos.y, g->z[i].pos.x, g->z[i].pos.y);
+   int dist = rl_dist(z->pos, g->z[i].pos);
    if (g->z[i].friendly == 0 && dist < closest && 
        g->m.sees(z->pos.x, z->pos.y, g->z[i].pos.x, g->z[i].pos.y, 18, t)) {
     target = &(g->z[i]);
@@ -1129,8 +1129,7 @@ void mattack::upgrade(game *g, monster *z)
 {
  std::vector<int> targets;
  for (int i = 0; i < g->z.size(); i++) {
-  if (g->z[i].type->id == mon_zombie &&
-      rl_dist(z->pos.x, z->pos.y, g->z[i].pos.x, g->z[i].pos.y) <= 5)
+  if (g->z[i].type->id == mon_zombie && rl_dist(z->pos, g->z[i].pos) <= 5)
    targets.push_back(i);
  }
  if (targets.empty()) return;

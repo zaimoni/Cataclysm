@@ -60,10 +60,10 @@ void mdeath::kill_vines(game *g, monster *z)
 
  for (int i = 0; i < vines.size(); i++) {
   monster *vine = &(g->z[vines[i]]);
-  int dist = rl_dist(vine->pos.x, vine->pos.y, z->pos.x, z->pos.y);
+  int dist = rl_dist(vine->pos, z->pos);
   bool closer_hub = false;
   for (int j = 0; j < hubs.size() && !closer_hub; j++) {
-   if (rl_dist(vine->pos.x, vine->pos.y, g->z[hubs[j]].pos.x, g->z[hubs[j]].pos.y) < dist) {
+   if (rl_dist(vine->pos, g->z[hubs[j]].pos) < dist) {
     closer_hub = true;
 	break;
    }

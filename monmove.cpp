@@ -59,10 +59,10 @@ void monster::plan(game *g)
  if (friendly != 0) {	// Target monsters, not the player!
   for (int i = 0; i < g->z.size(); i++) {
    monster *tmp = &(g->z[i]);
-   if (tmp->friendly == 0 && rl_dist(pos.x, pos.y, tmp->pos.x, tmp->pos.y) < dist &&
+   if (tmp->friendly == 0 && rl_dist(pos, tmp->pos) < dist &&
        g->m.sees(pos.x, pos.y, tmp->pos.x, tmp->pos.y, sightrange, tc)) {
     closest = i;
-    dist = rl_dist(pos.x, pos.y, tmp->pos.x, tmp->pos.y);
+    dist = rl_dist(pos, tmp->pos);
     stc = tc;
    }
   }
@@ -116,7 +116,7 @@ void monster::plan(game *g)
   fleeing = attitude() == MATT_FLEE;
   for (int i = 0; i < g->z.size(); i++) {
    monster *mon = &(g->z[i]);
-   int mondist = rl_dist(pos.x, pos.y, mon->pos.x, mon->pos.y);
+   int mondist = rl_dist(pos, mon->pos);
    if (mon->friendly != 0 && mondist < dist && can_see() &&
        g->m.sees(pos.x, pos.y, mon->pos.x, mon->pos.y, sightrange, tc)) {
     dist = mondist;
@@ -665,8 +665,7 @@ bool monster::will_reach(game *g, int x, int y)
 	 if ( 0 < scent && g->scent(x, y) > scent) return true;
  }
 
- if (can_hear() && wandf > 0 && rl_dist(wand.x, wand.y, x, y) <= 2 &&
-     rl_dist(pos.x, pos.y, wand.x, wand.y) <= wandf)
+ if (can_hear() && wandf > 0 && rl_dist(wand.x, wand.y, x, y) <= 2 && rl_dist(pos, wand) <= wandf)
   return true;
 
  if (can_see() && g->m.sees(pos.x, pos.y, x, y, g->light_level())) return true;

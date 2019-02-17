@@ -6384,7 +6384,7 @@ void map::post_process(game *g, unsigned zones)
    int radius = rng(1, 4);
    for (int x = center.x - radius; x <= center.x + radius; x++) {
     for (int y = center.y - radius; y <= center.y + radius; y++) {
-     if (rl_dist(x, y, center.x, center.y) <= rng(1, radius))
+     if (rl_dist(x, y, center) <= rng(1, radius))
       destroy(g, x, y, false);
     }
    }

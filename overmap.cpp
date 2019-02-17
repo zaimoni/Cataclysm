@@ -515,9 +515,9 @@ point overmap::find_note(point origin, const std::string& text)
  int closest = 9999;
  point ret(-1, -1);
  for (int i = 0; i < notes.size(); i++) {
-  if (notes[i].text.find(text) != std::string::npos &&
-      rl_dist(origin.x, origin.y, notes[i].x, notes[i].y) < closest) {
-   closest = rl_dist(origin.x, origin.y, notes[i].x, notes[i].y);
+  int dist = rl_dist(origin, notes[i].x, notes[i].y);
+  if (notes[i].text.find(text) != std::string::npos && dist < closest) {
+   closest = dist;
    ret = point(notes[i].x, notes[i].y);
   }
  }
@@ -1021,11 +1021,11 @@ std::vector<point> overmap::find_terrain(std::string term, int cursx, int cursy)
  return found;
 }
 
-int overmap::closest_city(point p)
+int overmap::closest_city(point p) const
 {
  int distance = 999, ret = -1;
  for (int i = 0; i < cities.size(); i++) {
-  int dist = rl_dist(p.x, p.y, cities[i].x, cities[i].y);
+  int dist = rl_dist(p, cities[i].x, cities[i].y);
   if (dist < distance || (dist == distance && cities[i].s < cities[ret].s)) {
    ret = i;
    distance = dist;
@@ -1059,11 +1059,11 @@ point overmap::random_house_in_city(int city_id)
  return valid[ rng(0, valid.size() - 1) ];
 }
 
-int overmap::dist_from_city(point p)
+int overmap::dist_from_city(point p) const
 {
  int distance = 999;
  for (int i = 0; i < cities.size(); i++) {
-  int dist = rl_dist(p.x, p.y, cities[i].x, cities[i].y);
+  int dist = rl_dist(p, cities[i].x, cities[i].y);
   dist -= cities[i].s;
   if (dist < distance)
    distance = dist;
@@ -1257,7 +1257,7 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
     mvwprintz(w, 1, 51, c_dkgray, "# Unexplored");
 
    if (target.x != -1 && target.y != -1) {
-    int distance = rl_dist(origx, origy, target.x, target.y);
+    int distance = rl_dist(origx, origy, target);
     mvwprintz(w, 3, 51, c_white, "Distance to target: %d", distance);
    }
    mvwprintz(w, 17, 51, c_magenta,           "Use movement keys to pan.  ");
@@ -2427,7 +2427,7 @@ void overmap::place_special(overmap_special special, point p)
  if (special.flags & mfb(OMS_FLAG_ROAD)) {
   int closest = -1, distance = 999;
   for (int i = 0; i < cities.size(); i++) {
-   int dist = rl_dist(p.x, p.y, cities[i].x, cities[i].y);
+   int dist = rl_dist(p, cities[i].x, cities[i].y);
    if (dist < distance) {
     closest = i;
     distance = dist;
@@ -2439,7 +2439,7 @@ void overmap::place_special(overmap_special special, point p)
  if (special.flags & mfb(OMS_FLAG_PARKING_LOT)) {
   int closest = -1, distance = 999;
   for (int i = 0; i < cities.size(); i++) {
-   int dist = rl_dist(p.x, p.y, cities[i].x, cities[i].y);
+   int dist = rl_dist(p, cities[i].x, cities[i].y);
    if (dist < distance) {
     closest = i;
     distance = dist;

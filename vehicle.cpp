@@ -1568,7 +1568,7 @@ bool vehicle::fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int
     int range = ammo.type == AT_GAS? 5 : 12;
     int closest = range + 1;
     for (int i = 0; i < g->z.size(); i++) {
-        int dist = rl_dist(origin.x, origin.y, g->z[i].pos.x, g->z[i].pos.y);
+        int dist = rl_dist(origin, g->z[i].pos);
         if (g->z[i].friendly == 0 && dist < closest &&
             g->m.sees(origin.x, origin.y, g->z[i].pos.x, g->z[i].pos.y, range, t))
         {

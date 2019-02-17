@@ -1948,13 +1948,12 @@ void map::process_active_items_in_submap(game *g, int nonant)
  }
 }
 
-void map::use_amount(point origin, int range, itype_id type, int quantity,
-                     bool use_container)
+void map::use_amount(point origin, int range, itype_id type, int quantity, bool use_container)
 {
  for (int radius = 0; radius <= range && quantity > 0; radius++) {
   for (int x = origin.x - radius; x <= origin.x + radius; x++) {
    for (int y = origin.y - radius; y <= origin.y + radius; y++) {
-    if (rl_dist(origin.x, origin.y, x, y) >= radius) {
+    if (rl_dist(origin, x, y) <= radius) {
      for (int n = 0; n < i_at(x, y).size() && quantity > 0; n++) {
       item* curit = &(i_at(x, y)[n]);
       bool used_contents = false;
@@ -1986,7 +1985,7 @@ void map::use_charges(point origin, int range, itype_id type, int quantity)
  for (int radius = 0; radius <= range && quantity > 0; radius++) {
   for (int x = origin.x - radius; x <= origin.x + radius; x++) {
    for (int y = origin.y - radius; y <= origin.y + radius; y++) {
-    if (rl_dist(origin.x, origin.y, x, y) >= radius) {
+    if (rl_dist(origin, x, y) <= radius) {
      for (int n = 0; n < i_at(x, y).size(); n++) {
       item* curit = &(i_at(x, y)[n]);
 // Check contents first
@@ -2557,7 +2556,7 @@ std::vector<point> map::route(int Fx, int Fy, int Tx, int Ty, bool bash)
   while (cur.x != Fx || cur.y != Fy) {
    //debugmsg("Retracing... (%d:%d) => [%d:%d] => (%d:%d)", Tx, Ty, cur.x, cur.y, Fx, Fy);
    tmp.push_back(cur);
-   if (rl_dist(cur.x, cur.y, parent[cur.x][cur.y].x, parent[cur.x][cur.y].y)>1){
+   if (rl_dist(cur, parent[cur.x][cur.y])>1){
     debugmsg("Jump in our route! %d:%d->%d:%d", cur.x, cur.y,
              parent[cur.x][cur.y].x, parent[cur.x][cur.y].y);
     return ret;

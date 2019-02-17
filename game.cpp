@@ -1112,14 +1112,11 @@ bool game::mission_complete(int id, int npc_id)
  switch (type->goal) {
   case MGOAL_GO_TO: {
    point cur_pos(lev.x + int(MAPSIZE / 2), lev.y + int(MAPSIZE / 2));
-   if (rl_dist(cur_pos.x, cur_pos.y, miss->target.x, miss->target.y) <= 1)
-    return true;
-   return false;
+   return rl_dist(cur_pos, miss->target) <= 1;
   } break;
 
   case MGOAL_FIND_ITEM:
-   if (!u.has_amount(type->item_id, 1))
-    return false;
+   if (!u.has_amount(type->item_id, 1)) return false;
    if (miss->npc_id != -1 && miss->npc_id != npc_id)
     return false;
    return true;
@@ -1132,8 +1129,7 @@ bool game::mission_complete(int id, int npc_id)
    if (miss->npc_id != -1 && miss->npc_id != npc_id)
     return false;
    for (int i = 0; i < z.size(); i++) {
-    if (z[i].mission_id == miss->uid)
-     return true;
+    if (z[i].mission_id == miss->uid) return true;
    }
    return false;
 
@@ -3269,7 +3265,7 @@ void game::sound(int x, int y, int vol, std::string description)
 // First, alert all monsters (that can hear) to the sound
  for (int i = 0; i < z.size(); i++) {
   if (z[i].can_hear()) {
-   int dist = rl_dist(x, y, z[i].pos.x, z[i].pos.y);
+   int dist = rl_dist(x, y, z[i].pos);
    int volume = vol - (z[i].has_flag(MF_GOODHEARING) ? int(dist / 2) : dist);
    z[i].wander_to(x, y, volume);
    z[i].process_trigger(MTRIG_SOUND, volume);
@@ -3490,7 +3486,7 @@ void game::flashbang(int x, int y)
    u.infect(DI_BLIND, bp_eyes, (12 - dist) / 2, 10 - dist, this);
  }
  for (int i = 0; i < z.size(); i++) {
-  dist = rl_dist(z[i].pos.x, z[i].pos.y, x, y);
+  dist = rl_dist(z[i].pos, x, y);
   if (dist <= 4) z[i].add_effect(ME_STUNNED, 10 - dist);
   if (dist <= 8) {
    if (z[i].has_flag(MF_SEES) && m.sees(z[i].pos.x, z[i].pos.y, x, y, 8))
