@@ -3740,7 +3740,7 @@ void game::explode_mon(monster& target)
   point pos(target.pos);
   for (int i = 0; i < num_chunks; i++) {
    point tar(pos.x + rng(-3, 3), pos.y + rng(-3, 3));
-   std::vector<point> traj = line_to(pos.x, pos.y, tar.x, tar.y, 0);
+   std::vector<point> traj = line_to(pos, tar, 0);
  
    for (int j = 0; j < traj.size(); j++) {
     tar = traj[j];
@@ -6280,31 +6280,33 @@ void game::set_adjacent_overmaps(bool from_scratch)
 
 void game::update_overmap_seen()
 {
- int omx = (lev.x + int(MAPSIZE / 2)) / 2, omy = (lev.y + int(MAPSIZE / 2)) / 2;
+ point om((lev.x + MAPSIZE / 2) / 2, (lev.y + MAPSIZE / 2) / 2);
  int dist = u.overmap_sight_range(light_level());
- cur_om.seen(omx, omy) = true; // We can always see where we're standing
+ cur_om.seen(om.x, om.y) = true; // We can always see where we're standing
  if (dist == 0) return; // No need to run the rest!
  bool altered_om_vert = false, altered_om_diag = false, altered_om_hori = false;
- for (int x = omx - dist; x <= omx + dist; x++) {
-  for (int y = omy - dist; y <= omy + dist; y++) {
-   std::vector<point> line = line_to(omx, omy, x, y, 0);
+ for (int x = om.x - dist; x <= om.x + dist; x++) {
+  for (int y = om.y - dist; y <= om.y + dist; y++) {
+   std::vector<point> line = line_to(om, x, y, 0);
    int sight_points = dist;
    int cost = 0;
    for (int i = 0; i < line.size() && sight_points >= 0; i++) {
     int lx = line[i].x, ly = line[i].y;
-    if (lx >= 0 && lx < OMAPX && ly >= 0 && ly < OMAPY)
+	const bool x_in_bounds = (0 <= lx && OMAPX > lx);
+	const bool y_in_bounds = (0 <= ly && OMAPX > ly);
+    if (x_in_bounds && y_in_bounds)
      cost = oter_t::list[cur_om.ter(lx, ly)].see_cost;
-    else if ((lx < 0 || lx >= OMAPX) && (ly < 0 || ly >= OMAPY)) {
+    else if (!x_in_bounds && !y_in_bounds) {
      if (lx < 0) lx += OMAPX;
      else        lx -= OMAPX;
      if (ly < 0) ly += OMAPY;
      else        ly -= OMAPY;
      cost = oter_t::list[om_diag->ter(lx, ly)].see_cost;
-    } else if (lx < 0 || lx >= OMAPX) {
+    } else if (!x_in_bounds) {
      if (lx < 0) lx += OMAPX;
      else        lx -= OMAPX;
      cost = oter_t::list[om_hori->ter(lx, ly)].see_cost;
-    } else if (ly < 0 || ly >= OMAPY) {
+    } else if (!y_in_bounds) {
      if (ly < 0) ly += OMAPY;
      else        ly -= OMAPY;
      cost = oter_t::list[om_vert->ter(lx, ly)].see_cost;
@@ -6313,21 +6315,23 @@ void game::update_overmap_seen()
    }
    if (sight_points >= 0) {
     int tmpx = x, tmpy = y;
-    if (tmpx >= 0 && tmpx < OMAPX && tmpy >= 0 && tmpy < OMAPY)
+	const bool x_in_bounds = (0 <= tmpx && OMAPX > tmpx);
+	const bool y_in_bounds = (0 <= tmpy && OMAPX > tmpy);
+	if (x_in_bounds && y_in_bounds)
      cur_om.seen(tmpx, tmpy) = true;
-    else if ((tmpx < 0 || tmpx >= OMAPX) && (tmpy < 0 || tmpy >= OMAPY)) {
+    else if (!x_in_bounds && !y_in_bounds) {
      if (tmpx < 0) tmpx += OMAPX;
      else          tmpx -= OMAPX;
      if (tmpy < 0) tmpy += OMAPY;
      else          tmpy -= OMAPY;
      om_diag->seen(tmpx, tmpy) = true;
      altered_om_diag = true;
-    } else if (tmpx < 0 || tmpx >= OMAPX) {
+    } else if (!x_in_bounds) {
      if (tmpx < 0) tmpx += OMAPX;
      else          tmpx -= OMAPX;
      om_hori->seen(tmpx, tmpy) = true;
      altered_om_hori = true;
-    } else if (tmpy < 0 || tmpy >= OMAPY) {
+    } else if (!y_in_bounds) {
      if (tmpy < 0) tmpy += OMAPY;
      else          tmpy -= OMAPY;
      om_vert->seen(tmpx, tmpy) = true;
@@ -6343,10 +6347,7 @@ void game::update_overmap_seen()
 
 point game::om_location()
 {
- point ret;
- ret.x = int( (lev.x + int(MAPSIZE / 2)) / 2);
- ret.y = int( (lev.y + int(MAPSIZE / 2)) / 2);
- return ret;
+ return point((lev.x + MAPSIZE/2) / 2, (lev.y + MAPSIZE/2) / 2);
 }
 
 void game::replace_stair_monsters()

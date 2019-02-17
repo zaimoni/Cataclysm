@@ -783,7 +783,7 @@ void mattack::vortex(game *g, monster *z)
  for (int x = z->pos.x - 2; x <= z->pos.x + 2; x++) {
   for (int y = z->pos.y - 2; y <= z->pos.y + 2; y++) {
    if (x == z->pos.x && y == z->pos.y) y++; // Don't throw us!
-   std::vector<point> from_monster = line_to(z->pos.x, z->pos.y, x, y, 0);
+   std::vector<point> from_monster = line_to(z->pos, x, y, 0);
    while (!g->m.i_at(x, y).empty()) {
     item thrown = g->m.i_at(x, y)[0];
     g->m.i_rem(x, y, 0);

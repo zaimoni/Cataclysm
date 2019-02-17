@@ -100,7 +100,7 @@ std::vector<point> continue_line(std::vector<point> line, int distance)
   if (slope != SLOPE_VERTICAL)
    end.x += int(distance / abs(slope)) * sX;
  }
- return line_to(start.x, start.y, end.x, end.y, 0);
+ return line_to(start, end, 0);
 }
 
 direction direction_from(int x1, int y1, int x2, int y2)

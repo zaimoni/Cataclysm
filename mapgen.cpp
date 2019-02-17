@@ -3917,13 +3917,13 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     place_items(mi_ant_food, 86, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1, true, 0);
     break;
    case 3: { // Hermit cave
-    int origx = rng(SEEX - 1, SEEX), origy = rng(SEEY - 1, SEEY),
-        hermx = rng(SEEX - 6, SEEX + 5), hermy = rng(SEEX - 6, SEEY + 5);
-    std::vector<point> bloodline = line_to(origx, origy, hermx, hermy, 0);
+	point orig(rng(SEEX - 1, SEEX), rng(SEEY - 1, SEEY));
+	point herm(rng(SEEX - 6, SEEX + 5), rng(SEEX - 6, SEEY + 5));
+    std::vector<point> bloodline = line_to(orig, herm, 0);
     for (int ii = 0; ii < bloodline.size(); ii++)
      add_field(g, bloodline[ii].x, bloodline[ii].y, fd_blood, 2);
-    add_item(hermx, hermy, item(messages.turn));
-    place_items(mi_rare, 25, hermx - 1, hermy - 1, hermx + 1, hermy + 1,true,0);
+    add_item(herm.x, herm.y, item(messages.turn));
+    place_items(mi_rare, 25, herm.x - 1, herm.y - 1, herm.x + 1, herm.y + 1,true,0);
    } break;
    }
 
@@ -3932,15 +3932,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    draw_map(ot_forest, t_north, t_east, t_south, t_west, t_above, turn, g);
 // Clear the center with some rocks
    square(this, t_rock, SEEX - 6, SEEY - 6, SEEX + 5, SEEY + 5);
-   int pathx, pathy;
-   if (one_in(2)) {
-    pathx = rng(SEEX - 6, SEEX + 5);
-    pathy = (one_in(2) ? SEEY - 8 : SEEY + 7);
-   } else {
-    pathx = (one_in(2) ? SEEX - 8 : SEEX + 7);
-    pathy = rng(SEEY - 6, SEEY + 5);
-   }
-   std::vector<point> pathline = line_to(pathx, pathy, SEEX - 1, SEEY - 1, 0);
+   point path((one_in(2) ? SEEX - 8 : SEEX + 7), rng(SEEY - 6, SEEY + 5));
+   if (one_in(2)) std::swap(path.x, path.y);
+   std::vector<point> pathline = line_to(path, SEEX - 1, SEEY - 1, 0);
    for (int ii = 0; ii < pathline.size(); ii++)
     square(this, t_dirt, pathline[ii].x,     pathline[ii].y,
                          pathline[ii].x + 1, pathline[ii].y + 1);
@@ -3975,33 +3969,28 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     for (int cx = cavex - 1; cx <= cavex + 1; cx++) {
      for (int cy = cavey - 1; cy <= cavey + 1; cy++) {
       ter(cx, cy) = t_rock_floor;
-      if (one_in(10))
-       add_field(g, cx, cy, fd_blood, rng(1, 3));
-      if (one_in(20))
-       add_spawn(mon_sewer_rat, 1, cx, cy);
+      if (one_in(10)) add_field(g, cx, cy, fd_blood, rng(1, 3));
+      if (one_in(20)) add_spawn(mon_sewer_rat, 1, cx, cy);
      }
     }
-    if (cavey == SEEY - 1)
-     centerx = cavex;
+    if (cavey == SEEY - 1) centerx = cavex;
    } while (cavey > 2);
 // Now draw some extra passages!
    do {
-    int tox = (one_in(2) ? 2 : SEEX * 2 - 3), toy = rng(2, SEEY * 2 - 3);
-    std::vector<point> path = line_to(centerx, SEEY - 1, tox, toy, 0);
+	point to((one_in(2) ? 2 : SEEX * 2 - 3), rng(2, SEEY * 2 - 3));
+    std::vector<point> path = line_to(centerx, SEEY - 1, to, 0);
     for (int i = 0; i < path.size(); i++) {
      for (int cx = path[i].x - 1; cx <= path[i].x + 1; cx++) {
       for (int cy = path[i].y - 1; cy <= path[i].y + 1; cy++) {
        ter(cx, cy) = t_rock_floor;
-       if (one_in(10))
-        add_field(g, cx, cy, fd_blood, rng(1, 3));
-       if (one_in(20))
-        add_spawn(mon_sewer_rat, 1, cx, cy);
+       if (one_in(10)) add_field(g, cx, cy, fd_blood, rng(1, 3));
+       if (one_in(20)) add_spawn(mon_sewer_rat, 1, cx, cy);
       }
      }
     }
     if (one_in(2)) {
-     stairsx = tox;
-     stairsy = toy;
+     stairsx = to.x;
+     stairsy = to.y;
     }
    } while (one_in(2));
 // Finally, draw the stairs up and down.

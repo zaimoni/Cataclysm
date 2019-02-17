@@ -1579,7 +1579,7 @@ bool vehicle::fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int
     }
     if (!target) return false;
 
-    std::vector<point> traj = line_to(origin.x, origin.y, target->pos.x, target->pos.y, fire_t);
+    std::vector<point> traj = line_to(origin, target->pos, fire_t);
     for (int i = 0; i < traj.size(); i++)
         if (traj[i].x == g->u.posx && traj[i].y == g->u.posy)
             return false; // won't shoot at player
