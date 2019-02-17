@@ -71,7 +71,7 @@ void monster::plan(game *g)
    set_dest(g->z[closest].pos.x, g->z[closest].pos.y, stc);
   else if (friendly > 0 && one_in(3))	// Grow restless with no targets
    friendly--;
-  else if (friendly < 0 && g->sees_u(pos.x, pos.y, tc)) {
+  else if (friendly < 0 && g->sees_u(pos, tc)) {
    if (rl_dist(pos.x, pos.y, g->u.posx, g->u.posy) > 2)
     set_dest(g->u.posx, g->u.posy, tc);
    else
@@ -79,7 +79,7 @@ void monster::plan(game *g)
   }
   return;
  }
- if (is_fleeing(g->u) && can_see() && g->sees_u(pos.x, pos.y)) {
+ if (is_fleeing(g->u) && can_see() && g->sees_u(pos)) {
   fleeing = true;
   wand.x = pos.x * 2 - g->u.posx;
   wand.y = pos.y * 2 - g->u.posy;
@@ -87,7 +87,7 @@ void monster::plan(game *g)
   dist = rl_dist(pos.x, pos.y, g->u.posx, g->u.posy);
  }
 // If we can see, and we can see a character, start moving towards them
- if (!is_fleeing(g->u) && can_see() && g->sees_u(pos.x, pos.y, tc)) {
+ if (!is_fleeing(g->u) && can_see() && g->sees_u(pos, tc)) {
   dist = rl_dist(pos.x, pos.y, g->u.posx, g->u.posy);
   closest = -2;
   stc = tc;

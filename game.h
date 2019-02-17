@@ -128,15 +128,20 @@ class game
   void fling_player_or_monster(player *p, monster *zz, int dir, int flvel);
 
   void nuke(int x, int y);
-  std::vector<faction *> factions_at(int x, int y);
   int& scent(int x, int y);
   void clear_scents() { memset(grscent, 0, sizeof(grscent)); }
   unsigned char light_level();
   int assign_npc_id() { return next_npc_id++; }
   int assign_faction_id() { return next_faction_id++; }
   faction* faction_by_id(int it);
+  std::vector<faction *> factions_at(int x, int y);	// dead function
+  faction* random_good_faction();
+  faction* random_evil_faction();
+
   bool sees_u(int x, int y);
+  bool sees_u(const point& pt) { return sees_u(pt.x, pt.y); };
   bool sees_u(int x, int y, int &t);
+  bool sees_u(const point& pt, int &t) { return sees_u(pt.x, pt.y, t); };
   bool u_see (int x, int y);
   bool u_see (int x, int y, int &t);
   bool u_see (const monster *mon);
@@ -145,9 +150,6 @@ class game
   void update_map(int &x, int &y);  // Called by plmove when the map updates
   void update_overmap_seen(); // Update which overmap tiles we can see
   point om_location(); // levx and levy converted to overmap coordinates
-
-  faction* random_good_faction();
-  faction* random_evil_faction();
 
   itype* new_artifact();
   itype* new_natural_artifact(artifact_natural_property prop = ARTPROP_NULL);

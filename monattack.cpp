@@ -58,7 +58,7 @@ void mattack::antqueen(game *g, monster *z)
 
 void mattack::shriek(game *g, monster *z)
 {
- if (rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 4 || !g->sees_u(z->pos.x, z->pos.y)) return;	// Out of range
+ if (rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 4 || !g->sees_u(z->pos)) return;	// Out of range
  z->moves = -240;			// It takes a while
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  g->sound(z->pos, 50, "a terrible shriek!");
@@ -67,7 +67,7 @@ void mattack::shriek(game *g, monster *z)
 void mattack::acid(game *g, monster *z)
 {
  int junk;
- if (rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 10 || !g->sees_u(z->pos.x, z->pos.y, junk)) return;	// Out of range
+ if (rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 10 || !g->sees_u(z->pos, junk)) return;	// Out of range
  z->moves = -300;			// It takes a while
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  g->sound(z->pos, 4, "a spitting noise.");
@@ -97,7 +97,7 @@ void mattack::acid(game *g, monster *z)
 
 void mattack::shockstorm(game *g, monster *z)
 {
- if (!g->sees_u(z->pos.x, z->pos.y) || rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 12) return;	// Can't see you, no attack
+ if (!g->sees_u(z->pos) || rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 12) return;	// Can't see you, no attack
  z->moves = -50;			// It takes a while
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  messages.add("A bolt of electricity arcs towards you!");
@@ -121,7 +121,7 @@ void mattack::shockstorm(game *g, monster *z)
 void mattack::boomer(game *g, monster *z)
 {
  int j;
- if (rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 3 || !g->sees_u(z->pos.x, z->pos.y, j)) return;	// Out of range
+ if (rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 3 || !g->sees_u(z->pos, j)) return;	// Out of range
  std::vector<point> line = line_to(z->pos.x, z->pos.y, g->u.posx, g->u.posy, j);
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  z->moves = -250;			// It takes a while
@@ -204,7 +204,7 @@ void mattack::resurrect(game *g, monster *z)
 void mattack::science(game *g, monster *z)	// I said SCIENCE again!
 {
  int t, dist = rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy);
- if (dist > 5 || !g->sees_u(z->pos.x, z->pos.y, t)) return;	// Out of range
+ if (dist > 5 || !g->sees_u(z->pos, t)) return;	// Out of range
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  std::vector<point> line = line_to(z->pos.x, z->pos.y, g->u.posx, g->u.posy, t);
  std::vector<point> free;
@@ -422,7 +422,7 @@ void mattack::vine(game *g, monster *z)
 void mattack::spit_sap(game *g, monster *z)
 {
 // TODO: Friendly biollantes?
- if (rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 12 || !g->sees_u(z->pos.x, z->pos.y)) return;
+ if (rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 12 || !g->sees_u(z->pos)) return;
 
  z->moves -= 150;
  z->sp_timeout = z->type->sp_freq;
@@ -565,7 +565,7 @@ void mattack::fungus_sprout(game *g, monster *z)
 
 void mattack::leap(game *g, monster *z)
 {
- if (!g->sees_u(z->pos.x, z->pos.y)) return;	// Only leap if we can see you!
+ if (!g->sees_u(z->pos)) return;	// Only leap if we can see you!
 
  std::vector<point> options;
  int best = 0;
@@ -740,7 +740,7 @@ void mattack::dogthing(game *g, monster *z)	// XXX only happens when PC can see 
 void mattack::tentacle(game *g, monster *z)
 {
  int t;
- if (!g->sees_u(z->pos.x, z->pos.y, t)) return;
+ if (!g->sees_u(z->pos, t)) return;
 
  messages.add("The %s lashes its tentacle at you!", z->name().c_str());
  z->moves -= 100;
@@ -915,7 +915,7 @@ void mattack::vortex(game *g, monster *z)
 
 void mattack::gene_sting(game *g, monster *z)
 {
- if (rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 7 || !g->sees_u(z->pos.x, z->pos.y)) return;	// Not within range and/or sight
+ if (rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 7 || !g->sees_u(z->pos)) return;	// Not within range and/or sight
 
  z->moves -= 150;
  z->sp_timeout = z->type->sp_freq;
@@ -927,7 +927,7 @@ void mattack::stare(game *g, monster *z)
 {
  z->moves -= 200;
  z->sp_timeout = z->type->sp_freq;
- if (g->sees_u(z->pos.x, z->pos.y)) {
+ if (g->sees_u(z->pos)) {
   messages.add("The %s stares at you, and you shudder.", z->name().c_str());
   g->u.add_disease(DI_TELEGLOW, 800, g);
  } else {
@@ -961,7 +961,7 @@ void mattack::photograph(game *g, monster *z)
 {
  if (z->faction_id == -1 ||
      rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 6 ||
-     !g->sees_u(z->pos.x, z->pos.y))
+     !g->sees_u(z->pos))
   return;
  z->sp_timeout = z->type->sp_freq;
  z->moves -= 150;
@@ -972,7 +972,7 @@ void mattack::photograph(game *g, monster *z)
 
 void mattack::tazer(game *g, monster *z)
 {
- if (rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 2 || !g->sees_u(z->pos.x, z->pos.y)) return;	// Out of range
+ if (rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 2 || !g->sees_u(z->pos)) return;	// Out of range
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  z->moves = -200;			// It takes a while
  messages.add("The %s shocks you!", z->name().c_str());
@@ -1020,7 +1020,7 @@ void mattack::smg(game *g, monster *z)
  }
  
 // Not friendly; hence, firing at the player
- if (rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 24 || !g->sees_u(z->pos.x, z->pos.y, t)) return;
+ if (rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 24 || !g->sees_u(z->pos, t)) return;
  z->sp_timeout = z->type->sp_freq;	// Reset timer
 
  if (!z->has_effect(ME_TARGETED)) {
@@ -1054,7 +1054,7 @@ void mattack::smg(game *g, monster *z)
 void mattack::flamethrower(game *g, monster *z)
 {
  int t;
- if (abs(g->u.posx - z->pos.x) > 5 || abs(g->u.posy - z->pos.y) > 5 || !g->sees_u(z->pos.x, z->pos.y, t)) return;	// Out of range
+ if (abs(g->u.posx - z->pos.x) > 5 || abs(g->u.posy - z->pos.y) > 5 || !g->sees_u(z->pos, t)) return;	// Out of range
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  z->moves = -500;			// It takes a while
  std::vector<point> traj = line_to(z->pos.x, z->pos.y, g->u.posx, g->u.posy, t);
@@ -1065,7 +1065,7 @@ void mattack::flamethrower(game *g, monster *z)
 
 void mattack::copbot(game *g, monster *z)
 {
- const bool sees_u = g->sees_u(z->pos.x, z->pos.y);
+ const bool sees_u = g->sees_u(z->pos);
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  if (rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 2 || !sees_u) {
   if (one_in(3)) {
@@ -1086,7 +1086,7 @@ void mattack::copbot(game *g, monster *z)
 void mattack::multi_robot(game *g, monster *z)
 {
  int mode = 0;
- if (!g->sees_u(z->pos.x, z->pos.y)) return;	// Can't see you!
+ if (!g->sees_u(z->pos)) return;	// Can't see you!
  {
  const auto range = rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy);
  if (range == 1 && one_in(2)) mode = 1;
