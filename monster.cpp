@@ -621,7 +621,7 @@ void monster::die(game *g)
   int light = g->light_level();
   for (auto& critter : g->z) {
    if (critter.type->species != type->species) continue;
-   if (!g->m.sees(critter.pos.x, critter.pos.y, pos.x, pos.y, light)) continue;
+   if (!g->m.sees(critter.pos, pos, light)) continue;
    critter.morale += morale_adjust;
    critter.anger += anger_adjust;
   }

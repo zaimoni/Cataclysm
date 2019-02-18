@@ -1497,8 +1497,7 @@ void iuse::gasbomb_act(game *g, player *p, item *it, bool t)
    for (int i = -2; i <= 2; i++) {
     for (int j = -2; j <= 2; j++) {
 	 point dest(pos.x + i, pos.y + j);
-     if (g->m.sees(pos.x, pos.y, dest.x, dest.y, 3) &&
-         g->m.move_cost(dest) > 0)
+     if (g->m.sees(pos, dest, 3) && g->m.move_cost(dest) > 0)
       g->m.add_field(g, dest.x, dest.y, fd_tear_gas, 3);
     }
    }
@@ -1524,8 +1523,7 @@ void iuse::smokebomb_act(game *g, player *p, item *it, bool t)
    for (int i = -2; i <= 2; i++) {
     for (int j = -2; j <= 2; j++) {
 	 point dest(pos.x + i, pos.y + j);
-     if (g->m.sees(pos.x, pos.y, dest.x, dest.y, 3) &&
-         g->m.move_cost(dest) > 0)
+     if (g->m.sees(pos, dest, 3) && g->m.move_cost(dest) > 0)
       g->m.add_field(g, dest.x, dest.y, fd_smoke, rng(1, 2) + rng(0, 1));
     }
    }
@@ -1628,8 +1626,7 @@ void iuse::mininuke_act(game *g, player *p, item *it, bool t)
   for (int i = -4; i <= 4; i++) {
    for (int j = -4; j <= 4; j++) {
 	point dest(pos.x + i, pos.y + j);
-    if (g->m.sees(pos.x, pos.y, dest.x, dest.y, 3) &&
-        g->m.move_cost(dest) > 0)
+    if (g->m.sees(pos, dest, 3) && g->m.move_cost(dest) > 0)
      g->m.add_field(g, dest.x, dest.y, fd_nuke_gas, 3);
    }
   }

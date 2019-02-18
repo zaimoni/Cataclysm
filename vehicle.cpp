@@ -1566,12 +1566,11 @@ bool vehicle::fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int
     monster *target = 0;
     int range = ammo.type == AT_GAS? 5 : 12;
     int closest = range + 1;
-    for (int i = 0; i < g->z.size(); i++) {
-        int dist = rl_dist(origin, g->z[i].pos);
-        if (g->z[i].friendly == 0 && dist < closest &&
-            g->m.sees(origin.x, origin.y, g->z[i].pos.x, g->z[i].pos.y, range, t))
-        {
-            target = &(g->z[i]);
+	for(auto& _mon : g->z) {
+        int dist = rl_dist(origin, _mon.pos);
+        if (_mon.friendly == 0 && dist < closest &&
+            g->m.sees(origin, _mon.pos, range, t)) {
+            target = &_mon;
             closest = dist;
             fire_t = t;
         }

@@ -3485,17 +3485,15 @@ void game::flashbang(int x, int y)
   if (m.sees(u.posx, u.posy, x, y, 8))
    u.infect(DI_BLIND, bp_eyes, (12 - dist) / 2, 10 - dist, this);
  }
- for (int i = 0; i < z.size(); i++) {
-  dist = rl_dist(z[i].pos, x, y);
-  if (dist <= 4) z[i].add_effect(ME_STUNNED, 10 - dist);
-  if (dist <= 8) {
-   if (z[i].has_flag(MF_SEES) && m.sees(z[i].pos.x, z[i].pos.y, x, y, 8))
-    z[i].add_effect(ME_BLIND, 18 - dist);
-   if (z[i].has_flag(MF_HEARS)) z[i].add_effect(ME_DEAF, 60 - dist * 4);
-  }
+ // TODO: Blind/deafen NPC
+ for (auto& _mon : z) {
+  dist = rl_dist(_mon.pos, x, y);
+  if (8 < dist) continue;
+  if (dist <= 4) _mon.add_effect(ME_STUNNED, 10 - dist);
+  if (_mon.has_flag(MF_SEES) && m.sees(_mon.pos, x, y, 8)) _mon.add_effect(ME_BLIND, 18 - dist);
+  if (_mon.has_flag(MF_HEARS)) _mon.add_effect(ME_DEAF, 60 - dist * 4);
  }
  sound(x, y, 12, "a huge boom!");
-// TODO: Blind/deafen NPC
 }
 
 void game::use_computer(int x, int y)

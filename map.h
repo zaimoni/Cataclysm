@@ -49,7 +49,13 @@ class map
  // tc indicates the Bresenham line used to connect the two points, and may
  //  subsequently be used to form a path between them
  bool sees(int Fx, int Fy, int Tx, int Ty, int range);
+ bool sees(const point& F, int Tx, int Ty, int range) { return sees(F.x, F.y, Tx, Ty, range); };
+ bool sees(const point& F, const point& T, int range) { return sees(F.x, F.y, T.x, T.y, range); };
+ bool sees(int Fx, int Fy, const point& T, int range) { return sees(Fx, Fy, T.x, T.y, range); };
  bool sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc);
+ bool sees(const point& F, int Tx, int Ty, int range, int &tc) { return sees(F.x, F.y, Tx, Ty, range, tc); };
+ bool sees(const point& F, const point& T, int range, int &tc) { return sees(F.x, F.y, T.x, T.y, range, tc); };
+ bool sees(int Fx, int Fy, const point& T, int range, int &tc) { return sees(Fx, Fy, T.x, T.y, range, tc); };
  // clear_path is the same idea, but uses cost_min <= move_cost <= cost_max
  bool clear_path(int Fx, int Fy, int Tx, int Ty, int range, int cost_min,
                  int cost_max, int &tc);

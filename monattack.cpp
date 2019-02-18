@@ -68,8 +68,8 @@ void mattack::acid(game *g, monster *z)
  z->moves = -300;			// It takes a while
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  g->sound(z->pos, 4, "a spitting noise.");
- int hitx = g->u.posx + rng(-2, 2), hity = g->u.posy + rng(-2, 2);
- std::vector<point> line = line_to(z->pos.x, z->pos.y, hitx, hity, junk);
+ point hit(g->u.posx + rng(-2, 2), g->u.posy + rng(-2, 2));
+ std::vector<point> line = line_to(z->pos, hit, junk);
  for (int i = 0; i < line.size(); i++) {
   if (g->m.hit_with_acid(g, line[i].x, line[i].y)) {
    if (g->u_see(line[i]))
@@ -79,9 +79,9 @@ void mattack::acid(game *g, monster *z)
  }
  for (int i = -3; i <= 3; i++) {
   for (int j = -3; j <= 3; j++) {
-   point dest(hitx + i, hity + j);
+   point dest(hit.x + i, hit.y + j);
    if (g->m.move_cost(dest) > 0 &&
-       g->m.sees(dest.x, dest.y, hitx, hity, 6) &&
+       g->m.sees(dest, hit, 6) &&
        one_in(abs(j)) && one_in(abs(i))) {
 	 auto& f = g->m.field_at(dest.x, dest.y);
      if (f.type == fd_acid && f.density < 3) f.density++;
@@ -100,7 +100,7 @@ void mattack::shockstorm(game *g, monster *z)
  int tarx = g->u.posx + rng(-1, 1) + rng(-1, 1),// 3 in 9 chance of direct hit,
      tary = g->u.posy + rng(-1, 1) + rng(-1, 1);// 4 in 9 chance of near hit
  int t;
- std::vector<point> bolt = line_to(z->pos.x, z->pos.y, tarx, tary, (g->m.sees(z->pos.x, z->pos.y, tarx, tary, -1, t) ? t : 0));
+ std::vector<point> bolt = line_to(z->pos, tarx, tary, (g->m.sees(z->pos, tarx, tary, -1, t) ? t : 0));
  for (int i = 0; i < bolt.size(); i++) { // Fill the LOS with electricity
   if (!one_in(4))
    g->m.add_field(g, bolt[i].x, bolt[i].y, fd_electricity, rng(1, 3));
@@ -153,7 +153,7 @@ void mattack::resurrect(game *g, monster *z)
 // Find all corposes that we can see within 4 tiles.
  for (int x = z->pos.x - 4; x <= z->pos.x + 4; x++) {
   for (int y = z->pos.y - 4; y <= z->pos.y + 4; y++) {
-   if (g->is_empty(x, y) && g->m.sees(z->pos.x, z->pos.y, x, y, -1)) {
+   if (g->is_empty(x, y) && g->m.sees(z->pos, x, y, -1)) {
     for (int i = 0; i < g->m.i_at(x, y).size(); i++) {
      if (g->m.i_at(x, y)[i].type->id == itm_corpse &&
          g->m.i_at(x, y)[i].corpse->species == species_zombie) {
@@ -571,7 +571,7 @@ void mattack::leap(game *g, monster *z)
  * from the player; otherwise, those tiles with the least distance from the
  * player.
  */
-   if (g->is_empty(x, y) && g->m.sees(z->pos.x, z->pos.y, x, y, g->light_level()) &&
+   if (g->is_empty(x, y) && g->m.sees(z->pos, x, y, g->light_level()) &&
        (( fleeing && rl_dist(g->u.posx, g->u.posy, x, y) >= best) ||
         (!fleeing && rl_dist(g->u.posx, g->u.posy, x, y) <= best)   )) {
     options.push_back( point(x, y) );
@@ -979,17 +979,16 @@ void mattack::smg(game *g, monster *z)
  if (z->friendly != 0) { // Attacking monsters, not the player!
   monster* target = NULL;
   int closest = 19;
-  for (int i = 0; i < g->z.size(); i++) {
-   int dist = rl_dist(z->pos, g->z[i].pos);
-   if (g->z[i].friendly == 0 && dist < closest && 
-       g->m.sees(z->pos.x, z->pos.y, g->z[i].pos.x, g->z[i].pos.y, 18, t)) {
-    target = &(g->z[i]);
+  for(auto& _mon : g->z) {
+   int dist = rl_dist(z->pos, _mon.pos);
+   if (_mon.friendly == 0 && dist < closest &&  g->m.sees(z->pos, _mon.pos, 18, t)) {
+    target = &_mon;
     closest = dist;
     fire_t = t;
    }
   }
-  z->sp_timeout = z->type->sp_freq;	// Reset timer
   if (target == NULL) return; // Couldn't find any targets!
+  z->sp_timeout = z->type->sp_freq;	// Reset timer
   z->moves = -150;			// It takes a while
   if (g->u_see(z->pos)) messages.add("The %s fires its smg!", z->name().c_str());
   player tmp;

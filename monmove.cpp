@@ -52,25 +52,23 @@ void monster::wander_to(int x, int y, int f)
 void monster::plan(game *g)
 {
  int sightrange = g->light_level();
- int closest = -1;
  int dist = 1000;
  int tc, stc;
  bool fleeing = false;
  if (friendly != 0) {	// Target monsters, not the player!
-  for (int i = 0; i < g->z.size(); i++) {
-   monster *tmp = &(g->z[i]);
-   if (tmp->friendly == 0 && rl_dist(pos, tmp->pos) < dist &&
-       g->m.sees(pos.x, pos.y, tmp->pos.x, tmp->pos.y, sightrange, tc)) {
-    closest = i;
-    dist = rl_dist(pos, tmp->pos);
-    stc = tc;
+  const monster* closest_mon = NULL;
+  if (!has_effect(ME_DOCILE)) {
+   for (const auto& _mon : g->z) {
+    const int test = rl_dist(pos, _mon.pos);
+    if (_mon.friendly == 0 && test < dist && g->m.sees(pos, _mon.pos, sightrange, tc)) {
+     closest_mon = &_mon;
+     dist = test;
+     stc = tc;
+    }
    }
   }
-  if (has_effect(ME_DOCILE)) closest = -1;
-  if (closest >= 0)
-   set_dest(g->z[closest].pos.x, g->z[closest].pos.y, stc);
-  else if (friendly > 0 && one_in(3))	// Grow restless with no targets
-   friendly--;
+  if (closest_mon) set_dest(closest_mon->pos.x, closest_mon->pos.y, stc);
+  else if (friendly > 0 && one_in(3)) friendly--;	// Grow restless with no targets
   else if (friendly < 0 && g->sees_u(pos, tc)) {
    if (rl_dist(pos.x, pos.y, g->u.posx, g->u.posy) > 2)
     set_dest(g->u.posx, g->u.posy, tc);
@@ -86,6 +84,8 @@ void monster::plan(game *g)
   wandf = 40;
   dist = rl_dist(pos.x, pos.y, g->u.posx, g->u.posy);
  }
+
+ int closest = -1;
 // If we can see, and we can see a character, start moving towards them
  if (!is_fleeing(g->u) && can_see() && g->sees_u(pos, tc)) {
   dist = rl_dist(pos.x, pos.y, g->u.posx, g->u.posy);
@@ -112,30 +112,28 @@ void monster::plan(game *g)
    }
   }
  }
+ if (!fleeing) fleeing = attitude() == MATT_FLEE;
  if (!fleeing) {
-  fleeing = attitude() == MATT_FLEE;
-  for (int i = 0; i < g->z.size(); i++) {
-   monster *mon = &(g->z[i]);
-   int mondist = rl_dist(pos, mon->pos);
-   if (mon->friendly != 0 && mondist < dist && can_see() &&
-       g->m.sees(pos.x, pos.y, mon->pos.x, mon->pos.y, sightrange, tc)) {
+  const monster* closest_mon = NULL;
+  for (const auto& _mon : g->z) {
+   int mondist = rl_dist(pos, _mon.pos);
+   if (_mon.friendly != 0 && mondist < dist && can_see() && g->m.sees(pos, _mon.pos, sightrange, tc)) {
     dist = mondist;
     if (fleeing) {
-     wand.x = pos.x * 2 - mon->pos.x;
-     wand.y = pos.y * 2 - mon->pos.y;
+	 wand = 2*pos;
+	 wand -= _mon.pos;
      wandf = 40;
     } else {
-     closest = -3 - i;
+     closest_mon = &_mon;
      stc = tc;
     }
    }
   }
- }
- if (!fleeing) {
+
   if (closest == -2)
    set_dest(g->u.posx, g->u.posy, stc);
-  else if (closest <= -3)
-   set_dest(g->z[-3 - closest].pos.x, g->z[-3 - closest].pos.y, stc);
+  else if (closest_mon)
+   set_dest(closest_mon->pos.x, closest_mon->pos.y, stc);
   else if (closest >= 0)
    set_dest(g->active_npc[closest].posx, g->active_npc[closest].posy, stc);
  }
@@ -566,7 +564,7 @@ void monster::stumble(game *g, bool moved)
 // Otherwise the stumble will basically have no effect!
   if (plans.size() > 0) {
    int tc;
-   if (g->m.sees(pos.x, pos.y, plans[0].x, plans[0].y, -1, tc)) {
+   if (g->m.sees(pos, plans[0], -1, tc)) {
 // Copy out old plans...
     std::vector<point> plans2;
 	std::swap(plans2, plans);
@@ -663,7 +661,7 @@ bool monster::will_reach(game *g, int x, int y)
  if (can_hear() && wandf > 0 && rl_dist(wand.x, wand.y, x, y) <= 2 && rl_dist(pos, wand) <= wandf)
   return true;
 
- if (can_see() && g->m.sees(pos.x, pos.y, x, y, g->light_level())) return true;
+ if (can_see() && g->m.sees(pos, x, y, g->light_level())) return true;
 
  return false;
 }
