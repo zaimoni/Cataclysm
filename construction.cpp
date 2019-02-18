@@ -14,28 +14,28 @@ std::vector<constructable*> constructable::constructions; // The list of constru
 struct construct // Construction functions.
 {
 	// Bools - able to build at the given point?
-	static bool able_always(game *, point) { return true; }
-	static bool able_never(game *, point) { return false; }
+	static bool able_always(map&, point) { return true; }
+	static bool able_never(map&, point) { return false; }
 
-	static bool able_empty(game *, point); // Able if tile is empty
+	static bool able_empty(map&, point); // Able if tile is empty
 
-	static bool able_window(game *, point); // Any window tile
-	static bool able_window_pane(game *, point); // Only intact windows
-	static bool able_broken_window(game *, point); // Able if tile is broken window
+	static bool able_window(map&, point); // Any window tile
+	static bool able_window_pane(map&, point); // Only intact windows
+	static bool able_broken_window(map&, point); // Able if tile is broken window
 
-	static bool able_door(game *, point); // Any door tile
-	static bool able_door_broken(game *, point); // Broken door
+	static bool able_door(map&, point); // Any door tile
+	static bool able_door_broken(map&, point); // Broken door
 
-	static bool able_wall(game *, point); // Able if tile is wall
-	static bool able_wall_wood(game *g, point); // Only player-built walls
+	static bool able_wall(map&, point); // Able if tile is wall
+	static bool able_wall_wood(map&, point); // Only player-built walls
 
-	static bool able_between_walls(game *, point); // Flood-fill contained by walls
+	static bool able_between_walls(map&, point); // Flood-fill contained by walls
 
-	static bool able_dig(game *, point); // Able if diggable terrain
-	static bool able_pit(game *, point); // Able only on pits
+	static bool able_dig(map&, point); // Able if diggable terrain
+	static bool able_pit(map&, point); // Able only on pits
 
-	static bool able_tree(game *, point); // Able on trees
-	static bool able_log(game *, point); // Able on logs
+	static bool able_tree(map&, point); // Able on trees
+	static bool able_log(map&, point); // Able on logs
 
 										 // Does anything special happen when we're finished?
 	static void done_nothing(game *, point) { }
@@ -406,9 +406,8 @@ void game::place_construction(const constructable * const con)
  std::vector<point> valid;
  for (int x = u.posx - 1; x <= u.posx + 1; x++) {
   for (int y = u.posy - 1; y <= u.posy + 1; y++) {
-   if (x == u.posx && y == u.posy)
-    y++;
-   bool place_okay = (*(con->able))(this, point(x, y));
+   if (x == u.posx && y == u.posy) y++;
+   bool place_okay = (*(con->able))(m, point(x, y));
    for (int i = 0; i < con->stages.size() && !place_okay; i++) {
     if (m.ter(x, y) == con->stages[i].terrain) place_okay = true;
    }
@@ -505,63 +504,60 @@ void game::complete_construction()
  (*(built->done))(this, point(terx, tery));
 }
 
-bool construct::able_empty(game *g, point p)
+bool construct::able_empty(map& m, point p)
 {
- return g->m.move_cost(p) == 2;
+ return m.move_cost(p) == 2;
 }
 
-bool construct::able_tree(game *g, point p)
+bool construct::able_tree(map& m, point p)
 {
- return (g->m.ter(p.x, p.y) == t_tree);
+ return m.ter(p.x, p.y) == t_tree;
 }
 
-bool construct::able_log(game *g, point p)
+bool construct::able_log(map& m, point p)
 {
- return (g->m.ter(p.x, p.y) == t_log);
+ return m.ter(p.x, p.y) == t_log;
 }
 
-bool construct::able_window(game *g, point p)
+bool construct::able_window(map& m, point p)
 {
- return (g->m.ter(p.x, p.y) == t_window_frame ||
-         g->m.ter(p.x, p.y) == t_window_empty ||
-         g->m.ter(p.x, p.y) == t_window);
+ const auto t = m.ter(p.x, p.y);
+ return t_window_frame == t || t_window_empty == t || t_window == t;
 }
 
-bool construct::able_window_pane(game *g, point p)
+bool construct::able_window_pane(map& m, point p)
 {
- return (g->m.ter(p.x, p.y) == t_window);
+ return m.ter(p.x, p.y) == t_window;
 }
 
-bool construct::able_broken_window(game *g, point p)
+bool construct::able_broken_window(map& m, point p)
 {
- return (g->m.ter(p.x, p.y) == t_window_frame);
+ return m.ter(p.x, p.y) == t_window_frame;
 }
 
-bool construct::able_door(game *g, point p)
+bool construct::able_door(map& m, point p)
 {
- return (g->m.ter(p.x, p.y) == t_door_c ||
-         g->m.ter(p.x, p.y) == t_door_b ||
-         g->m.ter(p.x, p.y) == t_door_o ||
-         g->m.ter(p.x, p.y) == t_door_locked);
+ const auto t = m.ter(p.x, p.y);
+ return t_door_c == t || t_door_b == t || t_door_o == t || t_door_locked == t;
 }
 
-bool construct::able_door_broken(game *g, point p)
+bool construct::able_door_broken(map& m, point p)
 {
- return (g->m.ter(p.x, p.y) == t_door_b);
+ return m.ter(p.x, p.y) == t_door_b;
 }
 
-bool construct::able_wall(game *g, point p)
+bool construct::able_wall(map& m, point p)
 {
- return (g->m.ter(p.x, p.y) == t_wall_h || g->m.ter(p.x, p.y) == t_wall_v ||
-         g->m.ter(p.x, p.y) == t_wall_wood);
+ const auto t = m.ter(p.x, p.y);
+ return t_wall_h == t || t_wall_v == t || t_wall_wood == t;
 }
 
-bool construct::able_wall_wood(game *g, point p)
+bool construct::able_wall_wood(map& m, point p)
 {
- return (g->m.ter(p.x, p.y) == t_wall_wood);
+ return m.ter(p.x, p.y) == t_wall_wood;
 }
 
-bool construct::able_between_walls(game *g, point p)
+bool construct::able_between_walls(map& m, point p)
 {
  bool fill[SEEX * MAPSIZE][SEEY * MAPSIZE];
  for (int x = 0; x < SEEX * MAPSIZE; x++) {
@@ -569,17 +565,17 @@ bool construct::able_between_walls(game *g, point p)
    fill[x][y] = false;
  }
 
- return (will_flood_stop(&(g->m), fill, p.x, p.y)); // See bottom of file
+ return will_flood_stop(&m, fill, p.x, p.y); // See bottom of file
 }
 
-bool construct::able_dig(game *g, point p)
+bool construct::able_dig(map& m, point p)
 {
- return (g->m.has_flag(diggable, p.x, p.y));
+ return m.has_flag(diggable, p.x, p.y);
 }
 
-bool construct::able_pit(game *g, point p)
+bool construct::able_pit(map& m, point p)
 {
- return (g->m.ter(p.x, p.y) == t_pit);//|| g->m.ter(p.x, p.y) == t_pit_shallow);
+ return (m.ter(p.x, p.y) == t_pit);//|| m.ter(p.x, p.y) == t_pit_shallow);
 }
 
 bool will_flood_stop(map *m, bool (&fill)[SEEX * MAPSIZE][SEEY * MAPSIZE],

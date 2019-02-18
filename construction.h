@@ -22,11 +22,11 @@ struct constructable
  std::string name; // Name as displayed
  int difficulty; // Carpentry skill level required
  std::vector<construction_stage> stages;
- bool (*able)  (game *, point);
+ bool (*able)  (map&, point);
  void (*done)  (game *, point);
 
  constructable(int Id, std::string Name, int Diff,
-               bool (*Able) (game *, point),
+               bool (*Able) (map&, point),
                void (*Done) (game *, point)) :
   id (Id), name (Name), difficulty (Diff), able (Able), done (Done) {};
 
