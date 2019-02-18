@@ -87,10 +87,20 @@ class map
 
 // Terrain
  ter_id& ter(int x, int y); // Terrain at coord (x, y); {x|y}=(0, SEE{X|Y}*3]
+ ter_id& ter(const point& pt) { return ter(pt.x, pt.y); };
+ ter_id ter(int x, int y) const { return const_cast<map*>(this)->ter(x, y); };	// may want to specialize this anyway
+ ter_id ter(const point& pt) const { return const_cast<map*>(this)->ter(pt.x, pt.y); };
+
+ template<ter_id src, ter_id dest> void rewrite(int x, int y) {
+	 static_assert(src!=dest,"src!=dest");
+	 auto& t = ter(x,y);
+	 if (src == t) t = dest;
+ }
+
  std::string tername(int x, int y); // Name of terrain at (x, y)
  std::string features(int x, int y); // Words relevant to terrain (sharp, etc)
  bool has_flag(t_flag flag, int x, int y);  // checks terrain and vehicles
- bool has_flag_ter_only(t_flag flag, int x, int y); // only checks terrain
+ bool has_flag_ter_only(t_flag flag, int x, int y) const; // only checks terrain
  bool is_destructable(int x, int y);        // checks terrain and vehicles
  bool is_destructable_ter_only(int x, int y);       // only checks terrain
  bool is_outside(int x, int y);
@@ -114,7 +124,7 @@ class map
 // Items
  std::vector<item>& i_at(int x, int y);
  std::vector<item>& i_at(int x, int y) const { return const_cast<map*>(this)->i_at(x,y); };
- item water_from(int x, int y);
+ item water_from(int x, int y) const;
  void i_clear(int x, int y);
  void i_rem(int x, int y, int index);
  point find_item(item *it) const;

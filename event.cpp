@@ -94,8 +94,7 @@ void event::actualize(game *g) const
       }
      }
      tries++;
-    } while ((monx == -1 || mony == -1 || g->is_empty(monx, mony)) &&
-             tries < 10);
+    } while ((monx == -1 || mony == -1 || g->is_empty(monx, mony)) && tries < 10);
     if (tries < 10) {
      horror.spawn(monx, mony);
      g->z.push_back(horror);
@@ -106,7 +105,8 @@ void event::actualize(game *g) const
   case EVENT_ROOTS_DIE:
    for (int x = 0; x < SEEX * MAPSIZE; x++) {
     for (int y = 0; y < SEEY * MAPSIZE; y++) {
-     if (g->m.ter(x, y) == t_root_wall && one_in(3)) g->m.ter(x, y) = t_underbrush;
+	 auto& t = g->m.ter(x,y);
+     if (t_root_wall == t && one_in(3)) t = t_underbrush;
     }
    }
    break;

@@ -452,8 +452,7 @@ void computer::activate_function(game *g, computer_action action)
   case COMPACT_ELEVATOR_ON:
    for (int x = 0; x < SEEX * MAPSIZE; x++) {
     for (int y = 0; y < SEEY * MAPSIZE; y++) {
-     if (g->m.ter(x, y) == t_elevator_control_off)
-      g->m.ter(x, y) = t_elevator_control;
+	 g->m.rewrite<t_elevator_control_off, t_elevator_control>(x,y);
     }
    }
    print_line("Elevator activated.");
@@ -571,18 +570,19 @@ INITIATING STANDARD TREMOR TEST...");
    for (int x = g->u.posx - 2; x <= g->u.posx + 2; x++) {
     for (int y = g->u.posy - 2; y <= g->u.posy + 2; y++) {
      if (g->m.ter(x, y) == t_centrifuge) {
-      if (g->m.i_at(x, y).empty())
+	  auto& inv = g->m.i_at(x, y);
+      if (inv.empty())
        print_error("ERROR: Please place sample in centrifuge.");
-      else if (g->m.i_at(x, y).size() > 1)
+      else if (inv.size() > 1)
        print_error("ERROR: Please remove all but one sample from centrifuge.");
-      else if (g->m.i_at(x, y)[0].type->id != itm_vacutainer)
+      else if (inv[0].type->id != itm_vacutainer)
        print_error("ERROR: Please use vacutainer-contained samples.");
-      else if (g->m.i_at(x, y)[0].contents.empty())
+      else if (inv[0].contents.empty())
        print_error("ERROR: Vacutainer empty.");
-      else if (g->m.i_at(x, y)[0].contents[0].type->id != itm_blood)
+      else if (inv[0].contents[0].type->id != itm_blood)
        print_error("ERROR: Please only use blood samples.");
       else { // Success!
-       item *blood = &(g->m.i_at(x, y)[0].contents[0]);
+       item *blood = &(inv[0].contents[0]);
        if (blood->corpse == NULL || blood->corpse->id == mon_null)
         print_line("Result:  Human blood, no pathogens found.");
        else if (blood->corpse->sym == 'Z') {
@@ -681,8 +681,9 @@ void computer::activate_failure(game *g, computer_failure fail)
    messages.add("The pump explodes!");
    for (int x = 0; x < SEEX * MAPSIZE; x++) {
     for (int y = 0; y < SEEY * MAPSIZE; y++) {
-     if (g->m.ter(x, y) == t_sewage_pump) {
-      g->m.ter(x, y) = t_rubble;
+	 auto& t = g->m.ter(x, y);
+     if (t_sewage_pump == t) {
+      t = t_rubble;
       g->explosion(x, y, 10, 0, false);
      }
     }
@@ -710,7 +711,7 @@ void computer::activate_failure(game *g, computer_failure fail)
 	   if (next_move.empty()) break;
        
        p = next_move[rng(0, next_move.size() - 1)];
-       g->m.ter(p.x, p.y) = t_sewage;
+       g->m.ter(p) = t_sewage;
       }
      }
     }
@@ -729,21 +730,20 @@ void computer::activate_failure(game *g, computer_failure fail)
    for (int x = g->u.posx - 2; x <= g->u.posx + 2; x++) {
     for (int y = g->u.posy - 2; y <= g->u.posy + 2; y++) {
      if (g->m.ter(x, y) == t_centrifuge) {
-      for (int i = 0; i < g->m.i_at(x, y).size(); i++) {
-       if (g->m.i_at(x, y).empty())
-        print_error("ERROR: Please place sample in centrifuge.");
-       else if (g->m.i_at(x, y).size() > 1)
-        print_error("ERROR: Please remove all but one sample from centrifuge.");
-       else if (g->m.i_at(x, y)[0].type->id != itm_vacutainer)
-        print_error("ERROR: Please use vacutainer-contained samples.");
-       else if (g->m.i_at(x, y)[0].contents.empty())
-        print_error("ERROR: Vacutainer empty.");
-       else if (g->m.i_at(x, y)[0].contents[0].type->id != itm_blood)
-        print_error("ERROR: Please only use blood samples.");
-       else {
-        print_error("ERROR: Blood sample destroyed.");
-        g->m.i_at(x, y)[i].contents.clear();
-       }
+	  auto& inv = g->m.i_at(x, y);
+      if (inv.empty())
+       print_error("ERROR: Please place sample in centrifuge.");
+      else if (inv.size() > 1)
+       print_error("ERROR: Please remove all but one sample from centrifuge.");
+      else if (inv[0].type->id != itm_vacutainer)
+       print_error("ERROR: Please use vacutainer-contained samples.");
+      else if (inv[0].contents.empty())
+       print_error("ERROR: Vacutainer empty.");
+      else if (inv[0].contents[0].type->id != itm_blood)
+       print_error("ERROR: Please only use blood samples.");
+      else {
+       print_error("ERROR: Blood sample destroyed.");
+	   inv[0].contents.clear();
       }
      }
     }

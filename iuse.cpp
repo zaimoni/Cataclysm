@@ -840,7 +840,8 @@ void iuse::hammer(game *g, player *p, item *it, bool t)
  dir.y += p->posy;
  int nails = 0, boards = 0;
  ter_id newter;
- switch (g->m.ter(dir.x, dir.y)) {
+ auto& type = g->m.ter(dir);
+ switch(type) {
  case t_window_boarded:
   nails =  8;
   boards = 3;
@@ -863,7 +864,7 @@ void iuse::hammer(game *g, player *p, item *it, bool t)
  item board(item::types[itm_2x4], 0, g->nextinv);
  for (int i = 0; i < boards; i++)
   g->m.add_item(p->posx, p->posy, board);
- g->m.ter(dir.x, dir.y) = newter;
+ type = newter;
 }
  
 void iuse::light_off(game *g, player *p, item *it, bool t)
@@ -1039,31 +1040,31 @@ void iuse::crowbar(game *g, player *p, item *it, bool t)
  }
  dir.x += p->posx;
  dir.y += p->posy;
- ter_id type = g->m.ter(dir.x, dir.y);
+ auto& type = g->m.ter(dir);
  if (type == t_door_c || type == t_door_locked || type == t_door_locked_alarm) {
   if (dice(4, 6) < dice(4, p->str_cur)) {
    messages.add("You pry the door open.");
    p->moves -= (150 - (p->str_cur * 5));
-   g->m.ter(dir.x, dir.y) = t_door_o;
+   type = t_door_o;
   } else {
    messages.add("You pry, but cannot open the door.");
    p->moves -= 100;
   }
- } else if (g->m.ter(dir.x, dir.y) == t_manhole_cover) {
+ } else if (type == t_manhole_cover) {
   if (dice(8, 8) < dice(8, p->str_cur)) {
    messages.add("You lift the manhole cover.");
    p->moves -= (500 - (p->str_cur * 5));
-   g->m.ter(dir.x, dir.y) = t_manhole;
+   type = t_manhole;
    g->m.add_item(p->posx, p->posy, item::types[itm_manhole_cover], 0);
   } else {
    messages.add("You pry, but cannot lift the manhole cover.");
    p->moves -= 100;
   }
- } else if (g->m.ter(dir.x, dir.y) == t_crate_c) {
+ } else if (type == t_crate_c) {
   if (p->str_cur >= rng(3, 30)) {
    messages.add("You pop the crate open.");
    p->moves -= (150 - (p->str_cur * 5));
-   g->m.ter(dir.x, dir.y) = t_crate_o;
+   type = t_crate_o;
   } else {
    messages.add("You pry, but cannot open the crate.");
    p->moves -= 100;
@@ -1071,7 +1072,7 @@ void iuse::crowbar(game *g, player *p, item *it, bool t)
  } else {
   int nails = 0, boards = 0;
   ter_id newter;
-  switch (g->m.ter(dir.x, dir.y)) {
+  switch (type) {
   case t_window_boarded:
    nails =  8;
    boards = 3;
@@ -1093,7 +1094,7 @@ void iuse::crowbar(game *g, player *p, item *it, bool t)
   item board(item::types[itm_2x4], 0, g->nextinv);
   for (int i = 0; i < boards; i++)
    g->m.add_item(p->posx, p->posy, board);
-  g->m.ter(dir.x, dir.y) = newter;
+  type = newter;
  }
 }
 

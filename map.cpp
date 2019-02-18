@@ -756,9 +756,8 @@ void map::vehmove(game *g)
        for (int ep = 0; ep < veh->external_parts.size(); ep++) {
         int p = veh->external_parts[ep];
 		const point origin(x + veh->parts[p].precalc_d[0].x, y + veh->parts[p].precalc_d[0].y);
-        ter_id &pter = ter(origin.x, origin.y);
-        if (pter == t_dirt || pter == t_grass)
-         pter = t_dirtmound;
+        ter_id &pter = ter(origin);
+        if (pter == t_dirt || pter == t_grass) pter = t_dirtmound;
        }
       } // !veh->valid_wheel_config()
 
@@ -1055,7 +1054,7 @@ bool map::has_flag(t_flag flag, int x, int y)
  return ter_t::list[ter(x, y)].flags & mfb(flag);
 }
 
-bool map::has_flag_ter_only(t_flag flag, int x, int y)
+bool map::has_flag_ter_only(t_flag flag, int x, int y) const
 {
  return ter_t::list[ter(x, y)].flags & mfb(flag);
 }
@@ -1733,21 +1732,25 @@ void map::marlossify(int x, int y)
 
 bool map::open_door(int x, int y, bool inside)
 {
- if (ter(x, y) == t_door_c) {
-  ter(x, y) = t_door_o;
-  return true;
- } else if (ter(x, y) == t_door_metal_c) {
-  ter(x, y) = t_door_metal_o;
-  return true;
- } else if (ter(x, y) == t_door_glass_c) {
-  ter(x, y) = t_door_glass_o;
-  return true;
- } else if (inside &&
-            (ter(x, y) == t_door_locked || ter(x, y) == t_door_locked_alarm)) {
-  ter(x, y) = t_door_o;
-  return true;
+ auto& t = ter(x, y);
+ switch (t) {
+ case t_door_c:
+	 t = t_door_o;
+	 return true;
+ case t_door_metal_c:
+	 t = t_door_metal_o;
+	 return true;
+ case t_door_glass_c:
+	 t = t_door_glass_o;
+	 return true;
+ case t_door_locked:
+ case t_door_locked_alarm:
+	 if (inside) {
+		 t = t_door_o;
+		 return true;
+	 }
+ default: return false;
  }
- return false;
 }
 
 void map::translate(ter_id from, ter_id to)
@@ -1758,25 +1761,27 @@ void map::translate(ter_id from, ter_id to)
  }
  for (int x = 0; x < SEEX * my_MAPSIZE; x++) {
   for (int y = 0; y < SEEY * my_MAPSIZE; y++) {
-   if (ter(x, y) == from)
-    ter(x, y) = to;
+   auto& t = ter(x, y);
+   if (from == t) t = to;
   }
  }
 }
 
 bool map::close_door(int x, int y)
 {
- if (ter(x, y) == t_door_o) {
-  ter(x, y) = t_door_c;
-  return true;
- } else if (ter(x, y) == t_door_metal_o) {
-  ter(x, y) = t_door_metal_c;
-  return true;
- } else if (ter(x, y) == t_door_glass_o) {
-  ter(x, y) = t_door_glass_c;
-  return true;
+ auto& t = ter(x, y);
+ switch (t) {
+ case t_door_o:
+	 t = t_door_c;
+	 return true;
+ case t_door_metal_o:
+	 t = t_door_metal_c;
+	 return true;
+ case t_door_glass_o:
+	 t = t_door_glass_c;
+	 return true;
+ default: return false;
  }
- return false;
 }
 
 int& map::radiation(int x, int y)
@@ -1810,18 +1815,23 @@ std::vector<item>& map::i_at(int x, int y)
  return grid[nonant]->itm[x][y];
 }
 
-item map::water_from(int x, int y)
+item map::water_from(int x, int y) const
 {
  item ret(item::types[itm_water], 0);
- if (ter(x, y) == t_water_sh && one_in(3))
-  ret.poison = rng(1, 4);
- else if (ter(x, y) == t_water_dp && one_in(4))
-  ret.poison = rng(1, 4);
- else if (ter(x, y) == t_sewage)
-  ret.poison = rng(1, 7);
- else if (ter(x, y) == t_toilet && !one_in(3))
-  ret.poison = rng(1, 3);
-
+ switch(ter(x, y)) {
+ case t_water_sh:
+   if (one_in(3)) ret.poison = rng(1, 4);
+   break;
+ case t_water_dp:
+   if (one_in(4)) ret.poison = rng(1, 4);
+   break;
+ case t_sewage:
+   ret.poison = rng(1, 7);
+   break;
+ case t_toilet:
+   if (!one_in(3)) ret.poison = rng(1, 3);
+   break;
+ }
  return ret;
 }
 

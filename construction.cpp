@@ -451,7 +451,7 @@ void game::place_construction(const constructable * const con)
 // Figure out what stage to start at, and what stage is the maximum
  int starting_stage = 0, max_stage = 0;
  for (int i = 0; i < con->stages.size(); i++) {
-  if (m.ter(dir.x, dir.y) == con->stages[i].terrain)
+  if (m.ter(dir) == con->stages[i].terrain)
    starting_stage = i + 1;
   if (player_can_build(u, total_inv, con, i, true))
    max_stage = i;
@@ -486,9 +486,8 @@ void game::complete_construction()
  }
  
 // Make the terrain change
- int terx = u.activity.placement.x, tery = u.activity.placement.y;
  if (stage.terrain != t_null)
-  m.ter(terx, tery) = stage.terrain;
+  m.ter(u.activity.placement) = stage.terrain;
 
 // Strip off the first stage in our list...
  u.activity.values.erase(u.activity.values.begin());
@@ -501,7 +500,7 @@ void game::complete_construction()
 
 // This comes after clearing the activity, in case the function interrupts
 // activities
- (*(built->done))(this, point(terx, tery));
+ (*(built->done))(this, u.activity.placement);
 }
 
 bool construct::able_empty(map& m, point p)
@@ -511,50 +510,50 @@ bool construct::able_empty(map& m, point p)
 
 bool construct::able_tree(map& m, point p)
 {
- return m.ter(p.x, p.y) == t_tree;
+ return m.ter(p) == t_tree;
 }
 
 bool construct::able_log(map& m, point p)
 {
- return m.ter(p.x, p.y) == t_log;
+ return m.ter(p) == t_log;
 }
 
 bool construct::able_window(map& m, point p)
 {
- const auto t = m.ter(p.x, p.y);
+ const auto t = m.ter(p);
  return t_window_frame == t || t_window_empty == t || t_window == t;
 }
 
 bool construct::able_window_pane(map& m, point p)
 {
- return m.ter(p.x, p.y) == t_window;
+ return m.ter(p) == t_window;
 }
 
 bool construct::able_broken_window(map& m, point p)
 {
- return m.ter(p.x, p.y) == t_window_frame;
+ return m.ter(p) == t_window_frame;
 }
 
 bool construct::able_door(map& m, point p)
 {
- const auto t = m.ter(p.x, p.y);
+ const auto t = m.ter(p);
  return t_door_c == t || t_door_b == t || t_door_o == t || t_door_locked == t;
 }
 
 bool construct::able_door_broken(map& m, point p)
 {
- return m.ter(p.x, p.y) == t_door_b;
+ return m.ter(p) == t_door_b;
 }
 
 bool construct::able_wall(map& m, point p)
 {
- const auto t = m.ter(p.x, p.y);
+ const auto t = m.ter(p);
  return t_wall_h == t || t_wall_v == t || t_wall_wood == t;
 }
 
 bool construct::able_wall_wood(map& m, point p)
 {
- return m.ter(p.x, p.y) == t_wall_wood;
+ return m.ter(p) == t_wall_wood;
 }
 
 bool construct::able_between_walls(map& m, point p)
@@ -575,7 +574,7 @@ bool construct::able_dig(map& m, point p)
 
 bool construct::able_pit(map& m, point p)
 {
- return (m.ter(p.x, p.y) == t_pit);//|| m.ter(p.x, p.y) == t_pit_shallow);
+ return (m.ter(p) == t_pit);//|| m.ter(p) == t_pit_shallow);
 }
 
 bool will_flood_stop(map *m, bool (&fill)[SEEX * MAPSIZE][SEEY * MAPSIZE],
@@ -610,7 +609,7 @@ void construct::done_tree(game *g, point p)
  std::vector<point> tree = line_to(p, dest, rng(1, 8));
  for (int i = 0; i < tree.size(); i++) {
   g->m.destroy(g, tree[i].x, tree[i].y, true);
-  g->m.ter(tree[i].x, tree[i].y) = t_log;
+  g->m.ter(tree[i]) = t_log;
  }
 }
 

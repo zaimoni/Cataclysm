@@ -178,8 +178,9 @@ bool map::process_fields_in_submap(game *g, int gridn)
     veh = veh_at(x, y, part);
     if (veh) veh->damage (part, cur->density * 10, false);
 // Consume the terrain we're on
+	auto& terrain = ter(x, y);
     if (has_flag(explodes, x, y)) {
-     ter(x, y) = ter_id(int(ter(x, y)) + 1);
+     terrain = ter_id(int(terrain) + 1);
      cur->age = 0;
      cur->density = 3;
      g->explosion(x, y, 40, 0, true);
@@ -187,14 +188,14 @@ bool map::process_fields_in_submap(game *g, int gridn)
     } else if (has_flag(flammable, x, y) && one_in(32 - cur->density * 10)) {
      cur->age -= cur->density * cur->density * 40;
      smoke += 15;
-     if (cur->density == 3) ter(x, y) = t_rubble;
+     if (cur->density == 3) terrain = t_rubble;
 
     } else if (has_flag(l_flammable, x, y) && one_in(62 - cur->density * 10)) {
      cur->age -= cur->density * cur->density * 30;
      smoke += 10;
-     if (cur->density == 3) ter(x, y) = t_rubble;
+     if (cur->density == 3) terrain = t_rubble;
 
-    } else if (ter_t::list[ter(x, y)].flags & mfb(swimmable))
+    } else if (ter_t::list[terrain].flags & mfb(swimmable))
      cur->age += 800;	// Flames die quickly on water
 
 // If we consumed a lot, the flames grow higher
@@ -203,7 +204,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
      cur->density++;
     }
 // If the flames are in a pit, it can't spread to non-pit
-    bool in_pit = (ter(x, y) == t_pit);
+    const bool in_pit = (t_pit == terrain);
 // If the flames are REALLY big, they contribute to adjacent flames
     if (cur->density == 3 && cur->age < 0) {
 // Randomly offset our x/y shifts by 0-2, to randomly pick a square to spread to
@@ -232,15 +233,14 @@ bool map::process_fields_in_submap(game *g, int gridn)
        int spread_chance = 20 * (cur->density - 1) + 10 * smoke;
 	   auto& f = field_at(fx, fy);
        if (f.type == fd_web) spread_chance = 50 + spread_chance / 2;
+	   auto& t = ter(fx, fy);
        if (has_flag(explodes, fx, fy) && one_in(8 - cur->density)) {
-        ter(fx, fy) = ter_id(int(ter(fx, fy)) + 1);
+        t = ter_id(t + 1);
         g->explosion(fx, fy, 40, 0, true);
        } else if ((i != 0 || j != 0) && rng(1, 100) < spread_chance &&
-                  (!in_pit || ter(fx, fy) == t_pit) &&
-                  ((cur->density == 3 &&
-                    (has_flag(flammable, fx, fy) || one_in(20))) ||
-                   (cur->density == 3 &&
-                    (has_flag(l_flammable, fx, fy) && one_in(10))) ||
+                  (!in_pit || t_pit == t) &&
+                  ((cur->density == 3 && (has_flag(flammable, fx, fy) || one_in(20))) ||
+                   (cur->density == 3 && (has_flag(l_flammable, fx, fy) && one_in(10))) ||
                    flammable_items_at(fx, fy) ||
                    f.type == fd_web)) {
         if (f.type == fd_smoke || f.type == fd_web)

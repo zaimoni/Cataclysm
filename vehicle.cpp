@@ -975,10 +975,10 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
             switch (collision_type) // destroy obstacle
             {
             case 3:
-                g->m.ter (dest.x, dest.y) = t_dirt;
+                g->m.ter(dest) = t_dirt;
                 break;
             case 5:
-                g->m.ter(dest.x, dest.y) = t_rubble;
+                g->m.ter(dest) = t_rubble;
                 snd = "crash!";
                 break;
             case 6:

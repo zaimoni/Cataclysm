@@ -167,7 +167,8 @@ void mission_start::place_npc_software(game *g, mission *miss)
 					bool okay = false;
 					for (int x2 = x - 1; x2 <= x + 1 && !okay; x2++) {
 						for (int y2 = y - 1; y2 <= y + 1 && !okay; y2++) {
-							if (compmap.ter(x2, y2) == t_bed || compmap.ter(x2, y2) == t_dresser) {
+							const auto t = compmap.ter(x2, y2);
+							if (t_bed == t || t_dresser == t) {
 								okay = true;
 								valid.push_back(point(x, y));
 							}
@@ -229,7 +230,7 @@ void mission_start::place_npc_software(game *g, mission *miss)
 
 	std::stringstream compname;
 	compname << dev->name << "'s Terminal";
-	compmap.ter(comppoint.x, comppoint.y) = t_console;
+	compmap.ter(comppoint) = t_console;
 	computer* const tmpcomp = compmap.add_computer(comppoint.x, comppoint.y, compname.str(), 0);
 	tmpcomp->mission_id = miss->uid;
 	tmpcomp->add_option("Download Software", COMPACT_DOWNLOAD_SOFTWARE, 0);

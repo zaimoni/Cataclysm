@@ -69,7 +69,7 @@ t_door_glass_c, t_door_glass_o,
 t_bulletin,
 t_portcullis,
 t_window, t_window_alarm, t_window_empty, t_window_frame, t_window_boarded,
-t_rock, t_fault,
+t_rock, t_fault /* amigara */,
 t_paper,
 // Tree
 t_tree, t_tree_young, t_underbrush, t_shrub, t_log,

@@ -3601,8 +3601,7 @@ void game::emp_blast(int x, int y)
    messages.add("The nearby doors slide open!");
    for (int i = -3; i <= 3; i++) {
     for (int j = -3; j <= 3; j++) {
-     if (m.ter(x + i, y + j) == t_door_metal_locked)
-      m.ter(x + i, y + j) = t_floor;
+	 m.rewrite<t_door_metal_locked, t_floor>(x + i, y + j);
     }
    }
   }
@@ -4018,6 +4017,8 @@ void game::examine()
  exam.y += u.posy;
  messages.add("That is a %s.", m.tername(exam.x, exam.y).c_str());
 
+ auto& exam_t = m.ter(exam);
+
  int veh_part = 0;
  vehicle *veh = m.veh_at(exam, veh_part);
  if (veh) {
@@ -4046,7 +4047,7 @@ void game::examine()
   }
  } else {
   if (m.i_at(exam.x, exam.y).size() == 0 && m.has_flag(container, exam.x, exam.y) &&
-      !(m.has_flag(swimmable, exam.x, exam.y) || m.ter(exam.x, exam.y) == t_toilet))
+      !(m.has_flag(swimmable, exam.x, exam.y) || t_toilet == exam_t))
    messages.add("It is empty.");
   else
    pickup(exam.x, exam.y, 0);
@@ -4055,19 +4056,16 @@ void game::examine()
   use_computer(exam.x, exam.y);
   return;
  }
- if (m.ter(exam.x, exam.y) == t_card_science ||
-     m.ter(exam.x, exam.y) == t_card_military  ) {
-  itype_id card_type = (m.ter(exam.x, exam.y) == t_card_science ? itm_id_science :
-                                                               itm_id_military);
+ if (t_card_science == exam_t || t_card_military == exam_t) {
+  itype_id card_type = (t_card_science == exam_t ? itm_id_science : itm_id_military);
   if (u.has_amount(card_type, 1) && query_yn("Swipe your ID card?")) {
    u.moves -= 100;
    for (int i = -3; i <= 3; i++) {
     for (int j = -3; j <= 3; j++) {
-     if (m.ter(exam.x + i, exam.y + j) == t_door_metal_locked)
-      m.ter(exam.x + i, exam.y + j) = t_floor;
+	 m.rewrite<t_door_metal_locked, t_floor>(exam.x + i, exam.y + j);
     }
    }
-   {
+   {	// relies on reality bubble size to work
    int i = z.size();
    while (0 < i--) {
      if (mon_turret == z[i].type->id) z_erase(i);
@@ -4103,26 +4101,24 @@ void game::examine()
       u.charge_power(0 - rng(0, u.power_level));
      }
     }
-    m.ter(exam.x, exam.y) = t_card_reader_broken;
+	exam_t = t_card_reader_broken;
    } else if (success < 6)
     messages.add("Nothing happens.");
    else {
     messages.add("You activate the panel!");
 	messages.add("The nearby doors slide into the floor.");
-    m.ter(exam.x, exam.y) = t_card_reader_broken;
+	exam_t = t_card_reader_broken;
     for (int i = -3; i <= 3; i++) {
      for (int j = -3; j <= 3; j++) {
-      if (m.ter(exam.x + i, exam.y + j) == t_door_metal_locked)
-       m.ter(exam.x + i, exam.y + j) = t_floor;
+	   m.rewrite<t_door_metal_locked, t_floor>(exam.x + i, exam.y + j);
      }
     }
    }
   }
- } else if (m.ter(exam.x, exam.y) == t_elevator_control && query_yn("Activate elevator?")) {
+ } else if (t_elevator_control == exam_t && query_yn("Activate elevator?")) {
   int movez = (lev.z < 0 ? 2 : -2);
   lev.z += movez;
   cur_om.save(u.name);
-  //m.save(&cur_om, turn, levx, levy);
   overmap(this, cur_om.pos.x, cur_om.pos.y, -1);
   cur_om = overmap(this, cur_om.pos.x, cur_om.pos.y, cur_om.pos.z + movez);
   m.load(this, lev.x, lev.y);
@@ -4136,7 +4132,7 @@ void game::examine()
    }
   }
   refresh_all();
- } else if (m.ter(exam.x, exam.y) == t_gas_pump && query_yn("Pump gas?")) {
+ } else if (t_gas_pump == exam_t && query_yn("Pump gas?")) {
   item gas(item::types[itm_gasoline], messages.turn);
   if (one_in(10 + u.dex_cur)) {
    messages.add("You accidentally spill the gasoline.");
@@ -4145,7 +4141,7 @@ void game::examine()
    u.moves -= 300;
    handle_liquid(gas, false, true);
   }
- } else if (m.ter(exam.x, exam.y) == t_slot_machine) {
+ } else if (t_slot_machine == exam_t) {
   if (u.cash < 10) messages.add("You need $10 to play.");
   else if (query_yn("Insert $10?")) {
    do {
@@ -4165,7 +4161,7 @@ void game::examine()
     }
    } while (u.cash >= 10 && query_yn("Play again?"));
   }
- } else if (m.ter(exam.x, exam.y) == t_bulletin) {
+ } else if (t_bulletin == exam_t) {
 // TODO: Bulletin Boards
   switch (menu("Bulletin Board", "Check jobs", "Check events",
                "Check other notices", "Post notice", "Cancel", NULL)) {
@@ -4178,82 +4174,63 @@ void game::examine()
    case 4:
     break;
   }
- } else if (m.ter(exam.x, exam.y) == t_fault) {
+ } else if (t_fault == exam_t) {
   popup("\
 This wall is perfectly vertical.  Odd, twisted holes are set in it, leading\n\
 as far back into the solid rock as you can see.  The holes are humanoid in\n\
 shape, but with long, twisted, distended limbs.");
- } else if (m.ter(exam.x, exam.y) == t_pedestal_wyrm &&
-            m.i_at(exam.x, exam.y).empty()) {
+ } else if (t_pedestal_wyrm == exam_t && m.i_at(exam.x, exam.y).empty()) {
   messages.add("The pedestal sinks into the ground...");
-  m.ter(exam.x, exam.y) = t_rock_floor;
+  exam_t = t_rock_floor;
   add_event(EVENT_SPAWN_WYRMS, int(messages.turn) + rng(5, 10));
- } else if (m.ter(exam.x, exam.y) == t_pedestal_temple) {
+ } else if (t_pedestal_temple == exam_t) {
   if (m.i_at(exam.x, exam.y).size() == 1 &&
       m.i_at(exam.x, exam.y)[0].type->id == itm_petrified_eye) {
    messages.add("The pedestal sinks into the ground...");
-   m.ter(exam.x, exam.y) = t_dirt;
+   exam_t = t_dirt;
    m.i_at(exam.x, exam.y).clear();
    add_event(EVENT_TEMPLE_OPEN, int(messages.turn) + 4);
   } else if (u.has_amount(itm_petrified_eye, 1) &&
              query_yn("Place your petrified eye on the pedestal?")) {
    u.use_amount(itm_petrified_eye, 1);
    messages.add("The pedestal sinks into the ground...");
-   m.ter(exam.x, exam.y) = t_dirt;
+   exam_t = t_dirt;
    add_event(EVENT_TEMPLE_OPEN, int(messages.turn) + 4);
   } else
    messages.add("This pedestal is engraved in eye-shaped diagrams, and has a large semi-spherical indentation at the top.");
- } else if (m.ter(exam.x, exam.y) >= t_switch_rg &&
-            m.ter(exam.x, exam.y) <= t_switch_even &&
+ } else if (t_switch_rg <= exam_t && t_switch_even >= exam_t &&
             query_yn("Flip the %s?", m.tername(exam.x, exam.y).c_str())) {
   u.moves -= 100;
   for (int y = exam.y; y <= exam.y + 5; y++) {
    for (int x = 0; x < SEEX * MAPSIZE; x++) {
-    switch (m.ter(exam.x, exam.y)) {
+	auto& t = m.ter(x, y);
+    switch (exam_t) {
      case t_switch_rg:
-      if (m.ter(x, y) == t_rock_red)
-       m.ter(x, y) = t_floor_red;
-      else if (m.ter(x, y) == t_floor_red)
-       m.ter(x, y) = t_rock_red;
-      else if (m.ter(x, y) == t_rock_green)
-       m.ter(x, y) = t_floor_green;
-      else if (m.ter(x, y) == t_floor_green)
-       m.ter(x, y) = t_rock_green;
+      if (t_rock_red == t) t = t_floor_red;
+      else if (t_floor_red == t) t = t_rock_red;
+      else if (t_rock_green == t) t = t_floor_green;
+      else if (t_floor_green == t) t = t_rock_green;
       break;
      case t_switch_gb:
-      if (m.ter(x, y) == t_rock_blue)
-       m.ter(x, y) = t_floor_blue;
-      else if (m.ter(x, y) == t_floor_blue)
-       m.ter(x, y) = t_rock_blue;
-      else if (m.ter(x, y) == t_rock_green)
-       m.ter(x, y) = t_floor_green;
-      else if (m.ter(x, y) == t_floor_green)
-       m.ter(x, y) = t_rock_green;
+      if (t_rock_blue == t) t = t_floor_blue;
+      else if (t_floor_blue == t) t = t_rock_blue;
+      else if (t_rock_green == t) t = t_floor_green;
+      else if (t_floor_green == t) t = t_rock_green;
       break;
      case t_switch_rb:
-      if (m.ter(x, y) == t_rock_blue)
-       m.ter(x, y) = t_floor_blue;
-      else if (m.ter(x, y) == t_floor_blue)
-       m.ter(x, y) = t_rock_blue;
-      else if (m.ter(x, y) == t_rock_red)
-       m.ter(x, y) = t_floor_red;
-      else if (m.ter(x, y) == t_floor_red)
-       m.ter(x, y) = t_rock_red;
+      if (t_rock_blue == t) t = t_floor_blue;
+      else if (t_floor_blue == t) t = t_rock_blue;
+      else if (t_rock_red == t) t = t_floor_red;
+      else if (t_floor_red == t) t = t_rock_red;
       break;
      case t_switch_even:
       if ((y - exam.y) % 2 == 1) {
-       if (m.ter(x, y) == t_rock_red)
-        m.ter(x, y) = t_floor_red;
-       else if (m.ter(x, y) == t_floor_red)
-        m.ter(x, y) = t_rock_red;
-       else if (m.ter(x, y) == t_rock_green)
-        m.ter(x, y) = t_floor_green;
-       else if (m.ter(x, y) == t_floor_green)
-        m.ter(x, y) = t_rock_green;
-       else if (m.ter(x, y) == t_rock_blue)
-        m.ter(x, y) = t_floor_blue;
-       else if (m.ter(x, y) == t_floor_blue)
-        m.ter(x, y) = t_rock_blue;
+       if (t_rock_red == t) t = t_floor_red;
+       else if (t_floor_red == t) t = t_rock_red;
+       else if (t_rock_green == t) t = t_floor_green;
+       else if (t_floor_green == t) t = t_rock_green;
+       else if (t_rock_blue == t) t = t_floor_blue;
+       else if (t_floor_blue == t) t = t_rock_blue;
       }
       break;
     }
@@ -6074,9 +6051,10 @@ void game::vertical_move(int movez, bool force)
  u.posx = stairx;
  u.posy = stairy;
  if (rope_ladder) m.ter(u.posx, u.posy) = t_rope_up;
- if (m.ter(stairx, stairy) == t_manhole_cover) {
+ auto& test_manhole = m.ter(stairx, stairy);
+ if (t_manhole_cover == test_manhole) {
   m.add_item(stairx + rng(-1, 1), stairy + rng(-1, 1), item::types[itm_manhole_cover], 0);
-  m.ter(stairx, stairy) = t_manhole;
+  test_manhole = t_manhole;
  }
 
  if (replace_monsters) replace_stair_monsters();

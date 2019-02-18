@@ -279,19 +279,20 @@ void mattack::growplants(game *g, monster *z)
  for (int i = -3; i <= 3; i++) {
   for (int j = -3; j <= 3; j++) {
    if (i == 0 && j == 0) j++;
-   if (!g->m.has_flag(diggable, z->pos.x + i, z->pos.y + j) && one_in(4))
-    g->m.ter(z->pos.x + i, z->pos.y + j) = t_dirt;
-   else if (one_in(3) && g->m.is_destructable(z->pos.x + i, z->pos.y + j))
-    g->m.ter(z->pos.x + i, z->pos.y + j) = t_dirtmound; // Destroy walls, &c
-   else {
-    if (one_in(4)) {	// 1 in 4 chance to grow a tree
-     if (monster* const m_at = g->mon(z->pos.x + i, z->pos.y + j)) {
-      if (g->u_see(z->pos.x + i, z->pos.y + j))
+   point dest(z->pos.x + i, z->pos.y + j);
+   auto& t = g->m.ter(dest);
+   if (!g->m.has_flag(diggable, dest.x, dest.y) && one_in(4))
+    t = t_dirt;
+   else if (one_in(3) && g->m.is_destructable(dest.x, dest.y))
+    t = t_dirtmound; // Destroy walls, &c
+   else if (one_in(4)) {	// 1 in 4 chance to grow a tree
+     if (monster* const m_at = g->mon(dest)) {
+      if (g->u_see(dest))
        messages.add("A tree bursts forth from the earth and pierces the %s!", m_at->name().c_str());
       int rn = rng(10, 30) - m_at->armor_cut();
       if (rn < 0) rn = 0;
       if (m_at->hurt(rn)) g->kill_mon(*m_at, (z->friendly != 0));
-     } else if (g->u.posx == z->pos.x + i && g->u.posy == z->pos.y + j) {
+     } else if (g->u.posx == dest.x && g->u.posy == dest.y) {
 // Player is hit by a growing tree
       body_part hit = bp_legs;
       int side = rng(1, 2);
@@ -300,39 +301,39 @@ void mattack::growplants(game *g, monster *z)
 	  messages.add("A tree bursts forth from the earth and pierces your %s!",
                  body_part_name(hit, side).c_str());
       g->u.hit(g, hit, side, 0, rng(10, 30));
-     } else if (npc* const nPC = g->nPC(z->pos.x + i, z->pos.y + j)) {	// An NPC got hit
+     } else if (npc* const nPC = g->nPC(dest)) {	// An NPC got hit
        body_part hit = bp_legs;
        int side = rng(1, 2);
        if (one_in(4)) hit = bp_torso;
        else if (one_in(2)) hit = bp_feet;
-       if (g->u_see(z->pos.x + i, z->pos.y + j))
+       if (g->u_see(dest))
         messages.add("A tree bursts forth from the earth and pierces %s's %s!",
 			nPC->name.c_str(), body_part_name(hit, side).c_str());
 	   nPC->hit(g, hit, side, 0, rng(10, 30));
      }
-     g->m.ter(z->pos.x + i, z->pos.y + j) = t_tree_young;
+	 t = t_tree_young;
     } else if (one_in(3)) // If no tree, perhaps underbrush
-     g->m.ter(z->pos.x + i, z->pos.y + j) = t_underbrush;
-   }
+     t = t_underbrush;
   }
  }
 
  if (one_in(5)) { // 1 in 5 chance of making exisiting vegetation grow larger
   for (int i = -5; i <= 5; i++) {
    for (int j = -5; j <= 5; j++) {
-    if (i != 0 || j != 0) {
-     if (g->m.ter(z->pos.x + i, z->pos.y + j) == t_tree_young)
-      g->m.ter(z->pos.x + i, z->pos.y + j) = t_tree; // Young tree => tree
-     else if (g->m.ter(z->pos.x + i, z->pos.y + j) == t_underbrush) {
+	if (0 == i && 0 == j) j++;
+	point dest(z->pos.x + i, z->pos.y + j);
+	auto& t = g->m.ter(dest);
+     if (t_tree_young == t) t = t_tree; // Young tree => tree
+     else if (t_underbrush == t) {
 // Underbrush => young tree
-	  monster* const m_at = g->mon(z->pos.x + i, z->pos.y + j);
+	  monster* const m_at = g->mon(dest);
       if (m_at) {
-       if (g->u_see(z->pos.x + i, z->pos.y + j))
+       if (g->u_see(dest))
         messages.add("Underbrush forms into a tree, and it pierces the %s!", m_at->name().c_str());
        int rn = rng(10, 30) - m_at->armor_cut();
        if (rn < 0) rn = 0;
        if (m_at->hurt(rn)) g->kill_mon(*m_at, (z->friendly != 0));
-      } else if (g->u.posx == z->pos.x + i && g->u.posy == z->pos.y + j) {
+      } else if (g->u.posx == dest.x && g->u.posy == dest.y) {
        body_part hit = bp_legs;
        int side = rng(1, 2);
        if (one_in(4)) hit = bp_torso;
@@ -340,20 +341,17 @@ void mattack::growplants(game *g, monster *z)
 	   messages.add("The underbrush beneath your feet grows and pierces your %s!",
                   body_part_name(hit, side).c_str());
        g->u.hit(g, hit, side, 0, rng(10, 30));
-      } else {
-       if (npc* const nPC = g->nPC(z->pos.x + i, z->pos.y + j)) {
+      } else if (npc* const nPC = g->nPC(dest)) {
         body_part hit = bp_legs;
         int side = rng(1, 2);
         if (one_in(4)) hit = bp_torso;
         else if (one_in(2)) hit = bp_feet;
-        if (g->u_see(z->pos.x + i, z->pos.y + j))
+        if (g->u_see(dest))
          messages.add("Underbrush grows into a tree, and it pierces %s's %s!",
 			 nPC->name.c_str(), body_part_name(hit, side).c_str());
 		nPC->hit(g, hit, side, 0, rng(10, 30));
        }
-      }
      }
-    }
    }
   }
  }
@@ -475,10 +473,9 @@ void mattack::triffid_heartbeat(game *g, monster *z)
   messages.add("The root walls creak around you.");
   for (int x = g->u.posx; x <= z->pos.x - 3; x++) {
    for (int y = g->u.posy; y <= z->pos.y - 3; y++) {
-    if (g->is_empty(x, y) && one_in(4))
-     g->m.ter(x, y) = t_root_wall;
-    else if (g->m.ter(x, y) == t_root_wall && one_in(10))
-     g->m.ter(x, y) = t_dirt;
+	auto& t = g->m.ter(x, y);
+    if (g->is_empty(x, y) && one_in(4)) t = t_root_wall;
+    else if (t_root_wall == t && one_in(10)) t = t_dirt;
    }
   }
 // Open blank tiles as long as there's no possible route
@@ -926,11 +923,9 @@ void mattack::stare(game *g, monster *z)
   messages.add("A piercing beam of light bursts forth!");
   std::vector<point> sight = line_to(z->pos.x, z->pos.y, g->u.posx, g->u.posy, 0);
   for (int i = 0; i < sight.size(); i++) {
-   if (g->m.ter(sight[i].x, sight[i].y) == t_reinforced_glass_h ||
-       g->m.ter(sight[i].x, sight[i].y) == t_reinforced_glass_v)
-    i = sight.size();
-   else if (g->m.is_destructable(sight[i].x, sight[i].y))
-    g->m.ter(sight[i].x, sight[i].y) = t_rubble;
+   auto& t = g->m.ter(sight[i]);
+   if (t_reinforced_glass_h == t || t_reinforced_glass_v == t) break;
+   if (g->m.is_destructable(sight[i].x, sight[i].y)) t = t_rubble;
   }
  }
 }

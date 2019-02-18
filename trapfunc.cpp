@@ -370,7 +370,7 @@ void trapfuncm::pit_spikes(game *g, monster *z)
 
  if (one_in(4)) {
   if (sees) messages.add("The spears break!");
-  g->m.ter(z->pos.x, z->pos.y) = t_pit;
+  g->m.ter(z->pos) = t_pit;
   g->m.tr_at(z->pos.x, z->pos.y) = tr_pit;
   for (int i = 0; i < 4; i++) { // 4 spears to a pit
    if (one_in(3)) g->m.add_item(z->pos.x, z->pos.y, item::types[itm_spear_wood], messages.turn);
@@ -493,28 +493,20 @@ void trapfunc::temple_toggle(game *g, int x, int y)
  ter_id type = g->m.ter(x, y);
  for (int i = 0; i < SEEX * MAPSIZE; i++) {
   for (int j = 0; j < SEEY * MAPSIZE; j++) {
+   auto& t = g->m.ter(i, j);
    switch (type) {
     case t_floor_red:
-     if (g->m.ter(i, j) == t_rock_green)
-      g->m.ter(i, j) = t_floor_green;
-     else if (g->m.ter(i, j) == t_floor_green)
-      g->m.ter(i, j) = t_rock_green;
+     if (t_rock_green == t) t = t_floor_green;
+     else if (t_floor_green == t) t = t_rock_green;
      break;
-
     case t_floor_green:
-     if (g->m.ter(i, j) == t_rock_blue)
-      g->m.ter(i, j) = t_floor_blue;
-     else if (g->m.ter(i, j) == t_floor_blue)
-      g->m.ter(i, j) = t_rock_blue;
+     if (t_rock_blue == t) t = t_floor_blue;
+     else if (t_floor_blue == t) t = t_rock_blue;
      break;
-
     case t_floor_blue:
-     if (g->m.ter(i, j) == t_rock_red)
-      g->m.ter(i, j) = t_floor_red;
-     else if (g->m.ter(i, j) == t_floor_red)
-      g->m.ter(i, j) = t_rock_red;
+     if (t_rock_red == t) t = t_floor_red;
+     else if (t_floor_red == t) t = t_rock_red;
      break;
-
    }
   }
  }
