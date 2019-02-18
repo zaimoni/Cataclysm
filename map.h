@@ -107,7 +107,11 @@ class map
  bool flammable_items_at(int x, int y);
  point random_outdoor_tile();
 
- void translate(ter_id from, ter_id to); // Change all instances of $from->$to
+ template<ter_id src, ter_id dest> void translate() { // Change all instances of $src->$dest
+	 static_assert(src != dest, "src!=dest");
+	 _translate(src,dest);
+ }
+ 
  bool close_door(int x, int y);
  bool open_door(int x, int y, bool inside);
  // bash: if res pointer is supplied, res will contain absorbed impact or -1
@@ -188,6 +192,8 @@ protected:
 
  int my_MAPSIZE;
  std::vector<submap*> grid;
+private:
+ void _translate(ter_id from, ter_id to);	// error-checked backend for map::translate
 };
 
 class tinymap : public map	// XXX direct subclassing defeats the point of this class \todo fix this

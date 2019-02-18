@@ -976,6 +976,16 @@ ter_id& map::ter(int x, int y)
  return grid[nonant]->ter[x][y];
 }
 
+void map::_translate(ter_id from, ter_id to)
+{
+	for (int x = 0; x < SEEX * my_MAPSIZE; x++) {
+		for (int y = 0; y < SEEY * my_MAPSIZE; y++) {
+			auto& t = ter(x, y);
+			if (from == t) t = to;
+		}
+	}
+}
+
 std::string map::tername(int x, int y)
 {
  return ter_t::list[ter(x, y)].name;
@@ -1750,20 +1760,6 @@ bool map::open_door(int x, int y, bool inside)
 		 return true;
 	 }
  default: return false;
- }
-}
-
-void map::translate(ter_id from, ter_id to)
-{
- if (from == to) {
-  debugmsg("map::translate %s => %s", ter_t::list[from].name.c_str(), ter_t::list[from].name.c_str());
-  return;
- }
- for (int x = 0; x < SEEX * my_MAPSIZE; x++) {
-  for (int y = 0; y < SEEY * my_MAPSIZE; y++) {
-   auto& t = ter(x, y);
-   if (from == t) t = to;
-  }
  }
 }
 

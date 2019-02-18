@@ -220,7 +220,7 @@ void computer::activate_function(game *g, computer_action action)
    break; // Why would this be called?
 
   case COMPACT_OPEN:
-   g->m.translate(t_door_metal_locked, t_floor);
+   g->m.translate<t_door_metal_locked, t_floor>();
    print_line("Doors opened.");
    break;
 
@@ -250,8 +250,8 @@ void computer::activate_function(game *g, computer_action action)
 
   case COMPACT_RELEASE:
    g->sound(g->u.posx, g->u.posy, 40, "An alarm sounds!");
-   g->m.translate(t_reinforced_glass_h, t_floor);
-   g->m.translate(t_reinforced_glass_v, t_floor);
+   g->m.translate<t_reinforced_glass_h, t_floor>();
+   g->m.translate<t_reinforced_glass_v, t_floor>();
    print_line("Containment shields opened.");
    break;
 
@@ -415,7 +415,7 @@ void computer::activate_function(game *g, computer_action action)
     g->cur_om = overmap(g, tmp_om.pos.x, tmp_om.pos.y, level);
     tinymap tmpmap;
     tmpmap.load(g, g->lev.x, g->lev.y);
-    tmpmap.translate(t_missile, t_hole);
+    tmpmap.translate<t_missile, t_hole>();
     tmpmap.save(&tmp_om, messages.turn, g->lev.x, g->lev.y);
    }
    g->cur_om = tmp_om;
