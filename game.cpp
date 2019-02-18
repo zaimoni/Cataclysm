@@ -4203,37 +4203,7 @@ shape, but with long, twisted, distended limbs.");
   u.moves -= 100;
   for (int y = exam.y; y <= exam.y + 5; y++) {
    for (int x = 0; x < SEEX * MAPSIZE; x++) {
-	auto& t = m.ter(x, y);
-    switch (exam_t) {
-     case t_switch_rg:
-      if (t_rock_red == t) t = t_floor_red;
-      else if (t_floor_red == t) t = t_rock_red;
-      else if (t_rock_green == t) t = t_floor_green;
-      else if (t_floor_green == t) t = t_rock_green;
-      break;
-     case t_switch_gb:
-      if (t_rock_blue == t) t = t_floor_blue;
-      else if (t_floor_blue == t) t = t_rock_blue;
-      else if (t_rock_green == t) t = t_floor_green;
-      else if (t_floor_green == t) t = t_rock_green;
-      break;
-     case t_switch_rb:
-      if (t_rock_blue == t) t = t_floor_blue;
-      else if (t_floor_blue == t) t = t_rock_blue;
-      else if (t_rock_red == t) t = t_floor_red;
-      else if (t_floor_red == t) t = t_rock_red;
-      break;
-     case t_switch_even:
-      if ((y - exam.y) % 2 == 1) {
-       if (t_rock_red == t) t = t_floor_red;
-       else if (t_floor_red == t) t = t_rock_red;
-       else if (t_rock_green == t) t = t_floor_green;
-       else if (t_floor_green == t) t = t_rock_green;
-       else if (t_rock_blue == t) t = t_floor_blue;
-       else if (t_floor_blue == t) t = t_rock_blue;
-      }
-      break;
-    }
+	m.apply_temple_switch(exam_t,exam.y,x,y);
    }
   }
   messages.add("You hear the rumble of rock shifting.");

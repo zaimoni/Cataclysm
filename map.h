@@ -160,6 +160,8 @@ class map
  computer* computer_at(int x, int y);
 
 // mapgen.cpp functions
+ void apply_temple_switch(ter_id trigger, int y0, int x, int y);
+
  void generate(game *g, overmap *om, int x, int y, int turn);
  void post_process(game *g, unsigned zones);
  void place_items(items_location loc, int chance, int x1, int y1,

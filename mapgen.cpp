@@ -4,6 +4,7 @@
 #include "rng.h"
 #include "line.h"
 #include "recent_msg.h"
+#include "Zaimoni.STL/Logging.h"
 
 ter_id grass_or_dirt()
 {
@@ -189,6 +190,43 @@ void map::generate(game *g, overmap *om, int x, int y, int turn)
     delete grid[i + j * my_MAPSIZE];
   }
  }
+}
+
+// policy: make the caller responsible for the correct y range (historically non-strict upper bound is y0+5)
+void map::apply_temple_switch(ter_id trigger, int y0, int x, int y)
+{
+	auto& t = ter(x, y);
+	switch (trigger) {
+	case t_switch_rg:
+		if (t_rock_red == t) t = t_floor_red;
+		else if (t_floor_red == t) t = t_rock_red;
+		else if (t_rock_green == t) t = t_floor_green;
+		else if (t_floor_green == t) t = t_rock_green;
+		break;
+	case t_switch_gb:
+		if (t_rock_blue == t) t = t_floor_blue;
+		else if (t_floor_blue == t) t = t_rock_blue;
+		else if (t_rock_green == t) t = t_floor_green;
+		else if (t_floor_green == t) t = t_rock_green;
+		break;
+	case t_switch_rb:
+		if (t_rock_blue == t) t = t_floor_blue;
+		else if (t_floor_blue == t) t = t_rock_blue;
+		else if (t_rock_red == t) t = t_floor_red;
+		else if (t_floor_red == t) t = t_rock_red;
+		break;
+	case t_switch_even:
+		if ((y - y0) % 2 == 1) {
+			if (t_rock_red == t) t = t_floor_red;
+			else if (t_floor_red == t) t = t_rock_red;
+			else if (t_rock_green == t) t = t_floor_green;
+			else if (t_floor_green == t) t = t_rock_green;
+			else if (t_rock_blue == t) t = t_floor_blue;
+			else if (t_floor_blue == t) t = t_rock_blue;
+		}
+		break;
+	default: assert(0 && "unhandled temple switch type");
+	}
 }
 
 void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
@@ -2970,7 +3008,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 // Now, randomly choose actions
 // Set up an actions vector so that there's not undue repetion
      std::vector<int> actions;
-     actions.push_back(1);
+     actions.push_back(1);	// offset from ter_id values is t_switch_rg-1
      actions.push_back(2);
      actions.push_back(3);
      actions.push_back(4);
@@ -2981,37 +3019,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
       actions.erase(actions.begin() + index);
       for (int y = 1; y < 7; y++) {
        for (int x = SEEX; x <= SEEX + 1; x++) {
-		auto& t = ter(x, y);
-        switch (action) {
-         case 1: // Toggle RG
-          if (t_floor_red == t) t = t_rock_red;
-          else if (t_rock_red == t) t = t_floor_red;
-          else if (t_floor_green == t) t = t_rock_green;
-          else if (t_rock_green == t) t = t_floor_green;
-          break;
-         case 2: // Toggle GB
-          if (t_floor_blue == t) t = t_rock_blue;
-          else if (t_rock_blue == t) t = t_floor_blue;
-          else if (t_floor_green == t) t = t_rock_green;
-          else if (t_rock_green == t) t = t_floor_green;
-          break;
-         case 3: // Toggle RB
-          if (t_floor_blue == t) t = t_rock_blue;
-          else if (t_rock_blue == t) t = t_floor_blue;
-          else if (t_floor_red == t) t = t_rock_red;
-          else if (t_rock_red == t) t = t_floor_red;
-          break;
-         case 4: // Toggle Even
-          if (y % 2 == 0) {
-           if (t_floor_blue == t) t = t_rock_blue;
-           else if (t_rock_blue == t) t = t_floor_blue;
-           else if (t_floor_red == t) t = t_rock_red;
-           else if (t_rock_red == t) t = t_floor_red;
-           else if (t_floor_green == t) t = t_rock_green;
-           else if (t_rock_green == t) t = t_floor_green;
-          }
-          break;
-        }
+		apply_temple_switch((ter_id)(action + (t_switch_rg-1)),1,x,y);
        }
       }
      }
