@@ -738,7 +738,7 @@ void game::process_activity()
    u.activity.moves_left -= 100;
    u.pause(this);
   } else if (u.activity.type == ACT_REFILL_VEHICLE) {
-   vehicle *veh = m.veh_at( u.activity.placement.x, u.activity.placement.y );
+   vehicle *veh = m.veh_at(u.activity.placement);
    if (!veh) {  // Vehicle must've moved or something!
     u.activity.moves_left = 0;
     return;
@@ -3828,7 +3828,7 @@ void game::close()
  if (const monster* const m_at = mon(close)) { messages.add("There's a %s in the way!", m_at->name().c_str()); return; }
 
  int vpart;
- vehicle * const veh = m.veh_at(close.x, close.y, vpart);
+ vehicle * const veh = m.veh_at(close, vpart);
  if (veh && veh->part_flag(vpart, vpf_openable) && veh->parts[vpart].open) {
    veh->parts[vpart].open = 0;
    veh->insides_dirty = true;
@@ -4019,7 +4019,7 @@ void game::examine()
  messages.add("That is a %s.", m.tername(exam.x, exam.y).c_str());
 
  int veh_part = 0;
- vehicle *veh = m.veh_at (exam.x, exam.y, veh_part);
+ vehicle *veh = m.veh_at(exam, veh_part);
  if (veh) {
   int vpcargo = veh->part_with_feature(veh_part, vpf_cargo, false);
   if (vpcargo >= 0 && veh->parts[vpcargo].items.size() > 0) pickup(exam.x, exam.y, 0);
@@ -4927,7 +4927,7 @@ void game::drop_in_direction()
  dir.y += u.posy;
  int veh_part = 0;
  bool to_veh = false;
- vehicle *veh = m.veh_at(dir.x, dir.y, veh_part);
+ vehicle *veh = m.veh_at(dir, veh_part);
  if (veh) {
   veh_part = veh->part_with_feature (veh_part, vpf_cargo);
   to_veh = veh->type != veh_null && veh_part >= 0;

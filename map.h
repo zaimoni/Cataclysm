@@ -68,7 +68,9 @@ class map
 // vehicles
 // checks, if tile is occupied by vehicle and by which part
  vehicle* veh_at(int x, int y, int &part_num);
+ vehicle* veh_at(const point& pt, int &part_num) { return veh_at(pt.x, pt.y, part_num); };
  vehicle* veh_at(int x, int y);// checks, if tile is occupied by vehicle
+ vehicle* veh_at(const point& pt) { return veh_at(pt.x, pt.y); };
  // put player on vehicle at x,y
  void board_vehicle(game *g, int x, int y, player *p);
  void unboard_vehicle(game *g, int x, int y);//remove player from vehicle at x,y

@@ -891,7 +891,7 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
     const bool u_here = dest.x == g->u.posx && dest.y == g->u.posy && !g->u.in_vehicle;
     monster * const z = g->mon(dest);
     player * const ph = (nPC ? nPC : (u_here? &g->u : 0));
-    vehicle * const oveh = g->m.veh_at (dest.x, dest.y);
+    vehicle * const oveh = g->m.veh_at(dest);
     const bool veh_collision = oveh && oveh->pos != pos;
     bool body_collision = u_here || z || nPC;
 
