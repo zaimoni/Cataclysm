@@ -986,7 +986,7 @@ void map::_translate(ter_id from, ter_id to)
 	}
 }
 
-std::string map::tername(int x, int y)
+const std::string& map::tername(int x, int y) const
 {
  return ter_t::list[ter(x, y)].name;
 }

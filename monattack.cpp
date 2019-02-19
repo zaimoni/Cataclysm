@@ -73,7 +73,7 @@ void mattack::acid(game *g, monster *z)
  for (int i = 0; i < line.size(); i++) {
   if (g->m.hit_with_acid(g, line[i].x, line[i].y)) {
    if (g->u_see(line[i]))
-    messages.add("A glob of acid hits the %s!", g->m.tername(line[i].x, line[i].y).c_str());
+    messages.add("A glob of acid hits the %s!", g->m.tername(line[i]).c_str());
    return;
   }
  }
@@ -136,7 +136,7 @@ void mattack::boomer(game *g, monster *z)
   if (g->m.move_cost(line[i]) == 0) {
    g->m.add_field(g, line[i].x, line[i].y, fd_bile, 3);
    if (g->u_see(line[i]))
-    messages.add("Bile splatters on the %s!", g->m.tername(line[i].x, line[i].y).c_str());
+    messages.add("Bile splatters on the %s!", g->m.tername(line[i]).c_str());
    return;
   }
  }
@@ -435,7 +435,7 @@ void mattack::spit_sap(game *g, monster *z)
   for (int i = 0; i < line.size() && dam > 0; i++) {
    g->m.shoot(g, line[i].x, line[i].y, dam, false, 0);
    if (dam == 0 && g->u_see(line[i])) {
-    messages.add("A glob of sap hits the %s!", g->m.tername(line[i].x, line[i].y).c_str());
+    messages.add("A glob of sap hits the %s!", g->m.tername(line[i]).c_str());
     return;
    }
   }
@@ -450,7 +450,7 @@ void mattack::spit_sap(game *g, monster *z)
  for (int i = 0; i < line.size() && dam > 0; i++) {
   g->m.shoot(g, line[i].x, line[i].y, dam, false, 0);
   if (dam == 0 && g->u_see(line[i])) {
-   messages.add("A glob of sap hits the %s!", g->m.tername(line[i].x, line[i].y).c_str());
+   messages.add("A glob of sap hits the %s!", g->m.tername(line[i]).c_str());
    return;
   }
  }
@@ -880,7 +880,7 @@ void mattack::vortex(game *g, monster *z)
       g->u.posx = traj[i - 1].x;
       g->u.posy = traj[i - 1].y;
      } else if (g->m.move_cost(traj[i]) == 0) {
-      messages.add("You slam into a %s", g->m.tername(traj[i].x, traj[i].y).c_str());
+      messages.add("You slam into a %s", g->m.tername(traj[i]).c_str());
       hit_wall = true;
       g->u.posx = traj[i - 1].x;
       g->u.posy = traj[i - 1].y;

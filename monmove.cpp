@@ -633,7 +633,7 @@ void monster::knock_back_from(game *g, int x, int y)
    hurt(type->size);
    add_effect(ME_STUNNED, 2);
    if (u_see)
-    messages.add("The %s bounces off a %s.", name().c_str(), g->m.tername(to.x, to.y).c_str());
+    messages.add("The %s bounces off a %s.", name().c_str(), g->m.tername(to).c_str());
   }
 
  } else pos = to; // It's no wall

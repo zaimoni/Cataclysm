@@ -898,7 +898,7 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
     // 0 - nothing, 1 - monster/player/npc, 2 - vehicle,
     // 3 - thin_obstacle, 4 - bashable, 5 - destructible, 6 - other
     int collision_type = 0;
-    std::string obs_name(g->m.tername(dest.x, dest.y));
+    std::string obs_name(g->m.tername(dest));
 
     int parm = part_with_feature (part, vpf_armor);
     if (parm < 0) parm = part;

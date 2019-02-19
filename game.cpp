@@ -3078,7 +3078,7 @@ void game::monmove()
 // If we can't move to our current position, assign us to a new one
    if (debugmon)
     debugmsg("%s can't move to its location! (%d:%d), %s", z[i].name().c_str(),
-             z[i].pos.x, z[i].pos.y, m.tername(z[i].pos.x, z[i].pos.y).c_str());
+             z[i].pos.x, z[i].pos.y, m.tername(z[i].pos).c_str());
    bool okay = false;
    int xdir = rng(1, 2) * 2 - 3, ydir = rng(1, 2) * 2 - 3; // -1 or 1
    int startx = z[i].pos.x - 3 * xdir, endx = z[i].pos.x + 3 * xdir;
@@ -4015,7 +4015,7 @@ void game::examine()
  }
  exam.x += u.posx;
  exam.y += u.posy;
- messages.add("That is a %s.", m.tername(exam.x, exam.y).c_str());
+ messages.add("That is a %s.", m.tername(exam).c_str());
 
  auto& exam_t = m.ter(exam);
 
@@ -4043,7 +4043,7 @@ void game::examine()
    buff += " but is firmly sealed.";
    messages.add(buff.c_str());
   } else {
-   messages.add("There's something in there, but you can't see what it is, and the %s is firmly sealed.", m.tername(exam.x, exam.y).c_str());
+   messages.add("There's something in there, but you can't see what it is, and the %s is firmly sealed.", m.tername(exam).c_str());
   }
  } else {
   if (m.i_at(exam.x, exam.y).size() == 0 && m.has_flag(container, exam.x, exam.y) &&
@@ -4198,8 +4198,7 @@ shape, but with long, twisted, distended limbs.");
    add_event(EVENT_TEMPLE_OPEN, int(messages.turn) + 4);
   } else
    messages.add("This pedestal is engraved in eye-shaped diagrams, and has a large semi-spherical indentation at the top.");
- } else if (t_switch_rg <= exam_t && t_switch_even >= exam_t &&
-            query_yn("Flip the %s?", m.tername(exam.x, exam.y).c_str())) {
+ } else if (t_switch_rg <= exam_t && t_switch_even >= exam_t && query_yn("Flip the %s?", m.tername(exam).c_str())) {
   u.moves -= 100;
   for (int y = exam.y; y <= exam.y + 5; y++) {
    for (int x = 0; x < SEEX * MAPSIZE; x++) {
@@ -4911,14 +4910,14 @@ void game::drop_in_direction()
    messages.add("You %s your %s%s %s the %s.", verb.c_str(),
            dropped[0].tname(this).c_str(),
            (dropped.size() == 1 ? "" : "s"), prep.c_str(),
-           m.tername(dir.x, dir.y).c_str());
+           m.tername(dir).c_str());
  } else {
   if (to_veh)
    messages.add("You put several items in the %s's %s.", veh->name.c_str(),
            veh->part_info(veh_part).name);
   else
    messages.add("You %s several items %s the %s.", verb.c_str(), prep.c_str(),
-           m.tername(dir.x, dir.y).c_str());
+           m.tername(dir).c_str());
  }
  if (to_veh) {
   bool vh_overflow = false;

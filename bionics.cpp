@@ -333,7 +333,7 @@ void player::activate_bionic(int b, game *g)
    moves -= 40;
    messages.add("You unlock the door.");
   } else
-   messages.add("You can't unlock that %s.", g->m.tername(dir.x, dir.y).c_str());
+   messages.add("You can't unlock that %s.", g->m.tername(dir).c_str());
   }
   break;
 

@@ -390,7 +390,7 @@ void trapfunc::lava(game *g, int x, int y)
 void trapfuncm::lava(game *g, monster *z)
 {
  if (g->u_see(z))
-  messages.add("The %s burns the %s!", g->m.tername(z->pos.x, z->pos.y).c_str(), z->name().c_str());
+  messages.add("The %s burns the %s!", g->m.tername(z->pos).c_str(), z->name().c_str());
 
  int dam = 30;
  if (z->made_of(FLESH)) dam = 50;

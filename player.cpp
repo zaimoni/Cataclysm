@@ -2477,7 +2477,7 @@ void player::knock_back_from(game *g, int x, int y)
   } else { // It's some kind of wall.
    hurt(g, bp_torso, 0, 3);
    add_disease(DI_STUNNED, 2, g);
-   if (u_see) messages.add("%s bounce%s off a %s.", name.c_str(), s, g->m.tername(to.x, to.y).c_str());
+   if (u_see) messages.add("%s bounce%s off a %s.", name.c_str(), s, g->m.tername(to).c_str());
   }
 
  } else { // It's no wall
