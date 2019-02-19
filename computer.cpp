@@ -681,11 +681,7 @@ void computer::activate_failure(game *g, computer_failure fail)
    messages.add("The pump explodes!");
    for (int x = 0; x < SEEX * MAPSIZE; x++) {
     for (int y = 0; y < SEEY * MAPSIZE; y++) {
-	 auto& t = g->m.ter(x, y);
-     if (t_sewage_pump == t) {
-      t = t_rubble;
-      g->explosion(x, y, 10, 0, false);
-     }
+	 if (g->m.rewrite_test<t_sewage_pump, t_rubble>(x,y)) g->explosion(x, y, 10, 0, false);
     }
    }
    break;

@@ -97,6 +97,54 @@ class map
 	 if (src == t) t = dest;
  }
 
+ template<ter_id src, ter_id dest> void rewrite_inv(int x, int y) {
+	 static_assert(src != dest, "src!=dest");
+	 auto& t = ter(x, y);
+	 if (src != t) t = dest;
+ }
+
+ template<ter_id src> void rewrite(int x, int y, ter_id dest) {
+	 auto& t = ter(x, y);
+	 if (src == t) t = dest;
+ }
+
+ template<ter_id src, ter_id src2, ter_id src3, ter_id dest> void rewrite(int x, int y) {
+	 static_assert(src != dest, "src!=dest");
+	 static_assert(src2 != dest, "src2!=dest");
+	 static_assert(src3 != dest, "src3!=dest");
+	 static_assert(src != src2, "src!=src2");
+	 static_assert(src != src3, "src!=src3");
+	 static_assert(src2 != src3, "src2!=src3");
+	 auto& t = ter(x, y);
+	 if (src == t || src2 == t || src3 == t) t = dest;
+ }
+
+ template<ter_id src, ter_id dest> bool rewrite_test(int x, int y) {
+	 static_assert(src != dest, "src!=dest");
+	 auto& t = ter(x, y);
+	 bool ret = (src == t);
+	 if (ret) t = dest;
+	 return ret;
+ }
+
+ template<ter_id src, ter_id dest> bool rewrite_test(const point& pt) {
+	 static_assert(src != dest, "src!=dest");
+	 auto& t = ter(pt);
+	 bool ret = (src == t);
+	 if (ret) t = dest;
+	 return ret;
+ }
+
+ template<ter_id src, ter_id src2, ter_id dest> bool rewrite_test(int x, int y) {
+	 static_assert(src != dest, "src!=dest");
+	 static_assert(src2 != dest, "src2!=dest");
+	 static_assert(src != src2, "src!=src2");
+	 auto& t = ter(x,y);
+	 bool ret = (src == t || src2 == t);
+	 if (ret) t = dest;
+	 return ret;
+ }
+
  std::string tername(int x, int y); // Name of terrain at (x, y)
  std::string features(int x, int y); // Words relevant to terrain (sharp, etc)
  bool has_flag(t_flag flag, int x, int y);  // checks terrain and vehicles

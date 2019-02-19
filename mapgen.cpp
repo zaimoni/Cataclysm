@@ -647,8 +647,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    for (int x1 = x - 3; x1 <= x + 3; x1++) {
     for (int y1 = y - 3; y1 <= y + 3; y1++) {
      field_at(x1, y1) = field(fd_web, rng(2, 3));
-	 auto& t = ter(x1, y1);
-     if (t_slope_down != t) t = t_dirt;
+	 rewrite_inv<t_slope_down, t_dirt>(x1, y1);
     }
    }
   }
@@ -2437,8 +2436,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      do {
       sx = rng(lw, SEEX * 2 - 1 - rw);
       sy = rng(tw, SEEY * 2 - 1 - bw);
-     } while (ter(sx, sy) != t_floor);
-     ter(sx, sy) = t_stairs_up;
+     } while (!rewrite_test<t_floor, t_stairs_up>(sx, sy));
     }
     if (rw == 1) {
      ter(SEEX * 2 - 1, SEEY - 1) = t_door_metal_c;
@@ -2453,8 +2451,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      do {
       sx = rng(lw, SEEX * 2 - 1 - rw);
       sy = rng(tw, SEEY * 2 - 1 - bw);
-     } while (ter(sx, sy) != t_floor);
-     ter(sx, sy) = t_stairs_down;
+     } while (!rewrite_test<t_floor, t_stairs_down>(sx,sy));
     }
     break;
    }
@@ -2800,8 +2797,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     for (int i = doorx - 1; i <= doorx + 1; i++) {
      for (int j = doory - 1; j <= doory + 1; j++) {
       i_clear(i, j);
-	  auto& t = ter(i, j);
-      if (t_bed == t || t_rack == t || t_counter == t) t = t_floor;
+	  rewrite<t_bed, t_rack, t_counter, t_floor>(i, j);
      }
     }
     ter(doorx, doory) = t_door_c;
@@ -3074,8 +3070,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      for (int i = SEEX - 3; i <= SEEX + 4; i++) {
       for (int j = 2; j <= SEEY * 2 - 2; j++) {
        add_trap(i, j, tr_temple_toggle);
-	   auto& t = ter(i, j);
-       if (t_rock_floor == t) t = ter_id( rng(t_rock_red, t_floor_blue) );
+	   rewrite<t_rock_floor>(i,j, ter_id(rng(t_rock_red, t_floor_blue)));
       }
      }
     } break;
@@ -3393,11 +3388,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   } while (tries < 5);
   do {	// theoretically could infinite-loop
     int ladderx = rng(0, SEEX * 2 - 1), laddery = rng(0, SEEY * 2 - 1);
-	auto& t = ter(ladderx, laddery);
-	if (t_dirt == t || t_grass == t) {
-		t = t_manhole_cover;
-		break;
-	}
+	if (rewrite_test<t_dirt, t_grass, t_manhole_cover>(ladderx, laddery)) break;
   } while (true); 
  } break;
 

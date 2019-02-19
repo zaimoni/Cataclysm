@@ -329,10 +329,9 @@ void player::activate_bionic(int b, game *g)
   }
   dir.x += posx;
   dir.y += posy;
-  if (g->m.ter(dir) == t_door_locked) {
+  if (g->m.rewrite_test<t_door_locked, t_door_c>(dir)) {
    moves -= 40;
    messages.add("You unlock the door.");
-   g->m.ter(dir) = t_door_c;
   } else
    messages.add("You can't unlock that %s.", g->m.tername(dir.x, dir.y).c_str());
   }

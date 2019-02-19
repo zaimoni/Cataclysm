@@ -115,8 +115,7 @@ void event::actualize(game *g) const
    bool saw_grate = false;
    for (int x = 0; x < SEEX * MAPSIZE; x++) {
     for (int y = 0; y < SEEY * MAPSIZE; y++) {
-     if (g->m.ter(x, y) == t_grate) {
-      g->m.ter(x, y) = t_stairs_down;
+	 if (g->m.rewrite_test<t_grate, t_stairs_down>(x,y)) {
       if (!saw_grate && g->u_see(x, y)) saw_grate = true;
      }
     }

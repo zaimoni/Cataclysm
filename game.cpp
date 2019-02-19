@@ -6021,11 +6021,8 @@ void game::vertical_move(int movez, bool force)
  u.posx = stairx;
  u.posy = stairy;
  if (rope_ladder) m.ter(u.posx, u.posy) = t_rope_up;
- auto& test_manhole = m.ter(stairx, stairy);
- if (t_manhole_cover == test_manhole) {
-  m.add_item(stairx + rng(-1, 1), stairy + rng(-1, 1), item::types[itm_manhole_cover], 0);
-  test_manhole = t_manhole;
- }
+ if (m.rewrite_test<t_manhole_cover, t_manhole>(stairx, stairy)) 
+   m.add_item(stairx + rng(-1, 1), stairy + rng(-1, 1), item::types[itm_manhole_cover], 0);
 
  if (replace_monsters) replace_stair_monsters();
 

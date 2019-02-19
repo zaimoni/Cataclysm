@@ -1675,39 +1675,36 @@ void map::shoot(game *g, int x, int y, int &dam, bool hit_items, unsigned flags)
 
 bool map::hit_with_acid(game *g, int x, int y)
 {
- if (move_cost(x, y) != 0)
-  return false; // Didn't hit the tile!
+ if (move_cost(x, y) != 0) return false; // Didn't hit the tile!
 
- switch (ter(x, y)) {
+ auto& t = ter(x, y);
+ switch(t) {
   case t_wall_glass_v:
   case t_wall_glass_h:
   case t_wall_glass_v_alarm:
   case t_wall_glass_h_alarm:
   case t_vat:
-   ter(x, y) = t_floor;
-   break;
+   t = t_floor;
+   return true;
 
   case t_door_c:
   case t_door_locked:
   case t_door_locked_alarm:
-   if (one_in(3))
-    ter(x, y) = t_door_b;
-   break;
+   if (one_in(3)) t = t_door_b;
+   return true;
 
   case t_door_b:
-   if (one_in(4))
-    ter(x, y) = t_door_frame;
-   else
-    return false;
-   break;
+   if (one_in(4)) t = t_door_frame;
+   else return false;
+   return true;
 
   case t_window:
   case t_window_alarm:
-   ter(x, y) = t_window_empty;
-   break;
+   t = t_window_empty;
+   return true;
 
   case t_wax:
-   ter(x, y) = t_floor_wax;
+   t = t_floor_wax;
    break;
 
   case t_toilet:
@@ -1717,11 +1714,11 @@ bool map::hit_with_acid(game *g, int x, int y)
 
   case t_card_science:
   case t_card_military:
-   ter(x, y) = t_card_reader_broken;
-   break;
- }
+   t = t_card_reader_broken;
+   return true;
 
- return true;
+  default: return true;	 // would like to assert but the uploads are debug builds as of 2019-02-18
+ }
 }
 
 void map::marlossify(int x, int y)
