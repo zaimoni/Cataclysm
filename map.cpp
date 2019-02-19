@@ -990,7 +990,7 @@ const std::string& map::tername(int x, int y) const
  return ter_t::list[ter(x, y)].name;
 }
 
-std::string map::features(int x, int y)
+std::string map::features(int x, int y) const
 {
 // This is used in an info window that is 46 characters wide, and is expected
 // to take up one line.  So, make sure it does that.

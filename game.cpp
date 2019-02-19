@@ -4027,7 +4027,7 @@ void game::examine()
   else if (u.in_vehicle) messages.add("You can't do that while onboard.");
   else if (abs(veh->velocity) > 0) messages.add("You can't do that on moving vehicle.");
   else exam_vehicle (*veh, exam.x, exam.y);
- } else if (m.has_flag(sealed, exam.x, exam.y)) {
+ } else if (m.has_flag(sealed, exam)) {
   if (m.trans(exam.x, exam.y)) {
    const auto& stack = m.i_at(exam.x, exam.y);
    std::string buff;
@@ -4046,8 +4046,7 @@ void game::examine()
    messages.add("There's something in there, but you can't see what it is, and the %s is firmly sealed.", m.tername(exam).c_str());
   }
  } else {
-  if (m.i_at(exam.x, exam.y).size() == 0 && m.has_flag(container, exam.x, exam.y) &&
-      !(m.has_flag(swimmable, exam.x, exam.y) || t_toilet == exam_t))
+  if (m.i_at(exam.x, exam.y).size() == 0 && m.has_flag(container, exam) && !(m.has_flag(swimmable, exam) || t_toilet == exam_t))
    messages.add("It is empty.");
   else
    pickup(exam.x, exam.y, 0);
@@ -4879,7 +4878,7 @@ void game::drop_in_direction()
   to_veh = veh->type != veh_null && veh_part >= 0;
  }
 
- if (m.has_flag(noitem, dir.x, dir.y) || m.has_flag(sealed, dir.x, dir.y)) {
+ if (m.has_flag(noitem, dir) || m.has_flag(sealed, dir)) {
   messages.add("You can't place items there!");
   return;
  }

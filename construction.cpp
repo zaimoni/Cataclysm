@@ -569,7 +569,7 @@ bool construct::able_between_walls(map& m, point p)
 
 bool construct::able_dig(map& m, point p)
 {
- return m.has_flag(diggable, p.x, p.y);
+ return m.has_flag(diggable, p);
 }
 
 bool construct::able_pit(map& m, point p)

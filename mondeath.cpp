@@ -148,7 +148,7 @@ void mdeath::worm(game *g, monster *z)
  for (int i = -1; i <= 1; i++) {
   for (int j = -1; j <= 1; j++) {
    point worm(z->pos.x + i, z->pos.y + j);
-   if (g->m.has_flag(diggable, worm.x, worm.y) && !g->mon(worm) &&
+   if (g->m.has_flag(diggable, worm) && !g->mon(worm) &&
        !(g->u.posx == worm.x && g->u.posy == worm.y)) {
     wormspots.push_back(worm);
    }
