@@ -965,7 +965,7 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
     if (collision_type == 4 || collision_type == 2) // something bashable -- use map::bash to determine outcome
     {
         int absorb = -1;
-        g->m.bash(dest.x, dest.y, imp * dmg_mod / 100, snd, &absorb);
+        g->m.bash(dest, imp * dmg_mod / 100, snd, &absorb);
         if (absorb != -1) imp2 = absorb;
         smashed = imp * dmg_mod / 100 > absorb;
     } else if (collision_type >= 3) // some other terrain

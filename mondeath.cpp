@@ -33,13 +33,14 @@ void mdeath::boomer(game *g, monster *z)
  g->sound(z->pos, 24, "a boomer explode!");
  for (int i = -1; i <= 1; i++) {
   for (int j = -1; j <= 1; j++) {
-   g->m.bash(z->pos.x + i, z->pos.y + j, 10);	// no need to spam player with sounds
+   const point dest(z->pos.x + i, z->pos.y + j);
+   g->m.bash(dest, 10);	// no need to spam player with sounds
    {
-   auto& f = g->m.field_at(z->pos.x + i, z->pos.y + j);
+   auto& f = g->m.field_at(dest.x, dest.y);
    if (f.type == fd_bile && f.density < 3) f.density++;
-   else g->m.add_field(g, z->pos.x + i, z->pos.y + j, fd_bile, 1);
+   else g->m.add_field(g, dest.x, dest.y, fd_bile, 1);
    }
-   if (monster* const m_at = g->mon(z->pos.x + i, z->pos.y + j)) {
+   if (monster* const m_at = g->mon(dest)) {
 	m_at->stumble(g, false);
 	m_at->moves -= 250;
    }

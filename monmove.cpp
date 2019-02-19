@@ -247,7 +247,7 @@ void monster::move(game *g)
              g->m.has_flag(bashable, next) && has_flag(MF_BASHES)) {
    std::string bashsound = "NOBASH"; // If we hear "NOBASH" it's time to debug!
    int bashskill = int(type->melee_dice * type->melee_sides);
-   g->m.bash(next.x, next.y, bashskill, bashsound);
+   g->m.bash(next, bashskill, bashsound);
    g->sound(next, 18, bashsound);
   } else if (g->m.move_cost(next) == 0 && has_flag(MF_DESTROYS)) {
    g->m.destroy(g, next.x, next.y, true);
@@ -320,7 +320,7 @@ void monster::friendly_move(game *g)
            g->m.has_flag(bashable, next) && has_flag(MF_BASHES)) {
    std::string bashsound = "NOBASH"; // If we hear "NOBASH" it's time to debug!
    int bashskill = int(type->melee_dice * type->melee_sides);
-   g->m.bash(next.x, next.y, bashskill, bashsound);
+   g->m.bash(next, bashskill, bashsound);
    g->sound(next, 18, bashsound);
   } else if (g->m.move_cost(next) == 0 && has_flag(MF_DESTROYS)) {
    g->m.destroy(g, next.x, next.y, true);
