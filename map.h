@@ -181,7 +181,7 @@ class map
 
 // Items
  std::vector<item>& i_at(int x, int y);
- std::vector<item>& i_at(int x, int y) const { return const_cast<map*>(this)->i_at(x,y); };
+ const std::vector<item>& i_at(int x, int y) const { return const_cast<map*>(this)->i_at(x,y); };
  item water_from(int x, int y) const;
  void i_clear(int x, int y);
  void i_rem(int x, int y, int index);

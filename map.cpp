@@ -1843,9 +1843,8 @@ point map::find_item(item *it) const
  point ret;
  for (ret.x = 0; ret.x < SEEX * my_MAPSIZE; ret.x++) {
   for (ret.y = 0; ret.y < SEEY * my_MAPSIZE; ret.y++) {
-   for (int i = 0; i < i_at(ret.x, ret.y).size(); i++) {
-    if (it == &i_at(ret.x, ret.y)[i])
-     return ret;
+   for(auto& obj : i_at(ret.x, ret.y)) {
+    if (it == &obj) return ret;
    }
   }
  }
