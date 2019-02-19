@@ -1452,36 +1452,38 @@ bool map::bash(int x, int y, int str, std::string &sound, int *res)
  return smashed_web;// If we kick empty space, the action is cancelled
 }
 
-// map::destroy is only called (?) if the terrain is NOT bashable.
+// creatures call map::destroy only if the terrain is NOT bashable.  Map generation usually pre-emptively bashes.
 void map::destroy(game *g, int x, int y, bool makesound)
 {
- switch (ter(x, y)) {
+ // contrary to what one would expect, vehicle destruction not directly processed here
+ if (!is_destructable_ter_only(x,y)) return;
+
+ // \todo V0.3.0 bash bashable terrain (seems to give more detailed results)?
+
+ auto& terrain = ter(x,y);
+ switch(terrain) {
 
  case t_gas_pump:
-  if (makesound && one_in(3))
-   g->explosion(x, y, 40, 0, true);
+  if (makesound && one_in(3)) g->explosion(x, y, 40, 0, true);
   else {
    for (int i = x - 2; i <= x + 2; i++) {
     for (int j = y - 2; j <= y + 2; j++) {
-     if (move_cost(i, j) > 0 && one_in(3))
-      add_item(i, j, item::types[itm_gasoline], 0);
-     if (move_cost(i, j) > 0 && one_in(6))
-      add_item(i, j, item::types[itm_steel_chunk], 0);
+     if (move_cost(i, j) > 0 && one_in(3)) add_item(i, j, item::types[itm_gasoline], 0);
+     if (move_cost(i, j) > 0 && one_in(6)) add_item(i, j, item::types[itm_steel_chunk], 0);
     }
    }
   }
-  ter(x, y) = t_rubble;
+  terrain = t_rubble;
   break;
 
  case t_door_c:
  case t_door_b:
  case t_door_locked:
  case t_door_boarded:
-  ter(x, y) = t_door_frame;
+  terrain = t_door_frame;
   for (int i = x - 2; i <= x + 2; i++) {
    for (int j = y - 2; j <= y + 2; j++) {
-    if (move_cost(i, j) > 0 && one_in(6))
-     add_item(i, j, item::types[itm_2x4], 0);
+    if (move_cost(i, j) > 0 && one_in(6)) add_item(i, j, item::types[itm_2x4], 0);
    }
   }
   break;
@@ -1490,19 +1492,16 @@ void map::destroy(game *g, int x, int y, bool makesound)
  case t_wall_h:
   for (int i = x - 2; i <= x + 2; i++) {
    for (int j = y - 2; j <= y + 2; j++) {
-    if (move_cost(i, j) > 0 && one_in(5))
-     add_item(i, j, item::types[itm_rock], 0);
-    if (move_cost(i, j) > 0 && one_in(4))
-     add_item(i, j, item::types[itm_2x4], 0);
+    if (move_cost(i, j) > 0 && one_in(5)) add_item(i, j, item::types[itm_rock], 0);
+    if (move_cost(i, j) > 0 && one_in(4)) add_item(i, j, item::types[itm_2x4], 0);
    }
   }
-  ter(x, y) = t_rubble;
+  terrain = t_rubble;
   break;
 
  default:
-  if (makesound && has_flag(explodes, x, y) && one_in(2))
-   g->explosion(x, y, 40, 0, true);
-  ter(x, y) = t_rubble;
+  if (makesound && has_flag(explodes, x, y) && one_in(2)) g->explosion(x, y, 40, 0, true);
+  terrain = t_rubble;
  }
 
  if (makesound) g->sound(x, y, 40, "SMASH!!");
