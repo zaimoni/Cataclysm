@@ -1006,7 +1006,7 @@ std::string map::features(int x, int y) const
  return ret;
 }
 
-int map::move_cost(int x, int y)
+int map::move_cost(int x, int y) const
 {
  int vpart = -1;
  vehicle *veh = veh_at(x, y, vpart);
@@ -1021,7 +1021,7 @@ int map::move_cost(int x, int y)
  return ter_t::list[ter(x, y)].movecost;
 }
 
-int map::move_cost_ter_only(int x, int y)
+int map::move_cost_ter_only(int x, int y) const
 {
  return ter_t::list[ter(x, y)].movecost;
 }
@@ -1068,13 +1068,13 @@ bool map::has_flag_ter_only(t_flag flag, int x, int y) const
  return ter_t::list[ter(x, y)].flags & mfb(flag);
 }
 
-bool map::is_destructable(int x, int y)
+bool map::is_destructable(int x, int y) const
 {
  return (has_flag(bashable, x, y) ||
          (move_cost(x, y) == 0 && !has_flag(liquid, x, y)));
 }
 
-bool map::is_destructable_ter_only(int x, int y)
+bool map::is_destructable_ter_only(int x, int y) const
 {
  return (has_flag_ter_only(bashable, x, y) ||
          (move_cost_ter_only(x, y) == 0 && !has_flag(liquid, x, y)));

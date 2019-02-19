@@ -41,9 +41,9 @@ class map
  void clear_traps();
 
 // Movement and LOS
- int move_cost(int x, int y); // Cost to move through; 0 = impassible
- int move_cost(const point& pt) { return move_cost(pt.x, pt.y); };
- int move_cost_ter_only(int x, int y); // same as above, but don't take vehicles into account
+ int move_cost(int x, int y) const; // Cost to move through; 0 = impassible
+ int move_cost(const point& pt) const { return move_cost(pt.x, pt.y); };
+ int move_cost_ter_only(int x, int y) const; // same as above, but don't take vehicles into account
  bool trans(int x, int y); // Transparent?
  // (Fx, Fy) sees (Tx, Ty), within a range of (range)?
  // tc indicates the Bresenham line used to connect the two points, and may
@@ -152,8 +152,8 @@ class map
  bool has_flag(t_flag flag, int x, int y) const;  // checks terrain and vehicles
  bool has_flag(t_flag flag, const point& pt) const { return has_flag(flag, pt.x, pt.y); };
  bool has_flag_ter_only(t_flag flag, int x, int y) const; // only checks terrain
- bool is_destructable(int x, int y);        // checks terrain and vehicles
- bool is_destructable_ter_only(int x, int y);       // only checks terrain
+ bool is_destructable(int x, int y) const;        // checks terrain and vehicles
+ bool is_destructable_ter_only(int x, int y) const;       // only checks terrain
  bool is_outside(int x, int y);
  bool flammable_items_at(int x, int y);
  point random_outdoor_tile();
