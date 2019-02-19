@@ -483,7 +483,7 @@ enum astar_list {
  ASL_CLOSED
 };
 
-vehicle* map::veh_at(int x, int y, int &part_num)
+vehicle* map::veh_at(int x, int y, int &part_num) const
 {
  if (!inbounds(x, y)) return NULL;    // Out-of-bounds - null vehicle
  int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
@@ -512,11 +512,10 @@ vehicle* map::veh_at(int x, int y, int &part_num)
  return NULL;
 }
 
-vehicle* map::veh_at(int x, int y)
+vehicle* map::veh_at(int x, int y) const
 {
  int part = 0;
- vehicle *veh = veh_at(x, y, part);
- return veh;
+ return veh_at(x, y, part);
 }
 
 void map::board_vehicle(game *g, int x, int y, player *p)
@@ -1049,7 +1048,7 @@ bool map::trans(int x, int y)
         fieldlist[field_at(x, y).type].transparent[field_at(x, y).density - 1]);
 }
 
-bool map::has_flag(t_flag flag, int x, int y)
+bool map::has_flag(t_flag flag, int x, int y) const
 {
  if (flag == bashable) {
   int vpart;
@@ -2761,7 +2760,7 @@ void map::clear_traps()
 }
 
 
-bool map::inbounds(int x, int y)
+bool map::inbounds(int x, int y) const
 {
  return (x >= 0 && x < SEEX * my_MAPSIZE && y >= 0 && y < SEEY * my_MAPSIZE);
 }

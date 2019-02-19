@@ -67,10 +67,10 @@ class map
 
 // vehicles
 // checks, if tile is occupied by vehicle and by which part
- vehicle* veh_at(int x, int y, int &part_num);
- vehicle* veh_at(const point& pt, int &part_num) { return veh_at(pt.x, pt.y, part_num); };
- vehicle* veh_at(int x, int y);// checks, if tile is occupied by vehicle
- vehicle* veh_at(const point& pt) { return veh_at(pt.x, pt.y); };
+ vehicle* veh_at(int x, int y, int &part_num) const;
+ vehicle* veh_at(const point& pt, int &part_num) const { return veh_at(pt.x, pt.y, part_num); };
+ vehicle* veh_at(int x, int y) const;
+ vehicle* veh_at(const point& pt) const { return veh_at(pt.x, pt.y); };
  // put player on vehicle at x,y
  void board_vehicle(game *g, int x, int y, player *p);
  void unboard_vehicle(game *g, int x, int y);//remove player from vehicle at x,y
@@ -149,7 +149,7 @@ class map
  const std::string& tername(const point& pt) const { return tername(pt.x, pt.y); };
 
  std::string features(int x, int y); // Words relevant to terrain (sharp, etc)
- bool has_flag(t_flag flag, int x, int y);  // checks terrain and vehicles
+ bool has_flag(t_flag flag, int x, int y) const;  // checks terrain and vehicles
  bool has_flag_ter_only(t_flag flag, int x, int y) const; // only checks terrain
  bool is_destructable(int x, int y);        // checks terrain and vehicles
  bool is_destructable_ter_only(int x, int y);       // only checks terrain
@@ -239,7 +239,7 @@ protected:
  void rotate(int turns);// Rotates the current map 90*turns degress clockwise
 			// Useful for houses, shops, etc
 
- bool inbounds(int x, int y);
+ bool inbounds(int x, int y) const;
  bool is_tiny() const { return 2== my_MAPSIZE; };
 
  int my_MAPSIZE;
