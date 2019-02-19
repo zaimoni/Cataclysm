@@ -154,7 +154,8 @@ class map
  bool has_flag_ter_only(t_flag flag, int x, int y) const; // only checks terrain
  bool is_destructable(int x, int y) const;        // checks terrain and vehicles
  bool is_destructable_ter_only(int x, int y) const;       // only checks terrain
- bool is_outside(int x, int y);
+ bool is_outside(int x, int y) const;
+ bool is_outside(const point& pt) const { return is_outside(pt.x, pt.y); };
  bool flammable_items_at(int x, int y);
  point random_outdoor_tile();
 

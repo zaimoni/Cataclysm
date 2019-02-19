@@ -168,7 +168,7 @@ void weather_effect::acid(game *g)
   }
  }
  for (int i = 0; i < g->z.size(); i++) {
-  if (g->m.is_outside(g->z[i].pos.x, g->z[i].pos.y)) {
+  if (g->m.is_outside(g->z[i].pos)) {
    if (!g->z[i].has_flag(MF_ACIDPROOF))
     g->z[i].hurt(1);
   }

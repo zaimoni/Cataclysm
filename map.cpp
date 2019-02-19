@@ -1080,7 +1080,7 @@ bool map::is_destructable_ter_only(int x, int y) const
          (move_cost_ter_only(x, y) == 0 && !has_flag(liquid, x, y)));
 }
 
-bool map::is_outside(int x, int y)
+bool map::is_outside(int x, int y) const
 {
  bool out = (
          ter(x    , y    ) != t_floor && ter(x - 1, y - 1) != t_floor &&
