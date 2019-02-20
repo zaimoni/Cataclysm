@@ -348,7 +348,7 @@ void monster::process_trigger(monster_trigger trig, int amount)
  for (const auto trigger : type->fear) if (trigger == trig) morale -= amount;
 }
 
-int monster::trigger_sum(game *g, const std::vector<monster_trigger>& triggers)
+int monster::trigger_sum(const game *g, const std::vector<monster_trigger>& triggers) const
 {
  int ret = 0;
  bool check_terrain = false, check_meat = false, check_fire = false;

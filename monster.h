@@ -99,7 +99,7 @@ class monster {
  int morale_level(player &u);	// Looks at our HP etc.
  void process_triggers(game *g);// Process things that anger/scare us
  void process_trigger(monster_trigger trig, int amount);// Single trigger
- int trigger_sum(game *g, const std::vector<monster_trigger>& triggers);
+ int trigger_sum(const game *g, const std::vector<monster_trigger>& triggers) const;
  int  hit(game *g, player &p, body_part &bp_hit); // Returns a damage
  void hit_monster(game *g, monster& target);
  bool hurt(int dam); 	// Deals this dam damage; returns true if we dead
