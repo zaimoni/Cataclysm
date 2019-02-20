@@ -187,6 +187,7 @@ class map
  item water_from(int x, int y) const;
  void i_clear(int x, int y);
  void i_rem(int x, int y, int index);
+ void i_rem(const point& pt, int index) { i_rem(pt.x, pt.y, index); };
  point find_item(item *it) const;
  void add_item(int x, int y, const itype* type, int birthday);
  void add_item(int x, int y, item new_item);

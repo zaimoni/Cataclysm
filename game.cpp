@@ -2847,7 +2847,7 @@ void game::remove_item(item *it)
   auto& stack = m.i_at(ret);
   for (int i = 0; i < stack.size(); i++) {
    if (it == &stack[i]) {
-    m.i_rem(ret.x, ret.y, i);
+    m.i_rem(ret, i);
     return;
    }
   }

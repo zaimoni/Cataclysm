@@ -1080,7 +1080,7 @@ void npc::pick_up_item(game *g)
  for (int i = 0; i < pickup.size(); i++) i_add(items[pickup[i]]);
  {	// indexes are added in strictly increasing order.  Doing this separately as we are not guaranteed this does not invalidate our pointer
  int i = pickup.size();
- while (0 < i--) g->m.i_rem(it.x, it.y, pickup[i]);
+ while (0 < i--) g->m.i_rem(it, pickup[i]);
  }
 }
 

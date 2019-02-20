@@ -45,7 +45,7 @@ void mattack::antqueen(game *g, monster *z)
    for(auto& obj : g->m.i_at(egg_points[i])) {
 	++j;
     if (obj.type->id == itm_ant_egg) {
-     g->m.i_rem(egg_points[i].x, egg_points[i].y, j);
+     g->m.i_rem(egg_points[i], j);
      g->z.push_back(monster(mtype::types[mon_ant_larva], egg_points[i].x, egg_points[i].y));
 	 break;	// Max one hatch per tile.
 	}
@@ -181,7 +181,7 @@ void mattack::resurrect(game *g, monster *z)
     monster mon(obj.corpse, corpses[i].x, corpses[i].y);
     mon.speed = int(mon.speed * .8) - burnt_penalty / 2;
     mon.hp    = int(mon.hp    * .7) - burnt_penalty;
-    g->m.i_rem(corpses[i].x, corpses[i].y, n);
+    g->m.i_rem(corpses[i], n);
     g->z.push_back(mon);
 	break;
    }
