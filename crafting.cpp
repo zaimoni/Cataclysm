@@ -673,7 +673,7 @@ void game::craft()
  char ch;
 
  inventory crafting_inv;
- crafting_inv.form_from_map(this, point(u.posx, u.posy), PICKUP_RANGE);
+ crafting_inv.form_from_map(m, point(u.posx, u.posy), PICKUP_RANGE);
  crafting_inv += u.inv;
  crafting_inv += u.weapon;
  if (u.has_bionic(bio_tools)) {
@@ -962,7 +962,7 @@ void game::pick_recipes(std::vector<const recipe*> &current,
                         std::vector<bool> &available, craft_cat tab)
 {
  inventory crafting_inv;
- crafting_inv.form_from_map(this, point(u.posx, u.posy), PICKUP_RANGE);
+ crafting_inv.form_from_map(m, point(u.posx, u.posy), PICKUP_RANGE);
  crafting_inv += u.inv;
  crafting_inv += u.weapon;
  if (u.has_bionic(bio_tools)) {
@@ -1115,7 +1115,7 @@ void consume_items(game *g, const std::vector<component>& components)
  std::vector<component> map_use;
  std::vector<component> mixed_use;
  inventory map_inv;
- map_inv.form_from_map(g, point(g->u.posx, g->u.posy), PICKUP_RANGE);
+ map_inv.form_from_map(g->m, point(g->u.posx, g->u.posy), PICKUP_RANGE);
 
  for(const component& comp : components) {
   const itype_id type = comp.type;
@@ -1216,7 +1216,7 @@ void consume_tools(game *g, const std::vector<component>& tools)
 {
  bool found_nocharge = false;
  inventory map_inv;
- map_inv.form_from_map(g, point(g->u.posx, g->u.posy), PICKUP_RANGE);
+ map_inv.form_from_map(g->m, point(g->u.posx, g->u.posy), PICKUP_RANGE);
  std::vector<component> player_has;
  std::vector<component> map_has;
 // Use charges of any tools that require charges used

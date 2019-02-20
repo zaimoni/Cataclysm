@@ -201,7 +201,7 @@ void game::construction_menu()
  char ch;
 
  inventory total_inv;
- total_inv.form_from_map(this, point(u.posx, u.posy), PICKUP_RANGE);
+ total_inv.form_from_map(m, point(u.posx, u.posy), PICKUP_RANGE);
  total_inv.add_stack(u.inv_dump());
  if (u.has_bionic(bio_tools)) {
   item tools(item::types[itm_toolset], messages.turn);
@@ -400,7 +400,7 @@ void game::place_construction(const constructable * const con)
 {
  refresh_all();
  inventory total_inv;
- total_inv.form_from_map(this, point(u.posx, u.posy), PICKUP_RANGE);
+ total_inv.form_from_map(m, point(u.posx, u.posy), PICKUP_RANGE);
  total_inv.add_stack(u.inv_dump());
 
  std::vector<point> valid;
@@ -470,7 +470,7 @@ void game::place_construction(const constructable * const con)
 void game::complete_construction()
 {
  inventory map_inv;
- map_inv.form_from_map(this, point(u.posx, u.posy), PICKUP_RANGE);
+ map_inv.form_from_map(m, point(u.posx, u.posy), PICKUP_RANGE);
  int stage_num = u.activity.values[0];
  const constructable* const built = constructable::constructions[u.activity.index];
  construction_stage stage = built->stages[stage_num];

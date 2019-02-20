@@ -157,16 +157,15 @@ void inventory::restack(player *p)
   items.push_back(tmp.items[i]);
 }
 
-void inventory::form_from_map(game *g, point origin, int range)
+void inventory::form_from_map(map& m, point origin, int range)
 {
  items.clear();
  for (int x = origin.x - range; x <= origin.x + range; x++) {
   for (int y = origin.y - range; y <= origin.y + range; y++) {
-   for(auto& obj : g->m.i_at(x, y))
-    if (!obj.made_of(LIQUID))
-     add_item(obj);
+   for(auto& obj : m.i_at(x, y))
+    if (!obj.made_of(LIQUID)) add_item(obj);
 // Kludge for now!
-   if (g->m.field_at(x, y).type == fd_fire) {
+   if (m.field_at(x, y).type == fd_fire) {	// signature should be const map& m
     item fire(item::types[itm_fire], 0);
     fire.charges = 1;
     add_item(fire);

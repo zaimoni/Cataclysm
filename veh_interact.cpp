@@ -60,7 +60,7 @@ void veh_interact::exec ()
     }
     wrefresh(w_grid);
 
-    crafting_inv.form_from_map(_g, point(_g->u.posx, _g->u.posy), PICKUP_RANGE);
+    crafting_inv.form_from_map(_g->m, point(_g->u.posx, _g->u.posy), PICKUP_RANGE);
     crafting_inv += _g->u.inv;
     crafting_inv += _g->u.weapon;
     if (_g->u.has_bionic(bio_tools))  {
