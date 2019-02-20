@@ -4207,7 +4207,7 @@ shape, but with long, twisted, distended limbs.");
   add_event(EVENT_TEMPLE_SPAWN, messages.turn + 3);
  }
 
- const auto tr_id = m.tr_at(exam.x, exam.y);
+ const auto tr_id = m.tr_at(exam);
  if (tr_id != tr_null) {
    const trap* const tr = trap::traps[tr_id];
    if (tr->difficulty < 99

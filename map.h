@@ -88,7 +88,7 @@ class map
 // Terrain
  ter_id& ter(int x, int y); // Terrain at coord (x, y); {x|y}=(0, SEE{X|Y}*3]
  ter_id& ter(const point& pt) { return ter(pt.x, pt.y); };
- ter_id ter(int x, int y) const { return const_cast<map*>(this)->ter(x, y); };	// may want to specialize this anyway
+ ter_id ter(int x, int y) const { return const_cast<map*>(this)->ter(x, y); };	// \todo specialize this properly
  ter_id ter(const point& pt) const { return const_cast<map*>(this)->ter(pt.x, pt.y); };
 
  template<ter_id src, ter_id dest> void rewrite(int x, int y) {
@@ -203,6 +203,9 @@ class map
 
 // Traps
  trap_id& tr_at(int x, int y);
+ trap_id& tr_at(const point& pt) { return tr_at(pt.x, pt.y); };
+ trap_id tr_at(int x, int y) const { return const_cast<map*>(this)->tr_at(x, y); };	// \todo specialize this properly
+ trap_id tr_at(const point& pt) const { return const_cast<map*>(this)->tr_at(pt.x, pt.y); };
  void add_trap(int x, int y, trap_id t);
  void disarm_trap( game *g, int x, int y);
 

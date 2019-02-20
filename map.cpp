@@ -1908,7 +1908,7 @@ void map::process_active_items(game *g)
   }
  }
 }
-     
+
 void map::process_active_items_in_submap(game *g, int nonant)
 {
  for (int i = 0; i < SEEX; i++) {
