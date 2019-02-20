@@ -1,7 +1,7 @@
 #ifndef _COMPUTER_H_
 #define _COMPUTER_H_
 
-#include "output.h"
+#include "item.h"
 #include <vector>
 #include <string>
 
@@ -91,6 +91,8 @@ private:
  void activate_random_failure(game *g);
 // ...but we can also choose a specific failure.
  void activate_failure       (game *g, computer_failure fail);
+
+ bool blood_analysis_precondition(const std::vector<item>& inv);
 
 // OUTPUT/INPUT
 // Reset to a blank terminal (e.g. at start of usage loop)

@@ -212,6 +212,31 @@ void computer::load_data(std::string data)
  }
 }
 
+bool computer::blood_analysis_precondition(const std::vector<item>& inv)
+{
+	if (inv.empty()) {
+		print_error("ERROR: Please place sample in centrifuge.");
+		return false;
+	}
+	if (inv.size() > 1) {
+		print_error("ERROR: Please remove all but one sample from centrifuge.");
+		return false;
+	}
+	if (inv[0].type->id != itm_vacutainer) {
+		print_error("ERROR: Please use vacutainer-contained samples.");
+		return false;
+	}
+	if (inv[0].contents.empty()) {
+		print_error("ERROR: Vacutainer empty.");
+		return false;
+	}
+	if (inv[0].contents[0].type->id != itm_blood) {
+		print_error("ERROR: Please only use blood samples.");
+		return false;
+	}
+	return true;
+}
+
 void computer::activate_function(game *g, computer_action action)
 {
  switch (action) {
@@ -566,17 +591,7 @@ INITIATING STANDARD TREMOR TEST...");
     for (int y = g->u.posy - 2; y <= g->u.posy + 2; y++) {
      if (g->m.ter(x, y) == t_centrifuge) {
 	  auto& inv = g->m.i_at(x, y);
-      if (inv.empty())
-       print_error("ERROR: Please place sample in centrifuge.");
-      else if (inv.size() > 1)
-       print_error("ERROR: Please remove all but one sample from centrifuge.");
-      else if (inv[0].type->id != itm_vacutainer)
-       print_error("ERROR: Please use vacutainer-contained samples.");
-      else if (inv[0].contents.empty())
-       print_error("ERROR: Vacutainer empty.");
-      else if (inv[0].contents[0].type->id != itm_blood)
-       print_error("ERROR: Please only use blood samples.");
-      else { // Success!
+	  if (blood_analysis_precondition(inv))  { // Success!
        item *blood = &(inv[0].contents[0]);
        if (blood->corpse == NULL || blood->corpse->id == mon_null)
         print_line("Result:  Human blood, no pathogens found.");
@@ -722,17 +737,7 @@ void computer::activate_failure(game *g, computer_failure fail)
     for (int y = g->u.posy - 2; y <= g->u.posy + 2; y++) {
      if (g->m.ter(x, y) == t_centrifuge) {
 	  auto& inv = g->m.i_at(x, y);
-      if (inv.empty())
-       print_error("ERROR: Please place sample in centrifuge.");
-      else if (inv.size() > 1)
-       print_error("ERROR: Please remove all but one sample from centrifuge.");
-      else if (inv[0].type->id != itm_vacutainer)
-       print_error("ERROR: Please use vacutainer-contained samples.");
-      else if (inv[0].contents.empty())
-       print_error("ERROR: Vacutainer empty.");
-      else if (inv[0].contents[0].type->id != itm_blood)
-       print_error("ERROR: Please only use blood samples.");
-      else {
+	  if (blood_analysis_precondition(inv)) {
        print_error("ERROR: Blood sample destroyed.");
 	   inv[0].contents.clear();
       }
