@@ -47,7 +47,7 @@ void ammo_effects(game *g, point pt, long flags)
 	if (flags & mfb(IF_AMMO_FLASHBANG)) g->flashbang(pt);
 
 	if (flags & mfb(IF_AMMO_FLAME)) {
-		if (g->m.add_field(g, pt.x, pt.y, fd_fire, 1)) g->m.field_at(pt.x, pt.y).age = 800;
+		if (g->m.add_field(g, pt.x, pt.y, fd_fire, 1)) g->m.field_at(pt).age = 800;
 	}
 }
 
@@ -841,12 +841,10 @@ void splatter(game *g, std::vector<point> trajectory, int dam, monster* mon)
 
  std::vector<point> spurt = continue_line(trajectory, distance);
 
- for (int i = 0; i < spurt.size(); i++) {
-  int tarx = spurt[i].x, tary = spurt[i].y;
-  if (g->m.field_at(tarx, tary).type == blood &&
-      g->m.field_at(tarx, tary).density < 3)
-   g->m.field_at(tarx, tary).density++;
-  else
-   g->m.add_field(g, tarx, tary, blood, 1);
+ for (auto& tar : spurt) {
+	 auto& fd = g->m.field_at(tar);
+	 if (blood == fd.type) {
+		 if (3 > fd.density) fd.density++;
+	 } else g->m.add_field(g, tar.x, tar.y, blood, 1);
  }
 }

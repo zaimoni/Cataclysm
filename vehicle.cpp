@@ -1041,11 +1041,10 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
         }
 
         if (part_flag(part, vpf_sharp)) {
-			auto& f = g->m.field_at(dest.x, dest.y);
-            if (f.type == fd_blood && f.density < 2)
-                f.density++;
-            else
-                g->m.add_field(g, dest.x, dest.y, fd_blood, 1);
+			auto& f = g->m.field_at(dest);
+			if (f.type == fd_blood) {
+				if (f.density < 3) f.density++;
+			} else g->m.add_field(g, dest.x, dest.y, fd_blood, 1);
         } else
             g->sound(dest, 20, "");
     }

@@ -11,9 +11,10 @@ void mdeath::normal(game *g, monster *z)
 {
  if (g->u_see(z)) messages.add("It dies!");
  if (z->made_of(FLESH) && z->has_flag(MF_WARM)) {
-  auto& f = g->m.field_at(z->pos.x, z->pos.y);
-  if (f.type == fd_blood && f.density < 3) f.density++;
-  else g->m.add_field(g, z->pos.x, z->pos.y, fd_blood, 1);
+  auto& f = g->m.field_at(z->pos);
+  if (f.type == fd_blood) {
+	  if (f.density < 3) f.density++;
+  } else g->m.add_field(g, z->pos.x, z->pos.y, fd_blood, 1);
  }
 // Drop a dang ol' corpse
 // If their hp is less than -50, we destroyed them so badly no corpse was left
@@ -36,9 +37,10 @@ void mdeath::boomer(game *g, monster *z)
    const point dest(z->pos.x + i, z->pos.y + j);
    g->m.bash(dest, 10);	// no need to spam player with sounds
    {
-   auto& f = g->m.field_at(dest.x, dest.y);
-   if (f.type == fd_bile && f.density < 3) f.density++;
-   else g->m.add_field(g, dest.x, dest.y, fd_bile, 1);
+   auto& f = g->m.field_at(dest);
+   if (f.type == fd_bile) {
+	   if (f.density < 3) f.density++;
+   } else g->m.add_field(g, dest.x, dest.y, fd_bile, 1);
    }
    if (monster* const m_at = g->mon(dest)) {
 	m_at->stumble(g, false);

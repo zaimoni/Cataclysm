@@ -46,7 +46,7 @@ class inventory
  */
   void restack(player *p = NULL);
 
-  void form_from_map(map& m, point origin, int distance);
+  void form_from_map(const map& m, point origin, int distance);
 
   std::vector<item> remove_stack(int index);
   item  remove_item(int index);

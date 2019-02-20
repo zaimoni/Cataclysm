@@ -1032,9 +1032,8 @@ bool map::trans(int x, int y)
  // is how we stop rays from going on forever.  Instead we'll have to include
  // this check in the ray loop.
  int vpart = -1;
- vehicle *veh = veh_at(x, y, vpart);
  bool tertr;
- if (veh) {
+ if (vehicle *veh = veh_at(x, y, vpart)) {
   tertr = !veh->part_flag(vpart, vpf_opaque) || veh->parts[vpart].hp <= 0;
   if (!tertr) {
    int dpart = veh->part_with_feature(vpart, vpf_openable);
@@ -1043,9 +1042,8 @@ bool map::trans(int x, int y)
   }
  } else
   tertr = ter_t::list[ter(x, y)].flags & mfb(transparent);
- return tertr &&
-        (field_at(x, y).type == 0 ||	// Fields may obscure the view, too
-        fieldlist[field_at(x, y).type].transparent[field_at(x, y).density - 1]);
+ const auto& fd = field_at(x, y);
+ return tertr && (fd.type == 0 || fieldlist[fd.type].transparent[fd.density - 1]);	// Fields may obscure the view, too
 }
 
 bool map::has_flag(t_flag flag, int x, int y) const
@@ -2096,9 +2094,9 @@ field& map::field_at(int x, int y)
 bool map::add_field(game *g, int x, int y, field_id t, unsigned char density)
 {
  if (!INBOUNDS(x, y)) return false;
- if (field_at(x, y).type == fd_web && t == fd_fire) density++;
- else if (!field_at(x, y).is_null()) // Blood & bile are null too
-  return false;
+ auto& fd = field_at(x, y);
+ if (fd.type == fd_web && t == fd_fire) density++;
+ else if (!fd.is_null()) return false; // Blood & bile are null too
  if (density > 3) density = 3;
  if (density <= 0) return false;
  int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
@@ -2227,11 +2225,12 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
      } else sym = tr->sym;
    }
  }
-   // If there's a field here, draw that instead (unless its symbol is %)
-   if (field_at(x, y).type != fd_null && fieldlist[field_at(x, y).type].sym != '&') {
-  tercol = fieldlist[field_at(x, y).type].color[field_at(x, y).density - 1];
+ // If there's a field here, draw that instead (unless its symbol is %)
+ const auto& fd = field_at(x, y);
+ if (fd.type != fd_null && fieldlist[fd.type].sym != '&') {
+  tercol = fieldlist[fd.type].color[fd.density - 1];
   drew_field = true;
-  if (fieldlist[field_at(x, y).type].sym == '*') {
+  if (fieldlist[fd.type].sym == '*') {
    switch (rng(1, 5)) {
     case 1: sym = '*'; break;
     case 2: sym = '0'; break;
@@ -2239,8 +2238,8 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
     case 4: sym = '&'; break;
     case 5: sym = '+'; break;
    }
-  } else if (fieldlist[field_at(x, y).type].sym != '%') {
-   sym = fieldlist[field_at(x, y).type].sym;
+  } else if (fieldlist[fd.type].sym != '%') {
+   sym = fieldlist[fd.type].sym;
    drew_field = false;
   }
  }

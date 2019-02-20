@@ -63,18 +63,16 @@ void weather_effect::glare(game *g)
 
 void weather_effect::wet(game *g)
 {
- if (!g->u.is_wearing(itm_coat_rain) && !g->u.has_trait(PF_FEATHERS) &&
-     PLAYER_OUTSIDE && one_in(2))
+ if (!g->u.is_wearing(itm_coat_rain) && !g->u.has_trait(PF_FEATHERS) && PLAYER_OUTSIDE && one_in(2))
   g->u.add_morale(MORALE_WET, -1, -30);
 // Put out fires and reduce scent
  for (int x = g->u.posx - SEEX * 2; x <= g->u.posx + SEEX * 2; x++) {
   for (int y = g->u.posy - SEEY * 2; y <= g->u.posy + SEEY * 2; y++) {
    if (g->m.is_outside(x, y)) {
-    field *fd = &(g->m.field_at(x, y));
-    if (fd->type == fd_fire)
-     fd->age += 15;
-    if (g->scent(x, y) > 0)
-     g->scent(x, y)--;
+	auto& fd = g->m.field_at(x, y);
+    if (fd.type == fd_fire) fd.age += 15;
+	auto& sc = g->scent(x, y);
+    if (sc > 0) sc--;
    }
   }
  }
@@ -82,18 +80,16 @@ void weather_effect::wet(game *g)
 
 void weather_effect::very_wet(game *g)
 {
- if (!g->u.is_wearing(itm_coat_rain) && !g->u.has_trait(PF_FEATHERS) &&
-     PLAYER_OUTSIDE)
+ if (!g->u.is_wearing(itm_coat_rain) && !g->u.has_trait(PF_FEATHERS) && PLAYER_OUTSIDE)
   g->u.add_morale(MORALE_WET, -1, -60);
 // Put out fires and reduce scent
  for (int x = g->u.posx - SEEX * 2; x <= g->u.posx + SEEX * 2; x++) {
   for (int y = g->u.posy - SEEY * 2; y <= g->u.posy + SEEY * 2; y++) {
    if (g->m.is_outside(x, y)) {
-    field *fd = &(g->m.field_at(x, y));
-    if (fd->type == fd_fire)
-     fd->age += 45;
-    if (g->scent(x, y) > 0)
-     g->scent(x, y)--;
+    auto& fd = g->m.field_at(x, y);
+    if (fd.type == fd_fire) fd.age += 45;
+	auto& sc = g->scent(x, y);
+    if (sc > 0) sc--;
    }
   }
  }

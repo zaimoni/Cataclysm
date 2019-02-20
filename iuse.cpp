@@ -626,7 +626,7 @@ void iuse::lighter(game *g, player *p, item *it, bool t)
  dir.y += p->posy;
  if (g->m.flammable_items_at(dir.x, dir.y)) {
   if (g->m.add_field(g, dir.x, dir.y, fd_fire, 1))
-   g->m.field_at(dir.x, dir.y).age = 30;
+   g->m.field_at(dir).age = 30;
  } else {
   messages.add("There's nothing to light there.");
   it->charges++;
@@ -797,12 +797,11 @@ void iuse::extinguisher(game *g, player *p, item *it, bool t)
  p->moves -= 140;
  int x = dir.x + p->posx;
  int y = dir.y + p->posy;
- if (g->m.field_at(x, y).type == fd_fire) {
-  g->m.field_at(x, y).density -= rng(2, 3);
-  if (g->m.field_at(x, y).density <= 0) {
-   g->m.field_at(x, y).density = 1;
-   g->m.remove_field(x, y);
-  }
+ {
+ auto& fd = g->m.field_at(x, y);
+ if (fd.type == fd_fire) {
+  if (0 >= (fd.density -= rng(2, 3))) g->m.remove_field(x, y);
+ }
  }
  monster* const m_at = g->mon(x,y);
  if (m_at) {
@@ -817,12 +816,11 @@ void iuse::extinguisher(game *g, player *p, item *it, bool t)
  if (g->m.move_cost(x, y) != 0) {
   x += dir.x;
   y += dir.y;
-  if (g->m.field_at(x, y).type == fd_fire) {
-   g->m.field_at(x, y).density -= rng(0, 1) + rng(0, 1);
-   if (g->m.field_at(x, y).density <= 0) {
-    g->m.field_at(x, y).density = 1;
-    g->m.remove_field(x, y);
-   }
+  auto& fd = g->m.field_at(x, y);
+  if (fd.type == fd_fire) {
+   fd.density -= rng(0, 1) + rng(0, 1);
+   if (fd.density <= 0) g->m.remove_field(x, y);
+   else if (3 < fd.density) fd.density = 3;
   }
  }
 }
@@ -2048,11 +2046,10 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
   case AEA_FATIGUE: {
    messages.add("The fabric of space seems to decay.");
    int x = rng(p->posx - 3, p->posx + 3), y = rng(p->posy - 3, p->posy + 3);
-   if (g->m.field_at(x, y).type == fd_fatigue &&
-       g->m.field_at(x, y).density < 3)
-    g->m.field_at(x, y).density++;
-   else
-    g->m.add_field(g, x, y, fd_fatigue, rng(1, 2));
+   auto& fd = g->m.field_at(x, y);
+   if (fd.type == fd_fatigue) { 
+	   if (fd.density < 3) fd.density++;
+   } else g->m.add_field(g, x, y, fd_fatigue, rng(1, 2));
   } break;
 
   case AEA_ACIDBALL: {
@@ -2060,9 +2057,9 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
    if (acidball.x != -1 && acidball.y != -1) {
     for (int x = acidball.x - 1; x <= acidball.x + 1; x++) {
      for (int y = acidball.y - 1; y <= acidball.y + 1; y++) {
-      if (g->m.field_at(x, y).type == fd_acid &&
-          g->m.field_at(x, y).density < 3)
-       g->m.field_at(x, y).density++;
+	  auto& fd = g->m.field_at(x, y);
+      if (fd.type == fd_acid && fd.density < 3)
+       fd.density++;
       else
        g->m.add_field(g, x, y, fd_acid, rng(2, 3));
      }

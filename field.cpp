@@ -205,11 +205,11 @@ bool map::process_fields_in_submap(game *g, int gridn)
      int startj = rng(0, 2);
      for (int i = 0; i < 3 && cur->age < 0; i++) {
       for (int j = 0; j < 3 && cur->age < 0; j++) {
-       int fx = x + ((i + starti) % 3) - 1, fy = y + ((j + startj) % 3) - 1;
-       if (field_at(fx, fy).type == fd_fire && field_at(fx, fy).density < 3 &&
-           (!in_pit || ter(fx, fy) == t_pit)) {
-        field_at(fx, fy).density++; 
-        field_at(fx, fy).age = 0;
+	   const point f_pt(x + ((i + starti) % 3) - 1,  y + ((j + startj) % 3) - 1);
+	   auto& fd = field_at(f_pt);
+       if (fd.type == fd_fire && fd.density < 3 && (!in_pit || ter(f_pt) == t_pit)) {
+        fd.density++; 
+        fd.age = 0;
         cur->age = 0;
        }
       }
@@ -273,7 +273,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
      for (int a = -1; a <= 1; a++) {
       for (int b = -1; b <= 1; b++) {
 	   point dest(x + a, y + b);
-	   auto& f = field_at(dest.x, dest.y);
+	   auto& f = field_at(dest);
        if ((f.type == fd_smoke && f.density < 3) ||
            (f.is_null() && move_cost(dest) > 0))
         spread.push_back(dest);
@@ -281,13 +281,13 @@ bool map::process_fields_in_submap(game *g, int gridn)
      }
      if (cur->density > 0 && cur->age > 0 && spread.size() > 0) {
       point p = spread[rng(0, spread.size() - 1)];
-	  auto& f = field_at(p.x, p.y);
+	  auto& f = field_at(p);
       if (f.type == fd_smoke) {
 		f.density++;
         cur->density--;
       } else if (add_field(g, p.x, p.y, fd_smoke, 1)){
        cur->density--;
-       field_at(p.x, p.y).age = cur->age;
+       field_at(p).age = cur->age;
       }
      }
     }
@@ -307,7 +307,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
      for (int a = -1; a <= 1; a++) {
       for (int b = -1; b <= 1; b++) {
 	   point dest(x + a, y + b);
-	   auto& f = field_at(dest.x, dest.y);
+	   auto& f = field_at(dest);
        if (((f.type == fd_smoke ||
 		     f.type == fd_tear_gas) &&
 		     f.density < 3            )      ||
@@ -318,7 +318,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
 // Then, spread to a nearby point
      if (cur->density > 0 && cur->age > 0 && spread.size() > 0) {
       point p = spread[rng(0, spread.size() - 1)];
-	  auto& f = field_at(p.x, p.y);
+	  auto& f = field_at(p);
 	  switch (f.type) {
 	  case fd_tear_gas:	// Nearby teargas grows thicker
 		  f.density++;
@@ -330,7 +330,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
 	  default:	// Or, just create a new field.
 		  if (add_field(g, p.x, p.y, fd_tear_gas, 1)) {
 			  cur->density--;
-			  field_at(p.x, p.y).age = cur->age;
+			  field_at(p).age = cur->age;
 		  }
 	  }
      }
@@ -350,7 +350,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
      for (int a = -1; a <= 1; a++) {
       for (int b = -1; b <= 1; b++) {
 	   point dest(x + a, y + b);
-	   auto& f = field_at(dest.x, dest.y);
+	   auto& f = field_at(dest);
        if (((f.type == fd_smoke ||
 		     f.type == fd_tear_gas ||
 		     f.type == fd_toxic_gas) &&
@@ -362,7 +362,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
 // Then, spread to a nearby point
      if (!spread.empty()) {
       point p = spread[rng(0, spread.size() - 1)];
-	  auto& f = field_at(p.x, p.y);
+	  auto& f = field_at(p);
 	  switch (f.type) {
 	  case fd_toxic_gas:	// Nearby toxic gas grows thicker
 		  f.density++;
@@ -375,7 +375,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
 	  default:	// Or, just create a new field.
 		  if (add_field(g, p.x, p.y, fd_toxic_gas, 1)) {
 			  cur->density--;
-			  field_at(p.x, p.y).age = cur->age;
+			  field_at(p).age = cur->age;
 		  }
 	  }
      }
@@ -398,7 +398,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
      for (int a = -1; a <= 1; a++) {
       for (int b = -1; b <= 1; b++) {
 	   point dest(x + a, y + b);
-	   auto& f = field_at(dest.x, dest.y);
+	   auto& f = field_at(dest);
        if (((f.type == fd_smoke ||
 		     f.type == fd_tear_gas ||
 		     f.type == fd_toxic_gas ||
@@ -411,7 +411,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
 // Then, spread to a nearby point
      if (!spread.empty()) {
       point p = spread[rng(0, spread.size() - 1)];
-	  auto& f = field_at(p.x, p.y);
+	  auto& f = field_at(p);
 	  switch(f.type) {
 	  case fd_nuke_gas:	// Nearby nukegas grows thicker
 		if (f.density < 3) {
@@ -426,7 +426,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
 	  default:	// Or, just create a new field.
 		if (add_field(g, p.x, p.y, fd_nuke_gas, cur->age)) {
 			cur->density--;
-			field_at(p.x, p.y).age = cur->age;
+			field_at(p).age = cur->age;
 		}
 	  }
      }
@@ -436,10 +436,10 @@ bool map::process_fields_in_submap(game *g, int gridn)
    case fd_gas_vent:
     for (int i = x - 1; i <= x + 1; i++) {
      for (int j = y - 1; j <= y + 1; j++) {
-      if (field_at(i, j).type == fd_toxic_gas && field_at(i, j).density < 3)
-       field_at(i, j).density++;
-      else
-       add_field(g, i, j, fd_toxic_gas, 3);
+	  auto& fd = field_at(i, j);
+	  if (fd.type == fd_toxic_gas) {
+		  if (fd.density < 3) fd.density++;
+	  } else add_field(g, i, j, fd_toxic_gas, 3);
      }
     }
     break;
@@ -470,7 +470,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
       int tries = 0;
       while (tries < 10 && cur->age < 50) {
 	   point dest(x + rng(-1, 1), y + rng(-1, 1));
-       if (move_cost(dest) != 0 && field_at(dest.x, dest.y).is_null()) {
+       if (move_cost(dest) != 0 && field_at(dest).is_null()) {
         add_field(g, dest.x, dest.y, fd_electricity, 1);
         cur->density--;
         tries = 0;
@@ -480,14 +480,14 @@ bool map::process_fields_in_submap(game *g, int gridn)
       for (int a = -1; a <= 1; a++) {
        for (int b = -1; b <= 1; b++) {
 		point dest(x + a, y + b);
-        if (move_cost(dest) == 0 && field_at(dest.x, dest.y).is_null())	// Grounded tiles first
+        if (move_cost(dest) == 0 && field_at(dest).is_null())	// Grounded tiles first
          valid.push_back(dest);
        }
       }
       if (valid.size() == 0) {	// Spread to adjacent space, then
 	   point dest(x + rng(-1, 1), y + rng(-1, 1));
 	   if (move_cost(dest) > 0) {
-		   auto& f = field_at(dest.x, dest.y);
+		   auto& f = field_at(dest);
 		   if (f.type == fd_electricity && f.density < 3) f.density++;
 		   else add_field(g, dest.x, dest.y, fd_electricity, 1);
 	   }
@@ -596,12 +596,11 @@ bool map::process_fields_in_submap(game *g, int gridn)
      cur->density = 3;
      for (int i = x - 5; i <= x + 5; i++) {
       for (int j = y - 5; j <= y + 5; j++) {
-       if (field_at(i, j).type == fd_null || field_at(i, j).density == 0) {
+	   const auto& fd = field_at(i, j);
+       if (fd.type == fd_null || fd.density == 0) {
         int newdens = 3 - (rl_dist(x, y, i, j) / 2) + (one_in(3) ? 1 : 0);
-        if (newdens > 3)
-         newdens = 3;
-        if (newdens > 0)
-         add_field(g, i, j, fd_acid, newdens);
+        if (newdens > 3) newdens = 3;
+        if (newdens > 0) add_field(g, i, j, fd_acid, newdens);
        }
       }
      }

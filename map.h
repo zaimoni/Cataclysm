@@ -211,6 +211,9 @@ class map
 
 // Fields
  field& field_at(int x, int y);
+ field& field_at(const point& pt) { return field_at(pt.x, pt.y); };
+ const field& field_at(int x, int y) const { return const_cast<map*>(this)->field_at(x, y); };
+ const field& field_at(const point& pt) const { return const_cast<map*>(this)->field_at(pt.x, pt.y); };
  bool add_field(game *g, int x, int y, field_id t, unsigned char density);
  void remove_field(int x, int y);
  bool process_fields(game *g);				// See fields.cpp

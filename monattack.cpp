@@ -84,7 +84,7 @@ void mattack::acid(game *g, monster *z)
    if (g->m.move_cost(dest) > 0 &&
        g->m.sees(dest, hit, 6) &&
        one_in(abs(j)) && one_in(abs(i))) {
-	 auto& f = g->m.field_at(dest.x, dest.y);
+	 auto& f = g->m.field_at(dest);
      if (f.type == fd_acid && f.density < 3) f.density++;
      else g->m.add_field(g, dest.x, dest.y, fd_acid, 2);
    }
@@ -125,13 +125,13 @@ void mattack::boomer(game *g, monster *z)
  bool u_see = g->u_see(z->pos.x);
  if (u_see) messages.add("The %s spews bile!", z->name().c_str());
  for (int i = 0; i < line.size(); i++) {
-  if (g->m.field_at(line[i].x, line[i].y).type == fd_blood) {
-   g->m.field_at(line[i].x, line[i].y).type = fd_bile;
-   g->m.field_at(line[i].x, line[i].y).density = 1;
-  } else if (g->m.field_at(line[i].x, line[i].y).type == fd_bile &&
-             g->m.field_at(line[i].x, line[i].y).density < 3)
-   g->m.field_at(line[i].x, line[i].y).density++;
-  else
+  auto& fd = g->m.field_at(line[i]);
+  if (fd.type == fd_blood) {
+   fd.type = fd_bile;
+   fd.density = 1;
+  } else if (fd.type == fd_bile) {
+	  if (fd.density < 3) fd.density++;
+  } else
    g->m.add_field(g, line[i].x, line[i].y, fd_bile, 1);
 // If bile hit a solid tile, return.
   if (g->m.move_cost(line[i]) == 0) {

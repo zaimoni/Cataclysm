@@ -1579,9 +1579,11 @@ void game::update_scent()
      }
     }
     newscent[x][y] /= (squares_used + 1);
-    if (m.field_at(x, y).type == fd_slime &&
-        newscent[x][y] < 10 * m.field_at(x, y).density)
-     newscent[x][y] = 10 * m.field_at(x, y).density;
+	const auto& fd = m.field_at(x, y);
+    if (fd.type == fd_slime && newscent[x][y] < 10 * fd.density) {
+	  const auto nonstrict_lb = 10 * fd.density;
+	  if (newscent[x][y] < nonstrict_lb) newscent[x][y] = nonstrict_lb;
+	}
     if (newscent[x][y] > 10000) {
      debugmsg("Wacky scent at %d, %d (%d)", x, y, newscent[x][y]);
      newscent[x][y] = 0; // Scent should never be higher
@@ -3746,7 +3748,7 @@ void game::explode_mon(monster& target)
     if (corpse->dies == &mdeath::boomer) blood_type = fd_bile;
     else if (corpse->dies == &mdeath::acid) blood_type = fd_acid;
 	{
-	auto& f = m.field_at(tar.x, tar.y);
+	auto& f = m.field_at(tar);
     if (f.type == blood_type && f.density < 3) f.density++;
     else m.add_field(this, tar.x, tar.y, blood_type, 1);
 	}
@@ -5581,9 +5583,8 @@ void game::plmove(int x, int y)
    return;
   }
 
-  if (m.field_at(x, y).is_dangerous() &&
-      !query_yn("Really step into that %s?", m.field_at(x, y).name().c_str()))
-   return;
+  const auto& fd = m.field_at(x, y);
+  if (fd.is_dangerous() && !query_yn("Really step into that %s?", fd.name().c_str())) return;
   const auto tr_id = m.tr_at(x, y);
   if (tr_id != tr_null) {
 	 const trap* const tr = trap::traps[tr_id];

@@ -492,19 +492,17 @@ void game::process_artifact(item *it, player *p, bool wielded)
   case AEP_EXTINGUISH:
    for (int x = p->posx - 1; x <= p->posx + 1; x++) {
     for (int y = p->posy - 1; y <= p->posy + 1; y++) {
-     if (m.field_at(x, y).type == fd_fire) {
-      if (m.field_at(x, y).density == 0)
-       m.remove_field(x, y);
-      else
-       m.field_at(x, y).density--;
+	 auto& fd = m.field_at(x, y);
+     if (fd.type == fd_fire) {
+      if (fd.density == 0) m.remove_field(x, y);
+      else fd.density--;
      }
     }
    }
    break;
 
   case AEP_HUNGER:
-   if (one_in(100))
-    p->hunger++;
+   if (one_in(100)) p->hunger++;
    break;
 
   case AEP_THIRST:

@@ -391,19 +391,18 @@ int monster::trigger_sum(game *g, const std::vector<monster_trigger>& triggers)
   for (int x = pos.x - 3; x <= pos.x + 3; x++) {
    for (int y = pos.y - 3; y <= pos.y + 3; y++) {
     if (check_meat) {
-     std::vector<item> *items = &(g->m.i_at(x, y));
-     for (int n = 0; n < items->size(); n++) {
-      if ((*items)[n].type->id == itm_corpse ||
-          (*items)[n].type->id == itm_meat ||
-          (*items)[n].type->id == itm_meat_tainted) {
+	 for(const auto& obj : g->m.i_at(x, y)) {
+      if (obj.type->id == itm_corpse ||
+		  obj.type->id == itm_meat ||
+		  obj.type->id == itm_meat_tainted) {
        ret += 3;
        check_meat = false;
       }
      }
     }
     if (check_fire) {
-     if (g->m.field_at(x, y).type == fd_fire)
-      ret += 5 * g->m.field_at(x, y).density;
+	 const auto fd = g->m.field_at(x, y);
+     if (fd.type == fd_fire) ret += 5 * fd.density;
     }
    }
   }
