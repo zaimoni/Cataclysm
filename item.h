@@ -66,7 +66,7 @@ public:
  void load_info(std::string data, game *g);
  std::string info(bool showtext = false);	// Formatted for human viewing
  char symbol() const { return type->sym; }
- nc_color color();
+ nc_color color() const;
  int price() const;
 
  bool invlet_is_okay();

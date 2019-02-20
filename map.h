@@ -156,7 +156,7 @@ class map
  bool is_destructable_ter_only(int x, int y) const;       // only checks terrain
  bool is_outside(int x, int y) const;
  bool is_outside(const point& pt) const { return is_outside(pt.x, pt.y); };
- bool flammable_items_at(int x, int y);
+ bool flammable_items_at(int x, int y) const;
  point random_outdoor_tile();
 
  template<ter_id src, ter_id dest> void translate() { // Change all instances of $src->$dest
@@ -181,7 +181,9 @@ class map
 
 // Items
  std::vector<item>& i_at(int x, int y);
- const std::vector<item>& i_at(int x, int y) const { return const_cast<map*>(this)->i_at(x,y); };
+ std::vector<item>& i_at(const point& pt) { return i_at(pt.x, pt.y); };
+ const std::vector<item>& i_at(int x, int y) const { return const_cast<map*>(this)->i_at(x, y); };
+ const std::vector<item>& i_at(const point& pt) const { return const_cast<map*>(this)->i_at(pt.x, pt.y); };
  item water_from(int x, int y) const;
  void i_clear(int x, int y);
  void i_rem(int x, int y, int index);

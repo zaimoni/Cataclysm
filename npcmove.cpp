@@ -990,7 +990,7 @@ void npc::find_item(game *g)
  if (range > 12) range = 12;
  int minx = posx - range, maxx = posx + range,
      miny = posy - range, maxy = posy + range;
- int index = -1;
+ item* pickup = NULL;
  if (minx < 0) minx = 0;
  if (miny < 0) miny = 0;
  if (maxx >= SEEX * MAPSIZE) maxx = SEEX * MAPSIZE - 1;
@@ -999,16 +999,14 @@ void npc::find_item(game *g)
  for (int x = minx; x <= maxx; x++) {
   for (int y = miny; y <= maxy; y++) {
    if (g->m.sees(posx, posy, x, y, range)) {
-    for (int i = 0; i < g->m.i_at(x, y).size(); i++) {
-     int itval = value(g->m.i_at(x, y)[i]);
-     int wgt = g->m.i_at(x, y)[i].weight(), vol = g->m.i_at(x, y)[i].volume();
+	for(auto& obj : g->m.i_at(x, y)) {
+     int itval = value(obj);
+     int wgt = obj.weight(), vol = obj.volume();
      if (itval > best_value &&
-         //(itval > worst_item_value ||
           (weight_carried() + wgt <= weight_capacity() / 4 &&
            volume_carried() + vol <= volume_capacity()       )) {
-      it.x = x;
-      it.y = y;
-      index = i;
+      it = point(x,y);
+	  pickup = &obj;
       best_value = itval;
       fetching_item = true;
      }
@@ -1018,7 +1016,7 @@ void npc::find_item(game *g)
  }
 
  if (fetching_item && is_following())
-  say(g, "Hold on, I want to pick up that %s.", g->m.i_at(it.x, it.y)[index].tname().c_str());
+  say(g, "Hold on, I want to pick up that %s.", pickup->tname().c_str());
 }
 
 void npc::pick_up_item(game *g)
@@ -1034,7 +1032,7 @@ void npc::pick_up_item(game *g)
 // We're adjacent to the item; grab it!
  moves -= 100;
  fetching_item = false;
- std::vector<item>& items = g->m.i_at(it.x, it.y);
+ std::vector<item>& items = g->m.i_at(it);
  int total_volume = 0, total_weight = 0; // How much the items will add
  std::vector<int> pickup; // Indices of items we want
 

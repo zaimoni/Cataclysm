@@ -30,13 +30,10 @@ bool map::process_fields_in_submap(game *g, int gridn)
        y = locy + SEEY * int(gridn / my_MAPSIZE);
    
    curtype = cur->type;
-   if (!found_field && curtype != fd_null)
-    found_field = true;
-   if (cur->density > 3 || cur->density < 1)
-    debugmsg("Whoooooa density of %d", cur->density);
+   if (!found_field && curtype != fd_null) found_field = true;
+   if (cur->density > 3 || cur->density < 1) debugmsg("Whoooooa density of %d", cur->density);
 
-  if (cur->age == 0)	// Don't process "newborn" fields
-   curtype = fd_null;
+  if (cur->age == 0) curtype = fd_null;	// Don't process "newborn" fields
 
   int part;
   vehicle *veh;
@@ -47,15 +44,15 @@ bool map::process_fields_in_submap(game *g, int gridn)
 
    case fd_blood:
    case fd_bile:
-    if (has_flag(swimmable, x, y))	// Dissipate faster in water
-     cur->age += 250;
+    if (has_flag(swimmable, x, y)) cur->age += 250;	// Dissipate faster in water
     break;
 
    case fd_acid:
-    if (has_flag(swimmable, x, y))	// Dissipate faster in water
-     cur->age += 20;
-    for (int i = 0; i < i_at(x, y).size(); i++) {
-     item *melting = &(i_at(x, y)[i]);
+    if (has_flag(swimmable, x, y)) cur->age += 20;	// Dissipate faster in water
+	{
+	auto& stack = i_at(x, y);
+	for (int i = 0; i < stack.size(); i++) {
+     item *melting = &stack[i];
      if (melting->made_of(LIQUID) || melting->made_of(VEGGY)   ||
          melting->made_of(FLESH)  || melting->made_of(POWDER)  ||
          melting->made_of(COTTON) || melting->made_of(WOOL)    ||
@@ -63,16 +60,15 @@ bool map::process_fields_in_submap(game *g, int gridn)
          (melting->made_of(GLASS) && !one_in(3)) || one_in(4)) {
 // Acid destructable objects here
       melting->damage++;
-      if (melting->damage >= 5 ||
-          (melting->made_of(PAPER) && melting->damage >= 3)) {
+      if (melting->damage >= 5 || (melting->made_of(PAPER) && melting->damage >= 3)) {
        cur->age += melting->volume();
-       for (int m = 0; m < i_at(x, y)[i].contents.size(); m++)
-        i_at(x, y).push_back( i_at(x, y)[i].contents[m] );
-       i_at(x, y).erase(i_at(x, y).begin() + i);
+	   for(auto it : melting->contents) stack.push_back(it);
+	   stack.erase(stack.begin() + i);
        i--;
       }
      }
     }
+	}
     break;
 
    case fd_sap:
@@ -84,8 +80,8 @@ bool map::process_fields_in_submap(game *g, int gridn)
     int vol = 0, smoke = 0, consumed = 0;
     for (int i = 0; i < i_at(x, y).size() && consumed < cur->density * 2; i++) {
      destroyed = false;
-     vol = i_at(x, y)[i].volume();
      item *it = &(i_at(x, y)[i]);
+	 vol = it->volume();
 
      if (it->is_ammo() && it->ammo_type() != AT_BATT &&
          it->ammo_type() != AT_NAIL && it->ammo_type() != AT_BB &&
@@ -99,10 +95,8 @@ bool map::process_fields_in_submap(game *g, int gridn)
      } else if (it->made_of(PAPER)) {
       destroyed = it->burn(cur->density * 3);
       consumed++;
-      if (cur->density == 1)
-       cur->age -= vol * 10;
-      if (vol >= 4)
-       smoke++;
+      if (cur->density == 1) cur->age -= vol * 10;
+      if (vol >= 4) smoke++;
 
      } else if ((it->made_of(WOOD) || it->made_of(VEGGY))) {
       if (vol <= cur->density * 10 || cur->density == 3) {
@@ -162,15 +156,14 @@ bool map::process_fields_in_submap(game *g, int gridn)
       smoke += 3;
       if (it->burnt <= cur->density * 2 || (cur->density == 3 && one_in(vol))) {
        destroyed = it->burn(cur->density);
-       if (one_in(vol + it->burnt))
-        cur->age--;
+       if (one_in(vol + it->burnt)) cur->age--;
       }
      }
 
      if (destroyed) {
-      for (int m = 0; m < i_at(x, y)[i].contents.size(); m++)
-       i_at(x, y).push_back( i_at(x, y)[i].contents[m] );
-      i_at(x, y).erase(i_at(x, y).begin() + i);
+	  auto& stack = i_at(x, y);
+	  for(auto& obj : stack[i].contents) stack.push_back(obj);
+	  stack.erase(stack.begin() + i);
       i--;
      }
     }

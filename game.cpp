@@ -2844,8 +2844,9 @@ void game::remove_item(item *it)
  }
  ret = m.find_item(it);
  if (ret.x != -1 && ret.y != -1) {
-  for (int i = 0; i < m.i_at(ret.x, ret.y).size(); i++) {
-   if (it == &m.i_at(ret.x, ret.y)[i]) {
+  auto& stack = m.i_at(ret);
+  for (int i = 0; i < stack.size(); i++) {
+   if (it == &stack[i]) {
     m.i_rem(ret.x, ret.y, i);
     return;
    }
@@ -3833,7 +3834,7 @@ void game::close()
    veh->insides_dirty = true;
    didit = true;
  } else {
-   const auto& stack = m.i_at(close.x, close.y);
+   const auto& stack = m.i_at(close);
    if (!stack.empty()) {
      messages.add("There's %s in the way!", stack.size() == 1 ? stack[0].tname(this).c_str() : "some stuff");
 	 return;
@@ -4018,6 +4019,7 @@ void game::examine()
  messages.add("That is a %s.", m.tername(exam).c_str());
 
  auto& exam_t = m.ter(exam);
+ auto& stack = m.i_at(exam);
 
  int veh_part = 0;
  vehicle *veh = m.veh_at(exam, veh_part);
@@ -4029,7 +4031,6 @@ void game::examine()
   else exam_vehicle (*veh, exam.x, exam.y);
  } else if (m.has_flag(sealed, exam)) {
   if (m.trans(exam.x, exam.y)) {
-   const auto& stack = m.i_at(exam.x, exam.y);
    std::string buff;
    if (stack.size() <= 3 && !stack.empty()) {
     buff = "It contains ";
@@ -4046,7 +4047,7 @@ void game::examine()
    messages.add("There's something in there, but you can't see what it is, and the %s is firmly sealed.", m.tername(exam).c_str());
   }
  } else {
-  if (m.i_at(exam.x, exam.y).size() == 0 && m.has_flag(container, exam) && !(m.has_flag(swimmable, exam) || t_toilet == exam_t))
+  if (stack.empty() && m.has_flag(container, exam) && !(m.has_flag(swimmable, exam) || t_toilet == exam_t))
    messages.add("It is empty.");
   else
    pickup(exam.x, exam.y, 0);
@@ -4178,16 +4179,15 @@ void game::examine()
 This wall is perfectly vertical.  Odd, twisted holes are set in it, leading\n\
 as far back into the solid rock as you can see.  The holes are humanoid in\n\
 shape, but with long, twisted, distended limbs.");
- } else if (t_pedestal_wyrm == exam_t && m.i_at(exam.x, exam.y).empty()) {
+ } else if (t_pedestal_wyrm == exam_t && stack.empty()) {
   messages.add("The pedestal sinks into the ground...");
   exam_t = t_rock_floor;
   add_event(EVENT_SPAWN_WYRMS, int(messages.turn) + rng(5, 10));
  } else if (t_pedestal_temple == exam_t) {
-  if (m.i_at(exam.x, exam.y).size() == 1 &&
-      m.i_at(exam.x, exam.y)[0].type->id == itm_petrified_eye) {
+  if (stack.size() == 1 && stack[0].type->id == itm_petrified_eye) {
    messages.add("The pedestal sinks into the ground...");
    exam_t = t_dirt;
-   m.i_at(exam.x, exam.y).clear();
+   stack.clear();
    add_event(EVENT_TEMPLE_OPEN, int(messages.turn) + 4);
   } else if (u.has_amount(itm_petrified_eye, 1) &&
              query_yn("Place your petrified eye on the pedestal?")) {
@@ -4275,29 +4275,28 @@ point game::look_around()
    }
 
    monster* const m_at = mon(lx, ly);
+   auto& stack = m.i_at(lx, ly);
    if (m_at && u_see(m_at)) {
     m_at->draw(w_terrain, lx, ly, true);
     m_at->print_info(this, w_look);
-    if (m.i_at(lx, ly).size() > 1)
+    if (stack.size() > 1)
      mvwprintw(w_look, 3, 1, "There are several items there.");
-    else if (m.i_at(lx, ly).size() == 1)
+    else if (stack.size() == 1)
      mvwprintw(w_look, 3, 1, "There is an item there.");
    } else if (npc* const _npc = nPC(lx,ly)) {
     _npc->draw(w_terrain, lx, ly, true);
 	_npc->print_info(w_look);
-    if (m.i_at(lx, ly).size() > 1)
+    if (stack.size() > 1)
      mvwprintw(w_look, 3, 1, "There are several items there.");
-    else if (m.i_at(lx, ly).size() == 1)
+    else if (stack.size() == 1)
      mvwprintw(w_look, 3, 1, "There is an item there.");
    } else if (veh) {
      mvwprintw(w_look, 3, 1, "There is a %s there. Parts:", veh->name.c_str());
      veh->print_part_desc(w_look, 4, 48, veh_part);
      m.drawsq(w_terrain, u, lx, ly, true, true, lx, ly);
-   } else if (m.i_at(lx, ly).size() > 0) {
-    mvwprintw(w_look, 3, 1, "There is a %s there.",
-              m.i_at(lx, ly)[0].tname(this).c_str());
-    if (m.i_at(lx, ly).size() > 1)
-     mvwprintw(w_look, 4, 1, "There are other items there as well.");
+   } else if (!stack.empty()) {
+    mvwprintw(w_look, 3, 1, "There is a %s there.", stack[0].tname(this).c_str());
+    if (stack.size() > 1) mvwprintw(w_look, 4, 1, "There are other items there as well.");
     m.drawsq(w_terrain, u, lx, ly, true, true, lx, ly);
    } else
     m.drawsq(w_terrain, u, lx, ly, true, true, lx, ly);
@@ -5707,20 +5706,21 @@ void game::plmove(int x, int y)
   }
 
 // List items here
-  if (!u.has_disease(DI_BLIND) && m.i_at(x, y).size() <= 3 &&
-                                  m.i_at(x, y).size() != 0) {
-   std::string buff = "You see here ";
-   for (int i = 0; i < m.i_at(x, y).size(); i++) {
-    buff += m.i_at(x, y)[i].tname(this);
-    if (i + 2 < m.i_at(x, y).size())
-     buff += ", ";
-    else if (i + 1 < m.i_at(x, y).size())
-     buff += ", and ";
-   }
-   buff += ".";
-   messages.add(buff.c_str());
-  } else if (m.i_at(x, y).size() != 0)
-   messages.add("There are many items here.");
+  auto& stack = m.i_at(x, y);
+  if (!stack.empty()) {
+	  if (!u.has_disease(DI_BLIND) && stack.size() <= 3) {
+		  std::string buff = "You see here ";
+		  int i = -1;
+		  for(auto& it : stack) {
+			  ++i;
+			  buff += it.tname(this);
+			  if (i + 2 < stack.size()) buff += ", ";
+			  else if (i + 1 < stack.size()) buff += ", and ";
+		  }
+		  buff += ".";
+		  messages.add(buff.c_str());
+	  } else messages.add("There are many items here.");
+  }
 
  } else if (veh_closed_door) { // move_cost <= 0
   veh->parts[dpart].open = 1;

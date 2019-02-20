@@ -516,7 +516,7 @@ std::string item::tname(game *g) const
  return ret.str();
 }
 
-nc_color item::color()
+nc_color item::color() const
 {
  if (type->id == itm_corpse) return corpse->color;
  return type->color;

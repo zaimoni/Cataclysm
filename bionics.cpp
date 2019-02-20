@@ -253,11 +253,12 @@ void player::activate_bionic(int b, game *g)
   break;
 
  case bio_water_extractor:
+  {
+  bool have_extracted = false;
   for (int i = 0; i < g->m.i_at(posx, posy).size(); i++) {
    item tmp = g->m.i_at(posx, posy)[i];
-   if (tmp.type->id == itm_corpse && query_yn("Extract water from the %s",
-                                              tmp.tname().c_str())) {
-    i = g->m.i_at(posx, posy).size() + 1;	// Loop is finished
+   if (tmp.type->id == itm_corpse && query_yn("Extract water from the %s", tmp.tname().c_str())) {
+	have_extracted = true;
     t = g->inv("Choose a container:");
 	auto& it = i_at(t);
     if (0 == it.type) {
@@ -276,26 +277,26 @@ void player::activate_bionic(int b, game *g)
       i_at(t).put_in(item(item::types[itm_water], 0));
      }
     }
+	break;
    }
-   if (i == g->m.i_at(posx, posy).size() - 1)	// We never chose a corpse
-    power_level += bionics[bio_water_extractor].power_cost;
+   if (!have_extracted) power_level += bionics[bio_water_extractor].power_cost;	// We never chose a corpse
+  }
   }
   break;
 
  case bio_magnet:
   for (int i = posx - 10; i <= posx + 10; i++) {
    for (int j = posy - 10; j <= posy + 10; j++) {
-    if (g->m.i_at(i, j).size() > 0) {
-	 traj = line_to(i, j, posx, posy, (g->m.sees(i, j, posx, posy, -1, t) ? t : 0));
-    }
+	auto& stack = g->m.i_at(i, j);
+	if (stack.empty()) continue;
+	traj = line_to(i, j, posx, posy, (g->m.sees(i, j, posx, posy, -1, t) ? t : 0));
     traj.insert(traj.begin(), point(i, j));
-    for (int k = 0; k < g->m.i_at(i, j).size(); k++) {
-     if (g->m.i_at(i, j)[k].made_of(IRON) || g->m.i_at(i, j)[k].made_of(STEEL)){
-      tmp_item = g->m.i_at(i, j)[k];
+    for (int k = 0; k < stack.size(); k++) {
+     if (stack[k].made_of(IRON) || stack[k].made_of(STEEL)){
+      tmp_item = stack[k];
       g->m.i_rem(i, j, k);
       for (l = 0; l < traj.size(); l++) {
-	   monster* const z = g->mon(traj[l]);
-       if (z) {
+       if (monster* const z = g->mon(traj[l])) {
         if (z->hurt(tmp_item.weight() * 2)) g->kill_mon(*z, true);
         g->m.add_item(traj[l].x, traj[l].y, tmp_item);
         l = traj.size() + 1;
@@ -309,8 +310,7 @@ void player::activate_bionic(int b, game *g)
         }
        }
       }
-      if (l == traj.size())
-       g->m.add_item(posx, posy, tmp_item);
+      if (l == traj.size()) g->m.add_item(posx, posy, tmp_item);
      }
     }
    }

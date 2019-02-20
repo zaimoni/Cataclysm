@@ -232,10 +232,9 @@ void computer::activate_function(game *g, computer_action action)
        for (int y1 = y - 1; y1 <= y + 1; y1++ ) {
         if (g->m.ter(x1, y1) == t_counter) {
          bool found_item = false;
-         for (int i = 0; i < g->m.i_at(x1, y1).size(); i++) {
-          item *it = &(g->m.i_at(x1, y1)[i]);
-          if (it->is_container() && it->contents.empty()) {
-           it->put_in( item(item::types[itm_sewage], messages.turn) );
+		 for(auto& it : g->m.i_at(x1, y1)) {
+          if (it.is_container() && it.contents.empty()) {
+           it.put_in( item(item::types[itm_sewage], messages.turn) );
            found_item = true;
           }
          }
@@ -433,20 +432,16 @@ void computer::activate_function(game *g, computer_action action)
    int more = 0;
    for (int x = 0; x < SEEX * MAPSIZE; x++) {
     for (int y = 0; y < SEEY * MAPSIZE; y++) {
-     for (int i = 0; i < g->m.i_at(x, y).size(); i++) {
-      if (g->m.i_at(x, y)[i].is_bionic()) {
-       if (names.size() < 9)
-        names.push_back(g->m.i_at(x, y)[i].tname());
-       else
-        more++;
+	 for(const auto& it : g->m.i_at(x, y)) {
+      if (it.is_bionic()) {
+       if (names.size() < 9) names.push_back(it.tname());
+       else more++;
       }
      }
     }
    }
-   for (int i = 0; i < names.size(); i++)
-    print_line(names[i].c_str());
-   if (more > 0)
-    print_line("%d OTHERS FOUND...");
+   for (int i = 0; i < names.size(); i++) print_line(names[i].c_str());
+   if (more > 0) print_line("%d OTHERS FOUND...");
   } break;
 
   case COMPACT_ELEVATOR_ON:

@@ -9,29 +9,29 @@
 void mattack::antqueen(game *g, monster *z)
 {
  std::vector<point> egg_points;
- std::vector<int> ants;
+ std::vector<monster*> ants;
  z->sp_timeout = z->type->sp_freq;	// Reset timer
 // Count up all adjacent tiles the contain at least one egg.
  for (int x = z->pos.x - 2; x <= z->pos.x + 2; x++) {
   for (int y = z->pos.y - 2; y <= z->pos.y + 2; y++) {
-   for (int i = 0; i < g->m.i_at(x, y).size(); i++) {
-// is_empty() because we can't hatch an ant under the player, a monster, etc.
-    if (g->m.i_at(x, y)[i].type->id == itm_ant_egg && g->is_empty(x, y)) {
+   monster* const _mon = g->mon(x, y);
+   if (_mon)  { 
+	   if ((_mon->type->id == mon_ant_larva || _mon->type->id == mon_ant)) ants.push_back(_mon);
+	   continue;	// not empty so egg hatching check will fail
+   }
+   if (!g->is_empty(x, y)) continue;	// is_empty() because we can't hatch an ant under the player, a monster, etc.
+   for (auto& obj : g->m.i_at(x, y)) {
+    if (obj.type->id == itm_ant_egg) {
      egg_points.push_back(point(x, y));
-     i = g->m.i_at(x, y).size();	// Done looking at this tile
+     break;	// Done looking at this tile
     }
-    int mondex = g->mon_at(x, y);
-    if (mondex != -1 && (g->z[mondex].type->id == mon_ant_larva ||
-                         g->z[mondex].type->id == mon_ant         ))
-     ants.push_back(mondex);
    }
   }
  }
 
  if (!ants.empty()) {
   z->moves -= 100; // It takes a while
-  int mondex = ants[ rng(0, ants.size() - 1) ];
-  monster *const ant = &(g->z[mondex]);
+  monster *const ant = ants[rng(0, ants.size() - 1)];
   if (g->u_see(z->pos) && g->u_see(ant->pos)) messages.add("The %s feeds an %s and it grows!", z->name().c_str(), ant->name().c_str());
   ant->poly(mtype::types[ant->type->id == mon_ant_larva ? mon_ant : mon_ant_soldier]);
  } else if (egg_points.empty()) {	// There's no eggs nearby--lay one.
@@ -41,13 +41,14 @@ void mattack::antqueen(game *g, monster *z)
   z->moves -= 20 * egg_points.size(); // It takes a while
   if (g->u_see(z->pos)) messages.add("The %s tends nearby eggs, and they hatch!", z->name().c_str());
   for (int i = 0; i < egg_points.size(); i++) {
-   int x = egg_points[i].x, y = egg_points[i].y;
-   for (int j = 0; j < g->m.i_at(x, y).size(); j++) {
-    if (g->m.i_at(x, y)[j].type->id == itm_ant_egg) {
-     g->m.i_rem(x, y, j);
-     j = g->m.i_at(x, y).size();	// Max one hatch per tile.
-     g->z.push_back(monster(mtype::types[mon_ant_larva], x, y));
-    }
+   int j = -1;
+   for(auto& obj : g->m.i_at(egg_points[i])) {
+	++j;
+    if (obj.type->id == itm_ant_egg) {
+     g->m.i_rem(egg_points[i].x, egg_points[i].y, j);
+     g->z.push_back(monster(mtype::types[mon_ant_larva], egg_points[i].x, egg_points[i].y));
+	 break;	// Max one hatch per tile.
+	}
    }
   }
  }
@@ -154,11 +155,10 @@ void mattack::resurrect(game *g, monster *z)
  for (int x = z->pos.x - 4; x <= z->pos.x + 4; x++) {
   for (int y = z->pos.y - 4; y <= z->pos.y + 4; y++) {
    if (g->is_empty(x, y) && g->m.sees(z->pos, x, y, -1)) {
-    for (int i = 0; i < g->m.i_at(x, y).size(); i++) {
-     if (g->m.i_at(x, y)[i].type->id == itm_corpse &&
-         g->m.i_at(x, y)[i].corpse->species == species_zombie) {
+	for(auto& obj : g->m.i_at(x, y)) {
+     if (obj.type->id == itm_corpse && obj.corpse->species == species_zombie) {
       corpses.push_back(point(x, y));
-      i = g->m.i_at(x, y).size();
+	  break;
      }
     }
    }
@@ -172,27 +172,25 @@ void mattack::resurrect(game *g, monster *z)
  z->moves = -500;			// It takes a while
  int raised = 0;
  for (int i = 0; i < corpses.size(); i++) {
-  int x = corpses[i].x, y = corpses[i].y;
-  for (int n = 0; n < g->m.i_at(x, y).size(); n++) {
-   if (g->m.i_at(x, y)[n].type->id == itm_corpse && one_in(2)) {
-    if (g->u_see(x, y)) raised++;
-    int burnt_penalty = g->m.i_at(x, y)[n].burnt;
-    monster mon(g->m.i_at(x, y)[n].corpse, x, y);
+  int n = -1;
+  for(auto& obj : g->m.i_at(corpses[i])) {
+   ++n;
+   if (obj.type->id == itm_corpse && obj.corpse->species == species_zombie && one_in(2)) {
+    if (g->u_see(corpses[i])) raised++;
+    int burnt_penalty = obj.burnt;
+    monster mon(obj.corpse, corpses[i].x, corpses[i].y);
     mon.speed = int(mon.speed * .8) - burnt_penalty / 2;
     mon.hp    = int(mon.hp    * .7) - burnt_penalty;
-    g->m.i_rem(x, y, n);
-    n = g->m.i_at(x, y).size();	// Only one body raised per tile
+    g->m.i_rem(corpses[i].x, corpses[i].y, n);
     g->z.push_back(mon);
+	break;
    }
   }
  }
  if (raised > 0) {
-  if (raised == 1)
-   messages.add("A nearby corpse rises from the dead!");
-  else if (raised < 4)
-   messages.add("A few corpses rise from the dead!");
-  else
-   messages.add("Several corpses rise from the dead!");
+  if (raised == 1) messages.add("A nearby corpse rises from the dead!");
+  else if (raised < 4) messages.add("A few corpses rise from the dead!");
+  else messages.add("Several corpses rise from the dead!");
  } else if (sees_necromancer)
   messages.add("...but nothing seems to happen.");
 }

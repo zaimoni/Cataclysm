@@ -1107,14 +1107,13 @@ bool map::is_outside(int x, int y) const
  return out;
 }
 
-bool map::flammable_items_at(int x, int y)
+bool map::flammable_items_at(int x, int y) const
 {
- for (int i = 0; i < i_at(x, y).size(); i++) {
-  item *it = &(i_at(x, y)[i]);
-  if (it->made_of(PAPER) || it->made_of(WOOD) || it->made_of(COTTON) ||
-      it->made_of(POWDER) || it->made_of(VEGGY) || it->is_ammo() ||
-      it->type->id == itm_whiskey || it->type->id == itm_vodka ||
-      it->type->id == itm_rum || it->type->id == itm_tequila)
+ for(auto& it : i_at(x,y)) {
+  if (it.made_of(PAPER) || it.made_of(WOOD) || it.made_of(COTTON) ||
+      it.made_of(POWDER) || it.made_of(VEGGY) || it.is_ammo() ||
+      it.type->id == itm_whiskey || it.type->id == itm_vodka ||
+      it.type->id == itm_rum || it.type->id == itm_tequila)
    return true;
  }
  return false;
@@ -1150,17 +1149,20 @@ bool map::bash(int x, int y, int str, std::string &sound, int *res)
   remove_field(x, y);
  }
 
- for (int i = 0; i < i_at(x, y).size(); i++) {	// Destroy glass items (maybe)
-  if (i_at(x, y)[i].made_of(GLASS) && one_in(2)) {
+ {
+ auto& stack = i_at(x, y);
+ for (int i = 0; i < stack.size(); i++) {	// Destroy glass items (maybe)
+  auto& it = i_at(x, y)[i];
+  if (it.made_of(GLASS) && one_in(2)) {
    if (sound == "")
-    sound = "A " + i_at(x, y)[i].tname() + " shatters!  ";
+    sound = "A " + it.tname() + " shatters!  ";
    else
     sound = "Some items shatter!  ";
-   for (int j = 0; j < i_at(x, y)[i].contents.size(); j++)
-    i_at(x, y).push_back(i_at(x, y)[i].contents[j]);
+   for(auto& obj : it.contents) stack.push_back(obj);
    i_rem(x, y, i);
    i--;
   }
+ }
  }
 
  int result = -1;
@@ -1634,40 +1636,36 @@ void map::shoot(game *g, int x, int y, int &dam, bool hit_items, unsigned flags)
 
 // Now, destroy items on that tile.
 
- if ((move_cost(x, y) == 2 && !hit_items) || !INBOUNDS(x, y))
-  return;	// Items on floor-type spaces won't be shot up.
+ if ((move_cost(x, y) == 2 && !hit_items) || !INBOUNDS(x, y)) return;	// Items on floor-type spaces won't be shot up.
 
- bool destroyed;
- for (int i = 0; i < i_at(x, y).size(); i++) {
-  destroyed = false;
-  switch (i_at(x, y)[i].type->m1) {
+ {
+ auto& stack = i_at(x, y);
+ for (int i = 0; i < stack.size(); i++) {	// forward-increment so that containers do not grant invulnerability to their contents
+  bool destroyed = false;
+  auto& it = stack[i];
+  switch (it.type->m1) {
    case GLASS:
    case PAPER:
-    if (dam > rng(2, 8) && one_in(i_at(x, y)[i].volume()))
-     destroyed = true;
+    if (dam > rng(2, 8) && one_in(it.volume())) destroyed = true;
     break;
    case PLASTIC:
-    if (dam > rng(2, 10) && one_in(i_at(x, y)[i].volume() * 3))
-     destroyed = true;
+    if (dam > rng(2, 10) && one_in(it.volume() * 3)) destroyed = true;
     break;
    case VEGGY:
    case FLESH:
-    if (dam > rng(10, 40))
-     destroyed = true;
+    if (dam > rng(10, 40)) destroyed = true;
     break;
    case COTTON:
    case WOOL:
-    i_at(x, y)[i].damage++;
-    if (i_at(x, y)[i].damage >= 5)
-     destroyed = true;
+    if (5 <= ++it.damage) destroyed = true;
     break;
   }
   if (destroyed) {
-   for (int j = 0; j < i_at(x, y)[i].contents.size(); j++)
-    i_at(x, y).push_back(i_at(x, y)[i].contents[j]);
+   for(auto& obj : it.contents) stack.push_back(obj);
    i_rem(x, y, i);
    i--;
   }
+ }
  }
 }
 
@@ -1843,7 +1841,7 @@ point map::find_item(item *it) const
  point ret;
  for (ret.x = 0; ret.x < SEEX * my_MAPSIZE; ret.x++) {
   for (ret.y = 0; ret.y < SEEY * my_MAPSIZE; ret.y++) {
-   for(auto& obj : i_at(ret.x, ret.y)) {
+   for(auto& obj : i_at(ret)) {
     if (it == &obj) return ret;
    }
   }
@@ -1948,7 +1946,7 @@ void map::process_active_items_in_submap(game *g, int nonant)
  }
 }
 
-void map::use_amount(point origin, int range, itype_id type, int quantity, bool use_container)
+void map::use_amount(point origin, int range, const itype_id type, int quantity, bool use_container)
 {
  for (int radius = 0; radius <= range && quantity > 0; radius++) {
   for (int x = origin.x - radius; x <= origin.x + radius; x++) {
@@ -1956,16 +1954,17 @@ void map::use_amount(point origin, int range, itype_id type, int quantity, bool 
     if (rl_dist(origin, x, y) <= radius) {
      for (int n = 0; n < i_at(x, y).size() && quantity > 0; n++) {
       item* curit = &(i_at(x, y)[n]);
-      bool used_contents = false;
-      for (int m = 0; m < curit->contents.size() && quantity > 0; m++) {
-       if (curit->contents[m].type->id == type) {
-        quantity--;
-        curit->contents.erase(curit->contents.begin() + m);
+	  bool used_contents = false;
+	  if (use_container) {
+       for (int m = 0; m < curit->contents.size() && quantity > 0; m++) {
+		if (type != curit->contents[m].type->id) continue;
+		quantity--;
+		curit->contents.erase(curit->contents.begin() + m);
         m--;
-        used_contents = true;
+		used_contents = curit->contents.empty();
        }
-      }
-      if (use_container && used_contents) {
+	  }
+      if (used_contents) {
        i_rem(x, y, n);
        n--;
       } else if (curit->type->id == type && quantity > 0) {
@@ -1980,45 +1979,41 @@ void map::use_amount(point origin, int range, itype_id type, int quantity, bool 
  }
 }
 
-void map::use_charges(point origin, int range, itype_id type, int quantity)
+void map::use_charges(point origin, int range, const itype_id type, int quantity)
 {
  for (int radius = 0; radius <= range && quantity > 0; radius++) {
   for (int x = origin.x - radius; x <= origin.x + radius; x++) {
    for (int y = origin.y - radius; y <= origin.y + radius; y++) {
     if (rl_dist(origin, x, y) <= radius) {
      for (int n = 0; n < i_at(x, y).size(); n++) {
-      item* curit = &(i_at(x, y)[n]);
+      auto& curit = i_at(x, y)[n];
 // Check contents first
-      for (int m = 0; m < curit->contents.size() && quantity > 0; m++) {
-       if (curit->contents[m].type->id == type) {
-        if (curit->contents[m].charges <= quantity) {
-         quantity -= curit->contents[m].charges;
-         if (curit->contents[m].destroyed_at_zero_charges()) {
-          curit->contents.erase(curit->contents.begin() + m);
+      for (int m = 0; m < curit.contents.size() && quantity > 0; m++) {
+	   auto& obj = curit.contents[m];
+	   if (type != obj.type->id) continue;
+	   if (obj.charges > quantity) {
+		   obj.charges -= quantity;
+		   return;
+	   }
+       quantity -= obj.charges;
+       if (obj.destroyed_at_zero_charges()) {
+          curit.contents.erase(curit.contents.begin() + m);
           m--;
-         } else
-          curit->contents[m].charges = 0;
-        } else {
-         curit->contents[m].charges -= quantity;
-         return;
-        }
-       }
+       } else obj.charges = 0;
       }
 // Now check the actual item
-      if (curit->type->id == type) {
-       if (curit->charges <= quantity) {
-        quantity -= curit->charges;
-        if (curit->destroyed_at_zero_charges()) {
-         i_rem(x, y, n);
-         n--;
-        } else
-         curit->charges = 0;
-       } else {
-        curit->charges -= quantity;
-        return;
-       }
-      }
-     }
+	  if (type != curit.type->id) continue;
+	  if (curit.charges > quantity) {
+		  curit.charges -= quantity;
+		  return;
+	  }
+	  quantity -= curit.charges;
+	  if (curit.destroyed_at_zero_charges()) {
+		  i_rem(x, y, n);
+		  n--;
+	  }
+	  else curit.charges = 0;
+	 }
     }
    }
   }
@@ -2154,9 +2149,10 @@ void map::debug()
  getch();
  for (int i = 0; i <= SEEX * 2; i++) {
   for (int j = 0; j <= SEEY * 2; j++) {
-   if (i_at(i, j).size() > 0) {
-    mvprintw(1, 0, "%d, %d: %d items", i, j, i_at(i, j).size());
-    mvprintw(2, 0, "%c, %d", i_at(i, j)[0].symbol(), i_at(i, j)[0].color());
+   const auto& stack = i_at(i, j);
+   if (!stack.empty()) {
+    mvprintw(1, 0, "%d, %d: %d items", i, j, stack.size());
+    mvprintw(2, 0, "%c, %d", stack.back().symbol(), stack.back().color());
     getch();
    }
   }
@@ -2256,12 +2252,16 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
  }
 // If there's items here, draw those instead
  if (show_items && i_at(x, y).size() > 0 && !drew_field) {
-  if ((ter_t::list[ter(x, y)].sym != '.')) hi = true;
-  else {
-   tercol = i_at(x, y)[i_at(x, y).size() - 1].color();
-   if (i_at(x, y).size() > 1) invert = !invert;
-   sym = i_at(x, y)[i_at(x, y).size() - 1].symbol();
-  }
+	 const auto& stack = i_at(x, y);
+	 if (!stack.empty()) {
+		 if ((ter_t::list[ter(x, y)].sym != '.')) hi = true;
+		 else {
+			 auto& top = stack.back();
+			 tercol = top.color();
+			 sym = top.symbol();
+			 if (stack.size() > 1) invert = !invert;
+		 }
+	 }
  }
 
  int veh_part = 0;
