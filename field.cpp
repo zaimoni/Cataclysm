@@ -531,7 +531,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
       }
       if (!valid.empty()) {
        point newp = valid[rng(0, valid.size() - 1)];
-       add_item(newp.x, newp.y, tmp);
+       add_item(newp, tmp);
        if (g->u.posx == newp.x && g->u.posy == newp.y) {
         messages.add("A %s hits you!", tmp.tname().c_str());
         g->u.hit(g, random_body_part(), rng(0, 1), 6, 0);

@@ -1860,37 +1860,32 @@ void map::add_item(int x, int y, const itype* type, int birthday)
  add_item(x, y, tmp);
 }
 
-void map::add_item(int x, int y, item new_item)
+void map::add_item(int x, int y, const item& new_item)
 {
- if (new_item.is_style())
-  return;
- if (!INBOUNDS(x, y))
-  return;
- if (new_item.made_of(LIQUID) && has_flag(swimmable, x, y))
-  return;
+ if (new_item.is_style()) return;
+ if (!INBOUNDS(x, y)) return;
+ if (new_item.made_of(LIQUID) && has_flag(swimmable, x, y)) return;
  if (has_flag(noitem, x, y) || i_at(x, y).size() >= 26) {// Too many items there
   std::vector<point> okay;
   for (int i = x - 1; i <= x + 1; i++) {
    for (int j = y - 1; j <= y + 1; j++) {
-    if (INBOUNDS(i, j) && move_cost(i, j) > 0 && !has_flag(noitem, i, j) &&
-        i_at(i, j).size() < 26)
+    if (INBOUNDS(i, j) && move_cost(i, j) > 0 && !has_flag(noitem, i, j) && i_at(i, j).size() < 26)
      okay.push_back(point(i, j));
    }
   }
   if (okay.size() == 0) {
    for (int i = x - 2; i <= x + 2; i++) {
     for (int j = y - 2; j <= y + 2; j++) {
-     if (INBOUNDS(i, j) && move_cost(i, j) > 0 && !has_flag(noitem, i, j) &&
-         i_at(i, j).size() < 26)
+     if (INBOUNDS(i, j) && move_cost(i, j) > 0 && !has_flag(noitem, i, j) && i_at(i, j).size() < 26)
       okay.push_back(point(i, j));
     }
    }
   }
-  if (okay.size() == 0)// STILL?
-   return;
+  if (okay.size() == 0) return; // STILL?	\todo decide what gets lost
   point choice = okay[rng(0, okay.size() - 1)];
-  add_item(choice.x, choice.y, new_item);
-  return;
+  // do not recurse.
+  x = choice.x;
+  y = choice.y;
  }
 /*
  int nonant;
@@ -1901,8 +1896,7 @@ void map::add_item(int x, int y, item new_item)
  x %= SEEX;
  y %= SEEY;
  grid[nonant]->itm[x][y].push_back(new_item);
- if (new_item.active)
-  grid[nonant]->active_item_count++;
+ if (new_item.active) grid[nonant]->active_item_count++;
 }
 
 void map::process_active_items(game *g)

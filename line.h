@@ -17,6 +17,19 @@ WEST,
 NORTHWEST
 };
 
+class Direction
+{
+public:
+	static const point N;
+	static const point NE;
+	static const point E;
+	static const point SE;
+	static const point S;
+	static const point SW;
+	static const point W;
+	static const point NW;
+};
+
 // The "t" value decides WHICH Bresenham line is used.
 std::vector<point> line_to(int x1, int y1, int x2, int y2, int t);
 inline std::vector<point> line_to(const point& pt, int x2, int y2, int t) { return line_to(pt.x, pt.y, x2, y2, t); };

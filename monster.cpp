@@ -577,7 +577,7 @@ void monster::die(game *g)
     selected_item++;
     cur_chance -= item::types[mapit[selected_item]]->rarity;
    }
-   g->m.add_item(pos.x, pos.y, item::types[mapit[selected_item]], 0);
+   g->m.add_item(pos, item::types[mapit[selected_item]], 0);
    if (type->item_chance < 0) animal_done = true;	// Only drop ONE item.
   }
  } // Done dropping items

@@ -222,7 +222,7 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, b
     if (is_bolt &&
         ((p.weapon.curammo->m1 == WOOD && !one_in(4)) ||
          (p.weapon.curammo->m1 != WOOD && !one_in(15))))
-     m.add_item(trajectory[i].x, trajectory[i].y, ammotmp);
+     m.add_item(trajectory[i], ammotmp);
     if (p.weapon.charges == 0) p.weapon.curammo = NULL;
     return;
    }
@@ -271,7 +271,7 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, b
   if (is_bolt &&
       ((p.weapon.curammo->m1 == WOOD && !one_in(5)) ||	// leave this verbose in case we want additional complexity
        (p.weapon.curammo->m1 != WOOD && !one_in(15))  ))
-    m.add_item(last.x, last.y, ammotmp);
+    m.add_item(last, ammotmp);
  }
 
  if (p.weapon.charges == 0) p.weapon.curammo = NULL;

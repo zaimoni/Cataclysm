@@ -36,7 +36,7 @@ void mattack::antqueen(game *g, monster *z)
   ant->poly(mtype::types[ant->type->id == mon_ant_larva ? mon_ant : mon_ant_soldier]);
  } else if (egg_points.empty()) {	// There's no eggs nearby--lay one.
   if (g->u_see(z->pos)) messages.add("The %s lays an egg!", z->name().c_str());
-  g->m.add_item(z->pos.x, z->pos.y, item::types[itm_ant_egg], messages.turn);
+  g->m.add_item(z->pos, item::types[itm_ant_egg], messages.turn);
  } else { // There are eggs nearby.  Let's hatch some.
   z->moves -= 20 * egg_points.size(); // It takes a while
   if (g->u_see(z->pos)) messages.add("The %s tends nearby eggs, and they hatch!", z->name().c_str());
@@ -801,11 +801,10 @@ void mattack::vortex(game *g, monster *z)
       if (dam == 0 || i == traj.size() - 1) {
        if (thrown.made_of(GLASS)) {
         if (g->u_see(traj[i])) messages.add("The %s shatters!", thrown.tname().c_str());
-        for (int n = 0; n < thrown.contents.size(); n++)
-         g->m.add_item(traj[i].x, traj[i].y, thrown.contents[n]);
+		for(const auto& obj : thrown.contents) g->m.add_item(traj[i], obj);
         g->sound(traj[i], 16, "glass breaking!");
        } else
-        g->m.add_item(traj[i].x, traj[i].y, thrown);
+        g->m.add_item(traj[i], thrown);
       }
      }
     } // Done throwing item

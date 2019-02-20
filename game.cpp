@@ -2074,7 +2074,7 @@ z.size(), events.size());
    artifact_natural_property prop =
     artifact_natural_property(rng(ARTPROP_NULL + 1, ARTPROP_MAX - 1));
    m.create_anomaly(center.x, center.y, prop);
-   m.add_item(center.x, center.y, new_natural_artifact(prop), 0);
+   m.add_item(center, new_natural_artifact(prop), 0);
    //m.add_item(u.posx, u.posy, new_natural_artifact(), 0);
    break;
  }
@@ -3717,8 +3717,7 @@ void game::kill_mon(monster& target, bool u_did_it)
    if (target.type->species != species_hallu)
     kills[target.type->id]++;	// Increment our kill counter
   }
-  for (int i = 0; i < target.inv.size(); i++)
-   m.add_item(target.pos.x, target.pos.y, target.inv[i]);
+  for(const auto& it : target.inv) m.add_item(target.pos, it);
   target.die(this);
  }
 // z_erase(index);	// highly unsafe, do this compaction at end-of-turn
@@ -3761,7 +3760,7 @@ void game::explode_mon(monster& target)
      }
     }
    }
-   m.add_item(tar.x, tar.y, meat, messages.turn);
+   m.add_item(tar, meat, messages.turn);
   }
  }
 
@@ -4921,12 +4920,11 @@ void game::drop_in_direction()
   bool vh_overflow = false;
   for (int i = 0; i < dropped.size(); i++) {
    vh_overflow = vh_overflow || !veh->add_item (veh_part, dropped[i]);
-   if (vh_overflow) m.add_item(dir.x, dir.y, dropped[i]);
+   if (vh_overflow) m.add_item(dir, dropped[i]);
   }
   if (vh_overflow) messages.add("Trunk is full, so some items fall on the ground.");
  } else {
-  for (int i = 0; i < dropped.size(); i++)
-   m.add_item(dir.x, dir.y, dropped[i]);
+  for(const auto& it : dropped) m.add_item(dir, it);
  }
 }
 
@@ -5643,7 +5641,7 @@ void game::plmove(int x, int y)
 // TODO: Make there a flag, instead of hard-coded to mon_turret
     if (m_at->type->id == mon_turret) {
      if (query_yn("Deactivate the turret?")) {
-      m.add_item(m_at->pos.x, m_at->pos.y, item::types[itm_bot_turret], messages.turn);
+      m.add_item(m_at->pos, item::types[itm_bot_turret], messages.turn);
 	  z_erase(mon_at(x, y));
       u.moves -= 100;
      }

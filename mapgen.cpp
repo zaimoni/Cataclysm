@@ -62,10 +62,55 @@ room_type pick_mansion_room(int x1, int y1, int x2, int y2);
 void build_mansion_room(map *m, room_type type, int x1, int y1, int x2, int y2);
 void mansion_room(map *m, int x1, int y1, int x2, int y2); // pick & build
 
-void line(map *m, ter_id type, int x1, int y1, int x2, int y2);
-void square(map *m, ter_id type, int x1, int y1, int x2, int y2);
-void rough_circle(map *m, ter_id type, int x, int y, int rad);
-void add_corpse(game *g, map *m, int x, int y);
+void line(map *m, ter_id type, int x1, int y1, int x2, int y2)
+{
+	for (const auto& pt : line_to(x1, y1, x2, y2, 0)) m->ter(pt) = type;
+	m->ter(x1, y1) = type;
+}
+
+void line(map *m, ter_id type, const point& pt1, const point& pt2)
+{
+	for (const auto& pt : line_to(pt1, pt2, 0)) m->ter(pt) = type;
+	m->ter(pt1) = type;
+}
+
+
+void square(map *m, ter_id type, int x1, int y1, int x2, int y2)
+{
+	for (int x = x1; x <= x2; x++) {
+		for (int y = y1; y <= y2; y++)
+			m->ter(x, y) = type;
+	}
+}
+
+void square(map *m, ter_id type, const point& pt1, const point& pt2)
+{
+	for (int x = pt1.x; x <= pt2.x; x++) {
+		for (int y = pt1.y; y <= pt2.y; y++)
+			m->ter(x, y) = type;
+	}
+}
+
+void rough_circle(map *m, ter_id type, int x, int y, int rad)
+{
+	for (int i = x - rad; i <= x + rad; i++) {
+		for (int j = y - rad; j <= y + rad; j++) {
+			if (rl_dist(x, y, i, j) + rng(0, 3) <= rad)
+				m->ter(i, j) = type;
+		}
+	}
+}
+
+void add_corpse(game *g, map *m, int x, int y)
+{
+	item body(0);
+	m->add_item(x, y, body);
+	m->put_items_from(mi_shoes, 1, x, y);
+	m->put_items_from(mi_pants, 1, x, y);
+	m->put_items_from(mi_shirts, 1, x, y);
+	if (one_in(6)) m->put_items_from(mi_jackets, 1, x, y);
+	if (one_in(15)) m->put_items_from(mi_bags, 1, x, y);
+}
 
 static map_extra random_map_extra(const map_extras& embellishments)
 {
@@ -2835,12 +2880,12 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      add_spawn(mon_zombie_soldier, 1, dest.x, dest.y);
     else if (one_in(2)) {
      item body(0);
-     add_item(dest.x, dest.y, body);
+     add_item(dest, body);
      place_items(mi_launchers,  10, dest.x, dest.y, dest.x, dest.y, true, 0);
      place_items(mi_mil_rifles, 30, dest.x, dest.y, dest.x, dest.y, true, 0);
      place_items(mi_mil_armor,  70, dest.x, dest.y, dest.x, dest.y, true, 0);
      place_items(mi_mil_food,   40, dest.x, dest.y, dest.x, dest.y, true, 0);
-     add_item(dest.x, dest.y, item::types[itm_id_military], 0);
+     add_item(dest, item::types[itm_id_military], 0);
     } else if (one_in(20))
      rough_circle(this, t_rubble, dest.x, dest.y, rng(3, 6));
    }
@@ -3492,7 +3537,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
       } while (body.x == -1 && tries < 10);
       if (tries < 10) {
        item miner(0);
-       add_item(body.x, body.y, miner);
+       add_item(body, miner);
        place_items(mi_mine_equipment, 60, body.x, body.y, body.x, body.y, false, 0);
       }
      }
@@ -3525,16 +3570,21 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     } break;
 
     case 6: { // Spiral
-     int orx = rng(SEEX - 4, SEEX), ory = rng(SEEY - 4, SEEY);
-     line(this, t_rock, orx    , ory    , orx + 5, ory    );
-     line(this, t_rock, orx + 5, ory    , orx + 5, ory + 5);
-     line(this, t_rock, orx + 1, ory + 5, orx + 5, ory + 5);
-     line(this, t_rock, orx + 1, ory + 2, orx + 1, ory + 4);
-     line(this, t_rock, orx + 1, ory + 2, orx + 3, ory + 2);
-     ter(orx + 3, ory + 3) = t_rock;
+	 const point nw_out = (rng(SEEX - 4, SEEX), rng(SEEY - 4, SEEY));
+	 const point nw_in  = nw_out + Direction::SE;
+	 const point ne_out = nw_out + 5 * Direction::E;
+	 const point se_out = nw_out + 5 * Direction::SE;
+	 const point miner_at = nw_out + 2 * Direction::SE + Direction::E;
+	 int orx = rng(SEEX - 4, SEEX), ory = rng(SEEY - 4, SEEY);
+     line(this, t_rock, nw_out, ne_out);
+     line(this, t_rock, ne_out, se_out);
+     line(this, t_rock, nw_in + 4*Direction::E, se_out);
+     line(this, t_rock, miner_at + Direction::NW, nw_in + 3 * Direction::E);
+     line(this, t_rock, miner_at + Direction::NW, miner_at + Direction::SW);
+     ter(miner_at + Direction::S) = t_rock;
      item miner(0);
-     add_item(orx + 2, ory + 3, miner);
-     place_items(mi_mine_equipment, 60, orx + 2, ory + 3, orx + 2, ory + 3, false, 0);
+     add_item(miner_at, miner);
+     place_items(mi_mine_equipment, 60, miner_at.x, miner_at.y, miner_at.x, miner_at.y, false, 0);
     } break;
    }
   }
@@ -3838,17 +3888,22 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     }
    }
   }
-  int buildx = rng(6, SEEX * 2 - 7), buildy = rng(6, SEEY * 2 - 7);
-  square(this, t_floor, buildx - 3, buildy - 3, buildx + 3, buildy + 3);
-  line(this, t_wall_h, buildx - 4, buildy - 4, buildx + 4, buildy - 4);
-  line(this, t_wall_h, buildx - 4, buildy + 4, buildx + 4, buildy + 4);
-  line(this, t_wall_v, buildx - 4, buildy - 4, buildx - 4, buildy + 4);
-  line(this, t_wall_v, buildx + 4, buildy - 4, buildx + 4, buildy + 4);
-  line(this, t_counter, buildx - 3, buildy - 3, buildx + 3, buildy - 3);
-  place_items(mi_toxic_dump_equipment, 80,
-              buildx - 3, buildy - 3, buildx + 3, buildy - 3, false, 0);
-  add_item(buildx, buildy, item::types[itm_id_military], 0);
-  ter(buildx, buildy + 4) = t_door_locked;
+  const point build(rng(6, SEEX * 2 - 7), rng(6, SEEY * 2 - 7));
+  const point nw_in = build + 3 * Direction::NW;
+  const point nw_out = build + 4 * Direction::NW;
+  const point ne_out = build + 4 * Direction::NE;
+  const point se_out = build + 4 * Direction::SE;
+  const point sw_in = build + 3 * Direction::SW;
+  const point sw_out = build + 4 * Direction::SW;
+  square(this, t_floor, nw_in, build+3*Direction::SE);
+  line(this, t_wall_h, nw_out, sw_out);
+  line(this, t_wall_h, ne_out, se_out);
+  line(this, t_wall_v, nw_out, ne_out);
+  line(this, t_wall_v, sw_out, se_out);
+  line(this, t_counter, nw_in, sw_in);
+  place_items(mi_toxic_dump_equipment, 80, nw_in.x, nw_in.y, sw_in.x, sw_in.y, false, 0);
+  add_item(build, item::types[itm_id_military], 0);
+  ter(build+4*Direction::E) = t_door_locked;
 
   rotate(rng(0, 3));
  } break;
@@ -3886,7 +3941,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     std::vector<point> bloodline = line_to(orig, herm, 0);
     for (int ii = 0; ii < bloodline.size(); ii++)
      add_field(g, bloodline[ii].x, bloodline[ii].y, fd_blood, 2);
-    add_item(herm.x, herm.y, item(messages.turn));
+    add_item(herm, item(messages.turn));
     place_items(mi_rare, 25, herm.x - 1, herm.y - 1, herm.x + 1, herm.y + 1,true,0);
    } break;
    }
@@ -8026,7 +8081,7 @@ void map::add_extra(map_extra type, game *g)
   point center( rng(6, SEEX * 2 - 7), rng(6, SEEY * 2 - 7) );
   artifact_natural_property prop = artifact_natural_property(rng(ARTPROP_NULL + 1, ARTPROP_MAX - 1));
   create_anomaly(center.x, center.y, prop);
-  add_item(center.x, center.y, g->new_natural_artifact(prop), 0);
+  add_item(center, g->new_natural_artifact(prop), 0);
  } break;
 
  } // switch (prop)
@@ -8145,39 +8200,4 @@ void map::create_anomaly(int cx, int cy, artifact_natural_property prop)
    break;
 
  }
-}
-
-void line(map *m, ter_id type, int x1, int y1, int x2, int y2)
-{
- for(const auto& pt : line_to(x1, y1, x2, y2, 0)) m->ter(pt) = type;
- m->ter(x1, y1) = type;
-}
-
-void square(map *m, ter_id type, int x1, int y1, int x2, int y2)
-{
- for (int x = x1; x <= x2; x++) {
-  for (int y = y1; y <= y2; y++)
-   m->ter(x, y) = type;
- }
-}
-
-void rough_circle(map *m, ter_id type, int x, int y, int rad)
-{
- for (int i = x - rad; i <= x + rad; i++) {
-  for (int j = y - rad; j <= y + rad; j++) {
-   if (rl_dist(x, y, i, j) + rng(0, 3) <= rad)
-    m->ter(i, j) = type;
-  }
- }
-}
-
-void add_corpse(game *g, map *m, int x, int y)
-{
- item body(0);
- m->add_item(x, y, body);
- m->put_items_from(mi_shoes,  1, x, y);
- m->put_items_from(mi_pants,  1, x, y);
- m->put_items_from(mi_shirts, 1, x, y);
- if (one_in(6)) m->put_items_from(mi_jackets, 1, x, y);
- if (one_in(15)) m->put_items_from(mi_bags, 1, x, y);
 }

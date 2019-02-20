@@ -119,9 +119,9 @@ void trapfuncm::crossbow(game *g, monster *z)
   add_bolt = !one_in(10);
  } else if (seen) messages.add("A bolt shoots out, but misses the %s.", z->name().c_str());
  g->m.tr_at(z->pos.x, z->pos.y) = tr_null;
- g->m.add_item(z->pos.x, z->pos.y, item::types[itm_crossbow], 0);
- g->m.add_item(z->pos.x, z->pos.y, item::types[itm_string_6], 0);
- if (add_bolt) g->m.add_item(z->pos.x, z->pos.y, item::types[itm_bolt_steel], 0);
+ g->m.add_item(z->pos, item::types[itm_crossbow], 0);
+ g->m.add_item(z->pos, item::types[itm_string_6], 0);
+ if (add_bolt) g->m.add_item(z->pos, item::types[itm_bolt_steel], 0);
 }
 
 void trapfunc::shotgun(game *g, int x, int y)
@@ -173,8 +173,8 @@ void trapfuncm::shotgun(game *g, monster *z)
  if (z->hurt(rng(40 * shots, 60 * shots))) g->kill_mon(*z);
  if (shots == 2 || g->m.tr_at(z->pos.x, z->pos.y) == tr_shotgun_1) {
   g->m.tr_at(z->pos.x, z->pos.y) = tr_null;
-  g->m.add_item(z->pos.x, z->pos.y, item::types[itm_shotgun_sawn], 0);
-  g->m.add_item(z->pos.x, z->pos.y, item::types[itm_string_6], 0);
+  g->m.add_item(z->pos, item::types[itm_shotgun_sawn], 0);
+  g->m.add_item(z->pos, item::types[itm_string_6], 0);
  } else g->m.tr_at(z->pos.x, z->pos.y) = tr_shotgun_1;
 }
 
@@ -373,7 +373,7 @@ void trapfuncm::pit_spikes(game *g, monster *z)
   g->m.ter(z->pos) = t_pit;
   g->m.tr_at(z->pos.x, z->pos.y) = tr_pit;
   for (int i = 0; i < 4; i++) { // 4 spears to a pit
-   if (one_in(3)) g->m.add_item(z->pos.x, z->pos.y, item::types[itm_spear_wood], messages.turn);
+   if (one_in(3)) g->m.add_item(z->pos, item::types[itm_spear_wood], messages.turn);
   }
  }
 }

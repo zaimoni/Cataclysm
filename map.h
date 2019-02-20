@@ -190,7 +190,9 @@ class map
  void i_rem(const point& pt, int index) { i_rem(pt.x, pt.y, index); };
  point find_item(item *it) const;
  void add_item(int x, int y, const itype* type, int birthday);
- void add_item(int x, int y, item new_item);
+ void add_item(const point& pt, const itype* type, int birthday) { add_item(pt.x, pt.y, type, birthday); };
+ void add_item(int x, int y, const item& new_item);
+ void add_item(const point& pt, const item& new_item) { return add_item(pt.x, pt.y, new_item); };
  void process_active_items(game *g);
  void process_active_items_in_submap(game *g, int nonant);
 // void process_vehicles(game *g);	// undefined function

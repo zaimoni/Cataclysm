@@ -1399,8 +1399,8 @@ int vehicle::damage_direct (int p, int dmg, int type)
             }
         } else if (parts[p].hp <= 0 && part_flag(p, vpf_unmount_on_damage)) {
 			const point dest(global() + parts[p].precalc_d[0]);
-            g->m.add_item (dest.x, dest.y, item::types[part_info(p).item], messages.turn);
-            remove_part (p);
+            g->m.add_item(dest, item::types[part_info(p).item], messages.turn);
+            remove_part(p);
         }
     }
     if (dres < 0) dres = 0;

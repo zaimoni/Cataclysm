@@ -617,7 +617,7 @@ void construct::done_log(game *g, point p)
 {
  int num_sticks = rng(10, 20);
  for (int i = 0; i < num_sticks; i++)
-  g->m.add_item(p.x, p.y, item::types[itm_2x4], int(messages.turn));
+  g->m.add_item(p, item::types[itm_2x4], int(messages.turn));
 }
 
 void construct::done_vehicle(game *g, point p)
