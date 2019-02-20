@@ -194,7 +194,6 @@ class map
  void add_item(int x, int y, const item& new_item);
  void add_item(const point& pt, const item& new_item) { return add_item(pt.x, pt.y, new_item); };
  void process_active_items(game *g);
- void process_active_items_in_submap(game *g, int nonant);
 // void process_vehicles(game *g);	// undefined function
 
  void use_amount(point origin, int range, itype_id type, int quantity,
@@ -217,7 +216,6 @@ class map
  bool add_field(game *g, int x, int y, field_id t, unsigned char density);
  void remove_field(int x, int y);
  bool process_fields(game *g);				// See fields.cpp
- bool process_fields_in_submap(game *g, int gridn);	// See fields.cpp
  void step_in_field(int x, int y, game *g);		// See fields.cpp
  void mon_in_field(int x, int y, game *g, monster *z);	// See fields.cpp
 
@@ -260,6 +258,8 @@ protected:
  int my_MAPSIZE;
  std::vector<submap*> grid;
 private:
+ void process_active_items_in_submap(game *g, int nonant);
+ bool process_fields_in_submap(game *g, int gridn);	// See fields.cpp
  void _translate(ter_id from, ter_id to);	// error-checked backend for map::translate
 };
 
