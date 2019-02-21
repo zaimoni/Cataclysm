@@ -245,7 +245,7 @@ void mdeath::explode(game *g, monster *z)
   case MS_LARGE:  size = 20; break;
   case MS_HUGE:   size = 26; break;
  }
- g->explosion(z->pos.x, z->pos.y, size, 0, false);
+ g->explosion(z->pos, size, 0, false);
 }
 
 void mdeath::ratking(game *g, monster *z)

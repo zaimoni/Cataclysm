@@ -121,7 +121,7 @@ void weather_effect::lightning(game *g)
   if (strike.size() > 0) {
    hit = strike[rng(0, strike.size() - 1)];
    messages.add("Lightning strikes nearby!");
-   g->explosion(hit.x, hit.y, 10, 0, one_in(4));
+   g->explosion(hit, 10, 0, one_in(4));
   }
  }
 }

@@ -25,10 +25,10 @@ void splatter(game *g, std::vector<point> trajectory, int dam,
 
 void ammo_effects(game *g, point pt, long flags)
 {
-	if (flags & mfb(IF_AMMO_EXPLOSIVE)) g->explosion(pt.x, pt.y, 24, 0, false);
-	if (flags & mfb(IF_AMMO_FRAG)) g->explosion(pt.x, pt.y, 12, 28, false);
-	if (flags & mfb(IF_AMMO_NAPALM)) g->explosion(pt.x, pt.y, 18, 0, true);
-	if (flags & mfb(IF_AMMO_EXPLOSIVE_BIG)) g->explosion(pt.x, pt.y, 40, 0, false);
+	if (flags & mfb(IF_AMMO_EXPLOSIVE)) g->explosion(pt, 24, 0, false);
+	if (flags & mfb(IF_AMMO_FRAG)) g->explosion(pt, 12, 28, false);
+	if (flags & mfb(IF_AMMO_NAPALM)) g->explosion(pt, 18, 0, true);
+	if (flags & mfb(IF_AMMO_EXPLOSIVE_BIG)) g->explosion(pt, 40, 0, false);
 
 	if (flags & mfb(IF_AMMO_TEARGAS)) {
 		for (int i = -2; i <= 2; i++) {

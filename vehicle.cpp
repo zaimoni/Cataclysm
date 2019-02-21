@@ -1389,10 +1389,8 @@ int vehicle::damage_direct (int p, int dmg, int type)
                 int pow = parts[p].amount / 40;
                 if (parts[p].hp <= 0) leak_fuel (p);
                 if (type == 2 ||
-                    (one_in (ft == AT_GAS? 2 : 4) && pow > 5 && rng (75, 150) < dmg))
-                {
-					const point origin(global() + parts[p].precalc_d[0]);
-                    g->explosion (origin.x, origin.y, pow, 0, ft == AT_GAS);
+                    (one_in (ft == AT_GAS? 2 : 4) && pow > 5 && rng (75, 150) < dmg)) {
+                    g->explosion(global() + parts[p].precalc_d[0], pow, 0, ft == AT_GAS);
                     parts[p].hp = 0;
                 }
             }

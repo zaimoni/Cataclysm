@@ -199,7 +199,7 @@ void trapfunc::landmine(game *g, int x, int y)
 void trapfuncm::landmine(game *g, monster *z)
 {
  if (g->u_see(z->pos)) messages.add("The %s steps on a landmine!", z->name().c_str());
- g->explosion(z->pos.x, z->pos.y, 10, 8, false);
+ g->explosion(z->pos, 10, 8, false);
  g->m.tr_at(z->pos) = tr_null;
 }
 
@@ -213,7 +213,7 @@ void trapfunc::boobytrap(game *g, int x, int y)
 void trapfuncm::boobytrap(game *g, monster *z)
 {
  if (g->u_see(z->pos)) messages.add("The %s triggers a boobytrap!", z->name().c_str());
- g->explosion(z->pos.x, z->pos.y, 18, 12, false);
+ g->explosion(z->pos, 18, 12, false);
  g->m.tr_at(z->pos) = tr_null;
 }
 

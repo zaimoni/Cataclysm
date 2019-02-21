@@ -1388,7 +1388,7 @@ void iuse::pipebomb_act(game *g, player *p, item *it, bool t)
   if (one_in(10) && g->u_see(pos.x, pos.y))
    messages.add("The pipe bomb fizzles out.");
   else
-   g->explosion(pos.x, pos.y, rng(6, 14), rng(0, 4), false);
+   g->explosion(pos, rng(6, 14), rng(0, 4), false);
  }
 }
  
@@ -1407,7 +1407,7 @@ void iuse::grenade_act(game *g, player *p, item *it, bool t)
  if (t) // Simple timer effects
   g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
  else	// When that timer runs down...
-  g->explosion(pos.x, pos.y, 12, 28, false);
+  g->explosion(pos, 12, 28, false);
 }
 
 void iuse::flashbang(game *g, player *p, item *it, bool t)
@@ -1448,7 +1448,7 @@ void iuse::c4armed(game *g, player *p, item *it, bool t)
  if (t) // Simple timer effects
   g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
  else	// When that timer runs down...
-  g->explosion(pos.x, pos.y, 40, 3, false);
+  g->explosion(pos, 40, 3, false);
 }
 
 void iuse::EMPbomb(game *g, player *p, item *it, bool t)
@@ -1569,7 +1569,7 @@ void iuse::molotov_lit(game *g, player *p, item *it, bool t)
  if (!p->has_item(it)) {
   point pos = g->find_item(it);
   it->charges = -1;
-  g->explosion(pos.x, pos.y, 8, 0, true);
+  g->explosion(pos, 8, 0, true);
  } else if (age >= 5) { // More than 5 turns old = chance of going out
   if (rng(1, 50) < age) {
    messages.add("Your lit molotov goes out.");
@@ -1598,7 +1598,7 @@ void iuse::dynamite_act(game *g, player *p, item *it, bool t)
  point pos = g->find_item(it);
  if (pos.x == -999 || pos.y == -999) return;
  if (t) g->sound(pos, 0, "ssss...");	 // Simple timer effects
- else g->explosion(pos.x, pos.y, 60, 0, false);		// When that timer runs down...
+ else g->explosion(pos, 60, 0, false);		// When that timer runs down...
 }
 
 void iuse::mininuke(game *g, player *p, item *it, bool t)
@@ -1616,7 +1616,7 @@ void iuse::mininuke_act(game *g, player *p, item *it, bool t)
  if (t) 	// Simple timer effects
   g->sound(pos, 2, "Tick.");
  else {	// When that timer runs down...
-  g->explosion(pos.x, pos.y, 200, 0, false);
+  g->explosion(pos, 200, 0, false);
   for (int i = -4; i <= 4; i++) {
    for (int j = -4; j <= 4; j++) {
 	point dest(pos.x + i, pos.y + j);
@@ -1997,7 +1997,7 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
   case AEA_FIREBALL: {
    point fireball = g->look_around();
    if (fireball.x != -1 && fireball.y != -1)
-    g->explosion(fireball.x, fireball.y, 8, 0, true);
+    g->explosion(fireball, 8, 0, true);
   } break;
 
   case AEA_ADRENALINE:

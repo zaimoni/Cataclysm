@@ -65,12 +65,10 @@ class game
   void sound(const point& pt, int vol, const char* description) { sound(pt.x, pt.y, vol, description); };
   // creates a list of coordinates to draw footsteps
   void add_footstep(int x, int y, int volume, int distance);
-  std::vector<point> footsteps;
-// visual cue to monsters moving out of the players sight
-  void draw_footsteps();
 // Explosion at (x, y) of intensity (power), with (shrapnel) chunks of shrapnel
   void explosion(int x, int y, int power, int shrapnel, bool fire);
-// Flashback at (x, y)
+  void explosion(const point& pt, int power, int shrapnel, bool fire) { explosion(pt.x, pt.y, power, shrapnel, fire); };
+  // Flashback at (x, y)
   void flashbang(int x, int y);
   void flashbang(const point& pt) { flashbang(pt.x, pt.y); };
   // Move the player vertically, if (force) then they fell
@@ -311,7 +309,11 @@ class game
   // data integrity
   void z_erase(int z_index);	// morally z.erase(z.begin()+z_index), with required side effects
 
+  void draw_footsteps();
+
 // ########################## DATA ################################
+
+  std::vector<point> footsteps;	// visual cue to monsters moving out of the players sight
 
   int last_target;// The last monster targeted. -1, or a positional index in z
   char run_mode; // 0 - Normal run always; 1 - Running allowed, but if a new
@@ -329,7 +331,7 @@ class game
   std::string last_action;		// The keypresses of last turn
 
   special_game *gamemode;
-private:
+
   int next_npc_id, next_faction_id, next_mission_id; // Keep track of UIDs
   int grscent[SEEX * MAPSIZE][SEEY * MAPSIZE];	// The scent map
 };
