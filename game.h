@@ -78,9 +78,13 @@ class game
   void emp_blast(int x, int y);
   npc* nPC(int x, int y);
   npc* nPC(const point& pt);
+  const npc* nPC(int x, int y) const { return const_cast<game*>(this)->nPC(x, y); };
+  const npc* nPC(const point& pt) const { return const_cast<game*>(this)->nPC(pt); };
   int  mon_at(int x, int y) const;	// Index of the monster at (x, y); -1 for none
   monster* mon(int x, int y);
   monster* mon(const point& pt);
+  const monster* mon(int x, int y) const { return const_cast<game*>(this)->mon(x, y); };
+  const monster* mon(const point& pt) const { return const_cast<game*>(this)->mon(pt); };
 
   bool is_empty(int x, int y);	// True if no PC, no monster, move cost > 0
   bool isBetween(int test, int down, int up);
