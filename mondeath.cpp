@@ -77,19 +77,17 @@ void mdeath::kill_vines(game *g, monster *z)
 
 void mdeath::vine_cut(game *g, monster *z)
 {
- std::vector<int> vines;
+ std::vector<monster*> vines;
  for (int x = z->pos.x - 1; x <= z->pos.x + 1; x++) {
   for (int y = z->pos.y - 1; y <= z->pos.y + 1; y++) {
    if (x == z->pos.x && y == z->pos.y) y++; // Skip ourselves
-   int mondex = g->mon_at(x, y);
-   if (mondex != -1 && g->z[mondex].type->id == mon_creeper_vine)
-    vines.push_back(mondex);
+   monster* m_at = g->mon(x,y);
+   if (m_at && m_at->type->id == mon_creeper_vine) vines.push_back(m_at);
   }
  }
 
- for (int i = 0; i < vines.size(); i++) {
+ for(auto vine : vines) {
   bool found_neighbor = false;
-  monster *vine = &(g->z[ vines[i] ]);
   for (int x = vine->pos.x - 1; x <= vine->pos.x + 1 && !found_neighbor; x++) {
    for (int y = vine->pos.y - 1; y <= vine->pos.y + 1 && !found_neighbor; y++) {
     if (x != z->pos.x || y != z->pos.y) { // Not the dying vine
