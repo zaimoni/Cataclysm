@@ -127,6 +127,8 @@ struct trap {
   if (part3) components.push_back(part3);
  };
 
+ bool disarm_legal() const { return id != tr_null && difficulty < 99; };
+
  static void init();
 };
 

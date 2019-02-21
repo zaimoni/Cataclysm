@@ -4198,10 +4198,10 @@ shape, but with long, twisted, distended limbs.");
  const auto tr_id = m.tr_at(exam);
  if (tr_id != tr_null) {
    const trap* const tr = trap::traps[tr_id];
-   if (tr->difficulty < 99
+   if (   tr->disarm_legal()
        && u.per_cur-u.encumb(bp_eyes) >= tr->visibility
        && query_yn("There is a %s there.  Disarm?", tr->name.c_str()))
-     m.disarm_trap(this, exam.x, exam.y);
+     m.disarm_trap(this, exam);
  }
 }
 

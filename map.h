@@ -206,7 +206,7 @@ class map
  trap_id tr_at(int x, int y) const { return const_cast<map*>(this)->tr_at(x, y); };	// \todo specialize this properly
  trap_id tr_at(const point& pt) const { return const_cast<map*>(this)->tr_at(pt.x, pt.y); };
  void add_trap(int x, int y, trap_id t);
- void disarm_trap( game *g, int x, int y);
+ void disarm_trap( game *g, const point& pt);
 
 // Fields
  field& field_at(int x, int y);

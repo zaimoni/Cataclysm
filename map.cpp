@@ -2043,38 +2043,40 @@ void map::add_trap(int x, int y, trap_id t)
  grid[nonant]->trp[x][y] = t;
 }
 
-void map::disarm_trap(game *g, int x, int y)
+// 2019-02-21: only the player may disarm traps
+void map::disarm_trap(game *g, const point& pt)
 {
- const auto tr_id = tr_at(x, y);
- if (tr_id == tr_null) {
-  debugmsg("Tried to disarm a trap where there was none (%d %d)", x, y);
+ const auto tr_id = tr_at(pt);
+ const trap* const tr = trap::traps[tr_id];
+ assert(tr->disarm_legal());
+ const int diff = tr->difficulty;
+ int roll = rng(g->u.sklevel[sk_traps], 4 * g->u.sklevel[sk_traps]);
+ while ((rng(5, 20) < g->u.per_cur || rng(1, 20) < g->u.dex_cur) && roll < 50) roll++;
+
+ if (roll < diff * .8) {
+  const bool will_get_xp = (diff - roll <= 6);
+  messages.add(will_get_xp ? "You barely fail to disarm the trap, and you set it off!" 
+	: "You fail to disarm the trap, and you set it off!");
+  (*tr->act)(g, pt.x, pt.y);
+  // Give xp for failing, but not if we failed terribly (in which
+  // case the trap may not be disarmable).
+  if (will_get_xp) g->u.practice(sk_traps, 2*diff);
   return;
  }
- const trap* const tr = trap::traps[tr_id];
- int diff = tr->difficulty;
- int roll = rng(g->u.sklevel[sk_traps], 4 * g->u.sklevel[sk_traps]);
- while ((rng(5, 20) < g->u.per_cur || rng(1, 20) < g->u.dex_cur) && roll < 50)
-  roll++;
+
+ // Learning is exciting and worth emphasis.  Skill must be no more than 80% of difficulty to learn.
+ const bool will_get_xp = (diff > (1.25*g->u.sklevel[sk_traps]));
+
  if (roll >= diff) {
-  messages.add("You disarm the trap!");
+  messages.add(will_get_xp ? "You disarm the trap!" : "You disarm the trap.");
   for (const auto item_id : tr->components) {
-   if (item_id != itm_null) add_item(x, y, item::types[item_id], 0);
+   if (item_id != itm_null) add_item(pt, item::types[item_id], 0);
   }
-  tr_at(x, y) = tr_null;
-  if(diff > 1.25*g->u.sklevel[sk_traps]) // failure might have set off trap
-   g->u.practice(sk_traps, 1.5*(diff - g->u.sklevel[sk_traps]));
- } else if (roll >= diff * .8) {
-  messages.add("You fail to disarm the trap.");
-  if(diff > 1.25*g->u.sklevel[sk_traps])
-   g->u.practice(sk_traps, 1.5*(diff - g->u.sklevel[sk_traps]));
+  tr_at(pt) = tr_null;
  } else {
-  messages.add("You fail to disarm the trap, and you set it off!");
-  (*tr->act)(g, x, y);
-  if(diff - roll <= 6)
-   // Give xp for failing, but not if we failed terribly (in which
-   // case the trap may not be disarmable).
-   g->u.practice(sk_traps, 2*diff);
+  messages.add(will_get_xp  ? "You fail to disarm the trap!" : "You fail to disarm the trap.");
  }
+ if (will_get_xp) g->u.practice(sk_traps, 1.5*(diff - g->u.sklevel[sk_traps]));
 }
  
 field& map::field_at(int x, int y)
