@@ -88,7 +88,6 @@ class game
 
   bool is_empty(int x, int y) const;	// True if no PC, no monster, move cost > 0
   bool is_empty(const point& pt) const { return is_empty(pt.x, pt.y); };
-  bool isBetween(int test, int down, int up);
   bool is_in_sunlight(int x, int y); // Checks outdoors + sunny
 // Kill that monster; fixes any pointers etc
   void kill_mon(monster& target, bool u_did_it = false);

@@ -2423,12 +2423,6 @@ void game::draw()
  write_msg();
 }
 
-bool game::isBetween(int test, int down, int up)
-{
-	if(test>down && test<up) return true;
-	else return false;
-}
-
 void game::draw_ter(int posx, int posy)
 {
 // posx/posy default to -999
@@ -2451,16 +2445,16 @@ void game::draw_ter(int posx, int posy)
   if (dist.x <= SEEX && dist.y <= SEEY && u_see(active_npc[i].pos))
    active_npc[i].draw(w_terrain, posx, posy, false);
  }
- if (u.has_active_bionic(bio_scent_vision)) {
+ if (u.has_active_bionic(bio_scent_vision)) {	// overwriting normal vision isn't that useful
   for (int realx = posx - SEEX; realx <= posx + SEEX; realx++) {
    for (int realy = posy - SEEY; realy <= posy + SEEY; realy++) {
     if (scent(realx, realy) != 0) {
-     int tempx = posx - realx, tempy = posy - realy;
-     if (!(isBetween(tempx, -2, 2) && isBetween(tempy, -2, 2))) {
+     const int tempx = realx - posx, tempy = realy - posy;
+     if (2<=abs(tempx) || 2<=abs(tempy)) {
       if (mon(realx, realy))
-       mvwputch(w_terrain, realy + SEEY - posy, realx + SEEX - posx, c_white, '?');
+       mvwputch(w_terrain, SEEY + tempy, SEEX + tempx, c_white, '?');
       else
-       mvwputch(w_terrain, realy + SEEY - posy, realx + SEEX - posx, c_magenta, '#');
+       mvwputch(w_terrain, SEEY + tempy, SEEX + tempx, c_magenta, '#');
      }
     }
    }
