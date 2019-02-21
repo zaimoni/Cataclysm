@@ -2457,7 +2457,7 @@ void game::draw_ter(int posx, int posy)
     if (scent(realx, realy) != 0) {
      int tempx = posx - realx, tempy = posy - realy;
      if (!(isBetween(tempx, -2, 2) && isBetween(tempy, -2, 2))) {
-      if (mon_at(realx, realy) != -1)
+      if (mon(realx, realy))
        mvwputch(w_terrain, realy + SEEY - posy, realx + SEEX - posx, c_white, '?');
       else
        mvwputch(w_terrain, realy + SEEY - posy, realx + SEEX - posx, c_magenta, '#');
@@ -3634,15 +3634,6 @@ void game::emp_blast(int x, int y)
 // it is much clearer what is obtained from the Creature class than the Character class (cf. visitor pattern template at visitable.h)
 // diagram: Creature -> monster
 //						Character -> player -> npc
-int game::npc_at(int x, int y) const
-{
- for (int i = 0; i < active_npc.size(); i++) {
-  if (active_npc[i].pos.x == x && active_npc[i].pos.y == y && !active_npc[i].dead)
-   return i;
- }
- return -1;
-}
-
 npc* game::nPC(int x, int y)
 {
 	for (auto& m : active_npc) {
@@ -6114,7 +6105,6 @@ void game::update_map(int &x, int &y)
    active_npc[i].pos.y %= SEEY;
    cur_om.npcs.push_back(active_npc[i]);
    active_npc[i].dead = true;
-   //active_npc.erase(active_npc.begin() + i);
    i--;
   }
  }

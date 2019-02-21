@@ -844,7 +844,7 @@ void npc::move_to(game *g, int x, int y)
  } else if (g->u.pos.x == x && g->u.pos.y == y) {
   say(g, "<let_me_pass>");
   moves -= 100;
- } else if (g->npc_at(x, y) != -1)
+ } else if (g->nPC(x, y))
 // TODO: Determine if it's an enemy NPC (hit them), or a friendly in the way
   moves -= 100;
  else if (g->m.move_cost(x, y) > 0) {

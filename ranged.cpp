@@ -813,16 +813,6 @@ void shoot_player(game *g, player &p, player *h, int &dam, double goodhit)
                h->name.c_str(), body_part_name(hit, side).c_str());
   }
   h->hit(g, hit, side, 0, dam);
-/*
-  if (h != &(g->u)) {
-   int npcdex = g->npc_at(h->posx, h->posy);
-   if (g->active_npc[npcdex].hp_cur[hp_head]  <= 0 ||
-       g->active_npc[npcdex].hp_cur[hp_torso] <= 0   ) {
-    g->active_npc[npcdex].die(g, !p.is_npc());
-    g->active_npc.erase(g->active_npc.begin() + npcdex);
-   }
-  }
-*/
  }
 }
 

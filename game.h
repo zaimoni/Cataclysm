@@ -76,7 +76,6 @@ class game
   void use_computer(int x, int y);
   void resonance_cascade(int x, int y);
   void emp_blast(int x, int y);
-  int  npc_at(int x, int y) const;	// Index of the npc at (x, y); -1 for none
   npc* nPC(int x, int y);
   npc* nPC(const point& pt);
   int  mon_at(int x, int y) const;	// Index of the monster at (x, y); -1 for none
