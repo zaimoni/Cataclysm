@@ -147,6 +147,9 @@ class monster {
  std::string unique_name; // If we're unique
 
 private:
+ bool can_sound_move_to(game* g, const point& pt);
+ bool can_sound_move_to(game* g, const point& pt, point& dest);
+
  std::vector <point> plans;
 };
 

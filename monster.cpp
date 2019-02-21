@@ -274,9 +274,8 @@ void monster::debug(player &u)
  debugmsg("%s Moves %d Speed %d HP %d",name().c_str(), moves, speed, hp);
  for (int i = 0; i < plans.size(); i++) {
   sprintf(buff, "%d", i);
-  if (i < 10) mvaddch(plans[i].y - SEEY + u.posy, plans[i].x - SEEX + u.posx,
-                      buff[0]);
-  else mvaddch(plans[i].y - SEEY + u.posy, plans[i].x - SEEX + u.posx, buff[1]);
+  if (i < 10) mvaddch(plans[i].y - SEEY + u.pos.y, plans[i].x - SEEX + u.pos.x, buff[0]);
+  else mvaddch(plans[i].y - SEEY + u.pos.y, plans[i].x - SEEX + u.pos.x, buff[1]);
  }
  getch();
 }
@@ -296,7 +295,7 @@ bool monster::is_fleeing(player &u)
  if (has_effect(ME_RUN)) return true;
  monster_attitude att = attitude(&u);
  return (att == MATT_FLEE ||
-         (att == MATT_FOLLOW && rl_dist(pos.x, pos.y, u.posx, u.posy) <= 4));
+         (att == MATT_FOLLOW && rl_dist(pos, u.pos) <= 4));
 }
 
 monster_attitude monster::attitude(player *u) const
@@ -365,9 +364,9 @@ int monster::trigger_sum(const game *g, const std::vector<monster_trigger>& trig
    break;
 
   case MTRIG_PLAYER_CLOSE:
-   if (rl_dist(pos.x, pos.y, g->u.posx, g->u.posy) <= 5) ret += 5;
+   if (rl_dist(pos, g->u.pos) <= 5) ret += 5;
    for (int i = 0; i < g->active_npc.size(); i++) {
-    if (rl_dist(pos.x, pos.y, g->active_npc[i].posx, g->active_npc[i].posy) <= 5)
+    if (rl_dist(pos, g->active_npc[i].pos) <= 5)
      ret += 5;
    }
    break;

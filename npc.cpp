@@ -42,7 +42,7 @@ std::string npc::save_info()
 {
  std::stringstream dump;
 // The " || " is what tells npc::load_info() that it's down reading the name
- dump << id << " " << name << " || " << posx << " " << posy << " " << str_cur <<
+ dump << id << " " << name << " || " << pos << " " << str_cur <<
          " " << str_max << " " << dex_cur << " " << dex_max << " " << int_cur <<
          " " << int_max << " " << per_cur << " " << per_max << " " << hunger <<
          " " << thirst << " " << fatigue << " " << stim << " " << pain << " " <<
@@ -120,7 +120,7 @@ void npc::load_info(game *g, std::string data)
    name += tmpname + " ";
  } while (tmpname != "||");
  name = name.substr(0, name.size() - 1); // Strip off trailing " "
- dump >> posx >> posy >> str_cur >> str_max >> dex_cur >> dex_max >>
+ dump >> pos >> str_cur >> str_max >> dex_cur >> dex_max >>
          int_cur >> int_max >> per_cur >> per_max >> hunger >> thirst >>
          fatigue >> stim >> pain >> pkill >> radiation >> cash >> recoil >>
          scent >> moves >> underwater >> dodges_left >> oxygen >> deathtmp >>
@@ -1005,10 +1005,10 @@ bool npc::wield(game *g, int index)
    i_add(remove_weapon());
    moves -= 15; // Extra penalty for putting weapon away
   } else // No room for weapon, so we drop it
-   g->m.add_item(posx, posy, remove_weapon());
+   g->m.add_item(pos, remove_weapon());
   moves -= 15;
   weapon.make(item::types[styles[index]] );
-  if (g->u_see(posx, posy)) messages.add("%s assumes a %s stance.", name.c_str(), weapon.tname().c_str());
+  if (g->u_see(pos)) messages.add("%s assumes a %s stance.", name.c_str(), weapon.tname().c_str());
   return true;
  }
 
@@ -1020,11 +1020,11 @@ bool npc::wield(game *g, int index)
   i_add(remove_weapon());
   moves -= 15;
  } else // No room for weapon, so we drop it
-  g->m.add_item(posx, posy, remove_weapon());
+  g->m.add_item(pos, remove_weapon());
  moves -= 15;
  weapon = inv[index];
  i_remn(index);
- if (g->u_see(posx, posy)) messages.add("%s wields a %s.", name.c_str(), weapon.tname().c_str());
+ if (g->u_see(pos)) messages.add("%s wields a %s.", name.c_str(), weapon.tname().c_str());
  return true;
 }
 
@@ -1353,12 +1353,12 @@ void npc::say(game *g, std::string line, ...)
  va_end(ap);
  line = buff;
  parse_tags(line, &(g->u), this);
- if (g->u_see(posx, posy)) {
+ if (g->u_see(pos)) {
   messages.add("%s says, \"%s\"", name.c_str(), line.c_str());
-  g->sound(posx, posy, 16, "");
+  g->sound(pos, 16, "");
  } else {
   std::string sound = name + " saying, \"" + line + "\"";
-  g->sound(posx, posy, 16, sound);
+  g->sound(pos, 16, sound);
  }
 }
 
@@ -1547,40 +1547,41 @@ int npc::danger_assessment(game *g) const
  int ret = 0;
  int sightdist = g->light_level();
  for (int i = 0; i < g->z.size(); i++) {
-  if (g->m.sees(posx, posy, g->z[i].pos.x, g->z[i].pos.y, sightdist))
+  if (g->m.sees(pos, g->z[i].pos, sightdist))
    ret += g->z[i].type->difficulty;
  }
  ret /= 10;
- if (ret <= 2)
-  ret = -10 + 5 * ret;	// Low danger if no monsters around
+ if (ret <= 2) ret = -10 + 5 * ret;	// Low danger if no monsters around
 
 // Mod for the player
  if (is_enemy()) {
-  if (rl_dist(posx, posy, g->u.posx, g->u.posy) < 10) {
+  const int dist = rl_dist(pos, g->u.pos);
+  if (dist < 10) {
    if (g->u.weapon.is_gun())
     ret += 10;
    else 
-    ret += 10 - rl_dist(posx, posy, g->u.posx, g->u.posy);
+    ret += 10 - dist;
   }
  } else if (is_friend()) {
-  if (rl_dist(posx, posy, g->u.posx, g->u.posy) < 8) {
+  const int dist = rl_dist(pos, g->u.pos);
+  if (dist < 8) {
    if (g->u.weapon.is_gun())
     ret -= 8;
    else 
-    ret -= 8 - rl_dist(posx, posy, g->u.posx, g->u.posy);
+    ret -= 8 - dist;
   }
  }
 
  for (int i = 0; i < num_hp_parts; i++) {
   if (i == hp_head || i == hp_torso) {
-        if (hp_cur[i] < hp_max[i] / 4)
+   if (hp_cur[i] < hp_max[i] / 4)
     ret += 5;
    else if (hp_cur[i] < hp_max[i] / 2)
     ret += 3;
    else if (hp_cur[i] < hp_max[i] * .9)
     ret += 1;
   } else {
-        if (hp_cur[i] < hp_max[i] / 4)
+   if (hp_cur[i] < hp_max[i] / 4)
     ret += 2;
    else if (hp_cur[i] < hp_max[i] / 2)
     ret += 1;
@@ -1682,8 +1683,8 @@ int npc::speed_estimate(int speed) const
 
 void npc::draw(WINDOW* w, int ux, int uy, bool inv)
 {
- int x = SEEX + posx - ux;
- int y = SEEY + posy - uy;
+ int x = SEEX + pos.x - ux;
+ int y = SEEY + pos.y - uy;
  nc_color col = c_pink;
  if (attitude == NPCATT_KILL)
   col = c_red;
@@ -1819,8 +1820,8 @@ std::string npc::opinion_text()
 void npc::shift(const point delta)
 {
  const point block_delta(delta*SEE);
- posx -= delta.x * SEEX;
- posy -= delta.y * SEEY;
+ pos.x -= delta.x * SEEX;
+ pos.y -= delta.y * SEEY;
  mapx += delta.x;
  mapy += delta.y;
  it -= block_delta;
@@ -1832,22 +1833,18 @@ void npc::die(game *g, bool your_fault)
 {
  if (dead) return;
  dead = true;
- if (g->u_see(posx, posy)) messages.add("%s dies!", name.c_str());
+ if (g->u_see(pos)) messages.add("%s dies!", name.c_str());
  if (your_fault && !g->u.has_trait(PF_HEARTLESS)) {
-  if (is_friend())
-   g->u.add_morale(MORALE_KILLED_FRIEND, -500);
-  else if (!is_enemy())
-   g->u.add_morale(MORALE_KILLED_INNOCENT, -100);
+  if (is_friend()) g->u.add_morale(MORALE_KILLED_FRIEND, -500);
+  else if (!is_enemy()) g->u.add_morale(MORALE_KILLED_INNOCENT, -100);
  }
 
  item my_body(messages.turn);
  my_body.name = name;
- g->m.add_item(posx, posy, my_body);
- for (size_t i = 0; i < inv.size(); i++)
-  g->m.add_item(posx, posy, inv[i]);
- for (const auto& it : worn) g->m.add_item(posx, posy, it);
- if (weapon.type->id != itm_null)
-  g->m.add_item(posx, posy, weapon);
+ g->m.add_item(pos, my_body);
+ for (size_t i = 0; i < inv.size(); i++) g->m.add_item(pos, inv[i]);
+ for (const auto& it : worn) g->m.add_item(pos, it);
+ if (weapon.type->id != itm_null) g->m.add_item(pos, weapon);
 
  for (int i = 0; i < g->active_missions.size(); i++) {
   if (g->active_missions[i].npc_id == id)

@@ -44,8 +44,7 @@ bool tutorial_game::init(game *g)
  }
  g->m.load(g, g->lev.x, g->lev.y);
  g->lev.z = 0;
- g->u.posx = SEEX + 2;
- g->u.posy = SEEY + 4;
+ g->u.pos = point(SEEX + 2, SEEY + 4);
 
  return true;
 }
@@ -65,47 +64,45 @@ void tutorial_game::per_turn(game *g)
    add_message(g, LESSON_DARK_NO_FLASH);
  }
 
- if (g->u.pain > 0)
-  add_message(g, LESSON_PAIN);
-
- if (g->u.recoil >= 5)
-  add_message(g, LESSON_RECOIL);
+ if (g->u.pain > 0) add_message(g, LESSON_PAIN);
+ if (g->u.recoil >= 5) add_message(g, LESSON_RECOIL);
 
  if (!tutorials_seen[LESSON_BUTCHER]) {
-  for (int i = 0; i < g->m.i_at(g->u.posx, g->u.posy).size(); i++) {
-   if (g->m.i_at(g->u.posx, g->u.posy)[i].type->id == itm_corpse) {
+  for(const auto& it : g->m.i_at(g->u.pos)) {
+   if (it.type->id == itm_corpse) {
     add_message(g, LESSON_BUTCHER);
-    i = g->m.i_at(g->u.posx, g->u.posy).size();
+	break;
    }
   }
  }
 
  bool showed_message = false;
- for (int x = g->u.posx - 1; x <= g->u.posx + 1 && !showed_message; x++) {
-  for (int y = g->u.posy - 1; y <= g->u.posy + 1 && !showed_message; y++) {
-   if (g->m.ter(x, y) == t_door_o) {
+ for (int x = g->u.pos.x - 1; x <= g->u.pos.x + 1 && !showed_message; x++) {
+  for (int y = g->u.pos.y - 1; y <= g->u.pos.y + 1 && !showed_message; y++) {
+   const auto& t = g->m.ter(x, y);
+   if (t_door_o == t) {
     add_message(g, LESSON_OPEN);
     showed_message = true;
-   } else if (g->m.ter(x, y) == t_door_c) {
+   } else if (t_door_c == t) {
     add_message(g, LESSON_CLOSE);
     showed_message = true;
-   } else if (g->m.ter(x, y) == t_window) {
+   } else if (t_window == t) {
     add_message(g, LESSON_SMASH);
     showed_message = true;
-   } else if (g->m.ter(x, y) == t_rack && !g->m.i_at(x, y).empty()) {
+   } else if (t_rack == t && !g->m.i_at(x, y).empty()) {
     add_message(g, LESSON_EXAMINE);
     showed_message = true;
-   } else if (g->m.ter(x, y) == t_stairs_down) {
+   } else if (t_stairs_down == t) {
     add_message(g, LESSON_STAIRS);
     showed_message = true;
-   } else if (g->m.ter(x, y) == t_water_sh) {
+   } else if (t_water_sh == t) {
     add_message(g, LESSON_PICKUP_WATER);
     showed_message = true;
    }
   }
  }
 
- if (!g->m.i_at(g->u.posx, g->u.posy).empty())
+ if (!g->m.i_at(g->u.pos).empty())
   add_message(g, LESSON_PICKUP);
 }
 
@@ -118,11 +115,11 @@ void tutorial_game::post_action(game *g, action_id act)
  switch (act) {
  case ACTION_RELOAD:
   if (g->u.weapon.is_gun() && !tutorials_seen[LESSON_GUN_FIRE]) {
-   monster tmp(mtype::types[mon_zombie], g->u.posx, g->u.posy - 6);
+   monster tmp(mtype::types[mon_zombie], g->u.pos.x, g->u.pos.y - 6);
    g->z.push_back(tmp);
-   tmp.spawn(g->u.posx + 2, g->u.posy - 5);
+   tmp.spawn(g->u.pos.x + 2, g->u.pos.y - 5);
    g->z.push_back(tmp);
-   tmp.spawn(g->u.posx - 2, g->u.posy - 5);
+   tmp.spawn(g->u.pos.x - 2, g->u.pos.y - 5);
    g->z.push_back(tmp);
    add_message(g, LESSON_GUN_FIRE);
   }
@@ -139,8 +136,8 @@ void tutorial_game::post_action(game *g, action_id act)
  case ACTION_USE:
   if (g->u.has_amount(itm_grenade_act, 1))
    add_message(g, LESSON_ACT_GRENADE);
-  for (int x = g->u.posx - 1; x <= g->u.posx + 1; x++) {
-   for (int y = g->u.posy - 1; y <= g->u.posy + 1; y++) {
+  for (int x = g->u.pos.x - 1; x <= g->u.pos.x + 1; x++) {
+   for (int y = g->u.pos.y - 1; y <= g->u.pos.y + 1; y++) {
     if (g->m.tr_at(x, y) == tr_bubblewrap)
      add_message(g, LESSON_ACT_BUBBLEWRAP);
    }

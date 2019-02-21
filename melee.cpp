@@ -129,7 +129,7 @@ int player::hit_mon(game *g, monster *z, bool allow_grab) // defaults to true
  bool is_u = (this == &(g->u));	// Affects how we'll display messages
  if (is_u)
   z->add_effect(ME_HIT_BY_PLAYER, 100); // Flag as attacked by us
- const bool can_see = (is_u || g->u_see(posx, posy));	// XXX this non-use suggests this function is never called by npcs
+ const bool can_see = (is_u || g->u_see(pos));	// XXX this non-use suggests this function is never called by npcs
 
  std::string You  = (is_u ? "You"  : name);
  std::string Your = (is_u ? "Your" : name + "'s");
@@ -176,9 +176,7 @@ int player::hit_mon(game *g, monster *z, bool allow_grab) // defaults to true
  int pain = 0; // Boost to pain; required for perform_technique
 
 // Moves lost to getting your weapon stuck
- int stuck_penalty = roll_stuck_penalty(z, (stab_dam >= cut_dam));
- if (weapon.is_style())
-  stuck_penalty = 0;
+ const int stuck_penalty = weapon.is_style() ? 0 : roll_stuck_penalty(z, (stab_dam >= cut_dam));
 
 // Pick one or more special attacks
  technique_id technique = pick_technique(g, z, NULL, critical_hit, allow_grab);
@@ -194,8 +192,7 @@ int player::hit_mon(game *g, monster *z, bool allow_grab) // defaults to true
  melee_special_effects(g, z, NULL, critical_hit, bash_dam, cut_dam, stab_dam);
 
 // Make a rather quiet sound, to alert any nearby monsters
- if (weapon.type->id != itm_style_ninjutsu) // Ninjutsu is silent!
-  g->sound(posx, posy, 8, "");
+ if (weapon.type->id != itm_style_ninjutsu) g->sound(pos, 8, ""); // Ninjutsu is silent!
 
  verb = melee_verb(technique, your, *this, bash_dam, cut_dam, stab_dam);
 
@@ -226,7 +223,7 @@ int player::hit_mon(game *g, monster *z, bool allow_grab) // defaults to true
 void player::hit_player(game *g, player &p, bool allow_grab)
 {
  const bool is_u = (this == &(g->u));	// Affects how we'll display messages
- const bool can_see = (is_u || g->u_see(posx, posy));
+ const bool can_see = (is_u || g->u_see(pos));
  if (is_u && p.is_npc()) {
   npc* npcPtr = dynamic_cast<npc*>(&p);
   npcPtr->make_angry();
@@ -303,9 +300,7 @@ void player::hit_player(game *g, player &p, bool allow_grab)
  int pain = 0; // Boost to pain; required for perform_technique
 
 // Moves lost to getting your weapon stuck
- int stuck_penalty = roll_stuck_penalty(NULL, (stab_dam >= cut_dam));
- if (weapon.is_style())
-  stuck_penalty = 0;
+ const int stuck_penalty = weapon.is_style() ? 0 : roll_stuck_penalty(NULL, (stab_dam >= cut_dam));
 
 // Pick one or more special attacks
  technique_id technique = pick_technique(g, NULL, &p, critical_hit, allow_grab);
@@ -322,7 +317,7 @@ void player::hit_player(game *g, player &p, bool allow_grab)
 
 // Make a rather quiet sound, to alert any nearby monsters
  if (weapon.type->id != itm_style_ninjutsu) // Ninjutsu is silent!
-  g->sound(posx, posy, 8, "");
+  g->sound(pos, 8, "");
 
  p.hit(g, bp_hit, side, bash_dam, (cut_dam > stab_dam ? cut_dam : stab_dam));
 
@@ -744,8 +739,8 @@ technique_id player::pick_technique(game *g, monster *z, player *p,
 
   if (weapon.has_technique(TEC_WIDE, this)) { // Count monsters
    int enemy_count = 0;
-   for (int x = posx - 1; x <= posx + 1; x++) {
-    for (int y = posy - 1; y <= posy + 1; y++) {
+   for (int x = pos.x - 1; x <= pos.x + 1; x++) {
+    for (int y = pos.y - 1; y <= pos.y + 1; y++) {
 	 if (const monster* const m_at = g->mon(x,y)) {
       if (0 == m_at->friendly)
        enemy_count++;
@@ -778,14 +773,13 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
                                player *p, int &bash_dam, int &cut_dam,
                                int &stab_dam, int &pain)
 {
- bool mon = (z != NULL);
  std::string You = (is_npc() ? name : "You");
- std::string target = (mon ? "the " + z->name() :
+ std::string target = (z ? "the " + z->name() :
                        (p->is_npc() ? p->name : "you"));
  std::string s = (is_npc() ? "s" : "");
- int tarx = (mon ? z->pos.x : p->posx), tary = (mon ? z->pos.y : p->posy);
+ point tar(z ? z->pos : p->pos);
 
- const bool u_see = (!is_npc() || g->u_see(posx, posy));
+ const bool u_see = (!is_npc() || g->u_see(pos));
 
  if (technique == TEC_RAPID) {
   moves += int( attack_speed(*this, false) / 2);
@@ -819,10 +813,10 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
  case TEC_BRUTAL:
   if (z != NULL) {
    z->add_effect(ME_STUNNED, 1);
-   z->knock_back_from(g, posx, posy);
+   z->knock_back_from(g, pos.x, pos.y);
   } else if (p != NULL) {
    p->add_disease(DI_STUNNED, 1, g);
-   p->knock_back_from(g, posy, posy);
+   p->knock_back_from(g, pos.x, pos.y);
   }
   break;
 
@@ -831,9 +825,9 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
 // We knock them back from a tile adjacent to us!
   if (z != NULL) {
    z->add_effect(ME_DOWNED, rng(1, 2));
-   z->knock_back_from(g, posx + rng(-1, 1), posy + rng(-1, 1));
+   z->knock_back_from(g, pos.x + rng(-1, 1), pos.y + rng(-1, 1));
   } else if (p != NULL) {
-   p->knock_back_from(g, posx + rng(-1, 1), posy + rng(-1, 1));
+   p->knock_back_from(g, pos.x + rng(-1, 1), pos.y + rng(-1, 1));
    if (p->weapon.type->id != itm_style_judo)
     p->add_disease(DI_DOWNED, rng(1, 2), g);
   }
@@ -841,9 +835,9 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
 
  case TEC_WIDE: {
   int count_hit = 0;
-  for (int x = posx - 1; x <= posx + 1; x++) {
-   for (int y = posy - 1; y <= posy + 1; y++) {
-    if (x != tarx || y != tary) { // Don't double-hit our target
+  for (int x = pos.x - 1; x <= pos.x + 1; x++) {
+   for (int y = pos.y - 1; y <= pos.y + 1; y++) {
+    if (x != tar.x || y != tar.y) { // Don't double-hit our target
 	 monster* const m_at = g->mon(x,y);
      if (m_at && hit_roll() >= rng(0, 5) + m_at->dodge_roll()) {
       count_hit++;
@@ -871,7 +865,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
  } break;
 
  case TEC_DISARM:
-  g->m.add_item(p->posx, p->posy, p->remove_weapon());
+  g->m.add_item(p->pos, p->remove_weapon());
   if (u_see) messages.add("%s disarm%s %s!", You.c_str(), s.c_str(), target.c_str());
   break;
 
@@ -951,11 +945,10 @@ void player::perform_defensive_technique(
   body_part &bp_hit, int &side, int &bash_dam, int &cut_dam, int &stab_dam)
 
 {
- bool mon = (z != NULL);
  std::string You = (is_npc() ? name : "You");
  const char* const your = (is_npc() ? (male ? "his" : "her") : "your");
- std::string target = (mon ? "the " + z->name() : p->name);
- const bool u_see = (!is_npc() || g->u_see(posx, posy));
+ std::string target = (z ? "the " + z->name() : p->name);
+ const bool u_see = (!is_npc() || g->u_see(pos));
 
  switch (technique) {
   case TEC_BLOCK:
@@ -997,22 +990,21 @@ void player::perform_defensive_technique(
 
   case TEC_DEF_THROW:
    if (u_see)
-    messages.add("%s throw%s %s!", You.c_str(), (is_npc() ? "s" : ""),
-               target.c_str());
+    messages.add("%s throw%s %s!", You.c_str(), (is_npc() ? "s" : ""), target.c_str());
    bash_dam = 0;
    cut_dam  = 0;
    stab_dam = 0;
-   if (mon) {
+   if (z) {
     z->add_effect(ME_DOWNED, rng(1, 2));
-    z->knock_back_from(g, posx + rng(-1, 1), posy + rng(-1, 1));
+    z->knock_back_from(g, pos.x + rng(-1, 1), pos.y + rng(-1, 1));
    } else {
     p->add_disease(DI_DOWNED, rng(1, 2), g);
-    p->knock_back_from(g, posx + rng(-1, 1), posy + rng(-1, 1));
+    p->knock_back_from(g, pos.x + rng(-1, 1), pos.y + rng(-1, 1));
    }
    break;
 
   case TEC_DEF_DISARM:
-   g->m.add_item(p->posx, p->posy, p->remove_weapon());
+   g->m.add_item(p->pos, p->remove_weapon());
 // Re-roll damage, without our weapon
    bash_dam = p->roll_bash_damage(NULL, false);
    cut_dam  = p->roll_cut_damage(NULL, false);
@@ -1071,20 +1063,19 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
                                    int &bash_dam, int &cut_dam, int &stab_dam)
 {
  if (z == NULL && p == NULL) return;
- bool mon = (z != NULL);
- bool is_u = (!is_npc());
- bool can_see = (is_u || g->u_see(posx, posy));
+ bool is_u = !is_npc();
+ bool can_see = (is_u || g->u_see(pos));
  std::string You = (is_u ? "You" : name);
  std::string Your = (is_u ? "Your" : name + "'s");
  std::string your = (is_u ? "your" : name + "'s");
- std::string target = (mon ? "the " + z->name() :
+ std::string target = (z ? "the " + z->name() :
                        (p->is_npc() ? p->name : "you"));
- std::string target_possessive = (mon ? "the " + z->name() + "'s" :
+ std::string target_possessive = (z ? "the " + z->name() + "'s" :
                                   (p->is_npc() ? p->name + "'s" : your));
- int tarposx = (mon ? z->pos.x : p->posx), tarposy = (mon ? z->pos.y : p->posy);
+ point tar = z ? z->pos : p->pos;
 
 // Bashing effecs
- if (mon) z->moves -= rng(0, bash_dam * 2);
+ if (z) z->moves -= rng(0, bash_dam * 2);
  else p->moves -= rng(0, bash_dam * 2);
 
 // Bashing crit
@@ -1092,7 +1083,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
   int turns_stunned = int(bash_dam / 20) + rng(0, int(sklevel[sk_bashing] / 2));
   if (turns_stunned > 6) turns_stunned = 6;
   if (turns_stunned > 0) {
-   if (mon)
+   if (z)
     z->add_effect(ME_STUNNED, turns_stunned);
    else
     p->add_disease(DI_STUNNED, 1 + turns_stunned / 2, g);
@@ -1106,25 +1097,25 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
   if (can_see)
    messages.add("%s force%s the %s to the ground!", You.c_str(),
               (is_u ? "" : "s"), target.c_str());
-  if (mon) {
+  if (z) {
    z->add_effect(ME_DOWNED, 1);
    z->moves -= stab_moves / 2;
   } else {
    p->add_disease(DI_DOWNED, 1, g);
    p->moves -= stab_moves / 2;
   }
- } else if (mon)
+ } else if (z)
   z->moves -= stab_moves;
  else
   p->moves -= stab_moves;
 
 // Bonus attacks!
  bool shock_them = (has_bionic(bio_shock) && power_level >= 2 &&
-                    unarmed_attack() && (!mon || !z->has_flag(MF_ELECTRIC)) &&
+                    unarmed_attack() && (!z || !z->has_flag(MF_ELECTRIC)) &&
                     one_in(3));
 
  bool drain_them = (has_bionic(bio_heat_absorb) && power_level >= 1 &&
-                    !is_armed() && (!mon || z->has_flag(MF_WARM)));
+                    !is_armed() && (!z || z->has_flag(MF_WARM)));
 
  if (drain_them) power_level--;
  drain_them &= one_in(2);	// Only works half the time
@@ -1132,7 +1123,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
  if (shock_them) {
   power_level -= 2;
   int shock = rng(2, 5);
-  if (mon) {
+  if (z) {
    z->hurt( shock * rng(1, 3) );
    z->moves -= shock * 180;
    if (can_see)
@@ -1148,7 +1139,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
   if (can_see)
    messages.add("%s drain%s %s body heat!", You.c_str(), (is_u ? "" : "s"),
                target_possessive.c_str());
-  if (mon) {
+  if (z) {
    z->moves -= rng(80, 120);
    z->speed -= rng(4, 6);
   } else
@@ -1157,7 +1148,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
 
  bool conductive = !wearing_something_on(bp_hands) && weapon.conductive();
                    
- if (mon && z->has_flag(MF_ELECTRIC) && conductive) {
+ if (z && z->has_flag(MF_ELECTRIC) && conductive) {
   hurtall(rng(0, 1));
   moves -= rng(0, 50);
   if (is_u) messages.add("Contact with the %s shocks you!", z->name().c_str());
@@ -1167,10 +1158,10 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
  if (weapon.made_of(GLASS) &&
      rng(0, weapon.volume() + 8) < weapon.volume() + str_cur) {
   if (can_see) messages.add("%s %s shatters!", Your.c_str(), weapon.tname(g).c_str());
-  g->sound(posx, posy, 16, "");
+  g->sound(pos, 16, "");
 // Dump its contents on the ground
   for (int i = 0; i < weapon.contents.size(); i++)
-   g->m.add_item(posx, posy, weapon.contents[i]);
+   g->m.add_item(pos, weapon.contents[i]);
   hit(g, bp_arms, 1, 0, rng(0, weapon.volume() * 2));// Take damage
   if (weapon.is_two_handed(this))// Hurt left arm too, if it was big
    hit(g, bp_arms, 0, 0, rng(0, weapon.volume()));
@@ -1182,8 +1173,8 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
  int cutting_penalty = roll_stuck_penalty(z, stab_dam > cut_dam);
  if (weapon.has_flag(IF_MESSY)) { // e.g. chainsaws
   cutting_penalty /= 6; // Harder to get stuck
-  for (int x = tarposx - 1; x <= tarposx + 1; x++) {
-   for (int y = tarposy - 1; y <= tarposy + 1; y++) {
+  for (int x = tar.x - 1; x <= tar.x + 1; x++) {
+   for (int y = tar.y - 1; y <= tar.y + 1; y++) {
     if (!one_in(3)) {
      auto& fd = g->m.field_at(x, y);
 	 if (fd.type == fd_blood) {
@@ -1197,21 +1188,20 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
   if (is_u)
    messages.add("Your %s gets stuck in %s, pulling it out of your hands!",
               weapon.tname().c_str(), target.c_str());
-  if (mon) {
+  if (z) {
    z->speed *= (weapon.has_flag(IF_SPEAR) || weapon.has_flag(IF_STAB)) ? .7 : .85;
    z->add_item(remove_weapon());
   } else
-   g->m.add_item(posx, posy, remove_weapon());
+   g->m.add_item(pos, remove_weapon());
  } else {
-  if (mon && (cut_dam >= z->hp || stab_dam >= z->hp)) {
+  if (z && (cut_dam >= z->hp || stab_dam >= z->hp)) {
    cutting_penalty /= 2;
    cutting_penalty -= rng(sklevel[sk_cutting], sklevel[sk_cutting] * 2 + 2);
   }
   if (cutting_penalty > 0) moves -= cutting_penalty;
   if (cutting_penalty >= 50 && is_u)
-   messages.add("Your %s gets stuck in %s, but you yank it free.",
-              weapon.tname().c_str(), target.c_str());
-  if (mon && (weapon.has_flag(IF_SPEAR) || weapon.has_flag(IF_STAB))) z->speed *= .9;
+   messages.add("Your %s gets stuck in %s, but you yank it free.", weapon.tname().c_str(), target.c_str());
+  if (z && (weapon.has_flag(IF_SPEAR) || weapon.has_flag(IF_STAB))) z->speed *= .9;
  }
 
 // Finally, some special effects for martial arts
@@ -1231,9 +1221,10 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
    break;
 
   case itm_style_muay_thai:
-   if ((mon && z->type->size >= MS_LARGE) || (!mon && p->str_max >= 12))
-    bash_dam += rng((mon ? z->type->size : (p->str_max - 8) / 4),
-                    3 * (mon ? z->type->size : (p->str_max - 8) / 4));
+   if (z) {
+	   if (z->type->size >= MS_LARGE) bash_dam += rng(z->type->size, 3 * z->type->size);
+   } else if (p->str_max >= 12)
+	   bash_dam += rng((p->str_max - 8) / 4, 3 * (p->str_max - 8) / 4);
    break;
 
   case itm_style_tiger:
@@ -1271,17 +1262,17 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
   case itm_style_scorpion:
    if (crit) {
     if (!is_npc()) messages.add("Stinger Strike!");
-    if (mon) {
+    if (z) {
      z->add_effect(ME_STUNNED, 3);
 	 const point zpos(z->pos);
-     z->knock_back_from(g, posx, posy);
-	 if (zpos != z->pos) z->knock_back_from(g, posx, posy); // Knock a 2nd time if the first worked
+     z->knock_back_from(g, pos.x, pos.y);
+	 if (zpos != z->pos) z->knock_back_from(g, pos.x, pos.y); // Knock a 2nd time if the first worked
     } else {
      p->add_disease(DI_STUNNED, 2, g);
-     int pposx = p->posx, pposy = p->posy;
-     p->knock_back_from(g, posx, posy);
-     if (p->posx != pposx || p->posy != pposy)
-      p->knock_back_from(g, posx, posy); // Knock a 2nd time if the first worked
+     const point ppos(p->pos);
+     p->knock_back_from(g, pos.x, pos.y);
+     if (p->pos != ppos)
+      p->knock_back_from(g, pos.x, pos.y); // Knock a 2nd time if the first worked
     }
    }
    break;

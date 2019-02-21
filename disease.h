@@ -88,9 +88,9 @@ void dis_effect(game *g, player &p, disease &dis)
    p.moves -= 80;
    if (!p.is_npc()) {
     messages.add("You cough noisily.");
-    g->sound(p.posx, p.posy, 12, "");
+    g->sound(p.pos, 12, "");
    } else
-    g->sound(p.posx, p.posy, 12, "loud coughing");
+    g->sound(p.pos, 12, "loud coughing");
   }
   break;
 
@@ -109,9 +109,9 @@ void dis_effect(game *g, player &p, disease &dis)
    p.moves -= 80;
    if (!p.is_npc()) {
     messages.add("You cough noisily.");
-    g->sound(p.posx, p.posy, 12, "");
+    g->sound(p.pos, 12, "");
    } else
-    g->sound(p.posx, p.posy, 12, "loud coughing");
+    g->sound(p.pos, 12, "loud coughing");
   }
   if (one_in(3600) || (p.has_trait(PF_WEAKSTOMACH) && one_in(3000)) || (p.has_trait(PF_NAUSEA) && one_in(2400))) {
    if (!p.has_disease(DI_TOOK_FLUMED) || one_in(2)) p.vomit();
@@ -124,9 +124,9 @@ void dis_effect(game *g, player &p, disease &dis)
   if (one_in(5)) {
    if (!p.is_npc()) {
     messages.add("You cough heavily.");
-    g->sound(p.posx, p.posy, 12, "");
+    g->sound(p.pos, 12, "");
    } else
-    g->sound(p.posx, p.posy, 12, "a hacking cough.");
+    g->sound(p.pos, 12, "a hacking cough.");
    p.moves -= 80;
    p.hurt(g, bp_torso, 0, 1 - (rng(0, 1) * rng(0, 1)));
   }
@@ -140,9 +140,9 @@ void dis_effect(game *g, player &p, disease &dis)
   if (one_in(3)) {
    if (!p.is_npc()) {
     messages.add("You cough heavily.");
-    g->sound(p.posx, p.posy, 12, "");
+    g->sound(p.pos, 12, "");
    } else
-    g->sound(p.posx, p.posy, 12, "a hacking cough");
+    g->sound(p.pos, 12, "a hacking cough");
    p.moves -= 100;
    p.hurt(g, bp_torso, 0, rng(0, 3) * rng(0, 1));
   }
@@ -185,9 +185,9 @@ void dis_effect(game *g, player &p, disease &dis)
    if (one_in(160 + bonus)) {
     if (!p.is_npc()) {
      messages.add("You cough heavily.");
-     g->sound(p.posx, p.posy, 12, "");
+     g->sound(p.pos, 12, "");
     } else
-     g->sound(p.posx, p.posy, 12, "a hacking cough");
+     g->sound(p.pos, 12, "a hacking cough");
     p.pain++;
    }
    if (one_in(100 + bonus)) {
@@ -206,7 +206,7 @@ void dis_effect(game *g, player &p, disease &dis)
        (p.has_trait(PF_NAUSEA) && one_in(800 + bonus * 6)) ||
        one_in(2000 + bonus * 10)) {
     if (!p.is_npc()) messages.add("You vomit a thick, gray goop.");
-    else if (g->u_see(p.posx, p.posy)) messages.add("%s vomits a thick, gray goop.", p.name.c_str());
+    else if (g->u_see(p.pos)) messages.add("%s vomits a thick, gray goop.", p.name.c_str());
     p.moves = -200;
     p.hunger += 50;
     p.thirst += 68;
@@ -214,12 +214,12 @@ void dis_effect(game *g, player &p, disease &dis)
   } else {	// Full symptoms
    if (one_in(1000 + bonus * 8)) {
     if (!p.is_npc()) messages.add("You double over, spewing live spores from your mouth!");
-    else if (g->u_see(p.posx, p.posy)) messages.add("%s coughs up a stream of live spores!", p.name.c_str());
+    else if (g->u_see(p.pos)) messages.add("%s coughs up a stream of live spores!", p.name.c_str());
     p.moves = -500;
     monster spore(mtype::types[mon_spore]);
     for (int i = -1; i <= 1; i++) {
      for (int j = -1; j <= 1; j++) {
-	  point dest(p.posx + i, p.posy + j);
+	  point dest(p.pos.x + i, p.pos.y + j);
 	  monster* const m_at = g->mon(dest);
       if (g->m.move_cost(dest) > 0 && one_in(5)) {
        if (m_at) {	// Spores hit a monster
@@ -234,7 +234,7 @@ void dis_effect(game *g, player &p, disease &dis)
     }
    } else if (one_in(6000 + bonus * 20)) {
     if (!p.is_npc()) messages.add("Fungus stalks burst through your hands!");
-    else if (g->u_see(p.posx, p.posy)) messages.add("Fungus stalks burst through %s's hands!", p.name.c_str());
+    else if (g->u_see(p.pos)) messages.add("Fungus stalks burst through %s's hands!", p.name.c_str());
     p.hurt(g, bp_arms, 0, 60);
     p.hurt(g, bp_arms, 1, 60);
    }
@@ -417,8 +417,8 @@ void dis_effect(game *g, player &p, disease &dis)
    while (num_insects < 6 && rng(0, 10) < p.str_max) num_insects++;
 // Figure out where they may be placed
    std::vector<point> valid_spawns;
-   for (int x = p.posx - 1; x <= p.posy + 1; x++) {
-    for (int y = p.posy - 1; y <= p.posy + 1; y++) {
+   for (int x = p.pos.x - 1; x <= p.pos.y + 1; x++) {
+    for (int y = p.pos.y - 1; y <= p.pos.y + 1; y++) {
      if (g->is_empty(x, y))
       valid_spawns.push_back(point(x, y));
     }
@@ -426,7 +426,7 @@ void dis_effect(game *g, player &p, disease &dis)
    if (valid_spawns.size() >= 1) {
     p.rem_disease(DI_DERMATIK); // No more infection!  yay.
     if (!p.is_npc()) messages.add("Insects erupt from your skin!");
-    else if (g->u_see(p.posx, p.posy)) messages.add("Insects erupt from %s's skin!", p.name.c_str());
+    else if (g->u_see(p.pos)) messages.add("Insects erupt from %s's skin!", p.name.c_str());
     p.moves -= 600;
     monster grub(mtype::types[mon_dermatik_larva]);
     while (valid_spawns.size() > 0 && num_insects > 0) {
@@ -469,7 +469,7 @@ void dis_effect(game *g, player &p, disease &dis)
    if (!p.is_npc()) {
     messages.add("You start scratching yourself all over!");
     g->cancel_activity();
-   } else if (g->u_see(p.posx, p.posy))
+   } else if (g->u_see(p.pos))
     messages.add("%s starts scratching %s all over!", p.name.c_str(), (p.male ? "himself" : "herself"));
    p.moves -= 150;
    p.hurt(g, bp_torso, 0, 1);
@@ -499,7 +499,7 @@ void dis_effect(game *g, player &p, disease &dis)
    p.int_cur -= 1;
    p.dex_cur -= 2;
    p.str_cur -= 1;
-   if (one_in(50)) g->z.push_back(monster(mtype::types[mon_hallu_zom + rng(0, 3)], p.posx + rng(-10, 10), p.posy + rng(-10, 10)));	// Generate phantasm
+   if (one_in(50)) g->z.push_back(monster(mtype::types[mon_hallu_zom + rng(0, 3)], p.pos.x + rng(-10, 10), p.pos.y + rng(-10, 10)));	// Generate phantasm
   }
   break;
 
@@ -570,11 +570,10 @@ void dis_effect(game *g, player &p, disease &dis)
    if (one_in(4000 - int(.25 * (dis.duration - 3600)))) {
     int x, y, tries = 0;
     do {
-     x = p.posx + rng(-4, 4);
-     y = p.posy + rng(-4, 4);
+     x = p.pos.x + rng(-4, 4);
+     y = p.pos.y + rng(-4, 4);
      tries++;
-    } while (((x == p.posx && y == p.posy) || g->mon_at(x, y) != -1) &&
-             tries < 10);
+    } while (((x == p.pos.x && y == p.pos.y) || g->mon(x, y)) && tries < 10);
     if (tries < 10) {
      if (g->m.move_cost(x, y) == 0) g->m.ter(x, y) = t_rubble;
      g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], x, y));
@@ -618,11 +617,10 @@ void dis_effect(game *g, player &p, disease &dis)
   if (one_in( 100000 / dis.duration ) && one_in( 100000 / dis.duration ) && one_in(250)) {
    int x, y, tries = 0;
    do {
-    x = p.posx + rng(-4, 4);
-    y = p.posy + rng(-4, 4);
+    x = p.pos.x + rng(-4, 4);
+    y = p.pos.y + rng(-4, 4);
     tries++;
-   } while (((x == p.posx && y == p.posy) || g->mon_at(x, y) != -1) &&
-            tries < 10);
+   } while (((x == p.pos.x && y == p.pos.y) || g->mon(x, y)) && tries < 10);
    if (tries < 10) {
     if (g->m.move_cost(x, y) == 0) g->m.ter(x, y) = t_rubble;
     g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], x, y));

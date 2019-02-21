@@ -247,7 +247,7 @@ public:
  std::vector<int> has_ammo(ammotype at) const;// Returns a list of indices of the ammo
 
 // ---------------VALUES-----------------
- int posx, posy;
+ point pos;
  bool in_vehicle;       // Means player sit inside vehicle on the tile he is now
  player_activity activity;
  player_activity backlog;

@@ -319,7 +319,7 @@ void mutation_effect(game *g, player &p, pl_flag mut)
      if (is_u) messages.add("Your %s is destroyed!", p.worn[i].tname().c_str());
     } else {
      if (is_u) messages.add("Your %s is pushed off.", p.worn[i].tname().c_str());
-     g->m.add_item(p.posx, p.posy, p.worn[i]);
+     g->m.add_item(p.pos, p.worn[i]);
     }
     p.worn.erase(p.worn.begin() + i);
     i--;

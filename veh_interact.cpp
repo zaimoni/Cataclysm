@@ -60,7 +60,7 @@ void veh_interact::exec ()
     }
     wrefresh(w_grid);
 
-    crafting_inv.form_from_map(_g->m, point(_g->u.posx, _g->u.posy), PICKUP_RANGE);
+    crafting_inv.form_from_map(_g->m, _g->u.pos, PICKUP_RANGE);
     crafting_inv += _g->u.inv;
     crafting_inv += _g->u.weapon;
     if (_g->u.has_bionic(bio_tools))  {
@@ -637,8 +637,7 @@ void complete_vehicle (game *g)
         veh->refill(g->u, part);
         break;
     case 'o':
-		for (const auto& it : veh->parts[part].items)
-            g->m.add_item (g->u.posx, g->u.posy, it);
+		for (const auto& it : veh->parts[part].items) g->m.add_item(g->u.pos, it);
         veh->parts[part].items.clear();
         itm = veh->part_info(part).item;
         broken = veh->parts[part].hp <= 0;
@@ -651,7 +650,7 @@ void complete_vehicle (game *g)
                         veh->part_info(part).name, veh->name.c_str());
             veh->remove_part (part);
         }
-        if (!broken) g->m.add_item (g->u.posx, g->u.posy, item::types[itm], messages.turn);
+        if (!broken) g->m.add_item(g->u.pos, item::types[itm], messages.turn);
         g->u.practice (sk_mechanics, 2 * 5 + 20);
         break;
     default:;

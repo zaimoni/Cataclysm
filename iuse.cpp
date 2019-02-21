@@ -537,13 +537,13 @@ void iuse::marloss(game *g, player *p, item *it, bool t)
   monster goo(mtype::types[mon_blob]);
   goo.friendly = -1;
   int goo_spawned = 0;
-  for (int x = p->posx - 4; x <= p->posx + 4; x++) {
-   for (int y = p->posy - 4; y <= p->posy + 4; y++) {
-    if (rng(0, 10) > trig_dist(x, y, p->posx, p->posy) &&
-        rng(0, 10) > trig_dist(x, y, p->posx, p->posy)   )
+  for (int x = p->pos.x - 4; x <= p->pos.x + 4; x++) {
+   for (int y = p->pos.y - 4; y <= p->pos.y + 4; y++) {
+	const auto dist = trig_dist(x, y, p->pos);
+    if (rng(0, 10) > dist &&
+        rng(0, 10) > dist)
      g->m.marlossify(x, y);
-    if (one_in(10 + 5 * trig_dist(x, y, p->posx, p->posy)) &&
-        (goo_spawned == 0 || one_in(goo_spawned * 2))) {
+    if (one_in(10 + 5 * dist) && (goo_spawned == 0 || one_in(goo_spawned * 2))) {
      goo.spawn(x, y);
      g->z.push_back(goo);
      goo_spawned++;
@@ -594,8 +594,7 @@ void iuse::dogfood(game *g, player *p, item *it, bool t)
   return;
  }
  p->moves -= 15;
- dir.x += p->posx;
- dir.y += p->posy;
+ dir += p->pos;
  if (monster* const m_at = g->mon(dir)) {
   if (m_at->type->id == mon_dog) {
    messages.add("The dog seems to like you!");
@@ -622,8 +621,7 @@ void iuse::lighter(game *g, player *p, item *it, bool t)
   return;
  }
  p->moves -= 15;
- dir.x += p->posx;
- dir.y += p->posy;
+ dir += p->pos;
  if (g->m.flammable_items_at(dir.x, dir.y)) {
   if (g->m.add_field(g, dir.x, dir.y, fd_fire, 1))
    g->m.field_at(dir).age = 30;
@@ -743,7 +741,7 @@ void iuse::scissors(game *g, player *p, item *it, bool t)
    }
    if (!drop && (iter == 52 || p->volume_carried() >= p->volume_capacity()))
     drop = true;
-   if (drop) g->m.add_item(p->posx, p->posy, string);
+   if (drop) g->m.add_item(p->pos, string);
    else p->i_add(string, g);
   }
   return;
@@ -779,7 +777,7 @@ void iuse::scissors(game *g, player *p, item *it, bool t)
    iter++;
   }
   if (!drop && (iter == 52 || p->volume_carried() >= p->volume_capacity())) drop = true;
-  if (drop) g->m.add_item(p->posx, p->posy, rag);
+  if (drop) g->m.add_item(p->pos, rag);
   else p->i_add(rag, g);
  }
 }
@@ -795,8 +793,8 @@ void iuse::extinguisher(game *g, player *p, item *it, bool t)
   return;
  }
  p->moves -= 140;
- int x = dir.x + p->posx;
- int y = dir.y + p->posy;
+ int x = dir.x + p->pos.x;
+ int y = dir.y + p->pos.y;
  {
  auto& fd = g->m.field_at(x, y);
  if (fd.type == fd_fire) {
@@ -834,8 +832,7 @@ void iuse::hammer(game *g, player *p, item *it, bool t)
   messages.add("Invalid direction!");
   return;
  }
- dir.x += p->posx;
- dir.y += p->posy;
+ dir += p->pos;
  int nails = 0, boards = 0;
  ter_id newter;
  auto& type = g->m.ter(dir);
@@ -858,10 +855,9 @@ void iuse::hammer(game *g, player *p, item *it, bool t)
  p->moves -= 500;
  item it_nails(item::types[itm_nail], 0, g->nextinv);
  it_nails.charges = nails;
- g->m.add_item(p->posx, p->posy, it_nails);
+ g->m.add_item(p->pos, it_nails);
  item board(item::types[itm_2x4], 0, g->nextinv);
- for (int i = 0; i < boards; i++)
-  g->m.add_item(p->posx, p->posy, board);
+ for (int i = 0; i < boards; i++) g->m.add_item(p->pos, board);
  type = newter;
 }
  
@@ -1036,8 +1032,7 @@ void iuse::crowbar(game *g, player *p, item *it, bool t)
   messages.add("Invalid direction.");
   return;
  }
- dir.x += p->posx;
- dir.y += p->posy;
+ dir += p->pos;
  auto& type = g->m.ter(dir);
  if (type == t_door_c || type == t_door_locked || type == t_door_locked_alarm) {
   if (dice(4, 6) < dice(4, p->str_cur)) {
@@ -1053,7 +1048,7 @@ void iuse::crowbar(game *g, player *p, item *it, bool t)
    messages.add("You lift the manhole cover.");
    p->moves -= (500 - (p->str_cur * 5));
    type = t_manhole;
-   g->m.add_item(p->posx, p->posy, item::types[itm_manhole_cover], 0);
+   g->m.add_item(p->pos, item::types[itm_manhole_cover], 0);
   } else {
    messages.add("You pry, but cannot lift the manhole cover.");
    p->moves -= 100;
@@ -1088,20 +1083,20 @@ void iuse::crowbar(game *g, player *p, item *it, bool t)
   p->moves -= 500;
   item it_nails(item::types[itm_nail], 0, g->nextinv);
   it_nails.charges = nails;
-  g->m.add_item(p->posx, p->posy, it_nails);
+  g->m.add_item(p->pos, it_nails);
   item board(item::types[itm_2x4], 0, g->nextinv);
   for (int i = 0; i < boards; i++)
-   g->m.add_item(p->posx, p->posy, board);
+   g->m.add_item(p->pos, board);
   type = newter;
  }
 }
 
 void iuse::makemound(game *g, player *p, item *it, bool t)
 {
- if (g->m.has_flag(diggable, p->posx, p->posy)) {
+ if (g->m.has_flag(diggable, p->pos)) {
   messages.add("You churn up the earth here.");
   p->moves = -300;
-  g->m.ter(p->posx, p->posy) = t_dirtmound;
+  g->m.ter(p->pos) = t_dirtmound;
  } else
   messages.add("You can't churn up this ground.");
 }
@@ -1115,7 +1110,7 @@ void iuse::chainsaw_off(game *g, player *p, item *it, bool t)
 {
  p->moves -= 80;
  if (rng(0, 10) - it->damage > 5 && it->charges > 0) {
-  g->sound(p->posx, p->posy, 20,
+  g->sound(p->pos, 20,
            "With a roar, the chainsaw leaps to life!");
   it->make(item::types[itm_chainsaw_on]);
   it->active = true;
@@ -1127,7 +1122,7 @@ void iuse::chainsaw_on(game *g, player *p, item *it, bool t)
 {
  if (t) {	// Effects while simply on
   if (one_in(15))
-   g->sound(p->posx, p->posy, 12, "Your chainsaw rumbles.");
+   g->sound(p->pos, 12, "Your chainsaw rumbles.");
  } else {	// Toggling
   messages.add("Your chainsaw dies.");
   it->make(item::types[itm_chainsaw_off]);
@@ -1144,8 +1139,7 @@ void iuse::jackhammer(game *g, player *p, item *it, bool t)
   messages.add("Invalid direction.");
   return;
  }
- dir.x += p->posx;
- dir.y += p->posy;
+ dir += p->pos;
  if (g->m.is_destructable(dir.x, dir.y)) {
   g->m.destroy(g, dir.x, dir.y, false);
   p->moves -= 500;
@@ -1165,8 +1159,8 @@ void iuse::set_trap(game *g, player *p, item *it, bool t)
   messages.add("Invalid direction.");
   return;
  }
- int posx = dir.x + p->posx;
- int posy = dir.y + p->posy;
+ int posx = dir.x + p->pos.x;
+ int posy = dir.y + p->pos.y;
  if (g->m.move_cost(posx, posy) != 2) {
   messages.add("You can't place a %s there.", it->tname().c_str());
   return;
@@ -1284,9 +1278,9 @@ void iuse::set_trap(game *g, player *p, item *it, bool t)
 void iuse::geiger(game *g, player *p, item *it, bool t)
 {
  if (t) { // Every-turn use when it's on
-  int rads = g->m.radiation(p->posx, p->posy);
+  int rads = g->m.radiation(p->pos.x, p->pos.y);
   if (rads == 0) return;
-  g->sound(p->posx, p->posy, 6, "");
+  g->sound(p->pos, 6, "");
   if (rads > 50) messages.add("The geiger counter buzzes intensely.");
   else if (rads > 35) messages.add("The geiger counter clicks wildly.");
   else if (rads > 25) messages.add("The geiger counter clicks rapidly.");
@@ -1312,7 +1306,8 @@ void iuse::geiger(game *g, player *p, item *it, bool t)
  switch (ch) {
   case 1: messages.add("Your radiation level: %d", p->radiation); break;
   case 2: messages.add("The ground's radiation level: %d",
-                     g->m.radiation(p->posx, p->posy));		break;
+                     g->m.radiation(p->pos.x, p->pos.y));
+	  break;
   case 3:
    messages.add("The geiger counter's scan LED flicks on.");
    it->make(item::types[itm_geiger_on]);
@@ -1335,8 +1330,8 @@ void iuse::can_goo(game *g, player *p, item *it, bool t)
  it->make(item::types[itm_canister_empty]);
  int tries = 0, goox, gooy;
  do {
-  goox = p->posx + rng(-2, 2);
-  gooy = p->posy + rng(-2, 2);
+  goox = p->pos.x + rng(-2, 2);
+  gooy = p->pos.y + rng(-2, 2);
   tries++;
  } while (g->m.move_cost(goox, gooy) == 0 && tries < 10);
  if (tries == 10) return;
@@ -1357,8 +1352,8 @@ void iuse::can_goo(game *g, player *p, item *it, bool t)
  while (!one_in(4) && tries < 10) {
   tries = 0;
   do {
-   goox = p->posx + rng(-2, 2);
-   gooy = p->posy + rng(-2, 2);
+   goox = p->pos.x + rng(-2, 2);
+   gooy = p->pos.y + rng(-2, 2);
    tries++;
   } while (g->m.move_cost(goox, gooy) == 0 &&
            g->m.tr_at(goox, gooy) == tr_null && tries < 10);
@@ -1544,7 +1539,7 @@ void iuse::acidbomb_act(game *g, player *p, item *it, bool t)
 {
  if (!p->has_item(it)) {
   point pos = g->find_item(it);
-  if (pos.x == -999) pos = point(p->posx, p->posy);
+  if (pos.x == -999) pos = p->pos;
   it->charges = 0;
   for (int x = pos.x - 1; x <= pos.x + 1; x++) {
    for (int y = pos.y - 1; y <= pos.y + 1; y++)
@@ -1634,9 +1629,9 @@ void iuse::mininuke_act(game *g, player *p, item *it, bool t)
 
 void iuse::pheromone(game *g, player *p, item *it, bool t)
 {
- point pos(p->posx, p->posy);
+ point pos(p->pos);
 
- bool is_u = !p->is_npc(), can_see = (is_u || g->u_see(p->posx, p->posy));
+ bool is_u = !p->is_npc(), can_see = (is_u || g->u_see(p->pos));
  if (pos.x == -999 || pos.y == -999) return;
 
  if (is_u)
@@ -1670,14 +1665,14 @@ void iuse::pheromone(game *g, player *p, item *it, bool t)
 
 void iuse::portal(game *g, player *p, item *it, bool t)
 {
- g->m.add_trap(p->posx + rng(-2, 2), p->posy + rng(-2, 2), tr_portal);
+ g->m.add_trap(p->pos.x + rng(-2, 2), p->pos.y + rng(-2, 2), tr_portal);
 }
 
 void iuse::manhack(game *g, player *p, item *it, bool t)
 {
  std::vector<point> valid;	// Valid spawn locations
- for (int x = p->posx - 1; x <= p->posx + 1; x++) {
-  for (int y = p->posy - 1; y <= p->posy + 1; y++) {
+ for (int x = p->pos.x - 1; x <= p->pos.x + 1; x++) {
+  for (int y = p->pos.y - 1; y <= p->pos.y + 1; y++) {
    if (g->is_empty(x, y)) valid.push_back(point(x, y));
   }
  }
@@ -1707,8 +1702,7 @@ void iuse::turret(game *g, player *p, item *it, bool t)
   return;
  }
  p->moves -= 100;
- dir.x += p->posx;
- dir.y += p->posy;
+ dir += p->pos;
  if (!g->is_empty(dir.x, dir.y)) {
   messages.add("You cannot place a turret there.");
   return;
@@ -1755,9 +1749,9 @@ void iuse::tazer(game *g, player *p, item *it, bool t)
   it->charges += (dynamic_cast<const it_tool*>(it->type))->charges_per_use;
   return;
  }
- int sx = dir.x + p->posx, sy = dir.y + p->posy;
- monster* const z = g->mon(sx,sy);
- npc* const foe = g->nPC(sx, sy);
+ point target(dir + p->pos);
+ monster* const z = g->mon(target);
+ npc* const foe = g->nPC(target);
  if (!z && !foe) {
   messages.add("Your tazer crackles in the air.");
   return;
@@ -1845,10 +1839,14 @@ void iuse::vortex(game *g, player *p, item *it, bool t)
 {
  std::vector<point> spawn;
  for (int i = -3; i <= 3; i++) {
-  if (g->is_empty(p->posx - 3, p->posy + i)) spawn.push_back( point(p->posx - 3, p->posy + i) );
-  if (g->is_empty(p->posx + 3, p->posy + i)) spawn.push_back( point(p->posx + 3, p->posy + i) );
-  if (g->is_empty(p->posx + i, p->posy - 3)) spawn.push_back( point(p->posx + i, p->posy - 3) );
-  if (g->is_empty(p->posx + i, p->posy + 3)) spawn.push_back( point(p->posx + i, p->posy + 3) );
+  point test(p->pos.x - 3, p->pos.y+i);
+  if (g->is_empty(test.x, test.y)) spawn.push_back(test);
+  test = point(p->pos.x + 3, p->pos.y + i);
+  if (g->is_empty(test.x, test.y)) spawn.push_back(test);
+  test = point(p->pos.x + i, p->pos.y - 3);
+  if (g->is_empty(test.x, test.y)) spawn.push_back(test);
+  test = point(p->pos.x + i, p->pos.y + 3);
+  if (g->is_empty(test.x, test.y)) spawn.push_back(test);
  }
  if (spawn.empty()) {
   if (!p->is_npc()) messages.add("Air swirls around you for a moment.");
@@ -1893,18 +1891,15 @@ void iuse::vacutainer(game *g, player *p, item *it, bool t)	// XXX disabled for 
 
  item blood(item::types[itm_blood], messages.turn);
  bool drew_blood = false;
- for (int i = 0; i < g->m.i_at(p->posx, p->posy).size() && !drew_blood; i++) {
-  item *it = &(g->m.i_at(p->posx, p->posy)[i]);
-  if (it->type->id == itm_corpse &&
-      query_yn("Draw blood from %s?", it->tname().c_str())) {
-   blood.corpse = it->corpse;
+ for(const auto& it : g->m.i_at(p->pos)) {
+  if (it.type->id == itm_corpse && query_yn("Draw blood from %s?", it.tname().c_str())) {
+   blood.corpse = it.corpse;
    drew_blood = true;
+   break;
   }
  }
 
- if (!drew_blood && query_yn("Draw your own blood?"))
-  drew_blood = true;
-
+ if (!drew_blood && query_yn("Draw your own blood?")) drew_blood = true;
  if (!drew_blood) return;
 
  it->put_in(blood);
@@ -1984,22 +1979,17 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
 
   switch (used) {
   case AEA_STORM: {
-   g->sound(p->posx, p->posy, 10, "Ka-BOOM!");
+   g->sound(p->pos, 10, "Ka-BOOM!");
    int num_bolts = rng(2, 4);
    for (int j = 0; j < num_bolts; j++) {
-    int xdir = 0, ydir = 0;
-    while (xdir == 0 && ydir == 0) {
-     xdir = rng(-1, 1);
-     ydir = rng(-1, 1);
-    }
+	point dir(direction_vector(direction(rng(NORTH,NORTHWEST))));
     int dist = rng(4, 12);
-    int boltx = p->posx, bolty = p->posy;
+	point bolt(p->pos);
     for (int n = 0; n < dist; n++) {
-     boltx += xdir;
-     bolty += ydir;
-     g->m.add_field(g, boltx, bolty, fd_electricity, rng(2, 3));
-     if (one_in(4)) xdir = (xdir == 0) ? rng(0, 1) * 2 - 1 : 0;
-     if (one_in(4)) ydir = (ydir == 0) ? rng(0, 1) * 2 - 1 : 0;
+	 bolt += dir;
+     g->m.add_field(g, bolt.x, bolt.y, fd_electricity, rng(2, 3));
+     if (one_in(4)) dir.x = (dir.x == 0) ? rng(0, 1) * 2 - 1 : 0;
+     if (one_in(4)) dir.y = (dir.y == 0) ? rng(0, 1) * 2 - 1 : 0;
     }
    }
   } break;
@@ -2033,8 +2023,8 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
 
   case AEA_BLOOD: {
    bool blood = false;
-   for (int x = p->posx - 4; x <= p->posx + 4; x++) {
-    for (int y = p->posy - 4; y <= p->posy + 4; y++) {
+   for (int x = p->pos.x - 4; x <= p->pos.x + 4; x++) {
+    for (int y = p->pos.y - 4; y <= p->pos.y + 4; y++) {
      if (!one_in(4) && g->m.add_field(g, x, y, fd_blood, 3) &&
          (blood || g->u_see(x, y)))
       blood = true;
@@ -2045,7 +2035,7 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
 
   case AEA_FATIGUE: {
    messages.add("The fabric of space seems to decay.");
-   int x = rng(p->posx - 3, p->posx + 3), y = rng(p->posy - 3, p->posy + 3);
+   int x = rng(p->pos.x - 3, p->pos.x + 3), y = rng(p->pos.y - 3, p->pos.y + 3);
    auto& fd = g->m.field_at(x, y);
    if (fd.type == fd_fatigue) { 
 	   if (fd.density < 3) fd.density++;
@@ -2068,9 +2058,9 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
   } break;
 
   case AEA_PULSE:
-   g->sound(p->posx, p->posy, 30, "The earth shakes!");
-   for (int x = p->posx - 2; x <= p->posx + 2; x++) {
-    for (int y = p->posy - 2; y <= p->posy + 2; y++) {
+   g->sound(p->pos, 30, "The earth shakes!");
+   for (int x = p->pos.x - 2; x <= p->pos.x + 2; x++) {
+    for (int y = p->pos.y - 2; y <= p->pos.y + 2; y++) {
      g->m.bash(x, y, 40);
      g->m.bash(x, y, 40);  // Multibash effect, so that doors &c will fall
      g->m.bash(x, y, 40);
@@ -2086,15 +2076,15 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
    break;
 
   case AEA_CONFUSED:
-   for (int x = p->posx - 8; x <= p->posx + 8; x++) {
-    for (int y = p->posy - 8; y <= p->posy + 8; y++) {
+   for (int x = p->pos.x - 8; x <= p->pos.x + 8; x++) {
+    for (int y = p->pos.y - 8; y <= p->pos.y + 8; y++) {
 	 if (monster* const m_at = g->mon(x,y)) m_at->add_effect(ME_STUNNED, rng(5, 15));
     }
    }
 
   case AEA_ENTRANCE:
-   for (int x = p->posx - 8; x <= p->posx + 8; x++) {
-    for (int y = p->posy - 8; y <= p->posy + 8; y++) {
+   for (int x = p->pos.x - 8; x <= p->pos.x + 8; x++) {
+    for (int y = p->pos.y - 8; y <= p->pos.y + 8; y++) {
 	 if (monster* const m_at = g->mon(x,y)) {
 	   if (0 == m_at->friendly && rng(0, 600) > m_at->hp) m_at->make_friendly();
 	 }
@@ -2107,8 +2097,8 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
    mon_id bug = mon_null;
    int num = 0;
    std::vector<point> empty;
-   for (int x = p->posx - 1; x <= p->posx + 1; x++) {
-    for (int y = p->posy - 1; y <= p->posy + 1; y++) {
+   for (int x = p->pos.x - 1; x <= p->pos.x + 1; x++) {
+    for (int y = p->pos.y - 1; y <= p->pos.y + 1; y++) {
      if (g->is_empty(x, y))
       empty.push_back( point(x, y) );
     }
@@ -2150,7 +2140,7 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
    break;
 
   case AEA_GROWTH: {
-   monster tmptriffid(mtype::types[0], p->posx, p->posy);
+   monster tmptriffid(mtype::types[0], p->pos.x, p->pos.y);
    mattack::growplants(g, &tmptriffid);
   } break;
 
@@ -2161,8 +2151,8 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
 
   case AEA_RADIATION:
    messages.add("Horrible gasses are emitted!");
-   for (int x = p->posx - 1; x <= p->posx + 1; x++) {
-    for (int y = p->posy - 1; y <= p->posy + 1; y++)
+   for (int x = p->pos.x - 1; x <= p->pos.x + 1; x++) {
+    for (int y = p->pos.y - 1; y <= p->pos.y + 1; y++)
      g->m.add_field(g, x, y, fd_nuke_gas, rng(2, 3));
    }
    break;
@@ -2183,8 +2173,8 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
 
   case AEA_FIRESTORM:
    messages.add("Fire rains down around you!");
-   for (int x = p->posx - 3; x <= p->posx + 3; x++) {
-    for (int y = p->posy - 3; y <= p->posy + 3; y++) {
+   for (int x = p->pos.x - 3; x <= p->pos.x + 3; x++) {
+    for (int y = p->pos.y - 3; y <= p->pos.y + 3; y++) {
      if (!one_in(3)) {
       if (g->m.add_field(g, x, y, fd_fire, 1 + rng(0, 1) * rng(0, 1)))
        g->m.field_at(x, y).age = 30;
@@ -2205,12 +2195,12 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
 
   case AEA_NOISE:
    messages.add("Your %s emits a deafening boom!", it->tname().c_str());
-   g->sound(p->posx, p->posy, 100, "");
+   g->sound(p->pos, 100, "");
    break;
 
   case AEA_SCREAM:
    messages.add("Your %s screams disturbingly.", it->tname().c_str());
-   g->sound(p->posx, p->posy, 40, "");
+   g->sound(p->pos, 40, "");
    p->add_morale(MORALE_SCREAM, -10);
    break;
 
@@ -2221,7 +2211,7 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
 
   case AEA_FLASH:
    messages.add("The %s flashes brightly!", it->tname().c_str());
-   g->flashbang(p->posx, p->posy);
+   g->flashbang(p->pos);
    break;
 
   case AEA_VOMIT:
@@ -2237,14 +2227,14 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
     int tries = 0, monx, mony;
     do {
      if (one_in(2)) {
-      monx = rng(p->posx - 5, p->posx + 5);
-      mony = (one_in(2) ? p->posy - 5 : p->posy + 5);
+      monx = rng(p->pos.x - 5, p->pos.x + 5);
+      mony = (one_in(2) ? p->pos.y - 5 : p->pos.y + 5);
      } else {
-      monx = (one_in(2) ? p->posx - 5 : p->posx + 5);
-      mony = rng(p->posy - 5, p->posy + 5);
+      monx = (one_in(2) ? p->pos.x - 5 : p->pos.x + 5);
+      mony = rng(p->pos.y - 5, p->pos.y + 5);
      }
     } while (tries < 5 && !g->is_empty(monx, mony) &&
-             !g->m.sees(monx, mony, p->posx, p->posy, 10));
+             !g->m.sees(monx, mony, p->pos.x, p->pos.y, 10));
     if (tries < 5) {
      num_spawned++;
      spawned.sp_timeout = rng(8, 20);

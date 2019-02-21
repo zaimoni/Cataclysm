@@ -48,7 +48,7 @@ void mdeath::boomer(game *g, monster *z)
    }
   }
  }
- if (rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) == 1)
+ if (rl_dist(z->pos, g->u.pos) == 1)
   g->u.infect(DI_BOOMERED, bp_eyes, 2, 24, g);
 }
 
@@ -122,7 +122,7 @@ void mdeath::fungus(game *g, monster *z)
     if (m_at) {	// Spores hit a monster
      if (g->u_see(dest)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
      if (!m_at->make_fungus(g)) g->kill_mon(*m_at, (z->friendly != 0));
-    } else if (g->u.posx == dest.x && g->u.posy == dest.y)	// \todo infect npcs
+    } else if (g->u.pos == dest)	// \todo infect npcs
      g->u.infect(DI_SPORES, bp_mouth, 4, 30, g);
     else {
      spore.spawn(dest);
@@ -151,8 +151,7 @@ void mdeath::worm(game *g, monster *z)
  for (int i = -1; i <= 1; i++) {
   for (int j = -1; j <= 1; j++) {
    point worm(z->pos.x + i, z->pos.y + j);
-   if (g->m.has_flag(diggable, worm) && !g->mon(worm) &&
-       !(g->u.posx == worm.x && g->u.posy == worm.y)) {
+   if (g->m.has_flag(diggable, worm) && !g->mon(worm) && g->u.pos != worm) {
     wormspots.push_back(worm);
    }
   }
@@ -174,7 +173,7 @@ void mdeath::disappear(game *g, monster *z)
 void mdeath::guilt(game *g, monster *z)
 {
  if (g->u.has_trait(PF_HEARTLESS)) return;	// We don't give a shit!
- if (rl_dist(z->pos.x, z->pos.y, g->u.posx, g->u.posy) > 1) return;	// Too far away, we can deal with it
+ if (rl_dist(z->pos, g->u.pos) > 1) return;	// Too far away, we can deal with it
  if (z->hp >= 0) return;	// It probably didn't die from damage
  messages.add("You feel terrible for killing %s!", z->name().c_str());
  g->u.add_morale(MORALE_KILLED_MONSTER, -50, -250);
@@ -197,10 +196,8 @@ void mdeath::blobsplit(game *g, monster *z)
  for (int i = -1; i <= 1; i++) {
   for (int j = -1; j <= 1; j++) {
    point test(z->pos.x + i, z->pos.y + j);
-   if (g->m.move_cost(test) > 0 &&
-       !g->mon(test) &&
-       (g->u.posx != test.x || g->u.posy != test.y))
-    valid.push_back(point(z->pos.x+i, z->pos.y+j));
+   if (g->m.move_cost(test) > 0 && !g->mon(test) && g->u.pos != test)
+    valid.push_back(test);
   }
  }
  

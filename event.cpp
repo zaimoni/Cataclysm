@@ -10,9 +10,7 @@ void event::actualize(game *g) const
 
   case EVENT_HELP: {
    npc tmp;
-   int num = 1;
-   if (faction_id >= 0)
-    num = rng(1, 6);
+   int num = (faction_id >= 0) ? rng(1, 6) : 1;
    for (int i = 0; i < num; i++) {
     if (faction_id != -1) {
      faction* fac = g->faction_by_id(faction_id);
@@ -23,8 +21,8 @@ void event::actualize(game *g) const
     } else
      tmp.randomize(g);
     tmp.attitude = NPCATT_DEFEND;
-    tmp.posx = g->u.posx - SEEX * 2 + rng(-5, 5);
-    tmp.posy = g->u.posy - SEEY * 2 + rng(-5, 5);
+    tmp.pos.x = g->u.pos.x - SEEX * 2 + rng(-5, 5);
+    tmp.pos.y = g->u.pos.y - SEEY * 2 + rng(-5, 5);
     g->active_npc.push_back(tmp);
    }
   } break;
@@ -52,7 +50,7 @@ void event::actualize(game *g) const
      mony = rng(0, SEEY * MAPSIZE);
      tries++;
     } while (tries < 10 && !g->is_empty(monx, mony) &&
-             rl_dist(g->u.posx, g->u.posx, monx, mony) <= 2);
+             rl_dist(g->u.pos, monx, mony) <= 2);
     if (tries < 10) {
      wyrm.spawn(monx, mony);
      g->z.push_back(wyrm);
@@ -159,12 +157,12 @@ void event::actualize(game *g) const
    }
    if (!flooded) return; // We finished flooding the entire chamber!
 // Check if we should print a message
-   if (copy.ter(g->u.posx, g->u.posy) != g->m.ter(g->u.posx, g->u.posy)) {
-    if (copy.ter(g->u.posx, g->u.posy) == t_water_sh)
+   if (copy.ter(g->u.pos) != g->m.ter(g->u.pos)) {
+    if (copy.ter(g->u.pos) == t_water_sh)
      messages.add("Water quickly floods up to your knees.");
     else { // Must be deep water!
      messages.add("Water fills nearly to the ceiling!");
-     g->plswim(g->u.posx, g->u.posy);
+     g->plswim(g->u.pos.x, g->u.pos.y);
     }
    }
 // copy is filled with correct tiles; now copy them back to g->m
@@ -186,11 +184,11 @@ void event::actualize(game *g) const
    monster spawned(mtype::types[montype]);
    int tries = 0, x, y;
    do {
-    x = rng(g->u.posx - 5, g->u.posx + 5);
-    y = rng(g->u.posy - 5, g->u.posy + 5);
+    x = rng(g->u.pos.x - 5, g->u.pos.x + 5);
+    y = rng(g->u.pos.y - 5, g->u.pos.y + 5);
     tries++;
    } while (tries < 20 && !g->is_empty(x, y) &&
-            rl_dist(x, y, g->u.posx, g->u.posy) <= 2);
+            rl_dist(x, y, g->u.pos) <= 2);
    if (tries < 20) {
     spawned.spawn(x, y);
     g->z.push_back(spawned);

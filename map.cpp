@@ -545,8 +545,8 @@ void map::board_vehicle(game *g, int x, int y, player *p)
   return;
  }
  veh->parts[seat_part].passenger = 1;
- p->posx = x;
- p->posy = y;
+ p->pos.x = x;
+ p->pos.y = y;
  p->in_vehicle = true;
  if (p == &g->u &&
      (x < SEEX * int(my_MAPSIZE / 2) || y < SEEY * int(my_MAPSIZE / 2) ||
@@ -656,7 +656,7 @@ bool map::displace_vehicle (game *g, int &x, int &y, int dx, int dy, bool test=f
   if (!psg) {
    const point origin(veh->global() + veh->parts[p].precalc_d[0]);
    debugmsg ("empty passenger part %d pcoord=%d,%d u=%d,%d?", p, 
-             origin.x, origin.y, g->u.posx, g->u.posy);
+             origin.x, origin.y, g->u.pos.x, g->u.pos.y);
    continue;
   }
   int trec = rec - psgs[i]->sklevel[sk_driving];
@@ -666,12 +666,12 @@ bool map::displace_vehicle (game *g, int &x, int &y, int dx, int dy, bool test=f
   // displace passenger taking in account vehicle movement (dx, dy)
   // and turning: precalc_dx/dy [0] contains previous frame direction,
   // and precalc_dx/dy[1] should contain next direction
-  psg->posx += dx + veh->parts[p].precalc_d[1].x - veh->parts[p].precalc_d[0].x;
-  psg->posy += dy + veh->parts[p].precalc_d[1].y - veh->parts[p].precalc_d[0].y;
+  psg->pos.x += dx + veh->parts[p].precalc_d[1].x - veh->parts[p].precalc_d[0].x;
+  psg->pos.y += dy + veh->parts[p].precalc_d[1].y - veh->parts[p].precalc_d[0].y;
   if (psg == &g->u) { // if passemger is you, we need to update the map
    need_update = true;
-   upd_x = psg->posx;
-   upd_y = psg->posy;
+   upd_x = psg->pos.x;
+   upd_y = psg->pos.y;
   }
  }
  for (auto& part : veh->parts) part.precalc_d[0] = part.precalc_d[1];
@@ -1512,7 +1512,7 @@ void map::shoot(game *g, int x, int y, int &dam, bool hit_items, unsigned flags)
  if (dam < 0) return;
 
  if (has_flag(alarmed, x, y) && !g->event_queued(EVENT_WANTED)) {
-  g->sound(g->u.posx, g->u.posy, 30, "An alarm sounds!");
+  g->sound(g->u.pos, 30, "An alarm sounds!");
   g->add_event(EVENT_WANTED, int(messages.turn) + 300, 0, g->lev.x, g->lev.y);
  }
 
@@ -1699,7 +1699,7 @@ bool map::hit_with_acid(game *g, int x, int y)
 
   case t_wax:
    t = t_floor_wax;
-   break;
+   return true;
 
   case t_toilet:
   case t_gas_pump:
@@ -2104,7 +2104,7 @@ bool map::add_field(game *g, int x, int y, field_id t, unsigned char density)
  y %= SEEY;
  if (grid[nonant]->fld[x][y].type == fd_null) grid[nonant]->field_count++;
  grid[nonant]->fld[x][y] = field(t, density);
- if (g != NULL && x == g->u.posx && y == g->u.posy && grid[nonant]->fld[x][y].is_dangerous()) {
+ if (g != NULL && x == g->u.pos.x && y == g->u.pos.y && grid[nonant]->fld[x][y].is_dangerous()) {
   g->cancel_activity_query("You're in a %s!", fieldlist[t].name[density - 1].c_str());
  }
  return true;
@@ -2162,17 +2162,17 @@ void map::draw(game *g, WINDOW* w, point center)
  int light = g->u.sight_range(g->light_level());
  for  (int realx = center.x - SEEX; realx <= center.x + SEEX; realx++) {
   for (int realy = center.y - SEEY; realy <= center.y + SEEY; realy++) {
-   const int dist = rl_dist(g->u.posx, g->u.posy, realx, realy);
+   const int dist = rl_dist(g->u.pos, realx, realy);
    if (dist > light) {
     mvwputch(w, realy+SEEY - center.y, realx+SEEX - center.x, (g->u.has_disease(DI_BOOMERED) ? c_magenta : c_dkgray),'#');
    } else if (dist <= g->u.clairvoyance() ||
-              sees(g->u.posx, g->u.posy, realx, realy, light))
+              sees(g->u.pos, realx, realy, light))
     drawsq(w, g->u, realx, realy, false, true, center.x, center.y);
    else
     mvwputch(w, realy+SEEY - center.y, realx+SEEX - center.x, c_black,'#');
   }
  }
- int atx = SEEX + g->u.posx - center.x, aty = SEEY + g->u.posy - center.y;
+ int atx = SEEX + g->u.pos.x - center.x, aty = SEEY + g->u.pos.y - center.y;
  if (atx >= 0 && atx < SEEX * 2 + 1 && aty >= 0 && aty < SEEY * 2 + 1)
   mvwputch(w, aty, atx, g->u.color(), '@');
 }
@@ -2181,8 +2181,8 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
                  bool show_items, int cx, int cy)
 {
  if (!INBOUNDS(x, y)) return;	// Out of bounds
- if (cx == -1) cx = u.posx;
- if (cy == -1) cy = u.posy;
+ if (cx == -1) cx = u.pos.x;
+ if (cy == -1) cy = u.pos.y;
  const int k = x + SEEX - cx;
  const int j = y + SEEY - cy;
  nc_color tercol;
@@ -2584,10 +2584,7 @@ void map::shift(game *g, int wx, int wy, const point delta)
  }
 
 // if player is driving vehicle, (s)he must be shifted with vehicle too
- if (g->u.in_vehicle) {
-  g->u.posx -= delta.x * SEEX;
-  g->u.posy -= delta.y * SEEY;
- }
+ if (g->u.in_vehicle) g->u.pos -= SEE*delta;
 
 // Shift the map sx submaps to the right and sy submaps down.
 // sx and sy should never be bigger than +/-1.

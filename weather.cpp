@@ -51,13 +51,13 @@ const weather_datum weather_datum::data[NUM_WEATHER_TYPES] = {
 &weather_effect::snowstorm }
 };
 
-#define PLAYER_OUTSIDE (g->m.is_outside(g->u.posx, g->u.posy) && g->lev.z >= 0)
+#define PLAYER_OUTSIDE (g->m.is_outside(g->u.pos.x, g->u.pos.y) && g->lev.z >= 0)
 #define THUNDER_CHANCE 50
 #define LIGHTNING_CHANCE 600
 
 void weather_effect::glare(game *g)
 {
- if (g->is_in_sunlight(g->u.posx, g->u.posy))
+ if (g->is_in_sunlight(g->u.pos.x, g->u.pos.y))
   g->u.infect(DI_GLARE, bp_eyes, 1, 2, g);
 }
 
@@ -66,8 +66,8 @@ void weather_effect::wet(game *g)
  if (!g->u.is_wearing(itm_coat_rain) && !g->u.has_trait(PF_FEATHERS) && PLAYER_OUTSIDE && one_in(2))
   g->u.add_morale(MORALE_WET, -1, -30);
 // Put out fires and reduce scent
- for (int x = g->u.posx - SEEX * 2; x <= g->u.posx + SEEX * 2; x++) {
-  for (int y = g->u.posy - SEEY * 2; y <= g->u.posy + SEEY * 2; y++) {
+ for (int x = g->u.pos.x - SEEX * 2; x <= g->u.pos.x + SEEX * 2; x++) {
+  for (int y = g->u.pos.y - SEEY * 2; y <= g->u.pos.y + SEEY * 2; y++) {
    if (g->m.is_outside(x, y)) {
 	auto& fd = g->m.field_at(x, y);
     if (fd.type == fd_fire) fd.age += 15;
@@ -83,8 +83,8 @@ void weather_effect::very_wet(game *g)
  if (!g->u.is_wearing(itm_coat_rain) && !g->u.has_trait(PF_FEATHERS) && PLAYER_OUTSIDE)
   g->u.add_morale(MORALE_WET, -1, -60);
 // Put out fires and reduce scent
- for (int x = g->u.posx - SEEX * 2; x <= g->u.posx + SEEX * 2; x++) {
-  for (int y = g->u.posy - SEEY * 2; y <= g->u.posy + SEEY * 2; y++) {
+ for (int x = g->u.pos.x - SEEX * 2; x <= g->u.pos.x + SEEX * 2; x++) {
+  for (int y = g->u.pos.y - SEEY * 2; y <= g->u.pos.y + SEEY * 2; y++) {
    if (g->m.is_outside(x, y)) {
     auto& fd = g->m.field_at(x, y);
     if (fd.type == fd_fire) fd.age += 45;
@@ -111,8 +111,8 @@ void weather_effect::lightning(game *g)
  thunder(g);
  if (one_in(LIGHTNING_CHANCE)) {
   std::vector<point> strike;
-  for (int x = g->u.posx - SEEX * 2; x <= g->u.posx + SEEX * 2; x++) {
-   for (int y = g->u.posy - SEEY * 2; y <= g->u.posy + SEEY * 2; y++) {
+  for (int x = g->u.pos.x - SEEX * 2; x <= g->u.pos.x + SEEX * 2; x++) {
+   for (int y = g->u.pos.y - SEEY * 2; y <= g->u.pos.y + SEEY * 2; y++) {
     if (g->m.move_cost(x, y) == 0 && g->m.is_outside(x, y))
      strike.push_back(point(x, y));
    }
@@ -155,8 +155,8 @@ void weather_effect::acid(game *g)
   }
  }
  if (g->lev.z >= 0) {
-  for (int x = g->u.posx - SEEX * 2; x <= g->u.posx + SEEX * 2; x++) {
-   for (int y = g->u.posy - SEEY * 2; y <= g->u.posy + SEEY * 2; y++) {
+  for (int x = g->u.pos.x - SEEX * 2; x <= g->u.pos.x + SEEX * 2; x++) {
+   for (int y = g->u.pos.y - SEEY * 2; y <= g->u.pos.y + SEEY * 2; y++) {
     if (!g->m.has_flag(diggable, x, y) && !g->m.has_flag(noitem, x, y) &&
         g->m.move_cost(x, y) > 0 && g->m.is_outside(x, y) && one_in(400))
      g->m.add_field(g, x, y, fd_acid, 1);

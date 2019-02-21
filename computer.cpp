@@ -273,7 +273,7 @@ void computer::activate_function(game *g, computer_action action)
    break;
 
   case COMPACT_RELEASE:
-   g->sound(g->u.posx, g->u.posy, 40, "An alarm sounds!");
+   g->sound(g->u.pos.x, g->u.pos.y, 40, "An alarm sounds!");
    g->m.translate<t_reinforced_glass_h, t_floor>();
    g->m.translate<t_reinforced_glass_v, t_floor>();
    print_line("Containment shields opened.");
@@ -321,14 +321,14 @@ void computer::activate_function(game *g, computer_action action)
    if (!query_bool("WARNING: Resonance cascade carries severe risk!  Continue?"))
     return;
    std::vector<point> cascade_points;
-   for (int i = g->u.posx - 10; i <= g->u.posx + 10; i++) {
-    for (int j = g->u.posy - 10; j <= g->u.posy + 10; j++) {
+   for (int i = g->u.pos.x - 10; i <= g->u.pos.x + 10; i++) {
+    for (int j = g->u.pos.y - 10; j <= g->u.pos.y + 10; j++) {
      if (g->m.ter(i, j) == t_radio_tower)
       cascade_points.push_back(point(i, j));
     }
    }
    if (cascade_points.size() == 0)
-    g->resonance_cascade(g->u.posx, g->u.posy);
+    g->resonance_cascade(g->u.pos.x, g->u.pos.y);
    else {
     point p = cascade_points[rng(0, cascade_points.size() - 1)];
     g->resonance_cascade(p.x, p.y);
@@ -424,7 +424,7 @@ void computer::activate_function(game *g, computer_action action)
    }
 // Figure out where the glass wall is...
    int wall_spot = 0;
-   for (int i = g->u.posx; i < g->u.posx + SEEX * 2 && wall_spot == 0; i++) {
+   for (int i = g->u.pos.x; i < g->u.pos.x + SEEX * 2 && wall_spot == 0; i++) {
     if (g->m.ter(i, 10) == t_wall_glass_v) wall_spot = i;
    }
 // ...and put radioactive to the right of it
@@ -587,8 +587,8 @@ INITIATING STANDARD TREMOR TEST...");
    break;
 
   case COMPACT_BLOOD_ANAL:
-   for (int x = g->u.posx - 2; x <= g->u.posx + 2; x++) {
-    for (int y = g->u.posy - 2; y <= g->u.posy + 2; y++) {
+   for (int x = g->u.pos.x - 2; x <= g->u.pos.x + 2; x++) {
+    for (int y = g->u.pos.y - 2; y <= g->u.pos.y + 2; y++) {
      if (g->m.ter(x, y) == t_centrifuge) {
 	  auto& inv = g->m.i_at(x, y);
 	  if (blood_analysis_precondition(inv))  { // Success!
@@ -645,7 +645,7 @@ void computer::activate_failure(game *g, computer_failure fail)
    break;
 
   case COMPFAIL_ALARM:
-   g->sound(g->u.posx, g->u.posy, 60, "An alarm sounds!");
+   g->sound(g->u.pos, 60, "An alarm sounds!");
    if (g->lev.z > 0 && !g->event_queued(EVENT_WANTED))
     g->add_event(EVENT_WANTED, int(messages.turn) + 300, 0, g->lev.x, g->lev.y);
    break;
@@ -655,8 +655,8 @@ void computer::activate_failure(game *g, computer_failure fail)
    for (int i = 0; i < num_robots; i++) {
     int mx, my, tries = 0;
     do {
-     mx = rng(g->u.posx - 3, g->u.posx + 3);
-     my = rng(g->u.posy - 3, g->u.posy + 3);
+     mx = rng(g->u.pos.x - 3, g->u.pos.x + 3);
+     my = rng(g->u.pos.y - 3, g->u.pos.y + 3);
      tries++;
     } while (!g->is_empty(mx, my) && tries < 10);
     if (tries != 10) {
@@ -671,8 +671,8 @@ void computer::activate_failure(game *g, computer_failure fail)
    for (int i = 0; i < num_robots; i++) {
     int mx, my, tries = 0;
     do {
-     mx = rng(g->u.posx - 3, g->u.posx + 3);
-     my = rng(g->u.posy - 3, g->u.posy + 3);
+     mx = rng(g->u.pos.x - 3, g->u.pos.x + 3);
+     my = rng(g->u.pos.y - 3, g->u.pos.y + 3);
      tries++;
     } while (!g->is_empty(mx, my) && tries < 10);
     if (tries != 10) {
@@ -733,8 +733,8 @@ void computer::activate_failure(game *g, computer_failure fail)
 
   case COMPFAIL_DESTROY_BLOOD:
    print_error("ERROR: Disruptive Spin");
-   for (int x = g->u.posx - 2; x <= g->u.posx + 2; x++) {
-    for (int y = g->u.posy - 2; y <= g->u.posy + 2; y++) {
+   for (int x = g->u.pos.x - 2; x <= g->u.pos.x + 2; x++) {
+    for (int y = g->u.pos.y - 2; y <= g->u.pos.y + 2; y++) {
      if (g->m.ter(x, y) == t_centrifuge) {
 	  auto& inv = g->m.i_at(x, y);
 	  if (blood_analysis_precondition(inv)) {

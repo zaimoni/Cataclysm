@@ -63,9 +63,9 @@ void player::activate_bionic(int b, game *g)
   break;
 
  case bio_resonator:
-  g->sound(posx, posy, 30, "VRRRRMP!");
-  for (int i = posx - 1; i <= posx + 1; i++) {
-   for (int j = posy - 1; j <= posy + 1; j++) {
+  g->sound(pos, 30, "VRRRRMP!");
+  for (int i = pos.x - 1; i <= pos.x + 1; i++) {
+   for (int j = pos.y - 1; j <= pos.y + 1; j++) {
     g->m.bash(i, j, 40);
     g->m.bash(i, j, 40);	// Multibash effect, so that doors &c will fall
     g->m.bash(i, j, 40);
@@ -189,8 +189,7 @@ void player::activate_bionic(int b, game *g)
    power_level += bionics[bio_lighter].power_cost;
    return;
   }
-  dir.x += posx;
-  dir.y += posy;
+  dir += pos;
   if (!g->m.add_field(g, dir.x, dir.y, fd_fire, 1))	// Unsuccessful.
    messages.add("You can't light a fire there.");
   }
@@ -202,7 +201,7 @@ void player::activate_bionic(int b, game *g)
    weapon = item::null;
   } else if (weapon.type->id != 0) {
    messages.add("Your claws extend, forcing you to drop your %s.", weapon.tname().c_str());
-   g->m.add_item(posx, posy, weapon);
+   g->m.add_item(pos, weapon);
    weapon = item(item::types[itm_bio_claws], 0);
    weapon.invlet = '#';
   } else {
@@ -242,8 +241,7 @@ void player::activate_bionic(int b, game *g)
    power_level += bionics[bio_emp].power_cost;
    return;
   }
-  dir.x += posx;
-  dir.y += posy;
+  dir += pos;
   g->emp_blast(dir.x, dir.y);
   }
   break;
@@ -255,8 +253,8 @@ void player::activate_bionic(int b, game *g)
  case bio_water_extractor:
   {
   bool have_extracted = false;
-  for (int i = 0; i < g->m.i_at(posx, posy).size(); i++) {
-   item tmp = g->m.i_at(posx, posy)[i];
+  for (int i = 0; i < g->m.i_at(pos).size(); i++) {
+   item tmp = g->m.i_at(pos)[i];
    if (tmp.type->id == itm_corpse && query_yn("Extract water from the %s", tmp.tname().c_str())) {
 	have_extracted = true;
     t = g->inv("Choose a container:");
@@ -285,11 +283,11 @@ void player::activate_bionic(int b, game *g)
   break;
 
  case bio_magnet:
-  for (int i = posx - 10; i <= posx + 10; i++) {
-   for (int j = posy - 10; j <= posy + 10; j++) {
+  for (int i = pos.x - 10; i <= pos.x + 10; i++) {
+   for (int j = pos.y - 10; j <= pos.y + 10; j++) {
 	auto& stack = g->m.i_at(i, j);
 	if (stack.empty()) continue;
-	traj = line_to(i, j, posx, posy, (g->m.sees(i, j, posx, posy, -1, t) ? t : 0));
+	traj = line_to(i, j, pos, (g->m.sees(i, j, pos, -1, t) ? t : 0));
     traj.insert(traj.begin(), point(i, j));
     for (int k = 0; k < stack.size(); k++) {
      if (stack[k].made_of(IRON) || stack[k].made_of(STEEL)){
@@ -310,7 +308,7 @@ void player::activate_bionic(int b, game *g)
         }
        }
       }
-      if (l == traj.size()) g->m.add_item(posx, posy, tmp_item);
+      if (l == traj.size()) g->m.add_item(pos, tmp_item);
      }
     }
    }
@@ -327,8 +325,7 @@ void player::activate_bionic(int b, game *g)
    power_level += bionics[bio_lockpick].power_cost;
    return;
   }
-  dir.x += posx;
-  dir.y += posy;
+  dir += pos;
   if (g->m.rewrite_test<t_door_locked, t_door_c>(dir)) {
    moves -= 40;
    messages.add("You unlock the door.");

@@ -99,12 +99,12 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, b
   return;
  }
 
- int x = p.posx, y = p.posy;
+ int x = p.pos.x, y = p.pos.y;
  const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
  if (p.has_trait(PF_TRIGGERHAPPY) && one_in(30)) burst = true;
  if (burst && p.weapon.burst_size() < 2) burst = false; // Can't burst fire a semi-auto
 
- bool u_see_shooter = u_see(p.posx, p.posy);
+ bool u_see_shooter = u_see(p.pos);
 // Use different amounts of time depending on the type of gun and our skill
  p.moves -= time_to_fire(p, firing);
 // Decide how many shots to fire
@@ -153,7 +153,7 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, b
     int target_picked = rng(0, new_targets.size() - 1);
     tarx = new_targets[target_picked].x;
     tary = new_targets[target_picked].y;
-	trajectory = line_to(p.posx, p.posy, tarx, tary, (m.sees(p.posx, p.posy, tarx, tary, 0, tart) ? tart : 0));
+	trajectory = line_to(p.pos, tarx, tary, (m.sees(p.pos, tarx, tary, 0, tart) ? tart : 0));
    } else if ((!p.has_trait(PF_TRIGGERHAPPY) || one_in(3)) &&
               (p.sklevel[sk_gun] >= 7 || one_in(7 - p.sklevel[sk_gun])))
     return; // No targets, so return
@@ -188,7 +188,7 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, b
    const int delta = int(sqrt(double(missed_by)));
    tarx += rng(-delta, delta);
    tary += rng(-delta, delta);
-   trajectory = line_to(p.posx, p.posy, tarx, tary, (m.sees(p.posx, p.posy, x, y, -1, tart) ? tart : 0));
+   trajectory = line_to(p.pos, tarx, tary, (m.sees(p.pos, x, y, -1, tart) ? tart : 0));
    missed = true;
    if (!burst) {
     if (&p == &u) messages.add("You miss!");
@@ -211,8 +211,8 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, b
 // relative to YOUR position, which may not be the gunman's position.
    if (u_see(trajectory[i])) {
     char bullet = (flags & mfb(IF_AMMO_FLAME)) ? '#' : '*';
-    mvwputch(w_terrain, trajectory[i].y + SEEY - u.posy,
-                        trajectory[i].x + SEEX - u.posx, c_red, bullet);
+    mvwputch(w_terrain, trajectory[i].y + SEEY - u.pos.y,
+                        trajectory[i].x + SEEX - u.pos.x, c_red, bullet);
     wrefresh(w_terrain);
     if (&p == &u) nanosleep(&ts, NULL);
    }
@@ -231,10 +231,10 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, b
 // If there's a monster in the path of our bullet, and either our aim was true,
 //  OR it's not the monster we were aiming at and we were lucky enough to hit it
    monster* const m_at = mon(trajectory[i]);
-   player* const h = (u.posx == tx && u.posy == ty) ? &u : nPC(tx, ty);	// XXX would prefer not to pay CPU here when monster case processes
+   player* const h = (u.pos == trajectory[i]) ? &u : nPC(tx, ty);	// XXX would prefer not to pay CPU here when monster case processes
 // If we shot us a monster...
    if (m_at && (!m_at->has_flag(MF_DIGS) ||
-       rl_dist(p.posx, p.posy, m_at->pos.x, m_at->pos.y) <= 1) &&
+       rl_dist(p.pos, m_at->pos) <= 1) &&
        ((!missed && i == trajectory.size() - 1) ||
         one_in((5 - int(m_at->type->size))))) {
 
@@ -246,7 +246,7 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, b
     if (m_at->speed > 80) goodhit *= double( double(m_at->speed) / 80.);
     
     std::vector<point> blood_traj = trajectory;
-    blood_traj.insert(blood_traj.begin(), point(p.posx, p.posy));
+    blood_traj.insert(blood_traj.begin(), p.pos);
     splatter(this, blood_traj, dam, m_at);
     shoot_monster(this, p, *m_at, dam, goodhit);
 
@@ -256,7 +256,7 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, b
      goodhit = double(rand() / (RAND_MAX + 1.0)) / 2;
 
     std::vector<point> blood_traj = trajectory;
-    blood_traj.insert(blood_traj.begin(), point(p.posx, p.posy));
+    blood_traj.insert(blood_traj.begin(), p.pos);
     splatter(this, blood_traj, dam);
     shoot_player(this, p, h, dam, goodhit);
 
@@ -282,7 +282,7 @@ void game::throw_item(player &p, int tarx, int tary, item &thrown,
                       std::vector<point> &trajectory)
 {
  int deviation = 0;
- int trange = 1.5 * rl_dist(p.posx, p.posy, tarx, tary);
+ int trange = 1.5 * rl_dist(p.pos, tarx, tary);
 
 // Throwing attempts below "Basic Competency" level are extra-bad
  if (p.sklevel[sk_throw] < 3)
@@ -319,7 +319,7 @@ void game::throw_item(player &p, int tarx, int tary, item &thrown,
   const int delta = int(sqrt(double(missed_by)));
   tarx += rng(-delta, delta);
   tary += rng(-delta, delta);
-  trajectory = line_to(p.posx, p.posy, tarx, tary, (m.sees(p.posx, p.posy, tarx, tary, -1, tart) ? tart : 0));
+  trajectory = line_to(p.pos, tarx, tary, (m.sees(p.pos, tarx, tary, -1, tart) ? tart : 0));
   missed = true;
   if (!p.is_npc()) messages.add("You miss!");
  } else if (missed_by >= .6) {
@@ -394,8 +394,8 @@ void game::throw_item(player &p, int tarx, int tary, item &thrown,
     tx = trajectory[i - 1].x;
     ty = trajectory[i - 1].y;
    } else {
-    tx = u.posx;
-    ty = u.posy;
+    tx = u.pos.x;
+    ty = u.pos.y;
    }
    i = trajectory.size();
   }
@@ -405,8 +405,8 @@ void game::throw_item(player &p, int tarx, int tary, item &thrown,
    tx = trajectory[i - 2].x;
    ty = trajectory[i - 2].y;
   } else {
-   tx = u.posx;
-   ty = u.posy;
+   tx = u.pos.x;
+   ty = u.pos.y;
   }
  }
  if (thrown.made_of(GLASS) && !thrown.active && // active means molotov, etc
@@ -436,7 +436,7 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
    double closest = -1;
    double dist;
    for (int i = 0; i < t.size(); i++) {
-    dist = rl_dist(t[i].pos.x, t[i].pos.y, u.posx, u.posy);
+    dist = rl_dist(t[i].pos, u.pos);
     if (closest < 0 || dist < closest) {
      closest = dist;
      target = i;
@@ -478,7 +478,7 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
   if (snap_to_target)
    center = point(x, y);
   else
-   center = point(u.posx, u.posy);
+   center = u.pos;
 // Clear the target window.
   for (int i = 5; i < 12; i++) {
    for (int j = 1; j < 46; j++)
@@ -493,27 +493,27 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
   }
 // Draw the NPCs
   for (int i = 0; i < active_npc.size(); i++) {
-   if (u_see(active_npc[i].posx, active_npc[i].posy))
+   if (u_see(active_npc[i].pos))
     active_npc[i].draw(w_terrain, center.x, center.y, false);
   }
-  if (x != u.posx || y != u.posy) {
+  if (x != u.pos.x || y != u.pos.y) {
 // Calculate the return vector (and draw it too)
 /*
    for (int i = 0; i < ret.size(); i++)
     m.drawsq(w_terrain, u, ret[i].x, ret[i].y, false, true, center.x, center.y);
 */
 // Draw the player
-   int atx = SEEX + u.posx - center.x, aty = SEEY + u.posy - center.y;
+   int atx = SEEX + u.pos.x - center.x, aty = SEEY + u.pos.y - center.y;
    if (atx >= 0 && atx < SEEX * 2 + 1 && aty >= 0 && aty < SEEY * 2 + 1)
     mvwputch(w_terrain, aty, atx, u.color(), '@');
 
    int tart;
-   if (m.sees(u.posx, u.posy, x, y, -1, tart)) {// Selects a valid line-of-sight
-    ret = line_to(u.posx, u.posy, x, y, tart); // Sets the vector to that LOS
+   if (m.sees(u.pos, x, y, -1, tart)) {// Selects a valid line-of-sight
+    ret = line_to(u.pos, x, y, tart); // Sets the vector to that LOS
 // Draw the trajectory
     for (int i = 0; i < ret.size(); i++) {
-     if (abs(ret[i].x - u.posx) <= sight_dist &&
-         abs(ret[i].y - u.posy) <= sight_dist   ) {
+     if (abs(ret[i].x - u.pos.x) <= sight_dist &&
+         abs(ret[i].y - u.pos.y) <= sight_dist   ) {
       monster* const m_at = mon(ret[i]);
 // NPCs and monsters get drawn with inverted colors
       if (m_at && u_see(m_at)) m_at->draw(w_terrain, center.x, center.y, true);
@@ -530,7 +530,7 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
     if (veh)
      mvwprintw(w_target, 5, 1, "There is a %s", veh->name.c_str());
    } else
-    mvwprintw(w_target, 5, 1, "Range: %d", rl_dist(u.posx, u.posy, x, y));
+    mvwprintw(w_target, 5, 1, "Range: %d", rl_dist(u.pos, x, y));
 
    monster* const m_at = mon(x, y);
    if (!m_at) {
@@ -538,7 +538,7 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
     if (snap_to_target)
      mvwputch(w_terrain, SEEY, SEEX, c_red, '*');
     else
-     mvwputch(w_terrain, y + SEEY - u.posy, x + SEEX - u.posx, c_red, '*');
+     mvwputch(w_terrain, y + SEEY - u.pos.y, x + SEEX - u.pos.x, c_red, '*');
    } else if (u_see(m_at)) m_at->print_info(this, w_target);
   }
   wrefresh(w_target);
@@ -553,7 +553,7 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
     m_at->draw(w_terrain, center.x, center.y, false);
    else if (npc* const _npc = nPC(x,y))
 	_npc->draw(w_terrain, center.x, center.y, false);
-   else if (m.sees(u.posx, u.posy, x, y, -1))
+   else if (m.sees(u.pos, x, y, -1))
     m.drawsq(w_terrain, u, x, y, false, true, center.x, center.y);
    else
     mvwputch(w_terrain, SEEY, SEEX, c_black, 'X');
@@ -580,8 +580,8 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
    }
    return ret;
   } else if (ch == '0') {
-   x = u.posx;
-   y = u.posy;
+   x = u.pos.x;
+   y = u.pos.y;
   } else if (ch == '*')
    snap_to_target = !snap_to_target;
   else if (ch == KEY_ESCAPE || ch == 'q') { // return empty vector (cancel)
@@ -647,18 +647,18 @@ void make_gun_sound_effect(game *g, player &p, bool burst)
   gunsound = burst ? "Kaboom!!" : "kerblam!";
  }
  if (p.weapon.curammo->type == AT_FUSION || p.weapon.curammo->type == AT_BATT || p.weapon.curammo->type == AT_PLUT)
-  g->sound(p.posx, p.posy, 8, "Fzzt!");
+  g->sound(p.pos, 8, "Fzzt!");
  else if (p.weapon.curammo->type == AT_40MM)
-  g->sound(p.posx, p.posy, 8, "Thunk!");
+  g->sound(p.pos, 8, "Thunk!");
  else if (p.weapon.curammo->type == AT_GAS)
-  g->sound(p.posx, p.posy, 4, "Fwoosh!");
+  g->sound(p.pos, 4, "Fwoosh!");
  else if (p.weapon.curammo->type != AT_BOLT && p.weapon.curammo->type != AT_ARROW)
-  g->sound(p.posx, p.posy, noise, gunsound);
+  g->sound(p.pos, noise, gunsound);
 }
 
 int calculate_range(player &p, int tarx, int tary)
 {
- int trange = rl_dist(p.posx, p.posy, tarx, tary);
+ int trange = rl_dist(p.pos, tarx, tary);
  const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
  if (trange < int(firing->volume / 3) && firing->ammo != AT_SHOT)
   trange = int(firing->volume / 3);
@@ -807,9 +807,9 @@ void shoot_player(game *g, player &p, player *h, int &dam, double goodhit)
   else {
    if (&p == &(g->u))
     messages.add("You shoot %s's %s.", h->name.c_str(), body_part_name(hit, side).c_str());
-   else if (g->u_see(h->posx, h->posy))
+   else if (g->u_see(h->pos))
     messages.add("%s shoots %s's %s.",
-               (g->u_see(p.posx, p.posy) ? p.name.c_str() : "Someone"),
+               (g->u_see(p.pos) ? p.name.c_str() : "Someone"),
                h->name.c_str(), body_part_name(hit, side).c_str());
   }
   h->hit(g, hit, side, 0, dam);

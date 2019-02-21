@@ -4,6 +4,7 @@
 #include "options.h"
 #include "stl_typetraits.h"
 #include "recent_msg.h"
+#include "saveload.h"
 
 #include <math.h>
 
@@ -360,9 +361,8 @@ nc_color encumb_color(int level);
 bool activity_is_suspendable(activity_type type);
 
 player::player()
+: pos(-1,-1)
 {
- posx = -1;
- posy = -1;
  str_cur = 8;
  str_max = 8;
  dex_cur = 8;
@@ -585,7 +585,7 @@ int player::current_speed(game *g) const
  if (has_trait(PF_QUICK)) newmoves = int(newmoves * 1.10);
 
  if (g != NULL) {
-  if (has_trait(PF_SUNLIGHT_DEPENDENT) && !g->is_in_sunlight(posx, posy)) newmoves -= (g->light_level() >= 12 ? 5 : 10);
+  if (has_trait(PF_SUNLIGHT_DEPENDENT) && !g->is_in_sunlight(pos.x, pos.y)) newmoves -= (g->light_level() >= 12 ? 5 : 10);
   if (has_trait(PF_COLDBLOOD3) && g->temperature < 60) newmoves -= int( (65 - g->temperature) / 2);
   else if (has_trait(PF_COLDBLOOD2) && g->temperature < 60) newmoves -= int( (65 - g->temperature) / 3);
   else if (has_trait(PF_COLDBLOOD) && g->temperature < 60) newmoves -= int( (65 - g->temperature) / 5);
@@ -693,7 +693,7 @@ void player::load_info(game *g, std::string data)
  dump << data;
  int inveh;
  int styletmp;
- dump >> posx >> posy >> str_cur >> str_max >> dex_cur >> dex_max >>
+ dump >> pos >> str_cur >> str_max >> dex_cur >> dex_max >>
          int_cur >> int_max >> per_cur >> per_max >> power_level >>
          max_power_level >> hunger >> thirst >> fatigue >> stim >>
          pain >> pkill >> radiation >> cash >> recoil >> driving_recoil >>
@@ -789,7 +789,7 @@ void player::load_info(game *g, std::string data)
 std::string player::save_info()
 {
  std::stringstream dump;
- dump << posx    << " " << posy    << " " << str_cur << " " << str_max << " " <<
+ dump << pos  << " " << str_cur << " " << str_max << " " <<
          dex_cur << " " << dex_max << " " << int_cur << " " << int_max << " " <<
          per_cur << " " << per_max << " " << power_level << " " <<
          max_power_level << " " << hunger << " " << thirst << " " << fatigue <<
@@ -942,21 +942,21 @@ void player::disp_info(game *g)
   effect_text.push_back(stim_text.str());
  }
 
- if ((has_trait(PF_TROGLO) && g->is_in_sunlight(posx, posy) &&
-      g->weather == WEATHER_SUNNY) ||
-     (has_trait(PF_TROGLO2) && g->is_in_sunlight(posx, posy) &&
-      g->weather != WEATHER_SUNNY)) {
-  effect_name.push_back("In Sunlight");
-  effect_text.push_back("The sunlight irritates you.\n\
+ if (g->is_in_sunlight(pos.x, pos.y)) {
+	 if ((has_trait(PF_TROGLO) && g->weather == WEATHER_SUNNY) ||
+		 (has_trait(PF_TROGLO2) && g->weather != WEATHER_SUNNY)) {
+		 effect_name.push_back("In Sunlight");
+		 effect_text.push_back("The sunlight irritates you.\n\
 Strength - 1;    Dexterity - 1;    Intelligence - 1;    Dexterity - 1");
- } else if (has_trait(PF_TROGLO2) && g->is_in_sunlight(posx, posy)) {
-  effect_name.push_back("In Sunlight");
-  effect_text.push_back("The sunlight irritates you badly.\n\
+	 } else if (has_trait(PF_TROGLO2)) {
+		 effect_name.push_back("In Sunlight");
+		 effect_text.push_back("The sunlight irritates you badly.\n\
 Strength - 2;    Dexterity - 2;    Intelligence - 2;    Dexterity - 2");
- } else if (has_trait(PF_TROGLO3) && g->is_in_sunlight(posx, posy)) {
-  effect_name.push_back("In Sunlight");
-  effect_text.push_back("The sunlight irritates you terribly.\n\
+	 } else if (has_trait(PF_TROGLO3)) {
+		 effect_name.push_back("In Sunlight");
+		 effect_text.push_back("The sunlight irritates you terribly.\n\
 Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
+	 }
  }
 
  for (int i = 0; i < addictions.size(); i++) {
@@ -1201,7 +1201,7 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
             (pen < 10 ? " " : ""), pen);
   line++;
  }
- if (has_trait(PF_SUNLIGHT_DEPENDENT) && !g->is_in_sunlight(posx, posy)) {
+ if (has_trait(PF_SUNLIGHT_DEPENDENT) && !g->is_in_sunlight(pos.x, pos.y)) {
   pen = (g->light_level() >= 12 ? 5 : 10);
   mvwprintz(w_speed, line, 1, c_red, "Out of Sunlight     -%s%d%%%%",
             (pen < 10 ? " " : ""), pen);
@@ -1703,7 +1703,7 @@ void player::disp_status(WINDOW *w, game *g)
  if (pain - pkill > 0)
   mvwprintz(w, 3, 0, col_pain, "Pain: %d", pain - pkill);
 
- vehicle *veh = g->m.veh_at (posx, posy);
+ vehicle *veh = g->m.veh_at(pos);
  int dmor = 0;
  //int dmor = (in_vehicle && veh) ? 0 : 9;
 
@@ -2194,8 +2194,8 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
  if (has_artifact_with(AEP_SNAKES) && dam >= 6) {
   int snakes = int(dam / 6);
   std::vector<point> valid;
-  for (int x = posx - 1; x <= posx + 1; x++) {
-   for (int y = posy - 1; y <= posy + 1; y++) {
+  for (int x = pos.x - 1; x <= pos.x + 1; x++) {
+   for (int y = pos.y - 1; y <= pos.y + 1; y++) {
     if (g->is_empty(x, y)) valid.push_back( point(x, y) );
    }
   }
@@ -2429,12 +2429,12 @@ void player::hitall(game *g, int dam, int vary)
 
 void player::knock_back_from(game *g, int x, int y)
 {
- if (x == posx && y == posy) return; // No effect
- point to(posx, posy);
- if (x < posx) to.x++;
- else if (x > posx) to.x--;
- if (y < posy) to.y++;
- else if (y > posy) to.y--;
+ if (x == pos.x && y == pos.y) return; // No effect
+ point to(pos);
+ if (x < pos.x) to.x++;
+ else if (x > pos.x) to.x--;
+ if (y < pos.y) to.y++;
+ else if (y > pos.y) to.y--;
 
  bool u_see = (!is_npc() || g->u_see(to));
 
@@ -2446,7 +2446,7 @@ void player::knock_back_from(game *g, int x, int y)
   hit(g, bp_torso, 0, z->type->size, 0);
   add_disease(DI_STUNNED, 1, g);
   if ((str_max - 6) / 4 > z->type->size) {
-   z->knock_back_from(g, posx, posy); // Chain reaction!
+   z->knock_back_from(g, pos.x, pos.y); // Chain reaction!
    z->hurt((str_max - 6) / 4);
    z->add_effect(ME_STUNNED, 1);
   } else if ((str_max - 6) / 4 == z->type->size) {
@@ -2480,10 +2480,7 @@ void player::knock_back_from(game *g, int x, int y)
    if (u_see) messages.add("%s bounce%s off a %s.", name.c_str(), s, g->m.tername(to).c_str());
   }
 
- } else { // It's no wall
-  posx = to.x;
-  posy = to.y;
- }
+ } else pos == to;	// It's no wall	
 }
 
 int player::hp_percentage() const
@@ -2795,7 +2792,7 @@ void player::suffer(game *g)
      break;
     case 7:
      for (i = 0; i < 10; i++) {
-      monster phantasm(mtype::types[mon_hallu_zom + rng(0, 3)], posx + rng(-10, 10), posy + rng(-10, 10));
+      monster phantasm(mtype::types[mon_hallu_zom + rng(0, 3)], pos.x + rng(-10, 10), pos.y + rng(-10, 10));
       if (!g->mon(phantasm.pos)) g->z.push_back(phantasm);
      }
      break;
@@ -2805,7 +2802,7 @@ void player::suffer(game *g)
      break;
     case 9:
      messages.add("You have the sudden urge to SCREAM!");
-     g->sound(posx, posy, 10 + 2 * str_cur, "AHHHHHHH!");
+     g->sound(pos, 10 + 2 * str_cur, "AHHHHHHH!");
      break;
     case 10:
      messages.add(std::string(name + name + name + name + name + name + name +
@@ -2834,9 +2831,9 @@ void player::suffer(game *g)
 
   if (has_trait(PF_VOMITOUS) && one_in(4200)) vomit();
 
-  if (has_trait(PF_SHOUT1) && one_in(3600)) g->sound(posx, posy, 10 + 2 * str_cur, "You shout loudly!");
-  if (has_trait(PF_SHOUT2) && one_in(2400)) g->sound(posx, posy, 15 + 3 * str_cur, "You scream loudly!");
-  if (has_trait(PF_SHOUT3) && one_in(1800)) g->sound(posx, posy, 20 + 4 * str_cur, "You let out a piercing howl!");
+  if (has_trait(PF_SHOUT1) && one_in(3600)) g->sound(pos, 10 + 2 * str_cur, "You shout loudly!");
+  if (has_trait(PF_SHOUT2) && one_in(2400)) g->sound(pos, 15 + 3 * str_cur, "You scream loudly!");
+  if (has_trait(PF_SHOUT3) && one_in(1800)) g->sound(pos, 20 + 4 * str_cur, "You let out a piercing howl!");
  }	// Done with while-awake-only effects
 
  if (has_trait(PF_ASTHMA) && one_in(3600 - stim * 50)) {
@@ -2858,7 +2855,7 @@ void player::suffer(game *g)
   }
  }
 
- if (has_trait(PF_LEAVES) && g->is_in_sunlight(posx, posy) && one_in(600)) hunger--;
+ if (has_trait(PF_LEAVES) && g->is_in_sunlight(pos.x, pos.y) && one_in(600)) hunger--;
 
  if (pain > 0) {
   if (has_trait(PF_PAINREC1) && one_in(600)) pain--;
@@ -2866,7 +2863,7 @@ void player::suffer(game *g)
   if (has_trait(PF_PAINREC3) && one_in(150)) pain--;
  }
 
- if (has_trait(PF_ALBINO) && g->is_in_sunlight(posx, posy) && one_in(20)) {
+ if (has_trait(PF_ALBINO) && g->is_in_sunlight(pos.x, pos.y) && one_in(20)) {
   messages.add("The sunlight burns your skin!");
   if (has_disease(DI_SLEEP)) {
    rem_disease(DI_SLEEP);
@@ -2875,7 +2872,7 @@ void player::suffer(game *g)
   hurtall(1);
  }
 
- if (g->is_in_sunlight(posx, posy)) {
+ if (g->is_in_sunlight(pos.x, pos.y)) {
   if ((has_trait(PF_TROGLO) || has_trait(PF_TROGLO2)) && g->weather == WEATHER_SUNNY) {
    str_cur--;
    dex_cur--;
@@ -2898,25 +2895,21 @@ void player::suffer(game *g)
 
  if (has_trait(PF_SORES)) {
   for (int i = bp_head; i < num_bp; i++) {
-   if (pain < 5 + 4 * abs(encumb(body_part(i))))
-    pain = 5 + 4 * abs(encumb(body_part(i)));
+   const int nonstrict_lb = 5 + 4 * abs(encumb(body_part(i)));
+   if (pain < nonstrict_lb) pain = nonstrict_lb;
   }
  }
 
  if (has_trait(PF_SLIMY)) {
-  if (g->m.field_at(posx, posy).type == fd_null)
-   g->m.add_field(g, posx, posy, fd_slime, 1);
-  else if (g->m.field_at(posx, posy).type == fd_slime &&
-           g->m.field_at(posx, posy).density < 3)
-   g->m.field_at(posx, posy).density++;
+  auto& fd = g->m.field_at(pos);
+  if (fd.type == fd_null) g->m.add_field(g, pos.x, pos.y, fd_slime, 1);
+  else if (fd.type == fd_slime && fd.density < 3) fd.density++;
  }
 
  if (has_trait(PF_WEB_WEAVER) && one_in(3)) {
-  if (g->m.field_at(posx, posy).type == fd_null)
-   g->m.add_field(g, posx, posy, fd_web, 1);
-  else if (g->m.field_at(posx, posy).type == fd_web &&
-           g->m.field_at(posx, posy).density < 3)
-   g->m.field_at(posx, posy).density++;
+  auto& fd = g->m.field_at(pos);
+  if (fd.type == fd_null) g->m.add_field(g, pos.x, pos.y, fd_web, 1);
+  else if (fd.type == fd_web && fd.density < 3) fd.density++;
  }
 
  if (has_trait(PF_RADIOGENIC) && int(messages.turn) % 50 == 0 && radiation >= 10) {
@@ -2925,24 +2918,28 @@ void player::suffer(game *g)
  }
 
  if (has_trait(PF_RADIOACTIVE1)) {
-  if (g->m.radiation(posx, posy) < 10 && one_in(50)) g->m.radiation(posx, posy)++;
+  auto& rad = g->m.radiation(pos.x, pos.y);
+  if (rad < 10 && one_in(50)) rad++;
  }
  if (has_trait(PF_RADIOACTIVE2)) {
-  if (g->m.radiation(posx, posy) < 20 && one_in(25)) g->m.radiation(posx, posy)++;
+  auto& rad = g->m.radiation(pos.x, pos.y);
+  if (rad < 20 && one_in(25)) rad++;
  }
  if (has_trait(PF_RADIOACTIVE3)) {
-  if (g->m.radiation(posx, posy) < 30 && one_in(10)) g->m.radiation(posx, posy)++;
+  auto& rad = g->m.radiation(pos.x, pos.y);
+  if (rad < 30 && one_in(10)) rad++;
  }
 
  if (has_trait(PF_UNSTABLE) && one_in(28800)) mutate(g);	// Average once per 2 days
  if (has_artifact_with(AEP_MUTAGENIC) && one_in(28800)) mutate(g);
  if (has_artifact_with(AEP_FORCE_TELEPORT) && one_in(600)) g->teleport(this);
 
+ const auto rad = g->m.radiation(pos.x, pos.y);
  if (is_wearing(itm_hazmat_suit)) {
-  if (radiation < int((100 * g->m.radiation(posx, posy)) / 20))
-   radiation += rng(0, g->m.radiation(posx, posy) / 20);
- } else if (radiation < int((100 * g->m.radiation(posx, posy)) / 8))
-  radiation += rng(0, g->m.radiation(posx, posy) / 8);
+  if (radiation < int((100 * rad) / 20))
+   radiation += rng(0, rad / 20);
+ } else if (radiation < int((100 * rad) / 8))
+  radiation += rng(0, rad / 8);
 
  if (rng(1, 2500) < radiation && (int(messages.turn) % 150 == 0 || radiation > 2000)){
   mutate(g);
@@ -2968,7 +2965,7 @@ void player::suffer(game *g)
  }
  if (has_bionic(bio_noise) && one_in(500)) {
   messages.add("A bionic emits a crackle of noise!");
-  g->sound(posx, posy, 60, "");
+  g->sound(pos, 60, "");
  }
  if (has_bionic(bio_power_weakness) && max_power_level > 0 && power_level >= max_power_level * .75)
   str_cur -= 3;
@@ -3193,8 +3190,8 @@ void player::process_active_items(game *g)
     if (maintain) {
      if (one_in(20)) {
       messages.add("Your %s discharges!", weapon.tname().c_str());
-      point target(posx + rng(-12, 12), posy + rng(-12, 12));
-      std::vector<point> traj = line_to(posx, posy, target.x, target.y, 0);
+      point target(pos.x + rng(-12, 12), pos.y + rng(-12, 12));
+      std::vector<point> traj = line_to(pos, target, 0);
       g->fire(*this, target, traj, false);
      } else
       messages.add("Your %s beeps alarmingly.", weapon.tname().c_str());
@@ -3745,7 +3742,7 @@ bool player::eat(game *g, int index)
   if (!is_npc()) {
    if (eaten->made_of(LIQUID)) messages.add("You drink your %s.", eaten->tname(g).c_str());
    else if (comest->nutr >= 5) messages.add("You eat your %s.", eaten->tname(g).c_str());
-  } else if (g->u_see(posx, posy)) messages.add("%s eats a %s.", name.c_str(), eaten->tname(g).c_str());
+  } else if (g->u_see(pos)) messages.add("%s eats a %s.", name.c_str(), eaten->tname(g).c_str());
 
   if (item::types[comest->tool]->is_tool()) use_charges(comest->tool, 1); // Tools like lighters get used
   if (comest->stim > 0) {
@@ -3826,9 +3823,8 @@ bool player::wield(game *g, int index)
    moves -= 20;
    recoil = 0;
    if (!pickstyle) return true;
-  } else if (query_yn("No space in inventory for your %s.  Drop it?",
-                      weapon.tname(g).c_str())) {
-   g->m.add_item(posx, posy, remove_weapon());
+  } else if (query_yn("No space in inventory for your %s.  Drop it?", weapon.tname(g).c_str())) {
+   g->m.add_item(pos, remove_weapon());
    recoil = 0;
    if (!pickstyle) return true;
   } else return false;
@@ -3868,7 +3864,7 @@ bool player::wield(game *g, int index)
   return true;
  } else if (query_yn("No space in inventory for your %s.  Drop it?",
                      weapon.tname(g).c_str())) {
-  g->m.add_item(posx, posy, remove_weapon());
+  g->m.add_item(pos, remove_weapon());
   weapon = inv[index];
   inv.remove_item(index);
   inv_sorted = false;
@@ -4010,7 +4006,7 @@ bool player::takeoff(game *g, char let)
     inv_sorted = false;
     return true;
    } else if (query_yn("No room in inventory for your %s.  Drop it?", worn[i].tname(g).c_str())) {
-    g->m.add_item(posx, posy, it);
+    g->m.add_item(pos, it);
     worn.erase(worn.begin() + i);
     return true;
    } else return false;
@@ -4166,7 +4162,7 @@ void player::use(game *g, char let)
 
 void player::read(game *g, char ch)
 {
- vehicle *veh = g->m.veh_at (posx, posy);
+ vehicle *veh = g->m.veh_at(pos);
  if (veh && veh->player_in_control (this)) {
   messages.add("It's bad idea to read while driving.");
   return;
@@ -4241,7 +4237,7 @@ void player::read(game *g, char ch)
  
 void player::try_to_sleep(game *g)
 {
- const auto terrain = g->m.ter(posx, posy);
+ const auto terrain = g->m.ter(pos);
  switch (terrain)
  {
  case t_floor: break;
@@ -4264,11 +4260,11 @@ bool player::can_sleep(game *g)
  if (has_trait(PF_INSOMNIA)) sleepy -= 8;
 
  int vpart = -1;
- const vehicle* const veh = g->m.veh_at (posx, posy, vpart);
+ const vehicle* const veh = g->m.veh_at(pos, vpart);
  if (veh && veh->part_with_feature(vpart, vpf_seat) >= 0) sleepy += 4;
- else if (g->m.ter(posx, posy) == t_bed) sleepy += 5;
- else if (g->m.ter(posx, posy) == t_floor) sleepy += 1;
- else sleepy -= g->m.move_cost(posx, posy);
+ else if (g->m.ter(pos) == t_bed) sleepy += 5;
+ else if (g->m.ter(pos) == t_floor) sleepy += 1;
+ else sleepy -= g->m.move_cost(pos);
  sleepy = (192 > fatigue) ? (192-fatigue)/4 : (fatigue-192)/16;
  sleepy += rng(-8, 8);
  sleepy -= 2 * stim;
@@ -4412,7 +4408,7 @@ void player::absorb(game *g, body_part bp, int &dam, int &cut)
     worn[i].damage++;
    if (worn[i].damage >= 5) {
     if (!is_npc()) messages.add("Your %s is completely destroyed!", worn[i].tname(g).c_str());
-    else if (g->u_see(posx, posy))
+    else if (g->u_see(pos))
      messages.add("%s's %s is destroyed!", name.c_str(), worn[i].tname(g).c_str());
     worn.erase(worn.begin() + i);
    }

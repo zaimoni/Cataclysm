@@ -201,7 +201,7 @@ void game::construction_menu()
  char ch;
 
  inventory total_inv;
- total_inv.form_from_map(m, point(u.posx, u.posy), PICKUP_RANGE);
+ total_inv.form_from_map(m, u.pos, PICKUP_RANGE);
  total_inv.add_stack(u.inv_dump());
  if (u.has_bionic(bio_tools)) {
   item tools(item::types[itm_toolset], messages.turn);
@@ -400,13 +400,13 @@ void game::place_construction(const constructable * const con)
 {
  refresh_all();
  inventory total_inv;
- total_inv.form_from_map(m, point(u.posx, u.posy), PICKUP_RANGE);
+ total_inv.form_from_map(m, u.pos, PICKUP_RANGE);
  total_inv.add_stack(u.inv_dump());
 
  std::vector<point> valid;
- for (int x = u.posx - 1; x <= u.posx + 1; x++) {
-  for (int y = u.posy - 1; y <= u.posy + 1; y++) {
-   if (x == u.posx && y == u.posy) y++;
+ for (int x = u.pos.x - 1; x <= u.pos.x + 1; x++) {
+  for (int y = u.pos.y - 1; y <= u.pos.y + 1; y++) {
+   if (x == u.pos.x && y == u.pos.y) y++;
    bool place_okay = (*(con->able))(m, point(x, y));
    for (int i = 0; i < con->stages.size() && !place_okay; i++) {
     if (m.ter(x, y) == con->stages[i].terrain) place_okay = true;
@@ -434,8 +434,7 @@ void game::place_construction(const constructable * const con)
   messages.add("Invalid direction.");
   return;
  }
- dir.x += u.posx;
- dir.y += u.posy;
+ dir += u.pos;
  bool point_is_okay = false;
  for (const auto& pt : valid) {
   if (pt == dir) {
@@ -470,7 +469,7 @@ void game::place_construction(const constructable * const con)
 void game::complete_construction()
 {
  inventory map_inv;
- map_inv.form_from_map(m, point(u.posx, u.posy), PICKUP_RANGE);
+ map_inv.form_from_map(m, u.pos, PICKUP_RANGE);
  int stage_num = u.activity.values[0];
  const constructable* const built = constructable::constructions[u.activity.index];
  construction_stage stage = built->stages[stage_num];
@@ -597,7 +596,7 @@ bool will_flood_stop(map *m, bool (&fill)[SEEX * MAPSIZE][SEEY * MAPSIZE],
 
 void construct::done_window_pane(game *g, point p)
 {
- g->m.add_item(g->u.posx, g->u.posy, item::types[itm_glass_sheet], 0);
+ g->m.add_item(g->u.pos, item::types[itm_glass_sheet], 0);
 }
 
 void construct::done_tree(game *g, point p)

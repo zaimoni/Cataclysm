@@ -430,7 +430,7 @@ void game::process_artifact(item *it, player *p, bool wielded)
      break;
     case ARTC_SOLAR:
      if (messages.turn.second == 0 && messages.turn.minute % 10 == 0 &&
-         is_in_sunlight(p->posx, p->posy))
+         is_in_sunlight(p->pos.x, p->pos.y))
       it->charges++;
      break;
     case ARTC_PAIN:
@@ -480,7 +480,7 @@ void game::process_artifact(item *it, player *p, bool wielded)
 
   case AEP_SMOKE:
    if (one_in(10)) {
-    int x = p->posx + rng(-1, 1), y = p->posy + rng(-1, 1);
+    int x = p->pos.x + rng(-1, 1), y = p->pos.y + rng(-1, 1);
     if (m.add_field(this, x, y, fd_smoke, rng(1, 3)))
      messages.add("The %s emits some smoke.", it->tname().c_str());
    }
@@ -490,8 +490,8 @@ void game::process_artifact(item *it, player *p, bool wielded)
    break; // Handled in player::hit()
 
   case AEP_EXTINGUISH:
-   for (int x = p->posx - 1; x <= p->posx + 1; x++) {
-    for (int y = p->posy - 1; y <= p->posy + 1; y++) {
+   for (int x = p->pos.x - 1; x <= p->pos.x + 1; x++) {
+    for (int y = p->pos.y - 1; y <= p->pos.y + 1; y++) {
 	 auto& fd = m.field_at(x, y);
      if (fd.type == fd_fire) {
       if (fd.density == 0) m.remove_field(x, y);

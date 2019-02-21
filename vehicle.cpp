@@ -37,7 +37,7 @@ bool vehicle::player_in_control (player *p)
 {
     if (type == veh_null) return false;
     int veh_part;
-    vehicle* const veh = g->m.veh_at (p->posx, p->posy, veh_part);
+    vehicle* const veh = g->m.veh_at(p->pos, veh_part);
     if (veh && veh != this) return false;
     return part_with_feature(veh_part, vpf_controls, false) >= 0 && p->in_vehicle;
 }
@@ -430,7 +430,7 @@ player *vehicle::get_passenger (int p)
     p = part_with_feature (p, vpf_seat, false);
     if (p >= 0 && parts[p].passenger) {
 		const point origin(global() + parts[p].precalc_d[0]);
-        if (g->u.posx == origin.x && g->u.posy == origin.y && g->u.in_vehicle) return &g->u;
+        if (g->u.pos == origin && g->u.in_vehicle) return &g->u;
 		if (npc* const nPC = g->nPC(origin)) return nPC;	// \todo why not require in_vehicle?
     }
     return 0;
@@ -888,7 +888,7 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
 {
     const bool pl_ctrl = player_in_control (&g->u);
 	npc* const nPC = g->nPC(dest);
-    const bool u_here = dest.x == g->u.posx && dest.y == g->u.posy && !g->u.in_vehicle;
+    const bool u_here = dest == g->u.pos && !g->u.in_vehicle;
     monster * const z = g->mon(dest);
     player * const ph = (nPC ? nPC : (u_here? &g->u : 0));
     vehicle * const oveh = g->m.veh_at(dest);
@@ -1578,16 +1578,14 @@ bool vehicle::fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int
 
     std::vector<point> traj = line_to(origin, target->pos, fire_t);
     for (int i = 0; i < traj.size(); i++)
-        if (traj[i].x == g->u.posx && traj[i].y == g->u.posy)
-            return false; // won't shoot at player
+        if (traj[i] == g->u.pos) return false; // won't shoot at player
     if (g->u_see(origin)) messages.add("The %s fires its %s!", name.c_str(), part_info(p).name);
     player tmp;
     tmp.name = std::string("The ") + part_info(p).name;
     tmp.sklevel[gun.skill_used] = 1;
     tmp.sklevel[sk_gun] = 0;
     tmp.recoil = abs(velocity) / 100 / 4;
-    tmp.posx = origin.x;
-    tmp.posy = origin.y;
+    tmp.pos = origin;
     tmp.str_cur = 16;
     tmp.dex_cur =  6;
     tmp.per_cur =  8;

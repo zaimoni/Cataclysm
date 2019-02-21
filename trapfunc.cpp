@@ -63,14 +63,9 @@ void trapfunc::tripwire(game *g, int x, int y)
     valid.push_back(point(j, k));
   }
  }
- if (!valid.empty()) {
-  int index = rng(0, valid.size() - 1);
-  g->u.posx = valid[index].x;
-  g->u.posy = valid[index].y;
- }
+ if (!valid.empty()) g->u.pos = valid[rng(0, valid.size() - 1)];
  g->u.moves -= 150;
- if (rng(5, 20) > g->u.dex_cur)
-  g->u.hurtall(rng(1, 4));
+ if (rng(5, 20) > g->u.dex_cur) g->u.hurtall(rng(1, 4));
 }
 
 void trapfuncm::tripwire(game *g, monster *z)
@@ -417,8 +412,8 @@ void trapfunc::sinkhole(game *g, int x, int y)
            g->u.sklevel[sk_unarmed] + g->u.str_cur) > 6) {
 // Determine safe places for the character to get pulled to
     std::vector<point> safe;
-    for (int i = g->u.posx - 1; i <= g->u.posx + 1; i++) {
-     for (int j = g->u.posx - 1; j <= g->u.posx + 1; j++) {
+    for (int i = g->u.pos.x - 1; i <= g->u.pos.x + 1; i++) {
+     for (int j = g->u.pos.y - 1; j <= g->u.pos.y + 1; j++) {
       if (g->m.move_cost(i, j) > 0 && g->m.tr_at(i, j) != tr_pit)
        safe.push_back(point(i, j));
      }
@@ -426,23 +421,22 @@ void trapfunc::sinkhole(game *g, int x, int y)
     if (safe.empty()) {
      messages.add("There's nowhere to pull yourself to, and you sink!");
      g->u.use_amount(itm_rope_30, 1);
-     g->m.add_item(g->u.posx + rng(-1, 1), g->u.posy + rng(-1, 1),
+     g->m.add_item(g->u.pos.x + rng(-1, 1), g->u.pos.y + rng(-1, 1),
 		           item::types[itm_rope_30], messages.turn);
-     g->m.tr_at(g->u.posx, g->u.posy) = tr_pit;
+     g->m.tr_at(g->u.pos) = tr_pit;
      g->vertical_move(-1, true);
     } else {
      messages.add("You pull yourself to safety!  The sinkhole collapses.");
      int index = rng(0, safe.size() - 1);
-     g->u.posx = safe[index].x;
-     g->u.posy = safe[index].y;
-     g->update_map(g->u.posx, g->u.posy);
-     g->m.tr_at(g->u.posx, g->u.posy) = tr_pit;
+     g->u.pos = safe[index];
+     g->update_map(g->u.pos.x, g->u.pos.y);
+     g->m.tr_at(g->u.pos) = tr_pit;
     }
    } else {
     messages.add("You're not strong enough to pull yourself out...");
     g->u.moves -= 100;
     g->u.use_amount(itm_rope_30, 1);
-    g->m.add_item(g->u.posx + rng(-1, 1), g->u.posy + rng(-1, 1),
+    g->m.add_item(g->u.pos.x + rng(-1, 1), g->u.pos.y + rng(-1, 1),
 				  item::types[itm_rope_30], messages.turn);
     g->vertical_move(-1, true);
    }
@@ -450,10 +444,10 @@ void trapfunc::sinkhole(game *g, int x, int y)
    messages.add("Your throw misses completely, and you sink!");
    if (one_in((g->u.str_cur + g->u.dex_cur) / 3)) {
     g->u.use_amount(itm_rope_30, 1);
-    g->m.add_item(g->u.posx + rng(-1, 1), g->u.posy + rng(-1, 1),
+    g->m.add_item(g->u.pos.x + rng(-1, 1), g->u.pos.y + rng(-1, 1),
                   item::types[itm_rope_30], messages.turn);
    }
-   g->m.tr_at(g->u.posx, g->u.posy) = tr_pit;
+   g->m.tr_at(g->u.pos) = tr_pit;
    g->vertical_move(-1, true);
   }
  } else {
@@ -518,7 +512,7 @@ void trapfunc::glow(game *g, int x, int y)
   g->u.radiation += rng(10, 30);
  } else if (one_in(4)) {
   messages.add("A blinding flash strikes you!");
-  g->flashbang(g->u.posx, g->u.posy);
+  g->flashbang(g->u.pos);
  } else
   messages.add("Small flashes surround you.");
 }
@@ -566,14 +560,13 @@ void trapfunc::shadow(game *g, int x, int y)
  int tries = 0, monx, mony;
  do {
   if (one_in(2)) {
-   monx = rng(g->u.posx - 5, g->u.posx + 5);
-   mony = (one_in(2) ? g->u.posy - 5 : g->u.posy + 5);
+   monx = rng(g->u.pos.x - 5, g->u.pos.x + 5);
+   mony = (one_in(2) ? g->u.pos.y - 5 : g->u.pos.y + 5);
   } else {
-   monx = (one_in(2) ? g->u.posx - 5 : g->u.posx + 5);
-   mony = rng(g->u.posy - 5, g->u.posy + 5);
+   monx = (one_in(2) ? g->u.pos.x - 5 : g->u.pos.x + 5);
+   mony = rng(g->u.pos.y - 5, g->u.pos.y + 5);
   }
- } while (tries < 5 && !g->is_empty(monx, mony) &&
-          !g->m.sees(monx, mony, g->u.posx, g->u.posy, 10));
+ } while (tries < 5 && !g->is_empty(monx, mony) && !g->m.sees(monx, mony, g->u.pos, 10));
 
  if (tries < 5) {
   messages.add("A shadow forms nearby.");
@@ -601,14 +594,14 @@ void trapfunc::snake(game *g, int x, int y)
   int tries = 0, monx, mony;
   do {
    if (one_in(2)) {
-    monx = rng(g->u.posx - 5, g->u.posx + 5);
-    mony = (one_in(2) ? g->u.posy - 5 : g->u.posy + 5);
+    monx = rng(g->u.pos.x - 5, g->u.pos.x + 5);
+    mony = (one_in(2) ? g->u.pos.y - 5 : g->u.pos.y + 5);
    } else {
-    monx = (one_in(2) ? g->u.posx - 5 : g->u.posx + 5);
-    mony = rng(g->u.posy - 5, g->u.posy + 5);
+    monx = (one_in(2) ? g->u.pos.x - 5 : g->u.pos.x + 5);
+    mony = rng(g->u.pos.y - 5, g->u.pos.y + 5);
    }
   } while (tries < 5 && !g->is_empty(monx, mony) &&
-           !g->m.sees(monx, mony, g->u.posx, g->u.posy, 10));
+           !g->m.sees(monx, mony, g->u.pos, 10));
 
   if (tries < 5) {
    messages.add("A shadowy snake forms nearby.");

@@ -673,7 +673,7 @@ void game::craft()
  char ch;
 
  inventory crafting_inv;
- crafting_inv.form_from_map(m, point(u.posx, u.posy), PICKUP_RANGE);
+ crafting_inv.form_from_map(m, u.pos, PICKUP_RANGE);
  crafting_inv += u.inv;
  crafting_inv += u.weapon;
  if (u.has_bionic(bio_tools)) {
@@ -962,7 +962,7 @@ void game::pick_recipes(std::vector<const recipe*> &current,
                         std::vector<bool> &available, craft_cat tab)
 {
  inventory crafting_inv;
- crafting_inv.form_from_map(m, point(u.posx, u.posy), PICKUP_RANGE);
+ crafting_inv.form_from_map(m, u.pos, PICKUP_RANGE);
  crafting_inv += u.inv;
  crafting_inv += u.weapon;
  if (u.has_bionic(bio_tools)) {
@@ -1092,11 +1092,11 @@ void game::complete_craft()
   if (iter == 52 || u.volume_carried()+newit.volume() > u.volume_capacity()) {
    messages.add("There's no room in your inventory for the %s, so you drop it.",
              newit.tname().c_str());
-   m.add_item(u.posx, u.posy, newit);
+   m.add_item(u.pos, newit);
   } else if (u.weight_carried() + newit.volume() > u.weight_capacity()) {
    messages.add("The %s is too heavy to carry, so you drop it.",
            newit.tname().c_str());
-   m.add_item(u.posx, u.posy, newit);
+   m.add_item(u.pos, newit);
   } else {
    u.i_add(newit);
    messages.add("%c - %s", newit.invlet, newit.tname().c_str());
@@ -1115,7 +1115,7 @@ void consume_items(game *g, const std::vector<component>& components)
  std::vector<component> map_use;
  std::vector<component> mixed_use;
  inventory map_inv;
- map_inv.form_from_map(g->m, point(g->u.posx, g->u.posy), PICKUP_RANGE);
+ map_inv.form_from_map(g->m, g->u.pos, PICKUP_RANGE);
 
  for(const component& comp : components) {
   const itype_id type = comp.type;
@@ -1194,20 +1194,20 @@ void consume_items(game *g, const std::vector<component>& components)
  }
  for(const component& comp : map_use) {
   if (item::types[comp.type]->count_by_charges() && 0 < comp.count)
-   g->m.use_charges(point(g->u.posx, g->u.posy), PICKUP_RANGE, comp.type, comp.count);
+   g->m.use_charges(g->u.pos, PICKUP_RANGE, comp.type, comp.count);
   else
-   g->m.use_amount(point(g->u.posx, g->u.posy), PICKUP_RANGE, comp.type, abs(comp.count), (comp.count < 0));
+   g->m.use_amount(g->u.pos, PICKUP_RANGE, comp.type, abs(comp.count), (comp.count < 0));
  }
  for(const component& comp : mixed_use) {
   if (item::types[comp.type]->count_by_charges() && 0 < comp.count) {
    const int from_map = comp.count - g->u.charges_of(comp.type);
    g->u.use_charges(comp.type, g->u.charges_of(comp.type));
-   g->m.use_charges(point(g->u.posx, g->u.posy), PICKUP_RANGE, comp.type, from_map);
+   g->m.use_charges(g->u.pos, PICKUP_RANGE, comp.type, from_map);
   } else {
    const bool in_container = (comp.count < 0);
    const int from_map = abs(comp.count) - g->u.amount_of(comp.type);
    g->u.use_amount(comp.type, g->u.amount_of(comp.type), in_container);
-   g->m.use_amount(point(g->u.posx, g->u.posy), PICKUP_RANGE, comp.type, from_map, in_container);
+   g->m.use_amount(g->u.pos, PICKUP_RANGE, comp.type, from_map, in_container);
   }
  }
 }
@@ -1216,7 +1216,7 @@ void consume_tools(game *g, const std::vector<component>& tools)
 {
  bool found_nocharge = false;
  inventory map_inv;
- map_inv.form_from_map(g->m, point(g->u.posx, g->u.posy), PICKUP_RANGE);
+ map_inv.form_from_map(g->m, g->u.pos, PICKUP_RANGE);
  std::vector<component> player_has;
  std::vector<component> map_has;
 // Use charges of any tools that require charges used
@@ -1238,7 +1238,7 @@ void consume_tools(game *g, const std::vector<component>& tools)
   g->u.use_charges(use.type, use.count);
  } else if (map_has.size() == 1 && player_has.size() == 0) {
   const component& use = map_has[0];
-  g->m.use_charges(point(g->u.posx, g->u.posy), PICKUP_RANGE, use.type, use.count);
+  g->m.use_charges(g->u.pos, PICKUP_RANGE, use.type, use.count);
  } else { // Variety of options, list them and pick one
 // Populate the list
   std::vector<std::string> options;
@@ -1255,7 +1255,7 @@ void consume_tools(game *g, const std::vector<component>& tools)
   int selection = menu_vec("Use which tool?", options) - 1;
   if (selection < map_has.size()) {
    const component& use = map_has[selection];
-   g->m.use_charges(point(g->u.posx, g->u.posy), PICKUP_RANGE, use.type, use.count);
+   g->m.use_charges(g->u.pos, PICKUP_RANGE, use.type, use.count);
   } else {
    const component& use = player_has[selection - map_has.size()];
    g->u.use_charges(use.type, use.count);
