@@ -1703,7 +1703,7 @@ void iuse::turret(game *g, player *p, item *it, bool t)
  }
  p->moves -= 100;
  dir += p->pos;
- if (!g->is_empty(dir.x, dir.y)) {
+ if (!g->is_empty(dir)) {
   messages.add("You cannot place a turret there.");
   return;
  }
@@ -1840,13 +1840,13 @@ void iuse::vortex(game *g, player *p, item *it, bool t)
  std::vector<point> spawn;
  for (int i = -3; i <= 3; i++) {
   point test(p->pos.x - 3, p->pos.y+i);
-  if (g->is_empty(test.x, test.y)) spawn.push_back(test);
+  if (g->is_empty(test)) spawn.push_back(test);
   test = point(p->pos.x + 3, p->pos.y + i);
-  if (g->is_empty(test.x, test.y)) spawn.push_back(test);
+  if (g->is_empty(test)) spawn.push_back(test);
   test = point(p->pos.x + i, p->pos.y - 3);
-  if (g->is_empty(test.x, test.y)) spawn.push_back(test);
+  if (g->is_empty(test)) spawn.push_back(test);
   test = point(p->pos.x + i, p->pos.y + 3);
-  if (g->is_empty(test.x, test.y)) spawn.push_back(test);
+  if (g->is_empty(test)) spawn.push_back(test);
  }
  if (spawn.empty()) {
   if (!p->is_npc()) messages.add("Air swirls around you for a moment.");

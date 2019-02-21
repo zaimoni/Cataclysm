@@ -243,7 +243,7 @@ void monster::move(game *g)
    g->m.destroy(g, next.x, next.y, true);
    moves -= 250;
   // end C:DDA refactor target monster::bash_at
-  } else if (can_move_to(g->m, next.x, next.y) && g->is_empty(next.x, next.y))
+  } else if (can_move_to(g->m, next.x, next.y) && g->is_empty(next))
    move_to(g, next.x, next.y);
   else
    moves -= 100;

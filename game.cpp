@@ -3674,7 +3674,7 @@ monster* game::mon(const point& pt)
 	return 0;
 }
 
-bool game::is_empty(int x, int y)
+bool game::is_empty(int x, int y) const
 {
  return ((m.move_cost(x, y) > 0 || m.has_flag(liquid, x, y)) &&
          !nPC(x, y) && !mon(x,y) &&

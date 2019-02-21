@@ -86,7 +86,8 @@ class game
   const monster* mon(int x, int y) const { return const_cast<game*>(this)->mon(x, y); };
   const monster* mon(const point& pt) const { return const_cast<game*>(this)->mon(pt); };
 
-  bool is_empty(int x, int y);	// True if no PC, no monster, move cost > 0
+  bool is_empty(int x, int y) const;	// True if no PC, no monster, move cost > 0
+  bool is_empty(const point& pt) const { return is_empty(pt.x, pt.y); };
   bool isBetween(int test, int down, int up);
   bool is_in_sunlight(int x, int y); // Checks outdoors + sunny
 // Kill that monster; fixes any pointers etc
