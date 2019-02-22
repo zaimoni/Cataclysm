@@ -5717,10 +5717,7 @@ void game::plswim(int x, int y)
   update_map(x, y);
  u.pos.x = x;
  u.pos.y = y;
- if (!m.has_flag(swimmable, x, y)) {
-  debugmsg("Tried to swim in %s!", m.tername(x, y).c_str());
-  return;
- }
+ DEBUG_FAIL_OR_LEAVE(!m.has_flag(swimmable, x, y), return);
  if (u.has_disease(DI_ONFIRE)) {
   messages.add("The water puts out the flames!");
   u.rem_disease(DI_ONFIRE);
