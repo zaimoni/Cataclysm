@@ -23,7 +23,7 @@ enum weather_type {
  NUM_WEATHER_TYPES
 };
 
-struct weather_effect
+struct weather_effect	// NPCs not really affected
 {
  static void none		(game *) {};
  static void glare		(game *);

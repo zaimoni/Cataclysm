@@ -585,7 +585,7 @@ int player::current_speed(game *g) const
  if (has_trait(PF_QUICK)) newmoves = int(newmoves * 1.10);
 
  if (g != NULL) {
-  if (has_trait(PF_SUNLIGHT_DEPENDENT) && !g->is_in_sunlight(pos.x, pos.y)) newmoves -= (g->light_level() >= 12 ? 5 : 10);
+  if (has_trait(PF_SUNLIGHT_DEPENDENT) && !g->is_in_sunlight(pos)) newmoves -= (g->light_level() >= 12 ? 5 : 10);
   if (has_trait(PF_COLDBLOOD3) && g->temperature < 60) newmoves -= int( (65 - g->temperature) / 2);
   else if (has_trait(PF_COLDBLOOD2) && g->temperature < 60) newmoves -= int( (65 - g->temperature) / 3);
   else if (has_trait(PF_COLDBLOOD) && g->temperature < 60) newmoves -= int( (65 - g->temperature) / 5);
@@ -942,7 +942,7 @@ void player::disp_info(game *g)
   effect_text.push_back(stim_text.str());
  }
 
- if (g->is_in_sunlight(pos.x, pos.y)) {
+ if (g->is_in_sunlight(pos)) {
 	 if ((has_trait(PF_TROGLO) && g->weather == WEATHER_SUNNY) ||
 		 (has_trait(PF_TROGLO2) && g->weather != WEATHER_SUNNY)) {
 		 effect_name.push_back("In Sunlight");
@@ -1201,7 +1201,7 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
             (pen < 10 ? " " : ""), pen);
   line++;
  }
- if (has_trait(PF_SUNLIGHT_DEPENDENT) && !g->is_in_sunlight(pos.x, pos.y)) {
+ if (has_trait(PF_SUNLIGHT_DEPENDENT) && !g->is_in_sunlight(pos)) {
   pen = (g->light_level() >= 12 ? 5 : 10);
   mvwprintz(w_speed, line, 1, c_red, "Out of Sunlight     -%s%d%%%%",
             (pen < 10 ? " " : ""), pen);
@@ -2855,24 +2855,24 @@ void player::suffer(game *g)
   }
  }
 
- if (has_trait(PF_LEAVES) && g->is_in_sunlight(pos.x, pos.y) && one_in(600)) hunger--;
-
  if (pain > 0) {
   if (has_trait(PF_PAINREC1) && one_in(600)) pain--;
   if (has_trait(PF_PAINREC2) && one_in(300)) pain--;
   if (has_trait(PF_PAINREC3) && one_in(150)) pain--;
  }
 
- if (has_trait(PF_ALBINO) && g->is_in_sunlight(pos.x, pos.y) && one_in(20)) {
-  messages.add("The sunlight burns your skin!");
-  if (has_disease(DI_SLEEP)) {
-   rem_disease(DI_SLEEP);
-   messages.add("You wake up!");
-  }
-  hurtall(1);
- }
+ if (g->is_in_sunlight(pos)) {
+  if (has_trait(PF_LEAVES) && one_in(600)) hunger--;
 
- if (g->is_in_sunlight(pos.x, pos.y)) {
+  if (has_trait(PF_ALBINO) && one_in(20)) {
+   messages.add("The sunlight burns your skin!");
+   if (has_disease(DI_SLEEP)) {
+    rem_disease(DI_SLEEP);
+    messages.add("You wake up!");
+   }
+   hurtall(1);
+  }
+
   if ((has_trait(PF_TROGLO) || has_trait(PF_TROGLO2)) && g->weather == WEATHER_SUNNY) {
    str_cur--;
    dex_cur--;

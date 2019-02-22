@@ -429,8 +429,7 @@ void game::process_artifact(item *it, player *p, bool wielded)
       it->charges++;
      break;
     case ARTC_SOLAR:
-     if (messages.turn.second == 0 && messages.turn.minute % 10 == 0 &&
-         is_in_sunlight(p->pos.x, p->pos.y))
+     if (messages.turn.second == 0 && messages.turn.minute % 10 == 0 && is_in_sunlight(p->pos))
       it->charges++;
      break;
     case ARTC_PAIN:

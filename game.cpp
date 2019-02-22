@@ -613,7 +613,7 @@ bool game::do_turn()
   if (u.stim > 0) u.stim--;
   if (u.pkill > 0) u.pkill--;
   if (u.pkill < 0) u.pkill++;
-  if (u.has_bionic(bio_solar) && is_in_sunlight(u.pos.x, u.pos.y))
+  if (u.has_bionic(bio_solar) && is_in_sunlight(u.pos))
    u.charge_power(1);
  }
  if (messages.turn % 300 == 0) {	// Pain up/down every 30 minutes
@@ -1906,10 +1906,10 @@ void game::add_event(event_type type, int on_turn, int faction_id, int x, int y)
  events.push_back(tmp);
 }
 
-bool game::event_queued(event_type type)
+bool game::event_queued(event_type type) const
 {
- for (int i = 0; i < events.size(); i++) {
-  if (events[i].type == type) return true;
+ for(auto& ev : events) {
+  if (ev.type == type) return true;
  }
  return false;
 }
@@ -2652,11 +2652,11 @@ void game::hallucinate()
  wrefresh(w_terrain);
 }
 
-unsigned char game::light_level()
+unsigned char game::light_level() const
 {
  int ret;
  if (lev.z < 0)	// Underground!
-  ret = 1;
+  ret = 1;	// assumes solid roof overhead -- would want the inside of a crater to have the light level of the surface; cf C:DDA
  else {
   ret = messages.turn.sunlight();
   ret -= weather_datum::data[weather].sight_penalty;
@@ -2664,30 +2664,24 @@ unsigned char game::light_level()
  for (int i = 0; i < events.size(); i++) {
   if (events[i].type == EVENT_DIM) {
    int turns_left = events[i].turn - int(messages.turn);
-   i = events.size();
    if (turns_left > 25)
     ret = (ret * (turns_left - 25)) / 25;
    else
     ret = (ret * (25 - turns_left)) / 25;
+   break;
   }
  }
  int flashlight = u.active_item_charges(itm_flashlight_on);
- //int light = u.light_items();
  if (ret < 10 && flashlight > 0) {
 /* additive so that low battery flashlights still increase the light level 
 	rather than decrease it 						*/
   ret += flashlight;
-  if (ret > 10)
-   ret = 10;
+  if (ret > 10) ret = 10;
  }
- if (ret < 8 && u.has_active_bionic(bio_flashlight))
-  ret = 8;
- if (ret < 8 && event_queued(EVENT_ARTIFACT_LIGHT))
-  ret = 8;
- if (ret < 4 && u.has_artifact_with(AEP_GLOW))
-  ret = 4;
- if (ret < 1)
-  ret = 1;
+ if (ret < 8 && u.has_active_bionic(bio_flashlight)) ret = 8;
+ if (ret < 8 && event_queued(EVENT_ARTIFACT_LIGHT)) ret = 8;
+ if (ret < 4 && u.has_artifact_with(AEP_GLOW)) ret = 4;
+ if (ret < 1) ret = 1;
 // The EVENT_DIM event slowly dims the sky, then relights it
 // EVENT_DIM has an occurance date of turn + 50, so the first 25 dim it
  return ret;
@@ -3675,10 +3669,9 @@ bool game::is_empty(int x, int y) const
          (u.pos.x != x || u.pos.y != y));
 }
 
-bool game::is_in_sunlight(int x, int y)
+bool game::is_in_sunlight(const point& pt) const
 {
- return (m.is_outside(x, y) && light_level() >= 40 &&
-         (weather == WEATHER_CLEAR || weather == WEATHER_SUNNY));
+ return m.is_outside(pt) && light_level() >= 40 && (weather == WEATHER_CLEAR || weather == WEATHER_SUNNY);
 }
 
 void game::kill_mon(monster& target, bool u_did_it)

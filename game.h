@@ -58,7 +58,7 @@ class game
   void decrease_nextinv();	// Decrement the next inventory letter
   void add_event(event_type type, int on_turn, int faction_id = -1,
                  int x = -1, int y = -1);
-  bool event_queued(event_type type);
+  bool event_queued(event_type type) const;
 // Sound at (x, y) of intensity (vol), described to the player is (description)
   void sound(int x, int y, int vol, std::string description);
   void sound(const point& pt, int vol, const std::string& description) { sound(pt.x, pt.y, vol, description); };
@@ -88,8 +88,9 @@ class game
 
   bool is_empty(int x, int y) const;	// True if no PC, no monster, move cost > 0
   bool is_empty(const point& pt) const { return is_empty(pt.x, pt.y); };
-  bool is_in_sunlight(int x, int y); // Checks outdoors + sunny
-// Kill that monster; fixes any pointers etc
+  bool is_in_sunlight(const point& pt) const; // Checks outdoors + sunny
+  unsigned char light_level() const;
+  // Kill that monster; fixes any pointers etc
   void kill_mon(monster& target, bool u_did_it = false);
   void kill_mon(monster* target, bool u_did_it = false) { if (target) kill_mon(*target, u_did_it); };
   void kill_mon(int index, bool u_did_it = false) { assert(0 <= index && index<z.size()); kill_mon(z[index], u_did_it); };
@@ -131,7 +132,6 @@ class game
   void nuke(int x, int y);
   int& scent(int x, int y);
   void clear_scents() { memset(grscent, 0, sizeof(grscent)); }
-  unsigned char light_level();
   int assign_npc_id() { return next_npc_id++; }
   int assign_faction_id() { return next_faction_id++; }
   faction* faction_by_id(int it);

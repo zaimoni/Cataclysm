@@ -1200,7 +1200,7 @@ void vehicle::gain_moves (int mp)
     }
 
 	const point anchor(global());
-    if (g->is_in_sunlight(anchor.x, anchor.y)) {
+    if (g->is_in_sunlight(anchor)) {
         if (const int spw = solar_power()) {
             int fl = spw / 100;
             if (rng (0, 100) <= (spw % 100)) fl++;
