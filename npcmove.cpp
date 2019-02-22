@@ -112,20 +112,16 @@ void npc::move(game *g)
 void npc::execute_action(game *g, npc_action action, int target)
 {
  int oldmoves = moves;
- int tarx = pos.x, tary = pos.y;
- int light = g->light_level();
- if (target == -2) {
-  tarx = g->u.pos.x;
-  tary = g->u.pos.y;
- } else if (target >= 0) {
-  tarx = g->z[target].pos.x;
-  tary = g->z[target].pos.y;
- }
+ const int light = g->light_level();
+ point tar(pos);
+ // would be useful to have a way to designate other NPCs as targets
+ if (target == -2) tar = g->u.pos;
+ else if (target >= 0) tar = g->z[target].pos;
 
  std::vector<point> line;
- if (tarx != pos.x || tary != pos.y) {
+ if (tar != pos) {
   int linet;
-  line = line_to(pos, tarx, tary, (g->m.sees(pos, tarx, tary, sight_range(g->light_level()), linet) ? linet : 0));
+  line = line_to(pos, tar, (g->m.sees(pos, tar, sight_range(light), linet) ? linet : 0));
  }
 
  switch (action) {
@@ -222,13 +218,12 @@ void npc::execute_action(game *g, npc_action action, int target)
 
  case npc_flee:
 // TODO: More intelligent fleeing
-  move_away_from(g, tarx, tary);
+  move_away_from(g, tar.x, tar.y);
   break;
 
  case npc_melee:
-  update_path(g, tarx, tary);
-  if (path.size() > 1)
-   move_to_next(g);
+  update_path(g, tar.x, tar.y);
+  if (path.size() > 1) move_to_next(g);
   else if (path.size() == 1) {
    if (target >= 0)
     melee_monster(g, target);
@@ -239,11 +234,11 @@ void npc::execute_action(game *g, npc_action action, int target)
   break;
   
  case npc_shoot:
-  g->fire(*this, tarx, tary, line, false);
+  g->fire(*this, tar, line, false);
   break;
 
  case npc_shoot_burst:
-  g->fire(*this, tarx, tary, line, true);
+  g->fire(*this, tar, line, true);
   break;
 
  case npc_alt_attack:
