@@ -79,9 +79,7 @@ void monster::plan(game *g)
  }
  if (is_fleeing(g->u) && can_see() && g->sees_u(pos)) {
   fleeing = true;
-  wand = pos;
-  wand *= 2;
-  wand -= g->u.pos;
+  wand = 2*pos - g->u.pos;
   wandf = 40;
   dist = rl_dist(pos, g->u.pos);
  }
@@ -100,9 +98,7 @@ void monster::plan(game *g)
       (can_see() && g->m.sees(pos, me->pos, sightrange))) {
    if (is_fleeing(*me)) {
     fleeing = true;
-	wand = pos;
-	wand *= 2;
-	wand -= me->pos;
+	wand = 2*pos - me->pos;
     wandf = 40;
     dist = medist;
    } else if (can_see() && g->m.sees(pos, me->pos, sightrange, tc)) {
@@ -120,8 +116,7 @@ void monster::plan(game *g)
    if (_mon.friendly != 0 && mondist < dist && can_see() && g->m.sees(pos, _mon.pos, sightrange, tc)) {
     dist = mondist;
     if (fleeing) {
-	 wand = 2*pos;
-	 wand -= _mon.pos;
+	 wand = 2*pos - _mon.pos;
      wandf = 40;
     } else {
      closest_mon = &_mon;

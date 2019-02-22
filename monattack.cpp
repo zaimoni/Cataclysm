@@ -122,7 +122,7 @@ void mattack::boomer(game *g, monster *z)
  std::vector<point> line = line_to(z->pos, g->u.pos, j);
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  z->moves = -250;			// It takes a while
- bool u_see = g->u_see(z->pos.x);
+ bool u_see = g->u_see(z->pos);
  if (u_see) messages.add("The %s spews bile!", z->name().c_str());
  for (int i = 0; i < line.size(); i++) {
   auto& fd = g->m.field_at(line[i]);

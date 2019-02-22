@@ -1820,8 +1820,7 @@ std::string npc::opinion_text()
 void npc::shift(const point delta)
 {
  const point block_delta(delta*SEE);
- pos.x -= delta.x * SEEX;
- pos.y -= delta.y * SEEY;
+ pos -= block_delta;
  mapx += delta.x;
  mapy += delta.y;
  it -= block_delta;

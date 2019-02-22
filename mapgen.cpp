@@ -3570,7 +3570,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     } break;
 
     case 6: { // Spiral
-	 const point nw_out = (rng(SEEX - 4, SEEX), rng(SEEY - 4, SEEY));
+	 const point nw_out = point(rng(SEEX - 4, SEEX), rng(SEEY - 4, SEEY));
 	 const point nw_in  = nw_out + Direction::SE;
 	 const point ne_out = nw_out + 5 * Direction::E;
 	 const point se_out = nw_out + 5 * Direction::SE;

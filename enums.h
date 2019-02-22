@@ -14,7 +14,9 @@ STONE, PAPER, WOOD, PLASTIC, GLASS, IRON, STEEL, SILVER
 struct point {
  int x;
  int y;
- point(int X = 0, int Y = 0) : x (X), y (Y) {}
+ point() : x(0), y(0) {}
+ explicit point(int X) : x(X), y(X) {}	// the diagonal projection of the integers Z into the integer plane ZxZ
+ point(int X, int Y) : x (X), y (Y) {}
  point(const point &p) = default;
 
  point& operator+=(const point& rhs) {
@@ -42,6 +44,7 @@ struct point {
 inline bool operator==(const point& lhs, const point& rhs) { return lhs.x == rhs.x && lhs.y == rhs.y; }
 inline bool operator!=(const point& lhs, const point& rhs) { return lhs.x != rhs.x || lhs.y != rhs.y; }
 inline point operator+(const point& lhs, const point& rhs) { return point(lhs) += rhs; }
+inline point operator-(const point& lhs, const point& rhs) { return point(lhs) -= rhs; }
 inline point operator*(int s, const point& pt) { return point(pt) *= s; }
 inline point operator*(const point& pt, int s) { return point(pt) *= s; }
 
