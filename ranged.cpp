@@ -465,7 +465,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
 */
 // Draw the player
    int atx = SEEX + u.pos.x - center.x, aty = SEEY + u.pos.y - center.y;
-   if (atx >= 0 && atx < SEEX * 2 + 1 && aty >= 0 && aty < SEEY * 2 + 1)
+   if (atx >= 0 && atx < VIEW && aty >= 0 && aty < VIEW)
     mvwputch(w_terrain, aty, atx, u.color(), '@');
 
    int tart;

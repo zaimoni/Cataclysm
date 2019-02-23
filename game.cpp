@@ -48,17 +48,17 @@ game::game()
  init_vehicles();     // Set up vehicles                  (SEE veh_typedef.cpp)
  load_keyboard_settings();
 // Set up the main UI windows.
- w_terrain = newwin(SEEY * 2 + 1, SEEX * 2 + 1, 0, 0);
+ w_terrain = newwin(VIEW, VIEW, 0, 0);
  werase(w_terrain);
- w_minimap = newwin(7, 7, 0, SEEX * 2 + 1);
+ w_minimap = newwin(7, 7, 0, VIEW);
  werase(w_minimap);
- w_HP = newwin(14, 7, 7, SEEX * 2 + 1);
+ w_HP = newwin(14, 7, 7, VIEW);
  werase(w_HP);
- w_moninfo = newwin(12, 48, 0, SEEX * 2 + 8);
+ w_moninfo = newwin(12, 48, 0, VIEW + 7);
  werase(w_moninfo);
- w_messages = newwin(9, 48, 12, SEEX * 2 + 8);
+ w_messages = newwin(9, 48, 12, VIEW + 7);
  werase(w_messages);
- w_status = newwin(4, 55, 21, SEEX * 2 + 1);
+ w_status = newwin(4, 55, 21, VIEW);
  werase(w_status);
 
  gamemode = new special_game;	// Nothing, basically.
@@ -2640,8 +2640,8 @@ void game::draw_minimap()
 
 void game::hallucinate()
 {
- for (int i = 0; i <= SEEX * 2 + 1; i++) {
-  for (int j = 0; j <= SEEY * 2 + 1; j++) {
+ for (int i = 0; i <= VIEW; i++) {
+  for (int j = 0; j <= VIEW; j++) {
    if (one_in(10)) {
     char ter_sym = ter_t::list[m.ter(i + rng(-2, 2), j + rng(-2, 2))].sym;
     nc_color ter_col = ter_t::list[m.ter(i + rng(-2, 2), j + rng(-2, 2))].color;
