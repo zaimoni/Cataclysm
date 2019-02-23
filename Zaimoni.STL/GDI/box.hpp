@@ -23,7 +23,7 @@ public:
 	const T& br_c() const { return _bottom_right; }
 
 	bool contains(const T& src) const {
-		static std::less_equal<T::coord_type> lte;
+		static std::less_equal<typename T::coord_type> lte;
 		return pointwise_test(_top_left, src, lte) && pointwise_test(src, _bottom_right, lte);
 	}
 
