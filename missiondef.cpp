@@ -87,7 +87,7 @@ void mission_start::place_dog(game *g, mission *miss)
 	}
 
 	tinymap doghouse;
-	doghouse.load(g, house.x * 2, house.y * 2);
+	doghouse.load(g, 2*house);
 	doghouse.add_spawn(mon_dog, 1, SEEX, SEEY, true, -1, miss->uid);
 	doghouse.save(&(g->cur_om), int(messages.turn), house.x * 2, house.y * 2);
 }
@@ -104,7 +104,7 @@ void mission_start::place_zombie_mom(game *g, mission *miss)
 	}
 
 	tinymap zomhouse;
-	zomhouse.load(g, house.x * 2, house.y * 2);
+	zomhouse.load(g, 2*house);
 	zomhouse.add_spawn(mon_zombie, 1, SEEX, SEEY, false, -1, miss->uid, random_first_name(false));
 	zomhouse.save(&(g->cur_om), int(messages.turn), house.x * 2, house.y * 2);
 }
@@ -152,7 +152,7 @@ void mission_start::place_npc_software(game *g, mission *miss)
 			g->cur_om.seen(x, y) = true;
 	}
 	tinymap compmap;
-	compmap.load(g, place.x * 2, place.y * 2);
+	compmap.load(g, 2*place);
 	point comppoint;
 
 	switch (g->cur_om.ter(place.x, place.y)) {

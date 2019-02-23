@@ -501,7 +501,7 @@ void game::start_game()
  set_adjacent_overmaps(true);
 // Init the starting map at this location.
  //MAPBUFFER.load();
- m.load(this, lev.x, lev.y);
+ m.load(this, point(lev.x, lev.y));
 // Start us off somewhere in the shelter.
  u.pos.x = SEEX * int(MAPSIZE / 2) + 5;
  u.pos.y = SEEY * int(MAPSIZE / 2) + 5;
@@ -561,7 +561,7 @@ bool game::do_turn()
   for (int i = 0; i < z.size(); i++) {
    if (z[i].is_static_spawn()) {	// Static spawn, move them back there
     tinymap tmp;
-    tmp.load(this, z[i].spawnmap.x, z[i].spawnmap.y);
+    tmp.load(this, z[i].spawnmap);
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, messages.turn, z[i].spawnmap.x, z[i].spawnmap.y);
    } else {	// Absorb them back into a group
@@ -1747,7 +1747,7 @@ void game::load(std::string name)
  cur_om = overmap(this, comx, comy, lev.z);
 // m = map(&itypes, &mapitems, &traps); // Init the root map with our vectors
  //MAPBUFFER.load();
- m.load(this, lev.x, lev.y);
+ m.load(this, point(lev.x, lev.y));
  run_mode = tmprun;
  if (OPTIONS[OPT_SAFEMODE] && run_mode == 0)
   run_mode = 1;
@@ -1951,7 +1951,7 @@ void game::debug()
     //m.save(&cur_om, turn, levx, levy);
     lev.x = tmp.x * 2 - int(MAPSIZE / 2);
     lev.y = tmp.y * 2 - int(MAPSIZE / 2);
-    m.load(this, lev.x, lev.y);
+    m.load(this, point(lev.x, lev.y));
    }
   } break;
 
@@ -4086,7 +4086,7 @@ void game::examine()
   cur_om.save(u.name);
   overmap(this, cur_om.pos.x, cur_om.pos.y, -1);
   cur_om = overmap(this, cur_om.pos.x, cur_om.pos.y, cur_om.pos.z + movez);
-  m.load(this, lev.x, lev.y);
+  m.load(this, point(lev.x, lev.y));
   update_map(u.pos.x, u.pos.y);
   for (int x = 0; x < SEEX * MAPSIZE; x++) {
    for (int y = 0; y < SEEY * MAPSIZE; y++) {
@@ -5853,7 +5853,7 @@ void game::vertical_move(int movez, bool force)
  //m.save(&cur_om, turn, levx, levy);
  cur_om = overmap(this, cur_om.pos.x, cur_om.pos.y, cur_om.pos.z + movez);
  map tmpmap;
- tmpmap.load(this, lev.x, lev.y);
+ tmpmap.load(this, point(lev.x, lev.y));
  cur_om = overmap(this, cur_om.pos.x, cur_om.pos.y, original_z);
 // Find the corresponding staircase
  int stairx = -1, stairy = -1;
@@ -5908,12 +5908,12 @@ void game::vertical_move(int movez, bool force)
      coming_to_stairs.push_back( monster_and_count(z[i], 1 + turns) );
    } else if (z[i].is_static_spawn()) { // Static spawn, move them back there
     tinymap tmp;
-    tmp.load(this, z[i].spawnmap.x, z[i].spawnmap.y);
+    tmp.load(this, z[i].spawnmap);
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, messages.turn, z[i].spawnmap.x, z[i].spawnmap.y);
    } else if (z[i].friendly < 0) { // Friendly, make it into a static spawn
     tinymap tmp;
-    tmp.load(this, lev.x, lev.y);
+    tmp.load(this, point(lev.x, lev.y));
 	point spawn = z[i].pos;
     while (spawn.x < 0) spawn.x += SEEX;
     while (spawn.y < 0) spawn.y += SEEY;
@@ -5955,7 +5955,7 @@ void game::vertical_move(int movez, bool force)
 
  lev.z += movez;
  u.moves -= 100;
- m.load(this, lev.x, lev.y);
+ m.load(this, point(lev.x, lev.y));
  u.pos.x = stairx;
  u.pos.y = stairy;
  if (rope_ladder) m.ter(u.pos) = t_rope_up;
@@ -6020,7 +6020,7 @@ void game::update_map(int &x, int &y)
   y -= SEEY;
   shift.y++;
  }
- m.shift(this, lev.x, lev.y, shift);
+ m.shift(this, point(lev.x, lev.y), shift);
  lev.x += shift.x;
  lev.y += shift.y;
  if (lev.x < 0) {
@@ -6051,7 +6051,7 @@ void game::update_map(int &x, int &y)
 // Despawn; we're out of bounds
    if (z[i].is_static_spawn()) {	// Static spawn, move them back there
     map tmp;
-    tmp.load(this, z[i].spawnmap.x, z[i].spawnmap.y);
+    tmp.load(this, z[i].spawnmap);
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, messages.turn, z[i].spawnmap.x, z[i].spawnmap.y);
    } else {	// Absorb them back into a group
@@ -6498,7 +6498,7 @@ void game::nuke(int x, int y)
  if (x < 0 || y < 0 || x >= OMAPX || y >= OMAPY) return;
  int mapx = x * 2, mapy = y * 2;
  map tmpmap;
- tmpmap.load(this, mapx, mapy);
+ tmpmap.load(this, point(mapx, mapy));
  for (int i = 0; i < SEEX * 2; i++) {
   for (int j = 0; j < SEEY * 2; j++) {
    if (!one_in(10)) tmpmap.ter(i, j) = t_rubble;

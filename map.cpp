@@ -15,6 +15,7 @@
 
 std::map<ter_id, std::string> ter_t::tiles;
 
+// \todo V.0.2.1 new terrain air
 const ter_t ter_t::list[num_terrain_types] = {  // MUST match enum ter_id!
 	{ "nothing",	     ' ', c_white,   2, tr_null,
 	mfb(transparent) | mfb(diggable) },
@@ -2167,7 +2168,7 @@ void map::draw(game *g, WINDOW* w, point center)
  }
  const point at(g->u.pos - center + point(SEE));
  if (at.x >= 0 && at.x < VIEW && at.y >= 0 && at.y < VIEW)
-  mvwputch(w, aty, atx, g->u.color(), '@');
+  mvwputch(w, at.y, at.x, g->u.color(), '@');
 }
 
 void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
@@ -2552,25 +2553,26 @@ void map::save(overmap *om, unsigned int turn, int x, int y)
  }
 }
 
-void map::load(game *g, int wx, int wy)
+void map::load(game *g, const point& world)
 {
  for (int gridx = 0; gridx < my_MAPSIZE; gridx++) {
   for (int gridy = 0; gridy < my_MAPSIZE; gridy++) {
-   if (!loadn(g, wx, wy, gridx, gridy))
-    loadn(g, wx, wy, gridx, gridy);
+   if (!loadn(g, world, gridx, gridy))
+    loadn(g, world, gridx, gridy);
   }
  }
 }
 
-void map::shift(game *g, int wx, int wy, const point delta)
+void map::shift(game *g, const point& world, const point& delta)
 {
+ const point dest(world+delta);
 // Special case of 0-shift; refresh the map
  if (delta.x == 0 && delta.y == 0) {
   return; // Skip this?
   for (int gridx = 0; gridx < my_MAPSIZE; gridx++) {
    for (int gridy = 0; gridy < my_MAPSIZE; gridy++) {
-    if (!loadn(g, wx+ delta.x, wy+ delta.y, gridx, gridy))
-     loadn(g, wx+ delta.x, wy+ delta.y, gridx, gridy);
+    if (!loadn(g, dest, gridx, gridy))
+     loadn(g, dest, gridx, gridy);
    }
   }
   return;
@@ -2589,16 +2591,16 @@ void map::shift(game *g, int wx, int wy, const point delta)
      if (gridx + delta.x < my_MAPSIZE && gridy + delta.y < my_MAPSIZE)
       copy_grid(gridx + gridy * my_MAPSIZE,
                 gridx + delta.x + (gridy + delta.y) * my_MAPSIZE);
-     else if (!loadn(g, wx + delta.x, wy + delta.y, gridx, gridy))
-      loadn(g, wx + delta.x, wy + delta.y, gridx, gridy);
+     else if (!loadn(g, dest, gridx, gridy))
+      loadn(g, dest, gridx, gridy);
     }
    } else { // sy < 0; work through it backwards
     for (int gridy = my_MAPSIZE - 1; gridy >= 0; gridy--) {
      if (gridx + delta.x < my_MAPSIZE && gridy + delta.y >= 0)
       copy_grid(gridx + gridy * my_MAPSIZE,
                 gridx + delta.x + (gridy + delta.y) * my_MAPSIZE);
-     else if (!loadn(g, wx + delta.x, wy + delta.y, gridx, gridy))
-      loadn(g, wx + delta.x, wy + delta.y, gridx, gridy);
+     else if (!loadn(g, dest, gridx, gridy))
+      loadn(g, dest, gridx, gridy);
     }
    }
   }
@@ -2609,16 +2611,16 @@ void map::shift(game *g, int wx, int wy, const point delta)
      if (gridx + delta.x >= 0 && gridy + delta.y < my_MAPSIZE)
       copy_grid(gridx + gridy * my_MAPSIZE,
                 gridx + delta.x + (gridy + delta.y) * my_MAPSIZE);
-     else if (!loadn(g, wx + delta.x, wy + delta.y, gridx, gridy))
-      loadn(g, wx + delta.x, wy + delta.y, gridx, gridy);
+     else if (!loadn(g, dest, gridx, gridy))
+      loadn(g, dest, gridx, gridy);
     }
    } else { // sy < 0; work through it backwards
     for (int gridy = my_MAPSIZE - 1; gridy >= 0; gridy--) {
      if (gridx + delta.x >= 0 && gridy + delta.y >= 0)
       copy_grid(gridx + gridy * my_MAPSIZE,
                 gridx + delta.x + (gridy + delta.y) * my_MAPSIZE);
-     else if (!loadn(g, wx + delta.x, wy + delta.y, gridx, gridy))
-      loadn(g, wx + delta.x, wy + delta.y, gridx, gridy);
+     else if (!loadn(g, dest, gridx, gridy))
+      loadn(g, dest, gridx, gridy);
     }
    }
   }
@@ -2648,10 +2650,10 @@ void map::saven(overmap *om, unsigned int turn, int worldx, int worldy,
 // 0,0  1,0  2,0
 // 0,1  1,1  2,1
 // 0,2  1,2  2,2 etc
-bool map::loadn(game *g, int worldx, int worldy, int gridx, int gridy)
+bool map::loadn(game *g, const point& world, int gridx, int gridy)
 {
- int absx = g->cur_om.pos.x * OMAPX * 2 + worldx + gridx,
-     absy = g->cur_om.pos.y * OMAPY * 2 + worldy + gridy,
+ int absx = g->cur_om.pos.x * OMAPX * 2 + world.x + gridx,
+     absy = g->cur_om.pos.y * OMAPY * 2 + world.y + gridy,
      gridn = gridx + gridy * my_MAPSIZE;
  submap * const tmpsub = MAPBUFFER.lookup_submap(absx, absy, g->cur_om.pos.z);
  if (tmpsub) {
@@ -2664,11 +2666,10 @@ bool map::loadn(game *g, int worldx, int worldy, int gridx, int gridy)
 // overx, overy is where in the overmap we need to pull data from
 // Each overmap square is two nonants; to prevent overlap, generate only at
 //  squares divisible by 2.
-  int newmapx = worldx + gridx - ((worldx + gridx) % 2);
-  int newmapy = worldy + gridy - ((worldy + gridy) % 2);
-  if (worldx + gridx < 0) newmapx = worldx + gridx;
-  if (worldy + gridy < 0) newmapy = worldy + gridy;
-  if (worldx + gridx < 0) newmapx = worldx + gridx;
+  int newmapx = world.x + gridx - ((world.x + gridx) % 2);	// making this block implement the above for negative coordinates, is a savefile break
+  int newmapy = world.y + gridy - ((world.y + gridy) % 2);
+  if (world.x + gridx < 0) newmapx = world.x + gridx;
+  if (world.y + gridy < 0) newmapy = world.y + gridy;
   tmp_map.generate(g, &(g->cur_om), newmapx, newmapy, int(messages.turn));
   return false;
  }

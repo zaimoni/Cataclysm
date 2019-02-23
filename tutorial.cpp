@@ -42,7 +42,7 @@ bool tutorial_game::init(game *g)
   for (int y = 0; y < OMAPY; y++)
    g->cur_om.seen(x, y) = true;
  }
- g->m.load(g, g->lev.x, g->lev.y);
+ g->m.load(g, point(g->lev.x, g->lev.y));
  g->lev.z = 0;
  g->u.pos = point(SEEX + 2, SEEY + 4);
 

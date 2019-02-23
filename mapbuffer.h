@@ -21,7 +21,7 @@ class mapbuffer
   int size() const { return submap_list.size(); };
 
  private:
-  std::map<tripoint, submap*> submaps;
+  std::map<tripoint, submap*> submaps;	// candidate for absolute coordinates: tripoint (submap index),point (legal values 0..SEE-1 for both x,y)
   std::list<submap*> submap_list;
   game *master_game;
 };

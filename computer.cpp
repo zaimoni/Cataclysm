@@ -438,7 +438,7 @@ void computer::activate_function(game *g, computer_action action)
     tmp_om = g->cur_om;
     g->cur_om = overmap(g, tmp_om.pos.x, tmp_om.pos.y, level);
     tinymap tmpmap;
-    tmpmap.load(g, g->lev.x, g->lev.y);
+    tmpmap.load(g, point(g->lev.x, g->lev.y));
     tmpmap.translate<t_missile, t_hole>();
     tmpmap.save(&tmp_om, messages.turn, g->lev.x, g->lev.y);
    }

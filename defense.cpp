@@ -238,7 +238,7 @@ void defense_game::init_map(game *g)
   }
  }
 
- g->m.load(g, g->lev.x, g->lev.y);
+ g->m.load(g, point(g->lev.x, g->lev.y));
 
  g->update_map(g->u.pos.x, g->u.pos.y);
  monster generator(mtype::types[mon_generator], g->u.pos.x + 1, g->u.pos.y + 1);
