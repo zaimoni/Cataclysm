@@ -457,17 +457,10 @@ std::vector<mongroup*> overmap::monsters_at(int x, int y)
  return ret;
 }
 
-bool overmap::is_safe(int x, int y)
+bool overmap::is_safe(const point& pt) const
 {
- std::vector<mongroup*> mons = monsters_at(x, y);
- if (monsters_at(x, y).empty())
-  return true;
-
- bool safe = true;
- for (int n = 0; n < mons.size() && safe; n++)
-  safe = mons[n]->is_safe();
-
- return safe;
+ for (auto& gr : const_cast<overmap*>(this)->monsters_at(pt.x, pt.y)) if (!gr->is_safe()) return false;
+ return true;
 }
 
 

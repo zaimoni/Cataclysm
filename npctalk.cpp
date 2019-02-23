@@ -227,7 +227,7 @@ std::string dynamic_line(talk_topic topic, game *g, npc *p)
  } break;
 
  case TALK_TRAIN_START:
-  if (g->cur_om.is_safe(g->om_location().x, g->om_location().y))
+  if (g->cur_om.is_safe(g->om_location()))
    return "Alright, let's begin.";
   else
    return "It's not safe here.  Let's get to safety first.";
@@ -735,7 +735,7 @@ std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *p)
   } break;
 
  case TALK_TRAIN_START:
-  if (g->cur_om.is_safe(g->om_location().x, g->om_location().y)) {
+  if (g->cur_om.is_safe(g->om_location())) {
    RESPONSE("Sounds good.");
     SUCCESS(TALK_DONE);
     SUCCESS_ACTION(&talk_function::start_training);
