@@ -464,9 +464,9 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
     m.drawsq(w_terrain, u, ret[i].x, ret[i].y, false, true, center.x, center.y);
 */
 // Draw the player
-   int atx = SEEX + u.pos.x - center.x, aty = SEEY + u.pos.y - center.y;
-   if (atx >= 0 && atx < VIEW && aty >= 0 && aty < VIEW)
-    mvwputch(w_terrain, aty, atx, u.color(), '@');
+   const point at(u.pos-center+point(SEE));
+   if (at.x >= 0 && at.x < VIEW && at.y >= 0 && at.y < VIEW)
+    mvwputch(w_terrain, at.y, at.x, u.color(), '@');
 
    int tart;
    if (m.sees(u.pos, tar, -1, tart)) {// Selects a valid line-of-sight
@@ -536,10 +536,8 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
     if (t[i]->pos == tar) target = i;
    }
    return ret;
-  } else if (ch == '0') {
-   tar = u.pos;
-  } else if (ch == '*')
-   snap_to_target = !snap_to_target;
+  } else if (ch == '0') tar = u.pos;
+  else if (ch == '*') snap_to_target = !snap_to_target;
   else if (ch == KEY_ESCAPE || ch == 'q') { // return empty vector (cancel)
    ret.clear();
    return ret;

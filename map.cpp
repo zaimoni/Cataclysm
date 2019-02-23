@@ -2165,8 +2165,8 @@ void map::draw(game *g, WINDOW* w, point center)
     mvwputch(w, realy+SEEY - center.y, realx+SEEX - center.x, c_black,'#');
   }
  }
- int atx = SEEX + g->u.pos.x - center.x, aty = SEEY + g->u.pos.y - center.y;
- if (atx >= 0 && atx < VIEW && aty >= 0 && aty < VIEW)
+ const point at(g->u.pos - center + point(SEE));
+ if (at.x >= 0 && at.x < VIEW && at.y >= 0 && at.y < VIEW)
   mvwputch(w, aty, atx, g->u.color(), '@');
 }
 
