@@ -234,7 +234,7 @@ void defense_game::init_map(game *g)
    tm.generate(g, &(g->cur_om), mx, my, int(messages.turn));
    tm.clear_spawns();
    tm.clear_traps();
-   tm.save(&g->cur_om, int(messages.turn), mx, my);
+   tm.save(&g->cur_om, int(messages.turn), point(mx, my));
   }
  }
 

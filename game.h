@@ -128,7 +128,7 @@ class game
   // when player is thrown (by impact or something)
   void fling_player_or_monster(player *p, monster *zz, int dir, int flvel);
 
-  void nuke(int x, int y);
+  void nuke(const point& world_div_2);
   int& scent(int x, int y);
   void clear_scents() { memset(grscent, 0, sizeof(grscent)); }
   int assign_npc_id() { return next_npc_id++; }

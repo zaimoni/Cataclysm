@@ -440,12 +440,12 @@ void computer::activate_function(game *g, computer_action action)
     tinymap tmpmap;
     tmpmap.load(g, point(g->lev.x, g->lev.y));
     tmpmap.translate<t_missile, t_hole>();
-    tmpmap.save(&tmp_om, messages.turn, g->lev.x, g->lev.y);
+    tmpmap.save(&tmp_om, messages.turn, point(g->lev.x, g->lev.y));
    }
    g->cur_om = tmp_om;
    for (int x = target.x - 2; x <= target.x + 2; x++) {
     for (int y = target.y -  2; y <= target.y + 2; y++)
-     g->nuke(x, y);
+     g->nuke(point(x, y));
    }
   } break;
 

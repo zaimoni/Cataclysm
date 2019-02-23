@@ -2545,11 +2545,11 @@ std::vector<point> map::route(int Fx, int Fy, int Tx, int Ty, bool bash)
  return ret;
 }
 
-void map::save(overmap *om, unsigned int turn, int x, int y)
+void map::save(overmap *om, unsigned int turn, const point& world)
 {
  for (int gridx = 0; gridx < my_MAPSIZE; gridx++) {
   for (int gridy = 0; gridy < my_MAPSIZE; gridy++)
-   saven(om, turn, x, y, gridx, gridy);
+   saven(om, turn, world, gridx, gridy);
  }
 }
 
@@ -2633,14 +2633,13 @@ void map::shift(game *g, const point& world, const point& delta)
 // 0,0 1,0 2,0
 // 0,1 1,1 2,1
 // 0,2 1,2 2,2
-void map::saven(overmap *om, unsigned int turn, int worldx, int worldy,
-                int gridx, int gridy)
+void map::saven(overmap *om, unsigned int turn, const point& world, int gridx, int gridy)
 {
  const int n = gridx + gridy * my_MAPSIZE;
 
  if (grid[n]->ter[0][0] == t_null) return;
- int abs_x = om->pos.x * OMAPX * 2 + worldx + gridx,
-     abs_y = om->pos.y * OMAPY * 2 + worldy + gridy;
+ int abs_x = om->pos.x * OMAPX * 2 + world.x + gridx,
+     abs_y = om->pos.y * OMAPY * 2 + world.y + gridy;
 
  MAPBUFFER.add_submap(abs_x, abs_y, om->pos.z, grid[n]);
 }

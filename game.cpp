@@ -563,7 +563,7 @@ bool game::do_turn()
     tinymap tmp;
     tmp.load(this, z[i].spawnmap);
     tmp.add_spawn(&(z[i]));
-    tmp.save(&cur_om, messages.turn, z[i].spawnmap.x, z[i].spawnmap.y);
+    tmp.save(&cur_om, messages.turn, z[i].spawnmap);
    } else {	// Absorb them back into a group
     int group = valid_group((mon_id)(z[i].type->id), lev.x, lev.y);
     if (group != -1) {
@@ -5910,7 +5910,7 @@ void game::vertical_move(int movez, bool force)
     tinymap tmp;
     tmp.load(this, z[i].spawnmap);
     tmp.add_spawn(&(z[i]));
-    tmp.save(&cur_om, messages.turn, z[i].spawnmap.x, z[i].spawnmap.y);
+    tmp.save(&cur_om, messages.turn, z[i].spawnmap);
    } else if (z[i].friendly < 0) { // Friendly, make it into a static spawn
     tinymap tmp;
     tmp.load(this, point(lev.x, lev.y));
@@ -5918,7 +5918,7 @@ void game::vertical_move(int movez, bool force)
     while (spawn.x < 0) spawn.x += SEEX;
     while (spawn.y < 0) spawn.y += SEEY;
     tmp.add_spawn(&(z[i]));
-    tmp.save(&cur_om, messages.turn, lev.x, lev.y);
+    tmp.save(&cur_om, messages.turn, point(lev.x, lev.y));
    } else {
     const int group = valid_group( (mon_id)(z[i].type->id), lev.x, lev.y);
     if (group != -1) cur_om.zg[group].population++;
@@ -6053,7 +6053,7 @@ void game::update_map(int &x, int &y)
     map tmp;
     tmp.load(this, z[i].spawnmap);
     tmp.add_spawn(&(z[i]));
-    tmp.save(&cur_om, messages.turn, z[i].spawnmap.x, z[i].spawnmap.y);
+    tmp.save(&cur_om, messages.turn, z[i].spawnmap);
    } else {	// Absorb them back into a group
     group = valid_group((mon_id)(z[i].type->id), lev.x + shift.x, lev.y + shift.y);
     if (group != -1) {
@@ -6491,14 +6491,14 @@ void game::teleport(player *p)
  if (is_u) update_map(u.pos.x, u.pos.y);
 }
 
-void game::nuke(int x, int y)
+void game::nuke(const point& world_div_2)
 {
+ if (world_div_2.x < 0 || world_div_2.y < 0 || world_div_2.x >= OMAPX || world_div_2.y >= OMAPY) return;	// precondition
  overmap tmp_om = cur_om;
  cur_om = overmap(this, tmp_om.pos.x, tmp_om.pos.y, 0);
- if (x < 0 || y < 0 || x >= OMAPX || y >= OMAPY) return;
- int mapx = x * 2, mapy = y * 2;
+ point dest(2 * world_div_2);
  map tmpmap;
- tmpmap.load(this, point(mapx, mapy));
+ tmpmap.load(this, dest);
  for (int i = 0; i < SEEX * 2; i++) {
   for (int j = 0; j < SEEY * 2; j++) {
    if (!one_in(10)) tmpmap.ter(i, j) = t_rubble;
@@ -6506,8 +6506,8 @@ void game::nuke(int x, int y)
    tmpmap.radiation(i, j) += rng(20, 80);
   }
  }
- tmpmap.save(&cur_om, messages.turn, mapx, mapy);
- cur_om.ter(x, y) = ot_crater;
+ tmpmap.save(&cur_om, messages.turn, dest);
+ cur_om.ter(world_div_2.x, world_div_2.y) = ot_crater;
  cur_om = tmp_om;
 }
 

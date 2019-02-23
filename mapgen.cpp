@@ -230,7 +230,7 @@ void map::generate(game *g, overmap *om, int x, int y, int turn)
  for (int i = 0; i < my_MAPSIZE; i++) {
   for (int j = 0; j < my_MAPSIZE; j++) {
    if (i <= 1 && j <= 1)
-    saven(om, turn, x, y, i, j);
+    saven(om, turn, point(x, y), i, j);
    else
     delete grid[i + j * my_MAPSIZE];
   }
