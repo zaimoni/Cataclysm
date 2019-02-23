@@ -6004,8 +6004,7 @@ static const zaimoni::gdi::box<point> _map_centered_enough(point(SEE*(MAPSIZE / 
 
 bool game::update_map_would_scroll(const point& pt)
 {
-	return pt.x < _map_centered_enough.tl_c().x || pt.x > _map_centered_enough.br_c().x
-		|| pt.y < _map_centered_enough.tl_c().y || pt.y > _map_centered_enough.br_c().y;
+	return _map_centered_enough.contains(pt);
 }
 
 void game::update_map(int &x, int &y)

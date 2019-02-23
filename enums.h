@@ -50,6 +50,12 @@ inline point operator-(const point& lhs, const point& rhs) { return point(lhs) -
 inline point operator*(int s, const point& pt) { return point(pt) *= s; }
 inline point operator*(const point& pt, int s) { return point(pt) *= s; }
 
+template<class T>
+bool pointwise_test(const point& lhs, const point& rhs, T rel)
+{
+	return rel(lhs.x, rhs.x) && rel(lhs.y, rhs.y);
+}
+
 struct tripoint {
  typedef int coord_type;
 

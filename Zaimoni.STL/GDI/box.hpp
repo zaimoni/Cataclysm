@@ -1,6 +1,8 @@
 #ifndef ZAIMONI_STL_GDI_BOX_HPP
 #define ZAIMONI_STL_GDI_BOX_HPP 1
 
+#include <functional>
+
 namespace zaimoni {
 namespace gdi {
 
@@ -20,11 +22,10 @@ public:
 	const T& tl_c() const { return _top_left; }
 	const T& br_c() const { return _bottom_right; }
 
-/*
 	bool contains(const T& src) const {
-		return pointwise_op(_top_left, src, std::less_equal<T::coord_type>) && pointwise_op(src, _bottom_right, std::less_equal<T::coord_type>);
+		static std::less_equal<T::coord_type> lte;
+		return pointwise_test(_top_left, src, lte) && pointwise_test(src, _bottom_right, lte);
 	}
-*/
 
 	box& operator+=(const T& rhs) {
 		_top_left += rhs;
