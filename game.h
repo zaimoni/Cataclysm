@@ -101,8 +101,7 @@ class game
 // ... a gun is fired, maybe by an NPC (actual damage, etc.).
   void fire(player &p, int tarx, int tary, std::vector<point> &trajectory, bool burst);
   void fire(player &p, const point& tar, std::vector<point> &trajectory, bool burst) { fire(p,tar.x,tar.y,trajectory,burst); }
-  void throw_item(player &p, int tarx, int tary, item &thrown,
-                  std::vector<point> &trajectory);
+  void throw_item(player &p, point tar, const item &thrown, std::vector<point> &trajectory);
   void cancel_activity();
   void cancel_activity_query(const char* message, ...);
   int assign_mission_id() { return next_mission_id++; } // Just returns the next available one

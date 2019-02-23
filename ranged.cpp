@@ -278,33 +278,25 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, b
 }
 
 
-void game::throw_item(player &p, int tarx, int tary, item &thrown,
-                      std::vector<point> &trajectory)
+void game::throw_item(player &p, point tar, const item &thrown, std::vector<point> &trajectory)
 {
  int deviation = 0;
- int trange = 1.5 * rl_dist(p.pos, tarx, tary);
+ int trange = 1.5 * rl_dist(p.pos, tar);
 
 // Throwing attempts below "Basic Competency" level are extra-bad
- if (p.sklevel[sk_throw] < 3)
-  deviation += rng(0, 8 - p.sklevel[sk_throw]);
+ if (p.sklevel[sk_throw] < 3) deviation += rng(0, 8 - p.sklevel[sk_throw]);
 
- if (p.sklevel[sk_throw] < 8)
-  deviation += rng(0, 8 - p.sklevel[sk_throw]);
- else
-  deviation -= p.sklevel[sk_throw] - 6;
+ if (p.sklevel[sk_throw] < 8) deviation += rng(0, 8 - p.sklevel[sk_throw]);
+ else deviation -= p.sklevel[sk_throw] - 6;
 
  deviation += p.throw_dex_mod();
 
- if (p.per_cur < 6)
-  deviation += rng(0, 8 - p.per_cur);
- else if (p.per_cur > 8)
-  deviation -= p.per_cur - 8;
+ if (p.per_cur < 6) deviation += rng(0, 8 - p.per_cur);
+ else if (p.per_cur > 8) deviation -= p.per_cur - 8;
 
  deviation += rng(0, p.encumb(bp_hands) * 2 + p.encumb(bp_eyes) + 1);
- if (thrown.volume() > 5)
-  deviation += rng(0, 1 + (thrown.volume() - 5) / 4);
- if (thrown.volume() == 0)
-  deviation += rng(0, 3);
+ if (thrown.volume() > 5) deviation += rng(0, 1 + (thrown.volume() - 5) / 4);
+ else if (thrown.volume() == 0) deviation += rng(0, 3);
 
  deviation += rng(0, 1 + abs(p.str_cur - thrown.weight()));
 
@@ -317,9 +309,9 @@ void game::throw_item(player &p, int tarx, int tary, item &thrown,
 // Shoot a random nearby space?
   if (missed_by > 9) missed_by = 9;
   const int delta = int(sqrt(double(missed_by)));
-  tarx += rng(-delta, delta);
-  tary += rng(-delta, delta);
-  trajectory = line_to(p.pos, tarx, tary, (m.sees(p.pos, tarx, tary, -1, tart) ? tart : 0));
+  tar.x += rng(-delta, delta);
+  tar.y += rng(-delta, delta);
+  trajectory = line_to(p.pos, tar, (m.sees(p.pos, tar, -1, tart) ? tart : 0));
   missed = true;
   if (!p.is_npc()) messages.add("You miss!");
  } else if (missed_by >= .6) {
@@ -331,20 +323,18 @@ void game::throw_item(player &p, int tarx, int tary, item &thrown,
  std::string message;
  int dam = (thrown.weight() / 4 + thrown.type->melee_dam / 2 + p.str_cur / 2) /
             double(2 + double(thrown.volume() / 4));
- if (dam > thrown.weight() * 3)
-  dam = thrown.weight() * 3;
+ if (dam > thrown.weight() * 3) dam = thrown.weight() * 3;
 
- int i = 0, tx = 0, ty = 0;
+ int i = 0;
+ point t;
  for (i = 0; i < trajectory.size() && dam > -10; i++) {
   message = "";
   double goodhit = missed_by;
-  tx = trajectory[i].x;
-  ty = trajectory[i].y;
+  t = trajectory[i];
   monster* const m_at = mon(trajectory[i]);
 // If there's a monster in the path of our item, and either our aim was true,
 //  OR it's not the monster we were aiming at and we were lucky enough to hit it
-  if (m_at &&
-      (!missed || one_in(7 - int(m_at->type->size)))) {
+  if (m_at && (!missed || one_in(7 - int(m_at->type->size)))) {
    if (0 < thrown.type->melee_cut && rng(0, 100) < 20 + p.sklevel[sk_throw] * 12) {
     if (!p.is_npc()) {
      message += " You cut the ";
@@ -356,17 +346,15 @@ void game::throw_item(player &p, int tarx, int tary, item &thrown,
    }
    if (thrown.made_of(GLASS) && !thrown.active && // active = molotov, etc.
        rng(0, thrown.volume() + 8) - rng(0, p.str_cur) < thrown.volume()) {
-    if (u_see(tx, ty)) messages.add("The %s shatters!", thrown.tname().c_str());
-    for (int i = 0; i < thrown.contents.size(); i++)
-     m.add_item(tx, ty, thrown.contents[i]);
-    sound(tx, ty, 16, "glass breaking!");
+    if (u_see(t)) messages.add("The %s shatters!", thrown.tname().c_str());
+	for (const auto& obj : thrown.contents) m.add_item(t, obj);
+    sound(t, 16, "glass breaking!");
     const int glassdam = rng(0, thrown.volume() * 2);
 	const auto c_armor = m_at->armor_cut();
 	if (glassdam > c_armor) dam += (glassdam - c_armor);
    } else
-    m.add_item(tx, ty, thrown);
-   if (i < trajectory.size() - 1)
-    goodhit = double(double(rand() / RAND_MAX) / 2);
+    m.add_item(t, thrown);
+   if (i < trajectory.size() - 1) goodhit = double(double(rand() / RAND_MAX) / 2);
    if (goodhit < .1 && !m_at->has_flag(MF_NOHEAD)) {
     message = "Headshot!";
     dam = rng(dam, dam * 3);
@@ -383,41 +371,26 @@ void game::throw_item(player &p, int tarx, int tary, item &thrown,
    }
    if (!p.is_npc())
     messages.add("%s You hit the %s for %d damage.", message.c_str(), m_at->name().c_str(), dam);
-   else if (u_see(tx, ty))
+   else if (u_see(t))
     messages.add("%s hits the %s for %d damage.", message.c_str(), m_at->name().c_str(), dam);
    if (m_at->hurt(dam)) kill_mon(*m_at, !p.is_npc());
    return;
   } else // No monster hit, but the terrain might be.
-   m.shoot(this, tx, ty, dam, false, 0);
-  if (m.move_cost(tx, ty) == 0) {
-   if (i > 0) {
-    tx = trajectory[i - 1].x;
-    ty = trajectory[i - 1].y;
-   } else {
-    tx = u.pos.x;
-    ty = u.pos.y;
-   }
-   i = trajectory.size();
+   m.shoot(this, t.x, t.y, dam, false, 0);
+  if (m.move_cost(t) == 0) {
+   t = (i > 0) ? trajectory[i - 1] : u.pos;
+   break;
   }
  }
- if (m.move_cost(tx, ty) == 0) {
-  if (i > 1) {
-   tx = trajectory[i - 2].x;
-   ty = trajectory[i - 2].y;
-  } else {
-   tx = u.pos.x;
-   ty = u.pos.y;
-  }
- }
+ if (m.move_cost(t) == 0) t = (i > 1) ? trajectory[i - 2] : u.pos;
  if (thrown.made_of(GLASS) && !thrown.active && // active means molotov, etc
      rng(0, thrown.volume() + 8) - rng(0, p.str_cur) < thrown.volume()) {
-  if (u_see(tx, ty)) messages.add("The %s shatters!", thrown.tname().c_str());
-  for (int i = 0; i < thrown.contents.size(); i++)
-   m.add_item(tx, ty, thrown.contents[i]);
-  sound(tx, ty, 16, "glass breaking!");
+  if (u_see(t)) messages.add("The %s shatters!", thrown.tname().c_str());
+  for (const auto& obj : thrown.contents) m.add_item(t, obj);
+  sound(t, 16, "glass breaking!");
  } else {
-  sound(tx, ty, 8, "thud.");
-  m.add_item(tx, ty, thrown);
+  sound(t, 8, "thud.");
+  m.add_item(t, thrown);
  }
 }
 

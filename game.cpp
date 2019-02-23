@@ -4942,11 +4942,10 @@ void game::plthrow()
 
  int sight_range = u.sight_range(light_level());
  if (range < sight_range) range = sight_range;
- int x = u.pos.x, y = u.pos.y;
- int x0 = x - range;
- int y0 = y - range;
- int x1 = x + range;
- int y1 = y + range;
+ int x0 = u.pos.x - range;
+ int y0 = u.pos.y - range;
+ int x1 = u.pos.x + range;
+ int y1 = u.pos.y + range;
 
  for (int j = u.pos.x - SEEX; j <= u.pos.x + SEEX; j++) {
   for (int k = u.pos.y - SEEY; k <= u.pos.y + SEEY; k++) {
@@ -4973,7 +4972,8 @@ void game::plthrow()
  }
 
  // target() sets x and y, or returns false if we canceled (by pressing Esc)
- std::vector <point> trajectory = target(x, y, x0, y0, x1, y1, mon_targets, passtarget, &thrown);
+ point tar(u.pos);
+ std::vector<point> trajectory = target(tar.x, tar.y, x0, y0, x1, y1, mon_targets, passtarget, &thrown);
  if (trajectory.empty()) return;
  if (passtarget != -1) last_target = targetindices[passtarget];
 
@@ -4981,7 +4981,7 @@ void game::plthrow()
  u.moves -= 125;
  u.practice(sk_throw, 10);
 
- throw_item(u, x, y, thrown, trajectory);
+ throw_item(u, tar, thrown, trajectory);
 }
 
 void game::plfire(bool burst)
@@ -5035,18 +5035,17 @@ void game::plfire(bool burst)
  int range = u.weapon.range(&u);
  int sight_range = u.sight_range(light_level());
  if (range > sight_range) range = sight_range;
- int x = u.pos.x, y = u.pos.y;
- int x0 = x - range;
- int y0 = y - range;
- int x1 = x + range;
- int y1 = y + range;
- for (int j = x - SEEX; j <= x + SEEX; j++) {
-  for (int k = y - SEEY; k <= y + SEEY; k++) {
+ int x0 = u.pos.x - range;
+ int y0 = u.pos.y - range;
+ int x1 = u.pos.x + range;
+ int y1 = u.pos.y + range;
+ for (int j = u.pos.x - SEEX; j <= u.pos.x + SEEX; j++) {
+  for (int k = u.pos.y - SEEY; k <= u.pos.y + SEEY; k++) {
    if (u_see(j, k)) {
     if (k >= y0 && k <= y1 && j >= x0 && j <= x1)
      m.drawsq(w_terrain, u, j, k, false, true);
     else
-     mvwputch(w_terrain, k + SEEY - y, j + SEEX - x, c_dkgray, '#');
+     mvwputch(w_terrain, k + SEEY - u.pos.y, j + SEEX - u.pos.x, c_dkgray, '#');
    }
   }
  }
@@ -5066,7 +5065,8 @@ void game::plfire(bool burst)
  }
 
  // target() sets x and y, and returns an empty vector if we canceled (Esc)
- std::vector <point> trajectory = target(x, y, x0, y0, x1, y1, mon_targets,
+ point tar(u.pos);
+ std::vector <point> trajectory = target(tar.x, tar.y, x0, y0, x1, y1, mon_targets,
                                          passtarget, &u.weapon);
  draw_ter(); // Recenter our view
  if (trajectory.size() == 0) return;
@@ -5090,7 +5090,7 @@ void game::plfire(bool burst)
  if (u.sklevel[sk_gun] == 0 || (firing->ammo != AT_BB && firing->ammo != AT_NAIL))
   u.practice(sk_gun, 5);
 
- fire(u, x, y, trajectory, burst);
+ fire(u, tar.x, tar.y, trajectory, burst);
 }
 
 void game::butcher()
