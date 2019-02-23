@@ -2568,13 +2568,14 @@ void map::shift(game *g, const point& world, const point& delta)
  const point dest(world+delta);
 // Special case of 0-shift; refresh the map
  if (delta.x == 0 && delta.y == 0) {
-  return; // Skip this?
+#if SHOULD_BE_NOOP
   for (int gridx = 0; gridx < my_MAPSIZE; gridx++) {
    for (int gridy = 0; gridy < my_MAPSIZE; gridy++) {
     if (!loadn(g, dest, gridx, gridy))
      loadn(g, dest, gridx, gridy);
    }
   }
+#endif
   return;
  }
 

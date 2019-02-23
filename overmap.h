@@ -43,7 +43,6 @@ class overmap
   void save(const std::string& name) { save(name, pos.x, pos.y, pos.z); }
   void generate(game *g, overmap* north, overmap* east, overmap* south,
                 overmap* west);
-  void generate_sub(overmap* above);
   void make_tutorial();
   void first_house(int &x, int &y);
 
@@ -69,7 +68,7 @@ class overmap
   point choose_point(game *g);
 
   oter_id& ter(int x, int y);
-  unsigned zones(int x, int y);
+// unsigned zones(int x, int y);	// no definition
   std::vector<mongroup*> monsters_at(int x, int y);
   bool is_safe(int x, int y); // true if monsters_at is empty, or only woodland
   bool&   seen(int x, int y);
@@ -97,6 +96,7 @@ class overmap
   std::vector<city> roads_out;
 
   void open(game *g);
+  void generate_sub(overmap* above);
   //Drawing
   void draw(WINDOW *w, game *g, int &cursx, int &cursy, 
                    int &origx, int &origy, char &ch, bool blink);
