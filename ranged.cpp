@@ -393,9 +393,7 @@ void game::throw_item(player &p, point tar, const item &thrown, std::vector<poin
  }
 }
 
-std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
-                                int hiy, std::vector <monster> t, int &target,
-                                item *relevent)
+std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& bounds, std::vector<const monster*> t, int &target, item *relevent)
 {
  std::vector<point> ret;
  const int sight_dist = u.sight_range(light_level());
@@ -408,15 +406,14 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
    double closest = -1;
    double dist;
    for (int i = 0; i < t.size(); i++) {
-    dist = rl_dist(t[i].pos, u.pos);
+    dist = rl_dist(t[i]->pos, u.pos);
     if (closest < 0 || dist < closest) {
      closest = dist;
      target = i;
     }
    }
   }
-  x = t[target].pos.x;
-  y = t[target].pos.y;
+  tar = t[target]->pos;
  } else
   target = -1;	// No monsters in range, don't use target, reset to -1
 
@@ -432,13 +429,10 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
             u.weapon.charges);
  else
   mvwprintz(w_target, 1, 1, c_red, "Throwing %s", relevent->tname().c_str());
- mvwprintz(w_target, 2, 1, c_white,
-           "Move cursor to target with directional keys.");
+ mvwprintz(w_target, 2, 1, c_white, "Move cursor to target with directional keys.");
  if (relevent) {
-  mvwprintz(w_target, 3, 1, c_white,
-            "'<' '>' Cycle targets; 'f' or '.' to fire.");
-  mvwprintz(w_target, 4, 1, c_white, 
-            "'0' target self; '*' toggle snap-to-target");
+  mvwprintz(w_target, 3, 1, c_white, "'<' '>' Cycle targets; 'f' or '.' to fire.");
+  mvwprintz(w_target, 4, 1, c_white,  "'0' target self; '*' toggle snap-to-target");
  }
 
  wrefresh(w_target);
@@ -446,11 +440,7 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
  bool snap_to_target = OPTIONS[OPT_SNAP_TO_TARGET];
 // The main loop.
  do {
-  point center;
-  if (snap_to_target)
-   center = point(x, y);
-  else
-   center = u.pos;
+  point center(snap_to_target ? tar : u.pos);
 // Clear the target window.
   for (int i = 5; i < 12; i++) {
    for (int j = 1; j < 46; j++)
@@ -459,8 +449,7 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
   m.draw(this, w_terrain, center);
 // Draw the Monsters
   for (int i = 0; i < z.size(); i++) {
-   if (u_see(&(z[i])) && z[i].pos.x >= lowx && z[i].pos.y >= lowy &&
-                               z[i].pos.x <=  hix && z[i].pos.y <=  hiy)
+   if (u_see(&(z[i])) && bounds.contains(z[i].pos))
     z[i].draw(w_terrain, center.x, center.y, false);
   }
 // Draw the NPCs
@@ -468,7 +457,7 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
    if (u_see(active_npc[i].pos))
     active_npc[i].draw(w_terrain, center.x, center.y, false);
   }
-  if (x != u.pos.x || y != u.pos.y) {
+  if (tar != u.pos) {
 // Calculate the return vector (and draw it too)
 /*
    for (int i = 0; i < ret.size(); i++)
@@ -480,8 +469,8 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
     mvwputch(w_terrain, aty, atx, u.color(), '@');
 
    int tart;
-   if (m.sees(u.pos, x, y, -1, tart)) {// Selects a valid line-of-sight
-    ret = line_to(u.pos, x, y, tart); // Sets the vector to that LOS
+   if (m.sees(u.pos, tar, -1, tart)) {// Selects a valid line-of-sight
+    ret = line_to(u.pos, tar, tart); // Sets the vector to that LOS
 // Draw the trajectory
     for (int i = 0; i < ret.size(); i++) {
      if (abs(ret[i].x - u.pos.x) <= sight_dist &&
@@ -498,19 +487,18 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
    }
 
    if (!relevent) { // currently targetting vehicle to refill with fuel
-    vehicle *veh = m.veh_at(x, y);
-    if (veh)
+    if (vehicle* const veh = m.veh_at(tar))
      mvwprintw(w_target, 5, 1, "There is a %s", veh->name.c_str());
    } else
-    mvwprintw(w_target, 5, 1, "Range: %d", rl_dist(u.pos, x, y));
+    mvwprintw(w_target, 5, 1, "Range: %d", rl_dist(u.pos, tar));
 
-   monster* const m_at = mon(x, y);
+   monster* const m_at = mon(tar);
    if (!m_at) {
     mvwprintw(w_status, 0, 9, "                             ");
     if (snap_to_target)
      mvwputch(w_terrain, SEEY, SEEX, c_red, '*');
     else
-     mvwputch(w_terrain, y + SEEY - u.pos.y, x + SEEX - u.pos.x, c_red, '*');
+     mvwputch(w_terrain, tar.y + SEEY - u.pos.y, tar.x + SEEX - u.pos.x, c_red, '*');
    } else if (u_see(m_at)) m_at->print_info(this, w_target);
   }
   wrefresh(w_target);
@@ -518,42 +506,38 @@ std::vector<point> game::target(int &x, int &y, int lowx, int lowy, int hix,
   wrefresh(w_status);
   refresh();
   ch = input();
-  point tar(get_direction(ch));
-  if (tar.x != -2 && ch != '.') {	// Direction character pressed
-   monster* const m_at = mon(x,y);
+  point dir(get_direction(ch));
+  if (dir.x != -2 && ch != '.') {	// Direction character pressed
+   monster* const m_at = mon(tar);
    if (m_at && u_see(m_at))
     m_at->draw(w_terrain, center.x, center.y, false);
-   else if (npc* const _npc = nPC(x,y))
+   else if (npc* const _npc = nPC(tar))
 	_npc->draw(w_terrain, center.x, center.y, false);
-   else if (m.sees(u.pos, x, y, -1))
-    m.drawsq(w_terrain, u, x, y, false, true, center.x, center.y);
+   else if (m.sees(u.pos, tar, -1))
+    m.drawsq(w_terrain, u, tar.x, tar.y, false, true, center.x, center.y);
    else
     mvwputch(w_terrain, SEEY, SEEX, c_black, 'X');
-   x += tar.x;
-   y += tar.y;
-   if (x < lowx) x = lowx;
-   else if (x > hix) x = hix;
-   if (y < lowy) y = lowy;
-   else if (y > hiy) y = hiy;
+   tar += dir;
+   // \todo two problems: bounds member names not that good, this might be a "clamp" member function
+   if (tar.x < bounds.tl_c().x) tar.x = bounds.tl_c().x;
+   else if (tar.x > bounds.br_c().x) tar.x = bounds.br_c().x;
+   if (tar.y < bounds.tl_c().y) tar.y = bounds.tl_c().y;
+   else if (tar.y > bounds.br_c().y) tar.y = bounds.br_c().y;
   } else if ((ch == '<') && (target != -1)) {
    target--;
    if (target == -1) target = t.size() - 1;
-   x = t[target].pos.x;
-   y = t[target].pos.y;
+   tar = t[target]->pos;
   } else if ((ch == '>') && (target != -1)) {
    target++;
    if (target == t.size()) target = 0;
-   x = t[target].pos.x;
-   y = t[target].pos.y;
+   tar = t[target]->pos;
   } else if (ch == '.' || ch == 'f' || ch == 'F' || ch == '\n') {
    for (int i = 0; i < t.size(); i++) {
-    if (t[i].pos.x == x && t[i].pos.y == y)
-     target = i;
+    if (t[i]->pos == tar) target = i;
    }
    return ret;
   } else if (ch == '0') {
-   x = u.pos.x;
-   y = u.pos.y;
+   tar = u.pos;
   } else if (ch == '*')
    snap_to_target = !snap_to_target;
   else if (ch == KEY_ESCAPE || ch == 'q') { // return empty vector (cancel)

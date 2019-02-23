@@ -19,8 +19,6 @@
 #include <sys/stat.h>
 #include <utility>
 
-#include "Zaimoni.STL/GDI/box.hpp"
-
 using namespace cataclysm;
 
 template<> int discard<int>::x = 0;
@@ -4942,15 +4940,13 @@ void game::plthrow()
 
  int sight_range = u.sight_range(light_level());
  if (range < sight_range) range = sight_range;
- int x0 = u.pos.x - range;
- int y0 = u.pos.y - range;
- int x1 = u.pos.x + range;
- int y1 = u.pos.y + range;
+ const point r(range);
+ const zaimoni::gdi::box<point> bounds(u.pos-r,u.pos+r);
 
  for (int j = u.pos.x - SEEX; j <= u.pos.x + SEEX; j++) {
   for (int k = u.pos.y - SEEY; k <= u.pos.y + SEEY; k++) {
    if (u_see(j, k)) {
-    if (k >= y0 && k <= y1 && j >= x0 && j <= x1)
+    if (bounds.contains(point(j,k)))
      m.drawsq(w_terrain, u, j, k, false, true);
     else
      mvwputch(w_terrain, k + SEEY - u.pos.y, j + SEEX - u.pos.x, c_dkgray, '#');
@@ -4958,13 +4954,12 @@ void game::plthrow()
   }
  }
 
- std::vector <monster> mon_targets;
- std::vector <int> targetindices;
+ std::vector<const monster*> mon_targets;
+ std::vector<int> targetindices;
  int passtarget = -1;
  for (int i = 0; i < z.size(); i++) {
-  if (u_see(&(z[i])) && z[i].pos.x >= x0 && z[i].pos.x <= x1 &&
-                        z[i].pos.y >= y0 && z[i].pos.y <= y1) {
-   mon_targets.push_back(z[i]);
+  if (u_see(&(z[i])) && bounds.contains(z[i].pos)) {
+   mon_targets.push_back(&z[i]);
    targetindices.push_back(i);
    if (i == last_target) passtarget = mon_targets.size() - 1;
    z[i].draw(w_terrain, u.pos.x, u.pos.y, true);
@@ -4973,7 +4968,7 @@ void game::plthrow()
 
  // target() sets x and y, or returns false if we canceled (by pressing Esc)
  point tar(u.pos);
- std::vector<point> trajectory = target(tar.x, tar.y, x0, y0, x1, y1, mon_targets, passtarget, &thrown);
+ std::vector<point> trajectory = target(tar, bounds, mon_targets, passtarget, &thrown);
  if (trajectory.empty()) return;
  if (passtarget != -1) last_target = targetindices[passtarget];
 
@@ -5035,14 +5030,12 @@ void game::plfire(bool burst)
  int range = u.weapon.range(&u);
  int sight_range = u.sight_range(light_level());
  if (range > sight_range) range = sight_range;
- int x0 = u.pos.x - range;
- int y0 = u.pos.y - range;
- int x1 = u.pos.x + range;
- int y1 = u.pos.y + range;
+ const point r(range);
+ const zaimoni::gdi::box<point> bounds(u.pos - r, u.pos + r);
  for (int j = u.pos.x - SEEX; j <= u.pos.x + SEEX; j++) {
   for (int k = u.pos.y - SEEY; k <= u.pos.y + SEEY; k++) {
    if (u_see(j, k)) {
-    if (k >= y0 && k <= y1 && j >= x0 && j <= x1)
+    if (bounds.contains(point(j,k)))
      m.drawsq(w_terrain, u, j, k, false, true);
     else
      mvwputch(w_terrain, k + SEEY - u.pos.y, j + SEEX - u.pos.x, c_dkgray, '#');
@@ -5050,14 +5043,12 @@ void game::plfire(bool burst)
   }
  }
 // Populate a list of targets with the zombies in range and visible
- std::vector <monster> mon_targets;
- std::vector <int> targetindices;
+ std::vector<const monster*> mon_targets;
+ std::vector<int> targetindices;
  int passtarget = -1;
  for (int i = 0; i < z.size(); i++) {
-  if (z[i].pos.x >= x0 && z[i].pos.x <= x1 &&
-      z[i].pos.y >= y0 && z[i].pos.y <= y1 &&
-      z[i].friendly == 0 && u_see(&(z[i]))) {
-   mon_targets.push_back(z[i]);
+  if (bounds.contains(z[i].pos) && z[i].friendly == 0 && u_see(&(z[i]))) {
+   mon_targets.push_back(&z[i]);
    targetindices.push_back(i);
    if (i == last_target) passtarget = mon_targets.size() - 1;
    z[i].draw(w_terrain, u.pos.x, u.pos.y, true);
@@ -5066,8 +5057,7 @@ void game::plfire(bool burst)
 
  // target() sets x and y, and returns an empty vector if we canceled (Esc)
  point tar(u.pos);
- std::vector <point> trajectory = target(tar.x, tar.y, x0, y0, x1, y1, mon_targets,
-                                         passtarget, &u.weapon);
+ std::vector <point> trajectory = target(tar, bounds, mon_targets, passtarget, &u.weapon);
  draw_ter(); // Recenter our view
  if (trajectory.size() == 0) return;
  if (passtarget != -1) { // We picked a real live target

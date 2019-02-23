@@ -14,6 +14,7 @@
 #include "gamemode.h"
 #include "action.h"
 #include "Zaimoni.STL/Logging.h"
+#include "Zaimoni.STL/GDI/box.hpp"
 
 #define LONG_RANGE 10
 #define BLINK_SPEED 300
@@ -259,9 +260,7 @@ class game
 // square.  It display information on any monster/NPC on that square, and also
 // returns a Bresenham line to that square.  It is called by plfire() and
 // throw().
-  std::vector<point> target(int &x, int &y, int lowx, int lowy, int hix,
-                            int hiy, std::vector <monster> t, int &target,
-                            item *relevent);
+  std::vector<point> target(point& tar, const zaimoni::gdi::box<point>& bounds, std::vector<const monster*> t, int &target, item *relevent);
 
 // Map updating and monster spawning
   void replace_stair_monsters();
