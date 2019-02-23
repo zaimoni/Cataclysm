@@ -51,8 +51,13 @@ void ammo_effects(game *g, point pt, long flags)
 	}
 }
 
-void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, bool burst)
+void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst)
 {
+ if (!p.weapon.is_gun()) {
+  debugmsg("%s tried to fire a non-gun (%s).", p.name.c_str(),
+                                               p.weapon.tname().c_str());
+  return;
+ }
  item ammotmp;
  if (p.weapon.has_flag(IF_CHARGE)) { // It's a charger gun, so make up a type
 // Charges maxes out at 8.
@@ -66,14 +71,10 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, b
    tmpammo->accuracy = p.weapon.charges * (p.weapon.charges - 4);
   tmpammo->recoil = tmpammo->accuracy * .8;
   tmpammo->item_flags = 0;
-  if (p.weapon.charges == 8)
-   tmpammo->item_flags |= mfb(IF_AMMO_EXPLOSIVE_BIG);
-  else if (p.weapon.charges >= 6)
-   tmpammo->item_flags |= mfb(IF_AMMO_EXPLOSIVE);
-  if (p.weapon.charges >= 5)
-   tmpammo->item_flags |= mfb(IF_AMMO_FLAME);
-  else if (p.weapon.charges >= 4)
-   tmpammo->item_flags |= mfb(IF_AMMO_INCENDIARY);
+  if (p.weapon.charges == 8) tmpammo->item_flags |= mfb(IF_AMMO_EXPLOSIVE_BIG);
+  else if (p.weapon.charges >= 6) tmpammo->item_flags |= mfb(IF_AMMO_EXPLOSIVE);
+  if (p.weapon.charges >= 5) tmpammo->item_flags |= mfb(IF_AMMO_FLAME);
+  else if (p.weapon.charges >= 4) tmpammo->item_flags |= mfb(IF_AMMO_INCENDIARY);
 
   ammotmp = item(tmpammo, 0);
   p.weapon.curammo = tmpammo;
@@ -84,11 +85,6 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, b
   ammotmp = item(p.weapon.curammo, 0);
 
  ammotmp.charges = 1;
- if (!p.weapon.is_gun()) {
-  debugmsg("%s tried to fire a non-gun (%s).", p.name.c_str(),
-                                               p.weapon.tname().c_str());
-  return;
- }
  unsigned int flags = p.weapon.curammo->item_flags;
 // Bolts and arrows are silent
  const bool is_bolt = (p.weapon.curammo->type == AT_BOLT || p.weapon.curammo->type == AT_ARROW);
@@ -125,35 +121,34 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, b
  int tart;
  for (int curshot = 0; curshot < num_shots; curshot++) {
 // Burst-fire weapons allow us to pick a new target after killing the first
-  monster* m_at = mon(tarx,tary);	// code below assumes kill processing is not "immediate"
+  monster* m_at = mon(tar);	// code below assumes kill processing is not "immediate"
   if (curshot > 0 && (!m_at || m_at->hp <= 0)) {
    std::vector<point> new_targets;
    for (int radius = 1; radius <= 2 + p.sklevel[sk_gun] && new_targets.empty(); radius++) {
     for (int diff = 0 - radius; diff <= radius; diff++) {
-     m_at = mon(tarx + diff, tary - radius);
-     if (m_at && 0 < m_at->hp && m_at->friendly == 0)
-      new_targets.push_back( point(tarx + diff, tary - radius) );
+	 point test(tar+point(diff,-radius));
+     m_at = mon(test);
+     if (m_at && 0 < m_at->hp && m_at->friendly == 0) new_targets.push_back(test);
 
-	 m_at = mon(tarx + diff, tary + radius);
-     if (m_at && 0 < m_at->hp && m_at->friendly == 0)
-      new_targets.push_back( point(tarx + diff, tary + radius) );
+	 test = tar + point(diff, radius);
+	 m_at = mon(test);
+	 if (m_at && 0 < m_at->hp && m_at->friendly == 0) new_targets.push_back(test);
 
      if (diff != 0 - radius && diff != radius) { // Corners were already checked
-      m_at = mon(tarx - radius, tary + diff);
-      if (m_at && 0 < m_at->hp && m_at->friendly == 0)
-       new_targets.push_back( point(tarx - radius, tary + diff) );
+	  test = tar + point(-radius, diff);
+	  m_at = mon(test);
+	  if (m_at && 0 < m_at->hp && m_at->friendly == 0) new_targets.push_back(test);
 
-	  m_at = mon(tarx + radius, tary + diff);
-      if (m_at && 0 < m_at->hp && m_at->friendly == 0)
-       new_targets.push_back( point(tarx + radius, tary + diff) );
-     }
+	  test = tar + point(radius, diff);
+	  m_at = mon(test);
+	  if (m_at && 0 < m_at->hp && m_at->friendly == 0) new_targets.push_back(test);
+	 }
     }
    }
    if (!new_targets.empty()) {
     int target_picked = rng(0, new_targets.size() - 1);
-    tarx = new_targets[target_picked].x;
-    tary = new_targets[target_picked].y;
-	trajectory = line_to(p.pos, tarx, tary, (m.sees(p.pos, tarx, tary, 0, tart) ? tart : 0));
+    tar = new_targets[target_picked];
+	trajectory = line_to(p.pos, tar, (m.sees(p.pos, tar, 0, tart) ? tart : 0));
    } else if ((!p.has_trait(PF_TRIGGERHAPPY) || one_in(3)) &&
               (p.sklevel[sk_gun] >= 7 || one_in(7 - p.sklevel[sk_gun])))
     return; // No targets, so return
@@ -164,31 +159,29 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, b
   else
    p.weapon.charges--;
 
-  int trange = calculate_range(p, tarx, tary);
+  int trange = calculate_range(p, tar.x, tar.y);
   double missed_by = calculate_missed_by(p, trange);
 // Calculate a penalty based on the monster's speed
   double monster_speed_penalty = 1.;
-  {
-  monster* const m_at = mon(tarx, tary);
-  if (m_at) {
+  if (monster* const m_at = mon(tar)) {
    monster_speed_penalty = double(m_at->speed) / 80.;
    if (monster_speed_penalty < 1.) monster_speed_penalty = 1.;
   }
-  }
 
+  const auto recoil_delta = recoil_add(p);
   if (curshot > 0) {
-   if (recoil_add(p) % 2 == 1) p.recoil++;
-   p.recoil += recoil_add(p) / 2;
+   if (recoil_delta % 2 == 1) p.recoil++;
+   p.recoil += recoil_delta / 2;
   } else
-   p.recoil += recoil_add(p);
+   p.recoil += recoil_delta;
 
   if (missed_by >= 1.) {
 // We missed D:
 // Shoot a random nearby space?
    const int delta = int(sqrt(double(missed_by)));
-   tarx += rng(-delta, delta);
-   tary += rng(-delta, delta);
-   trajectory = line_to(p.pos, tarx, tary, (m.sees(p.pos, x, y, -1, tart) ? tart : 0));
+   tar.x += rng(-delta, delta);
+   tar.y += rng(-delta, delta);
+   trajectory = line_to(p.pos, tar, (m.sees(p.pos, x, y, -1, tart) ? tart : 0));
    missed = true;
    if (!burst) {
     if (&p == &u) messages.add("You miss!");
@@ -227,20 +220,18 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, b
     return;
    }
 
-   int tx = trajectory[i].x, ty = trajectory[i].y;
+   point t(trajectory[i]);
 // If there's a monster in the path of our bullet, and either our aim was true,
 //  OR it's not the monster we were aiming at and we were lucky enough to hit it
    monster* const m_at = mon(trajectory[i]);
-   player* const h = (u.pos == trajectory[i]) ? &u : nPC(tx, ty);	// XXX would prefer not to pay CPU here when monster case processes
+   player* const h = (u.pos == trajectory[i]) ? &u : nPC(trajectory[i]);	// XXX would prefer not to pay CPU here when monster case processes
 // If we shot us a monster...
-   if (m_at && (!m_at->has_flag(MF_DIGS) ||
-       rl_dist(p.pos, m_at->pos) <= 1) &&
+   if (m_at && (!m_at->has_flag(MF_DIGS) || rl_dist(p.pos, m_at->pos) <= 1) &&
        ((!missed && i == trajectory.size() - 1) ||
         one_in((5 - int(m_at->type->size))))) {
 
     double goodhit = missed_by;
-    if (i < trajectory.size() - 1) // Unintentional hit
-     goodhit = double(rand() / (RAND_MAX + 1.0)) / 2;
+    if (i < trajectory.size() - 1) goodhit = double(rand() / (RAND_MAX + 1.0)) / 2; // Unintentional hit
 
 // Penalize for the monster's speed
     if (m_at->speed > 80) goodhit *= double( double(m_at->speed) / 80.);
@@ -252,8 +243,7 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, b
 
    } else if ((!missed || one_in(3)) && h)  {
     double goodhit = missed_by;
-    if (i < trajectory.size() - 1) // Unintentional hit
-     goodhit = double(rand() / (RAND_MAX + 1.0)) / 2;
+    if (i < trajectory.size() - 1) goodhit = double(rand() / (RAND_MAX + 1.0)) / 2;	 // Unintentional hit
 
     std::vector<point> blood_traj = trajectory;
     blood_traj.insert(blood_traj.begin(), p.pos);
@@ -261,7 +251,7 @@ void game::fire(player &p, int tarx, int tary, std::vector<point> &trajectory, b
     shoot_player(this, p, h, dam, goodhit);
 
    } else
-    m.shoot(this, tx, ty, dam, i == trajectory.size() - 1, flags);
+    m.shoot(this, t.x, t.y, dam, i == trajectory.size() - 1, flags);
   } // Done with the trajectory!
 
   point last(trajectory.back());

@@ -99,8 +99,7 @@ class game
   void hit_monster_with_flags(monster &z, unsigned int flags);
   void plfire(bool burst);	// Player fires a gun (target selection)...
 // ... a gun is fired, maybe by an NPC (actual damage, etc.).
-  void fire(player &p, int tarx, int tary, std::vector<point> &trajectory, bool burst);
-  void fire(player &p, const point& tar, std::vector<point> &trajectory, bool burst) { fire(p,tar.x,tar.y,trajectory,burst); }
+  void fire(player &p, point tar, std::vector<point> &trajectory, bool burst);
   void throw_item(player &p, point tar, const item &thrown, std::vector<point> &trajectory);
   void cancel_activity();
   void cancel_activity_query(const char* message, ...);

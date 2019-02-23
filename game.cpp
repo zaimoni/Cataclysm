@@ -5090,7 +5090,7 @@ void game::plfire(bool burst)
  if (u.sklevel[sk_gun] == 0 || (firing->ammo != AT_BB && firing->ammo != AT_NAIL))
   u.practice(sk_gun, 5);
 
- fire(u, tar.x, tar.y, trajectory, burst);
+ fire(u, tar, trajectory, burst);
 }
 
 void game::butcher()
