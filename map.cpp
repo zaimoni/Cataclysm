@@ -548,10 +548,7 @@ void map::board_vehicle(game *g, int x, int y, player *p)
  p->pos.x = x;
  p->pos.y = y;
  p->in_vehicle = true;
- if (p == &g->u &&
-     (x < SEEX * int(my_MAPSIZE / 2) || y < SEEY * int(my_MAPSIZE / 2) ||
-      x >= SEEX * (1 + int(my_MAPSIZE / 2)) ||
-      y >= SEEY * (1 + int(my_MAPSIZE / 2))   ))
+ if (p == &g->u && game::update_map_would_scroll(point(x,y)))
   g->update_map(x, y);
 }
 
@@ -689,19 +686,13 @@ bool map::displace_vehicle (game *g, int &x, int &y, int dx, int dy, bool test=f
  y += dy;
 
  bool was_update = false;
- if (need_update &&
-     (upd_x < SEEX * int(my_MAPSIZE / 2) || upd_y < SEEY *int(my_MAPSIZE / 2) ||
-      upd_x >= SEEX * (1+int(my_MAPSIZE / 2)) ||
-      upd_y >= SEEY * (1+int(my_MAPSIZE / 2))   )) {
+ if (need_update && game::update_map_would_scroll(point(upd_x,upd_y))) {
+  assert(MAPSIZE == my_MAPSIZE);	// critical fail if this doesn't hold, but map doesn't provide an accessor for testing this
 // map will shift, so adjust vehicle coords we've been passed
-  if (upd_x < SEEX * int(my_MAPSIZE / 2))
-   x += SEEX;
-  else if (upd_x >= SEEX * (1+int(my_MAPSIZE / 2)))
-   x -= SEEX;
-  if (upd_y < SEEY * int(my_MAPSIZE / 2))
-   y += SEEY;
-  else if (upd_y >= SEEY * (1+int(my_MAPSIZE / 2)))
-   y -= SEEY;
+  if (upd_x < SEEX * int(MAPSIZE / 2)) x += SEEX;
+  else if (upd_x >= SEEX * (1+int(MAPSIZE / 2))) x -= SEEX;
+  if (upd_y < SEEY * int(MAPSIZE / 2)) y += SEEY;
+  else if (upd_y >= SEEY * (1+int(MAPSIZE / 2))) y -= SEEY;
   g->update_map(upd_x, upd_y);
   was_update = true;
  }

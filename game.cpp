@@ -19,6 +19,8 @@
 #include <sys/stat.h>
 #include <utility>
 
+#include "Zaimoni.STL/GDI/box.hpp"
+
 using namespace cataclysm;
 
 template<> int discard<int>::x = 0;
@@ -5614,9 +5616,7 @@ void game::plmove(int x, int y)
    m_at->move_to(this, u.pos.x, u.pos.y);
    messages.add("You displace the %s.", m_at->name().c_str());
   }
-  if (x < SEEX * int(MAPSIZE / 2) || y < SEEY * int(MAPSIZE / 2) ||
-      x >= SEEX * (1 + int(MAPSIZE / 2)) || y >= SEEY * (1 + int(MAPSIZE / 2)))
-   update_map(x, y);
+  if (update_map_would_scroll(point(x,y))) update_map(x, y);
   u.pos.x = x;
   u.pos.y = y;
   if (tr_id != tr_null) { // We stepped on a trap!
@@ -5712,9 +5712,7 @@ void game::plmove(int x, int y)
 
 void game::plswim(int x, int y)
 {
- if (x < SEEX * int(MAPSIZE / 2) || y < SEEY * int(MAPSIZE / 2) ||
-     x >= SEEX * (1 + int(MAPSIZE / 2)) || y >= SEEY * (1 + int(MAPSIZE / 2)))
-  update_map(x, y);
+ if (update_map_would_scroll(point(x,y))) update_map(x, y);
  u.pos.x = x;
  u.pos.y = y;
  DEBUG_FAIL_OR_LEAVE(!m.has_flag(swimmable, x, y), return);
@@ -6002,9 +6000,18 @@ void game::vertical_move(int movez, bool force)
  refresh_all();
 }
 
+static const zaimoni::gdi::box<point> _map_centered_enough(point(SEE*(MAPSIZE / 2)), point(SEE*((MAPSIZE / 2) + 1)-1));
+
+bool game::update_map_would_scroll(const point& pt)
+{
+	return pt.x < _map_centered_enough.tl_c().x || pt.x > _map_centered_enough.br_c().x
+		|| pt.y < _map_centered_enough.tl_c().y || pt.y > _map_centered_enough.br_c().y;
+}
 
 void game::update_map(int &x, int &y)
 {
+ static_assert(MAPSIZE%2==1,"MAPSIZE%2==1");	// following assumes MAPSIZE i.e. # of submaps on each side is odd
+
  point shift(0,0);
  int group = 0;
  point olev(0, 0);

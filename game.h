@@ -149,6 +149,7 @@ class game
   bool u_see(const monster *mon);
   bool pl_sees(player *p, monster *mon);
   void refresh_all();
+  static bool update_map_would_scroll(const point& pt);
   void update_map(int &x, int &y);  // Called by plmove when the map updates
   void update_overmap_seen(); // Update which overmap tiles we can see
   point om_location(); // levx and levy converted to overmap coordinates

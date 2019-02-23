@@ -12,6 +12,8 @@ STONE, PAPER, WOOD, PLASTIC, GLASS, IRON, STEEL, SILVER
 };
 
 struct point {
+ typedef int coord_type;
+
  int x;
  int y;
  point() : x(0), y(0) {}
@@ -49,10 +51,14 @@ inline point operator*(int s, const point& pt) { return point(pt) *= s; }
 inline point operator*(const point& pt, int s) { return point(pt) *= s; }
 
 struct tripoint {
+ typedef int coord_type;
+
  int x;
  int y;
  int z;
- tripoint(int X = 0, int Y = 0, int Z = 0) : x (X), y (Y), z (Z) {}
+ tripoint() : x(0), y(0), z(0) {}
+// explicit tripoint(int X) : x(X), y(X), z(X) {};	// the diagonal projection of the integers Z into the integer space Z^3
+ tripoint(int X, int Y, int Z) : x (X), y (Y), z (Z) {}
  tripoint(const tripoint &p) = default;
 };
 

@@ -221,6 +221,7 @@
     <ClInclude Include="weather.h" />
     <ClInclude Include="wrap_curses.h" />
     <ClInclude Include="Zaimoni.STL\Compiler.h" />
+    <ClInclude Include="Zaimoni.STL\GDI\box.hpp" />
     <ClInclude Include="Zaimoni.STL\Logging.h" />
     <ClInclude Include="Zaimoni.STL\MetaRAM.hpp" />
     <ClInclude Include="Zaimoni.STL\polymorphic.hpp" />
