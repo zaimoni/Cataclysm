@@ -937,7 +937,7 @@ int item::burst_size()
  return ret;
 }
 
-int item::recoil(bool with_ammo)
+int item::recoil(bool with_ammo) const
 {
  if (!is_gun()) return 0;
  const it_gun* const gun = dynamic_cast<const it_gun*>(type);

@@ -13,7 +13,6 @@
 #include <vector>
 
 int time_to_fire(player &p, const it_gun* firing);
-int recoil_add(player &p);
 void make_gun_sound_effect(game *g, player &p, bool burst);
 int calculate_range(player &p, int tarx, int tary);
 double calculate_missed_by(player &p, int trange);
@@ -49,6 +48,16 @@ void ammo_effects(game *g, point pt, long flags)
 	if (flags & mfb(IF_AMMO_FLAME)) {
 		if (g->m.add_field(g, pt.x, pt.y, fd_fire, 1)) g->m.field_at(pt).age = 800;
 	}
+}
+
+// no real advantage to const member function of player over free static function
+static int recoil_add(const player &p)
+{
+	const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
+	int ret = p.weapon.recoil();
+	ret -= rng(p.str_cur / 2, p.str_cur);
+	ret -= rng(0, p.sklevel[firing->skill_used] / 2);
+	return (0 < ret) ? ret : 0;
 }
 
 void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst)
@@ -666,15 +675,6 @@ double calculate_missed_by(player &p, int trange)	// XXX real-world deviation is
 //  of quarter-degrees)
 // It's also generous; missed_by will be rather short.
   return (.00325 * deviation * trange);
-}
-
-int recoil_add(player &p)
-{
- const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
- int ret = p.weapon.recoil();
- ret -= rng(p.str_cur / 2, p.str_cur);
- ret -= rng(0, p.sklevel[firing->skill_used] / 2);
- return (0 < ret) ? ret : 0;
 }
 
 void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit)

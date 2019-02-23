@@ -56,7 +56,7 @@ public:
  int gun_damage(bool with_ammo = true);
  int noise();
  int burst_size();
- int recoil(bool with_ammo = true);
+ int recoil(bool with_ammo = true) const;
  int range(const player *p = NULL) const;
  ammotype ammo_type() const;
  int pick_reload_ammo(player &u, bool interactive) const;
