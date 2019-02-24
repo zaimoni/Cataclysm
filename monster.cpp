@@ -290,7 +290,7 @@ void monster::shift(int sx, int sy)
  }
 }
 
-bool monster::is_fleeing(player &u)
+bool monster::is_fleeing(const player &u) const
 {
  if (has_effect(ME_RUN)) return true;
  monster_attitude att = attitude(&u);

@@ -77,37 +77,42 @@ void monster::plan(game *g)
   }
   return;
  }
- if (is_fleeing(g->u) && can_see() && g->sees_u(pos)) {
-  fleeing = true;
-  wand = 2*pos - g->u.pos;
-  wandf = 40;
-  dist = rl_dist(pos, g->u.pos);
- }
 
  int closest = -1;
-// If we can see, and we can see a character, start moving towards them
- if (!is_fleeing(g->u) && can_see() && g->sees_u(pos, tc)) {
-  dist = rl_dist(pos, g->u.pos);
-  closest = -2;
-  stc = tc;
+ if (can_see()) {
+	 if (is_fleeing(g->u) && g->sees_u(pos)) {
+		 fleeing = true;
+		 wand = 2 * pos - g->u.pos;
+		 wandf = 40;
+		 dist = rl_dist(pos, g->u.pos);
+	 }
+
+	 // If we can see, and we can see a character, start moving towards them
+	 if (!is_fleeing(g->u) && g->sees_u(pos, tc)) {
+		 dist = rl_dist(pos, g->u.pos);
+		 closest = -2;
+		 stc = tc;
+	 }
+	 // check NPCs
+	 for (int i = 0; i < g->active_npc.size(); i++) {
+		 npc *me = &(g->active_npc[i]);
+		 int medist = rl_dist(pos, me->pos);
+		 if ((medist < dist || (!fleeing && is_fleeing(*me))) &&
+			 g->m.sees(pos, me->pos, sightrange)) {
+			 if (is_fleeing(*me)) {
+				 fleeing = true;
+				 wand = 2 * pos - me->pos;
+				 wandf = 40;
+				 dist = medist;
+			 } else if (g->m.sees(pos, me->pos, sightrange, tc)) {
+				 dist = medist;
+				 closest = i;
+				 stc = tc;
+			 }
+		 }
+	 }
  }
- for (int i = 0; i < g->active_npc.size(); i++) {
-  npc *me = &(g->active_npc[i]);
-  int medist = rl_dist(pos, me->pos);
-  if ((medist < dist || (!fleeing && is_fleeing(*me))) &&
-      (can_see() && g->m.sees(pos, me->pos, sightrange))) {
-   if (is_fleeing(*me)) {
-    fleeing = true;
-	wand = 2*pos - me->pos;
-    wandf = 40;
-    dist = medist;
-   } else if (can_see() && g->m.sees(pos, me->pos, sightrange, tc)) {
-    dist = medist;
-    closest = i;
-    stc = tc;
-   }
-  }
- }
+
  if (!fleeing) fleeing = attitude() == MATT_FLEE;
  if (!fleeing) {
   const monster* closest_mon = NULL;
@@ -327,7 +332,7 @@ point monster::scent_move(game *g)
    const auto smell = g->scent(test);
    monster* const m_at = g->mon(test);
    if ((!m_at || m_at->friendly != 0 || has_flag(MF_ATTACKMON)) && can_sound_move_to(g, test)) {
-	const auto fleeing = is_fleeing(g->u);
+	const bool fleeing = is_fleeing(g->u);
     if (   (!fleeing && smell > maxsmell)
 		|| ( fleeing && smell < minsmell)) {
      smoves.clear();
