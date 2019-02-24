@@ -28,12 +28,12 @@ std::string melee_verb(technique_id tech, std::string your, player &p,
  *   skills, torso encumberment penalties and drunken master bonuses.
  */
 
-bool player::is_armed()
+bool player::is_armed() const
 {
  return (weapon.type->id != 0 && !weapon.is_style());
 }
 
-bool player::unarmed_attack()
+bool player::unarmed_attack() const
 {
  return (weapon.type->id == 0 || weapon.is_style() ||
          weapon.has_flag(IF_UNARMED_WEAPON));

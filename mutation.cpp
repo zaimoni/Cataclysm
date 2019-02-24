@@ -19,12 +19,12 @@ void player::mutate(game *g)
  for (int i = 1; i < PF_MAX2; i++) {
   if (has_trait(i)) {
    for(const auto tmp : mutation_branch::data[i].replacements) {
-    if (!has_trait(tmp) && !has_child_flag(g, tmp) &&
+    if (!has_trait(tmp) && !has_child_flag(tmp) &&
         (!force_bad || mutation_branch::traits[tmp].points <= 0))
      upgrades.push_back(tmp);
    }
    for(const auto tmp : mutation_branch::data[i].additions) {
-    if (!has_trait(tmp) && !has_child_flag(g, tmp) &&
+    if (!has_trait(tmp) && !has_child_flag(tmp) &&
         (!force_bad || mutation_branch::traits[tmp].points <= 0))
      upgrades.push_back(tmp);
    }
@@ -71,7 +71,7 @@ void player::mutate(game *g)
 // Remove anything we already have, or that we have a child of, or that's
 // positive and we're forcing bad
   for (int i = 0; i < valid.size(); i++) {
-   if (has_trait(valid[i]) || has_child_flag(g, valid[i]) ||
+   if (has_trait(valid[i]) || has_child_flag(valid[i]) ||
        (force_bad && mutation_branch::traits[ valid[i] ].points > 0)) {
     valid.erase(valid.begin() + i);
     i--;
@@ -94,7 +94,7 @@ void player::mutate(game *g)
 
 void player::mutate_towards(game *g, pl_flag mut)
 {
- if (has_child_flag(g, mut)) {
+ if (has_child_flag(mut)) {
   remove_child_flag(g, mut);
   return;
  }
@@ -189,10 +189,10 @@ void player::remove_mutation(game *g, pl_flag mut)
 
 }
 
-bool player::has_child_flag(game *g, pl_flag flag)
+bool player::has_child_flag(pl_flag flag) const
 {
  for(const auto tmp : mutation_branch::data[flag].replacements) {
-  if (has_trait(tmp) || has_child_flag(g, tmp))	// XXX depth-first search
+  if (has_trait(tmp) || has_child_flag(tmp))	// XXX depth-first search
    return true;
  }
  return false;
@@ -204,7 +204,7 @@ void player::remove_child_flag(game *g, pl_flag flag)
   if (has_trait(tmp)) {
    remove_mutation(g, tmp);
    return;
-  } else if (has_child_flag(g, tmp)) {
+  } else if (has_child_flag(tmp)) {
    remove_child_flag(g, tmp);
    return;
   }

@@ -77,17 +77,17 @@ public:
  void mutate(game *g);
  void mutate_towards(game *g, pl_flag mut);
  void remove_mutation(game *g, pl_flag mut);
- bool has_child_flag(game *g, pl_flag mut);
+ bool has_child_flag(pl_flag mut) const;
  void remove_child_flag(game *g, pl_flag mut);
 
  int  sight_range(int light_level) const;
- int  overmap_sight_range(int light_level);
- int  clairvoyance(); // Sight through walls &c
- bool has_two_arms();
- bool can_wear_boots();
- bool is_armed();	// True if we're wielding something; true for bionics
- bool unarmed_attack(); // False if we're wielding something; true for bionics
- bool avoid_trap(const trap *tr);
+ int  overmap_sight_range(int light_level) const;
+ int  clairvoyance() const; // Sight through walls &c
+ bool has_two_arms() const;
+// bool can_wear_boots();	// no definition
+ bool is_armed() const;	// True if we're wielding something; true for bionics
+ bool unarmed_attack() const; // False if we're wielding something; true for bionics
+ bool avoid_trap(const trap *tr) const;
 
  void pause(game *g); // '.' command; pauses & reduces recoil
 

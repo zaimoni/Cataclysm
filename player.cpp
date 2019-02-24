@@ -1982,34 +1982,30 @@ int player::sight_range(int light_level) const
  return ret;
 }
 
-int player::overmap_sight_range(int light_level)
+int player::overmap_sight_range(int light_level) const
 {
  int sight = sight_range(light_level);
- if (sight < SEEX)
-  return 0;
- if (sight <= SEEX * 4)
-  return (sight / (SEEX / 2));
- if (has_amount(itm_binoculars, 1))
-  return 20;
-
- return 10;
+ // low-light interferes with overmap sight range
+ if (4*SEE >= sight) return (SEE > sight) ? 0 : SEE/2;
+ // technology overrides
+ if (has_amount(itm_binoculars, 1)) return 20;
+ return 10;	// baseline
 }
 
-int player::clairvoyance()
+int player::clairvoyance() const
 {
- if (has_artifact_with(AEP_CLAIRVOYANCE))
-  return 3;
+ if (has_artifact_with(AEP_CLAIRVOYANCE)) return 3;
  return 0;
 }
 
-bool player::has_two_arms()
+bool player::has_two_arms() const
 {
  if (has_bionic(bio_blaster) || hp_cur[hp_arm_l] < 10 || hp_cur[hp_arm_r] < 10)
   return false;
  return true;
 }
 
-bool player::avoid_trap(const trap* const tr)
+bool player::avoid_trap(const trap* const tr) const
 {
  int myroll = dice(3, dex_cur + sklevel[sk_dodge] * 1.5);
  int traproll;
