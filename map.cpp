@@ -2338,7 +2338,7 @@ bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc) const
 }
 
 bool map::clear_path(int Fx, int Fy, int Tx, int Ty, int range, int cost_min,
-                     int cost_max, int &tc)
+                     int cost_max, int &tc) const
 {
  int dx = Tx - Fx;
  int dy = Ty - Fy;
