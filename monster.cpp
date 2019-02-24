@@ -298,7 +298,7 @@ bool monster::is_fleeing(player &u)
          (att == MATT_FOLLOW && rl_dist(pos, u.pos) <= 4));
 }
 
-monster_attitude monster::attitude(player *u) const
+monster_attitude monster::attitude(const player *u) const
 {
  if (friendly != 0) return MATT_FRIEND;
  if (has_effect(ME_RUN)) return MATT_FLEE;

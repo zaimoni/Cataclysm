@@ -74,7 +74,7 @@ class monster {
 			     	// Updates current pos AND our plans
  bool wander() const { return plans.empty(); } 		// Returns true if we have no plans
  bool can_move_to(map &m, int x, int y); // Can we move to (x, y)?
- bool will_reach(game *g, int x, int y) const; // Do we have plans to get to (x, y)?
+ bool will_reach(game *g, const point& pt) const; // Do we have plans to get to (x, y)?
  int  turns_to_reach(game *g, int x, int y); // How long will it take?
 
  void set_dest(int x, int y, int &t); // Go in a straight line to (x, y)
@@ -95,8 +95,8 @@ class monster {
 
 // Combat
  bool is_fleeing(player &u);	// True if we're fleeing
- monster_attitude attitude(player *u = NULL) const;	// See the enum above
- int morale_level(player &u);	// Looks at our HP etc.
+ monster_attitude attitude(const player *u = NULL) const;	// See the enum above
+// int morale_level(player &u);	// Looks at our HP etc.
  void process_triggers(game *g);// Process things that anger/scare us
  void process_trigger(monster_trigger trig, int amount);// Single trigger
  int trigger_sum(const game *g, const std::vector<monster_trigger>& triggers) const;

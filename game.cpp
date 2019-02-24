@@ -5902,7 +5902,7 @@ void game::vertical_move(int movez, bool force)
   monstair.y = lev.y;
   monstair.z = original_z;
   for (int i = 0; i < z.size(); i++) {
-   if (z[i].will_reach(this, u.pos.x, u.pos.y)) {
+   if (z[i].will_reach(this, u.pos)) {
     int turns = z[i].turns_to_reach(this, u.pos.x, u.pos.y);
     if (turns < 999)
      coming_to_stairs.push_back( monster_and_count(z[i], 1 + turns) );

@@ -606,22 +606,22 @@ void monster::knock_back_from(game *g, int x, int y)
          Make sure that non-smashing monsters won't "teleport" through windows
          Injure monsters if they're gonna be walking through pits or whatevs
  */
-bool monster::will_reach(game *g, int x, int y) const
+bool monster::will_reach(game *g, const point& pt) const
 {
  monster_attitude att = attitude(&(g->u));
  if (att != MATT_FOLLOW && att != MATT_ATTACK && att != MATT_FRIEND) return false;
  if (has_flag(MF_DIGS)) return false;
- if (has_flag(MF_IMMOBILE) && (pos.x != x || pos.y != y)) return false;
+ if (has_flag(MF_IMMOBILE) && pos != pt) return false;
 
  if (has_flag(MF_SMELLS)) {
 	 const auto scent = g->scent(pos);
-	 if ( 0 < scent && g->scent(x, y) > scent) return true;
+	 if ( 0 < scent && g->scent(pt) > scent) return true;
  }
 
- if (can_hear() && wandf > 0 && rl_dist(wand.x, wand.y, x, y) <= 2 && rl_dist(pos, wand) <= wandf)
+ if (can_hear() && wandf > 0 && rl_dist(wand, pt) <= 2 && rl_dist(pos, wand) <= wandf)
   return true;
 
- if (can_see() && g->m.sees(pos, x, y, g->light_level())) return true;
+ if (can_see() && g->m.sees(pos, pt, g->light_level())) return true;
 
  return false;
 }
