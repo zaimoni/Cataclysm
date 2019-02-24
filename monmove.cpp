@@ -32,11 +32,10 @@ bool monster::can_move_to(const map &m, int x, int y) const
 // to the destination (x,y). t is used to choose which eligable line to use.
 // Currently, this assumes we can see (x,y), so shouldn't be used in any other
 // circumstance (or else the monster will "phase" through solid terrain!)
-void monster::set_dest(int x, int y, int &t)
+void monster::set_dest(const point& pt, int &t)
 { 
  plans.clear();
-// TODO: This causes a segfault, once in a blue moon!  Whyyyyy.
- plans = line_to(pos.x, pos.y, x, y, t);
+ plans = line_to(pos, pt, t);
 }
 
 // Move towards (x,y) for f more turns--generally if we hear a sound there
@@ -67,11 +66,11 @@ void monster::plan(game *g)
     }
    }
   }
-  if (closest_mon) set_dest(closest_mon->pos.x, closest_mon->pos.y, stc);
+  if (closest_mon) set_dest(closest_mon->pos, stc);
   else if (friendly > 0 && one_in(3)) friendly--;	// Grow restless with no targets
   else if (friendly < 0 && g->sees_u(pos, tc)) {
    if (rl_dist(pos, g->u.pos) > 2)
-    set_dest(g->u.pos.x, g->u.pos.y, tc);
+    set_dest(g->u.pos, tc);
    else
     plans.clear();
   }
@@ -131,11 +130,11 @@ void monster::plan(game *g)
   }
 
   if (closest == -2)
-   set_dest(g->u.pos.x, g->u.pos.y, stc);
+   set_dest(g->u.pos, stc);
   else if (closest_mon)
-   set_dest(closest_mon->pos.x, closest_mon->pos.y, stc);
+   set_dest(closest_mon->pos, stc);
   else if (closest >= 0)
-   set_dest(g->active_npc[closest].pos.x, g->active_npc[closest].pos.y, stc);
+   set_dest(g->active_npc[closest].pos, stc);
  }
 }
  
@@ -532,7 +531,7 @@ void monster::stumble(game *g, bool moved)
     std::vector<point> plans2;
 	std::swap(plans2, plans);
 // Set plans to a route between where we are now, and where we were
-    set_dest(plans2[0].x, plans2[0].y, tc);
+    set_dest(plans2[0], tc);
 // Append old plans to the new plans
     for (int index = 0; index < plans2.size(); index++)
      plans.push_back(plans2[index]);
