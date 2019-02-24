@@ -221,7 +221,7 @@ nc_color monster::color_with_effects()
  return ret;
 }
 
-bool monster::can_see()
+bool monster::can_see() const
 {
  return has_flag(MF_SEES) && !has_effect(ME_BLIND);
 }

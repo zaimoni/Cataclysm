@@ -60,7 +60,7 @@ class monster {
  nc_color color_with_effects();	// Color with fire, beartrapped, etc.
 				// Inverts color if inv==true
  bool has_flag(m_flag f) const { return type->has_flag(f); };
- bool can_see();		// MF_SEES and no ME_BLIND
+ bool can_see() const;		// MF_SEES and no ME_BLIND
  bool can_hear() const;		// MF_HEARS and no ME_DEAF
  bool made_of(material m);	// Returns true if it's made of m
  
@@ -74,7 +74,7 @@ class monster {
 			     	// Updates current pos AND our plans
  bool wander() const { return plans.empty(); } 		// Returns true if we have no plans
  bool can_move_to(map &m, int x, int y); // Can we move to (x, y)?
- bool will_reach(game *g, int x, int y); // Do we have plans to get to (x, y)?
+ bool will_reach(game *g, int x, int y) const; // Do we have plans to get to (x, y)?
  int  turns_to_reach(game *g, int x, int y); // How long will it take?
 
  void set_dest(int x, int y, int &t); // Go in a straight line to (x, y)
