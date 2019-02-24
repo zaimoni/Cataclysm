@@ -316,7 +316,7 @@ void monster::friendly_move(game *g)
  }
 }
 
-point monster::scent_move(game *g)
+point monster::scent_move(const game *g)
 {
  plans.clear();
  std::vector<point> smoves;
@@ -327,7 +327,7 @@ point monster::scent_move(game *g)
   for (int y = -1; y <= 1; y++) {
    point test(pos.x + x, pos.y + y);
    const auto smell = g->scent(test);
-   monster* const m_at = g->mon(test);
+   const auto m_at = g->mon(test);
    if ((!m_at || m_at->friendly != 0 || has_flag(MF_ATTACKMON)) && can_sound_move_to(g, test)) {
 	const bool fleeing = is_fleeing(g->u);
     if (   (!fleeing && smell > maxsmell)
@@ -346,12 +346,12 @@ point monster::scent_move(game *g)
  return next;
 }
 
-bool monster::can_sound_move_to(game* g, const point& pt)
+bool monster::can_sound_move_to(const game* g, const point& pt) const
 {
 	return can_move_to(g->m, pt) || pt == g->u.pos || (has_flag(MF_BASHES) && g->m.has_flag(bashable, pt));
 }
 
-bool monster::can_sound_move_to(game* g, const point& pt, point& dest)
+bool monster::can_sound_move_to(const game* g, const point& pt, point& dest) const
 {
 	if (can_sound_move_to(g, pt)) {
 		dest = pt;

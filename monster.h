@@ -87,7 +87,7 @@ class monster {
  void footsteps(game *g, int x, int y); // noise made by movement
  void friendly_move(game *g);
 
- point scent_move(game *g);
+ point scent_move(const game *g);
  point sound_move(game *g);
  void hit_player(game *g, player &p, bool can_grab = true);
  void move_to(game *g, int x, int y);
@@ -148,8 +148,8 @@ class monster {
  std::string unique_name; // If we're unique
 
 private:
- bool can_sound_move_to(game* g, const point& pt);
- bool can_sound_move_to(game* g, const point& pt, point& dest);
+ bool can_sound_move_to(const game* g, const point& pt) const;
+ bool can_sound_move_to(const game* g, const point& pt, point& dest) const;
 
  std::vector <point> plans;
 };
