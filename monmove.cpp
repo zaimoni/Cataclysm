@@ -611,7 +611,7 @@ void monster::knock_back_from(game *g, int x, int y)
          Make sure that non-smashing monsters won't "teleport" through windows
          Injure monsters if they're gonna be walking through pits or whatevs
  */
-bool monster::will_reach(game *g, const point& pt) const
+bool monster::will_reach(const game *g, const point& pt) const
 {
  monster_attitude att = attitude(&(g->u));
  if (att != MATT_FOLLOW && att != MATT_ATTACK && att != MATT_FRIEND) return false;

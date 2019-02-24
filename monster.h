@@ -74,7 +74,7 @@ class monster {
 			     	// Updates current pos AND our plans
  bool wander() const { return plans.empty(); } 		// Returns true if we have no plans
  bool can_move_to(map &m, int x, int y); // Can we move to (x, y)?
- bool will_reach(game *g, const point& pt) const; // Do we have plans to get to (x, y)?
+ bool will_reach(const game *g, const point& pt) const; // Do we have plans to get to (x, y)?
  int  turns_to_reach(game *g, int x, int y); // How long will it take?
 
  void set_dest(int x, int y, int &t); // Go in a straight line to (x, y)

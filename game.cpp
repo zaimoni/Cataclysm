@@ -2883,7 +2883,8 @@ void game::mon_info()
  for (const auto& mon : z) {
   if (u_see(&mon)) {
    bool mon_dangerous = false;
-   if (mon.attitude(&u) == MATT_ATTACK || mon.attitude(&u) == MATT_FOLLOW) {
+   const auto att = mon.attitude(&u);
+   if (att == MATT_ATTACK || att == MATT_FOLLOW) {
     mon_dangerous = true;
     newseen++;
    }
