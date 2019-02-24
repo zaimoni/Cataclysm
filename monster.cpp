@@ -231,11 +231,10 @@ bool monster::can_hear() const
  return has_flag(MF_HEARS) && !has_effect(ME_DEAF);
 }
 
-bool monster::made_of(material m)
+// this legitimately could be a more complicated implementation
+bool monster::made_of(material m) const
 {
- if (type->mat == m)
-  return true;
- return false;
+ return type->mat == m;
 }
  
 void monster::load_info(std::string data)

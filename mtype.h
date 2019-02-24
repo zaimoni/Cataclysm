@@ -156,7 +156,7 @@ MF_SUNDEATH,	// Dies in full sunlight
 MF_ELECTRIC,	// Shocks unarmed attackers
 MF_ACIDPROOF,	// Immune to acid
 MF_ACIDTRAIL,	// Leaves a trail of acid
-MF_FIREY,	// Burns stuff and is immune to fire
+MF_FIREY,	// Burns stuff and is immune to fire.  Fire elementals, etc.
 MF_QUEEN,	// When it dies, local populations start to die off too
 MF_ELECTRONIC,	// e.g. a robot; affected by emp blasts, and other stuff
 MF_FUR,		// May produce fur when butchered.
