@@ -504,6 +504,7 @@ void monster::move_to(game *g, const point& pt)
  * Most of the time (out in the open) this effect is insignificant compared to
  * the negative effects, but in a hallway it's perfectly even
  */
+// to fix this, we'd need both the previous and current location
 void monster::stumble(game *g, bool moved)
 {
  std::vector <point> valid_stumbles;

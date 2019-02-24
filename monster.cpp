@@ -327,7 +327,7 @@ monster_attitude monster::attitude(const player *u) const
  return MATT_ATTACK;
 }
 
-void monster::process_triggers(game *g)
+void monster::process_triggers(const game *g)
 {
  anger += trigger_sum(g, type->anger);
  anger -= trigger_sum(g, type->placate);

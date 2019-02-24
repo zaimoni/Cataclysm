@@ -536,7 +536,7 @@ void game::create_factions()
 void game::create_starting_npcs()
 {
  npc tmp;
- tmp.normalize(this);
+ tmp.normalize();
  tmp.randomize(this, (one_in(2) ? NC_DOCTOR : NC_NONE));
  tmp.spawn_at(&cur_om, lev.x, lev.y);
  tmp.pos.x = SEEX * int(MAPSIZE / 2) + SEEX;
@@ -1965,7 +1965,7 @@ void game::debug()
 
   case 5: {
    npc temp;
-   temp.normalize(this);
+   temp.normalize();
    temp.randomize(this);
    temp.attitude = NPCATT_TALK;
    temp.spawn_at(&cur_om, lev.x + (1 * rng(-2, 2)), lev.y + (1 * rng(-2, 2)));
@@ -6294,7 +6294,7 @@ void game::spawn_mon(int shiftx, int shifty)
  // Create a new NPC?
  if (!no_npc && one_in(100 + 15 * cur_om.npcs.size())) {
   npc tmp;
-  tmp.normalize(this);
+  tmp.normalize();
   tmp.randomize(this);
   //tmp.stock_missions(this);
   tmp.spawn_at(&cur_om, lev.x + (1 * rng(-5, 5)), lev.y + (1 * rng(-5, 5)));

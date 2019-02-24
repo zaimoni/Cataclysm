@@ -412,15 +412,14 @@ player::player()
   mutation_category_level[i] = 0;
 }
 
-void player::normalize(game *g)
+void player::normalize()
 {
- weapon   = item::null;
+ weapon = item::null;
  style_selected = itm_null;
- for (int i = 0; i < num_hp_parts; i++) {
-  hp_max[i] = 60 + str_max * 3;
-  if (has_trait(PF_TOUGH)) hp_max[i] = int(hp_max[i] * 1.2);
-  hp_cur[i] = hp_max[i];
- }
+ int max_hp = 60 + str_max * 3;
+ if (has_trait(PF_TOUGH)) max_hp = int(max_hp * 1.2);
+
+ for (int i = 0; i < num_hp_parts; i++) hp_cur[i] = hp_max[i] = max_hp;
 }
 
 void player::pick_name()
