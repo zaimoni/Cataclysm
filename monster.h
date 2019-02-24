@@ -87,8 +87,8 @@ class monster {
  void footsteps(game *g, int x, int y); // noise made by movement
  void friendly_move(game *g);
 
- point scent_move(const game *g);
- point sound_move(game *g);
+ point scent_move(const game *g);	// these two don't actually move, they return where to move to
+ point sound_move(const game *g);
  void hit_player(game *g, player &p, bool can_grab = true);
  void move_to(game *g, int x, int y);
  void stumble(game *g, bool moved);

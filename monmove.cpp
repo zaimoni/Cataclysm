@@ -360,7 +360,7 @@ bool monster::can_sound_move_to(const game* g, const point& pt, point& dest) con
 	return false;
 }
 
-point monster::sound_move(game *g)
+point monster::sound_move(const game *g)
 {
  plans.clear();
  const bool xbest = (abs(wand.y - pos.y) <= abs(wand.x - pos.x));	// which is more important
