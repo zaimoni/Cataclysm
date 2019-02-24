@@ -324,7 +324,7 @@ point monster::scent_move(game *g)
  for (int x = -1; x <= 1; x++) {
   for (int y = -1; y <= 1; y++) {
    point test(pos.x + x, pos.y + y);
-   const auto smell = g->scent(test.x, test.y);
+   const auto smell = g->scent(test);
    monster* const m_at = g->mon(test);
    if ((!m_at || m_at->friendly != 0 || has_flag(MF_ATTACKMON)) && can_sound_move_to(g, test)) {
 	const auto fleeing = is_fleeing(g->u);
@@ -614,7 +614,7 @@ bool monster::will_reach(game *g, int x, int y)
  if (has_flag(MF_IMMOBILE) && (pos.x != x || pos.y != y)) return false;
 
  if (has_flag(MF_SMELLS)) {
-	 const auto scent = g->scent(pos.x, pos.y);
+	 const auto scent = g->scent(pos);
 	 if ( 0 < scent && g->scent(x, y) > scent) return true;
  }
 

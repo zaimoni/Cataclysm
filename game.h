@@ -130,6 +130,9 @@ class game
 
   void nuke(const point& world_div_2);
   int& scent(int x, int y);
+  int& scent(const point& pt) { return scent(pt.x, pt.y); };
+  int scent(int x, int y) const { return const_cast<game*>(this)->scent(x, y); };	// consider optimized implementation
+  int scent(const point& pt) const { return const_cast<game*>(this)->scent(pt.x, pt.y); };
   void clear_scents() { memset(grscent, 0, sizeof(grscent)); }
   int assign_npc_id() { return next_npc_id++; }
   int assign_faction_id() { return next_faction_id++; }
