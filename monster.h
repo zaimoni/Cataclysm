@@ -61,7 +61,7 @@ class monster {
 				// Inverts color if inv==true
  bool has_flag(m_flag f) const { return type->has_flag(f); };
  bool can_see();		// MF_SEES and no ME_BLIND
- bool can_hear();		// MF_HEARS and no ME_DEAF
+ bool can_hear() const;		// MF_HEARS and no ME_DEAF
  bool made_of(material m);	// Returns true if it's made of m
  
  void load_info(std::string data);

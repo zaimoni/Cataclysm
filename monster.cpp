@@ -226,7 +226,7 @@ bool monster::can_see()
  return has_flag(MF_SEES) && !has_effect(ME_BLIND);
 }
 
-bool monster::can_hear()
+bool monster::can_hear() const
 {
  return has_flag(MF_HEARS) && !has_effect(ME_DEAF);
 }

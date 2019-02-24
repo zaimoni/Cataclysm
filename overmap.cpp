@@ -2698,7 +2698,7 @@ void overmap::open(game *g)	// only called from constructor
    fin.open(tmpfilename.str().c_str());
    if (fin.is_open()) {
     fin.close();
-    pointers.push_back(new overmap(g, pos.x-+i, pos.y, pos.z));
+    pointers.push_back(new overmap(g, pos.x-+i, pos.y, pos.z));	// \todo aligning this with above is a savefile break
    } else
     pointers.push_back(NULL);
   }
