@@ -243,7 +243,7 @@ void monster::move(game *g)
    moves -= 250;
   // end C:DDA refactor target monster::bash_at
   } else if (can_move_to(g->m, next) && g->is_empty(next))
-   move_to(g, next.x, next.y);
+   move_to(g, next);
   else
    moves -= 100;
  }
@@ -302,7 +302,7 @@ void monster::friendly_move(game *g)
    hit_monster(g, *m_at);
   else if (nPC && type->melee_dice > 0)
    hit_player(g, *nPC);
-  else if (!m_at && !nPC && can_move_to(g->m, next)) move_to(g, next.x, next.y);
+  else if (!m_at && !nPC && can_move_to(g->m, next)) move_to(g, next);
   else if ((!can_move_to(g->m, next) || one_in(3)) &&
            g->m.has_flag(bashable, next) && has_flag(MF_BASHES)) {
    std::string bashsound = "NOBASH"; // If we hear "NOBASH" it's time to debug!
@@ -470,28 +470,27 @@ void monster::hit_player(game *g, player &p, bool can_grab)
  }
 }
 
-void monster::move_to(game *g, int x, int y)
+void monster::move_to(game *g, const point& pt)
 {
- monster* const m_at = g->mon(x,y);
+ monster* const m_at = g->mon(pt);
  if (!m_at) { //...assuming there's no monster there
   if (has_effect(ME_BEARTRAP)) {
    moves = 0;
    return;
   }
   if (!plans.empty()) plans.erase(plans.begin());
-  if (has_flag(MF_SWIMS) && g->m.has_flag(swimmable, x, y)) moves += 50;
+  if (has_flag(MF_SWIMS) && g->m.has_flag(swimmable, pt)) moves += 50;
   if (!has_flag(MF_DIGS) && !has_flag(MF_FLIES) &&
-      (!has_flag(MF_SWIMS) || !g->m.has_flag(swimmable, x, y)))
-   moves -= (g->m.move_cost(x, y) - 2) * 50;
-  pos.x = x;
-  pos.y = y;
-  footsteps(g, x, y);
+      (!has_flag(MF_SWIMS) || !g->m.has_flag(swimmable, pt)))
+   moves -= (g->m.move_cost(pt) - 2) * 50;
+  pos = pt;
+  footsteps(g, pt.x, pt.y);
   if (!has_flag(MF_DIGS) && !has_flag(MF_FLIES) && g->m.tr_at(pos) != tr_null) { // Monster stepped on a trap!
    trap* const tr = trap::traps[g->m.tr_at(pos)];
    if (dice(3, sk_dodge + 1) < dice(3, tr->avoidance)) (tr->actm)(g, this);
   }
 // Diggers turn the dirt into dirtmound
-  if (has_flag(MF_DIGS)) g->m.ter(pos.x, pos.y) = t_dirtmound;
+  if (has_flag(MF_DIGS)) g->m.ter(pos) = t_dirtmound;
 // Acid trail monsters leave... a trail of acid
   if (has_flag(MF_ACIDTRAIL)) g->m.add_field(g, pos.x, pos.y, fd_acid, 1);
  } else if (has_flag(MF_ATTACKMON) || m_at->friendly != 0)

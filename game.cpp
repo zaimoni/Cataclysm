@@ -5604,7 +5604,7 @@ void game::plmove(int x, int y)
      return;
     }
    }
-   m_at->move_to(this, u.pos.x, u.pos.y);
+   m_at->move_to(this, u.pos);
    messages.add("You displace the %s.", m_at->name().c_str());
   }
   if (update_map_would_scroll(point(x,y))) update_map(x, y);

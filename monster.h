@@ -90,7 +90,7 @@ class monster {
  point scent_move(const game *g);	// these two don't actually move, they return where to move to
  point sound_move(const game *g);
  void hit_player(game *g, player &p, bool can_grab = true);
- void move_to(game *g, int x, int y);
+ void move_to(game *g, const point& pt);
  void stumble(game *g, bool moved);
  void knock_back_from(game *g, int posx, int posy);
 
