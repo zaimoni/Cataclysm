@@ -3061,13 +3061,13 @@ void game::monmove()
 {
  cleanup_dead();
  for (int i = 0; i < z.size(); i++) {
-  while (!z[i].dead && !z[i].can_move_to(m, z[i].pos.x, z[i].pos.y)) {
+  while (!z[i].dead && !z[i].can_move_to(m, z[i].pos)) {
 // If we can't move to our current position, assign us to a new one
    if (debugmon)
     debugmsg("%s can't move to its location! (%d:%d), %s", z[i].name().c_str(),
              z[i].pos.x, z[i].pos.y, m.tername(z[i].pos).c_str());
    bool okay = false;
-   int xdir = rng(1, 2) * 2 - 3, ydir = rng(1, 2) * 2 - 3; // -1 or 1
+   int xdir = rng(0, 1) * 2 - 1, ydir = rng(0, 1) * 2 - 1; // -1 or 1
    int startx = z[i].pos.x - 3 * xdir, endx = z[i].pos.x + 3 * xdir;
    int starty = z[i].pos.y - 3 * ydir, endy = z[i].pos.y + 3 * ydir;
    for (int x = startx; x != endx && !okay; x += xdir) {

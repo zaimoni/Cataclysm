@@ -73,7 +73,8 @@ class monster {
  void shift(int sx, int sy); 	// Shifts the monster to the appropriate submap
 			     	// Updates current pos AND our plans
  bool wander() const { return plans.empty(); } 		// Returns true if we have no plans
- bool can_move_to(map &m, int x, int y); // Can we move to (x, y)?
+ bool can_move_to(const map &m, int x, int y) const; // Can we move to (x, y)?
+ bool can_move_to(const map &m, const point& pt) const { return can_move_to(m, pt.x, pt.y); };
  bool will_reach(const game *g, const point& pt) const; // Do we have plans to get to (x, y)?
  int  turns_to_reach(game *g, int x, int y); // How long will it take?
 

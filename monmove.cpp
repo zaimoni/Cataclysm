@@ -16,7 +16,7 @@
 
 #define MONSTER_FOLLOW_DIST 8
 
-bool monster::can_move_to(map &m, int x, int y)
+bool monster::can_move_to(const map &m, int x, int y) const
 {
  if (m.move_cost(x, y) == 0 &&
      (!has_flag(MF_DESTROYS) || !m.is_destructable(x, y)) &&
@@ -233,7 +233,7 @@ void monster::move(game *g)
    hit_player(g, *nPC);
   // end C:DDA refactor target monster::attack_at
   // \todo C:DDA refactor target monster::bash_at
-  else if ((!can_move_to(g->m, next.x, next.y) || one_in(3)) &&
+  else if ((!can_move_to(g->m, next) || one_in(3)) &&
              g->m.has_flag(bashable, next) && has_flag(MF_BASHES)) {
    std::string bashsound = "NOBASH"; // If we hear "NOBASH" it's time to debug!
    int bashskill = int(type->melee_dice * type->melee_sides);
@@ -243,7 +243,7 @@ void monster::move(game *g)
    g->m.destroy(g, next.x, next.y, true);
    moves -= 250;
   // end C:DDA refactor target monster::bash_at
-  } else if (can_move_to(g->m, next.x, next.y) && g->is_empty(next))
+  } else if (can_move_to(g->m, next) && g->is_empty(next))
    move_to(g, next.x, next.y);
   else
    moves -= 100;
@@ -290,8 +290,7 @@ void monster::friendly_move(game *g)
  bool moved = false;
  moves -= 100;
  if (plans.size() > 0 && plans[0] != g->u.pos &&
-     (can_move_to(g->m, plans[0].x, plans[0].y) ||
-     (g->m.has_flag(bashable, plans[0]) && has_flag(MF_BASHES)))){
+     (can_move_to(g->m, plans[0]) || (g->m.has_flag(bashable, plans[0]) && has_flag(MF_BASHES)))){
   next = plans[0];
   plans.erase(plans.begin());
   moved = true;
@@ -304,9 +303,8 @@ void monster::friendly_move(game *g)
    hit_monster(g, *m_at);
   else if (nPC && type->melee_dice > 0)
    hit_player(g, *nPC);
-  else if (!m_at && !nPC && can_move_to(g->m, next.x, next.y))
-   move_to(g, next.x, next.y);
-  else if ((!can_move_to(g->m, next.x, next.y) || one_in(3)) &&
+  else if (!m_at && !nPC && can_move_to(g->m, next)) move_to(g, next.x, next.y);
+  else if ((!can_move_to(g->m, next) || one_in(3)) &&
            g->m.has_flag(bashable, next) && has_flag(MF_BASHES)) {
    std::string bashsound = "NOBASH"; // If we hear "NOBASH" it's time to debug!
    int bashskill = int(type->melee_dice * type->melee_sides);
@@ -351,7 +349,7 @@ point monster::scent_move(game *g)
 
 bool monster::can_sound_move_to(game* g, const point& pt)
 {
-	return can_move_to(g->m, pt.x, pt.y) || pt == g->u.pos || (has_flag(MF_BASHES) && g->m.has_flag(bashable, pt));
+	return can_move_to(g->m, pt) || pt == g->u.pos || (has_flag(MF_BASHES) && g->m.has_flag(bashable, pt));
 }
 
 bool monster::can_sound_move_to(game* g, const point& pt, point& dest)
@@ -514,7 +512,7 @@ void monster::stumble(game *g, bool moved)
  for (int i = -1; i <= 1; i++) {
   for (int j = -1; j <= 1; j++) {
    const point dest(pos.x + i, pos.y + j);
-   if (can_move_to(g->m, dest.x, dest.y) && g->u.pos != dest &&
+   if (can_move_to(g->m, dest) && g->u.pos != dest &&
        (!g->mon(dest) || (i == 0 && j == 0))) {
     valid_stumbles.push_back(dest);
    }
