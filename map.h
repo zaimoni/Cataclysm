@@ -60,10 +60,10 @@ class map
  bool clear_path(int Fx, int Fy, int Tx, int Ty, int range, int cost_min,
                  int cost_max, int &tc) const;
 // route() generates an A* best path; if bash is true, we can bash through doors
- std::vector<point> route(int Fx, int Fy, int Tx, int Ty, bool bash = true);
- std::vector<point> route(const point& F, int Tx, int Ty, bool bash = true) { return route(F.x, F.y, Tx, Ty, bash); };
- std::vector<point> route(const point& F, const point& T, bool bash = true) { return route(F.x, F.y, T.x, T.y, bash); };
- std::vector<point> route(int Fx, int Fy, const point& T, bool bash = true) { return route(Fx, Fy, T.x, T.y, bash); };
+ std::vector<point> route(int Fx, int Fy, int Tx, int Ty, bool bash = true) const;
+ std::vector<point> route(const point& F, int Tx, int Ty, bool bash = true) const { return route(F.x, F.y, Tx, Ty, bash); };
+ std::vector<point> route(const point& F, const point& T, bool bash = true) const { return route(F.x, F.y, T.x, T.y, bash); };
+ std::vector<point> route(int Fx, int Fy, const point& T, bool bash = true) const { return route(Fx, Fy, T.x, T.y, bash); };
 
 // vehicles
 // checks, if tile is occupied by vehicle and by which part

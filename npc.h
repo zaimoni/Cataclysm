@@ -485,7 +485,7 @@ public:
  bool enough_time_to_reload(game *g, int target, const item &gun) const;
 
 // Physical movement from one tile to the next
- void update_path	(game *g, int x, int y);
+ void update_path	(const map& m, const point& pt);
  bool can_move_to	(game *g, int x, int y);
  void move_to		(game *g, int x, int y);
  void move_to_next	(game *g); // Next in <path>

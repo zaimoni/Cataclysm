@@ -2403,7 +2403,7 @@ bool map::clear_path(int Fx, int Fy, int Tx, int Ty, int range, int cost_min,
 }
 
 // Bash defaults to true.
-std::vector<point> map::route(int Fx, int Fy, int Tx, int Ty, bool bash)
+std::vector<point> map::route(int Fx, int Fy, int Tx, int Ty, bool bash) const
 {
 /* TODO: If the origin or destination is out of bound, figure out the closest
  * in-bounds point and go to that, then to the real origin/destination.

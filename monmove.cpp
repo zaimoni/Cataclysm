@@ -629,7 +629,7 @@ bool monster::will_reach(const game *g, const point& pt) const
  return false;
 }
 
-int monster::turns_to_reach(game *g, int x, int y)
+int monster::turns_to_reach(const game *g, int x, int y) const
 {
  std::vector<point> path = g->m.route(pos, x, y, has_flag(MF_BASHES));
  if (path.size() == 0) return 999;

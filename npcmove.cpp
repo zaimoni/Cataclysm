@@ -222,7 +222,7 @@ void npc::execute_action(game *g, npc_action action, int target)
   break;
 
  case npc_melee:
-  update_path(g, tar.x, tar.y);
+  update_path(g->m, tar);
   if (path.size() > 1) move_to_next(g);
   else if (path.size() == 1) {
    if (target >= 0)
@@ -249,7 +249,7 @@ void npc::execute_action(game *g, npc_action action, int target)
   {
   if (saw_player_recently() && g->m.sees(pos, pl, light)) {
 // npc::pl is the point where we last saw the player
-   update_path(g, pl.x, pl.y);
+   update_path(g->m, pl);
    move_to_next(g);
   } else
    look_for_player(g, g->u);
@@ -257,7 +257,7 @@ void npc::execute_action(game *g, npc_action action, int target)
   break;
 
  case npc_heal_player:
-  update_path(g, g->u.pos.x, g->u.pos.y);
+  update_path(g->m, g->u.pos);
   if (path.size() == 1)	// We're adjacent to u, and thus can heal u
    heal_player(g, g->u);
   else if (path.size() > 0)
@@ -267,7 +267,7 @@ void npc::execute_action(game *g, npc_action action, int target)
   break;
 
  case npc_follow_player:
-  update_path(g, g->u.pos.x, g->u.pos.y);
+  update_path(g->m, g->u.pos);
   if (path.size() <= follow_distance())	// We're close enough to u.
    move_pause();
   else if (path.size() > 0)
@@ -282,7 +282,7 @@ void npc::execute_action(game *g, npc_action action, int target)
   break;
 
  case npc_mug_player:
-  update_path(g, g->u.pos.x, g->u.pos.y);
+  update_path(g->m, g->u.pos);
   if (path.size() == 1)	// We're adjacent to u, and thus can mug u
    mug_player(g, g->u);
   else if (path.size() > 0)
@@ -782,16 +782,14 @@ bool npc::enough_time_to_reload(game *g, int target, const item &gun) const
  return (turns_til_reloaded < turns_til_reached);
 }
 
-void npc::update_path(game *g, int x, int y)
+void npc::update_path(const map& m, const point& pt)
 {
  if (path.empty()) {
-  path = g->m.route(pos, x, y);
+  path = m.route(pos, pt);
   return;
  }
- point last = path[path.size() - 1];
- if (last.x == x && last.y == y)
-  return; // Our path already leads to that point, no need to recalculate
- path = g->m.route(pos, x, y);
+ if (path.back() == pt) return; // Our path already leads to that point, no need to recalculate
+ path = m.route(pos, pt);
  if (!path.empty() && path[0] == pos) path.erase(path.begin());
 }
 
@@ -1001,7 +999,7 @@ void npc::find_item(game *g)
 void npc::pick_up_item(game *g)
 {
  if (g->debugmon) debugmsg("%s::pick_up_item(); [%d, %d] => [%d, %d]", name.c_str(), pos.x, pos.y, it.x, it.y);
- update_path(g, it.x, it.y);
+ update_path(g->m, it);
 
  if (path.size() > 1) {
   if (g->debugmon) debugmsg("Moving; [%d, %d] => [%d, %d]", pos.x, pos.y, path[0].x, path[0].y);
@@ -1329,7 +1327,7 @@ void npc::alt_attack(game *g, int target)
    }
 
   } else { // Within this block, our chosen target is outside of our range
-   update_path(g, tar.x, tar.y);
+   update_path(g->m, tar);
    move_to_next(g); // Move towards the target
   }
  } // Done with throwing-item block
@@ -1362,7 +1360,7 @@ void npc::heal_player(game *g, player &patient)
  int dist = rl_dist(pos, patient.pos);
  
  if (dist > 1) { // We need to move to the player
-  update_path(g, patient.pos.x, patient.pos.y);
+  update_path(g->m, patient.pos);
   move_to_next(g);
  } else { // Close enough to heal!
   int lowest_HP = 400;
@@ -1544,7 +1542,7 @@ void npc::pick_and_eat(game *g)
 void npc::mug_player(game *g, player &mark)
 {
  if (rl_dist(pos, mark.pos) > 1) { // We have to travel
-  update_path(g, mark.pos.x, mark.pos.y);
+  update_path(g->m, mark.pos);
   move_to_next(g);
  } else {
   bool u_see_me   = g->u_see(pos),
@@ -1652,7 +1650,7 @@ void npc::look_for_player(game *g, player &sought)
   if (one_in(6))
    say(g, "<wait>");
   int index = rng(0, possibilities.size() - 1);
-  update_path(g, possibilities[index].x, possibilities[index].y);
+  update_path(g->m, possibilities[index]);
   move_to_next(g);
  }
 }
