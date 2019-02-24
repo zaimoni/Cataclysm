@@ -1018,14 +1018,14 @@ int map::move_cost_ter_only(int x, int y) const
  return ter_t::list[ter(x, y)].movecost;
 }
 
-bool map::trans(int x, int y)
+bool map::trans(int x, int y) const
 {
  // Control statement is a problem. Normally returning false on an out-of-bounds
  // is how we stop rays from going on forever.  Instead we'll have to include
  // this check in the ray loop.
  int vpart = -1;
  bool tertr;
- if (vehicle *veh = veh_at(x, y, vpart)) {
+ if (vehicle* const veh = veh_at(x, y, vpart)) {
   tertr = !veh->part_flag(vpart, vpf_opaque) || veh->parts[vpart].hp <= 0;
   if (!tertr) {
    int dpart = veh->part_with_feature(vpart, vpf_openable);
@@ -2265,25 +2265,7 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
  }
 }
 
-#if 0
-//WIP: faster map::sees
-bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc)
-{
- int dx = abs(Tx - Fx);
- int dy = abs(Ty - Fy);
- if (dx == 0) { // Infinite slope, special case
-  tc = 0; // doesn't matter who even cares
-  for (int y = Fy; y <= Ty; y++) {
-   if (!trans(x, y))
-    return false;
-  }
-  return true;
- }
- for (int x = Fx; x <= Tx; x++) {
-  int Yhl = 
-#endif
-
-bool map::sees(int Fx, int Fy, int Tx, int Ty, int range)
+bool map::sees(int Fx, int Fy, int Tx, int Ty, int range) const
 {
   int tc = 0;
   return sees(Fx, Fy, Tx, Ty, range, tc);
@@ -2293,7 +2275,7 @@ bool map::sees(int Fx, int Fy, int Tx, int Ty, int range)
 map::sees based off code by Steve Register [arns@arns.freeservers.com]
 http://roguebasin.roguelikedevelopment.org/index.php?title=Simple_Line_of_Sight
 */
-bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc)
+bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc) const
 {
  int dx = Tx - Fx;
  int dy = Ty - Fy;

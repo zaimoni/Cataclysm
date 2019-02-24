@@ -44,18 +44,18 @@ class map
  int move_cost(int x, int y) const; // Cost to move through; 0 = impassible
  int move_cost(const point& pt) const { return move_cost(pt.x, pt.y); };
  int move_cost_ter_only(int x, int y) const; // same as above, but don't take vehicles into account
- bool trans(int x, int y); // Transparent?
+ bool trans(int x, int y) const; // Transparent?
  // (Fx, Fy) sees (Tx, Ty), within a range of (range)?
  // tc indicates the Bresenham line used to connect the two points, and may
  //  subsequently be used to form a path between them
- bool sees(int Fx, int Fy, int Tx, int Ty, int range);
- bool sees(const point& F, int Tx, int Ty, int range) { return sees(F.x, F.y, Tx, Ty, range); };
- bool sees(const point& F, const point& T, int range) { return sees(F.x, F.y, T.x, T.y, range); };
- bool sees(int Fx, int Fy, const point& T, int range) { return sees(Fx, Fy, T.x, T.y, range); };
- bool sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc);
- bool sees(const point& F, int Tx, int Ty, int range, int &tc) { return sees(F.x, F.y, Tx, Ty, range, tc); };
- bool sees(const point& F, const point& T, int range, int &tc) { return sees(F.x, F.y, T.x, T.y, range, tc); };
- bool sees(int Fx, int Fy, const point& T, int range, int &tc) { return sees(Fx, Fy, T.x, T.y, range, tc); };
+ bool sees(int Fx, int Fy, int Tx, int Ty, int range) const;
+ bool sees(const point& F, int Tx, int Ty, int range) const { return sees(F.x, F.y, Tx, Ty, range); };
+ bool sees(const point& F, const point& T, int range) const { return sees(F.x, F.y, T.x, T.y, range); };
+ bool sees(int Fx, int Fy, const point& T, int range) const { return sees(Fx, Fy, T.x, T.y, range); };
+ bool sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc) const;
+ bool sees(const point& F, int Tx, int Ty, int range, int &tc) const { return sees(F.x, F.y, Tx, Ty, range, tc); };
+ bool sees(const point& F, const point& T, int range, int &tc) const { return sees(F.x, F.y, T.x, T.y, range, tc); };
+ bool sees(int Fx, int Fy, const point& T, int range, int &tc) const { return sees(Fx, Fy, T.x, T.y, range, tc); };
  // clear_path is the same idea, but uses cost_min <= move_cost <= cost_max
  bool clear_path(int Fx, int Fy, int Tx, int Ty, int range, int cost_min,
                  int cost_max, int &tc);
