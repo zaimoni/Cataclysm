@@ -47,8 +47,8 @@ public:
 
  void pick_name(); // Picks a name from NAMES_*
 
- virtual bool is_npc() { return false; }	// Overloaded for NPCs in npc.h
- nc_color color();				// What color to draw us as
+ virtual bool is_npc() const { return false; }	// Overloaded for NPCs in npc.h
+ nc_color color() const;				// What color to draw us as
 
  virtual void load_info(game *g, std::string data);// Load from file 'name.sav'
  virtual std::string save_info();		// Save to file matching name
@@ -64,7 +64,7 @@ public:
  int  swim_speed();	// Our speed when swimming
 
  bool has_trait(int flag) const;
- bool has_mutation(int flag);
+ bool has_mutation(int flag) const;
  void toggle_trait(int flag);
 
  bool has_bionic(bionic_id b) const;

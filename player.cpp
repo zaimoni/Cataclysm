@@ -671,7 +671,7 @@ int player::swim_speed()
  return ret;
 }
 
-nc_color player::color()
+nc_color player::color() const
 {
  if (has_disease(DI_ONFIRE))
   return c_red;
@@ -1814,11 +1814,9 @@ bool player::has_trait(int flag) const
  return my_traits[flag];
 }
 
-bool player::has_mutation(int flag)
+bool player::has_mutation(int flag) const
 {
- if (flag == PF_NULL)
-  return true;
- return my_mutations[flag];
+ return (flag == PF_NULL) ? true : my_mutations[flag];
 }
 
 void player::toggle_trait(int flag)

@@ -370,7 +370,7 @@ public:
 
  npc& operator=(const npc &rhs) = default;
 
- virtual bool is_npc() { return true; }
+ virtual bool is_npc() const { return true; }
 
 // Generating our stats, etc.
  void randomize(game *g, npc_class type = NC_NONE);
