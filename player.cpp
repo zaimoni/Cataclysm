@@ -2868,13 +2868,13 @@ void player::suffer(game *g)
 
  if (has_trait(PF_SLIMY)) {
   auto& fd = g->m.field_at(pos);
-  if (fd.type == fd_null) g->m.add_field(g, pos.x, pos.y, fd_slime, 1);
+  if (fd.type == fd_null) g->m.add_field(g, pos, fd_slime, 1);
   else if (fd.type == fd_slime && fd.density < 3) fd.density++;
  }
 
  if (has_trait(PF_WEB_WEAVER) && one_in(3)) {
   auto& fd = g->m.field_at(pos);
-  if (fd.type == fd_null) g->m.add_field(g, pos.x, pos.y, fd_web, 1);
+  if (fd.type == fd_null) g->m.add_field(g, pos, fd_web, 1);
   else if (fd.type == fd_web && fd.density < 3) fd.density++;
  }
 

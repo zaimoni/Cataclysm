@@ -86,7 +86,7 @@ void mattack::acid(game *g, monster *z)
        one_in(abs(j)) && one_in(abs(i))) {
 	 auto& f = g->m.field_at(dest);
      if (f.type == fd_acid && f.density < 3) f.density++;
-     else g->m.add_field(g, dest.x, dest.y, fd_acid, 2);
+     else g->m.add_field(g, dest, fd_acid, 2);
    }
   }
  }
@@ -103,14 +103,12 @@ void mattack::shockstorm(game *g, monster *z)
  int t;
  std::vector<point> bolt = line_to(z->pos, tarx, tary, (g->m.sees(z->pos, tarx, tary, -1, t) ? t : 0));
  for (int i = 0; i < bolt.size(); i++) { // Fill the LOS with electricity
-  if (!one_in(4))
-   g->m.add_field(g, bolt[i].x, bolt[i].y, fd_electricity, rng(1, 3));
+  if (!one_in(4)) g->m.add_field(g, bolt[i], fd_electricity, rng(1, 3));
  }
 // 3x3 cloud of electricity at the square hit
  for (int i = tarx - 1; i <= tarx + 1; i++) {
   for (int j = tary - 1; j <= tary + 1; j++) {
-   if (!one_in(6))
-    g->m.add_field(g, i, j, fd_electricity, rng(1, 3));
+   if (!one_in(6)) g->m.add_field(g, i, j, fd_electricity, rng(1, 3));
   }
  }
 }
@@ -132,10 +130,10 @@ void mattack::boomer(game *g, monster *z)
   } else if (fd.type == fd_bile) {
 	  if (fd.density < 3) fd.density++;
   } else
-   g->m.add_field(g, line[i].x, line[i].y, fd_bile, 1);
+   g->m.add_field(g, line[i], fd_bile, 1);
 // If bile hit a solid tile, return.
   if (g->m.move_cost(line[i]) == 0) {
-   g->m.add_field(g, line[i].x, line[i].y, fd_bile, 3);
+   g->m.add_field(g, line[i], fd_bile, 3);
    if (g->u_see(line[i]))
     messages.add("Bile splatters on the %s!", g->m.tername(line[i]).c_str());
    return;
@@ -251,7 +249,7 @@ void mattack::science(game *g, monster *z)	// I said SCIENCE again!
  case 4:	// Acid pool
   messages.add("The %s drops a flask of acid!", z->name().c_str());
   z->moves -= 100;
-  for(const auto& pt : free) g->m.add_field(g, pt.x, pt.y, fd_acid, 3);
+  for(const auto& pt : free) g->m.add_field(g, pt, fd_acid, 3);
   break;
  case 5:	// Flavor text
   switch (rng(1, 4)) {
@@ -1037,7 +1035,7 @@ void mattack::flamethrower(game *g, monster *z)
  z->moves = -500;			// It takes a while
  std::vector<point> traj = line_to(z->pos, g->u.pos, t);
  for (int i = 0; i < traj.size(); i++)
-  g->m.add_field(g, traj[i].x, traj[i].y, fd_fire, 1);
+  g->m.add_field(g, traj[i], fd_fire, 1);
  g->u.add_disease(DI_ONFIRE, 8);
 }
 

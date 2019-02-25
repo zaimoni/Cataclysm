@@ -44,10 +44,7 @@ void ammo_effects(game *g, point pt, long flags)
 	}
 
 	if (flags & mfb(IF_AMMO_FLASHBANG)) g->flashbang(pt);
-
-	if (flags & mfb(IF_AMMO_FLAME)) {
-		if (g->m.add_field(g, pt.x, pt.y, fd_fire, 1)) g->m.field_at(pt).age = 800;
-	}
+	if (flags & mfb(IF_AMMO_FLAME)) g->m.add_field(g, pt, fd_fire, 1, 800);
 }
 
 // no real advantage to const member function of player over free static function
@@ -780,6 +777,6 @@ void splatter(game *g, std::vector<point> trajectory, int dam, monster* mon)
 	 auto& fd = g->m.field_at(tar);
 	 if (blood == fd.type) {
 		 if (3 > fd.density) fd.density++;
-	 } else g->m.add_field(g, tar.x, tar.y, blood, 1);
+	 } else g->m.add_field(g, tar, blood, 1);
  }
 }

@@ -3938,9 +3938,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    case 3: { // Hermit cave
 	point orig(rng(SEEX - 1, SEEX), rng(SEEY - 1, SEEY));
 	point herm(rng(SEEX - 6, SEEX + 5), rng(SEEX - 6, SEEY + 5));
-    std::vector<point> bloodline = line_to(orig, herm, 0);
-    for (int ii = 0; ii < bloodline.size(); ii++)
-     add_field(g, bloodline[ii].x, bloodline[ii].y, fd_blood, 2);
+	for(const auto& pt : line_to(orig, herm, 0)) add_field(g, pt, fd_blood, 2);
     add_item(herm, item(messages.turn));
     place_items(mi_rare, 25, herm.x - 1, herm.y - 1, herm.x + 1, herm.y + 1,true,0);
    } break;

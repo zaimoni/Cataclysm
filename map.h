@@ -213,7 +213,8 @@ class map
  field& field_at(const point& pt) { return field_at(pt.x, pt.y); };
  const field& field_at(int x, int y) const { return const_cast<map*>(this)->field_at(x, y); };
  const field& field_at(const point& pt) const { return const_cast<map*>(this)->field_at(pt.x, pt.y); };
- bool add_field(game *g, int x, int y, field_id t, unsigned char density);
+ bool add_field(game *g, int x, int y, field_id t, unsigned char density, unsigned int age=0);
+ bool add_field(game *g, const point& pt, field_id t, unsigned char density, unsigned int age = 0) { return add_field(g, pt.x, pt.y, t, density, age); };
  void remove_field(int x, int y);
  bool process_fields(game *g);				// See fields.cpp
  void step_in_field(int x, int y, game *g);		// See fields.cpp

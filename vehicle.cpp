@@ -821,7 +821,7 @@ void vehicle::thrust (int thd)
         int smk = noise (true, true);
         if (smk > 0) {
             point rd(origin + coord_translate(exhaust_d));
-            g->m.add_field(g, rd.x, rd.y, fd_smoke, (smk / 50) + 1);
+            g->m.add_field(g, rd, fd_smoke, (smk / 50) + 1);
         }
         g->sound(origin, noise(), "");
     }
@@ -1044,7 +1044,7 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
 			auto& f = g->m.field_at(dest);
 			if (f.type == fd_blood) {
 				if (f.density < 3) f.density++;
-			} else g->m.add_field(g, dest.x, dest.y, fd_blood, 1);
+			} else g->m.add_field(g, dest, fd_blood, 1);
         } else
             g->sound(dest, 20, "");
     }
@@ -1593,8 +1593,7 @@ bool vehicle::fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int
     tmp.weapon.charges = charges;
     g->fire(tmp, target->pos, traj, true);
     if (ammo.type == AT_GAS) {
-        for (int i = 0; i < traj.size(); i++)
-            g->m.add_field(g, traj[i].x, traj[i].y, fd_fire, 1);
+		for(const auto& pt : traj) g->m.add_field(g, pt, fd_fire, 1);
     }
 	return true;
 }

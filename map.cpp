@@ -2085,7 +2085,7 @@ field& map::field_at(int x, int y)
  return grid[nonant]->fld[x][y];
 }
 
-bool map::add_field(game *g, int x, int y, field_id t, unsigned char density)
+bool map::add_field(game *g, int x, int y, field_id t, unsigned char density, unsigned int age)
 {
  if (!INBOUNDS(x, y)) return false;
  auto& fd = field_at(x, y);
@@ -2097,7 +2097,7 @@ bool map::add_field(game *g, int x, int y, field_id t, unsigned char density)
  x %= SEEX;
  y %= SEEY;
  if (grid[nonant]->fld[x][y].type == fd_null) grid[nonant]->field_count++;
- grid[nonant]->fld[x][y] = field(t, density);
+ grid[nonant]->fld[x][y] = field(t, density, age);
  if (g != NULL && x == g->u.pos.x && y == g->u.pos.y && grid[nonant]->fld[x][y].is_dangerous()) {
   g->cancel_activity_query("You're in a %s!", fieldlist[t].name[density - 1].c_str());
  }

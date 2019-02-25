@@ -492,7 +492,7 @@ void monster::move_to(game *g, const point& pt)
 // Diggers turn the dirt into dirtmound
   if (has_flag(MF_DIGS)) g->m.ter(pos) = t_dirtmound;
 // Acid trail monsters leave... a trail of acid
-  if (has_flag(MF_ACIDTRAIL)) g->m.add_field(g, pos.x, pos.y, fd_acid, 1);
+  if (has_flag(MF_ACIDTRAIL)) g->m.add_field(g, pos, fd_acid, 1);
  } else if (has_flag(MF_ATTACKMON) || m_at->friendly != 0)
 // If there IS a monster there, and we fight monsters, fight it!
   hit_monster(g, *m_at);

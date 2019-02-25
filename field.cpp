@@ -285,10 +285,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
       if (f.type == fd_smoke) {
 		f.density++;
         cur->density--;
-      } else if (add_field(g, p.x, p.y, fd_smoke, 1)){
-       cur->density--;
-       field_at(p).age = cur->age;
-      }
+      } else if (add_field(g, p, fd_smoke, 1, cur->age)) cur->density--;
      }
     }
    break;
@@ -328,10 +325,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
 		  f.type = fd_tear_gas;
 		  break;
 	  default:	// Or, just create a new field.
-		  if (add_field(g, p.x, p.y, fd_tear_gas, 1)) {
-			  cur->density--;
-			  field_at(p).age = cur->age;
-		  }
+		  if (add_field(g, p, fd_tear_gas, 1, cur->age)) cur->density--;
 	  }
      }
     }
@@ -373,10 +367,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
 		  f.type = fd_toxic_gas;
 		  break;
 	  default:	// Or, just create a new field.
-		  if (add_field(g, p.x, p.y, fd_toxic_gas, 1)) {
-			  cur->density--;
-			  field_at(p).age = cur->age;
-		  }
+		  if (add_field(g, p, fd_toxic_gas, 1, cur->age)) cur->density--;
 	  }
      }
     }
@@ -424,10 +415,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
 		  f.type = fd_nuke_gas;
 		  break;
 	  default:	// Or, just create a new field.
-		if (add_field(g, p.x, p.y, fd_nuke_gas, cur->age)) {
-			cur->density--;
-			field_at(p).age = cur->age;
-		}
+		if (add_field(g, p, fd_nuke_gas, 1, cur->age)) cur->density--;
 	  }
      }
     }
@@ -471,7 +459,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
       while (tries < 10 && cur->age < 50) {
 	   point dest(x + rng(-1, 1), y + rng(-1, 1));
        if (move_cost(dest) != 0 && field_at(dest).is_null()) {
-        add_field(g, dest.x, dest.y, fd_electricity, 1);
+        add_field(g, dest, fd_electricity, 1);
         cur->density--;
         tries = 0;
        } else tries++;
@@ -489,13 +477,13 @@ bool map::process_fields_in_submap(game *g, int gridn)
 	   if (move_cost(dest) > 0) {
 		   auto& f = field_at(dest);
 		   if (f.type == fd_electricity && f.density < 3) f.density++;
-		   else add_field(g, dest.x, dest.y, fd_electricity, 1);
+		   else add_field(g, dest, fd_electricity, 1);
 	   }
        cur->density--;
       }
       while (valid.size() > 0 && cur->density > 0) {
        int index = rng(0, valid.size() - 1);
-       add_field(g, valid[index].x, valid[index].y, fd_electricity, 1);
+       add_field(g, valid[index], fd_electricity, 1);
        cur->density--;
        valid.erase(valid.begin() + index);
       }

@@ -3718,7 +3718,7 @@ void game::explode_mon(monster& target)
 	{
 	auto& f = m.field_at(tar);
     if (f.type == blood_type && f.density < 3) f.density++;
-    else m.add_field(this, tar.x, tar.y, blood_type, 1);
+    else m.add_field(this, tar, blood_type, 1);
 	}
 
     if (m.move_cost(tar) == 0) {

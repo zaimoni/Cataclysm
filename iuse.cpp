@@ -623,8 +623,7 @@ void iuse::lighter(game *g, player *p, item *it, bool t)
  p->moves -= 15;
  dir += p->pos;
  if (g->m.flammable_items_at(dir.x, dir.y)) {
-  if (g->m.add_field(g, dir.x, dir.y, fd_fire, 1))
-   g->m.field_at(dir).age = 30;
+  g->m.add_field(g, dir, fd_fire, 1, 30);
  } else {
   messages.add("There's nothing to light there.");
   it->charges++;
@@ -1492,7 +1491,7 @@ void iuse::gasbomb_act(game *g, player *p, item *it, bool t)
     for (int j = -2; j <= 2; j++) {
 	 point dest(pos.x + i, pos.y + j);
      if (g->m.sees(pos, dest, 3) && g->m.move_cost(dest) > 0)
-      g->m.add_field(g, dest.x, dest.y, fd_tear_gas, 3);
+      g->m.add_field(g, dest, fd_tear_gas, 3);
     }
    }
   }
@@ -1518,7 +1517,7 @@ void iuse::smokebomb_act(game *g, player *p, item *it, bool t)
     for (int j = -2; j <= 2; j++) {
 	 point dest(pos.x + i, pos.y + j);
      if (g->m.sees(pos, dest, 3) && g->m.move_cost(dest) > 0)
-      g->m.add_field(g, dest.x, dest.y, fd_smoke, rng(1, 2) + rng(0, 1));
+      g->m.add_field(g, dest, fd_smoke, rng(1, 2) + rng(0, 1));
     }
    }
   }
@@ -1621,7 +1620,7 @@ void iuse::mininuke_act(game *g, player *p, item *it, bool t)
    for (int j = -4; j <= 4; j++) {
 	point dest(pos.x + i, pos.y + j);
     if (g->m.sees(pos, dest, 3) && g->m.move_cost(dest) > 0)
-     g->m.add_field(g, dest.x, dest.y, fd_nuke_gas, 3);
+     g->m.add_field(g, dest, fd_nuke_gas, 3);
    }
   }
  }
@@ -1987,7 +1986,7 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
 	point bolt(p->pos);
     for (int n = 0; n < dist; n++) {
 	 bolt += dir;
-     g->m.add_field(g, bolt.x, bolt.y, fd_electricity, rng(2, 3));
+     g->m.add_field(g, bolt, fd_electricity, rng(2, 3));
      if (one_in(4)) dir.x = (dir.x == 0) ? rng(0, 1) * 2 - 1 : 0;
      if (one_in(4)) dir.y = (dir.y == 0) ? rng(0, 1) * 2 - 1 : 0;
     }
@@ -2175,10 +2174,7 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
    messages.add("Fire rains down around you!");
    for (int x = p->pos.x - 3; x <= p->pos.x + 3; x++) {
     for (int y = p->pos.y - 3; y <= p->pos.y + 3; y++) {
-     if (!one_in(3)) {
-      if (g->m.add_field(g, x, y, fd_fire, 1 + rng(0, 1) * rng(0, 1)))
-       g->m.field_at(x, y).age = 30;
-     }
+     if (!one_in(3)) g->m.add_field(g, x, y, fd_fire, 1 + rng(0, 1) * rng(0, 1), 30);
     }
    }
    break;

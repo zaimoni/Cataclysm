@@ -190,7 +190,7 @@ void player::activate_bionic(int b, game *g)
    return;
   }
   dir += pos;
-  if (!g->m.add_field(g, dir.x, dir.y, fd_fire, 1))	// Unsuccessful.
+  if (!g->m.add_field(g, dir, fd_fire, 1))	// Unsuccessful.
    messages.add("You can't light a fire there.");
   }
   break;
