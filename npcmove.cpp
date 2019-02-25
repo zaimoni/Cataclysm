@@ -47,7 +47,7 @@ void npc::move(game *g)
  int danger = 0, total_danger = 0, target = -1;
 
  choose_monster_target(g, target, danger, total_danger);
- if (g->debugmon)
+ if (game::debugmon)
   debugmsg("NPC %s: target = %d, danger = %d, range = %d",
            name.c_str(), target, danger, confident_range(-1));
 
@@ -56,8 +56,7 @@ void npc::move(game *g)
   if (pl_danger > danger || target == -1) {
    target = TARGET_PLAYER;
    danger = pl_danger;
-   if (g->debugmon)
-    debugmsg("NPC %s: Set target to PLAYER, danger = %d", name.c_str(), danger);
+   if (game::debugmon) debugmsg("NPC %s: Set target to PLAYER, danger = %d", name.c_str(), danger);
   }
  }
 // TODO: Place player-aiding actions here, with a weight
@@ -70,12 +69,10 @@ void npc::move(game *g)
 
  else {	// No present danger
   action = address_needs(g, danger);
-  if (g->debugmon)
-   debugmsg("address_needs %s", npc_action_name(action).c_str());
+  if (game::debugmon) debugmsg("address_needs %s", npc_action_name(action).c_str());
   if (action == npc_undecided)
    action = address_player(g);
-  if (g->debugmon)
-   debugmsg("address_player %s", npc_action_name(action).c_str());
+  if (game::debugmon) debugmsg("address_player %s", npc_action_name(action).c_str());
   if (action == npc_undecided) {
    if (mission == NPC_MISSION_SHELTER || has_disease(DI_INFECTION))
     action = npc_pause;
@@ -83,16 +80,14 @@ void npc::move(game *g)
     action = scan_new_items(g, target);
    else if (!fetching_item)
     find_item(g);
-   if (g->debugmon)
-    debugmsg("find_item %s", npc_action_name(action).c_str());
+   if (game::debugmon) debugmsg("find_item %s", npc_action_name(action).c_str());
    if (fetching_item)		// Set to true if find_item() found something
     action = npc_pickup;
    else if (is_following())	// No items, so follow the player?
     action = npc_follow_player;
    else				// Do our long-term action
     action = long_term_goal_action(g);
-   if (g->debugmon)
-    debugmsg("long_term_goal_action %s", npc_action_name(action).c_str());
+   if (game::debugmon) debugmsg("long_term_goal_action %s", npc_action_name(action).c_str());
   }
  }
 
@@ -103,8 +98,7 @@ void npc::move(game *g)
  if (action == npc_follow_player && danger > 0 && rl_dist(pos, g->u.pos) <= follow_distance())
   action = method_of_attack(g, target, danger);
 
- if (g->debugmon)
-  debugmsg("%s chose action %s.", name.c_str(), npc_action_name(action).c_str());
+ if (game::debugmon) debugmsg("%s chose action %s.", name.c_str(), npc_action_name(action).c_str());
 
  execute_action(g, action, target);
 }
@@ -305,7 +299,7 @@ void npc::execute_action(game *g, npc_action action, int target)
 
  if (oldmoves == moves) {
   debugmsg("NPC didn't use its moves.  Action %d.  Turning on debug mode.", action);
-  g->debugmon = true;
+  game::debugmon = true;
  }
 }
 
@@ -561,8 +555,7 @@ npc_action npc::address_player(game *g)
 
 npc_action npc::long_term_goal_action(game *g)	// XXX this was being prototyped
 {
- if (g->debugmon)
-  debugmsg("long_term_goal_action()");
+ if (game::debugmon) debugmsg("long_term_goal_action()");
  path.clear();
 
  if (mission == NPC_MISSION_SHOPKEEP || mission == NPC_MISSION_SHELTER)
@@ -998,11 +991,11 @@ void npc::find_item(game *g)
 
 void npc::pick_up_item(game *g)
 {
- if (g->debugmon) debugmsg("%s::pick_up_item(); [%d, %d] => [%d, %d]", name.c_str(), pos.x, pos.y, it.x, it.y);
+ if (game::debugmon) debugmsg("%s::pick_up_item(); [%d, %d] => [%d, %d]", name.c_str(), pos.x, pos.y, it.x, it.y);
  update_path(g->m, it);
 
  if (path.size() > 1) {
-  if (g->debugmon) debugmsg("Moving; [%d, %d] => [%d, %d]", pos.x, pos.y, path[0].x, path[0].y);
+  if (game::debugmon) debugmsg("Moving; [%d, %d] => [%d, %d]", pos.x, pos.y, path[0].x, path[0].y);
   move_to_next(g);
   return;
  }
@@ -1063,7 +1056,7 @@ void npc::pick_up_item(game *g)
 
 void npc::drop_items(game *g, int weight, int volume)
 {
- if (g->debugmon) {
+ if (game::debugmon) {
   debugmsg("%s is dropping items-%d,%d (%d items, wgt %d/%d, vol %d/%d)",
            name.c_str(), weight, volume, inv.size(), weight_carried(),
            weight_capacity() / 4, volume_carried(), volume_capacity());

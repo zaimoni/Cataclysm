@@ -2479,13 +2479,13 @@ int player::hp_percentage() const
  return (100 * total_cur) / total_max;
 }
 
-void player::get_sick(const game *g)
+void player::get_sick()
 {
  if (health > 0 && rng(0, health + 10) < health) health--;
  if (health < 0 && rng(0, 10 - health) < (0 - health)) health++;
  if (one_in(12)) health -= 1;
 
- if (g->debugmon) debugmsg("Health: %d", health);
+ if (game::debugmon) debugmsg("Health: %d", health);
 
  if (has_trait(PF_DISIMMUNE)) return;
 

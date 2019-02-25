@@ -22,6 +22,7 @@
 using namespace cataclysm;
 
 template<> int discard<int>::x = 0;
+bool game::debugmon = false;
 
 #define MAX_MONSTERS_MOVING 40 // Efficiency!
 
@@ -628,7 +629,7 @@ bool game::do_turn()
   if (u.has_trait(PF_ROT3) && one_in(2)) u.hurtall(1);
 
   if (u.radiation > 1 && one_in(3)) u.radiation--;
-  u.get_sick(this);
+  u.get_sick();
 // Auto-save on the half-hour
   save();
  }
@@ -3082,7 +3083,7 @@ void game::monmove()
   }
 
   if (!z[i].dead) {
-   z[i].process_effects(this);
+   z[i].process_effects();
    if (z[i].hurt(0)) kill_mon(i);
   }
 

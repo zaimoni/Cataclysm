@@ -158,7 +158,7 @@ public:
 
  int hp_percentage() const;	// % of HP remaining, overall
 
- void get_sick(const game *g);	// Process diseases
+ void get_sick();	// Process diseases
 // infect() gives us a chance to save (mostly from armor)
  void infect(dis_type type, body_part vector, int strength, int duration);
 // add_disease() does NOT give us a chance to save
