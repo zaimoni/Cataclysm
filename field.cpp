@@ -629,7 +629,7 @@ void map::step_in_field(const point& pt, game *g)
     int web = cur->density * 5 - g->u.disease_level(DI_WEBBED);
     if (web > 0)
      g->u.add_disease(DI_WEBBED, web);
-    remove_field(pt.x, pt.y);
+    remove_field(pt);
    }
   } break;
 
@@ -651,7 +651,7 @@ void map::step_in_field(const point& pt, game *g)
   messages.add("The sap sticks to you!");
   g->u.add_disease(DI_SAP, cur->density * 2);
   if (cur->density == 1)
-   remove_field(pt.x, pt.y);
+   remove_field(pt);
   else
    cur->density--;
   break;
@@ -743,7 +743,7 @@ void map::step_in_field(const point& pt, game *g)
 
   case fd_shock_vent:
   case fd_acid_vent:
-   remove_field(pt.x, pt.y);
+   remove_field(pt);
    break;
  }
 }
