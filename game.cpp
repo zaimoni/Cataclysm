@@ -659,7 +659,7 @@ bool game::do_turn()
  m.vehmove(this);
  m.process_fields(this);
  m.process_active_items(this);
- m.step_in_field(u.pos.x, u.pos.y, this);
+ m.step_in_field(u.pos, this);
 
  monmove();
  update_stair_monsters();

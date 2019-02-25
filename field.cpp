@@ -614,9 +614,9 @@ bool map::process_fields_in_submap(game *g, int gridn)
  return found_field;
 }
 
-void map::step_in_field(int x, int y, game *g)
+void map::step_in_field(const point& pt, game *g)
 {
- field *cur = &field_at(x, y);
+ field *cur = &field_at(pt);
  switch (cur->type) {
   case fd_null:
   case fd_blood:	// It doesn't actually do anything
@@ -628,7 +628,7 @@ void map::step_in_field(int x, int y, game *g)
     int web = cur->density * 5 - g->u.disease_level(DI_WEBBED);
     if (web > 0)
      g->u.add_disease(DI_WEBBED, web);
-    remove_field(x, y);
+    remove_field(pt.x, pt.y);
    }
   } break;
 
@@ -650,7 +650,7 @@ void map::step_in_field(int x, int y, game *g)
   messages.add("The sap sticks to you!");
   g->u.add_disease(DI_SAP, cur->density * 2);
   if (cur->density == 1)
-   remove_field(x, y);
+   remove_field(pt.x, pt.y);
   else
    cur->density--;
   break;
@@ -742,7 +742,7 @@ void map::step_in_field(int x, int y, game *g)
 
   case fd_shock_vent:
   case fd_acid_vent:
-   remove_field(x, y);
+   remove_field(pt.x, pt.y);
    break;
  }
 }
