@@ -77,12 +77,14 @@ bool map::process_fields_in_submap(game *g, int gridn)
    case fd_fire: {
 // Consume items as fuel to help us grow/last longer.
     bool destroyed = false;
-    int vol = 0, smoke = 0, consumed = 0;
-    for (int i = 0; i < i_at(x, y).size() && consumed < cur->density * 2; i++) {
+    int smoke = 0, consumed = 0;
+	auto& stack = i_at(x, y);
+	for (int i = 0; i < stack.size() && consumed < cur->density * 2; i++) {
      destroyed = false;
-     item *it = &(i_at(x, y)[i]);
-	 vol = it->volume();
+     item *it = &stack[i];
+	 const int vol = it->volume();
 
+	 // firearms ammo cooks easily in B movies
      if (it->is_ammo() && it->ammo_type() != AT_BATT &&
          it->ammo_type() != AT_NAIL && it->ammo_type() != AT_BB &&
          it->ammo_type() != AT_BOLT && it->ammo_type() != AT_ARROW) {
@@ -161,7 +163,6 @@ bool map::process_fields_in_submap(game *g, int gridn)
      }
 
      if (destroyed) {
-	  auto& stack = i_at(x, y);
 	  for(auto& obj : stack[i].contents) stack.push_back(obj);
 	  stack.erase(stack.begin() + i);
       i--;

@@ -50,7 +50,6 @@ public:
  nc_color color(player *u) const;
  nc_color color_in_inventory(const player *u) const;
  std::string tname() const;
- void use(player &u);
  bool burn(int amount = 1); // Returns true if destroyed
 
 // Firearm specifics

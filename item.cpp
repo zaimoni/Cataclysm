@@ -4,8 +4,6 @@
 
 #include <sstream>
 
-bool is_flammable(material m);
-
 std::string default_technique_name(technique_id tech);
 
 item::item()
@@ -759,6 +757,11 @@ bool item::is_ammo() const
  return type->is_ammo();
 }
 
+bool is_flammable(material m)
+{
+	return (m == COTTON || m == WOOL || m == PAPER || m == WOOD || m == MNULL);
+}
+
 bool item::is_food(player *u) const
 {
  if (u == NULL) return is_food();
@@ -1099,21 +1102,10 @@ bool item::reload(player &u, int index)
  } else return false;
 }
 
-void item::use(player &u)
-{
- if (charges > 0)
-  charges--;
-}
-
 bool item::burn(int amount)
 {
  burnt += amount;
  return (burnt >= volume() * 3);
-}
-
-bool is_flammable(material m)
-{
- return (m == COTTON || m == WOOL || m == PAPER || m == WOOD || m == MNULL);
 }
 
 std::string default_technique_name(technique_id tech)
