@@ -37,11 +37,15 @@ public:
  item(const itype* it, unsigned int turn, char let);
  explicit item(unsigned int turn, int id = 0);	// corpse constructor; 0 is the value of mon_null
  item(std::string itemdata, game *g);
+ item(const item& src) = default;
+ item(item&& src) = default;
  ~item() = default;
  void make(itype* it);
 
+ item& operator=(const item& src) = default;
+
 // returns the default container of this item, with this item in it
- item in_its_container();
+ item in_its_container() const;
 
  nc_color color(player *u) const;
  nc_color color_in_inventory(player *u);
@@ -69,8 +73,8 @@ public:
  nc_color color() const;
  int price() const;
 
- bool invlet_is_okay();
- bool stacks_with(item rhs);
+ bool invlet_is_okay() const;
+ bool stacks_with(const item& rhs) const;
  void put_in(item payload);
 
  int weight() const;
@@ -82,7 +86,7 @@ public:
  bool has_flag(item_flag f) const;
  bool has_technique(technique_id t, player *p = NULL);
  std::vector<technique_id> techniques();
- bool goes_bad();
+ bool goes_bad() const;
  bool count_by_charges() const;
  bool craft_has_charges();
  bool rotten(game *g);

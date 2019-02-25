@@ -115,7 +115,7 @@ bool item::is_null() const
  return (type == NULL || type->id == 0);
 }
 
-item item::in_its_container()
+item item::in_its_container() const
 {
  if (is_software()) {
   item ret(item::types[itm_usb_drive], 0);
@@ -132,18 +132,13 @@ item item::in_its_container()
  return ret;
 }
 
-bool item::invlet_is_okay()
+bool item::invlet_is_okay() const
 {
  return ((invlet >= 'a' && invlet <= 'z') || (invlet >= 'A' && invlet <= 'Z'));
 }
 
-bool item::stacks_with(item rhs)
+bool item::stacks_with(const item& rhs) const
 {
- bool stacks = (type   == rhs.type   && damage  == rhs.damage  &&
-                active == rhs.active && charges == rhs.charges &&
-                contents.size() == rhs.contents.size() &&
-                (!goes_bad() || bday == rhs.bday));
-
  if ((corpse == NULL && rhs.corpse != NULL) ||
      (corpse != NULL && rhs.corpse == NULL)   )
   return false;
@@ -154,6 +149,10 @@ bool item::stacks_with(item rhs)
   
  if (contents.size() != rhs.contents.size())
   return false;
+
+ bool stacks = (type == rhs.type   && damage == rhs.damage  &&
+	 active == rhs.active && charges == rhs.charges &&
+	 (!goes_bad() || bday == rhs.bday));
 
  for (int i = 0; i < contents.size() && stacks; i++)
    stacks &= contents[i].stacks_with(rhs.contents[i]);
@@ -630,7 +629,7 @@ bool item::rotten(game *g)
  return (food->spoils != 0 && int(messages.turn) - bday > food->spoils * 600);
 }
 
-bool item::goes_bad()
+bool item::goes_bad() const
 {
  if (!is_food()) return false;
  return 0 != dynamic_cast<const it_comest*>(type)->spoils;
