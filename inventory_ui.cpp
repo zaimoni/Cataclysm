@@ -60,19 +60,15 @@ void print_inv_statics(game *g, WINDOW* w_inv, std::string title,
    if (dropped_items[j] == g->u.worn[i].invlet)
     dropping_armor = true;
   }
-  if (dropping_armor)
-   mvwprintz(w_inv, 6 + i, 40, c_white, "%c + %s", g->u.worn[i].invlet,
-             g->u.worn[i].tname(g).c_str());
-  else
-   mvwprintz(w_inv, 6 + i, 40, c_ltgray, "%c - %s", g->u.worn[i].invlet,
-             g->u.worn[i].tname(g).c_str());
+  
+  mvwprintz(w_inv, 6 + i, 40, (dropping_armor ? c_white : c_ltgray), "%c + %s", g->u.worn[i].invlet,
+            g->u.worn[i].tname().c_str());
  }
 }
  
 std::vector<int> find_firsts(const inventory &inv)
 {
- std::vector<int> firsts;
- for (int i = 0; i < 8; i++) firsts.push_back(-1);
+ std::vector<int> firsts(8, -1);
 
  for (size_t i = 0; i < inv.size(); i++) {
   if (firsts[0] == -1 && inv[i].is_gun())
@@ -140,7 +136,7 @@ char game::inv(std::string title)
    if (cur_it < u.inv.size()) {
     mvwputch (w_inv, cur_line, 0, c_white, u.inv[cur_it].invlet);
     mvwprintz(w_inv, cur_line, 1, u.inv[cur_it].color_in_inventory(&u), " %s",
-              u.inv[cur_it].tname(this).c_str());
+              u.inv[cur_it].tname().c_str());
     if (u.inv.stack_at(cur_it).size() > 1)
      wprintw(w_inv, " [%d]", u.inv.stack_at(cur_it).size());
     if (u.inv[cur_it].charges > 0)
@@ -215,8 +211,7 @@ std::vector<item> game::multidrop()
     else if (dropping[cur_it] > 0)
      icon = '#';
     nc_color col = (dropping[cur_it] == 0 ? c_ltgray : c_white);
-    mvwprintz(w_inv, cur_line, 1, col, " %c %s", icon,
-              u.inv[cur_it].tname(this).c_str());
+    mvwprintz(w_inv, cur_line, 1, col, " %c %s", icon, u.inv[cur_it].tname().c_str());
     if (u.inv.stack_at(cur_it).size() > 1)
      wprintz(w_inv, col, " [%d]", u.inv.stack_at(cur_it).size());
     if (u.inv[cur_it].charges > 0)
@@ -250,7 +245,7 @@ std::vector<item> game::multidrop()
      if (ch == u.weapon.invlet && u.weapon.type->id > num_items &&
          u.weapon.type->id < num_all_items) {
       if (!warned_about_bionic)
-       messages.add("You cannot drop your %s.", u.weapon.tname(this).c_str());
+       messages.add("You cannot drop your %s.", u.weapon.tname().c_str());
       warned_about_bionic = true;
      } else {
       weapon_and_armor.push_back(ch);

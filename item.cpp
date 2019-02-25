@@ -413,13 +413,13 @@ nc_color item::color(player *u) const
  return ret;
 }
 
-nc_color item::color_in_inventory(player *u)
+nc_color item::color_in_inventory(const player *u) const	// retain unused paramweter for later use
 {
 // Items in our inventory get colorized specially
  return active ? c_yellow : c_white;
 }
 
-std::string item::tname(game *g) const
+std::string item::tname() const
 {
  std::stringstream ret;
 
@@ -508,7 +508,7 @@ std::string item::tname(game *g) const
  const it_comest* food = NULL;
  if (is_food()) food = dynamic_cast<const it_comest*>(type);
  else if (is_food_container()) food = dynamic_cast<const it_comest*>(contents[0].type);
- if (food != NULL && g != NULL && food->spoils != 0 && int(messages.turn) - bday > food->spoils * 600)
+ if (food != NULL && food->spoils != 0 && int(messages.turn) - bday > food->spoils * 600)
   ret << " (rotten)";
 
  if (owned > 0) ret << " (owned)";

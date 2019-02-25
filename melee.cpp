@@ -1150,7 +1150,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
 // Glass weapons shatter sometimes
  if (weapon.made_of(GLASS) &&
      rng(0, weapon.volume() + 8) < weapon.volume() + str_cur) {
-  if (can_see) messages.add("%s %s shatters!", Your.c_str(), weapon.tname(g).c_str());
+  if (can_see) messages.add("%s %s shatters!", Your.c_str(), weapon.tname().c_str());
   g->sound(pos, 16, "");
 // Dump its contents on the ground
   for (int i = 0; i < weapon.contents.size(); i++)

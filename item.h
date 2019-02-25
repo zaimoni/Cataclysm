@@ -48,8 +48,8 @@ public:
  item in_its_container() const;
 
  nc_color color(player *u) const;
- nc_color color_in_inventory(player *u);
- std::string tname(game *g = NULL) const; // g needed for rotten-test
+ nc_color color_in_inventory(const player *u) const;
+ std::string tname() const;
  void use(player &u);
  bool burn(int amount = 1); // Returns true if destroyed
 
