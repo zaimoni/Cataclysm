@@ -3086,15 +3086,14 @@ void game::monmove()
    if (z[i].hurt(0)) kill_mon(i);
   }
 
-  m.mon_in_field(z[i].pos.x, z[i].pos.y, this, &(z[i]));
+  m.mon_in_field(z[i].pos, this, &(z[i]));
 
   while (z[i].moves > 0 && !z[i].dead) {
    z[i].made_footstep = false;
    z[i].plan(this);	// Formulate a path to follow
    z[i].move(this);	// Move one square, possibly hit u
    z[i].process_triggers(this);
-   m.mon_in_field(z[i].pos.x, z[i].pos.y, this, &(z[i]));
-   if (z[i].hurt(0)) kill_mon(i);	// Maybe we died...
+   m.mon_in_field(z[i].pos, this, &(z[i]));
   }
 
   if (!z[i].dead) {

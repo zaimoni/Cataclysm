@@ -748,10 +748,10 @@ void map::step_in_field(const point& pt, game *g)
  }
 }
     
-void map::mon_in_field(int x, int y, game *g, monster *z)
+void map::mon_in_field(const point& pt, game *g, monster *z)
 {
  if (z->has_flag(MF_DIGS)) return;	// Digging monsters are immune to fields
- field *cur = &field_at(x, y);
+ field *cur = &field_at(pt);
  int dam = 0;
  switch (cur->type) {
   case fd_null:
@@ -762,7 +762,7 @@ void map::mon_in_field(int x, int y, game *g, monster *z)
   case fd_web:
    if (!z->has_flag(MF_WEBWALK)) {
     z->speed *= .8;
-    remove_field(x, y);
+    remove_field(pt);
    }
    break;
 
@@ -779,7 +779,7 @@ void map::mon_in_field(int x, int y, game *g, monster *z)
   case fd_sap:
    z->speed -= cur->density * 5;
    if (cur->density == 1)
-    remove_field(x, y);
+    remove_field(pt);
    else
     cur->density--;
    break;
@@ -906,7 +906,7 @@ void map::mon_in_field(int x, int y, game *g, monster *z)
    break;
      
  }
- if (dam > 0) z->hurt(dam);
+ if (0 < dam && z->hurt(dam)) g->kill_mon(*z);
 }
 
 #if DEAD_FUNC

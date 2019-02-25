@@ -217,9 +217,9 @@ class map
  bool add_field(game *g, const point& pt, field_id t, unsigned char density, unsigned int age = 0) { return add_field(g, pt.x, pt.y, t, density, age); };
  void remove_field(int x, int y);
  void remove_field(const point& pt) { remove_field(pt.x, pt.y); };
- bool process_fields(game *g);				// See fields.cpp
- void step_in_field(const point& pt, game *g);		// See fields.cpp	// V 0.2.1 break hard-coding to player g->u
- void mon_in_field(int x, int y, game *g, monster *z);	// See fields.cpp
+ bool process_fields(game *g);				// See field.cpp
+ void step_in_field(const point& pt, game *g);		// See field.cpp	// V 0.2.1 break hard-coding to player g->u
+ void mon_in_field(const point& pt, game *g, monster *z);	// See field.cpp	\todo all callers use the monster's position: decide whether to hardcode this
 
 // Computers
  computer* computer_at(int x, int y);
