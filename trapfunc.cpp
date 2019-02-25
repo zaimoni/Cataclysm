@@ -21,7 +21,7 @@ void trapfunc::beartrap(game *g, int x, int y)
  messages.add("A bear trap closes on your foot!");
  g->sound(x, y, 8, "SNAP!");
  g->u.hit(g, bp_legs, rng(0, 1), 10, 16);
- g->u.add_disease(DI_BEARTRAP, -1, g);
+ g->u.add_disease(DI_BEARTRAP, -1);
  g->m.tr_at(x, y) = tr_null;
  g->m.add_item(x, y, item::types[itm_beartrap], messages.turn);
 }
@@ -250,7 +250,7 @@ void trapfuncm::telepad(game *g, monster *z)
 void trapfunc::goo(game *g, int x, int y)
 {
  messages.add("You step in a puddle of thick goo.");
- g->u.infect(DI_SLIMED, bp_feet, 6, 20, g);
+ g->u.infect(DI_SLIMED, bp_feet, 6, 20);
  if (one_in(3)) {
   messages.add("The acidic goo eats away at your feet.");
   g->u.hit(g, bp_feet, 0, 0, 5);
@@ -309,7 +309,7 @@ void trapfunc::pit(game *g, int x, int y)
   } else
    messages.add("You land nimbly.");
  }
- g->u.add_disease(DI_IN_PIT, -1, g);
+ g->u.add_disease(DI_IN_PIT, -1);
 }
 
 void trapfuncm::pit(game *g, monster *z)
@@ -352,7 +352,7 @@ void trapfunc::pit_spikes(game *g, int x, int y)
    }
   }
  }
- g->u.add_disease(DI_IN_PIT, -1, g);
+ g->u.add_disease(DI_IN_PIT, -1);
 }
 
 void trapfuncm::pit_spikes(game *g, monster *z)

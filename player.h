@@ -89,7 +89,7 @@ public:
  bool unarmed_attack() const; // False if we're wielding something; true for bionics
  bool avoid_trap(const trap *tr) const;
 
- void pause(game *g); // '.' command; pauses & reduces recoil
+ void pause(); // '.' command; pauses & reduces recoil
 
 // melee.cpp
  int  hit_mon(game *g, monster *z, bool allow_grab = true);
@@ -158,13 +158,11 @@ public:
 
  int hp_percentage() const;	// % of HP remaining, overall
 
- void get_sick(game *g);	// Process diseases
+ void get_sick(const game *g);	// Process diseases
 // infect() gives us a chance to save (mostly from armor)
- void infect(dis_type type, body_part vector, int strength, int duration,
-             game *g);
+ void infect(dis_type type, body_part vector, int strength, int duration);
 // add_disease() does NOT give us a chance to save
- void add_disease(dis_type type, int duration, game *g, int intensity = 0,
-                  int max_intensity = -1);
+ void add_disease(dis_type type, int duration, int intensity = 0, int max_intensity = -1);
  void rem_disease(dis_type type);
  bool has_disease(dis_type type) const;
  int  disease_level(dis_type type) const;
@@ -188,7 +186,7 @@ public:
  void use(game *g, char let);	// Use a tool
  bool install_bionics(game *g, const it_bionic* type);	// Install bionics
  void read(game *g, char let);	// Read a book
- void try_to_sleep(game *g);	// '$' command; adds DIS_LYING_DOWN
+ void try_to_sleep(const game *g);	// '$' command; adds DIS_LYING_DOWN
  bool can_sleep(game *g);	// Checked each turn during DIS_LYING_DOWN
 
  int warmth(body_part bp);	// Warmth provided by armor &c

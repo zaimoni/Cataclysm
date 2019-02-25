@@ -545,11 +545,11 @@ npc_action npc::address_player(game *g)
    int intense = disease_intensity(DI_CATCH_UP);
    if (intense < 10) {
     say(g, "<keep_up>");
-    add_disease(DI_CATCH_UP, 5, g, 1, 15);
+    add_disease(DI_CATCH_UP, 5, 1, 15);
     return npc_pause;
    } else if (intense == 10) {
     say(g, "<im_leaving_you>");
-    add_disease(DI_CATCH_UP, 5, g, 1, 15);
+    add_disease(DI_CATCH_UP, 5, 1, 15);
     return npc_pause;
    } else
     return npc_goto_destination;

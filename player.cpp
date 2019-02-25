@@ -2017,7 +2017,7 @@ bool player::avoid_trap(const trap* const tr) const
  return myroll >= traproll;
 }
 
-void player::pause(game *g)
+void player::pause()
 {
  moves = 0;
  if (recoil > 0) {
@@ -2033,11 +2033,9 @@ void player::pause(game *g)
  if (weapon.type->id == itm_style_toad && activity.type == ACT_NULL) {
   int arm_amount = 1 + (int_cur - 6) / 3 + (per_cur - 6) / 3;
   int arm_max = (int_cur + per_cur) / 2;
-  if (arm_amount > 3)
-   arm_amount = 3;
-  if (arm_max > 20)
-   arm_max = 20;
-  add_disease(DI_ARMOR_BOOST, 2, g, arm_amount, arm_max);
+  if (arm_amount > 3) arm_amount = 3;
+  if (arm_max > 20) arm_max = 20;
+  add_disease(DI_ARMOR_BOOST, 2, arm_amount, arm_max);
  }
 }
 
@@ -2217,26 +2215,22 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
   pain++;
   if (dam > 5 || cut > 0) {
    int minblind = int((dam + cut) / 10);
-   if (minblind < 1)
-    minblind = 1;
+   if (minblind < 1) minblind = 1;
    int maxblind = int((dam + cut) /  4);
-   if (maxblind > 5)
-    maxblind = 5;
-   add_disease(DI_BLIND, rng(minblind, maxblind), g);
+   if (maxblind > 5) maxblind = 5;
+   add_disease(DI_BLIND, rng(minblind, maxblind));
   }
 
  case bp_mouth: // Fall through to head damage
  case bp_head: 
   pain++;
   hp_cur[hp_head] -= dam;
-  if (hp_cur[hp_head] < 0)
-   hp_cur[hp_head] = 0;
+  if (hp_cur[hp_head] < 0) hp_cur[hp_head] = 0;
  break;
  case bp_torso:
   recoil += int(dam / 5);
   hp_cur[hp_torso] -= dam;
-  if (hp_cur[hp_torso] < 0)
-   hp_cur[hp_torso] = 0;
+  if (hp_cur[hp_torso] < 0) hp_cur[hp_torso] = 0;
  break;
  case bp_hands: // Fall through to arms
  case bp_arms:
@@ -2244,26 +2238,22 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
    recoil += int(dam / 3);
   if (side == 0 || side == 3) {
    hp_cur[hp_arm_l] -= dam;
-   if (hp_cur[hp_arm_l] < 0)
-    hp_cur[hp_arm_l] = 0;
+   if (hp_cur[hp_arm_l] < 0) hp_cur[hp_arm_l] = 0;
   }
   if (side == 1 || side == 3) {
    hp_cur[hp_arm_r] -= dam;
-   if (hp_cur[hp_arm_r] < 0)
-    hp_cur[hp_arm_r] = 0;
+   if (hp_cur[hp_arm_r] < 0) hp_cur[hp_arm_r] = 0;
   }
  break;
  case bp_feet: // Fall through to legs
  case bp_legs:
   if (side == 0 || side == 3) {
    hp_cur[hp_leg_l] -= dam;
-   if (hp_cur[hp_leg_l] < 0)
-    hp_cur[hp_leg_l] = 0;
+   if (hp_cur[hp_leg_l] < 0) hp_cur[hp_leg_l] = 0;
   }
   if (side == 1 || side == 3) {
    hp_cur[hp_leg_r] -= dam;
-   if (hp_cur[hp_leg_r] < 0)
-    hp_cur[hp_leg_r] = 0;
+   if (hp_cur[hp_leg_r] < 0) hp_cur[hp_leg_r] = 0;
   }
  break;
  default:
@@ -2271,7 +2261,7 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
  }
  if (has_trait(PF_ADRENALINE) && !has_disease(DI_ADRENALINE) &&
      (hp_cur[hp_head] < 25 || hp_cur[hp_torso] < 15))
-  add_disease(DI_ADRENALINE, 200, g);
+  add_disease(DI_ADRENALINE, 200);
 }
 
 void player::hurt(game *g, body_part bphurt, int side, int dam)
@@ -2321,7 +2311,7 @@ void player::hurt(game *g, body_part bphurt, int side, int dam)
   debugmsg("Wacky body part hurt!");
  }
  if (has_trait(PF_ADRENALINE) && !has_disease(DI_ADRENALINE) && (hp_cur[hp_head] < 25 || hp_cur[hp_torso] < 15))
-  add_disease(DI_ADRENALINE, 200, g);
+  add_disease(DI_ADRENALINE, 200);
 }
 
 void player::heal(body_part healed, int side, int dam)
@@ -2437,7 +2427,7 @@ void player::knock_back_from(game *g, int x, int y)
 // First, see if we hit a monster
  if (monster* const z = g->mon(to)) {
   hit(g, bp_torso, 0, z->type->size, 0);
-  add_disease(DI_STUNNED, 1, g);
+  add_disease(DI_STUNNED, 1);
   if ((str_max - 6) / 4 > z->type->size) {
    z->knock_back_from(g, pos.x, pos.y); // Chain reaction!
    z->hurt((str_max - 6) / 4);
@@ -2454,7 +2444,7 @@ void player::knock_back_from(game *g, int x, int y)
 
  if (npc* const p = g->nPC(to)) {
   hit(g, bp_torso, 0, 3, 0);
-  add_disease(DI_STUNNED, 1, g);
+  add_disease(DI_STUNNED, 1);
   p->hit(g, bp_torso, 0, 3, 0);
   if (u_see) messages.add("%s bounce%s off %s!", You.c_str(), s, p->name.c_str());
   return;
@@ -2469,7 +2459,7 @@ void player::knock_back_from(game *g, int x, int y)
 // TODO: NPCs can't swim!
   } else { // It's some kind of wall.
    hurt(g, bp_torso, 0, 3);
-   add_disease(DI_STUNNED, 2, g);
+   add_disease(DI_STUNNED, 2);
    if (u_see) messages.add("%s bounce%s off a %s.", name.c_str(), s, g->m.tername(to).c_str());
   }
 
@@ -2489,35 +2479,28 @@ int player::hp_percentage() const
  return (100 * total_cur) / total_max;
 }
 
-void player::get_sick(game *g)
+void player::get_sick(const game *g)
 {
- if (health > 0 && rng(0, health + 10) < health)
-  health--;
- if (health < 0 && rng(0, 10 - health) < (0 - health))
-  health++;
- if (one_in(12))
-  health -= 1;
+ if (health > 0 && rng(0, health + 10) < health) health--;
+ if (health < 0 && rng(0, 10 - health) < (0 - health)) health++;
+ if (one_in(12)) health -= 1;
 
- if (g->debugmon)
-  debugmsg("Health: %d", health);
+ if (g->debugmon) debugmsg("Health: %d", health);
 
- if (has_trait(PF_DISIMMUNE))
-  return;
+ if (has_trait(PF_DISIMMUNE)) return;
 
  if (!has_disease(DI_FLU) && !has_disease(DI_COMMON_COLD) &&
      one_in(900 + 10 * health + (has_trait(PF_DISRESISTANT) ? 300 : 0))) {
   if (one_in(6))
-   infect(DI_FLU, bp_mouth, 3, rng(40000, 80000), g);
+   infect(DI_FLU, bp_mouth, 3, rng(40000, 80000));
   else
-   infect(DI_COMMON_COLD, bp_mouth, 3, rng(20000, 60000), g);
+   infect(DI_COMMON_COLD, bp_mouth, 3, rng(20000, 60000));
  }
 }
 
-void player::infect(dis_type type, body_part vector, int strength,
-                    int duration, game *g)
+void player::infect(dis_type type, body_part vector, int strength, int duration)
 {
- if (dice(strength, 3) > dice(resist(vector), 3))
-  add_disease(type, duration, g);
+ if (dice(strength, 3) > dice(resist(vector), 3)) add_disease(type, duration);
 }
 
 // 2nd person singular.  Would need 3rd person for npcs
@@ -2555,31 +2538,23 @@ const char* describe(dis_type type)
 	}
 }
 
-void player::add_disease(dis_type type, int duration, game *g,
-                         int intensity, int max_intensity)
+void player::add_disease(dis_type type, int duration, int intensity, int max_intensity)
 {
  if (duration == 0) return;
- bool found = false;
  int i = 0;
- while ((i < illness.size()) && !found) {
-  if (illness[i].type == type) {
-   illness[i].duration += duration;
-   illness[i].intensity += intensity;
-   if (max_intensity != -1 && illness[i].intensity > max_intensity)
-    illness[i].intensity = max_intensity;
-   found = true;
-  }
-  i++;
+ for(auto& ill : illness) {
+  if (type != ill.type) continue;
+  illness[i].duration += duration;
+  illness[i].intensity += intensity;
+  if (max_intensity != -1 && illness[i].intensity > max_intensity) illness[i].intensity = max_intensity;
+  return;
  }
- if (!found) {   
-  if (!is_npc()) {
-	if (DI_ADRENALINE == type) g->u.moves += 800;
+ if (!is_npc()) {
+	if (DI_ADRENALINE == type) moves += 800;	// V 0.2.1: handle NPC adrenaline
 	messages.add(describe(type));
-  }
-  disease tmp(type, duration, intensity);
-  illness.push_back(tmp);
  }
-// activity.type = ACT_NULL;
+ disease tmp(type, duration, intensity);
+ illness.push_back(tmp);
 }
 
 void player::rem_disease(dis_type type)
@@ -2758,10 +2733,10 @@ void player::suffer(game *g)
    int i;
    switch(rng(0, 11)) {
     case 0:
-     add_disease(DI_HALLU, 3600, g);
+     add_disease(DI_HALLU, 3600);
      break;
     case 1:
-     add_disease(DI_VISUALS, rng(15, 60), g);
+     add_disease(DI_VISUALS, rng(15, 60));
      break;
     case 2:
      messages.add("From the south you hear glass breaking.");
@@ -2781,7 +2756,7 @@ void player::suffer(game *g)
      break;
     case 6:
      messages.add("You start to shake uncontrollably.");
-     add_disease(DI_SHAKES, 10 * rng(2, 5), g);
+     add_disease(DI_SHAKES, 10 * rng(2, 5));
      break;
     case 7:
      for (i = 0; i < 10; i++) {
@@ -2791,7 +2766,7 @@ void player::suffer(game *g)
      break;
     case 8:
      messages.add("It's a good time to lie down and sleep.");
-     add_disease(DI_LYING_DOWN, 200, g);
+     add_disease(DI_LYING_DOWN, 200);
      break;
     case 9:
      messages.add("You have the sudden urge to SCREAM!");
@@ -2803,16 +2778,14 @@ void player::suffer(game *g)
                             name + name + name + name + name + name).c_str());
      break;
     case 11:
-     add_disease(DI_FORMICATION, 600, g);
+     add_disease(DI_FORMICATION, 600);
      break;
    }
   }
 
   if (has_trait(PF_JITTERY) && !has_disease(DI_SHAKES)) {
-   if (stim > 50 && one_in(300 - stim))
-    add_disease(DI_SHAKES, 300 + stim, g);
-   else if (hunger > 80 && one_in(500 - hunger))
-    add_disease(DI_SHAKES, 400, g);
+   if (stim > 50 && one_in(300 - stim)) add_disease(DI_SHAKES, 300 + stim);
+   else if (hunger > 80 && one_in(500 - hunger)) add_disease(DI_SHAKES, 400);
   }
 
   if (has_trait(PF_MOODSWINGS) && one_in(3600)) {
@@ -2843,7 +2816,7 @@ void player::suffer(game *g)
   if (auto_use)
    use_charges(itm_inhaler, 1);
   else {
-   add_disease(DI_ASTHMA, 50 * rng(1, 4), g);
+   add_disease(DI_ASTHMA, 50 * rng(1, 4));
    if (!is_npc()) g->cancel_activity_query("You have an asthma attack!");
   }
  }
@@ -2964,7 +2937,7 @@ void player::suffer(game *g)
   str_cur -= 3;
 
 // Artifact effects
- if (has_artifact_with(AEP_ATTENTION)) add_disease(DI_ATTENTION, 3, g);
+ if (has_artifact_with(AEP_ATTENTION)) add_disease(DI_ATTENTION, 3);
 
  if (dex_cur < 0) dex_cur = 0;
  if (str_cur < 0) str_cur = 0;
@@ -3712,7 +3685,7 @@ bool player::eat(game *g, int index)
    if (!has_trait(PF_SAPROVORE) && !query_yn("This %s smells awful!  Eat it?", eaten->tname(g).c_str())) return false;
    messages.add("Ick, this %s doesn't taste so good...",eaten->tname(g).c_str());
    if (!has_trait(PF_SAPROVORE) && (!has_bionic(bio_digestion) || one_in(3)))
-    add_disease(DI_FOODPOISON, rng(60, (comest->nutr + 1) * 60), g);
+    add_disease(DI_FOODPOISON, rng(60, (comest->nutr + 1) * 60));
    hunger -= rng(0, comest->nutr);
    thirst -= comest->quench;
    if (!has_trait(PF_SAPROVORE) && !has_bionic(bio_digestion)) health -= 3;
@@ -3728,8 +3701,8 @@ bool player::eat(game *g, int index)
 // At this point, we've definitely eaten the item, so use up some turns.
   moves -= has_trait(PF_GOURMAND) ? 150 : 250;
 // If it's poisonous... poison us.  TODO: More several poison effects
-  if (eaten->poison >= rng(2, 4)) add_disease(DI_POISON, eaten->poison * 100, g);
-  if (eaten->poison > 0) add_disease(DI_FOODPOISON, eaten->poison * 300, g);
+  if (eaten->poison >= rng(2, 4)) add_disease(DI_POISON, eaten->poison * 100);
+  if (eaten->poison > 0) add_disease(DI_FOODPOISON, eaten->poison * 300);
 
 // Descriptive text
   if (!is_npc()) {
@@ -4228,7 +4201,7 @@ void player::read(game *g, char ch)
  moves = 0;
 }
  
-void player::try_to_sleep(game *g)
+void player::try_to_sleep(const game *g)
 {
  const auto terrain = g->m.ter(pos);
  switch (terrain)
@@ -4243,7 +4216,7 @@ void player::try_to_sleep(game *g)
     messages.add("It's %shard to get to sleep on this %s.", t_data.movecost <= 2 ? "a little " : "", t_data.name.c_str());
 	}
  }
- add_disease(DI_LYING_DOWN, 300, g);
+ add_disease(DI_LYING_DOWN, 300);
 }
 
 bool player::can_sleep(game *g)

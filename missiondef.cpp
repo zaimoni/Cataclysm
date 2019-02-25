@@ -59,7 +59,7 @@ void mission_start::infect_npc(game *g, mission *miss)
 		debugmsg("mission_start::infect_npc() couldn't find an NPC!");
 		return;
 	}
-	p->add_disease(DI_INFECTION, -1, g);
+	p->add_disease(DI_INFECTION, -1);
 	for (size_t i = 0; i < p->inv.size(); i++) {
 		if (p->inv[i].type->id == itm_antibiotics) {
 			p->inv.remove_stack(i);

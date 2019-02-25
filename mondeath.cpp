@@ -49,7 +49,7 @@ void mdeath::boomer(game *g, monster *z)
   }
  }
  if (rl_dist(z->pos, g->u.pos) == 1)
-  g->u.infect(DI_BOOMERED, bp_eyes, 2, 24, g);
+  g->u.infect(DI_BOOMERED, bp_eyes, 2, 24);	// V 0.2.1 npcs
 }
 
 void mdeath::kill_vines(game *g, monster *z)
@@ -120,8 +120,8 @@ void mdeath::fungus(game *g, monster *z)
     if (m_at) {	// Spores hit a monster
      if (g->u_see(dest)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
      if (!m_at->make_fungus(g)) g->kill_mon(*m_at, (z->friendly != 0));
-    } else if (g->u.pos == dest)	// \todo infect npcs
-     g->u.infect(DI_SPORES, bp_mouth, 4, 30, g);
+    } else if (g->u.pos == dest)	// V 0.2.1 \todo infect npcs
+     g->u.infect(DI_SPORES, bp_mouth, 4, 30);
     else {
      spore.spawn(dest);
      g->z.push_back(spore);

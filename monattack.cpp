@@ -142,7 +142,7 @@ void mattack::boomer(game *g, monster *z)
   }
  }
  if (rng(0, 10) > g->u.dodge(g) || one_in(g->u.dodge(g)))
-  g->u.infect(DI_BOOMERED, bp_eyes, 3, 12, g);
+  g->u.infect(DI_BOOMERED, bp_eyes, 3, 12);
  else if (u_see)
   messages.add("You dodge it!");
 }
@@ -456,7 +456,7 @@ void mattack::spit_sap(game *g, monster *z)
  if (dam <= 0) return;
  messages.add("A glob of sap hits you!");
  g->u.hit(g, bp_torso, 0, dam, 0);
- g->u.add_disease(DI_SAP, dam, g);
+ g->u.add_disease(DI_SAP, dam);
 }
 
 void mattack::triffid_heartbeat(game *g, monster *z)
@@ -529,7 +529,7 @@ void mattack::fungus(game *g, monster *z)
      if (!m_at->make_fungus(g)) g->kill_mon(*m_at, (z->friendly != 0));
 	// \todo infect NPCs
     } else if (g->u.pos == dest)
-     g->u.infect(DI_SPORES, bp_mouth, 4, 30, g); // Spores hit the player
+     g->u.infect(DI_SPORES, bp_mouth, 4, 30); // Spores hit the player
     else { // Spawn a spore
      spore.spawn(dest);
      g->z.push_back(spore);
@@ -642,7 +642,7 @@ void mattack::dermatik(game *g, monster *z)
 // Success!
  z->moves -= 500; // Successful laying takes a long time
  messages.add("The %s sinks its ovipositor into you!", z->name().c_str());
- g->u.add_disease(DI_DERMATIK, -1, g); // -1 = infinite
+ g->u.add_disease(DI_DERMATIK, -1); // -1 = infinite
 }
 
 void mattack::plant(game *g, monster *z)
@@ -670,7 +670,7 @@ void mattack::formblob(game *g, monster *z)
    if (g->u.pos == test) {
 // If we hit the player, cover them with slime
     didit = true;
-    g->u.add_disease(DI_SLIMED, rng(0, z->hp), g);
+    g->u.add_disease(DI_SLIMED, rng(0, z->hp));
    } else if (monster* const m_at = g->mon(test)) {
 // Hit a monster.  If it's a blob, give it our speed.  Otherwise, blobify it?
     if (z->speed > 20 && m_at->type->id == mon_blob && m_at->speed < 85) {
@@ -912,7 +912,7 @@ void mattack::stare(game *g, monster *z)
  z->sp_timeout = z->type->sp_freq;
  if (g->sees_u(z->pos)) {
   messages.add("The %s stares at you, and you shudder.", z->name().c_str());
-  g->u.add_disease(DI_TELEGLOW, 800, g);
+  g->u.add_disease(DI_TELEGLOW, 800);
  } else {
   messages.add("A piercing beam of light bursts forth!");
   std::vector<point> sight = line_to(z->pos, g->u.pos, 0);
@@ -1038,7 +1038,7 @@ void mattack::flamethrower(game *g, monster *z)
  std::vector<point> traj = line_to(z->pos, g->u.pos, t);
  for (int i = 0; i < traj.size(); i++)
   g->m.add_field(g, traj[i].x, traj[i].y, fd_fire, 1);
- g->u.add_disease(DI_ONFIRE, 8, g);
+ g->u.add_disease(DI_ONFIRE, 8);
 }
 
 void mattack::copbot(game *g, monster *z)
@@ -1094,7 +1094,7 @@ void mattack::ratking(game *g, monster *z)
   case 5: messages.add("\"FOUL INTERLOPER...\""); break;
  }
 
- g->u.add_disease(DI_RAT, 20, g);
+ g->u.add_disease(DI_RAT, 20);
 }
 
 void mattack::generator(game *g, monster *z)

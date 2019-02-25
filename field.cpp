@@ -639,7 +639,7 @@ void map::step_in_field(int x, int y, game *g)
    if (!g->u.has_trait(PF_WEB_WALKER)) {
     int web = cur->density * 5 - g->u.disease_level(DI_WEBBED);
     if (web > 0)
-     g->u.add_disease(DI_WEBBED, web, g);
+     g->u.add_disease(DI_WEBBED, web);
     remove_field(x, y);
    }
   } break;
@@ -660,7 +660,7 @@ void map::step_in_field(int x, int y, game *g)
 
  case fd_sap:
   messages.add("The sap sticks to you!");
-  g->u.add_disease(DI_SAP, cur->density * 2, g);
+  g->u.add_disease(DI_SAP, cur->density * 2);
   if (cur->density == 1)
    remove_field(x, y);
   else
@@ -685,32 +685,32 @@ void map::step_in_field(int x, int y, game *g)
      g->u.hit(g, bp_legs, 0, 0, rng(2, 6));
      g->u.hit(g, bp_legs, 1, 0, rng(2, 6));
      g->u.hit(g, bp_torso, 0, 4, rng(4, 9));
-     g->u.add_disease(DI_ONFIRE, 5, g);
+     g->u.add_disease(DI_ONFIRE, 5);
     }
     if (cur->density == 2)
-     g->u.infect(DI_SMOKE, bp_mouth, 5, 20, g);
+     g->u.infect(DI_SMOKE, bp_mouth, 5, 20);
     else if (cur->density == 3)
-     g->u.infect(DI_SMOKE, bp_mouth, 7, 30, g);
+     g->u.infect(DI_SMOKE, bp_mouth, 7, 30);
    }
    break;
 
   case fd_smoke:
    if (cur->density == 3)
-    g->u.infect(DI_SMOKE, bp_mouth, 4, 15, g);
+    g->u.infect(DI_SMOKE, bp_mouth, 4, 15);
    break;
 
   case fd_tear_gas:
    if (cur->density > 1 || !one_in(3))
-    g->u.infect(DI_TEARGAS, bp_mouth, 5, 20, g);
+    g->u.infect(DI_TEARGAS, bp_mouth, 5, 20);
    if (cur->density > 1)
-    g->u.infect(DI_BLIND, bp_eyes, cur->density * 2, 10, g);
+    g->u.infect(DI_BLIND, bp_eyes, cur->density * 2, 10);
    break;
 
   case fd_toxic_gas:
    if (cur->density == 2)
-    g->u.infect(DI_POISON, bp_mouth, 5, 30, g);
+    g->u.infect(DI_POISON, bp_mouth, 5, 30);
    else if (cur->density == 3)
-    g->u.infect(DI_BADPOISON, bp_mouth, 5, 30, g);
+    g->u.infect(DI_BADPOISON, bp_mouth, 5, 30);
    break;
 
   case fd_nuke_gas:

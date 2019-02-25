@@ -31,14 +31,14 @@ void dis_effect(game *g, player &p, disease &dis)
   p.per_cur -= int(dis.duration / 80);
   if (dis.duration >= 200 ||
       (dis.duration >= 100 && one_in(300 - dis.duration)))
-   p.add_disease(DI_FBFACE, 50, g);
+   p.add_disease(DI_FBFACE, 50);
   break;
 
  case DI_COLD_HANDS:
   p.dex_cur -= 1 + int(dis.duration / 40);
   if (dis.duration >= 200 ||
       (dis.duration >= 100 && one_in(300 - dis.duration)))
-   p.add_disease(DI_FBHANDS, 50, g);
+   p.add_disease(DI_FBHANDS, 50);
   break;
 
  case DI_COLD_LEGS:
@@ -47,11 +47,11 @@ void dis_effect(game *g, player &p, disease &dis)
  case DI_COLD_FEET:
   if (dis.duration >= 200 ||
       (dis.duration >= 100 && one_in(300 - dis.duration)))
-   p.add_disease(DI_FBFEET, 50, g);
+   p.add_disease(DI_FBFEET, 50);
   break;
 
  case DI_HOT:
-  if (rng(0, 500) < dis.duration) p.add_disease(DI_HEATSTROKE, 2, g);
+  if (rng(0, 500) < dis.duration) p.add_disease(DI_HEATSTROKE, 2);
   p.int_cur -= 1;
   break;
    
@@ -173,7 +173,7 @@ void dis_effect(game *g, player &p, disease &dis)
   break;
 
  case DI_SPORES:
-  if (one_in(30)) p.add_disease(DI_FUNGUS, -1, g);
+  if (one_in(30)) p.add_disease(DI_FUNGUS, -1);
   break;
 
  case DI_FUNGUS:
@@ -250,7 +250,7 @@ void dis_effect(game *g, player &p, disease &dis)
   if (p.can_sleep(g)) {
    dis.duration = 1;
    if (!p.is_npc()) messages.add("You fall asleep.");
-   p.add_disease(DI_SLEEP, 6000, g);
+   p.add_disease(DI_SLEEP, 6000);
   }
   if (dis.duration == 1 && !p.has_disease(DI_SLEEP))
    if (!p.is_npc()) messages.add("You try to sleep, but can't...");
@@ -334,7 +334,7 @@ void dis_effect(game *g, player &p, disease &dis)
   if (!p.has_disease(DI_SLEEP) && dis.duration >= 4500 &&
       one_in(500 - int(dis.duration / 80))) {
    if (!p.is_npc()) messages.add("You pass out.");
-   p.add_disease(DI_SLEEP, dis.duration / 2, g);
+   p.add_disease(DI_SLEEP, dis.duration / 2);
   }
   break;
 
@@ -407,7 +407,7 @@ void dis_effect(game *g, player &p, disease &dis)
  case DI_DERMATIK: {
   int formication_chance = 600;
   if (dis.duration > -2400 && dis.duration < 0) formication_chance = 2400 + dis.duration;
-  if (one_in(formication_chance)) p.add_disease(DI_FORMICATION, 1200, g);
+  if (one_in(formication_chance)) p.add_disease(DI_FORMICATION, 1200);
 
   if (dis.duration < -2400 && one_in(2400)) p.vomit();
 
@@ -493,7 +493,7 @@ void dis_effect(game *g, player &p, disease &dis)
     else if (one_in(200)) messages.add("Of course... it's all fractals!");
    }
   } else if (dis.duration == 2400)	// Visuals start
-   p.add_disease(DI_VISUALS, 2400, g);
+   p.add_disease(DI_VISUALS, 2400);
   else {	// Full symptoms
    p.per_cur -= 2;
    p.int_cur -= 1;
@@ -562,7 +562,7 @@ void dis_effect(game *g, player &p, disease &dis)
    }
    if (one_in(1200 - ((dis.duration - 6000) / 5)) && one_in(20)) {
     if (!p.is_npc()) messages.add("You pass out.");
-    p.add_disease(DI_SLEEP, 1200, g);
+    p.add_disease(DI_SLEEP, 1200);
     if (one_in(6)) p.rem_disease(DI_TELEGLOW);
    }
   }
@@ -591,24 +591,24 @@ void dis_effect(game *g, player &p, disease &dis)
    }
   }
   if (dis.duration > 2400) {	// 8 teleports
-   if (one_in(10000 - dis.duration)) p.add_disease(DI_SHAKES, rng(40, 80), g);
+   if (one_in(10000 - dis.duration)) p.add_disease(DI_SHAKES, rng(40, 80));
    if (one_in(12000 - dis.duration)) {
     if (!p.is_npc()) messages.add("Your vision is filled with bright lights...");
-    p.add_disease(DI_BLIND, rng(10, 20), g);
+    p.add_disease(DI_BLIND, rng(10, 20));
     if (one_in(8)) p.rem_disease(DI_TELEGLOW);
    }
    if (one_in(5000) && !p.has_disease(DI_HALLU)) {
-    p.add_disease(DI_HALLU, 3600, g);
+    p.add_disease(DI_HALLU, 3600);
     if (one_in(5)) p.rem_disease(DI_TELEGLOW);
    }
   }
   if (one_in(4000)) {
    if (!p.is_npc()) messages.add("You're suddenly covered in ectoplasm.");
-   p.add_disease(DI_BOOMERED, 100, g);
+   p.add_disease(DI_BOOMERED, 100);
    if (one_in(4)) p.rem_disease(DI_TELEGLOW);
   }
   if (one_in(10000)) {
-   p.add_disease(DI_FUNGUS, -1, g);
+   p.add_disease(DI_FUNGUS, -1);
    p.rem_disease(DI_TELEGLOW);
   }
   break;

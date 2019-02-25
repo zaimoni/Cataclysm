@@ -736,7 +736,7 @@ void game::process_activity()
   if (int(messages.turn) % 150 == 0) draw();
   if (u.activity.type == ACT_WAIT) {	// Based on time, not speed
    u.activity.moves_left -= 100;
-   u.pause(this);
+   u.pause();
   } else if (u.activity.type == ACT_REFILL_VEHICLE) {
    vehicle *veh = m.veh_at(u.activity.placement);
    if (!veh) {  // Vehicle must've moved or something!
@@ -744,7 +744,7 @@ void game::process_activity()
     return;
    }
    veh->refill (AT_GAS, 200);
-   u.pause(this);
+   u.pause();
    u.activity.moves_left -= 100;
   } else {
    u.activity.moves_left -= u.moves;
@@ -1239,7 +1239,7 @@ void game::get_input()
    if (run_mode == 2) // Monsters around and we don't wanna pause
     messages.add("Monster spotted--safe mode is on! (Press '!' to turn it off.)");
    else
-    u.pause(this);
+    u.pause();
    break;
 
   case ACTION_MOVE_N:
@@ -3287,7 +3287,7 @@ void game::sound(int x, int y, int vol, std::string description)
  if (!u.has_bionic(bio_ears) && rng( (vol - dist) / 2, (vol - dist) ) >= 150) {
   int duration = (vol - dist - 130) / 4;
   if (duration > 40) duration = 40;
-  u.add_disease(DI_DEAF, duration, this);
+  u.add_disease(DI_DEAF, duration);
  }
  if (x != u.pos.x || y != u.pos.y)
   cancel_activity_query("Heard %s!", (description == "" ? "a noise" : description.c_str()));
@@ -3464,8 +3464,8 @@ void game::flashbang(int x, int y)
 {
  int dist = rl_dist(u.pos, x, y);
  if (dist <= 8) {
-  if (!u.has_bionic(bio_ears)) u.add_disease(DI_DEAF, 40 - dist * 4, this);
-  if (m.sees(u.pos, x, y, 8)) u.infect(DI_BLIND, bp_eyes, (12 - dist) / 2, 10 - dist, this);
+  if (!u.has_bionic(bio_ears)) u.add_disease(DI_DEAF, 40 - dist * 4);
+  if (m.sees(u.pos, x, y, 8)) u.infect(DI_BLIND, bp_eyes, (12 - dist) / 2, 10 - dist);
  }
  // TODO: Blind/deafen NPC
  for (auto& _mon : z) {
@@ -3502,7 +3502,7 @@ void game::resonance_cascade(int x, int y)
  int maxglow = 100 - glow_decay;
  int minglow =  60 - glow_decay;
  if (minglow < 0) minglow = 0;
- if (maxglow > 0) u.add_disease(DI_TELEGLOW, rng(minglow, maxglow) * 100, this);
+ if (maxglow > 0) u.add_disease(DI_TELEGLOW, rng(minglow, maxglow) * 100);
  int startx = (x < 8 ? 0 : x - 8), endx = (x+8 >= SEEX*3 ? SEEX*3 - 1 : x + 8);
  int starty = (y < 8 ? 0 : y - 8), endy = (y+8 >= SEEY*3 ? SEEY*3 - 1 : y + 8);
  for (int i = startx; i <= endx; i++) {
@@ -5619,24 +5619,24 @@ void game::plmove(int x, int y)
   switch (u.weapon.type->id) {
 
    case itm_style_capoeira:
-    if (u.disease_level(DI_ATTACK_BOOST) < 2) u.add_disease(DI_ATTACK_BOOST, 2, this, 2, 2);
-    if (u.disease_level(DI_DODGE_BOOST) < 2) u.add_disease(DI_DODGE_BOOST, 2, this, 2, 2);
+    if (u.disease_level(DI_ATTACK_BOOST) < 2) u.add_disease(DI_ATTACK_BOOST, 2, 2, 2);
+    if (u.disease_level(DI_DODGE_BOOST) < 2) u.add_disease(DI_DODGE_BOOST, 2, 2, 2);
     break;
 
    case itm_style_ninjutsu:
-    u.add_disease(DI_ATTACK_BOOST, 2, this, 1, 3);
+    u.add_disease(DI_ATTACK_BOOST, 2, 1, 3);
     break;
 
    case itm_style_crane:
-    if (!u.has_disease(DI_DODGE_BOOST)) u.add_disease(DI_DODGE_BOOST, 1, this, 3, 3);
+    if (!u.has_disease(DI_DODGE_BOOST)) u.add_disease(DI_DODGE_BOOST, 1, 3, 3);
     break;
 
    case itm_style_leopard:
-    u.add_disease(DI_ATTACK_BOOST, 2, this, 1, 4);
+    u.add_disease(DI_ATTACK_BOOST, 2, 1, 4);
     break;
 
    case itm_style_dragon:
-    if (!u.has_disease(DI_DAMAGE_BOOST)) u.add_disease(DI_DAMAGE_BOOST, 2, this, 3, 3);
+    if (!u.has_disease(DI_DAMAGE_BOOST)) u.add_disease(DI_DAMAGE_BOOST, 2, 3, 3);
     break;
 
    case itm_style_lizard: {
@@ -5648,7 +5648,7 @@ void game::plmove(int x, int y)
      }
     }
     if (wall)
-     u.add_disease(DI_ATTACK_BOOST, 2, this, 2, 8);
+     u.add_disease(DI_ATTACK_BOOST, 2, 2, 8);
     else
      u.rem_disease(DI_ATTACK_BOOST);
    } break;
@@ -6466,7 +6466,7 @@ void game::teleport(player *p)
  if (p == NULL) p = &u;
  int newx, newy, tries = 0;
  const bool is_u = (p == &u);
- p->add_disease(DI_TELEGLOW, 300, this);
+ p->add_disease(DI_TELEGLOW, 300);
  do {
   newx = p->pos.x + rng(0, SEEX * 2) - SEEX;
   newy = p->pos.y + rng(0, SEEY * 2) - SEEY;

@@ -797,7 +797,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
    z->add_effect(ME_DOWNED, rng(1, 2));
    bash_dam += z->fall_damage();
   } else if (p != NULL && p->weapon.type->id != itm_style_judo) {
-   p->add_disease(DI_DOWNED, rng(1, 2), g);
+   p->add_disease(DI_DOWNED, rng(1, 2));
    bash_dam += 3;
   }
   break;
@@ -806,7 +806,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
   if (z != NULL)
    z->add_effect(ME_STUNNED, rng(1, 4));
   else if (p != NULL)
-   p->add_disease(DI_STUNNED, rng(1, 2), g);
+   p->add_disease(DI_STUNNED, rng(1, 2));
   pain += rng(5, 8);
   break;
 
@@ -815,7 +815,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
    z->add_effect(ME_STUNNED, 1);
    z->knock_back_from(g, pos.x, pos.y);
   } else if (p != NULL) {
-   p->add_disease(DI_STUNNED, 1, g);
+   p->add_disease(DI_STUNNED, 1);
    p->knock_back_from(g, pos.x, pos.y);
   }
   break;
@@ -829,7 +829,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
   } else if (p != NULL) {
    p->knock_back_from(g, pos.x + rng(-1, 1), pos.y + rng(-1, 1));
    if (p->weapon.type->id != itm_style_judo)
-    p->add_disease(DI_DOWNED, rng(1, 2), g);
+    p->add_disease(DI_DOWNED, rng(1, 2));
   }
   break;
 
@@ -998,7 +998,7 @@ void player::perform_defensive_technique(
     z->add_effect(ME_DOWNED, rng(1, 2));
     z->knock_back_from(g, pos.x + rng(-1, 1), pos.y + rng(-1, 1));
    } else {
-    p->add_disease(DI_DOWNED, rng(1, 2), g);
+    p->add_disease(DI_DOWNED, rng(1, 2));
     p->knock_back_from(g, pos.x + rng(-1, 1), pos.y + rng(-1, 1));
    }
    break;
@@ -1054,7 +1054,7 @@ void player::perform_special_attacks(game *g, monster *z, player *p,
    z->add_effect(ME_POISONED, 6);
   } else if (p != NULL) {
    if (!is_npc() && !p->has_disease(DI_POISON)) messages.add("You poison %s!", p->name.c_str());
-   p->add_disease(DI_POISON, 6, g);
+   p->add_disease(DI_POISON, 6);
   }
  }
 }
@@ -1086,7 +1086,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
    if (z)
     z->add_effect(ME_STUNNED, turns_stunned);
    else
-    p->add_disease(DI_STUNNED, 1 + turns_stunned / 2, g);
+    p->add_disease(DI_STUNNED, 1 + turns_stunned / 2);
   }
  }
 
@@ -1101,7 +1101,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
    z->add_effect(ME_DOWNED, 1);
    z->moves -= stab_moves / 2;
   } else {
-   p->add_disease(DI_DOWNED, 1, g);
+   p->add_disease(DI_DOWNED, 1);
    p->moves -= stab_moves / 2;
   }
  } else if (z)
@@ -1217,7 +1217,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
    break;
 
   case itm_style_capoeira:
-   add_disease(DI_DODGE_BOOST, 2, g, 2);
+   add_disease(DI_DODGE_BOOST, 2, 2);
    break;
 
   case itm_style_muay_thai:
@@ -1228,11 +1228,11 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
    break;
 
   case itm_style_tiger:
-   add_disease(DI_DAMAGE_BOOST, 2, g, 2, 10);
+   add_disease(DI_DAMAGE_BOOST, 2, 2, 10);
    break;
 
   case itm_style_centipede:
-   add_disease(DI_SPEED_BOOST, 2, g, 4, 40);
+   add_disease(DI_SPEED_BOOST, 2, 4, 40);
    break;
 
   case itm_style_venom_snake:
@@ -1242,7 +1242,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
      int dambuf = bash_dam;
      bash_dam = stab_dam;
      stab_dam = dambuf;
-     add_disease(DI_VIPER_COMBO, 2, g, 1, 2); // Upgrade to Viper Strike
+     add_disease(DI_VIPER_COMBO, 2, 1, 2); // Upgrade to Viper Strike
     } else if (disease_intensity(DI_VIPER_COMBO) == 2) {
      if (hp_cur[hp_arm_l] >= hp_max[hp_arm_l] * .75 &&
          hp_cur[hp_arm_r] >= hp_max[hp_arm_r] * .75   ) {
@@ -1255,7 +1255,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
    } else if (crit) {
     if (is_u) messages.add("Tail whip!  Viper Combo Initiated!");
     bash_dam += 5;
-    add_disease(DI_VIPER_COMBO, 2, g, 1, 2);
+    add_disease(DI_VIPER_COMBO, 2, 1, 2);
    }
    break;
 
@@ -1268,7 +1268,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
      z->knock_back_from(g, pos.x, pos.y);
 	 if (zpos != z->pos) z->knock_back_from(g, pos.x, pos.y); // Knock a 2nd time if the first worked
     } else {
-     p->add_disease(DI_STUNNED, 2, g);
+     p->add_disease(DI_STUNNED, 2);
      const point ppos(p->pos);
      p->knock_back_from(g, pos.x, pos.y);
      if (p->pos != ppos)

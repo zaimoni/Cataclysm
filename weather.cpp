@@ -57,7 +57,7 @@ const weather_datum weather_datum::data[NUM_WEATHER_TYPES] = {
 
 void weather_effect::glare(game *g)
 {
- if (g->is_in_sunlight(g->u.pos)) g->u.infect(DI_GLARE, bp_eyes, 1, 2, g);
+ if (g->is_in_sunlight(g->u.pos)) g->u.infect(DI_GLARE, bp_eyes, 1, 2);
 }
 
 void weather_effect::wet(game *g)
