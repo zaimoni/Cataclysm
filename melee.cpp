@@ -224,10 +224,7 @@ void player::hit_player(game *g, player &p, bool allow_grab)
 {
  const bool is_u = (this == &(g->u));	// Affects how we'll display messages
  const bool can_see = (is_u || g->u_see(pos));
- if (is_u && p.is_npc()) {
-  npc* npcPtr = dynamic_cast<npc*>(&p);
-  npcPtr->make_angry();
- }
+ if (is_u && p.is_npc()) dynamic_cast<npc&>(p).make_angry();
 
  std::string You  = (is_u ? "You"  : name);
  std::string Your = (is_u ? "Your" : name + "'s");
@@ -492,7 +489,7 @@ int player::dodge_roll(game *g)
  return dice(dodge(g), 6);
 }
 
-int player::base_damage(bool real_life, int stat)
+int player::base_damage(bool real_life, int stat) const
 {
  if (stat == -999)
   stat = (real_life ? str_cur : str_max);
@@ -507,13 +504,11 @@ int player::base_damage(bool real_life, int stat)
  return dam;
 }
 
-int player::roll_bash_damage(monster *z, bool crit)
+int player::roll_bash_damage(const monster *z, bool crit) const
 {
  int ret = 0;
  int stat = str_cur; // Which stat determines damage?
- int skill = sklevel[sk_bashing]; // Which skill determines damage?
- if (unarmed_attack())
-  skill = sklevel[sk_unarmed];
+ int skill = sklevel[unarmed_attack() ? sk_unarmed : sk_bashing];
  
  switch (weapon.type->id) { // Some martial arts change which stat
   case itm_style_crane:
@@ -575,10 +570,8 @@ int player::roll_bash_damage(monster *z, bool crit)
  if (crit) {
   ret += int(stat / 2);
   ret += skill;
-  if (z != NULL)
-   ret -= z->armor_bash() / 2;
- } else if (z != NULL)
-  ret -= z->armor_bash();
+ }
+ if (z) ret -= z->armor_bash();
 
  return (ret < 0 ? 0 : ret);
 }

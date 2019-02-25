@@ -95,13 +95,13 @@ public:
  int  hit_mon(game *g, monster *z, bool allow_grab = true);
  void hit_player(game *g, player &p, bool allow_grab = true);
 
- int base_damage(bool real_life = true, int stat = -999);
+ int base_damage(bool real_life = true, int stat = -999) const;
  int base_to_hit(bool real_life = true, int stat = -999);
 
  int  hit_roll(); // Our basic hit roll, compared to our target's dodge roll
  bool scored_crit(int target_dodge = 0); // Critical hit?
 
- int roll_bash_damage(monster *z, bool crit);
+ int roll_bash_damage(const monster *z, bool crit) const;
  int roll_cut_damage(monster *z, bool crit);
  int roll_stab_damage(monster *z, bool crit);
  int roll_stuck_penalty(monster *z, bool stabbing);
