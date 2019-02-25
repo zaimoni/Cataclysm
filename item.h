@@ -54,19 +54,19 @@ public:
 
 // Firearm specifics
  int reload_time(const player &u) const;
- int clip_size();
- int accuracy();
- int gun_damage(bool with_ammo = true);
- int noise();
- int burst_size();
+ int clip_size() const;
+ int accuracy() const;
+ int gun_damage(bool with_ammo = true) const;
+ int noise() const;
+ int burst_size() const;
  int recoil(bool with_ammo = true) const;
  int range(const player *p = NULL) const;
  ammotype ammo_type() const;
- int pick_reload_ammo(player &u, bool interactive) const;
+ int pick_reload_ammo(const player &u, bool interactive) const;
  bool reload(player &u, int index);
 
- std::string save_info();	// Formatted for save files
- void load_info(std::string data, game *g);
+ std::string save_info();	// Formatted for save files; corresponds to operator <<
+ void load_info(std::string data, game *g);	// corresponds to operator >>
  std::string info(bool showtext = false);	// Formatted for human viewing
  char symbol() const { return type->sym; }
  nc_color color() const;

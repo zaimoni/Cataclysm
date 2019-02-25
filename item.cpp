@@ -875,12 +875,12 @@ int item::reload_time(const player &u) const
  return ret;
 }
 
-int item::clip_size()
+int item::clip_size() const
 {
  if (!is_gun()) return 0;
  const it_gun* const gun = dynamic_cast<const it_gun*>(type);
- int ret = gun->clip;
  if (gun->ammo != AT_40MM && charges > 0 && curammo->type == AT_40MM) return 1; // M203 mod in use
+ int ret = gun->clip;
  for (const auto& it : contents) {
   if (it.is_gunmod()) {
    int bonus = (ret * (dynamic_cast<const it_gunmod*>(it.type))->clip) / 100;
@@ -890,7 +890,7 @@ int item::clip_size()
  return ret;
 }
 
-int item::accuracy()
+int item::accuracy() const
 {
  if (!is_gun()) return 0;
  const it_gun* const gun = dynamic_cast<const it_gun*>(type);
@@ -902,7 +902,7 @@ int item::accuracy()
  return ret;
 }
 
-int item::gun_damage(bool with_ammo)
+int item::gun_damage(bool with_ammo) const
 {
  if (!is_gun()) return 0;
  const it_gun* const gun = dynamic_cast<const it_gun*>(type);
@@ -915,11 +915,10 @@ int item::gun_damage(bool with_ammo)
  return ret;
 }
 
-int item::noise()
+int item::noise() const
 {
  if (!is_gun()) return 0;
- int ret = 0;
- if (curammo != NULL) ret = curammo->damage * .8;
+ int ret = curammo ? curammo->damage : 0;
  if (ret >= 5) ret += 20;
  for (const auto& it : contents) {
   if (it.is_gunmod()) ret += (dynamic_cast<const it_gunmod*>(it.type))->loudness;
@@ -927,7 +926,7 @@ int item::noise()
  return ret;
 }
 
-int item::burst_size()
+int item::burst_size() const
 {
  if (!is_gun()) return 0;
  const it_gun* const gun = dynamic_cast<const it_gun*>(type);
@@ -935,8 +934,7 @@ int item::burst_size()
  for(const auto& it : contents) {
   if (it.is_gunmod()) ret += (dynamic_cast<const it_gunmod*>(it.type))->burst;
  }
- if (ret < 0) return 0;
- return ret;
+ return (ret < 0) ? 0 : ret;
 }
 
 int item::recoil(bool with_ammo) const
@@ -951,18 +949,21 @@ int item::recoil(bool with_ammo) const
  return ret;
 }
 
-int item::range(const player *p) const
+int item::range(const player *p) const	// return value can be negative at this time
 {
  if (!is_gun()) return 0;
- int ret = 0;
- if (curammo != NULL) ret += curammo->range;
+ if (!curammo) return 0;
+ int ret = curammo->range;
 
- if (has_flag(IF_STR8_DRAW) && p != NULL) {
-  if (p->str_cur < 4) return 0;
-  else if (p->str_cur < 8) ret -= 2 * (8 - p->str_cur);
- } else if (has_flag(IF_STR10_DRAW) && p != NULL) {
-  if (p->str_cur < 5) return 0;
-  else if (p->str_cur < 10) ret -= 2 * (10 - p->str_cur);
+ if (p) {
+	 if (has_flag(IF_STR8_DRAW)) {
+		 if (p->str_cur < 4) return 0;
+		 else if (p->str_cur < 8) ret -= 2 * (8 - p->str_cur);
+	 }
+	 else if (has_flag(IF_STR10_DRAW)) {
+		 if (p->str_cur < 5) return 0;
+		 else if (p->str_cur < 10) ret -= 2 * (10 - p->str_cur);
+	 }
  }
 
  return ret;
@@ -986,16 +987,11 @@ ammotype item::ammo_type() const
  return AT_NULL;
 }
  
-int item::pick_reload_ammo(player &u, bool interactive) const
+int item::pick_reload_ammo(const player &u, bool interactive) const
 {
  if (!type->is_gun() && !type->is_tool()) {
   debugmsg("RELOADING NON-GUN NON-TOOL");
-  return false;
- }
- bool has_m203 = false;
- for (int i = 0; i < contents.size() && !has_m203; i++) {
-  if (contents[i].type->id == itm_m203)
-   has_m203 = true;
+  return -1;
  }
 
  std::vector<int> am;	// List of indicies of valid ammo
@@ -1008,6 +1004,11 @@ int item::pick_reload_ammo(player &u, bool interactive) const
     if (inv[i].type->id == aid) am.push_back(i);
    }
   } else {
+   bool has_m203 = false;
+   for (int i = 0; i < contents.size() && !has_m203; i++) {
+     if (contents[i].type->id == itm_m203)
+       has_m203 = true;
+   }
    am = u.has_ammo(ammo_type());
    if (has_m203) {
 	for (const auto grenade : u.has_ammo(AT_40MM)) am.push_back(grenade);
