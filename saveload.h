@@ -23,5 +23,11 @@ std::ostream& operator<<(std::ostream& os, const tripoint& src);
 std::ostream& operator<<(std::ostream& os, const mongroup& src);
 
 #endif
+#ifdef _VEHICLE_H_
+
+std::istream& operator>>(std::istream& is, vehicle_part& dest);
+std::ostream& operator<<(std::ostream& os, const vehicle_part& src);
+
+#endif
 
 #endif

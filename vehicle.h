@@ -32,8 +32,14 @@ struct vehicle_part
     };
     std::vector<item> items;// inventory
 
+	vehicle_part() = default;
 	vehicle_part(vpart_id _id, int _mdx, int _mdy, int _hp, int _blood=0, int _amount=0)
 	: id(_id),mount_d(_mdx,_mdy),hp(_hp),blood(_blood),amount(_amount) {};
+	vehicle_part(const vehicle_part& src) = default;
+	vehicle_part(vehicle_part&& src) = default;
+	~vehicle_part() = default;
+	vehicle_part& operator=(const vehicle_part& src) = default;
+	vehicle_part& operator=(vehicle_part&& src) = default;
 };
 
 // Facts you need to know about implementation:

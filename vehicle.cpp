@@ -68,29 +68,10 @@ void vehicle::load (std::ifstream &stin)
     getline(stin, databuff); // Clear EoL
     getline(stin, name); // read name
     int itms = 0;
-    for (int p = 0; p < prts; p++)
-    {
-        int pid, pdx, pdy, php, pam, pbld, pnit;
-        stin >> pid >> pdx >> pdy >> php >> pam >> pbld >> pnit;
-        getline(stin, databuff); // Clear EoL
-        vehicle_part new_part((vpart_id)pid,pdx,pdy,php,pbld,pam);
-        for (int j = 0; j < pnit; j++)
-        {
-            itms++;
-            getline(stin, databuff);
-            item itm(databuff);
-            new_part.items.push_back (itm);
-            int ncont;
-            stin >> ncont; // how many items inside container
-            getline(stin, databuff); // Clear EoL
-            for (int k = 0; k < ncont; k++)
-            {
-                getline(stin, databuff);
-                item citm(databuff);
-                new_part.items[new_part.items.size()-1].put_in(citm);
-            }
-        }
-        parts.push_back (new_part);
+    for (int p = 0; p < prts; p++) {
+		vehicle_part newpart;
+		stin >> newpart;
+        parts.push_back(newpart);
     }
     find_external_parts ();
     find_exhaust ();
@@ -115,23 +96,7 @@ void vehicle::save (std::ofstream &stout)
         parts.size() << std::endl;
     stout << name << std::endl;
 
-    for (int p = 0; p < parts.size(); p++)
-    {
-        stout <<
-            parts[p].id << " " <<
-            parts[p].mount_d << " " <<
-            parts[p].hp << " " <<
-            parts[p].amount << " " <<
-            parts[p].blood << " " <<
-            parts[p].items.size() << std::endl;
-            for (int i = 0; i < parts[p].items.size(); i++)
-            {
-                stout << parts[p].items[i].save_info() << std::endl;     // item info
-                stout << parts[p].items[i].contents.size() << std::endl; // how many items inside this item
-                for (int l = 0; l < parts[p].items[i].contents.size(); l++)
-                    stout << parts[p].items[i].contents[l].save_info() << std::endl; // contents info
-            }
-    }
+	for(const auto& part : parts) stout << part;
 }
 
 void vehicle::init_state()

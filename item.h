@@ -65,7 +65,7 @@ public:
  int pick_reload_ammo(const player &u, bool interactive) const;
  bool reload(player &u, int index);
 
- std::string save_info();	// Formatted for save files; corresponds to operator <<
+ std::string save_info() const;	// Formatted for save files; corresponds to operator <<
  void load_info(const std::string& data);	// corresponds to operator >>
  std::string info(bool showtext = false);	// Formatted for human viewing
  char symbol() const { return type->sym; }
