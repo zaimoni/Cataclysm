@@ -95,21 +95,21 @@ public:
 // As above, but discounts its use as a ranged weapon
  int  melee_value (const int skills[num_skill_types]) const;
 // Returns the data associated with tech, if we are an it_style
- style_move style_data(technique_id tech);
- bool is_two_handed(player *u);
+ style_move style_data(technique_id tech) const;
+ bool is_two_handed(const player *u) const;
  bool made_of(material mat) const;
- bool conductive(); // Electricity
- bool destroyed_at_zero_charges();
+ bool conductive() const; // Electricity
+ bool destroyed_at_zero_charges() const;
 // Most of the is_whatever() functions call the same function in our itype
  bool is_null() const; // True if type is NULL, or points to the null item (id == 0)
- bool is_food(player *u) const;// Some non-food items are food to certain players
- bool is_food_container(player *u) const;  // Ditto
+ bool is_food(const player *u) const;// Some non-food items are food to certain players
+ bool is_food_container(const player *u) const;  // Ditto
  bool is_food() const { return type->is_food(); };	// Ignoring the ability to eat batteries, etc.
  bool is_food_container() const;      // Ignoring the ability to eat batteries, etc.
- bool is_drink();
+ bool is_drink() const;
  bool is_weap() const;
- bool is_bashing_weapon();
- bool is_cutting_weapon();
+ bool is_bashing_weapon() const;
+ bool is_cutting_weapon() const;
  bool is_gun() const;
  bool is_gunmod() const;
  bool is_bionic() const;

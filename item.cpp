@@ -696,7 +696,7 @@ int item::melee_value(const int skills[num_skill_types]) const
  return my_value;
 }
 
-style_move item::style_data(technique_id tech)
+style_move item::style_data(technique_id tech) const
 {
  style_move ret;
 
@@ -711,7 +711,7 @@ style_move item::style_data(technique_id tech)
  return ret;
 }
  
-bool item::is_two_handed(player *u)
+bool item::is_two_handed(const player *u) const
 {
  if (is_gun() && (dynamic_cast<const it_gun*>(type))->skill_used != sk_pistol) return true;
  return (weight() > u->str_cur * 4);
@@ -723,19 +723,15 @@ bool item::made_of(material mat) const
  return (type->m1 == mat || type->m2 == mat);
 }
 
-bool item::conductive()
+bool item::conductive() const
 {
- if ((type->m1 == IRON || type->m1 == STEEL || type->m1 == SILVER ||
-      type->m1 == MNULL) &&
-     (type->m2 == IRON || type->m2 == STEEL || type->m2 == SILVER ||
-      type->m2 == MNULL))
-  return true;
- if (type->m1 == MNULL && type->m2 == MNULL)
+ if ((type->m1 == IRON || type->m1 == STEEL || type->m1 == SILVER || type->m1 == MNULL) &&
+     (type->m2 == IRON || type->m2 == STEEL || type->m2 == SILVER || type->m2 == MNULL))
   return true;
  return false;
 }
 
-bool item::destroyed_at_zero_charges()
+bool item::destroyed_at_zero_charges() const
 {
  return (is_ammo() || is_food());
 }
@@ -765,7 +761,7 @@ bool is_flammable(material m)
 	return (m == COTTON || m == WOOL || m == PAPER || m == WOOD || m == MNULL);
 }
 
-bool item::is_food(player *u) const
+bool item::is_food(const player *u) const
 {
  if (u == NULL) return is_food();
  if (type->is_food()) return true;
@@ -774,7 +770,7 @@ bool item::is_food(player *u) const
  return false;
 }
 
-bool item::is_food_container(player *u) const
+bool item::is_food_container(const player *u) const
 {
  return (contents.size() >= 1 && contents[0].is_food(u));
 }
@@ -784,7 +780,7 @@ bool item::is_food_container() const
  return (contents.size() >= 1 && contents[0].is_food());
 }
 
-bool item::is_drink()
+bool item::is_drink() const
 {
  return type->is_food() && type->m1 == LIQUID;
 }
@@ -797,12 +793,12 @@ bool item::is_weap() const
  return (type->melee_dam > 7 || type->melee_cut > 5);
 }
 
-bool item::is_bashing_weapon()
+bool item::is_bashing_weapon() const
 {
  return (type->melee_dam >= 8);
 }
 
-bool item::is_cutting_weapon()
+bool item::is_cutting_weapon() const
 {
  return (type->melee_cut >= 8 && !has_flag(IF_SPEAR));
 }
