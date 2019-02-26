@@ -1699,16 +1699,16 @@ bool game::load_master()
    if (!fin.eof()) {
     getline(fin, itemdata);
     if (item_place == 'I')
-     tmpinv.push_back(item(itemdata, this));
+     tmpinv.push_back(item(itemdata));
     else if (item_place == 'C' && !tmpinv.empty()) {
-     tmpinv[tmpinv.size() - 1].contents.push_back(item(itemdata, this));
+     tmpinv[tmpinv.size() - 1].contents.push_back(item(itemdata));
      j--;
     } else if (item_place == 'W')
-     tmp.worn.push_back(item(itemdata, this));
+     tmp.worn.push_back(item(itemdata));
     else if (item_place == 'w')
-     tmp.weapon = item(itemdata, this);
+     tmp.weapon = item(itemdata);
     else if (item_place == 'c') {
-     tmp.weapon.contents.push_back(item(itemdata, this));
+     tmp.weapon.contents.push_back(item(itemdata));
      j--;
     }
    }
@@ -1798,15 +1798,15 @@ void game::load(std::string name)
   if (!fin.eof()) {
    getline(fin, itemdata);
    if (item_place == 'I')
-    tmpinv.push_back(item(itemdata, this));
+    tmpinv.push_back(item(itemdata));
    else if (item_place == 'C')
-    tmpinv[tmpinv.size() - 1].contents.push_back(item(itemdata, this));
+    tmpinv[tmpinv.size() - 1].contents.push_back(item(itemdata));
    else if (item_place == 'W')
-    u.worn.push_back(item(itemdata, this));
+    u.worn.push_back(item(itemdata));
    else if (item_place == 'w')
-    u.weapon = item(itemdata, this);
+    u.weapon = item(itemdata);
    else if (item_place == 'c')
-    u.weapon.contents.push_back(item(itemdata, this));
+    u.weapon.contents.push_back(item(itemdata));
   }
  }
 // Now dump tmpinv into the player's inventory

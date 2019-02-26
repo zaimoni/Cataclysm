@@ -36,7 +36,7 @@ public:
  item(const itype* it, unsigned int turn);
  item(const itype* it, unsigned int turn, char let);
  explicit item(unsigned int turn, int id = 0);	// corpse constructor; 0 is the value of mon_null
- item(std::string itemdata, game *g);
+ explicit item(const std::string& itemdata);
  item(const item& src) = default;
  item(item&& src) = default;
  ~item() = default;
@@ -66,7 +66,7 @@ public:
  bool reload(player &u, int index);
 
  std::string save_info();	// Formatted for save files; corresponds to operator <<
- void load_info(std::string data, game *g);	// corresponds to operator >>
+ void load_info(const std::string& data);	// corresponds to operator >>
  std::string info(bool showtext = false);	// Formatted for human viewing
  char symbol() const { return type->sym; }
  nc_color color() const;

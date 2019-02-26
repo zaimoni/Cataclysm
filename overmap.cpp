@@ -2626,7 +2626,7 @@ void overmap::open(game *g)	// only called from constructor
               pos.x, pos.y, pos.z);
      debugmsg(itemdata.c_str());
     } else {
-     item tmp(itemdata, g);
+     item tmp(itemdata);
      npc& last = npcs.back();
      switch (datatype) {
       case 'I': npc_inventory.push_back(tmp);                 break;

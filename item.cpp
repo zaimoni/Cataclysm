@@ -97,9 +97,9 @@ item::item(unsigned int turn, int id)
 	bday = turn;
 }
 
-item::item(std::string itemdata, game *g)
+item::item(const std::string& itemdata)
 {
- load_info(itemdata, g);
+ load_info(itemdata);
 }
 
 void item::make(itype* it)
@@ -198,7 +198,7 @@ std::string item::save_info()
  return dump.str();
 }
 
-void item::load_info(std::string data, game *g)
+void item::load_info(const std::string& data)
 {
  std::stringstream dump;
  dump << data;

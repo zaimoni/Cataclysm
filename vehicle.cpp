@@ -78,8 +78,7 @@ void vehicle::load (std::ifstream &stin)
         {
             itms++;
             getline(stin, databuff);
-            item itm;
-            itm.load_info (databuff, g);
+            item itm(databuff);
             new_part.items.push_back (itm);
             int ncont;
             stin >> ncont; // how many items inside container
@@ -87,9 +86,8 @@ void vehicle::load (std::ifstream &stin)
             for (int k = 0; k < ncont; k++)
             {
                 getline(stin, databuff);
-                item citm;
-                citm.load_info (databuff, g);
-                new_part.items[new_part.items.size()-1].put_in (citm);
+                item citm(databuff);
+                new_part.items[new_part.items.size()-1].put_in(citm);
             }
         }
         parts.push_back (new_part);

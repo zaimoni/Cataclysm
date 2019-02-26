@@ -181,7 +181,7 @@ void mapbuffer::load()
     fin >> itx >> ity;
     getline(fin, databuff); // Clear out the endline
     getline(fin, databuff);
-    it_tmp.load_info(databuff, master_game);
+    it_tmp.load_info(databuff);
     sm->itm[itx][ity].push_back(it_tmp);
     if (it_tmp.active)
      sm->active_item_count++;
@@ -189,7 +189,7 @@ void mapbuffer::load()
     getline(fin, databuff); // Clear out the endline
     getline(fin, databuff);
     int index = sm->itm[itx][ity].size() - 1;
-    it_tmp.load_info(databuff, master_game);
+    it_tmp.load_info(databuff);
     sm->itm[itx][ity][index].put_in(it_tmp);
     if (it_tmp.active)
      sm->active_item_count++;
