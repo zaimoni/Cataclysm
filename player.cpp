@@ -3664,7 +3664,7 @@ bool player::eat(game *g, int index)
   }
   bool overeating = (!has_trait(PF_GOURMAND) && hunger < 0 &&
                      comest->nutr >= 15);
-  bool spoiled = eaten->rotten(g);
+  bool spoiled = eaten->rotten();
 
   last_item = itype_id(eaten->type->id);
 

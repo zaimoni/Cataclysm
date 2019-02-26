@@ -623,9 +623,9 @@ std::vector<technique_id> item::techniques() const
  return ret;
 }
 
-bool item::rotten(game *g)
+bool item::rotten() const
 {
- if (!is_food() || g == NULL) return false;
+ if (!is_food()) return false;
  const it_comest* const food = dynamic_cast<const it_comest*>(type);
  return (food->spoils != 0 && int(messages.turn) - bday > food->spoils * 600);
 }

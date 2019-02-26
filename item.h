@@ -88,7 +88,7 @@ public:
  bool goes_bad() const;
  bool count_by_charges() const;
  bool craft_has_charges() const;
- bool rotten(game *g);
+ bool rotten() const;
 
 // Our value as a weapon, given particular skills
  int  weapon_value(const int skills[num_skill_types]) const;
