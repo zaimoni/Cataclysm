@@ -4481,15 +4481,12 @@ void game::pickup(int posx, int posy, int min)
    mvwprintw(w_pickup, 1 + (cur_it % maxitems), 0,
              "                                        ");
    if (cur_it < here.size()) {
-    mvwputch(w_pickup, 1 + (cur_it % maxitems), 0, here[cur_it].color(&u),
-             char(cur_it + 'a'));
-    if (getitem[cur_it])
-     wprintw(w_pickup, " + ");
-    else
-     wprintw(w_pickup, " - ");
-    wprintz(w_pickup, here[cur_it].color(&u), here[cur_it].tname().c_str());
+	const nc_color it_color = here[cur_it].color(u);
+    mvwputch(w_pickup, 1 + (cur_it % maxitems), 0, it_color, char(cur_it + 'a'));
+    wprintw(w_pickup, (getitem[cur_it] ? " + " : " - "));
+    wprintz(w_pickup, it_color, here[cur_it].tname().c_str());
     if (here[cur_it].charges > 0)
-     wprintz(w_pickup, here[cur_it].color(&u), " (%d)", here[cur_it].charges);
+     wprintz(w_pickup, it_color, " (%d)", here[cur_it].charges);
    }
   }
   if (start > 0)
@@ -4985,7 +4982,7 @@ void game::plfire(bool burst)
  int reload_index = -1;
  if (!u.weapon.is_gun()) return;
  vehicle *veh = m.veh_at(u.pos);
- if (veh && veh->player_in_control(&u) && u.weapon.is_two_handed(&u)) {
+ if (veh && veh->player_in_control(&u) && u.weapon.is_two_handed(u)) {
   messages.add("You need free arm to drive!");
   return;
  }

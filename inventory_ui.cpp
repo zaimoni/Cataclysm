@@ -44,7 +44,7 @@ void print_inv_statics(game *g, WINDOW* w_inv, std::string title,
    mvwprintz(w_inv, 3, 40, c_white, "%c + %s", g->u.weapon.invlet,
              g->u.weapname().c_str());
   else
-   mvwprintz(w_inv, 3, 40, g->u.weapon.color_in_inventory(&(g->u)), "%c - %s",
+   mvwprintz(w_inv, 3, 40, g->u.weapon.color_in_inventory(g->u), "%c - %s",
              g->u.weapon.invlet, g->u.weapname().c_str());
  } else if (g->u.weapon.is_style())
   mvwprintz(w_inv, 3, 40, c_ltgray, "%c - %s",
@@ -135,7 +135,7 @@ char game::inv(std::string title)
    }
    if (cur_it < u.inv.size()) {
     mvwputch (w_inv, cur_line, 0, c_white, u.inv[cur_it].invlet);
-    mvwprintz(w_inv, cur_line, 1, u.inv[cur_it].color_in_inventory(&u), " %s",
+    mvwprintz(w_inv, cur_line, 1, u.inv[cur_it].color_in_inventory(u), " %s",
               u.inv[cur_it].tname().c_str());
     if (u.inv.stack_at(cur_it).size() > 1)
      wprintw(w_inv, " [%d]", u.inv.stack_at(cur_it).size());

@@ -47,8 +47,8 @@ public:
 // returns the default container of this item, with this item in it
  item in_its_container() const;
 
- nc_color color(player *u) const;
- nc_color color_in_inventory(const player *u) const;
+ nc_color color(const player& u) const;
+ nc_color color_in_inventory(const player& u) const;
  std::string tname() const;
  bool burn(int amount = 1); // Returns true if destroyed
 
@@ -96,14 +96,14 @@ public:
  int  melee_value (const int skills[num_skill_types]) const;
 // Returns the data associated with tech, if we are an it_style
  style_move style_data(technique_id tech) const;
- bool is_two_handed(const player *u) const;
+ bool is_two_handed(const player& u) const;
  bool made_of(material mat) const;
  bool conductive() const; // Electricity
  bool destroyed_at_zero_charges() const;
 // Most of the is_whatever() functions call the same function in our itype
  bool is_null() const; // True if type is NULL, or points to the null item (id == 0)
- bool is_food(const player *u) const;// Some non-food items are food to certain players
- bool is_food_container(const player *u) const;  // Ditto
+ bool is_food(const player& u) const;// Some non-food items are food to certain players
+ bool is_food_container(const player& u) const;  // Ditto
  bool is_food() const { return type->is_food(); };	// Ignoring the ability to eat batteries, etc.
  bool is_food_container() const;      // Ignoring the ability to eat batteries, etc.
  bool is_drink() const;

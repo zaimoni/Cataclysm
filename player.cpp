@@ -2234,8 +2234,7 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
  break;
  case bp_hands: // Fall through to arms
  case bp_arms:
-  if (side == 1 || side == 3 || weapon.is_two_handed(this))
-   recoil += int(dam / 3);
+  if (side == 1 || side == 3 || weapon.is_two_handed(*this)) recoil += int(dam / 3);
   if (side == 0 || side == 3) {
    hp_cur[hp_arm_l] -= dam;
    if (hp_cur[hp_arm_l] < 0) hp_cur[hp_arm_l] = 0;
@@ -3605,11 +3604,11 @@ bool player::eat(game *g, int index)
   messages.add("You do not have that item.");
   return false;
  } else if (index == -1) {
-  if (weapon.is_food_container(this)) {
+  if (weapon.is_food_container(*this)) {
    eaten = &weapon.contents[0];
    which = -2;
    if (weapon.contents[0].is_food()) comest = dynamic_cast<const it_comest*>(weapon.contents[0].type);
-  } else if (weapon.is_food(this)) {
+  } else if (weapon.is_food(*this)) {
    eaten = &weapon;
    which = -1;
    if (weapon.is_food()) comest = dynamic_cast<const it_comest*>(weapon.type);
@@ -3621,11 +3620,11 @@ bool player::eat(game *g, int index)
    return false;
   }
  } else {
-  if (inv[index].is_food_container(this)) {
+  if (inv[index].is_food_container(*this)) {
    eaten = &(inv[index].contents[0]);
    which = index + inv.size();
    if (inv[index].contents[0].is_food()) comest = dynamic_cast<const it_comest*>(inv[index].contents[0].type);
-  } else if (inv[index].is_food(this)) {
+  } else if (inv[index].is_food(*this)) {
    eaten = &inv[index];
    which = index;
    if (inv[index].is_food()) comest = dynamic_cast<const it_comest*>(inv[index].type);
@@ -3642,7 +3641,7 @@ bool player::eat(game *g, int index)
  if (eaten->is_ammo()) { // For when bionics let you eat fuel
   charge_power(eaten->charges / 20);
   eaten->charges = 0;
- } else if (!eaten->type->is_food() && !eaten->is_food_container(this)) {
+ } else if (!eaten->type->is_food() && !eaten->is_food_container(*this)) {
 // For when bionics let you burn organic materials
   int charge = (eaten->volume() + eaten->weight()) / 2;
   if (eaten->type->m1 == LEATHER || eaten->type->m2 == LEATHER) charge /= 4;
@@ -3809,7 +3808,7 @@ bool player::wield(game *g, int index)
   return false;
  }
 
- if (inv[index].is_two_handed(this) && !has_two_arms()) {
+ if (inv[index].is_two_handed(*this) && !has_two_arms()) {
   messages.add("You cannot wield a %s with only one arm.", inv[index].tname().c_str());
   return false;
  }

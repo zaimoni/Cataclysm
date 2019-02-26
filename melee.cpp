@@ -1152,10 +1152,9 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
   if (can_see) messages.add("%s %s shatters!", Your.c_str(), weapon.tname().c_str());
   g->sound(pos, 16, "");
 // Dump its contents on the ground
-  for (int i = 0; i < weapon.contents.size(); i++)
-   g->m.add_item(pos, weapon.contents[i]);
+  for(const auto& obj : weapon.contents) g->m.add_item(pos, obj);
   hit(g, bp_arms, 1, 0, rng(0, weapon.volume() * 2));// Take damage
-  if (weapon.is_two_handed(this))// Hurt left arm too, if it was big
+  if (weapon.is_two_handed(*this))// Hurt left arm too, if it was big
    hit(g, bp_arms, 0, 0, rng(0, weapon.volume()));
   cut_dam += rng(0, 5 + int(weapon.volume() * 1.5));// Hurt the monster extra
   remove_weapon();
@@ -1388,12 +1387,9 @@ std::vector<special_attack> player::mutation_attacks(monster *z, player *p)
  if (has_trait(PF_ARM_TENTACLES) || has_trait(PF_ARM_TENTACLES_4) ||
      has_trait(PF_ARM_TENTACLES_8)) {
   int num_attacks = 1;
-  if (has_trait(PF_ARM_TENTACLES_4))
-   num_attacks = 3;
-  if (has_trait(PF_ARM_TENTACLES_8))
-   num_attacks = 7;
-  if (weapon.is_two_handed(this))
-   num_attacks--;
+  if (has_trait(PF_ARM_TENTACLES_4)) num_attacks = 3;
+  if (has_trait(PF_ARM_TENTACLES_8)) num_attacks = 7;
+  if (weapon.is_two_handed(*this)) num_attacks--;
 
   for (int i = 0; i < num_attacks; i++) {
    if (one_in(18 - dex_cur - sklevel[sk_unarmed])) {

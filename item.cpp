@@ -382,7 +382,7 @@ std::string item::info(bool showtext)
  return dump.str();
 }
 
-nc_color item::color(player *u) const
+nc_color item::color(const player& u) const
 {
  nc_color ret = c_ltgray;
 
@@ -390,15 +390,15 @@ nc_color item::color(player *u) const
   ret = c_yellow;
  else if (is_gun()) { // Guns are green if you are carrying ammo for them
   ammotype amtype = ammo_type();
-  if (u->has_ammo(amtype).size() > 0)
+  if (u.has_ammo(amtype).size() > 0)
    ret = c_green;
  } else if (is_ammo()) { // Likewise, ammo is green if you have guns that use it
   ammotype amtype = ammo_type();
-  if (u->weapon.is_gun() && u->weapon.ammo_type() == amtype)
+  if (u.weapon.is_gun() && u.weapon.ammo_type() == amtype)
    ret = c_green;
   else {
-   for (size_t i = 0; i < u->inv.size(); i++) {
-    if (u->inv[i].is_gun() && u->inv[i].ammo_type() == amtype) {
+   for (size_t i = 0; i < u.inv.size(); i++) {
+    if (u.inv[i].is_gun() && u.inv[i].ammo_type() == amtype) {
      ret = c_green;
 	 break;
     }
@@ -406,15 +406,15 @@ nc_color item::color(player *u) const
   }
  } else if (is_book()) {
   const it_book* const tmp = dynamic_cast<const it_book*>(type);
-  if (tmp->type !=sk_null && tmp->intel <= u->int_cur + u->sklevel[tmp->type] &&
-      (tmp->intel == 0 || !u->has_trait(PF_ILLITERATE)) &&
-      tmp->req <= u->sklevel[tmp->type] && tmp->level > u->sklevel[tmp->type])
+  if (tmp->type !=sk_null && tmp->intel <= u.int_cur + u.sklevel[tmp->type] &&
+      (tmp->intel == 0 || !u.has_trait(PF_ILLITERATE)) &&
+      tmp->req <= u.sklevel[tmp->type] && tmp->level > u.sklevel[tmp->type])
    ret = c_ltblue;
  }
  return ret;
 }
 
-nc_color item::color_in_inventory(const player *u) const	// retain unused paramweter for later use
+nc_color item::color_in_inventory(const player& u) const	// retain unused paramweter for later use
 {
 // Items in our inventory get colorized specially
  return active ? c_yellow : c_white;
@@ -711,10 +711,10 @@ style_move item::style_data(technique_id tech) const
  return ret;
 }
  
-bool item::is_two_handed(const player *u) const
+bool item::is_two_handed(const player& u) const
 {
  if (is_gun() && (dynamic_cast<const it_gun*>(type))->skill_used != sk_pistol) return true;
- return (weight() > u->str_cur * 4);
+ return (weight() > u.str_cur * 4);
 }
 
 bool item::made_of(material mat) const
@@ -761,16 +761,15 @@ bool is_flammable(material m)
 	return (m == COTTON || m == WOOL || m == PAPER || m == WOOD || m == MNULL);
 }
 
-bool item::is_food(const player *u) const
+bool item::is_food(const player& u) const
 {
- if (u == NULL) return is_food();
  if (type->is_food()) return true;
- if (u->has_bionic(bio_batteries) && is_ammo() && (dynamic_cast<const it_ammo*>(type))->type == AT_BATT) return true;
- if (u->has_bionic(bio_furnace) && is_flammable(type->m1) && is_flammable(type->m2) && type->id != itm_corpse) return true;
+ if (u.has_bionic(bio_batteries) && is_ammo() && (dynamic_cast<const it_ammo*>(type))->type == AT_BATT) return true;
+ if (u.has_bionic(bio_furnace) && is_flammable(type->m1) && is_flammable(type->m2) && type->id != itm_corpse) return true;
  return false;
 }
 
-bool item::is_food_container(const player *u) const
+bool item::is_food_container(const player& u) const
 {
  return (contents.size() >= 1 && contents[0].is_food(u));
 }
