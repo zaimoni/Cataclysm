@@ -71,7 +71,7 @@ void vehicle::load (std::ifstream &stin)
     for (int p = 0; p < prts; p++) {
 		vehicle_part newpart;
 		stin >> newpart;
-        parts.push_back(newpart);
+		parts.push_back(std::move(newpart));
     }
     find_external_parts ();
     find_exhaust ();

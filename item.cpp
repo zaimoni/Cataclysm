@@ -573,14 +573,14 @@ int item::volume() const
  return type->volume;
 }
 
-int item::volume_contained()
+int item::volume_contained() const
 {
  int ret = 0;
  for (const auto& it : contents) ret += it.volume();
  return ret;
 }
 
-int item::attack_time()
+int item::attack_time() const
 {
  int ret = 65 + 4 * volume() + 2 * weight();
  return ret;
@@ -602,7 +602,7 @@ bool item::has_flag(item_flag f) const
  return (type->item_flags & mfb(f));
 }
 
-bool item::has_technique(technique_id tech, player *p)
+bool item::has_technique(technique_id tech, const player *p) const
 {
  if (is_style()) {
   const it_style* const style = dynamic_cast<const it_style*>(type);
@@ -613,7 +613,7 @@ bool item::has_technique(technique_id tech, player *p)
  return (type->techniques & mfb(tech));
 }
 
-std::vector<technique_id> item::techniques()
+std::vector<technique_id> item::techniques() const
 {
  std::vector<technique_id> ret;
  for (int i = 0; i < NUM_TECHNIQUES; i++) {
@@ -643,7 +643,7 @@ bool item::count_by_charges() const
  return false;
 }
 
-bool item::craft_has_charges()
+bool item::craft_has_charges() const
 {
  if (count_by_charges()) return true;
  else if (ammo_type() == AT_NULL) return true;

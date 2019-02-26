@@ -39,10 +39,9 @@ bool player::unarmed_attack() const
          weapon.has_flag(IF_UNARMED_WEAPON));
 }
 
-int player::base_to_hit(bool real_life, int stat)
+int player::base_to_hit(bool real_life, int stat) const
 {
- if (stat == -999)
-  stat = (real_life ? dex_cur : dex_max);
+ if (stat == -999) stat = (real_life ? dex_cur : dex_max);
  return 1 + int(stat / 2) + sklevel[sk_melee];
 }
 

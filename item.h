@@ -78,16 +78,16 @@ public:
 
  int weight() const;
  int volume() const;
- int volume_contained();
- int attack_time();
+ int volume_contained() const;
+ int attack_time() const;
  int damage_bash() const { return type->melee_dam; }
  int damage_cut() const;
  bool has_flag(item_flag f) const;
- bool has_technique(technique_id t, player *p = NULL);
- std::vector<technique_id> techniques();
+ bool has_technique(technique_id t, const player *p = NULL) const;
+ std::vector<technique_id> techniques() const;
  bool goes_bad() const;
  bool count_by_charges() const;
- bool craft_has_charges();
+ bool craft_has_charges() const;
  bool rotten(game *g);
 
 // Our value as a weapon, given particular skills
