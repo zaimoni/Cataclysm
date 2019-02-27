@@ -98,8 +98,8 @@ public:
  int base_damage(bool real_life = true, int stat = -999) const;
  int base_to_hit(bool real_life = true, int stat = -999) const;
 
- int  hit_roll(); // Our basic hit roll, compared to our target's dodge roll
- bool scored_crit(int target_dodge = 0); // Critical hit?
+ int  hit_roll() const; // Our basic hit roll, compared to our target's dodge roll
+ bool scored_crit(int target_dodge = 0) const; // Critical hit?
 
  int roll_bash_damage(const monster *z, bool crit) const;
  int roll_cut_damage(monster *z, bool crit);

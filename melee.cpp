@@ -45,7 +45,7 @@ int player::base_to_hit(bool real_life, int stat) const
  return 1 + int(stat / 2) + sklevel[sk_melee];
 }
 
-int player::hit_roll()
+int player::hit_roll() const
 {
  int stat = dex_cur;
 // Some martial arts use something else to determine hits!
@@ -60,39 +60,33 @@ int player::hit_roll()
    stat = (per_cur + dex_cur) / 2;
    break;
  }
- int numdice = base_to_hit(stat) + weapon.type->m_to_hit +
-               disease_intensity(DI_ATTACK_BOOST);
+ int numdice = base_to_hit(stat) + weapon.type->m_to_hit + disease_intensity(DI_ATTACK_BOOST);
  int sides = 10 - encumb(bp_torso);
  int best_bonus = 0;
- if (sides < 2)
-  sides = 2;
+ if (sides < 2) sides = 2;
 
 // Are we unarmed?
  if (unarmed_attack()) {
   best_bonus = sklevel[sk_unarmed];
-  if (sklevel[sk_unarmed] > 4)
-   best_bonus += sklevel[sk_unarmed] - 4; // Extra bonus for high levels
+  if (sklevel[sk_unarmed] > 4) best_bonus += sklevel[sk_unarmed] - 4; // Extra bonus for high levels
  }
 
 // Using a bashing weapon?
  if (weapon.is_bashing_weapon()) {
   int bash_bonus = int(sklevel[sk_bashing] / 3);
-  if (bash_bonus > best_bonus)
-   best_bonus = bash_bonus;
+  if (bash_bonus > best_bonus) best_bonus = bash_bonus;
  }
 
 // Using a cutting weapon?
  if (weapon.is_cutting_weapon()) {
   int cut_bonus = int(sklevel[sk_cutting] / 2);
-  if (cut_bonus > best_bonus)
-   best_bonus = cut_bonus;
+  if (cut_bonus > best_bonus) best_bonus = cut_bonus;
  }
 
 // Using a spear?
  if (weapon.has_flag(IF_SPEAR) || weapon.has_flag(IF_STAB)) {
   int stab_bonus = int(sklevel[sk_stabbing] / 2);
-  if (stab_bonus > best_bonus)
-   best_bonus = stab_bonus;
+  if (stab_bonus > best_bonus) best_bonus = stab_bonus;
  }
 
  numdice += best_bonus; // Use whichever bonus is best.
@@ -107,7 +101,7 @@ int player::hit_roll()
 
  if (numdice < 1) {
   numdice = 1;
-  sides = 8 - encumb(bp_torso);
+  sides = 8 - encumb(bp_torso);	// can result in sides < 1...problematic
  }
 
  return dice(numdice, sides);
@@ -362,7 +356,7 @@ int stumble(player &u)
  return stumble_pen;
 }
 
-bool player::scored_crit(int target_dodge)
+bool player::scored_crit(int target_dodge) const
 {
  bool to_hit_crit = false, dex_crit = false, skill_crit = false;
  int num_crits = 0;
@@ -380,8 +374,7 @@ bool player::scored_crit(int target_dodge)
   for (int i = 0; i > weapon.type->m_to_hit; i--)
    chance /= 2;
  }
- if (rng(0, 99) < chance + 4 * disease_intensity(DI_ATTACK_BOOST))
-  num_crits++;
+ if (rng(0, 99) < chance + 4 * disease_intensity(DI_ATTACK_BOOST)) num_crits++;
 
 // Dexterity to-hit roll
 // ... except sometimes we don't use dexteiry!
@@ -400,31 +393,24 @@ bool player::scored_crit(int target_dodge)
  }
  chance = 25;
  if (stat > 8) {
-  for (int i = 9; i <= stat; i++)
+  for (int i = 9; i <= stat; i++)	// max design stat 20 (pathological behavior above this)
    chance += (21 - i); // 12, 11, 10...
  } else {
   int decrease = 5;
   for (int i = 7; i >= stat; i--) {
    chance -= decrease;
-   if (i % 2 == 0)
-    decrease--;
+   if (i % 2 == 0) decrease--;
   }
  }
- if (rng(0, 99) < chance)
-  num_crits++;
+ if (rng(0, 99) < chance) num_crits++;
 
 // Skill level roll
  int best_skill = 0;
 
- if (weapon.is_bashing_weapon() && sklevel[sk_bashing] > best_skill)
-  best_skill = sklevel[sk_bashing];
- if (weapon.is_cutting_weapon() && sklevel[sk_cutting] > best_skill)
-  best_skill = sklevel[sk_cutting];
- if ((weapon.has_flag(IF_SPEAR) || weapon.has_flag(IF_STAB)) &&
-     sklevel[sk_stabbing] > best_skill)
-  best_skill = sklevel[sk_stabbing];
- if (unarmed_attack() && sklevel[sk_unarmed] > best_skill)
-  best_skill = sklevel[sk_unarmed];
+ if (weapon.is_bashing_weapon() && sklevel[sk_bashing] > best_skill) best_skill = sklevel[sk_bashing];
+ if (weapon.is_cutting_weapon() && sklevel[sk_cutting] > best_skill) best_skill = sklevel[sk_cutting];
+ if ((weapon.has_flag(IF_SPEAR) || weapon.has_flag(IF_STAB)) && sklevel[sk_stabbing] > best_skill) best_skill = sklevel[sk_stabbing];
+ if (unarmed_attack() && sklevel[sk_unarmed] > best_skill) best_skill = sklevel[sk_unarmed];
 
  best_skill += int(sklevel[sk_melee] / 2.5);
 
@@ -436,14 +422,10 @@ bool player::scored_crit(int target_dodge)
   for (int i = 3; i > best_skill; i--)
    chance /= 2;
  }
- if (rng(0, 99) < chance + 4 * disease_intensity(DI_ATTACK_BOOST))
-  num_crits++;
+ if (rng(0, 99) < chance + 4 * disease_intensity(DI_ATTACK_BOOST)) num_crits++;
 
- if (num_crits == 3)
-  return true;
- else if (num_crits == 2)
-  return (hit_roll() >= target_dodge * 1.5 && !one_in(4));
-
+ if (num_crits == 3) return true;
+ else if (num_crits == 2) return (hit_roll() >= target_dodge * 1.5 && !one_in(4));
  return false;
 }
 
