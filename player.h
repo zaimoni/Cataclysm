@@ -102,7 +102,7 @@ public:
  bool scored_crit(int target_dodge = 0) const; // Critical hit?
 
  int roll_bash_damage(const monster *z, bool crit) const;
- int roll_cut_damage(monster *z, bool crit);
+ int roll_cut_damage(const monster *z, bool crit) const;
  int roll_stab_damage(monster *z, bool crit);
  int roll_stuck_penalty(monster *z, bool stabbing);
 
@@ -194,7 +194,7 @@ public:
  int armor_bash(body_part bp);	// Bashing resistance
  int armor_cut(body_part bp);	// Cutting  resistance
  int resist(body_part bp);	// Infection &c resistance
- bool wearing_something_on(body_part bp); // True if wearing something on bp
+ bool wearing_something_on(body_part bp) const; // True if wearing something on bp
 
  void practice(skill s, int amount);	// Practice a skill
 

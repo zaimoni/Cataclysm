@@ -557,39 +557,31 @@ int player::roll_bash_damage(const monster *z, bool crit) const
  return (ret < 0 ? 0 : ret);
 }
 
-int player::roll_cut_damage(monster *z, bool crit)
+int player::roll_cut_damage(const monster *z, bool crit) const
 {
- if (weapon.has_flag(IF_SPEAR))
-  return 0;  // Stabs, doesn't cut!
- int z_armor_cut = (z == NULL ? 0 : z->armor_cut() - sklevel[sk_cutting] / 2);
+ if (weapon.has_flag(IF_SPEAR)) return 0;  // Stabs, doesn't cut!
+ int z_armor_cut = z ? z->armor_cut() - sklevel[sk_cutting] / 2 : 0;
 
- if (crit)
-  z_armor_cut /= 2;
- if (z_armor_cut < 0)
-  z_armor_cut = 0;
+ if (crit) z_armor_cut /= 2;
+ if (z_armor_cut < 0) z_armor_cut = 0;
 
  int ret = weapon.damage_cut() - z_armor_cut;
 
  if (unarmed_attack() && !wearing_something_on(bp_hands)) {
-  if (has_trait(PF_CLAWS))
-   ret += 6;
-  if (has_trait(PF_TALONS))
-   ret += 6 + (sklevel[sk_unarmed] > 8 ? 8 : sklevel[sk_unarmed]);
-  if (has_trait(PF_SLIME_HANDS) && (z == NULL || !z->has_flag(MF_ACIDPROOF)))
-   ret += rng(4, 6);
+  if (has_trait(PF_CLAWS)) ret += 6;
+  if (has_trait(PF_TALONS)) ret += 6 + (sklevel[sk_unarmed] > 8 ? 8 : sklevel[sk_unarmed]);
+  if (has_trait(PF_SLIME_HANDS) && (!z || !z->has_flag(MF_ACIDPROOF))) ret += rng(4, 6);
  }
 
- if (ret <= 0)
-  return 0; // No negative damage!
+ if (ret <= 0) return 0; // No negative damage!
 
 // 80%, 88%, 96%, 104%, 112%, 116%, 120%, 124%, 128%, 132%
  if (sklevel[sk_cutting] <= 5)
-  ret *= double( 0.8 + 0.08 * sklevel[sk_cutting] );
+  ret += ret * (2 * sklevel[sk_cutting] - 5) / 25;
  else
-  ret *= double( 0.92 + 0.04 * sklevel[sk_cutting] );
+  ret += ret * (sklevel[sk_cutting] - 2) / 25;
 
- if (crit)
-  ret *= double( 1.0 + double(sklevel[sk_cutting] / 12) );
+ if (crit) ret += ret * sklevel[sk_cutting] / 12;
 
  return ret;
 }

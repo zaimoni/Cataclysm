@@ -4444,7 +4444,7 @@ int player::resist(body_part bp)
  return ret;
 }
 
-bool player::wearing_something_on(body_part bp)
+bool player::wearing_something_on(body_part bp) const
 {
  for (const auto& it : worn) {
   if ((dynamic_cast<const it_armor*>(it.type))->covers & mfb(bp)) return true;
