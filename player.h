@@ -103,7 +103,7 @@ public:
 
  int roll_bash_damage(const monster *z, bool crit) const;
  int roll_cut_damage(const monster *z, bool crit) const;
- int roll_stab_damage(monster *z, bool crit);
+ int roll_stab_damage(const monster *z, bool crit) const;
  int roll_stuck_penalty(monster *z, bool stabbing);
 
  technique_id pick_technique(game *g, monster *z, player *p,

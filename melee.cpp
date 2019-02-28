@@ -586,24 +586,19 @@ int player::roll_cut_damage(const monster *z, bool crit) const
  return ret;
 }
 
-int player::roll_stab_damage(monster *z, bool crit)
+int player::roll_stab_damage(const monster *z, bool crit) const
 {
  int ret = 0;
  int z_armor = (z == NULL ? 0 : z->armor_cut() - 3 * sklevel[sk_stabbing]);
 
- if (crit)
-  z_armor /= 3;
- if (z_armor < 0)
-  z_armor = 0;
+ if (crit) z_armor /= 3;
+ if (z_armor < 0) z_armor = 0;
 
  if (unarmed_attack() && !wearing_something_on(bp_hands)) {
   ret = 0 - z_armor;
-  if (has_trait(PF_CLAWS))
-   ret += 6;
-  if (has_trait(PF_NAILS) && z_armor == 0)
-   ret++;
-  if (has_trait(PF_THORNS))
-   ret += 4;
+  if (has_trait(PF_CLAWS)) ret += 6;
+  if (has_trait(PF_NAILS) && z_armor == 0) ret++;
+  if (has_trait(PF_THORNS)) ret += 4;
  } else if (weapon.has_flag(IF_SPEAR) || weapon.has_flag(IF_STAB))
   ret = int((weapon.damage_cut() - z_armor) / 4);
  else
@@ -612,20 +607,16 @@ int player::roll_stab_damage(monster *z, bool crit)
  if (z != NULL && z->speed > 100) { // Bonus against fast monsters
   int speed_min = (z->speed - 100) / 10, speed_max = (z->speed - 100) / 5;
   int speed_dam = rng(speed_min, speed_max);
-  if (speed_dam > ret * 2)
-   speed_dam = ret * 2;
-  if (speed_dam > 0)
-   ret += speed_dam;
+  if (speed_dam > ret * 2) speed_dam = ret * 2;
+  if (speed_dam > 0) ret += speed_dam;
  }
 
- if (ret <= 0)
-  return 0; // No negative stabbing!
+ if (ret <= 0) return 0; // No negative stabbing!
 
  if (crit) {
-  int multiplier = double( 1.0 + double(sklevel[sk_stabbing] / 5) );
-  if (multiplier > 2.5)
-   multiplier = 2.5;
-  ret *= multiplier;
+  int numerator = 10 + 2 * sklevel[sk_stabbing];
+  if (25 < numerator) numerator = 25;
+  ret += (ret*(numerator - 10)) / 10;
  }
 
  return ret;
