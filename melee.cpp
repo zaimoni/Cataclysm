@@ -622,11 +622,11 @@ int player::roll_stab_damage(const monster *z, bool crit) const
  return ret;
 }
 
-int player::roll_stuck_penalty(monster *z, bool stabbing)
+int player::roll_stuck_penalty(const monster *z, bool stabbing) const
 {
  int ret = 0;
- int basharm = (z == NULL ? 6 : z->armor_bash()),
-     cutarm  = (z == NULL ? 6 : z->armor_cut());
+ int basharm = (z ? z->armor_bash() : 6),
+     cutarm  = (z ? z->armor_cut() : 6);
  if (stabbing)
   ret = weapon.damage_cut() * 3 + basharm * 3 + cutarm * 3 -
         dice(sklevel[sk_stabbing], 10);
@@ -639,36 +639,28 @@ int player::roll_stuck_penalty(monster *z, bool stabbing)
  return (ret < 0 ? 0 : ret);
 }
 
-technique_id player::pick_technique(game *g, monster *z, player *p,
-                                    bool crit, bool allowgrab)
+technique_id player::pick_technique(const game *g, const monster *z, const player *p, bool crit, bool allowgrab) const
 {
- if (z == NULL && p == NULL)
-  return TEC_NULL;
+ if (z == NULL && p == NULL) return TEC_NULL;
 
  std::vector<technique_id> possible;
  bool downed = ((z != NULL && !z->has_effect(ME_DOWNED)) ||
                 (p != NULL && !p->has_disease(DI_DOWNED))  );
- bool plastic = (z == NULL || !z->has_flag(MF_PLASTIC));
- bool mon = (z != NULL);
  int base_str_req = 0;
- if (z != NULL)
-  base_str_req = z->type->size;
- else if (p != NULL)
-  base_str_req = 1 + (2 + p->str_cur) / 4;
+ if (z) base_str_req = z->type->size;
+ else if (p) base_str_req = 1 + (2 + p->str_cur) / 4;
 
  if (allowgrab) { // Check if grabs AREN'T REALLY ALLOWED
-  if (mon && z->has_flag(MF_PLASTIC))
-   allowgrab = false;
+  if (z && z->has_flag(MF_PLASTIC)) allowgrab = false;
  }
 
  if (crit) { // Some are crit-only
 
   if (weapon.has_technique(TEC_SWEEP, this) &&
-      (z == NULL || !z->has_flag(MF_FLIES)) && !downed)
+      (!z || !z->has_flag(MF_FLIES)) && !downed)
    possible.push_back(TEC_SWEEP);
 
-  if (weapon.has_technique(TEC_PRECISE, this))
-   possible.push_back(TEC_PRECISE);
+  if (weapon.has_technique(TEC_PRECISE, this)) possible.push_back(TEC_PRECISE);
 
   if (weapon.has_technique(TEC_BRUTAL, this) && !downed &&
       str_cur + sklevel[sk_melee] >= 4 + base_str_req)
@@ -678,17 +670,14 @@ technique_id player::pick_technique(game *g, monster *z, player *p,
 
  if (possible.empty()) { // Use non-crits only if any crit-onlies aren't used
 
-  if (weapon.has_technique(TEC_DISARM, this) && !mon &&
+  if (weapon.has_technique(TEC_DISARM, this) && !z &&
       p->weapon.type->id != 0 && !p->weapon.has_flag(IF_UNARMED_WEAPON) &&
       dice(   dex_cur +    sklevel[sk_unarmed],  8) >
       dice(p->dex_cur + p->sklevel[sk_melee],   10))
    possible.push_back(TEC_DISARM);
 
-  if (weapon.has_technique(TEC_GRAB, this) && allowgrab)
-   possible.push_back(TEC_GRAB);
-
-  if (weapon.has_technique(TEC_RAPID, this))
-   possible.push_back(TEC_RAPID);
+  if (weapon.has_technique(TEC_GRAB, this) && allowgrab) possible.push_back(TEC_GRAB);
+  if (weapon.has_technique(TEC_RAPID, this)) possible.push_back(TEC_RAPID);
 
   if (weapon.has_technique(TEC_THROW, this) && !downed &&
       str_cur + sklevel[sk_melee] >= 4 + base_str_req * 4 + rng(-4, 4))
@@ -699,22 +688,16 @@ technique_id player::pick_technique(game *g, monster *z, player *p,
    for (int x = pos.x - 1; x <= pos.x + 1; x++) {
     for (int y = pos.y - 1; y <= pos.y + 1; y++) {
 	 if (const monster* const m_at = g->mon(x,y)) {
-      if (0 == m_at->friendly)
-       enemy_count++;
-      else
-       enemy_count -= 2;
+      if (0 == m_at->friendly) enemy_count++;
+      else enemy_count -= 2;
 	 }
-     if (npc* const nPC = g->nPC(x,y)) {
-      if (nPC->attitude == NPCATT_KILL)
-       enemy_count++;
-      else
-       enemy_count -= 2;
+     if (const npc* const nPC = g->nPC(x,y)) {
+      if (nPC->attitude == NPCATT_KILL) enemy_count++;
+      else enemy_count -= 2;
      }
     }
    }
-   if (enemy_count >= (possible.empty() ? 2 : 3)) {
-    possible.push_back(TEC_WIDE);
-   }
+   if (enemy_count >= (possible.empty() ? 2 : 3)) possible.push_back(TEC_WIDE);
   }
 
  } // if (possible.empty())

@@ -101,13 +101,13 @@ public:
  int  hit_roll() const; // Our basic hit roll, compared to our target's dodge roll
  bool scored_crit(int target_dodge = 0) const; // Critical hit?
 
+ // V 0.2.1 \todo player variants of these so we can avoid NULL pointers as signal for player; alternately, unify API
  int roll_bash_damage(const monster *z, bool crit) const;
  int roll_cut_damage(const monster *z, bool crit) const;
  int roll_stab_damage(const monster *z, bool crit) const;
- int roll_stuck_penalty(monster *z, bool stabbing);
+ int roll_stuck_penalty(const monster *z, bool stabbing) const;
 
- technique_id pick_technique(game *g, monster *z, player *p,
-                             bool crit, bool allowgrab);
+ technique_id pick_technique(const game *g, const monster *z, const player *p, bool crit, bool allowgrab) const;
  void perform_technique(technique_id technique, game *g, monster *z, player *p,
                        int &bash_dam, int &cut_dam, int &pierce_dam, int &pain);
 
