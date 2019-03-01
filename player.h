@@ -98,29 +98,12 @@ public:
  int base_damage(bool real_life = true, int stat = -999) const;
  int base_to_hit(bool real_life = true, int stat = -999) const;
 
- int  hit_roll() const; // Our basic hit roll, compared to our target's dodge roll
- bool scored_crit(int target_dodge = 0) const; // Critical hit?
-
- // V 0.2.1 \todo player variants of these so we can avoid NULL pointers as signal for player; alternately, unify API
- int roll_bash_damage(const monster *z, bool crit) const;
- int roll_cut_damage(const monster *z, bool crit) const;
- int roll_stab_damage(const monster *z, bool crit) const;
- int roll_stuck_penalty(const monster *z, bool stabbing) const;
-
- technique_id pick_technique(const game *g, const monster *z, const player *p, bool crit, bool allowgrab) const;
- void perform_technique(technique_id technique, game *g, monster *z, player *p,
-                       int &bash_dam, int &cut_dam, int &pierce_dam, int &pain);
-
- technique_id pick_defensive_technique(game *g, monster *z, player *p);
+ technique_id pick_defensive_technique(game *g, const monster *z, player *p);
 
  void perform_defensive_technique(technique_id technique, game *g, monster *z,
                                   player *p, body_part &bp_hit, int &side,
                                   int &bash_dam, int &cut_dam, int &stab_dam);
 
- void perform_special_attacks(game *g, monster *z, player *p,
-                        int &bash_dam, int &cut_dam, int &pierce_dam);
-
- std::vector<special_attack> mutation_attacks(monster *z, player *p);
  void melee_special_effects(game *g, monster *z, player *p, bool crit,
                             int &bash_dam, int &cut_dam, int &stab_dam);
 
@@ -296,6 +279,23 @@ public:
  
  std::vector <disease> illness;
  std::vector <addiction> addictions;
+private:
+ // melee.cpp
+ int  hit_roll() const; // Our basic hit roll, compared to our target's dodge roll
+ bool scored_crit(int target_dodge = 0) const; // Critical hit?
+
+ // V 0.2.1 \todo player variants of these so we can avoid NULL pointers as signal for player; alternately, unify API
+ int roll_bash_damage(const monster *z, bool crit) const;
+ int roll_cut_damage(const monster *z, bool crit) const;
+ int roll_stab_damage(const monster *z, bool crit) const;
+ int roll_stuck_penalty(const monster *z, bool stabbing) const;
+
+ technique_id pick_technique(const game *g, const monster *z, const player *p, bool crit, bool allowgrab) const;
+ void perform_technique(technique_id technique, game *g, monster *z, player *p,
+                       int &bash_dam, int &cut_dam, int &pierce_dam, int &pain);
+
+ void perform_special_attacks(game *g, monster *z, player *p, int &bash_dam, int &cut_dam, int &pierce_dam);	// V 0.2.1 \todo enable for NPCs
+ std::vector<special_attack> mutation_attacks(const monster *z, const player *p) const;	// V 0.2.1 \todo enable for NPCs
 };
 
 #endif

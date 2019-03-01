@@ -431,27 +431,19 @@ bool player::scored_crit(int target_dodge) const
 
 int player::dodge(game *g)
 {
- if (has_disease(DI_SLEEP) || has_disease(DI_LYING_DOWN))
-  return 0;
- if (activity.type != ACT_NULL)
-  return 0;
+ if (has_disease(DI_SLEEP) || has_disease(DI_LYING_DOWN)) return 0;
+ if (activity.type != ACT_NULL) return 0;
  int ret = 4 + (dex_cur / 2);
  ret += sklevel[sk_dodge];
  ret += disease_intensity(DI_DODGE_BOOST);
  ret -= (encumb(bp_legs) / 2) + encumb(bp_torso);
  ret += int(current_speed(g) / 150);
- if (has_trait(PF_TAIL_LONG))
-  ret += 4;
- if (has_trait(PF_TAIL_FLUFFY))
-  ret += 8;
- if (has_trait(PF_WHISKERS))
-  ret += 1;
- if (has_trait(PF_WINGS_BAT))
-  ret -= 3;
- if (str_max >= 16)
-  ret--; // Penalty if we're hyuuge
- else if (str_max <= 5)
-  ret++; // Bonus if we're small
+ if (has_trait(PF_TAIL_LONG)) ret += 4;
+ if (has_trait(PF_TAIL_FLUFFY)) ret += 8;
+ if (has_trait(PF_WHISKERS)) ret += 1;
+ if (has_trait(PF_WINGS_BAT)) ret -= 3;
+ if (str_max >= 16) ret--; // Penalty if we're huge
+ else if (str_max <= 5) ret++; // Bonus if we're small
  if (dodges_left <= 0) { // We already dodged this turn
   if (rng(1, sklevel[sk_dodge] + dex_cur + 15) <= sklevel[sk_dodge] + dex_cur)
    ret = rng(0, ret);
@@ -713,6 +705,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
                                player *p, int &bash_dam, int &cut_dam,
                                int &stab_dam, int &pain)
 {
+ assert(z || p);
  std::string You = (is_npc() ? name : "You");
  std::string target = (z ? "the " + z->name() :
                        (p->is_npc() ? p->name : "you"));
@@ -812,7 +805,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
  } // switch (tech)
 }
 
-technique_id player::pick_defensive_technique(game *g, monster *z, player *p)
+technique_id player::pick_defensive_technique(game *g, const monster *z, player *p)
 {
  if (blocks_left == 0) return TEC_NULL;
 
@@ -825,14 +818,11 @@ technique_id player::pick_defensive_technique(game *g, monster *z, player *p)
  else if (p != NULL) foe_dodge = p->dodge_roll(g);
 
  int foe_size = 0;
- if (z)
-  foe_size = 4 + z->type->size * 4;
+ if (z) foe_size = 4 + z->type->size * 4;
  else if (p) {
   foe_size = 12;
-  if (p->str_max <= 5)
-   foe_size -= 3;
-  if (p->str_max >= 12)
-   foe_size += 3;
+  if (p->str_max <= 5) foe_size -= 3;
+  if (p->str_max >= 12) foe_size += 3;
  }
 
  blocks_left--;
@@ -885,6 +875,7 @@ void player::perform_defensive_technique(
   body_part &bp_hit, int &side, int &bash_dam, int &cut_dam, int &stab_dam)
 
 {
+ assert(z || p);
  std::string You = (is_npc() ? name : "You");
  const char* const your = (is_npc() ? (male ? "his" : "her") : "your");
  std::string target = (z ? "the " + z->name() : p->name);
@@ -960,6 +951,7 @@ void player::perform_defensive_technique(
 void player::perform_special_attacks(game *g, monster *z, player *p,
                                      int &bash_dam, int &cut_dam, int &stab_dam)
 {
+ assert(z || p);
  bool can_poison = false;
  int bash_armor = (z == NULL ? 0 : z->armor_bash());
  int cut_armor  = (z == NULL ? 0 : z->armor_cut());
@@ -1223,19 +1215,15 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
  }
 }
 
-std::vector<special_attack> player::mutation_attacks(monster *z, player *p)
+std::vector<special_attack> player::mutation_attacks(const monster *z, const player *p) const
 {
  std::vector<special_attack> ret;
 
- if (z == NULL && p == NULL)
-  return ret;
-
- bool mon = (z != NULL);
  bool is_u = (!is_npc());// Affects how we'll display messages
  std::string You  = (is_u ? "You"  : name);
  std::string Your = (is_u ? "Your" : name + "'s");
  std::string your = (is_u ? "your" : (male ? "his" : "her"));
- std::string target = (mon ? "the " + z->name() : p->name);
+ std::string target = (z ? "the " + z->name() : p->name);
 
  std::stringstream text;
 
