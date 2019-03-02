@@ -93,6 +93,7 @@ class monster {
  void move_to(game *g, const point& pt);
  void stumble(game *g, bool moved);
  void knock_back_from(game *g, int posx, int posy);
+ void knock_back_from(game *g, const point& pt) { knock_back_from(g, pt.x, pt.y); };
 
 // Combat
  bool is_fleeing(const player &u) const;	// True if we're fleeing

@@ -746,10 +746,10 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
  case TEC_BRUTAL:
   if (z != NULL) {
    z->add_effect(ME_STUNNED, 1);
-   z->knock_back_from(g, pos.x, pos.y);
+   z->knock_back_from(g, pos);
   } else if (p != NULL) {
    p->add_disease(DI_STUNNED, 1);
-   p->knock_back_from(g, pos.x, pos.y);
+   p->knock_back_from(g, pos);
   }
   break;
 
@@ -1196,14 +1196,13 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
     if (z) {
      z->add_effect(ME_STUNNED, 3);
 	 const point zpos(z->pos);
-     z->knock_back_from(g, pos.x, pos.y);
-	 if (zpos != z->pos) z->knock_back_from(g, pos.x, pos.y); // Knock a 2nd time if the first worked
+     z->knock_back_from(g, pos);
+	 if (zpos != z->pos) z->knock_back_from(g, pos); // Knock a 2nd time if the first worked
     } else {
      p->add_disease(DI_STUNNED, 2);
      const point ppos(p->pos);
-     p->knock_back_from(g, pos.x, pos.y);
-     if (p->pos != ppos)
-      p->knock_back_from(g, pos.x, pos.y); // Knock a 2nd time if the first worked
+     p->knock_back_from(g, pos);
+     if (p->pos != ppos) p->knock_back_from(g, pos); // Knock a 2nd time if the first worked
     }
    }
    break;

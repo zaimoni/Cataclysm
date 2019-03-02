@@ -558,7 +558,7 @@ void monster::knock_back_from(game *g, int x, int y)
   hurt(z->type->size);
   add_effect(ME_STUNNED, 1);
   if (type->size > 1 + z->type->size) {
-   z->knock_back_from(g, pos.x, pos.y); // Chain reaction!
+   z->knock_back_from(g, pos); // Chain reaction!
    z->hurt(type->size);
    z->add_effect(ME_STUNNED, 1);
   } else if (type->size > z->type->size) {

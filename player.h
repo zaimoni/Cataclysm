@@ -114,20 +114,18 @@ public:
  int throw_dex_mod	(bool real_life = true) const;
 
 // Mental skills and stats
- int comprehension_percent(skill s, bool real_life = true);
- int read_speed		(bool real_life = true);
- int talk_skill(); // Skill at convincing NPCs of stuff
- int intimidation(); // Physical intimidation
+ int comprehension_percent(skill s, bool real_life = true) const;
+ int read_speed		(bool real_life = true) const;
+ int talk_skill() const; // Skill at convincing NPCs of stuff
+ int intimidation() const; // Physical intimidation
 
 // Converts bphurt to a hp_part (if side == 0, the left), then does/heals dam
 // hit() processes damage through armor
- void hit   (game *g, body_part bphurt, int side, int  dam, int  cut);
-// absorb() reduces dam and cut by your armor (and bionics, traits, etc)
- void absorb(game *g, body_part bp,               int &dam, int &cut);
+ void hit   (game *g, body_part bphurt, int side, int  dam, int  cut);	// \todo V 0.2.1 enable for NPCs?
 // hurt() doesn't--effects of disease, what have you
- void hurt  (game *g, body_part bphurt, int side, int  dam);
+ void hurt  (game *g, body_part bphurt, int side, int  dam);	// \todo V 0.2.1 enable for NPCs?
 
- void heal(body_part healed, int side, int dam);
+ void heal(body_part healed, int side, int dam);	// dead function?
  void heal(hp_part healed, int dam);
  void healall(int dam);
  void hurtall(int dam);
@@ -135,6 +133,7 @@ public:
  void hitall(game *g, int dam, int vary = 0);
 // Sends us flying one tile
  void knock_back_from(game *g, int x, int y);
+ void knock_back_from(game *g, const point& pt) { knock_back_from(g, pt.x, pt.y); };
 
  int hp_percentage() const;	// % of HP remaining, overall
 
@@ -165,7 +164,7 @@ public:
  bool takeoff(game *g, char let);// Take off item; returns false on fail
  void use(game *g, char let);	// Use a tool
  bool install_bionics(game *g, const it_bionic* type);	// Install bionics
- void read(game *g, char let);	// Read a book
+ void read(game *g, char let);	// Read a book	V 0.2.1 \todo enable for NPCs
  void try_to_sleep(const game *g);	// '$' command; adds DIS_LYING_DOWN
  bool can_sleep(game *g);	// Checked each turn during DIS_LYING_DOWN
 
@@ -295,6 +294,10 @@ private:
  std::vector<special_attack> mutation_attacks(const monster *z, const player *p) const;	// V 0.2.1 \todo enable for NPCs
 
  void melee_special_effects(game *g, monster *z, player *p, bool crit, int &bash_dam, int &cut_dam, int &stab_dam);
+
+ // player.cpp
+// absorb() reduces dam and cut by your armor (and bionics, traits, etc)
+ void absorb(game *g, body_part bp, int &dam, int &cut);	// \todo V 0.2.1 enable for NPCs?
 };
 
 #endif

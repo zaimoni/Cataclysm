@@ -2103,22 +2103,20 @@ int player::throw_dex_mod(bool real_life) const
  return (real_life ? rng(0, deviation) : deviation);
 }
 
-int player::comprehension_percent(skill s, bool real_life)
+int player::comprehension_percent(skill s, bool real_life) const
 {
  double intel = (double)(real_life ? int_cur : int_max);
  if (intel == 0.) intel = 1.;
  double percent = 80.; // double temporarily, since we divide a lot
  int learned = (real_life ? sklevel[s] : 4);
- if (learned > intel / 2)
-  percent /= 1 + ((learned - intel / 2) / (intel / 3));
- else if (!real_life && intel > 8)
-  percent += 125 - 1000 / intel;
+ if (learned > intel / 2) percent /= 1 + ((learned - intel / 2) / (intel / 3));
+ else if (!real_life && intel > 8) percent += 125 - 1000 / intel;
 
  if (has_trait(PF_FASTLEARNER)) percent += 50.;
  return (int)(percent);
 }
 
-int player::read_speed(bool real_life)
+int player::read_speed(bool real_life) const
 {
  int intel = (real_life ? int_cur : int_max);
  int ret = 1000 - 50 * (intel - 8);
@@ -2127,7 +2125,7 @@ int player::read_speed(bool real_life)
  return (real_life ? ret : ret / 10);
 }
 
-int player::talk_skill()
+int player::talk_skill() const
 {
  int ret = int_cur + per_cur + sklevel[sk_speech] * 3;
  if (has_trait(PF_DEFORMED)) ret -= 4;
@@ -2136,7 +2134,7 @@ int player::talk_skill()
  return ret;
 }
 
-int player::intimidation()
+int player::intimidation() const
 {
  int ret = str_cur * 2;
  if (weapon.is_gun()) ret += 10;
@@ -2413,7 +2411,7 @@ void player::knock_back_from(game *g, int x, int y)
   hit(g, bp_torso, 0, z->type->size, 0);
   add_disease(DI_STUNNED, 1);
   if ((str_max - 6) / 4 > z->type->size) {
-   z->knock_back_from(g, pos.x, pos.y); // Chain reaction!
+   z->knock_back_from(g, pos); // Chain reaction!
    z->hurt((str_max - 6) / 4);
    z->add_effect(ME_STUNNED, 1);
   } else if ((str_max - 6) / 4 == z->type->size) {
