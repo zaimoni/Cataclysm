@@ -2055,48 +2055,36 @@ int player::throw_range(int index) const
  return ret;
 }
  
-int player::ranged_dex_mod(bool real_life)
+int player::ranged_dex_mod(bool real_life) const
 {
  int dex = (real_life ? dex_cur : dex_max);
- if (dex == 8)
-  return 0;
- if (dex > 8)
-  return (real_life ? (0 - rng(0, dex - 8)) : (8 - dex));
+ if (dex == 8) return 0;
+ const int dex_delta = 8 - dex;
+ if (dex > 8) return (real_life ? (0 - rng(0, -dex_delta)) : dex_delta);
 
  int deviation = 0;
- if (dex < 4)
-  deviation = 4 * (8 - dex);
- if (dex < 6)
-  deviation = 2 * (8 - dex);
- else
-  deviation = 1.5 * (8 - dex);
+ if (dex < 6) deviation = 2 * dex_delta;
+ else deviation = 3 * dex_delta / 2;
 
  return (real_life ? rng(0, deviation) : deviation);
 }
 
-int player::ranged_per_mod(bool real_life)
+int player::ranged_per_mod(bool real_life) const
 {
  int per = (real_life ? per_cur : per_max);
- if (per == 8)
-  return 0;
- int deviation = 0;
+ if (per == 8) return 0;
+ if (16 < per) per = 16;
+ const int per_delta = 8 - per;
 
- if (per < 4) {
-  deviation = 5 * (8 - per);
-  if (real_life)
-   deviation = rng(0, deviation);
- } else if (per < 6) {
-  deviation = 2.5 * (8 - per);
-  if (real_life)
-   deviation = rng(0, deviation);
- } else if (per < 8) {
-  deviation = 2 * (8 - per);
-  if (real_life)
-   deviation = rng(0, deviation);
- } else {
+ int deviation = 0;
+ if (8 < per) {
   deviation = 3 * (0 - (per > 16 ? 8 : per - 8));
-  if (real_life && one_in(per))
-   deviation = 0 - rng(0, abs(deviation));
+  if (real_life && one_in(per)) deviation = 0 - rng(0, abs(deviation));
+ } else {
+  if (per < 4) deviation = 5 * (8 - per);
+  else if (per < 6) deviation = 2.5 * (8 - per);
+  else /* if (per < 8) */ deviation = 2 * (8 - per);
+  if (real_life) deviation = rng(0, deviation);
  }
  return deviation;
 }
@@ -2107,13 +2095,10 @@ int player::throw_dex_mod(bool real_life) const
  if (dex == 8 || dex == 9) return 0;
  if (dex >= 10) return (real_life ? 0 - rng(0, dex - 9) : 9 - dex);
  
- int deviation = 0;
- if (dex < 4)
-  deviation = 4 * (8 - dex);
- else if (dex < 6)
-  deviation = 3 * (8 - dex);
- else
-  deviation = 2 * (8 - dex);
+ int deviation = 8 - dex;
+ if (dex < 4) deviation *= 4;
+ else if (dex < 6) deviation *= 3;
+ else deviation *= 2;
 
  return (real_life ? rng(0, deviation) : deviation);
 }

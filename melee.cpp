@@ -429,7 +429,7 @@ bool player::scored_crit(int target_dodge) const
  return false;
 }
 
-int player::dodge(game *g)
+int player::dodge(game* g)
 {
  if (has_disease(DI_SLEEP) || has_disease(DI_LYING_DOWN)) return 0;
  if (activity.type != ACT_NULL) return 0;
@@ -452,8 +452,8 @@ int player::dodge(game *g)
  }
  dodges_left--;
 // If we're over our cap, average it with our cap
- if (ret > int(dex_cur / 2) + sklevel[sk_dodge] * 2)
-  ret = ( ret + int(dex_cur / 2) + sklevel[sk_dodge] * 2 ) / 2;
+ const int cap = dex_cur / 2 + sklevel[sk_dodge] * 2;
+ if (ret > cap) ret = ( ret + cap) / 2;
  return ret;
 }
 
@@ -994,7 +994,7 @@ void player::perform_special_attacks(game *g, monster *z, player *p,
 void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
                                    int &bash_dam, int &cut_dam, int &stab_dam)
 {
- if (z == NULL && p == NULL) return;
+ assert(z || p);
  bool is_u = !is_npc();
  bool can_see = (is_u || g->u_see(pos));
  std::string You = (is_u ? "You" : name);
@@ -1050,7 +1050,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
                     !is_armed() && (!z || z->has_flag(MF_WARM)));
 
  if (drain_them) power_level--;
- drain_them &= one_in(2);	// Only works half the time
+ if (one_in(2)) drain_them = false;	// Only works half the time
 
  if (shock_them) {
   power_level -= 2;

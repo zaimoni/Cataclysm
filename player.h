@@ -104,16 +104,13 @@ public:
                                   player *p, body_part &bp_hit, int &side,
                                   int &bash_dam, int &cut_dam, int &stab_dam);
 
- void melee_special_effects(game *g, monster *z, player *p, bool crit,
-                            int &bash_dam, int &cut_dam, int &stab_dam);
-
- int  dodge(game *g);     // Returns the players's dodge, modded by clothing etc
+ int  dodge(game* g);     // Returns the players's dodge, modded by clothing etc
  int  dodge_roll(game *g);// For comparison to hit_roll()
 
-// ranged.cpp
+// ranged.cpp (at some point, historically)
  int throw_range(int index) const; // Range of throwing item; -1:ERR 0:Can't throw
- int ranged_dex_mod	(bool real_life = true);
- int ranged_per_mod	(bool real_life = true);
+ int ranged_dex_mod	(bool real_life = true) const;
+ int ranged_per_mod	(bool real_life = true) const;
  int throw_dex_mod	(bool real_life = true) const;
 
 // Mental skills and stats
@@ -296,6 +293,8 @@ private:
 
  void perform_special_attacks(game *g, monster *z, player *p, int &bash_dam, int &cut_dam, int &pierce_dam);	// V 0.2.1 \todo enable for NPCs
  std::vector<special_attack> mutation_attacks(const monster *z, const player *p) const;	// V 0.2.1 \todo enable for NPCs
+
+ void melee_special_effects(game *g, monster *z, player *p, bool crit, int &bash_dam, int &cut_dam, int &stab_dam);
 };
 
 #endif
