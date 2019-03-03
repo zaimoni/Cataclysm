@@ -137,7 +137,7 @@ public:
 
  int hp_percentage() const;	// % of HP remaining, overall
 
- void get_sick();	// Process diseases
+ void get_sick();	// Process diseases	\todo V 0.2.1 enable for NPCs
 // infect() gives us a chance to save (mostly from armor)
  void infect(dis_type type, body_part vector, int strength, int duration);
 // add_disease() does NOT give us a chance to save
@@ -152,8 +152,8 @@ public:
  bool has_addiction(add_type type) const;
  int  addiction_level(add_type type) const;
 
- void suffer(game *g);
- void vomit();
+ void suffer(game *g);	// \todo V 0.2.1 extend fully to NPCs
+ void vomit();	// \todo V 0.2.1 extend to NPCs
  
  int  lookup_item(char let) const;
  bool eat(game *g, int index);	// Eat item; returns false on fail

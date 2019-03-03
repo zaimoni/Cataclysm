@@ -2572,39 +2572,27 @@ int player::disease_intensity(dis_type type) const
 
 void player::add_addiction(add_type type, int strength)
 {
- if (type == ADD_NULL)
-  return;
+ if (type == ADD_NULL) return;
  int timer = 1200;
  if (has_trait(PF_ADDICTIVE)) {
   strength = int(strength * 1.5);
   timer = 800;
  }
- for (int i = 0; i < addictions.size(); i++) {
-  if (addictions[i].type == type) {
-        if (addictions[i].sated <   0)
-    addictions[i].sated = timer;
-   else if (addictions[i].sated < 600)
-    addictions[i].sated += timer;	// TODO: Make this variable?
-   else
-    addictions[i].sated += int((3000 - addictions[i].sated) / 2);
-   if ((rng(0, strength) > rng(0, addictions[i].intensity * 5) ||
-       rng(0, 500) < strength) && addictions[i].intensity < 20)
-    addictions[i].intensity++;
-   return;
-  }
+ for(auto& a : addictions) {
+  if (type != a.type) continue;
+  if (a.sated <   0) a.sated = timer;
+  else if (a.sated < 600) a.sated += timer;	// TODO: Make this variable?
+  else a.sated += int((3000 - addictions[i].sated) / 2);	// definitely could be longer than above
+  if ((rng(0, strength) > rng(0, a.intensity * 5) || rng(0, 500) < strength) && a.intensity < 20)
+   a.intensity++;
+  return;
  }
- if (rng(0, 100) < strength) {
-  addiction tmp(type, 1);
-  addictions.push_back(tmp);
- }
+ if (rng(0, 100) < strength) addictions.push_back(addiction(type, 1));
 }
 
 bool player::has_addiction(add_type type) const
 {
- for (int i = 0; i < addictions.size(); i++) {
-  if (addictions[i].type == type && addictions[i].intensity >= MIN_ADDICTION_LEVEL) return true;
- }
- return false;
+ for(const auto& a : addictions) if (a.type == type && a.intensity >= MIN_ADDICTION_LEVEL) return true;
 }
 
 void player::rem_addiction(add_type type)
@@ -2619,9 +2607,7 @@ void player::rem_addiction(add_type type)
 
 int player::addiction_level(add_type type) const
 {
- for (int i = 0; i < addictions.size(); i++) {
-  if (addictions[i].type == type) return addictions[i].intensity;
- }
+ for(const auto& a : addictions) if (a.type == type) return a.intensity;
  return 0;
 }
 
