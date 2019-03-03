@@ -4231,7 +4231,7 @@ point game::look_around()
    mvwprintw(w_look, 2, 1, "%s", m.features(lx, ly).c_str());
    const auto& f = m.field_at(lx, ly);
    if (f.type != fd_null)
-    mvwprintz(w_look, 4, 1, fieldlist[f.type].color[f.density-1],
+    mvwprintz(w_look, 4, 1, field::list[f.type].color[f.density-1],
               "%s", f.name().c_str());
    const auto tr_id = m.tr_at(lx, ly);
    if (tr_id != tr_null) {

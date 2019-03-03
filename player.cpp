@@ -2582,7 +2582,7 @@ void player::add_addiction(add_type type, int strength)
   if (type != a.type) continue;
   if (a.sated <   0) a.sated = timer;
   else if (a.sated < 600) a.sated += timer;	// TODO: Make this variable?
-  else a.sated += int((3000 - addictions[i].sated) / 2);	// definitely could be longer than above
+  else a.sated += int((3000 - a.sated) / 2);	// definitely could be longer than above
   if ((rng(0, strength) > rng(0, a.intensity * 5) || rng(0, 500) < strength) && a.intensity < 20)
    a.intensity++;
   return;

@@ -221,69 +221,9 @@ enum field_id {
  num_fields
 };
 
-const field_t fieldlist[] = {
-{{"",	"",	""},					'%',
- {c_white, c_white, c_white},	{true, true, true}, {false, false, false},   0},
-
-{{"blood splatter", "blood stain", "puddle of blood"},	'%',
- {c_red, c_red, c_red},		{true, true, true}, {false, false, false},2500},
-
-{{"bile splatter", "bile stain", "puddle of bile"},	'%',
- {c_pink, c_pink, c_pink},	{true, true, true}, {false, false, false},2500},
-
-{{"cobwebs","webs", "thick webs"},			'}',
- {c_white, c_white, c_white},	{true, true, false},{false, false, false},   0},
-
-{{"slime trail", "slime stain", "puddle of slime"},	'%',
- {c_ltgreen, c_ltgreen, c_green},{true, true, true},{false, false, false},2500},
-
-{{"acid splatter", "acid streak", "pool of acid"},	'5',
- {c_ltgreen, c_green, c_green},	{true, true, true}, {true, true, true},	    10},
-
-{{"sap splatter", "glob of sap", "pool of sap"},	'5',
- {c_yellow, c_brown, c_brown},	{true, true, true}, {true, true, true},     20},
-
-{{"small fire",	"fire",	"raging fire"},			'4',
- {c_yellow, c_ltred, c_red},	{true, true, true}, {true, true, true},	   800},
-
-{{"thin smoke",	"smoke", "thick smoke"},		'8',
- {c_white, c_ltgray, c_dkgray},	{true, false, false},{false, true, true},  300},
-
-{{"hazy cloud","toxic gas","thick toxic gas"},		'8',
- {c_white, c_ltgreen, c_green}, {true, false, false},{false, true, true},  900},
-
-{{"hazy cloud","tear gas","thick tear gas"},		'8',
- {c_white, c_yellow, c_brown},	{true, false, false},{true, true, true},   600},
-
-{{"hazy cloud","radioactive gas", "thick radioactive gas"}, '8',
- {c_white, c_ltgreen, c_green},	{true, true, false}, {true, true, true},  1000},
-
-{{"gas vent", "gas vent", "gas vent"}, '%',
- {c_white, c_white, c_white}, {true, true, true}, {false, false, false}, 0},
-
-{{"", "", ""}, '&', // fire vents
- {c_white, c_white, c_white}, {true, true, true}, {false, false, false}, 0},
-
-{{"fire", "fire", "fire"}, '5',
- {c_red, c_red, c_red}, {true, true, true}, {true, true, true}, 0},
-
-{{"sparks", "electric crackle", "electric cloud"},	'9',
- {c_white, c_cyan, c_blue},	{true, true, true}, {true, true, true},	     2},
-
-{{"odd ripple", "swirling air", "tear in reality"},	'*',
- {c_ltgray, c_dkgray, c_magenta},{true, true, false},{false, false, false},  0},
-
-{{"", "", ""}, '&', // push items
- {c_white, c_white, c_white}, {true, true, true}, {false, false, false}, 0},
-
-{{"", "", ""}, '&', // shock vents
- {c_white, c_white, c_white}, {true, true, true}, {false, false, false}, 0},
-
-{{"", "", ""}, '&', // acid vents
- {c_white, c_white, c_white}, {true, true, true}, {false, false, false}, 0}
-};
-
 struct field {
+ static const field_t list[];
+
  field_id type;
  signed char density;	// only 1..3 valid; 0 is useful to signal "expired"
  int age;
@@ -297,8 +237,8 @@ struct field {
   return (type == fd_null || type == fd_blood || type == fd_bile || type == fd_slime);
  }
 
- bool is_dangerous() const { return fieldlist[type].dangerous[density - 1]; }
- std::string name() const { return fieldlist[type].name[density - 1]; }
+ bool is_dangerous() const { return list[type].dangerous[density - 1]; }
+ std::string name() const { return list[type].name[density - 1]; }
 };
 
 struct spawn_point {

@@ -599,9 +599,9 @@ bool map::process_fields_in_submap(game *g, int gridn)
    } // switch (curtype)
   
    cur->age++;
-   if (fieldlist[cur->type].halflife > 0) {
-    if (cur->age > 0 &&
-        dice(3, cur->age) > dice(3, fieldlist[cur->type].halflife)) {
+   const int half_life = field::list[cur->type].halflife;
+   if (half_life > 0) {
+    if (cur->age > 0 && dice(3, cur->age) > dice(3, half_life)) {
      cur->age = 0;
      cur->density--;
     }

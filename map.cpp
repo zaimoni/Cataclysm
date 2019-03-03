@@ -15,6 +15,69 @@
 
 std::map<ter_id, std::string> ter_t::tiles;
 
+const field_t field::list[] = {
+{{"",	"",	""},					'%',
+ {c_white, c_white, c_white},	{true, true, true}, {false, false, false},   0},
+
+{{"blood splatter", "blood stain", "puddle of blood"},	'%',
+ {c_red, c_red, c_red},		{true, true, true}, {false, false, false},2500},
+
+{{"bile splatter", "bile stain", "puddle of bile"},	'%',
+ {c_pink, c_pink, c_pink},	{true, true, true}, {false, false, false},2500},
+
+{{"cobwebs","webs", "thick webs"},			'}',
+ {c_white, c_white, c_white},	{true, true, false},{false, false, false},   0},
+
+{{"slime trail", "slime stain", "puddle of slime"},	'%',
+ {c_ltgreen, c_ltgreen, c_green},{true, true, true},{false, false, false},2500},
+
+{{"acid splatter", "acid streak", "pool of acid"},	'5',
+ {c_ltgreen, c_green, c_green},	{true, true, true}, {true, true, true},	    10},
+
+{{"sap splatter", "glob of sap", "pool of sap"},	'5',
+ {c_yellow, c_brown, c_brown},	{true, true, true}, {true, true, true},     20},
+
+{{"small fire",	"fire",	"raging fire"},			'4',
+ {c_yellow, c_ltred, c_red},	{true, true, true}, {true, true, true},	   800},
+
+{{"thin smoke",	"smoke", "thick smoke"},		'8',
+ {c_white, c_ltgray, c_dkgray},	{true, false, false},{false, true, true},  300},
+
+{{"hazy cloud","toxic gas","thick toxic gas"},		'8',
+ {c_white, c_ltgreen, c_green}, {true, false, false},{false, true, true},  900},
+
+{{"hazy cloud","tear gas","thick tear gas"},		'8',
+ {c_white, c_yellow, c_brown},	{true, false, false},{true, true, true},   600},
+
+{{"hazy cloud","radioactive gas", "thick radioactive gas"}, '8',
+ {c_white, c_ltgreen, c_green},	{true, true, false}, {true, true, true},  1000},
+
+{{"gas vent", "gas vent", "gas vent"}, '%',
+ {c_white, c_white, c_white}, {true, true, true}, {false, false, false}, 0},
+
+{{"", "", ""}, '&', // fire vents
+ {c_white, c_white, c_white}, {true, true, true}, {false, false, false}, 0},
+
+{{"fire", "fire", "fire"}, '5',
+ {c_red, c_red, c_red}, {true, true, true}, {true, true, true}, 0},
+
+{{"sparks", "electric crackle", "electric cloud"},	'9',
+ {c_white, c_cyan, c_blue},	{true, true, true}, {true, true, true},	     2},
+
+{{"odd ripple", "swirling air", "tear in reality"},	'*',
+ {c_ltgray, c_dkgray, c_magenta},{true, true, false},{false, false, false},  0},
+
+{{"", "", ""}, '&', // push items
+ {c_white, c_white, c_white}, {true, true, true}, {false, false, false}, 0},
+
+{{"", "", ""}, '&', // shock vents
+ {c_white, c_white, c_white}, {true, true, true}, {false, false, false}, 0},
+
+{{"", "", ""}, '&', // acid vents
+ {c_white, c_white, c_white}, {true, true, true}, {false, false, false}, 0}
+};
+
+
 // \todo V.0.2.1 new terrain air
 const ter_t ter_t::list[num_terrain_types] = {  // MUST match enum ter_id!
 	{ "nothing",	     ' ', c_white,   2, tr_null,
@@ -1035,7 +1098,7 @@ bool map::trans(int x, int y) const
  } else
   tertr = ter_t::list[ter(x, y)].flags & mfb(transparent);
  const auto& fd = field_at(x, y);
- return tertr && (fd.type == 0 || fieldlist[fd.type].transparent[fd.density - 1]);	// Fields may obscure the view, too
+ return tertr && (fd.type == 0 || field::list[fd.type].transparent[fd.density - 1]);	// Fields may obscure the view, too
 }
 
 bool map::has_flag(t_flag flag, int x, int y) const
@@ -2099,7 +2162,7 @@ bool map::add_field(game *g, int x, int y, field_id t, unsigned char density, un
  if (grid[nonant]->fld[x][y].type == fd_null) grid[nonant]->field_count++;
  grid[nonant]->fld[x][y] = field(t, density, age);
  if (g != NULL && x == g->u.pos.x && y == g->u.pos.y && grid[nonant]->fld[x][y].is_dangerous()) {
-  g->cancel_activity_query("You're in a %s!", fieldlist[t].name[density - 1].c_str());
+  g->cancel_activity_query("You're in a %s!", field::list[t].name[density - 1].c_str());
  }
  return true;
 }
@@ -2221,10 +2284,10 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
  }
  // If there's a field here, draw that instead (unless its symbol is %)
  const auto& fd = field_at(x, y);
- if (fd.type != fd_null && fieldlist[fd.type].sym != '&') {
-  tercol = fieldlist[fd.type].color[fd.density - 1];
+ if (fd.type != fd_null && field::list[fd.type].sym != '&') {
+  tercol = field::list[fd.type].color[fd.density - 1];
   drew_field = true;
-  if (fieldlist[fd.type].sym == '*') {
+  if (field::list[fd.type].sym == '*') {
    switch (rng(1, 5)) {
     case 1: sym = '*'; break;
     case 2: sym = '0'; break;
@@ -2232,13 +2295,13 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
     case 4: sym = '&'; break;
     case 5: sym = '+'; break;
    }
-  } else if (fieldlist[fd.type].sym != '%') {
-   sym = fieldlist[fd.type].sym;
+  } else if (field::list[fd.type].sym != '%') {
+   sym = field::list[fd.type].sym;
    drew_field = false;
   }
  }
 // If there's items here, draw those instead
- if (show_items && i_at(x, y).size() > 0 && !drew_field) {
+ if (show_items && !drew_field) {
 	 const auto& stack = i_at(x, y);
 	 if (!stack.empty()) {
 		 if ((ter_t::list[ter(x, y)].sym != '.')) hi = true;
@@ -2252,8 +2315,7 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
  }
 
  int veh_part = 0;
- const vehicle* const veh = veh_at(x, y, veh_part);
- if (veh) {
+ if (const vehicle* const veh = veh_at(x, y, veh_part)) {
   sym = special_symbol (veh->face.dir_symbol(veh->part_sym(veh_part)));
   if (normal_tercol) tercol = veh->part_color(veh_part);
  }
