@@ -1864,7 +1864,7 @@ void player::power_bionics(game *g)
 {
  WINDOW *wBio = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  werase(wBio);
- std::vector <bionic> passive;
+ std::vector <bionic> passive;	// \todo should these two be std::vector<bionic*>?
  std::vector <bionic> active;
  mvwprintz(wBio, 0, 0, c_blue, "BIONICS -");
  mvwprintz(wBio, 0,10, c_white,
@@ -1875,8 +1875,8 @@ void player::power_bionics(game *g)
   mvwputch(wBio, 21, i, c_ltgray, LINE_OXOX);
  }
  for (int i = 0; i < my_bionics.size(); i++) {
-  if ( bionics[my_bionics[i].id].power_source ||
-      !bionics[my_bionics[i].id].activated      )
+  const auto& bio_type = bionic::type[my_bionics[i].id];
+  if ( bio_type.power_source || !bio_type.activated)
    passive.push_back(my_bionics[i]);
   else
    active.push_back(my_bionics[i]);
@@ -1885,21 +1885,23 @@ void player::power_bionics(game *g)
  if (passive.size() > 0) {
   mvwprintz(wBio, 2, 0, c_ltblue, "Passive:");
   for (int i = 0; i < passive.size(); i++) {
-   type = (bionics[passive[i].id].power_source ? c_ltcyan : c_cyan);
+   const auto& bio_type = bionic::type[passive[i].id];
+   type = (bio_type.power_source ? c_ltcyan : c_cyan);
    mvwputch(wBio, 3 + i, 0, type, passive[i].invlet);
-   mvwprintz(wBio, 3 + i, 2, type, bionics[passive[i].id].name.c_str());
+   mvwprintz(wBio, 3 + i, 2, type, bio_type.name.c_str());
   }
  }
  if (active.size() > 0) {
   mvwprintz(wBio, 2, 32, c_ltblue, "Active:");
   for (int i = 0; i < active.size(); i++) {
    type = (active[i].powered ? c_red : c_ltred);
+   const auto& bio_type = bionic::type[active[i].id];
    mvwputch(wBio, 3 + i, 32, type, active[i].invlet);
    mvwprintz(wBio, 3 + i, 34, type,
              (active[i].powered ? "%s - ON" : "%s - %d PU / %d trns"),
-             bionics[active[i].id].name.c_str(),
-             bionics[active[i].id].power_cost,
-             bionics[active[i].id].charge_time);
+             bio_type.name.c_str(),
+             bio_type.power_cost,
+             bio_type.charge_time);
   }
  }
 
@@ -1927,19 +1929,19 @@ void player::power_bionics(game *g)
     }
    }
    if (tmp) {
+	const auto& bio_type = bionic::type[tmp->id];
     if (activating) {
-     if (bionics[tmp->id].activated) {
+     if (bio_type.activated) {
       if (tmp->powered) {
        tmp->powered = false;
-       messages.add("%s powered off.", bionics[tmp->id].name.c_str());
-      } else if (power_level >= bionics[tmp->id].power_cost ||
-                 (weapon.type->id == itm_bio_claws && tmp->id == bio_claws))
+       messages.add("%s powered off.", bio_type.name.c_str());
+      } else if (power_level >= bio_type.power_cost || (weapon.type->id == itm_bio_claws && tmp->id == bio_claws))
        activate_bionic(b, g);
      } else
       mvwprintz(wBio, 22, 0, c_ltred, "\
 You can not activate %s!  To read a description of \
-%s, press '!', then '%c'.", bionics[tmp->id].name.c_str(),
-                            bionics[tmp->id].name.c_str(), tmp->invlet);
+%s, press '!', then '%c'.", bio_type.name.c_str(),
+                            bio_type.name.c_str(), tmp->invlet);
     } else {	// Describing bionics, not activating them!
 // Clear the lines first
      ch = 0;
@@ -1947,8 +1949,7 @@ You can not activate %s!  To read a description of \
                                                                                \
                                                                                \
                                                                              ");
-     mvwprintz(wBio, 22, 0, c_ltblue,
-               bionics[tmp->id].description.c_str());
+     mvwprintz(wBio, 22, 0, c_ltblue, bio_type.description.c_str());
     }
    }
   }

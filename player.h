@@ -72,7 +72,7 @@ public:
  void add_bionic(bionic_id b);
  void charge_power(int amount);
  void power_bionics(game *g);
- void activate_bionic(int b, game *g);
+ void activate_bionic(int b, game *g);	// \todo V 0.2.1 extend to NPCs
 
  void mutate(game *g);
  void mutate_towards(game *g, pl_flag mut);
