@@ -3814,7 +3814,7 @@ bool player::wield(game *g, int index)
  return false;
 }
 
-void player::pick_style(game *g) // Style selection menu
+void player::pick_style() // Style selection menu
 {
  std::vector<std::string> options;
  options.push_back("No style");

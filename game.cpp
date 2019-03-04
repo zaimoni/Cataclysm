@@ -1384,7 +1384,7 @@ void game::get_input()
    break;
 
   case ACTION_PICK_STYLE:
-   u.pick_style(this);
+   u.pick_style();
    if (u.weapon.type->id == 0 || u.weapon.is_style()) {
     u.weapon = item(item::types[u.style_selected], 0);
     u.weapon.invlet = ':';
