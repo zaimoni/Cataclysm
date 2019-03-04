@@ -4349,9 +4349,8 @@ void game::pickup(int posx, int posy, int min)
   } else if (u.volume_carried() + newit.volume() > u.volume_capacity()) {
    if (u.is_armed()) {
     if (!u.weapon.has_flag(IF_NO_UNWIELD)) {
-     if (newit.is_armor() && // Armor can be instantly worn
-         query_yn("Put on the %s?", newit.tname().c_str())) {
-      if(u.wear_item(this, &newit)){
+     if (newit.is_armor() && query_yn("Put on the %s?", newit.tname().c_str())) { // Armor can be instantly worn
+      if(u.wear_item(newit)){
        if (from_veh)
         veh->remove_item (veh_part, 0);
        else
@@ -4364,7 +4363,7 @@ void game::pickup(int posx, int posy, int min)
       else
        m.i_clear(posx, posy);
       m.add_item(posx, posy, u.remove_weapon());
-      u.i_add(newit, this);
+      u.i_add(newit);
       u.wield(this, u.inv.size() - 1);
       u.moves -= 100;
       messages.add("Wielding %c - %s", newit.invlet, newit.tname().c_str());
@@ -4376,7 +4375,7 @@ void game::pickup(int posx, int posy, int min)
      decrease_nextinv();
     }
    } else {
-    u.i_add(newit, this);
+    u.i_add(newit);
     u.wield(this, u.inv.size() - 1);
     if (from_veh)
      veh->remove_item (veh_part, 0);
@@ -4396,7 +4395,7 @@ void game::pickup(int posx, int posy, int min)
    u.moves -= 100;
    messages.add("Wielding %c - %s", newit.invlet, newit.tname().c_str());
   } else {
-   u.i_add(newit, this);
+   u.i_add(newit);
    if (from_veh)
     veh->remove_item (veh_part, 0);
    else
@@ -4546,10 +4545,8 @@ void game::pickup(int posx, int posy, int min)
    } else if (u.volume_carried() + here[i].volume() > u.volume_capacity()) {
     if (u.is_armed()) {
      if (!u.weapon.has_flag(IF_NO_UNWIELD)) {
-      if (here[i].is_armor() && // Armor can be instantly worn
-          query_yn("Put on the %s?", here[i].tname().c_str())) {
-       if(u.wear_item(this, &(here[i])))
-       {
+      if (here[i].is_armor() && query_yn("Put on the %s?", here[i].tname().c_str())) {	// Armor can be instantly worn
+       if(u.wear_item(here[i])) {
         if (from_veh)
          veh->remove_item (veh_part, curmit);
         else
@@ -4563,7 +4560,7 @@ void game::pickup(int posx, int posy, int min)
        else
         m.i_rem(posx, posy, curmit);
        m.add_item(posx, posy, u.remove_weapon());
-       u.i_add(here[i], this);
+       u.i_add(here[i]);
        u.wield(this, u.inv.size() - 1);
        curmit--;
        u.moves -= 100;
@@ -4576,7 +4573,7 @@ void game::pickup(int posx, int posy, int min)
       decrease_nextinv();
      }
     } else {
-     u.i_add(here[i], this);
+     u.i_add(here[i]);
      u.wield(this, u.inv.size() - 1);
      if (from_veh)
       veh->remove_item (veh_part, curmit);
@@ -4596,7 +4593,7 @@ void game::pickup(int posx, int posy, int min)
     u.moves -= 100;
     curmit--;
    } else {
-    u.i_add(here[i], this);
+    u.i_add(here[i]);
     if (from_veh)
      veh->remove_item (veh_part, curmit);
     else
@@ -5290,7 +5287,7 @@ void game::unload()
         u.weight_carried() + content.weight() <= u.weight_capacity() &&
         iter < 52) {
      messages.add("You put the %s in your inventory.", content.tname().c_str());
-     u.i_add(content, this);
+     u.i_add(content);
     } else {
      messages.add("You drop the %s on the ground.", content.tname().c_str());
      m.add_item(u.pos, content);
@@ -5341,7 +5338,7 @@ void game::unload()
    if (newam.made_of(LIQUID)) {
     if (!handle_liquid(newam, false, false)) u.weapon.charges += newam.charges;	// Put it back in
    } else
-    u.i_add(newam, this);
+    u.i_add(newam);
   } else
    m.add_item(u.pos, newam);
  }

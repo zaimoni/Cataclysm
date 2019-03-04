@@ -3056,7 +3056,7 @@ void player::sort_inv()
  inv_sorted = true;
 }
 
-void player::i_add(item it, game *g)
+void player::i_add(item it)
 {
  last_item = itype_id(it.type->id);
  if (it.is_food() || it.is_ammo() || it.is_gun()  || it.is_armor() || 
@@ -3072,14 +3072,14 @@ void player::i_add(item it, game *g)
     if (obj.charges > ammo->count) {
      it.charges = obj.charges - ammo->count;
 	 obj.charges = ammo->count;
-    } else it.charges = 0;
+    } else it.charges = 0;	// requires full working copy to be valid
    }
   }
   if (it.charges > 0) inv.push_back(it);
   return;
  }
- if (g != NULL && it.is_artifact() && it.is_tool()) {
-  g->add_artifact_messages(dynamic_cast<const it_artifact_tool*>(it.type)->effects_carried);
+ if (it.is_artifact() && it.is_tool()) {
+  game::add_artifact_messages(dynamic_cast<const it_artifact_tool*>(it.type)->effects_carried);
  }
  inv.push_back(it);
 }
@@ -3784,7 +3784,7 @@ bool player::wield(game *g, int index)
  }
  if (!is_armed()) {
   weapon = inv.remove_item(index);
-  if (weapon.is_artifact() && weapon.is_tool()) g->add_artifact_messages(dynamic_cast<const it_artifact_tool*>(weapon.type)->effects_wielded);
+  if (weapon.is_artifact() && weapon.is_tool()) game::add_artifact_messages(dynamic_cast<const it_artifact_tool*>(weapon.type)->effects_wielded);
   moves -= 30;
   last_item = itype_id(weapon.type->id);
   return true;
@@ -3794,7 +3794,7 @@ bool player::wield(game *g, int index)
   inv.push_back(tmpweap);
   inv_sorted = false;
   moves -= 45;
-  if (weapon.is_artifact() && weapon.is_tool()) g->add_artifact_messages(dynamic_cast<const it_artifact_tool*>(weapon.type)->effects_wielded);
+  if (weapon.is_artifact() && weapon.is_tool()) game::add_artifact_messages(dynamic_cast<const it_artifact_tool*>(weapon.type)->effects_wielded);
   last_item = itype_id(weapon.type->id);
   return true;
  } else if (query_yn("No space in inventory for your %s.  Drop it?",
@@ -3805,7 +3805,7 @@ bool player::wield(game *g, int index)
   inv_sorted = false;
   moves -= 30;
   if (weapon.is_artifact() && weapon.is_tool()) {
-   g->add_artifact_messages(dynamic_cast<const it_artifact_tool*>(weapon.type)->effects_wielded);
+   game::add_artifact_messages(dynamic_cast<const it_artifact_tool*>(weapon.type)->effects_wielded);
   }
   last_item = itype_id(weapon.type->id);
   return true;
@@ -3845,7 +3845,7 @@ bool player::wear(game *g, char let)
   return false;
  }
 
- if (!wear_item(g, to_wear)) return false;
+ if (!wear_item(*to_wear)) return false;
 
  if (-2 == index) weapon = item::null;
  else inv.remove_item(index);
@@ -3853,24 +3853,24 @@ bool player::wear(game *g, char let)
  return true;
 }
 
-bool player::wear_item(game *g, item *to_wear)
+bool player::wear_item(const item& to_wear)
 {
- if (!to_wear->is_armor()) {
-  messages.add("Putting on a %s would be tricky.", to_wear->tname().c_str());
+ if (!to_wear.is_armor()) {
+  messages.add("Putting on a %s would be tricky.", to_wear.tname().c_str());
   return false;
  }
- const it_armor* const armor = dynamic_cast<const it_armor*>(to_wear->type);
+ const it_armor* const armor = dynamic_cast<const it_armor*>(to_wear.type);
 
 // Make sure we're not wearing 2 of the item already
  int count = 0;
  for (const auto& it : worn) {
-  if (it.type->id == to_wear->type->id) count++;
+  if (it.type->id == to_wear.type->id) count++;
  }
  if (2 <= count) {
-  messages.add("You can't wear more than two %s at once.", to_wear->tname().c_str());
+  messages.add("You can't wear more than two %s at once.", to_wear.tname().c_str());
   return false;
  }
- if (has_trait(PF_WOOLALLERGY) && to_wear->made_of(WOOL)) {
+ if (has_trait(PF_WOOLALLERGY) && to_wear.made_of(WOOL)) {
   messages.add("You can't wear that, it's made of wool!");
   return false;
  }
@@ -3902,8 +3902,8 @@ bool player::wear_item(game *g, item *to_wear)
   messages.add("You cannot wear anything over your shell.");
   return false;
  }
- if (armor->covers & mfb(bp_head) && !to_wear->made_of(WOOL) &&
-     !to_wear->made_of(COTTON) && !to_wear->made_of(LEATHER) &&
+ if (armor->covers & mfb(bp_head) && !to_wear.made_of(WOOL) &&
+     !to_wear.made_of(COTTON) && !to_wear.made_of(LEATHER) &&
      (has_trait(PF_HORNS_POINTED) || has_trait(PF_ANTENNAE) ||
       has_trait(PF_ANTLERS))) {
 	 messages.add("You cannot wear a helmet over your %s.",
@@ -3915,11 +3915,11 @@ bool player::wear_item(game *g, item *to_wear)
   messages.add("You're already wearing footwear!");
   return false;
  }
- messages.add("You put on your %s.", to_wear->tname().c_str());
- if (to_wear->is_artifact()) g->add_artifact_messages(dynamic_cast<const it_artifact_armor*>(to_wear->type)->effects_worn);
+ messages.add("You put on your %s.", to_wear.tname().c_str());
+ if (to_wear.is_artifact()) game::add_artifact_messages(dynamic_cast<const it_artifact_armor*>(to_wear.type)->effects_worn);
  moves -= 350; // TODO: Make this variable?
- last_item = itype_id(to_wear->type->id);
- worn.push_back(*to_wear);
+ last_item = itype_id(to_wear.type->id);
+ worn.push_back(to_wear);
  for (body_part i = bp_head; i < num_bp; i = body_part(i + 1)) {
   if (armor->covers & mfb(i) && encumb(i) >= 4)
    messages.add("Your %s %s very encumbered! %s",

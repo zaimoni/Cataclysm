@@ -741,7 +741,7 @@ void iuse::scissors(game *g, player *p, item *it, bool t)
    if (!drop && (iter == 52 || p->volume_carried() >= p->volume_capacity()))
     drop = true;
    if (drop) g->m.add_item(p->pos, string);
-   else p->i_add(string, g);
+   else p->i_add(string);
   }
   return;
  }
@@ -751,15 +751,13 @@ void iuse::scissors(game *g, player *p, item *it, bool t)
  }
  p->moves -= 25 * cut->volume();
  int count = cut->volume();
- if (p->sklevel[sk_tailor] == 0)
-  count = rng(0, count);
- else if (p->sklevel[sk_tailor] == 1 && count >= 2)
-  count -= rng(0, 2);
+ if (p->sklevel[sk_tailor] == 0) count = rng(0, count);
+ else if (p->sklevel[sk_tailor] == 1 && count >= 2) count -= rng(0, 2);
+
  if (dice(3, 3) > p->dex_cur) count -= rng(1, 3);
 
  if (count <= 0) {
-  messages.add("You clumsily cut the %s into useless ribbons.",
-             cut->tname().c_str());
+  messages.add("You clumsily cut the %s into useless ribbons.", cut->tname().c_str());
   p->i_rem(ch);
   return;
  }
@@ -777,7 +775,7 @@ void iuse::scissors(game *g, player *p, item *it, bool t)
   }
   if (!drop && (iter == 52 || p->volume_carried() >= p->volume_capacity())) drop = true;
   if (drop) g->m.add_item(p->pos, rag);
-  else p->i_add(rag, g);
+  else p->i_add(rag);
  }
 }
 

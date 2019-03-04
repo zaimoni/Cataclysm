@@ -160,7 +160,7 @@ public:
  virtual bool wield(game *g, int index);// Wield item; returns false on fail
  void pick_style(); // Pick a style
  bool wear(game *g, char let);	// Wear item; returns false on fail
- bool wear_item(game *g, item *to_wear);
+ bool wear_item(const item& to_wear);	// \todo V 0.2.1 enable for NPCs
  bool takeoff(game *g, char let);// Take off item; returns false on fail
  void use(game *g, char let);	// Use a tool
  bool install_bionics(game *g, const it_bionic* type);	// Install bionics
@@ -190,7 +190,7 @@ public:
  void sort_inv();	// Sort inventory by type
  std::string weapname(bool charges = true);
 
- void i_add(item it, game *g = NULL);
+ void i_add(item it);
  bool has_active_item(itype_id id) const;
  int  active_item_charges(itype_id id) const;
  void process_active_items(game *g);
