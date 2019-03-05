@@ -5206,7 +5206,7 @@ void game::wear()
 
 void game::takeoff()
 {
- if (u.takeoff(this, inv("Take off item:")))
+ if (u.takeoff(m, inv("Take off item:")))
   u.moves -= 250; // TODO: Make this variable
  else
   messages.add("Invalid selection.");

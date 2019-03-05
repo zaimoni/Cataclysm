@@ -3930,7 +3930,7 @@ bool player::wear_item(const item& to_wear)
  return true;
 }
 
-bool player::takeoff(game *g, char let)
+bool player::takeoff(map& m, char let)
 {
  for (int i = 0; i < worn.size(); i++) {
   const auto& it = worn[i];
@@ -3941,7 +3941,7 @@ bool player::takeoff(game *g, char let)
     inv_sorted = false;
     return true;
    } else if (query_yn("No room in inventory for your %s.  Drop it?", worn[i].tname().c_str())) {
-    g->m.add_item(pos, it);
+    m.add_item(pos, it);
     worn.erase(worn.begin() + i);
     return true;
    } else return false;
