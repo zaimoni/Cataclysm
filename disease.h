@@ -247,7 +247,7 @@ void dis_effect(game *g, player &p, disease &dis)
 
  case DI_LYING_DOWN:
   p.moves = 0;
-  if (p.can_sleep(g)) {
+  if (p.can_sleep(g->m)) {
    dis.duration = 1;
    if (!p.is_npc()) messages.add("You fall asleep.");
    p.add_disease(DI_SLEEP, 6000);

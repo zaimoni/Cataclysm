@@ -4170,10 +4170,9 @@ void player::read(game *g, char ch)
  moves = 0;
 }
  
-void player::try_to_sleep(const game *g)
+void player::try_to_sleep(const map& m)
 {
- const auto terrain = g->m.ter(pos);
- switch (terrain)
+ switch (const auto terrain = m.ter(pos))
  {
  case t_floor: break;
  case t_bed:
@@ -4188,25 +4187,25 @@ void player::try_to_sleep(const game *g)
  add_disease(DI_LYING_DOWN, 300);
 }
 
-bool player::can_sleep(game *g)
+bool player::can_sleep(const map& m) const
 {
  int sleepy = 0;
  if (has_addiction(ADD_SLEEP)) sleepy -= 3;
  if (has_trait(PF_INSOMNIA)) sleepy -= 8;
 
  int vpart = -1;
- const vehicle* const veh = g->m.veh_at(pos, vpart);
+ const vehicle* const veh = m.veh_at(pos, vpart);
  if (veh && veh->part_with_feature(vpart, vpf_seat) >= 0) sleepy += 4;
- else if (g->m.ter(pos) == t_bed) sleepy += 5;
- else if (g->m.ter(pos) == t_floor) sleepy += 1;
- else sleepy -= g->m.move_cost(pos);
+ else if (m.ter(pos) == t_bed) sleepy += 5;
+ else if (m.ter(pos) == t_floor) sleepy += 1;
+ else sleepy -= m.move_cost(pos);
  sleepy = (192 > fatigue) ? (192-fatigue)/4 : (fatigue-192)/16;
  sleepy += rng(-8, 8);
  sleepy -= 2 * stim;
  return 0 < sleepy;
 }
 
-int player::warmth(body_part bp)
+int player::warmth(body_part bp) const
 {
  int ret = 0;
  for (const auto& it : worn) {

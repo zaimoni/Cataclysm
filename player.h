@@ -162,13 +162,13 @@ public:
  bool wear(game *g, char let);	// Wear item; returns false on fail
  bool wear_item(const item& to_wear);	// \todo V 0.2.1 enable for NPCs
  bool takeoff(map& m, char let);// Take off item; returns false on fail	\todo V 0.2.1 extend to NPC? (this is UI-driven so maybe not)
- void use(game *g, char let);	// Use a tool
- bool install_bionics(game *g, const it_bionic* type);	// Install bionics
- void read(game *g, char let);	// Read a book	V 0.2.1 \todo enable for NPCs
- void try_to_sleep(const game *g);	// '$' command; adds DIS_LYING_DOWN
- bool can_sleep(game *g);	// Checked each turn during DIS_LYING_DOWN
+ void use(game *g, char let);	// Use a tool \todo V 0.2.1 extend to NPCs? (UI-driven)
+ bool install_bionics(game *g, const it_bionic* type);	// Install bionics \todo V 0.2.1 enable for NPCs
+ void read(game *g, char let);	// Read a book	V 0.2.1 \todo enable for NPCs? (UI driven)
+ void try_to_sleep(const map& m);	// '$' command; adds DIS_LYING_DOWN	\todo V 0.2.1 extend to NPCs
+ bool can_sleep(const map& m) const;	// Checked each turn during DIS_LYING_DOWN
 
- int warmth(body_part bp);	// Warmth provided by armor &c
+ int warmth(body_part bp) const;	// Warmth provided by armor &c
  int encumb(body_part bp) const;	// Encumberance from armor &c
  int armor_bash(body_part bp);	// Bashing resistance
  int armor_cut(body_part bp);	// Cutting  resistance
@@ -199,8 +199,8 @@ public:
  item remove_weapon();
  void remove_mission_items(int mission_id);
  item i_remn(int index);// Remove item from inventory; returns ret_null on fail
- item &i_at(char let);	// Returns the item with inventory letter let
- item &i_of_type(itype_id type); // Returns the first item with this type
+ item& i_at(char let);	// Returns the item with inventory letter let
+ item& i_of_type(itype_id type); // Returns the first item with this type
  std::vector<item> inv_dump() const; // Inventory + weapon + worn (for death, etc)
  int  butcher_factor() const;	// Automatically picks our best butchering tool
  int  pick_usb() const; // Pick a usb drive, interactively if it matters
