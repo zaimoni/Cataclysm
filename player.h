@@ -168,11 +168,11 @@ public:
  void try_to_sleep(const map& m);	// '$' command; adds DIS_LYING_DOWN	\todo V 0.2.1 extend to NPCs
  bool can_sleep(const map& m) const;	// Checked each turn during DIS_LYING_DOWN
 
- int warmth(body_part bp) const;	// Warmth provided by armor &c
+ int warmth(body_part bp) const;	// Warmth provided by armor &c; \todo cf game::check_warmth which might belong over in player
  int encumb(body_part bp) const;	// Encumberance from armor &c
- int armor_bash(body_part bp);	// Bashing resistance
- int armor_cut(body_part bp);	// Cutting  resistance
- int resist(body_part bp);	// Infection &c resistance
+ int armor_bash(body_part bp) const;	// Bashing resistance
+ int armor_cut(body_part bp) const;	// Cutting  resistance
+ int resist(body_part bp) const;	// Infection &c resistance
  bool wearing_something_on(body_part bp) const; // True if wearing something on bp
 
  void practice(skill s, int amount);	// Practice a skill

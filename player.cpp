@@ -4245,7 +4245,7 @@ int player::encumb(body_part bp) const
  return ret;
 }
 
-int player::armor_bash(body_part bp)
+int player::armor_bash(body_part bp) const
 {
  int ret = 0;
  for (const auto& it : worn) {
@@ -4264,7 +4264,7 @@ int player::armor_bash(body_part bp)
  return ret;
 }
 
-int player::armor_cut(body_part bp)
+int player::armor_cut(body_part bp) const
 {
  int ret = 0;
  for (const auto& it : worn) {
@@ -4397,7 +4397,7 @@ void player::absorb(game *g, body_part bp, int &dam, int &cut)
  if (cut < 0) cut = 0;
 }
   
-int player::resist(body_part bp)
+int player::resist(body_part bp) const
 {
  int ret = 0;
  for (const auto& it : worn) {
