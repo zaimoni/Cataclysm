@@ -4488,7 +4488,7 @@ std::vector<int> player::has_ammo(ammotype at) const
  return ret;
 }
 
-std::string player::weapname(bool charges)
+std::string player::weapname(bool charges) const
 {
  if (!(weapon.is_tool() && dynamic_cast<const it_tool*>(weapon.type)->max_charges <= 0) && weapon.charges >= 0 && charges) {
   std::stringstream dump;

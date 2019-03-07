@@ -158,7 +158,7 @@ class game
 
   itype* new_artifact();
   itype* new_natural_artifact(artifact_natural_property prop = ARTPROP_NULL);
-  void process_artifact(item *it, player *p, bool wielded = false);
+  void process_artifact(item *it, player *p, bool wielded = false);	// \todo V 0.2.1 fully extend to NPCs
   static void add_artifact_messages(const std::vector<art_effect_passive>& effects);
 
   point look_around();// Look at nearby terrain	';'

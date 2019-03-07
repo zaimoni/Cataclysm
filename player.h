@@ -177,7 +177,7 @@ public:
 
  void practice(skill s, int amount);	// Practice a skill
 
- void assign_activity(activity_type type, int moves, int index = -1);
+ void assign_activity(activity_type type, int moves, int index = -1);	// \todo V 0.2.1 extend to NPCs
  void cancel_activity();
 
  int weight_carried() const;
@@ -188,7 +188,7 @@ public:
  void add_morale(morale_type type, int bonus, int max_bonus = 0, const itype* item_type = NULL);
 
  void sort_inv();	// Sort inventory by type
- std::string weapname(bool charges = true);
+ std::string weapname(bool charges = true) const;
 
  void i_add(item it);
  bool has_active_item(itype_id id) const;
