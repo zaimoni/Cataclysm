@@ -1045,18 +1045,18 @@ const std::string& map::tername(int x, int y) const
  return ter_t::list[ter(x, y)].name;
 }
 
-std::string map::features(int x, int y) const
+std::string map::features(const point& pt) const
 {
 // This is used in an info window that is 46 characters wide, and is expected
 // to take up one line.  So, make sure it does that.
  std::string ret;
- if (has_flag(bashable, x, y))
+ if (has_flag(bashable, pt))
   ret += "Smashable. ";	// 11 chars (running total)
- if (has_flag(diggable, x, y))
+ if (has_flag(diggable, pt))
   ret += "Diggable. ";	// 21 chars
- if (has_flag(rough, x, y))
+ if (has_flag(rough, pt))
   ret += "Rough. ";	// 28 chars
- if (has_flag(sharp, x, y))
+ if (has_flag(sharp, pt))
   ret += "Sharp. ";	// 35 chars
  return ret;
 }

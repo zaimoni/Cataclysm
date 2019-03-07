@@ -4188,9 +4188,9 @@ shape, but with long, twisted, distended limbs.");
 point game::look_around()
 {
  draw_ter();
- int lx = u.pos.x, ly = u.pos.y;
+ point l(u.pos);
  char ch;
- WINDOW* w_look = newwin(13, 48, 12, SEEX * 2 + 8);
+ WINDOW* w_look = newwin(VIEW-SEE, SCREEN_WIDTH-(SEE * 2 + 8), SEE, SEE * 2 + 8);
  wborder(w_look, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                  LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  mvwprintz(w_look, 1, 1, c_white, "Looking Around");
@@ -4199,12 +4199,11 @@ point game::look_around()
  wrefresh(w_look);
  do {
   ch = input();
-  if (!u_see(lx, ly))
-   mvwputch(w_terrain, ly - u.pos.y + SEEY, lx - u.pos.x + SEEX, c_black, ' ');
+  if (!u_see(l))
+   mvwputch(w_terrain, l.y - u.pos.y + SEEY, l.x - u.pos.x + SEEX, c_black, ' ');
   point dir(get_direction(ch));
   if (dir.x != -2) {	// Directional key pressed
-   lx += dir.x;
-   ly += dir.y;
+   l += dir;
 /*
    if (lx < u.posx - SEEX)
     lx = u.posx - SEEX;
@@ -4216,42 +4215,41 @@ point game::look_around()
     ly = u.posy + SEEY;
 */
   }
-  draw_ter(lx, ly);
-  for (int i = 1; i < 12; i++) {
-   for (int j = 1; j < 47; j++)
+  draw_ter(l.x, l.y);
+  for (int i = 1; i < VIEW - SEE-1; i++) {
+   for (int j = 1; j < SCREEN_WIDTH - (SEE * 2 + 8)-1; j++)
     mvwputch(w_look, i, j, c_white, ' ');
   }
   int veh_part = 0;
-  vehicle *veh = m.veh_at(lx, ly, veh_part);
-  if (u_see(lx, ly)) {
-   if (m.move_cost(lx, ly) == 0)
-    mvwprintw(w_look, 1, 1, "%s; Impassable", m.tername(lx, ly).c_str());
+  vehicle *veh = m.veh_at(l, veh_part);
+  if (u_see(l)) {
+   const int mc = m.move_cost(l);
+   if (mc == 0)
+    mvwprintw(w_look, 1, 1, "%s; Impassable", m.tername(l).c_str());
    else
-    mvwprintw(w_look, 1, 1, "%s; Movement cost %d", m.tername(lx, ly).c_str(),
-                                                    m.move_cost(lx, ly) * 50);
-   mvwprintw(w_look, 2, 1, "%s", m.features(lx, ly).c_str());
-   const auto& f = m.field_at(lx, ly);
+    mvwprintw(w_look, 1, 1, "%s; Movement cost %d", m.tername(l).c_str(), mc * 50);
+   mvwprintw(w_look, 2, 1, "%s", m.features(l).c_str());
+   const auto& f = m.field_at(l);
    if (f.type != fd_null)
     mvwprintz(w_look, 4, 1, field::list[f.type].color[f.density-1],
               "%s", f.name().c_str());
-   const auto tr_id = m.tr_at(lx, ly);
-   if (tr_id != tr_null) {
-	 const trap* const tr = trap::traps[m.tr_at(lx, ly)];
+   if (const auto tr_id = m.tr_at(l)) {
+	 const trap* const tr = trap::traps[tr_id];
      if (u.per_cur - u.encumb(bp_eyes) >= tr->visibility)
        mvwprintz(w_look, 5, 1, tr->color, "%s", tr->name.c_str());
    }
 
-   monster* const m_at = mon(lx, ly);
-   auto& stack = m.i_at(lx, ly);
+   monster* const m_at = mon(l);
+   auto& stack = m.i_at(l);
    if (m_at && u_see(m_at)) {
-    m_at->draw(w_terrain, lx, ly, true);
+    m_at->draw(w_terrain, l.x, l.y, true);
     m_at->print_info(u, w_look);
     if (stack.size() > 1)
      mvwprintw(w_look, 3, 1, "There are several items there.");
     else if (stack.size() == 1)
      mvwprintw(w_look, 3, 1, "There is an item there.");
-   } else if (npc* const _npc = nPC(lx,ly)) {
-    _npc->draw(w_terrain, lx, ly, true);
+   } else if (npc* const _npc = nPC(l)) {
+    _npc->draw(w_terrain, l.x, l.y, true);
 	_npc->print_info(w_look);
     if (stack.size() > 1)
      mvwprintw(w_look, 3, 1, "There are several items there.");
@@ -4260,21 +4258,21 @@ point game::look_around()
    } else if (veh) {
      mvwprintw(w_look, 3, 1, "There is a %s there. Parts:", veh->name.c_str());
      veh->print_part_desc(w_look, 4, 48, veh_part);
-     m.drawsq(w_terrain, u, lx, ly, true, true, lx, ly);
+     m.drawsq(w_terrain, u, l.x, l.y, true, true, l.x, l.y);
    } else if (!stack.empty()) {
     mvwprintw(w_look, 3, 1, "There is a %s there.", stack[0].tname().c_str());
     if (stack.size() > 1) mvwprintw(w_look, 4, 1, "There are other items there as well.");
-    m.drawsq(w_terrain, u, lx, ly, true, true, lx, ly);
+    m.drawsq(w_terrain, u, l.x, l.y, true, true, l.x, l.y);
    } else
-    m.drawsq(w_terrain, u, lx, ly, true, true, lx, ly);
+    m.drawsq(w_terrain, u, l.x, l.y, true, true, l.x, l.y);
 
-  } else if (lx == u.pos.x && ly == u.pos.y) {
+  } else if (l == u.pos) {
    mvwputch_inv(w_terrain, SEEX, SEEY, u.color(), '@');
    mvwprintw(w_look, 1, 1, "You (%s)", u.name.c_str());
    if (veh) {
     mvwprintw(w_look, 3, 1, "There is a %s there. Parts:", veh->name.c_str());
     veh->print_part_desc(w_look, 4, 48, veh_part);
-    m.drawsq(w_terrain, u, lx, ly, true, true, lx, ly);
+    m.drawsq(w_terrain, u, l.x, l.y, true, true, l.x, l.y);
    }
 
   } else {
@@ -4284,8 +4282,7 @@ point game::look_around()
   wrefresh(w_look);
   wrefresh(w_terrain);
  } while (ch != ' ' && ch != KEY_ESCAPE && ch != '\n');
- if (ch == '\n')
-  return point(lx, ly);
+ if (ch == '\n') return l;
  return point(-1, -1);
 }
 
