@@ -4245,7 +4245,7 @@ point game::look_around()
    auto& stack = m.i_at(lx, ly);
    if (m_at && u_see(m_at)) {
     m_at->draw(w_terrain, lx, ly, true);
-    m_at->print_info(this, w_look);
+    m_at->print_info(u, w_look);
     if (stack.size() > 1)
      mvwprintw(w_look, 3, 1, "There are several items there.");
     else if (stack.size() == 1)

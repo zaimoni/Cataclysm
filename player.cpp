@@ -3487,12 +3487,12 @@ int player::amount_of(itype_id it) const
  return quantity;
 }
 
-bool player::has_charges(itype_id it, int quantity)
+bool player::has_charges(itype_id it, int quantity) const
 {
  return (charges_of(it) >= quantity);
 }
 
-int player::charges_of(itype_id it)
+int player::charges_of(itype_id it) const
 {
  if (it == itm_toolset) return has_bionic(bio_tools) ? power_level : 0;
 

@@ -200,7 +200,9 @@ public:
  void remove_mission_items(int mission_id);
  item i_remn(int index);// Remove item from inventory; returns ret_null on fail
  item& i_at(char let);	// Returns the item with inventory letter let
+ const item& i_at(char let) const { return const_cast<player*>(this)->i_at(let); };
  item& i_of_type(itype_id type); // Returns the first item with this type
+ const item& i_of_type(itype_id type) const { return const_cast<player*>(this)->i_of_type(type); };
  std::vector<item> inv_dump() const; // Inventory + weapon + worn (for death, etc)
  int  butcher_factor() const;	// Automatically picks our best butchering tool
  int  pick_usb() const; // Pick a usb drive, interactively if it matters
@@ -212,9 +214,9 @@ public:
  void use_amount(itype_id it, int quantity, bool use_container = false);
  void use_charges(itype_id it, int quantity);// Uses up charges
  bool has_amount(itype_id it, int quantity) const;
- bool has_charges(itype_id it, int quantity);
+ bool has_charges(itype_id it, int quantity) const;
  int  amount_of(itype_id it) const;
- int  charges_of(itype_id it);
+ int  charges_of(itype_id it) const;
 
  bool has_watertight_container() const;
  bool has_weapon_or_armor(char let) const;	// Has an item with invlet let

@@ -54,8 +54,8 @@ class monster {
 // Access
  std::string name() const; 		// Returns the monster's formal name
  std::string name_with_armor() const; // Name, with whatever our armor is called
- void print_info(game *g, WINDOW* w); // Prints information to w.
- char symbol();			// Just our type's symbol; no context
+ void print_info(const player& u, WINDOW* w) const; // Prints information to w.
+ char symbol() const { return type->sym; };			// Just our type's symbol; no context
  void draw(WINDOW* w, int plx, int ply, bool inv);
  nc_color color_with_effects();	// Color with fire, beartrapped, etc.
 				// Inverts color if inv==true

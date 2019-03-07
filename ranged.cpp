@@ -496,7 +496,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
      mvwputch(w_terrain, SEEY, SEEX, c_red, '*');
     else
      mvwputch(w_terrain, tar.y + SEEY - u.pos.y, tar.x + SEEX - u.pos.x, c_red, '*');
-   } else if (u_see(m_at)) m_at->print_info(this, w_target);
+   } else if (u_see(m_at)) m_at->print_info(u, w_target);
   }
   wrefresh(w_target);
   wrefresh(w_terrain);

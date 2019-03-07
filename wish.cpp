@@ -280,7 +280,7 @@ void game::monster_wish()
   }
   tmp = monster(mtype::types[a + shift]);
   if (friendly) tmp.friendly = -1;
-  tmp.print_info(this, w_info);
+  tmp.print_info(u, w_info);
   wrefresh(w_info);
   wrefresh(w_list);
   ch = (search ? getch() : input());
