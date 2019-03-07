@@ -54,7 +54,8 @@ class game
   void save();
   bool do_turn();
   void draw();
-  void draw_ter(int posx = -999, int posy = -999);
+  void draw_ter(const point& pos);
+  void draw_ter() { return draw_ter(u.pos); };
   void advance_nextinv();	// Increment the next inventory letter
   void decrease_nextinv();	// Decrement the next inventory letter
   void add_event(event_type type, int on_turn, int faction_id = -1,

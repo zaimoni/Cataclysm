@@ -2424,33 +2424,30 @@ void game::draw()
  write_msg();
 }
 
-void game::draw_ter(int posx, int posy)
+void game::draw_ter(const point& pos)
 {
-// posx/posy default to -999
- if (posx == -999) posx = u.pos.x;
- if (posy == -999) posy = u.pos.y;
- m.draw(this, w_terrain, point(posx, posy));
+ m.draw(this, w_terrain, pos);
 
  // Draw monsters
  for (int i = 0; i < z.size(); i++) {
-  point dist(abs(z[i].pos.x - posx), abs(z[i].pos.y - posy));
+  point dist(abs(z[i].pos.x - pos.x), abs(z[i].pos.y - pos.y));
   if (dist.x <= SEEX && dist.y <= SEEY && u_see(&(z[i])))
-   z[i].draw(w_terrain, posx, posy, false);
+   z[i].draw(w_terrain, pos.x, pos.y, false);
   else if (z[i].has_flag(MF_WARM) && dist.x <= SEEX && dist.y <= SEEY &&
            (u.has_active_bionic(bio_infrared) || u.has_trait(PF_INFRARED)))
-   mvwputch(w_terrain, SEEY + z[i].pos.y - posy, SEEX + z[i].pos.x - posx, c_red, '?');
+   mvwputch(w_terrain, SEEY + z[i].pos.y - pos.y, SEEX + z[i].pos.x - pos.x, c_red, '?');
  }
  // Draw NPCs
  for (int i = 0; i < active_npc.size(); i++) {
-  point dist(abs(active_npc[i].pos.x - posx), abs(active_npc[i].pos.y - posy));
+  point dist(abs(active_npc[i].pos.x - pos.x), abs(active_npc[i].pos.y - pos.y));
   if (dist.x <= SEEX && dist.y <= SEEY && u_see(active_npc[i].pos))
-   active_npc[i].draw(w_terrain, posx, posy, false);
+   active_npc[i].draw(w_terrain, pos.x, pos.y, false);
  }
  if (u.has_active_bionic(bio_scent_vision)) {	// overwriting normal vision isn't that useful
-  for (int realx = posx - SEEX; realx <= posx + SEEX; realx++) {
-   for (int realy = posy - SEEY; realy <= posy + SEEY; realy++) {
+  for (int realx = pos.x - SEEX; realx <= pos.x + SEEX; realx++) {
+   for (int realy = pos.y - SEEY; realy <= pos.y + SEEY; realy++) {
     if (scent(realx, realy) != 0) {
-     const int tempx = realx - posx, tempy = realy - posy;
+     const int tempx = realx - pos.x, tempy = realy - pos.y;
      if (2<=abs(tempx) || 2<=abs(tempy)) {
       if (mon(realx, realy))
        mvwputch(w_terrain, SEEY + tempy, SEEX + tempx, c_white, '?');
@@ -2462,8 +2459,7 @@ void game::draw_ter(int posx, int posy)
   }
  }
  wrefresh(w_terrain);
- if (u.has_disease(DI_VISUALS))
-  hallucinate();
+ if (u.has_disease(DI_VISUALS)) hallucinate();
 }
 
 void game::refresh_all()
@@ -4215,7 +4211,7 @@ point game::look_around()
     ly = u.posy + SEEY;
 */
   }
-  draw_ter(l.x, l.y);
+  draw_ter(l);
   for (int i = 1; i < VIEW - SEE-1; i++) {
    for (int j = 1; j < SCREEN_WIDTH - (SEE * 2 + 8)-1; j++)
     mvwputch(w_look, i, j, c_white, ' ');
