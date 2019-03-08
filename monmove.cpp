@@ -628,14 +628,14 @@ bool monster::will_reach(const game *g, const point& pt) const
  return false;
 }
 
-int monster::turns_to_reach(const game *g, int x, int y) const
+int monster::turns_to_reach(const map& m, const point& pt) const
 {
- std::vector<point> path = g->m.route(pos, x, y, has_flag(MF_BASHES));
+ std::vector<point> path = m.route(pos, pt, has_flag(MF_BASHES));
  if (path.size() == 0) return 999;
 
  double turns = 0.;
  for(const auto& step : path) {
-  const auto cost = g->m.move_cost(step);
+  const auto cost = m.move_cost(step);
   turns += (0 >= cost) ? 5	// We have to bash through
 		 : double(50 * cost) / speed;
  }

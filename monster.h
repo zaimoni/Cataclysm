@@ -76,7 +76,7 @@ class monster {
  bool can_move_to(const map &m, int x, int y) const; // Can we move to (x, y)?
  bool can_move_to(const map &m, const point& pt) const { return can_move_to(m, pt.x, pt.y); };
  bool will_reach(const game *g, const point& pt) const; // Do we have plans to get to (x, y)?
- int  turns_to_reach(const game *g, int x, int y) const; // How long will it take?
+ int  turns_to_reach(const map& m, const point& pt) const; // How long will it take?
 
  void set_dest(const point& pt, int &t); // Go in a straight line to (x, y)
 				      // t determines WHICH Bresenham line
