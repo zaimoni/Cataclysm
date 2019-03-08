@@ -183,28 +183,27 @@ void monster::print_info(const player& u, WINDOW* w) const
  } while (pos != std::string::npos && line < 12);
 }
 
-void monster::draw(WINDOW *w, int plx, int ply, bool inv)
+void monster::draw(WINDOW *w, const point& pl, bool inv) const
 {
- int x = SEEX + pos.x - plx;
- int y = SEEY + pos.y - ply;
+ point pt = pos - pl + point(SEE);
  nc_color color = type->color;
  char sym = type->sym;
 
  if (mtype::tiles.count(type->id)) {
-	 if (mvwaddfgtile(w, y, x, mtype::tiles[type->id].c_str())) sym = ' ';	// we still want any background color effects
+	 if (mvwaddfgtile(w, pt.y, pt.x, mtype::tiles[type->id].c_str())) sym = ' ';	// we still want any background color effects
  }
 
  if (friendly != 0 && !inv)
-  mvwputch_hi(w, y, x, color, sym);
+  mvwputch_hi(w, pt.y, pt.x, color, sym);
  else if (inv)
-  mvwputch_inv(w, y, x, color, sym);
+  mvwputch_inv(w, pt.y, pt.x, color, sym);
  else {
   color = color_with_effects();
-  mvwputch(w, y, x, color, sym);
+  mvwputch(w, pt.y, pt.x, color, sym);
  }
 }
 
-nc_color monster::color_with_effects()
+nc_color monster::color_with_effects() const
 {
  nc_color ret = type->color;
  if (has_effect(ME_BEARTRAP) || has_effect(ME_STUNNED) || has_effect(ME_DOWNED))

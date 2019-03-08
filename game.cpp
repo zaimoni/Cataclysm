@@ -2429,13 +2429,14 @@ void game::draw_ter(const point& pos)
  m.draw(this, w_terrain, pos);
 
  // Draw monsters
- for (int i = 0; i < z.size(); i++) {
-  point dist(abs(z[i].pos.x - pos.x), abs(z[i].pos.y - pos.y));
-  if (dist.x <= SEEX && dist.y <= SEEY && u_see(&(z[i])))
-   z[i].draw(w_terrain, pos.x, pos.y, false);
-  else if (z[i].has_flag(MF_WARM) && dist.x <= SEEX && dist.y <= SEEY &&
+ for(const auto& mon : z) {
+  point dist(abs(mon.pos.x - pos.x), abs(mon.pos.y - pos.y));
+  if (SEE < dist.x || SEE < dist.y) continue;
+  if (u_see(&mon))
+   mon.draw(w_terrain, pos, false);
+  else if (mon.has_flag(MF_WARM) &&
            (u.has_active_bionic(bio_infrared) || u.has_trait(PF_INFRARED)))
-   mvwputch(w_terrain, SEEY + z[i].pos.y - pos.y, SEEX + z[i].pos.x - pos.x, c_red, '?');
+   mvwputch(w_terrain, SEEY + mon.pos.y - pos.y, SEEX + mon.pos.x - pos.x, c_red, '?');
  }
  // Draw NPCs
  for (int i = 0; i < active_npc.size(); i++) {
@@ -4238,7 +4239,7 @@ point game::look_around()
    monster* const m_at = mon(l);
    auto& stack = m.i_at(l);
    if (m_at && u_see(m_at)) {
-    m_at->draw(w_terrain, l.x, l.y, true);
+    m_at->draw(w_terrain, l, true);
     m_at->print_info(u, w_look);
     if (stack.size() > 1)
      mvwprintw(w_look, 3, 1, "There are several items there.");
@@ -4946,13 +4947,17 @@ void game::plthrow()
  std::vector<const monster*> mon_targets;
  std::vector<int> targetindices;
  int passtarget = -1;
- for (int i = 0; i < z.size(); i++) {
-  if (u_see(&(z[i])) && bounds.contains(z[i].pos)) {
-   mon_targets.push_back(&z[i]);
-   targetindices.push_back(i);
-   if (i == last_target) passtarget = mon_targets.size() - 1;
-   z[i].draw(w_terrain, u.pos.x, u.pos.y, true);
+ {
+ int i2 = -1;
+ for(const auto& mon : z) {
+  ++i2;
+  if (u_see(&mon) && bounds.contains(mon.pos)) {
+   mon_targets.push_back(&mon);
+   targetindices.push_back(i2);
+   if (i2 == last_target) passtarget = mon_targets.size() - 1;
+   mon.draw(w_terrain, u.pos, true);
   }
+ }
  }
 
  // target() sets x and y, or returns false if we canceled (by pressing Esc)
@@ -5040,7 +5045,7 @@ void game::plfire(bool burst)
    mon_targets.push_back(&z[i]);
    targetindices.push_back(i);
    if (i == last_target) passtarget = mon_targets.size() - 1;
-   z[i].draw(w_terrain, u.pos.x, u.pos.y, true);
+   z[i].draw(w_terrain, u.pos, true);
   }
  }
 

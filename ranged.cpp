@@ -445,9 +445,9 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
   }
   m.draw(this, w_terrain, center);
 // Draw the Monsters
-  for (int i = 0; i < z.size(); i++) {
-   if (u_see(&(z[i])) && bounds.contains(z[i].pos))
-    z[i].draw(w_terrain, center.x, center.y, false);
+  for(const auto& mon : z) {
+   if (bounds.contains(mon.pos) && u_see(&mon))
+    mon.draw(w_terrain, center, false);
   }
 // Draw the NPCs
   for (int i = 0; i < active_npc.size(); i++) {
@@ -474,7 +474,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
          abs(ret[i].y - u.pos.y) <= sight_dist   ) {
       monster* const m_at = mon(ret[i]);
 // NPCs and monsters get drawn with inverted colors
-      if (m_at && u_see(m_at)) m_at->draw(w_terrain, center.x, center.y, true);
+      if (m_at && u_see(m_at)) m_at->draw(w_terrain, center, true);
       else if (npc* const _npc = nPC(ret[i]))
        _npc->draw(w_terrain, center.x, center.y, true);
       else
@@ -506,8 +506,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
   point dir(get_direction(ch));
   if (dir.x != -2 && ch != '.') {	// Direction character pressed
    monster* const m_at = mon(tar);
-   if (m_at && u_see(m_at))
-    m_at->draw(w_terrain, center.x, center.y, false);
+   if (m_at && u_see(m_at)) m_at->draw(w_terrain, center, false);
    else if (npc* const _npc = nPC(tar))
 	_npc->draw(w_terrain, center.x, center.y, false);
    else if (m.sees(u.pos, tar, -1))
