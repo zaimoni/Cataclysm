@@ -66,7 +66,7 @@ monster::monster(const mtype *t, int x, int y)
  unique_name = "";
 }
 
-void monster::poly(mtype *t)
+void monster::poly(const mtype *t)
 {
  double hp_percentage = double(hp) / double(type->hp);
  type = t;

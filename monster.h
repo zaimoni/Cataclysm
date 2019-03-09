@@ -47,7 +47,7 @@ class monster {
  monster(const mtype *t);
  monster(const mtype *t, int x, int y);
  ~monster() = default;
- void poly(mtype *t);
+ void poly(const mtype *t);
  void spawn(int x, int y); // All this does is moves the monster to x,y
  void spawn(const point& pt);
 

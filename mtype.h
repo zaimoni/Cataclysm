@@ -169,8 +169,8 @@ MF_MAX		// Sets the length of the flags - obviously MUST be last
 };
 
 struct mtype {
- static std::vector <mtype*> types;
- static std::vector <items_location_and_chance> items[num_monsters];
+ static std::vector<const mtype*> types;
+ static std::vector<items_location_and_chance> items[num_monsters];
  static std::map<int, std::string> tiles;
 
  int id;	// should be mon_id id but once we have JSON-configured monsters that doesn't work so well

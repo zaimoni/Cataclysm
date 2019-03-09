@@ -150,12 +150,13 @@ void defense_game::init_itypes()
 void defense_game::init_mtypes()
 {
  for(const auto m_type : mtype::types) {
-  m_type->difficulty *= 1.5;
-  m_type->difficulty += int(m_type->difficulty / 5);
-  m_type->flags.push_back(MF_BASHES);
-  m_type->flags.push_back(MF_SMELLS);
-  m_type->flags.push_back(MF_HEARS);
-  m_type->flags.push_back(MF_SEES);
+  mtype* const working = const_cast<mtype*>(m_type);
+  working->difficulty *= 1.5;
+  working->difficulty += int(m_type->difficulty / 5);
+  working->flags.push_back(MF_BASHES);
+  working->flags.push_back(MF_SMELLS);
+  working->flags.push_back(MF_HEARS);
+  working->flags.push_back(MF_SEES);
  }
 }
 
@@ -1188,7 +1189,7 @@ void defense_game::spawn_wave(game *g)
    messages.add("********");
    return;
   }
-  mtype * const type = mtype::types[valid[rng(0, valid.size() - 1)]];
+  const auto type = mtype::types[valid[rng(0, valid.size() - 1)]];
   if (themed_wave) {
    int num = diff / type->difficulty;
    if (num >= SPECIAL_WAVE_MIN) {
@@ -1231,7 +1232,7 @@ std::vector<mon_id> defense_game::pick_monster_wave(game *g)
  return ret;
 }
 
-void defense_game::spawn_wave_monster(game *g, mtype *type)
+void defense_game::spawn_wave_monster(game *g, const mtype *type)
 {
  monster tmp(type);
  if (location == DEFLOC_HOSPITAL || location == DEFLOC_MALL) {

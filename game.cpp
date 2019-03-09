@@ -2119,7 +2119,7 @@ void game::draw_overmap()
 void game::disp_kills()
 {
  WINDOW* w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
- std::vector<mtype *> types;
+ std::vector<const mtype*> types;
  std::vector<int> count;
  for (int i = 0; i < num_monsters; i++) {
   if (kills[i] > 0) {

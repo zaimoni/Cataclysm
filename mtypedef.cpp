@@ -3,7 +3,7 @@
 #include "JSON.h"
 #include "setvector.h"
 
-std::vector <mtype*> mtype::types;
+std::vector<const mtype*> mtype::types;
 std::map<int, std::string> mtype::tiles;
 
 nc_color mtype::danger() const
@@ -176,6 +176,7 @@ mon_id JSON_parse<mon_id>::operator()(const char* const src)
 void mtype::init()
 {
  int id = 0;
+ mtype* working = 0;
 // Null monster named "None".
  types.push_back(new mtype);
 
@@ -184,15 +185,16 @@ void mtype::init()
             melee_sides, melee_cut, dodge, arm_bash, arm_cut, item_chance, HP,\
             sp_freq, death, sp_att, desc) \
 id++;\
-types.push_back(new mtype(id, name, species, sym, color, size, mat,\
+working = new mtype(id, name, species, sym, color, size, mat,\
 freq, diff, agro, morale, speed, melee_skill, melee_dice, melee_sides,\
 melee_cut, dodge, arm_bash, arm_cut, item_chance, HP, sp_freq, death, sp_att,\
-desc))
+desc);	\
+types.push_back(working)
 
-#define FLAGS(...)   SET_VECTOR(types[id]->flags,   __VA_ARGS__)
-#define ANGER(...)   SET_VECTOR(types[id]->anger,   __VA_ARGS__)
-#define FEARS(...)   SET_VECTOR(types[id]->fear,    __VA_ARGS__)
-#define PLACATE(...) SET_VECTOR(types[id]->placate, __VA_ARGS__)
+#define FLAGS(...)   SET_VECTOR(working->flags,   __VA_ARGS__)
+#define ANGER(...)   SET_VECTOR(working->anger,   __VA_ARGS__)
+#define FEARS(...)   SET_VECTOR(working->fear,    __VA_ARGS__)
+#define PLACATE(...) SET_VECTOR(working->placate, __VA_ARGS__)
 
 // PLEASE NOTE: The description is AT MAX 4 lines of 46 characters each.
 
