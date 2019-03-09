@@ -3,8 +3,91 @@
 #include "JSON.h"
 #include "setvector.h"
 
+#include "Zaimoni.STL/Logging.h"
+
 std::vector<const mtype*> mtype::types;
 std::map<int, std::string> mtype::tiles;
+
+// Default constructor
+mtype::mtype() {
+	id = 0;
+	name = "human";
+	description = "";
+	species = species_none;
+	sym = ' ';
+	color = c_white;
+	size = MS_MEDIUM;
+	mat = FLESH;
+	difficulty = 0;
+	frequency = 0;
+	agro = 0;
+	morale = 0;
+	speed = 0;
+	melee_skill = 0;
+	melee_dice = 0;
+	melee_sides = 0;
+	melee_cut = 0;
+	sk_dodge = 0;
+	armor_bash = 0;
+	armor_cut = 0;
+	hp = 0;
+	sp_freq = 0;
+	item_chance = 0;
+	dies = NULL;
+	sp_attack = NULL;
+}
+// Non-default (messy)
+mtype::mtype(int pid, std::string pname, monster_species pspecies, char psym,
+	nc_color pcolor, m_size psize, material pmat,
+	unsigned char pfreq, unsigned int pdiff, signed char pagro,
+	signed char pmorale, unsigned int pspeed, unsigned char pml_skill,
+	unsigned char pml_dice, unsigned char pml_sides, unsigned char pml_cut,
+	unsigned char pdodge, unsigned char parmor_bash,
+	unsigned char parmor_cut, signed char pitem_chance, int php,
+	unsigned char psp_freq,
+	void(*pdies)      (game *, monster *),
+	void(*psp_attack)(game *, monster *),
+	std::string pdescription) {
+	id = pid;
+	name = pname;
+	species = pspecies;
+	sym = psym;
+	color = pcolor;
+	size = psize;
+	mat = pmat;
+	frequency = pfreq;
+	difficulty = pdiff;
+	agro = pagro;
+	morale = pmorale;
+	speed = pspeed;
+	melee_skill = pml_skill;
+	melee_dice = pml_dice;
+	melee_sides = pml_sides;
+	melee_cut = pml_cut;
+	sk_dodge = pdodge;
+	armor_bash = parmor_bash;
+	armor_cut = parmor_cut;
+	item_chance = pitem_chance;
+	hp = php;
+	sp_freq = psp_freq;
+	dies = pdies;
+	sp_attack = psp_attack;
+	description = pdescription;
+
+	anger = default_anger(species);
+	fear = default_fears(species);
+
+	assert(MS_TINY <= size && MS_HUGE >= size);
+}
+
+bool mtype::has_flag(m_flag flag) const
+{
+	for (int i = 0; i < flags.size(); i++) {
+		if (flags[i] == flag) return true;
+	}
+	return false;
+}
+
 
 nc_color mtype::danger() const
 {
