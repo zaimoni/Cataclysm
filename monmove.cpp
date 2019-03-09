@@ -255,7 +255,7 @@ void monster::move(game *g)
 
 // footsteps will determine how loud a monster's normal movement is
 // and create a sound in the monsters location when they move
-void monster::footsteps(game *g, int x, int y)
+void monster::footsteps(game *g, const point& pt)
 {
  if (made_footstep) return;
  if (has_flag(MF_FLIES)) return; // Flying monsters don't have footsteps!
@@ -278,8 +278,7 @@ void monster::footsteps(game *g, int x, int y)
    break;
   default: break;
  }
- int dist = rl_dist(x, y, g->u.pos);
- g->add_footstep(x, y, volume, dist);
+ g->add_footstep(pt, volume, rl_dist(pt, g->u.pos));	// \todo V 0.2.1+ would be interesting, but very expensive in CPU, to put npcs on the same infrastructure (moves footsteps storage to player object)
  return;
 }
 
@@ -484,7 +483,7 @@ void monster::move_to(game *g, const point& pt)
       (!has_flag(MF_SWIMS) || !g->m.has_flag(swimmable, pt)))
    moves -= (g->m.move_cost(pt) - 2) * 50;
   pos = pt;
-  footsteps(g, pt.x, pt.y);
+  footsteps(g, pt);
   if (!has_flag(MF_DIGS) && !has_flag(MF_FLIES) && g->m.tr_at(pos) != tr_null) { // Monster stepped on a trap!
    trap* const tr = trap::traps[g->m.tr_at(pos)];
    if (dice(3, sk_dodge + 1) < dice(3, tr->avoidance)) (tr->actm)(g, this);

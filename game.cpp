@@ -3305,11 +3305,12 @@ void game::sound(int x, int y, int vol, std::string description)
 // add_footstep will create a list of locations to draw monster
 // footsteps. these will be more or less accurate depending on the
 // characters hearing and how close they are
-void game::add_footstep(int x, int y, int volume, int distance)
+void game::add_footstep(const point& orig, int volume, int distance)
 {
- if (x == u.pos.x && y == u.pos.y) return;
- else if (u_see(x, y)) return;
+ if (orig == u.pos) return;
+ else if (u_see(orig)) return;
  int err_offset;
+ // \todo V 0.2.1 rethink this (effect is very loud, very close sounds don't have good precision
  if (volume / distance < 2)
   err_offset = 3;
  else if (volume / distance < 3)
@@ -3319,17 +3320,19 @@ void game::add_footstep(int x, int y, int volume, int distance)
  if (u.has_bionic(bio_ears)) err_offset--;
  if (u.has_trait(PF_BADHEARING)) err_offset++;
 
- int tries = 0, origx = x, origy = y;
- if (err_offset > 0) {
-  do {
-   tries++;
-   x = origx + rng(-err_offset, err_offset);
-   y = origy + rng(-err_offset, err_offset);
-  } while (tries < 10 && ((x == u.pos.x && y == u.pos.y)) || u_see(x, y));
+ if (0 >= err_offset) {
+   footsteps.push_back(orig);
+   return;
  }
- if (tries < 10)
-  footsteps.push_back(point(x, y));
- return;
+
+ int tries = 0;
+ do {
+   point pt(orig.x + rng(-err_offset, err_offset), orig.y + rng(-err_offset, err_offset));
+   if (pt != u.pos && !u_see(pt)) {
+     footsteps.push_back(pt);
+	 return;
+   }
+ } while (++tries < 10);
 }
 
 // draws footsteps that have been created by monsters moving about

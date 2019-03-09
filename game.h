@@ -66,7 +66,7 @@ class game
   void sound(const point& pt, int vol, const std::string& description) { sound(pt.x, pt.y, vol, description); };
   void sound(const point& pt, int vol, const char* description) { sound(pt.x, pt.y, vol, description); };
   // creates a list of coordinates to draw footsteps
-  void add_footstep(int x, int y, int volume, int distance);
+  void add_footstep(const point& pt, int volume, int distance);
 // Explosion at (x, y) of intensity (power), with (shrapnel) chunks of shrapnel
   void explosion(int x, int y, int power, int shrapnel, bool fire);
   void explosion(const point& pt, int power, int shrapnel, bool fire) { explosion(pt.x, pt.y, power, shrapnel, fire); };
