@@ -403,6 +403,8 @@ int monster::trigger_sum(const game *g, const std::vector<monster_trigger>& trig
 
 int monster::hit(game *g, player &p, body_part &bp_hit)
 {
+ static const int base_bodypart_hitrange[mtype::MS_MAX] = {3, 12, 20, 28, 35};
+
  int numdice = type->melee_skill;
  if (dice(numdice, 10) <= dice(p.dodge(g), 10) && !one_in(20)) {
   if (numdice > p.sklevel[sk_dodge])
@@ -411,36 +413,15 @@ int monster::hit(game *g, player &p, body_part &bp_hit)
  }
  p.practice(sk_dodge, 5);
  int ret = 0;
- int highest_hit;
- switch (type->size) {
- case MS_TINY:
-  highest_hit = 3;
- break;
- case MS_SMALL:
-  highest_hit = 12;
- break;
- case MS_MEDIUM:
-  highest_hit = 20;
- break;
- case MS_LARGE:
-  highest_hit = 28;
- break;
- case MS_HUGE:
-  highest_hit = 35;
- break;
- }
+ int highest_hit = base_bodypart_hitrange[type->size];
 
- if (has_flag(MF_DIGS))
-  highest_hit -= 8;
- if (has_flag(MF_FLIES))
-  highest_hit += 20;
- if (highest_hit <= 1)
-  highest_hit = 2;
- if (highest_hit > 20)
-  highest_hit = 20;
+ if (has_flag(MF_DIGS)) highest_hit -= 8;
+ if (has_flag(MF_FLIES)) highest_hit += 20;
+ if (highest_hit <= 1) highest_hit = 2;
+ if (highest_hit > 20) highest_hit = 20;
 
  int bp_rand = rng(0, highest_hit - 1);
-      if (bp_rand <=  2)
+ if (bp_rand <=  2)
   bp_hit = bp_legs;
  else if (bp_rand <= 10)
   bp_hit = bp_torso;
@@ -458,14 +439,11 @@ int monster::hit(game *g, player &p, body_part &bp_hit)
 
 void monster::hit_monster(game *g, monster& target)
 {
+ static const int dodge_bonus[mtype::MS_MAX] = {6, 3, 0, -2, -4};
+
  int numdice = type->melee_skill;
  int dodgedice = target.dodge() * 2;	// decidedly more agile than a typical dodge roll
- switch (target.type->size) {
-  case MS_TINY:  dodgedice += 6; break;
-  case MS_SMALL: dodgedice += 3; break;
-  case MS_LARGE: dodgedice -= 2; break;
-  case MS_HUGE:  dodgedice -= 4; break;
- }
+ dodgedice += dodge_bonus[target.type->size];
 
  if (dice(numdice, 10) <= dice(dodgedice, 10)) {
   if (g->u_see(this)) messages.add("The %s misses the %s!", name().c_str(), target.name().c_str());
@@ -506,16 +484,9 @@ int monster::dodge() const
 
 int monster::dodge_roll() const
 {
- int numdice = dodge();
- 
- switch (type->size) {
-  case MS_TINY:  numdice += 6; break;
-  case MS_SMALL: numdice += 3; break;
-  case MS_LARGE: numdice -= 2; break;
-  case MS_HUGE:  numdice -= 4; break;
- }
+ static const int dodge_bonus[mtype::MS_MAX] = {6, 3, 0, -2, -4};
 
- numdice += int(speed / 80);
+ const int numdice = dodge()+dodge_bonus[type->size] + (speed / 80);
  return dice(numdice, 10);
 }
 

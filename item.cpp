@@ -531,15 +531,10 @@ int item::price() const
 
 int item::weight() const
 {
+ static const int base_corpse_weight[mtype::MS_MAX] = {5, 60, 520, 2000, 4000};
+
  if (type->id == itm_corpse) {
-  int ret;
-  switch (corpse->size) {
-   case MS_TINY:   ret =    5;	break;
-   case MS_SMALL:  ret =   60;	break;
-   case MS_MEDIUM: ret =  520;	break;
-   case MS_LARGE:  ret = 2000;	break;
-   case MS_HUGE:   ret = 4000;	break;
-  }
+  int ret = base_corpse_weight[corpse->size];
   if (made_of(VEGGY))
    ret /= 10;
   else if (made_of(IRON) || made_of(STEEL) || made_of(STONE))
@@ -557,20 +552,14 @@ int item::weight() const
 
 int item::volume() const
 {
- if (type->id == itm_corpse) {
-  switch (corpse->size) {
-   case MS_TINY:   return   2;
-   case MS_SMALL:  return  40;
-   case MS_MEDIUM: return  75;
-   case MS_LARGE:  return 160;
-   case MS_HUGE:   return 600;
-  }
- }
+ static const int corpse_volume[mtype::MS_MAX] = {2, 40, 75, 160, 600};
+
+ if (type->id == itm_corpse) return corpse_volume[corpse->size];
  int ret = type->volume;
  if (is_gun()) {
   for (const auto& it : contents) ret += it.volume();
  }
- return type->volume;
+ return type->volume;	// \todo: determine whether the above wasted CPU should be used here, or deleted
 }
 
 int item::volume_contained() const

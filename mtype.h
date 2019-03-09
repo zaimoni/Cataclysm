@@ -173,6 +173,10 @@ struct mtype {
  static std::vector<items_location_and_chance> items[num_monsters];
  static std::map<int, std::string> tiles;
 
+ enum {
+	 MS_MAX = MS_HUGE+1
+ };
+
  int id;	// should be mon_id id but once we have JSON-configured monsters that doesn't work so well
  std::string name;
  std::string description;

@@ -235,15 +235,9 @@ void mdeath::thing(game *g, monster *z)
 
 void mdeath::explode(game *g, monster *z)
 {
- int size;
- switch (z->type->size) {
-  case MS_TINY:   size =  4; break;
-  case MS_SMALL:  size =  8; break;
-  case MS_MEDIUM: size = 14; break;
-  case MS_LARGE:  size = 20; break;
-  case MS_HUGE:   size = 26; break;
- }
- g->explosion(z->pos, size, 0, false);
+ static const int explosion_size[mtype::MS_MAX] = {4, 8, 14, 20, 26 };
+
+ g->explosion(z->pos, explosion_size[z->type->size], 0, false);
 }
 
 void mdeath::ratking(game *g, monster *z)

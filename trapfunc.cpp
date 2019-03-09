@@ -152,17 +152,10 @@ void trapfunc::shotgun(game *g, int x, int y)
  
 void trapfuncm::shotgun(game *g, monster *z)
 {
+ const static int evade_double_shot[mtype::MS_MAX] = { 100, 16, 12, 8, 2 };	// corresponding typical PC strmax: sub-zero, 4, 8, 12, 18
  bool seen = g->u_see(z);
- int chance;
- switch (z->type->size) {
-  case MS_TINY:   chance = 100; break;
-  case MS_SMALL:  chance =  16; break;
-  case MS_MEDIUM: chance =  12; break;
-  case MS_LARGE:  chance =   8; break;
-  case MS_HUGE:   chance =   2; break;
- }
  auto& trap = g->m.tr_at(z->pos);
- int shots = (tr_shotgun_1 != trap && (one_in(8) || one_in(chance))) ? 2 : 1;
+ int shots = (tr_shotgun_1 != trap && (one_in(8) || one_in(evade_double_shot[z->type->size]))) ? 2 : 1;
  if (seen) messages.add("A shotgun fires and hits the %s!", z->name().c_str());
  if (z->hurt(rng(40 * shots, 60 * shots))) g->kill_mon(*z);
  if (shots == 2 || tr_shotgun_1 == trap) {

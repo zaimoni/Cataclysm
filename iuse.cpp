@@ -1738,6 +1738,8 @@ void iuse::UPS_on(game *g, player *p, item *it, bool t)
 
 void iuse::tazer(game *g, player *p, item *it, bool t)
 {
+ static const int tazer_hit_modifier[mtype::MS_MAX] = {-2, -1, 0, 2, 4};
+
  g->draw();
  mvprintw(0, 0, "Shock in which direction?");
  point dir(get_direction(input()));
@@ -1758,14 +1760,8 @@ void iuse::tazer(game *g, player *p, item *it, bool t)
  p->moves -= 100;
 
  if (z) {
-  switch (z->type->size) {
-   case MS_TINY:  numdice -= 2; break;
-   case MS_SMALL: numdice -= 1; break;
-   case MS_LARGE: numdice += 2; break;
-   case MS_HUGE:  numdice += 4; break;
-  }
-  int mondice = z->dodge();
-  if (dice(numdice, 10) < dice(mondice, 10)) {	// A miss!
+  numdice += tazer_hit_modifier[z->type->size];
+  if (dice(numdice, 10) < dice(z->dodge(), 10)) {	// A miss!
    messages.add("You attempt to shock the %s, but miss.", z->name().c_str());
    return;
   }

@@ -5082,6 +5082,8 @@ void game::plfire(bool burst)
 
 void game::butcher()
 {
+ static const int corpse_time_to_cut[mtype::MS_MAX] = {2, 5, 10, 18, 40};	// in turns
+
  std::vector<int> corpses;
  const auto& items = m.i_at(u.pos);
  for (int i = 0; i < items.size(); i++) {
@@ -5101,14 +5103,7 @@ void game::butcher()
  for (int i = corpses.size() - 1; i >= 0; i--) {
   const mtype* const corpse = items[corpses[i]].corpse;
   if (query_yn("Butcher the %s corpse?", corpse->name.c_str())) {
-   int time_to_cut;
-   switch (corpse->size) {	// Time in turns to cut up te corpse
-    case MS_TINY:   time_to_cut =  2; break;
-    case MS_SMALL:  time_to_cut =  5; break;
-    case MS_MEDIUM: time_to_cut = 10; break;
-    case MS_LARGE:  time_to_cut = 18; break;
-    case MS_HUGE:   time_to_cut = 40; break;
-   }
+   int time_to_cut = corpse_time_to_cut[corpse->size];
    time_to_cut *= 100;	// Convert to movement points
    time_to_cut += factor * 5;	// Penalty for poor tool
    if (time_to_cut < 250) time_to_cut = 250;
@@ -5121,21 +5116,16 @@ void game::butcher()
 
 void game::complete_butcher(int index)
 {
+ static const int pelts_from_corpse[mtype::MS_MAX] = {1, 3, 6, 10, 18};
+
  auto& it = m.i_at(u.pos)[index];
  const mtype* const corpse = it.corpse;
  int age = it.bday;
  m.i_rem(u.pos.x, u.pos.y, index);	// reference it dies here
  int factor = u.butcher_factor();
- int pelts;
+ int pelts = pelts_from_corpse[corpse->size];
  double skill_shift = 0.;
  int pieces = corpse->chunk_count();
- switch (corpse->size) {
-  case MS_TINY:   pelts =  1; break;
-  case MS_SMALL:  pelts =  3; break;
-  case MS_MEDIUM: pelts =  6; break;
-  case MS_LARGE:  pelts = 10; break;
-  case MS_HUGE:   pelts = 18; break;
- }
  if (u.sklevel[sk_survival] < 3)
   skill_shift -= rng(0, 8 - u.sklevel[sk_survival]);
  else

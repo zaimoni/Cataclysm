@@ -750,6 +750,8 @@ void mattack::tentacle(game *g, monster *z)
 
 void mattack::vortex(game *g, monster *z)
 {
+ static const int base_mon_throw_range[mtype::MS_MAX] = {5, 3, 2, 1, 0};
+
 // Make sure that the player's butchering is interrupted!
  if (g->u.activity.type == ACT_BUTCHER && rl_dist(z->pos, g->u.pos) <= 2) {
   messages.add("The buffeting winds interrupt your butchering!");
@@ -810,15 +812,8 @@ void mattack::vortex(game *g, monster *z)
 // Throw monsters
    monster* const thrown = g->mon(x,y);
    if (thrown) {
-    int distance = 0, damage = 0;
-    switch (thrown->type->size) {
-     case MS_TINY:   distance = 5; break;
-     case MS_SMALL:  distance = 3; break;
-     case MS_MEDIUM: distance = 2; break;
-     case MS_LARGE:  distance = 1; break;
-     case MS_HUGE:   distance = 0; break;
-    }
-    damage = distance * 4;
+    int distance = base_mon_throw_range[thrown->type->size];
+	int damage = distance * 4;
     switch (thrown->type->mat) {
      case LIQUID:  distance += 3; damage -= 10; break;
      case VEGGY:   distance += 1; damage -=  5; break;

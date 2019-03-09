@@ -849,6 +849,8 @@ void vehicle::stop ()
 
 int vehicle::part_collision (int vx, int vy, int part, point dest)
 {
+	static const int mass_from_msize[mtype::MS_MAX] = { 15, 40, 80, 200, 800 };
+
     const bool pl_ctrl = player_in_control (&g->u);
 	npc* const nPC = g->nPC(dest);
     const bool u_here = dest == g->u.pos && !g->u.in_vehicle;
@@ -878,28 +880,7 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
     } else if (body_collision)
     { // then, check any monster/NPC/player on the way
         collision_type = 1; // body
-        if (z)
-            switch (z->type->size)
-            {
-            case MS_TINY:    // Rodent
-                mass2 = 15;
-                break;
-            case MS_SMALL:   // Half human
-                mass2 = 40;
-                break;
-            default:
-            case MS_MEDIUM:  // Human
-                mass2 = 80;
-                break;
-            case MS_LARGE:   // Cow
-                mass2 = 200;
-                break;
-            case MS_HUGE:     // TAAAANK
-                mass2 = 800;
-                break;
-            }
-        else
-            mass2 = 80;// player or NPC
+		mass2 = mass_from_msize[z ? z->type->size : MS_MEDIUM];
     }
     else // if all above fails, go for terrain which might obstruct moving
     if (g->m.has_flag_ter_only (thin_obstacle, dest.x, dest.y)) {

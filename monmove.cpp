@@ -263,15 +263,14 @@ void monster::footsteps(game *g, const point& pt)
  int volume = 6; // same as player's footsteps
  if (has_flag(MF_DIGS)) volume = 10;
  switch (type->size) {
-  case MS_TINY:
-   return; // No sound for the tinies
+  case MS_TINY: return; // No sound for the tinies
   case MS_SMALL:
    volume /= 3;
    break;
-  case MS_MEDIUM:
-   break;
+  case MS_MEDIUM: break;
   case MS_LARGE:
-   volume *= 1.5;
+   volume *= 3;
+   volume /= 2;
    break;
   case MS_HUGE:
    volume *= 2;
