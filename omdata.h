@@ -1,12 +1,7 @@
 #ifndef _OMDATA_H_
 #define _OMDATA_H_
 
-#include "mtype.h"
-#include "itype.h"
-#include "output.h"
 #include "mongroup.h"
-#include "mapdata.h"
-#include <bitset>
 
 #define OMAPX 180
 #define OMAPY 180
@@ -16,6 +11,7 @@
 #define NETHER_Z 	30
 
 class overmap;
+struct map_extras;
 
 enum oter_id {
  ot_null = 0,
