@@ -18,6 +18,13 @@ std::istream& operator>>(std::istream& is, tripoint& dest);
 std::ostream& operator<<(std::ostream& os, const tripoint& src);
 
 #endif
+
+#ifdef _MAPDATA_H_
+
+std::ostream& operator<<(std::ostream& os, const spawn_point& src);
+
+#endif
+
 #ifdef _MONGROUP_H_
 
 std::ostream& operator<<(std::ostream& os, const mongroup& src);

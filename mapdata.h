@@ -254,6 +254,8 @@ struct spawn_point {
              std::string N = "NONE") :
              pos(X,Y), count (C), type (T), faction_id (FAC),
              mission_id (MIS), friendly (F), name (N) {}
+
+ spawn_point(std::istream& is);
 };
 
 struct submap {

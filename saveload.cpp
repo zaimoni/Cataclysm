@@ -1,9 +1,7 @@
 // master implementation file for new-style saveload support
 
-#include "enums.h"
 #include "mongroup.h"
-#include "vehicle.h"
-#include "item.h"
+#include "mapdata.h"
 #include "saveload.h"
 #include <string>
 #include <istream>
@@ -50,6 +48,22 @@ mongroup::mongroup(std::istream& is)
 std::ostream& operator<<(std::ostream& os, const mongroup& src)
 {
   return os << src.type I_SEP << src.pos I_SEP << int(src.radius) I_SEP << src.population << std::endl;	// XXX note absence of src.dying: saveload cancels that
+}
+
+spawn_point::spawn_point(std::istream& is)
+{
+	char tmpfriend;
+	int t;
+	is >> t >> count >> pos >> faction_id >> mission_id >> tmpfriend >> name;
+	type = (mon_id)t;
+	friendly = '1' == tmpfriend;
+}
+
+std::ostream& operator<<(std::ostream& os, const spawn_point& src)
+{
+	return os << int(src.type) I_SEP << src.count I_SEP << src.pos I_SEP <<
+		src.faction_id I_SEP << src.mission_id << (src.friendly ? " 1 " : " 0 ") <<
+		src.name;
 }
 
 std::istream& operator>>(std::istream& is, vehicle_part& dest)

@@ -98,13 +98,8 @@ void mapbuffer::save()
    }
   }
  // Output the spawn points
-  spawn_point tmpsp;
-  for (int i = 0; i < sm->spawns.size(); i++) {
-   tmpsp = sm->spawns[i];
-   fout << "S " << int(tmpsp.type) << " " << tmpsp.count << " " << tmpsp.pos << " " << 
-	       tmpsp.faction_id << " " << tmpsp.mission_id << (tmpsp.friendly ? " 1 " : " 0 ") <<
-           tmpsp.name << std::endl;
-  }
+  for(const auto& s : sm->spawns) fout << "S " << s << std::endl;
+
  // Output the vehicles
   for (int i = 0; i < sm->vehicles.size(); i++) {
    fout << "V ";
@@ -201,15 +196,8 @@ void mapbuffer::load()
     fin >> itx >> ity >> t >> d >> a;
     sm->fld[itx][ity] = field(field_id(t), d, a);
     sm->field_count++;
-   } else if (string_identifier == "S") {
-    char tmpfriend;
-    int tmpfac = -1, tmpmis = -1;
-    std::string spawnname;
-    fin >> t >> a >> itx >> ity >> tmpfac >> tmpmis >> tmpfriend >> spawnname;
-    spawn_point tmp(mon_id(t), a, itx, ity, tmpfac, tmpmis, (tmpfriend == '1'),
-                    spawnname);
-    sm->spawns.push_back(tmp);
-   } else if (string_identifier == "V") {
+   } else if (string_identifier == "S") sm->spawns.push_back(spawn_point(fin));
+   else if (string_identifier == "V") {
     vehicle veh(master_game);
     veh.load (fin);
     //veh.smx = gridx;
