@@ -1,3 +1,4 @@
+#include "monattack.h"
 #include "mondeath.h"
 #include "monster.h"
 #include "game.h"

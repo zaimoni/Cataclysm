@@ -2,6 +2,7 @@
 #define _MONATTACK_H_
 
 class game;
+class monster;
 
 class mattack
 {

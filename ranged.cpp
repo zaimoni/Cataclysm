@@ -6,6 +6,7 @@
 #include "rng.h"
 #include "item.h"
 #include "options.h"
+#include "mondeath.h"
 #include "posix_time.h"
 #include "recent_msg.h"
 

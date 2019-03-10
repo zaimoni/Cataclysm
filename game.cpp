@@ -8,6 +8,7 @@
 #include "veh_interact.h"
 #include "options.h"
 #include "mapbuffer.h"
+#include "mondeath.h"
 #include "posix_time.h"
 #include "file.h"
 #include "recent_msg.h"

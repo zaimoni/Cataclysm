@@ -1,5 +1,7 @@
 #include "mtype.h"
 #include "item.h"
+#include "monattack.h"
+#include "mondeath.h"
 #include "JSON.h"
 #include "setvector.h"
 

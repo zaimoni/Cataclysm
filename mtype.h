@@ -3,13 +3,13 @@
 // SEE ALSO: monitemsdef.cpp, which defines data on which items any given
 // monster may carry.
 
-#include "mondeath.h"
-#include "monattack.h"
 #include "mapitems.h"
 #include "enums.h"
 #include "color.h"
 #include "itype.h"
 #include <map>
+
+class monster;
 
 enum monster_species {
 species_none = 0,
