@@ -1,40 +1,43 @@
 #include <string>
 
-std::string faction_adj_pos[15] = {
+// this file is not a normal include file (it's an extension of faction.cpp)
+// 2019-03-10: intentionally leaving these arrays as std::string (may want std::string when converting to external configuration files)
+
+const std::string faction_adj_pos[15] = {
 "Shining", "Sacred", "Golden", "Holy", "Righteous", "Devoted", "Virtuous",
 "Splendid", "Divine", "Radiant", "Noble", "Venerable", "Immaculate"
 "Heroic", "Bright"};
 
-std::string faction_adj_neu[15] = {
+const std::string faction_adj_neu[15] = {
 "Original", "Crystal", "Metal", "Mighty", "Powerful", "Solid", "Stone",
 "Firey", "Colossal", "Famous", "Supreme", "Invincible", "Unlimited",
 "Great", "Electric"};
 
-std::string faction_adj_bad[15] = {
+const std::string faction_adj_bad[15] = {
 "Poisonous", "Deadly", "Foul", "Nefarious", "Wicked", "Vile", "Ruinous",
 "Horror", "Devastating", "Vicious", "Sinister", "Baleful", "Pestilent",
 "Pernicious", "Dread"};
 
-std::string faction_noun_strong[15] = {
+const std::string faction_noun_strong[15] = {
 "Fists", "Slayers", "Furies", "Dervishes", "Tigers", "Destroyers",
 "Berserkers", "Samurai", "Valkyries", "Army", "Killers", "Paladins",
 "Knights", "Warriors", "Huntsmen"};
 
-std::string faction_noun_sneak[15] = {
+const std::string faction_noun_sneak[15] = {
 "Snakes", "Rats", "Assassins", "Ninja", "Agents", "Shadows", "Guerillas",
 "Eliminators", "Snipers", "Smoke", "Arachnids", "Creepers", "Shade",
 "Stalkers", "Eels"};
 
-std::string faction_noun_crime[15] = {
+const std::string faction_noun_crime[15] = {
 "Bandits", "Punks", "Family", "Mafia", "Mob", "Gang", "Vandals", "Sharks",
 "Muggers", "Cutthroats", "Guild", "Faction", "Thugs", "Racket", "Crooks"};
 
-std::string faction_noun_cult[15] = {
+const std::string faction_noun_cult[15] = {
 "Brotherhood", "Church", "Ones", "Crucible", "Sect", "Creed", "Doctrine",
 "Priests", "Tenet", "Monks", "Clerics", "Pastors", "Gnostics", "Elders",
 "Inquisitors"};
 
-std::string faction_noun_none[15] = {
+const std::string faction_noun_none[15] = {
 "Settlers", "People", "Men", "Faction", "Tribe", "Clan", "Society", "Folk",
 "Nation", "Republic", "Colony", "State", "Kingdom", "Party", "Company"};
 
@@ -48,7 +51,7 @@ struct faction_value_datum {
  int cult;
 };
 
-faction_value_datum facgoal_data[NUM_FACGOALS] = {
+const faction_value_datum facgoal_data[NUM_FACGOALS] = {
 // "Their ultimate goal is <name>"
 //Name				Good	Str	Sneak	Crime	Cult
 {"Null",		 	 0,	 0,	 0,	 0,	 0},
@@ -66,7 +69,7 @@ faction_value_datum facgoal_data[NUM_FACGOALS] = {
 };
 // TOTAL:			-5	 3	-2	 0	 7
 
-faction_value_datum facjob_data[NUM_FACJOBS] = {
+const faction_value_datum facjob_data[NUM_FACJOBS] = {
 // "They earn money via <name>"
 //Name				Good	Str	Sneak	Crime	Cult
 {"Null",		 	 0,	 0,	 0,	 0,	 0},
@@ -87,7 +90,7 @@ faction_value_datum facjob_data[NUM_FACJOBS] = {
 };
 // TOTAL:			-5	-3	-5	 0	-6
 
-faction_value_datum facval_data[NUM_FACVALS] = {
+const faction_value_datum facval_data[NUM_FACVALS] = {
 // "They are known for <name>"
 //Name				Good	Str	Sneak	Crime	Cult
 {"Null",		 	 0,	 0,	 0,	 0,	 0},

@@ -71,6 +71,9 @@ void faction::load_info(std::string data)
   name += " " + subname;
 }
 
+// not suitable for general library code due to rng usage...maybe RNG header
+#define STATIC_CHOOSE(VAR) faction_noun_strong[rng(0, sizeof(VAR)/sizeof(*VAR)-1)]
+
 void faction::randomize()
 {
 // Set up values
@@ -112,7 +115,6 @@ void faction::randomize()
    tries++;
  } while((one_in(num_values) || one_in(num_values)) && tries < 15);
 
- std::string noun;
  int sel = 1, best = strength;
  if (sneak > best) {
   sel = 2;
@@ -127,29 +129,30 @@ void faction::randomize()
  if (strength <= 0 && sneak <= 0 && crime <= 0 && cult <= 0)
   sel = 0;
 
+ std::string noun;	// needs to be std::string to trigger operator+ overload
  switch (sel) {
  case 1:
-  noun  = faction_noun_strong[rng(0, 14)];
+  noun  = STATIC_CHOOSE(faction_noun_strong);
   power = dice(5, 20);
   size  = dice(5, 6);
   break;
  case 2:
-  noun  = faction_noun_sneak [rng(0, 14)];
+  noun  = STATIC_CHOOSE(faction_noun_sneak);
   power = dice(5, 8);
   size  = dice(5, 8);
   break;
  case 3:
-  noun  = faction_noun_crime [rng(0, 14)];
+  noun  = STATIC_CHOOSE(faction_noun_crime);
   power = dice(5, 16);
   size  = dice(5, 8);
   break;
  case 4:
-  noun  = faction_noun_cult  [rng(0, 14)];
+  noun  = STATIC_CHOOSE(faction_noun_cult);
   power = dice(8, 8);
   size  = dice(4, 6);
   break;
  default:
-  noun  = faction_noun_none  [rng(0, 14)];
+  noun  = STATIC_CHOOSE(faction_noun_none);
   power = dice(6, 8);
   size  = dice(6, 6);
  }
@@ -168,11 +171,11 @@ void faction::randomize()
   do {
    std::string adj;
    if (good >= 3)
-    adj = faction_adj_pos[rng(0, 14)];
+    adj = STATIC_CHOOSE(faction_adj_pos);
    else if  (good <= -3)
-    adj = faction_adj_bad[rng(0, 14)];
+    adj = STATIC_CHOOSE(faction_adj_bad);
    else
-    adj = faction_adj_neu[rng(0, 14)];
+    adj = STATIC_CHOOSE(faction_adj_neu);
    name = "The " + adj + " " + noun;
    if (one_in(4))
     name += " of " + invent_name();
@@ -211,7 +214,7 @@ bool faction::has_value(faction_value v) const
  return values & mfb(v);
 }
 
-bool faction::matches_us(faction_value v)
+bool faction::matches_us(faction_value v) const
 {
  int numvals = 2;
  if (job2 != FACJOB_NULL)
@@ -253,7 +256,7 @@ facval_data[v].name.c_str());
  return false;
 }
 
-std::string faction::describe()
+std::string faction::describe() const
 {
  std::string ret = name + " have the ultimate goal of " +
                    facgoal_data[goal].name + ". Their primary concern is " +

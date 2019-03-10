@@ -81,8 +81,8 @@ struct faction {
  void make_army();
  bool has_job(faction_job j) const;
  bool has_value(faction_value v) const;
- bool matches_us(faction_value v);
- std::string describe();
+ bool matches_us(faction_value v) const;
+ std::string describe() const;
 
  int response_time(tripoint dest) const;	// Time it takes for them to get to u
 
