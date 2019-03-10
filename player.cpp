@@ -2588,6 +2588,7 @@ void player::add_addiction(add_type type, int strength)
 bool player::has_addiction(add_type type) const
 {
  for(const auto& a : addictions) if (a.type == type && a.intensity >= MIN_ADDICTION_LEVEL) return true;
+ return false;
 }
 
 void player::rem_addiction(add_type type)
