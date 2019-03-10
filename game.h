@@ -332,7 +332,7 @@ class game
   calendar nextspawn; // The turn on which monsters will spawn next.
   calendar nextweather; // The turn on which weather will shift next.
   overmap *om_hori, *om_vert, *om_diag; // Adjacent overmaps
-  std::vector<event> events;	        // Game events to be processed
+  std::vector<event> events;	        // Game events to be processed	\todo savefile break : include in savefile
   int kills[num_monsters];	        // Player's kill count
   std::string last_action;		// The keypresses of last turn
 

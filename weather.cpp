@@ -3,6 +3,21 @@
 #include "recent_msg.h"
 #include <vector>
 
+struct weather_effect	// NPCs not really affected
+{
+	static void none(game *) {};
+	static void glare(game *);
+	static void wet(game *);
+	static void very_wet(game *);
+	static void thunder(game *);
+	static void lightning(game *);
+	static void light_acid(game *);
+	static void acid(game *);
+	static void flurry(game *) {};
+	static void snow(game *) {};
+	static void snowstorm(game *) {};
+};
+
 /* Name, color in UI, {seasonal temperatures}, ranged penalty, sight penalty,
 * minimum time (in minutes), max time (in minutes), warn player?
 * Note that max time is NOT when the weather is guaranteed to stop; it is

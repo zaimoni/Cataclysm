@@ -23,21 +23,6 @@ enum weather_type {
  NUM_WEATHER_TYPES
 };
 
-struct weather_effect	// NPCs not really affected
-{
- static void none		(game *) {};
- static void glare		(game *);
- static void wet		(game *);
- static void very_wet	(game *);
- static void thunder	(game *);
- static void lightning	(game *);
- static void light_acid	(game *);
- static void acid		(game *);
- static void flurry		(game *) {};
- static void snow		(game *) {};
- static void snowstorm	(game *) {};
-};
-
 struct weather_datum
 {
  static const weather_datum data[NUM_WEATHER_TYPES];
