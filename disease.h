@@ -224,7 +224,7 @@ void dis_effect(game *g, player &p, disease &dis)
       if (g->m.move_cost(dest) > 0 && one_in(5)) {
        if (m_at) {	// Spores hit a monster
         if (g->u_see(dest)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
-        if (!m_at->make_fungus(g)) g->kill_mon(*m_at);
+        if (!m_at->make_fungus()) g->kill_mon(*m_at);
        } else {	// \todo infect npcs
         spore.spawn(dest);
         g->z.push_back(spore);

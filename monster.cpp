@@ -647,7 +647,7 @@ void monster::process_effects()
  }
 }
 
-bool monster::make_fungus(game *g)
+bool monster::make_fungus()
 {
  if (species_hallu == type->species) return true;
  if (species_fungus == type->species) return true;	// No friendly-fungalizing ;-)
