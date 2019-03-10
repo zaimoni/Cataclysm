@@ -73,7 +73,7 @@ void npc::talk_to_u(game *g)
 
  int most_difficult_mission = 0;
  for (int i = 0; i < chatbin.missions.size(); i++) {
-  mission_type *type = g->find_mission_type(chatbin.missions[i]);
+  const mission_type *type = g->find_mission_type(chatbin.missions[i]);
   if (type->urgent && type->difficulty > most_difficult_mission) {
    d.topic_stack.push_back(TALK_MISSION_DESCRIBE);
    chatbin.mission_selected = i;
@@ -83,7 +83,7 @@ void npc::talk_to_u(game *g)
  most_difficult_mission = 0;
  bool chosen_urgent = false;
  for (int i = 0; i < chatbin.missions_assigned.size(); i++) {
-  mission_type *type = g->find_mission_type(chatbin.missions_assigned[i]);
+  const mission_type *type = g->find_mission_type(chatbin.missions_assigned[i]);
   if ((type->urgent && !chosen_urgent) ||
       (type->difficulty > most_difficult_mission &&
        (type->urgent || !chosen_urgent)            )) {
@@ -153,7 +153,7 @@ std::string dynamic_line(talk_topic topic, game *g, npc *p)
 
 // Mission stuff is a special case, so we'll handle it up here
   mission *miss = g->find_mission(id);
-  mission_type *type = miss->type;
+  const mission_type *type = miss->type;
   std::string ret = mission_dialogue(mission_id(type->id), topic);
   if (topic == TALK_MISSION_SUCCESS && miss->follow_up != MISSION_NULL)
    return ret + "  And I have more I'd like you to do.";
@@ -496,7 +496,7 @@ std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *p)
     FAILURE(TALK_MISSION_FAILURE);
      FAILURE_OPINION(-3, 0, -1, 2, 0);
   } else if (!g->mission_complete(id, p->id)) {
-   mission_type *type = g->find_mission_type(id);
+   const mission_type *type = g->find_mission_type(id);
    RESPONSE("Not yet.");
     SUCCESS(TALK_NONE);
    if (type->goal == MGOAL_KILL_MONSTER) {
@@ -512,7 +512,7 @@ std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *p)
     SUCCESS(TALK_DONE);
   } else {
 // TODO: Lie about mission
-   mission_type *type = g->find_mission_type(id);
+   const mission_type *type = g->find_mission_type(id);
    switch (type->goal) {
    case MGOAL_FIND_ITEM:
    case MGOAL_FIND_ANY_ITEM:

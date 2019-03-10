@@ -80,7 +80,7 @@ struct mission_type {
 };
 
 struct mission {
- mission_type *type;
+ const mission_type* type;
  std::string description; // Basic descriptive text
  bool failed;		// True if we've failed it!
  int value;		// Cash/Favor value of completing this
@@ -96,7 +96,6 @@ struct mission {
  mission_id follow_up;	// What mission do we get after this succeeds?
  
  std::string name() const;
- std::string save_info() const;
  void load_info(std::ifstream &info);
 
  mission()
@@ -115,6 +114,7 @@ struct mission {
   bad_fac_id = -1;
   step = 0;
  }
+ mission(std::istream& src);
 };
 
 #endif

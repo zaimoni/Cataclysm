@@ -2,6 +2,7 @@
 
 #include "mongroup.h"
 #include "mapdata.h"
+#include "mission.h"
 #include "saveload.h"
 #include <string>
 #include <istream>
@@ -61,6 +62,51 @@ bionic::bionic(std::istream& is)
 std::ostream& operator<<(std::ostream& os, const bionic& src)
 {
 	return os << src.id I_SEP << src.invlet I_SEP << src.powered I_SEP << src.charge;
+}
+
+IO_OPS_ENUM(itype_id)
+IO_OPS_ENUM(npc_favor_type)
+IO_OPS_ENUM(skill)
+
+IO_OPS_ENUM(mission_id)
+
+// stereotypical translation of pointers to/from vector indexes
+std::istream& operator>>(std::istream& is, const mission_type*& dest)
+{
+	int type_id;
+	is >> type_id;
+	dest = (0 <= type_id && type_id<mission_type::types.size()) ? &mission_type::types[type_id] : 0;
+	return is;
+}
+
+std::ostream& operator<<(std::ostream& os, const mission_type* const src)
+{
+	return os << (src ? src->id : -1);
+}
+
+mission::mission(std::istream& is)
+{
+	is >> type;
+	std::string tmpdesc;
+	do {
+		is >> tmpdesc;
+		if (tmpdesc != "<>")
+			description += tmpdesc + " ";
+	} while (tmpdesc != "<>");
+	description = description.substr(0, description.size() - 1); // Ending ' '
+	is >> failed >> value >> reward.type >> reward.value >> reward.item_id >> reward.skill_id >>
+		uid >> target >> item_id >> count >> deadline >> npc_id >>
+		good_fac_id >> bad_fac_id >> step >> follow_up;
+}
+
+
+std::ostream& operator<<(std::ostream& os, const mission& src)
+{
+	os << src.type;
+	return os << src.description << " <> " << (src.failed ? 1 : 0) I_SEP << src.value  I_SEP 
+		<< src.reward.type  I_SEP << src.reward.value  I_SEP << src.reward.item_id  I_SEP 
+		<< src.reward.skill_id  I_SEP << src.uid  I_SEP << src.target  I_SEP << src.item_id  I_SEP << src.count  I_SEP << src.deadline  I_SEP 
+		<< src.npc_id  I_SEP << src.good_fac_id  I_SEP << src.bad_fac_id  I_SEP << src.step  I_SEP << src.follow_up;
 }
 
 mongroup::mongroup(std::istream& is)

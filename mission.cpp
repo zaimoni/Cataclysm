@@ -27,23 +27,6 @@ std::string mission::name() const
  return type ? type->name : "NULL";
 }
 
-std::string mission::save_info() const
-{
- std::stringstream ret;
- if (type == NULL)
-  ret << -1;
- else
-  ret << type->id;
- ret << description << " <> " << (failed ? 1 : 0) << " " << value <<
-        " " << reward.type << " " << reward.value << " " << reward.item_id <<
-        " " << reward.skill_id << " " << uid << " " << target.x << " " <<
-        target.y << " " << item_id << " " << count << " " << deadline << " " <<
-        npc_id << " " << good_fac_id << " " << bad_fac_id << " " << step <<
-        " " << follow_up;
-
- return ret.str();
-}
-
 void mission::load_info(std::ifstream &data)
 {
  int type_id, rewtype, reward_id, rew_item, rew_skill, itemid, tmpfollow;

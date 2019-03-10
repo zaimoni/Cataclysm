@@ -13,9 +13,6 @@ This is not a normal header.  It must be used only in cpp files and
 
 #ifdef _BIONICS_H_
 
-std::istream& operator>>(std::istream& is, bionic_id& dest);
-std::ostream& operator<<(std::ostream& os, bionic_id src);
-
 std::ostream& operator<<(std::ostream& os, const bionic& src);
 
 #endif
@@ -34,11 +31,14 @@ std::ostream& operator<<(std::ostream& os, const tripoint& src);
 
 std::ostream& operator<<(std::ostream& os, const spawn_point& src);
 
-std::istream& operator>>(std::istream& is, field_id& dest);
-std::ostream& operator<<(std::ostream& os, field_id src);
-
 std::istream& operator>>(std::istream& is, field& dest);
 std::ostream& operator<<(std::ostream& os, const field& src);
+
+#endif
+
+#ifdef _MISSION_H_
+
+std::ostream& operator<<(std::ostream& os, const mission& src);
 
 #endif
 

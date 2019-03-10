@@ -1095,11 +1095,9 @@ mission* game::find_mission(int id)
  return NULL;
 }
 
-mission_type* game::find_mission_type(int id)
+const mission_type* game::find_mission_type(int id)
 {
- for (int i = 0; i < active_missions.size(); i++) {
-  if (active_missions[i].uid == id) return active_missions[i].type;
- }
+ for (const auto& mi : active_missions) if (mi.uid == id) return mi.type;
  return NULL;
 }
 
@@ -1110,7 +1108,7 @@ bool game::mission_complete(int id, int npc_id)
   debugmsg("game::mission_complete(%d) - it's NULL!", id);
   return false;
  }
- mission_type* type = miss->type;
+ const mission_type* type = miss->type;
  switch (type->goal) {
   case MGOAL_GO_TO: {
    point cur_pos(lev.x + int(MAPSIZE / 2), lev.y + int(MAPSIZE / 2));
@@ -1665,17 +1663,14 @@ bool game::load_master()
  int num_missions, num_npc, num_factions, num_items;
 
  fin >> num_missions;
- if (fin.peek() == '\n')
-  fin.get(junk); // Chomp that pesky endline
+ if (fin.peek() == '\n') fin.get(junk); // Chomp that pesky endline
  for (int i = 0; i < num_missions; i++) {
-  mission tmpmiss;
-  tmpmiss.load_info(fin);
-  active_missions.push_back(tmpmiss);
+   active_missions.push_back(mission(fin));
+   if (!active_missions.back().type) active_missions.pop_back();	// if we didn't load with a valid mission type, ditch it
  }
 
  fin >> num_factions;
- if (fin.peek() == '\n')
-  fin.get(junk); // Chomp that pesky endline
+ if (fin.peek() == '\n') fin.get(junk); // Chomp that pesky endline
  for (int i = 0; i < num_factions; i++) {
   getline(fin, data);
   faction tmp;
@@ -1684,8 +1679,7 @@ bool game::load_master()
  }
 // NPCs come next
  fin >> num_npc;
- if (fin.peek() == '\n')
-  fin.get(junk); // Chomp that pesky endline
+ if (fin.peek() == '\n') fin.get(junk); // Chomp that pesky endline
  for (int i = 0; i < num_npc; i++) {
   getline(fin, data);
   npc tmp;
@@ -1853,8 +1847,7 @@ void game::save()
 
  fout << next_mission_id << " " << next_faction_id << " " << next_npc_id <<
          " " << active_missions.size() << " ";
- for (int i = 0; i < active_missions.size(); i++)
-  fout << active_missions[i].save_info() << " ";
+ for(const auto& mi : active_missions) fout << mi << " ";
 
  fout << factions.size() << std::endl;
  for (int i = 0; i < factions.size(); i++)
