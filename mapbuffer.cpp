@@ -88,13 +88,10 @@ void mapbuffer::save()
   }
  
  // Output the fields
-  field tmpf;
   for (int j = 0; j < SEEY; j++) {
    for (int i = 0; i < SEEX; i++) {
-    tmpf = sm->fld[i][j];
-    if (tmpf.type != fd_null)
-     fout << "F " << i << " " << j << " " << int(tmpf.type) << " " <<
-             int(tmpf.density) << " " << tmpf.age << std::endl;
+    const field& tmpf = sm->fld[i][j];
+    if (tmpf.type != fd_null) fout << "F " << i << " " << j << " " << tmpf << std::endl;
    }
   }
  // Output the spawn points
@@ -128,7 +125,6 @@ void mapbuffer::load()
 
  char ch = 0;
  int itx, ity, t, d, a, num_submaps;
- bool fields_here = false;
  item it_tmp;
  std::string databuff;
  fin >> num_submaps;
@@ -192,9 +188,8 @@ void mapbuffer::load()
     fin >> itx >> ity >> t;
     sm->trp[itx][ity] = trap_id(t);
    } else if (string_identifier == "F") {
-    fields_here = true;
-    fin >> itx >> ity >> t >> d >> a;
-    sm->fld[itx][ity] = field(field_id(t), d, a);
+    fin >> itx >> ity;
+	fin >> sm->fld[itx][ity];
     sm->field_count++;
    } else if (string_identifier == "S") sm->spawns.push_back(spawn_point(fin));
    else if (string_identifier == "V") {

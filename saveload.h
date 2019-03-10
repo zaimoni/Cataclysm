@@ -5,6 +5,8 @@ This is not a normal header.  It must be used only in cpp files and
 
  It also checks the preprocessor guards of other headers to discern
  which functions it should be declaring.
+
+ A full implementation would be: istream constructor, operator >>, operator <<
 */
 
 #include <iosfwd>
@@ -22,6 +24,12 @@ std::ostream& operator<<(std::ostream& os, const tripoint& src);
 #ifdef _MAPDATA_H_
 
 std::ostream& operator<<(std::ostream& os, const spawn_point& src);
+
+std::istream& operator>>(std::istream& is, field_id& dest);
+std::ostream& operator<<(std::ostream& os, field_id src);
+
+std::istream& operator>>(std::istream& is, field& dest);
+std::ostream& operator<<(std::ostream& os, const field& src);
 
 #endif
 

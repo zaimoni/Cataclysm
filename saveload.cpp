@@ -50,6 +50,33 @@ std::ostream& operator<<(std::ostream& os, const mongroup& src)
   return os << src.type I_SEP << src.pos I_SEP << int(src.radius) I_SEP << src.population << std::endl;	// XXX note absence of src.dying: saveload cancels that
 }
 
+// arguably prototypical for int enumeration save/load, but not other formalisms e.g. JSON
+std::istream& operator>>(std::istream& is, field_id& dest)
+{
+	int tmp;
+	is >> tmp;
+	dest = (field_id)tmp;
+	return is;
+}
+
+std::ostream& operator<<(std::ostream& os, field_id src)
+{
+	return os << int(src);
+}
+
+std::istream& operator>>(std::istream& is, field& dest)
+{
+	int d;
+	is >> dest.type >> d >> dest.age;
+	dest.density = d;
+	return is;
+}
+
+std::ostream& operator<<(std::ostream& os, const field& src)
+{
+	return os << src.type I_SEP << int(src.density) I_SEP << src.age;
+}
+
 spawn_point::spawn_point(std::istream& is)
 {
 	char tmpfriend;
