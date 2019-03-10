@@ -72,9 +72,7 @@ std::string npc::save_info()
           addictions[i].sated << " ";
 
  dump << my_bionics.size() << " ";
- for (int i = 0; i < my_bionics.size(); i++)
-  dump << int(my_bionics[i].id) << " " << my_bionics[i].invlet << " " <<
-          int(my_bionics[i].powered) << " " << my_bionics[i].charge << " ";
+ for (const auto& bio : my_bionics)  dump << bio << " ";
 
 // NPC-specific stuff
  dump << int(personality.aggression) << " " << int(personality.bravery) <<
@@ -172,11 +170,8 @@ void npc::load_info(game *g, std::string data)
  int numbio;
  bionic biotmp;
  dump >> numbio;
- for (int i = 0; i < numbio; i++) {
-  dump >> typetmp >> biotmp.invlet >> biotmp.powered >> biotmp.charge;
-  biotmp.id = bionic_id(typetmp);
-  my_bionics.push_back(biotmp);
- }
+ for (int i = 0; i < numbio; i++) my_bionics.push_back(bionic(dump));
+
 // Special NPC stuff
  int misstmp, flagstmp, tmpatt, agg, bra, col, alt;
  dump >> agg >> bra >> col >> alt >> wand >> wandf >> om >> 

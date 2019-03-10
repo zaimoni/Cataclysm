@@ -11,6 +11,15 @@ This is not a normal header.  It must be used only in cpp files and
 
 #include <iosfwd>
 
+#ifdef _BIONICS_H_
+
+std::istream& operator>>(std::istream& is, bionic_id& dest);
+std::ostream& operator<<(std::ostream& os, bionic_id src);
+
+std::ostream& operator<<(std::ostream& os, const bionic& src);
+
+#endif
+
 #ifdef _ENUMS_H_
 
 std::istream& operator>>(std::istream& is, point& dest);

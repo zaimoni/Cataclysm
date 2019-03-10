@@ -1,6 +1,7 @@
 #ifndef _BIONICS_H_
 #define _BIONICS_H_
 #include <string>
+#include <iosfwd>
 
 /* Thought: Perhaps a HUD bionic that changes the display of the game?
  * Showing more information or something. */
@@ -58,6 +59,7 @@ struct bionic {
 
  bionic() : id(bio_batteries), invlet('a'), powered(false), charge(0) {};
  bionic(bionic_id pid, char pinvlet) : id(pid), invlet(pinvlet), powered(false), charge(0) {};
+ bionic(std::istream& is);
 };
  
 #endif

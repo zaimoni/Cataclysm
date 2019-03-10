@@ -16,6 +16,21 @@
 #define I_SEP << " "
 #endif
 
+#define IO_OPS_ENUM(TYPE)	\
+std::istream& operator>>(std::istream& is, TYPE& dest)	\
+{	\
+	int tmp;	\
+	is >> tmp;	\
+	dest = (TYPE)tmp;	\
+	return is;	\
+}	\
+	\
+std::ostream& operator<<(std::ostream& os, TYPE src)	\
+{	\
+	return os << int(src);	\
+}
+
+
 std::istream& operator>>(std::istream& is, point& dest)
 {
 	return is >> dest.x >> dest.y;
@@ -36,6 +51,18 @@ std::ostream& operator<<(std::ostream& os, const tripoint& src)
 	return os << src.x I_SEP << src.y  I_SEP << src.z;
 }
 
+IO_OPS_ENUM(bionic_id)
+
+bionic::bionic(std::istream& is)
+{
+	is >> id >> invlet >> powered >> charge;
+}
+
+std::ostream& operator<<(std::ostream& os, const bionic& src)
+{
+	return os << src.id I_SEP << src.invlet I_SEP << src.powered I_SEP << src.charge;
+}
+
 mongroup::mongroup(std::istream& is)
 {
   int tmp_type;
@@ -50,19 +77,7 @@ std::ostream& operator<<(std::ostream& os, const mongroup& src)
   return os << src.type I_SEP << src.pos I_SEP << int(src.radius) I_SEP << src.population << std::endl;	// XXX note absence of src.dying: saveload cancels that
 }
 
-// arguably prototypical for int enumeration save/load, but not other formalisms e.g. JSON
-std::istream& operator>>(std::istream& is, field_id& dest)
-{
-	int tmp;
-	is >> tmp;
-	dest = (field_id)tmp;
-	return is;
-}
-
-std::ostream& operator<<(std::ostream& os, field_id src)
-{
-	return os << int(src);
-}
+IO_OPS_ENUM(field_id)
 
 std::istream& operator>>(std::istream& is, field& dest)
 {
