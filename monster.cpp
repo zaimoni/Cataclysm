@@ -695,7 +695,7 @@ void monster::make_friendly()
  friendly = rng(5, 30) + rng(0, 20);
 }
 
-void monster::add_item(item it)
+void monster::add_item(const item& it)
 {
  inv.push_back(it);
 }

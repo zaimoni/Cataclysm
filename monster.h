@@ -120,7 +120,7 @@ class monster {
  bool make_fungus();	// Makes this monster into a fungus version
 				// Returns false if no such monster exists
  void make_friendly();
- void add_item(item it);	// Add an item to inventory
+ void add_item(const item& it);	// Add an item to inventory
 
  bool is_static_spawn() const { return -1 != spawnmap.x; }
 
