@@ -95,9 +95,9 @@ struct mission {
  int step;		// How much have we completed?
  mission_id follow_up;	// What mission do we get after this succeeds?
  
- std::string name();
- std::string save_info();
- void load_info(game *g, std::ifstream &info);
+ std::string name() const;
+ std::string save_info() const;
+ void load_info(std::ifstream &info);
 
  mission()
  {

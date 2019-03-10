@@ -22,14 +22,12 @@ mission mission_type::create(game *g, int npc_id)
  return ret;
 }
 
-std::string mission::name()
+std::string mission::name() const
 {
- if (type == NULL)
-  return "NULL";
- return type->name;
+ return type ? type->name : "NULL";
 }
 
-std::string mission::save_info()
+std::string mission::save_info() const
 {
  std::stringstream ret;
  if (type == NULL)
@@ -46,7 +44,7 @@ std::string mission::save_info()
  return ret.str();
 }
 
-void mission::load_info(game *g, std::ifstream &data)
+void mission::load_info(std::ifstream &data)
 {
  int type_id, rewtype, reward_id, rew_item, rew_skill, itemid, tmpfollow;
  data >> type_id;

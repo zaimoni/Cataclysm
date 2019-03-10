@@ -1669,7 +1669,7 @@ bool game::load_master()
   fin.get(junk); // Chomp that pesky endline
  for (int i = 0; i < num_missions; i++) {
   mission tmpmiss;
-  tmpmiss.load_info(this, fin);
+  tmpmiss.load_info(fin);
   active_missions.push_back(tmpmiss);
  }
 
