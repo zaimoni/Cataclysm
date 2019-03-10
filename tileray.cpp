@@ -208,21 +208,21 @@ char tileray::dir_symbol (char sym) const
     return sym;
 }
 
-int tileray::ortho_dx (int od)
+int tileray::ortho_dx(int od) const
 {
     int quadr = (direction / 90) % 4;
     od *= -sy[quadr];
     return mostly_vertical()? od : 0;
 }
 
-int tileray::ortho_dy (int od)
+int tileray::ortho_dy(int od) const
 {
     int quadr = (direction / 90) % 4;
     od *= sx[quadr];
     return mostly_vertical()? 0 : od;
 }
 
-bool tileray::mostly_vertical ()
+bool tileray::mostly_vertical() const
 {
     return abs(deltax) <= abs(deltay);
 }
@@ -269,10 +269,9 @@ void tileray::advance (int num)
     }
 }
 
-bool tileray::end ()
+bool tileray::end() const
 {
-    if (infinite)
-        return true;
+    if (infinite) return true;
     return mostly_vertical()? steps >= abs(deltay) - 1 : steps >= abs(deltax) - 1;
 }
 

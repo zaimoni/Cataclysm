@@ -36,14 +36,14 @@ public:
 	int dx() const { return last_dx; };      // return dx of last advance (-1 to 1)
 	int dy() const { return last_dy; };      // return dy of last advance (-1 to 1)
 	int dir() const { return direction; };     // return direction of ray (degrees)
-    int dir4 () const;    // return 4-sided direction (0 = east, 1 = south, 2 = west, 3 = north)
-    char dir_symbol (char sym) const; // convert certain symbols from north-facing variant into current dir facing
-    int ortho_dx (int od); // return dx for point at "od" distance in orthogonal direction
-    int ortho_dy (int od); // return dy for point at "od" distance in orthogonal direction
-    bool mostly_vertical (); // return if ray is mostly vertical
+    int dir4() const;    // return 4-sided direction (0 = east, 1 = south, 2 = west, 3 = north)
+    char dir_symbol(char sym) const; // convert certain symbols from north-facing variant into current dir facing
+    int ortho_dx(int od) const; // return dx for point at "od" distance in orthogonal direction
+    int ortho_dy(int od) const; // return dy for point at "od" distance in orthogonal direction
+    bool mostly_vertical() const; // return if ray is mostly vertical
 
-    void advance (int num = 1); // move to the next tile (calculate last dx, dy)
-    bool end ();     // do we reach the end of (dx,dy) defined ray?
+    void advance(int num = 1); // move to the next tile (calculate last dx, dy)
+    bool end() const;      // do we reach the end of (dx,dy) defined ray?
 };
 
 #endif
