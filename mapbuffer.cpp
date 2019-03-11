@@ -103,8 +103,7 @@ void mapbuffer::save()
    sm->vehicles[i].save (fout);
   }
  // Output the computer
-  if (sm->comp.name != "")
-   fout << "c " << sm->comp.save_data() << std::endl;
+  if (sm->comp.name != "") fout << "c " << sm->comp << std::endl;
   fout << "----" << std::endl;
  }
  // Close the file; that's all we need.
@@ -199,8 +198,8 @@ void mapbuffer::load()
     //veh.smy = gridy;
     sm->vehicles.push_back(veh);
    } else if (string_identifier == "c") {
-    getline(fin, databuff);
-    sm->comp.load_data(databuff);
+	fin >> sm->comp;
+	getline(fin, databuff); // Clear out the endline
    }
   } while (string_identifier != "----" && !fin.eof());
 

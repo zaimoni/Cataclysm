@@ -1,5 +1,6 @@
 // master implementation file for new-style saveload support
 
+#include "computer.h"
 #include "mongroup.h"
 #include "mapdata.h"
 #include "mission.h"
@@ -50,6 +51,65 @@ std::istream& operator>>(std::istream& is, tripoint& dest)
 std::ostream& operator<<(std::ostream& os, const tripoint& src)
 {
 	return os << src.x I_SEP << src.y  I_SEP << src.z;
+}
+
+std::istream& operator>>(std::istream& is, computer& dest)
+{
+	dest.options.clear();
+	dest.failures.clear();
+
+	// Pull in name and security
+	is >> dest.name >> dest.security >> dest.mission_id;
+	size_t found = dest.name.find("_");
+	while (found != std::string::npos) {
+		dest.name.replace(found, 1, " ");
+		found = dest.name.find("_");
+	}
+	// Pull in options
+	int optsize;
+	is >> optsize;
+	for (int n = 0; n < optsize; n++) {
+		std::string tmpname;
+		int tmpaction, tmpsec;
+		is >> tmpname >> tmpaction >> tmpsec;
+		size_t found = tmpname.find("_");
+		while (found != std::string::npos) {
+			tmpname.replace(found, 1, " ");
+			found = tmpname.find("_");
+		}
+		dest.add_option(tmpname, computer_action(tmpaction), tmpsec);
+	}
+	// Pull in failures
+	int failsize, tmpfail;
+	is >> failsize;
+	for (int n = 0; n < failsize; n++) {
+		is >> tmpfail;
+		dest.failures.push_back(computer_failure(tmpfail));
+	}
+	return is;
+}
+
+std::ostream& operator<<(std::ostream& os, const computer& src)
+{
+	std::string savename = src.name; // Replace " " with "_"
+	size_t found = savename.find(" ");
+	while (found != std::string::npos) {
+		savename.replace(found, 1, "_");
+		found = savename.find(" ");
+	}
+	os << savename  I_SEP << src.security I_SEP << src.mission_id I_SEP << src.options.size() I_SEP;
+	for(const auto& opt : src.options) {
+		savename = opt.name;
+		found = savename.find(" ");
+		while (found != std::string::npos) {
+			savename.replace(found, 1, "_");
+			found = savename.find(" ");
+		}
+		os << savename I_SEP << int(opt.action) I_SEP << opt.security I_SEP;
+	}
+	os << src.failures.size() << " ";
+	for (const auto& fail : src.failures) os << int(fail) I_SEP;
+	return os;
 }
 
 IO_OPS_ENUM(bionic_id)

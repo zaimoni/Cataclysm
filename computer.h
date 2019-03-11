@@ -4,6 +4,7 @@
 #include "item.h"
 #include <vector>
 #include <string>
+#include <iosfwd>
 
 class game;
 class player;
@@ -59,6 +60,10 @@ struct computer_option
 class computer
 {
 private:
+// Save/load
+ friend std::istream& operator>>(std::istream& is, computer& dest);
+ friend std::ostream& operator<<(std::ostream& os, const computer& src);
+
  std::vector<computer_option> options;   // Things we can do
  std::vector<computer_failure> failures; // Things that happen if we fail a hack
  int security; // Difficulty of simply logging in
@@ -78,13 +83,9 @@ public:
  void shutdown_terminal(); // Shutdown (free w_terminal, etc)
  void use(game *g);
  bool hack_attempt(player *p, int Security = -1);// -1 defaults to main security
-// Save/load
- std::string save_data();
- void load_data(std::string data);
-
 
 private:
- 
+
 // Called by use()
  void activate_function      (game *g, computer_action action);
 // Generally called when we fail a hack attempt
