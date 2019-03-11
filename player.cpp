@@ -4093,7 +4093,7 @@ void player::use(game *g, char let)
 void player::read(game *g, char ch)
 {
  vehicle *veh = g->m.veh_at(pos);
- if (veh && veh->player_in_control (this)) {
+ if (veh && veh->player_in_control(*this)) {
   messages.add("It's bad idea to read while driving.");
   return;
  }

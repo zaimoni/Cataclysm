@@ -8,6 +8,9 @@
 #include <sstream>
 #include <fstream>
 
+const int fuel_types[] = { AT_GAS, AT_BATT, AT_PLUT, AT_PLASMA };
+#define num_fuel_types (sizeof(fuel_types)/sizeof(*fuel_types))
+
 std::vector <vehicle*> vehicle::vtypes;
 
 vehicle::vehicle(game *ag, vhtype_id type_id): g(ag), type(type_id), pos(0,0)
@@ -33,13 +36,13 @@ vehicle::vehicle(game *ag, vhtype_id type_id): g(ag), type(type_id), pos(0,0)
     precalc_mounts(0, face.dir());
 }
 
-bool vehicle::player_in_control (player *p)
+bool vehicle::player_in_control(player& p) const
 {
     if (type == veh_null) return false;
     int veh_part;
-    vehicle* const veh = g->m.veh_at(p->pos, veh_part);
+    const vehicle* const veh = g->m.veh_at(p.pos, veh_part);
     if (veh && veh != this) return false;
-    return part_with_feature(veh_part, vpf_controls, false) >= 0 && p->in_vehicle;
+    return part_with_feature(veh_part, vpf_controls, false) >= 0 && p.in_vehicle;
 }
 
 void vehicle::load (std::ifstream &stin)
@@ -744,7 +747,7 @@ void vehicle::thrust (int thd)
 
     if (!thd) return;
 
-    bool pl_ctrl = player_in_control(&g->u);
+    bool pl_ctrl = player_in_control(g->u);
 
     if (!valid_wheel_config() && velocity == 0) {
         if (pl_ctrl) messages.add("The %s don't have enough wheels to move!", name.c_str());
@@ -851,7 +854,7 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
 {
 	static const int mass_from_msize[mtype::MS_MAX] = { 15, 40, 80, 200, 800 };
 
-    const bool pl_ctrl = player_in_control (&g->u);
+    const bool pl_ctrl = player_in_control(g->u);
 	npc* const nPC = g->nPC(dest);
     const bool u_here = dest == g->u.pos && !g->u.in_vehicle;
     monster * const z = g->mon(dest);
@@ -1135,7 +1138,7 @@ void vehicle::gain_moves (int mp)
 {
     moves += mp;
     // cruise control TODO: enable for NPC?
-    if (player_in_control(&g->u)) {
+    if (player_in_control(g->u)) {
         if (cruise_on)
         if (abs(cruise_velocity - velocity) >= acceleration()/2 ||
             (cruise_velocity != 0 && velocity == 0) ||

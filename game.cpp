@@ -1231,7 +1231,7 @@ void game::get_input()
 
  int veh_part;
  vehicle *veh = m.veh_at(u.pos, veh_part);
- bool veh_ctrl = veh && veh->player_in_control (&u);
+ bool veh_ctrl = veh && veh->player_in_control(u);
 
  switch (act) {
 
@@ -4975,7 +4975,7 @@ void game::plfire(bool burst)
  int reload_index = -1;
  if (!u.weapon.is_gun()) return;
  vehicle *veh = m.veh_at(u.pos);
- if (veh && veh->player_in_control(&u) && u.weapon.is_two_handed(u)) {
+ if (veh && veh->player_in_control(u) && u.weapon.is_two_handed(u)) {
   messages.add("You need free arm to drive!");
   return;
  }

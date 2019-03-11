@@ -11,8 +11,6 @@ class map;
 class player;
 class game;
 
-const int num_fuel_types = 4;
-const int fuel_types[num_fuel_types] = { AT_GAS, AT_BATT, AT_PLUT, AT_PLASMA };
 const int k_mvel = 200;
 
 // Structure, describing vehicle part (ie, wheel, seat)
@@ -118,7 +116,7 @@ public:
 	~vehicle() = default;
 
 // check if given player controls this vehicle
-    bool player_in_control (player *p);
+    bool player_in_control(player& p) const;
 
 // init parts state for randomly generated vehicle
     void init_state();

@@ -787,7 +787,7 @@ void map::vehmove(game *g)
 
     for (int v = 0; v < grid[sm]->vehicles.size(); v++) {
      vehicle *veh = &(grid[sm]->vehicles[v]);
-     bool pl_ctrl = veh->player_in_control(&g->u);
+     bool pl_ctrl = veh->player_in_control(g->u);
      while (!sm_change && veh->moves > 0 && veh->velocity != 0) {
       int x = veh->pos.x + i * SEEX;
       int y = veh->pos.y + j * SEEY;
