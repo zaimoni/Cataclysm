@@ -1,8 +1,6 @@
 #ifndef _VEH_INTERACT_H_
 #define _VEH_INTERACT_H_
 
-#include <vector>
-#include "output.h"
 #include "inventory.h"
 
 class vehicle;
