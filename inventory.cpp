@@ -48,6 +48,7 @@ std::vector<item> inventory::const_stack(int i) const
  return items[i];
 }
 
+#if DEAD_FUNC
 std::vector<item> inventory::as_vector()
 {
  std::vector<item> ret;
@@ -56,6 +57,7 @@ std::vector<item> inventory::as_vector()
  }
  return ret;
 }
+#endif
 
 int inventory::num_items() const
 {

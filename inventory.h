@@ -22,7 +22,7 @@ class inventory
   std::vector<item>& stack_at(int i);
   const std::vector<item>& stack_at(int i) const { return const_cast<inventory*>(this)->stack_at(i); };
   std::vector<item> const_stack(int i) const;
-  std::vector<item> as_vector();
+// std::vector<item> as_vector();	// dead function
   size_t size() const { return items.size(); }
   int num_items() const;
 
