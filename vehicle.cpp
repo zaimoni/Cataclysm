@@ -168,7 +168,7 @@ bool vehicle::can_mount (int dx, int dy, vpart_id id) const
     return false;
 }
 
-bool vehicle::can_unmount (int p)
+bool vehicle::can_unmount(int p) const
 {
     int dx = parts[p].mount_d.x;
     int dy = parts[p].mount_d.y;
@@ -266,7 +266,7 @@ bool vehicle::part_flag(int p, unsigned int f) const
     return part_info(p).flags & mfb(f);
 }
 
-int vehicle::part_at(int dx, int dy)
+int vehicle::part_at(int dx, int dy) const
 {
 	for (const auto p : external_parts) {
 		const auto& part = parts[p];
@@ -382,7 +382,7 @@ void vehicle::precalc_mounts (int idir, int dir)
 	for(auto& part : parts) part.precalc_d[idir] = coord_translate(dir, part.mount_d);
 }
 
-std::vector<int> vehicle::boarded_parts()
+std::vector<int> vehicle::boarded_parts() const
 {
     std::vector<int> res;
     for (int p = 0; p < parts.size(); p++)
@@ -391,7 +391,7 @@ std::vector<int> vehicle::boarded_parts()
     return res;
 }
 
-player *vehicle::get_passenger (int p)
+player *vehicle::get_passenger(int p) const
 {
     p = part_with_feature (p, vpf_seat, false);
     if (p >= 0 && parts[p].passenger) {
@@ -404,7 +404,7 @@ player *vehicle::get_passenger (int p)
 
 point vehicle::global() const { return SEEX * sm + pos; }
 
-int vehicle::total_mass ()
+int vehicle::total_mass() const
 {
     int m = 0;
     for (int i = 0; i < parts.size(); i++)
@@ -417,23 +417,26 @@ int vehicle::total_mass ()
     return m;
 }
 
-int vehicle::fuel_left (int ftype, bool for_engine)
+int vehicle::fuel_left(int ftype, bool for_engine) const
 {
     int fl = 0;
-    for (int p = 0; p < parts.size(); p++)
-        if (part_flag(p, vpf_fuel_tank) &&
-            (ftype == part_info(p).fuel_type ||
-            (for_engine && ftype == AT_BATT && part_info(p).fuel_type == AT_PLUT)))
-            fl += parts[p].amount;
+	for (int p = 0; p < parts.size(); p++) {
+		if (!part_flag(p, vpf_fuel_tank)) continue;
+		const auto& p_info = part_info(p);
+		if ((ftype == p_info.fuel_type || (for_engine && ftype == AT_BATT && p_info.fuel_type == AT_PLUT)))
+			fl += parts[p].amount;
+	}
     return fl;
 }
 
-int vehicle::fuel_capacity (int ftype)
+int vehicle::fuel_capacity(int ftype) const
 {
     int cap = 0;
-    for (int p = 0; p < parts.size(); p++)
-        if (part_flag(p, vpf_fuel_tank) && ftype == part_info(p).fuel_type)
-            cap += part_info(p).size;
+	for (int p = 0; p < parts.size(); p++) {
+		if (!part_flag(p, vpf_fuel_tank)) continue;
+		const auto& p_info = part_info(p);
+		if (ftype == p_info.fuel_type) cap += p_info.size;
+	}
     return cap;
 }
 
@@ -478,39 +481,36 @@ std::string vehicle::fuel_name(int ftype)
     }
 }
 
-int vehicle::basic_consumption (int ftype)
+int vehicle::basic_consumption(int ftype) const
 {
-    if (ftype == AT_PLUT)
-        ftype = AT_BATT;
+    if (ftype == AT_PLUT) ftype = AT_BATT;
     int cnt = 0;
     int fcon = 0;
-    for (int p = 0; p < parts.size(); p++)
-        if (part_flag(p, vpf_engine) &&
-            ftype == part_info(p).fuel_type &&
-            parts[p].hp > 0)
-        {
-            fcon += part_info(p).power;
+	for (int p = 0; p < parts.size(); p++) {
+		if (!part_flag(p, vpf_engine) || 0 >= parts[p].hp) continue;
+		const auto& p_info = part_info(p);
+        if (ftype == p_info.fuel_type) {
+            fcon += p_info.power;
             cnt++;
         }
-    if (fcon < 100 && cnt > 0)
-        fcon = 100;
+	}
+    if (fcon < 100 && cnt > 0) fcon = 100;
     return fcon;
 }
 
-int vehicle::total_power (bool fueled)
+int vehicle::total_power(bool fueled) const
 {
     int pwr = 0;
     int cnt = 0;
-    for (int p = 0; p < parts.size(); p++)
-        if (part_flag(p, vpf_engine) &&
-            (fuel_left (part_info(p).fuel_type, true) || !fueled) &&
-            parts[p].hp > 0)
-        {
-            pwr += part_info(p).power;
-            cnt++;
-        }
-    if (cnt > 1)
-        pwr = pwr * 4 / (4 + cnt -1);
+	for (int p = 0; p < parts.size(); p++) {
+		if (!part_flag(p, vpf_engine) || 0 >= parts[p].hp) continue;
+		const auto& p_info = part_info(p);
+		if (fuel_left(p_info.fuel_type, true) || !fueled) {
+			pwr += p_info.power;
+			cnt++;
+		}
+	}
+    if (cnt > 1) pwr = pwr * 4 / (4 + cnt -1);
     return pwr;
 }
 
@@ -523,41 +523,39 @@ int vehicle::solar_power() const
     return pwr;
 }
 
-int vehicle::acceleration (bool fueled)
+int vehicle::acceleration(bool fueled) const
 {
     return (int) (safe_velocity (fueled) * k_mass() / (1 + strain ()) / 10);
 }
 
-int vehicle::max_velocity (bool fueled)
+int vehicle::max_velocity(bool fueled) const
 {
-    return total_power (fueled) * 80;
+    return total_power(fueled) * 80;
 }
 
-int vehicle::safe_velocity (bool fueled)
+int vehicle::safe_velocity(bool fueled) const
 {
     int pwrs = 0;
     int cnt = 0;
-    for (int p = 0; p < parts.size(); p++)
-        if (part_flag(p, vpf_engine) &&
-            (fuel_left (part_info(p).fuel_type, true) || !fueled) &&
-            parts[p].hp > 0)
-        {
-            int m2c = 100;
-            switch (part_info(p).fuel_type)
-            {
-            case AT_GAS:    m2c = 60; break;
-            case AT_PLASMA: m2c = 75; break;
-            case AT_BATT:   m2c = 90; break;
-            }
-            pwrs += part_info(p).power * m2c / 100;
-            cnt++;
-        }
-    if (cnt > 0)
-        pwrs = pwrs * 4 / (4 + cnt -1);
+	for (int p = 0; p < parts.size(); p++) {
+		if (!part_flag(p, vpf_engine) || 0 >= parts[p].hp) continue;
+		const auto& p_info = part_info(p);
+		if (fuel_left(p_info.fuel_type, true) || !fueled) {
+			int m2c = 100;
+			switch (p_info.fuel_type) {
+			case AT_GAS:    m2c = 60; break;
+			case AT_PLASMA: m2c = 75; break;
+			case AT_BATT:   m2c = 90; break;
+			}
+			pwrs += p_info.power * m2c / 100;
+			cnt++;
+		}
+	}
+    if (cnt > 0) pwrs = pwrs * 4 / (4 + cnt -1);
     return (int) (pwrs * k_dynamics() * k_mass()) * 80;
 }
 
-int vehicle::noise (bool fueled, bool gas_only)
+int vehicle::noise(bool fueled, bool gas_only) const
 {
     int pwrs = 0;
     int cnt = 0;
@@ -566,58 +564,50 @@ int vehicle::noise (bool fueled, bool gas_only)
         if (part_flag(p, vpf_muffler) && parts[p].hp > 0 && part_info(p).bonus < muffle)
             muffle = part_info(p).bonus;
 
-    for (int p = 0; p < parts.size(); p++)
-        if (part_flag(p, vpf_engine) &&
-            (fuel_left (part_info(p).fuel_type, true) || !fueled) &&
-            parts[p].hp > 0)
-        {
-            int nc = 10;
-            switch (part_info(p).fuel_type)
-            {
-            case AT_GAS:    nc = 25; break;
-            case AT_PLASMA: nc = 10; break;
-            case AT_BATT:   nc = 3; break;
-            }
-            if (!gas_only || part_info(p).fuel_type == AT_GAS)
-            {
-                int pwr = part_info(p).power * nc / 100;
-                if (muffle < 100 && (part_info(p).fuel_type == AT_GAS ||
-                    part_info(p).fuel_type == AT_PLASMA))
-                    pwr = pwr * muffle / 100;
-                pwrs += pwr;
-                cnt++;
-            }
-        }
+	for (int p = 0; p < parts.size(); p++) {
+		if (!part_flag(p, vpf_engine) || 0 >= parts[p].hp) continue;
+		const auto& p_info = part_info(p);
+		if (fuel_left(p_info.fuel_type, true) || !fueled) {
+			int nc = 10;
+			switch (p_info.fuel_type) {
+			case AT_GAS:    nc = 25; break;
+			case AT_PLASMA: nc = 10; break;
+			case AT_BATT:   nc = 3; break;
+			}
+			if (!gas_only || p_info.fuel_type == AT_GAS) {
+				int pwr = p_info.power * nc / 100;
+				if (muffle < 100 && (p_info.fuel_type == AT_GAS ||
+					p_info.fuel_type == AT_PLASMA))
+					pwr = pwr * muffle / 100;
+				pwrs += pwr;
+				cnt++;
+			}
+		}
+	}
     return pwrs;
 }
 
-int vehicle::wheels_area (int *cnt)
+int vehicle::wheels_area(int *cnt) const
 {
     int count = 0;
     int size = 0;
-    for (int i = 0; i < external_parts.size(); i++)
-    {
+    for (int i = 0; i < external_parts.size(); i++) {
         int p = external_parts[i];
-        if (part_flag(p, vpf_wheel) &&
-            parts[p].hp > 0)
-        {
+        if (part_flag(p, vpf_wheel) && parts[p].hp > 0) {
             size += part_info(p).size;
             count++;
         }
     }
-    if (cnt)
-        *cnt = count;
+    if (cnt) *cnt = count;
     return size;
 }
 
-float vehicle::k_dynamics ()
+float vehicle::k_dynamics() const
 {
     const int max_obst = 13;
     int obst[max_obst];
-    for (int o = 0; o < max_obst; o++)
-        obst[o] = 0;
-    for (int i = 0; i < external_parts.size(); i++)
-    {
+    for (int o = 0; o < max_obst; o++) obst[o] = 0;
+    for (int i = 0; i < external_parts.size(); i++) {
         int p = external_parts[i];
         int frame_size = part_flag(p, vpf_obstacle)? 30 : 10;
         int pos = parts[p].mount_d.y + max_obst / 2;
@@ -626,8 +616,7 @@ float vehicle::k_dynamics ()
         if (obst[pos] < frame_size) obst[pos] = frame_size;
     }
     int frame_obst = 0;
-    for (int o = 0; o < max_obst; o++)
-        frame_obst += obst[o];
+    for (int o = 0; o < max_obst; o++) frame_obst += obst[o];
     float ae0 = 200.0;
     float fr0 = 1000.0;
     int wa = wheels_area();
@@ -641,7 +630,7 @@ float vehicle::k_dynamics ()
     return ka * kf;
 }
 
-float vehicle::k_mass ()
+float vehicle::k_mass() const
 {
     int wa = wheels_area();
     float ma0 = 50.0;
@@ -652,7 +641,7 @@ float vehicle::k_mass ()
     return km;
 }
 
-float vehicle::strain ()
+float vehicle::strain() const
 {
     int mv = max_velocity();
     int sv = safe_velocity();
@@ -664,7 +653,7 @@ float vehicle::strain ()
         return (float) (velocity - sv) / (float) (mv - sv);
 }
 
-bool vehicle::valid_wheel_config ()
+bool vehicle::valid_wheel_config() const
 {
     int x1, y1, x2, y2;
     int count = 0;

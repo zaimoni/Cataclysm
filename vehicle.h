@@ -118,9 +118,6 @@ public:
 // check if given player controls this vehicle
     bool player_in_control(player& p) const;
 
-// init parts state for randomly generated vehicle
-    void init_state();
-
 // load and init vehicle data from stream. This implies valid save data!
     void load (std::ifstream &stin);
 
@@ -135,7 +132,7 @@ public:
 	bool can_mount(point d, vpart_id id) const { return can_mount(d.x, d.y, id); };
 
 // check if certain external part can be unmounted
-    bool can_unmount (int p);
+    bool can_unmount (int p) const;
 
 // install a new part to vehicle (force to skip possibility check)
     int install_part (int dx, int dy, vpart_id id, int hp = -1, bool force = false);
@@ -161,7 +158,7 @@ public:
     static point coord_translate (int dir, point reld);
     
 // Seek a vehicle part which obstructs tile with given coords relative to vehicle position
-    int part_at (int dx, int dy);
+    int part_at(int dx, int dy) const;
 
 // get symbol for map
     char part_sym (int p) const;
@@ -179,18 +176,18 @@ public:
     void precalc_mounts (int idir, int dir);
 
 // get a list of part indeces where is a passenger inside
-    std::vector<int> boarded_parts();
+    std::vector<int> boarded_parts() const;
 
 // get passenger at part p
-    player *get_passenger (int p);
+    player *get_passenger(int p) const;
 
 // get global coords for vehicle
 	point global() const;
 
 // Checks how much certain fuel left in tanks. If for_engine == true that means
 // ftype == AT_BATT is also takes in account AT_PLUT fuel (electric motors can use both)
-    int fuel_left (int ftype, bool for_engine = false);
-    int fuel_capacity (int ftype);
+    int fuel_left(int ftype, bool for_engine = false) const;
+    int fuel_capacity(int ftype) const;
 
     // refill fuel tank(s) with given type of fuel
     // returns amount of leftover fuel
@@ -202,50 +199,50 @@ public:
     std::string fuel_name(int ftype);
 
 // fuel consumption of vehicle engines of given type, in one-hundreth of fuel
-    int basic_consumption (int ftype);
+    int basic_consumption(int ftype) const;
 
     void consume_fuel ();
 
 // get the total mass of vehicle, including cargo and passengers
-    int total_mass ();
+    int total_mass() const;
 
 // Get combined power of all engines. If fueled == true, then only engines which
 // vehicle have fuel for are accounted
-    int total_power (bool fueled = true);
+    int total_power(bool fueled = true) const;
 
 // Get combined power of solar panels
     int solar_power () const;
     
 // Get acceleration gained by combined power of all engines. If fueled == true, then only engines which
 // vehicle have fuel for are accounted
-    int acceleration (bool fueled = true);
+    int acceleration(bool fueled = true) const;
 
 // Get maximum velocity gained by combined power of all engines. If fueled == true, then only engines which
 // vehicle have fuel for are accounted
-    int max_velocity (bool fueled = true);
+    int max_velocity(bool fueled = true) const;
 
 // Get safe velocity gained by combined power of all engines. If fueled == true, then only engines which
 // vehicle have fuel for are accounted
-    int safe_velocity (bool fueled = true);
+    int safe_velocity(bool fueled = true) const;
 
-    int noise (bool fueled = true, bool gas_only = false);
+    int noise(bool fueled = true, bool gas_only = false) const;
 
 // Calculate area covered by wheels and, optionally count number of wheels
-    int wheels_area (int *cnt = 0);
+    int wheels_area(int *cnt = 0) const;
 
 // Combined coefficient of aerodynamic and wheel friction resistance of vehicle, 0-1.0.
 // 1.0 means it's ideal form and have no resistance at all. 0 -- it won't move
-    float k_dynamics ();
+    float k_dynamics() const;
 
 // Coefficient of mass, 0-1.0.
 // 1.0 means mass won't slow vehicle at all, 0 - it won't move
-    float k_mass ();
+    float k_mass() const;
 
 // strain of engine(s) if it works higher that safe speed (0-1.0)
-    float strain ();
+    float strain() const;
 
 // calculate if it can move using its wheels configuration
-    bool valid_wheel_config ();
+    bool valid_wheel_config() const;
 
 // thrust (1) or brake (-1) vehicle
     void thrust (int thd);
@@ -337,6 +334,9 @@ public:
     int last_turn;      // amount of last turning (for calculate skidding due to handbrake)
     int moves;
     int turret_mode;    // turret firing mode: 0 = off, 1 = burst fire
+private:
+	// init parts state for randomly generated vehicle
+	void init_state();
 };
 
 #endif
