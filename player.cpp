@@ -58,31 +58,6 @@ std::string morale_point::name() const
 }
 // end prototype for morale.cpp
 
-// start prototype for player_activity.cpp
-std::string player_activity::save_info() const
-{
-	std::stringstream ret;
-	ret << type << " " << moves_left << " " << index << " " << placement.x <<
-		" " << placement.y << " " << values.size();
-	for (int i = 0; i < values.size(); i++)
-		ret << " " << values[i];
-
-	return ret.str();
-}
-
-void player_activity::load_info(std::stringstream &dump)
-{
-	int tmp, tmptype;
-	dump >> tmptype >> moves_left >> index >> placement.x >> placement.y >> tmp;
-	type = activity_type(tmptype);
-	for (int i = 0; i < tmp; i++) {
-		int tmp2;
-		dump >> tmp2;
-		values.push_back(tmp2);
-	}
-}
-// end prototype for player_activity.cpp
-
 // start prototype for disease.cpp
 int disease::speed_boost() const
 {
@@ -697,10 +672,7 @@ void player::load_info(game *g, std::string data)
          max_power_level >> hunger >> thirst >> fatigue >> stim >>
          pain >> pkill >> radiation >> cash >> recoil >> driving_recoil >>
          inveh >> scent >> moves >> underwater >> dodges_left >> blocks_left >>
-         oxygen >> active_mission >> xp_pool >> male >> health >> styletmp;
-
- activity.load_info(dump);
- backlog.load_info(dump);
+         oxygen >> active_mission >> xp_pool >> male >> health >> styletmp >> activity >> backlog;
 
  in_vehicle = inveh != 0;
  style_selected = itype_id(styletmp);
@@ -794,7 +766,7 @@ std::string player::save_info()
          underwater << " " << dodges_left << " " << blocks_left << " " <<
          oxygen << " " << active_mission << " " << xp_pool << " " << male <<
          " " << health << " " << style_selected << " " <<
-         activity.save_info() << " " << backlog.save_info() << " ";
+         activity << " " << backlog << " ";
 
  for (int i = 0; i < PF_MAX2; i++)
   dump << my_traits[i] << " ";

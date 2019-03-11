@@ -47,6 +47,14 @@ std::ostream& operator<<(std::ostream& os, const mission& src);
 std::ostream& operator<<(std::ostream& os, const mongroup& src);
 
 #endif
+
+#ifdef _PLDATA_H_
+
+std::istream& operator>>(std::istream& is, player_activity& dest);
+std::ostream& operator<<(std::ostream& os, const player_activity& src);
+
+#endif
+
 #ifdef _VEHICLE_H_
 
 std::istream& operator>>(std::istream& is, vehicle_part& dest);

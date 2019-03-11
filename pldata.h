@@ -5,7 +5,6 @@
 
 #include <vector>
 #include <string>
-#include <iosfwd>
 
 enum character_type {
  PLTYPE_CUSTOM,
@@ -97,9 +96,6 @@ struct player_activity
  player_activity(activity_type t = ACT_NULL, int turns = 0, int Index = -1)
  : type(t),moves_left(turns),index(Index),placement(-1,-1) {}
  player_activity(const player_activity &copy) = default;
-
- std::string save_info() const;
- void load_info(std::stringstream &dump);
 };
  
 enum pl_flag {

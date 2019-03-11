@@ -198,6 +198,27 @@ std::ostream& operator<<(std::ostream& os, const field& src)
 	return os << src.type I_SEP << int(src.density) I_SEP << src.age;
 }
 
+std::istream& operator>>(std::istream& is, player_activity& dest)
+{
+	int tmp, tmptype;
+	is >> tmptype >> dest.moves_left >> dest.index >> dest.placement >> tmp;
+	dest.type = activity_type(tmptype);
+	for (int i = 0; i < tmp; i++) {
+		int tmp2;
+		is >> tmp2;
+		dest.values.push_back(tmp2);
+	}
+	return is;
+}
+
+std::ostream& operator<<(std::ostream& os, const player_activity& src)
+{
+	os << src.type I_SEP << src.moves_left I_SEP << src.index I_SEP << src.placement I_SEP << src.values.size();
+	for(const auto& val : src.values) os I_SEP << val;
+
+	return os;
+}
+
 spawn_point::spawn_point(std::istream& is)
 {
 	char tmpfriend;
