@@ -1,6 +1,6 @@
 #include "trap.h"
 
-std::vector <trap*> trap::traps;
+std::vector<const trap*> trap::traps;
 
 void trap::init()
 {

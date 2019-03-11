@@ -98,7 +98,7 @@ struct trapfuncm {
 };
 
 struct trap {
- static std::vector <trap*> traps;
+ static std::vector<const trap*> traps;
 
  // don't worry about typedefs for trap actions
 

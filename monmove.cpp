@@ -484,7 +484,7 @@ void monster::move_to(game *g, const point& pt)
   pos = pt;
   footsteps(g, pt);
   if (!has_flag(MF_DIGS) && !has_flag(MF_FLIES) && g->m.tr_at(pos) != tr_null) { // Monster stepped on a trap!
-   trap* const tr = trap::traps[g->m.tr_at(pos)];
+   const trap* const tr = trap::traps[g->m.tr_at(pos)];
    if (dice(3, sk_dodge + 1) < dice(3, tr->avoidance)) (tr->actm)(g, this);
   }
 // Diggers turn the dirt into dirtmound
