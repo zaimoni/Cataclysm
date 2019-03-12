@@ -186,6 +186,8 @@ struct npc_opinion
   return (npc_opinion(*this) += rhs);
  };
 
+ std::string text() const;
+
  std::string save_info()
  {
   std::stringstream ret;
@@ -390,10 +392,9 @@ public:
  void draw(WINDOW* w, int plx, int ply, bool inv);
  void print_info(WINDOW* w);
  std::string short_description() const;
- std::string opinion_text();
 
 // Goal / mission functions
-// void pick_long_term_goal(game *g);	// no implementation
+// void pick_long_term_goal(game *g);	// no implementation, but likely would influence perform_mission
  void perform_mission(game *g);
  int  minutes_to_u(const game *g) const; // Time in minutes it takes to reach player
  bool fac_has_value(faction_value value) const;

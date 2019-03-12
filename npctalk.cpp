@@ -387,7 +387,7 @@ std::string dynamic_line(talk_topic topic, game *g, npc *p)
 
  case TALK_OPINION: {
   std::stringstream opinion;
-  opinion << "&" << p->opinion_text();
+  opinion << "&" << p->op_of_u.text();
   return opinion.str();
  } break;
 
