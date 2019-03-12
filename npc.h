@@ -389,13 +389,13 @@ public:
 // Display
  void draw(WINDOW* w, int plx, int ply, bool inv);
  void print_info(WINDOW* w);
- std::string short_description();
+ std::string short_description() const;
  std::string opinion_text();
 
 // Goal / mission functions
- void pick_long_term_goal(game *g);
+// void pick_long_term_goal(game *g);	// no implementation
  void perform_mission(game *g);
- int  minutes_to_u(game *g); // Time in minutes it takes to reach player
+ int  minutes_to_u(const game *g) const; // Time in minutes it takes to reach player
  bool fac_has_value(faction_value value) const;
  bool fac_has_job(faction_job job) const;
 

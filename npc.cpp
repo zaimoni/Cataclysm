@@ -1260,7 +1260,7 @@ std::vector<itype_id> npc::styles_offered_to(player *p)
 }
 
 
-int npc::minutes_to_u(game *g)
+int npc::minutes_to_u(const game *g) const
 {
  int ret = abs(mapx - g->lev.x);
  if (abs(mapy - g->lev.y) < ret)
@@ -1725,7 +1725,7 @@ void npc::print_info(WINDOW* w)
  } while (split != std::string::npos && line <= 11);
 }
 
-std::string npc::short_description()
+std::string npc::short_description() const
 {
  std::stringstream ret;
  ret << "Wielding " << weapon.tname() << ";   " << "Wearing: ";
