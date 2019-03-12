@@ -60,25 +60,27 @@ class overmap
                      int &dist, bool must_be_seen);
   std::vector<point> find_all(point origin, oter_id type, int type_range,
                             int &dist, bool must_be_seen);
-  std::vector<point> find_terrain(std::string term, int cursx, int cursy);
+  std::vector<point> find_terrain(const std::string& term) const;
   int closest_city(point p) const;
-  point random_house_in_city(int city_id);
+  point random_house_in_city(int city_id) const;
   int dist_from_city(point p) const;
 // Interactive point choosing; used as the map screen
   point choose_point(game *g);
 
   oter_id& ter(int x, int y);
-// unsigned zones(int x, int y);	// no definition
+  oter_id ter(int x, int y) const { return const_cast<overmap*>(this)->ter(x, y); };	// \todo specialize?
+  // unsigned zones(int x, int y);	// no definition
   std::vector<mongroup*> monsters_at(int x, int y);
   bool is_safe(const point& pt) const; // true if monsters_at is empty, or only woodland
-  bool&   seen(int x, int y);
+  bool& seen(int x, int y);
+  bool seen(int x, int y) const { return const_cast<overmap*>(this)->seen(x, y); };	// \todo specialize?
 
-  bool has_note(int x, int y);
-  std::string note(int x, int y);
+  bool has_note(int x, int y) const;
+  std::string note(int x, int y) const;
   void add_note(int x, int y, std::string message);
-  point find_note(point origin, const std::string& text);
+  point find_note(point origin, const std::string& text) const;
   void delete_note(int x, int y);
-  point display_notes();
+  point display_notes() const;
   
   tripoint pos;
   std::vector<city> cities;
@@ -99,7 +101,7 @@ class overmap
   void generate_sub(overmap* above);
   //Drawing
   void draw(WINDOW *w, game *g, int &cursx, int &cursy, 
-                   int &origx, int &origy, char &ch, bool blink);
+                   int &origx, int &origy, char &ch, bool blink) const;
   // Overall terrain
   void place_river(point pa, point pb);
   void place_forest();

@@ -470,7 +470,7 @@ bool& overmap::seen(int x, int y)
  return s[x][y];
 }
 
-bool overmap::has_note(int x, int y)
+bool overmap::has_note(int x, int y) const
 {
  for (int i = 0; i < notes.size(); i++) {
   if (notes[i].x == x && notes[i].y == y)
@@ -479,7 +479,7 @@ bool overmap::has_note(int x, int y)
  return false;
 }
 
-std::string overmap::note(int x, int y)
+std::string overmap::note(int x, int y) const
 {
  for (int i = 0; i < notes.size(); i++) {
   if (notes[i].x == x && notes[i].y == y)
@@ -503,7 +503,7 @@ void overmap::add_note(int x, int y, std::string message)
   notes.push_back(om_note(x, y, notes.size(), message));
 }
 
-point overmap::find_note(point origin, const std::string& text)
+point overmap::find_note(point origin, const std::string& text) const
 {
  int closest = 9999;
  point ret(-1, -1);
@@ -527,7 +527,7 @@ void overmap::delete_note(int x, int y)
  }
 }
 
-point overmap::display_notes()
+point overmap::display_notes() const
 {
  std::string title = "Notes:";
  WINDOW* w_notes = newwin(VIEW, SCREEN_WIDTH, 0, 0);
@@ -1002,7 +1002,7 @@ std::vector<point> overmap::find_all(point origin, oter_id type, int type_range,
  return res;
 }
 
-std::vector<point> overmap::find_terrain(std::string term, int cursx, int cursy)
+std::vector<point> overmap::find_terrain(const std::string& term) const
 {
  std::vector<point> found;
  for (int x = 0; x < OMAPX; x++) {
@@ -1028,7 +1028,7 @@ int overmap::closest_city(point p) const
  return ret;
 }
 
-point overmap::random_house_in_city(int city_id)
+point overmap::random_house_in_city(int city_id) const
 {
  if (city_id < 0 || city_id >= cities.size()) {
   debugmsg("overmap::random_house_in_city(%d) (max %d)", city_id,
@@ -1065,7 +1065,7 @@ int overmap::dist_from_city(point p) const
 }
 
 void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy, 
-                   int &origx, int &origy, char &ch, bool blink)
+                   int &origx, int &origy, char &ch, bool blink) const
 {
  bool legend = true, note_here = false, npc_here = false;
  std::string note_text, npc_name;
@@ -1311,7 +1311,7 @@ point overmap::choose_point(game *g)
    draw(w_map, g, curs.x, curs.y, orig.x, orig.y, ch, blink);
    point found = find_note(curs, term);
    if (found.x == -1) {	// Didn't find a note
-    std::vector<point> terlist(find_terrain(term, orig.x, orig.y));
+    std::vector<point> terlist(find_terrain(term));
     if (!terlist.empty()){
      int i = 0;
      //Navigate through results
