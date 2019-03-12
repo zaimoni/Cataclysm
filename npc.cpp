@@ -1392,7 +1392,7 @@ void npc::init_buying(inventory you, std::vector<int> &indices,
  }
 }
 
-int npc::minimum_item_value()
+int npc::minimum_item_value() const
 {
  int ret = 20;
  ret -= personality.collector;
@@ -1491,7 +1491,7 @@ bool npc::has_painkiller() const
  return false;
 }
 
-bool npc::took_painkiller()
+bool npc::took_painkiller() const
 {
  return (has_disease(DI_PKILL1) || has_disease(DI_PKILL2) ||
          has_disease(DI_PKILL3) || has_disease(DI_PKILL_L));
@@ -1519,7 +1519,7 @@ bool npc::is_following() const
  }
 }
 
-bool npc::is_leader()
+bool npc::is_leader() const
 {
  return (attitude == NPCATT_LEAD);
 }
@@ -1532,7 +1532,7 @@ bool npc::is_enemy() const
  return  false;
 }
 
-bool npc::is_defending()
+bool npc::is_defending() const
 {
  return (attitude == NPCATT_DEFEND);
 }
@@ -1585,7 +1585,7 @@ int npc::danger_assessment(game *g) const
  return ret;
 }
 
-int npc::average_damage_dealt()
+int npc::average_damage_dealt() const
 {
  int ret = base_damage();
  ret += weapon.damage_cut() + weapon.damage_bash() / 2;
@@ -1594,7 +1594,7 @@ int npc::average_damage_dealt()
  return ret;
 }
 
-bool npc::bravery_check(int diff)
+bool npc::bravery_check(int diff) const
 {
  return (dice(10 + personality.bravery, 6) >= dice(diff, 4));
 }
@@ -1660,7 +1660,7 @@ void npc::told_to_leave(game *g)
  }
 }
 
-int npc::follow_distance()
+int npc::follow_distance() const
 {
  return 4; // TODO: Modify based on bravery, weapon wielded, etc.
 }

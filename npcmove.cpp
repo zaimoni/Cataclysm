@@ -374,7 +374,7 @@ void npc::choose_monster_target(game *g, int &enemy, int &danger,
  }
 }
 
-npc_action npc::method_of_fleeing(game *g, int enemy)
+npc_action npc::method_of_fleeing(game *g, int enemy) const
 {
  int speed = (enemy == TARGET_PLAYER ? g->u.current_speed(g) :
                                        g->z[enemy].speed);
@@ -464,7 +464,7 @@ npc_action npc::method_of_attack(game *g, int target, int danger) const
  return npc_melee;
 }
 
-npc_action npc::address_needs(game *g, int danger)
+npc_action npc::address_needs(game *g, int danger) const
 {
  if (has_healing_item()) {
   for (int i = 0; i < num_hp_parts; i++) {
@@ -786,7 +786,7 @@ void npc::update_path(const map& m, const point& pt)
  if (!path.empty() && path[0] == pos) path.erase(path.begin());
 }
 
-bool npc::can_move_to(game *g, int x, int y)
+bool npc::can_move_to(game *g, int x, int y) const
 {
  return (g->m.move_cost(x, y) > 0 || g->m.has_flag(bashable, x, y)) && rl_dist(pos, x, y) <= 1;
 }

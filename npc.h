@@ -415,13 +415,13 @@ public:
  bool is_enemy() const; // We want to kill/mug/etc the player
  bool is_following() const; // Traveling w/ player (whether as a friend or a slave)
  bool is_friend() const; // Allies with the player
- bool is_leader(); // Leading the player
- bool is_defending(); // Putting the player's safety ahead of ours
+ bool is_leader() const; // Leading the player
+ bool is_defending() const; // Putting the player's safety ahead of ours
 // What happens when the player makes a request
  void told_to_help(game *g);
  void told_to_wait(game *g);
  void told_to_leave(game *g);
- int  follow_distance();	// How closely do we follow the player?
+ int  follow_distance() const;	// How closely do we follow the player?
  int  speed_estimate(int speed) const; // Estimate of a target's speed, usually player
 
 
@@ -437,21 +437,21 @@ public:
 
 
 // Use and assessment of items
- int  minimum_item_value(); // The minimum value to want to pick up an item
+ int  minimum_item_value() const; // The minimum value to want to pick up an item
  void update_worst_item_value(); // Find the worst value in our inventory
  int  value(item &it) const;
  bool wear_if_wanted(item it);
  virtual bool wield(game *g, int index);
  bool has_healing_item() const;
  bool has_painkiller() const;
- bool took_painkiller();
+ bool took_painkiller() const;
  void use_painkiller(game *g);
  void activate_item(game *g, int index);
 
 // Interaction and assessment of the world around us
  int  danger_assessment(game *g) const;
- int  average_damage_dealt(); // Our guess at how much damage we can deal
- bool bravery_check(int diff);
+ int  average_damage_dealt() const; // Our guess at how much damage we can deal
+ bool bravery_check(int diff) const;
  bool emergency(int danger) const;
  void say(game *g, std::string line, ...);
  void decide_needs();
@@ -470,9 +470,9 @@ public:
 // Functions which choose an action for a particular goal
  void choose_monster_target(game *g, int &enemy, int &danger,
                             int &total_danger);
- npc_action method_of_fleeing	(game *g, int enemy);
+ npc_action method_of_fleeing	(game *g, int enemy) const;
  npc_action method_of_attack	(game *g, int enemy, int danger) const;
- npc_action address_needs	(game *g, int danger);
+ npc_action address_needs	(game *g, int danger) const;
  npc_action address_player	(game *g);
  npc_action long_term_goal_action(game *g);
  itype_id alt_attack_available() const;	// Do we have grenades, molotov, etc?
@@ -487,7 +487,7 @@ public:
 
 // Physical movement from one tile to the next
  void update_path	(const map& m, const point& pt);
- bool can_move_to	(game *g, int x, int y);
+ bool can_move_to	(game *g, int x, int y) const;
  void move_to		(game *g, int x, int y);
  void move_to_next	(game *g); // Next in <path>
  void avoid_friendly_fire(game *g, int target); // Maneuver so we won't shoot u
@@ -508,7 +508,7 @@ public:
  void use_escape_item	(game *g, int index, int target);
  void heal_player	(game *g, player &patient);
  void heal_self		(game *g);
- void take_painkiller	(game *g);
+// void take_painkiller	(game *g);	// no implementation
  void pick_and_eat	(game *g);
  void mug_player	(game *g, player &mark);
  void look_for_player	(game *g, player &sought);
@@ -554,7 +554,7 @@ public:
  faction *my_fac;
  npc_mission mission;
  npc_personality personality;
- npc_opinion op_of_u;
+ npc_opinion op_of_u;	// \todo V 0.2.1+ clear this on new player in pre-existing world
  npc_chatbin chatbin;
  int patience; // Used when we expect the player to leave the area
  npc_combat_rules combat_rules;
