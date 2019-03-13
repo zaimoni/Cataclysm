@@ -640,13 +640,13 @@ void computer::activate_failure(game *g, computer_failure fail)
       int leak_size = rng(4, 10);
       for (int i = 0; i < leak_size; i++) {
        std::vector<point> next_move;
-	   point dest(p + direction_vector(EAST));
+	   point dest(p + Direction::E);
        if (g->m.move_cost(dest) > 0) next_move.push_back(dest);
-	   dest = p + direction_vector(SOUTH);
+	   dest = p + Direction::S;
 	   if (g->m.move_cost(dest) > 0) next_move.push_back(dest);
-	   dest = p + direction_vector(WEST);
+	   dest = p + Direction::W;
 	   if (g->m.move_cost(dest) > 0) next_move.push_back(dest);
-	   dest = p + direction_vector(NORTH);
+	   dest = p + Direction::N;
 	   if (g->m.move_cost(dest) > 0) next_move.push_back(dest);
 
 	   if (next_move.empty()) break;

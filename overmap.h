@@ -56,10 +56,10 @@ class overmap
  * Use must_be_seen=true if only terrain seen by the player should be searched.
  * If no such tile can be found, (-1, -1) is returned.
  */
-  point find_closest(point origin, oter_id type, int type_range,
-                     int &dist, bool must_be_seen);
-  std::vector<point> find_all(point origin, oter_id type, int type_range,
-                            int &dist, bool must_be_seen);
+  point find_closest(point origin, oter_id type, int type_range, int &dist, bool must_be_seen) const;
+#if DEAD_FUNC
+  std::vector<point> find_all(point origin, oter_id type, int type_range, int &dist, bool must_be_seen);
+#endif
   std::vector<point> find_terrain(const std::string& term) const;
   int closest_city(point p) const;
   point random_house_in_city(int city_id) const;
@@ -68,12 +68,16 @@ class overmap
   point choose_point(game *g);
 
   oter_id& ter(int x, int y);
+  oter_id& ter(const point& pt) { return ter(pt.x, pt.y); };
   oter_id ter(int x, int y) const { return const_cast<overmap*>(this)->ter(x, y); };	// \todo specialize?
+  oter_id ter(const point& pt) const { return const_cast<overmap*>(this)->ter(pt.x, pt.y); };
   // unsigned zones(int x, int y);	// no definition
   std::vector<mongroup*> monsters_at(int x, int y);
   bool is_safe(const point& pt) const; // true if monsters_at is empty, or only woodland
   bool& seen(int x, int y);
+  bool& seen(const point& pt) { return seen(pt.x, pt.y); };
   bool seen(int x, int y) const { return const_cast<overmap*>(this)->seen(x, y); };	// \todo specialize?
+  bool seen(const point& pt) const { return const_cast<overmap*>(this)->seen(pt.x, pt.y); };
 
   bool has_note(int x, int y) const;
   std::string note(int x, int y) const;

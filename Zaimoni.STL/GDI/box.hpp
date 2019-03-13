@@ -1,7 +1,12 @@
 #ifndef ZAIMONI_STL_GDI_BOX_HPP
 #define ZAIMONI_STL_GDI_BOX_HPP 1
 
+/* (C)2019 Kenneth Boyd, license: MIT.txt */
+
 #include <functional>
+#ifdef IRRATIONAL_CAUTION
+#include "../Logging.h"
+#endif
 
 namespace zaimoni {
 namespace gdi {
@@ -51,6 +56,29 @@ public:
 		return *this;
 	}
 };
+
+// enumerate coordinates "on edge of box" is practical for integer coordinates, but viable canonical schemas are dimension-dependent
+// prototyped in Rogue Survivor Revived, relicensed for here
+template<class T>
+T Linf_border_sweep(const int radius, unsigned int i, const int x0, const int y0)	// "Lesbegue infinity border sweep"
+{
+	if (i == 0) return T(x0 - radius, y0 - radius);
+#ifdef IRRATIONAL_CAUTION
+#define Z_UINT_MAX ((unsigned int)(-1)/2)
+	assert(1 <= radius);
+	assert(Z_UINT_MAX/8 >= radius);
+	assert(8 * radius > i);
+#undef Z_INT_MAX
+#endif
+	const int radius2 = 2 * radius;
+	if (i < radius2) return T(x0 - radius + i, y0 - radius);
+	i -= radius2;
+	if (i < radius2) return T(x0 + radius, y0 - radius + i);
+	i -= radius2;
+	if (i < radius2) return T(x0 + radius - i, y0 + radius);
+	i -= radius2;
+	/* if (i < radius2) */ return T(x0 - radius, y0 + radius - i);
+}
 
 }	// namespace gdi
 }	// namespace zaimoni

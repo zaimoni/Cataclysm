@@ -9,6 +9,8 @@
 #include <fstream>
 #include <sstream>
 
+#include "Zaimoni.STL/GDI/box.hpp"
+
 #define STREETCHANCE 2
 #define NUM_FOREST 250
 #define TOP_HIWAY_DIST 140
@@ -969,22 +971,24 @@ void overmap::make_tutorial()
  zg.clear();
 }
 
-point overmap::find_closest(point origin, oter_id type, int type_range,
-                            int &dist, bool must_be_seen)
+point overmap::find_closest(point origin, oter_id type, int type_range, int &dist, bool must_be_seen) const
 {
  int max = (dist == 0 ? OMAPX / 2 : dist);
- for (dist = 0; dist <= max; dist++) {
-  for (int x = origin.x - dist; x <= origin.x + dist; x++) {
-   for (int y = origin.y - dist; y <= origin.y + dist; y++) {
-    if (ter(x, y) >= type && ter(x, y) < type + type_range &&
-        (!must_be_seen || seen(x, y)))
-     return point(x, y);
-   }
+ auto t_at = ter(origin);
+ if (t_at >= type && t_at < type + type_range && (!must_be_seen || seen(origin))) return origin;
+ 
+ for (dist = 1; dist <= max; dist++) {
+  int i = 8*dist;
+  while (0 < i--) {
+    point pt = origin+zaimoni::gdi::Linf_border_sweep<point>(dist,i,origin.x,origin.y);
+	if ((t_at = ter(pt)) >= type && t_at < type + type_range && (!must_be_seen || seen(pt))) return pt;
   }
  }
  return point(-1, -1);
 }
 
+#if DEAD_FUNC
+// reimplement as above before taking live
 std::vector<point> overmap::find_all(point origin, oter_id type, int type_range,
                             int &dist, bool must_be_seen)
 {
@@ -1001,6 +1005,7 @@ std::vector<point> overmap::find_all(point origin, oter_id type, int type_range,
  }
  return res;
 }
+#endif
 
 std::vector<point> overmap::find_terrain(const std::string& term) const
 {
