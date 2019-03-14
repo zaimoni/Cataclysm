@@ -7,6 +7,7 @@
 #include "output.h"
 #include "npc.h"
 #include <vector>
+#include <iosfwd>
 
 struct city {
  int x;	// legal range 0...OMAPX-1
@@ -22,6 +23,8 @@ struct om_note {
  std::string text;
  om_note(int X = -1, int Y = -1, int N = -1, std::string T = "") :
          x (X), y (Y), num (N), text (T) {}
+
+ om_note(std::istream& is);
 };
 
 struct radio_tower {

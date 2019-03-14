@@ -1,11 +1,10 @@
 // master implementation file for new-style saveload support
 
 #include "computer.h"
-#include "mongroup.h"
 #include "mapdata.h"
 #include "mission.h"
+#include "overmap.h"
 #include "saveload.h"
-#include <string>
 #include <istream>
 #include <ostream>
 
@@ -196,6 +195,18 @@ std::istream& operator>>(std::istream& is, field& dest)
 std::ostream& operator<<(std::ostream& os, const field& src)
 {
 	return os << src.type I_SEP << int(src.density) I_SEP << src.age;
+}
+
+om_note::om_note(std::istream& is)
+{
+	is >> x >> y >> num;
+	getline(is, text);	// Chomp endl
+	getline(is, text);
+}
+
+std::ostream& operator<<(std::ostream& os, const om_note& src)
+{
+	return os << src.x  I_SEP << src.y  I_SEP << src.num << std::endl << src.text << std::endl;
 }
 
 std::istream& operator>>(std::istream& is, player_activity& dest)

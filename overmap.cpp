@@ -2544,9 +2544,7 @@ void overmap::save(const std::string& name, int x, int y, int z)
   }
   fout << std::endl;
  }
- for (int i = 0; i < notes.size(); i++)
-  fout << "N " << notes[i].x << " " << notes[i].y << " " << notes[i].num <<
-          std::endl << notes[i].text << std::endl;
+ for(const auto& n : notes) fout << "N " << n;
  fout.close();
  fout.open(terfilename.str().c_str(), std::ios_base::trunc);
  for (int j = 0; j < OMAPY; j++) {
@@ -2662,13 +2660,7 @@ void overmap::open(game *g)	// only called from constructor
     }
    }
    while (fin >> datatype) {	// Load private notes
-    if (datatype == 'N') {
-     om_note tmp;
-     fin >> tmp.x >> tmp.y >> tmp.num;
-     getline(fin, tmp.text);	// Chomp endl
-     getline(fin, tmp.text);
-     notes.push_back(tmp);
-    }
+    if (datatype == 'N') notes.push_back(om_note(fin));
    }
    fin.close();
   } else {

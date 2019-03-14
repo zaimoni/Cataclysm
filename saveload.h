@@ -48,6 +48,12 @@ std::ostream& operator<<(std::ostream& os, const mongroup& src);
 
 #endif
 
+#ifdef _OVERMAP_H_
+
+std::ostream& operator<<(std::ostream& os, const om_note& src);
+
+#endif
+
 #ifdef _PLDATA_H_
 
 std::istream& operator>>(std::istream& is, player_activity& dest);
