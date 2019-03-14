@@ -135,12 +135,10 @@ void map::generate(game *g, overmap *om, int x, int y, int turn)
   grid[i]->active_item_count = 0;
   grid[i]->field_count = 0;
   grid[i]->turn_last_touched = turn;
-  grid[i]->comp = computer();
   for (int x = 0; x < SEEX; x++) {
    for (int y = 0; y < SEEY; y++) {
     grid[i]->ter[x][y] = t_null;
     grid[i]->trp[x][y] = tr_null;
-    grid[i]->fld[x][y] = field();
     grid[i]->rad[x][y] = 0;
    }
   }

@@ -4,6 +4,7 @@
 #include "mapdata.h"
 #include "mission.h"
 #include "overmap.h"
+#include "recent_msg.h"
 #include "saveload.h"
 #include <istream>
 #include <ostream>
@@ -31,6 +32,13 @@ std::ostream& operator<<(std::ostream& os, TYPE src)	\
 	return os << int(src);	\
 }
 
+IO_OPS_ENUM(bionic_id)
+IO_OPS_ENUM(itype_id)
+IO_OPS_ENUM(mission_id)
+IO_OPS_ENUM(npc_favor_type)
+IO_OPS_ENUM(skill)
+IO_OPS_ENUM(ter_id)
+IO_OPS_ENUM(trap_id)
 
 std::istream& operator>>(std::istream& is, point& dest)
 {
@@ -111,8 +119,6 @@ std::ostream& operator<<(std::ostream& os, const computer& src)
 	return os;
 }
 
-IO_OPS_ENUM(bionic_id)
-
 bionic::bionic(std::istream& is)
 {
 	is >> id >> invlet >> powered >> charge;
@@ -122,12 +128,6 @@ std::ostream& operator<<(std::ostream& os, const bionic& src)
 {
 	return os << src.id I_SEP << src.invlet I_SEP << src.powered I_SEP << src.charge;
 }
-
-IO_OPS_ENUM(itype_id)
-IO_OPS_ENUM(npc_favor_type)
-IO_OPS_ENUM(skill)
-
-IO_OPS_ENUM(mission_id)
 
 // stereotypical translation of pointers to/from vector indexes
 std::istream& operator>>(std::istream& is, const mission_type*& dest)
@@ -271,6 +271,135 @@ std::ostream& operator<<(std::ostream& os, const spawn_point& src)
 		src.faction_id I_SEP << src.mission_id << (src.friendly ? " 1 " : " 0 ") <<
 		src.name;
 }
+
+submap::submap(std::istream& is, game* master_game)
+{
+	is >> turn_last_touched;
+	int turndif = int(messages.turn);
+	if (turndif < 0) turndif = 0;
+	// Load terrain
+	for (int j = 0; j < SEEY; j++) {
+		for (int i = 0; i < SEEX; i++) {
+			is >> ter[i][j];
+			itm[i][j].clear();
+			trp[i][j] = tr_null;
+			fld[i][j] = field();
+		}
+	}
+	// Load irradiation
+	for (int j = 0; j < SEEY; j++) {
+		for (int i = 0; i < SEEX; i++) {
+			int radtmp;
+			is >> radtmp;
+			radtmp -= int(turndif / 100);	// Radiation slowly decays	\todo V 0.2.1+ handle this as a true game time effect; no saveload-purging of radiation
+			if (radtmp < 0) radtmp = 0;
+			rad[i][j] = radtmp;
+		}
+	}
+	// Load items and traps and fields and spawn points and vehicles
+	item it_tmp;
+	std::string databuff;
+	std::string string_identifier;
+	int itx, ity;
+	do {
+		is >> string_identifier; // "----" indicates end of this submap
+		int t = 0;
+		if (string_identifier == "I") {
+			is >> itx >> ity;
+			getline(is, databuff); // Clear out the endline
+			getline(is, databuff);
+			it_tmp.load_info(databuff);
+			itm[itx][ity].push_back(it_tmp);
+			if (it_tmp.active) active_item_count++;
+		} else if (string_identifier == "C") {
+			getline(is, databuff); // Clear out the endline
+			getline(is, databuff);
+			it_tmp.load_info(databuff);
+			itm[itx][ity].back().put_in(it_tmp);
+			if (it_tmp.active) active_item_count++;
+		} else if (string_identifier == "T") {
+			is >> itx >> ity;
+			is >> trp[itx][ity];;
+		} else if (string_identifier == "F") {
+			is >> itx >> ity;
+			is >> fld[itx][ity];
+			field_count++;
+		}
+		else if (string_identifier == "S") spawns.push_back(spawn_point(is));
+		else if (string_identifier == "V") {
+			vehicle veh(master_game);
+			veh.load(is);
+			//veh.smx = gridx;
+			//veh.smy = gridy;
+			vehicles.push_back(veh);
+		} else if (string_identifier == "c") {
+			is >> comp;
+			getline(is, databuff); // Clear out the endline
+		}
+	} while (string_identifier != "----" && !is.eof());
+}
+
+
+std::ostream& operator<<(std::ostream& os, const submap& src)
+{
+	os << src.turn_last_touched << std::endl;
+	// Dump the terrain.
+	for (int j = 0; j < SEEY; j++) {
+		for (int i = 0; i < SEEX; i++) os << src.ter[i][j] I_SEP;
+		os << std::endl;
+	}
+	// Dump the radiation
+	for (int j = 0; j < SEEY; j++) {
+		for (int i = 0; i < SEEX; i++)
+			os << src.rad[i][j] I_SEP;
+	}
+	os << std::endl;
+
+	// Items section; designate it with an I.  Then check itm[][] for each square
+	//   in the grid and print the coords and the item's details.
+	// Designate it with a C if it's contained in the prior item.
+	// Also, this wastes space since we print the coords for each item, when we
+	//   could be printing a list of items for each coord (except the empty ones)
+	item tmp;
+	for (int j = 0; j < SEEY; j++) {
+		for (int i = 0; i < SEEX; i++) {
+			for (int k = 0; k < src.itm[i][j].size(); k++) {
+				tmp = src.itm[i][j][k];
+				os << "I " << i I_SEP << j << std::endl;
+				os << tmp.save_info() << std::endl;
+				for (int l = 0; l < tmp.contents.size(); l++)
+					os << "C " << std::endl << tmp.contents[l].save_info() << std::endl;
+			}
+		}
+	}
+	// Output the traps
+	for (int j = 0; j < SEEY; j++) {
+		for (int i = 0; i < SEEX; i++) {
+			if (src.trp[i][j] != tr_null)
+				os << "T " << i I_SEP << j I_SEP << src.trp[i][j] << std::endl;
+		}
+	}
+
+	// Output the fields
+	for (int j = 0; j < SEEY; j++) {
+		for (int i = 0; i < SEEX; i++) {
+			const field& tmpf = src.fld[i][j];
+			if (tmpf.type != fd_null) os << "F " << i << " " << j << " " << tmpf << std::endl;
+		}
+	}
+	// Output the spawn points
+	for (const auto& s : src.spawns) os << "S " << s << std::endl;
+
+	// Output the vehicles
+	for (int i = 0; i < src.vehicles.size(); i++) {
+		os << "V ";
+		src.vehicles[i].save(os);
+	}
+	// Output the computer
+	if (src.comp.name != "") os << "c " << src.comp << std::endl;
+	return os << "----" << std::endl;
+}
+
 
 std::istream& operator>>(std::istream& is, vehicle_part& dest)
 {

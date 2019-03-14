@@ -34,6 +34,8 @@ std::ostream& operator<<(std::ostream& os, const spawn_point& src);
 std::istream& operator>>(std::istream& is, field& dest);
 std::ostream& operator<<(std::ostream& os, const field& src);
 
+std::ostream& operator<<(std::ostream& os, const submap& src);
+
 #endif
 
 #ifdef _MISSION_H_

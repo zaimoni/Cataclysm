@@ -270,6 +270,9 @@ struct submap {
  std::vector<spawn_point> spawns;
  std::vector<vehicle> vehicles;
  computer comp;
+
+ submap() = default;
+ submap(std::istream& is, game* master_game);
 };
 
 #endif

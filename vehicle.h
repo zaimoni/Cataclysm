@@ -119,10 +119,10 @@ public:
     bool player_in_control(player& p) const;
 
 // load and init vehicle data from stream. This implies valid save data!
-    void load (std::ifstream &stin);
+    void load (std::istream &stin);
 
 // Save vehicle data to stream
-    void save (std::ofstream &stout);
+    void save(std::ostream &stout) const;
 
 // get vpart type info for part number (part at given vector index)
     const vpart_info& part_info(int index) const;
