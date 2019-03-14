@@ -50,6 +50,7 @@ std::ostream& operator<<(std::ostream& os, const mongroup& src);
 
 #ifdef _OVERMAP_H_
 
+std::ostream& operator<<(std::ostream& os, const city& src);
 std::ostream& operator<<(std::ostream& os, const om_note& src);
 std::ostream& operator<<(std::ostream& os, const radio_tower& src);
 

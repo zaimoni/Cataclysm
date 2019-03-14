@@ -2553,11 +2553,8 @@ void overmap::save(const std::string& name, int x, int y, int z)
  }
  fout << std::endl;
  for(const auto& zgroup : zg) fout << "Z " << zgroup;
- for (int i = 0; i < cities.size(); i++)
-  fout << "t " << cities[i].x << " " << cities[i].y << " " << cities[i].s <<
-          std::endl;
- for (int i = 0; i < roads_out.size(); i++)
-  fout << "R " << roads_out[i].x << " " << roads_out[i].y << std::endl;
+ for(const auto& c : cities) fout << "t " << c;
+ for(const auto& r : roads_out) fout << "R " << r;
  for(const auto& r : radios) fout << "T " << r;
 
  for (int i = 0; i < npcs.size(); i++)
@@ -2590,15 +2587,9 @@ void overmap::open(game *g)	// only called from constructor
   }
   while (fin >> datatype) {
    if (datatype == 'Z') zg.push_back(mongroup(fin));	// Monster group
-   else if (datatype == 't') {	// City
-    fin >> cx >> cy >> cs;
-    tmp.x = cx; tmp.y = cy; tmp.s = cs;
-    cities.push_back(tmp);
-   } else if (datatype == 'R') {	// Road leading out
-    fin >> cx >> cy;
-    tmp.x = cx; tmp.y = cy; tmp.s = 0;
-    roads_out.push_back(tmp);
-   } else if (datatype == 'T') radios.push_back(radio_tower(fin));	// Radio tower
+   else if (datatype == 't') cities.push_back(city(fin));		// City
+   else if (datatype == 'R') roads_out.push_back(city(fin,true));	// Road leading out
+   else if (datatype == 'T') radios.push_back(radio_tower(fin));	// Radio tower
    else if (datatype == 'n') {	// NPC
 /* When we start loading a new NPC, check to see if we've accumulated items for
    assignment to an NPC.

@@ -14,6 +14,8 @@ struct city {
  int y;	// legal range 0...OMAPY-1
  int s;
  city(int X = -1, int Y = -1, int S = -1) : x (X), y (Y), s (S) {}
+
+ city(std::istream& is, bool is_road=false);
 };
 
 struct om_note {

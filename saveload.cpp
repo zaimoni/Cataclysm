@@ -197,6 +197,20 @@ std::ostream& operator<<(std::ostream& os, const field& src)
 	return os << src.type I_SEP << int(src.density) I_SEP << src.age;
 }
 
+city::city(std::istream& is, bool is_road)
+: s(0)
+{	// the difference between a city, and a road, is the radius (roads have zero radius)
+	is >> x >> y;
+	if (!is_road) is >> s;
+}
+
+std::ostream& operator<<(std::ostream& os, const city& src)
+{
+	os << src.x << src.y;
+	if (0 < src.s) os << src.s;
+	return os << std::endl;
+}
+
 om_note::om_note(std::istream& is)
 {
 	is >> x >> y >> num;
