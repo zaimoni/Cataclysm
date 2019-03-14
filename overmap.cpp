@@ -2558,10 +2558,7 @@ void overmap::save(const std::string& name, int x, int y, int z)
           std::endl;
  for (int i = 0; i < roads_out.size(); i++)
   fout << "R " << roads_out[i].x << " " << roads_out[i].y << std::endl;
- for (int i = 0; i < radios.size(); i++)
-  fout << "T " << radios[i].x << " " << radios[i].y << " " <<
-          radios[i].strength << " " << std::endl << radios[i].message <<
-          std::endl;
+ for(const auto& r : radios) fout << "T " << r;
 
  for (int i = 0; i < npcs.size(); i++)
   fout << "n " << npcs[i].save_info() << std::endl;
@@ -2601,13 +2598,8 @@ void overmap::open(game *g)	// only called from constructor
     fin >> cx >> cy;
     tmp.x = cx; tmp.y = cy; tmp.s = 0;
     roads_out.push_back(tmp);
-   } else if (datatype == 'T') {	// Radio tower
-    radio_tower tmp;
-    fin >> tmp.x >> tmp.y >> tmp.strength;
-    getline(fin, tmp.message);	// Chomp endl
-    getline(fin, tmp.message);
-    radios.push_back(tmp);
-   } else if (datatype == 'n') {	// NPC
+   } else if (datatype == 'T') radios.push_back(radio_tower(fin));	// Radio tower
+   else if (datatype == 'n') {	// NPC
 /* When we start loading a new NPC, check to see if we've accumulated items for
    assignment to an NPC.
  */

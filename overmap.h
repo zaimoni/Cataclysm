@@ -34,6 +34,8 @@ struct radio_tower {
  std::string message;
  radio_tower(int X = -1, int Y = -1, int S = -1, std::string M = "") :
              x (X), y (Y), strength (S), message (M) {}
+
+ radio_tower(std::istream& is);
 };
 
 class overmap

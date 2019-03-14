@@ -209,6 +209,18 @@ std::ostream& operator<<(std::ostream& os, const om_note& src)
 	return os << src.x  I_SEP << src.y  I_SEP << src.num << std::endl << src.text << std::endl;
 }
 
+radio_tower::radio_tower(std::istream& is)
+{
+	is >> x >> y >> strength;
+	getline(is, message);	// Chomp endl
+	getline(is, message);
+}
+
+std::ostream& operator<<(std::ostream& os, const radio_tower& src)
+{
+	return os << src.x I_SEP << src.y I_SEP << src.strength I_SEP << std::endl << src.message << std::endl;
+}
+
 std::istream& operator>>(std::istream& is, player_activity& dest)
 {
 	int tmp, tmptype;
