@@ -32,21 +32,20 @@ submap* mapbuffer::lookup_submap(int x, int y, int z)
 
 void mapbuffer::save()
 {
- std::map<tripoint, submap*>::iterator it;
  std::ofstream fout;
  fout.open("save/maps.txt");
 
  fout << submap_list.size() << std::endl;
  int percent = 0;
 
- for (it = submaps.begin(); it != submaps.end(); it++) {
+ for(const auto& it : submaps) {
   percent++;
   if (percent % 100 == 0)
    popup_nowait("Please wait as the map saves [%s%d/%d]",
                 (percent < 100 ?  percent < 10 ? "  " : " " : ""), percent,
                 submap_list.size());
-  fout << it->first.x << " " << it->first.y << " " << it->first.z << std::endl;
-  fout << *it->second;
+  fout << it.first << std::endl;
+  fout << *it.second;
  }
  // Close the file; that's all we need.
  fout.close();
@@ -58,16 +57,11 @@ void mapbuffer::load()
   debugmsg("Can't load mapbuffer without a master_game");
   return;
  }
- std::map<tripoint, submap*>::iterator it;
  std::ifstream fin;
  fin.open("save/maps.txt");
- if (!fin.is_open())
-  return;
+ if (!fin.is_open()) return;
 
- char ch = 0;
- int itx, ity, t, d, a, num_submaps;
- item it_tmp;
- std::string databuff;
+ int num_submaps;
  fin >> num_submaps;
 
  while (!fin.eof()) {
@@ -76,11 +70,11 @@ void mapbuffer::load()
    popup_nowait("Please wait as the map loads [%s%d/%d]",
                 (percent < 100 ?  percent < 10 ? "  " : " " : ""), percent,
                 num_submaps);
-  int locx, locy, locz, turn;
-  fin >> locx >> locy >> locz;
+  tripoint where;
+  fin >> where;
   submap * sm = new submap(fin, master_game);
   submap_list.push_back(sm);
-  submaps[ tripoint(locx, locy, locz) ] = sm;
+  submaps[ where ] = sm;
  }
  fin.close();
 }
