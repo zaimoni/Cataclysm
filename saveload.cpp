@@ -32,6 +32,8 @@ std::ostream& operator<<(std::ostream& os, TYPE src)	\
 	return os << int(src);	\
 }
 
+IO_OPS_ENUM(art_charge)
+IO_OPS_ENUM(art_effect_active)
 IO_OPS_ENUM(art_effect_passive)
 IO_OPS_ENUM(bionic_id)
 IO_OPS_ENUM(itype_id)
@@ -587,33 +589,96 @@ std::ostream& operator<<(std::ostream& os, const it_tool& src)
 	return os << static_cast<const itype&>(src) I_SEP << src.max_charges;
 }
 
-// staging these here
-std::string it_artifact_tool::save_data()
+it_artifact_tool::it_artifact_tool(std::istream& is)
+: it_tool(is)
 {
-	std::stringstream data;
-	data << "T " << *static_cast<itype*>(this) << " " <<
-		int(charge_type) << " " << max_charges << " " <<
-		effects_wielded.size();
-	for (int i = 0; i < effects_wielded.size(); i++)
-		data << " " << int(effects_wielded[i]);
+	ammo = AT_NULL;
+	price = 0;
+	def_charges = 0;
+	charges_per_use = 1;
+	turns_per_charge = 0;
+	revert_to = itm_null;
+	use = &iuse::artifact;
 
-	data << " " << effects_activated.size();
-	for (int i = 0; i < effects_activated.size(); i++)
-		data << " " << int(effects_activated[i]);
+	int num_effects;
 
-	data << " " << effects_carried.size();
-	for (int i = 0; i < effects_carried.size(); i++)
-		data << " " << int(effects_carried[i]);
+	is >> charge_type >> num_effects;
+	for (int i = 0; i < num_effects; i++) {
+		art_effect_passive effect;
+		is >> effect;
+		effects_wielded.push_back(effect);
+	}
 
-	data << " " << name << " - ";
-	std::string desctmp = description;
+	is >> num_effects;
+	for (int i = 0; i < num_effects; i++) {
+		art_effect_active effect;
+		is >> effect;
+		effects_activated.push_back(effect);
+	}
+
+	is >> num_effects;
+	for (int i = 0; i < num_effects; i++) {
+		art_effect_passive effect;
+		is >> effect;
+		effects_carried.push_back(effect);
+	}
+
+	std::string namepart;
+	std::stringstream namedata;
+	bool start = true;
+	do {
+		is >> namepart;
+		if (namepart != "-") {
+			if (!start) namedata << " ";
+			else start = false;
+			namedata << namepart;
+		}
+	} while (namepart.find("-") == std::string::npos);
+	name = namedata.str();
+	start = true;
+
+	std::stringstream descdata;
+	do {
+		is >> namepart;
+		if (namepart == "=") {
+			descdata << "\n";
+			start = true;
+		} else if (namepart != "-") {
+			if (!start) descdata << " ";
+			descdata << namepart;
+			start = false;
+		}
+	} while (namepart.find("-") == std::string::npos && !is.eof());
+	description = descdata.str();
+}
+
+std::ostream& operator<<(std::ostream& os, const it_artifact_tool& src)
+{
+	return os << static_cast<const it_tool&>(src) I_SEP << src.charge_type I_SEP << src.effects_wielded.size();
+	for (const auto& eff : src.effects_wielded) os I_SEP << eff;
+
+	os I_SEP << src.effects_activated.size();
+	for (const auto& eff : src.effects_activated) os I_SEP << eff;
+
+	os I_SEP << src.effects_carried.size();
+	for (const auto& eff : src.effects_carried) os I_SEP << eff;
+
+	os I_SEP << src.name << " - ";
+	std::string desctmp = src.description;
 	size_t endline;
 	do {
 		endline = desctmp.find("\n");
 		if (endline != std::string::npos)
 			desctmp.replace(endline, 1, " = ");
 	} while (endline != std::string::npos);
-	data << desctmp << " -";
+	return os << desctmp << " -";
+}
+
+// staging these here
+std::string it_artifact_tool::save_data()
+{
+	std::stringstream data;
+	data << "T " << *this;
 	return data.str();
 }
 

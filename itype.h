@@ -792,7 +792,7 @@ struct it_style : public itype
        pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags) { }
 };
 
-struct it_artifact_tool : public it_tool
+struct it_artifact_tool final : public it_tool
 {
  art_charge charge_type;
  std::vector<art_effect_passive> effects_wielded;
@@ -801,6 +801,9 @@ struct it_artifact_tool : public it_tool
 
  virtual bool is_artifact() const { return true; }
  virtual std::string save_data();
+
+ it_artifact_tool(std::istream& is);
+ friend std::ostream& operator<<(std::ostream& os, const it_artifact_tool& src);
 
  it_artifact_tool() {
   ammo = AT_NULL;
