@@ -11,7 +11,6 @@
 #include <stdarg.h>
 #include <string>
 #include <vector>
-#include <sstream>
 
 class game;
 
@@ -794,37 +793,7 @@ struct it_artifact_tool : public it_tool
  std::vector<art_effect_passive> effects_carried;
 
  virtual bool is_artifact() const { return true; }
- virtual std::string save_data()
- {
-  std::stringstream data;
-  data << "T " << price << " " << sym << " " << color_to_int(color) << " " <<
-          int(m1) << " " << int(m2) << " " << int(volume) << " " <<
-          int(weight) << " " << int(melee_dam) << " " << int(melee_cut) <<
-          " " << int(m_to_hit) << " " << int(item_flags) << " " <<
-          int(charge_type) << " " << max_charges << " " <<
-          effects_wielded.size();
-  for (int i = 0; i < effects_wielded.size(); i++)
-   data << " " << int(effects_wielded[i]);
-
-  data << " " << effects_activated.size();
-  for (int i = 0; i < effects_activated.size(); i++)
-   data << " " << int(effects_activated[i]);
-
-  data << " " << effects_carried.size();
-  for (int i = 0; i < effects_carried.size(); i++)
-   data << " " << int(effects_carried[i]);
-
-  data << " " << name << " - ";
-  std::string desctmp = description;
-  size_t endline;
-  do {
-   endline = desctmp.find("\n");
-   if (endline != std::string::npos)
-    desctmp.replace(endline, 1, " = ");
-  } while (endline != std::string::npos);
-  data << desctmp << " -";
-  return data.str();
- }
+ virtual std::string save_data();
 
  it_artifact_tool() {
   ammo = AT_NULL;
@@ -853,32 +822,7 @@ struct it_artifact_armor : public it_armor
 
  virtual bool is_artifact() const { return true; }
 
- virtual std::string save_data()
- {
-  std::stringstream data;
-  data << "A " << price << " " << sym << " " << color_to_int(color) << " " <<
-          int(m1) << " " << int(m2) << " " << int(volume) << " " <<
-          int(weight) << " " << int(melee_dam) << " " << int(melee_cut) <<
-          " " << int(m_to_hit) << " " << int(item_flags) << " " <<
-          int(covers) << " " << int(encumber) << " " << int(dmg_resist) <<
-          " " << int(cut_resist) << " " << int(env_resist) << " " <<
-          int(warmth) << " " << int(storage) << " " << effects_worn.size();
-  for (int i = 0; i < effects_worn.size(); i++)
-   data << " " << int(effects_worn[i]);
-
-  data << " " << name << " - ";
-  std::string desctmp = description;
-  size_t endline;
-  do {
-   endline = desctmp.find("\n");
-   if (endline != std::string::npos)
-    desctmp.replace(endline, 1, " = ");
-  } while (endline != std::string::npos);
-
-  data << desctmp << " -";
-
-  return data.str();
- }
+ virtual std::string save_data();
 
  it_artifact_armor()
  {

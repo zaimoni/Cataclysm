@@ -3,6 +3,7 @@
 #include "setvector.h"
 
 #include <fstream>	// for artifacts
+#include <sstream>
 
 static itype* const null_type = new itype(0, 0, 0, "none", "", '#', c_white, MNULL, MNULL, 0, 0, 0, 0, 0, 0);
 
