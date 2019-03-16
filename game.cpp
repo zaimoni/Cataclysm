@@ -1866,7 +1866,7 @@ void game::save()
  if (item::types.size() > num_all_items) {
   fout.open("save/artifacts.gsav");
   for (int i = num_all_items; i < item::types.size(); i++)
-   fout << item::types[i]->save_data() << "\n";
+   fout << item::types[i]->save_data() << "\n";	// virtual function required here
   fout.close();
  }
 // aaaand the overmap, and the local map.

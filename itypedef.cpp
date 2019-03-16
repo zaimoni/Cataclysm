@@ -3616,91 +3616,15 @@ attacks with no penalty.",
 // Finally, load up artifacts!
  std::ifstream fin;
  fin.open("save/artifacts.gsav");
- if (!fin.is_open())
-  return; // No artifacts yet!
+ if (!fin.is_open()) return; // No artifacts yet!
 
  bool done = fin.eof();
  while (!done) {
   char arttype = ' ';
   fin >> arttype;
 
-  if (arttype == 'T') {
-   it_artifact_tool *art = new it_artifact_tool();
-
-   int num_effects, chargetmp, m1tmp, m2tmp, voltmp, wgttmp, bashtmp,
-       cuttmp, hittmp, flagstmp, colortmp, pricetmp, maxtmp;
-   fin >> pricetmp >> art->sym >> colortmp >> m1tmp >> m2tmp >> voltmp >>
-          wgttmp >> bashtmp >> cuttmp >> hittmp >> flagstmp >>
-          chargetmp >> maxtmp >> num_effects;
-   art->price = pricetmp;
-   art->color = int_to_color(colortmp);
-   art->m1 = material(m1tmp);
-   art->m2 = material(m2tmp);
-   art->volume = voltmp;
-   art->weight = wgttmp;
-   art->melee_dam = bashtmp;
-   art->melee_cut = cuttmp;
-   art->m_to_hit = hittmp;
-   art->charge_type = art_charge(chargetmp);
-   art->item_flags = flagstmp;
-   art->max_charges = maxtmp;
-   for (int i = 0; i < num_effects; i++) {
-    int effect;
-    fin >> effect;
-    art->effects_wielded.push_back( art_effect_passive(effect) );
-   }
-   fin >> num_effects;
-   for (int i = 0; i < num_effects; i++) {
-    int effect;
-    fin >> effect;
-    art->effects_activated.push_back( art_effect_active(effect) );
-   }
-   fin >> num_effects;
-   for (int i = 0; i < num_effects; i++) {
-    int effect;
-    fin >> effect;
-    art->effects_carried.push_back( art_effect_passive(effect) );
-   }
-
-   std::string namepart;
-   std::stringstream namedata;
-   bool start = true;
-   do {
-    fin >> namepart;
-    if (namepart != "-") {
-     if (!start)
-      namedata << " ";
-     else
-      start = false;
-     namedata << namepart;
-    }
-   } while (namepart.find("-") == std::string::npos);
-   art->name = namedata.str();
-   start = true;
- 
-   std::stringstream descdata;
-   do {
-    fin >> namepart;
-    if (namepart == "=") {
-     descdata << "\n";
-     start = true;
-    } else if (namepart != "-") {
-     if (!start)
-      descdata << " ";
-     descdata << namepart;
-     start = false;
-    }
-   } while (namepart.find("-") == std::string::npos && !fin.eof());
-   art->description = descdata.str();
-
-   art->id = types.size();
-   types.push_back(art);
-
-  } else if (arttype == 'A') {
-   it_artifact_armor *art = new it_artifact_armor(fin);
-   art->id = types.size();
-   types.push_back(art);
-  }
+  if (arttype == 'T') types.push_back(new it_artifact_tool(fin));
+  else if (arttype == 'A') types.push_back(new it_artifact_armor(fin));
 
 /*
   std::string chomper;

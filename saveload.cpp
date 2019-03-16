@@ -456,24 +456,7 @@ itype::itype(std::istream& is)
 	m_to_hit = hittmp;
 	item_flags = flagstmp;
 
-#if 0
-	// example code
-	fin >> chargetmp >> maxtmp >> num_effects;
-	art->charge_type = art_charge(chargetmp);
-	art->max_charges = maxtmp;
-
-	int num_effects, covertmp, enctmp, dmgrestmp, cutrestmp, envrestmp, warmtmp,
-		storagetmp, flagstmp, pricetmp;
-	fin  >> covertmp >> enctmp >> dmgrestmp >> cutrestmp >> envrestmp >>
-		warmtmp >> storagetmp >> num_effects;
-	art->covers = covertmp;
-	art->encumber = enctmp;
-	art->dmg_resist = dmgrestmp;
-	art->cut_resist = cutrestmp;
-	art->env_resist = envrestmp;
-	art->warmth = warmtmp;
-	art->storage = storagetmp;
-#endif
+	id = item::types.size();
 }
 
 std::ostream& operator<<(std::ostream& os, const itype& src)
