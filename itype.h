@@ -559,7 +559,6 @@ struct it_armor : public itype
  unsigned char storage;
 
  virtual bool is_armor() const { return true; }
- virtual std::string save_data() { return std::string(); }
 
  it_armor()
  {
@@ -666,7 +665,6 @@ struct it_tool : public itype
  void (*use)(game *, player *, item *, bool);
 
  virtual bool is_tool() const    { return true; }
- virtual std::string save_data() { return std::string(); }
 
  it_tool()
  {
@@ -700,6 +698,9 @@ struct it_tool : public itype
   revert_to = prevert_to;
   use = puse;
  }
+protected:	// this is not a final type so these aren't public
+	it_tool(std::istream& is);
+	friend std::ostream& operator<<(std::ostream& os, const it_tool& src);
 };
         
 struct it_bionic : public itype

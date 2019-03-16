@@ -510,6 +510,24 @@ std::ostream& operator<<(std::ostream& os, const it_armor& src)
 		int(src.env_resist) I_SEP << int(src.warmth) I_SEP << int(src.storage);
 }
 
+it_tool::it_tool(std::istream& is)
+: itype(is)
+{
+	ammo = AT_NULL;
+	def_charges = 0;
+	charges_per_use = 0;
+	turns_per_charge = 0;
+	revert_to = itm_null;
+	use = &iuse::none;
+
+	is >> max_charges;
+}
+
+std::ostream& operator<<(std::ostream& os, const it_tool& src)
+{
+	return os << static_cast<const itype&>(src) I_SEP << src.max_charges;
+}
+
 // staging these here
 std::string it_artifact_tool::save_data()
 {
