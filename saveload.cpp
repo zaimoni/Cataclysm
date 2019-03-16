@@ -481,6 +481,35 @@ std::ostream& operator<<(std::ostream& os, const itype& src)
 		int(src.m_to_hit) I_SEP << int(src.item_flags);
 }
 
+it_armor::it_armor(std::istream& is)
+: itype(is)
+{
+	covers = 0;
+	encumber = 0;
+	dmg_resist = 0;
+	cut_resist = 0;
+	env_resist = 0;
+	warmth = 0;
+	storage = 0;
+
+	int covertmp, enctmp, dmgrestmp, cutrestmp, envrestmp, warmtmp, storagetmp;
+	is >> covertmp >> enctmp >> dmgrestmp >> cutrestmp >> envrestmp >> warmtmp >> storagetmp;
+	covers = covertmp;
+	encumber = enctmp;
+	dmg_resist = dmgrestmp;
+	cut_resist = cutrestmp;
+	env_resist = envrestmp;
+	warmth = warmtmp;
+	storage = storagetmp;
+}
+
+std::ostream& operator<<(std::ostream& os, const it_armor& src)
+{
+	return os << static_cast<const itype&>(src) I_SEP << int(src.covers) I_SEP <<
+		int(src.encumber) I_SEP << int(src.dmg_resist) I_SEP << int(src.cut_resist)I_SEP <<
+		int(src.env_resist) I_SEP << int(src.warmth) I_SEP << int(src.storage);
+}
+
 // staging these here
 std::string it_artifact_tool::save_data()
 {
@@ -514,10 +543,7 @@ std::string it_artifact_tool::save_data()
 std::string it_artifact_armor::save_data()
 {
 	std::stringstream data;
-	data << "A " << *static_cast<itype*>(this) << " " <<
-		int(covers) << " " << int(encumber) << " " << int(dmg_resist) <<
-		" " << int(cut_resist) << " " << int(env_resist) << " " <<
-		int(warmth) << " " << int(storage) << " " << effects_worn.size();
+	data << "A " << *static_cast<it_armor*>(this) << " " << effects_worn.size();
 	for (int i = 0; i < effects_worn.size(); i++)
 		data << " " << int(effects_worn[i]);
 

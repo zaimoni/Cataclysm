@@ -593,6 +593,9 @@ struct it_armor : public itype
   warmth = pwarmth;
   storage = pstorage;
  }
+protected:	// this is not a final type so these aren't public
+ it_armor(std::istream& is);
+ friend std::ostream& operator<<(std::ostream& os, const it_armor& src);
 };
 
 struct it_book : public itype
