@@ -3697,68 +3697,7 @@ attacks with no penalty.",
    types.push_back(art);
 
   } else if (arttype == 'A') {
-   it_artifact_armor *art = new it_artifact_armor();
-
-   int num_effects, m1tmp, m2tmp, voltmp, wgttmp, bashtmp, cuttmp,
-       hittmp, covertmp, enctmp, dmgrestmp, cutrestmp, envrestmp, warmtmp,
-       storagetmp, flagstmp, colortmp, pricetmp;
-   fin >> pricetmp >> art->sym >> colortmp >> m1tmp >> m2tmp >> voltmp >>
-          wgttmp >> bashtmp >> cuttmp >> hittmp >> flagstmp >>
-          covertmp >> enctmp >> dmgrestmp >> cutrestmp >> envrestmp >>
-          warmtmp >> storagetmp >> num_effects;
-   art->price = pricetmp;
-   art->color = int_to_color(colortmp);
-   art->m1 = material(m1tmp);
-   art->m2 = material(m2tmp);
-   art->volume = voltmp;
-   art->weight = wgttmp;
-   art->melee_dam = bashtmp;
-   art->melee_cut = cuttmp;
-   art->m_to_hit = hittmp;
-   art->covers = covertmp;
-   art->encumber = enctmp;
-   art->dmg_resist = dmgrestmp;
-   art->cut_resist = cutrestmp;
-   art->env_resist = envrestmp;
-   art->warmth = warmtmp;
-   art->storage = storagetmp;
-   art->item_flags = flagstmp;
-   for (int i = 0; i < num_effects; i++) {
-    int effect;
-    fin >> effect;
-    art->effects_worn.push_back( art_effect_passive(effect) );
-   }
-
-   std::string namepart;
-   std::stringstream namedata;
-   bool start = true;
-   do {
-    if (!start)
-     namedata << " ";
-    else
-     start = false;
-    fin >> namepart;
-    if (namepart != "-")
-     namedata << namepart;
-   } while (namepart.find("-") == std::string::npos);
-   art->name = namedata.str();
-   start = true;
-
-   std::stringstream descdata;
-   do {
-    fin >> namepart;
-    if (namepart == "=") {
-     descdata << "\n";
-     start = true;
-    } else if (namepart != "-") {
-     if (!start)
-      descdata << " ";
-     descdata << namepart;
-     start = false;
-    }
-   } while (namepart.find("-") == std::string::npos && !fin.eof());
-   art->description = descdata.str();
-
+   it_artifact_armor *art = new it_artifact_armor(fin);
    art->id = types.size();
    types.push_back(art);
   }

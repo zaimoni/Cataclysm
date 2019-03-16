@@ -32,6 +32,7 @@ std::ostream& operator<<(std::ostream& os, TYPE src)	\
 	return os << int(src);	\
 }
 
+IO_OPS_ENUM(art_effect_passive)
 IO_OPS_ENUM(bionic_id)
 IO_OPS_ENUM(itype_id)
 IO_OPS_ENUM(material)
@@ -510,6 +511,64 @@ std::ostream& operator<<(std::ostream& os, const it_armor& src)
 		int(src.env_resist) I_SEP << int(src.warmth) I_SEP << int(src.storage);
 }
 
+it_artifact_armor::it_artifact_armor(std::istream& is)
+: it_armor(is)
+{
+	price = 0;
+
+	int num_effects;
+	is >> num_effects;
+
+	for (int i = 0; i < num_effects; i++) {
+		art_effect_passive effect;
+		is >> effect;
+		effects_worn.push_back(effect);
+	}
+
+	std::string namepart;
+	std::stringstream namedata;
+	bool start = true;
+	do {
+		if (!start) namedata I_SEP;
+		else start = false;
+		is >> namepart;
+		if (namepart != "-") namedata << namepart;
+	} while (namepart.find("-") == std::string::npos);
+	name = namedata.str();
+	start = true;
+
+	std::stringstream descdata;
+	do {
+		is >> namepart;
+		if (namepart == "=") {
+			descdata << "\n";
+			start = true;
+		} else if (namepart != "-") {
+			if (!start) descdata I_SEP;
+			descdata << namepart;
+			start = false;
+		}
+	} while (namepart.find("-") == std::string::npos && !is.eof());
+	description = descdata.str();
+}
+
+std::ostream& operator<<(std::ostream& os, const it_artifact_armor& src)
+{
+	os << static_cast<const it_armor&>(src) << " " << src.effects_worn.size();
+	for (const auto& eff : src.effects_worn) os << " " << eff;
+
+	os << " " << src.name << " - ";
+	std::string desctmp = src.description;
+	size_t endline;
+	do {
+		endline = desctmp.find("\n");
+		if (endline != std::string::npos)
+			desctmp.replace(endline, 1, " = ");
+	} while (endline != std::string::npos);
+
+	return os << desctmp << " -";
+}
+
 it_tool::it_tool(std::istream& is)
 : itype(is)
 {
@@ -561,20 +620,6 @@ std::string it_artifact_tool::save_data()
 std::string it_artifact_armor::save_data()
 {
 	std::stringstream data;
-	data << "A " << *static_cast<it_armor*>(this) << " " << effects_worn.size();
-	for (int i = 0; i < effects_worn.size(); i++)
-		data << " " << int(effects_worn[i]);
-
-	data << " " << name << " - ";
-	std::string desctmp = description;
-	size_t endline;
-	do {
-		endline = desctmp.find("\n");
-		if (endline != std::string::npos)
-			desctmp.replace(endline, 1, " = ");
-	} while (endline != std::string::npos);
-
-	data << desctmp << " -";
-
+	data << "A " << *this;
 	return data.str();
 }

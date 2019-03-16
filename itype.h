@@ -821,7 +821,6 @@ struct it_artifact_tool : public it_tool
 :it_tool(pid, 0, pprice, pname, pdes, psym, pcolor, pm1, pm2,
          pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags,
          0, 0, 1, 0, AT_NULL, itm_null, &iuse::artifact) { };
-
 };
 
 struct it_artifact_armor : public it_armor
@@ -829,8 +828,10 @@ struct it_artifact_armor : public it_armor
  std::vector<art_effect_passive> effects_worn;
 
  virtual bool is_artifact() const { return true; }
-
  virtual std::string save_data();
+
+ it_artifact_armor(std::istream& is);
+ friend std::ostream& operator<<(std::ostream& os, const it_artifact_armor& src);
 
  it_artifact_armor()
  {
