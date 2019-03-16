@@ -377,6 +377,9 @@ struct itype
  }
 
  virtual ~itype() = default;
+protected:	// this is not a final type so these aren't public
+ itype(std::istream& is);
+ friend std::ostream& operator<<(std::ostream& os, const itype& src);
 };
 
 // Includes food drink and drugs
@@ -814,6 +817,7 @@ struct it_artifact_tool : public it_tool
 :it_tool(pid, 0, pprice, pname, pdes, psym, pcolor, pm1, pm2,
          pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags,
          0, 0, 1, 0, AT_NULL, itm_null, &iuse::artifact) { };
+
 };
 
 struct it_artifact_armor : public it_armor

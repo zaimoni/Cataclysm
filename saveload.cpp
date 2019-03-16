@@ -34,6 +34,7 @@ std::ostream& operator<<(std::ostream& os, TYPE src)	\
 
 IO_OPS_ENUM(bionic_id)
 IO_OPS_ENUM(itype_id)
+IO_OPS_ENUM(material)
 IO_OPS_ENUM(mission_id)
 IO_OPS_ENUM(npc_favor_type)
 IO_OPS_ENUM(skill)
@@ -430,7 +431,7 @@ std::istream& operator>>(std::istream& is, vehicle_part& dest)
 
 std::ostream& operator<<(std::ostream& os, const vehicle_part& src)
 {
-	os << src.id << " " << src.mount_d << " " << src.hp << " " << src.amount << " " << src.blood << " " << src.items.size() << std::endl;
+	os << src.id I_SEP << src.mount_d I_SEP << src.hp I_SEP << src.amount I_SEP << src.blood I_SEP << src.items.size() << std::endl;
 	for (int i = 0; i < src.items.size(); i++) {
 		os << src.items[i].save_info() << std::endl;     // item info
 		os << src.items[i].contents.size() << std::endl; // how many items inside this item
@@ -440,14 +441,51 @@ std::ostream& operator<<(std::ostream& os, const vehicle_part& src)
 	return os;
 }
 
+itype::itype(std::istream& is)
+: id(0),rarity(0),name("none"),techniques(0)
+{
+	int colortmp, bashtmp, cuttmp, hittmp, flagstmp;
+
+	is >> price >> sym >> colortmp >> m1 >> m2 >> volume >> weight >> bashtmp >> cuttmp >> hittmp >> flagstmp;
+	color = int_to_color(colortmp);
+	melee_dam = bashtmp;
+	melee_cut = cuttmp;
+	m_to_hit = hittmp;
+	item_flags = flagstmp;
+
+#if 0
+	// example code
+	fin >> chargetmp >> maxtmp >> num_effects;
+	art->charge_type = art_charge(chargetmp);
+	art->max_charges = maxtmp;
+
+	int num_effects, covertmp, enctmp, dmgrestmp, cutrestmp, envrestmp, warmtmp,
+		storagetmp, flagstmp, pricetmp;
+	fin  >> covertmp >> enctmp >> dmgrestmp >> cutrestmp >> envrestmp >>
+		warmtmp >> storagetmp >> num_effects;
+	art->covers = covertmp;
+	art->encumber = enctmp;
+	art->dmg_resist = dmgrestmp;
+	art->cut_resist = cutrestmp;
+	art->env_resist = envrestmp;
+	art->warmth = warmtmp;
+	art->storage = storagetmp;
+#endif
+}
+
+std::ostream& operator<<(std::ostream& os, const itype& src)
+{
+	return os << src.price I_SEP << src.sym I_SEP << color_to_int(src.color) I_SEP <<
+		src.m1 I_SEP << src.m2 I_SEP << src.volume I_SEP <<
+		src.weight I_SEP << int(src.melee_dam) I_SEP << int(src.melee_cut) I_SEP <<
+		int(src.m_to_hit) I_SEP << int(src.item_flags);
+}
+
 // staging these here
 std::string it_artifact_tool::save_data()
 {
 	std::stringstream data;
-	data << "T " << price << " " << sym << " " << color_to_int(color) << " " <<
-		int(m1) << " " << int(m2) << " " << int(volume) << " " <<
-		int(weight) << " " << int(melee_dam) << " " << int(melee_cut) <<
-		" " << int(m_to_hit) << " " << int(item_flags) << " " <<
+	data << "T " << *static_cast<itype*>(this) << " " <<
 		int(charge_type) << " " << max_charges << " " <<
 		effects_wielded.size();
 	for (int i = 0; i < effects_wielded.size(); i++)
@@ -476,10 +514,7 @@ std::string it_artifact_tool::save_data()
 std::string it_artifact_armor::save_data()
 {
 	std::stringstream data;
-	data << "A " << price << " " << sym << " " << color_to_int(color) << " " <<
-		int(m1) << " " << int(m2) << " " << int(volume) << " " <<
-		int(weight) << " " << int(melee_dam) << " " << int(melee_cut) <<
-		" " << int(m_to_hit) << " " << int(item_flags) << " " <<
+	data << "A " << *static_cast<itype*>(this) << " " <<
 		int(covers) << " " << int(encumber) << " " << int(dmg_resist) <<
 		" " << int(cut_resist) << " " << int(env_resist) << " " <<
 		int(warmth) << " " << int(storage) << " " << effects_worn.size();
