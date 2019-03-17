@@ -820,18 +820,14 @@ std::string player::save_info()
  dump << std::endl;
 
  for (size_t i = 0; i < inv.size(); i++) {
-  for (int j = 0; j < inv.stack_at(i).size(); j++) {
-   dump << "I " << inv.stack_at(i)[j].save_info() << std::endl;
-   for (int k = 0; k < inv.stack_at(i)[j].contents.size(); k++)
-    dump << "C " << inv.stack_at(i)[j].contents[k].save_info() << std::endl;
+  for(const auto& it : inv.stack_at(i)) {
+   dump << "I " << it << std::endl;
+   for(const auto& it_2 : it.contents) dump << "C " << it_2 << std::endl;	// \todo blocker: V 0.2.0 should have been handled already
   }
  }
- for (int i = 0; i < worn.size(); i++)
-  dump << "W " << worn[i].save_info() << std::endl;
- if (!weapon.is_null())
-  dump << "w " << weapon.save_info() << std::endl;
- for (int j = 0; j < weapon.contents.size(); j++)
-  dump << "c " << weapon.contents[j].save_info() << std::endl;
+ for(const auto& it : worn) dump << "W " << it << std::endl;
+ if (!weapon.is_null()) dump << "w " << weapon << std::endl;
+ for(const auto& it : weapon.contents) dump << "c " << it << std::endl;	// \todo blocker: V 0.2.0 should have been handled already
 
  return dump.str();
 }

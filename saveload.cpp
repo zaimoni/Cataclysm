@@ -9,6 +9,8 @@
 #include <istream>
 #include <ostream>
 
+#include "Zaimoni.STL/Logging.h"
+
 // legacy implementations assume text mode streams
 // this only makes a difference for ostream, and may not be correct (different API may be needed)
 
@@ -45,6 +47,61 @@ IO_OPS_ENUM(npc_favor_type)
 IO_OPS_ENUM(skill)
 IO_OPS_ENUM(ter_id)
 IO_OPS_ENUM(trap_id)
+
+// stereotypical translation of pointers to/from vector indexes
+// \todo in general if a loaded pointer index is "invalid" we should warn here; non-null requirements are enforced higher up
+// \todo in general warn if a non-null ptr points to an invalid id
+std::istream& operator>>(std::istream& is, const mission_type*& dest)
+{
+	int type_id;
+	is >> type_id;
+	dest = (0 <= type_id && type_id < mission_type::types.size()) ? &mission_type::types[type_id] : 0;
+	return is;
+}
+
+std::ostream& operator<<(std::ostream& os, const mission_type* const src)
+{
+	return os << (src ? src->id : -1);
+}
+
+std::istream& operator>>(std::istream& is, const mtype*& dest)
+{
+	int type_id;
+	is >> type_id;
+	dest = (0 <= type_id && type_id < mtype::types.size()) ? mtype::types[type_id] : 0;
+	return is;
+}
+
+std::ostream& operator<<(std::ostream& os, const mtype* const src)
+{
+	return os << (src ? src->id : -1);
+}
+
+std::istream& operator>>(std::istream& is, const itype*& dest)
+{
+	int type_id;
+	is >> type_id;
+	dest = (0 <= type_id && type_id < item::types.size()) ? item::types[type_id] : 0;	// XXX \todo should be itype::types?
+	return is;
+}
+
+std::ostream& operator<<(std::ostream& os, const itype* const src)
+{
+	return os << (src ? src->id : -1);
+}
+
+std::istream& operator>>(std::istream& is, const it_ammo*& dest)
+{
+	int type_id;
+	is >> type_id;
+	dest = (0 <= type_id && type_id < item::types.size() && item::types[type_id]->is_ammo()) ? static_cast<it_ammo*>(item::types[type_id]) : 0;
+	return is;
+}
+
+std::ostream& operator<<(std::ostream& os, const it_ammo* const src)
+{
+	return os << (src ? src->id : -1);
+}
 
 std::istream& operator>>(std::istream& is, point& dest)
 {
@@ -133,20 +190,6 @@ bionic::bionic(std::istream& is)
 std::ostream& operator<<(std::ostream& os, const bionic& src)
 {
 	return os << src.id I_SEP << src.invlet I_SEP << src.powered I_SEP << src.charge;
-}
-
-// stereotypical translation of pointers to/from vector indexes
-std::istream& operator>>(std::istream& is, const mission_type*& dest)
-{
-	int type_id;
-	is >> type_id;
-	dest = (0 <= type_id && type_id<mission_type::types.size()) ? &mission_type::types[type_id] : 0;
-	return is;
-}
-
-std::ostream& operator<<(std::ostream& os, const mission_type* const src)
-{
-	return os << (src ? src->id : -1);
 }
 
 mission::mission(std::istream& is)
@@ -304,24 +347,18 @@ submap::submap(std::istream& is, game* master_game)
 	}
 	// Load items and traps and fields and spawn points and vehicles
 	item it_tmp;
-	std::string databuff;
 	std::string string_identifier;
 	int itx, ity;
 	do {
 		is >> string_identifier; // "----" indicates end of this submap
 		int t = 0;
 		if (string_identifier == "I") {
-			is >> itx >> ity;
-			getline(is, databuff); // Clear out the endline
-			getline(is, databuff);
-			it_tmp.load_info(databuff);
-			itm[itx][ity].push_back(it_tmp);
+			is >> itx >> ity >> std::ws;
+			itm[itx][ity].push_back(item(is));
 			if (it_tmp.active) active_item_count++;
 		} else if (string_identifier == "C") {
-			getline(is, databuff); // Clear out the endline
-			getline(is, databuff);
-			it_tmp.load_info(databuff);
-			itm[itx][ity].back().put_in(it_tmp);
+			is >> std::ws;
+			itm[itx][ity].back().put_in(item(is));
 			if (it_tmp.active) active_item_count++;
 		} else if (string_identifier == "T") {
 			is >> itx >> ity;
@@ -339,10 +376,14 @@ submap::submap(std::istream& is, game* master_game)
 			//veh.smy = gridy;
 			vehicles.push_back(veh);
 		} else if (string_identifier == "c") {
-			is >> comp;
-			getline(is, databuff); // Clear out the endline
+			is >> comp >> std::ws;
+		} else if ("----" == string_identifier) break;
+		else {
+			debugmsg("Unrecognized map data key");
+			std::string databuff;
+			getline(is, databuff);
 		}
-	} while (string_identifier != "----" && !is.eof());
+	} while (!is.eof());
 }
 
 
@@ -369,12 +410,10 @@ std::ostream& operator<<(std::ostream& os, const submap& src)
 	item tmp;
 	for (int j = 0; j < SEEY; j++) {
 		for (int i = 0; i < SEEX; i++) {
-			for (int k = 0; k < src.itm[i][j].size(); k++) {
-				tmp = src.itm[i][j][k];
+			for (const auto& it : src.itm[i][j])  {
 				os << "I " << i I_SEP << j << std::endl;
-				os << tmp.save_info() << std::endl;
-				for (int l = 0; l < tmp.contents.size(); l++)
-					os << "C " << std::endl << tmp.contents[l].save_info() << std::endl;
+				os << it << std::endl;
+				for(const auto& it_2 : it.contents) os << "C " << std::endl << it_2 << std::endl;
 			}
 		}
 	}
@@ -415,21 +454,13 @@ std::istream& operator>>(std::istream& is, vehicle_part& dest)
 	is >> pid;
 	dest.id = vpart_id(pid);
 
-	is >> dest.mount_d >> dest.hp >> dest.amount >> dest.blood >> pnit;
+	is >> dest.mount_d >> dest.hp >> dest.amount >> dest.blood >> pnit >> std::ws;
 	dest.items.clear();
-	std::getline(is, databuff); // Clear EoL
 	for (int j = 0; j < pnit; j++) {
-			std::getline(is, databuff);
-			item itm(databuff);
-			dest.items.push_back(itm);
-			int ncont;
-			is >> ncont; // how many items inside container
-			std::getline(is, databuff); // Clear EoL
-			for (int k = 0; k < ncont; k++) {
-				std::getline(is, databuff);
-				item citm(databuff);
-				dest.items.back().put_in(citm);
-			}
+		dest.items.push_back(item(is));
+		int ncont;
+		is >> ncont >> std::ws; // how many items inside container
+		for (int k = 0; k < ncont; k++) dest.items.back().put_in(item(is));
 	}
 	return is;
 }
@@ -437,11 +468,10 @@ std::istream& operator>>(std::istream& is, vehicle_part& dest)
 std::ostream& operator<<(std::ostream& os, const vehicle_part& src)
 {
 	os << src.id I_SEP << src.mount_d I_SEP << src.hp I_SEP << src.amount I_SEP << src.blood I_SEP << src.items.size() << std::endl;
-	for (int i = 0; i < src.items.size(); i++) {
-		os << src.items[i].save_info() << std::endl;     // item info
-		os << src.items[i].contents.size() << std::endl; // how many items inside this item
-		for (int l = 0; l < src.items[i].contents.size(); l++)
-			os << src.items[i].contents[l].save_info() << std::endl; // contents info
+	for(const auto& it : src.items) {
+		os << it << std::endl;     // item info
+		os << it.contents.size() << std::endl; // how many items inside this item
+		for(const auto& it_2 : it.contents) os << it_2 << std::endl; // contents info; blocker V 0.2.0 \todo should already be handled
 	}
 	return os;
 }
@@ -473,6 +503,45 @@ std::ostream& operator<<(std::ostream& os, const faction& src)
 	for (int i = 0; i < src.opinion_of.size(); i++)
 		os << src.opinion_of[i] << " ";
 	return os << src.name << std::endl;
+}
+
+item::item(std::istream& is)
+{
+	int lettmp, damtmp, burntmp;
+	is >> lettmp >> type >> charges >> damtmp >> burntmp >> poison >> curammo >>
+		owned >> bday >> active >> corpse >> mission_id >> player_id;
+	if (!type) type = item::types[itm_null];	// \todo warn if this kicks in
+	getline(is, name);
+	if (name == " ''") name = "";
+	else {
+		size_t pos = name.find_first_of("@@");
+		while (pos != std::string::npos) {
+			name.replace(pos, 2, "\n");
+			pos = name.find_first_of("@@");
+		}
+		name = name.substr(2, name.size() - 3); // s/^ '(.*)'$/\1/
+	}
+	invlet = char(lettmp);
+	damage = damtmp;
+	burnt = burntmp;
+	// XXX historically, contents are not loaded at this time; \todo blocker: V 0.2.0 final version would do so
+}
+
+std::ostream& operator<<(std::ostream& os, const item& src)
+{
+	os I_SEP << int(src.invlet) I_SEP << src.type I_SEP << src.charges I_SEP <<
+		int(src.damage) I_SEP << int(src.burnt) I_SEP << src.poison I_SEP <<
+		src.curammo I_SEP << src.owned I_SEP << src.bday I_SEP << src.active I_SEP << src.corpse;
+	os I_SEP << src.mission_id I_SEP << src.player_id;
+
+	std::string name_copy(src.name);
+
+	size_t pos = name_copy.find_first_of("\n");
+	while (pos != std::string::npos) {
+		name_copy.replace(pos, 1, "@@");
+		pos = name_copy.find_first_of("\n");
+	}
+	return os << " '" << name_copy << "'";
 }
 
 itype::itype(std::istream& is)

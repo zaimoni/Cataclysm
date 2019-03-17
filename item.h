@@ -13,7 +13,7 @@ public:
  static std::vector<itype*> types;
  static const item null;
 
- const itype*   type;
+ const itype*   type;	// \todo more actively enforce non-NULL constraint
  const mtype*   corpse;
  const it_ammo* curammo;
 
@@ -36,13 +36,15 @@ public:
  item(const itype* it, unsigned int turn);
  item(const itype* it, unsigned int turn, char let);
  explicit item(unsigned int turn, int id = 0);	// corpse constructor; 0 is the value of mon_null
- explicit item(const std::string& itemdata);
  item(const item& src) = default;
  item(item&& src) = default;
  ~item() = default;
  void make(itype* it);
 
  item& operator=(const item& src) = default;
+
+ item(std::istream& is);
+ friend std::ostream& operator<<(std::ostream& os, const item& src);
 
 // returns the default container of this item, with this item in it
  item in_its_container() const;
@@ -65,8 +67,6 @@ public:
  int pick_reload_ammo(const player &u, bool interactive) const;
  bool reload(player &u, int index);
 
- std::string save_info() const;	// Formatted for save files; corresponds to operator <<
- void load_info(const std::string& data);	// corresponds to operator >>
  std::string info(bool showtext = false);	// Formatted for human viewing
  char symbol() const { return type->sym; }
  nc_color color() const;

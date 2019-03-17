@@ -97,11 +97,6 @@ item::item(unsigned int turn, int id)
 	bday = turn;
 }
 
-item::item(const std::string& itemdata)
-{
- load_info(itemdata);
-}
-
 void item::make(itype* it)
 {
  type = it;
@@ -161,70 +156,6 @@ bool item::stacks_with(const item& rhs) const
 void item::put_in(item payload)
 {
  contents.push_back(payload);
-}
-
-std::string item::save_info() const
-{
- if (type == NULL)
-  debugmsg("Tried to save an item with NULL type!");
- int ammotmp = 0;
-/* TODO: This causes a segfault sometimes, even though we check to make sure
- * curammo isn't NULL.  The crashes seem to occur most frequently when saving an
- * NPC, or when saving map data containing an item an NPC has dropped.
- */
- if (curammo != NULL)
-  ammotmp = curammo->id;
- if (ammotmp < 0 || ammotmp > num_items)
-  ammotmp = 0; // Saves us from some bugs
- std::stringstream dump;// (std::stringstream::in | std::stringstream::out);
- dump << " " << int(invlet) << " " << int(type->id) << " " <<  int(charges) <<
-         " " << int(damage) << " " << int(burnt) << " " << poison << " " <<
-         ammotmp << " " << owned << " " << int(bday);
- if (active)
-  dump << " 1";
- else
-  dump << " 0";
- if (corpse != NULL)
-  dump << " " << corpse->id;
- else
-  dump << " -1";
- dump << " " << mission_id << " " << player_id;
-
- std::string name_copy(name);
-
- size_t pos = name_copy.find_first_of("\n");
- while (pos != std::string::npos)  {
-  name_copy.replace(pos, 1, "@@");
-  pos = name_copy.find_first_of("\n");
- }
- dump << " '" << name_copy << "'";
- return dump.str();
-}
-
-void item::load_info(const std::string& data)
-{
- std::stringstream dump;
- dump << data;
- int idtmp, ammotmp, lettmp, damtmp, burntmp, acttmp, corp;
- dump >> lettmp >> idtmp >> charges >> damtmp >> burntmp >> poison >> ammotmp >>
-         owned >> bday >> acttmp >> corp >> mission_id >> player_id;
- corpse = (-1 != corp) ? mtype::types[corp] : NULL;
- getline(dump, name);
- if (name == " ''") name = "";
- else {
-  size_t pos = name.find_first_of("@@");
-  while (pos != std::string::npos)  {
-   name.replace(pos, 2, "\n");
-   pos = name.find_first_of("@@");
-  }
-  name = name.substr(2, name.size() - 3); // s/^ '(.*)'$/\1/
- }
- make(item::types[idtmp]);
- invlet = char(lettmp);
- damage = damtmp;
- burnt = burntmp;
- active = (acttmp == 1);
- curammo = (0 < ammotmp) ? dynamic_cast<it_ammo*>(item::types[ammotmp]) : NULL;
 }
  
 std::string item::info(bool showtext)

@@ -2605,23 +2605,26 @@ void overmap::open(game *g)	// only called from constructor
     npcs.push_back(tmp);
    } else if (datatype == 'I' || datatype == 'C' || datatype == 'W' ||
               datatype == 'w' || datatype == 'c') {
-    std::string itemdata;
-    getline(fin, itemdata);
     if (npcs.empty()) {
-     debugmsg("Overmap %d:%d:%d tried to load object data, without an NPC!",
-              pos.x, pos.y, pos.z);
-     debugmsg(itemdata.c_str());
-    } else {
-     item tmp(itemdata);
+     debugmsg("Overmap %d:%d:%d tried to load object data, without an NPC!", pos.x, pos.y, pos.z);
+     std::string itemdata;
+	 getline(fin, itemdata);	// flush the line so we don't corrupt out too badly
+	 debugmsg(itemdata.c_str());
+	} else {
      npc& last = npcs.back();
      switch (datatype) {
-      case 'I': npc_inventory.push_back(tmp);                 break;
-      case 'C': npc_inventory.back().contents.push_back(tmp); break;
-      case 'W': last.worn.push_back(tmp);                    break;
-      case 'w': last.weapon = tmp;                           break;
-      case 'c': last.weapon.contents.push_back(tmp);         break;
+      case 'I': npc_inventory.push_back(item(fin));                 break;
+      case 'C': npc_inventory.back().contents.push_back(item(fin)); break;
+      case 'W': last.worn.push_back(item(fin));                    break;
+      case 'w': last.weapon = item(fin);                           break;
+      case 'c': last.weapon.contents.push_back(item(fin));         break;
      }
     }
+   } else {
+     debugmsg("Overmap %d:%d:%d tried to load unrecognized data!", pos.x, pos.y, pos.z);
+     std::string itemdata;
+	 getline(fin, itemdata);	// flush the line so we don't corrupt out too badly
+	 debugmsg(itemdata.c_str());
    }
   }
 // If we accrued an npc_inventory, assign it now

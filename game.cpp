@@ -1673,8 +1673,7 @@ bool game::load_master()
  for (int i = 0; i < num_factions; i++) factions.push_back(faction(fin));
 
 // NPCs come next
- fin >> num_npc;
- if (fin.peek() == '\n') fin.get(junk); // Chomp that pesky endline
+ fin >> num_npc >> std::ws;
  for (int i = 0; i < num_npc; i++) {
   getline(fin, data);
   npc tmp;
@@ -1683,30 +1682,28 @@ bool game::load_master()
   fin >> num_items;
   std::vector<item> tmpinv;
   for (int j = 0; j < num_items; j++) {
-   std::string itemdata;
    char item_place;
    fin >> item_place;
    if (!fin.eof()) {
-    getline(fin, itemdata);
-    if (item_place == 'I')
-     tmpinv.push_back(item(itemdata));
+    if (item_place == 'I') tmpinv.push_back(item(fin));
     else if (item_place == 'C' && !tmpinv.empty()) {
-     tmpinv[tmpinv.size() - 1].contents.push_back(item(itemdata));
+     tmpinv[tmpinv.size() - 1].contents.push_back(item(fin));
      j--;
-    } else if (item_place == 'W')
-     tmp.worn.push_back(item(itemdata));
-    else if (item_place == 'w')
-     tmp.weapon = item(itemdata);
+    } else if (item_place == 'W') tmp.worn.push_back(item(fin));
+    else if (item_place == 'w') tmp.weapon = item(fin);
     else if (item_place == 'c') {
-     tmp.weapon.contents.push_back(item(itemdata));
+     tmp.weapon.contents.push_back(item(fin));
      j--;
-    }
+    } else {
+	 debugmsg("Urecognized item key");
+	 std::string itemdata;
+	 getline(fin, itemdata);
+	}
    }
   }
   tmp.inv.add_stack(tmpinv);
   active_npc.push_back(tmp);
-  if (fin.peek() == '\n')
-   fin.get(junk); // Chomp that pesky endline
+  fin >> std::ws;
  }
  
  fin.close();
@@ -1758,27 +1755,22 @@ void game::load(std::string name)
  std::string data;
  z.clear();
  monster montmp;
- char junk;
- if (fin.peek() == '\n')
-  fin.get(junk); // Chomp that pesky endline
+ fin >> std::ws;
  for (int i = 0; i < nummon; i++) {
   getline(fin, data);
   montmp.load_info(data);
   z.push_back(montmp);
  }
 // And the kill counts;
- if (fin.peek() == '\n')
-  fin.get(junk); // Chomp that pesky endline
+ fin >> std::ws; // Chomp that pesky endline
  for (int i = 0; i < num_monsters; i++)
   fin >> kills[i];
 // Finally, the data on the player.
- if (fin.peek() == '\n')
-  fin.get(junk); // Chomp that pesky endline
+ fin >> std::ws;
  getline(fin, data);
  u.load_info(this, data);
 // And the player's inventory...
  char item_place;
- std::string itemdata;
 // We need a temporary vector of items.  Otherwise, when we encounter an item
 // which is contained in another item, the auto-sort/stacking behavior of the
 // player's inventory may cause the contained item to be misplaced.
@@ -1786,17 +1778,15 @@ void game::load(std::string name)
  while (!fin.eof()) {
   fin >> item_place;
   if (!fin.eof()) {
-   getline(fin, itemdata);
-   if (item_place == 'I')
-    tmpinv.push_back(item(itemdata));
-   else if (item_place == 'C')
-    tmpinv[tmpinv.size() - 1].contents.push_back(item(itemdata));
-   else if (item_place == 'W')
-    u.worn.push_back(item(itemdata));
-   else if (item_place == 'w')
-    u.weapon = item(itemdata);
-   else if (item_place == 'c')
-    u.weapon.contents.push_back(item(itemdata));
+   if (item_place == 'I') tmpinv.push_back(item(fin));
+   else if (item_place == 'C') tmpinv[tmpinv.size() - 1].contents.push_back(item(fin));
+   else if (item_place == 'W') u.worn.push_back(item(fin));
+   else if (item_place == 'w') u.weapon = item(fin);
+   else if (item_place == 'c') u.weapon.contents.push_back(item(fin));
+   else {
+     debugmsg("unrecognized item key");
+	 getline(fin, data);
+   }
   }
  }
 // Now dump tmpinv into the player's inventory
