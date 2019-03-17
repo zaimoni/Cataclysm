@@ -33,44 +33,6 @@ faction::faction(int uid)
  id = uid;
 }
 
-std::string faction::save_info()
-{
- std::stringstream dump;
- dump << id << " " << values << " " << goal << " " << job1 << " " << job2 <<
-         " " << likes_u << " " << respects_u << " " << known_by_u << " " <<
-         strength << " " << sneak << " " << crime << " " << cult << " " <<
-         good << " " << om << " " << map <<
-         " " << size << " " << power << " ";
- dump << opinion_of.size() << " ";
- for (int i = 0; i < opinion_of.size(); i++)
-  dump << opinion_of[i] << " ";
- dump << name;
- return dump.str();
-}
-
-void faction::load_info(std::string data)
-{
- std::stringstream dump;
- int valuetmp, goaltmp, jobtmp1, jobtmp2;
- dump << data;
- dump >> id >> valuetmp >> goaltmp >> jobtmp1 >> jobtmp2 >> likes_u >>
-         respects_u >> known_by_u >> strength >> sneak >> crime >> cult >>
-         good >> om >> map >> size >> power;
- values = valuetmp;
- goal = faction_goal(goaltmp);
- job1 = faction_job(jobtmp1);
- job2 = faction_job(jobtmp2);
- int size, tmpop;
- dump >> size;
- for (int i = 0; i < size; i++) {
-  dump >> tmpop;
-  opinion_of.push_back(tmpop);
- }
- std::string subname;
- while (dump >> subname)
-  name += " " + subname;
-}
-
 // not suitable for general library code due to rng usage...maybe RNG header
 #define STATIC_CHOOSE(VAR) faction_noun_strong[rng(0, sizeof(VAR)/sizeof(*VAR)-1)]
 

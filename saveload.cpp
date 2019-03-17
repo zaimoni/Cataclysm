@@ -36,6 +36,8 @@ IO_OPS_ENUM(art_charge)
 IO_OPS_ENUM(art_effect_active)
 IO_OPS_ENUM(art_effect_passive)
 IO_OPS_ENUM(bionic_id)
+IO_OPS_ENUM(faction_goal)
+IO_OPS_ENUM(faction_job)
 IO_OPS_ENUM(itype_id)
 IO_OPS_ENUM(material)
 IO_OPS_ENUM(mission_id)
@@ -442,6 +444,35 @@ std::ostream& operator<<(std::ostream& os, const vehicle_part& src)
 			os << src.items[i].contents[l].save_info() << std::endl; // contents info
 	}
 	return os;
+}
+
+faction::faction(std::istream& is)
+{
+	int valuetmp;
+	is >> id >> valuetmp >> goal >> job1 >> job2 >> likes_u >>
+		respects_u >> known_by_u >> strength >> sneak >> crime >> cult >>
+		good >> om >> map >> size >> power;
+	values = valuetmp;
+	int size, tmpop;
+	is >> size;
+	for (int i = 0; i < size; i++) {
+		is >> tmpop;
+		opinion_of.push_back(tmpop);
+	}
+	std::getline(is, name);
+}
+
+std::ostream& operator<<(std::ostream& os, const faction& src)
+{
+	os << src.id << " " << src.values << " " << src.goal << " " << src.job1 << " " << src.job2 <<
+		" " << src.likes_u << " " << src.respects_u << " " << src.known_by_u << " " <<
+		src.strength << " " << src.sneak << " " << src.crime << " " << src.cult << " " <<
+		src.good << " " << src.om << " " << src.map <<
+		" " << src.size << " " << src.power << " ";
+	os << src.opinion_of.size() << " ";
+	for (int i = 0; i < src.opinion_of.size(); i++)
+		os << src.opinion_of[i] << " ";
+	return os << src.name << std::endl;
 }
 
 itype::itype(std::istream& is)

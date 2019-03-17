@@ -74,8 +74,8 @@ struct faction {
  faction(int uid = -1);
  ~faction() = default;
 
- std::string save_info();
- void load_info(std::string data);
+ faction(std::istream& is);
+ friend std::ostream& operator<<(std::ostream& os, const faction& src);
 
  void randomize();
  void make_army();

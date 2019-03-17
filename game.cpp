@@ -1669,14 +1669,9 @@ bool game::load_master()
    if (!active_missions.back().type) active_missions.pop_back();	// if we didn't load with a valid mission type, ditch it
  }
 
- fin >> num_factions;
- if (fin.peek() == '\n') fin.get(junk); // Chomp that pesky endline
- for (int i = 0; i < num_factions; i++) {
-  getline(fin, data);
-  faction tmp;
-  tmp.load_info(data);
-  factions.push_back(tmp);
- }
+ fin >> num_factions >> std::ws;
+ for (int i = 0; i < num_factions; i++) factions.push_back(faction(fin));
+
 // NPCs come next
  fin >> num_npc;
  if (fin.peek() == '\n') fin.get(junk); // Chomp that pesky endline
@@ -1850,8 +1845,7 @@ void game::save()
  for(const auto& mi : active_missions) fout << mi << " ";
 
  fout << factions.size() << std::endl;
- for (int i = 0; i < factions.size(); i++)
-  fout << factions[i].save_info() << std::endl;
+ for(const auto& fac : factions) fout << fac;
 
  fout << active_npc.size() << std::endl;
  for (int i = 0; i < active_npc.size(); i++) {
