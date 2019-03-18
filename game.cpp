@@ -1756,11 +1756,7 @@ void game::load(std::string name)
  z.clear();
  monster montmp;
  fin >> std::ws;
- for (int i = 0; i < nummon; i++) {
-  getline(fin, data);
-  montmp.load_info(data);
-  z.push_back(montmp);
- }
+ for (int i = 0; i < nummon; i++) z.push_back(monster(fin));
 // And the kill counts;
  fin >> std::ws; // Chomp that pesky endline
  for (int i = 0; i < num_monsters; i++)
@@ -1819,7 +1815,7 @@ void game::save()
  }
 // Now save all monsters.
  fout << std::endl << z.size() << std::endl;
- for (const auto& mon : z) fout << mon.save_info() << std::endl;
+ for (const auto& mon : z) fout << mon << std::endl;
  for (int i = 0; i < num_monsters; i++)	// Save the kill counts, too.
   fout << kills[i] << " ";
 // And finally the player.

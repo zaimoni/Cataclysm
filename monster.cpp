@@ -229,35 +229,6 @@ bool monster::made_of(material m) const
  return type->mat == m;
 }
  
-void monster::load_info(std::string data)
-{
- std::stringstream dump;
- int idtmp, plansize;
- dump << data;
- dump >> idtmp >> pos >> wand >> wandf >> moves >> speed >> hp >>  sp_timeout >>
-	     plansize >> friendly >> faction_id >> mission_id >> dead >> anger >> 
-	     morale;
- type = mtype::types[idtmp];
- point ptmp;
- for (int i = 0; i < plansize; i++) {
-  dump >> ptmp;
-  plans.push_back(ptmp);
- }
-}
-
-std::string monster::save_info() const
-{
- std::stringstream pack;
- pack << int(type->id) << " " << pos << " " << wand << " " <<  wandf << " " <<
-	     moves << " " << speed << " " << hp << " " <<  sp_timeout << " " << 
-	     plans.size() << " " << friendly << " " << faction_id << " " << 
-	     mission_id << " " << dead << " " << anger << " " << morale;
- for (int i = 0; i < plans.size(); i++) {
-  pack << " " << plans[i];
- }
- return pack.str();
-}
-
 void monster::debug(player &u)
 {
  char buff[2];

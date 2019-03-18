@@ -47,6 +47,10 @@ class monster {
  monster(const mtype *t);
  monster(const mtype *t, int x, int y);
  ~monster() = default;
+
+ monster(std::istream& is);
+ friend std::ostream& operator<<(std::ostream& os, const monster& src);
+
  void poly(const mtype *t);
  void spawn(int x, int y); // All this does is moves the monster to x,y
  void spawn(const point& pt);
@@ -64,8 +68,6 @@ class monster {
  bool can_hear() const;		// MF_HEARS and no ME_DEAF
  bool made_of(material m) const;	// Returns true if it's made of m
  
- void load_info(std::string data);
- std::string save_info() const;	// String of all data, for save files
  void debug(player &u); 	// Gives debug info
 
 // Movement

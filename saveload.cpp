@@ -4,6 +4,7 @@
 #include "mapdata.h"
 #include "mission.h"
 #include "overmap.h"
+#include "monster.h"
 #include "recent_msg.h"
 #include "saveload.h"
 #include <istream>
@@ -40,6 +41,7 @@ IO_OPS_ENUM(art_effect_passive)
 IO_OPS_ENUM(bionic_id)
 IO_OPS_ENUM(faction_goal)
 IO_OPS_ENUM(faction_job)
+IO_OPS_ENUM(field_id)
 IO_OPS_ENUM(itype_id)
 IO_OPS_ENUM(material)
 IO_OPS_ENUM(mission_id)
@@ -230,8 +232,6 @@ std::ostream& operator<<(std::ostream& os, const mongroup& src)
 {
   return os << src.type I_SEP << src.pos I_SEP << int(src.radius) I_SEP << src.population << std::endl;	// XXX note absence of src.dying: saveload cancels that
 }
-
-IO_OPS_ENUM(field_id)
 
 std::istream& operator>>(std::istream& is, field& dest)
 {
@@ -542,6 +542,32 @@ std::ostream& operator<<(std::ostream& os, const item& src)
 		pos = name_copy.find_first_of("\n");
 	}
 	return os << " '" << name_copy << "'";
+}
+
+monster::monster(std::istream& is)
+{
+	int plansize;
+	is >> type >> pos >> wand >> wandf >> moves >> speed >> hp >> sp_timeout >>
+		plansize >> friendly >> faction_id >> mission_id >> dead >> anger >>
+		morale;
+	if (!type) type = mtype::types[mon_null];	// \todo warn if this kicks in
+	point ptmp;
+	for (int i = 0; i < plansize; i++) {
+		is >> ptmp;
+		plans.push_back(ptmp);
+	}
+}
+
+std::ostream& operator<<(std::ostream& os, const monster& src)
+{
+	os << src.type I_SEP << src.pos I_SEP << src.wand I_SEP << src.wandf I_SEP <<
+		src.moves I_SEP << src.speed I_SEP << src.hp I_SEP << src.sp_timeout I_SEP <<
+		src.plans.size() I_SEP << src.friendly I_SEP << src.faction_id I_SEP <<
+		src.mission_id I_SEP << src.dead I_SEP << src.anger I_SEP << src.morale;
+	for (int i = 0; i < src.plans.size(); i++) {
+		os I_SEP << src.plans[i];
+	}
+	return os;
 }
 
 itype::itype(std::istream& is)
