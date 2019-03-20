@@ -96,7 +96,6 @@ struct mission {
  mission_id follow_up;	// What mission do we get after this succeeds?
  
  std::string name() const;
- void load_info(std::ifstream &info);
 
  mission()
  {

@@ -27,28 +27,6 @@ std::string mission::name() const
  return type ? type->name : "NULL";
 }
 
-void mission::load_info(std::ifstream &data)
-{
- int type_id, rewtype, reward_id, rew_item, rew_skill, itemid, tmpfollow;
- data >> type_id;
- type = &mission_type::types[type_id];
- std::string tmpdesc;
- do {
-  data >> tmpdesc;
-  if (tmpdesc != "<>")
-   description += tmpdesc + " ";
- } while (tmpdesc != "<>");
- description = description.substr( 0, description.size() - 1 ); // Ending ' '
- data >> failed >> value >> rewtype >> reward_id >> rew_item >> rew_skill >>
-         uid >> target.x >> target.y >> itemid >> count >> deadline >> npc_id >>
-         good_fac_id >> bad_fac_id >> step >> tmpfollow;
- follow_up = mission_id(tmpfollow);
- reward.type = npc_favor_type(reward_id);
- reward.item_id = itype_id( rew_item );
- reward.skill_id = skill( rew_skill );
- item_id = itype_id(itemid);
-}
-
 std::string mission_dialogue (mission_id id, talk_topic state)
 {
  switch (id) {
