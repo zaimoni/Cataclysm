@@ -16,6 +16,7 @@ struct city {
  city(int X = -1, int Y = -1, int S = -1) : x (X), y (Y), s (S) {}
 
  city(std::istream& is, bool is_road=false);
+ friend std::ostream& operator<<(std::ostream& os, const city& src);
 };
 
 struct om_note {
@@ -27,6 +28,7 @@ struct om_note {
          x (X), y (Y), num (N), text (T) {}
 
  om_note(std::istream& is);
+ friend std::ostream& operator<<(std::ostream& os, const om_note& src);
 };
 
 struct radio_tower {
@@ -38,6 +40,7 @@ struct radio_tower {
              x (X), y (Y), strength (S), message (M) {}
 
  radio_tower(std::istream& is);
+ friend std::ostream& operator<<(std::ostream& os, const radio_tower& src);
 };
 
 class overmap

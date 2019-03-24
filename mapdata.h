@@ -232,6 +232,9 @@ struct field {
  : type(t),density(d),age(a)
  { }
 
+ friend std::istream& operator>>(std::istream& is, field& dest);
+ friend std::ostream& operator<<(std::ostream& os, const field& src);
+
  bool is_null() const
  {
   return (type == fd_null || type == fd_blood || type == fd_bile || type == fd_slime);
@@ -256,6 +259,7 @@ struct spawn_point {
              mission_id (MIS), friendly (F), name (N) {}
 
  spawn_point(std::istream& is);
+ friend std::ostream& operator<<(std::ostream& os, const spawn_point& src);
 };
 
 struct submap {
@@ -273,6 +277,7 @@ struct submap {
 
  submap() = default;
  submap(std::istream& is, game* master_game);
+ friend std::ostream& operator<<(std::ostream& os, const submap& src);
 };
 
 #endif

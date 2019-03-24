@@ -60,6 +60,7 @@ struct bionic {
  bionic() : id(bio_batteries), invlet('a'), powered(false), charge(0) {};
  bionic(bionic_id pid, char pinvlet) : id(pid), invlet(pinvlet), powered(false), charge(0) {};
  bionic(std::istream& is);
+ friend std::ostream& operator<<(std::ostream& os, const bionic& src);
 };
  
 #endif

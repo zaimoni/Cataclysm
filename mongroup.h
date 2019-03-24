@@ -38,6 +38,7 @@ struct mongroup {
  : type(ptype),pos(pposx,pposy),radius(prad),population(ppop),dying(false) {}
  
  mongroup(std::istream& is);
+ friend std::ostream& operator<<(std::ostream& os, const mongroup& src);
 
  bool is_safe() const { return mcat_null == type || mcat_forest == type; }
  static moncat_id to_mc(mon_id type);	// Monster type to monster category

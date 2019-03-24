@@ -113,7 +113,9 @@ struct mission {
   bad_fac_id = -1;
   step = 0;
  }
+
  mission(std::istream& src);
+ friend std::ostream& operator<<(std::ostream& os, const mission& src);
 };
 
 #endif
