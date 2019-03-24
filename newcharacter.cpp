@@ -134,9 +134,7 @@ bool player::create(game *g, character_type type, std::string tempname)
      debugmsg("Couldn't open %s!", filename.str().c_str());
      return false;
     }
-    std::string(data);
-    getline(fin, data);
-    load_info(g, data);
+	fin >> *this;
     points = 0;
    } break;
   }
@@ -893,11 +891,10 @@ int calc_HP(int strength, bool tough)
 void save_template(player *u)
 {
  std::string name = string_input_popup("Name of template:");
- if (name.length() == 0)
-  return;
+ if (0 >= name.length()) return;
  std::stringstream playerfile;
  playerfile << "data/" << name << ".template";
  std::ofstream fout;
  fout.open(playerfile.str().c_str());
- fout << u->save_info();
+ fout << u;
 }

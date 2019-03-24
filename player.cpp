@@ -623,14 +623,10 @@ int player::run_cost(int base_cost)
 int player::swim_speed()
 {
  int ret = 440 + 2 * weight_carried() - 50 * sklevel[sk_swimming];
- if (has_trait(PF_WEBBED))
-  ret -= 60 + str_cur * 5;
- if (has_trait(PF_TAIL_FIN))
-  ret -= 100 + str_cur * 10;
- if (has_trait(PF_SLEEK_SCALES))
-  ret -= 100;
- if (has_trait(PF_LEG_TENTACLES))
-  ret -= 60;
+ if (has_trait(PF_WEBBED)) ret -= 60 + str_cur * 5;
+ if (has_trait(PF_TAIL_FIN)) ret -= 100 + str_cur * 10;
+ if (has_trait(PF_SLEEK_SCALES)) ret -= 100;
+ if (has_trait(PF_LEG_TENTACLES)) ret -= 60;
  ret += (50 - sklevel[sk_swimming] * 2) * abs(encumb(bp_legs));
  ret += (80 - sklevel[sk_swimming] * 3) * abs(encumb(bp_torso));
  if (sklevel[sk_swimming] < 10) {
@@ -639,197 +635,19 @@ int player::swim_speed()
  }
  ret -= str_cur * 6 + dex_cur * 4;
 // If (ret > 500), we can not swim; so do not apply the underwater bonus.
- if (underwater && ret < 500)
-  ret -= 50;
- if (ret < 30)
-  ret = 30;
+ if (underwater && ret < 500) ret -= 50;
+ if (ret < 30) ret = 30;
  return ret;
 }
 
 nc_color player::color() const
 {
- if (has_disease(DI_ONFIRE))
-  return c_red;
- if (has_disease(DI_STUNNED))
-  return c_ltblue;
- if (has_disease(DI_BOOMERED))
-  return c_pink;
- if (underwater)
-  return c_blue;
- if (has_active_bionic(bio_cloak) || has_artifact_with(AEP_INVISIBLE))
-  return c_dkgray;
+ if (has_disease(DI_ONFIRE)) return c_red;
+ if (has_disease(DI_STUNNED)) return c_ltblue;
+ if (has_disease(DI_BOOMERED)) return c_pink;
+ if (underwater) return c_blue;
+ if (has_active_bionic(bio_cloak) || has_artifact_with(AEP_INVISIBLE)) return c_dkgray;
  return c_white;
-}
-
-void player::load_info(game *g, std::string data)
-{
- std::stringstream dump;
- dump << data;
- int inveh;
- int styletmp;
- dump >> pos >> str_cur >> str_max >> dex_cur >> dex_max >>
-         int_cur >> int_max >> per_cur >> per_max >> power_level >>
-         max_power_level >> hunger >> thirst >> fatigue >> stim >>
-         pain >> pkill >> radiation >> cash >> recoil >> driving_recoil >>
-         inveh >> scent >> moves >> underwater >> dodges_left >> blocks_left >>
-         oxygen >> active_mission >> xp_pool >> male >> health >> styletmp >> activity >> backlog;
-
- in_vehicle = inveh != 0;
- style_selected = itype_id(styletmp);
-
- for (int i = 0; i < PF_MAX2; i++)
-  dump >> my_traits[i];
-
- for (int i = 0; i < PF_MAX2; i++)
-  dump >> my_mutations[i];
-
- for (int i = 0; i < NUM_MUTATION_CATEGORIES; i++)
-  dump >> mutation_category_level[i];
-
- for (int i = 0; i < num_hp_parts; i++)
-  dump >> hp_cur[i] >> hp_max[i];
- for (int i = 0; i < num_skill_types; i++)
-  dump >> sklevel[i] >> skexercise[i];
-
- int numstyles, typetmp;
- dump >> numstyles;
- for (int i = 0; i < numstyles; i++) {
-  dump >> typetmp;
-  styles.push_back( itype_id(typetmp) );
- }
-
- int numill;
- disease illtmp;
- dump >> numill;
- for (int i = 0; i < numill; i++) {
-  dump >> typetmp >> illtmp.duration;
-  illtmp.type = dis_type(typetmp);
-  illness.push_back(illtmp);
- }
-
- int numadd = 0;
- addiction addtmp;
- dump >> numadd;
- for (int i = 0; i < numadd; i++) {
-  dump >> typetmp >> addtmp.intensity >> addtmp.sated;
-  addtmp.type = add_type(typetmp);
-  addictions.push_back(addtmp);
- }
-
- int numbio = 0;
- bionic biotmp;
- dump >> numbio;
- for (int i = 0; i < numbio; i++) my_bionics.push_back(bionic(dump));
-
- int nummor;
- morale_point mortmp;
- dump >> nummor;
- for (int i = 0; i < nummor; i++) {
-  int mortype;
-  int item_id;
-  dump >> mortmp.bonus >> mortype >> item_id;
-  mortmp.type = morale_type(mortype);
-  mortmp.item_type = (0 >= item_id) ? NULL : item::types[item_id];
-  morale.push_back(mortmp);
- }
-
- int nummis = 0;
- int mistmp;
- dump >> nummis;
- for (int i = 0; i < nummis; i++) {
-  dump >> mistmp;
-  active_missions.push_back(mistmp);
- }
- dump >> nummis;
- for (int i = 0; i < nummis; i++) {
-  dump >> mistmp;
-  completed_missions.push_back(mistmp);
- }
- dump >> nummis;
- for (int i = 0; i < nummis; i++) {
-  dump >> mistmp;
-  failed_missions.push_back(mistmp);
- }
- 
-}
-
-std::string player::save_info()
-{
- std::stringstream dump;
- dump << pos  << " " << str_cur << " " << str_max << " " <<
-         dex_cur << " " << dex_max << " " << int_cur << " " << int_max << " " <<
-         per_cur << " " << per_max << " " << power_level << " " <<
-         max_power_level << " " << hunger << " " << thirst << " " << fatigue <<
-         " " << stim << " " << pain << " " << pkill << " " << radiation <<
-         " " << cash << " " << recoil << " " << driving_recoil << " " <<
-         (in_vehicle? 1 : 0) << " " << scent << " " << moves << " " <<
-         underwater << " " << dodges_left << " " << blocks_left << " " <<
-         oxygen << " " << active_mission << " " << xp_pool << " " << male <<
-         " " << health << " " << style_selected << " " <<
-         activity << " " << backlog << " ";
-
- for (int i = 0; i < PF_MAX2; i++)
-  dump << my_traits[i] << " ";
- for (int i = 0; i < PF_MAX2; i++)
-  dump << my_mutations[i] << " ";
- for (int i = 0; i < NUM_MUTATION_CATEGORIES; i++)
-  dump << mutation_category_level[i] << " ";
- for (int i = 0; i < num_hp_parts; i++)
-  dump << hp_cur[i] << " " << hp_max[i] << " ";
- for (int i = 0; i < num_skill_types; i++)
-  dump << int(sklevel[i]) << " " << skexercise[i] << " ";
-
- dump << styles.size() << " ";
- for (int i = 0; i < styles.size(); i++)
-  dump << int(styles[i]) << " ";
-
- dump << illness.size() << " ";
- for (int i = 0; i < illness.size();  i++)
-  dump << int(illness[i].type) << " " << illness[i].duration << " ";
-
- dump << addictions.size() << " ";
- for (int i = 0; i < addictions.size(); i++)
-  dump << int(addictions[i].type) << " " << addictions[i].intensity << " " <<
-          addictions[i].sated << " ";
-
- dump << my_bionics.size() << " ";
- for(const auto& bio : my_bionics)  dump << bio << " ";
-
- dump << morale.size() << " ";
- for (int i = 0; i < morale.size(); i++) {
-  dump << morale[i].bonus << " " << morale[i].type << " ";
-  if (morale[i].item_type == NULL)
-   dump << "0";
-  else
-   dump << morale[i].item_type->id;
-  dump << " ";
- }
-
- dump << " " << active_missions.size() << " ";
- for (int i = 0; i < active_missions.size(); i++)
-  dump << active_missions[i] << " ";
-
- dump << " " << completed_missions.size() << " ";
- for (int i = 0; i < completed_missions.size(); i++)
-  dump << completed_missions[i] << " ";
-
- dump << " " << failed_missions.size() << " ";
- for (int i = 0; i < failed_missions.size(); i++)
-  dump << failed_missions[i] << " ";
-
- dump << std::endl;
-
- for (size_t i = 0; i < inv.size(); i++) {
-  for(const auto& it : inv.stack_at(i)) {
-   dump << "I " << it << std::endl;
-   for(const auto& it_2 : it.contents) dump << "C " << it_2 << std::endl;	// \todo blocker: V 0.2.0 should have been handled already
-  }
- }
- for(const auto& it : worn) dump << "W " << it << std::endl;
- if (!weapon.is_null()) dump << "w " << weapon << std::endl;
- for(const auto& it : weapon.contents) dump << "c " << it << std::endl;	// \todo blocker: V 0.2.0 should have been handled already
-
- return dump.str();
 }
 
 void player::disp_info(game *g)

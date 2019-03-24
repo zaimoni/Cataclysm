@@ -1762,9 +1762,7 @@ void game::load(std::string name)
  for (int i = 0; i < num_monsters; i++)
   fin >> kills[i];
 // Finally, the data on the player.
- fin >> std::ws;
- getline(fin, data);
- u.load_info(this, data);
+ fin >> std::ws >> u >> std::ws;
 // And the player's inventory...
  char item_place;
 // We need a temporary vector of items.  Otherwise, when we encounter an item
@@ -1819,8 +1817,7 @@ void game::save()
  for (int i = 0; i < num_monsters; i++)	// Save the kill counts, too.
   fout << kills[i] << " ";
 // And finally the player.
- fout << u.save_info() << std::endl;
- fout << std::endl;
+ fout << u << std::endl << std::endl;
  fout.close();
 
 // Now write things that aren't player-specific: factions and NPCs

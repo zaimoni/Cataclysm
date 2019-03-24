@@ -797,3 +797,152 @@ std::string it_artifact_armor::save_data()
 	data << "A " << *this;
 	return data.str();
 }
+
+// We have an improper inheritance player -> npc (ideal difference would be the AI controller class, cf. Rogue Survivor game family
+// -- but C++ is too close to the machine for the savefile issues to be easily managed.  Rely on data structures to keep 
+// the save of a non-final class to hard drive to disambiguate.
+
+// 2019-03-24: work required to make player object a proper base object of the npc object not plausibly mechanical.
+std::istream& operator>>(std::istream& is, player& dest)
+{
+	int styletmp;
+	is >> dest.pos >> dest.str_cur >> dest.str_max >> dest.dex_cur >> dest.dex_max >>
+		dest.int_cur >> dest.int_max >> dest.per_cur >> dest.per_max >> dest.power_level >>
+		dest.max_power_level >> dest.hunger >> dest.thirst >> dest.fatigue >> dest.stim >>
+		dest.pain >> dest.pkill >> dest.radiation >> dest.cash >> dest.recoil >> dest.driving_recoil >>
+		dest.in_vehicle >> dest.scent >> dest.moves >> dest.underwater >> dest.dodges_left >> dest.blocks_left >>
+		dest.oxygen >> dest.active_mission >> dest.xp_pool >> dest.male >> dest.health >> dest.style_selected >> dest.activity >> dest.backlog;
+
+	for (int i = 0; i < PF_MAX2; i++) is >> dest.my_traits[i];
+	for (int i = 0; i < PF_MAX2; i++) is >> dest.my_mutations[i];
+	for (int i = 0; i < NUM_MUTATION_CATEGORIES; i++) is >> dest.mutation_category_level[i];
+	for (int i = 0; i < num_hp_parts; i++) is >> dest.hp_cur[i] >> dest.hp_max[i];
+	for (int i = 0; i < num_skill_types; i++) is >> dest.sklevel[i] >> dest.skexercise[i];
+
+	int numstyles;
+	is >> numstyles;
+	for (int i = 0; i < numstyles; i++) {
+		itype_id tmp;
+		is >> tmp;
+		dest.styles.push_back(tmp);
+	}
+
+	int numill, typetmp;
+	disease illtmp;	// V 0.2.0 blocker \todo iostreams support
+	is >> numill;
+	for (int i = 0; i < numill; i++) {
+		is >> typetmp >> illtmp.duration;
+		illtmp.type = dis_type(typetmp);
+		dest.illness.push_back(illtmp);
+	}
+
+	int numadd = 0;
+	addiction addtmp;	// V 0.2.0 blocker \todo iostreams support
+	is >> numadd;
+	for (int i = 0; i < numadd; i++) {
+		is >> typetmp >> addtmp.intensity >> addtmp.sated;
+		addtmp.type = add_type(typetmp);
+		dest.addictions.push_back(addtmp);
+	}
+
+	int numbio = 0;
+	is >> numbio;
+	for (int i = 0; i < numbio; i++) dest.my_bionics.push_back(bionic(is));
+
+	int nummor;
+	morale_point mortmp;	// V 0.2.0 blocker \todo iostreams support
+	is >> nummor;
+	for (int i = 0; i < nummor; i++) {
+		int mortype;
+		int item_id;
+		is >> mortmp.bonus >> mortype >> item_id;
+		mortmp.type = morale_type(mortype);
+		mortmp.item_type = (0 >= item_id) ? NULL : item::types[item_id];
+		dest.morale.push_back(mortmp);
+	}
+
+	int nummis = 0;
+	int mistmp;
+	is >> nummis;
+	for (int i = 0; i < nummis; i++) {
+		is >> mistmp;
+		dest.active_missions.push_back(mistmp);
+	}
+	is >> nummis;
+	for (int i = 0; i < nummis; i++) {
+		is >> mistmp;
+		dest.completed_missions.push_back(mistmp);
+	}
+	is >> nummis;
+	for (int i = 0; i < nummis; i++) {
+		is >> mistmp;
+		dest.failed_missions.push_back(mistmp);
+	}
+	return is;
+}
+
+std::ostream& operator<<(std::ostream& os, const player& src)
+{
+	os << src.pos I_SEP << src.str_cur I_SEP << src.str_max I_SEP <<
+		src.dex_cur I_SEP << src.dex_max I_SEP << src.int_cur I_SEP << src.int_max I_SEP <<
+		src.per_cur I_SEP << src.per_max I_SEP << src.power_level I_SEP <<
+		src.max_power_level I_SEP << src.hunger I_SEP << src.thirst I_SEP << src.fatigue I_SEP <<
+		src.stim I_SEP << src.pain I_SEP << src.pkill I_SEP << src.radiation I_SEP <<
+		src.cash I_SEP << src.recoil I_SEP << src.driving_recoil I_SEP <<
+		src.in_vehicle I_SEP << src.scent I_SEP << src.moves I_SEP <<
+		src.underwater I_SEP << src.dodges_left I_SEP << src.blocks_left I_SEP <<
+		src.oxygen I_SEP << src.active_mission I_SEP << src.xp_pool I_SEP << src.male I_SEP <<
+		src.health I_SEP << src.style_selected I_SEP << src.activity I_SEP << src.backlog I_SEP;
+
+	for (int i = 0; i < PF_MAX2; i++) os << src.my_traits[i] I_SEP;
+	for (int i = 0; i < PF_MAX2; i++) os << src.my_mutations[i] I_SEP;
+	for (int i = 0; i < NUM_MUTATION_CATEGORIES; i++) os << src.mutation_category_level[i] I_SEP;
+	for (int i = 0; i < num_hp_parts; i++) os << src.hp_cur[i] I_SEP << src.hp_max[i] I_SEP;
+	for (int i = 0; i < num_skill_types; i++) os << src.sklevel[i] I_SEP << src.skexercise[i] I_SEP;
+
+	os << src.styles.size() I_SEP;
+	for (int i = 0; i < src.styles.size(); i++) os << src.styles[i] I_SEP;
+
+	os << src.illness.size() I_SEP;
+	for(const auto& ill : src.illness) os << int(ill.type) I_SEP << ill.duration I_SEP;
+
+	os << src.addictions.size() I_SEP;
+	for (const auto& add : src.addictions) os << int(add.type) I_SEP << add.intensity I_SEP << add.sated I_SEP;
+
+	os << src.my_bionics.size() I_SEP;
+	for (const auto& bio : src.my_bionics)  os << bio I_SEP;
+
+	os << src.morale.size() I_SEP;
+	for (int i = 0; i < src.morale.size(); i++) {
+		os << src.morale[i].bonus I_SEP << src.morale[i].type I_SEP;
+		if (src.morale[i].item_type == NULL)
+			os << "0";
+		else
+			os << src.morale[i].item_type->id;
+		os I_SEP;
+	}
+
+	os I_SEP << src.active_missions.size() I_SEP;
+	for (const auto& mi : src.active_missions) os << mi  I_SEP;
+
+	os I_SEP << src.completed_missions.size() I_SEP;
+	for (const auto& mi : src.completed_missions) os << mi  I_SEP;
+
+	os I_SEP << src.failed_missions.size() I_SEP;
+	for (const auto& mi : src.failed_missions) os << mi  I_SEP;
+
+	os << std::endl;
+
+	// V 0.2.0 blocker \todo asymmetric, not handled in operator >>
+	for (size_t i = 0; i < src.inv.size(); i++) {
+		for (const auto& it : src.inv.stack_at(i)) {
+			os << "I " << it << std::endl;
+			for (const auto& it_2 : it.contents) os << "C " << it_2 << std::endl;	// \todo blocker: V 0.2.0 should have been handled already
+		}
+	}
+	for (const auto& it : src.worn) os << "W " << it << std::endl;
+	if (!src.weapon.is_null()) os << "w " << src.weapon << std::endl;
+	for (const auto& it : src.weapon.contents) os << "c " << it << std::endl;	// \todo blocker: V 0.2.0 should have been handled already
+
+	return os;
+}

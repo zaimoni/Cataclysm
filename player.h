@@ -35,6 +35,8 @@ public:
  player();
  player(const player &rhs) = default;
  virtual ~player() = default;
+ friend std::istream& operator>>(std::istream& is, player& dest);
+ friend std::ostream& operator<<(std::ostream& is, const player& src);
 
  player& operator=(const player& rhs) = default;
 
@@ -49,9 +51,6 @@ public:
 
  virtual bool is_npc() const { return false; }	// Overloaded for NPCs in npc.h
  nc_color color() const;				// What color to draw us as
-
- virtual void load_info(game *g, std::string data);// Load from file 'name.sav'
- virtual std::string save_info();		// Save to file matching name
 
  void disp_info(game *g);	// '@' key; extended character info
  void disp_morale();		// '%' key; morale info
