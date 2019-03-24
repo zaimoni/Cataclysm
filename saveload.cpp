@@ -47,6 +47,7 @@ IO_OPS_ENUM(field_id)
 IO_OPS_ENUM(itype_id)
 IO_OPS_ENUM(material)
 IO_OPS_ENUM(mission_id)
+IO_OPS_ENUM(morale_type)
 IO_OPS_ENUM(npc_favor_type)
 IO_OPS_ENUM(skill)
 IO_OPS_ENUM(ter_id)
@@ -821,6 +822,18 @@ std::ostream& operator<<(std::ostream& os, const addiction& src)
 	return os << src.type I_SEP << src.intensity I_SEP << src.sated;
 }
 
+morale_point::morale_point(std::istream& is)
+{
+	int mortype;
+	int item_id;
+	is >> bonus >> type >> item_type;
+	if (item_type && itm_null == item_type->id) item_type = 0;	// historically, itm_null was the encoding for null pointer
+}
+
+std::ostream& operator<<(std::ostream& os, const morale_point& src)
+{
+	return os << src.bonus I_SEP << src.type I_SEP << src.item_type;
+}
 
 // We have an improper inheritance player -> npc (ideal difference would be the AI controller class, cf. Rogue Survivor game family
 // -- but C++ is too close to the machine for the savefile issues to be easily managed.  Rely on data structures to keep 
@@ -856,7 +869,6 @@ std::istream& operator>>(std::istream& is, player& dest)
 	for (int i = 0; i < numill; i++) dest.illness.push_back(disease(is));
 
 	int numadd = 0;
-	addiction addtmp;	// V 0.2.0 blocker \todo iostreams support
 	is >> numadd;
 	for (int i = 0; i < numadd; i++) dest.addictions.push_back(addiction(is));
 
@@ -864,17 +876,10 @@ std::istream& operator>>(std::istream& is, player& dest)
 	is >> numbio;
 	for (int i = 0; i < numbio; i++) dest.my_bionics.push_back(bionic(is));
 
+	// this is not mirrored in npc save format
 	int nummor;
-	morale_point mortmp;	// V 0.2.0 blocker \todo iostreams support
 	is >> nummor;
-	for (int i = 0; i < nummor; i++) {
-		int mortype;
-		int item_id;
-		is >> mortmp.bonus >> mortype >> item_id;
-		mortmp.type = morale_type(mortype);
-		mortmp.item_type = (0 >= item_id) ? NULL : item::types[item_id];
-		dest.morale.push_back(mortmp);
-	}
+	for (int i = 0; i < nummor; i++) dest.morale.push_back(morale_point(is));
 
 	int nummis = 0;
 	int mistmp;
@@ -928,14 +933,7 @@ std::ostream& operator<<(std::ostream& os, const player& src)
 	for (const auto& bio : src.my_bionics)  os << bio I_SEP;
 
 	os << src.morale.size() I_SEP;
-	for (int i = 0; i < src.morale.size(); i++) {
-		os << src.morale[i].bonus I_SEP << src.morale[i].type I_SEP;
-		if (src.morale[i].item_type == NULL)
-			os << "0";
-		else
-			os << src.morale[i].item_type->id;
-		os I_SEP;
-	}
+	for (const auto& mor : src.morale) os << mor I_SEP;
 
 	os I_SEP << src.active_missions.size() I_SEP;
 	for (const auto& mi : src.active_missions) os << mi  I_SEP;

@@ -47,6 +47,8 @@ struct morale_point
 
  morale_point(morale_type T = MORALE_NULL, const itype* I = NULL, int B = 0) :
               type (T), item_type (I), bonus (B) {};
+ morale_point(std::istream& is);
+ friend std::ostream& operator<<(std::ostream& os, const morale_point& src);
 
  std::string name() const;
 };
