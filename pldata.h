@@ -61,6 +61,8 @@ struct disease
  int intensity;
  int duration;
  disease(dis_type t = DI_NULL, int d = 0, int i = 0) : type(t),intensity(i),duration(d) {}
+ disease(std::istream& is);
+ friend std::ostream& operator<<(std::ostream& os, const disease& src);
 
  int speed_boost() const;
  const char* name() const;

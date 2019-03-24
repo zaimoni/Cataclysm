@@ -39,6 +39,7 @@ IO_OPS_ENUM(art_charge)
 IO_OPS_ENUM(art_effect_active)
 IO_OPS_ENUM(art_effect_passive)
 IO_OPS_ENUM(bionic_id)
+IO_OPS_ENUM(dis_type)
 IO_OPS_ENUM(faction_goal)
 IO_OPS_ENUM(faction_job)
 IO_OPS_ENUM(field_id)
@@ -798,6 +799,18 @@ std::string it_artifact_armor::save_data()
 	return data.str();
 }
 
+disease::disease(std::istream& is)	// V 0.2.0 blocker \todo savefile representation for disease intensity
+: intensity(0)
+{
+	is >> type >> duration;
+}
+
+std::ostream& operator<<(std::ostream& os, const disease& src)
+{
+	return os << src.type I_SEP << src.duration;
+}
+
+
 // We have an improper inheritance player -> npc (ideal difference would be the AI controller class, cf. Rogue Survivor game family
 // -- but C++ is too close to the machine for the savefile issues to be easily managed.  Rely on data structures to keep 
 // the save of a non-final class to hard drive to disambiguate.
@@ -828,13 +841,8 @@ std::istream& operator>>(std::istream& is, player& dest)
 	}
 
 	int numill, typetmp;
-	disease illtmp;	// V 0.2.0 blocker \todo iostreams support
 	is >> numill;
-	for (int i = 0; i < numill; i++) {
-		is >> typetmp >> illtmp.duration;
-		illtmp.type = dis_type(typetmp);
-		dest.illness.push_back(illtmp);
-	}
+	for (int i = 0; i < numill; i++) dest.illness.push_back(disease(is));
 
 	int numadd = 0;
 	addiction addtmp;	// V 0.2.0 blocker \todo iostreams support
@@ -904,7 +912,7 @@ std::ostream& operator<<(std::ostream& os, const player& src)
 	for (int i = 0; i < src.styles.size(); i++) os << src.styles[i] I_SEP;
 
 	os << src.illness.size() I_SEP;
-	for(const auto& ill : src.illness) os << int(ill.type) I_SEP << ill.duration I_SEP;
+	for(const auto& ill : src.illness) os << ill I_SEP;
 
 	os << src.addictions.size() I_SEP;
 	for (const auto& add : src.addictions) os << int(add.type) I_SEP << add.intensity I_SEP << add.sated I_SEP;

@@ -63,8 +63,7 @@ std::string npc::save_info()
   dump << int(styles[i]) << " ";
 
  dump << illness.size() << " ";
- for (int i = 0; i < illness.size();  i++)
-  dump << int(illness[i].type) << " " << illness[i].duration << " ";
+ for (const auto& ill : illness) dump << ill << " ";
 
  dump << addictions.size() << " ";
  for (int i = 0; i < addictions.size(); i++)
@@ -143,7 +142,6 @@ void npc::load_info(game *g, std::string data)
 
  int numill, numstyle;
  int typetmp;
- disease illtmp;
  dump >> numstyle;
  for (int i = 0; i < numstyle; i++) {
   dump >> typetmp;
@@ -151,11 +149,8 @@ void npc::load_info(game *g, std::string data)
  }
 
  dump >> numill;
- for (int i = 0; i < numill; i++) {
-  dump >> typetmp >> illtmp.duration;
-  illtmp.type = dis_type(typetmp);
-  illness.push_back(illtmp);
- }
+ for (int i = 0; i < numill; i++) illness.push_back(disease(dump));
+
  int numadd;
  addiction addtmp;
  dump >> numadd;
