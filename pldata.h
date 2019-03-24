@@ -74,9 +74,10 @@ struct addiction
  add_type type;
  int intensity;
  int sated;
- addiction() { type = ADD_NULL; intensity = 0; sated = 600; }
- addiction(add_type t) { type = t; intensity = 1; sated = 600; }
- addiction(add_type t, int i) { type = t; intensity = i; sated = 600; }
+ addiction() : type(ADD_NULL),intensity(0),sated(600) {}
+ addiction(add_type t, int i = 1) : type(t), intensity(i), sated(600) {}
+ addiction(std::istream& is);
+ friend std::ostream& operator<<(std::ostream& os, const addiction& src);
 };
 
 enum activity_type {

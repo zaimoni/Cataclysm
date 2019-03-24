@@ -66,9 +66,7 @@ std::string npc::save_info()
  for (const auto& ill : illness) dump << ill << " ";
 
  dump << addictions.size() << " ";
- for (int i = 0; i < addictions.size(); i++)
-  dump << int(addictions[i].type) << " " << addictions[i].intensity << " " <<
-          addictions[i].sated << " ";
+ for (const auto& add : addictions) dump << add << " ";
 
  dump << my_bionics.size() << " ";
  for (const auto& bio : my_bionics)  dump << bio << " ";
@@ -152,13 +150,9 @@ void npc::load_info(game *g, std::string data)
  for (int i = 0; i < numill; i++) illness.push_back(disease(dump));
 
  int numadd;
- addiction addtmp;
  dump >> numadd;
- for (int i = 0; i < numadd; i++) {
-  dump >> typetmp >> addtmp.intensity >> addtmp.sated;
-  addtmp.type = add_type(typetmp);
-  addictions.push_back(addtmp);
- }
+ for (int i = 0; i < numadd; i++) addictions.push_back(addiction(dump));
+
  int numbio;
  bionic biotmp;
  dump >> numbio;

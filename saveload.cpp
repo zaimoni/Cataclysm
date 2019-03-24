@@ -35,6 +35,7 @@ std::ostream& operator<<(std::ostream& os, TYPE src)	\
 	return os << int(src);	\
 }
 
+IO_OPS_ENUM(add_type)
 IO_OPS_ENUM(art_charge)
 IO_OPS_ENUM(art_effect_active)
 IO_OPS_ENUM(art_effect_passive)
@@ -810,6 +811,16 @@ std::ostream& operator<<(std::ostream& os, const disease& src)
 	return os << src.type I_SEP << src.duration;
 }
 
+addiction::addiction(std::istream& is)
+{
+	is >> type >> intensity >> sated;
+}
+
+std::ostream& operator<<(std::ostream& os, const addiction& src)
+{
+	return os << src.type I_SEP << src.intensity I_SEP << src.sated;
+}
+
 
 // We have an improper inheritance player -> npc (ideal difference would be the AI controller class, cf. Rogue Survivor game family
 // -- but C++ is too close to the machine for the savefile issues to be easily managed.  Rely on data structures to keep 
@@ -847,11 +858,7 @@ std::istream& operator>>(std::istream& is, player& dest)
 	int numadd = 0;
 	addiction addtmp;	// V 0.2.0 blocker \todo iostreams support
 	is >> numadd;
-	for (int i = 0; i < numadd; i++) {
-		is >> typetmp >> addtmp.intensity >> addtmp.sated;
-		addtmp.type = add_type(typetmp);
-		dest.addictions.push_back(addtmp);
-	}
+	for (int i = 0; i < numadd; i++) dest.addictions.push_back(addiction(is));
 
 	int numbio = 0;
 	is >> numbio;
@@ -915,7 +922,7 @@ std::ostream& operator<<(std::ostream& os, const player& src)
 	for(const auto& ill : src.illness) os << ill I_SEP;
 
 	os << src.addictions.size() I_SEP;
-	for (const auto& add : src.addictions) os << int(add.type) I_SEP << add.intensity I_SEP << add.sated I_SEP;
+	for (const auto& add : src.addictions) os << add I_SEP;
 
 	os << src.my_bionics.size() I_SEP;
 	for (const auto& bio : src.my_bionics)  os << bio I_SEP;
