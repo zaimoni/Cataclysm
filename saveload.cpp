@@ -936,13 +936,13 @@ std::ostream& operator<<(std::ostream& os, const player& src)
 	for (const auto& mor : src.morale) os << mor I_SEP;
 
 	os I_SEP << src.active_missions.size() I_SEP;
-	for (const auto& mi : src.active_missions) os << mi  I_SEP;
+	for (const auto& mi : src.active_missions) os << mi I_SEP;
 
 	os I_SEP << src.completed_missions.size() I_SEP;
-	for (const auto& mi : src.completed_missions) os << mi  I_SEP;
+	for (const auto& mi : src.completed_missions) os << mi I_SEP;
 
 	os I_SEP << src.failed_missions.size() I_SEP;
-	for (const auto& mi : src.failed_missions) os << mi  I_SEP;
+	for (const auto& mi : src.failed_missions) os << mi I_SEP;
 
 	os << std::endl;
 
@@ -957,5 +957,28 @@ std::ostream& operator<<(std::ostream& os, const player& src)
 	if (!src.weapon.is_null()) os << "w " << src.weapon << std::endl;
 	for (const auto& it : src.weapon.contents) os << "c " << it << std::endl;	// \todo blocker: V 0.2.0 should have been handled already
 
+	return os;
+}
+
+std::istream& operator>>(std::istream& is, npc_opinion& dest)
+{
+	int tmpsize;
+	is >> dest.trust >> dest.fear >> dest.value >> dest.anger >> dest.owed >> tmpsize;
+	for (int i = 0; i < tmpsize; i++) {
+		int tmptype, tmpitem, tmpskill;
+		npc_favor tmpfavor;
+		is >> tmptype >> tmpfavor.value >> tmpitem >> tmpskill;
+		tmpfavor.type = npc_favor_type(tmptype);
+		tmpfavor.item_id = itype_id(tmpitem);
+		tmpfavor.skill_id = skill(tmpskill);
+		dest.favors.push_back(tmpfavor);
+	}
+	return is;
+}
+
+std::ostream& operator<<(std::ostream& os, const npc_opinion& src)
+{
+	os << src.trust I_SEP << src.fear I_SEP << src.value I_SEP << src.anger I_SEP << src.owed I_SEP << src.favors.size();
+	for (const auto& fav : src.favors) os I_SEP << int(fav.type) I_SEP << fav.value I_SEP << fav.item_id I_SEP << fav.skill_id;	// V 0.2.0 blocker \todo iostreams support: npc_favor
 	return os;
 }

@@ -170,6 +170,9 @@ struct npc_opinion
              trust (T), fear (F), value (V), anger(A), owed (O) { };
 
  npc_opinion(const npc_opinion &copy) = default;
+ ~npc_opinion() = default;
+ friend std::istream& operator>>(std::istream& is, npc_opinion& dest);
+ friend std::ostream& operator<<(std::ostream& os, const npc_opinion& src);
 
  npc_opinion& operator+= (const npc_opinion &rhs)
  {
@@ -187,32 +190,6 @@ struct npc_opinion
  };
 
  std::string text() const;
-
- std::string save_info()
- {
-  std::stringstream ret;
-  ret << trust << " " << fear << " " << value << " " << anger << " " << owed <<
-         " " << favors.size();
-  for (int i = 0; i < favors.size(); i++)
-    ret << " " << int(favors[i].type) << " " << favors[i].value << " " <<
-           favors[i].item_id << " " << favors[i].skill_id;
-  return ret.str();
- }
-
- void load_info(std::stringstream &info)
- {
-  int tmpsize;
-  info >> trust >> fear >> value >> anger >> owed >> tmpsize;
-  for (int i = 0; i < tmpsize; i++) {
-   int tmptype, tmpitem, tmpskill;
-   npc_favor tmpfavor;
-   info >> tmptype >> tmpfavor.value >> tmpitem >> tmpskill;
-   tmpfavor.type = npc_favor_type(tmptype);
-   tmpfavor.item_id = itype_id(tmpitem);
-   tmpfavor.skill_id = skill(tmpskill);
-   favors.push_back(tmpfavor);
-  }
- }
 };
 
 enum combat_engagement {
