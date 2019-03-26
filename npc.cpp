@@ -78,8 +78,7 @@ std::string npc::save_info()
          wandf << " " << om << " " << mapx << " " << mapy << " " << pl << " " 
 		 <<  goal << " " << int(mission) << " " << int(flags) << " ";	// XXX \todo npc::it missing here
  dump << (my_fac == NULL ? -1 : my_fac->id);
- dump << " " << attitude << " " << " " << op_of_u << " " <<
-         chatbin.save_info() << " ";
+ dump << " " << attitude << " " << " " << op_of_u << " " << chatbin << " ";
 
  dump << combat_rules.save_info();
  
@@ -172,7 +171,7 @@ void npc::load_info(game *g, std::string data)
  attitude = npc_attitude(tmpatt);
 
  dump >> op_of_u;
- chatbin.load_info(dump);
+ dump >> chatbin;
  combat_rules.load_info(dump);
 }
 

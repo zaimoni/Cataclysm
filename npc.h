@@ -307,36 +307,8 @@ struct npc_chatbin
   tempvalue = -1;
   first_topic = TALK_NONE;
  }
-
- std::string save_info()
- {
-  std::stringstream ret;
-  ret << first_topic << " " << mission_selected << " " << tempvalue << " " <<
-          missions.size() << " " << missions_assigned.size();
-  for (int i = 0; i < missions.size(); i++)
-   ret << " " << missions[i];
-  for (int i = 0; i < missions_assigned.size(); i++)
-   ret << " " << missions_assigned[i];
-  return ret.str();
- }
-
- void load_info(std::stringstream &info)
- {
-  int tmpsize_miss, tmpsize_assigned, tmptopic;
-  info >> tmptopic >> mission_selected >> tempvalue >> tmpsize_miss >>
-          tmpsize_assigned;
-  first_topic = talk_topic(tmptopic);
-  for (int i = 0; i < tmpsize_miss; i++) {
-   int tmpmiss;
-   info >> tmpmiss;
-   missions.push_back(tmpmiss);
-  }
-  for (int i = 0; i < tmpsize_assigned; i++) {
-   int tmpmiss;
-   info >> tmpmiss;
-   missions_assigned.push_back(tmpmiss);
-  }
- }
+ friend std::istream& operator>>(std::istream& is, npc_chatbin& dest);
+ friend std::ostream& operator<<(std::ostream& os, const npc_chatbin& src);
 };
 
 class npc : public player {

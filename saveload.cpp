@@ -50,6 +50,7 @@ IO_OPS_ENUM(mission_id)
 IO_OPS_ENUM(morale_type)
 IO_OPS_ENUM(npc_favor_type)
 IO_OPS_ENUM(skill)
+IO_OPS_ENUM(talk_topic)
 IO_OPS_ENUM(ter_id)
 IO_OPS_ENUM(trap_id)
 
@@ -980,5 +981,31 @@ std::ostream& operator<<(std::ostream& os, const npc_opinion& src)
 {
 	os << src.trust I_SEP << src.fear I_SEP << src.value I_SEP << src.anger I_SEP << src.owed I_SEP << src.favors.size();
 	for (const auto& fav : src.favors) os I_SEP << int(fav.type) I_SEP << fav.value I_SEP << fav.item_id I_SEP << fav.skill_id;	// V 0.2.0 blocker \todo iostreams support: npc_favor
+	return os;
+}
+
+std::istream& operator>>(std::istream& is, npc_chatbin& dest)
+{
+	int tmpsize_miss, tmpsize_assigned;
+	is >> dest.first_topic >> dest.mission_selected >> dest.tempvalue >> tmpsize_miss >> tmpsize_assigned;
+	for (int i = 0; i < tmpsize_miss; i++) {
+		int tmpmiss;
+		is >> tmpmiss;
+		dest.missions.push_back(tmpmiss);
+	}
+	for (int i = 0; i < tmpsize_assigned; i++) {
+		int tmpmiss;
+		is >> tmpmiss;
+		dest.missions_assigned.push_back(tmpmiss);
+	}
+	return is;
+}
+
+std::ostream& operator<<(std::ostream& os, const npc_chatbin& src)
+{
+	os << src.first_topic I_SEP << src.mission_selected I_SEP << src.tempvalue I_SEP <<
+		src.missions.size() I_SEP << src.missions_assigned.size();
+	for (const auto& mi : src.missions) os I_SEP << mi;
+	for (const auto& mi : src.missions_assigned) os I_SEP << mi;
 	return os;
 }
