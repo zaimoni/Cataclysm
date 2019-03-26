@@ -150,6 +150,8 @@ struct npc_personality {
   collector  = 0;
   altruism   = 0;
  };
+ friend std::istream& operator>>(std::istream& is, npc_personality& dest);
+ friend std::ostream& operator<<(std::ostream& os, const npc_personality& src);
 };
 
 struct npc_opinion

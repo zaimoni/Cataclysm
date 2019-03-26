@@ -72,11 +72,9 @@ std::string npc::save_info()
  for (const auto& bio : my_bionics)  dump << bio << " ";
 
 // NPC-specific stuff
- dump << int(personality.aggression) << " " << int(personality.bravery) <<
-         " " << int(personality.collector) << " " <<
-         int(personality.altruism) << " " << wand << " " <<
-         wandf << " " << om << " " << mapx << " " << mapy << " " << pl << " " 
-		 <<  goal << " " << int(mission) << " " << int(flags) << " ";	// XXX \todo npc::it missing here
+ dump << personality << " " << wand << " " << wandf << " " <<
+		 om << " " << mapx << " " << mapy << " " << pl << " "  <<
+	     goal << " " << int(mission) << " " << int(flags) << " ";	// blocker V 0.2.0 \todo npc::it missing here
  dump << (my_fac == NULL ? -1 : my_fac->id);
  dump << " " << attitude << " " << " " << op_of_u << " " << chatbin << " ";
 
@@ -158,14 +156,10 @@ void npc::load_info(game *g, std::string data)
  for (int i = 0; i < numbio; i++) my_bionics.push_back(bionic(dump));
 
 // Special NPC stuff
- int misstmp, flagstmp, tmpatt, agg, bra, col, alt;
- dump >> agg >> bra >> col >> alt >> wand >> wandf >> om >> 
+ int misstmp, flagstmp, tmpatt;
+ dump >> personality >> wand >> wandf >> om >>
 	     mapx >> mapy >> pl >> goal >> misstmp >>
          flagstmp >> fac_id >> tmpatt;
- personality.aggression = agg;
- personality.bravery = bra;
- personality.collector = col;
- personality.altruism = alt;
  mission = npc_mission(misstmp);
  flags = flagstmp;
  attitude = npc_attitude(tmpatt);

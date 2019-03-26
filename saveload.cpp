@@ -1009,3 +1009,20 @@ std::ostream& operator<<(std::ostream& os, const npc_chatbin& src)
 	for (const auto& mi : src.missions_assigned) os I_SEP << mi;
 	return os;
 }
+
+std::istream& operator>>(std::istream& is, npc_personality& dest)
+{
+	int agg, bra, col, alt;
+	is >> agg >> bra >> col >> alt;
+	dest.aggression = agg;
+	dest.bravery = bra;
+	dest.collector = col;
+	dest.altruism = alt;
+	return is;
+}
+
+std::ostream& operator<<(std::ostream& os, const npc_personality& src)
+{
+	return os << int(src.aggression) I_SEP << int(src.bravery) I_SEP << int(src.collector) I_SEP << int(src.altruism);
+}
+
