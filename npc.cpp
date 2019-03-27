@@ -78,7 +78,7 @@ std::string npc::save_info()
  dump << (my_fac == NULL ? -1 : my_fac->id);
  dump << " " << attitude << " " << " " << op_of_u << " " << chatbin << " ";
 
- dump << combat_rules.save_info();
+ dump << combat_rules << " ";
  
 // Inventory size, plus armor size, plus 1 for the weapon
  dump << std::endl << inv.num_items() + worn.size() + 1 << std::endl;
@@ -166,7 +166,7 @@ void npc::load_info(game *g, std::string data)
 
  dump >> op_of_u;
  dump >> chatbin;
- combat_rules.load_info(dump);
+ dump >> combat_rules;
 }
 
 void npc::randomize(game *g, npc_class type)

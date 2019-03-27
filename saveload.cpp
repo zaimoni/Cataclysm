@@ -40,6 +40,7 @@ IO_OPS_ENUM(art_charge)
 IO_OPS_ENUM(art_effect_active)
 IO_OPS_ENUM(art_effect_passive)
 IO_OPS_ENUM(bionic_id)
+IO_OPS_ENUM(combat_engagement)
 IO_OPS_ENUM(dis_type)
 IO_OPS_ENUM(faction_goal)
 IO_OPS_ENUM(faction_job)
@@ -1026,3 +1027,12 @@ std::ostream& operator<<(std::ostream& os, const npc_personality& src)
 	return os << int(src.aggression) I_SEP << int(src.bravery) I_SEP << int(src.collector) I_SEP << int(src.altruism);
 }
 
+std::istream& operator>>(std::istream& is, npc_combat_rules& dest)
+{
+	return is >> dest.engagement >> dest.use_guns >> dest.use_grenades;
+}
+
+std::ostream& operator<<(std::ostream& os, const npc_combat_rules& src)
+{
+	return os << src.engagement I_SEP << src.use_guns I_SEP << src.use_grenades;
+}
