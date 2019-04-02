@@ -49,7 +49,10 @@ IO_OPS_ENUM(itype_id)
 IO_OPS_ENUM(material)
 IO_OPS_ENUM(mission_id)
 IO_OPS_ENUM(morale_type)
+IO_OPS_ENUM(npc_attitude)
+IO_OPS_ENUM(npc_class)
 IO_OPS_ENUM(npc_favor_type)
+IO_OPS_ENUM(npc_mission)
 IO_OPS_ENUM(skill)
 IO_OPS_ENUM(talk_topic)
 IO_OPS_ENUM(ter_id)
@@ -866,7 +869,7 @@ std::istream& operator>>(std::istream& is, player& dest)
 		dest.styles.push_back(tmp);
 	}
 
-	int numill, typetmp;
+	int numill;
 	is >> numill;
 	for (int i = 0; i < numill; i++) dest.illness.push_back(disease(is));
 
@@ -917,7 +920,7 @@ std::ostream& operator<<(std::ostream& os, const player& src)
 		src.health I_SEP << src.style_selected I_SEP << src.activity I_SEP << src.backlog I_SEP;
 
 	for (int i = 0; i < PF_MAX2; i++) os << src.my_traits[i] I_SEP;
-	for (int i = 0; i < PF_MAX2; i++) os << src.my_mutations[i] I_SEP;
+	for (int i = 0; i < PF_MAX2; i++) os << src.my_mutations[i] I_SEP;	// XXX mutation info not save/loaded by NPC in C:Whales
 	for (int i = 0; i < NUM_MUTATION_CATEGORIES; i++) os << src.mutation_category_level[i] I_SEP;
 	for (int i = 0; i < num_hp_parts; i++) os << src.hp_cur[i] I_SEP << src.hp_max[i] I_SEP;
 	for (int i = 0; i < num_skill_types; i++) os << src.sklevel[i] I_SEP << src.skexercise[i] I_SEP;
@@ -1035,4 +1038,109 @@ std::istream& operator>>(std::istream& is, npc_combat_rules& dest)
 std::ostream& operator<<(std::ostream& os, const npc_combat_rules& src)
 {
 	return os << src.engagement I_SEP << src.use_guns I_SEP << src.use_grenades;
+}
+
+npc::npc(std::istream& is)
+{
+	std::string tmpname;
+	is >> id;
+	// Standard player stuff
+	do {
+		is >> tmpname;
+		if (tmpname != "||") name += tmpname + " ";
+	} while (tmpname != "||");
+	name = name.substr(0, name.size() - 1); // Strip off trailing " "
+	is >> pos >> str_cur >> str_max >> dex_cur >> dex_max >>
+		int_cur >> int_max >> per_cur >> per_max >> hunger >> thirst >>
+		fatigue >> stim >> pain >> pkill >> radiation >> cash >> recoil >>
+		scent >> moves >> underwater >> dodges_left >> oxygen >> marked_for_death >>
+		dead >> myclass >> patience;
+
+	for (int i = 0; i < PF_MAX2; i++) is >> my_traits[i];
+	for (int i = 0; i < num_hp_parts; i++) is >> hp_cur[i] >> hp_max[i];
+	for (int i = 0; i < num_skill_types; i++) is >> sklevel[i] >> skexercise[i];
+
+	int numstyles;
+	is >> numstyles;
+	for (int i = 0; i < numstyles; i++) {
+		itype_id tmp;
+		is >> tmp;
+		styles.push_back(tmp);
+	}
+
+	int numill;
+	is >> numill;
+	for (int i = 0; i < numill; i++) illness.push_back(disease(is));
+
+	int numadd = 0;
+	is >> numadd;
+	for (int i = 0; i < numadd; i++) addictions.push_back(addiction(is));
+
+	int numbio = 0;
+	is >> numbio;
+	for (int i = 0; i < numbio; i++) my_bionics.push_back(bionic(is));
+
+	// Special NPC stuff
+	int flagstmp;
+	is >> personality >> wand >> wandf >> om >>
+		mapx >> mapy >> pl >> goal >> mission >>
+		flagstmp >> fac_id >> attitude;	// V 0.2.0 blocker \todo reconstitute faction* my_fac
+	flags = flagstmp;
+
+	is >> op_of_u;
+	is >> chatbin;
+	is >> combat_rules;
+}
+
+std::ostream& operator<<(std::ostream& os, const npc& src)
+{
+	// The " || " is what tells npc::load_info() that it's down reading the name
+	os << src.id I_SEP << src.name << " || " << src.pos I_SEP << src.str_cur I_SEP <<
+		src.str_max I_SEP << src.dex_cur I_SEP << src.dex_max I_SEP << src.int_cur I_SEP <<
+		src.int_max I_SEP << src.per_cur I_SEP << src.per_max I_SEP << src.hunger I_SEP <<
+		src.thirst I_SEP << src.fatigue I_SEP << src.stim I_SEP << src.pain I_SEP <<
+		src.pkill I_SEP << src.radiation I_SEP << src.cash I_SEP << src.recoil I_SEP <<
+		src.scent I_SEP << src.moves I_SEP << src.underwater I_SEP << src.dodges_left I_SEP <<
+		src.oxygen I_SEP << src.marked_for_death I_SEP <<
+		src.dead I_SEP << src.myclass I_SEP << src.patience I_SEP;
+
+	for (int i = 0; i < PF_MAX2; i++) os << src.my_traits[i] I_SEP;
+	for (int i = 0; i < num_hp_parts; i++) os << src.hp_cur[i] I_SEP << src.hp_max[i] I_SEP;
+	for (int i = 0; i < num_skill_types; i++) os << src.sklevel[i] I_SEP << src.skexercise[i] I_SEP;
+
+	os << src.styles.size() I_SEP;
+	for (int i = 0; i < src.styles.size(); i++) os << src.styles[i] I_SEP;
+
+	os << src.illness.size() I_SEP;
+	for (const auto& ill : src.illness) os << ill I_SEP;
+
+	os << src.addictions.size() I_SEP;
+	for (const auto& add : src.addictions) os << add I_SEP;
+
+	os << src.my_bionics.size() I_SEP;
+	for (const auto& bio : src.my_bionics)  os << bio I_SEP;
+
+	// NPC-specific stuff
+	os << src.personality I_SEP << src.wand I_SEP << src.wandf I_SEP <<
+		src.om I_SEP << src.mapx I_SEP << src.mapy I_SEP << src.pl I_SEP <<
+		src.goal I_SEP << src.mission I_SEP << int(src.flags) I_SEP;	// blocker V 0.2.0 \todo npc::it missing here
+	os << (src.my_fac == NULL ? -1 : src.my_fac->id);
+	os I_SEP << src.attitude I_SEP << src.op_of_u I_SEP << src.chatbin I_SEP << src.combat_rules I_SEP;
+
+	// Inventory size, plus armor size, plus 1 for the weapon
+	os << std::endl;
+
+	// V 0.2.0 blocker \todo asymmetric, not handled in istream constructor
+	os << src.inv.num_items() + src.worn.size() + 1 << std::endl;
+	for (size_t i = 0; i < src.inv.size(); i++) {
+		for (const auto& it : src.inv.stack_at(i)) {
+			os << "I " << it << std::endl;
+			for (const auto& it_2 : it.contents) os << "C " << it_2 << std::endl;	// blocker V 0.2.0 \todo should already be handled
+		}
+	}
+	os << "w " << src.weapon << std::endl;
+	for (const auto& it : src.worn) os << "W " << it << std::endl;
+	for (const auto& it : src.weapon.contents) os << "c " << it << std::endl;	// blocker V 0.2.0 \todo should already be handled
+
+	return os;
 }

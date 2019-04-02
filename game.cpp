@@ -1675,9 +1675,7 @@ bool game::load_master()
 // NPCs come next
  fin >> num_npc >> std::ws;
  for (int i = 0; i < num_npc; i++) {
-  getline(fin, data);
-  npc tmp;
-  tmp.load_info(this, data);
+  npc tmp(fin);
 // We need to load up all their items too
   fin >> num_items;
   std::vector<item> tmpinv;
@@ -1834,7 +1832,7 @@ void game::save()
  for (int i = 0; i < active_npc.size(); i++) {
   active_npc[i].mapx = lev.x;
   active_npc[i].mapy = lev.y;
-  fout << active_npc[i].save_info() << std::endl;
+  fout << active_npc[i] << std::endl;
  }
 
  fout.close();

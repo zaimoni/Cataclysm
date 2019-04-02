@@ -2558,7 +2558,7 @@ void overmap::save(const std::string& name, int x, int y, int z)
  for(const auto& r : radios) fout << "T " << r;
 
  for (int i = 0; i < npcs.size(); i++)
-  fout << "n " << npcs[i].save_info() << std::endl;
+  fout << "n " << npcs[i] << std::endl;
 
  fout.close();
 }
@@ -2598,11 +2598,7 @@ void overmap::open(game *g)	// only called from constructor
      npcs.back().inv.add_stack(npc_inventory);
      npc_inventory.clear();
     }
-    std::string npcdata;
-    getline(fin, npcdata);
-    npc tmp;
-    tmp.load_info(g, npcdata);
-    npcs.push_back(tmp);
+    npcs.push_back(npc(fin));
    } else if (datatype == 'I' || datatype == 'C' || datatype == 'W' ||
               datatype == 'w' || datatype == 'c') {
     if (npcs.empty()) {

@@ -310,6 +310,8 @@ public:
  ~npc() = default;
 
  npc& operator=(const npc &rhs) = default;
+ npc(std::istream& is);
+ friend std::ostream& operator<<(std::ostream& os, const npc& src);
 
  virtual bool is_npc() const { return true; }
 
@@ -320,12 +322,6 @@ public:
  void spawn_at(overmap *o, int posx, int posy);
  skill best_skill() const;
  void starting_weapon(game *g);
-
-
-// Save & load
- virtual void load_info(game *g, std::string data);// Overloaded from player
- virtual std::string save_info();
-
 
 // Display
  void draw(WINDOW* w, int plx, int ply, bool inv);
