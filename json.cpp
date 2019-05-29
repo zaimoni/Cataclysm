@@ -589,6 +589,11 @@ void JSON::finish_reading_string(std::istream& src, unsigned long& line, char& f
 	_scalar = new std::string(std::move(dest));
 }
 
+static const char* reject_for_JSON_literal(char c)
+{
+	return strchr(" \r\n\t\v\f{}[],:\"", c);
+}
+
 void JSON::finish_reading_literal(std::istream& src, unsigned long& line, char& first)
 {
 	std::string dest;
@@ -597,7 +602,7 @@ void JSON::finish_reading_literal(std::istream& src, unsigned long& line, char& 
 	do {
 		int test = src.peek();
 		if (EOF == test) break;
-		if (strchr(" \r\n\t\v\f{}[],:\"", test)) break;	// done
+		if (reject_for_JSON_literal(test)) break;	// done
 		src.get(first);
 		dest += first;
 	} while(!src.eof());
@@ -606,4 +611,120 @@ void JSON::finish_reading_literal(std::istream& src, unsigned long& line, char& 
 	_scalar = new std::string(std::move(dest));
 }
 
+static const char* escape_for_JSON_string(char c)
+{
+	return strchr("\r\n\t\v\f\"", c);
 }
+
+static std::ostream& write_string(std::ostream& os, const std::string& src)
+{
+	os.put('"');
+	for (const auto c : src) {
+		auto reject = escape_for_JSON_string(c);
+		if (!reject) {
+			os.put(c);
+			continue;
+		}
+		os.put('\\');
+		switch (*reject) {
+		case '\r':
+			os.put('r');
+			break;
+		case '\n':
+			os.put('n');
+			break;
+		case '\t':
+			os.put('t');
+			break;
+		case '\v':
+			os.put('v');
+			break;
+		case '\f':
+			os.put('f');
+			break;
+		case '"':
+			os.put('"');
+			break;
+		// default: throw std::string(....);
+		}
+	}
+	os.put('"');
+	return os;
+}
+
+static std::ostream& write_literal(std::ostream& os, const std::string& src)
+{
+	bool ok_as_literal = true;
+	for (const auto c : src) if (reject_for_JSON_literal(c)) {
+		ok_as_literal = false;
+		break;
+	}
+	if (ok_as_literal) return os << src;
+	return write_string(os, src);
+}
+
+std::ostream& JSON::write_array(std::ostream& os, const std::vector<JSON>& src, int indent)
+{
+	os.put('[');
+	const auto ub = src.size();
+	auto i = 0;
+	while (i < ub) {
+		src[i].write(os, indent+1);
+		if (++i < ub) {
+			os.put(',');
+			os << std::endl;
+			int _indent = indent;
+			while(0 < --_indent) os.put('\t');
+		}
+	}
+	os.put(']');
+	return os;
+}
+
+std::ostream& JSON::write_object(std::ostream& os, const std::map<std::string, JSON>& src, int indent)
+{
+	os.put('{');
+	const auto ub = src.size();
+	auto i = 0;
+	for (const auto x : src) {
+		write_literal(os, x.first);
+		os.put(':');
+		x.second.write(os, indent + 1);
+		if (++i < ub) {
+			os.put(',');
+			os << std::endl;
+			int _indent = indent;
+			while (0 < --_indent) os.put('\t');
+		}
+	}
+	os.put('}');
+	return os;
+}
+
+std::ostream& JSON::write(std::ostream& os, int indent) const
+{
+	switch (_mode)
+	{
+	case JSON::object: return write_object(os, *_object, indent);
+	case JSON::array: return write_array(os, *_array, indent);
+	case JSON::literal: return write_literal(os, *_scalar);
+	case JSON::string: return write_string(os, *_scalar);
+	// default: throw std::string(....);
+	}
+	return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const JSON& src)
+{
+	switch (src._mode)
+	{
+	case JSON::object: return src.write_object(os, *src._object);
+	case JSON::array: return src.write_array(os, *src._array);
+	case JSON::literal: return write_literal(os, *src._scalar);
+	case JSON::string: return write_string(os, *src._scalar);
+		// default: throw std::string(....);
+	}
+	return os;
+}
+
+}	// namespace cataclysm

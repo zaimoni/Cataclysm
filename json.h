@@ -31,7 +31,7 @@ private:
 	union {
 		std::string* _scalar;
 		std::vector<JSON>* _array;
-		std::map<std::string,JSON> * _object;
+		std::map<std::string,JSON>* _object;
 	};
 	unsigned char _mode;
 public:
@@ -40,6 +40,7 @@ public:
 	JSON(JSON&& src);
 	JSON(std::istream& src);
 	~JSON() { reset(); };
+	friend std::ostream& operator<<(std::ostream& os, const JSON& src);
 
 	JSON& operator=(const JSON& src);
 	JSON& operator=(JSON&& src);
@@ -92,6 +93,10 @@ private:
 	void finish_reading_array(std::istream& src, unsigned long& line);
 	void finish_reading_string(std::istream& src, unsigned long& line, char& first);
 	void finish_reading_literal(std::istream& src, unsigned long& line, char& first);
+
+	static std::ostream& write_array(std::ostream& os, const std::vector<JSON>& src, int indent = 1);
+	static std::ostream& write_object(std::ostream& os, const std::map<std::string, JSON>& src, int indent = 1);
+	std::ostream& write(std::ostream& os, int indent) const;
 };
 
 }
