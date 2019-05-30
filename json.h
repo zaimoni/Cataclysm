@@ -17,7 +17,7 @@ namespace cataclysm {
 class JSON
 {
 public:
-	static std::map<std::string, JSON> cache;
+	static std::map<const std::string, JSON> cache;
 
 	enum mode : unsigned char {
 		none = 0,
@@ -28,10 +28,12 @@ public:
 	};
 
 private:
+	typedef std::map<const std::string, JSON> _object_JSON;
+
 	union {
 		std::string* _scalar;
 		std::vector<JSON>* _array;
-		std::map<std::string,JSON>* _object;
+		_object_JSON* _object;
 	};
 	unsigned char _mode;
 public:
@@ -39,6 +41,10 @@ public:
 	JSON(const JSON& src);
 	JSON(JSON&& src);
 	JSON(std::istream& src);
+	JSON(const std::string& src) : _mode(literal), _scalar(new std::string(src)) {}
+	JSON(std::string&& src) : _mode(literal), _scalar(new std::string(src)) {}
+	JSON(const char* src,bool is_literal = true) : _mode(is_literal ? literal : string), _scalar(new std::string(src)) {}
+	JSON(std::string*& src, bool is_literal = true) : _mode(is_literal ? literal : string), _scalar(src) { src = 0; }
 	~JSON() { reset(); };
 	friend std::ostream& operator<<(std::ostream& os, const JSON& src);
 
@@ -84,6 +90,11 @@ public:
 	std::vector<std::string> keys() const;	// Cf. Perl
 	void unset(const std::vector<std::string>& src);	// cf PHP 3+ -- clears keys from object
 	void unset(const std::string& src);
+	// workarounds for the array deference operator not auto-vivifying
+	static bool is_legal_JS_literal(const char* src);
+	void set(const std::string& src, const JSON& val);
+	void set(const std::string& src, JSON&& val);
+	void set(const std::string& src, const char* const val) { set(src, JSON(val, is_legal_JS_literal(val))); }
 
 	bool syntax_ok() const;
 protected:
@@ -95,7 +106,7 @@ private:
 	void finish_reading_literal(std::istream& src, unsigned long& line, char& first);
 
 	static std::ostream& write_array(std::ostream& os, const std::vector<JSON>& src, int indent = 1);
-	static std::ostream& write_object(std::ostream& os, const std::map<std::string, JSON>& src, int indent = 1);
+	static std::ostream& write_object(std::ostream& os, const _object_JSON& src, int indent = 1);
 	std::ostream& write(std::ostream& os, int indent) const;
 };
 

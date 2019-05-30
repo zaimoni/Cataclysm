@@ -1,5 +1,6 @@
 #include "options.h"
 #include "output.h"
+#include "JSON.h"
 
 #include <fstream>
 
@@ -167,8 +168,7 @@ void save_options()
 {
  std::ofstream fout;
  fout.open("data/options.txt");
- if (!fout.is_open())
-  return;
+ if (!fout.is_open()) return;
 
  fout << options_header() << std::endl;
  for (int i = 1; i < NUM_OPTION_KEYS; i++) {
@@ -180,4 +180,22 @@ void save_options()
    fout << OPTIONS[key];
   fout << "\n";
  }
+
+ // prepare JSON output
+ cataclysm::JSON opts;
+ opts.set("use Celsius",OPTIONS[OPT_USE_CELSIUS] ? "true" : "false");
+ opts.set("use SI i.e. metric units", OPTIONS[OPT_USE_METRIC_SYS] ? "true" : "false");
+ opts.set("force y/n", OPTIONS[OPT_FORCE_YN] ? "true" : "false");
+ opts.set("no cblink", OPTIONS[OPT_NO_CBLINK] ? "true" : "false");
+ opts.set("24 hour clock", OPTIONS[OPT_24_HOUR] ? "true" : "false");
+ opts.set("snap to target", OPTIONS[OPT_SNAP_TO_TARGET] ? "true" : "false");
+ opts.set("safe mode", OPTIONS[OPT_SAFEMODE] ? "true" : "false");
+ opts.set("auto safe mode", OPTIONS[OPT_AUTOSAFEMODE] ? "true" : "false");
+ opts.set("NPCs", "true");	// don't want to mess with the file-exist hack here
+ opts.set("lang", "en");	// not used right now but we do want to allow configuring translations
+
+ fout.close();
+ fout.open("data/options.json");
+ if (!fout.is_open()) return;
+ fout << opts << std::endl;
 }

@@ -6,7 +6,7 @@
 
 namespace cataclysm {
 
-std::map<std::string, JSON> JSON::cache;
+std::map<const std::string, JSON> JSON::cache;
 
 bool JSON::syntax_ok() const
 {
@@ -87,13 +87,13 @@ JSON JSON::grep(bool (ok)(const JSON&)) const
 		return ret;
 	case object:
 		{
-		std::map<std::string,JSON> conserve;
+		_object_JSON conserve;
 		for (const auto& tmp : *_object) {
 			if (ok(tmp.second)) conserve[tmp.first] = tmp.second;
 		}
 		if (conserve.empty()) return ret;
 		ret._mode = object;
-		ret._object = new std::map<std::string,JSON>(std::move(conserve));
+		ret._object = new _object_JSON(std::move(conserve));
 		}
 		return ret;
 	case array:
@@ -176,7 +176,7 @@ bool JSON::destructive_merge(JSON& src)
 	}
 	if (object != _mode) return false;
 	if (!src._object) return true;	// no keys
-	std::map<std::string, JSON>* working = (_object ? _object : new std::map<std::string, JSON>());
+	_object_JSON* working = (_object ? _object : new _object_JSON());
 	// assume we have RAM, etc.
 #if OBSOLETE
 	std::vector<std::string> keys = src.keys();
@@ -204,7 +204,7 @@ bool JSON::destructive_merge(JSON& src, bool (ok)(const JSON&))
 	}
 	if (object != _mode) return false;
 	if (!src._object) return true;	// no keys
-	std::map<std::string, JSON>* working = (_object ? _object : new std::map<std::string, JSON>());
+	_object_JSON* working = (_object ? _object : new _object_JSON());
 	// assume we have RAM, etc.
 	std::vector<std::string> keys;
 	for (const auto& iter : *src._object) {
@@ -249,6 +249,36 @@ void JSON::unset(const std::string& src)
 	}
 }
 
+bool JSON::is_legal_JS_literal(const char* src)
+{
+	if (!src || !*src) return false;
+	if (!strcmp(src, "true")) return true;
+	if (!strcmp(src, "false")) return true;
+	if (!strcmp(src, "null")) return true;
+	// false-positive here...want to tolerate numerals
+	if (strchr("+-0123456789", *src)) return true;
+	return false;
+}
+
+void JSON::set(const std::string& src, const JSON& val)
+{
+	if (object != _mode) {
+		reset();
+		_mode = object;
+	}
+	if (!_object) _object = new _object_JSON();
+	(*_object)[src] = val;
+}
+
+void JSON::set(const std::string& src, JSON&& val)
+{
+	if (object != _mode) {
+		reset();
+		_mode = object;
+	}
+	if (!_object) _object = new _object_JSON();
+	(*_object)[src] = val;
+}
 
 // constructor and support thereof
 JSON::JSON(const JSON& src)
@@ -257,7 +287,7 @@ JSON::JSON(const JSON& src)
 	switch(src._mode)
 	{
 	case object:
-		_object = src._object ? new std::map<std::string,JSON>(*src._object) : 0;
+		_object = src._object ? new _object_JSON(*src._object) : 0;
 		break;
 	case array:
 		_array = src._array ? new std::vector<JSON>(*src._array) : 0;
@@ -434,7 +464,7 @@ void JSON::finish_reading_object(std::istream& src, unsigned long& line)
 		return;
 	}
 
-	std::map<std::string, JSON> dest;
+	_object_JSON dest;
 	char _last;
 	do {
 		JSON _key(src, line, _last, true);
@@ -467,12 +497,12 @@ void JSON::finish_reading_object(std::istream& src, unsigned long& line)
 		dest[std::move(_key.scalar())] = std::move(_value);
 		if (!consume_whitespace(src, line)) {	// oops, at end prematurely (but everything that did arrive is ok)
 			_mode = object;
-			_object = dest.empty() ? 0 : new std::map<std::string, JSON>(std::move(dest));
+			_object = dest.empty() ? 0 : new _object_JSON(std::move(dest));
 			return;
 		}
 		if (next_is(src, '}')) {
 			_mode = object;
-			_object = dest.empty() ? 0 : new std::map<std::string, JSON>(std::move(dest));
+			_object = dest.empty() ? 0 : new _object_JSON(std::move(dest));
 			return;
 		}
 		if (!next_is(src, ',')) {
@@ -681,7 +711,7 @@ std::ostream& JSON::write_array(std::ostream& os, const std::vector<JSON>& src, 
 	return os;
 }
 
-std::ostream& JSON::write_object(std::ostream& os, const std::map<std::string, JSON>& src, int indent)
+std::ostream& JSON::write_object(std::ostream& os, const _object_JSON& src, int indent)
 {
 	os.put('{');
 	const auto ub = src.size();
