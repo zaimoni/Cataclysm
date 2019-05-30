@@ -704,7 +704,7 @@ std::ostream& JSON::write_array(std::ostream& os, const std::vector<JSON>& src, 
 			os.put(',');
 			os << std::endl;
 			int _indent = indent;
-			while(0 < --_indent) os.put('\t');
+			while(0 < _indent--) os.put('\t');
 		}
 	}
 	os.put(']');
@@ -724,7 +724,7 @@ std::ostream& JSON::write_object(std::ostream& os, const _object_JSON& src, int 
 			os.put(',');
 			os << std::endl;
 			int _indent = indent;
-			while (0 < --_indent) os.put('\t');
+			while (0 < _indent--) os.put('\t');
 		}
 	}
 	os.put('}');
