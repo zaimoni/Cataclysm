@@ -1,7 +1,7 @@
 {"24 hour clock":false,
 	NPCs:true,
 	"auto safe mode":false,
-	"force y/n":true,
+	"force Y/N":true,
 	lang:"en",
 	"no cblink":false,
 	"safe mode":true,

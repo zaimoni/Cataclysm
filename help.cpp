@@ -18,6 +18,10 @@
 
 void game::help()
 {
+// scrolling assistants for keybinding and options
+// the number of options we can both display, and show a lower-case key as a menu entry trigger
+#define MENU_SPAN ((VIEW-1)<('z'-'a') ? VIEW : ('z'-'a')+1)
+
  char ch;
  do {
   erase();
@@ -424,20 +428,23 @@ easily drop unwanted items on the floor.");
    do {
     if (needs_refresh) {
      erase();
-     mvprintz(0, 40, c_white, "Use the arrow keys (or movement keys)");
-     mvprintz(1, 40, c_white, "to scroll.");
-     mvprintz(2, 40, c_white, "Press ESC or q to return.            ");
-     mvprintz(3, 40, c_white, "Press - to clear the keybindings for ");
-     mvprintz(4, 40, c_white, "an action.                           ");
-     mvprintz(5, 40, c_white, "Press + to add a keybinding for an   ");
-     mvprintz(6, 40, c_white, "action.                              ");
+	 int line = 0;
+	 if (1 + MENU_SPAN < NUM_ACTIONS) {
+		 mvprintz(line++, 40, c_white, "Use the arrow keys (or movement keys)");
+		 mvprintz(line++, 40, c_white, "to scroll.");
+	 }
+     mvprintz(line++, 40, c_white, "Press ESC or q to return.            ");
+     mvprintz(line++, 40, c_white, "Press - to clear the keybindings for ");
+     mvprintz(line++, 40, c_white, "an action.                           ");
+     mvprintz(line++, 40, c_white, "Press + to add a keybinding for an   ");
+     mvprintz(line++, 40, c_white, "action.                              ");
      needs_refresh = false;
     }
 // Clear the lines
     for (int i = 0; i < VIEW; i++)
      mvprintz(i, 0, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
-    for (int i = 0; i < VIEW && offset + i < NUM_ACTIONS; i++) {
+    for (int i = 0; i < MENU_SPAN && offset + i < NUM_ACTIONS; i++) {
      std::vector<char> k = keys.translate(action_id(offset + i));
      nc_color col = (k.empty() ? c_ltred : c_white);
      mvprintz(i, 3, col, "%s: ", action_name( action_id(offset + i) ).c_str());
@@ -454,16 +461,15 @@ easily drop unwanted items on the floor.");
     ch = input();
 	point s(get_direction(ch));
     if (s.y == -1 && offset > 1) offset--;
-    if (s.y == 1 && offset + 20 < NUM_ACTIONS) offset++;
+    if (s.y == 1 && offset + MENU_SPAN < NUM_ACTIONS) offset++;
     if (ch == '-' || ch == '+') { needs_refresh = true;
-     for (int i = 0; i < VIEW && i + offset < NUM_ACTIONS; i++) {
+     for (int i = 0; i < MENU_SPAN && i + offset < NUM_ACTIONS; i++) {
       mvprintz(i, 0, c_ltblue, "%c", 'a' + i);
       mvprintz(i, 1, c_white, ":");
      }
      refresh();
      char actch = getch();
-     if (actch >= 'a' && actch <= 'a' + 24 &&
-         actch - 'a' + offset < NUM_ACTIONS) {
+     if (actch >= 'a' && actch < 'a' + MENU_SPAN && actch - 'a' + offset < NUM_ACTIONS) {
       action_id act = action_id(actch - 'a' + offset);
       if (ch == '-' && query_yn("Clear keys for %s?",action_name(act).c_str())){
 	   keys.unset(act);
@@ -476,8 +482,7 @@ easily drop unwanted items on the floor.");
      }
     }
    } while (ch != 'q' && ch != 'Q' && ch != KEY_ESCAPE);
-   if (changed_keymap && query_yn("Save changes?"))
-    save_keymap();
+   if (changed_keymap && query_yn("Save changes?")) save_keymap();
    erase();
   } break;
 
@@ -490,18 +495,21 @@ easily drop unwanted items on the floor.");
    do {
     if (needs_refresh) {
      erase();
-     mvprintz(0, 40, c_white, "Use the arrow keys (or movement keys)");
-     mvprintz(1, 40, c_white, "to scroll.");
-     mvprintz(2, 40, c_white, "Press ESC or q to return.            ");
-     mvprintz(3, 40, c_white, "Press + to set an option to true.    ");
-     mvprintz(4, 40, c_white, "Press - to set an option to false.    ");
+	 int line = 0;
+	 if (1 + MENU_SPAN < NUM_OPTION_KEYS) {
+		 mvprintz(line++, 40, c_white, "Use the arrow keys (or movement keys)");
+		 mvprintz(line++, 40, c_white, "to scroll.");
+	 }
+     mvprintz(line++, 40, c_white, "Press ESC or q to return.            ");
+     mvprintz(line++, 40, c_white, "Press + to set an option to true.    ");
+     mvprintz(line++, 40, c_white, "Press - to set an option to false.    ");
      needs_refresh = false;
     }
 // Clear the lines
     for (int i = 0; i < VIEW; i++)
      mvprintz(i, 0, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
-    for (int i = 0; i < VIEW && offset + i < NUM_OPTION_KEYS; i++) {
+    for (int i = 0; i < MENU_SPAN && offset + i < NUM_OPTION_KEYS; i++) {
      mvprintz(i, 3, c_white, "%s: ",
               option_name( option_key(offset + i) ).c_str());
      bool on = OPTIONS[ option_key(offset + i) ];
@@ -510,26 +518,23 @@ easily drop unwanted items on the floor.");
     refresh();
     ch = input();
 	point s(get_direction(ch));
-    if (s.y == -1 && offset > 1)
-     offset--;
-    if (s.y == 1 && offset + 20 < NUM_OPTION_KEYS)
-     offset++;
+    if (s.y == -1 && offset > 1) offset--;
+    if (s.y == 1 && offset + MENU_SPAN < NUM_OPTION_KEYS) offset++;
     if (ch == '-' || ch == '+') {
      needs_refresh = true;
-     for (int i = 0; i < VIEW && i + offset < NUM_OPTION_KEYS; i++) {
+     for (int i = 0; i < MENU_SPAN && i + offset < NUM_OPTION_KEYS; i++) {
       mvprintz(i, 0, c_ltblue, "%c", 'a' + i);
       mvprintz(i, 1, c_white, ":");
      }
      refresh();
      char actch = getch();
-     if (actch >= 'a' && actch <= 'a' + 24 && actch - 'a' + offset < NUM_OPTION_KEYS) {
+     if (actch >= 'a' && actch < 'a' + MENU_SPAN && actch - 'a' + offset < NUM_OPTION_KEYS) {
       OPTIONS[ option_key(actch - 'a' + offset) ] = (ch == '+');
       changed_options = true;
      }
     }
    } while (ch != 'q' && ch != 'Q' && ch != KEY_ESCAPE);
-   if (changed_options && query_yn("Save changes?"))
-    save_options();
+   if (changed_options && query_yn("Save changes?")) save_options();
    erase();
   } break;
 
@@ -823,4 +828,6 @@ A: Post it at http://github.com/zaimoni/Cataclysm .  I'll answer it for you,\n\
 
   }
  } while (ch != 'q' && ch != KEY_ESCAPE);
+
+#undef MENU_SPAN
 }

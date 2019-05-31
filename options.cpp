@@ -185,7 +185,7 @@ void save_options()
  cataclysm::JSON opts;
  opts.set("use Celsius",OPTIONS[OPT_USE_CELSIUS] ? "true" : "false");
  opts.set("use SI i.e. metric units", OPTIONS[OPT_USE_METRIC_SYS] ? "true" : "false");
- opts.set("force y/n", OPTIONS[OPT_FORCE_YN] ? "true" : "false");
+ opts.set("force Y/N", OPTIONS[OPT_FORCE_YN] ? "true" : "false");
  opts.set("no cblink", OPTIONS[OPT_NO_CBLINK] ? "true" : "false");
  opts.set("24 hour clock", OPTIONS[OPT_24_HOUR] ? "true" : "false");
  opts.set("snap to target", OPTIONS[OPT_SNAP_TO_TARGET] ? "true" : "false");

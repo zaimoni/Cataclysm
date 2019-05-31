@@ -20,7 +20,11 @@ struct option_table
 {
  double options[NUM_OPTION_KEYS];
 
- option_table() { for (int i = 0; i < NUM_OPTION_KEYS; i++) options[i] = 0; };
+ option_table() { 
+	 for (int i = 0; i < NUM_OPTION_KEYS; i++) options[i] = 0;
+	 options[OPT_FORCE_YN] = 1;
+	 options[OPT_SAFEMODE] = 1;
+ };
 
  double& operator[] (option_key i) { return options[i]; };
  double& operator[] (int i) { return options[i]; };
