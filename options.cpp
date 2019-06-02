@@ -4,6 +4,60 @@
 
 #include <fstream>
 
+using cataclysm::JSON;
+
+static bool default_true(option_key opt)
+{
+	switch (opt)
+	{
+	case OPT_FORCE_YN:
+	case OPT_SAFEMODE: return true;
+	default: return false;
+	}
+}
+
+static const char* JSON_key(option_key opt)
+{
+	switch (opt)
+	{
+	case OPT_FORCE_YN: return "force Y/N";
+	case OPT_USE_CELSIUS: return "use Celsius";
+	case OPT_USE_METRIC_SYS: return "use SI i.e. metric units";
+	case OPT_NO_CBLINK: return "no cblink";
+	case OPT_24_HOUR: return "24 hour clock";
+	case OPT_SNAP_TO_TARGET: return "snap to target";
+	case OPT_SAFEMODE: return "safe mode";
+	case OPT_AUTOSAFEMODE: return "auto safe mode";
+	default: return 0;
+	}
+}
+
+static JSON& get_JSON_opts() {
+	static JSON* x = 0;
+	if (!x) {
+		std::ifstream fin;
+		fin.open("data/options.json");
+		if (fin.is_open()) x = new JSON(fin);
+		else x = new JSON();
+		fin.close();
+		// audit our own keys.  Since we will be used to initialize the option_table we can't reference it.
+		if (!x->has_key("lang")) x->set("lang", "en");	// not used right now but we do want to allow configuring translations
+		if (!x->has_key("NPCs")) x->set("NPCs", "true");	// currently on file-exists kludge in main program
+		int opt = OPT_FORCE_YN;
+		do  {
+			option_key option = (option_key)opt;
+			const std::string key(JSON_key(option));
+			if (!x->has_key(key)) x->set(key, default_true(option) ? "true" : "false");
+			}
+		while(NUM_OPTION_KEYS > ++opt);	// coincidentally all options are boolean currently
+	}
+	return *x;
+}
+
+option_table::option_table() {
+	for (int i = 0; i < NUM_OPTION_KEYS; i++) options[i] = default_true((option_key)i);
+};
+
 option_table& option_table::get()
 {
 	static option_table* x = 0;
@@ -170,7 +224,7 @@ void save_options()
  }
 
  // prepare JSON output
- cataclysm::JSON opts;
+ JSON opts;
  opts.set("use Celsius",OPTIONS[OPT_USE_CELSIUS] ? "true" : "false");
  opts.set("use SI i.e. metric units", OPTIONS[OPT_USE_METRIC_SYS] ? "true" : "false");
  opts.set("force Y/N", OPTIONS[OPT_FORCE_YN] ? "true" : "false");

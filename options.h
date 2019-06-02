@@ -22,11 +22,7 @@ class option_table
 private:
  double options[NUM_OPTION_KEYS];
 
- option_table() { 
-	 for (int i = 0; i < NUM_OPTION_KEYS; i++) options[i] = 0;
-	 options[OPT_FORCE_YN] = 1;
-	 options[OPT_SAFEMODE] = 1;
- };
+ option_table();
  option_table(const option_table& src) = delete;
  option_table(option_table&& src) = delete;
  ~option_table() = default;
