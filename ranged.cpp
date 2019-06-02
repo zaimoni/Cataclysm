@@ -435,7 +435,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
 
  wrefresh(w_target);
  char ch;
- bool snap_to_target = OPTIONS[OPT_SNAP_TO_TARGET];
+ bool snap_to_target = option_table::get()[OPT_SNAP_TO_TARGET];
 // The main loop.
  do {
   point center(snap_to_target ? tar : u.pos);

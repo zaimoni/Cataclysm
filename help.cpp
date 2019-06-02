@@ -488,6 +488,7 @@ easily drop unwanted items on the floor.");
 
   case '2': {
    erase();
+   auto& OPTIONS = option_table::get();
    int offset = 1;
    char ch = ' ';
    bool changed_options = false;

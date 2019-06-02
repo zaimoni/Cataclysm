@@ -279,36 +279,23 @@ int calendar::sunlight()
   return DAYLIGHT_LEVEL;
 }
 
-std::string calendar::print_time(bool twentyfour)
+std::string calendar::print_time()
 {
  std::stringstream ret;
- if (twentyfour) {
-  ret << hour << ":";
-  if (minute < 10)
-   ret << "0";
-  ret << minute;
- } else {
-  if (OPTIONS[OPT_24_HOUR]) {
+ const bool military_time = option_table::get()[OPT_24_HOUR];
+
+ if (military_time) {
    int hours = hour % 24;
-   if (hours < 10)
-    ret << "0";
+   if (hours < 10) ret << "0";
    ret << hours;
-  } else {
+ } else {
    int hours = hour % 12;
-   if (hours == 0)
-    hours = 12;
+   if (hours == 0) hours = 12;
    ret << hours << ":";
-  }
-  if (minute < 10)
-   ret << "0";
-  ret << minute;
-  if (!OPTIONS[OPT_24_HOUR]) {
-   if (hour < 12)
-    ret << " AM";
-   else
-    ret << " PM";
-  }
  }
+ if (minute < 10) ret << "0";
+ ret << minute;
+ if (!military_time) ret << ((12 > hour) ? " AM" : " PM");
 
  return ret.str();
 }

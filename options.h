@@ -16,8 +16,10 @@ OPT_AUTOSAFEMODE, // Autosafemode on by default?
 NUM_OPTION_KEYS
 };
 
-struct option_table
+// Historically, this was intended to be a singleton.  Enforce this.
+class option_table
 {
+private:
  double options[NUM_OPTION_KEYS];
 
  option_table() { 
@@ -25,16 +27,21 @@ struct option_table
 	 options[OPT_FORCE_YN] = 1;
 	 options[OPT_SAFEMODE] = 1;
  };
+ option_table(const option_table& src) = delete;
+ option_table(option_table&& src) = delete;
+ ~option_table() = default;
+ option_table& operator=(const option_table& src) = delete;
 
+public:
  double& operator[] (option_key i) { return options[i]; };
  double& operator[] (int i) { return options[i]; };
+
+ static option_table& get();
+private:
+ void load();
 };
 
-extern option_table OPTIONS;
-
-void load_options();
 void save_options();
-std::string option_string(option_key key);
 std::string option_name(option_key key);
 
 #endif

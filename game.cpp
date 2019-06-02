@@ -102,7 +102,7 @@ void game::setup()	// early part looks like it belongs in game::game (but we ret
  weather = WEATHER_CLEAR; // Start with some nice weather...
  nextweather = MINUTES(STARTING_MINUTES + 30); // Weather shift in 30
  turnssincelastmon = 0; //Auto safe mode init
- autosafemode = OPTIONS[OPT_AUTOSAFEMODE];
+ autosafemode = option_table::get()[OPT_AUTOSAFEMODE];
 
  footsteps.clear();
  z.clear();
@@ -475,7 +475,7 @@ http://github.com/zaimoni/Cataclysm .");
 void game::start_game()
 {
  messages.turn = MINUTES(STARTING_MINUTES);// It's turn 0...
- run_mode = (OPTIONS[OPT_SAFEMODE] ? 1 : 0);
+ run_mode = (option_table::get()[OPT_SAFEMODE] ? 1 : 0);
  mostseen = 0;	// ...and mostseen is 0, we haven't seen any monsters yet.
 
 // Init some factions.
@@ -1735,9 +1735,8 @@ void game::load(std::string name)
  //MAPBUFFER.load();
  m.load(this, point(lev.x, lev.y));
  run_mode = tmprun;
- if (OPTIONS[OPT_SAFEMODE] && run_mode == 0)
-  run_mode = 1;
- autosafemode = OPTIONS[OPT_AUTOSAFEMODE];
+ if (option_table::get()[OPT_SAFEMODE] && run_mode == 0) run_mode = 1;
+ autosafemode = option_table::get()[OPT_AUTOSAFEMODE];
  last_target = tmptar;
  weather = weather_type(tmpweather);
  temperature = tmptemp;
@@ -2381,7 +2380,7 @@ void game::draw()
   col_temp = c_cyan;
  else if (temperature >  32)
   col_temp = c_ltblue;
- if (OPTIONS[OPT_USE_CELSIUS])
+ if (option_table::get()[OPT_USE_CELSIUS])
   wprintz(w_status, col_temp, " %dC", int((temperature - 32) / 1.8));
  else
   wprintz(w_status, col_temp, " %dF", temperature);

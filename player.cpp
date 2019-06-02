@@ -1526,23 +1526,22 @@ void player::disp_status(WINDOW *w, game *g)
                        veh->turret_mode ? "auto" : "off ");
   }
 
+  const bool use_metric_system = option_table::get()[OPT_USE_METRIC_SYS];
   if (veh->cruise_on) {
-   if(OPTIONS[OPT_USE_METRIC_SYS]) {
+   if(use_metric_system) {
     mvwprintz(w, 3, 33, col_indf1, "{Km/h....>....}");
     mvwprintz(w, 3, 38, col_vel, "%4d", int(veh->velocity * 0.0161f));
-    mvwprintz(w, 3, 43, c_ltgreen, "%4d", int(veh->cruise_velocity * 0.0161f));
-   }
-   else {
+    mvwprintz(w, 3, 43, c_ltgreen, "%4d", int(veh->cruise_velocity * 0.0161f));	// not really a round fraction here...rational approximation 559/9
+   } else {
     mvwprintz(w, 3, 34, col_indf1, "{mph....>....}");
     mvwprintz(w, 3, 38, col_vel, "%4d", veh->velocity / 100);
     mvwprintz(w, 3, 43, c_ltgreen, "%4d", veh->cruise_velocity / 100);
    }
   } else {
-   if(OPTIONS[OPT_USE_METRIC_SYS]) {
+   if(use_metric_system) {
     mvwprintz(w, 3, 33, col_indf1, "  {Km/h....}  ");
     mvwprintz(w, 3, 40, col_vel, "%4d", int(veh->velocity * 0.0161f));
-   }
-   else {
+   } else {
     mvwprintz(w, 3, 34, col_indf1, "  {mph....}  ");
     mvwprintz(w, 3, 40, col_vel, "%4d", veh->velocity / 100);
    }

@@ -45,7 +45,7 @@ nc_color hilite(nc_color c)
 
 nc_color invert_color(nc_color c)
 {
- if (OPTIONS[OPT_NO_CBLINK]) {
+ if (option_table::get()[OPT_NO_CBLINK]) {
   switch (c) {
    case c_white:
    case c_ltgray:
@@ -308,7 +308,7 @@ void debugmsg(const char *mes, ...)
 
 bool query_yn(const char *mes, ...)
 {
- bool force_uc = OPTIONS[OPT_FORCE_YN];
+ const bool force_uc = option_table::get()[OPT_FORCE_YN];
  va_list ap;
  va_start(ap, mes);
  char buff[1024];

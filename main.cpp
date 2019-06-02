@@ -160,7 +160,6 @@ int main(int argc, char *argv[])
 #endif
  MAPBUFFER = mapbuffer(g);
  MAPBUFFER.load();
- load_options();
  do {
   g->setup();
   while (!g->do_turn());
