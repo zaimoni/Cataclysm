@@ -530,7 +530,7 @@ easily drop unwanted items on the floor.");
      refresh();
      char actch = getch();
      if (actch >= 'a' && actch < 'a' + MENU_SPAN && actch - 'a' + offset < NUM_OPTION_KEYS) {
-      OPTIONS[ option_key(actch - 'a' + offset) ] = (ch == '+');
+      OPTIONS.set(option_key(actch - 'a' + offset), (ch == '+'));
       changed_options = true;
      }
     }

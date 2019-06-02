@@ -29,8 +29,9 @@ private:
  option_table& operator=(const option_table& src) = delete;
 
 public:
- double& operator[] (option_key i) { return options[i]; };
- double& operator[] (int i) { return options[i]; };
+ double operator[](option_key i) const { return options[i]; }
+ double operator[](int i) const { return options[i]; }
+ void set(option_key i, double val);
 
  static option_table& get();
 private:

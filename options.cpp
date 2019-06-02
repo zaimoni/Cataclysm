@@ -68,6 +68,16 @@ option_table& option_table::get()
 	return *x;
 }
 
+void option_table::set(option_key i, double val) 
+{ 
+	const auto key = JSON_key(i);
+	if (!key) return;	// invalid in some way
+	options[i] = val;
+	// currently all options are actually boolean
+	get_JSON_opts().set(key, val ? "true" : "false");
+}
+
+
 option_key lookup_option_key(std::string id)
 {
 	if (id == "use_celsius") return OPT_USE_CELSIUS;
