@@ -16,7 +16,7 @@ static bool default_true(option_key opt)
 	}
 }
 
-static const char* JSON_key(option_key opt)
+static const char* JSON_key(option_key opt)	// \todo micro-optimize this and following by converting this to guarded array dereference?
 {
 	switch (opt)
 	{
@@ -30,6 +30,18 @@ static const char* JSON_key(option_key opt)
 	case OPT_AUTOSAFEMODE: return "auto safe mode";
 	default: return 0;
 	}
+}
+
+static option_key opt_key(const char* const x)
+{
+	if (!x) return OPT_NULL;
+	int opt = OPT_FORCE_YN;
+	do {
+		option_key option = (option_key)opt;
+		const auto key = JSON_key(option);
+		if (key && !strcmp(x, key)) return option;
+	} while (NUM_OPTION_KEYS > ++opt);	// coincidentally all options are boolean currently
+	return OPT_NULL;
 }
 
 static JSON& get_JSON_opts() {
@@ -55,7 +67,21 @@ static JSON& get_JSON_opts() {
 }
 
 option_table::option_table() {
-	for (int i = 0; i < NUM_OPTION_KEYS; i++) options[i] = default_true((option_key)i);
+	const auto& opts = get_JSON_opts();
+	for (int i = 0; i < NUM_OPTION_KEYS; i++) {
+		const auto key = JSON_key(option_key(i));
+		if (!key) options[i] = false;	// ok even after numeric options allowed; auto-converts to 0.0
+		else {
+			auto& test = opts[key];
+			if (!test.is_scalar()) options[i] = false;	// only should handle numerals or true/false
+			else {
+				auto val = test.scalar();
+				if ("true" == val) options[i] = true;
+				else if ("false" == val) options[i] = false;
+				else options[i] = false;	// \todo implement reading double as an option value
+			}
+		}
+	}
 };
 
 option_table& option_table::get()
