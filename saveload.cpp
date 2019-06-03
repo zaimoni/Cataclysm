@@ -370,7 +370,7 @@ submap::submap(std::istream& is, game* master_game)
 			if (it_tmp.active) active_item_count++;
 		} else if (string_identifier == "T") {
 			is >> itx >> ity;
-			is >> trp[itx][ity];;
+			is >> trp[itx][ity];
 		} else if (string_identifier == "F") {
 			is >> itx >> ity;
 			is >> fld[itx][ity];
@@ -385,11 +385,14 @@ submap::submap(std::istream& is, game* master_game)
 			vehicles.push_back(veh);
 		} else if (string_identifier == "c") {
 			is >> comp >> std::ws;
-		} else if ("----" == string_identifier) break;
-		else {
-			debugmsg("Unrecognized map data key");
+		} else if ("----" == string_identifier) {
+			is >> std::ws;	// to ensure we don't warn on trailing whitespace at end of file
+			break;
+		} else {
+			debugmsg((std::string("Unrecognized map data key '")+ string_identifier+"'").c_str());
 			std::string databuff;
 			getline(is, databuff);
+			debugmsg((std::string("discarding  '") + databuff + "'").c_str());
 		}
 	} while (!is.eof());
 }
