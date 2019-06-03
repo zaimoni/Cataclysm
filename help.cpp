@@ -16,6 +16,7 @@
 	#define LINE_XXXX 4194414
 #endif
 
+// \todo convert this to configuration file-driven help
 void game::help()
 {
 // scrolling assistants for keybinding and options

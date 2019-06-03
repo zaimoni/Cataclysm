@@ -93,12 +93,6 @@ void game::setup()	// early part looks like it belongs in game::game (but we ret
  last_target = -1;	// We haven't targeted any monsters yet
  uquit = QUIT_NO;	// We haven't quit the game
  debugmon = false;	// We're not printing debug messages
- no_npc = false;		// We're not suppressing NPC spawns
-
-// ... Unless data/no_npc.txt exists.
- std::ifstream ifile("data/no_npc.txt");
- if (ifile) no_npc = true;
-
  weather = WEATHER_CLEAR; // Start with some nice weather...
  nextweather = MINUTES(STARTING_MINUTES + 30); // Weather shift in 30
  turnssincelastmon = 0; //Auto safe mode init
@@ -1962,7 +1956,7 @@ NPCs are %s spawn.\n\
 %d monsters exist.\n\
 %d events planned.", u.pos.x, u.pos.y, lev.x, lev.y,
 oter_t::list[cur_om.ter(lev.x / 2, lev.y / 2)].name.c_str(),
-int(messages.turn), int(nextspawn), (no_npc ? "NOT going to" : "going to"),
+int(messages.turn), int(nextspawn), (option_table::get()[OPT_NPCS] ? "going to" : "NOT going to"),
 z.size(), events.size());
 
    if (!active_npc.empty())
@@ -6245,7 +6239,7 @@ void game::spawn_mon(int shiftx, int shifty)
  const int nlevx = lev.x + shiftx;
  const int nlevy = lev.y + shifty;
  // Create a new NPC?
- if (!no_npc && one_in(100 + 15 * cur_om.npcs.size())) {
+ if (option_table::get()[OPT_NPCS] && one_in(100 + 15 * cur_om.npcs.size())) {	// \todo this rate is a numeric option in C:DDA
   npc tmp;
   tmp.normalize();
   tmp.randomize(this);

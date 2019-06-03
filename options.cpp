@@ -22,7 +22,8 @@ static bool default_true(option_key opt)
 	switch (opt)
 	{
 	case OPT_FORCE_YN:
-	case OPT_SAFEMODE: return true;
+	case OPT_SAFEMODE: 
+	case OPT_NPCS: return true;
 	default: return false;
 	}
 }
@@ -39,6 +40,7 @@ static const char* JSON_key(option_key opt)	// \todo micro-optimize this and fol
 	case OPT_SNAP_TO_TARGET: return "snap to target";
 	case OPT_SAFEMODE: return "safe mode";
 	case OPT_AUTOSAFEMODE: return "auto safe mode";
+	case OPT_NPCS: return "NPCs";
 	default: return 0;
 	}
 }
@@ -65,7 +67,6 @@ static JSON& get_JSON_opts() {
 		fin.close();
 		// audit our own keys.  Since we will be used to initialize the option_table we can't reference it.
 		if (!x->has_key("lang")) x->set("lang", "en");	// not used right now but we do want to allow configuring translations
-		if (!x->has_key("NPCs")) x->set("NPCs", "true");	// currently on file-exists kludge in main program
 		int opt = OPT_FORCE_YN;
 		do  {
 			option_key option = (option_key)opt;
@@ -118,10 +119,11 @@ std::string option_name(option_key key)
   case OPT_USE_METRIC_SYS: return "Use Metric System";
   case OPT_FORCE_YN:		return "Force Y/N in prompts";
   case OPT_NO_CBLINK:		return "No Bright Backgrounds";
-  case OPT_24_HOUR:		return "24 Hour Time";
+  case OPT_24_HOUR:			return "24 Hour Time";
   case OPT_SNAP_TO_TARGET:	return "Snap to Target";
   case OPT_SAFEMODE:		return "Safemode on by default";
   case OPT_AUTOSAFEMODE:	return "Auto-Safemode on by default";
+  case OPT_NPCS:			return "Generate NPCs";
   default:			return "Unknown Option (BUG)";
  }
  return "Big ol Bug";

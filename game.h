@@ -189,7 +189,6 @@ class game
   std::vector<item> items_dragged;
   int weight_dragged; // Computed once, when you start dragging
   static bool debugmon;		// not clearly the most useful type; a raw pointer could selectively turn on for one monster
-  bool no_npc;	// will be rethinking options at some point
 // Display data... TODO: Make this more portable?
   WINDOW *w_terrain;
   WINDOW *w_minimap;
