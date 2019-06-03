@@ -9,7 +9,7 @@ mapbuffer MAPBUFFER;
 
 mapbuffer::~mapbuffer()
 {
- for(auto it : submap_list) delete it;
+ for (auto x : submaps) delete x.second;
 }
 
 bool mapbuffer::add_submap(int x, int y, int z, submap *sm)
@@ -18,7 +18,6 @@ bool mapbuffer::add_submap(int x, int y, int z, submap *sm)
  if (submaps.count(p) != 0) return false;
 
  if (master_game) sm->turn_last_touched = int(messages.turn);
- submap_list.push_back(sm);
  submaps[p] = sm;
  return true;
 }
@@ -35,7 +34,7 @@ void mapbuffer::save()
  std::ofstream fout;
  fout.open("save/maps.txt");
 
- fout << submap_list.size() << std::endl;
+ fout << submaps.size() << std::endl;
  int percent = 0;
 
  for(const auto& it : submaps) {
@@ -43,7 +42,7 @@ void mapbuffer::save()
   if (percent % 100 == 0)
    popup_nowait("Please wait as the map saves [%s%d/%d]",
                 (percent < 100 ?  percent < 10 ? "  " : " " : ""), percent,
-                submap_list.size());
+                submaps.size());
   fout << it.first << std::endl;
   fout << *it.second;
  }
@@ -65,16 +64,14 @@ void mapbuffer::load()
  fin >> num_submaps;
 
  while (!fin.eof()) {
-  int percent = submap_list.size();
+  int percent = submaps.size();
   if (percent % 100 == 0)
    popup_nowait("Please wait as the map loads [%s%d/%d]",
                 (percent < 100 ?  percent < 10 ? "  " : " " : ""), percent,
                 num_submaps);
   tripoint where;
   fin >> where;
-  submap * sm = new submap(fin, master_game);
-  submap_list.push_back(sm);
-  submaps[ where ] = sm;
+  submaps[ where ] = new submap(fin, master_game);
  }
  fin.close();
 }
