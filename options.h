@@ -34,8 +34,6 @@ public:
  void set(option_key i, double val);
 
  static option_table& get();
-private:
- void load();
 };
 
 void save_options();
