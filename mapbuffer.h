@@ -1,8 +1,10 @@
-#include "map.h"
-#include "line.h"
 #include <list>
+#include <map>
+
+#include "enums.h"
 
 class game;
+struct submap;
 
 class mapbuffer
 {

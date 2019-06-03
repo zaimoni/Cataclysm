@@ -1,4 +1,6 @@
 #include "mapbuffer.h"
+#include "map.h"
+#include "line.h"
 #include "game.h"
 #include "output.h"
 #include "recent_msg.h"
