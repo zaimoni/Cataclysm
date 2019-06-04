@@ -49,11 +49,8 @@ std::string morale_point::name() const
 {
 	std::string ret(data[type]);
 	std::string item_name(item_type ? item_type->name : "");
-	size_t it = ret.find("%i");
-	while (it != std::string::npos) {
-		ret.replace(it, 2, item_name);
-		it = ret.find("%i");
-	}
+	size_t it;
+	while ((it = ret.find("%i")) != std::string::npos) ret.replace(it, 2, item_name);
 	return ret;
 }
 // end prototype for morale.cpp

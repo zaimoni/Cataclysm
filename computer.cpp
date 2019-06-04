@@ -737,12 +737,9 @@ void computer::print_line(const char *mes, ...)
 // Replace any '\n' with "\n " to allow for the border
  std::string message = buff;
  size_t pos = 0;
- while (pos != std::string::npos) {
-  pos = message.find("\n", pos);
-  if (pos != std::string::npos) {
-   message.replace(pos, 1, "\n ");
-   pos += 2;
-  }
+ while ((pos = message.find('\n', pos)) != std::string::npos) {
+	 message.replace(pos, 1, "\n ");
+	 pos += 2;
  }
 // Print the line.
  wprintz(w_terminal, c_green, " %s\n", message.c_str());

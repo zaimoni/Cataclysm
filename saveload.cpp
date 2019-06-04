@@ -152,6 +152,13 @@ std::ostream& operator<<(std::ostream& os, const tripoint& src)
 	return os << '[' << std::to_string(src.x) << ',' << std::to_string(src.y) << ',' << std::to_string(src.z) << ']';
 }
 
+template<char src, char dest>
+void xform(std::string& x)
+{
+	size_t found;
+	while ((found = x.find(src)) != std::string::npos) x.replace(found, 1, 1, dest);
+}
+
 std::istream& operator>>(std::istream& is, computer& dest)
 {
 	dest.options.clear();
@@ -159,11 +166,7 @@ std::istream& operator>>(std::istream& is, computer& dest)
 
 	// Pull in name and security
 	is >> dest.name >> dest.security >> dest.mission_id;
-	size_t found = dest.name.find("_");
-	while (found != std::string::npos) {
-		dest.name.replace(found, 1, " ");
-		found = dest.name.find("_");
-	}
+	xform<'_',' '>(dest.name);
 	// Pull in options
 	int optsize;
 	is >> optsize;
@@ -171,11 +174,7 @@ std::istream& operator>>(std::istream& is, computer& dest)
 		std::string tmpname;
 		int tmpaction, tmpsec;
 		is >> tmpname >> tmpaction >> tmpsec;
-		size_t found = tmpname.find("_");
-		while (found != std::string::npos) {
-			tmpname.replace(found, 1, " ");
-			found = tmpname.find("_");
-		}
+		xform<'_', ' '>(tmpname);
 		dest.add_option(tmpname, computer_action(tmpaction), tmpsec);
 	}
 	// Pull in failures
@@ -190,20 +189,12 @@ std::istream& operator>>(std::istream& is, computer& dest)
 
 std::ostream& operator<<(std::ostream& os, const computer& src)
 {
-	std::string savename = src.name; // Replace " " with "_"
-	size_t found = savename.find(" ");
-	while (found != std::string::npos) {
-		savename.replace(found, 1, "_");
-		found = savename.find(" ");
-	}
+	std::string savename(src.name); // Replace " " with "_"
+	xform<' ', '_'>(savename);
 	os << savename  I_SEP << src.security I_SEP << src.mission_id I_SEP << src.options.size() I_SEP;
 	for(const auto& opt : src.options) {
 		savename = opt.name;
-		found = savename.find(" ");
-		while (found != std::string::npos) {
-			savename.replace(found, 1, "_");
-			found = savename.find(" ");
-		}
+		xform<' ', '_'>(savename);
 		os << savename I_SEP << int(opt.action) I_SEP << opt.security I_SEP;
 	}
 	os << src.failures.size() << " ";
@@ -701,11 +692,7 @@ std::ostream& operator<<(std::ostream& os, const it_artifact_armor& src)
 	os << " " << src.name << " - ";
 	std::string desctmp = src.description;
 	size_t endline;
-	do {
-		endline = desctmp.find("\n");
-		if (endline != std::string::npos)
-			desctmp.replace(endline, 1, " = ");
-	} while (endline != std::string::npos);
+	while((endline = desctmp.find('\n')) != std::string::npos) desctmp.replace(endline, 1, " = ");
 
 	return os << desctmp << " -";
 }
@@ -805,11 +792,7 @@ std::ostream& operator<<(std::ostream& os, const it_artifact_tool& src)
 	os I_SEP << src.name << " - ";
 	std::string desctmp = src.description;
 	size_t endline;
-	do {
-		endline = desctmp.find("\n");
-		if (endline != std::string::npos)
-			desctmp.replace(endline, 1, " = ");
-	} while (endline != std::string::npos);
+	while ((endline = desctmp.find('\n')) != std::string::npos) desctmp.replace(endline, 1, " = ");
 	return os << desctmp << " -";
 }
 
