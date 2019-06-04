@@ -643,40 +643,43 @@ void JSON::finish_reading_literal(std::istream& src, unsigned long& line, char& 
 
 static const char* escape_for_JSON_string(char c)
 {
-	return strchr("\r\n\t\v\f\"", c);
+	return strchr("\r\n\t\v\f\"\\", c);
 }
 
 static std::ostream& write_string(std::ostream& os, const std::string& src)
 {
 	os.put('"');
 	for (const auto c : src) {
-		auto reject = escape_for_JSON_string(c);
-		if (!reject) {
-			os.put(c);
+		if (auto reject = escape_for_JSON_string(c)) {
+			os.put('\\');
+			switch (*reject) {
+			case '\r':
+				os.put('r');
+				break;
+			case '\n':
+				os.put('n');
+				break;
+			case '\t':
+				os.put('t');
+				break;
+			case '\v':
+				os.put('v');
+				break;
+			case '\f':
+				os.put('f');
+				break;
+			case '"':
+				os.put('"');
+				break;
+			case '\\':
+				os.put('\\');
+				break;
+				// default: throw std::string(....);
+			}
 			continue;
 		}
-		os.put('\\');
-		switch (*reject) {
-		case '\r':
-			os.put('r');
-			break;
-		case '\n':
-			os.put('n');
-			break;
-		case '\t':
-			os.put('t');
-			break;
-		case '\v':
-			os.put('v');
-			break;
-		case '\f':
-			os.put('f');
-			break;
-		case '"':
-			os.put('"');
-			break;
-		// default: throw std::string(....);
-		}
+		os.put(c);
+		continue;
 	}
 	os.put('"');
 	return os;
