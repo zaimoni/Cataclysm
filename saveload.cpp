@@ -39,6 +39,7 @@ std::ostream& operator<<(std::ostream& os, TYPE src)	\
 	return os << int(src);	\
 }
 
+IO_OPS_ENUM(activity_type)
 IO_OPS_ENUM(add_type)
 IO_OPS_ENUM(art_charge)
 IO_OPS_ENUM(art_effect_active)
@@ -53,6 +54,8 @@ IO_OPS_ENUM(field_id)
 IO_OPS_ENUM(itype_id)
 IO_OPS_ENUM(material)
 IO_OPS_ENUM(mission_id)
+IO_OPS_ENUM(moncat_id)
+IO_OPS_ENUM(mon_id)
 IO_OPS_ENUM(morale_type)
 IO_OPS_ENUM(npc_attitude)
 IO_OPS_ENUM(npc_class)
@@ -243,10 +246,8 @@ std::ostream& operator<<(std::ostream& os, const mission& src)
 
 mongroup::mongroup(std::istream& is)
 {
-  int tmp_type;
   int tmp_radius;
-  is >> tmp_type >> pos >> tmp_radius >> population;	// XXX note absence of src.dying: saveload cancels that
-  type = (moncat_id)tmp_type;
+  is >> type >> pos >> tmp_radius >> population;	// XXX note absence of src.dying: saveload cancels that
   radius = tmp_radius;
 }
 
@@ -308,9 +309,8 @@ std::ostream& operator<<(std::ostream& os, const radio_tower& src)
 
 std::istream& operator>>(std::istream& is, player_activity& dest)
 {
-	int tmp, tmptype;
-	is >> tmptype >> dest.moves_left >> dest.index >> dest.placement >> tmp;
-	dest.type = activity_type(tmptype);
+	int tmp;
+	is >> dest.type >> dest.moves_left >> dest.index >> dest.placement >> tmp;
 	for (int i = 0; i < tmp; i++) {
 		int tmp2;
 		is >> tmp2;
@@ -330,15 +330,13 @@ std::ostream& operator<<(std::ostream& os, const player_activity& src)
 spawn_point::spawn_point(std::istream& is)
 {
 	char tmpfriend;
-	int t;
-	is >> t >> count >> pos >> faction_id >> mission_id >> tmpfriend >> name;
-	type = (mon_id)t;
+	is >> type >> count >> pos >> faction_id >> mission_id >> tmpfriend >> name;
 	friendly = '1' == tmpfriend;
 }
 
 std::ostream& operator<<(std::ostream& os, const spawn_point& src)
 {
-	return os << int(src.type) I_SEP << src.count I_SEP << src.pos I_SEP <<
+	return os << src.type I_SEP << src.count I_SEP << src.pos I_SEP <<
 		src.faction_id I_SEP << src.mission_id << (src.friendly ? " 1 " : " 0 ") <<
 		src.name;
 }
