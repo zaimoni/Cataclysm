@@ -45,6 +45,7 @@ IO_OPS_ENUM(art_effect_active)
 IO_OPS_ENUM(art_effect_passive)
 IO_OPS_ENUM(bionic_id)
 IO_OPS_ENUM(combat_engagement)
+IO_OPS_ENUM(computer_action)
 IO_OPS_ENUM(dis_type)
 IO_OPS_ENUM(faction_goal)
 IO_OPS_ENUM(faction_job)
@@ -159,6 +160,19 @@ void xform(std::string& x)
 	while ((found = x.find(src)) != std::string::npos) x.replace(found, 1, 1, dest);
 }
 
+computer_option::computer_option(std::istream& is)
+{
+	is >> name >> action >> security;
+	xform<'_', ' '>(name);
+}
+
+std::ostream& operator<<(std::ostream& os, const computer_option& src)
+{
+	std::string savename(src.name); // Replace " " with "_"
+	xform<' ', '_'>(savename);
+	return os << savename I_SEP << src.action I_SEP << src.security I_SEP;
+}
+
 std::istream& operator>>(std::istream& is, computer& dest)
 {
 	dest.options.clear();
@@ -170,13 +184,7 @@ std::istream& operator>>(std::istream& is, computer& dest)
 	// Pull in options
 	int optsize;
 	is >> optsize;
-	for (int n = 0; n < optsize; n++) {
-		std::string tmpname;
-		int tmpaction, tmpsec;
-		is >> tmpname >> tmpaction >> tmpsec;
-		xform<'_', ' '>(tmpname);
-		dest.add_option(tmpname, computer_action(tmpaction), tmpsec);
-	}
+	for (int n = 0; n < optsize; n++) dest.options.push_back(computer_option(is));
 	// Pull in failures
 	int failsize, tmpfail;
 	is >> failsize;
@@ -192,11 +200,7 @@ std::ostream& operator<<(std::ostream& os, const computer& src)
 	std::string savename(src.name); // Replace " " with "_"
 	xform<' ', '_'>(savename);
 	os << savename  I_SEP << src.security I_SEP << src.mission_id I_SEP << src.options.size() I_SEP;
-	for(const auto& opt : src.options) {
-		savename = opt.name;
-		xform<' ', '_'>(savename);
-		os << savename I_SEP << int(opt.action) I_SEP << opt.security I_SEP;
-	}
+	for (const auto& opt : src.options) os << opt;
 	os << src.failures.size() << " ";
 	for (const auto& fail : src.failures) os << int(fail) I_SEP;
 	return os;
@@ -834,8 +838,6 @@ std::ostream& operator<<(std::ostream& os, const addiction& src)
 
 morale_point::morale_point(std::istream& is)
 {
-	int mortype;
-	int item_id;
 	is >> bonus >> type >> item_type;
 	if (item_type && itm_null == item_type->id) item_type = 0;	// historically, itm_null was the encoding for null pointer
 }
@@ -852,7 +854,6 @@ std::ostream& operator<<(std::ostream& os, const morale_point& src)
 // 2019-03-24: work required to make player object a proper base object of the npc object not plausibly mechanical.
 std::istream& operator>>(std::istream& is, player& dest)
 {
-	int styletmp;
 	is >> dest.pos >> dest.str_cur >> dest.str_max >> dest.dex_cur >> dest.dex_max >>
 		dest.int_cur >> dest.int_max >> dest.per_cur >> dest.per_max >> dest.power_level >>
 		dest.max_power_level >> dest.hunger >> dest.thirst >> dest.fatigue >> dest.stim >>

@@ -55,6 +55,9 @@ struct computer_option
 
  computer_option(std::string N = "Unknown", computer_action A = COMPACT_NULL, int S = 0) :
    name (N), action (A), security (S) {};
+
+ computer_option(std::istream& is);
+ friend std::ostream& operator<<(std::ostream& os, const computer_option& src);
 };
 
 class computer
