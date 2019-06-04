@@ -7,10 +7,14 @@
 #include "monster.h"
 #include "recent_msg.h"
 #include "saveload.h"
+#include "json.h"
+
 #include <istream>
 #include <ostream>
 
 #include "Zaimoni.STL/Logging.h"
+
+using cataclysm::JSON;
 
 // legacy implementations assume text mode streams
 // this only makes a difference for ostream, and may not be correct (different API may be needed)
@@ -115,22 +119,37 @@ std::ostream& operator<<(std::ostream& os, const it_ammo* const src)
 
 std::istream& operator>>(std::istream& is, point& dest)
 {
-	return is >> dest.x >> dest.y;
+	if ('[' == (is >> std::ws).peek()) {
+		JSON pt(is);
+		if (2 != pt.size() || JSON::array!=pt.mode()) throw std::runtime_error("point expected to be a length 2 array");
+		dest.x = stoll(pt[0].scalar());
+		dest.y = stoll(pt[1].scalar());
+		return is;
+	}
+	return is >> dest.x >> dest.y;	// \todo release block: remove legacy reading
 }
 
 std::ostream& operator<<(std::ostream& os, const point& src)
 {
-	return os << src.x I_SEP << src.y;
+	return os << '[' << std::to_string(src.x) << ',' << std::to_string(src.y) << ']';
 }
 
 std::istream& operator>>(std::istream& is, tripoint& dest)
 {
-	return is >> dest.x >> dest.y >> dest.z;
+	if ('[' == (is >> std::ws).peek()) {
+		JSON pt(is);
+		if (3 != pt.size() || JSON::array != pt.mode()) throw std::runtime_error("tripoint expected to be a length 3 array");
+		dest.x = stoll(pt[0].scalar());
+		dest.y = stoll(pt[1].scalar());
+		dest.z = stoll(pt[2].scalar());
+		return is;
+	}
+	return is >> dest.x >> dest.y >> dest.z;	// \todo release block: remove legacy reading
 }
 
 std::ostream& operator<<(std::ostream& os, const tripoint& src)
 {
-	return os << src.x I_SEP << src.y  I_SEP << src.z;
+	return os << '[' << std::to_string(src.x) << ',' << std::to_string(src.y) << ',' << std::to_string(src.z) << ']';
 }
 
 std::istream& operator>>(std::istream& is, computer& dest)

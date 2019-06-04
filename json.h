@@ -62,6 +62,9 @@ public:
 	// scalar evaluation
 	bool is_scalar() const { return string <= _mode; }
 	std::string scalar() const { return string <= _mode ? *_scalar : std::string(); }
+	// array evaluation
+	JSON& operator[](const size_t key) { return (*_array)[key]; };
+	const JSON& operator[](const size_t key) const { return (*_array)[key]; };
 	// object evaluation
 	bool has_key(const std::string& key) const { return object == _mode && _object && _object->count(key); }
 	JSON& operator[](const std::string& key) { return (*_object)[key]; };
