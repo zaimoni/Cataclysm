@@ -164,16 +164,44 @@ void xform(std::string& x)
 }
 
 computer_option::computer_option(std::istream& is)
+: name("Unknown"),action(COMPACT_NULL),security(0)
 {
+	if ('{' == (is >> std::ws).peek()) {
+		const JSON opt(is);
+		if (opt.has_key("name")) {
+			auto& x = opt["name"];
+			if (x.is_scalar()) name = x.scalar();
+		}
+		if (opt.has_key("action")) {
+			auto& x = opt["action"];
+			if (x.is_scalar()) {
+				cataclysm::JSON_parse<computer_action> parse;
+				action = parse(x.scalar());
+			}
+		}
+		if ("Unknown"==name || COMPACT_NULL==action) throw std::runtime_error("invalid computer option");
+		if (opt.has_key("security")) {
+			auto& x = opt["security"];
+			if (x.is_scalar()) {
+				auto sec = stoll(x.scalar());
+				if (0 < sec) security = sec;
+			}
+		}
+		return;
+	}
 	is >> name >> action >> security;
 	xform<'_', ' '>(name);
 }
 
 std::ostream& operator<<(std::ostream& os, const computer_option& src)
 {
-	std::string savename(src.name); // Replace " " with "_"
-	xform<' ', '_'>(savename);
-	return os << savename I_SEP << src.action I_SEP << src.security I_SEP;
+	// mandatory keys: name:string, action:computer_action
+	// optional key: security (default to 0 if absent, suppress if non-positive)
+	JSON opt;
+	opt.set("name", src.name);
+	opt.set("action", JSON_key(src.action));
+	if (0 < src.security) opt.set("security", std::to_string(src.security));
+	return os << opt;
 }
 
 std::istream& operator>>(std::istream& is, computer& dest)
