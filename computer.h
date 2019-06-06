@@ -47,6 +47,28 @@ enum computer_failure
  NUM_COMPUTER_FAILURES
 };
 
+const char* JSON_key(computer_action src);
+const char* JSON_key(computer_failure src);
+
+namespace cataclysm {
+
+	template<>
+	struct JSON_parse<computer_action>
+	{
+		computer_action operator()(const char* src);
+		computer_action operator()(const std::string& src) { return operator()(src.c_str()); };
+	};
+
+	template<>
+	struct JSON_parse<computer_failure>
+	{
+		computer_failure operator()(const char* src);
+		computer_failure operator()(const std::string& src) { return operator()(src.c_str()); };
+	};
+
+}
+
+
 struct computer_option
 {
  std::string name;

@@ -8,6 +8,74 @@
 #include <fstream>
 #include <sstream>
 
+// JSON enum transcoding
+static const char* JSON_transcode_compact[] = {
+	"OPEN",
+	"SAMPLE",
+	"RELEASE",
+	"TERMINATE",
+	"PORTAL",
+	"CASCADE",
+	"RESEARCH",
+	"MAPS",
+	"MAP_SEWER",
+	"MISS_LAUNCH",
+	"MISS_DISARM",
+	"LIST_BIONICS",
+	"ELEVATOR_ON",
+	"AMIGARA_LOG",
+	"AMIGARA_START",
+	"DOWNLOAD_SOFTWARE",
+	"BLOOD_ANAL"
+};
+
+static const char* JSON_transcode_compfail[] = {
+	"SHUTDOWN",
+	"ALARM",
+	"MANHACKS",
+	"SECUBOTS",
+	"DAMAGE",
+	"PUMP_EXPLODE",
+	"PUMP_LEAK",
+	"AMIGARA",
+	"DESTROY_BLOOD"
+};
+
+const char* JSON_key(computer_action src)
+{
+	if (src) return JSON_transcode_compact[src-1];
+	return 0;
+}
+
+const char* JSON_key(computer_failure src)
+{
+	if (src) return JSON_transcode_compfail[src-1];
+	return 0;
+}
+
+using namespace cataclysm;
+
+computer_action JSON_parse<computer_action>::operator()(const char* const src)
+{
+	if (!src || !src[0]) return COMPACT_NULL;
+	ptrdiff_t i = sizeof(JSON_transcode_compact)/sizeof(*JSON_transcode_compact);
+	while (0 < i--) {
+		if (!strcmp(JSON_transcode_compact[i], src)) return (computer_action)(i+1);
+	}
+	return COMPACT_NULL;
+}
+
+computer_failure JSON_parse<computer_failure>::operator()(const char* const src)
+{
+	if (!src || !src[0]) return COMPFAIL_NULL;
+	size_t i = sizeof(JSON_transcode_compfail) / sizeof(*JSON_transcode_compfail);
+	while (0 < i--) {
+		if (!strcmp(JSON_transcode_compfail[i], src)) return (computer_failure)(i+1);
+	}
+	return COMPFAIL_NULL;
+}
+
+// main implementation
 computer::~computer()
 {
  if (w_terminal != NULL)

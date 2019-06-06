@@ -64,7 +64,9 @@ def JSON_transcode_definition_pair(src):
 	return 'static const std::pair<foo,const char*> JSON_transcode[] = {\n\t'+',\n\t'.join(JSON_diagnosis_array_body)+'\n};'
 
 # relevant_lines = bracketed_lines('mapdata.h','enum ter_id {','}')
-relevant_lines = bracketed_lines('mtype.h','enum mon_id {','}')
+# relevant_lines = bracketed_lines('mtype.h','enum mon_id {','}')
+# relevant_lines = bracketed_lines('computer.h','enum computer_action','}')
+relevant_lines = bracketed_lines('computer.h','enum computer_failure','}')
 # relevant_lines = bracketed_lines('color.h','enum nc_color {','}')
 enum_like = extract_C_enum(relevant_lines)
 print(JSON_transcode_definition(enum_like))
