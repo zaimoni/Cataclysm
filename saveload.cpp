@@ -66,6 +66,24 @@ IO_OPS_ENUM(talk_topic)
 IO_OPS_ENUM(ter_id)
 IO_OPS_ENUM(trap_id)
 
+#define JSON_ENUM(TYPE)	\
+JSON toJSON(TYPE src) {	\
+	auto x = JSON_key(src);	\
+	if (x) return JSON(x);	\
+	throw std::runtime_error(std::string("encoding failure: " #TYPE " value ")+std::to_string((int)src));	\
+}	\
+	\
+bool fromJSON(const JSON& src, TYPE& dest)	\
+{	\
+	if (!src.is_scalar()) return false;	\
+	cataclysm::JSON_parse<TYPE> parse;	\
+	dest = parse(src.scalar());	\
+	return true;	\
+}
+
+JSON_ENUM(computer_action)
+JSON_ENUM(computer_failure)
+
 // stereotypical translation of pointers to/from vector indexes
 // \todo in general if a loaded pointer index is "invalid" we should warn here; non-null requirements are enforced higher up
 // \todo in general warn if a non-null ptr points to an invalid id
@@ -126,8 +144,7 @@ std::istream& operator>>(std::istream& is, point& dest)
 	if ('[' == (is >> std::ws).peek()) {
 		JSON pt(is);
 		if (2 != pt.size() || JSON::array!=pt.mode()) throw std::runtime_error("point expected to be a length 2 array");
-		dest.x = stoll(pt[0].scalar());
-		dest.y = stoll(pt[1].scalar());
+		if (!fromJSON(pt[0],dest.x) || !fromJSON(pt[1], dest.y)) throw std::runtime_error("point wants integer coordinates");
 		return is;
 	}
 	return is >> dest.x >> dest.y;	// \todo release block: remove legacy reading
@@ -143,9 +160,7 @@ std::istream& operator>>(std::istream& is, tripoint& dest)
 	if ('[' == (is >> std::ws).peek()) {
 		JSON pt(is);
 		if (3 != pt.size() || JSON::array != pt.mode()) throw std::runtime_error("tripoint expected to be a length 3 array");
-		dest.x = stoll(pt[0].scalar());
-		dest.y = stoll(pt[1].scalar());
-		dest.z = stoll(pt[2].scalar());
+		if (!fromJSON(pt[0], dest.x) || !fromJSON(pt[1], dest.y) || !fromJSON(pt[2], dest.z)) throw std::runtime_error("tripoint wants integer coordinates");
 		return is;
 	}
 	return is >> dest.x >> dest.y >> dest.z;	// \todo release block: remove legacy reading
@@ -163,33 +178,34 @@ void xform(std::string& x)
 	while ((found = x.find(src)) != std::string::npos) x.replace(found, 1, 1, dest);
 }
 
+JSON toJSON(const computer_option& src)
+{
+	JSON opt;
+	opt.set("name", src.name);
+	opt.set("action", JSON_key(src.action));
+	if (0 < src.security) opt.set("security", std::to_string(src.security));
+	return opt;
+}
+
+bool fromJSON(const JSON& src, computer_option& dest)
+{
+	bool ok = true;
+	if (!src.has_key("name") || !fromJSON(src["name"], dest.name)) ok = false;
+	if (!src.has_key("action") || !fromJSON(src["action"], dest.action)) ok = false;
+	if (!ok) return false;
+	if (src.has_key("security") && fromJSON(src["security"],dest.security) && 0 > dest.security) dest.security = 0;
+	return true;
+}
+
 computer_option::computer_option(std::istream& is)
 : name("Unknown"),action(COMPACT_NULL),security(0)
 {
 	if ('{' == (is >> std::ws).peek()) {
-		const JSON opt(is);
-		if (opt.has_key("name")) {
-			auto& x = opt["name"];
-			if (x.is_scalar()) name = x.scalar();
-		}
-		if (opt.has_key("action")) {
-			auto& x = opt["action"];
-			if (x.is_scalar()) {
-				cataclysm::JSON_parse<computer_action> parse;
-				action = parse(x.scalar());
-			}
-		}
-		if ("Unknown"==name || COMPACT_NULL==action) throw std::runtime_error("invalid computer option");
-		if (opt.has_key("security")) {
-			auto& x = opt["security"];
-			if (x.is_scalar()) {
-				auto sec = stoll(x.scalar());
-				if (0 < sec) security = sec;
-			}
-		}
+		const JSON _in(is);
+		if (!fromJSON(_in,*this)) throw std::runtime_error("invalid computer option");
 		return;
 	}
-	is >> name >> action >> security;
+	is >> name >> action >> security;	// \todo release block: remove legacy reading
 	xform<'_', ' '>(name);
 }
 
@@ -208,9 +224,19 @@ std::istream& operator>>(std::istream& is, computer& dest)
 {
 	dest.options.clear();
 	dest.failures.clear();
+	if ('{' == is.peek()) {
+		const JSON _in(is);
+		if (!_in.has_key("name") || !fromJSON(_in["name"], dest.name)) throw std::runtime_error("computer should be named");
+		// \todo error out if name not set
+		if (_in.has_key("security") && fromJSON(_in["security"], dest.security) && 0 > dest.security) dest.security = 0;
+		if (_in.has_key("mission_id")) fromJSON(_in["mission_id"], dest.mission_id);
+		if (_in.has_key("options")) _in["options"].decode(dest.options);
+		if (_in.has_key("failures")) _in["failures"].decode(dest.failures);
+		return is;
+	}
 
 	// Pull in name and security
-	is >> dest.name >> dest.security >> dest.mission_id;
+	is >> dest.name >> dest.security >> dest.mission_id;	// \todo release block: remove legacy reading
 	xform<'_',' '>(dest.name);
 	// Pull in options
 	int optsize;
@@ -228,13 +254,15 @@ std::istream& operator>>(std::istream& is, computer& dest)
 
 std::ostream& operator<<(std::ostream& os, const computer& src)
 {
-	std::string savename(src.name); // Replace " " with "_"
-	xform<' ', '_'>(savename);
-	os << savename  I_SEP << src.security I_SEP << src.mission_id I_SEP << src.options.size() I_SEP;
-	for (const auto& opt : src.options) os << opt;
-	os << src.failures.size() << " ";
-	for (const auto& fail : src.failures) os << int(fail) I_SEP;
-	return os;
+	// mandatory keys: name
+	// optional keys: security, mission_id, options, failures
+	JSON comp;
+	comp.set("name", src.name);
+	if (0 < src.security) comp.set("security", std::to_string(src.security));
+	if (0 <= src.mission_id) comp.set("mission_id", std::to_string(src.mission_id));
+	if (!src.options.empty()) comp.set("options", JSON::encode(src.options));
+	if (!src.failures.empty()) comp.set("failures", JSON::encode(src.failures));
+	return os << comp;
 }
 
 bionic::bionic(std::istream& is)

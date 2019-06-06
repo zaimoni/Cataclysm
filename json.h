@@ -100,6 +100,34 @@ public:
 	void set(const std::string& src, const char* const val) { set(src, JSON(val, is_legal_JS_literal(val))); }
 
 	bool syntax_ok() const;
+
+	template<class T> static JSON encode(const std::vector<T>& src) {
+		JSON ret;
+		ret._mode = array;
+		int n = src.size();
+		if (0 < n) {
+			ret._array = new std::vector<JSON>(n);
+			for (const auto& x : src) ret._array->push_back(toJSON(x));
+		}
+		return ret;
+	}
+
+	template<class T> bool decode(std::vector<T>& dest) const {
+		if (array != _mode) return false;
+		if (!_array || _array->empty()) {
+			dest.clear();
+			return true;
+		}
+		bool ok = true;
+		std::vector<T> working(_array->size());
+		for (const auto& x : *_array) {
+			T tmp;
+			if (fromJSON(x, tmp)) working.push_back(tmp);
+			else ok = false;
+		}
+		if (!working.empty()) swap(working, dest);
+		return ok;
+	}
 protected:
 	JSON(std::istream& src,unsigned long& line, char& first, bool must_be_scalar = false);
 private:
@@ -113,7 +141,10 @@ private:
 	std::ostream& write(std::ostream& os, int indent) const;
 };
 
-}
+}	// namespace cataclysm
 
+// fromJSON only has to work correctly on default-constructed targets when called from JSON::decode
+bool fromJSON(const cataclysm::JSON& src, std::string& dest);
+bool fromJSON(const cataclysm::JSON& src, int& dest);
 
 #endif

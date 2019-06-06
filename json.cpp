@@ -761,3 +761,17 @@ std::ostream& operator<<(std::ostream& os, const JSON& src)
 }
 
 }	// namespace cataclysm
+
+bool fromJSON(const cataclysm::JSON& src, std::string& dest)
+{
+	if (!src.is_scalar()) return false;
+	dest = src.scalar();
+	return true;
+}
+
+bool fromJSON(const cataclysm::JSON& src, int& dest)
+{
+	if (!src.is_scalar()) return false;
+	dest = stoll(src.scalar());
+	return true;
+}
