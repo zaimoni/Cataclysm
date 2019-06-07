@@ -81,6 +81,7 @@ bool fromJSON(const JSON& src, TYPE& dest)	\
 	return true;	\
 }
 
+JSON_ENUM(bionic_id)
 JSON_ENUM(computer_action)
 JSON_ENUM(computer_failure)
 
@@ -266,13 +267,30 @@ std::ostream& operator<<(std::ostream& os, const computer& src)
 }
 
 bionic::bionic(std::istream& is)
+: id(bio_batteries), invlet('a'), powered(false), charge(0)
 {
-	is >> id >> invlet >> powered >> charge;
+	if ('{' == is.peek()) {
+		const JSON _in(is);
+		if (!_in.has_key("id") || !fromJSON(_in["id"], id)) throw std::runtime_error("unrecognized bionic");
+		if (_in.has_key("invlet")) fromJSON(_in["invlet"], invlet);
+		if (_in.has_key("powered")) fromJSON(_in["powered"], powered);
+		if (_in.has_key("charge")) fromJSON(_in["charge"], charge);
+		return;
+	}
+	is >> id >> invlet >> powered >> charge;	// \todo release block: remove legacy reading
 }
 
 std::ostream& operator<<(std::ostream& os, const bionic& src)
 {
-	return os << src.id I_SEP << src.invlet I_SEP << src.powered I_SEP << src.charge;
+	JSON _bionic;
+	_bionic.set("id", toJSON(src.id));
+	if ('a' != src.invlet) {
+		const char str[] = { src.invlet, '\x00' };
+		_bionic.set("invlet", str);
+	}
+	if (src.powered) _bionic.set("powered", "true");
+	if (0 < src.charge) _bionic.set("charge", std::to_string(src.charge));
+	return os << _bionic;
 }
 
 mission::mission(std::istream& is)

@@ -775,3 +775,26 @@ bool fromJSON(const cataclysm::JSON& src, int& dest)
 	dest = stoll(src.scalar());
 	return true;
 }
+
+bool fromJSON(const cataclysm::JSON& src, char& dest)
+{
+	if (!src.is_scalar()) return false;
+	dest = src.scalar()[0];
+	return true;
+}
+
+bool fromJSON(const cataclysm::JSON& src, bool& dest)
+{
+	if (!src.is_scalar()) return false;
+	const auto x(src.scalar());
+	if ("false" == x) {
+		dest = false;
+		return true;
+	}
+	if ("true" == x) {
+		dest = true;
+		return true;
+	}
+	// there may be other logical aliases to consider, but we ignore them here
+	return false;
+}

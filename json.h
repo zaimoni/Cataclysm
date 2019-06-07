@@ -61,7 +61,7 @@ public:
 
 	// scalar evaluation
 	bool is_scalar() const { return string <= _mode; }
-	std::string scalar() const { return string <= _mode ? *_scalar : std::string(); }
+	std::string scalar() const { return string <= _mode ? *_scalar : std::string(); }	// \todo would like an alternate API that bypasses the copy constructor
 	// array evaluation
 	JSON& operator[](const size_t key) { return (*_array)[key]; };
 	const JSON& operator[](const size_t key) const { return (*_array)[key]; };
@@ -146,5 +146,7 @@ private:
 // fromJSON only has to work correctly on default-constructed targets when called from JSON::decode
 bool fromJSON(const cataclysm::JSON& src, std::string& dest);
 bool fromJSON(const cataclysm::JSON& src, int& dest);
+bool fromJSON(const cataclysm::JSON& src, char& dest);
+bool fromJSON(const cataclysm::JSON& src, bool& dest);
 
 #endif

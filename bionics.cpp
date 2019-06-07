@@ -7,6 +7,98 @@
 #include "line.h"
 #include "recent_msg.h"
 
+static const char* JSON_transcode[] = {
+	"batteries",
+	"metabolics",
+	"solar",
+	"furnace",
+	"ethanol",
+	"memory",
+	"ears",
+	"eye_enhancer",
+	"membrane",
+	"targeting",
+	"gills",
+	"purifier",
+	"climate",
+	"storage",
+	"recycler",
+	"digestion",
+	"tools",
+	"shock",
+	"heat_absorb",
+	"carbon",
+	"armor_head",
+	"armor_torso",
+	"armor_arms",
+	"armor_legs",
+	"flashlight",
+	"night_vision",
+	"infrared",
+	"face_mask",
+	"ads",
+	"ods",
+	"scent_mask",
+	"scent_vision",
+	"cloak",
+	"painkiller",
+	"nanobots",
+	"heatsink",
+	"resonator",
+	"time_freeze",
+	"teleport",
+	"blood_anal",
+	"blood_filter",
+	"alarm",
+	"evap",
+	"lighter",
+	"claws",
+	"blaster",
+	"laser",
+	"emp",
+	"hydraulics",
+	"water_extractor",
+	"magnet",
+	"fingerhack",
+	"lockpick",
+	"ground_sonar",
+	"",	// max_bio_start
+	"banish",
+	"gate_out",
+	"gate_in",
+	"nightfall",
+	"drilldown",
+	"heatwave",
+	"lightning",
+	"tremor",
+	"flashflood",
+	"",	// max_bio_good
+	"dis_shock",
+	"dis_acid",
+	"drain",
+	"noise",
+	"power_weakness",
+	"stiff"
+};
+
+const char* JSON_key(bionic_id src)
+{
+	if (src) return JSON_transcode[src - 1];
+	return 0;
+}
+
+using namespace cataclysm;
+
+bionic_id JSON_parse<bionic_id>::operator()(const char* const src)
+{
+	if (!src || !src[0]) return bio_null;
+	ptrdiff_t i = sizeof(JSON_transcode) / sizeof(*JSON_transcode);
+	while (0 < i--) {
+		if (!strcmp(JSON_transcode[i], src)) return (bionic_id)(i + 1);
+	}
+	return bio_null;
+}
+
 const bionic_data bionic::type[] = {
 {"NULL bionics", false, false, 0, 0, "\
 If you're seeing this, it's a bug."},
