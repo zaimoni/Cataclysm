@@ -293,19 +293,33 @@ std::ostream& operator<<(std::ostream& os, const bionic& src)
 	return os << _bionic;
 }
 
+npc_favor::npc_favor(std::istream& is)
+: type(FAVOR_NULL),value(0),item_id(itm_null),skill_id(sk_null)
+{
+	is >> type >> value >> item_id >> skill_id;
+}
+
+std::istream& operator>>(std::istream& is, npc_favor& dest)
+{
+	return is >> dest.type >> dest.value >> dest.item_id >> dest.skill_id;
+}
+
+std::ostream& operator<<(std::ostream& os, const npc_favor& src)
+{
+	return os << src.type I_SEP << src.value  I_SEP << src.item_id I_SEP << src.skill_id;
+}
+
 mission::mission(std::istream& is)
 {
 	is >> type;
 	std::string tmpdesc;
 	do {
 		is >> tmpdesc;
-		if (tmpdesc != "<>")
-			description += tmpdesc + " ";
+		if (tmpdesc != "<>") description += tmpdesc + " ";
 	} while (tmpdesc != "<>");
 	description = description.substr(0, description.size() - 1); // Ending ' '
-	is >> failed >> value >> reward.type >> reward.value >> reward.item_id >> reward.skill_id >>
-		uid >> target >> item_id >> count >> deadline >> npc_id >>
-		good_fac_id >> bad_fac_id >> step >> follow_up;
+	is >> failed >> value >> reward >> uid >> target >> item_id >> count >> deadline 
+	   >> npc_id >> good_fac_id >> bad_fac_id >> step >> follow_up;
 }
 
 
@@ -313,9 +327,9 @@ std::ostream& operator<<(std::ostream& os, const mission& src)
 {
 	os << src.type;
 	return os << src.description << " <> " << (src.failed ? 1 : 0) I_SEP << src.value  I_SEP 
-		<< src.reward.type  I_SEP << src.reward.value  I_SEP << src.reward.item_id  I_SEP 
-		<< src.reward.skill_id  I_SEP << src.uid  I_SEP << src.target  I_SEP << src.item_id  I_SEP << src.count  I_SEP << src.deadline  I_SEP 
-		<< src.npc_id  I_SEP << src.good_fac_id  I_SEP << src.bad_fac_id  I_SEP << src.step  I_SEP << src.follow_up;
+		<< src.reward I_SEP << src.uid I_SEP << src.target I_SEP << src.item_id I_SEP 
+		<< src.count  I_SEP << src.deadline I_SEP << src.npc_id I_SEP << src.good_fac_id I_SEP
+		<< src.bad_fac_id  I_SEP << src.step I_SEP << src.follow_up;
 }
 
 mongroup::mongroup(std::istream& is)
@@ -1047,22 +1061,14 @@ std::istream& operator>>(std::istream& is, npc_opinion& dest)
 {
 	int tmpsize;
 	is >> dest.trust >> dest.fear >> dest.value >> dest.anger >> dest.owed >> tmpsize;
-	for (int i = 0; i < tmpsize; i++) {
-		int tmptype, tmpitem, tmpskill;
-		npc_favor tmpfavor;
-		is >> tmptype >> tmpfavor.value >> tmpitem >> tmpskill;
-		tmpfavor.type = npc_favor_type(tmptype);
-		tmpfavor.item_id = itype_id(tmpitem);
-		tmpfavor.skill_id = skill(tmpskill);
-		dest.favors.push_back(tmpfavor);
-	}
+	for (int i = 0; i < tmpsize; i++) dest.favors.push_back(npc_favor(is));
 	return is;
 }
 
 std::ostream& operator<<(std::ostream& os, const npc_opinion& src)
 {
 	os << src.trust I_SEP << src.fear I_SEP << src.value I_SEP << src.anger I_SEP << src.owed I_SEP << src.favors.size();
-	for (const auto& fav : src.favors) os I_SEP << int(fav.type) I_SEP << fav.value I_SEP << fav.item_id I_SEP << fav.skill_id;	// V 0.2.0 blocker \todo iostreams support: npc_favor
+	for (const auto& fav : src.favors) os I_SEP << fav;
 	return os;
 }
 

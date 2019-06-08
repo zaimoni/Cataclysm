@@ -122,20 +122,18 @@ enum npc_favor_type {
  NUM_FAVOR_TYPES
 };
 
-struct npc_favor
+struct npc_favor	// appears to be prototype/mockup
 {
  npc_favor_type type;
  int value;
  itype_id item_id;
  skill skill_id;
 
- npc_favor() {
-  type = FAVOR_NULL;
-  value = 0;
-  item_id = itm_null;
-  skill_id = sk_null;
- };
+ npc_favor() : type(FAVOR_NULL),value(0),item_id(itm_null),skill_id(sk_null) {}
+ npc_favor(std::istream& is);
 
+ friend std::istream& operator>>(std::istream& is, npc_favor& dest);
+ friend std::ostream& operator<<(std::ostream& os, const npc_favor& src);
 };
 
 struct npc_personality {
