@@ -1,4 +1,5 @@
 #include "skill.h"
+#include <string.h>
 
 static const char* const JSON_transcode[] = {
 	"dodge",
