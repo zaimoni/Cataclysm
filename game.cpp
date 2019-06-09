@@ -702,13 +702,11 @@ void game::update_skills()
   }
   if (u.skexercise[i] < -100) {
    u.sklevel[i]--;
-   messages.add("Your skill in %s has reduced to %d!",
-           skill_name(skill(i)).c_str(), u.sklevel[i]);
+   messages.add("Your skill in %s has reduced to %d!", skill_name(skill(i)), u.sklevel[i]);
    u.skexercise[i] = 0;
   } else if (u.skexercise[i] >= 100) {
    u.sklevel[i]++;
-   messages.add("Your skill in %s has increased to %d!",
-           skill_name(skill(i)).c_str() ,u.sklevel[i]);
+   messages.add("Your skill in %s has increased to %d!", skill_name(skill(i)) ,u.sklevel[i]);
    u.skexercise[i] = 0;
   }
  }
@@ -774,7 +772,7 @@ void game::process_activity()
     }
 
     if (u.sklevel[reading->type] < reading->level) {
-     messages.add("You learn a little about %s!", skill_name(reading->type).c_str());
+     messages.add("You learn a little about %s!", skill_name(reading->type));
      int min_ex = reading->time / 10 + u.int_cur / 4,
          max_ex = reading->time /  5 + u.int_cur / 2 - u.sklevel[reading->type];
      if (min_ex < 1) min_ex = 1;
@@ -810,8 +808,7 @@ void game::process_activity()
      u.styles.push_back( itype_id(0 - u.activity.index) );
     } else {
      u.sklevel[ u.activity.index ]++;
-	 messages.add("You finish training %s to level %d.",
-             skill_name(u.activity.index).c_str(), u.sklevel[u.activity.index]);
+	 messages.add("You finish training %s to level %d.", skill_name(skill(u.activity.index)), u.sklevel[u.activity.index]);
     }
     break;
     

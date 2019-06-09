@@ -1,6 +1,7 @@
 #ifndef _SKILL_H_
 #define _SKILL_H_
 
+#include "enums.h"
 #include <string>
 
 enum skill {
@@ -21,8 +22,20 @@ enum skill {
  num_skill_types	// MUST be last!
 };
 
-std::string skill_name(int);
-std::string skill_description(int);
-std::string skill_long_name(skill sk, int level);
+const char* JSON_key(skill src);
+
+namespace cataclysm {
+
+	template<>
+	struct JSON_parse<skill>
+	{
+		skill operator()(const char* src);
+		skill operator()(const std::string& src) { return operator()(src.c_str()); };
+	};
+
+}
+
+const char* skill_name(skill);
+const char* skill_description(skill);
 double price_adjustment(int);
 #endif

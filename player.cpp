@@ -901,8 +901,7 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
   if (sklevel[i] > 0) {
    skillslist.push_back(skill(i));
    if (line < 9) {
-    mvwprintz(w_skills, line, 1, c_ltblue, "%s:",
-              skill_name(skill(i)).c_str());
+    mvwprintz(w_skills, line, 1, c_ltblue, "%s:", skill_name(skill(i)));
     mvwprintz(w_skills, line,19, c_ltblue, "%d%s(%s%d%%%%)", sklevel[i],
               (sklevel[i] < 10 ? " " : ""),
               (skexercise[i] < 10 && skexercise[i] >= 0 ? " " : ""),
@@ -1271,35 +1270,25 @@ encumb(bp_feet) * 5);
    if (line <= 2) {
     min = 0;
     max = 7;
-    if (skillslist.size() < max)
-     max = skillslist.size();
+    if (skillslist.size() < max) max = skillslist.size();
    } else if (line >= skillslist.size() - 3) {
     min = (skillslist.size() < 8 ? 0 : skillslist.size() - 7);
     max = skillslist.size();
    } else {
     min = line - 3;
     max = line + 4;
-    if (skillslist.size() < max)
-     max = skillslist.size();
-    if (min < 0)
-     min = 0;
+    if (skillslist.size() < max) max = skillslist.size();
+    if (min < 0) min = 0;
    }
    for (int i = min; i < max; i++) {
     if (i == line) {
-     if (skexercise[skillslist[i]] >= 100)
-      status = h_pink;
-     else
-      status = h_ltblue;
+	 status = (skexercise[skillslist[i]] >= 100) ? h_pink : h_ltblue;
     } else {
-     if (skexercise[skillslist[i]] < 0)
-      status = c_ltred;
-     else
-      status = c_ltblue;
+	 status = (skexercise[skillslist[i]] < 0) ? c_ltred : c_ltblue;
     }
     mvwprintz(w_skills, 2 + i - min, 1, c_ltgray, "                         ");
     if (skexercise[i] >= 100) {
-     mvwprintz(w_skills, 2 + i - min, 1, status, "%s:",
-               skill_name(skillslist[i]).c_str());
+     mvwprintz(w_skills, 2 + i - min, 1, status, "%s:", skill_name(skill(skillslist[i])));
      mvwprintz(w_skills, 2 + i - min,19, status, "%d (%s%d%%%%)",
                sklevel[skillslist[i]],
                (skexercise[skillslist[i]] < 10 &&
@@ -1308,7 +1297,7 @@ encumb(bp_feet) * 5);
                 skexercise[skillslist[i]]));
     } else {
      mvwprintz(w_skills, 2 + i - min, 1, status, "%s:",
-               skill_name(skillslist[i]).c_str());
+               skill_name(skill(skillslist[i])));
      mvwprintz(w_skills, 2 + i - min,19, status, "%d (%s%d%%%%)", 
                sklevel[skillslist[i]],
                (skexercise[skillslist[i]] < 10 &&
@@ -1319,28 +1308,21 @@ encumb(bp_feet) * 5);
    }
    werase(w_info);
    if (line >= 0 && line < skillslist.size())
-    mvwprintz(w_info, 0, 0, c_magenta,
-              skill_description(skillslist[line]).c_str());
+    mvwprintz(w_info, 0, 0, c_magenta, skill_description(skill(skillslist[line])));
    wrefresh(w_skills);
    wrefresh(w_info);
    switch (input()) {
     case 'j':
-     if (line < skillslist.size() - 1)
-      line++;
+     if (line < skillslist.size() - 1) line++;
      break;
     case 'k':
-     if (line > 0)
-      line--;
+     if (line > 0) line--;
      break;
     case '\t':
      mvwprintz(w_skills, 0, 0, c_ltgray, "           SKILLS         ");
      for (int i = 0; i < skillslist.size() && i < 7; i++) {
-      if (skexercise[skillslist[i]] < 0)
-       status = c_ltred;
-      else
-       status = c_ltblue;
-      mvwprintz(w_skills, i + 2,  1, status, "%s:",
-                skill_name(skillslist[i]).c_str());
+	  status = (skexercise[skillslist[i]] < 0) ? c_ltred : c_ltblue;
+      mvwprintz(w_skills, i + 2,  1, status, "%s:", skill_name(skill(skillslist[i])));
       mvwprintz(w_skills, i + 2, 19, status, "%d (%s%d%%%%)",
                 sklevel[skillslist[i]],
                 (skexercise[skillslist[i]] < 10 &&
@@ -3934,11 +3916,10 @@ void player::read(game *g, char ch)
   messages.add("This book is way too complex for you to understand.");
   return;
  } else if (book->req > sklevel[book->type]) {
-  messages.add("The %s-related jargon flies over your head!", skill_name(book->type).c_str());
+  messages.add("The %s-related jargon flies over your head!", skill_name(skill(book->type)));
   return;
  } else if (book->level <= sklevel[book->type] && book->fun <= 0 &&
-            !query_yn("Your %s skill won't be improved.  Read anyway?",
-                      skill_name(book->type).c_str()))
+            !query_yn("Your %s skill won't be improved.  Read anyway?", skill_name(skill(book->type))))
   return;
 
 // Base read_speed() is 1000 move points (1 minute per tmp->time)

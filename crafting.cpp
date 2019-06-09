@@ -709,10 +709,10 @@ void game::craft()
    nc_color col = (available[line] ? c_white : c_dkgray);
    mvwprintz(w_data, 0, 30, col, "Primary skill: %s",
              (current[line]->sk_primary == sk_null ? "N/A" :
-              skill_name(current[line]->sk_primary).c_str()));
+              skill_name(current[line]->sk_primary)));
    mvwprintz(w_data, 1, 30, col, "Secondary skill: %s",
              (current[line]->sk_secondary == sk_null ? "N/A" :
-              skill_name(current[line]->sk_secondary).c_str()));
+              skill_name(current[line]->sk_secondary)));
    mvwprintz(w_data, 2, 30, col, "Difficulty: %d", current[line]->difficulty);
    if (current[line]->sk_primary == sk_null)
     mvwprintz(w_data, 3, 30, col, "Your skill level: N/A");

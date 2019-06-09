@@ -648,66 +648,62 @@ int set_skills(WINDOW* w, player *u, int &points)
  mvwputch(w, 2,73, c_ltgray, LINE_XXOX);
  mvwprintz(w,1,40, h_ltgray, "  SKILLS  ");
  
+ static const char* const CLEAR_LINE = "                                             ";
+ static const char* const CLEAR_WHOLE_LINE = "                                                                             ";
  int cur_sk = 1;
 
  do {
   mvwprintz(w,  3, 2, c_ltgray, "Points left: %d  ", points);
 // Clear the bottom of the screen.
-  mvwprintz(w, 22, 0, c_ltgray, "\
-                                                                             ");
-  mvwprintz(w, 23, 0, c_ltgray, "\
-                                                                             ");
-  mvwprintz(w, 24, 0, c_ltgray, "\
-                                                                             ");
+  mvwprintz(w, 22, 0, c_ltgray, CLEAR_WHOLE_LINE);
+  mvwprintz(w, 23, 0, c_ltgray, CLEAR_WHOLE_LINE);
+  mvwprintz(w, 24, 0, c_ltgray, CLEAR_WHOLE_LINE);
   if (points >= u->sklevel[cur_sk] + 1)
    mvwprintz(w,  3, 30, COL_SKILL_USED, "Upgrading %s costs %d points         ",
-             skill_name(cur_sk).c_str(), u->sklevel[cur_sk] + 1);
+             skill_name(skill(cur_sk)), u->sklevel[cur_sk] + 1);
   else
    mvwprintz(w,  3, 30, c_ltred, "Upgrading %s costs %d points         ",
-             skill_name(cur_sk).c_str(), u->sklevel[cur_sk] + 1);
-  mvwprintz(w, 22, 0, COL_SKILL_USED, skill_description(cur_sk).c_str());
+             skill_name(skill(cur_sk)), u->sklevel[cur_sk] + 1);
+  mvwprintz(w, 22, 0, COL_SKILL_USED, skill_description(skill(cur_sk)));
 
   if (cur_sk <= 7) {
    for (int i = 1; i < 17; i++) {
-    mvwprintz(w, 4 + i, 0, c_ltgray, "\
-                                             ");	// Clear the line
+    mvwprintz(w, 4 + i, 0, c_ltgray, CLEAR_LINE);
     if (u->sklevel[i] == 0) {
      mvwprintz(w, 4 + i, 0, (i == cur_sk ? h_ltgray : c_ltgray),
-               skill_name(i).c_str());
+               skill_name(skill(i)));
     } else {
      mvwprintz(w, 4 + i, 0,
                (i == cur_sk ? hilite(COL_SKILL_USED) : COL_SKILL_USED),
-               "%s ", skill_name(i).c_str());
+               "%s ", skill_name(skill(i)));
      for (int j = 0; j < u->sklevel[i]; j++)
       wprintz(w, (i == cur_sk ? hilite(COL_SKILL_USED) : COL_SKILL_USED), "*");
     }
    }
   } else if (cur_sk >= num_skill_types - 9) {
    for (int i = num_skill_types - 16; i < num_skill_types; i++) {
-    mvwprintz(w, 21 + i - num_skill_types, 0, c_ltgray, "\
-                                             ");	// Clear the line
+    mvwprintz(w, 21 + i - num_skill_types, 0, c_ltgray, CLEAR_LINE);
     if (u->sklevel[i] == 0) {
      mvwprintz(w, 21 + i - num_skill_types, 0,
-               (i == cur_sk ? h_ltgray : c_ltgray), skill_name(i).c_str());
+               (i == cur_sk ? h_ltgray : c_ltgray), skill_name(skill(i)));
     } else {
      mvwprintz(w, 21 + i - num_skill_types, 0,
                (i == cur_sk ? hilite(COL_SKILL_USED) : COL_SKILL_USED), "%s ",
-               skill_name(i).c_str());
+               skill_name(skill(i)));
      for (int j = 0; j < u->sklevel[i]; j++)
       wprintz(w, (i == cur_sk ? hilite(COL_SKILL_USED) : COL_SKILL_USED), "*");
     }
    }
   } else {
    for (int i = cur_sk - 7; i < cur_sk + 9; i++) {
-    mvwprintz(w, 12 + i - cur_sk, 0, c_ltgray, "\
-                                             ");	// Clear the line
+    mvwprintz(w, 12 + i - cur_sk, 0, c_ltgray, CLEAR_LINE);
     if (u->sklevel[i] == 0) {
      mvwprintz(w, 12 + i - cur_sk, 0, (i == cur_sk ? h_ltgray : c_ltgray),
-               skill_name(i).c_str());
+               skill_name(skill(i)));
     } else {
      mvwprintz(w, 12 + i - cur_sk, 0,
                (i == cur_sk ? hilite(COL_SKILL_USED) : COL_SKILL_USED),
-               "%s ", skill_name(i).c_str());
+               "%s ", skill_name(skill(i)));
      for (int j = 0; j < u->sklevel[i]; j++)
       wprintz(w, (i == cur_sk ? hilite(COL_SKILL_USED) : COL_SKILL_USED), "*");
     }
@@ -717,12 +713,10 @@ int set_skills(WINDOW* w, player *u, int &points)
   wrefresh(w);
   switch (input()) {
    case 'j':
-    if (cur_sk < num_skill_types - 1)
-     cur_sk++;
+    if (cur_sk < num_skill_types - 1) cur_sk++;
     break;
    case 'k':
-    if (cur_sk > 1)
-     cur_sk--;
+    if (cur_sk > 1) cur_sk--;
     break;
    case 'h':
     if (u->sklevel[cur_sk] > 0) {
@@ -736,10 +730,8 @@ int set_skills(WINDOW* w, player *u, int &points)
      u->sklevel[cur_sk] += 2;
     }
     break;
-   case '<':
-    return -1;
-   case '>':
-    return 1;
+   case '<': return -1;
+   case '>': return 1;
   }
  } while (true);
 }

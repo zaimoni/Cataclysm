@@ -683,7 +683,7 @@ std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *p)
    std::stringstream resume;
    resume << "Yes, let's resume training " <<
              (g->u.backlog.index > 0 ?
-              skill_name(g->u.backlog.index) :
+              skill_name(skill(g->u.backlog.index)) :
               item::types[ 0 - g->u.backlog.index ]->name);
    SELECT_TEMP( resume.str(), g->u.backlog.index);
     SUCCESS(TALK_TRAIN_START);

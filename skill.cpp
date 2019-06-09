@@ -1,75 +1,94 @@
 #include "skill.h"
 
-std::string skill_name(int sk)
+static const char* const JSON_transcode[] = {
+	"dodge",
+	"melee",
+	"unarmed",
+	"bashing",
+	"cutting",
+	"stabbing",
+	"throw",
+	"gun",
+	"pistol",
+	"shotgun",
+	"smg",
+	"rifle",
+	"archery",
+	"launcher",
+	"mechanics",
+	"electronics",
+	"cooking",
+	"tailor",
+	"carpentry",
+	"firstaid",
+	"speech",
+	"barter",
+	"computer",
+	"survival",
+	"traps",
+	"swimming",
+	"driving"
+};
+
+const char* JSON_key(skill src)
 {
- switch (sk) {
- case sk_null:
-  return "nothing";
- case sk_dodge:
-  return "dodge";
- case sk_melee:
-  return "melee";
- case sk_unarmed:
-  return "unarmed combat";
- case sk_bashing:
-  return "bashing weapons";
- case sk_cutting:
-  return "cutting weapons";
- case sk_stabbing:
-  return "piercing weapons";
- case sk_throw:
-  return "throwing";
- case sk_gun:
-  return "firearms";
- case sk_pistol:
-  return "handguns";
- case sk_shotgun:
-  return "shotguns";
- case sk_smg:
-  return "submachine guns";
- case sk_rifle:
-  return "rifles";
- case sk_archery:
-  return "archery";
- case sk_launcher:
-  return "grenade launcher";
- case sk_computer:
-  return "computers";
- case sk_mechanics:
-  return "mechanics";
- case sk_electronics:
-  return "electronics";
- case sk_cooking:
-  return "cooking";
- case sk_carpentry:
-  return "carpentry";
- case sk_survival:
-  return "survival";
- case sk_traps:
-  return "traps";
- case sk_tailor:
-  return "tailoring";
- case sk_firstaid:
-  return "first aid";
- case sk_speech:
-  return "speech";
- case sk_barter:
-  return "barter";
- case sk_swimming:
-  return "swimming";
- case sk_driving:
-  return "driving";
- case num_skill_types:
-  return "out of bounds";
- }
- return "the skill with no name";
+	if (src) return JSON_transcode[src - 1];
+	return 0;
 }
 
-std::string skill_description(int sk)
+using namespace cataclysm;
+
+skill JSON_parse<skill>::operator()(const char* const src)
 {
+	if (!src || !src[0]) return sk_null;
+	ptrdiff_t i = sizeof(JSON_transcode) / sizeof(*JSON_transcode);
+	while (0 < i--) {
+		if (!strcmp(JSON_transcode[i], src)) return (skill)(i + 1);
+	}
+	return sk_null;
+}
+
+const char* skill_name(skill sk)
+{
+ if (num_skill_types <= sk) return "out of bounds";
  switch (sk) {
- case sk_null:
-  return "No skill at all.";
+ case sk_null: return "nothing";
+ case sk_dodge: return "dodge";
+ case sk_melee: return "melee";
+ case sk_unarmed: return "unarmed combat";
+ case sk_bashing: return "bashing weapons";
+ case sk_cutting: return "cutting weapons";
+ case sk_stabbing: return "piercing weapons";
+ case sk_throw: return "throwing";
+ case sk_gun: return "firearms";
+ case sk_pistol: return "handguns";
+ case sk_shotgun: return "shotguns";
+ case sk_smg: return "submachine guns";
+ case sk_rifle: return "rifles";
+ case sk_archery: return "archery";
+ case sk_launcher: return "grenade launcher";
+ case sk_computer: return "computers";
+ case sk_mechanics: return "mechanics";
+ case sk_electronics: return "electronics";
+ case sk_cooking: return "cooking";
+ case sk_carpentry: return "carpentry";
+ case sk_survival: return "survival";
+ case sk_traps: return "traps";
+ case sk_tailor: return "tailoring";
+ case sk_firstaid: return "first aid";
+ case sk_speech: return "speech";
+ case sk_barter: return "barter";
+ case sk_swimming: return "swimming";
+ case sk_driving: return "driving";
+ default: return "the skill with no name";
+ }
+}
+
+const char* skill_description(skill sk)
+{
+ if (num_skill_types <= sk) return "out of bounds";
+ switch (sk) {
+ case sk_null: return "No skill at all.";
  case sk_dodge:
   return "\
 Your skill at dodging, whether it be from an attack, a trap, or a natural\n\
@@ -193,13 +212,12 @@ wearing clothes or carrying weights, and in-water combat.";
   return "\
 Your skill at driving. This affects how well you can control a vehicle,\n\
 as well as the penalty of shooting while driving.";
- case num_skill_types:
-  return "out of bounds";
- default:
-  return "What is this skill I don't even know!  BUG!";
+ default: return "What is this skill I don't even know!  BUG!";
  }
 }
 
+#if 0
+//.Cf. Dungeon Crawl Stone Soup.
 std::string skill_long_name(skill sk, int level)
 {
  switch (sk) {
@@ -240,7 +258,7 @@ std::string skill_long_name(skill sk, int level)
  }
  return "huh";
 }
-
+#endif
 
 double price_adjustment(int barter_skill)
 {

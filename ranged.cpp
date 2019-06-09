@@ -576,8 +576,7 @@ int time_to_fire(player &p, const it_gun* const firing)
  case sk_launcher: return (8 < p.sklevel[sk_launcher]) ? 30 : (200 - 20 * p.sklevel[sk_launcher]);
 
  default:
-  debugmsg("Why is shooting %s using %s skill?", (firing->name).c_str(),
-		skill_name(firing->skill_used).c_str());
+  debugmsg("Why is shooting %s using %s skill?", (firing->name).c_str(), skill_name(skill(firing->skill_used)));
   return 0;
  }
 
