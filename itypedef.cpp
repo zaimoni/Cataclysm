@@ -2,6 +2,7 @@
 #include "output.h"
 #include "setvector.h"
 
+#include <string.h>
 #include <fstream>	// for artifacts
 #include <sstream>
 
