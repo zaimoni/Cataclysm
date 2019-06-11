@@ -190,18 +190,7 @@ itm_style_karate, itm_style_aikido, itm_style_judo, itm_style_tai_chi,
 num_all_items
 };
 
-const char* JSON_key(itype_id src);
-
-namespace cataclysm {
-
-	template<>
-	struct JSON_parse<itype_id>
-	{
-		itype_id operator()(const char* src);
-		itype_id operator()(const std::string& src) { return operator()(src.c_str()); };
-	};
-
-}
+DECLARE_JSON_ENUM_SUPPORT(itype_id)
 
 // IMPORTANT: If adding a new AT_*** ammotype, add it to the ammo_name function
 //  at the end of itypedef.cpp

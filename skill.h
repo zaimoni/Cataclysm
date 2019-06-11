@@ -22,18 +22,7 @@ enum skill {
  num_skill_types	// MUST be last!
 };
 
-const char* JSON_key(skill src);
-
-namespace cataclysm {
-
-	template<>
-	struct JSON_parse<skill>
-	{
-		skill operator()(const char* src);
-		skill operator()(const std::string& src) { return operator()(src.c_str()); };
-	};
-
-}
+DECLARE_JSON_ENUM_SUPPORT(skill)
 
 const char* skill_name(skill);
 const char* skill_description(skill);

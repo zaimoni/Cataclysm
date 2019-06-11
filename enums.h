@@ -94,4 +94,20 @@ struct JSON_parse
 
 }
 
+// declaration requires std::string; definition typically also requires string.h on MingWin but not MSVC
+#define DECLARE_JSON_ENUM_SUPPORT(TYPE)	\
+const char* JSON_key(TYPE src);	\
+	\
+namespace cataclysm {	\
+	\
+	template<>	\
+	struct JSON_parse<TYPE>	\
+	{	\
+		TYPE operator()(const char* src);	\
+		TYPE operator()(const std::string& src) { return operator()(src.c_str()); };	\
+	};	\
+	\
+}
+
+
 #endif

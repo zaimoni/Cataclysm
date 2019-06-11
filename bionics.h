@@ -38,19 +38,7 @@ bio_dis_shock, bio_dis_acid, bio_drain, bio_noise, bio_power_weakness,
 max_bio
 };
 
-const char* JSON_key(bionic_id src);
-
-namespace cataclysm {
-
-	template<>
-	struct JSON_parse<bionic_id>
-	{
-		bionic_id operator()(const char* src);
-		bionic_id operator()(const std::string& src) { return operator()(src.c_str()); };
-	};
-
-}
-
+DECLARE_JSON_ENUM_SUPPORT(bionic_id)
 
 struct bionic_data {
  std::string name;

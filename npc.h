@@ -122,18 +122,7 @@ enum npc_favor_type {
  NUM_FAVOR_TYPES
 };
 
-const char* JSON_key(npc_favor_type src);
-
-namespace cataclysm {
-
-	template<>
-	struct JSON_parse<npc_favor_type>
-	{
-		npc_favor_type operator()(const char* src);
-		npc_favor_type operator()(const std::string& src) { return operator()(src.c_str()); };
-	};
-
-}
+DECLARE_JSON_ENUM_SUPPORT(npc_favor_type)
 
 struct npc_favor	// appears to be prototype/mockup
 {
