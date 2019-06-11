@@ -84,6 +84,9 @@ bool fromJSON(const JSON& src, TYPE& dest)	\
 JSON_ENUM(bionic_id)
 JSON_ENUM(computer_action)
 JSON_ENUM(computer_failure)
+JSON_ENUM(itype_id)
+JSON_ENUM(npc_favor_type)
+JSON_ENUM(skill)
 
 // stereotypical translation of pointers to/from vector indexes
 // \todo in general if a loaded pointer index is "invalid" we should warn here; non-null requirements are enforced higher up
@@ -225,7 +228,7 @@ std::istream& operator>>(std::istream& is, computer& dest)
 {
 	dest.options.clear();
 	dest.failures.clear();
-	if ('{' == is.peek()) {
+	if ('{' == (is >> std::ws).peek()) {
 		const JSON _in(is);
 		if (!_in.has_key("name") || !fromJSON(_in["name"], dest.name)) throw std::runtime_error("computer should be named");
 		// \todo error out if name not set
@@ -269,7 +272,7 @@ std::ostream& operator<<(std::ostream& os, const computer& src)
 bionic::bionic(std::istream& is)
 : id(bio_batteries), invlet('a'), powered(false), charge(0)
 {
-	if ('{' == is.peek()) {
+	if ('{' == (is >> std::ws).peek()) {
 		const JSON _in(is);
 		if (!_in.has_key("id") || !fromJSON(_in["id"], id)) throw std::runtime_error("unrecognized bionic");
 		if (_in.has_key("invlet")) fromJSON(_in["invlet"], invlet);
@@ -301,12 +304,42 @@ npc_favor::npc_favor(std::istream& is)
 
 std::istream& operator>>(std::istream& is, npc_favor& dest)
 {
+	if ('{' == (is >> std::ws).peek()) {
+		const JSON _in(is);
+//		if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) throw std::runtime_error("unrecognized favor");
+//		if (!_in.has_key("favor")) throw std::runtime_error("favor reward AWOL");
+		if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) return is;
+		if (!_in.has_key("favor")) return is;
+		auto& x = _in["favor"];
+		switch (dest.type)
+		{
+		case FAVOR_CASH: if (!fromJSON(x,dest.value)) throw std::runtime_error("unparsed favor reward");
+			break;
+		case FAVOR_ITEM: if (!fromJSON(x, dest.item_id)) throw std::runtime_error("unparsed favor reward");
+			break;
+		case FAVOR_TRAINING: if (!fromJSON(x, dest.skill_id)) throw std::runtime_error("unparsed favor reward");
+			break;
+		default: throw std::runtime_error("unhandled favor type");
+		}
+		return is;
+	}
+
 	return is >> dest.type >> dest.value >> dest.item_id >> dest.skill_id;
 }
 
 std::ostream& operator<<(std::ostream& os, const npc_favor& src)
 {
-	return os << src.type I_SEP << src.value  I_SEP << src.item_id I_SEP << src.skill_id;
+	if (!src.type) return os << "{}"; // temporary
+	JSON _favor;
+	_favor.set("type", toJSON(src.type));
+	switch (src.type)
+	{
+	case FAVOR_CASH: _favor.set("favor", std::to_string(src.value)); break;
+	case FAVOR_ITEM: _favor.set("favor", JSON_key(src.item_id)); break;
+	case FAVOR_TRAINING: _favor.set("favor", JSON_key(src.skill_id)); break;
+//	default: throw std::runtime_error("unhandled favor type");
+	}
+	return os << _favor;
 }
 
 mission::mission(std::istream& is)
@@ -600,7 +633,7 @@ faction::faction(std::istream& is)
 		is >> tmpop;
 		opinion_of.push_back(tmpop);
 	}
-	std::getline(is, name);
+	std::getline(is >> std::ws, name);
 }
 
 std::ostream& operator<<(std::ostream& os, const faction& src)

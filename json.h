@@ -97,7 +97,7 @@ public:
 	static bool is_legal_JS_literal(const char* src);
 	void set(const std::string& src, const JSON& val);
 	void set(const std::string& src, JSON&& val);
-	void set(const std::string& src, const char* const val) { set(src, JSON(val, is_legal_JS_literal(val))); }
+	void set(const std::string& src, const char* const val) { if (val) set(src, JSON(val, is_legal_JS_literal(val))); }
 
 	bool syntax_ok() const;
 

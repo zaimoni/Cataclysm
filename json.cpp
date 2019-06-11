@@ -525,7 +525,7 @@ void JSON::finish_reading_array(std::istream& src, unsigned long& line)
 	}
 	if (next_is(src, ']')) {
 		_mode = array;
-		_object = 0;
+		_array = 0;
 		return;
 	}
 

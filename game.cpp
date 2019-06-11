@@ -1653,8 +1653,7 @@ bool game::load_master()
  fin >> next_mission_id >> next_faction_id >> next_npc_id;
  int num_missions, num_npc, num_factions, num_items;
 
- fin >> num_missions;
- if (fin.peek() == '\n') fin.get(junk); // Chomp that pesky endline
+ fin >> num_missions >> std::ws;
  for (int i = 0; i < num_missions; i++) {
    active_missions.push_back(mission(fin));
    if (!active_missions.back().type) active_missions.pop_back();	// if we didn't load with a valid mission type, ditch it
@@ -1782,10 +1781,9 @@ void game::load(std::string name)
 
 void game::save()
 {
- std::stringstream playerfile, masterfile;
+ std::stringstream playerfile;
  std::ofstream fout;
  playerfile << "save/" << u.name << ".sav";
- masterfile << "save/master.gsav";
  fout.open(playerfile.str().c_str());
 // First, write out basic game state information.
  fout << int(messages.turn) << " " << int(last_target) << " " << int(run_mode) << " " <<
@@ -1809,7 +1807,7 @@ void game::save()
  fout.close();
 
 // Now write things that aren't player-specific: factions and NPCs
- fout.open(masterfile.str().c_str());
+ fout.open("save/master.tmp");
 
  fout << next_mission_id << " " << next_faction_id << " " << next_npc_id <<
          " " << active_missions.size() << " ";
@@ -1826,6 +1824,9 @@ void game::save()
  }
 
  fout.close();
+ unlink("save/master.bak");
+ rename("save/master.gsav", "save/master.bak");
+ rename("save/master.tmp", "save/master.gsav");
 
 // Finally, save artifacts.
  if (item::types.size() > num_all_items) {

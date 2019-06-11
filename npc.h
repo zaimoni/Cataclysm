@@ -135,7 +135,6 @@ namespace cataclysm {
 
 }
 
-
 struct npc_favor	// appears to be prototype/mockup
 {
  npc_favor_type type;
