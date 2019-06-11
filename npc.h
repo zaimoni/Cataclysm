@@ -115,12 +115,26 @@ enum npc_flag {
 
 enum npc_favor_type {
  FAVOR_NULL,
- FAVOR_GENERAL,	// We owe you... a favor?
+ FAVOR_GENERAL,	// We owe you... a favor?	// \todo savefile break: eliminate after legacy reading removed
  FAVOR_CASH,	// We owe cash (or goods of equivalent value)
  FAVOR_ITEM,	// We owe a specific item
  FAVOR_TRAINING,// We owe skill or style training
  NUM_FAVOR_TYPES
 };
+
+const char* JSON_key(npc_favor_type src);
+
+namespace cataclysm {
+
+	template<>
+	struct JSON_parse<npc_favor_type>
+	{
+		npc_favor_type operator()(const char* src);
+		npc_favor_type operator()(const std::string& src) { return operator()(src.c_str()); };
+	};
+
+}
+
 
 struct npc_favor	// appears to be prototype/mockup
 {
