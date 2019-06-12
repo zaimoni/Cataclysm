@@ -2257,21 +2257,20 @@ faction* game::list_factions(std::string title)
 
 void game::list_missions()
 {
+ static const char* const labels[] = { "ACTIVE MISSIONS", "COMPLETED MISSIONS", "FAILED MISSIONS", NULL };
+ const int tab_wrap = sizeof(labels) / sizeof(*labels) - 1;
+
+#define VBAR_X (30)
+
  WINDOW *w_missions = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  int tab = 0, selection = 0;
  char ch;
  do {
   werase(w_missions);
-  draw_tabs(w_missions, tab, "ACTIVE MISSIONS", "COMPLETED MISSIONS",
-            "FAILED MISSIONS", NULL);
-  std::vector<int> umissions;
-  switch (tab) {
-   case 0: umissions = u.active_missions;	break;
-   case 1: umissions = u.completed_missions;	break;
-   case 2: umissions = u.failed_missions;	break;
-  }
+  draw_tabs(w_missions, tab, labels);
+  const std::vector<int>& umissions = (0 == tab) ? u.active_missions : ((1 == tab) ? u.completed_missions : u.failed_missions);
   for (int y = 3; y < VIEW; y++)
-   mvwputch(w_missions, y, 30, c_white, LINE_XOXO);
+   mvwputch(w_missions, y, VBAR_X, c_white, LINE_XOXO);
   for (int i = 0; i < umissions.size(); i++) {
    const mission* const miss = find_mission(umissions[i]);
    const nc_color col = (i == u.active_mission && tab == 0) ? c_ltred : c_white;
@@ -2280,44 +2279,33 @@ void game::list_missions()
 
   if (selection >= 0 && selection < umissions.size()) {
    const mission* const miss = find_mission(umissions[selection]);
-   mvwprintz(w_missions, 4, 31, c_white,
+   mvwprintz(w_missions, 4, VBAR_X+1, c_white,
              miss->description.c_str());
    if (miss->deadline != 0)
-    mvwprintz(w_missions, 5, 31, c_white, "Deadline: %d (%d)",
+    mvwprintz(w_missions, 5, VBAR_X + 1, c_white, "Deadline: %d (%d)",
               miss->deadline, int(messages.turn));
-   mvwprintz(w_missions, 6, 31, c_white, "Target: (%d, %d)   You: (%d, %d)",
+   mvwprintz(w_missions, 6, VBAR_X + 1, c_white, "Target: (%d, %d)   You: (%d, %d)",
              miss->target.x, miss->target.y,
              (lev.x + int (MAPSIZE / 2)) / 2, (lev.y + int (MAPSIZE / 2)) / 2);
   } else {
-   std::string nope;
-   switch (tab) {
-    case 0: nope = "You have no active missions!"; break;
-    case 1: nope = "You haven't completed any missions!"; break;
-    case 2: nope = "You haven't failed any missions!"; break;
-   }
-   mvwprintz(w_missions, 4, 31, c_ltred, nope.c_str());
+   const char* const nope = (0 == tab) ? "You have no active missions!" : ((1 == tab) ? "You haven't completed any missions!" : "You haven't failed any missions!");
+   mvwprintz(w_missions, 4, VBAR_X + 1, c_ltred, nope);
   }
 
   wrefresh(w_missions);
   ch = input();
   switch (ch) {
   case '>':
-   tab++;
-   if (tab == 3) tab = 0;
+   if (tab_wrap <= ++tab) tab = 0;
    break;
   case '<':
-   tab--;
-   if (tab < 0) tab = 2;
+   if (0 > --tab) tab = tab_wrap-1;
    break;
   case 'j':
-   selection++;
-   if (selection >= umissions.size())
-    selection = 0;
+   if (umissions.size() <= ++selection) selection = 0;
    break;
   case 'k':
-   selection--;
-   if (selection < 0)
-    selection = umissions.size() - 1;
+   if (0 > --selection) selection = umissions.size() - 1;
    break;
   case '\n':
    u.active_mission = selection;
@@ -2326,6 +2314,7 @@ void game::list_missions()
 
  } while (ch != 'q' && ch != 'Q' && ch != KEY_ESCAPE);
 
+#undef VBAR_X
 
  werase(w_missions);
  delwin(w_missions);
