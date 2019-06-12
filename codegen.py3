@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # designed for Python 3.7.0, may work with other versions
-# (C)2018 Kenneth Boyd, license: MIT.txt
+# (C)2018-2019 Kenneth Boyd, license: MIT.txt
 
 from os import replace
 
@@ -69,8 +69,9 @@ def JSON_transcode_definition_pair(src):
 # relevant_lines = bracketed_lines('computer.h','enum computer_failure','}')
 # relevant_lines = bracketed_lines('itype.h','enum itype_id {','}')
 # relevant_lines = bracketed_lines('mapdata.h','enum ter_id {','}')
+relevant_lines = bracketed_lines('mission.h','enum mission_id {','}')
 # relevant_lines = bracketed_lines('mtype.h','enum mon_id {','}')
-relevant_lines = bracketed_lines('npc.h','enum npc_favor_type {','}')
+# relevant_lines = bracketed_lines('npc.h','enum npc_favor_type {','}')
 # relevant_lines = bracketed_lines('skill.h','enum skill {','}')
 enum_like = extract_C_enum(relevant_lines)
 print(JSON_transcode_definition(enum_like))

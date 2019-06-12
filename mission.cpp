@@ -4,6 +4,33 @@
 
 #include <fstream>
 
+static const char* JSON_transcode[] = {
+	"GET_ANTIBIOTICS",
+	"GET_SOFTWARE",
+	"GET_ZOMBIE_BLOOD_ANAL",
+	"RESCUE_DOG",
+	"KILL_ZOMBIE_MOM",
+	"REACH_SAFETY"
+};
+
+const char* JSON_key(mission_id src)
+{
+	if (src) return JSON_transcode[src - 1];
+	return 0;
+}
+
+using namespace cataclysm;
+
+mission_id JSON_parse<mission_id>::operator()(const char* const src)
+{
+	if (!src || !src[0]) return MISSION_NULL;
+	ptrdiff_t i = sizeof(JSON_transcode) / sizeof(*JSON_transcode);
+	while (0 < i--) {
+		if (!strcmp(JSON_transcode[i], src)) return (mission_id)(i + 1);
+	}
+	return MISSION_NULL;
+}
+
 mission mission_type::create(game *g, int npc_id)
 {
  mission ret;
@@ -20,11 +47,6 @@ mission mission_type::create(game *g, int npc_id)
   ret.deadline = 0;
 
  return ret;
-}
-
-std::string mission::name() const
-{
- return type ? type->name : "NULL";
 }
 
 std::string mission_dialogue (mission_id id, talk_topic state)
@@ -183,21 +205,7 @@ of those things now.  Can you put her out of her misery for me?";
     return "Really... that's too bad.";
   }
   break;
- default:
-  switch (state) {
-   case TALK_MISSION_DESCRIBE:
-   case TALK_MISSION_OFFER:
-   case TALK_MISSION_ACCEPTED:
-   case TALK_MISSION_REJECTED:
-   case TALK_MISSION_ADVICE:
-   case TALK_MISSION_INQUIRE:
-   case TALK_MISSION_SUCCESS:
-   case TALK_MISSION_SUCCESS_LIE:
-   case TALK_MISSION_FAILURE:
-    return "Someone forgot to code this message!";
-  }
-  break;
+ default: return "Someone forgot to code this mission's messages!";
  }
- return "Someone forgot to code this message!";
 }
 

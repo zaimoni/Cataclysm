@@ -15,6 +15,8 @@ enum mission_id {
  NUM_MISSION_IDS
 };
 
+DECLARE_JSON_ENUM_SUPPORT(mission_id)
+
 std::string mission_dialogue(mission_id id, talk_topic state);
 
 enum mission_origin {
@@ -42,7 +44,7 @@ struct mission_type {
  static std::vector <mission_type> types; // The list of mission templates
 
  int id;		// Matches it to a mission_id above
- std::string name;	// The name the mission is given in menus
+ const char* name;	// The name the mission is given in menus
  mission_goal goal;	// The basic goal type
  int difficulty;	// Difficulty; TODO: come up with a scale
  int value;		// Value; determines rewards and such
@@ -59,20 +61,15 @@ struct mission_type {
  void (*end  )(game *g, mission *);
  void (*fail )(game *g, mission *);
 
- mission_type(int ID, std::string NAME, mission_goal GOAL, int DIF, int VAL,
+ mission_type(int ID, const char* NAME, mission_goal GOAL, int DIF, int VAL,
               bool URGENT,
               bool (*PLACE)(game *, int x, int y),
               void (*START)(game *, mission *),
               void (*END  )(game *, mission *),
               void (*FAIL )(game *, mission *)) :
   id (ID), name (NAME), goal (GOAL), difficulty (DIF), value (VAL),
-  urgent(URGENT), place (PLACE), start (START), end (END), fail (FAIL)
-  {
-   deadline_low = 0;
-   deadline_high = 0;
-   item_id = itm_null;
-   follow_up = MISSION_NULL;
-  };
+  urgent(URGENT), place (PLACE), start (START), end (END), fail (FAIL),
+  deadline_low(0), deadline_high(0), item_id(itm_null), follow_up(MISSION_NULL) {};
 
  mission create(game *g, int npc_id = -1); // Create a mission
 
@@ -95,24 +92,12 @@ struct mission {
  int step;		// How much have we completed?
  mission_id follow_up;	// What mission do we get after this succeeds?
  
- std::string name() const;
+ const char* name() const { return type ? type->name : "NULL"; }
 
  mission()
- {
-  type = NULL;
-  description = "";
-  failed = false;
-  value = 0;
-  uid = -1;
-  target = point(-1, -1);
-  item_id = itm_null;
-  count = 0;
-  deadline = 0;
-  npc_id = -1;
-  good_fac_id = -1;
-  bad_fac_id = -1;
-  step = 0;
- }
+ : type(0),description(""),failed(false),value(0),uid(-1),target(-1,-1),
+   item_id(itm_null),count(0),deadline(0),npc_id(-1),good_fac_id(-1),
+   bad_fac_id(-1),step(0),follow_up(MISSION_NULL) {}
 
  mission(std::istream& src);
  friend std::ostream& operator<<(std::ostream& os, const mission& src);

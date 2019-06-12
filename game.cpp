@@ -2273,13 +2273,13 @@ void game::list_missions()
   for (int y = 3; y < VIEW; y++)
    mvwputch(w_missions, y, 30, c_white, LINE_XOXO);
   for (int i = 0; i < umissions.size(); i++) {
-   mission * const miss = find_mission(umissions[i]);
+   const mission* const miss = find_mission(umissions[i]);
    const nc_color col = (i == u.active_mission && tab == 0) ? c_ltred : c_white;
-   mvwprintz(w_missions, 3 + i, 0, ((selection == i) ? hilite(col) : col), miss->name().c_str());
+   mvwprintz(w_missions, 3 + i, 0, ((selection == i) ? hilite(col) : col), miss->name());
   }
 
   if (selection >= 0 && selection < umissions.size()) {
-   mission *miss = find_mission(umissions[selection]);
+   const mission* const miss = find_mission(umissions[selection]);
    mvwprintz(w_missions, 4, 31, c_white,
              miss->description.c_str());
    if (miss->deadline != 0)
