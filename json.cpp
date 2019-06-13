@@ -74,6 +74,20 @@ size_t JSON::size() const
 	}
 }
 
+void JSON::push(const JSON& src)
+{
+	if (array != _mode) reset();
+	if (!_array) _array = new std::vector<JSON>();
+	_array->push_back(src);
+}
+
+void JSON::push(JSON&& src)
+{
+	if (array != _mode) reset();
+	if (!_array) _array = new std::vector<JSON>();
+	_array->push_back(src);
+}
+
 JSON JSON::grep(bool (ok)(const JSON&)) const
 {
 	JSON ret;

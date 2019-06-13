@@ -85,6 +85,7 @@ JSON_ENUM(bionic_id)
 JSON_ENUM(computer_action)
 JSON_ENUM(computer_failure)
 JSON_ENUM(itype_id)
+JSON_ENUM(mission_id)
 JSON_ENUM(npc_favor_type)
 JSON_ENUM(skill)
 
@@ -102,6 +103,21 @@ std::istream& operator>>(std::istream& is, const mission_type*& dest)
 std::ostream& operator<<(std::ostream& os, const mission_type* const src)
 {
 	return os << (src ? src->id : -1);
+}
+
+JSON toJSON(const mission_type* const src) {
+	auto x = JSON_key((mission_id)src->id);
+	if (x) return JSON(x);
+	throw std::runtime_error(std::string("encoding failure: mission_id value ") + std::to_string(src->id));
+}
+
+bool fromJSON(const JSON& src, const mission_type*& dest)
+{
+	if (!src.is_scalar()) return false;
+	cataclysm::JSON_parse<mission_id> parse;
+	auto type_id = parse(src.scalar());
+	dest = type_id ? &mission_type::types[type_id] : 0;
+	return true;
 }
 
 std::istream& operator>>(std::istream& is, const mtype*& dest)
@@ -157,6 +173,23 @@ std::istream& operator>>(std::istream& is, point& dest)
 std::ostream& operator<<(std::ostream& os, const point& src)
 {
 	return os << '[' << std::to_string(src.x) << ',' << std::to_string(src.y) << ']';
+}
+
+bool fromJSON(const cataclysm::JSON& src, point& dest)
+{
+	if (2 != src.size() || JSON::array != src.mode()) return false;
+	point staging;
+	bool ret = fromJSON(src[0], staging.x) && fromJSON(src[1], staging.y);
+	if (ret) dest = staging;
+	return ret;
+}
+
+JSON toJSON(const point& src)
+{
+	JSON ret;
+	ret.push(std::to_string(src.x));
+	ret.push(std::to_string(src.y));
+	return ret;
 }
 
 std::istream& operator>>(std::istream& is, tripoint& dest)
@@ -308,6 +341,7 @@ std::istream& operator>>(std::istream& is, npc_favor& dest)
 		const JSON _in(is);
 //		if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) throw std::runtime_error("unrecognized favor");
 //		if (!_in.has_key("favor")) throw std::runtime_error("favor reward AWOL");
+		if (JSON::object != _in.mode()) return is;
 		if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) return is;
 		if (!_in.has_key("favor")) return is;
 		auto& x = _in["favor"];
@@ -342,8 +376,66 @@ std::ostream& operator<<(std::ostream& os, const npc_favor& src)
 	return os << _favor;
 }
 
-mission::mission(std::istream& is)
+JSON toJSON(const npc_favor& src) {
+	JSON _favor;
+	_favor.set("type", toJSON(src.type));
+	switch (src.type)
+	{
+	case FAVOR_CASH: _favor.set("favor", std::to_string(src.value)); break;
+	case FAVOR_ITEM: _favor.set("favor", JSON_key(src.item_id)); break;
+	case FAVOR_TRAINING: _favor.set("favor", JSON_key(src.skill_id)); break;
+	default: throw std::runtime_error("unhandled favor type");
+	}
+	return _favor;
+}
+
+bool fromJSON(const JSON& src, npc_favor& dest)
 {
+	if (JSON::object != src.mode()) return false;
+	npc_favor working;
+	if (!src.has_key("type") || !fromJSON(src["type"], working.type)) return false;
+	if (!src.has_key("favor")) return false;
+	auto& x = src["favor"];
+	switch (working.type)
+	{
+	case FAVOR_CASH: if (!fromJSON(x, working.value)) return false;
+		break;
+	case FAVOR_ITEM: if (!fromJSON(x, working.item_id)) return false;
+		break;
+	case FAVOR_TRAINING: if (!fromJSON(x, working.skill_id)) return false;
+		break;
+	default: return false;
+	}
+	dest = working;
+	return true;
+}
+
+mission::mission(std::istream& is)
+ : type(0),description(""),failed(false),value(0),uid(-1),target(-1,-1),
+   item_id(itm_null),count(0),deadline(0),npc_id(-1),good_fac_id(-1),
+   bad_fac_id(-1),step(0),follow_up(MISSION_NULL)
+{
+	if ('{' == (is >> std::ws).peek()) {
+		const JSON _in(is);
+		//		if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) throw std::runtime_error("unrecognized mission");
+		//		if (!_in.has_key("favor")) throw std::runtime_error("favor reward AWOL");
+		if (!_in.has_key("type") || !fromJSON(_in["type"], type)) return;
+		if (!_in.has_key("uid") || !fromJSON(_in["uid"], uid) || 0>=uid) return;
+		if (_in.has_key("description")) fromJSON(_in["description"],description);
+		if (_in.has_key("failed")) fromJSON(_in["failed"], failed);
+		if (_in.has_key("reward")) fromJSON(_in["reward"], reward);
+		if (_in.has_key("target")) fromJSON(_in["target"], target);
+		if (_in.has_key("item")) fromJSON(_in["item"], item_id);
+		if (_in.has_key("count")) fromJSON(_in["count"], count);
+		if (_in.has_key("deadline")) fromJSON(_in["deadline"], count);
+		if (_in.has_key("npc")) fromJSON(_in["npc"], npc_id);
+		if (_in.has_key("by_faction")) fromJSON(_in["by_faction"], good_fac_id);
+		if (_in.has_key("vs_faction")) fromJSON(_in["vs_faction"], bad_fac_id);
+		if (_in.has_key("step")) fromJSON(_in["step"], step);
+		if (_in.has_key("next")) fromJSON(_in["next"], follow_up);
+		return;
+	}
+	// \todo release block: remove legacy reading
 	is >> type;
 	std::string tmpdesc;
 	do {
@@ -358,11 +450,33 @@ mission::mission(std::istream& is)
 
 std::ostream& operator<<(std::ostream& os, const mission& src)
 {
-	os << src.type;
-	return os << src.description << " <> " << (src.failed ? 1 : 0) I_SEP << src.value  I_SEP 
-		<< src.reward I_SEP << src.uid I_SEP << src.target I_SEP << src.item_id I_SEP 
-		<< src.count  I_SEP << src.deadline I_SEP << src.npc_id I_SEP << src.good_fac_id I_SEP
-		<< src.bad_fac_id  I_SEP << src.step I_SEP << src.follow_up;
+	if (!src.type || 0>=src.type->id || NUM_MISSION_IDS<=src.type->id) return os << "{}"; // temporary
+	if (0 >= src.uid) return os << "{}"; // temporary
+	JSON _mission;
+	_mission.set("type", toJSON(src.type));
+	_mission.set("uid", std::to_string(src.uid));
+	if (!src.description.empty()) _mission.set("description",src.description);
+	if (src.failed) _mission.set("failed", "true");
+	if (src.value) _mission.set("value", std::to_string(src.value));	// for now allow negative mission values \todo audit for negative mission values
+	if (JSON_key(src.reward.type)) _mission.set("value", toJSON(src.reward));
+	// src.reward
+	if (point(-1, -1) != src.target) _mission.set("target", toJSON(src.target));
+	if (src.count) {
+		if (auto json = JSON_key(src.item_id)) {
+			_mission.set("item", json);
+			_mission.set("count", std::to_string(src.count));
+		}
+	}
+	if (0 < src.deadline) _mission.set("deadline", std::to_string(src.deadline));
+	if (0 < src.npc_id) _mission.set("npc", std::to_string(src.npc_id));	// \todo release block: is this always-valid?
+	if (0 <= src.good_fac_id) _mission.set("by_faction", std::to_string(src.good_fac_id));
+	if (0 <= src.bad_fac_id) _mission.set("vs_faction", std::to_string(src.bad_fac_id));
+	if (src.step) _mission.set("step", std::to_string(src.step));
+	{
+	if (auto json = JSON_key(src.follow_up)) _mission.set("next", json);
+	}
+
+	return os << _mission;
 }
 
 mongroup::mongroup(std::istream& is)
