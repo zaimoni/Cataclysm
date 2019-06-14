@@ -1,6 +1,44 @@
 #include "mongroup.h"
 #include "setvector.h"
 
+static const char* const JSON_transcode[] = {
+	"forest",
+	"ant",
+	"bee",
+	"worm",
+	"zombie",
+	"triffid",
+	"fungi",
+	"goo",
+	"chud",
+	"sewer",
+	"swamp",
+	"lab",
+	"nether",
+	"spiral",
+	"vanilla_zombie",
+	"spider",
+	"robot"
+};
+
+const char* JSON_key(moncat_id src)
+{
+	if (src) return JSON_transcode[src - 1];
+	return 0;
+}
+
+using namespace cataclysm;
+
+moncat_id JSON_parse<moncat_id>::operator()(const char* const src)
+{
+	if (!src || !src[0]) return mcat_null;
+	ptrdiff_t i = sizeof(JSON_transcode) / sizeof(*JSON_transcode);
+	while (0 < i--) {
+		if (!strcmp(JSON_transcode[i], src)) return (moncat_id)(i + 1);
+	}
+	return mcat_null;
+}
+
 std::vector<mon_id> mongroup::moncats[num_moncats];
 
 void mongroup::init()

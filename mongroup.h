@@ -25,6 +25,8 @@ enum moncat_id {
  num_moncats
 };
 
+DECLARE_JSON_ENUM_SUPPORT(moncat_id)
+
 struct mongroup {
  static std::vector<mon_id> moncats[num_moncats];
 
