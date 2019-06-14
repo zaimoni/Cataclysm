@@ -1,5 +1,6 @@
 #include "mongroup.h"
 #include "setvector.h"
+#include <string.h>
 
 static const char* const JSON_transcode[] = {
 	"forest",
