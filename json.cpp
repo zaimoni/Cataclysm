@@ -76,14 +76,20 @@ size_t JSON::size() const
 
 void JSON::push(const JSON& src)
 {
-	if (array != _mode) reset();
+	if (array != _mode) {
+		reset();
+		_mode = array;
+	}
 	if (!_array) _array = new std::vector<JSON>();
 	_array->push_back(src);
 }
 
 void JSON::push(JSON&& src)
 {
-	if (array != _mode) reset();
+	if (array != _mode) {
+		reset();
+		_mode = array;
+	}
 	if (!_array) _array = new std::vector<JSON>();
 	_array->push_back(src);
 }
@@ -787,6 +793,13 @@ bool fromJSON(const cataclysm::JSON& src, int& dest)
 {
 	if (!src.is_scalar()) return false;
 	dest = stoll(src.scalar());
+	return true;
+}
+
+bool fromJSON(const cataclysm::JSON& src, unsigned int& dest)
+{
+	if (!src.is_scalar()) return false;
+	dest = stoull(src.scalar());
 	return true;
 }
 

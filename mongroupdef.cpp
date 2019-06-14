@@ -24,7 +24,7 @@ static const char* const JSON_transcode[] = {
 
 const char* JSON_key(moncat_id src)
 {
-	if (src) return JSON_transcode[src - 1];
+	if (src) return JSON_transcode[src-1];
 	return 0;
 }
 
@@ -35,7 +35,7 @@ moncat_id JSON_parse<moncat_id>::operator()(const char* const src)
 	if (!src || !src[0]) return mcat_null;
 	ptrdiff_t i = sizeof(JSON_transcode) / sizeof(*JSON_transcode);
 	while (0 < i--) {
-		if (!strcmp(JSON_transcode[i], src)) return (moncat_id)(i + 1);
+		if (!strcmp(JSON_transcode[i], src)) return (moncat_id)(i+1);
 	}
 	return mcat_null;
 }

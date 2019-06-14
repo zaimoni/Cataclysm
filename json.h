@@ -148,6 +148,7 @@ private:
 // fromJSON only has to work correctly on default-constructed targets when called from JSON::decode
 bool fromJSON(const cataclysm::JSON& src, std::string& dest);
 bool fromJSON(const cataclysm::JSON& src, int& dest);
+bool fromJSON(const cataclysm::JSON& src, unsigned int& dest);
 bool fromJSON(const cataclysm::JSON& src, char& dest);
 bool fromJSON(const cataclysm::JSON& src, bool& dest);
 

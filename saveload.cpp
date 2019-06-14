@@ -86,6 +86,7 @@ JSON_ENUM(computer_action)
 JSON_ENUM(computer_failure)
 JSON_ENUM(itype_id)
 JSON_ENUM(mission_id)
+JSON_ENUM(moncat_id)
 JSON_ENUM(npc_favor_type)
 JSON_ENUM(skill)
 
@@ -480,7 +481,20 @@ std::ostream& operator<<(std::ostream& os, const mission& src)
 }
 
 mongroup::mongroup(std::istream& is)
+: type(mcat_null), pos(-1,-1), radius(0), population(0), dying(false)
 {
+	if ('{' == (is >> std::ws).peek()) {
+		const JSON _in(is);
+		int tmp;
+		if (!_in.has_key("type") || !fromJSON(_in["type"], type)) return;
+		if (!_in.has_key("pos") || !fromJSON(_in["pos"], pos)) return;
+		if (!_in.has_key("radius") || !fromJSON(_in["radius"], tmp)) return;
+		if (!_in.has_key("population") || !fromJSON(_in["population"], population)) return;
+		radius = tmp;
+		if (_in.has_key("dying")) fromJSON(_in["dying"], dying);
+		return;
+	}
+	// \todo release block: remove legacy reading
   int tmp_radius;
   is >> type >> pos >> tmp_radius >> population;	// XXX note absence of src.dying: saveload cancels that
   radius = tmp_radius;
@@ -488,7 +502,13 @@ mongroup::mongroup(std::istream& is)
 
 std::ostream& operator<<(std::ostream& os, const mongroup& src)
 {
-  return os << src.type I_SEP << src.pos I_SEP << int(src.radius) I_SEP << src.population << std::endl;	// XXX note absence of src.dying: saveload cancels that
+	JSON _mongroup;
+	_mongroup.set("type", toJSON(src.type));
+	_mongroup.set("pos", toJSON(src.pos));
+	_mongroup.set("radius", std::to_string(src.radius));
+	_mongroup.set("population", std::to_string(src.population));
+	if (src.dying) _mongroup.set("dying", "true");
+	return os << _mongroup;
 }
 
 std::istream& operator>>(std::istream& is, field& dest)
