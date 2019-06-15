@@ -3,6 +3,48 @@
 #include "game.h"
 #include "recent_msg.h"
 
+static const char* JSON_transcode[] = {
+	"blood",
+	"bile",
+	"web",
+	"slime",
+	"acid",
+	"sap",
+	"fire",
+	"smoke",
+	"toxic_gas",
+	"tear_gas",
+	"nuke_gas",
+	"gas_vent",
+	"fire_vent",
+	"flame_burst",
+	"electricity",
+	"fatigue",
+	"push_items",
+	"shock_vent",
+	"acid_vent"
+};
+
+const char* JSON_key(field_id src)
+{
+	if (src) return JSON_transcode[src - 1];
+	return 0;
+}
+
+namespace cataclysm {
+
+field_id JSON_parse<field_id>::operator()(const char* const src)
+{
+	if (!src || !src[0]) return fd_null;
+	ptrdiff_t i = sizeof(JSON_transcode) / sizeof(*JSON_transcode);
+	while (0 < i--) {
+		if (!strcmp(JSON_transcode[i], src)) return (field_id)(i + 1);
+	}
+	return fd_null;
+}
+
+}
+
 #define INBOUNDS(x, y) \
  (x >= 0 && x < SEEX * my_MAPSIZE && y >= 0 && y < SEEY * my_MAPSIZE)
 

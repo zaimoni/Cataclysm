@@ -210,6 +210,8 @@ enum field_id {
  num_fields
 };
 
+DECLARE_JSON_ENUM_SUPPORT(field_id)
+
 struct field {
  static const field_t list[];
 
