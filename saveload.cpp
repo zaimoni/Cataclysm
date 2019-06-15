@@ -84,6 +84,7 @@ bool fromJSON(const JSON& src, TYPE& dest)	\
 JSON_ENUM(bionic_id)
 JSON_ENUM(computer_action)
 JSON_ENUM(computer_failure)
+JSON_ENUM(field_id)
 JSON_ENUM(itype_id)
 JSON_ENUM(mission_id)
 JSON_ENUM(moncat_id)
@@ -513,6 +514,20 @@ std::ostream& operator<<(std::ostream& os, const mongroup& src)
 
 std::istream& operator>>(std::istream& is, field& dest)
 {
+	if ('{' == (is >> std::ws).peek()) {
+		const JSON _in(is);
+		if (_in.has_key("type")) {
+			if (!fromJSON(_in["type"], dest.type)) return is;
+			if (_in.has_key("density")) {
+				int tmp;
+				fromJSON(_in["density"], tmp);
+				dest.density = tmp;
+			}
+			if (_in.has_key("age")) fromJSON(_in["age"], dest.age);
+		} else dest = field();
+		return is;
+	}
+	// \todo release block: remove legacy reading
 	int d;
 	is >> dest.type >> d >> dest.age;
 	dest.density = d;
@@ -521,6 +536,13 @@ std::istream& operator>>(std::istream& is, field& dest)
 
 std::ostream& operator<<(std::ostream& os, const field& src)
 {
+	JSON _field;
+	if (const auto json = JSON_key(src.type)) {
+		_field.set("type", json);
+		_field.set("density", std::to_string((int)src.density));
+		_field.set("age", std::to_string(src.age));
+	}
+	return os << _field;
 	return os << src.type I_SEP << int(src.density) I_SEP << src.age;
 }
 
