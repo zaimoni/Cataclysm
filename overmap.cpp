@@ -2553,8 +2553,8 @@ void overmap::save(const std::string& name, int x, int y, int z)
  }
  fout << std::endl;
  for(const auto& zgroup : zg) fout << "Z " << zgroup;
- for(const auto& c : cities) fout << "t " << c;
- for(const auto& r : roads_out) fout << "R " << r;
+ for(const auto& c : cities) fout << "t " << c << std::endl;
+ for(const auto& r : roads_out) fout << "R " << r << std::endl;
  for(const auto& r : radios) fout << "T " << r;
 
  for (int i = 0; i < npcs.size(); i++)

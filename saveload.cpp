@@ -557,7 +557,7 @@ std::ostream& operator<<(std::ostream& os, const city& src)
 {
 	os << src.x << src.y;
 	if (0 < src.s) os << src.s;
-	return os << std::endl;
+	return os;
 }
 
 om_note::om_note(std::istream& is)
