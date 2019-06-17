@@ -2585,15 +2585,34 @@ void overmap::open(game *g)	// only called from constructor
               terfilename.str().c_str(), ter(i, j));
    }
   }
+  // while the legacy ready can cope with "any order", the generation order is much stricter:
+  // terrain data blob
+  // Z: mongroup
+  // t: cities
+  // R: roads out
+  // T: radios i.e. transmission towers
+  // n: NPCs (with several sub-entries)
+  int loading_stage = 0;
   while (fin >> datatype) {
-   if (datatype == 'Z') zg.push_back(mongroup(fin));	// Monster group
-   else if (datatype == 't') cities.push_back(city(fin));		// City
-   else if (datatype == 'R') roads_out.push_back(city(fin,true));	// Road leading out
-   else if (datatype == 'T') radios.push_back(radio_tower(fin));	// Radio tower
+   if (datatype == 'Z') {
+	   zg.push_back(mongroup(fin));	// Monster group
+	   loading_stage = 1;
+   } else if (datatype == 't') {
+	   cities.push_back(city(fin));		// City
+	   loading_stage = 2;
+   } else if (datatype == 'R') {
+	   roads_out.push_back(city(fin, true));	// Road leading out
+	   loading_stage = 3;
+   }
+   else if (datatype == 'T') {
+	   radios.push_back(radio_tower(fin));	// Radio tower
+	   loading_stage = 4;
+   }
    else if (datatype == 'n') {	// NPC
 /* When we start loading a new NPC, check to see if we've accumulated items for
    assignment to an NPC.
  */
+    loading_stage = 5;
     if (!npc_inventory.empty() && !npcs.empty()) {
      npcs.back().inv.add_stack(npc_inventory);
      npc_inventory.clear();
