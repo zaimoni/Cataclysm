@@ -549,15 +549,24 @@ std::ostream& operator<<(std::ostream& os, const field& src)
 city::city(std::istream& is, bool is_road)
 : s(0)
 {	// the difference between a city, and a road, is the radius (roads have zero radius)
+	if ('[' == (is >> std::ws).peek()) {
+		JSON _in(is);
+		const size_t _size = _in.size();
+
+		if ((2 != _size && 3!= _size) || JSON::array != _in.mode()) throw std::runtime_error("point expected to be a length 2 array");
+		if (!fromJSON(_in[0], x) || !fromJSON(_in[1], y)) throw std::runtime_error("point wants integer coordinates");
+		if (3 == _size && !fromJSON(_in[2], s)) throw std::runtime_error("point wants integer coordinates");
+		return;
+	}
 	is >> x >> y;
 	if (!is_road) is >> s;
 }
 
 std::ostream& operator<<(std::ostream& os, const city& src)
 {
-	os << src.x << src.y;
-	if (0 < src.s) os << src.s;
-	return os;
+	os << '[' << std::to_string(src.x) << ',' << std::to_string(src.y);
+	if (0 < src.s) os << ',' << std::to_string(src.s);
+	return os << ']';
 }
 
 om_note::om_note(std::istream& is)
