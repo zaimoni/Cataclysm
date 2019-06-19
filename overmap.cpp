@@ -2544,7 +2544,7 @@ void overmap::save(const std::string& name, int x, int y, int z)
   }
   fout << std::endl;
  }
- for(const auto& n : notes) fout << "N " << n;
+ for(const auto& n : notes) fout << "N " << n << std::endl;
  fout.close();
  fout.open(terfilename.str().c_str(), std::ios_base::trunc);
  for (int j = 0; j < OMAPY; j++) {
@@ -2555,7 +2555,7 @@ void overmap::save(const std::string& name, int x, int y, int z)
  for(const auto& zgroup : zg) fout << "Z " << zgroup << std::endl;
  for(const auto& c : cities) fout << "t " << c << std::endl;
  for(const auto& r : roads_out) fout << "R " << r << std::endl;
- for(const auto& r : radios) fout << "T " << r;
+ for(const auto& r : radios) fout << "T " << r << std::endl;
 
  for (int i = 0; i < npcs.size(); i++)
   fout << "n " << npcs[i] << std::endl;

@@ -546,6 +546,9 @@ std::ostream& operator<<(std::ostream& os, const field& src)
 	return os << src.type I_SEP << int(src.density) I_SEP << src.age;
 }
 
+// Arrays are not plausible for the final format for the overmap data classes, but
+// they are easily distinguished from objects so we have a clear upgrade path.
+// Plan is to reserve the object form for when the absolute coordinate system is understood.
 city::city(std::istream& is, bool is_road)
 : s(0)
 {	// the difference between a city, and a road, is the radius (roads have zero radius)
@@ -558,6 +561,7 @@ city::city(std::istream& is, bool is_road)
 		if (3 == _size && !fromJSON(_in[2], s)) throw std::runtime_error("point wants integer coordinates");
 		return;
 	}
+	// \todo release block: remove legacy reading
 	is >> x >> y;
 	if (!is_road) is >> s;
 }
@@ -570,7 +574,18 @@ std::ostream& operator<<(std::ostream& os, const city& src)
 }
 
 om_note::om_note(std::istream& is)
+: x(-1), y(-1), num(-1), text("")
 {
+	if ('[' == (is >> std::ws).peek()) {
+		JSON _in(is);
+		if (JSON::array != _in.mode() || 4 != _in.size()) throw std::runtime_error("om_note expected to be a length 4 array");
+		fromJSON(_in[0], x);
+		fromJSON(_in[1], y);
+		fromJSON(_in[2], num);
+		fromJSON(_in[3], text);
+		return;
+	}
+	// \todo release block: remove legacy reading
 	is >> x >> y >> num;
 	getline(is, text);	// Chomp endl
 	getline(is, text);
@@ -578,11 +593,21 @@ om_note::om_note(std::istream& is)
 
 std::ostream& operator<<(std::ostream& os, const om_note& src)
 {
-	return os << src.x  I_SEP << src.y  I_SEP << src.num << std::endl << src.text << std::endl;
+	return os << '[' << std::to_string(src.x) <<  ',' << std::to_string(src.y) <<  ',' << std::to_string(src.num) << ',' << JSON(src.text) << ']';
 }
 
 radio_tower::radio_tower(std::istream& is)
 {
+	if ('[' == (is >> std::ws).peek()) {
+		JSON _in(is);
+		if (JSON::array != _in.mode() || 4 != _in.size()) throw std::runtime_error("radio_tower expected to be a length 4 array");
+		fromJSON(_in[0], x);
+		fromJSON(_in[1], y);
+		fromJSON(_in[2], strength);
+		fromJSON(_in[3], message);
+		return;
+	}
+	// \todo release block: remove legacy reading
 	is >> x >> y >> strength;
 	getline(is, message);	// Chomp endl
 	getline(is, message);
@@ -590,7 +615,7 @@ radio_tower::radio_tower(std::istream& is)
 
 std::ostream& operator<<(std::ostream& os, const radio_tower& src)
 {
-	return os << src.x I_SEP << src.y I_SEP << src.strength I_SEP << std::endl << src.message << std::endl;
+	return os << '[' << std::to_string(src.x) << ',' << std::to_string(src.y) << ',' << std::to_string(src.strength) << ',' << JSON(src.message) << ']';
 }
 
 std::istream& operator>>(std::istream& is, player_activity& dest)
