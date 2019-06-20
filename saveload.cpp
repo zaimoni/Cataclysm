@@ -81,6 +81,7 @@ bool fromJSON(const JSON& src, TYPE& dest)	\
 	return true;	\
 }
 
+JSON_ENUM(activity_type)
 JSON_ENUM(bionic_id)
 JSON_ENUM(computer_action)
 JSON_ENUM(computer_failure)

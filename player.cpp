@@ -328,6 +328,20 @@ condition, and deals massive damage.";
 }
 // end prototype for disease.cpp
 
+static const char* const JSON_transcode_activity[] = {
+	"RELOAD",
+	"READ",
+	"WAIT",
+	"CRAFT",
+	"BUTCHER",
+	"BUILD",
+	"VEHICLE",
+	"REFILL_VEHICLE",
+	"TRAIN"
+};
+
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(activity_type, JSON_transcode_activity)
+
 // XXX inappropriate forward declares \todo lift definitions above uses
 nc_color encumb_color(int level);
 bool activity_is_suspendable(activity_type type);

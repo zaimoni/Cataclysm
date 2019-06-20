@@ -88,6 +88,8 @@ enum activity_type {
  NUM_ACTIVITIES
 };
 
+DECLARE_JSON_ENUM_SUPPORT(activity_type)
+
 struct player_activity
 {
  activity_type type;
