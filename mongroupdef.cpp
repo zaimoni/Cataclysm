@@ -22,23 +22,7 @@ static const char* const JSON_transcode[] = {
 	"robot"
 };
 
-const char* JSON_key(moncat_id src)
-{
-	if (src) return JSON_transcode[src-1];
-	return 0;
-}
-
-using namespace cataclysm;
-
-moncat_id JSON_parse<moncat_id>::operator()(const char* const src)
-{
-	if (!src || !src[0]) return mcat_null;
-	ptrdiff_t i = sizeof(JSON_transcode) / sizeof(*JSON_transcode);
-	while (0 < i--) {
-		if (!strcmp(JSON_transcode[i], src)) return (moncat_id)(i+1);
-	}
-	return mcat_null;
-}
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(moncat_id, JSON_transcode)
 
 std::vector<mon_id> mongroup::moncats[num_moncats];
 

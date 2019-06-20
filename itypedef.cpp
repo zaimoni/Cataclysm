@@ -611,24 +611,7 @@ static const char* JSON_transcode_items[] = {
 	"itm_style_zui_quan"
 };
 
-const char* JSON_key(itype_id src)
-{
-	if (src) return JSON_transcode_items[src - 1];
-	return 0;
-}
-
-using namespace cataclysm;
-
-itype_id JSON_parse<itype_id>::operator()(const char* const src)
-{
-	if (!src || !src[0]) return itm_null;
-	ptrdiff_t i = sizeof(JSON_transcode_items) / sizeof(*JSON_transcode_items);
-	while (0 < i--) {
-		if (!strcmp(JSON_transcode_items[i], src)) return (itype_id)(i + 1);
-	}
-	return itm_null;
-}
-
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(itype_id, JSON_transcode_items)
 
 // GENERAL GUIDELINES
 // When adding a new item, you MUST REMEMBER to insert it in the itype_id enum

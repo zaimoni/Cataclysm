@@ -13,23 +13,7 @@ static const char* JSON_transcode[] = {
 	"REACH_SAFETY"
 };
 
-const char* JSON_key(mission_id src)
-{
-	if (src) return JSON_transcode[src - 1];
-	return 0;
-}
-
-using namespace cataclysm;
-
-mission_id JSON_parse<mission_id>::operator()(const char* const src)
-{
-	if (!src || !src[0]) return MISSION_NULL;
-	ptrdiff_t i = sizeof(JSON_transcode) / sizeof(*JSON_transcode);
-	while (0 < i--) {
-		if (!strcmp(JSON_transcode[i], src)) return (mission_id)(i + 1);
-	}
-	return MISSION_NULL;
-}
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(mission_id, JSON_transcode)
 
 mission mission_type::create(game *g, int npc_id)
 {

@@ -25,25 +25,7 @@ static const char* JSON_transcode[] = {
 	"acid_vent"
 };
 
-const char* JSON_key(field_id src)
-{
-	if (src) return JSON_transcode[src - 1];
-	return 0;
-}
-
-namespace cataclysm {
-
-field_id JSON_parse<field_id>::operator()(const char* const src)
-{
-	if (!src || !src[0]) return fd_null;
-	ptrdiff_t i = sizeof(JSON_transcode) / sizeof(*JSON_transcode);
-	while (0 < i--) {
-		if (!strcmp(JSON_transcode[i], src)) return (field_id)(i + 1);
-	}
-	return fd_null;
-}
-
-}
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(field_id, JSON_transcode)
 
 #define INBOUNDS(x, y) \
  (x >= 0 && x < SEEX * my_MAPSIZE && y >= 0 && y < SEEY * my_MAPSIZE)

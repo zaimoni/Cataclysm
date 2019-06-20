@@ -41,39 +41,8 @@ static const char* JSON_transcode_compfail[] = {
 	"DESTROY_BLOOD"
 };
 
-const char* JSON_key(computer_action src)
-{
-	if (src) return JSON_transcode_compact[src-1];
-	return 0;
-}
-
-const char* JSON_key(computer_failure src)
-{
-	if (src) return JSON_transcode_compfail[src-1];
-	return 0;
-}
-
-using namespace cataclysm;
-
-computer_action JSON_parse<computer_action>::operator()(const char* const src)
-{
-	if (!src || !src[0]) return COMPACT_NULL;
-	ptrdiff_t i = sizeof(JSON_transcode_compact)/sizeof(*JSON_transcode_compact);
-	while (0 < i--) {
-		if (!strcmp(JSON_transcode_compact[i], src)) return (computer_action)(i+1);
-	}
-	return COMPACT_NULL;
-}
-
-computer_failure JSON_parse<computer_failure>::operator()(const char* const src)
-{
-	if (!src || !src[0]) return COMPFAIL_NULL;
-	size_t i = sizeof(JSON_transcode_compfail) / sizeof(*JSON_transcode_compfail);
-	while (0 < i--) {
-		if (!strcmp(JSON_transcode_compfail[i], src)) return (computer_failure)(i+1);
-	}
-	return COMPFAIL_NULL;
-}
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(computer_action, JSON_transcode_compact)
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(computer_failure, JSON_transcode_compfail)
 
 // main implementation
 computer::~computer()

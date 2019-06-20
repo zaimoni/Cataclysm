@@ -110,4 +110,22 @@ namespace cataclysm {	\
 }
 
 
+#define DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(TYPE,STATIC_REF)	\
+const char* JSON_key(TYPE src)	\
+{	\
+	if (src) return STATIC_REF[src - 1];	\
+	return 0;	\
+}	\
+	\
+namespace cataclysm {	\
+	TYPE JSON_parse<TYPE>::operator()(const char* const src)	\
+	{	\
+		if (!src || !src[0]) return TYPE(0);	\
+		ptrdiff_t i = sizeof(STATIC_REF) / sizeof(*STATIC_REF);	\
+		while (0 < i--) if (!strcmp(STATIC_REF[i], src)) return TYPE(i + 1);	\
+		return TYPE(0);	\
+	}	\
+}
+
+
 #endif

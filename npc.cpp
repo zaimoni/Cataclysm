@@ -25,7 +25,7 @@ static const char* const JSON_transcode_favors[] = {
 
 const char* JSON_key(npc_favor_type src)
 {
-	if (src) return JSON_transcode_favors[src - 1];
+	if (src) return JSON_transcode_favors[src - 2];
 	return 0;
 }
 

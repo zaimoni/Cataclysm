@@ -81,23 +81,7 @@ static const char* JSON_transcode[] = {
 	"stiff"
 };
 
-const char* JSON_key(bionic_id src)
-{
-	if (src) return JSON_transcode[src - 1];
-	return 0;
-}
-
-using namespace cataclysm;
-
-bionic_id JSON_parse<bionic_id>::operator()(const char* const src)
-{
-	if (!src || !src[0]) return bio_null;
-	ptrdiff_t i = sizeof(JSON_transcode) / sizeof(*JSON_transcode);
-	while (0 < i--) {
-		if (!strcmp(JSON_transcode[i], src)) return (bionic_id)(i + 1);
-	}
-	return bio_null;
-}
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(bionic_id, JSON_transcode)
 
 const bionic_data bionic::type[] = {
 {"NULL bionics", false, false, 0, 0, "\
