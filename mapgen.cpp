@@ -6476,13 +6476,11 @@ vehicle *map::add_vehicle(game *g, vhtype_id type, int x, int y, int dir)
   debugmsg("Bad add_vehicle t=%d d=%d x=%d y=%d", type, dir, x, y);
   return 0;
  }
-// debugmsg("add_vehicle t=%d d=%d x=%d y=%d", type, dir, x, y);
  int smx = x / SEEX;
  int smy = y / SEEY;
  int nonant = smx + smy * my_MAPSIZE;	// XXX \todo fix this -- can fail because MAPSIZE defaults to 11 i.e. SEEX-1; (11,n) and (0,n+1) will be assigned to the same nonant
  x %= SEEX;
  y %= SEEY;
-// debugmsg("n=%d x=%d y=%d MAPSIZE=%d ^2=%d", nonant, x, y, MAPSIZE, MAPSIZE*MAPSIZE);
  vehicle veh(g, type);
  veh.pos = point(x,y);
  veh.sm = point(smx,smy);
@@ -6490,7 +6488,6 @@ vehicle *map::add_vehicle(game *g, vhtype_id type, int x, int y, int dir)
  veh.turn_dir = dir;
  veh.precalc_mounts (0, dir);
  grid[nonant]->vehicles.push_back(veh);
- //debugmsg ("grid[%d]->vehicles.size=%d veh.parts.size=%d", nonant, grid[nonant]->vehicles.size(),veh.parts.size());
  return &grid[nonant]->vehicles[grid[nonant]->vehicles.size()-1];
 }
 
@@ -6502,18 +6499,6 @@ computer* map::add_computer(int x, int y, std::string name, int security)
  return &(grid[nonant]->comp);
 }
 
-void map::make_all_items_owned()
-{
-/*
- for (int i = 0; i < SEEX * 2; i++) {
-  for (int j = 0; j < SEEY * 2; j++) {
-   for (int n = 0; n < i_at(i, j).size(); n++)
-    i_at(i, j)[n].owned = true;
-  }
- }
-*/
-}
-   
 void map::rotate(int turns)
 {
  ter_id rotated         [SEEX*2][SEEY*2];

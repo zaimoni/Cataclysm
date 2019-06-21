@@ -88,6 +88,7 @@ JSON_ENUM(computer_failure)
 JSON_ENUM(field_id)
 JSON_ENUM(itype_id)
 JSON_ENUM(mission_id)
+JSON_ENUM(mon_id)
 JSON_ENUM(moncat_id)
 JSON_ENUM(npc_favor_type)
 JSON_ENUM(skill)
@@ -654,6 +655,7 @@ std::ostream& operator<<(std::ostream& os, const player_activity& src)
 }
 
 spawn_point::spawn_point(std::istream& is)
+: pos(-1,-1), count(0), type(mon_null), faction_id(-1), mission_id(-1), friendly(false), name("NONE")
 {
 	char tmpfriend;
 	is >> type >> count >> pos >> faction_id >> mission_id >> tmpfriend >> name;
