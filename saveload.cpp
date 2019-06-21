@@ -542,7 +542,7 @@ std::ostream& operator<<(std::ostream& os, const field& src)
 		_field.set("type", json);
 		_field.set("density", std::to_string((int)src.density));
 		_field.set("age", std::to_string(src.age));
-	}
+	} else return os << "{}";
 	return os << _field;
 }
 
@@ -642,7 +642,6 @@ std::istream& operator>>(std::istream& is, player_activity& dest)
 
 std::ostream& operator<<(std::ostream& os, const player_activity& src)
 {
-	if (!src.type) return os << "{}"; // temporary
 	JSON _act;
 	if (const auto json = JSON_key(src.type)) {
 		_act.set("type", json);

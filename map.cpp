@@ -496,27 +496,13 @@ static const char* JSON_transcode[num_terrain_types] = {
 	"t_switch_even"
 };
 
-const char* JSON_key(ter_id src)
-{
-	if (src) return JSON_transcode[src];
-	return 0;
-}
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED(ter_id, JSON_transcode,0)
 
 using namespace cataclysm;
 
 template<> ter_id discard<ter_id>::x = t_null;
 template<> trap_id discard<trap_id>::x = tr_null;
 template<> field discard<field>::x = field();
-
-ter_id JSON_parse<ter_id>::operator()(const char* const src)
-{
-	if (!src || !src[0]) return t_null;
-	size_t i = num_terrain_types;
-	while(0 < --i) {
-		if (!strcmp(JSON_transcode[i], src)) return (ter_id)(i);
-	}
-	return t_null;
-}
 
 void ter_t::init()
 {

@@ -23,24 +23,7 @@ static const char* const JSON_transcode_favors[] = {
 	"TRAINING"
 };
 
-const char* JSON_key(npc_favor_type src)
-{
-	if (src) return JSON_transcode_favors[src - 2];
-	return 0;
-}
-
-using namespace cataclysm;
-
-npc_favor_type JSON_parse<npc_favor_type>::operator()(const char* const src)
-{
-	if (!src || !src[0]) return FAVOR_NULL;
-	ptrdiff_t i = sizeof(JSON_transcode_favors) / sizeof(*JSON_transcode_favors);
-	while (0 < i--) {
-		if (!strcmp(JSON_transcode_favors[i], src)) return (npc_favor_type)(i + 2);
-	}
-	return FAVOR_NULL;
-}
-
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED(npc_favor_type, JSON_transcode_favors, 2)
 
 npc::npc()
 : wand(0,0),wandf(0),om(0,0,0),pl(-1,-1),plt(0),it(-1,-1),goal(-1,-1)

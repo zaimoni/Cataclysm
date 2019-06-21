@@ -33,7 +33,7 @@ static const char* const JSON_transcode[] = {
 
 const char* JSON_key(skill src)
 {
-	if (src) return JSON_transcode[src - 1];
+	if (1 <= src && (sizeof(JSON_transcode) / sizeof(*JSON_transcode)) >= src) return JSON_transcode[src - 1];
 	return 0;
 }
 

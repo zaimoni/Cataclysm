@@ -231,23 +231,9 @@ static const char* JSON_transcode[num_monsters] = {
 	"mon_generator"
 };
 
-const char* JSON_key(mon_id src)
-{
-	if (src) return JSON_transcode[src];
-	return 0;
-}
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED(mon_id, JSON_transcode, 0)
 
 using namespace cataclysm;
-
-mon_id JSON_parse<mon_id>::operator()(const char* const src)
-{
-	if (!src || !src[0]) return mon_null;
-	size_t i = num_monsters;
-	while (0 < --i) {
-		if (!strcmp(JSON_transcode[i], src)) return (mon_id)(i);
-	}
-	return mon_null;
-}
 
 // This function populates the master list of monster types.
 // If you edit this function, you'll also need to edit:
