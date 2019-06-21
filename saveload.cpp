@@ -544,7 +544,6 @@ std::ostream& operator<<(std::ostream& os, const field& src)
 		_field.set("age", std::to_string(src.age));
 	}
 	return os << _field;
-	return os << src.type I_SEP << int(src.density) I_SEP << src.age;
 }
 
 // Arrays are not plausible for the final format for the overmap data classes, but
@@ -621,6 +620,16 @@ std::ostream& operator<<(std::ostream& os, const radio_tower& src)
 
 std::istream& operator>>(std::istream& is, player_activity& dest)
 {
+	if ('{' == (is >> std::ws).peek()) {
+		JSON _in(is);
+		if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) return is;
+		if (_in.has_key("moves_left")) fromJSON(_in["moves_left"], dest.moves_left);
+		if (_in.has_key("index")) fromJSON(_in["index"], dest.index);
+		if (_in.has_key("placement")) fromJSON(_in["placement"], dest.placement);
+		if (_in.has_key("values")) _in["values"].decode(dest.values);
+		return is;
+	}
+	// \todo release block: remove legacy reading
 	int tmp;
 	is >> dest.type >> dest.moves_left >> dest.index >> dest.placement >> tmp;
 	for (int i = 0; i < tmp; i++) {
@@ -633,10 +642,16 @@ std::istream& operator>>(std::istream& is, player_activity& dest)
 
 std::ostream& operator<<(std::ostream& os, const player_activity& src)
 {
-	os << src.type I_SEP << src.moves_left I_SEP << src.index I_SEP << src.placement I_SEP << src.values.size();
-	for(const auto& val : src.values) os I_SEP << val;
-
-	return os;
+	if (!src.type) return os << "{}"; // temporary
+	JSON _act;
+	if (const auto json = JSON_key(src.type)) {
+		_act.set("type", json);
+		if (0 != src.moves_left) _act.set("moves_left", std::to_string(src.moves_left));
+		if (-1 != src.index) _act.set("index", std::to_string(src.index));
+		if (point(-1,-1) != src.placement) _act.set("placement", toJSON(src.placement));
+		if (!src.values.empty()) _act.set("values", JSON::encode(src.values));
+	} else return os << "{}"; // temporary
+	return os << _act;
 }
 
 spawn_point::spawn_point(std::istream& is)

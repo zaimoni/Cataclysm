@@ -12,6 +12,21 @@
 
 // THe intent here is not a full JSON parser, but rather a loose parser that accepts more than the strict standard.
 
+// fromJSON only has to work correctly on default-constructed targets when called from JSON::decode
+namespace cataclysm {
+
+class JSON;
+
+}
+
+bool fromJSON(const cataclysm::JSON& src, std::string& dest);
+bool fromJSON(const cataclysm::JSON& src, int& dest);
+bool fromJSON(const cataclysm::JSON& src, unsigned int& dest);
+bool fromJSON(const cataclysm::JSON& src, char& dest);
+bool fromJSON(const cataclysm::JSON& src, bool& dest);
+
+cataclysm::JSON toJSON(int src);
+
 namespace cataclysm {
 
 class JSON
@@ -144,12 +159,5 @@ private:
 };
 
 }	// namespace cataclysm
-
-// fromJSON only has to work correctly on default-constructed targets when called from JSON::decode
-bool fromJSON(const cataclysm::JSON& src, std::string& dest);
-bool fromJSON(const cataclysm::JSON& src, int& dest);
-bool fromJSON(const cataclysm::JSON& src, unsigned int& dest);
-bool fromJSON(const cataclysm::JSON& src, char& dest);
-bool fromJSON(const cataclysm::JSON& src, bool& dest);
 
 #endif

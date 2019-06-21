@@ -782,35 +782,37 @@ std::ostream& operator<<(std::ostream& os, const JSON& src)
 
 }	// namespace cataclysm
 
-bool fromJSON(const cataclysm::JSON& src, std::string& dest)
+using cataclysm::JSON;
+
+bool fromJSON(const JSON& src, std::string& dest)
 {
 	if (!src.is_scalar()) return false;
 	dest = src.scalar();
 	return true;
 }
 
-bool fromJSON(const cataclysm::JSON& src, int& dest)
+bool fromJSON(const JSON& src, int& dest)
 {
 	if (!src.is_scalar()) return false;
 	dest = stoll(src.scalar());
 	return true;
 }
 
-bool fromJSON(const cataclysm::JSON& src, unsigned int& dest)
+bool fromJSON(const JSON& src, unsigned int& dest)
 {
 	if (!src.is_scalar()) return false;
 	dest = stoull(src.scalar());
 	return true;
 }
 
-bool fromJSON(const cataclysm::JSON& src, char& dest)
+bool fromJSON(const JSON& src, char& dest)
 {
 	if (!src.is_scalar()) return false;
 	dest = src.scalar()[0];
 	return true;
 }
 
-bool fromJSON(const cataclysm::JSON& src, bool& dest)
+bool fromJSON(const JSON& src, bool& dest)
 {
 	if (!src.is_scalar()) return false;
 	const auto x(src.scalar());
@@ -824,4 +826,8 @@ bool fromJSON(const cataclysm::JSON& src, bool& dest)
 	}
 	// there may be other logical aliases to consider, but we ignore them here
 	return false;
+}
+
+cataclysm::JSON toJSON(int src) {
+	return JSON(std::to_string(src));
 }
