@@ -538,13 +538,13 @@ std::istream& operator>>(std::istream& is, field& dest)
 
 std::ostream& operator<<(std::ostream& os, const field& src)
 {
-	JSON _field;
 	if (const auto json = JSON_key(src.type)) {
+		JSON _field;
 		_field.set("type", json);
 		_field.set("density", std::to_string((int)src.density));
 		_field.set("age", std::to_string(src.age));
+		return os << _field;
 	} else return os << "{}";
-	return os << _field;
 }
 
 // Arrays are not plausible for the final format for the overmap data classes, but
@@ -643,20 +643,32 @@ std::istream& operator>>(std::istream& is, player_activity& dest)
 
 std::ostream& operator<<(std::ostream& os, const player_activity& src)
 {
-	JSON _act;
 	if (const auto json = JSON_key(src.type)) {
+		JSON _act;
 		_act.set("type", json);
 		if (0 != src.moves_left) _act.set("moves_left", std::to_string(src.moves_left));
 		if (-1 != src.index) _act.set("index", std::to_string(src.index));
 		if (point(-1,-1) != src.placement) _act.set("placement", toJSON(src.placement));
 		if (!src.values.empty()) _act.set("values", JSON::encode(src.values));
+		return os << _act;
 	} else return os << "{}"; // temporary
-	return os << _act;
 }
 
 spawn_point::spawn_point(std::istream& is)
 : pos(-1,-1), count(0), type(mon_null), faction_id(-1), mission_id(-1), friendly(false), name("NONE")
 {
+	if ('{' == (is >> std::ws).peek()) {
+		JSON _in(is);
+		if (!_in.has_key("type") || !fromJSON(_in["type"], type)) return;
+		if (_in.has_key("name")) fromJSON(_in["name"], name);
+		if (_in.has_key("count")) fromJSON(_in["count"], count);
+		if (_in.has_key("pos")) fromJSON(_in["pos"], pos);
+		if (_in.has_key("faction_id")) fromJSON(_in["faction_id"], faction_id);
+		if (_in.has_key("mission_id")) fromJSON(_in["mission_id"], mission_id);
+		if (_in.has_key("friendly")) fromJSON(_in["friendly"], friendly);
+		return;
+	}
+	// \todo release block: remove legacy reading
 	char tmpfriend;
 	is >> type >> count >> pos >> faction_id >> mission_id >> tmpfriend >> name;
 	friendly = '1' == tmpfriend;
@@ -664,9 +676,18 @@ spawn_point::spawn_point(std::istream& is)
 
 std::ostream& operator<<(std::ostream& os, const spawn_point& src)
 {
-	return os << src.type I_SEP << src.count I_SEP << src.pos I_SEP <<
-		src.faction_id I_SEP << src.mission_id << (src.friendly ? " 1 " : " 0 ") <<
-		src.name;
+	if (const auto json = JSON_key(src.type)) {
+		JSON _spawn;
+		_spawn.set("type", json);
+		_spawn.set("name", src.name);
+		if (0 != src.count) _spawn.set("count", std::to_string(src.count));
+		if (point(-1, -1) != src.pos) _spawn.set("pos", toJSON(src.pos));
+		if (0 <= src.faction_id) _spawn.set("faction_id", std::to_string(src.faction_id));
+		if (0 < src.mission_id) _spawn.set("mission_id", std::to_string(src.mission_id));
+		if (src.friendly) _spawn.set("friendly", "true");
+		return os << _spawn;
+	}
+	else return os << "{}"; // temporary
 }
 
 submap::submap(std::istream& is, game* master_game)
