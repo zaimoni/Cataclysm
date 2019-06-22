@@ -8,8 +8,56 @@
 
 #include <sstream>
 
-std::string invent_name();
-std::string invent_adj();
+static const char* JSON_transcode_goals[] = {
+	"NONE",
+	"WEALTH",
+	"DOMINANCE",
+	"CLEANSE",
+	"SHADOW",
+	"APOCALYPSE",
+	"ANARCHY",
+	"KNOWLEDGE",
+	"NATURE",
+	"CIVILIZATION",
+	"FUNGUS"
+};
+
+static const char* const JSON_transcode_jobs[] = {
+	"EXTORTION",
+	"INFORMATION",
+	"TRADE",
+	"CARAVANS",
+	"SCAVENGE",
+	"MERCENARIES",
+	"ASSASSINS",
+	"RAIDERS",
+	"THIEVES",
+	"GAMBLING",
+	"DOCTORS",
+	"FARMERS",
+	"DRUGS",
+	"MANUFACTURE"
+};
+
+#if DEAD_DATA
+static const char* const JSON_transcode_values[] = {
+	"CHARITABLE",
+	"LONERS",
+	"EXPLORATION",
+	"ARTIFACTS",
+	"BIONICS",
+	"BOOKS",
+	"TRAINING",
+	"ROBOTS",
+	"TREACHERY",
+	"STRAIGHTEDGE",
+	"LAWFUL",
+	"CRUELTY"
+};
+#endif
+
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(faction_goal, JSON_transcode_goals)
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(faction_job, JSON_transcode_jobs)
 
 faction::faction(int uid)
 {
@@ -35,6 +83,132 @@ faction::faction(int uid)
 
 // not suitable for general library code due to rng usage...maybe RNG header
 #define STATIC_CHOOSE(VAR) faction_noun_strong[rng(0, sizeof(VAR)/sizeof(*VAR)-1)]
+
+static std::string invent_name()
+{
+	std::string ret = "";
+	std::string tmp;
+	int syllables = rng(2, 3);
+	for (int i = 0; i < syllables; i++) {
+		switch (rng(0, 25)) {
+		case  0: tmp = "ab";  break;
+		case  1: tmp = "bon"; break;
+		case  2: tmp = "cor"; break;
+		case  3: tmp = "den"; break;
+		case  4: tmp = "el";  break;
+		case  5: tmp = "fes"; break;
+		case  6: tmp = "gun"; break;
+		case  7: tmp = "hit"; break;
+		case  8: tmp = "id";  break;
+		case  9: tmp = "jan"; break;
+		case 10: tmp = "kal"; break;
+		case 11: tmp = "ler"; break;
+		case 12: tmp = "mal"; break;
+		case 13: tmp = "nor"; break;
+		case 14: tmp = "or";  break;
+		case 15: tmp = "pan"; break;
+		case 16: tmp = "qua"; break;
+		case 17: tmp = "ros"; break;
+		case 18: tmp = "sin"; break;
+		case 19: tmp = "tor"; break;
+		case 20: tmp = "urr"; break;
+		case 21: tmp = "ven"; break;
+		case 22: tmp = "wel"; break;
+		case 23: tmp = "oxo";  break;
+		case 24: tmp = "yen"; break;
+		case 25: tmp = "zu";  break;
+		}
+		ret += tmp;
+	}
+	ret[0] += 'A' - 'a';
+	return ret;
+}
+
+static std::string invent_adj()
+{
+	int syllables = dice(2, 2) - 1;
+	std::string ret, tmp;
+	switch (rng(0, 25)) {
+	case  0: ret = "Ald";   break;
+	case  1: ret = "Brogg"; break;
+	case  2: ret = "Cald";  break;
+	case  3: ret = "Dredd"; break;
+	case  4: ret = "Eld";   break;
+	case  5: ret = "Forr";  break;
+	case  6: ret = "Gugg";  break;
+	case  7: ret = "Horr";  break;
+	case  8: ret = "Ill";   break;
+	case  9: ret = "Jov";   break;
+	case 10: ret = "Kok";   break;
+	case 11: ret = "Lill";  break;
+	case 12: ret = "Moom";  break;
+	case 13: ret = "Nov";   break;
+	case 14: ret = "Orb";   break;
+	case 15: ret = "Perv";  break;
+	case 16: ret = "Quot";  break;
+	case 17: ret = "Rar";   break;
+	case 18: ret = "Suss";  break;
+	case 19: ret = "Torr";  break;
+	case 20: ret = "Umbr";  break;
+	case 21: ret = "Viv";   break;
+	case 22: ret = "Warr";  break;
+	case 23: ret = "Xen";   break;
+	case 24: ret = "Yend";  break;
+	case 25: ret = "Zor";   break;
+	}
+	for (int i = 0; i < syllables - 2; i++) {
+		switch (rng(0, 17)) {
+		case  0: tmp = "al";   break;
+		case  1: tmp = "arn";  break;
+		case  2: tmp = "astr"; break;
+		case  3: tmp = "antr"; break;
+		case  4: tmp = "ent";  break;
+		case  5: tmp = "ell";  break;
+		case  6: tmp = "ev";   break;
+		case  7: tmp = "emm";  break;
+		case  8: tmp = "empr"; break;
+		case  9: tmp = "ill";  break;
+		case 10: tmp = "ial";  break;
+		case 11: tmp = "ior";  break;
+		case 12: tmp = "ordr"; break;
+		case 13: tmp = "oth";  break;
+		case 14: tmp = "omn";  break;
+		case 15: tmp = "uv";   break;
+		case 16: tmp = "ulv";  break;
+		case 17: tmp = "urn";  break;
+		}
+		ret += tmp;
+	}
+	switch (rng(0, 24)) {
+	case  0: tmp = "";      break;
+	case  1: tmp = "al";    break;
+	case  2: tmp = "an";    break;
+	case  3: tmp = "ard";   break;
+	case  4: tmp = "ate";   break;
+	case  5: tmp = "e";     break;
+	case  6: tmp = "ed";    break;
+	case  7: tmp = "en";    break;
+	case  8: tmp = "er";    break;
+	case  9: tmp = "ial";   break;
+	case 10: tmp = "ian";   break;
+	case 11: tmp = "iated"; break;
+	case 12: tmp = "ier";   break;
+	case 13: tmp = "ious";  break;
+	case 14: tmp = "ish";   break;
+	case 15: tmp = "ive";   break;
+	case 16: tmp = "oo";    break;
+	case 17: tmp = "or";    break;
+	case 18: tmp = "oth";   break;
+	case 19: tmp = "old";   break;
+	case 20: tmp = "ous";   break;
+	case 21: tmp = "ul";    break;
+	case 22: tmp = "un";    break;
+	case 23: tmp = "ule";   break;
+	case 24: tmp = "y";     break;
+	}
+	ret += tmp;
+	return ret;
+}
 
 void faction::randomize()
 {
@@ -268,133 +442,6 @@ int faction::response_time(tripoint dest) const
 
 
 // END faction:: MEMBER FUNCTIONS
-
-
-std::string invent_name()
-{
- std::string ret = "";
- std::string tmp;
- int syllables = rng(2, 3);
- for (int i = 0; i < syllables; i++) {
-  switch (rng(0, 25)) {
-   case  0: tmp = "ab";  break;
-   case  1: tmp = "bon"; break;
-   case  2: tmp = "cor"; break;
-   case  3: tmp = "den"; break;
-   case  4: tmp = "el";  break;
-   case  5: tmp = "fes"; break;
-   case  6: tmp = "gun"; break;
-   case  7: tmp = "hit"; break;
-   case  8: tmp = "id";  break;
-   case  9: tmp = "jan"; break;
-   case 10: tmp = "kal"; break;
-   case 11: tmp = "ler"; break;
-   case 12: tmp = "mal"; break;
-   case 13: tmp = "nor"; break;
-   case 14: tmp = "or";  break;
-   case 15: tmp = "pan"; break;
-   case 16: tmp = "qua"; break;
-   case 17: tmp = "ros"; break;
-   case 18: tmp = "sin"; break;
-   case 19: tmp = "tor"; break;
-   case 20: tmp = "urr"; break;
-   case 21: tmp = "ven"; break;
-   case 22: tmp = "wel"; break;
-   case 23: tmp = "oxo";  break;
-   case 24: tmp = "yen"; break;
-   case 25: tmp = "zu";  break;
-  }
-  ret += tmp;
- }
- ret[0] += 'A' - 'a';
- return ret;
-}
-
-std::string invent_adj()
-{
- int syllables = dice(2, 2) - 1;
- std::string ret,  tmp;
- switch (rng(0, 25)) {
-  case  0: ret = "Ald";   break;
-  case  1: ret = "Brogg"; break;
-  case  2: ret = "Cald";  break;
-  case  3: ret = "Dredd"; break;
-  case  4: ret = "Eld";   break;
-  case  5: ret = "Forr";  break;
-  case  6: ret = "Gugg";  break;
-  case  7: ret = "Horr";  break;
-  case  8: ret = "Ill";   break;
-  case  9: ret = "Jov";   break;
-  case 10: ret = "Kok";   break;
-  case 11: ret = "Lill";  break;
-  case 12: ret = "Moom";  break;
-  case 13: ret = "Nov";   break;
-  case 14: ret = "Orb";   break;
-  case 15: ret = "Perv";  break;
-  case 16: ret = "Quot";  break;
-  case 17: ret = "Rar";   break;
-  case 18: ret = "Suss";  break;
-  case 19: ret = "Torr";  break;
-  case 20: ret = "Umbr";  break;
-  case 21: ret = "Viv";   break;
-  case 22: ret = "Warr";  break;
-  case 23: ret = "Xen";   break;
-  case 24: ret = "Yend";  break;
-  case 25: ret = "Zor";   break;
- }
- for (int i = 0; i < syllables - 2; i++) {
-  switch (rng(0, 17)) {
-   case  0: tmp = "al";   break;
-   case  1: tmp = "arn";  break;
-   case  2: tmp = "astr"; break;
-   case  3: tmp = "antr"; break;
-   case  4: tmp = "ent";  break;
-   case  5: tmp = "ell";  break;
-   case  6: tmp = "ev";   break;
-   case  7: tmp = "emm";  break;
-   case  8: tmp = "empr"; break;
-   case  9: tmp = "ill";  break;
-   case 10: tmp = "ial";  break;
-   case 11: tmp = "ior";  break;
-   case 12: tmp = "ordr"; break;
-   case 13: tmp = "oth";  break;
-   case 14: tmp = "omn";  break;
-   case 15: tmp = "uv";   break;
-   case 16: tmp = "ulv";  break;
-   case 17: tmp = "urn";  break;
-  }
-  ret += tmp;
- }
- switch (rng(0, 24)) {
-  case  0: tmp = "";      break;
-  case  1: tmp = "al";    break;
-  case  2: tmp = "an";    break;
-  case  3: tmp = "ard";   break;
-  case  4: tmp = "ate";   break;
-  case  5: tmp = "e";     break;
-  case  6: tmp = "ed";    break;
-  case  7: tmp = "en";    break;
-  case  8: tmp = "er";    break;
-  case  9: tmp = "ial";   break;
-  case 10: tmp = "ian";   break;
-  case 11: tmp = "iated"; break;
-  case 12: tmp = "ier";   break;
-  case 13: tmp = "ious";  break;
-  case 14: tmp = "ish";   break;
-  case 15: tmp = "ive";   break;
-  case 16: tmp = "oo";    break;
-  case 17: tmp = "or";    break;
-  case 18: tmp = "oth";   break;
-  case 19: tmp = "old";   break;
-  case 20: tmp = "ous";   break;
-  case 21: tmp = "ul";    break;
-  case 22: tmp = "un";    break;
-  case 23: tmp = "ule";   break;
-  case 24: tmp = "y";     break;
- }
- ret += tmp;
- return ret;
-}
 
 // Used in game.cpp
 std::string fac_ranking_text(int val)

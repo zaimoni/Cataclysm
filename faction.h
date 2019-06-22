@@ -33,6 +33,8 @@ enum faction_goal {
  NUM_FACGOALS
 };
 
+DECLARE_JSON_ENUM_SUPPORT(faction_goal)
+
 enum faction_job {
  FACJOB_NULL = 0,
  FACJOB_EXTORTION,	// Protection rackets, etc
@@ -52,6 +54,8 @@ enum faction_job {
  NUM_FACJOBS
 };
 
+DECLARE_JSON_ENUM_SUPPORT(faction_job)
+
 enum faction_value {
  FACVAL_NULL = 0,
  FACVAL_CHARITABLE,	// Give their job for free (often)
@@ -68,7 +72,6 @@ enum faction_value {
  FACVAL_CRUELTY,	// Torture, murder, etc.
  NUM_FACVALS
 };
-
 
 struct faction {
  faction(int uid = -1);

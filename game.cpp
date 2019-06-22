@@ -474,7 +474,7 @@ void game::start_game()
 
 // Init some factions.
  if (!load_master())	// Master data record contains factions.
-  create_factions();
+  create_factions();	// \todo V 0.2.1+ if there are factions, reset likes_u/respects_u/known_by_u
  cur_om = overmap(this, 0, 0, 0);	// We start in the (0,0,0) overmap.
 // Find a random house on the map, and set us there.
  cur_om.first_house(lev.x, lev.y);

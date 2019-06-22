@@ -63,10 +63,15 @@ def JSON_transcode_definition_pair(src):
 		JSON_diagnosis_array_body.append('{'+x+',"'+x+'"}')
 	return 'static const std::pair<foo,const char*> JSON_transcode[] = {\n\t'+',\n\t'.join(JSON_diagnosis_array_body)+'\n};'
 
-#relevant_lines = bracketed_lines('bionics.h','enum bionic_id {','}')
+relevant_lines = []	# to document expected type for extract_C_enum
+# catalog of enumerations the extraction has been run for
+# relevant_lines = bracketed_lines('bionics.h','enum bionic_id {','}')
 # relevant_lines = bracketed_lines('color.h','enum nc_color {','}')
 # relevant_lines = bracketed_lines('computer.h','enum computer_action','}')
 # relevant_lines = bracketed_lines('computer.h','enum computer_failure','}')
+# relevant_lines = bracketed_lines('faction.h','enum faction_goal {','}')
+# relevant_lines = bracketed_lines('faction.h','enum faction_job {','}')
+# relevant_lines = bracketed_lines('faction.h','enum faction_value {','}')
 # relevant_lines = bracketed_lines('itype.h','enum itype_id {','}')
 # relevant_lines = bracketed_lines('mapdata.h','enum field_id {','}')
 # relevant_lines = bracketed_lines('mapdata.h','enum ter_id {','}')
@@ -74,7 +79,7 @@ def JSON_transcode_definition_pair(src):
 # relevant_lines = bracketed_lines('mongroup.h','enum moncat_id {','}')
 # relevant_lines = bracketed_lines('mtype.h','enum mon_id {','}')
 # relevant_lines = bracketed_lines('npc.h','enum npc_favor_type {','}')
-relevant_lines = bracketed_lines('pldata.h','enum activity_type {','}')
+# relevant_lines = bracketed_lines('pldata.h','enum activity_type {','}')
 # relevant_lines = bracketed_lines('skill.h','enum skill {','}')
 enum_like = extract_C_enum(relevant_lines)
 print(JSON_transcode_definition(enum_like))

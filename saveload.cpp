@@ -85,6 +85,8 @@ JSON_ENUM(activity_type)
 JSON_ENUM(bionic_id)
 JSON_ENUM(computer_action)
 JSON_ENUM(computer_failure)
+JSON_ENUM(faction_goal)
+JSON_ENUM(faction_job)
 JSON_ENUM(field_id)
 JSON_ENUM(itype_id)
 JSON_ENUM(mission_id)
@@ -690,6 +692,7 @@ std::ostream& operator<<(std::ostream& os, const spawn_point& src)
 	else return os << "{}"; // temporary
 }
 
+// \todo release block: submap::submap,operator<< need at least partial JSON conversion
 submap::submap(std::istream& is, game* master_game)
 {
 	is >> turn_last_touched;
@@ -817,7 +820,7 @@ std::ostream& operator<<(std::ostream& os, const submap& src)
 	return os << "----" << std::endl;
 }
 
-
+// \todo release block: vehicle_part: operator>>,operator<< JSON conversion blocked by items
 std::istream& operator>>(std::istream& is, vehicle_part& dest)
 {
 	std::string databuff;

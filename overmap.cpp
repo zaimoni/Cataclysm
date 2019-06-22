@@ -2528,6 +2528,7 @@ to your designated evacuation point."));
  }
 }
 
+// \todo release block: overmap::save,load need at least partial JSON conversion
 void overmap::save(const std::string& name, int x, int y, int z)
 {
  std::stringstream plrfilename, terfilename;
