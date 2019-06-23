@@ -8,10 +8,6 @@
 // TODO: Redefine?
 #define MAX_FAC_NAME_SIZE 40
 
-#ifndef mfb
-#define mfb(n) long(1 << (n))
-#endif
-
 std::string fac_ranking_text(int val);
 std::string fac_respect_text(int val);
 
@@ -72,6 +68,7 @@ enum faction_value {
  FACVAL_CRUELTY,	// Torture, murder, etc.
  NUM_FACVALS
 };
+static_assert(sizeof(unsigned)* CHAR_BIT > NUM_FACVALS, "bitfield for faction_value will overflow");
 
 struct faction {
  faction(int uid = -1);
@@ -83,7 +80,7 @@ struct faction {
  void randomize();
  void make_army();
  bool has_job(faction_job j) const;
- bool has_value(faction_value v) const;
+ bool has_value(faction_value v) const { return values & (1U << v); };
  bool matches_us(faction_value v) const;
  std::string describe() const;
 

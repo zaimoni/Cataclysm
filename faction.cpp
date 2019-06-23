@@ -8,6 +8,10 @@
 
 #include <sstream>
 
+// defensive undefine \todo remove when mfb macro purged from headers
+#undef mfb
+#define mfb(n) (1U << n)
+
 static const char* JSON_transcode_goals[] = {
 	"NONE",
 	"WEALTH",
@@ -345,22 +349,16 @@ bool faction::has_job(faction_job j) const
  return (job1 == j || job2 == j);
 }
 
-bool faction::has_value(faction_value v) const
-{
- return values & mfb(v);
-}
-
 bool faction::matches_us(faction_value v) const
 {
+ if (has_job(FACJOB_DRUGS) && v == FACVAL_STRAIGHTEDGE)	return false; // Mutually exclusive
  int numvals = 2;
- if (job2 != FACJOB_NULL)
-  numvals++;
+ if (job2 != FACJOB_NULL) numvals++;
  for (int i = 0; i < NUM_FACVALS; i++) {
-  if (has_value(faction_value(i)))
-   numvals++;
+  if (has_value(faction_value(i))) numvals++;
  }
- if (has_job(FACJOB_DRUGS) && v == FACVAL_STRAIGHTEDGE)	// Mutually exclusive
-  return false;
+ // micro-optimize, RAM for CPU?: these five are knowable at construction time, but likely should not be in the savefile
+ // may want to test whether integer truncation is what we want here
  int avggood = (good / numvals + good) / 2;
  int avgstrength = (strength / numvals + strength) / 2;
  int avgsneak = (sneak / numvals + sneak / 2);
@@ -397,23 +395,18 @@ std::string faction::describe() const
  std::string ret = name + " have the ultimate goal of " +
                    facgoal_data[goal].name + ". Their primary concern is " +
                    facjob_data[job1].name;
- if (job2 == FACJOB_NULL)
-  ret += ".";
- else
-  ret += ", but they are also involved in " + facjob_data[job2].name + ".";
+ ret += (job2 == FACJOB_NULL) ? "." : ", but they are also involved in " + facjob_data[job2].name + ".";
  if (values != 0) {
   ret += " They are known for ";
   for (int i = 0; i < NUM_FACVALS; i++) {
-   if (has_value(faction_value(i)))
-    ret += facval_data[i].name + ", ";
+   if (has_value(faction_value(i))) ret += facval_data[i].name + ", ";
   }
  }
  size_t pos = ret.find_last_of(",");
  if (pos != std::string::npos) {
   ret.replace(pos, 2, ".");
   pos = ret.find_last_of(",");
-  if (pos != std::string::npos)
-   ret.replace(pos, 2, ", and ");
+  if (pos != std::string::npos) ret.replace(pos, 2, ", and ");
  }
  return ret;
 }
