@@ -71,7 +71,7 @@ relevant_lines = []	# to document expected type for extract_C_enum
 # relevant_lines = bracketed_lines('computer.h','enum computer_failure','}')
 # relevant_lines = bracketed_lines('faction.h','enum faction_goal {','}')
 # relevant_lines = bracketed_lines('faction.h','enum faction_job {','}')
-# relevant_lines = bracketed_lines('faction.h','enum faction_value {','}')
+relevant_lines = bracketed_lines('faction.h','enum faction_value {','}')
 # relevant_lines = bracketed_lines('itype.h','enum itype_id {','}')
 # relevant_lines = bracketed_lines('mapdata.h','enum field_id {','}')
 # relevant_lines = bracketed_lines('mapdata.h','enum ter_id {','}')
@@ -82,6 +82,6 @@ relevant_lines = []	# to document expected type for extract_C_enum
 # relevant_lines = bracketed_lines('pldata.h','enum activity_type {','}')
 # relevant_lines = bracketed_lines('skill.h','enum skill {','}')
 enum_like = extract_C_enum(relevant_lines)
-print(JSON_transcode_definition(enum_like))
-# print(JSON_transcode_definition_pair(enum_like))
+# print(JSON_transcode_definition(enum_like))
+print(JSON_transcode_definition_pair(enum_like))
 

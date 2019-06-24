@@ -68,7 +68,17 @@ enum faction_value {
  FACVAL_CRUELTY,	// Torture, murder, etc.
  NUM_FACVALS
 };
-static_assert(sizeof(unsigned)* CHAR_BIT > NUM_FACVALS, "bitfield for faction_value will overflow");
+static_assert(sizeof(unsigned)* CHAR_BIT >= NUM_FACVALS, "bitfield for faction_value will overflow");
+
+namespace cataclysm {
+
+	template<>
+	struct JSON_parse<faction_value>
+	{
+		unsigned operator()(const std::vector<std::string>& src);
+		std::vector<std::string> operator()(unsigned src);
+	};
+}
 
 struct faction {
  faction(int uid = -1);
