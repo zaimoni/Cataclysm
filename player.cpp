@@ -340,7 +340,92 @@ static const char* const JSON_transcode_activity[] = {
 	"TRAIN"
 };
 
+static const char* const JSON_transcode_addiction[] = {
+	"CAFFEINE",
+	"ALCOHOL",
+	"SLEEP",
+	"PKILLER",
+	"SPEED",
+	"CIG",
+	"COKE"
+};
+
+static const char* const JSON_transcode_disease[] = {
+	"GLARE",
+	"WET",
+	"COLD",
+	"COLD_FACE",
+	"COLD_HANDS",
+	"COLD_LEGS",
+	"COLD_FEET",
+	"HOT",
+	"HEATSTROKE",
+	"FBFACE",
+	"FBHANDS",
+	"FBFEET",
+	"INFECTION",
+	"COMMON_COLD",
+	"FLU",
+	"SMOKE",
+	"ONFIRE",
+	"TEARGAS",
+	"BOOMERED",
+	"SAP",
+	"SPORES",
+	"FUNGUS",
+	"SLIMED",
+	"DEAF",
+	"BLIND",
+	"LYING_DOWN",
+	"SLEEP",
+	"POISON",
+	"BADPOISON",
+	"FOODPOISON",
+	"SHAKES",
+	"DERMATIK",
+	"FORMICATION",
+	"WEBBED",
+	"RAT",
+	"PKILL1",
+	"PKILL2",
+	"PKILL3",
+	"PKILL_L",
+	"DRUNK",
+	"CIG",
+	"HIGH",
+	"HALLU",
+	"VISUALS",
+	"IODINE",
+	"TOOK_XANAX",
+	"TOOK_PROZAC",
+	"TOOK_FLUMED",
+	"TOOK_VITAMINS",
+	"ADRENALINE",
+	"ASTHMA",
+	"METH",
+	"BEARTRAP",
+	"IN_PIT",
+	"STUNNED",
+	"DOWNED",
+	"ATTACK_BOOST",
+	"DAMAGE_BOOST",
+	"DODGE_BOOST",
+	"ARMOR_BOOST",
+	"SPEED_BOOST",
+	"VIPER_COMBO",
+	"AMIGARA",
+	"TELEGLOW",
+	"ATTENTION",
+	"EVIL",
+	"ASKED_TO_FOLLOW",
+	"ASKED_TO_LEAD",
+	"ASKED_FOR_ITEM",
+	"CATCH_UP"
+};
+
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(activity_type, JSON_transcode_activity)
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(add_type, JSON_transcode_addiction)
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(dis_type, JSON_transcode_disease)
 
 // XXX inappropriate forward declares \todo lift definitions above uses
 nc_color encumb_color(int level);

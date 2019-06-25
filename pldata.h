@@ -49,11 +49,15 @@ enum dis_type {
  DI_CATCH_UP
 };
 
+DECLARE_JSON_ENUM_SUPPORT(dis_type)
+
 enum add_type {
  ADD_NULL,
  ADD_CAFFEINE, ADD_ALCOHOL, ADD_SLEEP, ADD_PKILLER, ADD_SPEED, ADD_CIG,
  ADD_COKE
 };
+
+DECLARE_JSON_ENUM_SUPPORT(add_type)
 
 struct disease
 {

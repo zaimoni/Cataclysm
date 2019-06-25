@@ -55,7 +55,7 @@ def JSON_transcode_definition(src):
 	JSON_diagnosis_array_body = []
 	for x in src[:-1]:
 		JSON_diagnosis_array_body.append('"'+x+'"')
-	return 'static const char* JSON_transcode['+src[-1]+'] = {\n\t'+',\n\t'.join(JSON_diagnosis_array_body)+'\n};'
+	return 'static const char* const JSON_transcode['+src[-1]+'] = {\n\t'+',\n\t'.join(JSON_diagnosis_array_body)+'\n};'
 
 def JSON_transcode_definition_pair(src):
 	JSON_diagnosis_array_body = []
@@ -71,7 +71,7 @@ relevant_lines = []	# to document expected type for extract_C_enum
 # relevant_lines = bracketed_lines('computer.h','enum computer_failure','}')
 # relevant_lines = bracketed_lines('faction.h','enum faction_goal {','}')
 # relevant_lines = bracketed_lines('faction.h','enum faction_job {','}')
-relevant_lines = bracketed_lines('faction.h','enum faction_value {','}')
+# relevant_lines = bracketed_lines('faction.h','enum faction_value {','}')
 # relevant_lines = bracketed_lines('itype.h','enum itype_id {','}')
 # relevant_lines = bracketed_lines('mapdata.h','enum field_id {','}')
 # relevant_lines = bracketed_lines('mapdata.h','enum ter_id {','}')
@@ -80,8 +80,10 @@ relevant_lines = bracketed_lines('faction.h','enum faction_value {','}')
 # relevant_lines = bracketed_lines('mtype.h','enum mon_id {','}')
 # relevant_lines = bracketed_lines('npc.h','enum npc_favor_type {','}')
 # relevant_lines = bracketed_lines('pldata.h','enum activity_type {','}')
+# relevant_lines = bracketed_lines('pldata.h','enum add_type {','}')
+# relevant_lines = bracketed_lines('pldata.h','enum dis_type {','}')
 # relevant_lines = bracketed_lines('skill.h','enum skill {','}')
 enum_like = extract_C_enum(relevant_lines)
-# print(JSON_transcode_definition(enum_like))
-print(JSON_transcode_definition_pair(enum_like))
+print(JSON_transcode_definition(enum_like))
+# print(JSON_transcode_definition_pair(enum_like))
 

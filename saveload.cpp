@@ -936,18 +936,9 @@ std::ostream& operator<<(std::ostream& os, const faction& src)
 	_faction.set("size", std::to_string(src.size));
 	_faction.set("power", std::to_string(src.power));
 	return os << _faction;
-
-	os << src.id << " " << src.values << " " << src.goal << " " << src.job1 << " " << src.job2 <<
-		" " << src.likes_u << " " << src.respects_u << " " << src.known_by_u << " " <<
-		src.strength << " " << src.sneak << " " << src.crime << " " << src.cult << " " <<
-		src.good << " " << src.om << " " << src.map <<
-		" " << src.size << " " << src.power << " ";
-	os << src.opinion_of.size() << " ";
-	for (int i = 0; i < src.opinion_of.size(); i++)
-		os << src.opinion_of[i] << " ";
-	return os << src.name << std::endl;
 }
 
+// \todo release block JSON support for items (blocks other classes)
 item::item(std::istream& is)
 {
 	int lettmp, damtmp, burntmp;
@@ -987,6 +978,7 @@ std::ostream& operator<<(std::ostream& os, const item& src)
 	return os << " '" << name_copy << "'";
 }
 
+// \todo release block: JSON save/load support (repairs monster inventories, effects being dropped in save/load cycle
 monster::monster(std::istream& is)
 {
 	int plansize;
