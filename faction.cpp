@@ -63,24 +63,25 @@ DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(faction_job, JSON_transcode_jobs)
 
 namespace cataclysm {
 
-unsigned JSON_parse<faction_value>::operator()(const std::vector<std::string>& src)
+unsigned JSON_parse<faction_value>::operator()(const std::vector<const char*>& src)
 {
 	if (src.empty()) return 0;
 	unsigned ret = 0;
-
 	ptrdiff_t i = sizeof(JSON_transcode_values) / sizeof(*JSON_transcode_values);
 	while (0 < i--) {
-		for (const auto& x : src) if (!strcmp(JSON_transcode_values[i].second, x.c_str())) {
-			ret |= JSON_transcode_values[i].first;
-			break;
+		for (const auto& x : src) {
+			if (!strcmp(JSON_transcode_values[i].second, x)) {
+				ret |= JSON_transcode_values[i].first;
+				break;
+			}
 		}
 	}
 	return ret;
 }
 
-std::vector<std::string> JSON_parse<faction_value>::operator()(unsigned src)
+std::vector<const char*> JSON_parse<faction_value>::operator()(unsigned src)
 {
-	std::vector<std::string> ret;
+	std::vector<const char*> ret;
 
 	if (src) {
 		ptrdiff_t i = sizeof(JSON_transcode_values) / sizeof(*JSON_transcode_values);
@@ -93,25 +94,11 @@ std::vector<std::string> JSON_parse<faction_value>::operator()(unsigned src)
 }
 
 faction::faction(int uid)
+: name(""), values(0), goal(FACGOAL_NULL), job1(FACJOB_NULL), job2(FACJOB_NULL),
+  likes_u(0), respects_u(0), known_by_u(false), id(uid),
+  strength(0), sneak(0), crime(0), cult(0), good(0),
+  om(0, 0), map(0, 0), size(0), power(0)
 {
- name = "";
- values = 0;
- likes_u = 0;
- respects_u = 0;
- known_by_u = false;
- goal = FACGOAL_NULL;
- job1 = FACJOB_NULL;
- job2 = FACJOB_NULL;
- strength = 0;
- sneak = 0;
- crime = 0;
- cult = 0;
- good = 0;
- om = point(0, 0);
- map = point(0, 0);
- size = 0;
- power = 0;
- id = uid;
 }
 
 // not suitable for general library code due to rng usage...maybe RNG header

@@ -297,7 +297,7 @@ void JSON::set(const std::string& src, JSON&& val)
 		_mode = object;
 	}
 	if (!_object) _object = new _object_JSON();
-	(*_object)[src] = val;
+	(*_object)[src] = std::move(val);
 }
 
 // constructor and support thereof

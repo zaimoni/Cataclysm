@@ -128,6 +128,18 @@ public:
 		}
 		return ret;
 	}
+	template<> static JSON encode<const char*>(const std::vector<const char*>& src) {
+		JSON ret;
+		ret._mode = array;
+		int n = src.size();
+		if (0 < n) {
+			ret._array = new std::vector<JSON>();
+			for (const auto& x : src) {
+				if (x) ret._array->push_back(x);
+			}
+		}
+		return ret;
+	}
 
 	template<class T> bool decode(std::vector<T>& dest) const {
 		if (array != _mode) return false;
@@ -145,6 +157,23 @@ public:
 		if (!working.empty()) swap(working, dest);
 		return ok;
 	}
+	// in this case, std::vector's inaction on destruction vs raw pointers is fine
+	template<> bool decode<const char*>(std::vector<const char*>& dest) const {
+		if (array != _mode) return false;
+		if (!_array || _array->empty()) {
+			dest.clear();
+			return true;
+		}
+		bool ok = true;
+		std::vector<const char*> working;
+		for (const auto& x : *_array) {
+			if (!x.is_scalar() || !x._scalar || x._scalar->empty()) ok = false;
+			else working.push_back(x._scalar->c_str());
+		}
+		if (!working.empty()) swap(working, dest);
+		return ok;
+	}
+
 protected:
 	JSON(std::istream& src,unsigned long& line, char& first, bool must_be_scalar = false);
 private:

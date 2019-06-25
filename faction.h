@@ -75,8 +75,8 @@ namespace cataclysm {
 	template<>
 	struct JSON_parse<faction_value>
 	{
-		unsigned operator()(const std::vector<std::string>& src);
-		std::vector<std::string> operator()(unsigned src);
+		unsigned operator()(const std::vector<const char*>& src);
+		std::vector<const char*> operator()(unsigned src);
 	};
 }
 

@@ -852,7 +852,45 @@ std::ostream& operator<<(std::ostream& os, const vehicle_part& src)
 }
 
 faction::faction(std::istream& is)
+: name(""), values(0), goal(FACGOAL_NULL), job1(FACJOB_NULL), job2(FACJOB_NULL),
+  likes_u(0), respects_u(0), known_by_u(false), id(-1),
+  strength(0), sneak(0), crime(0), cult(0), good(0),
+  om(0, 0), map(0, 0), size(0), power(0)
 {
+	if ('{' == (is >> std::ws).peek()) {
+		cataclysm::JSON_parse<faction_value> _parse;
+		JSON _in(is);
+		if (!_in.has_key("id") || !fromJSON(_in["id"], id)) return;	// \todo do we want to interpolate this key?
+		if (_in.has_key("name")) fromJSON(_in["name"], name);
+		if (_in.has_key("values")) {
+			std::vector<const char*> relay;
+			_in["values"].decode(relay);
+			if (!relay.empty()) values = _parse(relay);
+		}
+		if (_in.has_key("goal")) fromJSON(_in["goal"], goal);
+		if (_in.has_key("job1")) fromJSON(_in["job1"], job1);
+		if (_in.has_key("job2")) fromJSON(_in["job2"], job2);
+		if (_in.has_key("u")) {
+			const auto& tmp = _in["u"];
+			if (tmp.has_key("likes")) fromJSON(tmp["likes"], likes_u);
+			if (tmp.has_key("respects")) fromJSON(tmp["respects"], respects_u);
+			if (tmp.has_key("known_by")) fromJSON(tmp["known_by"], known_by_u);
+		}
+		if (_in.has_key("ethics")) {
+			const auto& tmp = _in["ethics"];
+			if (tmp.has_key("strength")) fromJSON(tmp["strength"], strength);
+			if (tmp.has_key("sneak")) fromJSON(tmp["sneak"], sneak);
+			if (tmp.has_key("crime")) fromJSON(tmp["crime"], crime);
+			if (tmp.has_key("cult")) fromJSON(tmp["cult"], cult);
+			if (tmp.has_key("good")) fromJSON(tmp["good"], good);
+		}
+		if (_in.has_key("om")) fromJSON(_in["om"], om);
+		if (_in.has_key("map")) fromJSON(_in["map"], job2);
+		if (_in.has_key("size")) fromJSON(_in["size"], job2);
+		if (_in.has_key("power")) fromJSON(_in["power"], job2);
+		return;
+	}
+	// \todo release block: remove legacy reading
 	int valuetmp;
 	is >> id >> valuetmp >> goal >> job1 >> job2 >> likes_u >>
 		respects_u >> known_by_u >> strength >> sneak >> crime >> cult >>
@@ -869,6 +907,36 @@ faction::faction(std::istream& is)
 
 std::ostream& operator<<(std::ostream& os, const faction& src)
 {
+	cataclysm::JSON_parse<faction_value> _parse;
+	JSON _faction;
+	_faction.set("id", std::to_string(src.id));
+	_faction.set("name", src.name);
+	if (src.values) {
+		auto tmp = _parse(src.values);
+		if (!tmp.empty()) _faction.set("values", JSON::encode(tmp));
+	}
+	if (auto json = JSON_key(src.goal)) _faction.set("goal",json);
+	if (auto json = JSON_key(src.job1)) _faction.set("job1", json);
+	if (auto json = JSON_key(src.job2)) _faction.set("job2", json);
+	{
+	JSON tmp;
+	tmp.set("likes", std::to_string(src.likes_u));
+	tmp.set("respects", std::to_string(src.respects_u));
+	if (src.known_by_u) tmp.set("known_by", "true");
+	_faction.set("u", std::move(tmp));	// ultimately we'd like the same format for the PC, and NPCs
+	tmp.set("strength", std::to_string(src.strength));
+	tmp.set("sneak", std::to_string(src.sneak));
+	tmp.set("crime", std::to_string(src.crime));
+	tmp.set("cult", std::to_string(src.cult));
+	tmp.set("good", std::to_string(src.good));
+	_faction.set("ethics", tmp);
+	}
+	_faction.set("om", toJSON(src.om));
+	_faction.set("map", toJSON(src.map));
+	_faction.set("size", std::to_string(src.size));
+	_faction.set("power", std::to_string(src.power));
+	return os << _faction;
+
 	os << src.id << " " << src.values << " " << src.goal << " " << src.job1 << " " << src.job2 <<
 		" " << src.likes_u << " " << src.respects_u << " " << src.known_by_u << " " <<
 		src.strength << " " << src.sneak << " " << src.crime << " " << src.cult << " " <<
