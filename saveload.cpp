@@ -82,9 +82,11 @@ bool fromJSON(const JSON& src, TYPE& dest)	\
 }
 
 JSON_ENUM(activity_type)
+JSON_ENUM(add_type)
 JSON_ENUM(bionic_id)
 JSON_ENUM(computer_action)
 JSON_ENUM(computer_failure)
+JSON_ENUM(dis_type)
 JSON_ENUM(faction_goal)
 JSON_ENUM(faction_job)
 JSON_ENUM(field_id)
@@ -1057,6 +1059,7 @@ std::ostream& operator<<(std::ostream& os, const it_armor& src)
 		int(src.env_resist) I_SEP << int(src.warmth) I_SEP << int(src.storage);
 }
 
+// \todo release block JSON support for artifact armors
 it_artifact_armor::it_artifact_armor(std::istream& is)
 : it_armor(is)
 {
@@ -1129,6 +1132,7 @@ std::ostream& operator<<(std::ostream& os, const it_tool& src)
 	return os << static_cast<const itype&>(src) I_SEP << src.max_charges;
 }
 
+// \todo release block JSON support for artifact tools
 it_artifact_tool::it_artifact_tool(std::istream& is)
 : it_tool(is)
 {
@@ -1226,23 +1230,54 @@ std::string it_artifact_armor::save_data()
 }
 
 disease::disease(std::istream& is)	// V 0.2.0 blocker \todo savefile representation for disease intensity
-: intensity(0)
+: type(DI_NULL), intensity(0), duration(0)
 {
+	if ('{' == (is >> std::ws).peek()) {
+		JSON _in(is);
+		if (_in.has_key("type")) fromJSON(_in["type"], type);
+		if (_in.has_key("duration")) fromJSON(_in["duration"], duration);
+		if (_in.has_key("intensity")) fromJSON(_in["intensity"], intensity);
+		return;
+	}
+	// \todo release block: remove legacy reading
 	is >> type >> duration;
 }
 
 std::ostream& operator<<(std::ostream& os, const disease& src)
 {
-	return os << src.type I_SEP << src.duration;
+	if (auto json = JSON_key(src.type)) {
+		JSON _disease;
+		_disease.set("type", json);
+		_disease.set("duration", std::to_string(src.duration));
+		_disease.set("intensity", std::to_string(src.intensity));
+		return os << _disease;
+	}
+	else return os << "{}";
 }
 
 addiction::addiction(std::istream& is)
+: type(ADD_NULL), intensity(0), sated(600)
 {
+	if ('{' == (is >> std::ws).peek()) {
+		JSON _in(is);
+		if (_in.has_key("type")) fromJSON(_in["type"], type);
+		if (_in.has_key("intensity")) fromJSON(_in["intensity"], intensity);
+		if (_in.has_key("sated")) fromJSON(_in["sated"], sated);
+		return;
+	}
+	// \todo release block: remove legacy reading
 	is >> type >> intensity >> sated;
 }
 
 std::ostream& operator<<(std::ostream& os, const addiction& src)
 {
+	if (auto json = JSON_key(src.type)) {
+		JSON _addiction;
+		_addiction.set("type", json);
+		_addiction.set("intensity", std::to_string(src.intensity));
+		_addiction.set("sated", std::to_string(src.sated));
+		return os << _addiction;
+	}
 	return os << src.type I_SEP << src.intensity I_SEP << src.sated;
 }
 
