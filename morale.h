@@ -37,6 +37,8 @@ enum morale_type
  NUM_MORALE_TYPES
 };
 
+DECLARE_JSON_ENUM_SUPPORT(morale_type)
+
 struct morale_point
 {
  static const std::string data[NUM_MORALE_TYPES];

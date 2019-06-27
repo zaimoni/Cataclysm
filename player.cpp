@@ -423,9 +423,33 @@ static const char* const JSON_transcode_disease[] = {
 	"CATCH_UP"
 };
 
+static const char* const JSON_transcode_morale[] = {
+	"FOOD_GOOD",
+	"MUSIC",
+	"MARLOSS",
+	"FEELING_GOOD",
+	"CRAVING_NICOTINE",
+	"CRAVING_CAFFEINE",
+	"CRAVING_ALCOHOL",
+	"CRAVING_OPIATE",
+	"CRAVING_SPEED",
+	"CRAVING_COCAINE",
+	"FOOD_BAD",
+	"VEGETARIAN",
+	"WET",
+	"FEELING_BAD",
+	"KILLED_INNOCENT",
+	"KILLED_FRIEND",
+	"KILLED_MONSTER",
+	"MOODSWING",
+	"BOOK",
+	"SCREAM"
+};
+
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(activity_type, JSON_transcode_activity)
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(add_type, JSON_transcode_addiction)
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(dis_type, JSON_transcode_disease)
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(morale_type, JSON_transcode_morale)
 
 // XXX inappropriate forward declares \todo lift definitions above uses
 nc_color encumb_color(int level);
