@@ -94,6 +94,7 @@ JSON_ENUM(itype_id)
 JSON_ENUM(mission_id)
 JSON_ENUM(mon_id)
 JSON_ENUM(moncat_id)
+JSON_ENUM(morale_type)
 JSON_ENUM(npc_favor_type)
 JSON_ENUM(skill)
 
@@ -139,6 +140,15 @@ std::istream& operator>>(std::istream& is, const mtype*& dest)
 std::ostream& operator<<(std::ostream& os, const mtype* const src)
 {
 	return os << (src ? src->id : -1);
+}
+
+bool fromJSON(const JSON& src, const itype*& dest)
+{
+	if (!src.is_scalar()) return false;
+	itype_id type_id;
+	bool ret = fromJSON(src, type_id);
+	if (ret) dest = item::types[type_id];	// XXX \todo should be itype::types?
+	return ret;
 }
 
 std::istream& operator>>(std::istream& is, const itype*& dest)
@@ -1277,19 +1287,35 @@ std::ostream& operator<<(std::ostream& os, const addiction& src)
 		_addiction.set("intensity", std::to_string(src.intensity));
 		_addiction.set("sated", std::to_string(src.sated));
 		return os << _addiction;
-	}
-	return os << src.type I_SEP << src.intensity I_SEP << src.sated;
+	} else return os << "{}";
 }
 
 morale_point::morale_point(std::istream& is)
+: type(MORALE_NULL), item_type(0), bonus(0)
 {
+	if ('{' == (is >> std::ws).peek()) {
+		JSON _in(is);
+		if (!_in.has_key("type") || !fromJSON(_in["type"], type)) return;
+		if (_in.has_key("bonus")) fromJSON(_in["bonus"], bonus);
+		if (_in.has_key("item")) fromJSON(_in["item"], item_type);
+		return;
+	}
+	// \todo release block: remove legacy reading
 	is >> bonus >> type >> item_type;
 	if (item_type && itm_null == item_type->id) item_type = 0;	// historically, itm_null was the encoding for null pointer
 }
 
 std::ostream& operator<<(std::ostream& os, const morale_point& src)
 {
-	return os << src.bonus I_SEP << src.type I_SEP << src.item_type;
+	if (auto json = JSON_key(src.type)) {
+		JSON _morale;
+		_morale.set("type", json);
+		if (0 != src.bonus) _morale.set("bonus", std::to_string(src.bonus));
+		if (src.item_type) {
+			if (auto json2 = JSON_key((itype_id)(src.item_type->id))) _morale.set("item", json2);	// \todo eliminate this cast
+		}
+		return os << _morale;
+	} else return os << "{}";
 }
 
 // We have an improper inheritance player -> npc (ideal difference would be the AI controller class, cf. Rogue Survivor game family
