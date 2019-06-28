@@ -190,6 +190,10 @@ itm_style_karate, itm_style_aikido, itm_style_judo, itm_style_tai_chi,
 num_all_items
 };
 
+// styles from the 1978 movie "The Five Venoms":
+// itm_style_centipede, itm_style_venom_snake, itm_style_scorpion, itm_style_lizard, itm_style_toad
+// others exist in our reality
+
 DECLARE_JSON_ENUM_SUPPORT(itype_id)
 
 // IMPORTANT: If adding a new AT_*** ammotype, add it to the ammo_name function

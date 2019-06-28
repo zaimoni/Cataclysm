@@ -172,11 +172,14 @@ struct npc_opinion
              trust (T), fear (F), value (V), anger(A), owed (O) { };
 
  npc_opinion(const npc_opinion &copy) = default;
+ npc_opinion(npc_opinion&& copy) = default;
  ~npc_opinion() = default;
+ npc_opinion& operator=(const npc_opinion& copy) = default;
+ npc_opinion& operator=(npc_opinion&& copy) = default;
  friend std::istream& operator>>(std::istream& is, npc_opinion& dest);
  friend std::ostream& operator<<(std::ostream& os, const npc_opinion& src);
 
- npc_opinion& operator+= (const npc_opinion &rhs)
+ npc_opinion& operator+=(const npc_opinion &rhs)
  {
   trust += rhs.trust;
   fear  += rhs.fear;
@@ -186,7 +189,7 @@ struct npc_opinion
   return *this;
  };
 
- npc_opinion& operator+ (const npc_opinion &rhs) const
+ npc_opinion& operator+(const npc_opinion &rhs) const
  {
   return (npc_opinion(*this) += rhs);
  };

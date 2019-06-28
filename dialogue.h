@@ -95,19 +95,10 @@ struct talk_response
  talk_topic failure;
 
  talk_response()
+ : text(""),trial(TALK_TRIAL_NONE),difficulty(0),mission_index(-1),miss(MISSION_NULL),tempvalue(-1),
+   effect_success(&talk_function::nothing),effect_failure(&talk_function::nothing),
+   success(TALK_NONE),failure(TALK_NONE)
  {
-  text = "";
-  trial = TALK_TRIAL_NONE;
-  difficulty = 0;
-  mission_index = -1;
-  miss = MISSION_NULL;
-  tempvalue = -1;
-  effect_success = &talk_function::nothing;
-  effect_failure = &talk_function::nothing;
-  opinion_success = npc_opinion();
-  opinion_failure = npc_opinion();
-  success = TALK_NONE;
-  failure = TALK_NONE;
  }
 
  talk_response(const talk_response &rhs) = default;

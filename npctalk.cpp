@@ -1187,9 +1187,9 @@ void talk_function::mission_success(game *g, npc *p)
   return;
  }
  int index = p->chatbin.missions_assigned[selected];
- mission *miss = g->find_mission(index);
- npc_opinion tmp( 0, 0, 1 + (miss->value / 1000), -1, miss->value);
- p->op_of_u += tmp;
+ if (const mission* const miss = g->find_mission(index)) {
+	 p->op_of_u += npc_opinion(0, 0, 1 + (miss->value / 1000), -1, miss->value);
+ }
  g->wrap_up_mission(index);
 }
 
@@ -1201,8 +1201,7 @@ void talk_function::mission_failure(game *g, npc *p)
            selected, p->chatbin.missions_assigned.size());
   return;
  }
- npc_opinion tmp( -1, 0, -1, 1, 0);
- p->op_of_u += tmp;
+ p->op_of_u += npc_opinion(-1, 0, -1, 1, 0);
  g->mission_failed(p->chatbin.missions_assigned[selected]);
 }
 
