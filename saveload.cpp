@@ -90,7 +90,7 @@ JSON_ENUM(dis_type)
 JSON_ENUM(faction_goal)
 JSON_ENUM(faction_job)
 JSON_ENUM(field_id)
-JSON_ENUM(itype_id)
+JSON_ENUM(itype_id)	// breaks if we need a randart as a morale_point item
 JSON_ENUM(mission_id)
 JSON_ENUM(mon_id)
 JSON_ENUM(moncat_id)
@@ -1312,7 +1312,7 @@ std::ostream& operator<<(std::ostream& os, const morale_point& src)
 		_morale.set("type", json);
 		if (0 != src.bonus) _morale.set("bonus", std::to_string(src.bonus));
 		if (src.item_type) {
-			if (auto json2 = JSON_key((itype_id)(src.item_type->id))) _morale.set("item", json2);	// \todo eliminate this cast
+			if (auto json2 = JSON_key((itype_id)(src.item_type->id))) _morale.set("item", json2);	// \todo eliminate this cast?
 		}
 		return os << _morale;
 	} else return os << "{}";

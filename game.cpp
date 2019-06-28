@@ -766,10 +766,7 @@ void game::process_activity()
     {
     const it_book* reading = dynamic_cast<const it_book*>(-2 == u.activity.index ? u.weapon.type : u.inv[u.activity.index].type);
 
-    if (reading->fun != 0) {
-     std::stringstream morale_text;
-     u.add_morale(MORALE_BOOK, reading->fun * 5, reading->fun * 15, reading);
-    }
+    if (reading->fun != 0) u.add_morale(MORALE_BOOK, reading->fun * 5, reading->fun * 15, reading);
 
     if (u.sklevel[reading->type] < reading->level) {
      messages.add("You learn a little about %s!", skill_name(reading->type));

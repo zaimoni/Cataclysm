@@ -298,7 +298,8 @@ itype_id default_ammo(ammotype guntype);
 struct itype
 {
  int id;		// ID # that matches its place in master itype list
- 			// Used for save files; aligns to itype_id above.
+ 				// Used for save files; aligns to itype_id above.
+			    // plausibly should be int rather than itype_id due to random artifacts
  unsigned char rarity;	// How often it's found
  unsigned int  price;	// Its value
  
