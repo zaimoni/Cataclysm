@@ -1444,6 +1444,17 @@ std::ostream& operator<<(std::ostream& os, const player& src)
 
 std::istream& operator>>(std::istream& is, npc_opinion& dest)
 {
+	if ('{' == (is >> std::ws).peek()) {
+		JSON _in(is);
+		if (_in.has_key("trust")) fromJSON(_in["trust"], dest.trust);
+		if (_in.has_key("fear")) fromJSON(_in["fear"], dest.fear);
+		if (_in.has_key("value")) fromJSON(_in["value"], dest.value);
+		if (_in.has_key("anger")) fromJSON(_in["anger"], dest.anger);
+		if (_in.has_key("owed")) fromJSON(_in["owed"], dest.owed);
+		if (_in.has_key("favors")) _in["favors"].decode(dest.favors);
+		return is;
+	}
+	// \todo release block: remove legacy reading
 	int tmpsize;
 	is >> dest.trust >> dest.fear >> dest.value >> dest.anger >> dest.owed >> tmpsize;
 	for (int i = 0; i < tmpsize; i++) dest.favors.push_back(npc_favor(is));
@@ -1452,9 +1463,14 @@ std::istream& operator>>(std::istream& is, npc_opinion& dest)
 
 std::ostream& operator<<(std::ostream& os, const npc_opinion& src)
 {
-	os << src.trust I_SEP << src.fear I_SEP << src.value I_SEP << src.anger I_SEP << src.owed I_SEP << src.favors.size();
-	for (const auto& fav : src.favors) os I_SEP << fav;
-	return os;
+	JSON _opinion;
+	_opinion.set("trust", std::to_string(src.trust));
+	_opinion.set("fear", std::to_string(src.fear));
+	_opinion.set("value", std::to_string(src.value));
+	_opinion.set("anger", std::to_string(src.anger));
+	_opinion.set("owed", std::to_string(src.owed));
+	if (!src.favors.empty()) _opinion.set("favors", JSON::encode(src.favors));
+	return os << _opinion;
 }
 
 std::istream& operator>>(std::istream& is, npc_chatbin& dest)
