@@ -288,18 +288,19 @@ enum talk_topic {
 
 struct npc_chatbin
 {
- std::vector<int> missions;
- std::vector<int> missions_assigned;
+ std::vector<int> missions;           // values are mission uid values (expected non-null when attempting to find)
+ std::vector<int> missions_assigned;  // values are mission uid values (expected non-null when attempting to find)
  int mission_selected;
  int tempvalue;
  talk_topic first_topic;
 
- npc_chatbin()
- {
-  mission_selected = -1;
-  tempvalue = -1;
-  first_topic = TALK_NONE;
- }
+ npc_chatbin() : mission_selected(-1), tempvalue(-1), first_topic(TALK_NONE) {}
+ npc_chatbin(const npc_chatbin& src) = default;
+ npc_chatbin(npc_chatbin&& src) = default;
+ ~npc_chatbin() = default;
+ npc_chatbin& operator=(const npc_chatbin& src) = default;
+ npc_chatbin& operator=(npc_chatbin&& src) = default;
+
  friend std::istream& operator>>(std::istream& is, npc_chatbin& dest);
  friend std::ostream& operator<<(std::ostream& os, const npc_chatbin& src);
 };

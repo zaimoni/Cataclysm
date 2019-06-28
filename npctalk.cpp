@@ -128,36 +128,35 @@ void npc::talk_to_u(game *g)
  g->refresh_all();
 }
 
+// altered to throw on error conditions to allow the sole caller to respond more reasonably.
 std::string dynamic_line(talk_topic topic, game *g, npc *p)
 {
 // First, a sanity test for mission stuff
  if (topic >= TALK_MISSION_START && topic <= TALK_MISSION_END) {
 
-  if (topic == TALK_MISSION_START) return "Used TALK_MISSION_START - not meant to be used!";
-  if (topic == TALK_MISSION_END) return "Used TALK_MISSION_END - not meant to be used!";
+  if (topic == TALK_MISSION_START) throw std::string("Used TALK_MISSION_START - not meant to be used!");
+  if (topic == TALK_MISSION_END) throw std::string("Used TALK_MISSION_END - not meant to be used!");
 
-  if (p->chatbin.mission_selected == -1)
-   return "mission_selected = -1; BUG!";
+  if (0 > p->chatbin.mission_selected) throw std::string("BUG: negative mission_selected: ")+std::to_string(p->chatbin.mission_selected);
   int id = -1;
-  if (topic == TALK_MISSION_INQUIRE || topic == TALK_MISSION_ACCEPTED ||
-      topic == TALK_MISSION_SUCCESS || topic == TALK_MISSION_ADVICE ||
-      topic == TALK_MISSION_FAILURE || topic == TALK_MISSION_SUCCESS_LIE) {
-   if (p->chatbin.mission_selected >= p->chatbin.missions_assigned.size())
-    return "mission_selected is too high; BUG!";
-   id = p->chatbin.missions_assigned[ p->chatbin.mission_selected ];
-  } else {
-   if (p->chatbin.mission_selected >= p->chatbin.missions.size())
-    return "mission_selected is too high; BUG!";
-   id = p->chatbin.missions[ p->chatbin.mission_selected ];
-  }
+  std::vector<int>& conversation_target = (topic == TALK_MISSION_INQUIRE || topic == TALK_MISSION_ACCEPTED ||
+	  topic == TALK_MISSION_SUCCESS || topic == TALK_MISSION_ADVICE ||
+	  topic == TALK_MISSION_FAILURE || topic == TALK_MISSION_SUCCESS_LIE) ? p->chatbin.missions_assigned : p->chatbin.missions;
+
+  if (p->chatbin.mission_selected >= conversation_target.size()) throw std::string("BUG: mission_selected: ") + std::to_string(p->chatbin.mission_selected) + " exceeds strict upper bound " + std::to_string(conversation_target.size());
+  id = conversation_target[p->chatbin.mission_selected];
 
 // Mission stuff is a special case, so we'll handle it up here
-  mission *miss = g->find_mission(id);
-  const mission_type *type = miss->type;
-  std::string ret = mission_dialogue(mission_id(type->id), topic);
-  if (topic == TALK_MISSION_SUCCESS && miss->follow_up != MISSION_NULL)
-   return ret + "  And I have more I'd like you to do.";
-  return ret;
+  if (const mission* miss = g->find_mission(id)) {
+	  const mission_type* type = miss->type;
+	  std::string ret = mission_dialogue(mission_id(type->id), topic);
+	  if (topic == TALK_MISSION_SUCCESS && miss->follow_up != MISSION_NULL)
+		  return ret + "  And I have more I'd like you to do.";
+	  return ret;
+  } else {	// desired invariant failed
+	  // intentionally leave the offending mission uid in place
+	  throw std::string("BUG: non-existent mission uid ") + std::to_string(id);
+  }
 
  }
   
@@ -1451,7 +1450,13 @@ talk_topic dialogue::opt(talk_topic topic, game *g)
 {
  static std::string talk_trial_text[NUM_TALK_TRIALS] = { "", "LIE", "PERSUADE", "INTIMIDATE" };	// constructor disables the operator<<(void*) overload
 
- std::string challenge = dynamic_line(topic, g, beta);
+ std::string challenge;
+ try {
+   challenge = dynamic_line(topic, g, beta);
+ } catch (const std::string& e) {	// yes, non-standard choice.
+   debugmsg(e.c_str());
+   return TALK_NONE;
+ }
  std::vector<talk_response> responses = gen_responses(topic, g, beta);
 // Put quotes around challenge (unless it's an action)
  if (challenge[0] != '*' && challenge[0] != '&') {
