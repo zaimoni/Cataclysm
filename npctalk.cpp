@@ -42,8 +42,6 @@
 
 #define SUCCESS_MISSION(type) ret.back().miss = type
 
-std::string dynamic_line(talk_topic topic, game *g, npc *p);
-std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *p);
 int topic_category(talk_topic topic);
 
 talk_topic special_talk(char ch);
@@ -129,7 +127,7 @@ void npc::talk_to_u(game *g)
 }
 
 // altered to throw on error conditions to allow the sole caller to respond more reasonably.
-std::string dynamic_line(talk_topic topic, game *g, npc *p)
+static std::string dynamic_line(talk_topic topic, game *g, npc *p)
 {
 // First, a sanity test for mission stuff
  if (topic >= TALK_MISSION_START && topic <= TALK_MISSION_END) {
@@ -395,13 +393,20 @@ std::string dynamic_line(talk_topic topic, game *g, npc *p)
  return "I don't know what to say. (BUG)";
 }
 
-std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *p)
+static std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *p)
 {
  std::vector<talk_response> ret;
  int selected = p->chatbin.mission_selected;
  mission *miss = NULL;
- if (selected != -1 && selected < p->chatbin.missions_assigned.size())
-  miss = g->find_mission( p->chatbin.missions_assigned[selected] );
+ // agree with dynamic_line on which mission is relevant.
+ if (0 <= selected)
+	{
+    std::vector<int>& conversation_target = (topic == TALK_MISSION_INQUIRE || topic == TALK_MISSION_ACCEPTED ||
+		 topic == TALK_MISSION_SUCCESS || topic == TALK_MISSION_ADVICE ||
+		 topic == TALK_MISSION_FAILURE || topic == TALK_MISSION_SUCCESS_LIE) ? p->chatbin.missions_assigned : p->chatbin.missions;
+
+	 if (selected < conversation_target.size()) miss = g->find_mission(conversation_target[selected]);	// non-NULL as dynamic_lines validated this
+	}
 
  switch (topic) {
  case TALK_MISSION_LIST:
@@ -1458,30 +1463,32 @@ talk_topic dialogue::opt(talk_topic topic, game *g)
    return TALK_NONE;
  }
  std::vector<talk_response> responses = gen_responses(topic, g, beta);
+#if NO_OP
 // Put quotes around challenge (unless it's an action)
  if (challenge[0] != '*' && challenge[0] != '&') {
   std::stringstream tmp;
   tmp << "\"" << challenge << "\"";
  }
+#endif
 // Parse any tags in challenge
  parse_tags(challenge, alpha, beta);
- if (challenge[0] >= 'a' && challenge[0] <= 'z')
-  challenge[0] += 'A' - 'a';
+ if (challenge[0] >= 'a' && challenge[0] <= 'z') challenge[0] += 'A' - 'a';
 // Prepend "My Name: "
- if (challenge[0] == '&') // No name prepended!
-  challenge = challenge.substr(1);
- else if (challenge[0] == '*')
-  challenge = beta->name + " " + challenge.substr(1);
- else
-  challenge = beta->name + ": " + challenge;
+ if (challenge[0] == '&') challenge = challenge.substr(1); // No name prepended!
+ else challenge = beta->name + (challenge[0] == '*' ? " "	// action
+	                                                : ": ") + challenge.substr(1);	// speech
  history.push_back(""); // Empty line between lines of dialogue
  
 // Number of lines to highlight
+#ifdef MID_WIDTH
+#undef MID_WIDTH
+#endif
+ const int MID_WIDTH = SCREEN_WIDTH/2;	// historicallly, 40
  int hilight_lines = 1;
  size_t split;
- while (challenge.length() > 40) {
+ while (challenge.length() > MID_WIDTH) {
   hilight_lines++;
-  split = challenge.find_last_of(' ', 40);
+  split = challenge.find_last_of(' ', MID_WIDTH);
   history.push_back(challenge.substr(0, split));
   challenge = challenge.substr(split);
  }
@@ -1508,14 +1515,13 @@ talk_topic dialogue::opt(talk_topic topic, game *g)
    colors.push_back(c_white);
  }
   
- for (int i = 2; i < 24; i++) {
-  for (int j = 1; j < 79; j++) {
-   if (j != 41)
-    mvwputch(win, i, j, c_black, ' ');
+ for (int i = 2; i < VIEW-1; i++) {
+  for (int j = 1; j < SCREEN_WIDTH-1; j++) {
+   if (j != MID_WIDTH+1) mvwputch(win, i, j, c_black, ' ');
   }
  }
 
- int curline = 23, curhist = 1;
+ int curline = VIEW - 2, curhist = 1;
  while (curhist <= history.size() && curline > 0) {
   mvwprintz(win, curline, 1, ((curhist <= hilight_lines) ? c_red : c_dkgray), history[history.size() - curhist].c_str());
   curline--;
@@ -1524,17 +1530,17 @@ talk_topic dialogue::opt(talk_topic topic, game *g)
 
  curline = 3;
  for (int i = 0; i < options.size(); i++) {
-  while (options[i].size() > 36) {
-   split = options[i].find_last_of(' ', 36);
-   mvwprintz(win, curline, 42, colors[i], options[i].substr(0, split).c_str());
+  while (options[i].size() > MID_WIDTH - 4) {
+   split = options[i].find_last_of(' ', MID_WIDTH - 4);
+   mvwprintz(win, curline, MID_WIDTH + 2, colors[i], options[i].substr(0, split).c_str());
    options[i] = "  " + options[i].substr(split);
    curline++;
   }
-  mvwprintz(win, curline, 42, colors[i], options[i].c_str());
+  mvwprintz(win, curline, MID_WIDTH + 2, colors[i], options[i].c_str());
   curline++;
  }
- mvwprintz(win, curline + 2, 42, c_magenta, "L: Look at");
- mvwprintz(win, curline + 3, 42, c_magenta, "S: Size up stats");
+ mvwprintz(win, curline + 2, MID_WIDTH + 2, c_magenta, "L: Look at");
+ mvwprintz(win, curline + 3, MID_WIDTH + 2, c_magenta, "S: Size up stats");
 
  wrefresh(win);
 
@@ -1561,9 +1567,9 @@ talk_topic dialogue::opt(talk_topic topic, game *g)
  if (special_talk(ch) != TALK_NONE) return special_talk(ch);
 
  std::string response_printed = "You: " + responses[ch].text;
- while (response_printed.length() > 40) {
+ while (response_printed.length() > MID_WIDTH) {
   hilight_lines++;
-  split = response_printed.find_last_of(' ', 40);
+  split = response_printed.find_last_of(' ', MID_WIDTH);
   history.push_back(response_printed.substr(0, split));
   response_printed = response_printed.substr(split);
  }
