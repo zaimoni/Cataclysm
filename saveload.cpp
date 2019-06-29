@@ -97,6 +97,7 @@ JSON_ENUM(moncat_id)
 JSON_ENUM(morale_type)
 JSON_ENUM(npc_favor_type)
 JSON_ENUM(skill)
+JSON_ENUM(talk_topic)
 
 // stereotypical translation of pointers to/from vector indexes
 // \todo in general if a loaded pointer index is "invalid" we should warn here; non-null requirements are enforced higher up

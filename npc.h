@@ -286,6 +286,8 @@ enum talk_topic {
  NUM_TALK_TOPICS
 };
 
+DECLARE_JSON_ENUM_SUPPORT(talk_topic)
+
 struct npc_chatbin
 {
  std::vector<int> missions;           // values are mission uid values (expected non-null when attempting to find)
