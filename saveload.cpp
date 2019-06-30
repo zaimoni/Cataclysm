@@ -1522,6 +1522,16 @@ std::ostream& operator<<(std::ostream& os, const npc_chatbin& src)
 
 std::istream& operator>>(std::istream& is, npc_personality& dest)
 {
+	if ('{' == (is >> std::ws).peek()) {
+		JSON _in(is);
+		int tmp;
+		if (_in.has_key("aggression") && fromJSON(_in["aggression"], tmp)) dest.aggression = (signed char)tmp;
+		if (_in.has_key("bravery") && fromJSON(_in["bravery"], tmp)) dest.bravery = (signed char)tmp;
+		if (_in.has_key("collector") && fromJSON(_in["collector"], tmp)) dest.collector = (signed char)tmp;
+		if (_in.has_key("altruism") && fromJSON(_in["altruism"], tmp)) dest.altruism = (signed char)tmp;
+		return is;
+	}
+	// \todo release block: remove legacy reading
 	int agg, bra, col, alt;
 	is >> agg >> bra >> col >> alt;
 	dest.aggression = agg;
@@ -1533,7 +1543,12 @@ std::istream& operator>>(std::istream& is, npc_personality& dest)
 
 std::ostream& operator<<(std::ostream& os, const npc_personality& src)
 {
-	return os << int(src.aggression) I_SEP << int(src.bravery) I_SEP << int(src.collector) I_SEP << int(src.altruism);
+	JSON _personality;
+	_personality.set("aggression", std::to_string((int)src.aggression));
+	_personality.set("bravery", std::to_string((int)src.bravery));
+	_personality.set("collector", std::to_string((int)src.collector));
+	_personality.set("altruism", std::to_string((int)src.altruism));
+	return os << _personality;
 }
 
 std::istream& operator>>(std::istream& is, npc_combat_rules& dest)
