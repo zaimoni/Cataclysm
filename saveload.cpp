@@ -1478,7 +1478,7 @@ std::istream& operator>>(std::istream& is, npc_chatbin& dest)
 {
 	if ('{' == (is >> std::ws).peek()) {
 		JSON _in(is);
-		if (_in.has_key("first_topic") || !fromJSON(_in["first_topic"], dest.first_topic)) return is;
+		if (!_in.has_key("first_topic") || !fromJSON(_in["first_topic"], dest.first_topic)) return is;
 
 		// \todo: verify whether missions are fully loaded before the chatbins are loaded
 		// \todo: verify whether mission_selected and tempvalue are UI-local, thus not needed in the savefile
