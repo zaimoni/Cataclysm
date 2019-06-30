@@ -1476,6 +1476,19 @@ std::ostream& operator<<(std::ostream& os, const npc_opinion& src)
 
 std::istream& operator>>(std::istream& is, npc_chatbin& dest)
 {
+	if ('{' == (is >> std::ws).peek()) {
+		JSON _in(is);
+		if (_in.has_key("first_topic") || !fromJSON(_in["first_topic"], dest.first_topic)) return is;
+
+		// \todo: verify whether missions are fully loaded before the chatbins are loaded
+		// \todo: verify whether mission_selected and tempvalue are UI-local, thus not needed in the savefile
+		if (_in.has_key("mission_selected")) fromJSON(_in["mission_selected"], dest.mission_selected);
+		if (_in.has_key("tempvalue")) fromJSON(_in["tempvalue"], dest.tempvalue);
+		if (_in.has_key("missions")) _in["missions"].decode(dest.missions);
+		if (_in.has_key("missions_assigned")) _in["missions_assigned"].decode(dest.missions_assigned);
+		return is;
+	}
+	// \todo release block: remove legacy reading
 	int tmpsize_miss, tmpsize_assigned;
 	is >> dest.first_topic >> dest.mission_selected >> dest.tempvalue >> tmpsize_miss >> tmpsize_assigned;
 	for (int i = 0; i < tmpsize_miss; i++) {
@@ -1493,11 +1506,18 @@ std::istream& operator>>(std::istream& is, npc_chatbin& dest)
 
 std::ostream& operator<<(std::ostream& os, const npc_chatbin& src)
 {
-	os << src.first_topic I_SEP << src.mission_selected I_SEP << src.tempvalue I_SEP <<
-		src.missions.size() I_SEP << src.missions_assigned.size();
-	for (const auto& mi : src.missions) os I_SEP << mi;
-	for (const auto& mi : src.missions_assigned) os I_SEP << mi;
-	return os;
+	if (auto json = JSON_key(src.first_topic)) {
+		JSON _chatbin;
+		_chatbin.set("first_topic", json);
+		// \todo: try to purge invalid mission ids before checking size, etc.
+		if (0 <= src.mission_selected && (src.missions.size() > src.mission_selected || src.missions_assigned.size() > src.mission_selected)) {
+			_chatbin.set("mission_selected", std::to_string(src.mission_selected));
+		}
+		_chatbin.set("tempvalue", std::to_string(src.tempvalue));
+		if (!src.missions.empty()) _chatbin.set("missions", JSON::encode(src.missions));
+		if (!src.missions_assigned.empty()) _chatbin.set("missions_assigned", JSON::encode(src.missions_assigned));
+		return os << _chatbin;
+	} else return os << "{}";
 }
 
 std::istream& operator>>(std::istream& is, npc_personality& dest)

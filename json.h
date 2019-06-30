@@ -121,9 +121,8 @@ public:
 	template<class T> static JSON encode(const std::vector<T>& src) {
 		JSON ret;
 		ret._mode = array;
-		int n = src.size();
-		if (0 < n) {
-			ret._array = new std::vector<JSON>(n);
+		if (!src.empty()) {
+			ret._array = new std::vector<JSON>();
 			for (const auto& x : src) ret._array->push_back(toJSON(x));
 		}
 		return ret;
