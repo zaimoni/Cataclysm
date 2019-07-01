@@ -954,6 +954,8 @@ std::ostream& operator<<(std::ostream& os, const faction& src)
 
 // \todo release block JSON support for items (blocks other classes)
 item::item(std::istream& is)
+: type(0),corpse(0),curammo(0),name(""),invlet(0),charges(-1),active(false),
+  damage(0),burnt(0),bday(0),owned(-1),poison(0),mission_id(-1),player_id(-1)
 {
 	int lettmp, damtmp, burntmp;
 	is >> lettmp >> type >> charges >> damtmp >> burntmp >> poison >> curammo >>

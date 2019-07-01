@@ -7,39 +7,16 @@
 std::string default_technique_name(technique_id tech);
 
 item::item()
+: type(0),corpse(0),curammo(0),name(""),invlet(0),charges(-1),active(false),
+  damage(0),burnt(0),bday(0),owned(-1),poison(0),mission_id(-1),player_id(-1)
 {
- name = "";
- charges = -1;
- bday = 0;
- invlet = 0;
- damage = 0;
- burnt = 0;
- poison = 0;
- type = NULL;
- curammo = NULL;
- corpse = NULL;
- active = false;
- owned = -1;
- mission_id = -1;
- player_id = -1;
 }
 
 item::item(const itype* const it, unsigned int turn)
+: type(it), corpse(0), curammo(0), name(""), invlet(0), charges(-1), active(false),
+  damage(0), burnt(0), bday(turn), owned(-1), poison(0), mission_id(-1), player_id(-1)
 {
- type = it;
- bday = turn;
- name = "";
- invlet = 0;
- damage = 0;
- burnt = 0;
- poison = 0;
- active = false;
- curammo = NULL;
- corpse = NULL;
- owned = -1;
- mission_id = -1;
- player_id = -1;
- if (it == NULL) return;
+ if (!it) return;
  if (it->is_gun()) charges = 0;
  else if (it->is_ammo()) charges = dynamic_cast<const it_ammo*>(it)->count;
  else if (it->is_food()) {
@@ -48,18 +25,13 @@ item::item(const itype* const it, unsigned int turn)
  } else if (it->is_tool()) {
   const it_tool* const tool = dynamic_cast<const it_tool*>(it);
   charges = (0 == tool->max_charges) ? -1 : tool->def_charges;;
- } else charges = -1;
+ }
 }
 
 item::item(const itype* const it, unsigned int turn, char let)
+: type(it),corpse(0),curammo(0),name(""),invlet(let),charges(-1),active(false),
+  damage(0),burnt(0),bday(turn),owned(-1),poison(0),mission_id(-1),player_id(-1)
 {
- type = it;
- bday = turn;
- name = "";
- damage = 0;
- burnt = 0;
- poison = 0;
- active = false;
  if (it->is_gun()) charges = 0;
  else if (it->is_ammo()) charges = dynamic_cast<const it_ammo*>(it)->count;
  else if (it->is_food()) {
@@ -68,33 +40,14 @@ item::item(const itype* const it, unsigned int turn, char let)
  } else if (it->is_tool()) {
   const it_tool* const tool = dynamic_cast<const it_tool*>(it);
   charges = (0 == tool->max_charges) ? -1 : tool->def_charges;
- } else charges = -1;
- curammo = NULL;
- corpse = NULL;
- owned = -1;
- invlet = let;
- mission_id = -1;
- player_id = -1;
+ }
 }
 
 // corpse constructor
 item::item(unsigned int turn, int id)
+: type(item::types[itm_corpse]), corpse(mtype::types[id]), curammo(0), name(""), invlet(0), charges(-1), active(false),
+  damage(0), burnt(0), bday(turn), owned(-1), poison(0), mission_id(-1), player_id(-1)
 {
-	name = "";
-	charges = -1;
-	invlet = 0;
-	damage = 0;
-	burnt = 0;
-	poison = 0;
-	curammo = NULL;
-	active = false;
-	owned = -1;
-	mission_id = -1;
-	player_id = -1;
-
-	type = item::types[itm_corpse];
-	corpse = mtype::types[id];
-	bday = turn;
 }
 
 void item::make(itype* it)
@@ -111,9 +64,8 @@ bool item::is_null() const
 item item::in_its_container() const
 {
  if (is_software()) {
-  item ret(item::types[itm_usb_drive], 0);
+  item ret(item::types[itm_usb_drive], 0, invlet);
   ret.contents.push_back(*this);
-  ret.invlet = invlet;
   return ret;
  }
  if (!is_food()) return *this;

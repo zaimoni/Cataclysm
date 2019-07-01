@@ -42,6 +42,7 @@ public:
  void make(itype* it);
 
  item& operator=(const item& src) = default;
+ item& operator=(item&& src) = default;
 
  item(std::istream& is);
  friend std::ostream& operator<<(std::ostream& os, const item& src);
