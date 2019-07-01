@@ -2,8 +2,8 @@
 #define _ITEM_H_
 
 #include "itype.h"
-#include "mtype.h"
 
+struct mtype;
 class player;
 class npc;
 
