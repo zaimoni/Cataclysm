@@ -1554,12 +1554,27 @@ std::ostream& operator<<(std::ostream& os, const npc_personality& src)
 
 std::istream& operator>>(std::istream& is, npc_combat_rules& dest)
 {
+	if ('{' == (is >> std::ws).peek()) {
+		JSON _in(is);
+		int tmp;
+		if (!_in.has_key("engagement") || !fromJSON(_in["engagement"], dest.engagement)) return is;
+		if (_in.has_key("use_guns")) fromJSON(_in["use_guns"], dest.use_guns);
+		if (_in.has_key("use_grenades")) fromJSON(_in["use_grenades"], dest.use_grenades);
+		return is;
+	}
+	// \todo release block: remove legacy reading.  This unblocks re-ordering enum combat_engagement so that the default (ENGAGE_ALL) has value zero
 	return is >> dest.engagement >> dest.use_guns >> dest.use_grenades;
 }
 
 std::ostream& operator<<(std::ostream& os, const npc_combat_rules& src)
 {
-	return os << src.engagement I_SEP << src.use_guns I_SEP << src.use_grenades;
+	if (auto json = JSON_key(src.engagement)) {
+		JSON _engage;
+		_engage.set("engagement", json);
+		if (!src.use_guns) _engage.set("use_guns", "false");
+		if (!src.use_grenades) _engage.set("use_grenades", "false");
+		return os << _engage;
+	} else return os << "{}";
 }
 
 npc::npc(std::istream& is)

@@ -201,12 +201,8 @@ struct npc_combat_rules
  bool use_guns;
  bool use_grenades;
 
- npc_combat_rules()
- {
-  engagement = ENGAGE_ALL;
-  use_guns = true;
-  use_grenades = true;
- };
+ npc_combat_rules() : engagement(ENGAGE_ALL), use_guns(true), use_grenades(true) {}
+
  friend std::istream& operator>>(std::istream& is, npc_combat_rules& dest);
  friend std::ostream& operator<<(std::ostream& os, const npc_combat_rules& src);
 };
