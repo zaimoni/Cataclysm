@@ -73,6 +73,15 @@ static const char* const JSON_transcode_talk[] = {
 	"OPINION"
 };
 
+static const char* const JSON_transcode_engage[] = {
+	"NONE",
+	"CLOSE",
+	"WEAK",
+	"HIT",
+	"ALL"
+};
+
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED(combat_engagement, JSON_transcode_engage, 0)
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED(npc_favor_type, JSON_transcode_favors, 2)
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(talk_topic, JSON_transcode_talk)
 
@@ -1718,6 +1727,23 @@ std::string npc_opinion::text() const
  ret << " (Anger " << anger << ")";
 
  return ret.str();
+}
+
+npc_opinion& npc_opinion::operator+=(const npc_opinion& rhs)
+{
+	trust += rhs.trust;
+	fear += rhs.fear;
+	value += rhs.value;
+	anger += rhs.anger;
+	owed += rhs.owed;
+	return *this;
+}
+
+npc_opinion operator+(const npc_opinion& lhs, const npc_opinion& rhs)
+{
+	npc_opinion ret(lhs);
+	ret += rhs;
+	return ret;
 }
 
 void npc::shift(const point delta)

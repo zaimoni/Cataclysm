@@ -179,23 +179,11 @@ struct npc_opinion
  friend std::istream& operator>>(std::istream& is, npc_opinion& dest);
  friend std::ostream& operator<<(std::ostream& os, const npc_opinion& src);
 
- npc_opinion& operator+=(const npc_opinion &rhs)
- {
-  trust += rhs.trust;
-  fear  += rhs.fear;
-  value += rhs.value;
-  anger += rhs.anger;
-  owed  += rhs.owed;
-  return *this;
- };
-
- npc_opinion& operator+(const npc_opinion &rhs) const
- {
-  return (npc_opinion(*this) += rhs);
- };
-
+ npc_opinion& operator+=(const npc_opinion &rhs);
  std::string text() const;
 };
+
+npc_opinion operator+(const npc_opinion& lhs, const npc_opinion& rhs);
 
 enum combat_engagement {
  ENGAGE_NONE = 0,
@@ -204,6 +192,8 @@ enum combat_engagement {
  ENGAGE_HIT,
  ENGAGE_ALL
 };
+
+DECLARE_JSON_ENUM_SUPPORT(combat_engagement)
 
 struct npc_combat_rules
 {

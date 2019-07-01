@@ -79,6 +79,7 @@ relevant_lines = []	# to document expected type for extract_C_enum
 # relevant_lines = bracketed_lines('mongroup.h','enum moncat_id {','}')
 # relevant_lines = bracketed_lines('morale.h','enum morale_type','}')
 # relevant_lines = bracketed_lines('mtype.h','enum mon_id {','}')
+# relevant_lines = bracketed_lines('npc.h','enum combat_engagement {','}')
 # relevant_lines = bracketed_lines('npc.h','enum npc_favor_type {','}')
 # relevant_lines = bracketed_lines('npc.h','enum talk_topic {','}')
 # relevant_lines = bracketed_lines('pldata.h','enum activity_type {','}')
