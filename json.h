@@ -135,7 +135,7 @@ public:
 			return true;
 		}
 		bool ok = true;
-		std::vector<T> working(_array->size());
+		std::vector<T> working;
 		for (const auto& x : *_array) {
 			T tmp;
 			if (fromJSON(x, tmp)) working.push_back(tmp);
