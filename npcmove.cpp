@@ -476,8 +476,9 @@ npc_action npc::address_needs(game *g, int danger) const
   }
  }
 
- if (has_painkiller() && !took_painkiller() && pain - pkill >= 15)
-  return npc_use_painkiller;
+ if (!took_painkiller() && pain - pkill >= 15) {
+   if (0 <= pick_best_painkiller(inv)) return npc_use_painkiller;
+ }
 
  if (can_reload())
   return npc_reload;
@@ -1464,36 +1465,53 @@ void npc::heal_self(game *g)
  moves -= 250;
 }
 
+int npc::pick_best_painkiller(const inventory& _inv) const
+{
+	int difference = 9999, index = -1;
+	for (size_t i = 0; i < _inv.size(); i++) {
+		int diff = 9999;
+		switch (_inv[i].type->id)
+		{
+		case itm_aspirin:
+			if (35 < pain) continue;	// from legacy has_painkiller: arguable
+			diff = abs(pain - 15);
+			break;
+		case itm_codeine:
+			diff = abs(pain - 30);
+			break;
+		case itm_oxycodone:
+			if (50 > pain) continue;	// from legacy has_painkiller: not as enjoyable as heroin
+			diff = abs(pain - 60);
+			break;
+		case itm_heroin:
+			diff = abs(pain - 100);
+			break;
+		case itm_tramadol:
+			diff = abs(pain - 40) / 2; // Bonus since it's long-acting
+			break;
+		default: continue;	// not a painkiller
+		}
+		if (diff < difference) {
+			difference = diff;
+			index = i;
+		}
+	}
+	return index;
+}
+
 void npc::use_painkiller(game *g)
 {
 // First, find the best painkiller for our pain level
- int difference = 9999, index = -1;
- for (size_t i = 0; i < inv.size(); i++) {
-  int diff = 9999;
-  if (inv[i].type->id == itm_aspirin)
-   diff = abs(pain - 15);
-  else if (inv[i].type->id == itm_codeine)
-   diff = abs(pain - 30);
-  else if (inv[i].type->id == itm_oxycodone)
-   diff = abs(pain - 60);
-  else if (inv[i].type->id == itm_heroin)
-   diff = abs(pain - 100);
-  else if (inv[i].type->id == itm_tramadol)
-   diff = abs(pain - 40) / 2; // Bonus since it's long-acting
-
-  if (diff < difference) {
-   difference = diff;
-   index = i;
-  }
- }
+ int index = pick_best_painkiller(inv);
 
  if (index == -1) {
   debugmsg("NPC tried to use painkillers, but has none!");
   move_pause();
- } else {
-  eat(g, index);
-  moves = 0;
+  return;
  }
+
+ eat(g, index);
+ moves = 0;
 }
 
 int npc::pick_best_food(const inventory& _inv) const

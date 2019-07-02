@@ -370,9 +370,11 @@ public:
  bool wear_if_wanted(item it);
  virtual bool wield(game *g, int index);
  bool has_healing_item() const;
- bool has_painkiller() const;
  bool took_painkiller() const;
+private:
+ int pick_best_painkiller(const inventory& _inv) const;
  void use_painkiller(game *g);
+public:
  void activate_item(game *g, int index);
 
 // Interaction and assessment of the world around us
@@ -435,7 +437,6 @@ public:
  void use_escape_item	(game *g, int index, int target);
  void heal_player	(game *g, player &patient);
  void heal_self		(game *g);
-// void take_painkiller	(game *g);	// no implementation
 private:
  int pick_best_food(const inventory& _inv) const;
  void pick_and_eat	(game *g);

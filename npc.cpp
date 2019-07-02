@@ -1397,17 +1397,6 @@ bool npc::has_healing_item() const
  return false;
 }
 
-bool npc::has_painkiller() const
-{
- for (size_t i = 0; i < inv.size(); i++) {
-  if ((pain <= 35 && inv[i].type->id == itm_aspirin) ||
-      (pain >= 50 && inv[i].type->id == itm_oxycodone) ||
-      inv[i].type->id == itm_tramadol || inv[i].type->id == itm_codeine)
-   return true;
- }
- return false;
-}
-
 bool npc::took_painkiller() const
 {
  return (has_disease(DI_PKILL1) || has_disease(DI_PKILL2) ||
