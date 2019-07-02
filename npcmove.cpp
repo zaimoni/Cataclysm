@@ -8,25 +8,21 @@
 #define TARGET_PLAYER -2
 
 // A list of items used for escape, in order from least to most valuable
-#ifndef NUM_ESCAPE_ITEMS
-#define NUM_ESCAPE_ITEMS 11
-itype_id ESCAPE_ITEMS[NUM_ESCAPE_ITEMS] = {
+itype_id ESCAPE_ITEMS[] = {
  itm_cola, itm_caffeine, itm_energy_drink, itm_canister_goo, itm_smokebomb,
  itm_smokebomb_act, itm_adderall, itm_coke, itm_meth, itm_teleporter,
  itm_pheromone
 };
-#endif
+#define NUM_ESCAPE_ITEMS (sizeof(ESCAPE_ITEMS)/sizeof(ESCAPE_ITEMS))
 
 // A list of alternate attack items (e.g. grenades), from least to most valuable
-#ifndef NUM_ALT_ATTACK_ITEMS
-#define NUM_ALT_ATTACK_ITEMS 16
-itype_id ALT_ATTACK_ITEMS[NUM_ALT_ATTACK_ITEMS] = {
+itype_id ALT_ATTACK_ITEMS[] = {
  itm_knife_combat, itm_spear_wood, itm_molotov, itm_pipebomb, itm_grenade,
  itm_gasbomb, itm_bot_manhack, itm_tazer, itm_dynamite, itm_mininuke,
  itm_molotov_lit, itm_pipebomb_act, itm_grenade_act, itm_gasbomb_act,
  itm_dynamite_act, itm_mininuke_act
 };
-#endif
+#define NUM_ALT_ATTACK_ITEMS (sizeof(ALT_ATTACK_ITEMS)/sizeof(ALT_ATTACK_ITEMS))
 
 std::string npc_action_name(npc_action action);
 bool thrown_item(item *used);
