@@ -477,7 +477,7 @@ npc_action npc::address_needs(game *g, int danger) const
  }
 
  if (!took_painkiller() && pain - pkill >= 15) {
-   if (0 <= pick_best_painkiller(inv)) return npc_use_painkiller;
+   if (0 <= pick_best_painkiller(inv)) return npc_use_painkiller;	// \todo V0.2.1+ record this index and reuse it later
  }
 
  if (can_reload())
@@ -1351,6 +1351,50 @@ bool thrown_item(item *used)
  return (used->active || type == itm_knife_combat || type == itm_spear_wood);
 }
 
+std::pair<hp_part, int> player::worst_injury() const
+{
+	std::pair<hp_part, int> ret(hp_torso, 0);
+
+	int i = num_hp_parts;
+	while (0 <= --i) {
+		if (hp_max[i] <= hp_cur[i]) continue;
+		int delta = hp_max[i] - hp_cur[i];
+		// The head and torso are weighted more heavily than other body parts
+		if (hp_head == i) delta *= 3;
+		else if (hp_torso == i) delta *= 2;
+		if (delta > ret.second) {
+			ret.first = hp_part(i);
+			ret.second = delta;
+		}
+	}
+	// deflate before return for accuracy later on
+	if (hp_head == ret.second) ret.second /= 3;
+	else if (hp_torso == ret.second) ret.second /= 2;
+	return ret;
+}
+
+std::pair<itype_id, int> player::would_heal(const std::pair<hp_part, int>& injury) const
+{
+	std::pair<itype_id, int> ret(itm_null, 0);	// note that itm_null is 0 i.e. C-false
+
+	if (ret.second < injury.second && has_amount(itm_bandages, 1)) {
+		ret.first = itm_bandages;
+		switch (injury.first) {
+		case hp_head:  ret.second = 1 + 1.6 * sklevel[sk_firstaid]; break;
+		case hp_torso: ret.second = 4 + 3 * sklevel[sk_firstaid]; break;
+		default:       ret.second = 3 + 2 * sklevel[sk_firstaid];
+		}
+	}
+	if (ret.second < injury.second && has_amount(itm_1st_aid, 1)) {
+		switch (injury.first) {
+		case hp_head:  ret.second = 10 + 1.6 * sklevel[sk_firstaid]; break;
+		case hp_torso: ret.second = 20 + 3 * sklevel[sk_firstaid]; break;
+		default:       ret.second = 15 + 2 * sklevel[sk_firstaid];
+		}
+	}
+	return ret;
+}
+
 void npc::heal_player(game *g, player &patient)
 {
  int dist = rl_dist(pos, patient.pos);
@@ -1359,22 +1403,10 @@ void npc::heal_player(game *g, player &patient)
   update_path(g->m, patient.pos);
   move_to_next(g);
  } else { // Close enough to heal!
-  int lowest_HP = 400;
-  hp_part worst;
-// Chose the worst-hurting body part
-  for (int i = 0; i < num_hp_parts; i++) {
-   int hp = patient.hp_cur[i];
-// The head and torso are weighted more heavily than other body parts
-   if (i == hp_head)
-    hp = patient.hp_max[i] - 3 * (patient.hp_max[i] - hp);
-   else if (i == hp_torso)
-    hp = patient.hp_max[i] - 2 * (patient.hp_max[i] - hp);
-   if (hp < lowest_HP) {
-    lowest_HP = hp;
-    worst = hp_part(i);
-   }
-  }
-  
+  const auto injury = patient.worst_injury();
+  const auto predicted_heal = would_heal(injury);
+  if (!predicted_heal.first) FATAL("tried to heal w/o means to heal");	// \todo consider action-looping instead, or converting later action loops to FATAL
+
   bool u_see_me      = g->u_see(pos),
        u_see_patient = g->u_see(patient.pos);
   if (patient.is_npc()) {
@@ -1390,23 +1422,8 @@ void npc::heal_player(game *g, player &patient)
   else
    messages.add("Someone heals you.");
 
-  int amount_healed;
-  if (has_amount(itm_1st_aid, 1)) {
-   switch (worst) {
-    case hp_head:  amount_healed = 10 + 1.6 * sklevel[sk_firstaid]; break;
-    case hp_torso: amount_healed = 20 + 3   * sklevel[sk_firstaid]; break;
-    default:       amount_healed = 15 + 2   * sklevel[sk_firstaid];
-   }
-   use_charges(itm_1st_aid, 1);
-  } else if (has_amount(itm_bandages, 1)) {
-   switch (worst) {
-    case hp_head:  amount_healed =  1 + 1.6 * sklevel[sk_firstaid]; break;
-    case hp_torso: amount_healed =  4 + 3   * sklevel[sk_firstaid]; break;
-    default:       amount_healed =  3 + 2   * sklevel[sk_firstaid];
-   }
-   use_charges(itm_bandages, 1);
-  }
-  patient.heal(worst, amount_healed);
+  use_charges(predicted_heal.first, 1);
+  patient.heal(injury.first, predicted_heal.second);
   moves -= 250;
  
   if (!patient.is_npc()) {
@@ -1424,45 +1441,16 @@ void npc::heal_player(game *g, player &patient)
 
 void npc::heal_self(game *g)
 {
- int lowest_HP = 400;
- hp_part worst;
-// Chose the worst-hurting body part
- for (int i = 0; i < num_hp_parts; i++) {
-  int hp = hp_cur[i];
-// The head and torso are weighted more heavily than other body parts
-  if (i == hp_head)
-   hp = hp_max[i] - 3 * (hp_max[i] - hp);
-  else if (i == hp_torso)
-   hp = hp_max[i] - 2 * (hp_max[i] - hp);
-  if (hp < lowest_HP) {
-   lowest_HP = hp;
-   worst = hp_part(i);
-  }
- }
+ const auto injury = worst_injury();
+ const auto predicted_heal = would_heal(injury);
+ if (!predicted_heal.first) FATAL("tried to heal self w/o means to heal");
 
- int amount_healed;
- if (has_amount(itm_1st_aid, 1)) {
-  switch (worst) {
-   case hp_head:  amount_healed = 10 + 1.6 * sklevel[sk_firstaid]; break;
-   case hp_torso: amount_healed = 20 + 3   * sklevel[sk_firstaid]; break;
-   default:       amount_healed = 15 + 2   * sklevel[sk_firstaid];
-  }
-  use_charges(itm_1st_aid, 1);
- } else if (has_amount(itm_bandages, 1)) {
-  switch (worst) {
-   case hp_head:  amount_healed =  1 + 1.6 * sklevel[sk_firstaid]; break;
-   case hp_torso: amount_healed =  4 + 3   * sklevel[sk_firstaid]; break;
-   default:       amount_healed =  3 + 2   * sklevel[sk_firstaid];
-  }
-  use_charges(itm_bandages, 1);
- } else {
-  debugmsg("NPC tried to heal self, but has no bandages / first aid");
-  move_pause();
- }
- if (g->u_see(pos))
-  messages.add("%s heals %sself.", name.c_str(), (male ? "him" : "her"));
- heal(worst, amount_healed);
+ use_charges(predicted_heal.first, 1);
+ heal(injury.first, predicted_heal.second);
  moves -= 250;
+
+ if (g->u_see(pos))
+	 messages.add("%s heals %sself.", name.c_str(), (male ? "him" : "her"));
 }
 
 int npc::pick_best_painkiller(const inventory& _inv) const
@@ -1504,7 +1492,7 @@ void npc::use_painkiller(game *g)
 // First, find the best painkiller for our pain level
  int index = pick_best_painkiller(inv);
 
- if (index == -1) {
+ if (0 > index) {
   debugmsg("NPC tried to use painkillers, but has none!");
   move_pause();
   return;

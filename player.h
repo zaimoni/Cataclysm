@@ -135,6 +135,8 @@ public:
  void knock_back_from(game *g, const point& pt) { knock_back_from(g, pt.x, pt.y); };
 
  int hp_percentage() const;	// % of HP remaining, overall
+ std::pair<hp_part, int> worst_injury() const;
+ std::pair<itype_id, int> would_heal(const std::pair<hp_part, int>& injury) const;
 
  void get_sick();	// Process diseases	\todo V 0.2.1 enable for NPCs
 // infect() gives us a chance to save (mostly from armor)
