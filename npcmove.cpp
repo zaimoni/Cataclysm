@@ -482,9 +482,11 @@ npc_action npc::address_needs(game *g, int danger) const
  if (can_reload())
   return npc_reload;
 
- if ((danger <= NPC_DANGER_VERY_LOW && (hunger > 40 || thirst > 40)) ||
-     thirst > 80 || hunger > 160)
-  return npc_eat;
+ if (   (danger <= NPC_DANGER_VERY_LOW && (hunger > 40 || thirst > 40))
+	 ||  thirst > 80
+	 || hunger > 160) {
+	 if (0 <= pick_best_food(inv)) return npc_eat;	// \todo V0.2.1+ record this index and reuse it later
+  }
 
 /*
  if (weight_carried() > weight_capacity() / 4 ||
@@ -1494,35 +1496,35 @@ void npc::use_painkiller(game *g)
  }
 }
 
-void npc::pick_and_eat(game *g)
+int npc::pick_best_food(const inventory& _inv) const
 {
  int best_hunger = 999, best_thirst = 999, index = -1;
  bool thirst_more_important = (thirst > hunger * 1.5);
- for (size_t i = 0; i < inv.size(); i++) {
+ for (size_t i = 0; i < _inv.size(); i++) {
   int eaten_hunger = -1, eaten_thirst = -1;
-  const item& it = inv[i];
+  const item& it = _inv[i];
   const it_comest* food = NULL;
   if (it.is_food()) food = dynamic_cast<const it_comest*>(it.type);
   else if (it.is_food_container()) food = dynamic_cast<const it_comest*>(it.contents[0].type);
-  if (food != NULL) {
-   eaten_hunger = hunger - food->nutr;
-   eaten_thirst = thirst - food->quench;
-  }
-  if (eaten_hunger > 0) { // <0 means we have a chance of puking
-   if ((thirst_more_important && eaten_thirst < best_thirst) ||
-       (!thirst_more_important && eaten_hunger < best_hunger) ||
-       (eaten_thirst == best_thirst && eaten_hunger < best_hunger) ||
-       (eaten_hunger == best_hunger && eaten_thirst < best_thirst)   ) {
-    if (eaten_hunger < best_hunger)
-     best_hunger = eaten_hunger;
-    if (eaten_thirst < best_thirst)
-     best_thirst = eaten_thirst;
+  if (!food) continue;
+  eaten_hunger = hunger - food->nutr;
+  eaten_thirst = thirst - food->quench;
+  if (0 >= eaten_hunger) continue;	// not desperate enough to risk vomiting, etc.
+  if (   (thirst_more_important ? (eaten_thirst < best_thirst) : (eaten_hunger < best_hunger))
+	  || (eaten_thirst == best_thirst && eaten_hunger < best_hunger)
+	  || (eaten_hunger == best_hunger && eaten_thirst < best_thirst)) {
+    if (eaten_hunger < best_hunger) best_hunger = eaten_hunger;
+    if (eaten_thirst < best_thirst) best_thirst = eaten_thirst;
     index = i;
-   }
   }
  }
+ return index;
+}
 
- if (index == -1) {
+void npc::pick_and_eat(game *g)
+{
+ int index = pick_best_food(inv);
+ if (0 > index) {	// \todo invariant failure
   debugmsg("NPC tried to eat food, but couldn't find any!");
   move_pause();
   return;

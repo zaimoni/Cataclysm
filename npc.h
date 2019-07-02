@@ -436,7 +436,10 @@ public:
  void heal_player	(game *g, player &patient);
  void heal_self		(game *g);
 // void take_painkiller	(game *g);	// no implementation
+private:
+ int pick_best_food(const inventory& _inv) const;
  void pick_and_eat	(game *g);
+public:
  void mug_player	(game *g, player &mark);
  void look_for_player	(game *g, player &sought);
  bool saw_player_recently() const;// Do we have an idea of where u are?
