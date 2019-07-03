@@ -11,6 +11,61 @@
 const int fuel_types[] = { AT_GAS, AT_BATT, AT_PLUT, AT_PLASMA };
 #define num_fuel_types (sizeof(fuel_types)/sizeof(*fuel_types))
 
+static const char* const JSON_transcode_vparts[] = {
+	"seat",
+	"frame_h",
+	"frame_v",
+	"frame_c",
+	"frame_y",
+	"frame_u",
+	"frame_n",
+	"frame_b",
+	"frame_h2",
+	"frame_v2",
+	"frame_cover",
+	"frame_handle",
+	"board_h",
+	"board_v",
+	"board_y",
+	"board_u",
+	"board_n",
+	"board_b",
+	"roof",
+	"door",
+	"window",
+	"blade_h",
+	"blade_v",
+	"spike_h",
+	"spike_v",
+	"wheel_large",
+	"wheel",
+	"engine_gas_small",
+	"engine_gas_med",
+	"engine_gas_large",
+	"engine_motor",
+	"engine_motor_large",
+	"engine_plasma",
+	"fuel_tank_gas",
+	"fuel_tank_batt",
+	"fuel_tank_plut",
+	"fuel_tank_hydrogen",
+	"cargo_trunk",
+	"cargo_box",
+	"controls",
+	"muffler",
+	"seatbelt",
+	"solar_panel",
+	"m249",
+	"flamethrower",
+	"plasmagun",
+	"steel_plate",
+	"superalloy_plate",
+	"spiked_plate",
+	"hard_plate"
+};
+
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(vpart_id, JSON_transcode_vparts)
+
 std::vector <vehicle*> vehicle::vtypes;
 
 vehicle::vehicle(game *ag, vhtype_id type_id): g(ag), type(type_id), pos(0,0)

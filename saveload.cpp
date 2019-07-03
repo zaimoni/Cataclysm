@@ -65,6 +65,7 @@ IO_OPS_ENUM(skill)
 IO_OPS_ENUM(talk_topic)
 IO_OPS_ENUM(ter_id)
 IO_OPS_ENUM(trap_id)
+IO_OPS_ENUM(vpart_id)
 
 #define JSON_ENUM(TYPE)	\
 JSON toJSON(TYPE src) {	\

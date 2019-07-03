@@ -86,6 +86,7 @@ relevant_lines = []	# to document expected type for extract_C_enum
 # relevant_lines = bracketed_lines('pldata.h','enum add_type {','}')
 # relevant_lines = bracketed_lines('pldata.h','enum dis_type {','}')
 # relevant_lines = bracketed_lines('skill.h','enum skill {','}')
+# relevant_lines = bracketed_lines('veh_type.h','enum vpart_id','}')
 enum_like = extract_C_enum(relevant_lines)
 print(JSON_transcode_definition(enum_like))
 # print(JSON_transcode_definition_pair(enum_like))

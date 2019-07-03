@@ -73,6 +73,8 @@ enum vpart_id
     num_vparts
 };
 
+DECLARE_JSON_ENUM_SUPPORT(vpart_id)
+
 enum vpart_flags
 {
     vpf_external,           // can be mounted as external part
