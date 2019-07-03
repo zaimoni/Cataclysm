@@ -53,6 +53,7 @@ private:
 	unsigned char _mode;
 public:
 	JSON() : _mode(none), _scalar(0) {}
+	JSON(mode src) : _mode(src), _scalar(0) {}
 	JSON(const JSON& src);
 	JSON(JSON&& src);
 	JSON(std::istream& src);

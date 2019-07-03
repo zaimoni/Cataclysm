@@ -30,7 +30,7 @@ public:
  int poison;		// How badly poisoned is it?
 
  int mission_id;// Refers to a mission in game's master list
- int player_id;	// Only give a mission to the right player!
+ int player_id;	// Only give a mission to the right player!	(dead field, this would be for multi-PC case)
 
  item();
  item(const itype* it, unsigned int turn);
