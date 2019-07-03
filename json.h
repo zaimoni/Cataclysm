@@ -129,6 +129,18 @@ public:
 		return ret;
 	}
 
+	template<class T> static JSON encode(const T* src, size_t n) {
+		JSON ret;
+		ret._mode = array;
+		if (src && 0 < n) {
+			ret._array = new std::vector<JSON>();
+			size_t i = 0;
+			do ret._array->push_back(toJSON(src[i]));
+			while (++i < n);
+		}
+		return ret;
+	}
+
 	template<class T> bool decode(std::vector<T>& dest) const {
 		if (array != _mode) return false;
 		if (!_array || _array->empty()) {
@@ -143,6 +155,18 @@ public:
 			else ok = false;
 		}
 		if (!working.empty()) swap(working, dest);
+		return ok;
+	}
+
+	template<class T> bool decode(T* dest,size_t n) const {
+		if (array != _mode || !dest) return false;
+		if (!_array || _array->empty()) return 0 == n;
+		if (_array->size() != n) return false;
+		bool ok = true;
+		size_t i = 0;
+		do {
+			if (!fromJSON((*_array)[i], dest[i])) ok = false;
+		} while(++i < n);
 		return ok;
 	}
 

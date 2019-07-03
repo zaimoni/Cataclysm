@@ -100,6 +100,7 @@ JSON_ENUM(morale_type)
 JSON_ENUM(npc_favor_type)
 JSON_ENUM(skill)
 JSON_ENUM(talk_topic)
+JSON_ENUM(vpart_id)
 
 // stereotypical translation of pointers to/from vector indexes
 // \todo in general if a loaded pointer index is "invalid" we should warn here; non-null requirements are enforced higher up
@@ -858,6 +859,19 @@ std::ostream& operator<<(std::ostream& os, const submap& src)
 // \todo release block: vehicle_part: operator>>,operator<< JSON conversion blocked by items
 std::istream& operator>>(std::istream& is, vehicle_part& dest)
 {
+	if ('{' == (is >> std::ws).peek()) {
+		JSON _in(is);
+		if (!_in.has_key("id") || !fromJSON(_in["id"], dest.id)) return is;
+		if (_in.has_key("mount_d")) fromJSON(_in["mount_d"], dest.mount_d);
+		if (_in.has_key("precalc_d")) _in["precalc_d"].decode(dest.precalc_d, (sizeof(dest.precalc_d) / sizeof(*dest.precalc_d)));
+		if (_in.has_key("hp")) fromJSON(_in["hp"], dest.hp);
+		if (_in.has_key("blood")) fromJSON(_in["blood"], dest.blood);
+		if (_in.has_key("inside")) fromJSON(_in["inside"], dest.inside);
+		if (_in.has_key("amount")) fromJSON(_in["amount"], dest.amount);
+		if (_in.has_key("items")) _in["items"].decode(dest.items);
+		return is;
+	}
+	// \todo release block: remove legacy reading
 	std::string databuff;
 	int pid, pnit;
 
@@ -872,9 +886,18 @@ std::istream& operator>>(std::istream& is, vehicle_part& dest)
 
 std::ostream& operator<<(std::ostream& os, const vehicle_part& src)
 {
-	os << src.id I_SEP << src.mount_d I_SEP << src.hp I_SEP << src.amount I_SEP << src.blood I_SEP << src.items.size() << std::endl;
-	for(const auto& it : src.items) os << it << std::endl;     // item info
-	return os;
+	if (auto json = JSON_key(src.id)) {
+		JSON _part;
+		_part.set("id", json);
+		_part.set("mount_d", toJSON(src.mount_d));
+		_part.set("precalc_d", JSON::encode(src.precalc_d, (sizeof(src.precalc_d) / sizeof(*src.precalc_d))));
+		_part.set("hp", std::to_string(src.hp));
+		_part.set("blood", std::to_string(src.hp));
+		_part.set("inside", src.inside ? "true" : "false");	// \todo establish default value
+		_part.set("amount", std::to_string(src.amount));
+		if (!src.items.empty()) _part.set("items", JSON::encode(src.items));
+		return os << _part;
+	} else return os << "{}";
 }
 
 faction::faction(std::istream& is)
@@ -1612,7 +1635,6 @@ std::istream& operator>>(std::istream& is, npc_combat_rules& dest)
 {
 	if ('{' == (is >> std::ws).peek()) {
 		JSON _in(is);
-		int tmp;
 		if (!_in.has_key("engagement") || !fromJSON(_in["engagement"], dest.engagement)) return is;
 		if (_in.has_key("use_guns")) fromJSON(_in["use_guns"], dest.use_guns);
 		if (_in.has_key("use_grenades")) fromJSON(_in["use_grenades"], dest.use_grenades);
