@@ -989,9 +989,8 @@ bool fromJSON(const JSON& _in, item& dest)
 	return true;
 }
 
-// \todo release block JSON support for items (blocks other classes)
 item::item(std::istream& is)
-: type(0),corpse(0),curammo(0),name(""),invlet(0),charges(-1),active(false),
+: type(item::types[itm_null]),corpse(0),curammo(0),name(""),invlet(0),charges(-1),active(false),
   damage(0),burnt(0),bday(0),owned(-1),poison(0),mission_id(-1),player_id(-1)
 {
 	if ('{' == (is >> std::ws).peek()) {
@@ -1019,28 +1018,6 @@ item::item(std::istream& is)
 	burnt = burntmp;
 	// XXX historically, contents are not loaded at this time; \todo blocker: V 0.2.0 final version would do so
 }
-
-#if 0
-const itype* type;	// \todo more actively enforce non-NULL constraint
-const mtype* corpse;
-const it_ammo* curammo;
-
-std::vector<item> contents;
-
-std::string name;
-char invlet;           // Inventory letter
-int charges;
-bool active;           // If true, it has active effects to be processed
-signed char damage;    // How much damage it's sustained; generally, max is 5
-
-char burnt;		// How badly we're burnt
-unsigned int bday;     // The turn on which it was created
-int owned;		// UID of NPC owner; 0 = player, -1 = unowned
-int poison;		// How badly poisoned is it?
-
-int mission_id;// Refers to a mission in game's master list
-int player_id;	// Only give a mission to the right player!
-#endif
 
 JSON toJSON(const item& src) {
 	JSON _item(JSON::object);
@@ -1072,50 +1049,7 @@ JSON toJSON(const item& src) {
 	return _item;
 }
 
-std::ostream& operator<<(std::ostream& os, const item& src)
-{
-	return os << toJSON(src);
-	if (src.type) {
-		if (auto json = JSON_key((itype_id)src.type->id)) {
-			JSON _item;
-			_item.set("type", json);
-			if (src.corpse) {
-				if (auto json2 = JSON_key((mon_id)src.corpse->id)) _item.set("corpse", json2);
-			}
-			if (src.curammo) {
-				if (auto json2 = JSON_key((itype_id)src.curammo->id)) _item.set("curammo", json2);
-			}
-			if (!src.name.empty()) _item.set("name", src.name.c_str());
-			if (src.invlet) _item.set("invlet",std::string(1,src.invlet));
-			if (0 <= src.charges) _item.set("charges", std::to_string(src.charges));
-			if (src.active) _item.set("active", "true");
-			if (src.damage) _item.set("damage", std::to_string((int)src.damage));
-			if (src.burnt) _item.set("burn", std::to_string((int)src.burnt));
-			if (0 < src.bday) _item.set("bday", std::to_string(src.bday));
-			if (src.poison) _item.set("poison", std::to_string(src.poison));
-			if (0 <= src.owned) _item.set("owned", std::to_string(src.owned));
-			if (0 <= src.mission_id) _item.set("mission_id", std::to_string(src.mission_id));	// \todo validate this more thoroughly
-			if (-1 != src.player_id) _item.set("player_id", std::to_string(src.player_id));
-
-			if (!src.contents.empty()) _item.set("contents", JSON::encode(src.contents));
-
-			os << _item;
-		} else return os << "{}";
-	} else return os << "{}";
-	os I_SEP << int(src.invlet) I_SEP << src.type I_SEP << src.charges I_SEP <<
-		int(src.damage) I_SEP << int(src.burnt) I_SEP << src.poison I_SEP <<
-		src.curammo I_SEP << src.owned I_SEP << src.bday I_SEP << src.active I_SEP << src.corpse;
-	os I_SEP << src.mission_id I_SEP << src.player_id;
-
-	std::string name_copy(src.name);
-
-	size_t pos = name_copy.find_first_of("\n");
-	while (pos != std::string::npos) {
-		name_copy.replace(pos, 1, "@@");
-		pos = name_copy.find_first_of("\n");
-	}
-	return os << " '" << name_copy << "'";
-}
+std::ostream& operator<<(std::ostream& os, const item& src) { return os << toJSON(src); }
 
 // \todo release block: JSON save/load support (repairs monster inventories, effects being dropped in save/load cycle
 monster::monster(std::istream& is)
