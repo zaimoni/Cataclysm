@@ -750,8 +750,8 @@ int player::swim_speed()
  ret += (50 - sklevel[sk_swimming] * 2) * abs(encumb(bp_legs));
  ret += (80 - sklevel[sk_swimming] * 3) * abs(encumb(bp_torso));
  if (sklevel[sk_swimming] < 10) {
-  for (int i = 0; i < worn.size(); i++)
-   ret += (worn[i].volume() * (10 - sklevel[sk_swimming])) / 2;
+  const int scale = 10 - sklevel[sk_swimming];
+  for (const auto& it : worn) ret += (it.volume() * scale) / 2;
  }
  ret -= str_cur * 6 + dex_cur * 4;
 // If (ret > 500), we can not swim; so do not apply the underwater bonus.
@@ -4186,7 +4186,7 @@ void player::absorb(game *g, body_part bp, int &dam, int &cut)
   if ((tmp->covers & mfb(bp)) && tmp->storage < 20) {
    arm_bash = tmp->dmg_resist;
    arm_cut  = tmp->cut_resist;
-   switch (worn[i].damage) {
+   switch (worn[i].damage) {	// \todo V0.2.1+ : damage level 5+ should be no protection at all (multiplier zero)?
    case 1:
     arm_bash *= .8;
     arm_cut  *= .9;

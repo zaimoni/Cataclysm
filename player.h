@@ -271,7 +271,7 @@ public:
  //std::vector <item> inv;
  inventory inv;
  itype_id last_item;
- std::vector <item> worn;
+ std::vector <item> worn;	// invariant: dynamic cast to it_armor is non-null
  std::vector<itype_id> styles;
  itype_id style_selected;
  item weapon;

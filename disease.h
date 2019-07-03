@@ -157,7 +157,7 @@ void dis_effect(game *g, player &p, disease &dis)
    } else if ((p.worn[i].made_of(COTTON) || p.worn[i].made_of(WOOL)) && one_in(10)) {
     p.worn.erase(p.worn.begin() + i);
     i--;
-   } else if (p.worn[i].made_of(PLASTIC) && one_in(50)) {
+   } else if (p.worn[i].made_of(PLASTIC) && one_in(50)) {	// \todo V0.2.1+ thermoplastic might melt on the way which also causes damage
     p.worn.erase(p.worn.begin() + i);
     i--;
    }

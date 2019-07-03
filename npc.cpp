@@ -871,13 +871,14 @@ void npc::starting_weapon(game *g)
 
 bool npc::wear_if_wanted(item it)
 {
+ static const int max_encumb[num_bp] = {2, 3, 3, 4, 3, 3, 3, 2};
+
  if (!it.is_armor()) return false;
 
  const it_armor* const armor = dynamic_cast<const it_armor*>(it.type);
- int max_encumb[num_bp] = {2, 3, 3, 4, 3, 3, 3, 2};
  bool encumb_ok = true;
  for (int i = 0; i < num_bp && encumb_ok; i++) {
-  if (armor->covers & mfb(i) && encumb(body_part(i)) + armor->encumber > max_encumb[i])
+  if (armor->covers & mfb(i) && encumb(body_part(i)) + armor->encumber > max_encumb[i])	// \todo V0.2.1+ consider micro-optimizing against the armor->covers test
    encumb_ok = false;
  }
  if (encumb_ok) {

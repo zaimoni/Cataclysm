@@ -2750,7 +2750,7 @@ point game::find_item(item *it) const
     return active_npc[i].pos;
   }
  }
- return point(-999, -999);
+ return point(-999, -999);	// \todo V0.2.1+ change API to avoid this magic value
 }
 
 void game::remove_item(item *it)
@@ -2802,7 +2802,7 @@ void game::remove_item(item *it)
  }
 }
 
-static bool vector_has(const std::vector<int>& vec, int test)
+static bool vector_has(const std::vector<int>& vec, int test)	// \todo V0.2.1+ eliminate in favor of STL?
 {
  for (int i = 0; i < vec.size(); i++) {
   if (vec[i] == test) return true;
