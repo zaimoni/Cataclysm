@@ -101,6 +101,8 @@ faction::faction(int uid)
 {
 }
 
+faction* faction::from_id(int uid) { return game::active()->faction_by_id(uid); }
+
 // not suitable for general library code due to rng usage...maybe RNG header
 #define STATIC_CHOOSE(VAR) faction_noun_strong[rng(0, sizeof(VAR)/sizeof(*VAR)-1)]
 

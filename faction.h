@@ -86,6 +86,7 @@ struct faction {
 
  faction(std::istream& is);
  friend std::ostream& operator<<(std::ostream& os, const faction& src);
+ static faction* from_id(int uid);
 
  void randomize();
  void make_army();

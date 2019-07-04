@@ -1724,10 +1724,11 @@ npc::npc(std::istream& is)
 	for (int i = 0; i < numbio; i++) my_bionics.push_back(bionic(is));
 
 	// Special NPC stuff
-	int flagstmp;
+	int flagstmp, fac_id;
 	is >> personality >> wand >> wandf >> om >>
 		mapx >> mapy >> pl >> goal >> mission >>
-		flagstmp >> fac_id >> attitude;	// V 0.2.0 blocker \todo reconstitute faction* my_fac
+		flagstmp >> fac_id >> attitude;
+	my_fac = faction::from_id(fac_id);
 	flags = flagstmp;
 
 	is >> op_of_u;
