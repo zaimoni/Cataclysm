@@ -1,7 +1,5 @@
 #include "mapbuffer.h"
-#include "map.h"
-#include "line.h"
-#include "game.h"
+#include "mapdata.h"
 #include "output.h"
 #include "recent_msg.h"
 #include "saveload.h"
@@ -19,7 +17,7 @@ bool mapbuffer::add_submap(int x, int y, int z, submap *sm)
  tripoint p(x, y, z);
  if (submaps.count(p) != 0) return false;
 
- if (master_game) sm->turn_last_touched = int(messages.turn);
+ sm->turn_last_touched = int(messages.turn);
  submaps[p] = sm;
  return true;
 }
@@ -54,10 +52,6 @@ void mapbuffer::save()
 
 void mapbuffer::load()
 {
- if (!master_game) {
-  debugmsg("Can't load mapbuffer without a master_game");
-  return;
- }
  std::ifstream fin;
  fin.open("save/maps.txt");
  if (!fin.is_open()) return;
@@ -73,7 +67,7 @@ void mapbuffer::load()
                 num_submaps);
   tripoint where;
   fin >> where;
-  submaps[ where ] = new submap(fin, master_game);
+  submaps[ where ] = new submap(fin);
  }
  fin.close();
 }

@@ -1,18 +1,18 @@
-#include <list>
 #include <map>
 
 #include "enums.h"
 
-class game;
 struct submap;
 
 class mapbuffer
 {
  public:
-  mapbuffer(game *g = NULL) : master_game(g) {};
-  ~mapbuffer();
-
-  void set_game(game *g) { master_game = g; }
+  mapbuffer() = default;
+  mapbuffer(const mapbuffer& src) = delete;
+  mapbuffer(mapbuffer&& src) = default;
+  ~mapbuffer();	// raw pointers involved so cannot default-destruct or default-copy
+  mapbuffer& operator=(const mapbuffer& src) = delete;
+  mapbuffer& operator=(mapbuffer&& src) = default;
 
   void load();
   void save();
@@ -24,7 +24,6 @@ class mapbuffer
 
  private:
   std::map<tripoint, submap*> submaps;	// candidate for absolute coordinates: tripoint (submap index),point (legal values 0..SEE-1 for both x,y)
-  game *master_game;
 };
   
 extern mapbuffer MAPBUFFER;

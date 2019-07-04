@@ -267,7 +267,13 @@ struct submap {
  computer comp;
 
  submap() = default;
- submap(std::istream& is, game* master_game);
+ submap(const submap& src) = default;
+ submap(submap&& src) = default;
+ ~submap() = default;
+ submap& operator=(const submap& src) = default;
+ submap& operator=(submap&& src) = default;
+
+ submap(std::istream& is);
  friend std::ostream& operator<<(std::ostream& os, const submap& src);
 };
 

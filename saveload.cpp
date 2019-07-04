@@ -731,7 +731,7 @@ std::ostream& operator<<(std::ostream& os, const spawn_point& src)
 }
 
 // \todo release block: submap::submap,operator<< need at least partial JSON conversion
-submap::submap(std::istream& is, game* master_game)
+submap::submap(std::istream& is)
 {
 	is >> turn_last_touched;
 	int turndif = int(messages.turn);

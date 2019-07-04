@@ -158,7 +158,6 @@ int main(int argc, char *argv[])
    for (const auto& it : keys) std::cerr << it << '\n';
  }
 #endif
- MAPBUFFER = mapbuffer(g);
  MAPBUFFER.load();
  do {
   g->setup();
