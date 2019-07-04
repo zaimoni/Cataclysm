@@ -252,6 +252,20 @@ std::ostream& operator<<(std::ostream& os, const tripoint& src)
 	return os << '[' << std::to_string(src.x) << ',' << std::to_string(src.y) << ',' << std::to_string(src.z) << ']';
 }
 
+// will need friend-declaration when access controls go up
+template<class T>
+std::istream& operator>>(std::istream& is, countdown<T>& dest)
+{
+	return is >> dest.x >> dest.remaining;
+}
+
+template<class T>
+std::ostream& operator<<(std::ostream& os, const countdown<T>& src)
+{
+	return os << src.x I_SEP << src.remaining;
+}
+
+
 template<char src, char dest>
 void xform(std::string& x)
 {
@@ -1100,11 +1114,10 @@ JSON toJSON(const item& src) {
 std::ostream& operator<<(std::ostream& os, const item& src) { return os << toJSON(src); }
 
 // \todo release block: JSON save/load support (repairs monster inventories, effects being dropped in save/load cycle
-// \todo JSON conversion block: wand/wandf
 monster::monster(std::istream& is)
 {
 	int plansize;
-	is >> type >> pos >> wand >> wandf >> moves >> speed >> hp >> sp_timeout >>
+	is >> type >> pos >> wand >> moves >> speed >> hp >> sp_timeout >>
 		plansize >> friendly >> faction_id >> mission_id >> dead >> anger >>
 		morale;
 	if (!type) type = mtype::types[mon_null];	// \todo warn if this kicks in
@@ -1117,7 +1130,7 @@ monster::monster(std::istream& is)
 
 std::ostream& operator<<(std::ostream& os, const monster& src)
 {
-	os << src.type I_SEP << src.pos I_SEP << src.wand I_SEP << src.wandf I_SEP <<
+	os << src.type I_SEP << src.pos I_SEP << src.wand I_SEP <<
 		src.moves I_SEP << src.speed I_SEP << src.hp I_SEP << src.sp_timeout I_SEP <<
 		src.plans.size() I_SEP << src.friendly I_SEP << src.faction_id I_SEP <<
 		src.mission_id I_SEP << src.dead I_SEP << src.anger I_SEP << src.morale;

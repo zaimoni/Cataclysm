@@ -2,6 +2,7 @@
 #define _MONSTER_H_
 
 #include "mtype.h"
+#include "mobile.h"
 
 class map;
 class game;
@@ -135,8 +136,7 @@ class monster {
 
 // TEMP VALUES
  point pos;
- point wand; // Wander destination - Just try to move in that direction
- int wandf;	   // Urge to wander - Increased by sound, decrements each move
+ countdown<point> wand;	// Wander destination - Just try to move in that direction.
  std::vector<item> inv; // Inventory
  std::vector<monster_effect> effects; // Active effects, e.g. on fire
 

@@ -27,20 +27,20 @@ static const char* const JSON_transcode_meffects[] = {
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(monster_effect_type, JSON_transcode_meffects)
 
 monster::monster()
-: pos(20, 10), wand(-1, -1), wandf(0), spawnmap(-1, -1), spawnpos(-1,-1), moves(0), speed(0), hp(60), sp_timeout(0), friendly(0),
+: pos(20, 10), wand(point(-1, -1), 0), spawnmap(-1, -1), spawnpos(-1,-1), moves(0), speed(0), hp(60), sp_timeout(0), friendly(0),
   anger(0), morale(2), faction_id(-1), mission_id(-1),type(0),dead(false),made_footstep(false),unique_name("")
 {
 }
 
 monster::monster(const mtype *t)
-: pos(20, 10), wand(-1, -1), wandf(0), spawnmap(-1, -1), spawnpos(-1,-1), moves(t->speed), speed(t->speed), hp(t->hp), 
+: pos(20, 10), wand(point(-1, -1), 0), spawnmap(-1, -1), spawnpos(-1,-1), moves(t->speed), speed(t->speed), hp(t->hp),
   sp_timeout(rng(0, t->sp_freq)),friendly(0),anger(t->agro),morale(t->morale),faction_id(-1),mission_id(-1),type(t),dead(false),
   made_footstep(false),unique_name("")
 {
 }
 
 monster::monster(const mtype *t, int x, int y)
-: pos(x, y), wand(-1, -1), wandf(0), spawnmap(-1, -1), spawnpos(-1, -1), moves(t->speed), speed(t->speed), hp(t->hp),
+: pos(x, y), wand(point(-1, -1),0), spawnmap(-1, -1), spawnpos(-1, -1), moves(t->speed), speed(t->speed), hp(t->hp),
 	sp_timeout(t->sp_freq), friendly(0), anger(t->agro), morale(t->morale), faction_id(-1), mission_id(-1), type(t), dead(false),
 	made_footstep(false), unique_name("")
 {

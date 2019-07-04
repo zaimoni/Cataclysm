@@ -1247,8 +1247,7 @@ void defense_game::spawn_wave_monster(game *g, const mtype *type)
   if (one_in(2))
    tmp.pos.x = SEEX * MAPSIZE - 1 - tmp.pos.x;
  }
- tmp.wand = g->u.pos;
- tmp.wandf = 150;
+ tmp.wand.set(g->u.pos, 150);
 // We wanna kill!
  tmp.anger = 100;
  tmp.morale = 100;

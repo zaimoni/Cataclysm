@@ -42,10 +42,8 @@ void monster::set_dest(const point& pt, int &t)
 // "Stupid" movement; "if (wandx < posx) posx--;" etc.
 void monster::wander_to(int x, int y, int f)
 {
- wand.x = x;
- wand.y = y;
- wandf = f;
- if (has_flag(MF_GOODHEARING)) wandf *= 6;
+ if (has_flag(MF_GOODHEARING)) f *= 6;
+ wand.set(point(x, y), f);
 }
 
 void monster::plan(game *g)
@@ -81,8 +79,7 @@ void monster::plan(game *g)
  if (can_see()) {
 	 if (is_fleeing(g->u) && g->sees_u(pos)) {
 		 fleeing = true;
-		 wand = 2 * pos - g->u.pos;
-		 wandf = 40;
+		 wand.set(2 * pos - g->u.pos, 40);
 		 dist = rl_dist(pos, g->u.pos);
 	 }
 
@@ -100,8 +97,7 @@ void monster::plan(game *g)
 			 g->m.sees(pos, me->pos, sightrange)) {
 			 if (is_fleeing(*me)) {
 				 fleeing = true;
-				 wand = 2 * pos - me->pos;
-				 wandf = 40;
+				 wand.set(2 * pos - me->pos, 40);
 				 dist = medist;
 			 } else if (g->m.sees(pos, me->pos, sightrange, tc)) {
 				 dist = medist;
@@ -119,10 +115,8 @@ void monster::plan(game *g)
    int mondist = rl_dist(pos, _mon.pos);
    if (_mon.friendly != 0 && mondist < dist && can_see() && g->m.sees(pos, _mon.pos, sightrange, tc)) {
     dist = mondist;
-    if (fleeing) {
-	 wand = 2*pos - _mon.pos;
-     wandf = 40;
-    } else {
+    if (fleeing) wand.set(2 * pos - _mon.pos, 40);
+    else {
      closest_mon = &_mon;
      stc = tc;
     }
@@ -148,7 +142,7 @@ void monster::move(game *g)
 {
 // We decrement wandf no matter what.  We'll save our wander_to plans until
 // after we finish out set_dest plans, UNLESS they time out first.
- if (wandf > 0) wandf--;
+ wand.tick();
 
 // First, use the special attack, if we can!
  if (sp_timeout > 0) sp_timeout--;
@@ -208,7 +202,7 @@ void monster::move(game *g)
    moved = true;
   }
  }
- if (wandf > 0 && !moved) { // No LOS, no scent, so as a fall-back follow sound
+ if (wand.live() && !moved) { // No LOS, no scent, so as a fall-back follow sound
   point tmp = sound_move(g);
   if (tmp != pos) {
    next = tmp;
@@ -361,14 +355,14 @@ bool monster::can_sound_move_to(const game* g, const point& pt, point& dest) con
 point monster::sound_move(const game *g)
 {
  plans.clear();
- const bool xbest = (abs(wand.y - pos.y) <= abs(wand.x - pos.x));	// which is more important
+ const bool xbest = (abs(wand.x.y - pos.y) <= abs(wand.x.x - pos.x));	// which is more important
  point next(pos);
  int x = pos.x, x2 = pos.x - 1, x3 = pos.x + 1;
  int y = pos.y, y2 = pos.y - 1, y3 = pos.y + 1;
- if (wand.x < pos.x) { x--; x2++;          }
- else if (wand.x > pos.x) { x++; x2++; x3 -= 2; }
- if (wand.y < pos.y) { y--; y2++;          }
- else if (wand.y > pos.y) { y++; y2++; y3 -= 2; }
+ if (wand.x.x < pos.x) { x--; x2++;          }
+ else if (wand.x.x > pos.x) { x++; x2++; x3 -= 2; }
+ if (wand.x.y < pos.y) { y--; y2++;          }
+ else if (wand.x.y > pos.y) { y++; y2++; y3 -= 2; }
 
  if (!can_sound_move_to(g, point(x, y), next)) {
 	 if (xbest) {
@@ -618,7 +612,7 @@ bool monster::will_reach(const game *g, const point& pt) const
 	 if ( 0 < scent && g->scent(pt) > scent) return true;
  }
 
- if (can_hear() && wandf > 0 && rl_dist(wand, pt) <= 2 && rl_dist(pos, wand) <= wandf)
+ if (can_hear() && wand.live() && rl_dist(wand.x, pt) <= 2 && rl_dist(pos, wand.x) <= wand.remaining)
   return true;
 
  if (can_see() && g->m.sees(pos, pt, g->light_level())) return true;
