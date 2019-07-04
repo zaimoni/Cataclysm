@@ -8,6 +8,7 @@ class map;
 class game;
 class item;
 
+// note partial overlap with disease effects for the player
 enum monster_effect_type {
 ME_NULL = 0,
 ME_BEARTRAP,		// Stuck in beartrap
@@ -48,7 +49,11 @@ class monster {
  monster();
  monster(const mtype *t);
  monster(const mtype *t, int x, int y);
+ monster(const monster& src) = default;
+ monster(monster&& src) = default;
  ~monster() = default;
+ monster& operator=(const monster& src) = default;
+ monster& operator=(monster&& src) = default;
 
  monster(std::istream& is);
  friend std::ostream& operator<<(std::ostream& os, const monster& src);

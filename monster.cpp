@@ -11,75 +11,39 @@
 #define SQR(a) ((a)*(a))
 
 static const char* const JSON_transcode_meffects[] = {
-	"ME_BEARTRAP",
-	"ME_POISONED",
-	"ME_ONFIRE",
-	"ME_STUNNED",
-	"ME_DOWNED",
-	"ME_BLIND",
-	"ME_DEAF",
-	"ME_TARGETED",
-	"ME_DOCILE",
-	"ME_HIT_BY_PLAYER",
-	"ME_RUN"
+	"BEARTRAP",
+	"POISONED",
+	"ONFIRE",
+	"STUNNED",
+	"DOWNED",
+	"BLIND",
+	"DEAF",
+	"TARGETED",
+	"DOCILE",
+	"HIT_BY_PLAYER",
+	"RUN"
 };
 
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(monster_effect_type, JSON_transcode_meffects)
 
 monster::monster()
-: pos(20, 10), wand(-1, -1), spawnmap(-1, -1), spawnpos(-1,-1)
+: pos(20, 10), wand(-1, -1), wandf(0), spawnmap(-1, -1), spawnpos(-1,-1), moves(0), speed(0), hp(60), sp_timeout(0), friendly(0),
+  anger(0), morale(2), faction_id(-1), mission_id(-1),type(0),dead(false),made_footstep(false),unique_name("")
 {
- wandf = 0;
- type = NULL;
- hp = 60;
- moves = 0;
- sp_timeout = 0;
- friendly = 0;
- anger = 0;
- morale = 2;
- faction_id = -1;
- mission_id = -1;
- dead = false;
- made_footstep = false;
- unique_name = "";
 }
 
 monster::monster(const mtype *t)
-: pos(20, 10), wand(-1, -1), spawnmap(-1, -1), spawnpos(-1,-1)
+: pos(20, 10), wand(-1, -1), wandf(0), spawnmap(-1, -1), spawnpos(-1,-1), moves(t->speed), speed(t->speed), hp(t->hp), 
+  sp_timeout(rng(0, t->sp_freq)),friendly(0),anger(t->agro),morale(t->morale),faction_id(-1),mission_id(-1),type(t),dead(false),
+  made_footstep(false),unique_name("")
 {
- wandf = 0;
- type = t;
- moves = type->speed;
- speed = type->speed;
- hp = type->hp;
- sp_timeout = rng(0, type->sp_freq);
- friendly = 0;
- anger = t->agro;
- morale = t->morale;
- faction_id = -1;
- mission_id = -1;
- dead = false;
- made_footstep = false;
- unique_name = "";
 }
 
 monster::monster(const mtype *t, int x, int y)
-: pos(x, y), wand(-1, -1), spawnmap(-1, -1), spawnpos(-1,-1)
+: pos(x, y), wand(-1, -1), wandf(0), spawnmap(-1, -1), spawnpos(-1, -1), moves(t->speed), speed(t->speed), hp(t->hp),
+	sp_timeout(t->sp_freq), friendly(0), anger(t->agro), morale(t->morale), faction_id(-1), mission_id(-1), type(t), dead(false),
+	made_footstep(false), unique_name("")
 {
- wandf = 0;
- type = t;
- moves = type->speed;
- speed = type->speed;
- hp = type->hp;
- sp_timeout = type->sp_freq;
- friendly = 0;
- anger = type->agro;
- morale = type->morale;
- faction_id = -1;
- mission_id = -1;
- dead = false;
- made_footstep = false;
- unique_name = "";
 }
 
 void monster::poly(const mtype *t)
