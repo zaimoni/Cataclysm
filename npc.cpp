@@ -86,7 +86,7 @@ DEFINE_JSON_ENUM_SUPPORT_HARDCODED(npc_favor_type, JSON_transcode_favors, 2)
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(talk_topic, JSON_transcode_talk)
 
 npc::npc()
-: wand(0,0),wandf(0),om(0,0,0),pl(-1,-1),plt(0),it(-1,-1),goal(-1,-1)
+: wand(point(0,0),0),om(0,0,0),pl(point(-1,-1),0),it(-1,-1),goal(-1,-1)
 {
  id = -1;
  mapx = 0;
@@ -1743,7 +1743,7 @@ void npc::shift(const point delta)
  mapx += delta.x;
  mapy += delta.y;
  it -= block_delta;
- pl -= block_delta;
+ pl.x -= block_delta;
  path.clear();
 }
 

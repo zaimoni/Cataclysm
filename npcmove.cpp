@@ -39,6 +39,9 @@ struct ratio_index
  
 void npc::move(game *g)
 {
+ wand.tick();	// countdown timers
+ pl.tick();
+
  npc_action action = npc_undecided;
  int danger = 0, total_danger = 0, target = -1;
 
@@ -237,9 +240,9 @@ void npc::execute_action(game *g, npc_action action, int target)
 
  case npc_look_for_player:
   {
-  if (saw_player_recently() && g->m.sees(pos, pl, light)) {
+  if (saw_player_recently() && g->m.sees(pos, pl.x, light)) {
 // npc::pl is the point where we last saw the player
-   update_path(g->m, pl);
+   update_path(g->m, pl.x);
    move_to_next(g);
   } else
    look_for_player(g, g->u);
@@ -1654,7 +1657,7 @@ void npc::look_for_player(game *g, player &sought)
 
 bool npc::saw_player_recently() const
 {
- return (pl.x >= 0 && pl.x < SEEX * MAPSIZE && pl.y >= 0 && pl.y < SEEY * MAPSIZE && plt > 0);
+ return (pl.x.x >= 0 && pl.x.x < SEEX * MAPSIZE && pl.x.y >= 0 && pl.x.y < SEEY * MAPSIZE && pl.live());
 }
 
 bool npc::has_destination() const

@@ -1738,8 +1738,7 @@ npc::npc(std::istream& is)
 
 	// Special NPC stuff
 	int flagstmp, fac_id;
-	is >> personality >> wand >> wandf >> om >>
-		mapx >> mapy >> pl >> goal >> mission >>
+	is >> personality >> wand >> om >> mapx >> mapy >> pl >> goal >> mission >>
 		flagstmp >> fac_id >> attitude;
 	my_fac = faction::from_id(fac_id);
 	flags = flagstmp;
@@ -1778,9 +1777,9 @@ std::ostream& operator<<(std::ostream& os, const npc& src)
 	for (const auto& bio : src.my_bionics)  os << bio I_SEP;
 
 	// NPC-specific stuff
-	os << src.personality I_SEP << src.wand I_SEP << src.wandf I_SEP <<
-		src.om I_SEP << src.mapx I_SEP << src.mapy I_SEP << src.pl I_SEP <<
-		src.goal I_SEP << src.mission I_SEP << int(src.flags) I_SEP;	// blocker V 0.2.0 \todo npc::it missing here
+	os << src.personality I_SEP << src.wand I_SEP << src.om I_SEP << src.mapx I_SEP <<
+		src.mapy I_SEP << src.pl I_SEP << src.goal I_SEP << src.mission I_SEP <<
+		int(src.flags) I_SEP;	// blocker V 0.2.0 \todo npc::it missing here
 	os << (src.my_fac == NULL ? -1 : src.my_fac->id);
 	os I_SEP << src.attitude I_SEP << src.op_of_u I_SEP << src.chatbin I_SEP << src.combat_rules I_SEP;
 

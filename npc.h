@@ -4,6 +4,7 @@
 #include "player.h"
 #include "overmap.h"
 #include "faction.h"
+#include "mobile.h"
 #include <vector>
 #include <string>
 #include <sstream>
@@ -456,15 +457,13 @@ public:
  npc_attitude attitude;	// What we want to do to the player
  npc_class myclass; // What's our archetype?
  // last heard sound: dead data, in savefile but no users (same intended semantics as monster::wand,wandf?)
- point wand;	// location
- int wandf;		// recency (timeout)
+ countdown<point> wand;	// location
 
 // Location:
  tripoint om;	// which overmap (e.g., o.0.0.0) 
  int mapx, mapy;// Which square in that overmap (e.g., m.0.0)
  // last seen player data (assumes player is singleton)
- point pl;	// last saw player at; legal coordinates 0.. (SEEX/Y * MAPSIZE-1)
- int plt;	// timeout to forgetting
+ countdown<point> pl;	// last saw player at; legal coordinates 0.. (SEEX/Y * MAPSIZE-1)
  point it;	// The square containing an item we want
  point goal;	// Which mapx:mapy square we want to get to (legal coordinates 0...OMAPX/Y)
 
