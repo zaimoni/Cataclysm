@@ -93,63 +93,6 @@ bool vehicle::player_in_control(player& p) const
     return part_with_feature(veh_part, vpf_controls, false) >= 0 && p.in_vehicle;
 }
 
-void vehicle::load(std::istream &stin)
-{
-    int t;
-    int fdir, mdir, skd, prts, cr_on;
-    stin >>
-        t >>
-        pos >>
-        fdir >>
-        mdir >>
-        turn_dir >>
-        velocity >>
-        cruise_velocity >>
-        cr_on >>
-        turret_mode >>
-        skd >>
-        moves >>
-        prts;
-    type = (vhtype_id) t;
-    face.init (fdir);
-    move.init (mdir);
-    skidding = skd != 0;
-    cruise_on = cr_on != 0;
-    std::string databuff;
-    getline(stin, databuff); // Clear EoL
-    getline(stin, name); // read name
-    int itms = 0;
-    for (int p = 0; p < prts; p++) {
-		vehicle_part newpart;
-		stin >> newpart;
-		parts.push_back(std::move(newpart));
-    }
-    find_external_parts ();
-    find_exhaust ();
-    insides_dirty = true;
-    precalc_mounts (0, face.dir());
-}
-
-void vehicle::save (std::ostream &stout) const
-{
-    stout <<
-        int(type) << " " <<
-        pos << " " <<
-        face.dir() << " " <<
-        move.dir() << " " <<
-        turn_dir << " " <<
-        velocity << " " <<
-        cruise_velocity << " " <<
-        (cruise_on? 1 : 0) << " " <<
-        turret_mode << " " <<
-        (skidding? 1 : 0) << " " <<
-        moves << " " <<
-        parts.size() << std::endl;
-    stout << name << std::endl;
-
-	for(const auto& part : parts) stout << part;
-}
-
 void vehicle::init_state()
 {
     for (int p = 0; p < parts.size(); p++)

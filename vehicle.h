@@ -110,16 +110,16 @@ public:
 	static std::vector <vehicle*> vtypes;
 
     vehicle(vhtype_id type_id = veh_null);
+	vehicle(const vehicle& src) = default;
+	vehicle(vehicle&& src) = default;
 	~vehicle() = default;
+	vehicle& operator=(const vehicle& src) = default;
+	vehicle& operator=(vehicle&& src) = default;
+	vehicle(std::istream& in);
+	friend std::ostream& operator<<(std::ostream& os, const vehicle& src);
 
 // check if given player controls this vehicle
     bool player_in_control(player& p) const;
-
-// load and init vehicle data from stream. This implies valid save data!
-    void load (std::istream &stin);
-
-// Save vehicle data to stream
-    void save(std::ostream &stout) const;
 
 // get vpart type info for part number (part at given vector index)
     const vpart_info& part_info(int index) const;

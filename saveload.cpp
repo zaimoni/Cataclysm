@@ -730,6 +730,44 @@ std::ostream& operator<<(std::ostream& os, const spawn_point& src)
 	else return os << "{}"; // temporary
 }
 
+// \todo release block: JSON conversion for vehicle
+vehicle::vehicle(std::istream& in)
+{
+	int t;
+	int fdir, mdir, skd, prts, cr_on;
+	in >> t >> pos >> fdir >> mdir >> turn_dir >> velocity >> cruise_velocity >>
+		cr_on >> turret_mode >> skd >> moves >> prts;
+	type = (vhtype_id)t;
+	face.init(fdir);
+	move.init(mdir);
+	skidding = skd != 0;
+	cruise_on = cr_on != 0;
+	getline(in >> std::ws, name); // read name
+	int itms = 0;
+	for (int p = 0; p < prts; p++) {
+		vehicle_part newpart;	// \todo JSON conversion block: istream constructor
+		in >> newpart;
+		parts.push_back(std::move(newpart));
+	}
+	find_external_parts();
+	find_exhaust();
+	insides_dirty = true;
+	precalc_mounts(0, face.dir());
+}
+
+std::ostream& operator<<(std::ostream& os, const vehicle& src)
+{
+	os << int(src.type) I_SEP << src.pos I_SEP << src.face.dir() I_SEP <<
+		src.move.dir() I_SEP << src.turn_dir I_SEP << src.velocity I_SEP <<
+		src.cruise_velocity I_SEP << (src.cruise_on ? 1 : 0) I_SEP <<
+		src.turret_mode I_SEP << (src.skidding ? 1 : 0) I_SEP <<
+		src.moves I_SEP << src.parts.size() << std::endl;
+	os << src.name << std::endl;
+
+	for (const auto& part : src.parts) os << part;
+	return os;
+}
+
 // \todo release block: submap::submap,operator<< need at least partial JSON conversion
 submap::submap(std::istream& is)
 {
@@ -780,11 +818,7 @@ submap::submap(std::istream& is)
 		}
 		else if (string_identifier == "S") spawns.push_back(spawn_point(is));
 		else if (string_identifier == "V") {
-			vehicle veh;
-			veh.load(is);	// \todo release block: convert to istream constructor?
-			//veh.smx = gridx;
-			//veh.smy = gridy;
-			vehicles.push_back(veh);
+			vehicles.push_back(vehicle(is));
 		} else if (string_identifier == "c") {
 			is >> comp >> std::ws;
 		} else if ("----" == string_identifier) {
@@ -848,10 +882,8 @@ std::ostream& operator<<(std::ostream& os, const submap& src)
 	for (const auto& s : src.spawns) os << "S " << s << std::endl;
 
 	// Output the vehicles
-	for (int i = 0; i < src.vehicles.size(); i++) {
-		os << "V ";
-		src.vehicles[i].save(os);
-	}
+	for(const auto& v : src.vehicles) os << "V " << v;
+
 	// Output the computer
 	if (src.comp.name != "") os << "c " << src.comp << std::endl;
 	return os << "----" << std::endl;
