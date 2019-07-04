@@ -743,12 +743,7 @@ vehicle::vehicle(std::istream& in)
 	skidding = skd != 0;
 	cruise_on = cr_on != 0;
 	getline(in >> std::ws, name); // read name
-	int itms = 0;
-	for (int p = 0; p < prts; p++) {
-		vehicle_part newpart;	// \todo JSON conversion block: istream constructor
-		in >> newpart;
-		parts.push_back(std::move(newpart));
-	}
+	for (int p = 0; p < prts; p++) parts.push_back(vehicle_part(in));
 	find_external_parts();
 	find_exhaust();
 	insides_dirty = true;
@@ -889,32 +884,28 @@ std::ostream& operator<<(std::ostream& os, const submap& src)
 	return os << "----" << std::endl;
 }
 
-// \todo release block: vehicle_part: operator>>,operator<< JSON conversion blocked by items
-std::istream& operator>>(std::istream& is, vehicle_part& dest)
+vehicle_part::vehicle_part(std::istream& is)
 {
 	if ('{' == (is >> std::ws).peek()) {
 		JSON _in(is);
-		if (!_in.has_key("id") || !fromJSON(_in["id"], dest.id)) return is;
-		if (_in.has_key("mount_d")) fromJSON(_in["mount_d"], dest.mount_d);
-		if (_in.has_key("precalc_d")) _in["precalc_d"].decode(dest.precalc_d, (sizeof(dest.precalc_d) / sizeof(*dest.precalc_d)));
-		if (_in.has_key("hp")) fromJSON(_in["hp"], dest.hp);
-		if (_in.has_key("blood")) fromJSON(_in["blood"], dest.blood);
-		if (_in.has_key("inside")) fromJSON(_in["inside"], dest.inside);
-		if (_in.has_key("amount")) fromJSON(_in["amount"], dest.amount);
-		if (_in.has_key("items")) _in["items"].decode(dest.items);
-		return is;
+		if (!_in.has_key("id") || !fromJSON(_in["id"], id)) return;
+		if (_in.has_key("mount_d")) fromJSON(_in["mount_d"], mount_d);
+		if (_in.has_key("precalc_d")) _in["precalc_d"].decode(precalc_d, (sizeof(precalc_d) / sizeof(*precalc_d)));
+		if (_in.has_key("hp")) fromJSON(_in["hp"], hp);
+		if (_in.has_key("blood")) fromJSON(_in["blood"], blood);
+		if (_in.has_key("inside")) fromJSON(_in["inside"], inside);
+		if (_in.has_key("amount")) fromJSON(_in["amount"], amount);
+		if (_in.has_key("items")) _in["items"].decode(items);
+		return;
 	}
 	// \todo release block: remove legacy reading
-	std::string databuff;
 	int pid, pnit;
 
 	is >> pid;
-	dest.id = vpart_id(pid);
+	id = vpart_id(pid);
 
-	is >> dest.mount_d >> dest.hp >> dest.amount >> dest.blood >> pnit >> std::ws;
-	dest.items.clear();
-	for (int j = 0; j < pnit; j++) dest.items.push_back(item(is));
-	return is;
+	is >> mount_d >> hp >> amount >> blood >> pnit >> std::ws;
+	for (int j = 0; j < pnit; j++) items.push_back(item(is));
 }
 
 std::ostream& operator<<(std::ostream& os, const vehicle_part& src)
