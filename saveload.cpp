@@ -1077,6 +1077,7 @@ JSON toJSON(const item& src) {
 std::ostream& operator<<(std::ostream& os, const item& src) { return os << toJSON(src); }
 
 // \todo release block: JSON save/load support (repairs monster inventories, effects being dropped in save/load cycle
+// \todo JSON conversion block: wand/wandf
 monster::monster(std::istream& is)
 {
 	int plansize;
@@ -1409,6 +1410,7 @@ std::ostream& operator<<(std::ostream& os, const morale_point& src)
 // the save of a non-final class to hard drive to disambiguate.
 
 // 2019-03-24: work required to make player object a proper base object of the npc object not plausibly mechanical.
+// \todo release block: JSON conversion
 std::istream& operator>>(std::istream& is, player& dest)
 {
 	is >> dest.pos >> dest.str_cur >> dest.str_max >> dest.dex_cur >> dest.dex_max >>
@@ -1656,6 +1658,8 @@ std::ostream& operator<<(std::ostream& os, const npc_combat_rules& src)
 	} else return os << "{}";
 }
 
+// \todo release block: JSON conversion
+// \todo JSON conversion block: wand/wandf
 npc::npc(std::istream& is)
 {
 	std::string tmpname;

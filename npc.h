@@ -2,7 +2,6 @@
 #define _NPC_H_
 
 #include "player.h"
-#include "monster.h"
 #include "overmap.h"
 #include "faction.h"
 #include <vector>
@@ -14,10 +13,6 @@
 #define NPC_VERY_HI_VALUE  15
 #define NPC_DANGER_LEVEL   10
 #define NPC_DANGER_VERY_LOW 5
-
-class item;
-class overmap;
-class player;
 
 void parse_tags(std::string &phrase, player *u, npc *me);
 
