@@ -2,16 +2,16 @@
 #define _PLAYER_H_
 
 #include "item.h"
-#include "monster.h"
 #include "skill.h"
 #include "bionics.h"
 #include "morale.h"
 #include "inventory.h"
-#include "artifact.h"
 #include "mutation.h"
 
+enum art_effect_passive;
 class game;
 struct mission;
+class monster;
 struct trap;
 
 struct special_attack
