@@ -24,6 +24,8 @@ ME_RUN,			// For hit-and-run monsters; we're running for a bit;
 NUM_MONSTER_EFFECTS
 };
 
+DECLARE_JSON_ENUM_SUPPORT(monster_effect_type)
+
 enum monster_attitude {
 MATT_NULL = 0,
 MATT_FRIEND,

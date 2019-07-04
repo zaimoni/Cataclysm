@@ -96,6 +96,7 @@ JSON_ENUM(itype_id)	// breaks if we need a randart as a morale_point item
 JSON_ENUM(mission_id)
 JSON_ENUM(mon_id)
 JSON_ENUM(moncat_id)
+JSON_ENUM(monster_effect_type)
 JSON_ENUM(morale_type)
 JSON_ENUM(npc_favor_type)
 JSON_ENUM(skill)

@@ -10,6 +10,22 @@
 #define SGN(a) (((a)<0) ? -1 : 1)
 #define SQR(a) ((a)*(a))
 
+static const char* const JSON_transcode_meffects[] = {
+	"ME_BEARTRAP",
+	"ME_POISONED",
+	"ME_ONFIRE",
+	"ME_STUNNED",
+	"ME_DOWNED",
+	"ME_BLIND",
+	"ME_DEAF",
+	"ME_TARGETED",
+	"ME_DOCILE",
+	"ME_HIT_BY_PLAYER",
+	"ME_RUN"
+};
+
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(monster_effect_type, JSON_transcode_meffects)
+
 monster::monster()
 : pos(20, 10), wand(-1, -1), spawnmap(-1, -1), spawnpos(-1,-1)
 {
