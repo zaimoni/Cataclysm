@@ -5,7 +5,6 @@
 #include "monster.h"
 #include "skill.h"
 #include "bionics.h"
-#include "trap.h"
 #include "morale.h"
 #include "inventory.h"
 #include "artifact.h"
@@ -13,6 +12,7 @@
 
 class game;
 struct mission;
+struct trap;
 
 struct special_attack
 {
@@ -24,9 +24,6 @@ struct special_attack
  special_attack() { bash = 0; cut = 0; stab = 0; };
 };
 
-#define NUM_FIRST_NAMES 100
-#define NUM_LAST_NAMES  100
-
 std::string random_first_name(bool male);
 std::string random_last_name();
 
@@ -34,11 +31,13 @@ class player {
 public:
  player();
  player(const player &rhs) = default;
+ player(player&& rhs) = default;
  virtual ~player() = default;
  friend std::istream& operator>>(std::istream& is, player& dest);
  friend std::ostream& operator<<(std::ostream& is, const player& src);
 
  player& operator=(const player& rhs) = default;
+ player& operator=(player&& rhs) = default;
 
 // newcharacter.cpp 
  bool create(game *g, character_type type, std::string tempname = "");
@@ -268,7 +267,6 @@ public:
  int sktrain   [num_skill_types];
  
  bool inv_sorted;
- //std::vector <item> inv;
  inventory inv;
  itype_id last_item;
  std::vector <item> worn;	// invariant: dynamic cast to it_armor is non-null

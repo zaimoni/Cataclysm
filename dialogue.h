@@ -1,7 +1,6 @@
 #ifndef _DIALOGUE_H_
 #define _DIALOGUE_H_
 
-#include "player.h"
 #include "output.h"
 #include "npc.h"
 #include <vector>

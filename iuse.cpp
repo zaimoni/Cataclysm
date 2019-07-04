@@ -5,7 +5,6 @@
 #include "output.h"
 #include "rng.h"
 #include "line.h"
-#include "player.h"
 #include "monattack.h"
 #include "recent_msg.h"
 

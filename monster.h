@@ -1,12 +1,12 @@
 #ifndef _MONSTER_H_
 #define _MONSTER_H_
 
-#include "player.h"
 #include "mtype.h"
 
 class map;
 class game;
 class item;
+class player;
 
 // note partial overlap with disease effects for the player
 enum monster_effect_type {
