@@ -147,10 +147,10 @@ void game::init_vehicles()
     int index = 0;
     int pi;
 	bool ok = true;
-	vehicle::vtypes.push_back(new vehicle(this, (vhtype_id)index++)); // veh_null
-	vehicle::vtypes.push_back(new vehicle(this, (vhtype_id)index++)); // veh_custom
+	vehicle::vtypes.push_back(new vehicle((vhtype_id)index++)); // veh_null
+	vehicle::vtypes.push_back(new vehicle((vhtype_id)index++)); // veh_custom
 
-#define VEHICLE(nm) { veh = new vehicle(this, (vhtype_id)index++); veh->name = nm; vehicle::vtypes.push_back(veh); }
+#define VEHICLE(nm) { veh = new vehicle((vhtype_id)index++); veh->name = nm; vehicle::vtypes.push_back(veh); }
 #define PART(mdx, mdy, id) { pi = veh->install_part(mdx, mdy, id); \
     if (pi < 0) { debugmsg("init_vehicles: '%s' part '%s'(%d) can't be installed to %d,%d", veh->name.c_str(), vpart_info::list[id].name, veh->parts.size(), mdx, mdy); ok = false; } }
 

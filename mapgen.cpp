@@ -1293,14 +1293,13 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      ter(i, j) = grass_or_dirt();
    }
   }
-  if (one_in(3))
-  {
+  if (one_in(3)) {
       int vx = rng (0, 3) * 4 + 5;
       int vy = 4;
       vhtype_id vt = (one_in(10)? veh_sandbike :
                      (one_in(8)? veh_truck :
                      (one_in(3)? veh_car : veh_motorcycle)));
-      add_vehicle (g, vt, vx, vy, one_in(2)? 90 : 270);
+      add_vehicle(vt, vx, vy, one_in(2)? 90 : 270);
   }
   place_items(mi_road, 8, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1, false, turn);
   if (t_east  >= ot_road_null && t_east  <= ot_road_nesw_manhole)
@@ -6470,7 +6469,7 @@ void map::add_spawn(monster *mon)
            mon->faction_id, mon->mission_id, spawnname);
 }
 
-vehicle *map::add_vehicle(game *g, vhtype_id type, int x, int y, int dir)
+vehicle* map::add_vehicle(vhtype_id type, int x, int y, int dir)
 {
  if (x < 0 || x >= SEEX * my_MAPSIZE || y < 0 || y >= SEEY * my_MAPSIZE) {
   debugmsg("Bad add_vehicle t=%d d=%d x=%d y=%d", type, dir, x, y);
@@ -6481,7 +6480,7 @@ vehicle *map::add_vehicle(game *g, vhtype_id type, int x, int y, int dir)
  int nonant = smx + smy * my_MAPSIZE;	// XXX \todo fix this -- can fail because MAPSIZE defaults to 11 i.e. SEEX-1; (11,n) and (0,n+1) will be assigned to the same nonant
  x %= SEEX;
  y %= SEEY;
- vehicle veh(g, type);
+ vehicle veh(type);
  veh.pos = point(x,y);
  veh.sm = point(smx,smy);
  veh.face.init(dir);

@@ -68,17 +68,10 @@ DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(vpart_id, JSON_transcode_vparts)
 
 std::vector <vehicle*> vehicle::vtypes;
 
-vehicle::vehicle(game *ag, vhtype_id type_id): g(ag), type(type_id), pos(0,0)
+vehicle::vehicle(vhtype_id type_id)
+: type(type_id), insides_dirty(true), pos(0,0), velocity(0), cruise_velocity(0), cruise_on(true),
+  turn_dir(0), skidding(false), last_turn(0), moves(0), turret_mode(0)
 {
-    velocity = 0;
-    turn_dir = 0;
-    last_turn = 0;
-    moves = 0;
-    turret_mode = 0;
-    cruise_velocity = 0;
-    skidding = false;
-    cruise_on = true;
-    insides_dirty = true;
     if (type >= num_vehicles) type = 0;
     if (type > veh_custom)
     {   // get a copy of sample vehicle of this type
@@ -95,7 +88,7 @@ bool vehicle::player_in_control(player& p) const
 {
     if (type == veh_null) return false;
     int veh_part;
-    const vehicle* const veh = g->m.veh_at(p.pos, veh_part);
+    const vehicle* const veh = game::active()->m.veh_at(p.pos, veh_part);
     if (veh && veh != this) return false;
     return part_with_feature(veh_part, vpf_controls, false) >= 0 && p.in_vehicle;
 }
@@ -451,8 +444,9 @@ player *vehicle::get_passenger(int p) const
     p = part_with_feature (p, vpf_seat, false);
     if (p >= 0 && parts[p].passenger) {
 		const point origin(global() + parts[p].precalc_d[0]);
+		auto g = game::active();
         if (g->u.pos == origin && g->u.in_vehicle) return &g->u;
-		if (npc* const nPC = g->nPC(origin)) return nPC;	// \todo why not require in_vehicle?
+		if (npc* const nPC = g->nPC(origin)) return nPC;	// \todo V0.2.1+ why not require in_vehicle?
     }
     return 0;
 }
@@ -791,6 +785,8 @@ void vehicle::thrust (int thd)
 
     if (!thd) return;
 
+	auto g = game::active();
+
     bool pl_ctrl = player_in_control(g->u);
 
     if (!valid_wheel_config() && velocity == 0) {
@@ -897,6 +893,8 @@ void vehicle::stop ()
 int vehicle::part_collision (int vx, int vy, int part, point dest)
 {
 	static const int mass_from_msize[mtype::MS_MAX] = { 15, 40, 80, 200, 800 };
+
+	auto g = game::active();
 
     const bool pl_ctrl = player_in_control(g->u);
 	npc* const nPC = g->nPC(dest);
@@ -1069,6 +1067,7 @@ void vehicle::handle_trap (int x, int y, int part)
 {
     int pwh = part_with_feature (part, vpf_wheel);
     if (pwh < 0) return;
+	auto g = game::active();
     trap_id t = g->m.tr_at(x, y);
     if (t == tr_null) return;
     int noise = 0;
@@ -1181,6 +1180,7 @@ void vehicle::remove_item (int part, int itemdex)
 void vehicle::gain_moves (int mp)
 {
     moves += mp;
+	auto g = game::active();
     // cruise control TODO: enable for NPC?
     if (player_in_control(g->u)) {
         if (cruise_on)
@@ -1305,6 +1305,7 @@ bool vehicle::is_inside (int p)
 void vehicle::unboard_all ()
 {
 	const point o(global());
+	auto g = game::active();
     std::vector<int> bp = boarded_parts ();
 	for (int i = 0; i < bp.size(); i++) {
 		const point dest(o + parts[bp[i]].precalc_d[0]);
@@ -1374,6 +1375,7 @@ int vehicle::damage_direct (int p, int dmg, int type)
         parts[p].hp -= dmg;
         if (parts[p].hp < 0) parts[p].hp = 0;
         if (!parts[p].hp && last_hp > 0) insides_dirty = true;
+		auto g = game::active();
         if (part_flag(p, vpf_fuel_tank)) {
             int ft = part_info(p).fuel_type;
             if (ft == AT_GAS || ft == AT_PLASMA) {
@@ -1401,6 +1403,7 @@ void vehicle::leak_fuel (int p)
     int ft = part_info(p).fuel_type;
     if (ft == AT_GAS) {
 		const point origin(global());
+		auto g = game::active();
         for (int i = origin.x - 2; i <= origin.x + 2; i++)
             for (int j = origin.y - 2; j <= origin.y + 2; j++)
                 if (g->m.move_cost(i, j) > 0 && one_in(2)) {
@@ -1554,6 +1557,7 @@ bool vehicle::fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int
     monster *target = 0;
     int range = ammo.type == AT_GAS? 5 : 12;
     int closest = range + 1;
+	auto g = game::active();
 	for(auto& _mon : g->z) {
         int dist = rl_dist(origin, _mon.pos);
         if (_mon.friendly == 0 && dist < closest &&

@@ -106,13 +106,10 @@ struct vehicle_part
 //   If you can't understand, why installation fails, try to assemble your vehicle in game first.
 class vehicle
 {
-private:
-    game *g;
-
 public:
 	static std::vector <vehicle*> vtypes;
 
-    vehicle (game *ag=0, vhtype_id type_id = veh_null);
+    vehicle(vhtype_id type_id = veh_null);
 	~vehicle() = default;
 
 // check if given player controls this vehicle

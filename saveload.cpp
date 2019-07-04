@@ -780,8 +780,8 @@ submap::submap(std::istream& is, game* master_game)
 		}
 		else if (string_identifier == "S") spawns.push_back(spawn_point(is));
 		else if (string_identifier == "V") {
-			vehicle veh(master_game);
-			veh.load(is);
+			vehicle veh;
+			veh.load(is);	// \todo release block: convert to istream constructor?
 			//veh.smx = gridx;
 			//veh.smy = gridy;
 			vehicles.push_back(veh);

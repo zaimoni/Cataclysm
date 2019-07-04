@@ -621,12 +621,10 @@ void construct::done_log(game *g, point p)
 void construct::done_vehicle(game *g, point p)
 {
     std::string name = string_input_popup(20, "Enter new vehicle name");
-    vehicle *veh = g->m.add_vehicle (g, veh_custom, p.x, p.y, 270);
-    if (!veh)
-    {
-        debugmsg ("error constructing vehicle");
-        return;
-    }
-    veh->name = name;
-    veh->install_part (0, 0, vp_frame_v2);
+	if (auto veh = g->m.add_vehicle(veh_custom, p.x, p.y, 270)) {
+		veh->name = name;
+		veh->install_part(0, 0, vp_frame_v2);
+		return;
+	}
+    debugmsg("error constructing vehicle");
 }

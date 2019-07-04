@@ -238,7 +238,7 @@ class map
                 std::string name = "NONE");
  void add_spawn(monster *mon);
  void create_anomaly(int cx, int cy, artifact_natural_property prop);
- vehicle *add_vehicle(game *g, vhtype_id type, int x, int y, int dir);
+ vehicle* add_vehicle(vhtype_id type, int x, int y, int dir);
  computer* add_computer(int x, int y, std::string name, int security);
  
  static void init();
