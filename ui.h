@@ -9,6 +9,12 @@ enum {
 	SEEX = SEE,
 	SEEY = SEE,
 	VIEW = 2 * SEEX + 1,	// required curses view window height.  Default 25.  Fatcat graphical clients can resize as needed.
+	// minimap
+	MINIMAP_WIDTH_HEIGHT = 7,
+	// status bar
+	STATUS_BAR_HEIGHT = 4,
+	// mon info
+	MON_INFO_HEIGHT = 12,
 	// the canonical view with the player-scale map had a 55-wide "control panel", for a total width of 25+55=80
 	PANELX = 55,
 	SCREEN_WIDTH = VIEW+PANELX

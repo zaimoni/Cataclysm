@@ -24,6 +24,7 @@ using namespace cataclysm;
 
 template<> int discard<int>::x = 0;
 bool game::debugmon = false;
+game* game::_active = 0;
 
 #define MAX_MONSTERS_MOVING 40 // Efficiency!
 
@@ -35,6 +36,9 @@ game::game()
 {
  clear();	// Clear the screen
  intro();	// Print an intro screen, make sure we're at least 80x25
+
+ _active = this;	// for init_vehicles
+
 // Gee, it sure is init-y around here!
  ter_t::init();		// for terrain tiles (map.cpp)
  item::init();	      // Set up item types                (SEE itypedef.cpp)
@@ -52,15 +56,15 @@ game::game()
 // Set up the main UI windows.
  w_terrain = newwin(VIEW, VIEW, 0, 0);
  werase(w_terrain);
- w_minimap = newwin(7, 7, 0, VIEW);
+ w_minimap = newwin(MINIMAP_WIDTH_HEIGHT, MINIMAP_WIDTH_HEIGHT, 0, VIEW);
  werase(w_minimap);
- w_HP = newwin(14, 7, 7, VIEW);
+ w_HP = newwin(VIEW - MINIMAP_WIDTH_HEIGHT - STATUS_BAR_HEIGHT, MINIMAP_WIDTH_HEIGHT, MINIMAP_WIDTH_HEIGHT, VIEW);
  werase(w_HP);
- w_moninfo = newwin(12, 48, 0, VIEW + 7);
+ w_moninfo = newwin(MON_INFO_HEIGHT, PANELX - MINIMAP_WIDTH_HEIGHT, 0, VIEW + MINIMAP_WIDTH_HEIGHT);
  werase(w_moninfo);
- w_messages = newwin(9, 48, 12, VIEW + 7);
+ w_messages = newwin(VIEW - MON_INFO_HEIGHT - STATUS_BAR_HEIGHT, PANELX - MINIMAP_WIDTH_HEIGHT, MON_INFO_HEIGHT, VIEW + MINIMAP_WIDTH_HEIGHT);
  werase(w_messages);
- w_status = newwin(4, 55, 21, VIEW);
+ w_status = newwin(STATUS_BAR_HEIGHT, PANELX, VIEW - STATUS_BAR_HEIGHT, VIEW);
  werase(w_status);
 
  gamemode = new special_game;	// Nothing, basically.

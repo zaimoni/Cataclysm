@@ -46,7 +46,11 @@ struct monster_and_count
 
 class game
 {
+ private:
+  static game* _active;	// while it is not a logic paradox to have more than one game object, historically it has been used as a singleton.
  public:
+  static game* active() { return _active; }
+
   game();
   ~game();
   void setup();
