@@ -1305,11 +1305,11 @@ bool vehicle::is_inside (int p)
 void vehicle::unboard_all ()
 {
 	const point o(global());
-	auto g = game::active();
-    std::vector<int> bp = boarded_parts ();
+	auto& m = game::active()->m;
+    std::vector<int> bp(boarded_parts());
 	for (int i = 0; i < bp.size(); i++) {
 		const point dest(o + parts[bp[i]].precalc_d[0]);
-		g->m.unboard_vehicle(g, dest.x, dest.y);
+		m.unboard_vehicle(dest);
 	}
 }
 

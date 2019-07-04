@@ -602,10 +602,10 @@ void map::board_vehicle(game *g, int x, int y, player *p)
   g->update_map(x, y);
 }
 
-void map::unboard_vehicle(game *g, int x, int y)
+void map::unboard_vehicle(const point& pt)
 {
  int part = 0;
- vehicle *veh = veh_at(x, y, part);
+ vehicle *veh = veh_at(pt, part);
  if (!veh) {
   debugmsg ("map::unboard_vehicle: vehicle not found");
   return;
@@ -866,7 +866,7 @@ void map::vehmove(game *g)
           messages.add("%s %s hurled from the %s's seat by the power of impact!",
                       psgname.c_str(), psgverb, veh->name.c_str());
 		 const point origin(x + veh->parts[ppl[ps]].precalc_d[0].x, y + veh->parts[ppl[ps]].precalc_d[0].y);
-         g->m.unboard_vehicle(g, origin.x, origin.y);
+         g->m.unboard_vehicle(origin);
          g->fling_player_or_monster(psg, 0, mdir.dir() + rng(0, 60) - 30,
                                     (vel2/100 - sb_bonus < 10 ? 10 :
                                      vel2/100 - sb_bonus));

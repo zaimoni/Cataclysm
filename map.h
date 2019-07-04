@@ -24,8 +24,12 @@ class map
 
 // Constructors & Initialization
  map(int map_size = MAPSIZE) : my_MAPSIZE(map_size), grid(map_size*map_size, NULL) {};
- virtual ~map() = default;
- 
+ map(const map& src) = default;
+ map(map&& src) = default;
+ virtual ~map() = default;	// works because mapbuffer is the owner of the submaps, not us (copy works by same rationale)
+ map& operator=(const map& src) = default;
+ map& operator=(map&& src) = default;
+
 // Visual Output
  void draw(game *g, WINDOW* w, point center);
  void debug();
@@ -73,7 +77,7 @@ class map
  vehicle* veh_at(const point& pt) const { return veh_at(pt.x, pt.y); };
  // put player on vehicle at x,y
  void board_vehicle(game *g, int x, int y, player *p);
- void unboard_vehicle(game *g, int x, int y);//remove player from vehicle at x,y
+ void unboard_vehicle(const point& pt);//remove player from vehicle at x,y
 
  void destroy_vehicle (vehicle *veh);
 // Change vehicle coords and move vehicle's driver along.
