@@ -14,7 +14,7 @@ const item item::null(null_type ,0);
 
 // mfb(n) converts a flag to its appropriate position in covers's bitfield
 #ifndef mfb
-#define mfb(n) long(1 << (n))
+#define mfb(n) (1U << (n))
 #endif
 
 // Armor colors
@@ -4428,13 +4428,6 @@ it_container::it_container(int pid, unsigned char prarity, unsigned int pprice,
 it_tool::it_tool()
 : ammo(AT_NULL),max_charges(0),def_charges(0),charges_per_use(0),turns_per_charge(0),revert_to(itm_null),use(&iuse::none)
 {
-	ammo = AT_NULL;
-	max_charges = 0;
-	def_charges = 0;
-	charges_per_use = 0;
-	turns_per_charge = 0;
-	revert_to = itm_null;
-	use = &iuse::none;
 }
 
 it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,

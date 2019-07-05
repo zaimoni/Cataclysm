@@ -13,6 +13,12 @@
 
 class game;
 
+namespace cataclysm {
+
+	class JSON;
+
+}
+
 enum itype_id {
 itm_null = 0,
 itm_corpse,
@@ -254,6 +260,7 @@ IF_AMMO_FLASHBANG,	// Disorients and blinds
 IF_AMMO_STREAM,		// Doesn't stop once it hits a monster
 NUM_ITEM_FLAGS
 };
+static_assert(sizeof(unsigned)* CHAR_BIT >= NUM_ITEM_FLAGS, "need to upgrade bitmap size");
 
 enum technique_id {
 TEC_NULL,
@@ -280,6 +287,7 @@ TEC_DEF_DISARM, // Disarm an enemy
 
 NUM_TECHNIQUES
 };
+static_assert(sizeof(unsigned)* CHAR_BIT >= NUM_TECHNIQUES, "need to upgrade bitmap size");
 
 struct style_move
 {
@@ -348,6 +356,7 @@ struct itype
  virtual ~itype() = default;
 protected:	// this is not a final type so these aren't public
  itype(std::istream& is);
+ itype(const cataclysm::JSON& src);
  friend std::ostream& operator<<(std::ostream& os, const itype& src);
 };
 
@@ -491,6 +500,7 @@ struct it_armor : public itype
 
 protected:	// this is not a final type so these aren't public
  it_armor(std::istream& is);
+ it_armor(const cataclysm::JSON& src);
  friend std::ostream& operator<<(std::ostream& os, const it_armor& src);
 };
 
@@ -566,6 +576,7 @@ struct it_tool : public itype
 
  bool is_tool() const override { return true; }
 protected:	// this is not a final type so these aren't public
+	it_tool(const cataclysm::JSON& src);
 	it_tool(std::istream& is);
 	friend std::ostream& operator<<(std::ostream& os, const it_tool& src);
 };
@@ -643,11 +654,11 @@ struct it_artifact_tool final : public it_tool
  std::vector<art_effect_active>  effects_activated;
  std::vector<art_effect_passive> effects_carried;
 
+ it_artifact_tool(const cataclysm::JSON& src);
  it_artifact_tool(std::istream& is);
  friend std::ostream& operator<<(std::ostream& os, const it_artifact_tool& src);
 
  it_artifact_tool();
-
  it_artifact_tool(int pid, unsigned int pprice, std::string pname,
 	 std::string pdes, char psym, nc_color pcolor, material pm1,
 	 material pm2, unsigned short pvolume, unsigned short pweight,
@@ -658,7 +669,7 @@ struct it_artifact_tool final : public it_tool
  std::string save_data() override;
 };
 
-struct it_artifact_armor : public it_armor
+struct it_artifact_armor final : public it_armor
 {
  std::vector<art_effect_passive> effects_worn;
 
@@ -674,6 +685,7 @@ struct it_artifact_armor : public it_armor
                    unsigned char penv_resist, signed char pwarmth,
                    unsigned char pstorage);
  it_artifact_armor(std::istream& is);
+ it_artifact_armor(const cataclysm::JSON& src);
  friend std::ostream& operator<<(std::ostream& os, const it_artifact_armor& src);
 
  bool is_artifact() const override { return true; }

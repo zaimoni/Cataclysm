@@ -1140,6 +1140,42 @@ std::ostream& operator<<(std::ostream& os, const monster& src)
 	return os;
 }
 
+// usage is when loading artifacts
+// \todo release block: complete implementation
+itype::itype(const cataclysm::JSON& src)
+: id(item::types.size()),rarity(0),price(0),name("none"),sym('#'),color(c_white),m1(MNULL),m2(MNULL),volume(0),weight(0),
+  melee_dam(0),melee_cut(0),m_to_hit(0),item_flags(0),techniques(0)
+{
+	int tmp;
+	if (src.has_key("rarity")) {
+		fromJSON(src["rarity"], tmp);
+		rarity = tmp;
+	}
+	if (src.has_key("price")) fromJSON(src["price"], price);
+	if (src.has_key("name")) fromJSON(src["name"], name);
+	if (src.has_key("description")) fromJSON(src["description"], description);
+	if (src.has_key("sym")) fromJSON(src["sym"], sym);
+//	if (src.has_key("color")) fromJSON(src["color"], color);
+//	if (src.has_key("m1")) fromJSON(src["m1"], sym);
+//	if (src.has_key("m2")) fromJSON(src["m2"], sym);
+	if (src.has_key("volume")) fromJSON(src["volume"], volume);
+	if (src.has_key("weight")) fromJSON(src["weight"], weight);
+	if (src.has_key("melee_dam")) {
+		fromJSON(src["melee_dam"], tmp);
+		melee_dam = tmp;
+	}
+	if (src.has_key("melee_cut")) {
+		fromJSON(src["melee_cut"], tmp);
+		melee_cut = tmp;
+	}
+	if (src.has_key("m_to_hit")) {
+		fromJSON(src["m_to_hit"], tmp);
+		m_to_hit = tmp;
+	}
+//	if (src.has_key("item_flags")) fromJSON(src["item_flags"], item_flags);
+//	if (src.has_key("techniques")) fromJSON(src["techniques"], techniques);
+}
+
 itype::itype(std::istream& is)
 : id(0),rarity(0),name("none"),techniques(0)
 {
@@ -1163,17 +1199,44 @@ std::ostream& operator<<(std::ostream& os, const itype& src)
 		int(src.m_to_hit) I_SEP << int(src.item_flags);
 }
 
-it_armor::it_armor(std::istream& is)
-: itype(is)
+// usage is when loading artifacts
+it_armor::it_armor(const cataclysm::JSON& src)
+: itype(src), covers(0), encumber(0), dmg_resist(0), cut_resist(0), env_resist(0), warmth(0), storage(0)
 {
-	covers = 0;
-	encumber = 0;
-	dmg_resist = 0;
-	cut_resist = 0;
-	env_resist = 0;
-	warmth = 0;
-	storage = 0;
+	int tmp;
+	if (src.has_key("covers")) {
+		fromJSON(src["covers"], tmp);
+		covers = tmp;
+	}
+	if (src.has_key("encumber")) {
+		fromJSON(src["encumber"], tmp);
+		encumber = tmp;
+	}
+	if (src.has_key("dmg_resist")) {
+		fromJSON(src["dmg_resist"], tmp);
+		dmg_resist = tmp;
+	}
+	if (src.has_key("cut_resist")) {
+		fromJSON(src["cut_resist"], tmp);
+		cut_resist = tmp;
+	}
+	if (src.has_key("env_resist")) {
+		fromJSON(src["env_resist"], tmp);
+		env_resist = tmp;
+	}
+	if (src.has_key("warmth")) {
+		fromJSON(src["warmth"], tmp);
+		warmth = tmp;
+	}
+	if (src.has_key("storage")) {
+		fromJSON(src["price"], tmp);
+		storage = tmp;
+	}
+}
 
+it_armor::it_armor(std::istream& is)
+: itype(is), covers(0), encumber(0), dmg_resist(0), cut_resist(0), env_resist(0), warmth(0), storage(0)
+{
 	int covertmp, enctmp, dmgrestmp, cutrestmp, envrestmp, warmtmp, storagetmp;
 	is >> covertmp >> enctmp >> dmgrestmp >> cutrestmp >> envrestmp >> warmtmp >> storagetmp;
 	covers = covertmp;
@@ -1190,6 +1253,13 @@ std::ostream& operator<<(std::ostream& os, const it_armor& src)
 	return os << static_cast<const itype&>(src) I_SEP << int(src.covers) I_SEP <<
 		int(src.encumber) I_SEP << int(src.dmg_resist) I_SEP << int(src.cut_resist)I_SEP <<
 		int(src.env_resist) I_SEP << int(src.warmth) I_SEP << int(src.storage);
+}
+
+// \todo release block: complete implementation
+it_artifact_armor::it_artifact_armor(const cataclysm::JSON& src)
+: it_armor(src)
+{
+//	if (src.has_key("effects_worn")) src["effects_worn"].decode(effects_worn);
 }
 
 // \todo release block JSON support for artifact armors
@@ -1247,6 +1317,25 @@ std::ostream& operator<<(std::ostream& os, const it_artifact_armor& src)
 	return os << desctmp << " -";
 }
 
+// \todo release block: complete implementation
+it_tool::it_tool(const cataclysm::JSON& src)
+: itype(src),ammo(AT_NULL), max_charges(0), def_charges(0), charges_per_use(0), turns_per_charge(0), revert_to(itm_null), use(&iuse::none)
+{
+	int tmp;
+//	if (src.has_key("ammo")) fromJSON(src["ammo"], ammo);
+	if (src.has_key("max_charges")) fromJSON(src["max_charges"], max_charges);
+	if (src.has_key("def_charges")) fromJSON(src["def_charges"], def_charges);
+	if (src.has_key("charges_per_use")) {
+		fromJSON(src["charges_per_use"], tmp);
+		charges_per_use = tmp;
+	}
+	if (src.has_key("turns_per_charge")) {
+		fromJSON(src["turns_per_charge"], tmp);
+		turns_per_charge = tmp;
+	}
+	if (src.has_key("revert_to")) fromJSON(src["revert_to"], revert_to);
+}
+
 it_tool::it_tool(std::istream& is)
 : itype(is)
 {
@@ -1264,6 +1353,19 @@ std::ostream& operator<<(std::ostream& os, const it_tool& src)
 {
 	return os << static_cast<const itype&>(src) I_SEP << src.max_charges;
 }
+
+// \todo release block: complete implementation
+it_artifact_tool::it_artifact_tool(const cataclysm::JSON& src)
+: it_tool(src)
+{
+//	if (src.has_key("charge_type")) fromJSON(src["charge_type"], charge_type);
+//	if (src.has_key("effects_wielded")) src["effects_wielded"].decode(effects_wielded);
+//	if (src.has_key("effects_activated")) src["effects_activated"].decode(effects_activated);
+//	if (src.has_key("effects_carried")) src["effects_carried"].decode(effects_carried);
+
+	use = &iuse::artifact;
+}
+
 
 // \todo release block JSON support for artifact tools
 it_artifact_tool::it_artifact_tool(std::istream& is)
