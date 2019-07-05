@@ -69,6 +69,7 @@ relevant_lines = []	# to document expected type for extract_C_enum
 # relevant_lines = bracketed_lines('color.h','enum nc_color {','}')
 # relevant_lines = bracketed_lines('computer.h','enum computer_action','}')
 # relevant_lines = bracketed_lines('computer.h','enum computer_failure','}')
+# relevant_lines = bracketed_lines('enums.h','enum material {','}')
 # relevant_lines = bracketed_lines('faction.h','enum faction_goal {','}')
 # relevant_lines = bracketed_lines('faction.h','enum faction_job {','}')
 # relevant_lines = bracketed_lines('faction.h','enum faction_value {','}')

@@ -144,5 +144,4 @@ namespace cataclysm {	\
 	}	\
 }
 
-
 #endif

@@ -14,6 +14,29 @@
 
 #include "Zaimoni.STL/Logging.h"
 
+// enums.h doesn't have a recognizable implementation file, so park this here for now
+static const char* const JSON_transcode_material[] = {
+	"LIQUID",
+	"VEGGY",
+	"FLESH",
+	"POWDER",
+	"COTTON",
+	"WOOL",
+	"LEATHER",
+	"KEVLAR",
+	"STONE",
+	"PAPER",
+	"WOOD",
+	"PLASTIC",
+	"GLASS",
+	"IRON",
+	"STEEL",
+	"SILVER"
+};
+
+DECLARE_JSON_ENUM_SUPPORT(material)
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(material, JSON_transcode_material)
+
 using cataclysm::JSON;
 
 // legacy implementations assume text mode streams
@@ -94,6 +117,7 @@ JSON_ENUM(faction_goal)
 JSON_ENUM(faction_job)
 JSON_ENUM(field_id)
 JSON_ENUM(itype_id)	// breaks if we need a randart as a morale_point item
+JSON_ENUM(material)
 JSON_ENUM(mission_id)
 JSON_ENUM(mon_id)
 JSON_ENUM(moncat_id)
@@ -1157,8 +1181,14 @@ itype::itype(const cataclysm::JSON& src)
 	if (src.has_key("description")) fromJSON(src["description"], description);
 	if (src.has_key("sym")) fromJSON(src["sym"], sym);
 //	if (src.has_key("color")) fromJSON(src["color"], color);
-//	if (src.has_key("m1")) fromJSON(src["m1"], sym);
-//	if (src.has_key("m2")) fromJSON(src["m2"], sym);
+	if (src.has_key("material")) {
+		std::vector<material> tmp;
+		src["material"].decode(tmp);
+		if (!tmp.empty()) {
+			m1 = tmp.front();
+			if (1 < tmp.size()) m2 = tmp.back();
+		}
+	}
 	if (src.has_key("volume")) fromJSON(src["volume"], volume);
 	if (src.has_key("weight")) fromJSON(src["weight"], weight);
 	if (src.has_key("melee_dam")) {
