@@ -34,8 +34,77 @@ static const char* const JSON_transcode_material[] = {
 	"SILVER"
 };
 
+// while nc_color does have an implementation file, the header doesn't include enums.h or <string>
+static const char* const JSON_transcode_nc_color[] = {
+	"c_black",
+	"c_white",
+	"c_ltgray",
+	"c_dkgray",
+	"c_red",
+	"c_green",
+	"c_blue",
+	"c_cyan",
+	"c_magenta",
+	"c_brown",
+	"c_ltred",
+	"c_ltgreen",
+	"c_ltblue",
+	"c_ltcyan",
+	"c_pink",
+	"c_yellow",
+	"h_black",
+	"h_white",
+	"h_ltgray",
+	"h_dkgray",
+	"h_red",
+	"h_green",
+	"h_blue",
+	"h_cyan",
+	"h_magenta",
+	"h_brown",
+	"h_ltred",
+	"h_ltgreen",
+	"h_ltblue",
+	"h_ltcyan",
+	"h_pink",
+	"h_yellow",
+	"i_black",
+	"i_white",
+	"i_ltgray",
+	"i_dkgray",
+	"i_red",
+	"i_green",
+	"i_blue",
+	"i_cyan",
+	"i_magenta",
+	"i_brown",
+	"i_ltred",
+	"i_ltgreen",
+	"i_ltblue",
+	"i_ltcyan",
+	"i_pink",
+	"i_yellow",
+	"c_white_red",
+	"c_ltgray_red",
+	"c_dkgray_red",
+	"c_red_red",
+	"c_green_red",
+	"c_blue_red",
+	"c_cyan_red",
+	"c_magenta_red",
+	"c_brown_red",
+	"c_ltred_red",
+	"c_ltgreen_red",
+	"c_ltblue_red",
+	"c_ltcyan_red",
+	"c_pink_red",
+	"c_yellow_red"
+};
+
 DECLARE_JSON_ENUM_SUPPORT(material)
+DECLARE_JSON_ENUM_SUPPORT(nc_color)
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(material, JSON_transcode_material)
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(nc_color, JSON_transcode_nc_color)
 
 using cataclysm::JSON;
 
@@ -123,6 +192,7 @@ JSON_ENUM(mon_id)
 JSON_ENUM(moncat_id)
 JSON_ENUM(monster_effect_type)
 JSON_ENUM(morale_type)
+JSON_ENUM(nc_color)
 JSON_ENUM(npc_favor_type)
 JSON_ENUM(skill)
 JSON_ENUM(talk_topic)
@@ -1180,7 +1250,7 @@ itype::itype(const cataclysm::JSON& src)
 	if (src.has_key("name")) fromJSON(src["name"], name);
 	if (src.has_key("description")) fromJSON(src["description"], description);
 	if (src.has_key("sym")) fromJSON(src["sym"], sym);
-//	if (src.has_key("color")) fromJSON(src["color"], color);
+	if (src.has_key("color")) fromJSON(src["color"], color);
 	if (src.has_key("material")) {
 		std::vector<material> tmp;
 		src["material"].decode(tmp);
