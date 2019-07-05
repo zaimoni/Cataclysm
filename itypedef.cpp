@@ -617,6 +617,34 @@ static const char* JSON_transcode_items[] = {
 	"itm_style_zui_quan"
 };
 
+static const char* const JSON_transcode_ammo[] = {
+	"BATT",
+	"PLUT",
+	"NAIL",
+	"BB",
+	"BOLT",
+	"ARROW",
+	"SHOT",
+	"22",
+	"9MM",
+	"38",
+	"40",
+	"44",
+	"45",
+	"57",
+	"46",
+	"762",
+	"223",
+	"3006",
+	"308",
+	"40MM",
+	"GAS",
+	"FUSION",
+	"12MM",
+	"PLASMA"
+};
+
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(ammotype, JSON_transcode_ammo)
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(itype_id, JSON_transcode_items)
 
 // GENERAL GUIDELINES

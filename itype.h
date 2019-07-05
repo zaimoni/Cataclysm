@@ -214,6 +214,8 @@ AT_PLASMA,
 NUM_AMMO_TYPES
 };
 
+DECLARE_JSON_ENUM_SUPPORT(ammotype)
+
 enum software_type {
 SW_NULL,
 SW_USELESS,

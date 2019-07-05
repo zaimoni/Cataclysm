@@ -84,6 +84,7 @@ bool fromJSON(const JSON& src, TYPE& dest)	\
 
 JSON_ENUM(activity_type)
 JSON_ENUM(add_type)
+JSON_ENUM(ammotype)
 JSON_ENUM(bionic_id)
 JSON_ENUM(combat_engagement)
 JSON_ENUM(computer_action)
@@ -1317,12 +1318,11 @@ std::ostream& operator<<(std::ostream& os, const it_artifact_armor& src)
 	return os << desctmp << " -";
 }
 
-// \todo release block: complete implementation
 it_tool::it_tool(const cataclysm::JSON& src)
 : itype(src),ammo(AT_NULL), max_charges(0), def_charges(0), charges_per_use(0), turns_per_charge(0), revert_to(itm_null), use(&iuse::none)
 {
 	int tmp;
-//	if (src.has_key("ammo")) fromJSON(src["ammo"], ammo);
+	if (src.has_key("ammo")) fromJSON(src["ammo"], ammo);
 	if (src.has_key("max_charges")) fromJSON(src["max_charges"], max_charges);
 	if (src.has_key("def_charges")) fromJSON(src["def_charges"], def_charges);
 	if (src.has_key("charges_per_use")) {
@@ -1337,15 +1337,8 @@ it_tool::it_tool(const cataclysm::JSON& src)
 }
 
 it_tool::it_tool(std::istream& is)
-: itype(is)
+: itype(is),ammo(AT_NULL),def_charges(0),charges_per_use(0),turns_per_charge(0),revert_to(itm_null),use(&iuse::none)
 {
-	ammo = AT_NULL;
-	def_charges = 0;
-	charges_per_use = 0;
-	turns_per_charge = 0;
-	revert_to = itm_null;
-	use = &iuse::none;
-
 	is >> max_charges;
 }
 
@@ -1371,12 +1364,7 @@ it_artifact_tool::it_artifact_tool(const cataclysm::JSON& src)
 it_artifact_tool::it_artifact_tool(std::istream& is)
 : it_tool(is)
 {
-	ammo = AT_NULL;
-	price = 0;
-	def_charges = 0;
 	charges_per_use = 1;
-	turns_per_charge = 0;
-	revert_to = itm_null;
 	use = &iuse::artifact;
 
 	int num_effects;
