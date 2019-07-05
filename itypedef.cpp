@@ -5,11 +5,17 @@
 #include <string.h>
 #include <fstream>	// for artifacts
 #include <sstream>
+#include <stdarg.h> // for bionics
 
-static itype* const null_type = new itype(0, 0, 0, "none", "", '#', c_white, MNULL, MNULL, 0, 0, 0, 0, 0, 0);
+static itype* const null_type = new itype;
 
 std::vector <itype*> item::types;
 const item item::null(null_type ,0);
+
+// mfb(n) converts a flag to its appropriate position in covers's bitfield
+#ifndef mfb
+#define mfb(n) long(1 << (n))
+#endif
 
 // Armor colors
 #define C_SHOES  c_blue
@@ -4284,3 +4290,258 @@ itype_id default_ammo(ammotype guntype)
  }
  return itm_null;
 }
+
+// itype-related implementation
+itype::itype()	// result is a proper null type
+: id(0),rarity(0),price(0),name("none"),sym('#'),color(c_white),m1(MNULL),m2(MNULL),volume(0),weight(0),
+  melee_dam(0),melee_cut(0),m_to_hit(0),item_flags(0),techniques(0)
+{
+}
+
+itype::itype(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1, material pm2,
+	unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
+	unsigned pitem_flags, unsigned ptechniques)
+: id(pid),rarity(prarity),price(pprice),name(pname),description(pdes),sym(psym),color(pcolor),m1(pm1),m2(pm2),volume(pvolume),weight(pweight),
+  melee_dam(pmelee_dam),melee_cut(pmelee_cut),m_to_hit(pm_to_hit),item_flags(pitem_flags),techniques(ptechniques)
+{
+}
+
+it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1,
+	unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut,
+	signed char pm_to_hit, unsigned pitem_flags,
+
+	signed char pquench, unsigned char pnutr, signed char pspoils,
+	signed char pstim, signed char phealthy, unsigned char paddict,
+	unsigned char pcharges, signed char pfun, itype_id pcontainer,
+	itype_id ptool, void (*puse)(game*, player*, item*, bool),
+	add_type padd)
+:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+	quench(pquench),nutr(pnutr),spoils(pspoils),addict(paddict),charges(pcharges),stim(pstim),healthy(phealthy),fun(pfun),container(pcontainer),
+	tool(ptool),use(puse),add(padd)
+{
+}
+
+it_ammo::it_ammo(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1,
+	unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
+	unsigned pitem_flags,
+
+	ammotype ptype, unsigned char pdamage, unsigned char ppierce,
+	signed char paccuracy, unsigned char precoil, unsigned char prange,
+	unsigned char pcount)
+: itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+  type(ptype),damage(pdamage),pierce(ppierce),range(prange),accuracy(paccuracy),recoil(precoil),count(pcount)
+{
+}
+
+it_gun::it_gun(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1, material pm2,
+	unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
+	unsigned pitem_flags,
+
+	skill pskill_used, ammotype pammo, signed char pdmg_bonus,
+	signed char paccuracy, signed char precoil, unsigned char pdurability,
+	unsigned char pburst, int pclip, int preload_time)
+:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+  ammo(pammo),skill_used(pskill_used),dmg_bonus(pdmg_bonus),accuracy(paccuracy),recoil(precoil),durability(pdurability),burst(pburst),
+  clip(pclip),reload_time(preload_time)
+{
+}
+
+it_gunmod::it_gunmod(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1, material pm2,
+	unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut,
+	signed char pm_to_hit, unsigned pitem_flags,
+
+	signed char paccuracy, signed char pdamage, signed char ploudness,
+	signed char pclip, signed char precoil, signed char pburst,
+	ammotype pnewtype, long a_a_t, bool pistol,
+	bool shotgun, bool smg, bool rifle)
+
+:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+  accuracy(paccuracy),damage(pdamage),loudness(ploudness),clip(pclip),recoil(precoil),burst(pburst),newtype(pnewtype),
+  acceptible_ammo_types(a_a_t),used_on_pistol(pistol),used_on_shotgun(shotgun),used_on_smg(smg),used_on_rifle(rifle)
+{
+}
+
+it_armor::it_armor()
+: covers(0),encumber(0),dmg_resist(0),cut_resist(0),env_resist(0),warmth(0),storage(0)
+{
+}
+
+it_armor::it_armor(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1, material pm2,
+	unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
+	unsigned pitem_flags,
+
+	unsigned char pcovers, signed char pencumber,
+	unsigned char pdmg_resist, unsigned char pcut_resist,
+	unsigned char penv_resist, signed char pwarmth,
+	unsigned char pstorage)
+:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+  covers(pcovers),encumber(pencumber),dmg_resist(pdmg_resist),cut_resist(pcut_resist),env_resist(penv_resist),warmth(pwarmth),
+  storage(pstorage)
+{
+}
+
+it_book::it_book(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1, material pm2,
+	unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
+	unsigned pitem_flags,
+
+	skill ptype, unsigned char plevel, unsigned char preq,
+	signed char pfun, unsigned char pintel, unsigned char ptime)
+:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+  type(ptype),level(plevel),req(preq),fun(pfun),intel(pintel),time(ptime)
+{
+}
+
+it_container::it_container(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1, material pm2,
+	unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut,
+	signed char pm_to_hit, unsigned pitem_flags,
+
+	unsigned char pcontains, unsigned pflags)
+:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+ contains(pcontains),flags(pflags)
+{
+}
+
+it_tool::it_tool()
+: ammo(AT_NULL),max_charges(0),def_charges(0),charges_per_use(0),turns_per_charge(0),revert_to(itm_null),use(&iuse::none)
+{
+	ammo = AT_NULL;
+	max_charges = 0;
+	def_charges = 0;
+	charges_per_use = 0;
+	turns_per_charge = 0;
+	revert_to = itm_null;
+	use = &iuse::none;
+}
+
+it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1, material pm2,
+	unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
+	unsigned pitem_flags,
+
+	unsigned int pmax_charges, unsigned int pdef_charges,
+	unsigned char pcharges_per_use, unsigned char pturns_per_charge,
+	ammotype pammo, itype_id prevert_to,
+	void (*puse)(game*, player*, item*, bool))
+:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+  ammo(pammo), max_charges(pmax_charges), def_charges(pdef_charges), charges_per_use(pcharges_per_use),
+  turns_per_charge(pturns_per_charge), revert_to(prevert_to), use(puse)
+{
+}
+
+// \todo switch constructor to take std::vector
+it_bionic::it_bionic(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1, material pm2,
+	unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut,
+	signed char pm_to_hit, unsigned pitem_flags,
+
+	int pdifficulty, ...)
+:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+  difficulty(pdifficulty)
+{
+	va_list ap;
+	va_start(ap, pdifficulty);
+	bionic_id tmp;
+	while ((tmp = (bionic_id)va_arg(ap, int)))
+		options.push_back(tmp);
+	va_end(ap);
+}
+
+it_macguffin::it_macguffin(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1, material pm2,
+	unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut,
+	signed char pm_to_hit, unsigned pitem_flags,
+
+	bool preadable,
+	void (*puse)(game*, player*, item*, bool))
+:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+  readable(preadable),use(puse)
+{
+}
+
+it_software::it_software(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1, material pm2,
+	unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut,
+	signed char pm_to_hit, unsigned pitem_flags,
+
+	software_type pswtype, int ppower)
+:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+  swtype(pswtype),power(ppower)
+{
+	swtype = pswtype;
+	power = ppower;
+}
+
+it_style::it_style(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1, material pm2,
+	unsigned char pvolume, unsigned char pweight,
+	signed char pmelee_dam, signed char pmelee_cut,
+	signed char pm_to_hit, unsigned pitem_flags)
+:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags)
+{ }
+
+it_artifact_tool::it_artifact_tool()
+{
+	ammo = AT_NULL;
+	price = 0;
+	def_charges = 0;
+	charges_per_use = 1;
+	turns_per_charge = 0;
+	revert_to = itm_null;
+	use = &iuse::artifact;
+};
+
+it_artifact_tool::it_artifact_tool(int pid, unsigned int pprice, std::string pname,
+	std::string pdes, char psym, nc_color pcolor, material pm1,
+	material pm2, unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut,
+	signed char pm_to_hit, unsigned pitem_flags)
+:it_tool(pid, 0, pprice, pname, pdes, psym, pcolor, pm1, pm2,pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags,
+		0, 0, 1, 0, AT_NULL, itm_null, &iuse::artifact) { };
+
+it_artifact_armor::it_artifact_armor(int pid, unsigned int pprice, std::string pname,
+	std::string pdes, char psym, nc_color pcolor, material pm1,
+	material pm2, unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut,
+	signed char pm_to_hit, unsigned pitem_flags,
+
+	unsigned char pcovers, signed char pencumber,
+	unsigned char pdmg_resist, unsigned char pcut_resist,
+	unsigned char penv_resist, signed char pwarmth,
+	unsigned char pstorage)
+:it_armor(pid, 0, pprice, pname, pdes, psym, pcolor, pm1, pm2,
+		pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags,
+		pcovers, pencumber, pdmg_resist, pcut_resist, penv_resist, pwarmth,
+		pstorage) { };
