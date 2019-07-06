@@ -1273,7 +1273,13 @@ itype::itype(const cataclysm::JSON& src)
 		fromJSON(src["m_to_hit"], tmp);
 		m_to_hit = tmp;
 	}
-//	if (src.has_key("item_flags")) fromJSON(src["item_flags"], item_flags);
+
+	if (src.has_key("item_flags")) {
+		cataclysm::JSON_parse<item_flag> _parse;
+		std::vector<const char*> relay;
+		src["item_flags"].decode(relay);
+		if (!relay.empty()) item_flags = _parse(relay);
+	}
 //	if (src.has_key("techniques")) fromJSON(src["techniques"], techniques);
 }
 

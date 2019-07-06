@@ -40,54 +40,23 @@ static const char* const JSON_transcode_jobs[] = {
 };
 
 static const std::pair<unsigned, const char*> JSON_transcode_values[] = {
-	{(1U << FACVAL_CHARITABLE),"CHARITABLE"},
-	{(1U << FACVAL_LONERS),"LONERS"},
-	{(1U << FACVAL_EXPLORATION),"EXPLORATION"},
-	{(1U << FACVAL_ARTIFACTS),"ARTIFACTS"},
-	{(1U << FACVAL_BIONICS),"BIONICS"},
-	{(1U << FACVAL_BOOKS),"BOOKS"},
-	{(1U << FACVAL_TRAINING),"TRAINING"},
-	{(1U << FACVAL_ROBOTS),"ROBOTS"},
-	{(1U << FACVAL_TREACHERY),"TREACHERY"},
-	{(1U << FACVAL_STRAIGHTEDGE),"STRAIGHTEDGE"},
-	{(1U << FACVAL_LAWFUL),"LAWFUL"},
-	{(1U << FACVAL_CRUELTY),"CRUELTY"}
+	{mfb(FACVAL_CHARITABLE),"CHARITABLE"},
+	{mfb(FACVAL_LONERS),"LONERS"},
+	{mfb(FACVAL_EXPLORATION),"EXPLORATION"},
+	{mfb(FACVAL_ARTIFACTS),"ARTIFACTS"},
+	{mfb(FACVAL_BIONICS),"BIONICS"},
+	{mfb(FACVAL_BOOKS),"BOOKS"},
+	{mfb(FACVAL_TRAINING),"TRAINING"},
+	{mfb(FACVAL_ROBOTS),"ROBOTS"},
+	{mfb(FACVAL_TREACHERY),"TREACHERY"},
+	{mfb(FACVAL_STRAIGHTEDGE),"STRAIGHTEDGE"},
+	{mfb(FACVAL_LAWFUL),"LAWFUL"},
+	{mfb(FACVAL_CRUELTY),"CRUELTY"}
 };
 
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(faction_goal, JSON_transcode_goals)
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(faction_job, JSON_transcode_jobs)
-
-namespace cataclysm {
-
-unsigned JSON_parse<faction_value>::operator()(const std::vector<const char*>& src)
-{
-	if (src.empty()) return 0;
-	unsigned ret = 0;
-	ptrdiff_t i = sizeof(JSON_transcode_values) / sizeof(*JSON_transcode_values);
-	while (0 < i--) {
-		for (const auto& x : src) {
-			if (!strcmp(JSON_transcode_values[i].second, x)) {
-				ret |= JSON_transcode_values[i].first;
-				break;
-			}
-		}
-	}
-	return ret;
-}
-
-std::vector<const char*> JSON_parse<faction_value>::operator()(unsigned src)
-{
-	std::vector<const char*> ret;
-
-	if (src) {
-		ptrdiff_t i = sizeof(JSON_transcode_values) / sizeof(*JSON_transcode_values);
-		while (0 < i--) if (src & JSON_transcode_values[i].first) ret.push_back(JSON_transcode_values[i].second);
-	}
-
-	return ret;
-}
-
-}
+DEFINE_JSON_ENUM_BITFLAG_SUPPORT(faction_value, JSON_transcode_values)
 
 faction::faction(int uid)
 : name(""), values(0), goal(FACGOAL_NULL), job1(FACJOB_NULL), job2(FACJOB_NULL),

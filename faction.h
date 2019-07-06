@@ -70,15 +70,7 @@ enum faction_value {
 };
 static_assert(sizeof(unsigned)* CHAR_BIT >= NUM_FACVALS, "bitfield for faction_value will overflow");
 
-namespace cataclysm {
-
-	template<>
-	struct JSON_parse<faction_value>
-	{
-		unsigned operator()(const std::vector<const char*>& src);
-		std::vector<const char*> operator()(unsigned src);
-	};
-}
+DECLARE_JSON_ENUM_BITFLAG_SUPPORT(faction_value)
 
 struct faction {
  faction(int uid = -1);
@@ -91,7 +83,7 @@ struct faction {
  void randomize();
  void make_army();
  bool has_job(faction_job j) const;
- bool has_value(faction_value v) const { return values & (1U << v); };
+ bool has_value(faction_value v) const { return values & (1ULL << v); };
  bool matches_us(faction_value v) const;
  std::string describe() const;
 

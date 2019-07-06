@@ -231,7 +231,7 @@ NUM_SOFTWARE_TYPES
 };
 
 enum item_flag {
-IF_NULL,
+IF_NULL,	// \todo release block; blocked by savefile break; remove IF_NULL flag outright
 
 IF_LIGHT_4,	// Provides 4 tiles of light
 IF_LIGHT_8,	// Provides 8 tiles of light
@@ -267,6 +267,8 @@ IF_AMMO_STREAM,		// Doesn't stop once it hits a monster
 NUM_ITEM_FLAGS
 };
 static_assert(sizeof(unsigned)* CHAR_BIT >= NUM_ITEM_FLAGS, "need to upgrade bitmap size");
+
+DECLARE_JSON_ENUM_BITFLAG_SUPPORT(item_flag)
 
 enum technique_id {
 TEC_NULL,

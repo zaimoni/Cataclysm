@@ -639,8 +639,40 @@ static const char* const JSON_transcode_ammo[] = {
 	"PLASMA"
 };
 
+static const std::pair<unsigned, const char*> JSON_transcode_item_flags[] = {
+	{mfb(IF_LIGHT_4),"IF_LIGHT_4"},
+	{mfb(IF_LIGHT_8),"IF_LIGHT_8"},
+	{mfb(IF_SPEAR),"IF_SPEAR"},
+	{mfb(IF_STAB),"IF_STAB"},
+	{mfb(IF_WRAP),"IF_WRAP"},
+	{mfb(IF_MESSY),"IF_MESSY"},
+	{mfb(IF_RELOAD_ONE),"IF_RELOAD_ONE"},
+	{mfb(IF_STR_RELOAD),"IF_STR_RELOAD"},
+	{mfb(IF_STR8_DRAW),"IF_STR8_DRAW"},
+	{mfb(IF_STR10_DRAW),"IF_STR10_DRAW"},
+	{mfb(IF_USE_UPS),"IF_USE_UPS"},
+	{mfb(IF_RELOAD_AND_SHOOT),"IF_RELOAD_AND_SHOOT"},
+	{mfb(IF_FIRE_100),"IF_FIRE_100"},
+	{mfb(IF_GRENADE),"IF_GRENADE"},
+	{mfb(IF_CHARGE),"IF_CHARGE"},
+	{mfb(IF_UNARMED_WEAPON),"IF_UNARMED_WEAPON"},
+	{mfb(IF_NO_UNWIELD),"IF_NO_UNWIELD"},
+	{mfb(IF_AMMO_FLAME),"IF_AMMO_FLAME"},
+	{mfb(IF_AMMO_INCENDIARY),"IF_AMMO_INCENDIARY"},
+	{mfb(IF_AMMO_EXPLOSIVE),"IF_AMMO_EXPLOSIVE"},
+	{mfb(IF_AMMO_FRAG),"IF_AMMO_FRAG"},
+	{mfb(IF_AMMO_NAPALM),"IF_AMMO_NAPALM"},
+	{mfb(IF_AMMO_EXPLOSIVE_BIG),"IF_AMMO_EXPLOSIVE_BIG"},
+	{mfb(IF_AMMO_TEARGAS),"IF_AMMO_TEARGAS"},
+	{mfb(IF_AMMO_SMOKE),"IF_AMMO_SMOKE"},
+	{mfb(IF_AMMO_TRAIL),"IF_AMMO_TRAIL"},
+	{mfb(IF_AMMO_FLASHBANG),"IF_AMMO_FLASHBANG"},
+	{mfb(IF_AMMO_STREAM),"IF_AMMO_STREAM"}
+};
+
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(ammotype, JSON_transcode_ammo)
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(itype_id, JSON_transcode_items)
+DEFINE_JSON_ENUM_BITFLAG_SUPPORT(item_flag, JSON_transcode_item_flags)
 
 // GENERAL GUIDELINES
 // When adding a new item, you MUST REMEMBER to insert it in the itype_id enum
