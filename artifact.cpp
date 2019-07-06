@@ -1,9 +1,83 @@
+#include "artifactdata.h"
+#include "game.h"
+#include "recent_msg.h"
 #include <sstream>
 #include <vector>
-#include "game.h"
-#include "artifact.h"
-#include "artifactdata.h"
-#include "recent_msg.h"
+
+static const char* const JSON_transcode_artifactactives[] = {
+	"STORM",
+	"FIREBALL",
+	"ADRENALINE",
+	"MAP",
+	"BLOOD",
+	"FATIGUE",
+	"ACIDBALL",
+	"PULSE",
+	"HEAL",
+	"CONFUSED",
+	"ENTRANCE",
+	"BUGS",
+	"TELEPORT",
+	"LIGHT",
+	"GROWTH",
+	"HURTALL",
+	"",	// AEA_SPLIT
+	"RADIATION",
+	"PAIN",
+	"MUTATE",
+	"PARALYZE",
+	"FIRESTORM",
+	"ATTENTION",
+	"TELEGLOW",
+	"NOISE",
+	"SCREAM",
+	"DIM",
+	"FLASH",
+	"VOMIT",
+	"SHADOWS"
+};
+
+static const char* const JSON_transcode_artifactpassives[] = {
+	"STR_UP",
+	"DEX_UP",
+	"PER_UP",
+	"INT_UP",
+	"ALL_UP",
+	"SPEED_UP",
+	"IODINE",
+	"SNAKES",
+	"INVISIBLE",
+	"CLAIRVOYANCE",
+	"STEALTH",
+	"EXTINGUISH",
+	"GLOW",
+	"PSYSHIELD",
+	"RESIST_ELECTRICITY",
+	"CARRY_MORE",
+	"SAP_LIFE",
+	"",	// AEP_SPLIT
+	"HUNGER",
+	"THIRST",
+	"SMOKE",
+	"EVIL",
+	"SCHIZO",
+	"RADIOACTIVE",
+	"MUTAGENIC",
+	"ATTENTION",
+	"STR_DOWN",
+	"DEX_DOWN",
+	"PER_DOWN",
+	"INT_DOWN",
+	"ALL_DOWN",
+	"SPEED_DOWN",
+	"FORCE_TELEPORT",
+	"MOVEMENT_NOISE",
+	"BAD_WEATHER",
+	"SICK"
+};
+
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(art_effect_active, JSON_transcode_artifactactives)
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(art_effect_passive, JSON_transcode_artifactpassives)
 
 std::vector<art_effect_passive> fill_good_passive();
 std::vector<art_effect_passive> fill_bad_passive();
@@ -280,14 +354,14 @@ itype* game::new_natural_artifact(artifact_natural_property prop)
  desc << "This " << shape_data->desc << " " << property_data->desc << ".";
  art->description = desc.str();
 // Add line breaks to the description as necessary
- size_t pos = 76;
- while (art->description.length() - pos >= 76) {
+ size_t pos = SCREEN_WIDTH-4;
+ while (art->description.length() - pos >= SCREEN_WIDTH - 4) {
   pos = art->description.find_last_of(' ', pos);
   if (pos == std::string::npos)
    pos = art->description.length();
   else {
    art->description[pos] = '\n';
-   pos += 76;
+   pos += SCREEN_WIDTH - 4;
   }
  }
 

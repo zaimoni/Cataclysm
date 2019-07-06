@@ -177,6 +177,8 @@ bool fromJSON(const JSON& src, TYPE& dest)	\
 JSON_ENUM(activity_type)
 JSON_ENUM(add_type)
 JSON_ENUM(ammotype)
+JSON_ENUM(art_effect_active)
+JSON_ENUM(art_effect_passive)
 JSON_ENUM(bionic_id)
 JSON_ENUM(combat_engagement)
 JSON_ENUM(computer_action)
@@ -1370,7 +1372,7 @@ std::ostream& operator<<(std::ostream& os, const it_armor& src)
 it_artifact_armor::it_artifact_armor(const cataclysm::JSON& src)
 : it_armor(src)
 {
-//	if (src.has_key("effects_worn")) src["effects_worn"].decode(effects_worn);
+	if (src.has_key("effects_worn")) src["effects_worn"].decode(effects_worn);
 }
 
 // \todo release block JSON support for artifact armors
@@ -1462,9 +1464,9 @@ it_artifact_tool::it_artifact_tool(const cataclysm::JSON& src)
 : it_tool(src)
 {
 //	if (src.has_key("charge_type")) fromJSON(src["charge_type"], charge_type);
-//	if (src.has_key("effects_wielded")) src["effects_wielded"].decode(effects_wielded);
-//	if (src.has_key("effects_activated")) src["effects_activated"].decode(effects_activated);
-//	if (src.has_key("effects_carried")) src["effects_carried"].decode(effects_carried);
+	if (src.has_key("effects_wielded")) src["effects_wielded"].decode(effects_wielded);
+	if (src.has_key("effects_activated")) src["effects_activated"].decode(effects_activated);
+	if (src.has_key("effects_carried")) src["effects_carried"].decode(effects_carried);
 
 	use = &iuse::artifact;
 }
