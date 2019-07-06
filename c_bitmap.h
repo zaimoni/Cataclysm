@@ -1,6 +1,7 @@
 #ifndef C_BITMAP_H
 #define C_BITMAP_H 1
 
+#include <stddef.h>
 #include <limits.h>
 #include <type_traits>
 
