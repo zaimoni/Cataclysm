@@ -177,6 +177,7 @@ bool fromJSON(const JSON& src, TYPE& dest)	\
 JSON_ENUM(activity_type)
 JSON_ENUM(add_type)
 JSON_ENUM(ammotype)
+JSON_ENUM(art_charge)
 JSON_ENUM(art_effect_active)
 JSON_ENUM(art_effect_passive)
 JSON_ENUM(bionic_id)
@@ -1042,11 +1043,11 @@ faction::faction(std::istream& is)
   om(0, 0), map(0, 0), size(0), power(0)
 {
 	if ('{' == (is >> std::ws).peek()) {
-		cataclysm::JSON_parse<faction_value> _parse;
 		JSON _in(is);
 		if (!_in.has_key("id") || !fromJSON(_in["id"], id)) return;	// \todo do we want to interpolate this key?
 		if (_in.has_key("name")) fromJSON(_in["name"], name);
 		if (_in.has_key("values")) {
+			cataclysm::JSON_parse<faction_value> _parse;
 			std::vector<const char*> relay;
 			_in["values"].decode(relay);
 			if (!relay.empty()) values = _parse(relay);
@@ -1368,7 +1369,6 @@ std::ostream& operator<<(std::ostream& os, const it_armor& src)
 		int(src.env_resist) I_SEP << int(src.warmth) I_SEP << int(src.storage);
 }
 
-// \todo release block: complete implementation
 it_artifact_armor::it_artifact_armor(const cataclysm::JSON& src)
 : it_armor(src)
 {
@@ -1459,11 +1459,10 @@ std::ostream& operator<<(std::ostream& os, const it_tool& src)
 	return os << static_cast<const itype&>(src) I_SEP << src.max_charges;
 }
 
-// \todo release block: complete implementation
 it_artifact_tool::it_artifact_tool(const cataclysm::JSON& src)
 : it_tool(src)
 {
-//	if (src.has_key("charge_type")) fromJSON(src["charge_type"], charge_type);
+	if (src.has_key("charge_type")) fromJSON(src["charge_type"], charge_type);
 	if (src.has_key("effects_wielded")) src["effects_wielded"].decode(effects_wielded);
 	if (src.has_key("effects_activated")) src["effects_activated"].decode(effects_activated);
 	if (src.has_key("effects_carried")) src["effects_carried"].decode(effects_carried);

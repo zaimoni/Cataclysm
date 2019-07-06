@@ -76,6 +76,14 @@ static const char* const JSON_transcode_artifactpassives[] = {
 	"SICK"
 };
 
+static const char* const JSON_transcode_artifactcharging[] = {
+	"ARTC_TIME",
+	"ARTC_SOLAR",
+	"ARTC_PAIN",
+	"ARTC_HP"
+};
+
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(art_charge, JSON_transcode_artifactcharging)
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(art_effect_active, JSON_transcode_artifactactives)
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(art_effect_passive, JSON_transcode_artifactpassives)
 

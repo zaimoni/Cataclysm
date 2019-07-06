@@ -65,6 +65,7 @@ def JSON_transcode_definition_pair(src):
 
 relevant_lines = []	# to document expected type for extract_C_enum
 # catalog of enumerations the extraction has been run for
+# relevant_lines = bracketed_lines('artifact.h','enum art_charge','}')
 # relevant_lines = bracketed_lines('artifact.h','enum art_effect_active {','}')
 # relevant_lines = bracketed_lines('artifact.h','enum art_effect_passive {','}')
 # relevant_lines = bracketed_lines('bionics.h','enum bionic_id {','}')

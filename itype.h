@@ -697,6 +697,8 @@ struct it_artifact_armor final : public it_armor
  std::string save_data() override;
 };
 
+// artifact.h is a zero-dependency header so catch these here
+DECLARE_JSON_ENUM_SUPPORT(art_charge)
 DECLARE_JSON_ENUM_SUPPORT(art_effect_active)
 DECLARE_JSON_ENUM_SUPPORT(art_effect_passive)
 
