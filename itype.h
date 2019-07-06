@@ -8,12 +8,9 @@
 #include "skill.h"
 #include "bionics.h"
 #include "artifact.h"
+#include "c_bitmap.h"
 #include <string>
 #include <vector>
-
-
-// mfb(n) converts a flag to its appropriate position in a C bitfield
-#define mfb(n) (1ULL << (n))
 
 class game;
 
@@ -266,7 +263,6 @@ IF_AMMO_FLASHBANG,	// Disorients and blinds
 IF_AMMO_STREAM,		// Doesn't stop once it hits a monster
 NUM_ITEM_FLAGS
 };
-static_assert(sizeof(unsigned)* CHAR_BIT >= NUM_ITEM_FLAGS, "need to upgrade bitmap size");
 
 DECLARE_JSON_ENUM_BITFLAG_SUPPORT(item_flag)
 
@@ -295,7 +291,6 @@ TEC_DEF_DISARM, // Disarm an enemy
 
 NUM_TECHNIQUES
 };
-static_assert(sizeof(unsigned)* CHAR_BIT >= NUM_TECHNIQUES, "need to upgrade bitmap size");
 
 DECLARE_JSON_ENUM_BITFLAG_SUPPORT(technique_id)
 
@@ -336,8 +331,8 @@ struct itype
  signed char melee_cut;	// Cutting damage in melee
  signed char m_to_hit;	// To-hit bonus for melee combat; -5 to 5 is reasonable
 
- unsigned item_flags : NUM_ITEM_FLAGS;
- unsigned techniques : NUM_TECHNIQUES;
+ typename cataclysm::bitmap<NUM_ITEM_FLAGS>::type item_flags;
+ typename cataclysm::bitmap<NUM_TECHNIQUES>::type techniques;
  
  virtual bool is_food() const    { return false; }
  virtual bool is_ammo() const    { return false; }

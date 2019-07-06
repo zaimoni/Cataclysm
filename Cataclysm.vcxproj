@@ -165,6 +165,7 @@
     <ClInclude Include="computer.h" />
     <ClInclude Include="construction.h" />
     <ClInclude Include="crafting.h" />
+    <ClInclude Include="c_bitmap.h" />
     <ClInclude Include="dialogue.h" />
     <ClInclude Include="disease.h" />
     <ClInclude Include="enums.h" />

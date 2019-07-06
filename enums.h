@@ -106,16 +106,6 @@ namespace cataclysm {	\
 	};	\
 }
 
-#define DECLARE_JSON_ENUM_BITFLAG_SUPPORT(TYPE)	\
-namespace cataclysm {	\
-	template<>	\
-	struct JSON_parse<TYPE>	\
-	{	\
-		unsigned operator()(const std::vector<const char*>& src);	\
-		std::vector<const char*> operator()(unsigned src);	\
-	};	\
-}
-
 #define DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(TYPE,STATIC_REF)	\
 const char* JSON_key(TYPE src)	\
 {	\
@@ -149,37 +139,5 @@ namespace cataclysm {	\
 		return TYPE(0);	\
 	}	\
 }
-
-#define DEFINE_JSON_ENUM_BITFLAG_SUPPORT(TYPE,STATIC_REF)	\
-namespace cataclysm {	\
-	unsigned JSON_parse<TYPE>::operator()(const std::vector<const char*>& src)	\
-	{	\
-		if (src.empty()) return 0;	\
-		unsigned ret = 0;	\
-		ptrdiff_t i = sizeof(STATIC_REF) / sizeof(*STATIC_REF);	\
-		while (0 < i--) {	\
-			for (const auto& x : src) {	\
-				if (!strcmp(STATIC_REF[i].second, x)) {	\
-					ret |= STATIC_REF[i].first;	\
-					break;	\
-				}	\
-			}	\
-		}	\
-		return ret;	\
-	}	\
-	\
-	std::vector<const char*> JSON_parse<TYPE>::operator()(unsigned src)	\
-	{	\
-		std::vector<const char*> ret;	\
-	\
-		if (src) {	\
-			ptrdiff_t i = sizeof(STATIC_REF) / sizeof(*STATIC_REF);	\
-			while (0 < i--) if (src & STATIC_REF[i].first) ret.push_back(STATIC_REF[i].second);	\
-		}	\
-	\
-		return ret;	\
-	}	\
-}
-
 
 #endif

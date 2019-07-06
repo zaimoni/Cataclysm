@@ -1,9 +1,10 @@
 #ifndef _FACTION_H_
 #define _FACTION_H_
 
+#include "enums.h"
+#include "c_bitmap.h"
 #include <string>
 #include <vector>
-#include "enums.h"
 
 // TODO: Redefine?
 #define MAX_FAC_NAME_SIZE 40
@@ -68,7 +69,6 @@ enum faction_value {
  FACVAL_CRUELTY,	// Torture, murder, etc.
  NUM_FACVALS
 };
-static_assert(sizeof(unsigned)* CHAR_BIT >= NUM_FACVALS, "bitfield for faction_value will overflow");
 
 DECLARE_JSON_ENUM_BITFLAG_SUPPORT(faction_value)
 
@@ -83,14 +83,14 @@ struct faction {
  void randomize();
  void make_army();
  bool has_job(faction_job j) const;
- bool has_value(faction_value v) const { return values & (1ULL << v); };
+ bool has_value(faction_value v) const { return values & mfb(v); };
  bool matches_us(faction_value v) const;
  std::string describe() const;
 
  int response_time(tripoint dest) const;	// Time it takes for them to get to u
 
  std::string name;
- unsigned values : NUM_FACVALS; // Bitfield of values
+ typename cataclysm::bitmap<NUM_FACVALS>::type values; // Bitfield of values
  faction_goal goal;
  faction_job job1, job2;
  std::vector<int> opinion_of;

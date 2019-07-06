@@ -234,6 +234,9 @@
     <ClInclude Include="Zaimoni.STL\GDI\box.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="c_bitmap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
