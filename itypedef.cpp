@@ -1,5 +1,6 @@
 #include "item.h"
 #include "output.h"
+#include "JSON.h"
 #include "setvector.h"
 
 #include <string.h>
@@ -4294,8 +4295,8 @@ attacks with no penalty.",
   char arttype = ' ';
   fin >> arttype;
 
-  if (arttype == 'T') types.push_back(new it_artifact_tool(fin));
-  else if (arttype == 'A') types.push_back(new it_artifact_armor(fin));
+  if (arttype == 'T') types.push_back(('{' == (fin >> std::ws).peek()) ? new it_artifact_tool(cataclysm::JSON(fin)) : new it_artifact_tool(fin));
+  else if (arttype == 'A') types.push_back(('{' == (fin >> std::ws).peek()) ? new it_artifact_armor(cataclysm::JSON(fin)) : new it_artifact_armor(fin));
 
 /*
   std::string chomper;

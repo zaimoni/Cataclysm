@@ -1290,7 +1290,7 @@ itype::itype(const cataclysm::JSON& src)
 	}
 }
 
-void itype::toJSON(JSON& dest)
+void itype::toJSON(JSON& dest) const
 {
 	// we don't do the id key due to our use case
 	if (rarity) dest.set("rarity", std::to_string((int)rarity));
@@ -1380,7 +1380,7 @@ it_armor::it_armor(const cataclysm::JSON& src)
 	}
 }
 
-void it_armor::toJSON(JSON& dest)
+void it_armor::toJSON(JSON& dest) const
 {
 	itype::toJSON(dest);
 	if (covers) dest.set("covers", std::to_string((int)covers));
@@ -1419,7 +1419,7 @@ it_artifact_armor::it_artifact_armor(const cataclysm::JSON& src)
 	if (src.has_key("effects_worn")) src["effects_worn"].decode(effects_worn);
 }
 
-void it_artifact_armor::toJSON(JSON& dest)
+void it_artifact_armor::toJSON(JSON& dest) const
 {
 	it_armor::toJSON(dest);
 	if (!effects_worn.empty()) dest.set("effects_worn", JSON::encode(effects_worn));
@@ -1470,15 +1470,9 @@ it_artifact_armor::it_artifact_armor(std::istream& is)
 
 std::ostream& operator<<(std::ostream& os, const it_artifact_armor& src)
 {
-	os << static_cast<const it_armor&>(src) << " " << src.effects_worn.size();
-	for (const auto& eff : src.effects_worn) os << " " << eff;
-
-	os << " " << src.name << " - ";
-	std::string desctmp = src.description;
-	size_t endline;
-	while((endline = desctmp.find('\n')) != std::string::npos) desctmp.replace(endline, 1, " = ");
-
-	return os << desctmp << " -";
+	JSON tmp;
+	src.toJSON(tmp);
+	return os << tmp;
 }
 
 it_tool::it_tool(const cataclysm::JSON& src)
@@ -1499,7 +1493,7 @@ it_tool::it_tool(const cataclysm::JSON& src)
 	if (src.has_key("revert_to")) fromJSON(src["revert_to"], revert_to);
 }
 
-void it_tool::toJSON(JSON& dest)
+void it_tool::toJSON(JSON& dest) const
 {
 	itype::toJSON(dest);
 	if (auto json = JSON_key(ammo)) dest.set("ammo", json);
@@ -1533,7 +1527,7 @@ it_artifact_tool::it_artifact_tool(const cataclysm::JSON& src)
 	use = &iuse::artifact;
 }
 
-void it_artifact_tool::toJSON(JSON& dest)
+void it_artifact_tool::toJSON(JSON& dest) const
 {
 	it_tool::toJSON(dest);
 	if (auto json = JSON_key(charge_type)) dest.set("charge_type", json);
@@ -1603,20 +1597,9 @@ it_artifact_tool::it_artifact_tool(std::istream& is)
 
 std::ostream& operator<<(std::ostream& os, const it_artifact_tool& src)
 {
-	return os << static_cast<const it_tool&>(src) I_SEP << src.charge_type I_SEP << src.effects_wielded.size();
-	for (const auto& eff : src.effects_wielded) os I_SEP << eff;
-
-	os I_SEP << src.effects_activated.size();
-	for (const auto& eff : src.effects_activated) os I_SEP << eff;
-
-	os I_SEP << src.effects_carried.size();
-	for (const auto& eff : src.effects_carried) os I_SEP << eff;
-
-	os I_SEP << src.name << " - ";
-	std::string desctmp = src.description;
-	size_t endline;
-	while ((endline = desctmp.find('\n')) != std::string::npos) desctmp.replace(endline, 1, " = ");
-	return os << desctmp << " -";
+	JSON tmp;
+	src.toJSON(tmp);
+	return os << tmp;
 }
 
 // staging these here
