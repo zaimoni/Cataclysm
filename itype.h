@@ -271,7 +271,7 @@ static_assert(sizeof(unsigned)* CHAR_BIT >= NUM_ITEM_FLAGS, "need to upgrade bit
 DECLARE_JSON_ENUM_BITFLAG_SUPPORT(item_flag)
 
 enum technique_id {
-TEC_NULL,
+TEC_NULL,				// \todo release block; blocked by savefile break: redefine TEC_NULL as -1 (implementation-defined operator << but we should not be doing that anyway)
 // Offensive Techniques
 TEC_SWEEP,	// Crits may make your enemy fall & miss a turn
 TEC_PRECISE,	// Crits are painful and stun
@@ -296,6 +296,8 @@ TEC_DEF_DISARM, // Disarm an enemy
 NUM_TECHNIQUES
 };
 static_assert(sizeof(unsigned)* CHAR_BIT >= NUM_TECHNIQUES, "need to upgrade bitmap size");
+
+DECLARE_JSON_ENUM_BITFLAG_SUPPORT(technique_id)
 
 struct style_move
 {

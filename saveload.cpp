@@ -1236,7 +1236,6 @@ std::ostream& operator<<(std::ostream& os, const monster& src)
 }
 
 // usage is when loading artifacts
-// \todo release block: complete implementation
 itype::itype(const cataclysm::JSON& src)
 : id(item::types.size()),rarity(0),price(0),name("none"),sym('#'),color(c_white),m1(MNULL),m2(MNULL),volume(0),weight(0),
   melee_dam(0),melee_cut(0),m_to_hit(0),item_flags(0),techniques(0)
@@ -1280,7 +1279,12 @@ itype::itype(const cataclysm::JSON& src)
 		src["item_flags"].decode(relay);
 		if (!relay.empty()) item_flags = _parse(relay);
 	}
-//	if (src.has_key("techniques")) fromJSON(src["techniques"], techniques);
+	if (src.has_key("techniques")) {
+		cataclysm::JSON_parse<technique_id> _parse;
+		std::vector<const char*> relay;
+		src["techniques"].decode(relay);
+		if (!relay.empty()) techniques = _parse(relay);
+	}
 }
 
 itype::itype(std::istream& is)

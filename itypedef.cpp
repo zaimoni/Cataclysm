@@ -640,39 +640,61 @@ static const char* const JSON_transcode_ammo[] = {
 };
 
 static const std::pair<unsigned, const char*> JSON_transcode_item_flags[] = {
-	{mfb(IF_LIGHT_4),"IF_LIGHT_4"},
-	{mfb(IF_LIGHT_8),"IF_LIGHT_8"},
-	{mfb(IF_SPEAR),"IF_SPEAR"},
-	{mfb(IF_STAB),"IF_STAB"},
-	{mfb(IF_WRAP),"IF_WRAP"},
-	{mfb(IF_MESSY),"IF_MESSY"},
-	{mfb(IF_RELOAD_ONE),"IF_RELOAD_ONE"},
-	{mfb(IF_STR_RELOAD),"IF_STR_RELOAD"},
-	{mfb(IF_STR8_DRAW),"IF_STR8_DRAW"},
-	{mfb(IF_STR10_DRAW),"IF_STR10_DRAW"},
-	{mfb(IF_USE_UPS),"IF_USE_UPS"},
-	{mfb(IF_RELOAD_AND_SHOOT),"IF_RELOAD_AND_SHOOT"},
-	{mfb(IF_FIRE_100),"IF_FIRE_100"},
-	{mfb(IF_GRENADE),"IF_GRENADE"},
-	{mfb(IF_CHARGE),"IF_CHARGE"},
-	{mfb(IF_UNARMED_WEAPON),"IF_UNARMED_WEAPON"},
-	{mfb(IF_NO_UNWIELD),"IF_NO_UNWIELD"},
-	{mfb(IF_AMMO_FLAME),"IF_AMMO_FLAME"},
-	{mfb(IF_AMMO_INCENDIARY),"IF_AMMO_INCENDIARY"},
-	{mfb(IF_AMMO_EXPLOSIVE),"IF_AMMO_EXPLOSIVE"},
-	{mfb(IF_AMMO_FRAG),"IF_AMMO_FRAG"},
-	{mfb(IF_AMMO_NAPALM),"IF_AMMO_NAPALM"},
-	{mfb(IF_AMMO_EXPLOSIVE_BIG),"IF_AMMO_EXPLOSIVE_BIG"},
-	{mfb(IF_AMMO_TEARGAS),"IF_AMMO_TEARGAS"},
-	{mfb(IF_AMMO_SMOKE),"IF_AMMO_SMOKE"},
-	{mfb(IF_AMMO_TRAIL),"IF_AMMO_TRAIL"},
-	{mfb(IF_AMMO_FLASHBANG),"IF_AMMO_FLASHBANG"},
-	{mfb(IF_AMMO_STREAM),"IF_AMMO_STREAM"}
+	{mfb(IF_LIGHT_4),"LIGHT_4"},
+	{mfb(IF_LIGHT_8),"LIGHT_8"},
+	{mfb(IF_SPEAR),"SPEAR"},
+	{mfb(IF_STAB),"STAB"},
+	{mfb(IF_WRAP),"WRAP"},
+	{mfb(IF_MESSY),"MESSY"},
+	{mfb(IF_RELOAD_ONE),"RELOAD_ONE"},
+	{mfb(IF_STR_RELOAD),"STR_RELOAD"},
+	{mfb(IF_STR8_DRAW),"STR8_DRAW"},
+	{mfb(IF_STR10_DRAW),"STR10_DRAW"},
+	{mfb(IF_USE_UPS),"USE_UPS"},
+	{mfb(IF_RELOAD_AND_SHOOT),"RELOAD_AND_SHOOT"},
+	{mfb(IF_FIRE_100),"FIRE_100"},
+	{mfb(IF_GRENADE),"GRENADE"},
+	{mfb(IF_CHARGE),"CHARGE"},
+	{mfb(IF_UNARMED_WEAPON),"UNARMED_WEAPON"},
+	{mfb(IF_NO_UNWIELD),"NO_UNWIELD"},
+	{mfb(IF_AMMO_FLAME),"AMMO_FLAME"},
+	{mfb(IF_AMMO_INCENDIARY),"AMMO_INCENDIARY"},
+	{mfb(IF_AMMO_EXPLOSIVE),"AMMO_EXPLOSIVE"},
+	{mfb(IF_AMMO_FRAG),"AMMO_FRAG"},
+	{mfb(IF_AMMO_NAPALM),"AMMO_NAPALM"},
+	{mfb(IF_AMMO_EXPLOSIVE_BIG),"AMMO_EXPLOSIVE_BIG"},
+	{mfb(IF_AMMO_TEARGAS),"AMMO_TEARGAS"},
+	{mfb(IF_AMMO_SMOKE),"AMMO_SMOKE"},
+	{mfb(IF_AMMO_TRAIL),"AMMO_TRAIL"},
+	{mfb(IF_AMMO_FLASHBANG),"AMMO_FLASHBANG"},
+	{mfb(IF_AMMO_STREAM),"AMMO_STREAM"}
+};
+
+static const std::pair<unsigned, const char*> JSON_transcode_techniques[] = {
+	{mfb(TEC_SWEEP),"SWEEP"},
+	{mfb(TEC_PRECISE),"PRECISE"},
+	{mfb(TEC_BRUTAL),"BRUTAL"},
+	{mfb(TEC_GRAB),"GRAB"},
+	{mfb(TEC_WIDE),"WIDE"},
+	{mfb(TEC_RAPID),"RAPID"},
+	{mfb(TEC_FEINT),"FEINT"},
+	{mfb(TEC_THROW),"THROW"},
+	{mfb(TEC_DISARM),"DISARM"},
+	{mfb(TEC_BLOCK),"BLOCK"},
+	{mfb(TEC_BLOCK_LEGS),"BLOCK_LEGS"},
+	{mfb(TEC_WBLOCK_1),"WBLOCK_1"},
+	{mfb(TEC_WBLOCK_2),"WBLOCK_2"},
+	{mfb(TEC_WBLOCK_3),"WBLOCK_3"},
+	{mfb(TEC_COUNTER),"COUNTER"},
+	{mfb(TEC_BREAK),"BREAK"},
+	{mfb(TEC_DEF_THROW),"DEF_THROW"},
+	{mfb(TEC_DEF_DISARM),"DEF_DISARM"}
 };
 
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(ammotype, JSON_transcode_ammo)
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(itype_id, JSON_transcode_items)
 DEFINE_JSON_ENUM_BITFLAG_SUPPORT(item_flag, JSON_transcode_item_flags)
+DEFINE_JSON_ENUM_BITFLAG_SUPPORT(technique_id, JSON_transcode_techniques)
 
 // GENERAL GUIDELINES
 // When adding a new item, you MUST REMEMBER to insert it in the itype_id enum

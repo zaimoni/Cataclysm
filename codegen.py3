@@ -76,6 +76,7 @@ relevant_lines = []	# to document expected type for extract_C_enum
 # relevant_lines = bracketed_lines('itype.h','enum ammotype {','}')
 # relevant_lines = bracketed_lines('itype.h','enum item_flag {','}')
 # relevant_lines = bracketed_lines('itype.h','enum itype_id {','}')
+# relevant_lines = bracketed_lines('itype.h','enum technique_id {','}')
 # relevant_lines = bracketed_lines('mapdata.h','enum field_id {','}')
 # relevant_lines = bracketed_lines('mapdata.h','enum ter_id {','}')
 # relevant_lines = bracketed_lines('mission.h','enum mission_id {','}')
