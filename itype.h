@@ -363,6 +363,7 @@ protected:	// this is not a final type so these aren't public
  itype(std::istream& is);
  itype(const cataclysm::JSON& src);
  friend std::ostream& operator<<(std::ostream& os, const itype& src);
+ virtual void toJSON(cataclysm::JSON& dest);
 };
 
 // Includes food drink and drugs
@@ -507,6 +508,7 @@ protected:	// this is not a final type so these aren't public
  it_armor(std::istream& is);
  it_armor(const cataclysm::JSON& src);
  friend std::ostream& operator<<(std::ostream& os, const it_armor& src);
+ void toJSON(cataclysm::JSON& dest) override;
 };
 
 struct it_book : public itype
@@ -584,6 +586,7 @@ protected:	// this is not a final type so these aren't public
 	it_tool(const cataclysm::JSON& src);
 	it_tool(std::istream& is);
 	friend std::ostream& operator<<(std::ostream& os, const it_tool& src);
+	void toJSON(cataclysm::JSON& dest) override;
 };
         
 struct it_bionic : public itype
@@ -662,6 +665,7 @@ struct it_artifact_tool final : public it_tool
  it_artifact_tool(const cataclysm::JSON& src);
  it_artifact_tool(std::istream& is);
  friend std::ostream& operator<<(std::ostream& os, const it_artifact_tool& src);
+ void toJSON(cataclysm::JSON& dest) override;
 
  it_artifact_tool();
  it_artifact_tool(int pid, unsigned int pprice, std::string pname,
@@ -692,6 +696,7 @@ struct it_artifact_armor final : public it_armor
  it_artifact_armor(std::istream& is);
  it_artifact_armor(const cataclysm::JSON& src);
  friend std::ostream& operator<<(std::ostream& os, const it_artifact_armor& src);
+ void toJSON(cataclysm::JSON& dest) override;
 
  bool is_artifact() const override { return true; }
  std::string save_data() override;

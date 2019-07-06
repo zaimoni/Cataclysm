@@ -1290,6 +1290,38 @@ itype::itype(const cataclysm::JSON& src)
 	}
 }
 
+void itype::toJSON(JSON& dest)
+{
+	// we don't do the id key due to our use case
+	if (rarity) dest.set("rarity", std::to_string((int)rarity));
+	if (price) dest.set("price", std::to_string(price));
+	dest.set("name", name);
+	if (!description.empty()) dest.set("description", description);
+	dest.set("sym", std::string(1, sym));
+	if (auto json = JSON_key(color)) dest.set("color", json);
+	if (m1 || m2)
+		{
+		JSON tmp;
+		if (auto json = JSON_key(m1)) tmp.push(json);
+		if (auto json = JSON_key(m2)) tmp.push(json);
+		dest.set("material", tmp);
+		}
+	if (volume) dest.set("volume", std::to_string(volume));
+	if (weight) dest.set("weight", std::to_string(weight));
+	if (melee_dam) dest.set("melee_dam", std::to_string((int)melee_dam));
+	if (melee_cut) dest.set("melee_cut", std::to_string((int)melee_cut));
+	if (m_to_hit) dest.set("m_to_hit", std::to_string((int)m_to_hit));
+	int tmp;
+	if (item_flags) {
+		cataclysm::JSON_parse<item_flag> _parse;
+		dest.set("item_flags", JSON::encode(_parse(item_flags)));
+	}
+	if (techniques) {
+		cataclysm::JSON_parse<technique_id> _parse;
+		dest.set("techniques", JSON::encode(_parse(techniques)));
+	}
+}
+
 itype::itype(std::istream& is)
 : id(0),rarity(0),name("none"),techniques(0)
 {
@@ -1348,6 +1380,18 @@ it_armor::it_armor(const cataclysm::JSON& src)
 	}
 }
 
+void it_armor::toJSON(JSON& dest)
+{
+	itype::toJSON(dest);
+	if (covers) dest.set("covers", std::to_string((int)covers));
+	if (encumber) dest.set("encumber", std::to_string((int)encumber));
+	if (dmg_resist) dest.set("dmg_resist", std::to_string((int)dmg_resist));
+	if (cut_resist) dest.set("cut_resist", std::to_string((int)cut_resist));
+	if (env_resist) dest.set("env_resist", std::to_string((int)env_resist));
+	if (warmth) dest.set("warmth", std::to_string((int)warmth));
+	if (storage) dest.set("storage", std::to_string((int)storage));
+}
+
 it_armor::it_armor(std::istream& is)
 : itype(is), covers(0), encumber(0), dmg_resist(0), cut_resist(0), env_resist(0), warmth(0), storage(0)
 {
@@ -1374,6 +1418,13 @@ it_artifact_armor::it_artifact_armor(const cataclysm::JSON& src)
 {
 	if (src.has_key("effects_worn")) src["effects_worn"].decode(effects_worn);
 }
+
+void it_artifact_armor::toJSON(JSON& dest)
+{
+	it_armor::toJSON(dest);
+	if (!effects_worn.empty()) dest.set("effects_worn", JSON::encode(effects_worn));
+}
+
 
 // \todo release block JSON support for artifact armors
 it_artifact_armor::it_artifact_armor(std::istream& is)
@@ -1448,6 +1499,18 @@ it_tool::it_tool(const cataclysm::JSON& src)
 	if (src.has_key("revert_to")) fromJSON(src["revert_to"], revert_to);
 }
 
+void it_tool::toJSON(JSON& dest)
+{
+	itype::toJSON(dest);
+	if (auto json = JSON_key(ammo)) dest.set("ammo", json);
+	if (max_charges) dest.set("max_charges", std::to_string(max_charges));
+	if (def_charges) dest.set("def_charges", std::to_string(def_charges));
+	if (charges_per_use) dest.set("charges_per_use", std::to_string((int)charges_per_use));
+	if (turns_per_charge) dest.set("turns_per_charge", std::to_string((int)turns_per_charge));
+	if (auto json = JSON_key(revert_to)) dest.set("revert_to", json);
+	// function pointers only would need a JSON representation if modding
+}
+
 it_tool::it_tool(std::istream& is)
 : itype(is),ammo(AT_NULL),def_charges(0),charges_per_use(0),turns_per_charge(0),revert_to(itm_null),use(&iuse::none)
 {
@@ -1470,6 +1533,14 @@ it_artifact_tool::it_artifact_tool(const cataclysm::JSON& src)
 	use = &iuse::artifact;
 }
 
+void it_artifact_tool::toJSON(JSON& dest)
+{
+	it_tool::toJSON(dest);
+	if (auto json = JSON_key(charge_type)) dest.set("charge_type", json);
+	if (!effects_wielded.empty()) dest.set("effects_wielded", JSON::encode(effects_wielded));
+	if (!effects_activated.empty()) dest.set("effects_activated", JSON::encode(effects_activated));
+	if (!effects_carried.empty()) dest.set("effects_carried", JSON::encode(effects_carried));
+}
 
 // \todo release block JSON support for artifact tools
 it_artifact_tool::it_artifact_tool(std::istream& is)
