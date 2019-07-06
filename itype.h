@@ -11,6 +11,10 @@
 #include <string>
 #include <vector>
 
+
+// mfb(n) converts a flag to its appropriate position in a C bitfield
+#define mfb(n) (1ULL << (n))
+
 class game;
 
 namespace cataclysm {

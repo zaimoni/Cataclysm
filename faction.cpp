@@ -8,10 +8,6 @@
 
 #include <sstream>
 
-// defensive undefine \todo remove when mfb macro purged from headers
-#undef mfb
-#define mfb(n) (1U << n)
-
 static const char* JSON_transcode_goals[] = {
 	"NONE",
 	"WEALTH",

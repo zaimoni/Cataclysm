@@ -4,10 +4,6 @@
 #include "color.h"
 #include "itype.h"
 
-#ifndef mfb
-#define mfb(n) long(1 << (n))
-#endif
-
 enum vpart_id
 {
     vp_null = 0,

@@ -1,9 +1,9 @@
 #ifndef _ARTIFACTDATA_H_
 #define _ARTIFACTDATA_H_
 
-#include <vector>
 #include "artifact.h"
 #include "itype.h"
+#include <vector>
 
 int passive_effect_cost[NUM_AEPS] = {
 0,	// AEP_NULL

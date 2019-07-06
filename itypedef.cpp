@@ -12,11 +12,6 @@ static itype* const null_type = new itype;
 std::vector <itype*> item::types;
 const item item::null(null_type ,0);
 
-// mfb(n) converts a flag to its appropriate position in covers's bitfield
-#ifndef mfb
-#define mfb(n) (1U << (n))
-#endif
-
 // Armor colors
 #define C_SHOES  c_blue
 #define C_PANTS  c_brown

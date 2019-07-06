@@ -572,7 +572,6 @@ npc_action npc::long_term_goal_action(game *g)	// XXX this was being prototyped
  return npc_undecided;
 }
  
- 
 itype_id npc::alt_attack_available() const
 {
  for (int i = 0; i < NUM_ALT_ATTACK_ITEMS; i++) {

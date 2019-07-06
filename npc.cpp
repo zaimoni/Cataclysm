@@ -16,7 +16,6 @@
 std::vector<item> starting_clothes(npc_class type, bool male, game *g);
 std::vector<item> starting_inv(npc *me, npc_class type, game *g);
 
-
 static const char* const JSON_transcode_favors[] = {
 	"CASH",
 	"ITEM",

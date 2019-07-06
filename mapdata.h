@@ -12,11 +12,6 @@
 
 class game;
 
-// mfb(t_flag) converts a flag to a bit for insertion into a bitfield
-#ifndef mfb
-#define mfb(n) long(1 << (n))
-#endif
-
 enum t_flag {
  transparent = 0,// Player & monsters can see through/past it
  bashable,     // Player & monsters can bash this & make it the next in the list
