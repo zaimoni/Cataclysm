@@ -771,10 +771,18 @@ std::ostream& operator<<(std::ostream& os, const JSON& src)
 {
 	switch (src._mode)
 	{
-	case JSON::object: return src.write_object(os, *src._object);
-	case JSON::array: return src.write_array(os, *src._array);
-	case JSON::literal: return write_literal(os, *src._scalar);
-	case JSON::string: return write_string(os, *src._scalar);
+	case JSON::object:
+		if (!src._object) return os << "{}";
+		return src.write_object(os, *src._object);
+	case JSON::array:
+		if (!src._array) return os << "[]";
+		return src.write_array(os, *src._array);
+	case JSON::literal:
+		if (!src._scalar) return os << "\"\"";
+		return write_literal(os, *src._scalar);
+	case JSON::string:
+		if (!src._scalar) return os << "\"\"";
+		return write_string(os, *src._scalar);
 		// default: throw std::string(....);
 	}
 	return os;
