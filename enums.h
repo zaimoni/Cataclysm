@@ -140,4 +140,20 @@ namespace cataclysm {	\
 	}	\
 }
 
+// default assignment operator is often not ACID (requires utility header)
+#define DEFINE_ACID_ASSIGN_W_SWAP(TYPE)	\
+TYPE& TYPE::operator=(const TYPE& src)	\
+{	\
+	TYPE tmp(src);	\
+	std::swap(*this, tmp);	\
+	return *this;	\
+}
+
+#define DEFINE_ACID_ASSIGN_W_MOVE(TYPE)	\
+TYPE& TYPE::operator=(const TYPE& src)	\
+{	\
+	TYPE tmp(src);	\
+	return *this = std::move(tmp);	\
+}
+
 #endif

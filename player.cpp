@@ -507,6 +507,8 @@ player::player()
   mutation_category_level[i] = 0;
 }
 
+DEFINE_ACID_ASSIGN_W_MOVE(player)
+
 void player::normalize()
 {
  weapon = item::null;

@@ -13,9 +13,10 @@ class inventory
  public:
   inventory() = default;
   inventory(const inventory& src) = default;
+  inventory(inventory&& src) = default;
   ~inventory() = default;
-  inventory& operator=  (const inventory &rhs) = default;
-  inventory& operator=  (inventory &&rhs) = default;
+  inventory& operator=(const inventory &rhs);
+  inventory& operator=(inventory &&rhs) = default;
 
   item& operator[] (int i);
   const item& operator[] (int i) const;
@@ -66,11 +67,6 @@ class inventory
   bool has_amount(itype_id it, int quantity) { return (amount_of(it) >= quantity); }
   bool has_charges(itype_id it, int quantity) { return (charges_of(it) >= quantity); }
   bool has_item(item *it) const; // Looks for a specific item
-
-/* TODO: This stuff, I guess?
-  std::string save();
-  void load(std::string data);
-*/
 
  private:
   static const std::vector<item> nullstack;

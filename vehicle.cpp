@@ -84,13 +84,15 @@ vehicle::vehicle(vhtype_id type_id)
     precalc_mounts(0, face.dir());
 }
 
+DEFINE_ACID_ASSIGN_W_MOVE(vehicle)
+
 bool vehicle::player_in_control(player& p) const
 {
-    if (type == veh_null) return false;
+    if (!type || !p.in_vehicle) return false;
     int veh_part;
     const vehicle* const veh = game::active()->m.veh_at(p.pos, veh_part);
-    if (veh && veh != this) return false;
-    return part_with_feature(veh_part, vpf_controls, false) >= 0 && p.in_vehicle;
+    if (!veh || veh != this) return false;
+    return part_with_feature(veh_part, vpf_controls, false) >= 0;
 }
 
 void vehicle::init_state()

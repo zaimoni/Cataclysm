@@ -106,6 +106,9 @@ npc::npc()
  per_max = 0;
 }
 
+DEFINE_ACID_ASSIGN_W_MOVE(npc_chatbin)
+DEFINE_ACID_ASSIGN_W_MOVE(npc)
+
 void npc::randomize(game *g, npc_class type)
 {
  id = g->assign_npc_id();

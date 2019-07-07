@@ -79,10 +79,13 @@ public:
  int mission_id; // Linked to a mission?
 
  computer(std::string Name = "", int Security = 0) : name(Name), security(Security), w_terminal(NULL), mission_id(-1) {}
+ computer(const computer& rhs);
+ computer(computer&& rhs);
  ~computer();
 
- computer & operator=(const computer &rhs);
-// Initialization
+ computer& operator=(const computer& rhs);
+ computer& operator=(computer&& rhs);
+ // Initialization
  void add_option(std::string opt_name, computer_action action, int Security);
  void add_failure(computer_failure failure);
 // Basic usage

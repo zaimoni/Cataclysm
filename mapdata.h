@@ -265,7 +265,7 @@ struct submap {
  submap(const submap& src) = default;
  submap(submap&& src) = default;
  ~submap() = default;
- submap& operator=(const submap& src) = default;
+ submap& operator=(const submap& src) = default;	// plausibly should make ACID but we don't actually copy submaps frequently
  submap& operator=(submap&& src) = default;
 
  submap(std::istream& is);

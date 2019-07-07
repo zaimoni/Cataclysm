@@ -842,7 +842,6 @@ std::ostream& operator<<(std::ostream& os, const spawn_point& src)
 	else return os << "{}"; // temporary
 }
 
-// \todo release block: JSON conversion for vehicle
 vehicle::vehicle(std::istream& in)
 {
 	int t;
@@ -1426,7 +1425,6 @@ void it_artifact_armor::toJSON(JSON& dest) const
 }
 
 
-// \todo release block JSON support for artifact armors
 it_artifact_armor::it_artifact_armor(std::istream& is)
 : it_armor(is)
 {
@@ -1536,7 +1534,6 @@ void it_artifact_tool::toJSON(JSON& dest) const
 	if (!effects_carried.empty()) dest.set("effects_carried", JSON::encode(effects_carried));
 }
 
-// \todo release block JSON support for artifact tools
 it_artifact_tool::it_artifact_tool(std::istream& is)
 : it_tool(is)
 {
@@ -1617,7 +1614,7 @@ std::string it_artifact_armor::save_data()
 	return data.str();
 }
 
-disease::disease(std::istream& is)	// V 0.2.0 blocker \todo savefile representation for disease intensity
+disease::disease(std::istream& is)
 : type(DI_NULL), intensity(0), duration(0)
 {
 	if ('{' == (is >> std::ws).peek()) {
@@ -1950,7 +1947,6 @@ std::ostream& operator<<(std::ostream& os, const npc_combat_rules& src)
 }
 
 // \todo release block: JSON conversion
-// \todo JSON conversion block: wand/wandf
 npc::npc(std::istream& is)
 {
 	std::string tmpname;

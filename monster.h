@@ -53,7 +53,7 @@ class monster {
  monster(const monster& src) = default;
  monster(monster&& src) = default;
  ~monster() = default;
- monster& operator=(const monster& src) = default;
+ monster& operator=(const monster& src);
  monster& operator=(monster&& src) = default;
 
  monster(std::istream& is);

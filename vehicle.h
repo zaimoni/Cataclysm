@@ -16,7 +16,8 @@ const int k_mvel = 200;
 // Structure, describing vehicle part (ie, wheel, seat)
 struct vehicle_part
 {
-    vpart_id id;            // id in list of parts (vpart_list index)
+	std::vector<item> items;// inventory
+	vpart_id id;            // id in list of parts (vpart_list index)
 	point mount_d;			// mount point (coordinates flipped like curses, vertical x horizontal y)
     point precalc_d[2];     // mount_dx/mount_dy translated to face.dir [0] and turn_dir [1]
     int hp;                 // current durability, if 0, then broken
@@ -28,7 +29,6 @@ struct vehicle_part
         int open;           // door is open
         int passenger;      // seat has passenger
     };
-    std::vector<item> items;// inventory
 
 	vehicle_part() = default;
 	vehicle_part(vpart_id _id, int _mdx, int _mdy, int _hp, int _blood=0, int _amount=0)
@@ -115,7 +115,7 @@ public:
 	vehicle(const vehicle& src) = default;
 	vehicle(vehicle&& src) = default;
 	~vehicle() = default;
-	vehicle& operator=(const vehicle& src) = default;
+	vehicle& operator=(const vehicle& src);
 	vehicle& operator=(vehicle&& src) = default;
 	vehicle(std::istream& in);
 	friend std::ostream& operator<<(std::ostream& os, const vehicle& src);

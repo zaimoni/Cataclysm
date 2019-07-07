@@ -152,12 +152,12 @@ struct npc_personality {
 
 struct npc_opinion
 {
+ std::vector<npc_favor> favors;
  int trust;
  int fear;
  int value;
  int anger;
  int owed;
- std::vector<npc_favor> favors;
 
  int total_owed() {	// plausibly a placeholder
   int ret = owed;
@@ -282,7 +282,7 @@ struct npc_chatbin
  npc_chatbin(const npc_chatbin& src) = default;
  npc_chatbin(npc_chatbin&& src) = default;
  ~npc_chatbin() = default;
- npc_chatbin& operator=(const npc_chatbin& src) = default;
+ npc_chatbin& operator=(const npc_chatbin& src);
  npc_chatbin& operator=(npc_chatbin&& src) = default;
 
  friend std::istream& operator>>(std::istream& is, npc_chatbin& dest);
@@ -295,13 +295,15 @@ public:
 
  npc();
  npc(const npc &rhs) = default;
+ npc(npc&& rhs) = default;
  ~npc() = default;
+ npc& operator=(const npc& rhs);
+ npc& operator=(npc&& rhs) = default;
 
- npc& operator=(const npc &rhs) = default;
  npc(std::istream& is);
  friend std::ostream& operator<<(std::ostream& os, const npc& src);
 
- virtual bool is_npc() const { return true; }
+ bool is_npc() const override { return true; }
 
 // Generating our stats, etc.
  void randomize(game *g, npc_class type = NC_NONE);

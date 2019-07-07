@@ -46,6 +46,8 @@ monster::monster(const mtype *t, int x, int y)
 {
 }
 
+DEFINE_ACID_ASSIGN_W_MOVE(monster)
+
 void monster::poly(const mtype *t)
 {
  double hp_percentage = double(hp) / double(type->hp);

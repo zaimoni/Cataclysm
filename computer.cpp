@@ -7,6 +7,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <utility>
 
 // JSON enum transcoding
 static const char* JSON_transcode_compact[] = {
@@ -45,21 +46,36 @@ DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(computer_action, JSON_transcode_compa
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(computer_failure, JSON_transcode_compfail)
 
 // main implementation
+computer::computer(const computer& src)
+: options(src.options),failures(src.failures),security(security),w_terminal(0),name(src.name),mission_id(src.mission_id)
+{
+}
+
+computer::computer(computer&& src)
+: options(std::move(src.options)), failures(std::move(src.failures)), security(src.security), w_terminal(src.w_terminal),
+  name(std::move(src.name)), mission_id(src.mission_id)
+{
+	src.w_terminal = 0;
+}
+
 computer::~computer()
 {
  if (w_terminal != NULL)
   delwin(w_terminal);
 }
 
-computer& computer::operator=(const computer &rhs)
+DEFINE_ACID_ASSIGN_W_MOVE(computer)
+
+computer& computer::operator=(computer&& src)
 {
- security = rhs.security;
- name = rhs.name;
- mission_id = rhs.mission_id;
- options = rhs.options;
- failures = rhs.failures;
- w_terminal = NULL;	// does not value-copy
- return *this;
+	options = std::move(src.options);
+	failures = std::move(src.failures);
+	security = src.security;
+	w_terminal = src.w_terminal;
+	name = std::move(src.name);
+	mission_id = src.mission_id;
+	src.w_terminal = 0;
+	return *this;
 }
 
 void computer::add_option(std::string opt_name, computer_action action,

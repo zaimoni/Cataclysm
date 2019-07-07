@@ -41,7 +41,7 @@ public:
  ~item() = default;
  void make(itype* it);
 
- item& operator=(const item& src) = default;
+ item& operator=(const item& src);
  item& operator=(item&& src) = default;
 
  item(std::istream& is);

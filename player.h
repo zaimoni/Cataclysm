@@ -36,7 +36,7 @@ public:
  friend std::istream& operator>>(std::istream& is, player& dest);
  friend std::ostream& operator<<(std::ostream& is, const player& src);
 
- player& operator=(const player& rhs) = default;
+ player& operator=(const player& rhs);
  player& operator=(player&& rhs) = default;
 
 // newcharacter.cpp 
