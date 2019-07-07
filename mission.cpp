@@ -189,7 +189,7 @@ of those things now.  Can you put her out of her misery for me?";
     return "Really... that's too bad.";
   }
   break;
- default: return "Someone forgot to code this mission's messages!";
  }
+ return "Someone forgot to code this mission's messages!";	// break statements bypass the default case
 }
 

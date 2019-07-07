@@ -20,7 +20,9 @@ LINKERFLAGS = -Wl,-stack,12000000,-subsystem,windows
 
 CFLAGS = $(WARNINGS) $(DEBUG) $(PROFILE) $(OTHERS)
 
-LDFLAGS = -static -lgdi32 -Llib/host -lz_format_util -lz_stdio_log -lz_stdio_c
+# TDM-5.1.0 does not need -pthread (and does not detect nanosleep in time.h)
+# MingW64-8.1.0 does.
+LDFLAGS = -static -lgdi32 -pthread -Llib/host -lz_format_util -lz_stdio_log -lz_stdio_c
 
 #ifeq ($(OS), Msys)
 #LDFLAGS = -static -lpdcurses
