@@ -1293,14 +1293,35 @@ monster::monster(std::istream& is)
 
 std::ostream& operator<<(std::ostream& os, const monster& src)
 {
-	os << src.type I_SEP << src.pos I_SEP << src.wand I_SEP <<
-		src.moves I_SEP << src.speed I_SEP << src.hp I_SEP << src.sp_timeout I_SEP <<
-		src.plans.size() I_SEP << src.friendly I_SEP << src.faction_id I_SEP <<
-		src.mission_id I_SEP << src.dead I_SEP << src.anger I_SEP << src.morale;
-	for (int i = 0; i < src.plans.size(); i++) {
-		os I_SEP << src.plans[i];
+	if (src.type) {
+		if (auto json = JSON_key((mon_id)src.type->id)) {
+			JSON _monster;
+			_monster.set("type", json);
+			_monster.set("pos", toJSON(src.pos));
+			if (src.wand.live()) _monster.set("wand", toJSON(src.wand));
+			if (!src.inv.empty()) _monster.set("inv", JSON::encode(src.inv));
+			if (!src.effects.empty()) _monster.set("effects", JSON::encode(src.effects));
+			if (src.is_static_spawn()) {
+				_monster.set("spawnmap", toJSON(src.spawnmap));
+				_monster.set("spawnpos", toJSON(src.spawnpos));
+			}
+			_monster.set("moves", std::to_string(src.moves));
+			_monster.set("speed", std::to_string(src.speed));
+			_monster.set("hp", std::to_string(src.hp));
+			if (0 < src.sp_timeout) _monster.set("sp_timeout", std::to_string(src.sp_timeout));
+			if (src.friendly) _monster.set("friendly", std::to_string(src.friendly));
+			_monster.set("anger", std::to_string(src.anger));
+			_monster.set("morale", std::to_string(src.morale));
+			if (0 <= src.faction_id) _monster.set("faction_id", std::to_string(src.faction_id));	// \todo release block validate or verify inability to validate here
+			if (0 < src.mission_id) _monster.set("mission_id", std::to_string(src.mission_id));		// \todo release block validate or verify inability to validate here
+			if (src.dead) _monster.set("dead", "true");
+			if (src.made_footstep) _monster.set("made_footstep", "true");
+			if (!src.unique_name.empty()) _monster.set("unique_name", src.unique_name);
+			if (!src.plans.empty()) _monster.set("effects", JSON::encode(src.plans));
+			return os << _monster;
+		}
 	}
-	return os;
+	return os << "{}";
 }
 
 // usage is when loading artifacts
