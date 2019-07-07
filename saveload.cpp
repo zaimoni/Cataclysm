@@ -350,7 +350,46 @@ std::ostream& operator<<(std::ostream& os, const tripoint& src)
 	return os << '[' << std::to_string(src.x) << ',' << std::to_string(src.y) << ',' << std::to_string(src.z) << ']';
 }
 
+JSON toJSON(const monster_effect& src) {
+	JSON ret(JSON::object);
+	if (0 < src.duration) {
+		if (auto json = JSON_key(src.type)) {
+			ret.set("type", json);
+			ret.set("duration", std::to_string(src.duration));
+		}
+	}
+	return ret;
+}
+
+bool fromJSON(const JSON& src, monster_effect& dest)
+{
+	if (!src.has_key("duration") || !src.has_key("type")) return false;
+	bool ret = fromJSON(src["type"], dest.type);
+	if (!fromJSON(src["duration"], dest.duration)) ret = false;
+	return ret;
+}
+
 // will need friend-declaration when access controls go up
+template<class T>
+JSON toJSON(const countdown<T>& src) {
+	JSON ret;
+	ret.set("x", toJSON(src.x));
+	ret.set("remaining", std::to_string(src.remaining));
+	return ret;
+}
+
+template<class T>
+bool fromJSON(const JSON& src, countdown<T>& dest)
+{
+	if (!src.has_key("remaining")) return false;
+
+	decltype(dest.remaining) tmp;
+	if (!fromJSON(src["remaining"], tmp) || 0 >= tmp) return false;
+	if (!src.has_key("x") || !fromJSON(src["x"], dest.x)) return false;
+	dest.remaining = tmp;
+	return true;
+}
+
 template<class T>
 std::istream& operator>>(std::istream& is, countdown<T>& dest)
 {
@@ -1212,7 +1251,34 @@ std::ostream& operator<<(std::ostream& os, const item& src) { return os << toJSO
 
 // \todo release block: JSON save/load support (repairs monster inventories, effects being dropped in save/load cycle
 monster::monster(std::istream& is)
+: pos(20, 10), wand(point(-1, -1), 0), spawnmap(-1, -1), spawnpos(-1,-1), moves(0), speed(0), hp(60), sp_timeout(0), friendly(0),
+  anger(0), morale(2), faction_id(-1), mission_id(-1),type(0),dead(false),made_footstep(false),unique_name("")
 {
+	if ('{' == (is >> std::ws).peek()) {
+		JSON _in(is);
+		if (!_in.has_key("type") || !fromJSON(_in["type"],type)) return;
+		if (_in.has_key("pos")) fromJSON(_in["pos"], pos);
+		if (_in.has_key("wand")) fromJSON(_in["wand"], wand);
+		if (_in.has_key("inv")) _in["inv"].decode(inv);
+		if (_in.has_key("effects")) _in["effects"].decode(effects);
+		if (_in.has_key("spawnmap")) fromJSON(_in["spawnmap"], spawnmap);
+		if (_in.has_key("spawnpos")) fromJSON(_in["spawnpos"], spawnpos);
+		if (_in.has_key("moves")) fromJSON(_in["moves"], moves);
+		if (_in.has_key("speed")) fromJSON(_in["speed"], speed);
+		if (_in.has_key("hp")) fromJSON(_in["hp"], hp);
+		if (_in.has_key("sp_timeout")) fromJSON(_in["sp_timeout"], sp_timeout);
+		if (_in.has_key("friendly")) fromJSON(_in["friendly"], friendly);
+		if (_in.has_key("anger")) fromJSON(_in["anger"], anger);
+		if (_in.has_key("morale")) fromJSON(_in["morale"], morale);
+		if (_in.has_key("faction_id")) fromJSON(_in["faction_id"], faction_id);	// \todo release block validate or verify inability to validate here
+		if (_in.has_key("mission_id")) fromJSON(_in["mission_id"], morale);	// \todo release block validate or verify inability to validate here
+		if (_in.has_key("dead")) fromJSON(_in["dead"], dead);
+		if (_in.has_key("made_footstep")) fromJSON(_in["made_footstep"], made_footstep);
+		if (_in.has_key("unique_name")) fromJSON(_in["unique_name"], morale);
+		if (_in.has_key("plans")) _in["plans"].decode(plans);
+		return;
+	}
+	// \todo release block: remove legacy reading
 	int plansize;
 	is >> type >> pos >> wand >> moves >> speed >> hp >> sp_timeout >>
 		plansize >> friendly >> faction_id >> mission_id >> dead >> anger >>

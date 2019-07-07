@@ -84,6 +84,7 @@ public:
 	void push(const JSON& src);
 	void push(JSON&& src);
 	// object evaluation
+	// \todo consider alternate API for has_key that returns JSON* instead
 	bool has_key(const std::string& key) const { return object == _mode && _object && _object->count(key); }
 	JSON& operator[](const std::string& key) { return (*_object)[key]; };
 	const JSON& operator[](const std::string& key) const { return (*_object)[key]; };
@@ -154,7 +155,24 @@ public:
 			if (fromJSON(x, tmp)) working.push_back(tmp);
 			else ok = false;
 		}
-		if (!working.empty()) swap(working, dest);
+		if (!working.empty()) dest = std::move(working);
+		return ok;
+	}
+
+	template<class T> bool decode(std::vector<std::vector<T> >& dest) const {
+		if (array != _mode) return false;
+		if (!_array || _array->empty()) {
+			dest.clear();
+			return true;
+		}
+		bool ok = true;
+		std::vector<std::vector<T> > working;
+		for (const auto& x : *_array) {
+			std::vector<T> tmp;
+			if (x.decode(tmp)) working.push_back(tmp);
+			else ok = false;
+		}
+		if (!working.empty()) dest = std::move(working);
 		return ok;
 	}
 

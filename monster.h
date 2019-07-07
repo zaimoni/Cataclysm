@@ -42,7 +42,10 @@ struct monster_effect
 {
  monster_effect_type type;
  int duration;
+ monster_effect() = default;
  monster_effect(monster_effect_type T, int D) : type (T), duration (D) {}
+ monster_effect(const monster_effect& src) = default;
+ ~monster_effect() = default;
 };
 
 class monster {
@@ -158,10 +161,10 @@ class monster {
  std::string unique_name; // If we're unique
 
 private:
+ std::vector <point> plans;
+
  bool can_sound_move_to(const game* g, const point& pt) const;
  bool can_sound_move_to(const game* g, const point& pt, point& dest) const;
-
- std::vector <point> plans;
 };
 
 #endif

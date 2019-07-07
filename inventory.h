@@ -12,6 +12,7 @@ class inventory
 {
  public:
   inventory() = default;
+  inventory(const cataclysm::JSON& src);
   inventory(const inventory& src) = default;
   inventory(inventory&& src) = default;
   ~inventory() = default;
@@ -68,6 +69,7 @@ class inventory
   bool has_charges(itype_id it, int quantity) { return (charges_of(it) >= quantity); }
   bool has_item(item *it) const; // Looks for a specific item
 
+  void toJSON(cataclysm::JSON& dest) const;
  private:
   static const std::vector<item> nullstack;
   std::vector< std::vector<item> > items;

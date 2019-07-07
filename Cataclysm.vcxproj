@@ -188,6 +188,7 @@
     <ClInclude Include="mapdata.h" />
     <ClInclude Include="mapitems.h" />
     <ClInclude Include="mission.h" />
+    <ClInclude Include="mobile.h" />
     <ClInclude Include="monattack.h" />
     <ClInclude Include="mondeath.h" />
     <ClInclude Include="mongroup.h" />
