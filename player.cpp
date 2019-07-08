@@ -456,43 +456,13 @@ nc_color encumb_color(int level);
 bool activity_is_suspendable(activity_type type);
 
 player::player()
-: pos(-1,-1)
+: pos(-1,-1), in_vehicle(false), active_mission(-1), name(""), male(true),
+  str_cur(8),dex_cur(8),int_cur(8),per_cur(8),str_max(8),dex_max(8),int_max(8),per_max(8),
+  power_level(0),max_power_level(0),hunger(0),thirst(0),fatigue(0),health(0),
+  underwater(false),oxygen(0),recoil(0),driving_recoil(0),scent(500),
+  dodges_left(1),blocks_left(1),stim(0),pain(0),pkill(0),radiation(0),
+  cash(0),moves(100),xp_pool(0),inv_sorted(true),last_item(itm_null),style_selected(itm_null)
 {
- str_cur = 8;
- str_max = 8;
- dex_cur = 8;
- dex_max = 8;
- int_cur = 8;
- int_max = 8;
- per_cur = 8;
- per_max = 8;
- underwater = false;
- dodges_left = 1;
- blocks_left = 1;
- power_level = 0;
- max_power_level = 0;
- hunger = 0;
- thirst = 0;
- fatigue = 0;
- stim = 0;
- pain = 0;
- pkill = 0;
- radiation = 0;
- cash = 0;
- recoil = 0;
- driving_recoil = 0;
- scent = 500;
- health = 0;
- name = "";
- male = true;
- inv_sorted = true;
- moves = 100;
- oxygen = 0;
- active_mission = -1;
- in_vehicle = false;
- style_selected = itm_null;
- xp_pool = 0;
- last_item = itype_id(itm_null);
  for (int i = 0; i < num_skill_types; i++) {
   sklevel[i] = 0;
   skexercise[i] = 0;

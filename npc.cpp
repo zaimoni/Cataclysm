@@ -85,20 +85,10 @@ DEFINE_JSON_ENUM_SUPPORT_HARDCODED(npc_favor_type, JSON_transcode_favors, 2)
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(talk_topic, JSON_transcode_talk)
 
 npc::npc()
-: wand(point(0,0),0),om(0,0,0),pl(point(-1,-1),0),it(-1,-1),goal(-1,-1)
+: id(-1),attitude(NPCATT_NULL),myclass(NC_NONE),wand(point(0,0),0),om(0,0,0),mapx(0),mapy(0),
+  pl(point(-1,-1),0),it(-1,-1),goal(-1,-1),fetching_item(false),has_new_items(false),worst_item_value(0),
+  my_fac(0),mission(NPC_MISSION_NULL),patience(0),marked_for_death(false),dead(false),flags(0)
 {
- id = -1;
- mapx = 0;
- mapy = 0;
- fetching_item = false;
- has_new_items = false;
- worst_item_value = 0;
- my_fac = NULL;
- marked_for_death = false;
- dead = false;
- mission = NPC_MISSION_NULL;
- myclass = NC_NONE;
- patience = 0;
  // overrides of player::player()
  str_max = 0;
  dex_max = 0;
