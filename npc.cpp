@@ -89,11 +89,6 @@ npc::npc()
   pl(point(-1,-1),0),it(-1,-1),goal(-1,-1),fetching_item(false),has_new_items(false),worst_item_value(0),
   my_fac(0),mission(NPC_MISSION_NULL),patience(0),marked_for_death(false),dead(false),flags(0)
 {
- // overrides of player::player()
- str_max = 0;
- dex_max = 0;
- int_max = 0;
- per_max = 0;
 }
 
 DEFINE_ACID_ASSIGN_W_MOVE(npc_chatbin)

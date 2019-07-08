@@ -461,7 +461,7 @@ player::player()
   power_level(0),max_power_level(0),hunger(0),thirst(0),fatigue(0),health(0),
   underwater(false),oxygen(0),recoil(0),driving_recoil(0),scent(500),
   dodges_left(1),blocks_left(1),stim(0),pain(0),pkill(0),radiation(0),
-  cash(0),moves(100),xp_pool(0),inv_sorted(true),last_item(itm_null),style_selected(itm_null)
+  cash(0),moves(100),xp_pool(0),inv_sorted(true),last_item(itm_null),style_selected(itm_null),weapon(item::null)
 {
  for (int i = 0; i < num_skill_types; i++) {
   sklevel[i] = 0;
@@ -479,10 +479,9 @@ player::player()
 
 DEFINE_ACID_ASSIGN_W_MOVE(player)
 
+// \todo V0.2.1+ trigger uniform max hp recalculation on any change to str_max or the PF_TOUGH trait
 void player::normalize()
 {
- weapon = item::null;
- style_selected = itm_null;
  int max_hp = 60 + str_max * 3;
  if (has_trait(PF_TOUGH)) max_hp = int(max_hp * 1.2);
 
