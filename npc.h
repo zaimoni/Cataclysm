@@ -294,6 +294,7 @@ class npc : public player {
 public:
 
  npc();
+ npc(const cataclysm::JSON& src);
  npc(const npc &rhs) = default;
  npc(npc&& rhs) = default;
  ~npc() = default;

@@ -30,6 +30,7 @@ std::string random_last_name();
 class player {
 public:
  player();
+ player(const cataclysm::JSON& src);
  player(const player &rhs) = default;
  player(player&& rhs) = default;
  virtual ~player() = default;

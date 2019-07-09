@@ -1784,6 +1784,91 @@ std::ostream& operator<<(std::ostream& os, const morale_point& src)
 // -- but C++ is too close to the machine for the savefile issues to be easily managed.  Rely on data structures to keep 
 // the save of a non-final class to hard drive to disambiguate.
 
+player::player(const JSON& src)
+: pos(-1,-1), in_vehicle(false), active_mission(-1), name(""), male(true),
+  str_cur(8),dex_cur(8),int_cur(8),per_cur(8),str_max(8),dex_max(8),int_max(8),per_max(8),
+  power_level(0),max_power_level(0),hunger(0),thirst(0),fatigue(0),health(0),
+  underwater(false),oxygen(0),recoil(0),driving_recoil(0),scent(500),
+  dodges_left(1),blocks_left(1),stim(0),pain(0),pkill(0),radiation(0),
+  cash(0),moves(100),xp_pool(0),inv_sorted(true),last_item(itm_null),style_selected(itm_null),weapon(item::null)
+{
+ for (int i = 0; i < num_skill_types; i++) {
+  sklevel[i] = 0;
+  skexercise[i] = 0;
+ }
+ for (int i = 0; i < PF_MAX2; i++)
+  my_traits[i] = false;
+ for (int i = 0; i < PF_MAX2; i++)
+  my_mutations[i] = false;
+
+ mutation_category_level[0] = 5; // Weigh us towards no category for a bit
+ for (int i = 1; i < NUM_MUTATION_CATEGORIES; i++)
+  mutation_category_level[i] = 0;
+
+ if (src.has_key("pos")) fromJSON(src["pos"], pos);
+ if (src.has_key("in_vehicle")) fromJSON(src["in_vehicle"], in_vehicle);
+// if (src.has_key("activity")) fromJSON(src["activity"], activity);
+// if (src.has_key("backlog")) fromJSON(src["backlog"], backlog);
+ if (src.has_key("active_missions")) src["active_missions"].decode(active_missions);	// \todo release block: validate these four, or demonstrate inability to validate
+ if (src.has_key("completed_missions")) src["completed_missions"].decode(completed_missions);
+ if (src.has_key("failed_missions")) src["failed_missions"].decode(failed_missions);
+ if (src.has_key("active_mission_id")) fromJSON(src["active_mission_id"], active_mission);
+ if (src.has_key("name")) fromJSON(src["name"], name);
+ if (src.has_key("male")) fromJSON(src["male"], male);
+// if (src.has_key("traits")) fromJSON(src["traits"], my_traits);	// should look like bitmap array
+// if (src.has_key("mutations")) fromJSON(src["mutationse"], my_mutations);	// should look like bitmap array
+// if (src.has_key("mutation_category_level")) fromJSON(src["mutation_category_level"], mutation_category_level);	// should look like object literal
+// if (src.has_key("bionics")) src["bionics"].decode(bionics);
+ if (src.has_key("current")) {
+	 auto& tmp = src["current"];
+	 if (tmp.has_key("str")) fromJSON(tmp["str"], str_cur);
+	 if (tmp.has_key("dex")) fromJSON(tmp["dex"], dex_cur);
+	 if (tmp.has_key("int")) fromJSON(tmp["int"], int_cur);
+	 if (tmp.has_key("per")) fromJSON(tmp["per"], per_cur);
+	 if (tmp.has_key("power_level")) fromJSON(tmp["power_level"], power_level);
+//	 if (tmp.has_key("hp")) fromJSON(tmp["hp"], hp_cur);	// should look like object literal
+ }
+ if (src.has_key("max")) {
+	 auto& tmp = src["max"];
+	 if (tmp.has_key("str")) fromJSON(tmp["str"], str_max);
+	 if (tmp.has_key("dex")) fromJSON(tmp["dex"], dex_max);
+	 if (tmp.has_key("int")) fromJSON(tmp["int"], int_max);
+	 if (tmp.has_key("per")) fromJSON(tmp["per"], per_max);
+	 if (tmp.has_key("power_level")) fromJSON(tmp["power_level"], max_power_level);
+ //	 if (tmp.has_key("hp")) fromJSON(tmp["hp"], hp_max);	// should look like object literal
+ }
+ if (src.has_key("hunger")) fromJSON(src["hunger"], hunger);
+ if (src.has_key("thirst")) fromJSON(src["thirst"], thirst);
+ if (src.has_key("fatigue")) fromJSON(src["fatigue"], fatigue);
+ if (src.has_key("health")) fromJSON(src["health"], health);
+ if (src.has_key("underwater")) fromJSON(src["underwater"], underwater);
+ if (src.has_key("oxygen")) fromJSON(src["oxygen"], oxygen);
+ if (src.has_key("recoil")) fromJSON(src["recoil"], recoil);
+ if (src.has_key("driving_recoil")) fromJSON(src["driving_recoil"], driving_recoil);
+ if (src.has_key("scent")) fromJSON(src["scent"], scent);
+ if (src.has_key("dodges_left")) fromJSON(src["dodges_left"], dodges_left);
+ if (src.has_key("blocks_left")) fromJSON(src["blocks_left"], blocks_left);
+ if (src.has_key("stim")) fromJSON(src["stim"], stim);
+ if (src.has_key("pain")) fromJSON(src["pain"], pain);
+ if (src.has_key("pkill")) fromJSON(src["pkill"], pkill);
+ if (src.has_key("radiation")) fromJSON(src["radiation"], radiation);
+ if (src.has_key("cash")) fromJSON(src["cash"], radiation);
+ if (src.has_key("moves")) fromJSON(src["moves"], radiation);
+// if (src.has_key("morale")) src["morale"].decode(morale);
+ if (src.has_key("xp_pool")) fromJSON(src["xp_pool"], xp_pool);
+// if (src.has_key("sklevel")) fromJSON(src["sklevel"], sklevel);	// should look like object literal
+// if (src.has_key("skexercise")) fromJSON(src["skexercise"], skexercise);	// should look like object literal
+ if (src.has_key("inv_sorted")) fromJSON(src["inv_sorted"], inv_sorted);
+// if (src.has_key("inv")) fromJSON(src["inv"], inv);
+ if (src.has_key("last_item")) fromJSON(src["last_item"], last_item);
+ if (src.has_key("worn")) src["worn"].decode(worn);
+ if (src.has_key("styles")) src["styles"].decode(styles);
+ if (src.has_key("style_selected")) fromJSON(src["style_selected"], style_selected);
+ if (src.has_key("weapon")) fromJSON(src["weapon"], weapon);
+// if (src.has_key("illness")) src["illness"].decode(illness);
+// if (src.has_key("addictions")) src["addictions"].decode(addictions);
+}
+
 // 2019-03-24: work required to make player object a proper base object of the npc object not plausibly mechanical.
 // \todo release block: JSON conversion
 std::istream& operator>>(std::istream& is, player& dest)
@@ -2031,6 +2116,43 @@ std::ostream& operator<<(std::ostream& os, const npc_combat_rules& src)
 		if (!src.use_grenades) _engage.set("use_grenades", "false");
 		return os << _engage;
 	} else return os << "{}";
+}
+
+npc::npc(const JSON& src)
+: player(src),id(-1), attitude(NPCATT_NULL), myclass(NC_NONE), wand(point(0, 0), 0), om(0, 0, 0), mapx(0), mapy(0),
+  pl(point(-1, -1), 0), it(-1, -1), goal(-1, -1), fetching_item(false), has_new_items(false), worst_item_value(0),
+  my_fac(0), mission(NPC_MISSION_NULL), patience(0), marked_for_death(false), dead(false), flags(0)
+{
+	if (src.has_key("id")) fromJSON(src["id"], id);
+//	if (src.has_key("attitude")) fromJSON(src["attitude"], attitude);
+//	if (src.has_key("class")) fromJSON(src["class"], myclass);
+	if (src.has_key("wand")) fromJSON(src["wand"], wand);
+//	if (src.has_key("om")) fromJSON(src["om"], om);
+	if (src.has_key("om_pos")) {
+		point tmp;
+		if (fromJSON(src["om_pos"], tmp)) {
+			mapx = tmp.x;	// \todo blocked by JSON conversion: mapx,mapy -> om_pos (om,om_pos is not the GPS coordinate type suitable for long-range A* pathfinding)
+			mapy = tmp.y;
+		}
+	}
+	if (src.has_key("pl")) fromJSON(src["pl"], pl);
+	if (src.has_key("it")) fromJSON(src["it"], it);
+	if (src.has_key("goal")) fromJSON(src["goal"], goal);
+	if (src.has_key("fetching_item")) fromJSON(src["fetching_item"], fetching_item);
+	if (src.has_key("has_new_items")) fromJSON(src["has_new_items"], has_new_items);
+	if (src.has_key("worst_item_value")) fromJSON(src["worst_item_value"], worst_item_value);
+	if (src.has_key("path")) src["path"].decode(path);
+//	if (src.has_key("faction_id")) fromJSON(src["faction_id"], my_fac);	// \todo release block: validate or demonstrate inability to validate
+//	if (src.has_key("mission")) fromJSON(src["mission"], mission);	// \todo release block: validate or demonstrate inability to validate
+//	if (src.has_key("personality")) fromJSON(src["personality"], personality);
+//	if (src.has_key("op_of_u")) fromJSON(src["op_of_u"], op_of_u);
+//	if (src.has_key("chatbin")) fromJSON(src["chatbin"], chatbin);
+	if (src.has_key("patience")) fromJSON(src["patience"], patience);
+//	if (src.has_key("combat_rules")) fromJSON(src["combat_rules"], combat_rules);
+	if (src.has_key("marked_for_death")) fromJSON(src["marked_for_death"], marked_for_death);
+	if (src.has_key("dead")) fromJSON(src["dead"], dead);
+//	if (src.has_key("needs")) src["needs"].decode(needs);
+//	if (src.has_key("flags")) fromJSON(src["flags"], flags);	// bitfield encoding
 }
 
 // \todo release block: JSON conversion
