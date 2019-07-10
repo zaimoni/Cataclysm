@@ -497,15 +497,20 @@ std::ostream& operator<<(std::ostream& os, const computer& src)
 	return os << comp;
 }
 
+bool fromJSON(const JSON& src, bionic& dest)
+{
+	if (!src.has_key("id") || !fromJSON(src["id"], dest.id)) return false;
+	if (src.has_key("invlet")) fromJSON(src["invlet"], dest.invlet);
+	if (src.has_key("powered")) fromJSON(src["powered"], dest.powered);
+	if (src.has_key("charge")) fromJSON(src["charge"], dest.charge);
+	return true;
+}
+
 bionic::bionic(std::istream& is)
 : id(bio_batteries), invlet('a'), powered(false), charge(0)
 {
 	if ('{' == (is >> std::ws).peek()) {
-		const JSON _in(is);
-		if (!_in.has_key("id") || !fromJSON(_in["id"], id)) throw std::runtime_error("unrecognized bionic");
-		if (_in.has_key("invlet")) fromJSON(_in["invlet"], invlet);
-		if (_in.has_key("powered")) fromJSON(_in["powered"], powered);
-		if (_in.has_key("charge")) fromJSON(_in["charge"], charge);
+		fromJSON(JSON(is), *this);
 		return;
 	}
 	is >> id >> invlet >> powered >> charge;	// \todo release block: remove legacy reading
@@ -1828,7 +1833,7 @@ player::player(const JSON& src)
 // if (src.has_key("traits")) fromJSON(src["traits"], my_traits);	// should look like bitmap array
 // if (src.has_key("mutations")) fromJSON(src["mutationse"], my_mutations);	// should look like bitmap array
 // if (src.has_key("mutation_category_level")) fromJSON(src["mutation_category_level"], mutation_category_level);	// should look like object literal
-// if (src.has_key("bionics")) src["bionics"].decode(bionics);
+ if (src.has_key("bionics")) src["bionics"].decode(my_bionics);
  if (src.has_key("current")) {
 	 auto& tmp = src["current"];
 	 if (tmp.has_key("str")) fromJSON(tmp["str"], str_cur);
