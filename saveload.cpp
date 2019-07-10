@@ -810,6 +810,16 @@ std::ostream& operator<<(std::ostream& os, const radio_tower& src)
 	return os << '[' << std::to_string(src.x) << ',' << std::to_string(src.y) << ',' << std::to_string(src.strength) << ',' << JSON(src.message) << ']';
 }
 
+bool fromJSON(const JSON& src, player_activity& dest)
+{
+	if (!src.has_key("type") || !fromJSON(src["type"], dest.type)) return false;
+	if (src.has_key("moves_left")) fromJSON(src["moves_left"], dest.moves_left);
+	if (src.has_key("index")) fromJSON(src["index"], dest.index);
+	if (src.has_key("values")) src["values"].decode(dest.values);
+	if (src.has_key("placement")) fromJSON(src["placement"], dest.placement);
+	return true;
+}
+
 std::istream& operator>>(std::istream& is, player_activity& dest)
 {
 	if ('{' == (is >> std::ws).peek()) {
@@ -1807,8 +1817,8 @@ player::player(const JSON& src)
 
  if (src.has_key("pos")) fromJSON(src["pos"], pos);
  if (src.has_key("in_vehicle")) fromJSON(src["in_vehicle"], in_vehicle);
-// if (src.has_key("activity")) fromJSON(src["activity"], activity);
-// if (src.has_key("backlog")) fromJSON(src["backlog"], backlog);
+ if (src.has_key("activity")) fromJSON(src["activity"], activity);
+ if (src.has_key("backlog")) fromJSON(src["backlog"], backlog);
  if (src.has_key("active_missions")) src["active_missions"].decode(active_missions);	// \todo release block: validate these four, or demonstrate inability to validate
  if (src.has_key("completed_missions")) src["completed_missions"].decode(completed_missions);
  if (src.has_key("failed_missions")) src["failed_missions"].decode(failed_missions);
