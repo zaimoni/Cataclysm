@@ -1869,7 +1869,7 @@ player::player(const JSON& src)
  if (src.has_key("name")) fromJSON(src["name"], name);
  if (src.has_key("male")) fromJSON(src["male"], male);
 // if (src.has_key("traits")) fromJSON(src["traits"], my_traits);	// should look like bitmap array
-// if (src.has_key("mutations")) fromJSON(src["mutationse"], my_mutations);	// should look like bitmap array
+// if (src.has_key("mutations")) fromJSON(src["mutations"], my_mutations);	// should look like bitmap array
 // if (src.has_key("mutation_category_level")) fromJSON(src["mutation_category_level"], mutation_category_level);	// should look like object literal
  if (src.has_key("bionics")) src["bionics"].decode(my_bionics);
  if (src.has_key("current")) {
