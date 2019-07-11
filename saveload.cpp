@@ -1716,14 +1716,19 @@ std::string it_artifact_armor::save_data()
 	return data.str();
 }
 
+bool fromJSON(const JSON& src, disease& dest)
+{
+	if (!src.has_key("type") || !fromJSON(src["type"], dest.type)) return false;
+	if (src.has_key("duration")) fromJSON(src["duration"], dest.duration);
+	if (src.has_key("intensity")) fromJSON(src["intensity"], dest.intensity);
+	return true;
+}
+
 disease::disease(std::istream& is)
 : type(DI_NULL), intensity(0), duration(0)
 {
 	if ('{' == (is >> std::ws).peek()) {
-		JSON _in(is);
-		if (_in.has_key("type")) fromJSON(_in["type"], type);
-		if (_in.has_key("duration")) fromJSON(_in["duration"], duration);
-		if (_in.has_key("intensity")) fromJSON(_in["intensity"], intensity);
+		fromJSON(JSON(is),*this);
 		return;
 	}
 	// \todo release block: remove legacy reading
@@ -1742,14 +1747,19 @@ std::ostream& operator<<(std::ostream& os, const disease& src)
 	else return os << "{}";
 }
 
+bool fromJSON(const JSON& src, addiction& dest)
+{
+	if (!src.has_key("type") || !fromJSON(src["type"], dest.type)) return false;
+	if (src.has_key("intensity")) fromJSON(src["intensity"], dest.intensity);
+	if (src.has_key("sated")) fromJSON(src["sated"], dest.sated);
+	return true;
+}
+
 addiction::addiction(std::istream& is)
 : type(ADD_NULL), intensity(0), sated(600)
 {
 	if ('{' == (is >> std::ws).peek()) {
-		JSON _in(is);
-		if (_in.has_key("type")) fromJSON(_in["type"], type);
-		if (_in.has_key("intensity")) fromJSON(_in["intensity"], intensity);
-		if (_in.has_key("sated")) fromJSON(_in["sated"], sated);
+		fromJSON(JSON(is),*this);
 		return;
 	}
 	// \todo release block: remove legacy reading
@@ -1767,14 +1777,19 @@ std::ostream& operator<<(std::ostream& os, const addiction& src)
 	} else return os << "{}";
 }
 
+bool fromJSON(const JSON& src, morale_point& dest)
+{
+	if (!src.has_key("type") || !fromJSON(src["type"], dest.type)) return false;
+	if (src.has_key("bonus")) fromJSON(src["bonus"], dest.bonus);
+	if (src.has_key("item")) fromJSON(src["item"], dest.item_type);
+	return true;
+}
+
 morale_point::morale_point(std::istream& is)
 : type(MORALE_NULL), item_type(0), bonus(0)
 {
 	if ('{' == (is >> std::ws).peek()) {
-		JSON _in(is);
-		if (!_in.has_key("type") || !fromJSON(_in["type"], type)) return;
-		if (_in.has_key("bonus")) fromJSON(_in["bonus"], bonus);
-		if (_in.has_key("item")) fromJSON(_in["item"], item_type);
+		fromJSON(JSON(is), *this);
 		return;
 	}
 	// \todo release block: remove legacy reading
@@ -1793,6 +1808,29 @@ std::ostream& operator<<(std::ostream& os, const morale_point& src)
 		}
 		return os << _morale;
 	} else return os << "{}";
+}
+
+inventory::inventory(const JSON& src)
+{
+	src.decode(items);
+}
+
+bool fromJSON(const JSON& src, inventory& dest)
+{
+	if (JSON::array != !src.mode()) return false;
+	dest = std::move(inventory(src));
+	return true;
+}
+
+void inventory::toJSON(JSON& dest) const
+{	// morally calls JSON::encode(items,...) where ... is an invariant checker (we only let valid entries hit JSON)
+	JSON working(JSON::array);
+	if (!items.empty())
+		for (auto& stack : items) {
+			if (stack.empty()) continue;	// invariant failure
+			working.push(JSON::encode(stack));
+		}
+	dest = std::move(working);
 }
 
 // We have an improper inheritance player -> npc (ideal difference would be the AI controller class, cf. Rogue Survivor game family
@@ -1869,19 +1907,19 @@ player::player(const JSON& src)
  if (src.has_key("radiation")) fromJSON(src["radiation"], radiation);
  if (src.has_key("cash")) fromJSON(src["cash"], radiation);
  if (src.has_key("moves")) fromJSON(src["moves"], radiation);
-// if (src.has_key("morale")) src["morale"].decode(morale);
+ if (src.has_key("morale")) src["morale"].decode(morale);
  if (src.has_key("xp_pool")) fromJSON(src["xp_pool"], xp_pool);
 // if (src.has_key("sklevel")) fromJSON(src["sklevel"], sklevel);	// should look like object literal
 // if (src.has_key("skexercise")) fromJSON(src["skexercise"], skexercise);	// should look like object literal
  if (src.has_key("inv_sorted")) fromJSON(src["inv_sorted"], inv_sorted);
-// if (src.has_key("inv")) fromJSON(src["inv"], inv);
+ if (src.has_key("inv")) fromJSON(src["inv"], inv);
  if (src.has_key("last_item")) fromJSON(src["last_item"], last_item);
  if (src.has_key("worn")) src["worn"].decode(worn);
  if (src.has_key("styles")) src["styles"].decode(styles);
  if (src.has_key("style_selected")) fromJSON(src["style_selected"], style_selected);
  if (src.has_key("weapon")) fromJSON(src["weapon"], weapon);
-// if (src.has_key("illness")) src["illness"].decode(illness);
-// if (src.has_key("addictions")) src["addictions"].decode(addictions);
+ if (src.has_key("illness")) src["illness"].decode(illness);
+ if (src.has_key("addictions")) src["addictions"].decode(addictions);
 }
 
 // 2019-03-24: work required to make player object a proper base object of the npc object not plausibly mechanical.
