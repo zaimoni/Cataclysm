@@ -305,6 +305,8 @@ enum pl_flag {
  PF_MAX2
 };
 
+DECLARE_JSON_ENUM_SUPPORT(pl_flag)
+
 enum hp_part {
  hp_head = 0,
  hp_torso,
@@ -314,4 +316,6 @@ enum hp_part {
  hp_leg_r,
  num_hp_parts
 };
+
+DECLARE_JSON_ENUM_SUPPORT(hp_part)
 #endif
