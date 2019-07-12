@@ -80,7 +80,7 @@ mon_generator,
 num_monsters
 };
 
-DECLARE_JSON_ENUM_SUPPORT(mon_id)
+DECLARE_JSON_ENUM_SUPPORT_ATYPICAL(mon_id,0)
 
 enum m_size {
 MS_TINY = 0,	// Rodent

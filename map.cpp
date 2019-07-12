@@ -496,7 +496,7 @@ static const char* JSON_transcode[num_terrain_types] = {
 	"t_switch_even"
 };
 
-DEFINE_JSON_ENUM_SUPPORT_HARDCODED(ter_id, JSON_transcode,0)
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(ter_id, JSON_transcode,0)
 
 using namespace cataclysm;
 

@@ -644,12 +644,12 @@ static const char* const JSON_transcode_pl_flags[] = {
 	"LEG_TENTACLES"
 };
 
-DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(activity_type, JSON_transcode_activity)
-DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(add_type, JSON_transcode_addiction)
-DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(dis_type, JSON_transcode_disease)
-DEFINE_JSON_ENUM_SUPPORT_HARDCODED(hp_part, JSON_transcode_hp_parts,0)
-DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(morale_type, JSON_transcode_morale)
-DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(pl_flag, JSON_transcode_pl_flags)
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(activity_type, JSON_transcode_activity)
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(add_type, JSON_transcode_addiction)
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(dis_type, JSON_transcode_disease)
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(hp_part, JSON_transcode_hp_parts)
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(morale_type, JSON_transcode_morale)
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(pl_flag, JSON_transcode_pl_flags)
 
 // XXX inappropriate forward declares \todo lift definitions above uses
 nc_color encumb_color(int level);

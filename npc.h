@@ -118,7 +118,7 @@ enum npc_favor_type {
  NUM_FAVOR_TYPES
 };
 
-DECLARE_JSON_ENUM_SUPPORT(npc_favor_type)
+DECLARE_JSON_ENUM_SUPPORT_ATYPICAL(npc_favor_type,2)
 
 struct npc_favor	// appears to be prototype/mockup
 {
@@ -189,7 +189,7 @@ enum combat_engagement {
  ENGAGE_ALL
 };
 
-DECLARE_JSON_ENUM_SUPPORT(combat_engagement)
+DECLARE_JSON_ENUM_SUPPORT_ATYPICAL(combat_engagement,0)
 
 struct npc_combat_rules
 {

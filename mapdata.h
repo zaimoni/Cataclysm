@@ -108,7 +108,7 @@ t_rock_red, t_rock_green, t_rock_blue, t_floor_red, t_floor_green, t_floor_blue,
 num_terrain_types
 };
 
-DECLARE_JSON_ENUM_SUPPORT(ter_id)
+DECLARE_JSON_ENUM_SUPPORT_ATYPICAL(ter_id,0)
 
 struct ter_t {
 	static const ter_t list[num_terrain_types];

@@ -317,5 +317,5 @@ enum hp_part {
  num_hp_parts
 };
 
-DECLARE_JSON_ENUM_SUPPORT(hp_part)
+DECLARE_JSON_ENUM_SUPPORT_ATYPICAL(hp_part,0)
 #endif

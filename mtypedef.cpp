@@ -231,7 +231,7 @@ static const char* JSON_transcode[num_monsters] = {
 	"mon_generator"
 };
 
-DEFINE_JSON_ENUM_SUPPORT_HARDCODED(mon_id, JSON_transcode, 0)
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(mon_id, JSON_transcode)
 
 using namespace cataclysm;
 

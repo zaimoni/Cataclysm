@@ -80,9 +80,9 @@ static const char* const JSON_transcode_engage[] = {
 	"ALL"
 };
 
-DEFINE_JSON_ENUM_SUPPORT_HARDCODED(combat_engagement, JSON_transcode_engage, 0)
-DEFINE_JSON_ENUM_SUPPORT_HARDCODED(npc_favor_type, JSON_transcode_favors, 2)
-DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(talk_topic, JSON_transcode_talk)
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(combat_engagement, JSON_transcode_engage)
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(npc_favor_type, JSON_transcode_favors)
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(talk_topic, JSON_transcode_talk)
 
 npc::npc()
 : id(-1),attitude(NPCATT_NULL),myclass(NC_NONE),wand(point(0,0),0),om(0,0,0),mapx(0),mapy(0),
