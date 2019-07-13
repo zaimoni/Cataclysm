@@ -1881,7 +1881,7 @@ player::player(const JSON& src)
 	 if (tmp.has_key("int")) fromJSON(tmp["int"], int_cur);
 	 if (tmp.has_key("per")) fromJSON(tmp["per"], per_cur);
 	 if (tmp.has_key("power_level")) fromJSON(tmp["power_level"], power_level);
-//	 if (tmp.has_key("hp")) fromJSON(tmp["hp"], hp_cur);	// should look like object literal
+	 if (tmp.has_key("hp")) tmp["hp"].decode<hp_part>(hp_cur, num_hp_parts);
  }
  if (src.has_key("max")) {
 	 auto& tmp = src["max"];
@@ -1890,7 +1890,7 @@ player::player(const JSON& src)
 	 if (tmp.has_key("int")) fromJSON(tmp["int"], int_max);
 	 if (tmp.has_key("per")) fromJSON(tmp["per"], per_max);
 	 if (tmp.has_key("power_level")) fromJSON(tmp["power_level"], max_power_level);
- //	 if (tmp.has_key("hp")) fromJSON(tmp["hp"], hp_max);	// should look like object literal
+	 if (tmp.has_key("hp")) tmp["hp"].decode<hp_part>(hp_max, num_hp_parts);
  }
  if (src.has_key("hunger")) fromJSON(src["hunger"], hunger);
  if (src.has_key("thirst")) fromJSON(src["thirst"], thirst);
@@ -1911,8 +1911,8 @@ player::player(const JSON& src)
  if (src.has_key("moves")) fromJSON(src["moves"], radiation);
  if (src.has_key("morale")) src["morale"].decode(morale);
  if (src.has_key("xp_pool")) fromJSON(src["xp_pool"], xp_pool);
-// if (src.has_key("sklevel")) fromJSON(src["sklevel"], sklevel);	// should look like object literal
-// if (src.has_key("skexercise")) fromJSON(src["skexercise"], skexercise);	// should look like object literal
+ if (src.has_key("sklevel")) src["sklevel"].decode<skill>(sklevel, num_skill_types);
+ if (src.has_key("skexercise")) src["skexercise"].decode<skill>(skexercise, num_skill_types);
  if (src.has_key("inv_sorted")) fromJSON(src["inv_sorted"], inv_sorted);
  if (src.has_key("inv")) fromJSON(src["inv"], inv);
  if (src.has_key("last_item")) fromJSON(src["last_item"], last_item);

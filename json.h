@@ -1,6 +1,7 @@
 #ifndef JSON_H
 #define JSON_H 1
 
+#include "enum_json.h"
 #include <string.h>
 #include <string>
 #include <vector>
@@ -185,6 +186,22 @@ public:
 		do {
 			if (!fromJSON((*_array)[i], dest[i])) ok = false;
 		} while(++i < n);
+		return ok;
+	}
+
+	template<class Key, class T> bool decode(T* dest, size_t n) const {
+		if (object != _mode || !dest) return false;
+		if (!_object || _object->empty()) return 0 == n;
+		cataclysm::JSON_parse<Key> parse;
+		bool ok = true;
+		for (auto& x : *_object) {
+			auto key = parse(x.first);
+			if (cataclysm::JSON_parse<Key>::origin > key) {
+				ok = false;
+				continue;
+			}
+			if (!fromJSON(x.second, dest[key])) ok = false;
+		}
 		return ok;
 	}
 
