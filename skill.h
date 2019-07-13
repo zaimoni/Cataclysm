@@ -1,7 +1,7 @@
 #ifndef _SKILL_H_
 #define _SKILL_H_
 
-#include "enums.h"
+#include "enum_json.h"
 #include <string>
 
 enum skill {

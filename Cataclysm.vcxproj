@@ -169,6 +169,7 @@
     <ClInclude Include="dialogue.h" />
     <ClInclude Include="disease.h" />
     <ClInclude Include="enums.h" />
+    <ClInclude Include="enum_json.h" />
     <ClInclude Include="event.h" />
     <ClInclude Include="facdata.h" />
     <ClInclude Include="faction.h" />

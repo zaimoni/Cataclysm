@@ -1,5 +1,7 @@
 #ifndef _BIONICS_H_
 #define _BIONICS_H_
+
+#include "enum_json.h"
 #include <string>
 #include <iosfwd>
 

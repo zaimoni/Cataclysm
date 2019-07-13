@@ -2,6 +2,7 @@
 #define _FACTION_H_
 
 #include "enums.h"
+#include "enum_json.h"
 #include "c_bitmap.h"
 #include <string>
 #include <vector>

@@ -2,6 +2,7 @@
 #define _PLDATA_H_
 
 #include "enums.h"
+#include "enum_json.h"
 
 #include <vector>
 #include <string>

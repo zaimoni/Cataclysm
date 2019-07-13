@@ -1,9 +1,9 @@
+#include "bionics.h"
 #include "player.h"
 #include "game.h"
 #include "rng.h"
 #include "keypress.h"
 #include "item.h"
-#include "bionics.h"
 #include "line.h"
 #include "recent_msg.h"
 
