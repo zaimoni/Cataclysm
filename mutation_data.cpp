@@ -563,6 +563,23 @@ land by 20%, but makes your movement silent.  However, they also increase\n\
 your swimming speed." }
 };
 
+static const char* const JSON_transcode_mutation_categories[] = {
+	"NULL",
+	"LIZARD",
+	"BIRD",
+	"FISH",
+	"BEAST",
+	"CATTLE",
+	"INSECT",
+	"PLANT",
+	"SLIME",
+	"TROGLO",
+	"CEPHALOPOD",
+	"SPIDER",
+	"RAT"
+};
+
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(mutation_category, JSON_transcode_mutation_categories)
 
 #define MUTATION(mut) id = mut; data[id].valid = true
 

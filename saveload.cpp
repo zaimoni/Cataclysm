@@ -196,6 +196,7 @@ JSON_ENUM(mon_id)
 JSON_ENUM(moncat_id)
 JSON_ENUM(monster_effect_type)
 JSON_ENUM(morale_type)
+JSON_ENUM(mutation_category)
 JSON_ENUM(nc_color)
 JSON_ENUM(npc_favor_type)
 JSON_ENUM(pl_flag)
@@ -1414,7 +1415,6 @@ void itype::toJSON(JSON& dest) const
 	if (melee_dam) dest.set("melee_dam", std::to_string((int)melee_dam));
 	if (melee_cut) dest.set("melee_cut", std::to_string((int)melee_cut));
 	if (m_to_hit) dest.set("m_to_hit", std::to_string((int)m_to_hit));
-	int tmp;
 	if (item_flags) {
 		cataclysm::JSON_parse<item_flag> _parse;
 		dest.set("item_flags", JSON::encode(_parse(item_flags)));
@@ -1872,7 +1872,7 @@ player::player(const JSON& src)
  if (src.has_key("male")) fromJSON(src["male"], male);
 // if (src.has_key("traits")) fromJSON(src["traits"], my_traits);	// should look like bitmap array
 // if (src.has_key("mutations")) fromJSON(src["mutations"], my_mutations);	// should look like bitmap array
-// if (src.has_key("mutation_category_level")) fromJSON(src["mutation_category_level"], mutation_category_level);	// should look like object literal
+ if (src.has_key("mutation_category_level")) src["mutation_category_level"].decode<mutation_category>(mutation_category_level, NUM_MUTATION_CATEGORIES);
  if (src.has_key("bionics")) src["bionics"].decode(my_bionics);
  if (src.has_key("current")) {
 	 auto& tmp = src["current"];

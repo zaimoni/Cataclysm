@@ -21,6 +21,8 @@ enum mutation_category
  NUM_MUTATION_CATEGORIES
 };
 
+DECLARE_JSON_ENUM_SUPPORT_ATYPICAL(mutation_category,0)
+
 struct trait {
 	std::string name;
 	int points;		// How many points it costs in character creation
