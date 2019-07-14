@@ -1,4 +1,5 @@
 #include "mutation.h"
+#include <string.h>
 #include "setvector.h"
 
 mutation_branch mutation_branch::data[PF_MAX2]; // Mutation data
