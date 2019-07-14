@@ -1870,8 +1870,8 @@ player::player(const JSON& src)
  if (src.has_key("active_mission_id")) fromJSON(src["active_mission_id"], active_mission);
  if (src.has_key("name")) fromJSON(src["name"], name);
  if (src.has_key("male")) fromJSON(src["male"], male);
-// if (src.has_key("traits")) fromJSON(src["traits"], my_traits);	// should look like bitmap array
-// if (src.has_key("mutations")) fromJSON(src["mutations"], my_mutations);	// should look like bitmap array
+ if (src.has_key("traits")) src["traits"].decode<pl_flag>(my_traits, PF_MAX2);
+ if (src.has_key("mutations")) src["mutations"].decode<pl_flag>(my_mutations, PF_MAX2);
  if (src.has_key("mutation_category_level")) src["mutation_category_level"].decode<mutation_category>(mutation_category_level, NUM_MUTATION_CATEGORIES);
  if (src.has_key("bionics")) src["bionics"].decode(my_bionics);
  if (src.has_key("current")) {

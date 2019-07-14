@@ -205,6 +205,26 @@ public:
 		return ok;
 	}
 
+	template<class Key> bool decode(bool* dest, size_t n) const {
+		if (array != _mode || !dest) return false;
+		if (!_array || _array->empty()) return true;
+		cataclysm::JSON_parse<Key> parse;
+		bool ok = true;
+		for (auto& x : *_array) {
+			if (!x.is_scalar()) {
+				ok = false;
+				continue;
+			}
+			auto key = parse(x.scalar());
+			if (cataclysm::JSON_parse<Key>::origin > key) {
+				ok = false;
+				continue;
+			}
+			dest[key] = true;
+		}
+		return ok;
+	}
+
 protected:
 	JSON(std::istream& src,unsigned long& line, char& first, bool must_be_scalar = false);
 private:
