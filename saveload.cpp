@@ -353,6 +353,24 @@ std::ostream& operator<<(std::ostream& os, const tripoint& src)
 	return os << '[' << std::to_string(src.x) << ',' << std::to_string(src.y) << ',' << std::to_string(src.z) << ']';
 }
 
+bool fromJSON(const cataclysm::JSON& src, tripoint& dest)
+{
+	if (3 != src.size() || JSON::array != src.mode()) return false;
+	tripoint staging;
+	bool ret = fromJSON(src[0], staging.x) && fromJSON(src[1], staging.y) && fromJSON(src[2], staging.z);
+	if (ret) dest = staging;
+	return ret;
+}
+
+JSON toJSON(const tripoint& src)
+{
+	JSON ret;
+	ret.push(std::to_string(src.x));
+	ret.push(std::to_string(src.y));
+	ret.push(std::to_string(src.z));
+	return ret;
+}
+
 JSON toJSON(const monster_effect& src) {
 	JSON ret(JSON::object);
 	if (0 < src.duration) {
@@ -2182,7 +2200,7 @@ npc::npc(const JSON& src)
 //	if (src.has_key("attitude")) fromJSON(src["attitude"], attitude);
 //	if (src.has_key("class")) fromJSON(src["class"], myclass);
 	if (src.has_key("wand")) fromJSON(src["wand"], wand);
-//	if (src.has_key("om")) fromJSON(src["om"], om);
+	if (src.has_key("om")) fromJSON(src["om"], om);
 	if (src.has_key("om_pos")) {
 		point tmp;
 		if (fromJSON(src["om_pos"], tmp)) {
