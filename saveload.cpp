@@ -1837,7 +1837,7 @@ inventory::inventory(const JSON& src)
 
 bool fromJSON(const JSON& src, inventory& dest)
 {
-	if (JSON::array != !src.mode()) return false;
+	if (JSON::array != src.mode()) return false;
 	dest = std::move(inventory(src));
 	return true;
 }
@@ -2215,7 +2215,10 @@ npc::npc(const JSON& src)
 	if (src.has_key("has_new_items")) fromJSON(src["has_new_items"], has_new_items);
 	if (src.has_key("worst_item_value")) fromJSON(src["worst_item_value"], worst_item_value);
 	if (src.has_key("path")) src["path"].decode(path);
-//	if (src.has_key("faction_id")) fromJSON(src["faction_id"], my_fac);	// \todo release block: validate or demonstrate inability to validate
+	if (src.has_key("faction_id")) {
+		int fac_id;
+		if (fromJSON(src["faction_id"], fac_id)) my_fac = faction::from_id(fac_id);
+	}
 //	if (src.has_key("mission")) fromJSON(src["mission"], mission);	// \todo release block: validate or demonstrate inability to validate
 //	if (src.has_key("personality")) fromJSON(src["personality"], personality);
 //	if (src.has_key("op_of_u")) fromJSON(src["op_of_u"], op_of_u);

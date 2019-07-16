@@ -241,8 +241,7 @@ private:
 template<> inline JSON JSON::encode<const char*>(const std::vector<const char*>& src) {
 	JSON ret;
 	ret._mode = array;
-	int n = src.size();
-	if (0 < n) {
+	if (0 < src.size()) {
 		ret._array = new std::vector<JSON>();
 		for (const auto& x : src) {
 			if (x) ret._array->push_back(x);
