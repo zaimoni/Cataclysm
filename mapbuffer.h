@@ -20,7 +20,7 @@ class mapbuffer
   bool add_submap(int x, int y, int z, submap *sm);
   submap* lookup_submap(int x, int y, int z);
 
-  int size() const { return submaps.size(); };
+  size_t size() const { return submaps.size(); };
 
  private:
   std::map<tripoint, submap*> submaps;	// candidate for absolute coordinates: tripoint (submap index),point (legal values 0..SEE-1 for both x,y)

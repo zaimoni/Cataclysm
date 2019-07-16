@@ -318,7 +318,7 @@ public:
 	point exhaust_d;
 
     // temp values
-    point sm;   // submap coords. WARNING: must ALWAYS correspond to sumbap coords in grid, or i'm out
+    point sm;   // submap coords. WARNING: must ALWAYS correspond to submap coords in grid, or i'm out [0..10,0..10]
     bool insides_dirty; // if true, then parts' "inside" flags are outdated and need refreshing
 
     // save values

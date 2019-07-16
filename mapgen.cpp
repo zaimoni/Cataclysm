@@ -6477,7 +6477,7 @@ vehicle* map::add_vehicle(vhtype_id type, int x, int y, int dir)
  }
  int smx = x / SEEX;
  int smy = y / SEEY;
- int nonant = smx + smy * my_MAPSIZE;	// XXX \todo fix this -- can fail because MAPSIZE defaults to 11 i.e. SEEX-1; (11,n) and (0,n+1) will be assigned to the same nonant
+ int nonant = smx + smy * my_MAPSIZE;
  x %= SEEX;
  y %= SEEY;
  vehicle veh(type);

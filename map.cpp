@@ -2197,11 +2197,6 @@ void map::debug()
 
 void map::draw(game *g, WINDOW* w, point center)
 {
- for (int i = 0; i < my_MAPSIZE * my_MAPSIZE; i++) {
-  if (!grid[i])
-   debugmsg("grid %d (%d, %d) is null! mapbuffer size = %d",
-            i, i % my_MAPSIZE, i / my_MAPSIZE, MAPBUFFER.size());
- }
  int light = g->u.sight_range(g->light_level());
  for  (int realx = center.x - SEEX; realx <= center.x + SEEX; realx++) {
   for (int realy = center.y - SEEY; realy <= center.y + SEEY; realy++) {
@@ -2587,8 +2582,12 @@ void map::load(game *g, const point& world)
 {
  for (int gridx = 0; gridx < my_MAPSIZE; gridx++) {
   for (int gridy = 0; gridy < my_MAPSIZE; gridy++) {
-   if (!loadn(g, world, gridx, gridy))
-    loadn(g, world, gridx, gridy);
+   if (!loadn(g, world, gridx, gridy)) loadn(g, world, gridx, gridy);
+   const int i = gridx + gridy * my_MAPSIZE;
+   if (!grid[i]) {
+	 // \todo arguably should be a harder crash
+	 debugmsg("grid %d (%d, %d) is null! mapbuffer size = %s", i, i % my_MAPSIZE, i / my_MAPSIZE, std::to_string(MAPBUFFER.size()));
+   }
   }
  }
 }
@@ -2685,18 +2684,16 @@ bool map::loadn(game *g, const point& world, int gridx, int gridy)
  int absx = g->cur_om.pos.x * OMAPX * 2 + world.x + gridx,
      absy = g->cur_om.pos.y * OMAPY * 2 + world.y + gridy,
      gridn = gridx + gridy * my_MAPSIZE;
- submap * const tmpsub = MAPBUFFER.lookup_submap(absx, absy, g->cur_om.pos.z);
- if (tmpsub) {
+ if (submap * const tmpsub = MAPBUFFER.lookup_submap(absx, absy, g->cur_om.pos.z)) {
   grid[gridn] = tmpsub;
-  for (int i = 0; i < grid[gridn]->vehicles.size(); i++) {
-   grid[gridn]->vehicles[i].sm = point(gridx,gridy);
-  }
+  const point _sm(gridx, gridy);
+  for (auto& veh : grid[gridn]->vehicles) veh.sm = _sm;
  } else { // It doesn't exist; we must generate it!
   map tmp_map;
 // overx, overy is where in the overmap we need to pull data from
 // Each overmap square is two nonants; to prevent overlap, generate only at
 //  squares divisible by 2.
-  int newmapx = world.x + gridx - ((world.x + gridx) % 2);	// making this block implement the above for negative coordinates, is a savefile break
+  int newmapx = world.x + gridx - ((world.x + gridx) % 2);	// \todo savefile break: make this block implement the above for negative coordinates
   int newmapy = world.y + gridy - ((world.y + gridy) % 2);
   if (world.x + gridx < 0) newmapx = world.x + gridx;
   if (world.y + gridy < 0) newmapy = world.y + gridy;
@@ -2709,11 +2706,8 @@ bool map::loadn(game *g, const point& world, int gridx, int gridy)
 void map::copy_grid(int to, int from)
 {
  grid[to] = grid[from];
- for (int i = 0; i < grid[to]->vehicles.size(); i++) {
-  int ind = grid[to]->vehicles.size() - 1;
-  grid[to]->vehicles[ind].sm.x = to % my_MAPSIZE;
-  grid[to]->vehicles[ind].sm.y = to / my_MAPSIZE;
- }
+ const point _sm(to % my_MAPSIZE, to / my_MAPSIZE);
+ for (auto& veh : grid[to]->vehicles) veh.sm = _sm;
 }
 
 void map::spawn_monsters(game *g)
