@@ -198,7 +198,10 @@ JSON_ENUM(monster_effect_type)
 JSON_ENUM(morale_type)
 JSON_ENUM(mutation_category)
 JSON_ENUM(nc_color)
+JSON_ENUM(npc_attitude)
+JSON_ENUM(npc_class)
 JSON_ENUM(npc_favor_type)
+JSON_ENUM(npc_mission)
 JSON_ENUM(pl_flag)
 JSON_ENUM(skill)
 JSON_ENUM(talk_topic)
@@ -2197,8 +2200,8 @@ npc::npc(const JSON& src)
   my_fac(0), mission(NPC_MISSION_NULL), patience(0), marked_for_death(false), dead(false), flags(0)
 {
 	if (src.has_key("id")) fromJSON(src["id"], id);
-//	if (src.has_key("attitude")) fromJSON(src["attitude"], attitude);
-//	if (src.has_key("class")) fromJSON(src["class"], myclass);
+	if (src.has_key("attitude")) fromJSON(src["attitude"], attitude);
+	if (src.has_key("class")) fromJSON(src["class"], myclass);
 	if (src.has_key("wand")) fromJSON(src["wand"], wand);
 	if (src.has_key("om")) fromJSON(src["om"], om);
 	if (src.has_key("om_pos")) {
@@ -2219,7 +2222,7 @@ npc::npc(const JSON& src)
 		int fac_id;
 		if (fromJSON(src["faction_id"], fac_id)) my_fac = faction::from_id(fac_id);
 	}
-//	if (src.has_key("mission")) fromJSON(src["mission"], mission);	// \todo release block: validate or demonstrate inability to validate
+	if (src.has_key("mission")) fromJSON(src["mission"], mission);
 //	if (src.has_key("personality")) fromJSON(src["personality"], personality);
 //	if (src.has_key("op_of_u")) fromJSON(src["op_of_u"], op_of_u);
 //	if (src.has_key("chatbin")) fromJSON(src["chatbin"], chatbin);

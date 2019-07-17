@@ -49,6 +49,7 @@ enum npc_attitude {
 };
 
 std::string npc_attitude_name(npc_attitude);
+DECLARE_JSON_ENUM_SUPPORT_ATYPICAL(npc_attitude,0)
 
 enum npc_mission {
  NPC_MISSION_NULL = 0,	// Nothing in particular
@@ -61,7 +62,7 @@ enum npc_mission {
  NUM_NPC_MISSIONS
 };
 
-//std::string npc_mission_name(npc_mission);
+DECLARE_JSON_ENUM_SUPPORT_ATYPICAL(npc_mission, 0)
 
 enum npc_class {
  NC_NONE,
@@ -77,6 +78,7 @@ enum npc_class {
 };
 
 std::string npc_class_name(npc_class);
+DECLARE_JSON_ENUM_SUPPORT_ATYPICAL(npc_class, 0)
 
 enum npc_action {
  npc_undecided = 0,
@@ -458,7 +460,7 @@ public:
 
  int id;	// A unique ID number, assigned by the game class
  npc_attitude attitude;	// What we want to do to the player
- npc_class myclass; // What's our archetype?
+ npc_class myclass; // What's our archetype? (seems to be invariant after construction, reasonable)
  // last heard sound: dead data, in savefile but no users (same intended semantics as monster::wand,wandf?)
  countdown<point> wand;	// location
 
@@ -479,7 +481,7 @@ public:
 
 // Personality & other defining characteristics
  faction *my_fac;
- npc_mission mission;
+ npc_mission mission;	// (seems to be invariant after construction, not reasonable) \todo V 0.2.1+ allow relevant missions to complete
  npc_personality personality;
  npc_opinion op_of_u;	// \todo V 0.2.1+ clear this on new player in pre-existing world
  npc_chatbin chatbin;

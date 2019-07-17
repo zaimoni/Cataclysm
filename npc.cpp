@@ -22,6 +22,46 @@ static const char* const JSON_transcode_favors[] = {
 	"TRAINING"
 };
 
+static const char* const JSON_transcode_npc_attitude[] = {
+	"NULL",
+	"TALK",
+	"TRADE",
+	"FOLLOW",
+	"FOLLOW_RUN",
+	"LEAD",
+	"WAIT",
+	"DEFEND",
+	"MUG",
+	"WAIT_FOR_LEAVE",
+	"KILL",
+	"FLEE",
+	"SLAVE",
+	"HEAL",
+	"MISSING",
+	"KIDNAPPED"
+};
+
+static const char* const JSON_transcode_npc_class[] = {
+	"NONE",
+	"SHOPKEEP",
+	"HACKER",
+	"DOCTOR",
+	"TRADER",
+	"NINJA",
+	"COWBOY",
+	"SCIENTIST",
+	"BOUNTY_HUNTER"
+};
+
+static const char* const JSON_transcode_npc_mission[] = {
+	"NULL",
+	"RESCUE_U",
+	"SHELTER",
+	"SHOPKEEP",
+	"MISSING",
+	"KIDNAPPED"
+};
+
 static const char* const JSON_transcode_talk[] = {
 	"DONE",
 	"MISSION_LIST",
@@ -81,7 +121,10 @@ static const char* const JSON_transcode_engage[] = {
 };
 
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(combat_engagement, JSON_transcode_engage)
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(npc_attitude, JSON_transcode_npc_attitude)
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(npc_class, JSON_transcode_npc_class)
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(npc_favor_type, JSON_transcode_favors)
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(npc_mission, JSON_transcode_npc_mission)
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(talk_topic, JSON_transcode_talk)
 
 npc::npc()
