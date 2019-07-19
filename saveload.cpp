@@ -201,6 +201,7 @@ JSON_ENUM(nc_color)
 JSON_ENUM(npc_attitude)
 JSON_ENUM(npc_class)
 JSON_ENUM(npc_favor_type)
+JSON_ENUM(npc_need)
 JSON_ENUM(npc_mission)
 JSON_ENUM(pl_flag)
 JSON_ENUM(skill)
@@ -2230,8 +2231,14 @@ npc::npc(const JSON& src)
 //	if (src.has_key("combat_rules")) fromJSON(src["combat_rules"], combat_rules);
 	if (src.has_key("marked_for_death")) fromJSON(src["marked_for_death"], marked_for_death);
 	if (src.has_key("dead")) fromJSON(src["dead"], dead);
-//	if (src.has_key("needs")) src["needs"].decode(needs);
-//	if (src.has_key("flags")) fromJSON(src["flags"], flags);	// bitfield encoding
+	if (src.has_key("needs")) src["needs"].decode(needs);
+	if (src.has_key("flags")) {
+		cataclysm::JSON_parse<npc_flag> _parse;
+		std::vector<const char*> relay;
+		src["flags"].decode(relay);
+		if (!relay.empty()) flags = _parse(relay);
+	}
+
 }
 
 // \todo release block: JSON conversion

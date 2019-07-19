@@ -39,7 +39,7 @@ static const char* const JSON_transcode_jobs[] = {
 	"MANUFACTURE"
 };
 
-static const std::pair<unsigned, const char*> JSON_transcode_values[] = {
+static const std::pair< typename cataclysm::bitmap<NUM_FACVALS>::type, const char*> JSON_transcode_values[] = {
 	{mfb(FACVAL_CHARITABLE),"CHARITABLE"},
 	{mfb(FACVAL_LONERS),"LONERS"},
 	{mfb(FACVAL_EXPLORATION),"EXPLORATION"},

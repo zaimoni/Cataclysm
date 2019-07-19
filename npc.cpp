@@ -120,11 +120,30 @@ static const char* const JSON_transcode_engage[] = {
 	"ALL"
 };
 
+static const char* const JSON_transcode_npc_needs[] = {
+	"none",
+	"ammo",
+	"weapon",
+	"gun",
+	"food",
+	"drink"
+};
+
+static const std::pair<typename cataclysm::bitmap<NF_MAX>::type, const char*> JSON_transcode_npc_flags[] = {
+	{mfb(NF_NULL),"NULL"},
+	{mfb(NF_FOOD_HOARDER),"FOOD_HOARDER"},
+	{mfb(NF_DRUGGIE),"DRUGGIE"},
+	{mfb(NF_TECHNOPHILE),"TECHNOPHILE"},
+	{mfb(NF_BOOKWORM),"BOOKWORM"},
+};
+
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(combat_engagement, JSON_transcode_engage)
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(npc_attitude, JSON_transcode_npc_attitude)
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(npc_class, JSON_transcode_npc_class)
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(npc_favor_type, JSON_transcode_favors)
+DEFINE_JSON_ENUM_BITFLAG_SUPPORT(npc_flag, JSON_transcode_npc_flags)
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(npc_mission, JSON_transcode_npc_mission)
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(npc_need, JSON_transcode_npc_needs)
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(talk_topic, JSON_transcode_talk)
 
 npc::npc()

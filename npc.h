@@ -101,6 +101,8 @@ enum npc_need {
  num_needs
 };
 
+DECLARE_JSON_ENUM_SUPPORT_ATYPICAL(npc_need,0)
+
 enum npc_flag {
  NF_NULL,
 // Items desired
@@ -110,6 +112,8 @@ enum npc_flag {
  NF_BOOKWORM,
  NF_MAX
 };
+
+DECLARE_JSON_ENUM_BITFLAG_SUPPORT(npc_flag)
 
 enum npc_favor_type {
  FAVOR_NULL,
@@ -490,7 +494,7 @@ public:
  bool marked_for_death; // If true, we die as soon as we respawn!
  bool dead;		// If true, we need to be cleaned up
  std::vector<npc_need> needs;
- unsigned flags : NF_MAX;
+ typename cataclysm::bitmap<NF_MAX>::type flags;
 };
 
 #endif
