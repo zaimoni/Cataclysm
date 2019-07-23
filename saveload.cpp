@@ -2063,6 +2063,18 @@ std::ostream& operator<<(std::ostream& os, const player& src)
 	return os;
 }
 
+bool fromJSON(const JSON& src, npc_opinion& dest)
+{
+	if (JSON::object != src.mode()) return false;
+	if (src.has_key("trust")) fromJSON(src["trust"], dest.trust);
+	if (src.has_key("fear")) fromJSON(src["fear"], dest.fear);
+	if (src.has_key("value")) fromJSON(src["value"], dest.value);
+	if (src.has_key("anger")) fromJSON(src["anger"], dest.anger);
+	if (src.has_key("owed")) fromJSON(src["owed"], dest.owed);
+	if (src.has_key("favors")) src["favors"].decode(dest.favors);
+	return true;
+}
+
 std::istream& operator>>(std::istream& is, npc_opinion& dest)
 {
 	if ('{' == (is >> std::ws).peek()) {
@@ -2092,6 +2104,19 @@ std::ostream& operator<<(std::ostream& os, const npc_opinion& src)
 	_opinion.set("owed", std::to_string(src.owed));
 	if (!src.favors.empty()) _opinion.set("favors", JSON::encode(src.favors));
 	return os << _opinion;
+}
+
+bool fromJSON(const JSON& src, npc_chatbin& dest)
+{
+	if (!src.has_key("first_topic") || !fromJSON(src["first_topic"], dest.first_topic)) return false;
+
+	// \todo: verify whether missions are fully loaded before the chatbins are loaded
+	// \todo: verify whether mission_selected and tempvalue are UI-local, thus not needed in the savefile
+	if (src.has_key("mission_selected")) fromJSON(src["mission_selected"], dest.mission_selected);
+	if (src.has_key("tempvalue")) fromJSON(src["tempvalue"], dest.tempvalue);
+	if (src.has_key("missions")) src["missions"].decode(dest.missions);
+	if (src.has_key("missions_assigned")) src["missions_assigned"].decode(dest.missions_assigned);
+	return true;
 }
 
 std::istream& operator>>(std::istream& is, npc_chatbin& dest)
@@ -2140,6 +2165,17 @@ std::ostream& operator<<(std::ostream& os, const npc_chatbin& src)
 	} else return os << "{}";
 }
 
+bool fromJSON(const JSON& src, npc_personality& dest)
+{
+	if (JSON::object != src.mode()) return false;
+	int tmp;
+	if (src.has_key("aggression") && fromJSON(src["aggression"], tmp)) dest.aggression = (signed char)tmp;
+	if (src.has_key("bravery") && fromJSON(src["bravery"], tmp)) dest.bravery = (signed char)tmp;
+	if (src.has_key("collector") && fromJSON(src["collector"], tmp)) dest.collector = (signed char)tmp;
+	if (src.has_key("altruism") && fromJSON(src["altruism"], tmp)) dest.altruism = (signed char)tmp;
+	return true;
+}
+
 std::istream& operator>>(std::istream& is, npc_personality& dest)
 {
 	if ('{' == (is >> std::ws).peek()) {
@@ -2169,6 +2205,14 @@ std::ostream& operator<<(std::ostream& os, const npc_personality& src)
 	_personality.set("collector", std::to_string((int)src.collector));
 	_personality.set("altruism", std::to_string((int)src.altruism));
 	return os << _personality;
+}
+
+bool fromJSON(const JSON& src, npc_combat_rules& dest)
+{
+	if (!src.has_key("engagement") || !fromJSON(src["engagement"], dest.engagement)) return false;
+	if (src.has_key("use_guns")) fromJSON(src["use_guns"], dest.use_guns);
+	if (src.has_key("use_grenades")) fromJSON(src["use_grenades"], dest.use_grenades);
+	return true;
 }
 
 std::istream& operator>>(std::istream& is, npc_combat_rules& dest)
@@ -2224,11 +2268,11 @@ npc::npc(const JSON& src)
 		if (fromJSON(src["faction_id"], fac_id)) my_fac = faction::from_id(fac_id);
 	}
 	if (src.has_key("mission")) fromJSON(src["mission"], mission);
-//	if (src.has_key("personality")) fromJSON(src["personality"], personality);
-//	if (src.has_key("op_of_u")) fromJSON(src["op_of_u"], op_of_u);
-//	if (src.has_key("chatbin")) fromJSON(src["chatbin"], chatbin);
+	if (src.has_key("personality")) fromJSON(src["personality"], personality);
+	if (src.has_key("op_of_u")) fromJSON(src["op_of_u"], op_of_u);
+	if (src.has_key("chatbin")) fromJSON(src["chatbin"], chatbin);
 	if (src.has_key("patience")) fromJSON(src["patience"], patience);
-//	if (src.has_key("combat_rules")) fromJSON(src["combat_rules"], combat_rules);
+	if (src.has_key("combat_rules")) fromJSON(src["combat_rules"], combat_rules);
 	if (src.has_key("marked_for_death")) fromJSON(src["marked_for_death"], marked_for_death);
 	if (src.has_key("dead")) fromJSON(src["dead"], dead);
 	if (src.has_key("needs")) src["needs"].decode(needs);
