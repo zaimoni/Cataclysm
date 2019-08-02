@@ -1861,6 +1861,96 @@ void inventory::toJSON(JSON& dest) const
 // -- but C++ is too close to the machine for the savefile issues to be easily managed.  Rely on data structures to keep 
 // the save of a non-final class to hard drive to disambiguate.
 
+JSON toJSON(const player& src)
+{
+	JSON ret;
+	ret.set("pos", toJSON(src.pos));
+	if (!src.name.empty()) ret.set("name", src.name);
+	if (!src.male) ret.set("male", "false");
+	if (src.in_vehicle) ret.set("in_vehicle", "true");
+#if 0
+	: active_mission(-1),
+		str_cur(8), dex_cur(8), int_cur(8), per_cur(8), str_max(8), dex_max(8), int_max(8), per_max(8),
+		power_level(0), max_power_level(0), hunger(0), thirst(0), fatigue(0), health(0),
+		underwater(false), oxygen(0), recoil(0), driving_recoil(0), scent(500),
+		dodges_left(1), blocks_left(1), stim(0), pain(0), pkill(0), radiation(0),
+		cash(0), moves(100), xp_pool(0), inv_sorted(true), last_item(itm_null), style_selected(itm_null), weapon(item::null)
+	{
+		for (int i = 0; i < num_skill_types; i++) {
+			sklevel[i] = 0;
+			skexercise[i] = 0;
+		}
+		for (int i = 0; i < PF_MAX2; i++)
+			my_traits[i] = false;
+		for (int i = 0; i < PF_MAX2; i++)
+			my_mutations[i] = false;
+
+		mutation_category_level[0] = 5; // Weigh us towards no category for a bit
+		for (int i = 1; i < NUM_MUTATION_CATEGORIES; i++)
+			mutation_category_level[i] = 0;
+
+		if (src.has_key("activity")) fromJSON(src["activity"], activity);
+		if (src.has_key("backlog")) fromJSON(src["backlog"], backlog);
+		if (src.has_key("active_missions")) src["active_missions"].decode(active_missions);	// \todo release block: validate these four, or demonstrate inability to validate
+		if (src.has_key("completed_missions")) src["completed_missions"].decode(completed_missions);
+		if (src.has_key("failed_missions")) src["failed_missions"].decode(failed_missions);
+		if (src.has_key("active_mission_id")) fromJSON(src["active_mission_id"], active_mission);
+		if (src.has_key("traits")) src["traits"].decode<pl_flag>(my_traits, PF_MAX2);
+		if (src.has_key("mutations")) src["mutations"].decode<pl_flag>(my_mutations, PF_MAX2);
+		if (src.has_key("mutation_category_level")) src["mutation_category_level"].decode<mutation_category>(mutation_category_level, NUM_MUTATION_CATEGORIES);
+		if (src.has_key("bionics")) src["bionics"].decode(my_bionics);
+		if (src.has_key("current")) {
+			auto& tmp = src["current"];
+			if (tmp.has_key("str")) fromJSON(tmp["str"], str_cur);
+			if (tmp.has_key("dex")) fromJSON(tmp["dex"], dex_cur);
+			if (tmp.has_key("int")) fromJSON(tmp["int"], int_cur);
+			if (tmp.has_key("per")) fromJSON(tmp["per"], per_cur);
+			if (tmp.has_key("power_level")) fromJSON(tmp["power_level"], power_level);
+			if (tmp.has_key("hp")) tmp["hp"].decode<hp_part>(hp_cur, num_hp_parts);
+		}
+		if (src.has_key("max")) {
+			auto& tmp = src["max"];
+			if (tmp.has_key("str")) fromJSON(tmp["str"], str_max);
+			if (tmp.has_key("dex")) fromJSON(tmp["dex"], dex_max);
+			if (tmp.has_key("int")) fromJSON(tmp["int"], int_max);
+			if (tmp.has_key("per")) fromJSON(tmp["per"], per_max);
+			if (tmp.has_key("power_level")) fromJSON(tmp["power_level"], max_power_level);
+			if (tmp.has_key("hp")) tmp["hp"].decode<hp_part>(hp_max, num_hp_parts);
+		}
+		if (src.has_key("hunger")) fromJSON(src["hunger"], hunger);
+		if (src.has_key("thirst")) fromJSON(src["thirst"], thirst);
+		if (src.has_key("fatigue")) fromJSON(src["fatigue"], fatigue);
+		if (src.has_key("health")) fromJSON(src["health"], health);
+		if (src.has_key("underwater")) fromJSON(src["underwater"], underwater);
+		if (src.has_key("oxygen")) fromJSON(src["oxygen"], oxygen);
+		if (src.has_key("recoil")) fromJSON(src["recoil"], recoil);
+		if (src.has_key("driving_recoil")) fromJSON(src["driving_recoil"], driving_recoil);
+		if (src.has_key("scent")) fromJSON(src["scent"], scent);
+		if (src.has_key("dodges_left")) fromJSON(src["dodges_left"], dodges_left);
+		if (src.has_key("blocks_left")) fromJSON(src["blocks_left"], blocks_left);
+		if (src.has_key("stim")) fromJSON(src["stim"], stim);
+		if (src.has_key("pain")) fromJSON(src["pain"], pain);
+		if (src.has_key("pkill")) fromJSON(src["pkill"], pkill);
+		if (src.has_key("radiation")) fromJSON(src["radiation"], radiation);
+		if (src.has_key("cash")) fromJSON(src["cash"], radiation);
+		if (src.has_key("moves")) fromJSON(src["moves"], radiation);
+		if (src.has_key("morale")) src["morale"].decode(morale);
+		if (src.has_key("xp_pool")) fromJSON(src["xp_pool"], xp_pool);
+		if (src.has_key("sklevel")) src["sklevel"].decode<skill>(sklevel, num_skill_types);
+		if (src.has_key("skexercise")) src["skexercise"].decode<skill>(skexercise, num_skill_types);
+		if (src.has_key("inv_sorted")) fromJSON(src["inv_sorted"], inv_sorted);
+		if (src.has_key("inv")) fromJSON(src["inv"], inv);
+		if (src.has_key("last_item")) fromJSON(src["last_item"], last_item);
+		if (src.has_key("worn")) src["worn"].decode(worn);
+		if (src.has_key("styles")) src["styles"].decode(styles);
+		if (src.has_key("style_selected")) fromJSON(src["style_selected"], style_selected);
+		if (src.has_key("weapon")) fromJSON(src["weapon"], weapon);
+		if (src.has_key("illness")) src["illness"].decode(illness);
+		if (src.has_key("addictions")) src["addictions"].decode(addictions);
+#endif
+	return ret;
+}
+
 player::player(const JSON& src)
 : pos(-1,-1), in_vehicle(false), active_mission(-1), name(""), male(true),
   str_cur(8),dex_cur(8),int_cur(8),per_cur(8),str_max(8),dex_max(8),int_max(8),per_max(8),

@@ -13,6 +13,7 @@
 #include "file.h"
 #include "recent_msg.h"
 #include "saveload.h"
+#include "json.h"
 
 #include <fstream>
 #include <sstream>
@@ -1750,29 +1751,37 @@ void game::load(std::string name)
  for (int i = 0; i < num_monsters; i++)
   fin >> kills[i];
 // Finally, the data on the player.
- fin >> std::ws >> u >> std::ws;
-// And the player's inventory...
- char item_place;
-// We need a temporary vector of items.  Otherwise, when we encounter an item
-// which is contained in another item, the auto-sort/stacking behavior of the
-// player's inventory may cause the contained item to be misplaced.
- std::vector<item> tmpinv;
- while (!fin.eof()) {
-  fin >> item_place;
-  if (!fin.eof()) {
-   if (item_place == 'I') tmpinv.push_back(item(fin));
-   else if (item_place == 'C') tmpinv[tmpinv.size() - 1].contents.push_back(item(fin));
-   else if (item_place == 'W') u.worn.push_back(item(fin));
-   else if (item_place == 'w') u.weapon = item(fin);
-   else if (item_place == 'c') u.weapon.contents.push_back(item(fin));
-   else {
-     debugmsg("unrecognized item key");
-	 getline(fin, data);
-   }
-  }
+ if ('{' == (fin >> std::ws).peek()) {
+	 // JSON converted
+	 JSON pc(fin);
+	 u = player(pc);
+ } else {
+	 // legacy	\todo release block: remove legacy loading
+	 fin >> u >> std::ws;
+	 // And the player's inventory...
+	 char item_place;
+	 // We need a temporary vector of items.  Otherwise, when we encounter an item
+	 // which is contained in another item, the auto-sort/stacking behavior of the
+	 // player's inventory may cause the contained item to be misplaced.
+	 std::vector<item> tmpinv;
+	 while (!fin.eof()) {
+		 fin >> item_place;
+		 if (!fin.eof()) {
+			 if (item_place == 'I') tmpinv.push_back(item(fin));
+			 else if (item_place == 'C') tmpinv[tmpinv.size() - 1].contents.push_back(item(fin));
+			 else if (item_place == 'W') u.worn.push_back(item(fin));
+			 else if (item_place == 'w') u.weapon = item(fin);
+			 else if (item_place == 'c') u.weapon.contents.push_back(item(fin));
+			 else {
+				 debugmsg("unrecognized item key");
+				 getline(fin, data);
+			 }
+		 }
+	 }
+	 // Now dump tmpinv into the player's inventory
+	 u.inv.add_stack(tmpinv);
  }
-// Now dump tmpinv into the player's inventory
- u.inv.add_stack(tmpinv);
+
  fin.close();
 // Now load up the master game data; factions (and more?)
  load_master();
