@@ -5651,7 +5651,7 @@ void game::plswim(int x, int y)
  u.pos.x = x;
  u.pos.y = y;
  DEBUG_FAIL_OR_LEAVE(!m.has_flag(swimmable, x, y), return);
- if (u.has_disease(DI_ONFIRE)) {
+ if (u.has_disease(DI_ONFIRE)) {	// VAPORWARE: not for phosphorus or lithium ...
   messages.add("The water puts out the flames!");
   u.rem_disease(DI_ONFIRE);
  }
@@ -5659,7 +5659,7 @@ void game::plswim(int x, int y)
  u.practice(sk_swimming, 1);
  if (movecost >= 500) {
   if (!u.underwater) {
-   messages.add("You sink%s!", (movecost >= 400 ? " like a rock" : ""));
+   messages.add("You sink%s!", (movecost >= 400 ? " like a rock" : ""));	// \todo V 0.2.1+ either adjust adjective threshold, or hard-code this
    u.underwater = true;
    u.oxygen = 30 + 2 * u.str_cur;
   }
@@ -5668,7 +5668,7 @@ void game::plswim(int x, int y)
   if (movecost < 500)
    popup("You need to breathe! (Press '<' to surface.)");
   else
-   popup("You need to breathe but you can't swim!  Get to dry land, quick!");
+   popup("You need to breathe but you can't swim!  Get to dry land, quick!");	// \todo V 0.2.1+ check for bionic gills which mitigate the consequences
  }
  u.moves -= (movecost > 200 ? 200 : movecost);
  for (size_t i = 0; i < u.inv.size(); i++) {
