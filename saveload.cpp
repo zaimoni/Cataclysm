@@ -1867,18 +1867,31 @@ JSON toJSON(const player& src)
 	ret.set("pos", toJSON(src.pos));
 	if (!src.name.empty()) ret.set("name", src.name);
 	if (!src.male) ret.set("male", "false");
-	if (src.in_vehicle) ret.set("in_vehicle", "true");
+	if (src.in_vehicle) {
+		ret.set("in_vehicle", "true");
+		if (src.driving_recoil) ret.set("driving_recoil", std::to_string(src.driving_recoil));
+	}
 	if (src.underwater) {
 		ret.set("underwater", "true");
 		ret.set("oxygen", std::to_string(src.oxygen));	// 2019-08-07: only meaningful if underwater
 	}
+	// default-zero integer block without undue entanglements
+	if (src.hunger) ret.set("hunger", std::to_string(src.hunger));
+	if (src.thirst) ret.set("thirst", std::to_string(src.thirst));
+	if (src.fatigue) ret.set("fatigue", std::to_string(src.fatigue));
+	if (src.health) ret.set("health", std::to_string(src.health));
+	if (src.stim) ret.set("stim", std::to_string(src.stim));
+	if (src.pain) ret.set("pain", std::to_string(src.pain));
+	if (src.pkill) ret.set("pkill", std::to_string(src.pkill));
+	if (src.radiation) ret.set("radiation", std::to_string(src.radiation));
+	if (src.xp_pool) ret.set("xp_pool", std::to_string(src.xp_pool));
+	if (src.cash) ret.set("cash", std::to_string(src.cash));	// questionable (pre-Cataclysm cash...)
+	if (src.recoil) ret.set("recoil", std::to_string(src.recoil));
 #if 0
 	: active_mission(-1),
 		str_cur(8), dex_cur(8), int_cur(8), per_cur(8), str_max(8), dex_max(8), int_max(8), per_max(8),
-		power_level(0), max_power_level(0), hunger(0), thirst(0), fatigue(0), health(0),
-		recoil(0), driving_recoil(0), scent(500),
-		dodges_left(1), blocks_left(1), stim(0), pain(0), pkill(0), radiation(0),
-		cash(0), moves(100), xp_pool(0), inv_sorted(true), last_item(itm_null), style_selected(itm_null), weapon(item::null)
+		power_level(0), max_power_level(0), scent(500), dodges_left(1), blocks_left(1),
+		moves(100), inv_sorted(true), last_item(itm_null), style_selected(itm_null), weapon(item::null)
 	{
 		for (int i = 0; i < num_skill_types; i++) {
 			sklevel[i] = 0;
@@ -1921,23 +1934,11 @@ JSON toJSON(const player& src)
 			if (tmp.has_key("power_level")) fromJSON(tmp["power_level"], max_power_level);
 			if (tmp.has_key("hp")) tmp["hp"].decode<hp_part>(hp_max, num_hp_parts);
 		}
-		if (src.has_key("hunger")) fromJSON(src["hunger"], hunger);
-		if (src.has_key("thirst")) fromJSON(src["thirst"], thirst);
-		if (src.has_key("fatigue")) fromJSON(src["fatigue"], fatigue);
-		if (src.has_key("health")) fromJSON(src["health"], health);
-		if (src.has_key("recoil")) fromJSON(src["recoil"], recoil);
-		if (src.has_key("driving_recoil")) fromJSON(src["driving_recoil"], driving_recoil);
 		if (src.has_key("scent")) fromJSON(src["scent"], scent);
 		if (src.has_key("dodges_left")) fromJSON(src["dodges_left"], dodges_left);
 		if (src.has_key("blocks_left")) fromJSON(src["blocks_left"], blocks_left);
-		if (src.has_key("stim")) fromJSON(src["stim"], stim);
-		if (src.has_key("pain")) fromJSON(src["pain"], pain);
-		if (src.has_key("pkill")) fromJSON(src["pkill"], pkill);
-		if (src.has_key("radiation")) fromJSON(src["radiation"], radiation);
-		if (src.has_key("cash")) fromJSON(src["cash"], radiation);
-		if (src.has_key("moves")) fromJSON(src["moves"], radiation);
+		if (src.has_key("moves")) fromJSON(src["moves"], moves);
 		if (src.has_key("morale")) src["morale"].decode(morale);
-		if (src.has_key("xp_pool")) fromJSON(src["xp_pool"], xp_pool);
 		if (src.has_key("sklevel")) src["sklevel"].decode<skill>(sklevel, num_skill_types);
 		if (src.has_key("skexercise")) src["skexercise"].decode<skill>(skexercise, num_skill_types);
 		if (src.has_key("inv_sorted")) fromJSON(src["inv_sorted"], inv_sorted);
@@ -2021,8 +2022,8 @@ player::player(const JSON& src)
  if (src.has_key("pain")) fromJSON(src["pain"], pain);
  if (src.has_key("pkill")) fromJSON(src["pkill"], pkill);
  if (src.has_key("radiation")) fromJSON(src["radiation"], radiation);
- if (src.has_key("cash")) fromJSON(src["cash"], radiation);
- if (src.has_key("moves")) fromJSON(src["moves"], radiation);
+ if (src.has_key("cash")) fromJSON(src["cash"], cash);
+ if (src.has_key("moves")) fromJSON(src["moves"], moves);
  if (src.has_key("morale")) src["morale"].decode(morale);
  if (src.has_key("xp_pool")) fromJSON(src["xp_pool"], xp_pool);
  if (src.has_key("sklevel")) src["sklevel"].decode<skill>(sklevel, num_skill_types);
