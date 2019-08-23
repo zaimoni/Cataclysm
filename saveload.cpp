@@ -522,6 +522,19 @@ std::ostream& operator<<(std::ostream& os, const computer& src)
 	return os << comp;
 }
 
+JSON toJSON(const bionic& src)
+{
+	JSON _bionic;
+	_bionic.set("id", toJSON(src.id));
+	if ('a' != src.invlet) {
+		const char str[] = { src.invlet, '\x00' };
+		_bionic.set("invlet", str);
+	}
+	if (src.powered) _bionic.set("powered", "true");
+	if (0 < src.charge) _bionic.set("charge", std::to_string(src.charge));
+	return _bionic;
+}
+
 bool fromJSON(const JSON& src, bionic& dest)
 {
 	if (!src.has_key("id") || !fromJSON(src["id"], dest.id)) return false;
@@ -1748,6 +1761,15 @@ bool fromJSON(const JSON& src, disease& dest)
 	return true;
 }
 
+JSON toJSON(const disease& src)
+{
+	JSON _disease;
+	_disease.set("type", toJSON(src.type));
+	_disease.set("duration", std::to_string(src.duration));
+	_disease.set("intensity", std::to_string(src.intensity));
+	return _disease;
+}
+
 disease::disease(std::istream& is)
 : type(DI_NULL), intensity(0), duration(0)
 {
@@ -1770,6 +1792,16 @@ std::ostream& operator<<(std::ostream& os, const disease& src)
 	}
 	else return os << "{}";
 }
+
+JSON toJSON(const addiction& src)
+{
+	JSON _addiction;
+	_addiction.set("type", toJSON(src.type));
+	_addiction.set("intensity", std::to_string(src.intensity));
+	_addiction.set("sated", std::to_string(src.sated));
+	return _addiction;
+}
+
 
 bool fromJSON(const JSON& src, addiction& dest)
 {
@@ -1799,6 +1831,17 @@ std::ostream& operator<<(std::ostream& os, const addiction& src)
 		_addiction.set("sated", std::to_string(src.sated));
 		return os << _addiction;
 	} else return os << "{}";
+}
+
+JSON toJSON(const morale_point& src)
+{
+	JSON _morale;
+	_morale.set("type", toJSON(src.type));
+	if (0 != src.bonus) _morale.set("bonus", std::to_string(src.bonus));
+	if (src.item_type) {
+		if (auto json2 = JSON_key((itype_id)(src.item_type->id))) _morale.set("item", json2);	// \todo eliminate this cast?
+	}
+	return _morale;
 }
 
 bool fromJSON(const JSON& src, morale_point& dest)
@@ -1887,11 +1930,37 @@ JSON toJSON(const player& src)
 	if (src.xp_pool) ret.set("xp_pool", std::to_string(src.xp_pool));
 	if (src.cash) ret.set("cash", std::to_string(src.cash));	// questionable (pre-Cataclysm cash...)
 	if (src.recoil) ret.set("recoil", std::to_string(src.recoil));
+
+	// integer block
+	ret.set("scent", std::to_string(src.scent));
+	ret.set("dodges_left", std::to_string(src.dodges_left));
+	ret.set("blocks_left", std::to_string(src.blocks_left));
+	ret.set("moves", std::to_string(src.moves));
+	if (1 <= src.active_mission) ret.set("active_mission_id", std::to_string(src.active_mission));
+
+	// enumerations
+	if (itm_null != src.last_item) ret.set("last_item", toJSON(src.last_item));
+	if (itm_null != src.style_selected) ret.set("style_selected", toJSON(src.style_selected));
+
+	// single objects
+
+	// normal arrays
+	if (!src.addictions.empty()) ret.set("addictions", JSON::encode(src.addictions));
+	if (!src.my_bionics.empty()) ret.set("bionics", JSON::encode(src.my_bionics));
+	if (!src.illness.empty()) ret.set("illness", JSON::encode(src.illness));
+	if (!src.morale.empty()) ret.set("morale", JSON::encode(src.morale));
+	if (!src.styles.empty()) ret.set("styles", JSON::encode(src.styles));
+	if (!src.worn.empty()) ret.set("worn", JSON::encode(src.worn));
+	if (!src.active_missions.empty()) ret.set("active_missions", JSON::encode(src.active_missions));
+	if (!src.completed_missions.empty()) ret.set("completed_missions", JSON::encode(src.completed_missions));
+	if (!src.failed_missions.empty()) ret.set("failed_missions", JSON::encode(src.failed_missions));
+
+	// exotic arrays
 #if 0
 	: active_mission(-1),
 		str_cur(8), dex_cur(8), int_cur(8), per_cur(8), str_max(8), dex_max(8), int_max(8), per_max(8),
-		power_level(0), max_power_level(0), scent(500), dodges_left(1), blocks_left(1),
-		moves(100), inv_sorted(true), last_item(itm_null), style_selected(itm_null), weapon(item::null)
+		power_level(0), max_power_level(0),
+		inv_sorted(true), weapon(item::null)
 	{
 		for (int i = 0; i < num_skill_types; i++) {
 			sklevel[i] = 0;
@@ -1908,14 +1977,9 @@ JSON toJSON(const player& src)
 
 		if (src.has_key("activity")) fromJSON(src["activity"], activity);
 		if (src.has_key("backlog")) fromJSON(src["backlog"], backlog);
-		if (src.has_key("active_missions")) src["active_missions"].decode(active_missions);	// \todo release block: validate these four, or demonstrate inability to validate
-		if (src.has_key("completed_missions")) src["completed_missions"].decode(completed_missions);
-		if (src.has_key("failed_missions")) src["failed_missions"].decode(failed_missions);
-		if (src.has_key("active_mission_id")) fromJSON(src["active_mission_id"], active_mission);
 		if (src.has_key("traits")) src["traits"].decode<pl_flag>(my_traits, PF_MAX2);
 		if (src.has_key("mutations")) src["mutations"].decode<pl_flag>(my_mutations, PF_MAX2);
 		if (src.has_key("mutation_category_level")) src["mutation_category_level"].decode<mutation_category>(mutation_category_level, NUM_MUTATION_CATEGORIES);
-		if (src.has_key("bionics")) src["bionics"].decode(my_bionics);
 		if (src.has_key("current")) {
 			auto& tmp = src["current"];
 			if (tmp.has_key("str")) fromJSON(tmp["str"], str_cur);
@@ -1934,22 +1998,11 @@ JSON toJSON(const player& src)
 			if (tmp.has_key("power_level")) fromJSON(tmp["power_level"], max_power_level);
 			if (tmp.has_key("hp")) tmp["hp"].decode<hp_part>(hp_max, num_hp_parts);
 		}
-		if (src.has_key("scent")) fromJSON(src["scent"], scent);
-		if (src.has_key("dodges_left")) fromJSON(src["dodges_left"], dodges_left);
-		if (src.has_key("blocks_left")) fromJSON(src["blocks_left"], blocks_left);
-		if (src.has_key("moves")) fromJSON(src["moves"], moves);
-		if (src.has_key("morale")) src["morale"].decode(morale);
 		if (src.has_key("sklevel")) src["sklevel"].decode<skill>(sklevel, num_skill_types);
 		if (src.has_key("skexercise")) src["skexercise"].decode<skill>(skexercise, num_skill_types);
 		if (src.has_key("inv_sorted")) fromJSON(src["inv_sorted"], inv_sorted);
 		if (src.has_key("inv")) fromJSON(src["inv"], inv);
-		if (src.has_key("last_item")) fromJSON(src["last_item"], last_item);
-		if (src.has_key("worn")) src["worn"].decode(worn);
-		if (src.has_key("styles")) src["styles"].decode(styles);
-		if (src.has_key("style_selected")) fromJSON(src["style_selected"], style_selected);
 		if (src.has_key("weapon")) fromJSON(src["weapon"], weapon);
-		if (src.has_key("illness")) src["illness"].decode(illness);
-		if (src.has_key("addictions")) src["addictions"].decode(addictions);
 #endif
 	return ret;
 }

@@ -266,7 +266,7 @@ public:
  int sklevel   [num_skill_types];
  int skexercise[num_skill_types];
  
- bool inv_sorted;
+ bool inv_sorted;	// V 0.2.1+ use or eliminate, this appears to be a no-op tracer
  inventory inv;
  itype_id last_item;
  std::vector <item> worn;	// invariant: dynamic cast to it_armor is non-null
