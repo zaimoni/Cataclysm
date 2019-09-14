@@ -863,6 +863,19 @@ bool fromJSON(const JSON& src, player_activity& dest)
 	return true;
 }
 
+JSON toJSON(const player_activity& src)
+{
+	JSON _act(JSON::object);
+	if (const auto json = JSON_key(src.type)) {
+		_act.set("type", json);
+		if (0 != src.moves_left) _act.set("moves_left", std::to_string(src.moves_left));
+		if (-1 != src.index) _act.set("index", std::to_string(src.index));
+		if (point(-1, -1) != src.placement) _act.set("placement", toJSON(src.placement));
+		if (!src.values.empty()) _act.set("values", JSON::encode(src.values));
+	}
+	return _act;
+}
+
 std::istream& operator>>(std::istream& is, player_activity& dest)
 {
 	if ('{' == (is >> std::ws).peek()) {
@@ -1943,6 +1956,16 @@ JSON toJSON(const player& src)
 	if (itm_null != src.style_selected) ret.set("style_selected", toJSON(src.style_selected));
 
 	// single objects
+	if (src.inv.size()) {
+		JSON tmp;
+		src.inv.toJSON(tmp);
+		ret.set("inv", tmp);
+	}
+	if (src.weapon.type) {
+		if (const auto json = JSON_key((itype_id)(src.weapon.type->id))) ret.set("weapon", toJSON(src.weapon));
+	}
+	if (const auto json = JSON_key(src.activity.type)) ret.set("activity", toJSON(src.activity));
+	if (const auto json = JSON_key(src.backlog.type)) ret.set("backlog", toJSON(src.backlog));
 
 	// normal arrays
 	if (!src.addictions.empty()) ret.set("addictions", JSON::encode(src.addictions));
@@ -1960,7 +1983,7 @@ JSON toJSON(const player& src)
 	: active_mission(-1),
 		str_cur(8), dex_cur(8), int_cur(8), per_cur(8), str_max(8), dex_max(8), int_max(8), per_max(8),
 		power_level(0), max_power_level(0),
-		inv_sorted(true), weapon(item::null)
+		inv_sorted(true)
 	{
 		for (int i = 0; i < num_skill_types; i++) {
 			sklevel[i] = 0;
@@ -1975,8 +1998,6 @@ JSON toJSON(const player& src)
 		for (int i = 1; i < NUM_MUTATION_CATEGORIES; i++)
 			mutation_category_level[i] = 0;
 
-		if (src.has_key("activity")) fromJSON(src["activity"], activity);
-		if (src.has_key("backlog")) fromJSON(src["backlog"], backlog);
 		if (src.has_key("traits")) src["traits"].decode<pl_flag>(my_traits, PF_MAX2);
 		if (src.has_key("mutations")) src["mutations"].decode<pl_flag>(my_mutations, PF_MAX2);
 		if (src.has_key("mutation_category_level")) src["mutation_category_level"].decode<mutation_category>(mutation_category_level, NUM_MUTATION_CATEGORIES);
@@ -2001,8 +2022,6 @@ JSON toJSON(const player& src)
 		if (src.has_key("sklevel")) src["sklevel"].decode<skill>(sklevel, num_skill_types);
 		if (src.has_key("skexercise")) src["skexercise"].decode<skill>(skexercise, num_skill_types);
 		if (src.has_key("inv_sorted")) fromJSON(src["inv_sorted"], inv_sorted);
-		if (src.has_key("inv")) fromJSON(src["inv"], inv);
-		if (src.has_key("weapon")) fromJSON(src["weapon"], weapon);
 #endif
 	return ret;
 }
