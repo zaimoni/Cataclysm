@@ -1979,28 +1979,17 @@ JSON toJSON(const player& src)
 	if (!src.failed_missions.empty()) ret.set("failed_missions", JSON::encode(src.failed_missions));
 
 	// exotic arrays
+	ret.set("traits", JSON::encode<pl_flag>(src.my_traits, PF_MAX2));
+	ret.set("mutations", JSON::encode<pl_flag>(src.my_mutations, PF_MAX2));
+	ret.set("mutation_category_level", JSON::encode<mutation_category>(src.mutation_category_level, NUM_MUTATION_CATEGORIES));
+	ret.set("sklevel", JSON::encode<skill>(src.sklevel, num_skill_types));
+	ret.set("sk_exercise", JSON::encode<skill>(src.skexercise, num_skill_types));
 #if 0
 	: active_mission(-1),
 		str_cur(8), dex_cur(8), int_cur(8), per_cur(8), str_max(8), dex_max(8), int_max(8), per_max(8),
 		power_level(0), max_power_level(0),
 		inv_sorted(true)
 	{
-		for (int i = 0; i < num_skill_types; i++) {
-			sklevel[i] = 0;
-			skexercise[i] = 0;
-		}
-		for (int i = 0; i < PF_MAX2; i++)
-			my_traits[i] = false;
-		for (int i = 0; i < PF_MAX2; i++)
-			my_mutations[i] = false;
-
-		mutation_category_level[0] = 5; // Weigh us towards no category for a bit
-		for (int i = 1; i < NUM_MUTATION_CATEGORIES; i++)
-			mutation_category_level[i] = 0;
-
-		if (src.has_key("traits")) src["traits"].decode<pl_flag>(my_traits, PF_MAX2);
-		if (src.has_key("mutations")) src["mutations"].decode<pl_flag>(my_mutations, PF_MAX2);
-		if (src.has_key("mutation_category_level")) src["mutation_category_level"].decode<mutation_category>(mutation_category_level, NUM_MUTATION_CATEGORIES);
 		if (src.has_key("current")) {
 			auto& tmp = src["current"];
 			if (tmp.has_key("str")) fromJSON(tmp["str"], str_cur);
@@ -2019,8 +2008,6 @@ JSON toJSON(const player& src)
 			if (tmp.has_key("power_level")) fromJSON(tmp["power_level"], max_power_level);
 			if (tmp.has_key("hp")) tmp["hp"].decode<hp_part>(hp_max, num_hp_parts);
 		}
-		if (src.has_key("sklevel")) src["sklevel"].decode<skill>(sklevel, num_skill_types);
-		if (src.has_key("skexercise")) src["skexercise"].decode<skill>(skexercise, num_skill_types);
 		if (src.has_key("inv_sorted")) fromJSON(src["inv_sorted"], inv_sorted);
 #endif
 	return ret;

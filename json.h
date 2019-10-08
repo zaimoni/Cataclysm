@@ -143,6 +143,37 @@ public:
 		return ret;
 	}
 
+	template<class Key, class T> static JSON encode(const T* dest, size_t n) {
+		JSON ret;
+		ret._mode = object;
+		if (dest && 0 < n) {
+			size_t i = 0;
+			do {
+				if (dest[i]) {
+					if (auto json = JSON_key((Key)(i))) ret.set(json,toJSON(dest[i]));
+				}
+			} while (++i < n);
+		}
+		return ret;
+	}
+
+	template<class Key> static JSON encode(const bool* dest, size_t n) {
+		JSON ret;
+		ret._mode = array;
+		if (dest && 0 < n) {
+			size_t i = 0;
+			do {
+				if (dest[i]) {
+					if (auto json = JSON_key((Key)(i))) {
+						if (!ret._array) ret._array = new std::vector<JSON>();
+						ret._array->push_back(json);
+					}
+				}
+			} while (++i < n);
+		}
+		return ret;
+	}
+
 	template<class T> bool decode(std::vector<T>& dest) const {
 		if (array != _mode) return false;
 		if (!_array || _array->empty()) {
