@@ -1984,32 +1984,27 @@ JSON toJSON(const player& src)
 	ret.set("mutation_category_level", JSON::encode<mutation_category>(src.mutation_category_level, NUM_MUTATION_CATEGORIES));
 	ret.set("sklevel", JSON::encode<skill>(src.sklevel, num_skill_types));
 	ret.set("sk_exercise", JSON::encode<skill>(src.skexercise, num_skill_types));
-#if 0
-	: active_mission(-1),
-		str_cur(8), dex_cur(8), int_cur(8), per_cur(8), str_max(8), dex_max(8), int_max(8), per_max(8),
-		power_level(0), max_power_level(0),
-		inv_sorted(true)
-	{
-		if (src.has_key("current")) {
-			auto& tmp = src["current"];
-			if (tmp.has_key("str")) fromJSON(tmp["str"], str_cur);
-			if (tmp.has_key("dex")) fromJSON(tmp["dex"], dex_cur);
-			if (tmp.has_key("int")) fromJSON(tmp["int"], int_cur);
-			if (tmp.has_key("per")) fromJSON(tmp["per"], per_cur);
-			if (tmp.has_key("power_level")) fromJSON(tmp["power_level"], power_level);
-			if (tmp.has_key("hp")) tmp["hp"].decode<hp_part>(hp_cur, num_hp_parts);
-		}
-		if (src.has_key("max")) {
-			auto& tmp = src["max"];
-			if (tmp.has_key("str")) fromJSON(tmp["str"], str_max);
-			if (tmp.has_key("dex")) fromJSON(tmp["dex"], dex_max);
-			if (tmp.has_key("int")) fromJSON(tmp["int"], int_max);
-			if (tmp.has_key("per")) fromJSON(tmp["per"], per_max);
-			if (tmp.has_key("power_level")) fromJSON(tmp["power_level"], max_power_level);
-			if (tmp.has_key("hp")) tmp["hp"].decode<hp_part>(hp_max, num_hp_parts);
-		}
-		if (src.has_key("inv_sorted")) fromJSON(src["inv_sorted"], inv_sorted);
-#endif
+
+	JSON current(JSON::object);
+	JSON max(JSON::object);
+
+	current.set("str", std::to_string(src.str_cur));
+	max.set("str", std::to_string(src.str_max));
+	current.set("dex", std::to_string(src.dex_cur));
+	max.set("dex", std::to_string(src.dex_max));
+	current.set("int", std::to_string(src.int_cur));
+	max.set("int", std::to_string(src.int_max));
+	current.set("per", std::to_string(src.per_cur));
+	max.set("per", std::to_string(src.per_max));
+	if (0 < src.max_power_level) {
+		current.set("power_level", std::to_string(src.power_level));
+		max.set("power_level", std::to_string(src.max_power_level));
+	}
+	current.set("hp", JSON::encode<hp_part>(src.hp_cur, num_hp_parts));
+	max.set("hp", JSON::encode<hp_part>(src.hp_max, num_hp_parts));
+
+	ret.set("current", current);
+	ret.set("max", max);
 	return ret;
 }
 
@@ -2389,6 +2384,52 @@ std::ostream& operator<<(std::ostream& os, const npc_combat_rules& src)
 		if (!src.use_grenades) _engage.set("use_grenades", "false");
 		return os << _engage;
 	} else return os << "{}";
+}
+
+JSON toJSON(const npc& src)
+{
+	JSON ret(toJSON(static_cast<const player&>(src)));	// subclass JSON
+#if 0
+	if (src.has_key("id")) fromJSON(src["id"], id);
+	if (src.has_key("attitude")) fromJSON(src["attitude"], attitude);
+	if (src.has_key("class")) fromJSON(src["class"], myclass);
+	if (src.has_key("wand")) fromJSON(src["wand"], wand);
+	if (src.has_key("om")) fromJSON(src["om"], om);
+	if (src.has_key("om_pos")) {
+		point tmp;
+		if (fromJSON(src["om_pos"], tmp)) {
+			mapx = tmp.x;	// \todo blocked by JSON conversion: mapx,mapy -> om_pos (om,om_pos is not the GPS coordinate type suitable for long-range A* pathfinding)
+			mapy = tmp.y;
+		}
+	}
+	if (src.has_key("pl")) fromJSON(src["pl"], pl);
+	if (src.has_key("it")) fromJSON(src["it"], it);
+	if (src.has_key("goal")) fromJSON(src["goal"], goal);
+	if (src.has_key("fetching_item")) fromJSON(src["fetching_item"], fetching_item);
+	if (src.has_key("has_new_items")) fromJSON(src["has_new_items"], has_new_items);
+	if (src.has_key("worst_item_value")) fromJSON(src["worst_item_value"], worst_item_value);
+	if (src.has_key("path")) src["path"].decode(path);
+	if (src.has_key("faction_id")) {
+		int fac_id;
+		if (fromJSON(src["faction_id"], fac_id)) my_fac = faction::from_id(fac_id);
+	}
+	if (src.has_key("mission")) fromJSON(src["mission"], mission);
+	if (src.has_key("personality")) fromJSON(src["personality"], personality);
+	if (src.has_key("op_of_u")) fromJSON(src["op_of_u"], op_of_u);
+	if (src.has_key("chatbin")) fromJSON(src["chatbin"], chatbin);
+	if (src.has_key("patience")) fromJSON(src["patience"], patience);
+	if (src.has_key("combat_rules")) fromJSON(src["combat_rules"], combat_rules);
+	if (src.has_key("marked_for_death")) fromJSON(src["marked_for_death"], marked_for_death);
+	if (src.has_key("dead")) fromJSON(src["dead"], dead);
+	if (src.has_key("needs")) src["needs"].decode(needs);
+	if (src.has_key("flags")) {
+		cataclysm::JSON_parse<npc_flag> _parse;
+		std::vector<const char*> relay;
+		src["flags"].decode(relay);
+		if (!relay.empty()) flags = _parse(relay);
+	}
+#endif
+	return ret;
 }
 
 npc::npc(const JSON& src)
