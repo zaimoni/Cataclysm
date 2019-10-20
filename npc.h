@@ -473,7 +473,7 @@ public:
 
  bool fetching_item;
  bool has_new_items; // If true, we have something new and should re-equip
- int  worst_item_value; // The value of our least-wanted item
+ int  worst_item_value; // The value of our least-wanted item; \todo release block; blocked by JSON conversion: eliminate
 
  std::vector<point> path;	// Our movement plans
 

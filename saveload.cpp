@@ -2389,10 +2389,27 @@ std::ostream& operator<<(std::ostream& os, const npc_combat_rules& src)
 JSON toJSON(const npc& src)
 {
 	JSON ret(toJSON(static_cast<const player&>(src)));	// subclass JSON
+
+	// booleans
+	if (src.fetching_item) ret.set("fetching_item", "true");
+	if (src.has_new_items) ret.set("has_new_items", "true");
+	if (src.marked_for_death) ret.set("marked_for_death", "true");
+	if (src.dead) ret.set("dead", "true");
+
+	// enums
+	if (const auto json = JSON_key(src.attitude)) ret.set("attitude", json);
+	if (const auto json = JSON_key(src.myclass)) ret.set("class", json);
+	if (const auto json = JSON_key(src.mission)) ret.set("mission", json);
+
+	// integers
+	ret.set("id", std::to_string(src.id));
+	if (0 < src.worst_item_value) ret.set("worst_item_value", std::to_string(src.worst_item_value));
+	if (0 < src.patience) ret.set("patience", std::to_string(src.patience));
 #if 0
-	if (src.has_key("id")) fromJSON(src["id"], id);
-	if (src.has_key("attitude")) fromJSON(src["attitude"], attitude);
-	if (src.has_key("class")) fromJSON(src["class"], myclass);
+: player(src), wand(point(0, 0), 0), om(0, 0, 0), mapx(0), mapy(0),
+  pl(point(-1, -1), 0), it(-1, -1), goal(-1, -1),
+  my_fac(0), flags(0)
+
 	if (src.has_key("wand")) fromJSON(src["wand"], wand);
 	if (src.has_key("om")) fromJSON(src["om"], om);
 	if (src.has_key("om_pos")) {
@@ -2405,22 +2422,15 @@ JSON toJSON(const npc& src)
 	if (src.has_key("pl")) fromJSON(src["pl"], pl);
 	if (src.has_key("it")) fromJSON(src["it"], it);
 	if (src.has_key("goal")) fromJSON(src["goal"], goal);
-	if (src.has_key("fetching_item")) fromJSON(src["fetching_item"], fetching_item);
-	if (src.has_key("has_new_items")) fromJSON(src["has_new_items"], has_new_items);
-	if (src.has_key("worst_item_value")) fromJSON(src["worst_item_value"], worst_item_value);
 	if (src.has_key("path")) src["path"].decode(path);
 	if (src.has_key("faction_id")) {
 		int fac_id;
 		if (fromJSON(src["faction_id"], fac_id)) my_fac = faction::from_id(fac_id);
 	}
-	if (src.has_key("mission")) fromJSON(src["mission"], mission);
 	if (src.has_key("personality")) fromJSON(src["personality"], personality);
 	if (src.has_key("op_of_u")) fromJSON(src["op_of_u"], op_of_u);
 	if (src.has_key("chatbin")) fromJSON(src["chatbin"], chatbin);
-	if (src.has_key("patience")) fromJSON(src["patience"], patience);
 	if (src.has_key("combat_rules")) fromJSON(src["combat_rules"], combat_rules);
-	if (src.has_key("marked_for_death")) fromJSON(src["marked_for_death"], marked_for_death);
-	if (src.has_key("dead")) fromJSON(src["dead"], dead);
 	if (src.has_key("needs")) src["needs"].decode(needs);
 	if (src.has_key("flags")) {
 		cataclysm::JSON_parse<npc_flag> _parse;
