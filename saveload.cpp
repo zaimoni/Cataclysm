@@ -2210,6 +2210,18 @@ std::ostream& operator<<(std::ostream& os, const player& src)
 	return os;
 }
 
+JSON toJSON(const npc_opinion& src)
+{
+	JSON _opinion;
+	_opinion.set("trust", std::to_string(src.trust));
+	_opinion.set("fear", std::to_string(src.fear));
+	_opinion.set("value", std::to_string(src.value));
+	_opinion.set("anger", std::to_string(src.anger));
+	_opinion.set("owed", std::to_string(src.owed));
+	if (!src.favors.empty()) _opinion.set("favors", JSON::encode(src.favors));
+	return _opinion;
+}
+
 bool fromJSON(const JSON& src, npc_opinion& dest)
 {
 	if (JSON::object != src.mode()) return false;
@@ -2251,6 +2263,22 @@ std::ostream& operator<<(std::ostream& os, const npc_opinion& src)
 	_opinion.set("owed", std::to_string(src.owed));
 	if (!src.favors.empty()) _opinion.set("favors", JSON::encode(src.favors));
 	return os << _opinion;
+}
+
+JSON toJSON(const npc_chatbin& src)
+{
+	JSON _chatbin(JSON::object);
+	if (auto json = JSON_key(src.first_topic)) {
+		_chatbin.set("first_topic", json);
+		// \todo: try to purge invalid mission ids before checking size, etc.
+		if (0 <= src.mission_selected && (src.missions.size() > src.mission_selected || src.missions_assigned.size() > src.mission_selected)) {
+			_chatbin.set("mission_selected", std::to_string(src.mission_selected));
+		}
+		_chatbin.set("tempvalue", std::to_string(src.tempvalue));
+		if (!src.missions.empty()) _chatbin.set("missions", JSON::encode(src.missions));
+		if (!src.missions_assigned.empty()) _chatbin.set("missions_assigned", JSON::encode(src.missions_assigned));
+	}
+	return _chatbin;
 }
 
 bool fromJSON(const JSON& src, npc_chatbin& dest)
@@ -2312,6 +2340,16 @@ std::ostream& operator<<(std::ostream& os, const npc_chatbin& src)
 	} else return os << "{}";
 }
 
+JSON toJSON(const npc_personality& src)
+{
+	JSON _personality;
+	_personality.set("aggression", std::to_string((int)src.aggression));
+	_personality.set("bravery", std::to_string((int)src.bravery));
+	_personality.set("collector", std::to_string((int)src.collector));
+	_personality.set("altruism", std::to_string((int)src.altruism));
+	return _personality;
+}
+
 bool fromJSON(const JSON& src, npc_personality& dest)
 {
 	if (JSON::object != src.mode()) return false;
@@ -2354,6 +2392,17 @@ std::ostream& operator<<(std::ostream& os, const npc_personality& src)
 	return os << _personality;
 }
 
+JSON toJSON(const npc_combat_rules& src)
+{
+	JSON _engage(JSON::object);
+	if (auto json = JSON_key(src.engagement)) {
+		_engage.set("engagement", json);
+		if (!src.use_guns) _engage.set("use_guns", "false");
+		if (!src.use_grenades) _engage.set("use_grenades", "false");
+	}
+	return _engage;
+}
+
 bool fromJSON(const JSON& src, npc_combat_rules& dest)
 {
 	if (!src.has_key("engagement") || !fromJSON(src["engagement"], dest.engagement)) return false;
@@ -2391,7 +2440,10 @@ JSON toJSON(const npc& src)
 	JSON ret(toJSON(static_cast<const player&>(src)));	// subclass JSON
 
 	// booleans
-	if (src.fetching_item) ret.set("fetching_item", "true");
+	if (src.fetching_item) {
+		ret.set("fetching_item", "true");
+		ret.set("it", toJSON(src.it));
+	}
 	if (src.has_new_items) ret.set("has_new_items", "true");
 	if (src.marked_for_death) ret.set("marked_for_death", "true");
 	if (src.dead) ret.set("dead", "true");
@@ -2405,40 +2457,28 @@ JSON toJSON(const npc& src)
 	ret.set("id", std::to_string(src.id));
 	if (0 < src.worst_item_value) ret.set("worst_item_value", std::to_string(src.worst_item_value));
 	if (0 < src.patience) ret.set("patience", std::to_string(src.patience));
-#if 0
-: player(src), wand(point(0, 0), 0), om(0, 0, 0), mapx(0), mapy(0),
-  pl(point(-1, -1), 0), it(-1, -1), goal(-1, -1),
-  my_fac(0), flags(0)
+	if (src.my_fac) ret.set("faction_id", std::to_string(src.my_fac->id));	// \todo XXX should reality-check the faction id
 
-	if (src.has_key("wand")) fromJSON(src["wand"], wand);
-	if (src.has_key("om")) fromJSON(src["om"], om);
-	if (src.has_key("om_pos")) {
-		point tmp;
-		if (fromJSON(src["om_pos"], tmp)) {
-			mapx = tmp.x;	// \todo blocked by JSON conversion: mapx,mapy -> om_pos (om,om_pos is not the GPS coordinate type suitable for long-range A* pathfinding)
-			mapy = tmp.y;
-		}
-	}
-	if (src.has_key("pl")) fromJSON(src["pl"], pl);
-	if (src.has_key("it")) fromJSON(src["it"], it);
-	if (src.has_key("goal")) fromJSON(src["goal"], goal);
-	if (src.has_key("path")) src["path"].decode(path);
-	if (src.has_key("faction_id")) {
-		int fac_id;
-		if (fromJSON(src["faction_id"], fac_id)) my_fac = faction::from_id(fac_id);
-	}
-	if (src.has_key("personality")) fromJSON(src["personality"], personality);
-	if (src.has_key("op_of_u")) fromJSON(src["op_of_u"], op_of_u);
-	if (src.has_key("chatbin")) fromJSON(src["chatbin"], chatbin);
-	if (src.has_key("combat_rules")) fromJSON(src["combat_rules"], combat_rules);
-	if (src.has_key("needs")) src["needs"].decode(needs);
-	if (src.has_key("flags")) {
+	// toJSON
+	ret.set("om_pos", toJSON(point(src.mapx, src.mapy)));
+	ret.set("om", toJSON(src.om));
+	ret.set("personality", toJSON(src.personality));
+	ret.set("op_of_u", toJSON(src.op_of_u));
+	auto tmp = toJSON(src.chatbin);
+	if (tmp.has_key("first_topic")) ret.set("chatbin", tmp);
+	tmp = toJSON(src.combat_rules);
+	if (tmp.has_key("engagement")) ret.set("combat_rules", tmp);
+	if (src.wand.live()) ret.set("wand", toJSON(src.wand));
+	if (src.pl.live()) ret.set("pl", toJSON(src.pl));
+	if (src.has_destination()) ret.set("goal", toJSON(src.goal));
+
+	// JSON::encode
+	if (!src.path.empty()) ret.set("path", JSON::encode(src.path));
+	if (!src.needs.empty()) ret.set("needs", JSON::encode(src.needs));
+	if (src.flags) {
 		cataclysm::JSON_parse<npc_flag> _parse;
-		std::vector<const char*> relay;
-		src["flags"].decode(relay);
-		if (!relay.empty()) flags = _parse(relay);
+		ret.set("flags", JSON::encode(_parse(src.flags)));
 	}
-#endif
 	return ret;
 }
 
