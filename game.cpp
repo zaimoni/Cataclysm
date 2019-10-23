@@ -1651,6 +1651,42 @@ bool game::load_master()
  fin.open("save/master.gsav");
  if (!fin.is_open()) return false;
 
+ if ('{' == (fin >> std::ws).peek()) {
+	 // JSON encoded.
+	 enum {
+		 MISSION = 1,
+		 FACTION = 2 * MISSION,
+		 NPC = 2 * FACTION,
+		 ACTIVE = 2 * NPC,
+		 FACTIONS = 2 * ACTIVE,
+		 NPCS = 2 * FACTIONS
+	 };
+
+	 JSON master(fin);
+	 unsigned char have_loaded = 0;	// bitmap; should be using a local enumeration here
+	 if (master.has_key("next_id")) {
+		 const JSON& next_id = master["next_id"];
+		 if (next_id.has_key("mission") && fromJSON(next_id["mission"], next_mission_id) && 1 <= next_mission_id) have_loaded |= (1ULL << MISSION);
+		 if (next_id.has_key("faction") && fromJSON(next_id["faction"], next_faction_id) && 1 <= next_faction_id) have_loaded |= (1ULL << FACTION);
+		 if (next_id.has_key("npc") && fromJSON(next_id["npc"], next_npc_id) && 1 <= next_npc_id) have_loaded |= (1ULL << NPC);
+	 }
+
+	 if (master.has_key("active_missions") && master["active_missions"].decode(active_missions)) have_loaded |= (1ULL << ACTIVE);
+	 if (master.has_key("factions") && master["factions"].decode(factions)) have_loaded |= (1ULL << FACTIONS);
+	 if (master.has_key("npcs") && master["npcs"].decode(active_npc)) have_loaded |= (1ULL << NPCS);
+
+	 // simulate game::setup here
+	 if (!(have_loaded & (1ULL << MISSION))) next_mission_id = 1;
+	 if (!(have_loaded & (1ULL << FACTION))) next_faction_id = 1;
+	 if (!(have_loaded & (1ULL << NPC))) next_npc_id = 1;
+	 if (!(have_loaded & (1ULL << ACTIVE))) active_missions.clear();
+	 if (!(have_loaded & (1ULL << FACTIONS))) factions.clear();
+	 if (!(have_loaded & (1ULL << NPCS))) active_npc.clear();
+
+	 fin.close();
+	 return true;
+ }
+
 // First, get the next ID numbers for each of these
  fin >> next_mission_id >> next_faction_id >> next_npc_id;
  int num_missions, num_npc, num_factions, num_items;

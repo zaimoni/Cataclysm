@@ -648,6 +648,25 @@ bool fromJSON(const JSON& src, npc_favor& dest)
 	return true;
 }
 
+bool fromJSON(const JSON& _in, mission& dest)
+{
+	if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) return false;
+	if (!_in.has_key("uid") || !fromJSON(_in["uid"], dest.uid) || 0 >= dest.uid) return false;
+	if (_in.has_key("description")) fromJSON(_in["description"], dest.description);
+	if (_in.has_key("failed")) fromJSON(_in["failed"], dest.failed);
+	if (_in.has_key("reward")) fromJSON(_in["reward"], dest.reward);
+	if (_in.has_key("target")) fromJSON(_in["target"], dest.target);
+	if (_in.has_key("item")) fromJSON(_in["item"], dest.item_id);
+	if (_in.has_key("count")) fromJSON(_in["count"], dest.count);
+	if (_in.has_key("deadline")) fromJSON(_in["deadline"], dest.deadline);
+	if (_in.has_key("npc")) fromJSON(_in["npc"], dest.npc_id);
+	if (_in.has_key("by_faction")) fromJSON(_in["by_faction"], dest.good_fac_id);
+	if (_in.has_key("vs_faction")) fromJSON(_in["vs_faction"], dest.bad_fac_id);
+	if (_in.has_key("step")) fromJSON(_in["step"], dest.step);
+	if (_in.has_key("next")) fromJSON(_in["next"], dest.follow_up);
+	return true;
+}
+
 mission::mission(std::istream& is)
  : type(0),description(""),failed(false),value(0),uid(-1),target(-1,-1),
    item_id(itm_null),count(0),deadline(0),npc_id(-1),good_fac_id(-1),
@@ -665,7 +684,7 @@ mission::mission(std::istream& is)
 		if (_in.has_key("target")) fromJSON(_in["target"], target);
 		if (_in.has_key("item")) fromJSON(_in["item"], item_id);
 		if (_in.has_key("count")) fromJSON(_in["count"], count);
-		if (_in.has_key("deadline")) fromJSON(_in["deadline"], count);
+		if (_in.has_key("deadline")) fromJSON(_in["deadline"], deadline);
 		if (_in.has_key("npc")) fromJSON(_in["npc"], npc_id);
 		if (_in.has_key("by_faction")) fromJSON(_in["by_faction"], good_fac_id);
 		if (_in.has_key("vs_faction")) fromJSON(_in["vs_faction"], bad_fac_id);
@@ -1140,6 +1159,40 @@ std::ostream& operator<<(std::ostream& os, const vehicle_part& src)
 	} else return os << "{}";
 }
 
+bool fromJSON(const JSON& _in, faction& dest)
+{
+	if (!_in.has_key("id") || !fromJSON(_in["id"], dest.id)) return false;	// \todo do we want to interpolate this key?
+	if (_in.has_key("name")) fromJSON(_in["name"], dest.name);
+	if (_in.has_key("values")) {
+		cataclysm::JSON_parse<faction_value> _parse;
+		std::vector<const char*> relay;
+		_in["values"].decode(relay);
+		if (!relay.empty()) dest.values = _parse(relay);
+	}
+	if (_in.has_key("goal")) fromJSON(_in["goal"], dest.goal);
+	if (_in.has_key("job1")) fromJSON(_in["job1"], dest.job1);
+	if (_in.has_key("job2")) fromJSON(_in["job2"], dest.job2);
+	if (_in.has_key("u")) {
+		const auto& tmp = _in["u"];
+		if (tmp.has_key("likes")) fromJSON(tmp["likes"], dest.likes_u);
+		if (tmp.has_key("respects")) fromJSON(tmp["respects"], dest.respects_u);
+		if (tmp.has_key("known_by")) fromJSON(tmp["known_by"], dest.known_by_u);
+	}
+	if (_in.has_key("ethics")) {
+		const auto& tmp = _in["ethics"];
+		if (tmp.has_key("strength")) fromJSON(tmp["strength"], dest.strength);
+		if (tmp.has_key("sneak")) fromJSON(tmp["sneak"], dest.sneak);
+		if (tmp.has_key("crime")) fromJSON(tmp["crime"], dest.crime);
+		if (tmp.has_key("cult")) fromJSON(tmp["cult"], dest.cult);
+		if (tmp.has_key("good")) fromJSON(tmp["good"], dest.good);
+	}
+	if (_in.has_key("om")) fromJSON(_in["om"], dest.om);
+	if (_in.has_key("map")) fromJSON(_in["map"], dest.map);
+	if (_in.has_key("size")) fromJSON(_in["size"], dest.size);
+	if (_in.has_key("power")) fromJSON(_in["power"], dest.power);
+	return true;
+}
+
 faction::faction(std::istream& is)
 : name(""), values(0), goal(FACGOAL_NULL), job1(FACJOB_NULL), job2(FACJOB_NULL),
   likes_u(0), respects_u(0), known_by_u(false), id(-1),
@@ -1174,9 +1227,9 @@ faction::faction(std::istream& is)
 			if (tmp.has_key("good")) fromJSON(tmp["good"], good);
 		}
 		if (_in.has_key("om")) fromJSON(_in["om"], om);
-		if (_in.has_key("map")) fromJSON(_in["map"], job2);
-		if (_in.has_key("size")) fromJSON(_in["size"], job2);
-		if (_in.has_key("power")) fromJSON(_in["power"], job2);
+		if (_in.has_key("map")) fromJSON(_in["map"], map);
+		if (_in.has_key("size")) fromJSON(_in["size"], size);
+		if (_in.has_key("power")) fromJSON(_in["power"], power);
 		return;
 	}
 	// \todo release block: remove legacy reading
@@ -2480,6 +2533,13 @@ JSON toJSON(const npc& src)
 		ret.set("flags", JSON::encode(_parse(src.flags)));
 	}
 	return ret;
+}
+
+// \todo consider inlining the JSON-based NPC constructor, or providing an alternate implementation for array decode
+bool fromJSON(const JSON& src, npc& dest)
+{
+	dest = npc(src);
+	return true;
 }
 
 npc::npc(const JSON& src)

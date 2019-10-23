@@ -15,6 +15,10 @@ std::string fac_respect_text(int val);
 
 class game;
 
+namespace cataclysm {
+	class JSON;
+}
+
 enum faction_goal {
  FACGOAL_NULL = 0,
  FACGOAL_NONE,
@@ -79,6 +83,7 @@ struct faction {
 
  faction(std::istream& is);
  friend std::ostream& operator<<(std::ostream& os, const faction& src);
+ friend bool fromJSON(const cataclysm::JSON& _in, faction& dest);
  static faction* from_id(int uid);
 
  void randomize();
