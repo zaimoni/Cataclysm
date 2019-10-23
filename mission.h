@@ -102,6 +102,7 @@ struct mission {
  mission(std::istream& src);
  friend std::ostream& operator<<(std::ostream& os, const mission& src);
  friend bool fromJSON(const cataclysm::JSON& _in, mission& dest);
+ friend cataclysm::JSON toJSON(const mission& src);
 };
 
 

@@ -305,6 +305,7 @@ public:
  npc(std::istream& is);
  friend std::ostream& operator<<(std::ostream& os, const npc& src);
  friend bool fromJSON(const cataclysm::JSON& src, npc& dest);
+ friend cataclysm::JSON toJSON(const npc& src);
 
  bool is_npc() const override { return true; }
 

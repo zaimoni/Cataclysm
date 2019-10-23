@@ -667,6 +667,34 @@ bool fromJSON(const JSON& _in, mission& dest)
 	return true;
 }
 
+JSON toJSON(const mission& src)
+{
+	JSON _mission;
+	_mission.set("type", toJSON(src.type));
+	_mission.set("uid", std::to_string(src.uid));
+	if (!src.description.empty()) _mission.set("description", src.description);
+	if (src.failed) _mission.set("failed", "true");
+	if (src.value) _mission.set("value", std::to_string(src.value));	// for now allow negative mission values \todo audit for negative mission values
+	if (JSON_key(src.reward.type)) _mission.set("value", toJSON(src.reward));
+	// src.reward
+	if (point(-1, -1) != src.target) _mission.set("target", toJSON(src.target));
+	if (src.count) {
+		if (auto json = JSON_key(src.item_id)) {
+			_mission.set("item", json);
+			_mission.set("count", std::to_string(src.count));
+		}
+	}
+	if (0 < src.deadline) _mission.set("deadline", std::to_string(src.deadline));
+	if (0 < src.npc_id) _mission.set("npc", std::to_string(src.npc_id));	// \todo release block: is this always-valid?
+	if (0 <= src.good_fac_id) _mission.set("by_faction", std::to_string(src.good_fac_id));
+	if (0 <= src.bad_fac_id) _mission.set("vs_faction", std::to_string(src.bad_fac_id));
+	if (src.step) _mission.set("step", std::to_string(src.step));
+	{
+		if (auto json = JSON_key(src.follow_up)) _mission.set("next", json);
+	}
+	return _mission;
+}
+
 mission::mission(std::istream& is)
  : type(0),description(""),failed(false),value(0),uid(-1),target(-1,-1),
    item_id(itm_null),count(0),deadline(0),npc_id(-1),good_fac_id(-1),
@@ -1191,6 +1219,39 @@ bool fromJSON(const JSON& _in, faction& dest)
 	if (_in.has_key("size")) fromJSON(_in["size"], dest.size);
 	if (_in.has_key("power")) fromJSON(_in["power"], dest.power);
 	return true;
+}
+
+JSON toJSON(const faction& src)
+{
+	cataclysm::JSON_parse<faction_value> _parse;
+	JSON _faction;
+	_faction.set("id", std::to_string(src.id));
+	_faction.set("name", src.name);
+	if (src.values) {
+		auto tmp = _parse(src.values);
+		if (!tmp.empty()) _faction.set("values", JSON::encode(tmp));
+	}
+	if (auto json = JSON_key(src.goal)) _faction.set("goal", json);
+	if (auto json = JSON_key(src.job1)) _faction.set("job1", json);
+	if (auto json = JSON_key(src.job2)) _faction.set("job2", json);
+	{
+		JSON tmp;
+		tmp.set("likes", std::to_string(src.likes_u));
+		tmp.set("respects", std::to_string(src.respects_u));
+		if (src.known_by_u) tmp.set("known_by", "true");
+		_faction.set("u", std::move(tmp));	// ultimately we'd like the same format for the PC, and NPCs
+		tmp.set("strength", std::to_string(src.strength));
+		tmp.set("sneak", std::to_string(src.sneak));
+		tmp.set("crime", std::to_string(src.crime));
+		tmp.set("cult", std::to_string(src.cult));
+		tmp.set("good", std::to_string(src.good));
+		_faction.set("ethics", tmp);
+	}
+	_faction.set("om", toJSON(src.om));
+	_faction.set("map", toJSON(src.map));
+	_faction.set("size", std::to_string(src.size));
+	_faction.set("power", std::to_string(src.power));
+	return _faction;
 }
 
 faction::faction(std::istream& is)

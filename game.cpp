@@ -1671,22 +1671,24 @@ bool game::load_master()
 		 if (next_id.has_key("npc") && fromJSON(next_id["npc"], next_npc_id) && 1 <= next_npc_id) have_loaded |= (1ULL << NPC);
 	 }
 
-	 if (master.has_key("active_missions") && master["active_missions"].decode(active_missions)) have_loaded |= (1ULL << ACTIVE);
-	 if (master.has_key("factions") && master["factions"].decode(factions)) have_loaded |= (1ULL << FACTIONS);
-	 if (master.has_key("npcs") && master["npcs"].decode(active_npc)) have_loaded |= (1ULL << NPCS);
+	 // pre-emptive clear; return value not that useful here
+	 // for error reporting, the fromJSON specializations may be more useful
+	 active_missions.clear();
+	 factions.clear();
+	 active_npc.clear();
+	 if (master.has_key("active_missions")) master["active_missions"].decode(active_missions);
+	 if (master.has_key("factions")) master["factions"].decode(factions);
+	 if (master.has_key("npcs")) master["npcs"].decode(active_npc);
 
 	 // simulate game::setup here
 	 if (!(have_loaded & (1ULL << MISSION))) next_mission_id = 1;
 	 if (!(have_loaded & (1ULL << FACTION))) next_faction_id = 1;
 	 if (!(have_loaded & (1ULL << NPC))) next_npc_id = 1;
-	 if (!(have_loaded & (1ULL << ACTIVE))) active_missions.clear();
-	 if (!(have_loaded & (1ULL << FACTIONS))) factions.clear();
-	 if (!(have_loaded & (1ULL << NPCS))) active_npc.clear();
 
 	 fin.close();
 	 return true;
  }
-
+ // \todo release block: remove legacy reading
 // First, get the next ID numbers for each of these
  fin >> next_mission_id >> next_faction_id >> next_npc_id;
  int num_missions, num_npc, num_factions, num_items;
@@ -1855,6 +1857,22 @@ void game::save()
 // Now write things that aren't player-specific: factions and NPCs
  fout.open("save/master.tmp");
 
+#if 1
+ {
+ JSON master(JSON::object);
+ {
+ JSON next_id(JSON::object);
+ if (1 < next_mission_id) next_id.set("mission", std::to_string(next_mission_id));
+ if (1 < next_faction_id) next_id.set("faction", std::to_string(next_faction_id));
+ if (1 < next_npc_id) next_id.set("npc", std::to_string(next_npc_id));
+ if (0 < next_id.size()) master.set("next_id", next_id);
+ }
+ if (!active_missions.empty()) master.set("active_missions", JSON::encode(active_missions));
+ if (!factions.empty()) master.set("factions", JSON::encode(factions));
+ if (!active_npc.empty()) master.set("npcs", JSON::encode(active_npc));
+ fout << master;
+ }
+#else
  fout << next_mission_id << " " << next_faction_id << " " << next_npc_id <<
          " " << active_missions.size() << " ";
  for(const auto& mi : active_missions) fout << mi << " ";
@@ -1868,6 +1886,7 @@ void game::save()
   active_npc[i].mapy = lev.y;
   fout << active_npc[i] << std::endl;
  }
+#endif
 
  fout.close();
  unlink("save/master.bak");

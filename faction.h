@@ -84,6 +84,7 @@ struct faction {
  faction(std::istream& is);
  friend std::ostream& operator<<(std::ostream& os, const faction& src);
  friend bool fromJSON(const cataclysm::JSON& _in, faction& dest);
+ friend cataclysm::JSON toJSON(const faction& src);
  static faction* from_id(int uid);
 
  void randomize();
