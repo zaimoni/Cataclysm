@@ -758,10 +758,14 @@ std::ostream& JSON::write(std::ostream& os, int indent) const
 {
 	switch (_mode)
 	{
-	case JSON::object: return write_object(os, *_object, indent);
-	case JSON::array: return write_array(os, *_array, indent);
-	case JSON::literal: return write_literal(os, *_scalar);
-	case JSON::string: return write_string(os, *_scalar);
+	case JSON::object: if (_object) return write_object(os, *_object, indent);
+		return os << "{}";
+	case JSON::array: if (_array) return write_array(os, *_array, indent);
+		return os << "[]";
+	case JSON::literal: if (_scalar) return write_literal(os, *_scalar);
+		return os << "\"\"";
+	case JSON::string: if (_scalar)  return write_string(os, *_scalar);
+		return os << "\"\"";
 	// default: throw std::string(....);
 	}
 	return os;
