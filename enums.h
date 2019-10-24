@@ -93,6 +93,9 @@ struct discard
 bool fromJSON(const cataclysm::JSON& src, point& dest);
 bool fromJSON(const cataclysm::JSON& src, tripoint& dest);
 
+cataclysm::JSON toJSON(const point& src);
+cataclysm::JSON toJSON(const tripoint& src);
+
 // default assignment operator is often not ACID (requires utility header)
 #define DEFINE_ACID_ASSIGN_W_SWAP(TYPE)	\
 TYPE& TYPE::operator=(const TYPE& src)	\

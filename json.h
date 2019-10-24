@@ -222,7 +222,7 @@ public:
 
 	template<class Key, class T> bool decode(T* dest, size_t n) const {
 		if (object != _mode || !dest) return false;
-		if (!_object || _object->empty()) return 0 == n;
+		if (!_object || _object->empty()) return true;
 		cataclysm::JSON_parse<Key> parse;
 		bool ok = true;
 		for (auto& x : *_object) {

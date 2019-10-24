@@ -1456,6 +1456,36 @@ bool fromJSON(const JSON& _in, monster& dest)
 	return true;
 }
 
+JSON toJSON(const monster& src)
+{
+	JSON _monster(JSON::object);
+	if (auto json = JSON_key((mon_id)src.type->id)) {
+		_monster.set("type", json);
+		_monster.set("pos", toJSON(src.pos));
+		if (src.wand.live()) _monster.set("wand", toJSON(src.wand));
+		if (!src.inv.empty()) _monster.set("inv", JSON::encode(src.inv));
+		if (!src.effects.empty()) _monster.set("effects", JSON::encode(src.effects));
+		if (src.is_static_spawn()) {
+			_monster.set("spawnmap", toJSON(src.spawnmap));
+			_monster.set("spawnpos", toJSON(src.spawnpos));
+		}
+		_monster.set("moves", std::to_string(src.moves));
+		_monster.set("speed", std::to_string(src.speed));
+		_monster.set("hp", std::to_string(src.hp));
+		if (0 < src.sp_timeout) _monster.set("sp_timeout", std::to_string(src.sp_timeout));
+		if (src.friendly) _monster.set("friendly", std::to_string(src.friendly));
+		_monster.set("anger", std::to_string(src.anger));
+		_monster.set("morale", std::to_string(src.morale));
+		if (0 <= src.faction_id) _monster.set("faction_id", std::to_string(src.faction_id));	// \todo release block validate or verify inability to validate here
+		if (0 < src.mission_id) _monster.set("mission_id", std::to_string(src.mission_id));		// \todo release block validate or verify inability to validate here
+		if (src.dead) _monster.set("dead", "true");
+		if (src.made_footstep) _monster.set("made_footstep", "true");
+		if (!src.unique_name.empty()) _monster.set("unique_name", src.unique_name);
+		if (!src.plans.empty()) _monster.set("effects", JSON::encode(src.plans));
+	}
+	return _monster;
+}
+
 // \todo release block: JSON save/load support (repairs monster inventories, effects being dropped in save/load cycle
 monster::monster(std::istream& is)
 : pos(20, 10), wand(point(-1, -1), 0), spawnmap(-1, -1), spawnpos(-1,-1), moves(0), speed(0), hp(60), sp_timeout(0), friendly(0),

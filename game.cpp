@@ -1757,26 +1757,27 @@ void game::load(std::string name)
 	// JSON format	\todo make ACID (that is, if we error out we alter nothing)
 	JSON saved(fin);
 	int tmp;
-	point com;
+	tripoint com;
+	int err = 0;
 
-	if (   !saved.has_key("next") || !saved.has_key("weather") || !saved.has_key("temperature")
-		|| !saved.has_key("lev") || !saved.has_key("com") || !saved.has_key("scents")
-		|| !saved.has_key("monsters") || !saved.has_key("kill_counts") || !saved.has_key("player")
-		|| !fromJSON(saved["com"], com)) throw corrupted;
+	if (   !saved.has_key("next") || !(++err,saved.has_key("weather")) || !(++err, saved.has_key("temperature"))
+		|| !(++err, saved.has_key("lev")) || !(++err, saved.has_key("com")) || !(++err, saved.has_key("scents"))
+		|| !(++err, saved.has_key("monsters")) || !(++err, saved.has_key("kill_counts")) || !(++err, saved.has_key("player"))
+		|| !(++err, fromJSON(saved["com"], com))) throw corrupted+" : "+std::to_string(err);
 
 	const auto& scents = saved["scents"];
-	if (cataclysm::JSON::array != scents.mode() || SEEX * MAPSIZE != scents.size()) throw corrupted;
+	if (cataclysm::JSON::array != scents.mode() || SEEX * MAPSIZE != scents.size()) throw corrupted + " 2";
 
 	{
 	const auto& next = saved["next"];
-		if (!next.has_key("spawn") || !next.has_key("weather")) throw corrupted;
-		if (fromJSON(next["spawn"], tmp)) nextspawn = tmp; else throw corrupted;
-		if (fromJSON(next["weather"], tmp)) nextweather = tmp; else throw corrupted;
+		if (!next.has_key("spawn") || !next.has_key("weather")) throw corrupted + " 3";
+		if (fromJSON(next["spawn"], tmp)) nextspawn = tmp; else throw corrupted + " 4";
+		if (fromJSON(next["weather"], tmp)) nextweather = tmp; else throw corrupted + " 5";
 		if (!next.has_key("inv") || !fromJSON(next["inv"], nextinv)) nextinv = 'd';	// recoverable; here due to when accessible
 	}
-	if (!fromJSON(saved["weather"], weather)) throw corrupted;
-	if (fromJSON(saved["temperature"], tmp)) temperature = tmp; else throw corrupted;
-	if (!fromJSON(saved["lev"], lev)) throw corrupted;
+	if (!fromJSON(saved["weather"], weather)) throw corrupted + " 6";
+	if (fromJSON(saved["temperature"], tmp)) temperature = tmp; else throw corrupted + " 7";
+	if (!fromJSON(saved["lev"], lev)) throw corrupted + " 8";
 
 	// deal with map now (historical ordering)
 	cur_om = overmap(this, com.x, com.y, lev.z);
@@ -1790,15 +1791,15 @@ void game::load(std::string name)
 	size_t ub = SEEX * MAPSIZE;
 	do {
 		auto& row = scents[--ub];
-		if (cataclysm::JSON::array != row.mode() || SEEY * MAPSIZE != row.size()) throw corrupted;
+		if (cataclysm::JSON::array != row.mode() || SEEY * MAPSIZE != row.size()) throw corrupted+" 10";
 		row.decode(grscent[ub], SEEY * MAPSIZE);
 	} while(0 < ub);
 	}
 
 	// monsters (allows validating last_target)
-	if (!saved["monsters"].decode(z) && z.empty()) throw corrupted;
+	if (!saved["monsters"].decode(z) && z.empty()) throw corrupted+" 11";
 	// kill count
-	if (!saved["kill_count"].decode<mon_id>(kills, num_monsters)) throw corrupted;
+	if (!saved["kill_counts"].decode<mon_id>(kills, num_monsters)) throw corrupted+" 12; "+std::to_string((int)saved["kill_counts"].mode());
 	// player
 	u = player(saved["player"]);	// \todo fromJSON idiom, so we can signal failure w/o throwing?
 
@@ -1895,10 +1896,40 @@ void game::load(std::string name)
 
 void game::save()
 {
- std::stringstream playerfile;
+ std::stringstream playerfile_stem;
  std::ofstream fout;
- playerfile << "save/" << u.name << ".sav";
- fout.open(playerfile.str().c_str());
+ playerfile_stem << "save/" << u.name;
+ fout.open((playerfile_stem.str()+".tmp").c_str());
+#if 1
+ JSON saved(JSON::object);
+ JSON tmp(JSON::object);
+
+ tmp.set("inv", std::string(1, nextinv));
+ tmp.set("spawn", std::to_string(nextspawn));
+ tmp.set("weather", std::to_string(nextweather));
+ saved.set("next", std::move(tmp));
+
+ saved.set("com", toJSON(cur_om.pos));
+ saved.set("lev", toJSON(lev));
+ if (const auto json = JSON_key(weather)) saved.set("weather", json);
+ saved.set("temperature", std::to_string((int)temperature));
+
+ {
+ size_t i = 0;
+ do {
+	 tmp.push(JSON::encode(grscent[i], SEEY * MAPSIZE));
+ } while (++i < SEEX * MAPSIZE);
+ saved.set("scents", std::move(tmp));
+ }
+ saved.set("monsters", JSON::encode(z));
+ saved.set("kill_counts", JSON::encode<mon_id>(kills, num_monsters));
+ saved.set("player", toJSON(u));
+ saved.set("turn", std::to_string(messages.turn));
+ saved.set("mostseen", std::to_string(mostseen));
+ saved.set("run_mode", std::to_string((int)run_mode));
+ if (-1 < last_target && z.size() > last_target) saved.set("last_target", std::to_string(last_target));
+ fout << saved;
+#else
 // First, write out basic game state information.
  fout << int(messages.turn) << " " << int(last_target) << " " << int(run_mode) << " " <<
          mostseen << " " << nextinv << " " << next_npc_id << " " <<
@@ -1918,26 +1949,26 @@ void game::save()
   fout << kills[i] << " ";
 // And finally the player.
  fout << u << std::endl << std::endl;
+#endif
  fout.close();
+ unlink((playerfile_stem.str() + ".bak").c_str());
+ rename((playerfile_stem.str() + ".sav").c_str(), (playerfile_stem.str() + ".bak").c_str());
+ rename((playerfile_stem.str() + ".tmp").c_str(), (playerfile_stem.str() + ".sav").c_str());
 
 // Now write things that aren't player-specific: factions and NPCs
  fout.open("save/master.tmp");
 
 #if 1
- {
- JSON master(JSON::object);
- {
- JSON next_id(JSON::object);
- if (1 < next_mission_id) next_id.set("mission", std::to_string(next_mission_id));
- if (1 < next_faction_id) next_id.set("faction", std::to_string(next_faction_id));
- if (1 < next_npc_id) next_id.set("npc", std::to_string(next_npc_id));
- if (0 < next_id.size()) master.set("next_id", next_id);
- }
- if (!active_missions.empty()) master.set("active_missions", JSON::encode(active_missions));
- if (!factions.empty()) master.set("factions", JSON::encode(factions));
- if (!active_npc.empty()) master.set("npcs", JSON::encode(active_npc));
- fout << master;
- }
+ saved.reset();
+ if (1 < next_mission_id) tmp.set("mission", std::to_string(next_mission_id));
+ if (1 < next_faction_id) tmp.set("faction", std::to_string(next_faction_id));
+ if (1 < next_npc_id) tmp.set("npc", std::to_string(next_npc_id));
+ if (0 < tmp.size()) saved.set("next_id", std::move(tmp));
+
+ if (!active_missions.empty()) saved.set("active_missions", JSON::encode(active_missions));
+ if (!factions.empty()) saved.set("factions", JSON::encode(factions));
+ if (!active_npc.empty()) saved.set("npcs", JSON::encode(active_npc));
+ fout << saved;
 #else
  fout << next_mission_id << " " << next_faction_id << " " << next_npc_id <<
          " " << active_missions.size() << " ";

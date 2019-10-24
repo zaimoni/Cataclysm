@@ -39,7 +39,7 @@ namespace cataclysm {	\
 #define DEFINE_JSON_ENUM_SUPPORT_TYPICAL(TYPE,STATIC_REF)	\
 const char* JSON_key(TYPE src)	\
 {	\
-	if (1 <= src && (sizeof(STATIC_REF) / sizeof(*STATIC_REF))>= src) return STATIC_REF[src - cataclysm::JSON_parse<TYPE>::origin];	\
+	if (cataclysm::JSON_parse<TYPE>::origin <= src && (sizeof(STATIC_REF) / sizeof(*STATIC_REF))+cataclysm::JSON_parse<TYPE>::origin > src) return STATIC_REF[src - cataclysm::JSON_parse<TYPE>::origin];	\
 	return 0;	\
 }	\
 	\
