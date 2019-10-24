@@ -372,9 +372,13 @@ http://github.com/zaimoni/Cataclysm .");
     }
     if (ch == 'l' || ch == '\n' || ch == '>') {
      if (sel2 > 0 && savegames.size() > 0) {
-      load(savegames[sel2 - 1]);
-      start = true;
-      ch = 0;
+	  try {
+		  load(savegames[sel2 - 1]);
+		  start = true;
+		  ch = 0;
+	  } catch (const std::string& e) {	// debug message failure
+		  debugmsg(e.c_str());
+	  }
      }
     }
    } else if (sel1 == 3) {	// Special game
@@ -1740,15 +1744,77 @@ bool game::load_master()
 
 void game::load(std::string name)
 {
+ static std::string no_save("No save game exists!");
+ static std::string corrupted("Save game corrupted!");
+
  std::ifstream fin;
  std::stringstream playerfile;
  playerfile << "save/" << name << ".sav";
  fin.open(playerfile.str().c_str());
 // First, read in basic game state information.
- if (!fin.is_open()) {
-  debugmsg("No save game exists!");
-  return;
- }
+ if (!fin.is_open()) throw no_save;
+ if ('{' == (fin >> std::ws).peek()) {
+	// JSON format	\todo make ACID (that is, if we error out we alter nothing)
+	JSON saved(fin);
+	int tmp;
+	point com;
+
+	if (   !saved.has_key("next") || !saved.has_key("weather") || !saved.has_key("temperature")
+		|| !saved.has_key("lev") || !saved.has_key("com") || !saved.has_key("scents")
+		|| !saved.has_key("monsters") || !saved.has_key("kill_counts") || !saved.has_key("player")
+		|| !fromJSON(saved["com"], com)) throw corrupted;
+
+	const auto& scents = saved["scents"];
+	if (cataclysm::JSON::array != scents.mode() || SEEX * MAPSIZE != scents.size()) throw corrupted;
+
+	{
+	const auto& next = saved["next"];
+		if (!next.has_key("spawn") || !next.has_key("weather")) throw corrupted;
+		if (fromJSON(next["spawn"], tmp)) nextspawn = tmp; else throw corrupted;
+		if (fromJSON(next["weather"], tmp)) nextweather = tmp; else throw corrupted;
+		if (!next.has_key("inv") || !fromJSON(next["inv"], nextinv)) nextinv = 'd';	// recoverable; here due to when accessible
+	}
+	if (!fromJSON(saved["weather"], weather)) throw corrupted;
+	if (fromJSON(saved["temperature"], tmp)) temperature = tmp; else throw corrupted;
+	if (!fromJSON(saved["lev"], lev)) throw corrupted;
+
+	// deal with map now (historical ordering)
+	cur_om = overmap(this, com.x, com.y, lev.z);
+	// m = map(&itypes, &mapitems, &traps); // Init the root map with our vectors
+	//MAPBUFFER.load();
+	m.load(this, point(lev.x, lev.y));
+
+	// return to other non-recoverable keys
+	// scent map \todo? good candidate for uuencoding
+	{
+	size_t ub = SEEX * MAPSIZE;
+	do {
+		auto& row = scents[--ub];
+		if (cataclysm::JSON::array != row.mode() || SEEY * MAPSIZE != row.size()) throw corrupted;
+		row.decode(grscent[ub], SEEY * MAPSIZE);
+	} while(0 < ub);
+	}
+
+	// monsters (allows validating last_target)
+	if (!saved["monsters"].decode(z) && z.empty()) throw corrupted;
+	// kill count
+	if (!saved["kill_count"].decode<mon_id>(kills, num_monsters)) throw corrupted;
+	// player
+	u = player(saved["player"]);	// \todo fromJSON idiom, so we can signal failure w/o throwing?
+
+	// recoverable hacked-missing fields below
+	autosafemode = option_table::get()[OPT_AUTOSAFEMODE];
+	if (saved.has_key("turn") && fromJSON(saved["turn"], tmp)) messages.turn = tmp;
+	if (saved.has_key("mostseen") && fromJSON(saved["mostseen"], tmp) && 0 <= tmp) mostseen = tmp; else mostseen = 0;
+	if (saved.has_key("run_mode") && fromJSON(saved["run_mode"], tmp) && 0 <= tmp && 2 >= tmp) {
+		run_mode = tmp;
+		if (0 == run_mode && option_table::get()[OPT_SAFEMODE]) run_mode = 1;
+	}  else run_mode = (option_table::get()[OPT_SAFEMODE] ? 1 : 0);
+	if (saved.has_key("last_target") && fromJSON(saved["last_target"], tmp) && 0 <= tmp && z.size() > tmp) last_target = tmp; else last_target = -1;
+	// do not worry about next_npc_id/next_faction_id/next_mission_id, the master save catches these
+ } else {
+  // \todo release block remove legacy loading code
+
  u = player();
  u.name = name;
  int tmpturn, tmpspawn, tmpnextweather, tmprun, tmpweather, tmptemp,
@@ -1817,6 +1883,8 @@ void game::load(std::string name)
 	 // Now dump tmpinv into the player's inventory
 	 u.inv.add_stack(tmpinv);
  }
+
+ }	// end legacy loading code
 
  fin.close();
 // Now load up the master game data; factions (and more?)

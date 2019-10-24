@@ -3,6 +3,24 @@
 #include "recent_msg.h"
 #include <vector>
 
+static const char* const JSON_transcode[NUM_WEATHER_TYPES] = {
+	"NULL",
+	"CLEAR",
+	"SUNNY",
+	"CLOUDY",
+	"DRIZZLE",
+	"RAINY",
+	"THUNDER",
+	"LIGHTNING",
+	"ACID_DRIZZLE",
+	"ACID_RAIN",
+	"FLURRIES",
+	"SNOW",
+	"SNOWSTORM"
+};
+
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(weather_type, JSON_transcode)
+
 struct weather_effect	// NPCs not really affected
 {
 	static void none(game *) {};

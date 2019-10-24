@@ -5,6 +5,7 @@
 #include "mission.h"
 #include "overmap.h"
 #include "monster.h"
+#include "weather.h"
 #include "recent_msg.h"
 #include "saveload.h"
 #include "json.h"
@@ -207,6 +208,7 @@ JSON_ENUM(pl_flag)
 JSON_ENUM(skill)
 JSON_ENUM(talk_topic)
 JSON_ENUM(vpart_id)
+JSON_ENUM(weather_type)
 
 // stereotypical translation of pointers to/from vector indexes
 // \todo in general if a loaded pointer index is "invalid" we should warn here; non-null requirements are enforced higher up
@@ -1428,6 +1430,31 @@ JSON toJSON(const item& src) {
 }
 
 std::ostream& operator<<(std::ostream& os, const item& src) { return os << toJSON(src); }
+
+bool fromJSON(const JSON& _in, monster& dest)
+{
+	if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) return false;
+	if (_in.has_key("pos")) fromJSON(_in["pos"], dest.pos);
+	if (_in.has_key("wand")) fromJSON(_in["wand"], dest.wand);
+	if (_in.has_key("inv")) _in["inv"].decode(dest.inv);
+	if (_in.has_key("effects")) _in["effects"].decode(dest.effects);
+	if (_in.has_key("spawnmap")) fromJSON(_in["spawnmap"], dest.spawnmap);
+	if (_in.has_key("spawnpos")) fromJSON(_in["spawnpos"], dest.spawnpos);
+	if (_in.has_key("moves")) fromJSON(_in["moves"], dest.moves);
+	if (_in.has_key("speed")) fromJSON(_in["speed"], dest.speed);
+	if (_in.has_key("hp")) fromJSON(_in["hp"], dest.hp);
+	if (_in.has_key("sp_timeout")) fromJSON(_in["sp_timeout"], dest.sp_timeout);
+	if (_in.has_key("friendly")) fromJSON(_in["friendly"], dest.friendly);
+	if (_in.has_key("anger")) fromJSON(_in["anger"], dest.anger);
+	if (_in.has_key("morale")) fromJSON(_in["morale"], dest.morale);
+	if (_in.has_key("faction_id")) fromJSON(_in["faction_id"], dest.faction_id);	// \todo release block validate or verify inability to validate here
+	if (_in.has_key("mission_id")) fromJSON(_in["mission_id"], dest.morale);	// \todo release block validate or verify inability to validate here
+	if (_in.has_key("dead")) fromJSON(_in["dead"], dest.dead);
+	if (_in.has_key("made_footstep")) fromJSON(_in["made_footstep"], dest.made_footstep);
+	if (_in.has_key("unique_name")) fromJSON(_in["unique_name"], dest.morale);
+	if (_in.has_key("plans")) _in["plans"].decode(dest.plans);
+	return true;
+}
 
 // \todo release block: JSON save/load support (repairs monster inventories, effects being dropped in save/load cycle
 monster::monster(std::istream& is)

@@ -2,9 +2,14 @@
 #define _WEATHER_H_
 
 #include "color.h"
+#include "enum_json.h"
 #include <string>
 
 class game;
+
+namespace cataclysm {
+	class JSON;
+}
 
 enum weather_type {
  WEATHER_NULL,		// For data and stuff
@@ -22,6 +27,9 @@ enum weather_type {
  WEATHER_SNOWSTORM,	// Heavy snow
  NUM_WEATHER_TYPES
 };
+
+DECLARE_JSON_ENUM_SUPPORT(weather_type);
+bool fromJSON(const cataclysm::JSON& src, weather_type& dest);
 
 struct weather_datum
 {

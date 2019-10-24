@@ -79,6 +79,8 @@ inline bool operator<(const tripoint& lhs, const tripoint& rhs)
 
 namespace cataclysm {
 
+class JSON;
+
 // exceptionally un-threadsafe; intent is to provide a standard "overflow" for reference returns
 template<class T>
 struct discard
@@ -87,6 +89,9 @@ struct discard
 };
 
 }
+
+bool fromJSON(const cataclysm::JSON& src, point& dest);
+bool fromJSON(const cataclysm::JSON& src, tripoint& dest);
 
 // default assignment operator is often not ACID (requires utility header)
 #define DEFINE_ACID_ASSIGN_W_SWAP(TYPE)	\

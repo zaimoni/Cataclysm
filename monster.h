@@ -61,6 +61,7 @@ class monster {
 
  monster(std::istream& is);
  friend std::ostream& operator<<(std::ostream& os, const monster& src);
+ friend bool fromJSON(const cataclysm::JSON& _in, monster& dest);
 
  void poly(const mtype *t);
  void spawn(int x, int y); // All this does is moves the monster to x,y
