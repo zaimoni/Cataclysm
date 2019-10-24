@@ -2326,61 +2326,6 @@ std::istream& operator>>(std::istream& is, player& dest)
 	return is;
 }
 
-std::ostream& operator<<(std::ostream& os, const player& src)
-{
-	os << src.pos I_SEP << src.str_cur I_SEP << src.str_max I_SEP <<
-		src.dex_cur I_SEP << src.dex_max I_SEP << src.int_cur I_SEP << src.int_max I_SEP <<
-		src.per_cur I_SEP << src.per_max I_SEP << src.power_level I_SEP <<
-		src.max_power_level I_SEP << src.hunger I_SEP << src.thirst I_SEP << src.fatigue I_SEP <<
-		src.stim I_SEP << src.pain I_SEP << src.pkill I_SEP << src.radiation I_SEP <<
-		src.cash I_SEP << src.recoil I_SEP << src.driving_recoil I_SEP <<
-		src.in_vehicle I_SEP << src.scent I_SEP << src.moves I_SEP <<
-		src.underwater I_SEP << src.dodges_left I_SEP << src.blocks_left I_SEP <<
-		src.oxygen I_SEP << src.active_mission I_SEP << src.xp_pool I_SEP << src.male I_SEP <<
-		src.health I_SEP << src.style_selected I_SEP << src.activity I_SEP << src.backlog I_SEP;
-
-	for (int i = 0; i < PF_MAX2; i++) os << src.my_traits[i] I_SEP;
-	for (int i = 0; i < PF_MAX2; i++) os << src.my_mutations[i] I_SEP;	// XXX mutation info not save/loaded by NPC in C:Whales
-	for (int i = 0; i < NUM_MUTATION_CATEGORIES; i++) os << src.mutation_category_level[i] I_SEP;
-	for (int i = 0; i < num_hp_parts; i++) os << src.hp_cur[i] I_SEP << src.hp_max[i] I_SEP;
-	for (int i = 0; i < num_skill_types; i++) os << src.sklevel[i] I_SEP << src.skexercise[i] I_SEP;
-
-	os << src.styles.size() I_SEP;
-	for (int i = 0; i < src.styles.size(); i++) os << src.styles[i] I_SEP;
-
-	os << src.illness.size() I_SEP;
-	for(const auto& ill : src.illness) os << ill I_SEP;
-
-	os << src.addictions.size() I_SEP;
-	for (const auto& add : src.addictions) os << add I_SEP;
-
-	os << src.my_bionics.size() I_SEP;
-	for (const auto& bio : src.my_bionics)  os << bio I_SEP;
-
-	os << src.morale.size() I_SEP;
-	for (const auto& mor : src.morale) os << mor I_SEP;
-
-	os I_SEP << src.active_missions.size() I_SEP;
-	for (const auto& mi : src.active_missions) os << mi I_SEP;
-
-	os I_SEP << src.completed_missions.size() I_SEP;
-	for (const auto& mi : src.completed_missions) os << mi I_SEP;
-
-	os I_SEP << src.failed_missions.size() I_SEP;
-	for (const auto& mi : src.failed_missions) os << mi I_SEP;
-
-	os << std::endl;
-
-	// V 0.2.0 blocker \todo asymmetric, not handled in operator >>
-	for (size_t i = 0; i < src.inv.size(); i++) {
-		for (const auto& it : src.inv.stack_at(i)) os << "I " << it << std::endl;
-	}
-	for (const auto& it : src.worn) os << "W " << it << std::endl;
-	if (!src.weapon.is_null()) os << "w " << src.weapon << std::endl;
-
-	return os;
-}
-
 JSON toJSON(const npc_opinion& src)
 {
 	JSON _opinion;

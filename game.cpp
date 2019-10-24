@@ -1930,25 +1930,9 @@ void game::save()
  if (-1 < last_target && z.size() > last_target) saved.set("last_target", std::to_string(last_target));
  fout << saved;
 #else
-// First, write out basic game state information.
- fout << int(messages.turn) << " " << int(last_target) << " " << int(run_mode) << " " <<
-         mostseen << " " << nextinv << " " << next_npc_id << " " <<
-         next_faction_id << " " << next_mission_id << " " << int(nextspawn) <<
-         " " << int(nextweather) << " " << weather << " " << int(temperature) <<
-         " " << lev << " " << cur_om.pos.x <<
-         " " << cur_om.pos.y << " " << std::endl;
-// Next, the scent map.
- for (int i = 0; i < SEEX * MAPSIZE; i++) {
-  for (int j = 0; j < SEEY * MAPSIZE; j++)
-   fout << grscent[i][j] << " ";
- }
-// Now save all monsters.
+  // Now save all monsters.
  fout << std::endl << z.size() << std::endl;
  for (const auto& mon : z) fout << mon << std::endl;
- for (int i = 0; i < num_monsters; i++)	// Save the kill counts, too.
-  fout << kills[i] << " ";
-// And finally the player.
- fout << u << std::endl << std::endl;
 #endif
  fout.close();
  unlink((playerfile_stem.str() + ".bak").c_str());
@@ -1967,7 +1951,13 @@ void game::save()
 
  if (!active_missions.empty()) saved.set("active_missions", JSON::encode(active_missions));
  if (!factions.empty()) saved.set("factions", JSON::encode(factions));
- if (!active_npc.empty()) saved.set("npcs", JSON::encode(active_npc));
+ if (!active_npc.empty()) {
+	 for (auto& NPC : active_npc) {
+		 NPC.mapx = lev.x;
+		 NPC.mapy = lev.y;
+	 }
+	 saved.set("npcs", JSON::encode(active_npc));
+ }
  fout << saved;
 #else
  fout << next_mission_id << " " << next_faction_id << " " << next_npc_id <<

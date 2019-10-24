@@ -35,7 +35,6 @@ public:
  player(player&& rhs) = default;
  virtual ~player() = default;
  friend std::istream& operator>>(std::istream& is, player& dest);
- friend std::ostream& operator<<(std::ostream& is, const player& src);
  friend cataclysm::JSON toJSON(const player& src);
 
  player& operator=(const player& rhs);
