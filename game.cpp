@@ -1751,10 +1751,9 @@ void game::load(std::string name)
  }
  u = player();
  u.name = name;
- u.weapon = item::null;
- int tmpturn, tmpspawn, tmpnextweather, tmprun, tmptar, tmpweather, tmptemp,
+ int tmpturn, tmpspawn, tmpnextweather, tmprun, tmpweather, tmptemp,
      comx, comy;
- fin >> tmpturn >> tmptar >> tmprun >> mostseen >> nextinv >> next_npc_id >>
+ fin >> tmpturn >> last_target >> tmprun >> mostseen >> nextinv >> next_npc_id >>
         next_faction_id >> next_mission_id >> tmpspawn >> tmpnextweather >>
         tmpweather >> tmptemp >> lev >> comx >> comy;
  messages.turn = tmpturn;
@@ -1767,7 +1766,6 @@ void game::load(std::string name)
  run_mode = tmprun;
  if (option_table::get()[OPT_SAFEMODE] && run_mode == 0) run_mode = 1;
  autosafemode = option_table::get()[OPT_AUTOSAFEMODE];
- last_target = tmptar;
  weather = weather_type(tmpweather);
  temperature = tmptemp;
 // Next, the scent map.
