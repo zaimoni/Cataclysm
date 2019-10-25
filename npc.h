@@ -134,10 +134,6 @@ struct npc_favor	// appears to be prototype/mockup
  skill skill_id;
 
  npc_favor() : type(FAVOR_NULL),value(0),item_id(itm_null),skill_id(sk_null) {}
- npc_favor(std::istream& is);
-
- friend std::istream& operator>>(std::istream& is, npc_favor& dest);
- friend std::ostream& operator<<(std::ostream& os, const npc_favor& src);
 };
 
 struct npc_personality {
@@ -147,8 +143,6 @@ struct npc_personality {
  signed char collector;
  signed char altruism;
  npc_personality() : aggression(0),bravery(0),collector(0),altruism(0) {};
- friend std::istream& operator>>(std::istream& is, npc_personality& dest);
- friend std::ostream& operator<<(std::ostream& os, const npc_personality& src);
 };
 
 struct npc_opinion
@@ -173,8 +167,6 @@ struct npc_opinion
  ~npc_opinion() = default;
  npc_opinion& operator=(const npc_opinion& copy) = default;
  npc_opinion& operator=(npc_opinion&& copy) = default;
- friend std::istream& operator>>(std::istream& is, npc_opinion& dest);
- friend std::ostream& operator<<(std::ostream& os, const npc_opinion& src);
 
  npc_opinion& operator+=(const npc_opinion &rhs);
  std::string text() const;
@@ -199,9 +191,6 @@ struct npc_combat_rules
  bool use_grenades;
 
  npc_combat_rules() : engagement(ENGAGE_ALL), use_guns(true), use_grenades(true) {}
-
- friend std::istream& operator>>(std::istream& is, npc_combat_rules& dest);
- friend std::ostream& operator<<(std::ostream& os, const npc_combat_rules& src);
 };
 
 enum talk_topic {
@@ -285,9 +274,6 @@ struct npc_chatbin
  ~npc_chatbin() = default;
  npc_chatbin& operator=(const npc_chatbin& src);
  npc_chatbin& operator=(npc_chatbin&& src) = default;
-
- friend std::istream& operator>>(std::istream& is, npc_chatbin& dest);
- friend std::ostream& operator<<(std::ostream& os, const npc_chatbin& src);
 };
 
 class npc : public player {

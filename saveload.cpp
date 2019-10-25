@@ -417,19 +417,6 @@ bool fromJSON(const JSON& src, countdown<T>& dest)
 	return true;
 }
 
-template<class T>
-std::istream& operator>>(std::istream& is, countdown<T>& dest)
-{
-	return is >> dest.x >> dest.remaining;
-}
-
-template<class T>
-std::ostream& operator<<(std::ostream& os, const countdown<T>& src)
-{
-	return os << src.x I_SEP << src.remaining;
-}
-
-
 template<char src, char dest>
 void xform(std::string& x)
 {
@@ -544,76 +531,6 @@ bool fromJSON(const JSON& src, bionic& dest)
 	if (src.has_key("powered")) fromJSON(src["powered"], dest.powered);
 	if (src.has_key("charge")) fromJSON(src["charge"], dest.charge);
 	return true;
-}
-
-bionic::bionic(std::istream& is)
-: id(bio_batteries), invlet('a'), powered(false), charge(0)
-{
-	if ('{' == (is >> std::ws).peek()) {
-		fromJSON(JSON(is), *this);
-		return;
-	}
-	is >> id >> invlet >> powered >> charge;	// \todo release block: remove legacy reading
-}
-
-std::ostream& operator<<(std::ostream& os, const bionic& src)
-{
-	JSON _bionic;
-	_bionic.set("id", toJSON(src.id));
-	if ('a' != src.invlet) {
-		const char str[] = { src.invlet, '\x00' };
-		_bionic.set("invlet", str);
-	}
-	if (src.powered) _bionic.set("powered", "true");
-	if (0 < src.charge) _bionic.set("charge", std::to_string(src.charge));
-	return os << _bionic;
-}
-
-npc_favor::npc_favor(std::istream& is)
-: type(FAVOR_NULL),value(0),item_id(itm_null),skill_id(sk_null)
-{
-	is >> type >> value >> item_id >> skill_id;
-}
-
-std::istream& operator>>(std::istream& is, npc_favor& dest)
-{
-	if ('{' == (is >> std::ws).peek()) {
-		const JSON _in(is);
-//		if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) throw std::runtime_error("unrecognized favor");
-//		if (!_in.has_key("favor")) throw std::runtime_error("favor reward AWOL");
-		if (JSON::object != _in.mode()) return is;
-		if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) return is;
-		if (!_in.has_key("favor")) return is;
-		auto& x = _in["favor"];
-		switch (dest.type)
-		{
-		case FAVOR_CASH: if (!fromJSON(x,dest.value)) throw std::runtime_error("unparsed favor reward");
-			break;
-		case FAVOR_ITEM: if (!fromJSON(x, dest.item_id)) throw std::runtime_error("unparsed favor reward");
-			break;
-		case FAVOR_TRAINING: if (!fromJSON(x, dest.skill_id)) throw std::runtime_error("unparsed favor reward");
-			break;
-		default: throw std::runtime_error("unhandled favor type");
-		}
-		return is;
-	}
-
-	return is >> dest.type >> dest.value >> dest.item_id >> dest.skill_id;
-}
-
-std::ostream& operator<<(std::ostream& os, const npc_favor& src)
-{
-	if (!src.type) return os << "{}"; // temporary
-	JSON _favor;
-	_favor.set("type", toJSON(src.type));
-	switch (src.type)
-	{
-	case FAVOR_CASH: _favor.set("favor", std::to_string(src.value)); break;
-	case FAVOR_ITEM: _favor.set("favor", JSON_key(src.item_id)); break;
-	case FAVOR_TRAINING: _favor.set("favor", JSON_key(src.skill_id)); break;
-//	default: throw std::runtime_error("unhandled favor type");
-	}
-	return os << _favor;
 }
 
 JSON toJSON(const npc_favor& src) {
@@ -777,19 +694,12 @@ JSON toJSON(const city& src)
 om_note::om_note(std::istream& is)
 : x(-1), y(-1), num(-1), text("")
 {
-	if ('[' == (is >> std::ws).peek()) {
 		JSON _in(is);
 		if (JSON::array != _in.mode() || 4 != _in.size()) throw std::runtime_error("om_note expected to be a length 4 array");
 		fromJSON(_in[0], x);
 		fromJSON(_in[1], y);
 		fromJSON(_in[2], num);
 		fromJSON(_in[3], text);
-		return;
-	}
-	// \todo release block: remove legacy reading
-	is >> x >> y >> num;
-	getline(is, text);	// Chomp endl
-	getline(is, text);
 }
 
 std::ostream& operator<<(std::ostream& os, const om_note& src)
@@ -837,41 +747,6 @@ JSON toJSON(const player_activity& src)
 		if (!src.values.empty()) _act.set("values", JSON::encode(src.values));
 	}
 	return _act;
-}
-
-std::istream& operator>>(std::istream& is, player_activity& dest)
-{
-	if ('{' == (is >> std::ws).peek()) {
-		JSON _in(is);
-		if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) return is;
-		if (_in.has_key("moves_left")) fromJSON(_in["moves_left"], dest.moves_left);
-		if (_in.has_key("index")) fromJSON(_in["index"], dest.index);
-		if (_in.has_key("placement")) fromJSON(_in["placement"], dest.placement);
-		if (_in.has_key("values")) _in["values"].decode(dest.values);
-		return is;
-	}
-	// \todo release block: remove legacy reading
-	int tmp;
-	is >> dest.type >> dest.moves_left >> dest.index >> dest.placement >> tmp;
-	for (int i = 0; i < tmp; i++) {
-		int tmp2;
-		is >> tmp2;
-		dest.values.push_back(tmp2);
-	}
-	return is;
-}
-
-std::ostream& operator<<(std::ostream& os, const player_activity& src)
-{
-	if (const auto json = JSON_key(src.type)) {
-		JSON _act;
-		_act.set("type", json);
-		if (0 != src.moves_left) _act.set("moves_left", std::to_string(src.moves_left));
-		if (-1 != src.index) _act.set("index", std::to_string(src.index));
-		if (point(-1,-1) != src.placement) _act.set("placement", toJSON(src.placement));
-		if (!src.values.empty()) _act.set("values", JSON::encode(src.values));
-		return os << _act;
-	} else return os << "{}"; // temporary
 }
 
 spawn_point::spawn_point(std::istream& is)
@@ -1200,30 +1075,7 @@ item::item(std::istream& is)
 : type(item::types[itm_null]),corpse(0),curammo(0),name(""),invlet(0),charges(-1),active(false),
   damage(0),burnt(0),bday(0),owned(-1),poison(0),mission_id(-1),player_id(-1)
 {
-	if ('{' == (is >> std::ws).peek()) {
-		JSON _in(is);
-		fromJSON(_in, *this);
-		return;
-	}
-	// \todo release block: remove legacy reading
-	int lettmp, damtmp, burntmp;
-	is >> lettmp >> type >> charges >> damtmp >> burntmp >> poison >> curammo >>
-		owned >> bday >> active >> corpse >> mission_id >> player_id;
-	if (!type) type = item::types[itm_null];	// \todo warn if this kicks in
-	getline(is, name);
-	if (name == " ''") name = "";
-	else {
-		size_t pos = name.find_first_of("@@");
-		while (pos != std::string::npos) {
-			name.replace(pos, 2, "\n");
-			pos = name.find_first_of("@@");
-		}
-		name = name.substr(2, name.size() - 3); // s/^ '(.*)'$/\1/
-	}
-	invlet = char(lettmp);
-	damage = damtmp;
-	burnt = burntmp;
-	// XXX historically, contents are not loaded at this time; \todo blocker: V 0.2.0 final version would do so
+	fromJSON(JSON(is), *this);
 }
 
 JSON toJSON(const item& src) {
@@ -1396,29 +1248,6 @@ void itype::toJSON(JSON& dest) const
 	}
 }
 
-itype::itype(std::istream& is)
-: id(0),rarity(0),name("none"),techniques(0)
-{
-	int colortmp, bashtmp, cuttmp, hittmp, flagstmp;
-
-	is >> price >> sym >> colortmp >> m1 >> m2 >> volume >> weight >> bashtmp >> cuttmp >> hittmp >> flagstmp;
-	color = int_to_color(colortmp);
-	melee_dam = bashtmp;
-	melee_cut = cuttmp;
-	m_to_hit = hittmp;
-	item_flags = flagstmp;
-
-	id = item::types.size();
-}
-
-std::ostream& operator<<(std::ostream& os, const itype& src)
-{
-	return os << src.price I_SEP << src.sym I_SEP << color_to_int(src.color) I_SEP <<
-		src.m1 I_SEP << src.m2 I_SEP << src.volume I_SEP <<
-		src.weight I_SEP << int(src.melee_dam) I_SEP << int(src.melee_cut) I_SEP <<
-		int(src.m_to_hit) I_SEP << int(src.item_flags);
-}
-
 // usage is when loading artifacts
 it_armor::it_armor(const cataclysm::JSON& src)
 : itype(src), covers(0), encumber(0), dmg_resist(0), cut_resist(0), env_resist(0), warmth(0), storage(0)
@@ -1466,27 +1295,6 @@ void it_armor::toJSON(JSON& dest) const
 	if (storage) dest.set("storage", std::to_string((int)storage));
 }
 
-it_armor::it_armor(std::istream& is)
-: itype(is), covers(0), encumber(0), dmg_resist(0), cut_resist(0), env_resist(0), warmth(0), storage(0)
-{
-	int covertmp, enctmp, dmgrestmp, cutrestmp, envrestmp, warmtmp, storagetmp;
-	is >> covertmp >> enctmp >> dmgrestmp >> cutrestmp >> envrestmp >> warmtmp >> storagetmp;
-	covers = covertmp;
-	encumber = enctmp;
-	dmg_resist = dmgrestmp;
-	cut_resist = cutrestmp;
-	env_resist = envrestmp;
-	warmth = warmtmp;
-	storage = storagetmp;
-}
-
-std::ostream& operator<<(std::ostream& os, const it_armor& src)
-{
-	return os << static_cast<const itype&>(src) I_SEP << int(src.covers) I_SEP <<
-		int(src.encumber) I_SEP << int(src.dmg_resist) I_SEP << int(src.cut_resist)I_SEP <<
-		int(src.env_resist) I_SEP << int(src.warmth) I_SEP << int(src.storage);
-}
-
 it_artifact_armor::it_artifact_armor(const cataclysm::JSON& src)
 : it_armor(src)
 {
@@ -1497,48 +1305,6 @@ void it_artifact_armor::toJSON(JSON& dest) const
 {
 	it_armor::toJSON(dest);
 	if (!effects_worn.empty()) dest.set("effects_worn", JSON::encode(effects_worn));
-}
-
-
-it_artifact_armor::it_artifact_armor(std::istream& is)
-: it_armor(is)
-{
-	price = 0;
-
-	int num_effects;
-	is >> num_effects;
-
-	for (int i = 0; i < num_effects; i++) {
-		art_effect_passive effect;
-		is >> effect;
-		effects_worn.push_back(effect);
-	}
-
-	std::string namepart;
-	std::stringstream namedata;
-	bool start = true;
-	do {
-		if (!start) namedata I_SEP;
-		else start = false;
-		is >> namepart;
-		if (namepart != "-") namedata << namepart;
-	} while (namepart.find("-") == std::string::npos);
-	name = namedata.str();
-	start = true;
-
-	std::stringstream descdata;
-	do {
-		is >> namepart;
-		if (namepart == "=") {
-			descdata << "\n";
-			start = true;
-		} else if (namepart != "-") {
-			if (!start) descdata I_SEP;
-			descdata << namepart;
-			start = false;
-		}
-	} while (namepart.find("-") == std::string::npos && !is.eof());
-	description = descdata.str();
 }
 
 std::ostream& operator<<(std::ostream& os, const it_artifact_armor& src)
@@ -1578,17 +1344,6 @@ void it_tool::toJSON(JSON& dest) const
 	// function pointers only would need a JSON representation if modding
 }
 
-it_tool::it_tool(std::istream& is)
-: itype(is),ammo(AT_NULL),def_charges(0),charges_per_use(0),turns_per_charge(0),revert_to(itm_null),use(&iuse::none)
-{
-	is >> max_charges;
-}
-
-std::ostream& operator<<(std::ostream& os, const it_tool& src)
-{
-	return os << static_cast<const itype&>(src) I_SEP << src.max_charges;
-}
-
 it_artifact_tool::it_artifact_tool(const cataclysm::JSON& src)
 : it_tool(src)
 {
@@ -1607,64 +1362,6 @@ void it_artifact_tool::toJSON(JSON& dest) const
 	if (!effects_wielded.empty()) dest.set("effects_wielded", JSON::encode(effects_wielded));
 	if (!effects_activated.empty()) dest.set("effects_activated", JSON::encode(effects_activated));
 	if (!effects_carried.empty()) dest.set("effects_carried", JSON::encode(effects_carried));
-}
-
-it_artifact_tool::it_artifact_tool(std::istream& is)
-: it_tool(is)
-{
-	charges_per_use = 1;
-	use = &iuse::artifact;
-
-	int num_effects;
-
-	is >> charge_type >> num_effects;
-	for (int i = 0; i < num_effects; i++) {
-		art_effect_passive effect;
-		is >> effect;
-		effects_wielded.push_back(effect);
-	}
-
-	is >> num_effects;
-	for (int i = 0; i < num_effects; i++) {
-		art_effect_active effect;
-		is >> effect;
-		effects_activated.push_back(effect);
-	}
-
-	is >> num_effects;
-	for (int i = 0; i < num_effects; i++) {
-		art_effect_passive effect;
-		is >> effect;
-		effects_carried.push_back(effect);
-	}
-
-	std::string namepart;
-	std::stringstream namedata;
-	bool start = true;
-	do {
-		is >> namepart;
-		if (namepart != "-") {
-			if (!start) namedata << " ";
-			else start = false;
-			namedata << namepart;
-		}
-	} while (namepart.find("-") == std::string::npos);
-	name = namedata.str();
-	start = true;
-
-	std::stringstream descdata;
-	do {
-		is >> namepart;
-		if (namepart == "=") {
-			descdata << "\n";
-			start = true;
-		} else if (namepart != "-") {
-			if (!start) descdata << " ";
-			descdata << namepart;
-			start = false;
-		}
-	} while (namepart.find("-") == std::string::npos && !is.eof());
-	description = descdata.str();
 }
 
 std::ostream& operator<<(std::ostream& os, const it_artifact_tool& src)
@@ -1706,29 +1403,6 @@ JSON toJSON(const disease& src)
 	return _disease;
 }
 
-disease::disease(std::istream& is)
-: type(DI_NULL), intensity(0), duration(0)
-{
-	if ('{' == (is >> std::ws).peek()) {
-		fromJSON(JSON(is),*this);
-		return;
-	}
-	// \todo release block: remove legacy reading
-	is >> type >> duration;
-}
-
-std::ostream& operator<<(std::ostream& os, const disease& src)
-{
-	if (auto json = JSON_key(src.type)) {
-		JSON _disease;
-		_disease.set("type", json);
-		_disease.set("duration", std::to_string(src.duration));
-		_disease.set("intensity", std::to_string(src.intensity));
-		return os << _disease;
-	}
-	else return os << "{}";
-}
-
 JSON toJSON(const addiction& src)
 {
 	JSON _addiction;
@@ -1745,28 +1419,6 @@ bool fromJSON(const JSON& src, addiction& dest)
 	if (src.has_key("intensity")) fromJSON(src["intensity"], dest.intensity);
 	if (src.has_key("sated")) fromJSON(src["sated"], dest.sated);
 	return true;
-}
-
-addiction::addiction(std::istream& is)
-: type(ADD_NULL), intensity(0), sated(600)
-{
-	if ('{' == (is >> std::ws).peek()) {
-		fromJSON(JSON(is),*this);
-		return;
-	}
-	// \todo release block: remove legacy reading
-	is >> type >> intensity >> sated;
-}
-
-std::ostream& operator<<(std::ostream& os, const addiction& src)
-{
-	if (auto json = JSON_key(src.type)) {
-		JSON _addiction;
-		_addiction.set("type", json);
-		_addiction.set("intensity", std::to_string(src.intensity));
-		_addiction.set("sated", std::to_string(src.sated));
-		return os << _addiction;
-	} else return os << "{}";
 }
 
 JSON toJSON(const morale_point& src)
@@ -1786,31 +1438,6 @@ bool fromJSON(const JSON& src, morale_point& dest)
 	if (src.has_key("bonus")) fromJSON(src["bonus"], dest.bonus);
 	if (src.has_key("item")) fromJSON(src["item"], dest.item_type);
 	return true;
-}
-
-morale_point::morale_point(std::istream& is)
-: type(MORALE_NULL), item_type(0), bonus(0)
-{
-	if ('{' == (is >> std::ws).peek()) {
-		fromJSON(JSON(is), *this);
-		return;
-	}
-	// \todo release block: remove legacy reading
-	is >> bonus >> type >> item_type;
-	if (item_type && itm_null == item_type->id) item_type = 0;	// historically, itm_null was the encoding for null pointer
-}
-
-std::ostream& operator<<(std::ostream& os, const morale_point& src)
-{
-	if (auto json = JSON_key(src.type)) {
-		JSON _morale;
-		_morale.set("type", json);
-		if (0 != src.bonus) _morale.set("bonus", std::to_string(src.bonus));
-		if (src.item_type) {
-			if (auto json2 = JSON_key((itype_id)(src.item_type->id))) _morale.set("item", json2);	// \todo eliminate this cast?
-		}
-		return os << _morale;
-	} else return os << "{}";
 }
 
 inventory::inventory(const JSON& src)
@@ -2016,68 +1643,6 @@ player::player(const JSON& src)
  if (src.has_key("addictions")) src["addictions"].decode(addictions);
 }
 
-// 2019-03-24: work required to make player object a proper base object of the npc object not plausibly mechanical.
-// \todo release block: JSON conversion
-std::istream& operator>>(std::istream& is, player& dest)
-{
-	is >> dest.pos >> dest.str_cur >> dest.str_max >> dest.dex_cur >> dest.dex_max >>
-		dest.int_cur >> dest.int_max >> dest.per_cur >> dest.per_max >> dest.power_level >>
-		dest.max_power_level >> dest.hunger >> dest.thirst >> dest.fatigue >> dest.stim >>
-		dest.pain >> dest.pkill >> dest.radiation >> dest.cash >> dest.recoil >> dest.driving_recoil >>
-		dest.in_vehicle >> dest.scent >> dest.moves >> dest.underwater >> dest.dodges_left >> dest.blocks_left >>
-		dest.oxygen >> dest.active_mission >> dest.xp_pool >> dest.male >> dest.health >> dest.style_selected >> dest.activity >> dest.backlog;
-
-	for (int i = 0; i < PF_MAX2; i++) is >> dest.my_traits[i];
-	for (int i = 0; i < PF_MAX2; i++) is >> dest.my_mutations[i];
-	for (int i = 0; i < NUM_MUTATION_CATEGORIES; i++) is >> dest.mutation_category_level[i];
-	for (int i = 0; i < num_hp_parts; i++) is >> dest.hp_cur[i] >> dest.hp_max[i];
-	for (int i = 0; i < num_skill_types; i++) is >> dest.sklevel[i] >> dest.skexercise[i];
-
-	int numstyles;
-	is >> numstyles;
-	for (int i = 0; i < numstyles; i++) {
-		itype_id tmp;
-		is >> tmp;
-		dest.styles.push_back(tmp);
-	}
-
-	int numill;
-	is >> numill;
-	for (int i = 0; i < numill; i++) dest.illness.push_back(disease(is));
-
-	int numadd = 0;
-	is >> numadd;
-	for (int i = 0; i < numadd; i++) dest.addictions.push_back(addiction(is));
-
-	int numbio = 0;
-	is >> numbio;
-	for (int i = 0; i < numbio; i++) dest.my_bionics.push_back(bionic(is));
-
-	// this is not mirrored in npc save format
-	int nummor;
-	is >> nummor;
-	for (int i = 0; i < nummor; i++) dest.morale.push_back(morale_point(is));
-
-	int nummis = 0;
-	int mistmp;
-	is >> nummis;
-	for (int i = 0; i < nummis; i++) {
-		is >> mistmp;
-		dest.active_missions.push_back(mistmp);
-	}
-	is >> nummis;
-	for (int i = 0; i < nummis; i++) {
-		is >> mistmp;
-		dest.completed_missions.push_back(mistmp);
-	}
-	is >> nummis;
-	for (int i = 0; i < nummis; i++) {
-		is >> mistmp;
-		dest.failed_missions.push_back(mistmp);
-	}
-	return is;
-}
-
 JSON toJSON(const npc_opinion& src)
 {
 	JSON _opinion;
@@ -2100,37 +1665,6 @@ bool fromJSON(const JSON& src, npc_opinion& dest)
 	if (src.has_key("owed")) fromJSON(src["owed"], dest.owed);
 	if (src.has_key("favors")) src["favors"].decode(dest.favors);
 	return true;
-}
-
-std::istream& operator>>(std::istream& is, npc_opinion& dest)
-{
-	if ('{' == (is >> std::ws).peek()) {
-		JSON _in(is);
-		if (_in.has_key("trust")) fromJSON(_in["trust"], dest.trust);
-		if (_in.has_key("fear")) fromJSON(_in["fear"], dest.fear);
-		if (_in.has_key("value")) fromJSON(_in["value"], dest.value);
-		if (_in.has_key("anger")) fromJSON(_in["anger"], dest.anger);
-		if (_in.has_key("owed")) fromJSON(_in["owed"], dest.owed);
-		if (_in.has_key("favors")) _in["favors"].decode(dest.favors);
-		return is;
-	}
-	// \todo release block: remove legacy reading
-	int tmpsize;
-	is >> dest.trust >> dest.fear >> dest.value >> dest.anger >> dest.owed >> tmpsize;
-	for (int i = 0; i < tmpsize; i++) dest.favors.push_back(npc_favor(is));
-	return is;
-}
-
-std::ostream& operator<<(std::ostream& os, const npc_opinion& src)
-{
-	JSON _opinion;
-	_opinion.set("trust", std::to_string(src.trust));
-	_opinion.set("fear", std::to_string(src.fear));
-	_opinion.set("value", std::to_string(src.value));
-	_opinion.set("anger", std::to_string(src.anger));
-	_opinion.set("owed", std::to_string(src.owed));
-	if (!src.favors.empty()) _opinion.set("favors", JSON::encode(src.favors));
-	return os << _opinion;
 }
 
 JSON toJSON(const npc_chatbin& src)
@@ -2162,52 +1696,6 @@ bool fromJSON(const JSON& src, npc_chatbin& dest)
 	return true;
 }
 
-std::istream& operator>>(std::istream& is, npc_chatbin& dest)
-{
-	if ('{' == (is >> std::ws).peek()) {
-		JSON _in(is);
-		if (!_in.has_key("first_topic") || !fromJSON(_in["first_topic"], dest.first_topic)) return is;
-
-		// \todo: verify whether missions are fully loaded before the chatbins are loaded
-		// \todo: verify whether mission_selected and tempvalue are UI-local, thus not needed in the savefile
-		if (_in.has_key("mission_selected")) fromJSON(_in["mission_selected"], dest.mission_selected);
-		if (_in.has_key("tempvalue")) fromJSON(_in["tempvalue"], dest.tempvalue);
-		if (_in.has_key("missions")) _in["missions"].decode(dest.missions);
-		if (_in.has_key("missions_assigned")) _in["missions_assigned"].decode(dest.missions_assigned);
-		return is;
-	}
-	// \todo release block: remove legacy reading
-	int tmpsize_miss, tmpsize_assigned;
-	is >> dest.first_topic >> dest.mission_selected >> dest.tempvalue >> tmpsize_miss >> tmpsize_assigned;
-	for (int i = 0; i < tmpsize_miss; i++) {
-		int tmpmiss;
-		is >> tmpmiss;
-		dest.missions.push_back(tmpmiss);
-	}
-	for (int i = 0; i < tmpsize_assigned; i++) {
-		int tmpmiss;
-		is >> tmpmiss;
-		dest.missions_assigned.push_back(tmpmiss);
-	}
-	return is;
-}
-
-std::ostream& operator<<(std::ostream& os, const npc_chatbin& src)
-{
-	if (auto json = JSON_key(src.first_topic)) {
-		JSON _chatbin;
-		_chatbin.set("first_topic", json);
-		// \todo: try to purge invalid mission ids before checking size, etc.
-		if (0 <= src.mission_selected && (src.missions.size() > src.mission_selected || src.missions_assigned.size() > src.mission_selected)) {
-			_chatbin.set("mission_selected", std::to_string(src.mission_selected));
-		}
-		_chatbin.set("tempvalue", std::to_string(src.tempvalue));
-		if (!src.missions.empty()) _chatbin.set("missions", JSON::encode(src.missions));
-		if (!src.missions_assigned.empty()) _chatbin.set("missions_assigned", JSON::encode(src.missions_assigned));
-		return os << _chatbin;
-	} else return os << "{}";
-}
-
 JSON toJSON(const npc_personality& src)
 {
 	JSON _personality;
@@ -2229,37 +1717,6 @@ bool fromJSON(const JSON& src, npc_personality& dest)
 	return true;
 }
 
-std::istream& operator>>(std::istream& is, npc_personality& dest)
-{
-	if ('{' == (is >> std::ws).peek()) {
-		JSON _in(is);
-		int tmp;
-		if (_in.has_key("aggression") && fromJSON(_in["aggression"], tmp)) dest.aggression = (signed char)tmp;
-		if (_in.has_key("bravery") && fromJSON(_in["bravery"], tmp)) dest.bravery = (signed char)tmp;
-		if (_in.has_key("collector") && fromJSON(_in["collector"], tmp)) dest.collector = (signed char)tmp;
-		if (_in.has_key("altruism") && fromJSON(_in["altruism"], tmp)) dest.altruism = (signed char)tmp;
-		return is;
-	}
-	// \todo release block: remove legacy reading
-	int agg, bra, col, alt;
-	is >> agg >> bra >> col >> alt;
-	dest.aggression = agg;
-	dest.bravery = bra;
-	dest.collector = col;
-	dest.altruism = alt;
-	return is;
-}
-
-std::ostream& operator<<(std::ostream& os, const npc_personality& src)
-{
-	JSON _personality;
-	_personality.set("aggression", std::to_string((int)src.aggression));
-	_personality.set("bravery", std::to_string((int)src.bravery));
-	_personality.set("collector", std::to_string((int)src.collector));
-	_personality.set("altruism", std::to_string((int)src.altruism));
-	return os << _personality;
-}
-
 JSON toJSON(const npc_combat_rules& src)
 {
 	JSON _engage(JSON::object);
@@ -2277,30 +1734,6 @@ bool fromJSON(const JSON& src, npc_combat_rules& dest)
 	if (src.has_key("use_guns")) fromJSON(src["use_guns"], dest.use_guns);
 	if (src.has_key("use_grenades")) fromJSON(src["use_grenades"], dest.use_grenades);
 	return true;
-}
-
-std::istream& operator>>(std::istream& is, npc_combat_rules& dest)
-{
-	if ('{' == (is >> std::ws).peek()) {
-		JSON _in(is);
-		if (!_in.has_key("engagement") || !fromJSON(_in["engagement"], dest.engagement)) return is;
-		if (_in.has_key("use_guns")) fromJSON(_in["use_guns"], dest.use_guns);
-		if (_in.has_key("use_grenades")) fromJSON(_in["use_grenades"], dest.use_grenades);
-		return is;
-	}
-	// \todo release block: remove legacy reading.  This unblocks re-ordering enum combat_engagement so that the default (ENGAGE_ALL) has value zero
-	return is >> dest.engagement >> dest.use_guns >> dest.use_grenades;
-}
-
-std::ostream& operator<<(std::ostream& os, const npc_combat_rules& src)
-{
-	if (auto json = JSON_key(src.engagement)) {
-		JSON _engage;
-		_engage.set("engagement", json);
-		if (!src.use_guns) _engage.set("use_guns", "false");
-		if (!src.use_grenades) _engage.set("use_grenades", "false");
-		return os << _engage;
-	} else return os << "{}";
 }
 
 JSON toJSON(const npc& src)

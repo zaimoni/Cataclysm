@@ -360,9 +360,7 @@ struct itype
 
  virtual ~itype() = default;
 protected:	// this is not a final type so these aren't public
- itype(std::istream& is);
  itype(const cataclysm::JSON& src);
- friend std::ostream& operator<<(std::ostream& os, const itype& src);
  virtual void toJSON(cataclysm::JSON& dest) const;
 };
 
@@ -505,9 +503,7 @@ struct it_armor : public itype
  bool is_armor() const override { return true; }
 
 protected:	// this is not a final type so these aren't public
- it_armor(std::istream& is);
  it_armor(const cataclysm::JSON& src);
- friend std::ostream& operator<<(std::ostream& os, const it_armor& src);
  void toJSON(cataclysm::JSON& dest) const override;
 };
 
@@ -584,8 +580,6 @@ struct it_tool : public itype
  bool is_tool() const override { return true; }
 protected:	// this is not a final type so these aren't public
 	it_tool(const cataclysm::JSON& src);
-	it_tool(std::istream& is);
-	friend std::ostream& operator<<(std::ostream& os, const it_tool& src);
 	void toJSON(cataclysm::JSON& dest) const override;
 };
         
@@ -663,7 +657,6 @@ struct it_artifact_tool final : public it_tool
  std::vector<art_effect_passive> effects_carried;
 
  it_artifact_tool(const cataclysm::JSON& src);
- it_artifact_tool(std::istream& is);
  friend std::ostream& operator<<(std::ostream& os, const it_artifact_tool& src);
  void toJSON(cataclysm::JSON& dest) const override;
 
@@ -693,7 +686,6 @@ struct it_artifact_armor final : public it_armor
                    unsigned char pdmg_resist, unsigned char pcut_resist,
                    unsigned char penv_resist, signed char pwarmth,
                    unsigned char pstorage);
- it_artifact_armor(std::istream& is);
  it_artifact_armor(const cataclysm::JSON& src);
  friend std::ostream& operator<<(std::ostream& os, const it_artifact_armor& src);
  void toJSON(cataclysm::JSON& dest) const override;
