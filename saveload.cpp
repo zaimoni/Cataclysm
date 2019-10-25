@@ -208,6 +208,7 @@ JSON_ENUM(npc_mission)
 JSON_ENUM(pl_flag)
 JSON_ENUM(skill)
 JSON_ENUM(talk_topic)
+JSON_ENUM(vhtype_id)
 JSON_ENUM(vpart_id)
 JSON_ENUM(weather_type)
 
@@ -747,6 +748,54 @@ JSON toJSON(const vehicle_part& src)
 		if (!src.items.empty()) _part.set("items", JSON::encode(src.items));
 	}
 	return _part;
+}
+
+bool fromJSON(const JSON& src, vehicle& dest)
+{
+	if (!src.has_key("type") || !fromJSON(src["type"], dest._type)) return false;
+	if (src.has_key("name")) fromJSON(src["name"], dest.name);
+	if (src.has_key("pos")) fromJSON(src["pos"], dest.pos);
+	if (src.has_key("turn_dir")) fromJSON(src["turn_dir"], dest.turn_dir);
+	if (src.has_key("velocity")) fromJSON(src["velocity"], dest.velocity);
+	if (src.has_key("cruise_velocity")) fromJSON(src["cruise_velocity"], dest.cruise_velocity);
+	if (src.has_key("cruise_on")) fromJSON(src["cruise_on"], dest.cruise_on);
+	if (src.has_key("skidding")) fromJSON(src["skidding"], dest.skidding);
+	if (src.has_key("moves")) fromJSON(src["moves"], dest.moves);
+	if (src.has_key("parts")) src["parts"].decode(dest.parts);
+
+	// \todo? auto-convert true/false literals to 1/0 for numeric destinations
+	bool b_tmp;
+	if (src.has_key("turret_burst") && fromJSON("turret_burst", b_tmp)) dest.turret_mode = b_tmp;
+
+	int tmp;
+	if (src.has_key("facing") && fromJSON(src["facing"], tmp)) dest.face.init(tmp);
+	if (src.has_key("move_dir") && fromJSON(src["move_dir"], tmp)) dest.move.init(tmp);
+	dest.find_external_parts();
+	dest.find_exhaust();
+	dest.insides_dirty = true;
+	dest.precalc_mounts(0, dest.face.dir());
+	return true;
+}
+
+JSON toJSON(const vehicle& src)
+{
+	JSON _vehicle(JSON::object);
+	if (const auto json = JSON_key(src._type)) {
+		_vehicle.set("type", json);
+		_vehicle.set("name", src.name);
+		_vehicle.set("pos", toJSON(src.pos));
+		_vehicle.set("facing", std::to_string(src.face.dir()));
+		_vehicle.set("move_dir", std::to_string(src.move.dir()));
+		_vehicle.set("turn_dir", std::to_string(src.turn_dir));
+		_vehicle.set("velocity", std::to_string(src.velocity));
+		if (0 < src.cruise_velocity) _vehicle.set("cruise_velocity", std::to_string(src.cruise_velocity));
+		if (!src.cruise_on) _vehicle.set("cruise_on", "false");
+		if (src.turret_mode) _vehicle.set("turret_burst", "true");	// appears to be meant to be an enumeration (burst vs. autofire?)
+		if (src.skidding) _vehicle.set("skidding", "true");
+		_vehicle.set("moves", std::to_string(src.moves));
+		if (!src.parts.empty()) _vehicle.set("parts", JSON::encode(src.parts));
+	}
+	return _vehicle;
 }
 
 vehicle::vehicle(std::istream& in)

@@ -64,7 +64,16 @@ static const char* const JSON_transcode_vparts[] = {
 	"hard_plate"
 };
 
-DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(vpart_id, JSON_transcode_vparts)
+static const char* const JSON_transcode_vtypes[] = {
+	"custom",
+	"motorcycle",
+	"sandbike",
+	"car",
+	"truck"
+};
+
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(vhtype_id, JSON_transcode_vtypes)
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(vpart_id, JSON_transcode_vparts)
 
 std::vector <vehicle*> vehicle::vtypes;
 

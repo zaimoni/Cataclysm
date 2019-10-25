@@ -102,6 +102,7 @@ relevant_lines = []	# to document expected type for extract_C_enum
 # relevant_lines = bracketed_lines('pldata.h','enum hp_part {','}')
 # relevant_lines = bracketed_lines('pldata.h','enum pl_flag {','}')
 # relevant_lines = bracketed_lines('skill.h','enum skill {','}')
+# relevant_lines = bracketed_lines('veh_type.h','enum vhtype_id','}')
 # relevant_lines = bracketed_lines('veh_type.h','enum vpart_id','}')
 # relevant_lines = bracketed_lines('weather.h','enum weather_type {','}')
 enum_like = extract_C_enum(relevant_lines)

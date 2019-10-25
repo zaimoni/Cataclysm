@@ -3,8 +3,7 @@
 #include "recent_msg.h"
 #include <vector>
 
-static const char* const JSON_transcode[NUM_WEATHER_TYPES] = {
-	"NULL",
+static const char* const JSON_transcode[] = {
 	"CLEAR",
 	"SUNNY",
 	"CLOUDY",

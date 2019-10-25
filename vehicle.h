@@ -330,7 +330,7 @@ public:
     bool skidding;      // skidding mode
     int last_turn;      // amount of last turning (for calculate skidding due to handbrake)
     int moves;
-    int turret_mode;    // turret firing mode: 0 = off, 1 = burst fire
+    int turret_mode;    // turret firing mode: 0 = off, 1 = burst fire	; leave as int in case we want true autofire
 private:
 	// init parts state for randomly generated vehicle
 	void init_state();

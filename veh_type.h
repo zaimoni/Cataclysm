@@ -148,4 +148,6 @@ enum vhtype_id
     num_vehicles
 };
 
+DECLARE_JSON_ENUM_SUPPORT(vhtype_id)
+
 #endif
