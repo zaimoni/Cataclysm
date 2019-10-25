@@ -44,9 +44,6 @@ public:
  item& operator=(const item& src);
  item& operator=(item&& src) = default;
 
- item(std::istream& is);
- friend std::ostream& operator<<(std::ostream& os, const item& src);
-
 // returns the default container of this item, with this item in it
  item in_its_container() const;
 

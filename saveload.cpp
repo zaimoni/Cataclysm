@@ -783,6 +783,62 @@ std::ostream& operator<<(std::ostream& os, const vehicle& src)
 	return os;
 }
 
+bool fromJSON(const JSON& _in, item& dest)
+{
+	if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) return false;
+	if (_in.has_key("corpse")) fromJSON(_in["corpse"], dest.corpse);
+	if (_in.has_key("curammo")) fromJSON(_in["curammo"], dest.curammo);
+	if (_in.has_key("name")) fromJSON(_in["name"], dest.name);
+	if (_in.has_key("invlet")) {
+		std::string tmp;
+		fromJSON(_in["invlet"], tmp);
+		dest.invlet = tmp[0];
+	}
+	if (_in.has_key("charges")) fromJSON(_in["charges"], dest.charges);
+	if (_in.has_key("active")) fromJSON(_in["active"], dest.active); {
+		int tmp;
+		if (_in.has_key("damage") && fromJSON(_in["damage"], tmp)) dest.damage = tmp;
+		if (_in.has_key("burnt") && fromJSON(_in["burnt"], tmp)) dest.burnt = tmp;
+	}
+	if (_in.has_key("bday")) fromJSON(_in["bday"], dest.bday);
+	if (_in.has_key("poison")) fromJSON(_in["poison"], dest.poison);
+	if (_in.has_key("owned")) fromJSON(_in["owned"], dest.owned);
+	if (_in.has_key("mission_id")) fromJSON(_in["mission_id"], dest.mission_id);
+	if (_in.has_key("player_id")) fromJSON(_in["player_id"], dest.player_id);
+	if (_in.has_key("contents")) _in["contents"].decode(dest.contents);
+	return true;
+}
+
+JSON toJSON(const item& src) {
+	JSON _item(JSON::object);
+
+	if (src.type) {
+		if (auto json = JSON_key((itype_id)src.type->id)) {
+			_item.set("type", json);
+			if (src.corpse) {
+				if (auto json2 = JSON_key((mon_id)src.corpse->id)) _item.set("corpse", json2);
+			}
+			if (src.curammo) {
+				if (auto json2 = JSON_key((itype_id)src.curammo->id)) _item.set("curammo", json2);
+			}
+			if (!src.name.empty()) _item.set("name", src.name.c_str());
+			if (src.invlet) _item.set("invlet", std::string(1, src.invlet));
+			if (0 <= src.charges) _item.set("charges", std::to_string(src.charges));
+			if (src.active) _item.set("active", "true");
+			if (src.damage) _item.set("damage", std::to_string((int)src.damage));
+			if (src.burnt) _item.set("burnt", std::to_string((int)src.burnt));
+			if (0 < src.bday) _item.set("bday", std::to_string(src.bday));
+			if (src.poison) _item.set("poison", std::to_string(src.poison));
+			if (0 <= src.owned) _item.set("owned", std::to_string(src.owned));
+			if (0 <= src.mission_id) _item.set("mission_id", std::to_string(src.mission_id));	// \todo validate this more thoroughly
+			if (-1 != src.player_id) _item.set("player_id", std::to_string(src.player_id));
+
+			if (!src.contents.empty()) _item.set("contents", JSON::encode(src.contents));
+		};
+	};
+	return _item;
+}
+
 // \todo release block: submap::submap,operator<< need at least partial JSON conversion
 submap::submap(std::istream& is)
 {
@@ -817,12 +873,11 @@ submap::submap(std::istream& is)
 		int t = 0;
 		if (string_identifier == "I") {
 			is >> itx >> ity >> std::ws;
-			itm[itx][ity].push_back(item(is));
-			if (it_tmp.active) active_item_count++;
-		} else if (string_identifier == "C") {
-			is >> std::ws;
-			itm[itx][ity].back().put_in(item(is));
-			if (it_tmp.active) active_item_count++;
+			if (fromJSON(JSON(is), it_tmp)) {
+				itm[itx][ity].push_back(it_tmp);
+				if (it_tmp.active) active_item_count++;
+				if (!it_tmp.contents.empty()) for (const auto& it : it_tmp.contents) if (it.active) active_item_count++;
+			}
 		} else if (string_identifier == "T") {
 			is >> itx >> ity;
 			is >> trp[itx][ity];
@@ -878,7 +933,7 @@ std::ostream& operator<<(std::ostream& os, const submap& src)
 		for (int i = 0; i < SEEX; i++) {
 			for (const auto& it : src.itm[i][j])  {
 				os << "I " << i I_SEP << j << std::endl;
-				os << it << std::endl;
+				os << toJSON(it) << std::endl;
 			}
 		}
 	}
@@ -974,71 +1029,6 @@ JSON toJSON(const faction& src)
 	_faction.set("power", std::to_string(src.power));
 	return _faction;
 }
-
-bool fromJSON(const JSON& _in, item& dest)
-{
-	if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) return false;
-	if (_in.has_key("corpse")) fromJSON(_in["corpse"], dest.corpse);
-	if (_in.has_key("curammo")) fromJSON(_in["curammo"], dest.curammo);
-	if (_in.has_key("name")) fromJSON(_in["name"], dest.name);
-	if (_in.has_key("invlet")) {
-		std::string tmp;
-		fromJSON(_in["invlet"], tmp);
-		dest.invlet = tmp[0];
-	}
-	if (_in.has_key("charges")) fromJSON(_in["charges"], dest.charges);
-	if (_in.has_key("active")) fromJSON(_in["active"], dest.active); {
-		int tmp;
-		if (_in.has_key("damage") && fromJSON(_in["damage"], tmp)) dest.damage = tmp;
-		if (_in.has_key("burnt") && fromJSON(_in["burnt"], tmp)) dest.burnt = tmp;
-	}
-	if (_in.has_key("bday")) fromJSON(_in["bday"], dest.bday);
-	if (_in.has_key("poison")) fromJSON(_in["poison"], dest.poison);
-	if (_in.has_key("owned")) fromJSON(_in["owned"], dest.owned);
-	if (_in.has_key("mission_id")) fromJSON(_in["mission_id"], dest.mission_id);
-	if (_in.has_key("player_id")) fromJSON(_in["player_id"], dest.player_id);
-	if (_in.has_key("contents")) _in["contents"].decode(dest.contents);
-	return true;
-}
-
-item::item(std::istream& is)
-: type(item::types[itm_null]),corpse(0),curammo(0),name(""),invlet(0),charges(-1),active(false),
-  damage(0),burnt(0),bday(0),owned(-1),poison(0),mission_id(-1),player_id(-1)
-{
-	fromJSON(JSON(is), *this);
-}
-
-JSON toJSON(const item& src) {
-	JSON _item(JSON::object);
-
-	if (src.type) {
-		if (auto json = JSON_key((itype_id)src.type->id)) {
-			_item.set("type", json);
-			if (src.corpse) {
-				if (auto json2 = JSON_key((mon_id)src.corpse->id)) _item.set("corpse", json2);
-			}
-			if (src.curammo) {
-				if (auto json2 = JSON_key((itype_id)src.curammo->id)) _item.set("curammo", json2);
-			}
-			if (!src.name.empty()) _item.set("name", src.name.c_str());
-			if (src.invlet) _item.set("invlet", std::string(1, src.invlet));
-			if (0 <= src.charges) _item.set("charges", std::to_string(src.charges));
-			if (src.active) _item.set("active", "true");
-			if (src.damage) _item.set("damage", std::to_string((int)src.damage));
-			if (src.burnt) _item.set("burnt", std::to_string((int)src.burnt));
-			if (0 < src.bday) _item.set("bday", std::to_string(src.bday));
-			if (src.poison) _item.set("poison", std::to_string(src.poison));
-			if (0 <= src.owned) _item.set("owned", std::to_string(src.owned));
-			if (0 <= src.mission_id) _item.set("mission_id", std::to_string(src.mission_id));	// \todo validate this more thoroughly
-			if (-1 != src.player_id) _item.set("player_id", std::to_string(src.player_id));
-
-			if (!src.contents.empty()) _item.set("contents", JSON::encode(src.contents));
-		};
-	};
-	return _item;
-}
-
-std::ostream& operator<<(std::ostream& os, const item& src) { return os << toJSON(src); }
 
 bool fromJSON(const JSON& _in, monster& dest)
 {
