@@ -310,7 +310,7 @@ public:
 
     // config values
     std::string name;   // vehicle name
-    int type;           // vehicle type
+	vhtype_id _type;           // vehicle type
     std::vector<vehicle_part> parts;   // Parts which occupy different tiles
     std::vector<int> external_parts;   // List of external parts indeces
 	point exhaust_d;

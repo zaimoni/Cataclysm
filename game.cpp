@@ -4787,7 +4787,7 @@ void game::drop_in_direction()
  vehicle *veh = m.veh_at(dir, veh_part);
  if (veh) {
   veh_part = veh->part_with_feature (veh_part, vpf_cargo);
-  to_veh = veh->type != veh_null && veh_part >= 0;
+  to_veh = veh->_type && veh_part >= 0;
  }
 
  if (m.has_flag(noitem, dir) || m.has_flag(sealed, dir)) {

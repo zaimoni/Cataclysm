@@ -159,6 +159,7 @@ IO_OPS_ENUM(talk_topic)
 IO_OPS_ENUM(ter_id)
 IO_OPS_ENUM(trap_id)
 IO_OPS_ENUM(vpart_id)
+IO_OPS_ENUM(vhtype_id)
 
 #define JSON_ENUM(TYPE)	\
 JSON toJSON(TYPE src) {	\
@@ -752,9 +753,8 @@ vehicle::vehicle(std::istream& in)
 {
 	int t;
 	int fdir, mdir, skd, prts, cr_on;
-	in >> t >> pos >> fdir >> mdir >> turn_dir >> velocity >> cruise_velocity >>
+	in >> _type >> pos >> fdir >> mdir >> turn_dir >> velocity >> cruise_velocity >>
 		cr_on >> turret_mode >> skd >> moves >> prts;
-	type = (vhtype_id)t;
 	face.init(fdir);
 	move.init(mdir);
 	skidding = skd != 0;
@@ -772,7 +772,7 @@ vehicle::vehicle(std::istream& in)
 
 std::ostream& operator<<(std::ostream& os, const vehicle& src)
 {
-	os << int(src.type) I_SEP << src.pos I_SEP << src.face.dir() I_SEP <<
+	os << src._type I_SEP << src.pos I_SEP << src.face.dir() I_SEP <<
 		src.move.dir() I_SEP << src.turn_dir I_SEP << src.velocity I_SEP <<
 		src.cruise_velocity I_SEP << (src.cruise_on ? 1 : 0) I_SEP <<
 		src.turret_mode I_SEP << (src.skidding ? 1 : 0) I_SEP <<

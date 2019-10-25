@@ -69,17 +69,13 @@ DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(vpart_id, JSON_transcode_vparts)
 std::vector <vehicle*> vehicle::vtypes;
 
 vehicle::vehicle(vhtype_id type_id)
-: type(type_id), insides_dirty(true), pos(0,0), velocity(0), cruise_velocity(0), cruise_on(true),
+: _type(type_id), insides_dirty(true), pos(0,0), velocity(0), cruise_velocity(0), cruise_on(true),
   turn_dir(0), skidding(false), last_turn(0), moves(0), turret_mode(0)
 {
-    if (type >= num_vehicles) type = 0;
-    if (type > veh_custom)
+    if (veh_custom < _type && vehicle::vtypes.size() > _type)
     {   // get a copy of sample vehicle of this type
-        if (type < vehicle::vtypes.size())
-        {
-            *this = *(vehicle::vtypes[type]);
-            init_state();
-        }
+        *this = *(vehicle::vtypes[_type]);
+        init_state();
     }
     precalc_mounts(0, face.dir());
 }
@@ -88,7 +84,7 @@ DEFINE_ACID_ASSIGN_W_MOVE(vehicle)
 
 bool vehicle::player_in_control(player& p) const
 {
-    if (!type || !p.in_vehicle) return false;
+    if (!_type || !p.in_vehicle) return false;
     int veh_part;
     const vehicle* const veh = game::active()->m.veh_at(p.pos, veh_part);
     if (!veh || veh != this) return false;
