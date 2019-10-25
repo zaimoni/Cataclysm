@@ -38,8 +38,6 @@ struct vehicle_part
 	~vehicle_part() = default;
 	vehicle_part& operator=(const vehicle_part& src) = default;
 	vehicle_part& operator=(vehicle_part&& src) = default;
-	vehicle_part(std::istream& is);
-	friend std::ostream& operator<<(std::ostream& os, const vehicle_part& src);
 };
 
 // Facts you need to know about implementation:

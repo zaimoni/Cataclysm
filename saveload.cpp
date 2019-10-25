@@ -719,6 +719,35 @@ JSON toJSON(const spawn_point& src)
 	return _spawn;
 }
 
+bool fromJSON(const JSON& _in, vehicle_part& dest)
+{
+	if (!_in.has_key("id") || !fromJSON(_in["id"], dest.id)) return false;
+	if (_in.has_key("mount_d")) fromJSON(_in["mount_d"], dest.mount_d);
+	if (_in.has_key("precalc_d")) _in["precalc_d"].decode(dest.precalc_d, (sizeof(dest.precalc_d) / sizeof(*dest.precalc_d)));
+	if (_in.has_key("hp")) fromJSON(_in["hp"], dest.hp);
+	if (_in.has_key("blood")) fromJSON(_in["blood"], dest.blood);
+	if (_in.has_key("inside")) fromJSON(_in["inside"], dest.inside);
+	if (_in.has_key("amount")) fromJSON(_in["amount"], dest.amount);
+	if (_in.has_key("items")) _in["items"].decode(dest.items);
+	return true;
+}
+
+JSON toJSON(const vehicle_part& src)
+{
+	JSON _part(JSON::object);
+	if (auto json = JSON_key(src.id)) {
+		_part.set("id", json);
+		_part.set("mount_d", toJSON(src.mount_d));
+		_part.set("precalc_d", JSON::encode(src.precalc_d, (sizeof(src.precalc_d) / sizeof(*src.precalc_d))));
+		_part.set("hp", std::to_string(src.hp));
+		_part.set("blood", std::to_string(src.hp));
+		_part.set("inside", src.inside ? "true" : "false");	// \todo establish default value
+		_part.set("amount", std::to_string(src.amount));
+		if (!src.items.empty()) _part.set("items", JSON::encode(src.items));
+	}
+	return _part;
+}
+
 vehicle::vehicle(std::istream& in)
 {
 	int t;
@@ -731,7 +760,10 @@ vehicle::vehicle(std::istream& in)
 	skidding = skd != 0;
 	cruise_on = cr_on != 0;
 	getline(in >> std::ws, name); // read name
-	for (int p = 0; p < prts; p++) parts.push_back(vehicle_part(in));
+	for (int p = 0; p < prts; p++) {
+		vehicle_part tmp;
+		if (fromJSON(JSON(in), tmp)) parts.push_back(tmp);
+	}
 	find_external_parts();
 	find_exhaust();
 	insides_dirty = true;
@@ -747,7 +779,7 @@ std::ostream& operator<<(std::ostream& os, const vehicle& src)
 		src.moves I_SEP << src.parts.size() << std::endl;
 	os << src.name << std::endl;
 
-	for (const auto& part : src.parts) os << part;
+	for (const auto& part : src.parts) os << toJSON(part);
 	return os;
 }
 
@@ -802,6 +834,7 @@ submap::submap(std::istream& is)
 		else if (string_identifier == "S") {
 			spawn_point tmp;
 			if (fromJSON(JSON(is), tmp)) spawns.push_back(tmp);
+			is >> std::ws;
 		} else if (string_identifier == "V") {
 			vehicles.push_back(vehicle(is));
 		} else if (string_identifier == "c") {
@@ -873,46 +906,6 @@ std::ostream& operator<<(std::ostream& os, const submap& src)
 	// Output the computer
 	if (src.comp.name != "") os << "c " << toJSON(src.comp) << std::endl;
 	return os << "----" << std::endl;
-}
-
-vehicle_part::vehicle_part(std::istream& is)
-{
-	if ('{' == (is >> std::ws).peek()) {
-		JSON _in(is);
-		if (!_in.has_key("id") || !fromJSON(_in["id"], id)) return;
-		if (_in.has_key("mount_d")) fromJSON(_in["mount_d"], mount_d);
-		if (_in.has_key("precalc_d")) _in["precalc_d"].decode(precalc_d, (sizeof(precalc_d) / sizeof(*precalc_d)));
-		if (_in.has_key("hp")) fromJSON(_in["hp"], hp);
-		if (_in.has_key("blood")) fromJSON(_in["blood"], blood);
-		if (_in.has_key("inside")) fromJSON(_in["inside"], inside);
-		if (_in.has_key("amount")) fromJSON(_in["amount"], amount);
-		if (_in.has_key("items")) _in["items"].decode(items);
-		return;
-	}
-	// \todo release block: remove legacy reading
-	int pid, pnit;
-
-	is >> pid;
-	id = vpart_id(pid);
-
-	is >> mount_d >> hp >> amount >> blood >> pnit >> std::ws;
-	for (int j = 0; j < pnit; j++) items.push_back(item(is));
-}
-
-std::ostream& operator<<(std::ostream& os, const vehicle_part& src)
-{
-	if (auto json = JSON_key(src.id)) {
-		JSON _part;
-		_part.set("id", json);
-		_part.set("mount_d", toJSON(src.mount_d));
-		_part.set("precalc_d", JSON::encode(src.precalc_d, (sizeof(src.precalc_d) / sizeof(*src.precalc_d))));
-		_part.set("hp", std::to_string(src.hp));
-		_part.set("blood", std::to_string(src.hp));
-		_part.set("inside", src.inside ? "true" : "false");	// \todo establish default value
-		_part.set("amount", std::to_string(src.amount));
-		if (!src.items.empty()) _part.set("items", JSON::encode(src.items));
-		return os << _part;
-	} else return os << "{}";
 }
 
 bool fromJSON(const JSON& _in, faction& dest)
