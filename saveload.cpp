@@ -208,6 +208,7 @@ JSON_ENUM(npc_mission)
 JSON_ENUM(pl_flag)
 JSON_ENUM(skill)
 JSON_ENUM(talk_topic)
+JSON_ENUM(ter_id)
 JSON_ENUM(vhtype_id)
 JSON_ENUM(vpart_id)
 JSON_ENUM(weather_type)
@@ -892,23 +893,80 @@ submap::submap(std::istream& is)
 	is >> turn_last_touched;
 	int turndif = int(messages.turn);
 	if (turndif < 0) turndif = 0;
-	// Load terrain
 	for (int j = 0; j < SEEY; j++) {
 		for (int i = 0; i < SEEX; i++) {
-			is >> ter[i][j];
+			ter[i][j] = t_null;
 			itm[i][j].clear();
 			trp[i][j] = tr_null;
 			fld[i][j] = field();
 		}
 	}
-	// Load irradiation
-	for (int j = 0; j < SEEY; j++) {
-		for (int i = 0; i < SEEX; i++) {
-			int radtmp;
-			is >> radtmp;
+	if ('{' == (is >> std::ws).peek()) {
+		JSON sm(is);
+		ter_id terrain;
+		int radtmp;
+		if (sm.has_key("terrain") && JSON::array==sm["terrain"].mode() && SEEY <= sm["terrain"].size()) {
+			const auto& ter_map = sm["terrain"];
+			int j = -1;
+			while (++j < ter_map.size() && j < SEEY) {
+				auto& col = ter_map[j];
+				int i = -1;
+				while (++i < col.size() && i < SEEX) {
+					if (fromJSON(col[i], terrain)) ter[i][j] = terrain;
+				}
+			}
+		} else if (sm.has_key("const_terrain") && fromJSON(sm["const_terrain"], terrain)) {
+			for (int j = 0; j < SEEY; j++) {
+				for (int i = 0; i < SEEX; i++) {
+					ter[i][j] = terrain;
+				}
+			}
+		} else throw std::runtime_error("terrain data missing");
+
+		if (sm.has_key("radiation") && JSON::array == sm["radiation"].mode() && SEEY <= sm["radiation"].size()) {
+			const auto& rad_map = sm["radiation"];
+			int j = -1;
+			while (++j < rad_map.size() && j < SEEY) {
+				auto& col = rad_map[j];
+				int i = -1;
+				while (++i < col.size() && i < SEEX) {
+					if (fromJSON(col[i], radtmp)) {
+						radtmp -= int(turndif / 100);	// Radiation slowly decays	\todo V 0.2.1+ handle this as a true game time effect; no saveload-purging of radiation
+						if (radtmp < 0) radtmp = 0;
+						rad[i][j] = radtmp;
+					}
+				}
+			}
+		}
+		else if (sm.has_key("const_radiation") && fromJSON(sm["const_radiation"], radtmp)) {
 			radtmp -= int(turndif / 100);	// Radiation slowly decays	\todo V 0.2.1+ handle this as a true game time effect; no saveload-purging of radiation
 			if (radtmp < 0) radtmp = 0;
-			rad[i][j] = radtmp;
+			for (int j = 0; j < SEEY; j++) {
+				for (int i = 0; i < SEEX; i++) {
+					rad[i][j] = terrain;
+				}
+			}
+		} else throw std::runtime_error("radiation data missing");
+
+		if (sm.has_key("spawns")) sm["spawns"].decode(spawns);
+		if (sm.has_key("vehicles")) sm["vehicles"].decode(vehicles);
+		if (sm.has_key("computer")) fromJSON(sm["computer"], comp);
+	} else {	// \todo release block: remove legacy reading
+		// Load terrain
+		for (int j = 0; j < SEEY; j++) {
+			for (int i = 0; i < SEEX; i++) {
+				is >> ter[i][j];
+			}
+		}
+		// Load irradiation
+		for (int j = 0; j < SEEY; j++) {
+			for (int i = 0; i < SEEX; i++) {
+				int radtmp;
+				is >> radtmp;
+				radtmp -= int(turndif / 100);	// Radiation slowly decays	\todo V 0.2.1+ handle this as a true game time effect; no saveload-purging of radiation
+				if (radtmp < 0) radtmp = 0;
+				rad[i][j] = radtmp;
+			}
 		}
 	}
 	// Load items and traps and fields and spawn points and vehicles
@@ -956,19 +1014,48 @@ submap::submap(std::istream& is)
 
 
 std::ostream& operator<<(std::ostream& os, const submap& src)
-{
+{	// partially JSON (need enough to not be finicky, but not so far that faking a database isn't too awful
 	os << src.turn_last_touched << std::endl;
+
+	JSON sm(JSON::object);
+	JSON _tmp(JSON::array);
+
 	// Dump the terrain.
+	const auto first_terrain = src.ter[0][0];
+	bool need_full = false;
 	for (int j = 0; j < SEEY; j++) {
-		for (int i = 0; i < SEEX; i++) os << src.ter[i][j] I_SEP;
-		os << std::endl;
+		JSON tmp2(JSON::array);
+		for (int i = 0; i < SEEX; i++) {
+			tmp2.push(JSON_key(src.ter[i][j]));
+			if (first_terrain != src.ter[i][j]) need_full = true;
+		}
+		_tmp.push(std::move(tmp2));
 	}
+	if (need_full) sm.set("terrain", std::move(_tmp));
+	else sm.set("const_terrain", JSON_key(first_terrain));
+
 	// Dump the radiation
+	_tmp.reset();
+	const auto first_radiation = src.rad[0][0];
+	need_full = false;
 	for (int j = 0; j < SEEY; j++) {
-		for (int i = 0; i < SEEX; i++)
-			os << src.rad[i][j] I_SEP;
+		JSON tmp2(JSON::array);
+		for (int i = 0; i < SEEX; i++) {
+			tmp2.push(std::to_string(src.rad[i][j]));
+			if (first_radiation != src.rad[i][j]) need_full = true;
+		}
+		_tmp.push(std::move(tmp2));
 	}
-	os << std::endl;
+	if (need_full) sm.set("radiation", std::move(_tmp));
+	else sm.set("const_radiation", std::to_string(first_radiation));
+
+	if (!src.spawns.empty()) sm.set("spawns", JSON::encode(src.spawns));
+	if (!src.vehicles.empty()) sm.set("vehicles", JSON::encode(src.vehicles));
+	if (src.comp.name != "") sm.set("comp", toJSON(src.comp));
+	os << sm << std::endl;
+
+	// following are naturally associative arrays w/point keys.  We don't have a particularly clear
+	// JSON encoding so leave that as-is for now.
 
 	// Items section; designate it with an I.  Then check itm[][] for each square
 	//   in the grid and print the coords and the item's details.
@@ -999,14 +1086,7 @@ std::ostream& operator<<(std::ostream& os, const submap& src)
 			if (tmpf.type != fd_null) os << "F " << i << " " << j << " " << toJSON(tmpf) << std::endl;
 		}
 	}
-	// Output the spawn points
-	for (const auto& s : src.spawns) os << "S " << toJSON(s) << std::endl;
 
-	// Output the vehicles
-	for(const auto& v : src.vehicles) os << "V " << v;
-
-	// Output the computer
-	if (src.comp.name != "") os << "c " << toJSON(src.comp) << std::endl;
 	return os << "----" << std::endl;
 }
 

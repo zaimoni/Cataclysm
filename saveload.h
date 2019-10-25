@@ -21,11 +21,4 @@ std::ostream& operator<<(std::ostream& os, const tripoint& src);
 
 #endif
 
-#ifdef _PLDATA_H_
-
-std::istream& operator>>(std::istream& is, player_activity& dest);
-std::ostream& operator<<(std::ostream& os, const player_activity& src);
-
-#endif
-
 #endif
