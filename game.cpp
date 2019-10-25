@@ -519,7 +519,7 @@ void game::start_game()
 
 // Put some NPCs in there!
  create_starting_npcs();
-
+ save();
 }
 
 void game::create_factions()
@@ -1727,6 +1727,8 @@ void game::load(std::string name)
 	if (!fromJSON(saved["weather"], weather)) throw corrupted + " 6";
 	if (fromJSON(saved["temperature"], tmp)) temperature = tmp; else throw corrupted + " 7";
 	if (!fromJSON(saved["lev"], lev)) throw corrupted + " 8";
+	// player -- do this here or otherwise visibility info, etc. lost
+	u = player(saved["player"]);	// \todo fromJSON idiom, so we can signal failure w/o throwing?
 
 	// deal with map now (historical ordering)
 	cur_om = overmap(this, com.x, com.y, lev.z);
@@ -1749,8 +1751,6 @@ void game::load(std::string name)
 	if (!saved["monsters"].decode(z) && z.empty()) throw corrupted+" 11";
 	// kill count
 	if (!saved["kill_counts"].decode<mon_id>(kills, num_monsters)) throw corrupted+" 12; "+std::to_string((int)saved["kill_counts"].mode());
-	// player
-	u = player(saved["player"]);	// \todo fromJSON idiom, so we can signal failure w/o throwing?
 
 	// recoverable hacked-missing fields below
 	autosafemode = option_table::get()[OPT_AUTOSAFEMODE];
@@ -1845,7 +1845,7 @@ void game::save()
 // aaaand the overmap, and the local map.
  cur_om.save(u.name);
  //m.save(&cur_om, turn, levx, levy);
- //MAPBUFFER.save();
+ MAPBUFFER.save();
 }
 
 void game::advance_nextinv()
