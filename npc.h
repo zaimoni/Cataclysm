@@ -365,8 +365,8 @@ public:
 
 // Use and assessment of items
  int  minimum_item_value() const; // The minimum value to want to pick up an item
- void update_worst_item_value(); // Find the worst value in our inventory
- int  value(item &it) const;
+ int  worst_item_value() const; // Find the worst value in our inventory; dead function currently
+ int  value(const item &it) const;
  bool wear_if_wanted(item it);
  virtual bool wield(game *g, int index);
  bool has_healing_item() const;
@@ -473,7 +473,6 @@ public:
 
  bool fetching_item;
  bool has_new_items; // If true, we have something new and should re-equip
- int  worst_item_value; // The value of our least-wanted item; \todo release block; blocked by JSON conversion: eliminate
 
  std::vector<point> path;	// Our movement plans
 

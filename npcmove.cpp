@@ -1006,17 +1006,21 @@ void npc::pick_up_item(game *g)
  std::vector<item>& items = g->m.i_at(it);
  int total_volume = 0, total_weight = 0; // How much the items will add
  std::vector<int> pickup; // Indices of items we want
+// int worst_value = worst_item_value();	//	\todo V 0.2.1+ actually use this when deciding what to pick up?
+ const int vol_carried = volume_carried();
+ const int wgt_carried = weight_carried();
+ const int vol_capacity = volume_capacity();
+ const int wgt_capacity = weight_capacity();
 
- for (int i = 0; i < items.size(); i++) {
+ for (int i = 0; i < items.size(); i++) {	// \todo V 0.2.1+ be more aware of what we're doing here (packing problem)
   auto& it = items[i];
   int itval = value(it), vol = it.volume(), wgt = it.weight();
-  if (itval >= minimum_item_value() &&// (itval >= worst_item_value ||
-      (volume_carried() + total_volume + vol <= volume_capacity() &&
-       weight_carried() + total_weight + wgt <= weight_capacity() / 4)) {
+  if (itval >= minimum_item_value() &&
+      (vol_carried + total_volume + vol <= vol_capacity &&
+       wgt_carried + total_weight + wgt <= wgt_capacity / 4)) {
    pickup.push_back(i);
    total_volume += vol;
    total_weight += wgt;
-   if (itval < worst_item_value) worst_item_value = itval;
   }
  }
 // Describe the pickup to the player
@@ -1145,7 +1149,6 @@ void npc::drop_items(game *g, int weight, int volume)
   else
    messages.add("%s drops a %s.", name.c_str(), item_name_str.c_str());
  }
- update_worst_item_value();
 }
 
 npc_action npc::scan_new_items(game *g, int target)

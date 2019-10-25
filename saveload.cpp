@@ -2323,7 +2323,6 @@ JSON toJSON(const npc& src)
 
 	// integers
 	ret.set("id", std::to_string(src.id));
-	if (0 < src.worst_item_value) ret.set("worst_item_value", std::to_string(src.worst_item_value));
 	if (0 < src.patience) ret.set("patience", std::to_string(src.patience));
 	if (src.my_fac) ret.set("faction_id", std::to_string(src.my_fac->id));	// \todo XXX should reality-check the faction id
 
@@ -2359,7 +2358,7 @@ bool fromJSON(const JSON& src, npc& dest)
 
 npc::npc(const JSON& src)
 : player(src),id(-1), attitude(NPCATT_NULL), myclass(NC_NONE), wand(point(0, 0), 0), om(0, 0, 0), mapx(0), mapy(0),
-  pl(point(-1, -1), 0), it(-1, -1), goal(-1, -1), fetching_item(false), has_new_items(false), worst_item_value(0),
+  pl(point(-1, -1), 0), it(-1, -1), goal(-1, -1), fetching_item(false), has_new_items(false),
   my_fac(0), mission(NPC_MISSION_NULL), patience(0), marked_for_death(false), dead(false), flags(0)
 {
 	if (src.has_key("id")) fromJSON(src["id"], id);
@@ -2379,7 +2378,6 @@ npc::npc(const JSON& src)
 	if (src.has_key("goal")) fromJSON(src["goal"], goal);
 	if (src.has_key("fetching_item")) fromJSON(src["fetching_item"], fetching_item);
 	if (src.has_key("has_new_items")) fromJSON(src["has_new_items"], has_new_items);
-	if (src.has_key("worst_item_value")) fromJSON(src["worst_item_value"], worst_item_value);
 	if (src.has_key("path")) src["path"].decode(path);
 	if (src.has_key("faction_id")) {
 		int fac_id;

@@ -148,7 +148,7 @@ DEFINE_JSON_ENUM_SUPPORT_TYPICAL(talk_topic, JSON_transcode_talk)
 
 npc::npc()
 : id(-1),attitude(NPCATT_NULL),myclass(NC_NONE),wand(point(0,0),0),om(0,0,0),mapx(0),mapy(0),
-  pl(point(-1,-1),0),it(-1,-1),goal(-1,-1),fetching_item(false),has_new_items(false),worst_item_value(0),
+  pl(point(-1,-1),0),it(-1,-1),goal(-1,-1),fetching_item(false),has_new_items(false),
   my_fac(0),mission(NPC_MISSION_NULL),patience(0),marked_for_death(false),dead(false),flags(0)
 {
 }
@@ -318,7 +318,6 @@ void npc::randomize(game *g, npc_class type)
  worn = starting_clothes(type, male, g);
  inv.clear();
  inv.add_stack(starting_inv(this, type, g));
- update_worst_item_value();
 }
 
 void npc::randomize_from_faction(game *g, faction *fac)
@@ -618,7 +617,6 @@ void npc::make_shopkeep(game *g, oter_id type)
   } while(true);
  }
  mission = NPC_MISSION_SHOPKEEP;
- update_worst_item_value();
 }
 
 std::vector<item> starting_clothes(npc_class type, bool male, game *g)
@@ -1366,17 +1364,17 @@ int npc::minimum_item_value() const
  return ret;
 }
 
-void npc::update_worst_item_value()
+int npc::worst_item_value() const
 {
- worst_item_value = 99999;
+ int ret = INT_MAX;
  for (size_t i = 0; i < inv.size(); i++) {
   int itval = value(inv[i]);
-  if (itval < worst_item_value)
-   worst_item_value = itval;
+  if (itval < ret) ret = itval;
  }
+ return ret;
 }
 
-int npc::value(item &it) const
+int npc::value(const item &it) const
 {
  int ret = it.price() / 50;
  {
