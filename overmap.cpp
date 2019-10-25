@@ -2,6 +2,7 @@
 #include "game.h"
 #include "keypress.h"
 #include "saveload.h"
+#include "JSON.h"
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
@@ -2586,6 +2587,16 @@ void overmap::open(game *g)	// only called from constructor
               terfilename.str().c_str(), ter(i, j));
    }
   }
+#if 1
+  if ('{' == (fin >> std::ws).peek()) {
+	  JSON om(fin);
+	  if (om.has_key("groups")) om["groups"].decode(zg);
+	  if (om.has_key("cities")) om["cities"].decode(cities);
+	  if (om.has_key("roads")) om["roads"].decode(roads_out);
+	  if (om.has_key("radios")) om["radios"].decode(radios);
+	  if (om.has_key("npcs")) om["npcs"].decode(npcs);
+  } else {
+#endif
   // while the legacy ready can cope with "any order", the generation order is much stricter:
   // terrain data blob
   // Z: mongroup
@@ -2646,7 +2657,9 @@ void overmap::open(game *g)	// only called from constructor
 // If we accrued an npc_inventory, assign it now
   if (!npc_inventory.empty() && !npcs.empty())
    npcs.back().inv.add_stack(npc_inventory);
-
+#if 1
+  }
+#endif
 // Private/per-character data
   fin.close();
   fin.open(plrfilename.str().c_str());

@@ -36,11 +36,13 @@ struct mongroup {
  unsigned int population;
  bool dying;
 
+ mongroup() : type(mcat_null), pos(-1, -1), radius(0), population(0), dying(false) {};	// \todo consider defaulting this
  mongroup(moncat_id ptype, int pposx, int pposy, unsigned char prad, unsigned int ppop)
  : type(ptype),pos(pposx,pposy),radius(prad),population(ppop),dying(false) {}
  
  mongroup(std::istream& is);
  friend std::ostream& operator<<(std::ostream& os, const mongroup& src);
+ friend bool fromJSON(const cataclysm::JSON& _in, mongroup& dest);
 
  bool is_safe() const { return mcat_null == type || mcat_forest == type; }
  static moncat_id to_mc(mon_id type);	// Monster type to monster category

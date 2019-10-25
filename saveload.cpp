@@ -697,6 +697,18 @@ JSON toJSON(const mission& src)
 	return _mission;
 }
 
+bool fromJSON(const JSON& _in, mongroup& dest)
+{
+	int tmp;
+	if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) return false;
+	if (!_in.has_key("pos") || !fromJSON(_in["pos"], dest.pos)) return false;
+	if (!_in.has_key("radius") || !fromJSON(_in["radius"], tmp)) return false;
+	if (!_in.has_key("population") || !fromJSON(_in["population"], dest.population)) return false;
+	dest.radius = tmp;
+	if (_in.has_key("dying")) fromJSON(_in["dying"], dest.dying);
+	return true;
+}
+
 mongroup::mongroup(std::istream& is)
 : type(mcat_null), pos(-1,-1), radius(0), population(0), dying(false)
 {
@@ -761,6 +773,15 @@ std::ostream& operator<<(std::ostream& os, const field& src)
 	} else return os << "{}";
 }
 
+bool fromJSON(const JSON& _in, city& dest)
+{
+	const size_t _size = _in.size();
+	if ((2 != _size && 3 != _size) || JSON::array != _in.mode()) return false;
+	if (!fromJSON(_in[0], dest.x) || !fromJSON(_in[1], dest.y)) return false;
+	if (3 == _size && !fromJSON(_in[2], dest.s)) return false;;
+	return true;
+}
+
 // Arrays are not plausible for the final format for the overmap data classes, but
 // they are easily distinguished from objects so we have a clear upgrade path.
 // Plan is to reserve the object form for when the absolute coordinate system is understood.
@@ -809,6 +830,15 @@ om_note::om_note(std::istream& is)
 std::ostream& operator<<(std::ostream& os, const om_note& src)
 {
 	return os << '[' << std::to_string(src.x) <<  ',' << std::to_string(src.y) <<  ',' << std::to_string(src.num) << ',' << JSON(src.text) << ']';
+}
+
+bool fromJSON(const JSON& _in, radio_tower& dest)
+{
+	if (JSON::array != _in.mode() || 4 != _in.size()) return false;
+	if (!fromJSON(_in[0], dest.x)) return false;
+	if (!fromJSON(_in[1], dest.y)) return false;
+	if (!fromJSON(_in[2], dest.strength)) return false;
+	return fromJSON(_in[3], dest.message);
 }
 
 radio_tower::radio_tower(std::istream& is)
