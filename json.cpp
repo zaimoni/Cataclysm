@@ -725,9 +725,14 @@ std::ostream& JSON::write_array(std::ostream& os, const std::vector<JSON>& src, 
 		src[i].write(os, indent+1);
 		if (++i < ub) {
 			os.put(',');
-			os << std::endl;
-			int _indent = indent;
-			while(0 < _indent--) os.put('\t');
+			// arrays need scalars on the same line to pretty-print
+			if (src[i].is_scalar() && src[i - 1].is_scalar()) {
+				os.put(' ');
+			} else {
+				os << std::endl;
+				int _indent = indent;
+				while (0 < _indent--) os.put('\t');
+			}
 		}
 	}
 	os.put(']');
