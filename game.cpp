@@ -1654,16 +1654,13 @@ bool game::load_master()
  char junk;
  fin.open("save/master.gsav");
  if (!fin.is_open()) return false;
+ if ('{' != (fin >> std::ws).peek()) return false;
 
- if ('{' == (fin >> std::ws).peek()) {
 	 // JSON encoded.
 	 enum {
 		 MISSION = 1,
 		 FACTION = 2 * MISSION,
-		 NPC = 2 * FACTION,
-		 ACTIVE = 2 * NPC,
-		 FACTIONS = 2 * ACTIVE,
-		 NPCS = 2 * FACTIONS
+		 NPC = 2 * FACTION
 	 };
 
 	 JSON master(fin);
@@ -1691,55 +1688,6 @@ bool game::load_master()
 
 	 fin.close();
 	 return true;
- }
- // \todo release block: remove legacy reading
-// First, get the next ID numbers for each of these
- fin >> next_mission_id >> next_faction_id >> next_npc_id;
- int num_missions, num_npc, num_factions, num_items;
-
- fin >> num_missions >> std::ws;
- for (int i = 0; i < num_missions; i++) {
-   active_missions.push_back(mission(fin));
-   if (!active_missions.back().type) active_missions.pop_back();	// if we didn't load with a valid mission type, ditch it
- }
-
- fin >> num_factions >> std::ws;
- for (int i = 0; i < num_factions; i++) factions.push_back(faction(fin));
-
-// NPCs come next
- fin >> num_npc >> std::ws;
- for (int i = 0; i < num_npc; i++) {
-  npc tmp(fin);
-// We need to load up all their items too
-  fin >> num_items;
-  std::vector<item> tmpinv;
-  for (int j = 0; j < num_items; j++) {
-   char item_place;
-   fin >> item_place;
-   if (!fin.eof()) {
-    if (item_place == 'I') tmpinv.push_back(item(fin));
-    else if (item_place == 'C' && !tmpinv.empty()) {
-     tmpinv[tmpinv.size() - 1].contents.push_back(item(fin));
-     j--;
-    } else if (item_place == 'W') tmp.worn.push_back(item(fin));
-    else if (item_place == 'w') tmp.weapon = item(fin);
-    else if (item_place == 'c') {
-     tmp.weapon.contents.push_back(item(fin));
-     j--;
-    } else {
-	 debugmsg("Urecognized item key");
-	 std::string itemdata;
-	 getline(fin, itemdata);
-	}
-   }
-  }
-  tmp.inv.add_stack(tmpinv);
-  active_npc.push_back(tmp);
-  fin >> std::ws;
- }
- 
- fin.close();
- return true;
 }
 
 void game::load(std::string name)
@@ -1814,53 +1762,6 @@ void game::load(std::string name)
 	}  else run_mode = (option_table::get()[OPT_SAFEMODE] ? 1 : 0);
 	if (saved.has_key("last_target") && fromJSON(saved["last_target"], tmp) && 0 <= tmp && z.size() > tmp) last_target = tmp; else last_target = -1;
 	// do not worry about next_npc_id/next_faction_id/next_mission_id, the master save catches these
-#if 0
- } else {
-  // \todo release block remove legacy loading code
-
- int tmpturn, tmpspawn, tmpnextweather, tmprun, tmpweather, tmptemp,
-     comx, comy;
- fin >> tmpturn >> last_target >> tmprun >> mostseen >> nextinv >> next_npc_id >>
-        next_faction_id >> next_mission_id >> tmpspawn >> tmpnextweather >>
-        tmpweather >> tmptemp >> lev >> comx >> comy;
- messages.turn = tmpturn;
- nextspawn = tmpspawn;
- nextweather = tmpnextweather;
- cur_om = overmap(this, comx, comy, lev.z);
-// m = map(&itypes, &mapitems, &traps); // Init the root map with our vectors
- //MAPBUFFER.load();
- m.load(this, point(lev.x, lev.y));
- run_mode = tmprun;
- if (option_table::get()[OPT_SAFEMODE] && run_mode == 0) run_mode = 1;
- autosafemode = option_table::get()[OPT_AUTOSAFEMODE];
- weather = weather_type(tmpweather);
- temperature = tmptemp;
-// Next, the scent map.
- for (int i = 0; i < SEEX * MAPSIZE; i++) {
-  for (int j = 0; j < SEEY * MAPSIZE; j++)
-   fin >> grscent[i][j];
- }
-// Now the number of monsters...
- int nummon;
- fin >> nummon;
-// ... and the data on each one.
- std::string data;
- z.clear();
- monster montmp;
- fin >> std::ws;
- for (int i = 0; i < nummon; i++) z.push_back(monster(fin));
-// And the kill counts;
- fin >> std::ws; // Chomp that pesky endline
- for (int i = 0; i < num_monsters; i++)
-  fin >> kills[i];
-// Finally, the data on the player.
- 	 // JSON converted
-	 JSON pc(fin);
-	 u = player(pc);
- }
-
- }	// end legacy loading code
-#endif
 
  fin.close();
 // Now load up the master game data; factions (and more?)
@@ -1912,7 +1813,6 @@ void game::save()
 // Now write things that aren't player-specific: factions and NPCs
  fout.open("save/master.tmp");
 
-#if 1
  saved.reset();
  if (1 < next_mission_id) tmp.set("mission", std::to_string(next_mission_id));
  if (1 < next_faction_id) tmp.set("faction", std::to_string(next_faction_id));
@@ -1929,10 +1829,6 @@ void game::save()
 	 saved.set("npcs", JSON::encode(active_npc));
  }
  fout << saved;
-#else
- fout << factions.size() << std::endl;
- for(const auto& fac : factions) fout << fac;
-#endif
 
  fout.close();
  unlink("save/master.bak");

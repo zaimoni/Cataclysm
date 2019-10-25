@@ -697,44 +697,6 @@ JSON toJSON(const mission& src)
 	return _mission;
 }
 
-mission::mission(std::istream& is)
- : type(0),description(""),failed(false),value(0),uid(-1),target(-1,-1),
-   item_id(itm_null),count(0),deadline(0),npc_id(-1),good_fac_id(-1),
-   bad_fac_id(-1),step(0),follow_up(MISSION_NULL)
-{
-	if ('{' == (is >> std::ws).peek()) {
-		const JSON _in(is);
-		//		if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) throw std::runtime_error("unrecognized mission");
-		//		if (!_in.has_key("favor")) throw std::runtime_error("favor reward AWOL");
-		if (!_in.has_key("type") || !fromJSON(_in["type"], type)) return;
-		if (!_in.has_key("uid") || !fromJSON(_in["uid"], uid) || 0>=uid) return;
-		if (_in.has_key("description")) fromJSON(_in["description"],description);
-		if (_in.has_key("failed")) fromJSON(_in["failed"], failed);
-		if (_in.has_key("reward")) fromJSON(_in["reward"], reward);
-		if (_in.has_key("target")) fromJSON(_in["target"], target);
-		if (_in.has_key("item")) fromJSON(_in["item"], item_id);
-		if (_in.has_key("count")) fromJSON(_in["count"], count);
-		if (_in.has_key("deadline")) fromJSON(_in["deadline"], deadline);
-		if (_in.has_key("npc")) fromJSON(_in["npc"], npc_id);
-		if (_in.has_key("by_faction")) fromJSON(_in["by_faction"], good_fac_id);
-		if (_in.has_key("vs_faction")) fromJSON(_in["vs_faction"], bad_fac_id);
-		if (_in.has_key("step")) fromJSON(_in["step"], step);
-		if (_in.has_key("next")) fromJSON(_in["next"], follow_up);
-		return;
-	}
-	// \todo release block: remove legacy reading
-	is >> type;
-	std::string tmpdesc;
-	do {
-		is >> tmpdesc;
-		if (tmpdesc != "<>") description += tmpdesc + " ";
-	} while (tmpdesc != "<>");
-	description = description.substr(0, description.size() - 1); // Ending ' '
-	is >> failed >> value >> reward >> uid >> target >> item_id >> count >> deadline 
-	   >> npc_id >> good_fac_id >> bad_fac_id >> step >> follow_up;
-}
-
-
 mongroup::mongroup(std::istream& is)
 : type(mcat_null), pos(-1,-1), radius(0), population(0), dying(false)
 {
@@ -1225,93 +1187,6 @@ JSON toJSON(const faction& src)
 	return _faction;
 }
 
-faction::faction(std::istream& is)
-: name(""), values(0), goal(FACGOAL_NULL), job1(FACJOB_NULL), job2(FACJOB_NULL),
-  likes_u(0), respects_u(0), known_by_u(false), id(-1),
-  strength(0), sneak(0), crime(0), cult(0), good(0),
-  om(0, 0), map(0, 0), size(0), power(0)
-{
-	if ('{' == (is >> std::ws).peek()) {
-		JSON _in(is);
-		if (!_in.has_key("id") || !fromJSON(_in["id"], id)) return;	// \todo do we want to interpolate this key?
-		if (_in.has_key("name")) fromJSON(_in["name"], name);
-		if (_in.has_key("values")) {
-			cataclysm::JSON_parse<faction_value> _parse;
-			std::vector<const char*> relay;
-			_in["values"].decode(relay);
-			if (!relay.empty()) values = _parse(relay);
-		}
-		if (_in.has_key("goal")) fromJSON(_in["goal"], goal);
-		if (_in.has_key("job1")) fromJSON(_in["job1"], job1);
-		if (_in.has_key("job2")) fromJSON(_in["job2"], job2);
-		if (_in.has_key("u")) {
-			const auto& tmp = _in["u"];
-			if (tmp.has_key("likes")) fromJSON(tmp["likes"], likes_u);
-			if (tmp.has_key("respects")) fromJSON(tmp["respects"], respects_u);
-			if (tmp.has_key("known_by")) fromJSON(tmp["known_by"], known_by_u);
-		}
-		if (_in.has_key("ethics")) {
-			const auto& tmp = _in["ethics"];
-			if (tmp.has_key("strength")) fromJSON(tmp["strength"], strength);
-			if (tmp.has_key("sneak")) fromJSON(tmp["sneak"], sneak);
-			if (tmp.has_key("crime")) fromJSON(tmp["crime"], crime);
-			if (tmp.has_key("cult")) fromJSON(tmp["cult"], cult);
-			if (tmp.has_key("good")) fromJSON(tmp["good"], good);
-		}
-		if (_in.has_key("om")) fromJSON(_in["om"], om);
-		if (_in.has_key("map")) fromJSON(_in["map"], map);
-		if (_in.has_key("size")) fromJSON(_in["size"], size);
-		if (_in.has_key("power")) fromJSON(_in["power"], power);
-		return;
-	}
-	// \todo release block: remove legacy reading
-	int valuetmp;
-	is >> id >> valuetmp >> goal >> job1 >> job2 >> likes_u >>
-		respects_u >> known_by_u >> strength >> sneak >> crime >> cult >>
-		good >> om >> map >> size >> power;
-	values = valuetmp;
-	int size, tmpop;
-	is >> size;
-	for (int i = 0; i < size; i++) {
-		is >> tmpop;
-		opinion_of.push_back(tmpop);
-	}
-	std::getline(is >> std::ws, name);
-}
-
-std::ostream& operator<<(std::ostream& os, const faction& src)
-{
-	cataclysm::JSON_parse<faction_value> _parse;
-	JSON _faction;
-	_faction.set("id", std::to_string(src.id));
-	_faction.set("name", src.name);
-	if (src.values) {
-		auto tmp = _parse(src.values);
-		if (!tmp.empty()) _faction.set("values", JSON::encode(tmp));
-	}
-	if (auto json = JSON_key(src.goal)) _faction.set("goal",json);
-	if (auto json = JSON_key(src.job1)) _faction.set("job1", json);
-	if (auto json = JSON_key(src.job2)) _faction.set("job2", json);
-	{
-	JSON tmp;
-	tmp.set("likes", std::to_string(src.likes_u));
-	tmp.set("respects", std::to_string(src.respects_u));
-	if (src.known_by_u) tmp.set("known_by", "true");
-	_faction.set("u", std::move(tmp));	// ultimately we'd like the same format for the PC, and NPCs
-	tmp.set("strength", std::to_string(src.strength));
-	tmp.set("sneak", std::to_string(src.sneak));
-	tmp.set("crime", std::to_string(src.crime));
-	tmp.set("cult", std::to_string(src.cult));
-	tmp.set("good", std::to_string(src.good));
-	_faction.set("ethics", tmp);
-	}
-	_faction.set("om", toJSON(src.om));
-	_faction.set("map", toJSON(src.map));
-	_faction.set("size", std::to_string(src.size));
-	_faction.set("power", std::to_string(src.power));
-	return os << _faction;
-}
-
 bool fromJSON(const JSON& _in, item& dest)
 {
 	if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) return false;
@@ -1453,48 +1328,6 @@ JSON toJSON(const monster& src)
 		if (!src.plans.empty()) _monster.set("effects", JSON::encode(src.plans));
 	}
 	return _monster;
-}
-
-// \todo release block: JSON save/load support (repairs monster inventories, effects being dropped in save/load cycle
-monster::monster(std::istream& is)
-: pos(20, 10), wand(point(-1, -1), 0), spawnmap(-1, -1), spawnpos(-1,-1), moves(0), speed(0), hp(60), sp_timeout(0), friendly(0),
-  anger(0), morale(2), faction_id(-1), mission_id(-1),type(0),dead(false),made_footstep(false),unique_name("")
-{
-	if ('{' == (is >> std::ws).peek()) {
-		JSON _in(is);
-		if (!_in.has_key("type") || !fromJSON(_in["type"],type)) return;
-		if (_in.has_key("pos")) fromJSON(_in["pos"], pos);
-		if (_in.has_key("wand")) fromJSON(_in["wand"], wand);
-		if (_in.has_key("inv")) _in["inv"].decode(inv);
-		if (_in.has_key("effects")) _in["effects"].decode(effects);
-		if (_in.has_key("spawnmap")) fromJSON(_in["spawnmap"], spawnmap);
-		if (_in.has_key("spawnpos")) fromJSON(_in["spawnpos"], spawnpos);
-		if (_in.has_key("moves")) fromJSON(_in["moves"], moves);
-		if (_in.has_key("speed")) fromJSON(_in["speed"], speed);
-		if (_in.has_key("hp")) fromJSON(_in["hp"], hp);
-		if (_in.has_key("sp_timeout")) fromJSON(_in["sp_timeout"], sp_timeout);
-		if (_in.has_key("friendly")) fromJSON(_in["friendly"], friendly);
-		if (_in.has_key("anger")) fromJSON(_in["anger"], anger);
-		if (_in.has_key("morale")) fromJSON(_in["morale"], morale);
-		if (_in.has_key("faction_id")) fromJSON(_in["faction_id"], faction_id);	// \todo release block validate or verify inability to validate here
-		if (_in.has_key("mission_id")) fromJSON(_in["mission_id"], morale);	// \todo release block validate or verify inability to validate here
-		if (_in.has_key("dead")) fromJSON(_in["dead"], dead);
-		if (_in.has_key("made_footstep")) fromJSON(_in["made_footstep"], made_footstep);
-		if (_in.has_key("unique_name")) fromJSON(_in["unique_name"], morale);
-		if (_in.has_key("plans")) _in["plans"].decode(plans);
-		return;
-	}
-	// \todo release block: remove legacy reading
-	int plansize;
-	is >> type >> pos >> wand >> moves >> speed >> hp >> sp_timeout >>
-		plansize >> friendly >> faction_id >> mission_id >> dead >> anger >>
-		morale;
-	if (!type) type = mtype::types[mon_null];	// \todo warn if this kicks in
-	point ptmp;
-	for (int i = 0; i < plansize; i++) {
-		is >> ptmp;
-		plans.push_back(ptmp);
-	}
 }
 
 // usage is when loading artifacts
