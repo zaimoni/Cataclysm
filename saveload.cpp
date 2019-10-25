@@ -443,72 +443,25 @@ bool fromJSON(const JSON& src, computer_option& dest)
 	return true;
 }
 
-computer_option::computer_option(std::istream& is)
-: name("Unknown"),action(COMPACT_NULL),security(0)
+bool fromJSON(const JSON& _in, computer& dest)
 {
-	if ('{' == (is >> std::ws).peek()) {
-		const JSON _in(is);
-		if (!fromJSON(_in,*this)) throw std::runtime_error("invalid computer option");
-		return;
-	}
-	is >> name >> action >> security;	// \todo release block: remove legacy reading
-	xform<'_', ' '>(name);
+	if (!_in.has_key("name") || !fromJSON(_in["name"], dest.name)) return false;
+	if (_in.has_key("security") && fromJSON(_in["security"], dest.security) && 0 > dest.security) dest.security = 0;
+	if (_in.has_key("mission_id")) fromJSON(_in["mission_id"], dest.mission_id);
+	if (_in.has_key("options")) _in["options"].decode(dest.options);
+	if (_in.has_key("failures")) _in["failures"].decode(dest.failures);
+	return true;
 }
 
-std::ostream& operator<<(std::ostream& os, const computer_option& src)
+JSON toJSON(const computer& src)
 {
-	// mandatory keys: name:string, action:computer_action
-	// optional key: security (default to 0 if absent, suppress if non-positive)
-	JSON opt;
-	opt.set("name", src.name);
-	opt.set("action", JSON_key(src.action));
-	if (0 < src.security) opt.set("security", std::to_string(src.security));
-	return os << opt;
-}
-
-std::istream& operator>>(std::istream& is, computer& dest)
-{
-	dest.options.clear();
-	dest.failures.clear();
-	if ('{' == (is >> std::ws).peek()) {
-		const JSON _in(is);
-		if (!_in.has_key("name") || !fromJSON(_in["name"], dest.name)) throw std::runtime_error("computer should be named");
-		// \todo error out if name not set
-		if (_in.has_key("security") && fromJSON(_in["security"], dest.security) && 0 > dest.security) dest.security = 0;
-		if (_in.has_key("mission_id")) fromJSON(_in["mission_id"], dest.mission_id);
-		if (_in.has_key("options")) _in["options"].decode(dest.options);
-		if (_in.has_key("failures")) _in["failures"].decode(dest.failures);
-		return is;
-	}
-
-	// Pull in name and security
-	is >> dest.name >> dest.security >> dest.mission_id;	// \todo release block: remove legacy reading
-	xform<'_',' '>(dest.name);
-	// Pull in options
-	int optsize;
-	is >> optsize;
-	for (int n = 0; n < optsize; n++) dest.options.push_back(computer_option(is));
-	// Pull in failures
-	int failsize, tmpfail;
-	is >> failsize;
-	for (int n = 0; n < failsize; n++) {
-		is >> tmpfail;
-		dest.failures.push_back(computer_failure(tmpfail));
-	}
-	return is;
-}
-
-std::ostream& operator<<(std::ostream& os, const computer& src)
-{
-	// mandatory keys: name
-	// optional keys: security, mission_id, options, failures
 	JSON comp;
 	comp.set("name", src.name);
 	if (0 < src.security) comp.set("security", std::to_string(src.security));
 	if (0 <= src.mission_id) comp.set("mission_id", std::to_string(src.mission_id));
 	if (!src.options.empty()) comp.set("options", JSON::encode(src.options));
 	if (!src.failures.empty()) comp.set("failures", JSON::encode(src.failures));
-	return os << comp;
+	return comp;
 }
 
 JSON toJSON(const bionic& src)
@@ -869,7 +822,8 @@ submap::submap(std::istream& is)
 		else if (string_identifier == "V") {
 			vehicles.push_back(vehicle(is));
 		} else if (string_identifier == "c") {
-			is >> comp >> std::ws;
+			fromJSON(JSON(is), comp);
+			is >> std::ws;
 		} else if ("----" == string_identifier) {
 			is >> std::ws;	// to ensure we don't warn on trailing whitespace at end of file
 			break;
@@ -934,7 +888,7 @@ std::ostream& operator<<(std::ostream& os, const submap& src)
 	for(const auto& v : src.vehicles) os << "V " << v;
 
 	// Output the computer
-	if (src.comp.name != "") os << "c " << src.comp << std::endl;
+	if (src.comp.name != "") os << "c " << toJSON(src.comp) << std::endl;
 	return os << "----" << std::endl;
 }
 

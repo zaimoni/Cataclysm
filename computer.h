@@ -58,18 +58,11 @@ struct computer_option
 
  computer_option(std::string N = "Unknown", computer_action A = COMPACT_NULL, int S = 0) :
    name (N), action (A), security (S) {};
-
- computer_option(std::istream& is);
- friend std::ostream& operator<<(std::ostream& os, const computer_option& src);
 };
 
 class computer
 {
 private:
-// Save/load
- friend std::istream& operator>>(std::istream& is, computer& dest);
- friend std::ostream& operator<<(std::ostream& os, const computer& src);
-
  std::vector<computer_option> options;   // Things we can do
  std::vector<computer_failure> failures; // Things that happen if we fail a hack
  int security; // Difficulty of simply logging in
@@ -85,6 +78,10 @@ public:
 
  computer& operator=(const computer& rhs);
  computer& operator=(computer&& rhs);
+
+ friend bool fromJSON(const cataclysm::JSON& _in, computer& dest);
+ friend cataclysm::JSON toJSON(const computer& src);
+
  // Initialization
  void add_option(std::string opt_name, computer_action action, int Security);
  void add_failure(computer_failure failure);
