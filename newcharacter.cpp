@@ -3,6 +3,7 @@
 #include "rng.h"
 #include "keypress.h"
 #include "game.h"
+#include "json.h"
 //#include <unistd.h>
 #include <fstream>
 #include <sstream>
@@ -42,9 +43,10 @@ int set_description(WINDOW* w, player *u, int &points);
 
 int random_skill();
 
-int calc_HP(int strength, bool tough);
-
-void save_template(player *u);
+static int calc_HP(int strength, bool tough)
+{
+	return (60 + 3 * strength) * (tough ? 1.2 : 1);
+}
 
 bool player::create(game *g, character_type type, std::string tempname)
 {
@@ -126,15 +128,14 @@ bool player::create(game *g, character_type type, std::string tempname)
     }
    } break;
    case PLTYPE_TEMPLATE: {
-    std::ifstream fin;
     std::stringstream filename;
     filename << "data/" << tempname << ".template";
-    fin.open(filename.str().c_str());
+	std::ifstream fin(filename.str().c_str());
     if (!fin.is_open()) {
      debugmsg("Couldn't open %s!", filename.str().c_str());
      return false;
     }
-	fin >> *this;
+	*this = player(cataclysm::JSON(fin));
     points = 0;
    } break;
   }
@@ -736,6 +737,17 @@ int set_skills(WINDOW* w, player *u, int &points)
  } while (true);
 }
 
+void save_template(const player& u)
+{
+	std::string name = string_input_popup("Name of template:");
+	if (0 >= name.length()) return;
+	std::stringstream playerfile;
+	playerfile << "data/" << name << ".template";
+	std::ofstream fout(playerfile.str().c_str());
+	if (fout.is_open()) fout << toJSON(u);
+	else debugmsg("Sorry, couldn't open %s.", playerfile.str().c_str());
+}
+
 int set_description(WINDOW* w, player *u, int &points)
 {
 // Draw horizontal lines, with a gap for the active tab
@@ -825,7 +837,7 @@ Points left: %d    You must use the rest of your points!", points);
    if (points > 0) {
     popup("You cannot save a template with unused points!");
    } else
-    save_template(u);
+    save_template(*u);
    mvwprintz(w,12, 2, c_ltgray,"To go back and review your character, press <");
    wrefresh(w);
   } else if (ch == '?') {
@@ -873,20 +885,4 @@ int player::random_bad_trait()
 int random_skill()
 {
  return rng(1, num_skill_types - 1);
-}
-
-int calc_HP(int strength, bool tough)
-{
- return (60 + 3 * strength) * (tough ? 1.2 : 1);
-}
-
-void save_template(player *u)
-{
- std::string name = string_input_popup("Name of template:");
- if (0 >= name.length()) return;
- std::stringstream playerfile;
- playerfile << "data/" << name << ".template";
- std::ofstream fout;
- fout.open(playerfile.str().c_str());
- fout << u;
 }
