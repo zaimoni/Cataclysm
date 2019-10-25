@@ -692,30 +692,22 @@ JSON toJSON(const player_activity& src)
 	return _act;
 }
 
-spawn_point::spawn_point(std::istream& is)
-: pos(-1,-1), count(0), type(mon_null), faction_id(-1), mission_id(-1), friendly(false), name("NONE")
+bool fromJSON(const JSON& _in, spawn_point& dest)
 {
-	if ('{' == (is >> std::ws).peek()) {
-		JSON _in(is);
-		if (!_in.has_key("type") || !fromJSON(_in["type"], type)) return;
-		if (_in.has_key("name")) fromJSON(_in["name"], name);
-		if (_in.has_key("count")) fromJSON(_in["count"], count);
-		if (_in.has_key("pos")) fromJSON(_in["pos"], pos);
-		if (_in.has_key("faction_id")) fromJSON(_in["faction_id"], faction_id);
-		if (_in.has_key("mission_id")) fromJSON(_in["mission_id"], mission_id);
-		if (_in.has_key("friendly")) fromJSON(_in["friendly"], friendly);
-		return;
-	}
-	// \todo release block: remove legacy reading
-	char tmpfriend;
-	is >> type >> count >> pos >> faction_id >> mission_id >> tmpfriend >> name;
-	friendly = '1' == tmpfriend;
+	if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) return true;
+	if (_in.has_key("name")) fromJSON(_in["name"], dest.name);
+	if (_in.has_key("count")) fromJSON(_in["count"], dest.count);
+	if (_in.has_key("pos")) fromJSON(_in["pos"], dest.pos);
+	if (_in.has_key("faction_id")) fromJSON(_in["faction_id"], dest.faction_id);
+	if (_in.has_key("mission_id")) fromJSON(_in["mission_id"], dest.mission_id);
+	if (_in.has_key("friendly")) fromJSON(_in["friendly"], dest.friendly);
+	return true;
 }
 
-std::ostream& operator<<(std::ostream& os, const spawn_point& src)
+JSON toJSON(const spawn_point& src)
 {
+	JSON _spawn(JSON::object);
 	if (const auto json = JSON_key(src.type)) {
-		JSON _spawn;
 		_spawn.set("type", json);
 		_spawn.set("name", src.name);
 		if (0 != src.count) _spawn.set("count", std::to_string(src.count));
@@ -723,9 +715,8 @@ std::ostream& operator<<(std::ostream& os, const spawn_point& src)
 		if (0 <= src.faction_id) _spawn.set("faction_id", std::to_string(src.faction_id));
 		if (0 < src.mission_id) _spawn.set("mission_id", std::to_string(src.mission_id));
 		if (src.friendly) _spawn.set("friendly", "true");
-		return os << _spawn;
 	}
-	else return os << "{}"; // temporary
+	return _spawn;
 }
 
 vehicle::vehicle(std::istream& in)
@@ -808,8 +799,10 @@ submap::submap(std::istream& is)
 			fromJSON(JSON(is), fld[itx][ity]);
 			field_count++;
 		}
-		else if (string_identifier == "S") spawns.push_back(spawn_point(is));
-		else if (string_identifier == "V") {
+		else if (string_identifier == "S") {
+			spawn_point tmp;
+			if (fromJSON(JSON(is), tmp)) spawns.push_back(tmp);
+		} else if (string_identifier == "V") {
 			vehicles.push_back(vehicle(is));
 		} else if (string_identifier == "c") {
 			fromJSON(JSON(is), comp);
@@ -872,7 +865,7 @@ std::ostream& operator<<(std::ostream& os, const submap& src)
 		}
 	}
 	// Output the spawn points
-	for (const auto& s : src.spawns) os << "S " << s << std::endl;
+	for (const auto& s : src.spawns) os << "S " << toJSON(s) << std::endl;
 
 	// Output the vehicles
 	for(const auto& v : src.vehicles) os << "V " << v;
