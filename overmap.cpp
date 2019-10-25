@@ -2529,15 +2529,14 @@ to your designated evacuation point."));
  }
 }
 
-// \todo release block: overmap::save,load need at least partial JSON conversion
 void overmap::save(const std::string& name, int x, int y, int z)
 {
  std::stringstream plrfilename, terfilename;
- std::ofstream fout;
  plrfilename << "save/" << name << ".seen." << x << "." << y << "." << z;
  terfilename << "save/o." << x << "." << y << "." << z;
- fout.open(plrfilename.str().c_str());
- for (int j = 0; j < OMAPY; j++) {
+
+ std::ofstream fout(plrfilename.str().c_str());
+ for (int j = 0; j < OMAPY; j++) {	// \todo good candidate for uuencoding
   for (int i = 0; i < OMAPX; i++) {
    if (seen(i, j))
     fout << "1";
@@ -2554,7 +2553,7 @@ void overmap::save(const std::string& name, int x, int y, int z)
    fout << char(int(ter(i, j)) + 32);
  }
  fout << std::endl;
-#if 1
+
  JSON saved(JSON::object);
  saved.set("groups", JSON::encode(zg));
  saved.set("cities", JSON::encode(cities));
@@ -2562,15 +2561,6 @@ void overmap::save(const std::string& name, int x, int y, int z)
  saved.set("radios", JSON::encode(radios));
  saved.set("npcs", JSON::encode(npcs));
  fout << saved;
-#else
- for(const auto& zgroup : zg) fout << "Z " << zgroup << std::endl;
- for(const auto& c : cities) fout << "t " << c << std::endl;
- for(const auto& r : roads_out) fout << "R " << r << std::endl;
- for(const auto& r : radios) fout << "T " << r << std::endl;
-
- for (int i = 0; i < npcs.size(); i++)
-  fout << "n " << npcs[i] << std::endl;
-#endif
 
  fout.close();
 }
@@ -2578,16 +2568,12 @@ void overmap::save(const std::string& name, int x, int y, int z)
 void overmap::open(game *g)	// only called from constructor
 {
  std::stringstream plrfilename, terfilename;
- std::ifstream fin;
  char datatype;
- int cx, cy, cs;
- city tmp;
- std::vector<item> npc_inventory;
 
  plrfilename << "save/" << g->u.name << ".seen." << pos.x << "." << pos.y << "." << pos.z;
  terfilename << "save/o." << pos.x << "." << pos.y << "." << pos.z;
 
- fin.open(terfilename.str().c_str());
+ std::ifstream fin(terfilename.str().c_str());
  if (fin.is_open()) {
   for (int j = 0; j < OMAPY; j++) {
    for (int i = 0; i < OMAPX; i++) {
@@ -2597,79 +2583,17 @@ void overmap::open(game *g)	// only called from constructor
               terfilename.str().c_str(), ter(i, j));
    }
   }
-#if 1
-  if ('{' == (fin >> std::ws).peek()) {
+  if ('{' != (fin >> std::ws).peek()) {
+	  debugmsg("Pre-V0.2.0 format?");
+	  return;
+  }
 	  JSON om(fin);
 	  if (om.has_key("groups")) om["groups"].decode(zg);
 	  if (om.has_key("cities")) om["cities"].decode(cities);
 	  if (om.has_key("roads")) om["roads"].decode(roads_out);
 	  if (om.has_key("radios")) om["radios"].decode(radios);
 	  if (om.has_key("npcs")) om["npcs"].decode(npcs);
-  } else {
-#endif
-  // while the legacy ready can cope with "any order", the generation order is much stricter:
-  // terrain data blob
-  // Z: mongroup
-  // t: cities
-  // R: roads out
-  // T: radios i.e. transmission towers
-  // n: NPCs (with several sub-entries)
-  int loading_stage = 0;
-  while (fin >> datatype) {
-   if (datatype == 'Z') {
-	   zg.push_back(mongroup(fin));	// Monster group
-	   loading_stage = 1;
-   } else if (datatype == 't') {
-	   cities.push_back(city(fin));		// City
-	   loading_stage = 2;
-   } else if (datatype == 'R') {
-	   roads_out.push_back(city(fin, true));	// Road leading out
-	   loading_stage = 3;
-   }
-   else if (datatype == 'T') {
-	   radios.push_back(radio_tower(fin));	// Radio tower
-	   loading_stage = 4;
-   }
-   else if (datatype == 'n') {	// NPC
-/* When we start loading a new NPC, check to see if we've accumulated items for
-   assignment to an NPC.
- */
-    loading_stage = 5;
-    if (!npc_inventory.empty() && !npcs.empty()) {
-     npcs.back().inv.add_stack(npc_inventory);
-     npc_inventory.clear();
-    }
-    npcs.push_back(npc(fin));
-   } else if (datatype == 'I' || datatype == 'C' || datatype == 'W' ||
-              datatype == 'w' || datatype == 'c') {
-    if (npcs.empty()) {
-     debugmsg("Overmap %d:%d:%d tried to load object data, without an NPC!", pos.x, pos.y, pos.z);
-     std::string itemdata;
-	 getline(fin, itemdata);	// flush the line so we don't corrupt out too badly
-	 debugmsg(itemdata.c_str());
-	} else {
-     npc& last = npcs.back();
-     switch (datatype) {
-      case 'I': npc_inventory.push_back(item(fin));                 break;
-      case 'C': npc_inventory.back().contents.push_back(item(fin)); break;
-      case 'W': last.worn.push_back(item(fin));                    break;
-      case 'w': last.weapon = item(fin);                           break;
-      case 'c': last.weapon.contents.push_back(item(fin));         break;
-     }
-    }
-   } else {
-     debugmsg("Overmap %d:%d:%d tried to load unrecognized data!", pos.x, pos.y, pos.z);
-     std::string itemdata;
-	 getline(fin, itemdata);	// flush the line so we don't corrupt out too badly
-	 debugmsg(itemdata.c_str());
-   }
-  }
-// If we accrued an npc_inventory, assign it now
-  if (!npc_inventory.empty() && !npcs.empty())
-   npcs.back().inv.add_stack(npc_inventory);
-#if 1
-  }
-#endif
+
 // Private/per-character data
   fin.close();
   fin.open(plrfilename.str().c_str());

@@ -720,37 +720,6 @@ JSON toJSON(const mongroup& src)
 	return _mongroup;
 }
 
-mongroup::mongroup(std::istream& is)
-: type(mcat_null), pos(-1,-1), radius(0), population(0), dying(false)
-{
-	if ('{' == (is >> std::ws).peek()) {
-		const JSON _in(is);
-		int tmp;
-		if (!_in.has_key("type") || !fromJSON(_in["type"], type)) return;
-		if (!_in.has_key("pos") || !fromJSON(_in["pos"], pos)) return;
-		if (!_in.has_key("radius") || !fromJSON(_in["radius"], tmp)) return;
-		if (!_in.has_key("population") || !fromJSON(_in["population"], population)) return;
-		radius = tmp;
-		if (_in.has_key("dying")) fromJSON(_in["dying"], dying);
-		return;
-	}
-	// \todo release block: remove legacy reading
-  int tmp_radius;
-  is >> type >> pos >> tmp_radius >> population;	// XXX note absence of src.dying: saveload cancels that
-  radius = tmp_radius;
-}
-
-std::ostream& operator<<(std::ostream& os, const mongroup& src)
-{
-	JSON _mongroup;
-	_mongroup.set("type", toJSON(src.type));
-	_mongroup.set("pos", toJSON(src.pos));
-	_mongroup.set("radius", std::to_string(src.radius));
-	_mongroup.set("population", std::to_string(src.population));
-	if (src.dying) _mongroup.set("dying", "true");
-	return os << _mongroup;
-}
-
 std::istream& operator>>(std::istream& is, field& dest)
 {
 	if ('{' == (is >> std::ws).peek()) {
@@ -784,6 +753,9 @@ std::ostream& operator<<(std::ostream& os, const field& src)
 	} else return os << "{}";
 }
 
+// Arrays are not plausible for the final format for the overmap data classes, but
+// they are easily distinguished from objects so we have a clear upgrade path.
+// Plan is to reserve the object form for when the absolute coordinate system is understood.
 bool fromJSON(const JSON& _in, city& dest)
 {
 	const size_t _size = _in.size();
@@ -800,33 +772,6 @@ JSON toJSON(const city& src)
 	ret.push(std::to_string(src.y));
 	if (0 < src.s) ret.push(std::to_string(src.x));
 	return ret;
-}
-
-// Arrays are not plausible for the final format for the overmap data classes, but
-// they are easily distinguished from objects so we have a clear upgrade path.
-// Plan is to reserve the object form for when the absolute coordinate system is understood.
-city::city(std::istream& is, bool is_road)
-: s(0)
-{	// the difference between a city, and a road, is the radius (roads have zero radius)
-	if ('[' == (is >> std::ws).peek()) {
-		JSON _in(is);
-		const size_t _size = _in.size();
-
-		if ((2 != _size && 3!= _size) || JSON::array != _in.mode()) throw std::runtime_error("point expected to be a length 2 array");
-		if (!fromJSON(_in[0], x) || !fromJSON(_in[1], y)) throw std::runtime_error("point wants integer coordinates");
-		if (3 == _size && !fromJSON(_in[2], s)) throw std::runtime_error("point wants integer coordinates");
-		return;
-	}
-	// \todo release block: remove legacy reading
-	is >> x >> y;
-	if (!is_road) is >> s;
-}
-
-std::ostream& operator<<(std::ostream& os, const city& src)
-{
-	os << '[' << std::to_string(src.x) << ',' << std::to_string(src.y);
-	if (0 < src.s) os << ',' << std::to_string(src.s);
-	return os << ']';
 }
 
 om_note::om_note(std::istream& is)
@@ -869,28 +814,6 @@ JSON toJSON(const radio_tower& src)
 	ret.push(std::to_string(src.strength));
 	ret.push(src.message);
 	return ret;
-}
-
-radio_tower::radio_tower(std::istream& is)
-{
-	if ('[' == (is >> std::ws).peek()) {
-		JSON _in(is);
-		if (JSON::array != _in.mode() || 4 != _in.size()) throw std::runtime_error("radio_tower expected to be a length 4 array");
-		fromJSON(_in[0], x);
-		fromJSON(_in[1], y);
-		fromJSON(_in[2], strength);
-		fromJSON(_in[3], message);
-		return;
-	}
-	// \todo release block: remove legacy reading
-	is >> x >> y >> strength;
-	getline(is, message);	// Chomp endl
-	getline(is, message);
-}
-
-std::ostream& operator<<(std::ostream& os, const radio_tower& src)
-{
-	return os << '[' << std::to_string(src.x) << ',' << std::to_string(src.y) << ',' << std::to_string(src.strength) << ',' << JSON(src.message) << ']';
 }
 
 bool fromJSON(const JSON& src, player_activity& dest)
@@ -2478,106 +2401,4 @@ npc::npc(const JSON& src)
 		if (!relay.empty()) flags = _parse(relay);
 	}
 
-}
-
-// \todo release block: JSON conversion
-npc::npc(std::istream& is)
-{
-	std::string tmpname;
-	is >> id;
-	// Standard player stuff
-	do {
-		is >> tmpname;
-		if (tmpname != "||") name += tmpname + " ";
-	} while (tmpname != "||");
-	name = name.substr(0, name.size() - 1); // Strip off trailing " "
-	is >> pos >> str_cur >> str_max >> dex_cur >> dex_max >>
-		int_cur >> int_max >> per_cur >> per_max >> hunger >> thirst >>
-		fatigue >> stim >> pain >> pkill >> radiation >> cash >> recoil >>
-		scent >> moves >> underwater >> dodges_left >> oxygen >> marked_for_death >>
-		dead >> myclass >> patience;
-
-	for (int i = 0; i < PF_MAX2; i++) is >> my_traits[i];
-	for (int i = 0; i < num_hp_parts; i++) is >> hp_cur[i] >> hp_max[i];
-	for (int i = 0; i < num_skill_types; i++) is >> sklevel[i] >> skexercise[i];
-
-	int numstyles;
-	is >> numstyles;
-	for (int i = 0; i < numstyles; i++) {
-		itype_id tmp;
-		is >> tmp;
-		styles.push_back(tmp);
-	}
-
-	int numill;
-	is >> numill;
-	for (int i = 0; i < numill; i++) illness.push_back(disease(is));
-
-	int numadd = 0;
-	is >> numadd;
-	for (int i = 0; i < numadd; i++) addictions.push_back(addiction(is));
-
-	int numbio = 0;
-	is >> numbio;
-	for (int i = 0; i < numbio; i++) my_bionics.push_back(bionic(is));
-
-	// Special NPC stuff
-	int flagstmp, fac_id;
-	is >> personality >> wand >> om >> mapx >> mapy >> pl >> goal >> mission >>
-		flagstmp >> fac_id >> attitude;
-	my_fac = faction::from_id(fac_id);
-	flags = flagstmp;
-
-	is >> op_of_u;
-	is >> chatbin;
-	is >> combat_rules;
-}
-
-std::ostream& operator<<(std::ostream& os, const npc& src)
-{
-	// The " || " is what tells npc::load_info() that it's down reading the name
-	os << src.id I_SEP << src.name << " || " << src.pos I_SEP << src.str_cur I_SEP <<
-		src.str_max I_SEP << src.dex_cur I_SEP << src.dex_max I_SEP << src.int_cur I_SEP <<
-		src.int_max I_SEP << src.per_cur I_SEP << src.per_max I_SEP << src.hunger I_SEP <<
-		src.thirst I_SEP << src.fatigue I_SEP << src.stim I_SEP << src.pain I_SEP <<
-		src.pkill I_SEP << src.radiation I_SEP << src.cash I_SEP << src.recoil I_SEP <<
-		src.scent I_SEP << src.moves I_SEP << src.underwater I_SEP << src.dodges_left I_SEP <<
-		src.oxygen I_SEP << src.marked_for_death I_SEP <<
-		src.dead I_SEP << src.myclass I_SEP << src.patience I_SEP;
-
-	for (int i = 0; i < PF_MAX2; i++) os << src.my_traits[i] I_SEP;
-	for (int i = 0; i < num_hp_parts; i++) os << src.hp_cur[i] I_SEP << src.hp_max[i] I_SEP;
-	for (int i = 0; i < num_skill_types; i++) os << src.sklevel[i] I_SEP << src.skexercise[i] I_SEP;
-
-	os << src.styles.size() I_SEP;
-	for (int i = 0; i < src.styles.size(); i++) os << src.styles[i] I_SEP;
-
-	os << src.illness.size() I_SEP;
-	for (const auto& ill : src.illness) os << ill I_SEP;
-
-	os << src.addictions.size() I_SEP;
-	for (const auto& add : src.addictions) os << add I_SEP;
-
-	os << src.my_bionics.size() I_SEP;
-	for (const auto& bio : src.my_bionics)  os << bio I_SEP;
-
-	// NPC-specific stuff
-	os << src.personality I_SEP << src.wand I_SEP << src.om I_SEP << src.mapx I_SEP <<
-		src.mapy I_SEP << src.pl I_SEP << src.goal I_SEP << src.mission I_SEP <<
-		int(src.flags) I_SEP;	// blocker V 0.2.0 \todo npc::it missing here
-	os << (src.my_fac == NULL ? -1 : src.my_fac->id);
-	os I_SEP << src.attitude I_SEP << src.op_of_u I_SEP << src.chatbin I_SEP << src.combat_rules I_SEP;
-
-	// Inventory size, plus armor size, plus 1 for the weapon
-	os << std::endl;
-
-	// V 0.2.0 blocker \todo asymmetric, not handled in istream constructor
-	os << src.inv.num_items() + src.worn.size() + 1 << std::endl;
-	for (size_t i = 0; i < src.inv.size(); i++) {
-		for (const auto& it : src.inv.stack_at(i)) os << "I " << it << std::endl;
-	}
-	os << "w " << src.weapon << std::endl;
-	for (const auto& it : src.worn) os << "W " << it << std::endl;
-
-	return os;
 }

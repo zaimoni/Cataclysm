@@ -302,8 +302,6 @@ public:
  npc& operator=(const npc& rhs);
  npc& operator=(npc&& rhs) = default;
 
- npc(std::istream& is);
- friend std::ostream& operator<<(std::ostream& os, const npc& src);
  friend bool fromJSON(const cataclysm::JSON& src, npc& dest);
  friend cataclysm::JSON toJSON(const npc& src);
 

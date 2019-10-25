@@ -40,8 +40,6 @@ struct mongroup {
  mongroup(moncat_id ptype, int pposx, int pposy, unsigned char prad, unsigned int ppop)
  : type(ptype),pos(pposx,pposy),radius(prad),population(ppop),dying(false) {}
  
- mongroup(std::istream& is);
- friend std::ostream& operator<<(std::ostream& os, const mongroup& src);
  friend bool fromJSON(const cataclysm::JSON& _in, mongroup& dest);
  friend cataclysm::JSON toJSON(const mongroup& src);
 
