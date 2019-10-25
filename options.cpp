@@ -1,6 +1,7 @@
 #include "options.h"
 #include "output.h"
 #include "JSON.h"
+#include "ios_file.h"
 
 #include <fstream>
 
@@ -57,12 +58,13 @@ static option_key opt_key(const char* const x)
 	return OPT_NULL;
 }
 
+#define OPT_FILE "data/options.json"
+
 static JSON& get_JSON_opts() {
 	static JSON* x = 0;
 	if (!x) {
-		std::ifstream fin;
-		fin.open("data/options.json");
-		if (fin.is_open()) x = new JSON(fin);
+		std::ifstream fin(OPT_FILE);
+		if (fin) x = new JSON(fin);
 		else x = new JSON();
 		fin.close();
 		// audit our own keys.  Since we will be used to initialize the option_table we can't reference it.
@@ -131,7 +133,8 @@ std::string option_name(option_key key)
 
 void save_options()
 {
- std::ofstream fout;
- fout.open("data/options.json");
- if (fout.is_open()) fout << get_JSON_opts() << std::endl;
+ DECLARE_AND_ACID_OPEN(std::ofstream, fout, OPT_FILE, return;)
+ fout << get_JSON_opts() << std::endl;
+ OFSTREAM_ACID_CLOSE(fout, OPT_FILE)
 }
+#undef OPT_FILE

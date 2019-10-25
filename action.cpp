@@ -1,5 +1,6 @@
 #include "game.h"
 #include "keypress.h"
+#include "ios_file.h"
 #include <fstream>
 
 const char* const  default_keymap_txt = "\
@@ -102,16 +103,15 @@ debug_mode ~\n\
 # debug_scent -\n\
 ";
 
+#define KEY_FILE "data/keymap.txt"
 void game::load_keyboard_settings()
 {
- std::ifstream fin;
- fin.open("data/keymap.txt");
+ std::ifstream fin(KEY_FILE);
  if (!fin) { // It doesn't exist
-  std::ofstream fout;
-  fout.open("data/keymap.txt");
+  std::ofstream fout(KEY_FILE);
   fout << default_keymap_txt;
   fout.close();
-  fin.open("data/keymap.txt");
+  fin.open(KEY_FILE);
  }
  if (!fin) { // Still can't open it--probably bad permissions
   debugmsg("Can't open data/keymap.txt.  This may be a permissions issue.");
@@ -147,18 +147,11 @@ Fix data/keymap.txt at your next chance!", ch, id.c_str());
 
 void game::save_keymap()
 {
- std::ofstream fout;
- fout.open("data/keymap.txt");
- if (!fout) { // It doesn't exist
-  debugmsg("Can't open data/keymap.txt.");
-  fout.close();
-  return;
- }
-
+ DECLARE_AND_ACID_OPEN(std::ofstream, fout, KEY_FILE, return;)
  keys.forall([&fout](char key, action_id act) { fout << action_ident(act) << " " << key << std::endl; });
-
- fout.close();
+ OFSTREAM_ACID_CLOSE(fout, KEY_FILE)
 }
+#undef KEY_FILE
 
 std::string action_ident(action_id act)
 {

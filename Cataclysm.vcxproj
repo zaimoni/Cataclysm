@@ -177,6 +177,7 @@
     <ClInclude Include="game.h" />
     <ClInclude Include="gamemode.h" />
     <ClInclude Include="inventory.h" />
+    <ClInclude Include="ios_file.h" />
     <ClInclude Include="item.h" />
     <ClInclude Include="itype.h" />
     <ClInclude Include="iuse.h" />

@@ -3,6 +3,7 @@
 #include "output.h"
 #include "recent_msg.h"
 #include "saveload.h"
+#include "ios_file.h"
 #include <fstream>
 
 mapbuffer MAPBUFFER;
@@ -29,10 +30,12 @@ submap* mapbuffer::lookup_submap(int x, int y, int z)
  return (0 < submaps.count(p)) ? submaps[p] : NULL;
 }
 
+#define MAP_FILE "save/maps.txt"
+
 void mapbuffer::save()
 {
- std::ofstream fout;
- fout.open("save/maps.txt");
+
+ DECLARE_AND_ACID_OPEN(std::ofstream, fout, MAP_FILE, return;)
 
  fout << submaps.size() << std::endl;
  int percent = 0;
@@ -47,14 +50,13 @@ void mapbuffer::save()
   fout << *it.second;
  }
  // Close the file; that's all we need.
- fout.close();
+ OFSTREAM_ACID_CLOSE(fout, MAP_FILE)
+
 }
 
 void mapbuffer::load()
 {
- std::ifstream fin;
- fin.open("save/maps.txt");
- if (!fin.is_open()) return;
+ DECLARE_AND_OPEN(std::ifstream, fin, MAP_FILE, return;)
 
  int num_submaps;
  fin >> num_submaps;
@@ -71,3 +73,4 @@ void mapbuffer::load()
  }
  fin.close();
 }
+#undef MAP_FILE

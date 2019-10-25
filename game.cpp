@@ -1773,9 +1773,7 @@ void game::load(std::string name)
 void game::save()
 {
  std::stringstream playerfile_stem;
- std::ofstream fout;
  playerfile_stem << "save/" << u.name;
- fout.open((playerfile_stem.str()+".tmp").c_str());
  JSON saved(JSON::object);
  JSON tmp(JSON::object);
 
@@ -1803,6 +1801,8 @@ void game::save()
  saved.set("mostseen", std::to_string(mostseen));
  saved.set("run_mode", std::to_string((int)run_mode));
  if (-1 < last_target && z.size() > last_target) saved.set("last_target", std::to_string(last_target));
+
+ std::ofstream fout((playerfile_stem.str() + ".tmp").c_str());
  fout << saved;
  fout.close();
 
@@ -1811,7 +1811,6 @@ void game::save()
  rename((playerfile_stem.str() + ".tmp").c_str(), (playerfile_stem.str() + ".sav").c_str());
 
 // Now write things that aren't player-specific: factions and NPCs
- fout.open("save/master.tmp");
 
  saved.reset();
  if (1 < next_mission_id) tmp.set("mission", std::to_string(next_mission_id));
@@ -1828,9 +1827,11 @@ void game::save()
 	 }
 	 saved.set("npcs", JSON::encode(active_npc));
  }
- fout << saved;
 
+ fout.open("save/master.tmp");
+ fout << saved;
  fout.close();
+
  unlink("save/master.bak");
  rename("save/master.gsav", "save/master.bak");
  rename("save/master.tmp", "save/master.gsav");
