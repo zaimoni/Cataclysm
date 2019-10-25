@@ -799,7 +799,13 @@ JSON toJSON(const vehicle& src)
 }
 
 vehicle::vehicle(std::istream& in)
+: _type(veh_null), insides_dirty(true), pos(0,0), velocity(0), cruise_velocity(0), cruise_on(true),
+  turn_dir(0), skidding(false), last_turn(0), moves(0), turret_mode(0)
 {
+	if ('{' == (in >> std::ws).peek()) {
+		fromJSON(JSON(in), *this);
+		return;
+	}
 	int t;
 	int fdir, mdir, skd, prts, cr_on;
 	in >> _type >> pos >> fdir >> mdir >> turn_dir >> velocity >> cruise_velocity >>
@@ -821,15 +827,7 @@ vehicle::vehicle(std::istream& in)
 
 std::ostream& operator<<(std::ostream& os, const vehicle& src)
 {
-	os << src._type I_SEP << src.pos I_SEP << src.face.dir() I_SEP <<
-		src.move.dir() I_SEP << src.turn_dir I_SEP << src.velocity I_SEP <<
-		src.cruise_velocity I_SEP << (src.cruise_on ? 1 : 0) I_SEP <<
-		src.turret_mode I_SEP << (src.skidding ? 1 : 0) I_SEP <<
-		src.moves I_SEP << src.parts.size() << std::endl;
-	os << src.name << std::endl;
-
-	for (const auto& part : src.parts) os << toJSON(part);
-	return os;
+	return os << toJSON(src);
 }
 
 bool fromJSON(const JSON& _in, item& dest)
