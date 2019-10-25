@@ -735,37 +735,6 @@ mission::mission(std::istream& is)
 }
 
 
-std::ostream& operator<<(std::ostream& os, const mission& src)
-{
-	if (!src.type || 0>=src.type->id || NUM_MISSION_IDS<=src.type->id) return os << "{}"; // temporary
-	if (0 >= src.uid) return os << "{}"; // temporary
-	JSON _mission;
-	_mission.set("type", toJSON(src.type));
-	_mission.set("uid", std::to_string(src.uid));
-	if (!src.description.empty()) _mission.set("description",src.description);
-	if (src.failed) _mission.set("failed", "true");
-	if (src.value) _mission.set("value", std::to_string(src.value));	// for now allow negative mission values \todo audit for negative mission values
-	if (JSON_key(src.reward.type)) _mission.set("value", toJSON(src.reward));
-	// src.reward
-	if (point(-1, -1) != src.target) _mission.set("target", toJSON(src.target));
-	if (src.count) {
-		if (auto json = JSON_key(src.item_id)) {
-			_mission.set("item", json);
-			_mission.set("count", std::to_string(src.count));
-		}
-	}
-	if (0 < src.deadline) _mission.set("deadline", std::to_string(src.deadline));
-	if (0 < src.npc_id) _mission.set("npc", std::to_string(src.npc_id));	// \todo release block: is this always-valid?
-	if (0 <= src.good_fac_id) _mission.set("by_faction", std::to_string(src.good_fac_id));
-	if (0 <= src.bad_fac_id) _mission.set("vs_faction", std::to_string(src.bad_fac_id));
-	if (src.step) _mission.set("step", std::to_string(src.step));
-	{
-	if (auto json = JSON_key(src.follow_up)) _mission.set("next", json);
-	}
-
-	return os << _mission;
-}
-
 mongroup::mongroup(std::istream& is)
 : type(mcat_null), pos(-1,-1), radius(0), population(0), dying(false)
 {
@@ -1526,39 +1495,6 @@ monster::monster(std::istream& is)
 		is >> ptmp;
 		plans.push_back(ptmp);
 	}
-}
-
-std::ostream& operator<<(std::ostream& os, const monster& src)
-{
-	if (src.type) {
-		if (auto json = JSON_key((mon_id)src.type->id)) {
-			JSON _monster;
-			_monster.set("type", json);
-			_monster.set("pos", toJSON(src.pos));
-			if (src.wand.live()) _monster.set("wand", toJSON(src.wand));
-			if (!src.inv.empty()) _monster.set("inv", JSON::encode(src.inv));
-			if (!src.effects.empty()) _monster.set("effects", JSON::encode(src.effects));
-			if (src.is_static_spawn()) {
-				_monster.set("spawnmap", toJSON(src.spawnmap));
-				_monster.set("spawnpos", toJSON(src.spawnpos));
-			}
-			_monster.set("moves", std::to_string(src.moves));
-			_monster.set("speed", std::to_string(src.speed));
-			_monster.set("hp", std::to_string(src.hp));
-			if (0 < src.sp_timeout) _monster.set("sp_timeout", std::to_string(src.sp_timeout));
-			if (src.friendly) _monster.set("friendly", std::to_string(src.friendly));
-			_monster.set("anger", std::to_string(src.anger));
-			_monster.set("morale", std::to_string(src.morale));
-			if (0 <= src.faction_id) _monster.set("faction_id", std::to_string(src.faction_id));	// \todo release block validate or verify inability to validate here
-			if (0 < src.mission_id) _monster.set("mission_id", std::to_string(src.mission_id));		// \todo release block validate or verify inability to validate here
-			if (src.dead) _monster.set("dead", "true");
-			if (src.made_footstep) _monster.set("made_footstep", "true");
-			if (!src.unique_name.empty()) _monster.set("unique_name", src.unique_name);
-			if (!src.plans.empty()) _monster.set("effects", JSON::encode(src.plans));
-			return os << _monster;
-		}
-	}
-	return os << "{}";
 }
 
 // usage is when loading artifacts

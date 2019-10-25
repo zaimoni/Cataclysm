@@ -100,7 +100,6 @@ struct mission {
    bad_fac_id(-1),step(0),follow_up(MISSION_NULL) {}
 
  mission(std::istream& src);
- friend std::ostream& operator<<(std::ostream& os, const mission& src);
  friend bool fromJSON(const cataclysm::JSON& _in, mission& dest);
  friend cataclysm::JSON toJSON(const mission& src);
 };

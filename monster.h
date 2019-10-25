@@ -60,7 +60,6 @@ class monster {
  monster& operator=(monster&& src) = default;
 
  monster(std::istream& is);
- friend std::ostream& operator<<(std::ostream& os, const monster& src);
  friend bool fromJSON(const cataclysm::JSON& _in, monster& dest);
  friend cataclysm::JSON toJSON(const monster& src);
 

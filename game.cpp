@@ -1753,8 +1753,9 @@ void game::load(std::string name)
  fin.open(playerfile.str().c_str());
 // First, read in basic game state information.
  if (!fin.is_open()) throw no_save;
- if ('{' == (fin >> std::ws).peek()) {
-	// JSON format	\todo make ACID (that is, if we error out we alter nothing)
+ if ('{' != (fin >> std::ws).peek()) throw corrupted;
+
+ // JSON format	\todo make ACID (that is, if we error out we alter nothing)
 	JSON saved(fin);
 	int tmp;
 	tripoint com;
@@ -1813,11 +1814,10 @@ void game::load(std::string name)
 	}  else run_mode = (option_table::get()[OPT_SAFEMODE] ? 1 : 0);
 	if (saved.has_key("last_target") && fromJSON(saved["last_target"], tmp) && 0 <= tmp && z.size() > tmp) last_target = tmp; else last_target = -1;
 	// do not worry about next_npc_id/next_faction_id/next_mission_id, the master save catches these
+#if 0
  } else {
   // \todo release block remove legacy loading code
 
- u = player();
- u.name = name;
  int tmpturn, tmpspawn, tmpnextweather, tmprun, tmpweather, tmptemp,
      comx, comy;
  fin >> tmpturn >> last_target >> tmprun >> mostseen >> nextinv >> next_npc_id >>
@@ -1854,38 +1854,13 @@ void game::load(std::string name)
  for (int i = 0; i < num_monsters; i++)
   fin >> kills[i];
 // Finally, the data on the player.
- if ('{' == (fin >> std::ws).peek()) {
-	 // JSON converted
+ 	 // JSON converted
 	 JSON pc(fin);
 	 u = player(pc);
- } else {
-	 // legacy	\todo release block: remove legacy loading
-	 fin >> u >> std::ws;
-	 // And the player's inventory...
-	 char item_place;
-	 // We need a temporary vector of items.  Otherwise, when we encounter an item
-	 // which is contained in another item, the auto-sort/stacking behavior of the
-	 // player's inventory may cause the contained item to be misplaced.
-	 std::vector<item> tmpinv;
-	 while (!fin.eof()) {
-		 fin >> item_place;
-		 if (!fin.eof()) {
-			 if (item_place == 'I') tmpinv.push_back(item(fin));
-			 else if (item_place == 'C') tmpinv[tmpinv.size() - 1].contents.push_back(item(fin));
-			 else if (item_place == 'W') u.worn.push_back(item(fin));
-			 else if (item_place == 'w') u.weapon = item(fin);
-			 else if (item_place == 'c') u.weapon.contents.push_back(item(fin));
-			 else {
-				 debugmsg("unrecognized item key");
-				 getline(fin, data);
-			 }
-		 }
-	 }
-	 // Now dump tmpinv into the player's inventory
-	 u.inv.add_stack(tmpinv);
  }
 
  }	// end legacy loading code
+#endif
 
  fin.close();
 // Now load up the master game data; factions (and more?)
@@ -1900,7 +1875,6 @@ void game::save()
  std::ofstream fout;
  playerfile_stem << "save/" << u.name;
  fout.open((playerfile_stem.str()+".tmp").c_str());
-#if 1
  JSON saved(JSON::object);
  JSON tmp(JSON::object);
 
@@ -1929,12 +1903,8 @@ void game::save()
  saved.set("run_mode", std::to_string((int)run_mode));
  if (-1 < last_target && z.size() > last_target) saved.set("last_target", std::to_string(last_target));
  fout << saved;
-#else
-  // Now save all monsters.
- fout << std::endl << z.size() << std::endl;
- for (const auto& mon : z) fout << mon << std::endl;
-#endif
  fout.close();
+
  unlink((playerfile_stem.str() + ".bak").c_str());
  rename((playerfile_stem.str() + ".sav").c_str(), (playerfile_stem.str() + ".bak").c_str());
  rename((playerfile_stem.str() + ".tmp").c_str(), (playerfile_stem.str() + ".sav").c_str());
@@ -1960,19 +1930,8 @@ void game::save()
  }
  fout << saved;
 #else
- fout << next_mission_id << " " << next_faction_id << " " << next_npc_id <<
-         " " << active_missions.size() << " ";
- for(const auto& mi : active_missions) fout << mi << " ";
-
  fout << factions.size() << std::endl;
  for(const auto& fac : factions) fout << fac;
-
- fout << active_npc.size() << std::endl;
- for (int i = 0; i < active_npc.size(); i++) {
-  active_npc[i].mapx = lev.x;
-  active_npc[i].mapy = lev.y;
-  fout << active_npc[i] << std::endl;
- }
 #endif
 
  fout.close();
