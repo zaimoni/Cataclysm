@@ -218,9 +218,6 @@ struct field {
  : type(t),density(d),age(a)
  { }
 
- friend std::istream& operator>>(std::istream& is, field& dest);
- friend std::ostream& operator<<(std::ostream& os, const field& src);
-
  bool is_null() const
  {
   return (type == fd_null || type == fd_blood || type == fd_bile || type == fd_slime);

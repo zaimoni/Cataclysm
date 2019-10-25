@@ -590,37 +590,27 @@ JSON toJSON(const mongroup& src)
 	return _mongroup;
 }
 
-std::istream& operator>>(std::istream& is, field& dest)
+bool fromJSON(const JSON& _in, field& dest)
 {
-	if ('{' == (is >> std::ws).peek()) {
-		const JSON _in(is);
-		if (_in.has_key("type")) {
-			if (!fromJSON(_in["type"], dest.type)) return is;
-			if (_in.has_key("density")) {
-				int tmp;
-				fromJSON(_in["density"], tmp);
-				dest.density = tmp;
-			}
-			if (_in.has_key("age")) fromJSON(_in["age"], dest.age);
-		} else dest = field();
-		return is;
+	if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) return false;
+	if (_in.has_key("density")) {
+		int tmp;
+		fromJSON(_in["density"], tmp);
+		dest.density = tmp;
 	}
-	// \todo release block: remove legacy reading
-	int d;
-	is >> dest.type >> d >> dest.age;
-	dest.density = d;
-	return is;
+	if (_in.has_key("age")) fromJSON(_in["age"], dest.age);
+	return true;
 }
 
-std::ostream& operator<<(std::ostream& os, const field& src)
+JSON toJSON(const field& src)
 {
+	JSON _field;
 	if (const auto json = JSON_key(src.type)) {
-		JSON _field;
 		_field.set("type", json);
 		_field.set("density", std::to_string((int)src.density));
 		_field.set("age", std::to_string(src.age));
-		return os << _field;
-	} else return os << "{}";
+	}
+	return _field;
 }
 
 // Arrays are not plausible for the final format for the overmap data classes, but
@@ -815,7 +805,7 @@ submap::submap(std::istream& is)
 			is >> trp[itx][ity];
 		} else if (string_identifier == "F") {
 			is >> itx >> ity;
-			is >> fld[itx][ity];
+			fromJSON(JSON(is), fld[itx][ity]);
 			field_count++;
 		}
 		else if (string_identifier == "S") spawns.push_back(spawn_point(is));
@@ -878,7 +868,7 @@ std::ostream& operator<<(std::ostream& os, const submap& src)
 	for (int j = 0; j < SEEY; j++) {
 		for (int i = 0; i < SEEX; i++) {
 			const field& tmpf = src.fld[i][j];
-			if (tmpf.type != fd_null) os << "F " << i << " " << j << " " << tmpf << std::endl;
+			if (tmpf.type != fd_null) os << "F " << i << " " << j << " " << toJSON(tmpf) << std::endl;
 		}
 	}
 	// Output the spawn points
