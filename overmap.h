@@ -18,6 +18,7 @@ struct city {
  city(std::istream& is, bool is_road=false);
  friend std::ostream& operator<<(std::ostream& os, const city& src);
  friend bool fromJSON(const cataclysm::JSON& _in, city& dest);
+ friend cataclysm::JSON toJSON(const city& src);
 };
 
 struct om_note {
@@ -43,6 +44,7 @@ struct radio_tower {
  radio_tower(std::istream& is);
  friend std::ostream& operator<<(std::ostream& os, const radio_tower& src);
  friend bool fromJSON(const cataclysm::JSON& _in, radio_tower& dest);
+ friend cataclysm::JSON toJSON(const radio_tower& src);
 };
 
 class overmap

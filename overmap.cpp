@@ -2554,6 +2554,15 @@ void overmap::save(const std::string& name, int x, int y, int z)
    fout << char(int(ter(i, j)) + 32);
  }
  fout << std::endl;
+#if 1
+ JSON saved(JSON::object);
+ saved.set("groups", JSON::encode(zg));
+ saved.set("cities", JSON::encode(cities));
+ saved.set("roads", JSON::encode(roads_out));
+ saved.set("radios", JSON::encode(radios));
+ saved.set("npcs", JSON::encode(npcs));
+ fout << saved;
+#else
  for(const auto& zgroup : zg) fout << "Z " << zgroup << std::endl;
  for(const auto& c : cities) fout << "t " << c << std::endl;
  for(const auto& r : roads_out) fout << "R " << r << std::endl;
@@ -2561,6 +2570,7 @@ void overmap::save(const std::string& name, int x, int y, int z)
 
  for (int i = 0; i < npcs.size(); i++)
   fout << "n " << npcs[i] << std::endl;
+#endif
 
  fout.close();
 }

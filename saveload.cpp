@@ -709,6 +709,17 @@ bool fromJSON(const JSON& _in, mongroup& dest)
 	return true;
 }
 
+JSON toJSON(const mongroup& src)
+{
+	JSON _mongroup;
+	_mongroup.set("type", toJSON(src.type));
+	_mongroup.set("pos", toJSON(src.pos));
+	_mongroup.set("radius", std::to_string(src.radius));
+	_mongroup.set("population", std::to_string(src.population));
+	if (src.dying) _mongroup.set("dying", "true");
+	return _mongroup;
+}
+
 mongroup::mongroup(std::istream& is)
 : type(mcat_null), pos(-1,-1), radius(0), population(0), dying(false)
 {
@@ -782,6 +793,15 @@ bool fromJSON(const JSON& _in, city& dest)
 	return true;
 }
 
+JSON toJSON(const city& src)
+{
+	JSON ret(JSON::array);
+	ret.push(std::to_string(src.x));
+	ret.push(std::to_string(src.y));
+	if (0 < src.s) ret.push(std::to_string(src.x));
+	return ret;
+}
+
 // Arrays are not plausible for the final format for the overmap data classes, but
 // they are easily distinguished from objects so we have a clear upgrade path.
 // Plan is to reserve the object form for when the absolute coordinate system is understood.
@@ -839,6 +859,16 @@ bool fromJSON(const JSON& _in, radio_tower& dest)
 	if (!fromJSON(_in[1], dest.y)) return false;
 	if (!fromJSON(_in[2], dest.strength)) return false;
 	return fromJSON(_in[3], dest.message);
+}
+
+JSON toJSON(const radio_tower& src)
+{
+	JSON ret(JSON::array);
+	ret.push(std::to_string(src.x));
+	ret.push(std::to_string(src.y));
+	ret.push(std::to_string(src.strength));
+	ret.push(src.message);
+	return ret;
 }
 
 radio_tower::radio_tower(std::istream& is)

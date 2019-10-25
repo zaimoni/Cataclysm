@@ -43,6 +43,7 @@ struct mongroup {
  mongroup(std::istream& is);
  friend std::ostream& operator<<(std::ostream& os, const mongroup& src);
  friend bool fromJSON(const cataclysm::JSON& _in, mongroup& dest);
+ friend cataclysm::JSON toJSON(const mongroup& src);
 
  bool is_safe() const { return mcat_null == type || mcat_forest == type; }
  static moncat_id to_mc(mon_id type);	// Monster type to monster category
