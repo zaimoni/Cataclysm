@@ -52,8 +52,11 @@ item::item(unsigned int turn, int id)
 
 DEFINE_ACID_ASSIGN_W_MOVE(item)
 
-void item::make(itype* it)
+void item::make(const itype* it)
 {
+ assert(it);
+ assert(0<it->id);
+ assert(num_all_items > it->id&& JSON_key((itype_id)(it->id)));
  type = it;
  contents.clear();
 }

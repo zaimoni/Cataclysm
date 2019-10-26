@@ -39,7 +39,7 @@ public:
  item(const item& src) = default;
  item(item&& src) = default;
  ~item() = default;
- void make(itype* it);
+ void make(const itype* it);
 
  item& operator=(const item& src);
  item& operator=(item&& src) = default;
