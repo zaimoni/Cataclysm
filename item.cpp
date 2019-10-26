@@ -73,9 +73,8 @@ item item::in_its_container() const
   ret.contents.push_back(*this);
   return ret;
  }
- if (!is_food()) return *this;
  const it_comest* const food = dynamic_cast<const it_comest*>(type);
- if (!food) return *this;	// XXX dead code \todo verify
+ if (!food || !food->container) return *this;
  item ret(item::types[food->container], bday);
  ret.contents.push_back(*this);
  ret.invlet = invlet;
