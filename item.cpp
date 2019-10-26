@@ -28,6 +28,20 @@ item::item()
 {
 }
 
+static void _bootstrap_item_charges(int& charges, const itype* const it)
+{
+	if (it->is_gun()) charges = 0;
+	else if (it->is_ammo()) charges = dynamic_cast<const it_ammo*>(it)->count;
+	else if (it->is_food()) {
+		const it_comest* const comest = dynamic_cast<const it_comest*>(it);
+		charges = (1 == comest->charges) ? -1 : comest->charges;
+	}
+	else if (it->is_tool()) {
+		const it_tool* const tool = dynamic_cast<const it_tool*>(it);
+		charges = (0 == tool->max_charges) ? -1 : tool->def_charges;;
+	}
+}
+
 item::item(const itype* const it, unsigned int turn)
 : type(it), corpse(0), curammo(0), name(""), invlet(0), charges(-1), active(false),
   damage(0), burnt(0), bday(turn), owned(-1), poison(0), mission_id(-1), player_id(-1)
@@ -35,16 +49,7 @@ item::item(const itype* const it, unsigned int turn)
 #ifdef ITEM_CONSTRUCTOR_INVARIANTS
  approve(type);
 #endif
- if (!it) return;
- if (it->is_gun()) charges = 0;
- else if (it->is_ammo()) charges = dynamic_cast<const it_ammo*>(it)->count;
- else if (it->is_food()) {
-  const it_comest* const comest = dynamic_cast<const it_comest*>(it);
-  charges = (1 == comest->charges) ? -1 : comest->charges;
- } else if (it->is_tool()) {
-  const it_tool* const tool = dynamic_cast<const it_tool*>(it);
-  charges = (0 == tool->max_charges) ? -1 : tool->def_charges;;
- }
+ _bootstrap_item_charges(charges, it);
 }
 
 item::item(const itype* const it, unsigned int turn, char let)
@@ -54,15 +59,7 @@ item::item(const itype* const it, unsigned int turn, char let)
 #ifdef ITEM_CONSTRUCTOR_INVARIANTS
  approve(type);
 #endif
- if (it->is_gun()) charges = 0;
- else if (it->is_ammo()) charges = dynamic_cast<const it_ammo*>(it)->count;
- else if (it->is_food()) {
-  const it_comest* const comest = dynamic_cast<const it_comest*>(it);
-  charges = (1 == comest->charges) ? -1 : comest->charges;
- } else if (it->is_tool()) {
-  const it_tool* const tool = dynamic_cast<const it_tool*>(it);
-  charges = (0 == tool->max_charges) ? -1 : tool->def_charges;
- }
+ _bootstrap_item_charges(charges, it);
 }
 
 // corpse constructor
@@ -79,8 +76,10 @@ void item::make(const itype* it)
 #ifdef ITEM_CONSTRUCTOR_INVARIANTS
  approve(it);
 #endif
+ const bool was_null = is_null();
  type = it;
  contents.clear();
+ if (was_null) _bootstrap_item_charges(charges, it);
 }
 
 bool item::is_null() const
