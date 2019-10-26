@@ -4,7 +4,23 @@
 
 #include <sstream>
 
+#ifndef NDEBUG
+// #define ITEM_CONSTRUCTOR_INVARIANTS 1
+#endif
+
 std::string default_technique_name(technique_id tech);
+
+#ifdef ITEM_CONSTRUCTOR_INVARIANTS
+#include "json.h"
+cataclysm::JSON toJSON(const item& src);	// saveload.cpp
+
+static void approve(const itype* type)	// need a stack trace from this
+{
+	if (!type) throw std::logic_error("null-type");
+	if (!item::types.empty() && (0 >= type->id || item::types.size() <= type->id)) throw std::logic_error("type id out of range");
+	if (0 < type->id && num_all_items > type->id && !JSON_key((itype_id)(type->id))) throw std::logic_error("non-artifact does not have JSON-valid type");
+}
+#endif
 
 item::item()
 : type(0),corpse(0),curammo(0),name(""),invlet(0),charges(-1),active(false),
@@ -16,6 +32,9 @@ item::item(const itype* const it, unsigned int turn)
 : type(it), corpse(0), curammo(0), name(""), invlet(0), charges(-1), active(false),
   damage(0), burnt(0), bday(turn), owned(-1), poison(0), mission_id(-1), player_id(-1)
 {
+#ifdef ITEM_CONSTRUCTOR_INVARIANTS
+ approve(type);
+#endif
  if (!it) return;
  if (it->is_gun()) charges = 0;
  else if (it->is_ammo()) charges = dynamic_cast<const it_ammo*>(it)->count;
@@ -32,6 +51,9 @@ item::item(const itype* const it, unsigned int turn, char let)
 : type(it),corpse(0),curammo(0),name(""),invlet(let),charges(-1),active(false),
   damage(0),burnt(0),bday(turn),owned(-1),poison(0),mission_id(-1),player_id(-1)
 {
+#ifdef ITEM_CONSTRUCTOR_INVARIANTS
+ approve(type);
+#endif
  if (it->is_gun()) charges = 0;
  else if (it->is_ammo()) charges = dynamic_cast<const it_ammo*>(it)->count;
  else if (it->is_food()) {
@@ -54,9 +76,9 @@ DEFINE_ACID_ASSIGN_W_MOVE(item)
 
 void item::make(const itype* it)
 {
- assert(it);
- assert(0<it->id);
- assert(num_all_items > it->id&& JSON_key((itype_id)(it->id)));
+#ifdef ITEM_CONSTRUCTOR_INVARIANTS
+ approve(it);
+#endif
  type = it;
  contents.clear();
 }
