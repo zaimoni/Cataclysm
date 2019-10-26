@@ -270,8 +270,11 @@ bool fromJSON(const JSON& src, const itype*& dest)
 {
 	if (!src.is_scalar()) return false;
 	itype_id type_id;
+	int artifact_id;
 	bool ret = fromJSON(src, type_id);
 	if (ret) dest = item::types[type_id];	// XXX \todo should be itype::types?
+	else if (ret = fromJSON(src, artifact_id) && item::types.size() > artifact_id) dest = item::types[artifact_id];
+	// second try: artifacts
 	return ret;
 }
 
@@ -863,6 +866,10 @@ JSON toJSON(const item& src) {
 	if (src.type) {
 		if (auto json = JSON_key((itype_id)src.type->id)) {
 			_item.set("type", json);
+		} else if (num_all_items <= src.type->id && item::types.size() > src.type->id) {
+			_item.set("type", std::to_string(src.type->id));	// artifacts
+		};
+		if (_item.has_key("type")) {
 			if (src.corpse) {
 				if (auto json2 = JSON_key((mon_id)src.corpse->id)) _item.set("corpse", json2);
 			}
@@ -882,7 +889,7 @@ JSON toJSON(const item& src) {
 			if (-1 != src.player_id) _item.set("player_id", std::to_string(src.player_id));
 
 			if (!src.contents.empty()) _item.set("contents", JSON::encode(src.contents));
-		};
+		}
 	};
 	return _item;
 }
