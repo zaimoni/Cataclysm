@@ -824,16 +824,16 @@ void overmap::generate_sub(overmap* above)
 
  for (int i = 0; i < OMAPX; i++) {
   for (int j = 0; j < OMAPY; j++) {
-   if (above->ter(i, j) >= ot_sub_station_north &&
-       above->ter(i, j) <= ot_sub_station_west) {
+   const auto above_terrain = above->ter(i, j);
+   if (is_between<ot_sub_station_north, ot_sub_station_west>(above_terrain)) {
     ter(i, j) = ot_subway_nesw;
     subway_points.push_back(city(i, j, 0));
 
-   } else if (above->ter(i, j) == ot_road_nesw_manhole) {
+   } else if (above_terrain == ot_road_nesw_manhole) {
     ter(i, j) = ot_sewer_nesw;
     sewer_points.push_back(city(i, j, 0));
 
-   } else if (above->ter(i, j) == ot_sewage_treatment) {
+   } else if (above_terrain == ot_sewage_treatment) {
     for (int x = i-1; x <= i+1; x++) {
      for (int y = j-1; y <= j+1; y++) {
       ter(x, y) = ot_sewage_treatment_under;
@@ -842,56 +842,56 @@ void overmap::generate_sub(overmap* above)
     ter(i, j) = ot_sewage_treatment_hub;
     sewer_points.push_back(city(i, j, 0));
 
-   } else if (above->ter(i, j) == ot_spider_pit)
+   } else if (above_terrain == ot_spider_pit)
     ter(i, j) = ot_spider_pit_under;
 
-   else if (above->ter(i, j) == ot_cave && pos.z == -1) {
+   else if (above_terrain == ot_cave && pos.z == -1) {
 	ter(i, j) = one_in(3) ? ot_cave_rat : ot_cave;
 
-   } else if (above->ter(i, j) == ot_cave_rat && pos.z == -2)
+   } else if (above_terrain == ot_cave_rat && pos.z == -2)
     ter(i, j) = ot_cave_rat;
 
-   else if (above->ter(i, j) == ot_anthill) {
+   else if (above_terrain == ot_anthill) {
     int size = rng(MIN_ANT_SIZE, MAX_ANT_SIZE);
     ant_points.push_back(city(i, j, size));
     zg.push_back(mongroup(mcat_ant, i * 2, j * 2, size * 1.5, rng(6000, 8000)));
 
-   } else if (above->ter(i, j) == ot_slimepit_down) {
+   } else if (above_terrain == ot_slimepit_down) {
     int size = rng(MIN_GOO_SIZE, MAX_GOO_SIZE);
     goo_points.push_back(city(i, j, size));
 
-   } else if (above->ter(i, j) == ot_forest_water)
+   } else if (above_terrain == ot_forest_water)
     ter(i, j) = ot_cavern;
 
-   else if (above->ter(i, j) == ot_triffid_grove ||
-            above->ter(i, j) == ot_triffid_roots)
+   else if (above_terrain == ot_triffid_grove ||
+            above_terrain == ot_triffid_roots)
     triffid_points.push_back( point(i, j) );
 
-   else if (above->ter(i, j) == ot_temple_stairs)
+   else if (above_terrain == ot_temple_stairs)
     temple_points.push_back( point(i, j) );
 
-   else if (above->ter(i, j) == ot_lab_core ||
+   else if (above_terrain == ot_lab_core ||
             (pos.z == -1 && above->ter(i, j) == ot_lab_stairs))
     lab_points.push_back(city(i, j, rng(1, 5 + pos.z)));
 
-   else if (above->ter(i, j) == ot_lab_stairs)
+   else if (above_terrain == ot_lab_stairs)
     ter(i, j) = ot_lab;
 
-   else if (above->ter(i, j) == ot_bunker && pos.z == -1)
+   else if (above_terrain == ot_bunker && pos.z == -1)
     bunker_points.push_back( point(i, j) );
 
-   else if (above->ter(i, j) == ot_shelter)
+   else if (above_terrain == ot_shelter)
     shelter_points.push_back( point(i, j) );
 
-   else if (above->ter(i, j) == ot_mine_entrance)
+   else if (above_terrain == ot_mine_entrance)
     shaft_points.push_back( point(i, j) );
 
-   else if (above->ter(i, j) == ot_mine_shaft ||
-            above->ter(i, j) == ot_mine_down    ) {
+   else if (above_terrain == ot_mine_shaft ||
+	        above_terrain == ot_mine_down    ) {
     ter(i, j) = ot_mine;
     mine_points.push_back(city(i, j, rng(6 + pos.z, 10 + pos.z)));
 
-   } else if (above->ter(i, j) == ot_mine_finale) {
+   } else if (above_terrain == ot_mine_finale) {
     for (int x = i - 1; x <= i + 1; x++) {
      for (int y = j - 1; y <= j + 1; y++)
       ter(x, y) = ot_spiral;
@@ -899,7 +899,7 @@ void overmap::generate_sub(overmap* above)
     ter(i, j) = ot_spiral_hub;
     zg.push_back(mongroup(mcat_spiral, i * 2, j * 2, 2, 200));
 
-   } else if (above->ter(i, j) == ot_silo) {
+   } else if (above_terrain == ot_silo) {
 	const auto abs_z = (0<pos.z) ? pos.z : -pos.z;
 	ter(i, j) = (rng(2, 7) < abs_z || rng(2, 7) < abs_z) ? ot_silo_finale : ot_silo;
    }
@@ -935,8 +935,8 @@ void overmap::generate_sub(overmap* above)
 // Basements done last so sewers, etc. don't overwrite them
  for (int i = 0; i < OMAPX; i++) {
   for (int j = 0; j < OMAPY; j++) {
-   if (above->ter(i, j) >= ot_house_base_north &&
-       above->ter(i, j) <= ot_house_base_west)
+   const auto above_terrain = above->ter(i, j);
+   if (is_between<ot_house_base_north, ot_house_base_west>(above_terrain))
     ter(i, j) = ot_basement;
   }
  }
@@ -1755,12 +1755,10 @@ void overmap::build_anthill(int x, int y, int s)
  ter(queenpoints[index].x, queenpoints[index].y) = ot_ants_queen;
 }
 
-void overmap::build_tunnel(int x, int y, int s, int dir)
+void overmap::build_tunnel(int x, int y, int s, int dir)	// for ants nests
 {
- if (s <= 0)
-  return;
- if (ter(x, y) < ot_ants_ns || ter(x, y) > ot_ants_queen)
-  ter(x, y) = ot_ants_ns;
+ if (s <= 0) return;
+ if (!is_between<ot_ants_ns, ot_ants_queen>(ter(x, y))) ter(x, y) = ot_ants_ns;
  point next;
  switch (dir) {
   case 0: next = point(x    , y - 1);
@@ -1773,27 +1771,23 @@ void overmap::build_tunnel(int x, int y, int s, int dir)
  std::vector<point> valid;
  for (int i = x - 1; i <= x + 1; i++) {
   for (int j = y - 1; j <= y + 1; j++) {
-   if ((ter(i, j) < ot_ants_ns || ter(i, j) > ot_ants_queen) &&
+   if (!is_between<ot_ants_ns, ot_ants_queen>(ter(i, j)) &&
        abs(i - x) + abs(j - y) == 1)
     valid.push_back(point(i, j));
   }
  }
- for (int i = 0; i < valid.size(); i++) {
-  if (valid[i].x != next.x || valid[i].y != next.y) {
+ for (const auto& pt : valid) {
+   if (pt == next) continue;
    if (one_in(s * 2)) {
-    if (one_in(2))
-     ter(valid[i].x, valid[i].y) = ot_ants_food;
-    else
-     ter(valid[i].x, valid[i].y) = ot_ants_larvae;
+    ter(pt.x, pt.y) = one_in(2) ? ot_ants_food : ot_ants_larvae;
    } else if (one_in(5)) {
     int dir2;
-    if (valid[i].y == y - 1) dir2 = 0;
-    if (valid[i].x == x + 1) dir2 = 1;
-    if (valid[i].y == y + 1) dir2 = 2;
-    if (valid[i].x == x - 1) dir2 = 3;
-    build_tunnel(valid[i].x, valid[i].y, s - rng(0, 3), dir2);
+    if (pt.y == y - 1) dir2 = 0;
+    if (pt.x == x + 1) dir2 = 1;
+    if (pt.y == y + 1) dir2 = 2;
+    if (pt.x == x - 1) dir2 = 3;
+    build_tunnel(pt.x, pt.y, s - rng(0, 3), dir2);
    }
-  }
  }
  build_tunnel(next.x, next.y, s - 1, dir);
 }
@@ -1904,20 +1898,22 @@ void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
     dir = 1; // We are moving vertically
     x = next[1].x;
     y = next[1].y;
-    if (is_river(ter(x, y)))
-     ter(x, y) = ot_bridge_ns;
+	auto& terrain = ter(x, y);
+    if (is_river(terrain))
+     terrain = ot_bridge_ns;
     else if (!is_road(base, x, y))
-     ter(x, y) = base;
+     terrain = base;
    } else if (next.size() == 1) { // Y must be correct, take the x-change
     if (dir == 1)
      ter(x, y) = base;
     dir = 0; // We are moving horizontally
     x = next[0].x;
     y = next[0].y;
-    if (is_river(ter(x, y)))
-     ter(x, y) = ot_bridge_ew;
+	auto& terrain = ter(x, y);
+	if (is_river(terrain))
+	 terrain = ot_bridge_ew;
     else if (!is_road(base, x, y))
-     ter(x, y) = base;
+     terrain = base;
    } else {	// More than one eligable route; pick one randomly
     if (one_in(12) &&
        !is_river(ter(next[(dir + 1) % 2].x, next[(dir + 1) % 2].y)))
@@ -1974,10 +1970,10 @@ void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
 */
   }
   found_road = (
-        ((ter(x, y - 1) > ot_road_null && ter(x, y - 1) < ot_river_center) ||
-         (ter(x, y + 1) > ot_road_null && ter(x, y + 1) < ot_river_center) ||
-         (ter(x - 1, y) > ot_road_null && ter(x - 1, y) < ot_river_center) ||
-         (ter(x + 1, y) > ot_road_null && ter(x + 1, y) < ot_river_center)  ) &&
+        (is_between<ot_road_null, ot_river_center>(ter(x, y - 1)) ||
+         is_between<ot_road_null, ot_river_center>(ter(x, y + 1)) ||
+         is_between<ot_road_null, ot_river_center>(ter(x - 1, y)) ||
+         is_between<ot_road_null, ot_river_center>(ter(x + 1, y))  ) &&
         rl_dist(x, y, x1, y2) > rl_dist(x, y, x2, y2));
  } while ((x != x2 || y != y2) && !found_road);
 }
@@ -2052,31 +2048,32 @@ void overmap::polish(oter_id min, oter_id max)
 // Main loop--checks roads and rivers that aren't on the borders of the map
  for (int x = 0; x < OMAPX; x++) {
   for (int y = 0; y < OMAPY; y++) {
-   if (ter(x, y) >= min && ter(x, y) <= max) {
-    if (ter(x, y) >= ot_road_null && ter(x, y) <= ot_road_nesw)
+   auto& terrain = ter(x, y);
+   if (terrain >= min && terrain <= max) {
+    if (is_between<ot_road_null, ot_road_nesw>(terrain))
      good_road(ot_road_ns, x, y);
-    else if (ter(x, y) >= ot_bridge_ns && ter(x, y) <= ot_bridge_ew &&
-             ter(x - 1, y) >= ot_bridge_ns && ter(x - 1, y) <= ot_bridge_ew &&
-             ter(x + 1, y) >= ot_bridge_ns && ter(x + 1, y) <= ot_bridge_ew &&
-             ter(x, y - 1) >= ot_bridge_ns && ter(x, y - 1) <= ot_bridge_ew &&
-             ter(x, y + 1) >= ot_bridge_ns && ter(x, y + 1) <= ot_bridge_ew)
-     ter(x, y) = ot_road_nesw;
-    else if (ter(x, y) >= ot_subway_ns && ter(x, y) <= ot_subway_nesw)
+    else if (is_between<ot_bridge_ns, ot_bridge_ew>(terrain) &&
+		     is_between<ot_bridge_ns, ot_bridge_ew>(ter(x - 1, y)) &&
+		     is_between<ot_bridge_ns, ot_bridge_ew>(ter(x + 1, y)) &&
+		     is_between<ot_bridge_ns, ot_bridge_ew>(ter(x, y - 1)) &&
+		     is_between<ot_bridge_ns, ot_bridge_ew>(ter(x, y + 1)))
+     terrain = ot_road_nesw;
+    else if (is_between<ot_subway_ns, ot_subway_nesw>(terrain))
      good_road(ot_subway_ns, x, y);
-    else if (ter(x, y) >= ot_sewer_ns && ter(x, y) <= ot_sewer_nesw)
+    else if (is_between<ot_sewer_ns, ot_sewer_nesw>(terrain))
      good_road(ot_sewer_ns, x, y);
-    else if (ter(x, y) >= ot_ants_ns && ter(x, y) <= ot_ants_nesw)
+    else if (is_between<ot_ants_ns, ot_ants_nesw>(terrain))
      good_road(ot_ants_ns, x, y);
-    else if (ter(x, y) >= ot_river_center && ter(x, y) < ot_river_nw)
+    else if (is_between<ot_river_center, ot_river_nw>(terrain))
      good_river(x, y);
 // Sometimes a bridge will start at the edge of a river, and this looks ugly
 // So, fix it by making that square normal road; bit of a kludge but it works
-    else if (ter(x, y) == ot_bridge_ns &&
+    else if (terrain == ot_bridge_ns &&
              (!is_river(ter(x - 1, y)) || !is_river(ter(x + 1, y))))
-     ter(x, y) = ot_road_ns;
-    else if (ter(x, y) == ot_bridge_ew &&
+     terrain = ot_road_ns;
+    else if (terrain == ot_bridge_ew &&
              (!is_river(ter(x, y - 1)) || !is_river(ter(x, y + 1))))
-     ter(x, y) = ot_road_ew;
+     terrain = ot_road_ew;
    }
   }
  }
@@ -2086,16 +2083,17 @@ void overmap::polish(oter_id min, oter_id max)
 // Also, this leaves, say, 3x3 areas of road.  TODO: fix this?  courtyards etc?
  for (int y = 0; y < OMAPY - 1; y++) {
   for (int x = 0; x < OMAPX - 1; x++) {
-   if (ter(x, y) >= min && ter(x, y) <= max) {
-    if (ter(x, y) == ot_road_nes && ter(x+1, y) == ot_road_nsw &&
+   auto& terrain = ter(x, y);
+   if (terrain >= min && terrain <= max) {
+    if (terrain == ot_road_nes && ter(x+1, y) == ot_road_nsw &&
         ter(x, y+1) == ot_road_nes && ter(x+1, y+1) == ot_road_nsw) {
-     ter(x, y) = ot_hiway_ns;
+     terrain = ot_hiway_ns;
      ter(x+1, y) = ot_hiway_ns;
      ter(x, y+1) = ot_hiway_ns;
      ter(x+1, y+1) = ot_hiway_ns;
-    } else if (ter(x, y) == ot_road_esw && ter(x+1, y) == ot_road_esw &&
+    } else if (terrain == ot_road_esw && ter(x+1, y) == ot_road_esw &&
                ter(x, y+1) == ot_road_new && ter(x+1, y+1) == ot_road_new) {
-     ter(x, y) = ot_hiway_ew;
+     terrain = ot_hiway_ew;
      ter(x+1, y) = ot_hiway_ew;
      ter(x, y+1) = ot_hiway_ew;
      ter(x+1, y+1) = ot_hiway_ew;
@@ -2127,19 +2125,19 @@ bool overmap::is_road(int x, int y)
 bool overmap::is_road(oter_id base, int x, int y)
 {
  oter_id min, max;
-        if (base >= ot_road_null && base <= ot_bridge_ew) {
+ if (is_between<ot_road_null, ot_bridge_ew>(base)) {
   min = ot_road_null;
   max = ot_bridge_ew;
- } else if (base >= ot_subway_ns && base <= ot_subway_nesw) {
+ } else if (is_between<ot_subway_ns, ot_subway_nesw>(base)) {
   min = ot_subway_station;
   max = ot_subway_nesw;
- } else if (base >= ot_sewer_ns && base <= ot_sewer_nesw) {
+ } else if (is_between<ot_sewer_ns, ot_sewer_nesw>(base)) {
   min = ot_sewer_ns;
   max = ot_sewer_nesw;
-  if (ter(x, y) == ot_sewage_treatment_hub ||
-      ter(x, y) == ot_sewage_treatment_under )
+  const auto terrain = ter(x, y);
+  if (terrain == ot_sewage_treatment_hub || terrain == ot_sewage_treatment_under)
    return true;
- } else if (base >= ot_ants_ns && base <= ot_ants_queen) {
+ } else if (is_between<ot_ants_ns, ot_ants_queen>(base)) {
   min = ot_ants_ns;
   max = ot_ants_queen;
  } else	{ // Didn't plan for this!
@@ -2152,9 +2150,8 @@ bool overmap::is_road(oter_id base, int x, int y)
     return true;
   }
  }
- if (ter(x, y) >= min && ter(x, y) <= max)
-  return true;
- return false;
+ const auto terrain = ter(x, y);
+ return terrain >= min && terrain <= max;
 }
 
 void overmap::good_road(oter_id base, int x, int y)
@@ -2577,10 +2574,10 @@ void overmap::open(game *g)	// only called from constructor
  if (fin.is_open()) {
   for (int j = 0; j < OMAPY; j++) {
    for (int i = 0; i < OMAPX; i++) {
-    ter(i, j) = oter_id(fin.get() - 32);
-    if (ter(i, j) < 0 || ter(i, j) > num_ter_types)
-     debugmsg("Loaded bad ter!  %s; ter %d",
-              terfilename.str().c_str(), ter(i, j));
+	const auto ter_code = fin.get() - 32;
+    ter(i, j) = oter_id(ter_code);
+    if (ter_code < 0 || ter_code > num_ter_types)
+     debugmsg("Loaded bad ter!  %s; ter %d", terfilename.str().c_str(), ter_code);
    }
   }
   if ('{' != (fin >> std::ws).peek()) {
