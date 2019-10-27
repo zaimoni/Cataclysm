@@ -111,6 +111,9 @@ class overmap
   std::vector<om_note> notes;
   std::vector<city> roads_out;
 
+  void clear_seen() { memset(s,0,sizeof(s)); }
+  void clear_terrain(oter_id src);
+
   void open(game *g);
   void generate_sub(overmap* above);
   //Drawing
@@ -131,7 +134,7 @@ class overmap
   void place_rifts();
   // Connection highways
   void place_hiways(std::vector<city> cities, oter_id base);
-  void place_subways(std::vector<point> stations);
+// void place_subways(std::vector<point> stations);	// dead function
   void make_hiway(int x1, int y1, int x2, int y2, oter_id base);
   void building_on_hiway(int x, int y, int dir);
   // Polishing

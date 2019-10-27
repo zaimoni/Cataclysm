@@ -585,18 +585,25 @@ point overmap::display_notes() const
  return point(-1,-1);
 }
 
+void overmap::clear_terrain(oter_id src)
+{
+	for (int i = 0; i < OMAPY; i++) {
+		for (int j = 0; j < OMAPX; j++) {
+			t[i][j] = src;
+		}
+	}
+}
+
 void overmap::generate(game *g, overmap* north, overmap* east, overmap* south,
                        overmap* west)
 {
- erase();
+ erase();	// curses setup
  clear();
  move(0, 0);
- for (int i = 0; i < OMAPY; i++) {
-  for (int j = 0; j < OMAPX; j++) {
-   ter(i, j) = ot_field;
-   seen(i, j) = false;
-  }
- }
+
+ clear_seen(); // Start by setting all squares to unseen
+ clear_terrain(ot_field);	// Start by setting everything to open field
+
  std::vector<city> road_points;	// cities and roads_out together
  std::vector<point> river_start;// West/North endpoints of rivers
  std::vector<point> river_end;	// East/South endpoints of rivers
@@ -815,12 +822,9 @@ void overmap::generate_sub(overmap* above)
  std::vector<point> shelter_points;
  std::vector<point> triffid_points;
  std::vector<point> temple_points;
- for (int i = 0; i < OMAPX; i++) {
-  for (int j = 0; j < OMAPY; j++) {
-   seen(i, j) = false;	// Start by setting all squares to unseen
-   ter(i, j) = ot_rock;	// Start by setting everything to solid rock
-  }
- }
+
+ clear_seen(); // Start by setting all squares to unseen
+ clear_terrain(ot_rock);	// Start by setting everything to solid rock
 
  for (int i = 0; i < OMAPX; i++) {
   for (int j = 0; j < OMAPY; j++) {
@@ -2599,10 +2603,7 @@ void overmap::open(game *g)	// only called from constructor
     std::string dataline;
     getline(fin, dataline);
     for (int i = 0; i < OMAPX; i++) {
-     if (dataline[i] == '1')
-      seen(i, j) = true;
-     else
-      seen(i, j) = false;
+     seen(i, j) = (dataline[i] == '1');
     }
    }
    while (fin >> datatype) {	// Load private notes
@@ -2610,10 +2611,7 @@ void overmap::open(game *g)	// only called from constructor
    }
    fin.close();
   } else {
-   for (int j = 0; j < OMAPY; j++) {
-    for (int i = 0; i < OMAPX; i++)
-    seen(i, j) = false;
-   }
+   clear_seen();
   }
  } else if (pos.z <= -1) {	// No map exists, and we are underground!
 // Fetch the terrain above
