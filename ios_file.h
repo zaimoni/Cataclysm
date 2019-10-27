@@ -27,4 +27,11 @@ if (!F) {	\
 	ACTION	\
 }
 
+#define DECLARE_AND_OPEN_SILENT(TYPE,F,NAME,ACTION)	\
+TYPE F(NAME);	\
+if (!F) {	\
+	ACTION	\
+}
+
+
 #endif

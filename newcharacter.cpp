@@ -50,7 +50,7 @@ static int calc_HP(int strength, bool tough)
 
 bool player::create(game *g, character_type type, std::string tempname)
 {
- weapon = item(item::types[0], 0);
+ weapon = item::null;
  WINDOW* w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  int tab = 0, points = 38;
  if (type != PLTYPE_CUSTOM) {

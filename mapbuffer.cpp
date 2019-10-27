@@ -56,7 +56,7 @@ void mapbuffer::save()
 
 void mapbuffer::load()
 {
- DECLARE_AND_OPEN(std::ifstream, fin, MAP_FILE, return;)
+ DECLARE_AND_OPEN_SILENT(std::ifstream, fin, MAP_FILE, return;)
 
  int num_submaps;
  fin >> num_submaps;
