@@ -126,11 +126,11 @@ class overmap
   void place_cities(std::vector<city> &cities, int min);
   void put_buildings(int x, int y, int dir, city town);
   void make_road(int cx, int cy, int cs, int dir, city town);
-  void build_lab(int x, int y, int s);
-  void build_anthill(int x, int y, int s);
+  void build_lab(const city& origin);
+  void build_anthill(const city& origin);
   void build_tunnel(int x, int y, int s, int dir);
-  void build_slimepit(int x, int y, int s);
-  void build_mine(int x, int y, int s);
+  void build_slimepit(const city& origin);
+  void build_mine(city origin);
   void place_rifts();
   // Connection highways
   void place_hiways(std::vector<city> cities, oter_id base);
@@ -138,8 +138,8 @@ class overmap
   void make_hiway(int x1, int y1, int x2, int y2, oter_id base);
   void building_on_hiway(int x, int y, int dir);
   // Polishing
-  bool is_road(oter_id base, int x, int y); // Dependant on road type
-  bool is_road(int x, int y);
+  bool is_road(oter_id base, int x, int y) const; // Dependant on road type
+  bool is_road(int x, int y) const;
   void polish(oter_id min = ot_null, oter_id max = ot_tutorial);
   void good_road(oter_id base, int x, int y);
   void good_river(int x, int y);

@@ -910,17 +910,13 @@ void overmap::generate_sub(overmap* above)
   }
  }
 
- for (int i = 0; i < goo_points.size(); i++)
-  build_slimepit(goo_points[i].x, goo_points[i].y, goo_points[i].s);
+ for (const auto& pt : goo_points) build_slimepit(pt);
  place_hiways(sewer_points,  ot_sewer_nesw);
  polish(ot_sewer_ns, ot_sewer_nesw);
  place_hiways(subway_points, ot_subway_nesw);
- for (int i = 0; i < subway_points.size(); i++)
-  ter(subway_points[i].x, subway_points[i].y) = ot_subway_station;
- for (int i = 0; i < lab_points.size(); i++)
-  build_lab(lab_points[i].x, lab_points[i].y, lab_points[i].s);
- for (int i = 0; i < ant_points.size(); i++)
-  build_anthill(ant_points[i].x, ant_points[i].y, ant_points[i].s);
+ for (const auto& pt : subway_points) ter(pt.x, pt.y) = ot_subway_station;
+ for (const auto& pt : lab_points) build_lab(pt);
+ for (const auto& pt : ant_points) build_anthill(pt);
  polish(ot_subway_ns, ot_subway_nesw);
  polish(ot_ants_ns, ot_ants_nesw);
  for (int i = 0; i < above->cities.size(); i++) {
@@ -934,8 +930,7 @@ void overmap::generate_sub(overmap* above)
              above->cities[i].s * 3.5, above->cities[i].s * 70));
  }
  place_rifts();
- for (int i = 0; i < mine_points.size(); i++)
-  build_mine(mine_points[i].x, mine_points[i].y, mine_points[i].s);
+ for(const auto& pt : mine_points) build_mine(pt);
 // Basements done last so sewers, etc. don't overwrite them
  for (int i = 0; i < OMAPX; i++) {
   for (int j = 0; j < OMAPY; j++) {
@@ -945,23 +940,11 @@ void overmap::generate_sub(overmap* above)
   }
  }
 
- for (int i = 0; i < shaft_points.size(); i++)
-  ter(shaft_points[i].x, shaft_points[i].y) = ot_mine_shaft;
-
- for (int i = 0; i < bunker_points.size(); i++)
-  ter(bunker_points[i].x, bunker_points[i].y) = ot_bunker;
-
- for (int i = 0; i < shelter_points.size(); i++)
-  ter(shelter_points[i].x, shelter_points[i].y) = ot_shelter_under;
-
- for (int i = 0; i < triffid_points.size(); i++) {
-  ter( triffid_points[i].x, triffid_points[i].y ) = (pos.z == -1) ? ot_triffid_roots : ot_triffid_finale;
- }
-
- for (int i = 0; i < temple_points.size(); i++) {
-  ter( temple_points[i].x, temple_points[i].y ) = (pos.z == -5) ? ot_temple_finale : ot_temple_stairs;
- }
-
+ for (const auto& pt : shaft_points) ter(pt) = ot_mine_shaft;
+ for (const auto& pt : bunker_points) ter(pt) = ot_bunker;
+ for (const auto& pt : shelter_points) ter(pt) = ot_shelter_under;
+ for (const auto& pt : triffid_points) ter(pt) = (pos.z == -1) ? ot_triffid_roots : ot_triffid_finale;
+ for (const auto& pt : temple_points) ter(pt) = (pos.z == -5) ? ot_temple_finale : ot_temple_stairs;
 }
 
 void overmap::make_tutorial()
@@ -1697,13 +1680,13 @@ void overmap::make_road(int cx, int cy, int cs, int dir, city town)
  }
 }
 
-void overmap::build_lab(int x, int y, int s)
+void overmap::build_lab(const city& origin)
 {
- ter(x, y) = ot_lab;
+ ter(origin.x, origin.y) = ot_lab;
  for (int n = 0; n <= 1; n++) {	// Do it in two passes to allow diagonals
-  for (int i = 1; i <= s; i++) {
-   for (int lx = x - i; lx <= x + i; lx++) {
-    for (int ly = y - i; ly <= y + i; ly++) {
+  for (int i = 1; i <= origin.s; i++) {
+   for (int lx = origin.x - i; lx <= origin.x + i; lx++) {
+    for (int ly = origin.y - i; ly <= origin.y + i; ly++) {
      if ((ter(lx - 1, ly) == ot_lab || ter(lx + 1, ly) == ot_lab ||
          ter(lx, ly - 1) == ot_lab || ter(lx, ly + 1) == ot_lab) &&
          one_in(i))
@@ -1712,51 +1695,50 @@ void overmap::build_lab(int x, int y, int s)
    }
   }
  }
- ter(x, y) = ot_lab_core;
+ ter(origin.x, origin.y) = ot_lab_core;
  int numstairs = 0;
- if (s > 1) {	// Build stairs going down
+ if (origin.s > 1) {	// Build stairs going down
   while (!one_in(6)) {
-   int stairx, stairy;
    int tries = 0;
    do {
-    stairx = rng(x - s, x + s);
-    stairy = rng(y - s, y + s);
-    tries++;
-   } while (ter(stairx, stairy) != ot_lab && tries < 15);
-   if (tries < 15)
-    ter(stairx, stairy) = ot_lab_stairs;
-   numstairs++;
+	point stair(rng(origin.x - origin.s, origin.x + origin.s), rng(origin.y - origin.s, origin.y + origin.s));
+	auto& terrain = ter(stair);
+	if (ot_lab == terrain) {
+      terrain = ot_lab_stairs;
+	  break;
+	}
+   } while (++tries < 15);
+   numstairs++;	// XXX records attempts, not real stairs
   }
  }
  if (numstairs == 0) {	// This is the bottom of the lab;  We need a finale
   int finalex, finaley;
   int tries = 0;
   do {
-   finalex = rng(x - s, x + s);
-   finaley = rng(y - s, y + s);
+   finalex = rng(origin.x - origin.s, origin.x + origin.s);
+   finaley = rng(origin.y - origin.s, origin.y + origin.s);
    tries++;
   } while (tries < 15 && ter(finalex, finaley) != ot_lab &&
                          ter(finalex, finaley) != ot_lab_core);
   ter(finalex, finaley) = ot_lab_finale;
  }
- zg.push_back(mongroup(mcat_lab, (x * 2), (y * 2), s, 400));
+ zg.push_back(mongroup(mcat_lab, (origin.x * 2), (origin.y * 2), origin.s, 400));
 }
 
-void overmap::build_anthill(int x, int y, int s)
+void overmap::build_anthill(const city& origin)
 {
- build_tunnel(x, y, s - rng(0, 3), 0);
- build_tunnel(x, y, s - rng(0, 3), 1);
- build_tunnel(x, y, s - rng(0, 3), 2);
- build_tunnel(x, y, s - rng(0, 3), 3);
+ build_tunnel(origin.x, origin.y, origin.s - rng(0, 3), 0);
+ build_tunnel(origin.x, origin.y, origin.s - rng(0, 3), 1);
+ build_tunnel(origin.x, origin.y, origin.s - rng(0, 3), 2);
+ build_tunnel(origin.x, origin.y, origin.s - rng(0, 3), 3);
  std::vector<point> queenpoints;
- for (int i = x - s; i <= x + s; i++) {
-  for (int j = y - s; j <= y + s; j++) {
-   if (ter(i, j) >= ot_ants_ns && ter(i, j) <= ot_ants_nesw)
+ for (int i = origin.x - origin.s; i <= origin.x + origin.s; i++) {
+  for (int j = origin.y - origin.s; j <= origin.y + origin.s; j++) {
+   if (is_between<ot_ants_ns, ot_ants_nesw>(ter(i, j)))
     queenpoints.push_back(point(i, j));
   }
  }
- int index = rng(0, queenpoints.size() - 1);
- ter(queenpoints[index].x, queenpoints[index].y) = ot_ants_queen;
+ ter(queenpoints[rng(0, queenpoints.size() - 1)]) = ot_ants_queen;
 }
 
 void overmap::build_tunnel(int x, int y, int s, int dir)	// for ants nests
@@ -1796,43 +1778,42 @@ void overmap::build_tunnel(int x, int y, int s, int dir)	// for ants nests
  build_tunnel(next.x, next.y, s - 1, dir);
 }
 
-void overmap::build_slimepit(int x, int y, int s)
+void overmap::build_slimepit(const city& origin)
 {
- for (int n = 1; n <= s; n++) {
-  for (int i = x - n; i <= x + n; i++) {
-   for (int j = y - n; j <= y + n; j++) {
-    if (rng(1, s * 2) >= n)
+ for (int n = 1; n <= origin.s; n++) {
+  for (int i = origin.x - n; i <= origin.x + n; i++) {
+   for (int j = origin.y - n; j <= origin.y + n; j++) {
+    if (rng(1, origin.s * 2) >= n)
      ter(i, j) = (one_in(8) ? ot_slimepit_down : ot_slimepit);
     }
    }
  }
 }
 
-void overmap::build_mine(int x, int y, int s)
+void overmap::build_mine(city origin)
 {
- bool finale = (s <= rng(1, 3));
+ bool finale = (origin.s <= rng(1, 3));
  int built = 0;
- if (s < 2)
-  s = 2;
- while (built < s) {
-  ter(x, y) = ot_mine;
+ const int max_depth = (origin.s < 2) ? 2 : origin.s;
+ while (built < max_depth) {
+  ter(origin.x, origin.y) = ot_mine;
   std::vector<point> next;
   for (int i = -1; i <= 1; i += 2) {
-   if (ter(x, y + i) == ot_rock)
-    next.push_back( point(x, y + i) );
-   if (ter(x + i, y) == ot_rock)
-    next.push_back( point(x + i, y) );
+   point pt(origin.x, origin.y + i);
+   if (ter(pt) == ot_rock) next.push_back(pt);
+   pt = point(origin.x + i, origin.y);
+   if (ter(pt) == ot_rock) next.push_back(pt);
   }
   if (next.empty()) { // Dead end!  Go down!
-   ter(x, y) = (finale ? ot_mine_finale : ot_mine_down);
+   ter(origin.x, origin.y) = (finale ? ot_mine_finale : ot_mine_down);
    return;
   }
   point p = next[ rng(0, next.size() - 1) ];
-  x = p.x;
-  y = p.y;
+  origin.x = p.x;
+  origin.y = p.y;
   built++;
  }
- ter(x, y) = (finale ? ot_mine_finale : ot_mine_down);
+ ter(origin.x, origin.y) = (finale ? ot_mine_finale : ot_mine_down);
 }
 
 void overmap::place_rifts()
@@ -1875,25 +1856,21 @@ void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
  do {
   next.clear(); // Clear list of valid points
   // Add valid points -- step in the right x-direction
-  if (x2 > x)
-   next.push_back(point(x + 1, y));
-  else if (x2 < x)
-   next.push_back(point(x - 1, y));
-  else
-   next.push_back(point(-1, -1)); // X is right--don't change it!
+  if (x2 > x) next.push_back(point(x + 1, y));
+  else if (x2 < x) next.push_back(point(x - 1, y));
+  else next.push_back(point(-1, -1)); // X is right--don't change it!
+
   // Add valid points -- step in the right y-direction
-  if (y2 > y)
-   next.push_back(point(x, y + 1));
-  else if (y2 < y)
-   next.push_back(point(x, y - 1));
+  if (y2 > y) next.push_back(point(x, y + 1));
+  else if (y2 < y) next.push_back(point(x, y - 1));
+
   for (int i = 0; i < next.size(); i++) { // Take an existing road if we can
    if (next[i].x != -1 && is_road(base, next[i].x, next[i].y)) {
     x = next[i].x;
     y = next[i].y;
     dir = i; // We are moving... whichever way that highway is moving
 // If we're closer to the destination than to the origin, this highway is done!
-    if (dist(x, y, x1, y1) > dist(x, y, x2, y2))
-     return;
+    if (dist(x, y, x1, y1) > dist(x, y, x2, y2)) return;
     next.clear();
    } 
   }
@@ -1903,21 +1880,16 @@ void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
     x = next[1].x;
     y = next[1].y;
 	auto& terrain = ter(x, y);
-    if (is_river(terrain))
-     terrain = ot_bridge_ns;
-    else if (!is_road(base, x, y))
-     terrain = base;
+    if (is_river(terrain)) terrain = ot_bridge_ns;
+    else if (!is_road(base, x, y)) terrain = base;
    } else if (next.size() == 1) { // Y must be correct, take the x-change
-    if (dir == 1)
-     ter(x, y) = base;
+    if (dir == 1) ter(x, y) = base;
     dir = 0; // We are moving horizontally
     x = next[0].x;
     y = next[0].y;
 	auto& terrain = ter(x, y);
-	if (is_river(terrain))
-	 terrain = ot_bridge_ew;
-    else if (!is_road(base, x, y))
-     terrain = base;
+	if (is_river(terrain)) terrain = ot_bridge_ew;
+    else if (!is_road(base, x, y)) terrain = base;
    } else {	// More than one eligable route; pick one randomly
     if (one_in(12) &&
        !is_river(ter(next[(dir + 1) % 2].x, next[(dir + 1) % 2].y)))
@@ -1928,12 +1900,10 @@ void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
      if (is_river(ter(x, y))) {
       xdir = -1;
       bridge_is_okay = true;
-      if (x2 > x)
-       xdir = 1;
+      if (x2 > x) xdir = 1;
       tmp = x;
       while (is_river(ter(tmp, y))) {
-       if (is_road(base, tmp, y))
-        bridge_is_okay = false;	// Collides with another bridge!
+       if (is_road(base, tmp, y)) bridge_is_okay = false;	// Collides with another bridge!
        tmp += xdir;
       }
       if (bridge_is_okay) {
@@ -1949,12 +1919,10 @@ void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
      if (is_river(ter(x, y))) {
       ydir = -1;
       bridge_is_okay = true;
-      if (y2 > y)
-       ydir = 1;
+      if (y2 > y) ydir = 1;
       tmp = y;
       while (is_river(ter(x, tmp))) {
-       if (is_road(base, x, tmp))
-        bridge_is_okay = false;	// Collides with another bridge!
+       if (is_road(base, x, tmp)) bridge_is_okay = false;	// Collides with another bridge!
        tmp += ydir;
       }
       if (bridge_is_okay) {
@@ -2107,7 +2075,7 @@ void overmap::polish(oter_id min, oter_id max)
  }
 }
 
-bool overmap::is_road(int x, int y)
+bool overmap::is_road(int x, int y) const
 {
  if (ter(x, y) == ot_rift || ter(x, y) == ot_hellmouth)
   return true;
@@ -2126,7 +2094,7 @@ bool overmap::is_road(int x, int y)
  return false;
 }
 
-bool overmap::is_road(oter_id base, int x, int y)
+bool overmap::is_road(oter_id base, int x, int y) const
 {
  oter_id min, max;
  if (is_between<ot_road_null, ot_bridge_ew>(base)) {
