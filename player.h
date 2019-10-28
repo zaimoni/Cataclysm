@@ -234,7 +234,7 @@ public:
  std::vector<int> active_missions;
  std::vector<int> completed_missions;
  std::vector<int> failed_missions;
- int active_mission;
+ int active_mission;	// index into active_missions vector, above
  
  std::string name;
  bool male;

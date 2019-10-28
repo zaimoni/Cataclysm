@@ -15,6 +15,8 @@ static const char* JSON_transcode[] = {
 
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(mission_id, JSON_transcode)
 
+mission* mission::from_id(int uid) { return game::active()->find_mission(uid); }
+
 mission mission_type::create(game *g, int npc_id)
 {
  mission ret;

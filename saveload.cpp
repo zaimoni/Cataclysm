@@ -318,13 +318,10 @@ std::ostream& operator<<(std::ostream& os, const it_ammo* const src)
 
 std::istream& operator>>(std::istream& is, point& dest)
 {
-	if ('[' == (is >> std::ws).peek()) {
-		JSON pt(is);
-		if (2 != pt.size() || JSON::array!=pt.mode()) throw std::runtime_error("point expected to be a length 2 array");
-		if (!fromJSON(pt[0],dest.x) || !fromJSON(pt[1], dest.y)) throw std::runtime_error("point wants integer coordinates");
-		return is;
-	}
-	return is >> dest.x >> dest.y;	// \todo release block: remove legacy reading
+	JSON pt(is);
+	if (2 != pt.size() || JSON::array!=pt.mode()) throw std::runtime_error("point expected to be a length 2 array");
+	if (!fromJSON(pt[0],dest.x) || !fromJSON(pt[1], dest.y)) throw std::runtime_error("point wants integer coordinates");
+	return is;
 }
 
 std::ostream& operator<<(std::ostream& os, const point& src)
@@ -351,13 +348,10 @@ JSON toJSON(const point& src)
 
 std::istream& operator>>(std::istream& is, tripoint& dest)
 {
-	if ('[' == (is >> std::ws).peek()) {
-		JSON pt(is);
-		if (3 != pt.size() || JSON::array != pt.mode()) throw std::runtime_error("tripoint expected to be a length 3 array");
-		if (!fromJSON(pt[0], dest.x) || !fromJSON(pt[1], dest.y) || !fromJSON(pt[2], dest.z)) throw std::runtime_error("tripoint wants integer coordinates");
-		return is;
-	}
-	return is >> dest.x >> dest.y >> dest.z;	// \todo release block: remove legacy reading
+	JSON pt(is);
+	if (3 != pt.size() || JSON::array != pt.mode()) throw std::runtime_error("tripoint expected to be a length 3 array");
+	if (!fromJSON(pt[0], dest.x) || !fromJSON(pt[1], dest.y) || !fromJSON(pt[2], dest.z)) throw std::runtime_error("tripoint wants integer coordinates");
+	return is;
 }
 
 std::ostream& operator<<(std::ostream& os, const tripoint& src)
@@ -563,7 +557,7 @@ JSON toJSON(const mission& src)
 		}
 	}
 	if (0 < src.deadline) _mission.set("deadline", std::to_string(src.deadline));
-	if (0 < src.npc_id) _mission.set("npc", std::to_string(src.npc_id));	// \todo release block: is this always-valid?
+	if (0 < src.npc_id) _mission.set("npc", std::to_string(src.npc_id));	// npc need not be active
 	if (0 <= src.good_fac_id) _mission.set("by_faction", std::to_string(src.good_fac_id));
 	if (0 <= src.bad_fac_id) _mission.set("vs_faction", std::to_string(src.bad_fac_id));
 	if (src.step) _mission.set("step", std::to_string(src.step));
@@ -894,7 +888,6 @@ JSON toJSON(const item& src) {
 	return _item;
 }
 
-// \todo release block: submap::submap,operator<< need at least partial JSON conversion
 submap::submap(std::istream& is)
 {
 	is >> turn_last_touched;
@@ -908,7 +901,8 @@ submap::submap(std::istream& is)
 			fld[i][j] = field();
 		}
 	}
-	if ('{' == (is >> std::ws).peek()) {
+	if ('{' != (is >> std::ws).peek()) throw std::runtime_error("submap data lost: pre-V0.2.0 format?");
+	{
 		JSON sm(is);
 		ter_id terrain;
 		int radtmp;
@@ -958,23 +952,6 @@ submap::submap(std::istream& is)
 		if (sm.has_key("spawns")) sm["spawns"].decode(spawns);
 		if (sm.has_key("vehicles")) sm["vehicles"].decode(vehicles);
 		if (sm.has_key("computer")) fromJSON(sm["computer"], comp);
-	} else {	// \todo release block: remove legacy reading
-		// Load terrain
-		for (int j = 0; j < SEEY; j++) {
-			for (int i = 0; i < SEEX; i++) {
-				is >> ter[i][j];
-			}
-		}
-		// Load irradiation
-		for (int j = 0; j < SEEY; j++) {
-			for (int i = 0; i < SEEX; i++) {
-				int radtmp;
-				is >> radtmp;
-				radtmp -= int(turndif / 100);	// Radiation slowly decays	\todo V 0.2.1+ handle this as a true game time effect; no saveload-purging of radiation
-				if (radtmp < 0) radtmp = 0;
-				rad[i][j] = radtmp;
-			}
-		}
 	}
 	// Load items and traps and fields and spawn points and vehicles
 	item it_tmp;
@@ -997,16 +974,6 @@ submap::submap(std::istream& is)
 			is >> itx >> ity;
 			fromJSON(JSON(is), fld[itx][ity]);
 			field_count++;
-		}
-		else if (string_identifier == "S") {
-			spawn_point tmp;
-			if (fromJSON(JSON(is), tmp)) spawns.push_back(tmp);
-			is >> std::ws;
-		} else if (string_identifier == "V") {
-			vehicles.push_back(vehicle(is));
-		} else if (string_identifier == "c") {
-			fromJSON(JSON(is), comp);
-			is >> std::ws;
 		} else if ("----" == string_identifier) {
 			is >> std::ws;	// to ensure we don't warn on trailing whitespace at end of file
 			break;
@@ -1180,11 +1147,15 @@ bool fromJSON(const JSON& _in, monster& dest)
 	if (_in.has_key("friendly")) fromJSON(_in["friendly"], dest.friendly);
 	if (_in.has_key("anger")) fromJSON(_in["anger"], dest.anger);
 	if (_in.has_key("morale")) fromJSON(_in["morale"], dest.morale);
-	if (_in.has_key("faction_id")) fromJSON(_in["faction_id"], dest.faction_id);	// \todo release block validate or verify inability to validate here
-	if (_in.has_key("mission_id")) fromJSON(_in["mission_id"], dest.morale);	// \todo release block validate or verify inability to validate here
+
+	int tmp;
+	if (_in.has_key("faction_id") && fromJSON(_in["faction_id"], tmp)) {
+		if (faction::from_id(tmp)) dest.faction_id = tmp;
+	}
+	if (_in.has_key("mission_id")) fromJSON(_in["mission_id"], dest.mission_id);	// \todo validate after re-ordering savegame loading
 	if (_in.has_key("dead")) fromJSON(_in["dead"], dest.dead);
 	if (_in.has_key("made_footstep")) fromJSON(_in["made_footstep"], dest.made_footstep);
-	if (_in.has_key("unique_name")) fromJSON(_in["unique_name"], dest.morale);
+	if (_in.has_key("unique_name")) fromJSON(_in["unique_name"], dest.unique_name);
 	if (_in.has_key("plans")) _in["plans"].decode(dest.plans);
 	return true;
 }
@@ -1209,8 +1180,8 @@ JSON toJSON(const monster& src)
 		if (src.friendly) _monster.set("friendly", std::to_string(src.friendly));
 		_monster.set("anger", std::to_string(src.anger));
 		_monster.set("morale", std::to_string(src.morale));
-		if (0 <= src.faction_id) _monster.set("faction_id", std::to_string(src.faction_id));	// \todo release block validate or verify inability to validate here
-		if (0 < src.mission_id) _monster.set("mission_id", std::to_string(src.mission_id));		// \todo release block validate or verify inability to validate here
+		if (0 <= src.faction_id && faction::from_id(src.faction_id)) _monster.set("faction_id", std::to_string(src.faction_id));
+		if (0 < src.mission_id && mission::from_id(src.mission_id)) _monster.set("mission_id", std::to_string(src.mission_id));
 		if (src.dead) _monster.set("dead", "true");
 		if (src.made_footstep) _monster.set("made_footstep", "true");
 		if (!src.unique_name.empty()) _monster.set("unique_name", src.unique_name);
@@ -1553,7 +1524,7 @@ JSON toJSON(const player& src)
 	ret.set("dodges_left", std::to_string(src.dodges_left));
 	ret.set("blocks_left", std::to_string(src.blocks_left));
 	ret.set("moves", std::to_string(src.moves));
-	if (1 <= src.active_mission) ret.set("active_mission_id", std::to_string(src.active_mission));
+	if (0 <= src.active_mission && src.active_mission<src.active_missions.size()) ret.set("active_mission_id", std::to_string(src.active_mission));
 
 	// enumerations
 	if (itm_null != src.last_item) ret.set("last_item", toJSON(src.last_item));
@@ -1637,10 +1608,15 @@ player::player(const JSON& src)
  if (src.has_key("in_vehicle")) fromJSON(src["in_vehicle"], in_vehicle);
  if (src.has_key("activity")) fromJSON(src["activity"], activity);
  if (src.has_key("backlog")) fromJSON(src["backlog"], backlog);
- if (src.has_key("active_missions")) src["active_missions"].decode(active_missions);	// \todo release block: validate these four, or demonstrate inability to validate
+ if (src.has_key("active_missions")) src["active_missions"].decode(active_missions);	// \todo validate after re-ordering savegame loading
  if (src.has_key("completed_missions")) src["completed_missions"].decode(completed_missions);
  if (src.has_key("failed_missions")) src["failed_missions"].decode(failed_missions);
- if (src.has_key("active_mission_id")) fromJSON(src["active_mission_id"], active_mission);
+ if (src.has_key("active_mission_id")) {
+	 int tmp;
+	 if (fromJSON(src["active_mission_id"], tmp)) {
+		 if (0 <= tmp && active_missions.size() > tmp) active_mission = tmp;
+	 }
+ }
  if (src.has_key("name")) fromJSON(src["name"], name);
  if (src.has_key("male")) fromJSON(src["male"], male);
  if (src.has_key("traits")) src["traits"].decode<pl_flag>(my_traits, PF_MAX2);

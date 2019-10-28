@@ -228,8 +228,6 @@ NUM_SOFTWARE_TYPES
 };
 
 enum item_flag {
-IF_NULL,	// \todo release block; blocked by savefile break; remove IF_NULL flag outright
-
 IF_LIGHT_4,	// Provides 4 tiles of light
 IF_LIGHT_8,	// Provides 8 tiles of light
 
@@ -267,7 +265,7 @@ NUM_ITEM_FLAGS
 DECLARE_JSON_ENUM_BITFLAG_SUPPORT(item_flag)
 
 enum technique_id {
-TEC_NULL,				// \todo release block; blocked by savefile break: redefine TEC_NULL as -1 (implementation-defined operator << but we should not be doing that anyway)
+TEC_NULL,				// \todo redefine TEC_NULL as -1 (implementation-defined operator << but we should not be doing that anyway)
 // Offensive Techniques
 TEC_SWEEP,	// Crits may make your enemy fall & miss a turn
 TEC_PRECISE,	// Crits are painful and stun
