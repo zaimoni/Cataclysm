@@ -115,8 +115,6 @@ public:
 	~vehicle() = default;
 	vehicle& operator=(const vehicle& src);
 	vehicle& operator=(vehicle&& src) = default;
-	vehicle(std::istream& in);
-	friend std::ostream& operator<<(std::ostream& os, const vehicle& src);
 
 // check if given player controls this vehicle
     bool player_in_control(player& p) const;

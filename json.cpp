@@ -394,6 +394,12 @@ JSON::JSON(std::istream& src)
 	case array:
 		finish_reading_array(src, line);
 		return;
+	case string:
+		finish_reading_string(src, line, last_read);
+		return;
+	case literal:
+		finish_reading_literal(src, line, last_read);
+		return;
 	default:
 		if (!src.eof() || !strchr(" \r\n\t\v\f", last_read)) {
 			std::stringstream msg;

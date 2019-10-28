@@ -718,19 +718,6 @@ JSON toJSON(const vehicle& src)
 	return _vehicle;
 }
 
-vehicle::vehicle(std::istream& in)
-: _type(veh_null), insides_dirty(true), pos(0,0), velocity(0), cruise_velocity(0), cruise_on(true),
-  turn_dir(0), skidding(false), last_turn(0), moves(0), turret_mode(0)
-{
-	if ('{' != (in >> std::ws).peek()) throw std::runtime_error("could not read vehicle data");
-	if (!fromJSON(JSON(in), *this)) throw std::runtime_error("could not read vehicle data");
-}
-
-std::ostream& operator<<(std::ostream& os, const vehicle& src)
-{
-	return os << toJSON(src);
-}
-
 bool fromJSON(const JSON& _in, item& dest)
 {
 	if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) return false;
@@ -792,18 +779,16 @@ JSON toJSON(const item& src) {
 }
 
 submap::submap(std::istream& is)
+: active_item_count(0), field_count(0)	// turn_last_touched omitted, will be caught later
 {
+	memset(ter, 0, sizeof(ter));
+	memset(trp, 0, sizeof(trp));
+	memset(rad, 0, sizeof(rad));	// reasonably redundant given below, but matches zero-parameter constructor
+
 	is >> turn_last_touched;
 	int turndif = int(messages.turn);
 	if (turndif < 0) turndif = 0;
-	for (int j = 0; j < SEEY; j++) {
-		for (int i = 0; i < SEEX; i++) {
-			ter[i][j] = t_null;
-			itm[i][j].clear();
-			trp[i][j] = tr_null;
-			fld[i][j] = field();
-		}
-	}
+
 	if ('{' != (is >> std::ws).peek()) throw std::runtime_error("submap data lost: pre-V0.2.0 format?");
 	{
 		JSON sm(is);
