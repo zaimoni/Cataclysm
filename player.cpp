@@ -651,10 +651,6 @@ DEFINE_JSON_ENUM_SUPPORT_TYPICAL(hp_part, JSON_transcode_hp_parts)
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(morale_type, JSON_transcode_morale)
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(pl_flag, JSON_transcode_pl_flags)
 
-// XXX inappropriate forward declares \todo lift definitions above uses
-nc_color encumb_color(int level);
-bool activity_is_suspendable(activity_type type);
-
 player::player()
 : pos(-1,-1), in_vehicle(false), active_mission(-1), name(""), male(true),
   str_cur(8),dex_cur(8),int_cur(8),per_cur(8),str_max(8),dex_max(8),int_max(8),per_max(8),
@@ -939,6 +935,15 @@ nc_color player::color() const
  if (underwater) return c_blue;
  if (has_active_bionic(bio_cloak) || has_artifact_with(AEP_INVISIBLE)) return c_dkgray;
  return c_white;
+}
+
+static nc_color encumb_color(int level)
+{
+	if (level < 0) return c_green;
+	if (level == 0) return c_ltgray;
+	if (level < 4) return c_yellow;
+	if (level < 7) return c_ltred;
+	return c_red;
 }
 
 void player::disp_info(game *g)
@@ -4506,6 +4511,12 @@ void player::assign_activity(activity_type type, int moves, int index)
   activity = player_activity(type, moves, index);
 }
 
+static bool activity_is_suspendable(activity_type type)
+{
+	if (type == ACT_NULL || type == ACT_RELOAD) return false;
+	return true;
+}
+
 void player::cancel_activity()
 {
  if (activity_is_suspendable(activity.type)) backlog = activity;
@@ -4549,36 +4560,29 @@ std::string player::weapname(bool charges) const
 
   switch (weapon.type->id) {
    case itm_style_capoeira:
-    if (has_disease(DI_DODGE_BOOST))
-     dump << " +Dodge";
-    if (has_disease(DI_ATTACK_BOOST))
-     dump << " +Attack";
+    if (has_disease(DI_DODGE_BOOST)) dump << " +Dodge";
+    if (has_disease(DI_ATTACK_BOOST)) dump << " +Attack";
     break;
 
    case itm_style_ninjutsu:
    case itm_style_leopard:
-    if (has_disease(DI_ATTACK_BOOST))
-     dump << " +Attack";
+    if (has_disease(DI_ATTACK_BOOST)) dump << " +Attack";
     break;
 
    case itm_style_crane:
-    if (has_disease(DI_DODGE_BOOST))
-     dump << " +Dodge";
+    if (has_disease(DI_DODGE_BOOST)) dump << " +Dodge";
     break;
 
    case itm_style_dragon:
-    if (has_disease(DI_DAMAGE_BOOST))
-     dump << " +Damage";
+    if (has_disease(DI_DAMAGE_BOOST)) dump << " +Damage";
     break;
 
    case itm_style_tiger: {
     dump << " [";
     int intensity = disease_intensity(DI_DAMAGE_BOOST);
     for (int i = 1; i <= 5; i++) {
-     if (intensity >= i * 2)
-      dump << "*";
-     else
-      dump << ".";
+     if (intensity >= i * 2) dump << "*";
+     else dump << ".";
     }
     dump << "]";
    } break;
@@ -4587,10 +4591,8 @@ std::string player::weapname(bool charges) const
     dump << " [";
     int intensity = disease_intensity(DI_SPEED_BOOST);
     for (int i = 1; i <= 8; i++) {
-     if (intensity >= i * 4)
-      dump << "*";
-     else
-      dump << ".";
+     if (intensity >= i * 4) dump << "*";
+     else dump << ".";
     }
     dump << "]";
    } break;
@@ -4599,10 +4601,8 @@ std::string player::weapname(bool charges) const
     dump << " [";
     int intensity = disease_intensity(DI_VIPER_COMBO);
     for (int i = 1; i <= 2; i++) {
-     if (intensity >= i)
-      dump << "C";
-     else
-      dump << ".";
+     if (intensity >= i) dump << "C";
+     else dump << ".";
     }
     dump << "]";
    } break;
@@ -4611,10 +4611,8 @@ std::string player::weapname(bool charges) const
     dump << " [";
     int intensity = disease_intensity(DI_ATTACK_BOOST);
     for (int i = 1; i <= 4; i++) {
-     if (intensity >= i)
-      dump << "*";
-     else
-      dump << ".";
+     if (intensity >= i) dump << "*";
+     else dump << ".";
     }
     dump << "]";
    } break;
@@ -4623,12 +4621,9 @@ std::string player::weapname(bool charges) const
     dump << " [";
     int intensity = disease_intensity(DI_ARMOR_BOOST);
     for (int i = 1; i <= 5; i++) {
-     if (intensity >= 5 + i)
-      dump << "!";
-     else if (intensity >= i)
-      dump << "*";
-     else
-      dump << ".";
+     if (intensity >= 5 + i) dump << "!";
+     else if (intensity >= i) dump << "*";
+     else dump << ".";
     }
     dump << "]";
    } break;
@@ -4637,26 +4632,6 @@ std::string player::weapname(bool charges) const
   return dump.str();
  } else
   return weapon.tname();
-}
-
-nc_color encumb_color(int level)
-{
- if (level < 0)
-  return c_green;
- if (level == 0)
-  return c_ltgray;
- if (level < 4)
-  return c_yellow;
- if (level < 7)
-  return c_ltred;
- return c_red;
-}
-
-bool activity_is_suspendable(activity_type type)
-{
- if (type == ACT_NULL || type == ACT_RELOAD)
-  return false;
- return true;
 }
 
 static bool file_to_string_vector(const char* src, std::vector<std::string>& dest)
