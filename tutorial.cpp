@@ -34,7 +34,7 @@ bool tutorial_game::init(game *g)
  for (int i = 0; i <= MAPSIZE; i += 2) {
   for (int j = 0; j <= MAPSIZE; j += 2) {
    tinymap tm;
-   tm.generate(g, &(g->cur_om), g->lev.x + i - 1, g->lev.y + j - 1, int(messages.turn));
+   tm.generate(g, &(g->cur_om), g->lev.x + i - 1, g->lev.y + j - 1);
   }
  }
 // Start with the overmap revealed

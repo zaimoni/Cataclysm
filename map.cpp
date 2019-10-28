@@ -2697,7 +2697,7 @@ bool map::loadn(game *g, const point& world, int gridx, int gridy)
   int newmapy = world.y + gridy - ((world.y + gridy) % 2);
   if (world.x + gridx < 0) newmapx = world.x + gridx;
   if (world.y + gridy < 0) newmapy = world.y + gridy;
-  tmp_map.generate(g, &(g->cur_om), newmapx, newmapy, int(messages.turn));
+  tmp_map.generate(g, &(g->cur_om), newmapx, newmapy);
   return false;
  }
  return true;

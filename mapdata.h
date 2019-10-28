@@ -255,7 +255,7 @@ struct submap {
  std::vector<vehicle> vehicles;
  computer comp;
 
- submap() = default;
+ submap();	// mapgen.cpp: sole caller there
  submap(const submap& src) = default;
  submap(submap&& src) = default;
  ~submap() = default;

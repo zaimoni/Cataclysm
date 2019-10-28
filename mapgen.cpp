@@ -124,24 +124,23 @@ static map_extra random_map_extra(const map_extras& embellishments)
 	return map_extra(choice);
 }
 
-void map::generate(game *g, overmap *om, int x, int y, int turn)
+submap::submap()
+: active_item_count(0), field_count(0)	// turn_last_touched omitted, will be caught later
 {
+	memset(ter, 0, sizeof(ter));
+	memset(trp, 0, sizeof(trp));
+	memset(rad, 0, sizeof(rad));
+}
+
+void map::generate(game *g, overmap *om, int x, int y)
+{
+  const int turn = int(messages.turn);
 // First we have to create new submaps and initialize them to 0 all over
 // We create all the submaps, even if we're not a tinymap, so that map
 //  generation which overflows won't cause a crash.  At the bottom of this
 //  function, we save the upper-left 4 submaps, and delete the rest.
  for (int i = 0; i < my_MAPSIZE * my_MAPSIZE; i++) {
-  grid[i] = new submap;
-  grid[i]->active_item_count = 0;
-  grid[i]->field_count = 0;
-  grid[i]->turn_last_touched = turn;
-  for (int x = 0; x < SEEX; x++) {
-   for (int y = 0; y < SEEY; y++) {
-    grid[i]->ter[x][y] = t_null;
-    grid[i]->trp[x][y] = tr_null;
-    grid[i]->rad[x][y] = 0;
-   }
-  }
+  (grid[i] = new submap)->turn_last_touched = turn;
  }
 
  oter_id terrain_type, t_north, t_east, t_south, t_west, t_above;

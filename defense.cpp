@@ -232,7 +232,7 @@ void defense_game::init_map(game *g)
    mx -= mx % 2;
    my -= my % 2;
    tinymap tm;
-   tm.generate(g, &(g->cur_om), mx, my, int(messages.turn));
+   tm.generate(g, &(g->cur_om), mx, my);
    tm.clear_spawns();
    tm.clear_traps();
    tm.save(&g->cur_om, int(messages.turn), point(mx, my));

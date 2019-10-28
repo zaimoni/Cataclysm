@@ -231,7 +231,7 @@ class map
 // mapgen.cpp functions
  void apply_temple_switch(ter_id trigger, int y0, int x, int y);
 
- void generate(game *g, overmap *om, int x, int y, int turn);
+ void generate(game *g, overmap *om, int x, int y);
  void post_process(game *g, unsigned zones);
  void place_items(items_location loc, int chance, int x1, int y1,
                   int x2, int y2, bool ongrass, int turn);
