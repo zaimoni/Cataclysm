@@ -40,6 +40,8 @@ enum trap_id {
  num_trap_types
 };
 
+DECLARE_JSON_ENUM_SUPPORT(trap_id)
+
 struct trapfunc {
  static void none		(game *g, int x, int y) { };
  static void bubble		(game *g, int x, int y);

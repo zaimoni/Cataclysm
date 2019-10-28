@@ -132,34 +132,7 @@ std::ostream& operator<<(std::ostream& os, TYPE src)	\
 	return os << int(src);	\
 }
 
-IO_OPS_ENUM(activity_type)
-IO_OPS_ENUM(add_type)
-IO_OPS_ENUM(art_charge)
-IO_OPS_ENUM(art_effect_active)
-IO_OPS_ENUM(art_effect_passive)
-IO_OPS_ENUM(bionic_id)
-IO_OPS_ENUM(combat_engagement)
-IO_OPS_ENUM(computer_action)
-IO_OPS_ENUM(dis_type)
-IO_OPS_ENUM(faction_goal)
-IO_OPS_ENUM(faction_job)
-IO_OPS_ENUM(field_id)
-IO_OPS_ENUM(itype_id)
-IO_OPS_ENUM(material)
-IO_OPS_ENUM(mission_id)
-IO_OPS_ENUM(moncat_id)
-IO_OPS_ENUM(mon_id)
-IO_OPS_ENUM(morale_type)
-IO_OPS_ENUM(npc_attitude)
-IO_OPS_ENUM(npc_class)
-IO_OPS_ENUM(npc_favor_type)
-IO_OPS_ENUM(npc_mission)
-IO_OPS_ENUM(skill)
-IO_OPS_ENUM(talk_topic)
-IO_OPS_ENUM(ter_id)
 IO_OPS_ENUM(trap_id)
-IO_OPS_ENUM(vpart_id)
-IO_OPS_ENUM(vhtype_id)
 
 #define JSON_ENUM(TYPE)	\
 JSON toJSON(TYPE src) {	\
@@ -209,6 +182,7 @@ JSON_ENUM(pl_flag)
 JSON_ENUM(skill)
 JSON_ENUM(talk_topic)
 JSON_ENUM(ter_id)
+JSON_ENUM(trap_id)
 JSON_ENUM(vhtype_id)
 JSON_ENUM(vpart_id)
 JSON_ENUM(weather_type)
@@ -216,19 +190,6 @@ JSON_ENUM(weather_type)
 // stereotypical translation of pointers to/from vector indexes
 // \todo in general if a loaded pointer index is "invalid" we should warn here; non-null requirements are enforced higher up
 // \todo in general warn if a non-null ptr points to an invalid id
-std::istream& operator>>(std::istream& is, const mission_type*& dest)
-{
-	int type_id;
-	is >> type_id;
-	dest = (0 <= type_id && type_id < mission_type::types.size()) ? &mission_type::types[type_id] : 0;
-	return is;
-}
-
-std::ostream& operator<<(std::ostream& os, const mission_type* const src)
-{
-	return os << (src ? src->id : -1);
-}
-
 JSON toJSON(const mission_type* const src) {
 	auto x = JSON_key((mission_id)src->id);
 	if (x) return JSON(x);
@@ -253,19 +214,6 @@ bool fromJSON(const JSON& src, const mtype*& dest)
 	return ret;
 }
 
-std::istream& operator>>(std::istream& is, const mtype*& dest)
-{
-	int type_id;
-	is >> type_id;
-	dest = (0 <= type_id && type_id < mtype::types.size()) ? mtype::types[type_id] : 0;
-	return is;
-}
-
-std::ostream& operator<<(std::ostream& os, const mtype* const src)
-{
-	return os << (src ? src->id : -1);
-}
-
 bool fromJSON(const JSON& src, const itype*& dest)
 {
 	if (!src.is_scalar()) return false;
@@ -288,32 +236,6 @@ bool fromJSON(const JSON& src, const it_ammo*& dest)
 		else ret = false;
 	}
 	return ret;
-}
-
-std::istream& operator>>(std::istream& is, const itype*& dest)
-{
-	int type_id;
-	is >> type_id;
-	dest = (0 <= type_id && type_id < item::types.size()) ? item::types[type_id] : 0;	// XXX \todo should be itype::types?
-	return is;
-}
-
-std::ostream& operator<<(std::ostream& os, const itype* const src)
-{
-	return os << (src ? src->id : -1);
-}
-
-std::istream& operator>>(std::istream& is, const it_ammo*& dest)
-{
-	int type_id;
-	is >> type_id;
-	dest = (0 <= type_id && type_id < item::types.size() && item::types[type_id]->is_ammo()) ? static_cast<it_ammo*>(item::types[type_id]) : 0;
-	return is;
-}
-
-std::ostream& operator<<(std::ostream& os, const it_ammo* const src)
-{
-	return os << (src ? src->id : -1);
 }
 
 std::istream& operator>>(std::istream& is, point& dest)
@@ -800,27 +722,8 @@ vehicle::vehicle(std::istream& in)
 : _type(veh_null), insides_dirty(true), pos(0,0), velocity(0), cruise_velocity(0), cruise_on(true),
   turn_dir(0), skidding(false), last_turn(0), moves(0), turret_mode(0)
 {
-	if ('{' == (in >> std::ws).peek()) {
-		fromJSON(JSON(in), *this);
-		return;
-	}
-	int t;
-	int fdir, mdir, skd, prts, cr_on;
-	in >> _type >> pos >> fdir >> mdir >> turn_dir >> velocity >> cruise_velocity >>
-		cr_on >> turret_mode >> skd >> moves >> prts;
-	face.init(fdir);
-	move.init(mdir);
-	skidding = skd != 0;
-	cruise_on = cr_on != 0;
-	getline(in >> std::ws, name); // read name
-	for (int p = 0; p < prts; p++) {
-		vehicle_part tmp;
-		if (fromJSON(JSON(in), tmp)) parts.push_back(tmp);
-	}
-	find_external_parts();
-	find_exhaust();
-	insides_dirty = true;
-	precalc_mounts(0, face.dir());
+	if ('{' != (in >> std::ws).peek()) throw std::runtime_error("could not read vehicle data");
+	if (!fromJSON(JSON(in), *this)) throw std::runtime_error("could not read vehicle data");
 }
 
 std::ostream& operator<<(std::ostream& os, const vehicle& src)
@@ -969,7 +872,13 @@ submap::submap(std::istream& is)
 			}
 		} else if (string_identifier == "T") {
 			is >> itx >> ity;
-			is >> trp[itx][ity];
+			// historical encoding was raw integer
+			if (strchr("0123456789", (is >> std::ws).peek())) {
+				// legacy
+				is >> trp[itx][ity];
+			} else {
+				fromJSON(JSON(is), trp[itx][ity]);
+			}
 		} else if (string_identifier == "F") {
 			is >> itx >> ity;
 			fromJSON(JSON(is), fld[itx][ity]);
@@ -1049,7 +958,7 @@ std::ostream& operator<<(std::ostream& os, const submap& src)
 	for (int j = 0; j < SEEY; j++) {
 		for (int i = 0; i < SEEX; i++) {
 			if (src.trp[i][j] != tr_null)
-				os << "T " << i I_SEP << j I_SEP << src.trp[i][j] << std::endl;
+				os << "T " << i I_SEP << j I_SEP << toJSON(src.trp[i][j]) << std::endl;
 		}
 	}
 

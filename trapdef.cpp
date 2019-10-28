@@ -1,5 +1,39 @@
 #include "trap.h"
 
+static const char* const JSON_transcode_traps[] = {
+	"bubblewrap",
+	"beartrap",
+	"beartrap_buried",
+	"snare",
+	"nailboard",
+	"tripwire",
+	"crossbow",
+	"shotgun_2",
+	"shotgun_1",
+	"engine",
+	"blade",
+	"landmine",
+	"telepad",
+	"goo",
+	"dissector",
+	"sinkhole",
+	"pit",
+	"spike_pit",
+	"lava",
+	"portal",
+	"ledge",
+	"boobytrap",
+	"temple_flood",
+	"temple_toggle",
+	"glow",
+	"hum",
+	"shadow",
+	"drain",
+	"snake"
+};
+
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(trap_id, JSON_transcode_traps)
+
 std::vector<const trap*> trap::traps;
 
 void trap::init()
