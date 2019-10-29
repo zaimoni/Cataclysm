@@ -1346,7 +1346,7 @@ JSON toJSON(const morale_point& src)
 	_morale.set("type", toJSON(src.type));
 	if (0 != src.bonus) _morale.set("bonus", std::to_string(src.bonus));
 	if (src.item_type) {
-		if (auto json2 = JSON_key((itype_id)(src.item_type->id))) _morale.set("item", json2);	// \todo eliminate this cast?
+		if (auto json2 = JSON_key((itype_id)(src.item_type->id))) _morale.set("item", json2);	// artifacts ruled out until JSON encoding updated
 	}
 	return _morale;
 }

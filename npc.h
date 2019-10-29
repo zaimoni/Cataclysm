@@ -117,14 +117,13 @@ DECLARE_JSON_ENUM_BITFLAG_SUPPORT(npc_flag)
 
 enum npc_favor_type {
  FAVOR_NULL,
- FAVOR_GENERAL,	// We owe you... a favor?	// \todo savefile break: eliminate after legacy reading removed
  FAVOR_CASH,	// We owe cash (or goods of equivalent value)
  FAVOR_ITEM,	// We owe a specific item
  FAVOR_TRAINING,// We owe skill or style training
  NUM_FAVOR_TYPES
 };
 
-DECLARE_JSON_ENUM_SUPPORT_ATYPICAL(npc_favor_type,2)
+DECLARE_JSON_ENUM_SUPPORT(npc_favor_type)
 
 struct npc_favor	// appears to be prototype/mockup
 {

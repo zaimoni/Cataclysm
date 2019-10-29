@@ -34,7 +34,6 @@ struct trait {
 // mutations_from_category() defines the lists; see mutation_data.cpp
 std::vector<pl_flag> mutations_from_category(mutation_category cat);
 
-// XXX \todo setvector elimination target.
 // Zaimoni, 2018-07-10: C:DDA and C:Bright Nights indicate we need 
 // to prepare for a constructor that takes a JSON representation.
 struct mutation_branch
