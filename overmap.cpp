@@ -2568,11 +2568,10 @@ void overmap::open(game *g)	// only called from constructor
   fin.open(plrfilename.str().c_str());
   if (fin.is_open()) {	// Load private seen data
    for (int j = 0; j < OMAPY; j++) {
-    std::string dataline;
-    getline(fin, dataline);
     for (int i = 0; i < OMAPX; i++) {
-     seen(i, j) = (dataline[i] == '1');
+     seen(i, j) = (fin.get() == '1');
     }
+	fin >> std::ws;
    }
    while (fin >> datatype) {	// Load private notes
     if (datatype == 'N') notes.push_back(om_note(fin));
