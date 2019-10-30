@@ -832,7 +832,7 @@ submap::submap(std::istream& is)
 			if (radtmp < 0) radtmp = 0;
 			for (int j = 0; j < SEEY; j++) {
 				for (int i = 0; i < SEEX; i++) {
-					rad[i][j] = terrain;
+					rad[i][j] = radtmp;
 				}
 			}
 		} else throw std::runtime_error("radiation data missing");
