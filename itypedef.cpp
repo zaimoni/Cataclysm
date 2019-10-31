@@ -693,9 +693,28 @@ static const std::pair<unsigned, const char*> JSON_transcode_techniques[] = {
 };
 
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(ammotype, JSON_transcode_ammo)
-DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(itype_id, JSON_transcode_items)
 DEFINE_JSON_ENUM_BITFLAG_SUPPORT(item_flag, JSON_transcode_item_flags)
 DEFINE_JSON_ENUM_BITFLAG_SUPPORT(technique_id, JSON_transcode_techniques)
+
+// not using macro here due to artifacts
+const char* JSON_key(itype_id src)
+{
+	static std::string _x;
+	if (cataclysm::JSON_parse<itype_id>::origin <= src && (sizeof(JSON_transcode_items) / sizeof(*JSON_transcode_items)) + cataclysm::JSON_parse<itype_id>::origin > src) return JSON_transcode_items[src - cataclysm::JSON_parse<itype_id>::origin];
+	if (item::types.size() > src&& num_all_items <= src) return (_x = std::to_string(src-(num_all_items-1))).c_str();
+	return 0;
+}
+
+namespace cataclysm {
+
+	itype_id JSON_parse<itype_id>::operator()(const char* const src)
+	{
+		if (!src || !src[0]) return itype_id(0);
+		ptrdiff_t i = sizeof(JSON_transcode_items) / sizeof(*JSON_transcode_items);	\
+		while (0 < i--) if (!strcmp(JSON_transcode_items[i], src)) return itype_id(i + JSON_parse<itype_id>::origin);	\
+		return itype_id(0);
+	}
+}
 
 // GENERAL GUIDELINES
 // When adding a new item, you MUST REMEMBER to insert it in the itype_id enum

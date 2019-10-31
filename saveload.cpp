@@ -221,7 +221,8 @@ bool fromJSON(const JSON& src, const itype*& dest)
 	int artifact_id;
 	bool ret = fromJSON(src, type_id);
 	if (ret) dest = item::types[type_id];	// XXX \todo should be itype::types?
-	else if (ret = fromJSON(src, artifact_id) && item::types.size() > artifact_id) dest = item::types[artifact_id];
+	else if (ret = fromJSON(src, artifact_id) && item::types.size() > artifact_id+(num_all_items-1)) dest = item::types[artifact_id + (num_all_items - 1)];
+	else if (ret = fromJSON(src, artifact_id) && item::types.size() > artifact_id) dest = item::types[artifact_id];	// \todo V0.3.1+: remove, this is backward-compatibility
 	// second try: artifacts
 	return ret;
 }
@@ -339,13 +340,6 @@ bool fromJSON(const JSON& src, countdown<T>& dest)
 	return true;
 }
 
-template<char src, char dest>
-void xform(std::string& x)
-{
-	size_t found;
-	while ((found = x.find(src)) != std::string::npos) x.replace(found, 1, 1, dest);
-}
-
 JSON toJSON(const computer_option& src)
 {
 	JSON opt;
@@ -423,7 +417,6 @@ JSON toJSON(const npc_favor& src) {
 
 bool fromJSON(const JSON& src, npc_favor& dest)
 {
-	if (JSON::object != src.mode()) return false;
 	npc_favor working;
 	if (!src.has_key("type") || !fromJSON(src["type"], working.type)) return false;
 	if (!src.has_key("favor")) return false;
@@ -448,6 +441,7 @@ bool fromJSON(const JSON& _in, mission& dest)
 	if (!_in.has_key("uid") || !fromJSON(_in["uid"], dest.uid) || 0 >= dest.uid) return false;
 	if (_in.has_key("description")) fromJSON(_in["description"], dest.description);
 	if (_in.has_key("failed")) fromJSON(_in["failed"], dest.failed);
+	if (_in.has_key("value")) fromJSON(_in["value"], dest.value);
 	if (_in.has_key("reward")) fromJSON(_in["reward"], dest.reward);
 	if (_in.has_key("target")) fromJSON(_in["target"], dest.target);
 	if (_in.has_key("item")) fromJSON(_in["item"], dest.item_id);
@@ -662,7 +656,7 @@ JSON toJSON(const vehicle_part& src)
 		_part.set("mount_d", toJSON(src.mount_d));
 		_part.set("precalc_d", JSON::encode(src.precalc_d, (sizeof(src.precalc_d) / sizeof(*src.precalc_d))));
 		_part.set("hp", std::to_string(src.hp));
-		_part.set("blood", std::to_string(src.hp));
+		_part.set("blood", std::to_string(src.blood));
 		_part.set("inside", src.inside ? "true" : "false");	// \todo establish default value
 		_part.set("amount", std::to_string(src.amount));
 		if (!src.items.empty()) _part.set("items", JSON::encode(src.items));
@@ -748,11 +742,7 @@ JSON toJSON(const item& src) {
 	JSON _item(JSON::object);
 
 	if (src.type) {
-		if (auto json = JSON_key((itype_id)src.type->id)) {
-			_item.set("type", json);
-		} else if (num_all_items <= src.type->id && item::types.size() > src.type->id) {
-			_item.set("type", std::to_string(src.type->id));	// artifacts
-		};
+		if (auto json = JSON_key((itype_id)src.type->id)) _item.set("type", json);
 		if (_item.has_key("type")) {
 			if (src.corpse) {
 				if (auto json2 = JSON_key((mon_id)src.corpse->id)) _item.set("corpse", json2);
@@ -1371,15 +1361,15 @@ bool fromJSON(const JSON& src, inventory& dest)
 	return true;
 }
 
-void inventory::toJSON(JSON& dest) const
-{	// morally calls JSON::encode(items,...) where ... is an invariant checker (we only let valid entries hit JSON)
-	JSON working(JSON::array);
-	if (!items.empty())
-		for (auto& stack : items) {
+JSON toJSON(const inventory& src)
+{
+	JSON ret(JSON::array);
+	if (!src.items.empty())
+		for (auto& stack : src.items) {
 			if (stack.empty()) continue;	// invariant failure
-			working.push(JSON::encode(stack));
+			ret.push(JSON::encode(stack));
 		}
-	dest = std::move(working);
+	return ret;
 }
 
 // We have an improper inheritance player -> npc (ideal difference would be the AI controller class, cf. Rogue Survivor game family
@@ -1425,11 +1415,7 @@ JSON toJSON(const player& src)
 	if (itm_null != src.style_selected) ret.set("style_selected", toJSON(src.style_selected));
 
 	// single objects
-	if (src.inv.size()) {
-		JSON tmp;
-		src.inv.toJSON(tmp);
-		ret.set("inv", tmp);
-	}
+	if (src.inv.size()) ret.set("inv", toJSON(src.inv));
 	if (src.weapon.type) {
 		if (const auto json = JSON_key((itype_id)(src.weapon.type->id))) ret.set("weapon", toJSON(src.weapon));
 	}

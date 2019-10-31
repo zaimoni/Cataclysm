@@ -18,6 +18,7 @@ class inventory
   ~inventory() = default;
   inventory& operator=(const inventory &rhs);
   inventory& operator=(inventory &&rhs) = default;
+  friend cataclysm::JSON toJSON(const inventory& src);
 
   item& operator[] (int i);
   const item& operator[] (int i) const;
@@ -68,8 +69,6 @@ class inventory
   bool has_amount(itype_id it, int quantity) { return (amount_of(it) >= quantity); }
   bool has_charges(itype_id it, int quantity) { return (charges_of(it) >= quantity); }
   bool has_item(item *it) const; // Looks for a specific item
-
-  void toJSON(cataclysm::JSON& dest) const;
  private:
   static const std::vector<item> nullstack;
   std::vector< std::vector<item> > items;
