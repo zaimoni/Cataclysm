@@ -124,8 +124,8 @@ class overmap
   void place_forest();
   // City Building
   void place_cities(std::vector<city> &cities, int min);
-  void put_buildings(int x, int y, int dir, city town);
-  void make_road(int cx, int cy, int cs, int dir, city town);
+  void put_buildings(int x, int y, int dir, const city& town);
+  void make_road(int cx, int cy, int cs, int dir, const city& town);
   void build_lab(const city& origin);
   void build_anthill(const city& origin);
   void build_tunnel(int x, int y, int s, int dir);
@@ -133,7 +133,7 @@ class overmap
   void build_mine(city origin);
   void place_rifts();
   // Connection highways
-  void place_hiways(std::vector<city> cities, oter_id base);
+  void place_hiways(const std::vector<city>& cities, oter_id base);
 // void place_subways(std::vector<point> stations);	// dead function
   void make_hiway(int x1, int y1, int x2, int y2, oter_id base);
   void building_on_hiway(int x, int y, int dir);

@@ -1536,8 +1536,8 @@ void overmap::place_cities(std::vector<city> &cities, int min)
   cs = rng(4, 17);
   if (ter(cx, cy) == ot_field) {
    ter(cx, cy) = ot_road_nesw;
-   city tmp; tmp.x = cx; tmp.y = cy; tmp.s = cs;
-   cities.push_back(tmp);
+   cities.push_back(city(cx, cy, cs));
+   const auto& tmp = cities.back();
    start_dir = rng(0, 3);
    for (int j = 0; j < 4; j++)
     make_road(cx, cy, cs, (start_dir + j) % 4, tmp);
@@ -1545,24 +1545,23 @@ void overmap::place_cities(std::vector<city> &cities, int min)
  }
 }
 
-void overmap::put_buildings(int x, int y, int dir, city town)
+void overmap::put_buildings(int x, int y, int dir, const city& town)
 {
  int ychange = dir % 2, xchange = (dir + 1) % 2;
  for (int i = -1; i <= 1; i += 2) {
-  if ((ter(x+i*xchange, y+i*ychange) == ot_field) && !one_in(STREETCHANCE)) {
+  auto& terrain = ter(x + i * xchange, y + i * ychange);
+  if ((ot_field == terrain) && !one_in(STREETCHANCE)) {
    if (rng(0, 99) > 80 * dist(x,y,town.x,town.y) / town.s)
-    ter(x+i*xchange, y+i*ychange) = shop(((dir%2)-i)%4);
-   else {
-    if (rng(0, 99) > 130 * dist(x, y, town.x, town.y) / town.s)
-     ter(x+i*xchange, y+i*ychange) = ot_park;
-    else
-     ter(x+i*xchange, y+i*ychange) = house(((dir%2)-i)%4);
-   }
+    terrain = shop(((dir%2)-i)%4);
+   else if (rng(0, 99) > 130 * dist(x, y, town.x, town.y) / town.s)
+    terrain = ot_park;
+   else
+    terrain = house(((dir%2)-i)%4);
   }
  }
 }
 
-void overmap::make_road(int cx, int cy, int cs, int dir, city town)
+void overmap::make_road(int cx, int cy, int cs, int dir, const city& town)
 {
  int x = cx, y = cy;
  int c = cs, croad = cs;
@@ -1986,30 +1985,29 @@ void overmap::building_on_hiway(int x, int y, int dir)
  }
 }
 
-void overmap::place_hiways(std::vector<city> cities, oter_id base)
+void overmap::place_hiways(const std::vector<city>& cities, oter_id base)
 {
- if (cities.size() == 1)
-  return;
+ if (1 >= cities.size()) return;
  city best;
- int closest = -1;
  int distance;
- bool maderoad = false;
  for (int i = 0; i < cities.size(); i++) {
-  maderoad = false;
-  closest = -1;
+  const auto& src = cities[i];
+  bool maderoad = false;
+  int closest = -1;
   for (int j = i + 1; j < cities.size(); j++) {
-   distance = dist(cities[i].x, cities[i].y, cities[j].x, cities[j].y);
+   const auto& dest = cities[j];
+   distance = dist(src.x, src.y, dest.x, dest.y);
    if (distance < closest || closest < 0) {
     closest = distance; 
-    best = cities[j];
+    best = dest;
    }
    if (distance < TOP_HIWAY_DIST) {
     maderoad = true;
-    make_hiway(cities[i].x, cities[i].y, cities[j].x, cities[j].y, base);
+    make_hiway(src.x, src.y, dest.x, dest.y, base);
    }
   }
   if (!maderoad && closest > 0)
-   make_hiway(cities[i].x, cities[i].y, best.x, best.y, base);
+   make_hiway(src.x, src.y, best.x, best.y, base);
  }
 }
 
