@@ -6229,6 +6229,28 @@ void game::update_stair_monsters()
  if (coming_to_stairs.empty()) monstair = tripoint(-1,-1,999);
 }
 
+static mon_id valid_monster_from(const std::vector<mon_id>& group)
+{
+	std::vector<mon_id> valid;	// YOLO could stack-allocate this to eliminate dynamic allocations
+	int rntype = 0;
+	for (auto m_id : group) {
+		const mtype* const type = mtype::types[m_id];
+		if (type->frequency > 0 &&
+			int(messages.turn) + MINUTES(90) >= MINUTES(STARTING_MINUTES) + HOURS(type->difficulty)) {
+			valid.push_back(m_id);
+			rntype += type->frequency;
+		}
+	}
+	if (valid.empty()) return mon_null;
+	assert(0 < rntype);
+	int curmon = -1;
+	rntype = rng(0, rntype - 1);	// rntype set to [0, rntype)
+	do {
+		rntype -= mtype::types[valid[++curmon]]->frequency;
+	} while (rntype > 0);
+	return valid[curmon];
+}
+
 void game::spawn_mon(int shiftx, int shifty)
 {
  const int nlevx = lev.x + shiftx;
@@ -6306,30 +6328,6 @@ void game::spawn_mon(int shiftx, int shifty)
   }
  }
 }
-
-mon_id game::valid_monster_from(std::vector<mon_id> group)
-{
- std::vector<mon_id> valid;
- int rntype = 0;
- for(auto m_id : group) {
-  const mtype* const type = mtype::types[m_id];
-  if (type->frequency > 0 &&
-      int(messages.turn) + 900 >= MINUTES(STARTING_MINUTES) + HOURS(type->difficulty)){
-   valid.push_back(m_id);
-   rntype += type->frequency;
-  }
- }
- if (valid.empty()) return mon_null;
- int curmon = -1;
- if (rntype > 0)
-  rntype = rng(0, rntype - 1);	// rntype set to [0, rntype)
- do {
-  curmon++;
-  rntype -= mtype::types[valid[curmon]]->frequency;
- } while (rntype > 0);
- return valid[curmon];
-}
-
 
 int game::valid_group(mon_id type, int x, int y)
 {

@@ -274,7 +274,6 @@ class game
   void replace_stair_monsters();
   void update_stair_monsters();
   void spawn_mon(int shift, int shifty); // Called by update_map, sometimes
-  mon_id valid_monster_from(std::vector<mon_id> group);
   int valid_group(mon_id type, int x, int y);// Picks a group from cur_om
   void set_adjacent_overmaps(bool from_scratch = false);
 
