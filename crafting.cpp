@@ -655,6 +655,11 @@ RECIPE(itm_boobytrap, CC_MISC, sk_mechanics, sk_traps,3,5000);
 
 }
 
+enum {
+	CRAFTING_HEADER_HEIGHT = 3,	// don't need to use this, close enough to usage to proofread
+	CRAFTING_WIN_HEIGHT = VIEW-CRAFTING_HEADER_HEIGHT
+};
+
 void game::craft()
 {
  if (u.morale_level() < MIN_MORALE_CRAFT) {	// See morale.h
@@ -662,7 +667,7 @@ void game::craft()
   return;
  }
  WINDOW *w_head = newwin( 3, SCREEN_WIDTH, 0, 0);
- WINDOW *w_data = newwin(22, SCREEN_WIDTH, 3, 0);
+ WINDOW *w_data = newwin(CRAFTING_WIN_HEIGHT, SCREEN_WIDTH, 3, 0);
  craft_cat tab = CC_WEAPON;
  std::vector<const recipe*> current;
  std::vector<bool> available;
@@ -687,8 +692,6 @@ void game::craft()
    redraw = false;
    line = 0;
    draw_recipe_tabs(w_head, tab);
-   current.clear();
-   available.clear();
 // Set current to all recipes in the current tab; available are possible to make
    pick_recipes(current, available, tab);
   }
@@ -697,7 +700,7 @@ void game::craft()
   werase(w_data);
   mvwprintz(w_data, 20, 0, c_white, "Press ? to describe object.  Press <ENTER> to attempt to craft object.");
   wrefresh(w_data);
-  for (int i = 0; i < current.size() && i < 23; i++) {
+  for (int i = 0; i < current.size() && i < CRAFTING_WIN_HEIGHT; i++) {
    if (i == line)
     mvwprintz(w_data, i, 0, (available[i] ? h_white : h_dkgray),
 		item::types[current[i]->result]->name.c_str());
@@ -849,10 +852,8 @@ void game::craft()
    redraw = true;
    break;
   }
-  if (line < 0)
-   line = current.size() - 1;
-  else if (line >= current.size())
-   line = 0;
+  if (line < 0) line = current.size() - 1;
+  else if (line >= current.size()) line = 0;
  } while (ch != KEY_ESCAPE && ch != 'q' && ch != 'Q' && !done);
 
  werase(w_head);
@@ -983,13 +984,12 @@ void game::pick_recipes(std::vector<const recipe*> &current,
   current.push_back(tmp);
   available.push_back(false);
  }
- for (int i = 0; i < current.size() && i < 22; i++) {
+ for (int i = 0; i < current.size() && i < CRAFTING_WIN_HEIGHT; i++) {
 //Check if we have the requisite tools and components
   for (int j = 0; j < 5; j++) {
-   have_tool[j] = false;
-   have_comp[j] = false;
-   if (current[i]->tools[j].empty()) have_tool[j] = true;
-   else {
+   have_tool[j] = current[i]->tools[j].empty();
+   have_comp[j] = current[i]->components[j].empty();
+   if (!have_tool[j]) {
 	for (const component& tool : current[i]->tools[j]) {
      const itype_id type = tool.type;
      const int req = tool.count;	// -1 => 1
@@ -999,8 +999,7 @@ void game::pick_recipes(std::vector<const recipe*> &current,
      }
     }
    }
-   if (current[i]->components[j].empty()) have_comp[j] = true;
-   else {
+   if (!have_comp[j]) {
 	for(const component& comp : current[i]->components[j]) {
      const itype_id type = comp.type;
      const int count = comp.count;
