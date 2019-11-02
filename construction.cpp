@@ -469,23 +469,15 @@ void game::complete_construction()
 {
  inventory map_inv;
  map_inv.form_from_map(m, u.pos, PICKUP_RANGE);
- int stage_num = u.activity.values[0];
  const constructable* const built = constructable::constructions[u.activity.index];
- construction_stage stage = built->stages[stage_num];
- std::vector<component> player_use;
- std::vector<component> map_use;
+ construction_stage stage = built->stages[u.activity.values[0]];
 
  u.practice(sk_carpentry, built->difficulty * 10);
- if (built->difficulty < 1)
-  u.practice(sk_carpentry, 10);
- for (int i = 0; i < 3; i++) {
-  if (!stage.components[i].empty())
-   consume_items(this, stage.components[i]);
- }
+ if (built->difficulty < 1) u.practice(sk_carpentry, 10);
+ for(const auto& comp : stage.components) if (!comp.empty()) consume_items(m, u, comp);
  
 // Make the terrain change
- if (stage.terrain != t_null)
-  m.ter(u.activity.placement) = stage.terrain;
+ if (stage.terrain != t_null) m.ter(u.activity.placement) = stage.terrain;
 
 // Strip off the first stage in our list...
  u.activity.values.erase(u.activity.values.begin());

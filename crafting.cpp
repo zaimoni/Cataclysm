@@ -1050,15 +1050,12 @@ void game::complete_craft()
 // Messed up badly; waste some components.
  if (making->difficulty != 0 && diff_roll > skill_roll * (1 + 0.1 * rng(1, 5))) {
   messages.add("You fail to make the %s, and waste some materials.", item::types[making->result]->name.c_str());
-  for (int i = 0; i < 5; i++) {
-   if (making->components[i].size() > 0) {
-    std::vector<component> copy = making->components[i];
-    for (int j = 0; j < copy.size(); j++)
-     copy[j].count = rng(0, copy[j].count);
-    consume_items(this, copy);
-   }
-   if (making->tools[i].size() > 0) consume_tools(this, making->tools[i]);
+  for (const auto& comp : making->components) if (!comp.empty()) {
+    std::vector<component> wasted(comp);
+	for (auto& comp : wasted) comp.count = rng(0, comp.count);
+    consume_items(m, u, wasted);
   }
+  for(const auto& tools : making->tools) if (!tools.empty()) consume_tools(m, u, tools);
   u.activity.type = ACT_NULL;
   return;
   // Messed up slightly; no components wasted.
@@ -1069,10 +1066,8 @@ void game::complete_craft()
  }
 // If we're here, the craft was a success!
 // Use up the components and tools
- for (int i = 0; i < 5; i++) {
-  if (making->components[i].size() > 0) consume_items(this, making->components[i]);
-  if (making->tools[i].size() > 0) consume_tools(this, making->tools[i]);
- }
+ for (const auto& comp : making->components) if (!comp.empty()) consume_items(m, u, comp);
+ for (const auto& tools : making->tools) if (!tools.empty()) consume_tools(m, u, tools);
 
   // Set up the new item, and pick an inventory letter
  int iter = 0;
@@ -1103,7 +1098,7 @@ void game::complete_craft()
  }
 }
 
-void consume_items(game *g, const std::vector<component>& components)
+void consume_items(map& m, player& u, const std::vector<component>& components)
 {
 // For each set of components in the recipe, fill you_have with the list of all
 // matching ingredients the player has.
@@ -1114,7 +1109,7 @@ void consume_items(game *g, const std::vector<component>& components)
  std::vector<component> map_use;
  std::vector<component> mixed_use;
  inventory map_inv;
- map_inv.form_from_map(g->m, g->u.pos, PICKUP_RANGE);
+ map_inv.form_from_map(m, u.pos, PICKUP_RANGE);
 
  for(const component& comp : components) {
   const itype_id type = comp.type;
@@ -1123,7 +1118,7 @@ void consume_items(game *g, const std::vector<component>& components)
 
   if (item::types[type]->count_by_charges() && count > 0) {
 
-   if (g->u.has_charges(type, count)) {
+   if (u.has_charges(type, count)) {
     player_has.push_back(comp);
     pl = true;
    }
@@ -1131,12 +1126,12 @@ void consume_items(game *g, const std::vector<component>& components)
     map_has.push_back(comp);
     mp = true;
    }
-   if (!pl && !mp && g->u.charges_of(type) + map_inv.charges_of(type) >= count)
+   if (!pl && !mp && u.charges_of(type) + map_inv.charges_of(type) >= count)
     mixed.push_back(comp);
 
   } else { // Counting by units, not charges
 
-   if (g->u.has_amount(type, count)) {
+   if (u.has_amount(type, count)) {
     player_has.push_back(comp);
     pl = true;
    }
@@ -1144,7 +1139,7 @@ void consume_items(game *g, const std::vector<component>& components)
     map_has.push_back(comp);
     mp = true;
    }
-   if (!pl && !mp && g->u.amount_of(type) + map_inv.amount_of(type) >= count)
+   if (!pl && !mp && u.amount_of(type) + map_inv.amount_of(type) >= count)
     mixed.push_back(comp);
 
   }
@@ -1187,57 +1182,57 @@ void consume_items(game *g, const std::vector<component>& components)
 
  for(const component& comp : player_use) {
   if (item::types[comp.type]->count_by_charges() && 0 < comp.count)
-   g->u.use_charges(comp.type, comp.count);
+   u.use_charges(comp.type, comp.count);
   else
-   g->u.use_amount(comp.type, abs(comp.count), (comp.count < 0));
+   u.use_amount(comp.type, abs(comp.count), (comp.count < 0));
  }
  for(const component& comp : map_use) {
   if (item::types[comp.type]->count_by_charges() && 0 < comp.count)
-   g->m.use_charges(g->u.pos, PICKUP_RANGE, comp.type, comp.count);
+   m.use_charges(u.pos, PICKUP_RANGE, comp.type, comp.count);
   else
-   g->m.use_amount(g->u.pos, PICKUP_RANGE, comp.type, abs(comp.count), (comp.count < 0));
+   m.use_amount(u.pos, PICKUP_RANGE, comp.type, abs(comp.count), (comp.count < 0));
  }
  for(const component& comp : mixed_use) {
   if (item::types[comp.type]->count_by_charges() && 0 < comp.count) {
-   const int from_map = comp.count - g->u.charges_of(comp.type);
-   g->u.use_charges(comp.type, g->u.charges_of(comp.type));
-   g->m.use_charges(g->u.pos, PICKUP_RANGE, comp.type, from_map);
+   const int from_map = comp.count - u.charges_of(comp.type);
+   u.use_charges(comp.type, u.charges_of(comp.type));
+   m.use_charges(u.pos, PICKUP_RANGE, comp.type, from_map);
   } else {
    const bool in_container = (comp.count < 0);
-   const int from_map = abs(comp.count) - g->u.amount_of(comp.type);
-   g->u.use_amount(comp.type, g->u.amount_of(comp.type), in_container);
-   g->m.use_amount(g->u.pos, PICKUP_RANGE, comp.type, from_map, in_container);
+   const int from_map = abs(comp.count) - u.amount_of(comp.type);
+   u.use_amount(comp.type, u.amount_of(comp.type), in_container);
+   m.use_amount(u.pos, PICKUP_RANGE, comp.type, from_map, in_container);
   }
  }
 }
 
-void consume_tools(game *g, const std::vector<component>& tools)
+void consume_tools(map& m, player& u, const std::vector<component>& tools)
 {
  bool found_nocharge = false;
  inventory map_inv;
- map_inv.form_from_map(g->m, g->u.pos, PICKUP_RANGE);
+ map_inv.form_from_map(m, u.pos, PICKUP_RANGE);
  std::vector<component> player_has;
  std::vector<component> map_has;
 // Use charges of any tools that require charges used
  for (int i = 0; i < tools.size() && !found_nocharge; i++) {
-  itype_id type = tools[i].type;
-  if (tools[i].count > 0) {
-   int count = tools[i].count;
-   if (g->u.has_charges(type, count))
+  const itype_id type = tools[i].type;
+  const int count = tools[i].count;
+  if (count > 0) {
+   if (u.has_charges(type, count))
     player_has.push_back(tools[i]);
    if (map_inv.has_charges(type, count))
     map_has.push_back(tools[i]);
-  } else if (g->u.has_amount(type, 1) || map_inv.has_amount(type, 1))
+  } else if (u.has_amount(type, 1) || map_inv.has_amount(type, 1))
    found_nocharge = true;
  }
  if (found_nocharge) return; // Default to using a tool that doesn't require charges
 
  if (player_has.size() == 1 && map_has.size() == 0) {
   const component& use = player_has[0];
-  g->u.use_charges(use.type, use.count);
+  u.use_charges(use.type, use.count);
  } else if (map_has.size() == 1 && player_has.size() == 0) {
   const component& use = map_has[0];
-  g->m.use_charges(g->u.pos, PICKUP_RANGE, use.type, use.count);
+  m.use_charges(u.pos, PICKUP_RANGE, use.type, use.count);
  } else { // Variety of options, list them and pick one
 // Populate the list
   std::vector<std::string> options;
@@ -1254,10 +1249,10 @@ void consume_tools(game *g, const std::vector<component>& tools)
   int selection = menu_vec("Use which tool?", options) - 1;
   if (selection < map_has.size()) {
    const component& use = map_has[selection];
-   g->m.use_charges(g->u.pos, PICKUP_RANGE, use.type, use.count);
+   m.use_charges(u.pos, PICKUP_RANGE, use.type, use.count);
   } else {
    const component& use = player_has[selection - map_has.size()];
-   g->u.use_charges(use.type, use.count);
+   u.use_charges(use.type, use.count);
   }
  }
 }

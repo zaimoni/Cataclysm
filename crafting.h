@@ -48,7 +48,7 @@ struct recipe
  static void init();
 };
 
-void consume_items(game *g, const std::vector<component>& components);
-void consume_tools(game *g, const std::vector<component>& tools);
+void consume_items(map& m, player& u, const std::vector<component>& components);	// \todo enable NPC construction
+void consume_tools(map& m, player& u, const std::vector<component>& tools);
 
 #endif

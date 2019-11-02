@@ -605,27 +605,26 @@ void complete_vehicle (game *g)
         if (veh->install_part (dx, dy, (vpart_id) part) < 0)
             debugmsg ("complete_vehicle install part fails dx=%d dy=%d id=%d", dx, dy, part);
         comps.push_back(component(vpart_info::list[part].item, 1));
-        consume_items(g, comps);
+        consume_items(g->m, g->u, comps);
         tools.push_back(component(itm_welder, welder_charges));
         tools.push_back(component(itm_toolset, welder_charges/5));
-        consume_tools(g, tools);
+        consume_tools(g->m, g->u, tools);
 		messages.add("You install a %s into the %s.", vpart_info::list[part].name, veh->name.c_str());
         g->u.practice (sk_mechanics, vpart_info::list[part].difficulty * 5 + 20);
         break;
     case 'r':
-        if (veh->parts[part].hp <= 0)
-        {
+        if (veh->parts[part].hp <= 0) {
             comps.push_back(component(veh->part_info(part).item, 1));
-            consume_items(g, comps);
+            consume_items(g->m, g->u, comps);
             tools.push_back(component(itm_wrench, 1));
-            consume_tools(g, tools);
+            consume_tools(g->m, g->u, tools);
             tools.clear();
             dd = 0;
             veh->insides_dirty = true;
         }
         tools.push_back(component(itm_welder, welder_charges));
         tools.push_back(component(itm_toolset, welder_charges/5));
-        consume_tools(g, tools);
+        consume_tools(g->m, g->u, tools);
         veh->parts[part].hp = veh->part_info(part).durability;
 		messages.add("You repair the %s's %s.", veh->name.c_str(), veh->part_info(part).name);
         g->u.practice (sk_mechanics, (vpart_info::list[part].difficulty + dd) * 5 + 20);
