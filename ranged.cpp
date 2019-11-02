@@ -20,9 +20,6 @@ double calculate_missed_by(player &p, int trange);
 void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit);
 void shoot_player(game *g, player &p, player *h, int &dam, double goodhit);
 
-void splatter(game *g, std::vector<point> trajectory, int dam,
-              monster* mon = NULL);
-
 void ammo_effects(game *g, point pt, long flags)
 {
 	if (flags & mfb(IF_AMMO_EXPLOSIVE)) g->explosion(pt, 24, 0, false);
@@ -56,6 +53,28 @@ static int recoil_add(const player &p)
 	ret -= rng(p.str_cur / 2, p.str_cur);
 	ret -= rng(0, p.sklevel[firing->skill_used] / 2);
 	return (0 < ret) ? ret : 0;
+}
+
+static void splatter(game* g, const std::vector<point>& trajectory, int dam, monster* mon = 0)
+{
+	field_id blood = fd_blood;
+	if (mon) {
+		if (!mon->made_of(FLESH)) return;
+		if (mon->type->dies == &mdeath::boomer) blood = fd_bile;
+		else if (mon->type->dies == &mdeath::acid) blood = fd_acid;
+	}
+
+	int distance = 1;
+	if (dam > 50) distance = 3;
+	else if (dam > 20) distance = 2;
+
+	for (auto& tar : continue_line(trajectory, distance)) {
+		auto& fd = g->m.field_at(tar);
+		if (blood == fd.type) {
+			if (3 > fd.density) fd.density++;
+		}
+		else g->m.add_field(g, tar, blood, 1);
+	}
 }
 
 void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst)
@@ -754,28 +773,5 @@ void shoot_player(game *g, player &p, player *h, int &dam, double goodhit)
                h->name.c_str(), body_part_name(hit, side).c_str());
   }
   h->hit(g, hit, side, 0, dam);
- }
-}
-
-void splatter(game *g, std::vector<point> trajectory, int dam, monster* mon)
-{
- field_id blood = fd_blood;
- if (mon != NULL) {
-  if (!mon->made_of(FLESH)) return;
-  if (mon->type->dies == &mdeath::boomer) blood = fd_bile;
-  else if (mon->type->dies == &mdeath::acid) blood = fd_acid;
- }
-
- int distance = 1;
- if (dam > 50) distance = 3;
- else if (dam > 20) distance = 2;
-
- std::vector<point> spurt = continue_line(trajectory, distance);
-
- for (auto& tar : spurt) {
-	 auto& fd = g->m.field_at(tar);
-	 if (blood == fd.type) {
-		 if (3 > fd.density) fd.density++;
-	 } else g->m.add_field(g, tar, blood, 1);
  }
 }
