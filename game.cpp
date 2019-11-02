@@ -5942,7 +5942,7 @@ bool game::update_map_would_scroll(const point& pt)
 
 void game::update_map(int &x, int &y)
 {
- static_assert(MAPSIZE%2==1,"MAPSIZE%2==1");	// following assumes MAPSIZE i.e. # of submaps on each side is odd
+ static_assert(MAPSIZE % 2 == 1);	// following assumes MAPSIZE i.e. # of submaps on each side is odd
 
  point shift(0,0);
  int group = 0;

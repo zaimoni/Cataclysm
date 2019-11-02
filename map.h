@@ -96,13 +96,13 @@ class map
  ter_id ter(const point& pt) const { return const_cast<map*>(this)->ter(pt.x, pt.y); };
 
  template<ter_id src, ter_id dest> void rewrite(int x, int y) {
-	 static_assert(src!=dest,"src!=dest");
+	 static_assert(src!=dest);
 	 auto& t = ter(x,y);
 	 if (src == t) t = dest;
  }
 
  template<ter_id src, ter_id dest> void rewrite_inv(int x, int y) {
-	 static_assert(src != dest, "src!=dest");
+	 static_assert(src != dest);
 	 auto& t = ter(x, y);
 	 if (src != t) t = dest;
  }
@@ -113,18 +113,18 @@ class map
  }
 
  template<ter_id src, ter_id src2, ter_id src3, ter_id dest> void rewrite(int x, int y) {
-	 static_assert(src != dest, "src!=dest");
-	 static_assert(src2 != dest, "src2!=dest");
-	 static_assert(src3 != dest, "src3!=dest");
-	 static_assert(src != src2, "src!=src2");
-	 static_assert(src != src3, "src!=src3");
-	 static_assert(src2 != src3, "src2!=src3");
+	 static_assert(src != dest);
+	 static_assert(src2 != dest);
+	 static_assert(src3 != dest);
+	 static_assert(src != src2);
+	 static_assert(src != src3);
+	 static_assert(src2 != src3);
 	 auto& t = ter(x, y);
 	 if (src == t || src2 == t || src3 == t) t = dest;
  }
 
  template<ter_id src, ter_id dest> bool rewrite_test(int x, int y) {
-	 static_assert(src != dest, "src!=dest");
+	 static_assert(src != dest);
 	 auto& t = ter(x, y);
 	 bool ret = (src == t);
 	 if (ret) t = dest;
@@ -132,7 +132,7 @@ class map
  }
 
  template<ter_id src, ter_id dest> bool rewrite_test(const point& pt) {
-	 static_assert(src != dest, "src!=dest");
+	 static_assert(src != dest);
 	 auto& t = ter(pt);
 	 bool ret = (src == t);
 	 if (ret) t = dest;
@@ -140,9 +140,9 @@ class map
  }
 
  template<ter_id src, ter_id src2, ter_id dest> bool rewrite_test(int x, int y) {
-	 static_assert(src != dest, "src!=dest");
-	 static_assert(src2 != dest, "src2!=dest");
-	 static_assert(src != src2, "src!=src2");
+	 static_assert(src != dest);
+	 static_assert(src2 != dest);
+	 static_assert(src != src2);
 	 auto& t = ter(x,y);
 	 bool ret = (src == t || src2 == t);
 	 if (ret) t = dest;
@@ -164,7 +164,7 @@ class map
  point random_outdoor_tile();
 
  template<ter_id src, ter_id dest> void translate() { // Change all instances of $src->$dest
-	 static_assert(src != dest, "src!=dest");
+	 static_assert(src != dest);
 	 _translate(src,dest);
  }
  

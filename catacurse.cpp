@@ -546,7 +546,7 @@ private:
 	static bool Get32BRGAbuffer(const std::string src,  RGBQUAD*& buffer, unsigned int& width, unsigned int& height)
 	{	// this implementation requires COM classes
 #if HAVE_MS_COM
-		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t> > widen;
+		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t> > widen;	// 2019-11-01: MSVC++ indicates std::wstring_convert was deprecated in C++17
 		const auto w_src = widen.from_bytes(src);
 
 		// plan B
