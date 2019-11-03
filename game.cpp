@@ -1647,6 +1647,8 @@ void game::load(std::string name)
  static std::string no_save("No save game exists!");
  static std::string corrupted("Save game corrupted!");
 
+ load_master();	// load this first so we can validate later stages
+
  std::ifstream fin;
  std::stringstream playerfile;
  playerfile << "save/" << name << ".sav";
@@ -1716,8 +1718,6 @@ void game::load(std::string name)
 	// do not worry about next_npc_id/next_faction_id/next_mission_id, the master save catches these
 
  fin.close();
-// Now load up the master game data; factions (and more?)
- load_master();
  set_adjacent_overmaps(true);
  draw();
 }

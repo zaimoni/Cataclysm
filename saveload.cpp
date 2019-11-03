@@ -435,6 +435,18 @@ bool fromJSON(const JSON& src, npc_favor& dest)
 	return true;
 }
 
+static void loadFactionID(const JSON& _in, int& dest)
+{
+	int tmp;
+	if (fromJSON(_in, tmp) && faction::from_id(tmp)) dest = tmp;
+}
+
+static void loadFactionID(const JSON& _in, faction*& fac)
+{
+	int tmp;
+	if (fromJSON(_in, tmp)) fac = faction::from_id(tmp);
+}
+
 bool fromJSON(const JSON& _in, mission& dest)
 {
 	if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) return false;
@@ -448,8 +460,8 @@ bool fromJSON(const JSON& _in, mission& dest)
 	if (_in.has_key("count")) fromJSON(_in["count"], dest.count);
 	if (_in.has_key("deadline")) fromJSON(_in["deadline"], dest.deadline);
 	if (_in.has_key("npc")) fromJSON(_in["npc"], dest.npc_id);
-	if (_in.has_key("by_faction")) fromJSON(_in["by_faction"], dest.good_fac_id);
-	if (_in.has_key("vs_faction")) fromJSON(_in["vs_faction"], dest.bad_fac_id);
+	if (_in.has_key("by_faction")) loadFactionID(_in["by_faction"], dest.good_fac_id);
+	if (_in.has_key("vs_faction")) loadFactionID(_in["vs_faction"], dest.bad_fac_id);
 	if (_in.has_key("step")) fromJSON(_in["step"], dest.step);
 	if (_in.has_key("next")) fromJSON(_in["next"], dest.follow_up);
 	return true;
@@ -614,7 +626,7 @@ bool fromJSON(const JSON& _in, spawn_point& dest)
 	if (_in.has_key("name")) fromJSON(_in["name"], dest.name);
 	if (_in.has_key("count")) fromJSON(_in["count"], dest.count);
 	if (_in.has_key("pos")) fromJSON(_in["pos"], dest.pos);
-	if (_in.has_key("faction_id")) fromJSON(_in["faction_id"], dest.faction_id);
+	if (_in.has_key("faction_id")) loadFactionID(_in["faction_id"], dest.faction_id);
 	if (_in.has_key("mission_id")) fromJSON(_in["mission_id"], dest.mission_id);
 	if (_in.has_key("friendly")) fromJSON(_in["friendly"], dest.friendly);
 	return true;
@@ -1031,11 +1043,7 @@ bool fromJSON(const JSON& _in, monster& dest)
 	if (_in.has_key("friendly")) fromJSON(_in["friendly"], dest.friendly);
 	if (_in.has_key("anger")) fromJSON(_in["anger"], dest.anger);
 	if (_in.has_key("morale")) fromJSON(_in["morale"], dest.morale);
-
-	int tmp;
-	if (_in.has_key("faction_id") && fromJSON(_in["faction_id"], tmp)) {
-		if (faction::from_id(tmp)) dest.faction_id = tmp;
-	}
+	if (_in.has_key("faction_id")) loadFactionID(_in["faction_id"], dest.faction_id);
 	if (_in.has_key("mission_id")) fromJSON(_in["mission_id"], dest.mission_id);	// \todo validate after re-ordering savegame loading
 	if (_in.has_key("dead")) fromJSON(_in["dead"], dest.dead);
 	if (_in.has_key("made_footstep")) fromJSON(_in["made_footstep"], dest.made_footstep);
@@ -1722,10 +1730,7 @@ npc::npc(const JSON& src)
 	if (src.has_key("fetching_item")) fromJSON(src["fetching_item"], fetching_item);
 	if (src.has_key("has_new_items")) fromJSON(src["has_new_items"], has_new_items);
 	if (src.has_key("path")) src["path"].decode(path);
-	if (src.has_key("faction_id")) {
-		int fac_id;
-		if (fromJSON(src["faction_id"], fac_id)) my_fac = faction::from_id(fac_id);
-	}
+	if (src.has_key("faction_id")) loadFactionID(src["faction_id"], my_fac);
 	if (src.has_key("mission")) fromJSON(src["mission"], mission);
 	if (src.has_key("personality")) fromJSON(src["personality"], personality);
 	if (src.has_key("op_of_u")) fromJSON(src["op_of_u"], op_of_u);
