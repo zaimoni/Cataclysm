@@ -87,15 +87,15 @@ DECLARE_JSON_ENUM_SUPPORT_ATYPICAL(npc_class, 0)
 
 enum npc_action {
  npc_undecided = 0,
- npc_pause, //1
- npc_reload, npc_sleep, // 2, 3
- npc_pickup, // 4
- npc_escape_item, npc_wield_melee, npc_wield_loaded_gun, npc_wield_empty_gun,
-  npc_heal, npc_use_painkiller, npc_eat, npc_drop_items, // 5 - 12
- npc_flee, npc_melee, npc_shoot, npc_shoot_burst, npc_alt_attack, // 13 - 17
+ npc_pause,
+ npc_reload, npc_sleep,
+ npc_pickup,
+ npc_wield_melee, npc_wield_loaded_gun, npc_wield_empty_gun,
+  npc_heal, npc_use_painkiller, npc_eat, npc_drop_items,
+ npc_flee, npc_melee, npc_shoot, npc_shoot_burst, npc_alt_attack,
  npc_look_for_player, npc_heal_player, npc_follow_player, npc_talk_to_player,
-  npc_mug_player, // 18 - 22
- npc_goto_destination, npc_avoid_friendly_fire, // 23, 24
+  npc_mug_player,
+ npc_goto_destination, npc_avoid_friendly_fire,
  num_npc_actions
 };
 
@@ -427,7 +427,6 @@ public:
  void melee_player	(game *g, player &foe);
  void wield_best_melee	(game *g);
  void alt_attack	(game *g, int target);
- void use_escape_item	(game *g, int index, int target);
  void heal_player	(game *g, player &patient);
  void heal_self		(game *g);
 private:

@@ -15,8 +15,9 @@ namespace cataclysm {
 	public:
 		virtual ~action() = default;
 		virtual bool IsLegal() const = 0;		// can be scheduled
-		virtual bool IsPerformable() const = 0;	// can be done "now"
+		virtual bool IsPerformable() const { return IsLegal(); };	// can be done "now"
 		virtual void Perform() const = 0;		// do it
+		virtual const char* name() const = 0;
 	};
 
 }

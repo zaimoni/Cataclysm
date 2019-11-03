@@ -9,7 +9,7 @@
 #define TARGET_PLAYER -2
 
 // A list of items used for escape, in order from least to most valuable
-itype_id ESCAPE_ITEMS[] = {
+static const itype_id ESCAPE_ITEMS[] = {	// \todo mod target
  itm_cola, itm_caffeine, itm_energy_drink, itm_canister_goo, itm_smokebomb,
  itm_smokebomb_act, itm_adderall, itm_coke, itm_meth, itm_teleporter,
  itm_pheromone
@@ -17,13 +17,57 @@ itype_id ESCAPE_ITEMS[] = {
 #define NUM_ESCAPE_ITEMS (sizeof(ESCAPE_ITEMS)/sizeof(ESCAPE_ITEMS))
 
 // A list of alternate attack items (e.g. grenades), from least to most valuable
-itype_id ALT_ATTACK_ITEMS[] = {
+static const itype_id ALT_ATTACK_ITEMS[] = {	// \todo mod target
  itm_knife_combat, itm_spear_wood, itm_molotov, itm_pipebomb, itm_grenade,
  itm_gasbomb, itm_bot_manhack, itm_tazer, itm_dynamite, itm_mininuke,
  itm_molotov_lit, itm_pipebomb_act, itm_grenade_act, itm_gasbomb_act,
  itm_dynamite_act, itm_mininuke_act
 };
 #define NUM_ALT_ATTACK_ITEMS (sizeof(ALT_ATTACK_ITEMS)/sizeof(ALT_ATTACK_ITEMS))
+
+class use_escape_obj : public cataclysm::action
+{
+	player& _actor;
+	int inv_index;
+public:
+	use_escape_obj(player& actor, int index) : _actor(actor), inv_index(index) {
+#ifndef NDEBUG
+		if (!IsLegal()) throw new std::logic_error("illegal escape item");
+#endif
+	};
+	~use_escape_obj() = default;
+	bool IsLegal() const override {
+		if (0 > inv_index || _actor.inv.size() <= inv_index) return false;
+		const auto& used = _actor.inv[inv_index];
+		return used.is_food() || used.is_food_container() || used.is_tool();
+	}
+	void Perform() const override {
+		// C:Whales npc::use_escape_item inlined
+
+		/* There is a static list of items that NPCs consider to be "escape items," so
+		 * we can just use a switch here to decide what to do based on type.  See
+		 * ESCAPE_ITEMS, defined in npc.h
+		 */
+
+		auto& used = _actor.inv[inv_index];
+
+		if (used.is_food() || used.is_food_container()) {
+			_actor.eat(game::active(), inv_index);
+			return;
+		}
+#ifndef NDEBUG
+		if (!used.is_tool()) throw new std::logic_error("escape item was neither edible nor a tool");
+#endif
+
+		const it_tool* const tool = dynamic_cast<const it_tool*>(used.type);
+		(*tool->use)(game::active(), &_actor, &used, false);
+		used.charges -= tool->charges_per_use;
+		if (0 == used.invlet) _actor.inv.remove_item(inv_index);
+	}
+	const char* name() const override {
+		return "Use escape item";
+	}
+};
 
 std::string npc_action_name(npc_action action);
 bool thrown_item(item *used);
@@ -69,9 +113,9 @@ void npc::move(game *g)
 
  else {	// No present danger
   action = address_needs(g, danger);
-  if (game::debugmon) debugmsg("address_needs %s", npc_action_name(action.first).c_str());
+  if (game::debugmon) debugmsg("address_needs %s", action.second ? action.second->name() : npc_action_name(action.first).c_str());
   if (action.first == npc_undecided && !action.second) action = address_player(g);
-  if (game::debugmon) debugmsg("address_player %s", npc_action_name(action.first).c_str());
+  if (game::debugmon) debugmsg("address_player %s", action.second ? action.second->name() : npc_action_name(action.first).c_str());
   if (action.first == npc_undecided) {
    if (mission == NPC_MISSION_SHELTER || has_disease(DI_INFECTION))
     action = ai_action(npc_pause, std::unique_ptr<cataclysm::action>());
@@ -79,14 +123,14 @@ void npc::move(game *g)
     action = scan_new_items(g, target);
    else if (!fetching_item)
     find_item(g);
-   if (game::debugmon) debugmsg("find_item %s", npc_action_name(action.first).c_str());
+   if (game::debugmon) debugmsg("find_item %s", action.second ? action.second->name() : npc_action_name(action.first).c_str());
    if (fetching_item)		// Set to true if find_item() found something
     action = ai_action(npc_pickup, std::unique_ptr<cataclysm::action>());
    else if (is_following())	// No items, so follow the player?
     action = ai_action(npc_follow_player, std::unique_ptr<cataclysm::action>());
    else				// Do our long-term action
     action = long_term_goal_action(g);
-   if (game::debugmon) debugmsg("long_term_goal_action %s", npc_action_name(action.first).c_str());
+   if (game::debugmon) debugmsg("long_term_goal_action %s", action.second ? action.second->name() : npc_action_name(action.first).c_str());
   }
  }
 
@@ -97,7 +141,7 @@ void npc::move(game *g)
  if (action.first == npc_follow_player && danger > 0 && rl_dist(pos, g->u.pos) <= follow_distance())
   action = method_of_attack(g, target, danger);
 
- if (game::debugmon) debugmsg("%s chose action %s.", name.c_str(), npc_action_name(action.first).c_str());
+ if (game::debugmon) debugmsg("%s chose action %s.", name.c_str(), action.second ? action.second->name() : npc_action_name(action.first).c_str());
 
  execute_action(g, action, target);
 }
@@ -150,10 +194,6 @@ void npc::execute_action(game *g, const ai_action& action, int target)
 
  case npc_pickup:
   pick_up_item(g);
-  break;
-
- case npc_escape_item:
-  use_escape_item(g, choose_escape_item(), target);
   break;
 
  case npc_wield_melee:
@@ -381,13 +421,14 @@ void npc::choose_monster_target(game *g, int &enemy, int &danger,
 
 npc::ai_action npc::method_of_fleeing(game *g, int enemy) const
 {
+ int it = choose_escape_item();
+ if (0 <= it) // We have an escape item!
+  return ai_action(npc_pause,std::unique_ptr<cataclysm::action>(new use_escape_obj(*const_cast<npc*>(this), it)));	// C:Whales failure mode was npc_pause
+
  int speed = (enemy == TARGET_PLAYER ? g->u.current_speed(g) :
-                                       g->z[enemy].speed);
+	 g->z[enemy].speed);
  point enemy_loc = (enemy == TARGET_PLAYER ? g->u.pos : g->z[enemy].pos);
  int distance = rl_dist(pos, enemy_loc);
-
- if (choose_escape_item() >= 0) // We have an escape item!
-  return ai_action(npc_escape_item,std::unique_ptr<cataclysm::action>());
 
  if (speed > 0 && (100 * distance) / speed <= 4 && speed > current_speed(g))
   return method_of_attack(g, enemy, -1); // Can't outrun, so attack
@@ -592,53 +633,22 @@ int npc::choose_escape_item() const
 {
  int best = -1, ret = -1;
  for (size_t i = 0; i < inv.size(); i++) {
+  const it_comest* food = 0;
+  const auto& it = inv[i];
   for (int j = 0; j < NUM_ESCAPE_ITEMS; j++) {
-   const it_comest* food = NULL;
-   if (inv[i].is_food())
-    food = dynamic_cast<const it_comest*>(inv[i].type);
-   if (inv[i].type->id == ESCAPE_ITEMS[j] &&
-       (food == NULL || stim < food->stim ||            // Avoid guzzling down
-        (food->stim >= 10 && stim < food->stim * 2)) && //  Adderall etc.
-       (j > best || (j == best && inv[i].charges < inv[ret].charges))) {
+   if (it.type->id != ESCAPE_ITEMS[j]) continue;	// \todo some sort of relevance check (needs context)
+   if (j < best) continue;
+   if (j == best && it.charges >= inv[ret].charges) continue;
+   if (!food && it.is_food()) food = dynamic_cast<const it_comest*>(inv[i].type);
+   if ((!food || stim < food->stim ||            // Avoid guzzling down
+        (food->stim >= 10 && stim < food->stim * 2))) { //  Adderall etc.
     ret = i;
     best = j;
-    j = NUM_ESCAPE_ITEMS;
+	break;
    }
   }
  }
  return ret;
-}
-
-void npc::use_escape_item(game *g, int index, int target)
-{
- if (index < 0 || index >= inv.size()) {
-  debugmsg("%s tried to use item %d (%d in inv)", name.c_str(), index, inv.size());
-  move_pause();
-  return;
- }
-
-/* There is a static list of items that NPCs consider to be "escape items," so
- * we can just use a switch here to decide what to do based on type.  See
- * ESCAPE_ITEMS, defined in npc.h
- */
-
- item* used = &(inv[index]);
-
- if (used->is_food() || used->is_food_container()) {
-  eat(g, index);
-  return;
- }
-
- if (used->is_tool()) {
-  const it_tool* const tool = dynamic_cast<const it_tool*>(used->type);
-  (*tool->use)(g, this, used, false);
-  used->charges -= tool->charges_per_use;
-  if (used->invlet == 0) inv.remove_item(index);
-  return;
- }
-
- debugmsg("NPC tried to use %s (%d) but it has no use?", used->tname().c_str(), index);
- move_pause();
 }
 
 // Index defaults to -1, i.e., wielded weapon
@@ -1762,7 +1772,6 @@ std::string npc_action_name(npc_action action)
   case npc_reload:		return "Reload";
   case npc_sleep:		return "Sleep";
   case npc_pickup:		return "Pick up items";
-  case npc_escape_item:		return "Use escape item";
   case npc_wield_melee:		return "Wield melee weapon";
   case npc_wield_loaded_gun:	return "Wield loaded gun";
   case npc_wield_empty_gun:	return "Wield empty gun";
