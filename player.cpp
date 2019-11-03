@@ -1835,27 +1835,20 @@ void player::disp_status(WINDOW *w, game *g)
  } else {  // Not in vehicle
   nc_color col_str = c_white, col_dex = c_white, col_int = c_white,
            col_per = c_white, col_spd = c_white;
-  if (str_cur < str_max)
-   col_str = c_red;
-  if (str_cur > str_max)
-   col_str = c_green;
-  if (dex_cur < dex_max)
-   col_dex = c_red;
-  if (dex_cur > dex_max)
-   col_dex = c_green;
-  if (int_cur < int_max)
-   col_int = c_red;
-  if (int_cur > int_max)
-   col_int = c_green;
-  if (per_cur < per_max)
-   col_per = c_red;
-  if (per_cur > per_max)
-   col_per = c_green;
+  if (str_cur < str_max) col_str = c_red;
+  else if (str_cur > str_max) col_str = c_green;
+  if (dex_cur < dex_max) col_dex = c_red;
+  else if (dex_cur > dex_max) col_dex = c_green;
+  if (int_cur < int_max) col_int = c_red;
+  else if (int_cur > int_max) col_int = c_green;
+  if (per_cur < per_max) col_per = c_red;
+  else if (per_cur > per_max) col_per = c_green;
+
+  // C:Whales computed color w/o environmental effects, but did not display those effects either
   int spd_cur = current_speed();
-  if (current_speed() < 100)
-   col_spd = c_red;
-  if (current_speed() > 100)
-   col_spd = c_green;
+  if (spd_cur < 100) col_spd = c_red;
+  else if (spd_cur > 100) col_spd = c_green;
+  spd_cur = current_speed(g);
 
   mvwprintz(w, 3, 13, col_str, "Str %s%d", str_cur >= 10 ? "" : " ", str_cur);
   mvwprintz(w, 3, 20, col_dex, "Dex %s%d", dex_cur >= 10 ? "" : " ", dex_cur);

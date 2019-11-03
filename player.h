@@ -53,7 +53,7 @@ public:
 
  void disp_info(game *g);	// '@' key; extended character info
  void disp_morale();		// '%' key; morale info
- void disp_status(WINDOW* w, game *g = NULL);// On-screen data
+ void disp_status(WINDOW* w, game *g);// On-screen data
 
  void reset(game *g = NULL);// Resets movement points, stats, applies effects
  void update_morale();	// Ticks down morale counters and removes them
