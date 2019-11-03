@@ -743,7 +743,7 @@ bool computer::query_bool(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[6000];
- vsprintf(buff, mes, ap);
+ vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
 // Append with (Y/N/Q)
  std::string full_line = buff;
@@ -764,7 +764,7 @@ char computer::query_ynq(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[6000];
- vsprintf(buff, mes, ap);
+ vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
 // Append with (Y/N/Q)
  std::string full_line = buff;
@@ -785,7 +785,7 @@ void computer::print_line(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[6000];
- vsprintf(buff, mes, ap);
+ vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
 // Replace any '\n' with "\n " to allow for the border
  std::string message = buff;
@@ -808,7 +808,7 @@ void computer::print_error(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[6000];
- vsprintf(buff, mes, ap);
+ vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
 // Print the line.
  wprintz(w_terminal, c_red, " %s%s", buff, "\n");

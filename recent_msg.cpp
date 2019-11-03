@@ -15,7 +15,7 @@ void recent_msg::add(const char* msg, ...)
 	char buff[1024];
 	va_list ap;
 	va_start(ap, msg);
-	vsprintf(buff, msg, ap);
+	vsprintf_s<sizeof(buff)>(buff, msg, ap);
 	va_end(ap);
 	std::string s(buff);
 	if (s.empty()) return;

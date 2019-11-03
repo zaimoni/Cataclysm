@@ -4528,7 +4528,7 @@ void player::cancel_activity_query(const char* message, ...)
 	char buff[1024];
 	va_list ap;
 	va_start(ap, message);
-	vsprintf_s<1024>(buff, message, ap);
+	vsprintf_s<sizeof(buff)>(buff, message, ap);
 	va_end(ap);
 
 	bool doit = false;

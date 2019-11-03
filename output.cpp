@@ -181,7 +181,7 @@ void mvprintz(int y, int x, nc_color FG, const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[6000];
- vsprintf(buff, mes, ap);
+ vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
  attron(FG);
  mvprintw(y, x, buff);
@@ -192,10 +192,8 @@ void mvwprintz(WINDOW* w, int y, int x, nc_color FG, const char *mes, ...)
 {
  va_list ap;
  va_start(ap, mes);
-// char buff[4096];
-// vsprintf(buff, mes, ap);
- char buff[6000];
- vsprintf(buff, mes, ap);
+ char buff[6000];	// formerly 4096
+ vsprintf_s<sizeof(buff)>(buff, mes, ap);
  wattron(w, FG);
 // wmove(w, y, x);
  mvwprintw(w, y, x, buff);
@@ -208,7 +206,7 @@ void printz(nc_color FG, const char *mes, ...)
  va_list ap;
  va_start(ap,mes);
  char buff[6000];
- vsprintf(buff, mes, ap);
+ vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
  attron(FG);
  printw(buff);
@@ -220,7 +218,7 @@ void wprintz(WINDOW *w, nc_color FG, const char *mes, ...)
  va_list ap;
  va_start(ap,mes);
  char buff[6000];
- vsprintf(buff, mes, ap);
+ vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
  wattron(w, FG);
  wprintw(w, buff);
@@ -291,7 +289,7 @@ void debugmsg(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[1024];
- vsprintf(buff, mes, ap);
+ vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
  attron(c_red);
  mvprintw(0, 0, "DEBUG: %s                \n  Press spacebar...", buff);
@@ -305,7 +303,7 @@ bool query_yn(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[1024];
- vsprintf(buff, mes, ap);
+ vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
  int win_width = strlen(buff) + 26;
  WINDOW* w = newwin(3, win_width, 11, 0);
@@ -332,7 +330,7 @@ int query_int(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[1024];
- vsprintf(buff, mes, ap);
+ vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
  int win_width = strlen(buff) + 10;
  WINDOW* w = newwin(3, win_width, 11, 0);
@@ -359,7 +357,7 @@ std::string string_input_popup(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[1024];
- vsprintf(buff, mes, ap);
+ vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
  int startx = strlen(buff) + 2;
  WINDOW* w = newwin(3, SCREEN_WIDTH, 11, 0);
@@ -406,7 +404,7 @@ std::string string_input_popup(int max_length, const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[1024];
- vsprintf(buff, mes, ap);
+ vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
  int startx = strlen(buff) + 2;
  WINDOW* w = newwin(3, SCREEN_WIDTH, 11, 0);
@@ -452,7 +450,7 @@ char popup_getkey(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[8192];
- vsprintf(buff, mes, ap);
+ vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
  std::string tmp = buff;
  int width = 0;
@@ -555,7 +553,7 @@ void popup_top(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[1024];
- vsprintf(buff, mes, ap);
+ vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
  std::string tmp = buff;
  int width = 0;
@@ -603,7 +601,7 @@ void popup(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[8192];
- vsprintf(buff, mes, ap);
+ vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
  std::string tmp = buff;
  int width = 0;
@@ -651,7 +649,7 @@ void popup_nowait(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[8192];
- vsprintf(buff, mes, ap);
+ vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
  std::string tmp = buff;
  int width = 0;
@@ -693,7 +691,7 @@ void full_screen_popup(const char* mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[8192];
- vsprintf(buff, mes, ap);
+ vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
  std::string tmp = buff;
  WINDOW* const w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
