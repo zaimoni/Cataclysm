@@ -107,8 +107,6 @@ class game
 // ... a gun is fired, maybe by an NPC (actual damage, etc.).
   void fire(player &p, point tar, std::vector<point> &trajectory, bool burst);
   void throw_item(player &p, point tar, const item &thrown, std::vector<point> &trajectory);
-  void cancel_activity();
-  void cancel_activity_query(const char* message, ...);
   int assign_mission_id() { return next_mission_id++; } // Just returns the next available one
   void give_mission(mission_id type); // Create the mission and assign it
   void assign_mission(int id); // Just assign an existing mission

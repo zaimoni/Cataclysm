@@ -612,14 +612,13 @@ bool game::do_turn()
    if (u.activity.type == ACT_NULL)
     messages.add("You're feeling tired.  Press '$' to lie down for sleep.");
    else
-    cancel_activity_query("You're feeling tired.");
+    u.cancel_activity_query("You're feeling tired.");
   }
   if (u.stim < 0) u.stim++;
   if (u.stim > 0) u.stim--;
   if (u.pkill > 0) u.pkill--;
   if (u.pkill < 0) u.pkill++;
-  if (u.has_bionic(bio_solar) && is_in_sunlight(u.pos))
-   u.charge_power(1);
+  if (u.has_bionic(bio_solar) && is_in_sunlight(u.pos)) u.charge_power(1);
  }
  if (messages.turn % 300 == 0) {	// Pain up/down every 30 minutes
   if (u.pain > 0)
@@ -842,53 +841,6 @@ void game::process_activity()
  }
 }
 
-void game::cancel_activity()
-{
- u.cancel_activity();
-}
-
-void game::cancel_activity_query(const char* message, ...)
-{
- char buff[1024];
- va_list ap;
- va_start(ap, message);
- vsprintf(buff, message, ap);
- va_end(ap);
- std::string s(buff);
-
- bool doit = false;;
-
- switch (u.activity.type) {
-  case ACT_NULL:
-   doit = false;
-   break;
-  case ACT_READ:
-   if (query_yn("%s Stop reading?", s.c_str())) doit = true;
-   break;
-  case ACT_RELOAD:
-   if (query_yn("%s Stop reloading?", s.c_str())) doit = true;
-   break;
-  case ACT_CRAFT:
-   if (query_yn("%s Stop crafting?", s.c_str())) doit = true;
-   break;
-  case ACT_BUTCHER:
-   if (query_yn("%s Stop butchering?", s.c_str())) doit = true;
-   break;
-  case ACT_BUILD:
-  case ACT_VEHICLE:
-   if (query_yn("%s Stop construction?", s.c_str())) doit = true;
-   break;
-  case ACT_TRAIN:
-   if (query_yn("%s Stop training?", s.c_str())) doit = true;
-   break;
-  default:
-   doit = true;
- }
-
- if (doit)
-  u.cancel_activity();
-}
-
 void game::update_weather()
 {
 	/* Chances for each season, for the weather listed on the left to shift to the
@@ -1012,7 +964,7 @@ void game::update_weather()
      lev.z >= 0 && m.is_outside(u.pos)) {
   std::stringstream weather_text;
   weather_text << "The weather changed to " << w_data.name << "!";
-  cancel_activity_query(weather_text.str().c_str());
+  u.cancel_activity_query(weather_text.str().c_str());
  }
 
 // Now update temperature
@@ -2863,7 +2815,7 @@ void game::mon_info()
  }
 
  if (newseen > mostseen) {
-  cancel_activity_query("Monster spotted!");
+  u.cancel_activity_query("Monster spotted!");
   turnssincelastmon = 0;
   if (run_mode == 1) run_mode = 2;	// Stop movement!
  } else if (autosafemode) { // Auto-safemode
@@ -3055,7 +3007,7 @@ void game::monmove()
    if (u.has_active_bionic(bio_alarm) && u.power_level >= 1 && rl_dist(u.pos, z[i].pos) <= 5) {
     u.power_level--;
 	messages.add("Your motion alarm goes off!");
-    cancel_activity_query("Your motion alarm goes off!");
+    u.cancel_activity_query("Your motion alarm goes off!");
     if (u.has_disease(DI_SLEEP) || u.has_disease(DI_LYING_DOWN)) {
      u.rem_disease(DI_SLEEP);
      u.rem_disease(DI_LYING_DOWN);
@@ -3245,7 +3197,7 @@ void game::sound(int x, int y, int vol, std::string description)
   u.add_disease(DI_DEAF, duration);
  }
  if (x != u.pos.x || y != u.pos.y)
-  cancel_activity_query("Heard %s!", (description == "" ? "a noise" : description.c_str()));
+  u.cancel_activity_query("Heard %s!", (description == "" ? "a noise" : description.c_str()));
 // We need to figure out where it was coming from, relative to the player
  int dx = x - u.pos.x;
  int dy = y - u.pos.y;

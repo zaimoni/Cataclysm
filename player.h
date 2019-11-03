@@ -179,6 +179,7 @@ public:
 
  void assign_activity(activity_type type, int moves, int index = -1);	// \todo V 0.2.1 extend to NPCs
  void cancel_activity();
+ virtual void cancel_activity_query(const char* message, ...);
 
  int weight_carried() const;
  int volume_carried() const;

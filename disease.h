@@ -466,11 +466,11 @@ void dis_effect(game *g, player &p, disease &dis)
   p.int_cur -= 2;
   p.str_cur -= 1;
   if (one_in(10 + 40 * p.int_cur)) {
-   if (!p.is_npc()) {
+   if (!p.is_npc())
     messages.add("You start scratching yourself all over!");
-    g->cancel_activity();
-   } else if (g->u_see(p.pos))
+   else if (g->u_see(p.pos))
     messages.add("%s starts scratching %s all over!", p.name.c_str(), (p.male ? "himself" : "herself"));
+   p.cancel_activity();
    p.moves -= 150;
    p.hurt(g, bp_torso, 0, 1);
   }
@@ -578,7 +578,7 @@ void dis_effect(game *g, player &p, disease &dis)
      if (g->m.move_cost(x, y) == 0) g->m.ter(x, y) = t_rubble;
      g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], x, y));
      if (g->u_see(x, y)) {
-      g->cancel_activity_query("A monster appears nearby!");
+      g->u.cancel_activity_query("A monster appears nearby!");
 	  messages.add("A portal opens nearby, and a monster crawls through!");
      }
      if (one_in(2)) p.rem_disease(DI_TELEGLOW);
@@ -625,7 +625,7 @@ void dis_effect(game *g, player &p, disease &dis)
     if (g->m.move_cost(x, y) == 0) g->m.ter(x, y) = t_rubble;
     g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], x, y));
     if (g->u_see(x, y)) {
-     g->cancel_activity_query("A monster appears nearby!");
+     g->u.cancel_activity_query("A monster appears nearby!");
      messages.add("A portal opens nearby, and a monster crawls through!");
     }
     dis.duration /= 4;

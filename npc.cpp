@@ -5,8 +5,6 @@
 #include "rng.h"
 #include "map.h"
 #include "game.h"
-#include "bodypart.h"
-#include "skill.h"
 #include "output.h"
 #include "line.h"
 #include "recent_msg.h"
@@ -1816,6 +1814,31 @@ void npc::die(game *g, bool your_fault)
    g->fail_mission( g->active_missions[i].uid );
  }
   
+}
+
+// NPCs don't use the text UI, so override the player version
+void npc::cancel_activity_query(const char* message, ...)
+{
+	bool doit = false;
+
+	// cf player version.  The commented-out cases represent where specific AI buildout
+	// would be needed to know when not to cancel.
+	switch (activity.type) {
+	case ACT_NULL: return;
+/*
+	case ACT_READ:
+	case ACT_RELOAD:
+	case ACT_CRAFT:
+	case ACT_BUTCHER:
+	case ACT_BUILD:
+	case ACT_VEHICLE:
+	case ACT_TRAIN:
+*/
+	default:
+		doit = true;
+	}
+
+	if (doit) cancel_activity();
 }
 
 std::string npc_attitude_name(npc_attitude att)

@@ -376,6 +376,8 @@ public:
  */
  void shift(point delta); 
 
+// placeholders for NPC use of activities
+ void cancel_activity_query(const char* message, ...) override;
 
 // Movement; the following are defined in npcmove.cpp
  void move(game *g); // Picks an action & a target and calls execute_action

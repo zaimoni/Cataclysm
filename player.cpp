@@ -2221,7 +2221,7 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
  rem_disease(DI_SPEED_BOOST);
  if (dam >= 6) rem_disease(DI_ARMOR_BOOST);
 
- if (!is_npc()) g->cancel_activity_query("You were hurt!");
+ g->u.cancel_activity_query("You were hurt!");
 
  if (has_artifact_with(AEP_SNAKES) && dam >= 6) {
   int snakes = int(dam / 6);
@@ -2314,7 +2314,7 @@ void player::hurt(game *g, body_part bphurt, int side, int dam)
 
  if (dam <= 0) return;
 
- if (!is_npc()) g->cancel_activity_query("You were hurt!");
+ g->u.cancel_activity_query("You were hurt!");
 
  int painadd = dam / (has_trait(PF_PAINRESIST) ? 3 : 2);
  pain += painadd;
@@ -2844,7 +2844,7 @@ void player::suffer(game *g)
    use_charges(itm_inhaler, 1);
   else {
    add_disease(DI_ASTHMA, 50 * rng(1, 4));
-   if (!is_npc()) g->cancel_activity_query("You have an asthma attack!");
+   g->u.cancel_activity_query("You have an asthma attack!");
   }
  }
 
@@ -4521,6 +4521,44 @@ void player::cancel_activity()
 {
  if (activity_is_suspendable(activity.type)) backlog = activity;
  activity.type = ACT_NULL;
+}
+
+void player::cancel_activity_query(const char* message, ...)
+{
+	char buff[1024];
+	va_list ap;
+	va_start(ap, message);
+	vsprintf_s<1024>(buff, message, ap);
+	va_end(ap);
+
+	bool doit = false;
+
+	switch (activity.type) {
+	case ACT_NULL: return;
+	case ACT_READ:
+		if (query_yn("%s Stop reading?", buff)) doit = true;
+		break;
+	case ACT_RELOAD:
+		if (query_yn("%s Stop reloading?", buff)) doit = true;
+		break;
+	case ACT_CRAFT:
+		if (query_yn("%s Stop crafting?", buff)) doit = true;
+		break;
+	case ACT_BUTCHER:
+		if (query_yn("%s Stop butchering?", buff)) doit = true;
+		break;
+	case ACT_BUILD:
+	case ACT_VEHICLE:
+		if (query_yn("%s Stop construction?", buff)) doit = true;
+		break;
+	case ACT_TRAIN:
+		if (query_yn("%s Stop training?", buff)) doit = true;
+		break;
+	default:
+		doit = true;
+	}
+
+	if (doit) cancel_activity();
 }
 
 std::vector<int> player::has_ammo(ammotype at) const
