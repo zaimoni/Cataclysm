@@ -87,7 +87,7 @@ void npc::move(game *g)
  wand.tick();	// countdown timers
  pl.tick();
 
- ai_action action = ai_action(npc_undecided,std::unique_ptr<cataclysm::action>());
+ ai_action action(npc_undecided,std::unique_ptr<cataclysm::action>());
  int danger = 0, total_danger = 0, target = -1;
 
  choose_monster_target(g, target, danger, total_danger);
@@ -103,18 +103,22 @@ void npc::move(game *g)
    if (game::debugmon) debugmsg("NPC %s: Set target to PLAYER, danger = %d", name.c_str(), danger);
   }
  }
+#ifndef NDEBUG
+ if (0 < danger && TARGET_PLAYER != target && (0 > target || g->z.size() <= target)) throw std::logic_error("danger without a target");
+#endif
 // TODO: Place player-aiding actions here, with a weight
 
+ // Bravery check appears to have been disabled due to excessive randomness.
  //if (!bravery_check(danger) || !bravery_check(total_danger) || 
  if (target == TARGET_PLAYER && attitude == NPCATT_FLEE)
   action = method_of_fleeing(g, target);
  else if (danger > 0 || (target == TARGET_PLAYER && attitude == NPCATT_KILL))
   action = method_of_attack(g, target, danger);
 
- else {	// No present danger
+ if (!action.second && npc_undecided == action.first) {	// No present danger
   action = address_needs(g, danger);
   if (game::debugmon) debugmsg("address_needs %s", action.second ? action.second->name() : npc_action_name(action.first).c_str());
-  if (action.first == npc_undecided && !action.second) action = address_player(g);
+  if (action.first == npc_undecided) action = address_player(g);
   if (game::debugmon) debugmsg("address_player %s", action.second ? action.second->name() : npc_action_name(action.first).c_str());
   if (action.first == npc_undecided) {
    if (mission == NPC_MISSION_SHELTER || has_disease(DI_INFECTION))
@@ -425,8 +429,7 @@ npc::ai_action npc::method_of_fleeing(game *g, int enemy) const
  if (0 <= it) // We have an escape item!
   return ai_action(npc_pause,std::unique_ptr<cataclysm::action>(new use_escape_obj(*const_cast<npc*>(this), it)));	// C:Whales failure mode was npc_pause
 
- int speed = (enemy == TARGET_PLAYER ? g->u.current_speed(g) :
-	 g->z[enemy].speed);
+ int speed = (enemy == TARGET_PLAYER ? g->u.current_speed(g) : g->z[enemy].speed);
  point enemy_loc = (enemy == TARGET_PLAYER ? g->u.pos : g->z[enemy].pos);
  int distance = rl_dist(pos, enemy_loc);
 
@@ -438,26 +441,13 @@ npc::ai_action npc::method_of_fleeing(game *g, int enemy) const
 
 npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
 {
- int tarx = pos.x, tary = pos.y;
- if (target == TARGET_PLAYER) {
-  tarx = g->u.pos.x;
-  tary = g->u.pos.y;
- } else if (target >= 0) {
-  tarx = g->z[target].pos.x;
-  tary = g->z[target].pos.y;
- } else { // This function shouldn't be called...
-  debugmsg("Ran npc::method_of_attack without a target!");
-  return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());	// XXX \todo invariant failure, do something more reasonable
- }
+ point tar((target == TARGET_PLAYER) ? g->u.pos : g->z[target].pos);
 
  bool can_use_gun = (!is_following() || combat_rules.use_guns),
 	 can_use_grenades = (!is_following() || combat_rules.use_grenades);
 
- int dist = rl_dist(pos, tarx, tary), target_HP;
- if (target == TARGET_PLAYER)
-  target_HP = g->u.hp_percentage() * g->u.hp_max[hp_torso];
- else
-  target_HP = g->z[target].hp;
+ const int dist = rl_dist(pos, tar);
+ const int target_HP = (target == TARGET_PLAYER) ? g->u.hp_percentage() * g->u.hp_max[hp_torso] : g->z[target].hp;
 
  if (can_use_gun) {
   if (need_to_reload() && can_reload()) return ai_action(npc_reload, std::unique_ptr<cataclysm::action>());
@@ -470,7 +460,7 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
      return ai_action(npc_melee, std::unique_ptr<cataclysm::action>());
    }
    const it_gun* const gun = dynamic_cast<const it_gun*>(weapon.type);
-   if (!wont_hit_friend(g, tarx, tary)) return ai_action(npc_avoid_friendly_fire, std::unique_ptr<cataclysm::action>());
+   if (!wont_hit_friend(g, tar)) return ai_action(npc_avoid_friendly_fire, std::unique_ptr<cataclysm::action>());
    else if (dist <= confident_range() / 3 && weapon.charges >= gun->burst &&
             gun->burst > 1 &&
             (target_HP >= weapon.curammo->damage * 3 || emergency(danger * 2)))
@@ -1275,7 +1265,7 @@ void npc::alt_attack(game *g, int target)
   std::vector<point> trajectory;
   const int light = g->light_level();
 
-  if (dist <= confident_range(index) && wont_hit_friend(g, tar.x, tar.y, index)) {
+  if (dist <= confident_range(index) && wont_hit_friend(g, tar, index)) {
    {
    int linet;
    trajectory = line_to(pos, tar, (g->m.sees(pos, tar, light, linet) ? linet : 0));
@@ -1286,7 +1276,7 @@ void npc::alt_attack(game *g, int target)
    g->throw_item(*this, tar, *used, trajectory);
    i_remn(index);
 
-  } else if (!wont_hit_friend(g, tar.x, tar.y, index)) {// Danger of friendly fire
+  } else if (!wont_hit_friend(g, tar, index)) {// Danger of friendly fire
 
    if (!used->active || used->charges > 2) // Safe to hold on to, for now
     avoid_friendly_fire(g, target); // Maneuver around player
