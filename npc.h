@@ -8,6 +8,11 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <memory>
+
+namespace cataclysm {
+	class action;
+}
 
 #define NPC_LOW_VALUE       5
 #define NPC_HI_VALUE        8
@@ -278,6 +283,7 @@ struct npc_chatbin
 class npc : public player {
 
 public:
+ typedef std::pair<npc_action, std::unique_ptr<cataclysm::action> > ai_action;	// transition typedef
 
  npc();
  npc(const cataclysm::JSON& src);
@@ -381,16 +387,16 @@ public:
 
 // Movement; the following are defined in npcmove.cpp
  void move(game *g); // Picks an action & a target and calls execute_action
- void execute_action(game *g, npc_action action, int target); // Performs action
+ void execute_action(game *g, const ai_action& action, int target); // Performs action
 
 // Functions which choose an action for a particular goal
  void choose_monster_target(game *g, int &enemy, int &danger,
                             int &total_danger);
- npc_action method_of_fleeing	(game *g, int enemy) const;
- npc_action method_of_attack	(game *g, int enemy, int danger) const;
- npc_action address_needs	(game *g, int danger) const;
- npc_action address_player	(game *g);
- npc_action long_term_goal_action(game *g);
+ ai_action method_of_fleeing	(game *g, int enemy) const;
+ ai_action method_of_attack	(game *g, int enemy, int danger) const;
+ ai_action address_needs	(game *g, int danger) const;
+ ai_action address_player	(game *g);
+ ai_action long_term_goal_action(game *g);
  itype_id alt_attack_available() const;	// Do we have grenades, molotov, etc?
  int  choose_escape_item() const; // Returns index of our best escape aid
 
@@ -414,7 +420,7 @@ public:
  void find_item		(game *g); // Look around and pick an item
  void pick_up_item	(game *g); // Move to, or grab, our targeted item
  void drop_items	(game *g, int weight, int volume); // Drop wgt and vol
- npc_action scan_new_items(game *g, int target);
+ ai_action scan_new_items(game *g, int target);
 
 // Combat functions and player interaction functions
  void melee_monster	(game *g, int target);

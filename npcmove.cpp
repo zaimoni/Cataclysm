@@ -3,6 +3,7 @@
 #include "rng.h"
 #include "game.h"
 #include "line.h"
+#include "act_obj.h"
 #include "recent_msg.h"
 
 #define TARGET_PLAYER -2
@@ -36,13 +37,13 @@ struct ratio_index
 };
 
 // class npc functions!
- 
+
 void npc::move(game *g)
 {
  wand.tick();	// countdown timers
  pl.tick();
 
- npc_action action = npc_undecided;
+ ai_action action = ai_action(npc_undecided,std::unique_ptr<cataclysm::action>());
  int danger = 0, total_danger = 0, target = -1;
 
  choose_monster_target(g, target, danger, total_danger);
@@ -68,25 +69,24 @@ void npc::move(game *g)
 
  else {	// No present danger
   action = address_needs(g, danger);
-  if (game::debugmon) debugmsg("address_needs %s", npc_action_name(action).c_str());
-  if (action == npc_undecided)
-   action = address_player(g);
-  if (game::debugmon) debugmsg("address_player %s", npc_action_name(action).c_str());
-  if (action == npc_undecided) {
+  if (game::debugmon) debugmsg("address_needs %s", npc_action_name(action.first).c_str());
+  if (action.first == npc_undecided && !action.second) action = address_player(g);
+  if (game::debugmon) debugmsg("address_player %s", npc_action_name(action.first).c_str());
+  if (action.first == npc_undecided) {
    if (mission == NPC_MISSION_SHELTER || has_disease(DI_INFECTION))
-    action = npc_pause;
+    action = ai_action(npc_pause, std::unique_ptr<cataclysm::action>());
    else if (has_new_items)
     action = scan_new_items(g, target);
    else if (!fetching_item)
     find_item(g);
-   if (game::debugmon) debugmsg("find_item %s", npc_action_name(action).c_str());
+   if (game::debugmon) debugmsg("find_item %s", npc_action_name(action.first).c_str());
    if (fetching_item)		// Set to true if find_item() found something
-    action = npc_pickup;
+    action = ai_action(npc_pickup, std::unique_ptr<cataclysm::action>());
    else if (is_following())	// No items, so follow the player?
-    action = npc_follow_player;
+    action = ai_action(npc_follow_player, std::unique_ptr<cataclysm::action>());
    else				// Do our long-term action
     action = long_term_goal_action(g);
-   if (game::debugmon) debugmsg("long_term_goal_action %s", npc_action_name(action).c_str());
+   if (game::debugmon) debugmsg("long_term_goal_action %s", npc_action_name(action.first).c_str());
   }
  }
 
@@ -94,16 +94,22 @@ void npc::move(game *g)
  * "following" means standing still.  If that's the case, if there are any
  * monsters around, we should attack them after all!
  */
- if (action == npc_follow_player && danger > 0 && rl_dist(pos, g->u.pos) <= follow_distance())
+ if (action.first == npc_follow_player && danger > 0 && rl_dist(pos, g->u.pos) <= follow_distance())
   action = method_of_attack(g, target, danger);
 
- if (game::debugmon) debugmsg("%s chose action %s.", name.c_str(), npc_action_name(action).c_str());
+ if (game::debugmon) debugmsg("%s chose action %s.", name.c_str(), npc_action_name(action.first).c_str());
 
  execute_action(g, action, target);
 }
 
-void npc::execute_action(game *g, npc_action action, int target)
+void npc::execute_action(game *g, const ai_action& action, int target)
 {
+ if (action.second && action.second->IsPerformable()) {	// if we have an action object, use that
+	 action.second->Perform();
+	 return;
+ }
+ 
+ // C:Whales action processing
  int oldmoves = moves;
  const int light = g->light_level();
  point tar(pos);
@@ -117,7 +123,7 @@ void npc::execute_action(game *g, npc_action action, int target)
   line = line_to(pos, tar, (g->m.sees(pos, tar, sight_range(light), linet) ? linet : 0));
  }
 
- switch (action) {
+ switch (action.first) {
 
  case npc_pause:
   move_pause();
@@ -293,11 +299,11 @@ void npc::execute_action(game *g, npc_action action, int target)
   break;
 
  default:
-  debugmsg("Unknown NPC action (%d)", action);
+  debugmsg("Unknown NPC action (%d)", action.first);
  }
 
  if (oldmoves == moves) {
-  debugmsg("NPC didn't use its moves.  Action %d.  Turning on debug mode.", action);
+  debugmsg("NPC didn't use its moves.  Action %d.  Turning on debug mode.", action.first);
   game::debugmon = true;
  }
 }
@@ -373,7 +379,7 @@ void npc::choose_monster_target(game *g, int &enemy, int &danger,
  }
 }
 
-npc_action npc::method_of_fleeing(game *g, int enemy) const
+npc::ai_action npc::method_of_fleeing(game *g, int enemy) const
 {
  int speed = (enemy == TARGET_PLAYER ? g->u.current_speed(g) :
                                        g->z[enemy].speed);
@@ -381,15 +387,15 @@ npc_action npc::method_of_fleeing(game *g, int enemy) const
  int distance = rl_dist(pos, enemy_loc);
 
  if (choose_escape_item() >= 0) // We have an escape item!
-  return npc_escape_item;
+  return ai_action(npc_escape_item,std::unique_ptr<cataclysm::action>());
 
  if (speed > 0 && (100 * distance) / speed <= 4 && speed > current_speed(g))
   return method_of_attack(g, enemy, -1); // Can't outrun, so attack
 
- return npc_flee;
+ return ai_action(npc_flee, std::unique_ptr<cataclysm::action>());
 }
 
-npc_action npc::method_of_attack(game *g, int target, int danger) const
+npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
 {
  int tarx = pos.x, tary = pos.y;
  if (target == TARGET_PLAYER) {
@@ -400,7 +406,7 @@ npc_action npc::method_of_attack(game *g, int target, int danger) const
   tary = g->z[target].pos.y;
  } else { // This function shouldn't be called...
   debugmsg("Ran npc::method_of_attack without a target!");
-  return npc_pause;
+  return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());	// XXX \todo invariant failure, do something more reasonable
  }
 
  bool can_use_gun = (!is_following() || combat_rules.use_guns),
@@ -413,22 +419,22 @@ npc_action npc::method_of_attack(game *g, int target, int danger) const
   target_HP = g->z[target].hp;
 
  if (can_use_gun) {
-  if (need_to_reload() && can_reload()) return npc_reload;
-  if (emergency(danger_assessment(g)) && alt_attack_available()) return npc_alt_attack;
+  if (need_to_reload() && can_reload()) return ai_action(npc_reload, std::unique_ptr<cataclysm::action>());
+  if (emergency(danger_assessment(g)) && alt_attack_available()) return ai_action(npc_alt_attack, std::unique_ptr<cataclysm::action>());
   if (weapon.is_gun() && weapon.charges > 0) {
    if (dist > confident_range()) {
     if (can_reload() && enough_time_to_reload(g, target, weapon))
-     return npc_reload;
+     return ai_action(npc_reload, std::unique_ptr<cataclysm::action>());
     else
-     return npc_melee;
+     return ai_action(npc_melee, std::unique_ptr<cataclysm::action>());
    }
    const it_gun* const gun = dynamic_cast<const it_gun*>(weapon.type);
-   if (!wont_hit_friend(g, tarx, tary)) return npc_avoid_friendly_fire;
+   if (!wont_hit_friend(g, tarx, tary)) return ai_action(npc_avoid_friendly_fire, std::unique_ptr<cataclysm::action>());
    else if (dist <= confident_range() / 3 && weapon.charges >= gun->burst &&
             gun->burst > 1 &&
             (target_HP >= weapon.curammo->damage * 3 || emergency(danger * 2)))
-    return npc_shoot_burst;
-   else return npc_shoot;
+    return ai_action(npc_shoot_burst, std::unique_ptr<cataclysm::action>());
+   else return ai_action(npc_shoot, std::unique_ptr<cataclysm::action>());
   }
  }
 
@@ -437,7 +443,7 @@ npc_action npc::method_of_attack(game *g, int target, int danger) const
  std::vector<int> empty_guns;
  for (size_t i = 0; i < inv.size(); i++) {
   if (can_use_gun && inv[i].is_gun() && inv[i].charges > 0)
-   return npc_wield_loaded_gun;
+   return ai_action(npc_wield_loaded_gun, std::unique_ptr<cataclysm::action>());
   else if (can_use_gun && inv[i].is_gun() &&
            enough_time_to_reload(g, target, inv[i])) {
    has_empty_gun = true;
@@ -456,14 +462,14 @@ npc_action npc::method_of_attack(game *g, int target, int danger) const
  }
 
  if (has_empty_gun && has_ammo_for_empty_gun)
-  return npc_wield_empty_gun;
+  return ai_action(npc_wield_empty_gun, std::unique_ptr<cataclysm::action>());
  else if (has_better_melee)
-  return npc_wield_melee;
+  return ai_action(npc_wield_melee, std::unique_ptr<cataclysm::action>());
 
- return npc_melee;
+ return ai_action(npc_melee, std::unique_ptr<cataclysm::action>());
 }
 
-npc_action npc::address_needs(game *g, int danger) const
+npc::ai_action npc::address_needs(game *g, int danger) const
 {
  if (has_healing_item()) {
   for (int i = 0; i < num_hp_parts; i++) {
@@ -471,21 +477,22 @@ npc_action npc::address_needs(game *g, int danger) const
    if ((part == hp_head  && hp_cur[i] <= 35) ||
        (part == hp_torso && hp_cur[i] <= 25) ||
        hp_cur[i] <= 15)
-    return npc_heal;
+    return ai_action(npc_heal, std::unique_ptr<cataclysm::action>());
   }
  }
 
  if (!took_painkiller() && pain - pkill >= 15) {
-   if (0 <= pick_best_painkiller(inv)) return npc_use_painkiller;	// \todo V0.2.1+ record this index and reuse it later
+   if (0 <= pick_best_painkiller(inv)) return ai_action(npc_use_painkiller, std::unique_ptr<cataclysm::action>());	// \todo V0.2.1+ record this index and reuse it later
  }
 
  if (can_reload())
-  return npc_reload;
+  return ai_action(npc_reload, std::unique_ptr<cataclysm::action>());
 
  if (   (danger <= NPC_DANGER_VERY_LOW && (hunger > 40 || thirst > 40))
 	 ||  thirst > 80
 	 || hunger > 160) {
-	 if (0 <= pick_best_food(inv)) return npc_eat;	// \todo V0.2.1+ record this index and reuse it later
+	 if (0 <= pick_best_food(inv))
+	return ai_action(npc_eat, std::unique_ptr<cataclysm::action>());	// \todo V0.2.1+ record this index and reuse it later
   }
 
 /*
@@ -502,25 +509,23 @@ npc_action npc::address_needs(game *g, int danger) const
 // TODO: Mutation & trait related needs
 // e.g. finding glasses; getting out of sunlight if we're an albino; etc.
 
- return npc_undecided;
+ return ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
 }
 
-npc_action npc::address_player(game *g)
+npc::ai_action npc::address_player(game *g)
 {
  if ((attitude == NPCATT_TALK || attitude == NPCATT_TRADE) && g->sees_u(pos)) {
   if (rl_dist(pos, g->u.pos) <= 6)
-   return npc_talk_to_player; // Close enough to talk to you
+   return ai_action(npc_talk_to_player, std::unique_ptr<cataclysm::action>()); // Close enough to talk to you
   else {
-   if (one_in(10))
-    say(g, "<lets_talk>");
-   return npc_follow_player;
+   if (one_in(10)) say(g, "<lets_talk>");
+   return ai_action(npc_follow_player, std::unique_ptr<cataclysm::action>());
   }
  }
 
  if (attitude == NPCATT_MUG && g->sees_u(pos)) {
-  if (one_in(3))
-   say(g, "Don't move a <swear> muscle...");
-  return npc_mug_player;
+  if (one_in(3)) say(g, "Don't move a <swear> muscle...");
+  return ai_action(npc_mug_player, std::unique_ptr<cataclysm::action>());
  }
 
  if (attitude == NPCATT_WAIT_FOR_LEAVE) {
@@ -530,11 +535,11 @@ npc_action npc::address_player(game *g)
    attitude = NPCATT_KILL;
    return method_of_attack(g, TARGET_PLAYER, player_danger( &(g->u) ));
   }
-  return npc_undecided;
+  return ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
  }
  
  if (attitude == NPCATT_FLEE)
-  return npc_flee;
+  return ai_action(npc_flee, std::unique_ptr<cataclysm::action>());
 
  if (attitude == NPCATT_LEAD) {
   if (rl_dist(pos, g->u.pos) >= 12 || !g->sees_u(pos)) {
@@ -542,34 +547,34 @@ npc_action npc::address_player(game *g)
    if (intense < 10) {
     say(g, "<keep_up>");
     add_disease(DI_CATCH_UP, 5, 1, 15);
-    return npc_pause;
+    return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());
    } else if (intense == 10) {
     say(g, "<im_leaving_you>");
     add_disease(DI_CATCH_UP, 5, 1, 15);
-    return npc_pause;
+    return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());
    } else
-    return npc_goto_destination;
+    return ai_action(npc_goto_destination, std::unique_ptr<cataclysm::action>());
   } else
-   return npc_goto_destination;
+   return ai_action(npc_goto_destination, std::unique_ptr<cataclysm::action>());
  }
- return npc_undecided;
+ return ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
 }
 
-npc_action npc::long_term_goal_action(game *g)	// XXX this was being prototyped
+npc::ai_action npc::long_term_goal_action(game *g)	// XXX this was being prototyped
 {
  if (game::debugmon) debugmsg("long_term_goal_action()");
  path.clear();
 
  if (mission == NPC_MISSION_SHOPKEEP || mission == NPC_MISSION_SHELTER)
-  return npc_pause;	// Shopkeeps just stay put.
+  return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());	// Shopkeeps just stay put.
 
 // TODO: Follow / look for player
  
 
  if (!has_destination()) set_destination(g);
- return npc_goto_destination;
+ return ai_action(npc_goto_destination, std::unique_ptr<cataclysm::action>());
 
- return npc_undecided;
+ return ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
 }
  
 itype_id npc::alt_attack_available() const
@@ -905,8 +910,8 @@ void npc::avoid_friendly_fire(game *g, int target)
  * We pass a <danger> value of NPC_DANGER_VERY_LOW + 1 so that we won't start
  * eating food (or, god help us, sleeping).
  */
- npc_action action = address_needs(g, NPC_DANGER_VERY_LOW + 1);
- if (action == npc_undecided) move_pause();
+ ai_action action = address_needs(g, NPC_DANGER_VERY_LOW + 1);
+ if (action.first == npc_undecided) move_pause();
  execute_action(g, action, target);
 }
 
@@ -1151,7 +1156,7 @@ void npc::drop_items(game *g, int weight, int volume)
  }
 }
 
-npc_action npc::scan_new_items(game *g, int target)
+npc::ai_action npc::scan_new_items(game *g, int target)
 {
  bool can_use_gun =      (!is_following() || combat_rules.use_guns);
 // Check if there's something better to wield
@@ -1159,7 +1164,7 @@ npc_action npc::scan_new_items(game *g, int target)
  std::vector<int> empty_guns;
  for (size_t i = 0; i < inv.size(); i++) {
   if (can_use_gun && inv[i].is_gun() && inv[i].charges > 0)
-   return npc_wield_loaded_gun;
+   return ai_action(npc_wield_loaded_gun, std::unique_ptr<cataclysm::action>());
   else if (can_use_gun && inv[i].is_gun() &&
            enough_time_to_reload(g, target, inv[i])) {
    has_empty_gun = true;
@@ -1178,11 +1183,11 @@ npc_action npc::scan_new_items(game *g, int target)
  }
 
  if (has_empty_gun && has_ammo_for_empty_gun)
-  return npc_wield_empty_gun;
+  return ai_action(npc_wield_empty_gun, std::unique_ptr<cataclysm::action>());
  else if (has_better_melee)
-  return npc_wield_melee;
+  return ai_action(npc_wield_melee, std::unique_ptr<cataclysm::action>());
 
- return npc_pause;
+ return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());
 }
 
 void npc::melee_monster(game *g, int target)
