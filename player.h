@@ -91,6 +91,7 @@ public:
 
  // Physical movement from one tile to the next
  bool can_move_to(game* g, const point& pt) const;
+ bool move_away_from(game* g, const point& tar, point& dest) const;
 
  // melee.cpp
  int  hit_mon(game *g, monster *z, bool allow_grab = true);

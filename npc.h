@@ -92,7 +92,7 @@ enum npc_action {
  npc_pickup,
  npc_wield_melee, npc_wield_loaded_gun, npc_wield_empty_gun,
   npc_heal, npc_use_painkiller, npc_eat, npc_drop_items,
- npc_flee, npc_melee, npc_shoot, npc_shoot_burst, npc_alt_attack,
+ npc_melee, npc_shoot, npc_shoot_burst, npc_alt_attack,
  npc_look_for_player, npc_heal_player, npc_follow_player, npc_talk_to_player,
   npc_mug_player,
  npc_goto_destination, npc_avoid_friendly_fire,
@@ -413,7 +413,6 @@ public:
  void move_to		(game *g, point pt);
  void move_to_next	(game *g); // Next in <path>
  void avoid_friendly_fire(game *g, int target); // Maneuver so we won't shoot u
- void move_away_from	(game *g, int x, int y);
  void move_pause	(); // Same as if the player pressed '.'
 
 // Item discovery and fetching

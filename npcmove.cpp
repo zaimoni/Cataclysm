@@ -69,6 +69,28 @@ public:
 	}
 };
 
+class move_step_screen : public cataclysm::action
+{
+	npc& _actor;	// \todo would like player here
+	point _dest;
+public:
+	move_step_screen(npc& actor, const point& dest) : _actor(actor), _dest(dest) {
+#ifndef NDEBUG
+		if (!IsLegal()) throw new std::logic_error("unreasonable move");
+#endif
+	};
+	~move_step_screen() = default;
+	bool IsLegal() const override {
+		return _actor.can_move_to(game::active(), _dest);	// stricter than what npc::move_to actually supports
+	}
+	void Perform() const override {
+		_actor.move_to(game::active(), _dest);
+	}
+	const char* name() const override {
+		return "Moving (screen-relative)";
+	}
+};
+
 std::string npc_action_name(npc_action action);
 bool thrown_item(item *used);
 
@@ -259,11 +281,6 @@ void npc::execute_action(game *g, const ai_action& action, int target)
   move_pause();
   break;
 
- case npc_flee:
-// TODO: More intelligent fleeing
-  move_away_from(g, tar.x, tar.y);
-  break;
-
  case npc_melee:
   update_path(g->m, tar);
   if (path.size() > 1) move_to_next(g);
@@ -423,6 +440,15 @@ void npc::choose_monster_target(game *g, int &enemy, int &danger,
  }
 }
 
+static npc::ai_action _flee(const npc& actor, const point& fear)
+{
+	point escape;
+	if (actor.move_away_from(game::active(), fear, escape)) {
+		return npc::ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(const_cast<npc&>(actor), escape)));	// C:Whales failure mode was npc_pause
+	}
+	return npc::ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
+}
+
 npc::ai_action npc::method_of_fleeing(game *g, int enemy) const
 {
  int it = choose_escape_item();
@@ -436,7 +462,7 @@ npc::ai_action npc::method_of_fleeing(game *g, int enemy) const
  if (speed > 0 && (100 * distance) / speed <= 4 && speed > current_speed(g))
   return method_of_attack(g, enemy, -1); // Can't outrun, so attack
 
- return ai_action(npc_flee, std::unique_ptr<cataclysm::action>());
+ return _flee(*this, enemy_loc);
 }
 
 npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
@@ -569,8 +595,7 @@ npc::ai_action npc::address_player(game *g)
   return ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
  }
  
- if (attitude == NPCATT_FLEE)
-  return ai_action(npc_flee, std::unique_ptr<cataclysm::action>());
+ if (attitude == NPCATT_FLEE) return _flee(*this, g->u.pos);
 
  if (attitude == NPCATT_LEAD) {
   if (rl_dist(pos, g->u.pos) >= 12 || !g->sees_u(pos)) {
@@ -910,36 +935,34 @@ void npc::avoid_friendly_fire(game *g, int target)
  execute_action(g, action, target);
 }
 
-void npc::move_away_from(game *g, int x, int y)
+bool player::move_away_from(game* g, const point& tar, point& dest) const
 {
- std::vector<point> options;
- int dx = 0, dy = 0;
- if (x < pos.x) dx = 1;
- else if (x > pos.x) dx = -1;
- if (y < pos.y) dy = 1;
- else if (y < pos.y) dy = -1;
+	std::vector<point> options;
+	point d(0, 0);
+	if (tar.x < pos.x) d.x = 1;
+	else if (tar.x > pos.x) d.x = -1;
+	if (tar.y < pos.y) d.y = 1;
+	else if (tar.y < pos.y) d.y = -1;
 
- // 2019-02-16: re-implemented along Angband lines
- direction best = direction_from(0, 0, dx, dy);
- options.push_back(pos + direction_vector(best));	// consistency
- int delta = 2 * rng(0, 1) - 1;
- options.push_back(pos + direction_vector(rotate_clockwise(best, delta)));	// 45 degrees off
- options.push_back(pos + direction_vector(rotate_clockwise(best, -delta)));
+	// 2019-02-16: re-implemented along Angband lines
+	direction best = direction_from(0, 0, d);
+	options.push_back(pos + direction_vector(best));	// consistency
+	int delta = 2 * rng(0, 1) - 1;
+	options.push_back(pos + direction_vector(rotate_clockwise(best, delta)));	// 45 degrees off
+	options.push_back(pos + direction_vector(rotate_clockwise(best, -delta)));
 
- delta = 4 * rng(0, 1) - 2;
- options.push_back(pos + direction_vector(rotate_clockwise(best, delta)));	// 90 degrees off
- options.push_back(pos + direction_vector(rotate_clockwise(best, -delta)));
+	delta = 4 * rng(0, 1) - 2;
+	options.push_back(pos + direction_vector(rotate_clockwise(best, delta)));	// 90 degrees off
+	options.push_back(pos + direction_vector(rotate_clockwise(best, -delta)));
 
- // looks strange to go the other way when backed against a wall
- if (trig_dist(x, y, options[4]) < trig_dist(x, y, options[3])) std::swap(options[3], options[4]);
+	// looks strange to go the other way when backed against a wall
+	if (trig_dist(tar, options[4]) < trig_dist(tar, options[3])) std::swap(options[3], options[4]);
 
- for (int i = 0; i < options.size(); i++) {
-  if (can_move_to(g, options[i])) {
-    move_to(g, options[i]);
-	return;
-  }
- }
- move_pause();
+	for (const auto& pt : options) if (can_move_to(g, pt)) {
+		dest = pt;
+		return true;
+	}
+	return false;
 }
 
 void npc::move_pause()
@@ -1766,7 +1789,6 @@ std::string npc_action_name(npc_action action)
   case npc_use_painkiller:	return "Use painkillers";
   case npc_eat:			return "Eat";
   case npc_drop_items:		return "Drop items";
-  case npc_flee:		return "Flee";
   case npc_melee:		return "Melee";
   case npc_shoot:		return "Shoot";
   case npc_shoot_burst:		return "Fire a burst";
