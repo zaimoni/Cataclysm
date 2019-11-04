@@ -792,9 +792,9 @@ void npc::update_path(const map& m, const point& pt)
  if (!path.empty() && path[0] == pos) path.erase(path.begin());
 }
 
-bool npc::can_move_to(game *g, int x, int y) const
+bool player::can_move_to(game *g, const point& pt) const
 {
- return (g->m.move_cost(x, y) > 0 || g->m.has_flag(bashable, x, y)) && rl_dist(pos, x, y) <= 1;
+ return (g->m.move_cost(pt) > 0 || g->m.has_flag(bashable, pt)) && rl_dist(pos, pt) <= 1;
 }
 
 void npc::move_to(game *g, int x, int y)
@@ -899,7 +899,7 @@ void npc::avoid_friendly_fire(game *g, int target)
  valid_moves.push_back(pos + direction_vector(rotate_clockwise(dir_to_target, -delta)));
 
  for (int i = 0; i < valid_moves.size(); i++) {
-  if (can_move_to(g, valid_moves[i].x, valid_moves[i].y)) {
+  if (can_move_to(g, valid_moves[i])) {
    move_to(g, valid_moves[i].x, valid_moves[i].y);
    return;
   }
@@ -939,7 +939,7 @@ void npc::move_away_from(game *g, int x, int y)
  if (trig_dist(x, y, options[4]) < trig_dist(x, y, options[3])) std::swap(options[3], options[4]);
 
  for (int i = 0; i < options.size(); i++) {
-  if (can_move_to(g, options[i].x, options[i].y))
+  if (can_move_to(g, options[i]))
    move_to(g, options[i].x, options[i].y);
  }
  move_pause();
@@ -1739,7 +1739,7 @@ void npc::go_to_destination(game *g)
           g->m.ter(dest) == t_door_c) &&
          g->m.sees(pos, dest, light)) {
       path = g->m.route(pos, dest);
-      if (!path.empty() && can_move_to(g, path[0].x, path[0].y)) {
+      if (!path.empty() && can_move_to(g, path[0])) {
        move_to_next(g);
        return;
       } else {
