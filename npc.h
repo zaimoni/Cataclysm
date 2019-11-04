@@ -410,7 +410,7 @@ public:
 
 // Physical movement from one tile to the next
  void update_path	(const map& m, const point& pt);
- void move_to		(game *g, int x, int y);
+ void move_to		(game *g, point pt);
  void move_to_next	(game *g); // Next in <path>
  void avoid_friendly_fire(game *g, int target); // Maneuver so we won't shoot u
  void move_away_from	(game *g, int x, int y);

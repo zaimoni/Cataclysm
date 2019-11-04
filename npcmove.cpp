@@ -797,7 +797,7 @@ bool player::can_move_to(game *g, const point& pt) const
  return (g->m.move_cost(pt) > 0 || g->m.has_flag(bashable, pt)) && rl_dist(pos, pt) <= 1;
 }
 
-void npc::move_to(game *g, int x, int y)
+void npc::move_to(game *g, point pt)
 {
  if (has_disease(DI_DOWNED)) {
   moves -= 100;
@@ -812,45 +812,40 @@ void npc::move_to(game *g, int x, int y)
   }
  }
  if (has_disease(DI_STUNNED)) {
-  x = rng(pos.x - 1, pos.x + 1);
-  y = rng(pos.y - 1, pos.y + 1);
+  pt.x = rng(pos.x - 1, pos.x + 1);
+  pt.y = rng(pos.y - 1, pos.y + 1);
  }
- if (rl_dist(pos, x, y) > 1) {
+ // ok to try to path to something in sight
+ if (rl_dist(pos, pt) > 1) {
 /*
   debugmsg("Tried to move_to more than one space! (%d, %d) to (%d, %d)",
            posx, posy, x, y);
   debugmsg("Route is size %d.", path.size());
 */
   int linet;
-  std::vector<point> newpath;
-  if (g->m.sees(pos, x, y, -1, linet)) {
-   newpath = line_to(pos, x, y, linet);
-   x = newpath[0].x;
-   y = newpath[0].y;
-  }
+  if (g->m.sees(pos, pt, -1, linet)) pt = line_to(pos, pt, linet)[0];
  }
- if (x == pos.x && y == pos.y)	// We're just pausing!
+ if (pt == pos)	// We're just pausing!
   moves -= 100;
- else if (g->mon_at(x, y) != -1) {	// Shouldn't happen, but it might.
-  melee_monster(g, g->mon_at(x, y));
- } else if (g->u.pos.x == x && g->u.pos.y == y) {
+ else if (g->mon_at(pt.x, pt.y) != -1) {	// Shouldn't happen, but it might.
+  melee_monster(g, g->mon_at(pt.x, pt.y));
+ } else if (g->u.pos == pt) {
   say(g, "<let_me_pass>");
   moves -= 100;
- } else if (g->nPC(x, y))
-// TODO: Determine if it's an enemy NPC (hit them), or a friendly in the way
+ } else if (g->nPC(pt))
+// \todo Determine if it's an enemy NPC (hit them), or a friendly in the way
   moves -= 100;
- else if (g->m.move_cost(x, y) > 0) {
-  pos.x = x;
-  pos.y = y;
-  moves -= run_cost(g->m.move_cost(x, y) * 50);
- } else if (g->m.open_door(x, y, (g->m.ter(pos) == t_floor)))
+ else if (g->m.move_cost(pt) > 0) {
+  pos = pt;
+  moves -= run_cost(g->m.move_cost(pt) * 50);
+ } else if (g->m.open_door(pt.x, pt.y, (g->m.ter(pos) == t_floor)))
   moves -= 100;
- else if (g->m.has_flag(bashable, x, y)) {
+ else if (g->m.has_flag(bashable, pt)) {
   moves -= 110;
   std::string bashsound;
   int smashskill = int(str_cur / 2 + weapon.type->melee_dam);
-  g->m.bash(x, y, smashskill, bashsound);
-  g->sound(x, y, 18, bashsound);
+  g->m.bash(pt, smashskill, bashsound);
+  g->sound(pt, 18, bashsound);
  } else
   moves -= 100;
 }
@@ -863,7 +858,7 @@ void npc::move_to_next(game *g)
   return;
  }
  while (pos == path[0]) path.erase(path.begin());
- move_to(g, path[0].x, path[0].y);
+ move_to(g, path[0]);
  if (pos == path[0]) path.erase(path.begin());	 // Move was successful
 }
 
@@ -900,7 +895,7 @@ void npc::avoid_friendly_fire(game *g, int target)
 
  for (int i = 0; i < valid_moves.size(); i++) {
   if (can_move_to(g, valid_moves[i])) {
-   move_to(g, valid_moves[i].x, valid_moves[i].y);
+   move_to(g, valid_moves[i]);
    return;
   }
  }
@@ -939,8 +934,10 @@ void npc::move_away_from(game *g, int x, int y)
  if (trig_dist(x, y, options[4]) < trig_dist(x, y, options[3])) std::swap(options[3], options[4]);
 
  for (int i = 0; i < options.size(); i++) {
-  if (can_move_to(g, options[i]))
-   move_to(g, options[i].x, options[i].y);
+  if (can_move_to(g, options[i])) {
+    move_to(g, options[i]);
+	return;
+  }
  }
  move_pause();
 }
