@@ -89,9 +89,11 @@ public:
 
  void pause(); // '.' command; pauses & reduces recoil
 
+ // npcmove.cpp (inherited location)
  // Physical movement from one tile to the next
  bool can_move_to(game* g, const point& pt) const;
  bool move_away_from(game* g, const point& tar, point& dest) const;
+ virtual bool can_reload() const; // Wielding a gun that is not fully loaded
 
  // melee.cpp
  int  hit_mon(game *g, monster *z, bool allow_grab = true);

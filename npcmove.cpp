@@ -772,7 +772,49 @@ bool npc::wont_hit_friend(game *g, int tarx, int tary, int index) const
  }
  return true;
 }
- 
+
+bool player::can_reload() const
+{
+	if (weapon.is_gun()) {
+		if (weapon.has_flag(IF_RELOAD_AND_SHOOT)) {
+			messages.add("Your %s does not need to be reloaded; it reloads and fires in a single action.", weapon.tname().c_str());
+			return false;
+		}
+		if (weapon.ammo_type() == AT_NULL) {
+			messages.add("Your %s does not reload normally.", weapon.tname().c_str());
+			return false;
+		}
+		if (weapon.charges == weapon.clip_size()) {
+			messages.add("Your %s is fully loaded!", weapon.tname().c_str());
+			return false;
+		}
+		int index = weapon.pick_reload_ammo(*this, true);
+		if (index == -1) {
+			messages.add("Out of ammo!");
+			return false;
+		}
+		return true;	// XXX \todo change return type to the index to use
+	} else if (weapon.is_tool()) {
+		const it_tool* const tool = dynamic_cast<const it_tool*>(weapon.type);
+		if (tool->ammo == AT_NULL) {
+			messages.add("You can't reload a %s!", weapon.tname().c_str());
+			return false;
+		}
+		int index = weapon.pick_reload_ammo(*this, true);
+		if (index == -1) {
+			// Reload failed
+			messages.add("Out of %s!", ammo_name(tool->ammo).c_str());
+			return false;
+		}
+		return true;
+	} else if (!is_armed()) {
+		messages.add("You're not wielding anything.");
+		return false;
+	}
+	messages.add("You can't reload a %s!", weapon.tname().c_str());
+	return false;
+}
+
 bool npc::can_reload() const
 {
  if (!weapon.is_gun()) return false;

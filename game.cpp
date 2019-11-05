@@ -4887,7 +4887,6 @@ void game::plthrow()
 
 void game::plfire(bool burst)
 {
- int reload_index = -1;
  if (!u.weapon.is_gun()) return;
  vehicle *veh = m.veh_at(u.pos);
  if (veh && veh->player_in_control(u) && u.weapon.is_two_handed(u)) {
@@ -4907,22 +4906,19 @@ void game::plfire(bool burst)
   }
  }
  if (u.weapon.has_flag(IF_RELOAD_AND_SHOOT)) {
-  reload_index = u.weapon.pick_reload_ammo(u, true);
-  if (reload_index == -1) {
+  const int reload_index = u.weapon.pick_reload_ammo(u, true);
+  if (0 > reload_index) {
    messages.add("Out of ammo!");
    return;
   }
- }
- if (u.weapon.has_flag(IF_RELOAD_AND_SHOOT)) {
   u.weapon.reload(u, reload_index);
   u.moves -= u.weapon.reload_time(u);
   refresh_all();
+ } else if (0 == u.weapon.charges) {
+   messages.add("You need to reload!");
+   return;
  }
 
- if (u.weapon.charges == 0 && !u.weapon.has_flag(IF_RELOAD_AND_SHOOT)) {
-  messages.add("You need to reload!");
-  return;
- }
  if (u.weapon.has_flag(IF_FIRE_100) && u.weapon.charges < 100) {
   messages.add("Your %s needs 100 charges to fire!", u.weapon.tname().c_str());
   return;
@@ -5115,42 +5111,10 @@ void game::takeoff()
 
 void game::reload()
 {
- if (u.weapon.is_gun()) {
-  if (u.weapon.has_flag(IF_RELOAD_AND_SHOOT)) {
-   messages.add("Your %s does not need to be reloaded; it reloads and fires in a single action.", u.weapon.tname().c_str());
-   return;
-  }
-  if (u.weapon.ammo_type() == AT_NULL) {
-   messages.add("Your %s does not reload normally.", u.weapon.tname().c_str());
-   return;
-  }
-  if (u.weapon.charges == u.weapon.clip_size()) {
-   messages.add("Your %s is fully loaded!", u.weapon.tname().c_str());
-   return;
-  }
-  int index = u.weapon.pick_reload_ammo(u, true);
-  if (index == -1) {
-   messages.add("Out of ammo!");
-   return;
-  }
-  u.assign_activity(ACT_RELOAD, u.weapon.reload_time(u), index);
-  u.moves = 0;
- } else if (u.weapon.is_tool()) {
-  const it_tool* const tool = dynamic_cast<const it_tool*>(u.weapon.type);
-  if (tool->ammo == AT_NULL) {
-   messages.add("You can't reload a %s!", u.weapon.tname().c_str());
-   return;
-  }
-  int index = u.weapon.pick_reload_ammo(u, true);
-  if (index == -1) {
-// Reload failed
-   messages.add("Out of %s!", ammo_name(tool->ammo).c_str());
-   return;
-  }
-  u.assign_activity(ACT_RELOAD, u.weapon.reload_time(u), index);
-  u.moves = 0;
- } else if (!u.is_armed()) messages.add("You're not wielding anything.");
- else messages.add("You can't reload a %s!", u.weapon.tname().c_str());
+ if (!u.can_reload()) return;
+ // XXX \todo should be reusing the non-negative return value from u.can_reload
+ u.assign_activity(ACT_RELOAD, u.weapon.reload_time(u), u.weapon.pick_reload_ammo(u, true));
+ u.moves = 0;
  refresh_all();
 }
 
