@@ -387,7 +387,9 @@ public:
 
 // Movement; the following are defined in npcmove.cpp
  void move(game *g); // Picks an action & a target and calls execute_action
+private:
  void execute_action(game *g, const ai_action& action, int target); // Performs action
+public:
 
 // Functions which choose an action for a particular goal
  void choose_monster_target(game *g, int &enemy, int &danger,

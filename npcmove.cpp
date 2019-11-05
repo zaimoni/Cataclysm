@@ -167,6 +167,10 @@ void npc::move(game *g)
  if (action.first == npc_follow_player && danger > 0 && rl_dist(pos, g->u.pos) <= follow_distance())
   action = method_of_attack(g, target, danger);
 
+#ifndef NDEBUG
+ if (!action.first && !action.second) throw std::logic_error("npc::execute_action will fail");
+#endif
+
  if (game::debugmon) debugmsg("%s chose action %s.", name.c_str(), action.second ? action.second->name() : npc_action_name(action.first).c_str());
 
  execute_action(g, action, target);
@@ -931,7 +935,7 @@ void npc::avoid_friendly_fire(game *g, int target)
  * eating food (or, god help us, sleeping).
  */
  ai_action action = address_needs(g, NPC_DANGER_VERY_LOW + 1);
- if (action.first == npc_undecided) move_pause();
+ if (!action.first && !action.second) action.first = npc_pause;
  execute_action(g, action, target);
 }
 
