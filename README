@@ -8,8 +8,10 @@ compiles with Microsoft Visual Studio 2017 as a baseline.
 Source for this fork is available at the github repository, http://github.com/zaimoni/Cataclysm .
 The contents of the code_doc and data directories are as they were in 2013.
 
-Compiling Cataclysm under linux should remain straightforward, and only requires the
-ncurses development libraries.  [2013] Under Ubuntu, these libraries can be found in
+[2019-11-05] If there are missing DLLs with the Windows build, download them from Microsoft.
+
+[2013] Compiling Cataclysm under linux should remain straightforward, and only requires the
+ncurses development libraries.  Under Ubuntu, these libraries can be found in
 the libncurses5-dev package ("sudo apt-get install libncurses5-dev" will install
 this package).
 
