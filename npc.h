@@ -88,7 +88,9 @@ DECLARE_JSON_ENUM_SUPPORT_ATYPICAL(npc_class, 0)
 enum npc_action {
  npc_undecided = 0,
  npc_pause,
- npc_reload, npc_sleep,
+#if DEAD_FUNC
+ npc_sleep,
+#endif
  npc_pickup,
  npc_wield_melee, npc_wield_loaded_gun, npc_wield_empty_gun,
   npc_heal, npc_use_painkiller, npc_eat, npc_drop_items,
@@ -406,7 +408,7 @@ public:
  int  confident_range(int index = -1) const; // >= 50% chance to hit
  bool wont_hit_friend(game *g, int tarx, int tary, int index = -1) const;
  bool wont_hit_friend(game* g, point tar, int index = -1) const { return wont_hit_friend(g, tar.x, tar.y, index); };
- bool can_reload() const override; // Wielding a gun that is not fully loaded
+ int can_reload() const override; // Wielding a gun that is not fully loaded
  bool need_to_reload() const; // Wielding a gun that is empty
  bool enough_time_to_reload(game *g, int target, const item &gun) const;
 

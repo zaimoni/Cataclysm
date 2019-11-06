@@ -5111,9 +5111,9 @@ void game::takeoff()
 
 void game::reload()
 {
- if (!u.can_reload()) return;
- // XXX \todo should be reusing the non-negative return value from u.can_reload
- u.assign_activity(ACT_RELOAD, u.weapon.reload_time(u), u.weapon.pick_reload_ammo(u, true));
+ const int inv_index = u.can_reload();
+ if (0 > inv_index) return;
+ u.assign_activity(ACT_RELOAD, u.weapon.reload_time(u), inv_index);
  u.moves = 0;
  refresh_all();
 }

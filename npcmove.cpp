@@ -91,6 +91,32 @@ public:
 	}
 };
 
+class reload : public cataclysm::action
+{
+	npc& _actor;
+	int inv_index;
+public:
+	reload(npc& actor, int index) : _actor(actor), inv_index(index) {
+#ifndef NDEBUG
+		if (!IsLegal()) throw new std::logic_error("illegal reload");
+#endif
+	};
+	~reload() = default;
+	bool IsLegal() const override {
+		if (0 > inv_index || _actor.inv.size() <= inv_index) return false;
+		return true;	// ahem...should match ammo type
+	}
+	void Perform() const override {
+		_actor.moves -= _actor.weapon.reload_time(_actor);
+		if (!_actor.weapon.reload(_actor, inv_index)) debugmsg("NPC reload failed.");
+		_actor.recoil = 6;
+		if (game::active()->u_see(_actor.pos)) messages.add("%s reloads %s %s.", _actor.name.c_str(), (_actor.male ? "his" : "her"), _actor.weapon.tname().c_str());
+    }
+	const char* name() const override {
+		return "Reload";
+	}
+};
+
 std::string npc_action_name(npc_action action);
 bool thrown_item(item *used);
 
@@ -203,16 +229,7 @@ void npc::execute_action(game *g, const ai_action& action, int target)
   move_pause();
   break;
 
- case npc_reload: {
-  moves -= weapon.reload_time(*this);
-  int ammo_index = weapon.pick_reload_ammo(*this, false);
-  if (!weapon.reload(*this, ammo_index))
-   debugmsg("NPC reload failed.");
-  recoil = 6;
-  if (g->u_see(pos))
-   messages.add("%s reloads %s %s.", name.c_str(), (male ? "his" : "her"), weapon.tname().c_str());
-  } break;
-
+#if DEAD_FUNC
  case npc_sleep:
 /* TODO: Open a dialogue with the player, allowing us to ask if it's alright if
  * we get some sleep, how long watch shifts should be, etc.
@@ -221,6 +238,7 @@ void npc::execute_action(game *g, const ai_action& action, int target)
   if (is_friend() && g->u_see(pos))
    say(g, "I'm going to sleep.");
   break;
+#endif
 
  case npc_pickup:
   pick_up_item(g);
@@ -480,12 +498,16 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
  const int target_HP = (target == TARGET_PLAYER) ? g->u.hp_percentage() * g->u.hp_max[hp_torso] : g->z[target].hp;
 
  if (can_use_gun) {
-  if (need_to_reload() && can_reload()) return ai_action(npc_reload, std::unique_ptr<cataclysm::action>());
+  if (need_to_reload()) {
+	  const auto inv_index = can_reload();
+	  if (0 <= inv_index) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new reload(*const_cast<npc*>(this), inv_index)));
+  }
   if (emergency(danger_assessment(g)) && alt_attack_available()) return ai_action(npc_alt_attack, std::unique_ptr<cataclysm::action>());
   if (weapon.is_gun() && weapon.charges > 0) {
    if (dist > confident_range()) {
-    if (can_reload() && enough_time_to_reload(g, target, weapon))
-     return ai_action(npc_reload, std::unique_ptr<cataclysm::action>());
+	const auto inv_index = can_reload();
+    if (0 <= inv_index && enough_time_to_reload(g, target, weapon))
+     return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new reload(*const_cast<npc*>(this), inv_index)));
     else
      return ai_action(npc_melee, std::unique_ptr<cataclysm::action>());
    }
@@ -546,8 +568,8 @@ npc::ai_action npc::address_needs(game *g, int danger) const
    if (0 <= pick_best_painkiller(inv)) return ai_action(npc_use_painkiller, std::unique_ptr<cataclysm::action>());	// \todo V0.2.1+ record this index and reuse it later
  }
 
- if (can_reload())
-  return ai_action(npc_reload, std::unique_ptr<cataclysm::action>());
+ const auto inv_index = can_reload();
+ if (0 <= inv_index) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new reload(*const_cast<npc*>(this), inv_index)));
 
  if (   (danger <= NPC_DANGER_VERY_LOW && (hunger > 40 || thirst > 40))
 	 ||  thirst > 80
@@ -773,54 +795,56 @@ bool npc::wont_hit_friend(game *g, int tarx, int tary, int index) const
  return true;
 }
 
-bool player::can_reload() const
+int player::can_reload() const
 {
 	if (weapon.is_gun()) {
 		if (weapon.has_flag(IF_RELOAD_AND_SHOOT)) {
 			messages.add("Your %s does not need to be reloaded; it reloads and fires in a single action.", weapon.tname().c_str());
-			return false;
+			return -1;
 		}
 		if (weapon.ammo_type() == AT_NULL) {
 			messages.add("Your %s does not reload normally.", weapon.tname().c_str());
-			return false;
+			return -1;
 		}
 		if (weapon.charges == weapon.clip_size()) {
 			messages.add("Your %s is fully loaded!", weapon.tname().c_str());
-			return false;
+			return -1;
 		}
 		int index = weapon.pick_reload_ammo(*this, true);
-		if (index == -1) {
+		if (0 > index) {
 			messages.add("Out of ammo!");
-			return false;
+			return -1;
 		}
-		return true;	// XXX \todo change return type to the index to use
+		return index;
 	} else if (weapon.is_tool()) {
 		const it_tool* const tool = dynamic_cast<const it_tool*>(weapon.type);
 		if (tool->ammo == AT_NULL) {
 			messages.add("You can't reload a %s!", weapon.tname().c_str());
-			return false;
+			return -1;
 		}
-		int index = weapon.pick_reload_ammo(*this, true);
-		if (index == -1) {
+		const int index = weapon.pick_reload_ammo(*this, true);
+		if (0 > index) {
 			// Reload failed
 			messages.add("Out of %s!", ammo_name(tool->ammo).c_str());
-			return false;
+			return -1;
 		}
-		return true;
+		return index;
 	} else if (!is_armed()) {
 		messages.add("You're not wielding anything.");
-		return false;
+		return -1;
 	}
 	messages.add("You can't reload a %s!", weapon.tname().c_str());
-	return false;
+	return -1;
 }
 
-bool npc::can_reload() const
+int npc::can_reload() const
 {
- if (!weapon.is_gun()) return false;
+   if (!weapon.is_gun()) return -1;	// \todo extend this to tools
 
- const it_gun* const gun = dynamic_cast<const it_gun*>(weapon.type);
- return (weapon.charges < gun->clip && has_ammo(gun->ammo).size() > 0);
+// if (weapon.has_flag(IF_RELOAD_AND_SHOOT)) return -1;	// ignored by NPCs
+   if (weapon.ammo_type() == AT_NULL) return -1;
+   if (weapon.charges == weapon.clip_size()) return -1;
+   return weapon.pick_reload_ammo(*this, true);
 }
 
 bool npc::need_to_reload() const
@@ -1825,8 +1849,9 @@ std::string npc_action_name(npc_action action)
  switch (action) {
   case npc_undecided:		return "Undecided";
   case npc_pause:		return "Pause";
-  case npc_reload:		return "Reload";
+#if DEAD_FUNC
   case npc_sleep:		return "Sleep";
+#endif
   case npc_pickup:		return "Pick up items";
   case npc_wield_melee:		return "Wield melee weapon";
   case npc_wield_loaded_gun:	return "Wield loaded gun";
