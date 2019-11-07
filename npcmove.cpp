@@ -876,13 +876,26 @@ bool npc::enough_time_to_reload(game *g, int target, const item &gun) const
  return (turns_til_reloaded < turns_til_reached);
 }
 
+bool npc::path_is_usable(const map& m)
+{
+	while (!path.empty()) {
+		const auto& pt = path[0];
+		if (pt == pos) {
+			path.erase(path.begin());
+			continue;
+		}
+		// \todo cf npc::move_to for other issues (re-routing around non-hostiles)
+		if (1 == rl_dist(pos, pt)) return true;	// \todo path optimization?
+		if (m.sees(pos, pt, -1)) return true;
+		// \todo path repair?
+		return false;
+	}
+	return false;
+}
+
 void npc::update_path(const map& m, const point& pt)
 {
- if (path.empty()) {
-  path = m.route(pos, pt);
-  return;
- }
- if (path.back() == pt) return; // Our path already leads to that point, no need to recalculate
+ if (path_is_usable(m) && path.back() == pt) return;	// usable, already leads to destination: no need to recalculate
  path = m.route(pos, pt);
  if (!path.empty() && path[0] == pos) path.erase(path.begin());
 }
@@ -1810,11 +1823,11 @@ void npc::set_destination(game *g)
 
 void npc::go_to_destination(game *g)
 {
- int sx = (goal.x > mapx ? 1 : -1), sy = (goal.y > mapy ? 1 : -1);
- if (goal.x == mapx && goal.y == mapy) {	// We're at our desired map square!
-  move_pause();
-  reach_destination();
- } else {
+  if (goal.x == mapx && goal.y == mapy) {	// We're at our desired map square!
+   move_pause();
+   reach_destination();
+  }
+  int sx = (goal.x > mapx ? 1 : -1), sy = (goal.y > mapy ? 1 : -1);
   if (goal.x == mapx) sx = 0;
   if (goal.y == mapy) sy = 0;
 // sx and sy are now equal to the direction we need to move in
@@ -1831,17 +1844,19 @@ void npc::go_to_destination(game *g)
       path = g->m.route(pos, dest);
       if (!path.empty() && can_move_to(g, path[0])) {
        move_to_next(g);
+       if (goal.x == mapx && goal.y == mapy) {	// We're at our desired map square!
+        reach_destination();
+       }
        return;
       } else {
-       move_pause();
+       move_pause();	// XXX error path
        return;
       }
      }
     }
    }
   }
-  move_pause();
- }
+  move_pause();	// XXX error path
 }
 
 std::string npc_action_name(npc_action action)
