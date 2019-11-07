@@ -320,13 +320,12 @@ void npc::execute_action(game *g, const ai_action& action, int target)
   pick_and_eat(g);
   break;
 
+#if DEAD_FUNC
  case npc_drop_items:
-/*
   drop_items(g, weight_carried() - weight_capacity() / 4,
                 volume_carried() - volume_capacity());
-*/
-  move_pause();
   break;
+#endif
 
  case npc_melee:
   update_path(g->m, tar);
@@ -593,11 +592,11 @@ npc::ai_action npc::address_needs(game *g, int danger) const
 	return ai_action(npc_eat, std::unique_ptr<cataclysm::action>());	// \todo V0.2.1+ record this index and reuse it later
   }
 
-/*
+#if DEAD_FUNC
  if (weight_carried() > weight_capacity() / 4 ||
      volume_carried() > volume_capacity())
   return npc_drop_items;
-*/
+#endif
 
 /*
  if (danger <= 0 && fatigue > 191)
@@ -1185,6 +1184,7 @@ void npc::pick_up_item(game *g)
  }
 }
 
+#if DEAD_FUNC
 void npc::drop_items(game *g, int weight, int volume)
 {
  if (game::debugmon) {
@@ -1276,6 +1276,7 @@ void npc::drop_items(game *g, int weight, int volume)
    messages.add("%s drops a %s.", name.c_str(), item_name_str.c_str());
  }
 }
+#endif
 
 npc::ai_action npc::scan_new_items(game *g, int target)
 {
@@ -1884,6 +1885,7 @@ std::string npc_action_name(npc_action action)
   case npc_pause:		return "Pause";
 #if DEAD_FUNC
   case npc_sleep:		return "Sleep";
+  case npc_drop_items:		return "Drop items";
 #endif
   case npc_pickup:		return "Pick up items";
   case npc_wield_melee:		return "Wield melee weapon";
@@ -1892,7 +1894,6 @@ std::string npc_action_name(npc_action action)
   case npc_heal:		return "Heal self";
   case npc_use_painkiller:	return "Use painkillers";
   case npc_eat:			return "Eat";
-  case npc_drop_items:		return "Drop items";
   case npc_melee:		return "Melee";
   case npc_shoot:		return "Shoot";
   case npc_shoot_burst:		return "Fire a burst";
