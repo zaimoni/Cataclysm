@@ -117,6 +117,31 @@ public:
 	}
 };
 
+class target_player : public cataclysm::action
+{
+	npc& _actor;
+	player& _target;
+	void (npc::* _op)(player& pl);
+	const char* _desc;
+public:
+	target_player(npc& actor, player& target, void (npc::* op)(player& pl), const char* desc) : _actor(actor), _target(target), _op(op) {
+#ifndef NDEBUG
+		if (!IsLegal()) throw new std::logic_error("illegal targeting of player");
+#endif
+	}
+	~target_player() = default;
+	bool IsLegal() const override {
+		return !_actor.path.empty() && _actor.path.back() == _target.pos;	// e.g., result of npc::update_path.
+	}
+	void Perform() const override {
+		(_actor.*_op)(_target);
+	}
+	const char* name() const override {
+		if (_desc && *_desc) return _desc;
+		return "targeting player";	// failover
+	}
+};
+
 std::string npc_action_name(npc_action action);
 bool thrown_item(item *used);
 
@@ -363,16 +388,6 @@ void npc::execute_action(game *g, const ai_action& action, int target)
   moves = 0;
   break;
 
- case npc_mug_player:
-  update_path(g->m, g->u.pos);
-  if (path.size() == 1)	// We're adjacent to u, and thus can mug u
-   mug_player(g, g->u);
-  else if (path.size() > 0)
-   move_to_next(g);
-  else
-   move_pause();
-  break;
-
  case npc_goto_destination:
   go_to_destination(g);
   break;
@@ -607,8 +622,11 @@ npc::ai_action npc::address_player(game *g)
  }
 
  if (attitude == NPCATT_MUG && g->sees_u(pos)) {
-  if (one_in(3)) say(g, "Don't move a <swear> muscle...");
-  return ai_action(npc_mug_player, std::unique_ptr<cataclysm::action>());
+  update_path(g->m, g->u.pos);
+  if (!path.empty()) {
+	if (one_in(3)) say(g, "Don't move a <swear> muscle...");
+	return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_player(*this,g->u,&npc::mug_player, "Mug player")));
+  }
  }
 
  if (attitude == NPCATT_WAIT_FOR_LEAVE) {
@@ -1649,12 +1667,13 @@ void npc::pick_and_eat(game *g)
  moves = 0;
 }
 
-void npc::mug_player(game *g, player &mark)
+void npc::mug_player(player &mark)
 {
- if (rl_dist(pos, mark.pos) > 1) { // We have to travel
-  update_path(g->m, mark.pos);
+ auto g = game::active();
+ if (rl_dist(pos, mark.pos) > 1) { // We have to travel; path already updated
   move_to_next(g);
- } else {
+  return;
+ }
   bool u_see_me   = g->u_see(pos),
        u_see_mark = g->u_see(mark.pos);
   if (mark.cash > 0) {
@@ -1722,7 +1741,6 @@ void npc::mug_player(game *g, player &mark)
     if (!mark.is_npc()) op_of_u.value -= rng(0, 1); // Decrease the value of the player
    }
   }
- }
 }
 
 void npc::look_for_player(game *g, player &sought)
@@ -1883,7 +1901,6 @@ std::string npc_action_name(npc_action action)
   case npc_heal_player:		return "Heal player";
   case npc_follow_player:	return "Follow player";
   case npc_talk_to_player:	return "Talk to player";
-  case npc_mug_player:		return "Mug player";
   case npc_goto_destination:	return "Go to destination";
   case npc_avoid_friendly_fire:	return "Avoid friendly fire";
   default: 			return "Unnamed action";

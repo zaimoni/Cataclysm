@@ -96,7 +96,6 @@ enum npc_action {
   npc_heal, npc_use_painkiller, npc_eat, npc_drop_items,
  npc_melee, npc_shoot, npc_shoot_burst, npc_alt_attack,
  npc_look_for_player, npc_heal_player, npc_follow_player, npc_talk_to_player,
-  npc_mug_player,
  npc_goto_destination, npc_avoid_friendly_fire,
  num_npc_actions
 };
@@ -436,8 +435,8 @@ public:
 private:
  int pick_best_food(const inventory& _inv) const;
  void pick_and_eat	(game *g);
+ void mug_player(player& mark);
 public:
- void mug_player	(game *g, player &mark);
  void look_for_player	(game *g, player &sought);
  bool saw_player_recently() const;// Do we have an idea of where u are?
 
