@@ -89,13 +89,13 @@ enum npc_action {
  npc_undecided = 0,
  npc_pause,
 #if DEAD_FUNC
- npc_sleep, npc_drop_items,
+ npc_sleep, npc_drop_items, npc_heal_player,
 #endif
  npc_pickup,
  npc_wield_melee, npc_wield_loaded_gun, npc_wield_empty_gun,
   npc_heal, npc_use_painkiller, npc_eat,
  npc_melee, npc_shoot, npc_shoot_burst, npc_alt_attack,
- npc_look_for_player, npc_heal_player, npc_follow_player, npc_talk_to_player,
+ npc_look_for_player, npc_follow_player, npc_talk_to_player,
  npc_goto_destination, npc_avoid_friendly_fire,
  num_npc_actions
 };
@@ -422,7 +422,6 @@ public:
 // Item discovery and fetching
  void find_item		(game *g); // Look around and pick an item
  void pick_up_item	(game *g); // Move to, or grab, our targeted item
-// void drop_items	(game *g, int weight, int volume); // Drop wgt and vol	// prototyped function
  ai_action scan_new_items(game *g, int target);
 
 // Combat functions and player interaction functions
@@ -430,9 +429,12 @@ public:
  void melee_player	(game *g, player &foe);
  void wield_best_melee	(game *g);
  void alt_attack	(game *g, int target);
- void heal_player	(game *g, player &patient);
  void heal_self		(game *g);
 private:
+#if PROTOTYPE
+ void drop_items	(game *g, int weight, int volume); // Drop wgt and vol
+ void heal_player(game* g, player& patient);
+#endif
  int pick_best_food(const inventory& _inv) const;
  void pick_and_eat	(game *g);
  void mug_player(player& mark);

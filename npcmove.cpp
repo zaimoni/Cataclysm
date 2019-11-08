@@ -362,6 +362,7 @@ void npc::execute_action(game *g, const ai_action& action, int target)
   }
   break;
 
+#if DEAD_FUNC
  case npc_heal_player:
   update_path(g->m, g->u.pos);
   if (path.size() == 1)	// We're adjacent to u, and thus can heal u
@@ -371,6 +372,7 @@ void npc::execute_action(game *g, const ai_action& action, int target)
   else
    move_pause();
   break;
+#endif
 
  case npc_follow_player:
   update_path(g->m, g->u.pos);
@@ -1184,7 +1186,7 @@ void npc::pick_up_item(game *g)
  }
 }
 
-#if DEAD_FUNC
+#if PROTOTYPE
 void npc::drop_items(game *g, int weight, int volume)
 {
  if (game::debugmon) {
@@ -1523,6 +1525,7 @@ std::pair<itype_id, int> player::would_heal(const std::pair<hp_part, int>& injur
 	return ret;
 }
 
+#if PROTOTYPE
 void npc::heal_player(game *g, player &patient)
 {
  int dist = rl_dist(pos, patient.pos);
@@ -1566,6 +1569,7 @@ void npc::heal_player(game *g, player &patient)
   }
  }
 }
+#endif
 
 void npc::heal_self(game *g)
 {
@@ -1886,6 +1890,7 @@ std::string npc_action_name(npc_action action)
 #if DEAD_FUNC
   case npc_sleep:		return "Sleep";
   case npc_drop_items:		return "Drop items";
+  case npc_heal_player:		return "Heal player";
 #endif
   case npc_pickup:		return "Pick up items";
   case npc_wield_melee:		return "Wield melee weapon";
@@ -1899,7 +1904,6 @@ std::string npc_action_name(npc_action action)
   case npc_shoot_burst:		return "Fire a burst";
   case npc_alt_attack:		return "Use alternate attack";
   case npc_look_for_player:	return "Look for player";
-  case npc_heal_player:		return "Heal player";
   case npc_follow_player:	return "Follow player";
   case npc_talk_to_player:	return "Talk to player";
   case npc_goto_destination:	return "Go to destination";
