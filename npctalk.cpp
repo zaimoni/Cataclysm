@@ -1475,8 +1475,8 @@ talk_topic dialogue::opt(talk_topic topic, game *g)
  if (challenge[0] >= 'a' && challenge[0] <= 'z') challenge[0] += 'A' - 'a';
 // Prepend "My Name: "
  if (challenge[0] == '&') challenge = challenge.substr(1); // No name prepended!
- else challenge = beta->name + (challenge[0] == '*' ? " "	// action
-	                                                : ": ") + challenge.substr(1);	// speech
+ else challenge = beta->name + (challenge[0] == '*' ? " " + challenge.substr(1)	// action
+	                                                : ": " + challenge);	// speech
  history.push_back(""); // Empty line between lines of dialogue
  
 // Number of lines to highlight
@@ -1500,8 +1500,7 @@ talk_topic dialogue::opt(talk_topic topic, game *g)
   std::stringstream text;
   text << char('a' + i) << ": ";
   if (responses[i].trial != TALK_TRIAL_NONE)
-   text << "[" << talk_trial_text[responses[i].trial] << " " <<
-           trial_chance(responses[i], alpha, beta) << "%] ";
+   text << "[" << talk_trial_text[responses[i].trial] << " " << trial_chance(responses[i], alpha, beta) << "%%] ";	// heading to vsprint_s
   text << responses[i].text;
   options.push_back(text.str());
   parse_tags(options.back(), alpha, beta);
