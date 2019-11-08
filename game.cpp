@@ -4271,7 +4271,7 @@ void game::pickup(int posx, int posy, int min)
        m.i_clear(posx, posy);
       m.add_item(posx, posy, u.remove_weapon());
       u.i_add(newit);
-      u.wield(this, u.inv.size() - 1);
+      u.wield(u.inv.size() - 1);
       u.moves -= 100;
       messages.add("Wielding %c - %s", newit.invlet, newit.tname().c_str());
      } else
@@ -4283,7 +4283,7 @@ void game::pickup(int posx, int posy, int min)
     }
    } else {
     u.i_add(newit);
-    u.wield(this, u.inv.size() - 1);
+    u.wield(u.inv.size() - 1);
     if (from_veh)
      veh->remove_item (veh_part, 0);
     else
@@ -4468,7 +4468,7 @@ void game::pickup(int posx, int posy, int min)
         m.i_rem(posx, posy, curmit);
        m.add_item(posx, posy, u.remove_weapon());
        u.i_add(here[i]);
-       u.wield(this, u.inv.size() - 1);
+       u.wield(u.inv.size() - 1);
        curmit--;
        u.moves -= 100;
 	   messages.add("Wielding %c - %s", u.weapon.invlet, u.weapon.tname().c_str());
@@ -4481,7 +4481,7 @@ void game::pickup(int posx, int posy, int min)
      }
     } else {
      u.i_add(here[i]);
-     u.wield(this, u.inv.size() - 1);
+     u.wield(u.inv.size() - 1);
      if (from_veh)
       veh->remove_item (veh_part, curmit);
      else
@@ -5218,7 +5218,7 @@ void game::wield()
   return;
  }
  char ch = inv(u.styles.empty() ? "Wield item:" : "Wield item: Press - to choose a style");
- if (u.wield(this, ('-' == ch ? -3 : u.lookup_item(ch)))) u.recoil = 5;
+ if (u.wield('-' == ch ? -3 : u.lookup_item(ch))) u.recoil = 5;
 }
 
 void game::read()

@@ -92,7 +92,7 @@ enum npc_action {
  npc_sleep, npc_drop_items, npc_heal_player,
 #endif
  npc_pickup,
- npc_wield_melee, npc_wield_loaded_gun, npc_wield_empty_gun,
+ npc_wield_loaded_gun, npc_wield_empty_gun,
   npc_heal, npc_use_painkiller, npc_eat,
  npc_melee, npc_shoot, npc_shoot_burst, npc_alt_attack,
  npc_look_for_player, npc_follow_player, npc_talk_to_player,
@@ -360,7 +360,9 @@ public:
  int  worst_item_value() const; // Find the worst value in our inventory; dead function currently
  int  value(const item &it) const;
  bool wear_if_wanted(item it);
- virtual bool wield(game *g, int index);
+private:
+ bool wield(int index) override;
+public:
  bool has_healing_item() const;
  bool took_painkiller() const;
 private:
@@ -427,10 +429,10 @@ public:
 // Combat functions and player interaction functions
  void melee_monster	(game *g, int target);
  void melee_player	(game *g, player &foe);
- void wield_best_melee	(game *g);
  void alt_attack	(game *g, int target);
  void heal_self		(game *g);
 private:
+ bool best_melee_weapon(int& inv_index) const;
 #if PROTOTYPE
  void drop_items	(game *g, int weight, int volume); // Drop wgt and vol
  void heal_player(game* g, player& patient);

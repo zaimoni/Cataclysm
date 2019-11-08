@@ -142,6 +142,32 @@ public:
 	}
 };
 
+class target_inventory : public cataclysm::action
+{
+	npc& _actor;
+	int _inv_index;
+	bool (npc::* _op)(int inv_target);
+	const char* _desc;
+public:
+	target_inventory(npc& actor, int inv_index, bool (npc::* op)(int inv_target), const char* desc) : _actor(actor), _inv_index(inv_index), _op(op) {
+#ifndef NDEBUG
+		if (!IsLegal()) throw new std::logic_error("illegal targeting of inventory");
+#endif
+	}
+	~target_inventory() = default;
+	bool IsLegal() const override {
+		if (0 <= _inv_index) return _actor.inv.size() > _inv_index;
+		else return _actor.styles.size() >= -_inv_index;	// not always correct, but sometimes is
+	}
+	void Perform() const override {
+		(_actor.*_op)(_inv_index);
+	}
+	const char* name() const override {
+		if (_desc && *_desc) return _desc;
+		return "targeting inventory";	// failover
+	}
+};
+
 std::string npc_action_name(npc_action action);
 bool thrown_item(item *used);
 
@@ -269,10 +295,6 @@ void npc::execute_action(game *g, const ai_action& action, int target)
   pick_up_item(g);
   break;
 
- case npc_wield_melee:
-  wield_best_melee(g);
-  break;
-
  case npc_wield_loaded_gun:
  {
   int index = -1, max = 0;
@@ -286,7 +308,7 @@ void npc::execute_action(game *g, const ai_action& action, int target)
    debugmsg("NPC tried to wield a loaded gun, but has none!");
    move_pause();
   } else
-   wield(g, index);
+   wield(index);
  } break;
 
  case npc_wield_empty_gun:
@@ -305,7 +327,7 @@ void npc::execute_action(game *g, const ai_action& action, int target)
   if (index == -1) {
    debugmsg("NPC tried to wield a gun, but has none!");
    move_pause();
-  } else wield(g, index);
+  } else wield(index);
  } break;
 
  case npc_heal:
@@ -562,8 +584,10 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
 
  if (has_empty_gun && has_ammo_for_empty_gun)
   return ai_action(npc_wield_empty_gun, std::unique_ptr<cataclysm::action>());
- else if (has_better_melee)
-  return ai_action(npc_wield_melee, std::unique_ptr<cataclysm::action>());
+ else if (has_better_melee) {
+	 int melee;
+	 if (best_melee_weapon(melee)) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), melee, &npc::wield, "Wield melee weapon")));
+ }
 
  return ai_action(npc_melee, std::unique_ptr<cataclysm::action>());
 }
@@ -1308,8 +1332,10 @@ npc::ai_action npc::scan_new_items(game *g, int target)
 
  if (has_empty_gun && has_ammo_for_empty_gun)
   return ai_action(npc_wield_empty_gun, std::unique_ptr<cataclysm::action>());
- else if (has_better_melee)
-  return ai_action(npc_wield_melee, std::unique_ptr<cataclysm::action>());
+ else if (has_better_melee) {
+	 int melee;
+	 if (best_melee_weapon(melee)) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), melee, &npc::wield, "Wield melee weapon")));
+ }
 
  return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());
 }
@@ -1326,28 +1352,25 @@ void npc::melee_player(game *g, player &foe)
  hit_player(g, foe);
 }
 
-void npc::wield_best_melee(game *g)
+bool npc::best_melee_weapon(int& inv_index) const
 {
- int best_score = 0, index = -999;
- for (size_t i = 0; i < inv.size(); i++) {
-  int score = inv[i].melee_value(sklevel);
-  if (score > best_score) {
-   best_score = score;
-   index = i;
-  }
- }
- if (!styles.empty() && // Wield a style if our skills warrant it
-      best_score < 15 * sklevel[sk_unarmed] + 8 * sklevel[sk_melee]) {
-// TODO: More intelligent style choosing
-  wield(g, 0 - rng(1, styles.size()));
-  return;
- }
- if (index == -999) {
-  debugmsg("npc::wield_best_melee failed to find a melee weapon.");
-  move_pause();
-  return;
- }
- wield(g, index);
+	int best_score = 0, index = -999;
+	for (size_t i = 0; i < inv.size(); i++) {
+		int score = inv[i].melee_value(sklevel);
+		if (score > best_score) {
+			best_score = score;
+			index = i;
+		}
+	}
+	if (!styles.empty() && // Wield a style if our skills warrant it
+		best_score < 15 * sklevel[sk_unarmed] + 8 * sklevel[sk_melee]) {
+		// TODO: More intelligent style choosing
+		inv_index = -rng(1, styles.size());
+		return true;
+	}
+	if (index == -999) return false;
+	inv_index = index;
+	return true;
 }
 
 void npc::alt_attack(game *g, int target)
@@ -1893,7 +1916,6 @@ std::string npc_action_name(npc_action action)
   case npc_heal_player:		return "Heal player";
 #endif
   case npc_pickup:		return "Pick up items";
-  case npc_wield_melee:		return "Wield melee weapon";
   case npc_wield_loaded_gun:	return "Wield loaded gun";
   case npc_wield_empty_gun:	return "Wield empty gun";
   case npc_heal:		return "Heal self";

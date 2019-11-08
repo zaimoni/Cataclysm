@@ -3784,7 +3784,7 @@ bool player::eat(game *g, int index)
  return true;
 }
 
-bool player::wield(game *g, int index)
+bool player::wield(int index)
 {
  if (weapon.has_flag(IF_NO_UNWIELD)) {
   messages.add("You cannot unwield your %s!  Withdraw them with 'p'.", weapon.tname().c_str());
@@ -3805,7 +3805,7 @@ bool player::wield(game *g, int index)
    recoil = 0;
    if (!pickstyle) return true;
   } else if (query_yn("No space in inventory for your %s.  Drop it?", weapon.tname().c_str())) {
-   g->m.add_item(pos, remove_weapon());
+   game::active()->m.add_item(pos, remove_weapon());
    recoil = 0;
    if (!pickstyle) return true;
   } else return false;
@@ -3845,7 +3845,7 @@ bool player::wield(game *g, int index)
   return true;
  } else if (query_yn("No space in inventory for your %s.  Drop it?",
                      weapon.tname().c_str())) {
-  g->m.add_item(pos, remove_weapon());
+  game::active()->m.add_item(pos, remove_weapon());
   weapon = inv[index];
   inv.remove_item(index);
   inv_sorted = false;

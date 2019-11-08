@@ -951,7 +951,7 @@ bool npc::wear_if_wanted(item it)
  return false;
 } 
 
-bool npc::wield(game *g, int index)
+bool npc::wield(int index)
 {
  if (index < 0) { // Wielding a style
   index = 0 - index - 1;
@@ -963,10 +963,10 @@ bool npc::wield(game *g, int index)
    i_add(remove_weapon());
    moves -= 15; // Extra penalty for putting weapon away
   } else // No room for weapon, so we drop it
-   g->m.add_item(pos, remove_weapon());
+   game::active()->m.add_item(pos, remove_weapon());
   moves -= 15;
   weapon.make(item::types[styles[index]] );
-  if (g->u_see(pos)) messages.add("%s assumes a %s stance.", name.c_str(), weapon.tname().c_str());
+  if (game::active()->u_see(pos)) messages.add("%s assumes a %s stance.", name.c_str(), weapon.tname().c_str());
   return true;
  }
 
@@ -978,11 +978,11 @@ bool npc::wield(game *g, int index)
   i_add(remove_weapon());
   moves -= 15;
  } else // No room for weapon, so we drop it
-  g->m.add_item(pos, remove_weapon());
+  game::active()->m.add_item(pos, remove_weapon());
  moves -= 15;
  weapon = inv[index];
  i_remn(index);
- if (g->u_see(pos)) messages.add("%s wields a %s.", name.c_str(), weapon.tname().c_str());
+ if (game::active()->u_see(pos)) messages.add("%s wields a %s.", name.c_str(), weapon.tname().c_str());
  return true;
 }
 
