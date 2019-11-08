@@ -295,22 +295,6 @@ void npc::execute_action(game *g, const ai_action& action, int target)
   pick_up_item(g);
   break;
 
- case npc_wield_loaded_gun:
- {
-  int index = -1, max = 0;
-  for (size_t i = 0; i < inv.size(); i++) {
-   if (inv[i].is_gun() && inv[i].charges > max) {
-    max = inv[i].charges;
-    index = i;
-   }
-  }
-  if (index == -1) {
-   debugmsg("NPC tried to wield a loaded gun, but has none!");
-   move_pause();
-  } else
-   wield(index);
- } break;
-
  case npc_wield_empty_gun:
  {
   bool ammo_found = false;
@@ -560,18 +544,18 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
  }
 
 // Check if there's something better to wield
- bool has_empty_gun = false, has_better_melee = false;
+ bool has_better_melee = false;
  std::vector<int> empty_guns;
- for (size_t i = 0; i < inv.size(); i++) {
-  if (can_use_gun && inv[i].is_gun() && inv[i].charges > 0)
-   return ai_action(npc_wield_loaded_gun, std::unique_ptr<cataclysm::action>());
-  else if (can_use_gun && inv[i].is_gun() &&
-           enough_time_to_reload(g, target, inv[i])) {
-   has_empty_gun = true;
-   empty_guns.push_back(i);
-  } else if (inv[i].melee_value(sklevel) > weapon.melee_value(sklevel) * 1.1)
-   has_better_melee = true;
+ if (can_use_gun) {
+	 int gun;
+	 if (best_gun(target, gun, empty_guns, has_better_melee)) {
+		 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), gun, &npc::wield, "Wield loaded gun")));
+	 }
+ } else {
+	 has_better_melee = can_wield_better_melee();
  }
+
+ const bool has_empty_gun = !empty_guns.empty();
 
  bool has_ammo_for_empty_gun = false;
  for (int i = 0; i < empty_guns.size(); i++) {
@@ -1306,26 +1290,26 @@ void npc::drop_items(game *g, int weight, int volume)
 
 npc::ai_action npc::scan_new_items(game *g, int target)
 {
- bool can_use_gun =      (!is_following() || combat_rules.use_guns);
+ const bool can_use_gun = (!is_following() || combat_rules.use_guns);
 // Check if there's something better to wield
- bool has_empty_gun = false, has_better_melee = false;
+ bool has_better_melee = false;
  std::vector<int> empty_guns;
- for (size_t i = 0; i < inv.size(); i++) {
-  if (can_use_gun && inv[i].is_gun() && inv[i].charges > 0)
-   return ai_action(npc_wield_loaded_gun, std::unique_ptr<cataclysm::action>());
-  else if (can_use_gun && inv[i].is_gun() &&
-           enough_time_to_reload(g, target, inv[i])) {
-   has_empty_gun = true;
-   empty_guns.push_back(i);
-  } else if (inv[i].melee_value(sklevel) > weapon.melee_value(sklevel) * 1.1)
-   has_better_melee = true;
+ if (can_use_gun) {
+  int gun;
+  if (best_gun(target, gun, empty_guns, has_better_melee)) {
+   return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*this, gun, &npc::wield, "Wield loaded gun")));
+  }
+ } else {
+  has_better_melee = can_wield_better_melee();
  }
+
+ const bool has_empty_gun = !empty_guns.empty();
 
  bool has_ammo_for_empty_gun = false;
  for (int i = 0; i < empty_guns.size(); i++) {
   for (size_t j = 0; j < inv.size(); j++) {
    if (inv[j].is_ammo() &&
-       inv[j].ammo_type() == inv[ empty_guns[i] ].ammo_type())
+	   inv[j].ammo_type() == inv[ empty_guns[i] ].ammo_type())
     has_ammo_for_empty_gun = true;
   }
  }
@@ -1371,6 +1355,35 @@ bool npc::best_melee_weapon(int& inv_index) const
 	if (index == -999) return false;
 	inv_index = index;
 	return true;
+}
+
+bool npc::can_wield_better_melee() const
+{
+	for (size_t i = 0; i < inv.size(); i++) {
+		if (inv[i].melee_value(sklevel) > weapon.melee_value(sklevel) * 1.1) return true;
+	}
+	return false;
+}
+
+bool npc::best_gun(const int target, int& inv_index, std::vector<int>& empty_guns, bool& has_better_melee) const
+{
+	bool ret = false;
+	int max = 0;
+	inv_index = -1;
+	has_better_melee = false;
+	empty_guns.clear();
+	for (size_t i = 0; i < inv.size(); i++) {
+		const auto& obj = inv[i];
+		if (obj.is_gun() && obj.charges > 0) {
+			if (obj.charges > max) {
+				max = obj.charges;
+				inv_index = i;
+				ret = true;
+			}
+		} else if (obj.is_gun() && enough_time_to_reload(game::active(), target, obj)) empty_guns.push_back(i);
+		else if (obj.melee_value(sklevel) > weapon.melee_value(sklevel) * 1.1) has_better_melee = true;
+	}
+	return ret;
 }
 
 void npc::alt_attack(game *g, int target)
@@ -1916,7 +1929,6 @@ std::string npc_action_name(npc_action action)
   case npc_heal_player:		return "Heal player";
 #endif
   case npc_pickup:		return "Pick up items";
-  case npc_wield_loaded_gun:	return "Wield loaded gun";
   case npc_wield_empty_gun:	return "Wield empty gun";
   case npc_heal:		return "Heal self";
   case npc_use_painkiller:	return "Use painkillers";

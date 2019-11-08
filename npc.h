@@ -92,7 +92,7 @@ enum npc_action {
  npc_sleep, npc_drop_items, npc_heal_player,
 #endif
  npc_pickup,
- npc_wield_loaded_gun, npc_wield_empty_gun,
+ npc_wield_empty_gun,
   npc_heal, npc_use_painkiller, npc_eat,
  npc_melee, npc_shoot, npc_shoot_burst, npc_alt_attack,
  npc_look_for_player, npc_follow_player, npc_talk_to_player,
@@ -433,6 +433,8 @@ public:
  void heal_self		(game *g);
 private:
  bool best_melee_weapon(int& inv_index) const;
+ bool can_wield_better_melee() const;
+ bool best_gun(int target, int& inv_index, std::vector<int>& empty_guns, bool& has_better_melee) const;
 #if PROTOTYPE
  void drop_items	(game *g, int weight, int volume); // Drop wgt and vol
  void heal_player(game* g, player& patient);
