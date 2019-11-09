@@ -435,6 +435,7 @@ private:
  bool best_melee_weapon(int& inv_index) const;
  bool can_wield_better_melee() const;
  bool best_gun(int target, int& inv_index, std::vector<int>& empty_guns, bool& has_better_melee) const;
+ bool reload(int inv_index);
 #if PROTOTYPE
  void drop_items	(game *g, int weight, int volume); // Drop wgt and vol
  void heal_player(game* g, player& patient);

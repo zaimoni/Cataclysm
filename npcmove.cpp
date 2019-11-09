@@ -91,32 +91,6 @@ public:
 	}
 };
 
-class reload : public cataclysm::action
-{
-	npc& _actor;
-	int inv_index;
-public:
-	reload(npc& actor, int index) : _actor(actor), inv_index(index) {
-#ifndef NDEBUG
-		if (!IsLegal()) throw new std::logic_error("illegal reload");
-#endif
-	};
-	~reload() = default;
-	bool IsLegal() const override {
-		if (0 > inv_index || _actor.inv.size() <= inv_index) return false;
-		return true;	// ahem...should match ammo type
-	}
-	void Perform() const override {
-		_actor.moves -= _actor.weapon.reload_time(_actor);
-		if (!_actor.weapon.reload(_actor, inv_index)) debugmsg("NPC reload failed.");
-		_actor.recoil = 6;
-		if (game::active()->u_see(_actor.pos)) messages.add("%s reloads %s %s.", _actor.name.c_str(), (_actor.male ? "his" : "her"), _actor.weapon.tname().c_str());
-    }
-	const char* name() const override {
-		return "Reload";
-	}
-};
-
 class target_player : public cataclysm::action
 {
 	npc& _actor;
@@ -509,6 +483,18 @@ npc::ai_action npc::method_of_fleeing(game *g, int enemy) const
  return _flee(*this, enemy_loc);
 }
 
+bool npc::reload(int inv_index)
+{
+	moves -= weapon.reload_time(*this);
+	if (!weapon.reload(*this, inv_index)) {
+		debugmsg("NPC reload failed.");
+		return false;
+	}
+	recoil = 6;
+	if (game::active()->u_see(pos)) messages.add("%s reloads %s %s.", name.c_str(), (male ? "his" : "her"), weapon.tname().c_str());
+	return true;
+}
+
 npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
 {
  point tar((target == TARGET_PLAYER) ? g->u.pos : g->z[target].pos);
@@ -522,14 +508,14 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
  if (can_use_gun) {
   if (need_to_reload()) {
 	  const auto inv_index = can_reload();
-	  if (0 <= inv_index) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new reload(*const_cast<npc*>(this), inv_index)));
+	  if (0 <= inv_index) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), inv_index, &npc::reload, "Reload")));
   }
   if (emergency(danger_assessment(g)) && alt_attack_available()) return ai_action(npc_alt_attack, std::unique_ptr<cataclysm::action>());
   if (weapon.is_gun() && weapon.charges > 0) {
    if (dist > confident_range()) {
 	const auto inv_index = can_reload();
     if (0 <= inv_index && enough_time_to_reload(g, target, weapon))
-     return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new reload(*const_cast<npc*>(this), inv_index)));
+     return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), inv_index, &npc::reload, "Reload")));
     else
      return ai_action(npc_melee, std::unique_ptr<cataclysm::action>());
    }
@@ -593,7 +579,7 @@ npc::ai_action npc::address_needs(game *g, int danger) const
  }
 
  const auto inv_index = can_reload();
- if (0 <= inv_index) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new reload(*const_cast<npc*>(this), inv_index)));
+ if (0 <= inv_index) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), inv_index, &npc::reload, "Reload")));
 
  if (   (danger <= NPC_DANGER_VERY_LOW && (hunger > 40 || thirst > 40))
 	 ||  thirst > 80
