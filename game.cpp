@@ -4220,7 +4220,7 @@ void game::pickup(int posx, int posy, int min)
    item water = m.water_from(posx, posy);
    if (query_yn("Drink from your hands?")) {
     u.inv.push_back(water);
-    u.eat(this, u.inv.size() - 1);
+    u.eat(u.inv.size() - 1);
     u.moves -= 350;
    } else {
     handle_liquid(water, true, false);
@@ -5088,7 +5088,7 @@ void game::eat()
   messages.add("You don't have item '%c'!", ch);
   return;
  }
- u.eat(this, u.lookup_item(ch));
+ u.eat(u.lookup_item(ch));
 }
 
 void game::wear()

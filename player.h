@@ -162,7 +162,7 @@ public:
  void vomit();	// \todo V 0.2.1 extend to NPCs
  
  int  lookup_item(char let) const;
- bool eat(game *g, int index);	// Eat item; returns false on fail
+ bool eat(int index);	// Eat item; returns false on fail
  virtual bool wield(int index);// Wield item; returns false on fail
  void pick_style(); // Pick a style
  bool wear(game *g, char let);	// Wear item; returns false on fail

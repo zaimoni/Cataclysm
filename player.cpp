@@ -3611,12 +3611,13 @@ int player::lookup_item(char let) const
  return -2; // -2 is for "item not found"
 }
 
-bool player::eat(game *g, int index)
+bool player::eat(int index)
 {
- const it_comest *comest = NULL;
- item *eaten = NULL;
+ auto g = game::active();
+ const it_comest *comest = 0;
+ item *eaten = 0;
  int which = -3; // Helps us know how to delete the item which got eaten
- if (index == -2) {
+ if (-1 > index) {
   messages.add("You do not have that item.");
   return false;
  } else if (index == -1) {
@@ -3652,7 +3653,7 @@ bool player::eat(game *g, int index)
    return false;
   }
  }
- if (eaten == NULL) return false;
+ if (!eaten) return false;
 
  if (eaten->is_ammo()) { // For when bionics let you eat fuel
   charge_power(eaten->charges / 20);
@@ -4125,7 +4126,7 @@ void player::use(game *g, char let)
 
  } else if (used->is_food() || used->is_food_container()) {
   if (replace_item) inv.add_item(copy);
-  eat(g, lookup_item(let));
+  eat(lookup_item(let));
   return;
  } else if (used->is_book()) {
   if (replace_item) inv.add_item(copy);

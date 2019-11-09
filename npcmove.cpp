@@ -52,7 +52,7 @@ public:
 		auto& used = _actor.inv[inv_index];
 
 		if (used.is_food() || used.is_food_container()) {
-			_actor.eat(game::active(), inv_index);
+			_actor.eat(inv_index);
 			return;
 		}
 #ifndef NDEBUG
@@ -276,10 +276,6 @@ void npc::execute_action(game *g, const ai_action& action, int target)
 
  case npc_use_painkiller:
   use_painkiller(g);
-  break;
-
- case npc_eat:
-  pick_and_eat(g);
   break;
 
 #if DEAD_FUNC
@@ -569,14 +565,15 @@ npc::ai_action npc::address_needs(game *g, int danger) const
    if (0 <= pick_best_painkiller(inv)) return ai_action(npc_use_painkiller, std::unique_ptr<cataclysm::action>());	// \todo V0.2.1+ record this index and reuse it later
  }
 
- const auto inv_index = can_reload();
+ auto inv_index = can_reload();
  if (0 <= inv_index) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), inv_index, &npc::reload, "Reload")));
 
  if (   (danger <= NPC_DANGER_VERY_LOW && (hunger > 40 || thirst > 40))
 	 ||  thirst > 80
 	 || hunger > 160) {
-	 if (0 <= pick_best_food(inv))
-	return ai_action(npc_eat, std::unique_ptr<cataclysm::action>());	// \todo V0.2.1+ record this index and reuse it later
+	inv_index = pick_best_food(inv);
+	if (0 <= inv_index)
+	  return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<player>(*const_cast<npc*>(this), inv_index, &player::eat, "Eat")));
   }
 
 #if DEAD_FUNC
@@ -1634,7 +1631,7 @@ void npc::use_painkiller(game *g)
   return;
  }
 
- eat(g, index);
+ eat(index);
  moves = 0;
 }
 
@@ -1661,19 +1658,6 @@ int npc::pick_best_food(const inventory& _inv) const
   }
  }
  return index;
-}
-
-void npc::pick_and_eat(game *g)
-{
- int index = pick_best_food(inv);
- if (0 > index) {	// \todo invariant failure
-  debugmsg("NPC tried to eat food, but couldn't find any!");
-  move_pause();
-  return;
- }
-
- eat(g, index);
- moves = 0;
 }
 
 void npc::mug_player(player &mark)
@@ -1899,7 +1883,6 @@ std::string npc_action_name(npc_action action)
   case npc_pickup:		return "Pick up items";
   case npc_heal:		return "Heal self";
   case npc_use_painkiller:	return "Use painkillers";
-  case npc_eat:			return "Eat";
   case npc_melee:		return "Melee";
   case npc_shoot:		return "Shoot";
   case npc_shoot_burst:		return "Fire a burst";
