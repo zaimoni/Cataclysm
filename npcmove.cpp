@@ -269,25 +269,6 @@ void npc::execute_action(game *g, const ai_action& action, int target)
   pick_up_item(g);
   break;
 
- case npc_wield_empty_gun:
- {
-  bool ammo_found = false;
-  int index = -1;
-  for (size_t i = 0; i < inv.size(); i++) {
-   const item& it = inv[i];
-   if (!it.is_gun()) continue;
-   bool am = (0 < has_ammo((dynamic_cast<const it_gun*>(it.type))->ammo).size());
-   if (!ammo_found || am) {
-    index = i;
-    ammo_found = (ammo_found || am);
-   }
-  }
-  if (index == -1) {
-   debugmsg("NPC tried to wield a gun, but has none!");
-   move_pause();
-  } else wield(index);
- } break;
-
  case npc_heal:
   heal_self(g);
   break;
@@ -495,6 +476,24 @@ bool npc::reload(int inv_index)
 	return true;
 }
 
+bool npc::choose_empty_gun(const std::vector<int>& empty_guns, int& inv_index) const
+{
+	inv_index = -1;
+	bool ammo_found = false;	// alias for 0 <= inv_index
+	for (auto gun : empty_guns) {
+		const item& it = inv[gun];
+#ifndef NDEBUG
+		if (!it.is_gun()) throw std::logic_error("empty_guns must contain only ranged weapons");
+#endif
+		bool am = (0 < has_ammo((dynamic_cast<const it_gun*>(it.type))->ammo).size());
+		if (!ammo_found || am) {
+			inv_index = gun;
+			ammo_found = (ammo_found || am);
+		}
+	}
+	return ammo_found;
+}
+
 npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
 {
  point tar((target == TARGET_PLAYER) ? g->u.pos : g->z[target].pos);
@@ -542,21 +541,12 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
  }
 
  const bool has_empty_gun = !empty_guns.empty();
+ int wield_this;
 
- bool has_ammo_for_empty_gun = false;
- for (int i = 0; i < empty_guns.size(); i++) {
-  for (size_t j = 0; j < inv.size(); j++) {
-   if (inv[j].is_ammo() &&
-       inv[j].ammo_type() == inv[ empty_guns[i] ].ammo_type())
-    has_ammo_for_empty_gun = true;
-  }
- }
-
- if (has_empty_gun && has_ammo_for_empty_gun)
-  return ai_action(npc_wield_empty_gun, std::unique_ptr<cataclysm::action>());
+ if (has_empty_gun && choose_empty_gun(empty_guns, wield_this))
+	 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), wield_this, &npc::wield, "Wield empty gun")));
  else if (has_better_melee) {
-	 int melee;
-	 if (best_melee_weapon(melee)) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), melee, &npc::wield, "Wield melee weapon")));
+	 if (best_melee_weapon(wield_this)) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), wield_this, &npc::wield, "Wield melee weapon")));
  }
 
  return ai_action(npc_melee, std::unique_ptr<cataclysm::action>());
@@ -1290,21 +1280,12 @@ npc::ai_action npc::scan_new_items(game *g, int target)
  }
 
  const bool has_empty_gun = !empty_guns.empty();
+ int wield_this;
 
- bool has_ammo_for_empty_gun = false;
- for (int i = 0; i < empty_guns.size(); i++) {
-  for (size_t j = 0; j < inv.size(); j++) {
-   if (inv[j].is_ammo() &&
-	   inv[j].ammo_type() == inv[ empty_guns[i] ].ammo_type())
-    has_ammo_for_empty_gun = true;
-  }
- }
-
- if (has_empty_gun && has_ammo_for_empty_gun)
-  return ai_action(npc_wield_empty_gun, std::unique_ptr<cataclysm::action>());
+ if (has_empty_gun && choose_empty_gun(empty_guns, wield_this))
+	 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), wield_this, &npc::wield, "Wield empty gun")));
  else if (has_better_melee) {
-	 int melee;
-	 if (best_melee_weapon(melee)) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), melee, &npc::wield, "Wield melee weapon")));
+	 if (best_melee_weapon(wield_this)) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), wield_this, &npc::wield, "Wield melee weapon")));
  }
 
  return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());
@@ -1915,7 +1896,6 @@ std::string npc_action_name(npc_action action)
   case npc_heal_player:		return "Heal player";
 #endif
   case npc_pickup:		return "Pick up items";
-  case npc_wield_empty_gun:	return "Wield empty gun";
   case npc_heal:		return "Heal self";
   case npc_use_painkiller:	return "Use painkillers";
   case npc_eat:			return "Eat";
