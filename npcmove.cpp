@@ -98,7 +98,7 @@ class target_player : public cataclysm::action
 	void (npc::* _op)(player& pl);
 	const char* _desc;
 public:
-	target_player(npc& actor, player& target, void (npc::* op)(player& pl), const char* desc) : _actor(actor), _target(target), _op(op) {
+	target_player(npc& actor, player& target, void (npc::* op)(player& pl), const char* desc) : _actor(actor), _target(target), _op(op), _desc(desc) {
 #ifndef NDEBUG
 		if (!IsLegal()) throw new std::logic_error("illegal targeting of player");
 #endif
@@ -123,7 +123,7 @@ class target_inventory : public cataclysm::action
 	bool (npc::* _op)(int inv_target);
 	const char* _desc;
 public:
-	target_inventory(npc& actor, int inv_index, bool (npc::* op)(int inv_target), const char* desc) : _actor(actor), _inv_index(inv_index), _op(op) {
+	target_inventory(npc& actor, int inv_index, bool (npc::* op)(int inv_target), const char* desc) : _actor(actor), _inv_index(inv_index), _op(op), _desc(desc) {
 #ifndef NDEBUG
 		if (!IsLegal()) throw new std::logic_error("illegal targeting of inventory");
 #endif
