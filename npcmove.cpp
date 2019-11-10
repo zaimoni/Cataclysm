@@ -132,9 +132,12 @@ public:
 	~target_inventory() = default;
 	bool IsLegal() const override {
 		if (0 <= _inv_index) return _actor.inv.size() > _inv_index;
+		else if (-1 == _inv_index) return true;	// not always correct: requesting weapon
 		else return _actor.styles.size() >= -_inv_index;	// not always correct, but sometimes is
 	}
 	void Perform() const override {
+		// release block \todo need to checkpoint before/after for actor state; if "no change" and _op fails then critical bug (infinite loop)
+		// C:Whales handled this for eating by forcing moves=0 afterwards, but this resulted in NPCs eating faster than PCs
 		(_actor.*_op)(_inv_index);
 	}
 	const char* name() const override {
@@ -272,10 +275,6 @@ void npc::execute_action(game *g, const ai_action& action, int target)
 
  case npc_heal:
   heal_self(g);
-  break;
-
- case npc_use_painkiller:
-  use_painkiller(g);
   break;
 
 #if DEAD_FUNC
@@ -561,11 +560,13 @@ npc::ai_action npc::address_needs(game *g, int danger) const
   }
  }
 
+ int inv_index;
  if (!took_painkiller() && pain - pkill >= 15) {
-   if (0 <= pick_best_painkiller(inv)) return ai_action(npc_use_painkiller, std::unique_ptr<cataclysm::action>());	// \todo V0.2.1+ record this index and reuse it later
+   inv_index = pick_best_painkiller(inv);
+   if (0 <= inv_index) ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<player>(*const_cast<npc*>(this), inv_index, &player::eat, "Use painkillers")));
  }
 
- auto inv_index = can_reload();
+ inv_index = can_reload();
  if (0 <= inv_index) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), inv_index, &npc::reload, "Reload")));
 
  if (   (danger <= NPC_DANGER_VERY_LOW && (hunger > 40 || thirst > 40))
@@ -1620,21 +1621,6 @@ int npc::pick_best_painkiller(const inventory& _inv) const
 	return index;
 }
 
-void npc::use_painkiller(game *g)
-{
-// First, find the best painkiller for our pain level
- int index = pick_best_painkiller(inv);
-
- if (0 > index) {
-  debugmsg("NPC tried to use painkillers, but has none!");
-  move_pause();
-  return;
- }
-
- eat(index);
- moves = 0;
-}
-
 int npc::pick_best_food(const inventory& _inv) const
 {
  int best_hunger = 999, best_thirst = 999, index = -1;
@@ -1882,7 +1868,6 @@ std::string npc_action_name(npc_action action)
 #endif
   case npc_pickup:		return "Pick up items";
   case npc_heal:		return "Heal self";
-  case npc_use_painkiller:	return "Use painkillers";
   case npc_melee:		return "Melee";
   case npc_shoot:		return "Shoot";
   case npc_shoot_burst:		return "Fire a burst";
