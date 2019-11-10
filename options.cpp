@@ -7,18 +7,19 @@
 
 using cataclysm::JSON;
 
-static bool is_bool(option_key id)
+enum {
+	OPTTYPE_BOOL = 0,
+	OPTTYPE_INT,
+	OPTTYPE_DOUBLE
+};
+
+static constexpr int type_code(option_key id)
 {
-#if 0
-	switch (id) {
-	default: return true;
-	}
-#endif
-	return true;
+	return OPTTYPE_BOOL;	// default: boolean
 }
 
 // return value true does imply boolean option
-static bool default_true(option_key opt)
+static constexpr bool default_true(option_key opt)
 {
 	switch (opt)
 	{
@@ -29,7 +30,7 @@ static bool default_true(option_key opt)
 	}
 }
 
-static const char* JSON_key(option_key opt)	// \todo micro-optimize this and following by converting this to guarded array dereference?
+static constexpr const char* JSON_key(option_key opt)	// \todo micro-optimize this and following by converting this to guarded array dereference?
 {
 	switch (opt)
 	{
@@ -89,10 +90,11 @@ option_table::option_table() {
 			auto& test = opts[key];
 			if (!test.is_scalar()) options[i] = false;	// only should handle numerals or true/false
 			else {
+				int tmp;
 				auto val = test.scalar();
 				if ("true" == val) options[i] = true;
 				else if ("false" == val) options[i] = false;
-				else options[i] = false;	// \todo implement reading double as an option value
+				else options[i] = strtod(val.c_str(),0);	// also handles int
 			}
 		}
 	}
@@ -110,8 +112,18 @@ void option_table::set(option_key i, double val)
 	const auto key = JSON_key(i);
 	if (!key) return;	// invalid in some way
 	options[i] = val;
-	// currently all options are actually boolean
-	get_JSON_opts().set(key, val ? "true" : "false");
+	switch (type_code(i)) {
+	case OPTTYPE_DOUBLE:
+		get_JSON_opts().set(key, std::to_string(val));
+		break;
+	case OPTTYPE_INT:
+		get_JSON_opts().set(key, std::to_string((int)val));
+		break;
+	case OPTTYPE_BOOL:
+	default:
+		get_JSON_opts().set(key, val ? "true" : "false");
+		break;
+	}
 }
 
 std::string option_name(option_key key)
