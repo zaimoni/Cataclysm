@@ -116,7 +116,7 @@ public:
 	}
 };
 
-template<class PC=npc>
+template<class PC/*=npc */>	// default class works for MSVC++, not MingW64
 class target_inventory : public cataclysm::action
 {
 	PC& _actor;
@@ -504,14 +504,14 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
  if (can_use_gun) {
   if (need_to_reload()) {
 	  const auto inv_index = can_reload();
-	  if (0 <= inv_index) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), inv_index, &npc::reload, "Reload")));
+	  if (0 <= inv_index) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), inv_index, &npc::reload, "Reload")));
   }
   if (emergency(danger_assessment(g)) && alt_attack_available()) return ai_action(npc_alt_attack, std::unique_ptr<cataclysm::action>());
   if (weapon.is_gun() && weapon.charges > 0) {
    if (dist > confident_range()) {
 	const auto inv_index = can_reload();
     if (0 <= inv_index && enough_time_to_reload(g, target, weapon))
-     return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), inv_index, &npc::reload, "Reload")));
+     return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), inv_index, &npc::reload, "Reload")));
     else
      return ai_action(npc_melee, std::unique_ptr<cataclysm::action>());
    }
@@ -531,7 +531,7 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
  if (can_use_gun) {
 	 int gun;
 	 if (best_gun(target, gun, empty_guns, has_better_melee)) {
-		 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), gun, &npc::wield, "Wield loaded gun")));
+		 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), gun, &npc::wield, "Wield loaded gun")));
 	 }
  } else {
 	 has_better_melee = can_wield_better_melee();
@@ -541,9 +541,9 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
  int wield_this;
 
  if (has_empty_gun && choose_empty_gun(empty_guns, wield_this))
-	 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), wield_this, &npc::wield, "Wield empty gun")));
+	 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), wield_this, &npc::wield, "Wield empty gun")));
  else if (has_better_melee) {
-	 if (best_melee_weapon(wield_this)) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), wield_this, &npc::wield, "Wield melee weapon")));
+	 if (best_melee_weapon(wield_this)) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), wield_this, &npc::wield, "Wield melee weapon")));
  }
 
  return ai_action(npc_melee, std::unique_ptr<cataclysm::action>());
@@ -566,7 +566,7 @@ npc::ai_action npc::address_needs(game *g, int danger) const
  }
 
  auto inv_index = can_reload();
- if (0 <= inv_index) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), inv_index, &npc::reload, "Reload")));
+ if (0 <= inv_index) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), inv_index, &npc::reload, "Reload")));
 
  if (   (danger <= NPC_DANGER_VERY_LOW && (hunger > 40 || thirst > 40))
 	 ||  thirst > 80
@@ -1271,7 +1271,7 @@ npc::ai_action npc::scan_new_items(game *g, int target)
  if (can_use_gun) {
   int gun;
   if (best_gun(target, gun, empty_guns, has_better_melee)) {
-   return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*this, gun, &npc::wield, "Wield loaded gun")));
+   return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*this, gun, &npc::wield, "Wield loaded gun")));
   }
  } else {
   has_better_melee = can_wield_better_melee();
@@ -1281,9 +1281,9 @@ npc::ai_action npc::scan_new_items(game *g, int target)
  int wield_this;
 
  if (has_empty_gun && choose_empty_gun(empty_guns, wield_this))
-	 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), wield_this, &npc::wield, "Wield empty gun")));
+	 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), wield_this, &npc::wield, "Wield empty gun")));
  else if (has_better_melee) {
-	 if (best_melee_weapon(wield_this)) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory(*const_cast<npc*>(this), wield_this, &npc::wield, "Wield melee weapon")));
+	 if (best_melee_weapon(wield_this)) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), wield_this, &npc::wield, "Wield melee weapon")));
  }
 
  return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());
