@@ -7,17 +7,6 @@
 
 using cataclysm::JSON;
 
-enum {
-	OPTTYPE_BOOL = 0,
-	OPTTYPE_INT,
-	OPTTYPE_DOUBLE
-};
-
-static constexpr int type_code(option_key id)
-{
-	return OPTTYPE_BOOL;	// default: boolean
-}
-
 // return value true does imply boolean option
 static constexpr bool default_true(option_key opt)
 {

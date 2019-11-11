@@ -512,10 +512,22 @@ easily drop unwanted items on the floor.");
      mvprintz(i, 0, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
     for (int i = 0; i < MENU_SPAN && offset + i < NUM_OPTION_KEYS; i++) {
+	 const auto opt = option_key(offset + i);
      mvprintz(i, 3, c_white, "%s: ",
-              option_name( option_key(offset + i) ).c_str());
-     bool on = OPTIONS[ option_key(offset + i) ];
-     mvprintz(i, 32, (on ? c_ltgreen : c_ltred), (on ? "True" : "False"));
+              option_name(opt).c_str());
+	 const auto on = OPTIONS[opt];
+	 switch (option_table::type_code(opt))
+	 {
+	 case OPTTYPE_DOUBLE:
+		 mvprintz(i, 32, c_ltgreen, std::to_string(on).c_str());
+		 break;
+	 case OPTTYPE_INT:
+		 mvprintz(i, 32, c_ltgreen, std::to_string((int)on).c_str());
+		 break;
+	 default:	// boolean
+		 mvprintz(i, 32, (on ? c_ltgreen : c_ltred), (on ? "True" : "False"));
+		 break;
+	 }
     }
     refresh();
     ch = input();
@@ -531,7 +543,19 @@ easily drop unwanted items on the floor.");
      refresh();
      char actch = getch();
      if (actch >= 'a' && actch < 'a' + MENU_SPAN && actch - 'a' + offset < NUM_OPTION_KEYS) {
-      OPTIONS.set(option_key(actch - 'a' + offset), (ch == '+'));
+	 const auto opt = option_key(actch - 'a' + offset);
+	 switch (option_table::type_code(opt))
+	 {
+	 case OPTTYPE_DOUBLE:
+		 OPTIONS.set(opt, OPTIONS[opt]+((ch == '+') ? 1 : -1));	// will need more precision eventually
+		 break;
+	 case OPTTYPE_INT:
+		 OPTIONS.set(opt, OPTIONS[opt] + ((ch == '+') ? 1 : -1));
+		 break;
+	 default:	// boolean
+		 OPTIONS.set(opt, (ch == '+'));
+		 break;
+	 }
       changed_options = true;
      }
     }

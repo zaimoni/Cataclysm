@@ -17,6 +17,12 @@ OPT_NPCS,	// NPCs generated in game world
 NUM_OPTION_KEYS
 };
 
+enum {
+	OPTTYPE_BOOL = 0,
+	OPTTYPE_INT,
+	OPTTYPE_DOUBLE
+};
+
 // Historically, this was intended to be a singleton.  Enforce this.
 class option_table
 {
@@ -33,6 +39,11 @@ public:
  double operator[](option_key i) const { return options[i]; }
  double operator[](int i) const { return options[i]; }
  void set(option_key i, double val);
+
+ static constexpr int type_code(option_key id)
+ {
+	 return OPTTYPE_BOOL;	// default: boolean
+ }
 
  static option_table& get();
 };
