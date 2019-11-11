@@ -91,8 +91,8 @@ public:
 
  // npcmove.cpp (inherited location)
  // Physical movement from one tile to the next
- bool can_move_to(game* g, const point& pt) const;
- bool move_away_from(game* g, const point& tar, point& dest) const;
+ bool can_move_to(const map& m, const point& pt) const;
+ bool move_away_from(const map& m, const point& tar, point& dest) const;
  virtual int can_reload() const; // Wielding a gun that is not fully loaded; return value is inventory index, or -1
 
  // melee.cpp

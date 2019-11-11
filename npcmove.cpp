@@ -81,7 +81,7 @@ public:
 	};
 	~move_step_screen() = default;
 	bool IsLegal() const override {
-		return _actor.can_move_to(game::active(), _dest);	// stricter than what npc::move_to actually supports
+		return _actor.can_move_to(game::active()->m, _dest);	// stricter than what npc::move_to actually supports
 	}
 	void Perform() const override {
 		_actor.move_to(game::active(), _dest);
@@ -438,7 +438,7 @@ void npc::choose_monster_target(game *g, int &enemy, int &danger,
 static npc::ai_action _flee(const npc& actor, const point& fear)
 {
 	point escape;
-	if (actor.move_away_from(game::active(), fear, escape)) {
+	if (actor.move_away_from(game::active()->m, fear, escape)) {
 		return npc::ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(const_cast<npc&>(actor), escape)));	// C:Whales failure mode was npc_pause
 	}
 	return npc::ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
@@ -902,9 +902,9 @@ void npc::update_path(const map& m, const point& pt)
  if (!path.empty() && path[0] == pos) path.erase(path.begin());
 }
 
-bool player::can_move_to(game *g, const point& pt) const
+bool player::can_move_to(const map& m, const point& pt) const
 {
- return (g->m.move_cost(pt) > 0 || g->m.has_flag(bashable, pt)) && rl_dist(pos, pt) <= 1;
+ return (m.move_cost(pt) > 0 || m.has_flag(bashable, pt)) && rl_dist(pos, pt) <= 1;
 }
 
 void npc::move_to(game *g, point pt)
@@ -1004,7 +1004,7 @@ void npc::avoid_friendly_fire(game *g, int target)
  valid_moves.push_back(pos + direction_vector(rotate_clockwise(dir_to_target, -delta)));
 
  for (int i = 0; i < valid_moves.size(); i++) {
-  if (can_move_to(g, valid_moves[i])) {
+  if (can_move_to(g->m, valid_moves[i])) {
    move_to(g, valid_moves[i]);
    return;
   }
@@ -1020,7 +1020,7 @@ void npc::avoid_friendly_fire(game *g, int target)
  execute_action(g, action, target);
 }
 
-bool player::move_away_from(game* g, const point& tar, point& dest) const
+bool player::move_away_from(const map& m, const point& tar, point& dest) const
 {
 	std::vector<point> options;
 	point d(0, 0);
@@ -1043,7 +1043,7 @@ bool player::move_away_from(game* g, const point& tar, point& dest) const
 	// looks strange to go the other way when backed against a wall
 	if (trig_dist(tar, options[4]) < trig_dist(tar, options[3])) std::swap(options[3], options[4]);
 
-	for (const auto& pt : options) if (can_move_to(g, pt)) {
+	for (const auto& pt : options) if (can_move_to(m, pt)) {
 		dest = pt;
 		return true;
 	}
@@ -1839,7 +1839,7 @@ void npc::go_to_destination(game *g)
           g->m.ter(dest) == t_door_c) &&
          g->m.sees(pos, dest, light)) {
       path = g->m.route(pos, dest);
-      if (!path.empty() && can_move_to(g, path[0])) {
+      if (!path.empty() && can_move_to(g->m, path[0])) {
        move_to_next(g);
        if (goal.x == mapx && goal.y == mapy) {	// We're at our desired map square!
         reach_destination();
