@@ -147,7 +147,6 @@ public:
 };
 
 std::string npc_action_name(npc_action action);
-bool thrown_item(item *used);
 
 // Used in npc::drop_items()
 struct ratio_index
@@ -1352,6 +1351,17 @@ bool npc::best_gun(const int target, int& inv_index, std::vector<int>& empty_gun
 	return ret;
 }
 
+static bool thrown_item(const item& used)	// not general enough to migrate to item member function
+{
+	if (used.active) return true;	// already activated
+	switch (used.type->id)
+	{
+	case itm_knife_combat:
+	case itm_spear_wood: return true; // whitelist of throwing weapons \todo? bitflag to enable JSON configuration
+	default: return false;
+	}
+}
+
 void npc::alt_attack(game *g, int target)
 {
  point tar;
@@ -1364,7 +1374,6 @@ void npc::alt_attack(game *g, int target)
   move_pause();
   return;
  }
- int dist = rl_dist(pos, tar);
  const itype_id which = alt_attack_available();
  DEBUG_FAIL_OR_LEAVE(itm_null == which, return);	// We ain't got shit!  Definitely should not happen.
 
@@ -1384,12 +1393,12 @@ void npc::alt_attack(game *g, int target)
  DEBUG_FAIL_OR_LEAVE(!used, return);	// invariant violation
 
 // Are we going to throw this item?
- if (!thrown_item(used))
-  activate_item(g, index);
+ if (!thrown_item(*used)) activate_item(g, index);
  else { // We are throwing it!
 
   std::vector<point> trajectory;
   const int light = g->light_level();
+  const int dist = rl_dist(pos, tar);
 
   if (dist <= confident_range(index) && wont_hit_friend(g, tar, index)) {
    {
@@ -1461,7 +1470,7 @@ void npc::alt_attack(game *g, int target)
  } // Done with throwing-item block
 }
 
-void npc::activate_item(game *g, int index)
+void npc::activate_item(game *g, int index)	// unclear whether this "works"; parallel is npc::use_escape_item
 {
  item& it = inv[index];
  if (it.is_tool()) {
@@ -1471,16 +1480,6 @@ void npc::activate_item(game *g, int index)
   const it_comest* const comest = dynamic_cast<const it_comest*>(it.type);
   (*comest->use)(g, this, &it, false);
  }
-}
-
-bool thrown_item(item *used)
-{
- if (used == NULL) {
-  debugmsg("npcmove.cpp's thrown_item() called with NULL item");
-  return false;
- }
- itype_id type = itype_id(used->type->id);
- return (used->active || type == itm_knife_combat || type == itm_spear_wood);
 }
 
 std::pair<hp_part, int> player::worst_injury() const
