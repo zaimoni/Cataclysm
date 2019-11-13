@@ -3,9 +3,6 @@
 
 #include "mongroup.h"
 
-#define OMAPX 180
-#define OMAPY 180
-
 #define TUTORIAL_Z	10
 #define DEFENSE_Z	20
 #define NETHER_Z 	30

@@ -3,11 +3,16 @@
 #include "enums.h"
 #include "string.h"
 #include "omdata.h"
-#include "mongroup.h"
 #include "output.h"
 #include "npc.h"
 #include <vector>
 #include <iosfwd>
+
+enum {
+	OMAP = 180,
+	OMAPX = OMAP,
+	OMAPY = OMAP
+};
 
 struct city {
  int x;	// legal range 0...OMAPX-1
