@@ -19,6 +19,14 @@ static constexpr bool default_true(option_key opt)
 	}
 }
 
+static constexpr double default_nonzero(option_key opt)
+{
+	switch (opt)
+	{
+	default: return 0;
+	}
+}
+
 static constexpr const char* JSON_key(option_key opt)	// \todo micro-optimize this and following by converting this to guarded array dereference?
 {
 	switch (opt)
@@ -63,7 +71,17 @@ static JSON& get_JSON_opts() {
 		do  {
 			option_key option = (option_key)opt;
 			const std::string key(JSON_key(option));
-			if (!x->has_key(key)) x->set(key, default_true(option) ? "true" : "false");
+			if (!x->has_key(key)) {
+				switch (option_table::type_code(option))
+				{
+				case OPTTYPE_INT: x->set(key, std::to_string((int)default_nonzero(option)));
+					break;
+				case OPTTYPE_DOUBLE: x->set(key, std::to_string(default_nonzero(option)));
+					break;
+				default: x->set(key, default_true(option) ? "true" : "false");
+					break;
+				}
+			}
 			}
 		while(NUM_OPTION_KEYS > ++opt);	// coincidentally all options are boolean currently
 	}
@@ -79,7 +97,6 @@ option_table::option_table() {
 			auto& test = opts[key];
 			if (!test.is_scalar()) options[i] = false;	// only should handle numerals or true/false
 			else {
-				int tmp;
 				auto val = test.scalar();
 				if ("true" == val) options[i] = true;
 				else if ("false" == val) options[i] = false;
