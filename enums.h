@@ -66,7 +66,37 @@ struct tripoint {
 // explicit tripoint(int X) : x(X), y(X), z(X) {};	// the diagonal projection of the integers Z into the integer space Z^3
  tripoint(int X, int Y, int Z) : x (X), y (Y), z (Z) {}
  tripoint(const tripoint &p) = default;
+
+ tripoint& operator+=(const tripoint& rhs) {
+	 x += rhs.x;
+	 y += rhs.y;
+	 z += rhs.z;
+	 return *this;
+ }
+ tripoint& operator-=(const tripoint& rhs) {
+	 x -= rhs.x;
+	 y -= rhs.y;
+	 z -= rhs.z;
+	 return *this;
+ }
+ tripoint& operator*=(int rhs) {
+	 x *= rhs;
+	 y *= rhs;
+	 z *= rhs;
+	 return *this;
+ }
+ tripoint& operator/=(int rhs) {
+	 x /= rhs;
+	 y /= rhs;
+	 z /= rhs;
+	 return *this;
+ }
 };
+
+inline tripoint operator+(const tripoint& lhs, const tripoint& rhs) { return tripoint(lhs) += rhs; }
+inline tripoint operator-(const tripoint& lhs, const tripoint& rhs) { return tripoint(lhs) -= rhs; }
+inline tripoint operator*(int s, const tripoint& pt) { return tripoint(pt) *= s; }
+inline tripoint operator*(const tripoint& pt, int s) { return tripoint(pt) *= s; }
 
 inline bool operator<(const tripoint& lhs, const tripoint& rhs)
 {

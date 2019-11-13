@@ -5849,6 +5849,36 @@ void game::vertical_move(int movez, bool force)
  refresh_all();
 }
 
+// cf map::loadn
+std::pair<tripoint, point> game::toGPS(point screen_pos) const	// \todo overflow checking
+{
+	auto anchor(cur_om.pos);
+	anchor *= 2 * OMAP;
+	anchor.x += lev.x;
+	anchor.y += lev.y;
+//  historically cur_om.pos.z == lev.z
+	if (0 > screen_pos.x) {
+		anchor.x += screen_pos.x / SEE;
+		screen_pos.x %= SEE;
+		anchor.x--;
+		screen_pos.x += SEE;
+	} else if (SEE <= screen_pos.x) {
+		anchor.x += screen_pos.x / SEE;
+		screen_pos.x %= SEE;
+	}
+	if (0 > screen_pos.y) {
+		anchor.y += screen_pos.y / SEE;
+		screen_pos.y %= SEE;
+		anchor.y--;
+		screen_pos.y += SEE;
+	}
+	else if (SEE <= screen_pos.y) {
+		anchor.y += screen_pos.y / SEE;
+		screen_pos.y %= SEE;
+	}
+	return std::pair<tripoint, point>(anchor, screen_pos);
+}
+
 static const zaimoni::gdi::box<point> _map_centered_enough(point(SEE*(MAPSIZE / 2)), point(SEE*((MAPSIZE / 2) + 1)-1));
 
 bool game::update_map_would_scroll(const point& pt)
