@@ -91,6 +91,35 @@ public:
 	}
 };
 
+class move_path_screen : public cataclysm::action
+{
+	npc& _actor;	// \todo would like player here
+	size_t _threshold;
+	void (npc::* _op)();
+	const char* _desc;
+public:
+	move_path_screen(npc& actor, const point& dest, size_t threshold, void (npc::* op)(), const char* desc) : _actor(actor), _threshold(threshold),_op(op),_desc(desc) {
+		_actor.update_path(game::active()->m, dest);
+		if (_actor.path.empty()) throw std::runtime_error("tried to follow empty path");
+		if (_actor.path.size() <= _threshold && !_op) throw std::runtime_error("NULL path action");
+#ifndef NDEBUG
+		if (!IsLegal()) throw new std::logic_error("unreasonable pathing");
+#endif
+	};
+	~move_path_screen() = default;
+	bool IsLegal() const override {
+		return _actor.path.size() <= _threshold || _actor.can_move_to(game::active()->m, _actor.path[0]);	// stricter than what npc::move_to actually supports
+	}
+	void Perform() const override {
+		if (_actor.path.size() <= _threshold) (_actor.*_op)();
+		else _actor.move_to(game::active(), _actor.path[0]);
+	}
+	const char* name() const override {
+		if (_desc && *_desc) return _desc;
+		return "Following path";	// failover
+	}
+};
+
 class target_player : public cataclysm::action
 {
 	npc& _actor;
@@ -169,7 +198,7 @@ void npc::move(game *g)
  choose_monster_target(g, target, danger, total_danger);
  if (game::debugmon)
   debugmsg("NPC %s: target = %d, danger = %d, range = %d",
-           name.c_str(), target, danger, confident_range(-1));
+           name.c_str(), target, danger, confident_range());
 
  if (is_enemy()) {
   int pl_danger = player_danger( &(g->u) );
@@ -205,7 +234,7 @@ void npc::move(game *g)
     find_item(g);
    if (game::debugmon) debugmsg("find_item %s", action.second ? action.second->name() : npc_action_name(action.first).c_str());
    if (fetching_item)		// Set to true if find_item() found something
-    action = ai_action(npc_pickup, std::unique_ptr<cataclysm::action>());
+     action = ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_path_screen(*this, it, 1, &npc::pick_up_item, "Pick up items")));
    else if (is_following())	// No items, so follow the player?
     action = ai_action(npc_follow_player, std::unique_ptr<cataclysm::action>());
    else				// Do our long-term action
@@ -267,10 +296,6 @@ void npc::execute_action(game *g, const ai_action& action, int target)
    say(g, "I'm going to sleep.");
   break;
 #endif
-
- case npc_pickup:
-  pick_up_item(g);
-  break;
 
  case npc_heal:
   heal_self(g);
@@ -1099,16 +1124,9 @@ void npc::find_item(game *g)
   say(g, "Hold on, I want to pick up that %s.", pickup->tname().c_str());
 }
 
-void npc::pick_up_item(game *g)
+void npc::pick_up_item()
 {
- if (game::debugmon) debugmsg("%s::pick_up_item(); [%d, %d] => [%d, %d]", name.c_str(), pos.x, pos.y, it.x, it.y);
- update_path(g->m, it);
-
- if (path.size() > 1) {
-  if (game::debugmon) debugmsg("Moving; [%d, %d] => [%d, %d]", pos.x, pos.y, path[0].x, path[0].y);
-  move_to_next(g);
-  return;
- }
+ auto g = game::active();
 // We're adjacent to the item; grab it!
  moves -= 100;
  fetching_item = false;
@@ -1865,7 +1883,6 @@ std::string npc_action_name(npc_action action)
   case npc_drop_items:		return "Drop items";
   case npc_heal_player:		return "Heal player";
 #endif
-  case npc_pickup:		return "Pick up items";
   case npc_heal:		return "Heal self";
   case npc_melee:		return "Melee";
   case npc_shoot:		return "Shoot";

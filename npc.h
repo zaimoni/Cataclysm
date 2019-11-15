@@ -91,7 +91,6 @@ enum npc_action {
 #if DEAD_FUNC
  npc_sleep, npc_drop_items, npc_heal_player,
 #endif
- npc_pickup,
   npc_heal,
  npc_melee, npc_shoot, npc_shoot_burst, npc_alt_attack,
  npc_look_for_player, npc_follow_player, npc_talk_to_player,
@@ -421,7 +420,9 @@ public:
 
 // Item discovery and fetching
  void find_item		(game *g); // Look around and pick an item
- void pick_up_item	(game *g); // Move to, or grab, our targeted item
+private:
+ void pick_up_item	(); // Move to, or grab, our targeted item
+public:
  ai_action scan_new_items(game *g, int target);
 
 // Combat functions and player interaction functions
