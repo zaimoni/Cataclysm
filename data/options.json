@@ -1,6 +1,8 @@
 {"24 hour clock":false,
 	NPCs:true,
 	"auto safe mode":false,
+	"extra bottom-right margin":0,
+	"font height":16,
 	"force Y/N":true,
 	lang:"en",
 	"no cblink":false,

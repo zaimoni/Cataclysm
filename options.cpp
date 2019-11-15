@@ -19,10 +19,20 @@ static constexpr bool default_true(option_key opt)
 	}
 }
 
-static constexpr double default_nonzero(option_key opt)
+static constexpr double default_numeric(option_key opt)
 {
 	switch (opt)
 	{
+	case OPT_FONT_HEIGHT: return 16;
+	default: return 0;
+	}
+}
+
+static constexpr double min_numeric(option_key opt)
+{
+	switch (opt)
+	{
+	case OPT_FONT_HEIGHT: return 10;	// historically deemed unreadable if calculated width 4 or lower; likewise height 4 or lower
 	default: return 0;
 	}
 }
@@ -40,6 +50,8 @@ static constexpr const char* JSON_key(option_key opt)	// \todo micro-optimize th
 	case OPT_SAFEMODE: return "safe mode";
 	case OPT_AUTOSAFEMODE: return "auto safe mode";
 	case OPT_NPCS: return "NPCs";
+	case OPT_FONT_HEIGHT: return "font height";
+	case OPT_EXTRA_MARGIN: return "extra bottom-right margin";
 	default: return 0;
 	}
 }
@@ -74,9 +86,9 @@ static JSON& get_JSON_opts() {
 			if (!x->has_key(key)) {
 				switch (option_table::type_code(option))
 				{
-				case OPTTYPE_INT: x->set(key, std::to_string((int)default_nonzero(option)));
+				case OPTTYPE_INT: x->set(key, std::to_string((int)default_numeric(option)));
 					break;
-				case OPTTYPE_DOUBLE: x->set(key, std::to_string(default_nonzero(option)));
+				case OPTTYPE_DOUBLE: x->set(key, std::to_string(default_numeric(option)));
 					break;
 				default: x->set(key, default_true(option) ? "true" : "false");
 					break;
@@ -117,6 +129,12 @@ void option_table::set(option_key i, double val)
 { 
 	const auto key = JSON_key(i);
 	if (!key) return;	// invalid in some way
+	switch (type_code(i)) {
+	case OPTTYPE_DOUBLE:
+	case OPTTYPE_INT: 
+		if (min_numeric(i) > val) val = min_numeric(i);	// clamp numeric options; don't worry about CPU, this is UI
+		break;
+	}
 	options[i] = val;
 	switch (type_code(i)) {
 	case OPTTYPE_DOUBLE:
@@ -144,6 +162,8 @@ std::string option_name(option_key key)
   case OPT_SAFEMODE:		return "Safemode on by default";
   case OPT_AUTOSAFEMODE:	return "Auto-Safemode on by default";
   case OPT_NPCS:			return "Generate NPCs";
+  case OPT_FONT_HEIGHT:		return "Font height";
+  case OPT_EXTRA_MARGIN:	return "Extra bottom-right margin";
   default:			return "Unknown Option (BUG)";
  }
  return "Big ol Bug";

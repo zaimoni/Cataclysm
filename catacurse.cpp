@@ -2,6 +2,7 @@
 #include "catacurse.h"
 #include "JSON.h"
 #include "ui.h"
+#include "options.h"
 #include <fstream>
 #include <string>
 #include <map>
@@ -1198,26 +1199,32 @@ WINDOW *initscr(void)
     BITMAPINFO bmi;
     lastchar=-1;
     inputdelay=-1;
+
+	const auto& OPTIONS = option_table::get();
+	SetFontSize(OPTIONS[OPT_FONT_HEIGHT]/2, OPTIONS[OPT_FONT_HEIGHT]);
+
     std::string typeface;
 	std::ifstream fin;
 	fin.open("data\\FONTDATA");
  if (!fin.is_open()){
      MessageBox(_win, "Failed to open FONTDATA, loading defaults.", NULL, 0);
-	 if (0 >= fontwidth) SetFontSize(8, 16);
+	 if (0 >= fontwidth) SetFontSize(8, 16);	// predicted to be dead code
  } else {
      getline(fin, typeface);
-	 int tmp_width;
-	 int tmp_height;
+	 if (0 >= fontwidth) {	// predicted to be dead code
+		 int tmp_width;
+		 int tmp_height;
 
-     fin >> tmp_width;
-     fin >> tmp_height;
-	 if (   (0 >= fontwidth && 4 >= tmp_width)
-		 || (0 >= fontheight && 4 >= tmp_height)) {
-         MessageBox(_win, "Invalid font size specified!", NULL, 0);
-		 tmp_width  = 8;
-		 tmp_height = 16;
-     }
-	 if (0 >= fontwidth) SetFontSize(tmp_width, tmp_height);
+		 fin >> tmp_width;
+		 fin >> tmp_height;
+		 if ((0 >= fontwidth && 4 >= tmp_width)
+			 || (0 >= fontheight && 4 >= tmp_height)) {
+			 MessageBox(_win, "Invalid font size specified!", NULL, 0);
+			 tmp_width = 8;
+			 tmp_height = 16;
+		 }
+		 if (0 >= fontwidth) SetFontSize(tmp_width, tmp_height);
+	 }
  }
  haveCustomFont = (!typeface.empty() ? AddFontResourceExA("data\\termfont", FR_PRIVATE, NULL) : 0);
  if (!haveCustomFont) MessageBox(_win, "Failed to load default font, using FixedSys.", NULL, 0);
