@@ -5,6 +5,7 @@
 	"font height":16,
 	"force Y/N":true,
 	lang:"en",
+	"load tiles":true,
 	"no cblink":false,
 	"safe mode":true,
 	"snap to target":false,

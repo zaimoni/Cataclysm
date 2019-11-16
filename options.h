@@ -14,6 +14,7 @@ OPT_SNAP_TO_TARGET, // game::firing snaps to target
 OPT_SAFEMODE, // Safemode on by default?
 OPT_AUTOSAFEMODE, // Autosafemode on by default?
 OPT_NPCS,	// NPCs generated in game world
+OPT_LOAD_TILES,	// use tileset
 OPT_FONT_HEIGHT,	// font height (ASCII)
 OPT_EXTRA_MARGIN,	// correction to margin to avoid clipping text
 NUM_OPTION_KEYS

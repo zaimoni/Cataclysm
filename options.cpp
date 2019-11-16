@@ -14,6 +14,7 @@ static constexpr bool default_true(option_key opt)
 	{
 	case OPT_FORCE_YN:
 	case OPT_SAFEMODE: 
+	case OPT_LOAD_TILES:
 	case OPT_NPCS: return true;
 	default: return false;
 	}
@@ -50,6 +51,7 @@ static constexpr const char* JSON_key(option_key opt)	// \todo micro-optimize th
 	case OPT_SAFEMODE: return "safe mode";
 	case OPT_AUTOSAFEMODE: return "auto safe mode";
 	case OPT_NPCS: return "NPCs";
+	case OPT_LOAD_TILES: return "load tiles";
 	case OPT_FONT_HEIGHT: return "font height";
 	case OPT_EXTRA_MARGIN: return "extra bottom-right margin";
 	default: return 0;
@@ -162,8 +164,9 @@ std::string option_name(option_key key)
   case OPT_SAFEMODE:		return "Safemode on by default";
   case OPT_AUTOSAFEMODE:	return "Auto-Safemode on by default";
   case OPT_NPCS:			return "Generate NPCs";
-  case OPT_FONT_HEIGHT:		return "Font height";
-  case OPT_EXTRA_MARGIN:	return "Extra bottom-right margin";
+  case OPT_LOAD_TILES:		return "use tileset (requires restart)";
+  case OPT_FONT_HEIGHT:		return "Font height (requires restart)";
+  case OPT_EXTRA_MARGIN:	return "Extra bottom-right margin (requires restart)";
   default:			return "Unknown Option (BUG)";
  }
  return "Big ol Bug";

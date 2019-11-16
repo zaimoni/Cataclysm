@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
 
 // final format is an object of key-id, value-image filepath pairs  To fully support C:DDA tilesheets, 
 // we have to specify what order tilesets are to be checked in (array) and then merge the objects accordingly
- load_JSON("data/json/tilespec.json", "tilespec", scalar_on_hard_drive);	// expected format array of JSON files
+ if (option_table::get()[OPT_LOAD_TILES]) load_JSON("data/json/tilespec.json", "tilespec", scalar_on_hard_drive);	// expected format array of JSON files
  // expected format of the files named by tilespec are
  // key name: value is display name of tileset
  // key tiles: value is an object, keys are enumeration values, values are tile images.  For the DeonApocalypse tileset we need to
