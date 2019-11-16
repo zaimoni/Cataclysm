@@ -309,15 +309,14 @@ void npc::execute_action(game *g, const ai_action& action, int target)
 #endif
 
  case npc_melee:
-  update_path(g->m, tar);
+  // path is updated and non-empty
   if (path.size() > 1) move_to_next(g);
-  else if (path.size() == 1) {
+  else /* if (path.size() == 1) */ {
    if (target >= 0)
     melee_monster(g, target);
    else if (target == TARGET_PLAYER)
     melee_player(g, g->u);
-  } else
-   look_for_player(g, g->u);
+  }
   break;
   
  case npc_shoot:
@@ -514,6 +513,14 @@ bool npc::choose_empty_gun(const std::vector<int>& empty_guns, int& inv_index) c
 	return ammo_found;
 }
 
+static npc::ai_action _melee(const npc& actor, const point& tar)
+{
+	const_cast<npc&>(actor).update_path(game::active()->m, tar);	// \todo want to think of npc::path as mutable here
+	if (!actor.path.empty()) return npc::ai_action(npc_melee, std::unique_ptr<cataclysm::action>());
+	// \todo maybe follow player if appropriate
+	return npc::ai_action(npc_look_for_player, std::unique_ptr<cataclysm::action>());	// C:Whales failover when no path
+}
+
 npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
 {
  point tar((target == TARGET_PLAYER) ? g->u.pos : g->z[target].pos);
@@ -536,7 +543,7 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
     if (0 <= inv_index && enough_time_to_reload(g, target, weapon))
      return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), inv_index, &npc::reload, "Reload")));
     else
-     return ai_action(npc_melee, std::unique_ptr<cataclysm::action>());
+	 return _melee(*this, tar);
    }
    const it_gun* const gun = dynamic_cast<const it_gun*>(weapon.type);
    if (!wont_hit_friend(g, tar)) return ai_action(npc_avoid_friendly_fire, std::unique_ptr<cataclysm::action>());
@@ -569,7 +576,7 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
 	 if (best_melee_weapon(wield_this)) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), wield_this, &npc::wield, "Wield melee weapon")));
  }
 
- return ai_action(npc_melee, std::unique_ptr<cataclysm::action>());
+ return _melee(*this, tar);
 }
 
 npc::ai_action npc::address_needs(game *g, int danger) const
