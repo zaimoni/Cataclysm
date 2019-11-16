@@ -311,14 +311,16 @@ private:
 	};
 };
 
+static const auto& OPTIONS = option_table::get();
+
 #if _MSC_VER
 // MSVC is empirically broken (following is correct for _MSC_VER 1913 ... 1914)
-#define BORDERWIDTH_SCALE 5
-#define BORDERHEIGHT_SCALE 5
+#define BORDERWIDTH_SCALE (5+3*OPTIONS[OPT_EXTRA_MARGIN])
+#define BORDERHEIGHT_SCALE (5+3*OPTIONS[OPT_EXTRA_MARGIN])
 #else
 // assume we are on a working WinAPI (e.g., MingWin)
-#define BORDERWIDTH_SCALE 2
-#define BORDERHEIGHT_SCALE 2
+#define BORDERWIDTH_SCALE (2+3*OPTIONS[OPT_EXTRA_MARGIN])
+#define BORDERHEIGHT_SCALE (2+3*OPTIONS[OPT_EXTRA_MARGIN])
 #endif
 HWND OS_Window::_last = 0;	// the most recently created, valid window
 HDC OS_Window::_last_dc = 0;	// the most recently created, valid physical device context
@@ -1016,7 +1018,7 @@ bool WinCreate()
     WindowClassType.hIconSm = LoadIcon(NULL, IDI_APPLICATION);//Default Icon
     WindowClassType.hCursor = LoadCursor(NULL, IDC_ARROW);//Default Pointer
     WindowClassType.lpszMenuName = NULL;
-    WindowClassType.hbrBackground = 0;//Thanks jday! Remove background brush
+	WindowClassType.hbrBackground = CreateSolidBrush(RGB(0, 0, 0)); // will be auto-deleted on close
     WindowClassType.lpszClassName = szWindowClass;
     if (!RegisterClassExW(&WindowClassType)) return false;
 	const unsigned int WindowStyle = WS_OVERLAPPEDWINDOW & ~(WS_THICKFRAME) & ~(WS_MAXIMIZEBOX);
@@ -1066,8 +1068,9 @@ LRESULT CALLBACK ProcessMessages(HWND__ *hWnd,unsigned int Msg, WPARAM wParam, L
                 default:
                     break;
             };
-        case WM_ERASEBKGND:
-            return 1;               //We don't want to erase our background
+// \todo we usually don't want to erase background but we have to when resizing or else.
+// Control variable in OS_Window; starts true, set by resizing, cleared by redrawing background.
+//      case WM_ERASEBKGND: return 1;
         case WM_PAINT:              //Pull from our backbuffer, onto the screen
             BitBlt(_win.dc(), 0, 0, _win.width(), _win.height(), _win.backbuffer(), 0, 0,SRCCOPY);
             ValidateRect(_win,NULL);
@@ -1200,7 +1203,6 @@ WINDOW *initscr(void)
     lastchar=-1;
     inputdelay=-1;
 
-	const auto& OPTIONS = option_table::get();
 	SetFontSize(OPTIONS[OPT_FONT_HEIGHT]/2, OPTIONS[OPT_FONT_HEIGHT]);
 
     std::string typeface;
