@@ -73,8 +73,9 @@ class move_step_screen : public cataclysm::action
 {
 	npc& _actor;	// \todo would like player here
 	point _dest;
+	const char* _desc;
 public:
-	move_step_screen(npc& actor, const point& dest) : _actor(actor), _dest(dest) {
+	move_step_screen(npc& actor, const point& dest, const char* desc) : _actor(actor), _dest(dest), _desc(desc) {
 #ifndef NDEBUG
 		if (!IsLegal()) throw new std::logic_error("unreasonable move");
 #endif
@@ -87,7 +88,8 @@ public:
 		_actor.move_to(game::active(), _dest);
 	}
 	const char* name() const override {
-		return "Moving (screen-relative)";
+		if (_desc && *_desc) return _desc;
+		return "Moving (screen-relative)";	// failover
 	}
 };
 
@@ -235,20 +237,13 @@ void npc::move(game *g)
    if (game::debugmon) debugmsg("find_item %s", action.second ? action.second->name() : npc_action_name(action.first).c_str());
    if (fetching_item)		// Set to true if find_item() found something
      action = ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_path_screen(*this, it, 1, &npc::pick_up_item, "Pick up items")));
-   else if (is_following())	// No items, so follow the player?
-    action = ai_action(npc_follow_player, std::unique_ptr<cataclysm::action>());
-   else				// Do our long-term action
-    action = long_term_goal_action(g);
+   else if (is_following() && update_path(g->m, g->u.pos, follow_distance())) {	// No items, so follow the player?
+    action = ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(const_cast<npc&>(*this), path.front(), "Follow player")));
+   } else
+    action = long_term_goal_action(g); // Do our long-term action
    if (game::debugmon) debugmsg("long_term_goal_action %s", action.second ? action.second->name() : npc_action_name(action.first).c_str());
   }
  }
-
-/* Sometimes we'll be following the player at this point, but close enough that
- * "following" means standing still.  If that's the case, if there are any
- * monsters around, we should attack them after all!
- */
- if (action.first == npc_follow_player && danger > 0 && rl_dist(pos, g->u.pos) <= follow_distance())
-  action = method_of_attack(g, target, danger);
 
 #ifndef NDEBUG
  if (!action.first && !action.second) throw std::logic_error("npc::execute_action will fail");
@@ -354,16 +349,6 @@ void npc::execute_action(game *g, const ai_action& action, int target)
   break;
 #endif
 
- case npc_follow_player:
-  update_path(g->m, g->u.pos);
-  if (path.size() <= follow_distance())	// We're close enough to u.
-   move_pause();
-  else if (path.size() > 0)
-   move_to_next(g);
-  else
-   move_pause();
-  break;
-
  case npc_talk_to_player:
   talk_to_u(g);
   moves = 0;
@@ -462,7 +447,7 @@ static npc::ai_action _flee(const npc& actor, const point& fear)
 {
 	point escape;
 	if (actor.move_away_from(game::active()->m, fear, escape)) {
-		return npc::ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(const_cast<npc&>(actor), escape)));	// C:Whales failure mode was npc_pause
+		return npc::ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(const_cast<npc&>(actor), escape, "Fleeing")));	// C:Whales failure mode was npc_pause
 	}
 	return npc::ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
 }
@@ -628,12 +613,11 @@ npc::ai_action npc::address_needs(game *g, int danger) const
 npc::ai_action npc::address_player(game *g)
 {
  if ((attitude == NPCATT_TALK || attitude == NPCATT_TRADE) && g->sees_u(pos)) {
-  if (rl_dist(pos, g->u.pos) <= 6)
-   return ai_action(npc_talk_to_player, std::unique_ptr<cataclysm::action>()); // Close enough to talk to you
-  else {
+  if (update_path(g->m, g->u.pos, 6)) {
    if (one_in(10)) say(g, "<lets_talk>");
-   return ai_action(npc_follow_player, std::unique_ptr<cataclysm::action>());
-  }
+   return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(const_cast<npc&>(*this), path.front(), "Follow player")));
+  } else
+   return ai_action(npc_talk_to_player, std::unique_ptr<cataclysm::action>()); // Close enough to talk to you
  }
 
  if (attitude == NPCATT_MUG && g->sees_u(pos)) {
@@ -687,7 +671,7 @@ npc::ai_action npc::long_term_goal_action(game *g)	// XXX this was being prototy
  
 
  if (!has_destination()) set_destination(g);
- return ai_action(npc_goto_destination, std::unique_ptr<cataclysm::action>());
+ if (has_destination()) return ai_action(npc_goto_destination, std::unique_ptr<cataclysm::action>());
 
  return ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
 }
@@ -925,6 +909,17 @@ bool npc::path_is_usable(const map& m)
 	}
 	return false;
 }
+
+bool npc::update_path(const map& m, const point& pt, const size_t longer_than)
+{
+	if (path_is_usable(m) && path.back() == pt) return longer_than < path.size();	// usable, already leads to destination: no need to recalculate
+	auto new_path = m.route(pos, pt);
+	if (!new_path.empty() && new_path.front() == pos) new_path.erase(new_path.begin());
+	if (longer_than >= new_path.size()) return false;
+	path = std::move(new_path);
+	return true;
+}
+
 
 void npc::update_path(const map& m, const point& pt)
 {
@@ -1896,7 +1891,6 @@ std::string npc_action_name(npc_action action)
   case npc_shoot_burst:		return "Fire a burst";
   case npc_alt_attack:		return "Use alternate attack";
   case npc_look_for_player:	return "Look for player";
-  case npc_follow_player:	return "Follow player";
   case npc_talk_to_player:	return "Talk to player";
   case npc_goto_destination:	return "Go to destination";
   case npc_avoid_friendly_fire:	return "Avoid friendly fire";

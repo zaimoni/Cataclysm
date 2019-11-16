@@ -93,7 +93,7 @@ enum npc_action {
 #endif
   npc_heal,
  npc_melee, npc_shoot, npc_shoot_burst, npc_alt_attack,
- npc_look_for_player, npc_follow_player, npc_talk_to_player,
+ npc_look_for_player, npc_talk_to_player,
  npc_goto_destination, npc_avoid_friendly_fire,
  num_npc_actions
 };
@@ -413,6 +413,7 @@ public:
 // Physical movement from one tile to the next
  bool path_is_usable(const map& m);
  void update_path	(const map& m, const point& pt);
+ bool update_path(const map& m, const point& pt, size_t longer_than);
  void move_to		(game *g, point pt);
  void move_to_next	(game *g); // Next in <path>
  void avoid_friendly_fire(game *g, int target); // Maneuver so we won't shoot u
@@ -442,15 +443,17 @@ private:
 #endif
  int pick_best_food(const inventory& _inv) const;
  void mug_player(player& mark);
-public:
  void look_for_player	(game *g, player &sought);
+public:
  bool saw_player_recently() const;// Do we have an idea of where u are?
 
 // Movement on the overmap scale
  bool has_destination() const;	// Do we have a long-term destination?
+private:
  void set_destination(game *g);	// Pick a place to go
  void go_to_destination(game *g); // Move there; on the micro scale
  void reach_destination() { goal = point(-1, -1); } // We made it!
+public:
 
 // The preceding are in npcmove.cpp
 
