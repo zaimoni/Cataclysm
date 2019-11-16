@@ -972,6 +972,7 @@ void npc::move_to(game *g, point pt)
  else if (g->m.move_cost(pt) > 0) {
   pos = pt;
   moves -= run_cost(g->m.move_cost(pt) * 50);
+  if (!path.empty() && pos == path.front()) path.erase(path.begin());	 // maintain path (should cost CPU)
  } else if (g->m.open_door(pt.x, pt.y, (g->m.ter(pos) == t_floor)))
   moves -= 100;
  else if (g->m.has_flag(bashable, pt)) {
@@ -993,7 +994,6 @@ void npc::move_to_next(game *g)
  }
  while (pos == path[0]) path.erase(path.begin());
  move_to(g, path[0]);
- if (pos == path[0]) path.erase(path.begin());	 // Move was successful
 }
 
 // TODO: Rewrite this.  It doesn't work well and is ugly.
