@@ -668,7 +668,7 @@ npc::ai_action npc::long_term_goal_action(game *g)	// XXX this was being prototy
   return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());	// Shopkeeps just stay put.
 
 // TODO: Follow / look for player
- 
+ if (is_following()) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());	// historical C:Whales for already-in-range
 
  if (!has_destination()) set_destination(g);
  if (has_destination()) return ai_action(npc_goto_destination, std::unique_ptr<cataclysm::action>());
