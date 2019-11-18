@@ -308,7 +308,7 @@ void npc::execute_action(game *g, const ai_action& action, int target)
   if (path.size() > 1) move_to_next(g);
   else /* if (path.size() == 1) */ {
    if (target >= 0)
-    melee_monster(g, target);
+    melee_monster(g, g->z[target]);
    else if (target == TARGET_PLAYER)
     melee_player(g, g->u);
   }
@@ -963,8 +963,8 @@ void npc::move_to(game *g, point pt)
  }
  if (pt == pos)	// We're just pausing!
   moves -= 100;
- else if (g->mon_at(pt.x, pt.y) != -1) {	// Shouldn't happen, but it might.
-  melee_monster(g, g->mon_at(pt.x, pt.y));
+ else if (auto mon = g->mon(pt)) {	// Shouldn't happen, but it might.
+  melee_monster(g, *mon);
  } else if (g->u.pos == pt) {
   say(g, "<let_me_pass>");
   moves -= 100;
@@ -1309,11 +1309,10 @@ npc::ai_action npc::scan_new_items(game *g, int target)
  return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());
 }
 
-void npc::melee_monster(game *g, int target)
+void npc::melee_monster(game *g, monster& monhit)
 {
- monster* monhit = &(g->z[target]);
- int dam = hit_mon(g, monhit);
- if (monhit->hurt(dam)) g->kill_mon(*monhit);
+ int dam = hit_mon(g, &monhit);
+ if (monhit.hurt(dam)) g->kill_mon(monhit);
 }
 
 void npc::melee_player(game *g, player &foe)

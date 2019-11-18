@@ -427,7 +427,7 @@ public:
  ai_action scan_new_items(game *g, int target);
 
 // Combat functions and player interaction functions
- void melee_monster	(game *g, int target);
+ void melee_monster	(game *g, monster& monhit);
  void melee_player	(game *g, player &foe);
  void alt_attack	(game *g, int target);
  void heal_self		(game *g);
