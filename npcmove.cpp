@@ -25,6 +25,7 @@ static const itype_id ALT_ATTACK_ITEMS[] = {	// \todo mod target
 };
 #define NUM_ALT_ATTACK_ITEMS (sizeof(ALT_ATTACK_ITEMS)/sizeof(ALT_ATTACK_ITEMS))
 
+// all of these classes are designed for immediate use, not scheduling (i.e., IsLegal implementation may include parts that belong in IsPerformable)
 class use_escape_obj : public cataclysm::action
 {
 	player& _actor;
@@ -119,6 +120,38 @@ public:
 	const char* name() const override {
 		if (_desc && *_desc) return _desc;
 		return "Following path";	// failover
+	}
+};
+
+class fire_weapon_screen : public cataclysm::action
+{
+	npc& _actor;	// \todo would like player here
+	point _tar;
+	mutable std::vector<point> _trajectory;
+	bool _burst;
+	const char* _desc;
+public:
+	fire_weapon_screen(npc& actor, const point& tar, bool burst, const char* desc=0) : _actor(actor), _tar(tar), _burst(burst), _desc(desc) {
+		auto g = game::active();
+		if (tar != actor.pos) {	// required for legality/performability
+			int linet;
+			const int light = g->light_level();
+			_trajectory = line_to(actor.pos, tar, (g->m.sees(actor.pos, tar, actor.sight_range(light), linet) ? linet : 0));
+		}
+#ifndef NDEBUG
+		if (!IsLegal()) throw new std::logic_error("unreasonable targeting");
+#endif
+	};
+	~fire_weapon_screen() = default;
+	bool IsLegal() const override {
+		return _actor.weapon.is_gun() && _tar != _actor.pos;
+	}
+	void Perform() const override {
+		game::active()->fire(_actor, _tar, _trajectory, _burst);
+	}
+	const char* name() const override {
+		if (_desc && *_desc) return _desc;
+		return (_burst ? "Fire a burst" : "Shoot");	// failover
 	}
 };
 
@@ -262,18 +295,8 @@ void npc::execute_action(game *g, const ai_action& action, int target)
  }
  
  // C:Whales action processing
- int oldmoves = moves;
+ const int oldmoves = moves;
  const int light = g->light_level();
- point tar(pos);
- // would be useful to have a way to designate other NPCs as targets
- if (target == -2) tar = g->u.pos;
- else if (target >= 0) tar = g->z[target].pos;
-
- std::vector<point> line;
- if (tar != pos) {
-  int linet;
-  line = line_to(pos, tar, (g->m.sees(pos, tar, sight_range(light), linet) ? linet : 0));
- }
 
  switch (action.first) {
 
@@ -310,14 +333,6 @@ void npc::execute_action(game *g, const ai_action& action, int target)
     melee_player(g, g->u);
   break;
   
- case npc_shoot:
-  g->fire(*this, tar, line, false);
-  break;
-
- case npc_shoot_burst:
-  g->fire(*this, tar, line, true);
-  break;
-
  case npc_alt_attack:
   alt_attack(g, target);
   break;
@@ -531,11 +546,9 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
    }
    const it_gun* const gun = dynamic_cast<const it_gun*>(weapon.type);
    if (!wont_hit_friend(g, tar)) return ai_action(npc_avoid_friendly_fire, std::unique_ptr<cataclysm::action>());
-   else if (dist <= confident_range() / 3 && weapon.charges >= gun->burst &&
-            gun->burst > 1 &&
-            (target_HP >= weapon.curammo->damage * 3 || emergency(danger * 2)))
-    return ai_action(npc_shoot_burst, std::unique_ptr<cataclysm::action>());
-   else return ai_action(npc_shoot, std::unique_ptr<cataclysm::action>());
+   const bool want_burst = (dist <= confident_range() / 3 && weapon.charges >= gun->burst && gun->burst > 1 &&
+	   (target_HP >= weapon.curammo->damage * 3 || emergency(danger * 2)));
+   return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new fire_weapon_screen(*const_cast<npc*>(this), tar, want_burst)));
   }
  }
 
@@ -1885,8 +1898,6 @@ std::string npc_action_name(npc_action action)
 #endif
   case npc_heal:		return "Heal self";
   case npc_melee:		return "Melee";
-  case npc_shoot:		return "Shoot";
-  case npc_shoot_burst:		return "Fire a burst";
   case npc_alt_attack:		return "Use alternate attack";
   case npc_look_for_player:	return "Look for player";
   case npc_talk_to_player:	return "Talk to player";

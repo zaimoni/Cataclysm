@@ -92,7 +92,7 @@ enum npc_action {
  npc_sleep, npc_drop_items, npc_heal_player,
 #endif
   npc_heal,
- npc_melee, npc_shoot, npc_shoot_burst, npc_alt_attack,
+ npc_melee, npc_alt_attack,
  npc_look_for_player, npc_talk_to_player,
  npc_goto_destination, npc_avoid_friendly_fire,
  num_npc_actions
