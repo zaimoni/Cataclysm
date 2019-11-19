@@ -304,14 +304,10 @@ void npc::execute_action(game *g, const ai_action& action, int target)
 #endif
 
  case npc_melee:
-  // path is updated and non-empty
-  if (path.size() > 1) move_to_next(g);
-  else /* if (path.size() == 1) */ {
-   if (target >= 0)
+  if (target >= 0)
     melee_monster(g, g->z[target]);
-   else if (target == TARGET_PLAYER)
+  else if (target == TARGET_PLAYER)
     melee_player(g, g->u);
-  }
   break;
   
  case npc_shoot:
@@ -501,7 +497,10 @@ bool npc::choose_empty_gun(const std::vector<int>& empty_guns, int& inv_index) c
 static npc::ai_action _melee(const npc& actor, const point& tar)
 {
 	const_cast<npc&>(actor).update_path(game::active()->m, tar);	// \todo want to think of npc::path as mutable here
-	if (!actor.path.empty()) return npc::ai_action(npc_melee, std::unique_ptr<cataclysm::action>());
+	if (!actor.path.empty()) {
+		if (1 < actor.path.size()) return npc::ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(const_cast<npc&>(actor), actor.path.front(), "Melee")));
+		return npc::ai_action(npc_melee, std::unique_ptr<cataclysm::action>());
+	}
 	// \todo maybe follow player if appropriate
 	return npc::ai_action(npc_look_for_player, std::unique_ptr<cataclysm::action>());	// C:Whales failover when no path
 }
