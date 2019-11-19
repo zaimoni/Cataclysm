@@ -93,7 +93,7 @@ enum npc_action {
 #endif
   npc_heal,
  npc_melee, npc_alt_attack,
- npc_look_for_player, npc_talk_to_player,
+ npc_talk_to_player,
  npc_goto_destination, npc_avoid_friendly_fire,
  num_npc_actions
 };
@@ -443,8 +443,8 @@ private:
 #endif
  int pick_best_food(const inventory& _inv) const;
  void mug_player(player& mark);
- void look_for_player	(game *g, player &sought);
 public:
+ ai_action look_for_player(player& sought);
  bool saw_player_recently() const;// Do we have an idea of where u are?
 
 // Movement on the overmap scale

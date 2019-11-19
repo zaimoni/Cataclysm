@@ -337,17 +337,6 @@ void npc::execute_action(game *g, const ai_action& action, int target)
   alt_attack(g, target);
   break;
 
- case npc_look_for_player:
-  {
-  if (saw_player_recently() && g->m.sees(pos, pl.x, light)) {
-// npc::pl is the point where we last saw the player
-   update_path(g->m, pl.x);
-   move_to_next(g);
-  } else
-   look_for_player(g, g->u);
-  }
-  break;
-
 #if DEAD_FUNC
  case npc_heal_player:
   update_path(g->m, g->u.pos);
@@ -517,7 +506,7 @@ static npc::ai_action _melee(const npc& actor, const point& tar)
 		return npc::ai_action(npc_melee, std::unique_ptr<cataclysm::action>());
 	}
 	// \todo maybe follow player if appropriate
-	return npc::ai_action(npc_look_for_player, std::unique_ptr<cataclysm::action>());	// C:Whales failover when no path
+	return const_cast<npc&>(actor).look_for_player(game::active()->u);
 }
 
 npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
@@ -1752,44 +1741,53 @@ void npc::mug_player(player &mark)
   }
 }
 
-void npc::look_for_player(game *g, player &sought)
+npc::ai_action npc::look_for_player(player& sought)
 {
- const int range = sight_range(g->light_level());
- if (g->m.sees(pos, sought.pos, range)) {
-  if (sought.is_npc())
-   debugmsg("npc::look_for_player() called, but we can see %s!",
-            sought.name.c_str());
-  else
-   debugmsg("npc::look_for_player() called, but we can see u!");
-  move_pause();
-  return;
- }
+	auto g = game::active();
+	const int light = g->light_level();
 
- if (!path.empty()) {
-  point dest = path[path.size() - 1];
-  if (!g->m.sees(pos, dest, range)) {
-   move_to_next(g);
-   return;
-  }
-  path.clear();
- }
- std::vector<point> possibilities;
- for (int x = 1; x < SEEX * MAPSIZE; x += 11) { // 1, 12, 23, 34
-  for (int y = 1; y < SEEY * MAPSIZE; y += 11) {
-   if (g->m.sees(pos, x, y, range))
-    possibilities.push_back(point(x, y));
-  }
- }
- if (possibilities.size() == 0) { // We see all the spots we'd like to check!
-  say(g, "<wait>");
-  move_pause();
- } else {
-  if (one_in(6))
-   say(g, "<wait>");
-  int index = rng(0, possibilities.size() - 1);
-  update_path(g->m, possibilities[index]);
-  move_to_next(g);
- }
+	// 2019-11-19: but nothing sets pl?
+	if (saw_player_recently() && g->m.sees(pos, pl.x, light)) {
+		// npc::pl is the point where we last saw the player
+		if (update_path(g->m, pl.x, 0))
+			return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(*this, path.front(), "Look for player")));
+	}
+	const int range = sight_range(light);
+	if (g->m.sees(pos, sought.pos, range)) {
+		// invariant violation.
+#ifndef NDEBUG
+		throw std::logic_error("trying to look for player in sight");
+#else
+		if (sought.is_npc())
+			debugmsg("npc::look_for_player() called, but we can see %s!",
+				sought.name.c_str());
+		else
+			debugmsg("npc::look_for_player() called, but we can see u!");
+		return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());	// failover
+#endif
+	}
+	if (!path.empty() && !g->m.sees(pos, path.back(), range))
+		return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(*this, path.front(), "Look for player")));
+
+	// collate possibilities (this is a rewrite target)
+	std::vector<point> possibilities;
+	for (int x = 1; x < SEEX * MAPSIZE; x += 11) { // 1, 12, 23, 34
+		for (int y = 1; y < SEEY * MAPSIZE; y += 11) {
+			if (g->m.sees(pos, x, y, range)) possibilities.push_back(point(x, y));
+		}
+	}
+	// \todo n-ary usable path test so we have some sense of object constancy
+	auto count = possibilities.size();
+	while (0 < count) {
+		int index = rng(0, --count);
+		if (update_path(g->m, possibilities[index], 0)) {
+			if (one_in(6)) say(g, "<wait>");
+			return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(*this, path.front(), "Look for player")));
+		}
+		possibilities.erase(possibilities.begin() + index);
+	}
+	say(g, "<wait>");
+	return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());	// stall-out failover
 }
 
 bool npc::saw_player_recently() const
@@ -1899,7 +1897,6 @@ std::string npc_action_name(npc_action action)
   case npc_heal:		return "Heal self";
   case npc_melee:		return "Melee";
   case npc_alt_attack:		return "Use alternate attack";
-  case npc_look_for_player:	return "Look for player";
   case npc_talk_to_player:	return "Talk to player";
   case npc_goto_destination:	return "Go to destination";
   case npc_avoid_friendly_fire:	return "Avoid friendly fire";
