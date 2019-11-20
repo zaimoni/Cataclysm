@@ -67,6 +67,7 @@ mon_dark_wyrm, mon_amigara_horror, mon_dog_thing, mon_headless_dog_thing,
 // Spiral monsters
 mon_human_snail, mon_twisted_body, mon_vortex,
 // Subspace monsters
+// Mi-Go: H.P. Lovecraft's "Whisperer in Darkness"
 mon_flying_polyp, mon_hunting_horror, mon_mi_go, mon_yugg, mon_gelatin,
  mon_flaming_eye, mon_kreck, mon_blank, mon_gozu, mon_shadow, mon_breather_hub,
  mon_breather, mon_shadow_snake,

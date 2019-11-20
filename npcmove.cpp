@@ -500,8 +500,7 @@ bool npc::choose_empty_gun(const std::vector<int>& empty_guns, int& inv_index) c
 
 static npc::ai_action _melee(const npc& actor, const point& tar)
 {
-	const_cast<npc&>(actor).update_path(game::active()->m, tar);	// \todo want to think of npc::path as mutable here
-	if (!actor.path.empty()) {
+	if (const_cast<npc&>(actor).update_path(game::active()->m, tar, 0)) {	// \todo want to think of npc::path as mutable here
 		if (1 < actor.path.size()) return npc::ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(const_cast<npc&>(actor), actor.path.front(), "Melee")));
 		return npc::ai_action(npc_melee, std::unique_ptr<cataclysm::action>());
 	}
@@ -622,8 +621,7 @@ npc::ai_action npc::address_player(game *g)
  }
 
  if (attitude == NPCATT_MUG && g->sees_u(pos)) {
-  update_path(g->m, g->u.pos);
-  if (!path.empty()) {
+  if (update_path(g->m, g->u.pos, 0)) {
 	if (one_in(3)) say(g, "Don't move a <swear> muscle...");
 	return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_player(*this,g->u,&npc::mug_player, "Mug player")));
   }
@@ -905,7 +903,7 @@ bool npc::path_is_usable(const map& m)
 		// \todo cf npc::move_to for other issues (re-routing around non-hostiles)
 		if (1 == rl_dist(pos, pt)) return true;	// \todo path optimization?
 		if (m.sees(pos, pt, -1)) return true;
-		// \todo path repair?
+		// path repair is a different function: need a non-destructive version for multi-target search
 		return false;
 	}
 	return false;
