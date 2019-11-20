@@ -892,28 +892,30 @@ bool npc::enough_time_to_reload(game *g, int target, const item &gun) const
  return (turns_til_reloaded < turns_til_reached);
 }
 
+template<class T, class COORD>
+static void _normalize_path(T& path, const COORD& origin)
+{
+	while(!path.empty() && origin == path.front()) path.erase(path.begin());
+	// while we could cut corners, we don't yet have a "required waypoint" designation (i.e.
+	// a non-optimal path may be achieving an ai-required side effect)
+	// \todo? re-routing around non-hostiles, and other issues in npc::move_to
+}
+
 bool npc::path_is_usable(const map& m)
 {
-	while (!path.empty()) {
-		const auto& pt = path[0];
-		if (pt == pos) {
-			path.erase(path.begin());
-			continue;
-		}
-		// \todo cf npc::move_to for other issues (re-routing around non-hostiles)
-		if (1 == rl_dist(pos, pt)) return true;	// \todo path optimization?
-		if (m.sees(pos, pt, -1)) return true;
-		// path repair is a different function: need a non-destructive version for multi-target search
-		return false;
-	}
-	return false;
+	_normalize_path(path, pos);
+	if (path.empty()) return false;
+	const auto& pt = path.front();
+	// \todo cf npc::move_to for other issues (re-routing around non-hostiles)
+	return 1 == rl_dist(pos, pt) || m.sees(pos, pt, -1);
+	// path repair and optimization are for a different function: need a non-destructive version for multi-target search
 }
 
 bool npc::update_path(const map& m, const point& pt, const size_t longer_than)
 {
 	if (path_is_usable(m) && path.back() == pt) return longer_than < path.size();	// usable, already leads to destination: no need to recalculate
 	auto new_path = m.route(pos, pt);
-	if (!new_path.empty() && new_path.front() == pos) new_path.erase(new_path.begin());
+	_normalize_path(new_path, pos);
 	if (longer_than >= new_path.size()) return false;
 	path = std::move(new_path);
 	return true;
@@ -924,7 +926,7 @@ void npc::update_path(const map& m, const point& pt)
 {
  if (path_is_usable(m) && path.back() == pt) return;	// usable, already leads to destination: no need to recalculate
  path = m.route(pos, pt);
- if (!path.empty() && path[0] == pos) path.erase(path.begin());
+ _normalize_path(path, pos);
 }
 
 bool player::can_move_to(const map& m, const point& pt) const
@@ -973,7 +975,7 @@ void npc::move_to(game *g, point pt)
  else if (g->m.move_cost(pt) > 0) {
   pos = pt;
   moves -= run_cost(g->m.move_cost(pt) * 50);
-  if (!path.empty() && pos == path.front()) path.erase(path.begin());	 // maintain path (should cost CPU)
+  _normalize_path(path, pos); // maintain path (should cost CPU)
  } else if (g->m.open_door(pt.x, pt.y, (g->m.ter(pos) == t_floor)))
   moves -= 100;
  else if (g->m.has_flag(bashable, pt)) {
@@ -988,12 +990,12 @@ void npc::move_to(game *g, point pt)
 
 void npc::move_to_next(game *g)
 {
+ _normalize_path(path, pos);
  if (path.empty()) {
   debugmsg("npc::move_to_next() called with an empty path!");
   move_pause();
   return;
  }
- while (pos == path[0]) path.erase(path.begin());
  move_to(g, path[0]);
 }
 
