@@ -911,9 +911,27 @@ bool npc::path_is_usable(const map& m)
 	// path repair and optimization are for a different function: need a non-destructive version for multi-target search
 }
 
+template<class T, class COORD>
+static bool _path_goes_there(const T& path, const COORD& dest)
+{
+	if (path.empty()) return false;
+	return dest == path.back();
+}
+
+template<class T, class ITER>
+static bool _path_goes_there(const T& path, ITER start, ITER end)
+{
+	if (path.empty()) return false;
+	auto& last = path.back();
+	while (start != end) {
+		if (last == *(start++)) return true;
+	}
+	return false;
+}
+
 bool npc::update_path(const map& m, const point& pt, const size_t longer_than)
 {
-	if (path_is_usable(m) && path.back() == pt) return longer_than < path.size();	// usable, already leads to destination: no need to recalculate
+	if (path_is_usable(m) && _path_goes_there(path,pt)) return longer_than < path.size();	// usable, already leads to destination: no need to recalculate
 	auto new_path = m.route(pos, pt);
 	_normalize_path(new_path, pos);
 	if (longer_than >= new_path.size()) return false;
@@ -1771,12 +1789,17 @@ npc::ai_action npc::look_for_player(player& sought)
 
 	// collate possibilities (this is a rewrite target)
 	std::vector<point> possibilities;
-	for (int x = 1; x < SEEX * MAPSIZE; x += 11) { // 1, 12, 23, 34
-		for (int y = 1; y < SEEY * MAPSIZE; y += 11) {
-			if (g->m.sees(pos, x, y, range)) possibilities.push_back(point(x, y));
+	point dest;
+	for (dest.x = 1; dest.x < SEEX * MAPSIZE; dest.x += 11) { // 1, 12, 23, 34
+		for (dest.y = 1; dest.y < SEEY * MAPSIZE; dest.y += 11) {
+			if (pos!=dest && g->m.sees(pos, dest, range)) possibilities.push_back(dest);
 		}
 	}
-	// \todo n-ary usable path test so we have some sense of object constancy
+	if (_path_goes_there(path, possibilities.begin(), possibilities.end())) {
+		if (one_in(6)) say(g, "<wait>");
+		return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(*this, path.front(), "Look for player")));
+	}
+
 	auto count = possibilities.size();
 	while (0 < count) {
 		int index = rng(0, --count);
