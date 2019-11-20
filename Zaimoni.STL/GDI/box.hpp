@@ -24,6 +24,8 @@ public:
 	~box() = default;
 	box& operator=(const box& src) = default;
 
+	T& tl_c() { return _top_left; }
+	T& br_c() { return _bottom_right; }
 	const T& tl_c() const { return _top_left; }
 	const T& br_c() const { return _bottom_right; }
 
