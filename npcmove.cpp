@@ -287,6 +287,28 @@ void npc::move(game *g)
  execute_action(g, action, target);
 }
 
+static bool decode_target(int target, npc::ai_target& dest)
+{
+	auto g = game::active();
+	if (0 <= target && g->z.size() > target) {
+		auto& mon = g->z[target];
+		dest = npc::ai_target(mon.pos, std::tuple<monster*, player*, npc*>(&mon, 0, 0));
+		return true;
+	} else if (TARGET_PLAYER == target) {
+		auto& u = g->u;
+		dest = npc::ai_target(u.pos, std::tuple<monster*, player*, npc*>(0, &u, 0));
+		return true;
+	} else if (TARGET_PLAYER > target && g->active_npc.size()>((TARGET_PLAYER-1) - target)) {	// 2019-11-21: UNTESTED
+		auto npc_index = (TARGET_PLAYER - 1) - target;
+		if (g->active_npc.size() > npc_index) {
+			auto& nPC = g->active_npc[npc_index];
+			dest = npc::ai_target(nPC.pos, std::tuple<monster*, player*, npc*>(0, 0, &nPC));
+			return true;
+		}
+	}
+	return false;
+}
+
 void npc::execute_action(game *g, const ai_action& action, int target)
 {
  if (action.second && action.second->IsPerformable()) {	// if we have an action object, use that
@@ -295,6 +317,7 @@ void npc::execute_action(game *g, const ai_action& action, int target)
  }
  
  // C:Whales action processing
+ npc::ai_target Target;
  const int oldmoves = moves;
  const int light = g->light_level();
 
@@ -327,11 +350,16 @@ void npc::execute_action(game *g, const ai_action& action, int target)
 #endif
 
  case npc_melee:
-  if (target >= 0)
-    melee_monster(g, g->z[target]);
-  else if (target == TARGET_PLAYER)
-    melee_player(g, g->u);
-  break;
+  if (decode_target(target, Target)) {
+	  if (auto mon = std::get<0>(Target.second)) melee_monster(g, *mon);
+	  else if (auto pc = std::get<1>(Target.second)) melee_player(g, *pc);
+	  else if (auto nPC = std::get<2>(Target.second)) melee_player(g, *nPC);
+	  // invariant violation if no case processes
+	  break;
+  }
+#ifndef NDEBUG
+  throw std::logic_error("npc_melee invoked w/o target");
+#endif
   
  case npc_alt_attack:
   alt_attack(g, target);
@@ -1020,18 +1048,20 @@ void npc::move_to_next(game *g)
 // TODO: Rewrite this.  It doesn't work well and is ugly.
 void npc::avoid_friendly_fire(game *g, int target)
 {
- point tar;
- if (target == TARGET_PLAYER) {
-  tar = g->u.pos;
- } else if (target >= 0) {
-  tar = g->z[target].pos;
-  if (!one_in(3))
-   say(g, "<move> so I can shoot that %s!", g->z[target].name().c_str());
- } else {
-  debugmsg("npc::avoid_friendly_fire() called with no target!");
-  move_pause();
-  return;
- }
+ ai_target Target;
+ if (!decode_target(target, Target)) {
+#ifndef NDEBUG
+	 throw std::logic_error("npc::avoid_friendly_fire called with invalid target");
+#else
+	 debugmsg("npc::avoid_friendly_fire() called with no target!");
+	 move_pause();
+	 return;
+#endif
+ } else if (auto mon = std::get<0>(Target.second)) {
+	 if (!one_in(3)) say(g, "<move> so I can shoot that %s!", mon->name().c_str());
+ }	// \todo similar message when targeting NPC?
+
+ point tar = Target.first;	// backward compatibility
 
  int xdir = (tar.x > pos.x ? 1 : -1), ydir = (tar.y > pos.y ? 1 : -1);
  direction dir_to_target = direction_from(pos, tar);
@@ -1402,16 +1432,20 @@ static bool thrown_item(const item& used)	// not general enough to migrate to it
 
 void npc::alt_attack(game *g, int target)
 {
- point tar;
- if (target == TARGET_PLAYER) {
-  tar = g->u.pos;
- } else if (target >= 0) {
-  tar = g->z[target].pos;
- } else {
-  debugmsg("npc::alt_attack() called with target = %d", target);
-  move_pause();
-  return;
+ ai_target Target;
+
+ if (!decode_target(target, Target)) {
+#ifndef NDEBUG
+	 throw std::logic_error("npc::alt_attack called without a valid target");
+#else
+	 debugmsg("npc::alt_attack() called with target = %d", target);
+	 move_pause();
+	 return;
+#endif
  }
+
+ point tar = Target.first;	// backward compatibility
+
  const itype_id which = alt_attack_available();
  DEBUG_FAIL_OR_LEAVE(itm_null == which, return);	// We ain't got shit!  Definitely should not happen.
 

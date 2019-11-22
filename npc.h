@@ -283,6 +283,7 @@ class npc : public player {
 
 public:
  typedef std::pair<npc_action, std::unique_ptr<cataclysm::action> > ai_action;	// transition typedef
+ typedef std::pair<point, std::tuple<monster*, player*, npc*> > ai_target;	// expect to simplify this
 
  npc();
  npc(const cataclysm::JSON& src);
