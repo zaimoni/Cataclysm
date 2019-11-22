@@ -842,22 +842,20 @@ std::vector<item> starting_inv(npc *me, npc_class type, game *g)
  return ret;
 }
 
-void npc::spawn_at(overmap *o, int x, int y)
+// 2019-11-22 respecify this to work.
+void npc::spawn_at(const overmap& o, int x, int y)
 {
-// First, specify that we are in this overmap!
- om = o->pos;
+ om = o.pos;	// First, specify that we are in this overmap!
  mapx = x;
  mapy = y;
- if (x == -1 || y == -1) {
-  int city_index = rng(0, o->cities.size() - 1);
-  int x = o->cities[city_index].x;
-  int y = o->cities[city_index].y;
-  int s = o->cities[city_index].s;
-  if (x == -1)
-   mapx = rng(x - s, x + s);
-  if (y == -1)
-   mapy = rng(y - s, y + s);
- }
+}
+
+void npc::spawn_at(const overmap& o)
+{
+ om = o.pos;	// First, specify that we are in this overmap!
+ const auto& c = o.cities[rng(0, o.cities.size() - 1)];
+ mapx = rng(c.x - c.s, c.x + c.s);
+ mapy = rng(c.y - c.s, c.y + c.s);
 }
 
 skill npc::best_skill() const

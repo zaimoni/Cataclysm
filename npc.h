@@ -302,7 +302,8 @@ public:
  void randomize(game *g, npc_class type = NC_NONE);
  void randomize_from_faction(game *g, faction *fac);
  void make_shopkeep(game *g, oter_id type);
- void spawn_at(overmap *o, int posx, int posy);
+ void spawn_at(const overmap& o, int posx, int posy);
+ void spawn_at(const overmap& o);	// random city.  Dead function currently
  skill best_skill() const;
  void starting_weapon(game *g);
 

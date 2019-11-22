@@ -543,7 +543,7 @@ void game::create_starting_npcs()
  npc tmp;
  tmp.normalize();
  tmp.randomize(this, (one_in(2) ? NC_DOCTOR : NC_NONE));
- tmp.spawn_at(&cur_om, lev.x, lev.y);
+ tmp.spawn_at(cur_om, lev.x, lev.y);
  tmp.pos.x = SEEX * int(MAPSIZE / 2) + SEEX;
  tmp.pos.y = SEEY * int(MAPSIZE / 2) + 6;
  tmp.form_opinion(&u);
@@ -1889,7 +1889,7 @@ void game::debug()
    temp.normalize();
    temp.randomize(this);
    temp.attitude = NPCATT_TALK;
-   temp.spawn_at(&cur_om, lev.x + (1 * rng(-2, 2)), lev.y + (1 * rng(-2, 2)));
+   temp.spawn_at(cur_om, lev.x + (1 * rng(-2, 2)), lev.y + (1 * rng(-2, 2)));
    temp.pos.x = u.pos.x - 4;
    temp.pos.y = u.pos.y - 4;
    temp.form_opinion(&u);
@@ -6207,7 +6207,7 @@ void game::spawn_mon(int shiftx, int shifty)
   tmp.normalize();
   tmp.randomize(this);
   //tmp.stock_missions(this);
-  tmp.spawn_at(&cur_om, lev.x + (1 * rng(-5, 5)), lev.y + (1 * rng(-5, 5)));
+  tmp.spawn_at(cur_om, lev.x + (1 * rng(-5, 5)), lev.y + (1 * rng(-5, 5)));
   tmp.pos.x = SEEX * 2 * (tmp.mapx - lev.x) + rng(0 - SEEX, SEEX);
   tmp.pos.y = SEEY * 2 * (tmp.mapy - lev.y) + rng(0 - SEEY, SEEY);
   tmp.form_opinion(&u);
