@@ -100,7 +100,9 @@ class overmap
   point find_note(point origin, const std::string& text) const;
   void delete_note(int x, int y);
   point display_notes() const;
-  
+
+  static std::pair<tripoint, point> toGPS(const point& screen_pos);
+
   tripoint pos;
   std::vector<city> cities;
 #if PROTOTYPE

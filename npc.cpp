@@ -145,7 +145,7 @@ DEFINE_JSON_ENUM_SUPPORT_TYPICAL(npc_need, JSON_transcode_npc_needs)
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(talk_topic, JSON_transcode_talk)
 
 npc::npc()
-: id(-1),attitude(NPCATT_NULL),myclass(NC_NONE),wand(point(0,0),0),om(0,0,0),mapx(0),mapy(0),
+: id(-1),attitude(NPCATT_NULL),myclass(NC_NONE),wand(point(0,0),0),om(0,0,0),mapx(0),mapy(0),GPSpos(om,pos),
   pl(point(-1,-1),0),it(-1,-1),goal(-1,-1),fetching_item(false),has_new_items(false),
   my_fac(0),mission(NPC_MISSION_NULL),patience(0),marked_for_death(false),dead(false),flags(0)
 {

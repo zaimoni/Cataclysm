@@ -5853,7 +5853,8 @@ void game::vertical_move(int movez, bool force)
 std::pair<tripoint, point> game::toGPS(point screen_pos) const	// \todo overflow checking
 {
 	auto anchor(cur_om.pos);
-	anchor *= 2 * OMAP;
+	anchor.x *= 2 * OMAP;	// don't scale z coordinate
+	anchor.y *= 2 * OMAP;
 	anchor.x += lev.x;
 	anchor.y += lev.y;
 //  historically cur_om.pos.z == lev.z

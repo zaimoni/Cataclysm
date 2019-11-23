@@ -187,6 +187,28 @@ JSON_ENUM(vhtype_id)
 JSON_ENUM(vpart_id)
 JSON_ENUM(weather_type)
 
+template<class LHS, class RHS>
+JSON toJSON(const std::pair<LHS, RHS>& src)
+{
+	JSON ret(JSON::array);
+	ret.push(toJSON(src.first));
+	ret.push(toJSON(src.second));
+	return ret;
+}
+
+template<class LHS, class RHS>
+bool fromJSON(const JSON& src, std::pair<LHS, RHS>& dest)
+{
+	if (JSON::array != src.mode() || 2 != src.size()) return false;
+	// this is meant to be ACID, so we need a working copy
+	std::pair<LHS, RHS> working;
+	if (fromJSON(src[0], working.first) && fromJSON(src[1], working.second)) {
+		dest = std::move(working);	// in case the underlying types need it
+		return true;
+	}
+	return false;
+}
+
 // stereotypical translation of pointers to/from vector indexes
 // \todo in general if a loaded pointer index is "invalid" we should warn here; non-null requirements are enforced higher up
 // \todo in general warn if a non-null ptr points to an invalid id
@@ -1690,6 +1712,10 @@ JSON toJSON(const npc& src)
 	if (src.pl.live()) ret.set("pl", toJSON(src.pl));
 	if (src.has_destination()) ret.set("goal", toJSON(src.goal));
 
+	// V 0.2.1+
+	auto GPS = overmap::toGPS(src.pos);
+	ret.set("GPS_pos", toJSON(GPS));
+
 	// JSON::encode
 	if (!src.path.empty()) ret.set("path", JSON::encode(src.path));
 	if (!src.needs.empty()) ret.set("needs", JSON::encode(src.needs));
@@ -1722,6 +1748,11 @@ npc::npc(const JSON& src)
 		if (fromJSON(src["om_pos"], tmp)) {
 			mapx = tmp.x;	// \todo blocked by JSON conversion: mapx,mapy -> om_pos (om,om_pos is not the GPS coordinate type suitable for long-range A* pathfinding)
 			mapy = tmp.y;
+		}
+	}
+	if (src.has_key("GPS_pos")) {	// provided by V0.2.1+
+		if (fromJSON(src["GPS_pos"], GPSpos)) {
+			// reality checks possible, but not here
 		}
 	}
 	if (src.has_key("pl")) fromJSON(src["pl"], pl);

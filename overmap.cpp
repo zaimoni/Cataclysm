@@ -12,6 +12,9 @@
 
 #include "Zaimoni.STL/GDI/box.hpp"
 
+std::pair<tripoint, point> overmap::toGPS(const point& screen_pos) { return game::active()->toGPS(screen_pos); }
+
+
 #define STREETCHANCE 2
 #define NUM_FOREST 250
 #define TOP_HIWAY_DIST 140
