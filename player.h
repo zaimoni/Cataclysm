@@ -232,6 +232,10 @@ public:
  bool has_mission_item(int mission_id) const;	// Has item with mission_id
  std::vector<int> has_ammo(ammotype at) const;// Returns a list of indices of the ammo
 
+// integrity checks
+ void screenpos_set(point pt);
+ void screenpos_set(int x, int y);
+
 // ---------------VALUES-----------------
  point pos;
  std::pair<tripoint, point> GPSpos;

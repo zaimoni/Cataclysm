@@ -544,8 +544,7 @@ void game::create_starting_npcs()
  tmp.normalize();
  tmp.randomize(this, (one_in(2) ? NC_DOCTOR : NC_NONE));
  tmp.spawn_at(cur_om, lev.x, lev.y);
- tmp.pos.x = SEEX * int(MAPSIZE / 2) + SEEX;
- tmp.pos.y = SEEY * int(MAPSIZE / 2) + 6;
+ tmp.screenpos_set(SEEX * int(MAPSIZE / 2) + SEEX, SEEY * int(MAPSIZE / 2) + 6);
  tmp.form_opinion(&u);
  tmp.attitude = NPCATT_NULL;
  tmp.mission = NPC_MISSION_SHELTER;
@@ -1890,8 +1889,7 @@ void game::debug()
    temp.randomize(this);
    temp.attitude = NPCATT_TALK;
    temp.spawn_at(cur_om, lev.x + (1 * rng(-2, 2)), lev.y + (1 * rng(-2, 2)));
-   temp.pos.x = u.pos.x - 4;
-   temp.pos.y = u.pos.y - 4;
+   temp.screenpos_set(u.pos - point(4));
    temp.form_opinion(&u);
    temp.attitude = NPCATT_TALK;
    temp.mission = NPC_MISSION_NULL;
@@ -5647,7 +5645,7 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
         }
         if (slam) messages.add("%s slammed against the %s for %d damage!", sname.c_str(), dname.c_str(), dam1);
 		if (!thru) break;
-        if (is_player) p->pos = point(x, y);
+        if (is_player) p->screenpos_set(point(x, y));
         else zz->pos = point(x, y);
         range--;
         steps++;
@@ -5990,8 +5988,7 @@ void game::update_map(int &x, int &y)
              cur_om.npcs[i].mapx, cur_om.npcs[i].mapy);
    temp = cur_om.npcs[i];
    if (temp.pos.x == -1 || temp.pos.y == -1) {
-    temp.pos.x = SEEX * 2 * (temp.mapx - lev.x) + rng(0 - SEEX, SEEX);
-    temp.pos.y = SEEY * 2 * (temp.mapy - lev.y) + rng(0 - SEEY, SEEY);
+	temp.screenpos_set(SEEX * 2 * (temp.mapx - lev.x) + rng(0 - SEEX, SEEX), SEEY * 2 * (temp.mapy - lev.y) + rng(0 - SEEY, SEEY));
    } else {
     if (debugmon)
      debugmsg("Static NPC fine location %d:%d (%d:%d)", temp.pos.x, temp.pos.y,
@@ -6209,8 +6206,7 @@ void game::spawn_mon(int shiftx, int shifty)
   tmp.randomize(this);
   //tmp.stock_missions(this);
   tmp.spawn_at(cur_om, lev.x + (1 * rng(-5, 5)), lev.y + (1 * rng(-5, 5)));
-  tmp.pos.x = SEEX * 2 * (tmp.mapx - lev.x) + rng(0 - SEEX, SEEX);
-  tmp.pos.y = SEEY * 2 * (tmp.mapy - lev.y) + rng(0 - SEEY, SEEY);
+  tmp.screenpos_set(SEEX * 2 * (tmp.mapx - lev.x) + rng(0 - SEEX, SEEX), SEEY * 2 * (tmp.mapy - lev.y) + rng(0 - SEEY, SEEY));
   tmp.form_opinion(&u);
   tmp.attitude = NPCATT_TALK;
   tmp.mission = NPC_MISSION_NULL;

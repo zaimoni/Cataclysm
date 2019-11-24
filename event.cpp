@@ -21,8 +21,7 @@ void event::actualize(game *g) const
     } else
      tmp.randomize(g);
     tmp.attitude = NPCATT_DEFEND;
-    tmp.pos.x = g->u.pos.x - SEEX * 2 + rng(-5, 5);
-    tmp.pos.y = g->u.pos.y - SEEY * 2 + rng(-5, 5);
+	tmp.screenpos_set(g->u.pos.x - SEEX * 2 + rng(-5, 5), g->u.pos.y - SEEY * 2 + rng(-5, 5));
     g->active_npc.push_back(tmp);
    }
   } break;

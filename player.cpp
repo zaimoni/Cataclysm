@@ -675,6 +675,16 @@ player::player()
 
 DEFINE_ACID_ASSIGN_W_MOVE(player)
 
+void player::screenpos_set(point pt)
+{
+	GPSpos = overmap::toGPS(pos = pt);
+}
+
+void player::screenpos_set(int x, int y)
+{
+	GPSpos = overmap::toGPS(pos = point(x, y));
+}
+
 // \todo V0.2.1+ trigger uniform max hp recalculation on any change to str_max or the PF_TOUGH trait
 void player::normalize()
 {

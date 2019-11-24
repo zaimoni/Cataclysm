@@ -1528,7 +1528,7 @@ bool vehicle::fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int
     tmp.sklevel[gun.skill_used] = 1;
     tmp.sklevel[sk_gun] = 0;
     tmp.recoil = abs(velocity) / 100 / 4;
-    tmp.pos = origin;
+    tmp.screenpos_set(origin);
     tmp.str_cur = 16;
     tmp.dex_cur =  6;
     tmp.per_cur =  8;

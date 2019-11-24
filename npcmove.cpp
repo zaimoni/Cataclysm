@@ -1019,7 +1019,7 @@ void npc::move_to(game *g, point pt)
 // \todo Determine if it's an enemy NPC (hit them), or a friendly in the way
   moves -= 100;
  else if (g->m.move_cost(pt) > 0) {
-  pos = pt;
+  screenpos_set(pt);
   moves -= run_cost(g->m.move_cost(pt) * 50);
   _normalize_path(path, pos); // maintain path (should cost CPU)
  } else if (g->m.open_door(pt.x, pt.y, (g->m.ter(pos) == t_floor)))

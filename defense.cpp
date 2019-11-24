@@ -183,8 +183,7 @@ void defense_game::init_map(game *g)
 
  g->cur_om.save(g->u.name, 0, 0, DEFENSE_Z);
  g->lev = tripoint(100,100,0);
- g->u.pos.x = SEEX;
- g->u.pos.y = SEEY;
+ g->u.screenpos_set(point(SEE));
 
  switch (location) {
 

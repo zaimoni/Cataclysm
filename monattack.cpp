@@ -868,11 +868,11 @@ void mattack::vortex(game *g, monster *z)
       if (g->u_see(traj[i])) messages.add("You hit a %s!", m_hit->name().c_str());
       if (m_hit->hurt(damage)) g->kill_mon(*m_hit, true); // We get the kill :)
       hit_wall = true;
-      g->u.pos = traj[i - 1];
+      g->u.screenpos_set(traj[i - 1]);
      } else if (g->m.move_cost(traj[i]) == 0) {
       messages.add("You slam into a %s", g->m.tername(traj[i]).c_str());
       hit_wall = true;
-      g->u.pos = traj[i - 1];
+      g->u.screenpos_set(traj[i - 1]);
      }
      int damage_copy = damage;
      g->m.shoot(g, traj[i].x, traj[i].y, damage_copy, false, 0);
@@ -881,7 +881,7 @@ void mattack::vortex(game *g, monster *z)
     }
     if (hit_wall) damage *= 2;
     else {
-     g->u.pos = traj.back();
+     g->u.screenpos_set(traj.back());
     }
     g->u.hit(g, bp_torso, 0, damage, 0);
     g->update_map(g->u.pos.x, g->u.pos.y);
@@ -979,7 +979,7 @@ void mattack::smg(game *g, monster *z)
   tmp.sklevel[sk_smg] = 1;
   tmp.sklevel[sk_gun] = 0;
   tmp.recoil = 0;
-  tmp.pos = z->pos;
+  tmp.screenpos_set(z->pos);
   tmp.str_cur = 16;
   tmp.dex_cur =  6;
   tmp.per_cur =  8;
@@ -1011,7 +1011,7 @@ void mattack::smg(game *g, monster *z)
  tmp.sklevel[sk_smg] = 1;
  tmp.sklevel[sk_gun] = 0;
  tmp.recoil = 0;
- tmp.pos = z->pos;
+ tmp.screenpos_set(z->pos);
  tmp.str_cur = 16;
  tmp.dex_cur =  6;
  tmp.per_cur =  8;

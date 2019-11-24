@@ -63,7 +63,7 @@ void trapfunc::tripwire(game *g, int x, int y)
     valid.push_back(point(j, k));
   }
  }
- if (!valid.empty()) g->u.pos = valid[rng(0, valid.size() - 1)];
+ if (!valid.empty()) g->u.screenpos_set(valid[rng(0, valid.size() - 1)]);
  g->u.moves -= 150;
  if (rng(5, 20) > g->u.dex_cur) g->u.hurtall(rng(1, 4));
 }
@@ -421,7 +421,7 @@ void trapfunc::sinkhole(game *g, int x, int y)
     } else {
      messages.add("You pull yourself to safety!  The sinkhole collapses.");
      int index = rng(0, safe.size() - 1);
-     g->u.pos = safe[index];
+     g->u.screenpos_set(safe[index]);
      g->update_map(g->u.pos.x, g->u.pos.y);
      g->m.tr_at(g->u.pos) = tr_pit;
     }

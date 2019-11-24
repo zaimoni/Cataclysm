@@ -44,7 +44,7 @@ bool tutorial_game::init(game *g)
  }
  g->m.load(g, point(g->lev.x, g->lev.y));
  g->lev.z = 0;
- g->u.pos = point(SEEX + 2, SEEY + 4);
+ g->u.screenpos_set(point(SEEX + 2, SEEY + 4));
 
  return true;
 }
