@@ -472,7 +472,6 @@ public:
 // Location:
  tripoint om;	// which overmap (e.g., o.0.0.0) 
  int mapx, mapy;// Which square in that overmap (e.g., m.0.0)
- std::pair<tripoint, point> GPSpos;	// \todo lift higher in the type hiearchy
  // last seen player data (assumes player is singleton)
  countdown<point> pl;	// last saw player at; legal coordinates 0.. (SEEX/Y * MAPSIZE-1)
  point it;	// The square containing an item we want

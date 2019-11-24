@@ -1410,6 +1410,11 @@ JSON toJSON(const player& src)
 {
 	JSON ret;
 	ret.set("pos", toJSON(src.pos));
+
+	// V 0.2.1+
+	auto GPS = overmap::toGPS(src.pos);
+	ret.set("GPS_pos", toJSON(GPS));
+
 	if (!src.name.empty()) ret.set("name", src.name);
 	if (!src.male) ret.set("male", "false");
 	if (src.in_vehicle) {
@@ -1515,6 +1520,11 @@ player::player(const JSON& src)
   mutation_category_level[i] = 0;
 
  if (src.has_key("pos")) fromJSON(src["pos"], pos);
+ if (src.has_key("GPS_pos")) {	// provided by V0.2.1+
+	 if (fromJSON(src["GPS_pos"], GPSpos)) {
+		 // reality checks possible, but not here
+	 }
+ }
  if (src.has_key("in_vehicle")) fromJSON(src["in_vehicle"], in_vehicle);
  if (src.has_key("activity")) fromJSON(src["activity"], activity);
  if (src.has_key("backlog")) fromJSON(src["backlog"], backlog);
@@ -1712,10 +1722,6 @@ JSON toJSON(const npc& src)
 	if (src.pl.live()) ret.set("pl", toJSON(src.pl));
 	if (src.has_destination()) ret.set("goal", toJSON(src.goal));
 
-	// V 0.2.1+
-	auto GPS = overmap::toGPS(src.pos);
-	ret.set("GPS_pos", toJSON(GPS));
-
 	// JSON::encode
 	if (!src.path.empty()) ret.set("path", JSON::encode(src.path));
 	if (!src.needs.empty()) ret.set("needs", JSON::encode(src.needs));
@@ -1748,11 +1754,6 @@ npc::npc(const JSON& src)
 		if (fromJSON(src["om_pos"], tmp)) {
 			mapx = tmp.x;	// \todo blocked by JSON conversion: mapx,mapy -> om_pos (om,om_pos is not the GPS coordinate type suitable for long-range A* pathfinding)
 			mapy = tmp.y;
-		}
-	}
-	if (src.has_key("GPS_pos")) {	// provided by V0.2.1+
-		if (fromJSON(src["GPS_pos"], GPSpos)) {
-			// reality checks possible, but not here
 		}
 	}
 	if (src.has_key("pl")) fromJSON(src["pl"], pl);

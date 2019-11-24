@@ -234,6 +234,7 @@ public:
 
 // ---------------VALUES-----------------
  point pos;
+ std::pair<tripoint, point> GPSpos;
  bool in_vehicle;       // Means player sit inside vehicle on the tile he is now
  player_activity activity;
  player_activity backlog;

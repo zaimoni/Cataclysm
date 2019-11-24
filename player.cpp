@@ -652,7 +652,7 @@ DEFINE_JSON_ENUM_SUPPORT_TYPICAL(morale_type, JSON_transcode_morale)
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(pl_flag, JSON_transcode_pl_flags)
 
 player::player()
-: pos(-1,-1), in_vehicle(false), active_mission(-1), name(""), male(true),
+: pos(-1,-1), GPSpos(tripoint(0,0,0), pos), in_vehicle(false), active_mission(-1), name(""), male(true),
   str_cur(8),dex_cur(8),int_cur(8),per_cur(8),str_max(8),dex_max(8),int_max(8),per_max(8),
   power_level(0),max_power_level(0),hunger(0),thirst(0),fatigue(0),health(0),
   underwater(false),oxygen(0),recoil(0),driving_recoil(0),scent(500),
