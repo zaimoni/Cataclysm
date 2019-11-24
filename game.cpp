@@ -5932,8 +5932,9 @@ void game::update_map(int &x, int &y)
  set_adjacent_overmaps();
 
  // Shift monsters
+ if (0 != shift.x || 0 != shift.y) {
  for (int i = 0; i < z.size(); i++) {
-  z[i].shift(shift.x, shift.y);
+  z[i].shift(shift);
   if (z[i].pos.x < 0 - SEEX             || z[i].pos.y < 0 - SEEX ||
       z[i].pos.x > SEEX * (MAPSIZE + 1) || z[i].pos.y > SEEY * (MAPSIZE + 1)) {
 // Despawn; we're out of bounds
@@ -5976,6 +5977,7 @@ void game::update_map(int &x, int &y)
    i--;
   }
  }
+ }	// if (0 != shift.x || 0 != shift.y)
 // Spawn static NPCs?
  npc temp;
  for (int i = 0; i < cur_om.npcs.size(); i++) {
@@ -6008,12 +6010,14 @@ void game::update_map(int &x, int &y)
  m.spawn_monsters(this);	// Static monsters
  if (messages.turn >= nextspawn) spawn_mon(shift.x, shift.y);
 // Shift scent
+ if (0 != shift.x || 0 != shift.y) {
  decltype(grscent) newscent;
  for (int i = 0; i < SEEX * MAPSIZE; i++) {
   for (int j = 0; j < SEEY * MAPSIZE; j++)
    newscent[i][j] = scent(i + (shift.x * SEEX), j + (shift.y * SEEY));
  }
  memmove(grscent, newscent, sizeof(newscent));
+ }	// if (0 != shift.x || 0 != shift.y)
 // Update what parts of the world map we can see
  update_overmap_seen();
  draw_minimap();

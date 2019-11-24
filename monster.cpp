@@ -224,14 +224,11 @@ void monster::debug(player &u)
  getch();
 }
 
-void monster::shift(int sx, int sy)
+void monster::shift(const point& delta)
 {
- pos.x -= sx * SEEX;
- pos.y -= sy * SEEY;
- for (int i = 0; i < plans.size(); i++) {
-  plans[i].x -= sx * SEEX;
-  plans[i].y -= sy * SEEY;
- }
+ const point delta_block(delta*SEE);
+ pos -= delta_block;
+ for (auto& pt : plans) pt -= delta_block;
 }
 
 bool monster::is_fleeing(const player &u) const

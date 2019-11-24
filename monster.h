@@ -83,7 +83,7 @@ class monster {
 
 // Movement
  void receive_moves() { moves += speed; }		// Gives us movement points
- void shift(int sx, int sy); 	// Shifts the monster to the appropriate submap
+ void shift(const point& delta); 	// Shifts the monster to the appropriate submap
 			     	// Updates current pos AND our plans
  bool wander() const { return plans.empty(); } 		// Returns true if we have no plans
  bool can_move_to(const map &m, int x, int y) const; // Can we move to (x, y)?
