@@ -380,6 +380,16 @@ void vehicle::precalc_mounts (int idir, int dir)
 	for(auto& part : parts) part.precalc_d[idir] = coord_translate(dir, part.mount_d);
 }
 
+bool vehicle::any_boarded_parts() const
+{
+	for (const auto& part : parts) {
+		if (!part.has_flag(vpf_seat)) continue;
+		auto pl = part.get_passenger(global());
+		if (pl) return true;
+	}
+	return false;
+}
+
 std::vector<int> vehicle::boarded_parts() const
 {
     std::vector<int> res;
@@ -389,19 +399,38 @@ std::vector<int> vehicle::boarded_parts() const
     return res;
 }
 
+player* vehicle_part::get_passenger(point origin) const
+{
+	if (passenger) {
+		origin += precalc_d[0];	// where we are relative to our global position
+		auto g = game::active();
+		if (g->u.pos == origin && g->u.in_vehicle) return &g->u;
+		if (npc* const nPC = g->nPC(origin)) return nPC;	// \todo V0.2.1+ why not require in_vehicle?
+	}
+	return 0;
+}
+
 player *vehicle::get_passenger(int p) const
 {
     p = part_with_feature (p, vpf_seat, false);
-    if (p >= 0 && parts[p].passenger) {
-		const point origin(global() + parts[p].precalc_d[0]);
-		auto g = game::active();
-        if (g->u.pos == origin && g->u.in_vehicle) return &g->u;
-		if (npc* const nPC = g->nPC(origin)) return nPC;	// \todo V0.2.1+ why not require in_vehicle?
-    }
+	if (0 <= p) return parts[p].get_passenger(global());
     return 0;
 }
 
-point vehicle::global() const { return SEEX * sm + pos; }
+std::vector<std::pair<int, player*> > vehicle::passengers() const
+{
+	std::vector<std::pair<int, player*> > res;
+	int i = -1;
+	for (const auto& part : parts) {
+		++i;
+		if (!part.has_flag(vpf_seat)) continue;
+		auto pl = part.get_passenger(global());
+		if (pl) res.push_back({ i, pl });
+	}
+	return res;
+}
+
+point vehicle::global() const { return SEE * sm + pos; }
 
 int vehicle::total_mass() const
 {

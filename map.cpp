@@ -679,27 +679,19 @@ bool map::displace_vehicle (game *g, int &x, int &y, const point& delta, bool te
  // don't let it go off grid
  if (!inbounds(dest.x, dest.y)) veh->stop();
 
- // record every passenger inside
- std::vector<int> psg_parts = veh->boarded_parts();
- std::vector<player *> psgs;
- for (int p = 0; p < psg_parts.size(); p++)
-  psgs.push_back (veh->get_passenger (psg_parts[p]));
-
  int rec = abs(veh->velocity) / 5 / 100;
+
+ // record every passenger inside
+ auto passengers = veh->passengers();
 
  bool need_update = false;
  point upd;
  // move passengers
- for (int i = 0; i < psg_parts.size(); i++) {
-  player *psg = psgs[i];
-  int p = psg_parts[i];
-  if (!psg) {
-   const point origin(veh->global() + veh->parts[p].precalc_d[0]);
-   debugmsg ("empty passenger part %d pcoord=%d,%d u=%d,%d?", p, 
-             origin.x, origin.y, g->u.pos.x, g->u.pos.y);
-   continue;
-  }
-  int trec = rec - psgs[i]->sklevel[sk_driving];
+ for (const auto& pass : passengers) {
+  assert(pass.second);
+  player *psg = pass.second;
+  int p = pass.first;
+  int trec = rec - psg->sklevel[sk_driving];	// dead compensation \todo how does C:DDA handle this?
   if (trec < 0) trec = 0;
   // add recoil
   psg->driving_recoil = rec;
@@ -798,7 +790,7 @@ void map::vehmove(game *g)
        veh->turn (one_in(2) ? -15 : 15);
       }
  // eventually send it skidding if no control
-      if (!veh->boarded_parts().size() && one_in (10))
+      if (!veh->any_boarded_parts() && one_in (10))	// XXX \todo should be out of control? check C:DDA
        veh->skidding = true;
       tileray mdir; // the direction we're moving
       if (veh->skidding) // if skidding, it's the move vector
@@ -829,52 +821,49 @@ void map::vehmove(game *g)
       int coll_turn = 0;
       if (imp > 0) {
        if (imp > 100) veh->damage_all(imp / 20, imp / 10, 1);// shake veh because of collision
-       std::vector<int> ppl = veh->boarded_parts();
-       int vel2 = imp * k_mvel * 100 / (veh->total_mass() / 8);
-       for (int ps = 0; ps < ppl.size(); ps++) {
-        player *psg = veh->get_passenger (ppl[ps]);
-        if (!psg) {
-         debugmsg ("throw passenger: empty passenger at part %d", ppl[ps]);
-         continue;
-        }
-        int throw_roll = rng (vel2/100, vel2/100 * 2);
-        int psblt = veh->part_with_feature (ppl[ps], vpf_seatbelt);
-        int sb_bonus = psblt >= 0? veh->part_info(psblt).bonus : 0;
-        bool throw_it = throw_roll > (psg->str_cur + sb_bonus) * 3;
-        std::string psgname;
-		const char* psgverb;
-        if (psg == &g->u) {
-         psgname = "You";
-         psgverb = "were";
-        } else {
-         psgname = psg->name;
-         psgverb = "was";
-        }
-        if (throw_it) {
-         if (psgname.length())
-          messages.add("%s %s hurled from the %s's seat by the power of impact!",
-                      psgname.c_str(), psgverb, veh->name.c_str());
-		 const point origin(x + veh->parts[ppl[ps]].precalc_d[0].x, y + veh->parts[ppl[ps]].precalc_d[0].y);
-         g->m.unboard_vehicle(origin);
-         g->fling_player_or_monster(psg, 0, mdir.dir() + rng(0, 60) - 30,
-                                    (vel2/100 - sb_bonus < 10 ? 10 :
-                                     vel2/100 - sb_bonus));
-        } else if (veh->part_with_feature (ppl[ps], vpf_controls) >= 0) {
-         int lose_ctrl_roll = rng (0, imp);
-         if (lose_ctrl_roll > psg->dex_cur * 2 + psg->sklevel[sk_driving] * 3) {
-          if (psgname.length())
-           messages.add("%s lose%s control of the %s.", psgname.c_str(),
-                       (psg == &g->u ? "" : "s"), veh->name.c_str());
-          int turn_amount = (rng (1, 3) * sqrt (vel2) / 2) / 15;
-          if (turn_amount < 1) turn_amount = 1;
-          turn_amount *= 15;
-          if (turn_amount > 120) turn_amount = 120;
-          //veh->skidding = true;
-          //veh->turn (one_in (2)? turn_amount : -turn_amount);
-          coll_turn = one_in (2)? turn_amount : -turn_amount;
-         }
-        }
-       }
+	   int vel2 = imp * k_mvel * 100 / (veh->total_mass() / 8);
+	   auto passengers = veh->passengers();
+	   for (const auto& pass : passengers) {
+		   assert(pass.second);
+		   int ps = pass.first;
+		   player* psg = pass.second;
+		   int throw_roll = rng(vel2 / 100, vel2 / 100 * 2);
+		   int psblt = veh->part_with_feature(ps, vpf_seatbelt);
+		   int sb_bonus = psblt >= 0 ? veh->part_info(psblt).bonus : 0;
+		   bool throw_it = throw_roll > (psg->str_cur + sb_bonus) * 3;
+		   std::string psgname;
+		   const char* psgverb;
+		   if (psg == &g->u) {
+			   psgname = "You";
+			   psgverb = "were";
+		   } else {
+			   psgname = psg->name;
+			   psgverb = "was";
+		   }
+		   if (throw_it) {
+			   if (psgname.length())
+				   messages.add("%s %s hurled from the %s's seat by the power of impact!",
+					   psgname.c_str(), psgverb, veh->name.c_str());
+			   const point origin(x + veh->parts[ps].precalc_d[0].x, y + veh->parts[ps].precalc_d[0].y);
+			   g->m.unboard_vehicle(origin);
+			   g->fling_player_or_monster(psg, 0, mdir.dir() + rng(0, 60) - 30,
+				   (vel2 / 100 - sb_bonus < 10 ? 10 : vel2 / 100 - sb_bonus));
+		   } else if (veh->part_with_feature(ps, vpf_controls) >= 0) {
+			   int lose_ctrl_roll = rng(0, imp);
+			   if (lose_ctrl_roll > psg->dex_cur * 2 + psg->sklevel[sk_driving] * 3) {
+				   if (psgname.length())
+					   messages.add("%s lose%s control of the %s.", psgname.c_str(),
+					   (psg == &g->u ? "" : "s"), veh->name.c_str());
+				   int turn_amount = (rng(1, 3) * sqrt(vel2) / 2) / 15;
+				   if (turn_amount < 1) turn_amount = 1;
+				   turn_amount *= 15;
+				   if (turn_amount > 120) turn_amount = 120;
+				   //veh->skidding = true;
+				   //veh->turn (one_in (2)? turn_amount : -turn_amount);
+				   coll_turn = one_in(2) ? turn_amount : -turn_amount;
+			   }
+		   }
+	   }
       }
 // now we're gonna handle traps we're standing on (if we're still moving).
 // this is done here before displacement because

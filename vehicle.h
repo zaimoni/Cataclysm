@@ -38,6 +38,10 @@ struct vehicle_part
 	~vehicle_part() = default;
 	vehicle_part& operator=(const vehicle_part& src) = default;
 	vehicle_part& operator=(vehicle_part&& src) = default;
+
+	const vpart_info& info() const { return vpart_info::list[id]; }
+	bool has_flag(unsigned int f) const { return info().flags & mfb(f); }
+	player* get_passenger(point origin) const;
 };
 
 // Facts you need to know about implementation:
@@ -172,6 +176,8 @@ public:
 
 // get a list of part indeces where is a passenger inside
     std::vector<int> boarded_parts() const;
+	std::vector<std::pair<int, player*> > passengers() const;
+	bool any_boarded_parts() const;
 
 // get passenger at part p
     player *get_passenger(int p) const;
