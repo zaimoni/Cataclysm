@@ -41,6 +41,11 @@ struct point {
 	 y /= rhs;
 	 return *this;
  }
+ point& operator%=(int rhs) {
+	 x %= rhs;
+	 y %= rhs;
+	 return *this;
+ }
 };
 
 inline bool operator==(const point& lhs, const point& rhs) { return lhs.x == rhs.x && lhs.y == rhs.y; }
@@ -49,6 +54,8 @@ inline point operator+(const point& lhs, const point& rhs) { return point(lhs) +
 inline point operator-(const point& lhs, const point& rhs) { return point(lhs) -= rhs; }
 inline point operator*(int s, const point& pt) { return point(pt) *= s; }
 inline point operator*(const point& pt, int s) { return point(pt) *= s; }
+inline point operator/(const point& pt, int s) { return point(pt) /= s; }
+inline point operator%(const point& pt, int s) { return point(pt) %= s; }
 
 template<class T>
 bool pointwise_test(const point& lhs, const point& rhs, T rel)

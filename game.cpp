@@ -5949,13 +5949,10 @@ void game::update_map(int &x, int &y)
      cur_om.zg[group].population++;
      if (cur_om.zg[group].population / pow(cur_om.zg[group].radius, 2.0) > 5)
       cur_om.zg[group].radius++;
-    }
-/*  Removing adding new groups for now.  Haha!
-	else {
+    } else {
 		const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id));
-		if (m_cat != mcat_null) cur_om.zg.push_back(mongroup(m_cat, levx, levy, 1, 1));
+		if (m_cat != mcat_null) cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
 	}
-}*/
    }
    z_erase(i);
    i--;

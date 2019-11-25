@@ -643,36 +643,29 @@ void map::destroy_vehicle (vehicle *veh)
  debugmsg ("destroy_vehicle can't find it! sm=%d", sm);
 }
 
-bool map::displace_vehicle (game *g, int &x, int &y, int dx, int dy, bool test=false)
+bool map::displace_vehicle (game *g, int &x, int &y, const point& delta, bool test)
 {
- int x2 = x + dx;
- int y2 = y + dy;
- int srcx = x;
- int srcy = y;
- int dstx = x2;
- int dsty = y2;
+ const point dest(x+delta.x, y+delta.y);
+ point src(x, y);
 
- if (!inbounds(srcx, srcy)) {
+ if (!inbounds(src.x, src.y)) {
   debugmsg ("map::displace_vehicle: coords out of bounds %d,%d->%d,%d",
-            srcx, srcy, dstx, dsty);
+            src.x, src.y, dest.x, dest.y);
   return false;
  }
 
- int src_na = int(srcx / SEEX) + int(srcy / SEEY) * my_MAPSIZE;
- srcx %= SEEX;
- srcy %= SEEY;
+ int src_na = int(src.x / SEEX) + int(src.y / SEEY) * my_MAPSIZE;
+ src %= SEE;
 
- int dst_na = int(dstx / SEEX) + int(dsty / SEEY) * my_MAPSIZE;
- dstx %= SEEX;
- dsty %= SEEY;
+ int dst_na = int(dest.x / SEEX) + int(dest.y / SEEY) * my_MAPSIZE;
+ const point dst(dest % SEE);
 
  if (test) return src_na != dst_na;
 
  // first, let's find our position in current vehicles vector
  int our_i = -1;
  for (int i = 0; i < grid[src_na]->vehicles.size(); i++) {
-  if (grid[src_na]->vehicles[i].pos.x == srcx &&
-      grid[src_na]->vehicles[i].pos.y == srcy) {
+  if (grid[src_na]->vehicles[i].pos == src) {
    our_i = i;
    break;
   }
@@ -684,7 +677,7 @@ bool map::displace_vehicle (game *g, int &x, int &y, int dx, int dy, bool test=f
  // move the vehicle
  vehicle *veh = &(grid[src_na]->vehicles[our_i]);
  // don't let it go off grid
- if (!inbounds(x2, y2)) veh->stop();
+ if (!inbounds(dest.x, dest.y)) veh->stop();
 
  // record every passenger inside
  std::vector<int> psg_parts = veh->boarded_parts();
@@ -695,7 +688,7 @@ bool map::displace_vehicle (game *g, int &x, int &y, int dx, int dy, bool test=f
  int rec = abs(veh->velocity) / 5 / 100;
 
  bool need_update = false;
- int upd_x, upd_y;
+ point upd;
  // move passengers
  for (int i = 0; i < psg_parts.size(); i++) {
   player *psg = psgs[i];
@@ -713,37 +706,33 @@ bool map::displace_vehicle (game *g, int &x, int &y, int dx, int dy, bool test=f
   // displace passenger taking in account vehicle movement (dx, dy)
   // and turning: precalc_dx/dy [0] contains previous frame direction,
   // and precalc_dx/dy[1] should contain next direction
-  psg->pos.x += dx + veh->parts[p].precalc_d[1].x - veh->parts[p].precalc_d[0].x;
-  psg->pos.y += dy + veh->parts[p].precalc_d[1].y - veh->parts[p].precalc_d[0].y;
+  psg->pos += delta + veh->parts[p].precalc_d[1] - veh->parts[p].precalc_d[0];
   if (psg == &g->u) { // if passemger is you, we need to update the map
    need_update = true;
-   upd_x = psg->pos.x;
-   upd_y = psg->pos.y;
+   upd = psg->pos;
   }
  }
  for (auto& part : veh->parts) part.precalc_d[0] = part.precalc_d[1];
 
- veh->pos.x = dstx;
- veh->pos.y = dsty;
+ veh->pos = dst;
  if (src_na != dst_na) {
-  vehicle veh1 = *veh;
-  veh1.sm = point(int(x2 / SEEX),int(y2 / SEEY));
-  grid[dst_na]->vehicles.push_back (veh1);
+  veh->sm = dest / SEE;
+  grid[dst_na]->vehicles.push_back(std::move(*veh));
   grid[src_na]->vehicles.erase (grid[src_na]->vehicles.begin() + our_i);
  }
 
- x += dx;
- y += dy;
+ x += delta.x;	// cf dest
+ y += delta.y;
 
  bool was_update = false;
- if (need_update && game::update_map_would_scroll(point(upd_x,upd_y))) {
+ if (need_update && game::update_map_would_scroll(upd)) {
   assert(MAPSIZE == my_MAPSIZE);	// critical fail if this doesn't hold, but map doesn't provide an accessor for testing this
 // map will shift, so adjust vehicle coords we've been passed
-  if (upd_x < SEEX * int(MAPSIZE / 2)) x += SEEX;
-  else if (upd_x >= SEEX * (1+int(MAPSIZE / 2))) x -= SEEX;
-  if (upd_y < SEEY * int(MAPSIZE / 2)) y += SEEY;
-  else if (upd_y >= SEEY * (1+int(MAPSIZE / 2))) y -= SEEY;
-  g->update_map(upd_x, upd_y);
+  if (upd.x < SEEX * int(MAPSIZE / 2)) x += SEEX;
+  else if (upd.x >= SEEX * (1+int(MAPSIZE / 2))) x -= SEEX;
+  if (upd.y < SEEY * int(MAPSIZE / 2)) y += SEEY;
+  else if (upd.y >= SEEY * (1+int(MAPSIZE / 2))) y -= SEEY;
+  g->update_map(upd.x, upd.y);	// player coords were already updated so don't re-update them
   was_update = true;
  }
  return (src_na != dst_na) || was_update;
@@ -941,7 +930,7 @@ void map::vehmove(game *g)
        }
 // accept new position
 // if submap changed, we need to process grid from the beginning.
-       sm_change = displace_vehicle (g, x, y, dx, dy);
+       sm_change = displace_vehicle (g, x, y, point(dx, dy));
       } else // can_move
        veh->stop();
 // redraw scene
