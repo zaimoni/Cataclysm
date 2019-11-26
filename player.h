@@ -235,6 +235,7 @@ public:
 // integrity checks
  void screenpos_set(point pt);
  void screenpos_set(int x, int y);
+ void screenpos_add(point delta);
 
 // ---------------VALUES-----------------
  point pos;

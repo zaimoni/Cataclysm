@@ -508,8 +508,7 @@ void game::start_game()
  //MAPBUFFER.load();
  m.load(this, point(lev.x, lev.y));
 // Start us off somewhere in the shelter.
- u.pos.x = SEEX * int(MAPSIZE / 2) + 5;
- u.pos.y = SEEY * int(MAPSIZE / 2) + 5;
+ u.screenpos_set(point(SEE * int(MAPSIZE / 2) + 5, SEE * int(MAPSIZE / 2) + 5));
  u.str_cur = u.str_max;
  u.per_cur = u.per_max;
  u.int_cur = u.int_max;
@@ -4000,8 +3999,7 @@ void game::examine()
   for (int x = 0; x < SEEX * MAPSIZE; x++) {
    for (int y = 0; y < SEEY * MAPSIZE; y++) {
     if (m.ter(x, y) == t_elevator) {
-     u.pos.x = x;
-     u.pos.y = y;
+	 u.screenpos_set(point(x,y));
     }
    }
   }
@@ -5464,8 +5462,7 @@ void game::plmove(int x, int y)
    messages.add("You displace the %s.", m_at->name().c_str());
   }
   if (update_map_would_scroll(point(x,y))) update_map(x, y);
-  u.pos.x = x;
-  u.pos.y = y;
+  u.screenpos_set(point(x, y));
   if (tr_id != tr_null) { // We stepped on a trap!
    const trap* const tr = trap::traps[tr_id];
    if (!u.avoid_trap(tr)) (*tr->act)(this, x, y);
@@ -5560,8 +5557,7 @@ void game::plmove(int x, int y)
 void game::plswim(int x, int y)
 {
  if (update_map_would_scroll(point(x,y))) update_map(x, y);
- u.pos.x = x;
- u.pos.y = y;
+ u.screenpos_set(point(x,y));
  DEBUG_FAIL_OR_LEAVE(!m.has_flag(swimmable, x, y), return);
  if (u.has_disease(DI_ONFIRE)) {	// VAPORWARE: not for phosphorus or lithium ...
   messages.add("The water puts out the flames!");
@@ -5813,8 +5809,7 @@ void game::vertical_move(int movez, bool force)
  lev.z += movez;
  u.moves -= 100;
  m.load(this, point(lev.x, lev.y));
- u.pos.x = stairx;
- u.pos.y = stairy;
+ u.screenpos_set(point(stairx, stairy));
  if (rope_ladder) m.ter(u.pos) = t_rope_up;
  if (m.rewrite_test<t_manhole_cover, t_manhole>(stairx, stairy)) 
    m.add_item(stairx + rng(-1, 1), stairy + rng(-1, 1), item::types[itm_manhole_cover], 0);
@@ -5992,8 +5987,7 @@ void game::update_map(int &x, int &y)
     if (debugmon)
      debugmsg("Static NPC fine location %d:%d (%d:%d)", temp.pos.x, temp.pos.y,
               temp.pos.x + dx * SEEX, temp.pos.y + dy * SEEY);
-    temp.pos.x += dx * SEEX;
-    temp.pos.y += dy * SEEY;
+	temp.screenpos_add(point(dx * SEE, dy * SEE));
    }
    if (temp.marked_for_death)
     temp.die(this, false);
@@ -6348,25 +6342,25 @@ void game::msg_buffer()
 void game::teleport(player *p)
 {
  if (p == NULL) p = &u;
- int newx, newy, tries = 0;
+ int tries = 0;
+ point dest(0, 0);
  const bool is_u = (p == &u);
  p->add_disease(DI_TELEGLOW, 300);
  do {
-  newx = p->pos.x + rng(0, SEEX * 2) - SEEX;
-  newy = p->pos.y + rng(0, SEEY * 2) - SEEY;
+  dest.x = p->pos.x + rng(0, SEEX * 2) - SEEX;
+  dest.y = p->pos.y + rng(0, SEEY * 2) - SEEY;
   tries++;
- } while (tries < 15 && !is_empty(newx, newy));
- const bool can_see = (is_u || u_see(newx, newy));
+ } while (tries < 15 && !is_empty(dest));
+ const bool can_see = (is_u || u_see(dest));
  std::string You = (is_u ? "You" : p->name);
- p->pos.x = newx;
- p->pos.y = newy;
+ p->screenpos_set(dest);
  if (tries == 15) {
-  if (m.move_cost(newx, newy) == 0) {	// TODO: If we land in water, swim
+  if (m.move_cost(dest) == 0) {	// TODO: If we land in water, swim
    if (can_see)
     messages.add("%s teleport%s into the middle of a %s!", You.c_str(),
-            (is_u ? "" : "s"), m.tername(newx, newy).c_str());
+            (is_u ? "" : "s"), m.tername(dest).c_str());
    p->hurt(this, bp_torso, 0, 500);
-  } else if (monster* const m_at = mon(newx, newy)) {
+  } else if (monster* const m_at = mon(dest)) {
      if (can_see)
        messages.add("%s teleport%s into the middle of a %s!", You.c_str(),
               (is_u ? "" : "s"), m_at->name().c_str());

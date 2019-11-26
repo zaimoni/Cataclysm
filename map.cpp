@@ -595,8 +595,7 @@ void map::board_vehicle(game *g, int x, int y, player *p)
   return;
  }
  veh->parts[seat_part].passenger = 1;
- p->pos.x = x;
- p->pos.y = y;
+ p->screenpos_set(point(x,y));
  p->in_vehicle = true;
  if (p == &g->u && game::update_map_would_scroll(point(x,y)))
   g->update_map(x, y);
@@ -698,7 +697,7 @@ bool map::displace_vehicle (game *g, int &x, int &y, const point& delta, bool te
   // displace passenger taking in account vehicle movement (dx, dy)
   // and turning: precalc_dx/dy [0] contains previous frame direction,
   // and precalc_dx/dy[1] should contain next direction
-  psg->pos += delta + veh->parts[p].precalc_d[1] - veh->parts[p].precalc_d[0];
+  psg->screenpos_add(delta + veh->parts[p].precalc_d[1] - veh->parts[p].precalc_d[0]);
   if (psg == &g->u) { // if passemger is you, we need to update the map
    need_update = true;
    upd = psg->pos;
