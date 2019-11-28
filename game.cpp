@@ -5873,6 +5873,20 @@ std::pair<tripoint, point> game::toGPS(point screen_pos) const	// \todo overflow
 	return std::pair<tripoint, point>(anchor, screen_pos);
 }
 
+bool game::toScreen(std::pair<tripoint, point> GPS_pos, point& screen_pos) const
+{
+	if (GPS_pos.first.z != cur_om.pos.z) return false;	// \todo? z-level change target
+	const auto anchor(toGPS(point(0, 0)));	// \todo would be nice to short-circuit this stage, but may be moot after modeling Earth's radius.  Also, cache target
+	if (GPS_pos.first.x < anchor.first.x || GPS_pos.first.y < anchor.first.y) return false;
+	point delta;
+	delta.x = anchor.first.x - GPS_pos.first.x;
+	if (MAPSIZE <= delta.x) return false;
+	delta.y = anchor.first.y - GPS_pos.first.y;
+	if (MAPSIZE <= delta.y) return false;
+	screen_pos = GPS_pos.second + MAPSIZE * delta;
+	return true;
+}
+
 static const zaimoni::gdi::box<point> _map_centered_enough(point(SEE*(MAPSIZE / 2)), point(SEE*((MAPSIZE / 2) + 1)-1));
 
 bool game::update_map_would_scroll(const point& pt)
