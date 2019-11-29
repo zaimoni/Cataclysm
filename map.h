@@ -190,6 +190,7 @@ class map
  const std::vector<item>& i_at(const point& pt) const { return const_cast<map*>(this)->i_at(pt.x, pt.y); };
  item water_from(int x, int y) const;
  void i_clear(int x, int y);
+ void i_clear(const point& pt) { return i_clear(pt.x, pt.y); };
  void i_rem(int x, int y, int index);
  void i_rem(const point& pt, int index) { i_rem(pt.x, pt.y, index); };
  point find_item(item *it) const;
