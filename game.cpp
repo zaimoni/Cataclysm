@@ -2345,23 +2345,18 @@ void game::draw_ter(const point& pos)
    mvwputch(w_terrain, SEEY + mon.pos.y - pos.y, SEEX + mon.pos.x - pos.x, c_red, '?');
  }
  // Draw NPCs
- for (int i = 0; i < active_npc.size(); i++) {
-  point dist(abs(active_npc[i].pos.x - pos.x), abs(active_npc[i].pos.y - pos.y));
-  if (dist.x <= SEEX && dist.y <= SEEY && u_see(active_npc[i].pos))
-   active_npc[i].draw(w_terrain, pos.x, pos.y, false);
+ for (const auto& NPC : active_npc) {
+   const point dist(NPC.pos-pos);
+   if (SEE >= abs(dist.x) && SEE >= abs(dist.y) && u_see(NPC.pos)) NPC.draw(w_terrain, pos, false);
  }
  if (u.has_active_bionic(bio_scent_vision)) {	// overwriting normal vision isn't that useful
-  for (int realx = pos.x - SEEX; realx <= pos.x + SEEX; realx++) {
-   for (int realy = pos.y - SEEY; realy <= pos.y + SEEY; realy++) {
-    if (scent(realx, realy) != 0) {
-     const int tempx = realx - pos.x, tempy = realy - pos.y;
-     if (2<=abs(tempx) || 2<=abs(tempy)) {
-      if (mon(realx, realy))
-       mvwputch(w_terrain, SEEY + tempy, SEEX + tempx, c_white, '?');
-      else
-       mvwputch(w_terrain, SEEY + tempy, SEEX + tempx, c_magenta, '#');
-     }
-    }
+  point temp;
+  for (temp.x = -SEEX; temp.x <= SEEX; temp.x++) {
+   for (temp.y = -SEEY; temp.y <= SEEY; temp.y++) {
+	if (2 <= abs(temp.x) || 2 <= abs(temp.y)) {
+	  const point real(temp+pos);
+	  if (0 != scent(real)) mvwputch(w_terrain, SEEY + temp.y, SEEX + temp.x, c_white, (mon(real) ? '?' : '#'));
+	}
    }
   }
  }
@@ -4154,7 +4149,7 @@ point game::look_around()
     else if (stack.size() == 1)
      mvwprintw(w_look, 3, 1, "There is an item there.");
    } else if (npc* const _npc = nPC(l)) {
-    _npc->draw(w_terrain, l.x, l.y, true);
+    _npc->draw(w_terrain, l, true);
 	_npc->print_info(w_look);
     if (stack.size() > 1)
      mvwprintw(w_look, 3, 1, "There are several items there.");

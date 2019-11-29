@@ -308,7 +308,7 @@ public:
  void starting_weapon(game *g);
 
 // Display
- void draw(WINDOW* w, int plx, int ply, bool inv);
+ void draw(WINDOW* w, const point& pt, bool inv) const;
  void print_info(WINDOW* w);
  std::string short_description() const;
 

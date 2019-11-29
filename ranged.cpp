@@ -470,9 +470,8 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
     mon.draw(w_terrain, center, false);
   }
 // Draw the NPCs
-  for (int i = 0; i < active_npc.size(); i++) {
-   if (u_see(active_npc[i].pos))
-    active_npc[i].draw(w_terrain, center.x, center.y, false);
+  for (const auto& NPC : active_npc) {
+   if (u_see(NPC.pos)) NPC.draw(w_terrain, center, false);
   }
   if (tar != u.pos) {
 // Calculate the return vector (and draw it too)
@@ -496,7 +495,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
 // NPCs and monsters get drawn with inverted colors
       if (m_at && u_see(m_at)) m_at->draw(w_terrain, center, true);
       else if (npc* const _npc = nPC(ret[i]))
-       _npc->draw(w_terrain, center.x, center.y, true);
+       _npc->draw(w_terrain, center, true);
       else
        m.drawsq(w_terrain, u, ret[i].x, ret[i].y, true,true,center.x, center.y);
      }
@@ -528,7 +527,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
    monster* const m_at = mon(tar);
    if (m_at && u_see(m_at)) m_at->draw(w_terrain, center, false);
    else if (npc* const _npc = nPC(tar))
-	_npc->draw(w_terrain, center.x, center.y, false);
+	_npc->draw(w_terrain, center, false);
    else if (m.sees(u.pos, tar, -1))
     m.drawsq(w_terrain, u, tar.x, tar.y, false, true, center.x, center.y);
    else

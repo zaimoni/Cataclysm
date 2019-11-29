@@ -1626,21 +1626,15 @@ int npc::speed_estimate(int speed) const
  return rng(low, high);
 }
 
-void npc::draw(WINDOW* w, int ux, int uy, bool inv)
+void npc::draw(WINDOW* w, const point& pt, bool inv) const
 {
- int x = SEEX + pos.x - ux;
- int y = SEEY + pos.y - uy;
+ const point dest = point(SEE)+pos-pt;
  nc_color col = c_pink;
- if (attitude == NPCATT_KILL)
-  col = c_red;
- if (is_friend())
-  col = c_green;
- else if (is_following())
-  col = c_ltgreen;
- if (inv)
-  mvwputch_inv(w, y, x, col, '@');
- else
-  mvwputch    (w, y, x, col, '@');
+ if (attitude == NPCATT_KILL) col = c_red;
+ if (is_friend())             col = c_green;
+ else if (is_following())     col = c_ltgreen;
+ if (inv) mvwputch_inv(w, dest.y, dest.x, col, '@');
+ else     mvwputch    (w, dest.y, dest.x, col, '@');
 }
 
 void npc::print_info(WINDOW* w)
