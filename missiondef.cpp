@@ -291,34 +291,34 @@ void mission_start::place_book(game *g, mission *miss)	// XXX doesn't look like 
 
 void mission_end::heal_infection(game *g, mission *miss)
 {
-	bool found_npc = false;
-	for (int i = 0; i < g->active_npc.size() && !found_npc; i++) {
-		if (g->active_npc[i].id == miss->npc_id) {
-			g->active_npc[i].rem_disease(DI_INFECTION);
-			found_npc = true;
+	for (auto& _npc : g->active_npc) {
+		if (_npc.id == miss->npc_id) {
+			_npc.rem_disease(DI_INFECTION);
+			return;
 		}
 	}
-
-	for (int i = 0; !found_npc && i < g->cur_om.npcs.size(); i++) {
-		if (g->cur_om.npcs[i].id == miss->npc_id) {
-			g->cur_om.npcs[i].rem_disease(DI_INFECTION);
-			found_npc = true;
+	for (auto& _npc : g->cur_om.npcs) {
+		if (_npc.id == miss->npc_id) {
+			_npc.rem_disease(DI_INFECTION);
+			return;
 		}
 	}
 }
 
 void mission_fail::kill_npc(game *g, mission *miss)
 {
-	for (int i = 0; i < g->active_npc.size(); i++) {
-		if (g->active_npc[i].id == miss->npc_id) {
-			g->active_npc[i].die(g, false);
+	int i = -1;
+	for (auto& _npc : g->active_npc) {
+		++i;
+		if (_npc.id == miss->npc_id) {
+			_npc.die(g, false);
 			g->active_npc.erase(g->active_npc.begin() + i);
 			return;
 		}
 	}
-	for (int i = 0; i < g->cur_om.npcs.size(); i++) {
-		if (g->cur_om.npcs[i].id == miss->npc_id) {
-			g->cur_om.npcs[i].marked_for_death = true;
+	for (auto& _npc : g->cur_om.npcs) {
+		if (_npc.id == miss->npc_id) {
+			_npc.marked_for_death = true;
 			return;
 		}
 	}

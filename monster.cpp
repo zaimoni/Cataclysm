@@ -291,7 +291,7 @@ void monster::process_trigger(monster_trigger trig, int amount)
 int monster::trigger_sum(const game *g, const std::vector<monster_trigger>& triggers) const
 {
  int ret = 0;
- bool check_terrain = false, check_meat = false, check_fire = false;
+ bool check_meat = false, check_fire = false;
  for (const auto trigger : triggers) {
 
   switch (trigger) {
@@ -300,33 +300,30 @@ int monster::trigger_sum(const game *g, const std::vector<monster_trigger>& trig
    break;
 
   case MTRIG_MEAT:
-   check_terrain = true;
    check_meat = true;
    break;
 
   case MTRIG_PLAYER_CLOSE:
    if (rl_dist(pos, g->u.pos) <= 5) ret += 5;
-   for (int i = 0; i < g->active_npc.size(); i++) {
-    if (rl_dist(pos, g->active_npc[i].pos) <= 5)
-     ret += 5;
-   }
+   for (const auto& _npc : g->active_npc) if (5 >= rl_dist(pos, _npc.pos)) ret += 5;
    break;
 
   case MTRIG_FIRE:
-   check_terrain = true;
    check_fire = true;
    break;
 
-  case MTRIG_PLAYER_WEAK:
-   if (g->u.hp_percentage() <= 70)
-    ret += 10 - int(g->u.hp_percentage() / 10);
+  case MTRIG_PLAYER_WEAK:	// \todo why not NPCs?
+   {
+   const auto hp_percent = g->u.hp_percentage();
+   if (70 >= hp_percent) ret += int(g->u.hp_percentage() / 10);
+   }
    break;
 
-  default:
-   break; // The rest are handled when the impetus occurs
+  default: break; // The rest are handled when the impetus occurs
   }
  }
 
+ const bool check_terrain = check_meat || check_fire;
  if (check_terrain) {
   for (int x = pos.x - 3; x <= pos.x + 3; x++) {
    for (int y = pos.y - 3; y <= pos.y + 3; y++) {

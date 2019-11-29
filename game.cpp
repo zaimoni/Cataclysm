@@ -5224,9 +5224,8 @@ void game::chat()
   return;
  }
  std::vector<npc*> available;
- for (int i = 0; i < active_npc.size(); i++) {
-  if (u_see(active_npc[i].pos) && rl_dist(u.pos, active_npc[i].pos) <= 24)
-   available.push_back(&active_npc[i]);
+ for (auto& _npc : active_npc) {
+	 if (u_see(_npc.pos) && rl_dist(u.pos, _npc.pos) <= 24) available.push_back(&_npc);
  }
  if (available.empty()) {
   messages.add("There's no-one close enough to talk to.");
@@ -5973,14 +5972,13 @@ void game::update_map(int &x, int &y)
    active_npc[i].mapy = lev.y + (active_npc[i].pos.y / SEEY);
    active_npc[i].pos.x %= SEEX;
    active_npc[i].pos.y %= SEEY;
-   cur_om.npcs.push_back(active_npc[i]);
-   active_npc[i].dead = true;
+   cur_om.npcs.push_back(std::move(active_npc[i]));
+   active_npc.erase(active_npc.begin() + i);
    i--;
   }
  }
  }	// if (0 != shift.x || 0 != shift.y)
 // Spawn static NPCs?
- npc temp;
  for (int i = 0; i < cur_om.npcs.size(); i++) {
   if (rl_dist(lev.x + int(MAPSIZE / 2), lev.y + int(MAPSIZE / 2),
               cur_om.npcs[i].mapx, cur_om.npcs[i].mapy) <= 
@@ -5989,7 +5987,7 @@ void game::update_map(int &x, int &y)
    if (debugmon)
     debugmsg("Spawning static NPC, %d:%d (%d:%d)", lev.x, lev.y,
              cur_om.npcs[i].mapx, cur_om.npcs[i].mapy);
-   temp = cur_om.npcs[i];
+   npc temp(std::move(cur_om.npcs[i]));
    if (temp.pos.x == -1 || temp.pos.y == -1) {
 	temp.screenpos_set(SEEX * 2 * (temp.mapx - lev.x) + rng(0 - SEEX, SEEX), SEEY * 2 * (temp.mapy - lev.y) + rng(0 - SEEY, SEEY));
    } else {
@@ -5998,10 +5996,8 @@ void game::update_map(int &x, int &y)
               temp.pos.x + dx * SEEX, temp.pos.y + dy * SEEY);
 	temp.screenpos_add(point(dx * SEE, dy * SEE));
    }
-   if (temp.marked_for_death)
-    temp.die(this, false);
-   else
-    active_npc.push_back(temp);
+   if (temp.marked_for_death) temp.die(this, false);
+   else active_npc.push_back(std::move(temp));
    cur_om.npcs.erase(cur_om.npcs.begin() + i);
    i--;
   }
@@ -6218,7 +6214,7 @@ void game::spawn_mon(int shiftx, int shifty)
                                              om_location(), tmp.id);
   if (mission_index != -1)
   tmp.chatbin.missions.push_back(mission_index);
-  active_npc.push_back(tmp);
+  active_npc.push_back(std::move(tmp));
  }
 
 // Now, spawn monsters (perhaps)
