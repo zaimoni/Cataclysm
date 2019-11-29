@@ -57,6 +57,8 @@ class inventory
   item  remove_item_by_letter(char ch);
   item& item_by_letter(char ch);
   int   index_by_letter(char ch) const;
+  std::pair<int, item*> by_letter(char ch);
+  std::pair<int, const item*> by_letter(char ch) const;
 
 // Below, "amount" refers to quantity
 //        "charges" refers to charges

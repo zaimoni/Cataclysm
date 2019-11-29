@@ -881,23 +881,20 @@ void iuse::light_on(game *g, player *p, item *it, bool t)
 
 void iuse::water_purifier(game *g, player *p, item *it, bool t)
 {
- char ch = g->inv("Purify what?");
- if (!p->has_item(ch)) {
-  messages.add("You do not have that idea!");
-  return;
+ const auto purify = p->have_item(g->inv("Purify what?"));
+ if (!purify.second) {
+	 messages.add("You do not have that idea!");
+	 return;
  }
- if (p->i_at(ch).contents.size() == 0) {
-  messages.add("You can only purify water.");
-  return;
+ if (purify.second->contents.empty()) {
+only_water:
+	 messages.add("You can only purify water.");
+	 return;
  }
- item *pure = &(p->i_at(ch).contents[0]);
- if (pure->type->id != itm_water && pure->type->id != itm_salt_water) {
-  messages.add("You can only purify water.");
-  return;
- }
- p->moves -= 150;
- pure->make(item::types[itm_water]);
- pure->poison = 0;
+ auto& pure = purify.second->contents[0];
+ if (pure.type->id != itm_water && pure.type->id != itm_salt_water) goto only_water;
+ pure.make(item::types[itm_water]);
+ pure.poison = 0;
 }
 
 void iuse::two_way_radio(game *g, player *p, item *it, bool t)

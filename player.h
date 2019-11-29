@@ -231,6 +231,8 @@ public:
  bool has_item(item *it) const;		// Has a specific item
  bool has_mission_item(int mission_id) const;	// Has item with mission_id
  std::vector<int> has_ammo(ammotype at) const;// Returns a list of indices of the ammo
+ std::pair<int, item*> have_item(char let);
+ std::pair<int, const item*> have_item(char let) const;
 
 // integrity checks
  void screenpos_set(point pt);

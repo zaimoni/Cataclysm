@@ -3626,6 +3626,33 @@ int player::lookup_item(char let) const
  return -2; // -2 is for "item not found"
 }
 
+std::pair<int, item*> player::have_item(char let)
+{
+	auto ret = inv.by_letter(let);
+	if (ret.second) return ret;
+	if (weapon.invlet == let) return decltype(ret)(-2, &weapon);
+	int i = -2;
+	for (auto& it : worn) {
+		--i;
+		if (it.invlet == let) return decltype(ret)(i, &it);
+	}
+	return decltype(ret)(-1, 0);
+}
+
+std::pair<int, const item*> player::have_item(char let) const
+{
+	auto ret = inv.by_letter(let);
+	if (ret.second) return ret;
+	if (weapon.invlet == let) return decltype(ret)(-2, &weapon);
+	int i = -2;
+	for (auto& it : worn) {
+		--i;
+		if (it.invlet == let) return decltype(ret)(i, &it);
+	}
+	return decltype(ret)(-1, 0);
+}
+
+
 bool player::eat(int index)
 {
  auto g = game::active();

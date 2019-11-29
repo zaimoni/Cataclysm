@@ -5075,11 +5075,15 @@ void game::eat()
   messages.add("Never mind.");
   return;
  }
- if (!u.has_item(ch)) {
-  messages.add("You don't have item '%c'!", ch);
-  return;
+ auto it = u.have_item(ch);
+ if (!it.second) {
+	 messages.add("You don't have item '%c'!", ch);
+	 return;
+ } else if (-2 > it.first) {
+	 messages.add("Please take off '%c' before eating it.", ch);
+	 return;
  }
- u.eat(u.lookup_item(ch));
+ u.eat(0 > it.first ? -1 : it.first);	// translate between conventions
 }
 
 void game::wear()
