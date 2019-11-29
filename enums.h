@@ -16,9 +16,9 @@ struct point {
 
  int x;
  int y;
- point() : x(0), y(0) {}
- explicit point(int X) : x(X), y(X) {}	// the diagonal projection of the integers Z into the integer plane ZxZ
- point(int X, int Y) : x (X), y (Y) {}
+ constexpr point() : x(0), y(0) {}
+ explicit constexpr point(int X) : x(X), y(X) {}	// the diagonal projection of the integers Z into the integer plane ZxZ
+ constexpr point(int X, int Y) : x (X), y (Y) {}
  point(const point &p) = default;
 
  point& operator+=(const point& rhs) {
@@ -48,8 +48,8 @@ struct point {
  }
 };
 
-inline bool operator==(const point& lhs, const point& rhs) { return lhs.x == rhs.x && lhs.y == rhs.y; }
-inline bool operator!=(const point& lhs, const point& rhs) { return lhs.x != rhs.x || lhs.y != rhs.y; }
+inline constexpr bool operator==(const point& lhs, const point& rhs) { return lhs.x == rhs.x && lhs.y == rhs.y; }
+inline constexpr bool operator!=(const point& lhs, const point& rhs) { return lhs.x != rhs.x || lhs.y != rhs.y; }
 inline point operator+(const point& lhs, const point& rhs) { return point(lhs) += rhs; }
 inline point operator-(const point& lhs, const point& rhs) { return point(lhs) -= rhs; }
 inline point operator*(int s, const point& pt) { return point(pt) *= s; }
@@ -69,9 +69,9 @@ struct tripoint {
  int x;
  int y;
  int z;
- tripoint() : x(0), y(0), z(0) {}
-// explicit tripoint(int X) : x(X), y(X), z(X) {};	// the diagonal projection of the integers Z into the integer space Z^3
- tripoint(int X, int Y, int Z) : x (X), y (Y), z (Z) {}
+ constexpr tripoint() : x(0), y(0), z(0) {}
+// explicit constexpr tripoint(int X) : x(X), y(X), z(X) {};	// the diagonal projection of the integers Z into the integer space Z^3
+ constexpr tripoint(int X, int Y, int Z) : x (X), y (Y), z (Z) {}
  tripoint(const tripoint &p) = default;
 
  tripoint& operator+=(const tripoint& rhs) {
