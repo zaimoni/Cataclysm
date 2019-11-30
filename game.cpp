@@ -1291,13 +1291,11 @@ void game::get_input()
    break;
 
   case ACTION_INVENTORY: {
-   bool has = false;
-   do {
-    char ch = inv();
-    has = u.has_item(ch);
-    if (has)
-     full_screen_popup(u.i_at(ch).info(true).c_str());
-   } while (has);
+   auto has = u.have_item(inv());
+   while (has.second) {
+	   full_screen_popup(has.second->info(true).c_str());
+	   has = u.have_item(inv());
+   }
    refresh_all();
   } break;
 
@@ -4772,24 +4770,23 @@ void game::reassign_item()
   messages.add("Never mind.");
   return;
  }
- if (!u.has_item(ch)) {
+ auto change_from = u.have_item(ch);
+ if (!change_from.second) {
   messages.add("You do not have that item.");
   return;
  }
- char newch = popup_getkey("%c - %s; enter new letter.", ch,
-                           u.i_at(ch).tname().c_str());
+ char newch = popup_getkey("%c - %s; enter new letter.", ch, change_from.second->tname().c_str());
  if ((newch < 'A' || (newch > 'Z' && newch < 'a') || newch > 'z')) {
   messages.add("%c is not a valid inventory letter.", newch);
   return;
  }
- item* change_from = &(u.i_at(ch));
- if (u.has_item(newch)) {
-  item* change_to = &(u.i_at(newch));
-  change_to->invlet = ch;
-  messages.add("%c - %s", ch, change_to->tname().c_str());
+ auto change_to = u.have_item(newch);	// if new letter already exists, swap it
+ if (change_to.second) {
+  change_to.second->invlet = ch;
+  messages.add("%c - %s", ch, change_to.second->tname().c_str());
  }
- change_from->invlet = newch;
- messages.add("%c - %s", newch, change_from->tname().c_str());
+ change_from.second->invlet = newch;
+ messages.add("%c - %s", newch, change_from.second->tname().c_str());
 }
 
 
