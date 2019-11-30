@@ -2776,30 +2776,25 @@ void game::mon_info()
  bool dangerous[8];
  for (int i = 0; i < 8; i++) dangerous[i] = false;
 
- direction dir_to_mon, dir_to_npc;
  for (const auto& mon : z) {
   if (u_see(&mon)) {
-   bool mon_dangerous = false;
    const auto att = mon.attitude(&u);
-   if (att == MATT_ATTACK || att == MATT_FOLLOW) {
-    mon_dangerous = true;
-    newseen++;
-   }
+   const bool mon_dangerous = (att == MATT_ATTACK || att == MATT_FOLLOW);
+   if (mon_dangerous) newseen++;
 
-   dir_to_mon = direction_from(u.pos, mon.pos);
+   direction dir_to_mon = direction_from(u.pos, mon.pos);
    int index = (rl_dist(u.pos, mon.pos) <= SEEX ? 8 : dir_to_mon);
    if (mon_dangerous && index < 8) dangerous[index] = true;
 
    if (!vector_has(unique_types[dir_to_mon], mon.type->id))
-    unique_types[index].push_back(mon.type->id);
+    unique_types[dir_to_mon].push_back(mon.type->id);
   }
  }
  for (int i = 0; i < active_npc.size(); i++) {
-  if (u_see(active_npc[i].pos)) { // TODO: NPC invis
-   if (active_npc[i].attitude == NPCATT_KILL) newseen++;
-   point npcp(active_npc[i].pos);
-   dir_to_npc = direction_from(u.pos, npcp);
-   int index = (rl_dist(u.pos, npcp) <= SEEX ? 8 : dir_to_npc);
+  const auto& _npc = active_npc[i];
+  if (u_see(_npc.pos)) { // TODO: NPC invis
+   if (_npc.attitude == NPCATT_KILL) newseen++;
+   int index = (rl_dist(u.pos, _npc.pos) <= SEEX ? 8 : direction_from(u.pos, _npc.pos));
    unique_types[index].push_back(-1 - i);
   }
  }
@@ -2815,8 +2810,6 @@ void game::mon_info()
 
 
  mostseen = newseen;
- int line = 0;
- nc_color tmpcol;
 // Print the direction headings
 // Reminder:
 // 7 0 1	unique_types uses these indices;
@@ -2839,31 +2832,30 @@ void game::mon_info()
  mvwprintz(w_moninfo,  2, 33, (unique_types[3].empty() ?
            c_dkgray : (dangerous[3] ? c_ltred : c_ltgray)), "SE:");
 
+ static constexpr const point label_reference[8] = {
+	 point(0, 22),
+	 point(0, 37),
+	 point(1, 37),
+	 point(2, 37),
+	 point(2, 22),
+	 point(2, 4),
+	 point(1, 6),
+	 point(0, 4)
+ };
+
  for (int i = 0; i < 8; i++) {
 
-  point pr;
-  switch (i) {
-   case 7: pr.y = 0; pr.x =  4; break;
-   case 0: pr.y = 0; pr.x = 22; break;
-   case 1: pr.y = 0; pr.x = 37; break;
-
-   case 6: pr.y = 1; pr.x =  6; break;
-   case 2: pr.y = 1; pr.x = 37; break;
-
-   case 5: pr.y = 2; pr.x =  4; break;
-   case 4: pr.y = 2; pr.x = 22; break;
-   case 3: pr.y = 2; pr.x = 37; break;
-  }
+  point pr(label_reference[i]);
 
   for (int j = 0; j < unique_types[i].size() && j < 10; j++) {
    buff = unique_types[i][j];
 
    if (buff < 0) { // It's an NPC!
+    nc_color tmpcol(c_pink);
     switch (active_npc[(buff + 1) * -1].attitude) {
      case NPCATT_KILL:   tmpcol = c_red;     break;
      case NPCATT_FOLLOW: tmpcol = c_ltgreen; break;
      case NPCATT_DEFEND: tmpcol = c_green;   break;
-     default:            tmpcol = c_pink;    break;
     }
     mvwputch (w_moninfo, pr.y, pr.x, tmpcol, '@');
 
@@ -3029,20 +3021,19 @@ void game::monmove()
  cleanup_dead();
 
 // Now, do active NPCs.
- for (int i = 0; i < active_npc.size(); i++) {
+ for (auto& _npc : active_npc) {
   int turns = 0;
-  if(active_npc[i].hp_cur[hp_head] <= 0 || active_npc[i].hp_cur[hp_torso] <= 0)
-   active_npc[i].die(this);
+  if(_npc.hp_cur[hp_head] <= 0 || _npc.hp_cur[hp_torso] <= 0) _npc.die(this);
   else {
-   active_npc[i].reset(this);
-   active_npc[i].suffer(this);
-   while (!active_npc[i].dead && active_npc[i].moves > 0 && turns < 10) {	// 10 moves in one turn is lethal; assuming this is a bug intercept
+   _npc.reset(this);
+   _npc.suffer(this);
+   while (!_npc.dead && _npc.moves > 0 && turns < 10) {	// 10 moves in one turn is lethal; assuming this is a bug intercept
     turns++;
-    active_npc[i].move(this);
+	_npc.move(this);
    }
    if (turns == 10) {
-    messages.add("%s's brain explodes!", active_npc[i].name.c_str());
-    active_npc[i].die(this);
+    messages.add("%s's brain explodes!", _npc.name.c_str());
+	_npc.die(this);
    }
   }
  }
@@ -5942,20 +5933,23 @@ void game::update_map(int &x, int &y)
   }
  }
 // Shift NPCs
- for (int i = 0; i < active_npc.size(); i++) {
-  active_npc[i].shift(shift);
-  if (active_npc[i].pos.x < 0 - SEEX * 2 ||
-      active_npc[i].pos.y < 0 - SEEX * 2 ||
-      active_npc[i].pos.x >     SEEX * (MAPSIZE + 2) ||
-      active_npc[i].pos.y >     SEEY * (MAPSIZE + 2)   ) {
-   active_npc[i].mapx = lev.x + (active_npc[i].pos.x / SEEX);
-   active_npc[i].mapy = lev.y + (active_npc[i].pos.y / SEEY);
-   active_npc[i].pos.x %= SEEX;
-   active_npc[i].pos.y %= SEEY;
-   cur_om.npcs.push_back(std::move(active_npc[i]));
-   active_npc.erase(active_npc.begin() + i);
-   i--;
-  }
+ {
+ auto i = active_npc.size();
+ while (0 < i) {
+	 auto& _npc = active_npc[--i];
+	 _npc.shift(shift);
+	 if (_npc.pos.x < 0 - SEEX * 2 ||
+		 _npc.pos.y < 0 - SEEX * 2 ||
+		 _npc.pos.x >     SEEX* (MAPSIZE + 2) ||
+		 _npc.pos.y >     SEEY* (MAPSIZE + 2)) {
+		 _npc.mapx = lev.x + (_npc.pos.x / SEEX);	// XXX \todo unclear why C:Whales erases overmap target when mothballing
+		 _npc.mapy = lev.y + (_npc.pos.y / SEEY);
+		 _npc.pos.x %= SEEX;
+		 _npc.pos.y %= SEEY;
+		 cur_om.npcs.push_back(std::move(active_npc[i]));
+		 active_npc.erase(active_npc.begin() + i);
+	 }
+ }
  }
  }	// if (0 != shift.x || 0 != shift.y)
 // Spawn static NPCs?
@@ -6303,14 +6297,6 @@ void game::wait()
  }
  u.assign_activity(ACT_WAIT, time, 0);
  u.moves = 0;
-}
-
-void game::gameover()
-{
- erase();
- gamemode->game_over(this);
- mvprintw(0, 35, "GAME OVER");
- inv();
 }
 
 void game::write_msg()

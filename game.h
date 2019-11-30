@@ -277,7 +277,6 @@ class game
   int valid_group(mon_id type, int x, int y);// Picks a group from cur_om
 private:
   void set_adjacent_overmaps(bool from_scratch = false);
-public:
 
 // Routine loop functions, approximately in order of execution
   void cleanup_dead();     // Delete any dead NPCs/monsters
@@ -294,7 +293,6 @@ public:
   void update_scent();     // Updates the scent map
   bool is_game_over();     // Returns true if the player quit or died
   void death_screen();     // Display our stats, "GAME OVER BOO HOO"
-  void gameover();         // Ends the game
   void write_msg();        // Prints the messages in the messages list
   void msg_buffer();       // Opens a window with old messages in it
   void draw_minimap();     // Draw the 5x5 minimap
@@ -302,6 +300,7 @@ public:
 
 // On-request draw functions
   void draw_overmap();     // Draws the overmap, allows note-taking etc.
+public:
   void disp_kills();       // Display the player's kill counts
   void disp_NPCs();        // Currently UNUSED.  Lists global NPCs.
   void list_missions();    // Listed current, completed and failed missions.
