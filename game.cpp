@@ -2708,24 +2708,8 @@ point game::find_item(item *it) const
 
 void game::remove_item(item *it)
 {
- point ret;
- if (it == &u.weapon) {
-  u.remove_weapon();
-  return;
- }
- for (size_t i = 0; i < u.inv.size(); i++) {
-  if (it == &u.inv[i]) {
-   u.i_remn(i);
-   return;
-  }
- }
- for (int i = 0; i < u.worn.size(); i++) {
-  if (it == &u.worn[i]) {
-   u.worn.erase(u.worn.begin() + i);
-   return;
-  }
- }
- ret = m.find_item(it);
+ if (u.remove_item(it)) return;
+ point ret = m.find_item(it);
  if (ret.x != -1 && ret.y != -1) {
   auto& stack = m.i_at(ret);
   for (int i = 0; i < stack.size(); i++) {
@@ -2735,24 +2719,7 @@ void game::remove_item(item *it)
    }
   }
  }
- for (auto& n_pc : active_npc) {
-  if (it == &n_pc.weapon) {
-   n_pc.remove_weapon();
-   return;
-  }
-  for (size_t j = 0; j < n_pc.inv.size(); j++) {
-   if (it == &n_pc.inv[j]) {
-    n_pc.i_remn(j);
-    return;
-   }
-  }
-  for (int j = 0; j < n_pc.worn.size(); j++) {
-   if (it == &n_pc.worn[j]) {
-    n_pc.worn.erase(n_pc.worn.begin() + j);
-    return;
-   }
-  }
- }
+ for (auto& n_pc : active_npc) if (n_pc.remove_item(it)) return;
 }
 
 static bool vector_has(const std::vector<int>& vec, int test)	// \todo V0.2.1+ eliminate in favor of STL?

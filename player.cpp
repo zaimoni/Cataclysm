@@ -3391,6 +3391,29 @@ item player::i_remn(int index)
  return inv.remove_item(index);
 }
 
+bool player::remove_item(item* it)
+{
+	assert(it);
+	if (it == &weapon) {
+		remove_weapon();
+		return true;
+	}
+	for (size_t i = 0; i < inv.size(); i++) {
+		if (it == &inv[i]) {
+			i_remn(i);
+			return true;
+		}
+	}
+	for (int i = 0; i < worn.size(); i++) {
+		if (it == &worn[i]) {
+			worn.erase(worn.begin() + i);
+			return true;
+		}
+	}
+	return false;
+}
+
+
 void player::use_amount(itype_id it, int quantity, bool use_container)
 {
  bool used_weapon_contents = false;
