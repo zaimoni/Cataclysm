@@ -550,7 +550,7 @@ void game::create_starting_npcs()
  tmp.chatbin.first_topic = TALK_SHELTER;
  tmp.chatbin.missions.push_back(reserve_random_mission(ORIGIN_OPENER_NPC, om_location(), tmp.id) );
 
- active_npc.push_back(tmp);
+ active_npc.push_back(std::move(tmp));
 }
  
 
@@ -1025,33 +1025,27 @@ int game::reserve_random_mission(mission_origin origin, point p, int npc_id)
 
 npc* game::find_npc(int id)
 {
- for (int i = 0; i < active_npc.size(); i++) {
-  if (active_npc[i].id == id) return &(active_npc[i]);
- }
- for (int i = 0; i < cur_om.npcs.size(); i++) {
-  if (cur_om.npcs[i].id == id) return &(cur_om.npcs[i]);
- }
- return NULL;
+ for (auto& _npc : active_npc) if (_npc.id == id) return &_npc;
+ for (auto& _npc : cur_om.npcs) if (_npc.id == id) return &_npc;
+ return 0;
 }
 
 mission* game::find_mission(int id)
 {
- for (int i = 0; i < active_missions.size(); i++) {
-  if (active_missions[i].uid == id) return &(active_missions[i]);
- }
- return NULL;
+ for (auto& mi : active_missions) if (mi.uid == id) return &mi;
+ return 0;
 }
 
 const mission_type* game::find_mission_type(int id)
 {
  for (const auto& mi : active_missions) if (mi.uid == id) return mi.type;
- return NULL;
+ return 0;
 }
 
 bool game::mission_complete(int id, int npc_id)
 {
  mission* miss = find_mission(id);
- if (miss == NULL) {
+ if (!miss) {
   debugmsg("game::mission_complete(%d) - it's NULL!", id);
   return false;
  }
@@ -1890,11 +1884,10 @@ void game::debug()
    temp.form_opinion(&u);
    temp.attitude = NPCATT_TALK;
    temp.mission = NPC_MISSION_NULL;
-   int mission_index = reserve_random_mission(ORIGIN_ANY_NPC,
-                                              om_location(), temp.id);
+   int mission_index = reserve_random_mission(ORIGIN_ANY_NPC, om_location(), temp.id);
    if (mission_index != -1)
    temp.chatbin.missions.push_back(mission_index);
-   active_npc.push_back(temp);
+   active_npc.push_back(std::move(temp));
   } break;
 
   case 6:
