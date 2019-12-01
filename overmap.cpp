@@ -14,6 +14,15 @@
 
 std::pair<tripoint, point> overmap::toGPS(const point& screen_pos) { return game::active()->toGPS(screen_pos); }
 
+tripoint overmap::toOvermap(const std::pair<tripoint, point> GPSpos)
+{
+	tripoint ret(GPSpos.first);
+	if (0 <= ret.x) ret.x /= 2 * OMAP;
+	else ret.x = ((ret.x + 1) / (2 * OMAP)) - 1;
+	if (0 <= ret.y) ret.y /= 2 * OMAP;
+	else ret.y = ((ret.y + 1) / (2 * OMAP)) - 1;
+	return ret;
+}
 
 #define STREETCHANCE 2
 #define NUM_FOREST 250
