@@ -1374,8 +1374,8 @@ void iuse::pipebomb(game *g, player *p, item *it, bool t)
 
 void iuse::pipebomb_act(game *g, player *p, item *it, bool t)
 {
- point pos = g->find_item(it);
- if (pos.x == -999 || pos.y == -999) return;
+ point pos;
+ if (!g->find_item(it, pos)) return;
  if (t) // Simple timer effects
   g->sound(pos, 0, "Ssssss");	// Vol 0 = only heard if you hold it
  else {	// The timer has run down
@@ -1396,8 +1396,8 @@ void iuse::grenade(game *g, player *p, item *it, bool t)
 
 void iuse::grenade_act(game *g, player *p, item *it, bool t)
 {
- point pos = g->find_item(it);
- if (pos.x == -999 || pos.y == -999) return;
+ point pos;
+ if (!g->find_item(it, pos)) return;
  if (t) // Simple timer effects
   g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
  else	// When that timer runs down...
@@ -1414,8 +1414,8 @@ void iuse::flashbang(game *g, player *p, item *it, bool t)
 
 void iuse::flashbang_act(game *g, player *p, item *it, bool t)
 {
- point pos = g->find_item(it);
- if (pos.x == -999 || pos.y == -999) return;
+ point pos;
+ if (!g->find_item(it, pos)) return;
  if (t) // Simple timer effects
   g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
  else	// When that timer runs down...
@@ -1437,8 +1437,8 @@ void iuse::c4(game *g, player *p, item *it, bool t)
 
 void iuse::c4armed(game *g, player *p, item *it, bool t)
 {
- point pos = g->find_item(it);
- if (pos.x == -999 || pos.y == -999) return;
+ point pos;
+ if (!g->find_item(it, pos)) return;
  if (t) // Simple timer effects
   g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
  else	// When that timer runs down...
@@ -1455,8 +1455,8 @@ void iuse::EMPbomb(game *g, player *p, item *it, bool t)
 
 void iuse::EMPbomb_act(game *g, player *p, item *it, bool t)
 {
- point pos = g->find_item(it);
- if (pos.x == -999 || pos.y == -999) return;
+ point pos;
+ if (!g->find_item(it, pos)) return;
  if (t)	// Simple timer effects
   g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
  else {	// When that timer runs down...
@@ -1477,8 +1477,8 @@ void iuse::gasbomb(game *g, player *p, item *it, bool t)
 
 void iuse::gasbomb_act(game *g, player *p, item *it, bool t)
 {
- point pos = g->find_item(it);
- if (pos.x == -999 || pos.y == -999) return;
+ point pos;
+ if (!g->find_item(it, pos)) return;
  if (t) {
   if (it->charges > 15) g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
   else {
@@ -1503,8 +1503,8 @@ void iuse::smokebomb(game *g, player *p, item *it, bool t)
 
 void iuse::smokebomb_act(game *g, player *p, item *it, bool t)
 {
- point pos = g->find_item(it);
- if (pos.x == -999 || pos.y == -999) return;
+ point pos;
+ if (!g->find_item(it, pos)) return;
  if (t) {
   if (it->charges > 17) g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
   else {
@@ -1532,8 +1532,8 @@ void iuse::acidbomb(game *g, player *p, item *it, bool t)
 void iuse::acidbomb_act(game *g, player *p, item *it, bool t)
 {
  if (!p->has_item(it)) {
-  point pos = g->find_item(it);
-  if (pos.x == -999) pos = p->pos;
+  point pos;
+  if (!g->find_item(it, pos)) pos = p->pos;
   it->charges = 0;
   for (int x = pos.x - 1; x <= pos.x + 1; x++) {
    for (int y = pos.y - 1; y <= pos.y + 1; y++)
@@ -1589,8 +1589,8 @@ void iuse::dynamite(game *g, player *p, item *it, bool t)
 
 void iuse::dynamite_act(game *g, player *p, item *it, bool t)
 {
- point pos = g->find_item(it);
- if (pos.x == -999 || pos.y == -999) return;
+ point pos;
+ if (!g->find_item(it, pos)) return;
  if (t) g->sound(pos, 0, "ssss...");	 // Simple timer effects
  else g->explosion(pos, 60, 0, false);		// When that timer runs down...
 }
@@ -1605,10 +1605,9 @@ void iuse::mininuke(game *g, player *p, item *it, bool t)
 
 void iuse::mininuke_act(game *g, player *p, item *it, bool t)
 {
- point pos = g->find_item(it);
- if (pos.x == -999 || pos.y == -999) return;
- if (t) 	// Simple timer effects
-  g->sound(pos, 2, "Tick.");
+ point pos;
+ if (!g->find_item(it, pos)) return;
+ if (t) g->sound(pos, 2, "Tick."); 	// Simple timer effects
  else {	// When that timer runs down...
   g->explosion(pos, 200, 0, false);
   for (int i = -4; i <= 4; i++) {

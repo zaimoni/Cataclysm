@@ -2343,9 +2343,9 @@ void game::draw_ter(const point& pos)
    mvwputch(w_terrain, SEEY + mon.pos.y - pos.y, SEEX + mon.pos.x - pos.x, c_red, '?');
  }
  // Draw NPCs
- for (const auto& NPC : active_npc) {
-   const point dist(NPC.pos-pos);
-   if (SEE >= abs(dist.x) && SEE >= abs(dist.y) && u_see(NPC.pos)) NPC.draw(w_terrain, pos, false);
+ for (const auto& _npc : active_npc) {
+   const point dist(_npc.pos-pos);
+   if (SEE >= abs(dist.x) && SEE >= abs(dist.y) && u_see(_npc.pos)) _npc.draw(w_terrain, pos, false);
  }
  if (u.has_active_bionic(bio_scent_vision)) {	// overwriting normal vision isn't that useful
   point temp;
@@ -2697,13 +2697,34 @@ point game::find_item(item *it) const
  if (u.has_item(it)) return u.pos;
  point ret = m.find_item(it);
  if (ret.x != -1 && ret.y != -1) return ret;
- for (int i = 0; i < active_npc.size(); i++) {
-  for (size_t j = 0; j < active_npc[i].inv.size(); j++) {
-   if (it == &(active_npc[i].inv[j]))
-    return active_npc[i].pos;
+ for (const auto& _npc : active_npc) {
+  for (size_t j = 0; j < _npc.inv.size(); j++) {
+   if (it == &(_npc.inv[j])) return _npc.pos;
   }
  }
- return point(-999, -999);	// \todo V0.2.1+ change API to avoid this magic value
+ throw std::logic_error("should have called allow-fail game::find_item?");
+}
+
+bool game::find_item(item* it, point& pos) const
+{
+	if (u.has_item(it)) {
+		pos = u.pos;
+		return true;
+	}
+	point ret = m.find_item(it);
+	if (ret.x != -1 && ret.y != -1) {
+		pos = ret;
+		return true;
+	}
+	for (const auto& _npc : active_npc) {	// \todo? why not _npc.has_item()?
+		for (size_t j = 0; j < _npc.inv.size(); j++) {
+			if (it == &(_npc.inv[j])) {
+				pos = _npc.pos;
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 void game::remove_item(item *it)
