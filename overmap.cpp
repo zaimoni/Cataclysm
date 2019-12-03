@@ -1072,64 +1072,52 @@ int overmap::dist_from_city(point p) const
 void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy, 
                    int &origx, int &origy, char &ch, bool blink) const
 {
- bool legend = true, note_here = false, npc_here = false;
+ constexpr const bool legend = true;
+ constexpr const int om_w = 51;	// overmap width
+
+ bool note_here = false, npc_here = false;
  std::string note_text, npc_name;
  
- int omx, omy;
- overmap hori, vert, diag; // Adjacent maps
+ overmap hori, vert, diag; // Adjacent maps	\todo stack hog; MSVC++ recommends converting to std::unique_ptr
  point target(-1, -1);
  if (g->u.active_mission >= 0 &&
      g->u.active_mission < g->u.active_missions.size())
   target = g->find_mission(g->u.active_missions[g->u.active_mission])->target;
-  bool see;
-  oter_id cur_ter;
-  nc_color ter_color;
-  long ter_sym;
 /* First, determine if we're close enough to the edge to need to load an
  * adjacent overmap, and load it/them. */
-  if (cursx < 25) {
-   hori = overmap(g, pos.x - 1, pos.y, pos.z);
-   if (cursy < 12)
-    diag = overmap(g, pos.x - 1, pos.y - 1, pos.z);
-   if (cursy > OMAPY - 14)
-    diag = overmap(g, pos.x - 1, pos.y + 1, pos.z);
+ const int y_delta = ((cursy < VIEW / 2) ? -1 : ((cursy >= OMAPY - VIEW / 2 - 1) ? 1 : 0));
+ const int x_delta = ((cursx < om_w / 2) ? -1 : ((cursx >= OMAPX - om_w / 2) ? 1 : 0));
+
+  if (x_delta) {
+   hori = overmap(g, pos.x + x_delta, pos.y, pos.z);
+   if (y_delta) diag = overmap(g, pos.x + x_delta, pos.y + y_delta, pos.z);
   }
-  if (cursx > OMAPX - 26) {
-   hori = overmap(g, pos.x + 1, pos.y, pos.z);
-   if (cursy < 12)
-    diag = overmap(g, pos.x + 1, pos.y - 1, pos.z);
-   if (cursy > OMAPY - 14)
-    diag = overmap(g, pos.x + 1, pos.y + 1, pos.z);
-  }
-  if (cursy < 12)
-   vert = overmap(g, pos.x, pos.y - 1, pos.z);
-  if (cursy > OMAPY - 14)
-   vert = overmap(g, pos.x, pos.y + 1, pos.z);
+  if (y_delta) vert = overmap(g, pos.x, pos.y + y_delta, pos.z);
 
 // Now actually draw the map
   bool csee = false;
   oter_id ccur_ter;
-  for (int i = -25; i < 25; i++) {
-   for (int j = -12; j <= (ch == 'j' ? 13 : 12); j++) {
-    omx = cursx + i;
-    omy = cursy + j;
-    see = false;
+  for (int i = -om_w / 2; i < om_w / 2; i++) {
+   for (int j = -VIEW / 2; j <= (ch == 'j' ? VIEW / 2 + 1 : VIEW / 2); j++) {
+    oter_id cur_ter;
+	nc_color ter_color;
+	long ter_sym;
+	int omx = cursx + i;
+	int omy = cursy + j;
+    bool see = false;
+	npc_name = "";
     npc_here = false;
     if (omx >= 0 && omx < OMAPX && omy >= 0 && omy < OMAPY) { // It's in-bounds
      cur_ter = ter(omx, omy);
      see = seen(omx, omy);
-     if (note_here = has_note(omx, omy))
-      note_text = note(omx, omy);
-     for (int n = 0; n < npcs.size(); n++) {
-      if ((npcs[n].mapx + 1) / 2 == omx && (npcs[n].mapy + 1) / 2 == omy) {
+     if (note_here = has_note(omx, omy)) note_text = note(omx, omy);
+	 for (const auto& _npc : npcs) {
+      if ((_npc.mapx + 1) / 2 == omx && (_npc.mapy + 1) / 2 == omy) {	// XXX \todo does not agree with inverter; is this correct?
        npc_here = true;
-       npc_name = npcs[n].name;
-       n = npcs.size();
-      } else {
-       npc_here = false;
-       npc_name = "";
+       npc_name = _npc.name;
+	   break;
       }
-     }
+	 }
 // <Out of bounds placement>
     } else if (omx < 0) {
      omx += OMAPX;
@@ -1137,13 +1125,11 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
       omy += (omy < 0 ? OMAPY : 0 - OMAPY);
       cur_ter = diag.ter(omx, omy);
       see = diag.seen(omx, omy);
-      if ((note_here = diag.has_note(omx, omy)))
-       note_text = diag.note(omx, omy);
+      if ((note_here = diag.has_note(omx, omy))) note_text = diag.note(omx, omy);
      } else {
       cur_ter = hori.ter(omx, omy);
       see = hori.seen(omx, omy);
-      if (note_here = hori.has_note(omx, omy))
-       note_text = hori.note(omx, omy);
+      if (note_here = hori.has_note(omx, omy)) note_text = hori.note(omx, omy);
      }
     } else if (omx >= OMAPX) {
      omx -= OMAPX;
@@ -1151,26 +1137,22 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
       omy += (omy < 0 ? OMAPY : 0 - OMAPY);
       cur_ter = diag.ter(omx, omy);
       see = diag.seen(omx, omy);
-      if (note_here = diag.has_note(omx, omy))
-       note_text = diag.note(omx, omy);
+      if (note_here = diag.has_note(omx, omy)) note_text = diag.note(omx, omy);
      } else {
       cur_ter = hori.ter(omx, omy);
       see = hori.seen(omx, omy);
-      if ((note_here = hori.has_note(omx, omy)))
-       note_text = hori.note(omx, omy);
+      if ((note_here = hori.has_note(omx, omy))) note_text = hori.note(omx, omy);
      }
     } else if (omy < 0) {
      omy += OMAPY;
      cur_ter = vert.ter(omx, omy);
      see = vert.seen(omx, omy);
-     if ((note_here = vert.has_note(omx, omy)))
-      note_text = vert.note(omx, omy);
+     if ((note_here = vert.has_note(omx, omy))) note_text = vert.note(omx, omy);
     } else if (omy >= OMAPY) {
      omy -= OMAPY;
      cur_ter = vert.ter(omx, omy);
      see = vert.seen(omx, omy);
-     if ((note_here = vert.has_note(omx, omy)))
-      note_text = vert.note(omx, omy);
+     if ((note_here = vert.has_note(omx, omy))) note_text = vert.note(omx, omy);
     } else
      debugmsg("No data loaded! omx: %d omy: %d", omx, omy);
 // </Out of bounds replacement>
@@ -1201,24 +1183,24 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
      ter_sym = '#';
     }
     if (j == 0 && i == 0) {
-     mvwputch_hi (w, 12,     25,     ter_color, ter_sym);
+     mvwputch_hi (w, VIEW / 2, om_w / 2,     ter_color, ter_sym);
      csee = see;
      ccur_ter = cur_ter;
     } else
-     mvwputch    (w, 12 + j, 25 + i, ter_color, ter_sym);
+     mvwputch    (w, VIEW / 2 + j, om_w / 2 + i, ter_color, ter_sym);
    }
   }
   if (target.x != -1 && target.y != -1 && blink &&
-      (target.x < cursx - 25 || target.x > cursx + 25  ||
-       target.y < cursy - 12 || target.y > cursy + 12    )) {
+      (target.x < cursx - om_w / 2 || target.x > cursx + om_w / 2 ||
+       target.y < cursy - VIEW / 2 || target.y > cursy + VIEW / 2)) {
    switch (direction_from(cursx, cursy, target)) {
-    case NORTH:      mvwputch(w,  0, 25, c_red, '^');       break;
-    case NORTHEAST:  mvwputch(w,  0, 49, c_red, LINE_OOXX); break;
-    case EAST:       mvwputch(w, 12, 49, c_red, '>');       break;
-    case SOUTHEAST:  mvwputch(w, 24, 49, c_red, LINE_XOOX); break;
-    case SOUTH:      mvwputch(w, 24, 25, c_red, 'v');       break;
-    case SOUTHWEST:  mvwputch(w, 24,  0, c_red, LINE_XXOO); break;
-    case WEST:       mvwputch(w, 12,  0, c_red, '<');       break;
+    case NORTH:      mvwputch(w,  0, om_w / 2, c_red, '^');       break;
+    case NORTHEAST:  mvwputch(w,  0, om_w - 2, c_red, LINE_OOXX); break;
+    case EAST:       mvwputch(w, VIEW / 2, om_w - 2, c_red, '>');       break;
+    case SOUTHEAST:  mvwputch(w, VIEW - 1, om_w - 2, c_red, LINE_XOOX); break;
+    case SOUTH:      mvwputch(w, VIEW - 1, om_w / 2, c_red, 'v');       break;
+    case SOUTHWEST:  mvwputch(w, VIEW - 1,  0, c_red, LINE_XXOO); break;
+    case WEST:       mvwputch(w, VIEW / 2,  0, c_red, '<');       break;
     case NORTHWEST:  mvwputch(w,  0,  0, c_red, LINE_OXXO); break;
    }
   }
@@ -1237,35 +1219,34 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
    mvwprintz(w, 0, 0, c_yellow, npc_name.c_str());
   }
   if (legend) {
-   cur_ter = ter(cursx, cursy);
 // Draw the vertical line
    for (int j = 0; j < VIEW; j++)
-    mvwputch(w, j, 51, c_white, LINE_XOXO);
+    mvwputch(w, j, om_w, c_white, LINE_XOXO);
 // Clear the legend
-   for (int i = 51; i < SCREEN_WIDTH; i++) {
+   for (int i = om_w; i < SCREEN_WIDTH; i++) {
     for (int j = 0; j < VIEW; j++)
      mvwputch(w, j, i, c_black, 'x');
    }
 
    if (csee) {
 	decltype(oter_t::list[ccur_ter])& terrain = oter_t::list[ccur_ter];
-    mvwputch(w, 1, 51, terrain.color, terrain.sym);
-    mvwprintz(w, 1, 53, terrain.color, "%s", terrain.name.c_str());
+    mvwputch(w, 1, om_w, terrain.color, terrain.sym);
+    mvwprintz(w, 1, om_w + 2, terrain.color, "%s", terrain.name.c_str());
    } else
-    mvwprintz(w, 1, 51, c_dkgray, "# Unexplored");
+    mvwprintz(w, 1, om_w, c_dkgray, "# Unexplored");
 
    if (target.x != -1 && target.y != -1) {
     int distance = rl_dist(origx, origy, target);
-    mvwprintz(w, 3, 51, c_white, "Distance to target: %d", distance);
+    mvwprintz(w, 3, om_w, c_white, "Distance to target: %d", distance);
    }
-   mvwprintz(w, 17, 51, c_magenta,           "Use movement keys to pan.  ");
-   mvwprintz(w, 18, 51, c_magenta,           "0 - Center map on character");
-   mvwprintz(w, 19, 51, c_magenta,           "t - Toggle legend          ");
-   mvwprintz(w, 20, 51, c_magenta,           "/ - Search                 ");
-   mvwprintz(w, 21, 51, c_magenta,           "N - Add a note             ");
-   mvwprintz(w, 22, 51, c_magenta,           "D - Delete a note          ");
-   mvwprintz(w, 23, 51, c_magenta,           "L - List notes             ");
-   mvwprintz(w, 24, 51, c_magenta,           "Esc or q - Return to game  ");
+   mvwprintz(w, VIEW - 8, om_w, c_magenta,           "Use movement keys to pan.  ");
+   mvwprintz(w, VIEW - 7, om_w, c_magenta,           "0 - Center map on character");
+   mvwprintz(w, VIEW - 6, om_w, c_magenta,           "t - Toggle legend          ");
+   mvwprintz(w, VIEW - 5, om_w, c_magenta,           "/ - Search                 ");
+   mvwprintz(w, VIEW - 4, om_w, c_magenta,           "N - Add a note             ");
+   mvwprintz(w, VIEW - 3, om_w, c_magenta,           "D - Delete a note          ");
+   mvwprintz(w, VIEW - 2, om_w, c_magenta,           "L - List notes             ");
+   mvwprintz(w, VIEW - 1, om_w, c_magenta,           "Esc or q - Return to game  ");
   }
 // Done with all drawing!
   wrefresh(w);
