@@ -71,7 +71,7 @@ class overmap
  * Use must_be_seen=true if only terrain seen by the player should be searched.
  * If no such tile can be found, (-1, -1) is returned.
  */
-  point find_closest(point origin, oter_id type, int type_range, int &dist, bool must_be_seen) const;
+  point find_closest(point origin, oter_id type, int type_range, int &dist, bool must_be_seen) const;	// dist parameter appears unused by callers
 #if DEAD_FUNC
   std::vector<point> find_all(point origin, oter_id type, int type_range, int &dist, bool must_be_seen);
 #endif

@@ -10,6 +10,8 @@
 #include <sstream>
 #include <memory>
 
+// #define KILL_NPC_OVERMAP_FIELDS 1
+
 namespace cataclysm {
 	class action;
 }
@@ -303,7 +305,6 @@ public:
  void randomize_from_faction(game *g, faction *fac);
  void make_shopkeep(game *g, oter_id type);
  void spawn_at(const overmap& o, int posx, int posy);
- void spawn_at(const overmap& o);	// random city.  Dead function currently
  skill best_skill() const;
  void starting_weapon(game *g);
 
@@ -470,12 +471,14 @@ public:
  countdown<point> wand;	// location
 
 // Location:
+#ifndef KILL_NPC_OVERMAP_FIELDS
  tripoint om;	// which overmap (e.g., o.0.0.0) 
  int mapx, mapy;// Which square in that overmap (e.g., m.0.0)
+#endif
  // last seen player data (assumes player is singleton)
  countdown<point> pl;	// last saw player at; legal coordinates 0.. (SEEX/Y * MAPSIZE-1)
  point it;	// The square containing an item we want
- point goal;	// Which mapx:mapy square we want to get to (legal coordinates 0...OMAPX/Y)
+ point goal;	// Which mapx:mapy square we want to get to (legal coordinates 0...OMAPX/Y) \todo convert to full overmap coordinates
 
  bool fetching_item;
  bool has_new_items; // If true, we have something new and should re-equip

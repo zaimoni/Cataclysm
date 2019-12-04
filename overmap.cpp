@@ -1126,7 +1126,12 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
      see = seen(omx, omy);
      if (note_here = has_note(omx, omy)) note_text = note(omx, omy);
 	 for (const auto& _npc : npcs) {
+#ifdef KILL_NPC_OVERMAP_FIELDS
+	  const auto om = toOvermap(_npc.GPSpos);
+      if (om.second.x == omx && om.second.y == omy) {
+#else
       if ((_npc.mapx + 1) / 2 == omx && (_npc.mapy + 1) / 2 == omy) {	// XXX \todo does not agree with inverter; is this correct?
+#endif
        npc_here = true;
        npc_name = _npc.name;
 	   break;
@@ -1134,6 +1139,7 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
 	 }
 // <Out of bounds placement>
     } else if (omx < 0) {
+	 // \todo cross-overmap NPC awareness
      omx += OMAPX;
      if (omy < 0 || omy >= OMAPY) {
       omy += (omy < 0 ? OMAPY : 0 - OMAPY);
@@ -1146,6 +1152,7 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
       if (note_here = hori.has_note(omx, omy)) note_text = hori.note(omx, omy);
      }
     } else if (omx >= OMAPX) {
+	 // \todo cross-overmap NPC awareness
      omx -= OMAPX;
      if (omy < 0 || omy >= OMAPY) {
       omy += (omy < 0 ? OMAPY : 0 - OMAPY);
@@ -1158,11 +1165,13 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
       if ((note_here = hori.has_note(omx, omy))) note_text = hori.note(omx, omy);
      }
     } else if (omy < 0) {
+	 // \todo cross-overmap NPC awareness
      omy += OMAPY;
      cur_ter = vert.ter(omx, omy);
      see = vert.seen(omx, omy);
      if ((note_here = vert.has_note(omx, omy))) note_text = vert.note(omx, omy);
     } else if (omy >= OMAPY) {
+	 // \todo cross-overmap NPC awareness
      omy -= OMAPY;
      cur_ter = vert.ter(omx, omy);
      see = vert.seen(omx, omy);

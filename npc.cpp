@@ -145,7 +145,10 @@ DEFINE_JSON_ENUM_SUPPORT_TYPICAL(npc_need, JSON_transcode_npc_needs)
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(talk_topic, JSON_transcode_talk)
 
 npc::npc()
-: id(-1),attitude(NPCATT_NULL),myclass(NC_NONE),wand(point(0,0),0),om(0,0,0),mapx(0),mapy(0),
+: id(-1),attitude(NPCATT_NULL),myclass(NC_NONE),wand(point(0,0),0),
+#ifndef KILL_NPC_OVERMAP_FIELDS
+om(0,0,0),mapx(0),mapy(0),
+#endif
   pl(point(-1,-1),0),it(-1,-1),goal(-1,-1),fetching_item(false),has_new_items(false),
   my_fac(0),mission(NPC_MISSION_NULL),patience(0),marked_for_death(false),dead(false),flags(0)
 {
@@ -850,14 +853,6 @@ void npc::spawn_at(const overmap& o, int x, int y)
  mapy = y;
 }
 
-void npc::spawn_at(const overmap& o)
-{
- om = o.pos;	// First, specify that we are in this overmap!
- const auto& c = o.cities[rng(0, o.cities.size() - 1)];
- mapx = rng(c.x - c.s, c.x + c.s);
- mapy = rng(c.y - c.s, c.y + c.s);
-}
-
 skill npc::best_skill() const
 {
  std::vector<int> best_skills;
@@ -1223,9 +1218,10 @@ std::vector<itype_id> npc::styles_offered_to(player *p)
 
 int npc::minutes_to_u(const game *g) const
 {
- int ret = abs(mapx - g->lev.x);
- if (abs(mapy - g->lev.y) < ret)
-  ret = abs(mapy - g->lev.y);
+ const auto om = overmap::toOvermap(GPSpos);
+ int ret = abs(om.second.x - g->lev.x);
+ if (abs(om.second.y - g->lev.y) < ret)
+  ret = abs(om.second.y - g->lev.y);
  ret *= 24;
  ret /= 10;
  while (ret % 5 != 0)	// Round up to nearest five-minute interval
@@ -1777,8 +1773,10 @@ void npc::shift(const point delta)
 {
  const point block_delta(delta*SEE);
  pos -= block_delta;
+#ifndef KILL_NPC_OVERMAP_FIELDS
  mapx += delta.x;
  mapy += delta.y;
+#endif
  it -= block_delta;
  pl.x -= block_delta;
  path.clear();

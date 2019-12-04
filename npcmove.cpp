@@ -1900,25 +1900,27 @@ void npc::set_destination(game *g)
  oter_id dest_type = options[rng(0, options.size() - 1)];
 
  int dist = 0;
- goal = g->cur_om.find_closest(point(mapx, mapy), dest_type, 4, dist, false);
+ const auto om = overmap::toOvermap(GPSpos);
+ goal = g->cur_om.find_closest(om.second, dest_type, 4, dist, false);
 }
 
 void npc::go_to_destination(game *g)
 {
-  if (goal.x == mapx && goal.y == mapy) {	// We're at our desired map square!
+  auto om = overmap::toOvermap(GPSpos);
+  if (goal == om.second) {	// We're at our desired map square!
    move_pause();
    reach_destination();
   }
-  int sx = (goal.x > mapx ? 1 : -1), sy = (goal.y > mapy ? 1 : -1);
-  if (goal.x == mapx) sx = 0;
-  if (goal.y == mapy) sy = 0;
+  point s(cmp(goal, om.second));
 // sx and sy are now equal to the direction we need to move in
-  int x = pos.x + 8 * sx, y = pos.y + 8 * sy, light = g->light_level();
+  point d;
+  point target(pos + 8 * s);
+  int light = g->light_level();
 // x and y are now equal to a local square that's close by
   for (int i = 0; i < 8; i++) {
-   for (int dx = 0 - i; dx <= i; dx++) {
-    for (int dy = 0 - i; dy <= i; dy++) {
-	 const point dest(x + dx, y + dy);
+   for (d.x = 0 - i; d.x <= i; d.x++) {
+    for (d.y = 0 - i; d.y <= i; d.y++) {
+	 const point dest(target+d);
      if ((g->m.move_cost(dest) > 0 ||
           g->m.has_flag(bashable, dest) ||
           g->m.ter(dest) == t_door_c) &&
@@ -1926,7 +1928,8 @@ void npc::go_to_destination(game *g)
       path = g->m.route(pos, dest);
       if (!path.empty() && can_move_to(g->m, path[0])) {
        move_to_next(g);
-       if (goal.x == mapx && goal.y == mapy) {	// We're at our desired map square!
+	   om = overmap::toOvermap(GPSpos);	// GPSpos updated so this updates
+       if (goal == om.second) {	// We're at our desired map square!
         reach_destination();
        }
        return;

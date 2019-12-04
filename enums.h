@@ -11,6 +11,12 @@ COTTON, WOOL, LEATHER, KEVLAR,
 STONE, PAPER, WOOD, PLASTIC, GLASS, IRON, STEEL, SILVER
 };
 
+// kludge implementation -- want something more generalizable
+constexpr int cmp(int lhs, int rhs)
+{
+	return (lhs < rhs) ? -1 : (lhs > rhs);
+}
+
 struct point {
  typedef int coord_type;
 
@@ -61,6 +67,11 @@ template<class T>
 bool pointwise_test(const point& lhs, const point& rhs, T rel)
 {
 	return rel(lhs.x, rhs.x) && rel(lhs.y, rhs.y);
+}
+
+constexpr point cmp(point lhs, point rhs)
+{
+	return point(cmp(lhs.x, rhs.x), cmp(lhs.y, rhs.y));
 }
 
 struct tripoint {

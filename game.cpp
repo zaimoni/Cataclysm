@@ -1136,14 +1136,15 @@ void game::mission_step_complete(int id, int step)
   case MGOAL_FIND_MONSTER:
   case MGOAL_KILL_MONSTER: {
    bool npc_found = false;
-   for (int i = 0; i < cur_om.npcs.size(); i++) {
-    if (cur_om.npcs[i].id == miss->npc_id) {
-     miss->target = point(cur_om.npcs[i].mapx, cur_om.npcs[i].mapy);
+   for (const auto& _npc : cur_om.npcs) {
+    if (_npc.id == miss->npc_id) {
+	 auto om = overmap::toOvermap(_npc.GPSpos);
+     miss->target = om.second;
      npc_found = true;
+	 break;
     }
    }
-   if (!npc_found)
-    miss->target = point(-1, -1);
+   if (!npc_found) miss->target = point(-1, -1);
   } break;
  }
 }
@@ -1764,8 +1765,10 @@ void game::save()
  if (!factions.empty()) saved.set("factions", JSON::encode(factions));
  if (!active_npc.empty()) {
 	 for (auto& NPC : active_npc) {
+#ifndef KILL_NPC_OVERMAP_FIELDS
 		 NPC.mapx = lev.x;
 		 NPC.mapy = lev.y;
+#endif
 	 }
 	 saved.set("npcs", JSON::encode(active_npc));
  }
@@ -2081,26 +2084,31 @@ void game::disp_NPCs()
 {
  WINDOW* w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  mvwprintz(w, 0, 0, c_white, "Your position: %d:%d", lev.x, lev.y);
- std::vector<npc*> closest;
- closest.push_back(&cur_om.npcs[0]);
- for (int i = 1; i < cur_om.npcs.size(); i++) {
-  if (closest.size() < VIEW-5)
-   closest.push_back(&cur_om.npcs[i]);
-  else if (rl_dist(lev.x, lev.y, cur_om.npcs[i].mapx, cur_om.npcs[i].mapy) <
-           rl_dist(lev.x, lev.y, closest[VIEW - 6]->mapx, closest[VIEW - 6]->mapy)) {
-   for (int j = 0; j < VIEW - 5; j++) {
-    if (rl_dist(lev.x, lev.y, closest[j]->mapx, closest[j]->mapy) >
-        rl_dist(lev.x, lev.y, cur_om.npcs[i].mapx, cur_om.npcs[i].mapy)) {
-     closest.insert(closest.begin() + j, &cur_om.npcs[i]);
-     closest.erase(closest.end() - 1);
-     j = VIEW - 5;
-    }
+ std::vector<std::pair<npc*,std::pair<tripoint,point> > > closest;
+ for (auto& _npc : cur_om.npcs) {
+   const auto om = overmap::toOvermap(_npc.GPSpos);
+   if (closest.size() < VIEW - 5) {
+     closest.push_back(std::make_pair(&_npc, om));
+	 continue;
    }
-  }
+   if (rl_dist(lev.x, lev.y, om.second) < rl_dist(lev.x, lev.y, closest.back().second.second)) {
+    for (int j = 0; j < VIEW - 5; j++) {
+     if (rl_dist(lev.x, lev.y, closest[j].second.second) > rl_dist(lev.x, lev.y, om.second)) {
+      closest.insert(closest.begin() + j, std::make_pair(&_npc, om));
+      closest.erase(closest.end() - 1);
+	  break;
+     }
+   }
+   }
  }
- for (int i = 0; i < VIEW - 5; i++)
-  mvwprintz(w, i + 2, 0, c_white, "%s: %d:%d", closest[i]->name.c_str(),
-            closest[i]->mapx, closest[i]->mapy);
+
+ {
+ int i = -1;
+ for (const auto& who : closest) {
+   ++i;
+   mvwprintz(w, i + 2, 0, c_white, "%s: %d:%d", who.first->name.c_str(), who.second.second.x, who.second.second.y);
+ }
+ }
 
  wrefresh(w);
  getch();
@@ -5923,8 +5931,10 @@ void game::update_map(int &x, int &y)
 		 _npc.pos.y < 0 - SEEX * 2 ||
 		 _npc.pos.x >     SEEX* (MAPSIZE + 2) ||
 		 _npc.pos.y >     SEEY* (MAPSIZE + 2)) {
+#ifndef KILL_NPC_OVERMAP_FIELDS
 		 _npc.mapx = lev.x + (_npc.pos.x / SEEX);	// XXX \todo unclear why C:Whales erases overmap target when mothballing
 		 _npc.mapy = lev.y + (_npc.pos.y / SEEY);
+#endif
 		 _npc.pos.x %= SEEX;
 		 _npc.pos.y %= SEEY;
 		 cur_om.npcs.push_back(std::move(active_npc[i]));

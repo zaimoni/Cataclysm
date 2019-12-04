@@ -945,14 +945,14 @@ void iuse::two_way_radio(game *g, player *p, item *it, bool t)
  } else if (ch == '3') {	// General S.O.S.
   p->moves -= 150;
   std::vector<npc*> in_range;
-  for (int i = 0; i < g->cur_om.npcs.size(); i++) {
-   if (g->cur_om.npcs[i].op_of_u.value >= 4 &&
-       rl_dist(g->lev.x, g->lev.y, g->cur_om.npcs[i].mapx,
-                                   g->cur_om.npcs[i].mapy) <= 30)
-    in_range.push_back(&(g->cur_om.npcs[i]));
+  for (auto& _npc : g->cur_om.npcs) {
+    if (4 > _npc.op_of_u.value) continue;
+	auto om = overmap::toOvermap(_npc.GPSpos);
+	if (30 >= rl_dist(g->lev.x, g->lev.y, om.second)) in_range.push_back(&_npc);
   }
-  if (in_range.size() > 0) {
-   npc* coming = in_range[rng(0, in_range.size() - 1)];
+  const auto ub = in_range.size();
+  if (0 < ub) {
+   npc* coming = in_range[rng(0, ub - 1)];
    popup("A reply!  %s says, \"I'm on my way; give me %d minutes!\"",
          coming->name.c_str(), coming->minutes_to_u(g));
    coming->mission = NPC_MISSION_RESCUE_U;
