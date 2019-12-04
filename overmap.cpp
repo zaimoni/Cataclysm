@@ -14,13 +14,27 @@
 
 std::pair<tripoint, point> overmap::toGPS(const point& screen_pos) { return game::active()->toGPS(screen_pos); }
 
-tripoint overmap::toOvermap(const std::pair<tripoint, point> GPSpos)
+std::pair<tripoint, point> overmap::toOvermap(const std::pair<tripoint, point> GPSpos)
 {
-	tripoint ret(GPSpos.first);
-	if (0 <= ret.x) ret.x /= 2 * OMAP;
-	else ret.x = ((ret.x + 1) / (2 * OMAP)) - 1;
-	if (0 <= ret.y) ret.y /= 2 * OMAP;
-	else ret.y = ((ret.y + 1) / (2 * OMAP)) - 1;
+	std::pair<tripoint, point> ret(GPSpos.first,point(0));
+	ret.second.x = (ret.first.x % (2 * OMAP));
+	ret.second.y = (ret.first.y % (2 * OMAP));
+	if (0 <= ret.first.x) {
+		ret.first.x /= (2 * OMAP);
+	} else {
+		ret.first.x = ((ret.first.x + 1) / (2 * OMAP)) - 1;
+		assert(0 >= ret.second.x);	// \todo remove this once live (test of algorithmic correctness)
+		ret.second.x += (2 * OMAP -1);
+	}
+	if (0 <= ret.first.y) {
+		ret.first.y /= (2 * OMAP);
+	}
+	else {
+		ret.first.y = ((ret.first.y + 1) / (2 * OMAP)) - 1;
+		assert(0 >= ret.second.y);	// \todo remove this once live (test of algorithmic correctness)
+		ret.second.y += (2 * OMAP - 1);
+	}
+	ret.second /= 2;
 	return ret;
 }
 

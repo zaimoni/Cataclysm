@@ -102,7 +102,7 @@ class overmap
   point display_notes() const;
 
   static std::pair<tripoint, point> toGPS(const point& screen_pos);
-  static tripoint toOvermap(const std::pair<tripoint, point> screen_pos);
+  static std::pair<tripoint, point> toOvermap(const std::pair<tripoint, point> GPSpos);
 
   tripoint pos;
   std::vector<city> cities;
