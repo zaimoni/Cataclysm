@@ -10,8 +10,6 @@
 #include <sstream>
 #include <memory>
 
-// #define KILL_NPC_OVERMAP_FIELDS 1
-
 namespace cataclysm {
 	class action;
 }
@@ -304,7 +302,7 @@ public:
  void randomize(game *g, npc_class type = NC_NONE);
  void randomize_from_faction(game *g, faction *fac);
  void make_shopkeep(game *g, oter_id type);
- void spawn_at(const overmap& o, int posx, int posy);
+ void spawn_at(const std::pair<tripoint, point>& _GPSpos);
  skill best_skill() const;
  void starting_weapon(game *g);
 
@@ -470,11 +468,6 @@ public:
  // last heard sound: dead data, in savefile but no users (same intended semantics as monster::wand,wandf?)
  countdown<point> wand;	// location
 
-// Location:
-#ifndef KILL_NPC_OVERMAP_FIELDS
- tripoint om;	// which overmap (e.g., o.0.0.0) 
- int mapx, mapy;// Which square in that overmap (e.g., m.0.0)
-#endif
  // last seen player data (assumes player is singleton)
  countdown<point> pl;	// last saw player at; legal coordinates 0.. (SEEX/Y * MAPSIZE-1)
  point it;	// The square containing an item we want

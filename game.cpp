@@ -542,8 +542,7 @@ void game::create_starting_npcs()
  npc tmp;
  tmp.normalize();
  tmp.randomize(this, (one_in(2) ? NC_DOCTOR : NC_NONE));
- tmp.spawn_at(cur_om, lev.x, lev.y);
- tmp.screenpos_set(SEEX * int(MAPSIZE / 2) + SEEX, SEEY * int(MAPSIZE / 2) + 6);
+ tmp.spawn_at(toGPS(point(SEEX * int(MAPSIZE / 2) + SEEX, SEEY * int(MAPSIZE / 2) + 6)));
  tmp.form_opinion(&u);
  tmp.attitude = NPCATT_NULL;
  tmp.mission = NPC_MISSION_SHELTER;
@@ -1763,15 +1762,7 @@ void game::save()
 
  if (!active_missions.empty()) saved.set("active_missions", JSON::encode(active_missions));
  if (!factions.empty()) saved.set("factions", JSON::encode(factions));
- if (!active_npc.empty()) {
-	 for (auto& NPC : active_npc) {
-#ifndef KILL_NPC_OVERMAP_FIELDS
-		 NPC.mapx = lev.x;
-		 NPC.mapy = lev.y;
-#endif
-	 }
-	 saved.set("npcs", JSON::encode(active_npc));
- }
+ if (!active_npc.empty()) saved.set("npcs", JSON::encode(active_npc));
 
  fout.open("save/master.tmp");
  fout << saved;
@@ -1882,8 +1873,7 @@ void game::debug()
    temp.normalize();
    temp.randomize(this);
    temp.attitude = NPCATT_TALK;
-   temp.spawn_at(cur_om, lev.x + (1 * rng(-2, 2)), lev.y + (1 * rng(-2, 2)));
-   temp.screenpos_set(u.pos - point(4));
+   temp.spawn_at(toGPS(u.pos - point(4)));  // Przybylski's Star \todo actually check that landing point is legal
    temp.form_opinion(&u);
    temp.attitude = NPCATT_TALK;
    temp.mission = NPC_MISSION_NULL;
@@ -3029,15 +3019,15 @@ void game::monmove()
  cleanup_dead();
 }
 
-void game::om_npcs_move()
+void game::om_npcs_move()   // Przybylski's Star \todo reimplement this using absolute locations
 {
 /*
  for (int i = 0; i < cur_om.npcs.size(); i++) {
   cur_om.npcs[i].perform_mission(this);
-  if (abs(cur_om.npcs[i].mapx - levx) <= 1 &&
-      abs(cur_om.npcs[i].mapy - levy) <= 1   ) {
-   cur_om.npcs[i].posx = u.posx + SEEX * 2 * (cur_om.npcs[i].mapx - levx);
-   cur_om.npcs[i].posy = u.posy + SEEY * 2 * (cur_om.npcs[i].mapy - levy);
+  if (abs(cur_om.npcs[i].mapx - lev.x) <= 1 &&
+      abs(cur_om.npcs[i].mapy - lev.y) <= 1   ) {
+   cur_om.npcs[i].pos.x = u.pos.x + SEEX * 2 * (cur_om.npcs[i].mapx - lev.x);
+   cur_om.npcs[i].pos.y = u.pos.y + SEEY * 2 * (cur_om.npcs[i].mapy - lev.y);
    active_npc.push_back(cur_om.npcs[i]);
    cur_om.npcs.erase(cur_om.npcs.begin() + i);
    i--;
@@ -5931,10 +5921,6 @@ void game::update_map(int &x, int &y)
 		 _npc.pos.y < 0 - SEEX * 2 ||
 		 _npc.pos.x >     SEEX* (MAPSIZE + 2) ||
 		 _npc.pos.y >     SEEY* (MAPSIZE + 2)) {
-#ifndef KILL_NPC_OVERMAP_FIELDS
-		 _npc.mapx = lev.x + (_npc.pos.x / SEEX);	// XXX \todo unclear why C:Whales erases overmap target when mothballing
-		 _npc.mapy = lev.y + (_npc.pos.y / SEEY);
-#endif
 		 _npc.pos.x %= SEEX;
 		 _npc.pos.y %= SEEY;
 		 cur_om.npcs.push_back(std::move(active_npc[i]));
@@ -5944,22 +5930,17 @@ void game::update_map(int &x, int &y)
  }
  }	// if (0 != shift.x || 0 != shift.y)
 // Spawn static NPCs?
+ const auto reality_anchor = toGPS(point(0, 0));
  for (int i = 0; i < cur_om.npcs.size(); i++) {
-  if (rl_dist(lev.x + int(MAPSIZE / 2), lev.y + int(MAPSIZE / 2),
-              cur_om.npcs[i].mapx, cur_om.npcs[i].mapy) <= 
-              int(MAPSIZE / 2) + 1) {
-   int dx = cur_om.npcs[i].mapx - lev.x, dy = cur_om.npcs[i].mapy - lev.y;
+  const auto delta = cur_om.npcs[i].GPSpos.first - reality_anchor.first;
+  if (/* 0 == delta.z && */ 0<=delta.x && MAPSIZE >= delta.x && 0 <= delta.y && MAPSIZE >= delta.y) {
    if (debugmon)
-    debugmsg("Spawning static NPC, %d:%d (%d:%d)", lev.x, lev.y,
-             cur_om.npcs[i].mapx, cur_om.npcs[i].mapy);
+    debugmsg("Spawning static NPC, %d:%d (%d:%d)", lev.x, lev.y, delta.x, delta.y);
    npc temp(std::move(cur_om.npcs[i]));
-   if (temp.pos.x == -1 || temp.pos.y == -1) {
-	temp.screenpos_set(SEEX * 2 * (temp.mapx - lev.x) + rng(0 - SEEX, SEEX), SEEY * 2 * (temp.mapy - lev.y) + rng(0 - SEEY, SEEY));
-   } else {
-    if (debugmon)
-     debugmsg("Static NPC fine location %d:%d (%d:%d)", temp.pos.x, temp.pos.y,
-              temp.pos.x + dx * SEEX, temp.pos.y + dy * SEEY);
-	temp.screenpos_add(point(dx * SEE, dy * SEE));
+   if (!toScreen(temp.GPSpos, temp.pos)) {  // Przybylski's Star \todo check on legality of location
+       temp.GPSpos.second.x = rng(0, SEEX - 1);
+       temp.GPSpos.second.y = rng(0, SEEY - 1);
+       if (!toScreen(temp.GPSpos, temp.pos)) throw std::logic_error("static-spawned NPC must have valid position");
    }
    if (temp.marked_for_death) temp.die(this, false);
    else active_npc.push_back(std::move(temp));
@@ -6169,16 +6150,17 @@ void game::spawn_mon(int shiftx, int shifty)
   npc tmp;
   tmp.normalize();
   tmp.randomize(this);
-  //tmp.stock_missions(this);
-  tmp.spawn_at(cur_om, lev.x + (1 * rng(-5, 5)), lev.y + (1 * rng(-5, 5)));
-  tmp.screenpos_set(SEEX * 2 * (tmp.mapx - lev.x) + rng(0 - SEEX, SEEX), SEEY * 2 * (tmp.mapy - lev.y) + rng(0 - SEEY, SEEY));
+  auto _GPSpos = toGPS(point(0, 0));
+  _GPSpos.first.x += rng(0, MAPSIZE - 1);   // Przybylski's Star \todo more realistic landing zone; reality check location is legal
+  _GPSpos.first.y += rng(0, MAPSIZE - 1);
+  _GPSpos.second.x = rng(0, SEEX - 1);
+  _GPSpos.second.y = rng(0, SEEY - 1);
+  tmp.spawn_at(_GPSpos);
   tmp.form_opinion(&u);
   tmp.attitude = NPCATT_TALK;
   tmp.mission = NPC_MISSION_NULL;
-  int mission_index = reserve_random_mission(ORIGIN_ANY_NPC,
-                                             om_location(), tmp.id);
-  if (mission_index != -1)
-  tmp.chatbin.missions.push_back(mission_index);
+  int mission_index = reserve_random_mission(ORIGIN_ANY_NPC, om_location(), tmp.id);
+  if (mission_index != -1) tmp.chatbin.missions.push_back(mission_index);
   active_npc.push_back(std::move(tmp));
  }
 

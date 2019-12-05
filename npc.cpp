@@ -146,9 +146,6 @@ DEFINE_JSON_ENUM_SUPPORT_TYPICAL(talk_topic, JSON_transcode_talk)
 
 npc::npc()
 : id(-1),attitude(NPCATT_NULL),myclass(NC_NONE),wand(point(0,0),0),
-#ifndef KILL_NPC_OVERMAP_FIELDS
-om(0,0,0),mapx(0),mapy(0),
-#endif
   pl(point(-1,-1),0),it(-1,-1),goal(-1,-1),fetching_item(false),has_new_items(false),
   my_fac(0),mission(NPC_MISSION_NULL),patience(0),marked_for_death(false),dead(false),flags(0)
 {
@@ -845,12 +842,10 @@ std::vector<item> starting_inv(npc *me, npc_class type, game *g)
  return ret;
 }
 
-// 2019-11-22 respecify this to work.
-void npc::spawn_at(const overmap& o, int x, int y)
+void npc::spawn_at(const std::pair<tripoint, point>& _GPSpos)
 {
- om = o.pos;	// First, specify that we are in this overmap!
- mapx = x;
- mapy = y;
+    GPSpos = _GPSpos;
+    game::active()->toScreen(GPSpos, pos);
 }
 
 skill npc::best_skill() const
@@ -979,15 +974,19 @@ bool npc::wield(int index)
  return true;
 }
 
+// only valid to call on NPCs outside of the reality bubble
 void npc::perform_mission(game *g)
 {
  switch (mission) {
  case NPC_MISSION_RESCUE_U:
   if (int(messages.turn) % 24 == 0) {
-   if (mapx > g->lev.x) mapx--;
-   else if (mapx < g->lev.x) mapx++;
-   if (mapy > g->lev.y) mapy--;
-   else if (mapy < g->lev.y) mapy++;
+   auto delta = g->u.GPSpos.first - GPSpos.first;
+   if (2 < delta.x) delta.x = 2;
+   else if (-2 > delta.x) delta.x = -2;
+   if (2 < delta.y) delta.y = 2;
+   else if (-2 > delta.y) delta.y = -2;
+   GPSpos.first.x += delta.x;
+   GPSpos.first.y += delta.y;
    attitude = NPCATT_DEFEND;
   }
   break;
@@ -995,8 +994,8 @@ void npc::perform_mission(game *g)
   break;	// Just stay where we are
  default:	// Random Walk
   if (int(messages.turn) % 24 == 0) {
-   mapx += rng(-1, 1);
-   mapy += rng(-1, 1);
+   GPSpos.first.x += 2 * rng(-1, 1);
+   GPSpos.first.y += 2 * rng(-1, 1);
   }
  }
 }
@@ -1773,10 +1772,6 @@ void npc::shift(const point delta)
 {
  const point block_delta(delta*SEE);
  pos -= block_delta;
-#ifndef KILL_NPC_OVERMAP_FIELDS
- mapx += delta.x;
- mapy += delta.y;
-#endif
  it -= block_delta;
  pl.x -= block_delta;
  path.clear();

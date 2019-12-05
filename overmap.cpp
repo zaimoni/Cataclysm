@@ -1126,12 +1126,8 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
      see = seen(omx, omy);
      if (note_here = has_note(omx, omy)) note_text = note(omx, omy);
 	 for (const auto& _npc : npcs) {
-#ifdef KILL_NPC_OVERMAP_FIELDS
 	  const auto om = toOvermap(_npc.GPSpos);
       if (om.second.x == omx && om.second.y == omy) {
-#else
-      if ((_npc.mapx + 1) / 2 == omx && (_npc.mapy + 1) / 2 == omy) {	// XXX \todo does not agree with inverter; is this correct?
-#endif
        npc_here = true;
        npc_name = _npc.name;
 	   break;

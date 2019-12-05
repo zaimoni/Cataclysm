@@ -1710,10 +1710,6 @@ JSON toJSON(const npc& src)
 	if (src.my_fac) ret.set("faction_id", std::to_string(src.my_fac->id));	// \todo XXX should reality-check the faction id
 
 	// toJSON
-#ifndef KILL_NPC_OVERMAP_FIELDS
-	ret.set("om_pos", toJSON(point(src.mapx, src.mapy)));
-	ret.set("om", toJSON(src.om));
-#endif
 	ret.set("personality", toJSON(src.personality));
 	ret.set("op_of_u", toJSON(src.op_of_u));
 	auto tmp = toJSON(src.chatbin);
@@ -1743,9 +1739,6 @@ bool fromJSON(const JSON& src, npc& dest)
 
 npc::npc(const JSON& src)
 : player(src),id(-1), attitude(NPCATT_NULL), myclass(NC_NONE), wand(point(0, 0), 0),
-#ifndef KILL_NPC_OVERMAP_FIELDS
-om(0, 0, 0), mapx(0), mapy(0),
-#endif
   pl(point(-1, -1), 0), it(-1, -1), goal(-1, -1), fetching_item(false), has_new_items(false),
   my_fac(0), mission(NPC_MISSION_NULL), patience(0), marked_for_death(false), dead(false), flags(0)
 {
@@ -1753,16 +1746,6 @@ om(0, 0, 0), mapx(0), mapy(0),
 	if (src.has_key("attitude")) fromJSON(src["attitude"], attitude);
 	if (src.has_key("class")) fromJSON(src["class"], myclass);
 	if (src.has_key("wand")) fromJSON(src["wand"], wand);
-#ifndef KILL_NPC_OVERMAP_FIELDS
-	if (src.has_key("om")) fromJSON(src["om"], om);
-	if (src.has_key("om_pos")) {
-		point tmp;
-		if (fromJSON(src["om_pos"], tmp)) {
-			mapx = tmp.x;	// \todo blocked by JSON conversion: mapx,mapy -> om_pos (om,om_pos is not the GPS coordinate type suitable for long-range A* pathfinding)
-			mapy = tmp.y;
-		}
-	}
-#endif
 	if (src.has_key("pl")) fromJSON(src["pl"], pl);
 	if (src.has_key("it")) fromJSON(src["it"], it);
 	if (src.has_key("goal")) fromJSON(src["goal"], goal);
