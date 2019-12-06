@@ -5938,10 +5938,14 @@ void game::update_map(int &x, int &y)
    if (debugmon)
     debugmsg("Spawning static NPC, %d:%d (%d:%d)", lev.x, lev.y, delta.x, delta.y);
    npc temp(std::move(cur_om.npcs[i]));
-   if (!toScreen(temp.GPSpos, temp.pos)) {  // Przybylski's Star \todo check on legality of location
+   if (!temp.can_enter(temp.GPSpos) || !toScreen(temp.GPSpos, temp.pos)) {  // Przybylski's Star \todo proper landing zone fixup
        temp.GPSpos.second.x = rng(0, SEEX - 1);
        temp.GPSpos.second.y = rng(0, SEEY - 1);
-       if (!toScreen(temp.GPSpos, temp.pos)) throw std::logic_error("static-spawned NPC must have valid position");
+#ifndef NDEBUG
+       if (!temp.can_enter(temp.GPSpos) || !toScreen(temp.GPSpos, temp.pos)) throw std::logic_error("static-spawned NPC must have valid position");
+#else
+       toScreen(temp.GPSpos, temp.pos); // just soak it for non-programmers
+#endif
    }
    if (temp.marked_for_death) temp.die(this, false);
    else active_npc.push_back(std::move(temp));
@@ -6148,21 +6152,37 @@ void game::spawn_mon(int shiftx, int shifty)
  const int nlevy = lev.y + shifty;
  // Create a new NPC?
  if (option_table::get()[OPT_NPCS] && one_in(100 + 15 * cur_om.npcs.size())) {	// \todo this rate is a numeric option in C:DDA
+  size_t lz_ub = 0;
+  std::pair<tripoint, point> lz[4*(MAPSIZE*SEE -1)];
+
   npc tmp;
   tmp.normalize();
   tmp.randomize(this);
-  auto _GPSpos = toGPS(point(0, 0));
-  _GPSpos.first.x += rng(0, MAPSIZE - 1);   // Przybylski's Star \todo more realistic landing zone; reality check location is legal
-  _GPSpos.first.y += rng(0, MAPSIZE - 1);
-  _GPSpos.second.x = rng(0, SEEX - 1);
-  _GPSpos.second.y = rng(0, SEEY - 1);
-  tmp.spawn_at(_GPSpos);
-  tmp.form_opinion(&u);
-  tmp.attitude = NPCATT_TALK;
-  tmp.mission = NPC_MISSION_NULL;
-  int mission_index = reserve_random_mission(ORIGIN_ANY_NPC, om_location(), tmp.id);
-  if (mission_index != -1) tmp.chatbin.missions.push_back(mission_index);
-  active_npc.push_back(std::move(tmp));
+
+  // assume spawned NPCs arrive on the outer edge, not within vehicle: enumerate legal landing zones and choose one
+  // \todo prefer outdoors if "sensible"
+  // \todo exclude bashing required
+  for (int i = 0; i < MAPSIZE * SEE; ++i) {
+      auto test = toGPS(point(i, 0));
+      if (tmp.can_enter(test)) lz[lz_ub++] = test;
+      test = toGPS(point(i, MAPSIZE * SEE - 1));
+      if (tmp.can_enter(test)) lz[lz_ub++] = test;
+  }
+  for (int i = 1; i < MAPSIZE * SEE-1; ++i) {
+      auto test = toGPS(point(0, i));
+      if (tmp.can_enter(test)) lz[lz_ub++] = test;
+      test = toGPS(point(MAPSIZE * SEE - 1, i));
+      if (tmp.can_enter(test)) lz[lz_ub++] = test;
+  }
+  if (0 < lz_ub) {  // clear to arrive
+      tmp.spawn_at(lz[rng(0, lz_ub - 1)]);
+      tmp.form_opinion(&u);
+      tmp.attitude = NPCATT_TALK;
+      tmp.mission = NPC_MISSION_NULL;
+      int mission_index = reserve_random_mission(ORIGIN_ANY_NPC, om_location(), tmp.id);
+      if (mission_index != -1) tmp.chatbin.missions.push_back(mission_index);
+      active_npc.push_back(std::move(tmp));
+  }
  }
 
 // Now, spawn monsters (perhaps)
