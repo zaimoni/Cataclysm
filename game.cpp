@@ -3019,21 +3019,22 @@ void game::monmove()
  cleanup_dead();
 }
 
-void game::om_npcs_move()   // Przybylski's Star \todo reimplement this using absolute locations
+void game::om_npcs_move()   // blocked:? Earth coordinates, CPU, hard drive \todo handle other overmaps
 {
-/*
- for (int i = 0; i < cur_om.npcs.size(); i++) {
-  cur_om.npcs[i].perform_mission(this);
-  if (abs(cur_om.npcs[i].mapx - lev.x) <= 1 &&
-      abs(cur_om.npcs[i].mapy - lev.y) <= 1   ) {
-   cur_om.npcs[i].pos.x = u.pos.x + SEEX * 2 * (cur_om.npcs[i].mapx - lev.x);
-   cur_om.npcs[i].pos.y = u.pos.y + SEEY * 2 * (cur_om.npcs[i].mapy - lev.y);
-   active_npc.push_back(cur_om.npcs[i]);
-   cur_om.npcs.erase(cur_om.npcs.begin() + i);
-   i--;
+  const auto reality_anchor = toGPS(point(0,0));
+  auto i = cur_om.npcs.size();
+  while (0 < i) {
+    auto& _npc = cur_om.npcs[--i];
+    _npc.perform_mission(this);
+    if (/* reality_anchor.first.z==_npc.GPSpos.first.z && */
+        reality_anchor.first.x <= _npc.GPSpos.first.x
+        && MAPSIZE > _npc.GPSpos.first.x - reality_anchor.first.x
+        && reality_anchor.first.y <= _npc.GPSpos.first.y
+        && MAPSIZE > _npc.GPSpos.first.y - reality_anchor.first.y) {
+        active_npc.push_back(std::move(_npc));
+        cur_om.npcs.erase(cur_om.npcs.begin() + i);
+    }
   }
- }
-*/
 }
 
 void game::check_warmth()

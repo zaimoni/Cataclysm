@@ -3,6 +3,7 @@
 #include "rng.h"
 #include "game.h"
 #include "line.h"
+#include "mapbuffer.h"
 #include "act_obj.h"
 #include "recent_msg.h"
 
@@ -973,6 +974,16 @@ void npc::update_path(const map& m, const point& pt)
  if (path_is_usable(m) && path.back() == pt) return;	// usable, already leads to destination: no need to recalculate
  path = m.route(pos, pt);
  _normalize_path(path, pos);
+}
+
+bool player::can_enter(const std::pair<tripoint, point>& _GPSpos) const // should act like player::can_move_to
+{
+    return false;   // stub
+    if (const auto sm = MAPBUFFER.lookup_submap(_GPSpos.first)) {
+//      return 0 < sm->move_cost(_GPSpos.second) || sm->has_flag(bashable, _GPSpos.second); // \todo includes vehicles
+        return 0 < sm->move_cost_ter_only(_GPSpos.second) || sm->has_flag_ter_only<bashable>(_GPSpos.second);
+    }
+    return true;    // if submap not yet created, optimistically assume everything is ok
 }
 
 bool player::can_move_to(const map& m, const point& pt) const

@@ -4,7 +4,7 @@
 
 struct submap;
 
-class mapbuffer
+class mapbuffer // \todo natural singleton, but likely needs pre-requisites loaded before it is loaded for that
 {
  public:
   mapbuffer() = default;
@@ -18,7 +18,8 @@ class mapbuffer
   void save();
 
   bool add_submap(int x, int y, int z, submap *sm);
-  submap* lookup_submap(int x, int y, int z);
+  submap* lookup_submap(const tripoint& src);
+  submap* lookup_submap(int x, int y, int z) { return lookup_submap(tripoint(x, y, z)); };
 
   size_t size() const { return submaps.size(); };
 
