@@ -976,12 +976,35 @@ void npc::update_path(const map& m, const point& pt)
  _normalize_path(path, pos);
 }
 
+bool player::landing_zone_ok() // \todo more complex approach; favor "near entry point", etc.
+{
+    if (can_enter(GPSpos)) return true;
+    size_t lz_ub = 0;
+    point lz[SEEX * SEEY];
+    point pt;
+    for (pt.x = 0; pt.x < SEEX; ++pt.x) {
+        for (pt.y = 0; pt.y < SEEY; ++pt.y) {
+            // Przybylski's Star \todo also reject landing on z or other npcs
+            if (can_enter(std::pair<tripoint, point>(GPSpos.first, pt))) lz[lz_ub++] = pt;
+        }
+    }
+    const bool ret = (0 < lz_ub);
+    if (ret) GPSpos.second = lz[rng(0, lz_ub - 1)];
+    return ret;
+}
+
 bool player::can_enter(const std::pair<tripoint, point>& _GPSpos) const // should act like player::can_move_to
 {
-    return false;   // stub
     if (const auto sm = MAPBUFFER.lookup_submap(_GPSpos.first)) {
-//      return 0 < sm->move_cost(_GPSpos.second) || sm->has_flag(bashable, _GPSpos.second); // \todo includes vehicles
-        return 0 < sm->move_cost_ter_only(_GPSpos.second) || sm->has_flag_ter_only<bashable>(_GPSpos.second);
+        point pt;
+        if (game::active()->toScreen(_GPSpos, pt)) {
+            // destination is actually in reality bubble
+            const auto& m = game::active()->m;
+            return 0 < m.move_cost(pt) || m.has_flag(bashable, pt);
+        } else {
+    //      return 0 < sm->move_cost(_GPSpos.second) || sm->has_flag(bashable, _GPSpos.second); // \todo includes vehicles
+            return 0 < sm->move_cost_ter_only(_GPSpos.second) || sm->has_flag_ter_only<bashable>(_GPSpos.second);
+        }
     }
     return true;    // if submap not yet created, optimistically assume everything is ok
 }

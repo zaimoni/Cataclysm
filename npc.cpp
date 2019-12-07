@@ -845,6 +845,7 @@ std::vector<item> starting_inv(npc *me, npc_class type, game *g)
 void npc::spawn_at(const std::pair<tripoint, point>& _GPSpos)
 {
     GPSpos = _GPSpos;
+    landing_zone_ok();
     game::active()->toScreen(GPSpos, pos);
 }
 

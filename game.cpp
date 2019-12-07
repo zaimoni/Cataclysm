@@ -1709,6 +1709,7 @@ void game::load(std::string name)
 
  fin.close();
  set_adjacent_overmaps(true);
+ // Przybylski's Star \todo repair active_npcs (we have lev at this point so can measure who is/isn't in scope)
  draw();
 }
 
@@ -1873,7 +1874,7 @@ void game::debug()
    temp.normalize();
    temp.randomize(this);
    temp.attitude = NPCATT_TALK;
-   temp.spawn_at(toGPS(u.pos - point(4)));  // Przybylski's Star \todo actually check that landing point is legal
+   temp.spawn_at(toGPS(u.pos - point(4)));
    temp.form_opinion(&u);
    temp.attitude = NPCATT_TALK;
    temp.mission = NPC_MISSION_NULL;
@@ -5933,24 +5934,19 @@ void game::update_map(int &x, int &y)
 // Spawn static NPCs?
  const auto reality_anchor = toGPS(point(0, 0));
  for (int i = 0; i < cur_om.npcs.size(); i++) {
-  const auto delta = cur_om.npcs[i].GPSpos.first - reality_anchor.first;
-  if (/* 0 == delta.z && */ 0<=delta.x && MAPSIZE >= delta.x && 0 <= delta.y && MAPSIZE >= delta.y) {
-   if (debugmon)
-    debugmsg("Spawning static NPC, %d:%d (%d:%d)", lev.x, lev.y, delta.x, delta.y);
-   npc temp(std::move(cur_om.npcs[i]));
-   if (!temp.can_enter(temp.GPSpos) || !toScreen(temp.GPSpos, temp.pos)) {  // Przybylski's Star \todo proper landing zone fixup
-       temp.GPSpos.second.x = rng(0, SEEX - 1);
-       temp.GPSpos.second.y = rng(0, SEEY - 1);
-#ifndef NDEBUG
-       if (!temp.can_enter(temp.GPSpos) || !toScreen(temp.GPSpos, temp.pos)) throw std::logic_error("static-spawned NPC must have valid position");
-#else
-       toScreen(temp.GPSpos, temp.pos); // just soak it for non-programmers
-#endif
-   }
-   if (temp.marked_for_death) temp.die(this, false);
-   else active_npc.push_back(std::move(temp));
-   cur_om.npcs.erase(cur_om.npcs.begin() + i);
-   i--;
+  point test;
+  auto& _npc = cur_om.npcs[i];
+  if (toScreen(_npc.GPSpos, test)) {
+      _npc.landing_zone_ok();
+      if (debugmon) debugmsg("Spawning static NPC, %d:%d (%d:%d)", _npc.GPSpos.first.x, _npc.GPSpos.first.y, _npc.GPSpos.second.x, _npc.GPSpos.second.y);
+      npc temp(std::move(cur_om.npcs[i]));
+      if (temp.marked_for_death) temp.die(this, false);
+      else {
+          toScreen(temp.GPSpos, temp.pos);  // should be no-fail
+          active_npc.push_back(std::move(temp));
+      }
+      cur_om.npcs.erase(cur_om.npcs.begin() + i);
+      i--;
   }
  }
 // Spawn monsters if appropriate
