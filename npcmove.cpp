@@ -984,7 +984,6 @@ bool player::landing_zone_ok() // \todo more complex approach; favor "near entry
     point pt;
     for (pt.x = 0; pt.x < SEEX; ++pt.x) {
         for (pt.y = 0; pt.y < SEEY; ++pt.y) {
-            // Przybylski's Star \todo also reject landing on z or other npcs
             if (can_enter(std::pair<tripoint, point>(GPSpos.first, pt))) lz[lz_ub++] = pt;
         }
     }
@@ -996,12 +995,14 @@ bool player::landing_zone_ok() // \todo more complex approach; favor "near entry
 bool player::can_enter(const std::pair<tripoint, point>& _GPSpos) const // should act like player::can_move_to
 {
     if (const auto sm = MAPBUFFER.lookup_submap(_GPSpos.first)) {
+        auto g = game::active();
         point pt;
-        if (game::active()->toScreen(_GPSpos, pt)) {
-            // destination is actually in reality bubble
-            const auto& m = game::active()->m;
-            return 0 < m.move_cost(pt) || m.has_flag(bashable, pt);
-        } else {
+        if (g->toScreen(_GPSpos, pt)) {
+            // destination is actually in reality bubble: we are contemplating spawning
+            if (g->mon(pt) || g->nPC(pt)) return false; // so do not spawn on monsters or NPCs
+            const auto& m = g->m;
+            return 0 < m.move_cost(pt) /* || m.has_flag(bashable, pt) */;   // \todo would be interesting if we could bash from just outside the reality bubble?
+        } else {    // formally moving outside of the reality bubble
     //      return 0 < sm->move_cost(_GPSpos.second) || sm->has_flag(bashable, _GPSpos.second); // \todo includes vehicles
             return 0 < sm->move_cost_ter_only(_GPSpos.second) || sm->has_flag_ter_only<bashable>(_GPSpos.second);
         }
