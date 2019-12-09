@@ -566,13 +566,11 @@ bool game::do_turn()
     tmp.load(this, z[i].spawnmap);
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, messages.turn, z[i].spawnmap);
-   } else {	// Absorb them back into a group
-    int group = valid_group((mon_id)(z[i].type->id), lev.x, lev.y);
-    if (group != -1) {
-     cur_om.zg[group].population++;
-     if (cur_om.zg[group].population / pow(cur_om.zg[group].radius, 2.0) > 5)
-      cur_om.zg[group].radius++;
-    }
+   } else if (const auto m_group = valid_group((mon_id)(z[i].type->id), lev.x, lev.y)) {	// Absorb them back into a group
+       m_group->population++;
+       if (m_group->population / pow(m_group->radius, 2.0) > 5) m_group->radius++;
+   } else if (const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id))) {
+       cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
    }
   }
   if (uquit == QUIT_DIED) popup_top("Game over! Press spacebar...");
@@ -3000,18 +2998,12 @@ void game::monmove()
        z[i].pos.x > (SEEX * MAPSIZE * 7) / 6 ||
        z[i].pos.y > (SEEY * MAPSIZE * 7) / 6   ) {
 // Re-absorb into local group, if applicable
-    int group = valid_group((mon_id)(z[i].type->id), lev.x, lev.y);
-    if (group != -1) {
-     cur_om.zg[group].population++;
-     if (cur_om.zg[group].population / pow(cur_om.zg[group].radius, 2.0) > 5)
-      cur_om.zg[group].radius++;
-    } else if (mongroup::to_mc((mon_id)(z[i].type->id)) != mcat_null) {
-     cur_om.zg.push_back(mongroup(mongroup::to_mc((mon_id)(z[i].type->id)),
-                                  lev.x, lev.y, 1, 1));
-	} else {
-	  const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id));
-	  if (m_cat != mcat_null) cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
-	}
+    if (const auto m_group = valid_group((mon_id)(z[i].type->id), lev.x, lev.y)) {
+        m_group->population++;
+        if (m_group->population / pow(m_group->radius, 2.0) > 5) m_group->radius++;
+    } else if (const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id))) {
+        cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
+    }
     z[i].dead = true;
    } else z[i].receive_moves();
   }
@@ -5741,9 +5733,10 @@ void game::vertical_move(int movez, bool force)
     while (spawn.y < 0) spawn.y += SEEY;
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, messages.turn, point(lev.x, lev.y));
-   } else {
-    const int group = valid_group( (mon_id)(z[i].type->id), lev.x, lev.y);
-    if (group != -1) cur_om.zg[group].population++;
+   } else if (const auto m_group = valid_group((mon_id)(z[i].type->id), lev.x, lev.y)) {
+       m_group->population++;
+   } else if (const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id))) {
+       cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
    }
   }
  }
@@ -5922,14 +5915,11 @@ void game::update_map(int &x, int &y)
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, messages.turn, z[i].spawnmap);
    } else {	// Absorb them back into a group
-    group = valid_group((mon_id)(z[i].type->id), lev.x + shift.x, lev.y + shift.y);
-    if (group != -1) {
-     cur_om.zg[group].population++;
-     if (cur_om.zg[group].population / pow(cur_om.zg[group].radius, 2.0) > 5)
-      cur_om.zg[group].radius++;
-    } else {
-		const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id));
-		if (m_cat != mcat_null) cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
+    if (const auto m_group = valid_group((mon_id)(z[i].type->id), lev.x + shift.x, lev.y + shift.y)) {
+        m_group->population++;
+        if (m_group->population / pow(m_group->radius, 2.0) > 5) m_group->radius++;
+    } else if (const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id))) {
+		cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
 	}
    }
    z_erase(i);
@@ -6243,7 +6233,7 @@ void game::spawn_mon(int shiftx, int shifty)
  }
 }
 
-int game::valid_group(mon_id type, int x, int y)
+mongroup* game::valid_group(mon_id type, int x, int y)
 {
  std::vector <int> valid_groups;
  std::vector <int> semi_valid;	// Groups that're ALMOST big enough
@@ -6267,14 +6257,14 @@ int game::valid_group(mon_id type, int x, int y)
   }
  }
  if (valid_groups.size() == 0) {
-  if (semi_valid.empty()) return -1;
+  if (semi_valid.empty()) return 0;
 // If there's a group that's ALMOST big enough, expand that group's radius
 // by one and absorb into that group.
-  const int semi = rng(0, semi_valid.size() - 1);
-  cur_om.zg[semi_valid[semi]].radius++;
-  return semi_valid[semi];
+  auto& ret = cur_om.zg[semi_valid[rng(0, semi_valid.size() - 1)]];
+  ret.radius++;
+  return &ret;
  }
- return valid_groups[rng(0, valid_groups.size() - 1)];
+ return &cur_om.zg[valid_groups[rng(0, valid_groups.size() - 1)]];
 }
 
 void game::wait()
