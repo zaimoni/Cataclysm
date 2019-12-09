@@ -1709,7 +1709,26 @@ void game::load(std::string name)
 
  fin.close();
  set_adjacent_overmaps(true);
- // Przybylski's Star \todo repair active_npcs (we have lev at this point so can measure who is/isn't in scope)
+
+ {  // validate active_npcs (we have lev at this point so can measure who is/isn't in scope)
+ auto i = active_npc.size();
+ while (0 < i) {
+     auto& _npc = active_npc[--i];
+     auto test = toGPS(_npc.pos);
+     if (test != _npc.GPSpos) {
+         if (point(-1, -1) == _npc.GPSpos.second) {
+             // likely still defaulted: presumably loaded from V0.2.0
+             _npc.GPSpos = test;
+         } else if (!toScreen(_npc.GPSpos, _npc.pos)) {
+             // off-screen!
+             cur_om.npcs.push_back(std::move(_npc));
+             active_npc.erase(active_npc.begin() + i);
+         }
+     }
+ }
+ }
+ activate_npcs();
+
  draw();
 }
 
@@ -3022,20 +3041,24 @@ void game::monmove()
 
 void game::om_npcs_move()   // blocked:? Earth coordinates, CPU, hard drive \todo handle other overmaps
 {
-  const auto reality_anchor = toGPS(point(0,0));
-  auto i = cur_om.npcs.size();
-  while (0 < i) {
-    auto& _npc = cur_om.npcs[--i];
-    _npc.perform_mission(this);
-    if (/* reality_anchor.first.z==_npc.GPSpos.first.z && */
-        reality_anchor.first.x <= _npc.GPSpos.first.x
-        && MAPSIZE > _npc.GPSpos.first.x - reality_anchor.first.x
-        && reality_anchor.first.y <= _npc.GPSpos.first.y
-        && MAPSIZE > _npc.GPSpos.first.y - reality_anchor.first.y) {
-        active_npc.push_back(std::move(_npc));
-        cur_om.npcs.erase(cur_om.npcs.begin() + i);
+  for(auto& _npc : cur_om.npcs) _npc.perform_mission(this);
+  activate_npcs();
+}
+
+void game::activate_npcs()   // blocked:? Earth coordinates, CPU, hard drive \todo handle other overmaps
+{
+    const auto reality_anchor = toGPS(point(0, 0));
+    auto i = cur_om.npcs.size();
+    point test;
+    while (0 < i) {
+        auto& _npc = cur_om.npcs[--i];
+        if (toScreen(_npc.GPSpos, test)) {
+            _npc.spawn_at(_npc.GPSpos); // release block \todo inline this or specialize
+            if (_npc.marked_for_death) _npc.die(this, false);
+            else active_npc.push_back(std::move(_npc));
+            cur_om.npcs.erase(cur_om.npcs.begin() + i);
+        }
     }
-  }
 }
 
 void game::check_warmth()
@@ -5932,23 +5955,7 @@ void game::update_map(int &x, int &y)
  }
  }	// if (0 != shift.x || 0 != shift.y)
 // Spawn static NPCs?
- const auto reality_anchor = toGPS(point(0, 0));
- for (int i = 0; i < cur_om.npcs.size(); i++) {
-  point test;
-  auto& _npc = cur_om.npcs[i];
-  if (toScreen(_npc.GPSpos, test)) {
-      _npc.landing_zone_ok();
-      if (debugmon) debugmsg("Spawning static NPC, %d:%d (%d:%d)", _npc.GPSpos.first.x, _npc.GPSpos.first.y, _npc.GPSpos.second.x, _npc.GPSpos.second.y);
-      npc temp(std::move(cur_om.npcs[i]));
-      if (temp.marked_for_death) temp.die(this, false);
-      else {
-          toScreen(temp.GPSpos, temp.pos);  // should be no-fail
-          active_npc.push_back(std::move(temp));
-      }
-      cur_om.npcs.erase(cur_om.npcs.begin() + i);
-      i--;
-  }
- }
+ activate_npcs();
 // Spawn monsters if appropriate
  m.spawn_monsters(this);	// Static monsters
  if (messages.turn >= nextspawn) spawn_mon(shift.x, shift.y);

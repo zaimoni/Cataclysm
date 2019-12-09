@@ -111,6 +111,8 @@ struct tripoint {
  }
 };
 
+inline constexpr bool operator==(const tripoint& lhs, const tripoint& rhs) { return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z; }
+inline constexpr bool operator!=(const tripoint& lhs, const tripoint& rhs) { return lhs.x != rhs.x || lhs.y != rhs.y || lhs.z != rhs.z; }
 inline tripoint operator+(const tripoint& lhs, const tripoint& rhs) { return tripoint(lhs) += rhs; }
 inline tripoint operator-(const tripoint& lhs, const tripoint& rhs) { return tripoint(lhs) -= rhs; }
 inline tripoint operator*(int s, const tripoint& pt) { return tripoint(pt) *= s; }
