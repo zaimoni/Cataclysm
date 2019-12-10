@@ -201,6 +201,7 @@
     <ClInclude Include="mutation.h" />
     <ClInclude Include="npc.h" />
     <ClInclude Include="omdata.h" />
+    <ClInclude Include="om_cache.hpp" />
     <ClInclude Include="options.h" />
     <ClInclude Include="output.h" />
     <ClInclude Include="overmap.h" />
@@ -280,6 +281,7 @@
     <ClCompile Include="npc.cpp" />
     <ClCompile Include="npcmove.cpp" />
     <ClCompile Include="npctalk.cpp" />
+    <ClCompile Include="om_cache.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="output.cpp" />
     <ClCompile Include="overmap.cpp" />

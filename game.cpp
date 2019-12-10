@@ -14,6 +14,7 @@
 #include "recent_msg.h"
 #include "saveload.h"
 #include "json.h"
+#include "om_cache.hpp"
 
 #include <fstream>
 #include <sstream>
@@ -566,6 +567,7 @@ void game::create_starting_npcs()
 // Returns true if game is over (death, saved, quit, etc)
 bool game::do_turn()
 {
+ om_cache::get().expire();  // flush unused overmaps to hard drive (not clearly correct placement)
  if (is_game_over()) {
   write_msg();
 // Save the monsters before we die!

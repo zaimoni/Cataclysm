@@ -249,6 +249,9 @@
     <ClInclude Include="act_obj.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="om_cache.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -453,6 +456,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="recent_msg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="om_cache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
