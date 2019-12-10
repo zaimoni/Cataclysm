@@ -12,11 +12,11 @@
 
 #include "Zaimoni.STL/GDI/box.hpp"
 
-std::pair<tripoint, point> overmap::toGPS(const point& screen_pos) { return game::active()->toGPS(screen_pos); }
+GPS_loc overmap::toGPS(const point& screen_pos) { return game::active()->toGPS(screen_pos); }
 
-std::pair<tripoint, point> overmap::toOvermap(const std::pair<tripoint, point> GPSpos)
+OM_loc overmap::toOvermap(const GPS_loc GPSpos)
 {
-	std::pair<tripoint, point> ret(GPSpos.first,point(0));
+	OM_loc ret(GPSpos.first,point(0));
 	ret.second.x = (ret.first.x % (2 * OMAP));
 	ret.second.y = (ret.first.y % (2 * OMAP));
 	if (0 <= ret.first.x) {

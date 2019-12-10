@@ -984,7 +984,7 @@ bool player::landing_zone_ok() // \todo more complex approach; favor "near entry
     point pt;
     for (pt.x = 0; pt.x < SEEX; ++pt.x) {
         for (pt.y = 0; pt.y < SEEY; ++pt.y) {
-            if (can_enter(std::pair<tripoint, point>(GPSpos.first, pt))) lz[lz_ub++] = pt;
+            if (can_enter(GPS_loc(GPSpos.first, pt))) lz[lz_ub++] = pt;
         }
     }
     const bool ret = (0 < lz_ub);
@@ -992,7 +992,7 @@ bool player::landing_zone_ok() // \todo more complex approach; favor "near entry
     return ret;
 }
 
-bool player::can_enter(const std::pair<tripoint, point>& _GPSpos) const // should act like player::can_move_to
+bool player::can_enter(const GPS_loc& _GPSpos) const // should act like player::can_move_to
 {
     if (const auto sm = MAPBUFFER.lookup_submap(_GPSpos.first)) {
         auto g = game::active();

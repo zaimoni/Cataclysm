@@ -5814,7 +5814,7 @@ void game::vertical_move(int movez, bool force)
 }
 
 // cf map::loadn
-std::pair<tripoint, point> game::toGPS(point screen_pos) const	// \todo overflow checking
+GPS_loc game::toGPS(point screen_pos) const	// \todo overflow checking
 {
 	auto anchor(cur_om.pos);
 	anchor.x *= 2 * OMAP;	// don't scale z coordinate
@@ -5841,10 +5841,10 @@ std::pair<tripoint, point> game::toGPS(point screen_pos) const	// \todo overflow
 		anchor.y += screen_pos.y / SEE;
 		screen_pos.y %= SEE;
 	}
-	return std::pair<tripoint, point>(anchor, screen_pos);
+	return GPS_loc(anchor, screen_pos);
 }
 
-bool game::toScreen(std::pair<tripoint, point> GPS_pos, point& screen_pos) const
+bool game::toScreen(GPS_loc GPS_pos, point& screen_pos) const
 {
 	if (GPS_pos.first.z != cur_om.pos.z) return false;	// \todo? z-level change target
 	const auto anchor(toGPS(point(0, 0)));	// \todo would be nice to short-circuit this stage, but may be moot after modeling Earth's radius.  Also, cache target
@@ -6154,7 +6154,7 @@ void game::spawn_mon(int shiftx, int shifty)
  // Create a new NPC?
  if (option_table::get()[OPT_NPCS] && one_in(100 + 15 * cur_om.npcs.size())) {	// \todo this rate is a numeric option in C:DDA
   size_t lz_ub = 0;
-  std::pair<tripoint, point> lz[4*(MAPSIZE*SEE -1)];
+  GPS_loc lz[4*(MAPSIZE*SEE -1)];
 
   npc tmp;
   tmp.normalize();

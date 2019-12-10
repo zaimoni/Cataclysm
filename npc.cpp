@@ -842,7 +842,7 @@ std::vector<item> starting_inv(npc *me, npc_class type, game *g)
  return ret;
 }
 
-void npc::spawn_at(const std::pair<tripoint, point>& _GPSpos)
+void npc::spawn_at(const GPS_loc& _GPSpos)
 {
     GPSpos = _GPSpos;
     landing_zone_ok();

@@ -14,6 +14,10 @@ enum {
 	OMAPY = OMAP
 };
 
+// currently have to use proofreading to distinguish between these
+typedef std::pair<tripoint, point> GPS_loc;
+typedef std::pair<tripoint, point> OM_loc;
+
 struct city {
  int x;	// legal range 0...OMAPX-1
  int y;	// legal range 0...OMAPY-1
@@ -101,8 +105,8 @@ class overmap
   void delete_note(int x, int y);
   point display_notes() const;
 
-  static std::pair<tripoint, point> toGPS(const point& screen_pos);
-  static std::pair<tripoint, point> toOvermap(const std::pair<tripoint, point> GPSpos);
+  static GPS_loc toGPS(const point& screen_pos);
+  static OM_loc toOvermap(const GPS_loc GPSpos);
 
   tripoint pos;
   std::vector<city> cities;
