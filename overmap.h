@@ -99,8 +99,10 @@ class overmap
   bool seen(const point& pt) const { return const_cast<overmap*>(this)->seen(pt.x, pt.y); };
 
   bool has_note(int x, int y) const;
+  bool has_note(const point& pt) const { return has_note(pt.x, pt.y); };
   std::string note(int x, int y) const;
-  void add_note(int x, int y, std::string message);
+  void add_note(const point& pt, std::string message);
+  void add_note(const point& pt, const char* const message) { add_note(pt, std::string(message)); };
   point find_note(point origin, const std::string& text) const;
   void delete_note(int x, int y);
   point display_notes() const;

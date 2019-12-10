@@ -5766,15 +5766,13 @@ void game::vertical_move(int movez, bool force)
  cur_om = overmap(this, cur_om.pos.x, cur_om.pos.y, cur_om.pos.z + movez);
 
 // Fill in all the tiles we know about (e.g. subway stations)
- for (int i = 0; i < discover.size(); i++) {
-  int x = discover[i].x, y = discover[i].y;
-  cur_om.seen(x, y) = true;
-  if (movez ==  1 && !oter_t::list[ cur_om.ter(x, y) ].known_down &&
-      !cur_om.has_note(x, y))
-   cur_om.add_note(x, y, "AUTO: goes down");
-  if (movez == -1 && !oter_t::list[ cur_om.ter(x, y) ].known_up &&
-      !cur_om.has_note(x, y))
-   cur_om.add_note(x, y, "AUTO: goes up");
+ for (const auto& pt : discover) {
+     cur_om.seen(pt) = true;
+     if (1 == movez) {
+         if (!oter_t::list[cur_om.ter(pt)].known_down && !cur_om.has_note(pt)) cur_om.add_note(pt, "AUTO: goes down");
+     } else if (-1 == movez) {
+         if (!oter_t::list[cur_om.ter(pt)].known_up && !cur_om.has_note(pt)) cur_om.add_note(pt, "AUTO: goes up");
+     }
  }
 
  lev.z += movez;

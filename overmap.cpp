@@ -517,19 +517,17 @@ std::string overmap::note(int x, int y) const
  return "";
 }
 
-void overmap::add_note(int x, int y, std::string message)
+void overmap::add_note(const point& pt, std::string message)
 {
+ const bool non_empty = 0 < message.length();
  for (int i = 0; i < notes.size(); i++) {
-  if (notes[i].x == x && notes[i].y == y) {
-   if (message == "")
-    notes.erase(notes.begin() + i);
-   else
-    notes[i].text = message;
+  if (notes[i].x == pt.x && notes[i].y == pt.y) {
+   if (non_empty) notes[i].text = std::move(message);
+   else notes.erase(notes.begin() + i);
    return;
   }
  }
- if (message.length() > 0)
-  notes.push_back(om_note(x, y, notes.size(), message));
+ if (non_empty) notes.push_back(om_note(pt.x, pt.y, notes.size(), std::move(message)));
 }
 
 point overmap::find_note(point origin, const std::string& text) const
@@ -1294,11 +1292,11 @@ point overmap::choose_point(game *g)
   else if (ch == KEY_ESCAPE || ch == 'q' || ch == 'Q') ret = point(-1, -1);
   else if (ch == 'N') {
    timeout(-1);
-   add_note(curs.x, curs.y, string_input_popup(49, "Enter note")); // 49 char max
+   add_note(curs, string_input_popup(49, "Enter note")); // 49 char max
    timeout(BLINK_SPEED);
   } else if(ch == 'D'){
    timeout(-1);
-   if (has_note(curs.x, curs.y)){
+   if (has_note(curs)){
     if (query_yn("Really delete note?")) delete_note(curs.x, curs.y);
    }
    timeout(BLINK_SPEED);
