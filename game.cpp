@@ -32,6 +32,15 @@ game* game::_active = 0;
 void intro();
 nc_color sev(int a);	// Right now, ONLY used for scent debugging....
 
+// inline hypothetical mongroup.cpp
+bool mongroup::add_one() {
+    if (UINT_MAX <= population) return false;
+    population++;
+    if (UCHAR_MAX > radius && 5 < population / (radius * radius)) radius++;
+    return true;
+}
+// end inline hypothetical mongroup.cpp
+
 // This is the main game set-up process.
 game::game()
 {
@@ -567,8 +576,7 @@ bool game::do_turn()
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, messages.turn, z[i].spawnmap);
    } else if (const auto m_group = valid_group((mon_id)(z[i].type->id), lev.x, lev.y)) {	// Absorb them back into a group
-       m_group->population++;
-       if (m_group->population / pow(m_group->radius, 2.0) > 5) m_group->radius++;
+       m_group->add_one();
    } else if (const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id))) {
        cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
    }
@@ -2999,8 +3007,7 @@ void game::monmove()
        z[i].pos.y > (SEEY * MAPSIZE * 7) / 6   ) {
 // Re-absorb into local group, if applicable
     if (const auto m_group = valid_group((mon_id)(z[i].type->id), lev.x, lev.y)) {
-        m_group->population++;
-        if (m_group->population / pow(m_group->radius, 2.0) > 5) m_group->radius++;
+        m_group->add_one();
     } else if (const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id))) {
         cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
     }
@@ -5734,7 +5741,7 @@ void game::vertical_move(int movez, bool force)
     tmp.add_spawn(&(z[i]));
     tmp.save(&cur_om, messages.turn, point(lev.x, lev.y));
    } else if (const auto m_group = valid_group((mon_id)(z[i].type->id), lev.x, lev.y)) {
-       m_group->population++;
+       m_group->add_one();
    } else if (const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id))) {
        cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
    }
@@ -5916,8 +5923,7 @@ void game::update_map(int &x, int &y)
     tmp.save(&cur_om, messages.turn, z[i].spawnmap);
    } else {	// Absorb them back into a group
     if (const auto m_group = valid_group((mon_id)(z[i].type->id), lev.x + shift.x, lev.y + shift.y)) {
-        m_group->population++;
-        if (m_group->population / pow(m_group->radius, 2.0) > 5) m_group->radius++;
+        m_group->add_one();
     } else if (const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id))) {
 		cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
 	}
@@ -6235,36 +6241,32 @@ void game::spawn_mon(int shiftx, int shifty)
 
 mongroup* game::valid_group(mon_id type, int x, int y)
 {
- std::vector <int> valid_groups;
- std::vector <int> semi_valid;	// Groups that're ALMOST big enough
- for (int i = 0; i < cur_om.zg.size(); i++) {
-  const int dist = trig_dist(x, y, cur_om.zg[i].pos);
-  const auto& tmp_ids = mongroup::moncats[cur_om.zg[i].type];
-  if (dist < cur_om.zg[i].radius) {
-   for(auto tmp_monid : tmp_ids) {
-    if (type == tmp_monid) {
-     valid_groups.push_back(i);
-	 break;
-    }
-   }
-  } else if (dist < cur_om.zg[i].radius + 3) {
-   for(auto tmp_monid : tmp_ids) {
-    if (type == tmp_monid) {
-     semi_valid.push_back(i);
-	 break;
-	}
-   }
-  }
+ std::vector<mongroup*> semi_valid;	// Groups that're ALMOST big enough
+ {  // scoping brace
+ std::vector<mongroup*> valid_groups;
+ for (auto& _group : cur_om.zg) {
+     const int dist = trig_dist(x, y, _group.pos);
+     if (dist >= _group.radius + 3) continue;   // not even semi-valid
+     auto groups = (dist < _group.radius) ? &valid_groups : &semi_valid;    // unsure whether auto& avoids copy-construction
+     for (auto tmp_monid : mongroup::moncats[_group.type]) {
+         if (type == tmp_monid) {
+             groups->push_back(&_group);
+             break;
+         }
+     }
  }
- if (valid_groups.size() == 0) {
-  if (semi_valid.empty()) return 0;
-// If there's a group that's ALMOST big enough, expand that group's radius
-// by one and absorb into that group.
-  auto& ret = cur_om.zg[semi_valid[rng(0, semi_valid.size() - 1)]];
-  ret.radius++;
-  return &ret;
+ const auto v_size = valid_groups.size();
+ if (0 < v_size) return valid_groups[rng(0, v_size - 1)];
+ }  // end scoping brace: triggers destructor early
+ // If there's a group that's ALMOST big enough, expand that group's radius
+ // by one and absorb into that group.
+ const auto sv_size = semi_valid.size();
+ if (0 < sv_size) {
+     auto ret = semi_valid[rng(0, sv_size - 1)];
+     ret->radius++;
+     return ret;
  }
- return &cur_om.zg[valid_groups[rng(0, valid_groups.size() - 1)]];
+ return 0;
 }
 
 void game::wait()
