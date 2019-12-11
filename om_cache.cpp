@@ -47,3 +47,13 @@ void om_cache::expire()	// all overmaps not used flushed to hard drive; usage fl
 	}
 }
 
+void om_cache::save()
+{
+	std::vector<tripoint> discard;
+	for (auto& x : _cache) {
+		x.second.second->save(game::active()->u.name);
+		if (x.second.first) x.second.first = false;
+		else discard.push_back(x.first);
+	}
+	if (!discard.empty()) for (const auto& kill : discard) _cache.erase(kill);
+}

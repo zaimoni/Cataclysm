@@ -368,16 +368,13 @@ void computer::activate_function(game *g, computer_action action)
    int maxx = int((g->lev.x + int(MAPSIZE / 2)) / 2) + 40;
    int miny = int((g->lev.y + int(MAPSIZE / 2)) / 2) - 40;
    int maxy = int((g->lev.y + int(MAPSIZE / 2)) / 2) + 40;
-   if (minx < 0)             minx = 0;
-   if (maxx >= OMAPX) maxx = OMAPX - 1;
-   if (miny < 0)             miny = 0;
-   if (maxy >= OMAPY) maxy = OMAPY - 1;
-   overmap tmp(g, g->cur_om.pos.x, g->cur_om.pos.y, 0);
-   for (int i = minx; i <= maxx; i++) {
-    for (int j = miny; j <= maxy; j++)
-     tmp.seen(i, j) = true;
+
+   OM_loc scan(tripoint(g->cur_om.pos.x, g->cur_om.pos.y, 0), point(0, 0));
+   for (scan.second.x = minx; scan.second.x <= maxx; scan.second.x++) {
+       for (scan.second.y = miny; scan.second.y <= maxy; scan.second.y++) overmap::seen(scan) = true;
    }
-   tmp.save(g->u.name);
+   overmap::saveall();
+
    print_line("Surface map data downloaded.");
   } break;
 

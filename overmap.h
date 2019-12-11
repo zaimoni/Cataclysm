@@ -60,6 +60,7 @@ class overmap
   ~overmap() = default;
   void save(const std::string& name, int x, int y, int z);
   void save(const std::string& name) { save(name, pos.x, pos.y, pos.z); }
+  static void saveall();
   void generate(game *g, overmap* north, overmap* east, overmap* south,
                 overmap* west);
   void make_tutorial();
@@ -95,8 +96,10 @@ class overmap
   bool is_safe(const point& pt) const; // true if monsters_at is empty, or only woodland
   bool& seen(int x, int y);
   bool& seen(const point& pt) { return seen(pt.x, pt.y); };
+  static bool& seen(OM_loc OMpos);
   bool seen(int x, int y) const { return const_cast<overmap*>(this)->seen(x, y); };	// \todo specialize?
   bool seen(const point& pt) const { return const_cast<overmap*>(this)->seen(pt.x, pt.y); };
+  static bool seen_c(OM_loc OMpos);
 
   bool has_note(int x, int y) const;
   bool has_note(const point& pt) const { return has_note(pt.x, pt.y); };
@@ -109,6 +112,8 @@ class overmap
 
   static GPS_loc toGPS(const point& screen_pos);
   static OM_loc toOvermap(const GPS_loc GPSpos);
+  static OM_loc normalize(const OM_loc& OMpos);
+  static void self_normalize(OM_loc& OMpos);
 
   tripoint pos;
   std::vector<city> cities;

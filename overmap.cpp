@@ -3,6 +3,7 @@
 #include "keypress.h"
 #include "saveload.h"
 #include "JSON.h"
+#include "om_cache.hpp"
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
@@ -36,6 +37,33 @@ OM_loc overmap::toOvermap(const GPS_loc GPSpos)
 	}
 	ret.second /= 2;
 	return ret;
+}
+
+void overmap::self_normalize(OM_loc& ret)
+{
+    while (0 > ret.second.x&& INT_MIN < ret.first.x) {
+        ret.second.x += OMAPX;
+        ret.first.x--;
+    };
+    while (OMAPX <= ret.second.x && INT_MAX > ret.first.x) {
+        ret.second.x -= OMAPX;
+        ret.first.x++;
+    };
+    while (0 > ret.second.y&& INT_MIN < ret.first.y) {
+        ret.second.y += OMAPY;
+        ret.first.y--;
+    };
+    while (OMAPY <= ret.second.y && INT_MAX > ret.first.y) {
+        ret.second.y -= OMAPY;
+        ret.first.y++;
+    };
+}
+
+OM_loc overmap::normalize(const OM_loc& OMpos)
+{
+    OM_loc ret(OMpos);
+    self_normalize(ret);
+    return ret;
 }
 
 #define STREETCHANCE 2
@@ -497,6 +525,23 @@ bool& overmap::seen(int x, int y)
 {
  if (x < 0 || x >= OMAPX || y < 0 || y >= OMAPY) return (discard<bool>::x = false);
  return s[x][y];
+}
+
+bool& overmap::seen(OM_loc OMpos)
+{
+    self_normalize(OMpos);
+    if (OMpos.first == game::active()->cur_om.pos) return game::active()->cur_om.seen(OMpos.second);
+    auto om = om_cache::get().create(OMpos.first);
+    return om->seen(OMpos.second);
+}
+
+bool overmap::seen_c(OM_loc OMpos)
+{
+    self_normalize(OMpos);
+    if (OMpos.first == game::active()->cur_om.pos) return game::active()->cur_om.seen(OMpos.second);
+    const auto om = om_cache::get().get(OMpos.first);
+    if (!om) return false;
+    return om->seen(OMpos.second);
 }
 
 bool overmap::has_note(int x, int y) const
@@ -2554,6 +2599,13 @@ void overmap::save(const std::string& name, int x, int y, int z)
 
  fout.close();
 }
+
+void overmap::saveall()
+{
+    om_cache::get().save();
+    game::active()->cur_om.save(game::active()->u.name);
+}
+
 
 void overmap::open(game *g)	// only called from constructor
 {

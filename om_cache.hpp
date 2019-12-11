@@ -24,6 +24,7 @@ public:
 	overmap* get(const tripoint& x);
 	overmap* create(const tripoint& x);	// only if needed
 	void expire();	// all overmaps not used flushed to hard drive; usage flag reset
+	void save();
 };
 
 #endif
