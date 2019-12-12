@@ -35,28 +35,28 @@ const overmap* om_cache::r_get(const tripoint& x)
 	return 0;
 }
 
-overmap* om_cache::create(const tripoint& x)	// only if needed
+overmap& om_cache::create(const tripoint& x)	// only if needed
 {
 	if (_cache.count(x)) {
 		auto& ret = _cache[x];
 		ret.first = true;
-		return ret.second;
+		return *ret.second;
 	}
 	std::unique_ptr<overmap> ret(new overmap(game::active(), x.x, x.y, x.z));
 	_cache[x] = std::pair(true, ret.get());
-	return ret.release();
+	return *(ret.release());
 }
 
-const overmap* om_cache::r_create(const tripoint& x)	// only if needed
+const overmap& om_cache::r_create(const tripoint& x)	// only if needed
 {
 	if (_cache.count(x)) {
 		auto& ret = _cache[x];
 //		ret.first = true;	// would need const cast to update
-		return ret.second;
+		return *ret.second;
 	}
 	std::unique_ptr<overmap> ret(new overmap(game::active(), x.x, x.y, x.z));
-	_cache[x] = std::pair(true, ret.get());
-	return ret.release();
+	_cache[x] = std::pair(false, ret.get());	// creation saved to hard drive already
+	return *(ret.release());
 }
 
 

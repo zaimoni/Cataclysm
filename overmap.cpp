@@ -531,8 +531,7 @@ bool& overmap::seen(OM_loc OMpos)
 {
     self_normalize(OMpos);
     if (OMpos.first == game::active()->cur_om.pos) return game::active()->cur_om.seen(OMpos.second);
-    auto om = om_cache::get().create(OMpos.first);
-    return om->seen(OMpos.second);
+    om_cache::get().create(OMpos.first).seen(OMpos.second);
 }
 
 bool overmap::seen_c(OM_loc OMpos)
@@ -2658,7 +2657,7 @@ void overmap::open(game *g)	// only called from constructor
   }
  } else if (pos.z <= -1) {	// No map exists, and we are underground!
 // Fetch the terrain above
-     generate_sub(om_cache::get().r_create(tripoint(pos.x, pos.y, pos.z + 1)));
+     generate_sub(&om_cache::get().r_create(tripoint(pos.x, pos.y, pos.z + 1)));    // \todo? fix type of generate_sub
  } else {	// No map exists!  Prepare neighbors, and generate one.
   std::vector<const overmap*> pointers;
 // Fetch north and south
