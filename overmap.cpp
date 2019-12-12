@@ -539,7 +539,7 @@ bool overmap::seen_c(OM_loc OMpos)
 {
     self_normalize(OMpos);
     if (OMpos.first == game::active()->cur_om.pos) return game::active()->cur_om.seen(OMpos.second);
-    const auto om = om_cache::get().get(OMpos.first);
+    const auto om = om_cache::get().r_get(OMpos.first);
     if (!om) return false;
     return om->seen(OMpos.second);
 }

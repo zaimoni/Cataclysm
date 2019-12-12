@@ -23,6 +23,8 @@ public:
 	static om_cache& get();
 	overmap* get(const tripoint& x);
 	overmap* create(const tripoint& x);	// only if needed
+	const overmap* r_get(const tripoint& x);
+	const overmap* r_create(const tripoint& x);	// only if needed
 	void expire();	// all overmaps not used flushed to hard drive; usage flag reset
 	void save();
 };
