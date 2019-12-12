@@ -663,8 +663,7 @@ void overmap::clear_terrain(oter_id src)
 	}
 }
 
-void overmap::generate(game *g, overmap* north, overmap* east, overmap* south,
-                       overmap* west)
+void overmap::generate(game *g, const overmap* north, const overmap* east, const overmap* south, const overmap* west)
 {
  erase();	// curses setup
  clear();

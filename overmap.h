@@ -61,8 +61,6 @@ class overmap
   void save(const std::string& name, int x, int y, int z);
   void save(const std::string& name) { save(name, pos.x, pos.y, pos.z); }
   static void saveall();
-  void generate(game *g, overmap* north, overmap* east, overmap* south,
-                overmap* west);
   void make_tutorial();
   void first_house(int &x, int &y);
 
@@ -134,6 +132,7 @@ class overmap
   void clear_terrain(oter_id src);
 
   void open(game *g);
+  void generate(game* g, const overmap* north, const overmap* east, const overmap* south, const overmap* west);
   void generate_sub(overmap* above);
   //Drawing
   void draw(WINDOW *w, game *g, int &cursx, int &cursy, 
