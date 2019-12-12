@@ -133,7 +133,7 @@ class overmap
 
   void open(game *g);
   void generate(game* g, const overmap* north, const overmap* east, const overmap* south, const overmap* west);
-  void generate_sub(overmap* above);
+  void generate_sub(const overmap* above);
   //Drawing
   void draw(WINDOW *w, game *g, int &cursx, int &cursy, 
                    int &origx, int &origy, char &ch, bool blink) const;

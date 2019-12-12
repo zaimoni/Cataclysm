@@ -875,9 +875,11 @@ void overmap::generate(game *g, const overmap* north, const overmap* east, const
 // Place the monsters, now that the terrain is laid out
  place_mongroups();
  place_radios();
+
+ save(g->u.name);
 }
 
-void overmap::generate_sub(overmap* above)
+void overmap::generate_sub(const overmap* above)
 {
  std::vector<city> subway_points;
  std::vector<city> sewer_points;
@@ -1013,6 +1015,8 @@ void overmap::generate_sub(overmap* above)
  for (const auto& pt : shelter_points) ter(pt) = ot_shelter_under;
  for (const auto& pt : triffid_points) ter(pt) = (pos.z == -1) ? ot_triffid_roots : ot_triffid_finale;
  for (const auto& pt : temple_points) ter(pt) = (pos.z == -5) ? ot_temple_finale : ot_temple_stairs;
+
+ save(game::active()->u.name);
 }
 
 void overmap::make_tutorial()
@@ -2654,39 +2658,19 @@ void overmap::open(game *g)	// only called from constructor
   }
  } else if (pos.z <= -1) {	// No map exists, and we are underground!
 // Fetch the terrain above
-  overmap* above = new overmap(g, pos.x, pos.y, pos.z + 1);
-  generate_sub(above);
-  save(g->u.name);
-  delete above;
+     generate_sub(om_cache::get().r_create(tripoint(pos.x, pos.y, pos.z + 1)));
  } else {	// No map exists!  Prepare neighbors, and generate one.
-  std::vector<overmap*> pointers;
+  std::vector<const overmap*> pointers;
 // Fetch north and south
   for (int i = -1; i <= 1; i+=2) {
-   std::stringstream tmpfilename;
-   tmpfilename << "save/o." << pos.x << "." << pos.y + i << "." << pos.z;
-   fin.open(tmpfilename.str().c_str());
-   if (fin.is_open()) {
-    fin.close();
-    pointers.push_back(new overmap(g, pos.x, pos.y+i, pos.z));
-   } else
-    pointers.push_back(NULL);
+      pointers.push_back(om_cache::get().r_get(tripoint(pos.x, pos.y + i, pos.z)));
   }
 // Fetch east and west
   for (int i = -1; i <= 1; i+=2) {
-   std::stringstream tmpfilename;
-   tmpfilename << "save/o." << pos.x + i << "." << pos.y << "." << pos.z;
-   fin.open(tmpfilename.str().c_str());
-   if (fin.is_open()) {
-    fin.close();
-    pointers.push_back(new overmap(g, pos.x + i, pos.y, pos.z));
-   } else
-    pointers.push_back(NULL);
+      pointers.push_back(om_cache::get().r_get(tripoint(pos.x + i, pos.y, pos.z)));
   }
 // pointers looks like (north, south, west, east)
   generate(g, pointers[0], pointers[3], pointers[1], pointers[2]);
-  for (int i = 0; i < 4; i++)
-   delete pointers[i];
-  save(g->u.name);
  }
 }
 
