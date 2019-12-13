@@ -11,7 +11,7 @@ class overmap;
 class om_cache
 {
 private:
-	std::map<tripoint, std::pair<bool,overmap*> > _cache;	// could use std::unique_ptr in place of raw pointer here and default destructor instead
+	std::map<tripoint, std::pair<signed char,overmap*> > _cache;	// could use std::unique_ptr in place of raw pointer here and default destructor instead
 	
 	om_cache() = default;
 	~om_cache();
