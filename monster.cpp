@@ -1,6 +1,7 @@
 #include "monster.h"
 #include "game.h"
 #include "recent_msg.h"
+#include "om_cache.hpp"
 #include "saveload.h"
 
 #include <sstream>
@@ -451,6 +452,18 @@ int monster::fall_damage() const
  return 0;
 }
 
+static void leaderless_hive(int id, const std::vector<mongroup*>& m_gr)
+{
+    for (const auto mon_gr : m_gr) {
+        for (const auto tmp_id : mongroup::moncats[mon_gr->type]) {
+            if (tmp_id == id) {
+                mon_gr->dying = true;
+                break;
+            }
+        }
+    }
+}
+
 void monster::die(game *g)
 {
  if (!dead) dead = true;
@@ -491,25 +504,10 @@ void monster::die(game *g)
 
 // If we're a queen, make nearby groups of our type start to die out
  if (has_flag(MF_QUEEN)) {
-  for(mongroup* const mon_gr : g->cur_om.monsters_at(g->lev.x, g->lev.y)) {
-   for(const auto tmp_id : mongroup::moncats[mon_gr->type]) {
-    if (tmp_id == type->id) {
-	 mon_gr->dying = true;
-	 break;
-	}
-   }
-  }
+  leaderless_hive(type->id, g->cur_om.monsters_at(g->lev.x, g->lev.y));
 // Do it for overmap above/below too
-  overmap tmp(g, g->cur_om.pos.x, g->cur_om.pos.y,(g->cur_om.pos.z == 0 ? -1 : 0));
-
-  for(mongroup* const mon_gr : tmp.monsters_at(g->lev.x, g->lev.y)) {
-   for(const auto tmp_id : mongroup::moncats[mon_gr->type]) {
-    if (tmp_id == type->id) {
-	 mon_gr->dying = true;
-	 break;
-	}
-   }
-  }
+  auto om = om_cache::get().get(tripoint(g->cur_om.pos.x, g->cur_om.pos.y, (g->cur_om.pos.z == 0 ? -1 : 0)));
+  if (om) leaderless_hive(type->id, om->monsters_at(g->lev.x, g->lev.y));
  }
 // If we're a mission monster, update the mission
  if (mission_id != -1) {

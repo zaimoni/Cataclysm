@@ -384,18 +384,17 @@ void computer::activate_function(game *g, computer_action action)
    int maxx = int((g->lev.x + int(MAPSIZE / 2)) / 2) + 60;
    int miny = int((g->lev.y + int(MAPSIZE / 2)) / 2) - 60;
    int maxy = int((g->lev.y + int(MAPSIZE / 2)) / 2) + 60;
-   if (minx < 0)      minx = 0;
-   if (maxx >= OMAPX) maxx = OMAPX - 1;
-   if (miny < 0)      miny = 0;
-   if (maxy >= OMAPY) maxy = OMAPY - 1;
-   for (int i = minx; i <= maxx; i++) {
-    for (int j = miny; j <= maxy; j++)
-     if ((g->cur_om.ter(i, j) >= ot_sewer_ns &&
-          g->cur_om.ter(i, j) <= ot_sewer_nesw) || 
-         (g->cur_om.ter(i, j) >= ot_sewage_treatment &&
-          g->cur_om.ter(i, j) <= ot_sewage_treatment_under))
-     g->cur_om.seen(i, j) = true;
+
+   OM_loc scan(tripoint(g->cur_om.pos.x, g->cur_om.pos.y, 0), point(0, 0));
+   for (scan.second.x = minx; scan.second.x <= maxx; scan.second.x++) {
+       for (scan.second.y = miny; scan.second.y <= maxy; scan.second.y++) {
+           const auto terrain = overmap::ter_c(scan);
+           if (   is_between<ot_sewer_ns, ot_sewer_nesw>(terrain)
+               || is_between<ot_sewage_treatment, ot_sewage_treatment_under>(terrain))
+               overmap::seen(scan) = true;
+       }
    }
+
    print_line("Sewage map data downloaded.");
   } break;
 
