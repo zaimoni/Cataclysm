@@ -18,6 +18,7 @@ om_cache& om_cache::get()
 // status coding: 0 unread, 1 read, 2 written to
 overmap* om_cache::get(const tripoint& x)
 {
+	if (x == game::active()->cur_om.pos) return &(game::active()->cur_om);
 	if (_cache.count(x)) {
 		auto& ret = _cache[x];
 		ret.first = 2;
@@ -28,6 +29,7 @@ overmap* om_cache::get(const tripoint& x)
 
 const overmap* om_cache::r_get(const tripoint& x)
 {
+	if (x == game::active()->cur_om.pos) return &(game::active()->cur_om);
 	if (_cache.count(x)) {
 		auto& ret = _cache[x];
 		ret.first = 1;	// would need const cast to update
@@ -38,6 +40,7 @@ const overmap* om_cache::r_get(const tripoint& x)
 
 overmap& om_cache::create(const tripoint& x)	// only if needed
 {
+	if (x == game::active()->cur_om.pos) return game::active()->cur_om;
 	if (_cache.count(x)) {
 		auto& ret = _cache[x];
 		ret.first = 2;
@@ -50,6 +53,7 @@ overmap& om_cache::create(const tripoint& x)	// only if needed
 
 const overmap& om_cache::r_create(const tripoint& x)	// only if needed
 {
+	if (x == game::active()->cur_om.pos) return game::active()->cur_om;
 	if (_cache.count(x)) {
 		auto& ret = _cache[x];
 		ret.first = 1;	// would need const cast to update
