@@ -27,6 +27,7 @@ public:
 	const overmap& r_create(const tripoint& x);	// only if needed
 	void expire();	// all overmaps not used flushed to hard drive; usage flag reset
 	void save();
+	void load(overmap& dest, const tripoint& x);
 };
 
 #endif

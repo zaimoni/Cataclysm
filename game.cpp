@@ -3980,8 +3980,8 @@ void game::examine()
   int movez = (lev.z < 0 ? 2 : -2);
   lev.z += movez;
   cur_om.save(u.name);
-  overmap(this, cur_om.pos.x, cur_om.pos.y, -1);
-  cur_om = overmap(this, cur_om.pos.x, cur_om.pos.y, cur_om.pos.z + movez);
+  om_cache::get().r_create(tripoint(cur_om.pos.x, cur_om.pos.y, -1));
+  om_cache::get().load(cur_om, tripoint(cur_om.pos.x, cur_om.pos.y, cur_om.pos.z + movez));
   m.load(this, point(lev.x, lev.y));
   update_map(u.pos.x, u.pos.y);
   for (int x = 0; x < SEEX * MAPSIZE; x++) {
@@ -5674,10 +5674,10 @@ void game::vertical_move(int movez, bool force)
  int original_z = cur_om.pos.z;
  cur_om.save(u.name);
  //m.save(&cur_om, turn, levx, levy);
- cur_om = overmap(this, cur_om.pos.x, cur_om.pos.y, cur_om.pos.z + movez);
+ om_cache::get().load(cur_om, tripoint(cur_om.pos.x, cur_om.pos.y, cur_om.pos.z + movez));
  map tmpmap;
  tmpmap.load(this, point(lev.x, lev.y));
- cur_om = overmap(this, cur_om.pos.x, cur_om.pos.y, original_z);
+ om_cache::get().load(cur_om, tripoint(cur_om.pos.x, cur_om.pos.y, original_z));
 // Find the corresponding staircase
  int stairx = -1, stairy = -1;
  bool rope_ladder = false;
@@ -5763,7 +5763,7 @@ void game::vertical_move(int movez, bool force)
  }
 
 // We moved!  Load the new map.
- cur_om = overmap(this, cur_om.pos.x, cur_om.pos.y, cur_om.pos.z + movez);
+ om_cache::get().load(cur_om, tripoint(cur_om.pos.x, cur_om.pos.y, cur_om.pos.z + movez));
 
 // Fill in all the tiles we know about (e.g. subway stations)
  for (const auto& pt : discover) {
@@ -5905,7 +5905,7 @@ void game::update_map(int &x, int &y)
  }
  if (olev.x != 0 || olev.y != 0) {
   cur_om.save(u.name);
-  cur_om = overmap(this, cur_om.pos.x + olev.x, cur_om.pos.y + olev.y, cur_om.pos.z);
+  om_cache::get().load(cur_om, tripoint(cur_om.pos.x + olev.x, cur_om.pos.y + olev.y, cur_om.pos.z));
  }
  set_adjacent_overmaps();
 
@@ -6333,8 +6333,8 @@ void game::teleport(player *p)
 void game::nuke(const point& world_div_2)
 {
  if (world_div_2.x < 0 || world_div_2.y < 0 || world_div_2.x >= OMAPX || world_div_2.y >= OMAPY) return;	// precondition
- overmap tmp_om = cur_om;
- cur_om = overmap(this, tmp_om.pos.x, tmp_om.pos.y, 0);
+ const tripoint revert_om_pos(cur_om.pos);
+ om_cache::get().load(cur_om, tripoint(cur_om.pos.x, cur_om.pos.y, 0));
  point dest(2 * world_div_2);
  map tmpmap;
  tmpmap.load(this, dest);
@@ -6347,7 +6347,7 @@ void game::nuke(const point& world_div_2)
  }
  tmpmap.save(&cur_om, messages.turn, dest);
  cur_om.ter(world_div_2.x, world_div_2.y) = ot_crater;
- cur_om = tmp_om;
+ om_cache::get().load(cur_om, revert_om_pos);
 }
 
 std::vector<faction *> game::factions_at(int x, int y)

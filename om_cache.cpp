@@ -91,3 +91,21 @@ void om_cache::save()
 	}
 	if (!discard.empty()) for (const auto& kill : discard) _cache.erase(kill);
 }
+
+void om_cache::load(overmap& dest, const tripoint& x)	// dest is typically game::cur_om
+{
+	if (x == dest.pos) return;
+	if (_cache.count(dest.pos)) {	// should not happen
+		auto& working = _cache[dest.pos];
+		*working.second = std::move(dest);
+		working.first = 1;
+	}
+	if (_cache.count(x)) {
+		auto& working = _cache[x];
+		dest = std::move(*working.second);
+		delete working.second;
+		_cache.erase(x);
+		return;
+	}
+	dest = overmap(game::active(), x.x, x.y, x.z);
+}

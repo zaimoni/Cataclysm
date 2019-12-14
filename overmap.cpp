@@ -1316,7 +1316,7 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
   wrefresh(w);
 }
 
-point overmap::choose_point(game *g)
+point overmap::choose_point(game *g)    // not const due to overmap::add_note
 {
  WINDOW* w_map = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  WINDOW* w_search = newwin(13, 27, 3, 51);

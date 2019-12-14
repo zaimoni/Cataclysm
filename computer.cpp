@@ -4,6 +4,7 @@
 #include "overmap.h"
 #include "output.h"
 #include "recent_msg.h"
+#include "om_cache.hpp"
 
 #include <fstream>
 #include <sstream>
@@ -400,9 +401,9 @@ void computer::activate_function(game *g, computer_action action)
 
 
   case COMPACT_MISS_LAUNCH: {
-   overmap tmp_om(g, g->cur_om.pos.x, g->cur_om.pos.y, 0);
+   auto targ_om = om_cache::get().create(tripoint(g->cur_om.pos.x, g->cur_om.pos.y, 0));
 // Target Acquisition.
-   point target = tmp_om.choose_point(g);
+   point target = targ_om.choose_point(g);
    if (target.x == -1) {
     print_line("Launch canceled.");
     return;
@@ -419,18 +420,18 @@ void computer::activate_function(game *g, computer_action action)
     }
    }
 // For each level between here and the surface, remove the missile
+   const tripoint revert_pos(g->cur_om.pos);
    for (int level = g->cur_om.pos.z; level < 0; level++) {
-    tmp_om = g->cur_om;
-    g->cur_om = overmap(g, tmp_om.pos.x, tmp_om.pos.y, level);
+    om_cache::get().load(g->cur_om, tripoint(revert_pos.x, revert_pos.y, level));
     tinymap tmpmap;
     tmpmap.load(g, point(g->lev.x, g->lev.y));
     tmpmap.translate<t_missile, t_hole>();
-    tmpmap.save(&tmp_om, messages.turn, point(g->lev.x, g->lev.y));
+    tmpmap.save(&g->cur_om, messages.turn, point(g->lev.x, g->lev.y));
    }
-   g->cur_om = tmp_om;
+   om_cache::get().load(g->cur_om, revert_pos);
    for (int x = target.x - 2; x <= target.x + 2; x++) {
     for (int y = target.y -  2; y <= target.y + 2; y++)
-     g->nuke(point(x, y));
+     g->nuke(point(x, y));  // \todo should be re-specified to take a rectangle; also needs to be cross-overmap aware
    }
   } break;
 
