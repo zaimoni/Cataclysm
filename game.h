@@ -277,7 +277,6 @@ class game
   void spawn_mon(int shift, int shifty); // Called by update_map, sometimes
   mongroup* valid_group(mon_id type, int x, int y);// Picks a group from cur_om
 private:
-  void set_adjacent_overmaps(bool from_scratch = false);
 
 // Routine loop functions, approximately in order of execution
   void cleanup_dead();     // Delete any dead NPCs/monsters
@@ -332,7 +331,6 @@ public:
 
   calendar nextspawn; // The turn on which monsters will spawn next.
   calendar nextweather; // The turn on which weather will shift next.
-  overmap *om_hori, *om_vert, *om_diag; // Adjacent overmaps
   std::vector<event> events;	        // Game events to be processed	\todo savefile break : include in savefile
   int kills[num_monsters];	        // Player's kill count
   std::string last_action;		// The keypresses of last turn

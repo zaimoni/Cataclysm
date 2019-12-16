@@ -512,7 +512,6 @@ void game::start_game()
 // Convert the overmap coordinates to submap coordinates
  lev.x = lev.x * 2 - 1;
  lev.y = lev.y * 2 - 1;
- set_adjacent_overmaps(true);
 // Init the starting map at this location.
  //MAPBUFFER.load();
  m.load(this, point(lev.x, lev.y));
@@ -1714,7 +1713,6 @@ void game::load(std::string name)
 	// do not worry about next_npc_id/next_faction_id/next_mission_id, the master save catches these
 
  fin.close();
- set_adjacent_overmaps(true);
 
  {  // validate active_npcs (we have lev at this point so can measure who is/isn't in scope)
  auto i = active_npc.size();
@@ -5777,7 +5775,6 @@ void game::vertical_move(int movez, bool force)
   if (force || !u.avoid_trap(tr)) (tr->act)(this, u.pos.x, u.pos.y);
  }
 
- set_adjacent_overmaps(true);
  refresh_all();
 }
 
@@ -5877,7 +5874,6 @@ void game::update_map(int &x, int &y)
   cur_om.save(u.name);
   om_cache::get().load(cur_om, tripoint(cur_om.pos.x + olev.x, cur_om.pos.y + olev.y, cur_om.pos.z));
  }
- set_adjacent_overmaps();
 
  // Shift monsters
  if (0 != shift.x || 0 != shift.y) {
@@ -5938,39 +5934,6 @@ void game::update_map(int &x, int &y)
  update_overmap_seen();
  draw_minimap();
  //save(); // We autosave every time the map gets updated.
-}
-
-void game::set_adjacent_overmaps(bool from_scratch)
-{
- if (lev.x == OMAPX - 1 || lev.x == 0 || (from_scratch && lev.x <= OMAPX)) {
-  delete om_hori;
-  om_hori = new overmap(this, cur_om.pos.x - 1, cur_om.pos.y, cur_om.pos.z);
-  if (lev.y == OMAPY - 1 || lev.y == 0 || (from_scratch && lev.y <= OMAPY)) {
-   delete om_diag;
-   om_diag = new overmap(this, cur_om.pos.x - 1, cur_om.pos.y - 1, cur_om.pos.z);
-  } else if (lev.y == OMAPY || lev.y == OMAPY * 2 - 1 || (from_scratch && lev.y > OMAPY)) {
-   delete om_diag;
-   om_diag = new overmap(this, cur_om.pos.x - 1, cur_om.pos.y + 1, cur_om.pos.z);
-  }
- } else if (lev.x == OMAPX || lev.x == OMAPX * 2 - 1 || (from_scratch && lev.x > OMAPX)) {
-  delete om_hori;
-  om_hori = new overmap(this, cur_om.pos.x + 1, cur_om.pos.y, cur_om.pos.z);
-  if (lev.y == OMAPY - 1 || lev.y == 0 || (from_scratch && lev.y <= OMAPY)) {
-   delete om_diag;
-   om_diag = new overmap(this, cur_om.pos.x + 1, cur_om.pos.y - 1, cur_om.pos.z);
-  } else if (lev.y == OMAPY || lev.y == OMAPY * 2 - 1 || (from_scratch && lev.y > OMAPY)) {
-   delete om_diag;
-   om_diag = new overmap(this, cur_om.pos.x + 1, cur_om.pos.y + 1, cur_om.pos.z);
-  }
- }
-
- if (lev.y == OMAPY - 1 || lev.y == 0 || (from_scratch && lev.y <= OMAPY)) {
-  delete om_vert;
-  om_vert = new overmap(this, cur_om.pos.x    , cur_om.pos.y - 1, cur_om.pos.z);
- } else if (lev.y == OMAPY || lev.y == OMAPY * 2 - 1 || (from_scratch && lev.y > OMAPY)) {
-  delete om_vert;
-  om_vert = new overmap(this, cur_om.pos.x    , cur_om.pos.y + 1, cur_om.pos.z);
- }
 }
 
 void game::update_overmap_seen()
