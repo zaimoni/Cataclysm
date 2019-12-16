@@ -31,7 +31,6 @@ game* game::_active = 0;
 #define MAX_MONSTERS_MOVING 40 // Efficiency!
 
 void intro();
-nc_color sev(int a);	// Right now, ONLY used for scent debugging....
 
 // inline hypothetical mongroup.cpp
 bool mongroup::add_one() {
@@ -1742,6 +1741,7 @@ void game::load(std::string name)
 
 void game::save()
 {
+ overmap::saveall();
  std::stringstream playerfile_stem;
  playerfile_stem << "save/" << u.name;
  JSON saved(JSON::object);
@@ -6361,36 +6361,7 @@ std::vector<faction *> game::factions_at(int x, int y)
  return ret;
 }
 
-oter_id game::ter_at(int omx, int omy, bool& mark_as_seen)
-{
- oter_id ret;
- int sx = 0, sy = 0;
- if (omx >= OMAPX) sx = 1;
- else if (omx < 0) sx = -1;
- if (omy >= OMAPY) sy = 1;
- else if (omy < 0) sy = -1;
- if (sx != 0 || sy != 0) {
-  omx -= sx * OMAPX;
-  omy -= sy * OMAPY;
-  overmap tmp(this, cur_om.pos.x + sx, cur_om.pos.y + sy, 0);
-  if (mark_as_seen) {
-   tmp.seen(omx, omy) = true;
-   tmp.save(u.name, tmp.pos.x, tmp.pos.y, cur_om.pos.z);
-  } else {
-   mark_as_seen = tmp.seen(omx, omy);
-  }
-  ret = tmp.ter(omx, omy);
- } else {
-  ret = cur_om.ter(omx, omy);
-  if (mark_as_seen)
-   cur_om.seen(omx, omy) = true;
-  else
-   mark_as_seen = cur_om.seen(omx, omy);
- }
- return ret;
-}
-
-nc_color sev(int a)
+static nc_color sev(int a)
 {
  switch (a) {
   case 0: return c_cyan;

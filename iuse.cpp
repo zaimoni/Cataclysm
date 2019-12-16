@@ -1996,11 +1996,12 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
 
   case AEA_MAP: {
    bool new_map = false;
-   for (int x = int(g->lev.x / 2) - 20; x <= int(g->lev.x / 2) + 20; x++) {
-    for (int y = int(g->lev.y / 2) - 20; y <= int(g->lev.y / 2) + 20; y++) {
-     if (!g->cur_om.seen(x, y)) {
+   OM_loc scan(g->cur_om.pos, point(0, 0));
+   for (scan.second.x = int(g->lev.x / 2) - 20; scan.second.x <= int(g->lev.x / 2) + 20; scan.second.x++) {
+    for (scan.second.y = int(g->lev.y / 2) - 20; scan.second.y <= int(g->lev.y / 2) + 20; scan.second.y++) {
+     if (!overmap::seen_c(scan)) {
       new_map = true;
-      g->cur_om.seen(x, y) = true;
+      overmap::seen(scan) = true;
      }
     }
    }

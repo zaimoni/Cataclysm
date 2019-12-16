@@ -374,7 +374,6 @@ void computer::activate_function(game *g, computer_action action)
    for (scan.second.x = minx; scan.second.x <= maxx; scan.second.x++) {
        for (scan.second.y = miny; scan.second.y <= maxy; scan.second.y++) overmap::seen(scan) = true;
    }
-   overmap::saveall();
 
    print_line("Surface map data downloaded.");
   } break;

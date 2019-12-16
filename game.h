@@ -307,10 +307,6 @@ public:
   void disp_NPCs();        // Currently UNUSED.  Lists global NPCs.
   void list_missions();    // Listed current, completed and failed missions.
 
-// If x & y are OOB, creates a new overmap and returns the proper terrain; also,
-// may mark the square as seen by the player
-  oter_id ter_at(int x, int y, bool& mark_as_seen);	// dead function?
-
 // Debug functions
   void debug();           // All-encompassing debug screen.  TODO: This.
   void display_scent();   // Displays the scent map

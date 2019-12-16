@@ -82,8 +82,9 @@ void mission_start::place_dog(game *g, mission *miss)
 
 	miss->target = house;
 	// Make it seen on our map
-	for (int x = house.x - 6; x <= house.x + 6; x++) {
-		for (int y = house.y - 6; y <= house.y + 6; y++) g->cur_om.seen(x, y) = true;
+	OM_loc scan(g->cur_om.pos, point(0, 0));
+	for (scan.second.x = house.x - 6; scan.second.x <= house.x + 6; scan.second.x++) {
+		for (scan.second.y = house.y - 6; scan.second.y <= house.y + 6; scan.second.y++) overmap::seen(scan) = true;
 	}
 
 	tinymap doghouse;
@@ -99,8 +100,9 @@ void mission_start::place_zombie_mom(game *g, mission *miss)
 
 	miss->target = house;
 	// Make it seen on our map
-	for (int x = house.x - 6; x <= house.x + 6; x++) {
-		for (int y = house.y - 6; y <= house.y + 6; y++) g->cur_om.seen(x, y) = true;
+	OM_loc scan(g->cur_om.pos, point(0, 0));
+	for (scan.second.x = house.x - 6; scan.second.x <= house.x + 6; scan.second.x++) {
+		for (scan.second.y = house.y - 6; scan.second.y <= house.y + 6; scan.second.y++) overmap::seen(scan) = true;
 	}
 
 	tinymap zomhouse;
@@ -147,9 +149,10 @@ void mission_start::place_npc_software(game *g, mission *miss)
 		place = g->cur_om.find_closest(g->om_location(), ter, 4, dist, false);
 	miss->target = place;
 	// Make it seen on our map
-	for (int x = place.x - 6; x <= place.x + 6; x++) {
-		for (int y = place.y - 6; y <= place.y + 6; y++)
-			g->cur_om.seen(x, y) = true;
+	OM_loc scan(g->cur_om.pos, point(0, 0));
+	for (scan.second.x = place.x - 6; scan.second.x <= place.x + 6; scan.second.x++) {
+		for (scan.second.y = place.y - 6; scan.second.y <= place.y + 6; scan.second.y++)
+			overmap::seen(scan) = true;
 	}
 	tinymap compmap;
 	compmap.load(g, 2*place);
@@ -240,15 +243,15 @@ void mission_start::place_npc_software(game *g, mission *miss)
 
 void mission_start::reveal_hospital(game *g, mission *miss)
 {
-	const npc* const dev = g->find_npc(miss->npc_id);
-	if (dev != NULL) {
+	if (const npc* const dev = g->find_npc(miss->npc_id)) {
 		g->u.i_add(item(item::types[itm_vacutainer], 0));
 		messages.add("%s gave you a vacutainer.", dev->name.c_str());
 	}
 	int dist = 0;
 	point place = g->cur_om.find_closest(g->om_location(), ot_hospital, 1, dist, false);
-	for (int x = place.x - 3; x <= place.x + 3; x++) {
-		for (int y = place.y - 3; y <= place.y + 3; y++) g->cur_om.seen(x, y) = true;
+	OM_loc scan(g->cur_om.pos, point(0, 0));
+	for (scan.second.x = place.x - 3; scan.second.x <= place.x + 3; scan.second.x++) {
+		for (scan.second.y = place.y - 3; scan.second.y <= place.y + 3; scan.second.y++) overmap::seen(scan) = true;
 	}
 	miss->target = place;
 }
