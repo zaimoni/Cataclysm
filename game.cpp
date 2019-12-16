@@ -1600,7 +1600,6 @@ bool game::load_master()
 {
  std::ifstream fin;
  std::string data;
- char junk;
  fin.open("save/master.gsav");
  if (!fin.is_open()) return false;
  if ('{' != (fin >> std::ws).peek()) return false;
@@ -2472,41 +2471,18 @@ void game::draw_minimap()
  else
   drew_mission = true;
 
- if (target.x == -1)
-  drew_mission = true;
+ if (target.x == -1) drew_mission = true;
 
+ OM_loc scan(cur_om.pos, point(0, 0));
  for (int i = -2; i <= 2; i++) {
   for (int j = -2; j <= 2; j++) {
-   int omx = cursx + i;
-   int omy = cursy + j;
-   bool seen = false;
-   oter_id cur_ter = ot_null;
-   if (omx >= 0 && omx < OMAPX && omy >= 0 && omy < OMAPY) {
-    cur_ter = cur_om.ter(omx, omy);
-    seen    = cur_om.seen(omx, omy);
-   } else if ((omx < 0 || omx >= OMAPX) && (omy < 0 || omy >= OMAPY)) {
-    if (omx < 0) omx += OMAPX;
-    else         omx -= OMAPX;
-    if (omy < 0) omy += OMAPY;
-    else         omy -= OMAPY;
-    cur_ter = om_diag->ter(omx, omy);
-    seen    = om_diag->seen(omx, omy);
-   } else if (omx < 0 || omx >= OMAPX) {
-    if (omx < 0) omx += OMAPX;
-    else         omx -= OMAPX;
-    cur_ter = om_hori->ter(omx, omy);
-    seen    = om_hori->seen(omx, omy);
-   } else if (omy < 0 || omy >= OMAPY) {
-    if (omy < 0) omy += OMAPY;
-    else         omy -= OMAPY;
-    cur_ter = om_vert->ter(omx, omy);
-    seen    = om_vert->seen(omx, omy);
-   } else
-    debugmsg("No data loaded! omx: %d omy: %d", omx, omy);
+   scan.second.x = cursx + i;
+   scan.second.y = cursy + j;
+   if (!overmap::seen_c(scan)) continue;
+   oter_id cur_ter = overmap::ter_c(scan);
    nc_color ter_color = oter_t::list[cur_ter].color;
    long ter_sym = oter_t::list[cur_ter].sym;
-   if (seen) {
-    if (!drew_mission && target.x == omx && target.y == omy) {
+    if (!drew_mission && target == scan.second) {
      drew_mission = true;
      if (i != 0 || j != 0)
       mvwputch   (w_minimap, 3 + j, 3 + i, red_background(ter_color), ter_sym);
@@ -2516,15 +2492,13 @@ void game::draw_minimap()
      mvwputch_hi(w_minimap, 3,     3,     ter_color, ter_sym);
     else
      mvwputch   (w_minimap, 3 + j, 3 + i, ter_color, ter_sym);
-   }
   }
  }
 
 // Print arrow to mission if we have one!
  if (!drew_mission) {
   double slope;
-  if (cursx != target.x)
-   slope = double(target.y - cursy) / double(target.x - cursx);
+  if (cursx != target.x) slope = double(target.y - cursy) / double(target.x - cursx);
   if (cursx == target.x || abs(slope) > 3.5 ) { // Vertical slope
    if (target.y > cursy)
     mvwputch(w_minimap, 6, 3, c_red, '*');
@@ -2535,17 +2509,13 @@ void game::draw_minimap()
    if (abs(slope) >= 1.) { // y diff is bigger!
     arrowy = (target.y > cursy ? 6 : 0);
     arrowx = 3 + 3 * (target.y > cursy ? slope : (0 - slope));
-    if (arrowx < 0)
-     arrowx = 0;
-    if (arrowx > 6)
-     arrowx = 6;
+    if (arrowx < 0) arrowx = 0;
+    else if (arrowx > 6) arrowx = 6;
    } else {
     arrowx = (target.x > cursx ? 6 : 0);
     arrowy = 3 + 3 * (target.x > cursx ? slope : (0 - slope));
-    if (arrowy < 0)
-     arrowy = 0;
-    if (arrowy > 6)
-     arrowy = 6;
+    if (arrowy < 0) arrowy = 0;
+    else if (arrowy > 6) arrowy = 6;
    }
    mvwputch(w_minimap, arrowy, arrowx, c_red, '*');
   }
@@ -6009,65 +5979,19 @@ void game::update_overmap_seen()
  int dist = u.overmap_sight_range(light_level());
  cur_om.seen(om.x, om.y) = true; // We can always see where we're standing
  if (dist == 0) return; // No need to run the rest!
- bool altered_om_vert = false, altered_om_diag = false, altered_om_hori = false;
- for (int x = om.x - dist; x <= om.x + dist; x++) {
-  for (int y = om.y - dist; y <= om.y + dist; y++) {
-   std::vector<point> line = line_to(om, x, y, 0);
+ OM_loc scan(cur_om.pos, point(0, 0));
+ for (scan.second.x = om.x - dist; scan.second.x <= om.x + dist; scan.second.x++) {
+  for (scan.second.y = om.y - dist; scan.second.y <= om.y + dist; scan.second.y++) {
+   std::vector<point> line = line_to(om, scan.second, 0);
    int sight_points = dist;
    int cost = 0;
    for (int i = 0; i < line.size() && sight_points >= 0; i++) {
-    int lx = line[i].x, ly = line[i].y;
-	const bool x_in_bounds = (0 <= lx && OMAPX > lx);
-	const bool y_in_bounds = (0 <= ly && OMAPX > ly);
-    if (x_in_bounds && y_in_bounds)
-     cost = oter_t::list[cur_om.ter(lx, ly)].see_cost;
-    else if (!x_in_bounds && !y_in_bounds) {
-     if (lx < 0) lx += OMAPX;
-     else        lx -= OMAPX;
-     if (ly < 0) ly += OMAPY;
-     else        ly -= OMAPY;
-     cost = oter_t::list[om_diag->ter(lx, ly)].see_cost;
-    } else if (!x_in_bounds) {
-     if (lx < 0) lx += OMAPX;
-     else        lx -= OMAPX;
-     cost = oter_t::list[om_hori->ter(lx, ly)].see_cost;
-    } else if (!y_in_bounds) {
-     if (ly < 0) ly += OMAPY;
-     else        ly -= OMAPY;
-     cost = oter_t::list[om_vert->ter(lx, ly)].see_cost;
-    }
-    sight_points -= cost;
+    cost = oter_t::list[overmap::ter_c(OM_loc(scan.first,line[i]))].see_cost;
+    if (0 > (sight_points -= cost)) break;
    }
-   if (sight_points >= 0) {
-    int tmpx = x, tmpy = y;
-	const bool x_in_bounds = (0 <= tmpx && OMAPX > tmpx);
-	const bool y_in_bounds = (0 <= tmpy && OMAPX > tmpy);
-	if (x_in_bounds && y_in_bounds)
-     cur_om.seen(tmpx, tmpy) = true;
-    else if (!x_in_bounds && !y_in_bounds) {
-     if (tmpx < 0) tmpx += OMAPX;
-     else          tmpx -= OMAPX;
-     if (tmpy < 0) tmpy += OMAPY;
-     else          tmpy -= OMAPY;
-     om_diag->seen(tmpx, tmpy) = true;
-     altered_om_diag = true;
-    } else if (!x_in_bounds) {
-     if (tmpx < 0) tmpx += OMAPX;
-     else          tmpx -= OMAPX;
-     om_hori->seen(tmpx, tmpy) = true;
-     altered_om_hori = true;
-    } else if (!y_in_bounds) {
-     if (tmpy < 0) tmpy += OMAPY;
-     else          tmpy -= OMAPY;
-     om_vert->seen(tmpx, tmpy) = true;
-     altered_om_vert = true;
-    }
-   }
+   if (sight_points >= 0) overmap::seen(scan) = true;
   }
  }
- if (altered_om_vert) om_vert->save(u.name);
- if (altered_om_hori) om_hori->save(u.name);
- if (altered_om_diag) om_diag->save(u.name);
 }
 
 point game::om_location()
