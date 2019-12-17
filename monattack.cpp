@@ -1077,7 +1077,7 @@ void mattack::multi_robot(game *g, monster *z)
 
 void mattack::ratking(game *g, monster *z)
 {
- if (rl_dist(z->pos.x, z->pos.y, g->u.pos) > 10) return;
+ if (rl_dist(z->pos, g->u.pos) > 10) return;
  z->sp_timeout = z->type->sp_freq;	// Reset timer
 
  switch (rng(1, 5)) { // What do we say?

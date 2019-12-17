@@ -3110,12 +3110,12 @@ void game::sound(int x, int y, int vol, std::string description)
 {
  vol *= 1.5; // Scale it a little	\todo looks like this doesn't work; try *=3 /=2 instead
 // First, alert all monsters (that can hear) to the sound
- for (int i = 0; i < z.size(); i++) {
-  if (z[i].can_hear()) {
-   int dist = rl_dist(x, y, z[i].pos);
-   int volume = vol - (z[i].has_flag(MF_GOODHEARING) ? int(dist / 2) : dist);
-   z[i].wander_to(x, y, volume);
-   z[i].process_trigger(MTRIG_SOUND, volume);
+ for (auto& _mon : z) {
+  if (_mon.can_hear()) {
+   int dist = rl_dist(x, y, _mon.pos);
+   int volume = vol - (_mon.has_flag(MF_GOODHEARING) ? int(dist / 2) : dist);
+   _mon.wander_to(x, y, volume);
+   _mon.process_trigger(MTRIG_SOUND, volume);
   }
  }
 // Loud sounds make the next spawn sooner!
@@ -3134,7 +3134,7 @@ void game::sound(int x, int y, int vol, std::string description)
  if (u.has_disease(DI_DEAF)) return;	// We're deaf, can't hear it
 
  if (u.has_bionic(bio_ears)) vol *= 3.5;
- if (u.has_trait(PF_BADHEARING)) vol *= .5;
+ if (u.has_trait(PF_BADHEARING)) vol /= 2;
  if (u.has_trait(PF_CANINE_EARS)) vol *= 1.5;
  int dist = rl_dist(x, y, u.pos);
  if (dist > vol) return;	// Too far away, we didn't hear it!

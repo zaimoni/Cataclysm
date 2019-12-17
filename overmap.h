@@ -139,8 +139,7 @@ class overmap
   void generate(game* g, const overmap* north, const overmap* east, const overmap* south, const overmap* west);
   void generate_sub(const overmap* above);
   //Drawing
-  void draw(WINDOW *w, game *g, int &cursx, int &cursy, 
-                   int &origx, int &origy, char &ch, bool blink) const;
+  void draw(WINDOW *w, game *g, point& curs, point& orig, char &ch, bool blink) const;
   // Overall terrain
   void place_river(point pa, point pb);
   void place_forest();

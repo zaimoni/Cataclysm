@@ -1145,8 +1145,7 @@ int overmap::dist_from_city(point p) const
  return distance;
 }
 
-void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy, 
-                   int &origx, int &origy, char &ch, bool blink) const
+void overmap::draw(WINDOW *w, game *g, point& curs, point& orig, char &ch, bool blink) const
 {
  constexpr const bool legend = true;
  constexpr const int om_w = 51;	// overmap width
@@ -1161,8 +1160,8 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
   target = g->find_mission(g->u.active_missions[g->u.active_mission])->target;
 /* First, determine if we're close enough to the edge to need to load an
  * adjacent overmap, and load it/them. */
- const int y_delta = ((cursy < VIEW / 2) ? -1 : ((cursy >= OMAPY - VIEW / 2 - 1) ? 1 : 0));
- const int x_delta = ((cursx < om_w / 2) ? -1 : ((cursx >= OMAPX - om_w / 2) ? 1 : 0));
+ const int y_delta = ((curs.y < VIEW / 2) ? -1 : ((curs.y >= OMAPY - VIEW / 2 - 1) ? 1 : 0));
+ const int x_delta = ((curs.x < om_w / 2) ? -1 : ((curs.x >= OMAPX - om_w / 2) ? 1 : 0));
 
   if (x_delta) {
    hori = overmap(g, pos.x + x_delta, pos.y, pos.z);
@@ -1175,17 +1174,16 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
   oter_id ccur_ter;
   for (int i = -om_w / 2; i < om_w / 2; i++) {
    for (int j = -VIEW / 2; j <= (ch == 'j' ? VIEW / 2 + 1 : VIEW / 2); j++) {
-    oter_id cur_ter;
+    OM_loc scan(pos, point(curs.x+i, curs.y+j));
+    oter_id cur_ter = overmap::ter_c(scan);
 	nc_color ter_color;
 	long ter_sym;
-	int omx = cursx + i;
-	int omy = cursy + j;
-    bool see = false;
+	int omx = scan.second.x;
+	int omy = scan.second.y;
+    bool see = overmap::seen_c(scan);
 	npc_name = "";
     npc_here = false;
     if (omx >= 0 && omx < OMAPX && omy >= 0 && omy < OMAPY) { // It's in-bounds
-     cur_ter = ter(omx, omy);
-     see = seen(omx, omy);
      if (note_here = has_note(omx, omy)) note_text = note(omx, omy);
 	 for (const auto& _npc : npcs) {
 	  const auto om = toOvermap(_npc.GPSpos);
@@ -1201,12 +1199,8 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
      omx += OMAPX;
      if (omy < 0 || omy >= OMAPY) {
       omy += (omy < 0 ? OMAPY : 0 - OMAPY);
-      cur_ter = diag.ter(omx, omy);
-      see = diag.seen(omx, omy);
       if ((note_here = diag.has_note(omx, omy))) note_text = diag.note(omx, omy);
      } else {
-      cur_ter = hori.ter(omx, omy);
-      see = hori.seen(omx, omy);
       if (note_here = hori.has_note(omx, omy)) note_text = hori.note(omx, omy);
      }
     } else if (omx >= OMAPX) {
@@ -1214,25 +1208,17 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
      omx -= OMAPX;
      if (omy < 0 || omy >= OMAPY) {
       omy += (omy < 0 ? OMAPY : 0 - OMAPY);
-      cur_ter = diag.ter(omx, omy);
-      see = diag.seen(omx, omy);
       if (note_here = diag.has_note(omx, omy)) note_text = diag.note(omx, omy);
      } else {
-      cur_ter = hori.ter(omx, omy);
-      see = hori.seen(omx, omy);
       if ((note_here = hori.has_note(omx, omy))) note_text = hori.note(omx, omy);
      }
     } else if (omy < 0) {
 	 // \todo cross-overmap NPC awareness
      omy += OMAPY;
-     cur_ter = vert.ter(omx, omy);
-     see = vert.seen(omx, omy);
      if ((note_here = vert.has_note(omx, omy))) note_text = vert.note(omx, omy);
     } else if (omy >= OMAPY) {
 	 // \todo cross-overmap NPC awareness
      omy -= OMAPY;
-     cur_ter = vert.ter(omx, omy);
-     see = vert.seen(omx, omy);
      if ((note_here = vert.has_note(omx, omy))) note_text = vert.note(omx, omy);
     } else
      debugmsg("No data loaded! omx: %d omy: %d", omx, omy);
@@ -1241,7 +1227,7 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
      if (note_here && blink) {
       ter_color = c_yellow;
       ter_sym = 'N';
-     } else if (omx == origx && omy == origy && blink) {
+     } else if (omx == orig.x && omy == orig.y && blink) {
       ter_color = g->u.color();
       ter_sym = '@';
      } else if (npc_here && blink) {
@@ -1272,9 +1258,9 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
    }
   }
   if (target.x != -1 && target.y != -1 && blink &&
-      (target.x < cursx - om_w / 2 || target.x > cursx + om_w / 2 ||
-       target.y < cursy - VIEW / 2 || target.y > cursy + VIEW / 2)) {
-   switch (direction_from(cursx, cursy, target)) {
+      (target.x < curs.x - om_w / 2 || target.x > curs.x + om_w / 2 ||
+       target.y < curs.y - VIEW / 2 || target.y > curs.y + VIEW / 2)) {
+   switch (direction_from(curs.x, curs.y, target)) {
     case NORTH:      mvwputch(w,  0, om_w / 2, c_red, '^');       break;
     case NORTHEAST:  mvwputch(w,  0, om_w - 2, c_red, LINE_OOXX); break;
     case EAST:       mvwputch(w, VIEW / 2, om_w - 2, c_red, '>');       break;
@@ -1285,8 +1271,8 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
     case NORTHWEST:  mvwputch(w,  0,  0, c_red, LINE_OXXO); break;
    }
   }
-  if (has_note(cursx, cursy)) {
-   note_text = note(cursx, cursy);
+  if (has_note(curs.x, curs.y)) {
+   note_text = note(curs.x, curs.y);
    for (int i = 0; i < note_text.length(); i++)
     mvwputch(w, 1, i, c_white, LINE_OXOX);
    mvwputch(w, 1, note_text.length(), c_white, LINE_XOOX);
@@ -1317,7 +1303,7 @@ void overmap::draw(WINDOW *w, game *g, int &cursx, int &cursy,
     mvwprintz(w, 1, om_w, c_dkgray, "# Unexplored");
 
    if (target.x != -1 && target.y != -1) {
-    int distance = rl_dist(origx, origy, target);
+    int distance = rl_dist(orig, target);
     mvwprintz(w, 3, om_w, c_white, "Distance to target: %d", distance);
    }
    mvwprintz(w, VIEW - 8, om_w, c_magenta,           "Use movement keys to pan.  ");
@@ -1346,7 +1332,7 @@ point overmap::choose_point(game *g)    // not const due to overmap::add_note
  point ret(-1, -1);
  
  do {  
-  draw(w_map, g, curs.x, curs.y, orig.x, orig.y, ch, blink);
+  draw(w_map, g, curs, orig, ch, blink);
   ch = input();
   if (ch != ERR) blink = true;	// If any input is detected, make the blinkies on
   point dir(get_direction(ch));
@@ -1375,7 +1361,7 @@ point overmap::choose_point(game *g)    // not const due to overmap::add_note
    timeout(-1);
    std::string term = string_input_popup("Search term:");
    timeout(BLINK_SPEED);
-   draw(w_map, g, curs.x, curs.y, orig.x, orig.y, ch, blink);
+   draw(w_map, g, curs, orig, ch, blink);
    point found = find_note(curs, term);
    if (found.x == -1) {	// Didn't find a note
     std::vector<point> terlist(find_terrain(term));
@@ -1401,7 +1387,7 @@ point overmap::choose_point(game *g)    // not const due to overmap::add_note
        if(--i < 0) i = terlist.size() - 1;
       }
       curs = terlist[i];
-      draw(w_map, g, curs.x, curs.y, orig.x, orig.y, ch, blink);
+      draw(w_map, g, curs, orig, ch, blink);
       wrefresh(w_search);
       timeout(BLINK_SPEED);
      } while(ch != '\n' && ch != ' ' && ch != 'q'); 
