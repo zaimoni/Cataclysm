@@ -4,6 +4,7 @@
 #include "saveload.h"
 #include "JSON.h"
 #include "om_cache.hpp"
+#include "stl_limits.h"
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
@@ -1440,22 +1441,8 @@ void overmap::process_mongroups()
 {
  for (auto& _group : zg) {
    if (!_group.dying) continue;
-// _group.population *= .8;
-   if (UINT_MAX / 4 >= _group.population) {
-       _group.population *= 4;
-       _group.population /= 5;
-   } else {
-       _group.population /= 5;
-       _group.population *= 4;
-   }
-// _group.radius *= .9;
-   if (UCHAR_MAX / 9 >= _group.radius) {
-       _group.radius *= 9;
-       _group.radius /= 10;
-   } else {
-       _group.radius /= 10;
-       _group.radius *= 9;
-   }
+   rational_scale<4, 5>(_group.population); // _group.population *= .8;
+   rational_scale<9, 10>(_group.radius);    // _group.radius *= .9;
  }
 }
   

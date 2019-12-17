@@ -15,6 +15,7 @@
 #include "saveload.h"
 #include "json.h"
 #include "om_cache.hpp"
+#include "stl_limits.h"
 
 #include <fstream>
 #include <sstream>
@@ -3108,7 +3109,7 @@ void game::check_warmth()
 
 void game::sound(int x, int y, int vol, std::string description)
 {
- vol *= 1.5; // Scale it a little	\todo looks like this doesn't work; try *=3 /=2 instead
+ rational_scale<3,2>(vol); // Scale it a little
 // First, alert all monsters (that can hear) to the sound
  for (auto& _mon : z) {
   if (_mon.can_hear()) {
@@ -3133,9 +3134,9 @@ void game::sound(int x, int y, int vol, std::string description)
  if (description == "") return;	// No description (e.g., footsteps)
  if (u.has_disease(DI_DEAF)) return;	// We're deaf, can't hear it
 
- if (u.has_bionic(bio_ears)) vol *= 3.5;
+ if (u.has_bionic(bio_ears)) rational_scale<7,2>(vol);
  if (u.has_trait(PF_BADHEARING)) vol /= 2;
- if (u.has_trait(PF_CANINE_EARS)) vol *= 1.5;
+ if (u.has_trait(PF_CANINE_EARS)) rational_scale<3,2>(vol);
  int dist = rl_dist(x, y, u.pos);
  if (dist > vol) return;	// Too far away, we didn't hear it!
  if (u.has_disease(DI_SLEEP) &&

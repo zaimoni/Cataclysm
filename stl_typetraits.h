@@ -1,5 +1,5 @@
-#ifndef STL_VECTOR_H
-#define STL_VECTOR_H
+#ifndef STL_TYPETRAITS_H
+#define STL_TYPETRAITS_H
 
 #include <type_traits>
 
