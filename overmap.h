@@ -58,8 +58,8 @@ class overmap
   overmap() : pos(999, 999, 999) {};
   overmap(game *g, int x, int y, int z) : pos(x,y,z) { open(g); };
   ~overmap() = default;
-  void save(const std::string& name, int x, int y, int z);
-  void save(const std::string& name) { save(name, pos.x, pos.y, pos.z); }
+  void save(const std::string& name, int x, int y, int z) const;
+  void save(const std::string& name) const { save(name, pos.x, pos.y, pos.z); }
   static void saveall();
   void make_tutorial();
   void first_house(int &x, int &y);

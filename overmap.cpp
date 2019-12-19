@@ -2522,7 +2522,7 @@ to your designated evacuation point."));
  }
 }
 
-void overmap::save(const std::string& name, int x, int y, int z)
+void overmap::save(const std::string& name, int x, int y, int z) const
 {
  std::stringstream plrfilename, terfilename;
  plrfilename << "save/" << name << ".seen." << x << "." << y << "." << z;
