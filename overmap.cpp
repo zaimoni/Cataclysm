@@ -561,22 +561,26 @@ bool overmap::seen_c(OM_loc OMpos)
     return om->seen(OMpos.second);
 }
 
-bool overmap::has_note(int x, int y) const
+bool overmap::has_note(const point& pt) const
 {
- for (int i = 0; i < notes.size(); i++) {
-  if (notes[i].x == x && notes[i].y == y)
-   return true;
+ for (const auto& note : notes) {
+     if (note.x == pt.x && note.y == pt.y) return true;
  }
  return false;
 }
 
-std::string overmap::note(int x, int y) const
+bool overmap::has_note(OM_loc OMpos, std::string& dest)
 {
- for (int i = 0; i < notes.size(); i++) {
-  if (notes[i].x == x && notes[i].y == y)
-   return notes[i].text;
- }
- return "";
+    self_normalize(OMpos);
+    const auto om = om_cache::get().r_get(OMpos.first);
+    if (!om) return false;
+    for (const auto& note : om->notes) {
+        if (note.x == OMpos.second.x && note.y == OMpos.second.y) {
+            dest = note.text;
+            return true;
+        }
+    }
+    return false;
 }
 
 void overmap::add_note(const point& pt, std::string message)
@@ -606,13 +610,13 @@ point overmap::find_note(point origin, const std::string& text) const
  return ret;
 }
 
-void overmap::delete_note(int x, int y)
+void overmap::delete_note(const point& pt)
 {
- std::vector<om_note>::iterator it;
- for (it = notes.begin(); it < notes.end(); it++) {
-  if (it->x == x && it->y == y){
-  	notes.erase(it);
-  }
+ size_t i = notes.size();
+ while (0 < i) {
+     --i;
+     auto& note = notes[i];
+     if (note.x == pt.x && note.y == pt.y) notes.erase(notes.begin() + i);
  }
 }
 
@@ -1124,12 +1128,10 @@ point overmap::random_house_in_city(int city_id) const
      endy   = cities[city_id].y + cities[city_id].s;
  for (int x = startx; x <= endx; x++) {
   for (int y = starty; y <= endy; y++) {
-   if (ter(x, y) >= ot_house_north && ter(x, y) <= ot_house_west)
-    valid.push_back( point(x, y) );
+   if (is_between<ot_house_north, ot_house_west>(ter(x, y))) valid.push_back( point(x, y) );
   }
  }
- if (valid.empty())
-  return point(-1, -1);
+ if (valid.empty()) return point(-1, -1);
 
  return valid[ rng(0, valid.size() - 1) ];
 }
@@ -1140,8 +1142,7 @@ int overmap::dist_from_city(point p) const
  for (int i = 0; i < cities.size(); i++) {
   int dist = rl_dist(p, cities[i].x, cities[i].y);
   dist -= cities[i].s;
-  if (dist < distance)
-   distance = dist;
+  if (dist < distance) distance = dist;
  }
  return distance;
 }
@@ -1184,57 +1185,28 @@ void overmap::draw(WINDOW *w, game *g, point& curs, point& orig, char &ch, bool 
     bool see = overmap::seen_c(scan);
 	npc_name = "";
     npc_here = false;
+    note_here = overmap::has_note(scan, note_text);
     if (omx >= 0 && omx < OMAPX && omy >= 0 && omy < OMAPY) { // It's in-bounds
-     if (note_here = has_note(omx, omy)) note_text = note(omx, omy);
 	 for (const auto& _npc : npcs) {
 	  const auto om = toOvermap(_npc.GPSpos);
-      if (om.second.x == omx && om.second.y == omy) {
+      if (om.second == scan.second) {
        npc_here = true;
        npc_name = _npc.name;
 	   break;
       }
 	 }
-// <Out of bounds placement>
-    } else if (omx < 0) {
-	 // \todo cross-overmap NPC awareness
-     omx += OMAPX;
-     if (omy < 0 || omy >= OMAPY) {
-      omy += (omy < 0 ? OMAPY : 0 - OMAPY);
-      if ((note_here = diag.has_note(omx, omy))) note_text = diag.note(omx, omy);
-     } else {
-      if (note_here = hori.has_note(omx, omy)) note_text = hori.note(omx, omy);
-     }
-    } else if (omx >= OMAPX) {
-	 // \todo cross-overmap NPC awareness
-     omx -= OMAPX;
-     if (omy < 0 || omy >= OMAPY) {
-      omy += (omy < 0 ? OMAPY : 0 - OMAPY);
-      if (note_here = diag.has_note(omx, omy)) note_text = diag.note(omx, omy);
-     } else {
-      if ((note_here = hori.has_note(omx, omy))) note_text = hori.note(omx, omy);
-     }
-    } else if (omy < 0) {
-	 // \todo cross-overmap NPC awareness
-     omy += OMAPY;
-     if ((note_here = vert.has_note(omx, omy))) note_text = vert.note(omx, omy);
-    } else if (omy >= OMAPY) {
-	 // \todo cross-overmap NPC awareness
-     omy -= OMAPY;
-     if ((note_here = vert.has_note(omx, omy))) note_text = vert.note(omx, omy);
-    } else
-     debugmsg("No data loaded! omx: %d omy: %d", omx, omy);
-// </Out of bounds replacement>
+    }   // don't try to recover npc if out of bounds \todo fix this
     if (see) {
      if (note_here && blink) {
       ter_color = c_yellow;
       ter_sym = 'N';
-     } else if (omx == orig.x && omy == orig.y && blink) {
+     } else if (orig == scan.second && blink) {
       ter_color = g->u.color();
       ter_sym = '@';
      } else if (npc_here && blink) {
       ter_color = c_pink;
       ter_sym = '@';
-     } else if (omx == target.x && omy == target.y && blink) {
+     } else if (target == scan.second && blink) {
       ter_color = c_red;
       ter_sym = '*';
      } else {
@@ -1272,8 +1244,7 @@ void overmap::draw(WINDOW *w, game *g, point& curs, point& orig, char &ch, bool 
     case NORTHWEST:  mvwputch(w,  0,  0, c_red, LINE_OXXO); break;
    }
   }
-  if (has_note(curs.x, curs.y)) {
-   note_text = note(curs.x, curs.y);
+  if (has_note(OM_loc(pos, curs), note_text)) {
    for (int i = 0; i < note_text.length(); i++)
     mvwputch(w, 1, i, c_white, LINE_OXOX);
    mvwputch(w, 1, note_text.length(), c_white, LINE_XOOX);
@@ -1347,9 +1318,7 @@ point overmap::choose_point(game *g)    // not const due to overmap::add_note
    timeout(BLINK_SPEED);
   } else if(ch == 'D'){
    timeout(-1);
-   if (has_note(curs)){
-    if (query_yn("Really delete note?")) delete_note(curs.x, curs.y);
-   }
+   if (has_note(curs) && query_yn("Really delete note?")) delete_note(curs);
    timeout(BLINK_SPEED);
   } else if (ch == 'L'){
    timeout(-1);
