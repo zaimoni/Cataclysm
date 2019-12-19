@@ -1100,32 +1100,29 @@ std::vector<point> overmap::find_terrain(const std::string& term) const
  return found;
 }
 
-int overmap::closest_city(point p) const
+const city* overmap::closest_city(point p) const
 {
- int distance = 999, ret = -1;
- for (int i = 0; i < cities.size(); i++) {
-  int dist = rl_dist(p, cities[i].x, cities[i].y);
-  if (dist < distance || (dist == distance && cities[i].s < cities[ret].s)) {
-   ret = i;
-   distance = dist;
-  }
+ const city* ret = 0;
+ int distance = 999;
+ for (const auto& c : cities) {
+     int dist = rl_dist(p, c.x, c.y);
+     if (dist < distance || (dist == distance && c.s < ret->s)) {
+         ret = &c;
+         distance = dist;
+     }
  }
-
  return ret;
 }
 
-point overmap::random_house_in_city(int city_id) const
+point overmap::random_house_in_city(const city* c) const
 {
- if (city_id < 0 || city_id >= cities.size()) {
-  debugmsg("overmap::random_house_in_city(%d) (max %d)", city_id,
-           cities.size() - 1);
-  return point(-1, -1);
- }
+ if (!c) return point(-1, -1);
+
  std::vector<point> valid;
- int startx = cities[city_id].x - cities[city_id].s,
-     endx   = cities[city_id].x + cities[city_id].s,
-     starty = cities[city_id].y - cities[city_id].s,
-     endy   = cities[city_id].y + cities[city_id].s;
+ int startx = c->x - c->s,
+     endx   = c->x + c->s,
+     starty = c->y - c->s,
+     endy   = c->y + c->s;
  for (int x = startx; x <= endx; x++) {
   for (int y = starty; y <= endy; y++) {
    if (is_between<ot_house_north, ot_house_west>(ter(x, y))) valid.push_back( point(x, y) );

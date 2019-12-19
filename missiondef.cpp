@@ -70,7 +70,7 @@ void mission_start::infect_npc(game *g, mission *miss)
 
 void mission_start::place_dog(game *g, mission *miss)
 {
-	int city_id = g->cur_om.closest_city(g->om_location());
+	auto city_id = g->cur_om.closest_city(g->om_location());
 	point house = g->cur_om.random_house_in_city(city_id);
 	const npc* const dev = g->find_npc(miss->npc_id);
 	if (dev == NULL) {
@@ -95,7 +95,7 @@ void mission_start::place_dog(game *g, mission *miss)
 
 void mission_start::place_zombie_mom(game *g, mission *miss)
 {
-	int city_id = g->cur_om.closest_city(g->om_location());
+	auto city_id = g->cur_om.closest_city(g->om_location());
 	point house = g->cur_om.random_house_in_city(city_id);
 
 	miss->target = house;
@@ -142,7 +142,7 @@ void mission_start::place_npc_software(game *g, mission *miss)
 	int dist = 0;
 	point place;
 	if (ter == ot_house_north) {
-		int city_id = g->cur_om.closest_city(g->om_location());
+		auto city_id = g->cur_om.closest_city(g->om_location());
 		place = g->cur_om.random_house_in_city(city_id);
 	}
 	else
