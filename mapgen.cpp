@@ -166,9 +166,8 @@ void map::generate(game *g, overmap *om, int x, int y)
   overmap tmp(g, om->pos.x + sx, om->pos.y + sy, om->pos.z);
   terrain_type = tmp.ter(overx, overy);
   //zones = tmp.zones(overx, overy);
-  if (om->pos.z < 0 || om->pos.z == 9) {	// 9 is for tutorial overmap
-   overmap tmp2 = overmap(g, om->pos.x, om->pos.y, om->pos.z + 1);
-   t_above = tmp2.ter(overx, overy);
+  if (om->pos.z < 0 || om->pos.z == TUTORIAL_Z - 1) {	// 9 is for tutorial overmap
+   t_above = overmap::ter_c(OM_loc(tripoint(om->pos.x, om->pos.y, om->pos.z + 1),point(overx,overy)));
   } else t_above = ot_null;
   if (overy - 1 >= 0)
    t_north = tmp.ter(overx, overy - 1);
@@ -187,9 +186,8 @@ void map::generate(game *g, overmap *om, int x, int y)
   else
    t_west = om->ter(OMAPX - 1, overy);
  } else {
-  if (om->pos.z < 0 || om->pos.z == 9) {	// 9 is for tutorials
-   overmap tmp = overmap(g, om->pos.x, om->pos.y, om->pos.z + 1);
-   t_above = tmp.ter(overx, overy);
+  if (om->pos.z < 0 || om->pos.z == TUTORIAL_Z - 1) {	// 9 is for tutorials
+   t_above = overmap::ter_c(OM_loc(tripoint(om->pos.x, om->pos.y, om->pos.z + 1),point(overx,overy)));
   } else t_above = ot_null;
   terrain_type = om->ter(overx, overy);
   if (overy - 1 >= 0) t_north = om->ter(overx, overy - 1);

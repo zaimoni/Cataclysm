@@ -1042,7 +1042,7 @@ void overmap::generate_sub(const overmap* above)
 
 void overmap::make_tutorial()
 {
- if (pos.z == 9) {
+ if (pos.z == TUTORIAL_Z-1) {
   for (int i = 0; i < OMAPX; i++) {
    for (int j = 0; j < OMAPY; j++)
     ter(i, j) = ot_rock;
