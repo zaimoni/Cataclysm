@@ -575,7 +575,7 @@ bool game::do_turn()
     tinymap tmp;
     tmp.load(this, z[i].spawnmap);
     tmp.add_spawn(&(z[i]));
-    tmp.save(&cur_om, messages.turn, z[i].spawnmap);
+    tmp.save(cur_om.pos, messages.turn, z[i].spawnmap);
    } else if (const auto m_group = valid_group((mon_id)(z[i].type->id), lev.x, lev.y)) {	// Absorb them back into a group
        m_group->add_one();
    } else if (const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id))) {
@@ -5702,7 +5702,7 @@ void game::vertical_move(int movez, bool force)
     tinymap tmp;
     tmp.load(this, z[i].spawnmap);
     tmp.add_spawn(&(z[i]));
-    tmp.save(&cur_om, messages.turn, z[i].spawnmap);
+    tmp.save(cur_om.pos, messages.turn, z[i].spawnmap);
    } else if (z[i].friendly < 0) { // Friendly, make it into a static spawn
     tinymap tmp;
     tmp.load(this, point(lev.x, lev.y));
@@ -5710,7 +5710,7 @@ void game::vertical_move(int movez, bool force)
     while (spawn.x < 0) spawn.x += SEEX;
     while (spawn.y < 0) spawn.y += SEEY;
     tmp.add_spawn(&(z[i]));
-    tmp.save(&cur_om, messages.turn, point(lev.x, lev.y));
+    tmp.save(cur_om.pos, messages.turn, point(lev.x, lev.y));
    } else if (const auto m_group = valid_group((mon_id)(z[i].type->id), lev.x, lev.y)) {
        m_group->add_one();
    } else if (const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id))) {
@@ -5887,7 +5887,7 @@ void game::update_map(int &x, int &y)
     map tmp;
     tmp.load(this, z[i].spawnmap);
     tmp.add_spawn(&(z[i]));
-    tmp.save(&cur_om, messages.turn, z[i].spawnmap);
+    tmp.save(cur_om.pos, messages.turn, z[i].spawnmap);
    } else {	// Absorb them back into a group
     if (const auto m_group = valid_group((mon_id)(z[i].type->id), lev.x + shift.x, lev.y + shift.y)) {
         m_group->add_one();
@@ -6233,7 +6233,7 @@ void game::nuke(const point& world_div_2)
    tmpmap.radiation(i, j) += rng(20, 80);
   }
  }
- tmpmap.save(&cur_om, messages.turn, dest);
+ tmpmap.save(cur_om.pos, messages.turn, dest);
  cur_om.ter(world_div_2.x, world_div_2.y) = ot_crater;
  om_cache::get().load(cur_om, revert_om_pos);
 }

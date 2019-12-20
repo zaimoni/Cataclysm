@@ -424,7 +424,7 @@ void computer::activate_function(game *g, computer_action action)
     tinymap tmpmap;
     tmpmap.load(g, point(g->lev.x, g->lev.y));
     tmpmap.translate<t_missile, t_hole>();
-    tmpmap.save(&g->cur_om, messages.turn, point(g->lev.x, g->lev.y));
+    tmpmap.save(g->cur_om.pos, messages.turn, point(g->lev.x, g->lev.y));
    }
    om_cache::get().load(g->cur_om, revert_pos);
    for (int x = target.x - 2; x <= target.x + 2; x++) {

@@ -37,7 +37,7 @@ class map
              int cx = -1, int cy = -1);
 
 // File I/O
- void save(overmap *om, unsigned int turn, const point& world);
+ void save(const tripoint& om_pos, unsigned int turn, const point& world);
  void load(game *g, const point& world);
  void shift(game *g, const point& world, const point& delta);
  void spawn_monsters(game *g);
@@ -248,7 +248,7 @@ class map
  
  static void init();
 protected:
- void saven(overmap *om, unsigned int turn, const point& world, int gridx, int gridy);
+ void saven(const tripoint& om_pos, unsigned int turn, const point& world, int gridx, int gridy);
  bool loadn(game *g, const point& world, int gridx, int gridy);
  void copy_grid(int to, int from);
  void draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,

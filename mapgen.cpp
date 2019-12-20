@@ -191,7 +191,7 @@ void map::generate(game *g, overmap *om, int x, int y)
  for (int i = 0; i < my_MAPSIZE; i++) {
   for (int j = 0; j < my_MAPSIZE; j++) {
    if (i <= 1 && j <= 1)
-    saven(om, turn, point(x, y), i, j); // should be ok w/out of bounds x,y
+    saven(om->pos, turn, point(x, y), i, j); // should be ok w/out of bounds x,y
    else
     delete grid[i + j * my_MAPSIZE];
   }
