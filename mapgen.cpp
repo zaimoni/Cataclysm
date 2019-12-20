@@ -4,6 +4,7 @@
 #include "rng.h"
 #include "line.h"
 #include "recent_msg.h"
+#include "om_cache.hpp"
 #include "Zaimoni.STL/Logging.h"
 
 ter_id grass_or_dirt()
@@ -132,6 +133,29 @@ submap::submap()
 	memset(rad, 0, sizeof(rad));
 }
 
+static std::pair<point, point> overmap_delta(int x, int y)
+{
+    point over(x / 2, y / 2);
+    point shift(0, 0);
+    if (OMAPX * 2 <= x) {
+        shift.x = 1;
+        over.x = (x - 2 * OMAPX) / 2;
+    } else if (0 > x) {
+        shift.x = -1;
+        over.x = (x + 2 * OMAPX) / 2;
+    }
+    if (OMAPY * 2 <= y) {
+        shift.y = 1;
+        over.y = (y - 2 * OMAPY) / 2;
+    } else if (0 > y) {
+        shift.y = -1;
+        over.y = (y + 2 * OMAPY) / 2;
+    }
+    assert(0 <= over.x && OMAPX > over.x);
+    assert(0 <= over.y && OMAPY > over.y);
+    return std::pair(over, shift);
+}
+
 void map::generate(game *g, overmap *om, int x, int y)
 {
   const int turn = int(messages.turn);
@@ -143,89 +167,31 @@ void map::generate(game *g, overmap *om, int x, int y)
   (grid[i] = new submap)->turn_last_touched = turn;
  }
 
- oter_id terrain_type, t_north, t_east, t_south, t_west, t_above;
  unsigned zones = 0;
- int overx = x / 2;
- int overy = y / 2;
- if (x >= OMAPX * 2 || x < 0 || y >= OMAPY * 2 || y < 0) {
-// This happens when we're at the very edge of the overmap, and are generating
-// terrain for the adjacent overmap.
-  int sx = 0, sy = 0;
-  overx = (x % (OMAPX * 2)) / 2;
-  if (x >= OMAPX * 2) sx = 1;
-  else if (x < 0) {
-   sx = -1;
-   overx = (OMAPX * 2 + x) / 2;
-  }
-  overy = (y % (OMAPY * 2)) / 2;
-  if (y >= OMAPY * 2) sy = 1;
-  else if (y < 0) {
-   overy = (OMAPY * 2 + y) / 2;
-   sy = -1;
-  }
-  overmap tmp(g, om->pos.x + sx, om->pos.y + sy, om->pos.z);
-  terrain_type = tmp.ter(overx, overy);
-  //zones = tmp.zones(overx, overy);
-  if (om->pos.z < 0 || om->pos.z == TUTORIAL_Z - 1) {	// 9 is for tutorial overmap
-   t_above = overmap::ter_c(OM_loc(tripoint(om->pos.x, om->pos.y, om->pos.z + 1),point(overx,overy)));
-  } else t_above = ot_null;
-  if (overy - 1 >= 0)
-   t_north = tmp.ter(overx, overy - 1);
-  else
-   t_north = om->ter(overx, OMAPY - 1);
-  if (overx + 1 < OMAPX)
-   t_east = tmp.ter(overx + 1, overy - 1);
-  else
-   t_east = om->ter(0, overy);
-  if (overy + 1 < OMAPY)
-   t_south = tmp.ter(overx, overy + 1);
-  else
-   t_south = om->ter(overx, 0);
-  if (overx - 1 >= 0)
-   t_west = tmp.ter(overx - 1, overy);
-  else
-   t_west = om->ter(OMAPX - 1, overy);
- } else {
-  if (om->pos.z < 0 || om->pos.z == TUTORIAL_Z - 1) {	// 9 is for tutorials
-   t_above = overmap::ter_c(OM_loc(tripoint(om->pos.x, om->pos.y, om->pos.z + 1),point(overx,overy)));
-  } else t_above = ot_null;
-  terrain_type = om->ter(overx, overy);
-  if (overy - 1 >= 0) t_north = om->ter(overx, overy - 1);
-  else {
-   overmap tmp(g, om->pos.x, om->pos.y - 1, 0);
-   t_north = tmp.ter(overx, OMAPY - 1);
-  }
-  if (overx + 1 < OMAPX) t_east = om->ter(overx + 1, overy);
-  else {
-   overmap tmp(g, om->pos.x + 1, om->pos.y, 0);
-   t_east = tmp.ter(0, overy);
-  }
-  if (overy + 1 < OMAPY) t_south = om->ter(overx, overy + 1);
-  else {
-   overmap tmp(g, om->pos.x, om->pos.y + 1, 0);
-   t_south = tmp.ter(overx, 0);
-  }
-  if (overx - 1 >= 0) t_west = om->ter(overx - 1, overy);
-  else {
-   overmap tmp(g, om->pos.x - 1, om->pos.y, 0);
-   t_west = tmp.ter(OMAPX - 1, overy);
-  }
+ const auto physical = overmap_delta(x, y);
+ overmap& om_actual = (0 == physical.second.x && 0 == physical.second.y) ? *om : om_cache::get().create(tripoint(om->pos.x+physical.second.x,om->pos.y + physical.second.y,om->pos.z));
+ const oter_id t_above = (om_actual.pos.z < 0 || om_actual.pos.z == TUTORIAL_Z - 1)
+     ? overmap::ter_c(OM_loc(tripoint(om_actual.pos.x, om_actual.pos.y, om_actual.pos.z + 1), physical.first))
+     : ot_null;
+ const oter_id terrain_type = om_actual.ter(physical.first);
+ const oter_id t_north = overmap::ter_c(OM_loc(om_actual.pos, physical.first + Direction::N));
+ const oter_id t_east = overmap::ter_c(OM_loc(om_actual.pos, physical.first + Direction::E));
+ const oter_id t_south = overmap::ter_c(OM_loc(om_actual.pos, physical.first + Direction::S));
+ const oter_id t_west = overmap::ter_c(OM_loc(om_actual.pos, physical.first + Direction::W));
+
+// Okay, we know who are neighbors are.  Let's draw!
  draw_map(terrain_type, t_north, t_east, t_south, t_west, t_above, turn, g);
 
  decltype(oter_t::list[terrain_type].embellishments)& embellish = oter_t::list[terrain_type].embellishments;
- if ( one_in(embellish.chance ))
-  add_extra( random_map_extra(embellish), g);
+ if (one_in(embellish.chance)) add_extra(random_map_extra(embellish), g);
 
  post_process(g, zones);
 
- }
-
-// Okay, we know who are neighbors are.  Let's draw!
 // And finally save used submaps and delete the rest.
  for (int i = 0; i < my_MAPSIZE; i++) {
   for (int j = 0; j < my_MAPSIZE; j++) {
    if (i <= 1 && j <= 1)
-    saven(om, turn, point(x, y), i, j);
+    saven(om, turn, point(x, y), i, j); // should be ok w/out of bounds x,y
    else
     delete grid[i + j * my_MAPSIZE];
   }
