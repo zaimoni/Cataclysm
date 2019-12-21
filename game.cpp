@@ -551,7 +551,8 @@ void game::create_starting_npcs()
  npc tmp;
  tmp.normalize();
  tmp.randomize(this, (one_in(2) ? NC_DOCTOR : NC_NONE));
- tmp.spawn_at(toGPS(point(SEEX * int(MAPSIZE / 2) + SEEX, SEEY * int(MAPSIZE / 2) + 6)));
+ tmp.screenpos_set(point(SEE * int(MAPSIZE / 2) + SEEX, SEE * int(MAPSIZE / 2) + 6));
+// tmp.spawn_at(toGPS(point(SEEX * int(MAPSIZE / 2) + SEEX, SEEY * int(MAPSIZE / 2) + 6)));
  tmp.form_opinion(&u);
  tmp.attitude = NPCATT_NULL;
  tmp.mission = NPC_MISSION_SHELTER;
