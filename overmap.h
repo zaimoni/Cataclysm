@@ -92,7 +92,7 @@ class overmap
   oter_id ter(const point& pt) const { return const_cast<overmap*>(this)->ter(pt.x, pt.y); };
   static oter_id ter_c(OM_loc OMpos);
 
-  // unsigned zones(int x, int y);	// no definition
+  // unsigned zones(const point& pt);	// no definition
   std::vector<mongroup*> monsters_at(int x, int y);
   std::vector<const mongroup*> monsters_at(int x, int y) const;
   bool is_safe(const point& pt) const; // true if monsters_at is empty, or only woodland

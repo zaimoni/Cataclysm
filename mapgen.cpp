@@ -181,7 +181,7 @@ void map::generate(game *g, overmap *om, int x, int y)
 
 // Okay, we know who are neighbors are.  Let's draw!
  draw_map(terrain_type, t_north, t_east, t_south, t_west, t_above, turn, g);
-
+ //auto zones = om_actual.zones(physical.first);
  decltype(oter_t::list[terrain_type].embellishments)& embellish = oter_t::list[terrain_type].embellishments;
  if (one_in(embellish.chance)) add_extra(random_map_extra(embellish), g);
 
@@ -268,19 +268,15 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   break;
 
  case ot_crater:
-  if (t_north != ot_crater)
-   n_fac = 6;
-  if (t_east  != ot_crater)
-   e_fac = 6;
-  if (t_south != ot_crater)
-   s_fac = 6;
-  if (t_west  != ot_crater)
-   w_fac = 6;
+  if (t_north != ot_crater) n_fac = 6;
+  if (t_east  != ot_crater) e_fac = 6;
+  if (t_south != ot_crater) s_fac = 6;
+  if (t_west  != ot_crater) w_fac = 6;
 
   for (int i = 0; i < SEEX * 2; i++) {
    for (int j = 0; j < SEEY * 2; j++) {
-    if (rng(0, w_fac) <= i && rng(0, e_fac) <= SEEX * 2 - 1 - i &&
-        rng(0, n_fac) <= j && rng(0, s_fac) <= SEEX * 2 - 1 - j   ) {
+    if (rng_lte(0, w_fac, i) && rng_lte(0, e_fac, SEEX * 2 - 1 - i) &&
+        rng_lte(0, n_fac, j) && rng_lte(0, s_fac, SEEX * 2 - 1 - j)   ) {
      ter(i, j) = t_rubble;
      radiation(i, j) = rng(0, 4) * rng(0, 2);
     } else {
@@ -322,22 +318,14 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    s_fac = 0;
    w_fac = 0;
   }
-       if (t_north == ot_forest || t_north == ot_forest_water)
-   n_fac += 14;
-  else if (t_north == ot_forest_thick)
-   n_fac += 18;
-       if (t_east == ot_forest || t_east == ot_forest_water)
-   e_fac += 14;
-  else if (t_east == ot_forest_thick)
-   e_fac += 18;
-       if (t_south == ot_forest || t_south == ot_forest_water)
-   s_fac += 14;
-  else if (t_south == ot_forest_thick)
-   s_fac += 18;
-       if (t_west == ot_forest || t_west == ot_forest_water)
-   w_fac += 14;
-  else if (t_west == ot_forest_thick)
-   w_fac += 18;
+  if (t_north == ot_forest || t_north == ot_forest_water) n_fac += 14;
+  else if (t_north == ot_forest_thick) n_fac += 18;
+  if (t_east == ot_forest || t_east == ot_forest_water) e_fac += 14;
+  else if (t_east == ot_forest_thick) e_fac += 18;
+  if (t_south == ot_forest || t_south == ot_forest_water) s_fac += 14;
+  else if (t_south == ot_forest_thick) s_fac += 18;
+  if (t_west == ot_forest || t_west == ot_forest_water) w_fac += 14;
+  else if (t_west == ot_forest_thick) w_fac += 18;
   for (int i = 0; i < SEEX * 2; i++) {
    for (int j = 0; j < SEEY * 2; j++) {
     int forest_chance = 0, num = 0;
@@ -357,10 +345,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      forest_chance += w_fac - i;
      num++;
     }
-    if (num > 0)
-     forest_chance /= num;
+    if (num > 0) forest_chance /= num;
     rn = rng(0, forest_chance);
-         if ((forest_chance > 0 && rn > 13) || one_in(100 - forest_chance))
+    if ((forest_chance > 0 && rn > 13) || one_in(100 - forest_chance))
      ter(i, j) = t_tree;
     else if ((forest_chance > 0 && rn > 10) || one_in(100 - forest_chance))
      ter(i, j) = t_tree_young;
@@ -374,46 +361,30 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
   if (terrain_type == ot_forest_water) {
 // Reset *_fac to handle where to place water
-   if (t_north == ot_forest_water)
-    n_fac = 2;
-   else if (t_north >= ot_river_center && t_north <= ot_river_nw)
-    n_fac = 3;
-   else if (t_north == ot_forest || t_north == ot_forest_thick)
-    n_fac = 1;
-   else
-    n_fac = 0;
-   if (t_east == ot_forest_water)
-    e_fac = 2;
-   else if (t_east >= ot_river_center && t_east <= ot_river_nw)
-    e_fac = 3;
-   else if (t_east == ot_forest || t_east == ot_forest_thick)
-    e_fac = 1;
-   else
-    e_fac = 0;
-   if (t_south == ot_forest_water)
-    s_fac = 2;
-   else if (t_south >= ot_river_center && t_south <= ot_river_nw)
-    s_fac = 3;
-   else if (t_south == ot_forest || t_south == ot_forest_thick)
-    s_fac = 1;
-   else
-    s_fac = 0;
-   if (t_west == ot_forest_water)
-    w_fac = 2;
-   else if (t_west >= ot_river_center && t_west <= ot_river_nw)
-    w_fac = 3;
-   else if (t_west == ot_forest || t_west == ot_forest_thick)
-    w_fac = 1;
-   else
-    w_fac = 0;
+   if (t_north == ot_forest_water) n_fac = 2;
+   else if (t_north >= ot_river_center && t_north <= ot_river_nw) n_fac = 3;
+   else if (t_north == ot_forest || t_north == ot_forest_thick) n_fac = 1;
+   else n_fac = 0;
+   if (t_east == ot_forest_water) e_fac = 2;
+   else if (t_east >= ot_river_center && t_east <= ot_river_nw) e_fac = 3;
+   else if (t_east == ot_forest || t_east == ot_forest_thick) e_fac = 1;
+   else e_fac = 0;
+   if (t_south == ot_forest_water) s_fac = 2;
+   else if (t_south >= ot_river_center && t_south <= ot_river_nw) s_fac = 3;
+   else if (t_south == ot_forest || t_south == ot_forest_thick) s_fac = 1;
+   else s_fac = 0;
+   if (t_west == ot_forest_water) w_fac = 2;
+   else if (t_west >= ot_river_center && t_west <= ot_river_nw) w_fac = 3;
+   else if (t_west == ot_forest || t_west == ot_forest_thick) w_fac = 1;
+   else w_fac = 0;
    x = SEEX / 2 + rng(0, SEEX), y = SEEY / 2 + rng(0, SEEY);
    for (int i = 0; i < 20; i++) {
     if (x >= 0 && x < SEEX * 2 && y >= 0 && y < SEEY * 2) {
 	 auto& t = ter(x, y);
      if (t_water_sh == t) t = t_water_dp;
      else if (t_dirt == t || t_underbrush == t) t = t_water_sh;
-    } else
-     i = 20;
+    } else break;
+
     x += rng(-2, 2);
     y += rng(-2, 2);
     if (x < 0 || x >= SEEX * 2) x = SEEX / 2 + rng(0, SEEX);
@@ -439,7 +410,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 	 if (t_dirt == t ||  t_underbrush == t) t = t_water_sh;
     }
    }
-   rn = rng(0, 2) * rng(0, 1) * (rng(0, 1) + rng(0, 1));// Good chance of 0
+   rn = rng(0, 2) * rng(0, 1) * (rng(0, 1) + rng(0, 1));    // 1/24 1, 1/24 2, 11/12 0
    for (int i = 0; i < rn; i++) {
     x = rng(0, SEEX * 2 - 1);
     y = rng(0, SEEY * 2 - 1);
@@ -577,8 +548,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      if (skip1 == 23 || skip2 == 23)
       ter(i + 1, j + 4) = t_floor_wax;
 
-     if (t_north == ot_hive && t_east == ot_hive && t_south == ot_hive &&
-         t_west == ot_hive)
+     if (t_north == ot_hive && t_east == ot_hive && t_south == ot_hive && t_west == ot_hive)
       place_items(mi_hive_center, 90, i - 2, j - 2, i + 2, j + 2, false, turn);
      else
       place_items(mi_hive, 80, i - 2, j - 2, i + 2, j + 2, false, turn);
@@ -697,8 +667,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     }
    }
   }
-  if (terrain_type == ot_road_ew)
-   rotate(1);
+  if (terrain_type == ot_road_ew) rotate(1);
   place_items(mi_road, 5, 0, 0, SEEX * 2 - 1, SEEX * 2 - 1, false, turn);
   break;
 
@@ -729,12 +698,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     }
    }
   }
-  if (terrain_type == ot_road_es)
-   rotate(1);
-  if (terrain_type == ot_road_sw)
-   rotate(2);
-  if (terrain_type == ot_road_wn)
-   rotate(3);
+  if (terrain_type == ot_road_es) rotate(1);    // could enforce subtraction w/static_assert
+  if (terrain_type == ot_road_sw) rotate(2);
+  if (terrain_type == ot_road_wn) rotate(3);
   place_items(mi_road, 5, 0, 0, SEEX * 2 - 1, SEEX * 2 - 1, false, turn);
   break;
 
@@ -765,12 +731,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     }
    }
   }
-  if (terrain_type == ot_road_esw)
-   rotate(1);
-  if (terrain_type == ot_road_nsw)
-   rotate(2);
-  if (terrain_type == ot_road_new)
-   rotate(3);
+  if (terrain_type == ot_road_esw) rotate(1);    // could enforce subtraction w/static_assert
+  if (terrain_type == ot_road_nsw) rotate(2);
+  if (terrain_type == ot_road_new) rotate(3);
   place_items(mi_road, 5, 0, 0, SEEX * 2 - 1, SEEX * 2 - 1, false, turn);
   break;
 
@@ -851,8 +814,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     }
    }
   }
-  if (terrain_type == ot_bridge_ew)
-   rotate(1);
+  if (terrain_type == ot_bridge_ew) rotate(1);
   place_items(mi_road, 5, 0, 0, SEEX * 2 - 1, SEEX * 2 - 1, false, turn);
   break;
  
@@ -872,8 +834,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     }
    }
   }
-  if (terrain_type == ot_hiway_ew)
-   rotate(1);
+  if (terrain_type == ot_hiway_ew) rotate(1);
   place_items(mi_road, 8, 0, 0, SEEX * 2 - 1, SEEX * 2 - 1, false, turn);
   break;
 
@@ -896,12 +857,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      ter(i, j) = t_water_dp;
    }
   }
-  if (terrain_type == ot_river_c_not_se)
-   rotate(1);
-  if (terrain_type == ot_river_c_not_sw)
-   rotate(2);
-  if (terrain_type == ot_river_c_not_nw)
-   rotate(3);
+  if (terrain_type == ot_river_c_not_se) rotate(1); // could enforce subtraction w/static_assert
+  if (terrain_type == ot_river_c_not_sw) rotate(2);
+  if (terrain_type == ot_river_c_not_nw) rotate(3);
   break;
 
  case ot_river_north:
@@ -916,12 +874,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      ter(i, j) = t_water_dp;
    }
   }
-  if (terrain_type == ot_river_east)
-   rotate(1);
-  if (terrain_type == ot_river_south)
-   rotate(2);
-  if (terrain_type == ot_river_west)
-   rotate(3);
+  if (terrain_type == ot_river_east) rotate(1); // could enforce subtraction w/static_assert
+  if (terrain_type == ot_river_south) rotate(2);
+  if (terrain_type == ot_river_west) rotate(3);
   break;
 
  case ot_river_ne:
@@ -936,12 +891,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      ter(i, j) = t_water_dp;
    }
   }
-  if (terrain_type == ot_river_se)
-   rotate(1);
-  if (terrain_type == ot_river_sw)
-   rotate(2);
-  if (terrain_type == ot_river_nw)
-   rotate(3);
+  if (terrain_type == ot_river_se) rotate(1); // could enforce subtraction w/static_assert
+  if (terrain_type == ot_river_sw) rotate(2);
+  if (terrain_type == ot_river_nw) rotate(3);
   break;
 
  case ot_house_base_north:
@@ -1184,8 +1136,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   }
 
   if (terrain_type >= ot_house_base_north && terrain_type <= ot_house_base_west) {
-   do
-    rn = rng(lw + 1, rw - 1);
+   do rn = rng(lw + 1, rw - 1);
    while (ter(rn, bw - 1) != t_floor);
    ter(rn, bw - 1) = t_stairs_down;
   }
@@ -1200,19 +1151,12 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    }
    int num_pods = rng(8, 12);
    for (int i = 0; i < num_pods; i++) {
-    int podx = rng(1, SEEX * 2 - 2), pody = rng(1, SEEY * 2 - 2);
-    int nonx = 0, nony = 0;
-    while (nonx == 0 && nony == 0) {
-     nonx = rng(-1, 1);
-     nony = rng(-1, 1);
+    point pod(rng(1, SEEX * 2 - 2), rng(1, SEEY * 2 - 2));
+    direction non = (direction)(rng(NORTH, NORTHWEST));
+    for (int dir = NORTH; dir <= NORTHWEST; ++dir) {
+        if (non != dir) ter(pod + direction_vector((direction)dir)) = t_paper;
     }
-    for (int x = -1; x <= 1; x++) {
-     for (int y = -1; y <= 1; y++) {
-      if ((x != nonx || y != nony) && (x != 0 || y != 0))
-       ter(podx + x, pody + y) = t_paper;
-     }
-    }
-    add_spawn(mon_wasp, 1, podx, pody);
+    add_spawn(mon_wasp, 1, pod.x, pod.y);
    }
    place_items(mi_rare, 70, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1, false, turn);
     
@@ -1235,12 +1179,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    place_items(mi_rare, 60, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1, false, turn);
   }
 
-  if (terrain_type == ot_house_east  || terrain_type == ot_house_base_east)
-   rotate(1);
-  if (terrain_type == ot_house_south || terrain_type == ot_house_base_south)
-   rotate(2);
-  if (terrain_type == ot_house_west  || terrain_type == ot_house_base_west)
-   rotate(3);
+  if (terrain_type == ot_house_east  || terrain_type == ot_house_base_east) rotate(1);
+  if (terrain_type == ot_house_south || terrain_type == ot_house_base_south) rotate(2);
+  if (terrain_type == ot_house_west  || terrain_type == ot_house_base_west) rotate(3);
   break;
 
  case ot_s_lot:
@@ -1265,12 +1206,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
       add_vehicle(vt, vx, vy, one_in(2)? 90 : 270);
   }
   place_items(mi_road, 8, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1, false, turn);
-  if (t_east  >= ot_road_null && t_east  <= ot_road_nesw_manhole)
-   rotate(1);
-  if (t_south >= ot_road_null && t_south <= ot_road_nesw_manhole)
-   rotate(2);
-  if (t_west  >= ot_road_null && t_west  <= ot_road_nesw_manhole)
-   rotate(3);
+  if (t_east  >= ot_road_null && t_east  <= ot_road_nesw_manhole) rotate(1);
+  if (t_south >= ot_road_null && t_south <= ot_road_nesw_manhole) rotate(2);
+  if (t_west  >= ot_road_null && t_west  <= ot_road_nesw_manhole) rotate(3);
   break;
 
  case ot_park: {
@@ -1345,8 +1283,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   tw = rng(5, 14);
   bw = SEEY * 2 - rng(1, 2);
   mw = rng(tw + 5, bw - 3);
-  if (mw < bw - 5)
-   mw = bw - 5;
+  if (mw < bw - 5) mw = bw - 5;
   lw = rng(0, 3);
   rw = SEEX * 2 - rng(1, 4);
   cw = rng(lw + 4, rw - 5);
@@ -1396,12 +1333,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   place_items(mi_road,		12, 0,      0,  SEEX*2 - 1, tw - 1, false, 0);
   place_items(mi_behindcounter,	70, rw - 4, tw + 1, rw - 1, tw + 2, false, 0);
   place_items(mi_softdrugs,	12, rw - 1, bw - 2, rw - 1, bw - 2, false, 0);
-  if (terrain_type == ot_s_gas_east)
-   rotate(1);
-  if (terrain_type == ot_s_gas_south)
-   rotate(2);
-  if (terrain_type == ot_s_gas_west)
-   rotate(3);
+  if (terrain_type == ot_s_gas_east) rotate(1);
+  if (terrain_type == ot_s_gas_south) rotate(2);
+  if (terrain_type == ot_s_gas_west) rotate(3);
   break;
 
  case ot_s_pharm_north:
@@ -1468,12 +1402,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   place_items(mi_fridgesnacks,	74, cw + 2, mw - 1, rw - 1, mw - 1, false, 0);
   place_items(mi_harddrugs,	88, lw + 2, bw - 1, cw - 2, bw - 1, false, 0);
   place_items(mi_behindcounter,	78, lw + 1, tw + 1, lw + 4, tw + 5, false, 0);
-  if (terrain_type == ot_s_pharm_east)
-   rotate(1);
-  if (terrain_type == ot_s_pharm_south)
-   rotate(2);
-  if (terrain_type == ot_s_pharm_west)
-   rotate(3);
+  if (terrain_type == ot_s_pharm_east) rotate(1);
+  if (terrain_type == ot_s_pharm_south) rotate(2);
+  if (terrain_type == ot_s_pharm_west) rotate(3);
   break;
 
  case ot_s_grocery_north:
@@ -1534,12 +1465,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    place_items(mi_snacks,    50, i, 5, i, 6, false, 0);
    place_items(mi_magazines, 70, i, 7, i, 7, false, 0);
   }
-  if (terrain_type == ot_s_grocery_east)
-   rotate(1);
-  if (terrain_type == ot_s_grocery_south)
-   rotate(2);
-  if (terrain_type == ot_s_grocery_west)
-   rotate(3);
+  if (terrain_type == ot_s_grocery_east) rotate(1);
+  if (terrain_type == ot_s_grocery_south) rotate(2);
+  if (terrain_type == ot_s_grocery_west) rotate(3);
   break;
 
  case ot_s_hardware_north:
@@ -1547,10 +1475,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
  case ot_s_hardware_south:
  case ot_s_hardware_west:
   rn = 0;	// No back door
-  if (!one_in(3))
-   rn = 1;	// Old-style back door
-  else if (one_in(3))
-   rn = 2;	// Paved back area
+  if (!one_in(3)) rn = 1;	// Old-style back door
+  else if (one_in(3)) rn = 2;	// Paved back area
   for (int i = 0; i < SEEX * 2; i++) {
    for (int j = 0; j < SEEY * 2; j++) {
     if (j == 3 && ((i > 5 && i < 9) || (i > 14 && i < 18)))
@@ -1656,12 +1582,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   else
    place_items(mi_cleaning,	74, 15, 12, 17, 12, false, 0);
   place_items(mi_mischw,	90, 20,  4, 20, 19, false, 0);
-  if (terrain_type == ot_s_hardware_east)
-   rotate(1);
-  if (terrain_type == ot_s_hardware_south)
-   rotate(2);
-  if (terrain_type == ot_s_hardware_west)
-   rotate(3);
+  if (terrain_type == ot_s_hardware_east) rotate(1);
+  if (terrain_type == ot_s_hardware_south) rotate(2);
+  if (terrain_type == ot_s_hardware_west) rotate(3);
   break;
 
  case ot_s_electronics_north:
@@ -1726,12 +1649,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   place_items(mi_consumer_electronics, 85, 4, 4, 4, SEEY * 2 - 10, false,
               turn - 50);
   place_items(mi_consumer_electronics, 85, 5, 4, 8, 4, false, turn - 50);
-  if (terrain_type == ot_s_electronics_east)
-   rotate(1);
-  if (terrain_type == ot_s_electronics_south)
-   rotate(2);
-  if (terrain_type == ot_s_electronics_west)
-   rotate(3);
+  if (terrain_type == ot_s_electronics_east) rotate(1);
+  if (terrain_type == ot_s_electronics_south) rotate(2);
+  if (terrain_type == ot_s_electronics_west) rotate(3);
   break;
 
  case ot_s_sports_north:
@@ -1795,12 +1715,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   if (!one_in(4))
    place_items(mi_allsporting,	92, lw + 1, cw + 1, rw - 1, bw - 1, false, 0);
   
-  if (terrain_type == ot_s_sports_east)
-   rotate(1);
-  if (terrain_type == ot_s_sports_south)
-   rotate(2);
-  if (terrain_type == ot_s_sports_west)
-   rotate(3);
+  if (terrain_type == ot_s_sports_east) rotate(1);
+  if (terrain_type == ot_s_sports_south) rotate(2);
+  if (terrain_type == ot_s_sports_west) rotate(3);
   break;
 
  case ot_s_liquor_north:
@@ -1855,12 +1772,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   place_items(mi_trash,		30,  5, 14,  7, 14, false, 0);
   place_items(mi_trash,		30, 18, 15, 18, 17, false, 0);
   
-  if (terrain_type == ot_s_liquor_east)
-   rotate(1);
-  if (terrain_type == ot_s_liquor_south)
-   rotate(2);
-  if (terrain_type == ot_s_liquor_west)
-   rotate(3);
+  if (terrain_type == ot_s_liquor_east) rotate(1);
+  if (terrain_type == ot_s_liquor_south) rotate(2);
+  if (terrain_type == ot_s_liquor_west) rotate(3);
   break;
 
  case ot_s_gun_north:
@@ -1908,12 +1822,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   place_items(mi_ammo,		93,  3, 11,  3, 13, false, 0);
   place_items(mi_allguns,	12,  5, 16, 17, 16, false, 0);
   place_items(mi_gunxtras,	67, 16, 13, 19, 13, false, 0);
-  if (terrain_type == ot_s_gun_east)
-   rotate(1);
-  if (terrain_type == ot_s_gun_south)
-   rotate(2);
-  if (terrain_type == ot_s_gun_west)
-   rotate(3);
+  if (terrain_type == ot_s_gun_east) rotate(1);
+  if (terrain_type == ot_s_gun_south) rotate(2);
+  if (terrain_type == ot_s_gun_west) rotate(3);
   break;
 
  case ot_s_clothes_north:
@@ -1992,12 +1903,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     break;
   }
   
-  if (terrain_type == ot_s_clothes_east)
-   rotate(1);
-  if (terrain_type == ot_s_clothes_south)
-   rotate(2);
-  if (terrain_type == ot_s_clothes_west)
-   rotate(3);
+  if (terrain_type == ot_s_clothes_east) rotate(1);
+  if (terrain_type == ot_s_clothes_south) rotate(2);
+  if (terrain_type == ot_s_clothes_west) rotate(3);
   break;
 
  case ot_s_library_north:
@@ -2051,12 +1959,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   place_items(mi_novels,	96,  3,  8, 15,  9, false, 0);
   place_items(mi_manuals,	92,  3, 12, 15, 13, false, 0);
   place_items(mi_textbooks,	88,  3, 16, 15, 16, false, 0);
-  if (terrain_type == ot_s_library_east)
-   rotate(1);
-  if (terrain_type == ot_s_library_south)
-   rotate(2);
-  if (terrain_type == ot_s_library_west)
-   rotate(3);
+  if (terrain_type == ot_s_library_east) rotate(1);
+  if (terrain_type == ot_s_library_south) rotate(2);
+  if (terrain_type == ot_s_library_west) rotate(3);
   break;
 
  case ot_s_restaurant_north:
@@ -2171,12 +2076,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    place_items(mi_fridge, 50, rn, 22, rn + 3, 23, false, 0);
   }
 
-  if (terrain_type == ot_s_restaurant_east)
-   rotate(1);
-  if (terrain_type == ot_s_restaurant_south)
-   rotate(2);
-  if (terrain_type == ot_s_restaurant_west)
-   rotate(3);
+  if (terrain_type == ot_s_restaurant_east) rotate(1);
+  if (terrain_type == ot_s_restaurant_south) rotate(2);
+  if (terrain_type == ot_s_restaurant_west) rotate(3);
   } break;
 
  case ot_shelter:
@@ -2248,12 +2150,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
    add_spawn(mon_turret, 1, SEEX, 5);
 
-   if (t_east > ot_road_null && t_east <= ot_road_nesw_manhole)
-    rotate(1);
-   else if (t_south > ot_road_null && t_south <= ot_road_nesw_manhole)
-    rotate(2);
-   else if (t_west > ot_road_null && t_west <= ot_road_nesw_manhole)
-    rotate(3);
+   if (t_east > ot_road_null && t_east <= ot_road_nesw_manhole) rotate(1);
+   else if (t_south > ot_road_null && t_south <= ot_road_nesw_manhole) rotate(2);
+   else if (t_west > ot_road_null && t_west <= ot_road_nesw_manhole) rotate(3);
   } else if (tw != 0 || rw != 0 || lw != 0 || bw != 0) {	// Sewers!
    for (int i = 0; i < SEEX * 2; i++) {
     for (int j = 0; j < SEEY * 2; j++) {
@@ -3994,12 +3893,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    }
   }
   ter(16, 10) = t_stairs_down;
-  if (terrain_type == ot_sub_station_east)
-   rotate(1);
-  if (terrain_type == ot_sub_station_south)
-   rotate(2);
-  if (terrain_type == ot_sub_station_west)
-   rotate(3);
+  if (terrain_type == ot_sub_station_east) rotate(1);
+  if (terrain_type == ot_sub_station_south) rotate(2);
+  if (terrain_type == ot_sub_station_west) rotate(3);
   break;
 
  case ot_police_north:
@@ -4096,12 +3992,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   place_items(mi_cop_weapons,  70, 20,  8, 20, 11,    false, 0);
   place_items(mi_cop_evidence, 60,  1, 15,  4, 15,    false, 0);
 
-  if (terrain_type == ot_police_west)
-   rotate(1);
-  if (terrain_type == ot_police_north)
-   rotate(2);
-  if (terrain_type == ot_police_east)
-   rotate(3);
+  if (terrain_type == ot_police_west) rotate(1);
+  if (terrain_type == ot_police_north) rotate(2);
+  if (terrain_type == ot_police_east) rotate(3);
   } break;
 
  case ot_bank_north:
@@ -4188,12 +4081,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   place_items(mi_office,       70, 14, 14, 18, 21,    false, 0);
   place_items(mi_vault,        45,  3, 15, 11, 20,    false, 0);
 
-  if (terrain_type == ot_bank_east)
-   rotate(1);
-  if (terrain_type == ot_bank_south)
-   rotate(2);
-  if (terrain_type == ot_bank_west)
-   rotate(3);
+  if (terrain_type == ot_bank_east) rotate(1);
+  if (terrain_type == ot_bank_south) rotate(2);
+  if (terrain_type == ot_bank_west) rotate(3);
   } break;
 
  case ot_bar_north:
@@ -4269,12 +4159,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   place_items(mi_alcohol, 70, 21, 5, 21, 8, false, 0);
   place_items(mi_trash, 15, 2, 17, 16, 19, true, 0);
 
-  if (terrain_type == ot_bar_east)
-   rotate(1);
-  if (terrain_type == ot_bar_south)
-   rotate(2);
-  if (terrain_type == ot_bar_west)
-   rotate(3);
+  if (terrain_type == ot_bar_east) rotate(1);
+  if (terrain_type == ot_bar_south) rotate(2);
+  if (terrain_type == ot_bar_west) rotate(3);
  } break;
 
  case ot_pawn_north:
@@ -4373,12 +4260,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
                 bw - 1, false, 0);
    }
   }
-  if (terrain_type == ot_pawn_east)
-   rotate(1);
-  if (terrain_type == ot_pawn_south)
-   rotate(2);
-  if (terrain_type == ot_pawn_west)
-   rotate(3);
+  if (terrain_type == ot_pawn_east) rotate(1);
+  if (terrain_type == ot_pawn_south) rotate(2);
+  if (terrain_type == ot_pawn_west) rotate(3);
   break;
 
  case ot_mil_surplus_north:
@@ -4429,12 +4313,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     loc = mi_mil_food_nodrugs;
    place_items(loc, 70, i, tw + 5, i, bw - 2, false, 0);
   }
-  if (terrain_type == ot_mil_surplus_east)
-   rotate(1);
-  if (terrain_type == ot_mil_surplus_south)
-   rotate(2);
-  if (terrain_type == ot_mil_surplus_west)
-   rotate(3);
+  if (terrain_type == ot_mil_surplus_east) rotate(1);
+  if (terrain_type == ot_mil_surplus_south) rotate(2);
+  if (terrain_type == ot_mil_surplus_west) rotate(3);
   break;
 
  case ot_megastore_entrance: {
@@ -4457,12 +4338,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   }
 // Finally, figure out where the road is; contruct our entrance facing that.
   std::vector<direction> faces_road;
-  if (t_east >= ot_road_null && t_east <= ot_bridge_ew)
-   rotate(1);
-  if (t_south >= ot_road_null && t_south <= ot_bridge_ew)
-   rotate(2);
-  if (t_west >= ot_road_null && t_west <= ot_bridge_ew)
-   rotate(3);
+  if (t_east >= ot_road_null && t_east <= ot_bridge_ew) rotate(1);
+  if (t_south >= ot_road_null && t_south <= ot_bridge_ew) rotate(2);
+  if (t_west >= ot_road_null && t_west <= ot_bridge_ew) rotate(3);
  } break;
 
  case ot_megastore:
@@ -4995,12 +4873,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   square(this, t_floor, 1, 11, SEEX * 2 - 1, SEEY * 2 - 2);
   build_mansion_room(this, room_mansion_entry, 1, 11, SEEX * 2 - 1, SEEY*2 - 2);
 // Rotate to face the road
-  if (t_east >= ot_road_null && t_east <= ot_bridge_ew)
-   rotate(1);
-  if (t_south >= ot_road_null && t_south <= ot_bridge_ew)
-   rotate(2);
-  if (t_west >= ot_road_null && t_west <= ot_bridge_ew)
-   rotate(3);
+  if (t_east >= ot_road_null && t_east <= ot_bridge_ew) rotate(1);
+  if (t_south >= ot_road_null && t_south <= ot_bridge_ew) rotate(2);
+  if (t_west >= ot_road_null && t_west <= ot_bridge_ew) rotate(3);
  } break;
 
  case ot_mansion:
@@ -5729,8 +5604,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   if (t_above >= ot_sub_station_north && t_above <= ot_sub_station_west)
    ter(SEEX * 2 - 5, rng(SEEY - 5, SEEY + 4)) = t_stairs_up;
   place_items(mi_subway, 30, 4, 0, SEEX * 2 - 5, SEEY * 2 - 1, true, 0);
-  if (terrain_type == ot_subway_ew)
-   rotate(1);
+  if (terrain_type == ot_subway_ew) rotate(1);
   break;
 
  case ot_subway_ne:
@@ -5750,12 +5624,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   if (t_above >= ot_sub_station_north && t_above <= ot_sub_station_west)
    ter(SEEX * 2 - 5, rng(SEEY - 5, SEEY + 4)) = t_stairs_up;
   place_items(mi_subway, 30, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1, true, 0);
-  if (terrain_type == ot_subway_es)
-   rotate(1);
-  if (terrain_type == ot_subway_sw)
-   rotate(2);
-  if (terrain_type == ot_subway_wn)
-   rotate(3);
+  if (terrain_type == ot_subway_es) rotate(1);
+  if (terrain_type == ot_subway_sw) rotate(2);
+  if (terrain_type == ot_subway_wn) rotate(3);
   break;
 
  case ot_subway_nes:
@@ -5775,12 +5646,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   if (t_above >= ot_sub_station_north && t_above <= ot_sub_station_west)
    ter(4, rng(SEEY - 5, SEEY + 4)) = t_stairs_up;
   place_items(mi_subway, 35, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1, true, 0);
-  if (terrain_type == ot_subway_esw)
-   rotate(1);
-  if (terrain_type == ot_subway_nsw)
-   rotate(2);
-  if (terrain_type == ot_subway_new)
-   rotate(3);
+  if (terrain_type == ot_subway_esw) rotate(1);
+  if (terrain_type == ot_subway_nsw) rotate(2);
+  if (terrain_type == ot_subway_new) rotate(3);
   break;
 
  case ot_subway_nesw:
@@ -5811,8 +5679,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    }
   }
   place_items(mi_sewer, 10, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1, true, 0);
-  if (terrain_type == ot_sewer_ew)
-   rotate(1);
+  if (terrain_type == ot_sewer_ew) rotate(1);
   break;
 
  case ot_sewer_ne:
@@ -5828,12 +5695,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    }
   }
   place_items(mi_sewer, 18, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1, true, 0);
-  if (terrain_type == ot_sewer_es)
-   rotate(1);
-  if (terrain_type == ot_sewer_sw)
-   rotate(2);
-  if (terrain_type == ot_sewer_wn)
-   rotate(3);
+  if (terrain_type == ot_sewer_es) rotate(1);
+  if (terrain_type == ot_sewer_sw) rotate(2);
+  if (terrain_type == ot_sewer_wn) rotate(3);
   break;
 
  case ot_sewer_nes:
@@ -5849,12 +5713,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    }
   }
   place_items(mi_sewer, 23, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1, true, 0);
-  if (terrain_type == ot_sewer_esw)
-   rotate(1);
-  if (terrain_type == ot_sewer_nsw)
-   rotate(2);
-  if (terrain_type == ot_sewer_new)
-   rotate(3);
+  if (terrain_type == ot_sewer_esw) rotate(1);
+  if (terrain_type == ot_sewer_nsw) rotate(2);
+  if (terrain_type == ot_sewer_new) rotate(3);
   break;
 
  case ot_sewer_nesw:
@@ -5895,8 +5756,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     if (x > SEEX) x--;
    }
   }
-  if (terrain_type == ot_ants_ew)
-   rotate(1);
+  if (terrain_type == ot_ants_ew) rotate(1);
   break;
 
  case ot_ants_ne:
@@ -5947,12 +5807,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      ter(i, j) = t_rock_floor;
    }
   }
-  if (terrain_type == ot_ants_es)
-   rotate(1);
-  if (terrain_type == ot_ants_sw)
-   rotate(2);
-  if (terrain_type == ot_ants_wn)
-   rotate(3);
+  if (terrain_type == ot_ants_es) rotate(1);
+  if (terrain_type == ot_ants_sw) rotate(2);
+  if (terrain_type == ot_ants_wn) rotate(3);
   break;
   
  case ot_ants_nes:
@@ -5987,12 +5844,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     if (y > SEEY) y--;
    }
   }
-  if (terrain_type == ot_ants_new)
-   rotate(3);
-  if (terrain_type == ot_ants_nsw)
-   rotate(2);
-  if (terrain_type == ot_ants_esw)
-   rotate(1);
+  if (terrain_type == ot_ants_new) rotate(3);
+  if (terrain_type == ot_ants_nsw) rotate(2);
+  if (terrain_type == ot_ants_esw) rotate(1);
   break;
 
  case ot_ants_nesw:
@@ -6205,8 +6059,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
 // Now, fix sewers and subways so that they interconnect.
 
- if (terrain_type >= ot_subway_ns && terrain_type <= ot_subway_nesw) {
-  if (t_north >= ot_sewer_ns && t_north <= ot_sewer_nesw && !connects_to(terrain_type, 0)) {
+ if (is_between<ot_subway_ns, ot_subway_nesw>(terrain_type)) {
+  if (is_between<ot_sewer_ns, ot_sewer_nesw>(t_north) && !connects_to(terrain_type, 0)) {
    if (connects_to(t_north, 2)) {
     for (int i = SEEX - 2; i < SEEX + 2; i++) {
      for (int j = 0; j < SEEY; j++)
@@ -6221,7 +6075,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     ter(SEEX - 1, 3) = t_door_metal_c;
    }
   }
-  if (t_east >= ot_sewer_ns && t_east <= ot_sewer_nesw && !connects_to(terrain_type, 1)) {
+  if (is_between<ot_sewer_ns, ot_sewer_nesw>(t_east) && !connects_to(terrain_type, 1)) {
    if (connects_to(t_east, 3)) {
     for (int i = SEEX; i < SEEX * 2; i++) {
      for (int j = SEEY - 2; j < SEEY + 2; j++)
@@ -6236,7 +6090,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     ter(SEEX * 2 - 4, SEEY - 1) = t_door_metal_c;
    }
   }
-  if (t_south >= ot_sewer_ns && t_south <= ot_sewer_nesw && !connects_to(terrain_type, 2)) {
+  if (is_between<ot_sewer_ns, ot_sewer_nesw>(t_south) && !connects_to(terrain_type, 2)) {
    if (connects_to(t_south, 0)) {
     for (int i = SEEX - 2; i < SEEX + 2; i++) {
      for (int j = SEEY; j < SEEY * 2; j++)
@@ -6251,7 +6105,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     ter(SEEX - 1, SEEY * 2 - 4) = t_door_metal_c;
    }
   }
-  if (t_west >= ot_sewer_ns && t_west <= ot_sewer_nesw && !connects_to(terrain_type, 3)) {
+  if (is_between<ot_sewer_ns, ot_sewer_nesw>(t_west) && !connects_to(terrain_type, 3)) {
    if (connects_to(t_west, 1)) {
     for (int i = 0; i < SEEX; i++) {
      for (int j = SEEY - 2; j < SEEY + 2; j++)
@@ -6266,10 +6120,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     ter(3, SEEY - 1) = t_door_metal_c;
    }
   }
- } else if (terrain_type >= ot_sewer_ns && terrain_type <= ot_sewer_nesw) {
+ } else if (is_between<ot_sewer_ns, ot_sewer_nesw>(terrain_type)) {
   if (t_above == ot_road_nesw_manhole)
    ter(rng(SEEX - 2, SEEX + 1), rng(SEEY - 2, SEEY + 1)) = t_ladder_up;
-  if (t_north >= ot_subway_ns && t_north <= ot_subway_nesw && !connects_to(terrain_type, 0)) {
+  if (is_between<ot_subway_ns, ot_subway_nesw>(t_north) && !connects_to(terrain_type, 0)) {
    for (int j = 0; j < SEEY - 3; j++) {
     ter(SEEX, j) = t_rock_floor;
     ter(SEEX - 1, j) = t_rock_floor;
@@ -6277,7 +6131,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    ter(SEEX, SEEY - 3) = t_door_metal_c;
    ter(SEEX - 1, SEEY - 3) = t_door_metal_c;
   }
-  if (t_east >= ot_subway_ns && t_east <= ot_subway_nesw && !connects_to(terrain_type, 1)) {
+  if (is_between<ot_subway_ns, ot_subway_nesw>(t_east) && !connects_to(terrain_type, 1)) {
    for (int i = SEEX + 3; i < SEEX * 2; i++) {
     ter(i, SEEY) = t_rock_floor;
     ter(i, SEEY - 1) = t_rock_floor;
@@ -6285,7 +6139,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    ter(SEEX + 2, SEEY) = t_door_metal_c;
    ter(SEEX + 2, SEEY - 1) = t_door_metal_c;
   }
-  if (t_south >= ot_subway_ns && t_south <= ot_subway_nesw && !connects_to(terrain_type, 2)) {
+  if (is_between<ot_subway_ns, ot_subway_nesw>(t_south) && !connects_to(terrain_type, 2)) {
    for (int j = SEEY + 3; j < SEEY * 2; j++) {
     ter(SEEX, j) = t_rock_floor;
     ter(SEEX - 1, j) = t_rock_floor;
@@ -6293,7 +6147,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    ter(SEEX, SEEY + 2) = t_door_metal_c;
    ter(SEEX - 1, SEEY + 2) = t_door_metal_c;
   }
-  if (t_west >= ot_subway_ns && t_west <= ot_subway_nesw && !connects_to(terrain_type, 3)) {
+  if (is_between<ot_subway_ns, ot_subway_nesw>(t_west) && !connects_to(terrain_type, 3)) {
    for (int i = 0; i < SEEX - 3; i++) {
     ter(i, SEEY) = t_rock_floor;
     ter(i, SEEY - 1) = t_rock_floor;
@@ -6301,7 +6155,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    ter(SEEX - 3, SEEY) = t_door_metal_c;
    ter(SEEX - 3, SEEY - 1) = t_door_metal_c;
   }
- } else if (terrain_type >= ot_ants_ns && terrain_type <= ot_ants_queen) {
+ } else if (is_between<ot_ants_ns, ot_ants_queen>(terrain_type)) {
   if (t_above == ot_anthill) {
    do {	// theoretically could infinite-loop
     int x = rng(0, SEEX * 2 - 1), y = rng(0, SEEY * 2 - 1);
@@ -6316,19 +6170,21 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
 }
 
+// 2019-12-21: inherited from C:Whales as dead code.
 void map::post_process(game *g, unsigned zones)
 {
  if (zones & mfb(OMZONE_CITY)) {
+  // seems to be an attempt at mocking up prior damage
   if (!one_in(10)) { // 90% chance of smashing stuff up
-   for (int x = 0; x < 24; x++) {
-    for (int y = 0; y < 24; y++)
+   for (int x = 0; x < 2 * SEEX; x++) {
+    for (int y = 0; y < 2 * SEEY; y++)
      bash(x, y, 20);
    }
   }
   if (one_in(10)) { // 10% chance of corpses
    int num_corpses = rng(1, 8);
    for (int i = 0; i < num_corpses; i++) {
-    int x = rng(0, 23), y = rng(0, 23);
+    int x = rng(0, 2 * SEEX), y = rng(0, 2 * SEEY);
     if (move_cost(x, y) > 0)
      add_corpse(g, this, x, y);
    }
@@ -6336,6 +6192,7 @@ void map::post_process(game *g, unsigned zones)
  } // OMZONE_CITY
 
  if (zones & mfb(OMZONE_BOMBED)) {
+  // the ot_crater terrain type actually is lousy for this; might be good as a converter to ot_crater type
   while (one_in(4)) {
    point center( rng(4, 19), rng(4, 19) );
    int radius = rng(1, 4);
