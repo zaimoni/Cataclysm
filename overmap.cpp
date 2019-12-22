@@ -698,100 +698,85 @@ void overmap::generate(game *g, const overmap* north, const overmap* east, const
  std::vector<point> river_end;	// East/South endpoints of rivers
 
 // Determine points where rivers & roads should connect w/ adjacent maps
- if (north != NULL) {
+ if (north) {
   for (int i = 2; i < OMAPX - 2; i++) {
-   if (is_river(north->ter(i,OMAPY-1)))
+   const auto north_terrain = north->ter(i, OMAPY - 1);
+   if (is_river(north_terrain))
     ter(i, 0) = ot_river_center;
-   if (north->ter(i,     OMAPY - 1) == ot_river_center &&
+   if (north_terrain == ot_river_center &&
        north->ter(i - 1, OMAPY - 1) == ot_river_center &&
        north->ter(i + 1, OMAPY - 1) == ot_river_center) {
     if (river_start.size() == 0 ||
         river_start[river_start.size() - 1].x < i - 6)
      river_start.push_back(point(i, 0));
    }
+   if (north_terrain == ot_road_nesw) roads_out.push_back(city(i, 0, 0));    // 2019-12-22 interpolated
   }
-  for (int i = 0; i < north->roads_out.size(); i++) {
-   if (north->roads_out[i].y == OMAPY - 1)
-    roads_out.push_back(city(north->roads_out[i].x, 0, 0));
-  }
+  for (const auto& n_road_out : north->roads_out) if (n_road_out.y == OMAPY - 1) roads_out.push_back(city(n_road_out.x, 0, 0));
  }
  int rivers_from_north = river_start.size();
- if (west != NULL) {
+ if (west) {
   for (int i = 2; i < OMAPY - 2; i++) {
-   if (is_river(west->ter(OMAPX - 1, i)))
-    ter(0, i) = ot_river_center;
-   if (west->ter(OMAPX - 1, i)     == ot_river_center &&
+   const auto west_terrain = west->ter(OMAPX - 1, i);
+   if (is_river(west_terrain)) ter(0, i) = ot_river_center;
+   if (west_terrain == ot_river_center &&
        west->ter(OMAPX - 1, i - 1) == ot_river_center &&
        west->ter(OMAPX - 1, i + 1) == ot_river_center) {
     if (river_start.size() == rivers_from_north ||
         river_start[river_start.size() - 1].y < i - 6)
      river_start.push_back(point(0, i));
    }
+   if (west_terrain == ot_road_nesw) roads_out.push_back(city(0, i, 0));    // 2019-12-22 interpolated
   }
-  for (int i = 0; i < west->roads_out.size(); i++) {
-   if (west->roads_out[i].x == OMAPX - 1)
-    roads_out.push_back(city(0, west->roads_out[i].y, 0));
-  }
+  for (const auto& w_road_out : west->roads_out) if (w_road_out.x == OMAPX - 1) roads_out.push_back(city(0, w_road_out.y, 0));
  }
- if (south != NULL) {
+ if (south) {
   for (int i = 2; i < OMAPX - 2; i++) {
-   if (is_river(south->ter(i, 0)))
-    ter(i, OMAPY - 1) = ot_river_center;
-   if (south->ter(i,     0) == ot_river_center &&
+   const auto south_terrain = south->ter(i, 0);
+   if (is_river(south_terrain)) ter(i, OMAPY - 1) = ot_river_center;
+   if (south_terrain == ot_river_center &&
        south->ter(i - 1, 0) == ot_river_center &&
        south->ter(i + 1, 0) == ot_river_center) {
     if (river_end.size() == 0 ||
         river_end[river_end.size() - 1].x < i - 6)
      river_end.push_back(point(i, OMAPY - 1));
    }
-   if (south->ter(i, 0) == ot_road_nesw)
-    roads_out.push_back(city(i, OMAPY - 1, 0));
+   if (south_terrain == ot_road_nesw) roads_out.push_back(city(i, OMAPY - 1, 0));
   }
-  for (int i = 0; i < south->roads_out.size(); i++) {
-   if (south->roads_out[i].y == 0)
-    roads_out.push_back(city(south->roads_out[i].x, OMAPY - 1, 0));
-  }
+  for (const auto& s_road_out : south->roads_out) if (s_road_out.y == 0) roads_out.push_back(city(s_road_out.x, OMAPY - 1, 0));
  }
  int rivers_to_south = river_end.size();
- if (east != NULL) {
+ if (east) {
   for (int i = 2; i < OMAPY - 2; i++) {
-   if (is_river(east->ter(0, i)))
-    ter(OMAPX - 1, i) = ot_river_center;
-   if (east->ter(0, i)     == ot_river_center &&
+   const auto east_terrain = east->ter(0, i);
+   if (is_river(east_terrain)) ter(OMAPX - 1, i) = ot_river_center;
+   if (east_terrain == ot_river_center &&
        east->ter(0, i - 1) == ot_river_center &&
        east->ter(0, i + 1) == ot_river_center) {
     if (river_end.size() == rivers_to_south ||
         river_end[river_end.size() - 1].y < i - 6)
      river_end.push_back(point(OMAPX - 1, i));
    }
-   if (east->ter(0, i) == ot_road_nesw)
-    roads_out.push_back(city(OMAPX - 1, i, 0));
+   if (east_terrain == ot_road_nesw) roads_out.push_back(city(OMAPX - 1, i, 0));
   }
-  for (int i = 0; i < east->roads_out.size(); i++) {
-   if (east->roads_out[i].x == 0)
-    roads_out.push_back(city(OMAPX - 1, east->roads_out[i].y, 0));
-  }
+  for(const auto& e_road_out : east->roads_out) if (e_road_out.x == 0) roads_out.push_back(city(OMAPX - 1, e_road_out.y, 0));
  }
 // Even up the start and end points of rivers. (difference of 1 is acceptable)
 // Also ensure there's at least one of each.
  std::vector<point> new_rivers;
- if (north == NULL || west == NULL) {
+ if (!north || !west) {
   while (river_start.empty() || river_start.size() + 1 < river_end.size()) {
    new_rivers.clear();
-   if (north == NULL)
-    new_rivers.push_back( point(rng(10, OMAPX - 11), 0) );
-   if (west == NULL)
-    new_rivers.push_back( point(0, rng(10, OMAPY - 11)) );
+   if (!north) new_rivers.push_back( point(rng(10, OMAPX - 11), 0) );
+   if (!west) new_rivers.push_back( point(0, rng(10, OMAPY - 11)) );
    river_start.push_back( new_rivers[rng(0, new_rivers.size() - 1)] );
   }
  }
- if (south == NULL || east == NULL) {
+ if (!south || !east) {
   while (river_end.empty() || river_end.size() + 1 < river_start.size()) {
    new_rivers.clear();
-   if (south == NULL)
-    new_rivers.push_back( point(rng(10, OMAPX - 11), OMAPY - 1) );
-   if (east == NULL)
-    new_rivers.push_back( point(OMAPX - 1, rng(10, OMAPY - 11)) );
+   if (!south) new_rivers.push_back( point(rng(10, OMAPX - 11), OMAPY - 1) );
+   if (!east) new_rivers.push_back( point(OMAPX - 1, rng(10, OMAPY - 11)) );
    river_end.push_back( new_rivers[rng(0, new_rivers.size() - 1)] );
   }
  }
@@ -966,7 +951,7 @@ void overmap::generate_sub(const overmap* above)
     temple_points.push_back( point(i, j) );
 
    else if (above_terrain == ot_lab_core ||
-            (pos.z == -1 && above->ter(i, j) == ot_lab_stairs))
+            (pos.z == -1 && above_terrain == ot_lab_stairs))
     lab_points.push_back(city(i, j, rng(1, 5 + pos.z)));
 
    else if (above_terrain == ot_lab_stairs)
@@ -1010,23 +995,16 @@ void overmap::generate_sub(const overmap* above)
  for (const auto& pt : ant_points) build_anthill(pt);
  polish(ot_subway_ns, ot_subway_nesw);
  polish(ot_ants_ns, ot_ants_nesw);
- for (int i = 0; i < above->cities.size(); i++) {
-  if (one_in(3))
-   zg.push_back(
-    mongroup(mcat_chud, above->cities[i].x * 2, above->cities[i].y * 2,
-             above->cities[i].s, above->cities[i].s * 20));
-  if (!one_in(8))
-   zg.push_back(
-    mongroup(mcat_sewer, above->cities[i].x * 2, above->cities[i].y * 2,
-             above->cities[i].s * 3.5, above->cities[i].s * 70));
+ for (const auto& above_c : above->cities) {
+  if (one_in(3)) zg.push_back(mongroup(mcat_chud, above_c.x * 2, above_c.y * 2, above_c.s, above_c.s * 20));
+  if (!one_in(8)) zg.push_back(mongroup(mcat_sewer, above_c.x * 2, above_c.y * 2, above_c.s * 3.5, above_c.s * 70));
  }
  place_rifts();
  for(const auto& pt : mine_points) build_mine(pt);
 // Basements done last so sewers, etc. don't overwrite them
  for (int i = 0; i < OMAPX; i++) {
   for (int j = 0; j < OMAPY; j++) {
-   const auto above_terrain = above->ter(i, j);
-   if (is_between<ot_house_base_north, ot_house_base_west>(above_terrain))
+   if (is_between<ot_house_base_north, ot_house_base_west>(above->ter(i, j)))
     ter(i, j) = ot_basement;
   }
  }
@@ -1817,7 +1795,7 @@ void overmap::build_slimepit(const city& origin)
 
 void overmap::build_mine(city origin)
 {
- bool finale = (origin.s <= rng(1, 3));
+ const bool finale = (origin.s <= rng(1, 3));
  int built = 0;
  const int max_depth = (origin.s < 2) ? 2 : origin.s;
  while (built < max_depth) {
@@ -2101,7 +2079,8 @@ void overmap::polish(oter_id min, oter_id max)
 
 bool overmap::is_road(int x, int y) const
 {
- if (ter(x, y) == ot_rift || ter(x, y) == ot_hellmouth)
+ const auto terrain = ter(x,y);
+ if (terrain == ot_rift || terrain == ot_hellmouth)
   return true;
  if (x < 0 || x >= OMAPX || y < 0 || y >= OMAPY) {
   for (int i = 0; i < roads_out.size(); i++) {
@@ -2109,11 +2088,11 @@ bool overmap::is_road(int x, int y) const
     return true;
   }
  }
- if ((ter(x, y) >= ot_road_null && ter(x, y) <= ot_bridge_ew) ||
-     (ter(x, y) >= ot_subway_ns && ter(x, y) <= ot_subway_nesw) ||
-     (ter(x, y) >= ot_sewer_ns  && ter(x, y) <= ot_sewer_nesw) ||
-     ter(x, y) == ot_sewage_treatment_hub ||
-     ter(x, y) == ot_sewage_treatment_under)
+ if (is_between<ot_road_null, ot_bridge_ew>(terrain) ||
+     is_between<ot_subway_ns, ot_subway_nesw>(terrain) ||
+     is_between<ot_sewer_ns, ot_sewer_nesw>(terrain) ||
+     terrain == ot_sewage_treatment_hub ||
+     terrain == ot_sewage_treatment_under)
   return true;
  return false;
 }

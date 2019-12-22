@@ -1973,7 +1973,7 @@ z.size(), events.size());
             npc_attitude_name(_npc->attitude) << std::endl;
     if (_npc->has_destination())
      data << "Destination: " << _npc->goal.x << ":" << _npc->goal.y << "(" <<
-		     oter_t::list[ cur_om.ter(_npc->goal.x, _npc->goal.y) ].name << ")" <<
+		     oter_t::list[ cur_om.ter(_npc->goal) ].name << ")" <<
              std::endl;
     else
      data << "No destination." << std::endl;
