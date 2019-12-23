@@ -5954,7 +5954,7 @@ void game::update_overmap_seen()
     cost = oter_t::list[overmap::ter_c(OM_loc(scan.first,line[i]))].see_cost;
     if (0 > (sight_points -= cost)) break;
    }
-   if (sight_points >= 0) overmap::seen(scan) = true;
+   if (sight_points >= 0) overmap::expose(scan);
   }
  }
 }

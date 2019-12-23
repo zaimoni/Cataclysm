@@ -561,6 +561,15 @@ bool overmap::seen_c(OM_loc OMpos)
     return om->seen(OMpos.second);
 }
 
+void overmap::expose(OM_loc OMpos)
+{
+    self_normalize(OMpos);
+    const auto om = om_cache::get().r_get(OMpos.first);
+    // just read access first.  If we have to update, then redo the overmap retrieval to signal write access.
+    if (!om || !om->seen(OMpos.second)) om_cache::get().create(OMpos.first).seen(OMpos.second) = true;
+}
+
+
 bool overmap::has_note(const point& pt) const
 {
  for (const auto& note : notes) {

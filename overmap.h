@@ -102,6 +102,7 @@ class overmap
   bool seen(int x, int y) const { return const_cast<overmap*>(this)->seen(x, y); };	// \todo specialize?
   bool seen(const point& pt) const { return const_cast<overmap*>(this)->seen(pt.x, pt.y); };
   static bool seen_c(OM_loc OMpos);
+  static void expose(OM_loc OMpos);
 
   bool has_note(const point& pt) const;
   static bool has_note(OM_loc OMpos, std::string& dest);

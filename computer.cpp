@@ -372,7 +372,7 @@ void computer::activate_function(game *g, computer_action action)
 
    OM_loc scan(tripoint(g->cur_om.pos.x, g->cur_om.pos.y, 0), point(0, 0));
    for (scan.second.x = minx; scan.second.x <= maxx; scan.second.x++) {
-       for (scan.second.y = miny; scan.second.y <= maxy; scan.second.y++) overmap::seen(scan) = true;
+       for (scan.second.y = miny; scan.second.y <= maxy; scan.second.y++) overmap::expose(scan);
    }
 
    print_line("Surface map data downloaded.");
@@ -390,7 +390,7 @@ void computer::activate_function(game *g, computer_action action)
            const auto terrain = overmap::ter_c(scan);
            if (   is_between<ot_sewer_ns, ot_sewer_nesw>(terrain)
                || is_between<ot_sewage_treatment, ot_sewage_treatment_under>(terrain))
-               overmap::seen(scan) = true;
+               overmap::expose(scan);
        }
    }
 

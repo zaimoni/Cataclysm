@@ -84,7 +84,7 @@ void mission_start::place_dog(game *g, mission *miss)
 	// Make it seen on our map
 	OM_loc scan(g->cur_om.pos, point(0, 0));
 	for (scan.second.x = house.x - 6; scan.second.x <= house.x + 6; scan.second.x++) {
-		for (scan.second.y = house.y - 6; scan.second.y <= house.y + 6; scan.second.y++) overmap::seen(scan) = true;
+		for (scan.second.y = house.y - 6; scan.second.y <= house.y + 6; scan.second.y++) overmap::expose(scan);
 	}
 
 	tinymap doghouse;
@@ -102,7 +102,7 @@ void mission_start::place_zombie_mom(game *g, mission *miss)
 	// Make it seen on our map
 	OM_loc scan(g->cur_om.pos, point(0, 0));
 	for (scan.second.x = house.x - 6; scan.second.x <= house.x + 6; scan.second.x++) {
-		for (scan.second.y = house.y - 6; scan.second.y <= house.y + 6; scan.second.y++) overmap::seen(scan) = true;
+		for (scan.second.y = house.y - 6; scan.second.y <= house.y + 6; scan.second.y++) overmap::expose(scan);
 	}
 
 	tinymap zomhouse;
@@ -151,8 +151,7 @@ void mission_start::place_npc_software(game *g, mission *miss)
 	// Make it seen on our map
 	OM_loc scan(g->cur_om.pos, point(0, 0));
 	for (scan.second.x = place.x - 6; scan.second.x <= place.x + 6; scan.second.x++) {
-		for (scan.second.y = place.y - 6; scan.second.y <= place.y + 6; scan.second.y++)
-			overmap::seen(scan) = true;
+		for (scan.second.y = place.y - 6; scan.second.y <= place.y + 6; scan.second.y++) overmap::expose(scan);
 	}
 	tinymap compmap;
 	compmap.load(g, 2*place);
@@ -251,7 +250,7 @@ void mission_start::reveal_hospital(game *g, mission *miss)
 	point place = g->cur_om.find_closest(g->om_location(), ot_hospital, 1, dist, false);
 	OM_loc scan(g->cur_om.pos, point(0, 0));
 	for (scan.second.x = place.x - 3; scan.second.x <= place.x + 3; scan.second.x++) {
-		for (scan.second.y = place.y - 3; scan.second.y <= place.y + 3; scan.second.y++) overmap::seen(scan) = true;
+		for (scan.second.y = place.y - 3; scan.second.y <= place.y + 3; scan.second.y++) overmap::expose(scan);
 	}
 	miss->target = place;
 }
