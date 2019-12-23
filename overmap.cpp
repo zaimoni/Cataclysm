@@ -1130,7 +1130,6 @@ void overmap::draw(WINDOW *w, game *g, point& curs, point& orig, char &ch, bool 
  bool note_here = false, npc_here = false;
  std::string note_text, npc_name;
  
- overmap hori, vert, diag; // Adjacent maps	\todo stack hog; MSVC++ recommends converting to std::unique_ptr
  point target(-1, -1);
  if (g->u.active_mission >= 0 &&
      g->u.active_mission < g->u.active_missions.size())
@@ -1139,12 +1138,6 @@ void overmap::draw(WINDOW *w, game *g, point& curs, point& orig, char &ch, bool 
  * adjacent overmap, and load it/them. */
  const int y_delta = ((curs.y < VIEW / 2) ? -1 : ((curs.y >= OMAPY - VIEW / 2 - 1) ? 1 : 0));
  const int x_delta = ((curs.x < om_w / 2) ? -1 : ((curs.x >= OMAPX - om_w / 2) ? 1 : 0));
-
-  if (x_delta) {
-   hori = overmap(g, pos.x + x_delta, pos.y, pos.z);
-   if (y_delta) diag = overmap(g, pos.x + x_delta, pos.y + y_delta, pos.z);
-  }
-  if (y_delta) vert = overmap(g, pos.x, pos.y + y_delta, pos.z);
 
 // Now actually draw the map
   bool csee = false;
