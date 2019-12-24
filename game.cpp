@@ -5821,7 +5821,7 @@ bool game::toScreen(GPS_loc GPS_pos, point& screen_pos) const
 	if (MAPSIZE <= delta.x) return false;
 	delta.y = anchor.first.y - GPS_pos.first.y;
 	if (MAPSIZE <= delta.y) return false;
-	screen_pos = GPS_pos.second + MAPSIZE * delta;
+    screen_pos = GPS_pos.second + SEE * delta;
 	return true;
 }
 
