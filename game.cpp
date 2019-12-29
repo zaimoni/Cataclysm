@@ -551,8 +551,7 @@ void game::create_starting_npcs()
  npc tmp;
  tmp.normalize();
  tmp.randomize(this, (one_in(2) ? NC_DOCTOR : NC_NONE));
- tmp.screenpos_set(point(SEE * int(MAPSIZE / 2) + SEEX, SEE * int(MAPSIZE / 2) + 6));
-// tmp.spawn_at(toGPS(point(SEEX * int(MAPSIZE / 2) + SEEX, SEEY * int(MAPSIZE / 2) + 6)));
+ tmp.spawn_at(toGPS(point(SEEX * int(MAPSIZE / 2) + SEEX, SEEY * int(MAPSIZE / 2) + 6)));
  tmp.form_opinion(&u);
  tmp.attitude = NPCATT_NULL;
  tmp.mission = NPC_MISSION_SHELTER;
@@ -5817,9 +5816,9 @@ bool game::toScreen(GPS_loc GPS_pos, point& screen_pos) const
 	const auto anchor(toGPS(point(0, 0)));	// \todo would be nice to short-circuit this stage, but may be moot after modeling Earth's radius.  Also, cache target
 	if (GPS_pos.first.x < anchor.first.x || GPS_pos.first.y < anchor.first.y) return false;
 	point delta;
-	delta.x = anchor.first.x - GPS_pos.first.x;
+	delta.x = GPS_pos.first.x - anchor.first.x;
 	if (MAPSIZE <= delta.x) return false;
-	delta.y = anchor.first.y - GPS_pos.first.y;
+	delta.y = GPS_pos.first.y - anchor.first.y;
 	if (MAPSIZE <= delta.y) return false;
     screen_pos = GPS_pos.second + SEE * delta;
 	return true;
