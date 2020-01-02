@@ -1524,7 +1524,7 @@ player::player(const JSON& src)
 	 if (fromJSON(src["GPS_pos"], GPSpos)) {
 		 // reality checks possible, but not here
 	 }
- }	// release block: \todo rebuild GPSpos from pos for V0.2.0 savefiles, we have to do something
+ }	// missing GPSpos is covered over at game::load
  if (src.has_key("in_vehicle")) fromJSON(src["in_vehicle"], in_vehicle);
  if (src.has_key("activity")) fromJSON(src["activity"], activity);
  if (src.has_key("backlog")) fromJSON(src["backlog"], backlog);

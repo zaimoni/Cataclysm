@@ -293,18 +293,7 @@ void mission_start::place_book(game *g, mission *miss)	// XXX doesn't look like 
 
 void mission_end::heal_infection(game *g, mission *miss)
 {
-	for (auto& _npc : g->active_npc) {
-		if (_npc.id == miss->npc_id) {
-			_npc.rem_disease(DI_INFECTION);
-			return;
-		}
-	}
-	for (auto& _npc : g->cur_om.npcs) {
-		if (_npc.id == miss->npc_id) {
-			_npc.rem_disease(DI_INFECTION);
-			return;
-		}
-	}
+	if (auto _npc = g->find_npc(miss->npc_id)) _npc->rem_disease(DI_INFECTION);
 }
 
 void mission_fail::kill_npc(game *g, mission *miss)

@@ -201,7 +201,7 @@ public:
 		else return _actor.styles.size() >= -_inv_index;	// not always correct, but sometimes is
 	}
 	void Perform() const override {
-		// release block \todo need to checkpoint before/after for actor state; if "no change" and _op fails then critical bug (infinite loop)
+		// \todo need to checkpoint before/after for actor state; if "no change" and _op fails then critical bug (infinite loop)
 		// C:Whales handled this for eating by forcing moves=0 afterwards, but this resulted in NPCs eating faster than PCs
 		(_actor.*_op)(_inv_index);
 	}

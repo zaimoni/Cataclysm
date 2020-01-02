@@ -179,7 +179,7 @@ class game
   char nextinv;	// Determines which letter the next inv item will have
   overmap cur_om;
   map m;
-  tripoint lev;	// Placement inside the overmap; x/y should be in 0...OMAPX/Y; is the position of the player and could be lifted into that object
+  tripoint lev;	// Placement inside the overmap; x/y should be in 0...OMAPX/Y; offset from the player's submap coordinates
 	// but game::update_map thinks legal values are 0..2*OMAPX/Y
     // lev.z is almost always cur_om.pos.z (possibly should be explicitly enforced as map loading responds to cur_om.pos.z)
   player u;
