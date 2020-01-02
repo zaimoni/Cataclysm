@@ -298,6 +298,19 @@ public:
 
  bool is_npc() const override { return true; }
 
+ static npc* find(int id); // NPC with UID=id; NULL if non-existant
+ static const npc* find_r(int id); // NPC with UID=id; NULL if non-existant
+
+ static auto find_alive(int id) {
+     auto ret = find(id);
+     return ret && !ret->marked_for_death ? ret : 0;
+ };
+
+ static auto find_alive_r(int id) {
+     auto ret = find_r(id);
+     return ret && !ret->marked_for_death ? ret : 0;
+ };
+
 // Generating our stats, etc.
  void randomize(game *g, npc_class type = NC_NONE);
  void randomize_from_faction(game *g, faction *fac);

@@ -54,8 +54,8 @@ void mission_start::standard(game *g, mission *miss)
 
 void mission_start::infect_npc(game *g, mission *miss)
 {
-	npc* const p = g->find_npc(miss->npc_id);
-	if (p == NULL) {
+	const auto p = npc::find_alive(miss->npc_id);
+	if (!p) {
 		debugmsg("mission_start::infect_npc() couldn't find an NPC!");
 		return;
 	}
@@ -72,8 +72,8 @@ void mission_start::place_dog(game *g, mission *miss)
 {
 	auto city_id = g->cur_om.closest_city(g->om_location());
 	point house = g->cur_om.random_house_in_city(city_id);
-	const npc* const dev = g->find_npc(miss->npc_id);
-	if (dev == NULL) {
+	const auto dev = npc::find_alive_r(miss->npc_id);
+	if (!dev) {
 		debugmsg("Couldn't find NPC! %d", miss->npc_id);
 		return;
 	}
@@ -113,8 +113,8 @@ void mission_start::place_zombie_mom(game *g, mission *miss)
 
 void mission_start::place_npc_software(game *g, mission *miss)
 {
-	npc* dev = g->find_npc(miss->npc_id);
-	if (dev == NULL) {
+	const auto dev = npc::find_alive_r(miss->npc_id);
+	if (!dev) {
 		debugmsg("Couldn't find NPC! %d", miss->npc_id);
 		return;
 	}
@@ -242,10 +242,15 @@ void mission_start::place_npc_software(game *g, mission *miss)
 
 void mission_start::reveal_hospital(game *g, mission *miss)
 {
-	if (const npc* const dev = g->find_npc(miss->npc_id)) {
-		g->u.i_add(item(item::types[itm_vacutainer], 0));
-		messages.add("%s gave you a vacutainer.", dev->name.c_str());
+	const auto dev = npc::find_alive_r(miss->npc_id);
+	if (!dev) {
+		debugmsg("Couldn't find NPC! %d", miss->npc_id);
+		return;
 	}
+
+	g->u.i_add(item(item::types[itm_vacutainer], 0));
+	messages.add("%s gave you a vacutainer.", dev->name.c_str());
+
 	int dist = 0;
 	point place = g->cur_om.find_closest(g->om_location(), ot_hospital, 1, dist, false);
 	OM_loc scan(g->cur_om.pos, point(0, 0));
@@ -293,7 +298,7 @@ void mission_start::place_book(game *g, mission *miss)	// XXX doesn't look like 
 
 void mission_end::heal_infection(game *g, mission *miss)
 {
-	if (auto _npc = g->find_npc(miss->npc_id)) _npc->rem_disease(DI_INFECTION);
+	if (auto _npc = npc::find_alive(miss->npc_id)) _npc->rem_disease(DI_INFECTION);
 }
 
 void mission_fail::kill_npc(game *g, mission *miss)

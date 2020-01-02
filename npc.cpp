@@ -154,6 +154,22 @@ npc::npc()
 DEFINE_ACID_ASSIGN_W_MOVE(npc_chatbin)
 DEFINE_ACID_ASSIGN_W_MOVE(npc)
 
+npc* npc::find(int id) {
+    auto g = game::active();
+    for (auto& _npc : g->active_npc) if (_npc.id == id) return &_npc;
+    for (auto& _npc : g->cur_om.npcs) if (_npc.id == id) return &_npc;
+    // \todo check other overmaps...first those already loaded, then those *not* loaded
+    return 0;
+}
+
+const npc* npc::find_r(int id) {
+    auto g = game::active();
+    for (auto& _npc : g->active_npc) if (_npc.id == id) return &_npc;
+    for (auto& _npc : g->cur_om.npcs) if (_npc.id == id) return &_npc;
+    // \todo check other overmaps...first those already loaded, then those *not* loaded
+    return 0;
+}
+
 void npc::randomize(game *g, npc_class type)
 {
  id = g->assign_npc_id();
