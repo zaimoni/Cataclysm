@@ -154,20 +154,41 @@ npc::npc()
 DEFINE_ACID_ASSIGN_W_MOVE(npc_chatbin)
 DEFINE_ACID_ASSIGN_W_MOVE(npc)
 
-npc* npc::find(int id) {
+npc* npc::find(const int id) {
     auto g = game::active();
-    for (auto& _npc : g->active_npc) if (_npc.id == id) return &_npc;
-    for (auto& _npc : g->cur_om.npcs) if (_npc.id == id) return &_npc;
+    for (auto& _npc : g->active_npc) if (id == _npc.id) return &_npc;
+    for (auto& _npc : g->cur_om.npcs) if (id == _npc.id) return &_npc;
     // \todo check other overmaps...first those already loaded, then those *not* loaded
     return 0;
 }
 
-const npc* npc::find_r(int id) {
+const npc* npc::find_r(const int id) {
     auto g = game::active();
-    for (auto& _npc : g->active_npc) if (_npc.id == id) return &_npc;
-    for (auto& _npc : g->cur_om.npcs) if (_npc.id == id) return &_npc;
+    for (auto& _npc : g->active_npc) if (id == _npc.id) return &_npc;
+    for (auto& _npc : g->cur_om.npcs) if (id == _npc.id) return &_npc;
     // \todo check other overmaps...first those already loaded, then those *not* loaded
     return 0;
+}
+
+void npc::die(const int id)
+{
+    auto g = game::active();
+    int i = -1;
+    for (auto& _npc : g->active_npc) {
+        ++i;
+        if (id == _npc.id) {
+            _npc.die(g, false);
+            g->active_npc.erase(g->active_npc.begin() + i);
+            return;
+        }
+    }
+    for (auto& _npc : g->cur_om.npcs) {
+        if (id == _npc.id) {
+            _npc.marked_for_death = true;
+            return;
+        }
+    }
+    // \todo check other overmaps...first those already loaded, then those *not* loaded
 }
 
 void npc::randomize(game *g, npc_class type)

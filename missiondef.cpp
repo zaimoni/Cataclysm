@@ -301,24 +301,7 @@ void mission_end::heal_infection(game *g, mission *miss)
 	if (auto _npc = npc::find_alive(miss->npc_id)) _npc->rem_disease(DI_INFECTION);
 }
 
-void mission_fail::kill_npc(game *g, mission *miss)
-{
-	int i = -1;
-	for (auto& _npc : g->active_npc) {
-		++i;
-		if (_npc.id == miss->npc_id) {
-			_npc.die(g, false);
-			g->active_npc.erase(g->active_npc.begin() + i);
-			return;
-		}
-	}
-	for (auto& _npc : g->cur_om.npcs) {
-		if (_npc.id == miss->npc_id) {
-			_npc.marked_for_death = true;
-			return;
-		}
-	}
-}
+void mission_fail::kill_npc(game *g, mission *miss) { npc::die(miss->npc_id); }
 
 void mission_type::init()
 {
