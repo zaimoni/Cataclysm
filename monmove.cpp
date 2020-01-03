@@ -90,22 +90,22 @@ void monster::plan(game *g)
 		 stc = tc;
 	 }
 	 // check NPCs
-	 for (int i = 0; i < g->active_npc.size(); i++) {
-		 npc *me = &(g->active_npc[i]);
-		 int medist = rl_dist(pos, me->pos);
-		 if ((medist < dist || (!fleeing && is_fleeing(*me))) &&
-			 g->m.sees(pos, me->pos, sightrange)) {
-			 if (is_fleeing(*me)) {
-				 fleeing = true;
-				 wand.set(2 * pos - me->pos, 40);
-				 dist = medist;
-			 } else if (g->m.sees(pos, me->pos, sightrange, tc)) {
-				 dist = medist;
-				 closest = i;
-				 stc = tc;
-			 }
-		 }
-	 }
+     int i = -1;
+     for (const auto& _npc : g->active_npc) {
+         ++i;
+         int medist = rl_dist(pos, _npc.pos);
+         if ((medist < dist || (!fleeing && is_fleeing(_npc)))
+             && g->m.sees(pos, _npc.pos, sightrange, tc)) {
+             dist = medist;
+             if (is_fleeing(_npc)) {
+                 fleeing = true;
+                 wand.set(2 * pos - _npc.pos, 40);
+             } else /* if (g->m.sees(pos, _npc.pos, sightrange, tc)) */ {
+                 closest = i;
+                 stc = tc;
+             }
+         }
+     }
  }
 
  if (!fleeing) fleeing = attitude() == MATT_FLEE;
