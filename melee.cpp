@@ -768,32 +768,29 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
 
  case TEC_WIDE: {
   int count_hit = 0;
-  for (int x = pos.x - 1; x <= pos.x + 1; x++) {
-   for (int y = pos.y - 1; y <= pos.y + 1; y++) {
-    if (x != tar.x || y != tar.y) { // Don't double-hit our target
-	 monster* const m_at = g->mon(x,y);
-     if (m_at && hit_roll() >= rng(0, 5) + m_at->dodge_roll()) {
-      count_hit++;
-      int dam = roll_bash_damage(m_at, false) +
-                roll_cut_damage (m_at, false);
-	  m_at->hurt(dam);
-      if (u_see)
-       messages.add("%s hit%s %s for %d damage!", You.c_str(), s.c_str(),
-                                                target.c_str(), dam);
-     }
-	 npc* const nPC = g->nPC(x, y);
-     if (nPC && hit_roll() >= rng(0, 5) + nPC->dodge_roll(g)) {
-      count_hit++;
-      int dam = roll_bash_damage(NULL, false);	// looks like (n)PC armor won't work, but covered in the hit function
-      int cut = roll_cut_damage (NULL, false);
-	  nPC->hit(g, bp_legs, 3, dam, cut);
-      if (u_see)
-       messages.add("%s hit%s %s for %d damage!", You.c_str(), s.c_str(),
-		   nPC->name.c_str(), dam + cut);
-     }
-    }
-   }
+  for (int dir = direction::NORTH; dir <= direction::NORTHWEST; ++dir) {
+      point test = tar + direction_vector((direction)dir);
+      if (tar == test) continue; // Don't double-hit our target
+      if (const auto m_at = g->mon(test)) {
+          if (hit_roll() >= rng(0, 5) + m_at->dodge_roll()) {
+              count_hit++;
+              int dam = roll_bash_damage(m_at, false) + roll_cut_damage(m_at, false);
+              m_at->hurt(dam);
+              if (u_see) messages.add("%s hit%s %s for %d damage!", You.c_str(), s.c_str(), target.c_str(), dam);
+          }
+      }
+      if (const auto nPC = g->nPC(test)) {
+          if (hit_roll() >= rng(0, 5) + nPC->dodge_roll(g)) {
+              count_hit++;
+              int dam = roll_bash_damage(NULL, false);	// looks like (n)PC armor won't work, but covered in the hit function
+              int cut = roll_cut_damage(NULL, false);
+              nPC->hit(g, bp_legs, 3, dam, cut);
+              if (u_see) messages.add("%s hit%s %s for %d damage!", You.c_str(), s.c_str(), nPC->name.c_str(), dam + cut);
+          }
+      }
+      // XXX \todo FIX: genuine players immune to TEC_WIDE multi-attack
   }
+
   if (!is_npc()) messages.add("%d enemies hit!", count_hit);
  } break;
 

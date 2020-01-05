@@ -3482,17 +3482,13 @@ void game::emp_blast(int x, int y)
 //						Character -> player -> npc
 npc* game::nPC(int x, int y)
 {
-	for (auto& m : active_npc) {
-		if (m.pos.x == x && m.pos.y == y && !m.dead) return &m;
-	}
+	for (auto& m : active_npc) if (m.pos.x == x && m.pos.y == y && !m.dead) return &m;
 	return 0;
 }
 
 npc* game::nPC(const point& pt)
 {
-	for (auto& m : active_npc) {
-		if (m.pos == pt && !m.dead) return &m;
-	}
+	for (auto& m : active_npc) if (m.pos == pt && !m.dead) return &m;
 	return 0;
 }
 
@@ -3506,17 +3502,13 @@ int game::mon_at(int x, int y) const
 
 monster* game::mon(int x, int y)
 {
-	for (auto& m : z) {
-		if (m.pos.x == x && m.pos.y == y && !m.dead) return &m;
-	}
+	for (auto& m : z) if (m.pos.x == x && m.pos.y == y && !m.dead) return &m;
 	return 0;
 }
 
 monster* game::mon(const point& pt)
 {
-	for (auto& m : z) {
-		if (m.pos == pt && !m.dead) return &m;
-	}
+	for (auto& m : z) if (m.pos == pt && !m.dead) return &m;
 	return 0;
 }
 
