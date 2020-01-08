@@ -23,12 +23,6 @@
 #include <sys/stat.h>
 #include <utility>
 
-template<class T>
-void EraseAt(std::vector<T>& x, size_t i) {
-   x.erase(x.begin() + i);
-   if (x.empty()) std::vector<T>().swap(x);    // handles problem with range-based for loops
-}
-
 using namespace cataclysm;
 
 template<> int discard<int>::x = 0;

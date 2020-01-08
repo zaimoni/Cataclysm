@@ -11,6 +11,13 @@
 #include <string>
 #include <vector>
 
+// ideally this would be in a vector header extension
+template<class T>
+void EraseAt(std::vector<T>& x, size_t i) {
+    x.erase(x.begin() + i);
+    if (x.empty()) std::vector<T>().swap(x);    // handles problem with range-based for loops in MSVC++
+}
+
 class game;
 
 namespace cataclysm {
