@@ -924,7 +924,7 @@ bool npc::enough_time_to_reload(game *g, int target, const item &gun) const
 template<class T, class COORD>
 static void _normalize_path(T& path, const COORD& origin)
 {
-	while(!path.empty() && origin == path.front()) path.erase(path.begin());
+	while(!path.empty() && origin == path.front()) EraseAt(path, 0);
 	// while we could cut corners, we don't yet have a "required waypoint" designation (i.e.
 	// a non-optimal path may be achieving an ai-required side effect)
 	// \todo? re-routing around non-hostiles, and other issues in npc::move_to

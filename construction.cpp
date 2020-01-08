@@ -482,7 +482,7 @@ void game::complete_construction()
  if (stage.terrain != t_null) m.ter(u.activity.placement) = stage.terrain;
 
 // Strip off the first stage in our list...
- u.activity.values.erase(u.activity.values.begin());
+ EraseAt(u.activity.values, 0);
 // ...and start the next one, if it exists
  if (u.activity.values.size() > 0) {
   construction_stage next = built->stages[u.activity.values[0]];

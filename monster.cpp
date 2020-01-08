@@ -558,7 +558,7 @@ void monster::rem_effect(monster_effect_type effect)
 {
  for (int i = 0; i < effects.size(); i++) {
   if (effects[i].type == effect) {
-   effects.erase(effects.begin() + i);
+   EraseAt(effects, i);
    i--;	// \todo micro-optimize: return here since add effect guarantees only one effect of any given type?
   }
  }
@@ -574,10 +574,8 @@ void monster::process_effects()
    break;
 
   case ME_ONFIRE:
-   if (made_of(FLESH))
-    hurt(rng(3, 8));
-   if (made_of(VEGGY))
-    hurt(rng(10, 20));
+   if (made_of(FLESH)) hurt(rng(3, 8));
+   if (made_of(VEGGY)) hurt(rng(10, 20));
    if (made_of(PAPER) || made_of(POWDER) || made_of(WOOD) || made_of(COTTON) ||
        made_of(WOOL))
     hurt(rng(15, 40));
@@ -590,7 +588,7 @@ void monster::process_effects()
   }
   if (effects[i].duration == 0) {
    if (game::debugmon) debugmsg("Deleting");
-   effects.erase(effects.begin() + i);
+   EraseAt(effects, i);
    i--;
   }
  }

@@ -285,7 +285,7 @@ void monster::friendly_move(game *g)
  if (plans.size() > 0 && plans[0] != g->u.pos &&
      (can_move_to(g->m, plans[0]) || (g->m.has_flag(bashable, plans[0]) && has_flag(MF_BASHES)))){
   next = plans[0];
-  plans.erase(plans.begin());
+  EraseAt(plans, 0);
   moved = true;
  } else
   stumble(g, moved);
@@ -472,7 +472,7 @@ void monster::move_to(game *g, const point& pt)
    moves = 0;
    return;
   }
-  if (!plans.empty()) plans.erase(plans.begin());
+  if (!plans.empty()) EraseAt(plans, 0);
   if (has_flag(MF_SWIMS) && g->m.has_flag(swimmable, pt)) moves += 50;
   if (!has_flag(MF_DIGS) && !has_flag(MF_FLIES) &&
       (!has_flag(MF_SWIMS) || !g->m.has_flag(swimmable, pt)))

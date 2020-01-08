@@ -599,7 +599,7 @@ void overmap::add_note(const point& pt, std::string message)
  for (int i = 0; i < notes.size(); i++) {
   if (notes[i].x == pt.x && notes[i].y == pt.y) {
    if (non_empty) notes[i].text = std::move(message);
-   else notes.erase(notes.begin() + i);
+   else EraseAt(notes, i);
    return;
   }
  }
@@ -624,9 +624,8 @@ void overmap::delete_note(const point& pt)
 {
  size_t i = notes.size();
  while (0 < i) {
-     --i;
-     auto& note = notes[i];
-     if (note.x == pt.x && note.y == pt.y) notes.erase(notes.begin() + i);
+     auto& note = notes[--i];
+     if (note.x == pt.x && note.y == pt.y) EraseAt(notes, i);
  }
 }
 
@@ -2271,14 +2270,10 @@ void overmap::place_specials()
   point p;
   do {
    p = point(rng(x, x + OMSPEC_FREQ - 1), rng(y, y + OMSPEC_FREQ - 1));
-   if (p.x >= OMAPX - 1)
-    p.x = OMAPX - 2;
-   if (p.y >= OMAPY - 1)
-    p.y = OMAPY - 2;
-   if (p.x == 0)
-    p.x = 1;
-   if (p.y == 0)
-    p.y = 1;
+   if (p.x >= OMAPX - 1) p.x = OMAPX - 2;
+   if (p.y >= OMAPY - 1) p.y = OMAPY - 2;
+   if (p.x == 0) p.x = 1;
+   if (p.y == 0) p.y = 1;
    for (int i = 0; i < NUM_OMSPECS; i++) {
     overmap_special special = overmap_special::specials[i];
     int min = special.min_dist_from_city, max = special.max_dist_from_city;

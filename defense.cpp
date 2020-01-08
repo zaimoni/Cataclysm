@@ -767,7 +767,7 @@ void defense_game::caravan(game *g)
    if (current_wave == 0 || !one_in(4))
     item_count[i].push_back(0); // Init counts to 0 for each item
    else { // Remove the item
-    items[i].erase( items[i].begin() + j);
+    EraseAt(items[i], j);
     j--;
    }
   }
@@ -918,8 +918,8 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
         found_item = true;
         item_count[0][i]--;
         if (item_count[0][i] == 0) {
-         item_count[0].erase(item_count[0].begin() + i);
-         items[0].erase(items[0].begin() + i);
+         EraseAt(item_count[0], i);
+         EraseAt(items[0], i);
         }
        }
       }

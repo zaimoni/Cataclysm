@@ -178,7 +178,7 @@ void npc::die(const int id)
         ++i;
         if (id == _npc.id) {
             _npc.die(g, false);
-            g->active_npc.erase(g->active_npc.begin() + i);
+            EraseAt(g->active_npc, i);
             return;
         }
     }
@@ -869,7 +869,7 @@ std::vector<item> starting_inv(npc *me, npc_class type, game *g)
  while(0 < i--) {
   for (const auto type : map::items[mi_trader_avoid]) {
    if (ret[i].type->id == type) {
-    ret.erase(ret.begin() + i);
+    EraseAt(ret, i);
 	break;
    }
   }

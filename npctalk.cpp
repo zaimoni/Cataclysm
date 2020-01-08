@@ -1178,7 +1178,7 @@ void talk_function::assign_mission(game *g, npc *p)
  miss->npc_id = p->id;
  g->u.active_mission = g->u.active_missions.size() - 1;
  p->chatbin.missions_assigned.push_back( p->chatbin.missions[selected] );
- p->chatbin.missions.erase(p->chatbin.missions.begin() + selected);
+ EraseAt(p->chatbin.missions, selected);
 }
 
 void talk_function::mission_success(game *g, npc *p)
@@ -1218,8 +1218,7 @@ void talk_function::clear_mission(game *g, npc *p)
   return;
  }
  mission *miss = g->find_mission( p->chatbin.missions_assigned[selected] );
- p->chatbin.missions_assigned.erase( p->chatbin.missions_assigned.begin() +
-                                     selected);
+ EraseAt(p->chatbin.missions_assigned, selected);
  if (miss->follow_up != MISSION_NULL)
   p->chatbin.missions.push_back( g->reserve_mission(miss->follow_up, p->id) );
 }

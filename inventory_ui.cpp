@@ -234,7 +234,7 @@ std::vector<item> game::multidrop()
     int found = false;
     for (int i = 0; i < weapon_and_armor.size() && !found; i++) {
      if (weapon_and_armor[i] == ch) {
-      weapon_and_armor.erase(weapon_and_armor.begin() + i);
+      EraseAt(weapon_and_armor, i);
       found = true;
       print_inv_statics(this, w_inv, "Multidrop:", weapon_and_armor);
      }

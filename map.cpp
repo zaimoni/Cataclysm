@@ -1844,7 +1844,7 @@ void map::i_rem(int x, int y, int index)
 {
  auto& stack = i_at(x, y);
  if (index > stack.size() - 1) return;
- stack.erase(stack.begin() + index);
+ EraseAt(stack, index);
 }
 
 void map::i_clear(int x, int y)
@@ -1943,7 +1943,7 @@ void map::process_active_items_in_submap(game *g, int nonant)
       if (items[n].charges <= 0) {
        (*tmp->use)(g, &(g->u), &(items[n]), false);
        if (tmp->revert_to == itm_null || items[n].charges == -1) {
-        items.erase(items.begin() + n);
+        EraseAt(items, n);
         grid[nonant]->active_item_count--;
         n--;
        } else
@@ -1969,7 +1969,7 @@ void map::use_amount(point origin, int range, const itype_id type, int quantity,
        for (int m = 0; m < curit->contents.size() && quantity > 0; m++) {
 		if (type != curit->contents[m].type->id) continue;
 		quantity--;
-		curit->contents.erase(curit->contents.begin() + m);
+		EraseAt(curit->contents, m);
         m--;
 		used_contents = curit->contents.empty();
        }
@@ -2007,7 +2007,7 @@ void map::use_charges(point origin, int range, const itype_id type, int quantity
 	   }
        quantity -= obj.charges;
        if (obj.destroyed_at_zero_charges()) {
-          curit.contents.erase(curit.contents.begin() + m);
+          EraseAt(curit.contents, m);
           m--;
        } else obj.charges = 0;
       }

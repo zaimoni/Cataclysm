@@ -223,7 +223,7 @@ int vehicle::install_part (int dx, int dy, vpart_id id, int hp, bool force)
 
 void vehicle::remove_part (int p)
 {
-    parts.erase(parts.begin() + p);
+    EraseAt(parts, p);
     find_external_parts ();
     find_exhaust ();
     precalc_mounts (0, face.dir());    

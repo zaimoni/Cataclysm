@@ -5078,7 +5078,7 @@ void game::unload()
      m.add_item(u.pos, content);
     }
    }
-   u.weapon.contents.erase(u.weapon.contents.begin());
+   EraseAt(u.weapon.contents, 0);
   }
   u.weapon.contents = new_contents;
   return;

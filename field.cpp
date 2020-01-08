@@ -87,7 +87,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
       if (melting->damage >= 5 || (melting->made_of(PAPER) && melting->damage >= 3)) {
        cur->age += melting->volume();
 	   for(auto it : melting->contents) stack.push_back(it);
-	   stack.erase(stack.begin() + i);
+	   EraseAt(stack, i);
        i--;
       }
      }
@@ -188,7 +188,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
 
      if (destroyed) {
 	  for(auto& obj : stack[i].contents) stack.push_back(obj);
-	  stack.erase(stack.begin() + i);
+	  EraseAt(stack, i);
       i--;
      }
     }

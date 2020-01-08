@@ -85,8 +85,7 @@ void player::mutate(game *g)
  } while (valid.empty() && cat != MUTCAT_NULL);
 
 
- if (valid.empty())
-  return; // Couldn't find anything at all!
+ if (valid.empty()) return; // Couldn't find anything at all!
 
  pl_flag selection = valid[ rng(0, valid.size() - 1) ]; // Pick one!
 
@@ -99,10 +98,8 @@ void player::mutate_towards(game *g, pl_flag mut)
   remove_child_flag(g, mut);
   return;
  }
- bool has_prereqs = false;
- std::vector<pl_flag> prereq = mutation_branch::data[mut].prereqs;
- std::vector<pl_flag> cancel = mutation_branch::data[mut].cancels;
 
+ std::vector<pl_flag> cancel(mutation_branch::data[mut].cancels);
  for (int i = 0; i < cancel.size(); i++) {
   if (!has_trait( cancel[i] )) {
    cancel.erase(cancel.begin() + i);
@@ -116,6 +113,8 @@ void player::mutate_towards(game *g, pl_flag mut)
   return;
  }
 
+ bool has_prereqs = false;
+ std::vector<pl_flag> prereq(mutation_branch::data[mut].prereqs);
  for (int i = 0; !has_prereqs && i < prereq.size(); i++) {
   if (has_trait(prereq[i]))
    has_prereqs = true;
@@ -322,7 +321,7 @@ void mutation_effect(game *g, player &p, pl_flag mut)
      if (is_u) messages.add("Your %s is pushed off.", p.worn[i].tname().c_str());
      g->m.add_item(p.pos, p.worn[i]);
     }
-    p.worn.erase(p.worn.begin() + i);
+    EraseAt(p.worn, i);
     i--;
    }
   }

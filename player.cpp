@@ -806,14 +806,13 @@ void player::reset(game *g)
 
 void player::update_morale()
 {
- for (int i = 0; i < morale.size(); i++) {
-  if (0 > morale[i].bonus) morale[i].bonus++;
-  else if (0 < morale[i].bonus) morale[i].bonus--;
+ auto i = morale.size();
+ while (0 < i) {
+     auto& m = morale[--i];
+     if (0 > m.bonus) m.bonus++;
+     else if (0 < m.bonus) m.bonus--;
 
-  if (morale[i].bonus == 0) {
-   morale.erase(morale.begin() + i);
-   i--;
-  }
+     if (m.bonus == 0) EraseAt(morale, i);
  }
 }
 
@@ -2215,7 +2214,6 @@ int player::intimidation() const
 
 void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
 {
- int painadd = 0;
  if (has_disease(DI_SLEEP)) {
   messages.add("You wake up!");
   rem_disease(DI_SLEEP);
@@ -2254,6 +2252,7 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
   }
  }
   
+ int painadd = 0;
  if (has_trait(PF_PAINRESIST))
   painadd = (sqrt(double(cut)) + dam + cut) / (rng(4, 6));
  else
@@ -2609,7 +2608,7 @@ void player::add_disease(dis_type type, int duration, int intensity, int max_int
 void player::rem_disease(dis_type type)
 {
  for (int i = 0; i < illness.size(); i++) {
-  if (illness[i].type == type) illness.erase(illness.begin() + i);
+  if (illness[i].type == type) EraseAt(illness, i);
  }
 }
 
@@ -2667,7 +2666,7 @@ void player::rem_addiction(add_type type)
 {
  for (int i = 0; i < addictions.size(); i++) {
   if (addictions[i].type == type) {
-   addictions.erase(addictions.begin() + i);
+   EraseAt(addictions, i);
    return;
   }
  }
@@ -2702,7 +2701,7 @@ void player::suffer(game *g)
   if (illness[i].duration < MIN_DISEASE_AGE)// Cap permanent disease age
    illness[i].duration = MIN_DISEASE_AGE;
   if (illness[i].duration == 0) {
-   illness.erase(illness.begin() + i);
+   EraseAt(illness, i);
    i--;
   }
  }
@@ -2712,11 +2711,10 @@ void player::suffer(game *g)
    if (addictions[i].sated <= 0 && addictions[i].intensity >= MIN_ADDICTION_LEVEL)
     addict_effect(g, addictions[i]);
    addictions[i].sated--;
-   if (!one_in(addictions[i].intensity - 2) && addictions[i].sated > 0)
-    addictions[i].sated -= 1;
+   if (!one_in(addictions[i].intensity - 2) && addictions[i].sated > 0) addictions[i].sated -= 1;
    if (addictions[i].sated < timer - (100 * addictions[i].intensity)) {
     if (addictions[i].intensity <= 2) {
-     addictions.erase(addictions.begin() + i);
+     EraseAt(addictions, i);
      i--;
     } else {
      addictions[i].intensity = int(addictions[i].intensity / 2);
@@ -3325,16 +3323,15 @@ item player::i_rem(char let)
 {
  item tmp;
  if (weapon.invlet == let) {
-  if (weapon.type->id > num_items && weapon.type->id < num_all_items)
-   return item::null;
-  tmp = weapon;
+  if (weapon.type->id > num_items && weapon.type->id < num_all_items) return item::null;
+  tmp = std::move(weapon);
   weapon = item::null;
   return tmp;
  }
  for (int i = 0; i < worn.size(); i++) {
   if (worn[i].invlet == let) {
-   tmp = worn[i];
-   worn.erase(worn.begin() + i);
+   tmp = std::move(worn[i]);
+   EraseAt(worn, i);
    return tmp;
   }
  }
@@ -3407,7 +3404,7 @@ bool player::remove_item(item* it)
 	}
 	for (int i = 0; i < worn.size(); i++) {
 		if (it == &worn[i]) {
-			worn.erase(worn.begin() + i);
+			EraseAt(worn, i);
 			return true;
 		}
 	}
@@ -3421,7 +3418,7 @@ void player::use_amount(itype_id it, int quantity, bool use_container)
  for (int i = 0; i < weapon.contents.size(); i++) {
   if (weapon.contents[0].type->id == it) {
    quantity--;
-   weapon.contents.erase(weapon.contents.begin() + 0);
+   EraseAt(weapon.contents, 0);
    i--;
    used_weapon_contents = true;
   }
@@ -3452,7 +3449,7 @@ void player::use_charges(itype_id it, int quantity)
        weapon.contents[i].charges <= quantity) {
     quantity -= weapon.contents[i].charges;
     if (weapon.contents[i].destroyed_at_zero_charges()) {
-     weapon.contents.erase(weapon.contents.begin() + i);
+     EraseAt(weapon.contents, i);
      i--;
     } else
      weapon.contents[i].charges = 0;
@@ -3836,13 +3833,13 @@ bool player::eat(int index)
  if (eaten->charges <= 0) {
   if (which == -1) weapon = item::null;
   else if (which == -2) {
-   weapon.contents.erase(weapon.contents.begin());
+   EraseAt(weapon.contents, 0);
    if (!is_npc()) messages.add("You are now wielding an empty %s.", weapon.tname().c_str());
   } else if (which >= 0 && which < inv.size())
    inv.remove_item(which);
   else if (which >= inv.size()) {
    which -= inv.size();
-   inv[which].contents.erase(inv[which].contents.begin());
+   EraseAt(inv[which].contents, 0);
    if (!is_npc()) messages.add("%c - an empty %s", inv[which].invlet, inv[which].tname().c_str());
    if (inv.stack_at(which).size() > 0) inv.restack(this);
    inv_sorted = false;
@@ -4050,12 +4047,12 @@ bool player::takeoff(map& m, char let)
   if (it.invlet == let) {
    if (volume_capacity() - (dynamic_cast<const it_armor*>(it.type))->storage > volume_carried() + it.type->volume) {
     inv.push_back(it);
-    worn.erase(worn.begin() + i);
+    EraseAt(worn, i);
     inv_sorted = false;
     return true;
    } else if (query_yn("No room in inventory for your %s.  Drop it?", worn[i].tname().c_str())) {
     m.add_item(pos, it);
-    worn.erase(worn.begin() + i);
+    EraseAt(worn, i);
     return true;
    } else return false;
   }
@@ -4456,7 +4453,7 @@ void player::absorb(game *g, body_part bp, int &dam, int &cut)
     if (!is_npc()) messages.add("Your %s is completely destroyed!", worn[i].tname().c_str());
     else if (g->u_see(pos))
      messages.add("%s's %s is destroyed!", name.c_str(), worn[i].tname().c_str());
-    worn.erase(worn.begin() + i);
+    EraseAt(worn, i);
    }
   }
   dam -= arm_bash;

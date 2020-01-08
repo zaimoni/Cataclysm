@@ -186,7 +186,7 @@ std::vector<item> inventory::remove_stack(int index)
   return nullstack;
  }
  std::vector<item> ret(std::move(items[index]));
- items.erase(items.begin() + index);
+ EraseAt(items, index);
  return ret;
 }
 
@@ -199,9 +199,8 @@ item inventory::remove_item(int index)
  }
 
  item ret = items[index][0];
- items[index].erase(items[index].begin());
- if (items[index].empty())
-  items.erase(items.begin() + index);
+ EraseAt(items[index], 0);
+ if (items[index].empty()) EraseAt(items, index);
 
  return ret;
 }
@@ -218,10 +217,9 @@ item inventory::remove_item(int stack, int index)
   return item::null;
  }
 
- item ret = items[stack][index];
- items[stack].erase(items[stack].begin() + index);
- if (items[stack].empty())
-  items.erase(items.begin() + stack);
+ item ret = std::move(items[stack][index]);
+ EraseAt(items[stack], index);
+ if (items[stack].empty()) EraseAt(items, stack);
 
  return ret;
 }
@@ -320,26 +318,26 @@ void inventory::use_amount(itype_id it, int quantity, bool use_container)
    for (int k = 0; k < items[i][j].contents.size() && quantity > 0; k++) {
     if (items[i][j].contents[k].type->id == it) {
      quantity--;
-     items[i][j].contents.erase(items[i][j].contents.begin() + k);
+     EraseAt(items[i][j].contents, k);
      k--;
      used_item_contents = true;
     }
    }
 // Now check the item itself
    if (use_container && used_item_contents) {
-    items[i].erase(items[i].begin() + j);
+    EraseAt(items[i], j);
     j--;
     if (items[i].empty()) {
-     items.erase(items.begin() + i);
+     EraseAt(items, i);
      i--;
      j = 0;
     }
    } else if (items[i][j].type->id == it && quantity > 0) {
     quantity--;
-    items[i].erase(items[i].begin() + j);
+    EraseAt(items[i], j);
     j--;
     if (items[i].empty()) {
-     items.erase(items.begin() + i);
+     EraseAt(items, i);
      i--;
      j = 0;
     }
@@ -358,7 +356,7 @@ void inventory::use_charges(itype_id it, int quantity)
      if (items[i][j].contents[k].charges <= quantity) {
       quantity -= items[i][j].contents[k].charges;
       if (items[i][j].contents[k].destroyed_at_zero_charges()) {
-       items[i][j].contents.erase(items[i][j].contents.begin() + k);
+       EraseAt(items[i][j].contents, k);
        k--;
       } else items[i][j].contents[k].charges = 0;
      } else {
@@ -372,10 +370,10 @@ void inventory::use_charges(itype_id it, int quantity)
     if (items[i][j].charges <= quantity) {
      quantity -= items[i][j].charges;
      if (items[i][j].destroyed_at_zero_charges()) {
-      items[i].erase(items[i].begin() + j);
+      EraseAt(items[i], j);
       j--;
       if (items[i].empty()) {
-       items.erase(items.begin() + i);
+       EraseAt(items, i);
        i--;
        j = 0;
       }
