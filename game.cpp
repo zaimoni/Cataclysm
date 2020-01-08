@@ -23,6 +23,12 @@
 #include <sys/stat.h>
 #include <utility>
 
+template<class T>
+void EraseAt(std::vector<T>& x, size_t i) {
+   x.erase(x.begin() + i);
+   if (x.empty()) std::vector<T>().swap(x);    // handles problem with range-based for loops
+}
+
 using namespace cataclysm;
 
 template<> int discard<int>::x = 0;
@@ -730,7 +736,7 @@ void game::process_events()
   events[i].per_turn(this);
   if (events[i].turn <= int(messages.turn)) {
    events[i].actualize(this);
-   events.erase(events.begin() + i);
+   EraseAt(events, i);
    i--;
   }
  }
@@ -1096,7 +1102,7 @@ void game::wrap_up_mission(int id)
  u.completed_missions.push_back( id );
  for (int i = 0; i < u.active_missions.size(); i++) {
   if (u.active_missions[i] == id) {
-   u.active_missions.erase( u.active_missions.begin() + i );
+   EraseAt(u.active_missions, i );
    i--;
   }
  }
@@ -1118,7 +1124,7 @@ void game::fail_mission(int id)
  u.failed_missions.push_back( id );
  for (int i = 0; i < u.active_missions.size(); i++) {
   if (u.active_missions[i] == id) {
-   u.active_missions.erase( u.active_missions.begin() + i );
+   EraseAt(u.active_missions, i );
    i--;
   }
  }
@@ -1719,7 +1725,7 @@ void game::load(std::string name)
          } else if (!toScreen(_npc.GPSpos, _npc.pos)) {
              // off-screen!
              cur_om.npcs.push_back(std::move(_npc));
-             active_npc.erase(active_npc.begin() + i);
+             EraseAt(active_npc, i);
          }
      }
  }
@@ -2896,7 +2902,7 @@ void game::mon_info()
 
 void game::z_erase(int z_index)
 {
-   z.erase(z.begin() + z_index);
+   EraseAt(z, z_index);
    if (last_target == z_index) last_target = -1;
    else if (last_target > z_index) last_target--;
 }
@@ -2910,7 +2916,7 @@ void game::cleanup_dead()
 
  i = active_npc.size();
  while(0 < i--) {
-   if (active_npc[i].dead) active_npc.erase(active_npc.begin() + i);
+   if (active_npc[i].dead) EraseAt(active_npc, i);
  }
 }
 
@@ -3018,7 +3024,7 @@ void game::activate_npcs()   // blocked:? Earth coordinates, CPU, hard drive \to
             _npc.spawn_at(_npc.GPSpos);
             if (_npc.marked_for_death) _npc.die(this, false);
             else active_npc.push_back(std::move(_npc));
-            cur_om.npcs.erase(cur_om.npcs.begin() + i);
+            EraseAt(cur_om.npcs, i);
         }
     }
 }
@@ -5896,7 +5902,7 @@ void game::update_map(int &x, int &y)
 		 _npc.pos.x %= SEEX;
 		 _npc.pos.y %= SEEY;
 		 cur_om.npcs.push_back(std::move(active_npc[i]));
-		 active_npc.erase(active_npc.begin() + i);
+		 EraseAt(active_npc, i);
 	 }
  }
  }
@@ -5988,7 +5994,7 @@ void game::update_stair_monsters()
      }
     }
    }
-   coming_to_stairs.erase(coming_to_stairs.begin() + i);
+   EraseAt(coming_to_stairs,i);
    i--;
   }
  }
@@ -6104,7 +6110,7 @@ void game::spawn_mon(int shiftx, int shifty)
      }
    }	// Placing monsters of this group is done!
    if (cur_om.zg[i].population <= 0) { // Last monster in the group spawned...
-    cur_om.zg.erase(cur_om.zg.begin() + i); // ...so remove that group
+    EraseAt(cur_om.zg, i); // ...so remove that group
     i--;	// And don't increment i.
    }
   }
