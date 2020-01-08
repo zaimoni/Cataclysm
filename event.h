@@ -1,8 +1,7 @@
 #ifndef _EVENT_H_
 #define _EVENT_H_
 
-#include "faction.h"
-#include "line.h"
+#include "enums.h"
 
 class game;
 

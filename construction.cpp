@@ -5,6 +5,8 @@
 #include "mapdata.h"
 #include "skill.h"
 #include "crafting.h" // For the use_comps use_tools functions
+#include "line.h"
+#include "rng.h"
 #include "recent_msg.h"
 #include "setvector.h"
 

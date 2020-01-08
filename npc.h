@@ -2,10 +2,9 @@
 #define _NPC_H_
 
 #include "player.h"
-#include "overmap.h"
+#include "omdata.h"
 #include "faction.h"
 #include "mobile.h"
-#include <vector>
 #include <string>
 #include <sstream>
 #include <memory>

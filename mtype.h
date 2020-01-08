@@ -5,10 +5,14 @@
 
 #include "mapitems.h"
 #include "enums.h"
+#include "enum_json.h"
 #include "color.h"
-#include "itype.h"
 #include <map>
+#include <string>
+#include <vector>
 
+class game;
+struct itype;
 class monster;
 
 enum monster_species {

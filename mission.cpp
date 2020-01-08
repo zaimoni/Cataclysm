@@ -1,5 +1,6 @@
 #include "mission.h"
 #include "game.h"
+#include "rng.h"
 #include "recent_msg.h"
 
 #include <fstream>

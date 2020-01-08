@@ -3,8 +3,6 @@
 #include "keypress.h"
 #include "recent_msg.h"
 
-#include <vector>
-
 std::string CATEGORIES[8] =
  {"FIREARMS:", "AMMUNITION:", "CLOTHING:", "COMESTIBLES:",
   "TOOLS:", "BOOKS:", "WEAPONS:", "OTHER:"};

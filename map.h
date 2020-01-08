@@ -4,9 +4,7 @@
 #include "mapdata.h"
 #include "mapitems.h"
 #include "overmap.h"
-#include "item.h"
 
-#include <vector>
 #include <string>
 
 #define MAPSIZE 11

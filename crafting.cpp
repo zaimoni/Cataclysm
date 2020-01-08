@@ -3,6 +3,7 @@
 #include "output.h"
 #include "crafting.h"
 #include "inventory.h"
+#include "rng.h"
 #include "recent_msg.h"
 #include "setvector.h"
 

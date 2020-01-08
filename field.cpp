@@ -1,6 +1,6 @@
-#include "map.h"
 #include "rng.h"
 #include "game.h"
+#include "line.h"
 #include "recent_msg.h"
 
 static const char* JSON_transcode[] = {

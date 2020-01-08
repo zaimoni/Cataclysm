@@ -1,7 +1,7 @@
 #include "weather.h"
 #include "game.h"
+#include "rng.h"
 #include "recent_msg.h"
-#include <vector>
 
 static const char* const JSON_transcode[] = {
 	"CLEAR",

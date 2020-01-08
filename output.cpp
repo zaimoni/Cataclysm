@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include <vector>
 
 #define LINE_XOXO 4194424
 #define LINE_OXOX 4194417

@@ -1,12 +1,12 @@
 #ifndef _PLAYER_H_
 #define _PLAYER_H_
 
-#include "item.h"
 #include "skill.h"
 #include "bionics.h"
 #include "morale.h"
 #include "inventory.h"
 #include "mutation.h"
+#include "bodypart.h"
 
 enum art_effect_passive;
 class game;

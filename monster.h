@@ -2,6 +2,7 @@
 #define _MONSTER_H_
 
 #include "mtype.h"
+#include "bodypart.h"
 #include "mobile.h"
 
 class map;

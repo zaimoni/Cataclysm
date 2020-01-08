@@ -7,7 +7,6 @@
 #include "keypress.h"
 #include "recent_msg.h"
 
-#include <vector>
 #include <sstream>
 #include <fstream>
 

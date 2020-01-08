@@ -1,8 +1,8 @@
 #include "artifactdata.h"
 #include "game.h"
 #include "recent_msg.h"
+#include "rng.h"
 #include <sstream>
-#include <vector>
 
 static const char* const JSON_transcode_artifactactives[] = {
 	"STORM",

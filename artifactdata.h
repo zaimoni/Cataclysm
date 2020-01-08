@@ -3,6 +3,7 @@
 
 #include "artifact.h"
 #include "itype.h"
+#include "bodypart.h"
 #include <vector>
 
 int passive_effect_cost[NUM_AEPS] = {

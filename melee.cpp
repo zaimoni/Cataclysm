@@ -1,5 +1,7 @@
 #include "player.h"
 #include "game.h"
+#include "rng.h"
+#include "line.h"
 #include "recent_msg.h"
 
 #include <sstream>

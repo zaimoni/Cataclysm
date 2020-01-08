@@ -5,6 +5,8 @@
 #include "output.h"
 #include "recent_msg.h"
 #include "om_cache.hpp"
+#include "line.h"
+#include "rng.h"
 
 #include <fstream>
 #include <sstream>

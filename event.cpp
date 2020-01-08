@@ -1,6 +1,7 @@
 #include "event.h"
 #include "npc.h"
 #include "game.h"
+#include "line.h"
 #include "rng.h"
 #include "recent_msg.h"
 

@@ -1,6 +1,7 @@
 #include "player.h"
 #include "mutation.h"
 #include "game.h"
+#include "rng.h"
 #include "recent_msg.h"
 
 // mutation_effect handles things like destruction of armor, etc.

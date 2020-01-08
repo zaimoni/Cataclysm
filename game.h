@@ -2,17 +2,13 @@
 #define _GAME_H_
 
 #include "map.h"
-#include "crafting.h"
-#include "trap.h"
 #include "npc.h"
 #include "event.h"
 #include "mission.h"
 #include "weather.h"
 #include "construction.h"
 #include "calendar.h"
-#include "mutation.h"
 #include "gamemode.h"
-#include "action.h"
 #include "Zaimoni.STL/Logging.h"
 #include "Zaimoni.STL/GDI/box.hpp"
 

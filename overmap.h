@@ -1,10 +1,10 @@
 #ifndef _OVERMAP_H_
 #define _OVERMAP_H_
 #include "enums.h"
-#include "string.h"
 #include "omdata.h"
 #include "output.h"
 #include "npc.h"
+#include <string.h>
 #include <vector>
 #include <iosfwd>
 

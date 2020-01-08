@@ -1,6 +1,7 @@
 #ifndef _MORALE_H_
 #define _MORALE_H_
 
+#include "itype.h"
 #include <string>
 
 #define MIN_MORALE_READ		(-40)

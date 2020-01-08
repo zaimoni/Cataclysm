@@ -4,7 +4,6 @@
 #include "color.h"
 #include "iuse.h"
 #include "pldata.h"
-#include "bodypart.h"
 #include "skill.h"
 #include "bionics.h"
 #include "artifact.h"

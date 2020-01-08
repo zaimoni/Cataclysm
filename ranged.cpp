@@ -11,7 +11,6 @@
 #include "recent_msg.h"
 
 #include <math.h>
-#include <vector>
 
 int time_to_fire(player &p, const it_gun* firing);
 void make_gun_sound_effect(game *g, player &p, bool burst);

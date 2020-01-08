@@ -1,6 +1,8 @@
 #include "vehicle.h"
 #include "game.h"
+#include "line.h"
 #include "recent_msg.h"
+#include "rng.h"
 #include "saveload.h"
 
 #include <stdlib.h>

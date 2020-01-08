@@ -1,6 +1,7 @@
 #include "item.h"
 #include "output.h"
 #include "JSON.h"
+#include "bodypart.h"
 #include "setvector.h"
 
 #include <string.h>

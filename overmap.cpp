@@ -5,10 +5,11 @@
 #include "JSON.h"
 #include "om_cache.hpp"
 #include "stl_limits.h"
+#include "line.h"
+#include "rng.h"
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-#include <vector>
 #include <fstream>
 #include <sstream>
 

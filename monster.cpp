@@ -1,5 +1,7 @@
 #include "monster.h"
 #include "game.h"
+#include "line.h"
+#include "rng.h"
 #include "recent_msg.h"
 #include "om_cache.hpp"
 #include "saveload.h"

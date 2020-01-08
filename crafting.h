@@ -3,7 +3,6 @@
 
 #include "itype.h"
 #include "skill.h"
-#include "rng.h"
 
 enum craft_cat {
 CC_NULL = 0,
