@@ -354,32 +354,16 @@ void inventory::use_charges(itype_id it, int quantity)
         auto j = outside.size();
         while (0 < j) {
             auto& obj = outside[--j];
-            // First, check contents
-            auto k = obj.contents.size();
-            while (0 < k) {
-                auto& inside = obj.contents[--k];
-                if (it != inside.type->id) continue;
-                if (auto code = inside.use_charges(quantity)) {
-                    if (0 > code) {
-                        EraseAt(obj.contents, k);
-                        if (0 < quantity) continue;
+            if (auto code = obj.use_charges(it, quantity)) {
+                if (0 > code) {
+                    EraseAt(outside, j);
+                    if (outside.empty()) { // should imply j = 0
+                        EraseAt(items, i);
+                        if (items.size() <= i) return;
                     }
-                    return;
+                    if (0 < quantity) continue;
                 }
-            }
-            // Now check the item itself
-            if (obj.type->id == it) {
-                if (auto code = obj.use_charges(quantity)) {
-                    if (0 > code) {
-                        EraseAt(outside, j);
-                        if (outside.empty()) { // should imply j = 0
-                            EraseAt(items, i);
-                            if (items.size() <= i) return;
-                        }
-                        if (0 < quantity) continue;
-                    }
-                    return;
-                }
+                return;
             }
         }
     }

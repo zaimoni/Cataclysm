@@ -1998,26 +1998,9 @@ void map::use_charges(point origin, int range, const itype_id type, int quantity
        auto n = i_at(x, y).size();
        while (0 < n) {
            auto& curit = i_at(x, y)[--n];
-           // Check contents first
-           auto m = curit.contents.size();
-           while (0 < m) {
-               auto& obj = curit.contents[--m];
-               if (type != obj.type->id) continue;
-               if (auto code = obj.use_charges(quantity)) {
-                   if (0 > code) {
-                       EraseAt(curit.contents, m);
-                       m--;
-                       if (0 < quantity) continue;
-                   }
-                   return;
-               }
-           }
-           // Now check the actual item
-           if (type != curit.type->id) continue;
-           if (auto code = curit.use_charges(quantity)) {
+           if (auto code = curit.use_charges(type, quantity)) {
                if (0 > code) {
                    i_rem(x, y, n);
-                   n--;
                    if (0 < quantity) continue;
                }
                return;

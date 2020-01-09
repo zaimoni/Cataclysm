@@ -74,7 +74,10 @@ public:
  bool stacks_with(const item& rhs) const;
  void put_in(item payload);
 
- int use_charges(int& qty); // 0: no op; 1: done; -1: destroyed, may or may not be done
+ int use_charges(itype_id it, int& qty); // 0: no op/continue; 1: done; -1: destroyed, may or may not be done
+private:
+ int use_charges(int& qty); // Cf. above
+public:
 
  int weight() const;
  int volume() const;

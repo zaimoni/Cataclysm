@@ -3444,23 +3444,11 @@ void player::use_charges(itype_id it, int quantity)
   if (power_level < 0) power_level = 0;
   return;
  }
-// Start by checking weapon contents
- for (int i = 0; i < weapon.contents.size(); i++) {
-  if (it != weapon.contents[i].type->id) continue;
-  if (auto code = weapon.contents[i].use_charges(quantity)) {
-      if (0 > code) {
-          EraseAt(weapon.contents, i--);
-          if (0 < quantity) continue;
-      }
-      return;
-  }
- }
-  
- if (weapon.type->id == it && 0 < weapon.charges) {
-  if (auto code = weapon.use_charges(quantity)) {
-      if (0 > code) remove_weapon();
-      if (0 < code || 0 >= quantity) return;
-  }
+
+ // check weapon first
+ if (auto code = weapon.use_charges(it, quantity)) {
+     if (0 > code) remove_weapon();
+     if (0 < code || 0 >= quantity) return;
  }
 
  inv.use_charges(it, quantity);

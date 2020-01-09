@@ -96,6 +96,26 @@ int item::use_charges(int& qty) {
     return 0;
 }
 
+int item::use_charges(const itype_id it, int& qty)
+{
+    // Check contents first
+    auto k = contents.size();
+    while (0 < k) {
+        auto& inside = contents[--k];
+        if (it != inside.type->id) continue;
+        if (auto code = inside.use_charges(qty)) {
+            if (0 > code) {
+                EraseAt(contents, k);
+                if (0 < qty) continue;
+            }
+            return 1;
+        }
+    }
+    // Now check the item itself
+    if (it == type->id) return use_charges(qty);
+    return 0;
+}
+
 bool item::is_null() const
 {
  return (type == NULL || type->id == 0);
