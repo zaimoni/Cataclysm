@@ -3247,7 +3247,7 @@ void player::process_active_items(game *g)
        i--;
        j = 0;
       } else {
-       inv.stack_at(i).erase(inv.stack_at(i).begin() + j);
+       EraseAt(inv.stack_at(i), j);
        j--;
       }
      } else

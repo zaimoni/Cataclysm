@@ -635,7 +635,7 @@ void map::destroy_vehicle (vehicle *veh)
  int sm = veh->sm.x + veh->sm.y * my_MAPSIZE;
  for (int i = 0; i < grid[sm]->vehicles.size(); i++) {
   if (&(grid[sm]->vehicles[i]) == veh) {
-   grid[sm]->vehicles.erase (grid[sm]->vehicles.begin() + i);
+   EraseAt(grid[sm]->vehicles, i);
    return;
   }
  }
@@ -709,7 +709,7 @@ bool map::displace_vehicle (game *g, int &x, int &y, const point& delta, bool te
  if (src_na != dst_na) {
   veh->sm = dest / SEE;
   grid[dst_na]->vehicles.push_back(std::move(*veh));
-  grid[src_na]->vehicles.erase (grid[src_na]->vehicles.begin() + our_i);
+  EraseAt(grid[src_na]->vehicles, our_i);
  }
 
  x += delta.x;	// cf dest
@@ -762,7 +762,7 @@ void map::vehmove(game *g)
        if (pl_ctrl) messages.add("Your %s sank.", veh->name.c_str());
        veh->unboard_all ();
 // destroy vehicle (sank to nowhere)
-       grid[sm]->vehicles.erase (grid[sm]->vehicles.begin() + v);
+       EraseAt(grid[sm]->vehicles, v);
        v--;
        break;
       }

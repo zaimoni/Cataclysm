@@ -1155,7 +1155,7 @@ bool vehicle::add_item (int part, item itm)
 void vehicle::remove_item (int part, int itemdex)
 {
     if (itemdex < 0 || itemdex >= parts[part].items.size()) return;
-    parts[part].items.erase (parts[part].items.begin() + itemdex);
+    EraseAt(parts[part].items, itemdex);
 }
 
 void vehicle::gain_moves (int mp)
@@ -1465,19 +1465,15 @@ bool vehicle::refill(player& u, const int part, const bool test)
              v_part.amount == max_fuel? " to its maximum" : "");
 
     p_itm->charges -= used_charges;
-    if (rem_itm)
-    {
-        if (i_itm == -2)
-        {
+    if (rem_itm) {
+        if (i_itm == -2) {
             if (i_cont)
-                u.weapon.contents.erase (u.weapon.contents.begin());
+                EraseAt(u.weapon.contents, 0);
             else
                 u.remove_weapon ();
-        }
-        else
-        {
+        } else {
             if (i_cont)
-                u.inv[i_itm].contents.erase (u.inv[i_itm].contents.begin());
+                EraseAt(u.inv[i_itm].contents, 0);
             else
                 u.inv.remove_item (i_itm);
         }
@@ -1522,7 +1518,7 @@ void vehicle::fire_turret (int p, bool burst)
             if (fire_turret_internal (p, *gun, *ammo, charges))
             { // consume ammo
                 if (charges >= parts[p].items[0].charges)
-                    parts[p].items.erase (parts[p].items.begin());
+                    EraseAt(parts[p].items, 0);
                 else
                     parts[p].items[0].charges -= charges;
             }
