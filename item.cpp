@@ -89,11 +89,11 @@ int item::use_charges(int& qty) {
         if (destroyed_at_zero_charges()) return -1; // item destroyed; must check qty separately
         else charges = 0;
         if (0 >= qty) return 1; // done
-    }
-    else {
+    } else {
         charges -= qty;
         return 1;   // done
     }
+    return 0;
 }
 
 bool item::is_null() const

@@ -3261,9 +3261,8 @@ void player::process_active_items(game *g)
  }
 }
 
-item player::remove_weapon()
+void player::remove_weapon()
 {
- item tmp = weapon;
  weapon = item::null;
 // We need to remove any boosts related to our style
  rem_disease(DI_ATTACK_BOOST);
@@ -3272,7 +3271,13 @@ item player::remove_weapon()
  rem_disease(DI_SPEED_BOOST);
  rem_disease(DI_ARMOR_BOOST);
  rem_disease(DI_VIPER_COMBO);
- return tmp;
+}
+
+item player::unwield()
+{
+    item ret(std::move(weapon));
+    remove_weapon();
+    return ret;
 }
 
 void player::remove_mission_items(int mission_id)
@@ -3339,7 +3344,7 @@ item player::i_rem(char let)
 
 item player::i_rem(itype_id type)
 {
- if (weapon.type->id == type) return remove_weapon();
+ if (weapon.type->id == type) return unwield();
  for (size_t i = 0; i < inv.size(); i++) {
   if (inv[i].type->id == type) return inv.remove_item(i);
  }
@@ -3844,13 +3849,13 @@ bool player::wield(int index)
     return false;
    }
   } else if (volume_carried() + weapon.volume() < volume_capacity()) {
-   inv.push_back(remove_weapon());
+   inv.push_back(unwield());
    inv_sorted = false;
    moves -= 20;
    recoil = 0;
    if (!pickstyle) return true;
   } else if (query_yn("No space in inventory for your %s.  Drop it?", weapon.tname().c_str())) {
-   game::active()->m.add_item(pos, remove_weapon());
+   game::active()->m.add_item(pos, unwield());
    recoil = 0;
    if (!pickstyle) return true;
   } else return false;
@@ -3880,9 +3885,9 @@ bool player::wield(int index)
   last_item = itype_id(weapon.type->id);
   return true;
  } else if (volume_carried() + weapon.volume() - inv[index].volume() < volume_capacity()) {
-  item tmpweap = remove_weapon();
+  item tmpweap(unwield());
   weapon = inv.remove_item(index);
-  inv.push_back(tmpweap);
+  inv.push_back(std::move(tmpweap));
   inv_sorted = false;
   moves -= 45;
   if (weapon.is_artifact() && weapon.is_tool()) game::add_artifact_messages(dynamic_cast<const it_artifact_tool*>(weapon.type)->effects_wielded);
@@ -3890,9 +3895,8 @@ bool player::wield(int index)
   return true;
  } else if (query_yn("No space in inventory for your %s.  Drop it?",
                      weapon.tname().c_str())) {
-  game::active()->m.add_item(pos, remove_weapon());
-  weapon = inv[index];
-  inv.remove_item(index);
+  game::active()->m.add_item(pos, unwield());
+  weapon = inv.remove_item(index);
   inv_sorted = false;
   moves -= 30;
   if (weapon.is_artifact() && weapon.is_tool()) {

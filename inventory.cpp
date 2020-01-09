@@ -198,7 +198,7 @@ item inventory::remove_item(int index)
   return item::null;
  }
 
- item ret = items[index][0];
+ item ret(std::move(items[index][0]));
  EraseAt(items[index], 0);
  if (items[index].empty()) EraseAt(items, index);
 

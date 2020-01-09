@@ -4202,7 +4202,7 @@ void game::pickup(const point& pt, int min)
                 u.weapon.tname().c_str(), newit.tname().c_str())) {
       if (from_veh) veh->remove_item (veh_part, 0);
       else m.i_clear(pt);
-      m.add_item(pt, u.remove_weapon());
+      m.add_item(pt, u.unwield());
       u.i_add(newit);
       u.wield(u.inv.size() - 1);
       u.moves -= 100;
@@ -4389,7 +4389,7 @@ void game::pickup(const point& pt, int min)
                 u.weapon.tname().c_str(), here[i].tname().c_str())) {
        if (from_veh) veh->remove_item (veh_part, curmit);
        else m.i_rem(pt, curmit);
-       m.add_item(pt, u.remove_weapon());
+       m.add_item(pt, u.unwield());
        u.i_add(here[i]);
        u.wield(u.inv.size() - 1);
        curmit--;

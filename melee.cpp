@@ -203,15 +203,14 @@ int player::hit_mon(game *g, monster *z, bool allow_grab) // defaults to true
  if (allow_grab && technique == TEC_GRAB) {
 // Move our weapon to a temp slot, if it's not unarmed
   if (!unarmed_attack()) {
-   item tmpweap = remove_weapon();
+   item tmpweap = unwield();
    dam += hit_mon(g, z, false); // False means a second grab isn't allowed
-   weapon = tmpweap;
+   weapon = std::move(tmpweap);
   } else
    dam += hit_mon(g, z, false); // False means a second grab isn't allowed
  }
 
- if (dam >= 5 && has_artifact_with(AEP_SAP_LIFE))
-  healall( rng(dam / 10, dam / 5) );
+ if (dam >= 5 && has_artifact_with(AEP_SAP_LIFE)) healall( rng(dam / 10, dam / 5) );
  return dam;
 }
 
@@ -322,8 +321,7 @@ void player::hit_player(game *g, player &p, bool allow_grab)
  bool stabbing = (stab_dam >= 10 && stab_dam >= cut_dam);
  melee_practice(*this, true, unarmed_attack(), bashing, cutting, stabbing);
 
- if (dam >= 5 && has_artifact_with(AEP_SAP_LIFE))
-  healall( rng(dam / 10, dam / 5) );
+ if (dam >= 5 && has_artifact_with(AEP_SAP_LIFE)) healall( rng(dam / 10, dam / 5) );
 
  if (allow_grab && technique == TEC_GRAB) {
 // Move our weapon to a temp slot, if it's not unarmed
@@ -333,9 +331,9 @@ void player::hit_player(game *g, player &p, bool allow_grab)
    if (is_u)
     messages.add("%s break%s the grab!", target.c_str(), (p.is_npc() ? "s" : ""));
   } else if (!unarmed_attack()) {
-   item tmpweap = remove_weapon();
+   item tmpweap = unwield();
    hit_player(g, p, false); // False means a second grab isn't allowed
-   weapon = tmpweap;
+   weapon = std::move(tmpweap);
   } else
    hit_player(g, p, false); // False means a second grab isn't allowed
  }
@@ -797,7 +795,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
  } break;
 
  case TEC_DISARM:
-  g->m.add_item(p->pos, p->remove_weapon());
+  g->m.add_item(p->pos, p->unwield());
   if (u_see) messages.add("%s disarm%s %s!", You.c_str(), s.c_str(), target.c_str());
   break;
 
@@ -934,7 +932,7 @@ void player::perform_defensive_technique(
    break;
 
   case TEC_DEF_DISARM:
-   g->m.add_item(p->pos, p->remove_weapon());
+   g->m.add_item(p->pos, p->unwield());
 // Re-roll damage, without our weapon
    bash_dam = p->roll_bash_damage(NULL, false);
    cut_dam  = p->roll_cut_damage(NULL, false);
@@ -1120,9 +1118,9 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
               weapon.tname().c_str(), target.c_str());
   if (z) {
    z->speed *= (weapon.has_flag(IF_SPEAR) || weapon.has_flag(IF_STAB)) ? .7 : .85;
-   z->add_item(remove_weapon());
+   z->add_item(unwield());
   } else
-   g->m.add_item(pos, remove_weapon());
+   g->m.add_item(pos, unwield());
  } else {
   if (z && (cut_dam >= z->hp || stab_dam >= z->hp)) {
    cutting_penalty /= 2;
