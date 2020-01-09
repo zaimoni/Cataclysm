@@ -1938,8 +1938,7 @@ void map::process_active_items_in_submap(game *g, int nonant)
      } else { 
       const it_tool* const tmp = dynamic_cast<const it_tool*>(items[n].type);
       (*tmp->use)(g, &(g->u), &(items[n]), true);
-      if (tmp->turns_per_charge > 0 && int(messages.turn) % tmp->turns_per_charge ==0)
-       items[n].charges--;
+      if (tmp->turns_per_charge > 0 && int(messages.turn) % tmp->turns_per_charge ==0) items[n].charges--;
       if (items[n].charges <= 0) {
        (*tmp->use)(g, &(g->u), &(items[n]), false);
        if (tmp->revert_to == itm_null || items[n].charges == -1) {
@@ -1991,40 +1990,39 @@ void map::use_amount(point origin, int range, const itype_id type, int quantity,
 
 void map::use_charges(point origin, int range, const itype_id type, int quantity)
 {
+ // XXX cubic rather than quartic \todo fix
  for (int radius = 0; radius <= range && quantity > 0; radius++) {
   for (int x = origin.x - radius; x <= origin.x + radius; x++) {
    for (int y = origin.y - radius; y <= origin.y + radius; y++) {
-    if (rl_dist(origin, x, y) <= radius) {
-     for (int n = 0; n < i_at(x, y).size(); n++) {
-      auto& curit = i_at(x, y)[n];
-// Check contents first
-      for (int m = 0; m < curit.contents.size() && quantity > 0; m++) {
-	   auto& obj = curit.contents[m];
-	   if (type != obj.type->id) continue;
-	   if (obj.charges > quantity) {
-		   obj.charges -= quantity;
-		   return;
-	   }
-       quantity -= obj.charges;
-       if (obj.destroyed_at_zero_charges()) {
-          EraseAt(curit.contents, m);
-          m--;
-       } else obj.charges = 0;
-      }
-// Now check the actual item
-	  if (type != curit.type->id) continue;
-	  if (curit.charges > quantity) {
-		  curit.charges -= quantity;
-		  return;
-	  }
-	  quantity -= curit.charges;
-	  if (curit.destroyed_at_zero_charges()) {
-		  i_rem(x, y, n);
-		  n--;
-	  }
-	  else curit.charges = 0;
-	 }
-    }
+       if (radius < rl_dist(origin, x, y)) continue;   // invariant?  meaningful for trigonmetric distance
+       auto n = i_at(x, y).size();
+       while (0 < n) {
+           auto& curit = i_at(x, y)[--n];
+           // Check contents first
+           auto m = curit.contents.size();
+           while (0 < m) {
+               auto& obj = curit.contents[--m];
+               if (type != obj.type->id) continue;
+               if (auto code = obj.use_charges(quantity)) {
+                   if (0 > code) {
+                       EraseAt(curit.contents, m);
+                       m--;
+                       if (0 < quantity) continue;
+                   }
+                   return;
+               }
+           }
+           // Now check the actual item
+           if (type != curit.type->id) continue;
+           if (auto code = curit.use_charges(quantity)) {
+               if (0 > code) {
+                   i_rem(x, y, n);
+                   n--;
+                   if (0 < quantity) continue;
+               }
+               return;
+           }
+       }
    }
   }
  }

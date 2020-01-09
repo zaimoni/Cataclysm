@@ -348,43 +348,41 @@ void inventory::use_amount(itype_id it, int quantity, bool use_container)
 
 void inventory::use_charges(itype_id it, int quantity)
 {
- for (int i = 0; i < items.size() && quantity > 0; i++) {
-  for (int j = 0; j < items[i].size() && quantity > 0; j++) {
-// First, check contents
-   for (int k = 0; k < items[i][j].contents.size() && quantity > 0; k++) {
-    if (items[i][j].contents[k].type->id == it) {
-     if (items[i][j].contents[k].charges <= quantity) {
-      quantity -= items[i][j].contents[k].charges;
-      if (items[i][j].contents[k].destroyed_at_zero_charges()) {
-       EraseAt(items[i][j].contents, k);
-       k--;
-      } else items[i][j].contents[k].charges = 0;
-     } else {
-      items[i][j].contents[k].charges -= quantity;
-      return;
-     }
+    auto i = items.size();
+    while (0 < i) {
+        auto& outside = items[--i];
+        auto j = outside.size();
+        while (0 < j) {
+            auto& obj = outside[--j];
+            // First, check contents
+            auto k = obj.contents.size();
+            while (0 < k) {
+                auto& inside = obj.contents[--k];
+                if (it != inside.type->id) continue;
+                if (auto code = inside.use_charges(quantity)) {
+                    if (0 > code) {
+                        EraseAt(obj.contents, k);
+                        if (0 < quantity) continue;
+                    }
+                    return;
+                }
+            }
+            // Now check the item itself
+            if (obj.type->id == it) {
+                if (auto code = obj.use_charges(quantity)) {
+                    if (0 > code) {
+                        EraseAt(outside, j);
+                        if (outside.empty()) { // should imply j = 0
+                            EraseAt(items, i);
+                            if (items.size() <= i) return;
+                        }
+                        if (0 < quantity) continue;
+                    }
+                    return;
+                }
+            }
+        }
     }
-   }
-// Now check the item itself
-   if (items[i][j].type->id == it) {
-    if (items[i][j].charges <= quantity) {
-     quantity -= items[i][j].charges;
-     if (items[i][j].destroyed_at_zero_charges()) {
-      EraseAt(items[i], j);
-      j--;
-      if (items[i].empty()) {
-       EraseAt(items, i);
-       i--;
-       j = 0;
-      }
-     } else items[i][j].charges = 0;
-    } else {
-     items[i][j].charges -= quantity;
-     return;
-    }
-   }
-  }
- }
 }
  
 bool inventory::has_item(item *it) const

@@ -3221,8 +3221,7 @@ void player::process_active_items(game *g)
   }
   tmp = dynamic_cast<const it_tool*>(weapon.type);
   (*tmp->use)(g, this, &weapon, true);
-  if (tmp->turns_per_charge > 0 && int(messages.turn) % tmp->turns_per_charge == 0)
-   weapon.charges--;
+  if (tmp->turns_per_charge > 0 && int(messages.turn) % tmp->turns_per_charge == 0) weapon.charges--;
   if (weapon.charges <= 0) {
    (*tmp->use)(g, this, &weapon, false);
    if (tmp->revert_to == itm_null)
@@ -3239,9 +3238,8 @@ void player::process_active_items(game *g)
    if (tmp_it->active) {
     tmp = dynamic_cast<const it_tool*>(tmp_it->type);
     (*tmp->use)(g, this, tmp_it, true);
-    if (tmp->turns_per_charge > 0 && int(messages.turn) % tmp->turns_per_charge == 0)
-    tmp_it->charges--;
-    if (tmp_it->charges <= 0) {
+    if (tmp->turns_per_charge > 0 && int(messages.turn) % tmp->turns_per_charge == 0) tmp_it->charges--;
+    if (0 >= tmp_it->charges) {
      (*tmp->use)(g, this, tmp_it, false);
      if (tmp->revert_to == itm_null) {
       if (inv.stack_at(i).size() == 1) {
@@ -3438,43 +3436,27 @@ void player::use_charges(itype_id it, int quantity)
 {
  if (it == itm_toolset) {
   power_level -= quantity;
-  if (power_level < 0)
-   power_level = 0;
+  if (power_level < 0) power_level = 0;
   return;
  }
 // Start by checking weapon contents
  for (int i = 0; i < weapon.contents.size(); i++) {
-  if (weapon.contents[i].type->id == it) {
-   if (weapon.contents[i].charges > 0 &&
-       weapon.contents[i].charges <= quantity) {
-    quantity -= weapon.contents[i].charges;
-    if (weapon.contents[i].destroyed_at_zero_charges()) {
-     EraseAt(weapon.contents, i);
-     i--;
-    } else
-     weapon.contents[i].charges = 0;
-    if (quantity == 0)
-     return;
-   } else {
-    weapon.contents[i].charges -= quantity;
-    return;
-   }
+  if (it != weapon.contents[i].type->id) continue;
+  if (auto code = weapon.contents[i].use_charges(quantity)) {
+      if (0 > code) {
+          EraseAt(weapon.contents, i--);
+          if (0 < quantity) continue;
+      }
+      return;
   }
  }
   
- if (weapon.type->id == it) {
-  if (weapon.charges > 0 && weapon.charges <= quantity) {
-   quantity -= weapon.charges;
-   if (weapon.destroyed_at_zero_charges())
-    remove_weapon();
-   else
-    weapon.charges = 0;
-   if (quantity == 0) return;
-   } else {
-    weapon.charges -= quantity;
-    return;
-   }
+ if (weapon.type->id == it && 0 < weapon.charges) {
+  if (auto code = weapon.use_charges(quantity)) {
+      if (0 > code) remove_weapon();
+      if (0 < code || 0 >= quantity) return;
   }
+ }
 
  inv.use_charges(it, quantity);
 }
@@ -3829,8 +3811,7 @@ bool player::eat(int index)
   }
  }
  
- eaten->charges--;
- if (eaten->charges <= 0) {
+ if (0 >= --eaten->charges) {
   if (which == -1) weapon = item::null;
   else if (which == -2) {
    EraseAt(weapon.contents, 0);
@@ -4629,7 +4610,7 @@ std::vector<int> player::has_ammo(ammotype at) const
   bool newtype = true;
   for (const auto n : ret) {
    const auto& it = inv[n];
-   if (ammo->id == it.type->id && it.charges == it.charges) {
+   if (ammo->id == it.type->id && inv[a].charges == it.charges) {
 // They're effectively the same; don't add it to the list
 // TODO: Bullets may become rusted, etc., so this if statement may change
     newtype = false;

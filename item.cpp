@@ -82,6 +82,20 @@ void item::make(const itype* it)
  if (was_null) _bootstrap_item_charges(charges, it);
 }
 
+int item::use_charges(int& qty) {
+    if (0 >= charges) return 0; // no change
+    if (charges <= qty) {
+        qty -= charges;
+        if (destroyed_at_zero_charges()) return -1; // item destroyed; must check qty separately
+        else charges = 0;
+        if (0 >= qty) return 1; // done
+    }
+    else {
+        charges -= qty;
+        return 1;   // done
+    }
+}
+
 bool item::is_null() const
 {
  return (type == NULL || type->id == 0);
