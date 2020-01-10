@@ -189,6 +189,8 @@ public:
  void cancel_activity();
  virtual void cancel_activity_query(const char* message, ...);
 
+ void accept_mission(mission* miss); // Just assign an existing mission
+
  int weight_carried() const;
  int volume_carried() const;
  int weight_capacity(bool real_life = true) const;

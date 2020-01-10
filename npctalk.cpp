@@ -404,7 +404,7 @@ static std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *
 		 topic == TALK_MISSION_SUCCESS || topic == TALK_MISSION_ADVICE ||
 		 topic == TALK_MISSION_FAILURE || topic == TALK_MISSION_SUCCESS_LIE) ? p->chatbin.missions_assigned : p->chatbin.missions;
 
-	 if (selected < conversation_target.size()) miss = g->find_mission(conversation_target[selected]);	// non-NULL as dynamic_lines validated this
+	 if (selected < conversation_target.size()) miss = g->find_mission(conversation_target[selected]);	// non-NULL as dynamic_line validated this
 	}
 
  switch (topic) {
@@ -1174,9 +1174,8 @@ void talk_function::assign_mission(game *g, npc *p)
   return;
  }
  mission *miss = g->find_mission( p->chatbin.missions[selected] );
- g->assign_mission(p->chatbin.missions[selected]);
+ g->u.accept_mission(miss);
  miss->npc_id = p->id;
- g->u.active_mission = g->u.active_missions.size() - 1;
  p->chatbin.missions_assigned.push_back( p->chatbin.missions[selected] );
  EraseAt(p->chatbin.missions, selected);
 }

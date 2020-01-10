@@ -14,7 +14,7 @@ struct dialogue {
  std::vector<std::string> history;
  std::vector<talk_topic> topic_stack;
 
- int opt(std::string challenge, ...);
+// int opt(std::string challenge, ...); // no implementation
  talk_topic opt(talk_topic topic, game *g);
 
  dialogue(player* _alpha, npc* _beta)
@@ -38,7 +38,7 @@ struct talk_function
  static void mission_failure	(game *g, npc *p);
  static void clear_mission	(game *g, npc *p);
  static void mission_reward	(game *g, npc *p);
- static void mission_favor	(game *g, npc *p);
+// static void mission_favor	(game *g, npc *p);  // no implementation
  static void give_equipment	(game *g, npc *p);
  static void start_trade	(game *g, npc *p);
  static void follow			(game *g, npc *p); // p follows u

@@ -987,20 +987,9 @@ void game::update_weather()
 void game::give_mission(mission_id type)
 {
  active_missions.push_back(mission_type::types[type].create(this));
- auto& tmp = active_missions.back();
- u.active_missions.push_back(tmp.uid);
- u.active_mission = u.active_missions.size() - 1;
- (*tmp.type->start)(this, &tmp);
+ u.accept_mission(&active_missions.back());
 }
 
-void game::assign_mission(int id)
-{
- u.active_missions.push_back(id);
- u.active_mission = u.active_missions.size() - 1;
- mission *miss = find_mission(id);
- (*miss->type->start)(this, miss);
-}
- 
 int game::reserve_mission(mission_id type, int npc_id)
 {
  mission tmp = mission_type::types[type].create(this, npc_id);

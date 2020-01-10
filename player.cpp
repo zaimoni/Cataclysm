@@ -4591,6 +4591,14 @@ void player::cancel_activity_query(const char* message, ...)
 	if (doit) cancel_activity();
 }
 
+void player::accept_mission(mission* const miss)
+{
+    assert(miss);
+    active_missions.push_back(miss->uid);
+    active_mission = active_missions.size() - 1;
+    (*miss->type->start)(game::active(), miss);
+}
+
 std::vector<int> player::has_ammo(ammotype at) const
 {
  std::vector<int> ret;
