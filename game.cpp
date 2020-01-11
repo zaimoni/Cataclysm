@@ -1029,50 +1029,6 @@ const mission_type* game::find_mission_type(int id)
  return 0;
 }
 
-bool game::mission_complete(int id, int npc_id)
-{
- mission* miss = find_mission(id);
- if (!miss) {
-  debugmsg("game::mission_complete(%d) - it's NULL!", id);
-  return false;
- }
- const mission_type* type = miss->type;
- switch (type->goal) {
-  case MGOAL_GO_TO: {
-   point cur_pos(lev.x + int(MAPSIZE / 2), lev.y + int(MAPSIZE / 2));
-   return rl_dist(cur_pos, miss->target) <= 1;
-  } break;
-
-  case MGOAL_FIND_ITEM:
-   if (!u.has_amount(type->item_id, 1)) return false;
-   if (miss->npc_id != -1 && miss->npc_id != npc_id)
-    return false;
-   return true;
-
-  case MGOAL_FIND_ANY_ITEM:
-   return (u.has_mission_item(miss->uid) &&
-           (miss->npc_id == -1 || miss->npc_id == npc_id));
-
-  case MGOAL_FIND_MONSTER:
-   if (miss->npc_id != -1 && miss->npc_id != npc_id)
-    return false;
-   for (int i = 0; i < z.size(); i++) {
-    if (z[i].mission_id == miss->uid) return true;
-   }
-   return false;
-
-  case MGOAL_FIND_NPC:
-   return (miss->npc_id == npc_id);
-
-  case MGOAL_KILL_MONSTER:
-   return (miss->step >= 1);
-
-  default:
-   return false;
- }
- return false;
-}
-
 bool game::mission_failed(int id)
 {
  mission *miss = find_mission(id);

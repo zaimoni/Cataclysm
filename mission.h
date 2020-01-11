@@ -102,6 +102,8 @@ struct mission {
  friend bool fromJSON(const cataclysm::JSON& _in, mission& dest);
  friend cataclysm::JSON toJSON(const mission& src);
 
+ bool is_complete(const player& u, int npc_id) const;
+
  static mission* from_id(int uid);	// only active missions
 };
 

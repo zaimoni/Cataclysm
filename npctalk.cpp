@@ -498,8 +498,8 @@ static std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *
     SUCCESS(TALK_NONE);
     FAILURE(TALK_MISSION_FAILURE);
      FAILURE_OPINION(-3, 0, -1, 2, 0);
-  } else if (!g->mission_complete(id, p->id)) {
-   const mission_type *type = g->find_mission_type(id);
+  } else if (!miss->is_complete(g->u, p->id)) {
+   const mission_type *type = miss->type;
    RESPONSE("Not yet.");
     SUCCESS(TALK_NONE);
    if (type->goal == MGOAL_KILL_MONSTER) {
@@ -515,7 +515,7 @@ static std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *
     SUCCESS(TALK_DONE);
   } else {
 // TODO: Lie about mission
-   const mission_type *type = g->find_mission_type(id);
+   const mission_type *type = miss->type;
    switch (type->goal) {
    case MGOAL_FIND_ITEM:
    case MGOAL_FIND_ANY_ITEM:

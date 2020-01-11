@@ -1,6 +1,7 @@
 #include "mission.h"
 #include "game.h"
 #include "rng.h"
+#include "line.h"
 #include "recent_msg.h"
 
 #include <fstream>
@@ -34,6 +35,33 @@ mission mission_type::create(game *g, int npc_id)
   ret.deadline = 0;
 
  return ret;
+}
+
+bool mission::is_complete(const player& u, const int _npc_id) const
+{
+    switch (type->goal) {
+    case MGOAL_GO_TO: {
+        const auto cur_pos = overmap::toOvermap(u.GPSpos);
+        return rl_dist(cur_pos.second, target) <= 1;
+    }
+
+    case MGOAL_FIND_ITEM:
+        if (!u.has_amount(type->item_id, 1)) return false;
+        return 0 >= npc_id || npc_id == _npc_id;
+
+    case MGOAL_FIND_ANY_ITEM:
+        if (!u.has_mission_item(uid)) return false;
+        return 0 >= npc_id || npc_id == _npc_id;
+
+    case MGOAL_FIND_MONSTER:
+        if (0 < npc_id && npc_id != _npc_id) return false;
+        for (const auto& _mon : game::active()->z) if (_mon.mission_id == uid) return true;
+        return false;
+
+    case MGOAL_FIND_NPC: return (npc_id == _npc_id);
+    case MGOAL_KILL_MONSTER: return 1 <= step;
+    default: return false;
+    }
 }
 
 std::string mission_dialogue (mission_id id, talk_topic state)

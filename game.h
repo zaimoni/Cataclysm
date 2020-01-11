@@ -113,7 +113,6 @@ class game
                              int npc_id = -1);
   mission* find_mission(int id); // Mission with UID=id; NULL if non-existant
   const mission_type* find_mission_type(int id); // Same, but returns its type
-  bool mission_complete(int id, int npc_id); // True if we made it
   bool mission_failed(int id); // True if we failed it
   void wrap_up_mission(int id); // Perform required actions
   void fail_mission(int id); // Perform required actions, move to failed list
