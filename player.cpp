@@ -4591,12 +4591,23 @@ void player::cancel_activity_query(const char* message, ...)
 	if (doit) cancel_activity();
 }
 
-void player::accept_mission(mission* const miss)
+void player::accept(mission* const miss)
 {
     assert(miss);
     active_missions.push_back(miss->uid);
     active_mission = active_missions.size() - 1;
     (*miss->type->start)(game::active(), miss);
+}
+
+void player::fail(const mission& miss)
+{
+    auto i = active_missions.size();
+    while (0 < i) {
+        if (active_missions[--i] == miss.uid) {
+            EraseAt(active_missions, i);
+            failed_missions.push_back(miss.uid);   // 2020-01-11 respecify: cannot fail a mission that isn't accepted
+        }
+    }
 }
 
 std::vector<int> player::has_ammo(ammotype at) const

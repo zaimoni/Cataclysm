@@ -513,10 +513,15 @@ void monster::die(game *g)
  }
 // If we're a mission monster, update the mission
  if (mission_id != -1) {
-  const mission_type *misstype = g->find_mission_type(mission_id);
-  if (misstype) {
-    if (misstype->goal == MGOAL_FIND_MONSTER) g->fail_mission(mission_id);
-    if (misstype->goal == MGOAL_KILL_MONSTER) g->mission_step_complete(mission_id, 1);
+  if (const auto miss = g->find_mission(mission_id)) {
+      switch (miss->type->goal) {
+      case MGOAL_FIND_MONSTER: miss->fail();
+          break;
+      case MGOAL_KILL_MONSTER: g->mission_step_complete(mission_id, 1);
+          break;
+      default:
+          mission_id = -1;	// active reset of assumed bug
+      }
   } else mission_id = -1;	// active reset
  }
 // Also, perform our death function

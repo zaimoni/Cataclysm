@@ -987,7 +987,7 @@ void game::update_weather()
 void game::give_mission(mission_id type)
 {
  active_missions.push_back(mission_type::types[type].create(this));
- u.accept_mission(&active_missions.back());
+ u.accept(&active_missions.back());
 }
 
 int game::reserve_mission(mission_id type, int npc_id)
@@ -1050,20 +1050,6 @@ void game::wrap_up_mission(int id)
  (*miss->type->end)(this, miss);
 }
 
-void game::fail_mission(int id)
-{
- mission *miss = find_mission(id);
- miss->failed = true;
- u.failed_missions.push_back( id );
- for (int i = 0; i < u.active_missions.size(); i++) {
-  if (u.active_missions[i] == id) {
-   EraseAt(u.active_missions, i );
-   i--;
-  }
- }
- (*miss->type->fail)(this, miss);
-}
-
 void game::mission_step_complete(int id, int step)
 {
  mission *miss = find_mission(id);
@@ -1088,11 +1074,7 @@ void game::mission_step_complete(int id, int step)
 
 void game::process_missions()
 {
- for (int i = 0; i < active_missions.size(); i++) {
-  if (active_missions[i].deadline > 0 &&
-      int(messages.turn) > active_missions[i].deadline)
-   fail_mission(active_missions[i].uid);
- }
+ for (auto& miss : active_missions) if (0 < miss.deadline && int(messages.turn) > miss.deadline) miss.fail();
 }
 
 void game::get_input()

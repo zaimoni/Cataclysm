@@ -1832,11 +1832,7 @@ void npc::die(game *g, bool your_fault)
  for (const auto& it : worn) g->m.add_item(pos, it);
  if (weapon.type->id != itm_null) g->m.add_item(pos, weapon);
 
- for (int i = 0; i < g->active_missions.size(); i++) {
-  if (g->active_missions[i].npc_id == id)
-   g->fail_mission( g->active_missions[i].uid );
- }
-  
+ for (auto& miss : g->active_missions) if (id == miss.npc_id) miss.fail();
 }
 
 // NPCs don't use the text UI, so override the player version

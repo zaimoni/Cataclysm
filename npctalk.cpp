@@ -1174,7 +1174,7 @@ void talk_function::assign_mission(game *g, npc *p)
   return;
  }
  mission *miss = g->find_mission( p->chatbin.missions[selected] );
- g->u.accept_mission(miss);
+ g->u.accept(miss);
  miss->npc_id = p->id;
  p->chatbin.missions_assigned.push_back( p->chatbin.missions[selected] );
  EraseAt(p->chatbin.missions, selected);

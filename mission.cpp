@@ -64,6 +64,14 @@ bool mission::is_complete(const player& u, const int _npc_id) const
     }
 }
 
+void mission::fail()
+{
+    failed = true;
+    auto g = game::active();
+    (*type->fail)(g, this);
+    g->u.fail(*this);    // \todo ultimately should check all players and NPCs
+}
+
 std::string mission_dialogue (mission_id id, talk_topic state)
 {
  switch (id) {
