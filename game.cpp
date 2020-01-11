@@ -1029,12 +1029,6 @@ const mission_type* game::find_mission_type(int id)
  return 0;
 }
 
-bool game::mission_failed(int id)
-{
- mission *miss = find_mission(id);
- return (miss->failed);
-}
-
 void game::wrap_up_mission(int id)
 {
  mission *miss = find_mission(id);

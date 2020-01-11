@@ -489,7 +489,7 @@ static std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *
 
  case TALK_MISSION_INQUIRE: {
   int id = p->chatbin.missions_assigned[ p->chatbin.mission_selected ];
-  if (g->mission_failed(id)) {
+  if (miss->failed) {
    RESPONSE("I'm sorry... I failed.");
     SUCCESS(TALK_MISSION_FAILURE);
      SUCCESS_OPINION(-1, 0, -1, 1, 0);
@@ -1204,7 +1204,6 @@ void talk_function::mission_failure(game *g, npc *p)
   return;
  }
  p->op_of_u += npc_opinion(-1, 0, -1, 1, 0);
- g->mission_failed(p->chatbin.missions_assigned[selected]);
 }
 
 void talk_function::clear_mission(game *g, npc *p)
