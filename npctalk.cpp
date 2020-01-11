@@ -1167,58 +1167,59 @@ int topic_category(talk_topic topic)
 
 void talk_function::assign_mission(game *g, npc *p)
 {
- int selected = p->chatbin.mission_selected;
- if (selected == -1 || selected >= p->chatbin.missions.size()) {
-  debugmsg("mission_selected = %d; missions.size() = %d!",
-           selected, p->chatbin.missions.size());
-  return;
- }
- mission *miss = g->find_mission( p->chatbin.missions[selected] );
- g->u.accept(miss);
- miss->npc_id = p->id;
- p->chatbin.missions_assigned.push_back( p->chatbin.missions[selected] );
- EraseAt(p->chatbin.missions, selected);
+    int selected = p->chatbin.mission_selected;
+    if (0 > selected || selected >= p->chatbin.missions.size())
+        throw std::string("mission_selected = " + std::to_string(selected) + "; missions.size() = " + std::to_string(p->chatbin.missions.size()) + "!");
+    if (auto miss = g->find_mission(p->chatbin.missions[selected])) {
+        g->u.accept(miss);
+        miss->npc_id = p->id;
+        p->chatbin.missions_assigned.push_back(p->chatbin.missions[selected]);
+        EraseAt(p->chatbin.missions, selected);
+    } else {
+        EraseAt(p->chatbin.missions, selected);
+        throw std::string("mission was AWOL");
+    }
 }
 
 void talk_function::mission_success(game *g, npc *p)
 {
- int selected = p->chatbin.mission_selected;
- if (selected == -1 || selected >= p->chatbin.missions_assigned.size()) {
-  debugmsg("mission_selected = %d; missions_assigned.size() = %d!",
-           selected, p->chatbin.missions_assigned.size());
-  return;
- }
+    int selected = p->chatbin.mission_selected;
+    if (0 > selected || selected >= p->chatbin.missions.size())
+        throw std::string("mission_selected = " + std::to_string(selected) + "; missions.size() = " + std::to_string(p->chatbin.missions.size()) + "!");
+
  int index = p->chatbin.missions_assigned[selected];
- if (const mission* const miss = g->find_mission(index)) {
-	 p->op_of_u += npc_opinion(0, 0, 1 + (miss->value / 1000), -1, miss->value);
+ if (auto miss = g->find_mission(index)) {
+     p->op_of_u += npc_opinion(0, 0, 1 + (miss->value / 1000), -1, miss->value);
+     g->wrap_up_mission(index);
+ } else {
+     EraseAt(p->chatbin.missions, selected);
+     throw std::string("mission was AWOL");
  }
- g->wrap_up_mission(index);
 }
 
 void talk_function::mission_failure(game *g, npc *p)
 {
- int selected = p->chatbin.mission_selected;
- if (selected == -1 || selected >= p->chatbin.missions_assigned.size()) {
-  debugmsg("mission_selected = %d; missions_assigned.size() = %d!",
-           selected, p->chatbin.missions_assigned.size());
-  return;
- }
- p->op_of_u += npc_opinion(-1, 0, -1, 1, 0);
+    int selected = p->chatbin.mission_selected;
+    if (0 > selected || selected >= p->chatbin.missions.size())
+        throw std::string("mission_selected = " + std::to_string(selected) + "; missions.size() = " + std::to_string(p->chatbin.missions.size()) + "!");
+    p->op_of_u += npc_opinion(-1, 0, -1, 1, 0);
 }
 
 void talk_function::clear_mission(game *g, npc *p)
 {
- int selected = p->chatbin.mission_selected;
- p->chatbin.mission_selected = -1;
- if (selected == -1 || selected >= p->chatbin.missions_assigned.size()) {
-  debugmsg("mission_selected = %d; missions_assigned.size() = %d!",
-           selected, p->chatbin.missions_assigned.size());
-  return;
- }
- mission *miss = g->find_mission( p->chatbin.missions_assigned[selected] );
- EraseAt(p->chatbin.missions_assigned, selected);
- if (miss->follow_up != MISSION_NULL)
-  p->chatbin.missions.push_back( g->reserve_mission(miss->follow_up, p->id) );
+    int selected = p->chatbin.mission_selected;
+    if (0 > selected || selected >= p->chatbin.missions.size())
+        throw std::string("mission_selected = " + std::to_string(selected) + "; missions.size() = " + std::to_string(p->chatbin.missions.size()) + "!");
+
+    p->chatbin.mission_selected = -1;
+
+    if (auto miss = g->find_mission(p->chatbin.missions_assigned[selected])) {
+        EraseAt(p->chatbin.missions_assigned, selected);
+        if (miss->follow_up != MISSION_NULL) p->chatbin.missions.push_back(g->reserve_mission(miss->follow_up, p->id));
+    } else {
+        EraseAt(p->chatbin.missions, selected);
+        throw std::string("mission was AWOL");
+    }
 }
 
 void talk_function::mission_reward(game *g, npc *p)
@@ -1575,9 +1576,14 @@ talk_topic dialogue::opt(talk_topic topic, game *g)
  if (chosen.tempvalue != -1) beta->chatbin.tempvalue = chosen.tempvalue;
 
  if (chosen.trial == TALK_TRIAL_NONE || rng(0, 99) < trial_chance(chosen, alpha, beta)) {
-  if (chosen.trial != TALK_TRIAL_NONE)
-   alpha->practice(sk_speech, (100 - trial_chance(chosen, alpha, beta)) / 10);
-  (chosen.effect_success)(g, beta);
+  try {
+      (chosen.effect_success)(g, beta);
+  } catch (const std::string & e) {	// yes, non-standard choice.
+      debugmsg(e.c_str());
+      return TALK_NONE;
+  }
+
+  if (chosen.trial != TALK_TRIAL_NONE) alpha->practice(sk_speech, (100 - trial_chance(chosen, alpha, beta)) / 10);
   beta->op_of_u += chosen.opinion_success;
   if (beta->turned_hostile()) {
    beta->make_angry();
@@ -1585,8 +1591,13 @@ talk_topic dialogue::opt(talk_topic topic, game *g)
   }
   return chosen.success;
  } else {
+  try {
+      (chosen.effect_failure)(g, beta);
+  } catch (const std::string & e) {	// yes, non-standard choice.
+      debugmsg(e.c_str());
+      return TALK_NONE;
+  }
   alpha->practice(sk_speech, (100 - trial_chance(chosen, alpha, beta)) / 7);
-  (chosen.effect_failure)(g, beta);
   beta->op_of_u += chosen.opinion_failure;
   if (beta->turned_hostile()) {
    beta->make_angry();
