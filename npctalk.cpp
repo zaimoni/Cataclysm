@@ -1335,9 +1335,8 @@ void talk_function::player_weapon_drop(game *g, npc *p)
 
 void talk_function::lead_to_safety(game *g, npc *p)
 {
- g->give_mission(MISSION_REACH_SAFETY);
- int missid = g->u.active_missions[g->u.active_mission];	// XXX \todo works due to side effects...would be better to guarantee valid mission id return or valid mission ptr return
- p->goal = g->find_mission(missid)->target;
+ auto& miss = g->give_mission(MISSION_REACH_SAFETY);
+ p->goal = miss.target;
  p->attitude = NPCATT_LEAD;
 }
  

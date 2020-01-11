@@ -104,7 +104,7 @@ class game
   void fire(player &p, point tar, std::vector<point> &trajectory, bool burst);
   void throw_item(player &p, point tar, const item &thrown, std::vector<point> &trajectory);
   int assign_mission_id() { return next_mission_id++; } // Just returns the next available one
-  void give_mission(mission_id type); // Create the mission and assign it
+  mission& give_mission(mission_id type); // Create the mission and assign it
 // reserve_mission() creates a new mission of the given type and pushes it to
 // active_missions.  The function returns the UID of the new mission, which can
 // then be passed to a MacGuffin or something else that needs to track a mission

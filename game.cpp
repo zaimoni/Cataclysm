@@ -984,10 +984,12 @@ void game::update_weather()
  temperature += messages.turn.is_night() ? rng(-2, 1) : rng(-1, 2);
 }
 
-void game::give_mission(mission_id type)
+mission& game::give_mission(mission_id type)
 {
  active_missions.push_back(mission_type::types[type].create(this));
- u.accept(&active_missions.back());
+ auto& ret = active_missions.back();
+ u.accept(&ret);
+ return ret;
 }
 
 int game::reserve_mission(mission_id type, int npc_id)
