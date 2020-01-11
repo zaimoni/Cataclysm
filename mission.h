@@ -102,6 +102,7 @@ struct mission {
  friend bool fromJSON(const cataclysm::JSON& _in, mission& dest);
  friend cataclysm::JSON toJSON(const mission& src);
 
+ void step_complete(int stage); // Partial completion
  bool is_complete(const player& u, int npc_id) const;
  void fail();
 

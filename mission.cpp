@@ -37,6 +37,21 @@ mission mission_type::create(game *g, int npc_id)
  return ret;
 }
 
+void mission::step_complete(const int stage)
+{
+    step = stage;
+    switch (type->goal) {
+    case MGOAL_FIND_ITEM:
+    case MGOAL_FIND_MONSTER:
+    case MGOAL_KILL_MONSTER: {
+        if (auto _npc = npc::find_alive_r(npc_id)) {
+            auto om = overmap::toOvermap(_npc->GPSpos);
+            target = om.second;
+        } else target = point(-1, -1);
+    } break;
+    }
+}
+
 bool mission::is_complete(const player& u, const int _npc_id) const
 {
     switch (type->goal) {

@@ -1050,28 +1050,6 @@ void game::wrap_up_mission(int id)
  (*miss->type->end)(this, miss);
 }
 
-void game::mission_step_complete(int id, int step)
-{
- mission *miss = find_mission(id);
- miss->step = step;
- switch (miss->type->goal) {
-  case MGOAL_FIND_ITEM:
-  case MGOAL_FIND_MONSTER:
-  case MGOAL_KILL_MONSTER: {
-   bool npc_found = false;
-   for (const auto& _npc : cur_om.npcs) {
-    if (_npc.id == miss->npc_id) {
-	 auto om = overmap::toOvermap(_npc.GPSpos);
-     miss->target = om.second;
-     npc_found = true;
-	 break;
-    }
-   }
-   if (!npc_found) miss->target = point(-1, -1);
-  } break;
- }
-}
-
 void game::process_missions()
 {
  for (auto& miss : active_missions) if (0 < miss.deadline && int(messages.turn) > miss.deadline) miss.fail();
