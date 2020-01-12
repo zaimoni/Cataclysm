@@ -1031,27 +1031,6 @@ const mission_type* game::find_mission_type(int id)
  return 0;
 }
 
-void game::wrap_up_mission(int id)
-{
- mission *miss = find_mission(id);
- u.completed_missions.push_back( id );
- for (int i = 0; i < u.active_missions.size(); i++) {
-  if (u.active_missions[i] == id) {
-   EraseAt(u.active_missions, i );
-   i--;
-  }
- }
- switch (miss->type->goal) {
-  case MGOAL_FIND_ITEM:
-   u.use_amount(miss->type->item_id, 1);
-   break;
-  case MGOAL_FIND_ANY_ITEM:
-   u.remove_mission_items(miss->uid);
-   break;
- }
- (*miss->type->end)(this, miss);
-}
-
 void game::process_missions()
 {
  for (auto& miss : active_missions) if (0 < miss.deadline && int(messages.turn) > miss.deadline) miss.fail();

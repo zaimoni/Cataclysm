@@ -191,6 +191,7 @@ public:
 
  void accept(mission* miss); // Just assign an existing mission
  void fail(const mission& miss); // move to failed list, if relevant
+ void wrap_up(mission* miss);
 
  int weight_carried() const;
  int volume_carried() const;

@@ -113,7 +113,6 @@ class game
                              int npc_id = -1);
   mission* find_mission(int id); // Mission with UID=id; NULL if non-existant
   const mission_type* find_mission_type(int id); // Same, but returns its type
-  void wrap_up_mission(int id); // Perform required actions
   void process_missions(); // Process missions, see if time's run out
 
   void teleport(player *p = NULL);

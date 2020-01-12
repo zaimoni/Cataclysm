@@ -1187,14 +1187,14 @@ void talk_function::mission_success(game *g, npc *p)
     if (0 > selected || selected >= p->chatbin.missions.size())
         throw std::string("mission_selected = " + std::to_string(selected) + "; missions.size() = " + std::to_string(p->chatbin.missions.size()) + "!");
 
- int index = p->chatbin.missions_assigned[selected];
- if (auto miss = g->find_mission(index)) {
-     p->op_of_u += npc_opinion(0, 0, 1 + (miss->value / 1000), -1, miss->value);
-     g->wrap_up_mission(index);
- } else {
-     EraseAt(p->chatbin.missions, selected);
-     throw std::string("mission was AWOL");
- }
+    int index = p->chatbin.missions_assigned[selected];
+    if (auto miss = g->find_mission(index)) {
+        p->op_of_u += npc_opinion(0, 0, 1 + (miss->value / 1000), -1, miss->value);
+        g->u.wrap_up(miss);
+    } else {
+        EraseAt(p->chatbin.missions, selected);
+        throw std::string("mission was AWOL");
+    }
 }
 
 void talk_function::mission_failure(game *g, npc *p)

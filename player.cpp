@@ -4610,6 +4610,29 @@ void player::fail(const mission& miss)
     }
 }
 
+void player::wrap_up(mission* const miss)
+{
+    assert(miss);
+    auto i = active_missions.size();
+    while (0 < i) {
+        if (active_missions[--i] == miss->uid) {
+            EraseAt(active_missions, i);
+            completed_missions.push_back(miss->uid);    // respecified 2020-01-12: can't openly complete a mission we haven't taken
+        }
+    }
+
+    switch (miss->type->goal) {
+    case MGOAL_FIND_ITEM:
+        use_amount(miss->type->item_id, 1);
+        break;
+    case MGOAL_FIND_ANY_ITEM:
+        remove_mission_items(miss->uid);
+        break;
+    }
+    (*miss->type->end)(game::active(), miss);
+}
+
+
 std::vector<int> player::has_ammo(ammotype at) const
 {
  std::vector<int> ret;
