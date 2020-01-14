@@ -2,9 +2,31 @@
 #include "game.h"
 #include "rng.h"
 #include "line.h"
+#include "JSON.h"
 #include "recent_msg.h"
 
 #include <fstream>
+
+int mission::next_id = mission::MIN_ID;
+
+void mission::global_reset() {
+    next_id = MIN_ID;
+}
+
+void mission::global_fromJSON(const cataclysm::JSON& src)
+{
+    if (src.has_key("next_id")) {
+        const auto& _next = src["next_id"];
+        if (_next.has_key("mission") && fromJSON(_next["mission"], next_id) && MIN_ID <= next_id) return;
+    }
+    next_id = MIN_ID;
+}
+
+void mission::global_toJSON(cataclysm::JSON& dest)
+{
+    if (MIN_ID < next_id) dest.set("mission", std::to_string(next_id));
+}
+
 
 static const char* JSON_transcode[] = {
 	"GET_ANTIBIOTICS",
@@ -22,7 +44,7 @@ mission* mission::from_id(int uid) { return game::active()->find_mission(uid); }
 mission mission_type::create(game *g, int npc_id)
 {
  mission ret;
- ret.uid = g->assign_mission_id();
+ ret.assign_id();
  ret.type = this;
  ret.npc_id = npc_id;
  ret.item_id = item_id;

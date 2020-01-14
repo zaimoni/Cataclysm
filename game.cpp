@@ -103,7 +103,7 @@ void game::setup()	// early part looks like it belongs in game::game (but we ret
  nextinv = 'd';
  next_npc_id = 1;
  next_faction_id = 1;
- next_mission_id = 1;
+ mission::global_reset();
 // Clear monstair values
  monstair = tripoint(-1,-1,-1);
  last_target = -1;	// We haven't targeted any monsters yet
@@ -1485,9 +1485,9 @@ bool game::load_master()
 
 	 JSON master(fin);
 	 unsigned char have_loaded = 0;	// bitmap; should be using a local enumeration here
+     mission::global_fromJSON(master);
 	 if (master.has_key("next_id")) {
 		 const JSON& next_id = master["next_id"];
-		 if (next_id.has_key("mission") && fromJSON(next_id["mission"], next_mission_id) && 1 <= next_mission_id) have_loaded |= (1ULL << MISSION);
 		 if (next_id.has_key("faction") && fromJSON(next_id["faction"], next_faction_id) && 1 <= next_faction_id) have_loaded |= (1ULL << FACTION);
 		 if (next_id.has_key("npc") && fromJSON(next_id["npc"], next_npc_id) && 1 <= next_npc_id) have_loaded |= (1ULL << NPC);
 	 }
@@ -1502,7 +1502,6 @@ bool game::load_master()
 	 if (master.has_key("npcs")) master["npcs"].decode(active_npc);
 
 	 // simulate game::setup here
-	 if (!(have_loaded & (1ULL << MISSION))) next_mission_id = 1;
 	 if (!(have_loaded & (1ULL << FACTION))) next_faction_id = 1;
 	 if (!(have_loaded & (1ULL << NPC))) next_npc_id = 1;
 
@@ -1653,7 +1652,7 @@ void game::save()
 // Now write things that aren't player-specific: factions and NPCs
 
  saved.reset();
- if (1 < next_mission_id) tmp.set("mission", std::to_string(next_mission_id));
+ mission::global_toJSON(tmp);
  if (1 < next_faction_id) tmp.set("faction", std::to_string(next_faction_id));
  if (1 < next_npc_id) tmp.set("npc", std::to_string(next_npc_id));
  if (0 < tmp.size()) saved.set("next_id", std::move(tmp));

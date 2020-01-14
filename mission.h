@@ -77,6 +77,11 @@ struct mission_type {
 };
 
 struct mission {
+#undef MIN_ID
+ enum {
+   MIN_ID = 1
+ };
+
  const mission_type* type;
  std::string description; // Basic descriptive text
  bool failed;		// True if we've failed it!
@@ -107,6 +112,13 @@ struct mission {
  void fail();
 
  static mission* from_id(int uid);	// only active missions
+ void assign_id() { uid = next_id++; }
+
+ static void global_reset();
+ static void global_fromJSON(const cataclysm::JSON& src);
+ static void global_toJSON(cataclysm::JSON& dest);
+private:
+ static int next_id;   // mininum/default next mission id
 };
 
 
