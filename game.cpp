@@ -16,6 +16,7 @@
 #include "json.h"
 #include "om_cache.hpp"
 #include "stl_limits.h"
+#include "stl_typetraits.h"
 
 #include <fstream>
 #include <sstream>
@@ -2602,14 +2603,6 @@ void game::remove_item(item *it)
  for (auto& n_pc : active_npc) if (n_pc.remove_item(it)) return;
 }
 
-static bool vector_has(const std::vector<int>& vec, int test)	// \todo V0.2.1+ eliminate in favor of STL?
-{
- for (int i = 0; i < vec.size(); i++) {
-  if (vec[i] == test) return true;
- }
- return false;
-}
-
 void game::mon_info()
 {
  werase(w_moninfo);
@@ -2633,8 +2626,7 @@ void game::mon_info()
    int index = (rl_dist(u.pos, mon.pos) <= SEEX ? 8 : dir_to_mon);
    if (mon_dangerous && index < 8) dangerous[index] = true;
 
-   if (!vector_has(unique_types[dir_to_mon], mon.type->id))
-    unique_types[dir_to_mon].push_back(mon.type->id);
+   if (!any(unique_types[dir_to_mon], mon.type->id)) unique_types[dir_to_mon].push_back(mon.type->id);
   }
  }
  for (int i = 0; i < active_npc.size(); i++) {
@@ -5041,7 +5033,7 @@ void game::chat()
  } else if (available.size() == 1)
   available[0]->talk_to_u(this);
  else {
-  WINDOW *w = newwin(available.size() + 3, 40, 10, 20);
+  WINDOW *w = newwin(available.size() + 3, 40, 10, 20);    // \todo implied maximum NPCs VIEW-3
   wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
              LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
   for (int i = 0; i < available.size(); i++)
