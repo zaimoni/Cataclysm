@@ -126,7 +126,6 @@ class game
   int scent(const point& pt) const { return const_cast<game*>(this)->scent(pt.x, pt.y); };
   void clear_scents() { memset(grscent, 0, sizeof(grscent)); }
   int assign_npc_id() { return next_npc_id++; }
-  int assign_faction_id() { return next_faction_id++; }
   faction* faction_by_id(int it);
   std::vector<faction *> factions_at(int x, int y);	// dead function
   faction* random_good_faction();
@@ -325,7 +324,7 @@ public:
 
   special_game *gamemode;
 
-  int next_npc_id, next_faction_id; // Keep track of UIDs
+  int next_npc_id; // Keep track of UIDs
   int grscent[SEEX * MAPSIZE][SEEY * MAPSIZE];	// The scent map
 };
 

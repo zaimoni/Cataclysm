@@ -102,8 +102,8 @@ void game::setup()	// early part looks like it belongs in game::game (but we ret
 // Even though we may already have 'd', nextinv will be incremented as needed
  nextinv = 'd';
  next_npc_id = 1;
- next_faction_id = 1;
  mission::global_reset();
+ faction::global_reset();
 // Clear monstair values
  monstair = tripoint(-1,-1,-1);
  last_target = -1;	// We haven't targeted any monsters yet
@@ -538,7 +538,7 @@ void game::create_factions()
  tmp.make_army();
  factions.push_back(tmp);
  for (int i = 0; i < num; i++) {
-  tmp = faction(assign_faction_id());
+  tmp = faction(faction::assign_id());
   tmp.randomize();
   tmp.likes_u = 100;
   tmp.respects_u = 100;
@@ -1486,9 +1486,9 @@ bool game::load_master()
 	 JSON master(fin);
 	 unsigned char have_loaded = 0;	// bitmap; should be using a local enumeration here
      mission::global_fromJSON(master);
-	 if (master.has_key("next_id")) {
+     faction::global_fromJSON(master);
+     if (master.has_key("next_id")) {
 		 const JSON& next_id = master["next_id"];
-		 if (next_id.has_key("faction") && fromJSON(next_id["faction"], next_faction_id) && 1 <= next_faction_id) have_loaded |= (1ULL << FACTION);
 		 if (next_id.has_key("npc") && fromJSON(next_id["npc"], next_npc_id) && 1 <= next_npc_id) have_loaded |= (1ULL << NPC);
 	 }
 
@@ -1502,7 +1502,6 @@ bool game::load_master()
 	 if (master.has_key("npcs")) master["npcs"].decode(active_npc);
 
 	 // simulate game::setup here
-	 if (!(have_loaded & (1ULL << FACTION))) next_faction_id = 1;
 	 if (!(have_loaded & (1ULL << NPC))) next_npc_id = 1;
 
 	 fin.close();
@@ -1653,7 +1652,7 @@ void game::save()
 
  saved.reset();
  mission::global_toJSON(tmp);
- if (1 < next_faction_id) tmp.set("faction", std::to_string(next_faction_id));
+ faction::global_toJSON(tmp);
  if (1 < next_npc_id) tmp.set("npc", std::to_string(next_npc_id));
  if (0 < tmp.size()) saved.set("next_id", std::move(tmp));
 
@@ -2464,7 +2463,7 @@ faction* game::random_good_faction()
   return &(factions[index]);
  }
 // No good factions exist!  So create one!
- faction newfac(assign_faction_id());
+ faction newfac(faction::assign_id());
  do
   newfac.randomize();
  while (newfac.good < 5);
@@ -2485,7 +2484,7 @@ faction* game::random_evil_faction()
   return &(factions[index]);
  }
 // No good factions exist!  So create one!
- faction newfac(assign_faction_id());
+ faction newfac(faction::assign_id());
  do
   newfac.randomize();
  while (newfac.good > -5);

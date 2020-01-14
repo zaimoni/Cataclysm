@@ -78,12 +78,22 @@ enum faction_value {
 DECLARE_JSON_ENUM_BITFLAG_SUPPORT(faction_value)
 
 struct faction {
+#undef MIN_ID
+    enum {
+        MIN_ID = 0
+    };
+
  faction(int uid = -1);
+ faction(const faction& src) = default;
+ faction(faction&& src) = default;
  ~faction() = default;
+ faction& operator=(const faction& src) = default;
+ faction& operator=(faction && src) = default;
 
  friend bool fromJSON(const cataclysm::JSON& _in, faction& dest);
  friend cataclysm::JSON toJSON(const faction& src);
  static faction* from_id(int uid);
+ static auto assign_id() { return next_id++; }
 
  void randomize();
  void make_army();
@@ -108,6 +118,12 @@ struct faction {
  point map; // Where in that overmap are we? (coordinate ranges 0...OMAPX/Y)
  int size;	// How big is our sphere of influence?
  int power;	// General measure of our power
+
+ static void global_reset();
+ static void global_fromJSON(const cataclysm::JSON& src);
+ static void global_toJSON(cataclysm::JSON& dest);
+private:
+ static int next_id;   // mininum/default next mission id
 };
 
 #endif

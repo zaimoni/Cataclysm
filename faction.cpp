@@ -4,9 +4,31 @@
 #include "math.h"
 #include "output.h"
 #include "game.h"
+#include "JSON.h"
 #include "saveload.h"
 
 #include <sstream>
+
+int faction::next_id = faction::MIN_ID+1;
+
+void faction::global_reset() {
+    next_id = MIN_ID+1;
+}
+
+void faction::global_fromJSON(const cataclysm::JSON& src)
+{
+    if (src.has_key("next_id")) {
+        const auto& _next = src["next_id"];
+        if (_next.has_key("faction") && fromJSON(_next["faction"], next_id) && MIN_ID <= next_id) return;
+    }
+    next_id = MIN_ID;
+}
+
+void faction::global_toJSON(cataclysm::JSON& dest)
+{
+    if (MIN_ID < next_id) dest.set("faction", std::to_string(next_id));
+}
+
 
 static const char* JSON_transcode_goals[] = {
 	"NONE",
