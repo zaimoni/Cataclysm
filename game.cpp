@@ -994,9 +994,8 @@ mission& game::give_mission(mission_id type)
 
 int game::reserve_mission(mission_id type, int npc_id)
 {
- mission tmp = mission_type::types[type].create(this, npc_id);
- active_missions.push_back(tmp);
- return tmp.uid;
+ active_missions.push_back(mission_type::types[type].create(this, npc_id));
+ return active_missions.back().uid;
 }
 
 int game::reserve_random_mission(mission_origin origin, point p, int npc_id)
