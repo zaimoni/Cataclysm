@@ -360,6 +360,7 @@ void npc::randomize_from_faction(game *g, faction *fac)
 // Personality = aggression, bravery, altruism, collector
  my_fac = fac;
  randomize(g);
+ if (!fac) return;
 
  switch (fac->goal) {
   case FACGOAL_DOMINANCE:

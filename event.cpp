@@ -10,17 +10,12 @@ void event::actualize(game *g) const
  switch (type) {
 
   case EVENT_HELP: {
-   npc tmp;
-   int num = (faction_id >= 0) ? rng(1, 6) : 1;
+   int num = (0 <= faction_id) ? rng(1, 6) : 1;
+   faction* fac = (0 <= faction_id) ? faction::from_id(faction_id) : 0;
+   if (0 <= faction_id && !fac) debugmsg("EVENT_HELP run with invalid faction_id");
    for (int i = 0; i < num; i++) {
-    if (faction_id != -1) {
-     faction* fac = g->faction_by_id(faction_id);
-     if (fac)
-      tmp.randomize_from_faction(g, fac);
-     else
-      debugmsg("EVENT_HELP run with invalid faction_id");
-    } else
-     tmp.randomize(g);
+    npc tmp;
+    tmp.randomize_from_faction(g, fac);
     tmp.attitude = NPCATT_DEFEND;
 	tmp.screenpos_set(g->u.pos.x - SEEX * 2 + rng(-5, 5), g->u.pos.y - SEEY * 2 + rng(-5, 5));
     g->active_npc.push_back(std::move(tmp));
