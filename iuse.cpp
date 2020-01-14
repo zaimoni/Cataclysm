@@ -1008,8 +1008,7 @@ void iuse::radio_on(game *g, player *p, item *it, bool t)
    messtream << "radio: " << segments[index];
    message = messtream.str();
   }
-  point p = g->find_item(it);
-  g->sound(p, 6, message.c_str());
+  g->sound(g->find_item(it), 6, message.c_str());
  } else {	// Turning it off
   messages.add("The radio dies.");
   it->make(item::types[itm_radio]);
@@ -1561,9 +1560,8 @@ void iuse::molotov_lit(game *g, player *p, item *it, bool t)
 {
  int age = int(messages.turn) - it->bday;
  if (!p->has_item(it)) {
-  point pos = g->find_item(it);
   it->charges = -1;
-  g->explosion(pos, 8, 0, true);
+  g->explosion(g->find_item(it), 8, 0, true);
  } else if (age >= 5) { // More than 5 turns old = chance of going out
   if (rng(1, 50) < age) {
    messages.add("Your lit molotov goes out.");

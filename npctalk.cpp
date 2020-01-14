@@ -144,7 +144,7 @@ static std::string dynamic_line(talk_topic topic, game *g, npc *p)
   id = conversation_target[p->chatbin.mission_selected];
 
 // Mission stuff is a special case, so we'll handle it up here
-  if (const mission* miss = g->find_mission(id)) {
+  if (const mission* miss = mission::from_id(id)) {
 	  const mission_type* type = miss->type;
 	  std::string ret = mission_dialogue(mission_id(type->id), topic);
 	  if (topic == TALK_MISSION_SUCCESS && miss->follow_up != MISSION_NULL)
@@ -404,7 +404,7 @@ static std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *
 		 topic == TALK_MISSION_SUCCESS || topic == TALK_MISSION_ADVICE ||
 		 topic == TALK_MISSION_FAILURE || topic == TALK_MISSION_SUCCESS_LIE) ? p->chatbin.missions_assigned : p->chatbin.missions;
 
-	 if (selected < conversation_target.size()) miss = g->find_mission(conversation_target[selected]);	// non-NULL as dynamic_line validated this
+	 if (selected < conversation_target.size()) miss = mission::from_id(conversation_target[selected]);	// non-NULL as dynamic_line validated this
 	}
 
  switch (topic) {
@@ -624,7 +624,7 @@ static std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *
   } else {
    int score = p->op_of_u.trust + p->op_of_u.value * 3 +
                p->personality.altruism * 2;
-   int missions_value = p->assigned_missions_value(g);
+   int missions_value = p->assigned_missions_value();
    RESPONSE("Because I'm your friend!");
     TRIAL(TALK_TRIAL_PERSUADE, 10 + score);
     SUCCESS(TALK_GIVE_EQUIPMENT);
@@ -1170,7 +1170,7 @@ void talk_function::assign_mission(game *g, npc *p)
     int selected = p->chatbin.mission_selected;
     if (0 > selected || selected >= p->chatbin.missions.size())
         throw std::string("mission_selected = " + std::to_string(selected) + "; missions.size() = " + std::to_string(p->chatbin.missions.size()) + "!");
-    if (auto miss = g->find_mission(p->chatbin.missions[selected])) {
+    if (auto miss = mission::from_id(p->chatbin.missions[selected])) {
         g->u.accept(miss);
         miss->npc_id = p->id;
         p->chatbin.missions_assigned.push_back(p->chatbin.missions[selected]);
@@ -1187,8 +1187,7 @@ void talk_function::mission_success(game *g, npc *p)
     if (0 > selected || selected >= p->chatbin.missions.size())
         throw std::string("mission_selected = " + std::to_string(selected) + "; missions.size() = " + std::to_string(p->chatbin.missions.size()) + "!");
 
-    int index = p->chatbin.missions_assigned[selected];
-    if (auto miss = g->find_mission(index)) {
+    if (auto miss = mission::from_id(p->chatbin.missions_assigned[selected])) {
         p->op_of_u += npc_opinion(0, 0, 1 + (miss->value / 1000), -1, miss->value);
         g->u.wrap_up(miss);
     } else {
@@ -1213,7 +1212,7 @@ void talk_function::clear_mission(game *g, npc *p)
 
     p->chatbin.mission_selected = -1;
 
-    if (auto miss = g->find_mission(p->chatbin.missions_assigned[selected])) {
+    if (auto miss = mission::from_id(p->chatbin.missions_assigned[selected])) {
         EraseAt(p->chatbin.missions_assigned, selected);
         if (miss->follow_up != MISSION_NULL) p->chatbin.missions.push_back(g->reserve_mission(miss->follow_up, p->id));
     } else {

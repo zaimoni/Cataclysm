@@ -1215,11 +1215,10 @@ bool npc::wants_to_travel_with(player *p)
  return true;
 }
 
-int npc::assigned_missions_value(game *g)
+int npc::assigned_missions_value() const
 {
  int ret = 0;
- for (int i = 0; i < chatbin.missions_assigned.size(); i++)
-  ret += g->find_mission(chatbin.missions_assigned[i])->value;
+ for (auto m_id : chatbin.missions_assigned) ret += mission::from_id(m_id)->value;
  return ret;
 }
 

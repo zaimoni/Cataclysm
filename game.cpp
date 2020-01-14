@@ -1802,9 +1802,9 @@ z.size(), events.size());
    break;
 
   case 8:
-   for (int i = 0; i < active_npc.size(); i++) {
-    messages.add("%s's head implodes!", active_npc[i].name.c_str());
-    active_npc[i].hp_cur[bp_head] = 0;
+   for (auto& _npc : active_npc) {
+     messages.add("%s's head implodes!", _npc.name.c_str());
+     _npc.hp_cur[bp_head] = 0;
    }
    break;
 
@@ -2116,13 +2116,13 @@ void game::list_missions()
   for (int y = 3; y < VIEW; y++)
    mvwputch(w_missions, y, VBAR_X, c_white, LINE_XOXO);
   for (int i = 0; i < umissions.size(); i++) {
-   const mission* const miss = find_mission(umissions[i]);
+   const mission* const miss = mission::from_id(umissions[i]);
    const nc_color col = (i == u.active_mission && tab == 0) ? c_ltred : c_white;
    mvwprintz(w_missions, 3 + i, 0, ((selection == i) ? hilite(col) : col), miss->name());
   }
 
   if (selection >= 0 && selection < umissions.size()) {
-   const mission* const miss = find_mission(umissions[selection]);
+   const mission* const miss = mission::from_id(umissions[selection]);
    mvwprintz(w_missions, 4, VBAR_X+1, c_white,
              miss->description.c_str());
    if (miss->deadline != 0)
@@ -2338,7 +2338,7 @@ void game::draw_minimap()
  bool drew_mission = false;
  point target(-1, -1);
  if (u.active_mission >= 0 && u.active_mission < u.active_missions.size())
-  target = find_mission(u.active_missions[u.active_mission])->target;
+  target = mission::from_id(u.active_missions[u.active_mission])->target;
  else
   drew_mission = true;
 

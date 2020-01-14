@@ -1142,7 +1142,7 @@ void overmap::draw(WINDOW *w, game *g, point& curs, point& orig, char &ch, bool 
  point target(-1, -1);
  if (g->u.active_mission >= 0 &&
      g->u.active_mission < g->u.active_missions.size())
-  target = g->find_mission(g->u.active_missions[g->u.active_mission])->target;
+  target = mission::from_id(g->u.active_missions[g->u.active_mission])->target;
 /* First, determine if we're close enough to the edge to need to load an
  * adjacent overmap, and load it/them. */
  const int y_delta = ((curs.y < VIEW / 2) ? -1 : ((curs.y >= OMAPY - VIEW / 2 - 1) ? 1 : 0));

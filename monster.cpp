@@ -513,7 +513,7 @@ void monster::die(game *g)
  }
 // If we're a mission monster, update the mission
  if (mission_id != -1) {
-  if (const auto miss = g->find_mission(mission_id)) {
+  if (const auto miss = mission::from_id(mission_id)) {
       switch (miss->type->goal) {
       case MGOAL_FIND_MONSTER: miss->fail(); break;
       case MGOAL_KILL_MONSTER: miss->step_complete(1); break;

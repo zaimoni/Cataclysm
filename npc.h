@@ -338,7 +338,7 @@ public:
  int hostile_anger_level(); // ... this value!
  void make_angry(); // Called if the player attacks us
  bool wants_to_travel_with(player *p);
- int assigned_missions_value(game *g);
+ int assigned_missions_value() const;
  std::vector<skill> skills_offered_to(player *p); // Skills that're higher
  std::vector<itype_id> styles_offered_to(player *p); // Martial Arts
 // State checks

@@ -558,7 +558,7 @@ INITIATING STANDARD TREMOR TEST...");
    if (!g->u.has_amount(itm_usb_drive, 1))
     print_error("USB drive required!");
    else {
-    mission *miss = g->find_mission(mission_id);
+    mission *miss = mission::from_id(mission_id);
     if (miss == NULL) {
      debugmsg("Computer couldn't find its mission!");
      return;
