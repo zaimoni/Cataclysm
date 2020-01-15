@@ -7,9 +7,30 @@
 #include "game.h"
 #include "output.h"
 #include "line.h"
+#include "JSON.h"
 #include "recent_msg.h"
 
 #include "saveload.h"
+
+int npc::next_id = npc::MIN_ID;
+
+void npc::global_reset() {
+    next_id = MIN_ID;
+}
+
+void npc::global_fromJSON(const cataclysm::JSON& src)
+{
+    if (src.has_key("next_id")) {
+        const auto& _next = src["next_id"];
+        if (_next.has_key("npc") && fromJSON(_next["npc"], next_id) && MIN_ID <= next_id) return;
+    }
+    next_id = MIN_ID;
+}
+
+void npc::global_toJSON(cataclysm::JSON& dest)
+{
+    if (MIN_ID < next_id) dest.set("npc", std::to_string(next_id));
+}
 
 std::vector<item> starting_clothes(npc_class type, bool male, game *g);
 std::vector<item> starting_inv(npc *me, npc_class type, game *g);
@@ -193,7 +214,7 @@ void npc::die(const int id)
 
 void npc::randomize(game *g, npc_class type)
 {
- id = g->assign_npc_id();
+ assign_id();
  str_max = dice(4, 3);
  dex_max = dice(4, 3);
  int_max = dice(4, 3);

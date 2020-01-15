@@ -281,6 +281,11 @@ struct npc_chatbin
 class npc : public player {
 
 public:
+#undef MIN_ID
+ enum {
+   MIN_ID = 1
+ };
+
  typedef std::pair<npc_action, std::unique_ptr<cataclysm::action> > ai_action;	// transition typedef
  typedef std::pair<point, std::tuple<monster*, player*, npc*> > ai_target;	// expect to simplify this
 
@@ -504,6 +509,13 @@ public:
  bool dead;		// If true, we need to be cleaned up
  std::vector<npc_need> needs;
  typename cataclysm::bitmap<NF_MAX>::type flags;
+
+ static void global_reset();
+ static void global_fromJSON(const cataclysm::JSON& src);
+ static void global_toJSON(cataclysm::JSON& dest);
+private:
+ static int next_id;   // mininum/default next mission id
+ void assign_id() { id = next_id++; }
 };
 
 #endif
