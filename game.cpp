@@ -120,7 +120,7 @@ void game::setup()	// early part looks like it belongs in game::game (but we ret
  active_npc.clear();
  factions.clear();
  active_missions.clear();
- items_dragged.clear();
+// items_dragged.clear();
  messages.clear();
  events.clear();
  clear_scents();

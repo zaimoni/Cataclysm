@@ -175,10 +175,13 @@ class game
   std::vector<npc> active_npc;
   std::vector<faction> factions;
   std::vector<mission> active_missions; // Missions which may be assigned \todo V 0.2.1+ arguably should be a member of the player class
-// NEW: Dragging a piece of furniture, with a list of items contained
+/*
+2019-01-14 No implementation inherited from C:Whales
+// \todo Dragging a piece of furniture, with a list of items contained
   ter_id dragging;
   std::vector<item> items_dragged;
   int weight_dragged; // Computed once, when you start dragging
+*/
   static bool debugmon;		// not clearly the most useful type; a raw pointer could selectively turn on for one monster
 // Display data... TODO: Make this more portable?
   WINDOW *w_terrain;
