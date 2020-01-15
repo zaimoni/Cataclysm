@@ -2,6 +2,8 @@
 #define _EVENT_H_
 
 #include "enums.h"
+#include "enum_json.h"
+#include <string>
 
 class game;
 
@@ -21,11 +23,13 @@ enum event_type {
  NUM_EVENT_TYPES
 };
 
+DECLARE_JSON_ENUM_SUPPORT(event_type)
+
 struct event {
  event_type type;
  int turn;
  int faction_id;	// -1 (no faction) is legal
- point map_point;
+ point map_point;   // usage is against game::lev.x,y
 
  event(event_type e_t=EVENT_NULL, int t=0, int f_id= -1, int x= -1, int y = -1)
  : type(e_t),turn(t),faction_id(f_id),map_point(-1,-1) {}

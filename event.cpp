@@ -5,6 +5,22 @@
 #include "rng.h"
 #include "recent_msg.h"
 
+static const char* const JSON_transcode_events[] = {
+    "HELP",
+    "WANTED",
+    "ROBOT_ATTACK",
+    "SPAWN_WYRMS",
+    "AMIGARA",
+    "ROOTS_DIE",
+    "TEMPLE_OPEN",
+    "TEMPLE_FLOOD",
+    "TEMPLE_SPAWN",
+    "DIM",
+    "ARTIFACT_LIGHT"
+};
+
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(event_type, JSON_transcode_events)
+
 void event::actualize(game *g) const
 {
  switch (type) {
