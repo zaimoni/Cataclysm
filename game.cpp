@@ -1468,6 +1468,50 @@ void game::death_screen()
  delwin(w_death);
 }
 
+#define JSON_ENUM(TYPE)	\
+JSON toJSON(TYPE src) {	\
+	auto x = JSON_key(src);	\
+	if (x) return JSON(x);	\
+	throw std::runtime_error(std::string("encoding failure: " #TYPE " value ")+std::to_string((int)src));	\
+}	\
+	\
+bool fromJSON(const JSON& src, TYPE& dest)	\
+{	\
+	if (!src.is_scalar()) return false;	\
+	cataclysm::JSON_parse<TYPE> parse;	\
+	dest = parse(src.scalar());	\
+	return true;	\
+}
+
+JSON_ENUM(event_type)
+
+JSON toJSON(const event& src) {
+    JSON ret(JSON::object);
+    event_type type;
+    int turn;
+    int faction_id;	// -1 (no faction) is legal
+    point map_point;   // usage is against game::lev.x,y
+
+    if (auto json = JSON_key(src.type)) {
+        ret.set("type", json);
+        ret.set("turn", std::to_string(src.turn));
+        if (faction::MIN_ID <= src.faction_id) ret.set("faction", std::to_string(src.faction_id));
+        if (src.map_point != point(-1, -1)) ret.set("map_point", toJSON(src.map_point));
+    }
+
+    return ret;
+}
+
+bool fromJSON(const JSON& src, event& dest)
+{
+    if (!src.has_key("turn") || !src.has_key("type")) return false;
+    bool ret = fromJSON(src["type"], dest.type);
+    if (!fromJSON(src["turn"], dest.turn)) ret = false;
+    if (src.has_key("faction")) fromJSON(src["faction"], dest.faction_id);
+    if (src.has_key("map_point")) fromJSON(src["map_point"], dest.map_point);
+    return ret;
+}
+
 bool game::load_master()
 {
  std::ifstream fin;
@@ -1487,9 +1531,11 @@ bool game::load_master()
 	 active_missions.clear();
 	 factions.clear();
 	 active_npc.clear();
-	 if (master.has_key("active_missions")) master["active_missions"].decode(active_missions);
+     events.clear();
+     if (master.has_key("active_missions")) master["active_missions"].decode(active_missions);
 	 if (master.has_key("factions")) master["factions"].decode(factions);
 	 if (master.has_key("npcs")) master["npcs"].decode(active_npc);
+     if (master.has_key("events")) master["events"].decode(events);
 
 	 fin.close();
 	 return true;
@@ -1646,6 +1692,7 @@ void game::save()
  if (!active_missions.empty()) saved.set("active_missions", JSON::encode(active_missions));
  if (!factions.empty()) saved.set("factions", JSON::encode(factions));
  if (!active_npc.empty()) saved.set("npcs", JSON::encode(active_npc));
+ if (!events.empty()) saved.set("events", JSON::encode(events));
 
  fout.open("save/master.tmp");
  fout << saved;
