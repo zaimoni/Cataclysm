@@ -21,8 +21,10 @@ static const char* const JSON_transcode_events[] = {
 
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(event_type, JSON_transcode_events)
 
-void event::actualize(game *g) const
+void event::actualize() const
 {
+ auto g = game::active();
+
  switch (type) {
 
   case EVENT_HELP: {
@@ -211,38 +213,39 @@ void event::actualize(game *g) const
  }
 }
 
-void event::per_turn(game *g)
+bool event::per_turn()
 {
+ auto g = game::active();
+
  switch (type) {
   case EVENT_WANTED: {
    if (g->lev.z >= 0 && one_in(100)) { // About once every 10 minutes
     point place = g->m.random_outdoor_tile();
-    if (place.x == -1 && place.y == -1) return; // We're safely indoors!
+    if (place.x == -1 && place.y == -1) return true; // We're safely indoors!
     monster eyebot(mtype::types[mon_eyebot], place.x, place.y);
     eyebot.faction_id = faction_id;
     g->z.push_back(eyebot);
     if (g->u_see(place)) messages.add("An eyebot swoops down nearby!");
    }
-  } break;
+  }
+   return true;
 
   case EVENT_SPAWN_WYRMS:
    if (g->lev.z >= 0) {
     turn--;
-    return;
+    return true;
    }
    if (int(messages.turn) % 3 == 0) messages.add("You hear screeches from the rock above and around you!");
-   break;
+   return true;
 
   case EVENT_AMIGARA:
    messages.add("The entire cavern shakes!");
-   break;
+   return true;
 
   case EVENT_TEMPLE_OPEN:
    messages.add("The earth rumbles.");
-   break;
+   return true;
 
-
-  default:
-   break; // Nothing happens for other events
+  default: return true; // Nothing happens for other events
  }
 }

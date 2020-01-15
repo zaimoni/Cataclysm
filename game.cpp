@@ -727,12 +727,16 @@ void game::update_skills()
 
 void game::process_events()
 {
+ // We want to go forward, to allow for the possibility of events scheduling events for same-turn
  for (int i = 0; i < events.size(); i++) {
-  events[i].per_turn(this);
+  if (!events[i].per_turn()) {
+      EraseAt(events, i--);
+      continue;
+  }
   if (events[i].turn <= int(messages.turn)) {
-   events[i].actualize(this);
-   EraseAt(events, i);
-   i--;
+   events[i].actualize();
+   EraseAt(events, i--);
+   continue;
   }
  }
 }
