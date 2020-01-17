@@ -168,13 +168,14 @@ class game
   tripoint lev;	// Placement inside the overmap; x/y should be in 0...OMAPX/Y; offset from the player's submap coordinates
 	// but game::update_map thinks legal values are 0..2*OMAPX/Y
     // lev.z is almost always cur_om.pos.z (possibly should be explicitly enforced as map loading responds to cur_om.pos.z)
+    // in savegames: lev = u.GPSpos.first+(-5,-5,0).  Should be true anytime except during reality bubble shift during a move between submaps
   player u;
   std::vector<monster> z;
   std::vector<monster_and_count> coming_to_stairs;
   tripoint monstair;
   std::vector<npc> active_npc;
   std::vector<faction> factions;
-  std::vector<mission> active_missions; // Missions which may be assigned \todo V 0.2.1+ arguably should be a member of the player class
+  std::vector<mission> active_missions; // Missions which may be assigned (globally valid list)
 /*
 2019-01-14 No implementation inherited from C:Whales
 // \todo Dragging a piece of furniture, with a list of items contained

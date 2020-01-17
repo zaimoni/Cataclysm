@@ -110,6 +110,11 @@ num_terrain_types
 
 DECLARE_JSON_ENUM_SUPPORT_ATYPICAL(ter_id,0)
 
+template<int lb, int ub> constexpr bool any(ter_id src) {
+    static_assert(lb < ub);
+    return lb == src || ub == src;
+}
+
 struct ter_t {
 	static const ter_t list[num_terrain_types];
 	static std::map<ter_id, std::string> tiles;

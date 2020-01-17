@@ -894,8 +894,7 @@ void map::vehmove(game *g)
        veh->velocity += slowdown;
       else
        veh->velocity -= slowdown;
-      if (abs(veh->velocity) < 100)
-       veh->stop();
+      if (abs(veh->velocity) < 100) veh->stop();
 
       if (pl_ctrl) {
 // a bit of delay for animation
@@ -1098,29 +1097,15 @@ bool map::is_destructable_ter_only(int x, int y) const
 
 bool map::is_outside(int x, int y) const
 {
- bool out = (
-         ter(x    , y    ) != t_floor && ter(x - 1, y - 1) != t_floor &&
-         ter(x - 1, y    ) != t_floor && ter(x - 1, y + 1) != t_floor &&
-         ter(x    , y - 1) != t_floor && ter(x    , y    ) != t_floor &&
-         ter(x    , y + 1) != t_floor && ter(x + 1, y - 1) != t_floor &&
-         ter(x + 1, y    ) != t_floor && ter(x + 1, y + 1) != t_floor &&
-         ter(x    , y    ) != t_floor_wax &&
-         ter(x - 1, y - 1) != t_floor_wax &&
-         ter(x - 1, y    ) != t_floor_wax &&
-         ter(x - 1, y + 1) != t_floor_wax &&
-         ter(x    , y - 1) != t_floor_wax &&
-         ter(x    , y    ) != t_floor_wax &&
-         ter(x    , y + 1) != t_floor_wax &&
-         ter(x + 1, y - 1) != t_floor_wax &&
-         ter(x + 1, y    ) != t_floor_wax &&
-         ter(x + 1, y + 1) != t_floor_wax   );
- if (out) {
-  int vpart;
-  vehicle *veh = veh_at (x, y, vpart);
-  if (veh && veh->is_inside(vpart))
-   out = false;
+ // with proper z-levels, we would say "outside is when there are no floors above us, and arguably properly enclosed by walls/doors/etc.
+ if (any<t_floor, t_floor_wax>(ter(x, y))) return false;
+ for(int dir = direction::NORTH; dir <= direction::NORTHWEST; dir++) {
+     point pt = point(x, y) + direction_vector((direction)dir);
+     if (any<t_floor, t_floor_wax>(ter(pt))) return false;
  }
- return out;
+ int vpart;
+ if (vehicle* veh = veh_at(x, y, vpart); veh && veh->is_inside(vpart)) return false;
+ return true;
 }
 
 bool map::flammable_items_at(int x, int y) const
