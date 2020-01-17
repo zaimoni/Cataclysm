@@ -3,6 +3,7 @@
 #include "keypress.h"
 #include "options.h"
 #include "stl_typetraits.h"
+#include "stl_limits.h"
 #include "line.h"
 #include "recent_msg.h"
 #include "saveload.h"
@@ -2116,8 +2117,11 @@ int player::throw_range(int index) const
  int ret = int((str_cur * 8) / (tmp.weight() > 0 ? tmp.weight() : 10));
  ret -= int(tmp.volume() / 10);
  if (ret < 1) return 1;
-// Cap at double our strength + skill
- if (ret > str_cur * 1.5 + sklevel[sk_throw]) return str_cur * 1.5 + sklevel[sk_throw];
+// Cap at one and a half of our strength, plus skill
+ int ub = str_cur;
+ rational_scale<3, 2>(ub);
+ ub += sklevel[sk_throw];
+ if (ret > ub) return ub;
  return ret;
 }
  

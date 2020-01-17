@@ -4,6 +4,7 @@
 #include "keypress.h"
 #include "game.h"
 #include "json.h"
+#include "stl_limits.h"
 //#include <unistd.h>
 #include <fstream>
 #include <sstream>
@@ -45,7 +46,9 @@ int random_skill();
 
 static int calc_HP(int strength, bool tough)
 {
-	return (60 + 3 * strength) * (tough ? 1.2 : 1);
+    int ret = (60 + 3 * strength);
+    if (tough) cataclysm::rational_scale<6, 5>(ret);
+    return ret;
 }
 
 bool player::create(game *g, character_type type, std::string tempname)
