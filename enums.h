@@ -1,7 +1,7 @@
 #ifndef _ENUMS_H_
 #define _ENUMS_H_
 
-enum material {
+enum material {	// needed by both itype.h and mtype.h; unclear whether worth own header
 MNULL = 0,
 //Food Materials
 LIQUID, VEGGY, FLESH, POWDER,

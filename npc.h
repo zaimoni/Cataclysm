@@ -489,7 +489,7 @@ public:
  // last seen player data (assumes player is singleton)
  countdown<point> pl;	// last saw player at; legal coordinates 0.. (SEEX/Y * MAPSIZE-1)
  point it;	// The square containing an item we want
- point goal;	// Which mapx:mapy square we want to get to (legal coordinates 0...OMAPX/Y) \todo convert to full overmap coordinates
+ point goal;	// Which mapx:mapy square we want to get to (legal coordinates 0...OMAPX/Y) \todo V0.2.2+ retype to overmap::OM_loc
 
  bool fetching_item;
  bool has_new_items; // If true, we have something new and should re-equip
