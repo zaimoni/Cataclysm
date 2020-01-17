@@ -38,6 +38,14 @@ const overmap* om_cache::r_get(const tripoint& x)
 	return 0;
 }
 
+// \todo get/r_get variants that target overmap properties, rather than the tripoint coordinate
+// required functions
+// bool preview(ifstream&) : for each overmap file being tested, report back whether the overmap file should be loaded for a detailed check.
+// bool test(overmap&) : reports whether the overmap actually implements the desired property
+// both of these may need to be function objects, i.e. std::function may be required
+
+// Would also need way to retrieve all overmap filenames, and exclude those already loaded from consideration
+
 overmap& om_cache::create(const tripoint& x)	// only if needed
 {
 	if (x == game::active()->cur_om.pos) return game::active()->cur_om;
