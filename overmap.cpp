@@ -1749,35 +1749,23 @@ void overmap::build_anthill(const city& origin)
 void overmap::build_tunnel(int x, int y, int s, int dir)	// for ants nests
 {
  if (s <= 0) return;
- if (!is_between<ot_ants_ns, ot_ants_queen>(ter(x, y))) ter(x, y) = ot_ants_ns;
+ const point origin(x, y);
+ if (!is_between<ot_ants_ns, ot_ants_queen>(ter(x, y))) ter(origin) = ot_ants_ns;
  point next;
- switch (dir) {
-  case 0: next = point(x    , y - 1);
-  case 1: next = point(x + 1, y    );
-  case 2: next = point(x    , y + 1);
-  case 3: next = point(x - 1, y    );
+ if (1 == s) next = point(-1, -1);
+ else next = origin + direction_vector((direction)(2 * dir));
+
+ std::vector<std::pair<int,point> > valid;
+ for (int d = 0; d <= 3; d++) {
+     point pt = origin + direction_vector((direction)(2 * d));
+     if (pt != next && !is_between<ot_ants_ns, ot_ants_queen>(ter(pt))) valid.push_back(std::pair(d,pt));
  }
- if (s == 1)
-  next = point(-1, -1);
- std::vector<point> valid;
- for (int i = x - 1; i <= x + 1; i++) {
-  for (int j = y - 1; j <= y + 1; j++) {
-   if (!is_between<ot_ants_ns, ot_ants_queen>(ter(i, j)) &&
-       abs(i - x) + abs(j - y) == 1)
-    valid.push_back(point(i, j));
-  }
- }
+
  for (const auto& pt : valid) {
-   if (pt == next) continue;
    if (one_in(s * 2)) {
-    ter(pt.x, pt.y) = one_in(2) ? ot_ants_food : ot_ants_larvae;
+    ter(pt.second) = one_in(2) ? ot_ants_food : ot_ants_larvae;
    } else if (one_in(5)) {
-    int dir2;
-    if (pt.y == y - 1) dir2 = 0;
-    if (pt.x == x + 1) dir2 = 1;
-    if (pt.y == y + 1) dir2 = 2;
-    if (pt.x == x - 1) dir2 = 3;
-    build_tunnel(pt.x, pt.y, s - rng(0, 3), dir2);
+    build_tunnel(pt.second.x, pt.second.y, s - rng(0, 3), pt.first);
    }
  }
  build_tunnel(next.x, next.y, s - 1, dir);
