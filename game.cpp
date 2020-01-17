@@ -3500,7 +3500,6 @@ void game::open()
  mvwprintw(w_terrain, 0, 0, "Open where? (hjklyubn) ");
  wrefresh(w_terrain);
  char ch = input();
- last_action += ch;
  point open(get_direction(ch));
  if (open.x != -2) {
   int vpart;
@@ -3543,7 +3542,6 @@ void game::close()
  mvwprintw(w_terrain, 0, 0, "Close where? (hjklyubn) ");
  wrefresh(w_terrain);
  char ch = input();
- last_action += ch;
  point close(get_direction(ch));
  if (-2 == close.x) { messages.add("Invalid direction."); return; }
  close += u.pos;
@@ -3576,7 +3574,6 @@ void game::smash()
  mvwprintw(w_terrain, 0, 0, "Smash what? (hjklyubn) ");
  wrefresh(w_terrain);
  char ch = input();
- last_action += ch;
  if (ch == KEY_ESCAPE) {
   messages.add("Never mind.");
   return;
@@ -3617,7 +3614,6 @@ void game::use_item()
   messages.add("Never mind.");
   return;
  }
- last_action += ch;
  u.use(this, ch);
 }
 
@@ -3730,7 +3726,6 @@ void game::examine()
  mvwprintw(w_terrain, 0, 0, "Examine where? (Direction button) ");
  wrefresh(w_terrain);
  char ch = input();
- last_action += ch;
  if (ch == KEY_ESCAPE || ch == 'e' || ch == 'q') return;
  point exam(get_direction(ch));
  if (exam.x == -2) {

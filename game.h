@@ -320,9 +320,11 @@ public:
 
   calendar nextspawn; // The turn on which monsters will spawn next.
   calendar nextweather; // The turn on which weather will shift next.
-  std::vector<event> events;	        // Game events to be processed	\todo savefile break : include in savefile
+  std::vector<event> events;
   int kills[num_monsters];	        // Player's kill count
-  std::string last_action;		// The keypresses of last turn
+  // Historically, we had a keypress recorder for tracking the last action taken.
+  // There was no "clearing" or "archival" operation, however.
+  // This would be a wrapper for input(), possibly ignoring cancelled actions.
 
   special_game *gamemode;
 
