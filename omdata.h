@@ -101,6 +101,11 @@ template<int lb, int ub> constexpr bool is_between(oter_id src) {
 	return lb <= src && ub >= src;
 }
 
+template<int lb, int ub> constexpr bool any(oter_id src) {
+    static_assert(lb < ub);
+    return lb == src || ub == src;
+}
+
 struct oter_t {
 	static const oter_t list[num_ter_types];
 

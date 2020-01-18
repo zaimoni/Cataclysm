@@ -1710,22 +1710,22 @@ void overmap::build_lab(const city& origin)
 	auto& terrain = ter(stair);
 	if (ot_lab == terrain) {
       terrain = ot_lab_stairs;
-	  break;
+      numstairs++;
+      break;
 	}
    } while (++tries < 15);
-   numstairs++;	// XXX records attempts, not real stairs
   }
  }
  if (numstairs == 0) {	// This is the bottom of the lab;  We need a finale
-  int finalex, finaley;
-  int tries = 0;
-  do {
-   finalex = rng(origin.x - origin.s, origin.x + origin.s);
-   finaley = rng(origin.y - origin.s, origin.y + origin.s);
-   tries++;
-  } while (tries < 15 && ter(finalex, finaley) != ot_lab &&
-                         ter(finalex, finaley) != ot_lab_core);
-  ter(finalex, finaley) = ot_lab_finale;
+  std::vector<point> valid;
+  point pt;
+  for (pt.x = origin.x - origin.s; pt.x <= origin.x + origin.s; pt.x++) {
+      for (pt.y = origin.y - origin.s; pt.y <= origin.y + origin.s; pt.y++) {
+          if (any<ot_lab, ot_lab_core>(ter(pt))) valid.push_back(pt);
+      }
+  }
+// assert(!valid.empty());  // we set a terrain explicitly to ot_lab_core so should be fine
+  ter(valid[rng(0, valid.size() - 1)]) = ot_lab_finale;
  }
  zg.push_back(mongroup(mcat_lab, (origin.x * 2), (origin.y * 2), origin.s, 400));
 }
