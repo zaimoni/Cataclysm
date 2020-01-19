@@ -246,7 +246,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
  switch (terrain_type) {
 
- case ot_null:
+ case ot_null:  // historical.  Duplicates submap constructor effects explicitly
   for (int i = 0; i < SEEX * 2; i++) {
    for (int j = 0; j < SEEY * 2; j++) {
     ter(i, j) = t_null;

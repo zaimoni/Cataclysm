@@ -2636,10 +2636,10 @@ bool map::loadn(game *g, const point& world, int gridx, int gridy)
 // overx, overy is where in the overmap we need to pull data from
 // Each overmap square is two nonants; to prevent overlap, generate only at
 //  squares divisible by 2.
-  int newmapx = world.x + gridx - ((world.x + gridx) % 2);	// \todo savefile break: make this block implement the above for negative coordinates
-  int newmapy = world.y + gridy - ((world.y + gridy) % 2);
-  if (world.x + gridx < 0) newmapx = world.x + gridx;
-  if (world.y + gridy < 0) newmapy = world.y + gridy;
+  int newmapx = world.x + gridx;
+  int newmapy = world.y + gridy;
+  if (newmapx % 2) newmapx--;
+  if (newmapy % 2) newmapy--;
   tmp_map.generate(g, &(g->cur_om), newmapx, newmapy);
   return false;
  }
