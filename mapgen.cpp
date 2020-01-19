@@ -6290,7 +6290,7 @@ void map::add_spawn(monster *mon)
 
 vehicle* map::add_vehicle(vhtype_id type, int x, int y, int dir)
 {
- if (x < 0 || x >= SEEX * my_MAPSIZE || y < 0 || y >= SEEY * my_MAPSIZE) {
+ if (!inbounds(x,y)) {
   debugmsg("Bad add_vehicle t=%d d=%d x=%d y=%d", type, dir, x, y);
   return 0;
  }
@@ -6305,8 +6305,8 @@ vehicle* map::add_vehicle(vhtype_id type, int x, int y, int dir)
  veh.face.init(dir);
  veh.turn_dir = dir;
  veh.precalc_mounts (0, dir);
- grid[nonant]->vehicles.push_back(veh);
- return &grid[nonant]->vehicles[grid[nonant]->vehicles.size()-1];
+ grid[nonant]->vehicles.push_back(std::move(veh));
+ return &grid[nonant]->vehicles.back();
 }
 
 computer* map::add_computer(int x, int y, std::string name, int security)
@@ -6435,18 +6435,17 @@ void map::rotate(int turns)
  default:
   return;
  }
+// assert(turns >= 1 && turns <= 3);    // true due to above switch statement
 
 // change vehicles' directions
  for (int i = 0; i < my_MAPSIZE * my_MAPSIZE; i++)
-     for (int v = 0; v < grid[i]->vehicles.size(); v++)
-         if (turns >= 1 && turns <= 3)
-            grid[i]->vehicles[v].turn (turns * 90);
+     for (auto& veh : grid[i]->vehicles) veh.turn(turns * 90);
 
 // Set the spawn points
- grid[0]->spawns = sprot[0];
- grid[1]->spawns = sprot[1];
- grid[my_MAPSIZE]->spawns = sprot[my_MAPSIZE];
- grid[my_MAPSIZE + 1]->spawns = sprot[my_MAPSIZE + 1];
+ grid[0]->spawns = std::move(sprot[0]);
+ grid[1]->spawns = std::move(sprot[1]);
+ grid[my_MAPSIZE]->spawns = std::move(sprot[my_MAPSIZE]);
+ grid[my_MAPSIZE + 1]->spawns = std::move(sprot[my_MAPSIZE + 1]);
  for (int i = 0; i < SEEX * 2; i++) {
   for (int j = 0; j < SEEY * 2; j++) {
    ter  (i, j) = rotated[i][j];
