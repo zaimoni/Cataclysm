@@ -535,7 +535,7 @@ enum astar_list {
 
 vehicle* map::veh_at(int x, int y, int &part_num) const
 {
- if (!inbounds(x, y)) return NULL;    // Out-of-bounds - null vehicle
+ if (!inbounds(x, y)) return 0;    // Out-of-bounds - null vehicle
  int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
 
  x %= SEEX;
@@ -546,20 +546,17 @@ vehicle* map::veh_at(int x, int y, int &part_num) const
  for (int mx = -1; mx <= 1; mx++) {
   for (int my = -1; my <= 1; my++) {
    int nonant1 = nonant + mx + my * my_MAPSIZE;
-   if (nonant1 < 0 || nonant1 >= my_MAPSIZE * my_MAPSIZE)
-    continue; // out of grid
-   for (int i = 0; i < grid[nonant1]->vehicles.size(); i++) {
-    vehicle *veh = &(grid[nonant1]->vehicles[i]);
-    int part = veh->part_at (x - (veh->pos.x + mx * SEEX),
-                             y - (veh->pos.y + my * SEEY));
-    if (part >= 0) {
-     part_num = part;
-     return veh;
-    }
+   if (nonant1 < 0 || nonant1 >= my_MAPSIZE * my_MAPSIZE) continue; // out of grid
+   for (auto& veh : grid[nonant1]->vehicles) {
+       int part = veh.part_at(x - (veh.pos.x + mx * SEEX), y - (veh.pos.y + my * SEEY));
+       if (part >= 0) {
+           part_num = part;
+           return &veh;
+       }
    }
   }
  }
- return NULL;
+ return 0;
 }
 
 vehicle* map::veh_at(int x, int y) const
@@ -731,25 +728,29 @@ bool map::displace_vehicle (game *g, int &x, int &y, const point& delta, bool te
 
 void map::vehmove(game *g)
 {
+ static int sm_stack[MAPSIZE*MAPSIZE];  // requires single-threaded or locking to be safe
+ size_t ub = 0;
+
  // give vehicles movement points
  for (int i = 0; i < my_MAPSIZE; i++) {
-  for (int j = 0; j < my_MAPSIZE; j++) {
-   int sm = i + j * my_MAPSIZE;
-   for (int v = 0; v < grid[sm]->vehicles.size(); v++) {
-    vehicle *veh = &(grid[sm]->vehicles[v]);
-    // velocity is ability to make more one-tile steps per turn
-    veh->gain_moves (abs (veh->velocity));
-   }
-  }
+     for (int j = 0; j < my_MAPSIZE; j++) {
+         int sm = i + j * my_MAPSIZE;
+         if (!grid[sm]->vehicles.empty()) {
+             sm_stack[ub++] = sm;
+             for (auto& veh : grid[sm]->vehicles) veh.gain_moves(abs(veh.velocity)); // velocity is ability to make more one-tile steps per turn
+         }
+     }
  }
+ if (0 >= ub) return;
 // move vehicles
  bool sm_change;
  int count = 0;
  do {
   sm_change = false;
-  for (int i = 0; i < my_MAPSIZE; i++) {
-   for (int j = 0; j < my_MAPSIZE; j++) {
-    int sm = i + j * my_MAPSIZE;
+  for (int scan = 0; scan < ub; scan++) {
+      const int sm = sm_stack[scan];
+      const int i = sm % my_MAPSIZE;
+      const int j = sm / my_MAPSIZE;
 
     for (int v = 0; v < grid[sm]->vehicles.size(); v++) {
      vehicle *veh = &(grid[sm]->vehicles[v]);
@@ -922,23 +923,14 @@ void map::vehmove(game *g)
        veh->stop();
 // redraw scene
       g->draw();
-      if (sm_change)
-       break;
+      if (sm_change) break;
      } // while (veh->moves
-     if (sm_change)
-      break;
+     if (sm_change) break;
     } //for v
-    if (sm_change)
-     break;
-   } // for j
-   if (sm_change)
-    break;
-  } // for i
+    if (sm_change) break;
+  } // for scan
   count++;
-//        if (count > 3)
-//            debugmsg ("vehmove count:%d", count);
-  if (count > 10)
-   break;
+  if (10 < ++count) break;  // infinite loop interceptor
  } while (sm_change);
 }
 
