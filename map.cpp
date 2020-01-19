@@ -524,8 +524,6 @@ void ter_t::init()
 }
 
 #define SGN(a) (((a)<0) ? -1 : 1)
-#define INBOUNDS(x, y) \
- (x >= 0 && x < SEEX * my_MAPSIZE && y >= 0 && y < SEEY * my_MAPSIZE)
 
 enum astar_list {
  ASL_NONE,
@@ -972,7 +970,7 @@ bool map::displace_water (int x, int y)
 
 ter_id& map::ter(int x, int y)
 {
- if (!INBOUNDS(x, y)) return (discard<ter_id>::x = t_null);	// Out-of-bounds - null terrain 
+ if (!inbounds(x, y)) return (discard<ter_id>::x = t_null);	// Out-of-bounds - null terrain 
 /*
  int nonant;
  cast_to_nonant(x, y, nonant);
@@ -1629,7 +1627,7 @@ void map::shoot(game *g, int x, int y, int &dam, bool hit_items, unsigned flags)
 
 // Now, destroy items on that tile.
 
- if ((move_cost(x, y) == 2 && !hit_items) || !INBOUNDS(x, y)) return;	// Items on floor-type spaces won't be shot up.
+ if ((move_cost(x, y) == 2 && !hit_items) || !inbounds(x, y)) return;	// Items on floor-type spaces won't be shot up.
 
  {
  auto& stack = i_at(x, y);
@@ -1768,7 +1766,7 @@ bool map::close_door(int x, int y)
 
 int& map::radiation(int x, int y)
 {
- if (!INBOUNDS(x, y)) return discard<int>::x = 0;
+ if (!inbounds(x, y)) return discard<int>::x = 0;
 /*
  int nonant;
  cast_to_nonant(x, y, nonant);
@@ -1782,7 +1780,7 @@ int& map::radiation(int x, int y)
 
 std::vector<item>& map::i_at(int x, int y)
 {
- if (!INBOUNDS(x, y)) {
+ if (!inbounds(x, y)) {
   discard<std::vector<item> >::x.clear();
   return discard<std::vector<item> >::x;
  }
@@ -1856,20 +1854,20 @@ void map::add_item(int x, int y, const itype* type, int birthday)
 void map::add_item(int x, int y, const item& new_item)
 {
  if (new_item.is_style()) return;
- if (!INBOUNDS(x, y)) return;
+ if (!inbounds(x, y)) return;
  if (new_item.made_of(LIQUID) && has_flag(swimmable, x, y)) return;
  if (has_flag(noitem, x, y) || i_at(x, y).size() >= 26) {// Too many items there
   std::vector<point> okay;
   for (int i = x - 1; i <= x + 1; i++) {
    for (int j = y - 1; j <= y + 1; j++) {
-    if (INBOUNDS(i, j) && move_cost(i, j) > 0 && !has_flag(noitem, i, j) && i_at(i, j).size() < 26)
+    if (inbounds(i, j) && move_cost(i, j) > 0 && !has_flag(noitem, i, j) && i_at(i, j).size() < 26)
      okay.push_back(point(i, j));
    }
   }
   if (okay.size() == 0) {
    for (int i = x - 2; i <= x + 2; i++) {
     for (int j = y - 2; j <= y + 2; j++) {
-     if (INBOUNDS(i, j) && move_cost(i, j) > 0 && !has_flag(noitem, i, j) && i_at(i, j).size() < 26)
+     if (inbounds(i, j) && move_cost(i, j) > 0 && !has_flag(noitem, i, j) && i_at(i, j).size() < 26)
       okay.push_back(point(i, j));
     }
    }
@@ -1990,7 +1988,7 @@ void map::use_charges(point origin, int range, const itype_id type, int quantity
  
 trap_id& map::tr_at(int x, int y)
 {
- if (!INBOUNDS(x, y)) return (discard<trap_id>::x = tr_null);	// Out-of-bounds, return our null trap
+ if (!inbounds(x, y)) return (discard<trap_id>::x = tr_null);	// Out-of-bounds, return our null trap
 /*
  int nonant;
  cast_to_nonant(x, y, nonant);
@@ -1999,10 +1997,6 @@ trap_id& map::tr_at(int x, int y)
 
  x %= SEEX;
  y %= SEEY;
- if (x < 0 || x >= SEEX || y < 0 || y >= SEEY) {
-  debugmsg("tr_at contained bad x:y %d:%d", x, y);
-  return (discard<trap_id>::x = tr_null);	// Out-of-bounds, return our null trap
- }
 
  if (ter_t::list[ grid[nonant]->ter[x][y] ].trap != tr_null) return (discard<trap_id>::x = ter_t::list[ grid[nonant]->ter[x][y] ].trap);
  
@@ -2011,7 +2005,7 @@ trap_id& map::tr_at(int x, int y)
 
 void map::add_trap(int x, int y, trap_id t)
 {
- if (!INBOUNDS(x, y)) return;
+ if (!inbounds(x, y)) return;
  int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
 
  x %= SEEX;
@@ -2057,7 +2051,7 @@ void map::disarm_trap(game *g, const point& pt)
  
 field& map::field_at(int x, int y)
 {
- if (!INBOUNDS(x, y)) return (discard<field>::x = field());
+ if (!inbounds(x, y)) return (discard<field>::x = field());
 /*
  int nonant;
  cast_to_nonant(x, y, nonant);
@@ -2071,7 +2065,7 @@ field& map::field_at(int x, int y)
 
 bool map::add_field(game *g, int x, int y, field_id t, unsigned char density, unsigned int age)
 {
- if (!INBOUNDS(x, y)) return false;
+ if (!inbounds(x, y)) return false;
  auto& fd = field_at(x, y);
  if (fd.type == fd_web && t == fd_fire) density++;
  else if (!fd.is_null()) return false; // Blood & bile are null too
@@ -2090,7 +2084,7 @@ bool map::add_field(game *g, int x, int y, field_id t, unsigned char density, un
 
 void map::remove_field(int x, int y)
 {
- if (!INBOUNDS(x, y)) return;
+ if (!inbounds(x, y)) return;
  int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
  x %= SEEX;
  y %= SEEY;
@@ -2100,7 +2094,7 @@ void map::remove_field(int x, int y)
 
 computer* map::computer_at(int x, int y)
 {
- if (!INBOUNDS(x, y)) return NULL;
+ if (!inbounds(x, y)) return 0;
 /*
  int nonant;
  cast_to_nonant(x, y, nonant);
@@ -2109,7 +2103,7 @@ computer* map::computer_at(int x, int y)
 
  x %= SEEX;
  y %= SEEY;
- if (grid[nonant]->comp.name == "") return NULL;
+ if (grid[nonant]->comp.name == "") return 0;
  return &(grid[nonant]->comp);
 }
 
@@ -2153,7 +2147,7 @@ void map::draw(game *g, WINDOW* w, point center)
 void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
                  bool show_items, int cx, int cy)
 {
- if (!INBOUNDS(x, y)) return;	// Out of bounds
+ if (!inbounds(x, y)) return;	// Out of bounds
  if (cx == -1) cx = u.pos.x;
  if (cy == -1) cy = u.pos.y;
  const int k = x + SEEX - cx;
@@ -2257,6 +2251,9 @@ bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc) const
 {
  int dx = Tx - Fx;
  int dy = Ty - Fy;
+ 
+ if (range >= 0 && (abs(dx) > range || abs(dy) > range)) return false;	// Out of range!
+
  int ax = abs(dx) << 1;
  int ay = abs(dy) << 1;
  int sx = SGN(dx);
@@ -2265,9 +2262,7 @@ bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc) const
  int y = Fy;
  int t = 0;
  int st;
- 
- if (range >= 0 && (abs(dx) > range || abs(dy) > range))
-  return false;	// Out of range!
+
  if (ax > ay) { // Mostly-horizontal line
   st = SGN(ay - (ax >> 1));
 // Doing it "backwards" prioritizes straight lines before diagonal.
@@ -2288,7 +2283,7 @@ bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc) const
      tc *= st;
      return true;
     }
-   } while ((trans(x, y)) && (INBOUNDS(x,y)));
+   } while ((trans(x, y)) && inbounds(x, y));
   }
   return false;
  } else { // Same as above, for mostly-vertical lines
@@ -2308,7 +2303,7 @@ bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc) const
      tc *= st;
      return true;
     }
-   } while ((trans(x, y)) && (INBOUNDS(x,y)));
+   } while ((trans(x, y)) && inbounds(x,y));
   }
   return false;
  }
@@ -2320,6 +2315,9 @@ bool map::clear_path(int Fx, int Fy, int Tx, int Ty, int range, int cost_min,
 {
  int dx = Tx - Fx;
  int dy = Ty - Fy;
+ 
+ if (range >= 0 && (abs(dx) > range || abs(dy) > range)) return false;	// Out of range!
+
  int ax = abs(dx) << 1;
  int ay = abs(dy) << 1;
  int sx = SGN(dx);
@@ -2328,9 +2326,7 @@ bool map::clear_path(int Fx, int Fy, int Tx, int Ty, int range, int cost_min,
  int y = Fy;
  int t = 0;
  int st;
- 
- if (range >= 0 && (abs(dx) > range || abs(dy) > range))
-  return false;	// Out of range!
+
  if (ax > ay) { // Mostly-horizontal line
   st = SGN(ay - (ax >> 1));
 // Doing it "backwards" prioritizes straight lines before diagonal.
@@ -2351,8 +2347,7 @@ bool map::clear_path(int Fx, int Fy, int Tx, int Ty, int range, int cost_min,
      tc *= st;
      return true;
     }
-   } while (move_cost(x, y) >= cost_min && move_cost(x, y) <= cost_max &&
-            INBOUNDS(x, y));
+   } while (is_between(cost_min, move_cost(x, y), cost_max) && inbounds(x, y));
   }
   return false;
  } else { // Same as above, for mostly-vertical lines
@@ -2372,8 +2367,7 @@ bool map::clear_path(int Fx, int Fy, int Tx, int Ty, int range, int cost_min,
      tc *= st;
      return true;
     }
-   } while (move_cost(x, y) >= cost_min && move_cost(x, y) <= cost_max &&
-            INBOUNDS(x,y));
+   } while (is_between(cost_min, move_cost(x, y), cost_max) && inbounds(x,y));
   }
   return false;
  }
@@ -2387,7 +2381,7 @@ std::vector<point> map::route(int Fx, int Fy, int Tx, int Ty, bool bash) const
  * in-bounds point and go to that, then to the real origin/destination.
  */
 
- if (!INBOUNDS(Fx, Fy) || !INBOUNDS(Tx, Ty)) {
+ if (!inbounds(Fx, Fy) || !inbounds(Tx, Ty)) {
   int linet;
   if (sees(Fx, Fy, Tx, Ty, -1, linet))
    return line_to(Fx, Fy, Tx, Ty, linet);

@@ -27,9 +27,6 @@ static const char* JSON_transcode[] = {
 
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(field_id, JSON_transcode)
 
-#define INBOUNDS(x, y) \
- (x >= 0 && x < SEEX * my_MAPSIZE && y >= 0 && y < SEEY * my_MAPSIZE)
-
 bool map::process_fields(game *g)
 {
  bool found_field = false;
@@ -247,7 +244,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
     for (int i = 0; i < 3; i++) {
      for (int j = 0; j < 3; j++) {
       int fx = x + ((i + starti) % 3) - 1, fy = y + ((j + startj) % 3) - 1;
-      if (INBOUNDS(fx, fy)) {
+      if (inbounds(fx, fy)) {
        int spread_chance = 20 * (cur->density - 1) + 10 * smoke;
 	   auto& f = field_at(fx, fy);
        if (f.type == fd_web) spread_chance = 50 + spread_chance / 2;
