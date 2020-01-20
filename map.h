@@ -19,6 +19,7 @@ class map
 {
  public:
  static std::vector <itype_id> items[num_itloc]; // Items at various map types
+ typedef std::pair<short,point> localPos; // nonant, x, y
 
 // Constructors & Initialization
  map(int map_size = MAPSIZE) : my_MAPSIZE(map_size), grid(map_size*map_size, NULL) {};
@@ -43,6 +44,8 @@ class map
  void clear_traps();
 
 // Movement and LOS
+ bool to(int x, int y, localPos& dest) const;
+
  int move_cost(int x, int y) const; // Cost to move through; 0 = impassible
  int move_cost(const point& pt) const { return move_cost(pt.x, pt.y); };
  int move_cost_ter_only(int x, int y) const; // same as above, but don't take vehicles into account
@@ -71,6 +74,7 @@ class map
 // checks, if tile is occupied by vehicle and by which part
  vehicle* veh_at(int x, int y, int &part_num) const;
  vehicle* veh_at(const point& pt, int &part_num) const { return veh_at(pt.x, pt.y, part_num); };
+ vehicle* veh_at(const localPos& src, int& part_num) const;
  vehicle* veh_at(int x, int y) const;
  vehicle* veh_at(const point& pt) const { return veh_at(pt.x, pt.y); };
  // put player on vehicle at x,y
@@ -90,6 +94,8 @@ class map
 // Terrain
  ter_id& ter(int x, int y); // Terrain at coord (x, y); {x|y}=(0, SEE{X|Y}*3]
  ter_id& ter(const point& pt) { return ter(pt.x, pt.y); };
+ ter_id& ter(const localPos& src) { return grid[src.first]->ter[src.second.x][src.second.y]; };
+ ter_id ter(const localPos& src) const { return grid[src.first]->ter[src.second.x][src.second.y]; };
  ter_id ter(int x, int y) const { return const_cast<map*>(this)->ter(x, y); };	// \todo specialize this properly
  ter_id ter(const point& pt) const { return const_cast<map*>(this)->ter(pt.x, pt.y); };
 
@@ -214,6 +220,8 @@ class map
 // Fields
  field& field_at(int x, int y);
  field& field_at(const point& pt) { return field_at(pt.x, pt.y); };
+ field& field_at(const localPos& src) { return grid[src.first]->fld[src.second.x][src.second.y]; };
+ const field& field_at(const localPos& src) const { return grid[src.first]->fld[src.second.x][src.second.y]; };
  const field& field_at(int x, int y) const { return const_cast<map*>(this)->field_at(x, y); };
  const field& field_at(const point& pt) const { return const_cast<map*>(this)->field_at(pt.x, pt.y); };
  bool add_field(game *g, int x, int y, field_id t, unsigned char density, unsigned int age=0);

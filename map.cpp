@@ -531,6 +531,36 @@ enum astar_list {
  ASL_CLOSED
 };
 
+bool map::to(int x, int y, localPos& dest) const
+{
+    if (!inbounds(x, y)) return false;
+    dest.first = (x / SEEX) + (y / SEEY) * my_MAPSIZE;
+    dest.second.x = x % SEEX;
+    dest.second.y = y % SEEY;
+    return true;
+}
+
+vehicle* map::veh_at(const localPos& src, int& part_num) const
+{
+    // must check 3x3 map chunks, as vehicle part may span to neighbour chunk
+    // we presume that vehicles don't intersect (they shouldn't by any means)
+    const auto nonant_ub = my_MAPSIZE * my_MAPSIZE;
+    for (int mx = -1; mx <= 1; mx++) {
+        for (int my = -1; my <= 1; my++) {
+            int nonant1 = src.first + mx + my * my_MAPSIZE;
+            if (nonant1 < 0 || nonant1 >= nonant_ub) continue; // out of grid
+            for (auto& veh : grid[nonant1]->vehicles) {
+                int part = veh.part_at(src.second.x - (veh.pos.x + mx * SEEX), src.second.y - (veh.pos.y + my * SEEY));
+                if (part >= 0) {
+                    part_num = part;
+                    return &veh;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
 vehicle* map::veh_at(int x, int y, int &part_num) const
 {
  if (!inbounds(x, y)) return 0;    // Out-of-bounds - null vehicle
@@ -1039,9 +1069,13 @@ bool map::trans(int x, int y) const
  // Control statement is a problem. Normally returning false on an out-of-bounds
  // is how we stop rays from going on forever.  Instead we'll have to include
  // this check in the ray loop.
+ localPos pos;
+ if (!to(x, y, pos)) return true;   // no known vehicle, null terrain: transparent
+
  int vpart = -1;
+
  bool tertr;
- if (vehicle* const veh = veh_at(x, y, vpart)) {
+ if (vehicle* const veh = veh_at(pos, vpart)) {
   tertr = !veh->part_flag(vpart, vpf_opaque) || veh->parts[vpart].hp <= 0;
   if (!tertr) {
    int dpart = veh->part_with_feature(vpart, vpf_openable);
@@ -1049,8 +1083,8 @@ bool map::trans(int x, int y) const
     tertr = true; // open opaque door
   }
  } else
-  tertr = ter_t::list[ter(x, y)].flags & mfb(transparent);
- const auto& fd = field_at(x, y);
+  tertr = ter_t::list[ter(pos)].flags & mfb(transparent);
+ const auto& fd = field_at(pos);
  return tertr && (fd.type == 0 || field::list[fd.type].transparent[fd.density - 1]);	// Fields may obscure the view, too
 }
 
