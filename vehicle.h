@@ -259,7 +259,7 @@ public:
     int part_collision (int vx, int vy, int part, point dest);
 
 // Process the trap beneath
-    void handle_trap (int x, int y, int part);
+    void handle_trap(const point& pt, int part);
 
 // add item to part's cargo. if false, then there's no cargo at this part or cargo is full
     bool add_item (int part, item itm);

@@ -264,7 +264,7 @@ void computer::activate_function(game *g, computer_action action)
    break;
 
   case COMPACT_RELEASE:
-   g->sound(g->u.pos.x, g->u.pos.y, 40, "An alarm sounds!");
+   g->sound(g->u.pos, 40, "An alarm sounds!");
    g->m.translate<t_reinforced_glass_h, t_floor>();
    g->m.translate<t_reinforced_glass_v, t_floor>();
    print_line("Containment shields opened.");

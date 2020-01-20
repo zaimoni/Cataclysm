@@ -874,7 +874,7 @@ void map::vehmove(game *g)
         if (veh->part_flag(p, vpf_wheel) && one_in(2))
          if (displace_water (origin.x, origin.y) && pl_ctrl)
           messages.add("You hear a splash!");
-        veh->handle_trap(origin.x, origin.y, p);
+        veh->handle_trap(origin, p);
        }
       }
 

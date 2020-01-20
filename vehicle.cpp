@@ -1044,19 +1044,19 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
     return imp2;
 }
 
-void vehicle::handle_trap (int x, int y, int part)
+void vehicle::handle_trap(const point& pt, int part)
 {
     int pwh = part_with_feature (part, vpf_wheel);
     if (pwh < 0) return;
 	auto g = game::active();
-    trap_id t = g->m.tr_at(x, y);
+    trap_id t = g->m.tr_at(pt);
     if (t == tr_null) return;
     int noise = 0;
     int chance = 100;
     int expl = 0;
     int shrap = 0;
     bool wreckit = false;
-    std::string msg ("The %s's %s runs over %s.");
+    const char* msg = "The %s's %s runs over %s.";
     std::string snd;
     switch (t)
     {
@@ -1069,8 +1069,8 @@ void vehicle::handle_trap (int x, int y, int part)
             noise = 8;
             snd = "SNAP!";
             wreckit = true;
-            g->m.tr_at(x, y) = tr_null;
-            g->m.add_item(x, y, item::types[itm_beartrap], 0);
+            g->m.tr_at(pt) = tr_null;
+            g->m.add_item(pt, item::types[itm_beartrap], 0);
             break;
         case tr_nailboard:
             wreckit = true;
@@ -1085,10 +1085,10 @@ void vehicle::handle_trap (int x, int y, int part)
             noise = 1;
             snd = "Clank!";
             wreckit = true;
-            g->m.tr_at(x, y) = tr_null;
-            g->m.add_item(x, y, item::types[itm_crossbow], 0);
-            g->m.add_item(x, y, item::types[itm_string_6], 0);
-            if (!one_in(10)) g->m.add_item(x, y, item::types[itm_bolt_steel], 0);
+            g->m.tr_at(pt) = tr_null;
+            g->m.add_item(pt, item::types[itm_crossbow], 0);
+            g->m.add_item(pt, item::types[itm_string_6], 0);
+            if (!one_in(10)) g->m.add_item(pt, item::types[itm_bolt_steel], 0);
             break;
         case tr_shotgun_2:
         case tr_shotgun_1:
@@ -1096,12 +1096,11 @@ void vehicle::handle_trap (int x, int y, int part)
             snd = "Bang!";
             chance = 70;
             wreckit = true;
-            if (t == tr_shotgun_2) g->m.tr_at(x, y) = tr_shotgun_1;
-            else
-            {
-                g->m.tr_at(x, y) = tr_null;
-                g->m.add_item(x, y, item::types[itm_shotgun_sawn], 0);
-                g->m.add_item(x, y, item::types[itm_string_6], 0);
+            if (t == tr_shotgun_2) g->m.tr_at(pt) = tr_shotgun_1;
+            else {
+                g->m.tr_at(pt) = tr_null;
+                g->m.add_item(pt, item::types[itm_shotgun_sawn], 0);
+                g->m.add_item(pt, item::types[itm_string_6], 0);
             }
             break;
         case tr_landmine:
@@ -1128,14 +1127,14 @@ void vehicle::handle_trap (int x, int y, int part)
         case tr_telepad:
         case tr_temple_flood:
         case tr_temple_toggle:
-            msg.clear();
+            msg = 0;
         default:;
     }
-    if (msg.size() > 0 && g->u_see(x, y))
-		messages.add(msg.c_str(), name.c_str(), part_info(part).name, trap::traps[t]->name.c_str());
-    if (noise > 0) g->sound (x, y, noise, snd);
+    if (msg && g->u_see(pt))
+		messages.add(msg, name.c_str(), part_info(part).name, trap::traps[t]->name.c_str());
+    if (noise > 0) g->sound(pt, noise, snd);
     if (wreckit && chance >= rng (1, 100)) damage (part, 500);
-    if (expl > 0) g->explosion(x, y, expl, shrap, false);
+    if (expl > 0) g->explosion(pt, expl, shrap, false);
 }
 
 bool vehicle::add_item (int part, item itm)
