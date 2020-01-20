@@ -541,10 +541,11 @@ vehicle* map::veh_at(int x, int y, int &part_num) const
 
  // must check 3x3 map chunks, as vehicle part may span to neighbour chunk
  // we presume that vehicles don't intersect (they shouldn't by any means)
+ const auto nonant_ub = my_MAPSIZE * my_MAPSIZE;
  for (int mx = -1; mx <= 1; mx++) {
   for (int my = -1; my <= 1; my++) {
    int nonant1 = nonant + mx + my * my_MAPSIZE;
-   if (nonant1 < 0 || nonant1 >= my_MAPSIZE * my_MAPSIZE) continue; // out of grid
+   if (nonant1 < 0 || nonant1 >= nonant_ub) continue; // out of grid
    for (auto& veh : grid[nonant1]->vehicles) {
        int part = veh.part_at(x - (veh.pos.x + mx * SEEX), y - (veh.pos.y + my * SEEY));
        if (part >= 0) {
