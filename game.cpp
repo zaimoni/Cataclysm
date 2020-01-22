@@ -3561,7 +3561,7 @@ void game::close()
 	 return;
    }
    if (close == u.pos) { messages.add("There's some buffoon in the way!"); return; }
-   didit = m.close_door(close.x, close.y);
+   didit = m.close_door(close);
  }
  if (didit) u.moves -= 90;
 }

@@ -175,7 +175,7 @@ class map
 	 _translate(src,dest);
  }
  
- bool close_door(int x, int y);
+ bool close_door(const point& pt);
  bool open_door(int x, int y, bool inside);
  // bash: if res pointer is supplied, res will contain absorbed impact or -1
  bool bash(int x, int y, int str, std::string &sound, int *res = 0);
