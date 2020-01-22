@@ -466,30 +466,34 @@ void monster::hit_player(game *g, player &p, bool can_grab)
 
 void monster::move_to(game *g, const point& pt)
 {
- monster* const m_at = g->mon(pt);
- if (!m_at) { //...assuming there's no monster there
+ if (const auto m_at = g->mon(pt)) {
+   if (has_flag(MF_ATTACKMON) || m_at->friendly != 0)
+// If there IS a monster there, and we fight monsters, fight it!
+     hit_monster(g, *m_at);
+   // \todo other interesting behaviors (side-step, etc.)
+ } else {
   if (has_effect(ME_BEARTRAP)) {
    moves = 0;
    return;
   }
   if (!plans.empty()) EraseAt(plans, 0);
-  if (has_flag(MF_SWIMS) && g->m.has_flag(swimmable, pt)) moves += 50;
-  if (!has_flag(MF_DIGS) && !has_flag(MF_FLIES) &&
-      (!has_flag(MF_SWIMS) || !g->m.has_flag(swimmable, pt)))
-   moves -= (g->m.move_cost(pt) - 2) * 50;
+  const unsigned int not_landbound = has_flag(MF_DIGS) + 2 * has_flag(MF_FLIES);
+  const bool is_swimming = (has_flag(MF_SWIMS) && g->m.has_flag(swimmable, pt));
+  if (is_swimming) moves += 50;
+  else if (!not_landbound) moves -= (g->m.move_cost(pt) - 2) * 50;
   pos = pt;
   footsteps(g, pt);
-  if (!has_flag(MF_DIGS) && !has_flag(MF_FLIES) && g->m.tr_at(pos) != tr_null) { // Monster stepped on a trap!
-   const trap* const tr = trap::traps[g->m.tr_at(pos)];
-   if (dice(3, sk_dodge + 1) < dice(3, tr->avoidance)) (tr->actm)(g, this);
+  if (!not_landbound) {
+      if (const auto tr_at = g->m.tr_at(pos)) { // Monster stepped on a trap!
+          const trap* const tr = trap::traps[tr_at];
+          if (dice(3, sk_dodge + 1) < dice(3, tr->avoidance)) (tr->actm)(g, this);
+      }
   }
 // Diggers turn the dirt into dirtmound
-  if (has_flag(MF_DIGS)) g->m.ter(pos) = t_dirtmound;
+  if (1== not_landbound%2) g->m.ter(pos) = t_dirtmound;
 // Acid trail monsters leave... a trail of acid
   if (has_flag(MF_ACIDTRAIL)) g->m.add_field(g, pos, fd_acid, 1);
- } else if (has_flag(MF_ATTACKMON) || m_at->friendly != 0)
-// If there IS a monster there, and we fight monsters, fight it!
-  hit_monster(g, *m_at);
+ }
 }
 
 /* Random walking even when we've moved
