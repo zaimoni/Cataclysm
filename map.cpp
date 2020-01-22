@@ -563,29 +563,9 @@ vehicle* map::veh_at(const localPos& src, int& part_num) const
 
 vehicle* map::veh_at(int x, int y, int &part_num) const
 {
- if (!inbounds(x, y)) return 0;    // Out-of-bounds - null vehicle
- int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
-
- x %= SEEX;
- y %= SEEY;
-
- // must check 3x3 map chunks, as vehicle part may span to neighbour chunk
- // we presume that vehicles don't intersect (they shouldn't by any means)
- const auto nonant_ub = my_MAPSIZE * my_MAPSIZE;
- for (int mx = -1; mx <= 1; mx++) {
-  for (int my = -1; my <= 1; my++) {
-   int nonant1 = nonant + mx + my * my_MAPSIZE;
-   if (nonant1 < 0 || nonant1 >= nonant_ub) continue; // out of grid
-   for (auto& veh : grid[nonant1]->vehicles) {
-       int part = veh.part_at(x - (veh.pos.x + mx * SEEX), y - (veh.pos.y + my * SEEY));
-       if (part >= 0) {
-           part_num = part;
-           return &veh;
-       }
-   }
-  }
- }
- return 0;
+ localPos pos;
+ if (!to(x, y, pos)) return 0;    // Out-of-bounds - null vehicle
+ return veh_at(pos, part_num);
 }
 
 vehicle* map::veh_at(int x, int y) const
@@ -1044,6 +1024,21 @@ std::string map::features(const point& pt) const
  return ret;
 }
 
+int map::move_cost(const localPos& pos) const
+{
+ int vpart = -1;
+ vehicle *veh = veh_at(pos, vpart);
+ if (veh) {  // moving past vehicle cost
+  int dpart = veh->part_with_feature(vpart, vpf_obstacle);
+  if (dpart >= 0 &&
+      (!veh->part_flag(dpart, vpf_openable) || !veh->parts[dpart].open))
+   return 0;
+  else
+   return 8;
+ }
+ return ter_t::list[ter(pos)].movecost;
+}
+
 int map::move_cost(int x, int y) const
 {
  int vpart = -1;
@@ -1064,28 +1059,32 @@ int map::move_cost_ter_only(int x, int y) const
  return ter_t::list[ter(x, y)].movecost;
 }
 
+bool map::trans(const localPos& pos) const
+{
+    // Control statement is a problem. Normally returning false on an out-of-bounds
+    // is how we stop rays from going on forever.  Instead we'll have to include
+    // this check in the ray loop.
+    int vpart = -1;
+
+    bool tertr;
+    if (vehicle* const veh = veh_at(pos, vpart)) {
+        tertr = !veh->part_flag(vpart, vpf_opaque) || veh->parts[vpart].hp <= 0;
+        if (!tertr) {
+            int dpart = veh->part_with_feature(vpart, vpf_openable);
+            if (dpart >= 0 && veh->parts[dpart].open)
+                tertr = true; // open opaque door
+        }
+    }
+    else
+        tertr = ter_t::list[ter(pos)].flags & mfb(transparent);
+    const auto& fd = field_at(pos);
+    return tertr && (fd.type == 0 || field::list[fd.type].transparent[fd.density - 1]);	// Fields may obscure the view, too
+}
+
 bool map::trans(int x, int y) const
 {
- // Control statement is a problem. Normally returning false on an out-of-bounds
- // is how we stop rays from going on forever.  Instead we'll have to include
- // this check in the ray loop.
  localPos pos;
- if (!to(x, y, pos)) return true;   // no known vehicle, null terrain: transparent
-
- int vpart = -1;
-
- bool tertr;
- if (vehicle* const veh = veh_at(pos, vpart)) {
-  tertr = !veh->part_flag(vpart, vpf_opaque) || veh->parts[vpart].hp <= 0;
-  if (!tertr) {
-   int dpart = veh->part_with_feature(vpart, vpf_openable);
-   if (dpart >= 0 && veh->parts[dpart].open)
-    tertr = true; // open opaque door
-  }
- } else
-  tertr = ter_t::list[ter(pos)].flags & mfb(transparent);
- const auto& fd = field_at(pos);
- return tertr && (fd.type == 0 || field::list[fd.type].transparent[fd.density - 1]);	// Fields may obscure the view, too
+ return to(x, y, pos) ? trans(pos) : true;
 }
 
 bool map::has_flag(t_flag flag, int x, int y) const
@@ -1661,8 +1660,8 @@ void map::shoot(game *g, int x, int y, int &dam, bool hit_items, unsigned flags)
  }
 
 // Now, destroy items on that tile.
-
- if ((move_cost(x, y) == 2 && !hit_items) || !inbounds(x, y)) return;	// Items on floor-type spaces won't be shot up.
+ localPos pos;
+ if (!to(x, y, pos) || (!hit_items && 2 == move_cost(pos))) return;	// Items on floor-type spaces won't be shot up.
 
  {
  auto& stack = i_at(x, y);
@@ -1889,20 +1888,25 @@ void map::add_item(int x, int y, const itype* type, int birthday)
 void map::add_item(int x, int y, const item& new_item)
 {
  if (new_item.is_style()) return;
- if (!inbounds(x, y)) return;
+
+ localPos pos_in;
+ if (!to(x, y, pos_in)) return;
  if (new_item.made_of(LIQUID) && has_flag(swimmable, x, y)) return;
+
+ localPos pos;
+
  if (has_flag(noitem, x, y) || i_at(x, y).size() >= 26) {// Too many items there
   std::vector<point> okay;
   for (int i = x - 1; i <= x + 1; i++) {
    for (int j = y - 1; j <= y + 1; j++) {
-    if (inbounds(i, j) && move_cost(i, j) > 0 && !has_flag(noitem, i, j) && i_at(i, j).size() < 26)
+    if (to(i, j, pos) && move_cost(pos) > 0 && !has_flag(noitem, i, j) && i_at(i, j).size() < 26)
      okay.push_back(point(i, j));
    }
   }
   if (okay.size() == 0) {
    for (int i = x - 2; i <= x + 2; i++) {
     for (int j = y - 2; j <= y + 2; j++) {
-     if (inbounds(i, j) && move_cost(i, j) > 0 && !has_flag(noitem, i, j) && i_at(i, j).size() < 26)
+     if (to(i, j, pos) && move_cost(pos) > 0 && !has_flag(noitem, i, j) && i_at(i, j).size() < 26)
       okay.push_back(point(i, j));
     }
    }
@@ -1913,16 +1917,9 @@ void map::add_item(int x, int y, const item& new_item)
   x = choice.x;
   y = choice.y;
  }
-/*
- int nonant;
- cast_to_nonant(x, y, nonant);
-*/
- int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
 
- x %= SEEX;
- y %= SEEY;
- grid[nonant]->itm[x][y].push_back(new_item);
- if (new_item.active) grid[nonant]->active_item_count++;
+ grid[pos_in.first]->itm[pos_in.second.x][pos_in.second.y].push_back(new_item);
+ if (new_item.active) grid[pos_in.first]->active_item_count++;
 }
 
 void map::process_active_items(game *g)
@@ -2182,13 +2179,14 @@ void map::draw(game *g, WINDOW* w, point center)
 void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
                  bool show_items, int cx, int cy)
 {
- if (!inbounds(x, y)) return;	// Out of bounds
+ localPos pos;
+ if (!to(x, y, pos)) return;	// Out of bounds
  if (cx == -1) cx = u.pos.x;
  if (cy == -1) cy = u.pos.y;
  const int k = x + SEEX - cx;
  const int j = y + SEEY - cy;
  nc_color tercol;
- const auto terrain = ter(x, y);
+ const auto terrain = ter(pos);
  long sym = ter_t::list[terrain].sym;
  bool hi = false;
  bool normal_tercol = false;
@@ -2208,7 +2206,7 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
 	 if (mvwaddbgtile(w, j, k, ter_t::tiles[terrain].c_str())) sym = 0;
  }
 
- if (move_cost(x, y) == 0 && has_flag(swimmable, x, y) && !u.underwater)
+ if (move_cost(pos) == 0 && has_flag(swimmable, x, y) && !u.underwater)
   show_items = false;	// Can only see underwater items if WE are underwater
 // If there's a trap here, and we have sufficient perception, draw that instead
  const auto tr_id = tr_at(x, y);
@@ -2228,7 +2226,7 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
    }
  }
  // If there's a field here, draw that instead (unless its symbol is %)
- const auto& fd = field_at(x, y);
+ const auto& fd = field_at(pos);
  if (fd.type != fd_null && field::list[fd.type].sym != '&') {
   tercol = field::list[fd.type].color[fd.density - 1];
   drew_field = true;
@@ -2260,7 +2258,7 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
  }
 
  int veh_part = 0;
- if (const vehicle* const veh = veh_at(x, y, veh_part)) {
+ if (const vehicle* const veh = veh_at(pos, veh_part)) {
   sym = special_symbol (veh->face.dir_symbol(veh->part_sym(veh_part)));
   if (normal_tercol) tercol = veh->part_color(veh_part);
  }
@@ -2298,6 +2296,8 @@ bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc) const
  int t = 0;
  int st;
 
+ localPos pos;
+
  if (ax > ay) { // Mostly-horizontal line
   st = SGN(ay - (ax >> 1));
 // Doing it "backwards" prioritizes straight lines before diagonal.
@@ -2318,7 +2318,7 @@ bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc) const
      tc *= st;
      return true;
     }
-   } while ((trans(x, y)) && inbounds(x, y));
+   } while (to(x, y, pos) && trans(pos));
   }
   return false;
  } else { // Same as above, for mostly-vertical lines
@@ -2338,7 +2338,7 @@ bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc) const
      tc *= st;
      return true;
     }
-   } while ((trans(x, y)) && inbounds(x,y));
+   } while (to(x, y, pos) && trans(pos));
   }
   return false;
  }
@@ -2362,6 +2362,8 @@ bool map::clear_path(int Fx, int Fy, int Tx, int Ty, int range, int cost_min,
  int t = 0;
  int st;
 
+ localPos pos;
+
  if (ax > ay) { // Mostly-horizontal line
   st = SGN(ay - (ax >> 1));
 // Doing it "backwards" prioritizes straight lines before diagonal.
@@ -2382,7 +2384,7 @@ bool map::clear_path(int Fx, int Fy, int Tx, int Ty, int range, int cost_min,
      tc *= st;
      return true;
     }
-   } while (is_between(cost_min, move_cost(x, y), cost_max) && inbounds(x, y));
+   } while (to(x, y, pos) && is_between(cost_min, move_cost(pos), cost_max));
   }
   return false;
  } else { // Same as above, for mostly-vertical lines
@@ -2402,7 +2404,7 @@ bool map::clear_path(int Fx, int Fy, int Tx, int Ty, int range, int cost_min,
      tc *= st;
      return true;
     }
-   } while (is_between(cost_min, move_cost(x, y), cost_max) && inbounds(x,y));
+   } while (to(x, y, pos) && is_between(cost_min, move_cost(pos), cost_max));
   }
   return false;
  }
