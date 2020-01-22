@@ -1087,6 +1087,21 @@ bool map::trans(int x, int y) const
  return to(x, y, pos) ? trans(pos) : true;
 }
 
+bool map::has_flag(t_flag flag, const localPos& pos) const
+{
+    if (flag == bashable) {
+        int vpart;
+        vehicle* veh = veh_at(pos, vpart);
+        if (veh && veh->parts[vpart].hp > 0 && // if there's a vehicle part here...
+            veh->part_with_feature(vpart, vpf_obstacle) >= 0) {// & it is obstacle...
+            int p = veh->part_with_feature(vpart, vpf_openable);
+            if (p < 0 || !veh->parts[p].open) // and not open door
+                return true;
+        }
+    }
+    return ter_t::list[ter(pos)].flags & mfb(flag);
+}
+
 bool map::has_flag(t_flag flag, int x, int y) const
 {
  if (flag == bashable) {
@@ -1664,7 +1679,7 @@ void map::shoot(game *g, int x, int y, int &dam, bool hit_items, unsigned flags)
  if (!to(x, y, pos) || (!hit_items && 2 == move_cost(pos))) return;	// Items on floor-type spaces won't be shot up.
 
  {
- auto& stack = i_at(x, y);
+ auto& stack = i_at(pos);
  for (int i = 0; i < stack.size(); i++) {	// forward-increment so that containers do not grant invulnerability to their contents
   bool destroyed = false;
   auto& it = stack[i];
@@ -1891,22 +1906,22 @@ void map::add_item(int x, int y, const item& new_item)
 
  localPos pos_in;
  if (!to(x, y, pos_in)) return;
- if (new_item.made_of(LIQUID) && has_flag(swimmable, x, y)) return;
+ if (new_item.made_of(LIQUID) && has_flag(swimmable, pos_in)) return;
 
  localPos pos;
 
- if (has_flag(noitem, x, y) || i_at(x, y).size() >= 26) {// Too many items there
+ if (has_flag(noitem, pos_in) || i_at(pos_in).size() >= 26) {// Too many items there
   std::vector<point> okay;
   for (int i = x - 1; i <= x + 1; i++) {
    for (int j = y - 1; j <= y + 1; j++) {
-    if (to(i, j, pos) && move_cost(pos) > 0 && !has_flag(noitem, i, j) && i_at(i, j).size() < 26)
+    if (to(i, j, pos) && move_cost(pos) > 0 && !has_flag(noitem, pos) && i_at(pos).size() < 26)
      okay.push_back(point(i, j));
    }
   }
   if (okay.size() == 0) {
    for (int i = x - 2; i <= x + 2; i++) {
     for (int j = y - 2; j <= y + 2; j++) {
-     if (to(i, j, pos) && move_cost(pos) > 0 && !has_flag(noitem, i, j) && i_at(i, j).size() < 26)
+     if (to(i, j, pos) && move_cost(pos) > 0 && !has_flag(noitem, pos) && i_at(pos).size() < 26)
       okay.push_back(point(i, j));
     }
    }
@@ -2209,7 +2224,7 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
  if (move_cost(pos) == 0 && has_flag(swimmable, x, y) && !u.underwater)
   show_items = false;	// Can only see underwater items if WE are underwater
 // If there's a trap here, and we have sufficient perception, draw that instead
- const auto tr_id = tr_at(x, y);
+ const auto tr_id = tr_at(pos);
  if (tr_id != tr_null){
    const trap* const tr = trap::traps[tr_id];
    if (u.per_cur - u.encumb(bp_eyes) >= tr->visibility) {

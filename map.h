@@ -161,6 +161,7 @@ class map
  std::string features(const point& pt) const; // Words relevant to terrain (sharp, etc)
  bool has_flag(t_flag flag, int x, int y) const;  // checks terrain and vehicles
  bool has_flag(t_flag flag, const point& pt) const { return has_flag(flag, pt.x, pt.y); };
+ bool has_flag(t_flag flag, const localPos& pos) const;
  bool has_flag_ter_only(t_flag flag, int x, int y) const; // only checks terrain
  bool is_destructable(int x, int y) const;        // checks terrain and vehicles
  bool is_destructable_ter_only(int x, int y) const;       // only checks terrain
@@ -192,6 +193,8 @@ class map
 // Items
  std::vector<item>& i_at(int x, int y);
  std::vector<item>& i_at(const point& pt) { return i_at(pt.x, pt.y); };
+ std::vector<item>& i_at(const localPos& pos) { return grid[pos.first]->itm[pos.second.x][pos.second.y]; };
+ const std::vector<item>& i_at(const localPos& pos) const { return grid[pos.first]->itm[pos.second.x][pos.second.y]; };
  const std::vector<item>& i_at(int x, int y) const { return const_cast<map*>(this)->i_at(x, y); };
  const std::vector<item>& i_at(const point& pt) const { return const_cast<map*>(this)->i_at(pt.x, pt.y); };
  item water_from(int x, int y) const;
@@ -214,6 +217,8 @@ class map
 // Traps
  trap_id& tr_at(int x, int y);
  trap_id& tr_at(const point& pt) { return tr_at(pt.x, pt.y); };
+ trap_id& tr_at(const localPos& src) { return grid[src.first]->trp[src.second.x][src.second.y]; };
+ trap_id tr_at(const localPos& src) const { return grid[src.first]->trp[src.second.x][src.second.y]; };
  trap_id tr_at(int x, int y) const { return const_cast<map*>(this)->tr_at(x, y); };	// \todo specialize this properly
  trap_id tr_at(const point& pt) const { return const_cast<map*>(this)->tr_at(pt.x, pt.y); };
  void add_trap(int x, int y, trap_id t);
