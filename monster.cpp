@@ -175,7 +175,8 @@ void monster::draw(WINDOW *w, const point& pl, bool inv) const
  char sym = type->sym;
 
  if (mtype::tiles.count(type->id)) {
-	 if (mvwaddfgtile(w, pt.y, pt.x, mtype::tiles[type->id].c_str())) sym = ' ';	// we still want any background color effects
+//	 if (mvwaddfgtile(w, pt.y, pt.x, mtype::tiles[type->id].c_str())) sym = ' ';	// we still want any background color effects
+     mvwaddfgtile(w, pt.y, pt.x, mtype::tiles[type->id].c_str());
  }
 
  if (friendly != 0 && !inv)
