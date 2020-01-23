@@ -5227,11 +5227,11 @@ void game::plmove(int x, int y)
 
 // Adjust recoil down
   if (u.recoil > 0) {
-   if (int(u.str_cur / 2) + u.sklevel[sk_gun] >= u.recoil)
-    u.recoil = 0;
+   const int dampen_recoil = u.str_cur/ + u.sklevel[sk_gun];
+   if (dampen_recoil >= u.recoil) u.recoil = 0;
    else {
-    u.recoil -= int(u.str_cur / 2) + u.sklevel[sk_gun];
-    u.recoil = int(u.recoil / 2);
+    u.recoil -= dampen_recoil;
+    u.recoil /= 2;
    }
   }
   if ((!u.has_trait(PF_PARKOUR) && m.move_cost(x, y) > 2) ||

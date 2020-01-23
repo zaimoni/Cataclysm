@@ -549,7 +549,7 @@ vehicle* map::veh_at(const localPos& src, int& part_num) const
         for (int my = -1; my <= 1; my++) {
             int nonant1 = src.first + mx + my * my_MAPSIZE;
             if (nonant1 < 0 || nonant1 >= nonant_ub) continue; // out of grid
-            for (auto& veh : grid[nonant1]->vehicles) {
+            for (auto& veh : grid[nonant1]->vehicles) { // profiler likes this; burns less CPU than testing for empty std::vector
                 int part = veh.part_at(src.second.x - (veh.pos.x + mx * SEEX), src.second.y - (veh.pos.y + my * SEEY));
                 if (part >= 0) {
                     part_num = part;
