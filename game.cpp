@@ -3242,22 +3242,20 @@ void game::flashbang(int x, int y)
  sound(x, y, 12, "a huge boom!");
 }
 
-void game::use_computer(int x, int y)
+void game::use_computer(const point& pt)
 {
  if (u.has_trait(PF_ILLITERATE)) {
   messages.add("You can not read a computer screen!");
   return;
  }
- computer* used = m.computer_at(x, y);
 
- if (used == NULL) {
-  debugmsg("Tried to use computer at (%d, %d) - none there", x, y);
-  return;
+ if (auto used = m.computer_at(pt)) {
+     used->use(this);
+     refresh_all();
+     return;
  }
- 
- used->use(this);
 
- refresh_all();
+ debugmsg("Tried to use computer at (%d, %d) - none there", pt.x, pt.y);
 }
 
 void game::resonance_cascade(int x, int y)
@@ -3768,8 +3766,8 @@ void game::examine()
    messages.add("It is empty.");
   else pickup(exam, 0);
  }
- if (m.has_flag(console, exam.x, exam.y)) {
-  use_computer(exam.x, exam.y);
+ if (m.has_flag(console, exam)) {
+  use_computer(exam);
   return;
  }
  if (t_card_science == exam_t || t_card_military == exam_t) {
@@ -5520,8 +5518,8 @@ void game::vertical_move(int movez, bool force)
  }
 // Force means we're going down, even if there's no staircase, etc.
 // This happens with sinkholes and the like.
- if (!force && ((movez == -1 && !m.has_flag(goes_down, u.pos.x, u.pos.y)) ||
-                (movez ==  1 && !m.has_flag(goes_up,   u.pos.x, u.pos.y))   )) {
+ if (!force && ((movez == -1 && !m.has_flag(goes_down, u.pos)) ||
+                (movez ==  1 && !m.has_flag(goes_up,   u.pos))   )) {
   messages.add("You can't go %s here!", (movez == -1 ? "down" : "up"));
   return;
  }

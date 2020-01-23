@@ -2139,19 +2139,15 @@ void map::remove_field(int x, int y)
  grid[nonant]->fld[x][y] = field();
 }
 
-computer* map::computer_at(int x, int y)
+computer* map::computer_at(const point& pt)
 {
- if (!inbounds(x, y)) return 0;
-/*
- int nonant;
- cast_to_nonant(x, y, nonant);
-*/
- int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
+ localPos pos;
+ if (!to(pt, pos)) return 0;
 
- x %= SEEX;
- y %= SEEY;
- if (grid[nonant]->comp.name == "") return 0;
- return &(grid[nonant]->comp);
+ auto& c = grid[pos.first]->comp;
+
+ if (c.name == "") return 0;
+ return &c;
 }
 
 void map::debug()

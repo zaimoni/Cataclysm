@@ -75,7 +75,7 @@ class game
   void flashbang(const point& pt) { flashbang(pt.x, pt.y); };
   // Move the player vertically, if (force) then they fell
   void vertical_move(int z, bool force);
-  void use_computer(int x, int y);
+  void use_computer(const point& pt);
   void resonance_cascade(int x, int y);
   void emp_blast(int x, int y);
   npc* nPC(int x, int y);

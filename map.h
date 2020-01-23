@@ -45,6 +45,7 @@ class map
 
 // Movement and LOS
  bool to(int x, int y, localPos& dest) const;
+ bool to(const point& pt, localPos& dest) const { return to(pt.x, pt.y, dest); };
 
  int move_cost(int x, int y) const; // Cost to move through; 0 = impassible
  int move_cost(const point& pt) const { return move_cost(pt.x, pt.y); };
@@ -240,7 +241,7 @@ class map
  void mon_in_field(const point& pt, game *g, monster *z);	// See field.cpp	\todo all callers use the monster's position: decide whether to hardcode this
 
 // Computers
- computer* computer_at(int x, int y);
+ computer* computer_at(const point& pt);
 
 // mapgen.cpp functions
  void apply_temple_switch(ter_id trigger, int y0, int x, int y);
