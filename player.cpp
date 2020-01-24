@@ -1905,15 +1905,9 @@ bool player::has_active_bionic(bionic_id b) const
 
 void player::add_bionic(bionic_id b)
 {
- for (int i = 0; i < my_bionics.size(); i++) {
-  if (my_bionics[i].id == b)
-   return;	// No duplicates!
- }
- char newinv;
- if (my_bionics.size() == 0)
-  newinv = 'a';
- else
-  newinv = my_bionics[my_bionics.size() - 1].invlet + 1;
+ for(const auto& bio : my_bionics) if (bio.id == b) return;	// No duplicates!
+
+ char newinv = my_bionics.empty() ? 'a' : my_bionics.back().invlet+1;
  my_bionics.push_back(bionic(b, newinv));
 }
 
@@ -2088,11 +2082,11 @@ void player::pause()
 {
  moves = 0;
  if (recoil > 0) {
-  if (str_cur + 2 * sklevel[sk_gun] >= recoil)
-   recoil = 0;
+  const int dampen_recoil = str_cur + 2 * sklevel[sk_gun];
+  if (dampen_recoil >= recoil) recoil = 0;
   else {
-   recoil -= str_cur + 2 * sklevel[sk_gun];
-   recoil = int(recoil / 2);
+      recoil -= dampen_recoil;
+      recoil /= 2;
   }
  }
 
