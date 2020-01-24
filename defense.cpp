@@ -77,7 +77,7 @@ bool defense_game::init(game *g)
  init_to_style(DEFENSE_EASY);
  setup();
  g->u.cash = initial_cash;
- popup_nowait("Please wait as the map generates [ 0%]");
+ popup_nowait("Please wait as the map generates [ 0%%]");
  init_map(g);
  caravan(g);
  return true;

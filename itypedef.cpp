@@ -3192,7 +3192,7 @@ firing slugs.  The rifling makes the gun less suitable for shot, however.",
 GUNMOD("extended clip",	  8,  560, c_ltgray, STEEL, PLASTIC,  1,  1, -2,  0, -1,
 	-1,  0,  0, 50,  0,  0, AT_NULL,	true,	true,	true,	true,
 	0, "\
-Increases the ammunition capacity of your firearm by 50%, but the added bulk\n\
+Increases the ammunition capacity of your firearm by 50%%%%, but the added bulk\n\
 reduces accuracy slightly.",
 0);
 
@@ -3201,7 +3201,7 @@ GUNMOD("double clip",	   4, 720, c_ltgray, STEEL, PLASTIC,  2,  2,  0,  0,  0,
 //	ACC DAM NOI CLP REC BST NEWTYPE,	PISTOL	SHOT	SMG	RIFLE
 	-2,  0,  0,100,  2,  0, AT_NULL,	false,	true,	true,	true,
 	0, "\
-Completely doubles the ammunition capacity of your firmarm, but the added\n\
+Completely doubles the ammunition capacity of your firearm, but the added\n\
 bulk reduces accuracy and increases recoil.",
 0);
 

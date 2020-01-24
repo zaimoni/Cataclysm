@@ -200,6 +200,14 @@ void mvwprintz(WINDOW* w, int y, int x, nc_color FG, const char *mes, ...)
  va_end(ap);
 }
 
+static void mvwprintz_noformat(WINDOW* w, int y, int x, nc_color FG, const char* mes)
+{
+    wattron(w, FG);
+    // wmove(w, y, x);
+    mvwprintw(w, y, x, mes);
+    wattroff(w, FG);
+}
+
 void printz(nc_color FG, const char *mes, ...)
 {
  va_list ap;
@@ -701,12 +709,12 @@ void full_screen_popup(const char* mes, ...)
  while (pos != std::string::npos) {
   std::string line = tmp.substr(0, pos);
   line_num++;
-  mvwprintz(w, line_num, 1, c_white, line.c_str());
+  mvwprintz_noformat(w, line_num, 1, c_white, line.c_str());
   tmp = tmp.substr(pos + 1);
   pos = tmp.find_first_of('\n');
  }
  line_num++;
- mvwprintz(w, line_num, 1, c_white, tmp.c_str());
+ mvwprintz_noformat(w, line_num, 1, c_white, tmp.c_str());
  wrefresh(w);
  char ch;
  do
