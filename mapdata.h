@@ -232,6 +232,9 @@ struct field {
  std::string name() const { return list[type].name[density - 1]; }
 };
 
+field_id bleeds(const monster& mon);
+inline field_id bleeds(const monster* mon) { return mon ? bleeds(*mon) : fd_blood; };
+
 struct spawn_point {
  point pos;
  int count;

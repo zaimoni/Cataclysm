@@ -3466,14 +3466,11 @@ void game::explode_mon(monster& target)
    for (int j = 0; j < traj.size(); j++) {
     tar = traj[j];
 // Choose a blood type and place it
-    field_id blood_type = fd_blood;
-    if (corpse->dies == &mdeath::boomer) blood_type = fd_bile;
-    else if (corpse->dies == &mdeath::acid) blood_type = fd_acid;
-	{
-	auto& f = m.field_at(tar);
-    if (f.type == blood_type && f.density < 3) f.density++;
-    else m.add_field(this, tar, blood_type, 1);
-	}
+    if (auto blood_type = bleeds(target)) {
+        auto& f = m.field_at(tar);
+        if (f.type == blood_type && f.density < 3) f.density++;
+        else m.add_field(this, tar, blood_type, 1);
+    }
 
     if (m.move_cost(tar) == 0) {
      std::string tmp;
@@ -3487,8 +3484,6 @@ void game::explode_mon(monster& target)
    m.add_item(tar, meat, messages.turn);
   }
  }
-
-// z_erase(index);	// unclear whether this is a good idea (mon_kill postpones this)
 }
 
 void game::open()

@@ -12,6 +12,15 @@
 
 #include <math.h>
 
+// monster type currently doesn't have field_id in scope
+field_id bleeds(const monster& mon)
+{
+    if (!mon.made_of(FLESH)) return fd_null;
+    if (mon.type->dies == &mdeath::boomer) return fd_bile;
+    if (mon.type->dies == &mdeath::acid) return fd_acid;
+    return fd_blood;
+}
+
 int time_to_fire(player &p, const it_gun* firing);
 void make_gun_sound_effect(game *g, player &p, bool burst);
 int calculate_range(player &p, int tarx, int tary);
@@ -56,12 +65,8 @@ static int recoil_add(const player &p)
 
 static void splatter(game* g, const std::vector<point>& trajectory, int dam, monster* mon = 0)
 {
-	field_id blood = fd_blood;
-	if (mon) {
-		if (!mon->made_of(FLESH)) return;
-		if (mon->type->dies == &mdeath::boomer) blood = fd_bile;
-		else if (mon->type->dies == &mdeath::acid) blood = fd_acid;
-	}
+    field_id blood = bleeds(mon);   // NULL mon would be a player
+    if (!blood) return;
 
 	int distance = 1;
 	if (dam > 50) distance = 3;

@@ -1104,10 +1104,13 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
   for (int x = tar.x - 1; x <= tar.x + 1; x++) {
    for (int y = tar.y - 1; y <= tar.y + 1; y++) {
     if (!one_in(3)) {
-     auto& fd = g->m.field_at(x, y);
-	 if (fd.type == fd_blood) {
-		 if (fd.density < 3) fd.density++;
-	 } else g->m.add_field(g, x, y, fd_blood, 1);
+     if (const auto blood = bleeds(z)) {
+         auto& fd = g->m.field_at(x, y);
+         if (fd.type == blood) {
+             if (fd.density < 3) fd.density++;
+         }
+         else g->m.add_field(g, x, y, blood, 1);
+     }
     }
    }
   }

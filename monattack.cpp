@@ -140,7 +140,8 @@ void mattack::boomer(game *g, monster *z)
    return;
   }
  }
- if (rng(0, 10) > g->u.dodge(g) || one_in(g->u.dodge(g)))
+ const int my_dodge = g->u.dodge(g);
+ if (rng(0, 10) > my_dodge || one_in(my_dodge))
   g->u.infect(DI_BOOMERED, bp_eyes, 3, 12);
  else if (u_see)
   messages.add("You dodge it!");
