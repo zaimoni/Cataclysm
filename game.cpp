@@ -3831,14 +3831,10 @@ void game::examine()
   om_cache::get().r_create(tripoint(cur_om.pos.x, cur_om.pos.y, -1));
   om_cache::get().load(cur_om, tripoint(cur_om.pos.x, cur_om.pos.y, cur_om.pos.z + movez));
   m.load(this, point(lev.x, lev.y));
+  point test(u.pos);
+  m.find_terrain(u.pos, t_elevator, test);
+  u.screenpos_set(test);
   update_map(u.pos.x, u.pos.y);
-  for (int x = 0; x < SEEX * MAPSIZE; x++) {
-   for (int y = 0; y < SEEY * MAPSIZE; y++) {
-    if (m.ter(x, y) == t_elevator) {
-	 u.screenpos_set(point(x,y));
-    }
-   }
-  }
   refresh_all();
  } else if (t_gas_pump == exam_t && query_yn("Pump gas?")) {
   item gas(item::types[itm_gasoline], messages.turn);
@@ -5529,27 +5525,11 @@ void game::vertical_move(int movez, bool force)
 
  // Find the corresponding staircase
  int stairx = -1, stairy = -1;
+ point stair(-1, -1);
  bool rope_ladder = false;
- if (force) {
-  stairx = u.pos.x;
-  stairy = u.pos.y;
- } else { // We need to find the stairs.
-  int best = 999;
-   for (int i = u.pos.x - SEEX * 2; i <= u.pos.x + SEEX * 2; i++) {
-    for (int j = u.pos.y - SEEY * 2; j <= u.pos.y + SEEY * 2; j++) {
-	 const int dist = rl_dist(u.pos, i, j);
-     if (dist <= best &&
-        ((movez == -1 && tmpmap.has_flag(goes_up, i, j)) ||
-         (movez ==  1 && (tmpmap.has_flag(goes_down, i, j) ||
-                          tmpmap.ter(i, j) == t_manhole_cover)))) {
-      stairx = i;
-      stairy = j;
-      best = dist;
-     }
-    }
-   }
-
-  if (stairx == -1 || stairy == -1) { // No stairs found!
+ if (force) stair = u.pos;
+ else { // We need to find the stairs.
+  if (!tmpmap.find_stairs(u.pos, movez, stair)) { // No stairs found!
    if (movez < 0) {
     if (tmpmap.move_cost(u.pos.x, u.pos.y) == 0) {
      popup("Halfway down, the way down becomes blocked off.");
@@ -5561,8 +5541,7 @@ void game::vertical_move(int movez, bool force)
     } else if (!query_yn("There is a sheer drop halfway down.  Jump?"))
      return;
    }
-   stairx = u.pos.x;
-   stairy = u.pos.y;
+   stair = u.pos;
   }
  }
  
@@ -5626,8 +5605,10 @@ void game::vertical_move(int movez, bool force)
 
  lev.z += movez;
  u.moves -= 100;
+
  m.load(this, point(lev.x, lev.y));
- u.screenpos_set(point(stairx, stairy));
+ m.find_stairs(stair, movez, stair);
+ u.screenpos_set(stair);
  if (rope_ladder) m.ter(u.pos) = t_rope_up;
  if (m.rewrite_test<t_manhole_cover, t_manhole>(stairx, stairy)) 
    m.add_item(stairx + rng(-1, 1), stairy + rng(-1, 1), item::types[itm_manhole_cover], 0);

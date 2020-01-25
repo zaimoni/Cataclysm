@@ -541,6 +541,42 @@ bool map::to(int x, int y, localPos& dest) const
     return true;
 }
 
+bool map::find_stairs(const point& pt, const int movez, point& pos) const
+{
+    int best = 999;
+    bool ok = false;
+    for (int i = pt.x - SEEX * 2; i <= pt.x + SEEX * 2; i++) {
+        for (int j = pt.y - SEEY * 2; j <= pt.y + SEEY * 2; j++) {
+            const int dist = rl_dist(pt, i, j);
+            if (dist <= best &&
+                ((movez == -1 && has_flag(goes_up, i, j)) ||
+                (movez == 1 && (has_flag(goes_down, i, j) || ter(i, j) == t_manhole_cover)))) {
+                pos = point(i, j);
+                best = dist;
+                ok = true;
+            }
+        }
+    }
+    return ok;
+}
+
+bool map::find_terrain(const point& pt, const ter_id dest, point& pos) const
+{
+    int best = 999;
+    bool ok = false;
+    for (int x = 0; x < SEEX * MAPSIZE; x++) {
+        for (int y = 0; y < SEEY * MAPSIZE; y++) {
+            const int dist = rl_dist(pt, x, y);
+            if (dist <= best && dest == ter(x, y)) {
+                pos = point(x, y);
+                ok = true;
+                best = dist;
+            }
+        }
+    }
+    return ok;
+}
+
 vehicle* map::veh_at(const localPos& src, int& part_num) const
 {
     // must check 3x3 map chunks, as vehicle part may span to neighbour chunk

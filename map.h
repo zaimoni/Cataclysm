@@ -48,6 +48,9 @@ class map
  bool to(int x, int y, localPos& dest) const;
  bool to(const point& pt, localPos& dest) const { return to(pt.x, pt.y, dest); };
 
+ bool find_stairs(const point& pt, int movez, point& pos) const;
+ bool find_terrain(const point& pt, ter_id dest, point& pos) const;
+
  int move_cost(int x, int y) const; // Cost to move through; 0 = impassible
  int move_cost(const point& pt) const { return move_cost(pt.x, pt.y); };
  int move_cost(const localPos& pos) const;
