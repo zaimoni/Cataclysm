@@ -10,6 +10,7 @@
 #include "posix_time.h"
 #include "JSON.h"
 #include "recent_msg.h"
+#include "om_cache.hpp"
 
 #include <iostream>
 
@@ -2569,6 +2570,20 @@ void map::load(game *g, const point& world)
  }
 }
 
+void map::load(const tripoint& GPS)
+{
+    for (int gridx = 0; gridx < my_MAPSIZE; gridx++) {
+        for (int gridy = 0; gridy < my_MAPSIZE; gridy++) {
+            if (!loadn(GPS, gridx, gridy)) loadn(GPS, gridx, gridy);
+            const int i = gridx + gridy * my_MAPSIZE;
+            if (!grid[i]) {
+                // \todo arguably should be a harder crash
+                debugmsg("grid %d (%d, %d) is null! mapbuffer size = %s", i, i % my_MAPSIZE, i / my_MAPSIZE, std::to_string(MAPBUFFER.size()));
+            }
+        }
+    }
+}
+
 void map::shift(game *g, const point& world, const point& delta)
 {
  const point dest(world+delta);
@@ -2678,6 +2693,28 @@ bool map::loadn(game *g, const point& world, int gridx, int gridy)
   return false;
  }
  return true;
+}
+
+bool map::loadn(const tripoint& GPS, int gridx, int gridy)
+{
+    const int gridn = gridx + gridy * my_MAPSIZE;
+    if (submap* const tmpsub = MAPBUFFER.lookup_submap(GPS.x+gridx, GPS.y + gridy, GPS.z)) {
+        grid[gridn] = tmpsub;
+        const point _sm(gridx, gridy);
+        for (auto& veh : grid[gridn]->vehicles) veh.sm = _sm;
+    } else { // It doesn't exist; we must generate it!
+        map tmp_map;
+        // overx, overy is where in the overmap we need to pull data from
+        // Each overmap square is two nonants; to prevent overlap, generate only at
+        //  squares divisible by 2.
+        GPS_loc target(tripoint(GPS.x + gridx, GPS.y + gridy, GPS.z), point(0, 0));
+        OM_loc _target = overmap::toOvermap(target);
+        auto g = game::active();
+
+        tmp_map.generate(g, &om_cache::get().create(_target.first), _target.second.x * 2, _target.second.y * 2);
+        return false;
+    }
+    return true;
 }
 
 void map::copy_grid(int to, int from)

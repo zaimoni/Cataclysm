@@ -5521,12 +5521,13 @@ void game::vertical_move(int movez, bool force)
 
  int original_z = cur_om.pos.z;
  cur_om.save(u.name);
- //m.save(&cur_om, turn, levx, levy);
- om_cache::get().load(cur_om, tripoint(cur_om.pos.x, cur_om.pos.y, cur_om.pos.z + movez));
+
+ GPS_loc dest = u.GPSpos;
+ dest.first += tripoint(-MAPSIZE / 2, -MAPSIZE / 2, movez);
  map tmpmap;
- tmpmap.load(this, point(lev.x, lev.y));
- om_cache::get().load(cur_om, tripoint(cur_om.pos.x, cur_om.pos.y, original_z));
-// Find the corresponding staircase
+ tmpmap.load(dest.first);
+
+ // Find the corresponding staircase
  int stairx = -1, stairy = -1;
  bool rope_ladder = false;
  if (force) {
