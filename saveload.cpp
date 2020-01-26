@@ -477,7 +477,10 @@ bool fromJSON(const JSON& _in, mission& dest)
 	if (_in.has_key("failed")) fromJSON(_in["failed"], dest.failed);
 	if (_in.has_key("value")) fromJSON(_in["value"], dest.value);
 	if (_in.has_key("reward")) fromJSON(_in["reward"], dest.reward);
-	if (_in.has_key("target")) fromJSON(_in["target"], dest.target);
+	if (_in.has_key("target") && !fromJSON(_in["target"], dest.target)) {
+		point tmp;	// V0.2.1- format was point rather than OM_loc
+		if (fromJSON(_in["target"], tmp)) dest.target = tmp;
+	}
 	if (_in.has_key("item")) fromJSON(_in["item"], dest.item_id);
 	if (_in.has_key("count")) fromJSON(_in["count"], dest.count);
 	if (_in.has_key("deadline")) fromJSON(_in["deadline"], dest.deadline);
@@ -1748,7 +1751,11 @@ npc::npc(const JSON& src)
 	if (src.has_key("wand")) fromJSON(src["wand"], wand);
 	if (src.has_key("pl")) fromJSON(src["pl"], pl);
 	if (src.has_key("it")) fromJSON(src["it"], it);
-	if (src.has_key("goal")) fromJSON(src["goal"], goal);
+	if (src.has_key("goal") && !fromJSON(src["goal"], goal)) {
+		// V0.2.1- was point rather than OM_loc
+		point tmp;
+		if (fromJSON(src["goal"], tmp)) goal = tmp;
+	}
 	if (src.has_key("fetching_item")) fromJSON(src["fetching_item"], fetching_item);
 	if (src.has_key("has_new_items")) fromJSON(src["has_new_items"], has_new_items);
 	if (src.has_key("path")) src["path"].decode(path);

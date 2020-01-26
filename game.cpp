@@ -1571,6 +1571,8 @@ void game::load(std::string name)
 		|| !(++err, saved.has_key("monsters")) || !(++err, saved.has_key("kill_counts")) || !(++err, saved.has_key("player"))
 		|| !(++err, fromJSON(saved["com"], com))) throw corrupted+" : "+std::to_string(err);
 
+    // release block \todo V0.2.2 this is the earliest we can repair the tripoint field for OM_loc-retyped mission::type, npc::goal
+
 	const auto& scents = saved["scents"];
 	if (cataclysm::JSON::array != scents.mode() || SEEX * MAPSIZE != scents.size()) throw corrupted + " 2";
 
