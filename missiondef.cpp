@@ -71,7 +71,7 @@ void mission_start::infect_npc(game *g, mission *miss)
 
 void mission_start::place_dog(game *g, mission *miss)
 {
-	auto city_id = g->cur_om.closest_city(g->om_location());
+	auto city_id = g->cur_om.closest_city(g->om_location().second);
 	point house = g->cur_om.random_house_in_city(city_id);
 	const auto dev = npc::find_alive_r(miss->npc_id);
 	if (!dev) {
@@ -96,7 +96,7 @@ void mission_start::place_dog(game *g, mission *miss)
 
 void mission_start::place_zombie_mom(game *g, mission *miss)
 {
-	auto city_id = g->cur_om.closest_city(g->om_location());
+	auto city_id = g->cur_om.closest_city(g->om_location().second);
 	point house = g->cur_om.random_house_in_city(city_id);
 
 	miss->target = house;
@@ -143,11 +143,11 @@ void mission_start::place_npc_software(game *g, mission *miss)
 	int dist = 0;
 	point place;
 	if (ter == ot_house_north) {
-		auto city_id = g->cur_om.closest_city(g->om_location());
+		auto city_id = g->cur_om.closest_city(g->om_location().second);
 		place = g->cur_om.random_house_in_city(city_id);
 	}
 	else
-		place = g->cur_om.find_closest(g->om_location(), ter, 4, dist, false);
+		place = g->cur_om.find_closest(g->om_location().second, ter, 4, dist, false);
 	miss->target = place;
 	// Make it seen on our map
 	OM_loc scan(g->cur_om.pos, point(0, 0));
@@ -253,7 +253,7 @@ void mission_start::reveal_hospital(game *g, mission *miss)
 	messages.add("%s gave you a vacutainer.", dev->name.c_str());
 
 	int dist = 0;
-	point place = g->cur_om.find_closest(g->om_location(), ot_hospital, 1, dist, false);
+	point place = g->cur_om.find_closest(g->om_location().second, ot_hospital, 1, dist, false);
 	OM_loc scan(g->cur_om.pos, point(0, 0));
 	for (scan.second.x = place.x - 3; scan.second.x <= place.x + 3; scan.second.x++) {
 		for (scan.second.y = place.y - 3; scan.second.y <= place.y + 3; scan.second.y++) overmap::expose(scan);
@@ -263,7 +263,7 @@ void mission_start::reveal_hospital(game *g, mission *miss)
 
 void mission_start::find_safety(game *g, mission *miss)
 {
-	point place = g->om_location();
+	point place = g->om_location().second;
 	bool done = false;
 	for (int radius = 0; radius <= 20 && !done; radius++) {
 		for (int dist = 0 - radius; dist <= radius && !done; dist++) {

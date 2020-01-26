@@ -145,7 +145,7 @@ class game
   static bool update_map_would_scroll(const point& pt);
   void update_map(int &x, int &y);  // Called by plmove when the map updates
   void update_overmap_seen(); // Update which overmap tiles we can see
-  point om_location(); // levx and levy converted to overmap coordinates
+  OM_loc om_location(); // levx and levy converted to overmap coordinates
 
   itype* new_artifact();
   itype* new_natural_artifact(artifact_natural_property prop = ARTPROP_NULL);

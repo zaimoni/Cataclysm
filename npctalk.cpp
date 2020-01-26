@@ -221,7 +221,7 @@ static std::string dynamic_line(talk_topic topic, game *g, npc *p)
  } break;
 
  case TALK_TRAIN_START:
-  if (g->cur_om.is_safe(g->om_location()))
+  if (g->cur_om.is_safe(g->om_location().second))
    return "Alright, let's begin.";
   else
    return "It's not safe here.  Let's get to safety first.";
@@ -244,7 +244,7 @@ static std::string dynamic_line(talk_topic topic, game *g, npc *p)
  case TALK_LEADER_STAYS: return "No.  I'm the leader here.";
 
  case TALK_HOW_MUCH_FURTHER: {
-  int dist = rl_dist(g->om_location(), p->goal);
+  int dist = rl_dist(g->om_location().second, p->goal);
   std::stringstream response;
   dist *= 100;
   if (dist >= 1300) {
@@ -736,7 +736,7 @@ static std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *
   } break;
 
  case TALK_TRAIN_START:
-  if (g->cur_om.is_safe(g->om_location())) {
+  if (g->cur_om.is_safe(g->om_location().second)) {
    RESPONSE("Sounds good.");
     SUCCESS(TALK_DONE);
     SUCCESS_ACTION(&talk_function::start_training);
