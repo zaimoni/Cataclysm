@@ -2533,23 +2533,29 @@ void overmap::saveall()
     game::active()->cur_om.save(game::active()->u.name);
 }
 
+std::string overmap::terrain_filename(const tripoint& pos)
+{
+    std::stringstream terfilename;
+    terfilename << "save/o." << pos.x << "." << pos.y << "." << pos.z;
+    return terfilename.str();
+}
 
 void overmap::open(game *g)	// only called from constructor
 {
- std::stringstream plrfilename, terfilename;
+ std::stringstream plrfilename;
  char datatype;
 
  plrfilename << "save/" << g->u.name << ".seen." << pos.x << "." << pos.y << "." << pos.z;
- terfilename << "save/o." << pos.x << "." << pos.y << "." << pos.z;
 
- std::ifstream fin(terfilename.str().c_str());
+ const auto terfilename(terrain_filename(pos));
+ std::ifstream fin(terfilename.c_str());
  if (fin.is_open()) {
   for (int j = 0; j < OMAPY; j++) {
    for (int i = 0; i < OMAPX; i++) {
 	const auto ter_code = fin.get() - 32;
     ter(i, j) = oter_id(ter_code);
     if (ter_code < 0 || ter_code > num_ter_types)
-     debugmsg("Loaded bad ter!  %s; ter %d", terfilename.str().c_str(), ter_code);
+     debugmsg("Loaded bad ter!  %s; ter %d", terfilename.c_str(), ter_code);
    }
   }
   if ('{' != (fin >> std::ws).peek()) {

@@ -61,6 +61,7 @@ class overmap
   void save(const std::string& name, int x, int y, int z) const;
   void save(const std::string& name) const { save(name, pos.x, pos.y, pos.z); }
   static void saveall();
+  static std::string terrain_filename(const tripoint& pos);
   void make_tutorial();
   void first_house(int &x, int &y);
 

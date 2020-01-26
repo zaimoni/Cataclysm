@@ -24,6 +24,13 @@ overmap* om_cache::get(const tripoint& x)
 		ret.first = 2;
 		return ret.second;
 	}
+	const auto filename(overmap::terrain_filename(x));
+	if (auto f = fopen(filename.c_str(), "r")) {	// check whether file exists before triggering loading
+		fclose(f);
+		std::unique_ptr<overmap> ret(new overmap(game::active(), x.x, x.y, x.z));
+		_cache[x] = std::pair(1, ret.get());
+		return ret.release();
+	}
 	return 0;
 }
 
@@ -34,6 +41,13 @@ const overmap* om_cache::r_get(const tripoint& x)
 		auto& ret = _cache[x];
 		ret.first = 1;	// would need const cast to update
 		return ret.second;
+	}
+	const auto filename(overmap::terrain_filename(x));
+	if (auto f = fopen(filename.c_str(), "r")) {	// check whether file exists before triggering loading
+		fclose(f);
+		std::unique_ptr<overmap> ret(new overmap(game::active(), x.x, x.y, x.z));
+		_cache[x] = std::pair(1, ret.get());
+		return ret.release();
 	}
 	return 0;
 }
