@@ -45,6 +45,7 @@ public:
 
 private:
 	typedef std::map<const std::string, JSON> _object_JSON;
+	static const std::string discard_s;
 
 	union {
 		std::string* _scalar;
@@ -78,7 +79,7 @@ public:
 
 	// scalar evaluation
 	bool is_scalar() const { return string <= _mode; }
-	std::string scalar() const { return string <= _mode ? *_scalar : std::string(); }	// \todo would like an alternate API that bypasses the copy constructor
+	const std::string& scalar() const { return string <= _mode ? *_scalar : discard_s; }
 	// array evaluation
 	JSON& operator[](const size_t key) { return (*_array)[key]; };
 	const JSON& operator[](const size_t key) const { return (*_array)[key]; };

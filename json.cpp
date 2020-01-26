@@ -7,6 +7,7 @@
 namespace cataclysm {
 
 std::map<const std::string, JSON> JSON::cache;
+const std::string JSON::discard_s;
 
 bool JSON::syntax_ok() const
 {
@@ -520,7 +521,7 @@ void JSON::finish_reading_object(std::istream& src, unsigned long& line)
 			msg << JSON_object_read_failed << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
-		dest[std::move(_key.scalar())] = std::move(_value);
+		dest[_key.scalar()] = std::move(_value);
 		if (!consume_whitespace(src, line)) {	// oops, at end prematurely (but everything that did arrive is ok)
 			_mode = object;
 			_object = dest.empty() ? 0 : new _object_JSON(std::move(dest));
