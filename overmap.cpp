@@ -535,12 +535,16 @@ std::vector<const mongroup*> overmap::monsters_at(int x, int y) const
     return ret;
 }
 
-bool overmap::is_safe(const point& pt) const
+bool overmap::is_safe(const OM_loc& loc)
 {
- for (auto& gr : monsters_at(pt.x, pt.y)) if (!gr->is_safe()) return false;
- return true;
+    if (0 <= loc.second.x && OMAPX > loc.second.x && 0 <= loc.second.y && OMAPY > loc.second.y) {
+        auto om = om_cache::get().r_get(loc.first);
+        if (!om) return false;  // not yet generated: scary
+        for (auto& gr : om->monsters_at(loc.second.x, loc.second.y)) if (!gr->is_safe()) return false;
+        return true;
+    }
+    return is_safe(normalize(loc));
 }
-
 
 bool& overmap::seen(int x, int y)
 {

@@ -2,6 +2,7 @@
 #include "game.h"
 #include "rng.h"
 #include "recent_msg.h"
+#include "line.h"
 #include "setvector.h"
 
 std::vector <mission_type> mission_type::types; // The list of mission templates
@@ -263,34 +264,28 @@ void mission_start::reveal_hospital(game *g, mission *miss)
 
 void mission_start::find_safety(game *g, mission *miss)
 {
-	point place = g->om_location().second;
-	bool done = false;
-	for (int radius = 0; radius <= 20 && !done; radius++) {
-		for (int dist = 0 - radius; dist <= radius && !done; dist++) {
+	static constexpr const point scan_dirs[] = {Direction::NW, Direction::NE, Direction::SE, Direction::SW };
+	auto place = g->om_location();
+	for (int radius = 0; radius <= 20; radius++) {
+		for (int dist = 0 - radius; dist <= radius; dist++) {
 			int offset = rng(0, 3); // Randomizes the direction we check first
-			for (int i = 0; i <= 3 && !done; i++) { // Which direction?
-				point check = place;
+			for (int i = 0; i <= 3; i++) { // Which direction?
+				auto check = place;
 				switch ((offset + i) % 4) {
-				case 0: check.x += dist; check.y -= radius; break;
-				case 1: check.x += dist; check.y += radius; break;
-				case 2: check.y += dist; check.x -= radius; break;
-				case 3: check.y += dist; check.x += radius; break;
+				case 0: check.second.x += dist; check.second.y -= radius; break;
+				case 1: check.second.x += dist; check.second.y += radius; break;
+				case 2: check.second.y += dist; check.second.x -= radius; break;
+				case 3: check.second.y += dist; check.second.x += radius; break;
 				}
-				if (g->cur_om.is_safe(check)) {
-					miss->target = check;
-					done = true;
+				if (overmap::is_safe(check)) {
+					miss->target = check.second;
+					return;
 				}
 			}
 		}
 	}
-	if (!done) { // Couldn't find safety; so just set the target to far away
-		switch (rng(0, 3)) {
-		case 0: miss->target = point(place.x - 20, place.y - 20); break;
-		case 1: miss->target = point(place.x - 20, place.y + 20); break;
-		case 2: miss->target = point(place.x + 20, place.y - 20); break;
-		case 3: miss->target = point(place.x + 20, place.y + 20); break;
-		}
-	}
+	// Couldn't find safety; so just set the target to far away
+	miss->target = place.second + 20*scan_dirs[rng(0, 3)];
 }
 
 void mission_start::place_book(game *g, mission *miss)	// XXX doesn't look like it works \todo fix

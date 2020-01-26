@@ -6,15 +6,6 @@
 #define SGN(a) (((a)<0) ? -1 : 1)
 #define SLOPE_VERTICAL 999999
 
-const point Direction::N(-1, 0);
-const point Direction::NE(-1, 1);
-const point Direction::E(0, 1);
-const point Direction::SE(1, 1);
-const point Direction::S(1, 0);
-const point Direction::SW(1, -1);
-const point Direction::W(0, -1);
-const point Direction::NW(-1, -1);
-
 std::vector <point> line_to(int x1, int y1, int x2, int y2, int t)
 {
  std::vector<point> ret;

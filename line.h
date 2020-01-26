@@ -20,14 +20,14 @@ NORTHWEST
 class Direction
 {
 public:
-	static const point N;
-	static const point NE;
-	static const point E;
-	static const point SE;
-	static const point S;
-	static const point SW;
-	static const point W;
-	static const point NW;
+	static constexpr const point N = point(-1, 0);
+	static constexpr const point NE = point(-1, 1);
+	static constexpr const point E = point(0, 1);
+	static constexpr const point SE = point(1, 1);
+	static constexpr const point S = point(1, 0);
+	static constexpr const point SW = point(1, -1);
+	static constexpr const point W = point(0, -1);
+	static constexpr const point NW = point(-1, -1);
 };
 
 // The "t" value decides WHICH Bresenham line is used.
