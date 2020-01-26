@@ -141,14 +141,13 @@ void mission_start::place_npc_software(game *g, mission *miss)
 		miss->item_id = itm_software_useless;
 	}
 
-	int dist = 0;
 	point place;
 	if (ter == ot_house_north) {
 		auto city_id = g->cur_om.closest_city(g->om_location().second);
 		place = g->cur_om.random_house_in_city(city_id);
 	}
 	else
-		place = g->cur_om.find_closest(g->om_location().second, ter, 4, dist, false);
+		place = g->cur_om.find_closest(g->om_location().second, ter, 4);
 	miss->target = place;
 	// Make it seen on our map
 	OM_loc scan(g->cur_om.pos, point(0, 0));
@@ -253,8 +252,7 @@ void mission_start::reveal_hospital(game *g, mission *miss)
 	g->u.i_add(item(item::types[itm_vacutainer], 0));
 	messages.add("%s gave you a vacutainer.", dev->name.c_str());
 
-	int dist = 0;
-	point place = g->cur_om.find_closest(g->om_location().second, ot_hospital, 1, dist, false);
+	point place = g->cur_om.find_closest(g->om_location().second, ot_hospital, 1);
 	OM_loc scan(g->cur_om.pos, point(0, 0));
 	for (scan.second.x = place.x - 3; scan.second.x <= place.x + 3; scan.second.x++) {
 		for (scan.second.y = place.y - 3; scan.second.y <= place.y + 3; scan.second.y++) overmap::expose(scan);
@@ -278,7 +276,7 @@ void mission_start::find_safety(game *g, mission *miss)
 				case 3: check.second.y += dist; check.second.x += radius; break;
 				}
 				if (overmap::is_safe(check)) {
-					miss->target = check.second;
+					miss->target = check.second;	// XXX \todo retype target to OM_loc; this is currently Przybylski's Star due to full cross-overmap safety check
 					return;
 				}
 			}

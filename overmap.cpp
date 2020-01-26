@@ -1043,9 +1043,9 @@ void overmap::make_tutorial()
  zg.clear();
 }
 
-point overmap::find_closest(point origin, oter_id type, int type_range, int &dist, bool must_be_seen) const
+point overmap::find_closest(const point origin, const oter_id type, const int type_range, int dist, const bool must_be_seen) const
 {
- int max = (dist == 0 ? OMAPX / 2 : dist);
+ const int max = (dist == 0 ? OMAPX / 2 : dist);
  auto t_at = ter(origin);
  if (t_at >= type && t_at < type + type_range && (!must_be_seen || seen(origin))) return origin;
  
