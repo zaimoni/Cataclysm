@@ -68,6 +68,23 @@ OM_loc overmap::normalize(const OM_loc& OMpos)
     return ret;
 }
 
+OM_loc overmap::denormalize(const tripoint& view, OM_loc OMpos)
+{
+#define DENORMALIZE_COORD(X)    \
+    if (view.X < OMpos.first.X) {   \
+        do OMpos.second.X += OMAP; \
+        while (view.X < --OMpos.first.X);   \
+    } else if (view.X > OMpos.first.X) {    \
+        do OMpos.second.X -= OMAP; \
+        while (view.X > ++OMpos.first.X);   \
+    }
+
+    DENORMALIZE_COORD(x)
+    DENORMALIZE_COORD(y)
+#undef DENORMALIZE_COORD
+    return OMpos;
+}
+
 #define STREETCHANCE 2
 #define NUM_FOREST 250
 #define TOP_HIWAY_DIST 140

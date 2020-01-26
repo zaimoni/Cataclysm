@@ -117,6 +117,7 @@ class overmap
   static OM_loc toOvermap(const GPS_loc GPSpos);
   static OM_loc normalize(const OM_loc& OMpos);
   static void self_normalize(OM_loc& OMpos);
+  static OM_loc denormalize(const tripoint& view, OM_loc OMpos);
 
   tripoint pos;
   std::vector<city> cities;
