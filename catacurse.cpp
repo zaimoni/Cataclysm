@@ -1007,7 +1007,7 @@ int haveCustomFont = 0;	// custom font was there and loaded
 bool WinCreate()
 {
     WNDCLASSEXW WindowClassType;
-    const WCHAR *szTitle=  (L"Cataclysm");
+    const WCHAR *szTitle=  (L"Cataclysm" " (" __DATE__ ")");
     WindowClassType.cbSize = sizeof(WNDCLASSEXW);
     WindowClassType.style = 0;//No point in having a custom style, no mouse, etc
     WindowClassType.lpfnWndProc = ProcessMessages;//the procedure that gets msgs
@@ -1258,7 +1258,6 @@ WINDOW *initscr(void)
 
 WINDOW *newwin(int nlines, int ncols, int begin_y, int begin_x)
 {
-    int i,j;
     WINDOW *newwindow = new WINDOW;
     //newwindow=&_windows[WindowCount];
     newwindow->x=begin_x;
@@ -1273,7 +1272,7 @@ WINDOW *newwin(int nlines, int ncols, int begin_y, int begin_x)
     newwindow->cursory=0;
     newwindow->line = new curseline[nlines];
 
-    for (j=0; j<nlines; j++) newwindow->line[j].init(ncols);
+    for (int j=0; j<nlines; j++) newwindow->line[j].init(ncols);
     //WindowCount++;
     return newwindow;
 };
@@ -1282,7 +1281,6 @@ WINDOW *newwin(int nlines, int ncols, int begin_y, int begin_x)
 //Deletes the window and marks it as free. Clears it just in case.
 int delwin(WINDOW *win)
 {
-    int j;
     win->inuse=false;
     win->draw=false;
     delete [] win->line;
@@ -1503,8 +1501,7 @@ int printw(const char *fmt, ...)
 //erases a window of all text and attributes
 int werase(WINDOW *win)
 {
-    int j,i;
-    for (j=0; j<win->height; j++) {
+    for (int j=0; j<win->height; j++) {
 		auto& line = win->line[j];
 		memset(line.chars, 0, win->width*sizeof(*line.chars));
 		memset(line.FG, 0, win->width * sizeof(*line.FG));
