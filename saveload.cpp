@@ -1742,7 +1742,7 @@ bool fromJSON(const JSON& src, npc& dest)
 
 npc::npc(const JSON& src)
 : player(src),id(-1), attitude(NPCATT_NULL), myclass(NC_NONE), wand(point(0, 0), 0),
-  pl(point(-1, -1), 0), it(-1, -1), goal(-1, -1), fetching_item(false), has_new_items(false),
+  pl(point(-1, -1), 0), it(-1, -1), goal(tripoint(INT_MAX),point(-1)), fetching_item(false), has_new_items(false),
   my_fac(0), mission(NPC_MISSION_NULL), patience(0), marked_for_death(false), dead(false), flags(0)
 {
 	if (src.has_key("id")) fromJSON(src["id"], id);
@@ -1754,7 +1754,7 @@ npc::npc(const JSON& src)
 	if (src.has_key("goal") && !fromJSON(src["goal"], goal)) {
 		// V0.2.1- was point rather than OM_loc
 		point tmp;
-		if (fromJSON(src["goal"], tmp)) goal = tmp;
+		if (fromJSON(src["goal"], tmp)) goal.second = tmp;
 	}
 	if (src.has_key("fetching_item")) fromJSON(src["fetching_item"], fetching_item);
 	if (src.has_key("has_new_items")) fromJSON(src["has_new_items"], has_new_items);

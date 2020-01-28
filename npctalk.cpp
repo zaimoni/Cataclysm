@@ -244,7 +244,7 @@ static std::string dynamic_line(talk_topic topic, game *g, npc *p)
  case TALK_LEADER_STAYS: return "No.  I'm the leader here.";
 
  case TALK_HOW_MUCH_FURTHER: {
-  int dist = rl_dist(g->om_location().second, p->goal);
+  int dist = overmap::rl_dist(g->om_location(), p->goal);
   std::stringstream response;
   dist *= 100;
   if (dist >= 1300) {
@@ -1335,7 +1335,7 @@ void talk_function::player_weapon_drop(game *g, npc *p)
 void talk_function::lead_to_safety(game *g, npc *p)
 {
  auto& miss = g->give_mission(MISSION_REACH_SAFETY);
- p->goal = miss.target;
+ p->goal = std::pair(g->cur_om.pos,miss.target);
  p->attitude = NPCATT_LEAD;
 }
  

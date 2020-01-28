@@ -1889,7 +1889,7 @@ bool npc::saw_player_recently() const
 
 bool npc::has_destination() const
 {
- return (goal.x >= 0 && goal.x < OMAPX && goal.y >= 0 && goal.y < OMAPY);
+ return (goal.second.x >= 0 && goal.second.x < OMAPX && goal.second.y >= 0 && goal.second.y < OMAPY);
 }
 
 void npc::set_destination(game *g)
@@ -1935,17 +1935,18 @@ void npc::set_destination(game *g)
  oter_id dest_type = options[rng(0, options.size() - 1)];
 
  const auto om = overmap::toOvermap(GPSpos);
- goal = g->cur_om.find_closest(om.second, dest_type, 4);
+ goal = std::pair(g->cur_om.pos, g->cur_om.find_closest(om.second, dest_type, 4));
 }
 
 void npc::go_to_destination(game *g)
 {
   auto om = overmap::toOvermap(GPSpos);
-  if (goal == om.second) {	// We're at our desired map square!
+  if (goal == om) {	// We're at our desired map square!
    move_pause();
    reach_destination();
   }
-  point s(cmp(goal, om.second));
+  // NPCs historically don't go underground/change Z levels much \todo fix as part of long-range pathing
+  point s(goal.first.x==om.first.x && goal.first.y==goal.second.y ? cmp(goal.second, om.second) : cmp(point(om.first.x,om.first.y),point(goal.first.x,goal.first.y)));
 // sx and sy are now equal to the direction we need to move in
   point d;
   point target(pos + 8 * s);
@@ -1963,7 +1964,7 @@ void npc::go_to_destination(game *g)
       if (!path.empty() && can_move_to(g->m, path[0])) {
        move_to_next(g);
 	   om = overmap::toOvermap(GPSpos);	// GPSpos updated so this updates
-       if (goal == om.second) {	// We're at our desired map square!
+       if (goal == om) {	// We're at our desired map square!
         reach_destination();
        }
        return;

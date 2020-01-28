@@ -1571,8 +1571,6 @@ void game::load(std::string name)
 		|| !(++err, saved.has_key("monsters")) || !(++err, saved.has_key("kill_counts")) || !(++err, saved.has_key("player"))
 		|| !(++err, fromJSON(saved["com"], com))) throw corrupted+" : "+std::to_string(err);
 
-    // release block \todo V0.2.2 this is the earliest we can repair the tripoint field for OM_loc-retyped mission::type, npc::goal
-
 	const auto& scents = saved["scents"];
 	if (cataclysm::JSON::array != scents.mode() || SEEX * MAPSIZE != scents.size()) throw corrupted + " 2";
 
@@ -1586,7 +1584,16 @@ void game::load(std::string name)
 	if (!fromJSON(saved["weather"], weather)) throw corrupted + " 6";
 	if (fromJSON(saved["temperature"], tmp)) temperature = tmp; else throw corrupted + " 7";
 	if (!fromJSON(saved["lev"], lev)) throw corrupted + " 8";
-	// player -- do this here or otherwise visibility info, etc. lost
+
+    // V0.2.2 this is the earliest we can repair the tripoint field for OM_loc-retyped mission::type, npc::goal
+    for (auto& _npc : active_npc) {
+        if (point(-1) != _npc.goal.second && tripoint(INT_MAX) == _npc.goal.first) {
+            // V0.2.1- goal is point.  Assume cur_om's location.
+            _npc.goal.first = tripoint(com.x, com.y, lev.z);
+        }
+    }
+
+    // player -- do this here or otherwise visibility info, etc. lost
 	u = player(saved["player"]);	// \todo fromJSON idiom, so we can signal failure w/o throwing?
 
 	// deal with map now (historical ordering)
@@ -1881,8 +1888,8 @@ z.size(), events.size());
     data << npc_class_name(_npc->myclass) << "; " <<
             npc_attitude_name(_npc->attitude) << std::endl;
     if (_npc->has_destination())
-     data << "Destination: " << _npc->goal.x << ":" << _npc->goal.y << "(" <<
-		     oter_t::list[ cur_om.ter(_npc->goal) ].name << ")" <<
+     data << "Destination: " << _npc->goal.first << _npc->goal.second << "(" <<
+		     oter_t::list[ overmap::ter_c(_npc->goal) ].name << ")" <<
              std::endl;
     else
      data << "No destination." << std::endl;

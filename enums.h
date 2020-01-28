@@ -86,7 +86,7 @@ struct tripoint {
  int y;
  int z;
  constexpr tripoint() : x(0), y(0), z(0) {}
-// explicit constexpr tripoint(int X) : x(X), y(X), z(X) {};	// the diagonal projection of the integers Z into the integer space Z^3
+ explicit constexpr tripoint(int X) : x(X), y(X), z(X) {};	// the diagonal projection of the integers Z into the integer space Z^3
  constexpr tripoint(int X, int Y, int Z) : x (X), y (Y), z (Z) {}
  tripoint(const tripoint &p) = default;
 

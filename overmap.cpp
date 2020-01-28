@@ -85,6 +85,28 @@ OM_loc overmap::denormalize(const tripoint& view, OM_loc OMpos)
     return OMpos;
 }
 
+bool overmap::is_valid(const OM_loc& x)
+{
+    if (tripoint(INT_MAX) == x.first) return zaimoni::gdi::box(point(0), point(OMAP)).contains(x.second);
+    return true;
+}
+
+// would prefer for this to be a free function but we have to have some way to distinguish between overmap and GPS coordinates
+int overmap::rl_dist(OM_loc lhs, OM_loc rhs)
+{
+    if (!is_valid(lhs) || !is_valid(rhs)) return INT_MAX;
+
+    if (lhs.first == rhs.first) return ::rl_dist(lhs.second, rhs.second);
+
+    // release block \todo expand following in a non-overflowing way (always return INT_MAX if overflow)
+    // prototype reductions (can overflow)
+    self_normalize(lhs);
+    self_normalize(rhs);
+    denormalize(lhs.first, rhs);
+    return ::rl_dist(lhs.second, rhs.second);
+}
+
+
 #define STREETCHANCE 2
 #define NUM_FOREST 250
 #define TOP_HIWAY_DIST 140
@@ -632,7 +654,7 @@ point overmap::find_note(point origin, const std::string& text) const
  int closest = 9999;
  point ret(-1, -1);
  for (int i = 0; i < notes.size(); i++) {
-  int dist = rl_dist(origin, notes[i].x, notes[i].y);
+  int dist = ::rl_dist(origin, notes[i].x, notes[i].y);
   if (notes[i].text.find(text) != std::string::npos && dist < closest) {
    closest = dist;
    ret = point(notes[i].x, notes[i].y);
@@ -1113,7 +1135,7 @@ const city* overmap::closest_city(point p) const
  const city* ret = 0;
  int distance = 999;
  for (const auto& c : cities) {
-     int dist = rl_dist(p, c.x, c.y);
+     int dist = ::rl_dist(p, c.x, c.y);
      if (dist < distance || (dist == distance && c.s < ret->s)) {
          ret = &c;
          distance = dist;
@@ -1145,7 +1167,7 @@ int overmap::dist_from_city(point p) const
 {
  int distance = 999;
  for (int i = 0; i < cities.size(); i++) {
-  int dist = rl_dist(p, cities[i].x, cities[i].y);
+  int dist = ::rl_dist(p, cities[i].x, cities[i].y);
   dist -= cities[i].s;
   if (dist < distance) distance = dist;
  }
@@ -1273,7 +1295,7 @@ void overmap::draw(WINDOW *w, game *g, point& curs, point& orig, char &ch, bool 
     mvwprintz(w, 1, om_w, c_dkgray, "# Unexplored");
 
    if (target.x != -1 && target.y != -1) {
-    int distance = rl_dist(orig, target);
+    int distance = ::rl_dist(orig, target);
     mvwprintz(w, 3, om_w, c_white, "Distance to target: %d", distance);
    }
    mvwprintz(w, VIEW - 8, om_w, c_magenta,           "Use movement keys to pan.  ");
@@ -1960,7 +1982,7 @@ void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
          is_between<ot_road_null, ot_river_center>(ter(x, y + 1)) ||
          is_between<ot_road_null, ot_river_center>(ter(x - 1, y)) ||
          is_between<ot_road_null, ot_river_center>(ter(x + 1, y))  ) &&
-        rl_dist(x, y, x1, y2) > rl_dist(x, y, x2, y2));
+      ::rl_dist(x, y, x1, y2) > ::rl_dist(x, y, x2, y2));
  } while ((x != x2 || y != y2) && !found_road);
 }
 
@@ -2405,7 +2427,7 @@ void overmap::place_special(overmap_special special, point p)
  if (special.flags & mfb(OMS_FLAG_ROAD)) {
   int closest = -1, distance = 999;
   for (int i = 0; i < cities.size(); i++) {
-   int dist = rl_dist(p, cities[i].x, cities[i].y);
+   int dist = ::rl_dist(p, cities[i].x, cities[i].y);
    if (dist < distance) {
     closest = i;
     distance = dist;
@@ -2417,7 +2439,7 @@ void overmap::place_special(overmap_special special, point p)
  if (special.flags & mfb(OMS_FLAG_PARKING_LOT)) {
   int closest = -1, distance = 999;
   for (int i = 0; i < cities.size(); i++) {
-   int dist = rl_dist(p, cities[i].x, cities[i].y);
+   int dist = ::rl_dist(p, cities[i].x, cities[i].y);
    if (dist < distance) {
     closest = i;
     distance = dist;
@@ -2584,7 +2606,16 @@ void overmap::open(game *g)	// only called from constructor
 	  if (om.has_key("cities")) om["cities"].decode(cities);
 	  if (om.has_key("roads")) om["roads"].decode(roads_out);
 	  if (om.has_key("radios")) om["radios"].decode(radios);
-	  if (om.has_key("npcs")) om["npcs"].decode(npcs);
+      if (om.has_key("npcs")) {
+          om["npcs"].decode(npcs);
+          // V0.2.2 this is the earliest we can repair the tripoint field for OM_loc-retyped npc::goal
+          for (auto& _npc : npcs) {
+              if (point(-1) != _npc.goal.second && tripoint(INT_MAX) == _npc.goal.first) {
+                  // V0.2.1- goal is point.  Assume our own location.
+                  _npc.goal.first = pos;
+              }
+          }
+      }
 
 // Private/per-character data
   fin.close();

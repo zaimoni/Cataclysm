@@ -118,6 +118,8 @@ class overmap
   static OM_loc normalize(const OM_loc& OMpos);
   static void self_normalize(OM_loc& OMpos);
   static OM_loc denormalize(const tripoint& view, OM_loc OMpos);
+  static int rl_dist(OM_loc lhs, OM_loc rhs);
+  static bool is_valid(const OM_loc& x);
 
   tripoint pos;
   std::vector<city> cities;
