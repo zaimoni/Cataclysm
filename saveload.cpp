@@ -479,7 +479,7 @@ bool fromJSON(const JSON& _in, mission& dest)
 	if (_in.has_key("reward")) fromJSON(_in["reward"], dest.reward);
 	if (_in.has_key("target") && !fromJSON(_in["target"], dest.target)) {
 		point tmp;	// V0.2.1- format was point rather than OM_loc
-		if (fromJSON(_in["target"], tmp)) dest.target = tmp;
+		if (fromJSON(_in["target"], tmp)) dest.target.second = tmp;
 	}
 	if (_in.has_key("item")) fromJSON(_in["item"], dest.item_id);
 	if (_in.has_key("count")) fromJSON(_in["count"], dest.count);
@@ -502,7 +502,7 @@ JSON toJSON(const mission& src)
 	if (src.value) _mission.set("value", std::to_string(src.value));	// for now allow negative mission values \todo audit for negative mission values
 	if (JSON_key(src.reward.type)) _mission.set("value", toJSON(src.reward));
 	// src.reward
-	if (point(-1, -1) != src.target) _mission.set("target", toJSON(src.target));
+	if (overmap::is_valid(src.target)) _mission.set("target", toJSON(src.target));
 	if (src.count) {
 		if (auto json = JSON_key(src.item_id)) {
 			_mission.set("item", json);

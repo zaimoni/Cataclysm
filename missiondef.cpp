@@ -82,7 +82,7 @@ void mission_start::place_dog(game *g, mission *miss)
 	g->u.i_add(item(item::types[itm_dog_whistle], 0));
 	messages.add("%s gave you a dog whistle.", dev->name.c_str());
 
-	miss->target = house;
+	miss->target = std::pair(g->cur_om.pos, house);
 	// Make it seen on our map
 	OM_loc scan(g->cur_om.pos, point(0, 0));
 	for (scan.second.x = house.x - 6; scan.second.x <= house.x + 6; scan.second.x++) {
@@ -100,7 +100,7 @@ void mission_start::place_zombie_mom(game *g, mission *miss)
 	auto city_id = g->cur_om.closest_city(g->om_location().second);
 	point house = g->cur_om.random_house_in_city(city_id);
 
-	miss->target = house;
+	miss->target = std::pair(g->cur_om.pos, house);
 	// Make it seen on our map
 	OM_loc scan(g->cur_om.pos, point(0, 0));
 	for (scan.second.x = house.x - 6; scan.second.x <= house.x + 6; scan.second.x++) {
@@ -148,7 +148,7 @@ void mission_start::place_npc_software(game *g, mission *miss)
 	}
 	else
 		place = g->cur_om.find_closest(g->om_location().second, ter, 4);
-	miss->target = place;
+	miss->target = std::pair(g->cur_om.pos, place);
 	// Make it seen on our map
 	OM_loc scan(g->cur_om.pos, point(0, 0));
 	for (scan.second.x = place.x - 6; scan.second.x <= place.x + 6; scan.second.x++) {
@@ -257,7 +257,7 @@ void mission_start::reveal_hospital(game *g, mission *miss)
 	for (scan.second.x = place.x - 3; scan.second.x <= place.x + 3; scan.second.x++) {
 		for (scan.second.y = place.y - 3; scan.second.y <= place.y + 3; scan.second.y++) overmap::expose(scan);
 	}
-	miss->target = place;
+	miss->target = std::pair(g->cur_om.pos, place);
 }
 
 void mission_start::find_safety(game *g, mission *miss)
@@ -276,14 +276,14 @@ void mission_start::find_safety(game *g, mission *miss)
 				case 3: check.second.y += dist; check.second.x += radius; break;
 				}
 				if (overmap::is_safe(check)) {
-					miss->target = check.second;	// XXX \todo retype target to OM_loc; this is currently Przybylski's Star due to full cross-overmap safety check
+					miss->target = check;
 					return;
 				}
 			}
 		}
 	}
 	// Couldn't find safety; so just set the target to far away
-	miss->target = place.second + 20*scan_dirs[rng(0, 3)];
+	miss->target = std::pair(g->cur_om.pos,place.second + 20*scan_dirs[rng(0, 3)]);
 }
 
 void mission_start::place_book(game *g, mission *miss)	// XXX doesn't look like it works \todo fix

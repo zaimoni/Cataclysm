@@ -66,10 +66,8 @@ void mission::step_complete(const int stage)
     case MGOAL_FIND_ITEM:
     case MGOAL_FIND_MONSTER:
     case MGOAL_KILL_MONSTER: {
-        if (auto _npc = npc::find_alive_r(npc_id)) {
-            auto om = overmap::toOvermap(_npc->GPSpos);
-            target = om.second;
-        } else target = point(-1, -1);
+        if (auto _npc = npc::find_alive_r(npc_id)) target = overmap::toOvermap(_npc->GPSpos);
+        else target = std::pair(tripoint(INT_MAX),point(-1));
     } break;
     }
 }
@@ -77,10 +75,7 @@ void mission::step_complete(const int stage)
 bool mission::is_complete(const player& u, const int _npc_id) const
 {
     switch (type->goal) {
-    case MGOAL_GO_TO: {
-        const auto cur_pos = overmap::toOvermap(u.GPSpos);
-        return rl_dist(cur_pos.second, target) <= 1;
-    }
+    case MGOAL_GO_TO: return overmap::rl_dist(overmap::toOvermap(u.GPSpos), target) <= 1;
 
     case MGOAL_FIND_ITEM:
         if (!u.has_amount(type->item_id, 1)) return false;

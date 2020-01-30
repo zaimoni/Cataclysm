@@ -1335,7 +1335,7 @@ void talk_function::player_weapon_drop(game *g, npc *p)
 void talk_function::lead_to_safety(game *g, npc *p)
 {
  auto& miss = g->give_mission(MISSION_REACH_SAFETY);
- p->goal = std::pair(g->cur_om.pos,miss.target);
+ p->goal = miss.target;
  p->attitude = NPCATT_LEAD;
 }
  

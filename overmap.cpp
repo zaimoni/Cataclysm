@@ -1182,10 +1182,12 @@ void overmap::draw(WINDOW *w, game *g, point& curs, point& orig, char &ch, bool 
  bool note_here = false, npc_here = false;
  std::string note_text, npc_name;
  
- point target(-1, -1);
+ OM_loc target(tripoint(INT_MAX),point(-1));
  if (g->u.active_mission >= 0 &&
-     g->u.active_mission < g->u.active_missions.size())
-  target = mission::from_id(g->u.active_missions[g->u.active_mission])->target;
+     g->u.active_mission < g->u.active_missions.size()) {
+    target = mission::from_id(g->u.active_missions[g->u.active_mission])->target;
+    if (overmap::is_valid(target)) target = overmap::denormalize(pos, target);
+ }
 /* First, determine if we're close enough to the edge to need to load an
  * adjacent overmap, and load it/them. */
  const int y_delta = ((curs.y < VIEW / 2) ? -1 : ((curs.y >= OMAPY - VIEW / 2 - 1) ? 1 : 0));
@@ -1226,7 +1228,7 @@ void overmap::draw(WINDOW *w, game *g, point& curs, point& orig, char &ch, bool 
      } else if (npc_here && blink) {
       ter_color = c_pink;
       ter_sym = '@';
-     } else if (target == scan.second && blink) {
+     } else if (overmap::is_valid(target) && target.second == scan.second && blink) {
       ter_color = c_red;
       ter_sym = '*';
      } else {
@@ -1250,10 +1252,8 @@ void overmap::draw(WINDOW *w, game *g, point& curs, point& orig, char &ch, bool 
      mvwputch    (w, VIEW / 2 + j, om_w / 2 + i, ter_color, ter_sym);
    }
   }
-  if (target.x != -1 && target.y != -1 && blink &&
-      (target.x < curs.x - om_w / 2 || target.x > curs.x + om_w / 2 ||
-       target.y < curs.y - VIEW / 2 || target.y > curs.y + VIEW / 2)) {
-   switch (direction_from(curs.x, curs.y, target)) {
+  if (overmap::is_valid(target) && blink && zaimoni::gdi::box(curs - point(om_w, VIEW)/2, point(om_w, VIEW)).contains(target.second)) {
+   switch (direction_from(curs.x, curs.y, target.second)) {
     case NORTH:      mvwputch(w,  0, om_w / 2, c_red, '^');       break;
     case NORTHEAST:  mvwputch(w,  0, om_w - 2, c_red, LINE_OOXX); break;
     case EAST:       mvwputch(w, VIEW / 2, om_w - 2, c_red, '>');       break;
@@ -1294,8 +1294,8 @@ void overmap::draw(WINDOW *w, game *g, point& curs, point& orig, char &ch, bool 
    } else
     mvwprintz(w, 1, om_w, c_dkgray, "# Unexplored");
 
-   if (target.x != -1 && target.y != -1) {
-    int distance = ::rl_dist(orig, target);
+   if (overmap::is_valid(target)) {
+    int distance = ::rl_dist(orig, target.second);
     mvwprintz(w, 3, om_w, c_white, "Distance to target: %d", distance);
    }
    mvwprintz(w, VIEW - 8, om_w, c_magenta,           "Use movement keys to pan.  ");

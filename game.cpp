@@ -1592,6 +1592,12 @@ void game::load(std::string name)
             _npc.goal.first = tripoint(com.x, com.y, lev.z);
         }
     }
+    for (auto& _miss : active_missions) {
+        if (point(-1) != _miss.target.second && tripoint(INT_MAX) == _miss.target.first) {
+            // V0.2.1- target is point.  Assume cur_om's location.
+            _miss.target.first = tripoint(com.x, com.y, lev.z);
+        }
+    }
 
     // player -- do this here or otherwise visibility info, etc. lost
 	u = player(saved["player"]);	// \todo fromJSON idiom, so we can signal failure w/o throwing?
@@ -2173,8 +2179,8 @@ void game::list_missions()
    if (miss->deadline != 0)
     mvwprintz(w_missions, 5, VBAR_X + 1, c_white, "Deadline: %d (%d)",
               miss->deadline, int(messages.turn));
-   mvwprintz(w_missions, 6, VBAR_X + 1, c_white, "Target: (%d, %d)   You: (%d, %d)",
-             miss->target.x, miss->target.y,
+   mvwprintz(w_missions, 6, VBAR_X + 1, c_white, "Target: (%d, %d)   You: (%d, %d)",    // release block \todo fix
+             miss->target.second.x, miss->target.second.y,
              (lev.x + int (MAPSIZE / 2)) / 2, (lev.y + int (MAPSIZE / 2)) / 2);
   } else {
    const char* const nope = (0 == tab) ? "You have no active missions!" : ((1 == tab) ? "You haven't completed any missions!" : "You haven't failed any missions!");
@@ -2377,28 +2383,27 @@ void game::draw_minimap()
   mvwputch(w_minimap, 6, i, c_white, LINE_OXOX);
  }
 
- int cursx = (lev.x + int(MAPSIZE / 2)) / 2;
- int cursy = (lev.y + int(MAPSIZE / 2)) / 2;
+ point curs((lev.x + int(MAPSIZE / 2)) / 2, (lev.y + int(MAPSIZE / 2)) / 2);
 
  bool drew_mission = false;
- point target(-1, -1);
+ OM_loc target(tripoint(INT_MAX), point(-1));
  if (u.active_mission >= 0 && u.active_mission < u.active_missions.size())
   target = mission::from_id(u.active_missions[u.active_mission])->target;
  else
   drew_mission = true;
 
- if (target.x == -1) drew_mission = true;
+ if (!overmap::is_valid(target)) drew_mission = true;
+ else target = overmap::denormalize(cur_om.pos, target);
 
  OM_loc scan(cur_om.pos, point(0, 0));
  for (int i = -2; i <= 2; i++) {
   for (int j = -2; j <= 2; j++) {
-   scan.second.x = cursx + i;
-   scan.second.y = cursy + j;
+   scan.second = curs + point(i, j);
    if (!overmap::seen_c(scan)) continue;
    oter_id cur_ter = overmap::ter_c(scan);
    nc_color ter_color = oter_t::list[cur_ter].color;
    long ter_sym = oter_t::list[cur_ter].sym;
-    if (!drew_mission && target == scan.second) {
+    if (!drew_mission && target.second == scan.second) {
      drew_mission = true;
      if (i != 0 || j != 0)
       mvwputch   (w_minimap, 3 + j, 3 + i, red_background(ter_color), ter_sym);
@@ -2414,22 +2419,22 @@ void game::draw_minimap()
 // Print arrow to mission if we have one!
  if (!drew_mission) {
   double slope;
-  if (cursx != target.x) slope = double(target.y - cursy) / double(target.x - cursx);
-  if (cursx == target.x || abs(slope) > 3.5 ) { // Vertical slope
-   if (target.y > cursy)
+  if (curs.x != target.second.x) slope = double(target.second.y - curs.y) / double(target.second.x - curs.x);
+  if (curs.x == target.second.x || abs(slope) > 3.5 ) { // Vertical slope
+   if (target.second.y > curs.y)
     mvwputch(w_minimap, 6, 3, c_red, '*');
    else
     mvwputch(w_minimap, 0, 3, c_red, '*');
   } else {
    int arrowx = 3, arrowy = 3;
    if (abs(slope) >= 1.) { // y diff is bigger!
-    arrowy = (target.y > cursy ? 6 : 0);
-    arrowx = 3 + 3 * (target.y > cursy ? slope : (0 - slope));
+    arrowy = (target.second.y > curs.y ? 6 : 0);
+    arrowx = 3 + 3 * (target.second.y > curs.y ? slope : (0 - slope));
     if (arrowx < 0) arrowx = 0;
     else if (arrowx > 6) arrowx = 6;
    } else {
-    arrowx = (target.x > cursx ? 6 : 0);
-    arrowy = 3 + 3 * (target.x > cursx ? slope : (0 - slope));
+    arrowx = (target.second.x > curs.x ? 6 : 0);
+    arrowy = 3 + 3 * (target.second.x > curs.x ? slope : (0 - slope));
     if (arrowy < 0) arrowy = 0;
     else if (arrowy > 6) arrowy = 6;
    }
