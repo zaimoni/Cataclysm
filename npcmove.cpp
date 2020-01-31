@@ -1935,7 +1935,7 @@ void npc::set_destination(game *g)
  oter_id dest_type = options[rng(0, options.size() - 1)];
 
  const auto om = overmap::toOvermap(GPSpos);
- goal = std::pair(g->cur_om.pos, g->cur_om.find_closest(om.second, dest_type, 4));
+ goal = OM_loc(g->cur_om.pos, g->cur_om.find_closest(om.second, dest_type, 4));
 }
 
 void npc::go_to_destination(game *g)

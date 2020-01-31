@@ -319,7 +319,7 @@ public:
  void randomize(game *g, npc_class type = NC_NONE);
  void randomize_from_faction(game *g, faction *fac);
  void make_shopkeep(game *g, oter_id type);
- void spawn_at(const std::pair<tripoint, point>& _GPSpos);
+ void spawn_at(const GPS_loc& _GPSpos);
  skill best_skill() const;
  void starting_weapon(game *g);
 
@@ -471,7 +471,7 @@ public:
 private:
  void set_destination(game *g);	// Pick a place to go
  void go_to_destination(game *g); // Move there; on the micro scale
- void reach_destination() { goal = std::pair(tripoint(INT_MAX),point(-1)); } // We made it!
+ void reach_destination() { goal = _ref<decltype(goal)>::invalid; } // We made it!
 public:
 
 // The preceding are in npcmove.cpp
@@ -489,7 +489,7 @@ public:
  // last seen player data (assumes player is singleton)
  countdown<point> pl;	// last saw player at; legal coordinates 0.. (SEEX/Y * MAPSIZE-1)
  point it;	// The square containing an item we want
- std::pair<tripoint,point> goal;	// Which mapx:mapy square we want to get to (type: OM_loc)
+ OM_loc goal;	// Which mapx:mapy square we want to get to (type: OM_loc)
 
  bool fetching_item;
  bool has_new_items; // If true, we have something new and should re-equip

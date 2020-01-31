@@ -1,5 +1,6 @@
 #ifndef _OVERMAP_H_
 #define _OVERMAP_H_
+#include "GPS_loc.hpp"
 #include "enums.h"
 #include "omdata.h"
 #include "output.h"
@@ -13,10 +14,6 @@ enum {
 	OMAPX = OMAP,
 	OMAPY = OMAP
 };
-
-// currently have to use proofreading to distinguish between these
-typedef std::pair<tripoint, point> GPS_loc;
-typedef std::pair<tripoint, point> OM_loc;
 
 struct city {
  int x;	// legal range 0...OMAPX-1
@@ -119,7 +116,6 @@ class overmap
   static void self_normalize(OM_loc& OMpos);
   static OM_loc denormalize(const tripoint& view, OM_loc OMpos);
   static int rl_dist(OM_loc lhs, OM_loc rhs);
-  static bool is_valid(const OM_loc& x);
 
   tripoint pos;
   std::vector<city> cities;

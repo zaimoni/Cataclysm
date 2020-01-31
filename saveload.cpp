@@ -502,7 +502,7 @@ JSON toJSON(const mission& src)
 	if (src.value) _mission.set("value", std::to_string(src.value));	// for now allow negative mission values \todo audit for negative mission values
 	if (JSON_key(src.reward.type)) _mission.set("value", toJSON(src.reward));
 	// src.reward
-	if (overmap::is_valid(src.target)) _mission.set("target", toJSON(src.target));
+	if (src.target.is_valid()) _mission.set("target", toJSON(src.target));
 	if (src.count) {
 		if (auto json = JSON_key(src.item_id)) {
 			_mission.set("item", json);
@@ -1742,7 +1742,7 @@ bool fromJSON(const JSON& src, npc& dest)
 
 npc::npc(const JSON& src)
 : player(src),id(-1), attitude(NPCATT_NULL), myclass(NC_NONE), wand(point(0, 0), 0),
-  pl(point(-1, -1), 0), it(-1, -1), goal(tripoint(INT_MAX),point(-1)), fetching_item(false), has_new_items(false),
+  pl(point(-1, -1), 0), it(-1, -1), goal(_ref<decltype(goal)>::invalid), fetching_item(false), has_new_items(false),
   my_fac(0), mission(NPC_MISSION_NULL), patience(0), marked_for_death(false), dead(false), flags(0)
 {
 	if (src.has_key("id")) fromJSON(src["id"], id);

@@ -145,6 +145,9 @@ struct discard
 
 }
 
+// must specialize to be useful
+template<class T> struct _ref;
+
 bool fromJSON(const cataclysm::JSON& src, point& dest);
 bool fromJSON(const cataclysm::JSON& src, tripoint& dest);
 

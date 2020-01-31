@@ -67,7 +67,7 @@ void mission::step_complete(const int stage)
     case MGOAL_FIND_MONSTER:
     case MGOAL_KILL_MONSTER: {
         if (auto _npc = npc::find_alive_r(npc_id)) target = overmap::toOvermap(_npc->GPSpos);
-        else target = std::pair(tripoint(INT_MAX),point(-1));
+        else target = _ref<decltype(target)>::invalid;
     } break;
     }
 }

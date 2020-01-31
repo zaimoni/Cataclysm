@@ -88,7 +88,7 @@ struct mission {
  int value;		// Cash/Favor value of completing this
  npc_favor reward;	// If there's a special reward for completing it
  int uid;		// Unique ID number, used for referencing elsewhere
- std::pair<tripoint,point> target;		// Marked on the player's map.  Morally OM_loc
+ OM_loc target;		// Marked on the player's map.
  itype_id item_id;	// Item that needs to be found (or whatever)
  int count;		// How many of that item
  int deadline;		// Turn number
@@ -100,7 +100,7 @@ struct mission {
  const char* name() const { return type ? type->name : "NULL"; }
 
  mission()
- : type(0),description(""),failed(false),value(0),uid(-1),target(-1,-1),
+ : type(0),description(""),failed(false),value(0),uid(-1),target(_ref<decltype(target)>::invalid),
    item_id(itm_null),count(0),deadline(0),npc_id(-1),good_fac_id(-1),
    bad_fac_id(-1),step(0),follow_up(MISSION_NULL) {}
 

@@ -1587,13 +1587,13 @@ void game::load(std::string name)
 
     // V0.2.2 this is the earliest we can repair the tripoint field for OM_loc-retyped mission::type, npc::goal
     for (auto& _npc : active_npc) {
-        if (point(-1) != _npc.goal.second && tripoint(INT_MAX) == _npc.goal.first) {
+        if (_ref<decltype(_npc.goal)>::invalid.second != _npc.goal.second && _ref<decltype(_npc.goal)>::invalid.first == _npc.goal.first) {
             // V0.2.1- goal is point.  Assume cur_om's location.
             _npc.goal.first = tripoint(com.x, com.y, lev.z);
         }
     }
     for (auto& _miss : active_missions) {
-        if (point(-1) != _miss.target.second && tripoint(INT_MAX) == _miss.target.first) {
+        if (_ref<decltype(_miss.target)>::invalid.second != _miss.target.second && _ref<decltype(_miss.target)>::invalid.first == _miss.target.first) {
             // V0.2.1- target is point.  Assume cur_om's location.
             _miss.target.first = tripoint(com.x, com.y, lev.z);
         }
@@ -2386,16 +2386,16 @@ void game::draw_minimap()
  point curs((lev.x + int(MAPSIZE / 2)) / 2, (lev.y + int(MAPSIZE / 2)) / 2);
 
  bool drew_mission = false;
- OM_loc target(tripoint(INT_MAX), point(-1));
+ OM_loc target(_ref<OM_loc>::invalid);
  if (u.active_mission >= 0 && u.active_mission < u.active_missions.size())
   target = mission::from_id(u.active_missions[u.active_mission])->target;
  else
   drew_mission = true;
 
- if (!overmap::is_valid(target)) drew_mission = true;
+ if (!target.is_valid()) drew_mission = true;
  else target = overmap::denormalize(cur_om.pos, target);
 
- OM_loc scan(cur_om.pos, point(0, 0));
+ OM_loc scan(cur_om.pos, point(0));
  for (int i = -2; i <= 2; i++) {
   for (int j = -2; j <= 2; j++) {
    scan.second = curs + point(i, j);

@@ -6,6 +6,7 @@
 #include "morale.h"
 #include "inventory.h"
 #include "mutation.h"
+#include "GPS_loc.hpp"
 #include "bodypart.h"
 
 enum art_effect_passive;
@@ -92,7 +93,7 @@ public:
  // npcmove.cpp (inherited location)
  // Physical movement from one tile to the next
  bool can_move_to(const map& m, const point& pt) const;
- bool can_enter(const std::pair<tripoint, point>& _GPSpos) const;
+ bool can_enter(const GPS_loc& _GPSpos) const;
  bool landing_zone_ok();   // returns true if final location is deemed ok; that is, no-op is true
  bool move_away_from(const map& m, const point& tar, point& dest) const;
  virtual int can_reload() const; // Wielding a gun that is not fully loaded; return value is inventory index, or -1
@@ -249,7 +250,7 @@ public:
 
 // ---------------VALUES-----------------
  point pos;
- std::pair<tripoint, point> GPSpos;
+ GPS_loc GPSpos;
  bool in_vehicle;       // Means player sit inside vehicle on the tile he is now
  player_activity activity;
  player_activity backlog;

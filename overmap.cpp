@@ -85,16 +85,16 @@ OM_loc overmap::denormalize(const tripoint& view, OM_loc OMpos)
     return OMpos;
 }
 
-bool overmap::is_valid(const OM_loc& x)
+bool OM_loc::is_valid() const
 {
-    if (tripoint(INT_MAX) == x.first) return zaimoni::gdi::box(point(0), point(OMAP)).contains(x.second);
+    if (_ref<OM_loc>::invalid.first == first) return zaimoni::gdi::box(point(0), point(OMAP)).contains(second);
     return true;
 }
 
 // would prefer for this to be a free function but we have to have some way to distinguish between overmap and GPS coordinates
 int overmap::rl_dist(OM_loc lhs, OM_loc rhs)
 {
-    if (!is_valid(lhs) || !is_valid(rhs)) return INT_MAX;
+    if (!lhs.is_valid() || !rhs.is_valid()) return INT_MAX;
 
     if (lhs.first == rhs.first) return ::rl_dist(lhs.second, rhs.second);
 
@@ -1182,11 +1182,11 @@ void overmap::draw(WINDOW *w, game *g, point& curs, point& orig, char &ch, bool 
  bool note_here = false, npc_here = false;
  std::string note_text, npc_name;
  
- OM_loc target(tripoint(INT_MAX),point(-1));
+ OM_loc target(_ref<OM_loc>::invalid);
  if (g->u.active_mission >= 0 &&
      g->u.active_mission < g->u.active_missions.size()) {
     target = mission::from_id(g->u.active_missions[g->u.active_mission])->target;
-    if (overmap::is_valid(target)) target = overmap::denormalize(pos, target);
+    if (target.is_valid()) target = overmap::denormalize(pos, target);
  }
 /* First, determine if we're close enough to the edge to need to load an
  * adjacent overmap, and load it/them. */
@@ -1228,7 +1228,7 @@ void overmap::draw(WINDOW *w, game *g, point& curs, point& orig, char &ch, bool 
      } else if (npc_here && blink) {
       ter_color = c_pink;
       ter_sym = '@';
-     } else if (overmap::is_valid(target) && target.second == scan.second && blink) {
+     } else if (target.is_valid() && target.second == scan.second && blink) {
       ter_color = c_red;
       ter_sym = '*';
      } else {
@@ -1252,7 +1252,7 @@ void overmap::draw(WINDOW *w, game *g, point& curs, point& orig, char &ch, bool 
      mvwputch    (w, VIEW / 2 + j, om_w / 2 + i, ter_color, ter_sym);
    }
   }
-  if (overmap::is_valid(target) && blink && zaimoni::gdi::box(curs - point(om_w, VIEW)/2, point(om_w, VIEW)).contains(target.second)) {
+  if (target.is_valid() && blink && zaimoni::gdi::box(curs - point(om_w, VIEW)/2, point(om_w, VIEW)).contains(target.second)) {
    switch (direction_from(curs.x, curs.y, target.second)) {
     case NORTH:      mvwputch(w,  0, om_w / 2, c_red, '^');       break;
     case NORTHEAST:  mvwputch(w,  0, om_w - 2, c_red, LINE_OOXX); break;
@@ -1294,7 +1294,7 @@ void overmap::draw(WINDOW *w, game *g, point& curs, point& orig, char &ch, bool 
    } else
     mvwprintz(w, 1, om_w, c_dkgray, "# Unexplored");
 
-   if (overmap::is_valid(target)) {
+   if (target.is_valid()) {
     int distance = ::rl_dist(orig, target.second);
     mvwprintz(w, 3, om_w, c_white, "Distance to target: %d", distance);
    }
@@ -2610,7 +2610,7 @@ void overmap::open(game *g)	// only called from constructor
           om["npcs"].decode(npcs);
           // V0.2.2 this is the earliest we can repair the tripoint field for OM_loc-retyped npc::goal
           for (auto& _npc : npcs) {
-              if (point(-1) != _npc.goal.second && tripoint(INT_MAX) == _npc.goal.first) {
+              if (_ref<decltype(_npc.goal)>::invalid.second != _npc.goal.second && _ref<decltype(_npc.goal)>::invalid.first == _npc.goal.first) {
                   // V0.2.1- goal is point.  Assume our own location.
                   _npc.goal.first = pos;
               }
