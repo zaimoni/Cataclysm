@@ -156,7 +156,9 @@ class overmap
   void place_hiways(const std::vector<city>& cities, oter_id base);
 // void place_subways(std::vector<point> stations);	// dead function
   void make_hiway(int x1, int y1, int x2, int y2, oter_id base);
+#if OVERMAP_HAS_BUILDINGS_ON_HIGHWAY
   void building_on_hiway(int x, int y, int dir);
+#endif
   // Polishing
   bool is_road(oter_id base, int x, int y) const; // Dependant on road type
   bool is_road(int x, int y) const;

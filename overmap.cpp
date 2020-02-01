@@ -485,7 +485,7 @@ bool is_wall_material(oter_id ter)
  return false;
 }
  
-oter_id shop(int dir)
+static oter_id shop(int dir)
 {
  oter_id ret = ot_s_lot;
  int type = rng(0, 16);
@@ -524,7 +524,7 @@ oter_id shop(int dir)
  return ret;
 }
 
-oter_id house(int dir)
+static oter_id house(int dir)
 {
  bool base = one_in(30);
  if (dir < 0) dir += 4;
@@ -1973,10 +1973,10 @@ void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
       ter(x, y) = base;
     }
    }
-/*
+#if OVERMAP_HAS_BUILDINGS_ON_HIGHWAY
    if (one_in(50) && posz == 0)
     building_on_hiway(x, y, dir);
-*/
+#endif
   }
   found_road = (
         (is_between<ot_road_null, ot_river_center>(ter(x, y - 1)) ||
@@ -1987,6 +1987,7 @@ void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
  } while ((x != x2 || y != y2) && !found_road);
 }
 
+#if OVERMAP_HAS_BUILDINGS_ON_HIGHWAY
 void overmap::building_on_hiway(int x, int y, int dir)
 {
  int xdif = dir * (1 - 2 * rng(0,1));
@@ -2022,6 +2023,7 @@ void overmap::building_on_hiway(int x, int y, int dir)
 */
  }
 }
+#endif
 
 void overmap::place_hiways(const std::vector<city>& cities, oter_id base)
 {
