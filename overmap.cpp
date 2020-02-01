@@ -41,30 +41,31 @@ OM_loc overmap::toOvermap(const GPS_loc GPSpos)
 	return ret;
 }
 
-void overmap::self_normalize(OM_loc& ret)
+// start inlined GPS_loc.cpp
+void OM_loc::self_normalize()
 {
-    while (0 > ret.second.x&& INT_MIN < ret.first.x) {
-        ret.second.x += OMAPX;
-        ret.first.x--;
+    while (0 > second.x && INT_MIN < first.x) {
+        second.x += OMAPX;
+        first.x--;
     };
-    while (OMAPX <= ret.second.x && INT_MAX > ret.first.x) {
-        ret.second.x -= OMAPX;
-        ret.first.x++;
+    while (OMAPX <= second.x && INT_MAX > first.x) {
+        second.x -= OMAPX;
+        first.x++;
     };
-    while (0 > ret.second.y&& INT_MIN < ret.first.y) {
-        ret.second.y += OMAPY;
-        ret.first.y--;
+    while (0 > second.y && INT_MIN < first.y) {
+        second.y += OMAPY;
+        first.y--;
     };
-    while (OMAPY <= ret.second.y && INT_MAX > ret.first.y) {
-        ret.second.y -= OMAPY;
-        ret.first.y++;
+    while (OMAPY <= second.y && INT_MAX > first.y) {
+        second.y -= OMAPY;
+        first.y++;
     };
 }
 
 OM_loc overmap::normalize(const OM_loc& OMpos)
 {
     OM_loc ret(OMpos);
-    self_normalize(ret);
+    ret.self_normalize();
     return ret;
 }
 
@@ -100,8 +101,8 @@ int overmap::rl_dist(OM_loc lhs, OM_loc rhs)
 
     // release block \todo expand following in a non-overflowing way (always return INT_MAX if overflow)
     // prototype reductions (can overflow)
-    self_normalize(lhs);
-    self_normalize(rhs);
+    lhs.self_normalize();
+    rhs.self_normalize();
     denormalize(lhs.first, rhs);
     return ::rl_dist(lhs.second, rhs.second);
 }
@@ -546,13 +547,13 @@ oter_id& overmap::ter(int x, int y)
 
 oter_id& overmap::ter(OM_loc OMpos)
 {
-    self_normalize(OMpos);
+    OMpos.self_normalize();
     return om_cache::get().create(OMpos.first).ter(OMpos.second);
 }
 
 oter_id overmap::ter_c(OM_loc OMpos)
 {
-    self_normalize(OMpos);
+    OMpos.self_normalize();
     const auto om = om_cache::get().r_get(OMpos.first);
     if (!om) return ot_null;
     return om->ter(OMpos.second);
@@ -593,13 +594,13 @@ bool& overmap::seen(int x, int y)
 
 bool& overmap::seen(OM_loc OMpos)
 {
-    self_normalize(OMpos);
+    OMpos.self_normalize();
     return om_cache::get().create(OMpos.first).seen(OMpos.second);
 }
 
 bool overmap::seen_c(OM_loc OMpos)
 {
-    self_normalize(OMpos);
+    OMpos.self_normalize();
     const auto om = om_cache::get().r_get(OMpos.first);
     if (!om) return false;
     return om->seen(OMpos.second);
@@ -607,7 +608,7 @@ bool overmap::seen_c(OM_loc OMpos)
 
 void overmap::expose(OM_loc OMpos)
 {
-    self_normalize(OMpos);
+    OMpos.self_normalize();
     const auto om = om_cache::get().r_get(OMpos.first);
     // just read access first.  If we have to update, then redo the overmap retrieval to signal write access.
     if (!om || !om->seen(OMpos.second)) om_cache::get().create(OMpos.first).seen(OMpos.second) = true;
@@ -624,7 +625,7 @@ bool overmap::has_note(const point& pt) const
 
 bool overmap::has_note(OM_loc OMpos, std::string& dest)
 {
-    self_normalize(OMpos);
+    OMpos.self_normalize();
     const auto om = om_cache::get().r_get(OMpos.first);
     if (!om) return false;
     for (const auto& note : om->notes) {

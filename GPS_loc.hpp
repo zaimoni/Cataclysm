@@ -25,6 +25,7 @@ struct OM_loc : public std::pair<tripoint, point>
 	OM_loc& operator=(const OM_loc& src) = default;
 
 	bool is_valid() const;
+	void self_normalize();
 };
 
 template<>
