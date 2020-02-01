@@ -484,48 +484,56 @@ bool is_wall_material(oter_id ter)
   return true;
  return false;
 }
- 
+
+static oter_id _shop()
+{
+    static constexpr const oter_id typical_shop[] = {
+      ot_s_lot,
+      ot_s_gas_north,
+      ot_s_pharm_north,
+      ot_s_grocery_north,
+      ot_s_hardware_north,
+      ot_s_sports_north,
+      ot_s_liquor_north,
+      ot_s_gun_north,
+      ot_s_clothes_north,
+      ot_s_library_north,
+      ot_s_restaurant_north,
+      ot_sub_station_north,
+      ot_bank_north,
+      ot_bar_north,
+      ot_s_electronics_north,
+      ot_pawn_north,
+      ot_mil_surplus_north
+    };
+
+    if (one_in(20)) return ot_police_north;
+    return typical_shop[rng(0, sizeof(typical_shop)/sizeof(*typical_shop)-1)];
+}
+
 static oter_id shop(int dir)
 {
- oter_id ret = ot_s_lot;
- int type = rng(0, 16);
- if (one_in(20))
-  type = 17;
- switch (type) {
-  case  0: ret = ot_s_lot;	         break;
-  case  1: ret = ot_s_gas_north;         break;
-  case  2: ret = ot_s_pharm_north;       break;
-  case  3: ret = ot_s_grocery_north;     break;
-  case  4: ret = ot_s_hardware_north;    break;
-  case  5: ret = ot_s_sports_north;      break;
-  case  6: ret = ot_s_liquor_north;      break;
-  case  7: ret = ot_s_gun_north;         break;
-  case  8: ret = ot_s_clothes_north;     break;
-  case  9: ret = ot_s_library_north;     break;
-  case 10: ret = ot_s_restaurant_north;  break;
-  case 11: ret = ot_sub_station_north;   break;
-  case 12: ret = ot_bank_north;          break;
-  case 13: ret = ot_bar_north;           break;
-  case 14: ret = ot_s_electronics_north; break;
-  case 15: ret = ot_pawn_north;          break;
-  case 16: ret = ot_mil_surplus_north;   break;
-  case 17: ret = ot_police_north;        break;
- }
- if (ret == ot_s_lot)
-  return ret;
+#ifndef NDEBUG
+ if (-4 > dir || 3 < dir) throw std::logic_error("invalid rotation specifier");
+#endif
+ oter_id ret = _shop();
+ if (ot_s_lot == ret) return ret;
  if (dir < 0) dir += 4;
  switch (dir) {
   case 0:                         break;
   case 1: ret = oter_id(ret + 1); break;
   case 2: ret = oter_id(ret + 2); break;
   case 3: ret = oter_id(ret + 3); break;
-  default: debugmsg("Bad rotation of shop."); return ot_null;
+  default: throw std::string("Bad rotation of shop.");
  }
  return ret;
 }
 
 static oter_id house(int dir)
 {
+#ifndef NDEBUG
+ if (-4 > dir || 3 < dir) throw std::logic_error("invalid rotation specifier");
+#endif
  bool base = one_in(30);
  if (dir < 0) dir += 4;
  switch (dir) {
@@ -533,7 +541,7 @@ static oter_id house(int dir)
   case 1:  return base ? ot_house_base_east  : ot_house_east;
   case 2:  return base ? ot_house_base_south : ot_house_south;
   case 3:  return base ? ot_house_base_west  : ot_house_west;
-  default: debugmsg("Bad rotation of house."); return ot_null;
+  default: throw std::string("Bad rotation of house.");
  }
 }
 
@@ -1601,12 +1609,16 @@ void overmap::put_buildings(int x, int y, int dir, const city& town)
  for (int i = -1; i <= 1; i += 2) {
   auto& terrain = ter(x + i * xchange, y + i * ychange);
   if ((ot_field == terrain) && !one_in(STREETCHANCE)) {
-   if (rng(0, 99) > 80 * dist(x,y,town.x,town.y) / town.s)
-    terrain = shop(((dir%2)-i)%4);
-   else if (rng(0, 99) > 130 * dist(x, y, town.x, town.y) / town.s)
-    terrain = ot_park;
-   else
-    terrain = house(((dir%2)-i)%4);
+   const auto c_dist = dist(x, y, town.x, town.y) / town.s;
+   static_assert(std::is_floating_point_v<decltype(c_dist)>);   // above truncates for integral types
+   try {
+     if (rng(0, 99) > 80 * c_dist) terrain = shop(((dir%2)-i)%4);
+     else if (rng(0, 99) > 130 * c_dist) terrain = ot_park;
+     else terrain = house(((dir%2)-i)%4);
+   } catch (const std::string& e) {
+     debugmsg(e.c_str());
+     continue;
+   }
   }
  }
 }
