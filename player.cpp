@@ -4594,9 +4594,14 @@ void player::cancel_activity_query(const char* message, ...)
 void player::accept(mission* const miss)
 {
     assert(miss);
+    try {
+        (*miss->type->start)(game::active(), miss);
+    } catch(const std::string& e) {
+        debugmsg(e.c_str());
+        return;
+    }
     active_missions.push_back(miss->uid);
     active_mission = active_missions.size() - 1;
-    (*miss->type->start)(game::active(), miss);
 }
 
 void player::fail(const mission& miss)

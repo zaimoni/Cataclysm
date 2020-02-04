@@ -57,10 +57,7 @@ void mission_start::standard(game *g, mission *miss)
 void mission_start::infect_npc(game *g, mission *miss)
 {
 	const auto p = npc::find_alive(miss->npc_id);
-	if (!p) {
-		debugmsg("mission_start::infect_npc() couldn't find an NPC!");
-		return;
-	}
+	if (!p) throw std::string(__FUNCTION__)+" couldn't find an NPC!";
 	p->add_disease(DI_INFECTION, -1);
 	for (size_t i = 0; i < p->inv.size(); i++) {
 		if (p->inv[i].type->id == itm_antibiotics) {
@@ -75,10 +72,7 @@ void mission_start::place_dog(game *g, mission *miss)
 	auto city_id = g->cur_om.closest_city(g->om_location().second);
 	point house = g->cur_om.random_house_in_city(city_id);
 	const auto dev = npc::find_alive_r(miss->npc_id);
-	if (!dev) {
-		debugmsg("Couldn't find NPC! %d", miss->npc_id);
-		return;
-	}
+	if (!dev) throw std::string(__FUNCTION__) + " couldn't find an NPC!";
 	g->u.i_add(item(item::types[itm_dog_whistle], 0));
 	messages.add("%s gave you a dog whistle.", dev->name.c_str());
 
@@ -116,10 +110,7 @@ void mission_start::place_zombie_mom(game *g, mission *miss)
 void mission_start::place_npc_software(game *g, mission *miss)
 {
 	const auto dev = npc::find_alive_r(miss->npc_id);
-	if (!dev) {
-		debugmsg("Couldn't find NPC! %d", miss->npc_id);
-		return;
-	}
+	if (!dev) throw std::string(__FUNCTION__) + " couldn't find an NPC!";
 	g->u.i_add(item(item::types[itm_usb_drive], 0));
 	messages.add("%s gave you a USB drive.", dev->name.c_str());
 
@@ -244,10 +235,7 @@ void mission_start::place_npc_software(game *g, mission *miss)
 void mission_start::reveal_hospital(game *g, mission *miss)
 {
 	const auto dev = npc::find_alive_r(miss->npc_id);
-	if (!dev) {
-		debugmsg("Couldn't find NPC! %d", miss->npc_id);
-		return;
-	}
+	if (!dev) throw std::string(__FUNCTION__) + " couldn't find an NPC!";
 
 	g->u.i_add(item(item::types[itm_vacutainer], 0));
 	messages.add("%s gave you a vacutainer.", dev->name.c_str());
