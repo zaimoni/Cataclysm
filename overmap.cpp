@@ -69,22 +69,22 @@ OM_loc overmap::normalize(const OM_loc& OMpos)
     return ret;
 }
 
-OM_loc overmap::denormalize(const tripoint& view, OM_loc OMpos)
+void OM_loc::self_denormalize(const tripoint& view)
 {
 #define DENORMALIZE_COORD(X)    \
-    if (view.X < OMpos.first.X) {   \
-        do OMpos.second.X += OMAP; \
-        while (view.X < --OMpos.first.X);   \
-    } else if (view.X > OMpos.first.X) {    \
-        do OMpos.second.X -= OMAP; \
-        while (view.X > ++OMpos.first.X);   \
+    if (view.X < first.X) {   \
+        do second.X += OMAP; \
+        while (view.X < --first.X);   \
+    } else if (view.X > first.X) {    \
+        do second.X -= OMAP; \
+        while (view.X > ++first.X);   \
     }
 
     DENORMALIZE_COORD(x)
     DENORMALIZE_COORD(y)
 #undef DENORMALIZE_COORD
-    return OMpos;
 }
+
 
 bool OM_loc::is_valid() const
 {
@@ -93,18 +93,18 @@ bool OM_loc::is_valid() const
 }
 
 // would prefer for this to be a free function but we have to have some way to distinguish between overmap and GPS coordinates
-int overmap::rl_dist(OM_loc lhs, OM_loc rhs)
+int rl_dist(OM_loc lhs, OM_loc rhs)
 {
     if (!lhs.is_valid() || !rhs.is_valid()) return INT_MAX;
 
-    if (lhs.first == rhs.first) return ::rl_dist(lhs.second, rhs.second);
+    if (lhs.first == rhs.first) return rl_dist(lhs.second, rhs.second);
 
     // release block \todo expand following in a non-overflowing way (always return INT_MAX if overflow)
     // prototype reductions (can overflow)
     lhs.self_normalize();
     rhs.self_normalize();
-    denormalize(lhs.first, rhs);
-    return ::rl_dist(lhs.second, rhs.second);
+    rhs.self_denormalize(lhs.first);
+    return rl_dist(lhs.second, rhs.second);
 }
 
 
@@ -663,7 +663,7 @@ point overmap::find_note(point origin, const std::string& text) const
  int closest = 9999;
  point ret(-1, -1);
  for (int i = 0; i < notes.size(); i++) {
-  int dist = ::rl_dist(origin, notes[i].x, notes[i].y);
+  int dist = rl_dist(origin, notes[i].x, notes[i].y);
   if (notes[i].text.find(text) != std::string::npos && dist < closest) {
    closest = dist;
    ret = point(notes[i].x, notes[i].y);
@@ -1144,7 +1144,7 @@ const city* overmap::closest_city(point p) const
  const city* ret = 0;
  int distance = 999;
  for (const auto& c : cities) {
-     int dist = ::rl_dist(p, c.x, c.y);
+     int dist = rl_dist(p, c.x, c.y);
      if (dist < distance || (dist == distance && c.s < ret->s)) {
          ret = &c;
          distance = dist;
@@ -1176,7 +1176,7 @@ int overmap::dist_from_city(point p) const
 {
  int distance = 999;
  for (int i = 0; i < cities.size(); i++) {
-  int dist = ::rl_dist(p, cities[i].x, cities[i].y);
+  int dist = rl_dist(p, cities[i].x, cities[i].y);
   dist -= cities[i].s;
   if (dist < distance) distance = dist;
  }
@@ -1195,7 +1195,7 @@ void overmap::draw(WINDOW *w, game *g, point& curs, point& orig, char &ch, bool 
  if (g->u.active_mission >= 0 &&
      g->u.active_mission < g->u.active_missions.size()) {
     target = mission::from_id(g->u.active_missions[g->u.active_mission])->target;
-    if (target.is_valid()) target = overmap::denormalize(pos, target);
+    if (target.is_valid()) target.self_denormalize(pos);
  }
 /* First, determine if we're close enough to the edge to need to load an
  * adjacent overmap, and load it/them. */
@@ -1304,7 +1304,7 @@ void overmap::draw(WINDOW *w, game *g, point& curs, point& orig, char &ch, bool 
     mvwprintz(w, 1, om_w, c_dkgray, "# Unexplored");
 
    if (target.is_valid()) {
-    int distance = ::rl_dist(orig, target.second);
+    int distance = rl_dist(orig, target.second);
     mvwprintz(w, 3, om_w, c_white, "Distance to target: %d", distance);
    }
    mvwprintz(w, VIEW - 8, om_w, c_magenta,           "Use movement keys to pan.  ");
@@ -1995,7 +1995,7 @@ void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
          is_between<ot_road_null, ot_river_center>(ter(x, y + 1)) ||
          is_between<ot_road_null, ot_river_center>(ter(x - 1, y)) ||
          is_between<ot_road_null, ot_river_center>(ter(x + 1, y))  ) &&
-      ::rl_dist(x, y, x1, y2) > ::rl_dist(x, y, x2, y2));
+      rl_dist(x, y, x1, y2) > rl_dist(x, y, x2, y2));
  } while ((x != x2 || y != y2) && !found_road);
 }
 
@@ -2442,7 +2442,7 @@ void overmap::place_special(overmap_special special, point p)
  if (special.flags & mfb(OMS_FLAG_ROAD)) {
   int closest = -1, distance = 999;
   for (int i = 0; i < cities.size(); i++) {
-   int dist = ::rl_dist(p, cities[i].x, cities[i].y);
+   int dist = rl_dist(p, cities[i].x, cities[i].y);
    if (dist < distance) {
     closest = i;
     distance = dist;
@@ -2454,7 +2454,7 @@ void overmap::place_special(overmap_special special, point p)
  if (special.flags & mfb(OMS_FLAG_PARKING_LOT)) {
   int closest = -1, distance = 999;
   for (int i = 0; i < cities.size(); i++) {
-   int dist = ::rl_dist(p, cities[i].x, cities[i].y);
+   int dist = rl_dist(p, cities[i].x, cities[i].y);
    if (dist < distance) {
     closest = i;
     distance = dist;

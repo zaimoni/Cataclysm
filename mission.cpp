@@ -75,7 +75,7 @@ void mission::step_complete(const int stage)
 bool mission::is_complete(const player& u, const int _npc_id) const
 {
     switch (type->goal) {
-    case MGOAL_GO_TO: return overmap::rl_dist(overmap::toOvermap(u.GPSpos), target) <= 1;
+    case MGOAL_GO_TO: return rl_dist(overmap::toOvermap(u.GPSpos), target) <= 1;
 
     case MGOAL_FIND_ITEM:
         if (!u.has_amount(type->item_id, 1)) return false;

@@ -2393,7 +2393,7 @@ void game::draw_minimap()
   drew_mission = true;
 
  if (!target.is_valid()) drew_mission = true;
- else target = overmap::denormalize(cur_om.pos, target);
+ else target.self_denormalize(cur_om.pos);
 
  OM_loc scan(cur_om.pos, point(0));
  for (int i = -2; i <= 2; i++) {

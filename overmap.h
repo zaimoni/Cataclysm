@@ -113,8 +113,6 @@ class overmap
   static GPS_loc toGPS(const point& screen_pos);
   static OM_loc toOvermap(const GPS_loc GPSpos);
   static OM_loc normalize(const OM_loc& OMpos);
-  static OM_loc denormalize(const tripoint& view, OM_loc OMpos);
-  static int rl_dist(OM_loc lhs, OM_loc rhs);
 
   tripoint pos;
   std::vector<city> cities;

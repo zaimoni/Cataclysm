@@ -26,7 +26,10 @@ struct OM_loc : public std::pair<tripoint, point>
 
 	bool is_valid() const;
 	void self_normalize();
+	void self_denormalize(const tripoint& view);
 };
+
+int rl_dist(OM_loc lhs, OM_loc rhs);
 
 template<>
 struct _ref<GPS_loc>
