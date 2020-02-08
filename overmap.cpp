@@ -1091,22 +1091,6 @@ void overmap::make_tutorial()
  zg.clear();
 }
 
-point overmap::find_closest(const point origin, const oter_id type, const int type_range, int dist, const bool must_be_seen) const
-{
- const int max = (dist == 0 ? OMAPX / 2 : dist);
- auto t_at = ter(origin);
- if (t_at >= type && t_at < type + type_range && (!must_be_seen || seen(origin))) return origin;
- 
- for (dist = 1; dist <= max; dist++) {
-  int i = 8*dist;
-  while (0 < i--) {
-    point pt = origin+zaimoni::gdi::Linf_border_sweep<point>(dist,i,origin.x,origin.y);
-	if ((t_at = ter(pt)) >= type && t_at < type + type_range && (!must_be_seen || seen(pt))) return pt;
-  }
- }
- return point(-1, -1);
-}
-
 bool overmap::find_closest(point origin, oter_id type, int type_range, OM_loc& dest, int dist, bool must_be_seen) const
 {
     const int max = (dist == 0 ? OMAPX / 2 : dist);

@@ -64,15 +64,13 @@ class overmap
 
   void process_mongroups(); // Makes them die out, maybe more
 
-/* Returns the closest point of terrain type [type, type + type_range)
+/* Returns whether there is a closest point of terrain type [type, type + type_range)
  * Use type_range of 4, for instance, to match all gun stores (4 rotations).
- * dist is set to the distance between the two points.
+ * dist would be set to the distance between the two points.
  * You can give dist a value, which will be used as the maximum distance; a
  *  value of 0 will search the entire overmap.
  * Use must_be_seen=true if only terrain seen by the player should be searched.
- * If no such tile can be found, (-1, -1) is returned.
  */
-  point find_closest(point origin, oter_id type, int type_range, int dist=0, bool must_be_seen=false) const;
   bool find_closest(point origin, oter_id type, int type_range, OM_loc& dest, int dist = 0, bool must_be_seen = false) const;
 #if DEAD_FUNC
   std::vector<point> find_all(point origin, oter_id type, int type_range, int &dist, bool must_be_seen);

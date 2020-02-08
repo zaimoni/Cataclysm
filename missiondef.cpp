@@ -111,8 +111,6 @@ void mission_start::place_npc_software(game *g, mission *miss)
 {
 	const auto dev = npc::find_alive_r(miss->npc_id);
 	if (!dev) throw std::string(__FUNCTION__) + " couldn't find an NPC!";
-	g->u.i_add(item(item::types[itm_usb_drive], 0));
-	messages.add("%s gave you a USB drive.", dev->name.c_str());
 
 	oter_id ter = ot_house_north;
 
@@ -132,24 +130,26 @@ void mission_start::place_npc_software(game *g, mission *miss)
 		miss->item_id = itm_software_useless;
 	}
 
-	point place;
+	OM_loc place;
 	if (ter == ot_house_north) {
 		auto city_id = g->cur_om.closest_city(g->om_location().second);
-		place = g->cur_om.random_house_in_city(city_id);
+		place = OM_loc(g->cur_om.pos, g->cur_om.random_house_in_city(city_id));
 	}
-	else
-		place = g->cur_om.find_closest(g->om_location().second, ter, 4);
-	miss->target = OM_loc(g->cur_om.pos, place);
+	else if (!g->cur_om.find_closest(g->om_location().second, ter, 4, place)) throw std::string(__FUNCTION__) + " couldn't find mission location";
+	g->u.i_add(item(item::types[itm_usb_drive], 0));
+	messages.add("%s gave you a USB drive.", dev->name.c_str());
+
+	miss->target = place;
 	// Make it seen on our map
 	OM_loc scan(g->cur_om.pos, point(0, 0));
-	for (scan.second.x = place.x - 6; scan.second.x <= place.x + 6; scan.second.x++) {
-		for (scan.second.y = place.y - 6; scan.second.y <= place.y + 6; scan.second.y++) overmap::expose(scan);
+	for (scan.second.x = place.second.x - 6; scan.second.x <= place.second.x + 6; scan.second.x++) {
+		for (scan.second.y = place.second.y - 6; scan.second.y <= place.second.y + 6; scan.second.y++) overmap::expose(scan);
 	}
 	tinymap compmap;
-	compmap.load(g, 2*place);
+	compmap.load(g, 2*place.second);
 	point comppoint;
 
-	switch (g->cur_om.ter(place.x, place.y)) {
+	switch (overmap::ter(place)) {
 	case ot_house_north:
 	case ot_house_east:
 	case ot_house_west:
@@ -229,7 +229,7 @@ void mission_start::place_npc_software(game *g, mission *miss)
 	tmpcomp->mission_id = miss->uid;
 	tmpcomp->add_option("Download Software", COMPACT_DOWNLOAD_SOFTWARE, 0);
 
-	compmap.save(g->cur_om.pos, int(messages.turn), 2*place);
+	compmap.save(g->cur_om.pos, int(messages.turn), 2*place.second);
 }
 
 void mission_start::reveal_hospital(game *g, mission *miss)
