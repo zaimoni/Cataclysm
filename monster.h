@@ -145,7 +145,7 @@ class monster {
  std::vector<monster_effect> effects; // Active effects, e.g. on fire
 
 // If we were spawned by the map, store our origin for later use
- point spawnmap;	// game::lev-based source; z coordinate lost; historical signal value is (-1,-1) but we can change this without breaking V0.2.0 saves
+ point spawnmap;	// game::lev-based source; z coordinate lost; historical signal value is (-1,-1) but we can change this without breaking V0.2.0 saves; \todo retype to OM_loc?
  point spawnpos;  // normal map position
 
 // DEFINING VALUES

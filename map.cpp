@@ -2620,6 +2620,22 @@ void map::load(const tripoint& GPS)
     }
 }
 
+void map::load(const OM_loc& GPS)
+{
+    // \todo extract this to to OM_loc::toGPS; needs to use exceptions for error reporting?
+    if (INT_MAX / (2 * OMAP) < GPS.first.x || INT_MIN / (2 * OMAP) > GPS.first.x) return;   // does not represent
+    if (INT_MAX / (2 * OMAP) < GPS.first.y || INT_MIN / (2 * OMAP) > GPS.first.y) return;   // does not represent
+    GPS_loc tmp(tripoint(GPS.first.x*(2*OMAP), GPS.first.y * (2 * OMAP), GPS.first.z), point(0, 0));
+    if (0 < GPS.second.x && 0 < tmp.first.x && INT_MAX - tmp.first.x < GPS.second.x) return; // does not represent
+    else if (0 > GPS.second.x && 0 > tmp.first.x&& INT_MIN - tmp.first.x > GPS.second.x) return; // does not represent
+    if (0 < GPS.second.y && INT_MAX - tmp.first.y < GPS.second.y) return; // does not represent
+    else if (0 > GPS.second.y && 0 > tmp.first.y && INT_MIN - tmp.first.y > GPS.second.y) return; // does not represent
+    tmp.first.x += GPS.second.x;
+    tmp.first.y += GPS.second.y;
+    // end extraction of OM_loc::toGPS
+    load(tmp.first);
+}
+
 void map::shift(game *g, const point& world, const point& delta)
 {
  const point dest(world+delta);

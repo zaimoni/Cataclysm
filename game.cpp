@@ -6093,7 +6093,7 @@ void game::teleport(player *p)
  if (is_u) update_map(u.pos.x, u.pos.y);
 }
 
-void game::nuke(const point& world_div_2)
+void game::nuke(const point& world_div_2)   // \todo parameter should be OM_loc
 {
  if (world_div_2.x < 0 || world_div_2.y < 0 || world_div_2.x >= OMAPX || world_div_2.y >= OMAPY) return;	// precondition
  const tripoint revert_om_pos(cur_om.pos);

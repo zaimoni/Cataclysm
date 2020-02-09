@@ -114,7 +114,7 @@ struct faction {
  bool known_by_u;
  int id;
  int strength, sneak, crime, cult, good;	// Defining values
- point om;	// Which overmap are we based in?
+ point om;	// Which overmap are we based in? \todo retype to OM_loc?
  point map; // Where in that overmap are we? (coordinate ranges 0...OMAPX/Y)
  int size;	// How big is our sphere of influence?
  int power;	// General measure of our power

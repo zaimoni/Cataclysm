@@ -84,9 +84,9 @@ void mission_start::place_dog(game *g, mission *miss)
 	}
 
 	tinymap doghouse;
-	doghouse.load(g, 2*house);
+	doghouse.load(miss->target);
 	doghouse.add_spawn(mon_dog, 1, SEEX, SEEY, true, -1, miss->uid);
-	doghouse.save(g->cur_om.pos, int(messages.turn), 2*house);
+	doghouse.save(miss->target, int(messages.turn));
 }
 
 void mission_start::place_zombie_mom(game *g, mission *miss)
@@ -102,9 +102,9 @@ void mission_start::place_zombie_mom(game *g, mission *miss)
 	}
 
 	tinymap zomhouse;
-	zomhouse.load(g, 2*house);
+	zomhouse.load(miss->target);
 	zomhouse.add_spawn(mon_zombie, 1, SEEX, SEEY, false, -1, miss->uid, random_first_name(false));
-	zomhouse.save(g->cur_om.pos, int(messages.turn), 2*house);
+	zomhouse.save(miss->target, int(messages.turn));
 }
 
 void mission_start::place_npc_software(game *g, mission *miss)
@@ -146,7 +146,7 @@ void mission_start::place_npc_software(game *g, mission *miss)
 		for (scan.second.y = place.second.y - 6; scan.second.y <= place.second.y + 6; scan.second.y++) overmap::expose(scan);
 	}
 	tinymap compmap;
-	compmap.load(g, 2*place.second);
+	compmap.load(place);
 	point comppoint;
 
 	switch (overmap::ter(place)) {
@@ -229,7 +229,7 @@ void mission_start::place_npc_software(game *g, mission *miss)
 	tmpcomp->mission_id = miss->uid;
 	tmpcomp->add_option("Download Software", COMPACT_DOWNLOAD_SOFTWARE, 0);
 
-	compmap.save(g->cur_om.pos, int(messages.turn), 2*place.second);
+	compmap.save(place, int(messages.turn));
 }
 
 void mission_start::reveal_hospital(game *g, mission *miss)
