@@ -59,9 +59,9 @@ void mission_start::infect_npc(game *g, mission *miss)
 	const auto p = npc::find_alive(miss->npc_id);
 	if (!p) throw std::string(__FUNCTION__)+" couldn't find an NPC!";
 	p->add_disease(DI_INFECTION, -1);
-	for (size_t i = 0; i < p->inv.size(); i++) {
+	for (size_t i = 0; i < p->inv.size(); i++) {	// XXX \todo make this a precondition that blocks assigning the mission to the NPC (or allow the NPC to self-cure)
 		if (p->inv[i].type->id == itm_antibiotics) {
-			p->inv.remove_stack(i);
+			p->inv.destroy_stack(i);
 			i--;
 		}
 	}

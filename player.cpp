@@ -3243,7 +3243,7 @@ void player::process_active_items(game *g)
      (*tmp->use)(g, this, tmp_it, false);
      if (tmp->revert_to == itm_null) {
       if (inv.stack_at(i).size() == 1) {
-       inv.remove_stack(i);
+       inv.destroy_stack(i);
        i--;
        j = 0;
       } else {

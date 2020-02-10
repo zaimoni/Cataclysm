@@ -1156,6 +1156,7 @@ std::pair<const overmap*, const city*> overmap::closest_city(point p) const
          distance = dist;
      }
  }
+ // \todo allow cross-overmap checks (but do not *create* the overmap for this purpose), at least when not underground
  return std::pair(this, ret);
 }
 

@@ -51,7 +51,10 @@ class inventory
 
   void form_from_map(const map& m, point origin, int distance);
 
+  void destroy_stack(int index);
+#if DEAD_FUNC
   std::vector<item> remove_stack(int index);
+#endif
   item  remove_item(int index);
   item  remove_item(int stack, int index);
   item  remove_item_by_letter(char ch);

@@ -178,6 +178,16 @@ void inventory::form_from_map(const map& m, point origin, int range)
  }
 }
 
+void inventory::destroy_stack(int index)
+{
+    if (index < 0 || index >= items.size()) {
+        debugmsg("Tried to remove_stack(%d) from an inventory (size %d)", index, items.size());
+        return;
+    }
+    EraseAt(items, index);
+}
+
+#if DEAD_FUNC
 std::vector<item> inventory::remove_stack(int index)
 {
  if (index < 0 || index >= items.size()) {
@@ -189,6 +199,7 @@ std::vector<item> inventory::remove_stack(int index)
  EraseAt(items, index);
  return ret;
 }
+#endif
 
 item inventory::remove_item(int index)
 {
