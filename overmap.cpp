@@ -1145,18 +1145,18 @@ std::vector<point> overmap::find_terrain(const std::string& term) const
  return found;
 }
 
-const city* overmap::closest_city(point p) const
+std::pair<const overmap*, const city*> overmap::closest_city(point p) const
 {
  const city* ret = 0;
- int distance = 999;
+ int distance = INT_MAX;
  for (const auto& c : cities) {
      int dist = rl_dist(p, c.x, c.y);
-     if (dist < distance || (dist == distance && c.s < ret->s)) {
+     if (!ret || dist < distance || (dist == distance && c.s < ret->s)) {
          ret = &c;
          distance = dist;
      }
  }
- return ret;
+ return std::pair(this, ret);
 }
 
 point overmap::random_house_in_city(const city* c) const

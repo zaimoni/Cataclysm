@@ -76,7 +76,7 @@ class overmap
   std::vector<point> find_all(point origin, oter_id type, int type_range, int &dist, bool must_be_seen);
 #endif
   std::vector<point> find_terrain(const std::string& term) const;
-  const city* closest_city(point p) const;
+  std::pair<const overmap*,const city*> closest_city(point p) const;
   point random_house_in_city(const city* c) const;
   int dist_from_city(point p) const;
 // Interactive point choosing; used as the map screen
