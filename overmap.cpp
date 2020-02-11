@@ -2307,8 +2307,7 @@ void overmap::good_river(int x, int y)
 void overmap::place_specials()
 {
  int placed[NUM_OMSPECS];
- for (int i = 0; i < NUM_OMSPECS; i++)
-  placed[i] = 0;
+ memset(placed, 0, sizeof(placed));
 
  std::vector<point> sectors;
  for (int x = 0; x < OMAPX; x += OMSPEC_FREQ) {
@@ -2348,23 +2347,16 @@ void overmap::place_specials()
     if (placed[i] < overmap_special::specials[ valid[i] ].min_appearances)
      must_place.push_back(valid[i]);
    }
-   if (must_place.empty()) {
-    int selection = rng(0, valid.size() - 1);
-    overmap_special special = overmap_special::specials[ valid[selection] ];
-    placed[ valid[selection] ]++;
-    place_special(special, p);
-   } else {
-    int selection = rng(0, must_place.size() - 1);
-    overmap_special special = overmap_special::specials[ must_place[selection] ];
-    placed[ must_place[selection] ]++;
-    place_special(special, p);
-   }
+   auto& place_these = must_place.empty() ? valid : must_place;
+   const auto chosen = place_these[rng(0, place_these.size() - 1)];
+   placed[chosen]++;
+   place_special(overmap_special::specials[chosen], p);
   } // Done with <Found a valid spot>
 
  } // Done picking sectors...
 }
 
-void overmap::place_special(overmap_special special, point p)
+void overmap::place_special(const overmap_special& special, point p)
 {
  bool rotated = false;
 // First, place terrain...

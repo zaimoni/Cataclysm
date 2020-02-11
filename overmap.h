@@ -164,7 +164,7 @@ class overmap
   void good_river(int x, int y);
   // Monsters, radios, etc.
   void place_specials();
-  void place_special(overmap_special special, point p);
+  void place_special(const overmap_special& special, point p);
   void place_mongroups();
   void place_radios();
   // File I/O
