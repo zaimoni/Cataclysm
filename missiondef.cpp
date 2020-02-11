@@ -71,17 +71,16 @@ void mission_start::place_dog(game *g, mission *miss)
 {
 	const auto city_id = g->cur_om.closest_city(g->om_location().second);
 	if (!city_id.second) throw std::string(__FUNCTION__) + " couldn't find mission city";
-	point house = city_id.first->random_house_in_city(city_id.second);
 	const auto dev = npc::find_alive_r(miss->npc_id);
 	if (!dev) throw std::string(__FUNCTION__) + " couldn't find an NPC!";
+	if (!city_id.first->random_house_in_city(city_id.second, miss->target)) throw std::string(__FUNCTION__) + " couldn't find house within mission city";
 	g->u.i_add(item(item::types[itm_dog_whistle], 0));
 	messages.add("%s gave you a dog whistle.", dev->name.c_str());
 
-	miss->target = OM_loc(city_id.first->pos, house);
 	// Make it seen on our map
 	OM_loc scan(g->cur_om.pos, point(0, 0));
-	for (scan.second.x = house.x - 6; scan.second.x <= house.x + 6; scan.second.x++) {
-		for (scan.second.y = house.y - 6; scan.second.y <= house.y + 6; scan.second.y++) overmap::expose(scan);
+	for (scan.second.x = miss->target.second.x - 6; scan.second.x <= miss->target.second.x + 6; scan.second.x++) {
+		for (scan.second.y = miss->target.second.y - 6; scan.second.y <= miss->target.second.y + 6; scan.second.y++) overmap::expose(scan);
 	}
 
 	tinymap doghouse;
@@ -94,13 +93,12 @@ void mission_start::place_zombie_mom(game *g, mission *miss)
 {
 	const auto city_id = g->cur_om.closest_city(g->om_location().second);
 	if (!city_id.second) throw std::string(__FUNCTION__) + " couldn't find mission city";
-	point house = city_id.first->random_house_in_city(city_id.second);
+	if (!city_id.first->random_house_in_city(city_id.second, miss->target)) throw std::string(__FUNCTION__) + " couldn't find house within mission city";
 
-	miss->target = OM_loc(city_id.first->pos, house);
 	// Make it seen on our map
 	OM_loc scan(g->cur_om.pos, point(0, 0));
-	for (scan.second.x = house.x - 6; scan.second.x <= house.x + 6; scan.second.x++) {
-		for (scan.second.y = house.y - 6; scan.second.y <= house.y + 6; scan.second.y++) overmap::expose(scan);
+	for (scan.second.x = miss->target.second.x - 6; scan.second.x <= miss->target.second.x + 6; scan.second.x++) {
+		for (scan.second.y = miss->target.second.y - 6; scan.second.y <= miss->target.second.y + 6; scan.second.y++) overmap::expose(scan);
 	}
 
 	tinymap zomhouse;
@@ -136,7 +134,7 @@ void mission_start::place_npc_software(game *g, mission *miss)
 	if (ter == ot_house_north) {
 		const auto city_id = g->cur_om.closest_city(g->om_location().second);
 		if (!city_id.second) throw std::string(__FUNCTION__) + " couldn't find mission city";
-		place = OM_loc(city_id.first->pos, city_id.first->random_house_in_city(city_id.second));
+		if (!city_id.first->random_house_in_city(city_id.second, place)) throw std::string(__FUNCTION__) + " couldn't find house within mission city";
 	}
 	else if (!g->cur_om.find_closest(g->om_location().second, ter, 4, place)) throw std::string(__FUNCTION__) + " couldn't find mission location";
 	g->u.i_add(item(item::types[itm_usb_drive], 0));

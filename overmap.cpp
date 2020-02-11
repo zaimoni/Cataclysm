@@ -1160,23 +1160,25 @@ std::pair<const overmap*, const city*> overmap::closest_city(point p) const
  return std::pair(this, ret);
 }
 
-point overmap::random_house_in_city(const city* c) const
+bool overmap::random_house_in_city(const city* c, OM_loc& dest) const
 {
- if (!c) return point(-1, -1);
+ if (!c) return false;  // \todo invariant violation...harder failure, at least in debug mode
 
  std::vector<point> valid;
  int startx = c->x - c->s,
      endx   = c->x + c->s,
      starty = c->y - c->s,
      endy   = c->y + c->s;
+ // \todo adjust this to be cross-overmap
  for (int x = startx; x <= endx; x++) {
   for (int y = starty; y <= endy; y++) {
    if (is_between<ot_house_north, ot_house_west>(ter(x, y))) valid.push_back( point(x, y) );
   }
  }
- if (valid.empty()) return point(-1, -1);
+ if (valid.empty()) return false;
 
- return valid[ rng(0, valid.size() - 1) ];
+ dest = OM_loc(pos, valid[rng(0, valid.size() - 1)]);   // would need normalization if cross-overmap
+ return true;
 }
 
 int overmap::dist_from_city(point p) const
