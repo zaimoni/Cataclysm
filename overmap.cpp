@@ -2343,10 +2343,7 @@ void overmap::place_specials()
   if (tries < 15) { // We found a valid spot!
 // Place the MUST HAVE ones first, to try and guarantee that they appear
    std::vector<omspec_id> must_place;
-   for (int i = 0; i < valid.size(); i++) {
-    if (placed[i] < overmap_special::specials[ valid[i] ].min_appearances)
-     must_place.push_back(valid[i]);
-   }
+   for (const auto& sp : valid) if (placed[sp] < overmap_special::specials[sp].min_appearances) must_place.push_back(sp);
    auto& place_these = must_place.empty() ? valid : must_place;
    const auto chosen = place_these[rng(0, place_these.size() - 1)];
    placed[chosen]++;
