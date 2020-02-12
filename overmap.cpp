@@ -2378,14 +2378,7 @@ void overmap::place_special(const overmap_special& special, point p)
   ter(p.x, p.y) = oter_id( int(ter(p.x, p.y)) + rng(0, 3) );
   
  if (special.flags & mfb(OMS_FLAG_3X3)) {
-  for (int x = -1; x <= 1; x++) {
-   for (int y = -1; y <= 1; y++) {
-    if (x == 0 && y == 0)
-     y++; // Already handled
-    point np(p.x + x, p.y + y);
-    ter(np.x, np.y) = special.ter;
-   }
-  }
+     for (int dir = direction::NORTH; dir <= direction::NORTHWEST; dir++) ter(p + direction_vector(direction(dir))) = special.ter;
  }
 
  if (special.flags & mfb(OMS_FLAG_3X3_SECOND)) {
@@ -2418,21 +2411,18 @@ void overmap::place_special(const overmap_special& special, point p)
     if (x == 0 && y == 0)
      y++; // Already handled
     point np(p.x + x, p.y + y);
-    if (one_in(1 + abs(x) + abs(y)) && (special.able)(this, np))
-     ter(p.x + x, p.y + y) = special.ter;
+    if (one_in(1 + abs(x) + abs(y)) && (special.able)(this, np)) ter(np) = special.ter;
    }
   }
  }
 
- if (special.flags & mfb(OMS_FLAG_BIG)) {
+ if (special.flags & mfb(OMS_FLAG_BIG)) {   // 2020-02-12 formal-fixed; this flag is dead
   for (int x = -3; x <= 3; x++) {
    for (int y = -3; y <= 3; y++) {
     if (x == 0 && y == 0)
      y++; // Already handled
     point np(p.x + x, p.y + y);
-    if ((special.able)(this, np))
-     ter(p.x + x, p.y + y) = special.ter;
-     ter(p.x + x, p.y + y) = special.ter;
+    if ((special.able)(this, np)) ter(np) = special.ter;
    }
   }
  }
