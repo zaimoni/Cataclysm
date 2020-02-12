@@ -5950,20 +5950,22 @@ void game::spawn_mon(int shiftx, int shifty)
 // Now, spawn monsters (perhaps)
  for (int i = 0; i < cur_om.zg.size(); i++) { // For each valid group...
   int group = 0;
-  int dist = trig_dist(nlevx, nlevy, cur_om.zg[i].pos);
-  int pop = cur_om.zg[i].population;
-  int rad = cur_om.zg[i].radius;
-  if (dist <= rad) {
-// (The area of the group's territory) in (population/square at this range)
-// chance of adding one monster; cap at the population OR 16
-   while (long((1.0 - double(dist / rad)) * pop) > rng(0, pow(rad, 2.0)) &&
-          rng(0, MAPSIZE * 4) > group && group < pop && group < MAPSIZE * 3)
-    group++;
+  const int dist = trig_dist(nlevx, nlevy, cur_om.zg[i].pos);
+  const int rad = cur_om.zg[i].radius;
+  if (dist > rad) continue;
+  const auto pop = cur_om.zg[i].population;
+  const int rad2 = rad * rad;
+  const int delta = rad - dist;
+  const long scale_pop = 0 >= delta ? 0 : long((double)(delta) / rad * pop);
+  // (The area of the group's territory) in (population/square at this range)
+// chance of adding one monster; cap at the population OR MAPSIZE * 3
+  while (scale_pop > rng(0, rad2) && rng(0, MAPSIZE * 4) > group && group < pop && group < MAPSIZE * 3) group++;
+  if (0 >= group) continue;
 
-   cur_om.zg[i].population -= group;
+  cur_om.zg[i].population -= group; // XXX can delete monsters if mon_null is returned later on
 
-   if (group > 0) // If we spawned some zombies, advance the timer
-    nextspawn += rng(group * 4 + z.size() * 4, group * 10 + z.size() * 10);
+  const long delta_spawn = group+z.size();
+  nextspawn += rng(4*delta_spawn, 10*delta_spawn); // Advance timer: we want to spawn monsters
 
    for (int j = 0; j < group; j++) {	// For each monster in the group...
     mon_id type = valid_monster_from(mongroup::moncats[cur_om.zg[i].type]);
@@ -5998,7 +6000,6 @@ void game::spawn_mon(int shiftx, int shifty)
     EraseAt(cur_om.zg, i); // ...so remove that group
     i--;	// And don't increment i.
    }
-  }
  }
 }
 
