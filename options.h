@@ -17,13 +17,20 @@ OPT_NPCS,	// NPCs generated in game world
 OPT_LOAD_TILES,	// use tileset
 OPT_FONT_HEIGHT,	// font height (ASCII)
 OPT_EXTRA_MARGIN,	// correction to margin to avoid clipping text
-NUM_OPTION_KEYS
+NUM_OPTION_KEYS,
+OPT_FONT = NUM_OPTION_KEYS,
+OPT_FONTPATH
+};
+
+enum {
+    MAX_OPTIONS = OPT_FONTPATH+1
 };
 
 enum {
 	OPTTYPE_BOOL = 0,
 	OPTTYPE_INT,
-	OPTTYPE_DOUBLE
+	OPTTYPE_DOUBLE,
+    OPTTYPE_STRING  // requires hard-coding support
 };
 
 // Historically, this was intended to be a singleton.  Enforce this.
@@ -31,6 +38,7 @@ class option_table
 {
 private:
  double options[NUM_OPTION_KEYS];
+ std::string str_opts[MAX_OPTIONS - NUM_OPTION_KEYS];
 
  option_table();
  option_table(const option_table& src) = delete;
@@ -41,6 +49,8 @@ private:
 public:
  double operator[](option_key i) const { return options[i]; }
  double operator[](int i) const { return options[i]; }
+ const std::string& getopt(option_key i) const { return str_opts[i - NUM_OPTION_KEYS]; }
+ const std::string& getopt(int i) const { return str_opts[i - NUM_OPTION_KEYS]; }
  void set(option_key i, double val);
 
  static constexpr int type_code(option_key id)
@@ -49,7 +59,9 @@ public:
 	 {
 	 case OPT_FONT_HEIGHT:	return OPTTYPE_INT;
 	 case OPT_EXTRA_MARGIN:	return OPTTYPE_INT;
-	 default: return OPTTYPE_BOOL;	// default: boolean
+     case OPT_FONT: return OPTTYPE_STRING;
+     case OPT_FONTPATH: return OPTTYPE_STRING;
+     default: return OPTTYPE_BOOL;	// default: boolean
 	 }
  }
 

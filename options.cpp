@@ -54,6 +54,8 @@ static constexpr const char* JSON_key(option_key opt)	// \todo micro-optimize th
 	case OPT_LOAD_TILES: return "load tiles";
 	case OPT_FONT_HEIGHT: return "font height";
 	case OPT_EXTRA_MARGIN: return "extra bottom-right margin";
+	case OPT_FONT:	return "font";
+	case OPT_FONTPATH:	return "font path";
 	default: return 0;
 	}
 }
@@ -81,6 +83,8 @@ static JSON& get_JSON_opts() {
 		fin.close();
 		// audit our own keys.  Since we will be used to initialize the option_table we can't reference it.
 		if (!x->has_key("lang")) x->set("lang", "en");	// not used right now but we do want to allow configuring translations
+		if (!x->has_key("font")) x->set("font", "Terminus");	// these two should agree with xlat.fonts.json
+		if (!x->has_key("font path")) x->set("lang", "data/termfont");
 		int opt = OPT_FORCE_YN;
 		do  {
 			option_key option = (option_key)opt;
@@ -167,6 +171,7 @@ std::string option_name(option_key key)
   case OPT_LOAD_TILES:		return "use tileset (requires restart)";
   case OPT_FONT_HEIGHT:		return "Font height (requires restart)";
   case OPT_EXTRA_MARGIN:	return "Extra bottom-right margin (requires restart)";
+  case OPT_FONT:	return "Font (requires restart)";
   default:			return "Unknown Option (BUG)";
  }
  return "Big ol Bug";
