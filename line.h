@@ -2,6 +2,7 @@
 #define _LINE_H_
 
 #include "enums.h"
+#include "Zaimoni.STL/augment.STL/typetraits"
 
 #include <vector>
 
@@ -37,7 +38,28 @@ inline std::vector<point> line_to(const point& pt, const point& pt2, int t) { re
 inline std::vector<point> line_to(int x1, int y1, const point& pt2, int t) { return line_to(x1, y1, pt2.x, pt2.y, t); };
 
 // sqrt(dX^2 + dY^2)
-int trig_dist(int x1, int y1, int x2, int y2);
+template<class T>
+struct dist
+{
+	static double L2(typename zaimoni::const_param<T>::type x0, typename zaimoni::const_param<T>::type x1) {
+		if constexpr (!std::is_same_v<T, zaimoni::types<T>::norm>) return dist<zaimoni::types<T>::norm>::L2(zaimoni::norm(x0), zaimoni::norm(x1));
+		if (0 == x0) return zaimoni::norm(x1);
+		else if (0 > x0) return L2(zaimoni::norm(x0), x1);
+		if (0 == x1) return zaimoni::norm(x0);
+		else if (0 > x1) return L2(x0, zaimoni::norm(x1));
+		if constexpr (!std::is_same_v<T, double>) return dist<double>::L2(x0, x1);	// requires reduction to norm-representing type to be safe
+		if (x0 == x1) return x0 * sqrt(2.0);
+		else if (x0 < x1) return L2(x1, x0);	// reduction
+		if (sqrt(std::numeric_limits<double>::max())/2.0 > x0) return sqrt(x0 * x0 + x1 * x1);	// general case does not clearly risk overflow
+		const double ratio = x1 / x0;
+		return x0 * (sqrt(1.0 + ratio * ratio));
+	}
+};
+
+template<class T>
+double L2_dist(T x0, T x1) { return dist<std::remove_cv_t<T>>::L2(x0, x1); }
+
+inline int trig_dist(int x1, int y1, int x2, int y2) { return L2_dist(x1 - x2, y1 - y2); }
 inline int trig_dist(const point& pt, int x2, int y2) { return trig_dist(pt.x, pt.y, x2, y2); };
 inline int trig_dist(const point& pt, const point& pt2) { return trig_dist(pt.x, pt.y, pt2.x, pt2.y); };
 inline int trig_dist(int x1, int y1, const point& pt2) { return trig_dist(x1, y1, pt2.x, pt2.y); };

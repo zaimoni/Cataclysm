@@ -469,6 +469,9 @@
     <None Include="Zaimoni.STL\cstdio">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="Zaimoni.STL\augment.STL\typetraits">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\host\z_format_util.lib">

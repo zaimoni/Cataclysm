@@ -1,0 +1,75 @@
+// Zaimoni.STL/augment.STL/typetraits
+
+#ifndef ZAIMONI_AUGMENT_STL_TYPE_TRAITS
+#define ZAIMONI_AUGMENT_STL_TYPE_TRAITS 1
+
+#include <limits>
+#include <type_traits>
+
+namespace zaimoni {
+
+// replicate efficient function declaration types from Boost
+template<class T> struct const_param
+{
+	typedef typename std::conditional<sizeof(unsigned long long)>=sizeof(T) , const T , typename std::add_lvalue_reference<const T>::type >::type type;
+};
+
+template<class T> struct return_copy
+{
+	typedef typename std::conditional<sizeof(unsigned long long)>=sizeof(T) , T , 
+		typename std::add_lvalue_reference<const T>::type 
+	>::type type;
+};
+
+// work around issues in type_traits
+template<class T> struct types
+{
+	typedef typename std::make_unsigned<T>::type norm;
+};
+
+template<>
+struct types<long double>
+{
+	typedef long double norm;
+};
+
+template<>
+struct types<double>
+{
+	typedef double norm;
+};
+
+template<>
+struct types<float>
+{
+	typedef float norm;
+};
+
+// abs is taken by the standard library.
+// norm is meant to be the "typical" measure of absolute value; for real numbers should be abs
+template<class T>
+constexpr typename std::enable_if<
+   std::is_floating_point<T>::value,
+T>::type norm(T x) {return 0<=x ? x : -x;}
+
+template<class T>
+constexpr  typename std::enable_if<
+   std::is_integral<T>::value
+&& std::is_unsigned<T>::value,
+T>::type norm(T x) {return x;}
+
+template<class T>
+constexpr typename std::enable_if<
+	std::is_integral<T>::value
+	&& std::is_signed<T>::value,
+	typename types<T>::norm>::type norm(T x) {
+	if constexpr(std::numeric_limits<T>::min() < -std::numeric_limits<T>::max()) {
+		// XXX 2's complement integer minimum is undefined behavior to negate
+		if (-std::numeric_limits<T>::max() > x) return (typename std::make_unsigned<T>::type)(std::numeric_limits<T>::max()) + (typename std::make_unsigned<T>::type)(-std::numeric_limits<T>::max() - x);
+	};
+	return 0 <= x ? x : -x;
+}
+
+}	// namespace zaimoni
+
+#endif

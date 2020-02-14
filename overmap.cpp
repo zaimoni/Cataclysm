@@ -458,10 +458,7 @@ const overmap_special overmap_special::specials[NUM_OMSPECS] = {
 void settlement_building(settlement &set, int x, int y);	// #include "settlement.h" when bringing this up
 #endif
 
-double dist(int x1, int y1, int x2, int y2)
-{
- return sqrt(double(pow(x1-x2, 2.0) + pow(y1-y2, 2.0)));
-}
+double dist(int x1, int y1, int x2, int y2) { return L2_dist(x1 - x2, y1-y2); }
 
 bool is_river(oter_id ter)
 {

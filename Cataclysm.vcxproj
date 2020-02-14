@@ -311,6 +311,7 @@
     <ClCompile Include="wish.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Zaimoni.STL\augment.STL\typetraits" />
     <None Include="Zaimoni.STL\cstdio" />
   </ItemGroup>
   <ItemGroup>
