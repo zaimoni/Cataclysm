@@ -493,8 +493,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
     ret = line_to(u.pos, tar, tart); // Sets the vector to that LOS
 // Draw the trajectory
     for (int i = 0; i < ret.size(); i++) {
-     if (abs(ret[i].x - u.pos.x) <= sight_dist &&
-         abs(ret[i].y - u.pos.y) <= sight_dist   ) {
+     if (sight_dist >= Linf_dist(ret[i] - u.pos)) {
       monster* const m_at = mon(ret[i]);
 // NPCs and monsters get drawn with inverted colors
       if (m_at && u_see(m_at)) m_at->draw(w_terrain, center, true);

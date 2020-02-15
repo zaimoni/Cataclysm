@@ -5,6 +5,8 @@
 #include "output.h"
 #include "game.h"
 #include "JSON.h"
+#include "line.h"
+#include "stl_limits.h"
 #include "saveload.h"
 
 #include <sstream>
@@ -416,11 +418,10 @@ std::string faction::describe() const
  return ret;
 }
 
-int faction::response_time(tripoint dest) const
+unsigned int faction::response_time(tripoint dest) const
 {
- int base = abs(map.x - dest.x);
- if (abs(map.y - dest.y) > base) base = abs(map.y - dest.y);
- if (base > size) base *= 2.5;	// Out of our sphere of influence
+ auto base = Linf_dist(map.x - dest.x, map.y - dest.y);
+ if (base > size) cataclysm::rational_scale<5,2>(base);	// Out of our sphere of influence
  base *= 24;	// 24 turns to move one overmap square
  int maxdiv = 10;
  if (goal == FACGOAL_DOMINANCE) maxdiv += 2;
@@ -431,10 +432,9 @@ int faction::response_time(tripoint dest) const
  if (has_value(FACVAL_EXPLORATION)) maxdiv += 2;
  if (has_value(FACVAL_LONERS)) maxdiv -= 3;
  if (has_value(FACVAL_TREACHERY)) maxdiv -= rng(0, 3);
- int mindiv = (maxdiv > 9 ? maxdiv - 9 : 1);
+ const int mindiv = (maxdiv > 9 ? maxdiv - 9 : 1);
  base /= rng(mindiv, maxdiv);// We might be in the field
- base -= likes_u;	// We'll hurry, if we like you
- if (base < 100) base = 100;
+ if (base < 100 + likes_u) base = 100;	// We'll hurry, if we like you
  return base;
 }
 

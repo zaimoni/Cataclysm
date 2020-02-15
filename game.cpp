@@ -2274,24 +2274,25 @@ void game::draw_ter(const point& pos)
 
  // Draw monsters
  for(const auto& mon : z) {
-  point dist(abs(mon.pos.x - pos.x), abs(mon.pos.y - pos.y));
-  if (SEE < dist.x || SEE < dist.y) continue;
+  point delta(mon.pos - pos);
+  if (SEE < Linf_dist(delta)) continue;
   if (u_see(&mon))
    mon.draw(w_terrain, pos, false);
   else if (mon.has_flag(MF_WARM) &&
            (u.has_active_bionic(bio_infrared) || u.has_trait(PF_INFRARED)))
-   mvwputch(w_terrain, SEEY + mon.pos.y - pos.y, SEEX + mon.pos.x - pos.x, c_red, '?');
+   mvwputch(w_terrain, SEEY + delta.y, SEEX + delta.x, c_red, '?');
  }
  // Draw NPCs
  for (const auto& _npc : active_npc) {
-   const point dist(_npc.pos-pos);
-   if (SEE >= abs(dist.x) && SEE >= abs(dist.y) && u_see(_npc.pos)) _npc.draw(w_terrain, pos, false);
+   const point delta(_npc.pos-pos);
+   if (SEE < Linf_dist(delta)) continue;
+   if (u_see(_npc.pos)) _npc.draw(w_terrain, pos, false);
  }
  if (u.has_active_bionic(bio_scent_vision)) {	// overwriting normal vision isn't that useful
   point temp;
   for (temp.x = -SEEX; temp.x <= SEEX; temp.x++) {
    for (temp.y = -SEEY; temp.y <= SEEY; temp.y++) {
-	if (2 <= abs(temp.x) || 2 <= abs(temp.y)) {
+	if (2 <= Linf_dist(temp)) {
 	  const point real(temp+pos);
 	  if (0 != scent(real)) mvwputch(w_terrain, SEEY + temp.y, SEEX + temp.x, c_white, (mon(real) ? '?' : '#'));
 	}

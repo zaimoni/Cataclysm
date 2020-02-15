@@ -1027,7 +1027,7 @@ void mattack::smg(game *g, monster *z)
 void mattack::flamethrower(game *g, monster *z)
 {
  int t;
- if (abs(g->u.pos.x - z->pos.x) > 5 || abs(g->u.pos.y - z->pos.y) > 5 || !g->sees_u(z->pos, t)) return;	// Out of range
+ if (5 < Linf_dist(g->u.pos - z->pos) || !g->sees_u(z->pos, t)) return;	// Out of range
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  z->moves = -500;			// It takes a while
  std::vector<point> traj = line_to(z->pos, g->u.pos, t);

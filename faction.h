@@ -102,7 +102,7 @@ struct faction {
  bool matches_us(faction_value v) const;
  std::string describe() const;
 
- int response_time(tripoint dest) const;	// Time it takes for them to get to u
+ unsigned int response_time(tripoint dest) const;	// Time it takes for them to get to u
 
  std::string name;
  typename cataclysm::bitmap<NUM_FACVALS>::type values; // Bitfield of values

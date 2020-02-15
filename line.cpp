@@ -62,14 +62,6 @@ std::vector <point> line_to(int x1, int y1, int x2, int y2, int t)
  return ret;
 }
 
-int rl_dist(int x1, int y1, int x2, int y2)
-{
- int dx = abs(x1 - x2), dy = abs(y1 - y2);
- if (dx > dy)
-  return dx;
- return dy;
-}
-
 double slope_of(const std::vector<point>& line)
 {
  const auto delta = line.back() - line.front();
