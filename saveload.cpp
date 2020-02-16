@@ -6,6 +6,7 @@
 #include "overmap.h"
 #include "monster.h"
 #include "weather.h"
+#include "iuse.h"
 #include "recent_msg.h"
 #include "saveload.h"
 #include "json.h"

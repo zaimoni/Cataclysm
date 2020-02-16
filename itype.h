@@ -2,7 +2,6 @@
 #define _ITYPE_H_
 
 #include "color.h"
-#include "iuse.h"
 #include "pldata.h"
 #include "skill.h"
 #include "bionics_enum.h"
@@ -19,6 +18,8 @@ void EraseAt(std::vector<T>& x, size_t i) {
 }
 
 class game;
+class item;
+class player;
 
 namespace cataclysm {
 

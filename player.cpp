@@ -1,5 +1,6 @@
 #include "player.h"
 #include "game.h"
+#include "iuse.h"
 #include "keypress.h"
 #include "options.h"
 #include "stl_typetraits.h"

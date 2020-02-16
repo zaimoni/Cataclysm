@@ -1,4 +1,5 @@
 #include "item.h"
+#include "iuse.h"
 #include "output.h"
 #include "JSON.h"
 #include "bodypart.h"
