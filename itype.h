@@ -5,7 +5,7 @@
 #include "iuse.h"
 #include "pldata.h"
 #include "skill.h"
-#include "bionics.h"
+#include "bionics_enum.h"
 #include "artifact.h"
 #include "c_bitmap.h"
 #include <string>

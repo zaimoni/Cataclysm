@@ -12,7 +12,7 @@
 static itype* const null_type = new itype;
 
 std::vector <itype*> item::types;
-const item item::null(null_type ,0);
+const item item::null(null_type ,0);	// this must be in the same file as null_type, to avoid static order initialization fiasco
 
 // Armor colors
 #define C_SHOES  c_blue
