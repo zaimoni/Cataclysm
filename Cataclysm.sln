@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27428.2015
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Cataclysm", "Cataclysm.vcxproj", "{373B6E6B-AD01-4E84-8065-37E3CC01C640}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Socrates-Daimon", "Socrates-Daimon.vcxproj", "{8BA19859-2CB1-444C-B6E6-DBA66143B99A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,14 @@ Global
 		{373B6E6B-AD01-4E84-8065-37E3CC01C640}.Release|x64.Build.0 = Release|x64
 		{373B6E6B-AD01-4E84-8065-37E3CC01C640}.Release|x86.ActiveCfg = Release|Win32
 		{373B6E6B-AD01-4E84-8065-37E3CC01C640}.Release|x86.Build.0 = Release|Win32
+		{8BA19859-2CB1-444C-B6E6-DBA66143B99A}.Debug|x64.ActiveCfg = Debug|x64
+		{8BA19859-2CB1-444C-B6E6-DBA66143B99A}.Debug|x64.Build.0 = Debug|x64
+		{8BA19859-2CB1-444C-B6E6-DBA66143B99A}.Debug|x86.ActiveCfg = Debug|Win32
+		{8BA19859-2CB1-444C-B6E6-DBA66143B99A}.Debug|x86.Build.0 = Debug|Win32
+		{8BA19859-2CB1-444C-B6E6-DBA66143B99A}.Release|x64.ActiveCfg = Release|x64
+		{8BA19859-2CB1-444C-B6E6-DBA66143B99A}.Release|x64.Build.0 = Release|x64
+		{8BA19859-2CB1-444C-B6E6-DBA66143B99A}.Release|x86.ActiveCfg = Release|Win32
+		{8BA19859-2CB1-444C-B6E6-DBA66143B99A}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

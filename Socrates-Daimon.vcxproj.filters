@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Library Include="lib\host\z_format_util.lib">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="lib\host\z_stdio_c.lib">
+      <Filter>Resource Files</Filter>
+    </Library>
+    <Library Include="lib\host\z_stdio_log.lib">
+      <Filter>Resource Files</Filter>
+    </Library>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{58c36a22-7889-475c-8ad5-5e3c2e4c2a13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{b27d1b14-98fa-4541-99ca-0a2a4b59b7b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{8ae1602e-7ad3-4931-aadf-e3d341d6d444}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Zaimoni.STL">
+      <UniqueIdentifier>{f1428036-b327-42fb-a388-f8094781e2f0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="socrates-daimon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="catacurse.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="color.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="options.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="json.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="output.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rng.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="color.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wrap_curses.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="catacurse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Zaimoni.STL\Compiler.h">
+      <Filter>Header Files\Zaimoni.STL</Filter>
+    </ClInclude>
+    <ClInclude Include="Zaimoni.STL\Logging.h">
+      <Filter>Header Files\Zaimoni.STL</Filter>
+    </ClInclude>
+    <ClInclude Include="Zaimoni.STL\MetaRAM.hpp">
+      <Filter>Header Files\Zaimoni.STL</Filter>
+    </ClInclude>
+    <ClInclude Include="Zaimoni.STL\polymorphic.hpp">
+      <Filter>Header Files\Zaimoni.STL</Filter>
+    </ClInclude>
+    <ClInclude Include="options.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="enum_json.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="json.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="output.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rng.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
