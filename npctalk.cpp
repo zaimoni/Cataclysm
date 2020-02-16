@@ -4,7 +4,7 @@
 #include "dialogue.h"
 #include "rng.h"
 #include "line.h"
-#include "keypress.h"
+#include "key_core.h"
 #include "recent_msg.h"
 
 #include <sstream>

@@ -4,6 +4,7 @@
 #include "enums.h"
 #include "action.h"
 #include "keymap.h"
+#include "key_core.h"
 
 // Simple text input--translates numpad to vikeys
 long input();
@@ -15,5 +16,4 @@ point get_direction(char ch);
 extern keymap<action_id> keys;
 
 #define CTRL(n) (n - 'A' + 1 < 1 ? n - 'a' + 1 : n - 'A' + 1)
-#define KEY_ESCAPE 27
 #endif
