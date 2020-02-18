@@ -2,9 +2,9 @@
 #include <sstream>
 
 #include "npc.h"
-#include "rng.h"
-#include "map.h"
 #include "game.h"
+#include "rng.h"
+#include "skill.h"
 #include "output.h"
 #include "line.h"
 #include "JSON.h"

@@ -2,7 +2,7 @@
 #define _CRAFTING_H_
 
 #include "itype.h"
-#include "skill.h"
+#include "skill_enum.h"
 
 enum craft_cat {
 CC_NULL = 0,

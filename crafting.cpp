@@ -2,6 +2,7 @@
 #include "game.h"
 #include "output.h"
 #include "crafting.h"
+#include "skill.h"
 #include "inventory.h"
 #include "rng.h"
 #include "recent_msg.h"

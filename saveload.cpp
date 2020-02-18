@@ -7,6 +7,7 @@
 #include "monster.h"
 #include "weather.h"
 #include "iuse.h"
+#include "skill.h"
 #include "recent_msg.h"
 #include "saveload.h"
 #include "json.h"

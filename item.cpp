@@ -1,5 +1,6 @@
 #include "item.h"
 #include "game.h"
+#include "skill.h"
 #include "recent_msg.h"
 
 #include <sstream>

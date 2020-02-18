@@ -1,8 +1,9 @@
 #include "player.h"
+#include "game.h"
 #include "output.h"
 #include "rng.h"
 #include "keypress.h"
-#include "game.h"
+#include "skill.h"
 #include "json.h"
 #include "stl_limits.h"
 //#include <unistd.h>
