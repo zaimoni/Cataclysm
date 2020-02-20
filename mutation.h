@@ -1,7 +1,10 @@
 #ifndef _MUTATION_H_
 #define _MUTATION_H_
 
-#include "pldata.h"	// See pldata.h for mutations--they're actually pl_flags
+#include "pldata_enum.h"	// See pldata.h for mutations--they're actually pl_flags
+#include "enum_json.h"
+#include <string>
+#include <vector>
 
 enum mutation_category
 {

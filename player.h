@@ -8,6 +8,7 @@
 #include "mutation.h"
 #include "GPS_loc.hpp"
 #include "bodypart.h"
+#include "pldata.h"
 
 enum art_effect_passive;
 class game;
