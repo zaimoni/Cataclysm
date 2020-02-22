@@ -2,6 +2,7 @@
 #define _INVENTORY_H_
 
 #include "item.h"
+#include "enums.h"
 #include <string>
 #include <vector>
 

@@ -4,7 +4,7 @@
 // monster may carry.
 
 #include "mapitems.h"
-#include "enums.h"
+#include "material_enum.h"
 #include "enum_json.h"
 #include "color.h"
 #include <map>

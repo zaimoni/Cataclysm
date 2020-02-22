@@ -7,7 +7,7 @@
 #include "bionics_enum.h"
 #include "artifact.h"
 #include "c_bitmap.h"
-#include "enums.h"
+#include "material_enum.h"
 #include "enum_json.h"
 #include <string>
 #include <vector>

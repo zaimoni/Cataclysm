@@ -1,16 +1,6 @@
 #ifndef _ENUMS_H_
 #define _ENUMS_H_
 
-enum material {	// needed by both itype.h and mtype.h; unclear whether worth own header
-MNULL = 0,
-//Food Materials
-LIQUID, VEGGY, FLESH, POWDER,
-//Clothing
-COTTON, WOOL, LEATHER, KEVLAR,
-//Other
-STONE, PAPER, WOOD, PLASTIC, GLASS, IRON, STEEL, SILVER
-};
-
 // kludge implementation -- want something more generalizable
 constexpr int cmp(int lhs, int rhs)
 {

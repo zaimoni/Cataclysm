@@ -193,6 +193,7 @@
     <ClInclude Include="mapbuffer.h" />
     <ClInclude Include="mapdata.h" />
     <ClInclude Include="mapitems.h" />
+    <ClInclude Include="material_enum.h" />
     <ClInclude Include="mission.h" />
     <ClInclude Include="mobile.h" />
     <ClInclude Include="monattack.h" />

@@ -3,6 +3,7 @@
 
 #include "tileray.h"
 #include "veh_type.h"
+#include "enums.h"
 #include <vector>
 #include <string>
 #include <iosfwd>
