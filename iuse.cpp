@@ -520,7 +520,7 @@ void iuse::purifier(game *g, player *p, item *it, bool t)
  if (num_cured > 4) num_cured = 4;
  for (int i = 0; i < num_cured && valid.size() > 0; i++) {
   int index = rng(0, valid.size() - 1);
-  p->remove_mutation(g, pl_flag(valid[index]) );
+  p->remove_mutation(pl_flag(valid[index]) );
   valid.erase(valid.begin() + index);
  }
 }

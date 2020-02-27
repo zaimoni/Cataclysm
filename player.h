@@ -75,10 +75,10 @@ public:
  void activate_bionic(int b, game *g);	// \todo V 0.2.1 extend to NPCs
 
  void mutate(game *g);
- void mutate_towards(game *g, pl_flag mut);
- void remove_mutation(game *g, pl_flag mut);
+ void mutate_towards(pl_flag mut);
+ void remove_mutation(pl_flag mut);
  bool has_child_flag(pl_flag mut) const;
- void remove_child_flag(game *g, pl_flag mut);
+ void remove_child_flag(pl_flag mut);
 
  int  sight_range(int light_level) const;
  int  overmap_sight_range(int light_level) const;

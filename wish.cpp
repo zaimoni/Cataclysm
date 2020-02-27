@@ -447,7 +447,7 @@ void game::mutation_wish()
  } while (ch != '\n');
  clear();
  if (a+shift == 0) u.mutate(this);
- else u.mutate_towards(this, pl_flag(a + shift));
+ else u.mutate_towards(pl_flag(a + shift));
  delwin(w_info);
  delwin(w_list);
 }
