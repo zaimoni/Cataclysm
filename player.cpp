@@ -2932,8 +2932,8 @@ void player::suffer(game *g)
   if (rad < 30 && one_in(10)) rad++;
  }
 
- if (has_trait(PF_UNSTABLE) && one_in(28800)) mutate(g);	// Average once per 2 days
- if (has_artifact_with(AEP_MUTAGENIC) && one_in(28800)) mutate(g);
+ if (has_trait(PF_UNSTABLE) && one_in(28800)) mutate();	// Average once per 2 days
+ if (has_artifact_with(AEP_MUTAGENIC) && one_in(28800)) mutate();
  if (has_artifact_with(AEP_FORCE_TELEPORT) && one_in(600)) g->teleport(this);
 
  const auto rad = g->m.radiation(pos.x, pos.y);
@@ -2944,7 +2944,7 @@ void player::suffer(game *g)
   radiation += rng(0, rad / 8);
 
  if (rng(1, 2500) < radiation && (int(messages.turn) % 150 == 0 || radiation > 2000)){
-  mutate(g);
+  mutate();
   if (radiation > 2000) radiation = 2000;
   radiation /= 2;
   radiation -= 5;

@@ -106,12 +106,13 @@ class iuse
 // It examines the item's artifact-specific properties
 // See artifact.h for a list
   static void artifact		(game *g, player *p, item *it, bool t);
-  static void heal		(game *g, player *p, item *it, bool t);
+  // historical declarations without definitions
+/*  static void heal		(game *g, player *p, item *it, bool t);
   static void twist_space	(game *g, player *p, item *it, bool t);
   static void mass_vampire	(game *g, player *p, item *it, bool t);
   static void growth		(game *g, player *p, item *it, bool t);
   static void water		(game *g, player *p, item *it, bool t);
-  static void lava		(game *g, player *p, item *it, bool t);
+  static void lava		(game *g, player *p, item *it, bool t); */
   
 };
 

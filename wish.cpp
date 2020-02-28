@@ -446,7 +446,7 @@ void game::mutation_wish()
   ch = (search ? getch() : input());
  } while (ch != '\n');
  clear();
- if (a+shift == 0) u.mutate(this);
+ if (a+shift == 0) u.mutate();
  else u.mutate_towards(pl_flag(a + shift));
  delwin(w_info);
  delwin(w_list);

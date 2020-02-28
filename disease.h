@@ -459,7 +459,7 @@ void dis_effect(game *g, player &p, disease &dis)
   p.per_cur -= int(dis.duration / 25);
   if (rng(30, 100) < rng(0, dis.duration) && one_in(3)) p.vomit();
   if (rng(0, 100) < rng(0, dis.duration)) p.mutation_category_level[MUTCAT_RAT]++;
-  if (rng(50, 500) < rng(0, dis.duration)) p.mutate(g);
+  if (rng(50, 500) < rng(0, dis.duration)) p.mutate();
   break;
 
  case DI_FORMICATION:
@@ -586,7 +586,7 @@ void dis_effect(game *g, player &p, disease &dis)
    }
    if (one_in(3500 - int(.25 * (dis.duration - 3600)))) {
     if (!p.is_npc()) messages.add("You shudder suddenly.");
-    p.mutate(g);
+    p.mutate();
     if (one_in(4)) p.rem_disease(DI_TELEGLOW);
    }
   }

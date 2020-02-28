@@ -74,7 +74,7 @@ public:
  void power_bionics(game *g);
  void activate_bionic(int b, game *g);	// \todo V 0.2.1 extend to NPCs
 
- void mutate(game *g);
+ void mutate();
  void mutate_towards(pl_flag mut);
  void remove_mutation(pl_flag mut);
  bool has_child_flag(pl_flag mut) const;

@@ -5,7 +5,7 @@
 #include "stl_typetraits.h"
 #include "recent_msg.h"
 
-void player::mutate(game *g)
+void player::mutate()
 {
  bool force_bad = one_in(3); // 33% chance!
  if (has_trait(PF_ROBUST) && force_bad && one_in(3)) force_bad = false; // 11% chance!

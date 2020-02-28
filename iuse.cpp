@@ -18,7 +18,7 @@
 void iuse::sewage(game *g, player *p, item *it, bool t)
 {
  p->vomit();
- if (one_in(4)) p->mutate(g);
+ if (one_in(4)) p->mutate();
 }
 
 void iuse::royal_jelly(game *g, player *p, item *it, bool t)
@@ -496,14 +496,14 @@ void iuse::blech(game *g, player *p, item *it, bool t)
 
 void iuse::mutagen(game *g, player *p, item *it, bool t)
 {
- if (!one_in(3)) p->mutate(g);
+ if (!one_in(3)) p->mutate();
 }
 
 void iuse::mutagen_3(game *g, player *p, item *it, bool t)
 {
- p->mutate(g);
- if (!one_in(3)) p->mutate(g);
- if (one_in(2)) p->mutate(g);
+ p->mutate();
+ if (!one_in(3)) p->mutate();
+ if (one_in(2)) p->mutate();
 }
 
 void iuse::purifier(game *g, player *p, item *it, bool t)
@@ -566,7 +566,7 @@ void iuse::marloss(game *g, player *p, item *it, bool t)
  int effect = rng(1, 9);
  if (effect <= 3) {
   messages.add("This berry tastes extremely strange!");
-  p->mutate(g);
+  p->mutate();
  } else if (effect <= 6) { // Radiation cleanse is below
   messages.add("This berry makes you feel better all over.");
   p->pkill += 30;
@@ -2151,7 +2151,7 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
    break;
 
   case AEA_MUTATE:
-   if (!one_in(3)) p->mutate(g);
+   if (!one_in(3)) p->mutate();
    break;
 
   case AEA_PARALYZE:

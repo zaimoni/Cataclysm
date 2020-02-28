@@ -888,11 +888,10 @@ void bionics_install_failure(game *g, player *u, int success)
   fail_text += " and do damage to your genetics, causing mutation.";
   messages.add(fail_text.c_str()); // Failure text comes BEFORE mutation text
   while (failure_level > 0) {
-   u->mutate(g);
+   u->mutate();
    failure_level -= rng(1, failure_level + 2);
   }
   return;	// So the failure text doesn't show up twice
-  break;
 
  case 5:
  {

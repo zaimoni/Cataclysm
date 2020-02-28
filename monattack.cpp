@@ -234,7 +234,7 @@ void mattack::science(game *g, monster *z)	// I said SCIENCE again!
   if (g->u.dodge(g) > rng(1, 16))
    messages.add("You dodge the beam!");
   else if (one_in(6))
-   g->u.mutate(g);
+   g->u.mutate();
   else {
    messages.add("You get pins and needles all over.");
    g->u.radiation += rng(20, 50);
@@ -898,7 +898,7 @@ void mattack::gene_sting(game *g, monster *z)
  z->moves -= 150;
  z->sp_timeout = z->type->sp_freq;
  messages.add("The %s shoots a dart into you!", z->name().c_str());
- g->u.mutate(g);
+ g->u.mutate();
 }
 
 void mattack::stare(game *g, monster *z)
