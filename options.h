@@ -1,6 +1,18 @@
 #ifndef _OPTIONS_H_
 #define _OPTIONS_H_
 
+// This is not a correct location for this integrity test, but the no-op Socrates' Daimon had a *VERY* limited set of mandatory include files.
+// This one is both game-specific and actually needed by the no-op Socrates' Daimon.
+
+#ifdef CATACLYSM
+#ifdef SOCRATES_DAIMON
+#error cannot signal that we are building both Cataclysm and Socrates Daimon
+#endif
+#elif SOCRATES_DAIMON
+#else
+#error must signal which executable we are building
+#endif
+
 #include <string>
 
 enum option_key {
