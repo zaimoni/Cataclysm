@@ -113,19 +113,19 @@ public:
  bool is_weap() const;
  bool is_bashing_weapon() const;
  bool is_cutting_weapon() const;
- bool is_gun() const;
- bool is_gunmod() const;
- bool is_bionic() const;
- bool is_ammo() const;
- bool is_armor() const;
+ bool is_gun() const { return type->is_gun(); }
+ bool is_gunmod() const { return type->is_gunmod(); }
+ bool is_bionic() const { return type->is_bionic(); }
+ bool is_ammo() const { return type->is_ammo(); }
+ bool is_armor() const { return type->is_armor(); }
  bool is_book() const;
- bool is_container() const;
- bool is_tool() const;
- bool is_software() const;
- bool is_macguffin() const;
- bool is_style() const;
+ bool is_container() const { return type->is_container(); }
+ bool is_tool() const { return type->is_tool(); }
+ bool is_software() const { return type->is_software(); }
+ bool is_macguffin() const { return type->is_macguffin(); }
+ bool is_style() const { return type->is_style(); }
  bool is_other() const; // Doesn't belong in other categories
- bool is_artifact() const;
+ bool is_artifact() const { return type->is_artifact(); }
 
  static void init();
 };

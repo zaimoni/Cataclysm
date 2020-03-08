@@ -668,26 +668,6 @@ bool item::destroyed_at_zero_charges() const
  return (is_ammo() || is_food());
 }
 
-bool item::is_gun() const
-{
- return type->is_gun();
-}
-
-bool item::is_gunmod() const
-{
- return type->is_gunmod();
-}
-
-bool item::is_bionic() const
-{
- return type->is_bionic();
-}
-
-bool item::is_ammo() const
-{
- return type->is_ammo();
-}
-
 bool is_flammable(material m)
 {
 	return (m == COTTON || m == WOOL || m == PAPER || m == WOOD || m == MNULL);
@@ -734,11 +714,6 @@ bool item::is_cutting_weapon() const
  return (type->melee_cut >= 8 && !has_flag(IF_SPEAR));
 }
 
-bool item::is_armor() const
-{
- return type->is_armor();
-}
-
 bool item::is_book() const
 {
 /*
@@ -750,41 +725,11 @@ bool item::is_book() const
  return type->is_book();
 }
 
-bool item::is_container() const
-{
- return type->is_container();
-}
-
-bool item::is_tool() const
-{
- return type->is_tool();
-}
-
-bool item::is_software() const
-{
- return type->is_software();
-}
-
-bool item::is_macguffin() const
-{
- return type->is_macguffin();
-}
-
-bool item::is_style() const
-{
- return type->is_style();
-}
-
 bool item::is_other() const
 {
  return (!is_gun() && !is_ammo() && !is_armor() && !is_food() &&
          !is_food_container() && !is_tool() && !is_gunmod() && !is_bionic() &&
          !is_book() && !is_weap());
-}
-
-bool item::is_artifact() const
-{
- return type->is_artifact();
 }
 
 int item::reload_time(const player &u) const
