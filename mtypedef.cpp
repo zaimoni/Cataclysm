@@ -1,7 +1,9 @@
 #include "mtype.h"
 #include "item.h"
+#ifndef SOCRATES_DAIMON
 #include "monattack.h"
 #include "mondeath.h"
+#endif
 #include "JSON.h"
 #include "setvector.h"
 

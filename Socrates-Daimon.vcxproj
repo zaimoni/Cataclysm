@@ -167,14 +167,22 @@
     <ClCompile Include="socrates-daimon.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="artifact.h" />
     <ClInclude Include="catacurse.h" />
     <ClInclude Include="color.h" />
+    <ClInclude Include="c_bitmap.h" />
     <ClInclude Include="enum_json.h" />
+    <ClInclude Include="item.h" />
+    <ClInclude Include="itype.h" />
     <ClInclude Include="json.h" />
     <ClInclude Include="key_core.h" />
+    <ClInclude Include="mapdata.h" />
+    <ClInclude Include="material_enum.h" />
+    <ClInclude Include="mtype.h" />
     <ClInclude Include="options.h" />
     <ClInclude Include="output.h" />
     <ClInclude Include="rng.h" />
+    <ClInclude Include="setvector.h" />
     <ClInclude Include="wrap_curses.h" />
     <ClInclude Include="Zaimoni.STL\Compiler.h" />
     <ClInclude Include="Zaimoni.STL\Logging.h" />

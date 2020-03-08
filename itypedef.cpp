@@ -1,5 +1,7 @@
 #include "item.h"
+#ifndef SOCRATES_DAIMON
 #include "iuse.h"
+#endif
 #include "output.h"
 #include "JSON.h"
 #include "bodypart.h"

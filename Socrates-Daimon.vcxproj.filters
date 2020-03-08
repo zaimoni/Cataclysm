@@ -88,5 +88,29 @@
     <ClInclude Include="key_core.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="item.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="itype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mtype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="material_enum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="setvector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="artifact.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="c_bitmap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mapdata.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

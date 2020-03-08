@@ -1,5 +1,7 @@
 #include "item.h"
+#ifndef SOCRATES_DAIMON
 #include "game.h"
+#endif
 #include "skill.h"
 #include "recent_msg.h"
 
