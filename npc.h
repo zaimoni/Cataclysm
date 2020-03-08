@@ -19,8 +19,6 @@ namespace cataclysm {
 #define NPC_DANGER_LEVEL   10
 #define NPC_DANGER_VERY_LOW 5
 
-void parse_tags(std::string &phrase, player *u, npc *me);
-
 /*
  * Talk:   Trust midlow->high, fear low->mid, need doesn't matter
  * Trade:  Trust mid->high, fear low->midlow, need is a bonus
@@ -517,5 +515,7 @@ private:
  static int next_id;   // mininum/default next mission id
  void assign_id() { id = next_id++; }
 };
+
+void parse_tags(std::string& phrase, player* u, npc* me);
 
 #endif

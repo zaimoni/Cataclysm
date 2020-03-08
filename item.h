@@ -5,7 +5,6 @@
 
 struct mtype;
 class player;
-class npc;
 
 class item
 {
