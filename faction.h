@@ -4,7 +4,6 @@
 #include "enums.h"
 #include "enum_json.h"
 #include "c_bitmap.h"
-#include <string>
 #include <vector>
 
 // TODO: Redefine?

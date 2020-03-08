@@ -8,7 +8,6 @@
 #include "enum_json.h"
 #include "color.h"
 #include <map>
-#include <string>
 #include <vector>
 
 class game;

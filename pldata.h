@@ -6,7 +6,6 @@
 #include "pldata_enum.h"
 
 #include <vector>
-#include <string>
 
 DECLARE_JSON_ENUM_SUPPORT(dis_type)
 DECLARE_JSON_ENUM_SUPPORT(add_type)

@@ -3,7 +3,6 @@
 
 #include "enums.h"
 #include "enum_json.h"
-#include <string>
 
 enum event_type {
  EVENT_NULL,

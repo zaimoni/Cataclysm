@@ -9,7 +9,6 @@
 #include "c_bitmap.h"
 #include "material_enum.h"
 #include "enum_json.h"
-#include <string>
 #include <vector>
 
 // ideally this would be in a vector header extension

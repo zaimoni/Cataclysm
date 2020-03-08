@@ -3,7 +3,6 @@
 
 #include "enum_json.h"
 #include <string.h>
-#include <string>
 #include <vector>
 #include <map>
 #include <iosfwd>

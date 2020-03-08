@@ -3,7 +3,6 @@
 
 #include "bionics_enum.h"
 #include "enum_json.h"
-#include <string>
 #include <iosfwd>
 
 DECLARE_JSON_ENUM_SUPPORT(bionic_id)
