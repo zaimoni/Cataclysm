@@ -32,6 +32,7 @@ void recent_msg::add(const char* msg, ...)
 	messages.push_back(game_message(turn, s));
 }
 
+#ifndef SOCRATES_DAIMON
 void recent_msg::buffer()
 {
  WINDOW *w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
@@ -104,6 +105,7 @@ void recent_msg::buffer()
  werase(w);
  delwin(w);
 }
+#endif
 
 void recent_msg::write(WINDOW* w_messages)
 {

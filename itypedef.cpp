@@ -750,11 +750,19 @@ void item::init()
 // quench MAY be less than zero--salt water and liquor make you thirstier.
 // Thirst goes up by 1 every 5 minutes; so a quench of 12 lasts for 1 hour
 
+#ifdef SOCRATES_DAIMON
+#define DRINK(name,rarity,price,color,container,quench,nutr,spoils,stim,\
+healthy,addict,charges,fun,use_func,addict_func,des) \
+	index++;types.push_back(new it_comest(index,rarity,price,name,des,'~',\
+color,LIQUID,2,1,0,0,0,0,quench,nutr,spoils,stim,healthy,addict,charges,\
+fun,container,itm_null,addict_func));
+#else
 #define DRINK(name,rarity,price,color,container,quench,nutr,spoils,stim,\
 healthy,addict,charges,fun,use_func,addict_func,des) \
 	index++;types.push_back(new it_comest(index,rarity,price,name,des,'~',\
 color,LIQUID,2,1,0,0,0,0,quench,nutr,spoils,stim,healthy,addict,charges,\
 fun,container,itm_null,use_func,addict_func));
+#endif
 
 //     NAME		RAR PRC	COLOR     CONTAINER
 DRINK("water",		90, 50,	c_ltcyan, itm_bottle_plastic,
@@ -866,11 +874,19 @@ DRINK("blood",		 20,  0, c_red, itm_vacutainer,
 	  5,  5,  0,  0, -8,  0,  1,-50,&iuse::none,	ADD_NULL, "\
 Blood, possibly that of a human.  Disgusting!");
 
+#if SOCRATES_DAIMON
+#define FOOD(name,rarity,price,color,mat1,container,volume,weight,quench,\
+nutr,spoils,stim,healthy,addict,charges,fun,use_func,addict_func,des) \
+	index++;types.push_back(new it_comest(index,rarity,price,name,des,'%',\
+color,mat1,volume,weight,0,0,0,0,quench,nutr,spoils,stim,healthy,addict,charges,\
+fun,container,itm_null,addict_func));
+#else
 #define FOOD(name,rarity,price,color,mat1,container,volume,weight,quench,\
 nutr,spoils,stim,healthy,addict,charges,fun,use_func,addict_func,des) \
 	index++;types.push_back(new it_comest(index,rarity,price,name,des,'%',\
 color,mat1,volume,weight,0,0,0,0,quench,nutr,spoils,stim,healthy,addict,charges,\
 fun,container,itm_null,use_func,addict_func));
+#endif
 // FOOD
 
 //   NAME		RAR PRC	COLOR		MAT1	CONTAINER
@@ -1149,11 +1165,19 @@ Ground coffee beans. You can boil it into a mediocre stimulant,\n\
 or swallow it raw for a lesser stimulative boost.");
 
 // MEDS
+#if SOCRATES_DAIMON
+#define MED(name,rarity,price,color,tool,mat,stim,healthy,addict,\
+charges,fun,use_func,addict_func,des) \
+	index++;types.push_back(new it_comest(index,rarity,price,name,des,'!',\
+color,mat,1,1,0,0,0,0,0,0,0,stim,healthy,addict,charges,\
+fun,itm_null,tool,addict_func));
+#else
 #define MED(name,rarity,price,color,tool,mat,stim,healthy,addict,\
 charges,fun,use_func,addict_func,des) \
 	index++;types.push_back(new it_comest(index,rarity,price,name,des,'!',\
 color,mat,1,1,0,0,0,0,0,0,0,stim,healthy,addict,charges,\
 fun,itm_null,tool,use_func,addict_func));
+#endif
 
 //  NAME		RAR PRC	COLOR		TOOL
 MED("bandages",		50, 60,	c_white,	itm_null,
@@ -3538,12 +3562,21 @@ A small cardboard box.  No bigger than a foot in any dimension.");
  *  turn if the tool is active.  The same function can be used for both.  See
  *  iuse.h and iuse.cpp for functions.
  */
+#ifdef SOCRATES_DAIMON
+#define TOOL(name,rarity,price,sym,color,mat1,mat2,volume,wgt,melee_dam,\
+melee_cut,to_hit,max_charge,def_charge,charge_per_use,charge_per_sec,fuel,\
+revert,func,flags,des) \
+	index++;types.push_back(new it_tool(index,rarity,price,name,des,sym,\
+color,mat1,mat2,volume,wgt,melee_dam,melee_cut,to_hit,flags,max_charge,\
+def_charge,charge_per_use,charge_per_sec,fuel,revert))
+#else
 #define TOOL(name,rarity,price,sym,color,mat1,mat2,volume,wgt,melee_dam,\
 melee_cut,to_hit,max_charge,def_charge,charge_per_use,charge_per_sec,fuel,\
 revert,func,flags,des) \
 	index++;types.push_back(new it_tool(index,rarity,price,name,des,sym,\
 color,mat1,mat2,volume,wgt,melee_dam,melee_cut,to_hit,flags,max_charge,\
 def_charge,charge_per_use,charge_per_sec,fuel,revert,func))
+#endif
 
 //	NAME		RAR PRC	SYM  COLOR	MAT1	MAT
 TOOL("lighter",		60,  35,',', c_blue,	PLASTIC,IRON,
@@ -4079,12 +4112,18 @@ A piece of mathematical software.");
 SOFTWARE("infection data", 200, SW_DATA, 5, "\
 Medical data on zombie blood.");
 
-
+#ifdef SOCRATES_DAIMON
+#define MACGUFFIN(name, price, sym, color, mat1, mat2, volume, wgt, dam, cut,\
+                  to_hit, readable, function, description) \
+index++; types.push_back(new it_macguffin(index, 0, price, name, description,\
+	sym, color, mat1, mat2, volume, wgt, dam, cut, to_hit, 0, readable))
+#else
 #define MACGUFFIN(name, price, sym, color, mat1, mat2, volume, wgt, dam, cut,\
                   to_hit, readable, function, description) \
 index++; types.push_back(new it_macguffin(index, 0, price, name, description,\
 	sym, color, mat1, mat2, volume, wgt, dam, cut, to_hit, 0, readable,\
 	function))
+#endif
 MACGUFFIN("paper note", 0, '?', c_white, PAPER, MNULL, 1, 0, 0, 0, 0,
 	true, &iuse::mcg_note, "\
 A hand-written paper note.");
@@ -4420,11 +4459,18 @@ it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
 	signed char pquench, unsigned char pnutr, signed char pspoils,
 	signed char pstim, signed char phealthy, unsigned char paddict,
 	unsigned char pcharges, signed char pfun, itype_id pcontainer,
-	itype_id ptool, void (*puse)(game*, player*, item*, bool),
+	itype_id ptool,
+#ifndef SOCRATES_DAIMON
+	void (*puse)(game*, player*, item*, bool),
+#endif
 	add_type padd)
 :itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
 	quench(pquench),nutr(pnutr),spoils(pspoils),addict(paddict),charges(pcharges),stim(pstim),healthy(phealthy),fun(pfun),container(pcontainer),
-	tool(ptool),use(puse),add(padd)
+	tool(ptool),
+#ifndef SOCRATES_DAIMON
+	use(puse),
+#endif
+	add(padd)
 {
 }
 
@@ -4527,7 +4573,10 @@ it_container::it_container(int pid, unsigned char prarity, unsigned int pprice,
 }
 
 it_tool::it_tool()
-: ammo(AT_NULL),max_charges(0),def_charges(0),charges_per_use(0),turns_per_charge(0),revert_to(itm_null),use(&iuse::none)
+: ammo(AT_NULL),max_charges(0),def_charges(0),charges_per_use(0),turns_per_charge(0),revert_to(itm_null)
+#ifndef SOCRATES_DAIMON
+  ,use(&iuse::none)
+#endif
 {
 }
 
@@ -4540,11 +4589,17 @@ it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
 
 	unsigned int pmax_charges, unsigned int pdef_charges,
 	unsigned char pcharges_per_use, unsigned char pturns_per_charge,
-	ammotype pammo, itype_id prevert_to,
-	void (*puse)(game*, player*, item*, bool))
+	ammotype pammo, itype_id prevert_to
+#ifndef SOCRATES_DAIMON
+	, void (*puse)(game*, player*, item*, bool)
+#endif
+)
 :itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
   ammo(pammo), max_charges(pmax_charges), def_charges(pdef_charges), charges_per_use(pcharges_per_use),
-  turns_per_charge(pturns_per_charge), revert_to(prevert_to), use(puse)
+  turns_per_charge(pturns_per_charge), revert_to(prevert_to)
+#ifndef SOCRATES_DAIMON
+  , use(puse)
+#endif
 {
 }
 
@@ -4575,10 +4630,16 @@ it_macguffin::it_macguffin(int pid, unsigned char prarity, unsigned int pprice,
 	signed char pmelee_dam, signed char pmelee_cut,
 	signed char pm_to_hit, unsigned pitem_flags,
 
-	bool preadable,
-	void (*puse)(game*, player*, item*, bool))
+	bool preadable
+#ifndef SOCRATES_DAIMON
+	, void (*puse)(game*, player*, item*, bool)
+#endif
+)
 :itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
-  readable(preadable),use(puse)
+  readable(preadable)
+#ifndef SOCRATES_DAIMON
+  ,use(puse)
+#endif
 {
 }
 
@@ -4614,7 +4675,9 @@ it_artifact_tool::it_artifact_tool()
 	charges_per_use = 1;
 	turns_per_charge = 0;
 	revert_to = itm_null;
+#ifndef SOCRATES_DAIMON
 	use = &iuse::artifact;
+#endif
 };
 
 it_artifact_tool::it_artifact_tool(int pid, unsigned int pprice, std::string pname,
@@ -4623,7 +4686,11 @@ it_artifact_tool::it_artifact_tool(int pid, unsigned int pprice, std::string pna
 	signed char pmelee_dam, signed char pmelee_cut,
 	signed char pm_to_hit, unsigned pitem_flags)
 :it_tool(pid, 0, pprice, pname, pdes, psym, pcolor, pm1, pm2,pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags,
-		0, 0, 1, 0, AT_NULL, itm_null, &iuse::artifact) { };
+		0, 0, 1, 0, AT_NULL, itm_null
+#ifndef SOCRATES_DAIMON
+	, &iuse::artifact
+#endif
+) { };
 
 it_artifact_armor::it_artifact_armor(int pid, unsigned int pprice, std::string pname,
 	std::string pdes, char psym, nc_color pcolor, material pm1,

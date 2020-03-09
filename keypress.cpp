@@ -1,7 +1,9 @@
 #include "keypress.h"
 #include "wrap_curses.h"
 
+#ifndef SOCRATES_DAIMON
 keymap<action_id> keys;
+#endif
 
 long input()
 {
@@ -61,6 +63,7 @@ void get_direction(int &x, int &y, char ch)
  }
 }
 
+#ifndef SOCRATES_DAIMON
 point get_direction(char ch)
 {
  switch (keys.translate(ch)) {
@@ -77,3 +80,4 @@ point get_direction(char ch)
  default: return point(-2, -2);
  }
 }
+#endif

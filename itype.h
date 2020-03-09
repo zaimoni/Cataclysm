@@ -18,9 +18,11 @@ void EraseAt(std::vector<T>& x, size_t i) {
     if (x.empty()) std::vector<T>().swap(x);    // handles problem with range-based for loops in MSVC++
 }
 
-class game;
 class item;
+#ifndef SOCRATES_DAIMON
+class game;
 class player;
+#endif
 
 namespace cataclysm {
 
@@ -386,7 +388,9 @@ struct it_comest : public itype
  itype_id container;	// The container it comes in
  itype_id tool;		// Tool needed to consume (e.g. lighter for cigarettes)
 
+#ifndef SOCRATES_DAIMON
  void (*use)(game*, player*, item*, bool);// Special effects of use
+#endif
  add_type add;				// Effects of addiction
 
  it_comest(int pid, unsigned char prarity, unsigned int pprice,
@@ -399,8 +403,11 @@ struct it_comest : public itype
 	 signed char pquench, unsigned char pnutr, signed char pspoils,
 	 signed char pstim, signed char phealthy, unsigned char paddict,
 	 unsigned char pcharges, signed char pfun, itype_id pcontainer,
-	 itype_id ptool, void (*puse)(game*, player*, item*, bool),
-	 add_type padd);
+	 itype_id ptool,
+#ifndef SOCRATES_DAIMON
+     void (*puse)(game*, player*, item*, bool),
+#endif
+     add_type padd);
 
  bool is_food() const override { return true; }
  bool count_by_charges() const override { return charges > 1; }
@@ -568,7 +575,9 @@ struct it_tool : public itype
  unsigned char charges_per_use;
  unsigned char turns_per_charge;
  itype_id revert_to;
+#ifndef SOCRATES_DAIMON
  void (*use)(game *, player *, item *, bool);
+#endif
 
  it_tool();
  it_tool(int pid, unsigned char prarity, unsigned int pprice,
@@ -580,8 +589,11 @@ struct it_tool : public itype
 
 	 unsigned int pmax_charges, unsigned int pdef_charges,
 	 unsigned char pcharges_per_use, unsigned char pturns_per_charge,
-	 ammotype pammo, itype_id prevert_to,
-	 void (*puse)(game*, player*, item*, bool));
+	 ammotype pammo, itype_id prevert_to
+#ifndef SOCRATES_DAIMON
+     , void (*puse)(game*, player*, item*, bool)
+#endif
+ );
 
  bool is_tool() const override { return true; }
 protected:	// this is not a final type so these aren't public
@@ -609,7 +621,9 @@ struct it_bionic : public itype
 struct it_macguffin : public itype
 {
  bool readable; // If true, activated with 'R'
+#ifndef SOCRATES_DAIMON
  void (*use)(game *, player *, item *, bool);
+#endif
 
  it_macguffin(int pid, unsigned char prarity, unsigned int pprice,
 	 std::string pname, std::string pdes,
@@ -618,8 +632,11 @@ struct it_macguffin : public itype
 	 signed char pmelee_dam, signed char pmelee_cut,
 	 signed char pm_to_hit, unsigned pitem_flags,
 
-	 bool preadable,
-	 void (*puse)(game*, player*, item*, bool));
+	 bool preadable
+#ifndef SOCRATES_DAIMON
+     , void (*puse)(game*, player*, item*, bool)
+#endif
+ );
 
  bool is_macguffin() const override { return true; }
 };

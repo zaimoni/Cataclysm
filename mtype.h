@@ -10,9 +10,11 @@
 #include <map>
 #include <vector>
 
-class game;
 struct itype;
+#ifndef SOCRATES_DAIMON
+class game;
 class monster;
+#endif
 
 enum monster_species {
 species_none = 0,
@@ -199,8 +201,10 @@ struct mtype {
  int hp;
 
  unsigned char sp_freq;			// How long sp_attack takes to charge
+#ifndef SOCRATES_DAIMON
  void (*dies)(game *, monster *); // What happens when this monster dies
  void (*sp_attack)(game *, monster *); // This monster's special attack
+#endif
  
   // Default constructor
  mtype();
@@ -214,8 +218,10 @@ struct mtype {
 	 unsigned char pdodge, unsigned char parmor_bash,
 	 unsigned char parmor_cut, signed char pitem_chance, int php,
 	 unsigned char psp_freq,
+#ifndef SOCRATES_DAIMON
 	 void(*pdies)      (game *, monster *),
 	 void(*psp_attack)(game *, monster *),
+#endif
 	 std::string pdescription);
 
  bool has_flag(m_flag flag) const;

@@ -4,7 +4,9 @@
 #include "itype.h"
 
 struct mtype;
+#ifndef SOCRATES_DAIMON
 class player;
+#endif
 
 class item
 {
@@ -46,23 +48,31 @@ public:
 // returns the default container of this item, with this item in it
  item in_its_container() const;
 
+#ifndef SOCRATES_DAIMON
  nc_color color(const player& u) const;
  nc_color color_in_inventory(const player& u) const;
+#endif
  std::string tname() const;
  bool burn(int amount = 1); // Returns true if destroyed
 
 // Firearm specifics
+#ifndef SOCRATES_DAIMON
  int reload_time(const player &u) const;
+#endif
  int clip_size() const;
  int accuracy() const;
  int gun_damage(bool with_ammo = true) const;
  int noise() const;
  int burst_size() const;
  int recoil(bool with_ammo = true) const;
+#ifndef SOCRATES_DAIMON
  int range(const player *p = NULL) const;
+#endif
  ammotype ammo_type() const;
+#ifndef SOCRATES_DAIMON
  int pick_reload_ammo(const player &u, bool interactive) const;
  bool reload(player &u, int index);
+#endif
 
  std::string info(bool showtext = false);	// Formatted for human viewing
  char symbol() const { return type->sym; }
@@ -85,8 +95,10 @@ public:
  int damage_bash() const { return type->melee_dam; }
  int damage_cut() const;
  bool has_flag(item_flag f) const;
+#ifndef SOCRATES_DAIMON
  bool has_technique(technique_id t, const player *p = NULL) const;
  std::vector<technique_id> techniques() const;
+#endif
  bool goes_bad() const;
  bool count_by_charges() const;
  bool craft_has_charges() const;
@@ -98,14 +110,18 @@ public:
  int  melee_value (const int skills[num_skill_types]) const;
 // Returns the data associated with tech, if we are an it_style
  style_move style_data(technique_id tech) const;
+#ifndef SOCRATES_DAIMON
  bool is_two_handed(const player& u) const;
+#endif
  bool made_of(material mat) const;
  bool conductive() const; // Electricity
  bool destroyed_at_zero_charges() const;
 // Most of the is_whatever() functions call the same function in our itype
  bool is_null() const; // True if type is NULL, or points to the null item (id == 0)
+#ifndef SOCRATES_DAIMON
  bool is_food(const player& u) const;// Some non-food items are food to certain players
  bool is_food_container(const player& u) const;  // Ditto
+#endif
  bool is_food() const { return type->is_food(); };	// Ignoring the ability to eat batteries, etc.
  bool is_food_container() const;      // Ignoring the ability to eat batteries, etc.
  bool is_drink() const;

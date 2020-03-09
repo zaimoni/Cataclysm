@@ -158,16 +158,21 @@
     <Library Include="lib\host\z_stdio_log.lib" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="calendar.cpp" />
     <ClCompile Include="catacurse.cpp" />
     <ClCompile Include="color.cpp" />
     <ClCompile Include="json.cpp" />
+    <ClCompile Include="keypress.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="output.cpp" />
+    <ClCompile Include="recent_msg.cpp" />
     <ClCompile Include="rng.cpp" />
     <ClCompile Include="socrates-daimon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="artifact.h" />
+    <ClInclude Include="bodypart.h" />
+    <ClInclude Include="calendar.h" />
     <ClInclude Include="catacurse.h" />
     <ClInclude Include="color.h" />
     <ClInclude Include="c_bitmap.h" />
@@ -175,12 +180,14 @@
     <ClInclude Include="item.h" />
     <ClInclude Include="itype.h" />
     <ClInclude Include="json.h" />
+    <ClInclude Include="keypress.h" />
     <ClInclude Include="key_core.h" />
     <ClInclude Include="mapdata.h" />
     <ClInclude Include="material_enum.h" />
     <ClInclude Include="mtype.h" />
     <ClInclude Include="options.h" />
     <ClInclude Include="output.h" />
+    <ClInclude Include="recent_msg.h" />
     <ClInclude Include="rng.h" />
     <ClInclude Include="setvector.h" />
     <ClInclude Include="wrap_curses.h" />

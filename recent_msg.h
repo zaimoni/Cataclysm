@@ -26,7 +26,9 @@ public:
 	}
 
 	void add(const char* msg, ...);
+#ifndef SOCRATES_DAIMON
 	void buffer();
+#endif
 	void write(WINDOW* w_messages);
 };
 

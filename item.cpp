@@ -1,6 +1,9 @@
 #include "item.h"
 #ifndef SOCRATES_DAIMON
 #include "game.h"
+#else
+#include "mtype.h"
+#include "bodypart.h"
 #endif
 #include "skill.h"
 #include "recent_msg.h"
@@ -327,6 +330,7 @@ std::string item::info(bool showtext)
  return dump.str();
 }
 
+#ifndef SOCRATES_DAIMON
 nc_color item::color(const player& u) const
 {
  nc_color ret = c_ltgray;
@@ -364,6 +368,7 @@ nc_color item::color_in_inventory(const player& u) const	// retain unused paramw
 // Items in our inventory get colorized specially
  return active ? c_yellow : c_white;
 }
+#endif
 
 std::string item::tname() const
 {
@@ -536,6 +541,7 @@ bool item::has_flag(item_flag f) const
  return (type->item_flags & mfb(f));
 }
 
+#ifndef SOCRATES_DAIMON
 bool item::has_technique(technique_id tech, const player *p) const
 {
  if (is_style()) {
@@ -556,6 +562,7 @@ std::vector<technique_id> item::techniques() const
  }
  return ret;
 }
+#endif
 
 bool item::rotten() const
 {
@@ -638,18 +645,18 @@ style_move item::style_data(technique_id tech) const
 
  const it_style* const style = dynamic_cast<const it_style*>(type);
 
- for(const auto& m : style->moves) {
-  if (m.tech == tech) return m;
- }
+ for(const auto& m : style->moves) if (m.tech == tech) return m;
 
  return ret;
 }
  
+#ifndef SOCRATES_DAIMON
 bool item::is_two_handed(const player& u) const
 {
  if (is_gun() && (dynamic_cast<const it_gun*>(type))->skill_used != sk_pistol) return true;
  return (weight() > u.str_cur * 4);
 }
+#endif
 
 bool item::made_of(material mat) const
 {
@@ -675,6 +682,7 @@ bool is_flammable(material m)
 	return (m == COTTON || m == WOOL || m == PAPER || m == WOOD || m == MNULL);
 }
 
+#ifndef SOCRATES_DAIMON
 bool item::is_food(const player& u) const
 {
  if (type->is_food()) return true;
@@ -687,6 +695,7 @@ bool item::is_food_container(const player& u) const
 {
  return (contents.size() >= 1 && contents[0].is_food(u));
 }
+#endif
 
 bool item::is_food_container() const
 {
@@ -734,6 +743,7 @@ bool item::is_other() const
          !is_book() && !is_weap());
 }
 
+#ifndef SOCRATES_DAIMON
 int item::reload_time(const player &u) const
 {
  int ret = 0;
@@ -751,6 +761,7 @@ int item::reload_time(const player &u) const
  ret += u.encumb(bp_hands) * 30;
  return ret;
 }
+#endif
 
 int item::clip_size() const
 {
@@ -826,6 +837,7 @@ int item::recoil(bool with_ammo) const
  return ret;
 }
 
+#ifndef SOCRATES_DAIMON
 int item::range(const player *p) const	// return value can be negative at this time
 {
  if (!is_gun()) return 0;
@@ -845,7 +857,7 @@ int item::range(const player *p) const	// return value can be negative at this t
 
  return ret;
 }
- 
+#endif
 
 ammotype item::ammo_type() const
 {
@@ -863,7 +875,8 @@ ammotype item::ammo_type() const
  else if (is_ammo()) return dynamic_cast<const it_ammo*>(type)->type;
  return AT_NULL;
 }
- 
+
+#ifndef SOCRATES_DAIMON
 int item::pick_reload_ammo(const player &u, bool interactive) const
 {
  if (!type->is_gun() && !type->is_tool()) {
@@ -979,6 +992,7 @@ bool item::reload(player &u, int index)
   return true;
  } else return false;
 }
+#endif
 
 bool item::burn(int amount)
 {

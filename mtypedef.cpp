@@ -37,8 +37,10 @@ mtype::mtype() {
 	hp = 0;
 	sp_freq = 0;
 	item_chance = 0;
+#ifndef SOCRATES_DAIMON
 	dies = NULL;
 	sp_attack = NULL;
+#endif
 }
 // Non-default (messy)
 mtype::mtype(int pid, std::string pname, monster_species pspecies, char psym,
@@ -49,8 +51,10 @@ mtype::mtype(int pid, std::string pname, monster_species pspecies, char psym,
 	unsigned char pdodge, unsigned char parmor_bash,
 	unsigned char parmor_cut, signed char pitem_chance, int php,
 	unsigned char psp_freq,
+#ifndef SOCRATES_DAIMON
 	void(*pdies)      (game *, monster *),
 	void(*psp_attack)(game *, monster *),
+#endif
 	std::string pdescription) {
 	id = pid;
 	name = pname;
@@ -74,8 +78,10 @@ mtype::mtype(int pid, std::string pname, monster_species pspecies, char psym,
 	item_chance = pitem_chance;
 	hp = php;
 	sp_freq = psp_freq;
+#ifndef SOCRATES_DAIMON
 	dies = pdies;
 	sp_attack = psp_attack;
+#endif
 	description = pdescription;
 
 	anger = default_anger(species);
@@ -253,6 +259,17 @@ void mtype::init()
 // Null monster named "None".
  types.push_back(new mtype);
 
+#ifdef SOCRATES_DAIMON
+#define mon(name, species, sym, color, size, mat, \
+            freq, diff, agro, morale, speed, melee_skill, melee_dice,\
+            melee_sides, melee_cut, dodge, arm_bash, arm_cut, item_chance, HP,\
+            sp_freq, death, sp_att, desc) \
+id++;\
+working = new mtype(id, name, species, sym, color, size, mat,\
+freq, diff, agro, morale, speed, melee_skill, melee_dice, melee_sides,\
+melee_cut, dodge, arm_bash, arm_cut, item_chance, HP, sp_freq, desc);	\
+types.push_back(working)
+#else
 #define mon(name, species, sym, color, size, mat, \
             freq, diff, agro, morale, speed, melee_skill, melee_dice,\
             melee_sides, melee_cut, dodge, arm_bash, arm_cut, item_chance, HP,\
@@ -263,6 +280,7 @@ freq, diff, agro, morale, speed, melee_skill, melee_dice, melee_sides,\
 melee_cut, dodge, arm_bash, arm_cut, item_chance, HP, sp_freq, death, sp_att,\
 desc);	\
 types.push_back(working)
+#endif
 
 #define FLAGS(...)   SET_VECTOR(working->flags,   __VA_ARGS__)
 #define ANGER(...)   SET_VECTOR(working->anger,   __VA_ARGS__)
