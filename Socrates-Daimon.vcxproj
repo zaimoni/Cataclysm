@@ -80,6 +80,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IntDir>$(Platform)\$(Configuration)\Socrates.Daimon\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -167,6 +168,7 @@
     <ClCompile Include="output.cpp" />
     <ClCompile Include="recent_msg.cpp" />
     <ClCompile Include="rng.cpp" />
+    <ClCompile Include="skill.cpp" />
     <ClCompile Include="socrates-daimon.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -1,7 +1,7 @@
 #ifndef _PLAYER_H_
 #define _PLAYER_H_
 
-#include "skill_enum.h"
+#include "skill.h"
 #include "bionics.h"
 #include "morale.h"
 #include "inventory.h"

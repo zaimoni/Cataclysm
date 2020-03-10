@@ -3,7 +3,7 @@
 
 #include "color.h"
 #include "pldata_enum.h"
-#include "skill_enum.h"
+#include "skill.h"
 #include "bionics_enum.h"
 #include "artifact.h"
 #include "c_bitmap.h"
