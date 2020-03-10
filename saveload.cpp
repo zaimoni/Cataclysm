@@ -1,19 +1,30 @@
 // master implementation file for new-style saveload support
 
+#ifndef SOCRATES_DAIMON
 #include "computer.h"
+#endif
 #include "mapdata.h"
+#ifndef SOCRATES_DAIMON
 #include "mission.h"
 #include "overmap.h"
 #include "monster.h"
 #include "weather.h"
 #include "iuse.h"
+#else
+#include "mtype.h"
+#endif
 #include "skill.h"
 #include "recent_msg.h"
+#ifndef SOCRATES_DAIMON
 #include "saveload.h"
+#endif
 #include "json.h"
 
 #include <istream>
 #include <ostream>
+#ifdef SOCRATES_DAIMON
+#include <sstream>
+#endif
 
 #include "Zaimoni.STL/Logging.h"
 
@@ -120,6 +131,7 @@ using cataclysm::JSON;
 #define I_SEP << " "
 #endif
 
+#ifndef SOCRATES_DAIMON
 #define IO_OPS_ENUM(TYPE)	\
 std::istream& operator>>(std::istream& is, TYPE& dest)	\
 {	\
@@ -135,6 +147,7 @@ std::ostream& operator<<(std::ostream& os, TYPE src)	\
 }
 
 IO_OPS_ENUM(trap_id)
+#endif
 
 #define JSON_ENUM(TYPE)	\
 JSON toJSON(TYPE src) {	\
@@ -151,12 +164,15 @@ bool fromJSON(const JSON& src, TYPE& dest)	\
 	return true;	\
 }
 
+#ifndef SOCRATES_DAIMON
 JSON_ENUM(activity_type)
 JSON_ENUM(add_type)
+#endif
 JSON_ENUM(ammotype)
 JSON_ENUM(art_charge)
 JSON_ENUM(art_effect_active)
 JSON_ENUM(art_effect_passive)
+#ifndef SOCRATES_DAIMON
 JSON_ENUM(bionic_id)
 JSON_ENUM(combat_engagement)
 JSON_ENUM(computer_action)
@@ -166,28 +182,37 @@ JSON_ENUM(faction_goal)
 JSON_ENUM(faction_job)
 JSON_ENUM(field_id)
 JSON_ENUM(hp_part)
+#endif
 JSON_ENUM(itype_id)	// breaks if we need a randart as a morale_point item
 JSON_ENUM(material)
+#ifndef SOCRATES_DAIMON
 JSON_ENUM(mission_id)
+#endif
 JSON_ENUM(mon_id)
+#ifndef SOCRATES_DAIMON
 JSON_ENUM(moncat_id)
 JSON_ENUM(monster_effect_type)
 JSON_ENUM(morale_type)
 JSON_ENUM(mutation_category)
+#endif
 JSON_ENUM(nc_color)
+#ifndef SOCRATES_DAIMON
 JSON_ENUM(npc_attitude)
 JSON_ENUM(npc_class)
 JSON_ENUM(npc_favor_type)
 JSON_ENUM(npc_need)
 JSON_ENUM(npc_mission)
 JSON_ENUM(pl_flag)
+#endif
 JSON_ENUM(skill)
+#ifndef SOCRATES_DAIMON
 JSON_ENUM(talk_topic)
 JSON_ENUM(ter_id)
 JSON_ENUM(trap_id)
 JSON_ENUM(vhtype_id)
 JSON_ENUM(vpart_id)
 JSON_ENUM(weather_type)
+#endif
 
 template<class LHS, class RHS>
 JSON toJSON(const std::pair<LHS, RHS>& src)
@@ -214,6 +239,7 @@ bool fromJSON(const JSON& src, std::pair<LHS, RHS>& dest)
 // stereotypical translation of pointers to/from vector indexes
 // \todo in general if a loaded pointer index is "invalid" we should warn here; non-null requirements are enforced higher up
 // \todo in general warn if a non-null ptr points to an invalid id
+#ifndef SOCRATES_DAIMON
 JSON toJSON(const mission_type* const src) {
 	auto x = JSON_key((mission_id)src->id);
 	if (x) return JSON(x);
@@ -228,6 +254,7 @@ bool fromJSON(const JSON& src, const mission_type*& dest)
 	dest = type_id ? &mission_type::types[type_id] : 0;
 	return true;
 }
+#endif
 
 bool fromJSON(const JSON& src, const mtype*& dest)
 {
@@ -263,6 +290,7 @@ bool fromJSON(const JSON& src, const it_ammo*& dest)
 	return ret;
 }
 
+#ifndef SOCRATES_DAIMON
 std::istream& operator>>(std::istream& is, point& dest)
 {
 	JSON pt(is);
@@ -567,10 +595,12 @@ JSON toJSON(const field& src)
 	}
 	return _field;
 }
+#endif
 
 // Arrays are not plausible for the final format for the overmap data classes, but
 // they are easily distinguished from objects so we have a clear upgrade path.
 // Plan is to reserve the object form for when the absolute coordinate system is understood.
+#ifndef SOCRATES_DAIMON
 bool fromJSON(const JSON& _in, city& dest)
 {
 	const size_t _size = _in.size();
@@ -750,6 +780,7 @@ JSON toJSON(const vehicle& src)
 	}
 	return _vehicle;
 }
+#endif
 
 bool fromJSON(const JSON& _in, item& dest)
 {
@@ -807,6 +838,7 @@ JSON toJSON(const item& src) {
 	return _item;
 }
 
+#ifndef SOCRATES_DAIMON
 submap::submap(std::istream& is)
 : active_item_count(0), field_count(0)	// turn_last_touched omitted, will be caught later
 {
@@ -1108,6 +1140,7 @@ JSON toJSON(const monster& src)
 	}
 	return _monster;
 }
+#endif
 
 // usage is when loading artifacts
 itype::itype(const cataclysm::JSON& src)
@@ -1259,7 +1292,10 @@ std::ostream& operator<<(std::ostream& os, const it_artifact_armor& src)
 }
 
 it_tool::it_tool(const cataclysm::JSON& src)
-: itype(src),ammo(AT_NULL), max_charges(0), def_charges(0), charges_per_use(0), turns_per_charge(0), revert_to(itm_null), use(&iuse::none)
+: itype(src),ammo(AT_NULL), max_charges(0), def_charges(0), charges_per_use(0), turns_per_charge(0), revert_to(itm_null)
+#ifndef SOCRATES_DAIMON
+, use(&iuse::none)
+#endif
 {
 	int tmp;
 	if (src.has_key("ammo")) fromJSON(src["ammo"], ammo);
@@ -1295,8 +1331,9 @@ it_artifact_tool::it_artifact_tool(const cataclysm::JSON& src)
 	if (src.has_key("effects_wielded")) src["effects_wielded"].decode(effects_wielded);
 	if (src.has_key("effects_activated")) src["effects_activated"].decode(effects_activated);
 	if (src.has_key("effects_carried")) src["effects_carried"].decode(effects_carried);
-
+#ifndef SOCRATES_DAIMON
 	use = &iuse::artifact;
+#endif
 }
 
 void it_artifact_tool::toJSON(JSON& dest) const
@@ -1330,6 +1367,7 @@ std::string it_artifact_armor::save_data()
 	return data.str();
 }
 
+#ifndef SOCRATES_DAIMON
 bool fromJSON(const JSON& src, disease& dest)
 {
 	if (!src.has_key("type") || !fromJSON(src["type"], dest.type)) return false;
@@ -1779,3 +1817,4 @@ npc::npc(const JSON& src)
 	}
 
 }
+#endif

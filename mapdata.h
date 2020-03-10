@@ -2,15 +2,19 @@
 #define _MAPDATA_H_
 
 #include "item.h"
+#ifndef SOCRATES_DAIMON
 #include "trap.h"
 #include "monster.h"
 #include "computer.h"
 #include "vehicle.h"
+#endif
 #include "ui.h"
 
 #include <map>
 
+#ifndef SOCRATES_DAIMON
 class game;
+#endif
 
 enum t_flag {
  transparent = 0,// Player & monsters can see through/past it
@@ -115,6 +119,7 @@ template<int lb, int ub> constexpr bool any(ter_id src) {
     return lb == src || ub == src;
 }
 
+#ifndef SOCRATES_DAIMON
 struct ter_t {
 	static const ter_t list[num_terrain_types];
 	static std::map<ter_id, std::string> tiles;
@@ -128,6 +133,7 @@ struct ter_t {
 
 	static void init();
 };
+#endif
 
 enum map_extra {
  mx_null = 0,
@@ -177,6 +183,7 @@ struct map_extras {
  }
 };
 
+#ifndef SOCRATES_DAIMON
 struct field_t {
  std::string name[3];
  char sym;
@@ -278,5 +285,6 @@ struct submap {
  template<t_flag flag> bool has_flag_ter_only(const point& pt) const { return ter_t::list[ter[pt.x][pt.y]].flags & mfb(flag); };
  int move_cost_ter_only(const point& pt) const { return ter_t::list[ter[pt.x][pt.y]].movecost; };
 };
+#endif
 
 #endif
