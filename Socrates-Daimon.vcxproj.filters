@@ -133,9 +133,6 @@
     <ClInclude Include="c_bitmap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="bodypart.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="recent_msg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -146,6 +143,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ui.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bodypart_enum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

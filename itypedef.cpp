@@ -4,7 +4,7 @@
 #endif
 #include "output.h"
 #include "JSON.h"
-#include "bodypart.h"
+#include "bodypart_enum.h"
 #include "setvector.h"
 
 #include <string.h>

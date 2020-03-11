@@ -3,7 +3,7 @@
 #include "game.h"
 #else
 #include "mtype.h"
-#include "bodypart.h"
+#include "bodypart_enum.h"
 #endif
 #include "skill.h"
 #include "recent_msg.h"

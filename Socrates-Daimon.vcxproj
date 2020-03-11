@@ -177,7 +177,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="artifact.h" />
-    <ClInclude Include="bodypart.h" />
+    <ClInclude Include="bodypart_enum.h" />
     <ClInclude Include="calendar.h" />
     <ClInclude Include="catacurse.h" />
     <ClInclude Include="color.h" />
