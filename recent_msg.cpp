@@ -1,7 +1,11 @@
 #include "recent_msg.h"
 #include "output.h"
 #include "keypress.h"
+#ifndef SOCRATES_DAIMON
 #include "mapdata.h"
+#else
+#include "ui.h"
+#endif
 
 #include <stdarg.h>
 #include <sstream>

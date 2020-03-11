@@ -133,9 +133,6 @@
     <ClInclude Include="c_bitmap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mapdata.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="bodypart.h">
       <Filter>Header Files</Filter>
     </ClInclude>
