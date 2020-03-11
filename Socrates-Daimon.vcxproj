@@ -162,12 +162,16 @@
     <ClCompile Include="calendar.cpp" />
     <ClCompile Include="catacurse.cpp" />
     <ClCompile Include="color.cpp" />
+    <ClCompile Include="item.cpp" />
+    <ClCompile Include="itypedef.cpp" />
     <ClCompile Include="json.cpp" />
     <ClCompile Include="keypress.cpp" />
+    <ClCompile Include="mtypedef.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="output.cpp" />
     <ClCompile Include="recent_msg.cpp" />
     <ClCompile Include="rng.cpp" />
+    <ClCompile Include="saveload.cpp" />
     <ClCompile Include="skill.cpp" />
     <ClCompile Include="socrates-daimon.cpp" />
   </ItemGroup>

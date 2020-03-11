@@ -115,10 +115,94 @@ static const char* const JSON_transcode_nc_color[] = {
 	"c_yellow_red"
 };
 
+// relocate artifact enum JSON transcoding here for Socrates' Daimon
+static const char* const JSON_transcode_artifactactives[] = {
+	"STORM",
+	"FIREBALL",
+	"ADRENALINE",
+	"MAP",
+	"BLOOD",
+	"FATIGUE",
+	"ACIDBALL",
+	"PULSE",
+	"HEAL",
+	"CONFUSED",
+	"ENTRANCE",
+	"BUGS",
+	"TELEPORT",
+	"LIGHT",
+	"GROWTH",
+	"HURTALL",
+	"",	// AEA_SPLIT
+	"RADIATION",
+	"PAIN",
+	"MUTATE",
+	"PARALYZE",
+	"FIRESTORM",
+	"ATTENTION",
+	"TELEGLOW",
+	"NOISE",
+	"SCREAM",
+	"DIM",
+	"FLASH",
+	"VOMIT",
+	"SHADOWS"
+};
+
+static const char* const JSON_transcode_artifactpassives[] = {
+	"STR_UP",
+	"DEX_UP",
+	"PER_UP",
+	"INT_UP",
+	"ALL_UP",
+	"SPEED_UP",
+	"IODINE",
+	"SNAKES",
+	"INVISIBLE",
+	"CLAIRVOYANCE",
+	"STEALTH",
+	"EXTINGUISH",
+	"GLOW",
+	"PSYSHIELD",
+	"RESIST_ELECTRICITY",
+	"CARRY_MORE",
+	"SAP_LIFE",
+	"",	// AEP_SPLIT
+	"HUNGER",
+	"THIRST",
+	"SMOKE",
+	"EVIL",
+	"SCHIZO",
+	"RADIOACTIVE",
+	"MUTAGENIC",
+	"ATTENTION",
+	"STR_DOWN",
+	"DEX_DOWN",
+	"PER_DOWN",
+	"INT_DOWN",
+	"ALL_DOWN",
+	"SPEED_DOWN",
+	"FORCE_TELEPORT",
+	"MOVEMENT_NOISE",
+	"BAD_WEATHER",
+	"SICK"
+};
+
+static const char* const JSON_transcode_artifactcharging[] = {
+	"ARTC_TIME",
+	"ARTC_SOLAR",
+	"ARTC_PAIN",
+	"ARTC_HP"
+};
+
 DECLARE_JSON_ENUM_SUPPORT(material)
 DECLARE_JSON_ENUM_SUPPORT(nc_color)
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(material, JSON_transcode_material)
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(nc_color, JSON_transcode_nc_color)
+
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(art_charge, JSON_transcode_artifactcharging)
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(art_effect_active, JSON_transcode_artifactactives)
+DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(art_effect_passive, JSON_transcode_artifactpassives)
 
 using cataclysm::JSON;
 
