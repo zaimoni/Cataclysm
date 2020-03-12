@@ -2281,7 +2281,7 @@ any effects.");
 #define AMMO(name,rarity,price,ammo_type,color,mat,volume,wgt,dmg,AP,range,\
 accuracy,recoil,count,des,flags) \
 	index++;types.push_back(new it_ammo(index,rarity,price,name,des,'=',\
-color,mat,volume,wgt,1,0,0,flags,ammo_type,dmg,AP,accuracy,recoil,range,count))
+color,mat,volume,wgt,1,flags,ammo_type,dmg,AP,accuracy,recoil,range,count))
 
 //  NAME		RAR PRC TYPE		COLOR		MAT
 AMMO("batteries",	50, 120,AT_BATT,	c_magenta,	IRON,
@@ -2634,7 +2634,7 @@ A weak plasma charge.",
 #define FUEL(name,rarity,price,ammo_type,color,dmg,AP,range,accuracy,recoil,\
              count,des,flags) \
 	index++;types.push_back(new it_ammo(index,rarity,price,name,des,'~',\
-color,LIQUID,1,1,0,0,0,flags,ammo_type,dmg,AP,accuracy,recoil,range,count))
+color,LIQUID,1,1,0,flags,ammo_type,dmg,AP,accuracy,recoil,range,count))
 FUEL("gasoline",	0,  50,   AT_GAS,	c_ltred,
 //	DMG  AP RNG ACC REC COUNT
 	 0,  0,  4,  0,  0,  200, "\
@@ -4477,13 +4477,12 @@ it_ammo::it_ammo(int pid, unsigned char prarity, unsigned int pprice,
 	std::string pname, std::string pdes,
 	char psym, nc_color pcolor, material pm1,
 	unsigned short pvolume, unsigned short pweight,
-	signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
-	unsigned pitem_flags,
+	signed char pmelee_dam, unsigned pitem_flags,
 
 	ammotype ptype, unsigned char pdamage, unsigned char ppierce,
 	signed char paccuracy, unsigned char precoil, unsigned char prange,
 	unsigned char pcount)
-: itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+: itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, pmelee_dam, 0, 0, pitem_flags),
   type(ptype),damage(pdamage),pierce(ppierce),range(prange),accuracy(paccuracy),recoil(precoil),count(pcount)
 {
 }
