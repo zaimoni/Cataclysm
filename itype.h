@@ -662,12 +662,9 @@ struct it_style : public itype
 {
  std::vector<style_move> moves;
  
- it_style(int pid, unsigned char prarity, unsigned int pprice,
-	 std::string pname, std::string pdes,
-	 char psym, nc_color pcolor, material pm1, material pm2,
-	 unsigned char pvolume, unsigned char pweight,
-	 signed char pmelee_dam, signed char pmelee_cut,
-	 signed char pm_to_hit, unsigned pitem_flags);
+ it_style(int pid, std::string pname, std::string pdes, char psym, nc_color pcolor,
+     signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
+     unsigned pitem_flags);
 
  bool is_style() const override { return true; }
 };

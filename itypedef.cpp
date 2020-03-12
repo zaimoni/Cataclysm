@@ -4165,8 +4165,7 @@ GUN("fusion blaster",	 0,0,c_magenta,	STEEL,	PLASTIC,
 #define STYLE(name,dam,description,...)	\
 {	\
 	index++; \
-	auto style = new it_style(index, 0, 0, name, description, '$',  c_white, MNULL, MNULL, 0, 0, dam, 0, 0, 0);	\
-	style->item_flags |= mfb(IF_UNARMED_WEAPON);	\
+	auto style = new it_style(index, name, description, '$',  c_white, dam, 0, 0, mfb(IF_UNARMED_WEAPON));	\
 	SET_VECTOR_STRUCT(style->moves, style_move, __VA_ARGS__); \
 	types.push_back(style); \
 }
@@ -4658,13 +4657,12 @@ it_software::it_software(int pid, unsigned char prarity, unsigned int pprice,
 	power = ppower;
 }
 
-it_style::it_style(int pid, unsigned char prarity, unsigned int pprice,
+it_style::it_style(int pid,
 	std::string pname, std::string pdes,
-	char psym, nc_color pcolor, material pm1, material pm2,
-	unsigned char pvolume, unsigned char pweight,
+	char psym, nc_color pcolor,
 	signed char pmelee_dam, signed char pmelee_cut,
 	signed char pm_to_hit, unsigned pitem_flags)
-:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags)
+:itype(pid, 0, 0, pname, pdes, psym, pcolor, MNULL, MNULL, 0, 0, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags)
 { }
 
 it_artifact_tool::it_artifact_tool()
