@@ -645,13 +645,9 @@ struct it_software : public itype
  software_type swtype;
  int power;
 
- it_software(int pid, unsigned char prarity, unsigned int pprice,
+ it_software(int pid, unsigned int pprice,
 	 std::string pname, std::string pdes,
-	 char psym, nc_color pcolor, material pm1, material pm2,
-	 unsigned short pvolume, unsigned short pweight,
-	 signed char pmelee_dam, signed char pmelee_cut,
-	 signed char pm_to_hit, unsigned pitem_flags,
-
+	 char psym, nc_color pcolor,
 	 software_type pswtype, int ppower);
 
  bool is_software() const override { return true; }

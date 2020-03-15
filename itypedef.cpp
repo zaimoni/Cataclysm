@@ -4095,8 +4095,8 @@ heavy ammunition and weapons.",
 // SOFTWARE
 
 #define SOFTWARE(name, price, swtype, power, description) \
-index++; types.push_back(new it_software(index, 0, price, name, description,\
-	' ', c_white, MNULL, MNULL, 0, 0, 0, 0, 0, 0, swtype, power))
+index++; types.push_back(new it_software(index, price, name, description,\
+	' ', c_white, swtype, power))
 SOFTWARE("misc software", 300, SW_USELESS, 0, "\
 A miscellaneous piece of hobby software.  Probably useless.");
 
@@ -4641,16 +4641,11 @@ it_macguffin::it_macguffin(int pid, unsigned char prarity, unsigned int pprice,
 {
 }
 
-it_software::it_software(int pid, unsigned char prarity, unsigned int pprice,
+it_software::it_software(int pid, unsigned int pprice,
 	std::string pname, std::string pdes,
-	char psym, nc_color pcolor, material pm1, material pm2,
-	unsigned short pvolume, unsigned short pweight,
-	signed char pmelee_dam, signed char pmelee_cut,
-	signed char pm_to_hit, unsigned pitem_flags,
-
+	char psym, nc_color pcolor,
 	software_type pswtype, int ppower)
-:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
-  swtype(pswtype),power(ppower)
+:itype(pid, 0, pprice, pname, pdes, psym, pcolor, MNULL, MNULL, 0, 0, 0, 0, 0, 0), swtype(pswtype),power(ppower)
 {
 	swtype = pswtype;
 	power = ppower;

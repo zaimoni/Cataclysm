@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
 			// constructor hard-coding (specification)
 			const auto ammo = static_cast<it_ammo*>(it);
 			if (!ammo) throw std::logic_error(it->name + ": static cast to ammo failed");
+			// constructor hard-coding (specification)
 			if (it->m2) throw std::logic_error("unexpected secondary material");
 			if (0 != it->melee_cut) throw std::logic_error("unexpected cutting damage");
 			if (0 != it->m_to_hit) throw std::logic_error("unexpected melee accuracy");
@@ -68,11 +69,29 @@ int main(int argc, char *argv[])
 				if (1 != it->volume) throw std::logic_error("unexpected volume");
 				if (1 != it->weight) throw std::logic_error("unexpected weight");
 				if (0 != it->melee_dam) throw std::logic_error("unexpected melee damage");
+				if ('~' != it->sym) throw std::logic_error("unexpected symbol");
 			} else {
 				if (1 != it->melee_dam) throw std::logic_error("unexpected melee damage");
+				if ('=' != it->sym) throw std::logic_error("unexpected symbol");
 				// exceptions are for plasma state
 				if (!it->m1 && itm_bio_fusion != it->id && itm_charge_shot!=it->id) throw std::logic_error("null material for ammo");
 			}
+		} else if (it->is_software()) {
+			const auto sw = static_cast<it_software*>(it);
+			if (!sw) throw std::logic_error(it->name + ": static cast to software failed");
+			// constructor hard-coding (specification)
+			if (0 != it->rarity) throw std::logic_error("unexpected rarity");	// 2020-03-14 these don't randomly spawn; might want to change that
+			// the container may have volume, etc. but the software itself isn't very physical
+			if (it->m1) throw std::logic_error("unexpectedly material");
+			if (0 != it->volume) throw std::logic_error("unexpected volume");
+			if (0 != it->weight) throw std::logic_error("unexpected weight");
+			if (0 != it->melee_dam) throw std::logic_error("unexpected melee damage");
+			if (0 != it->melee_cut) throw std::logic_error("unexpected cutting damage");
+			if (0 != it->m_to_hit) throw std::logic_error("unexpected melee accuracy");
+			if (0 != it->item_flags) throw std::logic_error("unexpected flags");	// 2020-03-14 not physical enough to have current flags
+			// macro hard-coding (may want to change these but currently invariant)
+			if (' ' != it->sym) throw std::logic_error("unexpected symbol");
+			if (c_white != it->color) throw std::logic_error("unexpected color");
 #if 0
 		} else if (!it->m1) {
 			if (itm_toolset < it->id && num_items != it->id && num_all_items != it->id) {
