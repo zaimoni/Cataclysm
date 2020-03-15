@@ -3,9 +3,13 @@
 #include "color.h"
 #include "mtype.h"
 #include "item.h"
+#include "output.h"
+#include "ios_file.h"
 #include <stdexcept>
 #include <stdlib.h>
 #include <time.h>
+
+#include <fstream>
 
 int main(int argc, char *argv[])
 {
@@ -27,6 +31,8 @@ int main(int argc, char *argv[])
 	item::init();
 	mtype::init();
 //	mtype::init_items();     need to do this but at a later stage
+
+	DECLARE_AND_ACID_OPEN(std::ofstream, fout, "data\\items_raw.txt", return EXIT_FAILURE;)
 
 	// item type scan
 	auto ub = item::types.size();
@@ -92,14 +98,38 @@ int main(int argc, char *argv[])
 			// macro hard-coding (may want to change these but currently invariant)
 			if (' ' != it->sym) throw std::logic_error("unexpected symbol");
 			if (c_white != it->color) throw std::logic_error("unexpected color");
-#if 0
 		} else if (!it->m1) {
 			if (itm_toolset < it->id && num_items != it->id && num_all_items != it->id) {
                 throw std::logic_error("unexpected null material: "+std::to_string(it->id));
             }
-#endif
+		}
+/*
+ virtual bool is_food() const    { return false; }
+ virtual bool is_gun() const     { return false; }
+ virtual bool is_gunmod() const  { return false; }
+ virtual bool is_bionic() const  { return false; }
+ virtual bool is_armor() const   { return false; }
+ virtual bool is_book() const    { return false; }
+ virtual bool is_tool() const    { return false; }
+ virtual bool is_container() const { return false; }
+ virtual bool is_macguffin() const { return false; }
+ virtual bool is_artifact() const { return false; }
+*/
+		// check what happens when item is created.  VAPORWARE generate web page system from this
+		if (itm_corpse == it->id) {	// corpses need their own testing path
+		} else {
+			item test(it, 0);
+			fout << test.tname() << std::endl << test.info(true) << std::endl << "====" << std::endl;
+			if (it->is_food() || it->is_software()) {	// i.e., can create in own container
+				auto test2 = test.in_its_container();
+				if (test2.type != test.type) {
+					fout << test2.tname() << std::endl << test2.info(true) << std::endl << "====" << std::endl;
+				}
+			}
 		}
 	}
+
+	OFSTREAM_ACID_CLOSE(fout, "data\\items_raw.txt")
 
 	// route the command line options here
 

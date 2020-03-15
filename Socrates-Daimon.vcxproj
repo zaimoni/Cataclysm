@@ -183,6 +183,7 @@
     <ClInclude Include="color.h" />
     <ClInclude Include="c_bitmap.h" />
     <ClInclude Include="enum_json.h" />
+    <ClInclude Include="ios_file.h" />
     <ClInclude Include="item.h" />
     <ClInclude Include="itype.h" />
     <ClInclude Include="json.h" />
