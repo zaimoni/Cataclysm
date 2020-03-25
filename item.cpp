@@ -88,6 +88,15 @@ void item::make(const itype* it)
  if (was_null) _bootstrap_item_charges(charges, it);
 }
 
+// intentionally ignores as ui: invlet, name
+bool operator==(const item& lhs, const item& rhs)
+{
+    return lhs.type == rhs.type && lhs.corpse == rhs.corpse && lhs.curammo == rhs.curammo && lhs.charges == rhs.charges && lhs.active == rhs.active
+        && lhs.damage == rhs.damage && lhs.burnt == rhs.burnt && lhs.bday == rhs.bday && lhs.owned == rhs.owned && lhs.poison == rhs.poison
+        && lhs.mission_id == rhs.mission_id && lhs.player_id == rhs.player_id && lhs.contents==rhs.contents;
+}
+
+
 int item::use_charges(int& qty) {
     if (0 >= charges) return 0; // no change
     if (charges <= qty) {

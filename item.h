@@ -45,6 +45,9 @@ public:
  item& operator=(const item& src);
  item& operator=(item&& src) = default;
 
+ friend bool operator==(const item& lhs, const item& rhs);
+ friend bool operator!=(const item& lhs, const item& rhs) { return !(lhs==rhs); };
+
 // returns the default container of this item, with this item in it
  item in_its_container() const;
 

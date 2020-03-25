@@ -5,11 +5,25 @@
 #include "item.h"
 #include "output.h"
 #include "ios_file.h"
+#include "json.h"
 #include <stdexcept>
 #include <stdlib.h>
 #include <time.h>
 
 #include <fstream>
+
+using namespace cataclysm;
+
+// from saveload.cpp
+bool fromJSON(const JSON& _in, item& dest);
+JSON toJSON(const item& src);
+
+static void check_roundtrip_JSON(const item& src)
+{
+	item staging;
+	if (!fromJSON(toJSON(src), staging)) throw std::logic_error("critical round-trip failure");
+	if (src != staging) throw std::logic_error("round-trip was not invariant");
+}
 
 int main(int argc, char *argv[])
 {
@@ -125,7 +139,9 @@ int main(int argc, char *argv[])
 				if (test2.type != test.type) {
 					fout << test2.tname() << std::endl << test2.info(true) << std::endl << "====" << std::endl;
 				}
+				check_roundtrip_JSON(test2);
 			}
+			if (num_items != it->id && itm_null != it->id) check_roundtrip_JSON(test);
 		}
 	}
 
