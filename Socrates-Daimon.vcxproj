@@ -163,6 +163,7 @@
     <ClCompile Include="calendar.cpp" />
     <ClCompile Include="catacurse.cpp" />
     <ClCompile Include="color.cpp" />
+    <ClCompile Include="html.cpp" />
     <ClCompile Include="item.cpp" />
     <ClCompile Include="itypedef.cpp" />
     <ClCompile Include="json.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="color.h" />
     <ClInclude Include="c_bitmap.h" />
     <ClInclude Include="enum_json.h" />
+    <ClInclude Include="html.hpp" />
     <ClInclude Include="ios_file.h" />
     <ClInclude Include="item.h" />
     <ClInclude Include="itype.h" />
