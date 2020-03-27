@@ -147,6 +147,14 @@ int main(int argc, char *argv[])
 
 	OFSTREAM_ACID_CLOSE(fout, "data\\items_raw.txt")
 
+	// try to replicate some issues
+	std::vector<item> res;
+	std::vector<item> stack0;
+	stack0.push_back(item(item::types[itm_mag_guns], 0));
+	stack0.push_back(item(item::types[itm_sandwich_t], 0));
+	if (!JSON::encode(stack0).decode(res)) throw std::logic_error("critical round-trip failure");
+	if (res != stack0) throw std::logic_error("round-trip failure");
+
 	// route the command line options here
 
 	erase(); // Clear screen
