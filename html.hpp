@@ -4,10 +4,11 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <stdio.h>
 
 namespace html {
 
-class tag {
+class tag final {
 private:
 	std::string _name;	// if this is empty, just a container for content
 	std::vector<tag> _content;
@@ -59,7 +60,29 @@ public:
 	std::string to_s_end() const;
 
 	// infrastructure
-	static std::string& destructive_quot_escape(std::string& x);
+	static std::string& destructive_quot_escape(std::string& x);	// returns reference to x
+};
+
+class to_text final
+{
+private:
+	std::vector<tag> _stack;
+	FILE* dest;
+public:
+	to_text(FILE* src) : dest(src) {};
+	to_text(const to_text& src) = delete;
+	to_text(to_text&& src) = delete;
+	~to_text() {
+		if (dest) fclose(dest);
+		dest = 0;
+	};
+	to_text& operator=(const to_text& src) = delete;
+	to_text& operator=(to_text&& src) = delete;
+
+	void print(const tag& src);
+	void start_print(const tag& src);
+	void start_print(tag&& src);
+	bool end_print(); // returns true iff no more tags to complete printing
 };
 
 }	// namespace html

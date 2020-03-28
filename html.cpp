@@ -77,4 +77,36 @@ std::string tag::to_s_end() const
 	return start_closing_tag + _name + end_tag;
 }
 
+void to_text::print(const tag& src) {
+	auto _html = src.to_s();
+	if (!_html.empty()) fwrite(_html.c_str(), 1, _html.size(), dest);
 }
+
+static void _start_print(const tag& src, FILE* dest)
+{
+	auto _html = src.to_s_start();
+	if (!_html.empty()) fwrite(_html.c_str(), 1, _html.size(), dest);
+	_html = src.to_s_content();
+	if (!_html.empty()) fwrite(_html.c_str(), 1, _html.size(), dest);
+}
+
+void to_text::start_print(const tag& src) {
+	_start_print(src, dest);
+	_stack.push_back(src);
+}
+
+void to_text::start_print(tag&& src) {
+	_start_print(src, dest);
+	_stack.push_back(std::move(src));
+}
+
+bool to_text::end_print() {
+	if (!_stack.empty()) {
+		auto _html = _stack.back().to_s_end();
+		if (!_html.empty()) fwrite(_html.c_str(), 1, _html.size(), dest);
+		_stack.pop_back();
+	}
+	return !_stack.empty();
+}
+
+}	// namespace html

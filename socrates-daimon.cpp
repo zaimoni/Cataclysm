@@ -48,6 +48,8 @@ int main(int argc, char *argv[])
 
 	DECLARE_AND_ACID_OPEN(std::ofstream, fout, "data\\items_raw.txt", return EXIT_FAILURE;)
 
+	// item HTML setup
+
 	// item type scan
 	auto ub = item::types.size();
 	while (0 < ub) {
