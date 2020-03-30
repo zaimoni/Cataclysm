@@ -1,4 +1,5 @@
 #include "html.hpp"
+#include <stdexcept>
 
 namespace html {
 
@@ -77,6 +78,25 @@ std::string tag::to_s_end() const
 	return start_closing_tag + _name + end_tag;
 }
 
+tag* tag::querySelector(const std::string& selector)
+{
+	if (selector.empty()) return 0;
+	auto pos = selector.find_first_of(" *>+.#[");
+	if (std::string::npos == pos) return _querySelector_tagname(selector);
+	// unhandled
+#ifndef NDEBUG
+	throw new std::logic_error("need to handle more selector syntax");
+#endif
+	return 0;
+}
+
+tag* tag::_querySelector_tagname(const std::string& tagname)
+{
+	if (tagname == _name) return this;
+	if (!_content.empty()) for (auto& _tag : _content) if (auto test = _tag._querySelector_tagname(tagname)) return test;
+	return 0;
+}
+
 void to_text::print(const tag& src) {
 	auto _html = src.to_s();
 	if (!_html.empty()) fwrite(_html.c_str(), 1, _html.size(), dest);
@@ -108,5 +128,6 @@ bool to_text::end_print() {
 	}
 	return !_stack.empty();
 }
+
 
 }	// namespace html

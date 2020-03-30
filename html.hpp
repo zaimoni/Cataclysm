@@ -53,6 +53,9 @@ public:
 	void set(std::string&& key, std::string val) { _attr[std::move(key)] = destructive_quot_escape(val); }
 	void set(std::string&& key, std::string&& val) { _attr[std::move(key)] = std::move(destructive_quot_escape(val)); }
 
+	// W3C API
+	tag* querySelector(const std::string& selector);	// returns first matching tag
+
 	// to normal text
 	std::string to_s() const;
 	std::string to_s_start() const;
@@ -61,6 +64,8 @@ public:
 
 	// infrastructure
 	static std::string& destructive_quot_escape(std::string& x);	// returns reference to x
+private:
+	tag* _querySelector_tagname(const std::string& tagname);
 };
 
 class to_text final

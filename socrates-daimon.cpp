@@ -6,6 +6,7 @@
 #include "output.h"
 #include "ios_file.h"
 #include "json.h"
+#include "html.hpp"
 #include <stdexcept>
 #include <stdlib.h>
 #include <time.h>
@@ -49,6 +50,19 @@ int main(int argc, char *argv[])
 	DECLARE_AND_ACID_OPEN(std::ofstream, fout, "data\\items_raw.txt", return EXIT_FAILURE;)
 
 	// item HTML setup
+	const html::tag _html("html");	// stage-printed
+	// head tag will be mostly "common" between pages, but title will need adjusting
+	html::tag _head("head");
+	_head.append(html::tag("title"));
+	// ....
+	html::tag* const _title = _head.querySelector("title");
+#ifndef NDEBUG
+	if (!_title) throw std::logic_error("title tag AWOL");
+#endif
+	// this is where the JS for any dynamic HTML, etc. has to be inlined
+	const html::tag _body("body");	// stage-printed
+	// navigation sidebar will be "common", at least between page types
+	const html::tag _data_table("table");	// stage-printed
 
 	// item type scan
 	auto ub = item::types.size();
