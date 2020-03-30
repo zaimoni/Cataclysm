@@ -34,10 +34,11 @@ static std::string destructive_vector_to_s(std::vector<std::string>& src)
 std::string tag::to_s() const
 {
 	const bool has_name = !_name.empty();
-	if (_content.empty()) return has_name ? start_opening_tag+_name+end_selfclose_tag : std::string();
+	if (_content.empty() && _text.empty()) return has_name ? start_opening_tag+_name+end_selfclose_tag : std::string();
 	std::vector<std::string> ret;
 	if (has_name) ret.push_back(to_s_start());
-	content_to_vector(_content, ret);
+	if (!_text.empty()) ret.push_back(_text);
+	else content_to_vector(_content, ret);
 	if (has_name) ret.push_back(to_s_end());
 	return destructive_vector_to_s(ret);
 }
@@ -67,6 +68,7 @@ std::string tag::to_s_start() const
 
 std::string tag::to_s_content() const
 {
+	if (!_text.empty()) return _text;
 	std::vector<std::string> ret;
 	content_to_vector(_content, ret);
 	return destructive_vector_to_s(ret);

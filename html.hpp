@@ -11,6 +11,7 @@ namespace html {
 class tag final {
 private:
 	std::string _name;	// if this is empty, just a container for content
+	std::string _text;
 	std::vector<tag> _content;
 	std::map<std::string, std::string> _attr;
 public:
@@ -28,13 +29,13 @@ public:
 
 	static tag wrap(const std::string& src) {
 		tag ret;
-		ret._content.push_back(src);
+		ret._text = src;
 		return ret;
 	}
 
 	static tag wrap(std::string&& src) {
 		tag ret;
-		ret._content.push_back(std::move(src));
+		ret._text = std::move(src);
 		return ret;
 	}
 
@@ -45,6 +46,11 @@ public:
 	void append(tag&& src) { _content.push_back(std::move(src)); }
 	void append(const std::string& src) { _content.push_back(wrap(src)); }
 	void append(std::string&& src) { _content.push_back(wrap(std::move(src))); }
+	void clear() {
+		decltype(_content) discard;
+		_content.swap(discard);
+	}
+	tag* operator[](size_t n) { return _content.size() > n ? _content.data() + n : 0; }
 
 	// attribute manipulation
 	void unset(const std::string& key) { _attr.erase(key); }

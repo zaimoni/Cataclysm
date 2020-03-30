@@ -28,6 +28,13 @@ static void check_roundtrip_JSON(const item& src)
 
 int main(int argc, char *argv[])
 {
+	// these do not belong here
+	static const std::string attr_valign("valign");
+	static const std::string val_top("top");
+	static const std::string attr_align("align");
+	static const std::string val_center("center");
+	static const std::string val_left("left");
+
 	// \todo parse command line options
 
 	srand(time(NULL));
@@ -64,9 +71,13 @@ int main(int argc, char *argv[])
 	// navigation sidebar will be "common", at least between page types
 	const html::tag _data_table("table");	// stage-printed
 
+	std::vector<it_style*> ma_styles;	// martial arts styles
+	std::map<std::string, std::string> name_desc;
+
 	// item type scan
 	auto ub = item::types.size();
 	while (0 < ub) {
+		bool will_handle_as_html = false;
 		const auto it = item::types[--ub];
 		if (!it) throw std::logic_error("null item type");
         if (it->id != ub) throw std::logic_error("reverse lookup failure: " + std::to_string(it->id)+" for " + std::to_string(ub));
@@ -89,6 +100,9 @@ int main(int argc, char *argv[])
 			if (0 != it->melee_cut) throw std::logic_error("unexpected cutting damage");
 			if (0 != it->m_to_hit) throw std::logic_error("unexpected melee accuracy");
 			if (mfb(IF_UNARMED_WEAPON) != it->item_flags) throw std::logic_error("unexpected flags");
+
+			ma_styles.push_back(style);
+			will_handle_as_html = true;
 		} else if (it->is_ammo()) {
 			// constructor hard-coding (specification)
 			const auto ammo = static_cast<it_ammo*>(it);
@@ -149,11 +163,11 @@ int main(int argc, char *argv[])
 		if (itm_corpse == it->id) {	// corpses need their own testing path
 		} else {
 			item test(it, 0);
-			fout << test.tname() << std::endl << test.info(true) << std::endl << "====" << std::endl;
+			if (!will_handle_as_html) fout << test.tname() << std::endl << test.info(true) << std::endl << "====" << std::endl;
 			if (it->is_food() || it->is_software()) {	// i.e., can create in own container
 				auto test2 = test.in_its_container();
 				if (test2.type != test.type) {
-					fout << test2.tname() << std::endl << test2.info(true) << std::endl << "====" << std::endl;
+					if (!will_handle_as_html) fout << test2.tname() << std::endl << test2.info(true) << std::endl << "====" << std::endl;
 				}
 				check_roundtrip_JSON(test2);
 			}
@@ -162,6 +176,65 @@ int main(int argc, char *argv[])
 	}
 
 	OFSTREAM_ACID_CLOSE(fout, "data\\items_raw.txt")
+
+	if (!ma_styles.empty()) {
+		for (auto it : ma_styles) {
+			item test(it, 0);
+			name_desc[test.tname()] = test.info(true);
+		}
+		_title->append(html::tag::wrap("Cataclysm:Z martial arts styles"));
+#define HTML_TARGET "data\\ma_styles.html"
+
+		FILE* out = fopen(HTML_TARGET ".tmp", "w");
+		if (out) {
+			html::tag cell("td");
+			cell.set(attr_valign, val_top);
+
+			{
+				html::to_text page(out);
+				page.start_print(_html);
+				page.print(_head);
+				page.start_print(_body);
+				// left navigation bar goes here
+				page.start_print(_data_table);
+				// actual content
+				{
+					html::tag table_header("tr");
+					table_header.set(attr_align, val_center);
+					table_header.append(html::tag("th"));
+					table_header.append(html::tag("th"));
+					table_header[0]->append(html::tag::wrap("Name"));
+					table_header[1]->append(html::tag::wrap("Description"));
+					page.print(table_header);
+				}
+				{
+					html::tag table_row("tr");
+					table_row.set(attr_align, val_left);
+					table_row.append(cell);
+					table_row.append(cell);
+					table_row[1]->append(html::tag("pre"));
+					auto _pre = table_row.querySelector("pre");
+
+					for (const auto& x : name_desc) {
+						table_row[0]->append(html::tag::wrap(x.first));
+						_pre->append(html::tag::wrap(x.second));
+						page.print(table_row);
+						table_row[0]->clear();
+						_pre->clear();
+					}
+				}
+
+				while (page.end_print());
+			}
+			unlink(HTML_TARGET);
+			rename(HTML_TARGET ".tmp", HTML_TARGET);
+		}
+
+#undef HTML_TARGET
+		_title->clear();
+		decltype(name_desc) discard;
+		name_desc.swap(discard);
+	}
 
 	// try to replicate some issues
 	std::vector<item> res;
