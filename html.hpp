@@ -54,9 +54,15 @@ public:
 
 	// attribute manipulation
 	void unset(const std::string& key) { _attr.erase(key); }
-	void set(const std::string& key, std::string val) { _attr[key] = destructive_quot_escape(val); }
+	void set(const std::string& key, const std::string& val) {
+		std::string x(val);
+		_attr[key] = std::move(destructive_quot_escape(x));
+	}
 	void set(const std::string& key, std::string&& val) { _attr[key] = std::move(destructive_quot_escape(val)); }
-	void set(std::string&& key, std::string val) { _attr[std::move(key)] = destructive_quot_escape(val); }
+	void set(std::string&& key, const std::string& val) {
+		std::string x(val);
+		_attr[std::move(key)] = destructive_quot_escape(x);
+	}
 	void set(std::string&& key, std::string&& val) { _attr[std::move(key)] = std::move(destructive_quot_escape(val)); }
 
 	// W3C API

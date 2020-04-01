@@ -19,6 +19,8 @@ using namespace cataclysm;
 bool fromJSON(const JSON& _in, item& dest);
 JSON toJSON(const item& src);
 
+const char* JSON_key(material src);
+
 static void check_roundtrip_JSON(const item& src)
 {
 	item staging;
@@ -29,11 +31,16 @@ static void check_roundtrip_JSON(const item& src)
 int main(int argc, char *argv[])
 {
 	// these do not belong here
+	static const std::string CSS_sep("; ");
 	static const std::string attr_valign("valign");
 	static const std::string val_top("top");
 	static const std::string attr_align("align");
 	static const std::string val_center("center");
 	static const std::string val_left("left");
+	static const std::string attr_style("style");
+	static const std::string val_thin_border("border: solid 1px black");
+	static const std::string val_left_align("float:left");
+	static const std::string val_list_none("list-style: none");
 
 	// \todo parse command line options
 
@@ -69,10 +76,45 @@ int main(int argc, char *argv[])
 	// this is where the JS for any dynamic HTML, etc. has to be inlined
 	const html::tag _body("body");	// stage-printed
 	// navigation sidebar will be "common", at least between page types
+	html::tag global_nav("ul");
+	global_nav.set(attr_style, std::move(val_thin_border + CSS_sep + val_left_align + CSS_sep + val_list_none + CSS_sep + "padding:10px"));
+
+	html::tag working_li("li");
+	html::tag working_a("a");
+
+	html::tag item_nav("ul");
+	item_nav.set(attr_style, std::move(val_list_none));
+	item_nav.set("id", "items");
+
+#define CONTAINERS_HTML "containers.html"
+#define MARTIAL_ARTS_HTML "ma_styles.html"
+
+	working_li.set("id", "containers");
+	working_a.set("href", "./" CONTAINERS_HTML);
+	working_a.append(html::tag::wrap("Containers"));
+	working_li.append(working_a);
+	item_nav.append(working_li);
+	working_li.clear();
+
+	working_li.set("id", "ma_styles");
+	working_a.set("href", "./" MARTIAL_ARTS_HTML);
+	working_a.clear();
+	working_a.append(html::tag::wrap("Martial Arts"));
+	working_li.append(working_a);
+	item_nav.append(working_li);
+
+	working_li.clear();
+	working_li.unset("id");
+	working_li.append(html::tag::wrap("Items"));
+	working_li.append(item_nav);
+	global_nav.append(working_li);
+
 	const html::tag _data_table("table");	// stage-printed
 
 	std::vector<it_style*> ma_styles;	// martial arts styles
+	std::vector<it_container*> containers;
 	std::map<std::string, std::string> name_desc;
+	std::map<std::string, int> name_id;
 
 	// item type scan
 	auto ub = item::types.size();
@@ -147,6 +189,14 @@ int main(int argc, char *argv[])
                 throw std::logic_error("unexpected null material: "+std::to_string(it->id));
             }
 		}
+
+		if (it->is_container()) {
+			const auto cont = static_cast<it_container*>(it);
+			if (!cont) throw std::logic_error(it->name + ": static cast to container failed");
+
+			containers.push_back(cont);
+			will_handle_as_html = true;
+		}
 /*
  virtual bool is_food() const    { return false; }
  virtual bool is_gun() const     { return false; }
@@ -164,6 +214,7 @@ int main(int argc, char *argv[])
 		} else {
 			item test(it, 0);
 			if (!will_handle_as_html) fout << test.tname() << std::endl << test.info(true) << std::endl << "====" << std::endl;
+			name_id[test.tname()] = it->id;
 			if (it->is_food() || it->is_software()) {	// i.e., can create in own container
 				auto test2 = test.in_its_container();
 				if (test2.type != test.type) {
@@ -183,7 +234,7 @@ int main(int argc, char *argv[])
 			name_desc[test.tname()] = test.info(true);
 		}
 		_title->append(html::tag::wrap("Cataclysm:Z martial arts styles"));
-#define HTML_TARGET "data\\ma_styles.html"
+#define HTML_TARGET "data\\" MARTIAL_ARTS_HTML
 
 		FILE* out = fopen(HTML_TARGET ".tmp", "w");
 		if (out) {
@@ -195,7 +246,7 @@ int main(int argc, char *argv[])
 				page.start_print(_html);
 				page.print(_head);
 				page.start_print(_body);
-				// left navigation bar goes here
+				page.print(global_nav);
 				page.start_print(_data_table);
 				// actual content
 				{
@@ -221,6 +272,70 @@ int main(int argc, char *argv[])
 						page.print(table_row);
 						table_row[0]->clear();
 						_pre->clear();
+					}
+				}
+
+				while (page.end_print());
+			}
+			unlink(HTML_TARGET);
+			rename(HTML_TARGET ".tmp", HTML_TARGET);
+		}
+
+#undef HTML_TARGET
+		_title->clear();
+		decltype(name_desc) discard;
+		name_desc.swap(discard);
+	}
+
+	if (!containers.empty()) {
+		for (auto it : containers) {
+			item test(it, 0);
+			name_desc[test.tname()] = test.info(true);
+		}
+		_title->append(html::tag::wrap("Cataclysm:Z containers"));
+#define HTML_TARGET "data\\" CONTAINERS_HTML
+
+		FILE* out = fopen(HTML_TARGET ".tmp", "w");
+		if (out) {
+			html::tag cell("td");
+			cell.set(attr_valign, val_top);
+
+			{
+				html::to_text page(out);
+				page.start_print(_html);
+				page.print(_head);
+				page.start_print(_body);
+				page.print(global_nav);
+				page.start_print(_data_table);
+				// actual content
+				{
+					html::tag table_header("tr");
+					table_header.set(attr_align, val_center);
+					table_header.append(html::tag("th"));
+					table_header.append(html::tag("th"));
+					table_header.append(html::tag("th"));
+					table_header[0]->append(html::tag::wrap("Name"));
+					table_header[1]->append(html::tag::wrap("Description"));
+					table_header[2]->append(html::tag::wrap("Material"));
+					page.print(table_header);
+				}
+				{
+					html::tag table_row("tr");
+					table_row.set(attr_align, val_left);
+					table_row.append(cell);
+					table_row.append(cell);
+					table_row.append(cell);
+					table_row[1]->append(html::tag("pre"));
+					auto _pre = table_row.querySelector("pre");
+
+					for (const auto& x : name_desc) {
+						table_row[0]->append(html::tag::wrap(x.first));
+						_pre->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						page.print(table_row);
+						table_row[0]->clear();
+						_pre->clear();
+						table_row[2]->clear();
 					}
 				}
 
