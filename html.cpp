@@ -85,6 +85,42 @@ tag* tag::querySelector(const std::string& selector)
 	if (selector.empty()) return 0;
 	auto pos = selector.find_first_of(" *>+.#[");
 	if (std::string::npos == pos) return _querySelector_tagname(selector);
+	auto str = selector.data();
+	if (0 < pos) {
+		auto leading_tag = selector.substr(0, pos);
+		auto test = _querySelector_tagname(leading_tag);
+		if (!test) return 0;
+		while (' ' == str[pos]) if (selector.size() <= ++pos) return test;
+		return test->querySelector(selector.substr(pos));
+	}
+	switch (str[pos])
+	{
+	case ' ':
+		while (' ' == str[pos]) if (selector.size() <= ++pos) return 0;
+		return querySelector(selector.substr(pos));
+	case '*':	// wildcard selector
+		{
+		if (selector.size() <= ++pos) return this;
+		while (' ' == str[pos]) if (selector.size() <= ++pos) return this;
+		auto subselector = selector.substr(pos);
+		for (auto& x : _content) if (auto test = x.querySelector(subselector)) return test;
+		return 0;
+		}
+	case '#':
+		if (selector.size() <= ++pos) return 0;
+		while (' ' == str[pos]) if (selector.size() <= ++pos) return 0;
+		{
+		auto subselector = selector.substr(pos);
+		pos = subselector.find_first_of(" *>+.#[");
+		if (std::string::npos == pos) return _querySelector_attr_val("id", subselector);
+		if (0 == pos) return 0;
+		auto relay = _querySelector_attr_val("id", subselector.substr(0, pos));
+		if (!relay) return 0;
+		str = subselector.data();
+		while (' ' == str[pos]) if (subselector.size() <= ++pos) return relay;
+		return relay->querySelector(subselector.substr(pos));
+		}
+	}
 	// unhandled
 #ifndef NDEBUG
 	throw new std::logic_error("need to handle more selector syntax");
@@ -98,6 +134,15 @@ tag* tag::_querySelector_tagname(const std::string& tagname)
 	if (!_content.empty()) for (auto& _tag : _content) if (auto test = _tag._querySelector_tagname(tagname)) return test;
 	return 0;
 }
+
+tag* tag::_querySelector_attr_val(const std::string& key, const std::string& val)
+{
+	auto id_val = read(key);
+	if (id_val && *id_val == val) return this;
+	for (auto& x : _content) if (auto test = x._querySelector_attr_val(key, val)) return test;
+	return 0;
+}
+
 
 void to_text::print(const tag& src) {
 	auto _html = src.to_s();

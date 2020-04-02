@@ -80,27 +80,33 @@ int main(int argc, char *argv[])
 	global_nav.set(attr_style, std::move(val_thin_border + CSS_sep + val_left_align + CSS_sep + val_list_none + CSS_sep + "padding:10px"));
 
 	html::tag working_li("li");
-	html::tag working_a("a");
 
 	html::tag item_nav("ul");
-	item_nav.set(attr_style, std::move(val_list_none));
+	item_nav.set(attr_style, val_list_none);
 	item_nav.set("id", "items");
 
 #define CONTAINERS_HTML "containers.html"
+#define CONTAINERS_ID "containers"
+#define CONTAINERS_LINK_NAME "Containers"
 #define MARTIAL_ARTS_HTML "ma_styles.html"
+#define MARTIAL_ARTS_ID "ma_styles"
+#define MARTIAL_ARTS_LINK_NAME "Martial Arts"
 
-	working_li.set("id", "containers");
-	working_a.set("href", "./" CONTAINERS_HTML);
-	working_a.append(html::tag::wrap("Containers"));
-	working_li.append(working_a);
+	working_li.set("id", CONTAINERS_ID);
+	{
+	html::tag a_tag("a", CONTAINERS_LINK_NAME);
+	a_tag.set("href", "./" CONTAINERS_HTML);
+	working_li.append(std::move(a_tag));
+	}
 	item_nav.append(working_li);
 	working_li.clear();
 
-	working_li.set("id", "ma_styles");
-	working_a.set("href", "./" MARTIAL_ARTS_HTML);
-	working_a.clear();
-	working_a.append(html::tag::wrap("Martial Arts"));
-	working_li.append(working_a);
+	working_li.set("id", MARTIAL_ARTS_ID);
+	{
+	html::tag a_tag("a", MARTIAL_ARTS_LINK_NAME);
+	a_tag.set("href", "./" MARTIAL_ARTS_HTML);
+	working_li.append(std::move(a_tag));
+	}
 	item_nav.append(working_li);
 
 	working_li.clear();
@@ -233,7 +239,7 @@ int main(int argc, char *argv[])
 			item test(it, 0);
 			name_desc[test.tname()] = test.info(true);
 		}
-		_title->append(html::tag::wrap("Cataclysm:Z martial arts styles"));
+		_title->append(html::tag::wrap("Cataclysm:Z " MARTIAL_ARTS_LINK_NAME));
 #define HTML_TARGET "data\\" MARTIAL_ARTS_HTML
 
 		FILE* out = fopen(HTML_TARGET ".tmp", "w");
@@ -246,16 +252,23 @@ int main(int argc, char *argv[])
 				page.start_print(_html);
 				page.print(_head);
 				page.start_print(_body);
+				{
+				auto subheader = global_nav.querySelector("#" MARTIAL_ARTS_ID);
+#ifndef NDEBUG
+				if (!subheader) throw new std::logic_error("missing update target");
+#endif
+				auto backup(std::move(*subheader));
+				*subheader = html::tag("b", MARTIAL_ARTS_LINK_NAME);
 				page.print(global_nav);
+				*subheader = std::move(backup);
+				}
 				page.start_print(_data_table);
 				// actual content
 				{
 					html::tag table_header("tr");
 					table_header.set(attr_align, val_center);
-					table_header.append(html::tag("th"));
-					table_header.append(html::tag("th"));
-					table_header[0]->append(html::tag::wrap("Name"));
-					table_header[1]->append(html::tag::wrap("Description"));
+					table_header.append(html::tag("th", "Name"));
+					table_header.append(html::tag("th", "Description"));
 					page.print(table_header);
 				}
 				{
@@ -292,7 +305,7 @@ int main(int argc, char *argv[])
 			item test(it, 0);
 			name_desc[test.tname()] = test.info(true);
 		}
-		_title->append(html::tag::wrap("Cataclysm:Z containers"));
+		_title->append(html::tag::wrap("Cataclysm:Z " CONTAINERS_LINK_NAME));
 #define HTML_TARGET "data\\" CONTAINERS_HTML
 
 		FILE* out = fopen(HTML_TARGET ".tmp", "w");
@@ -305,18 +318,24 @@ int main(int argc, char *argv[])
 				page.start_print(_html);
 				page.print(_head);
 				page.start_print(_body);
+				{
+				auto subheader = global_nav.querySelector("#" CONTAINERS_ID);
+#ifndef NDEBUG
+				if (!subheader) throw new std::logic_error("missing update target");
+#endif
+				auto backup(std::move(*subheader));
+				*subheader = html::tag("b", CONTAINERS_LINK_NAME);
 				page.print(global_nav);
+				*subheader = std::move(backup);
+				}
 				page.start_print(_data_table);
 				// actual content
 				{
 					html::tag table_header("tr");
 					table_header.set(attr_align, val_center);
-					table_header.append(html::tag("th"));
-					table_header.append(html::tag("th"));
-					table_header.append(html::tag("th"));
-					table_header[0]->append(html::tag::wrap("Name"));
-					table_header[1]->append(html::tag::wrap("Description"));
-					table_header[2]->append(html::tag::wrap("Material"));
+					table_header.append(html::tag("th", "Name"));
+					table_header.append(html::tag("th", "Description"));
+					table_header.append(html::tag("th", "Material"));
 					page.print(table_header);
 				}
 				{
