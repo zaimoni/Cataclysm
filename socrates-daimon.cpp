@@ -85,12 +85,24 @@ int main(int argc, char *argv[])
 	item_nav.set(attr_style, val_list_none);
 	item_nav.set("id", "items");
 
+#define BOOKS_HTML "books.html"
+#define BOOKS_ID "books"
+#define BOOKS_LINK_NAME "Books"
 #define CONTAINERS_HTML "containers.html"
 #define CONTAINERS_ID "containers"
 #define CONTAINERS_LINK_NAME "Containers"
 #define MARTIAL_ARTS_HTML "ma_styles.html"
 #define MARTIAL_ARTS_ID "ma_styles"
 #define MARTIAL_ARTS_LINK_NAME "Martial Arts"
+
+	working_li.set("id", BOOKS_ID);
+	{
+	html::tag a_tag("a", BOOKS_LINK_NAME);
+	a_tag.set("href", "./" BOOKS_HTML);
+	working_li.append(std::move(a_tag));
+	}
+	item_nav.append(working_li);
+	working_li.clear();
 
 	working_li.set("id", CONTAINERS_ID);
 	{
@@ -117,8 +129,10 @@ int main(int argc, char *argv[])
 
 	const html::tag _data_table("table");	// stage-printed
 
-	std::vector<it_style*> ma_styles;	// martial arts styles
+	std::vector<it_book*> books;
 	std::vector<it_container*> containers;
+	std::vector<it_style*> ma_styles;	// martial arts styles
+
 	std::map<std::string, std::string> name_desc;
 	std::map<std::string, int> name_id;
 
@@ -201,6 +215,12 @@ int main(int argc, char *argv[])
 			if (!cont) throw std::logic_error(it->name + ": static cast to container failed");
 
 			containers.push_back(cont);
+			will_handle_as_html = true;
+		} else if (it->is_book()) {
+			const auto book = static_cast<it_book*>(it);
+			if (!book) throw std::logic_error(it->name + ": static cast to book failed");
+
+			books.push_back(book);
 			will_handle_as_html = true;
 		}
 /*
@@ -325,6 +345,77 @@ int main(int argc, char *argv[])
 #endif
 				auto backup(std::move(*subheader));
 				*subheader = html::tag("b", CONTAINERS_LINK_NAME);
+				page.print(global_nav);
+				*subheader = std::move(backup);
+				}
+				page.start_print(_data_table);
+				// actual content
+				{
+					html::tag table_header("tr");
+					table_header.set(attr_align, val_center);
+					table_header.append(html::tag("th", "Name"));
+					table_header.append(html::tag("th", "Description"));
+					table_header.append(html::tag("th", "Material"));
+					page.print(table_header);
+				}
+				{
+					html::tag table_row("tr");
+					table_row.set(attr_align, val_left);
+					table_row.append(cell);
+					table_row.append(cell);
+					table_row.append(cell);
+					table_row[1]->append(html::tag("pre"));
+					auto _pre = table_row.querySelector("pre");
+
+					for (const auto& x : name_desc) {
+						table_row[0]->append(html::tag::wrap(x.first));
+						_pre->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						page.print(table_row);
+						table_row[0]->clear();
+						_pre->clear();
+						table_row[2]->clear();
+					}
+				}
+
+				while (page.end_print());
+			}
+			unlink(HTML_TARGET);
+			rename(HTML_TARGET ".tmp", HTML_TARGET);
+		}
+
+#undef HTML_TARGET
+		_title->clear();
+		decltype(name_desc) discard;
+		name_desc.swap(discard);
+	}
+
+	// \todo skills page should provide book learning chain
+	if (!books.empty()) {
+		for (auto it : books) {
+			item test(it, 0);
+			name_desc[test.tname()] = test.info(true);
+		}
+		_title->append(html::tag::wrap("Cataclysm:Z " BOOKS_LINK_NAME));
+#define HTML_TARGET "data\\" BOOKS_HTML
+
+		FILE* out = fopen(HTML_TARGET ".tmp", "w");
+		if (out) {
+			html::tag cell("td");
+			cell.set(attr_valign, val_top);
+
+			{
+				html::to_text page(out);
+				page.start_print(_html);
+				page.print(_head);
+				page.start_print(_body);
+				{
+				auto subheader = global_nav.querySelector("#" BOOKS_ID);
+#ifndef NDEBUG
+				if (!subheader) throw new std::logic_error("missing update target");
+#endif
+				auto backup(std::move(*subheader));
+				*subheader = html::tag("b", BOOKS_LINK_NAME);
 				page.print(global_nav);
 				*subheader = std::move(backup);
 				}
