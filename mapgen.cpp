@@ -6222,6 +6222,9 @@ void map::place_items(items_location loc, int chance, int x1, int y1,
 
  int item_chance = 0;	// # of items
  for (const auto id : eligible) item_chance += item::types[id]->rarity;
+
+ std::vector<std::pair<itype_id, point> > to_create;
+
  int selection;
  int px, py;
  while (rng(0, 99) < chance) {
@@ -6230,7 +6233,10 @@ void map::place_items(items_location loc, int chance, int x1, int y1,
   while (randnum > 0 && ++selection < eligible.size()-1) randnum -= item::types[eligible[selection]]->rarity;
   int tries = 0;
   do {
-   if (20 <= ++tries) return;
+   if (20 <= ++tries) {
+       if (!to_create.empty()) break;
+       return;
+   }
    px = rng(x1, x2);
    py = rng(y1, y2);
 // Only place on valid terrain
@@ -6238,13 +6244,22 @@ void map::place_items(items_location loc, int chance, int x1, int y1,
    if (!ongrass && (t_dirt == terrain || t_grass == terrain)) continue;
    const auto& t_data = ter_t::list[terrain];
    if (t_data.movecost == 0 && !(t_data.flags & mfb(container))) continue;
+   to_create.push_back(std::pair(eligible[selection], point(px, py)));
   } while (false);
-  add_item(px, py, item::types[eligible[selection]], turn);
-// Guns in the home and behind counters are generated with their ammo
-// TODO: Make this less of a hack
-  if (item::types[eligible[selection]]->is_gun() && (loc == mi_homeguns || loc == mi_behindcounter)) {
-   add_item(px, py, item::types[default_ammo(dynamic_cast<it_gun*> (item::types[eligible[selection]])->ammo)], turn);
-  }
+ }
+
+ if (to_create.empty()) return;
+
+ // \todo reality checks on what is about to be created
+
+ for (auto& x : to_create) {
+     const auto it = item::types[x.first];
+     add_item(x.second, it, turn);
+     // Guns in the home and behind counters are generated with their ammo
+     // TODO: Make this less of a hack
+     if (it->is_gun() && (loc == mi_homeguns || loc == mi_behindcounter)) {
+         add_item(x.second, item::types[default_ammo(dynamic_cast<it_gun*> (it)->ammo)], turn);
+     }
  }
 }
 
