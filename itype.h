@@ -642,8 +642,8 @@ struct it_macguffin : public itype
 
 struct it_software : public itype
 {
- software_type swtype;
- int power;
+ software_type swtype; // 2020-04-03 not wired in
+ int power; // 2020-04-03 not wired in
 
  it_software(int pid, unsigned int pprice,
 	 std::string pname, std::string pdes,
