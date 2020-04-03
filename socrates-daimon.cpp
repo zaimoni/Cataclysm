@@ -28,6 +28,16 @@ static void check_roundtrip_JSON(const item& src)
 	if (src != staging) throw std::logic_error("round-trip was not invariant");
 }
 
+template<class T>
+static void to_desc(const std::vector<T*>& src, std::map<std::string, std::string>& dest)
+{
+	static_assert(std::is_base_of_v<itype, T>);
+	for (auto it : src) {
+		item test(it, 0);
+		dest[test.tname()] = test.info(true);
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	// these do not belong here
@@ -285,11 +295,7 @@ int main(int argc, char *argv[])
 	OFSTREAM_ACID_CLOSE(fout, "data\\items_raw.txt")
 
 	if (!ma_styles.empty()) {
-		for (auto it : ma_styles) {
-			item test(it, 0);
-			name_desc[test.tname()] = test.info(true);
-		}
-		_title->append(html::tag::wrap("Cataclysm:Z " MARTIAL_ARTS_LINK_NAME));
+		to_desc(ma_styles, name_desc);
 #define HTML_TARGET "data\\" MARTIAL_ARTS_HTML
 
 		FILE* out = fopen(HTML_TARGET ".tmp", "w");
@@ -300,7 +306,9 @@ int main(int argc, char *argv[])
 			{
 				html::to_text page(out);
 				page.start_print(_html);
+				_title->append(html::tag::wrap("Cataclysm:Z " MARTIAL_ARTS_LINK_NAME));
 				page.print(_head);
+				_title->clear();
 				page.start_print(_body);
 				{
 				auto subheader = global_nav.querySelector("#" MARTIAL_ARTS_ID);
@@ -345,17 +353,12 @@ int main(int argc, char *argv[])
 		}
 
 #undef HTML_TARGET
-		_title->clear();
 		decltype(name_desc) discard;
 		name_desc.swap(discard);
 	}
 
 	if (!containers.empty()) {
-		for (auto it : containers) {
-			item test(it, 0);
-			name_desc[test.tname()] = test.info(true);
-		}
-		_title->append(html::tag::wrap("Cataclysm:Z " CONTAINERS_LINK_NAME));
+		to_desc(containers, name_desc);
 #define HTML_TARGET "data\\" CONTAINERS_HTML
 
 		FILE* out = fopen(HTML_TARGET ".tmp", "w");
@@ -366,7 +369,9 @@ int main(int argc, char *argv[])
 			{
 				html::to_text page(out);
 				page.start_print(_html);
+				_title->append(html::tag::wrap("Cataclysm:Z " CONTAINERS_LINK_NAME));
 				page.print(_head);
+				_title->clear();
 				page.start_print(_body);
 				{
 				auto subheader = global_nav.querySelector("#" CONTAINERS_ID);
@@ -415,18 +420,13 @@ int main(int argc, char *argv[])
 		}
 
 #undef HTML_TARGET
-		_title->clear();
 		decltype(name_desc) discard;
 		name_desc.swap(discard);
 	}
 
 	// \todo skills page should provide book learning chain
 	if (!books.empty()) {
-		for (auto it : books) {
-			item test(it, 0);
-			name_desc[test.tname()] = test.info(true);
-		}
-		_title->append(html::tag::wrap("Cataclysm:Z " BOOKS_LINK_NAME));
+		to_desc(books, name_desc);
 #define HTML_TARGET "data\\" BOOKS_HTML
 
 		FILE* out = fopen(HTML_TARGET ".tmp", "w");
@@ -437,7 +437,9 @@ int main(int argc, char *argv[])
 			{
 				html::to_text page(out);
 				page.start_print(_html);
+				_title->append(html::tag::wrap("Cataclysm:Z " BOOKS_LINK_NAME));
 				page.print(_head);
+				_title->clear();
 				page.start_print(_body);
 				{
 					auto subheader = global_nav.querySelector("#" BOOKS_ID);
@@ -486,17 +488,12 @@ int main(int argc, char *argv[])
 		}
 
 #undef HTML_TARGET
-		_title->clear();
 		decltype(name_desc) discard;
 		name_desc.swap(discard);
 	}
 
 	if (!ammunition.empty()) {
-		for (auto it : ammunition) {
-			item test(it, 0);
-			name_desc[test.tname()] = test.info(true);
-		}
-		_title->append(html::tag::wrap("Cataclysm:Z " AMMO_LINK_NAME));
+		to_desc(ammunition, name_desc);
 #define HTML_TARGET "data\\" AMMO_HTML
 
 		FILE* out = fopen(HTML_TARGET ".tmp", "w");
@@ -507,7 +504,9 @@ int main(int argc, char *argv[])
 			{
 				html::to_text page(out);
 				page.start_print(_html);
+				_title->append(html::tag::wrap("Cataclysm:Z " AMMO_LINK_NAME));
 				page.print(_head);
+				_title->clear();
 				page.start_print(_body);
 				{
 				auto subheader = global_nav.querySelector("#" AMMO_ID);
@@ -556,17 +555,12 @@ int main(int argc, char *argv[])
 		}
 
 #undef HTML_TARGET
-		_title->clear();
 		decltype(name_desc) discard;
 		name_desc.swap(discard);
 	}
 
 	if (!fuel.empty()) {
-		for (auto it : fuel) {
-			item test(it, 0);
-			name_desc[test.tname()] = test.info(true);
-		}
-		_title->append(html::tag::wrap("Cataclysm:Z " FUEL_LINK_NAME));
+		to_desc(fuel, name_desc);
 #define HTML_TARGET "data\\" FUEL_HTML
 
 		FILE* out = fopen(HTML_TARGET ".tmp", "w");
@@ -577,7 +571,9 @@ int main(int argc, char *argv[])
 			{
 				html::to_text page(out);
 				page.start_print(_html);
+				_title->append(html::tag::wrap("Cataclysm:Z " FUEL_LINK_NAME));
 				page.print(_head);
+				_title->clear();
 				page.start_print(_body);
 				{
 				auto subheader = global_nav.querySelector("#" FUEL_ID);
@@ -626,7 +622,6 @@ int main(int argc, char *argv[])
 		}
 
 #undef HTML_TARGET
-		_title->clear();
 		decltype(name_desc) discard;
 		name_desc.swap(discard);
 	}
