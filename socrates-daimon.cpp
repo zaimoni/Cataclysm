@@ -108,6 +108,9 @@ int main(int argc, char *argv[])
 #define AMMO_HTML "ammo.html"
 #define AMMO_ID "ammo"
 #define AMMO_LINK_NAME "Ammo"
+#define ARMOR_HTML "armor.html"
+#define ARMOR_ID "armor"
+#define ARMOR_LINK_NAME "Armor"
 #define BOOKS_HTML "books.html"
 #define BOOKS_ID "books"
 #define BOOKS_LINK_NAME "Books"
@@ -132,6 +135,15 @@ int main(int argc, char *argv[])
 #define SOFTWARE_HTML "software.html"
 #define SOFTWARE_ID "software"
 #define SOFTWARE_LINK_NAME "Software"
+
+	working_li.set("id", ARMOR_ID);
+	{
+	html::tag a_tag("a", ARMOR_LINK_NAME);
+	a_tag.set("href", "./" ARMOR_HTML);
+	working_li.append(std::move(a_tag));
+	}
+	item_nav.append(working_li);
+	working_li.clear();
 
 	working_li.set("id", AMMO_ID);
 	{
@@ -222,6 +234,7 @@ int main(int argc, char *argv[])
 	const html::tag _data_table("table");	// stage-printed
 
 	std::vector<it_ammo*> ammunition;
+	std::vector<it_armor*> armor;
 	std::vector<it_book*> books;
 	std::vector<it_container*> containers;
 	std::vector<it_comest*> drinks;
@@ -329,16 +342,22 @@ int main(int argc, char *argv[])
 		} else if (it->is_food()) {
 			// actually, all of food/drink/medicine -- should split this into 3 pages
 			const auto food = static_cast<it_comest*>(it);
-			if (!food) throw std::logic_error(it->name + ": static cast to book failed");
+			if (!food) throw std::logic_error(it->name + ": static cast to comestible failed");
 
 			if (LIQUID == it->m1) drinks.push_back(food);
 			else if (FLESH != it->m1 && VEGGY != it->m1 && PAPER != it->m1 && POWDER != it->m1) pharma.push_back(food);
 			else if (food->addict) pharma.push_back(food);
 			else edible.push_back(food);
 			will_handle_as_html = true;
+		} else if (it->is_armor()) {
+			const auto armour = static_cast<it_armor*>(it);
+			if (!armour) throw std::logic_error(it->name + ": static cast to armor failed");
+
+			armor.push_back(armour);
+			will_handle_as_html = true;
 		}
+
 /*
- virtual bool is_food() const    { return false; }
  virtual bool is_gun() const     { return false; }
  virtual bool is_gunmod() const  { return false; }
  virtual bool is_bionic() const  { return false; }
@@ -415,6 +434,73 @@ int main(int argc, char *argv[])
 						page.print(table_row);
 						table_row[0]->clear();
 						_pre->clear();
+					}
+				}
+
+				while (page.end_print());
+			}
+			unlink(HTML_TARGET);
+			rename(HTML_TARGET ".tmp", HTML_TARGET);
+		}
+
+#undef HTML_TARGET
+		decltype(name_desc) discard;
+		name_desc.swap(discard);
+	}
+
+	if (!armor.empty()) {
+		to_desc(armor, name_desc, name_id);
+#define HTML_TARGET "data\\" ARMOR_HTML
+
+		FILE* out = fopen(HTML_TARGET ".tmp", "w");
+		if (out) {
+			html::tag cell("td");
+			cell.set(attr_valign, val_top);
+
+			{
+				html::to_text page(out);
+				page.start_print(_html);
+				_title->append(html::tag::wrap("Cataclysm:Z " ARMOR_LINK_NAME));
+				page.print(_head);
+				_title->clear();
+				page.start_print(_body);
+				{
+					auto subheader = global_nav.querySelector("#" ARMOR_ID);
+#ifndef NDEBUG
+					if (!subheader) throw new std::logic_error("missing update target");
+#endif
+					auto backup(std::move(*subheader));
+					*subheader = html::tag("b", ARMOR_LINK_NAME);
+					page.print(global_nav);
+					*subheader = std::move(backup);
+				}
+				page.start_print(_data_table);
+				// actual content
+				{
+					html::tag table_header("tr");
+					table_header.set(attr_align, val_center);
+					table_header.append(html::tag("th", "Name"));
+					table_header.append(html::tag("th", "Description"));
+					table_header.append(html::tag("th", "Material"));
+					page.print(table_header);
+				}
+				{
+					html::tag table_row("tr");
+					table_row.set(attr_align, val_left);
+					table_row.append(cell);
+					table_row.append(cell);
+					table_row.append(cell);
+					table_row[1]->append(html::tag("pre"));
+					auto _pre = table_row.querySelector("pre");
+
+					for (const auto& x : name_desc) {
+						table_row[0]->append(html::tag::wrap(x.first));
+						_pre->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						page.print(table_row);
+						table_row[0]->clear();
+						_pre->clear();
+						table_row[2]->clear();
 					}
 				}
 
@@ -631,6 +717,7 @@ int main(int argc, char *argv[])
 		name_desc.swap(discard);
 	}
 
+	// \todo need to document addictions related to these
 	if (!pharma.empty()) {
 		to_desc(pharma, name_desc, name_id);
 #define HTML_TARGET "data\\" PHARMA_HTML

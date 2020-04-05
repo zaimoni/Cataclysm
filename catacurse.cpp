@@ -647,7 +647,7 @@ private:
 	static HANDLE loadFromFile(const std::string src, RGBQUAD*& pixels, BITMAPINFOHEADER& working,bool& got_stats)
 	{
 		pixels = NULL;
-		got_stats - false;
+		got_stats = false;
 		memset(&working, 0, sizeof(working));
 		working.biSize = sizeof(working);
 		working.biPlanes = 1;
