@@ -135,6 +135,9 @@ int main(int argc, char *argv[])
 #define SOFTWARE_HTML "software.html"
 #define SOFTWARE_ID "software"
 #define SOFTWARE_LINK_NAME "Software"
+#define TOOLS_HTML "tools.html"
+#define TOOLS_ID "tools"
+#define TOOLS_LINK_NAME "Tools"
 
 	working_li.set("id", ARMOR_ID);
 	{
@@ -226,6 +229,15 @@ int main(int argc, char *argv[])
 	item_nav.append(working_li);
 	working_li.clear();
 
+	working_li.set("id", TOOLS_ID);
+	{
+	html::tag a_tag("a", TOOLS_LINK_NAME);
+	a_tag.set("href", "./" TOOLS_HTML);
+	working_li.append(std::move(a_tag));
+	}
+	item_nav.append(working_li);
+	working_li.clear();
+
 	working_li.unset("id");
 	working_li.append(html::tag::wrap("Items"));
 	working_li.append(item_nav);
@@ -243,6 +255,7 @@ int main(int argc, char *argv[])
 	std::vector<it_style*> ma_styles;	// martial arts styles
 	std::vector<it_comest*> pharma;
 	std::vector<it_software*> software;
+	std::vector<it_tool*> tools;
 
 	std::map<std::string, std::string> name_desc;
 	std::map<std::string, int> name_id;
@@ -349,11 +362,18 @@ int main(int argc, char *argv[])
 			else if (food->addict) pharma.push_back(food);
 			else edible.push_back(food);
 			will_handle_as_html = true;
+		// these two implicitly cover artifacts
 		} else if (it->is_armor()) {
 			const auto armour = static_cast<it_armor*>(it);
 			if (!armour) throw std::logic_error(it->name + ": static cast to armor failed");
 
 			armor.push_back(armour);
+			will_handle_as_html = true;
+		} else if (it->is_tool()) {
+			const auto tool = static_cast<it_tool*>(it);
+			if (!tool) throw std::logic_error(it->name + ": static cast to tool failed");
+
+			tools.push_back(tool);
 			will_handle_as_html = true;
 		}
 
@@ -361,10 +381,7 @@ int main(int argc, char *argv[])
  virtual bool is_gun() const     { return false; }
  virtual bool is_gunmod() const  { return false; }
  virtual bool is_bionic() const  { return false; }
- virtual bool is_armor() const   { return false; }
- virtual bool is_tool() const    { return false; }
  virtual bool is_macguffin() const { return false; }
- virtual bool is_artifact() const { return false; }
 */
 		// check what happens when item is created.  VAPORWARE generate web page system from this
 		if (itm_corpse == it->id) {	// corpses need their own testing path
@@ -945,6 +962,73 @@ int main(int argc, char *argv[])
 				*subheader = html::tag("b", FUEL_LINK_NAME);
 				page.print(global_nav);
 				*subheader = std::move(backup);
+				}
+				page.start_print(_data_table);
+				// actual content
+				{
+					html::tag table_header("tr");
+					table_header.set(attr_align, val_center);
+					table_header.append(html::tag("th", "Name"));
+					table_header.append(html::tag("th", "Description"));
+					table_header.append(html::tag("th", "Material"));
+					page.print(table_header);
+				}
+				{
+					html::tag table_row("tr");
+					table_row.set(attr_align, val_left);
+					table_row.append(cell);
+					table_row.append(cell);
+					table_row.append(cell);
+					table_row[1]->append(html::tag("pre"));
+					auto _pre = table_row.querySelector("pre");
+
+					for (const auto& x : name_desc) {
+						table_row[0]->append(html::tag::wrap(x.first));
+						_pre->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						page.print(table_row);
+						table_row[0]->clear();
+						_pre->clear();
+						table_row[2]->clear();
+					}
+				}
+
+				while (page.end_print());
+			}
+			unlink(HTML_TARGET);
+			rename(HTML_TARGET ".tmp", HTML_TARGET);
+		}
+
+#undef HTML_TARGET
+		decltype(name_desc) discard;
+		name_desc.swap(discard);
+	}
+
+	if (!tools.empty()) {
+		to_desc(tools, name_desc, name_id);
+#define HTML_TARGET "data\\" TOOLS_HTML
+
+		FILE* out = fopen(HTML_TARGET ".tmp", "w");
+		if (out) {
+			html::tag cell("td");
+			cell.set(attr_valign, val_top);
+
+			{
+				html::to_text page(out);
+				page.start_print(_html);
+				_title->append(html::tag::wrap("Cataclysm:Z " TOOLS_LINK_NAME));
+				page.print(_head);
+				_title->clear();
+				page.start_print(_body);
+				{
+					auto subheader = global_nav.querySelector("#" TOOLS_ID);
+#ifndef NDEBUG
+					if (!subheader) throw new std::logic_error("missing update target");
+#endif
+					auto backup(std::move(*subheader));
+					*subheader = html::tag("b", TOOLS_LINK_NAME);
+					page.print(global_nav);
+					*subheader = std::move(backup);
 				}
 				page.start_print(_data_table);
 				// actual content
