@@ -126,6 +126,9 @@ int main(int argc, char *argv[])
 #define FUEL_HTML "fuel.html"
 #define FUEL_ID "fuel"
 #define FUEL_LINK_NAME "Fuel"
+#define GUNS_HTML "guns.html"
+#define GUNS_ID "guns"
+#define GUNS_LINK_NAME "Guns"
 #define MARTIAL_ARTS_HTML "ma_styles.html"
 #define MARTIAL_ARTS_ID "ma_styles"
 #define MARTIAL_ARTS_LINK_NAME "Martial Arts"
@@ -202,6 +205,15 @@ int main(int argc, char *argv[])
 	item_nav.append(working_li);
 	working_li.clear();
 
+	working_li.set("id", GUNS_ID);
+	{
+	html::tag a_tag("a", GUNS_LINK_NAME);
+	a_tag.set("href", "./" GUNS_HTML);
+	working_li.append(std::move(a_tag));
+	}
+	item_nav.append(working_li);
+	working_li.clear();
+
 	working_li.set("id", MARTIAL_ARTS_ID);
 	{
 	html::tag a_tag("a", MARTIAL_ARTS_LINK_NAME);
@@ -252,6 +264,7 @@ int main(int argc, char *argv[])
 	std::vector<it_comest*> drinks;
 	std::vector<it_comest*> edible;
 	std::vector<it_ammo*> fuel;	// XXX conflation in type system
+	std::vector<it_gun*> guns;
 	std::vector<it_style*> ma_styles;	// martial arts styles
 	std::vector<it_comest*> pharma;
 	std::vector<it_software*> software;
@@ -374,6 +387,12 @@ int main(int argc, char *argv[])
 			if (!tool) throw std::logic_error(it->name + ": static cast to tool failed");
 
 			tools.push_back(tool);
+			will_handle_as_html = true;
+		} else if (it->is_gun()) {
+			const auto gun = static_cast<it_gun*>(it);
+			if (!gun) throw std::logic_error(it->name + ": static cast to tool failed");
+
+			guns.push_back(gun);
 			will_handle_as_html = true;
 		}
 
@@ -869,6 +888,75 @@ int main(int argc, char *argv[])
 		name_desc.swap(discard);
 	}
 
+	if (!guns.empty()) {
+		to_desc(guns, name_desc, name_id);
+#define HTML_TARGET "data\\" GUNS_HTML
+
+		// \todo cross-link to what it reloads, etc.
+		FILE* out = fopen(HTML_TARGET ".tmp", "w");
+		if (out) {
+			html::tag cell("td");
+			cell.set(attr_valign, val_top);
+
+			{
+				html::to_text page(out);
+				page.start_print(_html);
+				_title->append(html::tag::wrap("Cataclysm:Z " GUNS_LINK_NAME));
+				page.print(_head);
+				_title->clear();
+				page.start_print(_body);
+				{
+					auto subheader = global_nav.querySelector("#" GUNS_ID);
+#ifndef NDEBUG
+					if (!subheader) throw new std::logic_error("missing update target");
+#endif
+					auto backup(std::move(*subheader));
+					*subheader = html::tag("b", GUNS_LINK_NAME);
+					page.print(global_nav);
+					*subheader = std::move(backup);
+				}
+				page.start_print(_data_table);
+				// actual content
+				{
+					html::tag table_header("tr");
+					table_header.set(attr_align, val_center);
+					table_header.append(html::tag("th", "Name"));
+					table_header.append(html::tag("th", "Description"));
+					table_header.append(html::tag("th", "Material"));
+					page.print(table_header);
+				}
+				{
+					html::tag table_row("tr");
+					table_row.set(attr_align, val_left);
+					table_row.append(cell);
+					table_row.append(cell);
+					table_row.append(cell);
+					table_row[1]->append(html::tag("pre"));
+					auto _pre = table_row.querySelector("pre");
+
+					for (const auto& x : name_desc) {
+						table_row[0]->append(html::tag::wrap(x.first));
+						_pre->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						page.print(table_row);
+						table_row[0]->clear();
+						_pre->clear();
+						table_row[2]->clear();
+					}
+				}
+
+				while (page.end_print());
+			}
+			unlink(HTML_TARGET);
+			rename(HTML_TARGET ".tmp", HTML_TARGET);
+		}
+
+#undef HTML_TARGET
+		decltype(name_desc) discard;
+		name_desc.swap(discard);
+	}
+
+	// \todo this should cross-link to the ranged weapons they fit
 	if (!ammunition.empty()) {
 		to_desc(ammunition, name_desc, name_id);
 #define HTML_TARGET "data\\" AMMO_HTML
