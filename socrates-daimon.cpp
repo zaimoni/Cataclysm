@@ -138,6 +138,9 @@ int main(int argc, char *argv[])
 #define MARTIAL_ARTS_HTML "ma_styles.html"
 #define MARTIAL_ARTS_ID "ma_styles"
 #define MARTIAL_ARTS_LINK_NAME "Martial Arts"
+#define MACGUFFIN_HTML "macguffin.html"
+#define MACGUFFIN_ID "macguffin"
+#define MACGUFFIN_LINK_NAME "MacGuffins"
 #define PHARMA_HTML "pharma.html"
 #define PHARMA_ID "pharma"
 #define PHARMA_LINK_NAME "Pharmaceuticals and Medical Supplies"
@@ -147,6 +150,9 @@ int main(int argc, char *argv[])
 #define TOOLS_HTML "tools.html"
 #define TOOLS_ID "tools"
 #define TOOLS_LINK_NAME "Tools"
+#define UNCLASSIFIED_HTML "unclassified.html"
+#define UNCLASSIFIED_ID "unclassified"
+#define UNCLASSIFIED_LINK_NAME "Unclassified"
 
 	working_li.set("id", ARMOR_ID);
 	{
@@ -247,6 +253,15 @@ int main(int argc, char *argv[])
 	item_nav.append(working_li);
 	working_li.clear();
 
+	working_li.set("id", MACGUFFIN_ID);
+	{
+	html::tag a_tag("a", MACGUFFIN_LINK_NAME);
+	a_tag.set("href", "./" MACGUFFIN_HTML);
+	working_li.append(std::move(a_tag));
+	}
+	item_nav.append(working_li);
+	working_li.clear();
+
 	working_li.set("id", PHARMA_ID);
 	{
 	html::tag a_tag("a", PHARMA_LINK_NAME);
@@ -274,6 +289,15 @@ int main(int argc, char *argv[])
 	item_nav.append(working_li);
 	working_li.clear();
 
+	working_li.set("id", UNCLASSIFIED_ID);
+	{
+	html::tag a_tag("a", UNCLASSIFIED_LINK_NAME);
+	a_tag.set("href", "./" UNCLASSIFIED_HTML);
+	working_li.append(std::move(a_tag));
+	}
+	item_nav.append(working_li);
+	working_li.clear();
+
 	working_li.unset("id");
 	working_li.append(html::tag::wrap("Items"));
 	working_li.append(item_nav);
@@ -292,9 +316,12 @@ int main(int argc, char *argv[])
 	std::vector<it_gun*> guns;
 	std::vector<it_gunmod*> gun_mods;
 	std::vector<it_style*> ma_styles;	// martial arts styles
+	std::vector<it_macguffin*> macguffins;
 	std::vector<it_comest*> pharma;
 	std::vector<it_software*> software;
 	std::vector<it_tool*> tools;
+
+	std::vector<itype*> unclassified;
 
 	std::map<std::string, std::string> name_desc;
 	std::map<std::string, int> name_id;
@@ -432,15 +459,19 @@ int main(int argc, char *argv[])
 
 			bionics.push_back(bionic);
 			will_handle_as_html = true;
+		} else if (it->is_macguffin()) {
+			const auto macguffin = static_cast<it_macguffin*>(it);
+			if (!macguffin) throw std::logic_error(it->name + ": static cast to bionic failed");
+
+			macguffins.push_back(macguffin);
+			will_handle_as_html = true;
+		} else if (itm_corpse == it->id) continue;	// corpses need their own testing path
+		else if (!will_handle_as_html) {
+			unclassified.push_back(it);
+			will_handle_as_html = true;
 		}
 
-/*
- virtual bool is_bionic() const  { return false; }
- virtual bool is_macguffin() const { return false; }
-*/
 		// check what happens when item is created.  VAPORWARE generate web page system from this
-		if (itm_corpse == it->id) {	// corpses need their own testing path
-		} else {
 			item test(it, 0);
 			if (!will_handle_as_html) fout << test.tname() << std::endl << test.info(true) << std::endl << "====" << std::endl;
 			name_id[test.tname()] = it->id;
@@ -452,7 +483,6 @@ int main(int argc, char *argv[])
 				check_roundtrip_JSON(test2);
 			}
 			if (num_items != it->id && itm_null != it->id) check_roundtrip_JSON(test);
-		}
 	}
 
 	OFSTREAM_ACID_CLOSE(fout, "data\\items_raw.txt")
@@ -1354,6 +1384,140 @@ int main(int argc, char *argv[])
 #endif
 					auto backup(std::move(*subheader));
 					*subheader = html::tag("b", SOFTWARE_LINK_NAME);
+					page.print(global_nav);
+					*subheader = std::move(backup);
+				}
+				page.start_print(_data_table);
+				// actual content
+				{
+					html::tag table_header("tr");
+					table_header.set(attr_align, val_center);
+					table_header.append(html::tag("th", "Name"));
+					table_header.append(html::tag("th", "Description"));
+					table_header.append(html::tag("th", "Material"));
+					page.print(table_header);
+				}
+				{
+					html::tag table_row("tr");
+					table_row.set(attr_align, val_left);
+					table_row.append(cell);
+					table_row.append(cell);
+					table_row.append(cell);
+					table_row[1]->append(html::tag("pre"));
+					auto _pre = table_row.querySelector("pre");
+
+					for (const auto& x : name_desc) {
+						table_row[0]->append(html::tag::wrap(x.first));
+						_pre->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						page.print(table_row);
+						table_row[0]->clear();
+						_pre->clear();
+						table_row[2]->clear();
+					}
+				}
+
+				while (page.end_print());
+			}
+			unlink(HTML_TARGET);
+			rename(HTML_TARGET ".tmp", HTML_TARGET);
+		}
+
+#undef HTML_TARGET
+		decltype(name_desc) discard;
+		name_desc.swap(discard);
+	}
+
+	if (!macguffins.empty()) {
+		to_desc(macguffins, name_desc, name_id);
+#define HTML_TARGET "data\\" MACGUFFIN_HTML
+
+		FILE* out = fopen(HTML_TARGET ".tmp", "w");
+		if (out) {
+			html::tag cell("td");
+			cell.set(attr_valign, val_top);
+
+			{
+				html::to_text page(out);
+				page.start_print(_html);
+				_title->append(html::tag::wrap("Cataclysm:Z " MACGUFFIN_LINK_NAME));
+				page.print(_head);
+				_title->clear();
+				page.start_print(_body);
+				{
+					auto subheader = global_nav.querySelector("#" MACGUFFIN_ID);
+#ifndef NDEBUG
+					if (!subheader) throw new std::logic_error("missing update target");
+#endif
+					auto backup(std::move(*subheader));
+					*subheader = html::tag("b", MACGUFFIN_LINK_NAME);
+					page.print(global_nav);
+					*subheader = std::move(backup);
+				}
+				page.start_print(_data_table);
+				// actual content
+				{
+					html::tag table_header("tr");
+					table_header.set(attr_align, val_center);
+					table_header.append(html::tag("th", "Name"));
+					table_header.append(html::tag("th", "Description"));
+					table_header.append(html::tag("th", "Material"));
+					page.print(table_header);
+				}
+				{
+					html::tag table_row("tr");
+					table_row.set(attr_align, val_left);
+					table_row.append(cell);
+					table_row.append(cell);
+					table_row.append(cell);
+					table_row[1]->append(html::tag("pre"));
+					auto _pre = table_row.querySelector("pre");
+
+					for (const auto& x : name_desc) {
+						table_row[0]->append(html::tag::wrap(x.first));
+						_pre->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						page.print(table_row);
+						table_row[0]->clear();
+						_pre->clear();
+						table_row[2]->clear();
+					}
+				}
+
+				while (page.end_print());
+			}
+			unlink(HTML_TARGET);
+			rename(HTML_TARGET ".tmp", HTML_TARGET);
+		}
+
+#undef HTML_TARGET
+		decltype(name_desc) discard;
+		name_desc.swap(discard);
+	}
+
+	if (!unclassified.empty()) {
+		to_desc(unclassified, name_desc, name_id);
+#define HTML_TARGET "data\\" UNCLASSIFIED_HTML
+
+		FILE* out = fopen(HTML_TARGET ".tmp", "w");
+		if (out) {
+			html::tag cell("td");
+			cell.set(attr_valign, val_top);
+
+			{
+				html::to_text page(out);
+				page.start_print(_html);
+				_title->append(html::tag::wrap("Cataclysm:Z " UNCLASSIFIED_LINK_NAME));
+				page.print(_head);
+				_title->clear();
+				page.start_print(_body);
+				{
+					auto subheader = global_nav.querySelector("#" UNCLASSIFIED_ID);
+#ifndef NDEBUG
+					if (!subheader) throw new std::logic_error("missing update target");
+#endif
+					auto backup(std::move(*subheader));
+					*subheader = html::tag("b", UNCLASSIFIED_LINK_NAME);
 					page.print(global_nav);
 					*subheader = std::move(backup);
 				}
