@@ -81,8 +81,6 @@ int main(int argc, char *argv[])
 	mtype::init();
 //	mtype::init_items();     need to do this but at a later stage
 
-	DECLARE_AND_ACID_OPEN(std::ofstream, fout, "data\\items_raw.txt", return EXIT_FAILURE;)
-
 	// item HTML setup
 	const html::tag _html("html");	// stage-printed
 	// head tag will be mostly "common" between pages, but title will need adjusting
@@ -470,22 +468,17 @@ int main(int argc, char *argv[])
 			unclassified.push_back(it);
 			will_handle_as_html = true;
 		}
+		// at this point will_handle_as_html is constant true
 
-		// check what happens when item is created.  VAPORWARE generate web page system from this
+		// check what happens when item is created.
 			item test(it, 0);
-			if (!will_handle_as_html) fout << test.tname() << std::endl << test.info(true) << std::endl << "====" << std::endl;
 			name_id[test.tname()] = it->id;
 			if (it->is_food() || it->is_software()) {	// i.e., can create in own container
 				auto test2 = test.in_its_container();
-				if (test2.type != test.type) {
-					if (!will_handle_as_html) fout << test2.tname() << std::endl << test2.info(true) << std::endl << "====" << std::endl;
-				}
-				check_roundtrip_JSON(test2);
+				if (test2.type != test.type) check_roundtrip_JSON(test2);
 			}
 			if (num_items != it->id && itm_null != it->id) check_roundtrip_JSON(test);
 	}
-
-	OFSTREAM_ACID_CLOSE(fout, "data\\items_raw.txt")
 
 	if (!ma_styles.empty()) {
 		to_desc(ma_styles, name_desc, name_id);
