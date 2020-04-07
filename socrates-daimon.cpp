@@ -111,6 +111,9 @@ int main(int argc, char *argv[])
 #define ARMOR_HTML "armor.html"
 #define ARMOR_ID "armor"
 #define ARMOR_LINK_NAME "Armor"
+#define BIONICS_HTML "bionics.html"
+#define BIONICS_ID "bionics"
+#define BIONICS_LINK_NAME "Bionics"
 #define BOOKS_HTML "books.html"
 #define BOOKS_ID "books"
 #define BOOKS_LINK_NAME "Books"
@@ -158,6 +161,15 @@ int main(int argc, char *argv[])
 	{
 	html::tag a_tag("a", AMMO_LINK_NAME);
 	a_tag.set("href", "./" AMMO_HTML);
+	working_li.append(std::move(a_tag));
+	}
+	item_nav.append(working_li);
+	working_li.clear();
+
+	working_li.set("id", BIONICS_ID);
+	{
+	html::tag a_tag("a", BIONICS_LINK_NAME);
+	a_tag.set("href", "./" BIONICS_HTML);
 	working_li.append(std::move(a_tag));
 	}
 	item_nav.append(working_li);
@@ -271,6 +283,7 @@ int main(int argc, char *argv[])
 
 	std::vector<it_ammo*> ammunition;
 	std::vector<it_armor*> armor;
+	std::vector<it_bionic*> bionics;
 	std::vector<it_book*> books;
 	std::vector<it_container*> containers;
 	std::vector<it_comest*> drinks;
@@ -403,15 +416,21 @@ int main(int argc, char *argv[])
 			will_handle_as_html = true;
 		} else if (it->is_gun()) {
 			const auto gun = static_cast<it_gun*>(it);
-			if (!gun) throw std::logic_error(it->name + ": static cast to tool failed");
+			if (!gun) throw std::logic_error(it->name + ": static cast to gun failed");
 
 			guns.push_back(gun);
 			will_handle_as_html = true;
 		} else if (it->is_gunmod()) {
 			const auto mod = static_cast<it_gunmod*>(it);
-			if (!mod) throw std::logic_error(it->name + ": static cast to tool failed");
+			if (!mod) throw std::logic_error(it->name + ": static cast to gun mod failed");
 
 			gun_mods.push_back(mod);
+			will_handle_as_html = true;
+		} else if (it->is_bionic()) {
+			const auto bionic = static_cast<it_bionic*>(it);
+			if (!bionic) throw std::logic_error(it->name + ": static cast to bionic failed");
+
+			bionics.push_back(bionic);
 			will_handle_as_html = true;
 		}
 
@@ -1201,6 +1220,73 @@ int main(int argc, char *argv[])
 #endif
 					auto backup(std::move(*subheader));
 					*subheader = html::tag("b", TOOLS_LINK_NAME);
+					page.print(global_nav);
+					*subheader = std::move(backup);
+				}
+				page.start_print(_data_table);
+				// actual content
+				{
+					html::tag table_header("tr");
+					table_header.set(attr_align, val_center);
+					table_header.append(html::tag("th", "Name"));
+					table_header.append(html::tag("th", "Description"));
+					table_header.append(html::tag("th", "Material"));
+					page.print(table_header);
+				}
+				{
+					html::tag table_row("tr");
+					table_row.set(attr_align, val_left);
+					table_row.append(cell);
+					table_row.append(cell);
+					table_row.append(cell);
+					table_row[1]->append(html::tag("pre"));
+					auto _pre = table_row.querySelector("pre");
+
+					for (const auto& x : name_desc) {
+						table_row[0]->append(html::tag::wrap(x.first));
+						_pre->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						page.print(table_row);
+						table_row[0]->clear();
+						_pre->clear();
+						table_row[2]->clear();
+					}
+				}
+
+				while (page.end_print());
+			}
+			unlink(HTML_TARGET);
+			rename(HTML_TARGET ".tmp", HTML_TARGET);
+		}
+
+#undef HTML_TARGET
+		decltype(name_desc) discard;
+		name_desc.swap(discard);
+	}
+
+	if (!bionics.empty()) {
+		to_desc(bionics, name_desc, name_id);
+#define HTML_TARGET "data\\" BIONICS_HTML
+
+		FILE* out = fopen(HTML_TARGET ".tmp", "w");
+		if (out) {
+			html::tag cell("td");
+			cell.set(attr_valign, val_top);
+
+			{
+				html::to_text page(out);
+				page.start_print(_html);
+				_title->append(html::tag::wrap("Cataclysm:Z " BIONICS_LINK_NAME));
+				page.print(_head);
+				_title->clear();
+				page.start_print(_body);
+				{
+					auto subheader = global_nav.querySelector("#" BIONICS_ID);
+#ifndef NDEBUG
+					if (!subheader) throw new std::logic_error("missing update target");
+#endif
+					auto backup(std::move(*subheader));
+					*subheader = html::tag("b", BIONICS_LINK_NAME);
 					page.print(global_nav);
 					*subheader = std::move(backup);
 				}
