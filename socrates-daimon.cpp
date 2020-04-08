@@ -48,6 +48,21 @@ static void to_desc(const std::vector<T*>& src, std::map<std::string, std::strin
 	}
 }
 
+static const char* addiction_target(add_type cur)
+{
+	switch(cur) {
+	case ADD_NULL:	return 0;
+	case ADD_CIG:		return "Nicotine";
+	case ADD_CAFFEINE:	return "Caffeine";	// technically also includes both theophylline and theobromine
+	case ADD_ALCOHOL:	return "Alcohol";
+	case ADD_SLEEP:	return "Sleeping Pills";	// benzodiazepenes or barbituates (ignore technical differences here)
+	case ADD_PKILLER:	return "Opiates";
+	case ADD_SPEED:	return "Amphetamine";
+	case ADD_COKE:	return "Cocaine";
+	}
+	throw new std::logic_error("unhandled addiction type");
+}
+
 int main(int argc, char *argv[])
 {
 	// these do not belong here
@@ -847,11 +862,13 @@ int main(int argc, char *argv[])
 					table_header.append(html::tag("th", "Name"));
 					table_header.append(html::tag("th", "Description"));
 					table_header.append(html::tag("th", "Material"));
+					table_header.append(html::tag("th", "Addiction"));
 					page.print(table_header);
 				}
 				{
 					html::tag table_row("tr");
 					table_row.set(attr_align, val_left);
+					table_row.append(cell);
 					table_row.append(cell);
 					table_row.append(cell);
 					table_row.append(cell);
@@ -862,10 +879,12 @@ int main(int argc, char *argv[])
 						table_row[0]->append(html::tag::wrap(x.first));
 						_pre->append(html::tag::wrap(x.second));
 						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						if (auto add = addiction_target(static_cast<it_comest*>(item::types.at(name_id[x.first]))->add)) table_row[3]->append(html::tag::wrap(add));
 						page.print(table_row);
 						table_row[0]->clear();
 						_pre->clear();
 						table_row[2]->clear();
+						table_row[3]->clear();
 					}
 				}
 
