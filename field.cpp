@@ -106,9 +106,8 @@ bool map::process_fields_in_submap(game *g, int gridn)
 	 const int vol = it->volume();
 
 	 // firearms ammo cooks easily in B movies
-     if (it->is_ammo() && it->ammo_type() != AT_BATT &&
-         it->ammo_type() != AT_NAIL && it->ammo_type() != AT_BB &&
-         it->ammo_type() != AT_BOLT && it->ammo_type() != AT_ARROW) {
+     ammotype am;
+     if (it->is_ammo() && (am = it->ammo_type()) != AT_BATT && am != AT_NAIL && am != AT_BB && am != AT_BOLT && am != AT_ARROW) {
       cur->age /= 2;
       cur->age -= 600;
       destroyed = true;
