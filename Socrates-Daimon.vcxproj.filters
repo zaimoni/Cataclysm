@@ -157,5 +157,8 @@
     <ClInclude Include="html.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="stl_typetraits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

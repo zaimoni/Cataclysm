@@ -376,6 +376,8 @@ int main(int argc, char *argv[])
 			if (it->m2) throw std::logic_error("unexpected secondary material");
 			if (0 != it->melee_cut) throw std::logic_error("unexpected cutting damage");
 			if (0 != it->m_to_hit) throw std::logic_error("unexpected melee accuracy");
+			// UPS power source responsible for itm_charge_shot
+			if (itm_charge_shot != it->id && !ammo->type) throw std::logic_error("ammo doesn't actually provide ammo");
 			// macro hard-coding (may want to change these but currently invariant)
 			// ammo and fuel are conflated in the type system.
 			// 2020-03-12: All fuel is material type LIQUID (this likely will be adjusted;

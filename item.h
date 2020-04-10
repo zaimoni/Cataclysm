@@ -72,6 +72,9 @@ public:
  int range(const player *p = NULL) const;
 #endif
  ammotype ammo_type() const;
+ bool gun_uses_ammo_type(ammotype am) const;
+ ammotype uses_ammo_type() const;
+ ammotype provides_ammo_type() const;
 #ifndef SOCRATES_DAIMON
  int pick_reload_ammo(const player &u, bool interactive) const;
  bool reload(player &u, int index);

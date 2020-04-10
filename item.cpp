@@ -4,6 +4,7 @@
 #else
 #include "mtype.h"
 #include "bodypart_enum.h"
+#include "stl_typetraits.h"
 #endif
 #include "skill.h"
 #include "recent_msg.h"
@@ -352,11 +353,10 @@ nc_color item::color(const player& u) const
    ret = c_green;
  } else if (is_ammo()) { // Likewise, ammo is green if you have guns that use it
   ammotype amtype = ammo_type();
-  if (u.weapon.is_gun() && u.weapon.ammo_type() == amtype)
-   ret = c_green;
+  if (u.weapon.gun_uses_ammo_type(amtype)) ret = c_green;
   else {
    for (size_t i = 0; i < u.inv.size(); i++) {
-    if (u.inv[i].is_gun() && u.inv[i].ammo_type() == amtype) {
+    if (u.inv[i].gun_uses_ammo_type(amtype)) {
      ret = c_green;
 	 break;
     }
@@ -885,6 +885,43 @@ ammotype item::ammo_type() const
  return AT_NULL;
 }
 
+template<itype_id N>
+static bool contains(const std::vector<item>& contents)
+{
+    for (auto& it : contents) if (N == it.type->id) return true;
+    return false;
+}
+
+bool item::gun_uses_ammo_type(ammotype am) const
+{
+    if (!is_gun()) return false;
+    if (const auto uses_am = uses_ammo_type(); uses_am && uses_am == am) return true;
+    if (AT_40MM == am && is_gun() && contains<itm_m203>(contents)) return true;
+    return false;
+}
+
+ammotype item::uses_ammo_type() const
+{
+    if (is_gun()) {
+        ammotype ret = dynamic_cast<const it_gun*>(type)->ammo;
+        for (const auto& it : contents) {
+            if (it.is_gunmod()) {
+                const it_gunmod* const mod = dynamic_cast<const it_gunmod*>(it.type);
+                if (mod->newtype != AT_NULL) ret = mod->newtype;
+            }
+        }
+        return ret;
+    }
+    else if (is_tool()) return dynamic_cast<const it_tool*>(type)->ammo;
+    return AT_NULL;
+}
+
+ammotype item::provides_ammo_type() const
+{
+    if (is_ammo()) return dynamic_cast<const it_ammo*>(type)->type;
+    return AT_NULL;
+}
+
 #ifndef SOCRATES_DAIMON
 int item::pick_reload_ammo(const player &u, bool interactive) const
 {
@@ -903,13 +940,8 @@ int item::pick_reload_ammo(const player &u, bool interactive) const
     if (inv[i].type->id == aid) am.push_back(i);
    }
   } else {
-   bool has_m203 = false;
-   for (int i = 0; i < contents.size() && !has_m203; i++) {
-     if (contents[i].type->id == itm_m203)
-       has_m203 = true;
-   }
    am = u.has_ammo(ammo_type());
-   if (has_m203) {
+   if (contains<itm_m203>(contents)) {
 	for (const auto grenade : u.has_ammo(AT_40MM)) am.push_back(grenade);
    }
   }

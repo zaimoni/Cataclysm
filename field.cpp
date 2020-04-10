@@ -106,8 +106,8 @@ bool map::process_fields_in_submap(game *g, int gridn)
 	 const int vol = it->volume();
 
 	 // firearms ammo cooks easily in B movies
-     ammotype am;
-     if (it->is_ammo() && (am = it->ammo_type()) != AT_BATT && am != AT_NAIL && am != AT_BB && am != AT_BOLT && am != AT_ARROW) {
+     if (ammotype am = it->provides_ammo_type(); am && am != AT_BATT && am != AT_NAIL && am != AT_BB && am != AT_BOLT && am != AT_ARROW) {
+      // as charger rounds are not typically found in naked ground inventories, their new (2020-04-10) inability to burn should be a non-issue
       cur->age /= 2;
       cur->age -= 600;
       destroyed = true;
