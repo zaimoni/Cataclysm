@@ -349,8 +349,7 @@ nc_color item::color(const player& u) const
   ret = c_yellow;
  else if (is_gun()) { // Guns are green if you are carrying ammo for them
   ammotype amtype = ammo_type();
-  if (u.has_ammo(amtype).size() > 0)
-   ret = c_green;
+  if (u.has_ammo(amtype)) ret = c_green;
  } else if (is_ammo()) { // Likewise, ammo is green if you have guns that use it
   ammotype amtype = ammo_type();
   if (u.weapon.gun_uses_ammo_type(amtype)) ret = c_green;
@@ -940,13 +939,11 @@ int item::pick_reload_ammo(const player &u, bool interactive) const
     if (inv[i].type->id == aid) am.push_back(i);
    }
   } else {
-   am = u.has_ammo(ammo_type());
-   if (contains<itm_m203>(contents)) {
-	for (const auto grenade : u.has_ammo(AT_40MM)) am.push_back(grenade);
-   }
+   am = u.have_ammo(ammo_type());
+   if (contains<itm_m203>(contents)) for (const auto grenade : u.have_ammo(AT_40MM)) am.push_back(grenade);
   }
  } else {
-  am = u.has_ammo(ammo_type());
+  am = u.have_ammo(ammo_type());
  }
 
  int index = -1;

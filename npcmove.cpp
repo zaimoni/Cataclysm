@@ -518,7 +518,7 @@ bool npc::choose_empty_gun(const std::vector<int>& empty_guns, int& inv_index) c
 #ifndef NDEBUG
 		if (!it.is_gun()) throw std::logic_error("empty_guns must contain only ranged weapons");
 #endif
-		bool am = (0 < has_ammo((dynamic_cast<const it_gun*>(it.type))->ammo).size());
+		bool am = has_ammo((dynamic_cast<const it_gun*>(it.type))->ammo);
 		if (!ammo_found || am) {
 			inv_index = gun;
 			ammo_found = (ammo_found || am);

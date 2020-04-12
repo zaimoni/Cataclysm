@@ -1303,11 +1303,8 @@ bool npc::fac_has_job(faction_job job) const
 void npc::decide_needs()
 {
  int needrank[num_needs];
- for (int i = 0; i < num_needs; i++)
-  needrank[i] = 20;
- if (weapon.is_gun()) {
-  needrank[need_ammo] = 5 * has_ammo(dynamic_cast<const it_gun*>(weapon.type)->ammo).size();
- }
+ for (int i = 0; i < num_needs; i++) needrank[i] = 20;
+ if (weapon.is_gun()) needrank[need_ammo] = 5 * have_ammo(dynamic_cast<const it_gun*>(weapon.type)->ammo).size();
  if (weapon.type->id == 0 && sklevel[sk_unarmed] < 4)
   needrank[need_weapon] = 1;
  else

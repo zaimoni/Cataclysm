@@ -4640,27 +4640,38 @@ void player::wrap_up(mission* const miss)
 }
 
 
-std::vector<int> player::has_ammo(ammotype at) const
+bool player::has_ammo(ammotype at) const
 {
- std::vector<int> ret;
  bool newtype = true;
  for (size_t a = 0; a < inv.size(); a++) {
   if (!inv[a].is_ammo()) continue;
   const it_ammo* ammo = dynamic_cast<const it_ammo*>(inv[a].type);
-  if (ammo->type != at) continue;
-  bool newtype = true;
-  for (const auto n : ret) {
-   const auto& it = inv[n];
-   if (ammo->id == it.type->id && inv[a].charges == it.charges) {
-// They're effectively the same; don't add it to the list
-// TODO: Bullets may become rusted, etc., so this if statement may change
-    newtype = false;
-	break;
-   }
-  }
-  if (newtype) ret.push_back(a);
+  if (at == ammo->type) return true;
  }
- return ret;
+ return false;
+}
+
+std::vector<int> player::have_ammo(ammotype at) const
+{
+    std::vector<int> ret;
+    bool newtype = true;
+    for (size_t a = 0; a < inv.size(); a++) {
+        if (!inv[a].is_ammo()) continue;
+        const it_ammo* ammo = dynamic_cast<const it_ammo*>(inv[a].type);
+        if (ammo->type != at) continue;
+        bool newtype = true;
+        for (const auto n : ret) {
+            const auto& it = inv[n];
+            if (ammo->id == it.type->id && inv[a].charges == it.charges) {
+                // They're effectively the same; don't add it to the list
+                // TODO: Bullets may become rusted, etc., so this if statement may change
+                newtype = false;
+                break;
+            }
+        }
+        if (newtype) ret.push_back(a);
+    }
+    return ret;
 }
 
 std::string player::weapname(bool charges) const
