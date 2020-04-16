@@ -104,14 +104,13 @@ bool vehicle::player_in_control(player& p) const
 
 void vehicle::init_state()
 {
-    for (int p = 0; p < parts.size(); p++)
-    {
-        if (part_flag(p, vpf_fuel_tank))   // 10% to 75% fuel for tank
-            parts[p].amount = rng (part_info(p).size / 10, part_info(p).size * 3 / 4);
-        if (part_flag(p, vpf_openable))    // doors are closed
-            parts[p].open = 0;
-        if (part_flag(p, vpf_seat))        // no passengers
-            parts[p].passenger = 0;
+    for (int p = 0; p < parts.size(); p++) {
+        if (part_flag(p, vpf_fuel_tank)) { // 10% to 75% fuel for tank
+            const int s = part_info(p)._size;
+            parts[p].amount = rng(s / 10, s * 3 / 4);
+        }
+        if (part_flag(p, vpf_openable)) parts[p].open = 0; // doors are closed
+        if (part_flag(p, vpf_seat)) parts[p].passenger = 0; // no passengers
     }
 }
 
@@ -465,30 +464,24 @@ int vehicle::fuel_capacity(ammotype ftype) const
 	for (int p = 0; p < parts.size(); p++) {
 		if (!part_flag(p, vpf_fuel_tank)) continue;
 		const auto& p_info = part_info(p);
-		if (ftype == p_info.fuel_type) cap += p_info.size;
+		if (ftype == p_info.fuel_type) cap += p_info._size;
 	}
     return cap;
 }
 
 int vehicle::refill (int ftype, int amount)
 {
-    for (int p = 0; p < parts.size(); p++)
-    {
-        if (part_flag(p, vpf_fuel_tank) &&
-            part_info(p).fuel_type == ftype &&
-            parts[p].amount < part_info(p).size)
-        {
-            int need = part_info(p).size - parts[p].amount;
-            if (amount < need)
-            {
+    for (int p = 0; p < parts.size(); p++) {
+        if (!part_flag(p, vpf_fuel_tank)) continue;
+        auto& p_info = part_info(p);
+        if (p_info.fuel_type == ftype && parts[p].amount < p_info._size) {
+            const int need = p_info._size - parts[p].amount;
+            if (amount < need) {
                 parts[p].amount += amount;
                 return 0;
             }
-            else
-            {
-                parts[p].amount += need;
-                amount -= need;
-            }
+            parts[p].amount += need;
+            amount -= need;
         }
     }
     return amount;
@@ -619,7 +612,7 @@ int vehicle::wheels_area(int *cnt) const
     for (int i = 0; i < external_parts.size(); i++) {
         int p = external_parts[i];
         if (part_flag(p, vpf_wheel) && parts[p].hp > 0) {
-            size += part_info(p).size;
+            size += part_info(p)._size;
             count++;
         }
     }
@@ -1448,7 +1441,7 @@ bool vehicle::refill(player& u, const int part, const bool test)
     default:;
     }
 
-	const int max_fuel = p_info.size;
+	const int max_fuel = p_info._size;
 	auto& v_part = parts[part];
     int dch = (max_fuel - v_part.amount) / fuel_per_charge;
     if (dch < 1) dch = 1;

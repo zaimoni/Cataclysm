@@ -120,7 +120,7 @@ struct vpart_info
     {
         int par1;
         int power;      // engine (top spd), solar panel (% of 1 fuel per turn, can be > 100)
-        int size;       // wheel, fuel tank, trunk
+        int _size;       // wheel, fuel tank, trunk
         int bonus;      // seatbelt (str), muffler (%)
     };
     ammotype fuel_type;  // engine, fuel tank

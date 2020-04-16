@@ -423,25 +423,21 @@ void veh_interact::move_cursor (int dx, int dy)
     can_mount.clear();
     has_mats.clear();
     if (!obstruct)
-        for (int i = 1; i < num_vparts; i++)
-        {
-            if (veh->can_mount (vd.x, vd.y, (vpart_id) i))
-                can_mount.push_back (i);
+        for (int i = 1; i < num_vparts; i++) {
+            if (veh->can_mount (vd.x, vd.y, (vpart_id) i)) can_mount.push_back (i);
         }
     need_repair.clear();
     parts_here.clear();
     ptank = -1;
-    if (cpart >= 0)
-    {
+    if (cpart >= 0) {
         parts_here = veh->internal_parts(cpart);
         parts_here.insert (parts_here.begin(), cpart);
-        for (int i = 0; i < parts_here.size(); i++)
-        {
+        for (int i = 0; i < parts_here.size(); i++) {
             int p = parts_here[i];
-            if (veh->parts[p].hp < veh->part_info(p).durability)
-                need_repair.push_back (i);
-            if (veh->part_flag(p, vpf_fuel_tank) && veh->parts[p].amount < veh->part_info(p).size)
-                ptank = p;
+            const auto& part = veh->parts[p];
+            const auto& p_info = veh->part_info(p);
+            if (part.hp < p_info.durability) need_repair.push_back (i);
+            if (veh->part_flag(p, vpf_fuel_tank) && part.amount < p_info._size) ptank = p;
         }
     }
     has_fuel = (ptank >= 0) ? veh->refill(_g->u, ptank, true) : false;
