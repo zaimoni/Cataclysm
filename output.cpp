@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#ifndef NDEBUG
+#include <stdexcept>
+#endif
 
 #define LINE_XOXO 4194424
 #define LINE_OXOX 4194417
@@ -175,6 +178,23 @@ void mvwputch_hi(WINDOW* w, int y, int x, nc_color FG, long ch)
  wattroff(w, HC);
 }
 
+#ifndef NDEBUG
+static void reject_unescaped_percent(const std::string& src)
+{
+    auto i = src.find('%');
+    while (std::string::npos != i) {
+        if (src.size() <= i + 1) throw std::logic_error("unescaped %");
+        if ('%' != src.data()[i + 1]) throw std::logic_error("unescaped %");
+        // technically not an error, but historically has not happened and is a symptom of now-buggy overescaping
+        if (src.size() > i + 3 && '%' == src.data()[i + 2] && '%' == src.data()[i + 2]) throw std::logic_error("multi-escaped %");
+        if (src.size() <= i + 2) return;
+        i = src.find('%', i + 2);
+    }
+}
+#else
+#define reject_unescaped_percent(A)
+#endif
+
 void mvprintz(int y, int x, nc_color FG, const char *mes, ...)
 {
  va_list ap;
@@ -182,6 +202,7 @@ void mvprintz(int y, int x, nc_color FG, const char *mes, ...)
  char buff[6000];
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
+ reject_unescaped_percent(buff);
  attron(FG);
  mvprintw(y, x, buff);
  attroff(FG);
@@ -193,15 +214,17 @@ void mvwprintz(WINDOW* w, int y, int x, nc_color FG, const char *mes, ...)
  va_start(ap, mes);
  char buff[6000];	// formerly 4096
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
+ va_end(ap);
+ reject_unescaped_percent(buff);
  wattron(w, FG);
 // wmove(w, y, x);
  mvwprintw(w, y, x, buff);
  wattroff(w, FG);
- va_end(ap);
 }
 
 static void mvwprintz_noformat(WINDOW* w, int y, int x, nc_color FG, const char* mes)
 {
+    reject_unescaped_percent(mes);
     wattron(w, FG);
     // wmove(w, y, x);
     mvwprintw(w, y, x, mes);
@@ -215,6 +238,7 @@ void printz(nc_color FG, const char *mes, ...)
  char buff[6000];
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
+ reject_unescaped_percent(buff);
  attron(FG);
  printw(buff);
  attroff(FG);
@@ -227,6 +251,7 @@ void wprintz(WINDOW *w, nc_color FG, const char *mes, ...)
  char buff[6000];
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
+ reject_unescaped_percent(buff);
  wattron(w, FG);
  wprintw(w, buff);
  wattroff(w, FG);
@@ -275,6 +300,7 @@ void draw_tabs(WINDOW *w, int active_tab, const char* const labels[])
    mvwputch(w, 1, xpos_r + 2, h_white, '>');
    mvwputch(w, 2, xpos, c_white, LINE_XOOX);
    mvwputch(w, 2, xpos_r, c_white, LINE_XXOO);
+   reject_unescaped_percent(labels[i]);
    mvwprintz(w, 1, xpos + 1, h_white, labels[i]);
    for (int x = xpos + 1; x < xpos_r; x++) {
     mvwputch(w, 0, x, c_white, LINE_OXOX);
@@ -283,6 +309,7 @@ void draw_tabs(WINDOW *w, int active_tab, const char* const labels[])
   } else {
    mvwputch(w, 2, xpos, c_white, LINE_XXOX);
    mvwputch(w, 2, xpos_r, c_white, LINE_XXOX);
+   reject_unescaped_percent(labels[i]);
    mvwprintz(w, 1, xpos + 1, c_white, labels[i]);
    for (int x = xpos + 1; x < xpos_r; x++)
     mvwputch(w, 0, x, c_white, LINE_OXOX);
@@ -298,6 +325,7 @@ void debugmsg(const char *mes, ...)
  char buff[1024];
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
+ reject_unescaped_percent(buff);
  attron(c_red);
  mvprintw(0, 0, "DEBUG: %s                \n  Press spacebar...", buff);
  while(getch() != ' ');
@@ -366,6 +394,7 @@ std::string string_input_popup(const char *mes, ...)
  char buff[1024];
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
+ reject_unescaped_percent(buff);
  int startx = strlen(buff) + 2;
  WINDOW* w = newwin(3, SCREEN_WIDTH, 11, 0);
  wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
@@ -413,6 +442,7 @@ std::string string_input_popup(int max_length, const char *mes, ...)
  char buff[1024];
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
+ reject_unescaped_percent(buff);
  int startx = strlen(buff) + 2;
  WINDOW* w = newwin(3, SCREEN_WIDTH, 11, 0);
  wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
@@ -482,11 +512,13 @@ char popup_getkey(const char *mes, ...)
  while (pos != std::string::npos) {
   std::string line = tmp.substr(0, pos);
   line_num++;
+  reject_unescaped_percent(line);
   mvwprintz(w, line_num, 1, c_white, line.c_str());
   tmp = tmp.substr(pos + 1);
   pos = tmp.find_first_of('\n');
  }
  line_num++;
+ reject_unescaped_percent(tmp);
  mvwprintz(w, line_num, 1, c_white, tmp.c_str());
  
  wrefresh(w);
@@ -514,6 +546,7 @@ int menu_vec(const char *mes, const std::vector<std::string>& options)
  wattron(w, c_white);
  wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
             LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
+ reject_unescaped_percent(mes);
  mvwprintw(w, 1, 1, mes);
  for (int i = 0; i < options.size(); i++)
   mvwprintw(w, i + 2, 1, "%c: %s", (i < 9? i + '1' :
@@ -585,11 +618,13 @@ void popup_top(const char *mes, ...)
  while (pos != std::string::npos) {
   std::string line = tmp.substr(0, pos);
   line_num++;
+  reject_unescaped_percent(line);
   mvwprintz(w, line_num, 1, c_white, line.c_str());
   tmp = tmp.substr(pos + 1);
   pos = tmp.find_first_of('\n');
  }
  line_num++;
+ reject_unescaped_percent(tmp);
  mvwprintz(w, line_num, 1, c_white, tmp.c_str());
  
  wrefresh(w);
@@ -633,11 +668,13 @@ void popup(const char *mes, ...)
  while (pos != std::string::npos) {
   std::string line = tmp.substr(0, pos);
   line_num++;
+  reject_unescaped_percent(line);
   mvwprintz(w, line_num, 1, c_white, line.c_str());
   tmp = tmp.substr(pos + 1);
   pos = tmp.find_first_of('\n');
  }
  line_num++;
+ reject_unescaped_percent(tmp);
  mvwprintz(w, line_num, 1, c_white, tmp.c_str());
  
  wrefresh(w);
@@ -681,11 +718,13 @@ void popup_nowait(const char *mes, ...)
  while (pos != std::string::npos) {
   std::string line = tmp.substr(0, pos);
   line_num++;
+  reject_unescaped_percent(line);
   mvwprintz(w, line_num, 1, c_white, line.c_str());
   tmp = tmp.substr(pos + 1);
   pos = tmp.find_first_of('\n');
  }
  line_num++;
+ reject_unescaped_percent(tmp);
  mvwprintz(w, line_num, 1, c_white, tmp.c_str());
  
  wrefresh(w);
