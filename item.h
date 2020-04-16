@@ -73,6 +73,7 @@ public:
 #endif
  ammotype ammo_type() const;
  bool gun_uses_ammo_type(ammotype am) const;
+ static void uses_ammo_type(itype_id src, std::vector<ammotype>& dest);
  ammotype uses_ammo_type() const;
  ammotype provides_ammo_type() const;
 #ifndef SOCRATES_DAIMON

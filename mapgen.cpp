@@ -5,6 +5,7 @@
 #include "line.h"
 #include "recent_msg.h"
 #include "om_cache.hpp"
+#include "stl_typetraits.h"
 #include "Zaimoni.STL/Logging.h"
 
 ter_id grass_or_dirt()
@@ -6250,14 +6251,28 @@ void map::place_items(items_location loc, int chance, int x1, int y1,
 
  if (to_create.empty()) return;
 
+ const bool will_autospawn_ammo = (mi_homeguns == loc || mi_behindcounter == loc);
+
+ std::vector<ammotype> usable_ammo;
+ for (const auto& x : to_create) item::uses_ammo_type(x.first, usable_ammo);
+ if (!will_autospawn_ammo && !usable_ammo.empty()) {
+     // Bay12/Robsoie : need to ensure ammo is something actually usable
+     for (auto& x : to_create) {
+         if (itm_battery <= x.first && itm_gasoline >= x.first && !cataclysm::any(usable_ammo, dynamic_cast<const it_ammo*>(item::types[x.first])->type)) {
+             x.first = default_ammo(usable_ammo[rng(0, usable_ammo.size() - 1)]);
+         }
+     }
+ }
+
  // \todo reality checks on what is about to be created
+
 
  for (auto& x : to_create) {
      const auto it = item::types[x.first];
      add_item(x.second, it, turn);
      // Guns in the home and behind counters are generated with their ammo
      // TODO: Make this less of a hack
-     if (it->is_gun() && (loc == mi_homeguns || loc == mi_behindcounter)) {
+     if (it->is_gun() && will_autospawn_ammo) {
          add_item(x.second, item::types[default_ammo(dynamic_cast<it_gun*> (it)->ammo)], turn);
      }
  }

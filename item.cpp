@@ -899,6 +899,17 @@ bool item::gun_uses_ammo_type(ammotype am) const
     return false;
 }
 
+void item::uses_ammo_type(itype_id src, std::vector<ammotype>& dest)
+{
+    const auto it = item(item::types[src],0);
+    if (auto am = it.uses_ammo_type()) dest.push_back(am);
+    else if (it.is_gunmod()) {
+        const it_gunmod* const mod = dynamic_cast<const it_gunmod*>(it.type);
+        if (mod->newtype) dest.push_back(mod->newtype);
+        if (itm_m203 == src) dest.push_back(AT_40MM);
+    }
+}
+
 ammotype item::uses_ammo_type() const
 {
     if (is_gun()) {
