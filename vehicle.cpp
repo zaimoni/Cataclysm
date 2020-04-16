@@ -10,7 +10,7 @@
 #include <sstream>
 #include <fstream>
 
-const int fuel_types[] = { AT_GAS, AT_BATT, AT_PLUT, AT_PLASMA };
+static const ammotype fuel_types[] = { AT_GAS, AT_BATT, AT_PLUT, AT_PLASMA };
 #define num_fuel_types (sizeof(fuel_types)/sizeof(*fuel_types))
 
 static const char* const JSON_transcode_vparts[] = {
@@ -447,7 +447,7 @@ int vehicle::total_mass() const
     return m;
 }
 
-int vehicle::fuel_left(int ftype, bool for_engine) const
+int vehicle::fuel_left(ammotype ftype, bool for_engine) const
 {
     int fl = 0;
 	for (int p = 0; p < parts.size(); p++) {
@@ -459,7 +459,7 @@ int vehicle::fuel_left(int ftype, bool for_engine) const
     return fl;
 }
 
-int vehicle::fuel_capacity(int ftype) const
+int vehicle::fuel_capacity(ammotype ftype) const
 {
     int cap = 0;
 	for (int p = 0; p < parts.size(); p++) {
@@ -494,20 +494,15 @@ int vehicle::refill (int ftype, int amount)
     return amount;
 }
 
-std::string vehicle::fuel_name(int ftype)
+const char* vehicle::fuel_name(ammotype ftype)
 {
     switch (ftype)
     {
-    case AT_GAS:
-        return std::string("gasoline");
-    case AT_BATT:
-        return std::string("batteries");
-    case AT_PLUT:
-        return std::string("plutonium cells");
-    case AT_PLASMA:
-        return std::string("hydrogen");
-    default:
-        return std::string("INVALID FUEL (BUG)");
+    case AT_GAS: return "gasoline";
+    case AT_BATT: return "batteries";
+    case AT_PLUT: return "plutonium cells";
+    case AT_PLASMA: return "hydrogen";
+    default: return "INVALID FUEL (BUG)";
     }
 }
 
@@ -1360,7 +1355,7 @@ int vehicle::damage_direct (int p, int dmg, int type)
         if (!parts[p].hp && last_hp > 0) insides_dirty = true;
 		auto g = game::active();
         if (part_flag(p, vpf_fuel_tank)) {
-            int ft = part_info(p).fuel_type;
+            const auto ft = part_info(p).fuel_type;
             if (ft == AT_GAS || ft == AT_PLASMA) {
                 int pow = parts[p].amount / 40;
                 if (parts[p].hp <= 0) leak_fuel (p);
@@ -1383,8 +1378,7 @@ int vehicle::damage_direct (int p, int dmg, int type)
 void vehicle::leak_fuel (int p)
 {
     if (!part_flag(p, vpf_fuel_tank)) return;
-    int ft = part_info(p).fuel_type;
-    if (ft == AT_GAS) {
+    if (AT_GAS == part_info(p).fuel_type) {
 		const point origin(global());
 		auto g = game::active();
         for (int i = origin.x - 2; i <= origin.x + 2; i++)
@@ -1405,14 +1399,14 @@ bool vehicle::refill(player& u, const int part, const bool test)
 {
     if (!part_flag(part, vpf_fuel_tank)) return false;
 	auto& p_info = part_info(part);
-	const int ftype = p_info.fuel_type;
+	const auto ftype = p_info.fuel_type;
 
     int i_itm = -1;
     item *p_itm = 0;
     int min_charges = -1;
     bool i_cont = false;
 
-    itype_id itid = default_ammo((ammotype)ftype);
+    itype_id itid = default_ammo(ftype);
     if (u.weapon.is_container() && u.weapon.contents.size() > 0 && u.weapon.contents[0].type->id == itid) {
         i_itm = -2;
         p_itm = &u.weapon.contents[0];
@@ -1490,7 +1484,7 @@ void vehicle::fire_turret (int p, bool burst)
     if (!gun) return;
     int charges = burst? gun->burst : 1;
     if (!charges) charges = 1;
-    int amt = part_info (p).fuel_type;
+    const auto amt = part_info (p).fuel_type;
     if (amt == AT_GAS || amt == AT_PLASMA)
     {
         if (amt == AT_GAS) charges = 20; // hacky

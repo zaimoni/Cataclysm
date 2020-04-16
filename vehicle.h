@@ -188,8 +188,8 @@ public:
 
 // Checks how much certain fuel left in tanks. If for_engine == true that means
 // ftype == AT_BATT is also takes in account AT_PLUT fuel (electric motors can use both)
-    int fuel_left(int ftype, bool for_engine = false) const;
-    int fuel_capacity(int ftype) const;
+    int fuel_left(ammotype ftype, bool for_engine = false) const;
+    int fuel_capacity(ammotype ftype) const;
 
     // refill fuel tank(s) with given type of fuel
     // returns amount of leftover fuel
@@ -198,7 +198,7 @@ public:
 	bool refill(player& u, int part, bool test=false);
 
 // vehicle's fuel type name
-    std::string fuel_name(int ftype);
+    static const char* fuel_name(ammotype ftype);
 
 // fuel consumption of vehicle engines of given type, in one-hundreth of fuel
     int basic_consumption(int ftype) const;

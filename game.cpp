@@ -4359,11 +4359,11 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
   if (pl_choose_vehicle(vx, vy)) {
    vehicle *veh = m.veh_at(vx, vy);
    if (veh) {
-    int ftype = AT_GAS;
+    constexpr const ammotype ftype = AT_GAS;
     int fuel_cap = veh->fuel_capacity(ftype);
     int fuel_amnt = veh->fuel_left(ftype);
     if (fuel_cap < 1)
-     messages.add("This vehicle doesn't use %s.", veh->fuel_name(ftype).c_str());
+     messages.add("This vehicle doesn't use %s.", vehicle::fuel_name(ftype));
     else if (fuel_amnt == fuel_cap)
      messages.add("Already full.");
     else if (infinite && query_yn("Pump until full?")) {
@@ -4372,7 +4372,7 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
     } else { // Not infinite
      veh->refill (AT_GAS, liquid.charges);
      messages.add("You refill %s with %s%s.", veh->name.c_str(),
-              veh->fuel_name(ftype).c_str(),
+              vehicle::fuel_name(ftype),
               veh->fuel_left(ftype) >= fuel_cap? " to its maximum" : "");
      u.moves -= 100;
      return true;

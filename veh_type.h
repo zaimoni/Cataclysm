@@ -123,11 +123,7 @@ struct vpart_info
         int size;       // wheel, fuel tank, trunk
         int bonus;      // seatbelt (str), muffler (%)
     };
-    union
-    {
-        int par2;
-        int fuel_type;  // engine, fuel tank
-    };
+    ammotype fuel_type;  // engine, fuel tank
     itype_id item;      // corresponding item
     int difficulty;     // installation difficulty (mechanics requirement)
     unsigned long flags;    // flags
