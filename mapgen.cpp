@@ -61,7 +61,6 @@ void set_science_room(map *m, int x1, int y1, bool faces_right, int turn);
 void silo_rooms(map *m);
 void build_mine_room(map *m, room_type type, int x1, int y1, int x2, int y2);
 
-room_type pick_mansion_room(int x1, int y1, int x2, int y2);
 void build_mansion_room(map *m, room_type type, int x1, int y1, int x2, int y2);
 void mansion_room(map *m, int x1, int y1, int x2, int y2); // pick & build
 
@@ -7290,36 +7289,27 @@ void build_mine_room(map *m, room_type type, int x1, int y1, int x2, int y2)
  }
 }
 
-room_type pick_mansion_room(int x1, int y1, int x2, int y2)
+static room_type pick_mansion_room(int x1, int y1, int x2, int y2)
 {
  int dx = abs(x1 - x2), dy = abs(y1 - y2), area = dx * dy;
  int shortest = (dx < dy ? dx : dy), longest = (dx > dy ? dx : dy);
  std::vector<room_type> valid;
- if (shortest >= 12)
-  valid.push_back(room_mansion_courtyard);
- if (shortest >= 7 && area >= 64 && area <= 100)
-  valid.push_back(room_mansion_bedroom);
- if (shortest >= 9)
-  valid.push_back(room_mansion_library);
- if (shortest >= 6 && area <= 60)
-  valid.push_back(room_mansion_kitchen);
- if (longest >= 7 && shortest >= 5)
-  valid.push_back(room_mansion_dining);
- if (shortest >= 6 && longest <= 10)
-  valid.push_back(room_mansion_game);
- if (shortest >= 10)
-  valid.push_back(room_mansion_pool);
- if (longest <= 6 || shortest <= 4)
-  valid.push_back(room_mansion_bathroom);
- if (longest >= 8 && shortest <= 6)
-  valid.push_back(room_mansion_gallery);
-
- if (valid.empty()) {
-  debugmsg("x: %d - %d, dx: %d\n\
-       y: %d - %d, dy: %d", x1, x2, dx,
-                            y1, y2, dy);
-  return room_null;
+ if (6 <= shortest) {
+     if (area <= 60) valid.push_back(room_mansion_kitchen);
+     if (longest <= 10) valid.push_back(room_mansion_game);
+     if (7 <= shortest) {
+         if (area >= 64 && area <= 100) valid.push_back(room_mansion_bedroom);
+         if (9 <= shortest) {
+             valid.push_back(room_mansion_library);
+             if (10 <= shortest) {
+                 valid.push_back(room_mansion_pool);
+                 if (shortest >= 12) valid.push_back(room_mansion_courtyard);
+             }
+         }
+     }
  }
+ valid.push_back((longest >= 7 && shortest >= 5) ? room_mansion_dining : room_mansion_bathroom);    // forces non-empty
+ if (longest >= 8 && shortest <= 6) valid.push_back(room_mansion_gallery);
 
  return valid[ rng(0, valid.size() - 1) ];
 }
