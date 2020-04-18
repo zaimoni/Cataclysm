@@ -26,4 +26,17 @@ typename std::enable_if<sizeof(unsigned long long) < sizeof(V), bool>::type any(
 
 }
 
+// check that C++ class is defined
+template <class T, class Enable = void>
+struct is_defined
+{
+	static constexpr bool value = false;
+};
+
+template <class T>
+struct is_defined<T, std::enable_if_t<sizeof(T)> >
+{
+	static constexpr bool value = true;
+};
+
 #endif

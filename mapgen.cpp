@@ -5,8 +5,9 @@
 #include "line.h"
 #include "recent_msg.h"
 #include "om_cache.hpp"
-#include "stl_typetraits.h"
 #include "Zaimoni.STL/Logging.h"
+#include "zero.h"
+#include "stl_typetraits_late.h"
 
 ter_id grass_or_dirt()
 {
@@ -7064,6 +7065,22 @@ void set_science_room(map *m, int x1, int y1, bool faces_right, int turn)
 
 void silo_rooms(map *m)
 {
+ static constexpr const std::pair<items_location,int> primary_room_stock[] = {
+   std::pair(mi_cannedfood,2),
+   std::pair(mi_allguns,2),
+   std::pair(mi_tools,2),
+   std::pair(mi_allclothes,1),
+   std::pair(mi_manuals,1),
+   std::pair(mi_electronics,3),
+   std::pair(mi_survival_tools,1),
+   std::pair(mi_radio,2)
+ };
+ static constexpr const std::pair<items_location,int> secondary_room_stock[] = {
+   std::pair(mi_fridge, 2),
+   std::pair(mi_ammo, 2),
+   std::pair(mi_none, 10),
+ };
+
  std::vector<point> rooms;
  std::vector<point> room_sizes;
  bool okay = true;
@@ -7076,8 +7093,7 @@ void silo_rooms(map *m)
     y = SEEY * 2 - 2 - y;	// Bottom of the screen, not the top
    width  = rng(2, 5);
    height = 2;
-   if (x + width >= SEEX * 2 - 1)
-    width = SEEX * 2 - 2 - x;	// Make sure our room isn't too wide
+   clamp_ub(width, SEEX * 2 - 2 - x);	// Make sure our room isn't too wide
   } else {
    x = rng(0, 4);
    y = rng(0, SEEY * 2 - 6);
@@ -7085,8 +7101,7 @@ void silo_rooms(map *m)
     x = SEEX * 2 - 2 - x;	// Right side of the screen, not the left
    width  = 2;
    height = rng(2, 5);
-   if (y + height >= SEEY * 2 - 1)
-    height = SEEY * 2 - 2 - y;	// Make sure our room isn't too tall
+   clamp_ub(height, SEEY * 2 - 2 - y);	// Make sure our room isn't too tall
   }
   if (!rooms.empty() &&	// We need at least one room!
       (m->ter(x, y) != t_rock || m->ter(x + width, y + height) != t_rock))
@@ -7099,29 +7114,11 @@ void silo_rooms(map *m)
 	 m->rewrite<t_rock, t_floor>(i,j);
     }
    }
-   items_location used1 = mi_none, used2 = mi_none;
-   switch (rng(1, 14)) {	// What type of items go here?
-    case  1:
-    case  2: used1 = mi_cannedfood;
-             used2 = mi_fridge;		break;
-    case  3:
-    case  4: used1 = mi_tools;		break;
-    case  5:
-    case  6: used1 = mi_allguns;
-             used2 = mi_ammo;		break;
-    case  7: used1 = mi_allclothes;	break;
-    case  8: used1 = mi_manuals;	break;
-    case  9:
-    case 10:
-    case 11: used1 = mi_electronics;	break;
-    case 12: used1 = mi_survival_tools;	break;
-    case 13:
-    case 14: used1 = mi_radio;		break;
-   }
-   if (used1 != mi_none)
-    m->place_items(used1, 78, x, y, x + width, y + height, false, 0);
-   if (used2 != mi_none)
-    m->place_items(used2, 64, x, y, x + width, y + height, false, 0);
+   const auto index = rng(0, 13);	// What type of items go here?
+   if (auto used = use_rarity_table(index, std::begin(primary_room_stock), std::end(primary_room_stock)))
+     m->place_items(used, 78, x, y, x + width, y + height, false, 0);
+   if (auto used = use_rarity_table(index, std::begin(secondary_room_stock), std::end(secondary_room_stock)))
+     m->place_items(used, 78, x, y, x + width, y + height, false, 0);
   }
  } while (okay);
 

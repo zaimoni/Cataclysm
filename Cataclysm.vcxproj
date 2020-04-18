@@ -224,6 +224,7 @@
     <ClInclude Include="skill.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="stl_typetraits.h" />
+    <ClInclude Include="stl_typetraits_late.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="tileray.h" />
     <ClInclude Include="trap.h" />
@@ -240,6 +241,7 @@
     <ClInclude Include="Zaimoni.STL\MetaRAM.hpp" />
     <ClInclude Include="Zaimoni.STL\polymorphic.hpp" />
     <ClInclude Include="Zaimoni.STL\Pure.C\comptest.h" />
+    <ClInclude Include="zero.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="action.cpp" />
