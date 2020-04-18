@@ -316,7 +316,9 @@ public:
 // Generating our stats, etc.
  void randomize(game *g, npc_class type = NC_NONE);
  void randomize_from_faction(game *g, faction *fac);
+#if DEAD_FUNC
  void make_shopkeep(game *g, oter_id type);
+#endif
  void spawn_at(const GPS_loc& _GPSpos);
  skill best_skill() const;
  void starting_weapon(game *g);

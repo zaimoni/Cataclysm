@@ -608,11 +608,13 @@ static itype_id _get_itype(const std::vector<itype_id>& src)
 	return src[rng(0, src.size() - 1)];
 }
 
-void npc::make_shopkeep(game *g, oter_id type)
+#if DEAD_FUNC
+void npc::make_shopkeep(game *g, oter_id type)  // some other enum was intended
 {
  randomize(g, NC_TRADER);
  item tmp;
  std::vector<items_location> pool;
+ // these options feel like Gamma World, much like the factions
  /*
  switch (type) {
  case ot_set_food:
@@ -675,6 +677,7 @@ void npc::make_shopkeep(game *g, oter_id type)
  }
  mission = NPC_MISSION_SHOPKEEP;
 }
+#endif
 
 std::vector<item> starting_clothes(npc_class type, bool male, game *g)
 {

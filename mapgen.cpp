@@ -7320,12 +7320,6 @@ void build_mansion_room(map *m, room_type type, int x1, int y1, int x2, int y2)
  int cx_low = (x1 + x2) / 2, cx_hi = (x1 + x2 + 1) / 2,
      cy_low = (y1 + y2) / 2, cy_hi = (y1 + y2 + 1) / 2;
 
-/*
- debugmsg("\
-x: %d - %d, dx: %d cx: %d/%d\n\
-x: %d - %d, dx: %d cx: %d/%d", x1, x2, dx, cx_low, cx_hi,
-                               y1, y2, dy, cy_low, cy_hi);
-*/
  bool walled_west = (x1 <= 1),            walled_north = (y1 == 0),
       walled_east = (x2 == SEEX * 2 - 1), walled_south = (y2 >= SEEY * 2 - 2);
 
