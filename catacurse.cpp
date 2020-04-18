@@ -35,6 +35,9 @@
 
 #pragma comment(lib,"msimg32")
 
+// linking against output.cpp...duplicate this part of output.h
+bool reject_not_whitelisted_printf(const std::string& src);
+
 class OS_Window
 {
 private:
@@ -1455,6 +1458,7 @@ inline int printstring(WINDOW *win, char *fmt)
 //Prints a formatted string to a window at the current cursor, base function
 int wprintw(WINDOW *win, const char *fmt, ...)
 {
+	if (reject_not_whitelisted_printf(fmt)) return ERR;
     va_list args;
     va_start(args, fmt);
 	char printbuf[2048];
@@ -1466,7 +1470,8 @@ int wprintw(WINDOW *win, const char *fmt, ...)
 //Prints a formatted string to a window, moves the cursor
 int mvwprintw(WINDOW *win, int y, int x, const char *fmt, ...)
 {
-    va_list args;
+	if (reject_not_whitelisted_printf(fmt)) return ERR;
+	va_list args;
     va_start(args, fmt);
 	char printbuf[2048];
 	vsprintf_s<sizeof(printbuf)>(printbuf, fmt, args);
@@ -1478,7 +1483,8 @@ int mvwprintw(WINDOW *win, int y, int x, const char *fmt, ...)
 //Prints a formatted string to window 0 (stdscr), moves the cursor
 int mvprintw(int y, int x, const char *fmt, ...)
 {
-    va_list args;
+	if (reject_not_whitelisted_printf(fmt)) return ERR;
+	va_list args;
     va_start(args, fmt);
     char printbuf[2048];
     vsprintf_s<sizeof(printbuf)>(printbuf, fmt, args);
@@ -1490,7 +1496,8 @@ int mvprintw(int y, int x, const char *fmt, ...)
 //Prints a formatted string to window 0 (stdscr) at the current cursor
 int printw(const char *fmt, ...)
 {
-    va_list args;
+	if (reject_not_whitelisted_printf(fmt)) return ERR;
+	va_list args;
     va_start(args, fmt);
 	char printbuf[2048];
 	vsprintf_s<sizeof(printbuf)>(printbuf, fmt, args);

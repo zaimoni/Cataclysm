@@ -737,56 +737,49 @@ void computer::activate_failure(game *g, computer_failure fail)
 
 bool computer::query_bool(const char *mes, ...)
 {
+ if (reject_not_whitelisted_printf(mes)) return false;  // auto-fail
 // Translate the printf flags
  va_list ap;
  va_start(ap, mes);
  char buff[6000];
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
-// Append with (Y/N/Q)
- std::string full_line = buff;
- full_line += " (Y/N/Q)";
-// Print the resulting text
- print_line(full_line.c_str());
+// Print, appending (Y/N/Q)
+ print_line((std::string(buff) += " (Y/N/Q)").c_str());
  char ret;
- do
-  ret = getch();
- while (ret != 'y' && ret != 'Y' && ret != 'n' && ret != 'N' && ret != 'q' &&
-        ret != 'Q');
+ do ret = getch();
+ while (ret != 'y' && ret != 'Y' && ret != 'n' && ret != 'N' && ret != 'q' && ret != 'Q');
  return (ret == 'y' || ret == 'Y');
 }
  
 char computer::query_ynq(const char *mes, ...)
 {
+ if (reject_not_whitelisted_printf(mes)) return 'N';    // auto-fail
 // Translate the printf flags
  va_list ap;
  va_start(ap, mes);
  char buff[6000];
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
-// Append with (Y/N/Q)
- std::string full_line = buff;
- full_line += " (Y/N/Q)";
-// Print the resulting text
- print_line(full_line.c_str());
+// Print, appending (Y/N/Q)
+ print_line((std::string(buff) += " (Y/N/Q)").c_str());
  char ret;
- do
-  ret = getch();
- while (ret != 'y' && ret != 'Y' && ret != 'n' && ret != 'N' && ret != 'q' &&
-        ret != 'Q');
+ do ret = getch();
+ while (ret != 'y' && ret != 'Y' && ret != 'n' && ret != 'N' && ret != 'q' && ret != 'Q');
  return ret;
 }
 
 void computer::print_line(const char *mes, ...)
 {
 // Translate the printf flags
+ if (reject_not_whitelisted_printf(mes)) return;
  va_list ap;
  va_start(ap, mes);
  char buff[6000];
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
 // Replace any '\n' with "\n " to allow for the border
- std::string message = buff;
+ std::string message(buff);
  size_t pos = 0;
  while ((pos = message.find('\n', pos)) != std::string::npos) {
 	 message.replace(pos, 1, "\n ");
@@ -802,6 +795,7 @@ void computer::print_line(const char *mes, ...)
 
 void computer::print_error(const char *mes, ...)
 {
+ if (reject_not_whitelisted_printf(mes)) return;
 // Translate the printf flags
  va_list ap;
  va_start(ap, mes);
@@ -809,7 +803,7 @@ void computer::print_error(const char *mes, ...)
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
  va_end(ap);
 // Print the line.
- wprintz(w_terminal, c_red, " %s%s", buff, "\n");
+ wprintz(w_terminal, c_red, " %s\n", buff);
 // Reprint the border, in case we pushed a line over it
  wborder(w_terminal, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                      LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );

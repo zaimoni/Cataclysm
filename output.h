@@ -19,6 +19,8 @@
 #define LINE_OXXX 4194423
 #define LINE_XXXX 4194414
 
+bool reject_not_whitelisted_printf(const std::string& src);
+
 void mvputch(int y, int x, nc_color FG, long ch);
 void wputch(WINDOW* w, nc_color FG, long ch);
 void mvwputch(WINDOW* w, int y, int x, nc_color FG, long ch);

@@ -1353,6 +1353,7 @@ void npc::decide_needs()
 
 void npc::say(game *g, std::string line, ...)
 {
+ if (reject_not_whitelisted_printf(line.c_str())) return;
  va_list ap;
  va_start(ap, line);
  char buff[8192];

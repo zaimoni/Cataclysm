@@ -195,8 +195,32 @@ static void reject_unescaped_percent(const std::string& src)
 #define reject_unescaped_percent(A)
 #endif
 
+bool reject_not_whitelisted_printf(const std::string& src)
+{
+    auto i = src.find('%');
+    while (std::string::npos != i) {
+#ifndef NDEBUG
+        if (src.size() <= i + 1) throw std::logic_error("unescaped %");
+        if (!strchr("%sidc", src[i + 1])) throw std::logic_error("unexpected escape % use");
+#else
+        if (src.size() <= i + 1) {
+            debugmsg("unescaped percent");
+            return true;
+        }
+        if (!strchr("%sidc", src[i + 1])) {
+            debugmsg("unexpected escape percent use");
+            return true;
+        }
+#endif
+        if (src.size() <= i + 2) return false;
+        i = src.find('%', i + 2);
+    }
+    return false;
+}
+
 void mvprintz(int y, int x, nc_color FG, const char *mes, ...)
 {
+ if (reject_not_whitelisted_printf(mes)) return;
  va_list ap;
  va_start(ap, mes);
  char buff[6000];
@@ -210,6 +234,7 @@ void mvprintz(int y, int x, nc_color FG, const char *mes, ...)
 
 void mvwprintz(WINDOW* w, int y, int x, nc_color FG, const char *mes, ...)
 {
+ if (reject_not_whitelisted_printf(mes)) return;
  va_list ap;
  va_start(ap, mes);
  char buff[6000];	// formerly 4096
@@ -233,6 +258,7 @@ static void mvwprintz_noformat(WINDOW* w, int y, int x, nc_color FG, const char*
 
 void printz(nc_color FG, const char *mes, ...)
 {
+ if (reject_not_whitelisted_printf(mes)) return;
  va_list ap;
  va_start(ap,mes);
  char buff[6000];
@@ -246,6 +272,7 @@ void printz(nc_color FG, const char *mes, ...)
 
 void wprintz(WINDOW *w, nc_color FG, const char *mes, ...)
 {
+ if (reject_not_whitelisted_printf(mes)) return;
  va_list ap;
  va_start(ap,mes);
  char buff[6000];
@@ -320,6 +347,7 @@ void draw_tabs(WINDOW *w, int active_tab, const char* const labels[])
 
 void debugmsg(const char *mes, ...)
 {
+ if (reject_not_whitelisted_printf(mes)) return;
  va_list ap;
  va_start(ap, mes);
  char buff[1024];
@@ -334,6 +362,7 @@ void debugmsg(const char *mes, ...)
 
 bool query_yn(const char *mes, ...)
 {
+ if (reject_not_whitelisted_printf(mes)) return false;
  const bool force_uc = option_table::get()[OPT_FORCE_YN];
  va_list ap;
  va_start(ap, mes);
@@ -348,20 +377,18 @@ bool query_yn(const char *mes, ...)
            (force_uc ? "Y/N - Case Sensitive" : "y/n"));
  wrefresh(w);
  char ch;
- do
-  ch = getch();
+ do ch = getch();
  while (ch != 'Y' && ch != 'N' && (force_uc || (ch != 'y' && ch != 'n')));
  werase(w);
  wrefresh(w);
  delwin(w);
  refresh();
- if (ch == 'Y' || ch == 'y')
-  return true;
- return false;
+ return ch == 'Y' || ch == 'y';
 }
 
 int query_int(const char *mes, ...)
 {
+ if (reject_not_whitelisted_printf(mes)) return 9;
  va_list ap;
  va_start(ap, mes);
  char buff[1024];
@@ -377,7 +404,7 @@ int query_int(const char *mes, ...)
  int temp;
  do
   temp = getch();
- while ((temp-48)<0 || (temp-48)>9);
+ while ((temp-48)<0 || (temp-48)>9);    // \todo magic constant: 48 is ASCII 0
  werase(w);
  wrefresh(w);
  delwin(w);
@@ -389,6 +416,7 @@ int query_int(const char *mes, ...)
 std::string string_input_popup(const char *mes, ...)
 {
  std::string ret;
+ if (reject_not_whitelisted_printf(mes)) return ret;
  va_list ap;
  va_start(ap, mes);
  char buff[1024];
@@ -437,6 +465,7 @@ std::string string_input_popup(const char *mes, ...)
 std::string string_input_popup(int max_length, const char *mes, ...)
 {
  std::string ret;
+ if (reject_not_whitelisted_printf(mes)) return ret;
  va_list ap;
  va_start(ap, mes);
  char buff[1024];
@@ -484,6 +513,7 @@ std::string string_input_popup(int max_length, const char *mes, ...)
 
 char popup_getkey(const char *mes, ...)
 {
+ if (reject_not_whitelisted_printf(mes)) return ' ';
  va_list ap;
  va_start(ap, mes);
  char buff[8192];
@@ -522,7 +552,7 @@ char popup_getkey(const char *mes, ...)
  mvwprintz(w, line_num, 1, c_white, tmp.c_str());
  
  wrefresh(w);
- char ch = getch();;
+ char ch = getch();
  werase(w);
  wrefresh(w);
  delwin(w);
@@ -590,6 +620,7 @@ int menu(const char *mes, ...)
 
 void popup_top(const char *mes, ...)
 {
+ if (reject_not_whitelisted_printf(mes)) return;
  va_list ap;
  va_start(ap, mes);
  char buff[1024];
@@ -640,6 +671,7 @@ void popup_top(const char *mes, ...)
 
 void popup(const char *mes, ...)
 {
+ if (reject_not_whitelisted_printf(mes)) return;
  va_list ap;
  va_start(ap, mes);
  char buff[8192];
@@ -690,6 +722,7 @@ void popup(const char *mes, ...)
 
 void popup_nowait(const char *mes, ...)
 {
+ if (reject_not_whitelisted_printf(mes)) return;
  va_list ap;
  va_start(ap, mes);
  char buff[8192];
@@ -734,6 +767,7 @@ void popup_nowait(const char *mes, ...)
 
 void full_screen_popup(const char* mes, ...)
 {
+ if (reject_not_whitelisted_printf(mes)) return;
  va_list ap;
  va_start(ap, mes);
  char buff[8192];

@@ -4557,7 +4557,8 @@ void player::cancel_activity()
 
 void player::cancel_activity_query(const char* message, ...)
 {
-	char buff[1024];
+    if (reject_not_whitelisted_printf(message)) return;
+    char buff[1024];
 	va_list ap;
 	va_start(ap, message);
 	vsprintf_s<sizeof(buff)>(buff, message, ap);
