@@ -7313,7 +7313,17 @@ static room_type pick_mansion_room(int x1, int y1, int x2, int y2)
 
  return valid[ rng(0, valid.size() - 1) ];
 }
- 
+
+static void add_knight_suit(map& m, const point& pt)
+{
+    m.add_item(pt.x, pt.y, item::types[itm_helmet_plate], 0);
+    m.add_item(pt.x, pt.y, item::types[itm_armor_plate], 0);
+    if (one_in(2)) m.add_item(pt.x, pt.y, item::types[itm_pike], 0);
+    else if (one_in(3)) m.add_item(pt.x, pt.y, item::types[itm_broadsword], 0);
+    else if (one_in(6)) m.add_item(pt.x, pt.y, item::types[itm_mace], 0);
+    else if (one_in(6)) m.add_item(pt.x, pt.y, item::types[itm_morningstar], 0);
+}
+
 void build_mansion_room(map *m, room_type type, int x1, int y1, int x2, int y2)
 {
  int dx = abs(x1 - x2), dy = abs(y1 - y2), area = dx * dy;
@@ -7360,19 +7370,8 @@ void build_mansion_room(map *m, room_type type, int x1, int y1, int x2, int y2)
   if (one_in(6)) { // Suits of armor
    int start = y1 + rng(2, 4), end = y2 - rng(0, 4), step = rng(3, 6);
    for (int y = start; y <= end; y += step) {
-    m->add_item(x1 + 1, y, item::types[itm_helmet_plate], 0);
-    m->add_item(x1 + 1, y, item::types[itm_armor_plate],  0);
-    if (one_in(2)) m->add_item(x1 + 1, y, item::types[itm_pike],  0);
-    else if (one_in(3)) m->add_item(x1 + 1, y, item::types[itm_broadsword],  0);
-    else if (one_in(6)) m->add_item(x1 + 1, y, item::types[itm_mace],  0);
-    else if (one_in(6)) m->add_item(x1 + 1, y, item::types[itm_morningstar],  0);
-
-    m->add_item(x2 - 1, y, item::types[itm_helmet_plate], 0);
-    m->add_item(x2 - 1, y, item::types[itm_armor_plate],  0);
-    if (one_in(2)) m->add_item(x2 - 1, y, item::types[itm_pike],  0);
-    else if (one_in(3)) m->add_item(x2 - 1, y, item::types[itm_broadsword],  0);
-    else if (one_in(6)) m->add_item(x2 - 1, y, item::types[itm_mace],  0);
-    else if (one_in(6)) m->add_item(x2 - 1, y, item::types[itm_morningstar],  0);
+    add_knight_suit(*m, point(x1 + 1, y));
+    add_knight_suit(*m, point(x2 - 1, y));
    }
   }
   break;
@@ -7508,14 +7507,8 @@ void build_mansion_room(map *m, room_type type, int x1, int y1, int x2, int y2)
  case room_mansion_gallery:
   for (int x = x1 + 1; x <= cx_low - 1; x += rng(2, 4)) {
    for (int y = y1 + 1; y <= cy_low - 1; y += rng(2, 4)) {
-    if (one_in(10)) { // Suit of armor
-     m->add_item(x, y, item::types[itm_helmet_plate], 0);
-     m->add_item(x, y, item::types[itm_armor_plate],  0);
-     if (one_in(2)) m->add_item(x, y, item::types[itm_pike],  0);
-     else if (one_in(3)) m->add_item(x, y, item::types[itm_broadsword],  0);
-     else if (one_in(6)) m->add_item(x, y, item::types[itm_mace],  0);
-     else if (one_in(6)) m->add_item(x, y, item::types[itm_morningstar],  0);
-    } else { // Objets d'art
+    if (one_in(10)) add_knight_suit(*m, point(x,y)); // Suit of armor
+    else { // Objets d'art
      m->ter(x, y) = t_counter;
      m->place_items(mi_art, 70, x, y, x, y, false, 0);
     }
@@ -7523,14 +7516,8 @@ void build_mansion_room(map *m, room_type type, int x1, int y1, int x2, int y2)
   }
   for (int x = x2 - 1; x >= cx_hi + 1; x -= rng(2, 4)) {
    for (int y = y2 - 1; y >= cy_hi + 1; y -= rng(2, 4)) {
-    if (one_in(10)) { // Suit of armor
-     m->add_item(x, y, item::types[itm_helmet_plate], 0);
-     m->add_item(x, y, item::types[itm_armor_plate],  0);
-     if (one_in(2)) m->add_item(x, y, item::types[itm_pike],  0);
-     else if (one_in(3)) m->add_item(x, y, item::types[itm_broadsword],  0);
-     else if (one_in(6)) m->add_item(x, y, item::types[itm_mace],  0);
-     else if (one_in(6)) m->add_item(x, y, item::types[itm_morningstar],  0);
-    } else { // Objets d'art
+    if (one_in(10)) add_knight_suit(*m, point(x,y)); // Suit of armor
+    else { // Objets d'art
      m->ter(x, y) = t_counter;
      m->place_items(mi_art, 70, x, y, x, y, false, 0);
     }
