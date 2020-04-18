@@ -21,6 +21,12 @@ enum season_type {
 #define HOURS(x)   ((x) * 600)
 #define DAYS(x)    ((x) * 14400)
 
+// so we have some idea of the time scaling issues
+// Ignore difference between Julian Calendar and Gregorian Calendar
+#define PREAPOCALYPSE_HOURS_IN_YEAR (365*24+6)
+// Ignore multiple astronomical technicalities, for now
+#define PREAPOCALYPSE_MINUTES_IN_LUNAR_CYCLE ((29*24+12)*60+44)
+
 // Times for sunrise, sunset at equinoxes
 #define SUNRISE_WINTER   7
 #define SUNRISE_SOLSTICE 6

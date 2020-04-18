@@ -159,19 +159,17 @@ void calendar::standardize()
 
 int calendar::minutes_past_midnight()
 {
- //debugmsg("minute: %d  hour: %d");
  int ret = minute + hour * 60;
  return ret;
 }
 
 moon_phase calendar::moon()
 {
- int phase = day / (DAYS_IN_SEASON / 4);
- //phase %= 4;   Redundant?
- if (phase == 3)
-  return MOON_HALF;
- else
-  return moon_phase(phase);
+ // strict upper bound on phase value should be 2*FULL_MOON (otherwise we double count new moon)
+ // if we included waxing/waning in phases (reasonable), bound would be different
+ const int phase = (day * (2*MOON_FULL))/ DAYS_IN_SEASON;
+ //phase %= 4;   // currently redundant, but won't be once we go physical
+ return (MOON_FULL >= phase) ? moon_phase(phase) : moon_phase(2*MOON_FULL - phase);
 }
 
 calendar calendar::sunrise()
