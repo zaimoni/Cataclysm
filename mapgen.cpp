@@ -6569,6 +6569,12 @@ bool connects_to(oter_id there, int dir)
  }
 }
 
+static void place_dresser(map& m, const point& pt, int confidence)
+{
+    m.ter(pt.x, pt.y) = t_dresser;
+    m.place_items(mi_dresser, confidence, pt.x, pt.y, pt.x, pt.y, false, 0);
+}
+
 void house_room(map *m, room_type type, int x1, int y1, int x2, int y2)
 {
  for (int i = x1; i <= x2; i++) {
@@ -6590,7 +6596,7 @@ void house_room(map *m, room_type type, int x1, int y1, int x2, int y2)
  }
 
  items_location placed = mi_none;
- int chance = 0, rn;
+ int chance = 0;
  switch (type) {
  case room_living:
   placed = mi_livingroom;
@@ -6653,22 +6659,16 @@ void house_room(map *m, room_type type, int x1, int y1, int x2, int y2)
   }
   switch (rng(1, 4)) {
   case 1:
-   m->ter(x1 + 2, y1 + 1) = t_dresser;
-   m->place_items(mi_dresser, 80, x1 + 2, y1 + 1, x1 + 2, y1 + 1, false, 0);
+   place_dresser(*m, point(x1 + 2, y1 + 1), 80);
    break;
   case 2:
-   m->ter(x2 - 2, y2 - 1) = t_dresser;
-   m->place_items(mi_dresser, 80, x2 - 2, y2 - 1, x2 - 2, y2 - 1, false, 0);
+   place_dresser(*m, point(x2 - 2, y2 - 1), 80);
    break;
   case 3:
-   rn = int((x1 + x2) / 2);
-   m->ter(rn, y1 + 1) = t_dresser;
-   m->place_items(mi_dresser, 80, rn, y1 + 1, rn, y1 + 1, false, 0);
+   place_dresser(*m, point((x1 + x2) / 2, y1 + 1), 80);
    break;
   case 4:
-   rn = int((y1 + y2) / 2);
-   m->ter(x1 + 1, rn) = t_dresser;
-   m->place_items(mi_dresser, 80, x1 + 1, rn, x1 + 1, rn, false, 0);
+   place_dresser(*m, point(x1 + 1, (y1 + y2) / 2), 80);
    break;
   }
   break;
@@ -6915,10 +6915,8 @@ void science_room(map *m, int x1, int y1, int x2, int y2, int rotate)
      m->ter(x1 + 1, y) = t_bed;
      m->ter(x2    , y) = t_bed;
      m->ter(x2 - 1, y) = t_bed;
-     m->ter(x1, y + 1) = t_dresser;
-     m->ter(x2, y + 1) = t_dresser;
-     m->place_items(mi_dresser, 70, x1, y + 1, x1, y + 1, false, 0);
-     m->place_items(mi_dresser, 70, x2, y + 1, x2, y + 1, false, 0);
+     place_dresser(*m, point(x1, y + 1), 70);
+     place_dresser(*m, point(x2, y + 1), 70);
     }
    } else if (rotate % 2 == 1) {
     for (int x = x1 + 1; x <= x2 - 1; x += 3) {
@@ -6926,10 +6924,8 @@ void science_room(map *m, int x1, int y1, int x2, int y2, int rotate)
      m->ter(x, y1 + 1) = t_bed;
      m->ter(x, y2    ) = t_bed;
      m->ter(x, y2 - 1) = t_bed;
-     m->ter(x + 1, y1) = t_dresser;
-     m->ter(x + 1, y2) = t_dresser;
-     m->place_items(mi_dresser, 70, x + 1, y1, x + 1, y1, false, 0);
-     m->place_items(mi_dresser, 70, x + 1, y2, x + 1, y2, false, 0);
+     place_dresser(*m, point(x + 1, y1), 70);
+     place_dresser(*m, point(x + 1, y2), 70);
     }
    }
    m->place_items(mi_bedroom, 84, x1, y1, x2, y2, false, 0);
@@ -7253,10 +7249,8 @@ void build_mine_room(map *m, room_type type, int x1, int y1, int x2, int y2)
      m->ter(x2    , y) = t_window;
      m->ter(x2 - 1, y) = t_bed;
      m->ter(x2 - 2, y) = t_bed;
-     m->ter(x1 + 1, y + 1) = t_dresser;
-     m->place_items(mi_dresser, 78, x1 + 1, y + 1, x1 + 1, y + 1, false, 0);
-     m->ter(x2 - 1, y + 1) = t_dresser;
-     m->place_items(mi_dresser, 78, x2 - 1, y + 1, x2 - 1, y + 1, false, 0);
+     place_dresser(*m, point(x1 + 1, y + 1), 78);
+     place_dresser(*m, point(x2 - 1, y + 1), 78);
     }
    } else {
     for (int x = x1 + 2; x <= x2 - 2; x += 2) {
@@ -7266,10 +7260,8 @@ void build_mine_room(map *m, room_type type, int x1, int y1, int x2, int y2)
      m->ter(x, y2    ) = t_window;
      m->ter(x, y2 - 1) = t_bed;
      m->ter(x, y2 - 2) = t_bed;
-     m->ter(x + 1, y1 + 1) = t_dresser;
-     m->place_items(mi_dresser, 78, x + 1, y1 + 1, x + 1, y1 + 1, false, 0);
-     m->ter(x + 1, y2 - 1) = t_dresser;
-     m->place_items(mi_dresser, 78, x + 1, y2 - 1, x + 1, y2 - 1, false, 0);
+     place_dresser(*m, point(x + 1, y1 + 1), 78);
+     place_dresser(*m, point(x + 1, y2 - 1), 78);
     }
    }
    m->place_items(mi_bedroom, 65, x1 + 1, y1 + 1, x2 - 1, y2 - 1, false, 0);
@@ -7381,23 +7373,19 @@ void build_mansion_room(map *m, room_type type, int x1, int y1, int x2, int y2)
    int dressy = (one_in(2) ? cy_low - 2 : cy_low + 2);
    if (one_in(2)) { // bed on left
     square(m, t_bed, x1 + 1, cy_low - 1, x1 + 3, cy_low + 1);
-    m->ter(x1 + 1, dressy) = t_dresser;
-    m->place_items(mi_dresser, 80, x1 + 1, dressy, x1 + 1, dressy, false, 0);
+    place_dresser(*m, point(x1 + 1, dressy), 80);
    } else { // bed on right
     square(m, t_bed, x2 - 3, cy_low - 1, x2 - 1, cy_low + 1);
-    m->ter(x1 + 1, dressy) = t_dresser;
-    m->place_items(mi_dresser, 80, x2 - 1, dressy, x2 - 1, dressy, false, 0);
+    place_dresser(*m, point(x2 - 1, dressy), 80);
    }
   } else { // vertical
    int dressx = (one_in(2) ? cx_low - 2 : cx_low + 2);
    if (one_in(2)) { // bed at top
     square(m, t_bed, cx_low - 1, y1 + 1, cx_low + 1, y1 + 3);
-    m->ter(dressx, y1 + 1) = t_dresser;
-    m->place_items(mi_dresser, 80, dressx, y1 + 1, dressx, y1 + 1, false, 0);
+    place_dresser(*m, point(dressx, y2 + 1), 80);
    } else { // bed at bottom
     square(m, t_bed, cx_low - 1, y2 - 3, cx_low + 1, y2 - 1);
-    m->ter(dressx, y2 - 1) = t_dresser;
-    m->place_items(mi_dresser, 80, dressx, y2 - 1, dressx, y2 - 1, false, 0);
+    place_dresser(*m, point(dressx, y2 - 1), 80);
    }
   }
   m->place_items(mi_bedroom, 75, x1, y1, x2, y2, false, 0);
