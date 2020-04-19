@@ -158,7 +158,9 @@ public:
  int  disease_intensity(dis_type type) const;
 
  void add_addiction(add_type type, int strength);
+#if DEAD_FUNC
  void rem_addiction(add_type type);
+#endif
  bool has_addiction(add_type type) const;
  int  addiction_level(add_type type) const;
 

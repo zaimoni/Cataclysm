@@ -2664,6 +2664,7 @@ bool player::has_addiction(add_type type) const
  return false;
 }
 
+#if DEAD_FUNC
 void player::rem_addiction(add_type type)
 {
  for (int i = 0; i < addictions.size(); i++) {
@@ -2673,6 +2674,7 @@ void player::rem_addiction(add_type type)
   }
  }
 }
+#endif
 
 int player::addiction_level(add_type type) const
 {
@@ -2697,75 +2699,66 @@ void player::suffer(game *g)
    }
   }
  }
- for (int i = 0; i < illness.size(); i++) {
-  dis_effect(g, *this, illness[i]);
-  illness[i].duration--;
-  if (illness[i].duration < MIN_DISEASE_AGE)// Cap permanent disease age
-   illness[i].duration = MIN_DISEASE_AGE;
-  if (illness[i].duration == 0) {
-   EraseAt(illness, i);
-   i--;
-  }
+ // time out illnesses and other temporary conditions
+ int _i = illness.size();   // non-standard countdown timer
+ while (0 <= --_i) {
+     decltype(auto) ill = illness[_i];
+     if (MIN_DISEASE_AGE > --ill.duration) ill.duration = MIN_DISEASE_AGE; // Cap permanent disease age
+     else if (0 == ill.duration) EraseAt(illness, _i);
  }
  if (!has_disease(DI_SLEEP)) {
-  int timer = has_trait(PF_ADDICTIVE) ? -4000 : -3600;
-  for (int i = 0; i < addictions.size(); i++) {
-   if (addictions[i].sated <= 0 && addictions[i].intensity >= MIN_ADDICTION_LEVEL)
-    addict_effect(g, addictions[i]);
-   addictions[i].sated--;
-   if (!one_in(addictions[i].intensity - 2) && addictions[i].sated > 0) addictions[i].sated -= 1;
-   if (addictions[i].sated < timer - (100 * addictions[i].intensity)) {
-    if (addictions[i].intensity <= 2) {
-     EraseAt(addictions, i);
-     i--;
-    } else {
-     addictions[i].intensity = int(addictions[i].intensity / 2);
-     addictions[i].intensity--;
-     addictions[i].sated = 0;
-    }
-   }
+  const int timer = has_trait(PF_ADDICTIVE) ? -HOURS(6)-MINUTES(40) : -HOURS(6);
+  // \todo work out why addiction processing only happens when awake
+  _i = addictions.size();
+  while (0 <= --_i) {
+      decltype(auto) addict = addictions[_i];
+      if (0 >= addict.sated && MIN_ADDICTION_LEVEL <= addict.intensity) addict_effect(g, addict);
+      if (0 < --addict.sated && !one_in(addict.intensity - 2)) addict.sated--;
+      if (addict.sated < timer - (MINUTES(10) * addict.intensity)) {
+          if (addict.intensity < MIN_ADDICTION_LEVEL) {
+              EraseAt(addictions, _i);
+              continue;
+          }
+          addict.intensity /= 2;
+          addict.intensity--;
+          addict.sated = 0;
+      }
   }
   if (has_trait(PF_CHEMIMBALANCE)) {
-   if (one_in(3600)) {
+   if (one_in(HOURS(6))) {
     messages.add("You suddenly feel sharp pain for no reason.");
     pain += 3 * rng(1, 3);
    }
-   if (one_in(3600)) {
-    int pkilladd = 5 * rng(-1, 2);
-    if (pkilladd > 0)
-     messages.add("You suddenly feel numb.");
-    else if (pkilladd < 0)
-     messages.add("You suddenly ache.");
-    pkill += pkilladd;
+   if (one_in(HOURS(6))) {
+       if (int delta = 5 * rng(-1, 2)) {
+           messages.add(0 < delta ? "You suddenly feel numb." : "You suddenly ache.");
+           pkill += delta;
+       }
    }
-   if (one_in(3600)) {
+   if (one_in(HOURS(6))) {
     messages.add("You feel dizzy for a moment.");
     moves -= rng(10, 30);
    }
-   if (one_in(3600)) {
-    int hungadd = 5 * rng(-1, 3);
-    if (hungadd > 0)
-     messages.add("You suddenly feel hungry.");
-    else
-     messages.add("You suddenly feel a little full.");
-    hunger += hungadd;
+   if (one_in(HOURS(6))) {
+       if (int delta = 5 * rng(-1, 3)) {
+           messages.add(0 < delta ? "You suddenly feel hungry." : "You suddenly feel a little full.");
+           hunger += delta;
+       }
    }
-   if (one_in(3600)) {
+   if (one_in(HOURS(6))) {
     messages.add("You suddenly feel thirsty.");
     thirst += 5 * rng(1, 3);
    }
-   if (one_in(3600)) {
+   if (one_in(HOURS(6))) {
     messages.add("You feel fatigued all of a sudden.");
     fatigue += 10 * rng(2, 4);
    }
-   if (one_in(4800)) {
-    if (one_in(3))
-     add_morale(MORALE_FEELING_GOOD, 20, 100);
-    else
-     add_morale(MORALE_FEELING_BAD, -20, -100);
+   if (one_in(HOURS(8))) {
+    if (one_in(3)) add_morale(MORALE_FEELING_GOOD, 20, 100);
+    else add_morale(MORALE_FEELING_BAD, -20, -100);
    }
   }
-  if ((has_trait(PF_SCHIZOPHRENIC) || has_artifact_with(AEP_SCHIZO)) && one_in(2400)) { // Every 4 hours or so
+  if ((has_trait(PF_SCHIZOPHRENIC) || has_artifact_with(AEP_SCHIZO)) && one_in(HOURS(4))) {
    int i;
    switch(rng(0, 11)) {
     case 0:
@@ -2802,7 +2795,7 @@ void player::suffer(game *g)
      break;
     case 8:
      messages.add("It's a good time to lie down and sleep.");
-     add_disease(DI_LYING_DOWN, 200);
+     add_disease(DI_LYING_DOWN, MINUTES(20));
      break;
     case 9:
      messages.add("You have the sudden urge to SCREAM!");
@@ -2814,7 +2807,7 @@ void player::suffer(game *g)
                             name + name + name + name + name + name).c_str());
      break;
     case 11:
-     add_disease(DI_FORMICATION, 600);
+     add_disease(DI_FORMICATION, HOURS(1));
      break;
    }
   }
@@ -2824,24 +2817,24 @@ void player::suffer(game *g)
    else if (hunger > 80 && one_in(500 - hunger)) add_disease(DI_SHAKES, 400);
   }
 
-  if (has_trait(PF_MOODSWINGS) && one_in(3600)) {
+  if (has_trait(PF_MOODSWINGS) && one_in(HOURS(6))) {
    if (rng(1, 20) > 9)	// 55% chance
     add_morale(MORALE_MOODSWING, -100, -500);
    else			// 45% chance
     add_morale(MORALE_MOODSWING, 100, 500);
   }
 
-  if (has_trait(PF_VOMITOUS) && one_in(4200)) vomit();
+  if (has_trait(PF_VOMITOUS) && one_in(HOURS(7))) vomit();
 
-  if (has_trait(PF_SHOUT1) && one_in(3600)) g->sound(pos, 10 + 2 * str_cur, "You shout loudly!");
-  if (has_trait(PF_SHOUT2) && one_in(2400)) g->sound(pos, 15 + 3 * str_cur, "You scream loudly!");
-  if (has_trait(PF_SHOUT3) && one_in(1800)) g->sound(pos, 20 + 4 * str_cur, "You let out a piercing howl!");
+  if (has_trait(PF_SHOUT1) && one_in(HOURS(6))) g->sound(pos, 10 + 2 * str_cur, "You shout loudly!");
+  if (has_trait(PF_SHOUT2) && one_in(HOURS(4))) g->sound(pos, 15 + 3 * str_cur, "You scream loudly!");
+  if (has_trait(PF_SHOUT3) && one_in(HOURS(3))) g->sound(pos, 20 + 4 * str_cur, "You let out a piercing howl!");
  }	// Done with while-awake-only effects
 
  if (has_trait(PF_ASTHMA) && one_in(3600 - stim * 50)) {
   bool auto_use = has_charges(itm_inhaler, 1);
   if (underwater) {
-   oxygen = int(oxygen / 2);
+   oxygen /= 2;
    auto_use = false;
   }
   if (has_disease(DI_SLEEP)) {
@@ -2852,21 +2845,21 @@ void player::suffer(game *g)
   if (auto_use)
    use_charges(itm_inhaler, 1);
   else {
-   add_disease(DI_ASTHMA, 50 * rng(1, 4));
+   add_disease(DI_ASTHMA, MINUTES(5) * rng(1, 4));
    g->u.cancel_activity_query("You have an asthma attack!");
   }
  }
 
  if (pain > 0) {
-  if (has_trait(PF_PAINREC1) && one_in(600)) pain--;
-  if (has_trait(PF_PAINREC2) && one_in(300)) pain--;
-  if (has_trait(PF_PAINREC3) && one_in(150)) pain--;
+  if (has_trait(PF_PAINREC1) && one_in(HOURS(1))) pain--;
+  if (has_trait(PF_PAINREC2) && one_in(MINUTES(30))) pain--;
+  if (has_trait(PF_PAINREC3) && one_in(MINUTES(15))) pain--;
  }
 
  if (g->is_in_sunlight(pos)) {
-  if (has_trait(PF_LEAVES) && one_in(600)) hunger--;
+  if (has_trait(PF_LEAVES) && one_in(HOURS(1))) hunger--;
 
-  if (has_trait(PF_ALBINO) && one_in(20)) {
+  if (has_trait(PF_ALBINO) && one_in(MINUTES(2))) {
    messages.add("The sunlight burns your skin!");
    if (has_disease(DI_SLEEP)) {
     rem_disease(DI_SLEEP);
@@ -2914,36 +2907,36 @@ void player::suffer(game *g)
   else if (fd.type == fd_web && fd.density < 3) fd.density++;
  }
 
- if (has_trait(PF_RADIOGENIC) && int(messages.turn) % 50 == 0 && radiation >= 10) {
+ if (has_trait(PF_RADIOGENIC) && int(messages.turn) % MINUTES(5) == 0 && radiation >= 10) {
   radiation -= 10;
   healall(1);
  }
 
  if (has_trait(PF_RADIOACTIVE1)) {
   auto& rad = g->m.radiation(pos.x, pos.y);
-  if (rad < 10 && one_in(50)) rad++;
+  if (rad < 10 && one_in(MINUTES(5))) rad++;
  }
  if (has_trait(PF_RADIOACTIVE2)) {
   auto& rad = g->m.radiation(pos.x, pos.y);
-  if (rad < 20 && one_in(25)) rad++;
+  if (rad < 20 && one_in(MINUTES(5)/2)) rad++;
  }
  if (has_trait(PF_RADIOACTIVE3)) {
   auto& rad = g->m.radiation(pos.x, pos.y);
-  if (rad < 30 && one_in(10)) rad++;
+  if (rad < 30 && one_in(MINUTES(1))) rad++;
  }
 
- if (has_trait(PF_UNSTABLE) && one_in(28800)) mutate();	// Average once per 2 days
- if (has_artifact_with(AEP_MUTAGENIC) && one_in(28800)) mutate();
- if (has_artifact_with(AEP_FORCE_TELEPORT) && one_in(600)) g->teleport(this);
+ if (has_trait(PF_UNSTABLE) && one_in(DAYS(2))) mutate();
+ if (has_artifact_with(AEP_MUTAGENIC) && one_in(DAYS(2))) mutate();
+ if (has_artifact_with(AEP_FORCE_TELEPORT) && one_in(HOURS(1))) g->teleport(this);
 
  const auto rad = g->m.radiation(pos.x, pos.y);
- if (is_wearing(itm_hazmat_suit)) {
-  if (radiation < int((100 * rad) / 20))
-   radiation += rng(0, rad / 20);
- } else if (radiation < int((100 * rad) / 8))
-  radiation += rng(0, rad / 8);
+ // \todo? this is exceptionally 1950's
+ const int rad_resist = is_wearing(itm_hazmat_suit) ? 20 : 8;
+ if (rad_resist <= rad) {
+     if (radiation < (100 * rad) / rad_resist) radiation += rng(0, rad / rad_resist);
+ }
 
- if (rng(1, 2500) < radiation && (int(messages.turn) % 150 == 0 || radiation > 2000)){
+ if (rng(1, 2500) < radiation && (int(messages.turn) % MINUTES(15) == 0 || radiation > 2000)){
   mutate();
   if (radiation > 2000) radiation = 2000;
   radiation /= 2;
@@ -2952,20 +2945,20 @@ void player::suffer(game *g)
  }
 
 // Negative bionics effects
- if (has_bionic(bio_dis_shock) && one_in(1200)) {
+ if (has_bionic(bio_dis_shock) && one_in(HOURS(2))) {
   messages.add("You suffer a painful electrical discharge!");
   pain++;
   moves -= 150;
  }
- if (has_bionic(bio_dis_acid) && one_in(1500)) {
+ if (has_bionic(bio_dis_acid) && one_in(HOURS(2)+MINUTES(30))) {
   messages.add("You suffer a burning acidic discharge!");
   hurtall(1);
  }
- if (has_bionic(bio_drain) && power_level > 0 && one_in(600)) {
+ if (has_bionic(bio_drain) && power_level > 0 && one_in(HOURS(1))) {
   messages.add("Your batteries discharge slightly.");
   power_level--;
  }
- if (has_bionic(bio_noise) && one_in(500)) {
+ if (has_bionic(bio_noise) && one_in(MINUTES(50))) {
   messages.add("A bionic emits a crackle of noise!");
   g->sound(pos, 60, "");
  }
