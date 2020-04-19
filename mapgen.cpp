@@ -235,6 +235,28 @@ static void install_military_base_turret(map& m, point dest, direction wall_dir,
     m.add_spawn(mon_turret, 1, dest.x, dest.y);
 }
 
+// example model is iterator pointing to std::pair<item_location, int>
+template<class T>
+static void _place_items(map& m, T begin, const T end, point ul, point rb, bool grass = false, int turn = 0)
+{
+    static_assert(std::is_same_v<std::remove_cv_t<decltype(T->first)>, items_location>);
+    //  assert(begin && end && begin != end);   // \todo need mode that throws std::logic error
+    do m.place_items(begin->first, begin->second, ul.x, ul.y, rb.x, rb.y, grass, turn);
+    while (++begin != end);
+}
+
+static void _stock_line(map& m, ter_id dest, items_location type, int rate, point ul, point rb, bool grass = false, int turn = 0)
+{
+    line(&m, dest, ul, rb);
+    m.place_items(type, rate, ul.x, ul.y, rb.x, rb.y, grass, turn);
+}
+
+static void _stock_square(map& m, ter_id dest, items_location type, int rate, point ul, point rb, bool grass = false, int turn = 0)
+{
+    square(&m, dest, ul, rb);
+    m.place_items(type, rate, ul.x, ul.y, rb.x, rb.y, grass, turn);
+}
+
 void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
                    oter_id t_south, oter_id t_west, oter_id t_above, int turn,
                    game *g)
@@ -654,17 +676,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    rn = 0;
   for (int i = 0; i < SEEX * 2; i++) {
    for (int j = 0; j < SEEY * 2; j++) {
-    if (i < 4 || i >= SEEX * 2 - 4) {
-     if (rn == 1)
-      ter(i, j) = t_sidewalk;
-     else
-      ter(i, j) = grass_or_dirt();
-    } else {
-     if ((i == SEEX - 1 || i == SEEX) && j % 4 != 0)
-      ter(i, j) = t_pavement_y;
-     else
-      ter(i, j) = t_pavement;
-    }
+    if (i < 4 || i >= SEEX * 2 - 4)
+     ter(i, j) = (1 == rn) ? t_sidewalk : grass_or_dirt();
+    else
+     ter(i, j) = ((i == SEEX - 1 || i == SEEX) && j % 4 != 0) ? t_pavement_y : t_pavement;
    }
   }
   if (terrain_type == ot_road_ew) rotate(1);
@@ -717,12 +732,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    rn = 0;
   for (int i = 0; i < SEEX * 2; i++) {
    for (int j = 0; j < SEEY * 2; j++) {
-    if (i < 4 || (i >= SEEX * 2 - 4 && (j < 4 || j >= SEEY * 2 - 4))) {
-     if (rn == 1)
-      ter(i, j) = t_sidewalk;
-     else
-      ter(i, j) = grass_or_dirt();
-    } else {
+    if (i < 4 || (i >= SEEX * 2 - 4 && (j < 4 || j >= SEEY * 2 - 4)))
+     ter(i, j) = (1 == rn) ? t_sidewalk : grass_or_dirt();
+    else {
      if (((i == SEEX - 1 || i == SEEX) && j % 4 != 0) ||
          ((j == SEEY - 1 || j == SEEY) && i % 4 != 0 && i > SEEX))
       ter(i, j) = t_pavement_y;
@@ -806,12 +818,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      ter(i, j) = t_water_dp;
     else if (i == 4 || i == SEEX * 2 - 5)
      ter(i, j) = t_railing_v;
-    else {
-     if ((i == SEEX - 1 || i == SEEX) && j % 4 != 0)
-      ter(i, j) = t_pavement_y;
-     else
-      ter(i, j) = t_pavement;
-    }
+    else
+     ter(i, j) = ((i == SEEX - 1 || i == SEEX) && j % 4 != 0) ? t_pavement_y : t_pavement;
    }
   }
   if (terrain_type == ot_bridge_ew) rotate(1);
@@ -826,12 +834,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      ter(i, j) = grass_or_dirt();
     else if (i == 3 || i == SEEX * 2 - 4)
      ter(i, j) = t_railing_v;
-    else {
-     if ((i == SEEX - 1 || i == SEEX) && j % 4 != 0)
-      ter(i, j) = t_pavement_y;
-     else
-      ter(i, j) = t_pavement;
-    }
+    else
+     ter(i, j) = ((i == SEEX - 1 || i == SEEX) && j % 4 != 0) ? t_pavement_y : t_pavement;
    }
   }
   if (terrain_type == ot_hiway_ew) rotate(1);
@@ -851,10 +855,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
  case ot_river_c_not_nw:
   for (int i = SEEX * 2 - 1; i >= 0; i--) {
    for (int j = 0; j < SEEY * 2; j++) {
-    if (j < 4 && i >= SEEX * 2 - 4)
-      ter(i, j) = t_water_sh;
-    else
-     ter(i, j) = t_water_dp;
+    ter(i, j) = (4 > j && SEEX * 2 - 4 <= i) ? t_water_sh : t_water_dp;
    }
   }
   if (terrain_type == ot_river_c_not_se) rotate(1); // could enforce subtraction w/static_assert
@@ -1324,10 +1325,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   if (one_in(5))
    ter(rng(lw + 1, cw - 1), bw) = (one_in(4) ? t_door_c : t_door_locked);
   for (int i = lw + (lw % 2 == 0 ? 3 : 4); i < cw && i < lw + 12; i += 2) {
-   if (!one_in(3))
-    place_items(mi_snacks,	74, i, tw + 2, i, mw - 2, false, 0);
-   else
-    place_items(mi_magazines,	74, i, tw + 2, i, mw - 2, false, 0);
+   place_items(one_in(3) ? mi_magazines : mi_snacks, 74, i, tw + 2, i, mw - 2, false, 0);
   }
   place_items(mi_fridgesnacks,	82, lw + 1, tw + 1, lw + 1, bw - 1, false, 0);
   place_items(mi_road,		12, 0,      0,  SEEX*2 - 1, tw - 1, false, 0);
@@ -1378,12 +1376,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      ter(i, j) = grass_or_dirt();
    }
   }
-  if (one_in(3))
-   place_items(mi_snacks,	74, lw + 8, tw + 4, lw + 8, mw - 3, false, 0);
-  else if (one_in(4))
-   place_items(mi_cleaning,	74, lw + 8, tw + 4, lw + 8, mw - 3, false, 0);
-  else
-   place_items(mi_magazines,	74, lw + 8, tw + 4, lw + 8, mw - 3, false, 0);
+  place_items(one_in(3) ? mi_snacks : (one_in(4) ? mi_cleaning : mi_magazines), 74, lw + 8, tw + 4, lw + 8, mw - 3, false, 0);
   if (one_in(5))
    place_items(mi_softdrugs,	84, lw + 9, tw + 4, lw + 9, mw - 3, false, 0);
   else if (one_in(4))
@@ -1532,55 +1525,19 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    place_items(mi_road, 30, 2, 16, 12, SEEY * 2 - 3, false, 0);
   }
 
+  // release block V0.2.3 \todo put in some audits so that the hardware store is guaranteed to have a balanced stock
   place_items(mi_magazines,	70,  9,  7,  9,  7, false, 0);
   if (one_in(4))
    place_items(mi_snacks,	70,  9,  7,  9,  7, false, 0);
 
-  if (!one_in(3))
-   place_items(mi_hardware,	80,  3,  9,  3, 14, false, 0);
-  else if (!one_in(3))
-   place_items(mi_tools,	80,  3,  9,  3, 14, false, 0);
-  else
-   place_items(mi_bigtools,	80,  3,  9,  3, 14, false, 0);
-
-  if (!one_in(3))
-   place_items(mi_hardware,	80,  6,  9,  6, 14, false, 0);
-  else if (!one_in(3))
-   place_items(mi_tools,	80,  6,  9,  6, 14, false, 0);
-  else
-   place_items(mi_bigtools,	80,  6,  9,  6, 14, false, 0);
-
-  if (!one_in(4))
-   place_items(mi_tools,	80,  7,  9,  7, 14, false, 0);
-  else if (one_in(4))
-   place_items(mi_mischw,	80,  7,  9,  7, 14, false, 0);
-  else
-   place_items(mi_hardware,	80,  7,  9,  7, 14, false, 0);
-  if (!one_in(4))
-   place_items(mi_tools,	80, 10,  9, 10, 14, false, 0);
-  else if (one_in(4))
-   place_items(mi_mischw,	80, 10,  9, 10, 14, false, 0);
-  else
-   place_items(mi_hardware,	80, 10,  9, 10, 14, false, 0);
-   
-  if (!one_in(3))
-   place_items(mi_bigtools,	75, 11,  9, 11, 14, false, 0);
-  else if (one_in(2))
-   place_items(mi_cleaning,	75, 11,  9, 11, 14, false, 0);
-  else
-   place_items(mi_tools,	75, 11,  9, 11, 14, false, 0);
-  if (one_in(2))
-   place_items(mi_cleaning,	65, 15,  8, 17,  8, false, 0);
-  else
-   place_items(mi_snacks,	65, 15,  8, 17,  8, false, 0);
-  if (one_in(4))
-   place_items(mi_hardware,	74, 15,  9, 17,  9, false, 0);
-  else
-   place_items(mi_cleaning,	74, 15,  9, 17,  9, false, 0);
-  if (one_in(4))
-   place_items(mi_hardware,	74, 15, 12, 17, 12, false, 0);
-  else
-   place_items(mi_cleaning,	74, 15, 12, 17, 12, false, 0);
+  place_items(one_in(3) ? (one_in(3) ? mi_bigtools : mi_tools) : mi_hardware, 80, 3, 9, 3, 14, false, 0);
+  place_items(one_in(3) ? (one_in(3) ? mi_bigtools : mi_tools) : mi_hardware, 80, 6, 9, 6, 14, false, 0);
+  place_items(one_in(4) ? (one_in(4) ? mi_mischw : mi_hardware) : mi_tools, 80, 7, 9, 7, 14, false, 0);
+  place_items(one_in(4) ? (one_in(4) ? mi_mischw : mi_hardware) : mi_tools, 80, 10, 9, 10, 14, false, 0);
+  place_items(one_in(3) ? (one_in(2) ? mi_cleaning : mi_tools) : mi_bigtools, 75, 11, 9, 11, 14, false, 0);
+  place_items(one_in(2) ? mi_cleaning : mi_snacks, 65, 15, 8, 17, 8, false, 0);
+  place_items(one_in(4) ? mi_hardware : mi_cleaning, 74, 15, 9, 17, 9, false, 0);
+  place_items(one_in(4) ? mi_hardware : mi_cleaning, 74, 15, 12, 17, 12, false, 0);
   place_items(mi_mischw,	90, 20,  4, 20, 19, false, 0);
   if (terrain_type == ot_s_hardware_east) rotate(1);
   if (terrain_type == ot_s_hardware_south) rotate(2);
@@ -1678,10 +1635,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     else if (j > tw && j < bw && i > lw && i < rw)
      ter(i, j) = t_floor;
     else if (tw >= 6 && j >= tw - 6 && j < tw && i >= lw && i <= rw) {
-     if ((i - lw) % 4 == 0)
-      ter(i, j) = t_pavement_y;
-     else
-      ter(i, j) = t_pavement;
+     ter(i, j) = ((i - lw) % 4 == 0) ? t_pavement_y : t_pavement;
     } else
      ter(i, j) = grass_or_dirt();
    }
@@ -1880,29 +1834,15 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   place_items(mi_dresser,	50, 12, 21, 17, 21, false, 0);
   place_items(mi_allclothes,	20,  3, 21, 10, 21, false, 0);
   place_items(mi_allclothes,	20,  3, 18, 10, 18, false, 0);
-  switch (rng(0, 2)) {
-   case 0:
-    place_items(mi_pants,	70, 16, 11, 16, 17, false, 0);
-    break;
-   case 1:
-    place_items(mi_shirts,	70, 16, 11, 16, 17, false, 0);
-    break;
-   case 2:
-    place_items(mi_bags,	70, 16, 11, 16, 17, false, 0);
-    break;
+
+  { // for emphasis; these are covered above as well
+  static const constexpr items_location clothes_stock[] = { mi_pants , mi_shirts, mi_bags };
+  static const constexpr items_location clothes_stock_2[] = { mi_pants , mi_shirts, mi_jackets };
+
+  place_items(clothes_stock[rng(0, 2)], 70, 16, 11, 16, 17, false, 0);
+  place_items(clothes_stock_2[rng(0, 2)], 75, 20, 10, 20, 19, false, 0);
   }
-  switch (rng(0, 2)) {
-   case 0:
-    place_items(mi_pants,	75, 20, 10, 20, 19, false, 0);
-    break;
-   case 1:
-    place_items(mi_shirts,	75, 20, 10, 20, 19, false, 0);
-    break;
-   case 2:
-    place_items(mi_jackets,	75, 20, 10, 20, 19, false, 0);
-    break;
-  }
-  
+
   if (terrain_type == ot_s_clothes_east) rotate(1);
   if (terrain_type == ot_s_clothes_south) rotate(2);
   if (terrain_type == ot_s_clothes_west) rotate(3);
@@ -1987,18 +1927,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   line(this, t_wall_v, rw, tw + 1, rw, bw - 1);
   
 // What's the front wall look like?
-  switch (rng(1, 3)) {
-  case 1: // Door to one side
-  case 2:
-// Mirror it?
-   if (one_in(2))
-    ter(lw + 2, tw) = doortype;
-   else
-    ter(rw - 2, tw) = doortype;
-   break;
-  case 3: // Double-door in center
-   line(this, doortype, (lw + rw) / 2, tw, 1 + ((lw + rw) / 2), tw);
-   break;
+  if (one_in(3)) {
+   line(this, doortype, (lw + rw) / 2, tw, 1 + ((lw + rw) / 2), tw); // Double-door in center
+  } else {
+   ter(one_in(2) ? lw + 2 : rw - 2, tw) = doortype; // // Door to one side; Mirror it?
   }
 // What type of windows?
   switch (rng(1, 6)) {
@@ -2031,12 +1963,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   cw = (one_in(3) ? rw - 3 : rw - 1); // 1 in 3 chance for corridor to back
   line(this, t_wall_h, lw + 1, mw, cw, mw);
   line(this, t_wall_v, cw, mw + 1, cw, bw - 1);
-  ter(lw + 1, mw + 1) = t_fridge;
-  ter(lw + 2, mw + 1) = t_fridge;
-  place_items(mi_fridge, 80, lw + 1, mw + 1, lw + 2, mw + 1, false, 0);
-  line(this, t_counter, lw + 3, mw + 1, cw - 1, mw + 1);
-  place_items(mi_kitchen, 70, lw + 3, mw + 1, cw - 1, mw + 1, false, 0);
-// Place a door to the kitchen
+  _stock_line(*this, t_fridge, mi_fridge, 80, point(lw + 1, mw + 1), point(lw + 2, mw + 1));
+  _stock_line(*this, t_counter, mi_kitchen, 70, point(lw + 3, mw + 1), point(cw - 1, mw + 1));
+  // Place a door to the kitchen
   if (cw != rw - 1 && one_in(2)) // side door
    ter(cw, rng(mw + 2, bw - 1)) = t_door_c;
   else { // north-facing door
@@ -2521,8 +2450,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    add_trap(SEEX + 1, SEEY - 2, tr_dissector);
    add_trap(SEEX - 2, SEEY + 1, tr_dissector);
    add_trap(SEEX + 1, SEEY + 1, tr_dissector);
-   square(this, t_counter, point(SEE - 1), point(SEE));
-   place_items(mi_bionics, 75, SEEX - 1, SEEY - 1, SEEX, SEEY, false, 0);
+   _stock_square(*this, t_counter, mi_bionics, 75, point(SEE - 1), point(SEE));
    line(this, t_reinforced_glass_h, SEEX - 2, SEEY - 2, SEEX + 1, SEEY - 2);
    line(this, t_reinforced_glass_h, SEEX - 2, SEEY + 1, SEEX + 1, SEEY + 1);
    line(this, t_reinforced_glass_v, SEEX - 2, SEEY - 1, SEEX - 2, SEEY);
@@ -2583,25 +2511,18 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
 // Fill rooms with items!
     for (int i = 2; i <= 15; i += 13) {
-     items_location goods;
-     int size;
-     switch (rng(1, 14)) {
-      case  1:
-      case  2: goods = mi_bots; size = 85; break;
-      case  3:
-      case  4: goods = mi_launchers; size = 83; break;
-      case  5:
-      case  6: goods = mi_mil_rifles; size = 87; break;
-      case  7:
-      case  8: goods = mi_grenades; size = 88; break;
-      case  9:
-      case 10: goods = mi_mil_armor; size = 85; break;
-      case 11:
-      case 12:
-      case 13: goods = mi_mil_food; size = 90; break;
-      case 14: goods = mi_bionics_mil; size = 78; break;
-     }
-     place_items(goods, size, i, j, i + 6, j + 5, false, 0);
+     static const constexpr std::pair<std::pair<items_location,int>,int> bunker_stock[] = {
+         std::pair(std::pair(mi_bots, 85), 2),
+         std::pair(std::pair(mi_launchers, 83), 2),
+         std::pair(std::pair(mi_mil_rifles, 87), 2),
+         std::pair(std::pair(mi_grenades, 88), 2),
+         std::pair(std::pair(mi_mil_armor, 85), 2),
+         std::pair(std::pair(mi_mil_food, 90), 3),
+         std::pair(std::pair(mi_bionics_mil, 78), 1)
+     };
+
+     const auto stock = use_rarity_table(rng(0,13), std::begin(bunker_stock), std::end(bunker_stock));
+     place_items(stock.first, stock.second, i, j, i + 6, j + 5, false, 0);
     }
    }
    line(this, t_wall_metal_h, 1, 1, SEEX * 2 - 2, 1);
@@ -2654,31 +2575,22 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      place_items(mi_bedroom, 84, bx1 + 1, by1 + 1, bx2 - 1, by2 - 1, false, 0);
      break;
     case 2: // Armory
-     line(this, t_counter, bx1 + 1, by1 + 1, bx2 - 1, by1 + 1);
-     line(this, t_counter, bx1 + 1, by2 - 1, bx2 - 1, by2 - 1);
-     line(this, t_counter, bx1 + 1, by1 + 2, bx1 + 1, by2 - 2);
-     line(this, t_counter, bx2 - 1, by1 + 2, bx2 - 1, by2 - 2);
-     place_items(mi_mil_rifles, 40, bx1+1, by1+1, bx2-1, by1+1, false, 0);
-     place_items(mi_launchers,  40, bx1+1, by2-1, bx2-1, by2-1, false, 0);
-     place_items(mi_grenades,   40, bx1+1, by1+2, bx1+1, by2-2, false, 0);
-     place_items(mi_mil_armor,  40, bx2-1, by1+2, bx2-1, by2-2, false, 0);
+     _stock_line(*this, t_counter, mi_mil_rifles, 40, point(bx1 + 1, by1 + 1), point(bx2 - 1, by1 + 1));
+     _stock_line(*this, t_counter, mi_launchers, 40, point(bx1 + 1, by2 - 1), point(bx2 - 1, by2 - 1));
+     _stock_line(*this, t_counter, mi_grenades, 40, point(bx1 + 1, by1 + 2), point(bx1 + 1, by2 - 2));
+     _stock_line(*this, t_counter, mi_mil_armor, 40, point(bx2 - 1, by1 + 2), point(bx2 - 1, by2 - 2));
      break;
     case 3: // Supplies
      for (int i = by1 + 1; i <= by2 - 1; i += 3) {
-      line(this, t_rack, bx1 + 2, i, bx2 - 2, i);
-      place_items(mi_mil_food, 78, bx1 + 2, i, bx2 - 2, i, false, 0);
+     _stock_line(*this, t_rack, mi_mil_food, 78, point(bx1 + 2, i), point(bx2 - 2, i));
      }
      break;
     }
     std::vector<direction> doorsides;
-    if (bx1 > 3)
-     doorsides.push_back(WEST);
-    if (bx2 < 20)
-     doorsides.push_back(EAST);
-    if (by1 > 3)
-     doorsides.push_back(NORTH);
-    if (by2 < 20)
-     doorsides.push_back(SOUTH);
+    if (bx1 > 3) doorsides.push_back(WEST);
+    if (bx2 < 20) doorsides.push_back(EAST);
+    if (by1 > 3) doorsides.push_back(NORTH);
+    if (by2 < 20) doorsides.push_back(SOUTH);
     int doorx, doory;
     switch (doorsides[rng(0, doorsides.size() - 1)]) {
      case WEST:
@@ -2725,7 +2637,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     if (one_in(5)) // Military zombie
      add_spawn(mon_zombie_soldier, 1, dest.x, dest.y);
     else if (one_in(2)) {
-     item body(0);
+     item body(0);  // \todo? something more specific
      add_item(dest, body);
      place_items(mi_launchers,  10, dest.x, dest.y, dest.x, dest.y, true, 0);
      place_items(mi_mil_rifles, 30, dest.x, dest.y, dest.x, dest.y, true, 0);
@@ -7865,7 +7777,6 @@ void map::add_extra(map_extra type, game *g)
   create_anomaly(center.x, center.y, prop);
   add_item(center, g->new_natural_artifact(prop), 0);
  } break;
-
  } // switch (prop)
 }
 
@@ -7884,7 +7795,6 @@ void map::create_anomaly(int cx, int cy, artifact_natural_property prop)
     }
    }
    break;
-
   case ARTPROP_GLOWING:
   case ARTPROP_GLITTERING:
    for (int i = cx - 5; i <= cx + 5; i++) {
@@ -7894,7 +7804,6 @@ void map::create_anomaly(int cx, int cy, artifact_natural_property prop)
     }
    }
    break;
-
   case ARTPROP_HUMMING:
   case ARTPROP_RATTLING:
    for (int i = cx - 5; i <= cx + 5; i++) {
@@ -7904,7 +7813,6 @@ void map::create_anomaly(int cx, int cy, artifact_natural_property prop)
     }
    }
    break;
-
   case ARTPROP_WHISPERING:
   case ARTPROP_ENGRAVED:
    for (int i = cx - 5; i <= cx + 5; i++) {
@@ -7914,7 +7822,6 @@ void map::create_anomaly(int cx, int cy, artifact_natural_property prop)
     }
    }
    break;
-
   case ARTPROP_BREATHING:
    for (int i = cx - 1; i <= cx + 1; i++) {
     for (int j = cy - 1; i <= cy + 1; j++)
@@ -7924,7 +7831,6 @@ void map::create_anomaly(int cx, int cy, artifact_natural_property prop)
       add_spawn(mon_breather, 1, i, j);
    }
    break;
-
   case ARTPROP_DEAD:
    for (int i = cx - 5; i <= cx + 5; i++) {
     for (int j = cy - 5; j <= cy + 5; j++) {
@@ -7933,7 +7839,6 @@ void map::create_anomaly(int cx, int cy, artifact_natural_property prop)
     }
    }
    break;
-
   case ARTPROP_ITCHY:
    for (int i = cx - 5; i <= cx + 5; i++) {
     for (int j = cy - 5; j <= cy + 5; j++) {
@@ -7942,16 +7847,13 @@ void map::create_anomaly(int cx, int cy, artifact_natural_property prop)
     }
    }
    break;
-
   case ARTPROP_ELECTRIC:
   case ARTPROP_CRACKLING:
    add_field(NULL, cx, cy, fd_shock_vent, 3);
    break;
-
   case ARTPROP_SLIMY:
    add_field(NULL, cx, cy, fd_acid_vent, 3);
    break;
-
   case ARTPROP_WARM:
    for (int i = cx - 5; i <= cx + 5; i++) {
     for (int j = cy - 5; j <= cy + 5; j++) {
@@ -7960,7 +7862,6 @@ void map::create_anomaly(int cx, int cy, artifact_natural_property prop)
     }
    }
    break;
-
   case ARTPROP_SCALED:
    for (int i = cx - 5; i <= cx + 5; i++) {
     for (int j = cy - 5; j <= cy + 5; j++) {
@@ -7969,7 +7870,6 @@ void map::create_anomaly(int cx, int cy, artifact_natural_property prop)
     }
    }
    break;
-
   case ARTPROP_FRACTAL:
    create_anomaly(cx - 4, cy - 4,
                artifact_natural_property(rng(ARTPROP_NULL + 1, ARTPROP_MAX - 1)));
@@ -7980,6 +7880,5 @@ void map::create_anomaly(int cx, int cy, artifact_natural_property prop)
    create_anomaly(cx + 4, cy - 4,
                artifact_natural_property(rng(ARTPROP_NULL + 1, ARTPROP_MAX - 1)));
    break;
-
  }
 }
