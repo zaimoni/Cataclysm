@@ -224,6 +224,17 @@ void map::apply_temple_switch(ter_id trigger, int y0, int x, int y)
 	}
 }
 
+// for military bases
+// results will be strange for diagonals
+static void install_military_base_turret(map& m, point dest, direction wall_dir, ter_id v_wall)
+{
+    // Seal up the entrances if there's walls there
+    if (m.ter(dest) != t_dirt) {
+        m.ter(dest + direction_vector(wall_dir)) = (ter_id)(v_wall + any_of<NORTH,SOUTH>(wall_dir));  // horizontal wall when moving vertically i.e. north-south
+    }
+    m.add_spawn(mon_turret, 1, dest.x, dest.y);
+}
+
 void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
                    oter_id t_south, oter_id t_west, oter_id t_above, int turn,
                    game *g)
@@ -2696,28 +2707,15 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     ter(doorx, doory) = t_door_c;
    }
   }
-// Seal up the entrances if there's walls there
-  if (ter(11,  3) != t_dirt) ter(11,  2) = t_wall_metal_h;
-  if (ter(12,  3) != t_dirt) ter(12,  2) = t_wall_metal_h;
 
-  if (ter(11, 20) != t_dirt) ter(11,  2) = t_wall_metal_h;
-  if (ter(12, 20) != t_dirt) ter(12,  2) = t_wall_metal_h;
-
-  if (ter( 3, 11) != t_dirt) ter( 2, 11) = t_wall_metal_v;
-  if (ter( 3, 12) != t_dirt) ter( 2, 12) = t_wall_metal_v;
-
-  if (ter( 3, 11) != t_dirt) ter( 2, 11) = t_wall_metal_v;
-  if (ter( 3, 12) != t_dirt) ter( 2, 12) = t_wall_metal_v;
-
-// Place turrets by (possible) entrances
-  add_spawn(mon_turret, 1,  3, 11);
-  add_spawn(mon_turret, 1,  3, 12);
-  add_spawn(mon_turret, 1, 20, 11);
-  add_spawn(mon_turret, 1, 20, 12);
-  add_spawn(mon_turret, 1, 11,  3);
-  add_spawn(mon_turret, 1, 12,  3);
-  add_spawn(mon_turret, 1, 11, 20);
-  add_spawn(mon_turret, 1, 12, 20);
+  install_military_base_turret(*this, point(SEE - 1, 3),           NORTH, t_wall_metal_v);
+  install_military_base_turret(*this, point(SEE,     3),           NORTH, t_wall_metal_v);
+  install_military_base_turret(*this, point(SEE - 1, 2 * SEE - 4), SOUTH, t_wall_metal_v);
+  install_military_base_turret(*this, point(SEE,     2 * SEE - 4), SOUTH, t_wall_metal_v);
+  install_military_base_turret(*this, point(3, SEE - 1),           WEST,  t_wall_metal_v);
+  install_military_base_turret(*this, point(3, SEE),               WEST,  t_wall_metal_v);
+  install_military_base_turret(*this, point(2 * SEE - 4, SEE - 1), EAST,  t_wall_metal_v);
+  install_military_base_turret(*this, point(2 * SEE - 4, SEE),     EAST,  t_wall_metal_v);
 
 // Finally, scatter dead bodies / mil zombies
   for (int i = 0; i < 20; i++) {
