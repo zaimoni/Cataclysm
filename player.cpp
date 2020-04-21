@@ -865,11 +865,11 @@ int player::current_speed(game *g) const
 
  if (has_trait(PF_QUICK)) newmoves = int(newmoves * 1.10);
 
- if (g != NULL) {
+ if (g) {
   if (has_trait(PF_SUNLIGHT_DEPENDENT) && !g->is_in_sunlight(pos)) newmoves -= (g->light_level() >= 12 ? 5 : 10);
-  if (has_trait(PF_COLDBLOOD3) && g->temperature < 60) newmoves -= int( (65 - g->temperature) / 2);
-  else if (has_trait(PF_COLDBLOOD2) && g->temperature < 60) newmoves -= int( (65 - g->temperature) / 3);
-  else if (has_trait(PF_COLDBLOOD) && g->temperature < 60) newmoves -= int( (65 - g->temperature) / 5);
+  if (const int cold = is_cold_blooded()) {
+      if (const int delta = (65 - g->temperature) / mutation_branch::cold_blooded_severity[cold - 1]; 0 < delta) newmoves -= delta;
+  }
  }
 
  if (has_artifact_with(AEP_SPEED_UP)) newmoves += 20;
@@ -964,6 +964,14 @@ static nc_color encumb_color(int level)
 	if (level < 4) return c_yellow;
 	if (level < 7) return c_ltred;
 	return c_red;
+}
+
+int player::is_cold_blooded() const
+{
+    if (has_trait(PF_COLDBLOOD)) return 1;
+    if (has_trait(PF_COLDBLOOD2)) return 1 + (PF_COLDBLOOD2 - PF_COLDBLOOD);
+    if (has_trait(PF_COLDBLOOD3)) return 1 + (PF_COLDBLOOD3 - PF_COLDBLOOD);
+    return 0;
 }
 
 void player::disp_info(game *g)
@@ -1301,17 +1309,12 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
             (pen < 10 ? " " : ""), pen);
   line++;
  }
- if ((has_trait(PF_COLDBLOOD) || has_trait(PF_COLDBLOOD2) ||
-      has_trait(PF_COLDBLOOD3)) && g->temperature < 65) {
-  if (has_trait(PF_COLDBLOOD3))
-   pen = int( (65 - g->temperature) / 2);
-  else if (has_trait(PF_COLDBLOOD2))
-   pen = int( (65 - g->temperature) / 3);
-  else
-   pen = int( (65 - g->temperature) / 2);
-  mvwprintz(w_speed, line, 1, c_red, "Cold-Blooded        -%s%d%%%%",
-            (pen < 10 ? " " : ""), pen);
-  line++;
+ if (const int cold = is_cold_blooded()) {
+     if (g->temperature < 65) {
+         pen = (65 - g->temperature) / mutation_branch::cold_blooded_severity[cold - 1];
+         mvwprintz(w_speed, line, 1, c_red, "Cold-Blooded        -%s%d%%%%", (pen < 10 ? " " : ""), pen);
+         line++;
+     }
  }
 
  for(const auto& cond : illness) {
@@ -2502,7 +2505,6 @@ void player::knock_back_from(game *g, int x, int y)
 
 // If we're still in the function at this point, we're actually moving a tile!
  if (g->m.move_cost(to) == 0) { // Wait, it's a wall (or water)
-
   if (g->m.has_flag(swimmable, to)) {
    if (!is_npc())
     g->plswim(to.x, to.y);
@@ -2512,7 +2514,6 @@ void player::knock_back_from(game *g, int x, int y)
    add_disease(DI_STUNNED, 2);
    if (u_see) messages.add("%s bounce%s off a %s.", name.c_str(), s, g->m.tername(to).c_str());
   }
-
  } else pos == to;	// It's no wall	
 }
 
@@ -2591,16 +2592,15 @@ const char* describe(dis_type type)
 void player::add_disease(dis_type type, int duration, int intensity, int max_intensity)
 {
  if (duration == 0) return;
- int i = 0;
- for(auto& ill : illness) {
+ for(decltype(auto) ill : illness) {
   if (type != ill.type) continue;
-  illness[i].duration += duration;
-  illness[i].intensity += intensity;
-  if (max_intensity != -1 && illness[i].intensity > max_intensity) illness[i].intensity = max_intensity;
+  ill.duration += duration;
+  ill.intensity += intensity;
+  if (max_intensity != -1 && ill.intensity > max_intensity) ill.intensity = max_intensity;
   return;
  }
  if (!is_npc()) {
-	if (DI_ADRENALINE == type) moves += 800;	// V 0.2.1: handle NPC adrenaline
+	if (DI_ADRENALINE == type) moves += 800;	// \todo V 0.2.3+: handle NPC adrenaline
 	messages.add(describe(type));
  }
  disease tmp(type, duration, intensity);
@@ -2616,25 +2616,19 @@ void player::rem_disease(dis_type type)
 
 bool player::has_disease(dis_type type) const
 {
- for (int i = 0; i < illness.size(); i++) {
-  if (illness[i].type == type) return true;
- }
+ for (decltype(auto) ill : illness) if (ill.type == type) return true;
  return false;
 }
 
 int player::disease_level(dis_type type) const
 {
- for (int i = 0; i < illness.size(); i++) {
-  if (illness[i].type == type) return illness[i].duration;
- }
+ for (decltype(auto) ill : illness) if (ill.type == type) return ill.duration;
  return 0;
 }
 
 int player::disease_intensity(dis_type type) const
 {
- for (int i = 0; i < illness.size(); i++) {
-  if (illness[i].type == type) return illness[i].intensity;
- }
+ for (decltype(auto) ill : illness) if (ill.type == type) return ill.intensity;
  return 0;
 }
 
@@ -4146,15 +4140,12 @@ void player::use(game *g, char let)
   messages.add("You attach the %s to your %s.", used->tname().c_str(), gun.tname().c_str());
   gun.contents.push_back(replace_item ? copy : i_rem(let));
   return;
-
  } else if (used->is_bionic()) {
-
   const it_bionic* const tmp = dynamic_cast<const it_bionic*>(used->type);
   if (install_bionics(g, tmp)) {
    if (!replace_item) i_rem(let);
   } else if (replace_item) inv.add_item(copy);
   return;
-
  } else if (used->is_food() || used->is_food_container()) {
   if (replace_item) inv.add_item(copy);
   eat(lookup_item(let));
@@ -4749,7 +4740,6 @@ std::string player::weapname(bool charges) const
     }
     dump << "]";
    } break;
-
   } // switch (weapon.type->id)
   return dump.str();
  } else

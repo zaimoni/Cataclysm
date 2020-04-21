@@ -256,6 +256,10 @@ enum pl_flag {
  PF_MAX2
 };
 
+// integrity checks
+static_assert(1 == PF_COLDBLOOD2 - PF_COLDBLOOD);
+static_assert(2 == PF_COLDBLOOD3 - PF_COLDBLOOD);
+
 enum hp_part {
  hp_head = 0,
  hp_torso,

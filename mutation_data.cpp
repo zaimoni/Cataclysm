@@ -523,13 +523,13 @@ You feel very sluggish when not in direct sunlight.  You suffer a 5%% drop in\n\
 speed when in shade, and a 10%% drop in speed when in the dark." },
 { "Heat dependent", -2, 0, 0, "\
 Your muscle response is dependent on ambient temperatures.  You lose 1%% of\n\
-your speed for every 5 degrees below 65 F." },
+your speed for every "+std::to_string(mutation_branch::cold_blooded_severity[0])+" degrees below 65 F." },
 { "Very Heat dependent", -3, 0, 0, "\
 Your muscle response is highly dependent on ambient temperatures.  You lose\n\
-1%% of your speed for every 3 degrees below 65 F." },
+1%% of your speed for every " + std::to_string(mutation_branch::cold_blooded_severity[1]) + " degrees below 65 F." },
 { "Cold Blooded", -5, 0, 0, "\
 You are cold-blooded and rely on heat to keep moving.  Your lose 1%% of your\n\
-speed for every 2 degrees below 65 F." },
+speed for every " + std::to_string(mutation_branch::cold_blooded_severity[2]) + " degrees below 65 F." },
 { "Growling Voice", -1, 0, 0, "\
 You have a growling, rough voice.  Persuading NPCs will be more difficult,\n\
 but threatening them will be easier." },
@@ -1080,17 +1080,12 @@ void mutation_branch::init()
  MUTATION(PF_SHELL);
   PREREQS (PF_CHITIN);
   CANCELS (PF_CHITIN3);
-
-
 }
-
-
 
 std::vector<pl_flag> mutations_from_category(mutation_category cat)
 {
  std::vector<pl_flag> ret;
  switch (cat) {
-
  case MUTCAT_LIZARD:
   SET_VECTOR(ret,
 PF_THICKSKIN, PF_INFRARED, PF_FANGS, PF_MEMBRANE, PF_SCALES, PF_TALONS,
@@ -1172,7 +1167,6 @@ PF_CARNIVORE, PF_COLDBLOOD, PF_DEX_UP_2);
 PF_DISRESISTANT, PF_NIGHTVISION2, PF_FANGS, PF_FUR, PF_CLAWS, PF_TAIL_LONG,
 PF_WHISKERS, PF_DEFORMED3, PF_VOMITOUS, PF_HUNGER, PF_TROGLO2, PF_GROWL);
   break;
-
  }
 
  return ret;

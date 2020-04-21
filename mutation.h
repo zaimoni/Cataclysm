@@ -42,6 +42,7 @@ struct mutation_branch
 {
  static mutation_branch data[PF_MAX2]; // Mutation data
  static const trait traits[PF_MAX2];	// descriptions for above
+ static const constexpr int cold_blooded_severity[(PF_COLDBLOOD3 - PF_COLDBLOOD) + 1] = { 5, 3, 2 };
 
  bool valid = false; // True if this is a valid mutation (only used for flags < PF_MAX)
  std::vector<pl_flag> prereqs; // Prerequisites; Only one is required

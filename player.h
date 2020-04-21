@@ -63,6 +63,7 @@ public:
  int  run_cost(int base_cost); // Adjust base_cost
  int  swim_speed();	// Our speed when swimming
 
+ int is_cold_blooded() const;
  bool has_trait(int flag) const;
  bool has_mutation(int flag) const;
  void toggle_trait(int flag);
@@ -303,6 +304,7 @@ public:
  
  std::vector <disease> illness;
  std::vector <addiction> addictions;
+
 private:
  // melee.cpp
  int  hit_roll() const; // Our basic hit roll, compared to our target's dodge roll
