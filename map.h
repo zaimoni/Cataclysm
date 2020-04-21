@@ -5,6 +5,7 @@
 #include "mapitems.h"
 #include "overmap.h"
 
+#include <functional>
 #include <string>
 
 #define MAPSIZE 11
@@ -176,6 +177,8 @@ class map
  bool is_outside(const point& pt) const { return is_outside(pt.x, pt.y); };
  bool flammable_items_at(int x, int y) const;
  point random_outdoor_tile();
+
+ std::vector<point> grep(const point& tl, const point& br, std::function<bool(point)> test);
 
  template<ter_id src, ter_id dest> void translate() { // Change all instances of $src->$dest
 	 static_assert(src != dest);

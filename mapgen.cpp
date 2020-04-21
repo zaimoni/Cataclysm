@@ -239,7 +239,7 @@ static void install_military_base_turret(map& m, point dest, direction wall_dir,
 template<class T>
 static void _place_items(map& m, T begin, const T end, point ul, point rb, bool grass = false, int turn = 0)
 {
-    static_assert(std::is_same_v<std::remove_cv_t<decltype(T->first)>, items_location>);
+    static_assert(std::is_same_v<std::remove_cv_t<decltype(begin->first)>, items_location>);
     //  assert(begin && end && begin != end);   // \todo need mode that throws std::logic error
     do m.place_items(begin->first, begin->second, ul.x, ul.y, rb.x, rb.y, grass, turn);
     while (++begin != end);
@@ -1992,8 +1992,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
            i += table_spacing + 2) {
    for (int j = tw + table_spacing + 1; j <= mw - 1 - table_spacing;
             j += table_spacing + 2) {
-    square(this, t_table, i, j, i + 1, j + 1);
-    place_items(mi_dining, 70, i, j, i + 1, j + 1, false, 0);
+    _stock_square(*this, t_table, mi_dining, 70, point(i, j), point(i + 1, j + 1));
    }
   }
 // Dumpster out back?
@@ -2637,12 +2636,16 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     if (one_in(5)) // Military zombie
      add_spawn(mon_zombie_soldier, 1, dest.x, dest.y);
     else if (one_in(2)) {
+     static const constexpr std::pair<items_location, int> deceased_stock[] = {
+         std::pair(mi_launchers, 10),
+         std::pair(mi_mil_rifles, 30),
+         std::pair(mi_mil_armor, 70),
+         std::pair(mi_mil_food, 40)
+     };
+
      item body(0);  // \todo? something more specific
      add_item(dest, body);
-     place_items(mi_launchers,  10, dest.x, dest.y, dest.x, dest.y, true, 0);
-     place_items(mi_mil_rifles, 30, dest.x, dest.y, dest.x, dest.y, true, 0);
-     place_items(mi_mil_armor,  70, dest.x, dest.y, dest.x, dest.y, true, 0);
-     place_items(mi_mil_food,   40, dest.x, dest.y, dest.x, dest.y, true, 0);
+     _place_items(*this, std::begin(deceased_stock), std::end(deceased_stock), dest, dest, true);
      add_item(dest, item::types[itm_id_military], 0);
     } else if (one_in(20))
      rough_circle(this, t_rubble, dest.x, dest.y, rng(3, 6));
@@ -2952,7 +2955,6 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   tmpcomp->add_option("Unlock stairs", COMPACT_OPEN, 0);
   tmpcomp->add_failure(COMPFAIL_SHUTDOWN);
   place_items(mi_sewage_plant, 80, 1, 6, 1, 13, false, 0);
-
   break;
 
  case ot_sewage_treatment_hub: // Stairs up, center of 3x3 of treatment_below
@@ -2973,8 +2975,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   line(this, t_wall_glass_h, rng(1, 3), 14, rng(5, 8), 14);
   line(this, t_wall_v,  9, 14,  9, 23);
   line(this, t_wall_glass_v, 9, 16, 9, 19);
-  square(this, t_counter, 5, 16, 6, 20);
-  place_items(mi_sewage_plant, 80, 5, 16, 6, 20, false, 0);
+  _stock_square(*this, t_counter, mi_sewage_plant, 80, point(5, 16), point(6, 20));
   ter(0, 20) = t_door_c;
   ter(9, 20) = t_door_c;
 
@@ -3065,11 +3066,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 // Bridge connecting bottom two rooms
   line(this, t_bridge, 10, 20, 13, 20);
 // Possibility of extra equipment shelves
-  if (!one_in(3)) {
-   line(this, t_rack, 23, 1, 23, 4);
-   place_items(mi_sewage_plant, 60, 23, 1, 23, 4, false, 0);
-  }
-
+  if (!one_in(3)) _stock_line(*this, t_rack, mi_sewage_plant, 60, point(23, 1), point(23, 4));
 
 // Finally, choose what the top-left and bottom-right rooms do.
   if (one_in(2)) { // Upper left is sampling, lower right valuable finds
@@ -3088,16 +3085,12 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    tmpcomp->add_failure(COMPFAIL_PUMP_EXPLODE);
    tmpcomp->add_failure(COMPFAIL_PUMP_LEAK);
 // Lower right...
-   line(this, t_counter, 15, 23, 22, 23);
-   place_items(mi_sewer, 65, 15, 23, 22, 23, false, 0);
-   line(this, t_counter, 23, 15, 23, 19);
-   place_items(mi_sewer, 65, 23, 15, 23, 19, false, 0);
+   _stock_line(*this, t_counter, mi_sewer, 65, point(15, 23), point(22, 23));
+   _stock_line(*this, t_counter, mi_sewer, 65, point(23, 15), point(23, 19));
   } else { // Upper left is valuable finds, lower right is sampling
 // Upper left...
-   line(this, t_counter,     1, 1, 1, 7);
-   place_items(mi_sewer, 65, 1, 1, 1, 7, false, 0);
-   line(this, t_counter,     7, 1, 7, 7);
-   place_items(mi_sewer, 65, 7, 1, 7, 7, false, 0);
+   _stock_line(*this, t_counter, mi_sewer, 65, point(1, 1), point(1, 7));
+   _stock_line(*this, t_counter, mi_sewer, 65, point(7, 1), point(7, 7));
 // Lower right...
    line(this, t_wall_v, 17, 22, 17, 23);
    line(this, t_wall_v, 19, 22, 19, 23);
@@ -3244,8 +3237,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    ter(10, 10) = t_elevator_control;
    ter(11, 10) = t_elevator;
    ter(10, 12) = t_ladder_up;
-   line(this, t_counter, 10, 15, 15, 15);
-   place_items(mi_mine_equipment, 86, 10, 15, 15, 15, false, 0);
+   _stock_line(*this, t_counter, mi_mine_equipment, 86, point(10, 15), point(15, 15));
    if (one_in(2))
     ter(9, 12) = t_door_c;
    else
@@ -3284,46 +3276,40 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
     case 4: { // Dead miners
      int num_bodies = rng(4, 8);
-     for (int i = 0; i < num_bodies; i++) {
-      int tries = 0;
-      point body;
-      do {
-       body = point(-1, -1);
-       int x = rng(0, SEEX * 2 - 1), y = rng(0, SEEY * 2 - 1);
-       if (move_cost(x, y) == 2) body = point(x, y);
-       else tries++;
-      } while (body.x == -1 && tries < 10);
-      if (tries < 10) {
-       item miner(0);
-       add_item(body, miner);
-       place_items(mi_mine_equipment, 60, body.x, body.y, body.x, body.y, false, 0);
-      }
-     }
+     auto ok_pts = grep(point(0), point(2*SEE-1), [&](const point& pt) {
+         return 2 == move_cost(pt);
+     });
+     while (0 < num_bodies && !ok_pts.empty()) {
+         const auto n = rng(0, ok_pts.size() - 1);
+         const point& body = ok_pts[n];
+         item miner(0);
+         add_item(body, miner);
+         place_items(mi_mine_equipment, 60, body.x, body.y, body.x, body.y, false, 0);
+         if (ok_pts.size() >= num_bodies) ok_pts.erase(ok_pts.begin() + n);
+     };
     } break;
 
     case 5: { // Dark worm!
-     int num_worms = rng(1, 5);
-     for (int i = 0; i < num_worms; i++) {
-      std::vector<direction> sides;
-      if (n_fac == 6) sides.push_back(NORTH);
-      if (e_fac == 6) sides.push_back(EAST);
-      if (s_fac == 6) sides.push_back(SOUTH);
-      if (w_fac == 6) sides.push_back(WEST);
-      if (sides.empty()) {
-       add_spawn(mon_dark_wyrm, 1, SEEX, SEEY);
-       i = num_worms;
-      } else {
-       direction side = sides[rng(0, sides.size() - 1)];
-       point p;
-       switch (side) {
-        case NORTH: p = point(rng(1, SEEX * 2 - 2), rng(1, 5)           );break;
-        case EAST:  p = point(SEEX * 2 - rng(2, 6), rng(1, SEEY * 2 - 2));break;
-        case SOUTH: p = point(rng(1, SEEX * 2 - 2), SEEY * 2 - rng(2, 6));break;
-        case WEST:  p = point(rng(1, 5)           , rng(1, SEEY * 2 - 2));break;
-       }
-       ter(p) = t_rock_floor;
-       add_spawn(mon_dark_wyrm, 1, p.x, p.y);
-      }
+     std::vector<direction> sides;
+     if (4 == n_fac) sides.push_back(NORTH);
+     if (4 == e_fac) sides.push_back(EAST);
+     if (4 == s_fac) sides.push_back(SOUTH);
+     if (4 == w_fac) sides.push_back(WEST);
+     if (sides.empty()) add_spawn(mon_dark_wyrm, 1, SEEX, SEEY);
+     else {
+         int num_worms = rng(1, 5);
+         for (int i = 0; i < num_worms; i++) {
+             direction side = sides[rng(0, sides.size() - 1)];
+             point p;
+             switch (side) {
+             case NORTH: p = point(rng(1, SEEX * 2 - 2), rng(1, 5)); break;
+             case EAST:  p = point(SEEX * 2 - rng(2, 6), rng(1, SEEY * 2 - 2)); break;
+             case SOUTH: p = point(rng(1, SEEX * 2 - 2), SEEY * 2 - rng(2, 6)); break;
+             case WEST:  p = point(rng(1, 5), rng(1, SEEY * 2 - 2)); break;
+             }
+             ter(p) = t_rock_floor;
+             add_spawn(mon_dark_wyrm, 1, p.x, p.y);
+         }
      }
     } break;
 
@@ -3349,32 +3335,28 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
   if (terrain_type == ot_mine_down) { // Don't forget to build a slope down!
    std::vector<direction> open;
-   if (n_fac == 4) open.push_back(NORTH);
-   if (e_fac == 4) open.push_back(EAST);
-   if (s_fac == 4) open.push_back(SOUTH);
-   if (w_fac == 4) open.push_back(WEST);
+   if (4 == n_fac) open.push_back(NORTH);
+   if (4 == e_fac) open.push_back(EAST);
+   if (4 == s_fac) open.push_back(SOUTH);
+   if (4 == w_fac) open.push_back(WEST);
 
    if (open.empty()) { // We'll have to build it in the center
-    int tries = 0;
+    auto ok_pts = grep(point(SEE-6), point(SEE+1), [&](const point& pt){
+        for (int i = pt.x; i <= pt.x + 5; i++) {
+            for (int j = pt.y; j <= pt.y + 5; j++) {
+                if (t_rock_floor != ter(i, j)) return false;
+            }
+        }
+        return true;
+    });
     point p;
-    bool okay = true;
-    do {
-     p.x = rng(SEEX - 6, SEEX + 1);
-     p.y = rng(SEEY - 6, SEEY + 1);
-     okay = true;
-     for (int i = p.x; i <= p.x + 5 && okay; i++) {
-      for (int j = p.y; j <= p.y + 5 && okay; j++) {
-       if (ter(i, j) != t_rock_floor)
-        okay = false;
-      }
-     }
-     if (!okay)
-      tries++;
-    } while (!okay && tries < 10);
-    if (tries == 10) // Clear the area around the slope down
-     square(this, t_rock_floor, p, p + 5*Direction::SE);
+    if (!ok_pts.empty()) p = ok_pts[rng(0, ok_pts.size())];
+    else { // Clear the area around the slope down
+        p.x = rng(SEEX - 6, SEEX + 1);
+        p.y = rng(SEEY - 6, SEEY + 1);
+        square(this, t_rock_floor, p, p + 5 * Direction::SE);
+    }
     square(this, t_slope_down, p + Direction::SE, p + 2*Direction::SE);
-
    } else { // We can build against a wall
     direction side = open[rng(0, open.size() - 1)];
     switch (side) {
@@ -3400,34 +3382,27 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    
   if (t_above == ot_mine_down) {  // Don't forget to build a slope up!
    std::vector<direction> open;
-   if (n_fac == 6 && ter(SEEX, 6) != t_slope_down)
-    open.push_back(NORTH);
-   if (e_fac == 6 && ter(SEEX * 2 - 7, SEEY) != t_slope_down)
-    open.push_back(EAST);
-   if (s_fac == 6 && ter(SEEX, SEEY * 2 - 7) != t_slope_down)
-    open.push_back(SOUTH);
-   if (w_fac == 6 && ter(6, SEEY) != t_slope_down)
-    open.push_back(WEST);
+   if (n_fac == 4 && ter(SEEX, 6) != t_slope_down) open.push_back(NORTH);
+   if (e_fac == 4 && ter(SEEX * 2 - 7, SEEY) != t_slope_down) open.push_back(EAST);
+   if (s_fac == 4 && ter(SEEX, SEEY * 2 - 7) != t_slope_down) open.push_back(SOUTH);
+   if (w_fac == 4 && ter(6, SEEY) != t_slope_down) open.push_back(WEST);
 
    if (open.empty()) { // We'll have to build it in the center
-    int tries = 0;
+    auto ok_pts = grep(point(SEE-6), point(SEE+1), [&](const point& pt){
+        for (int i = pt.x; i <= pt.x + 5; i++) {
+            for (int j = pt.y; j <= pt.y + 5; j++) {
+                if (t_rock_floor != ter(i, j)) return false;
+            }
+        }
+        return true;
+    });
     point p;
-    bool okay = true;
-    do {
-     p.x = rng(SEEX - 6, SEEX + 1);
-     p.y = rng(SEEY - 6, SEEY + 1);
-     okay = true;
-     for (int i = p.x; i <= p.x + 5 && okay; i++) {
-      for (int j = p.y; j <= p.y + 5 && okay; j++) {
-       if (ter(i, j) != t_rock_floor)
-        okay = false;
-      }
-     }
-     if (!okay)
-      tries++;
-    } while (!okay && tries < 10);
-    if (tries == 10) // Clear the area around the slope down
-     square(this, t_rock_floor, p, p + 5*Direction::SE);
+    if (!ok_pts.empty()) p = ok_pts[rng(0, ok_pts.size())];
+    else { // Clear the area around the slope up
+        p.x = rng(SEEX - 6, SEEX + 1);
+        p.y = rng(SEEY - 6, SEEY + 1);
+        square(this, t_rock_floor, p, p + 5 * Direction::SE);
+    }
     square(this, t_slope_up, p + Direction::SE, p + 2*Direction::SE);
 
    } else { // We can build against a wall
@@ -3658,8 +3633,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   line(this, t_wall_h, ne_out, se_out);
   line(this, t_wall_v, nw_out, ne_out);
   line(this, t_wall_v, sw_out, se_out);
-  line(this, t_counter, nw_in, sw_in);
-  place_items(mi_toxic_dump_equipment, 80, nw_in.x, nw_in.y, sw_in.x, sw_in.y, false, 0);
+  _stock_line(*this, t_counter, mi_toxic_dump_equipment, 80, nw_in, sw_in);
   add_item(build, item::types[itm_id_military], 0);
   ter(build+4*Direction::E) = t_door_locked;
 
@@ -3701,7 +3675,6 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     place_items(mi_rare, 25, herm.x - 1, herm.y - 1, herm.x + 1, herm.y + 1,true,0);
    } break;
    }
-
   } else { // We're above ground!
 // First, draw a forest
    draw_map(ot_forest, t_north, t_east, t_south, t_west, t_above, turn, g);
@@ -3710,9 +3683,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    point path((one_in(2) ? SEEX - 8 : SEEX + 7), rng(SEEY - 6, SEEY + 5));
    if (one_in(2)) std::swap(path.x, path.y);
    std::vector<point> pathline = line_to(path, SEEX - 1, SEEY - 1, 0);
-   for (int ii = 0; ii < pathline.size(); ii++)
-    square(this, t_dirt, pathline[ii].x,     pathline[ii].y,
-                         pathline[ii].x + 1, pathline[ii].y + 1);
+   for (const point& pt : pathline) square(this, t_dirt, pt, pt + Direction::SE);
    while (!one_in(8))
     ter(rng(SEEX - 6, SEEX + 5), rng(SEEY - 6, SEEY + 5)) = t_dirt;
    square(this, t_slope_down, SEEX - 1, SEEY - 1, SEEX, SEEY);
@@ -3720,7 +3691,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   break;
 
  case ot_cave_rat:
-  square(this, t_rock, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1);
+  square(this, t_rock, point(0), point(SEE * 2 - 1));
 
   if (t_above == ot_cave_rat) { // Finale
    rough_circle(this, t_rock_floor, SEEX, SEEY, 8);

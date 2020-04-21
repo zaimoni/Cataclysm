@@ -357,7 +357,6 @@ mfb(transparent) },
 mfb(transparent) },
 { "checkered switch", '6', c_white,   0, tr_null,
 mfb(transparent) }
-
 };
 
 // from codegen.py3
@@ -576,6 +575,21 @@ bool map::find_terrain(const point& pt, const ter_id dest, point& pos) const
     }
     return ok;
 }
+
+std::vector<point> map::grep(const point& tl, const point& br, std::function<bool(point)> test)
+{
+    std::vector<point> ret;
+    if (tl.x <= br.x && tl.y <= br.y) {
+        point pt;
+        for (pt.x = tl.x; pt.x <= br.x; pt.x++) {
+            for (pt.y = tl.y; pt.y <= br.y; pt.y++) {
+                if (test(pt)) ret.push_back(pt);
+            }
+        }
+    }
+    return ret;
+}
+
 
 vehicle* map::veh_at(const localPos& src, int& part_num) const
 {
@@ -1539,9 +1553,7 @@ void map::destroy(game *g, int x, int y, bool makesound)
 
  // \todo V0.3.0 bash bashable terrain (seems to give more detailed results)?
 
- auto& terrain = ter(x,y);
- switch(terrain) {
-
+ switch(auto& terrain = ter(x, y)) {
  case t_gas_pump:
   if (makesound && one_in(3)) g->explosion(x, y, 40, 0, true);
   else {
@@ -1603,7 +1615,6 @@ void map::shoot(game *g, int x, int y, int &dam, bool hit_items, unsigned flags)
  }
 
  switch (ter(x, y)) {
-
  case t_wall_wood_broken:
  case t_door_b:
   if (hit_items || one_in(8)) {	// 1 in 8 chance of hitting the door
