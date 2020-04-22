@@ -18,7 +18,7 @@ WEST,
 NORTHWEST
 };
 
-template<direction d1, direction d2> constexpr bool any_of(direction src) { return d1 == src || d2 == src; }
+template<direction d1, direction d2> constexpr bool any(direction src) { return d1 == src || d2 == src; }
 
 class Direction
 {
