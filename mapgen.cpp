@@ -225,6 +225,17 @@ void map::apply_temple_switch(ter_id trigger, int y0, int x, int y)
 	}
 }
 
+static int forest_penetration(oter_id x)
+{
+    switch (x)
+    {
+    case ot_forest:
+    case ot_forest_water: return 14;
+    case ot_forest_thick: return 18;
+    default: return 0;
+    }
+}
+
 // for military bases
 // results will be strange for diagonals
 static void install_military_base_turret(map& m, point dest, direction wall_dir, ter_id v_wall)
@@ -321,53 +332,44 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
  case ot_forest:
  case ot_forest_thick:
  case ot_forest_water:
+  n_fac = forest_penetration(t_north);
+  e_fac = forest_penetration(t_east);
+  s_fac = forest_penetration(t_south);
+  w_fac = forest_penetration(t_west);
   switch (terrain_type) {
   case ot_forest_thick:
-   n_fac = 8;
-   e_fac = 8;
-   s_fac = 8;
-   w_fac = 8;
+   n_fac += 8;
+   e_fac += 8;
+   s_fac += 8;
+   w_fac += 8;
    break;
   case ot_forest_water:
-   n_fac = 4;
-   e_fac = 4;
-   s_fac = 4;
-   w_fac = 4;
+   n_fac += 4;
+   e_fac += 4;
+   s_fac += 4;
+   w_fac += 4;
    break;
-  case ot_forest:
-   n_fac = 0;
-   e_fac = 0;
-   s_fac = 0;
-   w_fac = 0;
   }
-  if (t_north == ot_forest || t_north == ot_forest_water) n_fac += 14;
-  else if (t_north == ot_forest_thick) n_fac += 18;
-  if (t_east == ot_forest || t_east == ot_forest_water) e_fac += 14;
-  else if (t_east == ot_forest_thick) e_fac += 18;
-  if (t_south == ot_forest || t_south == ot_forest_water) s_fac += 14;
-  else if (t_south == ot_forest_thick) s_fac += 18;
-  if (t_west == ot_forest || t_west == ot_forest_water) w_fac += 14;
-  else if (t_west == ot_forest_thick) w_fac += 18;
   for (int i = 0; i < SEEX * 2; i++) {
    for (int j = 0; j < SEEY * 2; j++) {
     int forest_chance = 0, num = 0;
-    if (j < n_fac) {
-     forest_chance += n_fac - j;
-     num++;
+    if (const auto test = n_fac - j; 0 < test) {
+        forest_chance += test;
+        num++;
     }
-    if (SEEX * 2 - 1 - i < e_fac) {
-     forest_chance += e_fac - (SEEX * 2 - 1 - i);
-     num++;
+    if (const auto test = e_fac - (SEEX * 2 - 1 - i); 0 < test) {
+        forest_chance += test;
+        num++;
     }
-    if (SEEY * 2 - 1 - j < s_fac) {
-     forest_chance += s_fac - (SEEX * 2 - 1 - j);
-     num++;
+    if (const auto test = s_fac - (SEEY * 2 - 1 - j); 0 < test) {
+        forest_chance += test;
+        num++;
     }
-    if (i < w_fac) {
-     forest_chance += w_fac - i;
-     num++;
+    if (const auto test = w_fac - i; 0 < test) {
+        forest_chance += test;
+        num++;
     }
-    if (num > 0) forest_chance /= num;
+    if (num > 1) forest_chance /= num;
     rn = rng(0, forest_chance);
     if ((forest_chance > 0 && rn > 13) || one_in(100 - forest_chance))
      ter(i, j) = t_tree;
@@ -581,46 +583,30 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
  case ot_spider_pit:
 // First generate a forest
-  n_fac = 0;
-  e_fac = 0;
-  s_fac = 0;
-  w_fac = 0;
-  if (t_north == ot_forest || t_north == ot_forest_water)
-   n_fac += 14;
-  else if (t_north == ot_forest_thick)
-   n_fac += 18;
-  if (t_east == ot_forest || t_east == ot_forest_water)
-   e_fac += 14;
-  else if (t_east == ot_forest_thick)
-   e_fac += 18;
-  if (t_south == ot_forest || t_south == ot_forest_water)
-   s_fac += 14;
-  else if (t_south == ot_forest_thick)
-   s_fac += 18;
-  if (t_west == ot_forest || t_west == ot_forest_water)
-   w_fac += 14;
-  else if (t_west == ot_forest_thick)
-   w_fac += 18;
+  n_fac = forest_penetration(t_north);
+  e_fac = forest_penetration(t_east);
+  s_fac = forest_penetration(t_south);
+  w_fac = forest_penetration(t_west);
   for (int i = 0; i < SEEX * 2; i++) {
    for (int j = 0; j < SEEY * 2; j++) {
     int forest_chance = 0, num = 0;
-    if (j < n_fac) {
-     forest_chance += n_fac - j;
-     num++;
+    if (const auto test = n_fac - j; 0 < test) {
+        forest_chance += test;
+        num++;
     }
-    if (SEEX * 2 - 1 - i < e_fac) {
-     forest_chance += e_fac - (SEEX * 2 - 1 - i);
-     num++;
+    if (const auto test = e_fac - (SEEX * 2 - 1 - i); 0 < test) {
+        forest_chance += test;
+        num++;
     }
-    if (SEEY * 2 - 1 - j < s_fac) {
-     forest_chance += s_fac - (SEEX * 2 - 1 - j);
-     num++;
+    if (const auto test = s_fac - (SEEY * 2 - 1 - j); 0 < test) {
+        forest_chance += test;
+        num++;
     }
-    if (i < w_fac) {
-     forest_chance += w_fac - i;
-     num++;
+    if (const auto test = w_fac - i; 0 < test) {
+        forest_chance += test;
+        num++;
     }
-    if (num > 0) forest_chance /= num;
+    if (num > 1) forest_chance /= num;
     rn = rng(0, forest_chance);
     if ((forest_chance > 0 && rn > 13) || one_in(100 - forest_chance))
      ter(i, j) = t_tree;
