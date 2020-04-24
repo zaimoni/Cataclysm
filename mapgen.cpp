@@ -64,6 +64,7 @@ void build_mine_room(map *m, room_type type, int x1, int y1, int x2, int y2);
 void build_mansion_room(map *m, room_type type, int x1, int y1, int x2, int y2);
 void mansion_room(map *m, int x1, int y1, int x2, int y2); // pick & build
 
+// \todo these functions may need to clear inventory as well
 static void line(map *m, ter_id type, int x1, int y1, int x2, int y2)
 {
 	for (const auto& pt : line_to(x1, y1, x2, y2, 0)) m->ter(pt) = type;
@@ -4373,21 +4374,16 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    line(this, t_wall_h,  1,  2, 21,  2);
    line(this, t_wall_h,  1, 10, 21, 10);
    line(this, t_wall_v, 21,  3, 21,  9);
-   line(this, t_counter, 2,  3,  2,  9);
-   place_items(mi_hospital_lab, 70, 2, 3, 2, 9, false, 0);
-   square(this, t_counter,  5,  4,  6,  8);
-   place_items(mi_hospital_lab, 74, 5, 4, 6, 8, false, 0);
-   square(this, t_counter, 10,  4, 11,  8);
-   place_items(mi_hospital_lab, 74, 10, 4, 11, 8, false, 0);
-   square(this, t_counter, 15,  4, 16,  8);
-   place_items(mi_hospital_lab, 74, 15, 4, 16, 8, false, 0);
+   _stock_line(*this, t_counter, mi_hospital_lab, 70, point(2, 3), point(2, 9));
+   _stock_square(*this, t_counter, mi_hospital_lab, 74, point(5, 4), point(6, 8));
+   _stock_square(*this, t_counter, mi_hospital_lab, 74, point(10, 4), point(11, 8));
+   _stock_square(*this, t_counter, mi_hospital_lab, 74, point(15, 4), point(16, 8));
    ter(rng(3, 18),  2) = t_door_c;
    ter(rng(3, 18), 10) = t_door_c;
    if (one_in(4)) // Door on the right side
     ter(21, rng(4, 8)) = t_door_c;
    else { // Counter on the right side
-    line(this, t_counter, 20, 3, 20, 9);
-    place_items(mi_hospital_lab, 70, 20, 3, 20, 9, false, 0);
+    _stock_line(*this, t_counter, mi_hospital_lab, 70, point(20, 3), point(20, 9));
    }
 // Blood testing facility
    line(this, t_wall_h,  1, 13, 10, 13);
@@ -4397,8 +4393,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     ter(rng(3, 8), 13) = t_door_c;
    if (rn == 2 || rn == 3)
     ter(10, rng(15, 21)) = t_door_c;
-   line(this, t_counter, 2, 14,  2, 22);
-   place_items(mi_hospital_lab, 60, 2, 14, 2, 22, false, 0);
+   _stock_line(*this, t_counter, mi_hospital_lab, 60, point(2, 14), point(2, 22));
    square(this, t_counter, 4, 17, 6, 19);
    ter(4, 18) = t_centrifuge;
    line(this, t_floor, 5, 18, 6, rng(17, 19)); // Clear path to console
@@ -4413,13 +4408,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     ter(rng(14, 22), 13) = t_door_c;
    if (rn == 2 || rn == 3)
     ter(13, rng(14, 21)) = t_door_c;
-   square(this, t_rack, 16, 16, 21, 17);
-   place_items(mi_hospital_samples, 68, 16, 16, 21, 17, false, 0);
-   square(this, t_rack, 16, 19, 21, 20);
-   place_items(mi_hospital_samples, 68, 16, 19, 21, 20, false, 0);
-   line(this, t_rack, 14, 22, 23, 22);
-   place_items(mi_hospital_samples, 62, 14, 22, 23, 22, false, 0);
-
+   _stock_square(*this, t_rack, mi_hospital_samples, 68, point(16, 16), point(21, 17));
+   _stock_square(*this, t_rack, mi_hospital_samples, 68, point(16, 19), point(21, 20));
+   _stock_line(*this, t_rack, mi_hospital_samples, 62, point(14, 22), point(23, 22));
   } else { // We're NOT in the center; a random hospital type!
    // \todo but would be nice if all four types were represented among 7 normal hospital sections
    switch (rng(1, 4)) { // What type?
@@ -4445,10 +4436,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 // Waiting area
     for (int i = 1; i <= 9; i += 4)
      line(this, t_bench, i, 7, i, 10);
-    line(this, t_table, 3, 8, 3, 9);
-    place_items(mi_magazines, 50, 3, 8, 3, 9, false, 0);
-    line(this, t_table, 7, 8, 7, 9);
-    place_items(mi_magazines, 50, 7, 8, 7, 9, false, 0);
+    _stock_line(*this, t_table, mi_magazines, 50, point(3, 8), point(3, 9));
+    _stock_line(*this, t_table, mi_magazines, 50, point(7, 8), point(7, 9));
 // Middle right rooms
     line(this, t_wall_v, 14, 7, 14, 10);
     line(this, t_wall_h, 15, 7, 23, 7);
@@ -4568,24 +4557,18 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     line(this, t_wall_h, 13, 13, 23, 13);
     line(this, t_door_c, 18, 13, 19, 13);
 // Next, the contents of each operating room
-    line(this, t_counter, 1, 0, 1, 9);
-    place_items(mi_surgery, 70, 1, 1, 1, 9, false, 0);
+    _stock_line(*this, t_counter, mi_surgery, 70, point(1, 1), point(1, 9));
     square(this, t_bed, 5, 4, 6, 5);
 
-    line(this, t_counter, 1, 14, 1, 22);
-    place_items(mi_surgery, 70, 1, 14, 1, 22, false, 0);
+    _stock_line(*this, t_counter, mi_surgery, 70, point(1, 14), point(1, 22));
     square(this, t_bed, 5, 18, 6, 19);
 
-    line(this, t_counter, 14, 6, 14, 9);
-    place_items(mi_surgery, 60, 14, 6, 14, 9, false, 0);
-    line(this, t_counter, 15, 9, 17, 9);
-    place_items(mi_surgery, 60, 15, 9, 17, 9, false, 0);
+    _stock_line(*this, t_counter, mi_surgery, 60, point(14, 6), point(14, 9));
+    _stock_line(*this, t_counter, mi_surgery, 60, point(15, 9), point(17, 9));
     square(this, t_bed, 18, 4, 19, 5);
 
-    line(this, t_counter, 14, 14, 14, 17);
-    place_items(mi_surgery, 60, 14, 14, 14, 17, false, 0);
-    line(this, t_counter, 15, 14, 17, 14);
-    place_items(mi_surgery, 60, 15, 14, 17, 14, false, 0);
+    _stock_line(*this, t_counter, mi_surgery, 60, point(14, 14), point(14, 17));
+    _stock_line(*this, t_counter, mi_surgery, 60, point(15, 14), point(17, 14));
     square(this, t_bed, 18, 18, 19, 19);
 
     break;
@@ -4596,28 +4579,19 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     line(this, t_wall_h, 3, 10, 12, 10);
     line(this, t_wall_v, 3,  3,  3,  9);
     ter(3, 6) = t_door_c;
-    line(this, t_rack,   4,  3, 11,  3);
-    place_items(mi_softdrugs, 90, 4, 3, 11, 3, false, 0);
-    line(this, t_rack,   4,  9, 11,  9);
-    place_items(mi_softdrugs, 90, 4, 9, 11, 9, false, 0);
-    line(this, t_rack, 6, 5, 10, 5);
-    place_items(mi_softdrugs, 80, 6, 5, 10, 5, false, 0);
-    line(this, t_rack, 6, 7, 10, 7);
-    place_items(mi_softdrugs, 80, 6, 7, 10, 7, false, 0);
+    _stock_line(*this, t_rack, mi_softdrugs, 90, point(4, 3), point(11, 3));
+    _stock_line(*this, t_rack, mi_softdrugs, 90, point(4, 9), point(11, 9));
+    _stock_line(*this, t_rack, mi_softdrugs, 80, point(6, 5), point(10, 5));
+    _stock_line(*this, t_rack, mi_softdrugs, 80, point(6, 7), point(10, 7));
 // Hard drug storage
     line(this, t_wall_v, 13, 0, 13, 19);
     ter(13, 6) = t_door_locked;
-    line(this, t_rack, 14, 0, 14, 4);
-    place_items(mi_harddrugs, 78, 14, 1, 14, 4, false, 0);
-    line(this, t_rack, 17, 0, 17, 7);
-    place_items(mi_harddrugs, 85, 17, 0, 17, 7, false, 0);
-    line(this, t_rack, 20, 0, 20, 7);
-    place_items(mi_harddrugs, 85, 20, 0, 20, 7, false, 0);
+    _stock_line(*this, t_rack, mi_harddrugs, 78, point(14, 0), point(14, 4));   // \todo might be accessible from outside if northmost?
+    _stock_line(*this, t_rack, mi_harddrugs, 85, point(17, 0), point(17, 7));   // \todo might be accessible from outside if northmost?
+    _stock_line(*this, t_rack, mi_harddrugs, 85, point(20, 0), point(20, 7));   // \todo might be accessible from outside if northmost?
     line(this, t_wall_h, 20, 10, 23, 10);
-    line(this, t_rack, 16, 10, 19, 10);
-    place_items(mi_harddrugs, 78, 16, 10, 19, 10, false, 0);
-    line(this, t_rack, 16, 12, 19, 12);
-    place_items(mi_harddrugs, 78, 16, 12, 19, 12, false, 0);
+    _stock_line(*this, t_rack, mi_harddrugs, 78, point(16, 10), point(19, 10));
+    _stock_line(*this, t_rack, mi_harddrugs, 78, point(16, 12), point(19, 12));
     line(this, t_wall_h, 14, 14, 19, 14);
     ter(rng(14, 15), 14) = t_door_locked;
     ter(rng(16, 18), 14) = t_bars;
@@ -4629,8 +4603,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     ter(rng(3, 8), 13) = t_door_c;
     line(this, t_wall_v, 10, 14, 10, 22);
     ter(10, rng(16, 20)) = t_door_c;
-    line(this, t_counter, 1, 14, 1, 22);
-    place_items(mi_allclothes, 70, 1, 14, 1, 22, false, 0);
+    _stock_line(*this, t_counter, mi_allclothes, 70, point(1, 14), point(1, 22));
     for (int j = 15; j <= 21; j += 3) {
      line(this, t_rack, 4, j, 7, j);
      if (one_in(2))
@@ -4645,10 +4618,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     
 
 // We have walls to the north and east if they're not hospitals
-   if (t_east != ot_hospital_entrance && t_east != ot_hospital)
-    line(this, t_wall_v, 23, 0, 23, 23);
-   if (t_north != ot_hospital_entrance && t_north != ot_hospital)
-    line(this, t_wall_h, 0, 0, 23, 0);
+   if (!any<ot_hospital_entrance, ot_hospital>(t_east)) line(this, t_wall_v, 23, 0, 23, 23);
+   if (!any<ot_hospital_entrance, ot_hospital>(t_north)) line(this, t_wall_h, 0, 0, 23, 0);
   }
 // Generate bodies / zombies
   rn = rng(15, 20);
@@ -4690,9 +4661,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   square(this, t_floor, 1, 11, SEEX * 2 - 1, SEEY * 2 - 2);
   build_mansion_room(this, room_mansion_entry, 1, 11, SEEX * 2 - 1, SEEY*2 - 2);
 // Rotate to face the road
-  if (t_east >= ot_road_null && t_east <= ot_bridge_ew) rotate(1);
-  if (t_south >= ot_road_null && t_south <= ot_bridge_ew) rotate(2);
-  if (t_west >= ot_road_null && t_west <= ot_bridge_ew) rotate(3);
+  if (is_between<ot_road_null, ot_bridge_ew>(t_east)) rotate(1);
+  else if (is_between<ot_road_null, ot_bridge_ew>(t_south)) rotate(2);
+  else if (is_between<ot_road_null, ot_bridge_ew>(t_west)) rotate(3);
  } break;
 
  case ot_mansion:
@@ -4706,11 +4677,11 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   rw = SEEX * 2 - 1;
 // ...if we need outside walls, adjust tw & rw and build them
 // We build windows below.
-  if (t_north != ot_mansion_entrance && t_north != ot_mansion) {
+  if (!any<ot_mansion_entrance, ot_mansion>(t_north)) {
    tw = 1;
    line(this, t_wall_h, 0, 0, SEEX * 2 - 1, 0);
   }
-  if (t_east != ot_mansion_entrance && t_east != ot_mansion) {
+  if (!any<ot_mansion_entrance, ot_mansion>(t_east)) {
    rw = SEEX * 2 - 2;
    line(this, t_wall_v, SEEX * 2 - 1, 0, SEEX * 2 - 1, SEEX * 2 - 1);
   }
@@ -4719,9 +4690,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
   case 1: // Just one. big. room.
    mansion_room(this, 1, tw, rw, SEEY * 2 - 2);
-   if (t_west == ot_mansion_entrance || t_west == ot_mansion)
+   if (any<ot_mansion_entrance, ot_mansion>(t_west))
     line(this, t_door_c, 0, SEEY - 1, 0, SEEY);
-   if (t_south == ot_mansion_entrance || t_south == ot_mansion)
+   if (any<ot_mansion_entrance, ot_mansion>(t_south))
     line(this, t_door_c, SEEX - 1, SEEY * 2 - 1, SEEX, SEEY * 2 - 1);
    break;
 
@@ -4745,9 +4716,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     ter(rng(3, rw - 2),  9) = t_door_c;
     ter(rng(3, rw - 2), 14) = t_door_c;
    }
-   if (t_west == ot_mansion_entrance || t_west == ot_mansion)
+   if (any<ot_mansion_entrance, ot_mansion>(t_west))
     line(this, t_door_c, 0, SEEY - 1, 0, SEEY);
-   if (t_south == ot_mansion_entrance || t_south == ot_mansion)
+   if (any<ot_mansion_entrance, ot_mansion>(t_south))
     line(this, t_floor, SEEX - 1, SEEY * 2 - 1, SEEX, SEEY * 2 - 1);
    break;
    
@@ -4785,9 +4756,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    mansion_room(this, 14, tw, rw,  9);
    mansion_room(this,  1, 14,  9, SEEY * 2 - 2);
    mansion_room(this, 14, 14, rw, SEEY * 2 - 2);
-   if (t_west == ot_mansion_entrance || t_west == ot_mansion)
+   if (any<ot_mansion_entrance, ot_mansion>(t_west))
     line(this, t_floor, 0, SEEY - 1, 0, SEEY);
-   if (t_south == ot_mansion_entrance || t_south == ot_mansion)
+   if (any<ot_mansion_entrance, ot_mansion>(t_south))
     line(this, t_floor, SEEX - 1, SEEY * 2 - 1, SEEX, SEEY * 2 - 1);
    break;
 
@@ -4815,15 +4786,15 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    else
     ter(cw, rng(y + 2, SEEY * 2 - 3)) = t_door_c;
 
-   if (t_west == ot_mansion_entrance || t_west == ot_mansion)
+   if (any<ot_mansion_entrance, ot_mansion>(t_west))
     line(this, t_floor, 0, SEEY - 1, 0, SEEY);
-   if (t_south == ot_mansion_entrance || t_south == ot_mansion)
+   if (any<ot_mansion_entrance, ot_mansion>(t_south))
     line(this, t_floor, SEEX - 1, SEEY * 2 - 1, SEEX, SEEY * 2 - 1);
    break;
   } // switch (rng(1, 4))
 
 // Finally, place windows on outside-facing walls if necessary
-  if (t_west != ot_mansion_entrance && t_west != ot_mansion) {
+  if (!any<ot_mansion_entrance, ot_mansion>(t_west)) {
    int consecutive = 0;
    for (int i = 1; i < SEEY; i++) {
     if (move_cost(1, i) != 0 && move_cost(1, SEEY * 2 - 1 - i) != 0) {
@@ -4838,7 +4809,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      consecutive = 0;
    }
   }
-  if (t_south != ot_mansion_entrance && t_south != ot_mansion) {
+  if (!any<ot_mansion_entrance, ot_mansion>(t_south)) {
    int consecutive = 0;
    for (int i = 1; i < SEEX; i++) {
     if (move_cost(i, SEEY * 2 - 2) != 0 &&
@@ -4854,7 +4825,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      consecutive = 0;
    }
   }
-  if (t_east != ot_mansion_entrance && t_east != ot_mansion) {
+  if (any<ot_mansion_entrance, ot_mansion>(t_east)) {
    int consecutive = 0;
    for (int i = 1; i < SEEY; i++) {
     if (move_cost(SEEX * 2 - 2, i) != 0 &&
@@ -4871,7 +4842,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    }
   }
 
-  if (t_north != ot_mansion_entrance && t_north != ot_mansion) {
+  if (any<ot_mansion_entrance, ot_mansion>(t_north)) {
    int consecutive = 0;
    for (int i = 1; i < SEEX; i++) {
     if (move_cost(i, 1) != 0 && move_cost(SEEX * 2 - 1 - i, 1) != 0) {
