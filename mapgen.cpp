@@ -5640,30 +5640,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     }
    }
   }
-  if (connects_to(t_north, 2)) {
-   for (int i = SEEX - 2; i <= SEEX + 3; i++) {
-    for (int j = 0; j <= SEEY; j++)
-     ter(i, j) = t_rock_floor;
-   }
-  }
-  if (connects_to(t_east, 3)) {
-   for (int i = SEEX; i <= SEEX * 2 - 1; i++) {
-    for (int j = SEEY - 2; j <= SEEY + 3; j++)
-     ter(i, j) = t_rock_floor;
-   }
-  }
-  if (connects_to(t_south, 0)) {
-   for (int i = SEEX - 2; i <= SEEX + 3; i++) {
-    for (int j = SEEY; j <= SEEY * 2 - 1; j++)
-     ter(i, j) = t_rock_floor;
-   }
-  }
-  if (connects_to(t_west, 1)) {
-   for (int i = 0; i <= SEEX; i++) {
-    for (int j = SEEY - 2; j <= SEEY + 3; j++)
-     ter(i, j) = t_rock_floor;
-   }
-  }
+  if (connects_to(t_north, 2)) square(this, t_rock_floor, point(SEEX - 2, 0), point(SEEX + 3, SEEY));
+  if (connects_to(t_east, 3)) square(this, t_rock_floor, point(SEEX, SEEY - 2), point(SEEX * 2 - 1, SEEY + 3));
+  if (connects_to(t_south, 0)) square(this, t_rock_floor, point(SEEX - 2, SEEY), point(SEEX + 3, SEEY * 2 - 1));
+  if (connects_to(t_west, 1)) square(this, t_rock_floor, point(0, SEEY - 2), point(SEEX, SEEY + 3));
   if (terrain_type == ot_ants_food)
    place_items(mi_ant_food, 92, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1, true, 0);
   else
@@ -5743,30 +5723,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    }
   }
 
-  if (connects_to(t_north, 2)) {
-   for (int i = SEEX - 2; i <= SEEX + 3; i++) {
-    for (int j = 0; j <= SEEY; j++)
-     ter(i, j) = t_rock_floor;
-   }
-  }
-  if (connects_to(t_east, 3)) {
-   for (int i = SEEX; i <= SEEX * 2 - 1; i++) {
-    for (int j = SEEY - 2; j <= SEEY + 3; j++)
-     ter(i, j) = t_rock_floor;
-   }
-  }
-  if (connects_to(t_south, 0)) {
-   for (int i = SEEX - 2; i <= SEEX + 3; i++) {
-    for (int j = SEEY; j <= SEEY * 2 - 1; j++)
-     ter(i, j) = t_rock_floor;
-   }
-  }
-  if (connects_to(t_west, 1)) {
-   for (int i = 0; i <= SEEX; i++) {
-    for (int j = SEEY - 2; j <= SEEY + 3; j++)
-     ter(i, j) = t_rock_floor;
-   }
-  }
+  if (connects_to(t_north, 2)) square(this, t_rock_floor, point(SEEX - 2, 0), point(SEEX + 3, SEEY));
+  if (connects_to(t_east, 3)) square(this, t_rock_floor, point(SEEX, SEEY - 2), point(SEEX * 2 - 1, SEEY + 3));
+  if (connects_to(t_south, 0)) square(this, t_rock_floor, point(SEEX - 2, SEEY), point(SEEX + 3, SEEY * 2 - 1));
+  if (connects_to(t_west, 1)) square(this, t_rock_floor, point(0, SEEY-2), point(SEEX, SEEY+3));
   place_items(mi_cavern, 60, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1, false, 0);
   if (one_in(6)) {	// Miner remains
       const auto ok = grep(point(0), point(2 * SEE - 1), [&](point pt) {
