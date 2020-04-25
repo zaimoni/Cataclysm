@@ -106,6 +106,12 @@ template<int lb, int ub> constexpr bool any(oter_id src) {
     return lb == src || ub == src;
 }
 
+template<int lb, int x1, int ub> constexpr bool any(oter_id src) {
+    static_assert(lb < x1);
+    static_assert(x1 < ub);
+    return lb == src || x1 == src || ub == src;
+}
+
 struct oter_t {
 	static const oter_t list[num_ter_types];
 
