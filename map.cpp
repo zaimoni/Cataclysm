@@ -14,6 +14,8 @@
 
 #include <iostream>
 
+map_extra map::_force_map_extra = mx_null;
+
 std::map<ter_id, std::string> ter_t::tiles;
 
 const field_t field::list[] = {

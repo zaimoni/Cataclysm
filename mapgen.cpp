@@ -172,8 +172,12 @@ void map::generate(game *g, overmap *om, int x, int y)
 // Okay, we know who are neighbors are.  Let's draw!
  draw_map(terrain_type, t_north, t_east, t_south, t_west, t_above, turn, g);
  //auto zones = om_actual.zones(physical.first);
- decltype(oter_t::list[terrain_type].embellishments)& embellish = oter_t::list[terrain_type].embellishments;
+ decltype(auto) embellish = oter_t::list[terrain_type].embellishments;
  if (one_in(embellish.chance)) add_extra(random_map_extra(embellish), g);
+ else if (_force_map_extra && 0 < embellish.chances[_force_map_extra]) {
+     add_extra(_force_map_extra, g);
+     _force_map_extra = mx_null;
+ }
 
  post_process(g, zones);
 

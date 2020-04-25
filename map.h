@@ -20,6 +20,7 @@ class map
 {
  public:
  static std::vector <itype_id> items[num_itloc]; // Items at various map types
+ static map_extra _force_map_extra; // debugging assistant
  typedef std::pair<short,point> localPos; // nonant, x, y
 
 // Constructors & Initialization
