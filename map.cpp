@@ -2331,145 +2331,90 @@ void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
  }
 }
 
+/*
+based off code by Steve Register [arns@arns.freeservers.com]
+http://roguebasin.roguelikedevelopment.org/index.php?title=Simple_Line_of_Sight
+*/
+bool map::_BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range, int& tc, std::function<bool(localPos)> test) const
+{
+    int dx = Tx - Fx;
+    int dy = Ty - Fy;
+
+    if (range >= 0 && (abs(dx) > range || abs(dy) > range)) return false;	// Out of range!
+
+    int ax = abs(dx) << 1;
+    int ay = abs(dy) << 1;
+    int sx = SGN(dx);
+    int sy = SGN(dy);
+    int x = Fx;
+    int y = Fy;
+    int t = 0;
+    int st;
+
+    localPos pos;
+
+    if (ax > ay) { // Mostly-horizontal line
+        st = SGN(ay - (ax >> 1));
+        // Doing it "backwards" prioritizes straight lines before diagonal.
+        // This will help avoid creating a string of zombies behind you and will
+        // promote "mobbing" behavior (zombies surround you to beat on you)
+        for (tc = abs(ay - (ax >> 1)) * 2 + 1; tc >= -1; tc--) {
+            t = tc * st;
+            x = Fx;
+            y = Fy;
+            do {
+                if (t > 0) {
+                    y += sy;
+                    t -= ax;
+                }
+                x += sx;
+                t += ay;
+                if (x == Tx && y == Ty) {
+                    tc *= st;
+                    return true;
+                }
+            } while (to(x, y, pos) && test(pos));
+        }
+        return false;
+    } else { // Same as above, for mostly-vertical lines
+        st = SGN(ax - (ay >> 1));
+        for (tc = abs(ax - (ay >> 1)) * 2 + 1; tc >= -1; tc--) {
+            t = tc * st;
+            x = Fx;
+            y = Fy;
+            do {
+                if (t > 0) {
+                    x += sx;
+                    t -= ay;
+                }
+                y += sy;
+                t += ax;
+                if (x == Tx && y == Ty) {
+                    tc *= st;
+                    return true;
+                }
+            } while (to(x, y, pos) && test(pos));
+        }
+        return false;
+    }
+    return false; // Shouldn't ever be reached, but there it is.
+}
+
 bool map::sees(int Fx, int Fy, int Tx, int Ty, int range) const
 {
   int tc = 0;
   return sees(Fx, Fy, Tx, Ty, range, tc);
 }
 
-/*
-map::sees based off code by Steve Register [arns@arns.freeservers.com]
-http://roguebasin.roguelikedevelopment.org/index.php?title=Simple_Line_of_Sight
-*/
 bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc) const
 {
- int dx = Tx - Fx;
- int dy = Ty - Fy;
- 
- if (range >= 0 && (abs(dx) > range || abs(dy) > range)) return false;	// Out of range!
-
- int ax = abs(dx) << 1;
- int ay = abs(dy) << 1;
- int sx = SGN(dx);
- int sy = SGN(dy);
- int x = Fx;
- int y = Fy;
- int t = 0;
- int st;
-
- localPos pos;
-
- if (ax > ay) { // Mostly-horizontal line
-  st = SGN(ay - (ax >> 1));
-// Doing it "backwards" prioritizes straight lines before diagonal.
-// This will help avoid creating a string of zombies behind you and will
-// promote "mobbing" behavior (zombies surround you to beat on you)
-  for (tc = abs(ay - (ax >> 1)) * 2 + 1; tc >= -1; tc--) {
-   t = tc * st;
-   x = Fx;
-   y = Fy;
-   do {
-    if (t > 0) {
-     y += sy;
-     t -= ax;
-    }
-    x += sx;
-    t += ay;
-    if (x == Tx && y == Ty) {
-     tc *= st;
-     return true;
-    }
-   } while (to(x, y, pos) && trans(pos));
-  }
-  return false;
- } else { // Same as above, for mostly-vertical lines
-  st = SGN(ax - (ay >> 1));
-  for (tc = abs(ax - (ay >> 1)) * 2 + 1; tc >= -1; tc--) {
-   t = tc * st;
-   x = Fx;
-   y = Fy;
-   do {
-    if (t > 0) {
-     x += sx;
-     t -= ay;
-    }
-    y += sy;
-    t += ax;
-    if (x == Tx && y == Ty) {
-     tc *= st;
-     return true;
-    }
-   } while (to(x, y, pos) && trans(pos));
-  }
-  return false;
- }
- return false; // Shouldn't ever be reached, but there it is.
+ return _BresenhamLine(Fx, Fy, Tx, Ty, range, tc, [&](localPos pos){ return trans(pos);});
 }
 
 bool map::clear_path(int Fx, int Fy, int Tx, int Ty, int range, int cost_min,
                      int cost_max, int &tc) const
 {
- int dx = Tx - Fx;
- int dy = Ty - Fy;
- 
- if (range >= 0 && (abs(dx) > range || abs(dy) > range)) return false;	// Out of range!
-
- int ax = abs(dx) << 1;
- int ay = abs(dy) << 1;
- int sx = SGN(dx);
- int sy = SGN(dy);
- int x = Fx;
- int y = Fy;
- int t = 0;
- int st;
-
- localPos pos;
-
- if (ax > ay) { // Mostly-horizontal line
-  st = SGN(ay - (ax >> 1));
-// Doing it "backwards" prioritizes straight lines before diagonal.
-// This will help avoid creating a string of zombies behind you and will
-// promote "mobbing" behavior (zombies surround you to beat on you)
-  for (tc = abs(ay - (ax >> 1)) * 2 + 1; tc >= -1; tc--) {
-   t = tc * st;
-   x = Fx;
-   y = Fy;
-   do {
-    if (t > 0) {
-     y += sy;
-     t -= ax;
-    }
-    x += sx;
-    t += ay;
-    if (x == Tx && y == Ty) {
-     tc *= st;
-     return true;
-    }
-   } while (to(x, y, pos) && is_between(cost_min, move_cost(pos), cost_max));
-  }
-  return false;
- } else { // Same as above, for mostly-vertical lines
-  st = SGN(ax - (ay >> 1));
-  for (tc = abs(ax - (ay >> 1)) * 2 + 1; tc >= -1; tc--) {
-  t = tc * st;
-  x = Fx;
-  y = Fy;
-   do {
-    if (t > 0) {
-     x += sx;
-     t -= ay;
-    }
-    y += sy;
-    t += ax;
-    if (x == Tx && y == Ty) {
-     tc *= st;
-     return true;
-    }
-   } while (to(x, y, pos) && is_between(cost_min, move_cost(pos), cost_max));
-  }
-  return false;
- }
- return false; // Shouldn't ever be reached, but there it is.
+ return _BresenhamLine(Fx, Fy, Tx, Ty, range, tc, [&](localPos pos){ return is_between(cost_min, move_cost(pos), cost_max);});
 }
 
 // Bash defaults to true.
