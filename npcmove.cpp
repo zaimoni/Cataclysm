@@ -889,7 +889,7 @@ int npc::can_reload() const
 // if (weapon.has_flag(IF_RELOAD_AND_SHOOT)) return -1;	// ignored by NPCs
    if (weapon.ammo_type() == AT_NULL) return -1;
    if (weapon.charges == weapon.clip_size()) return -1;
-   return weapon.pick_reload_ammo(*this, true);
+   return weapon.pick_reload_ammo(*this, false);
 }
 
 bool npc::need_to_reload() const
