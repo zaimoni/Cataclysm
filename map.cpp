@@ -15,6 +15,7 @@
 #include <iostream>
 
 map_extra map::_force_map_extra = mx_null;
+point map::_force_map_extra_pos = point(-1, -1);
 
 std::map<ter_id, std::string> ter_t::tiles;
 

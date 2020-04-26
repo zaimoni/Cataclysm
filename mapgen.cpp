@@ -174,10 +174,12 @@ void map::generate(game *g, overmap *om, int x, int y)
  //auto zones = om_actual.zones(physical.first);
  decltype(auto) embellish = oter_t::list[terrain_type].embellishments;
  if (one_in(embellish.chance)) add_extra(random_map_extra(embellish), g);
- else if (_force_map_extra && 0 < embellish.chances[_force_map_extra]) {    // \todo need to be able to control location as well
+ else if (   _force_map_extra && 0 < embellish.chances[_force_map_extra]
+          && (0 > _force_map_extra_pos.x || _force_map_extra_pos==point(x,y))) {
      debugmsg("map extra forced: (%d,%d)", x, y);
      add_extra(_force_map_extra, g);
      _force_map_extra = mx_null;
+     _force_map_extra_pos = point(-1, -1);
  }
 
  post_process(g, zones);
