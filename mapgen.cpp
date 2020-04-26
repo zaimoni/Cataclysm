@@ -1412,48 +1412,42 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     else if (j > 4 && j < 8) {
      if (i == 5 || i == 9 || i == 13 || i == 17)
       ter(i, j) = t_counter;
-     else if (i == 8 || i == 12 || i == 16 || i == 20)
-      ter(i, j) = t_rack;
      else if (i > 2 && i < SEEX * 2 - 3)
       ter(i, j) = t_floor;
      else
       ter(i, j) = grass_or_dirt();
     } else if ((j == 7 && (i == 3 || i == 4)) || 
-               ((j == 11 || j == 14) && (i == 18 || i == 19)) ||
-               ((j > 9 && j < 16) && (i == 6 || i == 7 || i == 10 ||
-                                      i == 11 || i == 14 || i == 15 ||
-                                      i == 20)))
+               (j == 14 && (i == 18 || i == 19)))
      ter(i, j) = t_rack;
     else if ((j == 18 && i > 15 && i < 21) || (j == 19 && i == 16))
      ter(i, j) = t_counter;
-    else if ((i == 3 && j > 9 && j < 16) ||
-             (j == 20 && ((i > 7 && i < 15) || (i > 18 && i < 21))))
-     ter(i, j) = t_fridge;
     else if (i > 2 && i < SEEX * 2 - 3 && j > 2 && j < SEEY * 2 - 3)
      ter(i, j) = t_floor;
     else
      ter(i, j) = grass_or_dirt();
    }
   }
-  place_items(mi_fridgesnacks,	65,  3, 10,  3, 15, false, 0);
-  place_items(mi_fridge,	70,  8, 20, 14, 20, false, 0);
-  place_items(mi_fridge,	50, 19, 20, 20, 20, false, 0);
-  place_items(mi_softdrugs,	55,  6, 10,  6, 15, false, 0);
-  place_items(mi_cleaning,	88,  7, 10,  7, 15, false, 0);
-  place_items(mi_kitchen,	75, 10, 10, 10, 15, false, 0);
-  place_items(mi_snacks,	78, 11, 10, 11, 15, false, 0);
-  place_items(mi_cannedfood,	80, 14, 10, 14, 15, false, 0);
-  place_items(mi_pasta,		74, 15, 10, 15, 15, false, 0);
-  place_items(mi_produce,	60, 20, 10, 20, 15, false, 0);
-  place_items(mi_produce,	50, 18, 11, 19, 11, false, 0);
+  _stock_line(*this, t_fridge, mi_fridgesnacks, 65, point(3, 10), point(3, 15));
+  _stock_line(*this, t_fridge, mi_fridge, 70, point(8, 20), point(14, 20));
+  _stock_line(*this, t_fridge, mi_fridge, 50, point(19, 20), point(20, 20));
+  _stock_line(*this, t_rack, mi_softdrugs, 55, point(6, 10), point(6, 15));
+  _stock_line(*this, t_rack, mi_cleaning, 88, point(7, 10), point(7, 15));
+  _stock_line(*this, t_rack, mi_kitchen, 75, point(10, 10), point(10, 15));
+  _stock_line(*this, t_rack, mi_snacks, 78, point(11, 10), point(11, 15));
+  _stock_line(*this, t_rack, mi_cannedfood, 80, point(14, 10), point(14, 15));
+  _stock_line(*this, t_rack, mi_pasta, 74, point(15, 10), point(15, 15));
+  _stock_line(*this, t_rack, mi_produce, 60, point(20, 10), point(20, 15));
+  _stock_line(*this, t_rack, mi_produce, 50, point(18, 11), point(19, 11));
   place_items(mi_produce,	50, 18, 10, 20, 15, false, 0);
   for (int i = 8; i < 21; i +=4) {	// Checkout snacks & magazines
+   line(this, t_rack, point(i, 5), point(i, 7));
    place_items(mi_snacks,    50, i, 5, i, 6, false, 0);
    place_items(mi_magazines, 70, i, 7, i, 7, false, 0);
   }
-  if (terrain_type == ot_s_grocery_east) rotate(1);
-  if (terrain_type == ot_s_grocery_south) rotate(2);
-  if (terrain_type == ot_s_grocery_west) rotate(3);
+  static_assert(1 == ot_s_grocery_east - ot_s_grocery_north);
+  static_assert(2 == ot_s_grocery_south - ot_s_grocery_north);
+  static_assert(3 == ot_s_grocery_west - ot_s_grocery_north);
+  rotate(terrain_type - ot_s_grocery_north);
   break;
 
  case ot_s_hardware_north:
@@ -1477,14 +1471,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      ter(i, j) = t_wall_v;
     else if ((i > 3 && i < 10 && j == 6) || (i == 9 && j > 3 && j < 7))
      ter(i, j) = t_counter;
-    else if (((i == 3 || i == 6 || i == 7 || i == 10 || i == 11) &&
-               j > 8 && j < 15) ||
-              (i == SEEX * 2 - 4 && j > 3 && j < SEEX * 2 - 4) ||
-              (i > 14 && i < 18 && 
-               (j == 8 || j == 9 || j == 12 || j == 13)) ||
+    else if ((i > 14 && i < 18 && j == 13) ||
               (j == SEEY * 2 - 4 && i > 13 && i < SEEX * 2 - 4) ||
-              (i > 15 && i < 18 && j > 15 && j < 18) ||
-              (i == 9 && j == 7))
+              (i > 15 && i < 18 && j > 15 && j < 18))
      ter(i, j) = t_rack;
     else if ((i > 2 && i < SEEX * 2 - 3 && j > 3 && j < 15) ||
              (i > 13 && i < SEEX * 2 - 3 && j > 14 && j < SEEY * 2 - 3))
@@ -1502,39 +1491,32 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    if (one_in(5))
     ter(rng(4, 10), 16) = t_gas_pump;
    if (one_in(3)) {	// Place a dumpster
-    int startx = rng(2, 11), starty = rng(18, 19);
-    if (startx == 11)
-     starty = 18;
-    bool hori = (starty == 18 ? false : true);
-    for (int i = startx; i <= startx + (hori ? 3 : 2); i++) {
-     for (int j = starty; j <= starty + (hori ? 2 : 3); j++)
-      ter(i, j) = t_dumpster;
-    }
-    if (hori)
-     place_items(mi_trash, 30, startx, starty, startx+3, starty+2, false, 0);
-    else
-     place_items(mi_trash, 30, startx, starty, startx+2, starty+3, false, 0);
+    const int s_x = rng(2, 11);
+    const point start(s_x, 11 == s_x ? 18 : rng(18, 19));
+    const point br = start + (18 == start.y ? point(2,3) : point(3,2)); // favor N/S orientation but if at bottom then E/W orientation
+    _stock_square(*this, t_dumpster, mi_trash, 30, start, br);
    }
    place_items(mi_road, 30, 2, 16, 12, SEEY * 2 - 3, false, 0);
   }
 
   // release block V0.2.3 \todo put in some audits so that the hardware store is guaranteed to have a balanced stock
-  place_items(mi_magazines,	70,  9,  7,  9,  7, false, 0);
+  _stock(*this, t_rack, mi_magazines, 70, point(9, 7));
   if (one_in(4))
    place_items(mi_snacks,	70,  9,  7,  9,  7, false, 0);
 
-  place_items(one_in(3) ? (one_in(3) ? mi_bigtools : mi_tools) : mi_hardware, 80, 3, 9, 3, 14, false, 0);
-  place_items(one_in(3) ? (one_in(3) ? mi_bigtools : mi_tools) : mi_hardware, 80, 6, 9, 6, 14, false, 0);
-  place_items(one_in(4) ? (one_in(4) ? mi_mischw : mi_hardware) : mi_tools, 80, 7, 9, 7, 14, false, 0);
-  place_items(one_in(4) ? (one_in(4) ? mi_mischw : mi_hardware) : mi_tools, 80, 10, 9, 10, 14, false, 0);
-  place_items(one_in(3) ? (one_in(2) ? mi_cleaning : mi_tools) : mi_bigtools, 75, 11, 9, 11, 14, false, 0);
-  place_items(one_in(2) ? mi_cleaning : mi_snacks, 65, 15, 8, 17, 8, false, 0);
-  place_items(one_in(4) ? mi_hardware : mi_cleaning, 74, 15, 9, 17, 9, false, 0);
-  place_items(one_in(4) ? mi_hardware : mi_cleaning, 74, 15, 12, 17, 12, false, 0);
-  place_items(mi_mischw,	90, 20,  4, 20, 19, false, 0);
-  if (terrain_type == ot_s_hardware_east) rotate(1);
-  if (terrain_type == ot_s_hardware_south) rotate(2);
-  if (terrain_type == ot_s_hardware_west) rotate(3);
+  _stock_line(*this, t_rack, one_in(3) ? (one_in(3) ? mi_bigtools : mi_tools) : mi_hardware, 80, point(3, 9), point(3, 14));
+  _stock_line(*this, t_rack, one_in(3) ? (one_in(3) ? mi_bigtools : mi_tools) : mi_hardware, 80, point(6, 9), point(6, 14));
+  _stock_line(*this, t_rack, one_in(4) ? (one_in(4) ? mi_mischw : mi_hardware) : mi_tools, 80, point(7, 9), point(7, 14));
+  _stock_line(*this, t_rack, one_in(4) ? (one_in(4) ? mi_mischw : mi_hardware) : mi_tools, 80, point(10, 9), point(10, 14));
+  _stock_line(*this, t_rack, one_in(3) ? (one_in(2) ? mi_cleaning : mi_tools) : mi_bigtools, 75, point(11, 9), point(11, 14));
+  _stock_line(*this, t_rack, one_in(2) ? mi_cleaning : mi_snacks, 65, point(15, 8), point(17, 8));
+  _stock_line(*this, t_rack, one_in(4) ? mi_hardware : mi_cleaning, 74, point(15, 9), point(17, 9));
+  _stock_line(*this, t_rack, one_in(4) ? mi_hardware : mi_cleaning, 74, point(15, 12), point(17, 12));
+  _stock_line(*this, t_rack, mi_mischw, 90, point(20, 4), point(20, 19));
+  static_assert(1 == ot_s_hardware_east - ot_s_hardware_north);
+  static_assert(2 == ot_s_hardware_south - ot_s_hardware_north);
+  static_assert(3 == ot_s_hardware_west - ot_s_hardware_north);
+  rotate(terrain_type - ot_s_hardware_north);
   break;
 
  case ot_s_electronics_north:
@@ -1566,8 +1548,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
      */
 
-  square(this, grass_or_dirt(), 0, 0, SEEX * 2, SEEY * 2);  // XXX out of bounds clearing; reasonably expected to be propagated below
-  square(this, t_floor, 4, 4, SEEX * 2 - 4, SEEY * 2 - 4);
+  square(this, grass_or_dirt(), point(0), point(2 * SEE - 1));
+  square(this, t_floor, point(4), point(2 * SEE - 4));
   line(this, t_wall_v, 3, 4, 3, SEEY * 2 - 4);
   line(this, t_wall_v, SEEX * 2 - 3, 4, SEEX * 2 - 3, SEEY * 2 - 4);
   line(this, t_wall_h, 3, 3, SEEX * 2 - 3, 3);
@@ -1577,31 +1559,20 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   line(this, t_window, 16, 3, 18, 3);
   line(this, t_window, SEEX * 2 - 3, 9,  SEEX * 2 - 3, 11);
   line(this, t_window, SEEX * 2 - 3, 14,  SEEX * 2 - 3, 16);
-  line(this, t_counter, 4, SEEY * 2 - 4, SEEX * 2 - 4, SEEY * 2 - 4);
-  line(this, t_counter, 4, SEEY * 2 - 5, 4, SEEY * 2 - 9);
-  line(this, t_counter, SEEX * 2 - 4, SEEY * 2 - 5, SEEX * 2 - 4, SEEY * 2 - 9);
   line(this, t_counter, SEEX * 2 - 7, 4, SEEX * 2 - 7, 6);
   line(this, t_counter, SEEX * 2 - 7, 7, SEEX * 2 - 5, 7);
-  line(this, t_rack, 9, SEEY * 2 - 5, 9, SEEY * 2 - 9);
-  line(this, t_rack, SEEX * 2 - 9, SEEY * 2 - 5, SEEX * 2 - 9, SEEY * 2 - 9);
-  line(this, t_rack, 4, 4, 4, SEEY * 2 - 10);
-  line(this, t_rack, 5, 4, 8, 4);
-  place_items(mi_consumer_electronics, 85, 4, SEEY * 2 - 4, SEEX * 2 - 4,
-              SEEY * 2 - 4, false, turn - 50);
-  place_items(mi_consumer_electronics, 85, 4, SEEY * 2 - 5, 4, SEEY * 2 - 9,
-              false, turn - 50);
-  place_items(mi_consumer_electronics, 85, SEEX * 2 - 4, SEEY * 2 - 5,
-              SEEX * 2 - 4, SEEY * 2 - 9, false, turn - 50);
-  place_items(mi_consumer_electronics, 85, 9, SEEY * 2 - 5, 9, SEEY * 2 - 9,
-              false, turn - 50);
-  place_items(mi_consumer_electronics, 85, SEEX * 2 - 9, SEEY * 2 - 5,
-              SEEX * 2 - 9, SEEY * 2 - 9, false, turn - 50);
-  place_items(mi_consumer_electronics, 85, 4, 4, 4, SEEY * 2 - 10, false,
-              turn - 50);
-  place_items(mi_consumer_electronics, 85, 5, 4, 8, 4, false, turn - 50);
-  if (terrain_type == ot_s_electronics_east) rotate(1);
-  if (terrain_type == ot_s_electronics_south) rotate(2);
-  if (terrain_type == ot_s_electronics_west) rotate(3);
+  // C:Whales non-default turn
+  _stock_line(*this, t_counter, mi_consumer_electronics, 85, point(4, SEEY * 2 - 4), point(SEEX * 2 - 4, SEEY * 2 - 4), false, turn - 50);
+  _stock_line(*this, t_counter, mi_consumer_electronics, 85, point(4, SEEY * 2 - 5), point(4, SEEY * 2 - 9), false, turn - 50);
+  _stock_line(*this, t_counter, mi_consumer_electronics, 85, point(SEEX * 2 - 4, SEEY * 2 - 5), point(SEEX * 2 - 4, SEEY * 2 - 9), false, turn - 50);
+  _stock_line(*this, t_rack, mi_consumer_electronics, 85, point(9, SEEY * 2 - 5), point(9, SEEY * 2 - 9), false, turn - 50);
+  _stock_line(*this, t_rack, mi_consumer_electronics, 85, point(SEEX * 2 - 9, SEEY * 2 - 5), point(SEEX * 2 - 9, SEEY * 2 - 9), false, turn - 50);
+  _stock_line(*this, t_rack, mi_consumer_electronics, 85, point(4, 4), point(4, SEEY * 2 - 10), false, turn - 50);
+  _stock_line(*this, t_rack, mi_consumer_electronics, 85, point(5, 4), point(8, 4), false, turn - 50);
+  static_assert(1 == ot_s_electronics_east - ot_s_electronics_north);
+  static_assert(2 == ot_s_electronics_south - ot_s_electronics_north);
+  static_assert(3 == ot_s_electronics_west - ot_s_electronics_north);
+  rotate(terrain_type - ot_s_electronics_north);
   break;
 
  case ot_s_sports_north:
@@ -1620,9 +1591,6 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      ter(i, j) = t_wall_h;
     else if ((i == lw || i == rw) && j > tw && j < bw)
      ter(i, j) = t_wall_v;
-    else if ((j == cw - 1 && i > lw && i < rw - 4) ||
-             (j < cw - 3 && j > tw && (i == lw + 1 || i == rw - 1)))
-     ter(i, j) = t_rack;
     else if (j == cw - 3 && i > lw && i < rw - 4)
      ter(i, j) = t_counter;
     else if (j > tw && j < bw && i > lw && i < rw)
@@ -1636,15 +1604,11 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   rn = rng(tw + 2, cw - 6);
   for (int i = lw + 3; i <= rw - 5; i += 4) {
    if (cw - 6 > tw + 1) {
-    ter(i    , rn + 1) = t_rack;
-    ter(i    , rn    ) = t_rack;
-    ter(i + 1, rn + 1) = t_rack;
-    ter(i + 1, rn    ) = t_rack;
-    place_items(mi_camping,	86, i, rn, i + 1, rn + 1, false, 0);
+    const point origin(i,rn);
+    _stock_square(*this, t_rack, mi_camping, 86, origin, origin + Direction::SE);
    } else if (cw - 5 > tw + 1) {
-    ter(i    , cw - 5) = t_rack;
-    ter(i + 1, cw - 5) = t_rack;
-    place_items(mi_camping,	80, i, cw - 5, i + 1, cw - 5, false, 0);
+    const point origin(i, cw - 5);
+    _stock_line(*this, t_rack, mi_camping, 80, origin, origin + Direction::E);
    }
   }
   ter(rw - rng(2, 3), cw) = t_door_c;
@@ -1656,15 +1620,16 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   ter(rng(lw + 3 + rn, rw - 3 - rn), tw) = t_door_c;
   if (one_in(4))
    ter(rng(lw + 2, rw - 2), bw) = t_door_locked;
-  place_items(mi_allsporting,	90, lw + 1, cw - 1, rw - 5, cw - 1, false, 0);
-  place_items(mi_sports,	82, lw + 1, tw + 1, lw + 1, cw - 4, false, 0);
-  place_items(mi_sports,	82, rw - 1, tw + 1, rw - 1, cw - 4, false, 0);
+  _stock_line(*this, t_rack, mi_allsporting, 90, point(lw + 1, cw - 1), point(rw - 5, cw - 1));
+  _stock_line(*this, t_rack, mi_sports, 82, point(lw + 1, tw + 1), point(lw + 1, cw - 4));
+  _stock_line(*this, t_rack, mi_sports, 82, point(rw - 1, tw + 1), point(rw - 1, cw - 4));
   if (!one_in(4))
    place_items(mi_allsporting,	92, lw + 1, cw + 1, rw - 1, bw - 1, false, 0);
-  
-  if (terrain_type == ot_s_sports_east) rotate(1);
-  if (terrain_type == ot_s_sports_south) rotate(2);
-  if (terrain_type == ot_s_sports_west) rotate(3);
+
+  static_assert(1 == ot_s_sports_east - ot_s_sports_north);
+  static_assert(2 == ot_s_sports_south - ot_s_sports_north);
+  static_assert(3 == ot_s_sports_west - ot_s_sports_north);
+  rotate(terrain_type - ot_s_sports_north);
   break;
 
  case ot_s_liquor_north:
