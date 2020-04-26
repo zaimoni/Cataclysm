@@ -2238,8 +2238,8 @@ void map::draw(game *g, WINDOW* w, point center)
   mvwputch(w, at.y, at.x, g->u.color(), '@');
 }
 
-void map::drawsq(WINDOW* w, player &u, int x, int y, bool invert,
-                 bool show_items, int cx, int cy)
+void map::drawsq(WINDOW* w, const player& u, int x, int y, bool invert,
+                 bool show_items, int cx, int cy) const
 {
  localPos pos;
  if (!to(x, y, pos)) return;	// Out of bounds

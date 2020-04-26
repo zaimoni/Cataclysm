@@ -2560,7 +2560,7 @@ bool game::sees_u(int x, int y, int &t)
 		m.sees(x, y, u.pos, light_level(), t));
 }
 
-bool game::u_see(int x, int y)
+bool game::u_see(int x, int y) const
 {
  int range = u.sight_range(light_level());
  if (u.has_artifact_with(AEP_CLAIRVOYANCE)) {
@@ -2570,7 +2570,7 @@ bool game::u_see(int x, int y)
  return m.sees(u.pos, x, y, range);
 }
 
-bool game::u_see(int x, int y, int &t)
+bool game::u_see(int x, int y, int &t) const
 {
 	t = 0;	// safe default in case of clairvoyance
 	int range = u.sight_range(light_level());
@@ -2581,7 +2581,7 @@ bool game::u_see(int x, int y, int &t)
 	return m.sees(u.pos, x, y, range, t);
 }
 
-bool game::u_see(const monster *mon)
+bool game::u_see(const monster *mon) const
 {
  int dist = rl_dist(u.pos, mon->pos);
  if (u.has_trait(PF_ANTENNAE) && dist <= 3) return true;
@@ -2595,7 +2595,7 @@ bool game::u_see(const monster *mon)
  return m.sees(u.pos, mon->pos, range);
 }
 
-bool game::pl_sees(player *p, monster *mon)
+bool game::pl_sees(player *p, monster *mon) const
 {
  if (mon->has_flag(MF_DIGS) && !p->has_active_bionic(bio_ground_sonar) &&
      rl_dist(p->pos, mon->pos) > 1)
@@ -4644,6 +4644,35 @@ void game::reassign_item()
  messages.add("%c - %s", newch, change_from.second->tname().c_str());
 }
 
+void game::pl_draw(const zaimoni::gdi::box<point>& bounds) const
+{
+    for (int j = u.pos.x - SEEX; j <= u.pos.x + SEEX; j++) {
+        for (int k = u.pos.y - SEEY; k <= u.pos.y + SEEY; k++) {
+            if (u_see(j, k)) {
+                if (bounds.contains(point(j, k)))
+                    m.drawsq(w_terrain, u, j, k, false, true);
+                else
+                    mvwputch(w_terrain, k + SEEY - u.pos.y, j + SEEX - u.pos.x, c_dkgray, '#');
+            }
+        }
+    }
+}
+
+int game::visible_monsters(std::vector<const monster*>& mon_targets, std::vector<int>& targetindices, std::function<bool(const monster&)> test) const
+{
+    int passtarget = -1;
+    int i2 = -1;
+    for (const auto& mon : z) {
+        ++i2;
+        if (u_see(&mon) && test(mon)) {
+            mon_targets.push_back(&mon);
+            targetindices.push_back(i2);
+            if (i2 == last_target) passtarget = mon_targets.size() - 1;
+            mon.draw(w_terrain, u.pos, true);
+        }
+    }
+    return passtarget;
+}
 
 void game::plthrow()
 {
@@ -4666,33 +4695,13 @@ void game::plthrow()
  if (range < sight_range) range = sight_range;
  const point r(range);
  const zaimoni::gdi::box<point> bounds(u.pos-r,u.pos+r);
-
- for (int j = u.pos.x - SEEX; j <= u.pos.x + SEEX; j++) {
-  for (int k = u.pos.y - SEEY; k <= u.pos.y + SEEY; k++) {
-   if (u_see(j, k)) {
-    if (bounds.contains(point(j,k)))
-     m.drawsq(w_terrain, u, j, k, false, true);
-    else
-     mvwputch(w_terrain, k + SEEY - u.pos.y, j + SEEX - u.pos.x, c_dkgray, '#');
-   }
-  }
- }
+ pl_draw(bounds);
 
  std::vector<const monster*> mon_targets;
  std::vector<int> targetindices;
- int passtarget = -1;
- {
- int i2 = -1;
- for(const auto& mon : z) {
-  ++i2;
-  if (u_see(&mon) && bounds.contains(mon.pos)) {
-   mon_targets.push_back(&mon);
-   targetindices.push_back(i2);
-   if (i2 == last_target) passtarget = mon_targets.size() - 1;
-   mon.draw(w_terrain, u.pos, true);
-  }
- }
- }
+ int passtarget = visible_monsters(mon_targets, targetindices, [&](const monster& mon) {
+     return bounds.contains(mon.pos);
+ });
 
  // target() sets x and y, or returns false if we canceled (by pressing Esc)
  point tar(u.pos);
@@ -4756,28 +4765,14 @@ void game::plfire(bool burst)
  if (range > sight_range) range = sight_range;
  const point r(range);
  const zaimoni::gdi::box<point> bounds(u.pos - r, u.pos + r);
- for (int j = u.pos.x - SEEX; j <= u.pos.x + SEEX; j++) {
-  for (int k = u.pos.y - SEEY; k <= u.pos.y + SEEY; k++) {
-   if (u_see(j, k)) {
-    if (bounds.contains(point(j,k)))
-     m.drawsq(w_terrain, u, j, k, false, true);
-    else
-     mvwputch(w_terrain, k + SEEY - u.pos.y, j + SEEX - u.pos.x, c_dkgray, '#');
-   }
-  }
- }
-// Populate a list of targets with the zombies in range and visible
+ pl_draw(bounds);
+
+ // Populate a list of targets with the zombies in range and visible
  std::vector<const monster*> mon_targets;
  std::vector<int> targetindices;
- int passtarget = -1;
- for (int i = 0; i < z.size(); i++) {
-  if (bounds.contains(z[i].pos) && z[i].friendly == 0 && u_see(&(z[i]))) {
-   mon_targets.push_back(&z[i]);
-   targetindices.push_back(i);
-   if (i == last_target) passtarget = mon_targets.size() - 1;
-   z[i].draw(w_terrain, u.pos, true);
-  }
- }
+ int passtarget = visible_monsters(mon_targets, targetindices, [&](const monster& mon) {
+     return bounds.contains(mon.pos) && 0 == mon.friendly;
+ });
 
  // target() sets x and y, and returns an empty vector if we canceled (Esc)
  point tar(u.pos);

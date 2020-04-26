@@ -134,11 +134,11 @@ class game
   bool sees_u(const point& pt) { return sees_u(pt.x, pt.y); };
   bool sees_u(int x, int y, int &t);
   bool sees_u(const point& pt, int &t) { return sees_u(pt.x, pt.y, t); };
-  bool u_see(int x, int y);
-  bool u_see(const point& pt) { return u_see(pt.x, pt.y); };
-  bool u_see(int x, int y, int &t);
-  bool u_see(const monster *mon);
-  bool pl_sees(player *p, monster *mon);
+  bool u_see(int x, int y) const;
+  bool u_see(const point& pt) const { return u_see(pt.x, pt.y); };
+  bool u_see(int x, int y, int &t) const;
+  bool u_see(const monster *mon) const;
+  bool pl_sees(player *p, monster *mon) const;
   void refresh_all();
   GPS_loc toGPS(point screen_pos) const;
   bool toScreen(GPS_loc GPS_pos, point& screen_pos) const;
@@ -288,6 +288,8 @@ private:
   void msg_buffer();       // Opens a window with old messages in it
   void draw_minimap();     // Draw the 5x5 minimap
   void draw_HP();          // Draws the player's HP and Power level
+  void pl_draw(const zaimoni::gdi::box<point>& bounds) const;          // close-up map, centered on player
+  int visible_monsters(std::vector<const monster*>& mon_targets, std::vector<int>& targetindices, std::function<bool(const monster&)> test) const;
 
 // On-request draw functions
   void draw_overmap();     // Draws the overmap, allows note-taking etc.

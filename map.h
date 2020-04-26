@@ -35,8 +35,8 @@ class map
 // Visual Output
  void draw(game *g, WINDOW* w, point center);
  void debug();
- void drawsq(WINDOW* w, player &u, int x, int y, bool invert, bool show_items,
-             int cx = -1, int cy = -1);
+ void drawsq(WINDOW* w, const player& u, int x, int y, bool invert, bool show_items,
+             int cx = -1, int cy = -1) const;
 
 // File I/O
  void save(const tripoint& om_pos, unsigned int turn, const point& world);
