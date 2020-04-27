@@ -2654,6 +2654,22 @@ void game::remove_item(item *it)
  for (auto& n_pc : active_npc) if (n_pc.remove_item(it)) return;
 }
 
+static void local_mon_info_display(WINDOW* w_moninfo, const mtype* const type, point& pr, int ws)
+{
+    const std::string& name = type->name;
+    // + 2 for the "Z "
+    if (pr.x + name.length() >= (48 - 2)) { // We're too long!
+        pr.y++;
+        pr.x = 0;
+    }
+    if (pr.y < 12) { // Don't print if we've overflowed
+        mvwputch(w_moninfo, pr.y, pr.x, type->color, type->sym);
+        mvwprintz(w_moninfo, pr.y, pr.x + 2, type->danger(), name.c_str());
+    }
+    // +2 for the "Z "; trailing whitespace
+    pr.x += 2 + name.length() + ws;
+}
+
 void game::mon_info()
 {
  werase(w_moninfo);
@@ -2769,45 +2785,19 @@ void game::mon_info()
 // Start with nearby zombies--that's the most important
 // We stop if pr.y hits 10--i.e. we're out of space
  for (int i = 0; i < unique_types[8].size() && pr.y < 12; i++) {
-  buff = unique_types[8][i];
-// buff < 0 means an NPC!  Don't list those.
-  if (buff >= 0 && !listed_it[buff]) {
-   listed_it[buff] = true;
-   const mtype* const type = mtype::types[buff];
-   std::string name = type->name;
-// + 2 for the "Z "
-   if (pr.x + 2 + name.length() >= 48) { // We're too long!
-    pr.y++;
-    pr.x = 0;
+   // buff < 0 means an NPC!  Don't list those.
+   if (const int buff = unique_types[8][i]; buff >= 0 && !listed_it[buff]) {
+    listed_it[buff] = true;
+    local_mon_info_display(w_moninfo, mtype::types[buff], pr, 1);
    }
-   if (pr.y < 12) { // Don't print if we've overflowed
-    mvwputch (w_moninfo, pr.y, pr.x, type->color, type->sym);
-    mvwprintz(w_moninfo, pr.y, pr.x + 2, type->danger(), name.c_str());
-   }
-// +4 for the "Z " and two trailing spaces
-   pr.x += 4 + name.length();
-  }
  }
 // Now, if there's space, the rest of the monsters!
  for (int j = 0; j < 8 && pr.y < 12; j++) {
   for (int i = 0; i < unique_types[j].size() && pr.y < 12; i++) {
-   buff = unique_types[j][i];
-// buff < 0 means an NPC!  Don't list those.
-   if (buff >= 0 && !listed_it[buff]) {
+   // buff < 0 means an NPC!  Don't list those.
+   if (const int buff = unique_types[j][i]; buff >= 0 && !listed_it[buff]) {
     listed_it[buff] = true;
-	const mtype* const type = mtype::types[buff];
-    std::string name = type->name;
-// + 2 for the "Z "
-    if (pr.x + 2 + name.length() >= 48) { // We're too long!
-     pr.y++;
-     pr.x = 0;
-    }
-    if (pr.y < 12) { // Don't print if we've overflowed
-     mvwputch (w_moninfo, pr.y, pr.x, type->color, type->sym);
-     mvwprintz(w_moninfo, pr.y, pr.x + 2, type->danger(), name.c_str());
-    }
-// +3 for the "Z " and a trailing space
-    pr.x += 3 + name.length();
+    local_mon_info_display(w_moninfo, mtype::types[buff], pr, 1);
    }
   }
  }
