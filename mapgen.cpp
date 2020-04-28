@@ -1646,18 +1646,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     else if (((i == 3 || i == SEEX * 2 - 4) && j > 2 && j < 12) ||
              (i == 7 && j > 9 && j < 12))
      ter(i, j) = t_wall_v;
-    else if ((i == 19 && j > 6 && j < 12) || (j == 11 && i > 16 && i < 19))
-     ter(i, j) = t_fridge;
-    else if (((i == 4 || i == 7 || i == 8) && j > 2 && j < 8) ||
-             (j == 3 && i > 8 && i < 12) ||
-             (i > 10 && i < 13 && j > 4 && j < 7) ||
-             (i > 10 && i < 16 && j > 7 && j < 10))
-     ter(i, j) = t_rack;
     else if ((i == 16 && j > 2 && j < 6) || (j == 5 && i > 16 && i < 19))
      ter(i, j) = t_counter;
-    else if ((i > 4 && i < 8 && j > 12 && j < 15) ||
-             (i > 17 && i < 20 && j > 14 && j < 18))
-     ter(i, j) = t_dumpster;
     else if (i > 2 && i < SEEX * 2 - 3) {
      if (j > 2 && j < 12)
       ter(i, j) = t_floor;
@@ -1673,20 +1663,25 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   ter(rng(4, 6), 9) = t_door_c;
   ter(rng(9, 16), 12) = t_door_c;
 
-  place_items(mi_alcohol,	96,  4,  3,  4,  7, false, 0);
-  place_items(mi_alcohol,	96,  7,  3, 11,  3, false, 0);
-  place_items(mi_alcohol,	96,  7,  4,  8,  7, false, 0);
-  place_items(mi_alcohol,	96, 11,  8, 15,  9, false, 0);
-  place_items(mi_snacks,	85, 11,  5, 12,  6, false, 0);
-  place_items(mi_fridgesnacks,	90, 19,  7, 19, 10, false, 0);
-  place_items(mi_fridgesnacks,	90, 17, 11, 19, 11, false, 0);
+  _stock_line(*this, t_rack, mi_alcohol, 96, point(4, 3), point(4, 7));
+  _stock_line(*this, t_rack, mi_alcohol, 96, point(9, 3), point(11, 3));
+  _stock_square(*this, t_rack, mi_alcohol, 96, point(7, 3), point(8, 7));
+  _stock_square(*this, t_rack, mi_alcohol, 96, point(11, 8), point(15, 9));
+  _stock_square(*this, t_rack, mi_snacks, 85, point(11, 5), point(12, 6));
+  _stock_line(*this, t_fridge, mi_fridgesnacks, 90, point(19, 7), point(19, 11));
+  _stock_line(*this, t_fridge, mi_fridgesnacks, 90, point(17, 11), point(18, 11));
   place_items(mi_behindcounter,	80, 17,  3, 19,  4, false, 0);
-  place_items(mi_trash,		30,  5, 14,  7, 14, false, 0);
-  place_items(mi_trash,		30, 18, 15, 18, 17, false, 0);
-  
-  if (terrain_type == ot_s_liquor_east) rotate(1);
-  if (terrain_type == ot_s_liquor_south) rotate(2);
-  if (terrain_type == ot_s_liquor_west) rotate(3);
+
+  // trash hauling service pre-apocalypse was better here than other stores
+  line(this, t_dumpster, point(5, 13), point(7, 13));
+  _stock_line(*this, t_dumpster, mi_trash, 30, point(5, 14), point(7, 14));
+  _stock_line(*this, t_dumpster, mi_trash, 30, point(18, 15), point(18, 17));
+  line(this, t_dumpster, point(19, 15), point(19, 17));
+
+  static_assert(1 == ot_s_liquor_east - ot_s_liquor_north);
+  static_assert(2 == ot_s_liquor_south - ot_s_liquor_north);
+  static_assert(3 == ot_s_liquor_west - ot_s_liquor_north);
+  rotate(terrain_type - ot_s_liquor_north);
   break;
 
  case ot_s_gun_north:
