@@ -34,6 +34,16 @@
 #define CONCATENATE(A,B) A ## B
 #define DEEP_CONCATENATE(A,B) CONCATENATE(A,B)
 
+/* How to report a function name */
+#ifdef __GNUC__
+#	define ZAIMONI_FUNCNAME __PRETTY_FUNCTION__
+#elif 1300<=_MSC_VER	/* __FUNCDNAME__ extension cuts in at Visual C++ .NET 2002 */
+#	define ZAIMONI_FUNCNAME __FUNCDNAME__
+#else
+/* if no extensions, assume C99 */
+#	define ZAIMONI_FUNCNAME __func__
+#endif
+
 /* hooks for C/C++ adapter code */
 #ifdef __cplusplus
 #define EXTERN_C extern "C"

@@ -116,16 +116,9 @@ inline void INC_INFORM(unsigned char B) {return INC_INFORM((uintmax_t)(B));}
 #ifdef NDEBUG
 #	define FATAL(B) _fatal(B)
 #	define FATAL_CODE(B,CODE) _fatal_code(B,CODE)
-#elif defined(__GNUC__)
-#	define FATAL(B) _fatal((_LOG(__PRETTY_FUNCTION__),LOG_STRING_LITERAL(__FILE__ ":" DEEP_STRINGIZE(__LINE__)),B))
-#	define FATAL_CODE(B,CODE) _fatal_code((LOG(__PRETTY_FUNCTION__),LOG_STRING_LITERAL(__FILE__ ":" DEEP_STRINGIZE(__LINE__)),B),CODE)
-#elif 1300<=_MSC_VER	/* __FUNCDNAME__ extension cuts in at Visual C++ .NET 2002 */
-#	define FATAL(B) _fatal((_LOG(__FUNCDNAME__),LOG_STRING_LITERAL(__FILE__ ":" DEEP_STRINGIZE(__LINE__)),B))
-#	define FATAL_CODE(B,CODE) _fatal_code((LOG(__FUNCDNAME__),LOG_STRING_LITERAL(__FILE__ ":" DEEP_STRINGIZE(__LINE__)),B),CODE)
 #else
-/* if no extensions, assume C99 */
-#	define FATAL(B) _fatal((LOG(__func__),LOG_STRING_LITERAL(__FILE__ ":" DEEP_STRINGIZE(__LINE__)),B));
-#	define FATAL_CODE(B,CODE) _fatal_code((LOG(__func__),LOG_STRING_LITERAL(__FILE__ ":" DEEP_STRINGIZE(__LINE__)),B),CODE);
+#   define FATAL(B) _fatal((_LOG(ZAIMONI_FUNCNAME),LOG_STRING_LITERAL(__FILE__ ":" DEEP_STRINGIZE(__LINE__)),B))
+#   define FATAL_CODE(B,CODE) _fatal_code((LOG(ZAIMONI_FUNCNAME),LOG_STRING_LITERAL(__FILE__ ":" DEEP_STRINGIZE(__LINE__)),B),CODE)
 #endif
 #define INC_INFORM(B) _inc_inform(B,strlen(B))
 #define INFORM(B) _inform(B,strlen(B))
@@ -139,16 +132,8 @@ inline void INC_INFORM(unsigned char B) {return INC_INFORM((uintmax_t)(B));}
 #ifndef NDEBUG	/* self-aware version */
 /* use similar extensions on other compilers */
 #ifdef __cplusplus
-#	ifdef __GNUC__
-#		define FATAL(B) FATAL((LOG(__PRETTY_FUNCTION__),LOG_STRING_LITERAL(__FILE__ ":" DEEP_STRINGIZE(__LINE__)),B))
-#		define FATAL_CODE(B,CODE) FATAL_CODE((LOG(__PRETTY_FUNCTION__),LOG_STRING_LITERAL(__FILE__ ":" DEEP_STRINGIZE(__LINE__)),B),CODE)
-#	elif 1300<=_MSC_VER	/* __FUNCDNAME__ extension cuts in at Visual C++ .NET 2002 */
-#		define FATAL(B) FATAL((LOG(__FUNCDNAME__),LOG_STRING_LITERAL(__FILE__ ":" DEEP_STRINGIZE(__LINE__)),B))
-#		define FATAL_CODE(B,CODE) FATAL_CODE((LOG(__FUNCDNAME__),LOG_STRING_LITERAL(__FILE__ ":" DEEP_STRINGIZE(__LINE__)),B),CODE)
-#	else	/* if no extensions, assume C99 */		
-#		define FATAL(B) FATAL((LOG(__func__),LOG_STRING_LITERAL(__FILE__ ":" DEEP_STRINGIZE(__LINE__)),B));
-#		define FATAL_CODE(B,CODE) FATAL_CODE((LOG(__func__),LOG_STRING_LITERAL(__FILE__ ":" DEEP_STRINGIZE(__LINE__)),B),CODE);
-#	endif
+#   define FATAL(B) FATAL((LOG(ZAIMONI_FUNCNAME),LOG_STRING_LITERAL(__FILE__ ":" DEEP_STRINGIZE(__LINE__)),B))
+#   define FATAL_CODE(B,CODE) FATAL_CODE((LOG(ZAIMONI_FUNCNAME),LOG_STRING_LITERAL(__FILE__ ":" DEEP_STRINGIZE(__LINE__)),B),CODE)
 #endif
 
 #define ARG_TRACE_PARAMS , const char* const _file, long _line
