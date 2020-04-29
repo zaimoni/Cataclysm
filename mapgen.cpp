@@ -1704,10 +1704,6 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     else if (((j == 6 || j == SEEY * 2 - 1) && i > 1 && i < SEEX * 2 - 2) ||
              ((j == 16 || j == 14) && i > 2 && i < SEEX * 2 - 3))
      ter(i, j) = t_wall_h;
-    else if (((i == 3 || i == SEEX * 2 - 4) && j > 6 && j < 14) ||
-             ((j > 8 && j < 12) && (i == 12 || i == 13 || i == 16)) ||
-             (j == 13 && i > 15 && i < SEEX * 2 - 4))
-     ter(i, j) = t_rack;
     else if (i > 2 && i < SEEX * 2 - 3 && j > 6 && j < SEEY * 2 - 1)
      ter(i, j) = t_floor;
     else if ((j > 0 && j < 6 &&
@@ -1721,17 +1717,22 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   }
   ter(rng(11, 14), 6) = t_door_c;
   ter(rng(5, 14), 14) = t_door_c;
-  place_items(mi_pistols,	70, 12,  9, 13, 11, false, 0);
-  place_items(mi_shotguns,	60, 16,  9, 16, 11, false, 0);
-  place_items(mi_rifles,	80, 20,  7, 20, 12, false, 0);
+  _stock_square(*this, t_rack, mi_pistols, 70, point(12, 9), point(13, 11));
+  _stock_line(*this, t_rack, mi_shotguns, 60, point(16, 9), point(16, 11));
+  _stock_line(*this, t_rack, mi_rifles, 80, point(20, 7), point(20, 13));
+  line(this, t_rack, point(3, 7), point(3, 13));
   place_items(mi_smg,		25,  3,  7,  3,  8, false, 0);
   place_items(mi_assault,	18,  3,  9,  3, 10, false, 0);
   place_items(mi_ammo,		93,  3, 11,  3, 13, false, 0);
-  place_items(mi_allguns,	12,  5, 16, 17, 16, false, 0);
-  place_items(mi_gunxtras,	67, 16, 13, 19, 13, false, 0);
-  if (terrain_type == ot_s_gun_east) rotate(1);
-  if (terrain_type == ot_s_gun_south) rotate(2);
-  if (terrain_type == ot_s_gun_west) rotate(3);
+
+  place_items(mi_allguns,	12,  5, 16, 17, 16, false, 0);  // V0.2.3 blocker \todo? fix: lands in wall
+
+  _stock_line(*this, t_rack, mi_gunxtras, 67, point(16, 13), point(19, 13));
+
+  static_assert(1 == ot_s_gun_east - ot_s_gun_north);
+  static_assert(2 == ot_s_gun_south - ot_s_gun_north);
+  static_assert(3 == ot_s_gun_west - ot_s_gun_north);
+  rotate(terrain_type - ot_s_gun_north);
   break;
 
  case ot_s_clothes_north:
