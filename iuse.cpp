@@ -782,6 +782,23 @@ void iuse::extinguisher(game *g, player *p, item *it, bool t)
  }
 }
 
+// xref: construction.cpp/"Board Up Door"
+// interpretation: start terrain, dest terrain, # nails, # boards
+static constexpr const std::pair<ter_id, std::tuple<ter_id, int, int> > deconstruct_boarded[] = {
+    std::pair(t_window_boarded,std::tuple(t_window_empty, 8, 3)),
+    std::pair(t_door_boarded,std::tuple(t_door_b, 12, 3))
+};
+
+// competes with std::find_if
+// interpretation is iterating over std::pair<key, ....>
+template<class range, class K>
+auto linear_search(K key, range origin, range _end) // \todo migrate to zero.h
+{
+    do if (key == origin->first) return &origin->second;
+    while (++origin != _end);
+    return decltype(&origin->second)(nullptr);
+}
+
 void iuse::hammer(game *g, player *p, item *it, bool t)
 {
  g->draw();
@@ -792,32 +809,20 @@ void iuse::hammer(game *g, player *p, item *it, bool t)
   return;
  }
  dir += p->pos;
- int nails = 0, boards = 0;
- ter_id newter;
  auto& type = g->m.ter(dir);
- switch(type) {
- case t_window_boarded:
-  nails =  8;
-  boards = 3;
-  newter = t_window_empty;
-  break;
- case t_door_boarded:
-  nails = 12;
-  boards = 3;
-  newter = t_door_b;
-  break;
- default:
-  messages.add("Hammers can only remove boards from windows and doors.");
-  messages.add("To board up a window or door, press *");
-  return;
+ auto deconstruct = linear_search(type, std::begin(deconstruct_boarded), std::end(deconstruct_boarded));
+ if (!deconstruct) {
+     messages.add("Hammers can only remove boards from windows and doors.");
+     messages.add("To board up a window or door, press *");
+     return;
  }
  p->moves -= 500;
  item it_nails(item::types[itm_nail], 0, g->nextinv);
- it_nails.charges = nails;
+ it_nails.charges = std::get<1>(*deconstruct);
  g->m.add_item(p->pos, it_nails);
  item board(item::types[itm_2x4], 0, g->nextinv);
- for (int i = 0; i < boards; i++) g->m.add_item(p->pos, board);
- type = newter;
+ for (int i = 0; i < std::get<2>(*deconstruct); i++) g->m.add_item(p->pos, board);
+ type = std::get<0>(*deconstruct);
 }
  
 void iuse::light_off(game *g, player *p, item *it, bool t)
@@ -1018,31 +1023,19 @@ void iuse::crowbar(game *g, player *p, item *it, bool t)
    p->moves -= 100;
   } 
  } else {
-  int nails = 0, boards = 0;
-  ter_id newter;
-  switch (type) {
-  case t_window_boarded:
-   nails =  8;
-   boards = 3;
-   newter = t_window_empty;
-   break;
-  case t_door_boarded:
-   nails = 12;
-   boards = 3;
-   newter = t_door_b;
-   break;
-  default:
-   messages.add("There's nothing to pry there.");
-   return;
+  auto deconstruct = linear_search(type, std::begin(deconstruct_boarded), std::end(deconstruct_boarded));
+  if (!deconstruct) {
+      messages.add("There's nothing to pry there.");
+      return;
   }
   p->moves -= 500;
   item it_nails(item::types[itm_nail], 0, g->nextinv);
-  it_nails.charges = nails;
+  it_nails.charges = std::get<1>(*deconstruct);
   g->m.add_item(p->pos, it_nails);
   item board(item::types[itm_2x4], 0, g->nextinv);
-  for (int i = 0; i < boards; i++)
+  for (int i = 0; i < std::get<2>(*deconstruct); i++)
    g->m.add_item(p->pos, board);
-  type = newter;
+  type = std::get<0>(*deconstruct);
  }
 }
 
