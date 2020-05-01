@@ -1755,16 +1755,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
              (j == 21 && (i == 5 || i == 8)))
      ter(i, j) = t_wall_v;
     else if ((i == 16 && j > 4 && j < 9) ||
-             (j == 8 && (i == 17 || i == 18)) ||
-             (j == 18 && i > 2 && i < 11))
+             (j == 8 && (i == 17 || i == 18)))
      ter(i, j) = t_counter;
-    else if ((i == 3 && j > 4 && j < 13) ||
-             (i == SEEX * 2 - 4 && j > 9 && j < 20) ||
-             ((j == 10 || j == 11) && i > 6 && i < 13) ||
-             ((j == 14 || j == 15) && i > 4 && i < 13) ||
-             ((i == 15 || i == 16) && j > 10 && j < 18) ||
-             (j == SEEY * 2 - 3 && i > 11 && i < 18))
-     ter(i, j) = t_rack;
     else if (i > 2 && i < SEEX * 2 - 3 && j > 2 && j < SEEY * 2 - 2)
      ter(i, j) = t_floor;
     else
@@ -1779,27 +1771,28 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     ter(i + 1, SEEY * 2 - 4) = t_door_c;
   }
 
-  place_items(mi_shoes,		70,  7, 10, 12, 10, false, 0);
-  place_items(mi_pants,		88,  5, 14, 12, 14, false, 0);
-  place_items(mi_shirts,	88,  7, 11, 12, 11, false, 0);
-  place_items(mi_jackets,	80,  3,  5,  3, 12, false, 0);
-  place_items(mi_winter,	60,  5, 15, 12, 15, false, 0);
-  place_items(mi_bags,		70, 15, 11, 15, 17, false, 0);
-  place_items(mi_dresser,	50, 12, 21, 17, 21, false, 0);
-  place_items(mi_allclothes,	20,  3, 21, 10, 21, false, 0);
-  place_items(mi_allclothes,	20,  3, 18, 10, 18, false, 0);
+  _stock_line(*this, t_rack, mi_shoes, 70, point(7, 10), point(12, 10));
+  _stock_line(*this, t_rack, mi_shirts, 88, point(7, 11), point(12, 11));
+  _stock_line(*this, t_rack, mi_pants, 88, point(5, 14), point(12, 14));
+  _stock_line(*this, t_rack, mi_winter, 60, point(5, 15), point(12, 15));
+  _stock_line(*this, t_rack, mi_bags, 70, point(15, 11), point(15, 17));
+  _stock_line(*this, t_rack, mi_jackets, 80, point(3, 5), point(3, 12));
+  _stock_line(*this, t_rack, mi_dresser, 50, point(12, 21), point(17, 21));
+  place_items(mi_allclothes,	20,  3, 21, 10, 21, false, 0);  // \todo ??? (in wall?)
+  _stock_line(*this, t_counter, mi_allclothes, 20, point(3, 18), point(10, 18));
 
   { // for emphasis; these are covered above as well
   static const constexpr items_location clothes_stock[] = { mi_pants , mi_shirts, mi_bags };
   static const constexpr items_location clothes_stock_2[] = { mi_pants , mi_shirts, mi_jackets };
 
-  place_items(clothes_stock[rng(0, 2)], 70, 16, 11, 16, 17, false, 0);
-  place_items(clothes_stock_2[rng(0, 2)], 75, 20, 10, 20, 19, false, 0);
+  _stock_line(*this, t_rack, clothes_stock[rng(0, 2)], 70, point(16, 11), point(16, 17));
+  _stock_line(*this, t_rack, clothes_stock_2[rng(0, 2)], 75, point(20, 10), point(20, 19));
   }
 
-  if (terrain_type == ot_s_clothes_east) rotate(1);
-  if (terrain_type == ot_s_clothes_south) rotate(2);
-  if (terrain_type == ot_s_clothes_west) rotate(3);
+  static_assert(1 == ot_s_clothes_east - ot_s_clothes_north);
+  static_assert(2 == ot_s_clothes_south - ot_s_clothes_north);
+  static_assert(3 == ot_s_clothes_west - ot_s_clothes_north);
+  rotate(terrain_type - ot_s_clothes_north);
   break;
 
  case ot_s_library_north:
