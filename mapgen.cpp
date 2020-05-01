@@ -1826,11 +1826,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
       ter(i, j) = t_wall_v;
      else
       ter(i, j) = grass_or_dirt();
-    } else if (((j == 4 || j == 5) && i > 2 && i < 10) ||
-               ((j == 8 || j == 9 || j == 12 || j == 13 || j == 16) &&
-                i > 2 && i < 16) || (i == 20 && j > 7 && j < 17))
-     ter(i, j) = t_bookcase;
-    else if ((i == 14 && j < 6 && j > 2) || (j == 5 && i > 14 && i < 19))
+    } else if ((i == 14 && j < 6 && j > 2) || (j == 5 && i > 14 && i < 19))
      ter(i, j) = t_counter;
     else if (i > 2 && i < SEEX * 2 - 3 && j > 2 && j < 17)
      ter(i, j) = t_floor;
@@ -1840,15 +1836,18 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   }
   if (!one_in(3))
    ter(18, 17) = t_door_c;
-  place_items(mi_magazines, 	70,  3,  4,  9,  4, false, 0);
-  place_items(mi_magazines,	70, 20,  8, 20, 16, false, 0);
-  place_items(mi_novels, 	96,  3,  5,  9,  5, false, 0);
-  place_items(mi_novels,	96,  3,  8, 15,  9, false, 0);
-  place_items(mi_manuals,	92,  3, 12, 15, 13, false, 0);
-  place_items(mi_textbooks,	88,  3, 16, 15, 16, false, 0);
-  if (terrain_type == ot_s_library_east) rotate(1);
-  if (terrain_type == ot_s_library_south) rotate(2);
-  if (terrain_type == ot_s_library_west) rotate(3);
+
+  _stock_line(*this, t_bookcase, mi_magazines, 70, point(3, 4), point(9, 4));
+  _stock_line(*this, t_bookcase, mi_novels, 96, point(3, 5), point(9, 5));
+  _stock_line(*this, t_bookcase, mi_magazines, 70, point(20, 8), point(20, 16));
+  _stock_square(*this, t_bookcase, mi_textbooks, 88, point(3, 8), point(15, 9));
+  _stock_square(*this, t_bookcase, mi_textbooks, 88, point(3, 12), point(15, 13));
+  _stock_line(*this, t_bookcase, mi_textbooks, 88, point(3, 16), point(15, 16));
+
+  static_assert(1 == ot_s_library_east - ot_s_library_north);
+  static_assert(2 == ot_s_library_south - ot_s_library_north);
+  static_assert(3 == ot_s_library_west - ot_s_library_north);
+  rotate(terrain_type - ot_s_library_north);
   break;
 
  case ot_s_restaurant_north:
