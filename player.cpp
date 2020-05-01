@@ -9,6 +9,7 @@
 #include "line.h"
 #include "recent_msg.h"
 #include "saveload.h"
+#include "zero.h"
 
 #include <math.h>
 
@@ -2401,16 +2402,13 @@ void player::heal(body_part healed, int side, int dam)
   debugmsg("Wacky body part healed!");
   healpart = hp_torso;
  }
- hp_cur[healpart] += dam;
- if (hp_cur[healpart] > hp_max[healpart])
-  hp_cur[healpart] = hp_max[healpart];
+ heal(healpart, dam);
 }
 
 void player::heal(hp_part healed, int dam)
 {
  hp_cur[healed] += dam;
- if (hp_cur[healed] > hp_max[healed])
-  hp_cur[healed] = hp_max[healed];
+ clamp_ub(hp_cur[healed], hp_max[healed]);
 }
 
 void player::healall(int dam)
@@ -2418,8 +2416,7 @@ void player::healall(int dam)
  for (int i = 0; i < num_hp_parts; i++) {
   if (hp_cur[i] > 0) {
    hp_cur[i] += dam;
-   if (hp_cur[i] > hp_max[i])
-    hp_cur[i] = hp_max[i];
+   clamp_ub(hp_cur[i], hp_max[i]);
   }
  }
 }
@@ -2429,8 +2426,8 @@ void player::hurtall(int dam)
  for (int i = 0; i < num_hp_parts; i++) {
   int painadd = 0;
   hp_cur[i] -= dam;
-   if (hp_cur[i] < 0)
-     hp_cur[i] = 0;
+  clamp_lb<0>(hp_cur[i]);
+
   if (has_trait(PF_PAINRESIST))
    painadd = dam / 3;
   else
@@ -2453,8 +2450,7 @@ void player::hitall(game *g, int dam, int vary)
   absorb(g, (body_part) i, ddam, cut);
   int painadd = 0;
   hp_cur[i] -= ddam;
-   if (hp_cur[i] < 0)
-     hp_cur[i] = 0;
+  clamp_lb<0>(hp_cur[i]);
   if (has_trait(PF_PAINRESIST))
    painadd = dam / 3 / 4;
   else

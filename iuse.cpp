@@ -8,6 +8,7 @@
 #include "monattack.h"
 #include "recent_msg.h"
 #include "zero.h"
+#include "stl_limits.h"
 
 #include <sstream>
 
@@ -133,22 +134,34 @@ static bool _get_heal_target(player* p, item* it, hp_part& healed)
     return true;
 }
 
+// returns -1 if nothing needs healing
+static int _npc_get_heal_target(npc* p)
+{
+    int healed = -1;
+    int highest_damage = 0;
+    for (int i = 0; i < num_hp_parts; i++) {
+        int damage = p->hp_max[i] - p->hp_cur[i];
+        if (i == hp_head) cataclysm::rational_scale<3,2>(damage);
+        if (i == hp_torso) cataclysm::rational_scale<6,5>(damage);
+        if (damage > highest_damage) {
+            highest_damage = damage;
+            healed = i;
+        }
+    }
+    return healed;
+}
+
 void iuse::bandage(game *g, player *p, item *it, bool t) 
 {
  int bonus = p->sklevel[sk_firstaid];
  hp_part healed;
 
  if (p->is_npc()) { // NPCs heal whichever has sustained the most damage
-  int highest_damage = 0;
-  for (int i = 0; i < num_hp_parts; i++) {
-   int damage = p->hp_max[i] - p->hp_cur[i];
-   if (i == hp_head) damage *= 1.5;
-   if (i == hp_torso) damage *= 1.2;
-   if (damage > highest_damage) {
-    highest_damage = damage;
-    healed = hp_part(i);
-   }
-  }
+     if (auto code = _npc_get_heal_target(static_cast<npc*>(p)); 0 <= code) {
+         healed = hp_part(code);
+     } else {
+         return;
+     }
  } else { // Player--present a menu
    
   WINDOW* w = newwin(10, 20, 8, 1);
@@ -205,16 +218,11 @@ void iuse::firstaid(game *g, player *p, item *it, bool t)
  hp_part healed;
 
  if (p->is_npc()) { // NPCs heal whichever has sustained the most damage
-  int highest_damage = 0;
-  for (int i = 0; i < num_hp_parts; i++) {
-   int damage = p->hp_max[i] - p->hp_cur[i];
-   if (i == hp_head) damage *= 1.5;
-   if (i == hp_torso) damage *= 1.2;
-   if (damage > highest_damage) {
-    highest_damage = damage;
-    healed = hp_part(i);
-   }
-  }
+     if (auto code = _npc_get_heal_target(static_cast<npc*>(p)); 0 <= code) {
+         healed = hp_part(code);
+     } else {
+         return;
+     }
  } else { // Player--present a menu
    
   WINDOW* w = newwin(10, 20, 8, 1);
