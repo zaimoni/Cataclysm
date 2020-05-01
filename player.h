@@ -52,6 +52,7 @@ public:
 
  virtual bool is_npc() const { return false; }	// Overloaded for NPCs in npc.h
  nc_color color() const;				// What color to draw us as
+ std::pair<int, nc_color> hp_color(hp_part part) const;
 
  void disp_info(game *g);	// '@' key; extended character info
  void disp_morale();		// '%' key; morale info

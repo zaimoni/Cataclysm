@@ -958,6 +958,17 @@ nc_color player::color() const
  return c_white;
 }
 
+std::pair<int, nc_color> player::hp_color(hp_part part) const
+{
+    const int curhp = hp_cur[part];
+    const int max = hp_max[part];
+    if (curhp >= max) return std::pair(curhp, c_green);
+    else if (curhp > max * .8) return std::pair(curhp, c_ltgreen);
+    else if (curhp > max * .5) return std::pair(curhp, c_yellow);
+    else if (curhp > max * .3) return std::pair(curhp, c_ltred);
+    return std::pair(curhp, c_red);
+}
+
 static nc_color encumb_color(int level)
 {
 	if (level < 0) return c_green;

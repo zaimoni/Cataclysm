@@ -2316,29 +2316,17 @@ void game::refresh_all()
 
 void game::draw_HP()
 {
- int curhp;
- nc_color col;
  for (int i = 0; i < num_hp_parts; i++) {
-  curhp = u.hp_cur[i];
-       if (curhp == u.hp_max[i])
-   col = c_green;
-  else if (curhp > u.hp_max[i] * .8)
-   col = c_ltgreen;
-  else if (curhp > u.hp_max[i] * .5)
-   col = c_yellow;
-  else if (curhp > u.hp_max[i] * .3)
-   col = c_ltred;
-  else
-   col = c_red;
+  const auto cur_hp_color = u.hp_color(hp_part(i));
   if (u.has_trait(PF_HPIGNORANT)) {
-   mvwprintz(w_HP, i * 2 + 1, 0, col, " ***  ");
+   mvwprintz(w_HP, i * 2 + 1, 0, cur_hp_color.second, " ***  ");
   } else {
-   if (curhp >= 100)
-    mvwprintz(w_HP, i * 2 + 1, 0, col, "%d     ", curhp);
-   else if (curhp >= 10)
-    mvwprintz(w_HP, i * 2 + 1, 0, col, " %d    ", curhp);
+   if (cur_hp_color.first >= 100)
+    mvwprintz(w_HP, i * 2 + 1, 0, cur_hp_color.second, "%d     ", cur_hp_color.first);
+   else if (cur_hp_color.first >= 10)
+    mvwprintz(w_HP, i * 2 + 1, 0, cur_hp_color.second, " %d    ", cur_hp_color.first);
    else
-    mvwprintz(w_HP, i * 2 + 1, 0, col, "  %d    ", curhp);
+    mvwprintz(w_HP, i * 2 + 1, 0, cur_hp_color.second, "  %d    ", cur_hp_color.first);
   }
  }
  mvwprintz(w_HP,  0, 0, c_ltgray, "HEAD:  ");
@@ -2351,6 +2339,7 @@ void game::draw_HP()
  if (u.max_power_level == 0)
   mvwprintz(w_HP, 13, 0, c_ltgray, " --   ");
  else {
+  nc_color col;
   if (u.power_level == u.max_power_level)
    col = c_blue;
   else if (u.power_level >= u.max_power_level * .5)

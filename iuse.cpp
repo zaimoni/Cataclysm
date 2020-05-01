@@ -57,26 +57,16 @@ void iuse::royal_jelly(game *g, player *p, item *it, bool t)
 
 static void _display_hp(WINDOW* w, player* p, int curhp, int i)
 {
-    nc_color col;
-    if (curhp == p->hp_max[i])
-        col = c_green;
-    else if (curhp > p->hp_max[i] * .8)
-        col = c_ltgreen;
-    else if (curhp > p->hp_max[i] * .5)
-        col = c_yellow;
-    else if (curhp > p->hp_max[i] * .3)
-        col = c_ltred;
-    else
-        col = c_red;
+    const auto cur_hp_color = p->hp_color(hp_part(i));
     if (p->has_trait(PF_HPIGNORANT))
-        mvwprintz(w, i + 2, 15, col, "***");
+        mvwprintz(w, i + 2, 15, cur_hp_color.second, "***");
     else {
         if (curhp >= 100)
-            mvwprintz(w, i + 2, 15, col, "%d", curhp);
+            mvwprintz(w, i + 2, 15, cur_hp_color.second, "%d", cur_hp_color.first);
         else if (curhp >= 10)
-            mvwprintz(w, i + 2, 16, col, "%d", curhp);
+            mvwprintz(w, i + 2, 16, cur_hp_color.second, "%d", cur_hp_color.first);
         else
-            mvwprintz(w, i + 2, 17, col, "%d", curhp);
+            mvwprintz(w, i + 2, 17, cur_hp_color.second, "%d", cur_hp_color.first);
     }
 }
 
@@ -573,10 +563,7 @@ void iuse::dogfood(game *g, player *p, item *it, bool t)
    messages.add("The %s seems quit unimpressed!", m_at->type->name.c_str());
  } else
   messages.add("You spill the dogfood all over the ground.");
-
 }
-  
- 
 
 // TOOLS below this point!
 
