@@ -5425,15 +5425,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
  case ot_ants_ns:
  case ot_ants_ew:
   x = SEEX;
-  for (int i = 0; i < SEEX * 2; i++) {
-   for (int j = 0; j < SEEY * 2; j++)
-    ter(i, j) = t_rock;
-  }
+  square(this, t_rock, point(0), point(SEE - 1));
   for (int j = 0; j < SEEY * 2; j++) {
-   for (int i = x - 2; i <= x + 3; i++) {
-    if (i >= 1 && i < SEEX * 2 - 1)
-     ter(i, j) = t_rock_floor;
-   }
+   line(this, t_rock_floor, point(cataclysm::max(1, x-2), j), point(cataclysm::min(SEEX * 2 - 2, x+3), j));
    x += rng(-1, 1);
    while (abs(SEEX - x) > SEEX * 2 - j - 1) {
     if (x < SEEX) x++;
@@ -5451,26 +5445,15 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   y = 1;
   rn = 0;
 // First, set it all to rock
-  for (int i = 0; i < SEEX * 2; i++) {
-   for (int j = 0; j < SEEY * 2; j++)
-    ter(i, j) = t_rock;
-  }
+  square(this, t_rock, point(0), point(SEE - 1));
 
   for (int i = SEEX - 2; i <= SEEX + 3; i++) {
-   ter(i, 0) = t_rock_floor;
-   ter(i, 1) = t_rock_floor;
-   ter(i, 2) = t_rock_floor;
-   ter(SEEX * 2 - 1, i) = t_rock_floor;
-   ter(SEEX * 2 - 2, i) = t_rock_floor;
-   ter(SEEX * 2 - 3, i) = t_rock_floor;
+   line(this, t_rock_floor, point(i, 0), point(i, 2));
+   line(this, t_rock_floor, point(SEEX * 2 - 3, i), point(SEEX * 2 - 1, i));
   }
   do {
-   for (int i = x - 2; i <= x + 3; i++) {
-    for (int j = y - 2; j <= y + 3; j++) {
-     if (i > 0 && i < SEEX * 2 - 1 && j > 0 && j < SEEY * 2 - 1)
-      ter(i, j) = t_rock_floor;
-    }
-   }
+   square(this, t_rock_floor, point(cataclysm::max(1, x - 2), cataclysm::max(1, y - 2)),
+          point(cataclysm::min(2 * SEE - 2, x + 3), cataclysm::min(2 * SEE - 2, y + 3)));
    if (rn < SEEX) {
     x += rng(-1, 1);
     y++;
@@ -5485,12 +5468,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    }
    rn++;
   } while (x < SEEX * 2 - 1 || y != SEEY);
-  for (int i = x - 2; i <= x + 3; i++) {
-   for (int j = y - 2; j <= y + 3; j++) {
-    if (i > 0 && i < SEEX * 2 - 1 && j > 0 && j < SEEY * 2 - 1)
-     ter(i, j) = t_rock_floor;
-   }
-  }
+  square(this, t_rock_floor, point(cataclysm::max(1, x - 2), cataclysm::max(1, y - 2)),
+      point(cataclysm::min(2 * SEE - 2, x + 3), cataclysm::min(2 * SEE - 2, y + 3)));
+
   if (terrain_type == ot_ants_es) rotate(1);
   else if (terrain_type == ot_ants_sw) rotate(2);
   else if (terrain_type == ot_ants_wn) rotate(3);
@@ -5500,16 +5480,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
  case ot_ants_new:
  case ot_ants_nsw:
  case ot_ants_esw:
-  for (int i = 0; i < SEEX * 2; i++) {
-   for (int j = 0; j < SEEY * 2; j++)
-    ter(i, j) = t_rock;
-  }
+  square(this, t_rock, point(0), point(SEE - 1));
   x = SEEX;
   for (int j = 0; j < SEEY * 2; j++) {
-   for (int i = x - 2; i <= x + 3; i++) {
-    if (i >= 1 && i < SEEX * 2 - 1)
-     ter(i, j) = t_rock_floor;
-   }
+   line(this, t_rock_floor, point(cataclysm::max(1, x - 2), j), point(cataclysm::min(SEEX * 2 - 2, x + 3), j));
    x += rng(-1, 1);
    while (abs(SEEX - x) > SEEY * 2 - j - 1) {
     if (x < SEEX) x++;
@@ -5518,10 +5492,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   }
   y = SEEY;
   for (int i = SEEX; i < SEEX * 2; i++) {
-   for (int j = y - 2; j <= y + 3; j++) {
-    if (j >= 1 && j < SEEY * 2 - 1)
-     ter(i, j) = t_rock_floor;
-   }
+   line(this, t_rock_floor, point(i, cataclysm::max(1, y - 2)), point(i, cataclysm::min(SEE * 2 - 2, y + 3)));
    y += rng(-1, 1);
    while (abs(SEEY - y) > SEEX * 2 - 1 - i) {
     if (y < SEEY) y++;
@@ -5534,16 +5505,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   break;
 
  case ot_ants_nesw:
-  for (int i = 0; i < SEEX * 2; i++) {
-   for (int j = 0; j < SEEY * 2; j++)
-    ter(i, j) = t_rock;
-  }
+  square(this, t_rock, point(0), point(SEE - 1));
   x = SEEX;
   for (int j = 0; j < SEEY * 2; j++) {
-   for (int i = x - 2; i <= x + 3; i++) {
-    if (i >= 1 && i < SEEX * 2 - 1)
-     ter(i, j) = t_rock_floor;
-   }
+   line(this, t_rock_floor, point(cataclysm::max(1, x - 2), j), point(cataclysm::min(SEE * 2 - 2, x + 3), j));
    x += rng(-1, 1);
    while (abs(SEEX - x) > SEEY * 2 - j - 1) {
     if (x < SEEX) x++;
@@ -5553,10 +5518,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
   y = SEEY;
   for (int i = 0; i < SEEX * 2; i++) {
-   for (int j = y - 2; j <= y + 3; j++) {
-    if (j >= 1 && j < SEEY * 2 - 1)
-     ter(i, j) = t_rock_floor;
-   }
+   line(this, t_rock_floor, point(i, cataclysm::max(1, y - 2)), point(i, cataclysm::min(SEE * 2 - 2, y + 3)));
    y += rng(-1, 1);
    while (abs(SEEY - y) > SEEX * 2 - i - 1) {
     if (y < SEEY) y++;
