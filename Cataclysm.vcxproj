@@ -225,6 +225,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="stl_typetraits.h" />
     <ClInclude Include="stl_typetraits_late.h" />
+    <ClInclude Include="submap.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="tileray.h" />
     <ClInclude Include="trap.h" />

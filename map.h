@@ -1,9 +1,9 @@
 #ifndef _MAP_H_
 #define _MAP_H_
 
-#include "mapdata.h"
 #include "mapitems.h"
 #include "overmap.h"
+#include "submap.h"
 
 #include <functional>
 #include <string>

@@ -1,5 +1,5 @@
 #include "mapbuffer.h"
-#include "mapdata.h"
+#include "submap.h"
 #include "output.h"
 #include "recent_msg.h"
 #include "saveload.h"

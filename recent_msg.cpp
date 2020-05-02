@@ -3,9 +3,8 @@
 #include "keypress.h"
 #ifndef SOCRATES_DAIMON
 #include "mapdata.h"
-#else
-#include "ui.h"
 #endif
+#include "ui.h"
 
 #include <stdarg.h>
 #include <sstream>

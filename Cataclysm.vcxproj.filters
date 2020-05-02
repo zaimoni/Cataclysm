@@ -276,6 +276,9 @@
     <ClInclude Include="stl_typetraits_late.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="submap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

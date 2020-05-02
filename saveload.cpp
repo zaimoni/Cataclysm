@@ -19,6 +19,7 @@
 #include "recent_msg.h"
 #ifndef SOCRATES_DAIMON
 #include "saveload.h"
+#include "submap.h"
 #endif
 #include "json.h"
 

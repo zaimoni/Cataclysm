@@ -9,6 +9,7 @@
 #include "construction.h"
 #include "calendar.h"
 #include "gamemode.h"
+#include "monster.h"
 #include "Zaimoni.STL/Logging.h"
 #include "Zaimoni.STL/GDI/box.hpp"
 
