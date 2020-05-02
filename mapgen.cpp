@@ -1950,9 +1950,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    place_items(mi_fridge, 50, rn, 22, rn + 3, 23, false, 0);
   }
 
-  if (terrain_type == ot_s_restaurant_east) rotate(1);
-  if (terrain_type == ot_s_restaurant_south) rotate(2);
-  if (terrain_type == ot_s_restaurant_west) rotate(3);
+  static_assert(1 == ot_s_restaurant_east - ot_s_restaurant_north);
+  static_assert(2 == ot_s_restaurant_south - ot_s_restaurant_north);
+  static_assert(3 == ot_s_restaurant_west - ot_s_restaurant_north);
+  rotate(terrain_type - ot_s_restaurant_north);
   } break;
 
  case ot_shelter:
@@ -1975,9 +1976,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
  case ot_shelter_under:
   square(this, t_rock, point(0), point(2 * SEE - 1));
-  square(this, t_floor, point(8), point(2 * SEE - 9));
   line(this, t_stairs_up, SEEX - 1, SEEY * 2 - 8, SEEX, SEEY * 2 - 8);
-  place_items(mi_shelter, 80, 8, 8, SEEX * 2 - 9, SEEY * 2 - 9, false, 0);
+  _stock_square(*this, t_floor, mi_shelter, 80, point(8), point(2 * SEE - 9));
   break;
 
  case ot_lab:
@@ -2024,9 +2024,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
    add_spawn(mon_turret, 1, SEEX, 5);
 
-   if (t_east > ot_road_null && t_east <= ot_road_nesw_manhole) rotate(1);
-   else if (t_south > ot_road_null && t_south <= ot_road_nesw_manhole) rotate(2);
-   else if (t_west > ot_road_null && t_west <= ot_road_nesw_manhole) rotate(3);
+   if (is_between<ot_road_null, ot_road_nesw_manhole>(t_east)) rotate(1);
+   else if (is_between<ot_road_null, ot_road_nesw_manhole>(t_south)) rotate(2);
+   else if (is_between<ot_road_null, ot_road_nesw_manhole>(t_west)) rotate(3);
   } else if (tw != 0 || rw != 0 || lw != 0 || bw != 0) {	// Sewers!
    for (int i = 0; i < SEEX * 2; i++) {
     for (int j = 0; j < SEEY * 2; j++) {
@@ -2035,11 +2035,11 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      if (((i < lw || i > SEEX * 2 - 1 - rw) && j > SEEY - 3 && j < SEEY + 2) ||
          ((j < tw || j > SEEY * 2 - 1 - bw) && i > SEEX - 3 && i < SEEX + 2))
       t = t_sewage;
-     if ((i == 0 && t_east >= ot_lab && t_east <= ot_lab_core) || i == SEEX * 2 - 1) {
+     if ((i == 0 && is_between<ot_lab, ot_lab_core>(t_east)) || i == SEEX * 2 - 1) {
       if (t_sewage == t) t = t_bars;
       else if (j == SEEY - 1 || j == SEEY) t = t_door_metal_c;
       else t = t_wall_v;
-     } else if ((j == 0 && t_north >= ot_lab && t_north <= ot_lab_core) || j == SEEY * 2 - 1) {
+     } else if ((j == 0 && is_between<ot_lab, ot_lab_core>(t_north)) || j == SEEY * 2 - 1) {
       if (t_sewage == t) t = t_bars;
       else if (i == SEEX - 1 || i == SEEX) t = t_door_metal_c;
       else t = t_wall_h;
@@ -2048,10 +2048,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    }
   } else { // We're below ground, and no sewers
 // Set up the boudaries of walls (connect to adjacent lab squares)
-   tw = (t_north >= ot_lab && t_north <= ot_lab_finale) ? 0 : 2;
-   rw = (t_east  >= ot_lab && t_east  <= ot_lab_finale) ? 1 : 2;
-   bw = (t_south >= ot_lab && t_south <= ot_lab_finale) ? 1 : 2;
-   lw = (t_west  >= ot_lab && t_west  <= ot_lab_finale) ? 0 : 2;
+   tw = (is_between<ot_lab, ot_lab_core>(t_north)) ? 0 : 2;
+   rw = (is_between<ot_lab, ot_lab_core>(t_east)) ? 1 : 2;
+   bw = (is_between<ot_lab, ot_lab_core>(t_south)) ? 1 : 2;
+   lw = (is_between<ot_lab, ot_lab_core>(t_west)) ? 0 : 2;
    switch (rng(1, 3)) {	// Pick a random lab layout
    case 1:	// Cross shaped
     for (int i = 0; i < SEEX * 2; i++) {
@@ -2239,14 +2239,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   rw = 0;
   bw = 0;
   lw = 0;
-  if (t_north >= ot_ants_ns && t_north <=ot_ants_nesw && connects_to(t_north,2))
-   tw = SEEY;
-  if (t_east  >= ot_ants_ns && t_east <= ot_ants_nesw && connects_to(t_east, 3))
-   rw = SEEX;
-  if (t_south >= ot_ants_ns && t_south <=ot_ants_nesw && connects_to(t_south,0))
-   bw = SEEY + 1;
-  if (t_west  >= ot_ants_ns && t_west <= ot_ants_nesw && connects_to(t_west, 1))
-   lw = SEEX + 1;
+  if (is_between<ot_ants_ns, ot_ants_nesw>(t_north) && connects_to(t_north,2)) tw = SEEY;
+  if (is_between<ot_ants_ns, ot_ants_nesw>(t_east) && connects_to(t_east, 3)) rw = SEEX;
+  if (is_between<ot_ants_ns, ot_ants_nesw>(t_south) && connects_to(t_south,0)) bw = SEEY + 1;
+  if (is_between<ot_ants_ns, ot_ants_nesw>(t_west) && connects_to(t_west, 1)) lw = SEEX + 1;
   if (tw != 0 || rw != 0 || bw != 0 || lw != 0) {
    for (int i = 0; i < SEEX * 2; i++) {
     for (int j = 0; j < SEEY * 2; j++) {
@@ -2285,10 +2281,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
  break;
 
  case ot_lab_finale:
-  tw = (t_north >= ot_lab && t_north <= ot_lab_finale) ? 0 : 2;
-  rw = (t_east  >= ot_lab && t_east  <= ot_lab_finale) ? 1 : 2;
-  bw = (t_south >= ot_lab && t_south <= ot_lab_finale) ? 1 : 2;
-  lw = (t_west  >= ot_lab && t_west  <= ot_lab_finale) ? 0 : 2;
+  tw = is_between<ot_lab, ot_lab_finale>(t_north) ? 0 : 2;
+  rw = is_between<ot_lab, ot_lab_finale>(t_east) ? 1 : 2;
+  bw = is_between<ot_lab, ot_lab_finale>(t_south) ? 1 : 2;
+  lw = is_between<ot_lab, ot_lab_finale>(t_west) ? 0 : 2;
 // Start by setting up a large, empty room.
   for (int i = 0; i < SEEX * 2; i++) {
    for (int j = 0; j < SEEY * 2; j++) {
@@ -2336,16 +2332,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      add_item(SEEX    , SEEY    , item::types[itm_mininuke], 0);
     }
    } else {
-    ter(SEEX - 2, SEEY - 1) = t_rack;
-    ter(SEEX - 1, SEEY - 1) = t_rack;
-    ter(SEEX    , SEEY - 1) = t_rack;
-    ter(SEEX + 1, SEEY - 1) = t_rack;
-    ter(SEEX - 2, SEEY    ) = t_rack;
-    ter(SEEX - 1, SEEY    ) = t_rack;
-    ter(SEEX    , SEEY    ) = t_rack;
-    ter(SEEX + 1, SEEY    ) = t_rack;
-    place_items(mi_ammo, 96, SEEX - 2, SEEY - 1, SEEX + 1, SEEY - 1, false, 0);
-    place_items(mi_allguns, 96, SEEX - 2, SEEY, SEEX + 1, SEEY, false, 0);
+    _stock_line(*this, t_rack, mi_ammo, 96, point(SEEX - 2, SEEY - 1), point(SEEX + 1, SEEY - 1));
+    _stock_line(*this, t_rack, mi_allguns, 96, point(SEEX - 2, SEEY), point(SEEX + 1, SEEY));
    }
    break;
 
@@ -2859,7 +2847,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   line(this, t_wall_glass_v,  7,  6,  7, 13); // Interior glass (equipment)
   line(this, t_wall_glass_h,  8, 20, 13, 20); // Interior glass (flow)
   line(this, t_counter,  1,  3,  3,  3); // Desk (front office);
-  line(this, t_counter,  1,  6,  1, 13); // Counter (equipment);
+  _stock_line(*this, t_counter, mi_sewage_plant, 80, point(1, 6), point(1, 13));
 // Central tanks:
   square(this, t_sewage, 10,  3, 13,  6);
   square(this, t_sewage, 17,  3, 20,  6);
@@ -2888,7 +2876,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   ter(4, 19) = t_door_metal_locked;
   ter(2, 19) = t_console;
   ter(6, 19) = t_console;
-// Computers to unlock stair room, and items
+// Computers to unlock stair room
   tmpcomp = add_computer(2, 19, "EnviroCom OS v2.03", 1);
   tmpcomp->add_option("Unlock stairs", COMPACT_OPEN, 0);
   tmpcomp->add_failure(COMPFAIL_SHUTDOWN);
@@ -2896,7 +2884,6 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   tmpcomp = add_computer(6, 19, "EnviroCom OS v2.03", 1);
   tmpcomp->add_option("Unlock stairs", COMPACT_OPEN, 0);
   tmpcomp->add_failure(COMPFAIL_SHUTDOWN);
-  place_items(mi_sewage_plant, 80, 1, 6, 1, 13, false, 0);
   break;
 
  case ot_sewage_treatment_hub: // Stairs up, center of 3x3 of treatment_below
