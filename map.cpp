@@ -2003,24 +2003,24 @@ void map::process_active_items_in_submap(game *g, int nonant)
  for (int i = 0; i < SEEX; i++) {
   for (int j = 0; j < SEEY; j++) {
    std::vector<item>& items = grid[nonant]->itm[i][j];
-   for (int n = 0; n < items.size(); n++) {
-    if (items[n].active) {
-     if (!items[n].is_tool()) { // It's probably a charger gun
-      items[n].active = false;
-      items[n].charges = 0;
-     } else { 
-      const it_tool* const tmp = dynamic_cast<const it_tool*>(items[n].type);
-      (*tmp->use)(g, &(g->u), &(items[n]), true);
-      if (tmp->turns_per_charge > 0 && int(messages.turn) % tmp->turns_per_charge ==0) items[n].charges--;
-      if (items[n].charges <= 0) {
-       (*tmp->use)(g, &(g->u), &(items[n]), false);
-       if (tmp->revert_to == itm_null || items[n].charges == -1) {
-        EraseAt(items, n);
-        grid[nonant]->active_item_count--;
-        n--;
-       } else
-        items[n].type = item::types[tmp->revert_to];
-      }
+   int n = items.size();
+   while (0 < n) {
+    if (decltype(auto) it = items[--n]; it.active) {
+     switch(int code = use_active_item(g->u, it))   // XXX \todo allow modeling active item effects w/o player
+     {
+     // ignore artifacts/code -2
+     case -1:   // discharge charger gun
+         it.active = false;
+         it.charges = 0;
+         grid[nonant]->active_item_count--;
+         break;
+     case 1:
+         EraseAt(items, n);  // reference invalidated
+         grid[nonant]->active_item_count--;
+         break;
+     case 0:
+         if (!it.active) grid[nonant]->active_item_count--;
+         break;
      }
     }
    }

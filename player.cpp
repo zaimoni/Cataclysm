@@ -3165,91 +3165,76 @@ int player::active_item_charges(itype_id id) const
 
 void player::process_active_items(game *g)
 {
- const it_tool* tmp;
- if (weapon.is_artifact() && weapon.is_tool()) g->process_artifact(&weapon, this, true);
- else if (weapon.active) {
-  if (weapon.has_flag(IF_CHARGE)) { // We're chargin it up!
-   if (weapon.charges == 8) {
-    bool maintain = false;
-    if (has_charges(itm_UPS_on, 4)) {
-     use_charges(itm_UPS_on, 4);
-     maintain = true;
-    } else if (has_charges(itm_UPS_off, 4)) {
-     use_charges(itm_UPS_off, 4);
-     maintain = true;
+    switch (int code = use_active_item(*this, weapon)) {
+    case -2:
+        g->process_artifact(&weapon, this, true);
+        break;
+    case -1:   // IF_CHARGE
+        {
+        if (weapon.charges == 8) {
+            bool maintain = false;
+            if (has_charges(itm_UPS_on, 4)) {
+                use_charges(itm_UPS_on, 4);
+                maintain = true;
+            } else if (has_charges(itm_UPS_off, 4)) {
+                use_charges(itm_UPS_off, 4);
+                maintain = true;
+            }
+            if (maintain) {
+                if (one_in(20)) {
+                    messages.add("Your %s discharges!", weapon.tname().c_str());
+                    point target(pos.x + rng(-12, 12), pos.y + rng(-12, 12));
+                    std::vector<point> traj = line_to(pos, target, 0);
+                    g->fire(*this, target, traj, false);
+                }
+                else
+                    messages.add("Your %s beeps alarmingly.", weapon.tname().c_str());
+            }
+        } else {
+            if (has_charges(itm_UPS_on, 1 + weapon.charges)) {
+                use_charges(itm_UPS_on, 1 + weapon.charges);
+                weapon.poison++;
+            }
+            else if (has_charges(itm_UPS_off, 1 + weapon.charges)) {
+                use_charges(itm_UPS_off, 1 + weapon.charges);
+                weapon.poison++;
+            } else {
+                messages.add("Your %s spins down.", weapon.tname().c_str());
+                if (weapon.poison <= 0) {
+                    weapon.charges--;
+                    weapon.poison = weapon.charges - 1;
+                }
+                else weapon.poison--;
+                if (weapon.charges == 0) weapon.active = false;
+            } if (weapon.poison >= weapon.charges) {
+                weapon.charges++;
+                weapon.poison = 0;
+            }
+        }
+        return;
+        }
+    // ignore code 1: ok for weapon to be the null item
     }
-    if (maintain) {
-     if (one_in(20)) {
-      messages.add("Your %s discharges!", weapon.tname().c_str());
-      point target(pos.x + rng(-12, 12), pos.y + rng(-12, 12));
-      std::vector<point> traj = line_to(pos, target, 0);
-      g->fire(*this, target, traj, false);
-     } else
-      messages.add("Your %s beeps alarmingly.", weapon.tname().c_str());
-    }
-   } else {
-    if (has_charges(itm_UPS_on, 1 + weapon.charges)) {
-     use_charges(itm_UPS_on, 1 + weapon.charges);
-     weapon.poison++;
-    } else if (has_charges(itm_UPS_off, 1 + weapon.charges)) {
-     use_charges(itm_UPS_off, 1 + weapon.charges);
-     weapon.poison++;
-    } else {
-     messages.add("Your %s spins down.", weapon.tname().c_str());
-     if (weapon.poison <= 0) {
-      weapon.charges--;
-      weapon.poison = weapon.charges - 1;
-     } else weapon.poison--;
-     if (weapon.charges == 0) weapon.active = false;
-    }
-    if (weapon.poison >= weapon.charges) {
-     weapon.charges++;
-     weapon.poison = 0;
-    }
-   }
-   return;
-  } // if (weapon.has_flag(IF_CHARGE))
 
-     
-  if (!weapon.is_tool()) {
-   debugmsg("%s is active, but it is not a tool.", weapon.tname().c_str());
-   return;
-  }
-  tmp = dynamic_cast<const it_tool*>(weapon.type);
-  (*tmp->use)(g, this, &weapon, true);
-  if (tmp->turns_per_charge > 0 && int(messages.turn) % tmp->turns_per_charge == 0) weapon.charges--;
-  if (weapon.charges <= 0) {
-   (*tmp->use)(g, this, &weapon, false);
-   if (tmp->revert_to == itm_null)
-    weapon = item::null;
-   else
-    weapon.type = item::types[tmp->revert_to];
-  }
- }
  for (size_t i = 0; i < inv.size(); i++) {
-  for (int j = 0; j < inv.stack_at(i).size(); j++) {	// XXX usage is weird here \todo analyze
-   item *tmp_it = &(inv.stack_at(i)[j]);
-   if (tmp_it->is_artifact() && tmp_it->is_tool())
-    g->process_artifact(tmp_it, this);
-   if (tmp_it->active) {
-    tmp = dynamic_cast<const it_tool*>(tmp_it->type);
-    (*tmp->use)(g, this, tmp_it, true);
-    if (tmp->turns_per_charge > 0 && int(messages.turn) % tmp->turns_per_charge == 0) tmp_it->charges--;
-    if (0 >= tmp_it->charges) {
-     (*tmp->use)(g, this, tmp_it, false);
-     if (tmp->revert_to == itm_null) {
-      if (inv.stack_at(i).size() == 1) {
-       inv.destroy_stack(i);
-       i--;
-       j = 0;
-      } else {
-       EraseAt(inv.stack_at(i), j);
-       j--;
+  decltype(auto) _inv = inv.stack_at(i);
+  int j = _inv.size();
+  while(0 < j) {
+      item* tmp_it = &(_inv[--j]);
+      switch (int code = use_active_item(*this, *tmp_it))
+      {
+      case -2:
+          g->process_artifact(tmp_it, this, true);
+          break;
+          // ignore IF_CHARGE/case -1
+      case 1:  // null item shall not survive in inventory
+          if (1 == _inv.size()) {
+              inv.destroy_stack(i); // references die
+              i--;
+              j = 0;
+          } else EraseAt(_inv, j);
+          break;
       }
-     } else
-      tmp_it->type = item::types[tmp->revert_to];
-    }
-   }
   }
  }
  for (auto& it : worn) {
@@ -4033,6 +4018,11 @@ bool player::takeoff(map& m, char let)
 void player::use(game *g, char let)
 {
  item* used = &i_at(let);
+ if (used->is_null()) {
+     messages.add("You do not have that item.");
+     return;
+ }
+
  item copy;
  bool replace_item = false;
  if (inv.index_by_letter(let) != -1) {
@@ -4042,15 +4032,9 @@ void player::use(game *g, char let)
   replace_item = true;
  }
  
- if (used->is_null()) {
-  messages.add("You do not have that item.");
-  return;
- }
-
  last_item = itype_id(used->type->id);
 
  if (used->is_tool()) {
-
   const it_tool* const tool = dynamic_cast<const it_tool*>(used->type);
   if (tool->charges_per_use == 0 || used->charges >= tool->charges_per_use) {
    (*tool->use)(g, this, used, false);
@@ -4063,9 +4047,7 @@ void player::use(game *g, char let)
   if (replace_item && used->invlet != 0) inv.add_item_keep_invlet(copy);
   else if (used->invlet == 0 && used == &weapon) remove_weapon();
   return;
-
  } else if (used->is_gunmod()) {
-
   if (sklevel[sk_gun] == 0) {
    messages.add("You need to be at least level 1 in the firearms skill before you can modify guns.");
    if (replace_item) inv.add_item(copy);
