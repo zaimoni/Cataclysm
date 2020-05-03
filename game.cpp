@@ -3428,10 +3428,7 @@ void game::kill_mon(monster& target, bool u_did_it)
  if (!target.dead) {
   target.dead = true;
   if (u_did_it) {
-   if (target.has_flag(MF_GUILT)) {
-    mdeath tmpdeath;
-    tmpdeath.guilt(this, &target);
-   }
+   if (target.has_flag(MF_GUILT)) mdeath::guilt(this, &target);
    if (target.type->species != species_hallu)
     kills[target.type->id]++;	// Increment our kill counter
   }

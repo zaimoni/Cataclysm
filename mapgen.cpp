@@ -243,6 +243,23 @@ static int forest_penetration(oter_id x)
     }
 }
 
+// for the hospital
+static void overrun_by_z(map& m, int rn)
+{
+  const item body(messages.turn);
+  for (int i = 0; i < rn; i++) {
+   int zx = rng(0, SEEX * 2 - 1), zy = rng(0, SEEY * 2 - 1);
+   if (t_bed == m.ter(zx, zy) || one_in(3))
+    m.add_item(zx, zy, body);
+   else if (0 < m.move_cost(zx, zy)) {
+    mon_id zom = mon_zombie;
+    if (one_in(6)) zom = mon_zombie_spitter;
+    else if (!one_in(3)) zom = mon_boomer;
+    m.add_spawn(zom, 1, zx, zy);
+   }
+  }
+}
+
 // for military bases
 // results will be strange for diagonals
 static void install_military_base_turret(map& m, point dest, direction wall_dir, ter_id v_wall)
@@ -4250,19 +4267,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   line(this, t_wall_v, 23, 13, 23, 23);
 
 // Generate bodies / zombies
-  rn = rng(10, 15);
-  for (int i = 0; i < rn; i++) {
-   item body(messages.turn);
-   int zx = rng(0, SEEX * 2 - 1), zy = rng(0, SEEY * 2 - 1);
-   if (ter(zx, zy) == t_bed || one_in(3))
-    add_item(zx, zy, body);
-   else if (move_cost(zx, zy) > 0) {
-    mon_id zom = mon_zombie;
-    if (one_in(6)) zom = mon_zombie_spitter;
-    else if (!one_in(3)) zom = mon_boomer;
-    add_spawn(zom, 1, zx, zy);
-   }
-  }
+  overrun_by_z(*this, rng(10, 15));
 
 // Rotate to face the road
   if (t_east >= ot_road_null && t_east <= ot_bridge_ew) rotate(1);
@@ -4536,19 +4541,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    if (!any<ot_hospital_entrance, ot_hospital>(t_north)) line(this, t_wall_h, 0, 0, 23, 0);
   }
 // Generate bodies / zombies
-  rn = rng(15, 20);
-  for (int i = 0; i < rn; i++) {
-   item body(messages.turn);
-   int zx = rng(0, SEEX * 2 - 1), zy = rng(0, SEEY * 2 - 1);
-   if (ter(zx, zy) == t_bed || one_in(3))
-    add_item(zx, zy, body);
-   else if (move_cost(zx, zy) > 0) {
-    mon_id zom = mon_zombie;
-    if (one_in(6)) zom = mon_zombie_spitter;
-    else if (!one_in(3)) zom = mon_boomer;
-    add_spawn(zom, 1, zx, zy);
-   }
-  }
+  overrun_by_z(*this, rng(15, 20));
   break;
 
  case ot_mansion_entrance: {
