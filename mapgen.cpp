@@ -3040,11 +3040,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
  case ot_sewage_treatment_under:
   square(this, t_floor, point(0), point(2*SEE-1));
 
-  if (t_north == ot_sewage_treatment_under || t_north == ot_sewage_treatment_hub ||
-      (t_north >= ot_sewer_ns && t_north <= ot_sewer_nesw &&
-       connects_to(t_north, 2))) {
-   if (t_north == ot_sewage_treatment_under ||
-       t_north == ot_sewage_treatment_hub) {
+  if (    any<ot_sewage_treatment_hub, ot_sewage_treatment_under>(t_north)
+      || (is_between<ot_sewer_ns, ot_sewer_nesw>(t_north) && connects_to(t_north, 2))) {
+   if (any<ot_sewage_treatment_hub, ot_sewage_treatment_under>(t_north)) {
     line(this, t_wall_h,  0,  0, 23,  0);
     ter(3, 0) = t_door_c;
    }
@@ -3052,28 +3050,21 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    square(this, t_sewage, 10, 0, 13, 13);
   }
 
-  if (t_east == ot_sewage_treatment_under ||
-      t_east == ot_sewage_treatment_hub ||
-      (t_east >= ot_sewer_ns && t_east <= ot_sewer_nesw &&
-       connects_to(t_east, 3))) {
+  if (    any<ot_sewage_treatment_hub, ot_sewage_treatment_under>(t_east)
+      || (is_between<ot_sewer_ns, ot_sewer_nesw>(t_east) && connects_to(t_east, 3))) {
    e_fac = 1;
    square(this, t_sewage, 10, 10, 23, 13);
   }
 
-  if (t_south == ot_sewage_treatment_under ||
-      t_south == ot_sewage_treatment_hub ||
-      (t_south >= ot_sewer_ns && t_south <= ot_sewer_nesw &&
-       connects_to(t_south, 0))) {
+  if (    any<ot_sewage_treatment_hub, ot_sewage_treatment_under>(t_south)
+      || (is_between<ot_sewer_ns, ot_sewer_nesw>(t_south) && connects_to(t_south, 0))) {
    s_fac = 1;
    square(this, t_sewage, 10, 10, 13, 23);
   }
 
-  if (t_west == ot_sewage_treatment_under ||
-      t_west == ot_sewage_treatment_hub ||
-      (t_west >= ot_sewer_ns && t_west <= ot_sewer_nesw &&
-       connects_to(t_west, 1))) {
-   if (t_west == ot_sewage_treatment_under ||
-       t_west == ot_sewage_treatment_hub) {
+  if (    any<ot_sewage_treatment_hub, ot_sewage_treatment_under>(t_west)
+      || (is_between<ot_sewer_ns, ot_sewer_nesw>(t_west) && connects_to(t_west, 1))) {
+   if (any<ot_sewage_treatment_hub, ot_sewage_treatment_under>(t_west)) {
     line(this, t_wall_v,  0,  1,  0, 23);
     ter(0, 20) = t_door_c;
    }
@@ -3099,8 +3090,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     bool okay = true;
     for (int x = x1; x <= x2 && okay; x++) {
      for (int y = y1; y <= y2 && okay; y++) {
-      auto& t = ter(x, y);
-      if (t_grass != t && t_dirt != t) okay = false;
+      if (!any<t_dirt, t_grass>(ter(x, y))) okay = false;
      }
     }
     if (okay) {
@@ -3128,19 +3118,19 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
  case ot_mine:
  case ot_mine_down:
-  if (t_north >= ot_mine && t_north <= ot_mine_finale)
+  if (is_between<ot_mine, ot_mine_finale>(t_north))
    n_fac = (one_in(10) ? 0 : -2);
   else
    n_fac = 4;
-  if (t_east >= ot_mine  && t_east <= ot_mine_finale)
+  if (is_between<ot_mine, ot_mine_finale>(t_east))
    e_fac = (one_in(10) ? 0 : -2);
   else
    e_fac = 4;
-  if (t_south >= ot_mine && t_south <= ot_mine_finale)
+  if (is_between<ot_mine, ot_mine_finale>(t_south))
    s_fac = (one_in(10) ? 0 : -2);
   else
    s_fac = 4;
-  if (t_west >= ot_mine  && t_west <= ot_mine_finale)
+  if (is_between<ot_mine, ot_mine_finale>(t_west))
    w_fac = (one_in(10) ? 0 : -2);
   else
    w_fac = 4;
@@ -3171,7 +3161,6 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     ter(9, 12) = t_door_c;
    else
     ter(16, 12) = t_door_c;
-
   } else { // Not an entrance; maybe some hazards!
    switch( rng(0, 6) ) {
     case 0: break; // Nothing!  Lucky!
@@ -3287,25 +3276,17 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     }
     square(this, t_slope_down, p + Direction::SE, p + 2*Direction::SE);
    } else { // We can build against a wall
-    direction side = open[rng(0, open.size() - 1)];
-    switch (side) {
-     case NORTH:
-      square(this, t_rock_floor, SEEX - 3, 6, SEEX + 2, SEEY);
-      line(this, t_slope_down, SEEX - 2, 6, SEEX + 1, 6);
-      break;
-     case EAST:
-      square(this, t_rock_floor, SEEX + 1, SEEY - 3, SEEX * 2 - 7, SEEY + 2);
-      line(this, t_slope_down, SEEX * 2 - 7, SEEY - 2, SEEX * 2 - 7, SEEY + 1);
-      break;
-     case SOUTH:
-      square(this, t_rock_floor, SEEX - 3, SEEY + 1, SEEX + 2, SEEY * 2 - 7);
-      line(this, t_slope_down, SEEX - 2, SEEY * 2 - 7, SEEX + 1, SEEY * 2 - 7);
-      break;
-     case WEST:
-      square(this, t_rock_floor, 6, SEEY - 3, SEEX, SEEY + 2);
-      line(this, t_slope_down, 6, SEEY - 2, 6, SEEY + 1);
-      break;
-    }
+    // intended interpretation: square corners, line endpoints
+    static constexpr const std::pair<std::pair<point,point>, std::pair<point,point>> mine_down_roomspec[] = {
+        std::pair(std::pair(point(SEEX - 3, 6), point(SEEX + 2, SEEY)), std::pair(point(SEEX - 2, 6), point(SEEX + 1, 6))),
+        std::pair(std::pair(point(SEEX + 1, SEEY - 3), point(SEEX * 2 - 7, SEEY + 2)), std::pair(point(SEEX * 2 - 7, SEEY - 2), point(SEEX * 2 - 7, SEEY + 1))),
+        std::pair(std::pair(point(SEEX - 3, SEEY + 1), point(SEEX + 2, SEEY * 2 - 7)), std::pair(point(SEEX - 2, SEEY * 2 - 7), point(SEEX + 1, SEEY * 2 - 7))),
+        std::pair(std::pair(point(6, SEEY - 3), point(SEEX, SEEY + 2)), std::pair(point(6, SEEY - 2), point(6, SEEY + 1)))
+    };
+
+    const int side = open[rng(0, open.size() - 1)]/2;
+    square(this, t_rock_floor, mine_down_roomspec[side].first.first, mine_down_roomspec[side].first.second);
+    line(this, t_slope_down, mine_down_roomspec[side].second.first, mine_down_roomspec[side].second.second);
    }
   } // Done building a slope down
    
