@@ -3839,19 +3839,17 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   place_items(mi_office,       70, 14, 14, 18, 21,    false, 0);
   place_items(mi_vault,        45,  3, 15, 11, 20,    false, 0);
 
-  if (terrain_type == ot_bank_east) rotate(1);
-  if (terrain_type == ot_bank_south) rotate(2);
-  if (terrain_type == ot_bank_west) rotate(3);
+  static_assert(1 == ot_bank_east - ot_bank_north);
+  static_assert(2 == ot_bank_south - ot_bank_north);
+  static_assert(3 == ot_bank_west - ot_bank_north);
+  rotate(terrain_type - ot_bank_north);
   } break;
 
  case ot_bar_north:
  case ot_bar_east:
  case ot_bar_south:
  case ot_bar_west: {
-  for (int i = 0; i < SEEX * 2; i++) {
-   for (int j = 0; j < SEEY * 2; j++)
-    ter(i, j) = t_pavement;
-  }
+  square(this, t_pavement, point(0), point(2 * SEE - 1));
 
   square(this, t_floor, 2, 2, 21, 15);
   square(this, t_floor, 18, 17, 21, 18);
@@ -3863,11 +3861,12 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   line(this, t_wall_v, 22, 1, 22, 19);
   line(this, t_wall_v, 17, 18, 17, 19);
   // Main bar counter
+  _stock_line(*this, t_counter, mi_snacks, 30, point(19, 3), point(19, 10));
   line(this, t_counter, 19, 3, 19, 10);
   line(this, t_counter, 20, 3, 21, 3);
   ter(20,10) = t_counter;
    // Back room counter
-  line(this, t_counter, 18, 18, 21, 18);
+  _stock_line(*this, t_counter, mi_snacks, 50, point(18, 18), point(21, 18));
   // Tables
   square(this, t_table, 4, 3, 5, 4);
   square(this, t_table, 9, 3, 10, 4);
@@ -3876,10 +3875,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   square(this, t_table, 9, 8, 10, 9);
   square(this, t_table, 14, 8, 15, 9);
   // Pool tables
-  square(this, t_pool_table,      4, 13,  8, 14);
-  place_items(mi_pool_table, 50,  4, 13,  8, 14, false, 0);
-  square(this, t_pool_table,     13, 13, 17, 14);
-  place_items(mi_pool_table, 50, 13, 13, 17, 14, false, 0);
+  _stock_square(*this, t_pool_table, mi_pool_table, 50, point(4, 13), point(8, 14));
+  _stock_square(*this, t_pool_table, mi_pool_table, 50, point(13, 13), point(17, 14));
   // 1 in 4 chance to have glass walls in front
   if (one_in(4)) {
    line(this, t_wall_glass_h, 3, 1, 5, 1);
@@ -3900,9 +3897,9 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    ter(1,11) = t_window;
   }
   // Fridges and closets
-  ter(21,4) = t_fridge;
-  line(this, t_rack, 21, 5, 21, 8);
-  ter(21,17) = t_fridge; // Back room fridge
+  _stock(*this, t_fridge, mi_fridgesnacks, 60, point(21, 4));
+  _stock_line(*this, t_rack, mi_alcohol, 70, point(21, 5), point(21, 8));
+  _stock(*this, t_fridge, mi_fridgesnacks, 60, point(21, 17)); // Back room fridge
   // Door placement
   ter(11,1) = t_door_c;
   ter(12,1) = t_door_c;
@@ -3910,16 +3907,12 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   ter(17, 17) = t_door_locked;
 
   // Item placement
-  place_items(mi_snacks, 30, 19, 3, 19, 10, false, 0);
-  place_items(mi_snacks, 50, 18, 18, 21, 18, false, 0);
-  place_items(mi_fridgesnacks, 60, 21, 4, 21, 4, false, 0);
-  place_items(mi_fridgesnacks, 60, 21, 17, 21, 17, false, 0);
-  place_items(mi_alcohol, 70, 21, 5, 21, 8, false, 0);
   place_items(mi_trash, 15, 2, 17, 16, 19, true, 0);
 
-  if (terrain_type == ot_bar_east) rotate(1);
-  if (terrain_type == ot_bar_south) rotate(2);
-  if (terrain_type == ot_bar_west) rotate(3);
+  static_assert(1 == ot_bar_east - ot_bar_north);
+  static_assert(2 == ot_bar_south - ot_bar_north);
+  static_assert(3 == ot_bar_west - ot_bar_north);
+  rotate(terrain_type - ot_bar_north);
  } break;
 
  case ot_pawn_north:
