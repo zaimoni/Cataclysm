@@ -3333,21 +3333,15 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     square(this, t_slope_up, p + Direction::SE, p + 2*Direction::SE);
 
    } else { // We can build against a wall
-    direction side = open[rng(0, open.size() - 1)];
-    switch (side) {
-     case NORTH:
-      line(this, t_slope_up, SEEX - 2, 6, SEEX + 1, 6);
-      break;
-     case EAST:
-      line(this, t_slope_up, SEEX * 2 - 7, SEEY - 2, SEEX * 2 - 7, SEEY + 1);
-      break;
-     case SOUTH:
-      line(this, t_slope_up, SEEX - 2, SEEY * 2 - 7, SEEX + 1, SEEY * 2 - 7);
-      break;
-     case WEST:
-      line(this, t_slope_up, 6, SEEY - 2, 6, SEEY + 1);
-      break;
-    }
+    static constexpr const std::pair<point,point> mine_up_slope_spec[] = {
+        std::pair(point(SEEX - 2, 6), point(SEEX + 1, 6)),
+        std::pair(point(SEEX * 2 - 7, SEEY - 2), point(SEEX * 2 - 7, SEEY + 1)),
+        std::pair(point(SEEX - 2, SEEY * 2 - 7), point(SEEX + 1, SEEY * 2 - 7)),
+        std::pair(point(6, SEEY - 2), point(6, SEEY + 1))
+    };
+
+    int side = open[rng(0, open.size() - 1)]/2;
+    line(this, t_slope_up, mine_up_slope_spec[side].first, mine_up_slope_spec[side].second);
    }
   } // Done building a slope up
   break;
@@ -3449,10 +3443,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   } break;
 
  case ot_spiral_hub:
-  for (int i = 0; i < SEEX * 2; i++) {
-   for (int j = 0; j < SEEY * 2; j++)
-    ter(i, j) = t_rock_floor;
-  }
+  square(this, t_rock_floor, point(0), point(2*SEE-1));
   line(this, t_rock, 23,  0, 23, 23);
   line(this, t_rock,  2, 23, 23, 23);
   line(this, t_rock,  2,  4,  2, 23);
@@ -3473,10 +3464,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   break;
 
  case ot_spiral: {
-  for (int i = 0; i < SEEX * 2; i++) {
-   for (int j = 0; j < SEEY * 2; j++)
-    ter(i, j) = t_rock_floor;
-  }
+  square(this, t_rock_floor, point(0), point(2 * SEE - 1));
   int num_spiral = rng(1, 4);
   for (int i = 0; i < num_spiral; i++) {
    int orx = rng(SEEX - 4, SEEX), ory = rng(SEEY - 4, SEEY);
@@ -3687,9 +3675,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    }
   }
   ter(16, 10) = t_stairs_down;
-  if (terrain_type == ot_sub_station_east) rotate(1);
-  if (terrain_type == ot_sub_station_south) rotate(2);
-  if (terrain_type == ot_sub_station_west) rotate(3);
+  static_assert(1 == ot_sub_station_east - ot_sub_station_north);
+  static_assert(2 == ot_sub_station_south - ot_sub_station_north);
+  static_assert(3 == ot_sub_station_west - ot_sub_station_north);
+  rotate(terrain_type - ot_sub_station_north);
   break;
 
  case ot_police_north:
@@ -3715,9 +3704,6 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     else if ((i > 1 && i < 4 && j > 8 && j < 11) ||
              (j == 17 && i > 17 && i < 21))
      ter(i, j) = t_counter;
-    else if ((i == 20 && j > 7 && j < 12) || (j == 8 && i > 19 && i < 23) ||
-             (j == 15 && i > 0 && i < 5))
-     ter(i, j) = t_rack;
     else if (j < 7)
      ter(i, j) = t_pavement;
     else if (j > 20)
@@ -3732,7 +3718,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   ter(rng( 6,  9), 12) = t_door_c;
   ter(rng(11, 15), 12) = t_door_c;
   ter(21, 12) = t_door_metal_locked;
-  tmpcomp = add_computer(22, 13, "PolCom OS v1.47", 3);
+  tmpcomp = add_computer(22, 13, "PolCom OS v1.47", 3); // Fix \todo keep this from being overwritten, as part of fixing clairvoyant lockpicking
   tmpcomp->add_option("Open Supply Room", COMPACT_OPEN, 3);
   tmpcomp->add_failure(COMPFAIL_SHUTDOWN);
   tmpcomp->add_failure(COMPFAIL_ALARM);
@@ -3748,12 +3734,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   tmpcomp->add_failure(COMPFAIL_ALARM);
   tmpcomp->add_failure(COMPFAIL_MANHACKS);
   ter(17, 18) = t_door_c;
-  for (int i = 18; i < SEEX * 2 - 1; i++)
-   ter(i, 20) = t_window_alarm;
-  if (one_in(3)) {
-   for (int j = 16; j < 20; j++)
-    ter(SEEX * 2 - 1, j) = t_window_alarm;
-  }
+  line(this, t_window_alarm, point(18, 20), point(22,20));
+  if (one_in(3)) line(this, t_window_alarm, point(SEEX * 2 - 1, 16), point(SEEX * 2 - 1, 19));
   rn = rng(18, 21);
   const ter_id door = one_in(4) ? t_door_c : t_door_locked_alarm;
   ter(rn, 20) = door;
@@ -3764,27 +3746,20 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   rn = rng(10, 14);
   ter(rn, 20) = t_window_alarm;
   ter(rn + 1, 20) = t_window_alarm;
-  if (one_in(2)) {
-   for (int i = 6; i < 10; i++)
-    ter(i, 8) = t_counter;
-  }
-  if (one_in(3)) {
-   for (int j = 8; j < 12; j++)
-    ter(6, j) = t_counter;
-  }
-  if (one_in(3)) {
-   for (int j = 8; j < 12; j++)
-    ter(9, j) = t_counter;
-  }
+  if (one_in(2)) line(this, t_counter, point(6, 8), point(9, 8));
+  if (one_in(3)) line(this, t_counter, point(6, 8), point(6, 11));
+  if (one_in(3)) line(this, t_counter, point(9, 8), point(9, 11));
   
   place_items(mi_kitchen,      40,  6,  8,  9, 11,    false, 0);
-  place_items(mi_cop_weapons,  70, 20,  8, 22,  8,    false, 0);
-  place_items(mi_cop_weapons,  70, 20,  8, 20, 11,    false, 0);
-  place_items(mi_cop_evidence, 60,  1, 15,  4, 15,    false, 0);
+  _stock_line(*this, t_rack, mi_cop_weapons, 70, point(20, 8), point(22, 8));
+  _stock_line(*this, t_rack, mi_cop_weapons, 70, point(20, 8), point(20, 11)); // XXX C:Whales double-places 20,8
+  _stock_line(*this, t_rack, mi_cop_evidence, 60, point(1, 15), point(4, 15));
 
-  if (terrain_type == ot_police_west) rotate(1);
-  if (terrain_type == ot_police_north) rotate(2);
-  if (terrain_type == ot_police_east) rotate(3);
+  static_assert(1 == ot_police_east - ot_police_north);
+  static_assert(2 == ot_police_south - ot_police_north);
+  static_assert(3 == ot_police_west - ot_police_north);
+  // unlike many terrains, C:Whales reference rotation is south for police stations
+  rotate(((terrain_type - ot_police_north) + 2) % 4);
   } break;
 
  case ot_bank_north:

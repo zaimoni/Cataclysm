@@ -236,7 +236,7 @@ void computer::activate_function(game *g, computer_action action)
    break; // Why would this be called?
 
   case COMPACT_OPEN:
-   g->m.translate<t_door_metal_locked, t_floor>();
+   g->m.translate<t_door_metal_locked, t_floor>();  // fix \todo this opens *all doors in the map*; something more precise would be useful e.g. police station
    print_line("Doors opened.");
    break;
 
