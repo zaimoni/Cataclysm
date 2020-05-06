@@ -99,8 +99,6 @@ private:
 // ...but we can also choose a specific failure.
  void activate_failure       (game *g, computer_failure fail);
 
- bool blood_analysis_precondition(const std::vector<item>& inv);
-
 // OUTPUT/INPUT
 // Reset to a blank terminal (e.g. at start of usage loop)
  void reset_terminal();

@@ -203,29 +203,14 @@ bool computer::hack_attempt(player *p, int Security)
  return (dice(player_roll, 6) >= dice(Security, 6));
 }
 
-bool computer::blood_analysis_precondition(const std::vector<item>& inv)
+static const char* blood_analysis_precondition(const std::vector<item>& inv)
 {
-	if (inv.empty()) {
-		print_error("ERROR: Please place sample in centrifuge.");
-		return false;
-	}
-	if (inv.size() > 1) {
-		print_error("ERROR: Please remove all but one sample from centrifuge.");
-		return false;
-	}
-	if (inv[0].type->id != itm_vacutainer) {
-		print_error("ERROR: Please use vacutainer-contained samples.");
-		return false;
-	}
-	if (inv[0].contents.empty()) {
-		print_error("ERROR: Vacutainer empty.");
-		return false;
-	}
-	if (inv[0].contents[0].type->id != itm_blood) {
-		print_error("ERROR: Please only use blood samples.");
-		return false;
-	}
-	return true;
+    if (inv.empty()) return "ERROR: Please place sample in centrifuge.";
+    if (inv.size() > 1) return "ERROR: Please remove all but one sample from centrifuge.";
+    if (inv[0].type->id != itm_vacutainer) return "ERROR: Please use vacutainer-contained samples.";
+    if (inv[0].contents.empty()) return "ERROR: Vacutainer empty.";
+    if (inv[0].contents[0].type->id != itm_blood) return "ERROR: Please only use blood samples.";
+    return 0;
 }
 
 void computer::activate_function(game *g, computer_action action)
@@ -577,7 +562,9 @@ INITIATING STANDARD TREMOR TEST...");
     for (int y = g->u.pos.y - 2; y <= g->u.pos.y + 2; y++) {
      if (g->m.ter(x, y) == t_centrifuge) {
 	  auto& inv = g->m.i_at(x, y);
-	  if (blood_analysis_precondition(inv))  { // Success!
+      if (auto err = blood_analysis_precondition(inv)) {
+       print_error(err);
+      } else { // Success!
        item *blood = &(inv[0].contents[0]);
        if (blood->corpse == NULL || blood->corpse->id == mon_null)
         print_line("Result:  Human blood, no pathogens found.");
@@ -718,14 +705,16 @@ void computer::activate_failure(game *g, computer_failure fail)
    break;
 
   case COMPFAIL_DESTROY_BLOOD:
-   print_error("ERROR: Disruptive Spin");
    for (int x = g->u.pos.x - 2; x <= g->u.pos.x + 2; x++) {
     for (int y = g->u.pos.y - 2; y <= g->u.pos.y + 2; y++) {
      if (g->m.ter(x, y) == t_centrifuge) {
 	  auto& inv = g->m.i_at(x, y);
-	  if (blood_analysis_precondition(inv)) {
-       print_error("ERROR: Blood sample destroyed.");
-	   inv[0].contents.clear();
+      if (auto err = blood_analysis_precondition(inv)) {
+        print_error(err);
+      } else {
+        print_error("ERROR: Disruptive Spin");
+        print_error("ERROR: Blood sample destroyed.");
+	    inv[0].contents.clear();
       }
      }
     }
