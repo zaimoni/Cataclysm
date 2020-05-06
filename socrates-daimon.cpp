@@ -107,16 +107,88 @@ int main(int argc, char *argv[])
 	if (!_title) throw std::logic_error("title tag AWOL");
 #endif
 	// this is where the JS for any dynamic HTML, etc. has to be inlined
-	const html::tag _body("body");	// stage-printed
+	html::tag _body("body");	// stage-printed
 	// navigation sidebar will be "common", at least between page types
 	html::tag global_nav("ul");
-	global_nav.set(attr_style, std::move(val_thin_border + CSS_sep + val_left_align + CSS_sep + val_list_none + CSS_sep + "padding:10px"));
+	global_nav.set(attr_style, std::move(val_thin_border + CSS_sep + val_left_align + CSS_sep + val_list_none + CSS_sep + "margin:0px; padding:10px"));
+
+#define HOME_HTML "index.html"
+#define HOME_ID "home"
+#define HOME_LINK_NAME "Home"
+
+#define ITEMS_HTML "items.html"
+#define ITEMS_ID "items"
+#define ITEMS_LINK_NAME "Items"
+
+#define NAVIGATION_HTML "navigation.html"
+#define NAVIGATION_ID "navigation"
+#define NAVIGATION_LINK_NAME "Navigation"
 
 	html::tag working_li("li");
 
+	// wrap up global navigation menu
+	working_li.set("id", HOME_ID);
+	{
+	html::tag a_tag("a", HOME_LINK_NAME);
+	a_tag.set("href", "./" HOME_HTML);
+	working_li.append(std::move(a_tag));
+	}
+	global_nav.append(working_li);
+	working_li.clear();
+
+	working_li.set("id", ITEMS_ID);
+	{
+	html::tag a_tag("a", ITEMS_LINK_NAME);
+	a_tag.set("href", "./" ITEMS_HTML);
+	working_li.append(std::move(a_tag));
+	}
+	global_nav.append(working_li);
+	working_li.clear();
+
+	working_li.set("id", NAVIGATION_ID);
+	{
+	html::tag a_tag("a", NAVIGATION_LINK_NAME);
+	a_tag.set("href", "./" NAVIGATION_HTML);
+	working_li.append(std::move(a_tag));
+	}
+	global_nav.append(working_li);
+	working_li.clear();
+
+	auto home_subheader = global_nav.querySelector("#" HOME_ID);
+#ifndef NDEBUG
+	if (!home_subheader) throw new std::logic_error("missing update target");
+#endif
+	auto home_backup(std::move(*home_subheader));
+	*home_subheader = html::tag("b", HOME_LINK_NAME);
+
+#define HTML_TARGET "data\\" HOME_HTML
+
+	FILE* out = fopen(HTML_TARGET ".tmp", "w");
+	if (out) {
+		{
+		html::to_text page(out);
+		page.start_print(_html);
+		_title->append(html::tag::wrap("Cataclysm:Z Home"));
+		page.print(_head);
+		_title->clear();
+		page.start_print(_body);
+		page.print(global_nav);
+		while (page.end_print());
+		}
+	}
+	unlink(HTML_TARGET);
+	rename(HTML_TARGET ".tmp", HTML_TARGET);
+
+#undef HTML_TARGET
+
+	*home_subheader = home_backup;
+
+	// full item navigation menu
+	html::tag item_point("li", ITEMS_LINK_NAME);
+	item_point.set("id", "items");
+
 	html::tag item_nav("ul");
 	item_nav.set(attr_style, val_list_none);
-	item_nav.set("id", "items");
 
 #define AMMO_HTML "ammo.html"
 #define AMMO_ID "ammo"
@@ -312,9 +384,16 @@ int main(int argc, char *argv[])
 	working_li.clear();
 
 	working_li.unset("id");
-	working_li.append(html::tag::wrap("Items"));
-	working_li.append(item_nav);
-	global_nav.append(working_li);
+
+	item_point.append(item_nav);
+
+	// set up items submenu
+	auto item_subheader = global_nav.querySelector("#" ITEMS_ID);
+#ifndef NDEBUG
+	if (!item_subheader) throw new std::logic_error("missing update target");
+#endif
+	auto items_backup(std::move(*item_subheader));
+	*item_subheader = item_point;
 
 	const html::tag _data_table("table");	// stage-printed
 
@@ -1575,6 +1654,8 @@ int main(int argc, char *argv[])
 		decltype(name_desc) discard;
 		name_desc.swap(discard);
 	}
+
+	*item_subheader = std::move(items_backup);	// done with items pages
 
 	// try to replicate some issues
 	std::vector<item> res;

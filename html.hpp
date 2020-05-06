@@ -55,10 +55,10 @@ public:
 	// \todo name accessor
 
 	// content manipulation
-	void append(const tag& src) { _content.push_back(src); }	// \todo fix these to account for text/content interactions
-	void append(tag&& src) { _content.push_back(std::move(src)); }
-	void append(const std::string& src) { _content.push_back(wrap(src)); }
-	void append(std::string&& src) { _content.push_back(wrap(std::move(src))); }
+	void append(const tag& src);
+	void append(tag&& src);
+	void append(const std::string& src);
+	void append(std::string&& src);
 	void clear() {
 		decltype(_content) discard;
 		_content.swap(discard);

@@ -13,6 +13,47 @@ static const std::string open_attr_val("=\"");
 static const std::string close_attr_val("\"");
 static const std::string quot_entity("&quot;");
 
+// \todo fix these to account for text/content interactions
+void tag::append(const tag& src)
+{
+	if (!_text.empty()) {
+		decltype(_text) tmp;
+		tmp.swap(_text);
+		append(std::move(tmp));
+	}
+	_content.push_back(src);
+}
+
+void tag::append(tag&& src)
+{
+	if (!_text.empty()) {
+		decltype(_text) tmp;
+		tmp.swap(_text);
+		append(std::move(tmp));
+	}
+	_content.push_back(std::move(src));
+}
+
+void tag::append(const std::string& src)
+{
+	if (!_text.empty()) {
+		decltype(_text) tmp;
+		tmp.swap(_text);
+		append(std::move(tmp));
+	}
+	_content.push_back(wrap(src));
+}
+
+void tag::append(std::string&& src)
+{
+	if (!_text.empty()) {
+		decltype(_text) tmp;
+		tmp.swap(_text);
+		append(std::move(tmp));
+	}
+	_content.push_back(wrap(std::move(src)));
+}
+
 static void content_to_vector(const std::vector<tag>& src, std::vector<std::string>& dest)
 {
 	if (!src.empty()) for (auto& x : src) {

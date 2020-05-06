@@ -274,6 +274,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="map.cpp" />
     <ClCompile Include="mapbuffer.cpp" />
+    <ClCompile Include="mapdata.cpp" />
     <ClCompile Include="mapgen.cpp" />
     <ClCompile Include="mapitemsdef.cpp" />
     <ClCompile Include="melee.cpp" />
