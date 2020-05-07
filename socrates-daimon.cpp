@@ -63,6 +63,17 @@ static const char* addiction_target(add_type cur)
 	throw new std::logic_error("unhandled addiction type");
 }
 
+static auto swapDOM(const std::string& selector, html::tag& src, html::tag&& node)
+{
+	auto subheader = src.querySelector(selector);
+#ifndef NDEBUG
+	if (!subheader) throw new std::logic_error("missing update target");
+#endif
+	auto backup(std::move(*subheader));
+	*subheader = std::move(node);
+	return std::pair(subheader, std::move(backup));
+}
+
 int main(int argc, char *argv[])
 {
 	// these do not belong here
@@ -154,38 +165,63 @@ int main(int argc, char *argv[])
 	global_nav.append(working_li);
 	working_li.clear();
 
-	auto home_subheader = global_nav.querySelector("#" HOME_ID);
-#ifndef NDEBUG
-	if (!home_subheader) throw new std::logic_error("missing update target");
-#endif
-	auto home_backup(std::move(*home_subheader));
-	*home_subheader = html::tag("b", HOME_LINK_NAME);
+	auto home_revert = swapDOM("#" HOME_ID, global_nav, html::tag("b", HOME_LINK_NAME));
 
 #define HTML_TARGET "data\\" HOME_HTML
 
-	FILE* out = fopen(HTML_TARGET ".tmp", "w");
-	if (out) {
+	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 		{
 		html::to_text page(out);
 		page.start_print(_html);
-		_title->append(html::tag::wrap("Cataclysm:Z Home"));
+		_title->append(html::tag::wrap("Cataclysm:Z " HOME_LINK_NAME));
 		page.print(_head);
 		_title->clear();
 		page.start_print(_body);
 		page.print(global_nav);
 		while (page.end_print());
 		}
+
+		unlink(HTML_TARGET);
+		rename(HTML_TARGET ".tmp", HTML_TARGET);
 	}
-	unlink(HTML_TARGET);
-	rename(HTML_TARGET ".tmp", HTML_TARGET);
 
 #undef HTML_TARGET
 
-	*home_subheader = home_backup;
+	*home_revert.first = std::move(home_revert.second);
+
+	home_revert = swapDOM("#" NAVIGATION_ID, global_nav, html::tag("b", NAVIGATION_LINK_NAME));
+
+#define HTML_TARGET "data\\" NAVIGATION_HTML
+
+	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
+		{
+		html::to_text page(out);
+		page.start_print(_html);
+		_title->append(html::tag::wrap("Cataclysm:Z " NAVIGATION_LINK_NAME));
+		page.print(_head);
+		_title->clear();
+		page.start_print(_body);
+		page.print(global_nav);
+		while (page.end_print());
+		}
+
+		unlink(HTML_TARGET);
+		rename(HTML_TARGET ".tmp", HTML_TARGET);
+	}
+
+#undef HTML_TARGET
+
+	* home_revert.first = std::move(home_revert.second);
 
 	// full item navigation menu
-	html::tag item_point("li", ITEMS_LINK_NAME);
-	item_point.set("id", "items");
+	html::tag item_point("li");
+	item_point.set("id", ITEMS_ID);
+	{
+	html::tag a_tag("a", ITEMS_LINK_NAME);
+	a_tag.set("href", "./" ITEMS_HTML);
+	a_tag.set("id", ITEMS_ID "_link");
+	item_point.append(std::move(a_tag));
+	}
 
 	html::tag item_nav("ul");
 	item_nav.set(attr_style, val_list_none);
@@ -388,12 +424,31 @@ int main(int argc, char *argv[])
 	item_point.append(item_nav);
 
 	// set up items submenu
-	auto item_subheader = global_nav.querySelector("#" ITEMS_ID);
-#ifndef NDEBUG
-	if (!item_subheader) throw new std::logic_error("missing update target");
-#endif
-	auto items_backup(std::move(*item_subheader));
-	*item_subheader = item_point;
+	home_revert = swapDOM("#" ITEMS_ID, global_nav, std::move(item_point));
+
+#define HTML_TARGET "data\\" ITEMS_HTML
+
+	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
+		{
+			html::to_text page(out);
+			page.start_print(_html);
+			_title->append(html::tag::wrap("Cataclysm:Z " ITEMS_LINK_NAME));
+			page.print(_head);
+			_title->clear();
+			page.start_print(_body);
+			{
+			auto revert = swapDOM("#" ITEMS_ID "_link", global_nav, html::tag("b", ITEMS_LINK_NAME));
+			page.print(global_nav);
+			*revert.first = std::move(revert.second);
+			}
+			while (page.end_print());
+		}
+
+		unlink(HTML_TARGET);
+		rename(HTML_TARGET ".tmp", HTML_TARGET);
+	}
+
+#undef HTML_TARGET
 
 	const html::tag _data_table("table");	// stage-printed
 
@@ -580,8 +635,7 @@ int main(int argc, char *argv[])
 		to_desc(ma_styles, name_desc, name_id);
 #define HTML_TARGET "data\\" MARTIAL_ARTS_HTML
 
-		FILE* out = fopen(HTML_TARGET ".tmp", "w");
-		if (out) {
+		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
 			cell.set(attr_valign, val_top);
 
@@ -593,14 +647,9 @@ int main(int argc, char *argv[])
 				_title->clear();
 				page.start_print(_body);
 				{
-				auto subheader = global_nav.querySelector("#" MARTIAL_ARTS_ID);
-#ifndef NDEBUG
-				if (!subheader) throw new std::logic_error("missing update target");
-#endif
-				auto backup(std::move(*subheader));
-				*subheader = html::tag("b", MARTIAL_ARTS_LINK_NAME);
+				auto revert = swapDOM("#" MARTIAL_ARTS_ID, global_nav, html::tag("b", MARTIAL_ARTS_LINK_NAME));
 				page.print(global_nav);
-				*subheader = std::move(backup);
+				*revert.first = std::move(revert.second);
 				}
 				page.start_print(_data_table);
 				// actual content
@@ -643,8 +692,7 @@ int main(int argc, char *argv[])
 		to_desc(armor, name_desc, name_id);
 #define HTML_TARGET "data\\" ARMOR_HTML
 
-		FILE* out = fopen(HTML_TARGET ".tmp", "w");
-		if (out) {
+		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
 			cell.set(attr_valign, val_top);
 
@@ -656,14 +704,9 @@ int main(int argc, char *argv[])
 				_title->clear();
 				page.start_print(_body);
 				{
-					auto subheader = global_nav.querySelector("#" ARMOR_ID);
-#ifndef NDEBUG
-					if (!subheader) throw new std::logic_error("missing update target");
-#endif
-					auto backup(std::move(*subheader));
-					*subheader = html::tag("b", ARMOR_LINK_NAME);
-					page.print(global_nav);
-					*subheader = std::move(backup);
+				auto revert = swapDOM("#" ARMOR_ID, global_nav, html::tag("b", ARMOR_LINK_NAME));
+				page.print(global_nav);
+				*revert.first = std::move(revert.second);
 				}
 				page.start_print(_data_table);
 				// actual content
@@ -710,8 +753,7 @@ int main(int argc, char *argv[])
 		to_desc(containers, name_desc, name_id);
 #define HTML_TARGET "data\\" CONTAINERS_HTML
 
-		FILE* out = fopen(HTML_TARGET ".tmp", "w");
-		if (out) {
+		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
 			cell.set(attr_valign, val_top);
 
@@ -723,14 +765,9 @@ int main(int argc, char *argv[])
 				_title->clear();
 				page.start_print(_body);
 				{
-				auto subheader = global_nav.querySelector("#" CONTAINERS_ID);
-#ifndef NDEBUG
-				if (!subheader) throw new std::logic_error("missing update target");
-#endif
-				auto backup(std::move(*subheader));
-				*subheader = html::tag("b", CONTAINERS_LINK_NAME);
+				auto revert = swapDOM("#" CONTAINERS_ID, global_nav, html::tag("b", CONTAINERS_LINK_NAME));
 				page.print(global_nav);
-				*subheader = std::move(backup);
+				*revert.first = std::move(revert.second);
 				}
 				page.start_print(_data_table);
 				// actual content
@@ -778,8 +815,7 @@ int main(int argc, char *argv[])
 		to_desc(books, name_desc, name_id);
 #define HTML_TARGET "data\\" BOOKS_HTML
 
-		FILE* out = fopen(HTML_TARGET ".tmp", "w");
-		if (out) {
+		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
 			cell.set(attr_valign, val_top);
 
@@ -791,14 +827,9 @@ int main(int argc, char *argv[])
 				_title->clear();
 				page.start_print(_body);
 				{
-					auto subheader = global_nav.querySelector("#" BOOKS_ID);
-#ifndef NDEBUG
-					if (!subheader) throw new std::logic_error("missing update target");
-#endif
-					auto backup(std::move(*subheader));
-					*subheader = html::tag("b", BOOKS_LINK_NAME);
-					page.print(global_nav);
-					*subheader = std::move(backup);
+				auto revert = swapDOM("#" BOOKS_ID, global_nav, html::tag("b", BOOKS_LINK_NAME));
+				page.print(global_nav);
+				*revert.first = std::move(revert.second);
 				}
 				page.start_print(_data_table);
 				// actual content
@@ -845,8 +876,7 @@ int main(int argc, char *argv[])
 		to_desc(drinks, name_desc, name_id);
 #define HTML_TARGET "data\\" DRINKS_HTML
 
-		FILE* out = fopen(HTML_TARGET ".tmp", "w");
-		if (out) {
+		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
 			cell.set(attr_valign, val_top);
 
@@ -858,14 +888,9 @@ int main(int argc, char *argv[])
 				_title->clear();
 				page.start_print(_body);
 				{
-					auto subheader = global_nav.querySelector("#" DRINKS_ID);
-#ifndef NDEBUG
-					if (!subheader) throw new std::logic_error("missing update target");
-#endif
-					auto backup(std::move(*subheader));
-					*subheader = html::tag("b", DRINKS_LINK_NAME);
-					page.print(global_nav);
-					*subheader = std::move(backup);
+				auto revert = swapDOM("#" DRINKS_ID, global_nav, html::tag("b", DRINKS_LINK_NAME));
+				page.print(global_nav);
+				*revert.first = std::move(revert.second);
 				}
 				page.start_print(_data_table);
 				// actual content
@@ -913,8 +938,7 @@ int main(int argc, char *argv[])
 		to_desc(pharma, name_desc, name_id);
 #define HTML_TARGET "data\\" PHARMA_HTML
 
-		FILE* out = fopen(HTML_TARGET ".tmp", "w");
-		if (out) {
+		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
 			cell.set(attr_valign, val_top);
 
@@ -926,14 +950,9 @@ int main(int argc, char *argv[])
 				_title->clear();
 				page.start_print(_body);
 				{
-					auto subheader = global_nav.querySelector("#" PHARMA_ID);
-#ifndef NDEBUG
-					if (!subheader) throw new std::logic_error("missing update target");
-#endif
-					auto backup(std::move(*subheader));
-					*subheader = html::tag("b", PHARMA_LINK_NAME);
-					page.print(global_nav);
-					*subheader = std::move(backup);
+				auto revert = swapDOM("#" PHARMA_ID, global_nav, html::tag("b", PHARMA_LINK_NAME));
+				page.print(global_nav);
+				*revert.first = std::move(revert.second);
 				}
 				page.start_print(_data_table);
 				// actual content
@@ -984,8 +1003,7 @@ int main(int argc, char *argv[])
 		to_desc(edible, name_desc, name_id);
 #define HTML_TARGET "data\\" EDIBLE_HTML
 
-		FILE* out = fopen(HTML_TARGET ".tmp", "w");
-		if (out) {
+		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
 			cell.set(attr_valign, val_top);
 
@@ -997,14 +1015,9 @@ int main(int argc, char *argv[])
 				_title->clear();
 				page.start_print(_body);
 				{
-					auto subheader = global_nav.querySelector("#" EDIBLE_ID);
-#ifndef NDEBUG
-					if (!subheader) throw new std::logic_error("missing update target");
-#endif
-					auto backup(std::move(*subheader));
-					*subheader = html::tag("b", EDIBLE_LINK_NAME);
-					page.print(global_nav);
-					*subheader = std::move(backup);
+				auto revert = swapDOM("#" EDIBLE_ID, global_nav, html::tag("b", EDIBLE_LINK_NAME));
+				page.print(global_nav);
+				*revert.first = std::move(revert.second);
 				}
 				page.start_print(_data_table);
 				// actual content
@@ -1052,8 +1065,7 @@ int main(int argc, char *argv[])
 #define HTML_TARGET "data\\" GUNS_HTML
 
 		// \todo cross-link to what it reloads, etc.
-		FILE* out = fopen(HTML_TARGET ".tmp", "w");
-		if (out) {
+		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
 			cell.set(attr_valign, val_top);
 
@@ -1065,14 +1077,9 @@ int main(int argc, char *argv[])
 				_title->clear();
 				page.start_print(_body);
 				{
-					auto subheader = global_nav.querySelector("#" GUNS_ID);
-#ifndef NDEBUG
-					if (!subheader) throw new std::logic_error("missing update target");
-#endif
-					auto backup(std::move(*subheader));
-					*subheader = html::tag("b", GUNS_LINK_NAME);
-					page.print(global_nav);
-					*subheader = std::move(backup);
+				auto revert = swapDOM("#" GUNS_ID, global_nav, html::tag("b", GUNS_LINK_NAME));
+				page.print(global_nav);
+				*revert.first = std::move(revert.second);
 				}
 				page.start_print(_data_table);
 				// actual content
@@ -1121,8 +1128,7 @@ int main(int argc, char *argv[])
 #define HTML_TARGET "data\\" GUN_MODS_HTML
 
 		// \todo cross-link to what it reloads, etc.
-		FILE* out = fopen(HTML_TARGET ".tmp", "w");
-		if (out) {
+		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
 			cell.set(attr_valign, val_top);
 
@@ -1134,14 +1140,9 @@ int main(int argc, char *argv[])
 				_title->clear();
 				page.start_print(_body);
 				{
-					auto subheader = global_nav.querySelector("#" GUN_MODS_ID);
-#ifndef NDEBUG
-					if (!subheader) throw new std::logic_error("missing update target");
-#endif
-					auto backup(std::move(*subheader));
-					*subheader = html::tag("b", GUN_MODS_LINK_NAME);
-					page.print(global_nav);
-					*subheader = std::move(backup);
+				auto revert = swapDOM("#" GUN_MODS_ID, global_nav, html::tag("b", GUN_MODS_LINK_NAME));
+				page.print(global_nav);
+				*revert.first = std::move(revert.second);
 				}
 				page.start_print(_data_table);
 				// actual content
@@ -1190,8 +1191,7 @@ int main(int argc, char *argv[])
 #define HTML_TARGET "data\\" AMMO_HTML
 
 		// \todo cross-link to what it reloads, etc.
-		FILE* out = fopen(HTML_TARGET ".tmp", "w");
-		if (out) {
+		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
 			cell.set(attr_valign, val_top);
 
@@ -1203,14 +1203,9 @@ int main(int argc, char *argv[])
 				_title->clear();
 				page.start_print(_body);
 				{
-				auto subheader = global_nav.querySelector("#" AMMO_ID);
-#ifndef NDEBUG
-				if (!subheader) throw new std::logic_error("missing update target");
-#endif
-				auto backup(std::move(*subheader));
-				*subheader = html::tag("b", AMMO_LINK_NAME);
+				auto revert = swapDOM("#" AMMO_ID, global_nav, html::tag("b", AMMO_LINK_NAME));
 				page.print(global_nav);
-				*subheader = std::move(backup);
+				*revert.first = std::move(revert.second);
 				}
 				page.start_print(_data_table);
 				// actual content
@@ -1257,8 +1252,7 @@ int main(int argc, char *argv[])
 		to_desc(fuel, name_desc, name_id);
 #define HTML_TARGET "data\\" FUEL_HTML
 
-		FILE* out = fopen(HTML_TARGET ".tmp", "w");
-		if (out) {
+		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
 			cell.set(attr_valign, val_top);
 
@@ -1270,14 +1264,9 @@ int main(int argc, char *argv[])
 				_title->clear();
 				page.start_print(_body);
 				{
-				auto subheader = global_nav.querySelector("#" FUEL_ID);
-#ifndef NDEBUG
-				if (!subheader) throw new std::logic_error("missing update target");
-#endif
-				auto backup(std::move(*subheader));
-				*subheader = html::tag("b", FUEL_LINK_NAME);
+				auto revert = swapDOM("#" FUEL_ID, global_nav, html::tag("b", FUEL_LINK_NAME));
 				page.print(global_nav);
-				*subheader = std::move(backup);
+				*revert.first = std::move(revert.second);
 				}
 				page.start_print(_data_table);
 				// actual content
@@ -1324,8 +1313,7 @@ int main(int argc, char *argv[])
 		to_desc(tools, name_desc, name_id);
 #define HTML_TARGET "data\\" TOOLS_HTML
 
-		FILE* out = fopen(HTML_TARGET ".tmp", "w");
-		if (out) {
+		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
 			cell.set(attr_valign, val_top);
 
@@ -1337,14 +1325,9 @@ int main(int argc, char *argv[])
 				_title->clear();
 				page.start_print(_body);
 				{
-					auto subheader = global_nav.querySelector("#" TOOLS_ID);
-#ifndef NDEBUG
-					if (!subheader) throw new std::logic_error("missing update target");
-#endif
-					auto backup(std::move(*subheader));
-					*subheader = html::tag("b", TOOLS_LINK_NAME);
-					page.print(global_nav);
-					*subheader = std::move(backup);
+				auto revert = swapDOM("#" TOOLS_ID, global_nav, html::tag("b", TOOLS_LINK_NAME));
+				page.print(global_nav);
+				*revert.first = std::move(revert.second);
 				}
 				page.start_print(_data_table);
 				// actual content
@@ -1391,8 +1374,7 @@ int main(int argc, char *argv[])
 		to_desc(bionics, name_desc, name_id);
 #define HTML_TARGET "data\\" BIONICS_HTML
 
-		FILE* out = fopen(HTML_TARGET ".tmp", "w");
-		if (out) {
+		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
 			cell.set(attr_valign, val_top);
 
@@ -1404,14 +1386,9 @@ int main(int argc, char *argv[])
 				_title->clear();
 				page.start_print(_body);
 				{
-					auto subheader = global_nav.querySelector("#" BIONICS_ID);
-#ifndef NDEBUG
-					if (!subheader) throw new std::logic_error("missing update target");
-#endif
-					auto backup(std::move(*subheader));
-					*subheader = html::tag("b", BIONICS_LINK_NAME);
-					page.print(global_nav);
-					*subheader = std::move(backup);
+				auto revert = swapDOM("#" BIONICS_ID, global_nav, html::tag("b", BIONICS_LINK_NAME));
+				page.print(global_nav);
+				*revert.first = std::move(revert.second);
 				}
 				page.start_print(_data_table);
 				// actual content
@@ -1458,8 +1435,7 @@ int main(int argc, char *argv[])
 		to_desc(software, name_desc, name_id);
 #define HTML_TARGET "data\\" SOFTWARE_HTML
 
-		FILE* out = fopen(HTML_TARGET ".tmp", "w");
-		if (out) {
+		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
 			cell.set(attr_valign, val_top);
 
@@ -1471,14 +1447,9 @@ int main(int argc, char *argv[])
 				_title->clear();
 				page.start_print(_body);
 				{
-					auto subheader = global_nav.querySelector("#" SOFTWARE_ID);
-#ifndef NDEBUG
-					if (!subheader) throw new std::logic_error("missing update target");
-#endif
-					auto backup(std::move(*subheader));
-					*subheader = html::tag("b", SOFTWARE_LINK_NAME);
-					page.print(global_nav);
-					*subheader = std::move(backup);
+				auto revert = swapDOM("#" SOFTWARE_ID, global_nav, html::tag("b", SOFTWARE_LINK_NAME));
+				page.print(global_nav);
+				*revert.first = std::move(revert.second);
 				}
 				page.start_print(_data_table);
 				// actual content
@@ -1525,8 +1496,7 @@ int main(int argc, char *argv[])
 		to_desc(macguffins, name_desc, name_id);
 #define HTML_TARGET "data\\" MACGUFFIN_HTML
 
-		FILE* out = fopen(HTML_TARGET ".tmp", "w");
-		if (out) {
+		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
 			cell.set(attr_valign, val_top);
 
@@ -1538,14 +1508,9 @@ int main(int argc, char *argv[])
 				_title->clear();
 				page.start_print(_body);
 				{
-					auto subheader = global_nav.querySelector("#" MACGUFFIN_ID);
-#ifndef NDEBUG
-					if (!subheader) throw new std::logic_error("missing update target");
-#endif
-					auto backup(std::move(*subheader));
-					*subheader = html::tag("b", MACGUFFIN_LINK_NAME);
-					page.print(global_nav);
-					*subheader = std::move(backup);
+				auto revert = swapDOM("#" MACGUFFIN_ID, global_nav, html::tag("b", MACGUFFIN_LINK_NAME));
+				page.print(global_nav);
+				*revert.first = std::move(revert.second);
 				}
 				page.start_print(_data_table);
 				// actual content
@@ -1592,8 +1557,7 @@ int main(int argc, char *argv[])
 		to_desc(unclassified, name_desc, name_id);
 #define HTML_TARGET "data\\" UNCLASSIFIED_HTML
 
-		FILE* out = fopen(HTML_TARGET ".tmp", "w");
-		if (out) {
+		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
 			cell.set(attr_valign, val_top);
 
@@ -1605,14 +1569,9 @@ int main(int argc, char *argv[])
 				_title->clear();
 				page.start_print(_body);
 				{
-					auto subheader = global_nav.querySelector("#" UNCLASSIFIED_ID);
-#ifndef NDEBUG
-					if (!subheader) throw new std::logic_error("missing update target");
-#endif
-					auto backup(std::move(*subheader));
-					*subheader = html::tag("b", UNCLASSIFIED_LINK_NAME);
-					page.print(global_nav);
-					*subheader = std::move(backup);
+				auto revert = swapDOM("#" UNCLASSIFIED_ID, global_nav, html::tag("b", UNCLASSIFIED_LINK_NAME));
+				page.print(global_nav);
+				*revert.first = std::move(revert.second);
 				}
 				page.start_print(_data_table);
 				// actual content
@@ -1655,7 +1614,7 @@ int main(int argc, char *argv[])
 		name_desc.swap(discard);
 	}
 
-	*item_subheader = std::move(items_backup);	// done with items pages
+	*home_revert.first = std::move(home_revert.second);
 
 	// try to replicate some issues
 	std::vector<item> res;
