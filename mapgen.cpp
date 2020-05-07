@@ -287,6 +287,12 @@ static void _stock_line(map& m, ter_id dest, items_location type, int rate, poin
     m.place_items(type, rate, ul.x, ul.y, rb.x, rb.y, grass, turn);
 }
 
+static void _stock_line(map& m, ter_id dest, const std::pair<items_location, int>& stock, point ul, point rb, bool grass = false, int turn = 0)
+{
+    line(&m, dest, ul, rb);
+    m.place_items(stock.first, stock.second, ul.x, ul.y, rb.x, rb.y, grass, turn);
+}
+
 static void _stock_square(map& m, ter_id dest, items_location type, int rate, point ul, point rb, bool grass = false, int turn = 0)
 {
     square(&m, dest, ul, rb);
@@ -4003,9 +4009,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     _place_items(*this, std::begin(pawn_office_stock), std::end(pawn_office_stock), point(office_left + 1, office_top + 1), point(rw - 1, bw - 1));
    }
   }
-  if (terrain_type == ot_pawn_east) rotate(1);
-  if (terrain_type == ot_pawn_south) rotate(2);
-  if (terrain_type == ot_pawn_west) rotate(3);
+  static_assert(1 == ot_pawn_east - ot_pawn_north);
+  static_assert(2 == ot_pawn_south - ot_pawn_north);
+  static_assert(3 == ot_pawn_west - ot_pawn_north);
+  rotate(terrain_type - ot_pawn_north);
   break;
 
  case ot_mil_surplus_north:
@@ -4040,9 +4047,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   for (int i = rw - 1; i >= SEEX + 1; i -= 2) {
    _stock_line(*this, t_rack, one_in(3) ? mi_mil_armor : (one_in(3) ? mi_mil_surplus : mi_mil_food_nodrugs), 70, point(i, tw + 5), point(i, bw - 2));
   }
-  if (terrain_type == ot_mil_surplus_east) rotate(1);
-  if (terrain_type == ot_mil_surplus_south) rotate(2);
-  if (terrain_type == ot_mil_surplus_west) rotate(3);
+  static_assert(1 == ot_mil_surplus_east - ot_mil_surplus_north);
+  static_assert(2 == ot_mil_surplus_south - ot_mil_surplus_north);
+  static_assert(3 == ot_mil_surplus_west - ot_mil_surplus_north);
+  rotate(terrain_type - ot_mil_surplus_north);
   break;
 
  case ot_megastore_entrance: {
@@ -4079,14 +4087,13 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    bool fridge = false;
    for (int x = rng(2, 3); x < SEEX * 2 - 1; x += 3) {
     for (int y = 2; y <= SEEY; y += SEEY - 2) {
-     if (one_in(3))
-      fridge = !fridge;
+     if (one_in(3)) fridge = !fridge;
      if (fridge) {
-      line(this, t_fridge, x, y, x, y + SEEY - 4);
-      if (one_in(3))
-       place_items(mi_fridgesnacks, 80, x, y, x, y + SEEY - 4, false, 0);
-      else
-       place_items(mi_fridge,       70, x, y, x, y + SEEY - 4, false, 0);
+      static constexpr const std::pair<items_location, int> fridge_stock[] = {
+          std::pair(mi_fridge, 70),
+          std::pair(mi_fridgesnacks, 80)
+      };
+      _stock_line(*this, t_fridge, fridge_stock[one_in(3)], point(x, y), point(x, y + SEEY - 4));
      } else {
       line(this, t_rack, x, y, x, y + SEEY - 4);
       if (one_in(3))
@@ -4252,10 +4259,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   if (any<ot_hospital_entrance, ot_hospital>(t_west)) line(this, t_door_c, 0, 11, 0, 12);
   if (any<ot_hospital_entrance, ot_hospital>(t_south)) line(this, t_door_c, 11, 23, 12, 23);
 
-  if ((t_north == ot_hospital_entrance || t_north == ot_hospital) &&
-      (t_east  == ot_hospital_entrance || t_east  == ot_hospital) &&
-      (t_south == ot_hospital_entrance || t_south == ot_hospital) &&
-      (t_west  == ot_hospital_entrance || t_west  == ot_hospital)   ) {
+  if (   any<ot_hospital_entrance, ot_hospital>(t_north)
+      && any<ot_hospital_entrance, ot_hospital>(t_east)
+      && any<ot_hospital_entrance, ot_hospital>(t_south)
+      && any<ot_hospital_entrance, ot_hospital>(t_west)) {
 // We're in the center; center is always blood lab
 // Large lab
    line(this, t_wall_h,  1,  2, 21,  2);
@@ -5217,7 +5224,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   if (is_between<ot_sub_station_north, ot_sub_station_west>(t_above))
    ter(SEEX * 2 - 5, rng(SEEY - 5, SEEY + 4)) = t_stairs_up;
   place_items(mi_subway, 30, 4, 0, SEEX * 2 - 5, SEEY * 2 - 1, true, 0);
-  if (terrain_type == ot_subway_ew) rotate(1);
+  static_assert(1 == ot_subway_ew - ot_subway_ns);
+  rotate(terrain_type - ot_subway_ns);
   break;
 
  case ot_subway_ne:
