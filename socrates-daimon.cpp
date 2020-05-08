@@ -63,6 +63,19 @@ static const char* addiction_target(add_type cur)
 	throw new std::logic_error("unhandled addiction type");
 }
 
+static auto typicalMenuLink(std::string&& li_id, std::string&& a_name, std::string&& a_url)
+{
+	html::tag ret_li("li");
+
+	ret_li.set("id", std::move(li_id));
+
+	html::tag a_tag("a", std::move(a_name));
+	a_tag.set("href", std::move(a_url));
+	ret_li.append(std::move(a_tag));
+
+	return ret_li;
+}
+
 static auto swapDOM(const std::string& selector, html::tag& src, html::tag&& node)
 {
 	auto subheader = src.querySelector(selector);
@@ -138,32 +151,9 @@ int main(int argc, char *argv[])
 	html::tag working_li("li");
 
 	// wrap up global navigation menu
-	working_li.set("id", HOME_ID);
-	{
-	html::tag a_tag("a", HOME_LINK_NAME);
-	a_tag.set("href", "./" HOME_HTML);
-	working_li.append(std::move(a_tag));
-	}
-	global_nav.append(working_li);
-	working_li.clear();
-
-	working_li.set("id", ITEMS_ID);
-	{
-	html::tag a_tag("a", ITEMS_LINK_NAME);
-	a_tag.set("href", "./" ITEMS_HTML);
-	working_li.append(std::move(a_tag));
-	}
-	global_nav.append(working_li);
-	working_li.clear();
-
-	working_li.set("id", NAVIGATION_ID);
-	{
-	html::tag a_tag("a", NAVIGATION_LINK_NAME);
-	a_tag.set("href", "./" NAVIGATION_HTML);
-	working_li.append(std::move(a_tag));
-	}
-	global_nav.append(working_li);
-	working_li.clear();
+	global_nav.append(typicalMenuLink(HOME_ID, HOME_LINK_NAME, "./" HOME_HTML));
+	global_nav.append(typicalMenuLink(ITEMS_ID, ITEMS_LINK_NAME, "./" ITEMS_HTML));
+	global_nav.append(typicalMenuLink(NAVIGATION_ID, NAVIGATION_LINK_NAME, "./" NAVIGATION_HTML));
 
 	auto home_revert = swapDOM("#" HOME_ID, global_nav, html::tag("b", HOME_LINK_NAME));
 
@@ -188,30 +178,6 @@ int main(int argc, char *argv[])
 #undef HTML_TARGET
 
 	*home_revert.first = std::move(home_revert.second);
-
-	home_revert = swapDOM("#" NAVIGATION_ID, global_nav, html::tag("b", NAVIGATION_LINK_NAME));
-
-#define HTML_TARGET "data\\" NAVIGATION_HTML
-
-	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
-		{
-		html::to_text page(out);
-		page.start_print(_html);
-		_title->append(html::tag::wrap("Cataclysm:Z " NAVIGATION_LINK_NAME));
-		page.print(_head);
-		_title->clear();
-		page.start_print(_body);
-		page.print(global_nav);
-		while (page.end_print());
-		}
-
-		unlink(HTML_TARGET);
-		rename(HTML_TARGET ".tmp", HTML_TARGET);
-	}
-
-#undef HTML_TARGET
-
-	* home_revert.first = std::move(home_revert.second);
 
 	// full item navigation menu
 	html::tag item_point("li");
@@ -275,149 +241,22 @@ int main(int argc, char *argv[])
 #define UNCLASSIFIED_ID "unclassified"
 #define UNCLASSIFIED_LINK_NAME "Unclassified"
 
-	working_li.set("id", ARMOR_ID);
-	{
-	html::tag a_tag("a", ARMOR_LINK_NAME);
-	a_tag.set("href", "./" ARMOR_HTML);
-	working_li.append(std::move(a_tag));
-	}
-	item_nav.append(working_li);
-	working_li.clear();
-
-	working_li.set("id", AMMO_ID);
-	{
-	html::tag a_tag("a", AMMO_LINK_NAME);
-	a_tag.set("href", "./" AMMO_HTML);
-	working_li.append(std::move(a_tag));
-	}
-	item_nav.append(working_li);
-	working_li.clear();
-
-	working_li.set("id", BIONICS_ID);
-	{
-	html::tag a_tag("a", BIONICS_LINK_NAME);
-	a_tag.set("href", "./" BIONICS_HTML);
-	working_li.append(std::move(a_tag));
-	}
-	item_nav.append(working_li);
-	working_li.clear();
-
-	working_li.set("id", BOOKS_ID);
-	{
-	html::tag a_tag("a", BOOKS_LINK_NAME);
-	a_tag.set("href", "./" BOOKS_HTML);
-	working_li.append(std::move(a_tag));
-	}
-	item_nav.append(working_li);
-	working_li.clear();
-
-	working_li.set("id", CONTAINERS_ID);
-	{
-	html::tag a_tag("a", CONTAINERS_LINK_NAME);
-	a_tag.set("href", "./" CONTAINERS_HTML);
-	working_li.append(std::move(a_tag));
-	}
-	item_nav.append(working_li);
-	working_li.clear();
-
-	working_li.set("id", DRINKS_ID);
-	{
-	html::tag a_tag("a", DRINKS_LINK_NAME);
-	a_tag.set("href", "./" DRINKS_HTML);
-	working_li.append(std::move(a_tag));
-	}
-	item_nav.append(working_li);
-	working_li.clear();
-
-	working_li.set("id", EDIBLE_ID);
-	{
-	html::tag a_tag("a", EDIBLE_LINK_NAME);
-	a_tag.set("href", "./" EDIBLE_HTML);
-	working_li.append(std::move(a_tag));
-	}
-	item_nav.append(working_li);
-	working_li.clear();
-
-	working_li.set("id", FUEL_ID);
-	{
-	html::tag a_tag("a", FUEL_LINK_NAME);
-	a_tag.set("href", "./" FUEL_HTML);
-	working_li.append(std::move(a_tag));
-	}
-	item_nav.append(working_li);
-	working_li.clear();
-
-	working_li.set("id", GUNS_ID);
-	{
-	html::tag a_tag("a", GUNS_LINK_NAME);
-	a_tag.set("href", "./" GUNS_HTML);
-	working_li.append(std::move(a_tag));
-	}
-	item_nav.append(working_li);
-	working_li.clear();
-
-	working_li.set("id", GUN_MODS_ID);
-	{
-	html::tag a_tag("a", GUN_MODS_LINK_NAME);
-	a_tag.set("href", "./" GUN_MODS_HTML);
-	working_li.append(std::move(a_tag));
-	}
-	item_nav.append(working_li);
-	working_li.clear();
-
-	working_li.set("id", MARTIAL_ARTS_ID);
-	{
-	html::tag a_tag("a", MARTIAL_ARTS_LINK_NAME);
-	a_tag.set("href", "./" MARTIAL_ARTS_HTML);
-	working_li.append(std::move(a_tag));
-	}
-	item_nav.append(working_li);
-	working_li.clear();
-
-	working_li.set("id", MACGUFFIN_ID);
-	{
-	html::tag a_tag("a", MACGUFFIN_LINK_NAME);
-	a_tag.set("href", "./" MACGUFFIN_HTML);
-	working_li.append(std::move(a_tag));
-	}
-	item_nav.append(working_li);
-	working_li.clear();
-
-	working_li.set("id", PHARMA_ID);
-	{
-	html::tag a_tag("a", PHARMA_LINK_NAME);
-	a_tag.set("href", "./" PHARMA_HTML);
-	working_li.append(std::move(a_tag));
-	}
-	item_nav.append(working_li);
-	working_li.clear();
-
-	working_li.set("id", SOFTWARE_ID);
-	{
-	html::tag a_tag("a", SOFTWARE_LINK_NAME);
-	a_tag.set("href", "./" SOFTWARE_HTML);
-	working_li.append(std::move(a_tag));
-	}
-	item_nav.append(working_li);
-	working_li.clear();
-
-	working_li.set("id", TOOLS_ID);
-	{
-	html::tag a_tag("a", TOOLS_LINK_NAME);
-	a_tag.set("href", "./" TOOLS_HTML);
-	working_li.append(std::move(a_tag));
-	}
-	item_nav.append(working_li);
-	working_li.clear();
-
-	working_li.set("id", UNCLASSIFIED_ID);
-	{
-	html::tag a_tag("a", UNCLASSIFIED_LINK_NAME);
-	a_tag.set("href", "./" UNCLASSIFIED_HTML);
-	working_li.append(std::move(a_tag));
-	}
-	item_nav.append(working_li);
-	working_li.clear();
+	item_nav.append(typicalMenuLink(AMMO_ID, AMMO_LINK_NAME, "./" AMMO_HTML));
+	item_nav.append(typicalMenuLink(ARMOR_ID, ARMOR_LINK_NAME, "./" ARMOR_HTML));
+	item_nav.append(typicalMenuLink(BIONICS_ID, BIONICS_LINK_NAME, "./" BIONICS_HTML));
+	item_nav.append(typicalMenuLink(BOOKS_ID, BOOKS_LINK_NAME, "./" BOOKS_HTML));
+	item_nav.append(typicalMenuLink(CONTAINERS_ID, CONTAINERS_LINK_NAME, "./" CONTAINERS_HTML));
+	item_nav.append(typicalMenuLink(DRINKS_ID, DRINKS_LINK_NAME, "./" DRINKS_HTML));
+	item_nav.append(typicalMenuLink(EDIBLE_ID, EDIBLE_LINK_NAME, "./" EDIBLE_HTML));
+	item_nav.append(typicalMenuLink(FUEL_ID, FUEL_LINK_NAME, "./" FUEL_HTML));
+	item_nav.append(typicalMenuLink(GUNS_ID, GUNS_LINK_NAME, "./" GUNS_HTML));
+	item_nav.append(typicalMenuLink(GUN_MODS_ID, GUN_MODS_LINK_NAME, "./" GUN_MODS_HTML));
+	item_nav.append(typicalMenuLink(MARTIAL_ARTS_ID, MARTIAL_ARTS_LINK_NAME, "./" MARTIAL_ARTS_HTML));
+	item_nav.append(typicalMenuLink(MACGUFFIN_ID, MACGUFFIN_LINK_NAME, "./" MACGUFFIN_HTML));
+	item_nav.append(typicalMenuLink(PHARMA_ID, PHARMA_LINK_NAME, "./" PHARMA_HTML));
+	item_nav.append(typicalMenuLink(SOFTWARE_ID, SOFTWARE_LINK_NAME, "./" SOFTWARE_HTML));
+	item_nav.append(typicalMenuLink(TOOLS_ID, TOOLS_LINK_NAME, "./" TOOLS_HTML));
+	item_nav.append(typicalMenuLink(UNCLASSIFIED_ID, UNCLASSIFIED_LINK_NAME, "./" UNCLASSIFIED_HTML));
 
 	working_li.unset("id");
 
@@ -1614,7 +1453,61 @@ int main(int argc, char *argv[])
 		name_desc.swap(discard);
 	}
 
-	*home_revert.first = std::move(home_revert.second);
+	*home_revert.first = std::move(home_revert.second);	// items page family handled
+
+	// full terrain navigation menu
+	html::tag mapnav_point("li");
+	mapnav_point.set("id", NAVIGATION_ID);
+	{
+		html::tag a_tag("a", NAVIGATION_LINK_NAME);
+		a_tag.set("href", "./" NAVIGATION_HTML);
+		a_tag.set("id", NAVIGATION_ID "_link");
+		mapnav_point.append(std::move(a_tag));
+	}
+
+	html::tag mapnav_nav("ul");
+	mapnav_nav.set(attr_style, val_list_none);
+
+#define FIELDS_HTML "fields.html"
+#define FIELDS_ID "fields"
+#define FIELDS_LINK_NAME "Fields"
+#define TERRAIN_HTML "terrain.html"
+#define TERRAIN_ID "terrain"
+#define TERRAIN_LINK_NAME "Terrain"
+
+	mapnav_nav.append(typicalMenuLink(FIELDS_ID, FIELDS_LINK_NAME, "./" FIELDS_HTML));
+	mapnav_nav.append(typicalMenuLink(TERRAIN_ID, TERRAIN_LINK_NAME, "./" TERRAIN_HTML));
+
+	mapnav_point.append(mapnav_nav);
+
+	// set up mapnav submenu
+	home_revert = swapDOM("#" NAVIGATION_ID, global_nav, std::move(mapnav_point));
+
+#define HTML_TARGET "data\\" NAVIGATION_HTML
+
+	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
+		{
+		html::to_text page(out);
+		page.start_print(_html);
+		_title->append(html::tag::wrap("Cataclysm:Z " NAVIGATION_LINK_NAME));
+		page.print(_head);
+		_title->clear();
+		page.start_print(_body);
+		{
+		auto revert = swapDOM("#" NAVIGATION_ID "_link", global_nav, html::tag("b", NAVIGATION_LINK_NAME));
+		page.print(global_nav);
+		*revert.first = std::move(revert.second);
+		}
+		while (page.end_print());
+		}
+
+		unlink(HTML_TARGET);
+		rename(HTML_TARGET ".tmp", HTML_TARGET);
+	}
+
+#undef HTML_TARGET
+
+	*home_revert.first = std::move(home_revert.second);	// mapnav page family handled
 
 	// try to replicate some issues
 	std::vector<item> res;
