@@ -5245,9 +5245,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   if (is_between<ot_sub_station_north, ot_sub_station_west>(t_above))
    ter(SEEX * 2 - 5, rng(SEEY - 5, SEEY + 4)) = t_stairs_up;
   place_items(mi_subway, 30, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1, true, 0);
-  if (terrain_type == ot_subway_es) rotate(1);
-  else if (terrain_type == ot_subway_sw) rotate(2);
-  else if (terrain_type == ot_subway_wn) rotate(3);
+  static_assert(1 == ot_subway_es - ot_subway_ne);
+  static_assert(2 == ot_subway_sw - ot_subway_ne);
+  static_assert(3 == ot_subway_wn - ot_subway_ne);
+  rotate(terrain_type - ot_subway_ne);
   break;
 
  case ot_subway_nes:
