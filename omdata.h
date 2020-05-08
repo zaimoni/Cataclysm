@@ -196,7 +196,7 @@ struct overmap_special
 	int monster_rad_min;   // Minimum monster radius
 	int monster_rad_max;   // Maximum monster radius
 
-	bool (*able) (overmap *om, point p); // See above
+	bool (*able) (const overmap *om, point p); // See above
 	unsigned flags : NUM_OMS_FLAGS; // See above
 };
 

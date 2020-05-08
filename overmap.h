@@ -85,8 +85,8 @@ class overmap
   oter_id& ter(int x, int y);
   oter_id& ter(const point& pt) { return ter(pt.x, pt.y); };
   static oter_id& ter(OM_loc OMpos);
-  oter_id ter(int x, int y) const { return const_cast<overmap*>(this)->ter(x, y); };	// \todo specialize?
-  oter_id ter(const point& pt) const { return const_cast<overmap*>(this)->ter(pt.x, pt.y); };
+  oter_id ter(int x, int y) const;
+  oter_id ter(const point& pt) const { return ter(pt.x, pt.y); };
   static oter_id ter_c(OM_loc OMpos);
 
   // unsigned zones(const point& pt);	// no definition

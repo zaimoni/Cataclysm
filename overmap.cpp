@@ -357,13 +357,13 @@ const oter_t oter_t::list[num_ter_types] = {
 struct omspec_place
 {
 	// Able functions - true if p is valid
-	static bool never(overmap *om, point p) { return false; }
-	static bool always(overmap *om, point p) { return true; }
-	static bool water(overmap *om, point p); // Only on rivers
-	static bool land(overmap *om, point p); // Only on land (no rivers)
-	static bool forest(overmap *om, point p); // Forest
-	static bool wilderness(overmap *om, point p); // Forest or fields
-	static bool by_highway(overmap *om, point p); // Next to existing highways
+	static bool never(const overmap *om, point p) { return false; }
+	static bool always(const overmap *om, point p) { return true; }
+	static bool water(const overmap *om, point p); // Only on rivers
+	static bool land(const overmap *om, point p); // Only on land (no rivers)
+	static bool forest(const overmap *om, point p); // Forest
+	static bool wilderness(const overmap *om, point p); // Forest or fields
+	static bool by_highway(const overmap *om, point p); // Next to existing highways
 };
 
 // Set min or max to -1 to ignore them
@@ -548,6 +548,12 @@ oter_id& overmap::ter(int x, int y)
 {
  if (x < 0 || x >= OMAPX || y < 0 || y >= OMAPY) return (discard<oter_id>::x = ot_null);
  return t[x][y];
+}
+
+oter_id overmap::ter(int x, int y) const
+{
+    if (x < 0 || x >= OMAPX || y < 0 || y >= OMAPY) return ot_null;
+    return t[x][y];
 }
 
 oter_id& overmap::ter(OM_loc OMpos)
@@ -1631,119 +1637,100 @@ void overmap::put_buildings(int x, int y, int dir, const city& town)
 
 void overmap::make_road(int cx, int cy, int cs, int dir, const city& town)
 {
- int x = cx, y = cy;
+ point pt(cx, cy);
  int c = cs, croad = cs;
+
+ static_assert(0 == NORTH/2);
+ static_assert(1 == EAST/2);
+ static_assert(2 == SOUTH/2);
+ static_assert(3 == WEST/2);
+
  switch (dir) {
  case 0:
-  while (c > 0 && y > 0 && (ter(x, y-1) == ot_field || c == cs)) {
-   y--;
+  while (c > 0 && pt.y > 0 && (ot_field == ter(pt + Direction::N) || c == cs)) {
+   pt.y--;
    c--;
-   ter(x, y) = ot_road_ns;
-   for (int i = -1; i <= 0; i++) {
-    for (int j = -1; j <= 1; j++) {
-     if (abs(j) != abs(i) && (ter(x+j, y+i) == ot_road_ew ||
-                              ter(x+j, y+i) == ot_road_ns)) {
-      ter(x, y) = ot_road_null;
-      c = -1;
-     }
-    }
+   ter(pt) = ot_road_ns;
+   if (   any<ot_road_ns, ot_road_ew>(ter(pt + Direction::N))
+       || any<ot_road_ns, ot_road_ew>(ter(pt + Direction::W))
+       || any<ot_road_ns, ot_road_ew>(ter(pt + Direction::E))) {
+       ter(pt) = ot_road_null;
+       c = -1;
    }
-   put_buildings(x, y, dir, town);
-   if (c < croad - 1 && c >= 2 && ter(x - 1, y) == ot_field &&
-                                  ter(x + 1, y) == ot_field) {
+   put_buildings(pt.x, pt.y, dir, town);
+   if (c < croad - 1 && c >= 2 && ot_field == ter(pt + Direction::W) && ot_field == ter(pt + Direction::E)) {
     croad = c;
-    make_road(x, y, cs - rng(1, 3), 1, town);
-    make_road(x, y, cs - rng(1, 3), 3, town);
+    make_road(pt.x, pt.y, cs - rng(1, 3), 1, town);
+    make_road(pt.x, pt.y, cs - rng(1, 3), 3, town);
    }
   }
-  if (is_road(x, y-2))
-   ter(x, y-1) = ot_road_ns;
+  if (const auto delta = pt + 2 * Direction::N; is_road(delta.x, delta.y)) ter(pt + Direction::N) = ot_road_ns;
   break;
  case 1:
-  while (c > 0 && x < OMAPX-1 && (ter(x+1, y) == ot_field || c == cs)) {
-   x++;
+  while (c > 0 && pt.x < OMAPX-1 && (ot_field == ter(pt + Direction::E) || c == cs)) {
+   pt.x++;
    c--;
-   ter(x, y) = ot_road_ew;
-   for (int i = -1; i <= 1; i++) {
-    for (int j = 0; j <= 1; j++) {
-     if (abs(j) != abs(i) && (ter(x+j, y+i) == ot_road_ew ||
-                              ter(x+j, y+i) == ot_road_ns)) {
-      ter(x, y) = ot_road_null;
-      c = -1;
-     }
-    }
+   ter(pt) = ot_road_ew;
+   if (   any<ot_road_ns, ot_road_ew>(ter(pt + Direction::N))
+       || any<ot_road_ns, ot_road_ew>(ter(pt + Direction::S))
+       || any<ot_road_ns, ot_road_ew>(ter(pt + Direction::W))) {
+       ter(pt) = ot_road_null;
+       c = -1;
    }
-   put_buildings(x, y, dir, town);
-   if (c < croad-2 && c >= 3 && ter(x, y-1) == ot_field &&
-                                ter(x, y+1) == ot_field) {
+   put_buildings(pt.x, pt.y, dir, town);
+   if (c < croad-2 && c >= 3 && ot_field == ter(pt + Direction::N) && ot_field == ter(pt + Direction::S)) {
     croad = c;
-    make_road(x, y, cs - rng(1, 3), 0, town);
-    make_road(x, y, cs - rng(1, 3), 2, town);
+    make_road(pt.x, pt.y, cs - rng(1, 3), 0, town);
+    make_road(pt.x, pt.y, cs - rng(1, 3), 2, town);
    }
   }
-  if (is_road(x-2, y))
-   ter(x-1, y) = ot_road_ew;
+  if (const auto delta = pt + 2 * Direction::W; is_road(delta.x, delta.y)) ter(pt + Direction::W) = ot_road_ew;
   break;
  case 2:
-  while (c > 0 && y < OMAPY-1 && (ter(x, y+1) == ot_field || c == cs)) {
-   y++;
+  while (c > 0 && pt.y < OMAPY-1 && (ot_field == ter(pt + Direction::S) || c == cs)) {
+   pt.y++;
    c--;
-   ter(x, y) = ot_road_ns;
-   for (int i = 0; i <= 1; i++) {
-    for (int j = -1; j <= 1; j++) {
-     if (abs(j) != abs(i) && (ter(x+j, y+i) == ot_road_ew ||
-                              ter(x+j, y+i) == ot_road_ns)) {
-      ter(x, y) = ot_road_null;
-      c = -1;
-     }
-    }
+   ter(pt) = ot_road_ns;
+   if (   any<ot_road_ns, ot_road_ew>(ter(pt + Direction::S))
+       || any<ot_road_ns, ot_road_ew>(ter(pt + Direction::W))
+       || any<ot_road_ns, ot_road_ew>(ter(pt + Direction::E))) {
+       ter(pt) = ot_road_null;
+       c = -1;
    }
-   put_buildings(x, y, dir, town);
-   if (c < croad-2 && ter(x-1, y) == ot_field && ter(x+1, y) == ot_field) {
+   put_buildings(pt.x, pt.y, dir, town);
+   if (c < croad-2 && ot_field == ter(pt + Direction::W) && ot_field == ter(pt + Direction::E)) {
     croad = c;
-    make_road(x, y, cs - rng(1, 3), 1, town);
-    make_road(x, y, cs - rng(1, 3), 3, town);
+    make_road(pt.x, pt.y, cs - rng(1, 3), 1, town);
+    make_road(pt.x, pt.y, cs - rng(1, 3), 3, town);
    }
   }
-  if (is_road(x, y+2))
-   ter(x, y+1) = ot_road_ns;
+  if (const auto delta = pt + 2 * Direction::S; is_road(delta.x, delta.y)) ter(pt + Direction::S) = ot_road_ns;
   break;
  case 3:
-  while (c > 0 && x > 0 && (ter(x-1, y) == ot_field || c == cs)) {
-   x--;
+  while (c > 0 && pt.x > 0 && (ot_field == ter(pt + Direction::W) || c == cs)) {
+   pt.x--;
    c--;
-   ter(x, y) = ot_road_ew;
-   for (int i = -1; i <= 1; i++) {
-    for (int j = -1; j <= 0; j++) {
-     if (abs(j) != abs(i) && (ter(x+j, y+i) == ot_road_ew ||
-                              ter(x+j, y+i) == ot_road_ns)) {
-      ter(x, y) = ot_road_null;
-      c = -1;
-     }
-    }
+   ter(pt) = ot_road_ew;
+   if (   any<ot_road_ns, ot_road_ew>(ter(pt + Direction::N))
+       || any<ot_road_ns, ot_road_ew>(ter(pt + Direction::S))
+       || any<ot_road_ns, ot_road_ew>(ter(pt + Direction::E))) {
+       ter(pt) = ot_road_null;
+       c = -1;
    }
-   put_buildings(x, y, dir, town);
-   if (c < croad - 2 && c >= 3 && ter(x, y-1) == ot_field &&
-       ter(x, y+1) == ot_field) {
+   put_buildings(pt.x, pt.y, dir, town);
+   if (c < croad - 2 && c >= 3 && ot_field == ter(pt + Direction::N) && ot_field == ter(pt + Direction::S)) {
     croad = c;
-    make_road(x, y, cs - rng(1, 3), 0, town);
-    make_road(x, y, cs - rng(1, 3), 2, town);
+    make_road(pt.x, pt.y, cs - rng(1, 3), 0, town);
+    make_road(pt.x, pt.y, cs - rng(1, 3), 2, town);
    }
   }
-  if (is_road(x+2, y))
-   ter(x+1, y) = ot_road_ew;
+  if (const auto delta = pt + 2 * Direction::E; is_road(delta.x, delta.y)) ter(pt + Direction::E) = ot_road_ew;
   break;
  }
- cs -= rng(1, 3);
- if (cs >= 2 && c == 0) {
-  int dir2;
-  if (dir % 2 == 0)
-   dir2 = rng(0, 1) * 2 + 1;
-  else
-   dir2 = rng(0, 1) * 2;
-  make_road(x, y, cs, dir2, town);
-  if (one_in(5))
-   make_road(x, y, cs, (dir2 + 2) % 4, town);
+ if (0 == c && 2 <= (cs -= rng(1, 3))) {
+     const int dir2 = 2 * rng(0, 1) + (dir % 2 == 0);
+     make_road(pt.x, pt.y, cs, dir2, town);
+     if (one_in(5)) make_road(pt.x, pt.y, cs, (dir2 + 2) % 4, town);
  }
 }
 
@@ -2185,53 +2172,56 @@ bool overmap::is_road(oter_id base, int x, int y) const
 
 void overmap::good_road(oter_id base, int x, int y)
 {
- int d = ot_road_ns;
+ const int delta = base - ot_road_ns;
+ const bool road_to_west = is_road(base, x - 1, y);
+ const bool road_to_south = is_road(base, x, y + 1);
+ const bool road_to_east = is_road(base, x + 1, y);
  if (is_road(base, x, y-1)) {
-  if (is_road(base, x+1, y)) { 
-   if (is_road(base, x, y+1)) {
-    if (is_road(base, x-1, y))
-     ter(x, y) = oter_id(base + ot_road_nesw - d);
+  if (road_to_east) {
+   if (road_to_south) {
+    if (road_to_west)
+     ter(x, y) = oter_id(ot_road_nesw + delta);
     else
-     ter(x, y) = oter_id(base + ot_road_nes - d);
+     ter(x, y) = oter_id(ot_road_nes + delta);
    } else {
-    if (is_road(base, x-1, y))
-     ter(x, y) = oter_id(base + ot_road_new - d);
+    if (road_to_west)
+     ter(x, y) = oter_id(ot_road_new + delta);
     else
-     ter(x, y) = oter_id(base + ot_road_ne - d);
+     ter(x, y) = oter_id(ot_road_ne + delta);
    } 
   } else {
-   if (is_road(base, x, y+1)) {
-    if (is_road(base, x-1, y))
-     ter(x, y) = oter_id(base + ot_road_nsw - d);
+   if (road_to_south) {
+    if (road_to_west)
+     ter(x, y) = oter_id(ot_road_nsw + delta);
     else
-     ter(x, y) = oter_id(base + ot_road_ns - d);
+     ter(x, y) = oter_id(ot_road_ns + delta);
    } else {
-    if (is_road(base, x-1, y))
-     ter(x, y) = oter_id(base + ot_road_wn - d);
+    if (road_to_west)
+     ter(x, y) = oter_id(ot_road_wn + delta);
     else
-     ter(x, y) = oter_id(base + ot_road_ns - d);
+     ter(x, y) = oter_id(ot_road_ns + delta);
    } 
   }
  } else {
-  if (is_road(base, x+1, y)) { 
-   if (is_road(base, x, y+1)) {
-    if (is_road(base, x-1, y))
-     ter(x, y) = oter_id(base + ot_road_esw - d);
+  if (road_to_east) {
+   if (road_to_south) {
+    if (road_to_west)
+     ter(x, y) = oter_id(ot_road_esw + delta);
     else
-     ter(x, y) = oter_id(base + ot_road_es - d);
+     ter(x, y) = oter_id(ot_road_es + delta);
    } else
-    ter(x, y) = oter_id(base + ot_road_ew - d);
+    ter(x, y) = oter_id(ot_road_ew + delta);
   } else {
-   if (is_road(base, x, y+1)) {
-    if (is_road(base, x-1, y))
-     ter(x, y) = oter_id(base + ot_road_sw - d);
+   if (road_to_south) {
+    if (road_to_west)
+     ter(x, y) = oter_id(ot_road_sw + delta);
     else
-     ter(x, y) = oter_id(base + ot_road_ns - d);
+     ter(x, y) = oter_id(ot_road_ns + delta);
    } else {
-    if (is_road(base, x-1, y))
-     ter(x, y) = oter_id(base + ot_road_ew - d);
+    if (road_to_west)
+     ter(x, y) = oter_id(ot_road_ew + delta);
     else {// No adjoining roads/etc. Happens occasionally, esp. with sewers.
-     ter(x, y) = oter_id(base + ot_road_nesw - d);
+     ter(x, y) = oter_id(ot_road_nesw + delta);
     }
    } 
   }
@@ -2655,38 +2645,36 @@ void overmap::open(game *g)	// only called from constructor
 
 // Overmap special placement functions
 
-bool omspec_place::water(overmap *om, point p)
+bool omspec_place::water(const overmap *om, point p)
 {
  oter_id ter = om->ter(p.x, p.y);
  return (ter >= ot_river_center && ter <= ot_river_nw);
 }
 
-bool omspec_place::land(overmap *om, point p)
+bool omspec_place::land(const overmap *om, point p)
 {
  oter_id ter = om->ter(p.x, p.y);
  return (ter < ot_river_center || ter > ot_river_nw);
 }
 
-bool omspec_place::forest(overmap *om, point p)
+bool omspec_place::forest(const overmap *om, point p)
 {
  oter_id ter = om->ter(p.x, p.y);
  return (ter == ot_forest || ter == ot_forest_thick || ter == ot_forest_water);
 }
 
-bool omspec_place::wilderness(overmap *om, point p)
+bool omspec_place::wilderness(const overmap *om, point p)
 {
  oter_id ter = om->ter(p.x, p.y);
  return (ter == ot_forest || ter == ot_forest_thick || ter == ot_forest_water ||
          ter == ot_field);
 }
 
-bool omspec_place::by_highway(overmap *om, point p)
+bool omspec_place::by_highway(const overmap *om, point p)
 {
  oter_id north = om->ter(p.x, p.y - 1), east = om->ter(p.x + 1, p.y),
          south = om->ter(p.x, p.y + 1), west = om->ter(p.x - 1, p.y);
 
- return ((north == ot_hiway_ew || north == ot_road_ew) ||
-         (east  == ot_hiway_ns || east  == ot_road_ns) ||
-         (south == ot_hiway_ew || south == ot_road_ew) ||
-         (west  == ot_hiway_ns || west  == ot_road_ns)   );
+ return any<ot_hiway_ew, ot_road_ew>(north) || any<ot_hiway_ew, ot_road_ew>(east)
+     || any<ot_hiway_ew, ot_road_ew>(south) || any<ot_hiway_ew, ot_road_ew>(west);
 }
