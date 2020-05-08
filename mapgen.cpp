@@ -689,10 +689,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
  case ot_road_ns:
  case ot_road_ew:
-  if ((t_west  >= ot_house_north && t_west  <= ot_sub_station_west) ||
-      (t_east  >= ot_house_north && t_east  <= ot_sub_station_west) ||
-      (t_north >= ot_house_north && t_north <= ot_sub_station_west) ||
-      (t_south >= ot_house_north && t_south <= ot_sub_station_west)   )
+  if (   any<ot_house_north, ot_sub_station_west>(t_west) || any<ot_house_north, ot_sub_station_west>(t_east)
+      || any<ot_house_north, ot_sub_station_west>(t_north) || any<ot_house_north, ot_sub_station_west>(t_south))
    rn = 1;	// rn = 1 if this road has sidewalks
   else
    rn = 0;
@@ -704,7 +702,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      ter(i, j) = ((i == SEEX - 1 || i == SEEX) && j % 4 != 0) ? t_pavement_y : t_pavement;
    }
   }
-  if (terrain_type == ot_road_ew) rotate(1);
+  static_assert(1 == ot_road_ew - ot_road_ns);
+  rotate(terrain_type - ot_road_ns);
   place_items(mi_road, 5, 0, 0, SEEX * 2 - 1, SEEX * 2 - 1, false, turn);
   break;
 
@@ -712,10 +711,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
  case ot_road_es:
  case ot_road_sw:
  case ot_road_wn:
-  if ((t_west  >= ot_house_north && t_west  <= ot_sub_station_west) ||
-      (t_east  >= ot_house_north && t_east  <= ot_sub_station_west) ||
-      (t_north >= ot_house_north && t_north <= ot_sub_station_west) ||
-      (t_south >= ot_house_north && t_south <= ot_sub_station_west)   )
+  if (   any<ot_house_north, ot_sub_station_west>(t_west) || any<ot_house_north, ot_sub_station_west>(t_east)
+      || any<ot_house_north, ot_sub_station_west>(t_north) || any<ot_house_north, ot_sub_station_west>(t_south))
    rn = 1;	// rn = 1 if this road has sidewalks
   else
    rn = 0;
@@ -735,20 +732,19 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     }
    }
   }
-  if (terrain_type == ot_road_es) rotate(1);    // could enforce subtraction w/static_assert
-  if (terrain_type == ot_road_sw) rotate(2);
-  if (terrain_type == ot_road_wn) rotate(3);
+  static_assert(1 == ot_road_es - ot_road_ne);
+  static_assert(2 == ot_road_sw - ot_road_ne);
+  static_assert(3 == ot_road_wn - ot_road_ne);
+  rotate(terrain_type - ot_road_ne);
   place_items(mi_road, 5, 0, 0, SEEX * 2 - 1, SEEX * 2 - 1, false, turn);
   break;
 
- case ot_road_nes:
+ case ot_road_nes:    // FIX \todo? enum values not in rotation order
  case ot_road_new:
  case ot_road_nsw:
  case ot_road_esw:
-  if ((t_west  >= ot_house_north && t_west  <= ot_sub_station_west) ||
-      (t_east  >= ot_house_north && t_east  <= ot_sub_station_west) ||
-      (t_north >= ot_house_north && t_north <= ot_sub_station_west) ||
-      (t_south >= ot_house_north && t_south <= ot_sub_station_west)   )
+  if (   any<ot_house_north, ot_sub_station_west>(t_west) || any<ot_house_north, ot_sub_station_west>(t_east)
+      || any<ot_house_north, ot_sub_station_west>(t_north) || any<ot_house_north, ot_sub_station_west>(t_south))
    rn = 1;	// rn = 1 if this road has sidewalks
   else
    rn = 0;
@@ -773,10 +769,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
  case ot_road_nesw:
  case ot_road_nesw_manhole:
-  if ((t_west  == ot_road_nesw || t_west  == ot_road_nesw_manhole) &&
-      (t_east  == ot_road_nesw || t_east  == ot_road_nesw_manhole) &&
-      (t_north == ot_road_nesw || t_north == ot_road_nesw_manhole) &&
-      (t_south == ot_road_nesw || t_south == ot_road_nesw_manhole)   )
+  if (   any<ot_road_nesw, ot_road_nesw_manhole>(t_west) && any<ot_road_nesw, ot_road_nesw_manhole>(t_east)
+      && any<ot_road_nesw, ot_road_nesw_manhole>(t_north) && any<ot_road_nesw, ot_road_nesw_manhole>(t_south))
    rn = 2;	// rn = 2 if this is actually a plaza
   else
    rn = 1;	// rn = 1 if this road has sidewalks
@@ -844,7 +838,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      ter(i, j) = ((i == SEEX - 1 || i == SEEX) && j % 4 != 0) ? t_pavement_y : t_pavement;
    }
   }
-  if (terrain_type == ot_bridge_ew) rotate(1);
+  static_assert(1 == ot_bridge_ew - ot_bridge_ns);
+  rotate(terrain_type - ot_bridge_ns);
   place_items(mi_road, 5, 0, 0, SEEX * 2 - 1, SEEX * 2 - 1, false, turn);
   break;
  
@@ -860,18 +855,16 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      ter(i, j) = ((i == SEEX - 1 || i == SEEX) && j % 4 != 0) ? t_pavement_y : t_pavement;
    }
   }
-  if (terrain_type == ot_hiway_ew) rotate(1);
+  static_assert(1 == ot_hiway_ew - ot_hiway_ns);
+  rotate(terrain_type - ot_hiway_ns);
   place_items(mi_road, 8, 0, 0, SEEX * 2 - 1, SEEX * 2 - 1, false, turn);
   break;
 
  case ot_river_center:
-  for (int i = 0; i < SEEX * 2; i++) {
-   for (int j = 0; j < SEEY * 2; j++)
-    ter(i, j) = t_water_dp;
-  }
+  square(this, t_water_dp, point(0), point(2 * SEE - 1));
   break;
 
- case ot_river_c_not_ne:
+ case ot_river_c_not_ne:    // FIX \todo? enum values not in rotation order
  case ot_river_c_not_se:
  case ot_river_c_not_sw:
  case ot_river_c_not_nw:
@@ -897,9 +890,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      ter(i, j) = t_water_dp;
    }
   }
-  if (terrain_type == ot_river_east) rotate(1); // could enforce subtraction w/static_assert
-  if (terrain_type == ot_river_south) rotate(2);
-  if (terrain_type == ot_river_west) rotate(3);
+  static_assert(1 == ot_river_east - ot_river_north);
+  static_assert(2 == ot_river_south - ot_river_north);
+  static_assert(3 == ot_river_west - ot_river_north);
+  rotate(terrain_type - ot_river_north);
   break;
 
  case ot_river_ne:
@@ -914,9 +908,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      ter(i, j) = t_water_dp;
    }
   }
-  if (terrain_type == ot_river_se) rotate(1); // could enforce subtraction w/static_assert
-  if (terrain_type == ot_river_sw) rotate(2);
-  if (terrain_type == ot_river_nw) rotate(3);
+  static_assert(1 == ot_river_se - ot_river_ne);
+  static_assert(2 == ot_river_sw - ot_river_ne);
+  static_assert(3 == ot_river_nw - ot_river_ne);
+  rotate(terrain_type - ot_river_ne);
   break;
 
  case ot_house_base_north:
@@ -5251,7 +5246,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   rotate(terrain_type - ot_subway_ne);
   break;
 
- case ot_subway_nes:
+ case ot_subway_nes:    // FIX \todo? enum values not in rotation order
  case ot_subway_new:
  case ot_subway_nsw:
  case ot_subway_esw:
@@ -5322,7 +5317,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   else if (terrain_type == ot_sewer_wn) rotate(3);
   break;
 
- case ot_sewer_nes:
+ case ot_sewer_nes:    // FIX \todo? enum values not in rotation order
  case ot_sewer_new:
  case ot_sewer_nsw:
  case ot_sewer_esw:
@@ -5414,7 +5409,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   else if (terrain_type == ot_ants_wn) rotate(3);
   break;
   
- case ot_ants_nes:
+ case ot_ants_nes:    // FIX \todo? enum values not in rotation order
  case ot_ants_new:
  case ot_ants_nsw:
  case ot_ants_esw:
