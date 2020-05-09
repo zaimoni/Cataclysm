@@ -5296,7 +5296,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    }
   }
   place_items(mi_sewer, 10, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1, true, 0);
-  if (terrain_type == ot_sewer_ew) rotate(1);
+  static_assert(1 == ot_sewer_ew - ot_sewer_ns);
+  rotate(terrain_type - ot_sewer_ns);
   break;
 
  case ot_sewer_ne:
@@ -5312,9 +5313,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    }
   }
   place_items(mi_sewer, 18, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1, true, 0);
-  if (terrain_type == ot_sewer_es) rotate(1);
-  else if (terrain_type == ot_sewer_sw) rotate(2);
-  else if (terrain_type == ot_sewer_wn) rotate(3);
+  static_assert(1 == ot_sewer_es - ot_sewer_ne);
+  static_assert(2 == ot_sewer_sw - ot_sewer_ne);
+  static_assert(3 == ot_sewer_wn - ot_sewer_ne);
+  rotate(terrain_type - ot_sewer_ne);
   break;
 
  case ot_sewer_nes:    // FIX \todo? enum values not in rotation order
@@ -5362,12 +5364,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   for (int j = 0; j < SEEY * 2; j++) {
    line(this, t_rock_floor, point(cataclysm::max(1, x-2), j), point(cataclysm::min(SEEX * 2 - 2, x+3), j));
    x += rng(-1, 1);
-   while (abs(SEEX - x) > SEEX * 2 - j - 1) {
-    if (x < SEEX) x++;
-    if (x > SEEX) x--;
-   }
+   while (abs(SEEX - x) > SEEX * 2 - j - 1) x += cmp(SEEX, x);
   }
-  if (terrain_type == ot_ants_ew) rotate(1);
+  static_assert(1 == ot_ants_ew - ot_ants_ns);
+  rotate(terrain_type - ot_ants_ns);
   break;
 
  case ot_ants_ne:
@@ -5392,21 +5392,18 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     y++;
    } else {
     x++;
-    if (!one_in(x - SEEX))
-     y += rng(-1, 1);
-    else if (y < SEEY)
-     y++;
-    else if (y > SEEY)
-     y--;
+    if (!one_in(x - SEEX)) y += rng(-1, 1);
+    else y += cmp(SEEY, y);
    }
    rn++;
   } while (x < SEEX * 2 - 1 || y != SEEY);
   square(this, t_rock_floor, point(cataclysm::max(1, x - 2), cataclysm::max(1, y - 2)),
       point(cataclysm::min(2 * SEE - 2, x + 3), cataclysm::min(2 * SEE - 2, y + 3)));
 
-  if (terrain_type == ot_ants_es) rotate(1);
-  else if (terrain_type == ot_ants_sw) rotate(2);
-  else if (terrain_type == ot_ants_wn) rotate(3);
+  static_assert(1 == ot_ants_es - ot_ants_ne);
+  static_assert(2 == ot_ants_sw - ot_ants_ne);
+  static_assert(3 == ot_ants_wn - ot_ants_ne);
+  rotate(terrain_type - ot_ants_ne);
   break;
   
  case ot_ants_nes:    // FIX \todo? enum values not in rotation order
@@ -5418,19 +5415,13 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   for (int j = 0; j < SEEY * 2; j++) {
    line(this, t_rock_floor, point(cataclysm::max(1, x - 2), j), point(cataclysm::min(SEEX * 2 - 2, x + 3), j));
    x += rng(-1, 1);
-   while (abs(SEEX - x) > SEEY * 2 - j - 1) {
-    if (x < SEEX) x++;
-    if (x > SEEX) x--;
-   }
+   while (abs(SEEX - x) > SEEY * 2 - j - 1) x += cmp(SEEX, x);
   }
   y = SEEY;
   for (int i = SEEX; i < SEEX * 2; i++) {
    line(this, t_rock_floor, point(i, cataclysm::max(1, y - 2)), point(i, cataclysm::min(SEE * 2 - 2, y + 3)));
    y += rng(-1, 1);
-   while (abs(SEEY - y) > SEEX * 2 - 1 - i) {
-    if (y < SEEY) y++;
-    if (y > SEEY) y--;
-   }
+   while (abs(SEEY - y) > SEEX * 2 - 1 - i) y += cmp(SEEY, y);
   }
   if (terrain_type == ot_ants_new) rotate(3);
   else if (terrain_type == ot_ants_nsw) rotate(2);
@@ -5443,20 +5434,14 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   for (int j = 0; j < SEEY * 2; j++) {
    line(this, t_rock_floor, point(cataclysm::max(1, x - 2), j), point(cataclysm::min(SEE * 2 - 2, x + 3), j));
    x += rng(-1, 1);
-   while (abs(SEEX - x) > SEEY * 2 - j - 1) {
-    if (x < SEEX) x++;
-    if (x > SEEX) x--;
-   }
+   while (abs(SEEX - x) > SEEY * 2 - j - 1) x += cmp(SEEX, x);
   }
 
   y = SEEY;
   for (int i = 0; i < SEEX * 2; i++) {
    line(this, t_rock_floor, point(i, cataclysm::max(1, y - 2)), point(i, cataclysm::min(SEE * 2 - 2, y + 3)));
    y += rng(-1, 1);
-   while (abs(SEEY - y) > SEEX * 2 - i - 1) {
-    if (y < SEEY) y++;
-    if (y > SEEY) y--;
-   }
+   while (abs(SEEY - y) > SEEY * 2 - i - 1) y += cmp(SEEY, y);
   }
   break;
 
@@ -5590,10 +5575,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
  default:
   debugmsg("Error: tried to generate map for omtype %d, \"%s\"", terrain_type,
            oter_t::list[terrain_type].name.c_str());
-  for (int i = 0; i < SEEX * 2; i++) {
-   for (int j = 0; j < SEEY * 2; j++)
-    ter(i, j) = t_floor;
-  }
+  square(this, t_floor, point(0), point(2 * SEE - 1));
   break;
  }
 
@@ -5811,7 +5793,6 @@ void map::place_items(items_location loc, int chance, int x1, int y1,
  }
 
  // \todo reality checks on what is about to be created
-
 
  for (auto& x : to_create) {
      const auto it = item::types[x.first];
@@ -6147,23 +6128,14 @@ void house_room(map *m, room_type type, int x1, int y1, int x2, int y2)
   chance = 75;
   m->place_items(mi_cleaning,  58, x1 + 1, y1 + 1, x2 - 1, y2 - 2, false, 0);
   m->place_items(mi_home_hw,   40, x1 + 1, y1 + 1, x2 - 1, y2 - 2, false, 0);
-  switch (rng(1, 4)) {
-  case 1:
-   m->ter(x1 + 2, y1 + 1) = t_fridge;
-   m->place_items(mi_fridge, 82, x1 + 2, y1 + 1, x1 + 2, y1 + 1, false, 0);
-   break;
-  case 2:
-   m->ter(x2 - 2, y1 + 1) = t_fridge;
-   m->place_items(mi_fridge, 82, x2 - 2, y1 + 1, x2 - 2, y1 + 1, false, 0);
-   break;
-  case 3:
-   m->ter(x1 + 2, y2 - 1) = t_fridge;
-   m->place_items(mi_fridge, 82, x1 + 2, y2 - 1, x1 + 2, y2 - 1, false, 0);
-   break;
-  case 4:
-   m->ter(x2 - 2, y2 - 1) = t_fridge;
-   m->place_items(mi_fridge, 82, x2 - 2, y2 - 1, x2 - 2, y2 - 1, false, 0);
-   break;
+  {
+  static constexpr const point fridge_offset[] = {
+      point( 2,  1),
+      point(-2,  1),
+      point( 2, -1),
+      point(-2, -1)
+  };
+  _stock(*m, t_fridge, mi_fridge, 82, point(x1, y1)+fridge_offset[rng(0,3)]);
   }
   break;
  case room_bedroom:
@@ -6232,30 +6204,20 @@ void science_room(map *m, int x1, int y1, int x2, int y2, int rotate)
   height  = width;
   width   = tmp;
  }
- for (int i = x1; i <= x2; i++) {
-  for (int j = y1; j <= y2; j++)
-   m->ter(i, j) = t_floor;
- }
+ square(m, t_floor, point(x1, y1), point(x2, y2));
  int area = height * width;
  std::vector<room_type> valid_rooms;
- if (height < 5 && width < 5)
- valid_rooms.push_back(room_closet);
- if (height > 6 && width > 3)
-  valid_rooms.push_back(room_lobby);
- if (height > 4 || width > 4)
-  valid_rooms.push_back(room_chemistry);
- if ((height > 7 || width > 7) && height > 2 && width > 2)
-  valid_rooms.push_back(room_teleport);
- if (height > 4 && width > 4)
-  valid_rooms.push_back(room_goo);
- if (height > 7 && width > 7)
-  valid_rooms.push_back(room_bionics);
- if (height > 7 && width > 7)
-  valid_rooms.push_back(room_cloning);
- if (area >= 9)
-  valid_rooms.push_back(room_vivisect);
- if (height > 5 && width > 4)
-  valid_rooms.push_back(room_dorm);
+ if (height < 5 && width < 5) valid_rooms.push_back(room_closet);   // this ensures at least one legal room type
+ else valid_rooms.push_back(room_chemistry);
+ if (height > 6 && width > 3) valid_rooms.push_back(room_lobby);
+ if ((height > 7 || width > 7) && height > 2 && width > 2) valid_rooms.push_back(room_teleport);
+ if (height > 4 && width > 4) valid_rooms.push_back(room_goo);
+ if (height > 7 && width > 7) {
+     valid_rooms.push_back(room_bionics);
+     valid_rooms.push_back(room_cloning);
+ }
+ if (area >= 9) valid_rooms.push_back(room_vivisect);
+ if (height > 5 && width > 4) valid_rooms.push_back(room_dorm);
  if (width > 8) {
   for (int i = 8; i < width; i += rng(1, 2))
    valid_rooms.push_back(room_split);
@@ -6503,23 +6465,16 @@ void set_science_room(map *m, int x1, int y1, bool faces_right, int turn)
  int x2 = x1 + 7;
  int y2 = y1 + 4;
  switch (type) {
- case 0:	// Empty!
-  return;
+ case 0: return; // Empty!
  case 1: // Chemistry.
 // #######.
 // #.......
 // #.......
 // #.......
 // #######.
-  for (int i = x1; i <= x2; i++) {
-   for (int j = y1; j <= y2; j++) {
-    if ((i == x1 || j == y1 || j == y2) && i != x1)
-     m->ter(i, j) = t_counter;
-   }
-  }
-  m->place_items(mi_chemistry,	85, x1 + 1, y1, x2 - 1, y1, false, 0);
-  m->place_items(mi_chemistry,	85, x1 + 1, y2, x2 - 1, y2, false, 0);
-  m->place_items(mi_chemistry,	85, x1, y1 + 1, x1, y2 - 1, false, 0);
+  _stock_line(*m, t_counter, mi_chemistry, 85, point(x1 + 1, y1), point(x2 - 1, y1));
+  _stock_line(*m, t_counter, mi_chemistry, 85, point(x1 + 1, y2), point(x2 - 1, y2));
+  _stock_line(*m, t_counter, mi_chemistry, 85, point(x1, y1 + 1), point(x1, y2 - 1));
   break;
 
  case 2: // Hydroponics.
@@ -6528,17 +6483,9 @@ void set_science_room(map *m, int x1, int y1, bool faces_right, int turn)
 // #.......
 // #.~~~~~.
 // #.......
-  for (int i = x1; i <= x2; i++) {
-   for (int j = y1; j <= y2; j++) {
-    if (i == x1)
-     m->ter(i, j) = t_counter;
-    else if (i > x1 + 1 && i < x2 && (j == y1 + 1 || j == y2 - 1))
-     m->ter(i, j) = t_water_sh;
-   }
-  }
-  m->place_items(mi_chemistry,	80, x1, y1, x1, y2, false, turn - 50);
-  m->place_items(mi_hydro,	92, x1 + 1, y1 + 1, x2 - 1, y1 + 1, false,turn);
-  m->place_items(mi_hydro,	92, x1 + 1, y2 - 1, x2 - 1, y2 - 1, false,turn);
+  _stock_line(*m, t_counter, mi_chemistry, 80, point(x1, y1), point(x1, y2), false, turn - 50);
+  _stock_line(*m, t_water_sh, mi_hydro, 92, point(x1 + 2, y1 + 1), point(x2 - 1, y1 + 1));
+  _stock_line(*m, t_water_sh, mi_hydro, 92, point(x1 + 2, y2 - 1), point(x2 - 1, y2 - 1));
   break;
 
  case 3: // Electronics.
@@ -6547,15 +6494,9 @@ void set_science_room(map *m, int x1, int y1, bool faces_right, int turn)
 // #.......
 // #.......
 // #######.
-  for (int i = x1; i <= x2; i++) {
-   for (int j = y1; j <= y2; j++) {
-    if ((i == x1 || j == y1 || j == y2) && i != x1)
-     m->ter(i, j) = t_counter;
-   }
-  }
-  m->place_items(mi_electronics,85, x1 + 1, y1, x2 - 1, y1, false, turn - 50);
-  m->place_items(mi_electronics,85, x1 + 1, y2, x2 - 1, y2, false, turn - 50);
-  m->place_items(mi_electronics,85, x1, y1 + 1, x1, y2 - 1, false, turn - 50);
+  _stock_line(*m, t_counter, mi_electronics, 85, point(x1 + 1, y1), point(x2 - 1, y1), false, turn - 50);
+  _stock_line(*m, t_counter, mi_electronics, 85, point(x1 + 1, y2), point(x2 - 1, y2), false, turn - 50);
+  _stock_line(*m, t_counter, mi_electronics, 85, point(x1, y1 + 1), point(x1, y2 - 1), false, turn - 50);
   break;
 
  case 4: // Monster research.
@@ -6570,13 +6511,11 @@ void set_science_room(map *m, int x1, int y1, bool faces_right, int turn)
      m->ter(i, j) = t_wall_glass_v;
     else if (i == x1 && (j == y1 + 1 || j == y2 - 1))
      m->ter(i, j) = t_wall_glass_h;
-    else if ((j == y1 || j == y2) && i >= x1 + 3 && i <= x2 - 1)
-     m->ter(i, j) = t_counter;
    }
   }
 // TODO: Place a monster in the sealed areas.
-  m->place_items(mi_monparts,	70, x1 + 3, y1, 2 - 1, y1, false, turn - 100);
-  m->place_items(mi_monparts,	70, x1 + 3, y2, 2 - 1, y2, false, turn - 100);
+  _stock_line(*m, t_counter, mi_monparts, 70, point(x1 + 3, y1), point(x2 - 1, y1), false, turn - 100);
+  _stock_line(*m, t_counter, mi_monparts, 70, point(x1 + 3, y2), point(x2 - 1, y2), false, turn - 100);
   break;
  }
 
@@ -6697,24 +6636,16 @@ void build_mine_room(map *m, room_type type, int x1, int y1, int x2, int y2)
  direction door_side;
  std::vector<direction> possibilities;
  int midx = int( (x1 + x2) / 2), midy = int( (y1 + y2) / 2);
- if (x2 < SEEX)
-  possibilities.push_back(EAST);
- if (x1 > SEEX + 1)
-  possibilities.push_back(WEST);
- if (y1 > SEEY + 1)
-  possibilities.push_back(NORTH);
- if (y2 < SEEY)
-  possibilities.push_back(SOUTH);
+ if (x2 < SEEX) possibilities.push_back(EAST);
+ if (x1 > SEEX + 1) possibilities.push_back(WEST);
+ if (y1 > SEEY + 1) possibilities.push_back(NORTH);
+ if (y2 < SEEY) possibilities.push_back(SOUTH);
 
  if (possibilities.empty()) { // We're in the middle of the map!
-  if (midx <= SEEX)
-   possibilities.push_back(EAST);
-  else
-   possibilities.push_back(WEST);
-  if (midy <= SEEY)
-   possibilities.push_back(SOUTH);
-  else
-   possibilities.push_back(NORTH);
+  if (midx <= SEEX) possibilities.push_back(EAST);
+  else possibilities.push_back(WEST);
+  if (midy <= SEEY) possibilities.push_back(SOUTH);
+  else possibilities.push_back(NORTH);
  }
 
  door_side = possibilities[rng(0, possibilities.size() - 1)];
@@ -6997,27 +6928,21 @@ void build_mansion_room(map *m, room_type type, int x1, int y1, int x2, int y2)
    
  case room_mansion_dining:
   if (dx < dy || (dx == dy && one_in(2))) { // vertically-aligned table
-   line(m, t_table, cx_low, y1 + 2, cx_low, y2 - 2);
    line(m, t_bench, cx_low - 1, y1 + 2, cx_low - 1, y2 - 2);
    line(m, t_bench, cx_low + 1, y1 + 2, cx_low + 1, y2 - 2);
-   m->place_items(mi_dining, 78, cx_low, y1 + 2, cx_low, y2 - 2, false, 0);
+   _stock_line(*m, t_table, mi_dining, 78, point(cx_low, y1 + 2), point(cx_low, y2 - 2));
   } else { // horizontally-aligned table
-   line(m, t_table, x1 + 2, cy_low, x2 - 2, cy_low);
    line(m, t_bench, x1 + 2, cy_low - 1, x2 - 2, cy_low - 1);
    line(m, t_bench, x1 + 2, cy_low + 1, x2 - 2, cy_low + 1);
-   m->place_items(mi_dining, 78, x1 + 2, cy_low, x2 - 2, cy_low, false, 0);
+   _stock_line(*m, t_table, mi_dining, 78, point(x1 + 2, cy_low), point(x2 - 2, cy_low));
   }
   break;
 
  case room_mansion_game:
   if (dx < dy || one_in(2)) { // vertically-aligned table
-   square(m, t_pool_table, cx_low, cy_low - 1, cx_low + 1, cy_low + 1);
-   m->place_items(mi_pool_table, 80, cx_low, cy_low - 1, cx_low + 1, cy_low + 1,
-                  false, 0);
+   _stock_square(*m, t_pool_table, mi_pool_table, 80, point(cx_low, cy_low - 1), point(cx_low + 1, cy_low + 1));
   } else { // horizontally-aligned table
-   square(m, t_pool_table, cx_low - 1, cy_low, cx_low + 1, cy_low + 1);
-   m->place_items(mi_pool_table, 80, cx_low - 1, cy_low, cx_low + 1, cy_low + 1,
-                  false, 0);
+   _stock_square(*m, t_pool_table, mi_pool_table, 80, point(cx_low - 1, cy_low), point(cx_low + 1, cy_low + 1));
   }
   break;
 
