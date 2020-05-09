@@ -16,41 +16,25 @@ static const std::string quot_entity("&quot;");
 // \todo fix these to account for text/content interactions
 void tag::append(const tag& src)
 {
-	if (!_text.empty()) {
-		decltype(_text) tmp;
-		tmp.swap(_text);
-		append(std::move(tmp));
-	}
+	if (!_text.empty()) _content.push_back(wrap(std::move(_text)));
 	_content.push_back(src);
 }
 
 void tag::append(tag&& src)
 {
-	if (!_text.empty()) {
-		decltype(_text) tmp;
-		tmp.swap(_text);
-		append(std::move(tmp));
-	}
+	if (!_text.empty()) _content.push_back(wrap(std::move(_text)));
 	_content.push_back(std::move(src));
 }
 
 void tag::append(const std::string& src)
 {
-	if (!_text.empty()) {
-		decltype(_text) tmp;
-		tmp.swap(_text);
-		append(std::move(tmp));
-	}
+	if (!_text.empty()) _content.push_back(wrap(std::move(_text)));
 	_content.push_back(wrap(src));
 }
 
 void tag::append(std::string&& src)
 {
-	if (!_text.empty()) {
-		decltype(_text) tmp;
-		tmp.swap(_text);
-		append(std::move(tmp));
-	}
+	if (!_text.empty()) _content.push_back(wrap(std::move(_text)));
 	_content.push_back(wrap(std::move(src)));
 }
 
