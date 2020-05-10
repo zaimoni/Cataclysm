@@ -358,6 +358,11 @@ void dis_effect(game *g, player &p, disease &dis)
   p.per_cur--;
   break;
 
+ case DI_THC:
+  p.int_cur--;
+  p.per_cur--;
+  break;
+
  case DI_POISON:
   if (one_in(p.has_trait(PF_POISRESIST) ? 900 : 150)) {
    if (!p.is_npc()) messages.add("You're suddenly wracked with pain!");

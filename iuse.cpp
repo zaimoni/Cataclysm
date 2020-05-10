@@ -361,7 +361,7 @@ void iuse::weed(game *g, player *p, item *it, bool t)
  if (p->has_trait(PF_LIGHTWEIGHT)) duration = 90;
  p->hunger += 8;
  if (p->pkill < 15) p->pkill += 5;
- p->add_disease(DI_HIGH, duration);
+ p->add_disease(DI_THC, duration);
 }
 
 void iuse::coke(game *g, player *p, item *it, bool t)
@@ -404,6 +404,7 @@ void iuse::thorazine(game *g, player *p, item *it, bool t)
  p->rem_disease(DI_HALLU);
  p->rem_disease(DI_VISUALS);
  p->rem_disease(DI_HIGH);
+ p->rem_disease(DI_THC);    // B-movie; situation in real life is more complicated
  if (!p->has_disease(DI_DERMATIK)) p->rem_disease(DI_FORMICATION);
  if (!p->is_npc()) messages.add("You feel somewhat sedated.");
 }

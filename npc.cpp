@@ -1113,6 +1113,8 @@ void npc::form_opinion(player *u)
 
  if (u->has_disease(DI_HIGH))
   op_of_u.trust -= 1;
+ if (u->has_disease(DI_THC))
+  op_of_u.trust -= 1;
  if (u->has_disease(DI_DRUNK))
   op_of_u.trust -= 2;
  if (u->stim > 20 || u->stim < -20)

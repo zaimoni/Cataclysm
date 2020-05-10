@@ -450,6 +450,7 @@ void player::activate_bionic(int b, game *g)
   if (has_disease(DI_DRUNK)) good.push_back("Alcohol");
   if (has_disease(DI_CIG)) good.push_back("Nicotine");
   if (has_disease(DI_HIGH)) good.push_back("Intoxicant: Other");
+  if (has_disease(DI_THC)) good.push_back("Intoxicant: Other");
   if (has_disease(DI_TOOK_PROZAC)) good.push_back("Prozac");
   if (has_disease(DI_TOOK_FLUMED)) good.push_back("Antihistamines");
   if (has_disease(DI_ADRENALINE)) good.push_back("Adrenaline Spike");
@@ -479,6 +480,7 @@ void player::activate_bionic(int b, game *g)
   rem_disease(DI_DRUNK);
   rem_disease(DI_CIG);
   rem_disease(DI_HIGH);
+  rem_disease(DI_THC);
   rem_disease(DI_TOOK_PROZAC);
   rem_disease(DI_TOOK_FLUMED);
   rem_disease(DI_ADRENALINE);

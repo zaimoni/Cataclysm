@@ -122,7 +122,8 @@ const char* disease::name() const
 
 	case DI_CIG:		return "Cigarette";
 	case DI_HIGH:		return "High";
-	case DI_VISUALS:	return "Hallucinating";
+    case DI_THC:		return "Stoned";
+    case DI_VISUALS:	return "Hallucinating";
 
 	case DI_ADRENALINE:
 		if (duration > 150) return "Adrenaline Rush";
@@ -284,7 +285,8 @@ You smoked too much.";
 		return "Dexterity + 1;     Intelligence + 1;     Perception + 1";
 
 	case DI_HIGH: return "Intelligence - 1;     Perception - 1";
-	case DI_VISUALS: return "You can't trust everything that you see.";
+    case DI_THC: return "Intelligence - 1;     Perception - 1";
+    case DI_VISUALS: return "You can't trust everything that you see.";
 
 	case DI_ADRENALINE:
 		if (duration > 150) return "Speed +80;   Strength + 5;   Dexterity + 3;   Intelligence - 8;   Perception + 1";
@@ -408,7 +410,8 @@ static const char* const JSON_transcode_disease[] = {
 	"ADRENALINE",
 	"ASTHMA",
 	"METH",
-	"BEARTRAP",
+    "STONED",
+    "BEARTRAP",
 	"IN_PIT",
 	"STUNNED",
 	"DOWNED",
@@ -2585,7 +2588,8 @@ const char* describe(dis_type type)
 	case DI_WEBBED: return "You're covered in webs!";
 	case DI_DRUNK:
 	case DI_HIGH: return "You feel lightheaded.";
-	case DI_ADRENALINE: return "You feel a surge of adrenaline!";
+    case DI_THC: return "You feel lightheaded.";    // \todo once this is built out, be more accurate
+    case DI_ADRENALINE: return "You feel a surge of adrenaline!";
 	case DI_ASTHMA: return "You can't breathe... asthma attack!";
 	case DI_DEAF: return "You're deafened!";
 	case DI_BLIND: return "You're blinded!";
