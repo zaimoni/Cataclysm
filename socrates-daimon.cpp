@@ -67,10 +67,12 @@ static auto typicalMenuLink(std::string&& li_id, std::string&& a_name, std::stri
 {
 	html::tag ret_li("li");
 
+	std::string link_id(li_id + "_link");
 	ret_li.set("id", std::move(li_id));
 
 	html::tag a_tag("a", std::move(a_name));
 	a_tag.set("href", std::move(a_url));
+	a_tag.set("id", std::move(link_id));
 	ret_li.append(std::move(a_tag));
 
 	return ret_li;
@@ -1495,6 +1497,54 @@ int main(int argc, char *argv[])
 		page.start_print(_body);
 		{
 		auto revert = swapDOM("#" NAVIGATION_ID "_link", global_nav, html::tag("b", NAVIGATION_LINK_NAME));
+		page.print(global_nav);
+		*revert.first = std::move(revert.second);
+		}
+		while (page.end_print());
+		}
+
+		unlink(HTML_TARGET);
+		rename(HTML_TARGET ".tmp", HTML_TARGET);
+	}
+
+#undef HTML_TARGET
+
+#define HTML_TARGET "data\\" FIELDS_HTML
+
+	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
+		{
+		html::to_text page(out);
+		page.start_print(_html);
+		_title->append(html::tag::wrap("Cataclysm:Z " FIELDS_LINK_NAME));
+		page.print(_head);
+		_title->clear();
+		page.start_print(_body);
+		{
+		auto revert = swapDOM("#" FIELDS_ID "_link", global_nav, html::tag("b", FIELDS_LINK_NAME));
+		page.print(global_nav);
+		*revert.first = std::move(revert.second);
+		}
+		while (page.end_print());
+		}
+
+		unlink(HTML_TARGET);
+		rename(HTML_TARGET ".tmp", HTML_TARGET);
+	}
+
+#undef HTML_TARGET
+
+#define HTML_TARGET "data\\" TERRAIN_HTML
+
+	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
+		{
+		html::to_text page(out);
+		page.start_print(_html);
+		_title->append(html::tag::wrap("Cataclysm:Z " TERRAIN_LINK_NAME));
+		page.print(_head);
+		_title->clear();
+		page.start_print(_body);
+		{
+		auto revert = swapDOM("#" TERRAIN_ID "_link", global_nav, html::tag("b", TERRAIN_LINK_NAME));
 		page.print(global_nav);
 		*revert.first = std::move(revert.second);
 		}
