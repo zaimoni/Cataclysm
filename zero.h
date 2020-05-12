@@ -8,10 +8,19 @@ template<class T, class U> void clamp_ub(T& x, const U& ref) { if (ref < x) x = 
 template<auto ref, class T> void clamp_ub(T& x) { if (ref < x) x = ref; }
 template<class T> void clamp_ub(T& x, const T& ref) { if (ref < x) x = ref; }
 
+template<class T, class U> T clamped_ub(const T& x, const U& ref) { return (ref < x) ? ref : x; }
+template<auto ref, class T> T clamped_ub(const T& x) { return (ref < x) ? ref : x; }
+template<class T> T clamped_ub(const T& x, const T& ref) { return (ref < x) ? ref : x; }
+
 // lower-bound clamp
 template<class T, class U> void clamp_lb(T& x, const U& ref) { if (ref > x) x = ref; }
 template<auto ref, class T> void clamp_lb(T& x) { if (ref > x) x = ref; }
 template<class T> void clamp_lb(T& x, const T& ref) { if (ref > x) x = ref; }
+
+// bidrectional clamp
+template<class T, class U> T clamped(const T& x, const U& lb, const U& ub) { return (ub < x) ? ub : ((lb > x) ? lb : x); }
+template<auto lb, auto ub, class T> T clamped(const T& x) { return (ub < x) ? ub : ((lb > x) ? lb : x); }
+template<class T> T clamped(const T& x, const T& lb, const T& ub) { return (ub < x) ? ub : ((lb > x) ? lb : x); }
 
 // https://devblogs.microsoft.com/oldnewthing/20200413-00/?p=103669 [Raymond Chen/"The Old New Thing"]
 template<typename T, typename...>

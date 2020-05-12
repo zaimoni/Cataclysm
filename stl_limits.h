@@ -17,6 +17,18 @@ namespace cataclysm {
 		}
 	}
 
+	template<int n, int d, class T>
+	T rational_scaled(T x)
+	{
+		if (std::numeric_limits<T>::max() / n >= x) {
+			x *= n;
+			x /= d;
+		} else {
+			x /= d;
+			x *= n;
+		}
+		return x;
+	}
 }
 
 #endif

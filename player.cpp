@@ -731,61 +731,52 @@ void player::reset(game *g)
 // Didn't just pick something up
  last_item = itype_id(itm_null);
 // Bionic buffs
- if (has_active_bionic(bio_hydraulics))
-  str_cur += 20;
- if (has_bionic(bio_eye_enhancer))
-  per_cur += 2;
- if (has_bionic(bio_carbon))
-  dex_cur -= 2;
- if (has_bionic(bio_armor_head))
-  per_cur--;
- if (has_bionic(bio_armor_arms))
-  dex_cur--;
- if (has_bionic(bio_metabolics) && power_level < max_power_level &&
-     hunger < 100) {
+ if (has_active_bionic(bio_hydraulics)) str_cur += 20;
+ if (has_bionic(bio_eye_enhancer)) per_cur += 2;
+ if (has_bionic(bio_carbon)) dex_cur -= 2;
+ if (has_bionic(bio_armor_head)) per_cur--;
+ if (has_bionic(bio_armor_arms)) dex_cur--;
+ if (has_bionic(bio_metabolics) && power_level < max_power_level && hunger < 100) {
   hunger += 2;
   power_level++;
  }
 
 // Trait / mutation buffs
- if (has_trait(PF_THICK_SCALES))
-  dex_cur -= 2;
- if (has_trait(PF_CHITIN2) || has_trait(PF_CHITIN3))
-  dex_cur--;
- if (has_trait(PF_COMPOUND_EYES) && !wearing_something_on(bp_eyes))
-  per_cur++;
- if (has_trait(PF_ARM_TENTACLES) || has_trait(PF_ARM_TENTACLES_4) ||
-     has_trait(PF_ARM_TENTACLES_8))
-  dex_cur++;
+ if (has_trait(PF_THICK_SCALES)) dex_cur -= 2;
+ if (has_trait(PF_CHITIN2) || has_trait(PF_CHITIN3)) dex_cur--;
+ if (has_trait(PF_COMPOUND_EYES) && !wearing_something_on(bp_eyes)) per_cur++;
+ if (has_trait(PF_ARM_TENTACLES) || has_trait(PF_ARM_TENTACLES_4) || has_trait(PF_ARM_TENTACLES_8)) dex_cur++;
 // Pain
  if (pain > pkill) {
-  str_cur  -=     int((pain - pkill) / 15);
-  dex_cur  -=     int((pain - pkill) / 15);
-  per_cur  -=     int((pain - pkill) / 20);
-  int_cur  -= 1 + int((pain - pkill) / 25);
+  const int delta = pain - pkill;
+  str_cur  -=     delta / 15;
+  dex_cur  -=     delta / 15;
+  per_cur  -=     delta / 20;
+  int_cur  -= 1 + delta / 25;
  }
 // Morale
- if (abs(morale_level()) >= 100) {
-  str_cur  += int(morale_level() / 180);
-  dex_cur  += int(morale_level() / 200);
-  per_cur  += int(morale_level() / 125);
-  int_cur  += int(morale_level() / 100);
+ if (const int morale = morale_level(); abs(morale) >= 100) {
+  str_cur  += morale / 180;
+  dex_cur  += morale / 200;
+  per_cur  += morale / 125;
+  int_cur  += morale / 100;
  }
 // Radiation
  if (radiation > 0) {
-  str_cur  -= int(radiation / 80);
-  dex_cur  -= int(radiation / 110);
-  per_cur  -= int(radiation / 100);
-  int_cur  -= int(radiation / 120);
+  str_cur  -= radiation / 80;
+  dex_cur  -= radiation / 110;
+  per_cur  -= radiation / 100;
+  int_cur  -= radiation / 120;
  }
 // Stimulants
  dex_cur += int(stim / 10);
  per_cur += int(stim /  7);
  int_cur += int(stim /  6);
  if (stim >= 30) { 
-  dex_cur -= int(abs(stim - 15) /  8);
-  per_cur -= int(abs(stim - 15) / 12);
-  int_cur -= int(abs(stim - 15) / 14);
+  const int delta = stim - 15;
+  dex_cur -= delta /  8;
+  per_cur -= delta / 12;
+  int_cur -= delta / 14;
  }
 
 // Set our scent towards the norm
@@ -836,38 +827,17 @@ int player::current_speed(game *g) const
 
  newmoves -= carry_penalty;
 
- if (pain > pkill) {
-  int pain_penalty = int((pain - pkill) * .7);
-  if (pain_penalty > 60) pain_penalty = 60;
-  newmoves -= pain_penalty;
- }
- if (pkill >= 10) {
-  int pkill_penalty = int(pkill * .1);
-  if (pkill_penalty > 30) pkill_penalty = 30;
-  newmoves -= pkill_penalty;
- }
-
- if (abs(morale_level()) >= 100) {
-  int morale_bonus = int(morale_level() / 25);
-  if (morale_bonus < -10) morale_bonus = -10;
-  else if (morale_bonus > 10) morale_bonus = 10;
-  newmoves += morale_bonus;
- }
-
- if (radiation >= 40) {
-  int rad_penalty = radiation / 40;
-  if (rad_penalty > 20) rad_penalty = 20;
-  newmoves -= rad_penalty;
- }
-
- if (thirst > 40) newmoves -= int((thirst - 40) / 10);
- if (hunger > 100) newmoves -= int((hunger - 100) / 10);
-
- newmoves += (stim > 40 ? 40 : stim);
+ if (pain > pkill) newmoves -= clamped_ub<60>(rational_scaled<7, 10>(pain - pkill));
+ if (pkill >= 10) newmoves -= clamped_ub<30>(pkill / 10);
+ if (const auto morale = morale_level();  abs(morale) >= 100) newmoves += clamped<-10,10>(morale/25);
+ if (radiation >= 40) newmoves -= clamped_ub<20>(radiation / 40);
+ if (thirst >= 40+10) newmoves -= (thirst - 40) / 10;
+ if (hunger >= 100+10) newmoves -= (hunger - 100) / 10;
+ newmoves += clamped_ub<40>(stim);
 
  for (const auto& cond : illness) newmoves += cond.speed_boost();
 
- if (has_trait(PF_QUICK)) newmoves = int(newmoves * 1.10);
+ if (has_trait(PF_QUICK)) rational_scale<11, 10>(newmoves);
 
  if (g) {
   if (has_trait(PF_SUNLIGHT_DEPENDENT) && !g->is_in_sunlight(pos)) newmoves -= (g->light_level() >= 12 ? 5 : 10);
