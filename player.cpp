@@ -2166,7 +2166,7 @@ int player::read_speed(bool real_life) const
 {
  int intel = (real_life ? int_cur : int_max);
  int ret = 1000 - 50 * (intel - 8);
- if (has_trait(PF_FASTREADER)) ret *= .8;
+ if (has_trait(PF_FASTREADER)) rational_scale<4,5>(ret);
  if (ret < 100) ret = 100;
  return (real_life ? ret : ret / 10);
 }

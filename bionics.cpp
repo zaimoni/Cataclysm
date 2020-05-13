@@ -347,9 +347,6 @@ causing increased encumberance."}
 
 #define BATTERY_AMOUNT 4 // How much batteries increase your power
 
-void bionics_install_failure(game *g, player *u, int success);
-
-
 // Why put this in a Big Switch?  Why not let bionics have pointers to
 // functions, much like monsters and items?
 //
@@ -678,6 +675,90 @@ void player::activate_bionic(int b, game *g)
  }
 }
 
+static void bionics_install_failure(player *u, int success)
+{
+ success = abs(success) - rng(1, 10);
+ int failure_level = 0;
+ if (success <= 0) {
+  messages.add("The installation fails without incident.");
+  return;
+ }
+
+ while (success > 0) {
+  failure_level++;
+  success -= rng(1, 10);
+ }
+
+ int fail_type = rng(1, (failure_level > 5 ? 5 : failure_level));
+
+ static constexpr const char* const no_go[] = {
+  "You flub the installation",
+  "You mess up the installation",
+  "The installation fails",
+  "The installation is a failure",
+  "You screw up the installation"
+ };
+
+ std::string fail_text(no_go[rng(0, sizeof(no_go)/sizeof(*no_go)-1)]);
+
+ if (fail_type == 3 && u->my_bionics.size() == 0)
+  fail_type = 2; // If we have no bionics, take damage instead of losing some
+
+ switch (fail_type) {
+ case 1:
+  fail_text += ", causing great pain.";
+  u->pain += rng(failure_level * 3, failure_level * 6);
+  break;
+
+ case 2:
+  fail_text += " and your body is damaged.";
+  u->hurtall(rng(failure_level, failure_level * 2));
+  break;
+
+ case 3:
+  fail_text += " and ";
+  fail_text += (u->my_bionics.size() <= failure_level ? "all" : "some");
+  fail_text += " of your existing bionics are lost.";
+  for (int i = 0; i < failure_level && u->my_bionics.size() > 0; i++) {
+   int rem = rng(0, u->my_bionics.size() - 1);
+   EraseAt(u->my_bionics, rem);
+  }
+  break;
+
+ case 4:
+  fail_text += " and do damage to your genetics, causing mutation.";
+  messages.add(fail_text.c_str()); // Failure text comes BEFORE mutation text
+  while (failure_level > 0) {
+   u->mutate();
+   failure_level -= rng(1, failure_level + 2);
+  }
+  return;	// So the failure text doesn't show up twice
+
+ case 5:
+ {
+  fail_text += ", causing a faulty installation.";
+  std::vector<bionic_id> valid;
+  for (int i = max_bio_good + 1; i < max_bio; i++) {
+   bionic_id id = bionic_id(i);
+   if (!u->has_bionic(id)) valid.push_back(id);
+  }
+  if (valid.empty()) {	// We've got all the bad bionics!
+   if (u->max_power_level > 0) {
+    messages.add("You lose power capacity!");
+    u->max_power_level = rng(0, u->max_power_level - 1);
+   }
+// TODO: What if we can't lose power capacity?  No penalty?
+  } else {
+   int index = rng(0, valid.size() - 1);
+   u->add_bionic(valid[index]);
+  }
+ }
+  break;
+ }
+
+ messages.add(fail_text.c_str());
+}
+
 bool player::install_bionics(game *g, const it_bionic* type)
 {
  if (type == NULL) {
@@ -762,7 +843,7 @@ charge mechanism, which must be installed from another CBM.");
     messages.add("Successfully installed batteries.");
     max_power_level += BATTERY_AMOUNT;
    } else
-    bionics_install_failure(g, this, success);
+    bionics_install_failure(this, success);
    werase(w);
    delwin(w);
    g->refresh_all();
@@ -824,7 +905,7 @@ charge mechanism, which must be installed from another CBM.");
    messages.add("Successfully installed %s.", bionic::type[id].name.c_str());
    add_bionic(id);
   } else
-   bionics_install_failure(g, this, success);
+   bionics_install_failure(this, success);
   werase(w);
   delwin(w);
   g->refresh_all();
@@ -834,89 +915,4 @@ charge mechanism, which must be installed from another CBM.");
  delwin(w);
  g->refresh_all();
  return false;
-}
-
-void bionics_install_failure(game *g, player *u, int success)
-{
- success = abs(success) - rng(1, 10);
- int failure_level = 0;
- if (success <= 0) {
-  messages.add("The installation fails without incident.");
-  return;
- }
-
- while (success > 0) {
-  failure_level++;
-  success -= rng(1, 10);
- }
-
- int fail_type = rng(1, (failure_level > 5 ? 5 : failure_level));
- std::string fail_text;
-
- switch (rng(1, 5)) {
-  case 1: fail_text = "You flub the installation";	break;
-  case 2: fail_text = "You mess up the installation";	break;
-  case 3: fail_text = "The installation fails";		break;
-  case 4: fail_text = "The installation is a failure";	break;
-  case 5: fail_text = "You screw up the installation";	break;
- }
-
- if (fail_type == 3 && u->my_bionics.size() == 0)
-  fail_type = 2; // If we have no bionics, take damage instead of losing some
-
- switch (fail_type) {
-
- case 1:
-  fail_text += ", causing great pain.";
-  u->pain += rng(failure_level * 3, failure_level * 6);
-  break;
- 
- case 2:
-  fail_text += " and your body is damaged.";
-  u->hurtall(rng(failure_level, failure_level * 2));
-  break;
-
- case 3:
-  fail_text += " and ";
-  fail_text += (u->my_bionics.size() <= failure_level ? "all" : "some");
-  fail_text += " of your existing bionics are lost.";
-  for (int i = 0; i < failure_level && u->my_bionics.size() > 0; i++) {
-   int rem = rng(0, u->my_bionics.size() - 1);
-   EraseAt(u->my_bionics, rem);
-  }
-  break;
-
- case 4:
-  fail_text += " and do damage to your genetics, causing mutation.";
-  messages.add(fail_text.c_str()); // Failure text comes BEFORE mutation text
-  while (failure_level > 0) {
-   u->mutate();
-   failure_level -= rng(1, failure_level + 2);
-  }
-  return;	// So the failure text doesn't show up twice
-
- case 5:
- {
-  fail_text += ", causing a faulty installation.";
-  std::vector<bionic_id> valid;
-  for (int i = max_bio_good + 1; i < max_bio; i++) {
-   bionic_id id = bionic_id(i);
-   if (!u->has_bionic(id)) valid.push_back(id);
-  }
-  if (valid.empty()) {	// We've got all the bad bionics!
-   if (u->max_power_level > 0) {
-    messages.add("You lose power capacity!");
-    u->max_power_level = rng(0, u->max_power_level - 1);
-   }
-// TODO: What if we can't lose power capacity?  No penalty?
-  } else {
-   int index = rng(0, valid.size() - 1);
-   u->add_bionic(valid[index]);
-  }
- }
-  break;
- }
-
- messages.add(fail_text.c_str());
-
 }

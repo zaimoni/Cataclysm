@@ -1652,14 +1652,16 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
  std::vector<bool> getting_theirs(theirs.size(),false);
  std::vector<bool> getting_yours(yours.size(),false);
 
+// price_adjustment(...) is already notably broken (trading loops?) so probably ok that the 
+// intelligence delta is almost always zero
+// * if player is hyper-intelligent then negative prices possible both ways
 // Adjust the prices based on your barter skill.
+ const double price_scale = price_adjustment(g->u.sklevel[sk_barter]) + (p->int_cur - g->u.int_cur) / 15;
  for (int i = 0; i < their_price.size(); i++) {
-  their_price[i] *= (price_adjustment(g->u.sklevel[sk_barter]) +
-                     (p->int_cur - g->u.int_cur) / 15);
+  their_price[i] *= price_scale;
  }
  for (int i = 0; i < your_price.size(); i++) {
-  your_price[i] /= (price_adjustment(g->u.sklevel[sk_barter]) +
-                    (p->int_cur - g->u.int_cur) / 15);
+  your_price[i] /= price_scale;
  }
 
  int  cash = cost;// How much cash you get in the deal (negative = losing money)
