@@ -755,11 +755,11 @@ void player::reset(game *g)
   int_cur  -= 1 + delta / 25;
  }
 // Morale
- if (const int morale = morale_level(); abs(morale) >= 100) {
-  str_cur  += morale / 180;
-  dex_cur  += morale / 200;
-  per_cur  += morale / 125;
-  int_cur  += morale / 100;
+ if (const int cur_morale = morale_level(); abs(cur_morale) >= 100) {
+  str_cur  += cur_morale / 180;
+  dex_cur  += cur_morale / 200;
+  per_cur  += cur_morale / 125;
+  int_cur  += cur_morale / 100;
  }
 // Radiation
  if (radiation > 0) {
@@ -829,7 +829,7 @@ int player::current_speed(game *g) const
 
  if (pain > pkill) newmoves -= clamped_ub<60>(rational_scaled<7, 10>(pain - pkill));
  if (pkill >= 10) newmoves -= clamped_ub<30>(pkill / 10);
- if (const auto morale = morale_level();  abs(morale) >= 100) newmoves += clamped<-10,10>(morale/25);
+ if (const int cur_morale = morale_level(); abs(cur_morale) >= 100) newmoves += clamped<-10,10>(cur_morale /25);
  if (radiation >= 40) newmoves -= clamped_ub<20>(radiation / 40);
  if (thirst >= 40+10) newmoves -= (thirst - 40) / 10;
  if (hunger >= 100+10) newmoves -= (hunger - 100) / 10;
@@ -970,32 +970,24 @@ void player::disp_info(game *g)
   effect_name.push_back(name);
   effect_text.push_back(cond.description());
  }
- if (abs(morale_level()) >= 100) {
-  bool pos = (morale_level() > 0);
+ if (const int cur_morale = morale_level(), const abs_morale = abs(cur_morale); abs_morale >= 100) {
+  bool pos = (cur_morale > 0);
   effect_name.push_back(pos ? "Elated" : "Depressed");
+  const char* const sgn_text = (pos ? " +" : " ");
   std::stringstream morale_text;
-  if (abs(morale_level()) >= 200)
-   morale_text << "Dexterity" << (pos ? " +" : " ") <<
-                   int(morale_level() / 200) << "   ";
-  if (abs(morale_level()) >= 180)
-   morale_text << "Strength" << (pos ? " +" : " ") <<
-                  int(morale_level() / 180) << "   ";
-  if (abs(morale_level()) >= 125)
-   morale_text << "Perception" << (pos ? " +" : " ") <<
-                  int(morale_level() / 125) << "   ";
-  morale_text << "Intelligence" << (pos ? " +" : " ") <<
-                 int(morale_level() / 100) << "   ";
+  if (200 <= abs_morale) morale_text << "Dexterity" << sgn_text << cur_morale / 200 << "   ";
+  if (180 <= abs_morale) morale_text << "Strength" << sgn_text << cur_morale / 180 << "   ";
+  if (125 <= abs_morale) morale_text << "Perception" << sgn_text << cur_morale / 125 << "   ";
+  morale_text << "Intelligence" << sgn_text << cur_morale / 100 << "   ";
   effect_text.push_back(morale_text.str());
  }
- if (pain - pkill > 0) {
+ if (pain > pkill) {
+  const int pain_delta = pain - pkill;
   effect_name.push_back("Pain");
   std::stringstream pain_text;
-  if (pain - pkill >= 15)
-   pain_text << "Strength -" << int((pain - pkill) / 15) << "   Dexterity -" <<
-                int((pain - pkill) / 15) << "   ";
-  if (pain - pkill >= 20)
-   pain_text << "Perception -" << int((pain - pkill) / 15) << "   ";
-  pain_text << "Intelligence -" << 1 + int((pain - pkill) / 25);
+  if (const auto malus = pain_delta / 15; 1 <= malus) pain_text << "Strength -" << malus << "   Dexterity -" << malus << "   ";
+  if (const auto malus = pain_delta / 20; 1 <= malus) pain_text << "Perception -" << malus << "   ";
+  pain_text << "Intelligence -" << 1 + pain_delta / 25;
   effect_text.push_back(pain_text.str());
  }
  if (stim > 0) {
@@ -1760,13 +1752,11 @@ void player::disp_status(WINDOW *w, game *g)
   col_xp = c_ltgray;
  mvwprintz(w, 2, 45, col_xp, "%d", xp_pool);
 
- nc_color col_pain = c_yellow;
- if (pain - pkill >= 60)
-  col_pain = c_red;
- else if (pain - pkill >= 40)
-  col_pain = c_ltred;
- if (pain - pkill > 0)
-  mvwprintz(w, 3, 0, col_pain, "Pain: %d", pain - pkill);
+ if (pain > pkill) {
+     const int pain_delta = pain - pkill;
+     const nc_color col_pain = (60 <= pain_delta) ? c_red : ((40 <= pain_delta) ? c_ltred : c_yellow);
+     mvwprintz(w, 3, 0, col_pain, "Pain: %d", pain_delta);
+ }
 
  vehicle *veh = g->m.veh_at(pos);
  int dmor = 0;
