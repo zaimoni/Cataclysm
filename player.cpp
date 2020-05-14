@@ -795,10 +795,30 @@ void player::reset(game *g)
  if (str_cur < 0) str_cur = 0;
  if (per_cur < 0) per_cur = 0;
  if (int_cur < 0) int_cur = 0;
- 
+
+ // adjust morale based on pharmacology
  int mor = morale_level();
+ const int thc = disease_level(DI_THC);
+ if (thc) {
+     // handwaving...should get +20 morale at 3 doses.
+     const int thc_morale_ub = clamped_ub<20>(1 + (thc - 1) / (3 * 60 / 20));
+     const int thc_morale = get_morale(MORALE_FEELING_GOOD);   // XXX hijack Chem Imbalance
+     if (thc_morale_ub > thc_morale) {
+         add_morale(MORALE_FEELING_GOOD, 1, thc_morale_ub);
+         mor += 1;
+     } else if ((MIN_MORALE_READ + 5) > mor) {  // B-movie: THC can rescue you from *any* amount of morale penalties enough to read or craft!
+         add_morale(MORALE_FEELING_GOOD, 1);
+         mor += 1;
+     }
+ }
+
  int xp_frequency = 10 - int(mor / 20);
  if (xp_frequency < 1) xp_frequency = 1;
+ if (thc) {
+     // but we don't want to learn when dosed.  Cf. iuse::weed.
+     xp_frequency += 1 + (thc - 1) / 60;
+ }
+
  if (int(messages.turn) % xp_frequency == 0) xp_pool++;
 
  if (xp_pool > 800) xp_pool = 800;
@@ -2159,6 +2179,11 @@ int player::comprehension_percent(skill s, bool real_life) const
  else if (!real_life && intel > 8) percent += 125 - 1000 / intel;
 
  if (has_trait(PF_FASTLEARNER)) percent += 50.;
+
+ if (const int thc = disease_level(DI_THC); 3*60 < thc) {
+     // B-movie: no effect as long as painkill not overdosed (at normal weight).  cf iuse::weed
+     percent /= 1.0 + (thc - 3*60) / 400.0;   // needs empirical tuning.  For now, just be annoying.
+ }
  return (int)(percent);
 }
 
@@ -2167,6 +2192,10 @@ int player::read_speed(bool real_life) const
  int intel = (real_life ? int_cur : int_max);
  int ret = 1000 - 50 * (intel - 8);
  if (has_trait(PF_FASTREADER)) rational_scale<4,5>(ret);
+ if (const int thc = disease_level(DI_THC)) {  // don't overwhelm fast reader...at least, if we haven't had enough to max out pain kill
+     // cf iuse::weed.  Neutral point for cancelling fast reader handwaved as 4 full doses, at least at normal weight
+     ret += (ret / 16) * (1 + (thc - 1) / 60);
+ }
  if (ret < 100) ret = 100;
  return (real_life ? ret : ret / 10);
 }
@@ -3052,7 +3081,16 @@ void player::add_morale(morale_type type, int bonus, int max_bonus, const itype*
  // Didn't increase an existing point, so add a new one
  morale.push_back(morale_point(type, item_type, bonus));
 }
- 
+
+int player::get_morale(morale_type type, const itype* item_type) const
+{
+    for (auto& tmp : morale) {
+        if (tmp.type == type && tmp.item_type == item_type) return tmp.bonus;
+    }
+    return 0;
+}
+
+
 void player::sort_inv()
 {
  // guns ammo weaps armor food tools books other
