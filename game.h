@@ -12,6 +12,7 @@
 #include "monster.h"
 #include "Zaimoni.STL/Logging.h"
 #include "Zaimoni.STL/GDI/box.hpp"
+#include <memory>
 
 #define LONG_RANGE 10
 #define BLINK_SPEED 300
@@ -331,7 +332,7 @@ public:
   // There was no "clearing" or "archival" operation, however.
   // This would be a wrapper for input(), possibly ignoring cancelled actions.
 
-  special_game *gamemode;
+  std::unique_ptr<special_game> gamemode;
 
   int grscent[SEEX * MAPSIZE][SEEY * MAPSIZE];	// The scent map
 };

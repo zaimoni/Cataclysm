@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
  rand();  // For some reason a call to rand() seems to be necessary to avoid
           // repetion.
  bool quit_game = false;
- game *g = new game;
+ std::unique_ptr<game> g(new game);
 #if 0
 // #ifndef NDEBUG
  if (JSON::cache.count("tiles")) {

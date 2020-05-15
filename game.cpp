@@ -45,6 +45,7 @@ bool mongroup::add_one() {
 
 // This is the main game set-up process.
 game::game()
+: gamemode(new special_game)
 {
  clear();	// Clear the screen
  intro();	// Print an intro screen, make sure we're at least 80x25
@@ -78,13 +79,10 @@ game::game()
  werase(w_messages);
  w_status = newwin(STATUS_BAR_HEIGHT, PANELX, VIEW - STATUS_BAR_HEIGHT, VIEW);
  werase(w_status);
-
- gamemode = new special_game;	// Nothing, basically.
 }
 
-game::~game()	// XXX cf main() no delete call, OS cleanup (thus destructor not called and issues with dynamic memory allocation from init functions also not handled) \todo fix
+game::~game()
 {
- delete gamemode;
  delwin(w_terrain);
  delwin(w_minimap);
  delwin(w_HP);
@@ -418,11 +416,9 @@ http://github.com/zaimoni/Cataclysm .");
     }
     if (ch == 'l' || ch == '\n' || ch == '>') {
      if (sel2 >= 1 && sel2 < NUM_SPECIAL_GAMES) {
-      delete gamemode;
-      gamemode = get_special_game( special_game_id(sel2) );
+      gamemode = decltype(gamemode)(get_special_game( special_game_id(sel2) ));
       if (!gamemode->init(this)) {
-       delete gamemode;
-       gamemode = new special_game;
+       gamemode = decltype(gamemode)(new special_game);
        u = player();
        delwin(w_open);
        return (opening_screen());
