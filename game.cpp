@@ -769,10 +769,9 @@ void game::process_activity()
    case ACT_RELOAD:
     u.weapon.reload(u, u.activity.index);
     if (u.weapon.is_gun() && u.weapon.has_flag(IF_RELOAD_ONE)) {
-     messages.add("You insert a cartridge into your %s.",
-             u.weapon.tname().c_str());
+     messages.add("You insert a cartridge into your %s.", u.weapon.tname().c_str());
      if (u.recoil < 8) u.recoil = 8;
-     if (u.recoil > 8) u.recoil = (8 + u.recoil) / 2;
+     else if (u.recoil > 8) u.recoil = (8 + u.recoil) / 2;
     } else {
      messages.add("You reload your %s.", u.weapon.tname().c_str());
      u.recoil = 6;
@@ -787,11 +786,8 @@ void game::process_activity()
 
     if (u.sklevel[reading->type] < reading->level) {
      messages.add("You learn a little about %s!", skill_name(reading->type));
-     int min_ex = reading->time / 10 + u.int_cur / 4,
-         max_ex = reading->time /  5 + u.int_cur / 2 - u.sklevel[reading->type];
-     if (min_ex < 1) min_ex = 1;
-     if (max_ex < 2) max_ex = 2;
-     if (max_ex > 10) max_ex = 10;
+     int min_ex = clamped_lb<1>(reading->time / 10 + u.int_cur / 4),
+         max_ex = clamped<2,10>(reading->time /  5 + u.int_cur / 2 - u.sklevel[reading->type]);
      u.skexercise[reading->type] += rng(min_ex, max_ex);
      if (u.sklevel[reading->type] +
         (u.skexercise[reading->type] >= 100 ? 1 : 0) >= reading->level)

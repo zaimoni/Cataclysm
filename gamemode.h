@@ -34,7 +34,6 @@ struct special_game
  virtual void post_action(game *g, action_id act) { };
 // game_over is run when the player dies (or the game otherwise ends)
  virtual void game_over(game *g) { };
-
 };
 
 // TUTORIAL:
@@ -66,19 +65,17 @@ NUM_LESSONS
 
 struct tutorial_game : public special_game
 {
- virtual special_game_id id() { return SGAME_TUTORIAL; };
- virtual bool init(game *g);
- virtual void per_turn(game *g);
- virtual void pre_action(game *g, action_id &act);
- virtual void post_action(game *g, action_id act);
- virtual void game_over(game *g) { };
+ special_game_id id() override { return SGAME_TUTORIAL; };
+ bool init(game *g) override;
+ void per_turn(game *g) override;
+ void pre_action(game *g, action_id &act) override;
+ void post_action(game *g, action_id act) override;
 
 private:
  void add_message(game *g, tut_lesson lesson);
 
  bool tutorials_seen[NUM_LESSONS];
 };
-
 
 // DEFENSE
 
@@ -120,16 +117,15 @@ struct defense_game : public special_game
 {
  defense_game();
 
- virtual special_game_id id() { return SGAME_DEFENSE; };
- virtual bool init(game *g);
- virtual void per_turn(game *g);
- virtual void pre_action(game *g, action_id &act);
- virtual void post_action(game *g, action_id act);
- virtual void game_over(game *g);
+ special_game_id id() override { return SGAME_DEFENSE; };
+ bool init(game *g) override;
+ void per_turn(game *g) override;
+ void pre_action(game *g, action_id &act) override;
+ void post_action(game *g, action_id act) override;
+ void game_over(game *g) override;
 
 private:
  void init_to_style(defense_style new_style);
- void load_style(std::string style_name);
 
  void setup();
  void refresh_setup(WINDOW *w, int selection);
@@ -138,7 +134,6 @@ private:
  static void init_constructions();
  static void init_recipes();
  void init_map(game *g);
- std::vector<itype_id> carvan_items(caravan_category cat);
 
  void spawn_wave(game *g);
  void caravan(game *g);
@@ -146,7 +141,6 @@ private:
  void spawn_wave_monster(game *g, const mtype *type);
 
  std::string special_wave_message(std::string name);
-
 
 // DATA
  int current_wave;
@@ -176,7 +170,6 @@ private:
  bool sleep;		// Do we need to sleep?
 
  bool mercenaries;	// Do caravans offer the option of hiring a mercenary?
-
 };
 
 #endif

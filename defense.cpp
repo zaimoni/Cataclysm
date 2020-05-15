@@ -17,7 +17,6 @@
 #define NUMALIGN(n) ((n) >= 10000 ? 20 : ((n) >= 1000 ? 21 :\
                      ((n) >= 100 ? 22 : ((n) >= 10 ? 23 : 24))))
 
-std::string caravan_category_name(caravan_category cat);
 std::vector<itype_id> caravan_items(caravan_category cat);
 
 int caravan_price(player &u, int price);
@@ -988,7 +987,7 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
  }
 }
 
-std::string caravan_category_name(caravan_category cat)
+static std::string caravan_category_name(caravan_category cat)
 {
  switch (cat) {
   case CARAVAN_CART:		return "Shopping Cart";
