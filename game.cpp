@@ -819,7 +819,12 @@ void game::process_activity()
     break;
     
    case ACT_VEHICLE:
-    complete_vehicle (this);
+    try {
+        complete_vehicle(this);
+    } catch(std::string& e) {
+        debugmsg(e.c_str());    // failure
+        u.activity.type = ACT_NULL;
+    }
     break;
    }
 

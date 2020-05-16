@@ -576,17 +576,10 @@ void veh_interact::display_list (int pos)
 
 void complete_vehicle (game *g)
 {
-    if (g->u.activity.values.size() < 7)
-    {
-        debugmsg ("Invalid activity ACT_VEHICLE values:%d", g->u.activity.values.size());
-        return;
-    }
+    if (g->u.activity.values.size() < 7) throw std::string("Invalid activity ACT_VEHICLE values: ") + std::to_string(g->u.activity.values.size());
     vehicle* const veh = g->m.veh_at (g->u.activity.values[0], g->u.activity.values[1]);
-    if (!veh)
-    {
-        debugmsg ("Activity ACT_VEHICLE: vehicle not found");
-        return;
-    }
+    if (!veh) throw std::string("Activity ACT_VEHICLE: vehicle not found");
+
     char cmd = (char) g->u.activity.index;
     int dx = g->u.activity.values[4];
     int dy = g->u.activity.values[5];
@@ -601,8 +594,7 @@ void complete_vehicle (game *g)
     switch (cmd)
     {
     case 'i':
-        if (veh->install_part (dx, dy, (vpart_id) part) < 0)
-            debugmsg ("complete_vehicle install part fails dx=%d dy=%d id=%d", dx, dy, part);
+        if (veh->install_part(dx, dy, (vpart_id)part) < 0) throw std::string("complete_vehicle install part fails dx=") + std::to_string(dx) + " dy=" + std::to_string(dy) + " id=" + std::to_string(part);
         comps.push_back(component(vpart_info::list[part].item, 1));
         consume_items(g->m, g->u, comps);
         tools.push_back(component(itm_welder, welder_charges));
@@ -629,8 +621,7 @@ void complete_vehicle (game *g)
         g->u.practice (sk_mechanics, (vpart_info::list[part].difficulty + dd) * 5 + 20);
         break;
     case 'f':
-        if (!veh->refill(g->u, part, true))
-            debugmsg ("complete_vehicle refill broken");
+        if (!veh->refill(g->u, part, true)) throw std::string("complete_vehicle refill broken");
         veh->refill(g->u, part);
         break;
     case 'o':
