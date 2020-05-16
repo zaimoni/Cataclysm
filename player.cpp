@@ -3631,6 +3631,28 @@ std::pair<int, const item*> player::have_item(char let) const
 	return decltype(ret)(-1, 0);
 }
 
+item* player::decode_item_index(const int n)
+{
+    if (0 <= n) return inv.size() > n ? &inv[n] : 0;
+    else if (-2 == n) return &weapon;
+    else if (-3 >= n) {
+        const auto armor_n = -3 - n;
+        return worn.size() > armor_n ? &worn[n] : 0;
+    }
+    return 0;
+}
+
+const item* player::decode_item_index(const int n) const
+{
+    if (0 <= n) return inv.size() > n ? &inv[n] : 0;
+    else if (-2 == n) return &weapon;
+    else if (-3 >= n) {
+        const auto armor_n = -3 - n;
+        return worn.size() > armor_n ? &worn[n] : 0;
+    }
+    return 0;
+}
+
 
 bool player::eat(int index)
 {
@@ -4173,43 +4195,25 @@ void player::read(game *g, char ch)
  }
 
 // Find the object
- int index = -1;
- if (weapon.invlet == ch) index = -2;
- else {
-  for (size_t i = 0; i < inv.size(); i++) {
-   if (inv[i].invlet == ch) {
-    index = i;
-	break;
-   }
-  }
- }
+ auto used = have_item(ch);
 
- if (index == -1) {
+ if (!used.second) {
   messages.add("You do not have that item.");
   return;
  }
 
 // Some macguffins can be read, but they aren't treated like books.
- const it_macguffin* mac = NULL;
- item *used = NULL;
- if (index == -2 && weapon.is_macguffin()) {
-  mac = dynamic_cast<const it_macguffin*>(weapon.type);
-  used = &weapon;
- } else if (index >= 0 && inv[index].is_macguffin()) {
-  mac = dynamic_cast<const it_macguffin*>(inv[index].type);
-  used = &(inv[index]);
+ if (const it_macguffin* mac = used.second->is_macguffin() ? dynamic_cast<const it_macguffin*>(used.second->type) : 0) {
+     (*mac->use)(g, this, used.second, false);
+     return;
  }
- if (mac != NULL) {
-  (*mac->use)(g, this, used, false);
+
+ if (!used.second->is_book()) {
+  messages.add("Your %s is not good reading material.", used.second->tname().c_str());
   return;
  }
 
- if ((index >=  0 && !inv[index].is_book()) || (index == -2 && !weapon.is_book())) {
-  messages.add("Your %s is not good reading material.", (-2 == index ? weapon : inv[index]).tname().c_str());
-  return;
- }
-
- const it_book* const book = dynamic_cast<const it_book*>((-2 == index) ? weapon.type : inv[index].type);
+ const it_book* const book = dynamic_cast<const it_book*>(used.second->type);
  if (book->intel > 0 && has_trait(PF_ILLITERATE)) {
   messages.add("You're illiterate!");
   return;
@@ -4225,7 +4229,7 @@ void player::read(game *g, char ch)
 
 // Base read_speed() is 1000 move points (1 minute per tmp->time)
  int time = book->time * read_speed();
- activity = player_activity(ACT_READ, time, index);
+ activity = player_activity(ACT_READ, time, used.first);
  moves = 0;
 }
  

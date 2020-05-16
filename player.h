@@ -251,6 +251,8 @@ public:
  std::vector<int> have_ammo(ammotype at) const;// Returns a list of indices of the ammo
  std::pair<int, item*> have_item(char let);
  std::pair<int, const item*> have_item(char let) const;
+ item* decode_item_index(int n);
+ const item* decode_item_index(int n) const;
 
 // integrity checks
  void screenpos_set(point pt);

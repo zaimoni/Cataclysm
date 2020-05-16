@@ -776,7 +776,9 @@ void game::process_activity()
 
    case ACT_READ:
     {
-    const it_book* reading = dynamic_cast<const it_book*>(-2 == u.activity.index ? u.weapon.type : u.inv[u.activity.index].type);
+    const item* const text = u.decode_item_index(u.activity.index);
+    assert(text);
+    const it_book* reading = dynamic_cast<const it_book*>(text->type);
 
     if (reading->fun != 0) u.add_morale(MORALE_BOOK, reading->fun * 5, reading->fun * 15, reading);
 
