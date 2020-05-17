@@ -3653,7 +3653,6 @@ const item* player::decode_item_index(const int n) const
     return 0;
 }
 
-
 bool player::eat(int index)
 {
  auto g = game::active();
@@ -3663,45 +3662,29 @@ bool player::eat(int index)
  if (-1 > index) {
   messages.add("You do not have that item.");
   return false;
- } else if (index == -1) {
-  if (weapon.is_food_container(*this)) {
-   eaten = &weapon.contents[0];
-   which = -2;
-   if (weapon.contents[0].is_food()) comest = dynamic_cast<const it_comest*>(weapon.contents[0].type);
-  } else if (weapon.is_food(*this)) {
-   eaten = &weapon;
-   which = -1;
-   if (weapon.is_food()) comest = dynamic_cast<const it_comest*>(weapon.type);
-  } else {
-   if (!is_npc())
-    messages.add("You can't eat your %s.", weapon.tname().c_str());
-   else
-    debugmsg("%s tried to eat a %s", name.c_str(), weapon.tname().c_str());
-   return false;
-  }
- } else {
-  if (inv[index].is_food_container(*this)) {
-   eaten = &(inv[index].contents[0]);
-   which = index + inv.size();
-   if (inv[index].contents[0].is_food()) comest = dynamic_cast<const it_comest*>(inv[index].contents[0].type);
-  } else if (inv[index].is_food(*this)) {
-   eaten = &inv[index];
-   which = index;
-   if (inv[index].is_food()) comest = dynamic_cast<const it_comest*>(inv[index].type);
-  } else {
-   if (!is_npc())
-    messages.add("You can't eat your %s.", inv[index].tname().c_str());
-   else
-    debugmsg("%s tried to eat a %s", name.c_str(), inv[index].tname().c_str());
-   return false;
-  }
  }
- if (!eaten) return false;
+ const bool trying_weapon = (-1 == index);  // lookup_item encoding, not have_item encoding
+ if (trying_weapon) {
+     eaten = &weapon;
+     which = -1;
+ } else {
+     eaten = &inv[index];
+     which = index;
+ }
+ if (eaten->is_food_container(*this)) {
+     eaten = &eaten->contents[0];
+     which += trying_weapon ? -1 : inv.size();
+ } else if (!eaten->is_food(*this)) {
+     if (!is_npc()) messages.add("You can't eat your %s.", eaten->tname().c_str());
+     else debugmsg("%s tried to eat a %s", name.c_str(), eaten->tname().c_str());
+     return false;
+ }
+ if (eaten->is_food()) comest = dynamic_cast<const it_comest*>(eaten->type);
 
  if (eaten->is_ammo()) { // For when bionics let you eat fuel
   charge_power(eaten->charges / 20);
   eaten->charges = 0;
- } else if (!eaten->type->is_food() && !eaten->is_food_container(*this)) {
+ } else if (!comest) {
 // For when bionics let you burn organic materials
   int charge = (eaten->volume() + eaten->weight()) / 2;
   if (eaten->type->m1 == LEATHER || eaten->type->m2 == LEATHER) charge /= 4;
@@ -3709,10 +3692,6 @@ bool player::eat(int index)
   charge_power(charge);
  } else { // It's real food!  i.e. an it_comest
 // Remember, comest points to the it_comest data
-  if (comest == NULL) {
-   debugmsg("player::eat(%s); comest is NULL!", eaten->tname().c_str());
-   return false;
-  }
   if (comest->tool != itm_null) {
    bool has = has_amount(comest->tool, 1);
    if (item::types[comest->tool]->count_by_charges()) has = has_charges(comest->tool, 1);
@@ -3721,8 +3700,7 @@ bool player::eat(int index)
     return false;
    }
   }
-  bool overeating = (!has_trait(PF_GOURMAND) && hunger < 0 &&
-                     comest->nutr >= 15);
+  bool overeating = (!has_trait(PF_GOURMAND) && hunger < 0 && comest->nutr >= 15);
   bool spoiled = eaten->rotten();
 
   last_item = itype_id(eaten->type->id);
