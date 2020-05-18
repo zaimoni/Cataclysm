@@ -4054,7 +4054,11 @@ void game::pickup(const point& pt, int min)
   if (newit.made_of(LIQUID)) {
    messages.add("You can't pick up a liquid!");
    return;
+  } else if (u.weight_carried() + newit.weight() > u.weight_capacity()) {
+      messages.add("The %s is too heavy!", newit.tname().c_str());
+      return;
   }
+
   if (newit.invlet == 0) {
    newit.invlet = nextinv;
    advance_nextinv();
@@ -4068,9 +4072,6 @@ void game::pickup(const point& pt, int min)
   if (iter == 52) {
    messages.add("You're carrying too many items!");
    return;
-  } else if (u.weight_carried() + newit.weight() > u.weight_capacity()) {
-   messages.add("The %s is too heavy!", newit.tname().c_str());
-   decrease_nextinv();
   } else if (u.volume_carried() + newit.volume() > u.volume_capacity()) {
    if (u.is_armed()) {
     if (!u.weapon.has_flag(IF_NO_UNWIELD)) {
@@ -4942,7 +4943,7 @@ void game::unload()
    }
    if (content.made_of(LIQUID)) {
     if (!handle_liquid(content, false, false))
-     new_contents.push_back(content);// Put it back in (we canceled)
+     new_contents.push_back(std::move(content));// Put it back in (we canceled)
    } else {
     if (u.volume_carried() + content.volume() <= u.volume_capacity() &&
         u.weight_carried() + content.weight() <= u.weight_capacity() &&
@@ -4956,7 +4957,7 @@ void game::unload()
    }
    EraseAt(u.weapon.contents, 0);
   }
-  u.weapon.contents = new_contents;
+  u.weapon.contents = std::move(new_contents);
   return;
  }
 // Unloading a gun or tool!
@@ -4976,11 +4977,7 @@ void game::unload()
    }
   }
  }
- item newam;
- if (u.weapon.is_gun() && u.weapon.curammo != NULL)
-  newam = item(u.weapon.curammo, messages.turn);
- else
-  newam = item(item::types[default_ammo(u.weapon.ammo_type())], messages.turn);
+ item newam((u.weapon.is_gun() && u.weapon.curammo) ? u.weapon.curammo : item::types[default_ammo(u.weapon.ammo_type())], messages.turn);
  while (u.weapon.charges > 0) {
   int iter = 0;
   while ((newam.invlet == 0 || u.has_item(newam.invlet)) && iter < 52) {
@@ -5003,7 +5000,7 @@ void game::unload()
   } else
    m.add_item(u.pos, newam);
  }
- u.weapon.curammo = NULL;
+ u.weapon.curammo = 0;
 }
 
 void game::wield()
