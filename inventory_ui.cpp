@@ -2,71 +2,59 @@
 #include "output.h"
 #include "keypress.h"
 #include "recent_msg.h"
+#include "stl_typetraits.h"
+#include <array>
 
-std::string CATEGORIES[8] =
+static const std::string CATEGORIES[8] =
  {"FIREARMS:", "AMMUNITION:", "CLOTHING:", "COMESTIBLES:",
   "TOOLS:", "BOOKS:", "WEAPONS:", "OTHER:"};
 
-void print_inv_statics(game *g, WINDOW* w_inv, std::string title,
-                       std::vector<char> dropped_items)
+static void print_inv_statics(game *g, WINDOW* w_inv, std::string title, const std::vector<char>& dropped_items)
 {
 // Print our header
  mvwprintw(w_inv, 0, 0, title.c_str());
 
 // Print weight
  mvwprintw(w_inv, 0, 40, "Weight: ");
- if (g->u.weight_carried() >= g->u.weight_capacity() * .25)
-  wprintz(w_inv, c_red, "%d", g->u.weight_carried());
- else
-  wprintz(w_inv, c_ltgray, "%d", g->u.weight_carried());
- wprintz(w_inv, c_ltgray, "/%d/%d", int(g->u.weight_capacity() * .25),
-                                    g->u.weight_capacity());
+ const int my_w_capacity = g->u.weight_capacity();
+ const int my_w_carried = g->u.weight_carried();
+ wprintz(w_inv, (my_w_carried >= my_w_capacity / 4) ? c_red : c_ltgray, "%d", my_w_carried);
+ wprintz(w_inv, c_ltgray, "/%d/%d", my_w_capacity/4, my_w_capacity);
 
 // Print volume
  mvwprintw(w_inv, 0, 60, "Volume: ");
- if (g->u.volume_carried() > g->u.volume_capacity() - 2)
-  wprintz(w_inv, c_red, "%d", g->u.volume_carried());
- else
-  wprintz(w_inv, c_ltgray, "%d", g->u.volume_carried());
- wprintw(w_inv, "/%d", g->u.volume_capacity() - 2);
+ const int my_v_capacity = g->u.volume_capacity() - 2;
+ const int my_v_carried = g->u.volume_carried();
+ wprintz(w_inv, (my_v_carried > my_v_capacity) ? c_red : c_ltgray, "%d", my_v_carried);
+ wprintw(w_inv, "/%d", my_v_capacity);
 
 // Print our weapon
  mvwprintz(w_inv, 2, 40, c_magenta, "WEAPON:");
- int dropping_weapon = false;
- for (int i = 0; i < dropped_items.size() && !dropping_weapon; i++) {
-  if (dropped_items[i] == g->u.weapon.invlet)
-   dropping_weapon = true;
- }
  if (g->u.is_armed()) {
+  const bool dropping_weapon = cataclysm::any(dropped_items, g->u.weapon.invlet);
   if (dropping_weapon)
-   mvwprintz(w_inv, 3, 40, c_white, "%c + %s", g->u.weapon.invlet,
-             g->u.weapname().c_str());
+   mvwprintz(w_inv, 3, 40, c_white, "%c + %s", g->u.weapon.invlet, g->u.weapname().c_str());
   else
-   mvwprintz(w_inv, 3, 40, g->u.weapon.color_in_inventory(g->u), "%c - %s",
-             g->u.weapon.invlet, g->u.weapname().c_str());
+   mvwprintz(w_inv, 3, 40, g->u.weapon.color_in_inventory(g->u), "%c - %s", g->u.weapon.invlet, g->u.weapname().c_str());
  } else if (g->u.weapon.is_style())
-  mvwprintz(w_inv, 3, 40, c_ltgray, "%c - %s",
-            g->u.weapon.invlet, g->u.weapname().c_str());
+  mvwprintz(w_inv, 3, 40, c_ltgray, "%c - %s", g->u.weapon.invlet, g->u.weapname().c_str());
  else
   mvwprintz(w_inv, 3, 42, c_ltgray, g->u.weapname().c_str());
 // Print worn items
- if (g->u.worn.size() > 0)
-  mvwprintz(w_inv, 5, 40, c_magenta, "ITEMS WORN:");
- for (int i = 0; i < g->u.worn.size(); i++) {
-  bool dropping_armor = false;
-  for (int j = 0; j < dropped_items.size() && !dropping_armor; j++) {
-   if (dropped_items[j] == g->u.worn[i].invlet)
-    dropping_armor = true;
-  }
-  
-  mvwprintz(w_inv, 6 + i, 40, (dropping_armor ? c_white : c_ltgray), "%c + %s", g->u.worn[i].invlet,
-            g->u.worn[i].tname().c_str());
+ if (!g->u.worn.empty()) {
+     mvwprintz(w_inv, 5, 40, c_magenta, "ITEMS WORN:");
+     int row = 6;
+     for (const item& armor : g->u.worn) {
+         const bool dropping_armor = cataclysm::any(dropped_items, armor.invlet);
+         mvwprintz(w_inv, row++, 40, (dropping_armor ? c_white : c_ltgray), "%c + %s", armor.invlet, armor.tname().c_str());
+     }
  }
 }
  
-std::vector<int> find_firsts(const inventory &inv)
+static auto find_firsts(const inventory &inv)
 {
- std::vector<int> firsts(8, -1);
+ std::array<int, 8> firsts;
+ firsts.fill(-1);
 
  for (size_t i = 0; i < inv.size(); i++) {
   if (firsts[0] == -1 && inv[i].is_gun())
@@ -95,65 +83,63 @@ std::vector<int> find_firsts(const inventory &inv)
 // Display current inventory.
 char game::inv(std::string title)
 {
- WINDOW* w_inv = newwin(VIEW, SCREEN_WIDTH, 0, 0);
- const int maxitems = 20;	// Number of items to show at one time.
+ static const std::vector<char> null_vector;
+ constexpr const int maxitems = 20;	// Number of items to show at one time.
  char ch = '.';
  int start = 0, cur_it;
  u.sort_inv();
  u.inv.restack(&u);
- std::vector<char> null_vector;
- print_inv_statics(this, w_inv, title, null_vector);
+ std::unique_ptr<WINDOW, curses_full_delete> w_inv(newwin(VIEW, SCREEN_WIDTH, 0, 0));
+ print_inv_statics(this, w_inv.get(), title, null_vector);
 // Gun, ammo, weapon, armor, food, tool, book, other
- std::vector<int> firsts = find_firsts(u.inv);
+ const auto firsts = find_firsts(u.inv);
 
  do {
   if (ch == '<' && start > 0) { // Clear lines and shift
    for (int i = 1; i < VIEW; i++)
-    mvwprintz(w_inv, i, 0, c_black, "                                        ");
+    mvwprintz(w_inv.get(), i, 0, c_black, "                                        ");
    start -= maxitems;
    if (start < 0) start = 0;
-   mvwprintw(w_inv, maxitems + 2, 0, "         ");
+   mvwprintw(w_inv.get(), maxitems + 2, 0, "         ");
   }
   if (ch == '>' && cur_it < u.inv.size()) { // Clear lines and shift
    start = cur_it;
-   mvwprintw(w_inv, maxitems + 2, 12, "            ");
+   mvwprintw(w_inv.get(), maxitems + 2, 12, "            ");
    for (int i = 1; i < VIEW; i++)
-    mvwprintz(w_inv, i, 0, c_black, "                                        ");
+    mvwprintz(w_inv.get(), i, 0, c_black, "                                        ");
   }
   int cur_line = 2;
   for (cur_it = start; cur_it < start + maxitems && cur_line < 23; cur_it++) {
 // Clear the current line;
-   mvwprintw(w_inv, cur_line, 0, "                                    ");
+   mvwprintw(w_inv.get(), cur_line, 0, "                                    ");
 // Print category header
    for (int i = 0; i < 8; i++) {
     if (cur_it == firsts[i]) {
-     mvwprintz(w_inv, cur_line, 0, c_magenta, CATEGORIES[i].c_str());
+     mvwprintz(w_inv.get(), cur_line, 0, c_magenta, CATEGORIES[i].c_str());
      cur_line++;
     }
    }
    if (cur_it < u.inv.size()) {
-    mvwputch (w_inv, cur_line, 0, c_white, u.inv[cur_it].invlet);
-    mvwprintz(w_inv, cur_line, 1, u.inv[cur_it].color_in_inventory(u), " %s",
+    mvwputch (w_inv.get(), cur_line, 0, c_white, u.inv[cur_it].invlet);
+    mvwprintz(w_inv.get(), cur_line, 1, u.inv[cur_it].color_in_inventory(u), " %s",
               u.inv[cur_it].tname().c_str());
     if (u.inv.stack_at(cur_it).size() > 1)
-     wprintw(w_inv, " [%d]", u.inv.stack_at(cur_it).size());
+     wprintw(w_inv.get(), " [%d]", u.inv.stack_at(cur_it).size());
     if (u.inv[cur_it].charges > 0)
-     wprintw(w_inv, " (%d)", u.inv[cur_it].charges);
+     wprintw(w_inv.get(), " (%d)", u.inv[cur_it].charges);
     else if (u.inv[cur_it].contents.size() == 1 &&
              u.inv[cur_it].contents[0].charges > 0)
-     wprintw(w_inv, " (%d)", u.inv[cur_it].contents[0].charges);
+     wprintw(w_inv.get(), " (%d)", u.inv[cur_it].contents[0].charges);
    }
    cur_line++;
   }
   if (start > 0)
-   mvwprintw(w_inv, maxitems + 4, 0, "< Go Back");
+   mvwprintw(w_inv.get(), maxitems + 4, 0, "< Go Back");
   if (cur_it < u.inv.size())
-   mvwprintw(w_inv, maxitems + 4, 12, "> More items");
-  wrefresh(w_inv);
+   mvwprintw(w_inv.get(), maxitems + 4, 12, "> More items");
+  wrefresh(w_inv.get());
   ch = getch();
  } while (ch == '<' || ch == '>');
- werase(w_inv);
- delwin(w_inv);
  erase();
  refresh_all();
  return ch;
@@ -171,7 +157,7 @@ std::vector<item> game::multidrop()
  bool warned_about_bionic = false; // Printed add_msg re: dropping bionics
  print_inv_statics(this, w_inv, "Multidrop:", weapon_and_armor);
 // Gun, ammo, weapon, armor, food, tool, book, other
- std::vector<int> firsts = find_firsts(u.inv);
+ const auto firsts = find_firsts(u.inv);
 
  char ch = '.';
  int start = 0;

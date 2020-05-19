@@ -1,4 +1,5 @@
 #ifndef WRAP_CURSES_H
+#define WRAP_CURSES_H 1
 
 // to force system-installed curses, define CURSES_HEADER appropriately
 #ifndef CURSES_HEADER
@@ -21,6 +22,24 @@
 #ifndef ERR
 #error curses library should provide ERR macro
 #endif
+
+// Not a standard curses define; only effective for noecho or timeout modes.
+// No ALT key can be seen directly from curses, if this is possible.
+#define KEY_ESCAPE 27
+
+struct curses_delete {
+    constexpr curses_delete() noexcept = default;
+    void operator()(WINDOW* w) const { delwin(w); }
+};
+
+struct curses_full_delete {
+    constexpr curses_full_delete() noexcept = default;
+    void operator()(WINDOW* w) const {
+        werase(w);
+        wrefresh(w);    // \todo? unsure if this is actually needed
+        delwin(w);
+    }
+};
 
 #ifndef CURSES_HAS_TILESET
 // stock curses library does not have tileset extensions; no-op them

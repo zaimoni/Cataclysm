@@ -6,7 +6,6 @@
 #include "action.h"
 #include "keymap.h"
 #endif
-#include "key_core.h"
 
 // Simple text input--translates numpad to vikeys
 long input();

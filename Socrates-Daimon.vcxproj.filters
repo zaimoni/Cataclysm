@@ -115,9 +115,6 @@
     <ClInclude Include="rng.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="key_core.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="item.h">
       <Filter>Header Files</Filter>
     </ClInclude>

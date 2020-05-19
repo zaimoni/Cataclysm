@@ -2,7 +2,6 @@
 #include "output.h"
 #include "options.h"
 #include "rng.h"
-#include "key_core.h"
 #include "ui.h"
 #include <stdlib.h>
 #include <string.h>

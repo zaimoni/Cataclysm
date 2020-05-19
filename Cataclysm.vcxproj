@@ -190,7 +190,6 @@
     <ClInclude Include="json.h" />
     <ClInclude Include="keymap.h" />
     <ClInclude Include="keypress.h" />
-    <ClInclude Include="key_core.h" />
     <ClInclude Include="line.h" />
     <ClInclude Include="map.h" />
     <ClInclude Include="mapbuffer.h" />

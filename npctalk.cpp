@@ -5,7 +5,6 @@
 #include "skill.h"
 #include "rng.h"
 #include "line.h"
-#include "key_core.h"
 #include "recent_msg.h"
 
 #include <sstream>

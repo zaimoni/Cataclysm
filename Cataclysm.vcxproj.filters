@@ -255,9 +255,6 @@
     <ClInclude Include="GPS_loc.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="key_core.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="bionics_enum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
