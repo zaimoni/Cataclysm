@@ -10,8 +10,7 @@ struct construction_stage
  std::vector<itype_id> tools[3];
  std::vector<component> components[3];
 
- construction_stage(ter_id Terrain, int Time) :
-    terrain (Terrain), time (Time) { };
+ construction_stage(ter_id Terrain, int Time) noexcept : terrain (Terrain), time (Time) { };
 };
 
 struct constructable

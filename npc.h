@@ -132,7 +132,7 @@ struct npc_favor	// appears to be prototype/mockup
  itype_id item_id;
  skill skill_id;
 
- npc_favor() : type(FAVOR_NULL),value(0),item_id(itm_null),skill_id(sk_null) {}
+ npc_favor() noexcept : type(FAVOR_NULL),value(0),item_id(itm_null),skill_id(sk_null) {}
 };
 
 struct npc_personality {
@@ -158,8 +158,8 @@ struct npc_opinion
   return ret;
  }
 
- npc_opinion(signed char T = 0, signed char F = 0, signed char V = 0, signed char A = 0, int O = 0):
-             trust (T), fear (F), value (V), anger(A), owed (O) { };
+ npc_opinion(signed char T = 0, signed char F = 0, signed char V = 0, signed char A = 0, int O = 0) noexcept
+     : trust (T), fear (F), value (V), anger(A), owed (O) { };
 
  npc_opinion(const npc_opinion &copy) = default;
  npc_opinion(npc_opinion&& copy) = default;

@@ -93,22 +93,23 @@ struct talk_response
  talk_topic success;
  talk_topic failure;
 
- talk_response()
- : text(""),trial(TALK_TRIAL_NONE),difficulty(0),mission_index(-1),miss(MISSION_NULL),tempvalue(-1),
+ talk_response() noexcept
+ : trial(TALK_TRIAL_NONE),difficulty(0),mission_index(-1),miss(MISSION_NULL),tempvalue(-1),
    effect_success(&talk_function::nothing),effect_failure(&talk_function::nothing),
    success(TALK_NONE),failure(TALK_NONE)
  {
  }
-
- talk_response(const talk_response &rhs) = default;
 };
 
+/*
+// 2020-05-20 dead struct
 struct talk_response_list
 {
  std::vector<talk_response> none(game *g, npc *p);
  std::vector<talk_response> shelter(game *g, npc *p);
  std::vector<talk_response> shopkeep(game *g, npc *p);
 };
+*/
 
 /* There is a array of tag_data, "tags", at the bottom of this file.
  * It maps tags to the array of string replacements;

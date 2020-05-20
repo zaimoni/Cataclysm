@@ -17,10 +17,11 @@ struct point {
 
  int x;
  int y;
- constexpr point() : x(0), y(0) {}
- explicit constexpr point(int X) : x(X), y(X) {}	// the diagonal projection of the integers Z into the integer plane ZxZ
- constexpr point(int X, int Y) : x (X), y (Y) {}
+ constexpr point() noexcept : x(0), y(0) {}
+ explicit constexpr point(int X) noexcept : x(X), y(X) {}	// the diagonal projection of the integers Z into the integer plane ZxZ
+ constexpr point(int X, int Y)  noexcept : x (X), y (Y) {}
  point(const point &p) = default;
+ point& operator=(const point& p) = default;
 
  point& operator+=(const point& rhs) {
 	 x += rhs.x;
@@ -75,10 +76,11 @@ struct tripoint {
  int x;
  int y;
  int z;
- constexpr tripoint() : x(0), y(0), z(0) {}
- explicit constexpr tripoint(int X) : x(X), y(X), z(X) {};	// the diagonal projection of the integers Z into the integer space Z^3
- constexpr tripoint(int X, int Y, int Z) : x (X), y (Y), z (Z) {}
+ constexpr tripoint() noexcept : x(0), y(0), z(0) {}
+ explicit constexpr tripoint(int X) noexcept : x(X), y(X), z(X) {};	// the diagonal projection of the integers Z into the integer space Z^3
+ constexpr tripoint(int X, int Y, int Z) noexcept : x (X), y (Y), z (Z) {}
  tripoint(const tripoint &p) = default;
+ tripoint& operator=(const tripoint& p) = default;
 
  tripoint& operator+=(const tripoint& rhs) {
 	 x += rhs.x;
