@@ -4127,47 +4127,47 @@ void game::pickup(const point& pt, int min)
   return;
  }
 // Otherwise, we have 2 or more items and should list them, etc.
- WINDOW* w_pickup = newwin(12, 48, 0, SEEX * 2 + 8);
- WINDOW* w_item_info = newwin(12, 48, 12, SEEX * 2 + 8);
- int maxitems = 9;	 // Number of items to show at one time.
+ std::unique_ptr<WINDOW, curses_full_delete> w_pickup(newwin(12, 48, 0, SEEX * 2 + 8));
+ std::unique_ptr<WINDOW, curses_full_delete> w_item_info(newwin(12, 48, 12, SEEX * 2 + 8));
+ constexpr const int maxitems = 9;	 // Number of items to show at one time.
  std::vector <item> here = from_veh? veh->parts[veh_part].items : m.i_at(pt);
  std::vector<bool> getitem(here.size(),false);
  char ch = ' ';
  int start = 0, cur_it, iter;
  int new_weight = u.weight_carried(), new_volume = u.volume_carried();
  bool update = true;
- mvwprintw(w_pickup, 0,  0, "PICK UP");
+ mvwprintw(w_pickup.get(), 0,  0, "PICK UP");
 // Now print the two lists; those on the ground and about to be added to inv
 // Continue until we hit return or space
  do {
   for (int i = 1; i < 12; i++) {
    for (int j = 0; j < 48; j++)
-    mvwaddch(w_pickup, i, j, ' ');
+    mvwaddch(w_pickup.get(), i, j, ' ');
   }
   if (ch == '<' && start > 0) {
    start -= maxitems;
-   mvwprintw(w_pickup, maxitems + 2, 0, "         ");
+   mvwprintw(w_pickup.get(), maxitems + 2, 0, "         ");
   }
   if (ch == '>' && start + maxitems < here.size()) {
    start += maxitems;
-   mvwprintw(w_pickup, maxitems + 2, 12, "            ");
+   mvwprintw(w_pickup.get(), maxitems + 2, 12, "            ");
   }
   if (ch >= 'a' && ch <= 'a' + here.size() - 1) {
    ch -= 'a';
    getitem[ch] = !getitem[ch];
-   wclear(w_item_info);
+   wclear(w_item_info.get());
    if (getitem[ch]) {
-    mvwprintw(w_item_info, 1, 0, here[ch].info().c_str());
-    wborder(w_item_info, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
+    mvwprintw(w_item_info.get(), 1, 0, here[ch].info().c_str());
+    wborder(w_item_info.get(), LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                          LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
-    wrefresh(w_item_info);
+    wrefresh(w_item_info.get());
     new_weight += here[ch].weight();
     new_volume += here[ch].volume();
     update = true;
    } else {
-    wborder(w_item_info, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
+    wborder(w_item_info.get(), LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                          LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
-    wrefresh(w_item_info);
+    wrefresh(w_item_info.get());
     new_weight -= here[ch].weight();
     new_volume -= here[ch].volume();
     update = true;
@@ -4193,41 +4193,37 @@ void game::pickup(const point& pt, int min)
    update = true;
   }
   for (cur_it = start; cur_it < start + maxitems; cur_it++) {
-   mvwprintw(w_pickup, 1 + (cur_it % maxitems), 0,
+   mvwprintw(w_pickup.get(), 1 + (cur_it % maxitems), 0,
              "                                        ");
    if (cur_it < here.size()) {
 	const nc_color it_color = here[cur_it].color(u);
-    mvwputch(w_pickup, 1 + (cur_it % maxitems), 0, it_color, char(cur_it + 'a'));
-    wprintw(w_pickup, (getitem[cur_it] ? " + " : " - "));
-    wprintz(w_pickup, it_color, here[cur_it].tname().c_str());
+    mvwputch(w_pickup.get(), 1 + (cur_it % maxitems), 0, it_color, char(cur_it + 'a'));
+    wprintw(w_pickup.get(), (getitem[cur_it] ? " + " : " - "));
+    wprintz(w_pickup.get(), it_color, here[cur_it].tname().c_str());
     if (here[cur_it].charges > 0)
-     wprintz(w_pickup, it_color, " (%d)", here[cur_it].charges);
+     wprintz(w_pickup.get(), it_color, " (%d)", here[cur_it].charges);
    }
   }
   if (start > 0)
-   mvwprintw(w_pickup, maxitems + 2, 0, "< Go Back");
+   mvwprintw(w_pickup.get(), maxitems + 2, 0, "< Go Back");
   if (cur_it < here.size())
-   mvwprintw(w_pickup, maxitems + 2, 12, "> More items");
+   mvwprintw(w_pickup.get(), maxitems + 2, 12, "> More items");
   if (update) {		// Update weight & volume information
    update = false;
-   mvwprintw(w_pickup, 0,  7, "                           ");
-   mvwprintz(w_pickup, 0,  9,
+   mvwprintw(w_pickup.get(), 0,  7, "                           ");
+   mvwprintz(w_pickup.get(), 0,  9,
              (new_weight >= u.weight_capacity() * .25 ? c_red : c_white),
              "Wgt %d", new_weight);
-   wprintz(w_pickup, c_white, "/%d", int(u.weight_capacity() * .25));
-   mvwprintz(w_pickup, 0, 22,
+   wprintz(w_pickup.get(), c_white, "/%d", int(u.weight_capacity() * .25));
+   mvwprintz(w_pickup.get(), 0, 22,
              (new_volume > u.volume_capacity() - 2 ? c_red : c_white),
              "Vol %d", new_volume);
-   wprintz(w_pickup, c_white, "/%d", u.volume_capacity() - 2);
+   wprintz(w_pickup.get(), c_white, "/%d", u.volume_capacity() - 2);
   }
-  wrefresh(w_pickup);
+  wrefresh(w_pickup.get());
   ch = getch();
  } while (ch != ' ' && ch != '\n' && ch != KEY_ESCAPE);
  if (ch != '\n') {
-  werase(w_pickup);
-  wrefresh(w_pickup);
-  delwin(w_pickup);
-  delwin(w_item_info);
   messages.add("Never mind.");
   return;
  }
@@ -4251,9 +4247,6 @@ void game::pickup(const point& pt, int min)
    }
    if (iter == 52) {
     messages.add("You're carrying too many items!");
-    werase(w_pickup);
-    wrefresh(w_pickup);
-    delwin(w_pickup);
     return;
    } else if (u.weight_carried() + here[i].weight() > u.weight_capacity()) {
     messages.add("The %s is too heavy!", here[i].tname().c_str());
@@ -4317,10 +4310,6 @@ void game::pickup(const point& pt, int min)
  if (volume_is_okay && u.volume_carried() > u.volume_capacity() - 2) {
   messages.add("You struggle to carry such a large volume!");
  }
- werase(w_pickup);
- wrefresh(w_pickup);
- delwin(w_pickup);
- delwin(w_item_info);
 }
 
 // Handle_liquid returns false if we didn't handle all the liquid.
