@@ -2,6 +2,7 @@
 #define MOBILE_H
 
 #include "enums.h"
+#include <type_traits>
 
 // intended base class for things that move
 struct mobile	// \todo V0.2.1+ wire-in
@@ -11,7 +12,7 @@ struct mobile	// \todo V0.2.1+ wire-in
 
 protected:
 	mobile() = default;
-	mobile(const point& origin, int m) : pos(origin), moves(m) {};
+	mobile(const point& origin, int m) noexcept(std::is_nothrow_copy_constructible_v<point>) : pos(origin), moves(m) {};
 	mobile(const mobile& src) = default;
 	mobile(mobile&& src) = default;
 	virtual ~mobile() = default;
@@ -27,7 +28,7 @@ public:
 	int remaining;	// will want more access control after save/load conversion
 
 	countdown() = default;
-	countdown(const T& src, int t) : x(src), remaining(t) {}
+	countdown(const T& src, int t) noexcept(std::is_nothrow_copy_constructible_v<T>) : x(src), remaining(t) {}
 	countdown(const countdown& src) = default;
 	countdown(countdown&& src) = default;
 	~countdown() = default;

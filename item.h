@@ -33,10 +33,10 @@ public:
  int mission_id;// Refers to a mission in game's master list
  int player_id;	// Only give a mission to the right player!	(dead field, this would be for multi-PC case)
 
- item();
- item(const itype* it, unsigned int turn);
- item(const itype* it, unsigned int turn, char let);
- explicit item(unsigned int turn, int id = 0);	// corpse constructor; 0 is the value of mon_null
+ item() noexcept;
+ item(const itype* it, unsigned int turn) noexcept;
+ item(const itype* it, unsigned int turn, char let) noexcept;
+ explicit item(unsigned int turn, int id = 0) noexcept;	// corpse constructor; 0 is the value of mon_null
  item(const item& src) = default;
  item(item&& src) = default;
  ~item() = default;

@@ -29,8 +29,8 @@ static void approve(const itype* type)	// need a stack trace from this
 }
 #endif
 
-item::item()
-: type(0),corpse(0),curammo(0),name(""),invlet(0),charges(-1),active(false),
+item::item() noexcept
+: type(0),corpse(0),curammo(0),invlet(0),charges(-1),active(false),
   damage(0),burnt(0),bday(0),owned(-1),poison(0),mission_id(-1),player_id(-1)
 {
 }
@@ -49,8 +49,8 @@ static void _bootstrap_item_charges(int& charges, const itype* const it)
 	}
 }
 
-item::item(const itype* const it, unsigned int turn)
-: type(it), corpse(0), curammo(0), name(""), invlet(0), charges(-1), active(false),
+item::item(const itype* const it, unsigned int turn) noexcept
+: type(it), corpse(0), curammo(0), invlet(0), charges(-1), active(false),
   damage(0), burnt(0), bday(turn), owned(-1), poison(0), mission_id(-1), player_id(-1)
 {
 #ifdef ITEM_CONSTRUCTOR_INVARIANTS
@@ -59,8 +59,8 @@ item::item(const itype* const it, unsigned int turn)
  _bootstrap_item_charges(charges, it);
 }
 
-item::item(const itype* const it, unsigned int turn, char let)
-: type(it),corpse(0),curammo(0),name(""),invlet(let),charges(-1),active(false),
+item::item(const itype* const it, unsigned int turn, char let) noexcept
+: type(it),corpse(0),curammo(0),invlet(let),charges(-1),active(false),
   damage(0),burnt(0),bday(turn),owned(-1),poison(0),mission_id(-1),player_id(-1)
 {
 #ifdef ITEM_CONSTRUCTOR_INVARIANTS
@@ -70,8 +70,8 @@ item::item(const itype* const it, unsigned int turn, char let)
 }
 
 // corpse constructor
-item::item(unsigned int turn, int id)
-: type(item::types[itm_corpse]), corpse(mtype::types[id]), curammo(0), name(""), invlet(0), charges(-1), active(false),
+item::item(unsigned int turn, int id) noexcept
+: type(item::types[itm_corpse]), corpse(mtype::types[id]), curammo(0), invlet(0), charges(-1), active(false),
   damage(0), burnt(0), bday(turn), owned(-1), poison(0), mission_id(-1), player_id(-1)
 {
 }

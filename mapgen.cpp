@@ -5829,13 +5829,12 @@ void map::add_spawn(mon_id type, int count, int x, int y, bool friendly,
  int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
  x %= SEEX;
  y %= SEEY;
- spawn_point tmp(type, count, x, y, faction_id, mission_id, friendly, name);
- grid[nonant]->spawns.push_back(tmp);
+ grid[nonant]->spawns.push_back(spawn_point(type, count, x, y, faction_id, mission_id, friendly, name));
 }
 
 void map::add_spawn(monster *mon)
 {
- std::string spawnname = (mon->unique_name == "" ? "NONE" : mon->unique_name);
+ std::string spawnname = (mon->unique_name.empty() ? "NONE" : mon->unique_name);
  point spawn = mon->is_static_spawn() ? mon->spawnpos : mon->pos;
  while (spawn.x < 0) spawn.x += SEEX;
  while (spawn.y < 0) spawn.y += SEEY;

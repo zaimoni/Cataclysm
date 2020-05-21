@@ -82,7 +82,7 @@ struct faction {
         MIN_ID = 0
     };
 
- faction(int uid = -1);
+ faction(int uid = -1) noexcept;
  faction(const faction& src) = default;
  faction(faction&& src) = default;
  ~faction() = default;

@@ -44,16 +44,16 @@ struct monster_effect
  monster_effect_type type;
  int duration;
  monster_effect() = default;
- monster_effect(monster_effect_type T, int D) : type (T), duration (D) {}
+ monster_effect(monster_effect_type T, int D) noexcept : type (T), duration (D) {}
  monster_effect(const monster_effect& src) = default;
  ~monster_effect() = default;
 };
 
 class monster {
  public:
- monster();
- monster(const mtype *t);
- monster(const mtype *t, int x, int y);
+ monster() noexcept;
+ monster(const mtype *t) noexcept;
+ monster(const mtype *t, int x, int y) noexcept;
  monster(const monster& src) = default;
  monster(monster&& src) = default;
  ~monster() = default;

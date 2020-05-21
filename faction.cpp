@@ -82,8 +82,8 @@ DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(faction_goal, JSON_transcode_goals)
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(faction_job, JSON_transcode_jobs)
 DEFINE_JSON_ENUM_BITFLAG_SUPPORT(faction_value, JSON_transcode_values)
 
-faction::faction(int uid)
-: name(""), values(0), goal(FACGOAL_NULL), job1(FACJOB_NULL), job2(FACJOB_NULL),
+faction::faction(int uid) noexcept
+: values(0), goal(FACGOAL_NULL), job1(FACJOB_NULL), job2(FACJOB_NULL),
   likes_u(0), respects_u(0), known_by_u(false), id(uid),
   strength(0), sneak(0), crime(0), cult(0), good(0),
   om(0, 0), map(0, 0), size(0), power(0)

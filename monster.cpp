@@ -29,23 +29,23 @@ static const char* const JSON_transcode_meffects[] = {
 
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(monster_effect_type, JSON_transcode_meffects)
 
-monster::monster()
+monster::monster() noexcept
 : pos(20, 10), wand(point(-1, -1), 0), spawnmap(-1, -1), spawnpos(-1,-1), moves(0), speed(0), hp(60), sp_timeout(0), friendly(0),
-  anger(0), morale(2), faction_id(-1), mission_id(-1),type(0),dead(false),made_footstep(false),unique_name("")
+  anger(0), morale(2), faction_id(-1), mission_id(-1),type(0),dead(false),made_footstep(false)
 {
 }
 
-monster::monster(const mtype *t)
+monster::monster(const mtype *t) noexcept
 : pos(20, 10), wand(point(-1, -1), 0), spawnmap(-1, -1), spawnpos(-1,-1), moves(t->speed), speed(t->speed), hp(t->hp),
   sp_timeout(rng(0, t->sp_freq)),friendly(0),anger(t->agro),morale(t->morale),faction_id(-1),mission_id(-1),type(t),dead(false),
-  made_footstep(false),unique_name("")
+  made_footstep(false)
 {
 }
 
-monster::monster(const mtype *t, int x, int y)
+monster::monster(const mtype *t, int x, int y) noexcept
 : pos(x, y), wand(point(-1, -1),0), spawnmap(-1, -1), spawnpos(-1, -1), moves(t->speed), speed(t->speed), hp(t->hp),
 	sp_timeout(t->sp_freq), friendly(0), anger(t->agro), morale(t->morale), faction_id(-1), mission_id(-1), type(t), dead(false),
-	made_footstep(false), unique_name("")
+	made_footstep(false)
 {
 }
 
@@ -80,7 +80,7 @@ std::string monster::name() const
   debugmsg ("monster::name empty type!");
   return std::string();
  }
- if (unique_name != "")
+ if (!unique_name.empty())
   return type->name + ": " + unique_name;
  return type->name;
 }
