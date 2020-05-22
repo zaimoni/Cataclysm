@@ -192,6 +192,7 @@
     <ClInclude Include="itype.h" />
     <ClInclude Include="json.h" />
     <ClInclude Include="keypress.h" />
+    <ClInclude Include="mapdata.h" />
     <ClInclude Include="material_enum.h" />
     <ClInclude Include="mtype.h" />
     <ClInclude Include="options.h" />

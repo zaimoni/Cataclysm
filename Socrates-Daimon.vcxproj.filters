@@ -160,5 +160,8 @@
     <ClInclude Include="stl_typetraits.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="mapdata.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

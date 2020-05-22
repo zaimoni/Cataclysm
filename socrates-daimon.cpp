@@ -7,6 +7,7 @@
 #include "ios_file.h"
 #include "json.h"
 #include "html.hpp"
+#include "mapdata.h"
 #include <stdexcept>
 #include <stdlib.h>
 #include <time.h>
@@ -1524,6 +1525,58 @@ int main(int argc, char *argv[])
 		page.print(global_nav);
 		*revert.first = std::move(revert.second);
 		}
+
+		page.start_print(_data_table);
+		// actual content
+		{
+			html::tag table_header("tr");
+			table_header.set(attr_align, val_center);
+			table_header.append(html::tag("th", "Name"));
+			table_header.append(html::tag("th", "ASCII"));
+			table_header.append(html::tag("th", "Transparent?"));
+			table_header.append(html::tag("th", "Dangerous?"));
+			page.print(table_header);
+		}
+
+		{
+			static const std::string yes("yes");
+			html::tag cell("td");
+			html::tag table_row("tr");
+			table_row.set(attr_align, val_left);
+			table_row.append(cell);
+			table_row.append(cell);
+			table_row.append(cell);
+			table_row.append(cell);
+
+			size_t ub = num_fields;
+			while (0 < --ub) {
+				const field_t& x = field::list[ub];
+				table_row[0]->append(html::tag::wrap(x.name[0]));
+				table_row[1]->append(html::tag::wrap(std::string(1,x.sym)));
+				table_row[2]->append(html::tag::wrap(x.transparent[0] ? "yes" : ""));
+				table_row[3]->append(html::tag::wrap(x.dangerous[0] ? "yes" : ""));
+				page.print(table_row);
+				table_row[0]->clear();
+				table_row[2]->clear();
+				table_row[3]->clear();
+				table_row[0]->append(html::tag::wrap(x.name[1]));
+				table_row[2]->append(html::tag::wrap(x.transparent[1] ? "yes" : ""));
+				table_row[3]->append(html::tag::wrap(x.dangerous[1] ? "yes" : ""));
+				page.print(table_row);
+				table_row[0]->clear();
+				table_row[2]->clear();
+				table_row[3]->clear();
+				table_row[0]->append(html::tag::wrap(x.name[2]));
+				table_row[2]->append(html::tag::wrap(x.transparent[2] ? "yes" : ""));
+				table_row[3]->append(html::tag::wrap(x.dangerous[2] ? "yes" : ""));
+				page.print(table_row);
+				table_row[0]->clear();
+				table_row[1]->clear();
+				table_row[2]->clear();
+				table_row[3]->clear();
+			}
+		}
+
 		while (page.end_print());
 		}
 
