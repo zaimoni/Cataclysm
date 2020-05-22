@@ -1,11 +1,12 @@
 #ifndef _MORALE_H_
 #define _MORALE_H_
 
-#include "itype.h"
 #include <string>
 
 #define MIN_MORALE_READ		(-40)
 #define MIN_MORALE_CRAFT	(-50)
+
+struct itype;
 
 enum morale_type
 {
@@ -48,8 +49,7 @@ struct morale_point
  const itype* item_type;
  int bonus;
 
- morale_point(morale_type T = MORALE_NULL, const itype* I = NULL, int B = 0) :
-              type (T), item_type (I), bonus (B) {};
+ morale_point(morale_type T = MORALE_NULL, const itype* I = 0, int B = 0) noexcept : type(T), item_type(I), bonus(B) {};
 
  std::string name() const;
 };

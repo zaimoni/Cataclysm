@@ -25,7 +25,8 @@ struct special_attack
  int cut;
  int stab;
 
- special_attack() { bash = 0; cut = 0; stab = 0; };
+ special_attack() noexcept : bash(0), cut(0), stab(0) { };
+ special_attack(std::string&& src) noexcept : text(std::move(src)), bash(0), cut(0), stab(0) { };
 };
 
 std::string random_first_name(bool male);

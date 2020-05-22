@@ -1219,102 +1219,91 @@ std::vector<special_attack> player::mutation_attacks(const monster *z, const pla
  std::vector<special_attack> ret;
 
  bool is_u = (!is_npc());// Affects how we'll display messages
- std::string You  = (is_u ? "You"  : name);
- std::string Your = (is_u ? "Your" : name + "'s");
- std::string your = (is_u ? "your" : (male ? "his" : "her"));
- std::string target = (z ? "the " + z->name() : p->name);
+ const std::string You  = (is_u ? "You"  : name);
+ const std::string Your = (is_u ? "Your" : name + "'s");
+ const std::string your = (is_u ? "your" : (male ? "his" : "her"));
+ const std::string target = (z ? "the " + z->name() : p->name);
 
  std::stringstream text;
 
  if (has_trait(PF_FANGS) && !wearing_something_on(bp_mouth) &&
      one_in(20 - dex_cur - sklevel[sk_unarmed])) {
-  special_attack tmp;
-  text << You << " sink" << (is_u ? " " : "s ") << your << " fangs into " <<
-          target << "!";
-  tmp.text = text.str();
+  text.str(You);
+  text << " sink" << (is_u ? " " : "s ") << your << " fangs into " << target << "!";
+  special_attack tmp(text.str());
   tmp.stab = 20;
   ret.push_back(tmp);
  }
 
  if (has_trait(PF_MANDIBLES) && one_in(22 - dex_cur - sklevel[sk_unarmed])) {
-  special_attack tmp;
-  text << You << " slice" << (is_u ? " " : "s ") << target << " with " <<
-          your << " mandibles!";
-  tmp.text = text.str();
+  text.str(You);
+  text << " slice" << (is_u ? " " : "s ") << target << " with " << your << " mandibles!";
+  special_attack tmp(text.str());
   tmp.cut = 12;
   ret.push_back(tmp);
  }
 
  if (has_trait(PF_BEAK) && one_in(15 - dex_cur - sklevel[sk_unarmed])) {
-  special_attack tmp;
-  text << You << " peck" << (is_u ? " " : "s ") << target << "!";
-  tmp.text = text.str();
+  text.str(You);
+  text << " peck" << (is_u ? " " : "s ") << target << "!";
+  special_attack tmp(text.str());
   tmp.stab = 15;
   ret.push_back(tmp);
  }
   
  if (has_trait(PF_HOOVES) && one_in(25 - dex_cur - 2 * sklevel[sk_unarmed])) {
-  special_attack tmp;
-  text << You << " kick" << (is_u ? " " : "s ") << target << " with " <<
-          your << " hooves!";
-  tmp.text = text.str();
-  tmp.bash = str_cur * 3;
-  if (tmp.bash > 40)
-   tmp.bash = 40;
+  text.str(You);
+  text << " kick" << (is_u ? " " : "s ") << target << " with " << your << " hooves!";
+  special_attack tmp(text.str());
+  tmp.bash = clamped_ub<40>(str_cur * 3);
   ret.push_back(tmp);
  }
 
  if (has_trait(PF_HORNS) && one_in(20 - dex_cur - sklevel[sk_unarmed])) {
-  special_attack tmp;
-  text << You << " headbutt" << (is_u ? " " : "s ") << target << " with " <<
-          your << " horns!";
-  tmp.text = text.str();
+  text.str(You);
+  text << " headbutt" << (is_u ? " " : "s ") << target << " with " << your << " horns!";
+  special_attack tmp(text.str());
   tmp.bash = 3;
   tmp.stab = 3;
   ret.push_back(tmp);
  }
 
  if (has_trait(PF_HORNS_CURLED) && one_in(20 - dex_cur - sklevel[sk_unarmed])) {
-  special_attack tmp;
-  text << You << " headbutt" << (is_u ? " " : "s ") << target << " with " <<
-          your << " curled horns!";
-  tmp.text = text.str();
+  text.str(You);
+  text << " headbutt" << (is_u ? " " : "s ") << target << " with " << your << " curled horns!";
+  special_attack tmp(text.str());
   tmp.bash = 14;
   ret.push_back(tmp);
  }
 
  if (has_trait(PF_HORNS_POINTED) && one_in(22 - dex_cur - sklevel[sk_unarmed])){
-  special_attack tmp;
-  text << You << " stab" << (is_u ? " " : "s ") << target << " with " <<
-          your << " pointed horns!";
-  tmp.text = text.str();
+  text.str(You);
+  text << " stab" << (is_u ? " " : "s ") << target << " with " << your << " pointed horns!";
+  special_attack tmp(text.str());
   tmp.stab = 24;
   ret.push_back(tmp);
  }
 
  if (has_trait(PF_ANTLERS) && one_in(20 - dex_cur - sklevel[sk_unarmed])) {
-  special_attack tmp;
-  text << You << " butt" << (is_u ? " " : "s ") << target << " with " <<
-          your << " antlers!";
-  tmp.text = text.str();
+  text.str(You);
+  text << " butt" << (is_u ? " " : "s ") << target << " with " << your << " antlers!";
+  special_attack tmp(text.str());
   tmp.bash = 4;
   ret.push_back(tmp);
  }
 
  if (has_trait(PF_TAIL_STING) && one_in(3) && one_in(10 - dex_cur)) {
-  special_attack tmp;
-  text << You << " sting" << (is_u ? " " : "s ") << target << " with " <<
-          your << " tail!";
-  tmp.text = text.str();
+  text.str(You);
+  text << " sting" << (is_u ? " " : "s ") << target << " with " << your << " tail!";
+  special_attack tmp(text.str());
   tmp.stab = 20;
   ret.push_back(tmp);
  }
 
  if (has_trait(PF_TAIL_CLUB) && one_in(3) && one_in(10 - dex_cur)) {
-  special_attack tmp;
-  text << You << " hit" << (is_u ? " " : "s ") << target << " with " <<
-          your << " tail!";
-  tmp.text = text.str();
+  text.str(You);
+  text << " hit" << (is_u ? " " : "s ") << target << " with " << your << " tail!";
+  special_attack tmp(text.str());
   tmp.bash = 18;
   ret.push_back(tmp);
  }
@@ -1328,10 +1317,9 @@ std::vector<special_attack> player::mutation_attacks(const monster *z, const pla
 
   for (int i = 0; i < num_attacks; i++) {
    if (one_in(18 - dex_cur - sklevel[sk_unarmed])) {
-    special_attack tmp;
-    text.str("");
-    text << You << " slap" << (is_u ? " " : "s ") << target << " with " << your << " tentacle!";
-    tmp.text = text.str();
+    text.str(You);
+    text << " slap" << (is_u ? " " : "s ") << target << " with " << your << " tentacle!";
+    special_attack tmp(text.str());
     tmp.bash = str_cur / 2;
     ret.push_back(tmp);
    }
