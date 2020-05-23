@@ -3458,18 +3458,18 @@ int player::butcher_factor() const
  return lowest_factor;
 }
 
-int player::pick_usb() const
+item* player::pick_usb()
 {
  std::vector<int> drives;
  for (size_t i = 0; i < inv.size(); i++) {
   if (inv[i].type->id == itm_usb_drive) {
-   if (inv[i].contents.empty()) return i; // No need to pick, use an empty one by default!
+   if (inv[i].contents.empty()) return &inv[i]; // No need to pick, use an empty one by default!
    drives.push_back(i);
   }
  }
 
- if (drives.empty()) return -1; // None available!
- if (1 == drives.size()) return drives[0];	// exactly one.
+ if (drives.empty()) return 0; // None available!
+ if (1 == drives.size()) return &inv[drives[0]];	// exactly one.
 
  std::vector<std::string> selections;
  for (int i = 0; i < drives.size() && i < 9; i++)
@@ -3477,7 +3477,7 @@ int player::pick_usb() const
 
  int select = menu_vec("Choose drive:", selections);
 
- return drives[ select - 1 ];
+ return &inv[drives[ select - 1 ]];
 }
 
 bool player::is_wearing(itype_id it) const

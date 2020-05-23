@@ -559,7 +559,7 @@ char popup_getkey(const char *mes, ...)
  return ch;
 }
 
-int menu_vec(const char *mes, const std::vector<std::string>& options)
+int menu_vec(const char *mes, const std::vector<std::string>& options)  // \todo? ESC to cancel
 {
  if (options.size() == 0) {
   debugmsg("0-length menu (\"%s\")", mes);

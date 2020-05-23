@@ -542,18 +542,19 @@ INITIATING STANDARD TREMOR TEST...");
   case COMPACT_DOWNLOAD_SOFTWARE:
    if (!g->u.has_amount(itm_usb_drive, 1))
     print_error("USB drive required!");
-   else {
+   else {   // XXX \todo maybe allow downloading non-mission software?
     mission *miss = mission::from_id(mission_id);
     if (miss == NULL) {
      debugmsg("Computer couldn't find its mission!");
      return;
     }
-    item software(item::types[miss->item_id], 0);
-    software.mission_id = mission_id;
-    int index = g->u.pick_usb();
-    g->u.inv[index].contents.clear();
-    g->u.inv[index].put_in(software);
-    print_line("Software downloaded.");
+    if (item* usb_drive = g->u.pick_usb()) {
+        item software(item::types[miss->item_id], 0);   // this software is pre-Cataclysm
+        software.mission_id = mission_id;
+        usb_drive->contents.clear();
+        usb_drive->put_in(software);
+        print_line("Software downloaded.");
+    }
    }
    break;
 
@@ -575,11 +576,11 @@ INITIATING STANDARD TREMOR TEST...");
          if (!g->u.has_amount(itm_usb_drive, 1))
           print_error("USB drive required!");
          else {
-          item software(item::types[itm_software_blood_data], 0);
-          int index = g->u.pick_usb();
-          g->u.inv[index].contents.clear();
-          g->u.inv[index].put_in(software);
-          print_line("Software downloaded.");
+          if (item* usb_drive = g->u.pick_usb()) {
+              usb_drive->contents.clear();
+              usb_drive->put_in(item(item::types[itm_software_blood_data], messages.turn)); // recent scan, so use current turn
+              print_line("Software downloaded.");
+          }
          }
         }
        } else
