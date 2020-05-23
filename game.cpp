@@ -4884,7 +4884,7 @@ void game::wear()
   messages.add("Never mind.");
   return;
  }
- u.wear(this, ch);
+ u.wear(ch);
 }
 
 void game::takeoff()

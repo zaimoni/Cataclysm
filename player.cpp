@@ -3889,9 +3889,9 @@ void player::pick_style() // Style selection menu
  style_selected = (2 <= selection) ? styles[selection - 2] : itm_null;
 }
 
-bool player::wear(game *g, char let)
+bool player::wear(char let)
 {
- item* to_wear = NULL;
+ item* to_wear = 0;
  int index = -1;
  if (weapon.invlet == let) {
   to_wear = &weapon;
@@ -3906,7 +3906,7 @@ bool player::wear(game *g, char let)
   }
  }
 
- if (to_wear == NULL) {
+ if (!to_wear) {
   messages.add("You don't have item '%c'.", let);
   return false;
  }
@@ -4147,7 +4147,7 @@ void player::use(game *g, char let)
   return;
  } else if (used->is_armor()) {
   if (replace_item) inv.add_item(copy);
-  wear(g, let);
+  wear(let);
   return;
  } else
   messages.add("You can't do anything interesting with your %s.", used->tname().c_str());
