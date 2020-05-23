@@ -19,7 +19,7 @@ struct city {
  int x;	// legal range 0...OMAPX-1
  int y;	// legal range 0...OMAPY-1
  int s;
- city(int X = -1, int Y = -1, int S = -1) : x (X), y (Y), s (S) {}
+ city(int X = -1, int Y = -1, int S = -1) noexcept : x (X), y (Y), s (S) {}
 
  friend bool fromJSON(const cataclysm::JSON& _in, city& dest);
  friend cataclysm::JSON toJSON(const city& src);
@@ -30,8 +30,9 @@ struct om_note {
  int y;	// legal range 0...OMAPY-1
  int num;
  std::string text;
- om_note(int X = -1, int Y = -1, int N = -1, std::string T = "") :
-         x (X), y (Y), num (N), text (T) {}
+
+ om_note() noexcept : x(-1), y(-1), num(-1) {}
+ om_note(int X, int Y, int N, std::string&& T) noexcept : x(X), y(Y), num(N), text(std::move(T)) {}
 
  om_note(std::istream& is);
  friend std::ostream& operator<<(std::ostream& os, const om_note& src);
@@ -42,8 +43,9 @@ struct radio_tower {
  int y;	// legal range 0...OMAPY-1
  int strength;
  std::string message;
- radio_tower(int X = -1, int Y = -1, int S = -1, std::string M = "") :
-             x (X), y (Y), strength (S), message (M) {}
+
+ radio_tower() noexcept : x(-1), y(-1), strength(-1) {}
+ radio_tower(int X, int Y, int S, std::string&& M) noexcept : x(X), y(Y), strength(S), message(std::move(M)) {}
 
  friend bool fromJSON(const cataclysm::JSON& _in, radio_tower& dest);
  friend cataclysm::JSON toJSON(const radio_tower& src);
