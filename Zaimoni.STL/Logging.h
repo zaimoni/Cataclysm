@@ -1,12 +1,20 @@
 /* Logging.h */
 /* Unified error logging */
-/* (C)2009,2016,2018 Kenneth Boyd, license: MIT.txt */
+/* (C)2009,2016,2018,2020 Kenneth Boyd; Creative Commons license @ LICENSE */
 
 #ifndef ZAIMONI_LOGGING_H
 #define ZAIMONI_LOGGING_H
 
 #include "Compiler.h"
 #include <string.h>		/* need strlen here */
+
+#ifdef __cplusplus
+#ifdef ZAIMONI_ASSERT_STD_LOGIC
+#include <stdexcept>
+#endif
+#else
+#undef ZAIMONI_ASSERT_STD_LOGIC
+#endif
 
 /* deal with assert */
 /* note that including standard library assert.h/cassert will cause assert to be reserved (oops) */
@@ -15,6 +23,10 @@
 #ifdef NDEBUG
 #	define assert(A)	((void)0)
 #	define ZAIMONI_PASSTHROUGH_ASSERT(A)	A
+#elif defined(ZAIMONI_ASSERT_STD_LOGIC)
+/* useful if running in a debugger */
+#	define assert(A)	((A) ? (void)0 : throw std::logic_error(__FILE__ ":" DEEP_STRINGIZE(__LINE__) ": " #A))
+#	define ZAIMONI_PASSTHROUGH_ASSERT(A)	((A) ? (void)0 : throw std::logic_error(__FILE__ ":" DEEP_STRINGIZE(__LINE__) ": " #A))
 #else
 /* Interoperate with Microsoft: return code 3 */
 #	define assert(A)	((A) ? (void)0 : _fatal_code(__FILE__ ":" DEEP_STRINGIZE(__LINE__) ": " #A,3))
