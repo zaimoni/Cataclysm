@@ -11,6 +11,7 @@
 #include "saveload.h"
 #include "zero.h"
 
+#include <array>
 #include <math.h>
 
 using namespace cataclysm;
@@ -3090,22 +3091,26 @@ int player::get_morale(morale_type type, const itype* item_type) const
     return 0;
 }
 
+static void _add_range(std::vector<item>& dest, const std::vector<item>& src)
+{
+    for (decltype(auto) it : src) dest.push_back(it);
+}
 
 void player::sort_inv()
 {
  // guns ammo weaps armor food tools books other
- std::vector< std::vector<item> > types[8];
+ std::array< std::vector<item>, 8 > types;
  std::vector<item> tmp;
  for (size_t i = 0; i < inv.size(); i++) {
   const auto& tmp = inv.stack_at(i);
-  if (tmp[0].is_gun()) types[0].push_back(tmp);
-  else if (tmp[0].is_ammo()) types[1].push_back(tmp);
-  else if (tmp[0].is_armor()) types[3].push_back(tmp);
-  else if (tmp[0].is_tool() || tmp[0].is_gunmod()) types[5].push_back(tmp);
-  else if (tmp[0].is_food() || tmp[0].is_food_container()) types[4].push_back(tmp);
-  else if (tmp[0].is_book()) types[6].push_back(tmp);
-  else if (tmp[0].is_weap()) types[2].push_back(tmp);
-  else types[7].push_back(tmp);
+  if (tmp[0].is_gun()) _add_range(types[0], tmp);
+  else if (tmp[0].is_ammo()) _add_range(types[1], tmp);
+  else if (tmp[0].is_armor()) _add_range(types[3], tmp);
+  else if (tmp[0].is_tool() || tmp[0].is_gunmod()) _add_range(types[5], tmp);
+  else if (tmp[0].is_food() || tmp[0].is_food_container()) _add_range(types[4], tmp);
+  else if (tmp[0].is_book()) _add_range(types[6], tmp);
+  else if (tmp[0].is_weap()) _add_range(types[2], tmp);
+  else _add_range(types[7], tmp);
  }
  inv.clear();
  for (const auto& stack : types) {
@@ -3156,11 +3161,7 @@ int player::active_item_charges(itype_id id) const
  int max = 0;
  if (weapon.type->id == id && weapon.active) max = weapon.charges;
  for (size_t i = 0; i < inv.size(); i++) {
-  for (int j = 0; j < inv.stack_at(i).size(); j++) {
-   if (inv.stack_at(i)[j].type->id == id && inv.stack_at(i)[j].active &&
-       inv.stack_at(i)[j].charges > max)
-    max = inv.stack_at(i)[j].charges;
-  }
+     for (const item& it : inv.stack_at(i)) if (it.type->id == id && it.active && it.charges > max) max = it.charges;
  }
  return max;
 }
