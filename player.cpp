@@ -3718,14 +3718,19 @@ bool player::eat(int index)
   if (has_trait(PF_VEGETARIAN) && eaten->made_of(FLESH) && !is_npc() && !query_yn("Really eat that meat? (The poor animals!)")) return false;
 
   if (spoiled) {
-   if (is_npc()) return false;
-   if (!has_trait(PF_SAPROVORE) && !query_yn("This %s smells awful!  Eat it?", eaten->tname().c_str())) return false;
-   messages.add("Ick, this %s doesn't taste so good...",eaten->tname().c_str());
-   if (!has_trait(PF_SAPROVORE) && (!has_bionic(bio_digestion) || one_in(3)))
-    add_disease(DI_FOODPOISON, rng(60, (comest->nutr + 1) * 60));
+   const bool immune = has_trait(PF_SAPROVORE);
+   if (!immune) {
+       if (is_npc()) return false;
+       else {
+           if (!query_yn("This %s smells awful!  Eat it?", eaten->tname().c_str())) return false;
+           messages.add("Ick, this %s doesn't taste so good...", eaten->tname().c_str());
+       }
+   }
+   const bool resistant = has_bionic(bio_digestion);
+   if (!immune && (!resistant || one_in(3))) add_disease(DI_FOODPOISON, rng(60, (comest->nutr + 1) * 60));
    hunger -= rng(0, comest->nutr);
    thirst -= comest->quench;
-   if (!has_trait(PF_SAPROVORE) && !has_bionic(bio_digestion)) health -= 3;
+   if (!immune && !resistant) health -= 3;
   } else {
    hunger -= comest->nutr;
    thirst -= comest->quench;
@@ -3744,8 +3749,11 @@ bool player::eat(int index)
 // Descriptive text
   if (!is_npc()) {
    if (eaten->made_of(LIQUID)) messages.add("You drink your %s.", eaten->tname().c_str());
-   else if (comest->nutr >= 5) messages.add("You eat your %s.", eaten->tname().c_str());
-  } else if (g->u_see(pos)) messages.add("%s eats a %s.", name.c_str(), eaten->tname().c_str());
+   else if (comest->nutr >= 5) messages.add("You eat your %s.", eaten->tname().c_str());    // XXX \todo is this an invariant?
+  } else if (g->u_see(pos)) {
+   if (eaten->made_of(LIQUID)) messages.add("%s drinks a %s.", name.c_str(), eaten->tname().c_str());
+   else messages.add("%s eats a %s.", name.c_str(), eaten->tname().c_str());
+  }
 
   if (item::types[comest->tool]->is_tool()) use_charges(comest->tool, 1); // Tools like lighters get used
   if (comest->stim > 0) {
