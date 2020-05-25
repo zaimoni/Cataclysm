@@ -203,11 +203,7 @@ std::vector<item> inventory::remove_stack(int index)
 
 item inventory::remove_item(int index)
 {
- if (index < 0 || index >= items.size()) {
-  debugmsg("Tried to remove_item(%d) from an inventory (size %d)",
-           index, items.size());
-  return item::null;
- }
+ assert(0 <= index && items.size() > index);
 
  item ret(std::move(items[index][0]));
  EraseAt(items[index], 0);

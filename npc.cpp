@@ -1031,8 +1031,7 @@ bool npc::wield(int index)
  } else // No room for weapon, so we drop it
   game::active()->m.add_item(pos, unwield());
  moves -= 15;
- weapon = inv[index];
- i_remn(index);
+ weapon = i_remn(index);
  if (game::active()->u_see(pos)) messages.add("%s wields a %s.", name.c_str(), weapon.tname().c_str());
  return true;
 }
