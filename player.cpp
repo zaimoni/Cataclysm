@@ -2996,8 +2996,7 @@ int player::weight_carried() const
  ret += weapon.weight();
  for (const auto& it : worn) ret += it.weight();
  for (size_t i = 0; i < inv.size(); i++) {
-  for (int j = 0; j < inv.stack_at(i).size(); j++)
-   ret += inv.stack_at(i)[j].weight();
+  for (const auto& it : inv.stack_at(i)) ret += it.weight();
  }
  return ret;
 }

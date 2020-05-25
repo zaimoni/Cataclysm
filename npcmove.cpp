@@ -1792,10 +1792,12 @@ void npc::mug_player(player &mark)
    }
    int best_value = minimum_item_value() * value_mod, index = -1;
    for (size_t i = 0; i < mark.inv.size(); i++) {
-    if (value(mark.inv[i]) >= best_value &&
-        volume_carried() + mark.inv[i].volume() <= volume_capacity() && 
-        weight_carried() + mark.inv[i].weight() <= weight_capacity()   ) {
-     best_value = value(mark.inv[i]);
+	const item& it = mark.inv[i];
+	const auto current_value = value(it);
+    if (current_value >= best_value &&
+        volume_carried() + it.volume() <= volume_capacity() &&
+        weight_carried() + it.weight() <= weight_capacity()   ) {
+     best_value = current_value;
      index = i;
     }
    }

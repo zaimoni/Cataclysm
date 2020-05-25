@@ -1626,19 +1626,18 @@ talk_topic special_talk(char ch)
 
 bool trade(game *g, npc *p, int cost, std::string deal)
 {
- WINDOW* w_head = newwin( 4, SCREEN_WIDTH,  0,  0);
- WINDOW* w_them = newwin(21, SCREEN_WIDTH / 2,  4,  0);
- WINDOW* w_you  = newwin(21, SCREEN_WIDTH / 2,  4, SCREEN_WIDTH / 2);
- WINDOW* w_tmp;
- mvwprintz(w_head, 0, 0, c_white, "\
+ std::unique_ptr<WINDOW, curses_full_delete> w_head(newwin(4, SCREEN_WIDTH, 0, 0));
+ std::unique_ptr<WINDOW, curses_full_delete> w_them(newwin(21, SCREEN_WIDTH / 2,  4,  0));
+ std::unique_ptr<WINDOW, curses_full_delete> w_you(newwin(21, SCREEN_WIDTH / 2,  4, SCREEN_WIDTH / 2));
+ mvwprintz(w_head.get(), 0, 0, c_white, "\
 Trading with %s\n\
 Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n\
 ? to get information on an item", p->name.c_str());
 
 // Set up line drawings
  for (int i = 0; i < SCREEN_WIDTH; i++)
-  mvwputch(w_head,  3, i, c_white, LINE_OXOX);
- wrefresh(w_head);
+  mvwputch(w_head.get(),  3, i, c_white, LINE_OXOX);
+ wrefresh(w_head.get());
  
   
 // End of line drawings
@@ -1673,55 +1672,47 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
   if (update) {	// Time to re-draw
    update = false;
 // Draw borders, one of which is highlighted
-   werase(w_them);
-   werase(w_you);
+   werase(w_them.get());
+   werase(w_you.get());
    for (int i = 1; i < SCREEN_WIDTH; i++)
-    mvwputch(w_head, 3, i, c_white, LINE_OXOX);
-   mvwprintz(w_head, 3, 30, ((cash <  0 && g->u.cash >= cash * -1) ||
+    mvwputch(w_head.get(), 3, i, c_white, LINE_OXOX);
+   mvwprintz(w_head.get(), 3, 30, ((cash <  0 && g->u.cash >= cash * -1) ||
                              (cash >= 0 && p->cash  >= cash) ?
                              c_green : c_red),
              "%s $%d", (cash >= 0 ? "Profit" : "Cost"), abs(cash));
-   if (deal != "")
-    mvwprintz(w_head, 3, 45, (cost < 0 ? c_ltred : c_ltgreen), deal.c_str());
-   if (focus_them)
-    wattron(w_them, c_yellow);
-   else
-    wattron(w_you,  c_yellow);
-   wborder(w_them, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
+   if (!deal.empty()) mvwprintz(w_head.get(), 3, 45, (cost < 0 ? c_ltred : c_ltgreen), deal.c_str());
+   wattron((focus_them ? w_them : w_you).get(), c_yellow);
+   wborder(w_them.get(), LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                    LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
-   wborder(w_you,  LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
+   wborder(w_you.get(),  LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                    LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
-   wattroff(w_them, c_yellow);
-   wattroff(w_you,  c_yellow);
-   mvwprintz(w_them, 0, 1, (cash < 0 || p->cash >= cash ? c_green : c_red),
+   wattroff(w_them.get(), c_yellow);
+   wattroff(w_you.get(),  c_yellow);
+   mvwprintz(w_them.get(), 0, 1, (cash < 0 || p->cash >= cash ? c_green : c_red),
              "%s: $%d", p->name.c_str(), p->cash);
-   mvwprintz(w_you,  0, 2, (cash > 0 || g->u.cash>=cash*-1 ? c_green:c_red),
+   mvwprintz(w_you.get(),  0, 2, (cash > 0 || g->u.cash>=cash*-1 ? c_green:c_red),
              "You: $%d", g->u.cash);
 // Draw their list of items, starting from them_off
    for (int i = them_off; i < theirs.size() && i < 17; i++)
-    mvwprintz(w_them, i - them_off + 1, 1,
+    mvwprintz(w_them.get(), i - them_off + 1, 1,
               (getting_theirs[i] ? c_white : c_ltgray), "%c %c %s - $%d",
               char(i + 'a'), (getting_theirs[i] ? '+' : '-'),
               p->inv[theirs[i + them_off]].tname().substr( 0,25).c_str(),
               their_price[i + them_off]);
-   if (them_off > 0)
-    mvwprintw(w_them, 19, 1, "< Back");
-   if (them_off + 17 < theirs.size())
-    mvwprintw(w_them, 19, 9, "More >");
+   if (them_off > 0) mvwprintw(w_them.get(), 19, 1, "< Back");
+   if (them_off + 17 < theirs.size()) mvwprintw(w_them.get(), 19, 9, "More >");
 // Draw your list of items, starting from you_off
    for (int i = you_off; i < yours.size() && i < 17; i++)
-    mvwprintz(w_you, i - you_off + 1, 1,
+    mvwprintz(w_you.get(), i - you_off + 1, 1,
               (getting_yours[i] ? c_white : c_ltgray), "%c %c %s - $%d",
               char(i + 'a'), (getting_yours[i] ? '+' : '-'),
               g->u.inv[yours[i + you_off]].tname().substr( 0,25).c_str(),
               your_price[i + you_off]);
-   if (you_off > 0)
-    mvwprintw(w_you, 19, 1, "< Back");
-   if (you_off + 17 < yours.size())
-    mvwprintw(w_you, 19, 9, "More >");
-   wrefresh(w_head);
-   wrefresh(w_them);
-   wrefresh(w_you);
+   if (you_off > 0) mvwprintw(w_you.get(), 19, 1, "< Back");
+   if (you_off + 17 < yours.size()) mvwprintw(w_you.get(), 19, 9, "More >");
+   wrefresh(w_head.get());
+   wrefresh(w_them.get());
+   wrefresh(w_you.get());
   }	// Done updating the screen
   ch = getch();
   switch (ch) {
@@ -1757,22 +1748,22 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
    break;
   case '?':
    update = true;
-   w_tmp = newwin(3, 21, 1, 30);
-   mvwprintz(w_tmp, 1, 1, c_red, "Examine which item?");
-   wborder(w_tmp, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
+   {
+   std::unique_ptr<WINDOW, curses_full_delete> w_tmp(newwin(3, 21, 1, 30));
+   mvwprintz(w_tmp.get(), 1, 1, c_red, "Examine which item?");
+   wborder(w_tmp.get(), LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                   LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
-   wrefresh(w_tmp);
+   wrefresh(w_tmp.get());
    help = getch();
    help -= 'a';
-   werase(w_tmp);
-   delwin(w_tmp);
-   wrefresh(w_head);
+   }
+   wrefresh(w_head.get());
    if (focus_them) {
     if (help >= 0 && help < theirs.size())
      popup(p->inv[theirs[help]].info().c_str());
    } else {
     if (help >= 0 && help < yours.size())
-     popup(g->u.inv[theirs[help]].info().c_str());
+     popup(g->u.inv[yours[help]].info().c_str());
    }
    break;
   case '\n':	// Check if we have enough cash...
@@ -1840,23 +1831,12 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
     }
     g->u.inv.push_back(tmp);
    } else
-    newinv.push_back(tmp);
+    newinv.push_back(std::move(tmp));
   }
   g->u.practice(sk_barter, practice / 2);
   p->inv = newinv;
   g->u.cash += cash;
   p->cash   -= cash;
  }
- werase(w_head);
- werase(w_you);
- werase(w_them);
- wrefresh(w_head);
- wrefresh(w_you);
- wrefresh(w_them);
- delwin(w_head);
- delwin(w_you);
- delwin(w_them);
- if (ch == '\n')
-  return true;
- return false;
+ return '\n' == ch;
 }
