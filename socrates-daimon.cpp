@@ -1540,6 +1540,8 @@ int main(int argc, char *argv[])
 
 		{
 			static const std::string yes("yes");
+			static const std::string color("color: ");
+			static const std::string background("; background-color:");
 			html::tag cell("td");
 			html::tag table_row("tr");
 			table_row.set(attr_align, val_left);
@@ -1549,24 +1551,48 @@ int main(int argc, char *argv[])
 			table_row.append(cell);
 
 			size_t ub = num_fields;
+			const char* css_fg = 0;
+			const char* css_bg = 0;
 			while (0 < --ub) {
 				const field_t& x = field::list[ub];
 				table_row[0]->append(html::tag::wrap(x.name[0]));
-				table_row[1]->append(html::tag::wrap(std::string(1,x.sym)));
+				if (to_css_colors(x.color[0], css_fg, css_bg)) {
+					html::tag colorize("span", std::string(1, x.sym));
+					colorize.set("style", color+ css_fg + background + css_bg);
+					table_row[1]->append(std::move(colorize));
+				} else {
+					table_row[1]->append(html::tag::wrap(std::string(1, x.sym)));
+				}
 				table_row[2]->append(html::tag::wrap(x.transparent[0] ? "yes" : ""));
 				table_row[3]->append(html::tag::wrap(x.dangerous[0] ? "yes" : ""));
 				page.print(table_row);
 				table_row[0]->clear();
+				table_row[1]->clear();
 				table_row[2]->clear();
 				table_row[3]->clear();
 				table_row[0]->append(html::tag::wrap(x.name[1]));
+				if (to_css_colors(x.color[1], css_fg, css_bg)) {
+					html::tag colorize("span", std::string(1, x.sym));
+					colorize.set("style", color + css_fg + background + css_bg);
+					table_row[1]->append(std::move(colorize));
+				} else {
+					table_row[1]->append(html::tag::wrap(std::string(1, x.sym)));
+				}
 				table_row[2]->append(html::tag::wrap(x.transparent[1] ? "yes" : ""));
 				table_row[3]->append(html::tag::wrap(x.dangerous[1] ? "yes" : ""));
 				page.print(table_row);
 				table_row[0]->clear();
+				table_row[1]->clear();
 				table_row[2]->clear();
 				table_row[3]->clear();
 				table_row[0]->append(html::tag::wrap(x.name[2]));
+				if (to_css_colors(x.color[2], css_fg, css_bg)) {
+					html::tag colorize("span", std::string(1, x.sym));
+					colorize.set("style", color + css_fg + background + css_bg);
+					table_row[1]->append(std::move(colorize));
+				} else {
+					table_row[1]->append(html::tag::wrap(std::string(1, x.sym)));
+				}
 				table_row[2]->append(html::tag::wrap(x.transparent[2] ? "yes" : ""));
 				table_row[3]->append(html::tag::wrap(x.dangerous[2] ? "yes" : ""));
 				page.print(table_row);

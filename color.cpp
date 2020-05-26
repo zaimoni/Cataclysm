@@ -1,6 +1,84 @@
 #include "color.h"
 
+// for now, coordinate HTML support with catacurse.cpp rather than doing proper code locality
+static const char* const css_colors[16] = {
+	"#000",
+	"#C40000",
+	"#00C400",
+	"#C4B41D",
+	"#0000C4",
+	"#C400B4",
+	"#00AAC8",
+	"#C4C4C4",
+	"#606060",
+	"#FF4040",
+	"#00F000",
+	"#FF0",
+	"#1414FF",
+	"#FF00F0",
+	"#00F0FF",
+	"#FFF"
+};
+
 #define HILIGHT COLOR_BLUE
+#define ENCODE_COLORS(F,B) ((F<<3) + B)
+#define DECODE_FG(CODE) ((CODE >> 3) & 7U)
+#define DECODE_BG(CODE) (CODE & 7U)
+static unsigned char color_codes[] = {
+	0,
+	ENCODE_COLORS(COLOR_WHITE,   COLOR_BLACK),
+	ENCODE_COLORS(COLOR_RED,     COLOR_BLACK),
+	ENCODE_COLORS(COLOR_GREEN,   COLOR_BLACK),
+	ENCODE_COLORS(COLOR_BLUE,    COLOR_BLACK),
+	ENCODE_COLORS(COLOR_CYAN,    COLOR_BLACK),
+	ENCODE_COLORS(COLOR_MAGENTA, COLOR_BLACK),
+	ENCODE_COLORS(COLOR_YELLOW,  COLOR_BLACK),
+
+ // Inverted Colors
+	ENCODE_COLORS(COLOR_BLACK,   COLOR_WHITE),
+	ENCODE_COLORS(COLOR_BLACK,   COLOR_RED),
+	ENCODE_COLORS(COLOR_BLACK,   COLOR_GREEN),
+	ENCODE_COLORS(COLOR_BLACK,   COLOR_BLUE),
+	ENCODE_COLORS(COLOR_BLACK,   COLOR_CYAN),
+	ENCODE_COLORS(COLOR_BLACK,   COLOR_MAGENTA),
+	ENCODE_COLORS(COLOR_BLACK,   COLOR_YELLOW),
+
+ // Highlighted - blue background
+	ENCODE_COLORS(COLOR_WHITE,   HILIGHT),
+	ENCODE_COLORS(COLOR_RED,     HILIGHT),
+	ENCODE_COLORS(COLOR_GREEN,   HILIGHT),
+	ENCODE_COLORS(COLOR_BLUE,    HILIGHT),
+	ENCODE_COLORS(COLOR_CYAN,    HILIGHT),
+	ENCODE_COLORS(COLOR_BLACK,   HILIGHT),
+	ENCODE_COLORS(COLOR_MAGENTA, HILIGHT),
+	ENCODE_COLORS(COLOR_YELLOW,  HILIGHT),
+
+ // Red background - for monsters on fire
+	ENCODE_COLORS(COLOR_WHITE,   COLOR_RED),
+	ENCODE_COLORS(COLOR_RED,     COLOR_RED),
+	ENCODE_COLORS(COLOR_GREEN,   COLOR_RED),
+	ENCODE_COLORS(COLOR_BLUE,    COLOR_RED),
+	ENCODE_COLORS(COLOR_CYAN,    COLOR_RED),
+	ENCODE_COLORS(COLOR_MAGENTA, COLOR_RED),
+	ENCODE_COLORS(COLOR_YELLOW,  COLOR_RED),
+
+	0	// duplicate black
+};
+
+bool to_css_colors(nc_color src, const char*& fg, const char*& bg)
+{
+	const auto fg_boost = src & A_BOLD;
+	const auto bg_boost = src & A_BLINK;
+	const auto pair = PAIR_NUMBER(src);
+	if (0 > pair || sizeof(color_codes) / sizeof(*color_codes) <= pair) return false;
+	const auto code = color_codes[pair];
+	const auto _fg = DECODE_FG(code) + (fg_boost ? 8 : 0);
+	const auto _bg = DECODE_BG(code) + (bg_boost ? 8 : 0);
+	fg = css_colors[_fg];
+	bg = css_colors[_bg];
+	return true;
+}
+
 void init_colors()
 {
  start_color();

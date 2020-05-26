@@ -53,7 +53,7 @@ struct WINDOW;
 #define	COLOR_WHITE	0x07        //RGB{196, 196, 196}
 
 #define	COLOR_PAIR(n)	((((u_int32_t)n) << 17) & A_COLOR)
-//#define	PAIR_NUMBER(n)	((((u_int32_t)n) & A_COLOR) >> 17)
+#define	PAIR_NUMBER(n)	((((u_int32_t)n) & A_COLOR) >> 17)
 
 #define    KEY_MIN        0x101    /* minimum extended key value */ //<---------not used
 #define    KEY_BREAK      0x101    /* break key */                  //<---------not used

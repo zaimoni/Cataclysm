@@ -89,6 +89,8 @@ nc_color int_to_color(int key);
 
 // void setattr(nc_color &col, col_attribute attr);	// dead function but looks useful
 
+bool to_css_colors(nc_color src, const char*& fg, const char*& bg);
+
 #endif
 
 #endif
