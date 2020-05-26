@@ -1500,14 +1500,16 @@ void npc::alt_attack(game *g, int target)
  DEBUG_FAIL_OR_LEAVE(!used, return);	// invariant violation
 
 // Are we going to throw this item?
- if (!thrown_item(*used)) activate_item(g, index);
+ if (!thrown_item(*used)) activate_item(g, *used);
  else { // We are throwing it!
 
   std::vector<point> trajectory;
   const int light = g->light_level();
   const int dist = rl_dist(pos, tar);
+  const bool no_friendly_fire = wont_hit_friend(g, tar, index);
+  const int conf = confident_range(index);
 
-  if (dist <= confident_range(index) && wont_hit_friend(g, tar, index)) {
+  if (dist <= conf && no_friendly_fire) {
    {
    int linet;
    trajectory = line_to(pos, tar, (g->m.sees(pos, tar, light, linet) ? linet : 0));
@@ -1518,12 +1520,11 @@ void npc::alt_attack(game *g, int target)
    g->throw_item(*this, tar, *used, trajectory);
    i_remn(index);
 
-  } else if (!wont_hit_friend(g, tar, index)) {// Danger of friendly fire
+  } else if (!no_friendly_fire) {// Danger of friendly fire
 
    if (!used->active || used->charges > 2) // Safe to hold on to, for now
     avoid_friendly_fire(g, target); // Maneuver around player
    else { // We need to throw this live (grenade, etc) NOW! Pick another target?
-    int conf = confident_range(index);
     for (int dist = 2; dist <= conf; dist++) {
      for (int x = pos.x - dist; x <= pos.x + dist; x++) {
       for (int y = pos.y - dist; y <= pos.y + dist; y++) {
@@ -1577,9 +1578,8 @@ void npc::alt_attack(game *g, int target)
  } // Done with throwing-item block
 }
 
-void npc::activate_item(game *g, int index)	// unclear whether this "works"; parallel is npc::use_escape_item
+void npc::activate_item(game *g, item& it)	// unclear whether this "works"; parallel is npc::use_escape_item
 {
- item& it = inv[index];
  if (it.is_tool()) {
   const it_tool* const tool = dynamic_cast<const it_tool*>(it.type);
   (*tool->use)(g, this, &it, false);

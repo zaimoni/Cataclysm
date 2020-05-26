@@ -383,7 +383,7 @@ public:
 private:
  int pick_best_painkiller(const inventory& _inv) const;
 public:
- void activate_item(game *g, int index);
+ void activate_item(game *g, item& it);
 
 // Interaction and assessment of the world around us
  int  danger_assessment(game *g) const;
