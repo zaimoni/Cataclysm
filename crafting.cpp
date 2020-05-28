@@ -654,13 +654,26 @@ RECIPE(itm_boobytrap, CC_MISC, sk_mechanics, sk_traps,3,5000);
   COMP({ { itm_RAM, 2 } });
   COMP({ { itm_power_supply, 1 } });
   COMP({ { itm_battery, 500 },{ itm_plut_cell, 1 } });
-
 }
 
 enum {
 	CRAFTING_HEADER_HEIGHT = 3,	// don't need to use this, close enough to usage to proofread
 	CRAFTING_WIN_HEIGHT = VIEW-CRAFTING_HEADER_HEIGHT
 };
+
+static inventory crafting_inventory(const map& m, const player& u)  // 2020-05-28 NPC-valid
+{
+    inventory crafting_inv;
+    crafting_inv.form_from_map(m, u.pos, PICKUP_RANGE);
+    crafting_inv += u.inv;
+    crafting_inv += u.weapon;
+    if (u.has_bionic(bio_tools)) {
+        item tools(item::types[itm_toolset], messages.turn);
+        tools.charges = u.power_level;
+        crafting_inv += tools;
+    }
+    return crafting_inv;
+}
 
 void game::craft()
 {
@@ -679,15 +692,7 @@ void game::craft()
  bool done = false;
  char ch;
 
- inventory crafting_inv;
- crafting_inv.form_from_map(m, u.pos, PICKUP_RANGE);
- crafting_inv += u.inv;
- crafting_inv += u.weapon;
- if (u.has_bionic(bio_tools)) {
-  item tools(item::types[itm_toolset], messages.turn);
-  tools.charges = u.power_level;
-  crafting_inv += tools;
- }
+ inventory crafting_inv(crafting_inventory(m, u));
 
  do {
   if (redraw) { // When we switch tabs, redraw the header
@@ -964,15 +969,7 @@ void draw_recipe_tabs(WINDOW *w, craft_cat tab)
 void game::pick_recipes(std::vector<const recipe*> &current,
                         std::vector<bool> &available, craft_cat tab)
 {
- inventory crafting_inv;
- crafting_inv.form_from_map(m, u.pos, PICKUP_RANGE);
- crafting_inv += u.inv;
- crafting_inv += u.weapon;
- if (u.has_bionic(bio_tools)) {
-  item tools(item::types[itm_toolset], messages.turn);
-  tools.charges = u.power_level;
-  crafting_inv += tools;
- }
+ const inventory crafting_inv(crafting_inventory(m, u));
 
  bool have_tool[5], have_comp[5];
 
@@ -1119,7 +1116,6 @@ void consume_items(map& m, player& u, const std::vector<component>& components)
   bool pl = false, mp = false;
 
   if (item::types[type]->count_by_charges() && count > 0) {
-
    if (u.has_charges(type, count)) {
     player_has.push_back(comp);
     pl = true;
@@ -1130,9 +1126,7 @@ void consume_items(map& m, player& u, const std::vector<component>& components)
    }
    if (!pl && !mp && u.charges_of(type) + map_inv.charges_of(type) >= count)
     mixed.push_back(comp);
-
   } else { // Counting by units, not charges
-
    if (u.has_amount(type, count)) {
     player_has.push_back(comp);
     pl = true;
@@ -1143,12 +1137,10 @@ void consume_items(map& m, player& u, const std::vector<component>& components)
    }
    if (!pl && !mp && u.amount_of(type) + map_inv.amount_of(type) >= count)
     mixed.push_back(comp);
-
   }
  }
 
  if (player_has.size() + map_has.size() + mixed.size() == 1) { // Only 1 choice
-
   if (player_has.size() == 1)
    player_use.push_back(player_has[0]);
   else if (map_has.size() == 1)

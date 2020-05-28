@@ -72,8 +72,8 @@ class inventory
   void use_amount (itype_id it, int quantity, bool use_container = false);
   void use_charges(itype_id it, int quantity);
 
-  bool has_amount(itype_id it, int quantity) { return (amount_of(it) >= quantity); }
-  bool has_charges(itype_id it, int quantity) { return (charges_of(it) >= quantity); }
+  bool has_amount(itype_id it, int quantity) const { return amount_of(it) >= quantity; }
+  bool has_charges(itype_id it, int quantity) const { return charges_of(it) >= quantity; }
   bool has_item(item *it) const; // Looks for a specific item
  private:
   static const std::vector<item> nullstack;
