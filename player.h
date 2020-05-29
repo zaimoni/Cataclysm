@@ -337,6 +337,8 @@ private:
  void absorb(game *g, body_part bp, int &dam, int &cut);	// \todo V 0.2.1 enable for NPCs?
 };
 
+inventory crafting_inventory(const map& m, const player& u);
+
 // doesn't actually have to be active.  Once NPCs up, could refactor to a member function
  // 0: no further op; 1: nulled; -1: IF_CHARGE; -2 artifact 
 template<class P>

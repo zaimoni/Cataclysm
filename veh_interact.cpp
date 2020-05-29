@@ -60,14 +60,8 @@ void veh_interact::exec ()
     }
     wrefresh(w_grid);
 
-    crafting_inv.form_from_map(_g->m, _g->u.pos, PICKUP_RANGE);
-    crafting_inv += _g->u.inv;
-    crafting_inv += _g->u.weapon;
-    if (_g->u.has_bionic(bio_tools))  {
-        item tools(item::types[itm_toolset], messages.turn);
-        tools.charges = _g->u.power_level;
-        crafting_inv += tools;
-    }
+    crafting_inv = crafting_inventory(_g->m, _g->u);
+
     int charges = dynamic_cast<it_tool*>(item::types[itm_welder])->charges_per_use;
     has_wrench = crafting_inv.has_amount(itm_wrench, 1) ||
                  crafting_inv.has_amount(itm_toolset, 1);

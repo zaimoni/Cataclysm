@@ -661,7 +661,7 @@ enum {
 	CRAFTING_WIN_HEIGHT = VIEW-CRAFTING_HEADER_HEIGHT
 };
 
-static inventory crafting_inventory(const map& m, const player& u)  // 2020-05-28 NPC-valid
+inventory crafting_inventory(const map& m, const player& u)  // 2020-05-28 NPC-valid
 {
     inventory crafting_inv;
     crafting_inv.form_from_map(m, u.pos, PICKUP_RANGE);

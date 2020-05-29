@@ -4953,17 +4953,17 @@ void game::unload()
  u.moves -= int(u.weapon.reload_time(u) / 2);
  if (u.weapon.is_gun()) {	// Gun ammo is combined with existing items
   for (size_t i = 0; i < u.inv.size() && u.weapon.charges > 0; i++) {
-   if (u.inv[i].is_ammo()) {
-    const it_ammo* tmpammo = dynamic_cast<const it_ammo*>(u.inv[i].type);
-    if (tmpammo->id == u.weapon.curammo->id && u.inv[i].charges < tmpammo->count) {
-     u.weapon.charges -= (tmpammo->count - u.inv[i].charges);
-     u.inv[i].charges = tmpammo->count;
-     if (u.weapon.charges < 0) {
-      u.inv[i].charges += u.weapon.charges;
-      u.weapon.charges = 0;
-     }
-    }
-   }
+      decltype(auto) it = u.inv[i];
+      if (!it.is_ammo()) continue;
+      const it_ammo* tmpammo = dynamic_cast<const it_ammo*>(it.type);
+      if (tmpammo->id == u.weapon.curammo->id && it.charges < tmpammo->count) {
+          u.weapon.charges -= (tmpammo->count - it.charges);
+          it.charges = tmpammo->count;
+          if (u.weapon.charges < 0) {
+              it.charges += u.weapon.charges;
+              u.weapon.charges = 0;
+          }
+      }
   }
  }
  item newam((u.weapon.is_gun() && u.weapon.curammo) ? u.weapon.curammo : item::types[default_ammo(u.weapon.ammo_type())], messages.turn);
@@ -5365,8 +5365,8 @@ void game::plswim(int x, int y)
  }
  u.moves -= (movecost > 200 ? 200 : movecost);
  for (size_t i = 0; i < u.inv.size(); i++) {
-  if (u.inv[i].type->m1 == IRON && u.inv[i].damage < 5 && one_in(8))
-   u.inv[i].damage++;
+  decltype(auto) it = u.inv[i];
+  if (IRON == it.type->m1 && it.damage < 5 && one_in(8)) it.damage++;
  }
 }
 
