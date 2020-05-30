@@ -28,9 +28,27 @@ void mvputch_inv(int y, int x, nc_color FG, long ch);
 void mvwputch_inv(WINDOW *w, int y, int x, nc_color FG, long ch);
 void mvputch_hi(int y, int x, nc_color FG, long ch);
 void mvwputch_hi(WINDOW *w, int y, int x, nc_color FG, long ch);
-void mvprintz(int y, int x, nc_color FG, const char *mes, ...);
+
+template<class...Args>
+void mvprintz(int y, int x, nc_color FG, const char* mes, Args...params)
+{
+		if (reject_not_whitelisted_printf(mes)) return;
+		attron(FG);
+		mvprintw(y, x, mes, params...);
+		attroff(FG);
+}
+
 void mvwprintz(WINDOW *w, int y, int x, nc_color FG, const char *mes, ...);
-void printz(nc_color FG, const char *mes, ...);
+
+template<class...Args>
+void printz(nc_color FG, const char* mes, Args...params)
+{
+	if (reject_not_whitelisted_printf(mes)) return;
+	attron(FG);
+	printw(mes, params...);
+	attroff(FG);
+}
+
 void wprintz(WINDOW *w, nc_color FG, const char *mes, ...);
 void draw_tabs(WINDOW *w, int active_tab, const char* const labels[]);
 

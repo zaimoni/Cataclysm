@@ -217,20 +217,6 @@ bool reject_not_whitelisted_printf(const std::string& src)
     return false;
 }
 
-void mvprintz(int y, int x, nc_color FG, const char *mes, ...)
-{
- if (reject_not_whitelisted_printf(mes)) return;
- va_list ap;
- va_start(ap, mes);
- char buff[6000];
- vsprintf_s<sizeof(buff)>(buff, mes, ap);
- va_end(ap);
- reject_unescaped_percent(buff);
- attron(FG);
- mvprintw(y, x, buff);
- attroff(FG);
-}
-
 void mvwprintz(WINDOW* w, int y, int x, nc_color FG, const char *mes, ...)
 {
  if (reject_not_whitelisted_printf(mes)) return;
@@ -253,20 +239,6 @@ static void mvwprintz_noformat(WINDOW* w, int y, int x, nc_color FG, const char*
     // wmove(w, y, x);
     mvwprintw(w, y, x, mes);
     wattroff(w, FG);
-}
-
-void printz(nc_color FG, const char *mes, ...)
-{
- if (reject_not_whitelisted_printf(mes)) return;
- va_list ap;
- va_start(ap,mes);
- char buff[6000];
- vsprintf_s<sizeof(buff)>(buff, mes, ap);
- va_end(ap);
- reject_unescaped_percent(buff);
- attron(FG);
- printw(buff);
- attroff(FG);
 }
 
 void wprintz(WINDOW *w, nc_color FG, const char *mes, ...)
