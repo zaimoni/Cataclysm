@@ -1227,7 +1227,7 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
    skillslist.push_back(skill(i));
    if (line < 9) {
     mvwprintz(w_skills, line, 1, c_ltblue, "%s:", skill_name(skill(i)));
-    mvwprintz(w_skills, line,19, c_ltblue, "%d%s(%s%d%%%%)", sklevel[i],
+    mvwprintz(w_skills, line,19, c_ltblue, "%d%s(%s%d%%)", sklevel[i],
               (sklevel[i] < 10 ? " " : ""),
               (skexercise[i] < 10 && skexercise[i] >= 0 ? " " : ""),
               (skexercise[i] <  0 ? 0 : skexercise[i]));
@@ -1247,7 +1247,7 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
  if (weight_carried() > int(weight_capacity() * .25)) {
   pen = 75 * double((weight_carried() - int(weight_capacity() * .25)) /
                     (weight_capacity() * .75));
-  mvwprintz(w_speed, line, 1, c_red, "Overburdened        -%s%d%%%%",
+  mvwprintz(w_speed, line, 1, c_red, "Overburdened        -%s%d%%",
             (pen < 10 ? " " : ""), pen);
   line++;
  }
@@ -1258,10 +1258,10 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
   else if (pen < -10)
    pen = -10;
   if (pen > 0)
-   mvwprintz(w_speed, line, 1, c_green, "Good mood           +%s%d%%%%",
+   mvwprintz(w_speed, line, 1, c_green, "Good mood           +%s%d%%",
              (pen < 10 ? " " : ""), pen);
   else
-   mvwprintz(w_speed, line, 1, c_red, "Depressed           -%s%d%%%%",
+   mvwprintz(w_speed, line, 1, c_red, "Depressed           -%s%d%%",
              (abs(pen) < 10 ? " " : ""), abs(pen));
   line++;
  }
@@ -1269,48 +1269,48 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
  if (pen > 60)
   pen = 60;
  if (pen >= 1) {
-  mvwprintz(w_speed, line, 1, c_red, "Pain                -%s%d%%%%",
+  mvwprintz(w_speed, line, 1, c_red, "Pain                -%s%d%%",
             (pen < 10 ? " " : ""), pen);
   line++;
  }
  if (pkill >= 10) {
   pen = int(pkill * .1);
-  mvwprintz(w_speed, line, 1, c_red, "Painkillers         -%s%d%%%%",
+  mvwprintz(w_speed, line, 1, c_red, "Painkillers         -%s%d%%",
             (pen < 10 ? " " : ""), pen);
   line++;
  }
  if (stim != 0) {
   pen = stim;
   if (pen > 0)
-   mvwprintz(w_speed, line, 1, c_green, "Stimulants          +%s%d%%%%",
+   mvwprintz(w_speed, line, 1, c_green, "Stimulants          +%s%d%%",
             (pen < 10 ? " " : ""), pen);
   else
-   mvwprintz(w_speed, line, 1, c_red, "Depressants         -%s%d%%%%",
+   mvwprintz(w_speed, line, 1, c_red, "Depressants         -%s%d%%",
             (abs(pen) < 10 ? " " : ""), abs(pen));
   line++;
  }
  if (thirst > 40) {
   pen = int((thirst - 40) / 10);
-  mvwprintz(w_speed, line, 1, c_red, "Thirst              -%s%d%%%%",
+  mvwprintz(w_speed, line, 1, c_red, "Thirst              -%s%d%%",
             (pen < 10 ? " " : ""), pen);
   line++;
  }
  if (hunger > 100) {
   pen = int((hunger - 100) / 10);
-  mvwprintz(w_speed, line, 1, c_red, "Hunger              -%s%d%%%%",
+  mvwprintz(w_speed, line, 1, c_red, "Hunger              -%s%d%%",
             (pen < 10 ? " " : ""), pen);
   line++;
  }
  if (has_trait(PF_SUNLIGHT_DEPENDENT) && !g->is_in_sunlight(pos)) {
   pen = (g->light_level() >= 12 ? 5 : 10);
-  mvwprintz(w_speed, line, 1, c_red, "Out of Sunlight     -%s%d%%%%",
+  mvwprintz(w_speed, line, 1, c_red, "Out of Sunlight     -%s%d%%",
             (pen < 10 ? " " : ""), pen);
   line++;
  }
  if (const int cold = is_cold_blooded()) {
      if (g->temperature < 65) {
          pen = (65 - g->temperature) / mutation_branch::cold_blooded_severity[cold - 1];
-         mvwprintz(w_speed, line, 1, c_red, "Cold-Blooded        -%s%d%%%%", (pen < 10 ? " " : ""), pen);
+         mvwprintz(w_speed, line, 1, c_red, "Cold-Blooded        -%s%d%%", (pen < 10 ? " " : ""), pen);
          line++;
      }
  }
@@ -1323,11 +1323,11 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
   mvwprintz(w_speed, line,  1, col, cond.name());
   mvwprintz(w_speed, line, 21, col, (good ? "+" : "-"));
   if (good) move_adjust = -move_adjust;
-  mvwprintz(w_speed, line, (move_adjust >= 10 ? 22 : 23), col, "%d%%%%", move_adjust);
+  mvwprintz(w_speed, line, (move_adjust >= 10 ? 22 : 23), col, "%d%%", move_adjust);
  }
  if (has_trait(PF_QUICK)) {
   pen = int(newmoves * .1);
-  mvwprintz(w_speed, line, 1, c_green, "Quick               +%s%d%%%%",
+  mvwprintz(w_speed, line, 1, c_green, "Quick               +%s%d%%",
             (pen < 10 ? " " : ""), pen);
  }
  int runcost = run_cost(100);
@@ -1609,7 +1609,7 @@ encumb(bp_feet) * 5);
     mvwprintz(w_skills, 2 + i - min, 1, c_ltgray, "                         ");
     if (skexercise[i] >= 100) {
      mvwprintz(w_skills, 2 + i - min, 1, status, "%s:", skill_name(skill(skillslist[i])));
-     mvwprintz(w_skills, 2 + i - min,19, status, "%d (%s%d%%%%)",
+     mvwprintz(w_skills, 2 + i - min,19, status, "%d (%s%d%%)",
                sklevel[skillslist[i]],
                (skexercise[skillslist[i]] < 10 &&
                 skexercise[skillslist[i]] >= 0 ? " " : ""),
@@ -1618,7 +1618,7 @@ encumb(bp_feet) * 5);
     } else {
      mvwprintz(w_skills, 2 + i - min, 1, status, "%s:",
                skill_name(skill(skillslist[i])));
-     mvwprintz(w_skills, 2 + i - min,19, status, "%d (%s%d%%%%)", 
+     mvwprintz(w_skills, 2 + i - min,19, status, "%d (%s%d%%)",
                sklevel[skillslist[i]],
                (skexercise[skillslist[i]] < 10 &&
                 skexercise[skillslist[i]] >= 0 ? " " : ""),
@@ -1643,7 +1643,7 @@ encumb(bp_feet) * 5);
      for (int i = 0; i < skillslist.size() && i < 7; i++) {
 	  status = (skexercise[skillslist[i]] < 0) ? c_ltred : c_ltblue;
       mvwprintz(w_skills, i + 2,  1, status, "%s:", skill_name(skill(skillslist[i])));
-      mvwprintz(w_skills, i + 2, 19, status, "%d (%s%d%%%%)",
+      mvwprintz(w_skills, i + 2, 19, status, "%d (%s%d%%)",
                 sklevel[skillslist[i]],
                 (skexercise[skillslist[i]] < 10 &&
                  skexercise[skillslist[i]] >= 0 ? " " : ""),

@@ -3219,7 +3219,7 @@ firing slugs.  The rifling makes the gun less suitable for shot, however.",
 GUNMOD("extended clip",	  8,  560, c_ltgray, STEEL, PLASTIC,  1,  1, -2,  0, -1,
 	-1,  0,  0, 50,  0,  0, AT_NULL,	true,	true,	true,	true,
 	0, "\
-Increases the ammunition capacity of your firearm by 50%%%%, but the added bulk\n\
+Increases the ammunition capacity of your firearm by 50%%, but the added bulk\n\
 reduces accuracy slightly.",
 0);
 

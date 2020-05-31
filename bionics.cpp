@@ -336,7 +336,7 @@ occasionally draw power from your batteries."},
 A malfunctioning bionic.  It will occasionally emit a loud burst of noise."},
 {"Power Overload", false, false, 0, 0, "\
 Damaged power circuits cause short-circuiting inside your muscles when your\n\
-batteries are above 75%%%% capacity, causing greatly reduced strength.  This\n\
+batteries are above 75%% capacity, causing greatly reduced strength.  This\n\
 has no effect if you have no internal batteries."},
 {"Wire-induced Stiffness", false, false, 0, 0, "\
 Improperly installed wires cause a physical stiffness in most of your body,\n\
@@ -811,7 +811,7 @@ bool player::install_bionics(game *g, const it_bionic* type)
  else
   col_suc = c_red;
 
- mvwprintz(w.get(), 8, 59, col_suc, "%d%%%%", chance_of_success);
+ mvwprintz(w.get(), 8, 59, col_suc, "%d%%", chance_of_success);
 
  mvwprintz(w.get(), 10, 40, c_white,       "Failure may result in crippling damage,");
  mvwprintz(w.get(), 11, 40, c_white,       "loss of existing bionics, genetic damage");

@@ -32,13 +32,20 @@ void mvwputch_hi(WINDOW *w, int y, int x, nc_color FG, long ch);
 template<class...Args>
 void mvprintz(int y, int x, nc_color FG, const char* mes, Args...params)
 {
-		if (reject_not_whitelisted_printf(mes)) return;
-		attron(FG);
-		mvprintw(y, x, mes, params...);
-		attroff(FG);
+	if (reject_not_whitelisted_printf(mes)) return;
+	attron(FG);
+	mvprintw(y, x, mes, params...);
+	attroff(FG);
 }
 
-void mvwprintz(WINDOW *w, int y, int x, nc_color FG, const char *mes, ...);
+template<class...Args>
+void mvwprintz(WINDOW* w, int y, int x, nc_color FG, const char* mes, Args...params)
+{
+	if (reject_not_whitelisted_printf(mes)) return;
+	wattron(w, FG);
+	mvwprintw(w, y, x, mes, params...);
+	wattroff(w, FG);
+}
 
 template<class...Args>
 void printz(nc_color FG, const char* mes, Args...params)
@@ -49,7 +56,15 @@ void printz(nc_color FG, const char* mes, Args...params)
 	attroff(FG);
 }
 
-void wprintz(WINDOW *w, nc_color FG, const char *mes, ...);
+template<class...Args>
+void wprintz(WINDOW* w, nc_color FG, const char* mes, Args...params)
+{
+	if (reject_not_whitelisted_printf(mes)) return;
+	wattron(w, FG);
+	wprintw(w, mes, params...);
+	wattroff(w, FG);
+}
+
 void draw_tabs(WINDOW *w, int active_tab, const char* const labels[]);
 
 void debugmsg(const char *mes, ...);

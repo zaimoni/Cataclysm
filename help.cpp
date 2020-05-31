@@ -569,7 +569,7 @@ easily drop unwanted items on the floor.");
    mvprintz(0, 0, c_white, "\
 ITEM TYPES:\n\
 ~       Liquid\n\
-%%%%       Food\n\
+%%       Food\n\
 !       Medication\n\
     These are all consumed by using 'E'. They provide a certain amount of\n\
  nutrition, quench your thirst, may be a stimulant or a depressant, and may\n\
