@@ -1992,21 +1992,11 @@ void game::disp_kills()
 
  for (int i = 0; i < types.size(); i++) {
   if (i < VIEW - 1) {
-   mvwprintz(w, i + 1,  0, types[i]->color, "%c %s", types[i]->sym,
-             types[i]->name.c_str());
-   int hori = 25;
-   if (count[i] >= 10) hori = 24;
-   if (count[i] >= 100) hori = 23;
-   if (count[i] >= 1000) hori = 22;
-   mvwprintz(w, i + 1, hori, c_white, "%d", count[i]);
+   mvwprintz(w, i + 1,  0, types[i]->color, "%c %s", types[i]->sym, types[i]->name.c_str());
+   mvwprintz(w, i + 1, 25 - int_log10(count[i]), c_white, "%d", count[i]);
   } else {
-   mvwprintz(w, i + 1, 40, types[i]->color, "%c %s", types[i]->sym,
-             types[i]->name.c_str());
-   int hori = 65;
-   if (count[i] >= 10) hori = 64;
-   if (count[i] >= 100) hori = 63;
-   if (count[i] >= 1000) hori = 62;
-   mvwprintz(w, i + 1, hori, c_white, "%d", count[i]);
+   mvwprintz(w, i + 1, 40, types[i]->color, "%c %s", types[i]->sym, types[i]->name.c_str());
+   mvwprintz(w, i + 1, 65 - int_log10(count[i]), c_white, "%d", count[i]);
   }
  }
 

@@ -501,9 +501,9 @@ int set_traits(WINDOW* w, player *u, int &points)
 			// selecting disadvantages
 
  do {
-  mvwprintz(w,  3, 2, c_ltgray, "Points left: %d  ", points);
-  mvwprintz(w,  3,20, c_ltgreen, "%s%d/%d", (num_good < 10 ? " " : ""), num_good, MAX_TRAIT_POINTS);
-  mvwprintz(w,  3,33, c_ltred, "%s%d/%d", (num_bad < 10 ? " " : ""), num_bad, MAX_TRAIT_POINTS);
+  mvwprintz(w,  3,  2, c_ltgray, "Points left: %d  ", points);
+  mvwprintz(w,  3, 21 - int_log10(num_good), c_ltgreen, "%d/%d", num_good, MAX_TRAIT_POINTS);
+  mvwprintz(w,  3, 34 - int_log10(num_bad), c_ltred, "%d/%d", num_bad, MAX_TRAIT_POINTS);
 // Clear the bottom of the screen.
   mvwprintz(w, 22, 0, c_ltgray, "                                                                             ");
   mvwprintz(w, 23, 0, c_ltgray, "                                                                             ");

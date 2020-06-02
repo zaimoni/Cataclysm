@@ -303,16 +303,9 @@ void game::construction_menu()
        posy++;
        posx = 33;
       }
-      mvwprintz(w_con, posy, posx, col, "%s x%d",
-                item::types[comp.type]->name.c_str(), comp.count);
+      mvwprintz(w_con, posy, posx, col, "%s x%d", item::types[comp.type]->name.c_str(), comp.count);
       posx += length + 3; // + 2 for " x", + 1 for an empty space
-// Add more space for the length of the count
-      if (comp.count < 10)
-       posx++;
-      else if (comp.count < 100)
-       posx += 2;
-      else
-       posx += 3;
+      posx += 1 + int_log10(comp.count);    // Add more space for the length of the count
 
       if (j < stage.components[i].size() - 1) { // "OR" if there's more
        if (posx > 77) {

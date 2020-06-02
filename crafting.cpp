@@ -729,12 +729,11 @@ void game::craft()
    else
     mvwprintz(w_data, 3, 30, col, "Your skill level: %d",
               u.sklevel[current[line]->sk_primary]);
-   if (current[line]->time >= 1000)
-    mvwprintz(w_data, 4, 30, col, "Time to complete: %d minutes",
-              int(current[line]->time / 1000));
+   // for some reason 1 turn == 100 time here
+   if (current[line]->time >= MINUTES(100))
+    mvwprintz(w_data, 4, 30, col, "Time to complete: %d minutes", current[line]->time / MINUTES(100));
    else
-    mvwprintz(w_data, 4, 30, col, "Time to complete: %d turns",
-              int(current[line]->time / 100));
+    mvwprintz(w_data, 4, 30, col, "Time to complete: %d turns", current[line]->time / 100);
    mvwprintz(w_data, 5, 30, col, "Tools required:");
    if (current[line]->tools[0].size() == 0) {
     mvwputch(w_data, 6, 30, col, '>');

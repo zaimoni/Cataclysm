@@ -1122,7 +1122,7 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
   status = c_ltgreen;
  else
   status = c_green;
- mvwprintz(w_stats,  2, (str_cur < 10 ? 17 : 16), status, "%d", str_cur);
+ mvwprintz(w_stats,  2, 17-int_log10(str_cur), status, "%d", str_cur);
 
  if (dex_cur <= 0)
   status = c_dkgray;
@@ -1136,7 +1136,7 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
   status = c_ltgreen;
  else
   status = c_green;
- mvwprintz(w_stats,  3, (dex_cur < 10 ? 17 : 16), status, "%d", dex_cur);
+ mvwprintz(w_stats,  3, 17-int_log10(dex_cur), status, "%d", dex_cur);
 
  if (int_cur <= 0)
   status = c_dkgray;
@@ -1150,7 +1150,7 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
   status = c_ltgreen;
  else
   status = c_green;
- mvwprintz(w_stats,  4, (int_cur < 10 ? 17 : 16), status, "%d", int_cur);
+ mvwprintz(w_stats,  4, 17-int_log10(int_cur), status, "%d", int_cur);
 
  if (per_cur <= 0)
   status = c_dkgray;
@@ -1164,33 +1164,33 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
   status = c_ltgreen;
  else
   status = c_green;
- mvwprintz(w_stats,  5, (per_cur < 10 ? 17 : 16), status, "%d", per_cur);
+ mvwprintz(w_stats,  5, 17-int_log10(per_cur), status, "%d", per_cur);
 
  wrefresh(w_stats);
 
 // Next, draw encumberment.
  mvwprintz(w_encumb, 0, 6, c_ltgray, "ENCUMBERANCE");
  mvwprintz(w_encumb, 2, 2, c_ltgray, "Head................");
- mvwprintz(w_encumb, 2,(encumb(bp_head) >= 0 && encumb(bp_head) < 10 ? 21 : 20),
-           encumb_color(encumb(bp_head)), "%d", encumb(bp_head));
+ auto enc = encumb(bp_head);    // problematic if this can be negative (need better function)
+ mvwprintz(w_encumb, 2, 21 - int_log10(enc), encumb_color(enc), "%d", enc);
  mvwprintz(w_encumb, 3, 2, c_ltgray, "Eyes................");
- mvwprintz(w_encumb, 3,(encumb(bp_eyes) >= 0 && encumb(bp_eyes) < 10 ? 21 : 20),
-           encumb_color(encumb(bp_eyes)), "%d", encumb(bp_eyes));
+ enc = encumb(bp_eyes);
+ mvwprintz(w_encumb, 3, 21 - int_log10(enc), encumb_color(enc), "%d", enc);
  mvwprintz(w_encumb, 4, 2, c_ltgray, "Mouth...............");
- mvwprintz(w_encumb, 4,(encumb(bp_mouth)>=0 && encumb(bp_mouth) < 10 ? 21 : 20),
-           encumb_color(encumb(bp_mouth)), "%d", encumb(bp_mouth));
+ enc = encumb(bp_mouth);
+ mvwprintz(w_encumb, 4, 21 - int_log10(enc), encumb_color(enc), "%d", enc);
  mvwprintz(w_encumb, 5, 2, c_ltgray, "Torso...............");
- mvwprintz(w_encumb, 5,(encumb(bp_torso)>=0 && encumb(bp_torso) < 10 ? 21 : 20),
-           encumb_color(encumb(bp_torso)), "%d", encumb(bp_torso));
+ enc = encumb(bp_torso);
+ mvwprintz(w_encumb, 5, 21 - int_log10(enc), encumb_color(enc), "%d", enc);
  mvwprintz(w_encumb, 6, 2, c_ltgray, "Hands...............");
- mvwprintz(w_encumb, 6,(encumb(bp_hands)>=0 && encumb(bp_hands) < 10 ? 21 : 20),
-           encumb_color(encumb(bp_hands)), "%d", encumb(bp_hands));
+ enc = encumb(bp_hands);
+ mvwprintz(w_encumb, 6, 21 - int_log10(enc), encumb_color(enc), "%d", enc);
  mvwprintz(w_encumb, 7, 2, c_ltgray, "Legs................");
- mvwprintz(w_encumb, 7,(encumb(bp_legs) >= 0 && encumb(bp_legs) < 10 ? 21 : 20),
-           encumb_color(encumb(bp_legs)), "%d", encumb(bp_legs));
+ enc = encumb(bp_legs);
+ mvwprintz(w_encumb, 7, 21 - int_log10(enc), encumb_color(enc), "%d", enc);
  mvwprintz(w_encumb, 8, 2, c_ltgray, "Feet................");
- mvwprintz(w_encumb, 8,(encumb(bp_feet) >= 0 && encumb(bp_feet) < 10 ? 21 : 20),
-           encumb_color(encumb(bp_feet)), "%d", encumb(bp_feet));
+ enc = encumb(bp_feet);
+ mvwprintz(w_encumb, 8, 21 - int_log10(enc), encumb_color(enc), "%d", enc);
  wrefresh(w_encumb);
 
 // Next, draw traits.
@@ -1323,7 +1323,7 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
   mvwprintz(w_speed, line,  1, col, cond.name());
   mvwprintz(w_speed, line, 21, col, (good ? "+" : "-"));
   if (good) move_adjust = -move_adjust;
-  mvwprintz(w_speed, line, (move_adjust >= 10 ? 22 : 23), col, "%d%%", move_adjust);
+  mvwprintz(w_speed, line, 23 - int_log10(move_adjust), col, "%d%%", move_adjust);
  }
  if (has_trait(PF_QUICK)) {
   pen = int(newmoves * .1);
@@ -1332,11 +1332,9 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
  }
  int runcost = run_cost(100);
  nc_color col = (runcost <= 100 ? c_green : c_red);
- mvwprintz(w_speed, 1, (runcost  >= 100 ? 21 : (runcost  < 10 ? 23 : 22)), col,
-           "%d", runcost);
+ mvwprintz(w_speed, 1, 23 - int_log10(runcost), col, "%d", runcost);
  col = (newmoves >= 100 ? c_green : c_red);
- mvwprintz(w_speed, 2, (newmoves >= 100 ? 21 : (newmoves < 10 ? 23 : 22)), col,
-           "%d", newmoves);
+ mvwprintz(w_speed, 2, 23 - int_log10(newmoves), col, "%d", newmoves);
  wrefresh(w_speed);
 
  refresh();
@@ -1695,9 +1693,7 @@ void player::disp_morale()
  for (int i = 0; i < morale.size(); i++) {
   int b = morale[i].bonus;
 
-  int bpos = 24;
-  if (abs(b) >= 10) bpos--;
-  if (abs(b) >= 100) bpos--;
+  int bpos = 24 - int_log10(abs(b));
   if (b < 0) bpos--;
 
   mvwprintz(w, i + 3,  1, (b < 0 ? c_red : c_green), morale[i].name().c_str());
@@ -1705,9 +1701,7 @@ void player::disp_morale()
  }
 
  int mor = morale_level();
- int bpos = 24;
- if (abs(mor) >= 10) bpos--;
- if (abs(mor) >= 100) bpos--;
+ int bpos = 24 - int_log10(abs(mor));
  if (mor < 0) bpos--;
  mvwprintz(w, 20, 1, (mor < 0 ? c_red : c_green), "Total:");
  mvwprintz(w, 20, bpos, (mor < 0 ? c_red : c_green), "%d", mor);

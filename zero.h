@@ -3,6 +3,10 @@
 
 // zero-dependency header
 
+constexpr unsigned long long int_log10(unsigned long long x) {
+	return (10 <= x) ? 1 + int_log10(x / 10) : 0;
+}
+
 // upper-bound clamp
 template<class T, class U> void clamp_ub(T& x, const U& ref) { if (ref < x) x = ref; }
 template<auto ref, class T> void clamp_ub(T& x) { if (ref < x) x = ref; }
