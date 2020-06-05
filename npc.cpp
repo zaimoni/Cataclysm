@@ -1374,35 +1374,32 @@ void npc::say(game *g, std::string line, ...)
  }
 }
 
-void npc::init_selling(std::vector<int> &indices, std::vector<int> &prices)
+void npc::init_selling(std::vector<int> &indices, std::vector<int> &prices) const
 {
- int val, price;
  bool found_lighter = false;
  for (size_t i = 0; i < inv.size(); i++) {
-  if (inv[i].type->id == itm_lighter && !found_lighter)
-   found_lighter = true;
+  const item& it = inv[i];
+  if (it.type->id == itm_lighter && !found_lighter) found_lighter = true;
   else {
-   val = value(inv[i]) - (inv[i].price() / 50);
+   const int pr = it.price();
+   int val = value(it) - (pr / 50);
    if (val <= NPC_LOW_VALUE || mission == NPC_MISSION_SHOPKEEP) {
     indices.push_back(i);
-    price = inv[i].price() / (price_adjustment(sklevel[sk_barter]));
+    int price = pr / price_adjustment(sklevel[sk_barter]);
     prices.push_back(price);
    }
   }
  }
 }
 
-void npc::init_buying(inventory you, std::vector<int> &indices,
-                      std::vector<int> &prices)
+void npc::init_buying(const inventory& you, std::vector<int> &indices, std::vector<int> &prices) const
 {
- int val, price;
  for (size_t i = 0; i < you.size(); i++) {
-  val = value(you[i]);
-  if (val >= NPC_HI_VALUE) {
+  decltype(auto) it = you[i];
+  if (const int val = value(it);  val >= NPC_HI_VALUE) {
    indices.push_back(i);
-   price = you[i].price();
-   if (val >= NPC_VERY_HI_VALUE)
-    price *= 2;
+   int price = it.price();
+   if (val >= NPC_VERY_HI_VALUE) price *= 2;
    price *= price_adjustment(sklevel[sk_barter]);
    prices.push_back(price);
   }

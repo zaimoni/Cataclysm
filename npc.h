@@ -364,10 +364,9 @@ public:
 // Bartering - select items we're willing to buy/sell and set prices
 // Prices are later modified by g->u's barter skill; see dialogue.cpp
 // init_buying() fills <indices> with the indices of items in <you>
- void init_buying(inventory you, std::vector<int> &indices,
-                  std::vector<int> &prices);
+ void init_buying(const inventory& you, std::vector<int> &indices, std::vector<int> &prices) const;
 // init_selling() fills <indices> with the indices of items in our inventory
- void init_selling(std::vector<int> &indices, std::vector<int> &prices);
+ void init_selling(std::vector<int> &indices, std::vector<int> &prices) const;
 
 
 // Use and assessment of items
