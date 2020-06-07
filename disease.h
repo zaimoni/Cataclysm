@@ -151,7 +151,7 @@ void dis_effect(game *g, player &p, disease &dis)
  case DI_ONFIRE:
   p.hurtall(3);
   for (int i = 0; i < p.worn.size(); i++) {
-   if (p.worn[i].made_of(VEGGY) || p.worn[i].made_of(PAPER) || p.worn[i].made_of(PAPER)) {
+   if (p.worn[i].made_of(VEGGY) || p.worn[i].made_of(PAPER)) {  // \todo V0.2.3+ want to handle wood here but having it auto-destruct doesn't seem reasonable
     EraseAt(p.worn, i);
     i--;
    } else if ((p.worn[i].made_of(COTTON) || p.worn[i].made_of(WOOL)) && one_in(10)) {

@@ -177,7 +177,8 @@ public:
  virtual bool wield(int index);// Wield item; returns false on fail
  void pick_style(); // Pick a style
  bool wear(char let);	// Wear item; returns false on fail
- bool wear_item(const item& to_wear);	// \todo V 0.2.1 enable for NPCs
+ bool wear_item(const item& to_wear);
+ const it_armor* wear_is_performable(const item& to_wear) const;
  bool takeoff(map& m, char let);// Take off item; returns false on fail	\todo V 0.2.1 extend to NPC? (this is UI-driven so maybe not)
  void use(game *g, char let);	// Use a tool \todo V 0.2.1 extend to NPCs? (UI-driven)
  bool install_bionics(game *g, const it_bionic* type);	// Install bionics \todo V 0.2.1 enable for NPCs

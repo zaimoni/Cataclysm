@@ -41,7 +41,7 @@ std::string body_part_name (body_part bp, int side)
  }
 }
 
-std::string encumb_text(body_part bp)
+const char* encumb_text(body_part bp)
 {
  switch (bp) {
   case bp_head:  return "";
