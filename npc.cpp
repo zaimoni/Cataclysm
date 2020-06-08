@@ -9,6 +9,7 @@
 #include "line.h"
 #include "JSON.h"
 #include "recent_msg.h"
+#include "stl_typetraits.h"
 
 #include "saveload.h"
 
@@ -1248,31 +1249,20 @@ int npc::assigned_missions_value() const
  return ret;
 }
 
-std::vector<skill> npc::skills_offered_to(player *p)
+std::vector<skill> npc::skills_offered_to(const player& p) const
 {
  std::vector<skill> ret;
- if (p == NULL)
-  return ret;
  for (int i = 0; i < num_skill_types; i++) {
-  if (sklevel[i] > p->sklevel[i])
-   ret.push_back( skill(i) );
+  if (sklevel[i] > p.sklevel[i]) ret.push_back( skill(i) );
  }
  return ret;
 }
 
-std::vector<itype_id> npc::styles_offered_to(player *p)
+std::vector<itype_id> npc::styles_offered_to(const player& p) const
 {
  std::vector<itype_id> ret;
- if (p == NULL)
-  return ret;
  for (int i = 0; i < styles.size(); i++) {
-  bool found = false;
-  for (int j = 0; j < p->styles.size() && !found; j++) {
-   if (p->styles[j] == styles[i])
-    found = true;
-  }
-  if (!found)
-   ret.push_back( styles[i] );
+  if (!cataclysm::any(p.styles, styles[i])) ret.push_back(styles[i]);
  }
  return ret;
 }

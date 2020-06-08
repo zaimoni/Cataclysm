@@ -212,8 +212,8 @@ static std::string dynamic_line(talk_topic topic, game *g, npc *p)
  case TALK_TRAIN: {
   if (g->u.backlog.type == ACT_TRAIN)
    return "Shall we resume?";
-  std::vector<skill> trainable = p->skills_offered_to( &(g->u) );
-  std::vector<itype_id> styles = p->styles_offered_to( &(g->u) );
+  std::vector<skill> trainable = p->skills_offered_to(g->u);
+  std::vector<itype_id> styles = p->styles_offered_to(g->u);
   if (trainable.empty() && styles.empty())
    return "Sorry, but it doesn't seem I have anything to teach you.";
   else
@@ -691,8 +691,8 @@ static std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *
    SELECT_TEMP( resume.str(), g->u.backlog.index);
     SUCCESS(TALK_TRAIN_START);
   }
-  std::vector<skill> trainable = p->skills_offered_to( &(g->u) );
-  std::vector<itype_id> styles = p->styles_offered_to( &(g->u) );
+  std::vector<skill> trainable = p->skills_offered_to(g->u);
+  std::vector<itype_id> styles = p->styles_offered_to(g->u);
   if (trainable.empty() && styles.empty()) {
    RESPONSE("Oh, okay."); // Nothing to learn here
     SUCCESS(TALK_NONE);
