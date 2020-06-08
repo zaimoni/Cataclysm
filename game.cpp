@@ -1008,7 +1008,7 @@ int game::reserve_random_mission(mission_origin origin, point p, int npc_id)
  for (int i = 0; i < mission_type::types.size(); i++) {
   const auto& miss_type = mission_type::types[i];
   for(const auto x0 : miss_type.origins) {
-   if (x0 == origin && (*miss_type.place)(this, p.x, p.y)) {
+   if (x0 == origin && (*miss_type.place)(this, p.x, p.y, npc_id)) {
     valid.push_back(i);
 	break;
    }

@@ -8,9 +8,10 @@
 std::vector <mission_type> mission_type::types; // The list of mission templates
 
 struct mission_place {	// Return true if [posx,posy] is valid in overmap
-	static bool never(game *g, int posx, int posy) { return false; }
-	static bool always(game *g, int posx, int posy) { return true; }
-	static bool near_town(game *g, int posx, int posy);
+	static bool never(game *g, int posx, int posy, int npc_id) { return false; }
+	static bool always(game *g, int posx, int posy, int npc_id) { return true; }
+	static bool near_town(game *g, int posx, int posy, int npc_id);
+	static bool no_antibiotics(game* g, int posx, int posy, int npc_id);
 };
 
 /* mission_start functions are first run when a mission is accepted; this
@@ -40,9 +41,19 @@ struct mission_fail {
 	static void kill_npc(game *, mission *); // Kill the NPC who assigned it!
 };
 
-bool mission_place::near_town(game *g, int posx, int posy)
+bool mission_place::near_town(game *g, int posx, int posy, int npc_id)
 {
 	return (g->cur_om.dist_from_city(point(posx, posy)) <= 40);
+}
+
+bool mission_place::no_antibiotics(game* g, int posx, int posy, int npc_id)
+{
+	const auto p = npc::find_alive(npc_id);
+	if (!p) return false;
+	for (size_t i = 0; i < p->inv.size(); i++) {
+		if (p->inv[i].type->id == itm_antibiotics) return false;
+	}
+	return true;
 }
 
 /* These functions are responsible for making changes to the game at the moment
@@ -58,13 +69,8 @@ void mission_start::infect_npc(game *g, mission *miss)
 {
 	const auto p = npc::find_alive(miss->npc_id);
 	if (!p) throw std::string(__FUNCTION__)+" couldn't find an NPC!";
+	if (!mission_place::no_antibiotics(g, 0, 0, miss->npc_id)) throw std::string(__FUNCTION__) + " NPC trivializes mission.";
 	p->add_disease(DI_INFECTION, -1);
-	for (size_t i = 0; i < p->inv.size(); i++) {	// XXX \todo make this a precondition that blocks assigning the mission to the NPC (or allow the NPC to self-cure)
-		if (p->inv[i].type->id == itm_antibiotics) {
-			p->inv.destroy_stack(i);
-			i--;
-		}
-	}
 }
 
 void mission_start::place_dog(game *g, mission *miss)
@@ -311,7 +317,7 @@ mission_type(id, name, goal, diff, val, urgent, place, start, end, fail) )
          &mission_end::standard, &mission_fail::standard);
 
  MISSION("Find Antibiotics", MGOAL_FIND_ITEM, 2, 1500, true,
-	&mission_place::always, &mission_start::infect_npc,
+	&mission_place::no_antibiotics, &mission_start::infect_npc,
 	&mission_end::heal_infection, &mission_fail::kill_npc);
   ORIGINS(ORIGIN_OPENER_NPC);
   ITEM(itm_antibiotics);

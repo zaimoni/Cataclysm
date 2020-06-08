@@ -56,14 +56,14 @@ struct mission_type {
  itype_id item_id;
  mission_id follow_up;
 
- bool (*place)(game *g, int x, int y);
+ bool (*place)(game *g, int x, int y, int npc_id);
  void (*start)(game *g, mission *);
  void (*end  )(game *g, mission *);
  void (*fail )(game *g, mission *);
 
  mission_type(int ID, const char* NAME, mission_goal GOAL, int DIF, int VAL,
               bool URGENT,
-              bool (*PLACE)(game *, int x, int y),
+              bool (*PLACE)(game *, int x, int y, int npc_id),
               void (*START)(game *, mission *),
               void (*END  )(game *, mission *),
               void (*FAIL )(game *, mission *)) :
