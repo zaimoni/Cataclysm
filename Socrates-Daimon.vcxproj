@@ -177,6 +177,7 @@
     <ClCompile Include="saveload.cpp" />
     <ClCompile Include="skill.cpp" />
     <ClCompile Include="socrates-daimon.cpp" />
+    <ClCompile Include="trapdef.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="artifact.h" />

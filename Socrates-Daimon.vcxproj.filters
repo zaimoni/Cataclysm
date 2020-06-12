@@ -77,6 +77,9 @@
     <ClCompile Include="mapdata.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="trapdef.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="color.h">

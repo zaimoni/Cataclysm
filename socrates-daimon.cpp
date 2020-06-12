@@ -1627,6 +1627,55 @@ int main(int argc, char *argv[])
 		page.print(global_nav);
 		*revert.first = std::move(revert.second);
 		}
+
+		page.start_print(_data_table);
+		// actual content
+		{
+			html::tag table_header("tr");
+			table_header.set(attr_align, val_center);
+			table_header.append(html::tag("th", "Name"));
+			table_header.append(html::tag("th", "ASCII"));
+			table_header.append(html::tag("th", "time cost"));
+			table_header.append(html::tag("th", "Trap?"));
+			page.print(table_header);
+		}
+
+		{
+			static const std::string color("color: ");
+			static const std::string background("; background-color:");
+			html::tag cell("td");
+			html::tag table_row("tr");
+			table_row.set(attr_align, val_left);
+			table_row.append(cell);
+			table_row.append(cell);
+			table_row.append(cell);
+			table_row.append(cell);
+
+			size_t ub = num_terrain_types;
+			const char* css_fg = 0;
+			const char* css_bg = 0;
+			while (0 < --ub) {
+				const ter_t& x = ter_t::list[ub];
+				/*
+	unsigned long flags;// : num_t_flags;	// expanding this would be useful, but would be new support
+				*/
+				table_row[0]->append(html::tag::wrap(x.name));
+				if (to_css_colors(x.color, css_fg, css_bg)) {
+					html::tag colorize("span", std::string(1, x.sym));
+					colorize.set("style", color+ css_fg + background + css_bg);
+					table_row[1]->append(std::move(colorize));
+				} else {
+					table_row[1]->append(html::tag::wrap(std::string(1, x.sym)));
+				}
+				if (x.movecost) table_row[2]->append(html::tag::wrap(std::to_string((int)x.movecost)));
+				if (const auto json = JSON_key(x.trap)) table_row[3]->append(html::tag::wrap(json));	// \todo hyperlink to traps page when we have it
+				page.print(table_row);
+				table_row[0]->clear();
+				table_row[1]->clear();
+				table_row[2]->clear();
+				table_row[3]->clear();
+			}
+		}
 		while (page.end_print());
 		}
 

@@ -42,6 +42,7 @@ enum trap_id {
 
 DECLARE_JSON_ENUM_SUPPORT(trap_id)
 
+#ifndef SOCRATES_DAIMON
 struct trapfunc {
  static void none		(game *g, int x, int y) { };
  static void bubble		(game *g, int x, int y);
@@ -98,6 +99,7 @@ struct trapfuncm {
  static void drain	(game *g, monster *z);
  static void snake	(game *g, monster *z);
 };
+#endif
 
 struct trap {
  static std::vector<const trap*> traps;
@@ -115,14 +117,22 @@ struct trap {
  std::vector<itype_id> components;	// For disassembly?
  
  // \todo trap action for npcs
+#ifndef SOCRATES_DAIMON
  void (*act)(game *, int x, int y);	// You stepped on it
  void (*actm)(game *, monster *);	// Monster stepped on it
+#endif
  
  trap(int pid, char psym, nc_color pcolor, std::string pname,
       int pvisibility, int pavoidance, int pdifficulty, 
+#ifndef SOCRATES_DAIMON
       void (*pact)(game *, int x, int y),
-      void (*pactm)(game *, monster *), itype_id part = itm_null, itype_id part2 = itm_null, itype_id part3 = itm_null)
- : id(pid),sym(psym),color(pcolor),name(pname),visibility(pvisibility),avoidance(pavoidance),difficulty(pdifficulty),act(pact),actm(pactm)
+      void (*pactm)(game *, monster *),
+#endif
+      itype_id part = itm_null, itype_id part2 = itm_null, itype_id part3 = itm_null)
+ : id(pid),sym(psym),color(pcolor),name(pname),visibility(pvisibility),avoidance(pavoidance),difficulty(pdifficulty)
+#ifndef SOCRATES_DAIMON
+     ,act(pact),actm(pactm)
+#endif
  {
   if (part) components.push_back(part);
   if (part2) components.push_back(part2);

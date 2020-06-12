@@ -2,10 +2,10 @@
 
 #ifndef SOCRATES_DAIMON
 #include "computer.h"
-#include "mapdata.h"
 #else
 #include "item.h"
 #endif
+#include "mapdata.h"
 #ifndef SOCRATES_DAIMON
 #include "mission.h"
 #include "overmap.h"

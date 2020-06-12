@@ -44,6 +44,7 @@ void trap::init()
 id++;\
 traps.push_back(new trap(id, sym, color, name, visibility, avoidance,\
                     difficulty, __VA_ARGS__));
+#ifndef SOCRATES_DAIMON
  TRAP("none", '?', c_white, 20, 0, 0, &trapfunc::none, &trapfuncm::none);
 
 //	Name			Symbol	Color		Vis Avd Diff
@@ -149,5 +150,82 @@ traps.push_back(new trap(id, sym, color, name, visibility, avoidance,\
 // Snake spawn / hisssss
  TRAP("",			'^',	c_white,	99, 99, 99,
 	&trapfunc::snake,	&trapfuncm::snake);
+#else
+TRAP("none", '?', c_white, 20, 0, 0);
 
+//	Name			Symbol	Color		Vis Avd Diff
+TRAP("bubblewrap", '_', c_ltcyan, 0, 8, 0, itm_bubblewrap);
+
+//	Name			Symbol	Color		Vis Avd Diff
+TRAP("bear trap", '^', c_blue, 2, 7, 3, itm_beartrap);
+
+//	Name			Symbol	Color		Vis Avd Diff
+TRAP("buried bear trap", '^', c_blue, 9, 8, 4, itm_beartrap);
+
+//	Name			Symbol	Color		Vis Avd Diff
+TRAP("rabbit snare", '\\', c_brown, 5, 10, 2, itm_stick, itm_string_36);
+
+TRAP("spiked board", '_', c_ltgray, 1, 6, 0, itm_board_trap);
+
+TRAP("tripwire", '^', c_ltred, 6, 4, 3, itm_string_36);
+
+TRAP("crossbow trap", '^', c_green, 5, 4, 5, itm_string_36, itm_crossbow);
+
+TRAP("shotgun trap", '^', c_red, 4, 5, 6, itm_string_36, itm_shotgun_sawn);// 2 shots
+
+TRAP("shotgun trap", '^', c_red, 4, 5, 6, itm_string_36, itm_shotgun_sawn);// 1 shot
+
+TRAP("spinning blade engine", '_', c_ltred, 0, 0, 2, itm_motor, itm_machete, itm_machete);
+
+TRAP("spinning blade", '\\', c_cyan, 0, 4, 99);
+
+//	Name			Symbol	Color		Vis Avd Diff
+TRAP("land mine", '_', c_red, 10, 14, 10, itm_landmine);
+
+//	Name			Symbol	Color		Vis Avd Diff
+TRAP("teleport pad", '_', c_magenta, 0, 15, 20);
+
+//	Name			Symbol	Color		Vis Avd Diff
+TRAP("goo pit", '_', c_dkgray, 0, 15, 15);
+
+//	Name			Symbol	Color		Vis Avd Diff
+TRAP("dissector", '7', c_cyan, 2, 20, 99);
+
+//	Name			Symbol	Color		Vis Avd Diff
+TRAP("sinkhole", '_', c_brown, 10, 14, 99);
+
+TRAP("pit", '0', c_brown, 0, 8, 99);
+
+TRAP("spiked pit", '0', c_blue, 0, 8, 99);
+
+TRAP("lava", '~', c_red, 0, 99, 99);
+
+// The '%' symbol makes the portal cycle through ~*0&
+//	Name			Symbol	Color		Vis Avd Diff
+TRAP("shimmering portal", '%', c_magenta, 0, 30, 99);
+
+TRAP("ledge", ' ', c_black, 0, 99, 99);
+
+TRAP("boobytrap", '^', c_ltcyan, 5, 4, 7);
+
+TRAP("raised tile", '^', c_ltgray, 9, 20, 99);
+
+// Toggles through states of RGB walls
+TRAP("", '^', c_white, 99, 99, 99);
+
+// Glow attack
+TRAP("", '^', c_white, 99, 99, 99);
+
+// Hum attack
+TRAP("", '^', c_white, 99, 99, 99);
+
+// Shadow spawn
+TRAP("", '^', c_white, 99, 99, 99);
+
+// Drain attack
+TRAP("", '^', c_white, 99, 99, 99);
+
+// Snake spawn / hisssss
+TRAP("", '^', c_white, 99, 99, 99);
+#endif
 }
