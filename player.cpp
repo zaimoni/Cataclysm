@@ -65,7 +65,7 @@ std::string morale_point::name() const
 int disease::speed_boost() const
 {
 	switch (type) {
-	case DI_COLD:		return 0 - duration/5;
+	case DI_COLD:		return 0 - duration/TURNS(5);
 	case DI_HEATSTROKE:	return -15;
 	case DI_INFECTION:	return -80;
 	case DI_SAP:		return -25;
@@ -74,9 +74,9 @@ int disease::speed_boost() const
 	case DI_BADPOISON:	return -10;
 	case DI_FOODPOISON:	return -20;
 	case DI_WEBBED:	return -25;
-	case DI_ADRENALINE:	return (duration > 150 ? 40 : -10);
-	case DI_ASTHMA:	return 0 - duration/5;
-	case DI_METH:		return (duration > 600 ? 50 : -40);
+	case DI_ADRENALINE:	return (duration > MINUTES(15) ? 40 : -10);
+	case DI_ASTHMA:	return 0 - duration/TURNS(5);
+	case DI_METH:		return (duration > MINUTES(60) ? 50 : -40);
 	default:		return 0;
 	}
 }
@@ -116,9 +116,9 @@ const char* disease::name() const
 	case DI_WEBBED:	return "Webbed";
 	case DI_RAT:		return "Ratting";
 	case DI_DRUNK:
-		if (duration > 2200) return "Wasted";
-		if (duration > 1400) return "Trashed";
-		if (duration > 800)  return "Drunk";
+		if (duration > MINUTES(220)) return "Wasted";
+		if (duration > MINUTES(140)) return "Trashed";
+		if (duration > MINUTES(80))  return "Drunk";
 		return "Tipsy";
 
 	case DI_CIG:		return "Cigarette";
@@ -127,15 +127,15 @@ const char* disease::name() const
     case DI_VISUALS:	return "Hallucinating";
 
 	case DI_ADRENALINE:
-		if (duration > 150) return "Adrenaline Rush";
+		if (duration > MINUTES(15)) return "Adrenaline Rush";
 		return "Adrenaline Comedown";
 
 	case DI_ASTHMA:
-		if (duration > 800) return "Heavy Asthma";
+		if (duration > MINUTES(80)) return "Heavy Asthma";
 		return "Asthma";
 
 	case DI_METH:
-		if (duration > 600) return "High on Meth";
+		if (duration > HOURS(1)) return "High on Meth";
 		return "Meth Comedown";
 
 	case DI_IN_PIT:	return "Stuck in Pit";
@@ -167,34 +167,34 @@ std::string disease::description() const
 
 	case DI_COLD:
 		stream << "Your body in general is uncomfortably cold.\n";
-		if (duration >= 5) stream << "Speed -" << int(duration / 5) << "%;";
-		if (duration >= 80) stream << "       Dexterity - " << int(duration / 80);
+		if (duration >= TURNS(5)) stream << "Speed -" << int(duration / TURNS(5)) << "%;";
+		if (duration >= MINUTES(8)) stream << "       Dexterity - " << int(duration / MINUTES(8));
 		return stream.str();
 
 	case DI_COLD_FACE:
 		stream << "Your face is cold.";
-		if (duration >= 100) stream << "  It may become frostbitten.";
+		if (duration >= MINUTES(10)) stream << "  It may become frostbitten.";
 		stream << "\n";
-		if (duration >= 80) stream << "Perception - " << int(duration / 80);
+		if (duration >= MINUTES(8)) stream << "Perception - " << int(duration / MINUTES(8));
 		return stream.str();
 
 	case DI_COLD_HANDS:
 		stream << "Your hands are cold.";
-		if (duration >= 100) stream << "  They may become frostbitten.";
+		if (duration >= MINUTES(10)) stream << "  They may become frostbitten.";
 		stream << "\n";
-		if (duration >= 40) stream << "Dexterity - " << int(duration / 40);
+		if (duration >= MINUTES(4)) stream << "Dexterity - " << int(duration / MINUTES(4));
 		return stream.str();
 
 	case DI_COLD_LEGS:	// XXX omitted from disease::speed_boost \todo fix
 		stream << "Your legs are cold.\n";
-		if (duration >= 2) stream << "Speed -" << (duration > 60 ? 30 : int(duration / 2)) << "%";
+		if (duration >= TURNS(2)) stream << "Speed -" << (duration > MINUTES(6) ? MINUTES(6)/TURNS(2) : duration / TURNS(2)) << "%";
 		return stream.str();
 
 	case DI_COLD_FEET:	// XXX omitted from disease::speed_boost \todo fix
 		stream << "Your feet are cold.";
-		if (duration >= 100) stream << "  They may become frostbitten.";
+		if (duration >= MINUTES(10)) stream << "  They may become frostbitten.";
 		stream << "\n";
-		if (duration >= 4) stream << "Speed -" << (duration > 60 ? 15 : int(duration / 4)) << "%";
+		if (duration >= TURNS(4)) stream << "Speed -" << (duration > MINUTES(6) ? MINUTES(6)/TURNS(4) : duration / TURNS(4)) << "%";
 		return stream.str();
 
 	case DI_HOT: return " You are uncomfortably hot.\n\
@@ -258,9 +258,9 @@ this urge.";
 	case DI_WEBBED:	return "Strength - 1;     Dexterity - 4;    Speed - 25";
 
 	case DI_RAT:
-		intpen = int(duration / 20);
-		perpen = int(duration / 25);
-		strpen = int(duration / 50);
+		intpen = int(duration / MINUTES(2));
+		perpen = int(duration / (MINUTES(5)/2));
+		strpen = int(duration / MINUTES(5));
 		stream << "You feal nauseated and rat-like.\n";
 		if (intpen > 0) stream << "Intelligence - " << intpen << ";   ";
 		if (perpen > 0) stream << "Perception - " << perpen << ";   ";
@@ -268,10 +268,10 @@ this urge.";
 		return stream.str();
 
 	case DI_DRUNK:
-		perpen = int(duration / 1000);
-		dexpen = int(duration / 1000);
-		intpen = int(duration / 700);
-		strpen = int(duration / 1500);
+		perpen = int(duration / MINUTES(100));
+		dexpen = int(duration / MINUTES(100));
+		intpen = int(duration / MINUTES(70));
+		strpen = int(duration / MINUTES(150));
 		if (strpen > 0) stream << "Strength - " << strpen << ";    ";
 		else if (duration <= 600) stream << "Strength + 1;    ";
 		if (dexpen > 0) stream << "Dexterity - " << dexpen << ";    ";
@@ -280,7 +280,7 @@ this urge.";
 		return stream.str();
 
 	case DI_CIG:
-		if (duration >= 600)
+		if (duration >= HOURS(1))
 			return "Strength - 1;     Dexterity - 1\n\
 You smoked too much.";
 		return "Dexterity + 1;     Intelligence + 1;     Perception + 1";
@@ -290,7 +290,7 @@ You smoked too much.";
     case DI_VISUALS: return "You can't trust everything that you see.";
 
 	case DI_ADRENALINE:
-		if (duration > 150) return "Speed +80;   Strength + 5;   Dexterity + 3;   Intelligence - 8;   Perception + 1";
+		if (duration > MINUTES(15)) return "Speed +80;   Strength + 5;   Dexterity + 3;   Intelligence - 8;   Perception + 1";
 		return "Strength - 2;     Dexterity - 1;     Intelligence - 1;     Perception - 1";
 
 	case DI_ASTHMA:
@@ -298,7 +298,7 @@ You smoked too much.";
 		return stream.str();
 
 	case DI_METH:
-		if (duration > 600) return "Speed +50;  Strength + 2;  Dexterity + 2;  Intelligence + 3;  Perception + 3";
+		if (duration > HOURS(1)) return "Speed +50;  Strength + 2;  Dexterity + 2;  Intelligence + 3;  Perception + 3";
 		return "Speed -40;   Strength - 3;   Dexterity - 2;   Intelligence - 2";
 
 	case DI_IN_PIT: return "You're stuck in a pit.  Sight distance is limited and you have to climb out.";
@@ -2974,9 +2974,9 @@ void player::vomit()
  while (0 <= --i) {
   auto& ill = illness[i];
   if (DI_FOODPOISON == ill.type) {
-   if (0 > (ill.duration -= 300)) rem_disease(DI_FOODPOISON);
+   if (0 > (ill.duration -= MINUTES(30))) rem_disease(DI_FOODPOISON);
   } else if (DI_DRUNK == ill.type) {
-   if (0 > (ill.duration -= rng(1, 5) * 100)) rem_disease(DI_DRUNK);
+   if (0 > (ill.duration -= rng(1, 5) * MINUTES(10))) rem_disease(DI_DRUNK);
   }
  }
  rem_disease(DI_PKILL1);

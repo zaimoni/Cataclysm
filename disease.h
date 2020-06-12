@@ -9,7 +9,8 @@
 #error need to include bodypart.h
 #endif
 
-#define MIN_DISEASE_AGE (-43200) // Permanent disease capped @ 3 days
+// Permanent disease capped at 3 days
+#define MIN_DISEASE_AGE DAYS(-3)
   
 void dis_effect(game *g, player &p, disease &dis)
 {
@@ -24,34 +25,31 @@ void dis_effect(game *g, player &p, disease &dis)
   break;
 
  case DI_COLD:
-  p.dex_cur -= int(dis.duration / 80);
+  p.dex_cur -= dis.duration / MINUTES(8);
   break;
 
  case DI_COLD_FACE:
-  p.per_cur -= int(dis.duration / 80);
-  if (dis.duration >= 200 ||
-      (dis.duration >= 100 && one_in(300 - dis.duration)))
-   p.add_disease(DI_FBFACE, 50);
+  p.per_cur -= dis.duration / MINUTES(8);
+  if (dis.duration >= MINUTES(20) || (dis.duration >= MINUTES(10) && one_in(MINUTES(30) - dis.duration)))
+   p.add_disease(DI_FBFACE, MINUTES(5));
   break;
 
  case DI_COLD_HANDS:
-  p.dex_cur -= 1 + int(dis.duration / 40);
-  if (dis.duration >= 200 ||
-      (dis.duration >= 100 && one_in(300 - dis.duration)))
-   p.add_disease(DI_FBHANDS, 50);
+  p.dex_cur -= 1 + dis.duration / MINUTES(4);
+  if (dis.duration >= MINUTES(20) || (dis.duration >= MINUTES(10) && one_in(MINUTES(30) - dis.duration)))
+   p.add_disease(DI_FBHANDS, MINUTES(5));
   break;
 
  case DI_COLD_LEGS:
   break;
 
  case DI_COLD_FEET:
-  if (dis.duration >= 200 ||
-      (dis.duration >= 100 && one_in(300 - dis.duration)))
-   p.add_disease(DI_FBFEET, 50);
+  if (dis.duration >= MINUTES(20) || (dis.duration >= MINUTES(10) && one_in(MINUTES(30) - dis.duration)))
+   p.add_disease(DI_FBFEET, MINUTES(5));
   break;
 
  case DI_HOT:
-  if (rng(0, 500) < dis.duration) p.add_disease(DI_HEATSTROKE, 2);
+  if (rng(0, MINUTES(50)) < dis.duration) p.add_disease(DI_HEATSTROKE, TURNS(2));
   p.int_cur -= 1;
   break;
    
@@ -181,7 +179,7 @@ void dis_effect(game *g, player &p, disease &dis)
   p.moves -= 10;
   p.str_cur -= 1;
   p.dex_cur -= 1;
-  if (dis.duration > -600) {	// First hour symptoms
+  if (dis.duration > HOURS(-1)) {	// First hour symptoms
    if (one_in(160 + bonus)) {
     if (!p.is_npc()) {
      messages.add("You cough heavily.");
@@ -196,7 +194,7 @@ void dis_effect(game *g, player &p, disease &dis)
    if (one_in(100 + bonus)) {
     if (!p.is_npc()) messages.add("You smell and taste mushrooms.");
    }
-  } else if (dis.duration > -3600) {	// One to six hours
+  } else if (dis.duration > HOURS(-6)) {	// One to six hours
    if (one_in(600 + bonus * 3)) {
     if (!p.is_npc()) messages.add("You spasm suddenly!");
     p.moves -= 100;
@@ -284,7 +282,7 @@ void dis_effect(game *g, player &p, disease &dis)
   break;
 
  case DI_PKILL1:
-  if (dis.duration <= 70 && dis.duration % 7 == 0 && p.pkill < 15)
+  if (dis.duration <= MINUTES(7) && dis.duration % 7 == 0 && p.pkill < 15)
    p.pkill++;
   break;
 
@@ -323,26 +321,26 @@ void dis_effect(game *g, player &p, disease &dis)
 // We get 600 turns, or one hour, of DI_DRUNK for each drink we have (on avg)
 // So, the duration of DI_DRUNK is a good indicator of how much alcohol is in
 //  our system.
-  p.per_cur -= int(dis.duration / 1000);
-  p.dex_cur -= int(dis.duration / 1000);
-  p.int_cur -= int(dis.duration /  700);
-  p.str_cur -= int(dis.duration / 1500);
-  if (dis.duration <= 600) p.str_cur += 1;
-  if (dis.duration > 2000 + 100 * dice(2, 100) && 
+  p.per_cur -= int(dis.duration / MINUTES(100));
+  p.dex_cur -= int(dis.duration / MINUTES(100));
+  p.int_cur -= int(dis.duration /  MINUTES(70));
+  p.str_cur -= int(dis.duration / MINUTES(150));
+  if (dis.duration <= HOURS(1)) p.str_cur += 1;
+  if (dis.duration > MINUTES(200) + MINUTES(10) * dice(2, 100) && 
       (p.has_trait(PF_WEAKSTOMACH) || p.has_trait(PF_NAUSEA) || one_in(20)))
    p.vomit();
-  if (!p.has_disease(DI_SLEEP) && dis.duration >= 4500 &&
-      one_in(500 - int(dis.duration / 80))) {
+  if (!p.has_disease(DI_SLEEP) && dis.duration >= MINUTES(450) &&
+      one_in(500 - int(dis.duration / MINUTES(8)))) {
    if (!p.is_npc()) messages.add("You pass out.");
    p.add_disease(DI_SLEEP, dis.duration / 2);
   }
   break;
 
  case DI_CIG:
-  if (dis.duration >= 600) {	// Smoked too much
+  if (dis.duration >= HOURS(1)) {	// Smoked too much
    p.str_cur--;
    p.dex_cur--;
-   if (dis.duration >= 1200 && (one_in(50) ||
+   if (dis.duration >= HOURS(2) && (one_in(50) ||
                                 (p.has_trait(PF_WEAKSTOMACH) && one_in(30)) ||
                                 (p.has_trait(PF_NAUSEA) && one_in(20))))
     p.vomit();
@@ -411,12 +409,12 @@ void dis_effect(game *g, player &p, disease &dis)
 
  case DI_DERMATIK: {
   int formication_chance = 600;
-  if (dis.duration > -2400 && dis.duration < 0) formication_chance = 2400 + dis.duration;
-  if (one_in(formication_chance)) p.add_disease(DI_FORMICATION, 1200);
+  if (dis.duration > HOURS(-4) && dis.duration < 0) formication_chance = 2400 + dis.duration;
+  if (one_in(formication_chance)) p.add_disease(DI_FORMICATION, HOURS(2));
 
-  if (dis.duration < -2400 && one_in(2400)) p.vomit();
+  if (dis.duration < HOURS(-4) && one_in(2400)) p.vomit();
 
-  if (dis.duration < -14400) { // Spawn some larvae!
+  if (dis.duration < DAYS(-1)) { // Spawn some larvae!
 // Choose how many insects; more for large characters
    int num_insects = 1;
    while (num_insects < 6 && rng(0, 10) < p.str_max) num_insects++;
@@ -459,9 +457,9 @@ void dis_effect(game *g, player &p, disease &dis)
   break;
 
  case DI_RAT:
-  p.int_cur -= int(dis.duration / 20);
-  p.str_cur -= int(dis.duration / 50);
-  p.per_cur -= int(dis.duration / 25);
+  p.int_cur -= dis.duration / MINUTES(2);
+  p.str_cur -= dis.duration / MINUTES(5);
+  p.per_cur -= dis.duration / (MINUTES(5)/2);
   if (rng(30, 100) < rng(0, dis.duration) && one_in(3)) p.vomit();
   if (rng(0, 100) < rng(0, dis.duration)) p.mutation_category_level[MUTCAT_RAT]++;
   if (rng(50, 500) < rng(0, dis.duration)) p.mutate();
@@ -483,11 +481,11 @@ void dis_effect(game *g, player &p, disease &dis)
 
  case DI_HALLU:
 // This assumes that we were given DI_HALLU with a 3600 (6-hour) lifespan
-  if (dis.duration > 3000) {	// First hour symptoms
+  if (dis.duration > HOURS(5)) {	// First hour symptoms
    if (one_in(300)) {
     if (!p.is_npc()) messages.add("You feel a little strange.");
    }
-  } else if (dis.duration > 2400) {	// Coming up
+  } else if (dis.duration > HOURS(4)) {	// Coming up
    if (one_in(100) || (p.has_trait(PF_WEAKSTOMACH) && one_in(100))) {
     if (!p.is_npc()) messages.add("You feel nauseous.");
     p.hunger -= 5;
@@ -497,8 +495,8 @@ void dis_effect(game *g, player &p, disease &dis)
     else if (one_in(200)) messages.add("Oh god, what's happening?");
     else if (one_in(200)) messages.add("Of course... it's all fractals!");
    }
-  } else if (dis.duration == 2400)	// Visuals start
-   p.add_disease(DI_VISUALS, 2400);
+  } else if (dis.duration == HOURS(4))	// Visuals start
+   p.add_disease(DI_VISUALS, HOURS(4));
   else {	// Full symptoms
    p.per_cur -= 2;
    p.int_cur -= 1;
@@ -509,12 +507,12 @@ void dis_effect(game *g, player &p, disease &dis)
   break;
 
  case DI_ADRENALINE:
-  if (dis.duration > 150) {	// 5 minutes positive effects
+  if (dis.duration > MINUTES(15)) {	// 5 minutes positive effects
    p.str_cur += 5;
    p.dex_cur += 3;
    p.int_cur -= 8;
    p.per_cur += 1;
-  } else if (dis.duration == 150) {	// 15 minutes come-down
+  } else if (dis.duration == MINUTES(15)) {	// 15 minutes come-down
    if (!p.is_npc()) messages.add("Your adrenaline rush wears off.  You feel AWFUL!");
    p.moves -= 300;
   } else {
@@ -526,7 +524,7 @@ void dis_effect(game *g, player &p, disease &dis)
   break;
 
  case DI_ASTHMA:
-  if (dis.duration > 1200) {
+  if (dis.duration > HOURS(2)) {
    if (!p.is_npc()) messages.add("Your asthma overcomes you.  You stop breathing and die...");
    p.hurtall(500);
   }
@@ -535,7 +533,7 @@ void dis_effect(game *g, player &p, disease &dis)
   break;
 
  case DI_METH:
-  if (dis.duration > 600) {
+  if (dis.duration > HOURS(1)) {
    p.str_cur += 2;
    p.dex_cur += 2;
    p.int_cur += 3;
@@ -559,20 +557,20 @@ void dis_effect(game *g, player &p, disease &dis)
 // Default we get around 300 duration points per teleport (possibly more
 // depending on the source).
 // TODO: Include a chance to teleport to the nether realm.
-  if (dis.duration > 6000) {	// 20 teles (no decay; in practice at least 21)
-   if (one_in(1000 - ((dis.duration - 6000) / 10))) {
+  if (dis.duration > HOURS(10)) {	// 20 teles (no decay; in practice at least 21)
+   if (one_in(1000 - ((dis.duration - HOURS(10)) / 10))) {
     if (!p.is_npc()) messages.add("Glowing lights surround you, and you teleport.");
     g->teleport();
     if (one_in(10)) p.rem_disease(DI_TELEGLOW);
    }
-   if (one_in(1200 - ((dis.duration - 6000) / 5)) && one_in(20)) {
+   if (one_in(1200 - ((dis.duration - HOURS(10)) / 5)) && one_in(20)) {
     if (!p.is_npc()) messages.add("You pass out.");
-    p.add_disease(DI_SLEEP, 1200);
+    p.add_disease(DI_SLEEP, HOURS(2));
     if (one_in(6)) p.rem_disease(DI_TELEGLOW);
    }
   }
-  if (dis.duration > 3600) { // 12 teles
-   if (one_in(4000 - int(.25 * (dis.duration - 3600)))) {
+  if (dis.duration > HOURS(6)) { // 12 teles
+   if (one_in(4000 - (dis.duration - HOURS(6))/4)) {
     int x, y, tries = 0;
     do {
      x = p.pos.x + rng(-4, 4);
@@ -589,13 +587,13 @@ void dis_effect(game *g, player &p, disease &dis)
      if (one_in(2)) p.rem_disease(DI_TELEGLOW);
     }
    }
-   if (one_in(3500 - int(.25 * (dis.duration - 3600)))) {
+   if (one_in(3500 - (dis.duration - HOURS(6))/4)) {
     if (!p.is_npc()) messages.add("You shudder suddenly.");
     p.mutate();
     if (one_in(4)) p.rem_disease(DI_TELEGLOW);
    }
   }
-  if (dis.duration > 2400) {	// 8 teleports
+  if (dis.duration > HOURS(4)) {	// 8 teleports
    if (one_in(10000 - dis.duration)) p.add_disease(DI_SHAKES, rng(40, 80));
    if (one_in(12000 - dis.duration)) {
     if (!p.is_npc()) messages.add("Your vision is filled with bright lights...");
@@ -603,13 +601,13 @@ void dis_effect(game *g, player &p, disease &dis)
     if (one_in(8)) p.rem_disease(DI_TELEGLOW);
    }
    if (one_in(5000) && !p.has_disease(DI_HALLU)) {
-    p.add_disease(DI_HALLU, 3600);
+    p.add_disease(DI_HALLU, HOURS(6));
     if (one_in(5)) p.rem_disease(DI_TELEGLOW);
    }
   }
   if (one_in(4000)) {
    if (!p.is_npc()) messages.add("You're suddenly covered in ectoplasm.");
-   p.add_disease(DI_BOOMERED, 100);
+   p.add_disease(DI_BOOMERED, MINUTES(10));
    if (one_in(4)) p.rem_disease(DI_TELEGLOW);
   }
   if (one_in(10000)) {
@@ -652,18 +650,18 @@ void dis_effect(game *g, player &p, disease &dis)
   }
 
   if (lesser) { // Only minor effects, some even good!
-   p.str_cur += (dis.duration > 4500 ? 10 : int(dis.duration / 450));
-   if (dis.duration < 600)
+   p.str_cur += (dis.duration > MINUTES(450) ? 10 : dis.duration / MINUTES(45));
+   if (dis.duration < HOURS(1))
     p.dex_cur++;
    else
-    p.dex_cur -= (dis.duration > 3600 ? 10 : int((dis.duration - 600) / 300));
-   p.int_cur -= (dis.duration > 3000 ? 10 : int((dis.duration - 500) / 250));
-   p.per_cur -= (dis.duration > 4800 ? 10 : int((dis.duration - 800) / 400));
+    p.dex_cur -= (dis.duration > HOURS(6) ? 10 : (dis.duration - HOURS(1)) / MINUTES(30));
+   p.int_cur -= (dis.duration > MINUTES(300) ? 10 : (dis.duration - MINUTES(50)) / MINUTES(25));
+   p.per_cur -= (dis.duration > MINUTES(480) ? 10 : (dis.duration - MINUTES(80)) / MINUTES(40));
   } else { // Major effects, all bad.
-   p.str_cur -= (dis.duration > 5000 ? 10 : int(dis.duration / 500));
-   p.dex_cur -= (dis.duration > 6000 ? 10 : int(dis.duration / 600));
-   p.int_cur -= (dis.duration > 4500 ? 10 : int(dis.duration / 450));
-   p.per_cur -= (dis.duration > 4000 ? 10 : int(dis.duration / 400));
+   p.str_cur -= (dis.duration > MINUTES(500) ? 10 : dis.duration / MINUTES(50));
+   p.dex_cur -= (dis.duration > HOURS(1) ? 10 : dis.duration / HOURS(1));
+   p.int_cur -= (dis.duration > MINUTES(450) ? 10 : dis.duration / MINUTES(45));
+   p.per_cur -= (dis.duration > MINUTES(400) ? 10 : dis.duration / MINUTES(40));
   }
  } break;
  }

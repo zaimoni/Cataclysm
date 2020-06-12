@@ -265,7 +265,7 @@ void iuse::vitamins(game *g, player *p, item *it, bool t)
   return;
  }
 
- p->add_disease(DI_TOOK_VITAMINS, 14400);
+ p->add_disease(DI_TOOK_VITAMINS, DAYS(1));
  if (p->health <= -2) p->health -= (p->health / 2);
  p->health += 3;
 }
@@ -276,11 +276,11 @@ void iuse::pkill_1(game *g, player *p, item *it, bool t)
  if (!p->is_npc()) messages.add("You take some %s.", it->tname().c_str());
 
  if (!p->has_disease(DI_PKILL1))
-  p->add_disease(DI_PKILL1, 120);
+  p->add_disease(DI_PKILL1, MINUTES(12));
  else {
   for (int i = 0; i < p->illness.size(); i++) {
    if (p->illness[i].type == DI_PKILL1) {
-    p->illness[i].duration = 120;
+    p->illness[i].duration = MINUTES(12);
     i = p->illness.size();
    }
   }
@@ -332,8 +332,8 @@ void iuse::caff(game *g, player *p, item *it, bool t)
 
 void iuse::alcohol(game *g, player *p, item *it, bool t)
 {
- int duration = 680 - (10 * p->str_max); // Weaker characters are cheap drunks
- if (p->has_trait(PF_LIGHTWEIGHT)) duration += 300;
+ int duration = MINUTES(68 - p->str_max); // Weaker characters are cheap drunks
+ if (p->has_trait(PF_LIGHTWEIGHT)) duration += MINUTES(30);
  p->pkill += 8;
  p->add_disease(DI_DRUNK, duration);
 }
@@ -341,9 +341,9 @@ void iuse::alcohol(game *g, player *p, item *it, bool t)
 void iuse::cig(game *g, player *p, item *it, bool t)
 {
  if (!p->is_npc()) messages.add("You light a cigarette and smoke it.");
- p->add_disease(DI_CIG, 200);
+ p->add_disease(DI_CIG, MINUTES(20));
  for (int i = 0; i < p->illness.size(); i++) {
-  if (p->illness[i].type == DI_CIG && p->illness[i].duration > 600 && !p->is_npc())
+  if (p->illness[i].type == DI_CIG && p->illness[i].duration > HOURS(1) && !p->is_npc())
    messages.add("Ugh, too much smoke... you feel gross.");
  }
 }

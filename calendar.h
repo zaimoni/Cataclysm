@@ -20,6 +20,8 @@ enum season_type {
 #define MINUTES(x) ((x) * 10)
 #define HOURS(x)   ((x) * 600)
 #define DAYS(x)    ((x) * 14400)
+// forward-compatibility
+#define TURNS(x)	(x)
 
 // so we have some idea of the time scaling issues
 // Ignore difference between Julian Calendar and Gregorian Calendar
