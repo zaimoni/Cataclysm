@@ -3247,7 +3247,7 @@ void game::resonance_cascade(int x, int y)
  int maxglow = 100 - glow_decay;
  int minglow =  60 - glow_decay;
  if (minglow < 0) minglow = 0;
- if (maxglow > 0) u.add_disease(DI_TELEGLOW, rng(minglow, maxglow) * 100);
+ if (maxglow > 0) u.add_disease(DI_TELEGLOW, rng(minglow, maxglow) * MINUTES(10));
  int startx = (x < 8 ? 0 : x - 8), endx = (x+8 >= SEEX*3 ? SEEX*3 - 1 : x + 8);
  int starty = (y < 8 ? 0 : y - 8), endy = (y+8 >= SEEY*3 ? SEEY*3 - 1 : y + 8);
  for (int i = startx; i <= endx; i++) {
@@ -6016,7 +6016,7 @@ void game::teleport(player *p)
  int tries = 0;
  point dest(0, 0);
  const bool is_u = (p == &u);
- p->add_disease(DI_TELEGLOW, 300);
+ p->add_disease(DI_TELEGLOW, MINUTES(30));
  do {
   dest.x = p->pos.x + rng(0, SEEX * 2) - SEEX;
   dest.y = p->pos.y + rng(0, SEEY * 2) - SEEY;

@@ -2314,7 +2314,7 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
  }
  if (has_trait(PF_ADRENALINE) && !has_disease(DI_ADRENALINE) &&
      (hp_cur[hp_head] < 25 || hp_cur[hp_torso] < 15))
-  add_disease(DI_ADRENALINE, 200);
+  add_disease(DI_ADRENALINE, MINUTES(20));
 }
 
 void player::hurt(game *g, body_part bphurt, int side, int dam)
@@ -2364,7 +2364,7 @@ void player::hurt(game *g, body_part bphurt, int side, int dam)
   debugmsg("Wacky body part hurt!");
  }
  if (has_trait(PF_ADRENALINE) && !has_disease(DI_ADRENALINE) && (hp_cur[hp_head] < 25 || hp_cur[hp_torso] < 15))
-  add_disease(DI_ADRENALINE, 200);
+  add_disease(DI_ADRENALINE, MINUTES(20));
 }
 
 void player::heal(body_part healed, int side, int dam)
@@ -2475,7 +2475,7 @@ void player::knock_back_from(game *g, int x, int y)
 // First, see if we hit a monster
  if (monster* const z = g->mon(to)) {
   hit(g, bp_torso, 0, z->type->size, 0);
-  add_disease(DI_STUNNED, 1);
+  add_disease(DI_STUNNED, TURNS(1));
   if ((str_max - 6) / 4 > z->type->size) {
    z->knock_back_from(g, pos); // Chain reaction!
    z->hurt((str_max - 6) / 4);
@@ -2492,7 +2492,7 @@ void player::knock_back_from(game *g, int x, int y)
 
  if (npc* const p = g->nPC(to)) {
   hit(g, bp_torso, 0, 3, 0);
-  add_disease(DI_STUNNED, 1);
+  add_disease(DI_STUNNED, TURNS(1));
   p->hit(g, bp_torso, 0, 3, 0);
   if (u_see) messages.add("%s bounce%s off %s!", You.c_str(), s, p->name.c_str());
   return;
@@ -2506,7 +2506,7 @@ void player::knock_back_from(game *g, int x, int y)
 // TODO: NPCs can't swim!
   } else { // It's some kind of wall.
    hurt(g, bp_torso, 0, 3);
-   add_disease(DI_STUNNED, 2);
+   add_disease(DI_STUNNED, TURNS(2));
    if (u_see) messages.add("%s bounce%s off a %s.", name.c_str(), s, g->m.tername(to).c_str());
   }
  } else pos == to;	// It's no wall	
@@ -2752,10 +2752,10 @@ void player::suffer(game *g)
    int i;
    switch(rng(0, 11)) {
     case 0:
-     add_disease(DI_HALLU, 3600);
+     add_disease(DI_HALLU, HOURS(6));
      break;
     case 1:
-     add_disease(DI_VISUALS, rng(15, 60));
+     add_disease(DI_VISUALS, TURNS(rng(15, 60)));
      break;
     case 2:
      messages.add("From the south you hear glass breaking.");
@@ -2775,7 +2775,7 @@ void player::suffer(game *g)
      break;
     case 6:
      messages.add("You start to shake uncontrollably.");
-     add_disease(DI_SHAKES, 10 * rng(2, 5));
+     add_disease(DI_SHAKES, MINUTES(1) * rng(2, 5));
      break;
     case 7:
      for (i = 0; i < 10; i++) {
@@ -2803,8 +2803,8 @@ void player::suffer(game *g)
   }
 
   if (has_trait(PF_JITTERY) && !has_disease(DI_SHAKES)) {
-   if (stim > 50 && one_in(300 - stim)) add_disease(DI_SHAKES, 300 + stim);
-   else if (hunger > 80 && one_in(500 - hunger)) add_disease(DI_SHAKES, 400);
+   if (stim > 50 && one_in(300 - stim)) add_disease(DI_SHAKES, MINUTES(30) + stim);
+   else if (hunger > 80 && one_in(500 - hunger)) add_disease(DI_SHAKES, MINUTES(40));
   }
 
   if (has_trait(PF_MOODSWINGS) && one_in(HOURS(6))) {
@@ -2956,7 +2956,7 @@ void player::suffer(game *g)
   str_cur -= 3;
 
 // Artifact effects
- if (has_artifact_with(AEP_ATTENTION)) add_disease(DI_ATTENTION, 3);
+ if (has_artifact_with(AEP_ATTENTION)) add_disease(DI_ATTENTION, TURNS(3));
 
  if (dex_cur < 0) dex_cur = 0;
  if (str_cur < 0) str_cur = 0;
@@ -3722,7 +3722,7 @@ bool player::eat(int index)
        }
    }
    const bool resistant = has_bionic(bio_digestion);
-   if (!immune && (!resistant || one_in(3))) add_disease(DI_FOODPOISON, rng(60, (comest->nutr + 1) * 60));
+   if (!immune && (!resistant || one_in(3))) add_disease(DI_FOODPOISON, rng(MINUTES(6), (comest->nutr + 1) * MINUTES(6)));
    hunger -= rng(0, comest->nutr);
    thirst -= comest->quench;
    if (!immune && !resistant) health -= 3;
@@ -3738,8 +3738,8 @@ bool player::eat(int index)
 // At this point, we've definitely eaten the item, so use up some turns.
   moves -= has_trait(PF_GOURMAND) ? 150 : 250;
 // If it's poisonous... poison us.  TODO: More several poison effects
-  if (eaten->poison >= rng(2, 4)) add_disease(DI_POISON, eaten->poison * 100);
-  if (eaten->poison > 0) add_disease(DI_FOODPOISON, eaten->poison * 300);
+  if (eaten->poison >= rng(2, 4)) add_disease(DI_POISON, eaten->poison * MINUTES(10));
+  if (eaten->poison > 0) add_disease(DI_FOODPOISON, eaten->poison * MINUTES(30));
 
 // Descriptive text
   if (!is_npc()) {
@@ -4227,7 +4227,7 @@ void player::try_to_sleep(const map& m)
     messages.add("It's %shard to get to sleep on this %s.", t_data.movecost <= 2 ? "a little " : "", t_data.name.c_str());
 	}
  }
- add_disease(DI_LYING_DOWN, 300);
+ add_disease(DI_LYING_DOWN, MINUTES(30));
 }
 
 bool player::can_sleep(const map& m) const

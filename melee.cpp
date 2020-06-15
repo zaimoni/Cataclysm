@@ -1199,7 +1199,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
      z->knock_back_from(g, pos);
 	 if (zpos != z->pos) z->knock_back_from(g, pos); // Knock a 2nd time if the first worked
     } else {
-     p->add_disease(DI_STUNNED, 2);
+     p->add_disease(DI_STUNNED, TURNS(2));
      const point ppos(p->pos);
      p->knock_back_from(g, pos);
      if (p->pos != ppos) p->knock_back_from(g, pos); // Knock a 2nd time if the first worked

@@ -292,37 +292,37 @@ void iuse::pkill_2(game *g, player *p, item *it, bool t)
 {
  if (!p->is_npc()) messages.add("You take some %s.", it->tname().c_str());
 
- p->add_disease(DI_PKILL2, 180);
+ p->add_disease(DI_PKILL2, MINUTES(18));
 }
 
 void iuse::pkill_3(game *g, player *p, item *it, bool t)
 {
  if (!p->is_npc()) messages.add("You take some %s.", it->tname().c_str());
 
- p->add_disease(DI_PKILL3, 20);
- p->add_disease(DI_PKILL2, 200);
+ p->add_disease(DI_PKILL3, MINUTES(2));
+ p->add_disease(DI_PKILL2, MINUTES(20));
 }
 
 void iuse::pkill_4(game *g, player *p, item *it, bool t)
 {
  if (!p->is_npc()) messages.add("You shoot up.");
 
- p->add_disease(DI_PKILL3, 80);
- p->add_disease(DI_PKILL2, 200);
+ p->add_disease(DI_PKILL3, MINUTES(8));
+ p->add_disease(DI_PKILL2, MINUTES(20));
 }
 
 void iuse::pkill_l(game *g, player *p, item *it, bool t)
 {
  if (!p->is_npc()) messages.add("You take some %s.", it->tname().c_str());
 
- p->add_disease(DI_PKILL_L, rng(12, 18) * 300);
+ p->add_disease(DI_PKILL_L, rng(12, 18) * MINUTES(30));
 }
 
 void iuse::xanax(game *g, player *p, item *it, bool t)
 {
  if (!p->is_npc()) messages.add("You take some %s.", it->tname().c_str());
 
- p->add_disease(DI_TOOK_XANAX, (!p->has_disease(DI_TOOK_XANAX) ? 900 : 200));
+ p->add_disease(DI_TOOK_XANAX, (!p->has_disease(DI_TOOK_XANAX) ? MINUTES(90): MINUTES(20)));
 }
 
 void iuse::caff(game *g, player *p, item *it, bool t)
@@ -352,8 +352,8 @@ void iuse::weed(game *g, player *p, item *it, bool t)
 {
  if (!p->is_npc()) messages.add("Good stuff, man!");
 
- int duration = 60;
- if (p->has_trait(PF_LIGHTWEIGHT)) duration = 90;
+ int duration = MINUTES(6);
+ if (p->has_trait(PF_LIGHTWEIGHT)) duration = MINUTES(9);
  p->hunger += 8;
  if (p->pkill < 15) p->pkill += 5;
  p->add_disease(DI_THC, duration);
@@ -363,20 +363,20 @@ void iuse::coke(game *g, player *p, item *it, bool t)
 {
  if (!p->is_npc()) messages.add("You snort a bump.");
 
- int duration = 21 - p->str_cur;
- if (p->has_trait(PF_LIGHTWEIGHT)) duration += 20;
+ int duration = TURNS(21 - p->str_cur);
+ if (p->has_trait(PF_LIGHTWEIGHT)) duration += MINUTES(2);
  p->hunger -= 8;
  p->add_disease(DI_HIGH, duration);
 }
 
 void iuse::meth(game *g, player *p, item *it, bool t)
 {
- int duration = 10 * (40 - p->str_cur);
+ int duration = MINUTES(1) * (40 - p->str_cur);
  if (p->has_charges(itm_lighter, 1)) {
   if (!p->is_npc()) messages.add("You smoke some crystals.");
   duration *= 1.5;
  } else if (!p->is_npc()) messages.add("You snort some crystals.");
- if (!p->has_disease(DI_METH)) duration += 600;
+ if (!p->has_disease(DI_METH)) duration += HOURS(1);
  int hungerpen = (p->str_cur < 10 ? 20 : 30 - p->str_cur);
  p->hunger -= hungerpen;
  p->add_disease(DI_METH, duration);
@@ -384,13 +384,13 @@ void iuse::meth(game *g, player *p, item *it, bool t)
 
 void iuse::poison(game *g, player *p, item *it, bool t)
 {
- p->add_disease(DI_POISON, 600);
- p->add_disease(DI_FOODPOISON, 1800);
+ p->add_disease(DI_POISON, HOURS(1));
+ p->add_disease(DI_FOODPOISON, HOURS(3));
 }
 
 void iuse::hallu(game *g, player *p, item *it, bool t)
 {
- p->add_disease(DI_HALLU, 2400);
+ p->add_disease(DI_HALLU, HOURS(4));
 }
 
 void iuse::thorazine(game *g, player *p, item *it, bool t)
@@ -404,10 +404,10 @@ void iuse::thorazine(game *g, player *p, item *it, bool t)
  if (!p->is_npc()) messages.add("You feel somewhat sedated.");
 }
 
-void iuse::prozac(game *g, player *p, item *it, bool t)
+void iuse::prozac(game *g, player *p, item *it, bool t) // \todo not powerful enough
 {
  if (!p->has_disease(DI_TOOK_PROZAC) && p->morale_level() < 0)
-  p->add_disease(DI_TOOK_PROZAC, 7200);
+  p->add_disease(DI_TOOK_PROZAC, HOURS(6));
  else
   p->stim += 3;
 }
@@ -420,19 +420,19 @@ void iuse::sleep(game *g, player *p, item *it, bool t)
 
 void iuse::iodine(game *g, player *p, item *it, bool t)
 {
- p->add_disease(DI_IODINE, 1200);
+ p->add_disease(DI_IODINE, HOURS(2));
  if (!p->is_npc()) messages.add("You take an iodine tablet.");
 }
 
 void iuse::flumed(game *g, player *p, item *it, bool t)
 {
- p->add_disease(DI_TOOK_FLUMED, 6000);
+ p->add_disease(DI_TOOK_FLUMED, HOURS(10));
  if (!p->is_npc()) messages.add("You take some %s", it->tname().c_str());
 }
 
 void iuse::flusleep(game *g, player *p, item *it, bool t)
 {
- p->add_disease(DI_TOOK_FLUMED, 7200);
+ p->add_disease(DI_TOOK_FLUMED, HOURS(12));
  p->fatigue += 30;
  if (!p->is_npc()) messages.add("You feel very sleepy...");
 }
@@ -1935,7 +1935,7 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
 
   case AEA_ADRENALINE:
    messages.add("You're filled with a roaring energy!");
-   p->add_disease(DI_ADRENALINE, rng(200, 250));
+   p->add_disease(DI_ADRENALINE, rng(MINUTES(20), MINUTES(25)));
    break;
 
   case AEA_MAP: {
@@ -2116,12 +2116,12 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
 
   case AEA_ATTENTION:
    messages.add("You feel like your action has attracted attention.");
-   p->add_disease(DI_ATTENTION, 600 * rng(1, 3));
+   p->add_disease(DI_ATTENTION, HOURS(1) * rng(1, 3));
    break;
 
   case AEA_TELEGLOW:
    messages.add("You feel unhinged.");
-   p->add_disease(DI_TELEGLOW, 100 * rng(3, 12));
+   p->add_disease(DI_TELEGLOW, MINUTES(10) * rng(3, 12));
    break;
 
   case AEA_NOISE:

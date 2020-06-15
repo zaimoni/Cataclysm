@@ -907,7 +907,7 @@ void mattack::stare(game *g, monster *z)
  z->sp_timeout = z->type->sp_freq;
  if (g->sees_u(z->pos)) {
   messages.add("The %s stares at you, and you shudder.", z->name().c_str());
-  g->u.add_disease(DI_TELEGLOW, 800);
+  g->u.add_disease(DI_TELEGLOW, MINUTES(80));
  } else {
   messages.add("A piercing beam of light bursts forth!");
   std::vector<point> sight = line_to(z->pos, g->u.pos, 0);
@@ -1033,7 +1033,7 @@ void mattack::flamethrower(game *g, monster *z)
  std::vector<point> traj = line_to(z->pos, g->u.pos, t);
  for (int i = 0; i < traj.size(); i++)
   g->m.add_field(g, traj[i], fd_fire, 1);
- g->u.add_disease(DI_ONFIRE, 8);
+ g->u.add_disease(DI_ONFIRE, TURNS(8));
 }
 
 void mattack::copbot(game *g, monster *z)
@@ -1089,7 +1089,7 @@ void mattack::ratking(game *g, monster *z)
   case 5: messages.add("\"FOUL INTERLOPER...\""); break;
  }
 
- g->u.add_disease(DI_RAT, 20);
+ g->u.add_disease(DI_RAT, MINUTES(2));
 }
 
 void mattack::generator(game *g, monster *z)

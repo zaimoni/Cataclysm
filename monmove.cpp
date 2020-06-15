@@ -422,10 +422,10 @@ void monster::hit_player(game *g, player &p, bool can_grab)
   p.hit(g, bphit, side, dam, cut);
   if (has_flag(MF_VENOM)) {
    if (!is_npc) messages.add("You're poisoned!");
-   p.add_disease(DI_POISON, 30);
+   p.add_disease(DI_POISON, MINUTES(3));
   } else if (has_flag(MF_BADVENOM)) {
    if (!is_npc) messages.add("You feel poison flood your body, wracking you with pain...");
-   p.add_disease(DI_BADPOISON, 40);
+   p.add_disease(DI_BADPOISON, MINUTES(4));
   }
   if (can_grab && has_flag(MF_GRABS) && dice(type->melee_dice, 10) > dice(p.dodge(g), 10)) {
    if (!is_npc) messages.add("The %s grabs you!", name().c_str());

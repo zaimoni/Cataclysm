@@ -248,7 +248,7 @@ void dis_effect(game *g, player &p, disease &dis)
   if (p.can_sleep(g->m)) {
    dis.duration = 1;
    if (!p.is_npc()) messages.add("You fall asleep.");
-   p.add_disease(DI_SLEEP, 6000);
+   p.add_disease(DI_SLEEP, HOURS(10));
   }
   if (dis.duration == 1 && !p.has_disease(DI_SLEEP))
    if (!p.is_npc()) messages.add("You try to sleep, but can't...");
@@ -594,10 +594,10 @@ void dis_effect(game *g, player &p, disease &dis)
    }
   }
   if (dis.duration > HOURS(4)) {	// 8 teleports
-   if (one_in(10000 - dis.duration)) p.add_disease(DI_SHAKES, rng(40, 80));
+   if (one_in(10000 - dis.duration)) p.add_disease(DI_SHAKES, rng(MINUTES(4), MINUTES(8)));
    if (one_in(12000 - dis.duration)) {
     if (!p.is_npc()) messages.add("Your vision is filled with bright lights...");
-    p.add_disease(DI_BLIND, rng(10, 20));
+    p.add_disease(DI_BLIND, rng(MINUTES(1), MINUTES(2)));
     if (one_in(8)) p.rem_disease(DI_TELEGLOW);
    }
    if (one_in(5000) && !p.has_disease(DI_HALLU)) {

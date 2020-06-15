@@ -536,7 +536,7 @@ INITIATING STANDARD TREMOR TEST...");
 
   case COMPACT_AMIGARA_START:
    g->add_event(EVENT_AMIGARA, int(messages.turn) + 10, 0, 0, 0);
-   if (!g->u.has_artifact_with(AEP_PSYSHIELD)) g->u.add_disease(DI_AMIGARA, 20);
+   if (!g->u.has_artifact_with(AEP_PSYSHIELD)) g->u.add_disease(DI_AMIGARA, MINUTES(2));
    break;
 
   case COMPACT_DOWNLOAD_SOFTWARE:
@@ -700,7 +700,7 @@ void computer::activate_failure(game *g, computer_failure fail)
 
   case COMPFAIL_AMIGARA:
    g->add_event(EVENT_AMIGARA, int(messages.turn) + 5, 0, 0, 0);
-   g->u.add_disease(DI_AMIGARA, 20);
+   g->u.add_disease(DI_AMIGARA, MINUTES(2));
    g->explosion(rng(0, SEEX * MAPSIZE), rng(0, SEEY * MAPSIZE), 10, 10, false);
    g->explosion(rng(0, SEEX * MAPSIZE), rng(0, SEEY * MAPSIZE), 10, 10, false);
    break;

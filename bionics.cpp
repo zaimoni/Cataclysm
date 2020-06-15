@@ -423,12 +423,12 @@ void player::activate_bionic(int b, game *g)
    hurt(g, bp_legs, 1, rng(7, 12));
    hurt(g, bp_torso, 0, rng(5, 15));
   }
-  if (one_in(5)) add_disease(DI_TELEGLOW, rng(50, 400));
+  if (one_in(5)) add_disease(DI_TELEGLOW, rng(MINUTES(5), MINUTES(40)));
   break;
 
  case bio_teleport:
   g->teleport();
-  add_disease(DI_TELEGLOW, 300);
+  add_disease(DI_TELEGLOW, MINUTES(30));
   break;
 
 // TODO: More stuff here (and bio_blood_filter)
