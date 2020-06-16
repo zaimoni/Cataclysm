@@ -12,7 +12,7 @@
 // Permanent disease capped at 3 days
 #define MIN_DISEASE_AGE DAYS(-3)
   
-void dis_effect(game *g, player &p, disease &dis)
+void dis_effect(game *g, player &p, disease& dis)
 {
  int bonus;
  switch (dis.type) {

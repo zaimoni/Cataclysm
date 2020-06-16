@@ -2958,6 +2958,8 @@ void player::suffer(game *g)
 // Artifact effects
  if (has_artifact_with(AEP_ATTENTION)) add_disease(DI_ATTENTION, TURNS(3));
 
+ for (decltype(auto) ill : illness) dis_effect(g, *this, ill);  // 2020-06-16: applying disease effects had gotten dropped at some point
+
  if (dex_cur < 0) dex_cur = 0;
  if (str_cur < 0) str_cur = 0;
  if (per_cur < 0) per_cur = 0;
