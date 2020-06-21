@@ -1,7 +1,7 @@
 #ifndef _DISEASE_H_
 #define _DISEASE_H_
 
-// This is not a normal include file; it "should be" inlined into player.cpp.  Just check that required headers we contraol are in place.
+// This is not a normal include file; it "should be" inlined into player.cpp.  Just check that required headers we control are in place.
 #ifndef _GAME_H_
 #error need to include game.h
 #endif
@@ -11,36 +11,279 @@
 
 // Permanent disease capped at 3 days
 #define MIN_DISEASE_AGE DAYS(-3)
-  
+
+struct stat_delta {
+    int Str;
+    int Dex;
+    int Per;
+    int Int;
+    int Speed;
+};
+
+stat_delta dis_stat_effects(const player& p, const disease& dis)
+{
+    stat_delta ret = { 0,0,0,0,0 };
+    int bonus;
+    switch (dis.type) {
+    case DI_GLARE:
+        ret.Per = -1;
+        break;
+
+    case DI_COLD:
+        ret.Dex -= dis.duration / MINUTES(8);
+        break;
+
+    case DI_COLD_FACE:
+        ret.Per -= dis.duration / MINUTES(8);
+        break;
+
+    case DI_COLD_HANDS:
+        ret.Dex -= 1 + dis.duration / MINUTES(4);
+        break;
+
+    case DI_HOT:
+        ret.Int = -1;
+        break;
+
+    case DI_HEATSTROKE:
+        ret.Str = -2;
+        ret.Per = -1;
+        ret.Int = -2;
+        break;
+
+    case DI_FBFACE:
+        ret.Per = -2;
+        break;
+
+    case DI_FBHANDS:
+        ret.Dex = -4;
+        break;
+
+    case DI_FBFEET:
+        ret.Str = -1;
+        break;
+
+    case DI_COMMON_COLD:
+        if (p.has_disease(DI_TOOK_FLUMED)) {
+            ret.Str = -1;
+            ret.Int = -1;
+        } else {
+            ret.Str = -3;
+            ret.Dex = -1;
+            ret.Int = -2;
+            ret.Per = -1;
+        }
+        break;
+
+    case DI_FLU:
+        if (p.has_disease(DI_TOOK_FLUMED)) {
+            ret.Str = -2;
+            ret.Int = -1;
+        } else {
+            ret.Str = -4;
+            ret.Dex = -2;
+            ret.Int = -2;
+            ret.Per = -1;
+        }
+        break;
+
+    case DI_SMOKE:
+        ret.Str = -1;
+        ret.Int = -1;
+        break;
+
+    case DI_TEARGAS:
+        ret.Str = -2;
+        ret.Dex = -2;
+        ret.Int = -1;
+        ret.Per = -4;
+        break;
+
+    case DI_BOOMERED:
+        ret.Per = -5;
+        break;
+
+    case DI_SAP:
+        ret.Dex = -3;
+        break;
+
+    case DI_FUNGUS:
+        ret.Str = -1;
+        ret.Dex = -1;
+        break;
+
+    case DI_SLIMED:
+        ret.Dex = -2;
+        break;
+
+    case DI_DRUNK:
+        // We get 600 turns, or one hour, of DI_DRUNK for each drink we have (on avg)
+        // So, the duration of DI_DRUNK is a good indicator of how much alcohol is in
+        //  our system.
+        ret.Per -= int(dis.duration / MINUTES(100));
+        ret.Dex -= int(dis.duration / MINUTES(100));
+        ret.Int -= int(dis.duration / MINUTES(70));
+        ret.Str -= int(dis.duration / MINUTES(150));
+        if (dis.duration <= HOURS(1)) ret.Str += 1;
+        break;
+
+    case DI_CIG:
+        if (dis.duration >= HOURS(1)) {	// Smoked too much
+            ret.Str = -1;
+            ret.Dex = -1;
+        } else {
+            ret.Dex = 1;
+            ret.Int = 1;
+            ret.Per = 1;
+        }
+        break;
+
+    case DI_HIGH:
+        ret.Int = -1;
+        ret.Per = -1;
+        break;
+
+    case DI_THC:
+        ret.Int = -1;
+        ret.Per = -1;
+        break;
+
+    case DI_POISON:
+        ret.Per = -1;
+        ret.Dex = -1;
+        if (!p.has_trait(PF_POISRESIST)) ret.Str = -2;
+        break;
+
+    case DI_BADPOISON:
+        ret.Per = -2;
+        ret.Dex = -2;
+        ret.Str = p.has_trait(PF_POISRESIST) ? -1 : -3;
+        break;
+
+    case DI_FOODPOISON:
+        ret.Str = p.has_trait(PF_POISRESIST) ? -1 : -3;
+        ret.Per = -1;
+        ret.Dex = -1;
+        break;
+
+    case DI_SHAKES:
+        ret.Dex = -4;
+        ret.Str = -1;
+        break;
+
+    case DI_WEBBED:
+        ret.Str = -2;
+        ret.Dex = -4;
+        break;
+
+    case DI_RAT:
+        ret.Int -= dis.duration / MINUTES(2);
+        ret.Str -= dis.duration / MINUTES(5);
+        ret.Per -= dis.duration / (MINUTES(5) / 2);
+        break;
+
+    case DI_FORMICATION:
+        ret.Int = -2;
+        ret.Str = -1;
+        break;
+
+    case DI_HALLU:
+        // This assumes that we were given DI_HALLU with a 3600 (6-hour) lifespan
+        if (HOURS(4) > dis.duration) {	// Full symptoms
+            ret.Per = -2;
+            ret.Int = -1;
+            ret.Dex = -2;
+            ret.Str = -1;
+        }
+        break;
+
+    case DI_ADRENALINE:
+        if (MINUTES(15) < dis.duration) {	// 5 minutes positive effects
+            ret.Str = 5;
+            ret.Dex = 3;
+            ret.Int = -8;
+            ret.Per = 1;
+        } else if (MINUTES(15) > dis.duration) {	// 15 minutes come-down
+            ret.Str = -2;
+            ret.Dex = -1;
+            ret.Int = -1;
+            ret.Per = -1;
+        }
+        break;
+
+    case DI_ASTHMA:
+        ret.Str = -2;
+        ret.Dex = -3;
+        break;
+
+    case DI_METH:
+        if (dis.duration > HOURS(1)) {
+            ret.Str = 2;
+            ret.Dex = 2;
+            ret.Int = 3;
+            ret.Per = 3;
+        } else {
+            ret.Str = -3;
+            ret.Dex = -2;
+            ret.Int = -1;
+        }
+        break;
+
+    case DI_EVIL: {
+        bool lesser = false; // Worn or wielded; diminished effects
+        if (p.weapon.is_artifact() && p.weapon.is_tool()) {
+            const it_artifact_tool* const tool = dynamic_cast<const it_artifact_tool*>(p.weapon.type);
+            lesser = any(tool->effects_carried, AEP_EVIL) || any(tool->effects_wielded, AEP_EVIL);
+        }
+        if (!lesser) {
+            for (const auto& it : p.worn) {
+                if (!it.is_artifact()) continue;
+                if (lesser = any(dynamic_cast<const it_artifact_armor*>(it.type)->effects_worn, AEP_EVIL)) break;
+            }
+        }
+
+        if (lesser) { // Only minor effects, some even good!
+            ret.Str += (dis.duration > MINUTES(450) ? 10 : dis.duration / MINUTES(45));
+            if (dis.duration < HOURS(1))
+                ret.Dex++;
+            else
+                ret.Dex -= (dis.duration > HOURS(6) ? 10 : (dis.duration - HOURS(1)) / MINUTES(30));
+            ret.Int -= (dis.duration > MINUTES(300) ? 10 : (dis.duration - MINUTES(50)) / MINUTES(25));
+            ret.Per -= (dis.duration > MINUTES(480) ? 10 : (dis.duration - MINUTES(80)) / MINUTES(40));
+        }
+        else { // Major effects, all bad.
+            ret.Str -= (dis.duration > MINUTES(500) ? 10 : dis.duration / MINUTES(50));
+            ret.Dex -= (dis.duration > HOURS(1) ? 10 : dis.duration / HOURS(1));
+            ret.Int -= (dis.duration > MINUTES(450) ? 10 : dis.duration / MINUTES(45));
+            ret.Per -= (dis.duration > MINUTES(400) ? 10 : dis.duration / MINUTES(40));
+        }
+    } break;
+    }
+    return ret;
+}
+
 void dis_effect(game *g, player &p, disease& dis)
 {
+ const auto delta = dis_stat_effects(p, dis);
+ p.str_cur += delta.Str;
+ p.dex_cur += delta.Dex;
+ p.int_cur += delta.Int;
+ p.per_cur += delta.Per;
+
  int bonus;
  switch (dis.type) {
- case DI_GLARE:
-  p.per_cur -= 1;
-  break;
-
  case DI_WET:
   p.add_morale(MORALE_WET, -1, -50);
   break;
 
- case DI_COLD:
-  p.dex_cur -= dis.duration / MINUTES(8);
-  break;
-
  case DI_COLD_FACE:
-  p.per_cur -= dis.duration / MINUTES(8);
   if (dis.duration >= MINUTES(20) || (dis.duration >= MINUTES(10) && one_in(MINUTES(30) - dis.duration)))
    p.add_disease(DI_FBFACE, MINUTES(5));
   break;
 
  case DI_COLD_HANDS:
-  p.dex_cur -= 1 + dis.duration / MINUTES(4);
   if (dis.duration >= MINUTES(20) || (dis.duration >= MINUTES(10) && one_in(MINUTES(30) - dis.duration)))
    p.add_disease(DI_FBHANDS, MINUTES(5));
-  break;
-
- case DI_COLD_LEGS:
   break;
 
  case DI_COLD_FEET:
@@ -50,38 +293,10 @@ void dis_effect(game *g, player &p, disease& dis)
 
  case DI_HOT:
   if (rng(0, MINUTES(50)) < dis.duration) p.add_disease(DI_HEATSTROKE, TURNS(2));
-  p.int_cur -= 1;
   break;
    
- case DI_HEATSTROKE:
-  p.str_cur -=  2;
-  p.per_cur -=  1;
-  p.int_cur -=  2;
-  break;
-
- case DI_FBFACE:
-  p.per_cur -= 2;
-  break;
-
- case DI_FBHANDS:
-  p.dex_cur -= 4;
-  break;
-
- case DI_FBFEET:
-  p.str_cur -=  1;
-  break;
-
  case DI_COMMON_COLD:
   if (int(messages.turn) % 300 == 0) p.thirst++;
-  if (p.has_disease(DI_TOOK_FLUMED)) {
-   p.str_cur--;
-   p.int_cur--;
-  } else {
-   p.str_cur -= 3;
-   p.dex_cur--;
-   p.int_cur -= 2;
-   p.per_cur--;
-  }
   if (one_in(300)) {
    p.moves -= 80;
    if (!p.is_npc()) {
@@ -94,15 +309,6 @@ void dis_effect(game *g, player &p, disease& dis)
 
  case DI_FLU:
   if (int(messages.turn) % 300 == 0) p.thirst++;
-  if (p.has_disease(DI_TOOK_FLUMED)) {
-   p.str_cur -= 2;
-   p.int_cur--;
-  } else {
-   p.str_cur -= 4;
-   p.dex_cur -= 2;
-   p.int_cur -= 2;
-   p.per_cur--;
-  }
   if (one_in(300)) {
    p.moves -= 80;
    if (!p.is_npc()) {
@@ -117,8 +323,6 @@ void dis_effect(game *g, player &p, disease& dis)
   break;
 
  case DI_SMOKE:
-  p.str_cur--;
-  p.dex_cur--;
   if (one_in(5)) {
    if (!p.is_npc()) {
     messages.add("You cough heavily.");
@@ -131,10 +335,6 @@ void dis_effect(game *g, player &p, disease& dis)
   break;
 
  case DI_TEARGAS:
-  p.str_cur -= 2;
-  p.dex_cur -= 2;
-  p.int_cur -= 1;
-  p.per_cur -= 4;
   if (one_in(3)) {
    if (!p.is_npc()) {
     messages.add("You cough heavily.");
@@ -162,14 +362,6 @@ void dis_effect(game *g, player &p, disease& dis)
   }
   break;
 
- case DI_BOOMERED:
-  p.per_cur -= 5;
-  break;
-
- case DI_SAP:
-  p.dex_cur -= 3;
-  break;
-
  case DI_SPORES:
   if (one_in(30)) p.add_disease(DI_FUNGUS, -1);
   break;
@@ -177,8 +369,6 @@ void dis_effect(game *g, player &p, disease& dis)
  case DI_FUNGUS:
   bonus = p.has_trait(PF_POISRESIST) ? 100 : 0;
   p.moves -= 10;
-  p.str_cur -= 1;
-  p.dex_cur -= 1;
   if (dis.duration > HOURS(-1)) {	// First hour symptoms
    if (one_in(160 + bonus)) {
     if (!p.is_npc()) {
@@ -237,10 +427,6 @@ void dis_effect(game *g, player &p, disease& dis)
     p.hurt(g, bp_arms, 1, 60);
    }
   }
-  break;
-
- case DI_SLIMED:
-  p.dex_cur -= 2;
   break;
 
  case DI_LYING_DOWN:
@@ -321,10 +507,6 @@ void dis_effect(game *g, player &p, disease& dis)
 // We get 600 turns, or one hour, of DI_DRUNK for each drink we have (on avg)
 // So, the duration of DI_DRUNK is a good indicator of how much alcohol is in
 //  our system.
-  p.per_cur -= int(dis.duration / MINUTES(100));
-  p.dex_cur -= int(dis.duration / MINUTES(100));
-  p.int_cur -= int(dis.duration /  MINUTES(70));
-  p.str_cur -= int(dis.duration / MINUTES(150));
   if (dis.duration <= HOURS(1)) p.str_cur += 1;
   if (dis.duration > MINUTES(200) + MINUTES(10) * dice(2, 100) && 
       (p.has_trait(PF_WEAKSTOMACH) || p.has_trait(PF_NAUSEA) || one_in(20)))
@@ -338,27 +520,11 @@ void dis_effect(game *g, player &p, disease& dis)
 
  case DI_CIG:
   if (dis.duration >= HOURS(1)) {	// Smoked too much
-   p.str_cur--;
-   p.dex_cur--;
    if (dis.duration >= HOURS(2) && (one_in(50) ||
                                 (p.has_trait(PF_WEAKSTOMACH) && one_in(30)) ||
                                 (p.has_trait(PF_NAUSEA) && one_in(20))))
     p.vomit();
-  } else {
-   p.dex_cur++;
-   p.int_cur++;
-   p.per_cur++;
   }
-  break;
-
- case DI_HIGH:
-  p.int_cur--;
-  p.per_cur--;
-  break;
-
- case DI_THC:
-  p.int_cur--;
-  p.per_cur--;
   break;
 
  case DI_POISON:
@@ -367,9 +533,6 @@ void dis_effect(game *g, player &p, disease& dis)
    p.pain++;
    p.hurt(g, bp_torso, 0, rng(0, 2) * rng(0, 1));
   }
-  p.per_cur--;
-  p.dex_cur--;
-  if (!p.has_trait(PF_POISRESIST)) p.str_cur -= 2;
   break;
 
  case DI_BADPOISON:
@@ -378,12 +541,6 @@ void dis_effect(game *g, player &p, disease& dis)
    p.pain += 2;
    p.hurt(g, bp_torso, 0, rng(0, 2));
   }
-  p.per_cur -= 2;
-  p.dex_cur -= 2;
-  if (!p.has_trait(PF_POISRESIST))
-   p.str_cur -= 3;
-  else
-   p.str_cur--;
   break;
 
  case DI_FOODPOISON:
@@ -396,15 +553,6 @@ void dis_effect(game *g, player &p, disease& dis)
       (p.has_trait(PF_NAUSEA) && one_in(50 + bonus)) ||
       one_in(600 + bonus)) 
    p.vomit();
-  p.str_cur -= 3;
-  p.dex_cur--;
-  p.per_cur--;
-  if (p.has_trait(PF_POISRESIST)) p.str_cur += 2;
-  break;
-
- case DI_SHAKES:
-  p.dex_cur -= 4;
-  p.str_cur--;
   break;
 
  case DI_DERMATIK: {
@@ -451,23 +599,13 @@ void dis_effect(game *g, player &p, disease& dis)
   }
  } break;
 
- case DI_WEBBED:
-  p.str_cur -= 2;
-  p.dex_cur -= 4;
-  break;
-
  case DI_RAT:
-  p.int_cur -= dis.duration / MINUTES(2);
-  p.str_cur -= dis.duration / MINUTES(5);
-  p.per_cur -= dis.duration / (MINUTES(5)/2);
   if (rng(30, 100) < rng(0, dis.duration) && one_in(3)) p.vomit();
   if (rng(0, 100) < rng(0, dis.duration)) p.mutation_category_level[MUTCAT_RAT]++;
   if (rng(50, 500) < rng(0, dis.duration)) p.mutate();
   break;
 
  case DI_FORMICATION:
-  p.int_cur -= 2;
-  p.str_cur -= 1;
   if (one_in(10 + 40 * p.int_cur)) {
    if (!p.is_npc())
     messages.add("You start scratching yourself all over!");
@@ -498,28 +636,14 @@ void dis_effect(game *g, player &p, disease& dis)
   } else if (dis.duration == HOURS(4))	// Visuals start
    p.add_disease(DI_VISUALS, HOURS(4));
   else {	// Full symptoms
-   p.per_cur -= 2;
-   p.int_cur -= 1;
-   p.dex_cur -= 2;
-   p.str_cur -= 1;
    if (one_in(50)) g->z.push_back(monster(mtype::types[mon_hallu_zom + rng(0, 3)], p.pos.x + rng(-10, 10), p.pos.y + rng(-10, 10)));	// Generate phantasm
   }
   break;
 
- case DI_ADRENALINE:
-  if (dis.duration > MINUTES(15)) {	// 5 minutes positive effects
-   p.str_cur += 5;
-   p.dex_cur += 3;
-   p.int_cur -= 8;
-   p.per_cur += 1;
-  } else if (dis.duration == MINUTES(15)) {	// 15 minutes come-down
+ case DI_ADRENALINE: // positive/negative effects are all stat adjustments
+  if (dis.duration == MINUTES(15)) {	// 15 minutes come-down
    if (!p.is_npc()) messages.add("Your adrenaline rush wears off.  You feel AWFUL!");
    p.moves -= 300;
-  } else {
-   p.str_cur -= 2;
-   p.dex_cur -= 1;
-   p.int_cur -= 1;
-   p.per_cur -= 1;
   }
   break;
 
@@ -527,21 +651,6 @@ void dis_effect(game *g, player &p, disease& dis)
   if (dis.duration > HOURS(2)) {
    if (!p.is_npc()) messages.add("Your asthma overcomes you.  You stop breathing and die...");
    p.hurtall(500);
-  }
-  p.str_cur -= 2;
-  p.dex_cur -= 3;
-  break;
-
- case DI_METH:
-  if (dis.duration > HOURS(1)) {
-   p.str_cur += 2;
-   p.dex_cur += 2;
-   p.int_cur += 3;
-   p.per_cur += 3;
-  } else {
-   p.str_cur -= 3;
-   p.dex_cur -= 2;
-   p.int_cur -= 1;
   }
   break;
 
@@ -635,35 +744,6 @@ void dis_effect(game *g, player &p, disease& dis)
    }
   }
   break;
-
- case DI_EVIL: {
-  bool lesser = false; // Worn or wielded; diminished effects
-  if (p.weapon.is_artifact() && p.weapon.is_tool()) {
-   const it_artifact_tool* const tool = dynamic_cast<const it_artifact_tool*>(p.weapon.type);
-   lesser = any(tool->effects_carried, AEP_EVIL) || any(tool->effects_wielded, AEP_EVIL);
-  }
-  if (!lesser) {
-   for(const auto& it : p.worn) {
-    if (!it.is_artifact()) continue;
-    if (lesser = any(dynamic_cast<const it_artifact_armor*>(it.type)->effects_worn, AEP_EVIL)) break;
-   }
-  }
-
-  if (lesser) { // Only minor effects, some even good!
-   p.str_cur += (dis.duration > MINUTES(450) ? 10 : dis.duration / MINUTES(45));
-   if (dis.duration < HOURS(1))
-    p.dex_cur++;
-   else
-    p.dex_cur -= (dis.duration > HOURS(6) ? 10 : (dis.duration - HOURS(1)) / MINUTES(30));
-   p.int_cur -= (dis.duration > MINUTES(300) ? 10 : (dis.duration - MINUTES(50)) / MINUTES(25));
-   p.per_cur -= (dis.duration > MINUTES(480) ? 10 : (dis.duration - MINUTES(80)) / MINUTES(40));
-  } else { // Major effects, all bad.
-   p.str_cur -= (dis.duration > MINUTES(500) ? 10 : dis.duration / MINUTES(50));
-   p.dex_cur -= (dis.duration > HOURS(1) ? 10 : dis.duration / HOURS(1));
-   p.int_cur -= (dis.duration > MINUTES(450) ? 10 : dis.duration / MINUTES(45));
-   p.per_cur -= (dis.duration > MINUTES(400) ? 10 : dis.duration / MINUTES(40));
-  }
- } break;
  }
 }
 
