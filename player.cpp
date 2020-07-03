@@ -4,6 +4,7 @@
 #include "skill.h"
 #include "keypress.h"
 #include "options.h"
+#include "rng.h"
 #include "stl_typetraits.h"
 #include "stl_limits.h"
 #include "line.h"
@@ -13,10 +14,188 @@
 
 #include <array>
 #include <math.h>
+#include <sstream>
 
 using namespace cataclysm;
 
-#include "addiction.h"	// XXX the function definitions, at least, should be inlined somewhere around here
+#define MIN_ADDICTION_LEVEL 3 // Minimum intensity before effects are seen
+
+void addict_effect(player& u, addiction& add)   // \todo adapt for NPCs
+{
+    int in = add.intensity;
+
+    switch (add.type) {
+    case ADD_CIG:
+        if (in > 20 || one_in((500 - 20 * in))) {
+            messages.add("You %s a cigarette.", rng(0, 6) < in ? "need" : "could use");
+            u.cancel_activity_query("You have a nicotine craving.");
+            u.add_morale(MORALE_CRAVING_NICOTINE, -15, -50);
+            if (one_in(800 - 50 * in)) u.fatigue++;
+            if (one_in(400 - 20 * in)) u.stim--;
+        }
+        break;
+
+    case ADD_CAFFEINE:
+        u.moves -= 2;
+        if (in > 20 || one_in((500 - 20 * in))) {
+            messages.add("You want some caffeine.");
+            u.cancel_activity_query("You have a caffeine craving.");
+            u.add_morale(MORALE_CRAVING_CAFFEINE, -5, -30);
+            if (rng(0, 10) < in) u.stim--;
+            if (rng(8, 400) < in) {
+                messages.add("Your hands start shaking... you need it bad!");
+                u.add_disease(DI_SHAKES, MINUTES(2));
+            }
+        }
+        break;
+
+    case ADD_ALCOHOL:
+        u.per_cur--;
+        u.int_cur--;
+        if (rng(40, 1200) <= in * 10) u.health--;
+        if (one_in(20) && rng(0, 20) < in) {
+            messages.add("You could use a drink.");
+            u.cancel_activity_query("You have an alcohol craving.");
+            u.add_morale(MORALE_CRAVING_ALCOHOL, -35, -120);
+        } else if (rng(8, 300) < in) {
+            messages.add("Your hands start shaking... you need a drink bad!");
+            u.cancel_activity_query("You have an alcohol craving.");
+            u.add_morale(MORALE_CRAVING_ALCOHOL, -35, -120);
+            u.add_disease(DI_SHAKES, MINUTES(5));
+        } else if (!u.has_disease(DI_HALLU) && rng(10, 1600) < in)
+            u.add_disease(DI_HALLU, HOURS(6));
+        break;
+
+    case ADD_SLEEP:
+        // No effects here--just in player::can_sleep()
+        // EXCEPT!  Prolong this addiction longer than usual.
+        if (one_in(2) && add.sated < 0) add.sated++;
+        break;
+
+    case ADD_PKILLER:
+        if ((in >= 25 || int(messages.turn) % (100 - in * 4) == 0) && u.pkill > 0) u.pkill--;	// Tolerance increases!
+        if (u.pkill >= 35) // No further effects if we're doped up.
+            add.sated = 0;
+        else {
+            u.str_cur -= 1 + int(in / 7);
+            u.per_cur--;
+            u.dex_cur--;
+            if (u.pain < in * 3) u.pain++;
+            if (in >= 40 || one_in((1200 - 30 * in))) u.health--;
+            // XXX \todo would like to not burn RNG gratuitously
+            if (one_in(20) && dice(2, 20) < in) {
+                messages.add("Your hands start shaking... you need some painkillers.");
+                u.cancel_activity_query("You have an opiate craving.");
+                u.add_morale(MORALE_CRAVING_OPIATE, -40, -200);
+                u.add_disease(DI_SHAKES, MINUTES(2) + in * TURNS(5));
+            } else if (one_in(20) && dice(2, 30) < in) {
+                messages.add("You feel anxious.  You need your painkillers!");
+                u.add_morale(MORALE_CRAVING_OPIATE, -30, -200);
+                u.cancel_activity_query("You have a craving.");
+            } else if (one_in(50) && dice(3, 50) < in) {
+                messages.add("You throw up heavily!");
+                u.cancel_activity_query("Throwing up.");
+                u.vomit();
+            }
+        }
+        break;
+
+    case ADD_SPEED: {
+        u.moves -= clamped_ub<30>(in * 5);
+        u.int_cur--;
+        u.str_cur--;
+        if (u.stim > -100 && (in >= 20 || int(messages.turn) % (100 - in * 5) == 0)) u.stim--;
+        if (rng(0, 150) <= in) u.health--;
+        // XXX \todo would like to not burn RNG gratuitously
+        if (dice(2, 100) < in) {
+            messages.add("You feel depressed.  Speed would help.");
+            u.cancel_activity_query("You have a speed craving.");
+            u.add_morale(MORALE_CRAVING_SPEED, -25, -200);
+        }
+        else if (one_in(10) && dice(2, 80) < in) {
+            messages.add("Your hands start shaking... you need a pick-me-up.");
+            u.cancel_activity_query("You have a speed craving.");
+            u.add_morale(MORALE_CRAVING_SPEED, -25, -200);
+            u.add_disease(DI_SHAKES, in * MINUTES(2));
+        }
+        else if (one_in(50) && dice(2, 100) < in) {
+            messages.add("You stop suddenly, feeling bewildered.");
+            u.cancel_activity();
+            u.moves -= 300;
+        }
+        else if (!u.has_disease(DI_HALLU) && one_in(20) && 8 + dice(2, 80) < in)
+            u.add_disease(DI_HALLU, HOURS(6));
+    } break;
+
+    case ADD_COKE:
+        u.int_cur--;
+        u.per_cur--;
+        if (in >= 30 || one_in((900 - 30 * in))) {
+            messages.add("You feel like you need a bump.");
+            u.cancel_activity_query("You have a craving for cocaine.");
+            u.add_morale(MORALE_CRAVING_COCAINE, -20, -250);
+        }
+        if (dice(2, 80) <= in) {
+            messages.add("You feel like you need a bump.");
+            u.cancel_activity_query("You have a craving for cocaine.");
+            u.add_morale(MORALE_CRAVING_COCAINE, -20, -250);
+            u.stim -= 3;
+        }
+        break;
+    }
+}
+
+std::string addiction_name(addiction cur)
+{
+    switch (cur.type) {
+    case ADD_CIG:		return "Nicotine Withdrawal";
+    case ADD_CAFFEINE:	return "Caffeine Withdrawal";
+    case ADD_ALCOHOL:	return "Alcohol Withdrawal";
+    case ADD_SLEEP:	return "Sleeping Pill Dependance";
+    case ADD_PKILLER:	return "Opiate Withdrawal";
+    case ADD_SPEED:	return "Amphetamine Withdrawal";
+    case ADD_COKE:	return "Cocaine Withdrawal";
+    default:		return "Erroneous addiction";
+    }
+}
+
+std::string addiction_text(addiction cur)
+{
+    std::stringstream dump;
+    int strpen = 1 + int(cur.intensity / 7);
+    switch (cur.type) {
+    case ADD_CIG:
+        return "Intelligence - 1;   Occasional cravings";
+
+    case ADD_CAFFEINE:
+        return "Strength - 1;   Slight sluggishness;   Occasional cravings";
+
+    case ADD_ALCOHOL:
+        return "\
+Perception - 1;   Intelligence - 1;   Occasional Cravings;\n\
+Risk of delirium tremens";
+
+    case ADD_SLEEP:
+        return "You may find it difficult to sleep without medication.";
+
+    case ADD_PKILLER:
+        dump << "Strength -" << strpen << ";   Perception - 1;   Dexterity - 1;" <<
+            std::endl <<
+            "Depression and physical pain to some degree.  Frequent cravings.  Vomiting.";
+        return dump.str();
+
+    case ADD_SPEED:
+        return "Strength - 1;   Intelligence - 1;\n\
+Movement rate reduction.  Depression.  Weak immune system.  Frequent cravings.";
+
+    case ADD_COKE:
+        return "Perception - 1;   Intelligence - 1;  Frequent cravings.";
+
+    default:
+        return "";
+    }
+}
+
 #include "disease.h"	// XXX the function definitions, at least, should be inlined somewhere around here
 
 #include <fstream>
@@ -2667,7 +2846,7 @@ void player::suffer(game *g)
   _i = addictions.size();
   while (0 <= --_i) {
       decltype(auto) addict = addictions[_i];
-      if (0 >= addict.sated && MIN_ADDICTION_LEVEL <= addict.intensity) addict_effect(g, addict);
+      if (0 >= addict.sated && MIN_ADDICTION_LEVEL <= addict.intensity) addict_effect(*this, addict);
       if (0 < --addict.sated && !one_in(addict.intensity - 2)) addict.sated--;
       if (addict.sated < timer - (MINUTES(10) * addict.intensity)) {
           if (addict.intensity < MIN_ADDICTION_LEVEL) {

@@ -157,7 +157,6 @@
   <ItemGroup>
     <ClInclude Include="action.h" />
     <ClInclude Include="act_obj.h" />
-    <ClInclude Include="addiction.h" />
     <ClInclude Include="artifact.h" />
     <ClInclude Include="artifactdata.h" />
     <ClInclude Include="bionics.h" />

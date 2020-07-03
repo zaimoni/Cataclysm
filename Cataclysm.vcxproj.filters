@@ -24,9 +24,6 @@
     <ClInclude Include="action.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="addiction.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="artifact.h">
       <Filter>Header Files</Filter>
     </ClInclude>
