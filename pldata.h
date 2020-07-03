@@ -26,7 +26,7 @@ struct addiction
 {
  add_type type;
  int intensity;
- int sated;
+ int sated;	// time-scaled
  addiction() : type(ADD_NULL),intensity(0),sated(600) {}
  addiction(add_type t, int i = 1) : type(t), intensity(i), sated(600) {}
 };

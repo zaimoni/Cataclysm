@@ -2596,17 +2596,17 @@ int player::disease_intensity(dis_type type) const
 void player::add_addiction(add_type type, int strength)
 {
  if (type == ADD_NULL) return;
- int timer = 1200;
+ int timer = HOURS(2);  // \todo make this substance-dependent?
  if (has_trait(PF_ADDICTIVE)) {
-  strength = int(strength * 1.5);
-  timer = 800;
+  rational_scale<3,2>(strength);
+  rational_scale<2,3>(timer);
  }
  for(auto& a : addictions) {
   if (type != a.type) continue;
   if (a.sated <   0) a.sated = timer;
-  else if (a.sated < 600) a.sated += timer;	// TODO: Make this variable?
-  else a.sated += int((3000 - a.sated) / 2);	// definitely could be longer than above
-  if ((rng(0, strength) > rng(0, a.intensity * 5) || rng(0, 500) < strength) && a.intensity < 20)
+  else if (a.sated < HOURS(1)) a.sated += timer;	// TODO: Make this variable?
+  else a.sated += int((HOURS(5) - a.sated) / 2);	// definitely could be longer than above
+  if (20 > a.intensity && (rng(0, strength) > rng(0, a.intensity * 5) || rng(0, 500) < strength))
    a.intensity++;
   return;
  }
