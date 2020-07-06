@@ -27,8 +27,42 @@ struct stat_delta {
 
 #define MIN_ADDICTION_LEVEL 3 // Minimum intensity before effects are seen
 
+stat_delta addict_stat_effects(const addiction& add)
+{
+    stat_delta ret = { 0,0,0,0 };
+
+    // historically:
+    // * ADD_CIG claimed but did not impart -1 INT
+    // * ADD_CAFFIENE claimed but did not impart -1 STR
+    switch (add.type) {
+    case ADD_ALCOHOL:
+        ret.Per = -1;
+        ret.Int = -1;
+        break;
+
+    case ADD_PKILLER:
+        ret.Str -= 1 + int(add.intensity / 7);
+        ret.Per = -1;
+        ret.Dex = -1;
+        break;
+
+    case ADD_SPEED:
+        ret.Str = -1;
+        ret.Int = -1;
+        break;
+
+    case ADD_COKE:
+        ret.Per = -1;
+        ret.Int = -1;
+        break;
+    }
+
+    return ret;
+}
+
 void addict_effect(player& u, addiction& add)   // \todo adapt for NPCs
 {
+    const auto delta = addict_stat_effects(add);
     int in = add.intensity;
 
     switch (add.type) {
@@ -57,8 +91,6 @@ void addict_effect(player& u, addiction& add)   // \todo adapt for NPCs
         break;
 
     case ADD_ALCOHOL:
-        u.per_cur--;
-        u.int_cur--;
         if (rng(40, 1200) <= in * 10) u.health--;
         if (one_in(20) && rng(0, 20) < in) {
             messages.add("You could use a drink.");
@@ -81,12 +113,11 @@ void addict_effect(player& u, addiction& add)   // \todo adapt for NPCs
 
     case ADD_PKILLER:
         if ((in >= 25 || int(messages.turn) % (100 - in * 4) == 0) && u.pkill > 0) u.pkill--;	// Tolerance increases!
-        if (u.pkill >= 35) // No further effects if we're doped up.
+        if (35 <= u.pkill) {  // No further effects if we're doped up.
             add.sated = 0;
-        else {
-            u.str_cur -= 1 + int(in / 7);
-            u.per_cur--;
-            u.dex_cur--;
+            return; // bypass stat processing
+        }
+
             if (u.pain < in * 3) u.pain++;
             if (in >= 40 || one_in((1200 - 30 * in))) u.health--;
             // XXX \todo would like to not burn RNG gratuitously
@@ -104,13 +135,10 @@ void addict_effect(player& u, addiction& add)   // \todo adapt for NPCs
                 u.cancel_activity_query("Throwing up.");
                 u.vomit();
             }
-        }
         break;
 
     case ADD_SPEED: {
         u.moves -= clamped_ub<30>(in * 5);
-        u.int_cur--;
-        u.str_cur--;
         if (u.stim > -100 && (in >= 20 || int(messages.turn) % (100 - in * 5) == 0)) u.stim--;
         if (rng(0, 150) <= in) u.health--;
         // XXX \todo would like to not burn RNG gratuitously
@@ -135,8 +163,6 @@ void addict_effect(player& u, addiction& add)   // \todo adapt for NPCs
     } break;
 
     case ADD_COKE:
-        u.int_cur--;
-        u.per_cur--;
         if (in >= 30 || one_in((900 - 30 * in))) {
             messages.add("You feel like you need a bump.");
             u.cancel_activity_query("You have a craving for cocaine.");
@@ -150,9 +176,14 @@ void addict_effect(player& u, addiction& add)   // \todo adapt for NPCs
         }
         break;
     }
+
+    u.str_cur += delta.Str;
+    u.dex_cur += delta.Dex;
+    u.int_cur += delta.Int;
+    u.per_cur += delta.Per;
 }
 
-std::string addiction_name(addiction cur)
+std::string addiction_name(const addiction& cur)
 {
     switch (cur.type) {
     case ADD_CIG:		return "Nicotine Withdrawal";
@@ -166,41 +197,51 @@ std::string addiction_name(addiction cur)
     }
 }
 
-std::string addiction_text(addiction cur)
+const char* addiction_static_text(const addiction& cur)
 {
-    std::stringstream dump;
-    int strpen = 1 + int(cur.intensity / 7);
     switch (cur.type) {
-    case ADD_CIG:
-        return "Intelligence - 1;   Occasional cravings";
-
-    case ADD_CAFFEINE:
-        return "Strength - 1;   Slight sluggishness;   Occasional cravings";
-
-    case ADD_ALCOHOL:
-        return "\
-Perception - 1;   Intelligence - 1;   Occasional Cravings;\n\
-Risk of delirium tremens";
-
-    case ADD_SLEEP:
-        return "You may find it difficult to sleep without medication.";
-
-    case ADD_PKILLER:
-        dump << "Strength -" << strpen << ";   Perception - 1;   Dexterity - 1;" <<
-            std::endl <<
-            "Depression and physical pain to some degree.  Frequent cravings.  Vomiting.";
-        return dump.str();
-
-    case ADD_SPEED:
-        return "Strength - 1;   Intelligence - 1;\n\
-Movement rate reduction.  Depression.  Weak immune system.  Frequent cravings.";
-
-    case ADD_COKE:
-        return "Perception - 1;   Intelligence - 1;  Frequent cravings.";
-
-    default:
-        return "";
+    case ADD_CIG: return "Occasional cravings";
+    case ADD_CAFFEINE: return "Slight sluggishness; Occasional cravings";
+    case ADD_ALCOHOL: return "Occasional Cravings;\n\Risk of delirium tremens";
+    case ADD_SLEEP: return "You may find it difficult to sleep without medication.";
+    case ADD_PKILLER: return "\nDepression and physical pain to some degree.  Frequent cravings.  Vomiting.";
+    case ADD_SPEED: return "\nMovement rate reduction.  Depression.  Weak immune system.  Frequent cravings.";
+    case ADD_COKE: return "Frequent cravings.";
+    default: return 0;
     }
+}
+
+std::string addiction_text(const addiction& cur)
+{
+    const auto s_text = addiction_static_text(cur);
+    if (!s_text) return std::string();  // invalid
+
+    const auto delta = addict_stat_effects(cur);
+    std::stringstream dump;
+    bool non_empty = false;
+
+    if (delta.Str) {
+        dump << "Strength " << delta.Str;
+        non_empty = true;
+    }
+    if (delta.Dex) {
+        if (non_empty) dump << "; ";
+        dump << "Dexterity " << delta.Dex;
+        non_empty = true;
+    }
+    if (delta.Int) {
+        if (non_empty) dump << "; ";
+        dump << "Intelligence " << delta.Int;
+        non_empty = true;
+    }
+    if (delta.Per) {
+        if (non_empty) dump << "; ";
+        dump << "Perception " << delta.Per;
+        non_empty = true;
+    }
+    if (!non_empty) return s_text;
+    if ('\n' != s_text[0]) dump << "; ";
+    return dump.str() + s_text;
 }
 
 // Permanent disease capped at 3 days
