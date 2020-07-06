@@ -57,9 +57,6 @@
     <ClInclude Include="dialogue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="disease.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="enums.h">
       <Filter>Header Files</Filter>
     </ClInclude>
