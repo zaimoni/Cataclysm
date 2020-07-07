@@ -458,7 +458,7 @@ const overmap_special overmap_special::specials[NUM_OMSPECS] = {
 void settlement_building(settlement &set, int x, int y);	// #include "settlement.h" when bringing this up
 #endif
 
-double dist(int x1, int y1, int x2, int y2) { return L2_dist(x1 - x2, y1-y2); }
+double calc_dist(int x1, int y1, int x2, int y2) { return L2_dist(x1 - x2, y1-y2); }
 
 bool is_river(oter_id ter)
 {
@@ -1469,7 +1469,7 @@ void overmap::place_forest()
 // fors determinds its basic size
   fors = rng(15, 40);
   for (int j = 0; j < cities.size(); j++) {
-   while (dist(forx,fory,cities[j].x,cities[j].y) - fors / 2 < cities[j].s ) {
+   while (calc_dist(forx,fory,cities[j].x,cities[j].y) - fors / 2 < cities[j].s ) {
 // Set forx and fory far enough from cities
     forx = rng(0, OMAPX - 1);
     fory = rng(0, OMAPY - 1);
@@ -1621,7 +1621,7 @@ void overmap::put_buildings(int x, int y, int dir, const city& town)
  for (int i = -1; i <= 1; i += 2) {
   auto& terrain = ter(x + i * xchange, y + i * ychange);
   if ((ot_field == terrain) && !one_in(STREETCHANCE)) {
-   const auto c_dist = dist(x, y, town.x, town.y) / town.s;
+   const auto c_dist = calc_dist(x, y, town.x, town.y) / town.s;
    static_assert(std::is_floating_point_v<decltype(c_dist)>);   // above truncates for integral types
    try {
      if (rng(0, 99) > 80 * c_dist) terrain = shop(((dir%2)-i)%4);
@@ -1912,7 +1912,7 @@ void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
     y = next[i].y;
     dir = i; // We are moving... whichever way that highway is moving
 // If we're closer to the destination than to the origin, this highway is done!
-    if (dist(x, y, x1, y1) > dist(x, y, x2, y2)) return;
+    if (calc_dist(x, y, x1, y1) > calc_dist(x, y, x2, y2)) return;
     next.clear();
    } 
   }
@@ -2041,7 +2041,7 @@ void overmap::place_hiways(const std::vector<city>& cities, oter_id base)
   int closest = -1;
   for (int j = i + 1; j < cities.size(); j++) {
    const auto& dest = cities[j];
-   distance = dist(src.x, src.y, dest.x, dest.y);
+   distance = calc_dist(src.x, src.y, dest.x, dest.y);
    if (distance < closest || closest < 0) {
     closest = distance; 
     best = dest;
