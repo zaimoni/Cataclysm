@@ -4,7 +4,7 @@
 #include "options.h"
 #include "mapbuffer.h"
 #include "file.h"
-#include "JSON.h"
+#include "json.h"
 #include <time.h>
 #include <fstream>
 #include <iostream>

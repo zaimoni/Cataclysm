@@ -1,6 +1,6 @@
 #if (defined _WIN32 || defined WINDOWS)
 #include "catacurse.h"
-#include "JSON.h"
+#include "json.h"
 #include "ui.h"
 #include "options.h"
 #include <fstream>

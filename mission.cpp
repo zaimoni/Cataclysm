@@ -2,7 +2,7 @@
 #include "game.h"
 #include "rng.h"
 #include "line.h"
-#include "JSON.h"
+#include "json.h"
 #include "recent_msg.h"
 
 #include <fstream>

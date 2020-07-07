@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <fstream>
 #include "posix_time.h"
-#include "JSON.h"
+#include "json.h"
 #include "recent_msg.h"
 #include "om_cache.hpp"
 

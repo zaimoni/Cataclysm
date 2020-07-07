@@ -7,7 +7,7 @@
 #include "skill.h"
 #include "output.h"
 #include "line.h"
-#include "JSON.h"
+#include "json.h"
 #include "recent_msg.h"
 #include "stl_typetraits.h"
 

@@ -4,7 +4,7 @@
 #include "math.h"
 #include "output.h"
 #include "game.h"
-#include "JSON.h"
+#include "json.h"
 #include "line.h"
 #include "stl_limits.h"
 #include "saveload.h"

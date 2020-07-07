@@ -2,7 +2,7 @@
 #include "game.h"
 #include "keypress.h"
 #include "saveload.h"
-#include "JSON.h"
+#include "json.h"
 #include "om_cache.hpp"
 #include "stl_limits.h"
 #include "line.h"
