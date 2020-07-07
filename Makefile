@@ -19,7 +19,7 @@ CXX = g++
 CFLAGS = $(WARNINGS) $(DEBUG) $(PROFILE) $(OTHERS)
 
 ifeq ($(OS), Msys)
-LDFLAGS = -static -lncurses -lgdi
+LDFLAGS = -static -lncurses -lgdi32
 else
 LDFLAGS = -lncurses
 endif
