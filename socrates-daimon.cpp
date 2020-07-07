@@ -60,6 +60,7 @@ static const char* addiction_target(add_type cur)
 	case ADD_PKILLER:	return "Opiates";
 	case ADD_SPEED:	return "Amphetamine";
 	case ADD_COKE:	return "Cocaine";
+	case ADD_THC:	return "Marijuana";
 	}
 	throw new std::logic_error("unhandled addiction type");
 }

@@ -1271,7 +1271,7 @@ time.  They are quite addictive.");
 //  NAME		RAR PRC	COLOR
 MED("marijuana",	20,250,	c_green,	itm_lighter,
 //	MATERIAL STM HTH ADD CHG FUN use_func		addiction type
-	VEGGY,   -8,  0,  0,  5, 18,&iuse::weed,	ADD_NULL, "\
+	VEGGY,   -8,  0,  10,  5, 18,&iuse::weed,	ADD_THC, "\
 Really useful only for relaxing.  Will reduce your attributes and reflexes.");
 
 MED("cocaine",		 8,420,	c_white,	itm_null,

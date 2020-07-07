@@ -76,6 +76,16 @@ void addict_effect(player& u, addiction& add)   // \todo adapt for NPCs
         }
         break;
 
+    case ADD_THC:
+        if (in > 20 || one_in((500 - 20 * in))) {
+            messages.add("You %s some weed.", rng(0, 6) < in ? "need" : "could use");
+            u.cancel_activity_query("You have a marijuana craving.");
+            u.add_morale(MORALE_CRAVING_THC, -15, -50);
+            if (one_in(800 - 50 * in)) u.fatigue++;
+            if (one_in(400 - 20 * in)) u.stim--;
+        }
+        break;
+
     case ADD_CAFFEINE:
         u.moves -= 2;
         if (in > 20 || one_in((500 - 20 * in))) {
@@ -193,6 +203,7 @@ std::string addiction_name(const addiction& cur)
     case ADD_PKILLER:	return "Opiate Withdrawal";
     case ADD_SPEED:	return "Amphetamine Withdrawal";
     case ADD_COKE:	return "Cocaine Withdrawal";
+    case ADD_THC:	return "Marijuana Withdrawal";
     default:		return "Erroneous addiction";
     }
 }
@@ -207,6 +218,7 @@ const char* addiction_static_text(const addiction& cur)
     case ADD_PKILLER: return "\nDepression and physical pain to some degree.  Frequent cravings.  Vomiting.";
     case ADD_SPEED: return "\nMovement rate reduction.  Depression.  Weak immune system.  Frequent cravings.";
     case ADD_COKE: return "Frequent cravings.";
+    case ADD_THC: return "Occasional cravings";
     default: return 0;
     }
 }
@@ -1293,7 +1305,8 @@ static const char* const JSON_transcode_addiction[] = {
 	"PKILLER",
 	"SPEED",
 	"CIG",
-	"COKE"
+	"COKE",
+    "THC"
 };
 
 static const char* const JSON_transcode_disease[] = {
@@ -1390,7 +1403,8 @@ static const char* const JSON_transcode_morale[] = {
 	"CRAVING_OPIATE",
 	"CRAVING_SPEED",
 	"CRAVING_COCAINE",
-	"FOOD_BAD",
+    "CRAVING_MARIJUANA",
+    "FOOD_BAD",
 	"VEGETARIAN",
 	"WET",
 	"FEELING_BAD",
