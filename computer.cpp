@@ -732,7 +732,11 @@ bool computer::query_bool(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[6000];
+#ifdef _MSC_VER
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
+#else
+ vsnprintf(buff, sizeof(buff), mes, ap);
+#endif
  va_end(ap);
 // Print, appending (Y/N/Q)
  print_line((std::string(buff) += " (Y/N/Q)").c_str());
@@ -749,7 +753,11 @@ char computer::query_ynq(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[6000];
+#ifdef _MSC_VER
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
+#else
+ vsnprintf(buff, sizeof(buff), mes, ap);
+#endif
  va_end(ap);
 // Print, appending (Y/N/Q)
  print_line((std::string(buff) += " (Y/N/Q)").c_str());
@@ -766,7 +774,11 @@ void computer::print_line(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[6000];
+#ifdef _MSC_VER
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
+#else
+ vsnprintf(buff, sizeof(buff), mes, ap);
+#endif
  va_end(ap);
 // Replace any '\n' with "\n " to allow for the border
  std::string message(buff);
@@ -790,7 +802,11 @@ void computer::print_error(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[6000];
+#ifdef _MSC_VER
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
+#else
+ vsnprintf(buff, sizeof(buff), mes, ap);
+#endif
  va_end(ap);
 // Print the line.
  wprintz(w_terminal, c_red, " %s\n", buff);

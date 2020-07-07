@@ -1943,7 +1943,7 @@ void player::disp_info(game *g)
   effect_name.push_back(name);
   effect_text.push_back(describe(cond, *this));
  }
- if (const int cur_morale = morale_level(), const abs_morale = abs(cur_morale); abs_morale >= 100) {
+ if (const int cur_morale = morale_level(), abs_morale = abs(cur_morale); abs_morale >= 100) {
   bool pos = (cur_morale > 0);
   effect_name.push_back(pos ? "Elated" : "Depressed");
   const char* const sgn_text = (pos ? " +" : " ");
@@ -5474,7 +5474,11 @@ void player::cancel_activity_query(const char* message, ...)
     char buff[1024];
 	va_list ap;
 	va_start(ap, message);
+#ifdef _MSC_VER
 	vsprintf_s<sizeof(buff)>(buff, message, ap);
+#else
+	vsnprintf(buff, sizeof(buff), message, ap);
+#endif
 	va_end(ap);
 
 	bool doit = false;

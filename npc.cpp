@@ -1351,7 +1351,11 @@ void npc::say(game *g, std::string line, ...)
  va_list ap;
  va_start(ap, line);
  char buff[8192];
+#ifdef _MSC_VER
  vsprintf_s<sizeof(buff)>(buff, line.c_str(), ap);
+#else
+ vsnprintf(buff, sizeof(buff), line.c_str(), ap);
+#endif
  va_end(ap);
  line = buff;
  parse_tags(line, &(g->u), this);

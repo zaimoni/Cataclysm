@@ -19,7 +19,11 @@ void recent_msg::add(const char* msg, ...)
 	char buff[1024];
 	va_list ap;
 	va_start(ap, msg);
+#ifdef _MSC_VER
 	vsprintf_s<sizeof(buff)>(buff, msg, ap);
+#else
+	vsnprintf(buff, sizeof(buff), msg, ap);
+#endif
 	va_end(ap);
 	std::string s(buff);
 	if (s.empty()) return;
