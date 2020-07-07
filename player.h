@@ -9,7 +9,6 @@
 #include "GPS_loc.hpp"
 #include "bodypart.h"
 #include "pldata.h"
-#include "recent_msg.h"
 #include "zero.h"
 
 enum art_effect_passive;
@@ -339,41 +338,5 @@ private:
 };
 
 inventory crafting_inventory(const map& m, const player& u);
-
-// doesn't actually have to be active.  Once NPCs up, could refactor to a member function
- // 0: no further op; 1: nulled; -1: IF_CHARGE; -2 artifact 
-template<class P>
-std::enable_if_t<std::is_base_of_v<player, P>, int>
-use_active_item(P& u, item& it)
-{
-    if constexpr (std::is_same_v<player, P>) {
-        if (!it.is_tool()) {
-            if (!it.active) return 0;
-            if (it.has_flag(IF_CHARGE)) return -1;  // process as charger gun
-            it.active = false;  // restore invariant; for debugging purposes we'd use accessors and intercept on set
-            return 0;
-        }
-        if (it.is_artifact()) return -2;
-        if (!it.active) return 0;
-
-        auto g = game::active();
-        const it_tool* tmp = dynamic_cast<const it_tool*>(it.type);
-        (*tmp->use)(g, &u, &it, true);
-        if (tmp->turns_per_charge > 0 && int(messages.turn) % tmp->turns_per_charge == 0) it.charges--;
-        // separate this so we respond to bugs reasonably
-        if (it.charges <= 0) {
-            (*tmp->use)(g, &u, &it, false); // turns off
-            if (tmp->revert_to == itm_null) {
-                it = item::null;
-                return 1;
-            }
-            it.type = item::types[tmp->revert_to];
-        }
-    } else {
-        // adjust this to be more lenient as buildout happens
-        static_assert(unconditional_v<bool, false>, "NPC use of artifacts and items is not there yet");
-    }
-    return 0;
-}
 
 #endif
