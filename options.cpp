@@ -1,6 +1,6 @@
 #include "options.h"
 #include "output.h"
-#include "JSON.h"
+#include "json.h"
 #include "ios_file.h"
 
 #include <fstream>

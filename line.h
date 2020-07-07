@@ -5,6 +5,7 @@
 #include "Zaimoni.STL/augment.STL/typetraits"
 
 #include <vector>
+#include <cmath>
 
 // this is the canonical XCOM-like enumeration
 enum direction {
@@ -44,7 +45,7 @@ template<class T>
 struct dist
 {
 	static double L2(typename zaimoni::const_param<T>::type x0, typename zaimoni::const_param<T>::type x1) {
-		if constexpr (!std::is_same_v<T, zaimoni::types<T>::norm>) return dist<zaimoni::types<T>::norm>::L2(zaimoni::norm(x0), zaimoni::norm(x1));
+		if constexpr (!std::is_same_v<T, typename zaimoni::types<T>::norm>) return dist<typename zaimoni::types<T>::norm>::L2(zaimoni::norm(x0), zaimoni::norm(x1));
 		else {
 			if (0 == x0) return zaimoni::norm(x1);
 			else if (0 > x0) return L2(zaimoni::norm(x0), x1);
@@ -62,7 +63,7 @@ struct dist
 	}
 
 	static constexpr auto Linf(typename zaimoni::const_param<T>::type x0, typename zaimoni::const_param<T>::type x1) {
-		if constexpr (!std::is_same_v<T, zaimoni::types<T>::norm>) return dist<zaimoni::types<T>::norm>::Linf(zaimoni::norm(x0), zaimoni::norm(x1));
+		if constexpr (!std::is_same_v<T, typename zaimoni::types<T>::norm>) return dist<typename zaimoni::types<T>::norm>::Linf(zaimoni::norm(x0), zaimoni::norm(x1));
 		else {
 			if (0 == x0) return zaimoni::norm(x1);
 			else if (0 > x0) return Linf(zaimoni::norm(x0), x1);

@@ -4,7 +4,7 @@
 #include "monattack.h"
 #include "mondeath.h"
 #endif
-#include "JSON.h"
+#include "json.h"
 #include "setvector.h"
 
 #include "Zaimoni.STL/Logging.h"

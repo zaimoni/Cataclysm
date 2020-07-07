@@ -82,6 +82,7 @@ nc_color invert_color(nc_color c)
   case c_ltcyan:  return i_ltcyan;
   case c_pink:    return i_pink;
  }
+ return i_white;
 }
 
 nc_color red_background(nc_color c)
@@ -293,7 +294,11 @@ void debugmsg(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[1024];
+#ifdef _MSC_VER
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
+#else
+ vsnprintf(buff, sizeof(buff), mes, ap);
+#endif
  va_end(ap);
  reject_unescaped_percent(buff);
  attron(c_red);
@@ -309,7 +314,11 @@ bool query_yn(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[1024];
+#ifdef _MSC_VER
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
+#else
+ vsnprintf(buff, sizeof(buff), mes, ap);
+#endif
  va_end(ap);
  int win_width = strlen(buff) + 26;
  WINDOW* w = newwin(3, win_width, 11, 0);
@@ -334,7 +343,11 @@ int query_int(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[1024];
+#ifdef _MSC_VER
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
+#else
+ vsnprintf(buff, sizeof(buff), mes, ap);
+#endif
  va_end(ap);
  int win_width = strlen(buff) + 10;
  WINDOW* w = newwin(3, win_width, 11, 0);
@@ -362,7 +375,11 @@ std::string string_input_popup(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[1024];
+#ifdef _MSC_VER
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
+#else
+ vsnprintf(buff, sizeof(buff), mes, ap);
+#endif
  va_end(ap);
  reject_unescaped_percent(buff);
  int startx = strlen(buff) + 2;
@@ -411,7 +428,11 @@ std::string string_input_popup(int max_length, const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[1024];
+#ifdef _MSC_VER
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
+#else
+ vsnprintf(buff, sizeof(buff), mes, ap);
+#endif
  va_end(ap);
  reject_unescaped_percent(buff);
  int startx = strlen(buff) + 2;
@@ -459,7 +480,11 @@ char popup_getkey(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[8192];
+#ifdef _MSC_VER
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
+#else
+ vsnprintf(buff, sizeof(buff), mes, ap);
+#endif
  va_end(ap);
  std::string tmp = buff;
  int width = 0;
@@ -566,7 +591,11 @@ void popup_top(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[1024];
+#ifdef _MSC_VER
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
+#else
+ vsnprintf(buff, sizeof(buff), mes, ap);
+#endif
  va_end(ap);
  std::string tmp = buff;
  int width = 0;
@@ -617,7 +646,11 @@ void popup(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[8192];
+#ifdef _MSC_VER
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
+#else
+ vsnprintf(buff, sizeof(buff), mes, ap);
+#endif
  va_end(ap);
  std::string tmp = buff;
  int width = 0;
@@ -668,7 +701,11 @@ void popup_nowait(const char *mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[8192];
+#ifdef _MSC_VER
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
+#else
+ vsnprintf(buff, sizeof(buff), mes, ap);
+#endif
  va_end(ap);
  std::string tmp = buff;
  int width = 0;
@@ -713,7 +750,11 @@ void full_screen_popup(const char* mes, ...)
  va_list ap;
  va_start(ap, mes);
  char buff[8192];
+#ifdef _MSC_VER
  vsprintf_s<sizeof(buff)>(buff, mes, ap);
+#else
+ vsnprintf(buff, sizeof(buff), mes, ap);
+#endif
  va_end(ap);
  std::string tmp = buff;
  WINDOW* const w = newwin(VIEW, SCREEN_WIDTH, 0, 0);

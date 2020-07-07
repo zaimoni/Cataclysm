@@ -7,6 +7,7 @@
 #include "mobile.h"
 #include <string>
 #include <sstream>
+#include <memory>
 
 namespace cataclysm {
 	class action;

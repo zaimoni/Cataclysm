@@ -44,9 +44,9 @@ struct curses_full_delete {
 #ifndef CURSES_HAS_TILESET
 // stock curses library does not have tileset extensions; no-op them
 inline bool load_tile(const char* src) { return false; }	// automatic failure
-void flush_tilesheets() {}
-bool mvwaddbgtile(WINDOW *win, int y, int x, const char* bgtile) { return false; };
-bool mvwaddfgtile(WINDOW *win, int y, int x, const char* fgtile) { return false; };
+inline void flush_tilesheets() {}
+inline bool mvwaddbgtile(WINDOW* win, int y, int x, const char* bgtile) { return false; }
+inline bool mvwaddfgtile(WINDOW* win, int y, int x, const char* fgtile) { return false; }
 #endif
 
 

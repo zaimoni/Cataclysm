@@ -4,13 +4,16 @@
 #include "options.h"
 #include "mapbuffer.h"
 #include "file.h"
-#include "JSON.h"
+#include "json.h"
 #include <time.h>
 #include <fstream>
 #include <iostream>
 #include <exception>
 #if HAVE_MS_COM
 #include <combaseapi.h>
+#endif
+#ifndef OS_dir
+#include <filesystem>
 #endif
 
 using namespace cataclysm;
@@ -20,10 +23,14 @@ static bool scalar_on_hard_drive(const JSON& x)
 {
 	if (!x.is_scalar()) return false;
 	if (x.empty()) return false;
-	OS_dir working;
 	const auto hash_tag = x.scalar().find('#');
 	// we use a hashtag to cope with tilesheets.
+#ifdef OS_dir
+	OS_dir working;
 	return working.exists((hash_tag == std::string::npos ? x.scalar() : std::string(x.scalar(), 0, hash_tag)).c_str());
+#else
+	return std::filesystem::exists((hash_tag == std::string::npos ? x.scalar() : std::string(x.scalar(), 0, hash_tag)).c_str());
+#endif
 }
 
 static bool preload_image(const JSON& x)
@@ -37,7 +44,9 @@ static void load_JSON(const char* const src, const char* const key, bool (ok)(co
 #ifdef OS_dir
 	OS_dir working;
 	if (!working.exists(src)) return;
-
+#else
+	if (!std::filesystem::exists(src)) return;
+#endif
 	std::ifstream fin;
 	fin.open(src);
 	if (!fin.is_open()) return;
@@ -51,7 +60,6 @@ static void load_JSON(const char* const src, const char* const key, bool (ok)(co
 		fin.close();
 		std::cerr << src << ": " << e.what();
 	}
-#endif
 }
 
 // goes into destructive_grep of a JSON array so being applied in reverse order

@@ -5,12 +5,13 @@
 #WARNINGS = -Wall -Wextra -Wno-switch -Wno-sign-compare -Wno-missing-braces -Wno-unused-parameter -Wno-char-subscripts
 #DEBUG = -g
 #PROFILE = -pg
-OTHERS = -O3
+OTHERS = -O3 -std=gnu++17 -MMD -MP
 
-ODIR = obj
-DDIR = .deps
+ODIR1 = obj_cataclysm
+ODIR2 = obj_socrates_daimon
 
-TARGET = cataclysm
+TARGET1 = cataclysm
+TARGET2 = socrates-daimon
 
 OS  = $(shell uname -o)
 CXX = g++
@@ -18,31 +19,41 @@ CXX = g++
 CFLAGS = $(WARNINGS) $(DEBUG) $(PROFILE) $(OTHERS)
 
 ifeq ($(OS), Msys)
-LDFLAGS = -static -lpdcurses
-else 
+LDFLAGS = -static -lncurses -lgdi32
+else
 LDFLAGS = -lncurses
 endif
+LDFLAGS += -pthread -Llib/host -lz_format_util -lz_stdio_log -lz_stdio_c
 
-SOURCES = $(subst stdafx.cpp,,$(wildcard *.cpp))
-_OBJS = $(SOURCES:.cpp=.o)
-OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
+SOURCES1 = $(filter-out stdafx.cpp socrates-daimon.cpp,$(wildcard *.cpp))
+OBJS1 = $(addprefix $(ODIR1)/,$(SOURCES1:.cpp=.o))
 
-all: $(TARGET)
-	@
+SOURCES2 = calendar.cpp catacurse.cpp color.cpp html.cpp item.cpp itypedef.cpp\
+  json.cpp keypress.cpp mapdata.cpp mtypedef.cpp options.cpp output.cpp\
+  recent_msg.cpp rng.cpp saveload.cpp skill.cpp socrates-daimon.cpp trapdef.cpp
+OBJS2 = $(addprefix $(ODIR2)/,$(SOURCES2:.cpp=.o))
 
-$(TARGET): $(ODIR) $(DDIR) $(OBJS)
-	$(CXX) -o $(TARGET) $(CFLAGS) $(OBJS) $(LDFLAGS) 
+.PHONY: all clean
+all: $(TARGET1) $(TARGET2)
 
-$(ODIR):
-	mkdir $(ODIR)
+$(TARGET1): $(ODIR1) $(OBJS1)
+	$(CXX) -o $@ $(CFLAGS) -DCATACLYSM $(OBJS1) $(LDFLAGS)
 
-$(DDIR):
-	@mkdir $(DDIR)
+$(TARGET2): $(ODIR2) $(OBJS2)
+	$(CXX) -o $@ $(CFLAGS) -DSOCRATES_DAIMON $(OBJS2) $(LDFLAGS)
 
-$(ODIR)/%.o: %.cpp
-	$(CXX) $(CFLAGS) -c $< -o $@
+$(ODIR1) $(ODIR2):
+	mkdir $@
+
+$(ODIR1)/%.o: %.cpp
+	$(CXX) $(CFLAGS) -DCATACLYSM -c $< -o $@
+
+$(ODIR2)/%.o: %.cpp
+	$(CXX) $(CFLAGS) -DSOCRATES_DAIMON -c $< -o $@
 
 clean:
-	rm -f $(TARGET) $(ODIR)/*.o
+	rm -f $(TARGET1) $(TARGET2) $(ODIR1)/*.[od] $(ODIR2)/*.[od]
 
--include $(SOURCES:%.cpp=$(DEPDIR)/%.P)
+
+-include $(OBJS1:.o=.d)
+-include $(OBJS2:.o=.d)
