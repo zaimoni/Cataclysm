@@ -82,6 +82,7 @@ nc_color invert_color(nc_color c)
   case c_ltcyan:  return i_ltcyan;
   case c_pink:    return i_pink;
  }
+ return i_white;
 }
 
 nc_color red_background(nc_color c)
