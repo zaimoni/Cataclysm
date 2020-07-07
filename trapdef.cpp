@@ -40,10 +40,10 @@ std::vector<const trap*> trap::traps;
 void trap::init()
 {
  int id = -1;
-#define TRAP(name, sym, color, visibility, avoidance, difficulty, ...) \
+#define TRAP(name, sym, color, visibility, avoidance, ...) \
 id++;\
 traps.push_back(new trap(id, sym, color, name, visibility, avoidance,\
-                    difficulty, __VA_ARGS__));
+			 __VA_ARGS__));
 #ifndef SOCRATES_DAIMON
  TRAP("none", '?', c_white, 20, 0, 0, &trapfunc::none, &trapfuncm::none);
 
@@ -228,4 +228,5 @@ TRAP("", '^', c_white, 99, 99, 99);
 // Snake spawn / hisssss
 TRAP("", '^', c_white, 99, 99, 99);
 #endif
+#undef TRAP
 }
