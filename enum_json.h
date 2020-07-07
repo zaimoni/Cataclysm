@@ -20,7 +20,7 @@ namespace cataclysm {	\
 	template<>	\
 	struct JSON_parse<TYPE>	\
 	{	\
-		enum { origin = 1 };	\
+		static constexpr TYPE origin = TYPE(1);	\
 		TYPE operator()(const char* src);	\
 		TYPE operator()(const std::string& src) { return operator()(src.c_str()); };	\
 	};	\
@@ -32,7 +32,7 @@ namespace cataclysm {	\
 	template<>	\
 	struct JSON_parse<TYPE>	\
 	{	\
-		enum { origin = OFFSET };	\
+		static constexpr TYPE origin = TYPE(OFFSET);	\
 		TYPE operator()(const char* src);	\
 		TYPE operator()(const std::string& src) { return operator()(src.c_str()); };	\
 	};	\
