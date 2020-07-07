@@ -2,6 +2,16 @@
 #ifndef IOS_FILE_H
 #define IOS_FILE_H
 
+#include "Zaimoni.STL/Pure.C/comptest.h"        /* for C library test results */
+
+#ifdef ZAIMONI_HAS_MICROSOFT_IO_H
+#include <io.h>
+#include <stdio.h>
+#else
+#include <unistd.h>
+#endif
+
+
 #define OFSTREAM_ACID_CLOSE(F,NAME)	\
 if (F) {	\
 	F.close();	\
