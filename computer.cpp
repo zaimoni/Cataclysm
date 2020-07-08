@@ -50,7 +50,7 @@ DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(computer_failure, JSON_transcode_comp
 
 // main implementation
 computer::computer(const computer& src)
-: options(src.options),failures(src.failures),security(security),w_terminal(0),name(src.name),mission_id(src.mission_id)
+: options(src.options),failures(src.failures),security(src.security),w_terminal(0),name(src.name),mission_id(src.mission_id)
 {
 }
 
