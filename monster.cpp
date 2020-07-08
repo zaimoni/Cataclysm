@@ -217,7 +217,7 @@ bool monster::made_of(material m) const
  
 void monster::debug(player &u)
 {
- char buff[2];
+ char buff[16];
  debugmsg("%s has %d steps planned.", name().c_str(), plans.size());
  debugmsg("%s Moves %d Speed %d HP %d",name().c_str(), moves, speed, hp);
  for (int i = 0; i < plans.size(); i++) {
