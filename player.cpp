@@ -3507,11 +3507,11 @@ const char* describe(dis_type type)
 	switch (type) {
 	case DI_GLARE: return "The sunlight's glare makes it hard to see.";
 	case DI_WET: return "You're getting soaked!";
-	case DI_HEATSTROKE: "You have heatstroke!";
+	case DI_HEATSTROKE: return "You have heatstroke!";
 	case DI_FBFACE: return "Your face is frostbitten.";
 	case DI_FBHANDS: return "Your hands are frostbitten.";
 	case DI_FBFEET: return "Your feet are frostbitten.";
-	case DI_COMMON_COLD: "You feel a cold coming on...";
+	case DI_COMMON_COLD: return "You feel a cold coming on...";
 	case DI_FLU: return "You feel a flu coming on...";
 	case DI_ONFIRE: return "You're on fire!";
 	case DI_SMOKE: return "You inhale a lungful of thick smoke.";

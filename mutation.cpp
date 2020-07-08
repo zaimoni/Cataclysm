@@ -326,9 +326,10 @@ void player::remove_mutation(pl_flag mut)
  pl_flag replacing = PF_NULL;
  for(const auto pre : mutation_branch::data[mut].prereqs) {
   for(const auto tmp : mutation_branch::data[pre].replacements) {
-   if (tmp == mut)
+   if (tmp == mut) {
     replacing = pre;
     break;
+   }
   }
  }
 

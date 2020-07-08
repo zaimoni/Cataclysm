@@ -681,7 +681,7 @@ void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit)
  std::string message;
  const bool u_see_mon = g->u_see(&(mon));
  if (mon.has_flag(MF_HARDTOSHOOT) && !one_in(4) &&
-     !p.weapon.curammo->m1 == LIQUID && 
+     p.weapon.curammo->m1 != LIQUID && 
      p.weapon.curammo->accuracy >= 4) { // Buckshot hits anyway
   if (u_see_mon)
    messages.add("The shot passes through the %s without hitting.", mon.name().c_str());

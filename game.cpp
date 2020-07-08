@@ -3264,13 +3264,13 @@ void game::resonance_cascade(int x, int y)
      for (int l = j - 1; l <= j + 1; l++) {
       field_id type;
       switch (rng(1, 7)) {
-       case 1: type = fd_blood;
-       case 2: type = fd_bile;
+       case 1: type = fd_blood; break;
+       case 2: type = fd_bile; break;
        case 3:
-       case 4: type = fd_slime;
-       case 5: type = fd_fire;
+       case 4: type = fd_slime; break;
+       case 5: type = fd_fire; break;
        case 6:
-       case 7: type = fd_nuke_gas;
+       case 7: type = fd_nuke_gas; break;
       }
 	  auto& f = m.field_at(k, l);
       if (f.type == fd_null || !one_in(3)) f = field(type, 3);
