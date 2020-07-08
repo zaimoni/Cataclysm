@@ -824,7 +824,7 @@ bool player::install_bionics(game *g, const it_bionic* type)
 Installing this bionic will increase your total battery capacity by 10.\n\
 Batteries are necessary for most bionics to function.  They also require a\n\
 charge mechanism, which must be installed from another CBM.");
-  char ch;
+  int ch;
   wrefresh(w.get());
   do ch = getch();
   while (ch != 'q' && ch != '\n' && ch != KEY_ESCAPE);
@@ -846,7 +846,7 @@ charge mechanism, which must be installed from another CBM.");
  }
 
  int selection = 0;
- char ch;
+ int ch;
 
  do {
 

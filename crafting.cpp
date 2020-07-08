@@ -690,7 +690,7 @@ void game::craft()
  int line = 0, xpos, ypos;
  bool redraw = true;
  bool done = false;
- char ch;
+ int ch;
 
  inventory crafting_inv(crafting_inventory(m, u));
 

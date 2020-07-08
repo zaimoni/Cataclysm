@@ -417,7 +417,7 @@ void defense_game::setup()
  refresh_setup(w, selection);
 
  while (true) {
-  char ch = input();
+  int ch = input();
  
   if (ch == 'S') {
    if (!zombies && !specials && !spiders && !triffids && !robots && !subspace) {
@@ -787,7 +787,7 @@ void defense_game::caravan(game *g)
  bool cancel = false;
  while (!done) {
 
-  char ch = input();
+  int ch = input();
   switch (ch) {
    case '?':
     popup_top("\

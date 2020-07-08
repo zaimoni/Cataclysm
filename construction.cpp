@@ -199,7 +199,7 @@ void game::construction_menu()
 
  bool update_info = true;
  int select = 0;
- char ch;
+ int ch;
 
  inventory total_inv;
  total_inv.form_from_map(m, u.pos, PICKUP_RANGE);

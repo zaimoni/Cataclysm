@@ -457,7 +457,6 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
  }
 
  wrefresh(w_target);
- char ch;
  bool snap_to_target = option_table::get()[OPT_SNAP_TO_TARGET];
 // The main loop.
  do {
@@ -524,7 +523,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
   wrefresh(w_terrain);
   wrefresh(w_status);
   refresh();
-  ch = input();
+  int ch = input();
   point dir(get_direction(ch));
   if (dir.x != -2 && ch != '.') {	// Direction character pressed
    monster* const m_at = mon(tar);

@@ -232,7 +232,7 @@ http://github.com/zaimoni/Cataclysm .");
  }
 #endif
  int sel1 = 0, sel2 = 1, layer = 1;
- char ch;
+ int ch;
  bool start = false;
 
 // Load MOTD and store it in a string
@@ -1041,11 +1041,11 @@ void game::process_missions()
 
 void game::get_input()
 {
- char ch = input(); // See keypress.h - translates keypad and arrows to vikeys
+ int ch = input(); // See keypress.h - translates keypad and arrows to vikeys
 
  action_id act = keys.translate(ch);
  if (!act) {
-  if (ch != ' ' && ch != KEY_ESCAPE && ch != '\n') messages.add("Unknown command: '%c'", ch);
+  if (ch != ' ' && ch != KEY_ESCAPE && ch != '\n') messages.add("Unknown command: '%c'", char(ch));
   return;
  }
 
@@ -1465,7 +1465,7 @@ void game::death_screen()
 
  wrefresh(w_death);
  refresh();
- char ch;
+ int ch;
  do ch = getch();
  while(ch != ' ' && ch != '\n' && ch != KEY_ESCAPE);
  delwin(w_death);
@@ -2085,7 +2085,7 @@ faction* game::list_factions(std::string title)
  }
  mvwprintz(w_info, linenum, 0, c_white, desc.c_str());
  wrefresh(w_info);
- char ch;
+ int ch;
  do {
   ch = input();
   switch ( ch ) {
@@ -2148,7 +2148,7 @@ void game::list_missions()
 
  WINDOW *w_missions = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  int tab = 0, selection = 0;
- char ch;
+ int ch;
  do {
   werase(w_missions);
   draw_tabs(w_missions, tab, labels);
@@ -3472,7 +3472,7 @@ void game::open()
  bool didit = false;
  mvwprintw(w_terrain, 0, 0, "Open where? (hjklyubn) ");
  wrefresh(w_terrain);
- char ch = input();
+ int ch = input();
  point open(get_direction(ch));
  if (open.x != -2) {
   int vpart;
@@ -3514,7 +3514,7 @@ void game::close()
  bool didit = false;
  mvwprintw(w_terrain, 0, 0, "Close where? (hjklyubn) ");
  wrefresh(w_terrain);
- char ch = input();
+ int ch = input();
  point close(get_direction(ch));
  if (-2 == close.x) { messages.add("Invalid direction."); return; }
  close += u.pos;
@@ -3546,7 +3546,7 @@ void game::smash()
  int smashskill = int(u.str_cur / 2.5 + u.weapon.type->melee_dam);
  mvwprintw(w_terrain, 0, 0, "Smash what? (hjklyubn) ");
  wrefresh(w_terrain);
- char ch = input();
+ int ch = input();
  if (ch == KEY_ESCAPE) {
   messages.add("Never mind.");
   return;
@@ -3698,7 +3698,7 @@ void game::examine()
  }
  mvwprintw(w_terrain, 0, 0, "Examine where? (Direction button) ");
  wrefresh(w_terrain);
- char ch = input();
+ int ch = input();
  if (ch == KEY_ESCAPE || ch == 'e' || ch == 'q') return;
  point exam(get_direction(ch));
  if (exam.x == -2) {
@@ -3906,7 +3906,7 @@ point game::look_around()
 {
  draw_ter();
  point l(u.pos);
- char ch;
+ int ch;
  WINDOW* w_look = newwin(VIEW-SEE, SCREEN_WIDTH-(SEE * 2 + 8), SEE, SEE * 2 + 8);
  wborder(w_look, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                  LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
@@ -4122,7 +4122,7 @@ void game::pickup(const point& pt, int min)
  constexpr const int maxitems = 9;	 // Number of items to show at one time.
  std::vector <item> here = from_veh? veh->parts[veh_part].items : m.i_at(pt);
  std::vector<bool> getitem(here.size(),false);
- char ch = ' ';
+ int ch = ' ';
  int start = 0, cur_it, iter;
  int new_weight = u.weight_carried(), new_volume = u.volume_carried();
  bool update = true;
@@ -5022,7 +5022,7 @@ void game::chat()
   mvwprintz(w, available.size() + 1, 1, c_white, "%d: Cancel",
             available.size() + 1);
   wrefresh(w);
-  char ch;
+  int ch;
   do {
    ch = getch();
   } while (ch < '1' || ch > '1' + available.size());
