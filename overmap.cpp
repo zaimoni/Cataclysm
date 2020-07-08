@@ -689,7 +689,7 @@ point overmap::display_notes() const
  std::string title = "Notes:";
  WINDOW* w_notes = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  const int maxitems = 20;	// Number of items to show at one time.
- char ch = '.';
+ int ch = '.';
  int start = 0, cur_it;
  mvwprintz(w_notes, 0, 0, c_ltgray, title.c_str());
  do{

@@ -327,7 +327,7 @@ bool query_yn(const char *mes, ...)
  mvwprintz(w, 1, 1, c_ltred, "%s (%s)", buff,
            (force_uc ? "Y/N - Case Sensitive" : "y/n"));
  wrefresh(w);
- char ch;
+ int ch;
  do ch = getch();
  while (ch != 'Y' && ch != 'N' && (force_uc || (ch != 'y' && ch != 'n')));
  werase(w);
@@ -393,7 +393,7 @@ std::string string_input_popup(const char *mes, ...)
  mvwputch(w, 1, posx, h_ltgray, '_');
  do {
   wrefresh(w);
-  long ch = getch();
+  int ch = getch();
   if (ch == 27) {	// Escape
    werase(w);
    wrefresh(w);
@@ -446,7 +446,7 @@ std::string string_input_popup(int max_length, const char *mes, ...)
  mvwputch(w, 1, posx, h_ltgray, '_');
  do {
   wrefresh(w);
-  long ch = getch();
+  int ch = getch();
   if (ch == 27) {	// Escape
    werase(w);
    wrefresh(w);
@@ -519,7 +519,7 @@ char popup_getkey(const char *mes, ...)
  mvwprintz(w, line_num, 1, c_white, tmp.c_str());
  
  wrefresh(w);
- char ch = getch();
+ int ch = getch();
  werase(w);
  wrefresh(w);
  delwin(w);
@@ -549,7 +549,7 @@ int menu_vec(const char *mes, const std::vector<std::string>& options)  // \todo
   mvwprintw(w, i + 2, 1, "%c: %s", (i < 9? i + '1' :
                                    (i == 9? '0' : 'a' + i - 10)),
             options[i].c_str());
- long ch;
+ int ch;
  wrefresh(w);
  int res;
  do {
@@ -630,7 +630,7 @@ void popup_top(const char *mes, ...)
  mvwprintz(w, line_num, 1, c_white, tmp.c_str());
  
  wrefresh(w);
- char ch;
+ int ch;
  do
   ch = getch();
  while(ch != ' ' && ch != '\n' && ch != KEY_ESCAPE);
@@ -685,7 +685,7 @@ void popup(const char *mes, ...)
  mvwprintz(w, line_num, 1, c_white, tmp.c_str());
  
  wrefresh(w);
- char ch;
+ int ch;
  do
   ch = getch();
  while(ch != ' ' && ch != '\n' && ch != KEY_ESCAPE);
@@ -772,7 +772,7 @@ void full_screen_popup(const char* mes, ...)
  line_num++;
  mvwprintz_noformat(w, line_num, 1, c_white, tmp.c_str());
  wrefresh(w);
- char ch;
+ int ch;
  do
   ch = getch();
  while(ch != ' ' && ch != '\n' && ch != KEY_ESCAPE);

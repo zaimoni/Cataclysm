@@ -23,7 +23,7 @@ void game::help()
 // the number of options we can both display, and show a lower-case key as a menu entry trigger
 #define MENU_SPAN ((VIEW-1)<('z'-'a') ? VIEW : ('z'-'a')+1)
 
- char ch;
+ int ch;
  do {
   erase();
   mvprintz(0, 38, c_red, "HELP");
@@ -469,7 +469,7 @@ easily drop unwanted items on the floor.");
       mvprintz(i, 1, c_white, ":");
      }
      refresh();
-     char actch = getch();
+     int actch = getch();
      if (actch >= 'a' && actch < 'a' + MENU_SPAN && actch - 'a' + offset < NUM_ACTIONS) {
       action_id act = action_id(actch - 'a' + offset);
       if (ch == '-' && query_yn("Clear keys for %s?",action_name(act).c_str())){
@@ -541,7 +541,7 @@ easily drop unwanted items on the floor.");
       mvprintz(i, 1, c_white, ":");
      }
      refresh();
-     char actch = getch();
+     int actch = getch();
      if (actch >= 'a' && actch < 'a' + MENU_SPAN && actch - 'a' + offset < NUM_OPTION_KEYS) {
 	 const auto opt = option_key(actch - 'a' + offset);
 	 switch (option_table::type_code(opt))

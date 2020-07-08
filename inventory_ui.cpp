@@ -85,7 +85,7 @@ char game::inv(std::string title)
 {
  static const std::vector<char> null_vector;
  constexpr const int maxitems = 20;	// Number of items to show at one time.
- char ch = '.';
+ int ch = '.';
  int start = 0, cur_it;
  u.sort_inv();
  u.inv.restack(&u);
@@ -159,7 +159,7 @@ std::vector<item> game::multidrop()
 // Gun, ammo, weapon, armor, food, tool, book, other
  const auto firsts = find_firsts(u.inv);
 
- char ch = '.';
+ int ch = '.';
  int start = 0;
  size_t cur_it = 0;
  do {

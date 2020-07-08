@@ -12,7 +12,7 @@ void game::wish()
  WINDOW* const w_list = newwin(VIEW, 30, 0,  0);
  WINDOW* const w_info = newwin(VIEW, 50, 0, 30);
  int a = 0, shift = 0, result_selected = 0;
- char ch = '.';
+ int ch = '.';
  bool search = false, found = false;
  std::string pattern;
  std::string info;
@@ -160,7 +160,7 @@ void game::monster_wish()
  WINDOW* const w_list = newwin(VIEW, 30, 0,  0);
  WINDOW* const w_info = newwin(VIEW, 50, 0, 30);
  int a = 0, shift = 1, result_selected = 0;
- char ch = '.';
+ int ch = '.';
  bool search = false, found = false, friendly = false;
  std::string pattern;
  std::string info;
@@ -301,7 +301,7 @@ void game::mutation_wish()
  WINDOW* const w_list = newwin(VIEW, 30, 0,  0);
  WINDOW* const w_info = newwin(VIEW, 50, 0, 30);
  int a = 0, shift = 0, result_selected = 0;
- long ch = '.';
+ int ch = '.';
  bool search = false, found = false;
  std::string pattern;
  std::string info;

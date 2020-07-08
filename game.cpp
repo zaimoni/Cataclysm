@@ -1465,7 +1465,7 @@ void game::death_screen()
 
  wrefresh(w_death);
  refresh();
- char ch;
+ int ch;
  do ch = getch();
  while(ch != ' ' && ch != '\n' && ch != KEY_ESCAPE);
  delwin(w_death);
@@ -4122,7 +4122,7 @@ void game::pickup(const point& pt, int min)
  constexpr const int maxitems = 9;	 // Number of items to show at one time.
  std::vector <item> here = from_veh? veh->parts[veh_part].items : m.i_at(pt);
  std::vector<bool> getitem(here.size(),false);
- char ch = ' ';
+ int ch = ' ';
  int start = 0, cur_it, iter;
  int new_weight = u.weight_carried(), new_volume = u.volume_carried();
  bool update = true;
@@ -5022,7 +5022,7 @@ void game::chat()
   mvwprintz(w, available.size() + 1, 1, c_white, "%d: Cancel",
             available.size() + 1);
   wrefresh(w);
-  char ch;
+  int ch;
   do {
    ch = getch();
   } while (ch < '1' || ch > '1' + available.size());

@@ -8,7 +8,7 @@
 #endif
 
 // Simple text input--translates numpad to vikeys
-long input();
+int input();
 // If ch is vikey, x & y are set to corresponding direction; ch=='y'->x=-1,y=-1
 void get_direction(int &x, int &y, char ch);
 // Uses the keymap to figure out direction properly

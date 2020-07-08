@@ -159,7 +159,7 @@ void computer::use(game *g)
   print_line("Q - Quit and shut down");
   print_line("");
  
-  char ch;
+  int ch;
   do
    ch = getch();
   while (ch != 'q' && ch != 'Q' && (ch < '1' || ch - '1' >= options.size()));
@@ -740,7 +740,7 @@ bool computer::query_bool(const char *mes, ...)
  va_end(ap);
 // Print, appending (Y/N/Q)
  print_line((std::string(buff) += " (Y/N/Q)").c_str());
- char ret;
+ int ret;
  do ret = getch();
  while (ret != 'y' && ret != 'Y' && ret != 'n' && ret != 'N' && ret != 'q' && ret != 'Q');
  return (ret == 'y' || ret == 'Y');
@@ -761,7 +761,7 @@ char computer::query_ynq(const char *mes, ...)
  va_end(ap);
 // Print, appending (Y/N/Q)
  print_line((std::string(buff) += " (Y/N/Q)").c_str());
- char ret;
+ int ret;
  do ret = getch();
  while (ret != 'y' && ret != 'Y' && ret != 'n' && ret != 'N' && ret != 'q' && ret != 'Q');
  return ret;

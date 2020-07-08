@@ -5,9 +5,9 @@
 keymap<action_id> keys;
 #endif
 
-long input()
+int input()
 {
- long ch = getch();
+ int ch = getch();
  switch (ch) {
   case KEY_UP:    return 'k';
   case KEY_LEFT:  return 'h';

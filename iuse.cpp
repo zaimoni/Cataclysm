@@ -67,7 +67,7 @@ static void _display_hp(WINDOW* w, player* p, int curhp, int i)
 
 static bool _get_heal_target(player* p, item* it, hp_part& healed)
 {
-    char ch;
+    int ch;
     do {
         ch = getch();
         if (ch == '1')
@@ -869,7 +869,7 @@ void iuse::two_way_radio(game *g, player *p, item *it, bool t)
  mvwprintz(w, 3, 1, c_white, "3: General S.O.S.");
  mvwprintz(w, 4, 1, c_white, "0: Cancel");
  wrefresh(w);
- char ch = getch();
+ int ch = getch();
  if (ch == '1') {
   p->moves -= 300;
   faction* fac = g->list_factions("Call for help...");

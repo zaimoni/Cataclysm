@@ -2916,7 +2916,7 @@ void player::power_bionics(game *g)
  }
 
  wrefresh(wBio);
- char ch;
+ int ch;
  bool activating = true;
  do {
   bionic *tmp = NULL;
