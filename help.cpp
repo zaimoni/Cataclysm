@@ -423,7 +423,7 @@ easily drop unwanted items on the floor.");
   case '1': {
    erase();
    int offset = 1;
-   char ch = ' ';
+   int ch = ' ';
    bool changed_keymap = false;
    bool needs_refresh = true;
    do {
@@ -491,7 +491,7 @@ easily drop unwanted items on the floor.");
    erase();
    auto& OPTIONS = option_table::get();
    int offset = 1;
-   char ch = ' ';
+   int ch = ' ';
    bool changed_options = false;
    bool needs_refresh = true;
    do {

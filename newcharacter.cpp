@@ -269,7 +269,6 @@ void draw_tabs(WINDOW* w)
 int set_stats(WINDOW* w, player *u, int &points)
 {
  unsigned char sel = 1;
- char ch;
 // Draw horizontal lines, with a gap for the active tab
  for (int i = 0; i < SCREEN_WIDTH; i++) {
   if (i < 4 || i > 14)
@@ -392,7 +391,7 @@ int set_stats(WINDOW* w, player *u, int &points)
   }
  
   wrefresh(w);
-  ch = input();
+  int ch = input();
   if (ch == 'j' && sel < 4)
    sel++;
   if (ch == 'k' && sel > 1)
@@ -790,7 +789,6 @@ To save this character as a template, press !.");
  
  int line = 1;
  bool noname = false;
- long ch;
 
  do {
   if (u->male) {
@@ -812,7 +810,7 @@ To save this character as a template, press !.");
    mvwprintz(w, 8, 2, c_ltgray, "Gender:");
 
   wrefresh(w);
-  ch = input();
+  int ch = input();
   if (noname) {
    mvwprintz(w, 6, 8, c_ltgray, "______________________________");
    noname = false;

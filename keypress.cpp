@@ -18,7 +18,7 @@ int input()
  }
 }
 
-void get_direction(int &x, int &y, char ch)
+void get_direction(int &x, int &y, int ch)
 {
  x = 0;
  y = 0;
@@ -64,9 +64,9 @@ void get_direction(int &x, int &y, char ch)
 }
 
 #ifndef SOCRATES_DAIMON
-point get_direction(char ch)
+point get_direction(int ch)
 {
- switch (keys.translate(ch)) {
+ switch (keys.translate(char(ch))) {
  case ACTION_MOVE_NW: return point(-1, -1);
  case ACTION_MOVE_NE: return point(1, -1);
  case ACTION_MOVE_W: return point(-1, 0);

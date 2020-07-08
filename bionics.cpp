@@ -846,7 +846,7 @@ charge mechanism, which must be installed from another CBM.");
  }
 
  int selection = 0;
- char ch;
+ int ch;
 
  do {
 

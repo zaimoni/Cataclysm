@@ -78,7 +78,7 @@ void veh_interact::exec ()
     bool finish = false;
     while (!finish)
     {
-        char ch = input(); // See keypress.h
+        int ch = input(); // See keypress.h
         int dx, dy;
         get_direction (dx, dy, ch);
         if (ch == KEY_ESCAPE) finish = true;
@@ -197,7 +197,7 @@ void veh_interact::do_install(int reason)
             mvwprintz(w_msg, 1, 21, has_skill2? c_ltgreen : c_red, "%d", dif_eng);
         }
         wrefresh (w_msg);
-        char ch = input(); // See keypress.h
+        int ch = input(); // See keypress.h
         int dx, dy;
         get_direction (dx, dy, ch);
         if ((ch == '\n' || ch == ' ') && has_comps && has_skill && has_skill2)
@@ -267,7 +267,7 @@ void veh_interact::do_repair(int reason)
             mvwprintz(w_msg, 1, 28, has_comps? c_ltgreen : c_red, item::types[itm]->name.c_str());            
         }
         wrefresh (w_msg);
-        char ch = input(); // See keypress.h
+        int ch = input(); // See keypress.h
         int dx, dy;
         get_direction (dx, dy, ch);
         if ((ch == '\n' || ch == ' ') && has_comps && (veh->parts[sel_part].hp > 0 || has_wrench) && has_skill)
@@ -357,7 +357,7 @@ void veh_interact::do_remove(int reason)
         werase (w_parts);
         veh->print_part_desc (w_parts, 0, winw2, cpart, pos);
         wrefresh (w_parts);
-        char ch = input(); // See keypress.h
+        int ch = input(); // See keypress.h
         int dx, dy;
         get_direction (dx, dy, ch);
         if (ch == '\n' || ch == ' ')
