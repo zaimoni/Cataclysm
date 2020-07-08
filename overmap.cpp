@@ -1195,7 +1195,7 @@ int overmap::dist_from_city(point p) const
  return distance;
 }
 
-void overmap::draw(WINDOW *w, game *g, point& curs, point& orig, int ch, bool blink) const
+void overmap::draw(WINDOW *w, game *g, const point& curs, const point& orig, int ch, bool blink) const
 {
  constexpr const bool legend = true;
  constexpr const int om_w = 51;	// overmap width
