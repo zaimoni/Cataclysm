@@ -2015,6 +2015,7 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
 	 if (monster* const m_at = g->mon(x,y)) m_at->add_effect(ME_STUNNED, rng(5, 15));
     }
    }
+   break;
 
   case AEA_ENTRANCE:
    for (int x = p->pos.x - 8; x <= p->pos.x + 8; x++) {
