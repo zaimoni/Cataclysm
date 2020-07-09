@@ -4948,10 +4948,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
   if (t_above == ot_slimepit_down) {
    switch (rng(1, 4)) {
-    case 1: ter(rng(0, 2), rng(0, 2)) = t_slope_up;
-    case 2: ter(rng(0, 2), SEEY * 2 - rng(1, 3)) = t_slope_up;
-    case 3: ter(SEEX * 2 - rng(1, 3), rng(0, 2)) = t_slope_up;
-    case 4: ter(SEEX * 2 - rng(1, 3), SEEY * 2 - rng(1, 3)) = t_slope_up;
+    case 1: ter(rng(0, 2), rng(0, 2)) = t_slope_up; break;
+    case 2: ter(rng(0, 2), SEEY * 2 - rng(1, 3)) = t_slope_up; break;
+    case 3: ter(SEEX * 2 - rng(1, 3), rng(0, 2)) = t_slope_up; break;
+    case 4: ter(SEEX * 2 - rng(1, 3), SEEY * 2 - rng(1, 3)) = t_slope_up; break;
    }
   }
 
