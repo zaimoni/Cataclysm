@@ -132,7 +132,7 @@ bool player::create(game *g, character_type type, std::string tempname)
     }
    } break;
    case PLTYPE_TEMPLATE: {
-    std::stringstream filename;
+    std::ostringstream filename;
     filename << "data/" << tempname << ".template";
 	std::ifstream fin(filename.str().c_str());
     if (!fin.is_open()) {
@@ -744,7 +744,7 @@ void save_template(const player& u)
 {
 	std::string name = string_input_popup("Name of template:");
 	if (0 >= name.length()) return;
-	std::stringstream playerfile;
+	std::ostringstream playerfile;
 	playerfile << "data/" << name << ".template";
 	std::ofstream fout(playerfile.str().c_str());
 	if (fout.is_open()) fout << toJSON(u);

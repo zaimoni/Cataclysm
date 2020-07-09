@@ -1224,7 +1224,7 @@ std::vector<special_attack> player::mutation_attacks(const monster *z, const pla
  const std::string your = (is_u ? "your" : (male ? "his" : "her"));
  const std::string target = (z ? "the " + z->name() : p->name);
 
- std::stringstream text;
+ std::ostringstream text;
 
  if (has_trait(PF_FANGS) && !wearing_something_on(bp_mouth) &&
      one_in(20 - dex_cur - sklevel[sk_unarmed])) {
@@ -1337,7 +1337,7 @@ std::string melee_verb(technique_id tech, std::string your, player &p,
  if (tech != TEC_NULL && p.weapon.is_style() && p.weapon.style_data(tech).name != "")
   return p.weapon.style_data(tech).name + s;
 
- std::stringstream ret;
+ std::ostringstream ret;
 
  switch (tech) {
 

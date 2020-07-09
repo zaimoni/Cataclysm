@@ -756,7 +756,7 @@ void game::craft()
 	  if (charges <= 0 ? crafting_inv.has_amount(type, 1) : crafting_inv.has_charges(type, charges))
        toolcol = c_green;
 
-      std::stringstream toolinfo;
+      std::ostringstream toolinfo;
       toolinfo << item::types[type]->name + " ";
       if (charges > 0)
        toolinfo << "(" << charges << " charges) ";
@@ -798,7 +798,7 @@ void game::craft()
        compcol = c_green;
      } else if (crafting_inv.has_amount(type, abs(count)))
       compcol = c_green;
-     std::stringstream dump;
+     std::ostringstream dump;
      dump << abs(count) << "x " << i_type->name << " ";
      std::string compname = dump.str();
      if (xpos + compname.length() >= SCREEN_WIDTH) {

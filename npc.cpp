@@ -1694,7 +1694,7 @@ void npc::print_info(WINDOW* w)
  mvwprintz(w, 7, 1, c_red, "Wielding %s%s", (weapon.type->id == 0 ? "" : "a "),
                                      weapon.tname().c_str());
  std::string wearing;
- std::stringstream wstr;
+ std::ostringstream wstr;
  wstr << "Wearing: ";
  for (int i = 0; i < worn.size(); i++) {
   if (i > 0)
@@ -1718,7 +1718,7 @@ void npc::print_info(WINDOW* w)
 
 std::string npc::short_description() const
 {
- std::stringstream ret;
+ std::ostringstream ret;
  ret << "Wielding " << weapon.tname() << ";   " << "Wearing: ";
  for (int i = 0; i < worn.size(); i++) {
   if (i > 0)
@@ -1731,7 +1731,7 @@ std::string npc::short_description() const
 
 std::string npc_opinion::text() const
 {
- std::stringstream ret;
+ std::ostringstream ret;
  if (trust <= -10)
   ret << "Completely untrusting";
  else if (trust <= -6)

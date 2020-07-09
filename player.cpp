@@ -229,7 +229,7 @@ std::string addiction_text(const addiction& cur)
     if (!s_text) return std::string();  // invalid
 
     const auto delta = addict_stat_effects(cur);
-    std::stringstream dump;
+    std::ostringstream dump;
     bool non_empty = false;
 
     if (delta.Str) {
@@ -1147,7 +1147,7 @@ const char* disease::name() const
 
 std::string disease::invariant_desc() const
 {
-    std::stringstream stream;
+    std::ostringstream stream;
 
     switch (type) {
     case DI_NULL: return "None";
@@ -1250,7 +1250,7 @@ std::string describe(const disease& dis, const player& p)
     const auto stat_delta = dis_stat_effects(p, dis);
 
     bool live_str = false;
-    std::stringstream stat_desc;
+    std::ostringstream stat_desc;
     if (const auto speed_delta = dis.speed_boost()) {
         stat_desc << "Speed " << speed_delta << "%";
         live_str = true;
@@ -1664,7 +1664,7 @@ void player::normalize()
 
 void player::pick_name()
 {
- std::stringstream ss;
+ std::ostringstream ss;
  ss << random_first_name(male) << " " << random_last_name();
  name = ss.str();
 }
@@ -1947,7 +1947,7 @@ void player::disp_info(game *g)
   bool pos = (cur_morale > 0);
   effect_name.push_back(pos ? "Elated" : "Depressed");
   const char* const sgn_text = (pos ? " +" : " ");
-  std::stringstream morale_text;
+  std::ostringstream morale_text;
   if (200 <= abs_morale) morale_text << "Dexterity" << sgn_text << cur_morale / 200 << "   ";
   if (180 <= abs_morale) morale_text << "Strength" << sgn_text << cur_morale / 180 << "   ";
   if (125 <= abs_morale) morale_text << "Perception" << sgn_text << cur_morale / 125 << "   ";
@@ -1957,7 +1957,7 @@ void player::disp_info(game *g)
  if (pain > pkill) {
   const int pain_delta = pain - pkill;
   effect_name.push_back("Pain");
-  std::stringstream pain_text;
+  std::ostringstream pain_text;
   if (const auto malus = pain_delta / 15; 1 <= malus) pain_text << "Strength -" << malus << "   Dexterity -" << malus << "   ";
   if (const auto malus = pain_delta / 20; 1 <= malus) pain_text << "Perception -" << malus << "   ";
   pain_text << "Intelligence -" << 1 + pain_delta / 25;
@@ -1977,7 +1977,7 @@ void player::disp_info(game *g)
    effect_name.push_back("Stimulant Overdose");
   else
    effect_name.push_back("Stimulant");
-  std::stringstream stim_text;
+  std::ostringstream stim_text;
   stim_text << "Speed +" << stim << "   Intelligence " <<
                (intbonus > 0 ? "+ " : "") << intbonus << "   Perception " <<
                (perbonus > 0 ? "+ " : "") << perbonus << "   Dexterity "  <<
@@ -1985,7 +1985,7 @@ void player::disp_info(game *g)
   effect_text.push_back(stim_text.str());
  } else if (stim < 0) {
   effect_name.push_back("Depressants");
-  std::stringstream stim_text;
+  std::ostringstream stim_text;
   int dexpen = int(stim / 10);
   int perpen = int(stim /  7);
   int intpen = int(stim /  6);
@@ -5595,13 +5595,13 @@ std::vector<int> player::have_ammo(ammotype at) const
 std::string player::weapname(bool charges) const
 {
  if (!(weapon.is_tool() && dynamic_cast<const it_tool*>(weapon.type)->max_charges <= 0) && weapon.charges >= 0 && charges) {
-  std::stringstream dump;
+  std::ostringstream dump;
   dump << weapon.tname().c_str() << " (" << weapon.charges << ")";
   return dump.str();
  } else if (weapon.is_null()) return "fists";
 
  else if (weapon.is_style()) { // Styles get bonus-bars!
-  std::stringstream dump;
+  std::ostringstream dump;
   dump << weapon.tname();
 
   switch (weapon.type->id) {

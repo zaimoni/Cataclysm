@@ -43,13 +43,13 @@ itype* game::new_artifact()
     art->melee_cut += rng(weapon->bash_min, weapon->bash_max);
     art->m_to_hit += rng(weapon->to_hit_min, weapon->to_hit_max);
     art->item_flags |= weapon->flags;
-    std::stringstream newname;
+    std::ostringstream newname;
     newname << weapon->adjective << " " << info->name;
     art->name = artifact_name(newname.str());
    }
   }
 
-  std::stringstream description;
+  std::ostringstream description;
   description << "This is the " << art->name << ".\n\
 It is the only one of its kind.\n\
 It may have unknown powers; use 'a' to activate them.";
@@ -168,7 +168,7 @@ It may have unknown powers; use 'a' to activate them.";
   art->env_resist = info->env_resist;
   art->warmth = info->warmth;
   art->storage = info->storage; 
-  std::stringstream description;
+  std::ostringstream description;
   description << "This is the " << art->name << ".\n" <<
                  (info->plural ? "They are the only ones of their kind." :
                                  "It is the only one of its kind.");
@@ -275,7 +275,7 @@ itype* game::new_natural_artifact(artifact_natural_property prop)
  art->item_flags = 0;
 
  art->name = property_data->name + " " + shape_data->name;
- std::stringstream desc;
+ std::ostringstream desc;
  desc << "This " << shape_data->desc << " " << property_data->desc << ".";
  art->description = desc.str();
 // Add line breaks to the description as necessary
@@ -397,7 +397,7 @@ std::vector<art_effect_active> fill_bad_active()
 
 std::string artifact_name(std::string type)
 {
- std::stringstream ret;
+ std::ostringstream ret;
  ret << type << " of ";
  std::string noun = artifact_noun[rng(0, NUM_ART_NOUNS - 1)];
  if (noun[0] == '+') {
@@ -654,7 +654,7 @@ void game::add_artifact_messages(const std::vector<art_effect_passive>& effects)
   }
  }
 
- std::stringstream stat_info;
+ std::ostringstream stat_info;
  if (net_str != 0)
   stat_info << "Str " << (net_str > 0 ? "+" : "") << net_str << "! ";
  if (net_dex != 0)

@@ -403,7 +403,7 @@ JSON::JSON(std::istream& src)
 		return;
 	default:
 		if (!src.eof() || !strchr(" \r\n\t\v\f", last_read)) {
-			std::stringstream msg;
+			std::ostringstream msg;
 			msg << JSON_read_failed << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
@@ -433,7 +433,7 @@ JSON::JSON(std::istream& src, unsigned long& line, char& last_read, bool must_be
 		return;
 	default:
 		if (!src.eof() || !strchr(" \r\n\t\v\f", last_read)) {
-			std::stringstream msg;
+			std::ostringstream msg;
 			msg << JSON_read_failed << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
@@ -481,7 +481,7 @@ void JSON::finish_reading_object(std::istream& src, unsigned long& line)
 {
 	if (!consume_whitespace(src, line))
 		{
-		std::stringstream msg;
+		std::ostringstream msg;
 		msg << JSON_object_read_failed << line << '\n';
 		throw std::runtime_error(msg.str());
 		}
@@ -496,28 +496,28 @@ void JSON::finish_reading_object(std::istream& src, unsigned long& line)
 	do {
 		JSON _key(src, line, _last, true);
 		if (none == _key.mode()) {	// no valid data
-			std::stringstream msg;
+			std::ostringstream msg;
 			msg << JSON_object_read_failed << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
 		if (!consume_whitespace(src, line)) {	// oops, at end prematurely
-			std::stringstream msg;
+			std::ostringstream msg;
 			msg << JSON_object_read_truncated << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
 		if (!next_is(src, ':')) {
-			std::stringstream msg;
+			std::ostringstream msg;
 			msg << "JSON read of object failed, expected : got '" << (char)src.peek() << "' code point " << src.peek() << ", line: " << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
 		if (!consume_whitespace(src, line)) {	// oops, at end prematurely
-			std::stringstream msg;
+			std::ostringstream msg;
 			msg << JSON_object_read_truncated << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
 		JSON _value(src, line, _last);
 		if (none == _value.mode()) {	// no valid data
-			std::stringstream msg;
+			std::ostringstream msg;
 			msg << JSON_object_read_failed << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
@@ -533,7 +533,7 @@ void JSON::finish_reading_object(std::istream& src, unsigned long& line)
 			return;
 		}
 		if (!next_is(src, ',')) {
-			std::stringstream msg;
+			std::ostringstream msg;
 			msg << "JSON read of object failed, expected , or }, line: " << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
@@ -546,7 +546,7 @@ void JSON::finish_reading_array(std::istream& src, unsigned long& line)
 {
 	if (!consume_whitespace(src, line))
 	{
-		std::stringstream msg;
+		std::ostringstream msg;
 		msg << JSON_array_read_failed << line << '\n';
 		throw std::runtime_error(msg.str());
 	}
@@ -562,7 +562,7 @@ void JSON::finish_reading_array(std::istream& src, unsigned long& line)
 		{
 		JSON _next(src, line, _last);
 		if (none == _next.mode()) {	// no valid data
-			std::stringstream msg;
+			std::ostringstream msg;
 			msg << JSON_array_read_failed << line << '\n';
 			throw std::runtime_error(msg.str());
 		}
@@ -579,7 +579,7 @@ void JSON::finish_reading_array(std::istream& src, unsigned long& line)
 			return;
 		}
 		if (!next_is(src, ',')) {
-			std::stringstream msg;
+			std::ostringstream msg;
 			msg << "JSON read of array failed, expected , or ], line: " << line << '\n';
 			throw std::runtime_error(msg.str());
 		}

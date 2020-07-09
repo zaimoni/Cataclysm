@@ -245,7 +245,7 @@ static std::string dynamic_line(talk_topic topic, game *g, npc *p)
 
  case TALK_HOW_MUCH_FURTHER: {
   int dist = rl_dist(g->om_location(), p->goal);
-  std::stringstream response;
+  std::ostringstream response;
   dist *= 100;
   if (dist >= 1300) {
    int miles = dist / 52; // *100, e.g. quarter mile is "25"
@@ -262,7 +262,7 @@ static std::string dynamic_line(talk_topic topic, game *g, npc *p)
  case TALK_FRIEND: return "What is it?";
 
  case TALK_COMBAT_COMMANDS: {
-  std::stringstream status;
+  std::ostringstream status;
   status << "*is "; // Prepending * makes this an action, not a phrase
   switch (p->combat_rules.engagement) {
   case ENGAGE_NONE:  status << "not engaging enemies.";         break;
@@ -320,7 +320,7 @@ static std::string dynamic_line(talk_topic topic, game *g, npc *p)
      case NC_TRADER: return "I'm collecting gear and selling it.";
      case NC_NINJA:
       if (!p->styles.empty()) {
-       std::stringstream ret;
+       std::ostringstream ret;
        ret << "I am a wandering master of " <<
 		   item::types[p->styles[0]]->name.c_str() << ".";
        return ret.str();
@@ -337,7 +337,7 @@ static std::string dynamic_line(talk_topic topic, game *g, npc *p)
   break;
 
  case TALK_WEAPON_DROPPED: {
-  std::stringstream ret;
+  std::ostringstream ret;
   ret << "*drops " << (p->male ? "his" : "her") << " weapon.";
   return ret.str();
  }
@@ -350,7 +350,7 @@ static std::string dynamic_line(talk_topic topic, game *g, npc *p)
   if (ability <= 10)
    return "&You can't make anything out.";
 
-  std::stringstream info;
+  std::ostringstream info;
   info << "&";
   int str_range = int(100 / ability);
   int str_min = int(p->str_max / str_range) * str_range;
@@ -376,13 +376,13 @@ static std::string dynamic_line(talk_topic topic, game *g, npc *p)
  } break;
 
  case TALK_LOOK_AT: {
-  std::stringstream look;
+  std::ostringstream look;
   look << "&" << p->short_description();
   return look.str();
  } break;
 
  case TALK_OPINION: {
-  std::stringstream opinion;
+  std::ostringstream opinion;
   opinion << "&" << p->op_of_u.text();
   return opinion.str();
  } break;
@@ -683,7 +683,7 @@ static std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *
 
  case TALK_TRAIN: {
   if (g->u.backlog.type == ACT_TRAIN) {
-   std::stringstream resume;
+   std::ostringstream resume;
    resume << "Yes, let's resume training " <<
              (g->u.backlog.index > 0 ?
               skill_name(skill(g->u.backlog.index)) :
@@ -703,7 +703,7 @@ static std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *
   for (int i = shift; i < trainable.size() && printed < 9; i++) {
    //shift--;
    printed++;
-   std::stringstream skilltext;
+   std::ostringstream skilltext;
    skill trained = trainable[i];
 
    skilltext << skill_name(trained) << ": " << g->u.sklevel[trained] <<
@@ -1461,7 +1461,7 @@ talk_topic dialogue::opt(talk_topic topic, game *g)
 #if NO_OP
 // Put quotes around challenge (unless it's an action)
  if (challenge[0] != '*' && challenge[0] != '&') {
-  std::stringstream tmp;
+  std::ostringstream tmp;
   tmp << "\"" << challenge << "\"";
  }
 #endif
@@ -1492,7 +1492,7 @@ talk_topic dialogue::opt(talk_topic topic, game *g)
  std::vector<std::string> options;
  std::vector<nc_color>    colors;
  for (int i = 0; i < responses.size(); i++) {
-  std::stringstream text;
+  std::ostringstream text;
   text << char('a' + i) << ": ";
   if (responses[i].trial != TALK_TRIAL_NONE)
    text << "[" << talk_trial_text[responses[i].trial] << " " << trial_chance(responses[i], alpha, beta) << "%%] ";	// heading to vsprint_s

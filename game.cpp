@@ -970,7 +970,7 @@ void game::update_weather()
  const auto& w_data = weather_datum::data[weather];
  if (weather != old_weather && w_data.dangerous &&
      lev.z >= 0 && m.is_outside(u.pos)) {
-  std::stringstream weather_text;
+  std::ostringstream weather_text;
   weather_text << "The weather changed to " << w_data.name << "!";
   u.cancel_activity_query(weather_text.str().c_str());
  }
@@ -1430,7 +1430,7 @@ bool game::is_game_over()
    for(const auto& it : tmp) m.add_item(u.pos, it);
    //m.save(&cur_om, turn, levx, levy);
    //MAPBUFFER.save();
-   std::stringstream playerfile;
+   std::ostringstream playerfile;
    playerfile << "save/" << u.name << ".sav";
    unlink(playerfile.str().c_str());
    uquit = QUIT_DIED;
@@ -1443,7 +1443,7 @@ bool game::is_game_over()
 void game::death_screen()
 {
  gamemode->game_over(this);
- std::stringstream playerfile;
+ std::ostringstream playerfile;
  playerfile << "save/" << u.name << ".sav";
  unlink(playerfile.str().c_str());
  int num_kills = 0;
@@ -1552,7 +1552,7 @@ void game::load(std::string name)
  load_master();	// load this first so we can validate later stages
 
  std::ifstream fin;
- std::stringstream playerfile;
+ std::ostringstream playerfile;
  playerfile << "save/" << name << ".sav";
  fin.open(playerfile.str().c_str());
 // First, read in basic game state information.
@@ -1661,7 +1661,7 @@ void game::load(std::string name)
 void game::save()
 {
  overmap::saveall();
- std::stringstream playerfile_stem;
+ std::ostringstream playerfile_stem;
  playerfile_stem << "save/" << u.name;
  JSON saved(JSON::object);
  JSON tmp(JSON::object);
@@ -1888,7 +1888,7 @@ z.size(), events.size());
   case 13: {
    point p = look_around();
    if (npc* const _npc = nPC(p)) {
-    std::stringstream data;
+    std::ostringstream data;
     data << _npc->name << " " << (_npc->male ? "Male" : "Female") << std::endl;
     data << npc_class_name(_npc->myclass) << "; " <<
             npc_attitude_name(_npc->attitude) << std::endl;
@@ -4344,7 +4344,7 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
 
  } else { // Not filling vehicle
 
-  std::stringstream text;
+  std::ostringstream text;
   text << "Container for " << liquid.tname();
   char ch = inv(text.str().c_str());
   if (!u.has_item(ch))

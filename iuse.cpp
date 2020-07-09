@@ -962,7 +962,7 @@ void iuse::radio_on(game *g, player *p, item *it, bool t)
    }
    segments.push_back(message);
    int index = messages.turn % (segments.size());
-   std::stringstream messtream;
+   std::ostringstream messtream;
    messtream << "radio: " << segments[index];
    message = messtream.str();
   }
@@ -1107,7 +1107,7 @@ void iuse::set_trap(game *g, player *p, item *it, bool t)
 
  trap_id type = tr_null;
  bool buried = false;
- std::stringstream message;
+ std::ostringstream message;
  int practice;
 
  switch (it->type->id) {
@@ -1844,7 +1844,7 @@ void iuse::vacutainer(game *g, player *p, item *it, bool t)	// XXX disabled for 
  */
 void iuse::mcg_note(game *g, player *p, item *it, bool t)
 {
- std::stringstream message;
+ std::ostringstream message;
  message << "Dear " << it->name << ":\n";
 /*
  faction* fac = NULL;

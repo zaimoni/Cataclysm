@@ -229,7 +229,7 @@ void mission_start::place_npc_software(game *g, mission *miss)
 	} break;
 	}
 
-	std::stringstream compname;
+	std::ostringstream compname;
 	compname << dev->name << "'s Terminal";
 	compmap.ter(comppoint) = t_console;
 	computer* const tmpcomp = compmap.add_computer(comppoint.x, comppoint.y, compname.str(), 0);

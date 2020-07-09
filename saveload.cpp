@@ -1442,14 +1442,14 @@ std::ostream& operator<<(std::ostream& os, const it_artifact_tool& src)
 // staging these here
 std::string it_artifact_tool::save_data()
 {
-	std::stringstream data;
+	std::ostringstream data;
 	data << "T " << *this;
 	return data.str();
 }
 
 std::string it_artifact_armor::save_data()
 {
-	std::stringstream data;
+	std::ostringstream data;
 	data << "A " << *this;
 	return data.str();
 }

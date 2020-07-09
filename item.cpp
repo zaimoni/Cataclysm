@@ -187,7 +187,7 @@ void item::put_in(item payload)
  
 std::string item::info(bool showtext)
 {
- std::stringstream dump;
+ std::ostringstream dump;
  dump << " Volume: " << volume() << "    Weight: " << weight() << "\n" <<
          " Bash: " << int(type->melee_dam) <<
          (has_flag(IF_SPEAR) ? "  Pierce: " : "  Cut: ") <<
@@ -380,7 +380,7 @@ nc_color item::color_in_inventory(const player& u) const	// retain unused paramw
 
 std::string item::tname() const
 {
- std::stringstream ret;
+ std::ostringstream ret;
 
  if (damage != 0) {
   std::string damtext;
