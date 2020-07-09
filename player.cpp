@@ -213,7 +213,7 @@ const char* addiction_static_text(const addiction& cur)
     switch (cur.type) {
     case ADD_CIG: return "Occasional cravings";
     case ADD_CAFFEINE: return "Slight sluggishness; Occasional cravings";
-    case ADD_ALCOHOL: return "Occasional Cravings;\n\Risk of delirium tremens";
+    case ADD_ALCOHOL: return "Occasional Cravings;\nRisk of delirium tremens";
     case ADD_SLEEP: return "You may find it difficult to sleep without medication.";
     case ADD_PKILLER: return "\nDepression and physical pain to some degree.  Frequent cravings.  Vomiting.";
     case ADD_SPEED: return "\nMovement rate reduction.  Depression.  Weak immune system.  Frequent cravings.";
