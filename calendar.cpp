@@ -279,7 +279,7 @@ int calendar::sunlight()
 
 std::string calendar::print_time()
 {
- std::stringstream ret;
+ std::ostringstream ret;
  const bool military_time = option_table::get()[OPT_24_HOUR];
 
  if (military_time) {
@@ -301,7 +301,7 @@ std::string calendar::print_time()
 std::string calendar::textify_period()
 {
  standardize();
- std::stringstream ret;
+ std::ostringstream ret;
  int am;
  std::string tx;
 // Describe the biggest time period, as "<am> <tx>s", am = amount, tx = name 

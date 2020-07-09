@@ -1,10 +1,7 @@
-#ifndef _COLOR_H_
-#define _COLOR_H
+#ifndef COLOR_H
+#define COLOR_H
 
 #include "wrap_curses.h"
-
-#ifndef _COLOR_LIST_
-#define _COLOR_LIST_
 
 void init_colors();
 
@@ -90,7 +87,5 @@ nc_color int_to_color(int key);
 // void setattr(nc_color &col, col_attribute attr);	// dead function but looks useful
 
 bool to_css_colors(nc_color src, const char*& fg, const char*& bg);
-
-#endif
 
 #endif

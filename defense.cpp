@@ -1255,7 +1255,7 @@ void defense_game::spawn_wave_monster(game *g, const mtype *type)
 
 std::string defense_game::special_wave_message(std::string name)
 {
- std::stringstream ret;
+ std::ostringstream ret;
  ret << "Wave " << current_wave << ": ";
  name[0] += 'A' - 'a'; // Capitalize
 

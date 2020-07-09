@@ -2522,7 +2522,7 @@ to your designated evacuation point."));
 
 void overmap::save(const std::string& name, int x, int y, int z) const
 {
- std::stringstream plrfilename, terfilename;
+ std::ostringstream plrfilename, terfilename;
  plrfilename << "save/" << name << ".seen." << x << "." << y << "." << z;
  terfilename << "save/o." << x << "." << y << "." << z;
 
@@ -2564,14 +2564,14 @@ void overmap::saveall()
 
 std::string overmap::terrain_filename(const tripoint& pos)
 {
-    std::stringstream terfilename;
+    std::ostringstream terfilename;
     terfilename << "save/o." << pos.x << "." << pos.y << "." << pos.z;
     return terfilename.str();
 }
 
 void overmap::open(game *g)	// only called from constructor
 {
- std::stringstream plrfilename;
+ std::ostringstream plrfilename;
  char datatype;
 
  plrfilename << "save/" << g->u.name << ".seen." << pos.x << "." << pos.y << "." << pos.z;

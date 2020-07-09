@@ -55,5 +55,17 @@ clean:
 	rm -f $(TARGET1) $(TARGET2) $(ODIR1)/*.[od] $(ODIR2)/*.[od]
 
 
+# Zaimoni.STL header & library builds
+.PHONY: libs clean_libs
+libs:
+	make -C Zaimoni.STL/Pure.C/ host_install
+	make -C Zaimoni.STL/Pure.C/stdio.log/ host_install
+
+clean_libs:
+	rm -f lib/host/*.a
+	make -C Zaimoni.STL/Pure.C/ clean
+	make -C Zaimoni.STL/Pure.C/stdio.log/ clean
+
+
 -include $(OBJS1:.o=.d)
 -include $(OBJS2:.o=.d)

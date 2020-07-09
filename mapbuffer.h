@@ -1,3 +1,6 @@
+#ifndef MAPBUFFER_H
+#define MAPBUFFER_H
+
 #include <map>
 
 #include "enums.h"
@@ -28,3 +31,5 @@ class mapbuffer // \todo natural singleton, but likely needs pre-requisites load
 };
   
 extern mapbuffer MAPBUFFER;
+
+#endif

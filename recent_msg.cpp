@@ -77,7 +77,7 @@ void recent_msg::buffer()
    if (line <= 23) { // Print the actual message... we may have to split it
     std::string mes = mtmp->message;
     if (mtmp->count > 1) {
-     std::stringstream mesSS;
+     std::ostringstream mesSS;
      mesSS << mes << " x " << mtmp->count;
      mes = mesSS.str();
     }
@@ -123,7 +123,7 @@ void recent_msg::write(WINDOW* w_messages)
  for (int i = messages.size() - 1; i >= 0 && line < 9; i--) {
   std::string mes = messages[i].message;
   if (messages[i].count > 1) {
-   std::stringstream mesSS;
+   std::ostringstream mesSS;
    mesSS << mes << " x " << messages[i].count;
    mes = mesSS.str();
   }
