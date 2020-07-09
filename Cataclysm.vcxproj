@@ -220,6 +220,7 @@
     <ClInclude Include="setvector.h" />
     <ClInclude Include="skill.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="stl_limits.h" />
     <ClInclude Include="stl_typetraits.h" />
     <ClInclude Include="stl_typetraits_late.h" />
     <ClInclude Include="submap.h" />

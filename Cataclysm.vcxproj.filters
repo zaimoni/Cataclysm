@@ -270,6 +270,9 @@
     <ClInclude Include="submap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="stl_limits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
