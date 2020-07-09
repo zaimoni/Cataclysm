@@ -7,49 +7,71 @@
 #PROFILE = -pg
 OTHERS = -O3 -std=gnu++17 -MD
 
-ODIR = objwin
-DDIR = .deps
-NODEPS:=clean
+ODIR1 = obj_cataclysm
+ODIR2 = obj_socrates_daimon
 
-TARGET = cataclysm.exe
+TARGET1 = Cataclysm.exe
+TARGET2 = Socrates-Daimon.exe
 
-CXX = -g++
-
-LINKER = ld
-LINKERFLAGS = -Wl,-stack,12000000,-subsystem,windows
+OS  = $(shell uname -o)
+CXX = g++
 
 CFLAGS = $(WARNINGS) $(DEBUG) $(PROFILE) $(OTHERS)
 
-# TDM-5.1.0 does not need -pthread (and does not detect nanosleep in time.h)
-# MingW64-8.1.0 does.
-LDFLAGS = -static -lgdi32 -pthread -Llib/host -lz_format_util -lz_stdio_log -lz_stdio_c
-
+# LINKERFLAGS = -Wl,-stack,12000000,-subsystem,windows # historical
+## *NIX-like platform setup
 #ifeq ($(OS), Msys)
-#LDFLAGS = -static -lpdcurses
-#else 
+#LDFLAGS = -static -lncurses -lgdi32
+#else
 #LDFLAGS = -lncurses
 #endif
 
-SOURCES = $(subst stdafx.cpp,,$(wildcard *.cpp))
-_OBJS = $(SOURCES:.cpp=.o)
-OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
+# CMD shell Windows/MingW64 8.1.0
+LDFLAGS = -static -lgdi32
 
-all: $(TARGET)
-	@
+# TDM-5.1.0 does not need -pthread (and does not detect nanosleep in time.h)
+# MingW64-8.1.0 does.
+LDFLAGS += -pthread -Llib/host -lz_format_util -lz_stdio_log -lz_stdio_c
 
-$(TARGET): $(ODIR) $(DDIR) $(OBJS)
-	$(CXX) $(LINKERFLAGS) -o $(TARGET) $(CFLAGS) $(OBJS) $(LDFLAGS) 
+SOURCES1 = $(filter-out stdafx.cpp socrates-daimon.cpp,$(wildcard *.cpp))
+OBJS1 = $(addprefix $(ODIR1)/,$(SOURCES1:.cpp=.o))
 
-$(ODIR):
-	mkdir $(ODIR)
+SOURCES2 = calendar.cpp catacurse.cpp color.cpp html.cpp item.cpp itypedef.cpp\
+  json.cpp keypress.cpp mapdata.cpp mtypedef.cpp options.cpp output.cpp\
+  recent_msg.cpp rng.cpp saveload.cpp skill.cpp socrates-daimon.cpp trapdef.cpp
+OBJS2 = $(addprefix $(ODIR2)/,$(SOURCES2:.cpp=.o))
 
-$(DDIR):
-	@mkdir $(DDIR)
+.PHONY: all clean
+all: $(TARGET1) $(TARGET2)
 
-$(ODIR)/%.o: %.cpp
-	$(CXX) $(CFLAGS) -MMD -c $< -o $@
+$(TARGET1): $(ODIR1) $(OBJS1)
+	$(CXX) -o $@ $(CFLAGS) -DCATACLYSM $(OBJS1) $(LDFLAGS)
+
+$(TARGET2): $(ODIR2) $(OBJS2)
+	$(CXX) -o $@ $(CFLAGS) -DSOCRATES_DAIMON $(OBJS2) $(LDFLAGS)
+
+$(ODIR1) $(ODIR2):
+	mkdir $@
+
+$(ODIR1)/%.o: %.cpp
+	$(CXX) $(CFLAGS) -DCATACLYSM -c $< -o $@
+
+$(ODIR2)/%.o: %.cpp
+	$(CXX) $(CFLAGS) -DSOCRATES_DAIMON -c $< -o $@
 
 clean:
-	rm -f $(TARGET) $(ODIR)/*.o
+	rm -f $(TARGET1) $(TARGET2) $(ODIR1)/*.[od] $(ODIR2)/*.[od]
 
-include $(wildcard $(ODIR)/*.d)
+# Zaimoni.STL header & library builds
+.PHONY: libs clean_libs
+libs:
+	make -C Zaimoni.STL/Pure.C/ host_install
+	make -C Zaimoni.STL/Pure.C/stdio.log/ host_install
+
+clean_libs:
+	rm -f lib/host/*.a
+	make -C Zaimoni.STL/Pure.C/ clean
+	make -C Zaimoni.STL/Pure.C/stdio.log/ clean
+
+-include $(OBJS1:.o=.d)
+-include $(OBJS2:.o=.d)
