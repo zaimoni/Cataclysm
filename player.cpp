@@ -18,47 +18,7 @@
 
 using namespace cataclysm;
 
-struct stat_delta {
-    int Str;
-    int Dex;
-    int Per;
-    int Int;
-};
-
 #define MIN_ADDICTION_LEVEL 3 // Minimum intensity before effects are seen
-
-stat_delta addict_stat_effects(const addiction& add)
-{
-    stat_delta ret = { 0,0,0,0 };
-
-    // historically:
-    // * ADD_CIG claimed but did not impart -1 INT
-    // * ADD_CAFFIENE claimed but did not impart -1 STR
-    switch (add.type) {
-    case ADD_ALCOHOL:
-        ret.Per = -1;
-        ret.Int = -1;
-        break;
-
-    case ADD_PKILLER:
-        ret.Str -= 1 + int(add.intensity / 7);
-        ret.Per = -1;
-        ret.Dex = -1;
-        break;
-
-    case ADD_SPEED:
-        ret.Str = -1;
-        ret.Int = -1;
-        break;
-
-    case ADD_COKE:
-        ret.Per = -1;
-        ret.Int = -1;
-        break;
-    }
-
-    return ret;
-}
 
 void addict_effect(player& u, addiction& add)   // \todo adapt for NPCs
 {
@@ -106,12 +66,14 @@ void addict_effect(player& u, addiction& add)   // \todo adapt for NPCs
             messages.add("You could use a drink.");
             u.cancel_activity_query("You have an alcohol craving.");
             u.add_morale(MORALE_CRAVING_ALCOHOL, -35, -120);
-        } else if (rng(8, 300) < in) {
+        }
+        else if (rng(8, 300) < in) {
             messages.add("Your hands start shaking... you need a drink bad!");
             u.cancel_activity_query("You have an alcohol craving.");
             u.add_morale(MORALE_CRAVING_ALCOHOL, -35, -120);
             u.add_disease(DI_SHAKES, MINUTES(5));
-        } else if (!u.has_disease(DI_HALLU) && rng(10, 1600) < in)
+        }
+        else if (!u.has_disease(DI_HALLU) && rng(10, 1600) < in)
             u.add_disease(DI_HALLU, HOURS(6));
         break;
 
@@ -128,23 +90,25 @@ void addict_effect(player& u, addiction& add)   // \todo adapt for NPCs
             return; // bypass stat processing
         }
 
-            if (u.pain < in * 3) u.pain++;
-            if (in >= 40 || one_in((1200 - 30 * in))) u.health--;
-            // XXX \todo would like to not burn RNG gratuitously
-            if (one_in(20) && dice(2, 20) < in) {
-                messages.add("Your hands start shaking... you need some painkillers.");
-                u.cancel_activity_query("You have an opiate craving.");
-                u.add_morale(MORALE_CRAVING_OPIATE, -40, -200);
-                u.add_disease(DI_SHAKES, MINUTES(2) + in * TURNS(5));
-            } else if (one_in(20) && dice(2, 30) < in) {
-                messages.add("You feel anxious.  You need your painkillers!");
-                u.add_morale(MORALE_CRAVING_OPIATE, -30, -200);
-                u.cancel_activity_query("You have a craving.");
-            } else if (one_in(50) && dice(3, 50) < in) {
-                messages.add("You throw up heavily!");
-                u.cancel_activity_query("Throwing up.");
-                u.vomit();
-            }
+        if (u.pain < in * 3) u.pain++;
+        if (in >= 40 || one_in((1200 - 30 * in))) u.health--;
+        // XXX \todo would like to not burn RNG gratuitously
+        if (one_in(20) && dice(2, 20) < in) {
+            messages.add("Your hands start shaking... you need some painkillers.");
+            u.cancel_activity_query("You have an opiate craving.");
+            u.add_morale(MORALE_CRAVING_OPIATE, -40, -200);
+            u.add_disease(DI_SHAKES, MINUTES(2) + in * TURNS(5));
+        }
+        else if (one_in(20) && dice(2, 30) < in) {
+            messages.add("You feel anxious.  You need your painkillers!");
+            u.add_morale(MORALE_CRAVING_OPIATE, -30, -200);
+            u.cancel_activity_query("You have a craving.");
+        }
+        else if (one_in(50) && dice(3, 50) < in) {
+            messages.add("You throw up heavily!");
+            u.cancel_activity_query("Throwing up.");
+            u.vomit();
+        }
         break;
 
     case ADD_SPEED: {
@@ -191,69 +155,6 @@ void addict_effect(player& u, addiction& add)   // \todo adapt for NPCs
     u.dex_cur += delta.Dex;
     u.int_cur += delta.Int;
     u.per_cur += delta.Per;
-}
-
-std::string addiction_name(const addiction& cur)
-{
-    switch (cur.type) {
-    case ADD_CIG:		return "Nicotine Withdrawal";
-    case ADD_CAFFEINE:	return "Caffeine Withdrawal";
-    case ADD_ALCOHOL:	return "Alcohol Withdrawal";
-    case ADD_SLEEP:	return "Sleeping Pill Dependance";
-    case ADD_PKILLER:	return "Opiate Withdrawal";
-    case ADD_SPEED:	return "Amphetamine Withdrawal";
-    case ADD_COKE:	return "Cocaine Withdrawal";
-    case ADD_THC:	return "Marijuana Withdrawal";
-    default:		return "Erroneous addiction";
-    }
-}
-
-const char* addiction_static_text(const addiction& cur)
-{
-    switch (cur.type) {
-    case ADD_CIG: return "Occasional cravings";
-    case ADD_CAFFEINE: return "Slight sluggishness; Occasional cravings";
-    case ADD_ALCOHOL: return "Occasional Cravings;\nRisk of delirium tremens";
-    case ADD_SLEEP: return "You may find it difficult to sleep without medication.";
-    case ADD_PKILLER: return "\nDepression and physical pain to some degree.  Frequent cravings.  Vomiting.";
-    case ADD_SPEED: return "\nMovement rate reduction.  Depression.  Weak immune system.  Frequent cravings.";
-    case ADD_COKE: return "Frequent cravings.";
-    case ADD_THC: return "Occasional cravings";
-    default: return 0;
-    }
-}
-
-std::string addiction_text(const addiction& cur)
-{
-    const auto s_text = addiction_static_text(cur);
-    if (!s_text) return std::string();  // invalid
-
-    const auto delta = addict_stat_effects(cur);
-    std::ostringstream dump;
-    bool non_empty = false;
-
-    if (delta.Str) {
-        dump << "Strength " << delta.Str;
-        non_empty = true;
-    }
-    if (delta.Dex) {
-        if (non_empty) dump << "; ";
-        dump << "Dexterity " << delta.Dex;
-        non_empty = true;
-    }
-    if (delta.Int) {
-        if (non_empty) dump << "; ";
-        dump << "Intelligence " << delta.Int;
-        non_empty = true;
-    }
-    if (delta.Per) {
-        if (non_empty) dump << "; ";
-        dump << "Perception " << delta.Per;
-        non_empty = true;
-    }
-    if (!non_empty) return s_text;
-    if ('\n' != s_text[0]) dump << "; ";
-    return dump.str() + s_text;
 }
 
 // Permanent disease capped at 3 days

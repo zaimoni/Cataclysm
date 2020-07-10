@@ -10,6 +10,13 @@
 DECLARE_JSON_ENUM_SUPPORT(dis_type)
 DECLARE_JSON_ENUM_SUPPORT(add_type)
 
+struct stat_delta {
+    int Str;
+    int Dex;
+    int Per;
+    int Int;
+};
+
 struct disease
 {
  dis_type type;
@@ -30,6 +37,10 @@ struct addiction
  addiction() : type(ADD_NULL),intensity(0),sated(600) {}
  addiction(add_type t, int i = 1) : type(t), intensity(i), sated(600) {}
 };
+
+stat_delta addict_stat_effects(const addiction& add);   // \todo -> member function
+std::string addiction_name(const addiction& cur);   // \todo -> member function
+std::string addiction_text(const addiction& cur);   // \todo -> member function
 
 DECLARE_JSON_ENUM_SUPPORT(activity_type)
 

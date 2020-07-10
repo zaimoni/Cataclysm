@@ -296,6 +296,7 @@
     <ClCompile Include="output.cpp" />
     <ClCompile Include="overmap.cpp" />
     <ClCompile Include="player.cpp" />
+    <ClCompile Include="pldata.cpp" />
     <ClCompile Include="posix_time.cpp" />
     <ClCompile Include="ranged.cpp" />
     <ClCompile Include="recent_msg.cpp" />
