@@ -582,26 +582,26 @@ int vehicle::noise(bool fueled, bool gas_only) const
         if (part_flag(p, vpf_muffler) && parts[p].hp > 0 && part_info(p).bonus < muffle)
             muffle = part_info(p).bonus;
 
-	for (int p = 0; p < parts.size(); p++) {
-		if (!part_flag(p, vpf_engine) || 0 >= parts[p].hp) continue;
-		const auto& p_info = part_info(p);
-		if (fuel_left(p_info.fuel_type, true) || !fueled) {
-			int nc = 10;
-			switch (p_info.fuel_type) {
-			case AT_GAS:    nc = 25; break;
-			case AT_PLASMA: nc = 10; break;
-			case AT_BATT:   nc = 3; break;
-			}
-			if (!gas_only || p_info.fuel_type == AT_GAS) {
-				int pwr = p_info.power * nc / 100;
-				if (muffle < 100 && (p_info.fuel_type == AT_GAS ||
-					p_info.fuel_type == AT_PLASMA))
-					pwr = pwr * muffle / 100;
-				pwrs += pwr;
-				cnt++;
-			}
-		}
-	}
+    for (int p = 0; p < parts.size(); p++) {
+        if (!part_flag(p, vpf_engine) || 0 >= parts[p].hp) continue;
+        const auto& p_info = part_info(p);
+        if (fuel_left(p_info.fuel_type, true) || !fueled) {
+            int nc = 10;
+            switch (p_info.fuel_type) {
+            case AT_GAS:    nc = 25; break;
+            case AT_PLASMA: nc = 10; break;
+            case AT_BATT:   nc = 3; break;
+            }
+            if (!gas_only || p_info.fuel_type == AT_GAS) {
+                int pwr = p_info.power * nc / 100;
+                if (muffle < 100 && (p_info.fuel_type == AT_GAS ||
+                                     p_info.fuel_type == AT_PLASMA))
+                    pwr = pwr * muffle / 100;
+                pwrs += pwr;
+                cnt++;
+            }
+        }
+    }
     return pwrs;
 }
 

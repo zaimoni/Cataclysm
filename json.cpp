@@ -303,7 +303,7 @@ void JSON::set(const std::string& src, JSON&& val)
 
 // constructor and support thereof
 JSON::JSON(const JSON& src)
-: _mode(src._mode),_scalar(0)
+: _scalar(0), _mode(src._mode)
 {
 	switch(src._mode)
 	{
@@ -381,7 +381,7 @@ static unsigned char scan_for_data_start(std::istream& src, char& result, unsign
 static const std::string JSON_read_failed("JSON read failed before end of file, line: ");
 
 JSON::JSON(std::istream& src)
-: _mode(none), _scalar(0)
+: _scalar(0), _mode(none)
 {
 	src.exceptions(std::ios::badbit);	// throw on hardware failure
 	char last_read = ' ';
@@ -412,7 +412,7 @@ JSON::JSON(std::istream& src)
 }
 
 JSON::JSON(std::istream& src, unsigned long& line, char& last_read, bool must_be_scalar)
-	: _mode(none), _scalar(0)
+	: _scalar(0), _mode(none)
 {
 	const unsigned char code = scan_for_data_start(src, last_read, line);
 	switch (code)

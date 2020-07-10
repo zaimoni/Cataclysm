@@ -1,4 +1,11 @@
 #if (defined _WIN32 || defined WINDOWS)
+
+// requests W2K baseline Windows API ... unsure if this has link-time consequences w/posix_time.cpp which does not specify
+#define _WIN32_WINNT 0x0500
+#define WINVER 0x0500
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 #include "catacurse.h"
 #include "json.h"
 #include "ui.h"
@@ -7,16 +14,10 @@
 #include <string>
 #include <map>
 
-// requests W2K baseline Windows API ... unsure if this has link-time consequences w/posix_time.cpp which does not specify
-#define _WIN32_WINNT 0x0500
-#define WINVER 0x0500
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 #if HAVE_MS_COM
 #include <wincodec.h>
 #include <locale>
 #include <codecvt>
-
 #include "Zaimoni.STL/Logging.h"
 #include "Zaimoni.STL/MetaRAM.hpp"
 #else
@@ -24,6 +25,7 @@
 #include <wingdi.h>
 #include "Zaimoni.STL/cstdio"
 #endif
+
 #ifndef NDEBUG
 #include <iostream>
 #endif

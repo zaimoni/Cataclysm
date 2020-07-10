@@ -71,7 +71,7 @@ public:
  std::string name; // "Jon's Computer", "Lab 6E77-B Terminal Omega"
  int mission_id; // Linked to a mission?
 
- computer(std::string Name = "", int Security = 0) : name(Name), security(Security), w_terminal(NULL), mission_id(-1) {}
+ computer(std::string Name = "", int Security = 0) : security(Security), w_terminal(NULL), name(Name), mission_id(-1) {}
  computer(const computer& rhs);
  computer(computer&& rhs);
  ~computer();
