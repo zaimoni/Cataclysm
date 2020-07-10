@@ -169,5 +169,8 @@
     <ClInclude Include="mapdata.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="pldata_enum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

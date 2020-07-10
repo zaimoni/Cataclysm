@@ -140,6 +140,8 @@ int main(int argc, char *argv[])
 	html::tag global_nav("ul");
 	global_nav.set(attr_style, std::move(val_thin_border + CSS_sep + val_left_align + CSS_sep + val_list_none + CSS_sep + "margin:0px; padding:10px"));
 
+#define HTML_DIR "html/"
+
 #define HOME_HTML "index.html"
 #define HOME_ID "home"
 #define HOME_LINK_NAME "Home"
@@ -161,7 +163,7 @@ int main(int argc, char *argv[])
 
 	auto home_revert = swapDOM("#" HOME_ID, global_nav, html::tag("b", HOME_LINK_NAME));
 
-#define HTML_TARGET "data\\" HOME_HTML
+#define HTML_TARGET HTML_DIR HOME_HTML
 
 	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 		{
@@ -269,7 +271,7 @@ int main(int argc, char *argv[])
 	// set up items submenu
 	home_revert = swapDOM("#" ITEMS_ID, global_nav, std::move(item_point));
 
-#define HTML_TARGET "data\\" ITEMS_HTML
+#define HTML_TARGET HTML_DIR ITEMS_HTML
 
 	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 		{
@@ -476,7 +478,7 @@ int main(int argc, char *argv[])
 
 	if (!ma_styles.empty()) {
 		to_desc(ma_styles, name_desc, name_id);
-#define HTML_TARGET "data\\" MARTIAL_ARTS_HTML
+#define HTML_TARGET HTML_DIR MARTIAL_ARTS_HTML
 
 		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
@@ -533,7 +535,7 @@ int main(int argc, char *argv[])
 
 	if (!armor.empty()) {
 		to_desc(armor, name_desc, name_id);
-#define HTML_TARGET "data\\" ARMOR_HTML
+#define HTML_TARGET HTML_DIR ARMOR_HTML
 
 		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
@@ -594,7 +596,7 @@ int main(int argc, char *argv[])
 
 	if (!containers.empty()) {
 		to_desc(containers, name_desc, name_id);
-#define HTML_TARGET "data\\" CONTAINERS_HTML
+#define HTML_TARGET HTML_DIR CONTAINERS_HTML
 
 		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
@@ -656,7 +658,7 @@ int main(int argc, char *argv[])
 	// \todo skills page should provide book learning chain
 	if (!books.empty()) {
 		to_desc(books, name_desc, name_id);
-#define HTML_TARGET "data\\" BOOKS_HTML
+#define HTML_TARGET HTML_DIR BOOKS_HTML
 
 		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
@@ -717,7 +719,7 @@ int main(int argc, char *argv[])
 
 	if (!drinks.empty()) {
 		to_desc(drinks, name_desc, name_id);
-#define HTML_TARGET "data\\" DRINKS_HTML
+#define HTML_TARGET HTML_DIR DRINKS_HTML
 
 		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
@@ -779,7 +781,7 @@ int main(int argc, char *argv[])
 	// \todo need to document addictions related to these
 	if (!pharma.empty()) {
 		to_desc(pharma, name_desc, name_id);
-#define HTML_TARGET "data\\" PHARMA_HTML
+#define HTML_TARGET HTML_DIR PHARMA_HTML
 
 		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
@@ -844,7 +846,7 @@ int main(int argc, char *argv[])
 
 	if (!edible.empty()) {
 		to_desc(edible, name_desc, name_id);
-#define HTML_TARGET "data\\" EDIBLE_HTML
+#define HTML_TARGET HTML_DIR EDIBLE_HTML
 
 		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
@@ -905,7 +907,7 @@ int main(int argc, char *argv[])
 
 	if (!guns.empty()) {
 		to_desc(guns, name_desc, name_id);
-#define HTML_TARGET "data\\" GUNS_HTML
+#define HTML_TARGET HTML_DIR GUNS_HTML
 
 		// \todo cross-link to what it reloads, etc.
 		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
@@ -968,7 +970,7 @@ int main(int argc, char *argv[])
 	// \todo this may warrant a full planner, not just static cross-references
 	if (!gun_mods.empty()) {
 		to_desc(gun_mods, name_desc, name_id);
-#define HTML_TARGET "data\\" GUN_MODS_HTML
+#define HTML_TARGET HTML_DIR GUN_MODS_HTML
 
 		// \todo cross-link to what it reloads, etc.
 		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
@@ -1031,7 +1033,7 @@ int main(int argc, char *argv[])
 	// \todo this should cross-link to the ranged weapons they fit
 	if (!ammunition.empty()) {
 		to_desc(ammunition, name_desc, name_id);
-#define HTML_TARGET "data\\" AMMO_HTML
+#define HTML_TARGET HTML_DIR AMMO_HTML
 
 		// \todo cross-link to what it reloads, etc.
 		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
@@ -1093,7 +1095,7 @@ int main(int argc, char *argv[])
 
 	if (!fuel.empty()) {
 		to_desc(fuel, name_desc, name_id);
-#define HTML_TARGET "data\\" FUEL_HTML
+#define HTML_TARGET HTML_DIR FUEL_HTML
 
 		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
@@ -1154,7 +1156,7 @@ int main(int argc, char *argv[])
 
 	if (!tools.empty()) {
 		to_desc(tools, name_desc, name_id);
-#define HTML_TARGET "data\\" TOOLS_HTML
+#define HTML_TARGET HTML_DIR TOOLS_HTML
 
 		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
@@ -1215,7 +1217,7 @@ int main(int argc, char *argv[])
 
 	if (!bionics.empty()) {
 		to_desc(bionics, name_desc, name_id);
-#define HTML_TARGET "data\\" BIONICS_HTML
+#define HTML_TARGET HTML_DIR BIONICS_HTML
 
 		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
@@ -1276,7 +1278,7 @@ int main(int argc, char *argv[])
 
 	if (!software.empty()) {
 		to_desc(software, name_desc, name_id);
-#define HTML_TARGET "data\\" SOFTWARE_HTML
+#define HTML_TARGET HTML_DIR SOFTWARE_HTML
 
 		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
@@ -1337,7 +1339,7 @@ int main(int argc, char *argv[])
 
 	if (!macguffins.empty()) {
 		to_desc(macguffins, name_desc, name_id);
-#define HTML_TARGET "data\\" MACGUFFIN_HTML
+#define HTML_TARGET HTML_DIR MACGUFFIN_HTML
 
 		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
@@ -1398,7 +1400,7 @@ int main(int argc, char *argv[])
 
 	if (!unclassified.empty()) {
 		to_desc(unclassified, name_desc, name_id);
-#define HTML_TARGET "data\\" UNCLASSIFIED_HTML
+#define HTML_TARGET HTML_DIR UNCLASSIFIED_HTML
 
 		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
@@ -1487,7 +1489,7 @@ int main(int argc, char *argv[])
 	// set up mapnav submenu
 	home_revert = swapDOM("#" NAVIGATION_ID, global_nav, std::move(mapnav_point));
 
-#define HTML_TARGET "data\\" NAVIGATION_HTML
+#define HTML_TARGET HTML_DIR NAVIGATION_HTML
 
 	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 		{
@@ -1511,7 +1513,7 @@ int main(int argc, char *argv[])
 
 #undef HTML_TARGET
 
-#define HTML_TARGET "data\\" FIELDS_HTML
+#define HTML_TARGET HTML_DIR FIELDS_HTML
 
 	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 		{
@@ -1613,7 +1615,7 @@ int main(int argc, char *argv[])
 
 #undef HTML_TARGET
 
-#define HTML_TARGET "data\\" TERRAIN_HTML
+#define HTML_TARGET HTML_DIR TERRAIN_HTML
 
 	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 		{

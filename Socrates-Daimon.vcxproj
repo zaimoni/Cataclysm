@@ -199,6 +199,7 @@
     <ClInclude Include="mtype.h" />
     <ClInclude Include="options.h" />
     <ClInclude Include="output.h" />
+    <ClInclude Include="pldata_enum.h" />
     <ClInclude Include="recent_msg.h" />
     <ClInclude Include="rng.h" />
     <ClInclude Include="setvector.h" />
