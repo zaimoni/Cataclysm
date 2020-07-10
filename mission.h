@@ -67,9 +67,9 @@ struct mission_type {
               void (*START)(game *, mission *),
               void (*END  )(game *, mission *),
               void (*FAIL )(game *, mission *)) :
-  id (ID), name (NAME), goal (GOAL), difficulty (DIF), value (VAL),
-  urgent(URGENT), place (PLACE), start (START), end (END), fail (FAIL),
-  deadline_low(0), deadline_high(0), item_id(itm_null), follow_up(MISSION_NULL) {};
+  id(ID), name(NAME), goal(GOAL), difficulty(DIF), value(VAL),
+  deadline_low(0), deadline_high(0), urgent(URGENT), item_id(itm_null),
+  follow_up(MISSION_NULL), place(PLACE), start(START), end(END), fail(FAIL) {}
 
  mission create(game *g, int npc_id = -1); // Create a mission
 
