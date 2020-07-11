@@ -810,7 +810,7 @@ To save this character as a template, press !.");
    mvwprintz(w, 8, 2, c_ltgray, "Gender:");
 
   wrefresh(w);
-  int ch = input();
+  int ch = getch();
   if (noname) {
    mvwprintz(w, 6, 8, c_ltgray, "______________________________");
    noname = false;
