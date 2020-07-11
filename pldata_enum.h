@@ -50,6 +50,7 @@ enum add_type {
  ADD_CAFFEINE, ADD_ALCOHOL, ADD_SLEEP, ADD_PKILLER, ADD_SPEED, ADD_CIG,
  ADD_COKE, ADD_THC
 };
+static constexpr const auto NUM_ADDICTIONS = ADD_THC + 1;
 
 enum activity_type {
  ACT_NULL = 0,

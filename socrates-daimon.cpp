@@ -8,6 +8,7 @@
 #include "json.h"
 #include "html.hpp"
 #include "mapdata.h"
+#include "pldata.h"
 #include <stdexcept>
 #include <stdlib.h>
 #include <time.h>
@@ -154,12 +155,17 @@ int main(int argc, char *argv[])
 #define NAVIGATION_ID "navigation"
 #define NAVIGATION_LINK_NAME "Navigation"
 
+#define STATUS_HTML "status.html"
+#define STATUS_ID "status"
+#define STATUS_LINK_NAME "Status"
+
 	html::tag working_li("li");
 
 	// wrap up global navigation menu
 	global_nav.append(typicalMenuLink(HOME_ID, HOME_LINK_NAME, "./" HOME_HTML));
 	global_nav.append(typicalMenuLink(ITEMS_ID, ITEMS_LINK_NAME, "./" ITEMS_HTML));
 	global_nav.append(typicalMenuLink(NAVIGATION_ID, NAVIGATION_LINK_NAME, "./" NAVIGATION_HTML));
+	global_nav.append(typicalMenuLink(STATUS_ID, STATUS_LINK_NAME, "./" STATUS_HTML));
 
 	auto home_revert = swapDOM("#" HOME_ID, global_nav, html::tag("b", HOME_LINK_NAME));
 
@@ -1689,6 +1695,113 @@ int main(int argc, char *argv[])
 #undef HTML_TARGET
 
 	*home_revert.first = std::move(home_revert.second);	// mapnav page family handled
+
+	// player status pages
+	// full terrain navigation menu
+	html::tag statusnav_point("li");
+	statusnav_point.set("id", STATUS_ID);
+	{
+		html::tag a_tag("a", STATUS_LINK_NAME);
+		a_tag.set("href", "./" STATUS_HTML);
+		a_tag.set("id", STATUS_ID "_link");
+		statusnav_point.append(std::move(a_tag));
+	}
+
+	html::tag statusnav_nav("ul");
+	statusnav_nav.set(attr_style, val_list_none);
+
+#define ADDICTIONS_HTML "addictions.html"
+#define ADDICTIONS_ID "addictions"
+#define ADDICTIONS_LINK_NAME "Addictions"
+
+	statusnav_nav.append(typicalMenuLink(ADDICTIONS_ID, ADDICTIONS_LINK_NAME, "./" ADDICTIONS_HTML));
+
+	statusnav_point.append(statusnav_nav);
+
+	// set up statusnav submenu
+	home_revert = swapDOM("#" STATUS_ID, global_nav, std::move(statusnav_point));
+
+#define HTML_TARGET HTML_DIR STATUS_HTML
+
+	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
+		{
+			html::to_text page(out);
+			page.start_print(_html);
+			_title->append(html::tag::wrap("Cataclysm:Z " STATUS_LINK_NAME));
+			page.print(_head);
+			_title->clear();
+			page.start_print(_body);
+			{
+				auto revert = swapDOM("#" STATUS_ID "_link", global_nav, html::tag("b", STATUS_LINK_NAME));
+				page.print(global_nav);
+				*revert.first = std::move(revert.second);
+			}
+			while (page.end_print());
+		}
+
+		unlink(HTML_TARGET);
+		rename(HTML_TARGET ".tmp", HTML_TARGET);
+	}
+
+#undef HTML_TARGET
+
+#define HTML_TARGET HTML_DIR ADDICTIONS_HTML
+
+	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
+		{
+			html::to_text page(out);
+			page.start_print(_html);
+			_title->append(html::tag::wrap("Cataclysm:Z " ADDICTIONS_LINK_NAME));
+			page.print(_head);
+			_title->clear();
+			page.start_print(_body);
+			{
+				auto revert = swapDOM("#" ADDICTIONS_ID "_link", global_nav, html::tag("b", ADDICTIONS_LINK_NAME));
+				page.print(global_nav);
+				*revert.first = std::move(revert.second);
+			}
+
+			page.start_print(_data_table);
+			// actual content
+			{
+				html::tag table_header("tr");
+				table_header.set(attr_align, val_center);
+				table_header.append(html::tag("th", "Name"));
+				table_header.append(html::tag("th", "Description"));
+				page.print(table_header);
+			}
+
+			{
+				static const std::string color("color: ");
+				static const std::string background("; background-color:");
+				html::tag cell("td");
+				html::tag table_row("tr");
+				table_row.set(attr_align, val_left);
+				table_row.append(cell);
+				table_row.append(cell);
+
+				size_t ub = NUM_ADDICTIONS;
+				const char* css_fg = 0;
+				const char* css_bg = 0;
+				while (0 < --ub) {
+					addiction test((add_type)ub);
+					table_row[0]->append(html::tag::wrap(addiction_name(test)));
+					table_row[1]->append(html::tag::wrap(addiction_text(test)));
+					page.print(table_row);
+					table_row[0]->clear();
+					table_row[1]->clear();
+				}
+			}
+			while (page.end_print());
+		}
+
+		unlink(HTML_TARGET);
+		rename(HTML_TARGET ".tmp", HTML_TARGET);
+	}
+
+#undef HTML_TARGET
+
+	*home_revert.first = std::move(home_revert.second);	// statusnav page family handled
 
 	// try to replicate some issues
 	std::vector<item> res;
