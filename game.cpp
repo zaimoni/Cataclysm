@@ -5179,7 +5179,7 @@ void game::plmove(int x, int y)
 
 // Adjust recoil down
   if (u.recoil > 0) {
-   const int dampen_recoil = u.str_cur/ + u.sklevel[sk_gun];
+   const int dampen_recoil = u.str_cur + u.sklevel[sk_gun];
    if (dampen_recoil >= u.recoil) u.recoil = 0;
    else {
     u.recoil -= dampen_recoil;
