@@ -25,12 +25,13 @@ LDFLAGS = -lncurses
 endif
 LDFLAGS += -pthread -Llib/host -lz_format_util -lz_stdio_log -lz_stdio_c
 
-SOURCES1 = $(filter-out stdafx.cpp socrates-daimon.cpp,$(wildcard *.cpp))
+SOURCES1 = $(sort $(filter-out html.cpp socrates-daimon.cpp stdafx.cpp,$(wildcard *.cpp)))
 OBJS1 = $(addprefix $(ODIR1)/,$(SOURCES1:.cpp=.o))
 
 SOURCES2 = calendar.cpp catacurse.cpp color.cpp html.cpp item.cpp itypedef.cpp\
   json.cpp keypress.cpp mapdata.cpp mtypedef.cpp options.cpp output.cpp\
-  recent_msg.cpp rng.cpp saveload.cpp skill.cpp socrates-daimon.cpp trapdef.cpp
+  pldata.cpp recent_msg.cpp rng.cpp saveload.cpp skill.cpp socrates-daimon.cpp\
+  trapdef.cpp
 OBJS2 = $(addprefix $(ODIR2)/,$(SOURCES2:.cpp=.o))
 
 .PHONY: all clean
