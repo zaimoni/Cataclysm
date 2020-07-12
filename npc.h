@@ -303,14 +303,14 @@ public:
  static npc* find(int id); // NPC with UID=id; NULL if non-existant
  static const npc* find_r(int id); // NPC with UID=id; NULL if non-existant
 
- static auto find_alive(int id) {
+ static npc* find_alive(int id) {
      auto ret = find(id);
-     return ret && !ret->marked_for_death ? ret : 0;
+     return ret && !ret->marked_for_death ? ret : nullptr;
  };
 
- static auto find_alive_r(int id) {
+ static const npc* find_alive_r(int id) {
      auto ret = find_r(id);
-     return ret && !ret->marked_for_death ? ret : 0;
+     return ret && !ret->marked_for_death ? ret : nullptr;
  };
 
 // Generating our stats, etc.

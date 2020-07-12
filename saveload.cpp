@@ -338,7 +338,7 @@ bool fromJSON(const JSON& src, const mission_type*& dest)
 	if (!src.is_scalar()) return false;
 	cataclysm::JSON_parse<mission_id> parse;
 	auto type_id = parse(src.scalar());
-	dest = type_id ? &mission_type::types[type_id] : 0;
+	dest = type_id ? &mission_type::types[type_id] : nullptr;
 	return true;
 }
 #endif
@@ -1851,7 +1851,7 @@ bool fromJSON(const JSON& src, npc& dest)
 npc::npc(const JSON& src)
 : player(src),id(-1), attitude(NPCATT_NULL), myclass(NC_NONE), wand(point(0, 0), 0),
   pl(point(-1, -1), 0), it(-1, -1), goal(_ref<decltype(goal)>::invalid), fetching_item(false), has_new_items(false),
-  my_fac(0), mission(NPC_MISSION_NULL), patience(0), marked_for_death(false), dead(false), flags(0)
+  my_fac(nullptr), mission(NPC_MISSION_NULL), patience(0), marked_for_death(false), dead(false), flags(0)
 {
 	if (src.has_key("id")) fromJSON(src["id"], id);
 	if (src.has_key("attitude")) fromJSON(src["attitude"], attitude);

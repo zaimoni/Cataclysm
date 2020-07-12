@@ -255,7 +255,7 @@ using namespace cataclysm;
 void mtype::init()
 {
  int id = 0;
- mtype* working = 0;
+ mtype* working = nullptr;
 // Null monster named "None".
  types.push_back(new mtype);
 
@@ -1459,5 +1459,3 @@ std::vector<monster_trigger> default_fears(monster_species spec)
  }
  return ret;
 }
-
-

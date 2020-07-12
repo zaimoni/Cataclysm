@@ -4318,7 +4318,7 @@ item* player::pick_usb()
   }
  }
 
- if (drives.empty()) return 0; // None available!
+ if (drives.empty()) return nullptr; // None available!
  if (1 == drives.size()) return &inv[drives[0]];	// exactly one.
 
  std::vector<std::string> selections;
@@ -4465,7 +4465,7 @@ std::pair<int, item*> player::have_item(char let)
 		--i;
 		if (it.invlet == let) return decltype(ret)(i, &it);
 	}
-	return decltype(ret)(-1, 0);
+	return decltype(ret)(-1, nullptr);
 }
 
 std::pair<int, const item*> player::have_item(char let) const
@@ -4478,36 +4478,36 @@ std::pair<int, const item*> player::have_item(char let) const
 		--i;
 		if (it.invlet == let) return decltype(ret)(i, &it);
 	}
-	return decltype(ret)(-1, 0);
+	return decltype(ret)(-1, nullptr);
 }
 
 item* player::decode_item_index(const int n)
 {
-    if (0 <= n) return inv.size() > n ? &inv[n] : 0;
+    if (0 <= n) return inv.size() > n ? &inv[n] : nullptr;
     else if (-2 == n) return &weapon;
     else if (-3 >= n) {
         const auto armor_n = -3 - n;
-        return worn.size() > armor_n ? &worn[n] : 0;
+        return worn.size() > armor_n ? &worn[n] : nullptr;
     }
-    return 0;
+    return nullptr;
 }
 
 const item* player::decode_item_index(const int n) const
 {
-    if (0 <= n) return inv.size() > n ? &inv[n] : 0;
+    if (0 <= n) return inv.size() > n ? &inv[n] : nullptr;
     else if (-2 == n) return &weapon;
     else if (-3 >= n) {
         const auto armor_n = -3 - n;
-        return worn.size() > armor_n ? &worn[n] : 0;
+        return worn.size() > armor_n ? &worn[n] : nullptr;
     }
-    return 0;
+    return nullptr;
 }
 
 bool player::eat(int index)
 {
  auto g = game::active();
- const it_comest *comest = 0;
- item *eaten = 0;
+ const it_comest* comest = nullptr;
+ item* eaten = nullptr;
  int which = -3; // Helps us know how to delete the item which got eaten
  if (-1 > index) {
   messages.add("You do not have that item.");
@@ -4770,7 +4770,7 @@ const it_armor* player::wear_is_performable(const item& to_wear) const
 {
     if (!to_wear.is_armor()) {
         if (!is_npc()) messages.add("Putting on a %s would be tricky.", to_wear.tname().c_str());
-        return 0;
+        return nullptr;
     }
     const it_armor* const armor = dynamic_cast<const it_armor*>(to_wear.type);
 
@@ -4781,39 +4781,39 @@ const it_armor* player::wear_is_performable(const item& to_wear) const
     }
     if (2 <= count) {
         if (!is_npc()) messages.add("You can't wear more than two %s at once.", to_wear.tname().c_str());
-        return 0;
+        return nullptr;
     }
     if (has_trait(PF_WOOLALLERGY) && to_wear.made_of(WOOL)) {
         if (!is_npc()) messages.add("You can't wear that, it's made of wool!");
-        return 0;
+        return nullptr;
     }
     if (armor->covers & mfb(bp_head) && encumb(bp_head) != 0) {
         if (!is_npc()) messages.add("You can't wear a%s helmet!", wearing_something_on(bp_head) ? "nother" : "");
-        return 0;
+        return nullptr;
     }
     if (armor->covers & mfb(bp_hands) && has_trait(PF_WEBBED)) {
         if (!is_npc()) messages.add("You cannot put %s over your webbed hands.", armor->name.c_str());
-        return 0;
+        return nullptr;
     }
     if (armor->covers & mfb(bp_hands) && has_trait(PF_TALONS)) {
         if (!is_npc()) messages.add("You cannot put %s over your talons.", armor->name.c_str());
-        return 0;
+        return nullptr;
     }
     if (armor->covers & mfb(bp_mouth) && has_trait(PF_BEAK)) {
         if (!is_npc()) messages.add("You cannot put a %s over your beak.", armor->name.c_str());
-        return 0;
+        return nullptr;
     }
     if (armor->covers & mfb(bp_feet) && has_trait(PF_HOOVES)) {
         if (!is_npc()) messages.add("You cannot wear footwear on your hooves.");
-        return 0;
+        return nullptr;
     }
     if (armor->covers & mfb(bp_head) && has_trait(PF_HORNS_CURLED)) {
         if (!is_npc()) messages.add("You cannot wear headgear over your horns.");
-        return 0;
+        return nullptr;
     }
     if (armor->covers & mfb(bp_torso) && has_trait(PF_SHELL)) {
         if (!is_npc()) messages.add("You cannot wear anything over your shell.");
-        return 0;
+        return nullptr;
     }
     if (armor->covers & mfb(bp_head) && !to_wear.made_of(WOOL) &&
         !to_wear.made_of(COTTON) && !to_wear.made_of(LEATHER) &&
@@ -4822,11 +4822,11 @@ const it_armor* player::wear_is_performable(const item& to_wear) const
         if (!is_npc()) messages.add("You cannot wear a helmet over your %s.",
             (has_trait(PF_HORNS_POINTED) ? "horns" :
                 (has_trait(PF_ANTENNAE) ? "antennae" : "antlers")));
-        return 0;
+        return nullptr;
     }
     if (armor->covers & mfb(bp_feet) && wearing_something_on(bp_feet)) {
         if (!is_npc()) messages.add("You're already wearing footwear!");
-        return 0;
+        return nullptr;
     }
     return armor;
 }
@@ -5038,7 +5038,7 @@ void player::read(game *g, char ch)
  }
 
 // Some macguffins can be read, but they aren't treated like books.
- if (const it_macguffin* mac = used.second->is_macguffin() ? dynamic_cast<const it_macguffin*>(used.second->type) : 0) {
+ if (const it_macguffin* mac = used.second->is_macguffin() ? dynamic_cast<const it_macguffin*>(used.second->type) : nullptr) {
      (*mac->use)(g, this, used.second, false);
      return;
  }
@@ -5627,4 +5627,3 @@ std::string random_last_name()
  if (!file_to_string_vector("data/NAMES_LAST", last_names)) return "";
  return last_names[rng(0, last_names.size() - 1)];
 }
-

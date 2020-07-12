@@ -408,14 +408,14 @@ player* vehicle_part::get_passenger(point origin) const
 		if (g->u.pos == origin && g->u.in_vehicle) return &g->u;
 		if (npc* const nPC = g->nPC(origin)) return nPC;	// \todo V0.2.1+ why not require in_vehicle?
 	}
-	return 0;
+	return nullptr;
 }
 
 player *vehicle::get_passenger(int p) const
 {
     p = part_with_feature (p, vpf_seat, false);
 	if (0 <= p) return parts[p].get_passenger(global());
-    return 0;
+    return nullptr;
 }
 
 std::vector<std::pair<int, player*> > vehicle::passengers() const
@@ -868,9 +868,9 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
     const bool pl_ctrl = player_in_control(g->u);
 	npc* const nPC = g->nPC(dest);
     const bool u_here = dest == g->u.pos && !g->u.in_vehicle;
-    monster * const z = g->mon(dest);
-    player * const ph = (nPC ? nPC : (u_here? &g->u : 0));
-    vehicle * const oveh = g->m.veh_at(dest);
+    monster* const z = g->mon(dest);
+    player* const ph = (nPC ? nPC : (u_here? &g->u : nullptr));
+    vehicle* const oveh = g->m.veh_at(dest);
     const bool veh_collision = oveh && oveh->pos != pos;
     bool body_collision = u_here || z || nPC;
 
@@ -990,12 +990,12 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
         if (z) {
             z->hurt(dam);
             if (vel2 > rng (5, 30))
-                g->fling_player_or_monster (0, z, move.dir() + angle, vel2 / 100);
+                g->fling_player_or_monster(nullptr, z, move.dir() + angle, vel2 / 100);
             if (z->hp < 1) g->kill_mon (*z, pl_ctrl);
         } else {
             ph->hitall (g, dam, 40);
             if (vel2 > rng (5, 30))
-                g->fling_player_or_monster (ph, 0, move.dir() + angle, vel2 / 100);
+                g->fling_player_or_monster(ph, nullptr, move.dir() + angle, vel2 / 100);
         }
 
         if (part_flag(part, vpf_sharp)) {
@@ -1118,7 +1118,7 @@ void vehicle::handle_trap(const point& pt, int part)
         case tr_telepad:
         case tr_temple_flood:
         case tr_temple_toggle:
-            msg = 0;
+            msg = nullptr;
         default:;
     }
     if (msg && g->u_see(pt))
@@ -1395,7 +1395,7 @@ bool vehicle::refill(player& u, const int part, const bool test)
 	const auto ftype = p_info.fuel_type;
 
     int i_itm = -1;
-    item *p_itm = 0;
+    item* p_itm = nullptr;
     int min_charges = -1;
     bool i_cont = false;
 
@@ -1520,7 +1520,7 @@ bool vehicle::fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int
 	const point origin(global() + parts[p].precalc_d[0]);
     // code copied form mattack::smg, mattack::flamethrower
     int t, fire_t;
-    monster *target = 0;
+    monster* target = nullptr;
     int range = ammo.type == AT_GAS? 5 : 12;
     int closest = range + 1;
 	auto g = game::active();
@@ -1558,4 +1558,3 @@ bool vehicle::fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int
     }
 	return true;
 }
-

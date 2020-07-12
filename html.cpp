@@ -107,21 +107,21 @@ std::string tag::to_s_end() const
 
 tag* tag::querySelector(const std::string& selector)
 {
-	if (selector.empty()) return 0;
+	if (selector.empty()) return nullptr;
 	auto pos = selector.find_first_of(" *>+.#[");
 	if (std::string::npos == pos) return _querySelector_tagname(selector);
 	auto str = selector.data();
 	if (0 < pos) {
 		auto leading_tag = selector.substr(0, pos);
 		auto test = _querySelector_tagname(leading_tag);
-		if (!test) return 0;
+		if (!test) return nullptr;
 		while (' ' == str[pos]) if (selector.size() <= ++pos) return test;
 		return test->querySelector(selector.substr(pos));
 	}
 	switch (str[pos])
 	{
 	case ' ':
-		while (' ' == str[pos]) if (selector.size() <= ++pos) return 0;
+		while (' ' == str[pos]) if (selector.size() <= ++pos) return nullptr;
 		return querySelector(selector.substr(pos));
 	case '*':	// wildcard selector
 		{
@@ -129,18 +129,18 @@ tag* tag::querySelector(const std::string& selector)
 		while (' ' == str[pos]) if (selector.size() <= ++pos) return this;
 		auto subselector = selector.substr(pos);
 		for (auto& x : _content) if (auto test = x.querySelector(subselector)) return test;
-		return 0;
+		return nullptr;
 		}
 	case '#':
-		if (selector.size() <= ++pos) return 0;
-		while (' ' == str[pos]) if (selector.size() <= ++pos) return 0;
+		if (selector.size() <= ++pos) return nullptr;
+		while (' ' == str[pos]) if (selector.size() <= ++pos) return nullptr;
 		{
 		auto subselector = selector.substr(pos);
 		pos = subselector.find_first_of(" *>+.#[");
 		if (std::string::npos == pos) return _querySelector_attr_val("id", subselector);
-		if (0 == pos) return 0;
+		if (0 == pos) return nullptr;
 		auto relay = _querySelector_attr_val("id", subselector.substr(0, pos));
-		if (!relay) return 0;
+		if (!relay) return nullptr;
 		str = subselector.data();
 		while (' ' == str[pos]) if (subselector.size() <= ++pos) return relay;
 		return relay->querySelector(subselector.substr(pos));
@@ -150,14 +150,14 @@ tag* tag::querySelector(const std::string& selector)
 #ifndef NDEBUG
 	throw std::logic_error("need to handle more selector syntax");
 #endif
-	return 0;
+	return nullptr;
 }
 
 tag* tag::_querySelector_tagname(const std::string& tagname)
 {
 	if (tagname == _name) return this;
 	if (!_content.empty()) for (auto& _tag : _content) if (auto test = _tag._querySelector_tagname(tagname)) return test;
-	return 0;
+	return nullptr;
 }
 
 tag* tag::_querySelector_attr_val(const std::string& key, const std::string& val)
@@ -165,7 +165,7 @@ tag* tag::_querySelector_attr_val(const std::string& key, const std::string& val
 	auto id_val = read(key);
 	if (id_val && *id_val == val) return this;
 	for (auto& x : _content) if (auto test = x._querySelector_attr_val(key, val)) return test;
-	return 0;
+	return nullptr;
 }
 
 

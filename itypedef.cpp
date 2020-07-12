@@ -706,7 +706,7 @@ const char* JSON_key(itype_id src)
 	static std::string _x;
 	if (cataclysm::JSON_parse<itype_id>::origin <= src && (sizeof(JSON_transcode_items) / sizeof(*JSON_transcode_items)) + cataclysm::JSON_parse<itype_id>::origin > src) return JSON_transcode_items[src - cataclysm::JSON_parse<itype_id>::origin];
 	if (item::types.size() > src&& num_all_items <= src) return (_x = std::to_string(src-(num_all_items-1))).c_str();
-	return 0;
+	return nullptr;
 }
 
 namespace cataclysm {

@@ -63,7 +63,7 @@ static int recoil_add(const player &p)
 	return (0 < ret) ? ret : 0;
 }
 
-static void splatter(game* g, const std::vector<point>& trajectory, int dam, monster* mon = 0)
+static void splatter(game* g, const std::vector<point>& trajectory, int dam, monster* mon = nullptr)
 {
     field_id blood = bleeds(mon);   // NULL mon would be a player
     if (!blood) return;

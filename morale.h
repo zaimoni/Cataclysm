@@ -50,7 +50,7 @@ struct morale_point
  const itype* item_type;
  int bonus;
 
- morale_point(morale_type T = MORALE_NULL, const itype* I = 0, int B = 0) noexcept : type(T), item_type(I), bonus(B) {};
+ morale_point(morale_type T = MORALE_NULL, const itype* I = nullptr, int B = 0) noexcept : type(T), item_type(I), bonus(B) {};
 
  std::string name() const;
 };

@@ -132,7 +132,7 @@ class fire_weapon_screen : public cataclysm::action
 	bool _burst;
 	const char* _desc;
 public:
-	fire_weapon_screen(npc& actor, const point& tar, bool burst, const char* desc=0) : _actor(actor), _tar(tar), _burst(burst), _desc(desc) {
+	fire_weapon_screen(npc& actor, const point& tar, bool burst, const char* desc=nullptr) : _actor(actor), _tar(tar), _burst(burst), _desc(desc) {
 		auto g = game::active();
 		if (tar != actor.pos) {	// required for legality/performability
 			int linet;
@@ -293,17 +293,17 @@ static bool decode_target(int target, npc::ai_target& dest)
 	auto g = game::active();
 	if (0 <= target && g->z.size() > target) {
 		auto& mon = g->z[target];
-		dest = npc::ai_target(mon.pos, std::tuple<monster*, player*, npc*>(&mon, 0, 0));
+		dest = npc::ai_target(mon.pos, std::tuple<monster*, player*, npc*>(&mon, nullptr, nullptr));
 		return true;
 	} else if (TARGET_PLAYER == target) {
 		auto& u = g->u;
-		dest = npc::ai_target(u.pos, std::tuple<monster*, player*, npc*>(0, &u, 0));
+		dest = npc::ai_target(u.pos, std::tuple<monster*, player*, npc*>(nullptr, &u, nullptr));
 		return true;
 	} else if (TARGET_PLAYER > target && g->active_npc.size()>((TARGET_PLAYER-1) - target)) {	// 2019-11-21: UNTESTED
 		auto npc_index = (TARGET_PLAYER - 1) - target;
 		if (g->active_npc.size() > npc_index) {
 			auto& nPC = g->active_npc[npc_index];
-			dest = npc::ai_target(nPC.pos, std::tuple<monster*, player*, npc*>(0, 0, &nPC));
+			dest = npc::ai_target(nPC.pos, std::tuple<monster*, player*, npc*>(nullptr, nullptr, &nPC));
 			return true;
 		}
 	}
@@ -719,7 +719,7 @@ int npc::choose_escape_item() const
 {
  int best = -1, ret = -1;
  for (size_t i = 0; i < inv.size(); i++) {
-  const it_comest* food = 0;
+  const it_comest* food = nullptr;
   const auto& it = inv[i];
   for (int j = 0; j < NUM_ESCAPE_ITEMS; j++) {
    if (it.type->id != ESCAPE_ITEMS[j]) continue;	// \todo some sort of relevance check (needs context)

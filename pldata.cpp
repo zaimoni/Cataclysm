@@ -63,7 +63,7 @@ static const char* addiction_static_text(const addiction& cur)
     case ADD_SPEED: return "\nMovement rate reduction.  Depression.  Weak immune system.  Frequent cravings.";
     case ADD_COKE: return "Frequent cravings.";
     case ADD_THC: return "Occasional cravings";
-    default: return 0;
+    default: return nullptr;
     }
 }
 
@@ -99,4 +99,3 @@ std::string addiction_text(const addiction& cur)
     if ('\n' != s_text[0]) dump << "; ";
     return dump.str() + s_text;
 }
-

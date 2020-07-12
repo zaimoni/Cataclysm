@@ -5,7 +5,7 @@ om_cache::~om_cache()
 {
 	for (auto& x : _cache) {
 		delete x.second.second;
-		x.second.second = 0;
+		x.second.second = nullptr;
 	}
 }
 
@@ -31,7 +31,7 @@ overmap* om_cache::get(const tripoint& x)
 		_cache[x] = std::pair(1, ret.get());
 		return ret.release();
 	}
-	return 0;
+	return nullptr;
 }
 
 const overmap* om_cache::r_get(const tripoint& x)
@@ -49,7 +49,7 @@ const overmap* om_cache::r_get(const tripoint& x)
 		_cache[x] = std::pair(1, ret.get());
 		return ret.release();
 	}
-	return 0;
+	return nullptr;
 }
 
 // \todo get/r_get variants that target overmap properties, rather than the tripoint coordinate

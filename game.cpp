@@ -28,7 +28,7 @@ using namespace cataclysm;
 
 template<> int discard<int>::x = 0;
 bool game::debugmon = false;
-game* game::_active = 0;
+game* game::_active = nullptr;
 
 #define MAX_MONSTERS_MOVING 40 // Efficiency!
 
@@ -1025,13 +1025,13 @@ int game::reserve_random_mission(mission_origin origin, point p, int npc_id)
 mission* game::find_mission(int id)
 {
  for (auto& mi : active_missions) if (mi.uid == id) return &mi;
- return 0;
+ return nullptr;
 }
 
 const mission_type* game::find_mission_type(int id)
 {
  for (const auto& mi : active_missions) if (mi.uid == id) return mi.type;
- return 0;
+ return nullptr;
 }
 
 void game::process_missions()
@@ -3371,13 +3371,13 @@ void game::emp_blast(int x, int y)
 npc* game::nPC(int x, int y)
 {
 	for (auto& m : active_npc) if (m.pos.x == x && m.pos.y == y && !m.dead) return &m;
-	return 0;
+	return nullptr;
 }
 
 npc* game::nPC(const point& pt)
 {
 	for (auto& m : active_npc) if (m.pos == pt && !m.dead) return &m;
-	return 0;
+	return nullptr;
 }
 
 int game::mon_at(int x, int y) const
@@ -3391,13 +3391,13 @@ int game::mon_at(int x, int y) const
 monster* game::mon(int x, int y)
 {
 	for (auto& m : z) if (m.pos.x == x && m.pos.y == y && !m.dead) return &m;
-	return 0;
+	return nullptr;
 }
 
 monster* game::mon(const point& pt)
 {
 	for (auto& m : z) if (m.pos == pt && !m.dead) return &m;
-	return 0;
+	return nullptr;
 }
 
 bool game::is_empty(int x, int y) const
@@ -3691,7 +3691,7 @@ void game::examine()
    u.moves -= 200;
    if (veh->velocity) {      // TODO: move player out of harms way
     int dsgn = veh->parts[vpart].mount_d.x > 0? 1 : -1;
-    fling_player_or_monster (&u, 0, veh->face.dir() + 90 * dsgn, 35);
+    fling_player_or_monster(&u, nullptr, veh->face.dir() + 90 * dsgn, 35);
    }
    return;
   }
@@ -4979,7 +4979,7 @@ void game::unload()
   } else
    m.add_item(u.pos, newam);
  }
- u.weapon.curammo = 0;
+ u.weapon.curammo = nullptr;
 }
 
 void game::wield()
@@ -5423,7 +5423,7 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
         timespec ts;   // Timespec for the animation
         ts.tv_sec = 0;
         ts.tv_nsec = 50000000;
-        nanosleep (&ts, 0);
+        nanosleep(&ts, nullptr);
     }
 
     if (!m.has_flag(swimmable, x, y))
@@ -5977,7 +5977,7 @@ mongroup* game::valid_group(mon_id type, int x, int y)
      ret->radius++;
      return ret;
  }
- return 0;
+ return nullptr;
 }
 
 void game::wait()

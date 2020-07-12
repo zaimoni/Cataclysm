@@ -25,7 +25,7 @@ bool mapbuffer::add_submap(int x, int y, int z, submap *sm)
 
 submap* mapbuffer::lookup_submap(const tripoint& src)
 {   // this should not trigger map generation; would be ok to check hard drive for pre-existing chunk
-    return (0 < submaps.count(src)) ? submaps[src] : 0;
+    return (0 < submaps.count(src)) ? submaps[src] : nullptr;
 }
 
 #define MAP_FILE "save/maps.txt"

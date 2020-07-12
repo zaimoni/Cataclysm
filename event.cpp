@@ -29,7 +29,7 @@ void event::actualize() const
 
   case EVENT_HELP: {
    int num = (0 <= faction_id) ? rng(1, 6) : 1;
-   faction* fac = (0 <= faction_id) ? faction::from_id(faction_id) : 0;
+   faction* fac = (0 <= faction_id) ? faction::from_id(faction_id) : nullptr;
    if (0 <= faction_id && !fac) debugmsg("EVENT_HELP run with invalid faction_id");
    for (int i = 0; i < num; i++) {
     npc tmp;

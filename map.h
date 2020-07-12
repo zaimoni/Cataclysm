@@ -191,10 +191,10 @@ class map
  bool close_door(const point& pt);
  bool open_door(int x, int y, bool inside);
  // bash: if res pointer is supplied, res will contain absorbed impact or -1
- bool bash(int x, int y, int str, std::string &sound, int *res = 0);
- bool bash(const point& pt, int str, std::string &sound, int *res = 0) { return bash(pt.x,pt.y,str,sound,res); }
- bool bash(int x, int y, int str, int *res = 0);
- bool bash(const point& pt, int str, int *res = 0) { return bash(pt.x, pt.y, str, res ); }
+ bool bash(int x, int y, int str, std::string& sound, int* res = nullptr);
+ bool bash(const point& pt, int str, std::string& sound, int* res = nullptr) { return bash(pt.x,pt.y,str,sound,res); }
+ bool bash(int x, int y, int str, int* res = nullptr);
+ bool bash(const point& pt, int str, int* res = nullptr) { return bash(pt.x, pt.y, str, res ); }
  void destroy(game *g, int x, int y, bool makesound);
  void shoot(game *g, int x, int y, int &dam, bool hit_items, unsigned flags);
  bool hit_with_acid(game *g, int x, int y);

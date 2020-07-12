@@ -50,7 +50,7 @@ DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(computer_failure, JSON_transcode_comp
 
 // main implementation
 computer::computer(const computer& src)
-: options(src.options),failures(src.failures),security(src.security),w_terminal(0),name(src.name),mission_id(src.mission_id)
+: options(src.options),failures(src.failures),security(src.security),w_terminal(nullptr),name(src.name),mission_id(src.mission_id)
 {
 }
 
@@ -58,12 +58,12 @@ computer::computer(computer&& src)
 : options(std::move(src.options)), failures(std::move(src.failures)), security(src.security), w_terminal(src.w_terminal),
   name(std::move(src.name)), mission_id(src.mission_id)
 {
-	src.w_terminal = 0;
+	src.w_terminal = nullptr;
 }
 
 computer::~computer()
 {
- if (w_terminal != NULL)
+ if (w_terminal != nullptr)
   delwin(w_terminal);
 }
 
@@ -77,7 +77,7 @@ computer& computer::operator=(computer&& src)
 	w_terminal = src.w_terminal;
 	name = std::move(src.name);
 	mission_id = src.mission_id;
-	src.w_terminal = 0;
+	src.w_terminal = nullptr;
 	return *this;
 }
 
@@ -96,12 +96,12 @@ void computer::shutdown_terminal()
 {
  werase(w_terminal);
  delwin(w_terminal);
- w_terminal = NULL;
+ w_terminal = nullptr;
 }
 
 void computer::use(game *g)
 {
- if (w_terminal == NULL) w_terminal = newwin(VIEW, SCREEN_WIDTH, 0, 0);
+ if (w_terminal == nullptr) w_terminal = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  wborder(w_terminal, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                      LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  
@@ -210,7 +210,7 @@ static const char* blood_analysis_precondition(const std::vector<item>& inv)
     if (inv[0].type->id != itm_vacutainer) return "ERROR: Please use vacutainer-contained samples.";
     if (inv[0].contents.empty()) return "ERROR: Vacutainer empty.";
     if (inv[0].contents[0].type->id != itm_blood) return "ERROR: Please only use blood samples.";
-    return 0;
+    return nullptr;
 }
 
 void computer::activate_function(game *g, computer_action action)
@@ -843,4 +843,3 @@ void computer::reset_terminal()
  wmove(w_terminal, 1, 1);
  wrefresh(w_terminal);
 }
-

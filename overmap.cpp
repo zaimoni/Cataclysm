@@ -1150,7 +1150,7 @@ std::vector<point> overmap::find_terrain(const std::string& term) const
 
 std::pair<const overmap*, const city*> overmap::closest_city(point p) const
 {
- const city* ret = 0;
+ const city* ret = nullptr;
  int distance = INT_MAX;
  for (const auto& c : cities) {
      int dist = rl_dist(p, c.x, c.y);

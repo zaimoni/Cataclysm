@@ -100,7 +100,7 @@ struct mission {
  const char* name() const { return type ? type->name : "NULL"; }
 
  mission() noexcept
- : type(0),failed(false),value(0),uid(-1),target(_ref<decltype(target)>::invalid),
+ : type(nullptr),failed(false),value(0),uid(-1),target(_ref<decltype(target)>::invalid),
    item_id(itm_null),count(0),deadline(0),npc_id(-1),good_fac_id(-1),
    bad_fac_id(-1),step(0),follow_up(MISSION_NULL) {}
 

@@ -173,7 +173,7 @@ void monster::move(game *g)
 
  moves -= 100;
 
- monster_attitude current_attitude = attitude(0 == friendly ? &(g->u) : 0);
+ monster_attitude current_attitude = attitude(0 == friendly ? &(g->u) : nullptr);
 // If our plans end in a player, set our attitude to consider that player
  if (!plans.empty()) {
   if (plans.back() == g->u.pos) current_attitude = attitude(&(g->u));
@@ -188,7 +188,7 @@ void monster::move(game *g)
 
  bool moved = false;
  point next;
- monster* const m_plan = (plans.size() > 0 ? g->mon(plans[0]) : 0);
+ monster* const m_plan = (plans.size() > 0 ? g->mon(plans[0]) : nullptr);
 
  if (!plans.empty() && !is_fleeing(g->u) &&
      (!m_plan || m_plan->friendly != 0 || has_flag(MF_ATTACKMON)) && can_sound_move_to(g, plans[0])){
