@@ -3,9 +3,22 @@
 #include <sstream>
 
 // this file has to build without material changes for Socrates' Daimon, so no referring to the player class here until that builds for Socrates' Daimon.
+static stat_delta addict_linear_stat_step(const addiction& add)
+{
+    stat_delta ret = { 0,0,0,0 };
+
+    switch (add.type) {
+    case ADD_PKILLER:
+        ret.Str = 7;
+        break;
+    }
+
+    return ret;
+}
 
 stat_delta addict_stat_effects(const addiction& add)
 {
+    auto step = addict_linear_stat_step(add);
     stat_delta ret = { 0,0,0,0 };
 
     // historically:
@@ -18,7 +31,7 @@ stat_delta addict_stat_effects(const addiction& add)
         break;
 
     case ADD_PKILLER:
-        ret.Str -= 1 + int(add.intensity / 7);
+        ret.Str = -1;
         ret.Per = -1;
         ret.Dex = -1;
         break;
@@ -33,6 +46,11 @@ stat_delta addict_stat_effects(const addiction& add)
         ret.Int = -1;
         break;
     }
+
+    if (step.Str) ret.Str -= add.intensity / step.Str;
+    if (step.Dex) ret.Dex -= add.intensity / step.Dex;
+    if (step.Int) ret.Int -= add.intensity / step.Int;
+    if (step.Per) ret.Per -= add.intensity / step.Per;
 
     return ret;
 }
@@ -71,28 +89,42 @@ std::string addiction_text(const addiction& cur)
 {
     const auto s_text = addiction_static_text(cur);
     if (!s_text) return std::string();  // invalid
-
+#ifdef SOCRATES_DAIMON
+    const auto step = addict_linear_stat_step(cur);
+#endif
     const auto delta = addict_stat_effects(cur);
     std::ostringstream dump;
     bool non_empty = false;
 
     if (delta.Str) {
         dump << "Strength " << delta.Str;
+#ifdef SOCRATES_DAIMON
+        if (step.Str) dump << "-(intensity/" << step.Str << ")";
+#endif
         non_empty = true;
     }
     if (delta.Dex) {
         if (non_empty) dump << "; ";
         dump << "Dexterity " << delta.Dex;
+#ifdef SOCRATES_DAIMON
+        if (step.Dex) dump << "-(intensity/" << step.Dex << ")";
+#endif
         non_empty = true;
     }
     if (delta.Int) {
         if (non_empty) dump << "; ";
         dump << "Intelligence " << delta.Int;
+#ifdef SOCRATES_DAIMON
+        if (step.Int) dump << "-(intensity/" << step.Int << ")";
+#endif
         non_empty = true;
     }
     if (delta.Per) {
         if (non_empty) dump << "; ";
         dump << "Perception " << delta.Per;
+#ifdef SOCRATES_DAIMON
+        if (step.Per) dump << "-(intensity/" << step.Per << ")";
+#endif
         non_empty = true;
     }
     if (!non_empty) return s_text;
