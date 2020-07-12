@@ -25,7 +25,7 @@ class map
  typedef std::pair<short,point> localPos; // nonant, x, y
 
 // Constructors & Initialization
- map(int map_size = MAPSIZE) : my_MAPSIZE(map_size), grid(map_size*map_size, NULL) {};
+ map(int map_size = MAPSIZE) : my_MAPSIZE(map_size), grid(map_size*map_size, nullptr) {}
  map(const map& src) = default;
  map(map&& src) = default;
  virtual ~map() = default;	// works because mapbuffer is the owner of the submaps, not us (copy works by same rationale)

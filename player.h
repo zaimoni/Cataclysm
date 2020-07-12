@@ -60,9 +60,9 @@ public:
  void disp_morale();		// '%' key; morale info
  void disp_status(WINDOW* w, game *g);// On-screen data
 
- void reset(game *g = NULL);// Resets movement points, stats, applies effects
+ void reset(game* g = nullptr);// Resets movement points, stats, applies effects
  void update_morale();	// Ticks down morale counters and removes them
- int  current_speed(game *g = NULL) const; // Number of movement points we get a turn
+ int  current_speed(game* g = nullptr) const; // Number of movement points we get a turn
  int  run_cost(int base_cost); // Adjust base_cost
  int  swim_speed();	// Our speed when swimming
 
@@ -317,7 +317,7 @@ private:
  int  hit_roll() const; // Our basic hit roll, compared to our target's dodge roll
  bool scored_crit(int target_dodge = 0) const; // Critical hit?
 
- // V 0.2.1 \todo player variants of these so we can avoid NULL pointers as signal for player; alternately, unify API
+ // V 0.2.1 \todo player variants of these so we can avoid null pointers as signal for player; alternately, unify API
  int roll_bash_damage(const monster *z, bool crit) const;
  int roll_cut_damage(const monster *z, bool crit) const;
  int roll_stab_damage(const monster *z, bool crit) const;

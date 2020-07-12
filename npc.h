@@ -300,8 +300,8 @@ public:
 
  bool is_npc() const override { return true; }
 
- static npc* find(int id); // NPC with UID=id; NULL if non-existant
- static const npc* find_r(int id); // NPC with UID=id; NULL if non-existant
+ static npc* find(int id); // NPC with UID=id; null if non-existent
+ static const npc* find_r(int id); // NPC with UID=id; null if non-existent
 
  static npc* find_alive(int id) {
      auto ret = find(id);
