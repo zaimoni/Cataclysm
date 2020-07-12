@@ -169,7 +169,7 @@ DEFINE_JSON_ENUM_SUPPORT_TYPICAL(talk_topic, JSON_transcode_talk)
 npc::npc()
 : id(-1),attitude(NPCATT_NULL),myclass(NC_NONE),wand(point(0,0),0),
   pl(point(-1,-1),0),it(-1,-1),goal(_ref<decltype(goal)>::invalid),fetching_item(false),has_new_items(false),
-  my_fac(0),mission(NPC_MISSION_NULL),patience(0),marked_for_death(false),dead(false),flags(0)
+  my_fac(nullptr),mission(NPC_MISSION_NULL),patience(0),marked_for_death(false),dead(false),flags(0)
 {
 }
 
@@ -181,7 +181,7 @@ npc* npc::find(const int id) {
     for (auto& _npc : g->active_npc) if (id == _npc.id) return &_npc;
     for (auto& _npc : g->cur_om.npcs) if (id == _npc.id) return &_npc;
     // \todo check other overmaps...first those already loaded, then those *not* loaded
-    return 0;
+    return nullptr;
 }
 
 const npc* npc::find_r(const int id) {
@@ -189,7 +189,7 @@ const npc* npc::find_r(const int id) {
     for (auto& _npc : g->active_npc) if (id == _npc.id) return &_npc;
     for (auto& _npc : g->cur_om.npcs) if (id == _npc.id) return &_npc;
     // \todo check other overmaps...first those already loaded, then those *not* loaded
-    return 0;
+    return nullptr;
 }
 
 void npc::die(const int id)

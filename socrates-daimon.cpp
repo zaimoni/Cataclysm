@@ -53,7 +53,7 @@ static void to_desc(const std::vector<T*>& src, std::map<std::string, std::strin
 static const char* addiction_target(add_type cur)
 {
 	switch(cur) {
-	case ADD_NULL:	return 0;
+	case ADD_NULL:	return nullptr;
 	case ADD_CIG:		return "Nicotine";
 	case ADD_CAFFEINE:	return "Caffeine";	// technically also includes both theophylline and theobromine
 	case ADD_ALCOHOL:	return "Alcohol";
@@ -63,7 +63,7 @@ static const char* addiction_target(add_type cur)
 	case ADD_COKE:	return "Cocaine";
 	case ADD_THC:	return "Marijuana";
 	}
-	throw new std::logic_error("unhandled addiction type");
+	throw std::logic_error("unhandled addiction type");
 }
 
 static auto typicalMenuLink(std::string&& li_id, std::string&& a_name, std::string&& a_url)
@@ -85,7 +85,7 @@ static auto swapDOM(const std::string& selector, html::tag& src, html::tag&& nod
 {
 	auto subheader = src.querySelector(selector);
 #ifndef NDEBUG
-	if (!subheader) throw new std::logic_error("missing update target");
+	if (!subheader) throw std::logic_error("missing update target");
 #endif
 	auto backup(std::move(*subheader));
 	*subheader = std::move(node);
@@ -1560,8 +1560,8 @@ int main(int argc, char *argv[])
 			table_row.append(cell);
 
 			size_t ub = num_fields;
-			const char* css_fg = 0;
-			const char* css_bg = 0;
+			const char* css_fg = nullptr;
+			const char* css_bg = nullptr;
 			while (0 < --ub) {
 				const field_t& x = field::list[ub];
 				table_row[0]->append(html::tag::wrap(x.name[0]));
@@ -1661,8 +1661,8 @@ int main(int argc, char *argv[])
 			table_row.append(cell);
 
 			size_t ub = num_terrain_types;
-			const char* css_fg = 0;
-			const char* css_bg = 0;
+			const char* css_fg = nullptr;
+			const char* css_bg = nullptr;
 			while (0 < --ub) {
 				const ter_t& x = ter_t::list[ub];
 				/*
@@ -1781,8 +1781,8 @@ int main(int argc, char *argv[])
 				table_row.append(cell);
 
 				size_t ub = NUM_ADDICTIONS;
-				const char* css_fg = 0;
-				const char* css_bg = 0;
+				const char* css_fg = nullptr;
+				const char* css_bg = nullptr;
 				while (0 < --ub) {
 					addiction test((add_type)ub);
 					table_row[0]->append(html::tag::wrap(addiction_name(test)));
@@ -1818,4 +1818,3 @@ int main(int argc, char *argv[])
 	system("clear"); // Tell the terminal to clear itself
 	return 0;
 }
-

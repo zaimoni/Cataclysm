@@ -60,9 +60,9 @@ public:
  void disp_morale();		// '%' key; morale info
  void disp_status(WINDOW* w, game *g);// On-screen data
 
- void reset(game *g = NULL);// Resets movement points, stats, applies effects
+ void reset(game* g = nullptr);// Resets movement points, stats, applies effects
  void update_morale();	// Ticks down morale counters and removes them
- int  current_speed(game *g = NULL) const; // Number of movement points we get a turn
+ int  current_speed(game* g = nullptr) const; // Number of movement points we get a turn
  int  run_cost(int base_cost); // Adjust base_cost
  int  swim_speed();	// Our speed when swimming
 
@@ -207,8 +207,8 @@ public:
  int weight_capacity(bool real_life = true) const;
  int volume_capacity() const;
  int morale_level() const;	// Modified by traits, &c
- void add_morale(morale_type type, int bonus, int max_bonus = 0, const itype* item_type = 0);
- int get_morale(morale_type type, const itype* item_type = 0) const;
+ void add_morale(morale_type type, int bonus, int max_bonus = 0, const itype* item_type = nullptr);
+ int get_morale(morale_type type, const itype* item_type = nullptr) const;
 
  void sort_inv();	// Sort inventory by type
  std::string weapname(bool charges = true) const;
@@ -317,7 +317,7 @@ private:
  int  hit_roll() const; // Our basic hit roll, compared to our target's dodge roll
  bool scored_crit(int target_dodge = 0) const; // Critical hit?
 
- // V 0.2.1 \todo player variants of these so we can avoid NULL pointers as signal for player; alternately, unify API
+ // V 0.2.1 \todo player variants of these so we can avoid null pointers as signal for player; alternately, unify API
  int roll_bash_damage(const monster *z, bool crit) const;
  int roll_cut_damage(const monster *z, bool crit) const;
  int roll_stab_damage(const monster *z, bool crit) const;

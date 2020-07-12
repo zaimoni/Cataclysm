@@ -5848,7 +5848,7 @@ vehicle* map::add_vehicle(vhtype_id type, int x, int y, int dir)
 {
  if (!inbounds(x,y)) {
   debugmsg("Bad add_vehicle t=%d d=%d x=%d y=%d", type, dir, x, y);
-  return 0;
+  return nullptr;
  }
  int smx = x / SEEX;
  int smy = y / SEEY;

@@ -34,7 +34,7 @@ class use_escape_obj : public cataclysm::action
 public:
 	use_escape_obj(player& actor, int index) : _actor(actor), inv_index(index) {
 #ifndef NDEBUG
-		if (!IsLegal()) throw new std::logic_error("illegal escape item");
+		if (!IsLegal()) throw std::logic_error("illegal escape item");
 #endif
 	};
 	~use_escape_obj() = default;
@@ -58,7 +58,7 @@ public:
 			return;
 		}
 #ifndef NDEBUG
-		if (!used.is_tool()) throw new std::logic_error("escape item was neither edible nor a tool");
+		if (!used.is_tool()) throw std::logic_error("escape item was neither edible nor a tool");
 #endif
 
 		const it_tool* const tool = dynamic_cast<const it_tool*>(used.type);
@@ -79,7 +79,7 @@ class move_step_screen : public cataclysm::action
 public:
 	move_step_screen(npc& actor, const point& dest, const char* desc) : _actor(actor), _dest(dest), _desc(desc) {
 #ifndef NDEBUG
-		if (!IsLegal()) throw new std::logic_error("unreasonable move");
+		if (!IsLegal()) throw std::logic_error("unreasonable move");
 #endif
 	};
 	~move_step_screen() = default;
@@ -107,7 +107,7 @@ public:
 		if (_actor.path.empty()) throw std::runtime_error("tried to follow empty path");
 		if (_actor.path.size() <= _threshold && !_op) throw std::runtime_error("NULL path action");
 #ifndef NDEBUG
-		if (!IsLegal()) throw new std::logic_error("unreasonable pathing");
+		if (!IsLegal()) throw std::logic_error("unreasonable pathing");
 #endif
 	};
 	~move_path_screen() = default;
@@ -132,7 +132,7 @@ class fire_weapon_screen : public cataclysm::action
 	bool _burst;
 	const char* _desc;
 public:
-	fire_weapon_screen(npc& actor, const point& tar, bool burst, const char* desc=0) : _actor(actor), _tar(tar), _burst(burst), _desc(desc) {
+	fire_weapon_screen(npc& actor, const point& tar, bool burst, const char* desc=nullptr) : _actor(actor), _tar(tar), _burst(burst), _desc(desc) {
 		auto g = game::active();
 		if (tar != actor.pos) {	// required for legality/performability
 			int linet;
@@ -140,7 +140,7 @@ public:
 			_trajectory = line_to(actor.pos, tar, (g->m.sees(actor.pos, tar, actor.sight_range(light), linet) ? linet : 0));
 		}
 #ifndef NDEBUG
-		if (!IsLegal()) throw new std::logic_error("unreasonable targeting");
+		if (!IsLegal()) throw std::logic_error("unreasonable targeting");
 #endif
 	};
 	~fire_weapon_screen() = default;
@@ -165,7 +165,7 @@ class target_player : public cataclysm::action
 public:
 	target_player(npc& actor, player& target, void (npc::* op)(player& pl), const char* desc) : _actor(actor), _target(target), _op(op), _desc(desc) {
 #ifndef NDEBUG
-		if (!IsLegal()) throw new std::logic_error("illegal targeting of player");
+		if (!IsLegal()) throw std::logic_error("illegal targeting of player");
 #endif
 	}
 	~target_player() = default;
@@ -191,7 +191,7 @@ class target_inventory : public cataclysm::action
 public:
 	target_inventory(PC& actor, int inv_index, bool (PC::* op)(int inv_target), const char* desc) : _actor(actor), _inv_index(inv_index), _op(op), _desc(desc) {
 #ifndef NDEBUG
-		if (!IsLegal()) throw new std::logic_error("illegal targeting of inventory");
+		if (!IsLegal()) throw std::logic_error("illegal targeting of inventory");
 #endif
 	}
 	~target_inventory() = default;
@@ -293,17 +293,17 @@ static bool decode_target(int target, npc::ai_target& dest)
 	auto g = game::active();
 	if (0 <= target && g->z.size() > target) {
 		auto& mon = g->z[target];
-		dest = npc::ai_target(mon.pos, std::tuple<monster*, player*, npc*>(&mon, 0, 0));
+		dest = npc::ai_target(mon.pos, std::tuple<monster*, player*, npc*>(&mon, nullptr, nullptr));
 		return true;
 	} else if (TARGET_PLAYER == target) {
 		auto& u = g->u;
-		dest = npc::ai_target(u.pos, std::tuple<monster*, player*, npc*>(0, &u, 0));
+		dest = npc::ai_target(u.pos, std::tuple<monster*, player*, npc*>(nullptr, &u, nullptr));
 		return true;
 	} else if (TARGET_PLAYER > target && g->active_npc.size()>((TARGET_PLAYER-1) - target)) {	// 2019-11-21: UNTESTED
 		auto npc_index = (TARGET_PLAYER - 1) - target;
 		if (g->active_npc.size() > npc_index) {
 			auto& nPC = g->active_npc[npc_index];
-			dest = npc::ai_target(nPC.pos, std::tuple<monster*, player*, npc*>(0, 0, &nPC));
+			dest = npc::ai_target(nPC.pos, std::tuple<monster*, player*, npc*>(nullptr, nullptr, &nPC));
 			return true;
 		}
 	}
@@ -719,7 +719,7 @@ int npc::choose_escape_item() const
 {
  int best = -1, ret = -1;
  for (size_t i = 0; i < inv.size(); i++) {
-  const it_comest* food = 0;
+  const it_comest* food = nullptr;
   const auto& it = inv[i];
   for (int j = 0; j < NUM_ESCAPE_ITEMS; j++) {
    if (it.type->id != ESCAPE_ITEMS[j]) continue;	// \todo some sort of relevance check (needs context)

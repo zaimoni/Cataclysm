@@ -272,7 +272,7 @@ std::pair<int, item*> inventory::by_letter(const char ch)
 		  if (it.invlet == ch) return std::pair<int, item*>(i, &it);
 	  }
   }
-  return std::pair<int, item*>(-1, 0);
+  return std::pair<int, item*>(-1, nullptr);
 }
 
 std::pair<int, const item*> inventory::by_letter(const char ch) const
@@ -285,7 +285,7 @@ std::pair<int, const item*> inventory::by_letter(const char ch) const
 			if (it.invlet == ch) return std::pair<int, const item*>(i, &it);
 		}
 	}
-	return std::pair<int, const item*>(-1, 0);
+	return std::pair<int, const item*>(-1, nullptr);
 }
 
 int inventory::amount_of(itype_id it) const

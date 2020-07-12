@@ -494,7 +494,7 @@ void player::activate_bionic(int b, game *g)
   } else {
    t = g->inv("Choose a container:");
    auto& it = i_at(t);
-   if (it.type == 0) {
+   if (it.type == nullptr) {
     messages.add("You don't have that item!");
     power_level += bionic::type[bio_evap].power_cost;
    } else if (!it.is_container()) {
@@ -596,7 +596,7 @@ void player::activate_bionic(int b, game *g)
 	have_extracted = true;
     t = g->inv("Choose a container:");
 	auto& it = i_at(t);
-    if (0 == it.type) {
+    if (nullptr == it.type) {
      messages.add("You don't have that item!");
      power_level += bionic::type[bio_water_extractor].power_cost;
     } else if (!it.is_container()) {

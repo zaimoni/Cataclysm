@@ -65,7 +65,7 @@ public:
 		decltype(_text) discard2;
 		_text.swap(discard2);
 	}
-	tag* operator[](size_t n) { return _content.size() > n ? _content.data() + n : 0; }
+	tag* operator[](size_t n) { return _content.size() > n ? _content.data() + n : nullptr; }
 
 	// attribute manipulation
 	void unset(const std::string& key) { _attr.erase(key); }
@@ -79,7 +79,7 @@ public:
 		_attr[std::move(key)] = destructive_quot_escape(x);
 	}
 	void set(std::string&& key, std::string&& val) { _attr[std::move(key)] = std::move(destructive_quot_escape(val)); }
-	const std::string* read(const std::string& key) const { return _attr.count(key) ? &_attr.at(key) : 0; }
+	const std::string* read(const std::string& key) const { return _attr.count(key) ? &_attr.at(key) : nullptr; }
 
 	// W3C API
 	tag* querySelector(const std::string& selector);	// returns first matching tag
@@ -108,8 +108,8 @@ public:
 	to_text(to_text&& src) = delete;
 	~to_text() {
 		if (dest) fclose(dest);
-		dest = 0;
-	};
+		dest = nullptr;
+	}
 	to_text& operator=(const to_text& src) = delete;
 	to_text& operator=(to_text&& src) = delete;
 

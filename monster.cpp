@@ -31,7 +31,7 @@ DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(monster_effect_type, JSON_transcode_m
 
 monster::monster() noexcept
 : pos(20, 10), wand(point(-1, -1), 0), spawnmap(-1, -1), spawnpos(-1,-1), moves(0), speed(0), hp(60), sp_timeout(0), friendly(0),
-  anger(0), morale(2), faction_id(-1), mission_id(-1),type(0),dead(false),made_footstep(false)
+  anger(0), morale(2), faction_id(-1), mission_id(-1),type(nullptr),dead(false),made_footstep(false)
 {
 }
 

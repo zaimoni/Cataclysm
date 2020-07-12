@@ -56,7 +56,7 @@ static constexpr const char* JSON_key(option_key opt)	// \todo micro-optimize th
 	case OPT_EXTRA_MARGIN: return "extra bottom-right margin";
 	case OPT_FONT:	return "font";
 	case OPT_FONTPATH:	return "font path";
-	default: return 0;
+	default: return nullptr;
 	}
 }
 
@@ -75,7 +75,7 @@ static option_key opt_key(const char* const x)
 #define OPT_FILE "data/options.json"
 
 static JSON& get_JSON_opts() {
-	static JSON* x = 0;
+	static JSON* x = nullptr;
 	if (!x) {
 		std::ifstream fin(OPT_FILE);
 		if (fin) x = new JSON(fin);
@@ -118,7 +118,7 @@ option_table::option_table() {
 				auto val = test.scalar();
 				if ("true" == val) options[i] = true;
 				else if ("false" == val) options[i] = false;
-				else options[i] = strtod(val.c_str(),0);	// also handles int
+				else options[i] = strtod(val.c_str(),nullptr);	// also handles int
 			}
 		}
 	}
@@ -126,7 +126,7 @@ option_table::option_table() {
 
 option_table& option_table::get()
 {
-	static option_table* x = 0;
+	static option_table* x = nullptr;
 	if (!x) x = new option_table();
 	return *x;
 }

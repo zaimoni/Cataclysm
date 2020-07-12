@@ -14,7 +14,7 @@ public:
  static std::vector<itype*> types;
  static const item null;
 
- const itype*   type;	// \todo more actively enforce non-NULL constraint
+ const itype*   type;	// \todo more actively enforce non-null constraint
  const mtype*   corpse;
  const it_ammo* curammo;
 
@@ -69,7 +69,7 @@ public:
  int burst_size() const;
  int recoil(bool with_ammo = true) const;
 #ifndef SOCRATES_DAIMON
- int range(const player *p = NULL) const;
+ int range(const player* p = nullptr) const;
 #endif
  ammotype ammo_type() const;
  bool gun_uses_ammo_type(ammotype am) const;
@@ -103,7 +103,7 @@ public:
  int damage_cut() const;
  bool has_flag(item_flag f) const;
 #ifndef SOCRATES_DAIMON
- bool has_technique(technique_id t, const player *p = NULL) const;
+ bool has_technique(technique_id t, const player* p = nullptr) const;
  std::vector<technique_id> techniques() const;
 #endif
  bool goes_bad() const;
@@ -124,7 +124,7 @@ public:
  bool conductive() const; // Electricity
  bool destroyed_at_zero_charges() const;
 // Most of the is_whatever() functions call the same function in our itype
- bool is_null() const; // True if type is NULL, or points to the null item (id == 0)
+ bool is_null() const; // True if type is null, or points to the null item (id == 0)
 #ifndef SOCRATES_DAIMON
  bool is_food(const player& u) const;// Some non-food items are food to certain players
  bool is_food_container(const player& u) const;  // Ditto

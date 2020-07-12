@@ -48,7 +48,7 @@ class inventory
  * game pointer is not necessary, but if supplied, will ensure no overlap with
  * the player's worn items / weapon
  */
-  void restack(player *p = NULL);
+  void restack(player* p = nullptr);
 
   void form_from_map(const map& m, point origin, int distance);
 
@@ -79,7 +79,7 @@ class inventory
   static const std::vector<item> nullstack;
   std::vector< std::vector<item> > items;
 
-  void assign_empty_invlet(item &it, player *p = NULL);
+  void assign_empty_invlet(item &it, player* p = nullptr);
 };
 
 #endif

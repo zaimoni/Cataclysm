@@ -109,13 +109,13 @@ vehicle* map::veh_at(const localPos& src, int& part_num) const
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 vehicle* map::veh_at(int x, int y, int &part_num) const
 {
  localPos pos;
- if (!to(x, y, pos)) return 0;    // Out-of-bounds - null vehicle
+ if (!to(x, y, pos)) return nullptr;    // Out-of-bounds - null vehicle
  return veh_at(pos, part_num);
 }
 
@@ -406,7 +406,7 @@ void map::vehmove(game *g)
 					   psgname.c_str(), psgverb, veh->name.c_str());
 			   const point origin(x + veh->parts[ps].precalc_d[0].x, y + veh->parts[ps].precalc_d[0].y);
 			   g->m.unboard_vehicle(origin);
-			   g->fling_player_or_monster(psg, 0, mdir.dir() + rng(0, 60) - 30,
+			   g->fling_player_or_monster(psg, nullptr, mdir.dir() + rng(0, 60) - 30,
 				   (vel2 / 100 - sb_bonus < 10 ? 10 : vel2 / 100 - sb_bonus));
 		   } else if (veh->part_with_feature(ps, vpf_controls) >= 0) {
 			   int lose_ctrl_roll = rng(0, imp);
@@ -462,7 +462,7 @@ void map::vehmove(game *g)
        timespec ts;   // Timespec for the animation
        ts.tv_sec = 0;
        ts.tv_nsec = 50000000;
-       nanosleep (&ts, 0);
+       nanosleep(&ts, nullptr);
       }
 
       if (can_move) {
@@ -1690,11 +1690,11 @@ void map::remove_field(int x, int y)
 computer* map::computer_at(const point& pt)
 {
  localPos pos;
- if (!to(pt, pos)) return 0;
+ if (!to(pt, pos)) return nullptr;
 
  auto& c = grid[pos.first]->comp;
 
- if (c.name == "") return 0;
+ if (c.name == "") return nullptr;
  return &c;
 }
 
@@ -2292,4 +2292,3 @@ bool map::inbounds(int x, int y) const
 {
  return (x >= 0 && x < SEEX * my_MAPSIZE && y >= 0 && y < SEEY * my_MAPSIZE);
 }
-

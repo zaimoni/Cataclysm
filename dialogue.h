@@ -18,10 +18,10 @@ struct dialogue {
  talk_topic opt(talk_topic topic, game *g);
 
  dialogue(player* _alpha, npc* _beta)
- : alpha(_alpha),beta(_beta),win(NULL),done(false) {}
+ : alpha(_alpha),beta(_beta),win(nullptr),done(false) {}
  ~dialogue() { if (win) { 
 	 delwin(win);
-	 win = NULL;
+	 win = nullptr;
  } }
 
  dialogue(const dialogue& src) = delete;

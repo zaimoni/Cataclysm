@@ -48,7 +48,7 @@ void JSON::reset()
 	// just leak if it's invalid
 	}
 	_mode = none;
-	_scalar = 0;
+	_scalar = nullptr;
 }
 
 bool JSON::empty() const
@@ -149,7 +149,7 @@ bool JSON::destructive_grep(bool (ok)(const JSON&))
 		}
 		if (!_object->empty()) return true;
 		delete _object;
-		_object = 0;
+		_object = nullptr;
 		return false;
 	case array:
 		if (empty()) return false;
@@ -162,7 +162,7 @@ bool JSON::destructive_grep(bool (ok)(const JSON&))
 		}
 		if (!_array->empty()) return true;
 		delete _array;
-		_array = 0;
+		_array = nullptr;
 		return false;
 	}
 	return !empty();
@@ -183,7 +183,7 @@ bool JSON::destructive_grep(bool (ok)(const std::string& key, const JSON&), bool
 	}
 	if (_object->empty()) {
 		delete _object;
-		_object = 0;
+		_object = nullptr;
 	}
 	return true;
 }
@@ -193,7 +193,7 @@ bool JSON::destructive_merge(JSON& src)
 	if (object != src._mode) return false;
 	if (none == _mode) {	// we are blank.  retype as empty object.
 		_mode = object;
-		_object = 0;	// leak rather than crash
+		_object = nullptr;	// leak rather than crash
 	}
 	if (object != _mode) return false;
 	if (!src._object) return true;	// no keys
@@ -210,7 +210,7 @@ bool JSON::destructive_merge(JSON& src)
 		(*working)[iter.first] = std::move(iter.second);
 	}
 	delete src._object;
-	src._object = 0;
+	src._object = nullptr;
 #endif
 	if (!working->empty()) _object = working;
 	return true;
@@ -221,7 +221,7 @@ bool JSON::destructive_merge(JSON& src, bool (ok)(const JSON&))
 	if (object != src._mode) return false;
 	if (none == _mode) {	// we are blank.  retype as empty object.
 		_mode = object;
-		_object = 0;	// leak rather than crash
+		_object = nullptr;	// leak rather than crash
 	}
 	if (object != _mode) return false;
 	if (!src._object) return true;	// no keys
@@ -256,7 +256,7 @@ void JSON::unset(const std::vector<std::string>& src)
 	}
 	if (_object->empty()) {
 		delete _object;
-		_object = 0;
+		_object = nullptr;
 	}
 }
 
@@ -266,7 +266,7 @@ void JSON::unset(const std::string& src)
 	if (_object->count(src)) _object->erase(src);
 	if (_object->empty()) {
 		delete _object;
-		_object = 0;
+		_object = nullptr;
 	}
 }
 
@@ -303,19 +303,19 @@ void JSON::set(const std::string& src, JSON&& val)
 
 // constructor and support thereof
 JSON::JSON(const JSON& src)
-: _scalar(0), _mode(src._mode)
+: _scalar(nullptr), _mode(src._mode)
 {
 	switch(src._mode)
 	{
 	case object:
-		_object = src._object ? new _object_JSON(*src._object) : 0;
+		_object = src._object ? new _object_JSON(*src._object) : nullptr;
 		break;
 	case array:
-		_array = src._array ? new std::vector<JSON>(*src._array) : 0;
+		_array = src._array ? new std::vector<JSON>(*src._array) : nullptr;
 		break;
 	case string:
 	case literal:
-		_scalar = src._scalar ? new std::string(*src._scalar) : 0;
+		_scalar = src._scalar ? new std::string(*src._scalar) : nullptr;
 		break;
 	case none: break;
 	default: throw std::runtime_error("invalid JSON src for copy");
@@ -381,7 +381,7 @@ static unsigned char scan_for_data_start(std::istream& src, char& result, unsign
 static const std::string JSON_read_failed("JSON read failed before end of file, line: ");
 
 JSON::JSON(std::istream& src)
-: _scalar(0), _mode(none)
+: _scalar(nullptr), _mode(none)
 {
 	src.exceptions(std::ios::badbit);	// throw on hardware failure
 	char last_read = ' ';
@@ -412,7 +412,7 @@ JSON::JSON(std::istream& src)
 }
 
 JSON::JSON(std::istream& src, unsigned long& line, char& last_read, bool must_be_scalar)
-	: _scalar(0), _mode(none)
+	: _scalar(nullptr), _mode(none)
 {
 	const unsigned char code = scan_for_data_start(src, last_read, line);
 	switch (code)
@@ -487,7 +487,7 @@ void JSON::finish_reading_object(std::istream& src, unsigned long& line)
 		}
 	if (next_is(src,'}')) {
 		_mode = object;
-		_object = 0;
+		_object = nullptr;
 		return;
 	}
 
@@ -524,12 +524,12 @@ void JSON::finish_reading_object(std::istream& src, unsigned long& line)
 		dest[_key.scalar()] = std::move(_value);
 		if (!consume_whitespace(src, line)) {	// oops, at end prematurely (but everything that did arrive is ok)
 			_mode = object;
-			_object = dest.empty() ? 0 : new _object_JSON(std::move(dest));
+			_object = dest.empty() ? nullptr : new _object_JSON(std::move(dest));
 			return;
 		}
 		if (next_is(src, '}')) {
 			_mode = object;
-			_object = dest.empty() ? 0 : new _object_JSON(std::move(dest));
+			_object = dest.empty() ? nullptr : new _object_JSON(std::move(dest));
 			return;
 		}
 		if (!next_is(src, ',')) {
@@ -552,7 +552,7 @@ void JSON::finish_reading_array(std::istream& src, unsigned long& line)
 	}
 	if (next_is(src, ']')) {
 		_mode = array;
-		_array = 0;
+		_array = nullptr;
 		return;
 	}
 
@@ -570,12 +570,12 @@ void JSON::finish_reading_array(std::istream& src, unsigned long& line)
 		}
 		if (!consume_whitespace(src, line)) {	// early end but data so far ok
 			_mode = array;
-			_array = dest.empty() ? 0 : new std::vector<JSON>(std::move(dest));
+			_array = dest.empty() ? nullptr : new std::vector<JSON>(std::move(dest));
 			return;
 		}
 		if (next_is(src, ']')) {	// array terminated legally{
 			_mode = array;
-			_array = dest.empty() ? 0 : new std::vector<JSON>(std::move(dest));
+			_array = dest.empty() ? nullptr : new std::vector<JSON>(std::move(dest));
 			return;
 		}
 		if (!next_is(src, ',')) {

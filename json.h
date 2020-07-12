@@ -53,15 +53,15 @@ private:
 	};
 	unsigned char _mode;
 public:
-	JSON() : _scalar(0), _mode(none) {}
-	JSON(mode src) : _scalar(0), _mode(src) {}
+	JSON() : _scalar(nullptr), _mode(none) {}
+	JSON(mode src) : _scalar(nullptr), _mode(src) {}
 	JSON(const JSON& src);
 	JSON(JSON&& src);
 	JSON(std::istream& src);
 	JSON(const std::string& src) : _scalar(new std::string(src)), _mode(literal) {}
 	JSON(std::string&& src) : _scalar(new std::string(src)), _mode(literal) {}
 	JSON(const char* src,bool is_literal = true) : _scalar(new std::string(src)), _mode(is_literal ? literal : string) {}
-	JSON(std::string*& src, bool is_literal = true) : _scalar(src), _mode(is_literal ? literal : string) { src = 0; }
+	JSON(std::string*& src, bool is_literal = true) : _scalar(src), _mode(is_literal ? literal : string) { src = nullptr; }
 	~JSON() { reset(); };
 	friend std::ostream& operator<<(std::ostream& os, const JSON& src);
 

@@ -42,7 +42,7 @@ namespace cataclysm {	\
 const char* JSON_key(TYPE src)	\
 {	\
 	if (cataclysm::JSON_parse<TYPE>::origin <= src && (sizeof(STATIC_REF) / sizeof(*STATIC_REF))+cataclysm::JSON_parse<TYPE>::origin > src) return STATIC_REF[src - cataclysm::JSON_parse<TYPE>::origin];	\
-	return 0;	\
+	return nullptr;	\
 }	\
 	\
 namespace cataclysm {	\
@@ -60,7 +60,7 @@ namespace cataclysm {	\
 const char* JSON_key(TYPE src)	\
 {	\
 	if (1 <= src && (sizeof(STATIC_REF) / sizeof(*STATIC_REF))>= src) return STATIC_REF[src - 1];	\
-	return 0;	\
+	return nullptr;	\
 }	\
 	\
 namespace cataclysm {	\
@@ -74,4 +74,3 @@ namespace cataclysm {	\
 }
 
 #endif
-
