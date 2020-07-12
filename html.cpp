@@ -148,7 +148,7 @@ tag* tag::querySelector(const std::string& selector)
 	}
 	// unhandled
 #ifndef NDEBUG
-	throw new std::logic_error("need to handle more selector syntax");
+	throw std::logic_error("need to handle more selector syntax");
 #endif
 	return 0;
 }

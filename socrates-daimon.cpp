@@ -63,7 +63,7 @@ static const char* addiction_target(add_type cur)
 	case ADD_COKE:	return "Cocaine";
 	case ADD_THC:	return "Marijuana";
 	}
-	throw new std::logic_error("unhandled addiction type");
+	throw std::logic_error("unhandled addiction type");
 }
 
 static auto typicalMenuLink(std::string&& li_id, std::string&& a_name, std::string&& a_url)
@@ -85,7 +85,7 @@ static auto swapDOM(const std::string& selector, html::tag& src, html::tag&& nod
 {
 	auto subheader = src.querySelector(selector);
 #ifndef NDEBUG
-	if (!subheader) throw new std::logic_error("missing update target");
+	if (!subheader) throw std::logic_error("missing update target");
 #endif
 	auto backup(std::move(*subheader));
 	*subheader = std::move(node);
