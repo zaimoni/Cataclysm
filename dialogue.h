@@ -123,7 +123,7 @@ struct tag_data
  std::string (*replacement)[10];
 };
 
-std::string talk_needs[num_needs][5] = {
+std::string talk_needs[num_needs][5] = {	// 2020-07-12: dead array...assume relevant commented-out code incorrectly removed; this should be wired in
 {"", "", "", "", ""},
 {"Hey<punc> You got any <ammo>?", "I'll need some <ammo> soon, got any?",
  "I really need some <ammo><punc>", "I need <ammo> for my <mywp>, got any?",
@@ -333,9 +333,7 @@ std::string talk_done_mugging[10] = {
 "Thanks, <name_g>!"
 };
 
-#define NUM_STATIC_TAGS 24
-
-tag_data talk_tags[NUM_STATIC_TAGS] = {
+tag_data talk_tags[] = {
 {"<okay>",		&talk_okay},
 {"<no>",		&talk_no},
 {"<name_b>",		&talk_bad_names},
@@ -361,5 +359,6 @@ tag_data talk_tags[NUM_STATIC_TAGS] = {
 {"<move>",		&talk_move},
 {"<done_mugging>",	&talk_done_mugging}
 };
+static constexpr const size_t NUM_STATIC_TAGS = sizeof(talk_tags) / sizeof(*talk_tags);
 
 #endif
