@@ -468,22 +468,21 @@ artifact_armor_form_datum artifact_armor_mod_data[NUM_ARMORMODS] = {
 
 };
 
-
-#define NUM_ART_ADJS 20
-std::string artifact_adj[NUM_ART_ADJS] = {
+std::string artifact_adj[] = {
 "Forbidden", "Unknown", "Forgotten", "Hideous", "Eldritch",
 "Gelatinous", "Ancient", "Cursed", "Bloody", "Undying",
 "Shadowy", "Silent", "Cyclopean", "Fungal", "Unspeakable",
 "Grotesque", "Frigid", "Shattered", "Sleeping", "Repellent"
 };
+static constexpr const size_t NUM_ART_ADJS = sizeof(artifact_adj) / sizeof(*artifact_adj);
 
-#define NUM_ART_NOUNS 20
 // Prepending + makes it proper, e.g. "The Forbidden Abyss"
-std::string artifact_noun[NUM_ART_NOUNS] = {
+std::string artifact_noun[] = {
 "Technique", "Dreams", "Beasts", "Evil", "Miasma",
 "+Abyss", "+City", "Shadows", "Shade", "Illusion",
 "Justice", "+Necropolis", "Ichor", "+Monolith", "Aeons",
 "Graves", "Horrors", "Suffering", "Death", "Horror"
 };
+static constexpr const size_t NUM_ART_NOUNS = sizeof(artifact_noun) / sizeof(*artifact_noun);
 
 #endif
