@@ -10,8 +10,8 @@
 #include <sstream>
 #include <fstream>
 
-static const ammotype fuel_types[] = { AT_GAS, AT_BATT, AT_PLUT, AT_PLASMA };
-#define num_fuel_types (sizeof(fuel_types)/sizeof(*fuel_types))
+static const ammotype fuel_types[] = { AT_GAS, AT_BATT, AT_PLUT, AT_PLASMA };   // 2020-07-12 arguably could be sunk to vehicle::print_fuel_indicator
+static constexpr const size_t num_fuel_types = sizeof(fuel_types) / sizeof(*fuel_types);
 
 static const char* const JSON_transcode_vparts[] = {
 	"seat",
@@ -344,7 +344,7 @@ void vehicle::print_part_desc (void *w, int y1, int width, int p, int hl)
     }
 }
 
-void vehicle::print_fuel_indicator (void *w, int y, int x)
+void vehicle::print_fuel_indicator(void *w, int y, int x)
 {
     WINDOW *win = (WINDOW *) w;
     const nc_color fcs[num_fuel_types] = { c_ltred, c_yellow, c_ltgreen, c_ltblue };

@@ -166,6 +166,7 @@ public:
 // get color for map
     nc_color part_color (int p) const;
 
+// These two should be taking WINDOW* but we don't have the curses headers here
 // Vehicle parts description
     void print_part_desc (void *w, int y1, int width, int p, int hl = -1);
 
