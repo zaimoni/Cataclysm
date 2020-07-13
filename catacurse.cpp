@@ -35,7 +35,9 @@
 #endif
 // #define HAVE_TILES 1
 
+#ifdef _MSC_VER
 #pragma comment(lib,"msimg32")
+#endif
 
 // linking against output.cpp...duplicate this part of output.h
 bool reject_not_whitelisted_printf(const std::string& src);
@@ -1023,16 +1025,17 @@ bool WinCreate()
     WindowClassType.hIconSm = LoadIcon(NULL, IDI_APPLICATION);//Default Icon
     WindowClassType.hCursor = LoadCursor(NULL, IDC_ARROW);//Default Pointer
     WindowClassType.lpszMenuName = NULL;
-	WindowClassType.hbrBackground = CreateSolidBrush(RGB(0, 0, 0)); // will be auto-deleted on close
+    WindowClassType.hbrBackground = CreateSolidBrush(RGB(0, 0, 0)); // will be auto-deleted on close
     WindowClassType.lpszClassName = szWindowClass;
     if (!RegisterClassExW(&WindowClassType)) return false;
-	const unsigned int WindowStyle = WS_OVERLAPPEDWINDOW & ~(WS_THICKFRAME) & ~(WS_MAXIMIZEBOX);
-	return (_win = CreateWindowExW(WS_EX_APPWINDOW || WS_EX_TOPMOST * 0,
-                                   szWindowClass , szTitle,WindowStyle, _win.X(),
-                                   _win.Y(), _win.width() + OS_Window::BorderWidth,
-                                   _win.height() + OS_Window::BorderHeight + OS_Window::TitleSize,
-		                           0, 0, OS_Window::program, NULL));
-};
+    const unsigned int WindowStyle = WS_OVERLAPPEDWINDOW & ~(WS_THICKFRAME) & ~(WS_MAXIMIZEBOX);
+    _win = CreateWindowExW(WS_EX_APPWINDOW,
+                           szWindowClass , szTitle,WindowStyle, _win.X(),
+                           _win.Y(), _win.width() + OS_Window::BorderWidth,
+                           _win.height() + OS_Window::BorderHeight + OS_Window::TitleSize,
+                           0, 0, OS_Window::program, nullptr);
+    return _win;
+}
 
 //Unregisters, releases the DC if needed, and destroys the window.
 void WinDestroy()
