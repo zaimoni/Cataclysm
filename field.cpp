@@ -836,7 +836,7 @@ void map::mon_in_field(const point& pt, game *g, monster *z)
       z->add_effect(ME_ONFIRE, rng(8, 12));
     }
    }
-// Drop through to smoke
+   [[fallthrough]]; // Drop through to smoke
 
   case fd_smoke:
    if (cur->density == 3)

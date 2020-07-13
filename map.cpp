@@ -1340,6 +1340,7 @@ bool map::open_door(int x, int y, bool inside)
 		 t = t_door_o;
 		 return true;
 	 }
+     [[fallthrough]];
  default: return false;
  }
 }

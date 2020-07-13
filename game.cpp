@@ -218,14 +218,14 @@ http://github.com/zaimoni/Cataclysm .");
   endwin();
   exit(1);
  }
- while (dp = readdir(dir)) {
+ while ((dp = readdir(dir))) {
   tmp = dp->d_name;
   if (tmp.find(".sav") != std::string::npos)
    savegames.push_back(tmp.substr(0, tmp.find(".sav")));
  }
  closedir(dir);
  dir = opendir("data");
- while (dp = readdir(dir)) {
+ while ((dp = readdir(dir))) {
   tmp = dp->d_name;
   if (tmp.find(".template") != std::string::npos)
    templates.push_back(tmp.substr(0, tmp.find(".template")));
@@ -5438,11 +5438,14 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
             if (dam1 > 0) p->hitall (this, dam1, 40);
         }
         else zz->hurt (dam1);
+
         if (is_u)
+        {
             if (dam1 > 0)
 				messages.add("You fall on the ground for %d damage.", dam1);
             else
 				messages.add("You fall on the ground.");
+        }
     }
     else if (is_u) messages.add("You fall into water.");
 }

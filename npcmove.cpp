@@ -1912,7 +1912,7 @@ void npc::set_destination(game *g)
   needs.push_back(need_none);
  std::vector<oter_id> options;
  switch(needs[0]) {
-  case need_ammo:	options.push_back(ot_house_north);
+  case need_ammo:	options.push_back(ot_house_north); [[fallthrough]];
   case need_gun:	options.push_back(ot_s_gun_north); break;
 
   case need_weapon:	options.push_back(ot_s_gun_north);
@@ -1921,7 +1921,7 @@ void npc::set_destination(game *g)
 
   case need_drink:	options.push_back(ot_s_gas_north);
 			options.push_back(ot_s_pharm_north);
-			options.push_back(ot_s_liquor_north);
+			options.push_back(ot_s_liquor_north); [[fallthrough]];
   case need_food:	options.push_back(ot_s_grocery_north); break;
 
   default:		options.push_back(ot_house_north);

@@ -383,7 +383,8 @@ stat_delta dis_stat_effects(const player& p, const disease& dis)
         if (!lesser) {
             for (const auto& it : p.worn) {
                 if (!it.is_artifact()) continue;
-                if (lesser = any(dynamic_cast<const it_artifact_armor*>(it.type)->effects_worn, AEP_EVIL)) break;
+                lesser = any(dynamic_cast<const it_artifact_armor*>(it.type)->effects_worn, AEP_EVIL);
+                if (lesser) break;
             }
         }
 
@@ -3127,6 +3128,7 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
    if (maxblind > 5) maxblind = 5;
    add_disease(DI_BLIND, rng(minblind, maxblind));
   }
+  [[fallthrough]];
 
  case bp_mouth: // Fall through to head damage
  case bp_head: 
@@ -3235,6 +3237,7 @@ void player::heal(body_part healed, int side, int dam)
  case bp_hands:
 // Shouldn't happen, but fall through to arms
   debugmsg("Heal against hands!");
+  [[fallthrough]];
  case bp_arms:
   if (side == 0)
    healpart = hp_arm_l;
@@ -3244,6 +3247,7 @@ void player::heal(body_part healed, int side, int dam)
  case bp_feet:
 // Shouldn't happen, but fall through to legs
   debugmsg("Heal against feet!");
+  [[fallthrough]];
  case bp_legs:
   if (side == 0)
    healpart = hp_leg_l;

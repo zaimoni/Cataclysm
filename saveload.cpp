@@ -359,8 +359,8 @@ bool fromJSON(const JSON& src, const itype*& dest)
 	int artifact_id;
 	bool ret = fromJSON(src, type_id);
 	if (ret) dest = item::types[type_id];	// XXX \todo should be itype::types?
-	else if (ret = fromJSON(src, artifact_id) && item::types.size() > artifact_id+(num_all_items-1)) dest = item::types[artifact_id + (num_all_items - 1)];
-	else if (ret = fromJSON(src, artifact_id) && item::types.size() > artifact_id) dest = item::types[artifact_id];	// \todo V0.3.1+: remove, this is backward-compatibility
+	else if ((ret = fromJSON(src, artifact_id)) && item::types.size() > artifact_id+(num_all_items-1)) dest = item::types[artifact_id + (num_all_items - 1)];
+	else if ((ret = fromJSON(src, artifact_id)) && item::types.size() > artifact_id) dest = item::types[artifact_id];	// \todo V0.3.1+: remove, this is backward-compatibility
 	// second try: artifacts
 	return ret;
 }
@@ -881,11 +881,13 @@ bool fromJSON(const JSON& _in, item& dest)
 		dest.invlet = tmp[0];
 	}
 	if (_in.has_key("charges")) fromJSON(_in["charges"], dest.charges);
-	if (_in.has_key("active")) fromJSON(_in["active"], dest.active); {
-		int tmp;
-		if (_in.has_key("damage") && fromJSON(_in["damage"], tmp)) dest.damage = tmp;
-		if (_in.has_key("burnt") && fromJSON(_in["burnt"], tmp)) dest.burnt = tmp;
-	}
+	if (_in.has_key("active")) fromJSON(_in["active"], dest.active);
+
+    {
+        int tmp;
+        if (_in.has_key("damage") && fromJSON(_in["damage"], tmp)) dest.damage = tmp;
+        if (_in.has_key("burnt") && fromJSON(_in["burnt"], tmp)) dest.burnt = tmp;
+    }
 	if (_in.has_key("bday")) fromJSON(_in["bday"], dest.bday);
 	if (_in.has_key("poison")) fromJSON(_in["poison"], dest.poison);
 	if (_in.has_key("owned")) fromJSON(_in["owned"], dest.owned);
