@@ -166,6 +166,7 @@ void tutorial_game::post_action(game *g, action_id act)
 
  case ACTION_EXAMINE:
   add_message(g, LESSON_INTERACT);
+  [[fallthrough]];
 // Fall through to...
  case ACTION_PICKUP: {
   const itype* const it = item::types[ g->u.last_item ];
