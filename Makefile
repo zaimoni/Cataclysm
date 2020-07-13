@@ -9,41 +9,46 @@ WARNINGS = -Wall\
 #PROFILE = -pg
 OTHERS = -O3 -std=gnu++17 -MMD -MP
 
-ODIR1 = obj_cataclysm
-ODIR2 = obj_socrates_daimon
-
 TARGET1 = cataclysm
 TARGET2 = socrates-daimon
 
-OS  = $(shell uname -o)
 CXX = g++
-
 CFLAGS = $(WARNINGS) $(DEBUG) $(PROFILE) $(OTHERS)
 
-ifeq ($(OS), Msys)
+ifeq ($(shell uname -o), Msys)
 LDFLAGS = -static -lncurses -lgdi32
 else
 LDFLAGS = -lncurses
 endif
 LDFLAGS += -pthread -Llib/host -lz_format_util -lz_stdio_log -lz_stdio_c
 
+ZAIMONI_HEADERS = Zaimoni.STL/Pure.C/comptest.h
+ZAIMONI_LIBS = lib/host/libz_format_util.a lib/host/libz_stdio_c.a lib/host/libz_stdio_log.a
+
 SOURCES1 = $(sort $(filter-out html.cpp socrates-daimon.cpp stdafx.cpp,$(wildcard *.cpp)))
+ODIR1 = obj_cataclysm
 OBJS1 = $(addprefix $(ODIR1)/,$(SOURCES1:.cpp=.o))
 
 SOURCES2 = calendar.cpp catacurse.cpp color.cpp html.cpp item.cpp itypedef.cpp\
   json.cpp keypress.cpp mapdata.cpp mtypedef.cpp options.cpp output.cpp\
   pldata.cpp recent_msg.cpp rng.cpp saveload.cpp skill.cpp socrates-daimon.cpp\
   trapdef.cpp
+ODIR2 = obj_socrates_daimon
 OBJS2 = $(addprefix $(ODIR2)/,$(SOURCES2:.cpp=.o))
 
+
+# Main Targets
 .PHONY: all clean
 all: $(TARGET1) $(TARGET2)
 
-$(TARGET1): $(ODIR1) $(OBJS1)
+$(TARGET1): $(OBJS1) $(ZAIMONI_LIBS)
 	$(CXX) -o $@ $(CFLAGS) -DCATACLYSM $(OBJS1) $(LDFLAGS)
 
-$(TARGET2): $(ODIR2) $(OBJS2)
+$(TARGET2): $(OBJS2) $(ZAIMONI_LIBS)
 	$(CXX) -o $@ $(CFLAGS) -DSOCRATES_DAIMON $(OBJS2) $(LDFLAGS)
+
+$(OBJS1): | $(ZAIMONI_HEADERS) $(ODIR1)
+$(OBJS2): | $(ZAIMONI_HEADERS) $(ODIR2)
 
 $(ODIR1) $(ODIR2):
 	mkdir $@
@@ -61,13 +66,24 @@ clean:
 # Zaimoni.STL header & library builds
 .PHONY: libs clean_libs
 libs:
-	make -C Zaimoni.STL/Pure.C/ host_install
-	make -C Zaimoni.STL/Pure.C/stdio.log/ host_install
+	$(MAKE) -C Zaimoni.STL/Pure.C/ host_install
+	$(MAKE) -C Zaimoni.STL/Pure.C/stdio.log/ host_install
 
 clean_libs:
-	rm -f lib/host/*.a
-	make -C Zaimoni.STL/Pure.C/ clean
-	make -C Zaimoni.STL/Pure.C/stdio.log/ clean
+	rm -f $(ZAIMONI_LIBS)
+	$(MAKE) -C Zaimoni.STL/Pure.C/ clean
+	$(MAKE) -C Zaimoni.STL/Pure.C/stdio.log/ clean
+
+ifneq ($(filter grouped-target,$(.FEATURES)),)
+# GNU make 4.3 feature
+$(ZAIMONI_HEADERS) $(ZAIMONI_LIBS) &:
+	$(MAKE) -C Zaimoni.STL/Pure.C/ host_install
+	$(MAKE) -C Zaimoni.STL/Pure.C/stdio.log/ host_install
+else
+$(ZAIMONI_HEADERS) $(ZAIMONI_LIBS):
+# don't try to build Zaimoni.STL targets by default because
+# it won't work properly with parallel builds (-j option)
+endif
 
 
 -include $(OBJS1:.o=.d)
