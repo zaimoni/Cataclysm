@@ -1142,6 +1142,7 @@ will deal piercing damage.";
         case 2: return "Your next strike will be a Viper Strike.  It requires both arms to be in good\n\
 condition, and deals massive damage.";
         }
+        [[fallthrough]];
 
     default: return std::string();
     }
