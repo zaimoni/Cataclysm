@@ -70,7 +70,7 @@ bool to_css_colors(nc_color src, const char*& fg, const char*& bg)
 	const auto fg_boost = src & A_BOLD;
 	const auto bg_boost = src & A_BLINK;
 	const auto pair = PAIR_NUMBER(src);
-	if (0 > pair || sizeof(color_codes) / sizeof(*color_codes) <= pair) return false;
+	if (sizeof(color_codes) / sizeof(*color_codes) <= pair) return false;
 	const auto code = color_codes[pair];
 	const auto _fg = DECODE_FG(code) + (fg_boost ? 8 : 0);
 	const auto _bg = DECODE_BG(code) + (bg_boost ? 8 : 0);
