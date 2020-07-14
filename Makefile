@@ -1,7 +1,7 @@
 # comment these to toggle them as one sees fit.
 # DEBUG is best turned on if you plan to debug in gdb -- please do!
 # PROFILE is for use with gprof or a similar program -- don't bother generally
-WARNINGS = -Wall\
+WARNINGS = -Wall -Wextra\
   -Wno-switch -Wno-sign-compare -Wno-unused-variable -Wno-maybe-uninitialized\
   -Wno-unused-but-set-variable -Wno-unused-function -Wno-class-memaccess\
   -Wno-unused-parameter
@@ -16,7 +16,7 @@ CXX = g++
 CFLAGS = $(WARNINGS) $(DEBUG) $(PROFILE) $(OTHERS)
 
 ifeq ($(shell uname -o), Msys)
-LDFLAGS = -static -lncurses -lgdi32
+LDFLAGS = -static -lgdi32
 else
 LDFLAGS = -lncurses
 endif

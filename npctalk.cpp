@@ -191,7 +191,7 @@ static std::string dynamic_line(talk_topic topic, game *g, npc *p)
  case TALK_SHELTER:
   switch (rng(1, 2)) {
    case 1: return "Well, I guess it's just us.";
-   case 2: return "At least we've got shelter.";
+   default: return "At least we've got shelter.";
   }
 
  case TALK_SHELTER_PLANS: return "I don't know, look for supplies and other survivors I guess.";
@@ -574,6 +574,7 @@ static std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *
   RESPONSE("Well, um, sorry.");
    SUCCESS(TALK_NONE);
    SUCCESS_ACTION(&talk_function::clear_mission);
+  break;
 
  case TALK_MISSION_FAILURE:
   RESPONSE("I'm sorry.  I did what I could.");

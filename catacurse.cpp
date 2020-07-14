@@ -1057,7 +1057,7 @@ LRESULT CALLBACK ProcessMessages(HWND__ *hWnd,unsigned int Msg, WPARAM wParam, L
                 case 8:             //Reroute BACKSPACE key for compatilbity purposes
                     lastchar=127;
                     break;
-            };
+            }
             break;
         case WM_KEYDOWN:                //Here we handle non-character input
             switch (wParam){
@@ -1075,7 +1075,8 @@ LRESULT CALLBACK ProcessMessages(HWND__ *hWnd,unsigned int Msg, WPARAM wParam, L
                     break;
                 default:
                     break;
-            };
+            }
+            break;
 // \todo we usually don't want to erase background but we have to when resizing or else.
 // Control variable in OS_Window; starts true, set by resizing, cleared by redrawing background.
 //      case WM_ERASEBKGND: return 1;
@@ -1087,9 +1088,9 @@ LRESULT CALLBACK ProcessMessages(HWND__ *hWnd,unsigned int Msg, WPARAM wParam, L
             exit(0);//A messy exit, but easy way to escape game loop
         default://If we didnt process a message, return the default value for it
             return DefWindowProcW(hWnd, Msg, wParam, lParam);
-    };
+    }
     return 0;
-};
+}
 
 void DrawWindow(WINDOW *win)
 {
