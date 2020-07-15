@@ -865,7 +865,7 @@ DRINK("tea",		1, 50,	c_green, itm_bottle_plastic,
 Tea, the beverage of gentlemen everywhere.");
 
 DRINK("coffee",		1, 50,	c_brown, itm_bottle_plastic,
-	40,  3,  0,  12,  0,  0,  1, 6,&iuse::caff,	ADD_CAFFEINE, "\
+	40,  3,  0,  12,  0,  2,  1, 6,&iuse::caff,	ADD_CAFFEINE, "\
 Coffee. The morning ritual of the pre-apocalypse world.");
 
 //     NAME		RAR PRC	COLOR     CONTAINER
@@ -1160,7 +1160,7 @@ Dried leaves of a tropical plant. You cam boil them into tea, or you\n\
 can just eat them raw. They aren't too filling though.");
 
 FOOD("coffee powder",	15, 13,	c_brown,	VEGGY,	itm_bag_plastic,
-    2,  1, 0,  0,  0,  8,  0,  0,  4, -5,	&iuse::caff, ADD_CAFFEINE, "\
+    2,  1, 0,  0,  0,  8,  0,  1,  4, -5,	&iuse::caff, ADD_CAFFEINE, "\
 Ground coffee beans. You can boil it into a mediocre stimulant,\n\
 or swallow it raw for a lesser stimulative boost.");
 

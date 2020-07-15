@@ -321,6 +321,8 @@ int main(int argc, char *argv[])
 
 	std::vector<itype*> unclassified;
 
+	std::vector<std::pair<add_type, it_comest*> > xref_addictions;
+
 	std::map<std::string, std::string> name_desc;
 	std::map<std::string, int> name_id;
 
@@ -425,8 +427,13 @@ int main(int argc, char *argv[])
 
 			if (LIQUID == it->m1) drinks.push_back(food);
 			else if (FLESH != it->m1 && VEGGY != it->m1 && PAPER != it->m1 && POWDER != it->m1) pharma.push_back(food);
-			else if (food->addict) pharma.push_back(food);
-			else edible.push_back(food);
+			else if (food->addict) {
+				if (!food->add) throw std::logic_error(it->name + ": addicting food without addiction");
+				pharma.push_back(food);
+				xref_addictions.push_back(std::pair(food->add, food));
+			} else edible.push_back(food);
+			if (!food->addict && food->add) throw std::logic_error(it->name + ": non-addicting addiction");
+			// \todo the addiction consistency tests should be constructor, but itypedef.cpp doesn't use assert or SUCCEED_OR_DIE
 			will_handle_as_html = true;
 		// these two implicitly cover artifacts
 		} else if (it->is_armor()) {
@@ -827,10 +834,14 @@ int main(int argc, char *argv[])
 					auto _pre = table_row.querySelector("pre");
 
 					for (const auto& x : name_desc) {
+						auto med = dynamic_cast<it_comest*>(item::types.at(name_id[x.first]));
+						if (!med) continue;	// in container
 						table_row[0]->append(html::tag::wrap(x.first));
 						_pre->append(html::tag::wrap(x.second));
 						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
-						if (auto add = addiction_target(static_cast<it_comest*>(item::types.at(name_id[x.first]))->add)) table_row[3]->append(html::tag::wrap(add));
+						if (auto med = dynamic_cast<it_comest*>(item::types.at(name_id[x.first]))) {
+							if (auto add = addiction_target(med->add)) table_row[3]->append(html::tag::wrap(add));
+						} else throw std::logic_error(name_id[x.first]+" not really consumable");
 						page.print(table_row);
 						table_row[0]->clear();
 						_pre->clear();
@@ -1768,6 +1779,7 @@ int main(int argc, char *argv[])
 				table_header.set(attr_align, val_center);
 				table_header.append(html::tag("th", "Name"));
 				table_header.append(html::tag("th", "Description"));
+				table_header.append(html::tag("th", "Items"));
 				page.print(table_header);
 			}
 
@@ -1779,17 +1791,31 @@ int main(int argc, char *argv[])
 				table_row.set(attr_align, val_left);
 				table_row.append(cell);
 				table_row.append(cell);
+				table_row.append(cell);
 
 				size_t ub = NUM_ADDICTIONS;
 				const char* css_fg = nullptr;
 				const char* css_bg = nullptr;
 				while (0 < --ub) {
+					std::string what;
 					addiction test((add_type)ub);
 					table_row[0]->append(html::tag::wrap(addiction_name(test)));
 					table_row[1]->append(html::tag::wrap(addiction_text(test)));
+
+					size_t xref_ub = xref_addictions.size();
+					while (0 < xref_ub) {
+						decltype(auto) entry = xref_addictions[--xref_ub];
+						if (entry.first != ub) continue;
+						if (what.empty()) what = entry.second->name;
+						else what += ", " + entry.second->name;
+						xref_addictions.erase(xref_addictions.begin() + xref_ub);
+					}
+					if (!what.empty()) table_row[2]->append(html::tag::wrap(std::move(what)));
+
 					page.print(table_row);
 					table_row[0]->clear();
 					table_row[1]->clear();
+					table_row[2]->clear();
 				}
 			}
 			while (page.end_print());
