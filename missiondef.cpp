@@ -354,4 +354,6 @@ mission_type(id, name, goal, diff, val, urgent, place, start, end, fail) )
   //        &mission_place::always, &mission_start::place_book,
   //        &mission_end::standard, &mission_fail::standard);
   //ORIGINS(ORIGIN_ANY_NPC);
+
+  assert(NUM_MISSION_IDS >= types.size());	// postcondition check
 }

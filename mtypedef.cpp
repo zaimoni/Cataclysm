@@ -1379,6 +1379,8 @@ away.  Defend it at all costs!"
 );
 FLAGS(MF_NOHEAD, MF_ACIDPROOF, MF_IMMOBILE);
 
+	assert(num_monsters == types.size());	// postcondition check
+
 {	// install monster tiles
 	if (!JSON::cache.count("tiles")) return;
 	auto& j_tiles = JSON::cache["tiles"];

@@ -1,5 +1,6 @@
 #include "trap.h"
 #include <string.h>
+#include "Zaimoni.STL/Logging.h"
 
 static const char* const JSON_transcode_traps[] = {
 	"bubblewrap",
@@ -229,4 +230,6 @@ TRAP("", '^', c_white, 99, 99, 99);
 TRAP("", '^', c_white, 99, 99, 99);
 #endif
 #undef TRAP
+
+	assert(num_trap_types == traps.size());	// postcondition check
 }
