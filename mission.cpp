@@ -29,12 +29,13 @@ void mission::global_toJSON(cataclysm::JSON& dest)
 
 
 static const char* JSON_transcode[] = {
-	"GET_ANTIBIOTICS",
-	"GET_SOFTWARE",
-	"GET_ZOMBIE_BLOOD_ANAL",
-	"RESCUE_DOG",
-	"KILL_ZOMBIE_MOM",
-	"REACH_SAFETY"
+    "GET_ANTIBIOTICS",
+    "GET_SOFTWARE",
+    "GET_ZOMBIE_BLOOD_ANAL",
+    "RESCUE_DOG",
+    "KILL_ZOMBIE_MOM",
+    "REACH_SAFETY",
+    "GET_BOOK"
 };
 
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(mission_id, JSON_transcode)

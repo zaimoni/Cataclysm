@@ -349,8 +349,9 @@ mission_type(id, name, goal, diff, val, urgent, place, start, end, fail) )
 	&mission_end::standard, &mission_fail::standard);
   ORIGINS(ORIGIN_NULL);
 
- MISSION("Find a Book", MGOAL_FIND_ANY_ITEM, 2, 800, false,
-	&mission_place::always, &mission_start::place_book,
-	&mission_end::standard, &mission_fail::standard);
-  ORIGINS(ORIGIN_ANY_NPC);
+  // **** NOTE: disabled until finished ****
+  //MISSION("Find a Book", MGOAL_FIND_ANY_ITEM, 2, 800, false,
+  //        &mission_place::always, &mission_start::place_book,
+  //        &mission_end::standard, &mission_fail::standard);
+  //ORIGINS(ORIGIN_ANY_NPC);
 }
