@@ -1934,11 +1934,25 @@ void npc::set_destination(game *g)
 			options.push_back(ot_s_library_north);
  }
 
+ // 2020-07-16: for map generation to guarantee a goal can always be found, it would suffice to always have one of the following
+ // within radius 90 on current overmap:
+ // * ot_s_gun_... (gun store covers ammo, gun, default)
+ // * ot_s_grocery_north ... (grocery store covers drink, food, default)
+ // but this doesn't play nice with the vaporware whole-Earth globe (oceans)
+
  const auto om = overmap::toOvermap(GPSpos);
 
  shuffle_contents(options);
+
+ decltype(goal) staging;
+ int dist = INT_MAX;
  for (auto dest_type : options) {
-  if (g->cur_om.find_closest(om.second, dest_type, 4, goal)) { return; }
+  if (auto r = g->cur_om.find_closest(om.second, dest_type, 4, staging)) { // cf defaulted parameters
+   if (dist > r) {
+	dist = r;
+	goal = staging;
+   }
+  }
  }
 
  // FIXME - leaving this function without setting a destination will
@@ -1946,6 +1960,11 @@ void npc::set_destination(game *g)
  // function needs to always set a destination (with some sort of
  // secondary policy like picking the closest destination) or
  // long_term_goal_action() needs to return some other action.
+
+ // retry tactical options, before the cross-overmap pathing overhaul:
+ // * here: full radius OMAP (no blind spots)
+ // * here: retry with default (maximum goals)...could get pinned but likely not "material" with current reality bubble restrictions
+ // * long_term_goal_action: post-process with "drift to nearest acceptable" of some kind
 }
 
 void npc::go_to_destination(game *g)
