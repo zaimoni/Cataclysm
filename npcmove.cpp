@@ -1934,10 +1934,18 @@ void npc::set_destination(game *g)
 			options.push_back(ot_s_library_north);
  }
 
- oter_id dest_type = options[rng(0, options.size() - 1)];
-
  const auto om = overmap::toOvermap(GPSpos);
- g->cur_om.find_closest(om.second, dest_type, 4, goal);
+
+ shuffle_contents(options);
+ for (auto dest_type : options) {
+  if (g->cur_om.find_closest(om.second, dest_type, 4, goal)) { return; }
+ }
+
+ // FIXME - leaving this function without setting a destination will
+ // result in npc::move() throwing an exception later on.  Either this
+ // function needs to always set a destination (with some sort of
+ // secondary policy like picking the closest destination) or
+ // long_term_goal_action() needs to return some other action.
 }
 
 void npc::go_to_destination(game *g)
