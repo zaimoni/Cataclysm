@@ -425,9 +425,20 @@ int main(int argc, char *argv[])
 			const auto food = static_cast<it_comest*>(it);
 			if (!food) throw std::logic_error(it->name + ": static cast to comestible failed");
 
-			if (LIQUID == it->m1) drinks.push_back(food);
-			else if (FLESH != it->m1 && VEGGY != it->m1 && PAPER != it->m1 && POWDER != it->m1) pharma.push_back(food);
-			else if (food->addict) {
+			if (LIQUID == it->m1) {
+				drinks.push_back(food);
+				if (food->addict) {
+					if (!food->add) throw std::logic_error(it->name + ": addicting drink without addiction");
+					xref_addictions.push_back(std::pair(food->add, food));
+				}
+			}
+			else if (FLESH != it->m1 && VEGGY != it->m1 && PAPER != it->m1 && POWDER != it->m1) {
+				pharma.push_back(food);
+				if (food->addict) {
+					if (!food->add) throw std::logic_error(it->name + ": addicting drink without addiction");
+					xref_addictions.push_back(std::pair(food->add, food));
+				}
+			} else if (food->addict) {
 				if (!food->add) throw std::logic_error(it->name + ": addicting food without addiction");
 				pharma.push_back(food);
 				xref_addictions.push_back(std::pair(food->add, food));
