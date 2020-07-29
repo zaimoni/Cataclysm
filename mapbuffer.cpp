@@ -32,6 +32,7 @@ submap* mapbuffer::lookup_submap(const tripoint& src)
 
 void mapbuffer::save()
 {
+ if (submaps.empty()) return;
 
  DECLARE_AND_ACID_OPEN(std::ofstream, fout, MAP_FILE, return;)
 
