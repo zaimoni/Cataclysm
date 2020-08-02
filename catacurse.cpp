@@ -79,7 +79,7 @@ public:
 		HBITMAP backbit = CreateDIBSection(0, (BITMAPINFO*)&_backbuffer_stats, DIB_RGB_COLORS, (void**)&_dcbits, NULL, 0);	// _dcbits doesn't play nice w/move constructor; would have to rebuild this
 		DeleteObject(SelectObject(_backbuffer, backbit));//load the buffer into DC
 		SetBkMode(_backbuffer, TRANSPARENT);//Transparent font backgrounds
-		memset(&src, 0, sizeof(OS_Window));
+		memset((void*)&src, 0, sizeof(OS_Window));
 	}
 	~OS_Window() { destroy();  }
 
@@ -91,7 +91,7 @@ public:
 		HBITMAP backbit = CreateDIBSection(0, (BITMAPINFO*)&_backbuffer_stats, DIB_RGB_COLORS, (void**)&_dcbits, NULL, 0);	// _dcbits doesn't play nice w/move constructor; would have to rebuild this
 		DeleteObject(SelectObject(_backbuffer, backbit));//load the buffer into DC
 		SetBkMode(_backbuffer, TRANSPARENT);//Transparent font backgrounds
-		memset(&src, 0, sizeof(OS_Window));
+		memset((void*)&src, 0, sizeof(OS_Window));
 		return *this;
 	};
 	// lock defensible here
@@ -367,7 +367,7 @@ public:
 	OS_Image(OS_Image&& src) {
 		static_assert(std::is_standard_layout<OS_Window>::value, "OS_Window move constructor is invalid");
 		memmove(this,&src,sizeof(OS_Image));
-		memset(&src, 0, sizeof(OS_Image));
+		memset((void*)&src, 0, sizeof(OS_Image));
 	}
 	// clipping constructor
 	OS_Image(const OS_Image& src, const size_t origin_x, const size_t origin_y, const size_t width, const size_t height) {
@@ -412,7 +412,7 @@ public:
 		static_assert(std::is_standard_layout<OS_Window>::value, "OS_Window move constructor is invalid");
 		clear();
 		memmove(this, &src, sizeof(OS_Image));
-		memset(&src, 0, sizeof(OS_Image));
+		memset((void*)&src, 0, sizeof(OS_Image));
 		return *this;
 	}
 
