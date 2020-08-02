@@ -3,8 +3,7 @@
 # PROFILE is for use with gprof or a similar program -- don't bother generally
 WARNINGS = -Wall -Wextra\
   -Wno-switch -Wno-sign-compare -Wno-unused-variable -Wno-maybe-uninitialized\
-  -Wno-unused-but-set-variable -Wno-unused-function -Wno-class-memaccess\
-  -Wno-unused-parameter
+  -Wno-unused-but-set-variable -Wno-unused-function -Wno-unused-parameter
 #DEBUG = -g
 #PROFILE = -pg
 OTHERS = -O3 -std=gnu++17 -MMD -MP

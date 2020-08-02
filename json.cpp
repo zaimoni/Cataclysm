@@ -6,12 +6,12 @@
 
 namespace cataclysm {
 
-std::map<const std::string, JSON> JSON::cache;
+std::map<std::string, JSON> JSON::cache;
 const std::string JSON::discard_s;
 
 bool JSON::syntax_ok() const
 {
-	switch(_mode)
+	switch (_mode)
 	{
 	case object:
 		if (!_object) return true;
@@ -92,7 +92,7 @@ void JSON::push(JSON&& src)
 		_mode = array;
 	}
 	if (!_array) _array = new std::vector<JSON>();
-	_array->push_back(src);
+	_array->push_back(std::move(src));
 }
 
 JSON JSON::grep(bool (ok)(const JSON&)) const
@@ -193,26 +193,26 @@ bool JSON::destructive_merge(JSON& src)
 	if (object != src._mode) return false;
 	if (none == _mode) {	// we are blank.  retype as empty object.
 		_mode = object;
-		_object = nullptr;	// leak rather than crash
+		_object = nullptr;
 	}
 	if (object != _mode) return false;
 	if (!src._object) return true;	// no keys
-	_object_JSON* working = (_object ? _object : new _object_JSON());
-	// assume we have RAM, etc.
-#if OBSOLETE
-	std::vector<std::string> keys = src.keys();
-	for (const auto& key : keys) {
-		(*working)[key] = std::move((*src._object)[key]);
-		src._object->erase(key);
+
+	if (!_object) {
+		// take ownership of src._object
+		_object = src._object;
+	} else {
+		// copy src._object values to existing object
+		for (auto& iter : *src._object) {
+			(*_object)[iter.first] = std::move(iter.second);
+		}
+		delete src._object;
 	}
-#else
-	for (auto& iter : *src._object) {
-		(*working)[iter.first] = std::move(iter.second);
-	}
-	delete src._object;
 	src._object = nullptr;
-#endif
-	if (!working->empty()) _object = working;
+	if (_object->empty()) {
+		delete _object;
+		_object = nullptr;
+	}
 	return true;
 }
 
@@ -221,21 +221,25 @@ bool JSON::destructive_merge(JSON& src, bool (ok)(const JSON&))
 	if (object != src._mode) return false;
 	if (none == _mode) {	// we are blank.  retype as empty object.
 		_mode = object;
-		_object = nullptr;	// leak rather than crash
+		_object = nullptr;
 	}
 	if (object != _mode) return false;
 	if (!src._object) return true;	// no keys
-	_object_JSON* working = (_object ? _object : new _object_JSON());
+
+	if (!_object) _object = new _object_JSON();
 	// assume we have RAM, etc.
 	std::vector<std::string> keys;
 	for (const auto& iter : *src._object) {
 		if (ok(iter.second)) keys.push_back(iter.first);
 	}
 	for (const auto& key : keys) {
-		(*working)[key] = std::move((*src._object)[key]);
+		(*_object)[key] = std::move((*src._object)[key]);
 		src._object->erase(key);
 	}
-	if (!working->empty()) _object = working;
+	if (_object->empty()) {
+		delete _object;
+		_object = nullptr;
+	}
 	return true;
 }
 
@@ -305,7 +309,7 @@ void JSON::set(const std::string& src, JSON&& val)
 JSON::JSON(const JSON& src)
 : _scalar(nullptr), _mode(src._mode)
 {
-	switch(src._mode)
+	switch (src._mode)
 	{
 	case object:
 		_object = src._object ? new _object_JSON(*src._object) : nullptr;
@@ -322,14 +326,14 @@ JSON::JSON(const JSON& src)
 	}
 }
 
-static bool consume_whitespace(std::istream& src,unsigned long& line)
+static bool consume_whitespace(std::istream& src, unsigned long& line)
 {
 	bool last_was_cr = false;
 	bool last_was_nl = false;
 	do {
 	   int test = src.peek();
 	   if (EOF == test) return false;
-	   switch(test) {
+	   switch (test) {
 		case '\r':
 			if (last_was_nl) {	// Windows/DOS, as viewed by archaic Mac
 				last_was_cr = false;
@@ -364,8 +368,6 @@ static unsigned char scan_for_data_start(std::istream& src, char& result, unsign
 {
 	if (!consume_whitespace(src,line)) return JSON::none;
 	result = 0;
-	bool last_was_cr = false;
-	bool last_was_nl = false;
 	while (!src.get(result).eof())
 		{
 		if ('[' == result) return JSON::array;
@@ -404,7 +406,7 @@ JSON::JSON(std::istream& src)
 	default:
 		if (!src.eof() || !strchr(" \r\n\t\v\f", last_read)) {
 			std::ostringstream msg;
-			msg << JSON_read_failed << line << '\n';
+			msg << JSON_read_failed << line;
 			throw std::runtime_error(msg.str());
 		}
 		return;
@@ -426,15 +428,15 @@ JSON::JSON(std::istream& src, unsigned long& line, char& last_read, bool must_be
 		finish_reading_array(src, line);
 		return;
 	case string:
-		finish_reading_string(src, line,last_read);
+		finish_reading_string(src, line, last_read);
 		return;
 	case literal:
-		finish_reading_literal(src, line,last_read);
+		finish_reading_literal(src, line, last_read);
 		return;
 	default:
 		if (!src.eof() || !strchr(" \r\n\t\v\f", last_read)) {
 			std::ostringstream msg;
-			msg << JSON_read_failed << line << '\n';
+			msg << JSON_read_failed << line;
 			throw std::runtime_error(msg.str());
 		}
 		return;
@@ -442,11 +444,12 @@ JSON::JSON(std::istream& src, unsigned long& line, char& last_read, bool must_be
 }
 
 
-JSON::JSON(JSON&& src)
+JSON::JSON(JSON&& src) noexcept
 {
 	static_assert(std::is_standard_layout<JSON>::value, "JSON move constructor is invalid");
-	memmove(this, &src, sizeof(JSON));
-	memset(&src, 0, sizeof(JSON));
+	memcpy((void*)this, &src, sizeof(JSON));
+	src._mode = none;
+	src._scalar = nullptr;
 }
 
 JSON& JSON::operator=(const JSON& src)
@@ -455,12 +458,15 @@ JSON& JSON::operator=(const JSON& src)
 	return *this = std::move(tmp);
 }
 
-JSON& JSON::operator=(JSON&& src)
+JSON& JSON::operator=(JSON&& src) noexcept
 {
 	static_assert(std::is_standard_layout<JSON>::value, "JSON move assignment is invalid");
-	reset();
-	memmove(this, &src, sizeof(JSON));
-	memset(&src, 0, sizeof(JSON));
+	if (this != &src) {
+		reset();
+		memcpy((void*)this, &src, sizeof(JSON));
+		src._mode = none;
+		src._scalar = nullptr;
+	}
 	return *this;
 }
 
@@ -482,7 +488,7 @@ void JSON::finish_reading_object(std::istream& src, unsigned long& line)
 	if (!consume_whitespace(src, line))
 		{
 		std::ostringstream msg;
-		msg << JSON_object_read_failed << line << '\n';
+		msg << JSON_object_read_failed << line;
 		throw std::runtime_error(msg.str());
 		}
 	if (next_is(src,'}')) {
@@ -497,28 +503,28 @@ void JSON::finish_reading_object(std::istream& src, unsigned long& line)
 		JSON _key(src, line, _last, true);
 		if (none == _key.mode()) {	// no valid data
 			std::ostringstream msg;
-			msg << JSON_object_read_failed << line << '\n';
+			msg << JSON_object_read_failed << line;
 			throw std::runtime_error(msg.str());
 		}
 		if (!consume_whitespace(src, line)) {	// oops, at end prematurely
 			std::ostringstream msg;
-			msg << JSON_object_read_truncated << line << '\n';
+			msg << JSON_object_read_truncated << line;
 			throw std::runtime_error(msg.str());
 		}
 		if (!next_is(src, ':')) {
 			std::ostringstream msg;
-			msg << "JSON read of object failed, expected : got '" << (char)src.peek() << "' code point " << src.peek() << ", line: " << line << '\n';
+			msg << "JSON read of object failed, expected : got '" << (char)src.peek() << "' code point " << src.peek() << ", line: " << line;
 			throw std::runtime_error(msg.str());
 		}
 		if (!consume_whitespace(src, line)) {	// oops, at end prematurely
 			std::ostringstream msg;
-			msg << JSON_object_read_truncated << line << '\n';
+			msg << JSON_object_read_truncated << line;
 			throw std::runtime_error(msg.str());
 		}
 		JSON _value(src, line, _last);
 		if (none == _value.mode()) {	// no valid data
 			std::ostringstream msg;
-			msg << JSON_object_read_failed << line << '\n';
+			msg << JSON_object_read_failed << line;
 			throw std::runtime_error(msg.str());
 		}
 		dest[_key.scalar()] = std::move(_value);
@@ -534,7 +540,7 @@ void JSON::finish_reading_object(std::istream& src, unsigned long& line)
 		}
 		if (!next_is(src, ',')) {
 			std::ostringstream msg;
-			msg << "JSON read of object failed, expected , or }, line: " << line << '\n';
+			msg << "JSON read of object failed, expected , or }, line: " << line;
 			throw std::runtime_error(msg.str());
 		}
 	} while (true);
@@ -547,7 +553,7 @@ void JSON::finish_reading_array(std::istream& src, unsigned long& line)
 	if (!consume_whitespace(src, line))
 	{
 		std::ostringstream msg;
-		msg << JSON_array_read_failed << line << '\n';
+		msg << JSON_array_read_failed << line;
 		throw std::runtime_error(msg.str());
 	}
 	if (next_is(src, ']')) {
@@ -563,7 +569,7 @@ void JSON::finish_reading_array(std::istream& src, unsigned long& line)
 		JSON _next(src, line, _last);
 		if (none == _next.mode()) {	// no valid data
 			std::ostringstream msg;
-			msg << JSON_array_read_failed << line << '\n';
+			msg << JSON_array_read_failed << line;
 			throw std::runtime_error(msg.str());
 		}
 		dest.push_back(std::move(_next));
@@ -580,7 +586,7 @@ void JSON::finish_reading_array(std::istream& src, unsigned long& line)
 		}
 		if (!next_is(src, ',')) {
 			std::ostringstream msg;
-			msg << "JSON read of array failed, expected , or ], line: " << line << '\n';
+			msg << "JSON read of array failed, expected , or ], line: " << line;
 			throw std::runtime_error(msg.str());
 		}
 	} while (true);
@@ -596,7 +602,7 @@ void JSON::finish_reading_string(std::istream& src, unsigned long& line, char& f
 		if (EOF == test) break;
 		src.get(first);
 		if (in_escape) {
-			switch(first)
+			switch (first)
 			{
 			case 'r':
 				first = '\r';
