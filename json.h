@@ -32,9 +32,9 @@ namespace cataclysm {
 class JSON
 {
 public:
-	static std::map<const std::string, JSON> cache;
+	static std::map<std::string, JSON> cache;
 
-	enum mode : unsigned char {
+	enum mode_e : unsigned char {
 		none = 0,
 		object,
 		array,
@@ -43,7 +43,7 @@ public:
 	};
 
 private:
-	typedef std::map<const std::string, JSON> _object_JSON;
+	typedef std::map<std::string, JSON> _object_JSON;
 	static const std::string discard_s;
 
 	union {
@@ -54,41 +54,41 @@ private:
 	unsigned char _mode;
 public:
 	JSON() : _scalar(nullptr), _mode(none) {}
-	JSON(mode src) : _scalar(nullptr), _mode(src) {}
+	JSON(mode_e src) : _scalar(nullptr), _mode(src) {}
 	JSON(const JSON& src);
-	JSON(JSON&& src);
+	JSON(JSON&& src) noexcept;
 	JSON(std::istream& src);
 	JSON(const std::string& src) : _scalar(new std::string(src)), _mode(literal) {}
-	JSON(std::string&& src) : _scalar(new std::string(src)), _mode(literal) {}
-	JSON(const char* src,bool is_literal = true) : _scalar(new std::string(src)), _mode(is_literal ? literal : string) {}
+	JSON(std::string&& src) : _scalar(new std::string(std::move(src))), _mode(literal) {}
+	JSON(const char* src, bool is_literal = true) : _scalar(new std::string(src)), _mode(is_literal ? literal : string) {}
 	JSON(std::string*& src, bool is_literal = true) : _scalar(src), _mode(is_literal ? literal : string) { src = nullptr; }
-	~JSON() { reset(); };
+	~JSON() { reset(); }
 	friend std::ostream& operator<<(std::ostream& os, const JSON& src);
 
 	JSON& operator=(const JSON& src);
-	JSON& operator=(JSON&& src);
+	JSON& operator=(JSON&& src) noexcept;
 
-	unsigned char mode() const { return _mode; };
+	unsigned char mode() const { return _mode; }
 	void reset();
 	bool empty() const;
 	size_t size() const;
 
 	// reserved literal values in strict JSON
-	static bool is_null(const JSON& src) { return literal == src._mode && src._scalar && !strcmp("null", src._scalar->c_str()); };
+	static bool is_null(const JSON& src) { return literal == src._mode && src._scalar && !strcmp("null", src._scalar->c_str()); }
 
 	// scalar evaluation
 	bool is_scalar() const { return string <= _mode; }
-	const std::string& scalar() const { return string <= _mode ? *_scalar : discard_s; }
+	const std::string& scalar() const { return (string <= _mode) ? *_scalar : discard_s; }
 	// array evaluation
-	JSON& operator[](const size_t key) { return (*_array)[key]; };
-	const JSON& operator[](const size_t key) const { return (*_array)[key]; };
+	JSON& operator[](size_t key) { return (*_array)[key]; }
+	const JSON& operator[](size_t key) const { return (*_array)[key]; }
 	void push(const JSON& src);
 	void push(JSON&& src);
 	// object evaluation
 	// \todo consider alternate API for has_key that returns JSON* instead
 	bool has_key(const std::string& key) const { return object == _mode && _object && _object->count(key); }
-	JSON& operator[](const std::string& key) { return (*_object)[key]; };
-	const JSON& operator[](const std::string& key) const { return (*_object)[key]; };
+	JSON& operator[](const std::string& key) { return (*_object)[key]; }
+	const JSON& operator[](const std::string& key) const { return (*_object)[key]; }
 	bool become_key(const std::string& key) {
 		if (!has_key(key)) return false;
 		JSON tmp(std::move((*_object)[key]));
@@ -117,13 +117,12 @@ public:
 	static bool is_legal_JS_literal(const char* src);
 	void set(const std::string& src, const JSON& val);
 	void set(const std::string& src, JSON&& val);
-	void set(const std::string& src, const char* const val) { if (val) set(src, JSON(val, is_legal_JS_literal(val))); }
+	void set(const std::string& src, const char* val) { if (val) set(src, JSON(val, is_legal_JS_literal(val))); }
 
 	bool syntax_ok() const;
 
 	template<class T> static JSON encode(const std::vector<T>& src) {
-		JSON ret;
-		ret._mode = array;
+		JSON ret(array);
 		if (!src.empty()) {
 			ret._array = new std::vector<JSON>();
 			for (const auto& x : src) ret._array->push_back(toJSON(x));
@@ -132,8 +131,7 @@ public:
 	}
 
 	template<class T> static JSON encode(const T* src, size_t n) {
-		JSON ret;
-		ret._mode = array;
+		JSON ret(array);
 		if (src && 0 < n) {
 			ret._array = new std::vector<JSON>();
 			size_t i = 0;
@@ -144,8 +142,7 @@ public:
 	}
 
 	template<class Key, class T> static JSON encode(const T* dest, size_t n) {
-		JSON ret;
-		ret._mode = object;
+		JSON ret(object);
 		if (dest && 0 < n) {
 			size_t i = 0;
 			do {
@@ -158,8 +155,7 @@ public:
 	}
 
 	template<class Key> static JSON encode(const bool* dest, size_t n) {
-		JSON ret;
-		ret._mode = array;
+		JSON ret(array);
 		if (dest && 0 < n) {
 			size_t i = 0;
 			do {
@@ -270,8 +266,7 @@ private:
 };
 
 template<> inline JSON JSON::encode<const char*>(const std::vector<const char*>& src) {
-	JSON ret;
-	ret._mode = array;
+	JSON ret(array);
 	if (0 < src.size()) {
 		ret._array = new std::vector<JSON>();
 		for (const auto& x : src) {
