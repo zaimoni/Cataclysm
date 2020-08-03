@@ -116,11 +116,11 @@ static bool load_tiles(const JSON& src)
 int main(int argc, char *argv[])
 {
 #if HAVE_MS_COM
-	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);	// probably should be in main()
+	HRESULT hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 	if (!SUCCEEDED(hr)) exit(EXIT_FAILURE);	// fail
 #endif
 
- srand(time(NULL));
+ srand(time(nullptr));
 
  // XXX want to load tiles before initscr; implies errors before initscr() go to C stderr or C stdout	\todo IMPLEMENT
  // want a stderr.txt as well (cf. Wesnoth 1.12- [went away in Wesnoth 1.14])
@@ -182,4 +182,3 @@ int main(int argc, char *argv[])
 #endif
  return 0;
 }
-

@@ -65,7 +65,7 @@ static int recoil_add(const player &p)
 
 static void splatter(game* g, const std::vector<point>& trajectory, int dam, monster* mon = nullptr)
 {
-    field_id blood = bleeds(mon);   // NULL mon would be a player
+    field_id blood = bleeds(mon);   // null mon would be a player
     if (!blood) return;
 
 	int distance = 1;
@@ -237,7 +237,7 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
     mvwputch(w_terrain, trajectory[i].y + SEEY - u.pos.y,
                         trajectory[i].x + SEEX - u.pos.x, c_red, bullet);
     wrefresh(w_terrain);
-    if (&p == &u) nanosleep(&ts, NULL);
+    if (&p == &u) nanosleep(&ts, nullptr);
    }
    
    if (dam <= 0) { // Ran out of momentum.
@@ -246,7 +246,7 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
         ((p.weapon.curammo->m1 == WOOD && !one_in(4)) ||
          (p.weapon.curammo->m1 != WOOD && !one_in(15))))
      m.add_item(trajectory[i], ammotmp);
-    if (p.weapon.charges == 0) p.weapon.curammo = NULL;
+    if (p.weapon.charges == 0) p.weapon.curammo = nullptr;
     return;
    }
 
@@ -294,7 +294,7 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
     m.add_item(last, ammotmp);
  }
 
- if (p.weapon.charges == 0) p.weapon.curammo = NULL;
+ if (p.weapon.charges == 0) p.weapon.curammo = nullptr;
 }
 
 

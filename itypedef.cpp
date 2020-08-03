@@ -3987,7 +3987,7 @@ A tool for welding metal pieces together.  Useful for construction.");
 
 // BIONICS
 // These are the modules used to install new bionics in the player.  They're
-// very simple and straightforward; a difficulty, followed by a NULL-terminated
+// very simple and straightforward; a difficulty, followed by a null-terminated
 // list of options.
 #define BIO(name, rarity, price, color, difficulty, des, ...) \
 	index++;types.push_back(new it_bionic(index,rarity,price,name,des,':',\
@@ -3998,99 +3998,99 @@ BIO("CBM: Internal Battery",	24, 3800,	c_green,	 1, "\
 Compact Bionics Module which upgrades your power capacity by 4 units. Having\n\
 at least one of these is a prerequisite to using powered bionics.  You will\n\
 also need a power supply, found in another CBM.",
-    NULL); // This is a special case, which increases power capacity by 4
+    nullptr); // This is a special case, which increases power capacity by 4
 
 BIO("CBM: Power Sources",	18, 5000,	c_yellow,	 4, "\
 Compact Bionics Module containing the materials necessary to install any one\n\
 of several power sources.  Having a power source is necessary to use powered\n\
 bionics.",
-    bio_batteries, bio_metabolics, bio_solar, bio_furnace, bio_ethanol, NULL);
+    bio_batteries, bio_metabolics, bio_solar, bio_furnace, bio_ethanol, nullptr);
 
 BIO("CBM: Utilities",		20, 2000,	c_ltgray,	 2, "\
 Compact Bionics Module containing a variety of utilities.  Popular among\n\
 civilians, especially specialist laborers like mechanics.",
-    bio_tools, bio_storage, bio_flashlight, bio_lighter, bio_magnet, NULL);
+    bio_tools, bio_storage, bio_flashlight, bio_lighter, bio_magnet, nullptr);
 
 BIO("CBM: Neurological",	 8, 6000,	c_pink,		 8, "\
 Compact Bionics Module containing a few upgrades to one's central nervous\n\
 system or brain.  Due to the difficulty associated with what is essentially\n\
 brain surgery, these are best installed by a highly skill professional.",
-    bio_memory, bio_painkiller, bio_alarm, NULL);
+    bio_memory, bio_painkiller, bio_alarm, nullptr);
 
 BIO("CBM: Sensory",		10, 4500,	c_ltblue,	 5, "\
 Compact Bionics Module containing a few upgrades to one's sensory systems,\n\
 particularly sight.  Fairly difficult to install.",
-    bio_ears, bio_eye_enhancer, bio_night_vision, bio_infrared, bio_scent_vision, NULL);
+    bio_ears, bio_eye_enhancer, bio_night_vision, bio_infrared, bio_scent_vision, nullptr);
 
 BIO("CBM: Aquatic",		 5, 3000,	c_blue,		 3, "\
 Compact Bionics Module with a couple of upgrades designed with those who are\n\
 often underwater; popular among diving enthusiasts and Navy SEAL teams.",
-    bio_membrane, bio_gills, NULL);
+    bio_membrane, bio_gills, nullptr);
 
 BIO("CBM: Combat Augs",		10, 4500,	c_red,		 3, "\
 Compact Bionics Module containing several augmentations designed to aid in\n\
 combat.  While none of these are weapons, all are very useful for improving\n\
 one's battle awareness.",
-    bio_targeting, bio_night_vision, bio_infrared, bio_ground_sonar, NULL);
+    bio_targeting, bio_night_vision, bio_infrared, bio_ground_sonar, nullptr);
 
 BIO("CBM: Hazmat",		12, 4800,	c_ltgreen,	 3, "\
 Compact Bionics Module that allows you to install various augmentations\n\
 designed to protect the user in the event of exposure to hazardous materials.",
-    bio_purifier, bio_climate, bio_heatsink, bio_blood_filter, NULL);
+    bio_purifier, bio_climate, bio_heatsink, bio_blood_filter, nullptr);
 
 BIO("CBM: Nutritional",		 7, 3200,	c_green,	 4, "\
 Compact Bionics Module with several upgrades to one's digestive system, aimed\n\
 at making the consumption of food a lower priority.",
-    bio_recycler, bio_digestion, bio_evap, bio_water_extractor, NULL);
+    bio_recycler, bio_digestion, bio_evap, bio_water_extractor, nullptr);
 
 BIO("CBM: Desert Survival",	 4, 4000,	c_brown,	 3, "\
 Compact Bionics Module designed for those who will spend  significant time in\n\
 dry, hot areas like a desert.  Geared towards providing a source of water.",
-    bio_climate, bio_recycler, bio_evap, bio_water_extractor, NULL);
+    bio_climate, bio_recycler, bio_evap, bio_water_extractor, nullptr);
 
 BIO("CBM: Melee Combat",	 6, 5800,	c_red,		 3, "\
 Compact Bionics Module containing a few upgrades designed for melee combat.\n\
 Useful for those who like up-close combat.",
-    bio_shock, bio_heat_absorb, bio_claws, NULL);
+    bio_shock, bio_heat_absorb, bio_claws, nullptr);
 
 BIO("CBM: Armor",		12, 6800,	c_cyan,		 5, "\
 Compact Bionics Module containing the supplies necessary to install one of\n\
 several high-strength armors.  Very popular.",
     bio_carbon, bio_armor_head, bio_armor_torso, bio_armor_arms, bio_armor_legs,
-    NULL);
+    nullptr);
 
 BIO("CBM: Espionage",		 5, 7500,	c_magenta,	 4, "\
 Compact Bionics Module often used by high-tech spies.  Its contents are\n\
 geared towards avoiding detection and bypassing security.",
     bio_face_mask, bio_scent_mask, bio_cloak, bio_alarm, bio_fingerhack,
-    bio_lockpick, NULL);
+    bio_lockpick, nullptr);
 
 BIO("CBM: Defensive Systems",	 9, 8000,	c_ltblue,	 5, "\
 Compact Bionics Module containing a few augmentations designed to defend the\n\
 user in case of attack.",
-    bio_carbon, bio_ads, bio_ods, NULL);
+    bio_carbon, bio_ads, bio_ods, nullptr);
 
 BIO("CBM: Medical",		12, 8200,	c_ltred,	 6, "\
 Compact Bionics Module containing several upgrades designed to provide the\n\
 user with medical attention in the field.",
-    bio_painkiller, bio_nanobots, bio_blood_anal, bio_blood_filter, NULL);
+    bio_painkiller, bio_nanobots, bio_blood_anal, bio_blood_filter, nullptr);
 
 BIO("CBM: Construction",	10, 3500,	c_dkgray,	 3, "\
 Compact Bionics Module which is very popular among construction workers.  It\n\
 contains several upgrades designed to make the user a living tool.",
-    bio_tools, bio_resonator, bio_hydraulics, bio_magnet, NULL);
+    bio_tools, bio_resonator, bio_hydraulics, bio_magnet, nullptr);
 
 BIO("CBM: Super-Soldier",	 1,14000,	c_white,	10, "\
 A very rare Compact Bionics Module, designed by the military to create a kind\n\
 of super-soldier.  Due to the highly advanced technology used, this module is\n\
 very difficult to install.",
-    bio_time_freeze, bio_teleport, NULL);
+    bio_time_freeze, bio_teleport, nullptr);
 
 BIO("CBM: Ranged Combat",	 7, 9200,	c_red,		 6, "\
 Compact Bionics Module containing a few devices designed for ranged combat.\n\
 Good for those who want a gun on occasion, but do not wish to carry lots of\n\
 heavy ammunition and weapons.",
-    bio_blaster, bio_laser, bio_emp, NULL);
+    bio_blaster, bio_laser, bio_emp, nullptr);
 
 // SOFTWARE
 

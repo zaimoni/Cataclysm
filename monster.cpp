@@ -251,7 +251,7 @@ monster_attitude monster::attitude(const player *u) const
  int effective_anger  = anger;
  int effective_morale = morale;
 
- if (u != NULL) {
+ if (u != nullptr) {
 
   if (((type->species == species_mammal && u->has_trait(PF_PHEROMONE_MAMMAL)) ||
        (type->species == species_insect && u->has_trait(PF_PHEROMONE_INSECT)))&&

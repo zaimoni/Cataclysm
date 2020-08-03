@@ -50,7 +50,7 @@ void player::mutate()
  bool first_pass = (cat != MUTCAT_NULL);
 
  do {
-// If we tried once with a non-NULL category, and couldn't find anything valid
+// If we tried once with a non-null category, and couldn't find anything valid
 // there, try again with MUTCAT_NULL
   if (cat != MUTCAT_NULL && !first_pass)
    cat = MUTCAT_NULL;

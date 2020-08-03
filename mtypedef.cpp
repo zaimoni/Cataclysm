@@ -38,8 +38,8 @@ mtype::mtype() {
 	sp_freq = 0;
 	item_chance = 0;
 #ifndef SOCRATES_DAIMON
-	dies = NULL;
-	sp_attack = NULL;
+	dies = nullptr;
+	sp_attack = nullptr;
 #endif
 }
 // Non-default (messy)
@@ -114,7 +114,7 @@ const itype* mtype::chunk_material() const
 	{
 	case FLESH: return item::types[has_flag(MF_POISON) ? itm_meat_tainted : itm_meat];
 	case VEGGY: return item::types[has_flag(MF_POISON) ? itm_veggy_tainted : itm_veggy];
-	default: return NULL;	// no other materials have chunks: inherited from C:Whales
+	default: return nullptr;	// no other materials have chunks: inherited from C:Whales
 	}
 }
 

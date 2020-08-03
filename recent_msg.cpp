@@ -13,7 +13,7 @@ recent_msg messages;
 
 void recent_msg::add(const char* msg, ...)
 {
-	if (!msg || !*msg) return;	// reject NULL and empty-string
+	if (!msg || !*msg) return;	// reject null and empty-string
     if (reject_not_whitelisted_printf(msg)) return;
 
 	char buff[1024];

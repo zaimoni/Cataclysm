@@ -191,7 +191,7 @@ End of cheatery */
   itype_id ma_type;
   do {
    int choice = menu("Pick your style:",
-                     "Karate", "Judo", "Aikido", "Tai Chi", "Taekwando", NULL);
+                     "Karate", "Judo", "Aikido", "Tai Chi", "Taekwando", nullptr);
    if (choice == 1) ma_type = itm_style_karate;
    if (choice == 2) ma_type = itm_style_judo;
    if (choice == 3) ma_type = itm_style_aikido;

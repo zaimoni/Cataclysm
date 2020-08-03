@@ -186,7 +186,7 @@ void map::unboard_vehicle(const point& pt)
 void map::destroy_vehicle (vehicle *veh)
 {
  if (!veh) {
-  debugmsg("map::destroy_vehicle was passed NULL");
+  debugmsg("map::destroy_vehicle was passed null");
   return;
  }
  int sm = veh->sm.x + veh->sm.y * my_MAPSIZE;
@@ -1672,7 +1672,7 @@ bool map::add_field(game *g, int x, int y, field_id t, unsigned char density, un
  y %= SEEY;
  if (grid[nonant]->fld[x][y].type == fd_null) grid[nonant]->field_count++;
  grid[nonant]->fld[x][y] = field(t, density, age);
- if (g != NULL && x == g->u.pos.x && y == g->u.pos.y && grid[nonant]->fld[x][y].is_dangerous()) {
+ if (g != nullptr && x == g->u.pos.x && y == g->u.pos.y && grid[nonant]->fld[x][y].is_dangerous()) {
   g->u.cancel_activity_query("You're in a %s!", field::list[t].name[density - 1].c_str());
  }
  return true;

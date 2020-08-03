@@ -174,17 +174,17 @@ int player::hit_mon(game *g, monster *z, bool allow_grab) // defaults to true
  const int stuck_penalty = weapon.is_style() ? 0 : roll_stuck_penalty(z, (stab_dam >= cut_dam));
 
 // Pick one or more special attacks
- technique_id technique = pick_technique(g, z, NULL, critical_hit, allow_grab);
+ technique_id technique = pick_technique(g, z, nullptr, critical_hit, allow_grab);
 
 // Handles effects as well; not done in melee_affect_*
- perform_technique(technique, g, z, NULL, bash_dam, cut_dam, stab_dam, pain);
+ perform_technique(technique, g, z, nullptr, bash_dam, cut_dam, stab_dam, pain);
  z->speed -= int(pain / 2);
 
 // Mutation-based attacks
- perform_special_attacks(g, z, NULL, bash_dam, cut_dam, stab_dam);
+ perform_special_attacks(g, z, nullptr, bash_dam, cut_dam, stab_dam);
 
 // Handles speed penalties to monster & us, etc
- melee_special_effects(g, z, NULL, critical_hit, bash_dam, cut_dam, stab_dam);
+ melee_special_effects(g, z, nullptr, critical_hit, bash_dam, cut_dam, stab_dam);
 
 // Make a rather quiet sound, to alert any nearby monsters
  if (weapon.type->id != itm_style_ninjutsu) g->sound(pos, 8, ""); // Ninjutsu is silent!
@@ -274,12 +274,12 @@ void player::hit_player(game *g, player &p, bool allow_grab)
 
  bool critical_hit = scored_crit(target_dodge);
 
- int bash_dam = roll_bash_damage(NULL, critical_hit);
- int cut_dam  = roll_cut_damage(NULL, critical_hit);
- int stab_dam = roll_stab_damage(NULL, critical_hit);
+ int bash_dam = roll_bash_damage(nullptr, critical_hit);
+ int cut_dam  = roll_cut_damage(nullptr, critical_hit);
+ int stab_dam = roll_stab_damage(nullptr, critical_hit);
 
- technique_id tech_def = p.pick_defensive_technique(g, NULL, this);
- p.perform_defensive_technique(tech_def, g, NULL, this, bp_hit, side,
+ technique_id tech_def = p.pick_defensive_technique(g, nullptr, this);
+ p.perform_defensive_technique(tech_def, g, nullptr, this, bp_hit, side,
                                bash_dam, cut_dam, stab_dam);
 
  if (bash_dam + cut_dam + stab_dam <= 0)
@@ -291,20 +291,20 @@ void player::hit_player(game *g, player &p, bool allow_grab)
  int pain = 0; // Boost to pain; required for perform_technique
 
 // Moves lost to getting your weapon stuck
- const int stuck_penalty = weapon.is_style() ? 0 : roll_stuck_penalty(NULL, (stab_dam >= cut_dam));
+ const int stuck_penalty = weapon.is_style() ? 0 : roll_stuck_penalty(nullptr, (stab_dam >= cut_dam));
 
 // Pick one or more special attacks
- technique_id technique = pick_technique(g, NULL, &p, critical_hit, allow_grab);
+ technique_id technique = pick_technique(g, nullptr, &p, critical_hit, allow_grab);
 
 // Handles effects as well; not done in melee_affect_*
- perform_technique(technique, g, NULL, &p, bash_dam, cut_dam, stab_dam, pain);
+ perform_technique(technique, g, nullptr, &p, bash_dam, cut_dam, stab_dam, pain);
  p.pain += pain;
 
 // Mutation-based attacks
- perform_special_attacks(g, NULL, &p, bash_dam, cut_dam, stab_dam);
+ perform_special_attacks(g, nullptr, &p, bash_dam, cut_dam, stab_dam);
 
 // Handles speed penalties to monster & us, etc
- melee_special_effects(g, NULL, &p, critical_hit, bash_dam, cut_dam, stab_dam);
+ melee_special_effects(g, nullptr, &p, critical_hit, bash_dam, cut_dam, stab_dam);
 
 // Make a rather quiet sound, to alert any nearby monsters
  if (weapon.type->id != itm_style_ninjutsu) // Ninjutsu is silent!
@@ -525,7 +525,7 @@ int player::roll_bash_damage(const monster *z, bool crit) const
  if (bash_dam > bash_cap)// Cap for weak characters
   bash_dam = (bash_cap * 3 + bash_dam) / 4;
 
- if (z != NULL && z->has_flag(MF_PLASTIC))
+ if (z != nullptr && z->has_flag(MF_PLASTIC))
   bash_dam /= rng(2, 4);
 
  int bash_min = bash_dam / 4;
@@ -581,7 +581,7 @@ int player::roll_cut_damage(const monster *z, bool crit) const
 int player::roll_stab_damage(const monster *z, bool crit) const
 {
  int ret = 0;
- int z_armor = (z == NULL ? 0 : z->armor_cut() - 3 * sklevel[sk_stabbing]);
+ int z_armor = (z == nullptr ? 0 : z->armor_cut() - 3 * sklevel[sk_stabbing]);
 
  if (crit) z_armor /= 3;
  if (z_armor < 0) z_armor = 0;
@@ -596,7 +596,7 @@ int player::roll_stab_damage(const monster *z, bool crit) const
  else
   return 0; // Can't stab at all!
 
- if (z != NULL && z->speed > 100) { // Bonus against fast monsters
+ if (z != nullptr && z->speed > 100) { // Bonus against fast monsters
   int speed_min = (z->speed - 100) / 10, speed_max = (z->speed - 100) / 5;
   int speed_dam = rng(speed_min, speed_max);
   if (speed_dam > ret * 2) speed_dam = ret * 2;
@@ -633,11 +633,11 @@ int player::roll_stuck_penalty(const monster *z, bool stabbing) const
 
 technique_id player::pick_technique(const game *g, const monster *z, const player *p, bool crit, bool allowgrab) const
 {
- if (z == NULL && p == NULL) return TEC_NULL;
+ if (z == nullptr && p == nullptr) return TEC_NULL;
 
  std::vector<technique_id> possible;
- bool downed = ((z != NULL && !z->has_effect(ME_DOWNED)) ||
-                (p != NULL && !p->has_disease(DI_DOWNED))  );
+ bool downed = ((z != nullptr && !z->has_effect(ME_DOWNED)) ||
+                (p != nullptr && !p->has_disease(DI_DOWNED))  );
  int base_str_req = 0;
  if (z) base_str_req = z->type->size;
  else if (p) base_str_req = 1 + (2 + p->str_cur) / 4;
@@ -726,28 +726,28 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
  switch (technique) {
 
  case TEC_SWEEP:
-  if (z != NULL && !z->has_flag(MF_FLIES)) {
+  if (z != nullptr && !z->has_flag(MF_FLIES)) {
    z->add_effect(ME_DOWNED, rng(1, 2));
    bash_dam += z->fall_damage();
-  } else if (p != NULL && p->weapon.type->id != itm_style_judo) {
+  } else if (p != nullptr && p->weapon.type->id != itm_style_judo) {
    p->add_disease(DI_DOWNED, rng(1, 2));
    bash_dam += 3;
   }
   break;
 
  case TEC_PRECISE:
-  if (z != NULL)
+  if (z != nullptr)
    z->add_effect(ME_STUNNED, rng(1, 4));
-  else if (p != NULL)
+  else if (p != nullptr)
    p->add_disease(DI_STUNNED, rng(1, 2));
   pain += rng(5, 8);
   break;
 
  case TEC_BRUTAL:
-  if (z != NULL) {
+  if (z != nullptr) {
    z->add_effect(ME_STUNNED, 1);
    z->knock_back_from(g, pos);
-  } else if (p != NULL) {
+  } else if (p != nullptr) {
    p->add_disease(DI_STUNNED, 1);
    p->knock_back_from(g, pos);
   }
@@ -756,10 +756,10 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
  case TEC_THROW:
 // Throws are less predictable than brutal strikes.
 // We knock them back from a tile adjacent to us!
-  if (z != NULL) {
+  if (z != nullptr) {
    z->add_effect(ME_DOWNED, rng(1, 2));
    z->knock_back_from(g, pos.x + rng(-1, 1), pos.y + rng(-1, 1));
-  } else if (p != NULL) {
+  } else if (p != nullptr) {
    p->knock_back_from(g, pos.x + rng(-1, 1), pos.y + rng(-1, 1));
    if (p->weapon.type->id != itm_style_judo)
     p->add_disease(DI_DOWNED, rng(1, 2));
@@ -782,8 +782,8 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
       if (const auto nPC = g->nPC(test)) {
           if (hit_roll() >= rng(0, 5) + nPC->dodge_roll(g)) {
               count_hit++;
-              int dam = roll_bash_damage(NULL, false);	// looks like (n)PC armor won't work, but covered in the hit function
-              int cut = roll_cut_damage(NULL, false);
+              int dam = roll_bash_damage(nullptr, false);	// looks like (n)PC armor won't work, but covered in the hit function
+              int cut = roll_cut_damage(nullptr, false);
               nPC->hit(g, bp_legs, 3, dam, cut);
               if (u_see) messages.add("%s hit%s %s for %d damage!", You.c_str(), s.c_str(), nPC->name.c_str(), dam + cut);
           }
@@ -807,12 +807,12 @@ technique_id player::pick_defensive_technique(game *g, const monster *z, player 
  if (blocks_left == 0) return TEC_NULL;
 
  int foe_melee_skill = 0;
- if (z != NULL) foe_melee_skill = z->type->melee_skill;
- else if (p != NULL) foe_melee_skill = p->dex_cur + p->sklevel[sk_melee];
+ if (z != nullptr) foe_melee_skill = z->type->melee_skill;
+ else if (p != nullptr) foe_melee_skill = p->dex_cur + p->sklevel[sk_melee];
 
  int foe_dodge = 0;
- if (z != NULL) foe_dodge = z->dodge_roll();
- else if (p != NULL) foe_dodge = p->dodge_roll(g);
+ if (z != nullptr) foe_dodge = z->dodge_roll();
+ else if (p != nullptr) foe_dodge = p->dodge_roll(g);
 
  int foe_size = 0;
  if (z) foe_size = 4 + z->type->size * 4;
@@ -836,7 +836,7 @@ technique_id player::pick_defensive_technique(game *g, const monster *z, player 
   return TEC_WBLOCK_1;
 
  if (weapon.has_technique(TEC_DEF_DISARM, this) &&
-     z == NULL && p->weapon.type->id != 0 &&
+     z == nullptr && p->weapon.type->id != 0 &&
      !p->weapon.has_flag(IF_UNARMED_WEAPON) &&
      dice(   dex_cur +    sklevel[sk_unarmed], 8) >
      dice(p->dex_cur + p->sklevel[sk_melee],  10))
@@ -934,9 +934,9 @@ void player::perform_defensive_technique(
   case TEC_DEF_DISARM:
    g->m.add_item(p->pos, p->unwield());
 // Re-roll damage, without our weapon
-   bash_dam = p->roll_bash_damage(NULL, false);
-   cut_dam  = p->roll_cut_damage(NULL, false);
-   stab_dam = p->roll_stab_damage(NULL, false);
+   bash_dam = p->roll_bash_damage(nullptr, false);
+   cut_dam  = p->roll_cut_damage(nullptr, false);
+   stab_dam = p->roll_stab_damage(nullptr, false);
    if (u_see)
     messages.add("%s disarm%s %s!", You.c_str(), (is_npc() ? "s" : ""),
                                   target.c_str());
@@ -950,8 +950,8 @@ void player::perform_special_attacks(game *g, monster *z, player *p,
 {
  assert(z || p);
  bool can_poison = false;
- int bash_armor = (z == NULL ? 0 : z->armor_bash());
- int cut_armor  = (z == NULL ? 0 : z->armor_cut());
+ int bash_armor = (z == nullptr ? 0 : z->armor_bash());
+ int cut_armor  = (z == nullptr ? 0 : z->armor_cut());
  std::vector<special_attack> special_attacks = mutation_attacks(z, p);
 
  for (int i = 0; i < special_attacks.size(); i++) {
@@ -978,10 +978,10 @@ void player::perform_special_attacks(game *g, monster *z, player *p,
  }
 
  if (can_poison && has_trait(PF_POISONOUS)) {
-  if (z != NULL) {
+  if (z != nullptr) {
    if (!is_npc() && !z->has_effect(ME_POISONED)) messages.add("You poison the %s!", z->name().c_str());
    z->add_effect(ME_POISONED, 6);
-  } else if (p != NULL) {
+  } else if (p != nullptr) {
    if (!is_npc() && !p->has_disease(DI_POISON)) messages.add("You poison %s!", p->name.c_str());
    p->add_disease(DI_POISON, 6);
   }
