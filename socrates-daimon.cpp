@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
 
 	// \todo parse command line options
 
-	srand(time(NULL));
+	srand(time(nullptr));
 
 	// ncurses stuff
 	initscr(); // Initialize ncurses

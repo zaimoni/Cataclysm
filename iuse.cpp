@@ -587,7 +587,7 @@ void iuse::sew(game *g, player *p, item *it, bool t)
 {
  char ch = g->inv("Repair what?");
  item* fix = &(p->i_at(ch));
- if (fix == NULL || fix->is_null()) {
+ if (fix == nullptr || fix->is_null()) {
   messages.add("You do not have that item!");
   it->charges++;
   return;
@@ -873,7 +873,7 @@ void iuse::two_way_radio(game *g, player *p, item *it, bool t)
  if (ch == '1') {
   p->moves -= 300;
   faction* fac = g->list_factions("Call for help...");
-  if (fac == NULL) {
+  if (fac == nullptr) {
    it->charges++;
    return;
   }
@@ -1241,7 +1241,7 @@ void iuse::geiger(game *g, player *p, item *it, bool t)
  std::string toggle_text = "Turn continuous scan ";
  toggle_text += (is_on ? "off" : "on");
  int ch = menu("Geiger counter:", "Scan yourself", "Scan the ground",
-               toggle_text.c_str(), "Cancel", NULL);
+               toggle_text.c_str(), "Cancel", nullptr);
  switch (ch) {
   case 1: messages.add("Your radiation level: %d", p->radiation); break;
   case 2: messages.add("The ground's radiation level: %d",
@@ -1847,7 +1847,7 @@ void iuse::mcg_note(game *g, player *p, item *it, bool t)
  std::ostringstream message;
  message << "Dear " << it->name << ":\n";
 /*
- faction* fac = NULL;
+ faction* fac = nullptr;
  direction dir = NORTH;
 // Pick an associated faction
  switch (it->associated_mission) {
@@ -1859,7 +1859,7 @@ void iuse::mcg_note(game *g, player *p, item *it, bool t)
   break;
  }
 // Calculate where that faction is
- if (fac != NULL) {
+ if (fac != nullptr) {
   int omx = g->cur_om.posx, omy = g->cur_om.posy;
   if (fac->omx != g->cur_om.posx || fac->omx != g->cur_om.posy)
    dir = direction_from(omx, omy, fac->omx, fac->omy);

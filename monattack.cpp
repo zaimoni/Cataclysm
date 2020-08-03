@@ -961,7 +961,7 @@ void mattack::smg(game *g, monster *z)
 {
  int t, fire_t;
  if (z->friendly != 0) { // Attacking monsters, not the player!
-  monster* target = NULL;
+  monster* target = nullptr;
   int closest = 19;
   for(auto& _mon : g->z) {
    int dist = rl_dist(z->pos, _mon.pos);
@@ -971,7 +971,7 @@ void mattack::smg(game *g, monster *z)
     fire_t = t;
    }
   }
-  if (target == NULL) return; // Couldn't find any targets!
+  if (target == nullptr) return; // Couldn't find any targets!
   z->sp_timeout = z->type->sp_freq;	// Reset timer
   z->moves = -150;			// It takes a while
   if (g->u_see(z->pos)) messages.add("The %s fires its smg!", z->name().c_str());

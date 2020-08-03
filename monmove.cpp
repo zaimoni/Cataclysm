@@ -55,7 +55,7 @@ void monster::plan(game *g)
  int tc, stc;
  bool fleeing = false;
  if (friendly != 0) {	// Target monsters, not the player!
-  const monster* closest_mon = NULL;
+  const monster* closest_mon = nullptr;
   if (!has_effect(ME_DOCILE)) {
    for (const auto& _mon : g->z) {
     const int test = rl_dist(pos, _mon.pos);
@@ -112,7 +112,7 @@ void monster::plan(game *g)
 
  if (!fleeing) fleeing = attitude() == MATT_FLEE;
  if (!fleeing) {
-  const monster* closest_mon = NULL;
+  const monster* closest_mon = nullptr;
   for (const auto& _mon : g->z) {
    int mondist = rl_dist(pos, _mon.pos);
    if (_mon.friendly != 0 && mondist < dist && can_see() && g->m.sees(pos, _mon.pos, sightrange, tc)) {
@@ -393,8 +393,8 @@ void monster::hit_player(game *g, player &p, bool can_grab)
  body_part bphit;
  int side = rng(0, 1);
  int dam = hit(g, p, bphit), cut = type->melee_cut, stab = 0;
- technique_id tech = p.pick_defensive_technique(g, this, NULL);
- p.perform_defensive_technique(tech, g, this, NULL, bphit, side, dam, cut, stab);
+ technique_id tech = p.pick_defensive_technique(g, this, nullptr);
+ p.perform_defensive_technique(tech, g, this, nullptr, bphit, side, dam, cut, stab);
  if (dam == 0 && u_see) messages.add("The %s misses %s.", name().c_str(), you.c_str());
  else if (dam > 0) {
   if (u_see && tech != TEC_BLOCK)

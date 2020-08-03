@@ -401,7 +401,7 @@ void computer::activate_function(game *g, computer_action action)
 // ...and put radioactive to the right of it
    for (int i = wall_spot + 1; i < SEEX * 2 - 1; i++) {
     for (int j = 1; j < SEEY * 2 - 1; j++) {
-     if (one_in(3)) g->m.add_field(NULL, i, j, fd_nuke_gas, 3);
+     if (one_in(3)) g->m.add_field(nullptr, i, j, fd_nuke_gas, 3);
     }
    }
 // For each level between here and the surface, remove the missile
@@ -544,7 +544,7 @@ INITIATING STANDARD TREMOR TEST...");
     print_error("USB drive required!");
    else {   // XXX \todo maybe allow downloading non-mission software?
     mission *miss = mission::from_id(mission_id);
-    if (miss == NULL) {
+    if (miss == nullptr) {
      debugmsg("Computer couldn't find its mission!");
      return;
     }
@@ -567,7 +567,7 @@ INITIATING STANDARD TREMOR TEST...");
        print_error(err);
       } else { // Success!
        item *blood = &(inv[0].contents[0]);
-       if (blood->corpse == NULL || blood->corpse->id == mon_null)
+       if (blood->corpse == nullptr || blood->corpse->id == mon_null)
         print_line("Result:  Human blood, no pathogens found.");
        else if (blood->corpse->sym == 'Z') {
         print_line("Result:  Human blood.  Unknown pathogen found.");

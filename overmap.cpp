@@ -882,7 +882,7 @@ void overmap::generate(game *g, const overmap* north, const overmap* east, const
 // Cities, forests, and settlements come next.
 // These're agnostic of adjacent maps, so it's very simple.
  int mincit = 0;
- if (north == NULL && east == NULL && west == NULL && south == NULL)
+ if (north == nullptr && east == nullptr && west == nullptr && south == nullptr)
   mincit = 1;	// The first map MUST have a city, for the player to start in!
  place_cities(cities, mincit);
  place_forest();
@@ -894,28 +894,28 @@ void overmap::generate(game *g, const overmap* north, const overmap* east, const
 // Populate viable_roads with one point for each neighborless side.
 // Make sure these points don't conflict with rivers. 
 // TODO: In theory this is a potential infinte loop...
-  if (north == NULL) {
+  if (north == nullptr) {
    do
     tmp = rng(10, OMAPX - 11);
    while (is_river(ter(tmp, 0)) || is_river(ter(tmp - 1, 0)) ||
           is_river(ter(tmp + 1, 0)) );
    viable_roads.push_back(city(tmp, 0, 0));
   }
-  if (east == NULL) {
+  if (east == nullptr) {
    do
     tmp = rng(10, OMAPY - 11);
    while (is_river(ter(OMAPX - 1, tmp)) || is_river(ter(OMAPX - 1, tmp - 1))||
           is_river(ter(OMAPX - 1, tmp + 1)));
    viable_roads.push_back(city(OMAPX - 1, tmp, 0));
   }
-  if (south == NULL) {
+  if (south == nullptr) {
    do
     tmp = rng(10, OMAPX - 11);
    while (is_river(ter(tmp, OMAPY - 1)) || is_river(ter(tmp - 1, OMAPY - 1))||
           is_river(ter(tmp + 1, OMAPY - 1)));
    viable_roads.push_back(city(tmp, OMAPY - 1, 0));
   }
-  if (west == NULL) {
+  if (west == nullptr) {
    do
     tmp = rng(10, OMAPY - 11);
    while (is_river(ter(0, tmp)) || is_river(ter(0, tmp - 1)) ||

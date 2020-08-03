@@ -1785,7 +1785,7 @@ void game::debug()
                    "Check NPC",              // 13
                    "Spawn Artifact",         // 14
                    "Cancel",                 // 15
-                   NULL);
+                   nullptr);
  int veh_num;
  std::vector<std::string> opts;
  switch (action) {
@@ -2054,7 +2054,7 @@ faction* game::list_factions(std::string title)
  }
  if (valfac.size() == 0) {	// We don't know of any factions!
   popup("You don't know of any factions.  Press Spacebar...");
-  return NULL;
+  return nullptr;
  }
  WINDOW* w_list = newwin(VIEW,      MAX_FAC_NAME_SIZE, 0, 0);
  WINDOW* w_info = newwin(VIEW, SCREEN_WIDTH - MAX_FAC_NAME_SIZE, 0, MAX_FAC_NAME_SIZE);
@@ -2135,13 +2135,13 @@ faction* game::list_factions(std::string title)
  delwin(w_list);
  delwin(w_info);
  refresh_all();
- if (sel == -1) return NULL;
+ if (sel == -1) return nullptr;
  return &(factions[valfac[sel].id]);
 }
 
 void game::list_missions()
 {
- static const char* const labels[] = { "ACTIVE MISSIONS", "COMPLETED MISSIONS", "FAILED MISSIONS", NULL };
+ static const char* const labels[] = { "ACTIVE MISSIONS", "COMPLETED MISSIONS", "FAILED MISSIONS", nullptr };
  const int tab_wrap = sizeof(labels) / sizeof(*labels) - 1;
 
 #define VBAR_X (30)
@@ -2479,7 +2479,7 @@ faction* game::faction_by_id(int id)
   if (factions[i].id == id)
    return &(factions[i]);
  }
- return NULL;
+ return nullptr;
 }
 
 faction* game::random_good_faction()
@@ -3164,7 +3164,7 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
    mvwputch(w_terrain, y + j + SEEY - u.pos.y, x + i + SEEX - u.pos.x, c_red,'|');
   }
   wrefresh(w_terrain);
-  nanosleep(&ts, NULL);
+  nanosleep(&ts, nullptr);
  }
 
 // The rest of the function is shrapnel
@@ -3185,7 +3185,7 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
     mvwputch(w_terrain, traj[j].y + SEEY - u.pos.y,
                         traj[j].x + SEEX - u.pos.x, c_red, '`');
     wrefresh(w_terrain);
-    nanosleep(&ts, NULL);
+    nanosleep(&ts, nullptr);
    }
    if (monster* const m_at = mon(traj[j])) {
     dam -= m_at->armor_cut();
@@ -3435,7 +3435,7 @@ void game::explode_mon(monster& target)
   const mtype* const corpse = target.type;
   kills[corpse->id]++;	// Increment our kill counter
   const itype* const meat = corpse->chunk_material();
-  if (!meat) return;	// no chunks when return value is NULL
+  if (!meat) return;	// no chunks when return value is null
   const int num_chunks = corpse->chunk_count();
 
   point pos(target.pos);
@@ -3848,7 +3848,7 @@ void game::examine()
  } else if (t_bulletin == exam_t) {
 // TODO: Bulletin Boards
   switch (menu("Bulletin Board", "Check jobs", "Check events",
-               "Check other notices", "Post notice", "Cancel", NULL)) {
+               "Check other notices", "Post notice", "Cancel", nullptr)) {
    case 1:
     break;
    case 2:
@@ -4350,7 +4350,7 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
   if (!u.has_item(ch))
    return false;
   item *cont = &(u.i_at(ch));
-  if (cont == NULL || cont->is_null()) {
+  if (cont == nullptr || cont->is_null()) {
    messages.add("Never mind.");
    return false;
 
@@ -4835,7 +4835,7 @@ void game::complete_butcher(int index)
  }
  if (pieces <= 0) messages.add("Your clumsy butchering destroys the meat!");
  else {
-  const itype* const meat = corpse->chunk_material();	// assumed non-NULL: precondition
+  const itype* const meat = corpse->chunk_material();	// assumed non-null: precondition
   for (int i = 0; i < pieces; i++) m.add_item(u.pos, meat, age);
   messages.add("You butcher the corpse.");
  }
@@ -5986,7 +5986,7 @@ mongroup* game::valid_group(mon_id type, int x, int y)
 void game::wait()
 {
  char ch = menu("Wait for how long?", "5 Minutes", "30 Minutes", "1 hour",
-                "2 hours", "3 hours", "6 hours", "Exit", NULL);
+                "2 hours", "3 hours", "6 hours", "Exit", nullptr);
  int time;
  if (ch == 7)
   return;
@@ -6015,7 +6015,7 @@ void game::msg_buffer()
 
 void game::teleport(player *p)
 {
- if (p == NULL) p = &u;
+ if (p == nullptr) p = &u;
  int tries = 0;
  point dest(0, 0);
  const bool is_u = (p == &u);
@@ -6055,7 +6055,7 @@ void game::nuke(const point& world_div_2)   // \todo parameter should be OM_loc
  for (int i = 0; i < SEEX * 2; i++) {
   for (int j = 0; j < SEEY * 2; j++) {
    if (!one_in(10)) tmpmap.ter(i, j) = t_rubble;
-   if (one_in(3)) tmpmap.add_field(NULL, i, j, fd_nuke_gas, 3);
+   if (one_in(3)) tmpmap.add_field(nullptr, i, j, fd_nuke_gas, 3);
    tmpmap.radiation(i, j) += rng(20, 80);
   }
  }

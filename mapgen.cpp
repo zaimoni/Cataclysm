@@ -324,7 +324,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
  int rn, lw, rw, mw, tw, bw, cw, x, y;
  int n_fac = 0, e_fac = 0, s_fac = 0, w_fac = 0;
- computer *tmpcomp = NULL;
+ computer *tmpcomp = nullptr;
 
  switch (terrain_type) {
  case ot_null:  // historical.  Duplicates submap constructor effects explicitly
@@ -2658,7 +2658,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      else if (trig_dist(i, j, SEEX, SEEY) > 5) {
       ter(i, j) = t_metal_floor;
       if (one_in(30))
-       add_field(NULL, i, j, fd_nuke_gas, 2);	// NULL game; no messages
+       add_field(nullptr, i, j, fd_nuke_gas, 2);	// null game; no messages
      } else if (trig_dist(i, j, SEEX, SEEY) == 5) {
       ter(i, j) = t_hole;
       add_trap(i, j, tr_ledge);
@@ -7113,7 +7113,7 @@ void map::add_extra(map_extra type, game *g)
  case mx_drugdeal: {
 // Decide on a drug type
   int num_drugs;
-  itype* drugtype = NULL;
+  itype* drugtype = nullptr;
   switch (rng(1, 10)) {
    case 1: // Weed
     num_drugs = rng(20, 30);
@@ -7343,7 +7343,7 @@ void map::create_anomaly(int cx, int cy, artifact_natural_property prop)
    for (int i = cx - 5; i <= cx + 5; i++) {
     for (int j = cy - 5; j <= cy + 5; j++) {
      if (ter(i, j) == t_rubble) {
-      add_field(NULL, i, j, fd_push_items, 1);
+      add_field(nullptr, i, j, fd_push_items, 1);
       if (one_in(3)) add_item(i, j, item::types[itm_rock], 0);
      }
     }
@@ -7403,16 +7403,16 @@ void map::create_anomaly(int cx, int cy, artifact_natural_property prop)
    break;
   case ARTPROP_ELECTRIC:
   case ARTPROP_CRACKLING:
-   add_field(NULL, cx, cy, fd_shock_vent, 3);
+   add_field(nullptr, cx, cy, fd_shock_vent, 3);
    break;
   case ARTPROP_SLIMY:
-   add_field(NULL, cx, cy, fd_acid_vent, 3);
+   add_field(nullptr, cx, cy, fd_acid_vent, 3);
    break;
   case ARTPROP_WARM:
    for (int i = cx - 5; i <= cx + 5; i++) {
     for (int j = cy - 5; j <= cy + 5; j++) {
      if (ter(i, j) == t_rubble)
-      add_field(NULL, i, j, fd_fire_vent, 1 + (rl_dist(cx, cy, i, j) % 3));
+      add_field(nullptr, i, j, fd_fire_vent, 1 + (rl_dist(cx, cy, i, j) % 3));
     }
    }
    break;

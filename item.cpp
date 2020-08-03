@@ -134,7 +134,7 @@ int item::use_charges(const itype_id it, int& qty)
 
 bool item::is_null() const
 {
- return (type == NULL || type->id == 0);
+ return (type == nullptr || type->id == 0);
 }
 
 item item::in_its_container() const
@@ -159,11 +159,11 @@ bool item::invlet_is_okay() const
 
 bool item::stacks_with(const item& rhs) const
 {
- if ((corpse == NULL && rhs.corpse != NULL) ||
-     (corpse != NULL && rhs.corpse == NULL)   )
+ if ((corpse == nullptr && rhs.corpse != nullptr) ||
+     (corpse != nullptr && rhs.corpse == nullptr)   )
   return false;
 
- if (corpse != NULL && rhs.corpse != NULL &&
+ if (corpse != nullptr && rhs.corpse != nullptr &&
      corpse->id != rhs.corpse->id)
   return false;
   
@@ -220,7 +220,7 @@ std::string item::info(bool showtext)
 
   const it_gun* const gun = dynamic_cast<const it_gun*>(type);
   int ammo_dam = 0, ammo_recoil = 0;
-  bool has_ammo = (curammo != NULL && charges > 0);
+  bool has_ammo = (curammo != nullptr && charges > 0);
   if (has_ammo) {
    ammo_dam = curammo->damage;
    ammo_recoil = curammo->recoil;
@@ -448,7 +448,7 @@ std::string item::tname() const
   if (name != "") ret << " of " << name;
   return ret.str();
  } else if (type->id == itm_blood) {
-  if (corpse == NULL || corpse->id == mon_null) ret << "human blood";
+  if (corpse == nullptr || corpse->id == mon_null) ret << "human blood";
   else ret << corpse->name << " blood";
   return ret.str();
  }
@@ -464,10 +464,10 @@ std::string item::tname() const
  else ret << type->name;
  }
 
- const it_comest* food = NULL;
+ const it_comest* food = nullptr;
  if (is_food()) food = dynamic_cast<const it_comest*>(type);
  else if (is_food_container()) food = dynamic_cast<const it_comest*>(contents[0].type);
- if (food != NULL && food->spoils != 0 && int(messages.turn) - bday > food->spoils * 600)
+ if (food != nullptr && food->spoils != 0 && int(messages.turn) - bday > food->spoils * 600)
   ret << " (rotten)";
 
  if (owned > 0) ret << " (owned)";
@@ -555,7 +555,7 @@ bool item::has_technique(technique_id tech, const player *p) const
  if (is_style()) {
   const it_style* const style = dynamic_cast<const it_style*>(type);
   for (const auto& m : style->moves) {
-   if (m.tech == tech && (p == NULL || p->sklevel[sk_unarmed] >= m.level)) return true;
+   if (m.tech == tech && (p == nullptr || p->sklevel[sk_unarmed] >= m.level)) return true;
   }
  }
  return (type->techniques & mfb(tech));
@@ -803,7 +803,7 @@ int item::gun_damage(bool with_ammo) const
  if (!is_gun()) return 0;
  const it_gun* const gun = dynamic_cast<const it_gun*>(type);
  int ret = gun->dmg_bonus;
- if (with_ammo && curammo != NULL) ret += curammo->damage;
+ if (with_ammo && curammo != nullptr) ret += curammo->damage;
  for(const auto& it : contents) {
   if (it.is_gunmod()) ret += (dynamic_cast<const it_gunmod*>(it.type))->damage;
  }
@@ -838,7 +838,7 @@ int item::recoil(bool with_ammo) const
  if (!is_gun()) return 0;
  const it_gun* const gun = dynamic_cast<const it_gun*>(type);
  int ret = gun->recoil;
- if (with_ammo && curammo != NULL) ret += curammo->recoil;
+ if (with_ammo && curammo != nullptr) ret += curammo->recoil;
  for (const auto& it : contents) {
   if (it.is_gunmod()) ret += (dynamic_cast<const it_gunmod*>(it.type))->recoil;
  }

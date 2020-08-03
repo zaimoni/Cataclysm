@@ -88,7 +88,7 @@ int nanosleep (const struct timespec *requested_delay, struct timespec *remainin
 
  done:
   /* Sleep is not interruptible.  So there is no remaining delay.  */
-  if (remaining_delay != NULL)
+  if (remaining_delay != nullptr)
     {
       remaining_delay->tv_sec = 0;
       remaining_delay->tv_nsec = 0;

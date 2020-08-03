@@ -1283,13 +1283,13 @@ int npc::minutes_to_u(const game *g) const
 
 bool npc::fac_has_value(faction_value value) const
 {
- if (my_fac == NULL) return false;
+ if (my_fac == nullptr) return false;
  return my_fac->has_value(value);
 }
 
 bool npc::fac_has_job(faction_job job) const
 {
- if (my_fac == NULL) return false;
+ if (my_fac == nullptr) return false;
  return my_fac->has_job(job);
 }
 
@@ -1311,12 +1311,12 @@ void npc::decide_needs()
  needrank[need_food] = 15 - hunger;
  needrank[need_drink] = 15 - thirst;
  for (size_t i = 0; i < inv.size(); i++) {
-  const it_comest* food = NULL;
+  const it_comest* food = nullptr;
   if (inv[i].is_food())
    food = dynamic_cast<const it_comest*>(inv[i].type);
   else if (inv[i].is_food_container())
    food = dynamic_cast<const it_comest*>(inv[i].contents[0].type);
-  if (food != NULL) {
+  if (food != nullptr) {
    needrank[need_food] += food->nutr / 4;
    needrank[need_drink] += food->quench / 4;
   }

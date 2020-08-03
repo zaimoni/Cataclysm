@@ -1043,7 +1043,7 @@ const char* disease::name() const
 		}
 
 //	case DI_NULL:		return "";
-	default:		return NULL;
+	default:		return nullptr;
 	}
 }
 
@@ -2820,7 +2820,7 @@ void player::power_bionics(game *g)
  int ch;
  bool activating = true;
  do {
-  bionic *tmp = NULL;
+  bionic *tmp = nullptr;
   int b;
   ch = getch();
   if (ch == '!') {
@@ -3437,7 +3437,7 @@ const char* describe(dis_type type)
 	case DI_STUNNED: return "You're stunned!";
 	case DI_DOWNED: return "You're knocked to the floor!";
 	case DI_AMIGARA: return "You can't look away from the fautline...";
-	default: return NULL;
+	default: return nullptr;
 	}
 }
 

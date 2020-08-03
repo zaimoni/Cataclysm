@@ -396,7 +396,7 @@ static std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *
 {
  std::vector<talk_response> ret;
  int selected = p->chatbin.mission_selected;
- mission *miss = NULL;
+ mission *miss = nullptr;
  // agree with dynamic_line on which mission is relevant.
  if (0 <= selected)
 	{
@@ -404,7 +404,7 @@ static std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc *
 		 topic == TALK_MISSION_SUCCESS || topic == TALK_MISSION_ADVICE ||
 		 topic == TALK_MISSION_FAILURE || topic == TALK_MISSION_SUCCESS_LIE) ? p->chatbin.missions_assigned : p->chatbin.missions;
 
-	 if (selected < conversation_target.size()) miss = mission::from_id(conversation_target[selected]);	// non-NULL as dynamic_line validated this
+	 if (selected < conversation_target.size()) miss = mission::from_id(conversation_target[selected]);	// non-null as dynamic_line validated this
 	}
 
  switch (topic) {
@@ -1401,8 +1401,8 @@ void talk_function::start_training(game *g, npc *p)
 
 void parse_tags(std::string &phrase, player *u, npc *me)
 {
- if (u == NULL || me == NULL) {
-  debugmsg("Called parse_tags() with NULL pointers!");
+ if (u == nullptr || me == nullptr) {
+  debugmsg("Called parse_tags() with null pointers!");
   return;
  }
  size_t fa, fb;

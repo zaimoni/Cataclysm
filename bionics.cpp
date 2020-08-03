@@ -760,7 +760,7 @@ static void bionics_install_failure(player *u, int success)
 
 bool player::install_bionics(game *g, const it_bionic* type)
 {
- if (type == NULL) {
+ if (type == nullptr) {
   debugmsg("Tried to install NULL bionic");
   return false;
  }

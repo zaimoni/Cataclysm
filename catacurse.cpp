@@ -76,7 +76,7 @@ public:
 	OS_Window(OS_Window&& src) {
 		static_assert(std::is_standard_layout<OS_Window>::value, "OS_Window move constructor is invalid");
 		memmove(this, &src, sizeof(OS_Window));
-		HBITMAP backbit = CreateDIBSection(0, (BITMAPINFO*)&_backbuffer_stats, DIB_RGB_COLORS, (void**)&_dcbits, NULL, 0);	// _dcbits doesn't play nice w/move constructor; would have to rebuild this
+		HBITMAP backbit = CreateDIBSection(0, (BITMAPINFO*)&_backbuffer_stats, DIB_RGB_COLORS, (void**)&_dcbits, nullptr, 0);	// _dcbits doesn't play nice w/move constructor; would have to rebuild this
 		DeleteObject(SelectObject(_backbuffer, backbit));//load the buffer into DC
 		SetBkMode(_backbuffer, TRANSPARENT);//Transparent font backgrounds
 		memset((void*)&src, 0, sizeof(OS_Window));
@@ -88,7 +88,7 @@ public:
 		static_assert(std::is_standard_layout<OS_Window>::value, "OS_Window move assignment is invalid");
 		destroy();
 		memmove(this, &src, sizeof(OS_Window));
-		HBITMAP backbit = CreateDIBSection(0, (BITMAPINFO*)&_backbuffer_stats, DIB_RGB_COLORS, (void**)&_dcbits, NULL, 0);	// _dcbits doesn't play nice w/move constructor; would have to rebuild this
+		HBITMAP backbit = CreateDIBSection(0, (BITMAPINFO*)&_backbuffer_stats, DIB_RGB_COLORS, (void**)&_dcbits, nullptr, 0);	// _dcbits doesn't play nice w/move constructor; would have to rebuild this
 		DeleteObject(SelectObject(_backbuffer, backbit));//load the buffer into DC
 		SetBkMode(_backbuffer, TRANSPARENT);//Transparent font backgrounds
 		memset((void*)&src, 0, sizeof(OS_Window));
@@ -234,7 +234,7 @@ public:
 
 		_backbuffer_stats.biCompression = BI_RGB;   //store it in uncompressed bytes
 
-		HBITMAP backbit = CreateDIBSection(0, (BITMAPINFO*)&_backbuffer_stats, DIB_RGB_COLORS, (void**)&_dcbits, NULL, 0);	// _dcbits doesn't play nice w/move constructor; would have to rebuild this
+		HBITMAP backbit = CreateDIBSection(0, (BITMAPINFO*)&_backbuffer_stats, DIB_RGB_COLORS, (void**)&_dcbits, nullptr, 0);	// _dcbits doesn't play nice w/move constructor; would have to rebuild this
 		DeleteObject(SelectObject(_backbuffer, backbit));//load the buffer into DC
 		SetBkMode(_backbuffer, TRANSPARENT);//Transparent font backgrounds
 		if (8 >= _backbuffer_stats.biBitCount && _color_table && (1ULL << _backbuffer_stats.biBitCount) >= _color_table_size) return SetDIBColorTable(_backbuffer, 0, _color_table_size, _color_table);	// actually need this
@@ -483,7 +483,7 @@ private:
 		if (_x && !_have_info) {
 			memset(&_data, 0, sizeof(_data));
 			_data.biSize = sizeof(_data);
-			_have_info = GetDIBits(OS_Window::last_dc(), (HBITMAP)_x, 0, 0, NULL, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS);	// XXX needs testing, may need an HDC
+			_have_info = GetDIBits(OS_Window::last_dc(), (HBITMAP)_x, 0, 0, nullptr, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS);	// XXX needs testing, may need an HDC
 			_data.biCompression = BI_RGB;
 			_data.biHeight = (0 < _data.biHeight) ? -_data.biHeight : _data.biHeight;	// force bottom-up
 			OS_Window::SetColorDepth(_data,32);	// force alpha channel in (no padding bytes)
@@ -496,7 +496,7 @@ private:
 		if (!_have_info) return 0;
 		RGBQUAD* const tmp = zaimoni::_new_buffer<RGBQUAD>(width()*height());
 		if (!tmp) return 0;
-		if (!GetDIBits(OS_Window::last_dc(), (HBITMAP)_x, 0, 0, NULL, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS))	// may need an HDC
+		if (!GetDIBits(OS_Window::last_dc(), (HBITMAP)_x, 0, 0, nullptr, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS))	// may need an HDC
 			{
 			free(tmp);
 			return 0;
@@ -562,19 +562,19 @@ private:
 		// plan B
 		// Create a decoder
 		// XXX research how to not leak these COM objects
-		IWICImagingFactory* factory = NULL;
-		HRESULT hr = CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
+		IWICImagingFactory* factory = nullptr;
+		HRESULT hr = CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
 		if (!SUCCEEDED(hr)) return false;
 
 		IWICBitmapDecoder* parser = 0;
-		hr = factory->CreateDecoderFromFilename(w_src.c_str(), NULL, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &parser);
+		hr = factory->CreateDecoderFromFilename(w_src.c_str(), nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, &parser);
 		if (!SUCCEEDED(hr)) {
 			factory->Release();
 			return false;
 		}
 
 		// Retrieve the first frame of the image from the decoder
-		IWICBitmapFrameDecode *pFrame = NULL;
+		IWICBitmapFrameDecode *pFrame = nullptr;
 		hr = parser->GetFrame(0, &pFrame);
 		if (!SUCCEEDED(hr)) {
 			parser->Release();
@@ -602,7 +602,7 @@ private:
 			return false;
 		}
 
-		IWICFormatConverter* conv = NULL;
+		IWICFormatConverter* conv = nullptr;
 		hr = factory->CreateFormatConverter(&conv);
 		if (!SUCCEEDED(hr)) {
 			pFrame->Release();
@@ -610,7 +610,7 @@ private:
 			factory->Release();
 			return 0;
 		}
-		hr = conv->Initialize(pFrame, GUID_WICPixelFormat32bppBGRA, WICBitmapDitherTypeNone, NULL, 0.0f, WICBitmapPaletteTypeCustom);
+		hr = conv->Initialize(pFrame, GUID_WICPixelFormat32bppBGRA, WICBitmapDitherTypeNone, nullptr, 0.0f, WICBitmapPaletteTypeCustom);
 		if (!SUCCEEDED(hr)) {
 			conv->Release();
 			pFrame->Release();
@@ -630,7 +630,7 @@ private:
 			return false;
 		}
 
-		hr = conv->CopyPixels(NULL, 4 * width, buf_len, reinterpret_cast<unsigned char*>(buffer));
+		hr = conv->CopyPixels(nullptr, 4 * width, buf_len, reinterpret_cast<unsigned char*>(buffer));
 		if (!SUCCEEDED(hr)) {
 			free(buffer);
 			buffer = 0;
@@ -653,7 +653,7 @@ private:
 
 	static HANDLE loadFromFile(const std::string src, RGBQUAD*& pixels, BITMAPINFOHEADER& working,bool& got_stats)
 	{
-		pixels = NULL;
+		pixels = nullptr;
 		got_stats = false;
 		memset(&working, 0, sizeof(working));
 		working.biSize = sizeof(working);
@@ -1021,10 +1021,10 @@ bool WinCreate()
     WindowClassType.cbClsExtra = 0;
     WindowClassType.cbWndExtra = 0;
     WindowClassType.hInstance = OS_Window::program;// hInstance
-    WindowClassType.hIcon = LoadIcon(NULL, IDI_APPLICATION);//Default Icon
-    WindowClassType.hIconSm = LoadIcon(NULL, IDI_APPLICATION);//Default Icon
-    WindowClassType.hCursor = LoadCursor(NULL, IDC_ARROW);//Default Pointer
-    WindowClassType.lpszMenuName = NULL;
+    WindowClassType.hIcon = LoadIcon(nullptr, IDI_APPLICATION);//Default Icon
+    WindowClassType.hIconSm = LoadIcon(nullptr, IDI_APPLICATION);//Default Icon
+    WindowClassType.hCursor = LoadCursor(nullptr, IDC_ARROW);//Default Pointer
+    WindowClassType.lpszMenuName = nullptr;
     WindowClassType.hbrBackground = CreateSolidBrush(RGB(0, 0, 0)); // will be auto-deleted on close
     WindowClassType.lpszClassName = szWindowClass;
     if (!RegisterClassExW(&WindowClassType)) return false;
@@ -1082,7 +1082,7 @@ LRESULT CALLBACK ProcessMessages(HWND__ *hWnd,unsigned int Msg, WPARAM wParam, L
 //      case WM_ERASEBKGND: return 1;
         case WM_PAINT:              //Pull from our backbuffer, onto the screen
             BitBlt(_win.dc(), 0, 0, _win.width(), _win.height(), _win.backbuffer(), 0, 0,SRCCOPY);
-            ValidateRect(_win,NULL);
+            ValidateRect(_win, nullptr);
             break;
         case WM_DESTROY:
             exit(0);//A messy exit, but easy way to escape game loop
@@ -1138,7 +1138,7 @@ void DrawWindow(WINDOW *win)
 					const auto fg = _win.color(FG);
 					int color = RGB(fg.rgbRed, fg.rgbGreen, fg.rgbBlue);
                     SetTextColor(_win.backbuffer(),color);
-                    ExtTextOut(_win.backbuffer(),drawx,drawy,0,NULL,&tmp,1,NULL);
+                    ExtTextOut(_win.backbuffer(),drawx,drawy,0,nullptr,&tmp,1,nullptr);
                 //    }     //and this line too.
                 } else if (  tmp < 0 ) {
                     switch (tmp) {
@@ -1218,7 +1218,7 @@ WINDOW *initscr(void)
 	std::ifstream fin;
 	fin.open("data\\FONTDATA");
  if (!fin.is_open()){
-     MessageBox(_win, "Failed to open FONTDATA, loading defaults.", NULL, 0);
+     MessageBox(_win, "Failed to open FONTDATA, loading defaults.", nullptr, 0);
 	 if (0 >= fontwidth) SetFontSize(8, 16);	// predicted to be dead code
  } else {
      getline(fin, typeface);
@@ -1230,15 +1230,15 @@ WINDOW *initscr(void)
 		 fin >> tmp_height;
 		 if ((0 >= fontwidth && 4 >= tmp_width)
 			 || (0 >= fontheight && 4 >= tmp_height)) {
-			 MessageBox(_win, "Invalid font size specified!", NULL, 0);
+			 MessageBox(_win, "Invalid font size specified!", nullptr, 0);
 			 tmp_width = 8;
 			 tmp_height = 16;
 		 }
 		 if (0 >= fontwidth) SetFontSize(tmp_width, tmp_height);
 	 }
  }
- haveCustomFont = (!typeface.empty() ? AddFontResourceExA("data\\termfont", FR_PRIVATE, NULL) : 0);
- if (!haveCustomFont) MessageBox(_win, "Failed to load default font, using FixedSys.", NULL, 0);
+ haveCustomFont = (!typeface.empty() ? AddFontResourceExA("data\\termfont", FR_PRIVATE, nullptr) : 0);
+ if (!haveCustomFont) MessageBox(_win, "Failed to load default font, using FixedSys.", nullptr, 0);
  {
 	 const char* const t_face = haveCustomFont ? typeface.c_str() : "FixedSys";	//FixedSys will be user-changable at some point in time??
 	 font = CreateFont(fontheight, fontwidth, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
@@ -1404,7 +1404,7 @@ int refresh(void)
 int getch(void)
 {
  refresh();
- InvalidateRect(_win,NULL,true);
+ InvalidateRect(_win,nullptr,true);
  lastchar=ERR;//ERR=-1
     if (inputdelay < 0)
     {
@@ -1412,7 +1412,7 @@ int getch(void)
         {
 			OS_Window::CheckMessages();
             if (lastchar!=ERR) break;
-            MsgWaitForMultipleObjects(0, NULL, FALSE, 50, QS_ALLEVENTS);//low cpu wait!
+            MsgWaitForMultipleObjects(0, nullptr, FALSE, 50, QS_ALLEVENTS);//low cpu wait!
         }
         while (lastchar==ERR);
     }
@@ -1575,7 +1575,7 @@ int endwin(void)
 {
     DeleteObject(font);
     WinDestroy();
-    RemoveFontResourceExA("data\\termfont",FR_PRIVATE,NULL);//Unload it
+    RemoveFontResourceExA("data\\termfont",FR_PRIVATE,nullptr);//Unload it
     return 1;
 };
 

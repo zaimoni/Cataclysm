@@ -105,7 +105,7 @@ public:
 	move_path_screen(npc& actor, const point& dest, size_t threshold, void (npc::* op)(), const char* desc) : _actor(actor), _threshold(threshold),_op(op),_desc(desc) {
 		_actor.update_path(game::active()->m, dest);
 		if (_actor.path.empty()) throw std::runtime_error("tried to follow empty path");
-		if (_actor.path.size() <= _threshold && !_op) throw std::runtime_error("NULL path action");
+		if (_actor.path.size() <= _threshold && !_op) throw std::runtime_error("null path action");
 #ifndef NDEBUG
 		if (!IsLegal()) throw std::logic_error("unreasonable pathing");
 #endif
@@ -765,8 +765,8 @@ int npc::confident_range(int index) const
 
   deviation += .5 * encumb(bp_torso) + 2 * encumb(bp_eyes);
 
-  if (weapon.curammo == NULL)	// This shouldn't happen, but it does sometimes
-   debugmsg("%s has NULL curammo!", name.c_str()); // TODO: investigate this bug
+  if (weapon.curammo == nullptr)	// This shouldn't happen, but it does sometimes
+   debugmsg("%s has null curammo!", name.c_str()); // TODO: investigate this bug
   else {
    deviation += .5 * weapon.curammo->accuracy;
    max = weapon.range();
@@ -1181,7 +1181,7 @@ void npc::find_item(game *g)
  if (range > 12) range = 12;
  int minx = pos.x - range, maxx = pos.x + range,
      miny = pos.y - range, maxy = pos.y + range;
- item* pickup = NULL;
+ item* pickup = nullptr;
  if (minx < 0) minx = 0;
  if (miny < 0) miny = 0;
  if (maxx >= SEEX * MAPSIZE) maxx = SEEX * MAPSIZE - 1;
@@ -1485,7 +1485,7 @@ void npc::alt_attack(game *g, int target)
  DEBUG_FAIL_OR_LEAVE(itm_null == which, return);	// We ain't got shit!  Definitely should not happen.
 
  int index;
- item *used = NULL;
+ item *used = nullptr;
  if (weapon.type->id == which) {
   used = &weapon;
   index = -1;
@@ -1734,7 +1734,7 @@ int npc::pick_best_food(const inventory& _inv) const
  for (size_t i = 0; i < _inv.size(); i++) {
   int eaten_hunger = -1, eaten_thirst = -1;
   const item& it = _inv[i];
-  const it_comest* food = NULL;
+  const it_comest* food = nullptr;
   if (it.is_food()) food = dynamic_cast<const it_comest*>(it.type);
   else if (it.is_food_container()) food = dynamic_cast<const it_comest*>(it.contents[0].type);
   if (!food) continue;
