@@ -344,7 +344,7 @@ void vehicle::print_part_desc (void *w, int y1, int width, int p, int hl)
     }
 }
 
-void vehicle::print_fuel_indicator(void *w, int y, int x)
+void vehicle::print_fuel_indicator(void *w, int y, int x) const
 {
     WINDOW *win = (WINDOW *) w;
     const nc_color fcs[num_fuel_types] = { c_ltred, c_yellow, c_ltgreen, c_ltblue };

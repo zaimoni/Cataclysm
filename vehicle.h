@@ -171,7 +171,7 @@ public:
     void print_part_desc (void *w, int y1, int width, int p, int hl = -1);
 
 // Vehicle fuel indicator
-    void print_fuel_indicator (void *w, int y, int x);
+    void print_fuel_indicator(void *w, int y, int x) const;
 
 // Precalculate mount points for (idir=0) - current direction or (idir=1) - next turn direction
     void precalc_mounts (int idir, int dir);

@@ -2629,10 +2629,6 @@ void player::disp_status(WINDOW *w, game *g)
      mvwprintz(w, 3, 0, col_pain, "Pain: %d", pain_delta);
  }
 
- vehicle *veh = g->m.veh_at(pos);
- int dmor = 0;
- //int dmor = (in_vehicle && veh) ? 0 : 9;
-
  int morale_cur = morale_level ();
  nc_color col_morale = c_white;
  if (morale_cur >= 10)
@@ -2640,15 +2636,17 @@ void player::disp_status(WINDOW *w, game *g)
  else if (morale_cur <= -10)
   col_morale = c_red;
  if (morale_cur >= 100)
-  mvwprintz(w, 3, 10 + dmor, col_morale, ":D");
+  mvwprintz(w, 3, 10, col_morale, ":D");
  else if (morale_cur >= 10)
-  mvwprintz(w, 3, 10 + dmor, col_morale, ":)");
+  mvwprintz(w, 3, 10, col_morale, ":)");
  else if (morale_cur > -10)
-  mvwprintz(w, 3, 10 + dmor, col_morale, ":|");
+  mvwprintz(w, 3, 10, col_morale, ":|");
  else if (morale_cur > -100)
-  mvwprintz(w, 3, 10 + dmor, col_morale, ":(");
+  mvwprintz(w, 3, 10, col_morale, ":(");
  else
-  mvwprintz(w, 3, 10 + dmor, col_morale, "D:");
+  mvwprintz(w, 3, 10, col_morale, "D:");
+
+ const vehicle* const veh = g->m.veh_at(pos);
 
  if (in_vehicle && veh) {
   veh->print_fuel_indicator (w, 3, 49);
