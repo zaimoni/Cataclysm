@@ -176,7 +176,6 @@ int main(int argc, char *argv[])
  MAPBUFFER.save();
  erase(); // Clear screen
  endwin(); // End ncurses
- system("clear"); // Tell the terminal to clear itself
 #if HAVE_MS_COM
  CoUninitialize();
 #endif
