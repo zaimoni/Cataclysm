@@ -2568,9 +2568,11 @@ void player::disp_morale()
  delwin(w);
 }
  
-
+// 2020-08-04: unclear whether this should be in game class or not.
+// incoming window is game::w_status, canonical height 4 canonical width 55
 void player::disp_status(WINDOW *w, game *g)
 {
+ // \todo row 0 not in use 2020-08-04: ok for stderr.txt indicator; color h_red?
  mvwprintz(w, 1, 0, c_ltgray, "Weapon: %s", weapname().c_str());
  if (weapon.is_gun()) {
    int adj_recoil = recoil + driving_recoil;

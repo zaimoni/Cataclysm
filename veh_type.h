@@ -99,10 +99,10 @@ enum vpart_flags
     vpf_solar_panel,        // is solar panel
     vpf_turret,             // is turret
     vpf_armor,              // is armor plating
-    vpf_func_begin  = vpf_over,
-    vpf_func_end    = vpf_armor,
+    num_vpflags,
 
-    num_vpflags
+    vpf_func_begin  = vpf_over,
+    vpf_func_end    = vpf_armor
 };
 
 struct vpart_info
@@ -126,7 +126,10 @@ struct vpart_info
     ammotype fuel_type;  // engine, fuel tank
     itype_id item;      // corresponding item
     int difficulty;     // installation difficulty (mechanics requirement)
-    unsigned long flags;    // flags
+    cataclysm::bitmap<num_vpflags>::type flags;    // flags
+
+    bool has_flag(unsigned int f) const { return flags & mfb(f); }
+    template<vpart_flags f> bool has_flag() const { return flags & mfb(f); }
 };
 
 
