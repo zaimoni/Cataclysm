@@ -14,6 +14,7 @@
 #include <time.h>
 
 #include <fstream>
+#include <filesystem>
 
 using namespace cataclysm;
 
@@ -105,6 +106,12 @@ int main(int argc, char *argv[])
 	static const std::string val_thin_border("border: solid 1px black");
 	static const std::string val_left_align("float:left");
 	static const std::string val_list_none("list-style: none");
+
+	{  // force html subdirectory to exist (function extraction target)
+	std::error_code ec;
+	const std::filesystem::path target("html");
+	if (!std::filesystem::exists(target, ec) && !ec) create_directory(target, ec);	// do not want exception-throwing here
+	}
 
 	// \todo parse command line options
 
