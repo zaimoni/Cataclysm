@@ -9,7 +9,6 @@
 
 #include <string.h>
 #include <fstream>	// for artifacts
-#include <sstream>
 #include <stdarg.h> // for bionics
 
 static itype* const null_type = new itype;

@@ -6,7 +6,6 @@
 #include "faction.h"
 #include "mobile.h"
 #include <string>
-#include <sstream>
 #include <memory>
 
 namespace cataclysm {

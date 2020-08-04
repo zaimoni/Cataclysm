@@ -7,7 +7,6 @@
 
 #include <stdlib.h>
 #include <math.h>
-#include <sstream>
 #include <fstream>
 
 static const ammotype fuel_types[] = { AT_GAS, AT_BATT, AT_PLUT, AT_PLASMA };   // 2020-07-12 arguably could be sunk to vehicle::print_fuel_indicator

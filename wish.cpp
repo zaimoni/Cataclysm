@@ -2,7 +2,6 @@
 #include "output.h"
 #include "keypress.h"
 #include "recent_msg.h"
-#include <sstream>
 
 #define LESS(a, b) ((a)<(b)?(a):(b))
 

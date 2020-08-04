@@ -4,6 +4,7 @@
 #include "recent_msg.h"
 #include "line.h"
 #include "setvector.h"
+#include <sstream>
 
 std::vector <mission_type> mission_type::types; // The list of mission templates
 

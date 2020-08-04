@@ -5,8 +5,6 @@
 #include "line.h"
 #include "recent_msg.h"
 
-#include <sstream>
-
 void mdeath::normal(game *g, monster *z)
 {
  if (g->u_see(z)) messages.add("It dies!");

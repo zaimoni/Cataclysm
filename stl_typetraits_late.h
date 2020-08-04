@@ -2,6 +2,7 @@
 #define STL_TYPETRAITS_LATE_H 1
 
 #include "stl_typetraits.h"	// insurance policy
+#include <stdexcept>
 
 // example model for begin,end is container of std::pair<T,int>
 // example model n is rng(...,...)

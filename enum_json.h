@@ -1,6 +1,9 @@
 #ifndef ENUM_JSON_H
 #define ENUM_JSON_H
 
+#include <string>
+#include <cstring>
+
 namespace cataclysm {
 
 	template<class T>
@@ -11,9 +14,6 @@ namespace cataclysm {
 
 }
 
-#include <string>
-
-// declaration requires std::string; definition typically also requires string.h on MingWin but not MSVC
 #define DECLARE_JSON_ENUM_SUPPORT(TYPE)	\
 const char* JSON_key(TYPE src);	\
 namespace cataclysm {	\
