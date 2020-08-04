@@ -1042,7 +1042,7 @@ bool map::bash(int x, int y, int str, std::string &sound, int *res)
   sound += "thump!";
   return true;
  }
- return smashed_web;// If we kick empty space, the action is cancelled
+ return smashed_web;// If we kick empty space, the action is canceled
 }
 
 // creatures call map::destroy only if the terrain is NOT bashable.  Map generation usually pre-emptively bashes.

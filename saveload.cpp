@@ -25,9 +25,7 @@
 
 #include <istream>
 #include <ostream>
-#ifdef SOCRATES_DAIMON
 #include <sstream>
-#endif
 
 #include "Zaimoni.STL/Logging.h"
 

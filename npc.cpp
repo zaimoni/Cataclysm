@@ -1,6 +1,3 @@
-#include <fstream>
-#include <sstream>
-
 #include "npc.h"
 #include "game.h"
 #include "rng.h"
@@ -10,8 +7,10 @@
 #include "json.h"
 #include "recent_msg.h"
 #include "stl_typetraits.h"
-
 #include "saveload.h"
+
+#include <fstream>
+#include <sstream>
 
 int npc::next_id = npc::MIN_ID;
 

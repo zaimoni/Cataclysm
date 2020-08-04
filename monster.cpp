@@ -6,7 +6,6 @@
 #include "om_cache.hpp"
 #include "saveload.h"
 
-#include <sstream>
 #include <fstream>
 #include <stdlib.h>
 

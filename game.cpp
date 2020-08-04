@@ -5955,7 +5955,7 @@ void game::spawn_mon(int shiftx, int shifty)
 
 mongroup* game::valid_group(mon_id type, int x, int y)
 {
- std::vector<mongroup*> semi_valid;	// Groups that're ALMOST big enough
+ std::vector<mongroup*> semi_valid;	// Groups that are ALMOST big enough
  {  // scoping brace
  std::vector<mongroup*> valid_groups;
  for (auto& _group : cur_om.zg) {

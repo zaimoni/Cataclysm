@@ -7,6 +7,7 @@
 #include "rng.h"
 #include "recent_msg.h"
 #include "setvector.h"
+#include <sstream>
 
 std::vector<recipe*> recipe::recipes;
 

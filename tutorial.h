@@ -99,7 +99,7 @@ put on also encumbered your torso.  This will make combat a little more\n\
 difficult.  To check encumberance, press @.",
 "\
 You just put on an article of clothing that protects against the environment.\n\
-The most common and imporant are respiratory devices, which will protect you\n\
+The most common and important are respiratory devices, which will protect you\n\
 against smoke, air-born toxins or organisms, and other common hazards.\n\
 However, they also make it a little harder to breath when running, so you'll\n\
 move more slowly.  To check encumberance, press @.",
@@ -171,7 +171,7 @@ Recoil severely reduces your chance to hit, but you can eliminate recoil by\n\
 pausing ('.') for a turn or moving normally.  High strength reduces recoil,\n\
 so weak characters might want to stick to .22 or 9mm guns.",
 "\
-That yellow > next to you is a staircase leading down.  To go downtairs, step\n\
+That yellow > next to you is a staircase leading down.  To go downstairs, step\n\
 onto the staircase and press the '>' key.  Similarly, a yellow < is stairs\n\
 leading up, and can be followed with the '<' key.",
 "\

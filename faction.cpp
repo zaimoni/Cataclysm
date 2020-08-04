@@ -9,8 +9,6 @@
 #include "stl_limits.h"
 #include "saveload.h"
 
-#include <sstream>
-
 int faction::next_id = faction::MIN_ID+1;
 
 void faction::global_reset() {

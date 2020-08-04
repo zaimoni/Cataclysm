@@ -9,7 +9,6 @@
 #include "rng.h"
 
 #include <fstream>
-#include <sstream>
 #include <utility>
 
 // JSON enum transcoding

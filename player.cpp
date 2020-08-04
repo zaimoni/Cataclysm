@@ -3044,7 +3044,7 @@ int player::read_speed(bool real_life) const
  int ret = 1000 - 50 * (intel - 8);
  if (has_trait(PF_FASTREADER)) rational_scale<4,5>(ret);
  if (const int thc = disease_level(DI_THC)) {  // don't overwhelm fast reader...at least, if we haven't had enough to max out pain kill
-     // cf iuse::weed.  Neutral point for cancelling fast reader handwaved as 4 full doses, at least at normal weight
+     // cf iuse::weed.  Neutral point for canceling fast reader handwaved as 4 full doses, at least at normal weight
      ret += (ret / 16) * (1 + (thc - 1) / 60);
  }
  if (ret < 100) ret = 100;

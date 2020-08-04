@@ -1,9 +1,8 @@
 #ifndef MAPBUFFER_H
 #define MAPBUFFER_H
 
-#include <map>
-
 #include "enums.h"
+#include <map>
 
 struct submap;
 

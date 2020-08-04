@@ -91,8 +91,8 @@ struct vehicle_part
 //   map::board_vehicle and map::unboard_vehicle for
 //   boarding/unboarding player.
 // - To add new predesigned vehicle, assign new value for vhtype_id enum
-//   and declare vehicle and add parts in file veh_typedef.cpp, using macroes,
-//   similar to existant. Keep in mind, that positive x coordinate points
+//   and declare vehicle and add parts in file veh_typedef.cpp, using macros,
+//   similar to existent. Keep in mind, that positive x coordinate points
 //   forwards, negative x is back, positive y is to the right, and
 //   negative y to the left:
 //       orthogonal dir left (-Y)
@@ -104,7 +104,7 @@ struct vehicle_part
 //   coords. If it shows debug messages that it can't add parts, when you start
 //   the game, you did something wrong.
 //   There are a few rules: some parts are external, so one should be the first part
-//   at given mount point (tile). They require some part in neighbouring tile (with vpf_mount_point flag) to
+//   at given mount point (tile). They require some part in neighboring tile (with vpf_mount_point flag) to
 //   be mounted to. Other parts are internal or placed over. They can only be installed on top
 //   of external part. Some functional parts can be only in single instance per tile, i. e.,
 //   no two engines at one mount point.
@@ -139,10 +139,10 @@ public:
     
     void remove_part (int p);
 
-// returns the list of indeces of parts at certain position (not accounting frame direction)
+// returns the list of indices of parts at certain position (not accounting frame direction)
     std::vector<int> parts_at_relative (int dx, int dy) const;
 
-// returns the list of indeces of parts inside (or over) given
+// returns the list of indices of parts inside (or over) given
     std::vector<int> internal_parts(int p) const;
 
 // returns index of part, inner to given, with certain flag (WARNING: without mfb!), or -1
@@ -176,7 +176,7 @@ public:
 // Precalculate mount points for (idir=0) - current direction or (idir=1) - next turn direction
     void precalc_mounts (int idir, int dir);
 
-// get a list of part indeces where is a passenger inside
+// get a list of part indices where is a passenger inside
     std::vector<int> boarded_parts() const;
 	std::vector<std::pair<int, player*> > passengers() const;
 	bool any_boarded_parts() const;
@@ -201,7 +201,7 @@ public:
 // vehicle's fuel type name
     static const char* fuel_name(ammotype ftype);
 
-// fuel consumption of vehicle engines of given type, in one-hundreth of fuel
+// fuel consumption of vehicle engines of given type, in one-hundredth of fuel
     int basic_consumption(int ftype) const;
 
     void consume_fuel ();
@@ -289,7 +289,7 @@ public:
     // 1 - bashing (damage applied if it passes certain treshold)
     // 2 - incendiary
     // damage individual external part. bash means damage
-    // must exceed certain threshold to be substracted from hp
+    // must exceed certain threshold to be subtracted from hp
     // (a lot light collisions will not destroy parts)
     // returns damage bypassed
     int damage (int p, int dmg, int type = 1, bool aimed = true);
@@ -318,7 +318,7 @@ public:
     std::string name;   // vehicle name
 	vhtype_id _type;           // vehicle type
     std::vector<vehicle_part> parts;   // Parts which occupy different tiles
-    std::vector<int> external_parts;   // List of external parts indeces
+    std::vector<int> external_parts;   // List of external parts indices
 	point exhaust_d;
 
     // temp values
@@ -330,7 +330,7 @@ public:
     tileray face;       // frame direction
     tileray move;       // direction we are moving
     int velocity;       // vehicle current velocity, mph * 100
-    int cruise_velocity; // velocity vehicle's cruise control trying to acheive
+    int cruise_velocity; // velocity vehicle's cruise control trying to achieve
     bool cruise_on;     // cruise control on/off
     int turn_dir;       // direction, to wich vehicle is turning (player control). will rotate frame on next move
     bool skidding;      // skidding mode

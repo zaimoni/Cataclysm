@@ -5,8 +5,6 @@
 #include "json.h"
 #include "recent_msg.h"
 
-#include <fstream>
-
 int mission::next_id = mission::MIN_ID;
 
 void mission::global_reset() {
