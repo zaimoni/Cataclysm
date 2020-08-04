@@ -343,7 +343,7 @@ public:
  void make_angry(); // Called if the player attacks us
  bool wants_to_travel_with(player *p);
  int assigned_missions_value() const;
- std::vector<skill> skills_offered_to(const player& p) const; // Skills that're higher
+ std::vector<skill> skills_offered_to(const player& p) const; // Skills that are higher
  std::vector<itype_id> styles_offered_to(const player& p) const; // Martial Arts
 // State checks
  bool is_enemy() const; // We want to kill/mug/etc the player

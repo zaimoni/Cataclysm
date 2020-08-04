@@ -48,7 +48,7 @@ struct talk_function
  static void enslave		(game *g, npc *p) {}; // p becomes slave of u
  static void hostile		(game *g, npc *p); // p turns hostile to u
  static void flee			(game *g, npc *p);
- static void leave			(game *g, npc *p); // p becomes indifferant
+ static void leave			(game *g, npc *p); // p becomes indifferent
 
  static void start_mugging		(game *g, npc *p);
  static void player_leaving		(game *g, npc *p);

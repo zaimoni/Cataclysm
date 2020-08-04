@@ -104,7 +104,7 @@ const faction_value_datum facval_data[NUM_FACVALS] = {
 {"their robotics factories",	 0,	 3,	-1,	 0,	-2},
 {"treachery",			-3,	 0,	 1,	 3,	 0},
 {"the avoidance of drugs",	 1,	 0,	 0,	-1,	 1},
-{"their adherance to the law",	 2,	-1,	-1,	-4,	-1},
+{"their adherence to the law",	 2,	-1,	-1,	-4,	-1},
 {"their cruelty",		-3,	 1,	-1,	 4,	 1}
 };
 // TOTALS:			 5	 4	 1	-3	 4

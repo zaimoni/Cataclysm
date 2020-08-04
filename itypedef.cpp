@@ -3160,7 +3160,7 @@ mfb(IF_USE_UPS));
 // GUN MODS
 // Accuracy is inverted from guns; high values are a bonus, low values a penalty
 // The clip modification is a percentage of the original clip size.
-// The final variable is a bitfield of acceptible ammo types.  Using 0 means
+// The final variable is a bitfield of acceptable ammo types.  Using 0 means
 //   that any ammo type is acceptable (so long as the mod works on the class of
 //   gun)
 #define GUNMOD(name, rare, value, color, mat1, mat2, volume, weight, meleedam,\

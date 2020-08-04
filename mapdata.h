@@ -141,7 +141,7 @@ enum map_extra {
  num_map_extras
 };
 
-// Chances are relative to eachother; e.g. a 200 chance is twice as likely
+// Chances are relative to each other; e.g. a 200 chance is twice as likely
 // as a 100 chance to appear.
 struct map_extras {
  unsigned int chance;

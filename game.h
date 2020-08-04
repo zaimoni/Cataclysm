@@ -331,7 +331,7 @@ public:
   int kills[num_monsters];	        // Player's kill count
   // Historically, we had a keypress recorder for tracking the last action taken.
   // There was no "clearing" or "archival" operation, however.
-  // This would be a wrapper for input(), possibly ignoring cancelled actions.
+  // This would be a wrapper for input(), possibly ignoring canceled actions.
 
   std::unique_ptr<special_game> gamemode;
 

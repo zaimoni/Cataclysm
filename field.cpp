@@ -79,7 +79,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
          melting->made_of(COTTON) || melting->made_of(WOOL)    ||
          melting->made_of(PAPER)  || melting->made_of(PLASTIC) ||
          (melting->made_of(GLASS) && !one_in(3)) || one_in(4)) {
-// Acid destructable objects here
+// Acid destructible objects here
       melting->damage++;
       if (melting->damage >= 5 || (melting->made_of(PAPER) && melting->damage >= 3)) {
        cur->age += melting->volume();
