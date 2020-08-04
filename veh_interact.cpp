@@ -431,7 +431,7 @@ void veh_interact::move_cursor (int dx, int dy)
             const auto& part = veh->parts[p];
             const auto& p_info = veh->part_info(p);
             if (part.hp < p_info.durability) need_repair.push_back (i);
-            if (veh->part_flag(p, vpf_fuel_tank) && part.amount < p_info._size) ptank = p;
+            if (p_info.has_flag<vpf_fuel_tank>() && part.amount < p_info._size) ptank = p;
         }
     }
     has_fuel = (ptank >= 0) ? veh->refill(_g->u, ptank, true) : false;
