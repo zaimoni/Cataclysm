@@ -19,6 +19,12 @@
 #define LINE_OXXX 4194423
 #define LINE_XXXX 4194414
 
+// stderr logfile support
+bool have_used_stderr_log();
+const std::string& get_stderr_logname();
+FILE* get_stderr_log();
+// end stderr logfile support
+
 bool reject_not_whitelisted_printf(const std::string& src);
 
 void mvputch(int y, int x, nc_color FG, long ch);
@@ -28,6 +34,20 @@ void mvputch_inv(int y, int x, nc_color FG, long ch);
 void mvwputch_inv(WINDOW *w, int y, int x, nc_color FG, long ch);
 void mvputch_hi(int y, int x, nc_color FG, long ch);
 void mvwputch_hi(WINDOW *w, int y, int x, nc_color FG, long ch);
+
+template<class...Args>
+void debuglog(const char* mes, Args...params)
+{
+	if (reject_not_whitelisted_printf(mes)) return;
+	if (decltype(auto) err = get_stderr_log()) {
+		if constexpr (0 < sizeof...(params)) {
+			fprintf(err, mes, params...);
+		} else {
+			fputs(mes, err);
+		}
+		fputc('\n', err);
+	}
+}
 
 template<class...Args>
 void mvprintz(int y, int x, nc_color FG, const char* mes, Args...params)

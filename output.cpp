@@ -4,10 +4,32 @@
 #include "ui.h"
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <stdarg.h>
 #ifndef NDEBUG
 #include <stdexcept>
 #endif
+
+static FILE* stderr_log = nullptr;
+
+bool have_used_stderr_log() { return stderr_log; }
+
+const std::string& get_stderr_logname() {
+    static std::string ooao;
+    if (ooao.empty()) {
+        ooao = std::string("stderr")+std::to_string(time(nullptr))+".txt";
+    }
+    return ooao;
+}
+
+FILE* get_stderr_log() {
+    // \todo would need a lock if multi-threaded
+    if (!stderr_log) {
+        decltype(auto) name = get_stderr_logname();
+        stderr_log = fopen(name.c_str(),"ab");
+    }
+    return stderr_log;
+}
 
 nc_color hilite(nc_color c)
 {

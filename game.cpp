@@ -2252,6 +2252,10 @@ void game::draw()
  mvwprintz(w_status, 0, 41, c_white, "%s, day %d",
            season_name[messages.turn.season], messages.turn.day + 1);
  if (run_mode != 0) mvwprintz(w_status, 2, 51, c_red, "SAFE");
+
+ // no good place for the "stderr log is live" indicator.  Overwrite location/weather information for now.
+ if (have_used_stderr_log()) mvwprintz(w_status, 0, 0, h_red, get_stderr_logname().c_str());
+
  wrefresh(w_status);
  // Draw messages
  write_msg();
