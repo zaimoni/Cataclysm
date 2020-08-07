@@ -52,7 +52,17 @@ bool map::process_fields_in_submap(game *g, int gridn)
    
    curtype = cur->type;
    if (!found_field && curtype != fd_null) found_field = true;
-   if (cur->density > 3 || cur->density < 1) debugmsg("Whoooooa density of %d", cur->density);
+   // \todo ideally would use accessors and preclude this by construction
+   if (cur->density > 3 || cur->density < 1) {
+       if (const char* const json = JSON_key(curtype)) {
+           debuglog("Whoooooa density of %d for %s", cur->density, json);
+       } else {
+           debuglog("Whoooooa density of %d", cur->density);
+       }
+       // repair it
+       if (3 < cur->density) cur->density = 3;
+       else cur->density = 1;
+   }
 
   if (cur->age == 0) curtype = fd_null;	// Don't process "newborn" fields
 
@@ -670,7 +680,7 @@ void map::step_in_field(const point& pt, game *g)
  case fd_sap:
   messages.add("The sap sticks to you!");
   g->u.add_disease(DI_SAP, cur->density * 2);
-  if (cur->density == 1)
+  if (1 >= cur->density)
    remove_field(pt);
   else
    cur->density--;
@@ -798,7 +808,7 @@ void map::mon_in_field(const point& pt, game *g, monster *z)
 
   case fd_sap:
    z->speed -= cur->density * 5;
-   if (cur->density == 1)
+   if (1 >= cur->density)
     remove_field(pt);
    else
     cur->density--;

@@ -492,7 +492,7 @@ void game::process_artifact(item *it, player *p, bool wielded)
     for (int y = p->pos.y - 1; y <= p->pos.y + 1; y++) {
 	 auto& fd = m.field_at(x, y);
      if (fd.type == fd_fire) {
-      if (fd.density == 0) m.remove_field(x, y);
+      if (1 >= fd.density) m.remove_field(x, y);
       else fd.density--;
      }
     }
