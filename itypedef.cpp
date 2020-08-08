@@ -3990,7 +3990,7 @@ A tool for welding metal pieces together.  Useful for construction.");
 // list of options.
 #define BIO(name, rarity, price, color, difficulty, des, ...) \
 	index++;types.push_back(new it_bionic(index,rarity,price,name,des,':',\
-color, STEEL, PLASTIC, 10, 18, 8, 0, 0, 0, difficulty, __VA_ARGS__))
+color, difficulty, __VA_ARGS__))
 //  Name			RAR PRICE	COLOR		DIFFICULTY
 
 BIO("CBM: Internal Battery",	24, 3800,	c_green,	 1, "\
@@ -4603,13 +4603,10 @@ it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
 // \todo switch constructor to take std::vector
 it_bionic::it_bionic(int pid, unsigned char prarity, unsigned int pprice,
 	std::string pname, std::string pdes,
-	char psym, nc_color pcolor, material pm1, material pm2,
-	unsigned short pvolume, unsigned short pweight,
-	signed char pmelee_dam, signed char pmelee_cut,
-	signed char pm_to_hit, unsigned pitem_flags,
+	char psym, nc_color pcolor,
 
 	int pdifficulty, ...)
-:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, STEEL, PLASTIC, 10, 18, 8, 0, 0, 0),
   difficulty(pdifficulty)
 {
 	va_list ap;
