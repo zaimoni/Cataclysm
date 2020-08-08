@@ -758,10 +758,15 @@ static void bionics_install_failure(player *u, int success)
  messages.add(fail_text.c_str());
 }
 
+// forcing the sole caller to handler the null pointer just complicates the "bypass code" for that critical data design error.
 bool player::install_bionics(game *g, const it_bionic* type)
 {
  if (type == nullptr) {
-  debugmsg("Tried to install NULL bionic");
+#ifdef ZAIMONI_ASSERT_STD_LOGIC
+  assert(0 && "Tried to install null bionic");	// for stacktrace in debug build
+#endif
+  debuglog("Tried to install null bionic");	// audit trail
+  debugmsg("Tried to install null bionic");	// UI (player action failure)
   return false;
  }
  std::string bio_name = type->name.substr(5);	// Strip off "CBM: "
