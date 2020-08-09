@@ -10,6 +10,7 @@
 #include "material_enum.h"
 #include "enum_json.h"
 #include <vector>
+#include <initializer_list>
 
 // ideally this would be in a vector header extension
 template<class T>
@@ -610,6 +611,11 @@ struct it_bionic : public itype
 	 char psym, nc_color pcolor,
 
 	 int pdifficulty, ...);
+
+ it_bionic(int pid, std::string pname, unsigned char prarity, unsigned int pprice,
+	 char psym, nc_color pcolor, int pdifficulty,
+
+	 std::string pdes, const std::initializer_list<bionic_id>& _opts);
 
  bool is_bionic() const override { return true; }
 };

@@ -4617,6 +4617,15 @@ it_bionic::it_bionic(int pid, unsigned char prarity, unsigned int pprice,
 	va_end(ap);
 }
 
+it_bionic::it_bionic(int pid, std::string pname, unsigned char prarity, unsigned int pprice,
+	char psym, nc_color pcolor, int pdifficulty,
+	std::string pdes, const std::initializer_list<bionic_id>& _opts)
+:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, STEEL, PLASTIC, 10, 18, 8, 0, 0, 0),
+	options(_opts), difficulty(pdifficulty)
+{
+}
+
+
 it_macguffin::it_macguffin(int pid, unsigned char prarity, unsigned int pprice,
 	std::string pname, std::string pdes,
 	char psym, nc_color pcolor, material pm1, material pm2,
