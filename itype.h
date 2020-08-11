@@ -606,15 +606,8 @@ struct it_bionic : public itype
  std::vector<bionic_id> options;
  int difficulty;
 
- it_bionic(int pid, unsigned char prarity, unsigned int pprice,
-	 std::string pname, std::string pdes,
-	 char psym, nc_color pcolor,
-
-	 int pdifficulty, ...);
-
  it_bionic(int pid, std::string pname, unsigned char prarity, unsigned int pprice,
 	 char psym, nc_color pcolor, int pdifficulty,
-
 	 std::string pdes, const std::initializer_list<bionic_id>& _opts);
 
  bool is_bionic() const override { return true; }

@@ -9,7 +9,6 @@
 
 #include <string.h>
 #include <fstream>	// for artifacts
-#include <stdarg.h> // for bionics
 
 static itype* const null_type = new itype;
 
@@ -4353,10 +4352,6 @@ attacks with no penalty.",
   if (arttype == 'T') types.push_back(('{' == (fin >> std::ws).peek()) ? new it_artifact_tool(cataclysm::JSON(fin)) : new it_artifact_tool(fin));
   else if (arttype == 'A') types.push_back(('{' == (fin >> std::ws).peek()) ? new it_artifact_armor(cataclysm::JSON(fin)) : new it_artifact_armor(fin));
 
-/*
-  std::string chomper;
-  getline(fin, chomper);
-*/
   if (fin.eof()) done = true;
  } // Done reading the file
  fin.close();
@@ -4593,23 +4588,6 @@ it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
   , use(puse)
 #endif
 {
-}
-
-// \todo switch constructor to take std::vector
-it_bionic::it_bionic(int pid, unsigned char prarity, unsigned int pprice,
-	std::string pname, std::string pdes,
-	char psym, nc_color pcolor,
-
-	int pdifficulty, ...)
-:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, STEEL, PLASTIC, 10, 18, 8, 0, 0, 0),
-  difficulty(pdifficulty)
-{
-	va_list ap;
-	va_start(ap, pdifficulty);
-	bionic_id tmp;
-	while ((tmp = (bionic_id)va_arg(ap, int)))
-		options.push_back(tmp);
-	va_end(ap);
 }
 
 it_bionic::it_bionic(int pid, std::string pname, unsigned char prarity, unsigned int pprice,
