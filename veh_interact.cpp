@@ -568,7 +568,7 @@ void veh_interact::display_list (int pos)
     wrefresh (w_list);
 }
 
-void complete_vehicle (game *g)
+vehicle& complete_vehicle(game* g)
 {
     if (g->u.activity.values.size() < 7) throw std::string("Invalid activity ACT_VEHICLE values: ") + std::to_string(g->u.activity.values.size());
     vehicle* const veh = g->m.veh_at (g->u.activity.values[0], g->u.activity.values[1]);
@@ -638,6 +638,8 @@ void complete_vehicle (game *g)
     default:;
         
     }
+
+    return *veh;
 }
 
 

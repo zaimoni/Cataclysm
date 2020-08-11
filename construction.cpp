@@ -478,7 +478,7 @@ void game::complete_construction()
 // Strip off the first stage in our list...
  EraseAt(u.activity.values, 0);
 // ...and start the next one, if it exists
- if (u.activity.values.size() > 0) {
+ if (!u.activity.values.empty()) {
   construction_stage next = built->stages[u.activity.values[0]];
   u.activity.moves_left = next.time * 1000;
  } else // We're finished!

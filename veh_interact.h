@@ -62,6 +62,6 @@ public:
     void exec ();
 };
 
-void complete_vehicle (game *g);
+vehicle& complete_vehicle(game* g);
 
 #endif

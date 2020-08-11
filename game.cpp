@@ -822,29 +822,17 @@ void game::process_activity()
     
    case ACT_VEHICLE:
     try {
-        complete_vehicle(this);
+        exam_vehicle(complete_vehicle(this), u.activity.values[2], u.activity.values[3]);
     } catch(std::string& e) {
-        debugmsg(e.c_str());    // failure
-        u.activity.type = ACT_NULL;
+        debuglog(e.c_str());    // failure
+        debugmsg(e.c_str());
+        u.activity.clear(); // technically could fall-through
+        return;
     }
     break;
    }
 
-   bool act_veh = (u.activity.type == ACT_VEHICLE);
-   u.activity.type = ACT_NULL;
-   if (act_veh) {
-    if (u.activity.values.size() < 7)
-     debugmsg ("process_activity invalid ACT_VEHICLE values:%d",
-                u.activity.values.size());
-    else {
-     vehicle* const veh = m.veh_at(u.activity.values[0], u.activity.values[1]);
-     if (veh) {
-      exam_vehicle(*veh, u.activity.values[2], u.activity.values[3]);
-      return;
-     } else
-      debugmsg ("process_activity ACT_VEHICLE: vehicle not found");
-    }
-   }
+   u.activity.clear();
   }
  }
 }
@@ -3677,6 +3665,7 @@ void game::exam_vehicle(vehicle &veh, int cx, int cy)
         u.activity.values.push_back (-vehint.dd.x - vehint.c.y);   // values[4]
         u.activity.values.push_back (vehint.c.x - vehint.dd.y);   // values[5]
         u.activity.values.push_back (vehint.sel_part); // values[6]
+        assert(7 <= u.activity.values.size());
         u.moves = 0;
     }
     refresh_all();

@@ -5355,8 +5355,8 @@ void player::practice(skill s, int amount)
 void player::assign_activity(activity_type type, int moves, int index)
 {
  if (backlog.type == type && backlog.index == index && query_yn("Resume task?")) {
-  activity = backlog;
-  backlog = player_activity();
+  activity = std::move(backlog);
+  backlog.clear();
  } else
   activity = player_activity(type, moves, index);
 }
@@ -5369,8 +5369,8 @@ static bool activity_is_suspendable(activity_type type)
 
 void player::cancel_activity()
 {
- if (activity_is_suspendable(activity.type)) backlog = activity;
- activity.type = ACT_NULL;
+ if (activity_is_suspendable(activity.type)) backlog = std::move(activity);
+ activity.clear();
 }
 
 void player::cancel_activity_query(const char* message, ...)

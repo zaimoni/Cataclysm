@@ -52,12 +52,17 @@ struct player_activity
  std::vector<int> values;
  point placement;
 
- player_activity(activity_type t = ACT_NULL, int turns = 0, int Index = -1)
+ player_activity(activity_type t = ACT_NULL, int turns = 0, int Index = -1) noexcept
  : type(t),moves_left(turns),index(Index),placement(-1,-1) {}
  player_activity(const player_activity &copy) = default;
  player_activity(player_activity&& copy) = default;
  player_activity& operator=(const player_activity& copy) = default;
  player_activity& operator=(player_activity && copy) = default;
+
+ void clear() noexcept {    // Technically ok to sink this into a *.cpp 2020-08-11 zaimoni
+     type = ACT_NULL;
+     decltype(values)().swap(values);
+ }
 };
  
 DECLARE_JSON_ENUM_SUPPORT(pl_flag)
