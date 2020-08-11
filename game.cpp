@@ -745,14 +745,14 @@ void game::process_activity()
    u.activity.moves_left -= 100;
    u.pause();
   } else if (u.activity.type == ACT_REFILL_VEHICLE) {
-   vehicle *veh = m.veh_at(u.activity.placement);
-   if (!veh) {  // Vehicle must've moved or something!
+   if (vehicle* const veh = m.veh_at(u.activity.placement)) {
+    veh->refill(AT_GAS, 200);
+    u.pause();
+    u.activity.moves_left -= 100;
+   } else {  // Vehicle must've moved or something!
     u.activity.moves_left = 0;
     return;
    }
-   veh->refill (AT_GAS, 200);
-   u.pause();
-   u.activity.moves_left -= 100;
   } else {
    u.activity.moves_left -= u.moves;
    u.moves = 0;

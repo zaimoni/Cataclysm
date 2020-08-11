@@ -55,6 +55,9 @@ struct player_activity
  player_activity(activity_type t = ACT_NULL, int turns = 0, int Index = -1)
  : type(t),moves_left(turns),index(Index),placement(-1,-1) {}
  player_activity(const player_activity &copy) = default;
+ player_activity(player_activity&& copy) = default;
+ player_activity& operator=(const player_activity& copy) = default;
+ player_activity& operator=(player_activity && copy) = default;
 };
  
 DECLARE_JSON_ENUM_SUPPORT(pl_flag)

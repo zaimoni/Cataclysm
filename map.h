@@ -271,7 +271,9 @@ class map
  void create_anomaly(int cx, int cy, artifact_natural_property prop);
  vehicle* add_vehicle(vhtype_id type, int x, int y, int dir);
  computer* add_computer(int x, int y, std::string name, int security);
- 
+
+ static constexpr bool in_bounds(int x, int y) { return 0 <= x && x < SEE* MAPSIZE && 0 <= y && y < SEE* MAPSIZE; }
+ static constexpr bool in_bounds(const point& p) { return in_bounds(p.x, p.y); }
  static void init();
 protected:
  void saven(const tripoint& om_pos, unsigned int turn, const point& world, int gridx, int gridy);

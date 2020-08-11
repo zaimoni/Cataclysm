@@ -5847,7 +5847,7 @@ void map::add_spawn(monster *mon)
 vehicle* map::add_vehicle(vhtype_id type, int x, int y, int dir)
 {
  if (!inbounds(x,y)) {
-  debugmsg("Bad add_vehicle t=%d d=%d x=%d y=%d", type, dir, x, y);
+  debuglog("Bad add_vehicle t=%d d=%d x=%d y=%d", type, dir, x, y);
   return nullptr;
  }
  int smx = x / SEEX;

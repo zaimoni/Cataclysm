@@ -456,7 +456,7 @@ void game::place_construction(const constructable * const con)
  std::vector<int> stages;
  for (int i = starting_stage; i <= max_stage; i++)
   stages.push_back(i);
- u.activity.values = stages;
+ u.activity.values = std::move(stages);
  u.activity.placement = dir;
 }
 
@@ -607,9 +607,18 @@ void construct::done_log(game *g, point p)
 
 void construct::done_vehicle(game *g, point p)
 {
+    if (!map::in_bounds(p)) {
+#ifndef NDEBUG
+        throw std::logic_error("tried to construct vehicle outside of reality bubble");
+#else
+        debuglog("tried to construct vehicle outside of reality bubble");
+#endif
+        return;
+    }
+
     std::string name = string_input_popup(20, "Enter new vehicle name");
 	if (auto veh = g->m.add_vehicle(veh_custom, p.x, p.y, 270)) {
-		veh->name = name;
+		veh->name = std::move(name);
 		veh->install_part(0, 0, vp_frame_v2);
 		return;
 	}
