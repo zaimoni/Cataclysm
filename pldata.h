@@ -50,7 +50,7 @@ struct player_activity
  int moves_left;
  int index;
  std::vector<int> values;
- point placement;
+ point placement; // low priority to convert to GPS coordinates (needed for NPC activities outside of reality bubble) 2020-08-13 zaimoni
 
  player_activity(activity_type t = ACT_NULL, int turns = 0, int Index = -1) noexcept
  : type(t),moves_left(turns),index(Index),placement(-1,-1) {}

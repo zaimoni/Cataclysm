@@ -5361,6 +5361,19 @@ void player::assign_activity(activity_type type, int moves, int index)
   activity = player_activity(type, moves, index);
 }
 
+void player::assign_activity(activity_type type, int moves, const point& pt, int index)
+{
+    assert(map::in_bounds(pt));
+    assert(1 >= rl_dist(pos, pt));
+    if (backlog.type == type && backlog.index == index && pt == backlog.placement && query_yn("Resume task?")) {
+        activity = std::move(backlog);
+        backlog.clear();
+    } else {
+        activity = player_activity(type, moves, index);
+        activity.placement = pt;
+    }
+}
+
 static bool activity_is_suspendable(activity_type type)
 {
 	if (type == ACT_NULL || type == ACT_RELOAD) return false;

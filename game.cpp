@@ -4315,8 +4315,7 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
     else if (fuel_amnt == fuel_cap)
      messages.add("Already full.");
     else if (infinite && query_yn("Pump until full?")) {
-     u.assign_activity(ACT_REFILL_VEHICLE, 100 * (fuel_cap - fuel_amnt));
-     u.activity.placement = point(vx, vy);
+     u.assign_activity(ACT_REFILL_VEHICLE, 100 * (fuel_cap - fuel_amnt), point(vx, vy));
     } else { // Not infinite
      veh->refill (AT_GAS, liquid.charges);
      messages.add("You refill %s with %s%s.", veh->name.c_str(),

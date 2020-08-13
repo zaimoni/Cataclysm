@@ -5,6 +5,7 @@
 #include "mapdata.h"
 #include "skill.h"
 #include "crafting.h" // For the use_comps use_tools functions
+#include "stl_typetraits.h"
 #include "line.h"
 #include "rng.h"
 #include "recent_msg.h"
@@ -430,14 +431,7 @@ void game::place_construction(const constructable * const con)
   return;
  }
  dir += u.pos;
- bool point_is_okay = false;
- for (const auto& pt : valid) {
-  if (pt == dir) {
-   point_is_okay = true;
-   break;
-  }
- }
- if (!point_is_okay) {
+ if (!cataclysm::any(valid, dir)) {
   messages.add("You cannot build there!");
   return;
  }
@@ -451,14 +445,13 @@ void game::place_construction(const constructable * const con)
    max_stage = i;
  }
 
- u.assign_activity(ACT_BUILD, con->stages[starting_stage].time * 1000, con->id);
+ u.assign_activity(ACT_BUILD, con->stages[starting_stage].time * 1000, dir, con->id);
 
  u.moves = 0;
  std::vector<int> stages;
  for (int i = starting_stage; i <= max_stage; i++)
   stages.push_back(i);
  u.activity.values = std::move(stages);
- u.activity.placement = dir;
 }
 
 void game::complete_construction()
