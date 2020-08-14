@@ -1230,10 +1230,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
  case ot_park: {
   if (one_in(3)) { // Playground
-   for (int i = 0; i < SEEX * 2; i++) {
-    for (int j = 0; j < SEEY * 2; j++)
-     ter(i, j) = t_grass;
-   }
+   square(this, t_grass, point(0), point(2*SEE-1));
    square(this, t_sandbox,     16,  4, 17,  5);
    square(this, t_monkey_bars,  4,  7,  6,  9);
    line(this, t_slide, 11,  8, 11, 11);
@@ -1248,10 +1245,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    ter(20,  8) = t_tree;
    rotate(rng(0, 3));
   } else { // Basketball court
-   for (int i = 0; i < SEEX * 2; i++) {
-    for (int j = 0; j < SEEY * 2; j++)
-     ter(i, j) = t_pavement;
-   }
+   square(this, t_pavement, point(0), point(2*SEE-1));
    line(this, t_pavement_y,  1, 11, 22, 11);
    line(this, t_pavement_y,  6,  2,  6,  8);
    line(this, t_pavement_y, 16,  2, 16,  8);
