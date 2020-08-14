@@ -6,7 +6,6 @@
 #include "mtype.h"
 
 class game;
-struct special_game;
 
 enum special_game_id {
 SGAME_NULL = 0,
@@ -15,14 +14,13 @@ SGAME_DEFENSE,
 NUM_SPECIAL_GAMES
 };
 
-std::string special_game_name(special_game_id id);
-special_game* get_special_game(special_game_id id);
+const char* special_game_name(special_game_id id);
 
 struct special_game
 {
  virtual ~special_game() = default;
 
- virtual special_game_id id() { return SGAME_NULL; };
+ virtual special_game_id id() const { return SGAME_NULL; };
 // init is run when the game begins
  virtual bool init(game *g) { return true; };
 // per_turn is run every turn--before any player actions
@@ -35,6 +33,8 @@ struct special_game
 // game_over is run when the player dies (or the game otherwise ends)
  virtual void game_over(game *g) { };
 };
+
+special_game* get_special_game(special_game_id id);
 
 // TUTORIAL:
 
@@ -65,7 +65,7 @@ NUM_LESSONS
 
 struct tutorial_game : public special_game
 {
- special_game_id id() override { return SGAME_TUTORIAL; };
+ special_game_id id() const override { return SGAME_TUTORIAL; };
  bool init(game *g) override;
  void per_turn(game *g) override;
  void pre_action(game *g, action_id &act) override;
@@ -117,7 +117,7 @@ struct defense_game : public special_game
 {
  defense_game();
 
- special_game_id id() override { return SGAME_DEFENSE; };
+ special_game_id id() const override { return SGAME_DEFENSE; };
  bool init(game *g) override;
  void per_turn(game *g) override;
  void pre_action(game *g, action_id &act) override;

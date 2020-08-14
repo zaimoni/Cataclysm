@@ -1,7 +1,7 @@
 #include "gamemode.h"
 #include "output.h"
 
-std::string special_game_name(special_game_id id)
+const char* special_game_name(special_game_id id)
 {
  switch (id) {
   case SGAME_NULL:

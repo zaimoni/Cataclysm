@@ -386,7 +386,8 @@ http://github.com/zaimoni/Cataclysm .");
 		  start = true;
 		  ch = 0;
 	  } catch (const std::string& e) {	// debug message failure
-		  debugmsg(e.c_str());
+          debuglog(e.c_str());
+          debugmsg(e.c_str());  // UI for player
 	  }
      }
     }
@@ -394,7 +395,7 @@ http://github.com/zaimoni/Cataclysm .");
     for (int i = 1; i < NUM_SPECIAL_GAMES; i++) {
      mvwprintz(w_open, 6 + i, 12, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
      mvwprintz(w_open, 6 + i, 12, (sel2 == i ? h_white : c_white),
-               special_game_name( special_game_id(i) ).c_str());
+               special_game_name(special_game_id(i)));
     }
     wrefresh(w_open);
     refresh();
