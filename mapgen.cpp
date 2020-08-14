@@ -1216,12 +1216,11 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    }
   }
   if (one_in(3)) {
-      int vx = rng (0, 3) * 4 + 5;
-      int vy = 4;
+      point v(rng(0, 3) * 4 + 5, 4);
       vhtype_id vt = (one_in(10)? veh_sandbike :
                      (one_in(8)? veh_truck :
                      (one_in(3)? veh_car : veh_motorcycle)));
-      add_vehicle(vt, vx, vy, one_in(2)? 90 : 270);
+      add_vehicle(vt, v, one_in(2)? 90 : 270);
   }
   place_items(mi_road, 8, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1, false, turn);
   if (t_east  >= ot_road_null && t_east  <= ot_road_nesw_manhole) rotate(1);
@@ -5844,23 +5843,22 @@ void map::add_spawn(monster *mon)
            mon->faction_id, mon->mission_id, spawnname);
 }
 
-vehicle* map::add_vehicle(vhtype_id type, int x, int y, int dir)
+vehicle* map::add_vehicle(vhtype_id type, point pos, int deg)
 {
- if (!inbounds(x,y)) {
-  debuglog("Bad add_vehicle t=%d d=%d x=%d y=%d", type, dir, x, y);
+ if (!inbounds(pos.x, pos.y)) {
+  debuglog("Bad add_vehicle t=%d d=%d x=%d y=%d", type, deg, pos.x, pos.y);
   return nullptr;
  }
- int smx = x / SEEX;
- int smy = y / SEEY;
- int nonant = smx + smy * my_MAPSIZE;
- x %= SEEX;
- y %= SEEY;
+ const point sm = pos / SEE;
+ int nonant = sm.x + sm.y * my_MAPSIZE;
+ pos %= SEE;
+
  vehicle veh(type);
- veh.pos = point(x,y);
- veh.sm = point(smx,smy);
- veh.face.init(dir);
- veh.turn_dir = dir;
- veh.precalc_mounts (0, dir);
+ veh.pos = pos;
+ veh.sm = sm;
+ veh.face.init(deg);
+ veh.turn_dir = deg;
+ veh.precalc_mounts(0, deg);
  grid[nonant]->vehicles.push_back(std::move(veh));
  return &grid[nonant]->vehicles.back();
 }

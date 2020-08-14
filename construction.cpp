@@ -611,7 +611,7 @@ void construct::done_vehicle(game *g, point p)
     }
 
     std::string name = string_input_popup(20, "Enter new vehicle name");
-	if (auto veh = g->m.add_vehicle(veh_custom, p.x, p.y, 270)) {
+	if (auto veh = g->m.add_vehicle(veh_custom, p, 270)) {
 		veh->name = std::move(name);
 		veh->install_part(0, 0, vp_frame_v2);
 		return;
