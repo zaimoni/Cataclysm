@@ -21,14 +21,11 @@ field_id bleeds(const monster& mon)
     return fd_blood;
 }
 
-int time_to_fire(player &p, const it_gun* firing);
-void make_gun_sound_effect(game *g, player &p, bool burst);
-int calculate_range(player &p, int tarx, int tary);
 double calculate_missed_by(player &p, int trange);
 void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit);
 void shoot_player(game *g, player &p, player *h, int &dam, double goodhit);
 
-void ammo_effects(game *g, point pt, long flags)
+static void ammo_effects(game *g, point pt, long flags)
 {
 	if (flags & mfb(IF_AMMO_EXPLOSIVE)) g->explosion(pt, 24, 0, false);
 	if (flags & mfb(IF_AMMO_FRAG)) g->explosion(pt, 12, 28, false);
@@ -81,13 +78,88 @@ static void splatter(game* g, const std::vector<point>& trajectory, int dam, mon
 	}
 }
 
+static int time_to_fire(player& p, const it_gun* const firing)
+{
+    int time = 0;
+
+    switch (firing->skill_used) {
+    case sk_pistol: return (6 < p.sklevel[sk_pistol]) ? 10 : (80 - 10 * p.sklevel[sk_pistol]);
+    case sk_shotgun: return (3 < p.sklevel[sk_shotgun]) ? 70 : (150 - 25 * p.sklevel[sk_shotgun]);
+    case sk_smg: return (5 < p.sklevel[sk_smg]) ? 20 : (80 - 10 * p.sklevel[sk_smg]);
+    case sk_rifle: return (8 < p.sklevel[sk_rifle]) ? 30 : (150 - 15 * p.sklevel[sk_rifle]);
+    case sk_archery: return (8 < p.sklevel[sk_archery]) ? 20 : (220 - 25 * p.sklevel[sk_archery]);
+    case sk_launcher: return (8 < p.sklevel[sk_launcher]) ? 30 : (200 - 20 * p.sklevel[sk_launcher]);
+
+    default:
+        debugmsg("Why is shooting %s using %s skill?", (firing->name).c_str(), skill_name(skill(firing->skill_used)));
+        return 0;
+    }
+
+    return time;
+}
+
+static void make_gun_sound_effect(game* g, player& p, bool burst)
+{
+    switch (p.weapon.curammo->type)
+    {
+    case AT_FUSION:
+    case AT_BATT:
+    case AT_PLUT:
+        g->sound(p.pos, 8, "Fzzt!");
+        break;
+    case AT_40MM:
+        g->sound(p.pos, 8, "Thunk!");
+        break;
+    case AT_GAS:
+        g->sound(p.pos, 4, "Fwoosh!");
+        break;
+    case AT_BOLT:
+    case AT_ARROW: return;  // negligible compared to firearms
+    default:
+        {
+        std::string gunsound;
+        int noise = p.weapon.noise();
+        if (noise < 5) {
+            gunsound = burst ? "Brrrip!" : "plink!";
+        } else if (noise < 25) {
+            gunsound = burst ? "Brrrap!" : "bang!";
+        } else if (noise < 60) {
+            gunsound = burst ? "P-p-p-pow!" : "blam!";
+        } else {
+            gunsound = burst ? "Kaboom!!" : "kerblam!";
+        }
+        g->sound(p.pos, noise, gunsound);
+        }
+        break;
+    }
+}
+
+static int calculate_range(player& p, const point& tar)
+{
+    int trange = rl_dist(p.pos, tar);
+    const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
+    if (trange < int(firing->volume / 3) && firing->ammo != AT_SHOT)
+        trange = int(firing->volume / 3);
+    else if (p.has_bionic(bio_targeting)) {
+        trange = int(trange * ((LONG_RANGE < trange) ? .65 : .8));
+    }
+
+    if (firing->skill_used == sk_rifle && trange > LONG_RANGE)
+        trange = LONG_RANGE + .6 * (trange - LONG_RANGE);
+
+    return trange;
+}
+
 void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst)
 {
+#ifndef NDEBUG
+ assert(p.weapon.is_gun());
+#else
  if (!p.weapon.is_gun()) {
-  debugmsg("%s tried to fire a non-gun (%s).", p.name.c_str(),
-                                               p.weapon.tname().c_str());
+  debuglog("%s tried to fire a non-gun (%s).", p.name.c_str(), p.weapon.tname().c_str());
   return;
  }
+#endif
  item ammotmp;
  if (p.weapon.has_flag(IF_CHARGE)) { // It's a charger gun, so make up a type
 // Charges maxes out at 8.
@@ -138,7 +210,11 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
  if (burst) num_shots = p.weapon.burst_size();
  if (num_shots > p.weapon.charges && !p.weapon.has_flag(IF_CHARGE)) num_shots = p.weapon.charges;
 
- if (num_shots == 0) debugmsg("game::fire() - num_shots = 0!");
+#ifndef NDEBUG
+ assert(0 < num_shots);
+#else
+ if (0 >= num_shots) debuglog("game::fire() - num_shots = 0!");
+#endif
  
  // Make a sound at our location - Zombies will chase it
  make_gun_sound_effect(this, p, burst);
@@ -189,7 +265,7 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
   else
    p.weapon.charges--;
 
-  int trange = calculate_range(p, tar.x, tar.y);
+  int trange = calculate_range(p, tar);
   double missed_by = calculate_missed_by(p, trange);
 // Calculate a penalty based on the monster's speed
   double monster_speed_penalty = 1.;
@@ -581,65 +657,6 @@ void game::hit_monster_with_flags(monster &z, unsigned int flags)
    z.add_effect(ME_ONFIRE, rng(1, 4));
 
  }
-}
-
-int time_to_fire(player &p, const it_gun* const firing)
-{
- int time = 0;
-
- switch (firing->skill_used) {
- case sk_pistol: return (6 < p.sklevel[sk_pistol]) ? 10 : (80 - 10 * p.sklevel[sk_pistol]);
- case sk_shotgun: return (3 < p.sklevel[sk_shotgun]) ? 70 : (150 - 25 * p.sklevel[sk_shotgun]);
- case sk_smg: return (5 < p.sklevel[sk_smg]) ? 20 : (80 - 10 * p.sklevel[sk_smg]);
- case sk_rifle: return (8 < p.sklevel[sk_rifle]) ? 30 : (150 - 15 * p.sklevel[sk_rifle]);
- case sk_archery: return (8 < p.sklevel[sk_archery]) ? 20 : (220 - 25 * p.sklevel[sk_archery]);
- case sk_launcher: return (8 < p.sklevel[sk_launcher]) ? 30 : (200 - 20 * p.sklevel[sk_launcher]);
-
- default:
-  debugmsg("Why is shooting %s using %s skill?", (firing->name).c_str(), skill_name(skill(firing->skill_used)));
-  return 0;
- }
-
- return time;
-}
-
-void make_gun_sound_effect(game *g, player &p, bool burst)
-{
- std::string gunsound;
- int noise = p.weapon.noise();
- if (noise < 5) {
-  gunsound = burst ? "Brrrip!" : "plink!";
- } else if (noise < 25) {
-  gunsound = burst ? "Brrrap!" : "bang!";
- } else if (noise < 60) {
-  gunsound = burst ? "P-p-p-pow!" : "blam!";
- } else {
-  gunsound = burst ? "Kaboom!!" : "kerblam!";
- }
- if (p.weapon.curammo->type == AT_FUSION || p.weapon.curammo->type == AT_BATT || p.weapon.curammo->type == AT_PLUT)
-  g->sound(p.pos, 8, "Fzzt!");
- else if (p.weapon.curammo->type == AT_40MM)
-  g->sound(p.pos, 8, "Thunk!");
- else if (p.weapon.curammo->type == AT_GAS)
-  g->sound(p.pos, 4, "Fwoosh!");
- else if (p.weapon.curammo->type != AT_BOLT && p.weapon.curammo->type != AT_ARROW)
-  g->sound(p.pos, noise, gunsound);
-}
-
-int calculate_range(player &p, int tarx, int tary)
-{
- int trange = rl_dist(p.pos, tarx, tary);
- const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
- if (trange < int(firing->volume / 3) && firing->ammo != AT_SHOT)
-  trange = int(firing->volume / 3);
- else if (p.has_bionic(bio_targeting)) {
-  trange = int(trange * ((LONG_RANGE < trange) ? .65 : .8));
- }
-
- if (firing->skill_used == sk_rifle && trange > LONG_RANGE)
-  trange = LONG_RANGE + .6 * (trange - LONG_RANGE);
-
- return trange;
 }
 
 double calculate_missed_by(player &p, int trange)	// XXX real-world deviation is normal distribution with arithmetic mean zero \todo fix

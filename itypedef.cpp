@@ -6,6 +6,7 @@
 #include "json.h"
 #include "bodypart_enum.h"
 #include "setvector.h"
+#include "Zaimoni.STL/Logging.h"
 
 #include <string.h>
 #include <fstream>	// for artifacts
@@ -4490,6 +4491,13 @@ it_gun::it_gun(int pid, unsigned char prarity, unsigned int pprice,
   ammo(pammo),skill_used(pskill_used),dmg_bonus(pdmg_bonus),accuracy(paccuracy),recoil(precoil),durability(pdurability),burst(pburst),
   clip(pclip),reload_time(preload_time)
 {
+	// cf time_to_fire/ranged.cpp: only certain skills are legal for skill_used
+	assert(   sk_pistol == pskill_used
+		   || sk_shotgun == pskill_used
+	       || sk_smg == pskill_used
+	       || sk_rifle == pskill_used
+	       || sk_archery == pskill_used
+	       || sk_launcher == pskill_used);
 }
 
 it_gunmod::it_gunmod(int pid, unsigned char prarity, unsigned int pprice,
