@@ -4,48 +4,31 @@
 
 using namespace cataclysm;
 
-template<> std::vector<item> discard<std::vector<item> >::x(0);
-const std::vector<item> inventory::nullstack(0);
-
 DEFINE_ACID_ASSIGN_W_MOVE(inventory);
 
 item& inventory::operator[] (int i)
 {
- if (i < 0 || i >= items.size()) {
-  debugmsg("Attempted to access item %d in an inventory (size %d)", i, items.size());
-  return (discard<item>::x = item::null);
- }
-
- return items[i][0];
+    assert(0 <= i && items.size() > i);
+    assert(!items[i].empty());
+    return items[i].front();
 }
 
 const item& inventory::operator[] (int i) const
 {
-	if (i < 0 || i >= items.size()) {
-		debugmsg("Attempted to access item %d in an inventory (size %d)", i, items.size());
-		return (discard<item>::x = item::null);
-	}
-
-	return items[i][0];
+    assert(0 <= i && items.size() > i);
+    assert(!items[i].empty());
+	return items[i].front();
 }
 
 std::vector<item>& inventory::stack_at(int i)
 {
- if (i < 0 || i >= items.size()) {
-  debugmsg("Attempted to access stack %d in an inventory (size %d)",
-           i, items.size());
-  return (discard<std::vector<item> >::x = nullstack);
- }
+ assert(0 <= i && items.size() > i);
  return items[i];
 }
 
 std::vector<item> inventory::const_stack(int i) const
 {
- if (i < 0 || i >= items.size()) {
-  debugmsg("Attempted to access stack %d in an inventory (size %d)",
-           i, items.size());
-  return nullstack;
- }
+ assert(0 <= i && items.size() > i);
  return items[i];
 }
 
@@ -179,10 +162,7 @@ void inventory::form_from_map(const map& m, point origin, int range)
 
 void inventory::destroy_stack(int index)
 {
-    if (index < 0 || index >= items.size()) {
-        debugmsg("Tried to remove_stack(%d) from an inventory (size %d)", index, items.size());
-        return;
-    }
+    assert(0 <= index && items.size() > index);
     EraseAt(items, index);
 }
 
@@ -213,15 +193,8 @@ item inventory::remove_item(int index)
 
 item inventory::remove_item(int stack, int index)
 {
- if (stack < 0 || stack >= items.size()) {
-  debugmsg("Tried to remove_item(%d, %d) from an inventory (size %d)",
-           stack, index, items.size());
-  return item::null;
- } else if (index < 0 || index >= items[stack].size()) {
-  debugmsg("Tried to remove_item(%d, %d) from an inventory (stack is size %d)",
-           stack, index, items[stack].size());
-  return item::null;
- }
+ assert(0 <= stack && items.size() > stack);
+ assert(0 <= index && items[stack].size() > index);
 
  item ret = std::move(items[stack][index]);
  EraseAt(items[stack], index);

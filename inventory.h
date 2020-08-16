@@ -76,7 +76,6 @@ class inventory
   bool has_charges(itype_id it, int quantity) const { return charges_of(it) >= quantity; }
   bool has_item(item *it) const; // Looks for a specific item
  private:
-  static const std::vector<item> nullstack;
   std::vector< std::vector<item> > items;
 
   void assign_empty_invlet(item &it, player* p = nullptr);

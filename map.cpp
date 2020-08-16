@@ -22,6 +22,7 @@ using namespace cataclysm;
 template<> ter_id discard<ter_id>::x = t_null;
 template<> trap_id discard<trap_id>::x = tr_null;
 template<> field discard<field>::x = field();
+template<> std::vector<item> discard<std::vector<item> >::x(0);
 
 #define SGN(a) (((a)<0) ? -1 : 1)
 
