@@ -4119,43 +4119,18 @@ item player::unwield()
 
 void player::remove_mission_items(int mission_id)
 {
- if (mission_id == -1) return;
- if (weapon.mission_id == mission_id)
-  remove_weapon();
- else {
-  for (int i = 0; i < weapon.contents.size(); i++) {
-   if (weapon.contents[i].mission_id == mission_id)
-    remove_weapon();
-  }
- }
- for (size_t i = 0; i < inv.size(); i++) {
-  for (int j = 0; j < inv.stack_at(i).size() && j > 0; j++) {
-   if (inv.stack_at(i)[j].mission_id == mission_id) {
-    if (inv.stack_at(i).size() == 1) {
-     inv.remove_item(i, j);
-     i--;
-     j = -999;
-    } else {
-     inv.remove_item(i, j);
-     j--;
-    }
-   } else {
-    bool rem = false;
-    for (int k = 0; !rem && k < inv.stack_at(i)[j].contents.size(); k++) {
-     if (inv.stack_at(i)[j].contents[k].mission_id == mission_id) {
-      if (inv.stack_at(i).size() == 1) {
-       inv.remove_item(i, j);
-       i--;
-       j = 0;
-      } else {
-       inv.remove_item(i, j);
-       j--;
-      }
-      rem = true;
+ if (mission::MIN_ID > mission_id) return;
+ if (weapon.is_mission_item(mission_id)) remove_weapon();
+ size_t i = inv.size();
+ while (0 < i) {
+     decltype(auto) stack = inv.stack_at(--i);
+     size_t j = stack.size();
+     while (0 < j) {
+         decltype(auto) it = stack[--j];
+         // inv.remove_item *could* invalidate the stack reference, but if so 1 == stack.size() beforehand
+         // and we're not using that reference further
+         if (it.is_mission_item(mission_id)) inv.remove_item(i, j);
      }
-    }
-   }
-  }
  }
 }
 
@@ -4434,16 +4409,10 @@ bool player::has_item(item *it) const
 
 bool player::has_mission_item(int mission_id) const
 {
- if (mission_id == -1) return false;
- if (weapon.mission_id == mission_id) return true;
- for (const auto& it : weapon.contents) if (it.mission_id == mission_id) return true;
+ if (mission::MIN_ID > mission_id) return false;
+ if (weapon.is_mission_item(mission_id)) return true;
  for (size_t i = 0; i < inv.size(); i++) {
-  for (int j = 0; j < inv.stack_at(i).size(); j++) {
-   if (inv.stack_at(i)[j].mission_id == mission_id) return true;
-   for (int k = 0; k < inv.stack_at(i)[j].contents.size(); k++) {
-    if (inv.stack_at(i)[j].contents[k].mission_id == mission_id) return true;
-   }
-  }
+  for (decltype(auto) it : inv.stack_at(i)) if (it.is_mission_item(mission_id)) return true;
  }
  return false;
 }

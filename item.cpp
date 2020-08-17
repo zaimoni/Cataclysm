@@ -751,6 +751,13 @@ bool item::is_other() const
          !is_book() && !is_weap());
 }
 
+bool item::is_mission_item(int _id) const
+{
+    if (mission_id == _id) return true;
+    for (const auto& it : contents) if (it.mission_id == _id) return true;
+    return false;
+}
+
 #ifndef SOCRATES_DAIMON
 int item::reload_time(const player &u) const
 {

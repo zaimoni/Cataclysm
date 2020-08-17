@@ -916,7 +916,7 @@ JSON toJSON(const item& src) {
 			if (0 < src.bday) _item.set("bday", std::to_string(src.bday));
 			if (src.poison) _item.set("poison", std::to_string(src.poison));
 			if (0 <= src.owned) _item.set("owned", std::to_string(src.owned));
-			if (0 <= src.mission_id) _item.set("mission_id", std::to_string(src.mission_id));	// \todo validate this more thoroughly
+			if (/* mission::MIN_ID : go explicit once Socrates' Daimon knows about mission.h */ 1 <= src.mission_id) _item.set("mission_id", std::to_string(src.mission_id));	// \todo validate this more thoroughly
 			if (-1 != src.player_id) _item.set("player_id", std::to_string(src.player_id));
 
 			if (!src.contents.empty()) _item.set("contents", JSON::encode(src.contents));

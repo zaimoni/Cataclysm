@@ -149,6 +149,8 @@ public:
  bool is_other() const; // Doesn't belong in other categories
  bool is_artifact() const { return type->is_artifact(); }
 
+ bool is_mission_item(int _id) const;
+
  static void init();
 };
 
