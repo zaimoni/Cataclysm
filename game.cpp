@@ -5152,7 +5152,7 @@ void game::plmove(int x, int y)
   dpart = veh ? veh->part_with_feature (vpart, vpf_seat) : -1;
   bool can_board = dpart >= 0 && !veh->parts[dpart].passenger;
   if (can_board && query_yn("Board vehicle?")) { // empty vehicle's seat ahead
-   m.board_vehicle (this, x, y, &u);
+   m.board_vehicle (this, x, y, u);
    u.moves -= 200;
    return;
   }

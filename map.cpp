@@ -126,13 +126,8 @@ vehicle* map::veh_at(int x, int y) const
  return veh_at(x, y, part);
 }
 
-void map::board_vehicle(game *g, int x, int y, player *p)
+void map::board_vehicle(game *g, int x, int y, player& p)
 {
- if (!p) {
-  debugmsg ("map::board_vehicle: null player");
-  return;
- }
-
  int part = 0;
  vehicle *veh = veh_at(x, y, part);
  if (!veh) {
@@ -153,9 +148,9 @@ void map::board_vehicle(game *g, int x, int y, player *p)
   return;
  }
  veh->parts[seat_part].passenger = 1;
- p->screenpos_set(point(x,y));
- p->in_vehicle = true;
- if (p == &g->u && game::update_map_would_scroll(point(x,y)))
+ p.screenpos_set(point(x,y));
+ p.in_vehicle = true;
+ if (&p == &g->u && game::update_map_would_scroll(point(x,y)))
   g->update_map(x, y);
 }
 
