@@ -54,8 +54,8 @@ struct radio_tower {
 class overmap
 {
  public:
-  overmap() : pos(999, 999, 999) {};
-  overmap(game *g, int x, int y, int z) : pos(x,y,z) { open(g); };
+  overmap() noexcept : pos(999, 999, 999) {};	// \todo: use truly impossible coordinates
+  overmap(game *g, int x, int y, int z);
   ~overmap() = default;
   void save(const std::string& name, int x, int y, int z) const;
   void save(const std::string& name) const { save(name, pos.x, pos.y, pos.z); }
@@ -132,7 +132,6 @@ class overmap
   void clear_seen() { memset(s,0,sizeof(s)); }
   void clear_terrain(oter_id src);
 
-  void open(game *g);
   void generate(game* g, const overmap* north, const overmap* east, const overmap* south, const overmap* west);
   void generate_sub(const overmap* above);
   //Drawing

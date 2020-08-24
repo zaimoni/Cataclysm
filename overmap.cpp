@@ -2569,8 +2569,9 @@ std::string overmap::terrain_filename(const tripoint& pos)
     return terfilename.str();
 }
 
-void overmap::open(game *g)	// only called from constructor
-{
+overmap::overmap(game* g, int x, int y, int z)
+: pos(x, y, z)
+{ // function body is operationally C:Whales overmap::open
  std::ostringstream plrfilename;
  char datatype;
 
@@ -2582,14 +2583,19 @@ void overmap::open(game *g)	// only called from constructor
   for (int j = 0; j < OMAPY; j++) {
    for (int i = 0; i < OMAPX; i++) {
 	const auto ter_code = fin.get() - 32;
+    // \todo: some sort of best-effort repair process?
+    if (!is_between(0, ter_code, num_ter_types - 1)) {
+        debuglog("Loaded bad ter!  %s; ter %d", terfilename.c_str(), ter_code);
+        debugmsg("Loaded bad ter!  %s; ter %d", terfilename.c_str(), ter_code); // UI (in case it lasts long enough)
+        throw std::runtime_error("terrain file damaged, not attempting automatic repair.");
+    }
     ter(i, j) = oter_id(ter_code);
-    if (ter_code < 0 || ter_code > num_ter_types)
-     debugmsg("Loaded bad ter!  %s; ter %d", terfilename.c_str(), ter_code);
    }
   }
   if ('{' != (fin >> std::ws).peek()) {
-	  debugmsg("Pre-V0.2.0 format?");
-	  return;
+      debuglog("Pre-V0.2.0 format?");
+      debugmsg("Pre-V0.2.0 format?"); // UI (in case it lasts long enough)
+      throw std::runtime_error("extremely archaic savefile (pre V0.2.0)?");
   }
 	  JSON om(fin);
 	  if (om.has_key("groups")) om["groups"].decode(zg);
