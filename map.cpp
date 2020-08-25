@@ -141,7 +141,7 @@ bool map::try_board_vehicle(game* g, int x, int y, player& p)
             if (is_current_player) messages.add("Not boarding %s; %s already there.", veh->name.c_str(), psg->name);
             return false;
         }
-        veh->parts[seat_part].passenger = false; // invariant violation.  This is not where we enforce it.
+        veh->parts[seat_part].passenger = false; // invariant violation.  Enforced at map::displace_vehicle
     }
 
     if (is_current_player && !query_yn("Board vehicle?")) return false; // XXX \todo what if a PC, but not PC's turn (multi-PC case)
@@ -151,6 +151,7 @@ bool map::try_board_vehicle(game* g, int x, int y, player& p)
     p.in_vehicle = true;
     if (is_current_player && game::update_map_would_scroll(point(x, y)))
         g->update_map(x, y);
+    return true;
 }
 
 void map::unboard_vehicle(const point& pt)

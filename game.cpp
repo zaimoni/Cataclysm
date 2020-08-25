@@ -1045,6 +1045,16 @@ void game::get_input()
  vehicle *veh = m.veh_at(u.pos, veh_part);
  bool veh_ctrl = veh && veh->player_in_control(u);
 
+ // verify low-level constraint before using C rewrite of enumeration values
+ static_assert(ACTION_MOVE_N - ACTION_MOVE_N == NORTH);
+ static_assert(ACTION_MOVE_NE - ACTION_MOVE_N == NORTHEAST);
+ static_assert(ACTION_MOVE_E - ACTION_MOVE_N == EAST);
+ static_assert(ACTION_MOVE_SE - ACTION_MOVE_N == SOUTHEAST);
+ static_assert(ACTION_MOVE_S - ACTION_MOVE_N == SOUTH);
+ static_assert(ACTION_MOVE_SW - ACTION_MOVE_N == SOUTHWEST);
+ static_assert(ACTION_MOVE_W - ACTION_MOVE_N == WEST);
+ static_assert(ACTION_MOVE_NW - ACTION_MOVE_N == NORTHWEST);
+
  switch (act) {
 
   case ACTION_PAUSE:
@@ -1055,60 +1065,16 @@ void game::get_input()
    break;
 
   case ACTION_MOVE_N:
-   if (u.in_vehicle)
-    pldrive(0, -1);
-   else
-    plmove(0, -1);
-   break;
-
   case ACTION_MOVE_NE:
-   if (u.in_vehicle)
-    pldrive(1, -1);
-   else
-    plmove(1, -1);
-   break;
-
   case ACTION_MOVE_E:
-   if (u.in_vehicle)
-    pldrive(1, 0);
-   else
-    plmove(1, 0);
-   break;
-
   case ACTION_MOVE_SE:
-   if (u.in_vehicle)
-    pldrive(1, 1);
-   else
-    plmove(1, 1);
-   break;
-
   case ACTION_MOVE_S:
-   if (u.in_vehicle)
-    pldrive(0, 1);
-   else
-   plmove(0, 1);
-   break;
-
   case ACTION_MOVE_SW:
-   if (u.in_vehicle)
-    pldrive(-1, 1);
-   else
-    plmove(-1, 1);
-   break;
-
   case ACTION_MOVE_W:
-   if (u.in_vehicle)
-    pldrive(-1, 0);
-   else
-    plmove(-1, 0);
-   break;
-
   case ACTION_MOVE_NW:
-   if (u.in_vehicle)
-    pldrive(-1, -1);
-   else
-    plmove(-1, -1);
-   break;
+      if (u.in_vehicle) pldrive((direction)(act - ACTION_MOVE_N));
+      else plmove((direction)(act - ACTION_MOVE_N));
+      break;
 
   case ACTION_MOVE_DOWN:
    if (!u.in_vehicle)
@@ -5028,6 +4994,12 @@ void game::chat()
  u.moves -= 100;
 }
 
+void game::pldrive(direction dir)
+{
+    auto pt = direction_vector(dir);
+    pldrive(pt.x, pt.y);
+}
+
 void game::pldrive(int x, int y)
 {
  if (run_mode == 2) { // Monsters around and we don't wanna run
@@ -5063,6 +5035,12 @@ void game::pldrive(int x, int y)
 
  u.moves = 0;
  if (x != 0 && veh->velocity != 0 && one_in(4)) u.practice(sk_driving, 1);
+}
+
+void game::plmove(direction dir)
+{
+    auto pt = direction_vector(dir);
+    plmove(pt.x, pt.y);
 }
 
 void game::plmove(int x, int y)

@@ -10,6 +10,7 @@
 #include "calendar.h"
 #include "gamemode.h"
 #include "monster.h"
+#include "line.h"   // for direction enum
 #include "recent_msg.h"
 #include "Zaimoni.STL/Logging.h"
 #include "Zaimoni.STL/GDI/box.hpp"
@@ -218,6 +219,10 @@ class game
 
   void pldrive(int x, int y); // drive vehicle
   void plmove(int x, int y); // Standard movement; handles attacks, traps, &c
+
+  void pldrive(direction dir); // drive vehicle; turtle direction
+  void plmove(direction dir); // Standard movement; handles attacks, traps, &c; absolute direction
+
   void wait();	// Long wait (player action)	'^'
   void open();	// Open a door			'o'
   void close();	// Close a door			'c'

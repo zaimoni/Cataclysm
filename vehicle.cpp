@@ -399,7 +399,7 @@ player* vehicle_part::get_passenger(point origin) const
 		origin += precalc_d[0];	// where we are relative to our global position
 		auto g = game::active();
 		if (g->u.pos == origin && g->u.in_vehicle) return &g->u;
-		if (npc* const nPC = g->nPC(origin)) return nPC;	// \todo V0.2.1+ why not require in_vehicle?
+		if (npc* const nPC = g->nPC(origin)) return nPC;	// \todo V0.2.4+ require in_vehicle when it is possible for NPCs to initiate boarding vehicles
 	}
 	return nullptr;
 }
