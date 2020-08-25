@@ -126,32 +126,31 @@ vehicle* map::veh_at(int x, int y) const
  return veh_at(x, y, part);
 }
 
-void map::board_vehicle(game *g, int x, int y, player& p)
+bool map::try_board_vehicle(game* g, int x, int y, player& p)
 {
- int part = 0;
- vehicle *veh = veh_at(x, y, part);
- if (!veh) {
-  debugmsg ("map::board_vehicle: vehicle not found");
-  return;
- }
+    // p.in_vehicle theoretically could be true, it just usually isn't because boarding a vehicle from another vehicle isn't easy to set up
+    const bool is_current_player = &p == &g->u;
 
- int seat_part = veh->part_with_feature (part, vpf_seat);
- if (part < 0) {
-  debugmsg ("map::board_vehicle: boarding %s (not seat)",
-            veh->part_info(part).name);
-  return;
- }
- if (veh->parts[seat_part].passenger) {
-  player *psg = veh->get_passenger (seat_part);
-  debugmsg ("map::board_vehicle: passenger (%s) is already there",
-            psg ? psg->name.c_str() : "<null>");
-  return;
- }
- veh->parts[seat_part].passenger = 1;
- p.screenpos_set(point(x,y));
- p.in_vehicle = true;
- if (&p == &g->u && game::update_map_would_scroll(point(x,y)))
-  g->update_map(x, y);
+    int part = 0;
+    vehicle* const veh = veh_at(x, y, part);
+    if (!veh) return false;
+    const int seat_part = veh->part_with_feature(part, vpf_seat);
+    if (0 > seat_part) return false;
+    if (veh->parts[seat_part].passenger) {
+        if (player* psg = veh->get_passenger(seat_part)) {
+            if (is_current_player) messages.add("Not boarding %s; %s already there.", veh->name.c_str(), psg->name);
+            return false;
+        }
+        veh->parts[seat_part].passenger = false; // invariant violation.  This is not where we enforce it.
+    }
+
+    if (is_current_player && !query_yn("Board vehicle?")) return false; // XXX \todo what if a PC, but not PC's turn (multi-PC case)
+
+    veh->parts[seat_part].passenger = 1;
+    p.screenpos_set(point(x, y));   // \todo this is where vehicle-vehicle transfer would trigger unboarding the old vehicle
+    p.in_vehicle = true;
+    if (is_current_player && game::update_map_would_scroll(point(x, y)))
+        g->update_map(x, y);
 }
 
 void map::unboard_vehicle(const point& pt)

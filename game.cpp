@@ -5149,12 +5149,9 @@ void game::plmove(int x, int y)
 
  if (m.move_cost(x, y) > 0) { // move_cost() of 0 = impassible (e.g. a wall)
   if (u.underwater) u.underwater = false;
-  dpart = veh ? veh->part_with_feature (vpart, vpf_seat) : -1;
-  bool can_board = dpart >= 0 && !veh->parts[dpart].passenger;
-  if (can_board && query_yn("Board vehicle?")) { // empty vehicle's seat ahead
-   m.board_vehicle (this, x, y, u);
-   u.moves -= 200;
-   return;
+  if (m.try_board_vehicle(this, x, y, u)) {
+      u.moves -= 200;
+      return;
   }
 
   const auto& fd = m.field_at(x, y);
