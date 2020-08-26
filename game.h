@@ -82,6 +82,10 @@ class game
   void use_computer(const point& pt);
   void resonance_cascade(int x, int y);
   void emp_blast(int x, int y);
+  player* survivor(int x, int y);
+  player* survivor(const point& pt);
+  const player* survivor(int x, int y) const { return const_cast<game*>(this)->survivor(x, y); };
+  const player* survivor(const point& pt) const { return const_cast<game*>(this)->survivor(pt); };
   npc* nPC(int x, int y);
   npc* nPC(const point& pt);
   const npc* nPC(int x, int y) const { return const_cast<game*>(this)->nPC(x, y); };

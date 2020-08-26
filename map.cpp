@@ -1668,8 +1668,8 @@ bool map::add_field(game *g, int x, int y, field_id t, unsigned char density, un
  y %= SEEY;
  if (grid[nonant]->fld[x][y].type == fd_null) grid[nonant]->field_count++;
  grid[nonant]->fld[x][y] = field(t, density, age);
- if (g != nullptr && x == g->u.pos.x && y == g->u.pos.y && grid[nonant]->fld[x][y].is_dangerous()) {
-  g->u.cancel_activity_query("You're in a %s!", field::list[t].name[density - 1].c_str());
+ if (g && grid[nonant]->fld[x][y].is_dangerous()) {
+     if (const auto _pc = g->survivor(x,y)) _pc->cancel_activity_query("You're in a %s!", field::list[t].name[density - 1].c_str());
  }
  return true;
 }

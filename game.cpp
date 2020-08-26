@@ -1445,9 +1445,6 @@ JSON_ENUM(event_type)
 
 JSON toJSON(const event& src) {
     JSON ret(JSON::object);
-    event_type type;
-    int turn;
-    int faction_id;	// -1 (no faction) is legal
     point map_point;   // usage is against game::lev.x,y
 
     if (auto json = JSON_key(src.type)) {
@@ -3338,6 +3335,19 @@ npc* game::nPC(const point& pt)
 	for (auto& m : active_npc) if (m.pos == pt && !m.dead) return &m;
 	return nullptr;
 }
+
+player* game::survivor(int x, int y)
+{
+    if (x == u.pos.x && y == u.pos.y) return &u;
+    return nPC(x, y);
+}
+
+player* game::survivor(const point& pt)
+{
+    if (pt == u.pos) return &u;
+    return nPC(pt);
+}
+
 
 int game::mon_at(int x, int y) const
 {

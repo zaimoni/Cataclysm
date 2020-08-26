@@ -3087,7 +3087,7 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
  rem_disease(DI_SPEED_BOOST);
  if (dam >= 6) rem_disease(DI_ARMOR_BOOST);
 
- g->u.cancel_activity_query("You were hurt!");
+ cancel_activity_query("You were hurt!");
 
  if (has_artifact_with(AEP_SNAKES) && dam >= 6) {
   int snakes = int(dam / 6);
@@ -3182,7 +3182,7 @@ void player::hurt(game *g, body_part bphurt, int side, int dam)
 
  if (dam <= 0) return;
 
- g->u.cancel_activity_query("You were hurt!");
+ cancel_activity_query("You were hurt!");
 
  int painadd = dam / (has_trait(PF_PAINRESIST) ? 3 : 2);
  pain += painadd;
@@ -3693,7 +3693,7 @@ void player::suffer(game *g)
    use_charges(itm_inhaler, 1);
   else {
    add_disease(DI_ASTHMA, MINUTES(5) * rng(1, 4));
-   g->u.cancel_activity_query("You have an asthma attack!");
+   cancel_activity_query("You have an asthma attack!");
   }
  }
 
