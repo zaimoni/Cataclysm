@@ -844,7 +844,7 @@ void dis_effect(game* g, player& p, disease& dis)
                     x = p.pos.x + rng(-4, 4);
                     y = p.pos.y + rng(-4, 4);
                     tries++;
-                } while (((x == p.pos.x && y == p.pos.y) || g->mon(x, y)) && tries < 10);
+                } while ((g->survivor(x, y) || g->mon(x, y)) && tries < 10);
                 if (tries < 10) {
                     if (g->m.move_cost(x, y) == 0) g->m.ter(x, y) = t_rubble;
                     g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], x, y));
@@ -891,7 +891,7 @@ void dis_effect(game* g, player& p, disease& dis)
                 x = p.pos.x + rng(-4, 4);
                 y = p.pos.y + rng(-4, 4);
                 tries++;
-            } while (((x == p.pos.x && y == p.pos.y) || g->mon(x, y)) && tries < 10);
+            } while ((g->survivor(x, y) || g->mon(x, y)) && tries < 10);
             if (tries < 10) {
                 if (g->m.move_cost(x, y) == 0) g->m.ter(x, y) = t_rubble;
                 g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], x, y));
