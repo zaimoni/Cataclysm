@@ -1886,8 +1886,28 @@ void overmap::place_rifts()
  }
 }
 
+static constexpr std::pair<oter_id, oter_id> _road_range(oter_id _base)
+{
+    if (is_between<ot_road_null, ot_bridge_ew>(_base)) return std::pair(ot_road_null, ot_bridge_ew);
+    if (is_between<ot_subway_ns, ot_subway_nesw>(_base)) return std::pair(ot_subway_station, ot_subway_nesw);
+    if (is_between<ot_sewer_ns, ot_sewer_nesw>(_base)) return std::pair(ot_sewer_ns, ot_sewer_nesw);
+    if (is_between<ot_ants_ns, ot_ants_queen>(_base)) return std::pair(ot_ants_ns, ot_ants_queen);
+    throw std::logic_error(oter_t::list[_base].name + " is not road-like");
+}
+
+static bool _is_roadlike(oter_id x)
+{
+    try {
+        const auto test = _road_range(x);
+        return true;
+    } catch (std::logic_error& e) {
+        return false;
+    }
+}
+
 void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
 {
+ assert(_is_roadlike(base));
  std::vector<point> next;
  int dir = 0;
  int x = x1, y = y1;
@@ -2032,6 +2052,7 @@ void overmap::building_on_hiway(int x, int y, int dir)
 
 void overmap::place_hiways(const std::vector<city>& cities, oter_id base)
 {
+ assert(_is_roadlike(base));
  if (1 >= cities.size()) return;
  city best;
  int distance;
@@ -2140,25 +2161,9 @@ bool overmap::is_road(int x, int y) const
 
 bool overmap::is_road(oter_id base, int x, int y) const
 {
- oter_id min, max;
- if (is_between<ot_road_null, ot_bridge_ew>(base)) {
-  min = ot_road_null;
-  max = ot_bridge_ew;
- } else if (is_between<ot_subway_ns, ot_subway_nesw>(base)) {
-  min = ot_subway_station;
-  max = ot_subway_nesw;
- } else if (is_between<ot_sewer_ns, ot_sewer_nesw>(base)) {
-  min = ot_sewer_ns;
-  max = ot_sewer_nesw;
-  const auto terrain = ter(x, y);
-  if (terrain == ot_sewage_treatment_hub || terrain == ot_sewage_treatment_under)
-   return true;
- } else if (is_between<ot_ants_ns, ot_ants_queen>(base)) {
-  min = ot_ants_ns;
-  max = ot_ants_queen;
- } else	{ // Didn't plan for this!
-  debugmsg("Bad call to is_road, %s", oter_t::list[base].name.c_str());
-  return false;
+ const auto _range = _road_range(base);
+ if (ot_sewer_ns == _range.first) {
+     if (is_between<ot_sewage_treatment_hub, ot_sewage_treatment_under>(ter(x, y))) return true;
  }
  if (x < 0 || x >= OMAPX || y < 0 || y >= OMAPY) {
   for (int i = 0; i < roads_out.size(); i++) {
@@ -2166,12 +2171,12 @@ bool overmap::is_road(oter_id base, int x, int y) const
     return true;
   }
  }
- const auto terrain = ter(x, y);
- return terrain >= min && terrain <= max;
+ return is_between(_range.first, ter(x, y), _range.second);
 }
 
 void overmap::good_road(oter_id base, int x, int y)
 {
+ assert(_is_roadlike(base));
  const int delta = base - ot_road_ns;
  const bool road_to_west = is_road(base, x - 1, y);
  const bool road_to_south = is_road(base, x, y + 1);
