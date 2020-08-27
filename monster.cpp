@@ -470,9 +470,9 @@ void monster::die(game *g)
 {
  if (!dead) dead = true;
 // Drop goodies
- assert(!type->item_chance || !it.empty()); // should be caught in mtype::init_items
  if (type->item_chance) {
   const auto& it = mtype::items[type->id];
+  assert(!it.empty()); // should be caught in mtype::init_items
   int total_chance = 0;
   for (decltype(auto) x : it) total_chance += x.chance;
 

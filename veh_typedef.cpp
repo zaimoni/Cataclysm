@@ -151,7 +151,7 @@ void game::init_vehicles()
 
 #define VEHICLE(nm) { veh = new vehicle((vhtype_id)index++); veh->name = nm; vehicle::vtypes.push_back(veh); }
 #define PART(mdx, mdy, id) { pi = veh->install_part(mdx, mdy, id); \
-    if (pi < 0) { debugmsg("init_vehicles: '%s' part '%s'(%d) can't be installed to %d,%d", veh->name.c_str(), vpart_info::list[id].name, veh->parts.size(), mdx, mdy); ok = false; } }
+    if (pi < 0) { debuglog("init_vehicles: '%s' part '%s'(%d) can't be installed to %d,%d", veh->name.c_str(), vpart_info::list[id].name, veh->parts.size(), mdx, mdy); ok = false; } }
 
     //        name
     VEHICLE ("motorcycle");
@@ -324,11 +324,11 @@ void game::init_vehicles()
     PART (-3, 2,    vp_wheel_large);
 
 	if (vehicle::vtypes.size() != num_vehicles) {
-		debugmsg("%d vehicles, %d types: fatal", vehicle::vtypes.size(), num_vehicles);
+		debuglog("%d vehicles, %d types: fatal", vehicle::vtypes.size(), num_vehicles);
 		exit(EXIT_FAILURE);
 	}
 	if (!ok) {
-		debugmsg("errors in stock vehicle configuration: fatal", vehicle::vtypes.size(), num_vehicles);
+		debuglog("errors in stock vehicle configuration: fatal", vehicle::vtypes.size(), num_vehicles);
 		exit(EXIT_FAILURE);
 	}
 }
