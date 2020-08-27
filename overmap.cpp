@@ -2320,6 +2320,7 @@ void overmap::place_specials()
    if (p.y >= OMAPY - 1) p.y = OMAPY - 2;
    if (p.x == 0) p.x = 1;
    if (p.y == 0) p.y = 1;
+   // we could cache dist_from_city(p), but results aren't that readable without macros 2020-08-27 zaimoni
    for (int i = 0; i < NUM_OMSPECS; i++) {
     overmap_special special = overmap_special::specials[i];
     int min = special.min_dist_from_city, max = special.max_dist_from_city;
@@ -2332,7 +2333,7 @@ void overmap::place_specials()
    tries++;
   } while (valid.empty() && tries < 15); // Done looking for valid spot
 
-  if (tries < 15) { // We found a valid spot!
+  if (!valid.empty()) { // We found a valid spot!
 // Place the MUST HAVE ones first, to try and guarantee that they appear
    std::vector<omspec_id> must_place;
    for (const auto& sp : valid) if (placed[sp] < overmap_special::specials[sp].min_appearances) must_place.push_back(sp);
@@ -2446,6 +2447,7 @@ void overmap::place_special(const overmap_special& special, point p)
 
 // Finally, place monsters if applicable
  if (special.monsters != mcat_null) {
+  // \todo this test should be construction-time error
   if (special.monster_pop_min == 0 || special.monster_pop_max == 0 ||
       special.monster_rad_min == 0 || special.monster_rad_max == 0   ) {
    debugmsg("Overmap special %s has bad spawn: pop(%d, %d) rad(%d, %d)",
@@ -2457,8 +2459,7 @@ void overmap::place_special(const overmap_special& special, point p)
        
   int population = rng(special.monster_pop_min, special.monster_pop_max);
   int radius     = rng(special.monster_rad_min, special.monster_rad_max);
-  zg.push_back(
-     mongroup(special.monsters, p.x * 2, p.y * 2, radius, population));
+  zg.push_back(mongroup(special.monsters, 2*p, radius, population));
  }
 }
 

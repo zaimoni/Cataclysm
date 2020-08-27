@@ -5712,8 +5712,7 @@ void game::update_map(int &x, int &y)
 		 _npc.pos.y < 0 - SEEX * 2 ||
 		 _npc.pos.x >     SEEX* (MAPSIZE + 2) ||
 		 _npc.pos.y >     SEEY* (MAPSIZE + 2)) {
-		 _npc.pos.x %= SEEX;
-		 _npc.pos.y %= SEEY;
+		 _npc.pos %= SEE;
 		 cur_om.npcs.push_back(std::move(active_npc[i]));
 		 EraseAt(active_npc, i);
 	 }

@@ -40,7 +40,10 @@ struct mongroup {
  mongroup() noexcept : type(mcat_null), pos(-1, -1), radius(0), population(0), dying(false) {};	// \todo consider defaulting this
  mongroup(moncat_id ptype, int pposx, int pposy, unsigned char prad, unsigned int ppop) noexcept
  : type(ptype),pos(pposx,pposy),radius(prad),population(ppop),dying(false) {}
- 
+ mongroup(moncat_id ptype, const point& ppos, unsigned char prad, unsigned int ppop) noexcept
+	 : type(ptype), pos(ppos), radius(prad), population(ppop), dying(false) {}
+
+
  friend bool fromJSON(const cataclysm::JSON& _in, mongroup& dest);
  friend cataclysm::JSON toJSON(const mongroup& src);
 
