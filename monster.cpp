@@ -470,31 +470,26 @@ void monster::die(game *g)
 {
  if (!dead) dead = true;
 // Drop goodies
- int total_chance = 0, total_it_chance, cur_chance, selected_location,
-     selected_item;
- bool animal_done = false;
- std::vector<items_location_and_chance> it = mtype::items[type->id];
- std::vector<itype_id> mapit;
- if (type->item_chance != 0 && it.size() == 0)
-  debugmsg("Type %s has item_chance %d but no items assigned!",
-           type->name.c_str(), type->item_chance);
- else {
-  for (int i = 0; i < it.size(); i++)
-   total_chance += it[i].chance;
+ assert(!type->item_chance || !it.empty()); // should be caught in mtype::init_items
+ if (type->item_chance) {
+  const auto& it = mtype::items[type->id];
+  int total_chance = 0;
+  for (decltype(auto) x : it) total_chance += x.chance;
 
+  bool animal_done = false;
   while (rng(0, 99) < abs(type->item_chance) && !animal_done) {
-   cur_chance = rng(1, total_chance);
-   selected_location = -1;
+   int cur_chance = rng(1, total_chance);
+   int selected_location = -1;
    while (cur_chance > 0) {
     selected_location++;
     cur_chance -= it[selected_location].chance;
    }
-   total_it_chance = 0;
-   mapit = map::items[it[selected_location].loc];
-   for (int i = 0; i < mapit.size(); i++)
-    total_it_chance += item::types[mapit[i]]->rarity;
+   int total_it_chance = 0;
+   const auto& mapit = map::items[it[selected_location].loc];
+   assert(!mapit.empty());
+   for (auto x : mapit) total_it_chance += item::types[x]->rarity;
    cur_chance = rng(1, total_it_chance);
-   selected_item = -1;
+   int selected_item = -1;
    while (cur_chance > 0) {
     selected_item++;
     cur_chance -= item::types[mapit[selected_item]]->rarity;
