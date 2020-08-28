@@ -176,7 +176,7 @@ void map::generate(game *g, overmap *om, int x, int y)
  if (one_in(embellish.chance)) add_extra(random_map_extra(embellish), g);
  else if (   _force_map_extra && 0 < embellish.chances[_force_map_extra]
           && (0 > _force_map_extra_pos.x || _force_map_extra_pos==point(x,y))) {
-     debugmsg("map extra forced: (%d,%d)", x, y);
+     debugmsg("map extra forced: (%d,%d)", x, y); // UI: dev-mode testing force-creation
      add_extra(_force_map_extra, g);
      _force_map_extra = mx_null;
      _force_map_extra_pos = point(-1, -1);

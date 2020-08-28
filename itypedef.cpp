@@ -4123,7 +4123,7 @@ MACGUFFIN("paper note", 0, '?', c_white, PAPER, MNULL, 1, 0, 0, 0, 0,
 A hand-written paper note.");
 
 if (types.size() != num_items) {
-  debugmsg("%d items, %d itypes: fatal", types.size(), num_all_items);
+  debuglog("%d items, %d itypes: fatal", types.size(), num_all_items);
   exit(EXIT_FAILURE);
 }
 
@@ -4336,7 +4336,7 @@ attacks with no penalty.",
 
 
  if (types.size() != num_all_items) {
-  debugmsg("%d items, %d itypes (+bio): fatal", types.size(), num_all_items - 1);
+  debuglog("%d items, %d itypes (+bio): fatal", types.size(), num_all_items - 1);
   exit(EXIT_FAILURE);
  }
 
