@@ -23,6 +23,8 @@ struct point {
  point(const point &p) = default;
  point& operator=(const point& p) = default;
 
+ constexpr point operator-() const { return point(-x, -y); }
+
  point& operator+=(const point& rhs) {
 	 x += rhs.x;
 	 y += rhs.y;
