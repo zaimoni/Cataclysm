@@ -516,6 +516,6 @@ private:
  void assign_id() { id = next_id++; }
 };
 
-void parse_tags(std::string& phrase, player* u, npc* me);
+void parse_tags(std::string& phrase, player& u, npc& me);
 
 #endif

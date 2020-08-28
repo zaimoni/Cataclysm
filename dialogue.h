@@ -7,8 +7,8 @@
 #include <string>
 
 struct dialogue {
- player *alpha;
- npc *beta;
+ player &alpha;	// these two prevent copy assignment (*very* bad style), but we don't need that for this struct 2020-08-28 zaimoni
+ npc &beta;
  WINDOW *win;
  bool done;
  std::vector<std::string> history;
@@ -17,7 +17,7 @@ struct dialogue {
 // int opt(std::string challenge, ...); // no implementation
  talk_topic opt(talk_topic topic, game *g);
 
- dialogue(player* _alpha, npc* _beta)
+ dialogue(player& _alpha, npc& _beta)
  : alpha(_alpha),beta(_beta),win(nullptr),done(false) {}
  ~dialogue() { if (win) { 
 	 delwin(win);
@@ -32,41 +32,41 @@ struct dialogue {
 
 struct talk_function
 {
- static void nothing		(game *g, npc *p) {};
- static void assign_mission	(game *g, npc *p);
- static void mission_success	(game *g, npc *p);
- static void mission_failure	(game *g, npc *p);
- static void clear_mission	(game *g, npc *p);
- static void mission_reward	(game *g, npc *p);
-// static void mission_favor	(game *g, npc *p);  // no implementation
- static void give_equipment	(game *g, npc *p);
- static void start_trade	(game *g, npc *p);
- static void follow			(game *g, npc *p); // p follows u
- static void deny_follow	(game *g, npc *p); // p gets DI_ASKED_TO_FOLLOW
- static void deny_lead		(game *g, npc *p); // p gets DI_ASKED_TO_LEAD
- static void deny_equipment	(game *g, npc *p); // p gets DI_ASKED_FOR_ITEM
- static void enslave		(game *g, npc *p) {}; // p becomes slave of u
- static void hostile		(game *g, npc *p); // p turns hostile to u
- static void flee			(game *g, npc *p);
- static void leave			(game *g, npc *p); // p becomes indifferent
+ static void nothing		(game *g, npc& p) {};
+ static void assign_mission	(game *g, npc& p);
+ static void mission_success	(game *g, npc& p);
+ static void mission_failure	(game *g, npc& p);
+ static void clear_mission	(game *g, npc& p);
+ static void mission_reward	(game *g, npc& p);
+// static void mission_favor	(game *g, npc& p);  // no implementation
+ static void give_equipment	(game *g, npc& p);
+ static void start_trade	(game *g, npc& p);
+ static void follow			(game *g, npc& p); // p follows u
+ static void deny_follow	(game *g, npc& p); // p gets DI_ASKED_TO_FOLLOW
+ static void deny_lead		(game *g, npc& p); // p gets DI_ASKED_TO_LEAD
+ static void deny_equipment	(game *g, npc& p); // p gets DI_ASKED_FOR_ITEM
+ static void enslave		(game *g, npc& p) {}; // p becomes slave of u
+ static void hostile		(game *g, npc& p); // p turns hostile to u
+ static void flee			(game *g, npc& p);
+ static void leave			(game *g, npc& p); // p becomes indifferent
 
- static void start_mugging		(game *g, npc *p);
- static void player_leaving		(game *g, npc *p);
+ static void start_mugging		(game *g, npc& p);
+ static void player_leaving		(game *g, npc& p);
 
- static void drop_weapon		(game *g, npc *p);
- static void player_weapon_away	(game *g, npc *p);
- static void player_weapon_drop	(game *g, npc *p);
+ static void drop_weapon		(game *g, npc& p);
+ static void player_weapon_away	(game *g, npc& p);
+ static void player_weapon_drop	(game *g, npc& p);
 
- static void lead_to_safety		(game *g, npc *p);
- static void start_training		(game *g, npc *p);
+ static void lead_to_safety		(game *g, npc& p);
+ static void start_training		(game *g, npc& p);
 
- static void toggle_use_guns	(game *g, npc *p);
- static void toggle_use_grenades	(game *g, npc *p);
- static void set_engagement_none	(game *g, npc *p);
- static void set_engagement_close	(game *g, npc *p);
- static void set_engagement_weak	(game *g, npc *p);
- static void set_engagement_hit	(game *g, npc *p);
- static void set_engagement_all	(game *g, npc *p);
+ static void toggle_use_guns	(game *g, npc& p);
+ static void toggle_use_grenades	(game *g, npc& p);
+ static void set_engagement_none	(game *g, npc& p);
+ static void set_engagement_close	(game *g, npc& p);
+ static void set_engagement_weak	(game *g, npc& p);
+ static void set_engagement_hit	(game *g, npc& p);
+ static void set_engagement_all	(game *g, npc& p);
 };
 
 enum talk_trial
@@ -88,8 +88,8 @@ struct talk_response
  int tempvalue;		// Used for various stuff
  npc_opinion opinion_success;
  npc_opinion opinion_failure;
- void (*effect_success)(game *, npc *);
- void (*effect_failure)(game *, npc *);
+ void (*effect_success)(game *, npc&);
+ void (*effect_failure)(game *, npc&);
  talk_topic success;
  talk_topic failure;
 

@@ -1357,7 +1357,7 @@ void npc::say(game *g, std::string line, ...)
 #endif
  va_end(ap);
  line = buff;
- parse_tags(line, &(g->u), this);
+ parse_tags(line, g->u, *this);
  if (g->u_see(pos)) {
   messages.add("%s says, \"%s\"", name.c_str(), line.c_str());
   g->sound(pos, 16, "");
