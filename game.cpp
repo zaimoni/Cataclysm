@@ -1355,12 +1355,9 @@ void game::update_scent()
     }
     newscent[x][y] /= (squares_used + 1);
 	const auto& fd = m.field_at(x, y);
-    if (fd.type == fd_slime && newscent[x][y] < 10 * fd.density) {
-	  const auto nonstrict_lb = 10 * fd.density;
-	  if (newscent[x][y] < nonstrict_lb) newscent[x][y] = nonstrict_lb;
-	}
+    if (fd.type == fd_slime) clamp_lb(newscent[x][y], 10 * fd.density);
     if (newscent[x][y] > 10000) {
-     debugmsg("Wacky scent at %d, %d (%d)", x, y, newscent[x][y]);
+     debuglog("Wacky scent at %d, %d (%d)", x, y, newscent[x][y]);
      newscent[x][y] = 0; // Scent should never be higher
     }
    }
