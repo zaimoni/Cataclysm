@@ -129,24 +129,8 @@ const char* direction_name(direction dir)
 
 point direction_vector(direction dir)
 {
-	static const constexpr point _dir_vectors[] = {
-		point(0,-1),
-		point(1,-1),
-		point(1,0),
-		point(1,1),
-		point(0,1),
-		point(-1,1),
-		point(-1,0),
-		point(-1,-1)
-	};
-
-	static_assert(_dir_vectors[NORTH] == -_dir_vectors[SOUTH]);
-	static_assert(_dir_vectors[NORTHEAST] == -_dir_vectors[SOUTHWEST]);
-	static_assert(_dir_vectors[EAST] == -_dir_vectors[WEST]);
-	static_assert(_dir_vectors[SOUTHEAST] == -_dir_vectors[NORTHWEST]);
-
-	DEBUG_FAIL_OR_LEAVE(0 > dir || sizeof(_dir_vectors) / sizeof(*_dir_vectors) <= dir, return point((unsigned int)(-1) / 2, (unsigned int)(-1) / 2));
-	return _dir_vectors[dir];
+	DEBUG_FAIL_OR_LEAVE(0 > dir || sizeof(Direction::vector) / sizeof(*Direction::vector) <= dir, return point((unsigned int)(-1) / 2, (unsigned int)(-1) / 2));
+	return Direction::vector[dir];
 }
 
 direction rotate_clockwise(direction dir, int steps)

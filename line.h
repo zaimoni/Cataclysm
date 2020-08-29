@@ -24,15 +24,31 @@ template<direction d1, direction d2> constexpr bool any(direction src) { return 
 class Direction
 {
 public:
-	static constexpr const point N = point(-1, 0);
-	static constexpr const point NE = point(-1, 1);
-	static constexpr const point E = point(0, 1);
-	static constexpr const point SE = point(1, 1);
-	static constexpr const point S = point(1, 0);
-	static constexpr const point SW = point(1, -1);
-	static constexpr const point W = point(0, -1);
-	static constexpr const point NW = point(-1, -1);
+	static const constexpr point vector[] = {
+		point(0,-1),
+		point(1,-1),
+		point(1,0),
+		point(1,1),
+		point(0,1),
+		point(-1,1),
+		point(-1,0),
+		point(-1,-1)
+	};
+
+	static constexpr const point N = vector[NORTH];
+	static constexpr const point NE = vector[NORTHEAST];
+	static constexpr const point E = vector[EAST];
+	static constexpr const point SE = vector[SOUTHEAST];
+	static constexpr const point S = vector[SOUTH];
+	static constexpr const point SW = vector[SOUTHWEST];
+	static constexpr const point W = vector[WEST];
+	static constexpr const point NW = vector[NORTHWEST];
 };
+
+static_assert(Direction::N  == -Direction::S);
+static_assert(Direction::NE == -Direction::SW);
+static_assert(Direction::E  == -Direction::W);
+static_assert(Direction::SE == -Direction::NW);
 
 // The "t" value decides WHICH Bresenham line is used.
 std::vector<point> line_to(int x1, int y1, int x2, int y2, int t);
