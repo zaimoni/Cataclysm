@@ -282,6 +282,7 @@ public:
 
     bool is_inside (int p);
 
+    void unboard(int part);
     void unboard_all ();
 
     // damage types:

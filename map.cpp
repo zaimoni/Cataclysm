@@ -154,31 +154,6 @@ bool map::try_board_vehicle(game* g, int x, int y, player& p)
     return true;
 }
 
-void map::unboard_vehicle(const point& pt)
-{
- int part = 0;
- vehicle *veh = veh_at(pt, part);
- if (!veh) {
-  debugmsg ("map::unboard_vehicle: vehicle not found");
-  return;
- }
- int seat_part = veh->part_with_feature (part, vpf_seat, false);
- if (part < 0) {
-  debugmsg ("map::unboard_vehicle: unboarding %s (not seat)",
-            veh->part_info(part).name);
-  return;
- }
- player *psg = veh->get_passenger(seat_part);
- if (!psg) {
-  debugmsg ("map::unboard_vehicle: passenger not found");
-  return;
- }
- psg->in_vehicle = false;
- psg->driving_recoil = 0;
- veh->parts[seat_part].passenger = 0;
- veh->skidding = true;
-}
-
 void map::destroy_vehicle (vehicle *veh)
 {
  if (!veh) {
@@ -400,8 +375,7 @@ void map::vehmove(game *g)
 			   if (psgname.length())
 				   messages.add("%s %s hurled from the %s's seat by the power of impact!",
 					   psgname.c_str(), psgverb, veh->name.c_str());
-			   const point origin(x + veh->parts[ps].precalc_d[0].x, y + veh->parts[ps].precalc_d[0].y);
-			   g->m.unboard_vehicle(origin);
+               veh->unboard(ps);
 			   g->fling_player_or_monster(psg, nullptr, mdir.dir() + rng(0, 60) - 30,
 				   (vel2 / 100 - sb_bonus < 10 ? 10 : vel2 / 100 - sb_bonus));
 		   } else if (veh->part_with_feature(ps, vpf_controls) >= 0) {

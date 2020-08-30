@@ -92,7 +92,6 @@ class map
  vehicle* veh_at(const point& pt) const { return veh_at(pt.x, pt.y); };
  // put player on vehicle at x,y
  bool try_board_vehicle(game* g, int x, int y, player& p);
- void unboard_vehicle(const point& pt);//remove player from vehicle at x,y
 
  void destroy_vehicle (vehicle *veh);
 // Change vehicle coords and move vehicle's driver along.

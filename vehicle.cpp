@@ -1261,15 +1261,29 @@ bool vehicle::is_inside (int p)
     return parts[p].inside;
 }
 
+void vehicle::unboard(int part)
+{
+    int seat_part = part_with_feature(part, vpf_seat, false); // \todo what about minivans?
+    if (0 > seat_part) {
+        debuglog("vehicle::unboard: unboarding %s (not seat)", part_info(part).name);
+        return;
+    }
+    // relies on passenger position continually being in sync
+    // does *NOT* try to reposition outside of vehicle
+    // \todo? change target for vehicle-relative coordinates for player when boarded
+    if (player* psg = get_passenger(seat_part)) {
+        psg->in_vehicle = false;
+        psg->driving_recoil = 0;
+        parts[seat_part].passenger = 0;
+        skidding = true;
+        return;
+    }
+    debuglog("vehicle::unboard: passenger not found");
+}
+
 void vehicle::unboard_all ()
 {
-	const point o(global());
-	auto& m = game::active()->m;
-    std::vector<int> bp(boarded_parts());
-	for (int i = 0; i < bp.size(); i++) {
-		const point dest(o + parts[bp[i]].precalc_d[0]);
-		m.unboard_vehicle(dest);
-	}
+    for (int part : boarded_parts()) unboard(part);
 }
 
 int vehicle::damage (int p, int dmg, int type, bool aimed)

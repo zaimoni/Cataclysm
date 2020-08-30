@@ -3654,7 +3654,7 @@ void game::examine()
                        query_yn("Really exit moving vehicle?") :
                        query_yn("Exit vehicle?")));
   if (qexv) {
-   m.unboard_vehicle(u.pos);
+   veh->unboard(vpart);
    u.moves -= 200;
    if (veh->velocity) {      // TODO: move player out of harms way
     int dsgn = veh->parts[vpart].mount_d.x > 0? 1 : -1;
