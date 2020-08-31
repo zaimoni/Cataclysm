@@ -461,6 +461,7 @@ private:
  int pick_best_food(const inventory& _inv) const;
  void mug_player(player& mark);
 public:
+ int can_look_for(const player& sought) const; /// @returns 0, or positive code indicating algorithm for looking
  ai_action look_for_player(player& sought);
  bool saw_player_recently() const;// Do we have an idea of where u are?
 

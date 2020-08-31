@@ -532,7 +532,8 @@ static npc::ai_action _melee(const npc& actor, const point& tar)
 		return npc::ai_action(npc_melee, std::unique_ptr<cataclysm::action>());
 	}
 	// \todo maybe follow player if appropriate
-	return const_cast<npc&>(actor).look_for_player(game::active()->u);
+	if (actor.can_look_for(game::active()->u)) return const_cast<npc&>(actor).look_for_player(game::active()->u);
+	return npc::ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
 }
 
 npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
@@ -1828,31 +1829,37 @@ void npc::mug_player(player &mark)
   }
 }
 
-npc::ai_action npc::look_for_player(player& sought)
+int npc::can_look_for(const player& sought) const
 {
 	auto g = game::active();
 	const int light = g->light_level();
+	int ret = 0;
+	// npc::pl is the point where we last saw the player
+	if (saw_player_recently() && g->m.sees(pos, pl.x, light)) ret += 1; // but nothing sets pl? 2019-11-19 zaimoni
+	const int range = sight_range(light);
+	// even if there are no possibilities in a detailed check, that counts as "possible"
+	if (!g->m.sees(pos, sought.pos, range)) ret += 2;
+	return ret;
+}
 
-	// 2019-11-19: but nothing sets pl?
-	if (saw_player_recently() && g->m.sees(pos, pl.x, light)) {
+npc::ai_action npc::look_for_player(player& sought)
+{
+	const int code = can_look_for(sought); // don't have CPU issues (yet) so recalculate rather than pass in 2020-08-31 zaimoni
+	assert(0 < code);
+	assert(1+2 >= code);
+
+	auto g = game::active();
+	const int light = g->light_level();
+
+	if (1 & code) {
 		// npc::pl is the point where we last saw the player
 		if (update_path(g->m, pl.x, 0))
 			return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(*this, path.front(), "Look for player")));
 	}
+
+	if (!(2 & code)) return ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
+
 	const int range = sight_range(light);
-	if (g->m.sees(pos, sought.pos, range)) {
-		// invariant violation.
-#ifndef NDEBUG
-		throw std::logic_error("trying to look for player in sight");
-#else
-		if (sought.is_npc())
-			debugmsg("npc::look_for_player() called, but we can see %s!",
-				sought.name.c_str());
-		else
-			debugmsg("npc::look_for_player() called, but we can see u!");
-		return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());	// failover
-#endif
-	}
 	if (!path.empty() && !g->m.sees(pos, path.back(), range))
 		return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(*this, path.front(), "Look for player")));
 
@@ -1878,8 +1885,12 @@ npc::ai_action npc::look_for_player(player& sought)
 		}
 		possibilities.erase(possibilities.begin() + index);
 	}
+	return ai_action(npc_undecided, std::unique_ptr<cataclysm::action>()); // nothing checks? do something else 2020-08-31 zaimoni
+/*
+	// C:Whales behavior
 	say(g, "<wait>");
 	return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());	// stall-out failover
+*/
 }
 
 bool npc::saw_player_recently() const
