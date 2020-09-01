@@ -498,7 +498,7 @@ void player::activate_bionic(int b, game *g)
     messages.add("You don't have that item!");
     power_level += bionic::type[bio_evap].power_cost;
    } else if (!it.is_container()) {
-    messages.add("That %s isn't a container!", i_at(t).tname().c_str());
+    messages.add("That %s isn't a container!", it.tname().c_str());
     power_level += bionic::type[bio_evap].power_cost;
    } else {
     const it_container* const cont = dynamic_cast<const it_container*>(it.type);

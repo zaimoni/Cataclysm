@@ -4089,7 +4089,7 @@ void game::pickup(const point& pt, int min)
  std::vector <item> here = from_veh? veh->parts[veh_part].items : m.i_at(pt);
  std::vector<bool> getitem(here.size(),false);
  int ch = ' ';
- int start = 0, cur_it, iter;
+ int start = 0, cur_it;
  int new_weight = u.weight_carried(), new_volume = u.volume_carried();
  bool update = true;
  mvwprintw(w_pickup.get(), 0,  0, "PICK UP");
@@ -4187,13 +4187,12 @@ void game::pickup(const point& pt, int min)
  int curmit = 0;
  bool got_water = false;	// Did we try to pick up water?
  for (int i = 0; i < here.size(); i++) {
-  iter = 0;
 // This while loop guarantees the inventory letter won't be a repeat. If it
 // tries all 52 letters, it fails and we don't pick it up.
   if (getitem[i] && here[i].made_of(LIQUID))
    got_water = true;
   else if (getitem[i]) {
-   iter = 0;
+   int iter = 0;
    while (iter < 52 && (here[i].invlet == 0 ||
                         (u.has_item(here[i].invlet) &&
                          !u.i_at(here[i].invlet).stacks_with(here[i]))) ) {
@@ -4605,14 +4604,13 @@ void game::plthrow()
   messages.add("That is too heavy to throw.");
   return;
  }
- item thrown = u.i_at(ch);
+ item thrown = u.i_at(ch); // copy needed due to u.i_rem(ch) call before actually throwing
  if (thrown.type->id > num_items && thrown.type->id < num_all_items) {
   messages.add("That's part of your body, you can't throw that!");
   return;
  }
 
- int sight_range = u.sight_range(light_level());
- if (range < sight_range) range = sight_range;
+ clamp_ub(range, u.sight_range(light_level()));
  const point r(range);
  const zaimoni::gdi::box<point> bounds(u.pos-r,u.pos+r);
  pl_draw(bounds);
