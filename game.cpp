@@ -3556,7 +3556,7 @@ void game::use_item()
  u.use(this, ch);
 }
 
-bool game::pl_choose_vehicle (int &x, int &y)
+bool game::pl_choose_vehicle(point& vpos)
 {
  refresh_all();
  mvprintz(0, 0, c_red, "Choose a vehicle at direction:");
@@ -3565,8 +3565,7 @@ bool game::pl_choose_vehicle (int &x, int &y)
   messages.add("Invalid direction!");
   return false;
  }
- x += dir.x;
- y += dir.y;
+ vpos += dir;
  return true;
 /*
 int junk;
@@ -4277,9 +4276,9 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
   return false;
  }
  if (liquid.type->id == itm_gasoline && vehicle_near() && query_yn ("Refill vehicle?")) {
-  int vx = u.pos.x, vy = u.pos.y;
-  if (pl_choose_vehicle(vx, vy)) {
-   vehicle *veh = m.veh_at(vx, vy);
+  point vpos(u.pos);
+  if (pl_choose_vehicle(vpos)) {
+   vehicle *veh = m.veh_at(vpos);
    if (veh) {
     constexpr const ammotype ftype = AT_GAS;
     int fuel_cap = veh->fuel_capacity(ftype);
@@ -4289,7 +4288,7 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
     else if (fuel_amnt == fuel_cap)
      messages.add("Already full.");
     else if (infinite && query_yn("Pump until full?")) {
-     u.assign_activity(ACT_REFILL_VEHICLE, 100 * (fuel_cap - fuel_amnt), point(vx, vy));
+     u.assign_activity(ACT_REFILL_VEHICLE, 100 * (fuel_cap - fuel_amnt), vpos);
     } else { // Not infinite
      veh->refill (AT_GAS, liquid.charges);
      messages.add("You refill %s with %s%s.", veh->name.c_str(),
@@ -4301,7 +4300,7 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
    } else // if (veh)
     messages.add("There isn't any vehicle there.");
    return false;
-  } // if (pl_choose_vehicle(vx, vy))
+  } // if (pl_choose_vehicle(vpos))
 
  } else if (!from_ground &&
             query_yn("Pour %s on the ground?", liquid.tname().c_str())) {
@@ -4315,22 +4314,22 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
   char ch = inv(text.str().c_str());
   if (!u.has_item(ch))
    return false;
-  item *cont = &(u.i_at(ch));
-  if (cont == nullptr || cont->is_null()) {
+  item& cont = u.i_at(ch);
+  if (cont.is_null()) {
    messages.add("Never mind.");
    return false;
 
-  } else if (liquid.is_ammo() && (cont->is_tool() || cont->is_gun())) {
+  } else if (liquid.is_ammo() && (cont.is_tool() || cont.is_gun())) {
 
    ammotype ammo = AT_NULL;
    int max = 0;
 
-   if (cont->is_tool()) {
-    const it_tool* const tool = dynamic_cast<const it_tool*>(cont->type);
+   if (cont.is_tool()) {
+    const it_tool* const tool = dynamic_cast<const it_tool*>(cont.type);
     ammo = tool->ammo;
     max = tool->max_charges;
    } else {
-    const it_gun* const gun = dynamic_cast<const it_gun*>(cont->type);
+    const it_gun* const gun = dynamic_cast<const it_gun*>(cont.type);
     ammo = gun->ammo;
     max = gun->clip;
    }
@@ -4338,31 +4337,31 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
    ammotype liquid_type = liquid.ammo_type();
 
    if (ammo != liquid_type) {
-    messages.add("Your %s won't hold %s.", cont->tname().c_str(),
+    messages.add("Your %s won't hold %s.", cont.tname().c_str(),
                                       liquid.tname().c_str());
     return false;
    }
 
-   if (max <= 0 || cont->charges >= max) {
-    messages.add("Your %s can't hold any more %s.", cont->tname().c_str(),
+   if (max <= 0 || cont.charges >= max) {
+    messages.add("Your %s can't hold any more %s.", cont.tname().c_str(),
                                                liquid.tname().c_str());
     return false;
    }
 
-   if (cont->charges > 0 && cont->curammo->id != liquid.type->id) {
-    messages.add("You can't mix loads in your %s.", cont->tname().c_str());
+   if (cont.charges > 0 && cont.curammo->id != liquid.type->id) {
+    messages.add("You can't mix loads in your %s.", cont.tname().c_str());
     return false;
    }
 
    messages.add("You pour %s into your %s.", liquid.tname().c_str(),
-                                        cont->tname().c_str());
-   cont->curammo = dynamic_cast<const it_ammo*>(liquid.type);
-   if (infinite) cont->charges = max;
+                                        cont.tname().c_str());
+   cont.curammo = dynamic_cast<const it_ammo*>(liquid.type);
+   if (infinite) cont.charges = max;
    else {
-    cont->charges += liquid.charges;
-    if (cont->charges > max) {
-     int extra = 0 - cont->charges;
-     cont->charges = max;
+    cont.charges += liquid.charges;
+    if (cont.charges > max) {
+     int extra = 0 - cont.charges;
+     cont.charges = max;
      liquid.charges = extra;
      messages.add("There's some left over!");
      return false;
@@ -4370,24 +4369,24 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
    }
    return true;
 
-  } else if (!cont->is_container()) {
-   messages.add("That %s won't hold %s.", cont->tname().c_str(),
+  } else if (!cont.is_container()) {
+   messages.add("That %s won't hold %s.", cont.tname().c_str(),
                                      liquid.tname().c_str());
    return false;
 
-  } else if (!cont->contents.empty()) {
-   messages.add("Your %s is not empty.", cont->tname().c_str());
+  } else if (!cont.contents.empty()) {
+   messages.add("Your %s is not empty.", cont.tname().c_str());
    return false;
 
   } else {
 
-   const it_container* const container = dynamic_cast<const it_container*>(cont->type);
+   const it_container* const container = dynamic_cast<const it_container*>(cont.type);
 
    if (!(container->flags & mfb(con_wtight))) {
-    messages.add("That %s isn't water-tight.", cont->tname().c_str());
+    messages.add("That %s isn't water-tight.", cont.tname().c_str());
     return false;
    } else if (!(container->flags & mfb(con_seals))) {
-    messages.add("You can't seal that %s!", cont->tname().c_str());
+    messages.add("You can't seal that %s!", cont.tname().c_str());
     return false;
    }
 
@@ -4400,17 +4399,17 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
    }
 
    if (liquid.charges > container->contains * default_charges) {
-    messages.add("You fill your %s with some of the %s.", cont->tname().c_str(),
+    messages.add("You fill your %s with some of the %s.", cont.tname().c_str(),
                                                     liquid.tname().c_str());
     u.inv_sorted = false;
     int oldcharges = liquid.charges - container->contains * default_charges;
     liquid.charges = container->contains * default_charges;
-    cont->put_in(liquid);
+    cont.put_in(liquid);
     liquid.charges = oldcharges;
     return false;
    }
 
-   cont->put_in(liquid);
+   cont.put_in(liquid);
    return true;
 
   }

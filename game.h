@@ -241,7 +241,7 @@ class game
                         int level = -1, bool cont = false);
   void place_construction(const constructable *con); // See construction.cpp
   void complete_construction();               // See construction.cpp
-  bool pl_choose_vehicle (int &x, int &y);
+  bool pl_choose_vehicle(point& vpos);
   bool vehicle_near ();
   void handbrake ();
   void examine();// Examine nearby terrain	'e'
