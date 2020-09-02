@@ -685,14 +685,9 @@ void iuse::scissors(game *g, player *p, item *it, bool t)
   p->i_rem(ch);
   bool drop = false;
   for (int i = 0; i < pieces; i++) {
-   int iter = 0;
-   while (p->has_item(string.invlet)) {
-    string.invlet = g->nextinv;
-    g->advance_nextinv();
-    iter++;
+   if (!drop) {
+       if (p->volume_carried() >= p->volume_capacity() || !g->assign_invlet(string, *p)) drop = true;
    }
-   if (!drop && (iter == 52 || p->volume_carried() >= p->volume_capacity()))
-    drop = true;
    if (drop) g->m.add_item(p->pos, string);
    else p->i_add(string);
   }
@@ -720,13 +715,9 @@ void iuse::scissors(game *g, player *p, item *it, bool t)
  p->i_rem(ch);
  bool drop = false;
  for (int i = 0; i < count; i++) {
-  int iter = 0;
-  while (p->has_item(rag.invlet) && iter < 52) {
-   rag.invlet = g->nextinv;
-   g->advance_nextinv();
-   iter++;
+  if (!drop) {
+      if (p->volume_carried() >= p->volume_capacity() || !g->assign_invlet(rag, *p)) drop = true;
   }
-  if (!drop && (iter == 52 || p->volume_carried() >= p->volume_capacity())) drop = true;
   if (drop) g->m.add_item(p->pos, rag);
   else p->i_add(rag);
  }

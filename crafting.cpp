@@ -1069,20 +1069,15 @@ void game::complete_craft()
  for (const auto& tools : making->tools) if (!tools.empty()) consume_tools(m, u, tools);
 
   // Set up the new item, and pick an inventory letter
- int iter = 0;
  item newit(item::types[making->result], messages.turn, nextinv);
  if (!newit.craft_has_charges()) newit.charges = 0;
- do {
-  newit.invlet = nextinv;
-  advance_nextinv();
-  iter++;
- } while (u.has_item(newit.invlet) && iter < 52);
+ const bool inv_ok = assign_invlet(newit, u);
  //newit = newit.in_its_container();
  if (newit.made_of(LIQUID))
   handle_liquid(newit, false, false);
  else {
 // We might not have space for the item
-  if (iter == 52 || u.volume_carried()+newit.volume() > u.volume_capacity()) {
+  if (!inv_ok || u.volume_carried()+newit.volume() > u.volume_capacity()) {
    messages.add("There's no room in your inventory for the %s, so you drop it.",
              newit.tname().c_str());
    m.add_item(u.pos, newit);

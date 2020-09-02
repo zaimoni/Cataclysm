@@ -62,6 +62,8 @@ class game
   void draw_ter() { return draw_ter(u.pos); };
   void advance_nextinv();	// Increment the next inventory letter
   void decrease_nextinv();	// Decrement the next inventory letter
+  bool assign_invlet(item& it, const player& p);
+  bool assign_invlet_stacking_ok(item& it, const player& p);
   void add_event(event_type type, int on_turn, int faction_id = -1,
                  int x = -1, int y = -1);
   bool event_queued(event_type type) const;

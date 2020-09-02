@@ -1682,6 +1682,7 @@ void game::save()
  MAPBUFFER.save();
 }
 
+// game::nextinv feels like it should be player::nextinv, but it's UI-specific
 void game::advance_nextinv()
 {
  if (nextinv == 'z')
@@ -1692,6 +1693,7 @@ void game::advance_nextinv()
   nextinv++;
 }
 
+// \todo? do we even need this for anything other than formal completeness?
 void game::decrease_nextinv()
 {
  if (nextinv == 'a')
@@ -1700,6 +1702,32 @@ void game::decrease_nextinv()
   nextinv = 'z';
  else
   nextinv--;
+}
+
+bool game::assign_invlet(item& it, const player& p)
+{
+    // This while loop guarantees the inventory letter won't be a repeat. If it
+    // tries all 52 letters, it fails.
+    int iter = 0;
+    while(p.has_item(nextinv)) {
+        advance_nextinv();
+        if (52 <= ++iter) return false;
+    }
+    it.invlet = nextinv;
+    return true;
+}
+
+bool game::assign_invlet_stacking_ok(item& it, const player& p)
+{
+    // This while loop guarantees the inventory letter won't be a repeat. If it
+    // tries all 52 letters, it fails.
+    int iter = 0;
+    while (p.has_item(nextinv) && !p.i_at(nextinv).stacks_with(it)) {
+        advance_nextinv();
+        if (52 <= ++iter) return false;
+    }
+    it.invlet = nextinv;
+    return true;
 }
 
 void game::add_event(event_type type, int on_turn, int faction_id, int x, int y)
@@ -4005,7 +4033,6 @@ void game::pickup(const point& pt, int min)
 // Few item here, just get it
  } else if ((from_veh ? veh->parts[veh_part].items.size() :
                         m.i_at(pt).size()          ) <= min) {
-  int iter = 0;
   item newit = from_veh ? veh->parts[veh_part].items[0] : m.i_at(pt)[0];
   if (newit.made_of(LIQUID)) {
    messages.add("You can't pick up a liquid!");
@@ -4015,17 +4042,7 @@ void game::pickup(const point& pt, int min)
       return;
   }
 
-  if (newit.invlet == 0) {
-   newit.invlet = nextinv;
-   advance_nextinv();
-  }
-  while (iter < 52 && u.has_item(newit.invlet) &&
-         !u.i_at(newit.invlet).stacks_with(newit)) {
-   newit.invlet = nextinv;
-   iter++;
-   advance_nextinv();
-  }
-  if (iter == 52) {
+  if (!assign_invlet_stacking_ok(newit, u)) {
    messages.add("You're carrying too many items!");
    return;
   } else if (u.volume_carried() + newit.volume() > u.volume_capacity()) {
@@ -4192,15 +4209,7 @@ void game::pickup(const point& pt, int min)
   if (getitem[i] && here[i].made_of(LIQUID))
    got_water = true;
   else if (getitem[i]) {
-   int iter = 0;
-   while (iter < 52 && (here[i].invlet == 0 ||
-                        (u.has_item(here[i].invlet) &&
-                         !u.i_at(here[i].invlet).stacks_with(here[i]))) ) {
-    here[i].invlet = nextinv;
-    iter++;
-    advance_nextinv();
-   }
-   if (iter == 52) {
+   if (!assign_invlet_stacking_ok(here[i], u)) {
     messages.add("You're carrying too many items!");
     return;
    } else if (u.weight_carried() + here[i].weight() > u.weight_capacity()) {
@@ -4876,20 +4885,14 @@ void game::unload()
   std::vector<item> new_contents;	// In case we put stuff back
   while (!u.weapon.contents.empty()) {
    item content = u.weapon.contents[0];
-   int iter = 0;
-// Pick an inventory item for the contents
-   while ((content.invlet == 0 || u.has_item(content.invlet)) && iter < 52) {
-    content.invlet = nextinv;
-    advance_nextinv();
-    iter++;
-   }
+   const bool inv_ok = assign_invlet(content, u);
    if (content.made_of(LIQUID)) {
     if (!handle_liquid(content, false, false))
      new_contents.push_back(std::move(content));// Put it back in (we canceled)
    } else {
     if (u.volume_carried() + content.volume() <= u.volume_capacity() &&
         u.weight_carried() + content.weight() <= u.weight_capacity() &&
-        iter < 52) {
+        inv_ok) {
      messages.add("You put the %s in your inventory.", content.tname().c_str());
      u.i_add(content);
     } else {
@@ -4921,12 +4924,7 @@ void game::unload()
  }
  item newam((u.weapon.is_gun() && u.weapon.curammo) ? u.weapon.curammo : item::types[default_ammo(u.weapon.ammo_type())], messages.turn);
  while (u.weapon.charges > 0) {
-  int iter = 0;
-  while ((newam.invlet == 0 || u.has_item(newam.invlet)) && iter < 52) {
-   newam.invlet = nextinv;
-   advance_nextinv();
-   iter++;
-  }
+  const bool inv_ok = assign_invlet(newam, u);
   if (newam.made_of(LIQUID)) newam.charges = u.weapon.charges;
   u.weapon.charges -= newam.charges;
   if (u.weapon.charges < 0) {
@@ -4934,7 +4932,7 @@ void game::unload()
    u.weapon.charges = 0;
   }
   if (u.weight_carried() + newam.weight() < u.weight_capacity() &&
-      u.volume_carried() + newam.volume() < u.volume_capacity() && iter < 52) {
+      u.volume_carried() + newam.volume() < u.volume_capacity() && inv_ok) {
    if (newam.made_of(LIQUID)) {
     if (!handle_liquid(newam, false, false)) u.weapon.charges += newam.charges;	// Put it back in
    } else
