@@ -113,6 +113,7 @@ class vehicle
 {
 public:
 	static std::vector <vehicle*> vtypes;
+    static const constexpr int mph_1 = 100; // scaling factor between real-world velocity and internal representation
 
     vehicle(vhtype_id type_id = veh_null);
 	vehicle(const vehicle& src) = default;

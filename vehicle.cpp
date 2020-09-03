@@ -799,9 +799,9 @@ void vehicle::thrust (int thd)
     int accel = acceleration();
     int max_vel = max_velocity();
     int brake = 30 * k_mass();
-    int brk = abs(velocity) * brake / 100;
+    int brk = abs(velocity) * brake / mph_1;
     if (brk < accel) brk = accel;
-    if (brk < 10 * 100) brk = 10 * 100;
+    if (brk < 10 * mph_1) brk = 10 * mph_1;
     int vel_inc = (thrusting? accel : brk) * thd;
     if ((velocity > 0 && velocity + vel_inc < 0) ||
         (velocity < 0 && velocity + vel_inc > 0))
@@ -817,9 +817,8 @@ void vehicle::thrust (int thd)
 
 void vehicle::cruise_thrust (int amount)
 {
-    if (!amount)
-        return;
-    int max_vel = (safe_velocity() * 11 / 10000 + 1) * 1000;
+    if (!amount) return;
+    int max_vel = (safe_velocity() * 11 / (100 * mph_1) + 1) * (10 * mph_1);
     cruise_velocity += amount;
     cruise_velocity = cruise_velocity / abs(amount) * abs(amount);
     if (cruise_velocity > max_vel)

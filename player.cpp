@@ -2680,8 +2680,8 @@ void player::disp_status(WINDOW *w, game *g)
     mvwprintz(w, 3, 43, c_ltgreen, "%4d", int(veh->cruise_velocity * 0.0161f));	// not really a round fraction here...rational approximation 559/9
    } else {
     mvwprintz(w, 3, 34, col_indf1, "{mph....>....}");
-    mvwprintz(w, 3, 38, col_vel, "%4d", veh->velocity / 100);
-    mvwprintz(w, 3, 43, c_ltgreen, "%4d", veh->cruise_velocity / 100);
+    mvwprintz(w, 3, 38, col_vel, "%4d", veh->velocity / vehicle::mph_1);
+    mvwprintz(w, 3, 43, c_ltgreen, "%4d", veh->cruise_velocity / vehicle::mph_1);
    }
   } else {
    if(use_metric_system) {
@@ -2689,7 +2689,7 @@ void player::disp_status(WINDOW *w, game *g)
     mvwprintz(w, 3, 40, col_vel, "%4d", int(veh->velocity * 0.0161f));
    } else {
     mvwprintz(w, 3, 34, col_indf1, "  {mph....}  ");
-    mvwprintz(w, 3, 40, col_vel, "%4d", veh->velocity / 100);
+    mvwprintz(w, 3, 40, col_vel, "%4d", veh->velocity / vehicle::mph_1);
    }
   }
 

@@ -2790,7 +2790,7 @@ void game::monmove()
  cleanup_dead();
  for (int i = 0; i < z.size(); i++) {
   while (!z[i].dead && !z[i].can_move_to(m, z[i].pos)) {
-// If we can't move to our current position, assign us to a new one
+// If we can't move to our current position, assign us to a new one (terrain change after map generation?)
    if (debugmon)
     debugmsg("%s can't move to its location! (%d:%d), %s", z[i].name().c_str(),
              z[i].pos.x, z[i].pos.y, m.tername(z[i].pos).c_str());
@@ -5020,7 +5020,7 @@ void game::pldrive(int x, int y)
   return;
  }
 
- int thr_amount = 10 * 100;
+ const constexpr int thr_amount = 10 * vehicle::mph_1;
  if (veh->cruise_on)
   veh->cruise_thrust (-y * thr_amount);
  else {
