@@ -851,6 +851,27 @@ void vehicle::stop ()
     moves = 0;
 }
 
+/// <param name="u">The operator of the controls.</param>
+void vehicle::handbrake(player& u)
+{
+    const bool pc = !u.is_npc();
+    const bool vis_npc = u.is_npc() && game::active()->u_see(u.pos);
+    if (pc) messages.add("You pull a handbrake.");
+    else if (vis_npc) messages.add("%s pulls a handbrake.", u.name.c_str());
+    cruise_velocity = 0;
+    if (last_turn != 0 && rng(15, 60) * mph_1 < abs(velocity)) {
+        skidding = true;
+        if (pc) messages.add("You lose control of %s.", name.c_str());
+        else if (vis_npc) messages.add("%s loses control of %s.", u.name.c_str() , name.c_str());
+        turn(last_turn > 0 ? 60 : -60);
+    } else if (velocity < 0) stop();
+    else {
+        velocity = velocity / 2 - 10 * mph_1;
+        if (velocity < 0) stop();
+    }
+    u.moves = 0;
+}
+
 int vehicle::part_collision (int vx, int vy, int part, point dest)
 {
 	static constexpr const int mass_from_msize[mtype::MS_MAX] = { 15, 40, 80, 200, 800 };

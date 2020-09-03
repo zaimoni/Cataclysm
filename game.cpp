@@ -1095,10 +1095,8 @@ void game::get_input()
    break;
 
   case ACTION_SMASH:
-   if (veh_ctrl)
-    handbrake();
-   else
-    smash();
+   if (veh_ctrl) veh->handbrake(u);
+   else smash();
    break;
 
   case ACTION_EXAMINE:
@@ -3628,25 +3626,6 @@ bool game::vehicle_near ()
   }
  }
  return false;
-}
-
-void game::handbrake ()
-{
- vehicle *veh = m.veh_at(u.pos);
- if (!veh) return;
- messages.add("You pull a handbrake.");
- veh->cruise_velocity = 0;
- if (veh->last_turn != 0 && rng (15, 60) * 100 < abs(veh->velocity)) {
-  veh->skidding = true;
-  messages.add("You lose control of %s.", veh->name.c_str());
-  veh->turn (veh->last_turn > 0? 60 : -60);
- } else if (veh->velocity < 0)
-  veh->stop();
- else {
-  veh->velocity = veh->velocity / 2 - 10*100;
-  if (veh->velocity < 0) veh->stop();
- }
- u.moves = 0;
 }
 
 void game::exam_vehicle(vehicle &veh, int cx, int cy)

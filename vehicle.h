@@ -274,6 +274,7 @@ public:
 
 // reduces velocity to 0
     void stop ();
+    void handbrake(player& u);
 
     void find_external_parts ();
 
