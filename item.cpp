@@ -614,33 +614,7 @@ int item::weapon_value(const int skills[num_skill_types]) const
   my_value += gun_value;
  }
 
- my_value += int(type->melee_dam * (1   + .3 * skills[sk_bashing] +
-                                          .1 * skills[sk_melee]    ));
- //debugmsg("My value: (+bash) %d", my_value);
-
- my_value += int(type->melee_cut * (1   + .4 * skills[sk_cutting] +
-                                          .1 * skills[sk_melee]    ));
- //debugmsg("My value: (+cut) %d", my_value);
-
- my_value += int(type->m_to_hit  * (1.2 + .3 * skills[sk_melee]));
- //debugmsg("My value: (+hit) %d", my_value);
-
- return my_value;
-}
-
-int item::melee_value(const int skills[num_skill_types]) const
-{
- int my_value = 0;
- my_value += int(type->melee_dam * (1   + .3 * skills[sk_bashing] +
-                                          .1 * skills[sk_melee]    ));
-
- my_value += int(type->melee_cut * (1   + .4 * skills[sk_cutting] +
-                                          .1 * skills[sk_melee]    ));
-
- my_value += int(type->m_to_hit  * (1.2 + .3 * skills[sk_melee]));
-
- if (is_style())
-  my_value += 15 * skills[sk_unarmed] + 8 * skills[sk_melee];
+ my_value += type->melee_value(skills);
 
  return my_value;
 }

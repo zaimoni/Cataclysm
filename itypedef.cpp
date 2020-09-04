@@ -4438,6 +4438,22 @@ itype::itype(int pid, unsigned char prarity, unsigned int pprice,
 {
 }
 
+int itype::melee_value(const int skills[num_skill_types]) const
+{
+	int my_value = 0;
+
+	my_value += (melee_dam * (10 + 3 * skills[sk_bashing] + skills[sk_melee]))/10;
+	my_value += (melee_cut * (10 + 4 * skills[sk_cutting] + skills[sk_melee]))/10;
+	my_value += (m_to_hit * (12 + 3 * skills[sk_melee]))/10;
+
+	return my_value;
+}
+
+int it_style::melee_value(const int skills[num_skill_types]) const
+{	// \todo more intelligent style choosing
+	return base::melee_value(skills) + 15 * skills[sk_unarmed] + 8 * skills[sk_melee];
+}
+
 it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
 	std::string pname, std::string pdes,
 	char psym, nc_color pcolor, material pm1,

@@ -881,6 +881,7 @@ int player::can_reload() const
 	return -1;
 }
 
+// \todo adjust NPC logic to correctly handle IF_RELOAD_AND_SHOOT flag
 int npc::can_reload() const
 {
    if (!weapon.is_gun()) return -1;	// \todo extend this to tools
@@ -1413,11 +1414,20 @@ bool npc::best_melee_weapon(int& inv_index) const
 			index = i;
 		}
 	}
-	if (!styles.empty() && // Wield a style if our skills warrant it
-		best_score < 15 * sklevel[sk_unarmed] + 8 * sklevel[sk_melee]) {
-		// TODO: More intelligent style choosing
-		inv_index = -rng(1, styles.size());
-		return true;
+	if (!styles.empty()) { // Wield a style if our skills warrant it
+		int seen = 0;
+		int i = styles.size();
+		while (0 < i--) {
+			int score = item::types[i]->melee_value(sklevel);
+			if (score > best_score) {
+				seen = 1;
+				best_score = score;
+				index = -(i + 1);
+			} else if (score == best_score) {
+				seen++;
+				if (one_in(seen)) index = -(i + 1);
+			}
+		}
 	}
 	if (index == -999) return false;
 	inv_index = index;

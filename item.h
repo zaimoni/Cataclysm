@@ -11,7 +11,7 @@ class player;
 class item
 {
 public:
- static std::vector<itype*> types;
+ static std::vector<itype*> types; // \todo? really should be itype::types but time cost to migrate looks excessive
  static const item null;
 
  const itype*   type;	// \todo more actively enforce non-null constraint
@@ -114,7 +114,7 @@ public:
 // Our value as a weapon, given particular skills
  int  weapon_value(const int skills[num_skill_types]) const;
 // As above, but discounts its use as a ranged weapon
- int  melee_value (const int skills[num_skill_types]) const;
+ int  melee_value(const int skills[num_skill_types]) const { return type->melee_value(skills); }
 // Returns the data associated with tech, if we are an it_style
  style_move style_data(technique_id tech) const;
 #ifndef SOCRATES_DAIMON

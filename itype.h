@@ -368,6 +368,8 @@ struct itype
 	 unsigned pitem_flags, unsigned ptechniques = 0);
 
  virtual ~itype() = default;
+
+ virtual int melee_value(const int skills[num_skill_types]) const;
 protected:	// this is not a final type so these aren't public
  itype(const cataclysm::JSON& src);
  virtual void toJSON(cataclysm::JSON& dest) const;
@@ -651,6 +653,8 @@ struct it_software : public itype
 
 struct it_style : public itype
 {
+ using base = itype; // Cf. Objective-C
+
  std::vector<style_move> moves;
  
  it_style(int pid, std::string pname, std::string pdes, char psym, nc_color pcolor,
@@ -658,6 +662,8 @@ struct it_style : public itype
      unsigned pitem_flags);
 
  bool is_style() const override { return true; }
+
+ int melee_value(const int skills[num_skill_types]) const override;
 };
 
 struct it_artifact_tool final : public it_tool
