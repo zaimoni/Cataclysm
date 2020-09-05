@@ -540,8 +540,7 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
 {
  point tar((target == TARGET_PLAYER) ? g->u.pos : g->z[target].pos);
 
- bool can_use_gun = (!is_following() || combat_rules.use_guns),
-	 can_use_grenades = (!is_following() || combat_rules.use_grenades);
+ const bool can_use_gun = (!is_following() || combat_rules.use_guns);
 
  const int dist = rl_dist(pos, tar);
  const int target_HP = (target == TARGET_PLAYER) ? g->u.hp_percentage() * g->u.hp_max[hp_torso] : g->z[target].hp;
