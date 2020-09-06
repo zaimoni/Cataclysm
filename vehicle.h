@@ -4,6 +4,7 @@
 #include "tileray.h"
 #include "veh_type.h"
 #include "enums.h"
+#include "GPS_loc.hpp"
 #include <vector>
 #include <string>
 #include <iosfwd>
@@ -330,6 +331,7 @@ public:
 
     // save values
     point pos;		// position within submap: valid values 0...SEEX/SEEY-1
+    GPS_loc GPSpos; // absolute location
     tileray face;       // frame direction
     tileray move;       // direction we are moving
     int velocity;       // vehicle current velocity, mph * 100

@@ -234,6 +234,7 @@ bool map::displace_vehicle (game *g, int &x, int &y, const point& delta, bool te
  for (auto& part : veh->parts) part.precalc_d[0] = part.precalc_d[1];
 
  veh->pos = dst;
+ veh->GPSpos = g->toGPS(dest);
  if (src_na != dst_na) {
   veh->sm = dest / SEE;
   grid[dst_na]->vehicles.push_back(std::move(*veh));

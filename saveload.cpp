@@ -823,6 +823,12 @@ bool fromJSON(const JSON& src, vehicle& dest)
 	if (!src.has_key("type") || !fromJSON(src["type"], dest._type)) return false;
 	if (src.has_key("name")) fromJSON(src["name"], dest.name);
 	if (src.has_key("pos")) fromJSON(src["pos"], dest.pos);
+	// unlike NPCs, vehicles are loaded as part of the submap
+	if (src.has_key("GPS_pos")) {	// provided by V0.2.4+
+		if (fromJSON(src["GPS_pos"], dest.GPSpos)) {
+			// \todo reality checks possible
+		}
+	} // handle missing GPS_pos elsewhere
 	if (src.has_key("turn_dir")) fromJSON(src["turn_dir"], dest.turn_dir);
 	if (src.has_key("velocity")) fromJSON(src["velocity"], dest.velocity);
 	if (src.has_key("cruise_velocity")) fromJSON(src["cruise_velocity"], dest.cruise_velocity);
@@ -852,6 +858,15 @@ JSON toJSON(const vehicle& src)
 		_vehicle.set("type", json);
 		_vehicle.set("name", src.name);
 		_vehicle.set("pos", toJSON(src.pos));
+
+		// V 0.2.4+
+		if (0 <= src.GPSpos.second.x && SEE > src.GPSpos.second.x && 0 <= src.GPSpos.second.x && SEE > src.GPSpos.second.x) {
+			_vehicle.set("GPS_pos", toJSON(src.GPSpos));
+		} else {
+			auto GPS = overmap::toGPS(src.pos);
+			_vehicle.set("GPS_pos", toJSON(GPS));
+		}
+
 		_vehicle.set("facing", std::to_string(src.face.dir()));
 		_vehicle.set("move_dir", std::to_string(src.move.dir()));
 		_vehicle.set("turn_dir", std::to_string(src.turn_dir));

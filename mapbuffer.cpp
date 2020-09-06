@@ -68,7 +68,8 @@ void mapbuffer::load()
                 num_submaps);
   tripoint where;
   fin >> where;
-  submaps[ where ] = new submap(fin);
+  submaps[where] = new submap(fin);
+  for (auto& veh : submaps[where]->vehicles) veh.GPSpos = GPS_loc(where, veh.pos); // V.0.2.4+ auto-repair; V0.3.0 update
  }
  fin.close();
 }
