@@ -1944,69 +1944,67 @@ std::vector<point> map::route(int Fx, int Fy, int Tx, int Ty, bool bash) const
  bool done = false;
 
  do {
-  //debugmsg("Open.size() = %d", open.size());
-  int best = 9999;
+  int best = INT_MAX;
   int index = -1;
   for (int i = 0; i < open.size(); i++) {
-   if (i == 0 || score[open[i].x][open[i].y] < best) {
+   if (score[open[i].x][open[i].y] < best) {
     best = score[open[i].x][open[i].y];
     index = i;
    }
   }
-  for (int x = open[index].x - 1; x <= open[index].x + 1; x++) {
-   for (int y = open[index].y - 1; y <= open[index].y + 1; y++) {
-    if (x == open[index].x && y == open[index].y)
-     y++;	// Skip the current square
-    if (x == Tx && y == Ty) {
-     done = true;
-     parent[x][y] = open[index];
-    } else if (x >= startx && x <= endx && y >= starty && y <= endy &&
-               (move_cost(x, y) > 0 || (bash && has_flag(bashable, x, y)))) {
-     if (list[x][y] == ASL_NONE) {	// Not listed, so make it open
-      list[x][y] = ASL_OPEN;
-      open.push_back(point(x, y));
-      parent[x][y] = open[index];
-      gscore[x][y] = gscore[open[index].x][open[index].y] + move_cost(x, y);
-      if (ter(x, y) == t_door_c)
-       gscore[x][y] += 4;	// A turn to open it and a turn to move there
-      else if (move_cost(x, y) == 0 && (bash && has_flag(bashable, x, y)))
-       gscore[x][y] += 18;	// Worst case scenario with damage penalty
-      score[x][y] = gscore[x][y] + 2 * rl_dist(x, y, Tx, Ty);
-     } else if (list[x][y] == ASL_OPEN) { // It's open, but make it our child
-      int newg = gscore[open[index].x][open[index].y] + move_cost(x, y);
-      if (ter(x, y) == t_door_c)
-       newg += 4;	// A turn to open it and a turn to move there
-      else if (move_cost(x, y) == 0 && (bash && has_flag(bashable, x, y)))
-       newg += 18;	// Worst case scenario with damage penalty
-      if (newg < gscore[x][y]) {
-       gscore[x][y] = newg;
-       parent[x][y] = open[index];
-       score [x][y] = gscore[x][y] + 2 * rl_dist(x, y, Tx, Ty);
+  for (decltype(auto) dir_vec : Direction::vector) {
+      const point dest = open[index] + dir_vec;
+      if (dest.x == Tx && dest.y == Ty) {
+          done = true;
+          parent[dest.x][dest.y] = open[index];
+      } else if (dest.x >= startx && dest.x <= endx && dest.y >= starty && dest.y <= endy) {
+          const int mv_cost = move_cost(dest);
+          const bool can_destroy = bash && has_flag(bashable, dest);
+          if (0 < mv_cost || can_destroy) {
+              decltype(auto) gcost = [&]() {
+                  int new_g = gscore[open[index].x][open[index].y] + mv_cost;
+                  if (ter(dest) == t_door_c) new_g += 4;	// A turn to open it and a turn to move there
+                  else if (0 == mv_cost && can_destroy) new_g += 18;	// Worst case scenario with damage penalty
+                  return new_g;
+              };
+
+              switch(auto& asl_mode = list[dest.x][dest.y]) {
+              case ASL_NONE: // Not listed, so make it open
+                  asl_mode = ASL_OPEN;
+                  open.push_back(dest);
+                  parent[dest.x][dest.y] = open[index];
+                  gscore[dest.x][dest.y] = gcost();
+                  score[dest.x][dest.y] = gscore[dest.x][dest.y] + 2 * rl_dist(dest, Tx, Ty);
+                  break;
+              case ASL_OPEN: // It's open, but make it our child
+                  if (int newg = gcost(); newg < gscore[dest.x][dest.y]) {
+                      gscore[dest.x][dest.y] = newg;
+                      parent[dest.x][dest.y] = open[index];
+                      score[dest.x][dest.y] = gscore[dest.x][dest.y] + 2 * rl_dist(dest, Tx, Ty);
+                  }
+                  break;
+              }
+          }
       }
-     }
-    }
-   }
   }
+
   list[open[index].x][open[index].y] = ASL_CLOSED;
   open.erase(open.begin() + index);
- } while (!done && open.size() > 0);
+ } while (!done && !open.empty());
 
  std::vector<point> tmp;
  std::vector<point> ret;
  if (done) {
   point cur(Tx, Ty);
   while (cur.x != Fx || cur.y != Fy) {
-   //debugmsg("Retracing... (%d:%d) => [%d:%d] => (%d:%d)", Tx, Ty, cur.x, cur.y, Fx, Fy);
    tmp.push_back(cur);
-   if (rl_dist(cur, parent[cur.x][cur.y])>1){
-    debugmsg("Jump in our route! %d:%d->%d:%d", cur.x, cur.y,
-             parent[cur.x][cur.y].x, parent[cur.x][cur.y].y);
-    return ret;
-   }
+   assert(1 == rl_dist(cur, parent[cur.x][cur.y]));
    cur = parent[cur.x][cur.y];
   }
-  for (int i = tmp.size() - 1; i >= 0; i--)
-   ret.push_back(tmp[i]);
+  while (!tmp.empty()) {
+      ret.push_back(tmp.back());
+      tmp.pop_back();
+  }
  }
  return ret;
 }
