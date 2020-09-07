@@ -1,7 +1,6 @@
-#include <sstream>
 #include "calendar.h"
-#include "output.h"
 #include "options.h"
+#include <sstream>
 
 calendar::calendar()
 {
@@ -37,18 +36,7 @@ calendar::calendar(int turn)
  year = seasons / 4;
 }
 
-int calendar::get_turn()
-{
- int ret = second / 6;
- ret += minute * 10;
- ret += hour * 600;
- ret += day * 14400;
- ret += int(season) * 14400 * DAYS_IN_SEASON;
- ret += year * 14400 * 4 * DAYS_IN_SEASON;
- return ret;
-}
-
-calendar::operator int() const
+int calendar::get_turn() const
 {
  int ret = second / 6;
  ret += minute * 10;
@@ -73,7 +61,7 @@ calendar& calendar::operator =(int rhs)
  year = seasons / 4;
  return *this;
 }
- 
+
 calendar& calendar::operator -=(const calendar &rhs)
 {
  calendar tmp(rhs);
@@ -157,13 +145,13 @@ void calendar::standardize()
  season = season_type(tmpseason);
 }
 
-int calendar::minutes_past_midnight()
+int calendar::minutes_past_midnight() const
 {
  int ret = minute + hour * 60;
  return ret;
 }
 
-moon_phase calendar::moon()
+moon_phase calendar::moon() const
 {
  // strict upper bound on phase value should be 2*FULL_MOON (otherwise we double count new moon)
  // if we included waxing/waning in phases (reasonable), bound would be different
@@ -172,9 +160,8 @@ moon_phase calendar::moon()
  return (MOON_FULL >= phase) ? moon_phase(phase) : moon_phase(2*MOON_FULL - phase);
 }
 
-calendar calendar::sunrise()
+calendar calendar::sunrise() const
 {
- calendar ret;
  int start_hour = 0, end_hour = 0;
  switch (season) {
   case SPRING:
@@ -197,6 +184,7 @@ calendar calendar::sunrise()
  double percent = double(double(day) / DAYS_IN_SEASON);
  double time = double(start_hour) * (1.- percent) + double(end_hour) * percent;
 
+ calendar ret;
  ret.hour = int(time);
  time -= int(time);
  ret.minute = int(time * 60);
@@ -204,9 +192,8 @@ calendar calendar::sunrise()
  return ret;
 }
 
-calendar calendar::sunset()
+calendar calendar::sunset() const
 {
- calendar ret;
  int start_hour = 0, end_hour = 0;
  switch (season) {
   case SPRING:
@@ -229,6 +216,7 @@ calendar calendar::sunset()
  double percent = double(double(day) / DAYS_IN_SEASON);
  double time = double(start_hour) * (1.- percent) + double(end_hour) * percent;
 
+ calendar ret;
  ret.hour = int(time);
  time -= int(time);
  ret.minute = int(time * 60);
@@ -236,7 +224,7 @@ calendar calendar::sunset()
  return ret;
 }
 
-bool calendar::is_night()
+bool calendar::is_night() const
 {
  calendar sunrise_time = sunrise(), sunset_time = sunset();
 
@@ -247,7 +235,7 @@ bool calendar::is_night()
  return (mins > sunset_mins + TWILIGHT_MINUTES || mins < sunrise_mins);
 }
 
-int calendar::sunlight()
+int calendar::sunlight() const
 {
  calendar sunrise_time = sunrise(), sunset_time = sunset();
 
@@ -277,7 +265,7 @@ int calendar::sunlight()
   return DAYLIGHT_LEVEL;
 }
 
-std::string calendar::print_time()
+std::string calendar::print_time() const
 {
  std::ostringstream ret;
  const bool military_time = option_table::get()[OPT_24_HOUR];
@@ -301,10 +289,9 @@ std::string calendar::print_time()
 std::string calendar::textify_period()
 {
  standardize();
- std::ostringstream ret;
  int am;
  std::string tx;
-// Describe the biggest time period, as "<am> <tx>s", am = amount, tx = name 
+// Describe the biggest time period, as "<am> <tx>s", am = amount, tx = name
  if (year > 0) {
   am = year;
   tx = "year";
@@ -325,6 +312,7 @@ std::string calendar::textify_period()
   tx = "turn";
  }
 
+ std::ostringstream ret;
  ret << am << " " << tx << (am > 1 ? "s" : "");
 
  return ret.str();
