@@ -48,7 +48,7 @@ void recent_msg::buffer()
  mvwprintz(w, VIEW - 1, 32, c_red, "Press q to return");
 
  int offset = 0;
- char ch;
+ int ch;
  do {
   werase(w);
   wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
