@@ -10,34 +10,15 @@
 static const int sx[4] = { 1, -1, -1, 1 };
 static const int sy[4] = { 1, 1, -1, -1 };
 
-tileray::tileray (): deltax(0), deltay(0), leftover(0), direction(0),
-                     last_dx(0), last_dy(0), steps(0), infinite(false)
+tileray::tileray(int adx, int ady) noexcept
+: deltax(adx), deltay(ady), leftover(0), direction(0), last_dx(0), last_dy(0), steps(0), infinite(false)
 {
-}
-
-tileray::tileray (int adx, int ady)
-{
-    init (adx, ady);
+    if (adx || ady) direction = (int)(atan2(deltay, deltax) * 180.0 / M_PI);
 }
 
 tileray::tileray (int adir): direction (adir)
 {
     init (adir);
-}
-
-void tileray::init (int adx, int ady)
-{
-    leftover = 0;
-    last_dx = 0;
-    last_dy = 0;
-    deltax = adx;
-    deltay = ady;
-    if (!adx && !ady)
-        direction = 0;
-    else
-        direction = (int) (atan2 (deltay, deltax) * 180.0 / M_PI);
-    infinite = false;
-    steps = 0;
 }
 
 void tileray::init (int adir)

@@ -26,11 +26,10 @@ private:
     int steps;      // how many steps we advanced so far
     bool infinite;  // ray is infinite (end will always return true)
 public:
-    tileray ();
-    tileray (int adx, int ady);
+    constexpr tileray() noexcept : deltax(0), deltay(0), leftover(0), direction(0), last_dx(0), last_dy(0), steps(0), infinite(false) {}
+    tileray (int adx, int ady) noexcept; // init ray with dx,dy
     tileray (int adir);
 
-    void init (int adx, int ady);   // init ray with dx,dy
     void init (int adir);           // init ray with direction
 
 	int dx() const { return last_dx; };      // return dx of last advance (-1 to 1)
