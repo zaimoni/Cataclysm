@@ -50,9 +50,6 @@
     <ClCompile Include="recent_msg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="keypress.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="calendar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

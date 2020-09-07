@@ -167,7 +167,6 @@
     <ClCompile Include="item.cpp" />
     <ClCompile Include="itypedef.cpp" />
     <ClCompile Include="json.cpp" />
-    <ClCompile Include="keypress.cpp" />
     <ClCompile Include="mapdata.cpp" />
     <ClCompile Include="mtypedef.cpp" />
     <ClCompile Include="options.cpp" />
