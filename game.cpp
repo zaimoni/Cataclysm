@@ -5598,6 +5598,19 @@ bool game::toScreen(GPS_loc GPS_pos, point& screen_pos) const
 	return true;
 }
 
+std::optional<reality_bubble_loc> game::toSubmap(GPS_loc GPS_pos) const
+{
+    if (GPS_pos.first.z != cur_om.pos.z) return std::nullopt;	// \todo? z-level change target
+    const auto anchor(toGPS(point(0, 0)));	// \todo would be nice to short-circuit this stage, but may be moot after modeling Earth's radius.  Also, cache target
+    if (GPS_pos.first.x < anchor.first.x || GPS_pos.first.y < anchor.first.y) return std::nullopt;
+    point delta;
+    delta.x = GPS_pos.first.x - anchor.first.x;
+    if (MAPSIZE <= delta.x) return std::nullopt;
+    delta.y = GPS_pos.first.y - anchor.first.y;
+    if (MAPSIZE <= delta.y) return std::nullopt;
+    return reality_bubble_loc(delta.x + delta.y*MAPSIZE, GPS_pos.second);
+}
+
 static const zaimoni::gdi::box<point> _map_centered_enough(point(SEE*(MAPSIZE / 2)), point(SEE*((MAPSIZE / 2) + 1)-1));
 
 bool game::update_map_would_scroll(const point& pt)

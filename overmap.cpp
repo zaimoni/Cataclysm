@@ -92,6 +92,14 @@ bool OM_loc::is_valid() const
     return true;
 }
 
+bool reality_bubble_loc::is_valid() const
+{
+    if (0 > second.x || SEE <= second.x) return false;
+    if (0 > second.y || SEE <= second.y) return false;
+    if (0 > first || MAPSIZE* MAPSIZE <= first) return false;
+    return true;
+}
+
 // would prefer for this to be a free function but we have to have some way to distinguish between overmap and GPS coordinates
 int rl_dist(OM_loc lhs, OM_loc rhs)
 {
