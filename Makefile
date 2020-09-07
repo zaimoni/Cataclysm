@@ -29,7 +29,7 @@ ODIR1 = obj_cataclysm
 OBJS1 = $(addprefix $(ODIR1)/,$(SOURCES1:.cpp=.o))
 
 SOURCES2 = calendar.cpp catacurse.cpp color.cpp html.cpp item.cpp itypedef.cpp\
-  json.cpp keypress.cpp mapdata.cpp mtypedef.cpp options.cpp output.cpp\
+  json.cpp mapdata.cpp mtypedef.cpp options.cpp output.cpp\
   pldata.cpp recent_msg.cpp rng.cpp saveload.cpp skill.cpp socrates-daimon.cpp\
   trapdef.cpp
 ODIR2 = obj_socrates_daimon
