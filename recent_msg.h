@@ -10,8 +10,18 @@
 class recent_msg
 {
 private:
+	struct game_message
+	{
+		calendar turn;
+		int count;
+		std::string message;
+
+		game_message(calendar T = 0, std::string M="") : turn(T), count(1), message(M) {}
+	};
+
 	std::vector<game_message> msgs;   // Messages to be printed
 	int curmes;	  // The last-seen message.
+
 public:
 	calendar turn;	// this is not a reasonable location for global time, if indeed we should be using global time rather than per-overmap time
 
