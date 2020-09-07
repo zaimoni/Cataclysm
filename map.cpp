@@ -154,20 +154,22 @@ bool map::try_board_vehicle(game* g, int x, int y, player& p)
     return true;
 }
 
-void map::destroy_vehicle (vehicle *veh)
+void map::destroy_vehicle(vehicle *veh)
 {
- if (!veh) {
-  debugmsg("map::destroy_vehicle was passed null");
-  return;
+ assert(veh);
+ if (const auto rloc = game::active()->toSubmap(veh->GPSpos)) {
+     int sm = veh->sm.x + veh->sm.y * my_MAPSIZE;   // legacy
+     SUCCEED_OR_DIE(sm == rloc->first);
+     int i = -1;
+     for (decltype(auto) v : grid[sm]->vehicles) {
+         ++i;
+         if (&v == veh) {
+             EraseAt(grid[sm]->vehicles, i);
+             return;
+         }
+     }
  }
- int sm = veh->sm.x + veh->sm.y * my_MAPSIZE;
- for (int i = 0; i < grid[sm]->vehicles.size(); i++) {
-  if (&(grid[sm]->vehicles[i]) == veh) {
-   EraseAt(grid[sm]->vehicles, i);
-   return;
-  }
- }
- debugmsg ("destroy_vehicle can't find it! sm=%d", sm);
+ debugmsg("destroy_vehicle can't find it!");
 }
 
 bool map::displace_vehicle (game *g, int &x, int &y, const point& delta, bool test)
