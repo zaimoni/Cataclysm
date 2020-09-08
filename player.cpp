@@ -15,6 +15,7 @@
 #include <array>
 #include <math.h>
 #include <sstream>
+#include <cstdarg>
 
 using namespace cataclysm;
 

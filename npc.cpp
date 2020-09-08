@@ -11,6 +11,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <cstdarg>
 
 int npc::next_id = npc::MIN_ID;
 
