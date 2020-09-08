@@ -1,8 +1,7 @@
-#ifndef _OUTPUT_H_
-#define _OUTPUT_H_
+#ifndef OUTPUT_H
+#define OUTPUT_H
 
 #include "color.h"
-#include <cstdarg>
 #include <string>
 #include <vector>
 
@@ -28,12 +27,9 @@ FILE* get_stderr_log();
 bool reject_not_whitelisted_printf(const std::string& src);
 
 void mvputch(int y, int x, nc_color FG, long ch);
-void wputch(WINDOW* w, nc_color FG, long ch);
 void mvwputch(WINDOW* w, int y, int x, nc_color FG, long ch);
-void mvputch_inv(int y, int x, nc_color FG, long ch);
-void mvwputch_inv(WINDOW *w, int y, int x, nc_color FG, long ch);
-void mvputch_hi(int y, int x, nc_color FG, long ch);
-void mvwputch_hi(WINDOW *w, int y, int x, nc_color FG, long ch);
+void mvwputch_inv(WINDOW* w, int y, int x, nc_color FG, long ch);
+void mvwputch_hi(WINDOW* w, int y, int x, nc_color FG, long ch);
 
 template<class...Args>
 void debuglog(const char* mes, Args...params)
@@ -85,26 +81,24 @@ void wprintz(WINDOW* w, nc_color FG, const char* mes, Args...params)
 	wattroff(w, FG);
 }
 
-void draw_tabs(WINDOW *w, int active_tab, const char* const labels[]);
+void draw_tabs(WINDOW* w, int active_tab, const char* const labels[]);
 
-void debugmsg(const char *mes, ...);
-bool query_yn(const char *mes, ...);
-int  query_int(const char *mes, ...);
-std::string string_input_popup(const char *mes, ...);
-std::string string_input_popup(int max_length, const char *mes, ...);
-char popup_getkey(const char *mes, ...);
-int  menu_vec(const char *mes, const std::vector<std::string>& options);
-int  menu(const char *mes, ...);
-void popup_top(const char *mes, ...); // Displayed at the top of the screen
-void popup(const char *mes, ...);
-void popup_nowait(const char *mes, ...); // Doesn't wait for spacebar
-void full_screen_popup(const char *mes, ...);
+void debugmsg(const char* mes, ...);
+bool query_yn(const char* mes, ...);
+int  query_int(const char* mes, ...);
+std::string string_input_popup(const char* mes, ...);
+std::string string_input_popup(int max_length, const char* mes, ...);
+char popup_getkey(const char* mes, ...);
+int  menu_vec(const char* mes, const std::vector<std::string>& options);
+int  menu(const char* mes, ...);
+void popup_top(const char* mes, ...); // Displayed at the top of the screen
+void popup(const char* mes, ...);
+void popup_nowait(const char* mes, ...); // Doesn't wait for spacebar
+void full_screen_popup(const char* mes, ...);
 
 nc_color hilite(nc_color c);
 nc_color invert_color(nc_color c);
 nc_color red_background(nc_color c);
-nc_color rand_color();
-char rand_char();
-long special_symbol (char sym);
+long special_symbol(char sym);
 
 #endif

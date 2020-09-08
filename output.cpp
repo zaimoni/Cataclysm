@@ -1,6 +1,5 @@
 #include "output.h"
 #include "options.h"
-#include "rng.h"
 #include "ui.h"
 #include <stdlib.h>
 #include <string.h>
@@ -116,24 +115,6 @@ nc_color red_background(nc_color c)
  return c_white_red;
 }
 
-nc_color rand_color()
-{
- switch (rng(0, 9)) {
-  case 0:	return c_white;
-  case 1:	return c_ltgray;
-  case 2:	return c_green;
-  case 3:	return c_red;
-  case 4:	return c_yellow;
-  case 5:	return c_blue;
-  case 6:	return c_ltblue;
-  case 7:	return c_pink;
-  case 8:	return c_magenta;
-  case 9:	return c_brown;
- }
- return c_dkgray;
-}
-
-
 void mvputch(int y, int x, nc_color FG, long ch)
 {
  attron(FG);
@@ -141,26 +122,11 @@ void mvputch(int y, int x, nc_color FG, long ch)
  attroff(FG);
 }
 
-void wputch(WINDOW* w, nc_color FG, long ch)
-{
- wattron(w, FG);
- waddch(w, ch);
- wattroff(w, FG);
-}
-
-void mvwputch(WINDOW *w, int y, int x, nc_color FG, long ch)
+void mvwputch(WINDOW* w, int y, int x, nc_color FG, long ch)
 {
  wattron(w, FG);
  mvwaddch(w, y, x, ch);
  wattroff(w, FG);
-}
-
-void mvputch_inv(int y, int x, nc_color FG, long ch)
-{
- nc_color HC = invert_color(FG);
- attron(HC);
- mvaddch(y, x, ch);
- attroff(HC);
 }
 
 void mvwputch_inv(WINDOW* w, int y, int x, nc_color FG, long ch)
@@ -169,14 +135,6 @@ void mvwputch_inv(WINDOW* w, int y, int x, nc_color FG, long ch)
  wattron(w, HC);
  mvwaddch(w, y, x, ch);
  wattroff(w, HC);
-}
-
-void mvputch_hi(int y, int x, nc_color FG, long ch)
-{
- nc_color HC = hilite(FG);
- attron(HC);
- mvaddch(y, x, ch);
- attroff(HC);
 }
 
 void mvwputch_hi(WINDOW* w, int y, int x, nc_color FG, long ch)
@@ -236,7 +194,7 @@ static void mvwprintz_noformat(WINDOW* w, int y, int x, nc_color FG, const char*
     wattroff(w, FG);
 }
 
-void draw_tabs(WINDOW *w, int active_tab, const char* const labels[])
+void draw_tabs(WINDOW* w, int active_tab, const char* const labels[])
 {
  const int win_width = getmaxx(w);
  int labels_size = 0;
@@ -297,7 +255,7 @@ void draw_tabs(WINDOW *w, int active_tab, const char* const labels[])
  }
 }
 
-void debugmsg(const char *mes, ...)
+void debugmsg(const char* mes, ...)
 {
  if (reject_not_whitelisted_printf(mes)) return;
  va_list ap;
@@ -316,7 +274,7 @@ void debugmsg(const char *mes, ...)
  attroff(c_red);
 }
 
-bool query_yn(const char *mes, ...)
+bool query_yn(const char* mes, ...)
 {
  if (reject_not_whitelisted_printf(mes)) return false;
  const bool force_uc = option_table::get()[OPT_FORCE_YN];
@@ -346,7 +304,7 @@ bool query_yn(const char *mes, ...)
  return ch == 'Y' || ch == 'y';
 }
 
-int query_int(const char *mes, ...)
+int query_int(const char* mes, ...)
 {
  if (reject_not_whitelisted_printf(mes)) return 9;
  va_list ap;
@@ -377,7 +335,7 @@ int query_int(const char *mes, ...)
  return temp-48;
 }
 
-std::string string_input_popup(const char *mes, ...)
+std::string string_input_popup(const char* mes, ...)
 {
  std::string ret;
  if (reject_not_whitelisted_printf(mes)) return ret;
@@ -430,7 +388,7 @@ std::string string_input_popup(const char *mes, ...)
  } while (true);
 }
 
-std::string string_input_popup(int max_length, const char *mes, ...)
+std::string string_input_popup(int max_length, const char* mes, ...)
 {
  std::string ret;
  if (reject_not_whitelisted_printf(mes)) return ret;
@@ -483,7 +441,7 @@ std::string string_input_popup(int max_length, const char *mes, ...)
  } while (true);
 }
 
-char popup_getkey(const char *mes, ...)
+char popup_getkey(const char* mes, ...)
 {
  if (reject_not_whitelisted_printf(mes)) return ' ';
  va_list ap;
@@ -526,7 +484,7 @@ char popup_getkey(const char *mes, ...)
  line_num++;
  reject_unescaped_percent(tmp);
  mvwprintz(w, line_num, 1, c_white, tmp.c_str());
- 
+
  wrefresh(w);
  int ch = getch();
  werase(w);
@@ -536,7 +494,7 @@ char popup_getkey(const char *mes, ...)
  return ch;
 }
 
-int menu_vec(const char *mes, const std::vector<std::string>& options)  // \todo? ESC to cancel
+int menu_vec(const char* mes, const std::vector<std::string>& options)  // \todo? ESC to cancel
 {
  if (options.size() == 0) {
   debugmsg("0-length menu (\"%s\")", mes);
@@ -558,11 +516,10 @@ int menu_vec(const char *mes, const std::vector<std::string>& options)  // \todo
   mvwprintw(w, i + 2, 1, "%c: %s", (i < 9? i + '1' :
                                    (i == 9? '0' : 'a' + i - 10)),
             options[i].c_str());
- int ch;
  wrefresh(w);
  int res;
  do {
-  ch = getch();
+  int ch = getch();
   if (ch >= '1' && ch <= '9')
    res = ch - '1' + 1;
   else if (ch == '0')
@@ -579,22 +536,21 @@ int menu_vec(const char *mes, const std::vector<std::string>& options)  // \todo
  return (res);
 }
 
-int menu(const char *mes, ...)
+int menu(const char* mes, ...)
 {
  va_list ap;
  va_start(ap, mes);
- char* tmp;
  std::vector<std::string> options;
  bool done = false;
  while (!done) {
-  tmp = va_arg(ap, char*);
+  char* tmp = va_arg(ap, char*);
   if (tmp) options.push_back(std::string(tmp));
   else done = true;
  }
  return (menu_vec(mes, options));
 }
 
-void popup_top(const char *mes, ...)
+void popup_top(const char* mes, ...)
 {
  if (reject_not_whitelisted_printf(mes)) return;
  va_list ap;
@@ -637,7 +593,7 @@ void popup_top(const char *mes, ...)
  line_num++;
  reject_unescaped_percent(tmp);
  mvwprintz(w, line_num, 1, c_white, tmp.c_str());
- 
+
  wrefresh(w);
  int ch;
  do
@@ -649,7 +605,7 @@ void popup_top(const char *mes, ...)
  refresh();
 }
 
-void popup(const char *mes, ...)
+void popup(const char* mes, ...)
 {
  if (reject_not_whitelisted_printf(mes)) return;
  va_list ap;
@@ -692,7 +648,7 @@ void popup(const char *mes, ...)
  line_num++;
  reject_unescaped_percent(tmp);
  mvwprintz(w, line_num, 1, c_white, tmp.c_str());
- 
+
  wrefresh(w);
  int ch;
  do
@@ -704,7 +660,7 @@ void popup(const char *mes, ...)
  refresh();
 }
 
-void popup_nowait(const char *mes, ...)
+void popup_nowait(const char* mes, ...)
 {
  if (reject_not_whitelisted_printf(mes)) return;
  va_list ap;
@@ -747,7 +703,7 @@ void popup_nowait(const char *mes, ...)
  line_num++;
  reject_unescaped_percent(tmp);
  mvwprintz(w, line_num, 1, c_white, tmp.c_str());
- 
+
  wrefresh(w);
  delwin(w);
  refresh();
@@ -791,26 +747,9 @@ void full_screen_popup(const char* mes, ...)
  refresh();
 }
 
-char rand_char()
-{
- switch (rng(0, 9)) {
-  case 0:	return '|';
-  case 1:	return '-';
-  case 2:	return '#';
-  case 3:	return '?';
-  case 4:	return '&';
-  case 5:	return '.';
-  case 6:	return '%';
-  case 7:	return '{';
-  case 8:	return '*';
-  case 9:	return '^';
- }
- return '?';
-}
-
 // this translates symbol y, u, n, b to NW, NE, SE, SW lines correspondingly
-// h, j, c to horizontal, vertical, cross correspondingly 
-long special_symbol (char sym)
+// h, j, c to horizontal, vertical, cross correspondingly
+long special_symbol(char sym)
 {
     switch (sym)
     {
@@ -824,5 +763,3 @@ long special_symbol (char sym)
     default: return sym;
     }
 }
-
-
