@@ -10,6 +10,7 @@
 
 #include <fstream>
 #include <utility>
+#include <cstdarg>
 
 // JSON enum transcoding
 static const char* JSON_transcode_compact[] = {
