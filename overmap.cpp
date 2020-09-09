@@ -42,6 +42,33 @@ OM_loc overmap::toOvermap(const GPS_loc GPSpos)
 }
 
 // start inlined GPS_loc.cpp
+GPS_loc& GPS_loc::operator+=(const point& src)
+{
+    point delta = src / SEE;
+    point rem = src % SEE;   // relying on negative % positive being negative
+    // since we are currently Flatland, rather than a real globe, we can overflow.  
+    second += rem;
+    if (0 > second.x) {
+        delta.x += second.x / SEE - 1;
+        second.x %= SEE;
+        second.x += SEE;
+    } else if (SEE <= second.x) {
+        delta.x += second.x / SEE;
+        second.x %= SEE;
+    }
+    if (0 > second.y) {
+        delta.y += second.y / SEE - 1;
+        second.y %= SEE;
+        second.y += SEE;
+    } else if (SEE <= second.y) {
+        delta.y += second.y / SEE;
+        second.y %= SEE;
+    }
+    // \todo this is where we should clamp the results (or turn into a torus on most machines)
+    first.x += delta.x;
+    first.y += delta.y;
+}
+
 void OM_loc::self_normalize()
 {
     while (0 > second.x && INT_MIN < first.x) {

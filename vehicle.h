@@ -33,7 +33,7 @@ struct vehicle_part
     };
 
 	vehicle_part() = default;
-	vehicle_part(vpart_id _id, int _mdx, int _mdy, int _hp, int _blood=0, int _amount=0)
+	vehicle_part(vpart_id _id, int _mdx, int _mdy, int _hp, int _blood=0, int _amount=0) noexcept
 	: id(_id),mount_d(_mdx,_mdy),hp(_hp),blood(_blood),amount(_amount) {};
 	vehicle_part(const vehicle_part& src) = default;
 	vehicle_part(vehicle_part&& src) = default;
@@ -44,6 +44,7 @@ struct vehicle_part
 	const vpart_info& info() const { return vpart_info::list[id]; }
 	bool has_flag(unsigned int f) const { return info().flags & mfb(f); }
 	player* get_passenger(point origin) const;
+    player* get_passenger(GPS_loc origin) const;
 };
 
 // Facts you need to know about implementation:

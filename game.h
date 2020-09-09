@@ -91,8 +91,10 @@ class game
   const player* survivor(const point& pt) const { return const_cast<game*>(this)->survivor(pt); };
   npc* nPC(int x, int y);
   npc* nPC(const point& pt);
+  npc* nPC(const GPS_loc& gps);
   const npc* nPC(int x, int y) const { return const_cast<game*>(this)->nPC(x, y); };
   const npc* nPC(const point& pt) const { return const_cast<game*>(this)->nPC(pt); };
+  const npc* nPC(const GPS_loc& gps) const { return const_cast<game*>(this)->nPC(gps); };
   int  mon_at(int x, int y) const;	// Index of the monster at (x, y); -1 for none
   monster* mon(int x, int y);
   monster* mon(const point& pt);

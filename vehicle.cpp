@@ -404,11 +404,23 @@ player* vehicle_part::get_passenger(point origin) const
 	return nullptr;
 }
 
+player* vehicle_part::get_passenger(GPS_loc origin) const
+{
+    if (passenger) {
+        origin += precalc_d[0];	// where we are relative to our global position
+        auto g = game::active();
+        if (g->u.GPSpos == origin && g->u.in_vehicle) return &g->u;
+        if (npc* const nPC = g->nPC(origin)) return nPC;	// \todo V0.2.4+ require in_vehicle when it is possible for NPCs to initiate boarding vehicles
+    }
+    return nullptr;
+}
+
 player *vehicle::get_passenger(int p) const
 {
     p = part_with_feature (p, vpf_seat, false);
-	if (0 <= p) return parts[p].get_passenger(global());
-    return nullptr;
+    if (0 > p) return nullptr;
+    assert(parts[p].get_passenger(global()) == parts[p].get_passenger(GPSpos));
+	return parts[p].get_passenger(global());    // legacy
 }
 
 std::vector<std::pair<int, player*> > vehicle::passengers() const

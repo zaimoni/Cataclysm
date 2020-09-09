@@ -13,6 +13,8 @@ struct GPS_loc : public std::pair<tripoint, point>
 	GPS_loc(const GPS_loc& src) = default;
 	~GPS_loc() = default;
 	GPS_loc& operator=(const GPS_loc& src) = default;
+
+	GPS_loc& operator+=(const point& src);
 };
 
 struct OM_loc : public std::pair<tripoint, point>

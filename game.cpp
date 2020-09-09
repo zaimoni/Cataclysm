@@ -3359,6 +3359,12 @@ npc* game::nPC(const point& pt)
 	return nullptr;
 }
 
+npc* game::nPC(const GPS_loc& gps)
+{
+    for (auto& m : active_npc) if (m.GPSpos == gps && !m.dead) return &m;
+    return nullptr;
+}
+
 player* game::survivor(int x, int y)
 {
     if (x == u.pos.x && y == u.pos.y) return &u;
