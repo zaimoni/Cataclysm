@@ -645,139 +645,141 @@ bool map::process_fields_in_submap(game *g, int gridn)
  return found_field;
 }
 
-void map::step_in_field(const point& pt, game *g)
+void map::step_in_field(game* g, player& u)
 {
- field *cur = &field_at(pt);
- switch (cur->type) {
-  case fd_null:
-  case fd_blood:	// It doesn't actually do anything
-  case fd_bile:		// Ditto
-   return;
+    assert(!u.is_npc());    // \todo V0.2.5+ eliminate this precondition
+    point pt = u.pos;
 
-  case fd_web: {
-   if (!g->u.has_trait(PF_WEB_WALKER)) {
-    int web = cur->density * 5 - g->u.disease_level(DI_WEBBED);
-    if (web > 0)
-     g->u.add_disease(DI_WEBBED, web);
-    remove_field(pt);
-   }
-  } break;
+    field& cur = field_at(pt);
+    switch (cur.type) {
+    case fd_null:
+    case fd_blood:	// It doesn't actually do anything
+    case fd_bile:		// Ditto
+        return;
 
-  case fd_acid:
-   if (cur->density == 3) {
-    messages.add("The acid burns your legs and feet!");
-    g->u.hit(g, bp_feet, 0, 0, rng(4, 10));
-    g->u.hit(g, bp_feet, 1, 0, rng(4, 10));
-    g->u.hit(g, bp_legs, 0, 0, rng(2,  8));
-    g->u.hit(g, bp_legs, 1, 0, rng(2,  8));
-   } else {
-    messages.add("The acid burns your feet!");
-    g->u.hit(g, bp_feet, 0, 0, rng(cur->density, 4 * cur->density));
-    g->u.hit(g, bp_feet, 1, 0, rng(cur->density, 4 * cur->density));
-   }
-   break;
+    case fd_web: {
+        if (!u.has_trait(PF_WEB_WALKER)) {
+            int web = cur.density * 5 - u.disease_level(DI_WEBBED);
+            if (0 < web) u.add_disease(DI_WEBBED, web);
+            remove_field(pt);
+        }
+    } break;
 
- case fd_sap:
-  messages.add("The sap sticks to you!");
-  g->u.add_disease(DI_SAP, cur->density * 2);
-  if (1 >= cur->density)
-   remove_field(pt);
-  else
-   cur->density--;
-  break;
+    case fd_acid:
+        if (cur.density == 3) {
+            messages.add("The acid burns your legs and feet!");
+            u.hit(g, bp_feet, 0, 0, rng(4, 10));
+            u.hit(g, bp_feet, 1, 0, rng(4, 10));
+            u.hit(g, bp_legs, 0, 0, rng(2, 8));
+            u.hit(g, bp_legs, 1, 0, rng(2, 8));
+        } else {
+            messages.add("The acid burns your feet!");
+            u.hit(g, bp_feet, 0, 0, rng(cur.density, 4 * cur.density));
+            u.hit(g, bp_feet, 1, 0, rng(cur.density, 4 * cur.density));
+        }
+        break;
 
-  case fd_fire:
-   if (!g->u.has_active_bionic(bio_heatsink)) {
-    if (cur->density == 1) {
-     messages.add("You burn your legs and feet!");
-     g->u.hit(g, bp_feet, 0, 0, rng(2, 6));
-     g->u.hit(g, bp_feet, 1, 0, rng(2, 6));
-     g->u.hit(g, bp_legs, 0, 0, rng(1, 4));
-     g->u.hit(g, bp_legs, 1, 0, rng(1, 4));
-    } else if (cur->density == 2) {
-     messages.add("You're burning up!");
-     g->u.hit(g, bp_legs, 0, 0,  rng(2, 6));
-     g->u.hit(g, bp_legs, 1, 0,  rng(2, 6));
-     g->u.hit(g, bp_torso, 0, 4, rng(4, 9));
-    } else if (cur->density == 3) {
-     messages.add("You're set ablaze!");
-     g->u.hit(g, bp_legs, 0, 0, rng(2, 6));
-     g->u.hit(g, bp_legs, 1, 0, rng(2, 6));
-     g->u.hit(g, bp_torso, 0, 4, rng(4, 9));
-     g->u.add_disease(DI_ONFIRE, 5);
+    case fd_sap:
+        messages.add("The sap sticks to you!");
+        u.add_disease(DI_SAP, cur.density * 2);
+        if (1 >= cur.density)
+            remove_field(pt);
+        else
+            cur.density--;
+        break;
+
+    case fd_fire:
+        if (!u.has_active_bionic(bio_heatsink)) {
+            if (cur.density == 1) {
+                messages.add("You burn your legs and feet!");
+                u.hit(g, bp_feet, 0, 0, rng(2, 6));
+                u.hit(g, bp_feet, 1, 0, rng(2, 6));
+                u.hit(g, bp_legs, 0, 0, rng(1, 4));
+                u.hit(g, bp_legs, 1, 0, rng(1, 4));
+            } else if (cur.density == 2) {
+                messages.add("You're burning up!");
+                u.hit(g, bp_legs, 0, 0, rng(2, 6));
+                u.hit(g, bp_legs, 1, 0, rng(2, 6));
+                u.hit(g, bp_torso, 0, 4, rng(4, 9));
+            } else if (cur.density == 3) {
+                messages.add("You're set ablaze!");
+                u.hit(g, bp_legs, 0, 0, rng(2, 6));
+                u.hit(g, bp_legs, 1, 0, rng(2, 6));
+                u.hit(g, bp_torso, 0, 4, rng(4, 9));
+                u.add_disease(DI_ONFIRE, 5);
+            }
+            if (cur.density == 2)
+                u.infect(DI_SMOKE, bp_mouth, 5, 20);
+            else if (cur.density == 3)
+                u.infect(DI_SMOKE, bp_mouth, 7, 30);
+        }
+        break;
+
+    case fd_smoke:
+        if (cur.density == 3)
+            u.infect(DI_SMOKE, bp_mouth, 4, 15);
+        break;
+
+    case fd_tear_gas:
+        if (cur.density > 1 || !one_in(3))
+            u.infect(DI_TEARGAS, bp_mouth, 5, 20);
+        if (cur.density > 1)
+            u.infect(DI_BLIND, bp_eyes, cur.density * 2, 10);
+        break;
+
+    case fd_toxic_gas:
+        if (cur.density == 2)
+            u.infect(DI_POISON, bp_mouth, 5, 30);
+        else if (cur.density == 3)
+            u.infect(DI_BADPOISON, bp_mouth, 5, 30);
+        break;
+
+    case fd_nuke_gas:
+        u.radiation += rng(0, cur.density * (cur.density + 1));
+        if (cur.density == 3) {
+            messages.add("This radioactive gas burns!");
+            u.hurtall(rng(1, 3));
+        }
+        break;
+
+    case fd_flame_burst:
+        if (!u.has_active_bionic(bio_heatsink)) {
+            messages.add("You're torched by flames!");
+            u.hit(g, bp_legs, 0, 0, rng(2, 6));
+            u.hit(g, bp_legs, 1, 0, rng(2, 6));
+            u.hit(g, bp_torso, 0, 4, rng(4, 9));
+        } else
+            messages.add("These flames do not burn you.");
+        break;
+
+    case fd_electricity:
+        if (u.has_artifact_with(AEP_RESIST_ELECTRICITY))
+            messages.add("The electricity flows around you.");
+        else {
+            messages.add("You're electrocuted!");
+            u.hurtall(rng(1, cur.density));
+            if (one_in(8 - cur.density) && !one_in(30 - u.str_cur)) {
+                messages.add("You're paralyzed!");
+                u.moves -= rng(cur.density * 50, cur.density * 150);
+            }
+        }
+        break;
+
+    case fd_fatigue:
+        if (rng(0, 2) < cur.density) {
+            messages.add("You're violently teleported!");
+            u.hurtall(cur.density);
+            g->teleport(&u);
+        }
+        break;
+
+    case fd_shock_vent:
+    case fd_acid_vent:
+        remove_field(pt);
+        break;
     }
-    if (cur->density == 2)
-     g->u.infect(DI_SMOKE, bp_mouth, 5, 20);
-    else if (cur->density == 3)
-     g->u.infect(DI_SMOKE, bp_mouth, 7, 30);
-   }
-   break;
-
-  case fd_smoke:
-   if (cur->density == 3)
-    g->u.infect(DI_SMOKE, bp_mouth, 4, 15);
-   break;
-
-  case fd_tear_gas:
-   if (cur->density > 1 || !one_in(3))
-    g->u.infect(DI_TEARGAS, bp_mouth, 5, 20);
-   if (cur->density > 1)
-    g->u.infect(DI_BLIND, bp_eyes, cur->density * 2, 10);
-   break;
-
-  case fd_toxic_gas:
-   if (cur->density == 2)
-    g->u.infect(DI_POISON, bp_mouth, 5, 30);
-   else if (cur->density == 3)
-    g->u.infect(DI_BADPOISON, bp_mouth, 5, 30);
-   break;
-
-  case fd_nuke_gas:
-   g->u.radiation += rng(0, cur->density * (cur->density + 1));
-   if (cur->density == 3) {
-    messages.add("This radioactive gas burns!");
-    g->u.hurtall(rng(1, 3));
-   }
-   break;
-
-  case fd_flame_burst:
-   if (!g->u.has_active_bionic(bio_heatsink)) {
-    messages.add("You're torched by flames!");
-    g->u.hit(g, bp_legs, 0, 0,  rng(2, 6));
-    g->u.hit(g, bp_legs, 1, 0,  rng(2, 6));
-    g->u.hit(g, bp_torso, 0, 4, rng(4, 9));
-   } else
-    messages.add("These flames do not burn you.");
-   break;
-
-  case fd_electricity:
-   if (g->u.has_artifact_with(AEP_RESIST_ELECTRICITY))
-    messages.add("The electricity flows around you.");
-   else {
-    messages.add("You're electrocuted!");
-    g->u.hurtall(rng(1, cur->density));
-    if (one_in(8 - cur->density) && !one_in(30 - g->u.str_cur)) {
-     messages.add("You're paralyzed!");
-     g->u.moves -= rng(cur->density * 50, cur->density * 150);
-    }
-   }
-   break;
-
-  case fd_fatigue:
-   if (rng(0, 2) < cur->density) {
-    messages.add("You're violently teleported!");
-    g->u.hurtall(cur->density);
-    g->teleport();
-   }
-   break;
-
-  case fd_shock_vent:
-  case fd_acid_vent:
-   remove_field(pt);
-   break;
- }
 }
-    
+
 void map::mon_in_field(const point& pt, game *g, monster *z)
 {
  if (z->has_flag(MF_DIGS)) return;	// Digging monsters are immune to fields
