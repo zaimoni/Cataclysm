@@ -1,18 +1,18 @@
 #ifndef MOBILE_H
 #define MOBILE_H
 
-#include "enums.h"
+#include "GPS_loc.hpp"
 #include <type_traits>
 
 // intended base class for things that move
-struct mobile	// \todo V0.2.1+ wire-in
+struct mobile	// \todo V0.2.5+ wire-in
 {
-	point pos;
+	GPS_loc GPSpos;
 	int moves;
 
 protected:
 	mobile() = default;
-	mobile(const point& origin, int m) noexcept(std::is_nothrow_copy_constructible_v<point>) : pos(origin), moves(m) {};
+	mobile(const GPS_loc& origin, int m) noexcept : GPSpos(origin), moves(m) {}
 	mobile(const mobile& src) = default;
 	mobile(mobile&& src) = default;
 	virtual ~mobile() = default;
