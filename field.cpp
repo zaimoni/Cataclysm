@@ -1,6 +1,7 @@
 #include "rng.h"
 #include "game.h"
 #include "line.h"
+#include "stl_limits.h"
 #include "recent_msg.h"
 
 static const char* JSON_transcode[] = {
@@ -648,7 +649,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
 void map::step_in_field(game* g, player& u)
 {
     assert(!u.is_npc());    // \todo V0.2.5+ eliminate this precondition
-    point pt = u.pos;
+    const point pt = u.pos;
 
     field& cur = field_at(pt);
     switch (cur.type) {
@@ -780,173 +781,169 @@ void map::step_in_field(game* g, player& u)
     }
 }
 
-void map::mon_in_field(const point& pt, game *g, monster *z)
+void map::mon_in_field(game* g, monster& z)
 {
- if (z->has_flag(MF_DIGS)) return;	// Digging monsters are immune to fields
- field *cur = &field_at(pt);
- int dam = 0;
- switch (cur->type) {
-  case fd_null:
-  case fd_blood:	// It doesn't actually do anything
-  case fd_bile:		// Ditto
-   break;
+    if (z.has_flag(MF_DIGS)) return;	// Digging monsters are immune to fields
+    const point pt = z.pos;
+    field& cur = field_at(pt);
+    int dam = 0;
+    switch (cur.type) {
+    case fd_null:
+    case fd_blood:	// It doesn't actually do anything
+    case fd_bile:		// Ditto
+        break;
 
-  case fd_web:
-   if (!z->has_flag(MF_WEBWALK)) {
-    z->speed *= .8;
-    remove_field(pt);
-   }
-   break;
+    case fd_web:
+        if (!z.has_flag(MF_WEBWALK)) {
+            cataclysm::rational_scale<4, 5>(z.speed);
+            remove_field(pt);
+        }
+        break;
 
-  case fd_acid:
-   if (!z->has_flag(MF_DIGS) && !z->has_flag(MF_FLIES) &&
-       !z->has_flag(MF_ACIDPROOF)) {
-    if (cur->density == 3)
-     dam = rng(4, 10) + rng(2, 8);
-    else
-     dam = rng(cur->density, cur->density * 4);
-   }
-   break;
+    case fd_acid:
+        if (/* !z.has_flag(MF_DIGS) && */ !z.has_flag(MF_FLIES) && !z.has_flag(MF_ACIDPROOF)) {
+            if (cur.density == 3)
+                dam = rng(4, 10) + rng(2, 8);
+            else
+                dam = rng(cur.density, cur.density * 4);
+        }
+        break;
 
-  case fd_sap:
-   z->speed -= cur->density * 5;
-   if (1 >= cur->density)
-    remove_field(pt);
-   else
-    cur->density--;
-   break;
+    case fd_sap:
+        z.speed -= cur.density * 5;
+        if (1 >= cur.density)
+            remove_field(pt);
+        else
+            cur.density--;
+        break;
 
-  case fd_fire:
-   if (z->made_of(FLESH))
-    dam = 3;
-   if (z->made_of(VEGGY))
-    dam = 12;
-   if (z->made_of(PAPER) || z->made_of(LIQUID) || z->made_of(POWDER) ||
-       z->made_of(WOOD)  || z->made_of(COTTON) || z->made_of(WOOL))
-    dam = 20;
-   if (z->made_of(STONE) || z->made_of(KEVLAR) || z->made_of(STEEL))
-    dam = -20;
-   if (z->has_flag(MF_FLIES))
-    dam -= 15;
+    case fd_fire:
+        if (z.made_of(FLESH))
+            dam = 3;
+        if (z.made_of(VEGGY))
+            dam = 12;
+        if (z.made_of(PAPER) || z.made_of(LIQUID) || z.made_of(POWDER) ||
+            z.made_of(WOOD) || z.made_of(COTTON) || z.made_of(WOOL))
+            dam = 20;
+        if (z.made_of(STONE) || z.made_of(KEVLAR) || z.made_of(STEEL))
+            dam = -20;
+        if (z.has_flag(MF_FLIES))
+            dam -= 15;
 
-   if (cur->density == 1)
-    dam += rng(2, 6);
-   else if (cur->density == 2) {
-    dam += rng(6, 12);
-    if (!z->has_flag(MF_FLIES)) {
-     z->moves -= 20;
-     if (!z->made_of(LIQUID) && !z->made_of(STONE) && !z->made_of(KEVLAR) &&
-         !z->made_of(STEEL) && !z->has_flag(MF_FIREY))
-      z->add_effect(ME_ONFIRE, rng(3, 8));
-    }
-   } else if (cur->density == 3) {
-    dam += rng(10, 20);
-    if (!z->has_flag(MF_FLIES) || one_in(3)) {
-     z->moves -= 40;
-     if (!z->made_of(LIQUID) && !z->made_of(STONE) && !z->made_of(KEVLAR) &&
-         !z->made_of(STEEL) && !z->has_flag(MF_FIREY))
-      z->add_effect(ME_ONFIRE, rng(8, 12));
-    }
-   }
-   [[fallthrough]]; // Drop through to smoke
+        if (cur.density == 1)
+            dam += rng(2, 6);
+        else if (cur.density == 2) {
+            dam += rng(6, 12);
+            if (!z.has_flag(MF_FLIES)) {
+                z.moves -= 20;
+                if (!z.made_of(LIQUID) && !z.made_of(STONE) && !z.made_of(KEVLAR) &&
+                    !z.made_of(STEEL) && !z.has_flag(MF_FIREY))
+                    z.add_effect(ME_ONFIRE, rng(3, 8));
+            }
+        }
+        else if (cur.density == 3) {
+            dam += rng(10, 20);
+            if (!z.has_flag(MF_FLIES) || one_in(3)) {
+                z.moves -= 40;
+                if (!z.made_of(LIQUID) && !z.made_of(STONE) && !z.made_of(KEVLAR) &&
+                    !z.made_of(STEEL) && !z.has_flag(MF_FIREY))
+                    z.add_effect(ME_ONFIRE, rng(8, 12));
+            }
+        }
+        [[fallthrough]]; // Drop through to smoke
 
-  case fd_smoke:
-   if (cur->density == 3)
-    z->speed -= rng(10, 20);
-   if (z->made_of(VEGGY))	// Plants suffer from smoke even worse
-    z->speed -= rng(1, cur->density * 12);
-   break;
+    case fd_smoke:
+        if (cur.density == 3)
+            z.speed -= rng(10, 20);
+        if (z.made_of(VEGGY))	// Plants suffer from smoke even worse
+            z.speed -= rng(1, cur.density * 12);
+        break;
 
-  case fd_tear_gas:
-   if (z->made_of(FLESH) || z->made_of(VEGGY)) {
-    z->add_effect(ME_BLIND, cur->density * 8);
-    if (cur->density == 3) {
-     z->add_effect(ME_STUNNED, rng(10, 20));
-     dam = rng(4, 10);
-    } else if (cur->density == 2) {
-     z->add_effect(ME_STUNNED, rng(5, 10));
-     dam = rng(2, 5);
-    } else
-     z->add_effect(ME_STUNNED, rng(1, 5));
-    if (z->made_of(VEGGY)) {
-     z->speed -= rng(cur->density * 5, cur->density * 12);
-     dam += cur->density * rng(8, 14);
-    }
-   }
-   break;
+    case fd_tear_gas:
+        if (z.made_of(FLESH) || z.made_of(VEGGY)) {
+            z.add_effect(ME_BLIND, cur.density * 8);
+            if (cur.density == 3) {
+                z.add_effect(ME_STUNNED, rng(10, 20));
+                dam = rng(4, 10);
+            }
+            else if (cur.density == 2) {
+                z.add_effect(ME_STUNNED, rng(5, 10));
+                dam = rng(2, 5);
+            }
+            else
+                z.add_effect(ME_STUNNED, rng(1, 5));
+            if (z.made_of(VEGGY)) {
+                z.speed -= rng(cur.density * 5, cur.density * 12);
+                dam += cur.density * rng(8, 14);
+            }
+        }
+        break;
 
-  case fd_toxic_gas:
-   dam = cur->density;
-   z->speed -= cur->density;
-   break;
+    case fd_toxic_gas:
+        dam = cur.density;
+        z.speed -= cur.density;
+        break;
 
-  case fd_nuke_gas:
-   if (cur->density == 3) {
-    z->speed -= rng(60, 120);
-    dam = rng(30, 50);
-   } else if (cur->density == 2) {
-    z->speed -= rng(20, 50);
-    dam = rng(10, 25);
-   } else {
-    z->speed -= rng(0, 15);
-    dam = rng(0, 12);
-   }
-   if (z->made_of(VEGGY)) {
-    z->speed -= rng(cur->density * 5, cur->density * 12);
-    dam *= cur->density;
-   }
-   break;
+    case fd_nuke_gas:
+        if (cur.density == 3) {
+            z.speed -= rng(60, 120);
+            dam = rng(30, 50);
+        }
+        else if (cur.density == 2) {
+            z.speed -= rng(20, 50);
+            dam = rng(10, 25);
+        }
+        else {
+            z.speed -= rng(0, 15);
+            dam = rng(0, 12);
+        }
+        if (z.made_of(VEGGY)) {
+            z.speed -= rng(cur.density * 5, cur.density * 12);
+            dam *= cur.density;
+        }
+        break;
 
-  case fd_flame_burst:
-   if (z->made_of(FLESH))
-    dam = 3;
-   if (z->made_of(VEGGY))
-    dam = 12;
-   if (z->made_of(PAPER) || z->made_of(LIQUID) || z->made_of(POWDER) ||
-       z->made_of(WOOD)  || z->made_of(COTTON) || z->made_of(WOOL))
-    dam = 50;
-   if (z->made_of(STONE) || z->made_of(KEVLAR) || z->made_of(STEEL))
-    dam = -25;
-   dam += rng(0, 8);
-   z->moves -= 20;
-   break;
+    case fd_flame_burst:
+        if (z.made_of(FLESH))
+            dam = 3;
+        if (z.made_of(VEGGY))
+            dam = 12;
+        if (z.made_of(PAPER) || z.made_of(LIQUID) || z.made_of(POWDER) ||
+            z.made_of(WOOD) || z.made_of(COTTON) || z.made_of(WOOL))
+            dam = 50;
+        if (z.made_of(STONE) || z.made_of(KEVLAR) || z.made_of(STEEL))
+            dam = -25;
+        dam += rng(0, 8);
+        z.moves -= 20;
+        break;
 
-  case fd_electricity:
-   dam = rng(1, cur->density);
-   if (one_in(8 - cur->density)) z->moves -= cur->density * 150;
-   break;
+    case fd_electricity:
+        dam = rng(1, cur.density);
+        if (one_in(8 - cur.density)) z.moves -= cur.density * 150;
+        break;
 
-  case fd_fatigue:
-   if (rng(0, 2) < cur->density) {
-    dam = cur->density;
-    int tries = 0;
-	point newpos;
-    do {
-	 newpos = point(rng(z->pos.x - SEEX, z->pos.x + SEEX), rng(z->pos.y - SEEY, z->pos.y + SEEY));
-     tries++;
-    } while (g->m.move_cost(newpos) == 0 && tries != 10);
+    case fd_fatigue:
+        if (rng(0, 2) < cur.density) {
+            dam = cur.density;
+            int tries = 0;
+            point newpos;
+            do {
+                newpos = point(rng(z.pos.x - SEEX, z.pos.x + SEEX), rng(z.pos.y - SEEY, z.pos.y + SEEY));
+                tries++;
+            } while (g->m.move_cost(newpos) == 0 && tries != 10);
 
-    if (tries == 10) g->explode_mon(*z);
-    else if (monster* const m_hit = g->mon(newpos)) {
-     if (g->u_see(z))
-       messages.add("The %s teleports into a %s, killing them both!", z->name().c_str(), m_hit->name().c_str());
-      g->explode_mon(*m_hit);
-    } else {
-	  z->pos = newpos;
-    }
-   }
-   break;
-     
+            if (tries == 10) g->explode_mon(z);
+            else if (monster* const m_hit = g->mon(newpos)) {
+                if (g->u_see(&z))
+                    messages.add("The %s teleports into a %s, killing them both!", z.name().c_str(), m_hit->name().c_str());
+                g->explode_mon(*m_hit);
+            }
+            else {
+                z.pos = newpos;
+            }
+        }
+        break;
+
  }
- if (0 < dam && z->hurt(dam)) g->kill_mon(*z);
+    if (0 < dam && z.hurt(dam)) g->kill_mon(z);
 }
-
-#if DEAD_FUNC
-bool vector_has(std::vector<item> vec, itype_id type)
-{
- for (int i = 0; i < vec.size(); i++) {
-  if (vec[i].type->id == type) return true;
- }
- return false;
-}
-#endif
