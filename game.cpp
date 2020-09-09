@@ -1900,7 +1900,6 @@ z.size(), events.size());
     artifact_natural_property(rng(ARTPROP_NULL + 1, ARTPROP_MAX - 1));
    m.create_anomaly(center.x, center.y, prop);
    m.add_item(center, new_natural_artifact(prop), 0);
-   //m.add_item(u.posx, u.posy, new_natural_artifact(), 0);
    break;
  }
  erase();
@@ -1911,7 +1910,7 @@ void game::mondebug()
 {
  for (int i = 0; i < z.size(); i++) {
   z[i].debug(u);
-  if (z[i].has_flag(MF_SEES) && m.sees(z[i].pos.x, z[i].pos.y, u.pos.x, u.pos.y, -1))
+  if (z[i].has_flag(MF_SEES) && m.sees(z[i].pos, u.pos, -1))
    debugmsg("The %s can see you.", z[i].name().c_str());
   else
    debugmsg("The %s can't see you...", z[i].name().c_str());

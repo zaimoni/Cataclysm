@@ -2157,7 +2157,7 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
       mony = rng(p->pos.y - 5, p->pos.y + 5);
      }
     } while (tries < 5 && !g->is_empty(monx, mony) &&
-             !g->m.sees(monx, mony, p->pos.x, p->pos.y, 10));
+             !g->m.sees(monx, mony, p->pos, 10));
     if (tries < 5) {
      num_spawned++;
      spawned.sp_timeout = rng(8, 20);
