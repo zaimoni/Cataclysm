@@ -2026,9 +2026,11 @@ void map::load(game *g, const point& world)
   for (int gridy = 0; gridy < my_MAPSIZE; gridy++) {
    if (!loadn(g, world, gridx, gridy)) loadn(g, world, gridx, gridy);
    const int i = gridx + gridy * my_MAPSIZE;
+   // null pointer is a hard crash...just exit, now
    if (!grid[i]) {
-	 // \todo arguably should be a harder crash
-	 debugmsg("grid %d (%d, %d) is null! mapbuffer size = %s", i, i % my_MAPSIZE, i / my_MAPSIZE, std::to_string(MAPBUFFER.size()));
+     debuglog("grid %d (%d, %d) is null! mapbuffer size = %s", i, i % my_MAPSIZE, i / my_MAPSIZE, std::to_string(MAPBUFFER.size()));
+	 debugmsg("grid %d (%d, %d) is null! mapbuffer size = %s", i, i % my_MAPSIZE, i / my_MAPSIZE, std::to_string(MAPBUFFER.size())); // historical UI
+     exit(EXIT_FAILURE);
    }
   }
  }
@@ -2040,9 +2042,11 @@ void map::load(const tripoint& GPS)
         for (int gridy = 0; gridy < my_MAPSIZE; gridy++) {
             if (!loadn(GPS, gridx, gridy)) loadn(GPS, gridx, gridy);
             const int i = gridx + gridy * my_MAPSIZE;
+            // null pointer is a hard crash...just exit, now
             if (!grid[i]) {
-                // \todo arguably should be a harder crash
-                debugmsg("grid %d (%d, %d) is null! mapbuffer size = %s", i, i % my_MAPSIZE, i / my_MAPSIZE, std::to_string(MAPBUFFER.size()));
+                debuglog("grid %d (%d, %d) is null! mapbuffer size = %s", i, i % my_MAPSIZE, i / my_MAPSIZE, std::to_string(MAPBUFFER.size()));
+                debugmsg("grid %d (%d, %d) is null! mapbuffer size = %s", i, i % my_MAPSIZE, i / my_MAPSIZE, std::to_string(MAPBUFFER.size())); // historical UI
+                exit(EXIT_FAILURE);
             }
         }
     }
