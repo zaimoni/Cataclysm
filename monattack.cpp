@@ -461,11 +461,8 @@ void mattack::triffid_heartbeat(game *g, monster *z)
  g->sound(z->pos, 14, "thu-THUMP.");
  z->moves -= 300;
  z->sp_timeout = z->type->sp_freq;
- if ((z->pos.x < 0 || z->pos.x >= SEEX * MAPSIZE) &&
-     (z->pos.y < 0 || z->pos.y >= SEEY * MAPSIZE)   )
-  return;
- if (rl_dist(z->pos, g->u.pos) > 5 &&
-     !g->m.route(g->u.pos, z->pos).empty()) {
+ if (!map::in_bounds(z->pos)) return;
+ if (rl_dist(z->pos, g->u.pos) > 5 && !g->m.route(g->u.pos, z->pos).empty()) {
   messages.add("The root walls creak around you.");
   for (int x = g->u.pos.x; x <= z->pos.x - 3; x++) {
    for (int y = g->u.pos.y; y <= z->pos.y - 3; y++) {
@@ -491,17 +488,13 @@ void mattack::triffid_heartbeat(game *g, monster *z)
   }
 
  } else { // The player is close enough for a fight!
-
   monster triffid(mtype::types[mon_triffid]);
-  for (int x = z->pos.x - 1; x <= z->pos.x + 1; x++) {
-   for (int y = z->pos.y - 1; y <= z->pos.y + 1; y++) {
-    if (g->is_empty(x, y) && one_in(2)) {
-     triffid.spawn(x, y);
-     g->z.push_back(triffid);
-    }
-   }
+  for (decltype(auto) delta : Direction::vector) {
+      if (const point pt(z->pos + delta); g->is_empty(pt) && one_in(2)) {
+          triffid.spawn(pt);
+          g->z.push_back(triffid);
+      }
   }
-
  }
 }
 
