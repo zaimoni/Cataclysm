@@ -426,7 +426,7 @@ void mattack::spit_sap(game *g, monster *z)
 
   int hitx = g->u.pos.x + rng(0 - int(missed_by), int(missed_by)),
       hity = g->u.pos.y + rng(0 - int(missed_by), int(missed_by));
-  std::vector<point> line = line_to(z->pos.x, z->pos.y, hitx, hity, 0);
+  std::vector<point> line = line_to(z->pos, hitx, hity, 0);
   int dam = 5;
   for (int i = 0; i < line.size() && dam > 0; i++) {
    g->m.shoot(g, line[i].x, line[i].y, dam, false, 0);

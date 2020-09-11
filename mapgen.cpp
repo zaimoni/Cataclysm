@@ -3591,7 +3591,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    square(this, t_rock, SEEX - 6, SEEY - 6, SEEX + 5, SEEY + 5);
    point path((one_in(2) ? SEEX - 8 : SEEX + 7), rng(SEEY - 6, SEEY + 5));
    if (one_in(2)) std::swap(path.x, path.y);
-   std::vector<point> pathline = line_to(path, SEEX - 1, SEEY - 1, 0);
+   std::vector<point> pathline = line_to(path, point(SEE - 1), 0);
    for (const point& pt : pathline) square(this, t_dirt, pt, pt + Direction::SE);
    while (!one_in(8))
     ter(rng(SEEX - 6, SEEX + 5), rng(SEEY - 6, SEEY + 5)) = t_dirt;
