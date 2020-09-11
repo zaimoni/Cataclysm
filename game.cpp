@@ -2785,6 +2785,7 @@ void game::cleanup_dead()
 void game::monmove()
 {
  cleanup_dead();
+ static constexpr const zaimoni::gdi::box<point> extended_reality_bubble(point(-(SEE * MAPSIZE) / 6),point((SEEX * MAPSIZE * 7) / 6));
  for (int i = 0; i < z.size(); i++) {
   while (!z[i].dead && !z[i].can_move_to(m, z[i].pos)) {
 // If we can't move to our current position, assign us to a new one (terrain change after map generation?)
@@ -2832,10 +2833,7 @@ void game::monmove()
     }
    }
 // We might have stumbled out of range of the player; if so, kill us
-   if (z[i].pos.x < 0 - (SEEX * MAPSIZE) / 6 ||
-       z[i].pos.y < 0 - (SEEY * MAPSIZE) / 6 ||
-       z[i].pos.x > (SEEX * MAPSIZE * 7) / 6 ||
-       z[i].pos.y > (SEEY * MAPSIZE * 7) / 6   ) {
+   if (!extended_reality_bubble.contains(z[i].pos)) {
 // Re-absorb into local group, if applicable
     if (const auto m_group = valid_group((mon_id)(z[i].type->id), lev.x, lev.y)) {
         m_group->add_one();
@@ -5616,7 +5614,7 @@ std::optional<reality_bubble_loc> game::toSubmap(GPS_loc GPS_pos) const
     return reality_bubble_loc(delta.x + delta.y*MAPSIZE, GPS_pos.second);
 }
 
-static const zaimoni::gdi::box<point> _map_centered_enough(point(SEE*(MAPSIZE / 2)), point(SEE*((MAPSIZE / 2) + 1)-1));
+static constexpr const zaimoni::gdi::box<point> _map_centered_enough(point(SEE*(MAPSIZE / 2)), point(SEE*((MAPSIZE / 2) + 1)-1));
 
 bool game::update_map_would_scroll(const point& pt)
 {
@@ -5670,10 +5668,10 @@ void game::update_map(int &x, int &y)
 
  // Shift monsters
  if (0 != shift.x || 0 != shift.y) {
+ static constexpr const zaimoni::gdi::box<point> extended_reality_bubble(point(-SEE), point(SEE*(MAPSIZE+1)));
  for (int i = 0; i < z.size(); i++) {
   z[i].shift(shift);
-  if (z[i].pos.x < 0 - SEEX             || z[i].pos.y < 0 - SEEX ||
-      z[i].pos.x > SEEX * (MAPSIZE + 1) || z[i].pos.y > SEEY * (MAPSIZE + 1)) {
+  if (!extended_reality_bubble.contains(z[i].pos)) {
 // Despawn; we're out of bounds
    if (z[i].is_static_spawn()) {	// Static spawn, move them back there
     map tmp;

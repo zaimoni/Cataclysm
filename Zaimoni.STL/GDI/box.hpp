@@ -1,9 +1,10 @@
 #ifndef ZAIMONI_STL_GDI_BOX_HPP
 #define ZAIMONI_STL_GDI_BOX_HPP 1
 
-/* (C)2019 Kenneth Boyd, license: MIT.txt */
+/* (C)2019,2020 Kenneth Boyd, license: MIT.txt */
 
 #include <functional>
+#include <type_traits>
 #ifdef IRRATIONAL_CAUTION
 #include "../Logging.h"
 #endif
@@ -19,7 +20,7 @@ private:
 	T _bottom_right;
 public:
 	box() = default;
-	box(const T& tl, const T& br) : _top_left(tl), _bottom_right(br) {};
+	constexpr box(const T& tl, const T& br) noexcept(std::is_nothrow_constructible_v<T>) : _top_left(tl), _bottom_right(br) {}
 	box(const box& src) = default;
 	~box() = default;
 	box& operator=(const box& src) = default;

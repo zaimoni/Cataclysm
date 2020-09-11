@@ -203,11 +203,8 @@ void mattack::science(game *g, monster *z)	// I said SCIENCE again!
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  std::vector<point> line = line_to(z->pos, g->u.pos, t);
  std::vector<point> free;
- for (int x = z->pos.x - 1; x <= z->pos.x + 1; x++) {
-  for (int y = z->pos.y - 1; y <= z->pos.y + 1; y++) {
-   if (g->is_empty(x, y))
-    free.push_back(point(x, y));
-  }
+ for (decltype(auto) delta : Direction::vector) {
+   if (const point pt(z->pos + delta); g->is_empty(pt)) free.push_back(pt);
  }
  std::vector<int> valid;// List of available attacks
  int index;
