@@ -532,14 +532,16 @@ void mattack::fungus(game *g, monster *z)
 
 void mattack::fungus_sprout(game *g, monster *z)
 {
- for (int x = z->pos.x - 1; x <= z->pos.x + 1; x++) {
-  for (int y = z->pos.y - 1; y <= z->pos.y + 1; y++) {
-   if (g->u.pos.x == x && g->u.pos.y == y) {
-    messages.add("You're shoved away as a fungal wall grows!");
-    g->teleport();
-   }
-   if (g->is_empty(x, y)) g->z.push_back(monster(mtype::types[mon_fungal_wall], x, y));
-  }
+ for (decltype(auto) delta : Direction::vector) {
+     const point pt(z->pos + delta);
+     if (pt == g->u.pos) {
+         messages.add("You're shoved away as a fungal wall grows!");
+         g->teleport();
+     } else if (const auto _npc = g->nPC(pt)) {
+         if (g->u_see(pt)) messages.add("% is shoved away as a fungal wall grows!", _npc->name.c_str());
+         g->teleport(_npc);
+     }
+     if (g->is_empty(pt)) g->z.push_back(monster(mtype::types[mon_fungal_wall], pt.x, pt.y));
  }
 }
 

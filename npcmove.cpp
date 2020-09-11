@@ -1904,7 +1904,7 @@ npc::ai_action npc::look_for_player(player& sought)
 
 bool npc::saw_player_recently() const
 {
- return (pl.x.x >= 0 && pl.x.x < SEEX * MAPSIZE && pl.x.y >= 0 && pl.x.y < SEEY * MAPSIZE && pl.live());
+ return map::in_bounds(pl.x) && pl.live();
 }
 
 bool npc::has_destination() const
