@@ -313,10 +313,7 @@ int monster::trigger_sum(const game *g, const std::vector<monster_trigger>& trig
    break;
 
   case MTRIG_PLAYER_WEAK:	// \todo why not NPCs?
-   {
-   const auto hp_percent = g->u.hp_percentage();
-   if (70 >= hp_percent) ret += int(g->u.hp_percentage() / 10);
-   }
+   if (const int hp_percent = g->u.hp_percentage(); 70 >= hp_percent) ret += hp_percent / 10;
    break;
 
   default: break; // The rest are handled when the impetus occurs
