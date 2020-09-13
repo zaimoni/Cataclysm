@@ -222,7 +222,7 @@ bool event::per_turn()
    if (g->lev.z >= 0 && one_in(100)) { // About once every 10 minutes
     point place = g->m.random_outdoor_tile();
     if (place.x == -1 && place.y == -1) return true; // We're safely indoors!
-    monster eyebot(mtype::types[mon_eyebot], place.x, place.y);
+    monster eyebot(mtype::types[mon_eyebot], place);
     eyebot.faction_id = faction_id;
     g->z.push_back(eyebot);
     if (g->u_see(place)) messages.add("An eyebot swoops down nearby!");

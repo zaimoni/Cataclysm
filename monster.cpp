@@ -38,8 +38,8 @@ monster::monster(const mtype *t) noexcept
 {
 }
 
-monster::monster(const mtype *t, int x, int y) noexcept
-: pos(x, y), wand(point(-1, -1),0), spawnmap(-1, -1), spawnpos(-1, -1), moves(t->speed), speed(t->speed), hp(t->hp),
+monster::monster(const mtype *t, point origin) noexcept
+: pos(origin), wand(point(-1, -1),0), spawnmap(-1, -1), spawnpos(-1, -1), moves(t->speed), speed(t->speed), hp(t->hp),
 	sp_timeout(t->sp_freq), friendly(0), anger(t->agro), morale(t->morale), faction_id(-1), mission_id(-1), type(t), dead(false),
 	made_footstep(false)
 {

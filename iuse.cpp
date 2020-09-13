@@ -1608,10 +1608,9 @@ void iuse::manhack(game *g, player *p, item *it, bool t)
   messages.add("There is no adjacent square to release the manhack in!");
   return;
  }
- int index = rng(0, valid.size() - 1);
  p->moves -= 60;
  it->invlet = 0; // Remove the manhack from the player's inv
- monster manhack(mtype::types[mon_manhack], valid[index].x, valid[index].y);
+ monster manhack(mtype::types[mon_manhack], valid[rng(0, valid.size() - 1)]);
  if (rng(0, p->int_cur / 2) + p->sklevel[sk_electronics] / 2 +
      p->sklevel[sk_computer] < rng(0, 4))
   messages.add("You misprogram the manhack; it's hostile!");
@@ -1636,7 +1635,7 @@ void iuse::turret(game *g, player *p, item *it, bool t)
   return;
  }
  it->invlet = 0; // Remove the turret from the player's inv
- monster turret(mtype::types[mon_turret], dir.x, dir.y);
+ monster turret(mtype::types[mon_turret], dir);
  if (rng(0, p->int_cur / 2) + p->sklevel[sk_electronics] / 2 +
      p->sklevel[sk_computer] < rng(0, 6))
   messages.add("You misprogram the turret; it's hostile!");
@@ -1779,10 +1778,9 @@ void iuse::vortex(game *g, player *p, item *it, bool t)
  }
 
  messages.add("Air swirls all over...");
- int index = rng(0, spawn.size() - 1);
  p->moves -= 100;
  it->make(item::types[itm_spiral_stone]);
- monster vortex(mtype::types[mon_vortex], spawn[index].x, spawn[index].y);
+ monster vortex(mtype::types[mon_vortex], spawn[rng(0, spawn.size() - 1)]);
  vortex.friendly = -1;
  g->z.push_back(vortex);
 }
@@ -2066,7 +2064,7 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
    break;
 
   case AEA_GROWTH: {
-   monster tmptriffid(mtype::types[0], p->pos.x, p->pos.y);
+   monster tmptriffid(mtype::types[0], p->pos);
    mattack::growplants(g, &tmptriffid);
   } break;
 

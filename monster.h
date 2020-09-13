@@ -53,7 +53,8 @@ class monster {
  public:
  monster() noexcept;
  monster(const mtype *t) noexcept;
- monster(const mtype *t, int x, int y) noexcept;
+ monster(const mtype* t, point origin) noexcept;
+ monster(const mtype* t, int x, int y) noexcept : monster(t, point(x, y)) {}
  monster(const monster& src) = default;
  monster(monster&& src) = default;
  ~monster() = default;

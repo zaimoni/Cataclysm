@@ -241,7 +241,7 @@ void defense_game::init_map(game *g)
  g->m.load(g, point(g->lev.x, g->lev.y));
 
  g->update_map(g->u.pos.x, g->u.pos.y);
- monster generator(mtype::types[mon_generator], g->u.pos.x + 1, g->u.pos.y + 1);
+ monster generator(mtype::types[mon_generator], g->u.pos + Direction::SE);
 // Find a valid spot to spawn the generator
  std::vector<point> valid;
  for (int x = g->u.pos.x - 1; x <= g->u.pos.x + 1; x++) {

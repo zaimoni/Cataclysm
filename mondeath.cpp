@@ -131,7 +131,7 @@ void mdeath::fungus(game *g, monster *z)
 
 void mdeath::fungusawake(game *g, monster *z)
 {
- g->z.push_back(monster(mtype::types[mon_fungaloid], z->pos.x, z->pos.y));
+ g->z.push_back(monster(mtype::types[mon_fungaloid], z->pos));
 }
 
 void mdeath::disintegrate(game *g, monster *z)
@@ -228,7 +228,7 @@ void mdeath::amigara(game *g, monster *z)
 
 void mdeath::thing(game *g, monster *z)
 {
- g->z.push_back(monster(mtype::types[mon_thing], z->pos.x, z->pos.y));
+ g->z.push_back(monster(mtype::types[mon_thing], z->pos));
 }
 
 void mdeath::explode(game *g, monster *z)
