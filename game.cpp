@@ -6028,17 +6028,6 @@ void game::nuke(const point& world_div_2)   // \todo parameter should be OM_loc
  om_cache::get().load(cur_om, revert_om_pos);
 }
 
-std::vector<faction *> game::factions_at(int x, int y)
-{
- std::vector<faction *> ret;
- for (int i = 0; i < factions.size(); i++) {
-  if (factions[i].om.x == cur_om.pos.x && factions[i].om.y == cur_om.pos.y &&
-      trig_dist(x, y, factions[i].map) <= factions[i].size)
-   ret.push_back(&(factions[i]));
- }
- return ret;
-}
-
 static nc_color sev(int a)
 {
  switch (a) {

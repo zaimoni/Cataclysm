@@ -139,7 +139,6 @@ class game
   int scent(const point& pt) const { return const_cast<game*>(this)->scent(pt.x, pt.y); };
   void clear_scents() { memset(grscent, 0, sizeof(grscent)); }
   faction* faction_by_id(int it);
-  std::vector<faction *> factions_at(int x, int y);	// dead function
   faction* random_good_faction();
   faction* random_evil_faction();
 

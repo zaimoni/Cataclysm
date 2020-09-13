@@ -3,8 +3,6 @@
 #include "keypress.h"
 #include "recent_msg.h"
 
-#define LESS(a, b) ((a)<(b)?(a):(b))
-
 void game::wish()
 {
  const auto t_size = item::types.size();
