@@ -67,6 +67,7 @@ GPS_loc& GPS_loc::operator+=(const point& src)
     // \todo this is where we should clamp the results (or turn into a torus on most machines)
     first.x += delta.x;
     first.y += delta.y;
+    return *this;
 }
 
 void OM_loc::self_normalize()
