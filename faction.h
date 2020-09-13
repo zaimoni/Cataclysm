@@ -115,7 +115,7 @@ struct faction {
  int strength, sneak, crime, cult, good;	// Defining values
  point om;	// Which overmap are we based in? \todo retype to OM_loc?
  point map; // Where in that overmap are we? (coordinate ranges 0...OMAPX/Y)
- int size;	// How big is our sphere of influence?
+ int size;	// How big is our sphere of influence? (C:Whales: trigonometric distance from our overmap location)
  int power;	// General measure of our power
 
  static void global_reset();

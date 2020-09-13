@@ -1147,10 +1147,9 @@ void mattack::breathe(game *g, monster *z)
  if (!able) return;
 
  std::vector<point> valid;
- for (int x = z->pos.x - 1; x <= z->pos.x + 1; x++) {
-  for (int y = z->pos.y - 1; y <= z->pos.y + 1; y++) {
-   if (g->is_empty(x, y)) valid.push_back( point(x, y) );
-  }
+ for (decltype(auto) delta : Direction::vector) {
+     const point test(z->pos + delta);
+     if (g->is_empty(test)) valid.push_back(test);
  }
 
  if (!valid.empty()) {
