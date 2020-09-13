@@ -8,14 +8,6 @@
 
 #include <stdlib.h>
 
-#ifndef SGN
-#define SGN(a) (((a)<0) ? -1 : 1)
-#endif
-
-#ifndef MIN
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
-#endif
-
 #define MONSTER_FOLLOW_DIST 8
 
 bool monster::can_move_to(const map &m, int x, int y) const

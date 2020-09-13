@@ -9,9 +9,6 @@
 #include <fstream>
 #include <stdlib.h>
 
-#define SGN(a) (((a)<0) ? -1 : 1)
-#define SQR(a) ((a)*(a))
-
 static const char* const JSON_transcode_meffects[] = {
 	"BEARTRAP",
 	"POISONED",
