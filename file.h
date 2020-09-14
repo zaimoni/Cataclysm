@@ -1,8 +1,10 @@
 #ifndef FILE_H
 #define FILE_H 1
 
-#include <errno.h>
 #include "Zaimoni.STL/Pure.C/comptest.h"	/* for C library test results */
+#include <string>
+#include <vector>
+#include <errno.h>
 
 #ifdef ZAIMONI_HAS_MICROSOFT_IO_H
 #include <io.h>
@@ -12,8 +14,6 @@
 #include <dirent.h>
 #endif
 
-#include <string>
-#include <vector>
 
 namespace cataclysm {
 

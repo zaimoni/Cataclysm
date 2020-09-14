@@ -1,4 +1,3 @@
-#include <string>
 #include "veh_interact.h"
 #include "vehicle.h"
 #include "keypress.h"
@@ -7,6 +6,7 @@
 #include "crafting.h"
 #include "options.h"
 #include "recent_msg.h"
+#include <string>
 
 
 veh_interact::veh_interact (int cx, int cy, game *gm, vehicle *v)

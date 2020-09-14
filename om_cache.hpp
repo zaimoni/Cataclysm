@@ -1,9 +1,9 @@
 #ifndef OM_CACHE_HPP
 #define OM_CACHE_HPP 1
 
+#include "enums.h"
 #include <map>
 #include <utility>
-#include "enums.h"
 
 class overmap;
 
@@ -31,4 +31,3 @@ public:
 };
 
 #endif
-

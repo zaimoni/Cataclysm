@@ -1,4 +1,6 @@
 #include "game.h"
+#include "construction.h"
+#include "gamemode.h"
 #include "rng.h"
 #include "keypress.h"
 #include "output.h"

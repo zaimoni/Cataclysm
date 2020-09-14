@@ -1,18 +1,18 @@
 #include "map.h"
+#include "submap.h"
 #include "output.h"
 #include "rng.h"
 #include "game.h"
 #include "line.h"
 #include "mapbuffer.h"
-#include <cmath>
-#include <stdlib.h>
-#include <fstream>
 #include "posix_time.h"
 #include "json.h"
 #include "recent_msg.h"
 #include "om_cache.hpp"
-
+#include <fstream>
 #include <iostream>
+#include <cmath>
+#include <stdlib.h>
 
 map_extra map::_force_map_extra = mx_null;
 point map::_force_map_extra_pos = point(-1, -1);

@@ -1,13 +1,17 @@
 #ifndef _COMPUTER_H_
 #define _COMPUTER_H_
 
-#include "item.h"
+#include "enum_json.h"
+#include "wrap_curses.h"
 #include <vector>
 #include <string>
 #include <iosfwd>
 
 class game;
 class player;
+namespace cataclysm {
+  class JSON;
+}
 
 enum computer_action
 {

@@ -6,9 +6,8 @@
 #include "event.h"
 #include "mission.h"
 #include "weather.h"
-#include "construction.h"
+#include "crafting.h"
 #include "calendar.h"
-#include "gamemode.h"
 #include "monster.h"
 #include "line.h"   // for direction enum
 #include "recent_msg.h"
@@ -23,6 +22,10 @@
 #define EXPLOSION_SPEED 70000000
 
 #define PICKUP_RANGE 2
+
+struct constructable;
+struct special_game;
+class npc;
 
 enum tut_type {
  TUT_NULL,

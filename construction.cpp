@@ -1,3 +1,4 @@
+#include "construction.h"
 #include "game.h"
 #include "output.h"
 #include "keypress.h"
