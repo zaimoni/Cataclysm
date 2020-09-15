@@ -401,29 +401,27 @@ void game::place_construction(const constructable * const con)
  total_inv.add_stack(u.inv_dump());
 
  std::vector<point> valid;
- for (int x = u.pos.x - 1; x <= u.pos.x + 1; x++) {
-  for (int y = u.pos.y - 1; y <= u.pos.y + 1; y++) {
-   if (x == u.pos.x && y == u.pos.y) y++;
-   bool place_okay = (*(con->able))(m, point(x, y));
+ for (decltype(auto) delta : Direction::vector) {
+   const point pt(u.pos + delta);
+   bool place_okay = (*(con->able))(m, pt);
    for (int i = 0; i < con->stages.size() && !place_okay; i++) {
-    if (m.ter(x, y) == con->stages[i].terrain) place_okay = true;
+    if (m.ter(pt) == con->stages[i].terrain) place_okay = true;
    }
 
    if (place_okay) {
 // Make sure we're not trying to continue a construction that we can't finish
     int starting_stage = 0, max_stage = 0;
     for (int i = 0; i < con->stages.size(); i++) {
-     if (m.ter(x, y) == con->stages[i].terrain) starting_stage = i + 1;
+     if (m.ter(pt) == con->stages[i].terrain) starting_stage = i + 1;
      if (player_can_build(u, total_inv, con, i, true)) max_stage = i;
     }
 
     if (max_stage >= starting_stage) {
-     valid.push_back(point(x, y));
-     m.drawsq(w_terrain, u, x, y, true, false);
+     valid.push_back(pt);
+     m.drawsq(w_terrain, u, pt.x, pt.y, true, false);
      wrefresh(w_terrain);
     }
    }
-  }
  }
  mvprintz(0, 0, c_red, "Pick a direction in which to construct:");
  point dir = get_direction(input());

@@ -245,15 +245,11 @@ void defense_game::init_map(game *g)
  monster generator(mtype::types[mon_generator], g->u.pos + Direction::SE);
 // Find a valid spot to spawn the generator
  std::vector<point> valid;
- for (int x = g->u.pos.x - 1; x <= g->u.pos.x + 1; x++) {
-  for (int y = g->u.pos.y - 1; y <= g->u.pos.y + 1; y++) {
-   if (generator.can_move_to(g->m, x, y) && g->is_empty(x, y))
-    valid.push_back( point(x, y) );
-  }
+ for (decltype(auto) delta : Direction::vector) {
+   const point pt(g->u.pos + delta);
+   if (generator.can_move_to(g->m, pt) && g->is_empty(pt)) valid.push_back(pt);
  }
- if (!valid.empty()) {
-  generator.spawn(valid[rng(0, valid.size() - 1)]);
- }
+ if (!valid.empty()) generator.spawn(valid[rng(0, valid.size() - 1)]); // reset starting position to a legal one
  generator.friendly = -1;
  g->z.push_back(generator);
 }
