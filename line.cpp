@@ -1,7 +1,7 @@
 #include "line.h"
 #include "map.h"
-#include <math.h>
 #include "Zaimoni.STL/Logging.h"
+#include <math.h>
 
 #define SGN(a) (((a)<0) ? -1 : 1)
 #define SLOPE_VERTICAL 999999

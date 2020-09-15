@@ -2,6 +2,8 @@
 #define _CONSTRUCTION_H_
 
 #include "crafting.h"
+#include "mapdata.h"
+#include "enums.h"
 
 struct construction_stage
 {

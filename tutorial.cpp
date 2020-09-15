@@ -1,4 +1,5 @@
 #include "game.h"
+#include "gamemode.h"
 #include "output.h"
 #include "action.h"
 #include "tutorial.h"

@@ -1,5 +1,6 @@
 #include "gamemode.h"
 #include "game.h"
+#include "construction.h"
 #include "keypress.h"
 #include "itype.h"
 #include "mtype.h"

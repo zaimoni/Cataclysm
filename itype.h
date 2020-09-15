@@ -19,10 +19,10 @@ void EraseAt(std::vector<T>& x, size_t i) {
     if (x.empty()) std::vector<T>().swap(x);    // handles problem with range-based for loops in MSVC++
 }
 
-class item;
 #ifndef SOCRATES_DAIMON
 class game;
 class player;
+class item;
 #endif
 
 namespace cataclysm {

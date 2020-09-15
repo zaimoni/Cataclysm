@@ -1,4 +1,3 @@
-#include <sstream>
 #include "npc.h"
 #include "rng.h"
 #include "game.h"
@@ -6,6 +5,7 @@
 #include "mapbuffer.h"
 #include "act_obj.h"
 #include "recent_msg.h"
+#include <sstream>
 
 #define TARGET_PLAYER -2
 

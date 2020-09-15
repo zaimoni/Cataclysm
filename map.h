@@ -4,7 +4,6 @@
 #include "mapitems.h"
 #include "overmap.h"
 #include "submap.h"
-
 #include <functional>
 #include <string>
 

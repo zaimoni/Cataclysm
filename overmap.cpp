@@ -7,13 +7,12 @@
 #include "stl_limits.h"
 #include "line.h"
 #include "rng.h"
+#include "Zaimoni.STL/GDI/box.hpp"
+#include <fstream>
+#include <sstream>
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-#include <fstream>
-#include <sstream>
-
-#include "Zaimoni.STL/GDI/box.hpp"
 
 GPS_loc overmap::toGPS(const point& screen_pos) { return game::active()->toGPS(screen_pos); }
 
