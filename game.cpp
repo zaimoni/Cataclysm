@@ -3219,15 +3219,15 @@ void game::use_computer(const point& pt)
  debugmsg("Tried to use computer at (%d, %d) - none there", pt.x, pt.y);
 }
 
-void game::resonance_cascade(int x, int y)
+void game::resonance_cascade(const point& pt)
 {
- const int glow_decay = 5 * trig_dist(x, y, u.pos);
+ const int glow_decay = 5 * trig_dist(pt, u.pos);
  int maxglow = 100 - glow_decay;
  int minglow =  60 - glow_decay;
  if (minglow < 0) minglow = 0;
  if (maxglow > 0) u.add_disease(DI_TELEGLOW, rng(minglow, maxglow) * MINUTES(10));
- int startx = (x < 8 ? 0 : x - 8), endx = (x+8 >= SEEX*3 ? SEEX*3 - 1 : x + 8);
- int starty = (y < 8 ? 0 : y - 8), endy = (y+8 >= SEEY*3 ? SEEY*3 - 1 : y + 8);
+ int startx = (pt.x < 8 ? 0 : pt.x - 8), endx = (pt.x+8 >= SEEX*3 ? SEEX*3 - 1 : pt.x + 8);
+ int starty = (pt.y < 8 ? 0 : pt.y - 8), endy = (pt.y+8 >= SEEY*3 ? SEEY*3 - 1 : pt.y + 8);
  for (int i = startx; i <= endx; i++) {
   for (int j = starty; j <= endy; j++) {
    switch (rng(1, 80)) {

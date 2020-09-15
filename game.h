@@ -86,7 +86,7 @@ class game
   // Move the player vertically, if (force) then they fell
   void vertical_move(int z, bool force);
   void use_computer(const point& pt);
-  void resonance_cascade(int x, int y);
+  void resonance_cascade(const point& pt);
   void emp_blast(int x, int y);
   player* survivor(int x, int y);
   player* survivor(const point& pt);

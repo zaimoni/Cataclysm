@@ -303,11 +303,10 @@ void computer::activate_function(game *g, computer_action action)
       cascade_points.push_back(point(i, j));
     }
    }
-   if (cascade_points.size() == 0)
-    g->resonance_cascade(g->u.pos.x, g->u.pos.y);
-   else {
-    point p = cascade_points[rng(0, cascade_points.size() - 1)];
-    g->resonance_cascade(p.x, p.y);
+   if (const size_t ub = cascade_points.size()) {
+       g->resonance_cascade(cascade_points[rng(0, ub - 1)]);
+   } else {
+       g->resonance_cascade(g->u.pos);
    }
   } break;
 
