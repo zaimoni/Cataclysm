@@ -108,6 +108,18 @@ struct tripoint {
 	 z /= rhs;
 	 return *this;
  }
+
+ // canonical injection for point into tripoint is the xy-plane (makes Direction::vector, etc. work)
+ tripoint& operator+=(const point& rhs) {
+	 x += rhs.x;
+	 y += rhs.y;
+	 return *this;
+ }
+ tripoint& operator-=(const point& rhs) {
+	 x -= rhs.x;
+	 y -= rhs.y;
+	 return *this;
+ }
 };
 
 inline constexpr bool operator==(const tripoint& lhs, const tripoint& rhs) { return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z; }
@@ -116,6 +128,10 @@ inline tripoint operator+(const tripoint& lhs, const tripoint& rhs) { return tri
 inline tripoint operator-(const tripoint& lhs, const tripoint& rhs) { return tripoint(lhs) -= rhs; }
 inline tripoint operator*(int s, const tripoint& pt) { return tripoint(pt) *= s; }
 inline tripoint operator*(const tripoint& pt, int s) { return tripoint(pt) *= s; }
+
+inline tripoint operator+(tripoint lhs, const point& rhs) { return lhs += rhs; }
+inline tripoint operator+(const point& lhs, tripoint rhs) { return rhs += lhs; }
+inline tripoint operator-(tripoint lhs, const point& rhs) { return lhs -= rhs; } // need unary minus to reverse this; evaluate necessity when use case available
 
 inline bool operator<(const tripoint& lhs, const tripoint& rhs)
 {

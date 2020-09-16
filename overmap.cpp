@@ -69,6 +69,19 @@ GPS_loc& GPS_loc::operator+=(const point& src)
     return *this;
 }
 
+std::variant<point, tripoint> operator-(const GPS_loc& lhs, const GPS_loc& rhs)
+{
+    // \todo decide what to do about overflow here
+    tripoint ret = lhs.first - rhs.first;
+    point delta = lhs.second - rhs.second;
+    // \todo decide what to do about overflow here
+    ret.x *= SEE;
+    ret.y *= SEE;
+    ret += delta;
+    if (lhs.first.z == rhs.first.z) return point(ret.x, ret.y);
+    return ret;
+}
+
 void OM_loc::self_normalize()
 {
     while (0 > second.x && INT_MIN < first.x) {

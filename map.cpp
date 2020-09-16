@@ -113,6 +113,34 @@ vehicle* map::veh_at(const localPos& src, int& part_num) const
     return nullptr;
 }
 
+// \todo if map::veh_at goes dead code then relocate (overmap.cpp? new GPS_loc.cpp?)
+vehicle* GPS_loc::veh_at(int& part_num) const
+{
+    // must check 3x3 map chunks, as vehicle part may span to neighbour chunk
+    // we presume that vehicles don't intersect (they shouldn't by any means)
+    submap* const local_map[3][3] = { {MAPBUFFER.lookup_submap(first + Direction::NW), MAPBUFFER.lookup_submap(first + Direction::N), MAPBUFFER.lookup_submap(first + Direction::NE)},
+        {MAPBUFFER.lookup_submap(first + Direction::W), MAPBUFFER.lookup_submap(first), MAPBUFFER.lookup_submap(first + Direction::E)},
+        {MAPBUFFER.lookup_submap(first + Direction::SW), MAPBUFFER.lookup_submap(first + Direction::S), MAPBUFFER.lookup_submap(first + Direction::SE)} };
+
+    for (int mx = 0; mx <= 2; mx++) {
+        for (int my = 0; my <= 2; my++) {
+            if (!local_map[mx][my]) continue;   // submap not generated yet
+            for (decltype(auto) veh : local_map[mx][my]->vehicles) {
+                const auto delta = *this - veh.GPSpos;
+                if (const point* const pt = std::get_if<point>(&delta)) { // gross invariant failure: vehicles should have GPSpos tripoint of their submap
+                    int part = veh.part_at(pt->x, pt->y);
+                    if (part >= 0) {
+                        part_num = part;
+                        return &veh;
+                    }
+                }
+            }
+        }
+    }
+
+    return nullptr;
+}
+
 vehicle* map::veh_at(int x, int y, int &part_num) const
 {
  localPos pos;
@@ -669,6 +697,30 @@ bool map::is_outside(int x, int y) const
  int vpart;
  if (vehicle* veh = veh_at(x, y, vpart); veh && veh->is_inside(vpart)) return false;
  return true;
+}
+
+// \todo if map::is_outside goes dead code then relocate (overmap.cpp? new GPS_loc.cpp?)
+bool GPS_loc::is_outside() const
+{
+    // With proper z-levels, we would say "outside is when there are no floors above us, and arguably properly enclosed by walls/doors/etc.".
+    if (0 > first.z) return false;
+    if (const submap* const sm = MAPBUFFER.lookup_submap(first)) {
+        if (any<t_floor, t_floor_wax>(sm->ter[second.x][second.y])) return false;
+        for (decltype(auto) delta : Direction::vector) {
+            const GPS_loc loc(*this + delta);
+            if (loc.first == first) {
+                if (any<t_floor, t_floor_wax>(sm->ter[loc.second.x][loc.second.y])) return false;
+            } else if (const submap* const sm2 = MAPBUFFER.lookup_submap(loc.first)) {
+                if (any<t_floor, t_floor_wax>(sm2->ter[loc.second.x][loc.second.y])) return false;
+            }
+            // Just discard the test if the submap wasn't generated yet.  We'll still have some context.
+        }
+        int vpart;
+        if (vehicle* veh = veh_at(vpart); veh && veh->is_inside(vpart)) return false;
+        return true; // No guessing, we're outside.
+    }
+    return true;    // If we haven't generated the submap yet, just assume we're outside.
+    // \todo This could be improved by using overmap terrain, e.g. houses are likely inside.
 }
 
 bool map::flammable_items_at(int x, int y) const

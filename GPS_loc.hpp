@@ -4,6 +4,9 @@
 #include "enums.h"
 #include <limits.h>
 #include <utility>
+#include <variant>
+
+class vehicle;
 
 struct GPS_loc : public std::pair<tripoint, point>
 {
@@ -15,7 +18,16 @@ struct GPS_loc : public std::pair<tripoint, point>
 	GPS_loc& operator=(const GPS_loc& src) = default;
 
 	GPS_loc& operator+=(const point& src);
+
+	bool is_outside() const; // map.cpp
+	vehicle* veh_at(int& part_num) const; // map.cpp
 };
+
+// \todo evaluate whether these should be out-of-line defined (likely a matter of binary size, compile+link time)
+inline GPS_loc operator+(GPS_loc lhs, const point& rhs) { return lhs += rhs; }
+inline GPS_loc operator+(const point& lhs, GPS_loc rhs) { return rhs += lhs; }
+std::variant<point, tripoint> operator-(const GPS_loc& lhs, const GPS_loc& rhs);
+
 
 struct OM_loc : public std::pair<tripoint, point>
 {
