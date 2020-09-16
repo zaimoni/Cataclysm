@@ -83,9 +83,10 @@ const weather_datum weather_datum::data[NUM_WEATHER_TYPES] = {
 &weather_effect::snowstorm }
 };
 
-#define PLAYER_OUTSIDE (g->m.is_outside(g->u.pos.x, g->u.pos.y) && g->lev.z >= 0)
-#define THUNDER_CHANCE 50
-#define LIGHTNING_CHANCE 600
+// a more complex weather modeling system would undoubtly use functions, so keep these names to make that easier to do.
+// These are 1 in turn rates (i.e. time scale sensitive)
+static constexpr const int THUNDER_CHANCE = MINUTES(5);
+static constexpr const int LIGHTNING_CHANCE = MINUTES(60);
 
 void weather_effect::glare(game *g)
 {
@@ -94,7 +95,7 @@ void weather_effect::glare(game *g)
 
 void weather_effect::wet(game *g)
 {
- if (!g->u.is_wearing(itm_coat_rain) && !g->u.has_trait(PF_FEATHERS) && PLAYER_OUTSIDE && one_in(2))
+ if (!g->u.is_wearing(itm_coat_rain) && !g->u.has_trait(PF_FEATHERS) && g->u.GPSpos.is_outside() && one_in(2))
   g->u.add_morale(MORALE_WET, -1, -30);
 // Put out fires and reduce scent
  for (int x = g->u.pos.x - SEEX * 2; x <= g->u.pos.x + SEEX * 2; x++) {
@@ -111,7 +112,7 @@ void weather_effect::wet(game *g)
 
 void weather_effect::very_wet(game *g)
 {
- if (!g->u.is_wearing(itm_coat_rain) && !g->u.has_trait(PF_FEATHERS) && PLAYER_OUTSIDE)
+ if (!g->u.is_wearing(itm_coat_rain) && !g->u.has_trait(PF_FEATHERS) && g->u.GPSpos.is_outside())
   g->u.add_morale(MORALE_WET, -1, -60);
 // Put out fires and reduce scent
  for (int x = g->u.pos.x - SEEX * 2; x <= g->u.pos.x + SEEX * 2; x++) {
@@ -160,13 +161,21 @@ void weather_effect::lightning(game *g)
 void weather_effect::light_acid(game *g)
 {
  wet(g);
- if (int(messages.turn) % 10 == 0 && PLAYER_OUTSIDE)
+ if (int(messages.turn) % 10 == 0 && g->u.GPSpos.is_outside())
   messages.add("The acid rain stings, but is harmless for now...");
 }
 
+// Zaimoni, 2020-09-16
+// This is *far* more severe than the Leilani Estates/2018 eruption in Hawaii,
+// as far as direct damage is concerned.  It's fine for a B-movie, but
+// not a reality-simulator. (On the other hand, a reality-simulator
+// has to require some sort of breathing protection.  [What happens
+// when the fumes dissolve in phlegm?  This is far more concentrated than an onion's
+// fumes, which dissolve in water as sulfuric acid.]  A B-movie has the discretion
+// to omit that requirement.)
 void weather_effect::acid(game *g)
 {
- if (PLAYER_OUTSIDE) {
+ if (g->u.GPSpos.is_outside()) {
   messages.add("The acid rain burns!");
   if (one_in(6))
    g->u.hit(g, bp_head, 0, 0, 1);
@@ -185,11 +194,12 @@ void weather_effect::acid(game *g)
    g->u.hit(g, bp_arms, 1, 0, 1);
   }
  }
+ // reality-simulator wants damage to trees, if not non-living map objects, here
  if (g->lev.z >= 0) {
   for (int x = g->u.pos.x - SEEX * 2; x <= g->u.pos.x + SEEX * 2; x++) {
    for (int y = g->u.pos.y - SEEY * 2; y <= g->u.pos.y + SEEY * 2; y++) {
     if (!g->m.has_flag(diggable, x, y) && !g->m.has_flag(noitem, x, y) &&
-        g->m.move_cost(x, y) > 0 && g->m.is_outside(x, y) && one_in(400))
+        g->m.move_cost(x, y) > 0 && g->m.is_outside(x, y) && one_in(MINUTES(40)))
      g->m.add_field(g, x, y, fd_acid, 1);
    }
   }
