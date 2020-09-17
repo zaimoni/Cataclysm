@@ -18,9 +18,6 @@ std::vector<constructable*> constructable::constructions; // The list of constru
 struct construct // Construction functions.
 {
 	// Bools - able to build at the given point?
-	static bool able_always(map&, point) { return true; }
-	static bool able_never(map&, point) { return false; }
-
 	static bool able_empty(map&, point); // Able if tile is empty
 
 	static bool able_window(map&, point); // Any window tile
@@ -50,8 +47,59 @@ struct construct // Construction functions.
 
 };
 
-bool will_flood_stop(map *m, bool (&fill)[SEEX * MAPSIZE][SEEY * MAPSIZE],
-                     int x, int y);
+static bool will_flood_stop(map *m, bool (&fill)[SEEX * MAPSIZE][SEEY * MAPSIZE],
+                            int x, int y)
+{
+ if (x == 0 || y == 0 || x == SEEX * MAPSIZE - 1 || y == SEEY * MAPSIZE - 1)
+  return false;
+
+ fill[x][y] = true;
+ bool skip_north = (fill[x][y - 1] || m->has_flag(supports_roof, x, y - 1)),
+      skip_south = (fill[x][y + 1] || m->has_flag(supports_roof, x, y + 1)),
+      skip_east  = (fill[x + 1][y] || m->has_flag(supports_roof, x + 1, y)),
+      skip_west  = (fill[x - 1][y] || m->has_flag(supports_roof, x - 1, y));
+
+ return ((skip_north || will_flood_stop(m, fill, x    , y - 1)) &&
+         (skip_east  || will_flood_stop(m, fill, x + 1, y    )) &&
+         (skip_south || will_flood_stop(m, fill, x    , y + 1)) &&
+         (skip_west  || will_flood_stop(m, fill, x - 1, y    ))   );
+}
+
+static bool player_can_build(player& p, inventory inv, const constructable* con,
+                             int level = -1, bool cont = false)
+{
+ if (p.sklevel[sk_carpentry] < con->difficulty) return false;
+
+ if (level < 0) level = con->stages.size();
+
+ int start = cont ? level : 0;
+ for (int i = start; i < con->stages.size() && i <= level; i++) {
+  construction_stage stage = con->stages[i];
+  for (int j = 0; j < 3; j++) {
+   if (stage.tools[j].size() > 0) {
+    bool has_tool = false;
+	for (const auto tool : stage.tools[j]) {
+     if (inv.has_amount(tool, 1)) {
+	  has_tool = true;
+	  break;
+	 }
+    }
+    if (!has_tool) return false;
+   }
+   if (stage.components[j].size() > 0) {
+    bool has_component = false;
+	for(const auto& part : stage.components[j]) {
+	 if (item::types[part.type]->is_ammo() ? inv.has_charges(part.type, part.count) : inv.has_amount(part.type, part.count)) {
+       has_component = true;
+	   break;
+	 }
+    }
+    if (!has_component) return false;
+   }
+  }
+ }
+ return true;
+}
 
 void constructable::init()
 {
@@ -357,42 +405,6 @@ void game::construction_menu()
  refresh_all();
 }
 
-bool game::player_can_build(player &p, inventory inv, const constructable* con,
-                            int level, bool cont)
-{
- if (p.sklevel[sk_carpentry] < con->difficulty) return false;
-
- if (level < 0) level = con->stages.size();
-
- int start = cont ? level : 0;
- for (int i = start; i < con->stages.size() && i <= level; i++) {
-  construction_stage stage = con->stages[i];
-  for (int j = 0; j < 3; j++) {
-   if (stage.tools[j].size() > 0) {
-    bool has_tool = false;
-	for (const auto tool : stage.tools[j]) {
-     if (inv.has_amount(tool, 1)) {
-	  has_tool = true;
-	  break;
-	 }
-    }
-    if (!has_tool) return false;
-   }
-   if (stage.components[j].size() > 0) {
-    bool has_component = false;
-	for(const auto& part : stage.components[j]) {
-	 if (item::types[part.type]->is_ammo() ? inv.has_charges(part.type, part.count) : inv.has_amount(part.type, part.count)) {
-       has_component = true;
-	   break;
-	 }
-    }
-    if (!has_component) return false;
-   }
-  }
- }
- return true;
-}
-
 void game::place_construction(const constructable * const con)
 {
  refresh_all();
@@ -553,24 +565,6 @@ bool construct::able_dig(map& m, point p)
 bool construct::able_pit(map& m, point p)
 {
  return (m.ter(p) == t_pit);//|| m.ter(p) == t_pit_shallow);
-}
-
-bool will_flood_stop(map *m, bool (&fill)[SEEX * MAPSIZE][SEEY * MAPSIZE],
-                     int x, int y)
-{
- if (x == 0 || y == 0 || x == SEEX * MAPSIZE - 1 || y == SEEY * MAPSIZE - 1)
-  return false;
-
- fill[x][y] = true;
- bool skip_north = (fill[x][y - 1] || m->has_flag(supports_roof, x, y - 1)),
-      skip_south = (fill[x][y + 1] || m->has_flag(supports_roof, x, y + 1)),
-      skip_east  = (fill[x + 1][y] || m->has_flag(supports_roof, x + 1, y)),
-      skip_west  = (fill[x - 1][y] || m->has_flag(supports_roof, x - 1, y));
-
- return ((skip_north || will_flood_stop(m, fill, x    , y - 1)) &&
-         (skip_east  || will_flood_stop(m, fill, x + 1, y    )) &&
-         (skip_south || will_flood_stop(m, fill, x    , y + 1)) &&
-         (skip_west  || will_flood_stop(m, fill, x - 1, y    ))   );
 }
 
 void construct::done_window_pane(game *g, point p)
