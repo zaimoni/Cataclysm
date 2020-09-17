@@ -1231,17 +1231,16 @@ std::vector<mon_id> defense_game::pick_monster_wave(game *g)
 void defense_game::spawn_wave_monster(game *g, const mtype *type)
 {
  monster tmp(type);
- if (location == DEFLOC_HOSPITAL || location == DEFLOC_MALL) {
-  tmp.pos.y = SEEY; // Always spawn to the north!
-  tmp.pos.x = rng(SEEX * (MAPSIZE / 2), SEEX * (1 + MAPSIZE / 2));
+ if (location == DEFLOC_HOSPITAL || location == DEFLOC_MALL) { // Always spawn to the north!
+  tmp.screenpos_set(rng(SEEX * (MAPSIZE / 2), SEEX * (1 + MAPSIZE / 2)), SEEY);
  } else if (one_in(2)) {
-  tmp.spawn(rng(SEEX * (MAPSIZE / 2), SEEX * (1 + MAPSIZE / 2)), rng(1, SEEY));
-  if (one_in(2))
-   tmp.pos.y = SEEY * MAPSIZE - 1 - tmp.pos.y;
+  point pt(rng(SEEX * (MAPSIZE / 2), SEEX * (1 + MAPSIZE / 2)), rng(1, SEEY));
+  if (one_in(2)) pt.y = SEE * MAPSIZE - 1 - pt.y;
+  tmp.spawn(pt);
  } else {
-  tmp.spawn(rng(1, SEEX), rng(SEEY * (MAPSIZE / 2), SEEY * (1 + MAPSIZE / 2)));
-  if (one_in(2))
-   tmp.pos.x = SEEX * MAPSIZE - 1 - tmp.pos.x;
+  point pt(rng(1, SEEX), rng(SEEY * (MAPSIZE / 2), SEEY * (1 + MAPSIZE / 2)));
+  if (one_in(2)) pt.x = SEE * MAPSIZE - 1 - pt.x;
+  tmp.spawn(pt);
  }
  tmp.wand.set(g->u.pos, 150);
 // We wanna kill!

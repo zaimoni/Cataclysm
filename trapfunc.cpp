@@ -234,9 +234,9 @@ void trapfuncm::telepad(game *g, monster *z)
    if (g->u_see(z))
     messages.add("The %s teleports into a %s, killing the %s!", z->name().c_str(), m_hit->name().c_str(), m_hit->name().c_str());
    g->explode_mon(*m_hit);
-   z->pos = newpos;
+   z->screenpos_set(newpos);
  } else {
-   z->pos = newpos;
+   z->screenpos_set(newpos);
  }
 }
 

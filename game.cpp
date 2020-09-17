@@ -2801,7 +2801,7 @@ void game::monmove()
    for (int x = startx; x != endx && !okay; x += xdir) {
     for (int y = starty; y != endy && !okay; y += ydir){
      if (z[i].can_move_to(m, x, y)) {
-      z[i].pos = point(x, y);
+      z[i].screenpos_set(x, y);
       okay = true;
      }
     }
@@ -5371,7 +5371,7 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
         if (slam) messages.add("%s slammed against the %s for %d damage!", sname.c_str(), dname.c_str(), dam1);
 		if (!thru) break;
         if (is_player) p->screenpos_set(point(x, y));
-        else zz->pos = point(x, y);
+        else zz->screenpos_set(point(x, y));
         range--;
         steps++;
         timespec ts;   // Timespec for the animation
@@ -5784,8 +5784,7 @@ void game::update_stair_monsters()
        tries++;
       }
       if (tries < 10) {
-       coming_to_stairs[i].mon.pos.x = sx;
-       coming_to_stairs[i].mon.pos.y = sy;
+       coming_to_stairs[i].mon.screenpos_set(sx, sy);
        z.push_back( coming_to_stairs[i].mon );
        if (u_see(sx, sy))
         messages.add("A %s comes %s the %s!", coming_to_stairs[i].mon.name().c_str(),

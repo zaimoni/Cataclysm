@@ -577,9 +577,8 @@ void mattack::leap(game *g, monster *z)
 
  z->moves -= 150;
  z->sp_timeout = z->type->sp_freq;	// Reset timer
- point chosen = options[rng(0, options.size() - 1)];
  bool seen = g->u_see(z); // We can see them jump...
- z->pos = chosen;
+ z->screenpos_set(options[rng(0, options.size() - 1)]);
  seen |= g->u_see(z); // ... or we can see them land
  if (seen) messages.add("The %s leaps!", z->name().c_str());
 }
@@ -832,17 +831,17 @@ void mattack::vortex(game *g, monster *z)
        if (g->u_see(traj[i])) messages.add("The %s hits a %s!", thrown->name().c_str(), m_hit->name().c_str());
        if (m_hit->hurt(damage)) g->kill_mon(*m_hit, (z->friendly != 0));
        hit_wall = true;
-       thrown->pos = traj[i - 1];
+       thrown->screenpos_set(traj[i - 1]);
       } else if (g->m.move_cost(traj[i]) == 0) {
        hit_wall = true;
-       thrown->pos = traj[i - 1];
+       thrown->screenpos_set(traj[i - 1]);
       }
       int damage_copy = damage;
       g->m.shoot(g, traj[i].x, traj[i].y, damage_copy, false, 0);
       if (damage_copy < damage) thrown->hurt(damage - damage_copy);
      }
      if (hit_wall) damage *= 2;
-     else  thrown->pos = traj[traj.size() - 1];
+     else thrown->screenpos_set(traj.back());
      if (thrown->hurt(damage)) g->kill_mon(*thrown, (z->friendly != 0));
     } // if (distance > 0)
    } // if (thrown)

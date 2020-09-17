@@ -473,7 +473,7 @@ void monster::move_to(game *g, const point& pt)
   const bool is_swimming = (has_flag(MF_SWIMS) && g->m.has_flag(swimmable, pt));
   if (is_swimming) moves += 50;
   else if (!not_landbound) moves -= (g->m.move_cost(pt) - 2) * 50;
-  pos = pt;
+  screenpos_set(pt);
   footsteps(g, pt);
   if (!not_landbound) {
       if (const auto tr_at = g->m.tr_at(pos)) { // Monster stepped on a trap!
@@ -508,8 +508,7 @@ void monster::stumble(game *g, bool moved)
   }
  }
  if (valid_stumbles.size() > 0 && (one_in(8) || (!moved && one_in(3)))) {
-  int choice = rng(0, valid_stumbles.size() - 1);
-  pos = valid_stumbles[choice];
+  screenpos_set(valid_stumbles[rng(0, valid_stumbles.size() - 1)]);
   if (!has_flag(MF_DIGS) || !has_flag(MF_FLIES))
    moves -= (g->m.move_cost(pos) - 2) * 50;
 // Here we have to fix our plans[] list, trying to get back to the last point
@@ -588,7 +587,7 @@ void monster::knock_back_from(game *g, int x, int y)
     messages.add("The %s bounces off a %s.", name().c_str(), g->m.tername(to).c_str());
   }
 
- } else pos = to; // It's no wall
+ } else screenpos_set(to); // It's no wall
 }
 
 

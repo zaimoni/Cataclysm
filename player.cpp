@@ -1547,15 +1547,8 @@ void player::screenpos_set(point pt)
     if (this == &g->u && g->update_map_would_scroll(pos)) g->update_map(pos.x,pos.y);
 }
 
-void player::screenpos_set(int x, int y)
-{
-	GPSpos = overmap::toGPS(pos = point(x, y));
-}
-
-void player::screenpos_add(point delta)
-{
-	GPSpos = overmap::toGPS(pos += delta);
-}
+void player::screenpos_set(int x, int y) { GPSpos = overmap::toGPS(pos = point(x, y)); }
+void player::screenpos_add(point delta) { GPSpos = overmap::toGPS(pos += delta); }
 
 // \todo V0.2.1+ trigger uniform max hp recalculation on any change to str_max or the PF_TOUGH trait
 void player::normalize()

@@ -139,8 +139,14 @@ class monster {
 
  bool is_static_spawn() const { return -1 != spawnmap.x; }
 
+ // integrity checks
+ void screenpos_set(point pt);
+ void screenpos_set(int x, int y);
+ void screenpos_add(point delta);
+
 // TEMP VALUES
  point pos;
+ GPS_loc GPSpos;
  countdown<point> wand;	// Wander destination - Just try to move in that direction.
  std::vector<item> inv; // Inventory
  std::vector<monster_effect> effects; // Active effects, e.g. on fire

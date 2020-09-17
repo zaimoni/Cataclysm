@@ -1191,7 +1191,16 @@ JSON toJSON(const faction& src)
 bool fromJSON(const JSON& _in, monster& dest)
 {
 	if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) return false;
-	if (_in.has_key("pos")) fromJSON(_in["pos"], dest.pos);
+	if (_in.has_key("pos")) {
+		point staging;
+		fromJSON(_in["pos"], staging);
+		dest.screenpos_set(staging); // we load after game::lev is set in game::load, so this is safe
+	}
+	if (_in.has_key("GPS_pos")) {	// provided by V0.2.4+
+		if (fromJSON(_in["GPS_pos"], dest.GPSpos)) {
+			// reality checks possible, but not here
+		}
+	}
 	if (_in.has_key("wand")) fromJSON(_in["wand"], dest.wand);
 	if (_in.has_key("inv")) _in["inv"].decode(dest.inv);
 	if (_in.has_key("effects")) _in["effects"].decode(dest.effects);
@@ -1219,6 +1228,11 @@ JSON toJSON(const monster& src)
 	if (auto json = JSON_key((mon_id)src.type->id)) {
 		_monster.set("type", json);
 		_monster.set("pos", toJSON(src.pos));
+
+		// V 0.2.4+
+		auto GPS = overmap::toGPS(src.pos);
+		_monster.set("GPS_pos", toJSON(GPS));
+
 		if (src.wand.live()) _monster.set("wand", toJSON(src.wand));
 		if (!src.inv.empty()) _monster.set("inv", JSON::encode(src.inv));
 		if (!src.effects.empty()) _monster.set("effects", JSON::encode(src.effects));

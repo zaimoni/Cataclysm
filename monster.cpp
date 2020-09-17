@@ -47,6 +47,10 @@ monster::monster(const mtype *t, point origin) noexcept
 
 DEFINE_ACID_ASSIGN_W_MOVE(monster)
 
+void monster::screenpos_set(point pt) { GPSpos = overmap::toGPS(pos = pt); }
+void monster::screenpos_set(int x, int y) { GPSpos = overmap::toGPS(pos = point(x, y)); }
+void monster::screenpos_add(point delta) { GPSpos = overmap::toGPS(pos += delta); }
+
 void monster::poly(const mtype *t)
 {
  double hp_percentage = double(hp) / double(type->hp);
@@ -62,12 +66,12 @@ void monster::poly(const mtype *t)
 // definitely could be a complex implementation, so retain out-of-line definition
 void monster::spawn(int x, int y)
 {
- pos = point(x,y);
+    screenpos_set(x, y);
 }
 
 void monster::spawn(const point& pt)
 {
-	pos = pt;
+    screenpos_set(pt);
 }
 
 std::string monster::name() const
@@ -227,7 +231,7 @@ void monster::debug(player &u)
 void monster::shift(const point& delta)
 {
  const point delta_block(delta*SEE);
- pos -= delta_block;
+ screenpos_add(-delta_block);
  for (auto& pt : plans) pt -= delta_block;
 }
 

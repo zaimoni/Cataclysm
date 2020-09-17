@@ -939,7 +939,7 @@ void map::mon_in_field(game* g, monster& z)
                 g->explode_mon(*m_hit);
             }
             else {
-                z.pos = newpos;
+                z.screenpos_set(newpos);
             }
         }
         break;
