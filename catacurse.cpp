@@ -1440,8 +1440,8 @@ int getch(void)
 //The core printing function, prints characters to the array, and sets colors
 inline int printstring(WINDOW *win, char *fmt)
 {
- int size = strlen(fmt);
- int j;
+ size_t size = strlen(fmt);
+ size_t j;
  for (j=0; j<size; j++){
   if (!(fmt[j]==10)){//check that this isnt a newline char
    if (win->cursorx <= win->width - 1 && win->cursory <= win->height - 1) {
@@ -1452,10 +1452,9 @@ inline int printstring(WINDOW *win, char *fmt)
     addedchar(win);
    } else
    return 0; //if we try and write anything outside the window, abort completely
-} else // if the character is a newline, make sure to move down a line
-  if (newline(win)==0){
+  } else if (newline(win)==0){ // if the character is a newline, make sure to move down a line
       return 0;
-      }
+  }
  }
  win->draw=true;
  return 1;
