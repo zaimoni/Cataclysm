@@ -245,8 +245,6 @@ class game
   void pick_recipes(std::vector<const recipe*> &current,
                     std::vector<bool> &available, craft_cat tab);// crafting.cpp
   void construction_menu();                   // See construction.cpp
-  bool player_can_build(player &p, inventory inv, const constructable* con,
-                        int level = -1, bool cont = false);
   void place_construction(const constructable *con); // See construction.cpp
   void complete_construction();               // See construction.cpp
   bool pl_choose_vehicle(point& vpos);
