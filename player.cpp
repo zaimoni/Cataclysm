@@ -2123,7 +2123,7 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
   line++;
  }
  if (pkill >= 10) {
-  pen = int(pkill * .1);
+  pen = pkill / 10;
   mvwprintz(w_speed, line, 1, c_red, "Painkillers         -%s%d%%",
             (pen < 10 ? " " : ""), pen);
   line++;
@@ -2255,43 +2255,41 @@ detecting traps and other things of interest.");
    mvwprintz(w_encumb, 0, 0, h_ltgray, "      ENCUMBERANCE        ");
    if (line == 0) {
     mvwprintz(w_encumb, 2, 2, h_ltgray, "Head");
-    mvwprintz(w_info, 0, 0, c_magenta, "\
-Head encumberance has no effect; it simply limits how much you can put on.");
+    mvwprintz(w_info, 0, 0, c_magenta, "Head encumberance has no effect; it simply limits how much you can put on.");
    } else if (line == 1) {
     mvwprintz(w_encumb, 3, 2, h_ltgray, "Eyes");
-    mvwprintz(w_info, 0, 0, c_magenta, "\
-Perception -%d when checking traps or firing ranged weapons;\n\
-Perception -%.1f when throwing items", encumb(bp_eyes), encumb(bp_eyes) / 2.0);
+    const int enc_eyes = encumb(bp_eyes);
+    mvwprintz(w_info, 0, 0, c_magenta, "Perception -%d when checking traps or firing ranged weapons;\n\
+Perception -%.1f when throwing items", enc_eyes, enc_eyes / 2.0);
    } else if (line == 2) {
     mvwprintz(w_encumb, 4, 2, h_ltgray, "Mouth");
-    mvwprintz(w_info, 0, 0, c_magenta, "\
-Running costs +%d movement points", encumb(bp_mouth) * 5);
+    mvwprintz(w_info, 0, 0, c_magenta, "Running costs +%d movement points", encumb(bp_mouth) * 5);
    } else if (line == 3) {
     mvwprintz(w_encumb, 5, 2, h_ltgray, "Torso");
-    mvwprintz(w_info, 0, 0, c_magenta, "\
-Melee skill -%d;      Dodge skill -%d;\n\
+    const int enc_torso = encumb(bp_torso);
+    mvwprintz(w_info, 0, 0, c_magenta, "Melee skill -%d;      Dodge skill -%d;\n\
 Swimming costs +%d movement points;\n\
-Melee attacks cost +%d movement points", encumb(bp_torso), encumb(bp_torso),
-encumb(bp_torso) * (80 - sklevel[sk_swimming] * 3), encumb(bp_torso) * 20);
+Melee attacks cost +%d movement points", enc_torso, enc_torso,
+enc_torso * (80 - sklevel[sk_swimming] * 3), enc_torso * 20);
    } else if (line == 4) {
     mvwprintz(w_encumb, 6, 2, h_ltgray, "Hands");
-    mvwprintz(w_info, 0, 0, c_magenta, "\
-Reloading costs +%d movement points;\n\
-Dexterity -%d when throwing items", encumb(bp_hands) * 30, encumb(bp_hands));
+    const int enc_hands = encumb(bp_hands);
+    mvwprintz(w_info, 0, 0, c_magenta, "Reloading costs +%d movement points;\n\
+Dexterity -%d when throwing items", enc_hands * 30, enc_hands);
    } else if (line == 5) {
     mvwprintz(w_encumb, 7, 2, h_ltgray, "Legs");
-    std::string sign = (encumb(bp_legs) >= 0 ? "+" : "");
-    std::string osign = (encumb(bp_legs) < 0 ? "+" : "-");
+    const int enc_legs = encumb(bp_legs);
+    const char* const sign = (enc_legs >= 0 ? "+" : "");
+    const char* const osign = (enc_legs < 0 ? "+" : "-");
     mvwprintz(w_info, 0, 0, c_magenta, "\
 Running costs %s%d movement points;  Swimming costs %s%d movement points;\n\
-Dodge skill %s%.1f", sign.c_str(), encumb(bp_legs) * 3,
-                     sign.c_str(), encumb(bp_legs) *(50 - sklevel[sk_swimming]),
-                     osign.c_str(), encumb(bp_legs) / 2.0);
+Dodge skill %s%.1f", sign, enc_legs * 3,
+                     sign, enc_legs *(50 - sklevel[sk_swimming]),
+                     osign, enc_legs / 2.0);
    } else if (line == 6) {
     mvwprintz(w_encumb, 8, 2, h_ltgray, "Feet");
-    mvwprintz(w_info, 0, 0, c_magenta, "\
-Running costs %s%d movement points", (encumb(bp_feet) >= 0 ? "+" : ""),
-encumb(bp_feet) * 5);
+    const int enc_feet = encumb(bp_feet);
+    mvwprintz(w_info, 0, 0, c_magenta, "Running costs %s%d movement points", (enc_feet >= 0 ? "+" : ""), enc_feet * 5);
    }
    wrefresh(w_encumb);
    wrefresh(w_info);
