@@ -162,19 +162,23 @@ static void reject_unescaped_percent(const std::string& src)
 #define reject_unescaped_percent(A)
 #endif
 
+/// <summary>
+/// MSVC++ C standard library crashes to desktop if faced with an illegal printf escape sequence.
+/// Whitelist the leading characters after %, that are used.
+/// </summary>
 bool reject_not_whitelisted_printf(const std::string& src)
 {
     auto i = src.find('%');
     while (std::string::npos != i) {
 #ifndef NDEBUG
         if (src.size() <= i + 1) throw std::logic_error("unescaped %");
-        if (!strchr("%sidc", src[i + 1])) throw std::logic_error("unexpected escape % use");
+        if (!strchr("%sidc.", src[i + 1])) throw std::logic_error("unexpected escape % use");
 #else
         if (src.size() <= i + 1) {
             debugmsg("unescaped percent");
             return true;
         }
-        if (!strchr("%sidc", src[i + 1])) {
+        if (!strchr("%sidc.", src[i + 1])) {
             debugmsg("unexpected escape percent use");
             return true;
         }

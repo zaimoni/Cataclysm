@@ -2261,8 +2261,7 @@ Head encumberance has no effect; it simply limits how much you can put on.");
     mvwprintz(w_encumb, 3, 2, h_ltgray, "Eyes");
     mvwprintz(w_info, 0, 0, c_magenta, "\
 Perception -%d when checking traps or firing ranged weapons;\n\
-Perception -%.1f when throwing items", encumb(bp_eyes),
-double(double(encumb(bp_eyes)) / 2));
+Perception -%.1f when throwing items", encumb(bp_eyes), encumb(bp_eyes) / 2.0);
    } else if (line == 2) {
     mvwprintz(w_encumb, 4, 2, h_ltgray, "Mouth");
     mvwprintz(w_info, 0, 0, c_magenta, "\
@@ -2287,7 +2286,7 @@ Dexterity -%d when throwing items", encumb(bp_hands) * 30, encumb(bp_hands));
 Running costs %s%d movement points;  Swimming costs %s%d movement points;\n\
 Dodge skill %s%.1f", sign.c_str(), encumb(bp_legs) * 3,
                      sign.c_str(), encumb(bp_legs) *(50 - sklevel[sk_swimming]),
-                     osign.c_str(), double(double(encumb(bp_legs)) / 2));
+                     osign.c_str(), encumb(bp_legs) / 2.0);
    } else if (line == 6) {
     mvwprintz(w_encumb, 8, 2, h_ltgray, "Feet");
     mvwprintz(w_info, 0, 0, c_magenta, "\
