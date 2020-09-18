@@ -959,8 +959,7 @@ void game::update_weather()
  if (weather == WEATHER_SUNNY && messages.turn.is_night()) weather = WEATHER_CLEAR;
 
  const auto& w_data = weather_datum::data[weather];
- if (weather != old_weather && w_data.dangerous &&
-     lev.z >= 0 && m.is_outside(u.pos)) {
+ if (weather != old_weather && w_data.dangerous && u.GPSpos.is_outside()) {
   std::ostringstream weather_text;
   weather_text << "The weather changed to " << w_data.name << "!";
   u.cancel_activity_query(weather_text.str().c_str());

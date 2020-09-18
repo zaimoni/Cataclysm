@@ -204,11 +204,8 @@ void weather_effect::acid(game *g)
    }
   }
  }
- for (int i = 0; i < g->z.size(); i++) {
-  if (g->m.is_outside(g->z[i].pos)) {
-   if (!g->z[i].has_flag(MF_ACIDPROOF))
-    g->z[i].hurt(1);
-  }
+ for (decltype(auto) z : g->z) {
+	 if (z.GPSpos.is_outside() && !z.has_flag(MF_ACIDPROOF)) z.hurt(1);
  }
  very_wet(g);
 }
