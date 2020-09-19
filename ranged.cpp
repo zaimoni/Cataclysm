@@ -197,7 +197,6 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
   return;
  }
 
- int x = p.pos.x, y = p.pos.y;
  const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
  if (p.has_trait(PF_TRIGGERHAPPY) && one_in(30)) burst = true;
  if (burst && p.weapon.burst_size() < 2) burst = false; // Can't burst fire a semi-auto
@@ -287,7 +286,7 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
    const int delta = int(sqrt(double(missed_by)));
    tar.x += rng(-delta, delta);
    tar.y += rng(-delta, delta);
-   trajectory = line_to(p.pos, tar, (m.sees(p.pos, x, y, -1, tart) ? tart : 0));
+   trajectory = line_to(p.pos, tar, (m.sees(p.pos, tar, -1, tart) ? tart : 0));
    missed = true;
    if (!burst) {
     if (&p == &u) messages.add("You miss!");
@@ -310,8 +309,8 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
 // relative to YOUR position, which may not be the gunman's position.
    if (u_see(trajectory[i])) {
     char bullet = (flags & mfb(IF_AMMO_FLAME)) ? '#' : '*';
-    mvwputch(w_terrain, trajectory[i].y + SEEY - u.pos.y,
-                        trajectory[i].x + SEEX - u.pos.x, c_red, bullet);
+    const point pt(trajectory[i] + point(VIEW_CENTER) - u.pos);
+    mvwputch(w_terrain, pt.y, pt.x, c_red, bullet);
     wrefresh(w_terrain);
     if (&p == &u) nanosleep(&ts, nullptr);
    }
@@ -586,14 +585,17 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
    } else
     mvwprintw(w_target, 5, 1, "Range: %d", rl_dist(u.pos, tar));
 
-   monster* const m_at = mon(tar);
-   if (!m_at) {
-    mvwprintw(w_status, 0, 9, "                             ");
-    if (snap_to_target)
-     mvwputch(w_terrain, SEEY, SEEX, c_red, '*');
-    else
-     mvwputch(w_terrain, tar.y + SEEY - u.pos.y, tar.x + SEEX - u.pos.x, c_red, '*');
-   } else if (u_see(m_at)) m_at->print_info(u, w_target);
+   if (monster* const m_at = mon(tar)) {
+       if (u_see(m_at)) m_at->print_info(u, w_target);
+   } else {
+       mvwprintw(w_status, 0, 9, "                             ");
+       if (snap_to_target)
+           mvwputch(w_terrain, VIEW_CENTER, VIEW_CENTER, c_red, '*');
+       else {
+           const point pt(tar + point(VIEW_CENTER) - u.pos);
+           mvwputch(w_terrain, pt.y, pt.x, c_red, '*');
+       }
+   }
   }
   wrefresh(w_target);
   wrefresh(w_terrain);
