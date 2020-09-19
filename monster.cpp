@@ -222,8 +222,8 @@ void monster::debug(player &u)
  debugmsg("%s Moves %d Speed %d HP %d",name().c_str(), moves, speed, hp);
  for (int i = 0; i < plans.size(); i++) {
   sprintf(buff, "%d", i);
-  if (i < 10) mvaddch(plans[i].y - SEEY + u.pos.y, plans[i].x - SEEX + u.pos.x, buff[0]);
-  else mvaddch(plans[i].y - SEEY + u.pos.y, plans[i].x - SEEX + u.pos.x, buff[1]);
+  const point pt(plans[i] - point(VIEW_CENTER) + u.pos);
+  mvaddch(pt.y, pt.x, buff[(10 > i) ? 0 : 1]);
  }
  getch();
 }

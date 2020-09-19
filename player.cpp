@@ -714,11 +714,11 @@ void dis_effect(game* g, player& p, disease& dis)
         break;
 
     case DI_DERMATIK: {
-        int formication_chance = 600;
-        if (dis.duration > HOURS(-4) && dis.duration < 0) formication_chance = 2400 + dis.duration;
+        int formication_chance = HOURS(1);
+        if (dis.duration > HOURS(-4) && dis.duration < 0) formication_chance = HOURS(4) + dis.duration;
         if (one_in(formication_chance)) p.add_disease(DI_FORMICATION, HOURS(2));
 
-        if (dis.duration < HOURS(-4) && one_in(2400)) p.vomit();
+        if (dis.duration < HOURS(-4) && one_in(HOURS(4))) p.vomit();
 
         if (dis.duration < DAYS(-1)) { // Spawn some larvae!
       // Choose how many insects; more for large characters
@@ -726,11 +726,9 @@ void dis_effect(game* g, player& p, disease& dis)
             while (num_insects < 6 && rng(0, 10) < p.str_max) num_insects++;
             // Figure out where they may be placed
             std::vector<point> valid_spawns;
-            for (int x = p.pos.x - 1; x <= p.pos.y + 1; x++) {
-                for (int y = p.pos.y - 1; y <= p.pos.y + 1; y++) {
-                    if (g->is_empty(x, y))
-                        valid_spawns.push_back(point(x, y));
-                }
+            for (decltype(auto) delta : Direction::vector) {
+                const point pt(p.pos + delta);
+                if (g->is_empty(pt)) valid_spawns.push_back(pt);
             }
             if (valid_spawns.size() >= 1) {
                 p.rem_disease(DI_DERMATIK); // No more infection!  yay.
@@ -3083,22 +3081,22 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
  if (has_artifact_with(AEP_SNAKES) && dam >= 6) {
   int snakes = int(dam / 6);
   std::vector<point> valid;
-  for (int x = pos.x - 1; x <= pos.x + 1; x++) {
-   for (int y = pos.y - 1; y <= pos.y + 1; y++) {
-    if (g->is_empty(x, y)) valid.push_back( point(x, y) );
-   }
+  for (decltype(auto) delta : Direction::vector) {
+      const point pt(pos + delta);
+      if (g->is_empty(pt)) valid.push_back(pt);
   }
-  if (snakes > valid.size()) snakes = valid.size();
-  if (snakes == 1) messages.add("A snake sprouts from your body!");
-  else if (snakes >= 2) messages.add("Some snakes sprout from your body!");
-  monster snake(mtype::types[mon_shadow_snake]);
-  for (int i = 0; i < snakes; i++) {
-   int index = rng(0, valid.size() - 1);
-   point sp = valid[index];
-   valid.erase(valid.begin() + index);
-   snake.spawn(sp);
-   snake.friendly = -1;
-   g->z.push_back(snake);
+  clamp_ub(snakes, valid.size());
+  if (0 < snakes) {
+      messages.add(1 == snakes ? "A snake sprouts from your body!" : "Some snakes sprout from your body!");
+      monster snake(mtype::types[mon_shadow_snake]);
+      snake.friendly = -1;
+      for (int i = 0; i < snakes; i++) {
+          int index = rng(0, valid.size() - 1);
+          point sp = valid[index];
+          valid.erase(valid.begin() + index);
+          snake.spawn(sp);
+          g->z.push_back(snake);
+      }
   }
  }
   
