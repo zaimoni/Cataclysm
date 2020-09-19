@@ -77,34 +77,31 @@ void tutorial_game::per_turn(game *g)
   }
  }
 
- bool showed_message = false;
- for (int x = g->u.pos.x - 1; x <= g->u.pos.x + 1 && !showed_message; x++) {
-  for (int y = g->u.pos.y - 1; y <= g->u.pos.y + 1 && !showed_message; y++) {
-   const auto& t = g->m.ter(x, y);
-   if (t_door_o == t) {
-    add_message(g, LESSON_OPEN);
-    showed_message = true;
-   } else if (t_door_c == t) {
-    add_message(g, LESSON_CLOSE);
-    showed_message = true;
-   } else if (t_window == t) {
-    add_message(g, LESSON_SMASH);
-    showed_message = true;
-   } else if (t_rack == t && !g->m.i_at(x, y).empty()) {
-    add_message(g, LESSON_EXAMINE);
-    showed_message = true;
-   } else if (t_stairs_down == t) {
-    add_message(g, LESSON_STAIRS);
-    showed_message = true;
-   } else if (t_water_sh == t) {
-    add_message(g, LESSON_PICKUP_WATER);
-    showed_message = true;
-   }
-  }
+ for (decltype(auto) delta : Direction::vector) {
+     const point pt(g->u.pos + delta);
+     const auto& t = g->m.ter(pt);
+     if (t_door_o == t) {
+         add_message(g, LESSON_OPEN);
+         break;
+     } else if (t_door_c == t) {
+         add_message(g, LESSON_CLOSE);
+         break;
+     } else if (t_window == t) {
+         add_message(g, LESSON_SMASH);
+         break;
+     } else if (t_rack == t && !g->m.i_at(pt).empty()) {
+         add_message(g, LESSON_EXAMINE);
+         break;
+     } else if (t_stairs_down == t) {
+         add_message(g, LESSON_STAIRS);
+         break;
+     } else if (t_water_sh == t) {
+         add_message(g, LESSON_PICKUP_WATER);
+         break;
+     }
  }
 
- if (!g->m.i_at(g->u.pos).empty())
-  add_message(g, LESSON_PICKUP);
+ if (!g->m.i_at(g->u.pos).empty()) add_message(g, LESSON_PICKUP);
 }
 
 void tutorial_game::pre_action(game *g, action_id &act)
@@ -135,13 +132,9 @@ void tutorial_game::post_action(game *g, action_id act)
   break;
 
  case ACTION_USE:
-  if (g->u.has_amount(itm_grenade_act, 1))
-   add_message(g, LESSON_ACT_GRENADE);
-  for (int x = g->u.pos.x - 1; x <= g->u.pos.x + 1; x++) {
-   for (int y = g->u.pos.y - 1; y <= g->u.pos.y + 1; y++) {
-    if (g->m.tr_at(x, y) == tr_bubblewrap)
-     add_message(g, LESSON_ACT_BUBBLEWRAP);
-   }
+  if (g->u.has_amount(itm_grenade_act, 1)) add_message(g, LESSON_ACT_GRENADE);
+  for (decltype(auto) delta : Direction::vector) {
+      if (tr_bubblewrap == g->m.tr_at(g->u.pos + delta)) add_message(g, LESSON_ACT_BUBBLEWRAP);
   }
   break;
 
