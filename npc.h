@@ -434,7 +434,6 @@ public:
  void move_to		(game *g, point pt);
  void move_to_next	(game *g); // Next in <path>
  void avoid_friendly_fire(game *g, int target); // Maneuver so we won't shoot u
- void move_pause	(); // Same as if the player pressed '.'
 
 // Item discovery and fetching
  void find_item		(game *g); // Look around and pick an item

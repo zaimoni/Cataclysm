@@ -325,7 +325,7 @@ void npc::execute_action(game *g, const ai_action& action, int target)
  switch (action.first) {
 
  case npc_pause:
-  move_pause();
+  pause();
   break;
 
 #if DEAD_FUNC
@@ -1073,7 +1073,7 @@ void npc::move_to_next(game *g)
  _normalize_path(path, pos);
  if (path.empty()) {
   debugmsg("npc::move_to_next() called with an empty path!");
-  move_pause();
+  pause();
   return;
  }
  move_to(g, path[0]);
@@ -1088,7 +1088,7 @@ void npc::avoid_friendly_fire(game *g, int target)
 	 throw std::logic_error("npc::avoid_friendly_fire called with invalid target");
 #else
 	 debugmsg("npc::avoid_friendly_fire() called with no target!");
-	 move_pause();
+	 pause();
 	 return;
 #endif
  } else if (auto mon = std::get<0>(Target.second)) {
@@ -1156,19 +1156,6 @@ bool player::move_away_from(const map& m, const point& tar, point& dest) const
 		return true;
 	}
 	return false;
-}
-
-void npc::move_pause()
-{
- moves = 0;
- if (recoil > 0) {
-  const int dampen_recoil = str_cur + 2 * sklevel[sk_gun];
-  if (dampen_recoil >= recoil) recoil = 0;
-  else {
-   recoil -= dampen_recoil;
-   recoil /= 2;
-  }
- }
 }
 
 void npc::find_item(game *g)
@@ -1481,7 +1468,7 @@ void npc::alt_attack(game *g, int target)
 	 throw std::logic_error("npc::alt_attack called without a valid target");
 #else
 	 debugmsg("npc::alt_attack() called with target = %d", target);
-	 move_pause();
+	 pause();
 	 return;
 #endif
  }
@@ -1988,7 +1975,7 @@ void npc::go_to_destination(game *g)
 {
   auto om = overmap::toOvermap(GPSpos);
   if (goal == om) {	// We're at our desired map square!
-   move_pause();
+   pause();
    reach_destination();
   }
   // NPCs historically don't go underground/change Z levels much \todo fix as part of long-range pathing
@@ -2015,14 +2002,14 @@ void npc::go_to_destination(game *g)
        }
        return;
       } else {
-       move_pause();	// XXX error path
+       pause();	// XXX error path
        return;
       }
      }
     }
    }
   }
-  move_pause();	// XXX error path
+  pause();	// XXX error path
 }
 
 std::string npc_action_name(npc_action action)
