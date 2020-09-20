@@ -1097,7 +1097,6 @@ void npc::avoid_friendly_fire(game *g, int target)
 
  point tar = Target.first;	// backward compatibility
 
- int xdir = (tar.x > pos.x ? 1 : -1), ydir = (tar.y > pos.y ? 1 : -1);
  direction dir_to_target = direction_from(pos, tar);
  std::vector<point> valid_moves;
 
