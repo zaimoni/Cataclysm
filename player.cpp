@@ -3079,7 +3079,7 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
  cancel_activity_query("You were hurt!");
 
  if (has_artifact_with(AEP_SNAKES) && dam >= 6) {
-  int snakes = int(dam / 6);
+  int snakes = dam / 6;
   std::vector<point> valid;
   for (decltype(auto) delta : Direction::vector) {
       const point pt(pos + delta);
@@ -3111,10 +3111,8 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
  case bp_eyes:
   pain++;
   if (dam > 5 || cut > 0) {
-   int minblind = int((dam + cut) / 10);
-   if (minblind < 1) minblind = 1;
-   int maxblind = int((dam + cut) /  4);
-   if (maxblind > 5) maxblind = 5;
+   const int minblind = clamped_lb<1>((dam + cut) / 10);
+   const int maxblind = clamped_ub<5>((dam + cut) / 4);
    add_disease(DI_BLIND, rng(minblind, maxblind));
   }
   [[fallthrough]];
@@ -3126,13 +3124,13 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
   if (hp_cur[hp_head] < 0) hp_cur[hp_head] = 0;
  break;
  case bp_torso:
-  recoil += int(dam / 5);
+  recoil += dam / 5;
   hp_cur[hp_torso] -= dam;
   if (hp_cur[hp_torso] < 0) hp_cur[hp_torso] = 0;
  break;
  case bp_hands: // Fall through to arms
  case bp_arms:
-  if (side == 1 || side == 3 || weapon.is_two_handed(*this)) recoil += int(dam / 3);
+  if (side == 1 || side == 3 || weapon.is_two_handed(*this)) recoil += dam / 3;
   if (side == 0 || side == 3) {
    hp_cur[hp_arm_l] -= dam;
    if (hp_cur[hp_arm_l] < 0) hp_cur[hp_arm_l] = 0;
