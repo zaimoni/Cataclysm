@@ -734,16 +734,14 @@ void iuse::extinguisher(game *g, player *p, item *it, bool t)
   return;
  }
  p->moves -= 140;
- int x = dir.x + p->pos.x;
- int y = dir.y + p->pos.y;
+ point pt(dir + p->pos);
  {
- auto& fd = g->m.field_at(x, y);
+ auto& fd = g->m.field_at(pt);
  if (fd.type == fd_fire) {
-  if (0 >= (fd.density -= rng(2, 3))) g->m.remove_field(x, y);
+  if (0 >= (fd.density -= rng(2, 3))) g->m.remove_field(pt);
  }
  }
- monster* const m_at = g->mon(x,y);
- if (m_at) {
+ if (monster* const m_at = g->mon(pt)) {
   m_at->moves -= 150;
   if (g->u_see(m_at)) messages.add("The %s is sprayed!", m_at->name().c_str());
   if (m_at->made_of(LIQUID)) {
@@ -752,13 +750,12 @@ void iuse::extinguisher(game *g, player *p, item *it, bool t)
    else m_at->speed /= 2;
   }
  }
- if (g->m.move_cost(x, y) != 0) {
-  x += dir.x;
-  y += dir.y;
-  auto& fd = g->m.field_at(x, y);
+ if (g->m.move_cost(pt) != 0) {
+  pt += dir;
+  auto& fd = g->m.field_at(pt);
   if (fd.type == fd_fire) {
    fd.density -= rng(0, 1) + rng(0, 1);
-   if (fd.density <= 0) g->m.remove_field(x, y);
+   if (fd.density <= 0) g->m.remove_field(pt);
    else if (3 < fd.density) fd.density = 3;
   }
  }
@@ -1089,9 +1086,8 @@ void iuse::set_trap(game *g, player *p, item *it, bool t)
   messages.add("Invalid direction.");
   return;
  }
- int posx = dir.x + p->pos.x;
- int posy = dir.y + p->pos.y;
- if (g->m.move_cost(posx, posy) != 2) {
+ point trap_pos(dir + p->pos);
+ if (g->m.move_cost(trap_pos) != 2) {
   messages.add("You can't place a %s there.", it->tname().c_str());
   return;
  }
@@ -1114,28 +1110,23 @@ void iuse::set_trap(game *g, player *p, item *it, bool t)
   break;
  case itm_beartrap:
   buried = (p->has_amount(itm_shovel, 1) &&
-            g->m.has_flag(diggable, posx, posy) &&
+            g->m.has_flag(diggable, trap_pos) &&
             query_yn("Bury the beartrap?"));
   type = (buried ? tr_beartrap_buried : tr_beartrap);
   message << "You " << (buried ? "bury" : "set") << " the beartrap.";
   practice = (buried ? 7 : 4); 
   break;
  case itm_board_trap:
-  message << "You set the board trap on the " << g->m.tername(posx, posy) <<
-             ", nails facing up.";
+  message << "You set the board trap on the " << g->m.tername(trap_pos) << ", nails facing up.";
   type = tr_nailboard;
   practice = 2;
   break;
  case itm_tripwire:
 // Must have a connection between solid squares.
-  if ((g->m.move_cost(posx    , posy - 1) != 2 &&
-       g->m.move_cost(posx    , posy + 1) != 2   ) ||
-      (g->m.move_cost(posx + 1, posy    ) != 2 &&
-       g->m.move_cost(posx - 1, posy    ) != 2   ) ||
-      (g->m.move_cost(posx - 1, posy - 1) != 2 &&
-       g->m.move_cost(posx + 1, posy + 1) != 2   ) ||
-      (g->m.move_cost(posx + 1, posy - 1) != 2 &&
-       g->m.move_cost(posx - 1, posy + 1) != 2   )) {
+  if (   (g->m.move_cost(trap_pos + Direction::N) != 2 && g->m.move_cost(trap_pos + Direction::S) != 2)
+      || (g->m.move_cost(trap_pos + Direction::E) != 2 && g->m.move_cost(trap_pos + Direction::W) != 2)
+      || (g->m.move_cost(trap_pos + Direction::NW) != 2 && g->m.move_cost(trap_pos + Direction::SE) != 2)
+      || (g->m.move_cost(trap_pos + Direction::NE) != 2 && g->m.move_cost(trap_pos + Direction::SW) != 2)) {
    message << "You string up the tripwire.";
    type= tr_tripwire;
    practice = 3;
@@ -1155,11 +1146,10 @@ void iuse::set_trap(game *g, player *p, item *it, bool t)
   practice = 5;
   break;
  case itm_blade_trap:
-  posx += dir.x;
-  posy += dir.y;
+  trap_pos += dir;
   for (int i = -1; i <= 1; i++) {
    for (int j = -1; j <= 1; j++) {
-    if (g->m.move_cost(posx + i, posy + j) != 2) {
+    if (g->m.move_cost(trap_pos.x + i, trap_pos.y + j) != 2) {
      messages.add("That trap needs a 3x3 space to be clear, centered two tiles from you.");
      return;
     }
@@ -1184,21 +1174,21 @@ void iuse::set_trap(game *g, player *p, item *it, bool t)
   if (!p->has_amount(itm_shovel, 1)) {
    messages.add("You need a shovel.");
    return;
-  } else if (!g->m.has_flag(diggable, posx, posy)) {
-   messages.add("You can't dig in that %s", g->m.tername(posx, posy).c_str());
+  } else if (!g->m.has_flag(diggable, trap_pos)) {
+   messages.add("You can't dig in that %s", g->m.tername(trap_pos).c_str());
    return;
   }
  }
 
  messages.add(message.str().c_str());
  p->practice(sk_traps, practice);
- g->m.add_trap(posx, posy, type);
+ g->m.add_trap(trap_pos.x, trap_pos.y, type);
  p->moves -= 100 + practice * 25;
  if (type == tr_engine) {
   for (int i = -1; i <= 1; i++) {
    for (int j = -1; j <= 1; j++) {
     if (i != 0 || j != 0)
-     g->m.add_trap(posx + i, posy + j, tr_blade);
+     g->m.add_trap(trap_pos.x + i, trap_pos.y + j, tr_blade);
    }
   }
  }

@@ -3129,16 +3129,17 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
   }
  }
 // Draw the explosion
+ const point epicenter(point(x, y) + point(VIEW_CENTER) - u.pos);
  for (int i = 1; i <= radius; i++) {
-  mvwputch(w_terrain, y - i + SEEY - u.pos.y, x - i + SEEX - u.pos.x, c_red, '/');
-  mvwputch(w_terrain, y - i + SEEY - u.pos.y, x + i + SEEX - u.pos.x, c_red,'\\');
-  mvwputch(w_terrain, y + i + SEEY - u.pos.y, x - i + SEEX - u.pos.x, c_red,'\\');
-  mvwputch(w_terrain, y + i + SEEY - u.pos.y, x + i + SEEX - u.pos.x, c_red, '/');
+  mvwputch(w_terrain, epicenter.y - i, epicenter.x - i, c_red, '/');
+  mvwputch(w_terrain, epicenter.y - i, epicenter.x + i, c_red,'\\');
+  mvwputch(w_terrain, epicenter.y + i, epicenter.x - i, c_red,'\\');
+  mvwputch(w_terrain, epicenter.y + i, epicenter.x + i, c_red, '/');
   for (int j = 1 - i; j < 0 + i; j++) {
-   mvwputch(w_terrain, y - i + SEEY - u.pos.y, x + j + SEEX - u.pos.x, c_red,'-');
-   mvwputch(w_terrain, y + i + SEEY - u.pos.y, x + j + SEEX - u.pos.x, c_red,'-');
-   mvwputch(w_terrain, y + j + SEEY - u.pos.y, x - i + SEEX - u.pos.x, c_red,'|');
-   mvwputch(w_terrain, y + j + SEEY - u.pos.y, x + i + SEEX - u.pos.x, c_red,'|');
+   mvwputch(w_terrain, epicenter.y - i, epicenter.x + j, c_red,'-');
+   mvwputch(w_terrain, epicenter.y + i, epicenter.x + j, c_red,'-');
+   mvwputch(w_terrain, epicenter.y + j, epicenter.x - i, c_red,'|');
+   mvwputch(w_terrain, epicenter.y + j, epicenter.x + i, c_red,'|');
   }
   wrefresh(w_terrain);
   nanosleep(&ts, nullptr);
@@ -3159,8 +3160,8 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
    if (j > 0 && u_see(traj[j - 1]))
     m.drawsq(w_terrain, u, traj[j - 1].x, traj[j - 1].y, false, true);
    if (u_see(traj[j])) {
-    mvwputch(w_terrain, traj[j].y + SEEY - u.pos.y,
-                        traj[j].x + SEEX - u.pos.x, c_red, '`');
+    const point draw_at(traj[j] + point(VIEW_CENTER) - u.pos);
+    mvwputch(w_terrain, draw_at.y, draw_at.x, c_red, '`');
     wrefresh(w_terrain);
     nanosleep(&ts, nullptr);
    }
@@ -3893,22 +3894,12 @@ point game::look_around()
  wrefresh(w_look);
  do {
   ch = input();
-  if (!u_see(l))
-   mvwputch(w_terrain, l.y - u.pos.y + SEEY, l.x - u.pos.x + SEEX, c_black, ' ');
-  point dir(get_direction(ch));
-  if (dir.x != -2) {	// Directional key pressed
-   l += dir;
-/*
-   if (lx < u.posx - SEEX)
-    lx = u.posx - SEEX;
-   if (lx > u.posx + SEEX)
-    lx = u.posx + SEEX;
-   if (ly < u.posy - SEEY)
-    ly = u.posy - SEEY;
-   if (ly > u.posy + SEEY)
-    ly = u.posy + SEEY;
-*/
+  if (!u_see(l)) {
+   const point draw_at(l - u.pos + point(VIEW_CENTER));
+   mvwputch(w_terrain, draw_at.y, draw_at.x, c_black, ' ');
   }
+  point dir(get_direction(ch));
+  if (dir.x != -2) l += dir; // Directional key pressed
   draw_ter(l);
   for (int i = 1; i < VIEW - SEE-1; i++) {
    for (int j = 1; j < SCREEN_WIDTH - (SEE * 2 + 8)-1; j++)
