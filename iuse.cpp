@@ -1589,10 +1589,9 @@ void iuse::portal(game *g, player *p, item *it, bool t)
 void iuse::manhack(game *g, player *p, item *it, bool t)
 {
  std::vector<point> valid;	// Valid spawn locations
- for (int x = p->pos.x - 1; x <= p->pos.x + 1; x++) {
-  for (int y = p->pos.y - 1; y <= p->pos.y + 1; y++) {
-   if (g->is_empty(x, y)) valid.push_back(point(x, y));
-  }
+ for (decltype(auto) delta : Direction::vector) {
+     const point pt(p->pos + delta);
+     if (g->is_empty(pt)) valid.push_back(pt);
  }
  if (valid.empty()) {	// No valid points!
   messages.add("There is no adjacent square to release the manhack in!");

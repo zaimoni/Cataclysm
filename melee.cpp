@@ -677,17 +677,17 @@ technique_id player::pick_technique(const game *g, const monster *z, const playe
 
   if (weapon.has_technique(TEC_WIDE, this)) { // Count monsters
    int enemy_count = 0;
-   for (int x = pos.x - 1; x <= pos.x + 1; x++) {
-    for (int y = pos.y - 1; y <= pos.y + 1; y++) {
-	 if (const monster* const m_at = g->mon(x,y)) {
-      if (0 == m_at->friendly) enemy_count++;
-      else enemy_count -= 2;
-	 }
-     if (const npc* const nPC = g->nPC(x,y)) {
-      if (nPC->attitude == NPCATT_KILL) enemy_count++;
-      else enemy_count -= 2;
-     }
-    }
+   for (decltype(auto) delta : Direction::vector) {
+       const point pt(pos + delta);
+       // XXX faction-unaware
+       if (const monster* const m_at = g->mon(pt)) {
+           if (0 == m_at->friendly) enemy_count++;
+           else enemy_count -= 2;
+       }
+       if (const npc* const nPC = g->nPC(pt)) {
+           if (nPC->attitude == NPCATT_KILL) enemy_count++;
+           else enemy_count -= 2;
+       } // XXX \todo handle npc wide technique vs player
    }
    if (enemy_count >= (possible.empty() ? 2 : 3)) possible.push_back(TEC_WIDE);
   }
