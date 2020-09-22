@@ -1675,7 +1675,7 @@ int npc::speed_estimate(int speed) const
 
 void npc::draw(WINDOW* w, const point& pt, bool inv) const
 {
- const point dest = point(SEE)+pos-pt;
+ const point dest = point(VIEW_CENTER)+pos-pt;
  nc_color col = c_pink;
  if (attitude == NPCATT_KILL) col = c_red;
  if (is_friend())             col = c_green;

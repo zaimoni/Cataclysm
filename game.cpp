@@ -2243,26 +2243,30 @@ void game::draw_ter(const point& pos)
  // Draw monsters
  for(const auto& mon : z) {
   point delta(mon.pos - pos);
-  if (SEE < Linf_dist(delta)) continue;
+  if (VIEW_CENTER < Linf_dist(delta)) continue;
   if (u_see(&mon))
    mon.draw(w_terrain, pos, false);
-  else if (mon.has_flag(MF_WARM) &&
-           (u.has_active_bionic(bio_infrared) || u.has_trait(PF_INFRARED)))
-   mvwputch(w_terrain, SEEY + delta.y, SEEX + delta.x, c_red, '?');
+  else if (mon.has_flag(MF_WARM) && (u.has_active_bionic(bio_infrared) || u.has_trait(PF_INFRARED))) {
+      const point draw_at(point(VIEW_CENTER) + delta);
+      mvwputch(w_terrain, draw_at.y, draw_at.x, c_red, '?');
+  }
  }
  // Draw NPCs
  for (const auto& _npc : active_npc) {
    const point delta(_npc.pos-pos);
-   if (SEE < Linf_dist(delta)) continue;
+   if (VIEW_CENTER < Linf_dist(delta)) continue;
    if (u_see(_npc.pos)) _npc.draw(w_terrain, pos, false);
  }
  if (u.has_active_bionic(bio_scent_vision)) {	// overwriting normal vision isn't that useful
   point temp;
-  for (temp.x = -SEEX; temp.x <= SEEX; temp.x++) {
-   for (temp.y = -SEEY; temp.y <= SEEY; temp.y++) {
+  for (temp.x = -VIEW_CENTER; temp.x <= VIEW_CENTER; temp.x++) {
+   for (temp.y = -VIEW_CENTER; temp.y <= VIEW_CENTER; temp.y++) {
 	if (2 <= Linf_dist(temp)) {
 	  const point real(temp+pos);
-	  if (0 != scent(real)) mvwputch(w_terrain, SEEY + temp.y, SEEX + temp.x, c_white, (mon(real) ? '?' : '#'));
+      if (0 != scent(real)) {
+          const point draw_at(point(VIEW_CENTER) + temp);
+          mvwputch(w_terrain, draw_at.y, draw_at.x, c_white, (mon(real) ? '?' : '#'));
+      }
 	}
    }
   }
@@ -5687,6 +5691,7 @@ void game::update_map(int &x, int &y)
  while (0 < i) {
 	 auto& _npc = active_npc[--i];
 	 _npc.shift(shift);
+     // don't scope NPCs out *until* any vehicle containing them is outside of the reality bubble as well
 	 if (_npc.pos.x < 0 - SEEX * 2 ||
 		 _npc.pos.y < 0 - SEEX * 2 ||
 		 _npc.pos.x >     SEEX* (MAPSIZE + 2) ||
