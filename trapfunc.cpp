@@ -1,4 +1,3 @@
-#include "Zaimoni.STL/GDI/box.hpp" // to trigger conditional include for rng overload
 #include "trap.h"
 #include "rng.h"
 #include "game.h"

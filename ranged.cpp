@@ -558,7 +558,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
     m.drawsq(w_terrain, u, ret[i].x, ret[i].y, false, true, center.x, center.y);
 */
 // Draw the player
-   const point at(u.pos-center+point(SEE));
+   const point at(u.pos-center+point(VIEW_CENTER));
    if (at.x >= 0 && at.x < VIEW && at.y >= 0 && at.y < VIEW)
     mvwputch(w_terrain, at.y, at.x, u.color(), '@');
 

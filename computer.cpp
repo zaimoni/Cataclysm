@@ -700,8 +700,8 @@ void computer::activate_failure(game *g, computer_failure fail)
   case COMPFAIL_AMIGARA:
    g->add_event(EVENT_AMIGARA, int(messages.turn) + 5, 0, 0, 0);
    g->u.add_disease(DI_AMIGARA, MINUTES(2));
-   g->explosion(rng(0, SEEX * MAPSIZE), rng(0, SEEY * MAPSIZE), 10, 10, false);
-   g->explosion(rng(0, SEEX * MAPSIZE), rng(0, SEEY * MAPSIZE), 10, 10, false);
+   g->explosion(rng(map::reality_bubble_extent), 10, 10, false);
+   g->explosion(rng(map::reality_bubble_extent), 10, 10, false);
    break;
 
   case COMPFAIL_DESTROY_BLOOD:

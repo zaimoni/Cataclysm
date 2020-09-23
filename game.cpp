@@ -4552,13 +4552,13 @@ void game::reassign_item()
 
 void game::pl_draw(const zaimoni::gdi::box<point>& bounds) const
 {
-    for (int j = u.pos.x - SEEX; j <= u.pos.x + SEEX; j++) {
-        for (int k = u.pos.y - SEEY; k <= u.pos.y + SEEY; k++) {
+    for (int j = u.pos.x - VIEW_CENTER; j <= u.pos.x + VIEW_CENTER; j++) {
+        for (int k = u.pos.y - VIEW_CENTER; k <= u.pos.y + VIEW_CENTER; k++) {
             if (u_see(j, k)) {
                 if (bounds.contains(point(j, k)))
                     m.drawsq(w_terrain, u, j, k, false, true);
                 else
-                    mvwputch(w_terrain, k + SEEY - u.pos.y, j + SEEX - u.pos.x, c_dkgray, '#');
+                    mvwputch(w_terrain, k + VIEW_CENTER - u.pos.y, j + VIEW_CENTER - u.pos.x, c_dkgray, '#');
             }
         }
     }
