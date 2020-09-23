@@ -409,6 +409,18 @@ stat_delta dis_stat_effects(const player& p, const disease& dis)
     return ret;
 }
 
+bool player::see_phantasm()
+{
+    static constexpr const zaimoni::gdi::box<point> hallu_range(point(-10), point(10));
+    auto g = game::active();
+    const point pt(pos + rng(hallu_range));
+    if (!g->mon(pt)) {
+        g->z.push_back(monster(mtype::types[mon_hallu_zom + rng(0, 3)], pt));
+        return true;
+    }
+    return false;
+}
+
 void dis_effect(game* g, player& p, disease& dis)
 {
     const auto delta = dis_stat_effects(p, dis);
@@ -794,7 +806,7 @@ void dis_effect(game* g, player& p, disease& dis)
         else if (dis.duration == HOURS(4))	// Visuals start
             p.add_disease(DI_VISUALS, HOURS(4));
         else {	// Full symptoms
-            if (one_in(50)) g->z.push_back(monster(mtype::types[mon_hallu_zom + rng(0, 3)], p.pos.x + rng(-10, 10), p.pos.y + rng(-10, 10)));	// Generate phantasm
+            if (one_in(50)) p.see_phantasm();
         }
         break;
 
@@ -3622,13 +3634,8 @@ void player::suffer(game *g)
      messages.add("You start to shake uncontrollably.");
      add_disease(DI_SHAKES, MINUTES(1) * rng(2, 5));
      break;
-    case 7: {
-     static constexpr const zaimoni::gdi::box<point> hallu_range(point(-10), point(10));
-     for (i = 0; i < 10; i++) {
-      monster phantasm(mtype::types[mon_hallu_zom + rng(0, 3)], pos + rng(hallu_range));
-      if (!g->mon(phantasm.pos)) g->z.push_back(phantasm);
-     }
-     }
+    case 7:
+     for (i = 0; i < 10; i++) see_phantasm();
      break;
     case 8:
      messages.add("It's a good time to lie down and sleep.");

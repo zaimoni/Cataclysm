@@ -256,6 +256,9 @@ public:
  item* decode_item_index(int n);
  const item* decode_item_index(int n) const;
 
+// abstract ui
+ virtual bool see_phantasm();  // would not be const for multi-PC case
+
 // integrity checks
  void screenpos_set(point pt);
  void screenpos_set(int x, int y);

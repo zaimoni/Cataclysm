@@ -474,7 +474,8 @@ public:
 
 // The preceding are in npcmove.cpp
 
-
+// abstract ui
+    bool see_phantasm() override { return false; } // unclear how to implement this even for multi-PC case, let alone NPCs
 
 // #############   VALUES   ################
 
