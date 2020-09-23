@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\fragment.inc">
+      <UniqueIdentifier>{3997287f-87bd-48be-b2fe-b8ac7afcc6cc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -272,6 +275,9 @@
     </ClInclude>
     <ClInclude Include="stl_limits.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fragment.inc\rng_box.hpp">
+      <Filter>Header Files\fragment.inc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

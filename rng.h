@@ -20,4 +20,10 @@ void shuffle_contents(ContainerType& v)
     }
 }
 
+#ifdef _ENUMS_H_
+#ifdef ZAIMONI_STL_GDI_BOX_HPP
+#include "fragment.inc/rng_box.hpp"
+#endif
+#endif
+
 #endif

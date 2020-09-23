@@ -885,16 +885,17 @@ void dis_effect(game* g, player& p, disease& dis)
 
     case DI_ATTENTION:
         if (one_in(100000 / dis.duration) && one_in(100000 / dis.duration) && one_in(250)) {
-            int x, y, tries = 0;
+            static constexpr const zaimoni::gdi::box<point> portal_range(point(-4), point(4));
+            point pt;
+            int tries = 0;
             do {
-                x = p.pos.x + rng(-4, 4);
-                y = p.pos.y + rng(-4, 4);
+                pt = p.pos + rng(portal_range);
                 tries++;
-            } while ((g->survivor(x, y) || g->mon(x, y)) && tries < 10);
+            } while ((g->survivor(pt) || g->mon(pt)) && tries < 10);
             if (tries < 10) {
-                if (g->m.move_cost(x, y) == 0) g->m.ter(x, y) = t_rubble;
-                g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], x, y));
-                if (g->u_see(x, y)) {
+                if (g->m.move_cost(pt) == 0) g->m.ter(pt) = t_rubble;
+                g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], pt));
+                if (g->u_see(pt)) {
                     g->u.cancel_activity_query("A monster appears nearby!");
                     messages.add("A portal opens nearby, and a monster crawls through!");
                 }
@@ -3621,10 +3622,12 @@ void player::suffer(game *g)
      messages.add("You start to shake uncontrollably.");
      add_disease(DI_SHAKES, MINUTES(1) * rng(2, 5));
      break;
-    case 7:
+    case 7: {
+     static constexpr const zaimoni::gdi::box<point> hallu_range(point(-10), point(10));
      for (i = 0; i < 10; i++) {
-      monster phantasm(mtype::types[mon_hallu_zom + rng(0, 3)], pos.x + rng(-10, 10), pos.y + rng(-10, 10));
+      monster phantasm(mtype::types[mon_hallu_zom + rng(0, 3)], pos + rng(hallu_range));
       if (!g->mon(phantasm.pos)) g->z.push_back(phantasm);
+     }
      }
      break;
     case 8:
@@ -4025,8 +4028,10 @@ void player::process_active_items(game *g)
             }
             if (maintain) {
                 if (one_in(20)) {
+                    // do not think range of this dischage is fundamentally linked to map generation's SEE 2020-09-23 zaimoni
+                    static constexpr const zaimoni::gdi::box<point> discharge_range(point(-12), point(12));
                     messages.add("Your %s discharges!", weapon.tname().c_str());
-                    point target(pos.x + rng(-12, 12), pos.y + rng(-12, 12));
+                    const point target(pos + rng(discharge_range));
                     std::vector<point> traj = line_to(pos, target, 0);
                     g->fire(*this, target, traj, false);
                 }

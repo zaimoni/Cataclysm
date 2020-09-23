@@ -177,6 +177,7 @@
     <ClInclude Include="facdata.h" />
     <ClInclude Include="faction.h" />
     <ClInclude Include="file.h" />
+    <ClInclude Include="fragment.inc\rng_box.hpp" />
     <ClInclude Include="game.h" />
     <ClInclude Include="gamemode.h" />
     <ClInclude Include="GPS_loc.hpp" />

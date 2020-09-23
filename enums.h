@@ -142,6 +142,12 @@ inline bool operator<(const tripoint& lhs, const tripoint& rhs)
 	return lhs.z < rhs.z;
 }
 
+#ifdef RNG_H
+#ifdef ZAIMONI_STL_GDI_BOX_HPP
+#include "fragment.inc/rng_box.hpp"
+#endif
+#endif
+
 namespace cataclysm {
 
 class JSON;
