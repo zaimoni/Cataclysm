@@ -925,20 +925,16 @@ void map::mon_in_field(game* g, monster& z)
     case fd_fatigue:
         if (rng(0, 2) < cur.density) {
             dam = cur.density;
-            int tries = 0;
-            point newpos;
-            do {
-                newpos = point(rng(z.pos.x - SEEX, z.pos.x + SEEX), rng(z.pos.y - SEEY, z.pos.y + SEEY));
-                tries++;
-            } while (g->m.move_cost(newpos) == 0 && tries != 10);
+            const point newpos = g->teleport_destination_unsafe(z.pos, 10);
 
-            if (tries == 10) g->explode_mon(z);
+            // Cf. trapfunc::telepad
+            if (0 == g->m.move_cost(newpos)) g->explode_mon(z);
             else if (monster* const m_hit = g->mon(newpos)) {
-                if (g->u_see(&z))
-                    messages.add("The %s teleports into a %s, killing them both!", z.name().c_str(), m_hit->name().c_str());
+//              if (g->u_see(&z)) messages.add("The %s teleports into a %s, killing them both!", z.name().c_str(), m_hit->name().c_str()); // C:Whales
+                if (g->u_see(&z)) messages.add("The %s teleports into a %s, killing the %s!", z.name().c_str(), m_hit->name().c_str(), m_hit->name().c_str());
                 g->explode_mon(*m_hit);
-            }
-            else {
+                z.screenpos_set(newpos);
+            } else {
                 z.screenpos_set(newpos);
             }
         }

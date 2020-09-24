@@ -222,17 +222,12 @@ void trapfuncm::telepad(game *g, monster *z)
  g->sound(z->pos, 6, "vvrrrRRMM*POP!*");
  if (g->u_see(z)) messages.add("The air shimmers around the %s...", z->name().c_str());
 
- int tries = 0;
- point newpos;
- do {
-  newpos = point(rng(z->pos.x - SEEX, z->pos.x + SEEX), rng(z->pos.y - SEEY, z->pos.y + SEEY));
-  tries++;
- } while (g->m.move_cost(newpos) == 0 && tries != 10);
+ const point newpos = g->teleport_destination_unsafe(z->pos, 10);
 
- if (tries == 10) g->explode_mon(*z);
+ // Cf. dimensional fatigue field fd_fatigue
+ if (0 == g->m.move_cost(newpos)) g->explode_mon(*z);
  else if (monster* const m_hit = g->mon(newpos)) {	// must agree with LAB_NOTES
-   if (g->u_see(z))
-    messages.add("The %s teleports into a %s, killing the %s!", z->name().c_str(), m_hit->name().c_str(), m_hit->name().c_str());
+   if (g->u_see(z)) messages.add("The %s teleports into a %s, killing the %s!", z->name().c_str(), m_hit->name().c_str(), m_hit->name().c_str());
    g->explode_mon(*m_hit);
    z->screenpos_set(newpos);
  } else {

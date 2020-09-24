@@ -5973,34 +5973,45 @@ void game::msg_buffer()
  refresh_all();
 }
 
+// unclear that this is actually related to map generation (SEE=12, historically) 2020-09-24 zaimoni
+static constexpr const zaimoni::gdi::box<point> teleport_range(point(-12), point(12));
+
+point game::teleport_destination(const point& origin, int tries)
+{
+    point dest(origin + rng(teleport_range));
+    while (0 <= --tries) {
+        if (is_empty(dest)) break;
+        dest = origin + rng(teleport_range);
+    }
+    return dest;
+}
+
+point game::teleport_destination_unsafe(const point& origin, int tries)
+{
+    point dest(origin + rng(teleport_range));
+    while (0 <= --tries) {
+        if (0 < m.move_cost(dest)) break;
+        dest = origin + rng(teleport_range);
+    }
+    return dest;
+}
+
 void game::teleport(player *p)
 {
  if (p == nullptr) p = &u;
- int tries = 0;
- point dest(0, 0);
  const bool is_u = (p == &u);
  p->add_disease(DI_TELEGLOW, MINUTES(30));
- do {
-  dest.x = p->pos.x + rng(0, SEEX * 2) - SEEX;
-  dest.y = p->pos.y + rng(0, SEEY * 2) - SEEY;
-  tries++;
- } while (tries < 15 && !is_empty(dest));
+ const point dest = teleport_destination(p->pos, 15);
  const bool can_see = (is_u || u_see(dest));
  std::string You = (is_u ? "You" : p->name);
  p->screenpos_set(dest);
- if (tries == 15) {
-  if (m.move_cost(dest) == 0) {	// TODO: If we land in water, swim
-   if (can_see)
-    messages.add("%s teleport%s into the middle of a %s!", You.c_str(),
-            (is_u ? "" : "s"), m.tername(dest).c_str());
+ if (m.move_cost(dest) == 0) {	// \todo? C:Whales TODO: If we land in water, swim
+   if (can_see) messages.add("%s teleport%s into the middle of a %s!", You.c_str(), (is_u ? "" : "s"), m.tername(dest).c_str());
    p->hurt(this, bp_torso, 0, 500);
-  } else if (monster* const m_at = mon(dest)) {
-     if (can_see)
-       messages.add("%s teleport%s into the middle of a %s!", You.c_str(),
-              (is_u ? "" : "s"), m_at->name().c_str());
-     explode_mon(*m_at);
-   }
- }
+ } else if (monster* const m_at = mon(dest)) {
+   if (can_see) messages.add("%s teleport%s into the middle of a %s!", You.c_str(), (is_u ? "" : "s"), m_at->name().c_str());
+   explode_mon(*m_at);
+ } // \todo handle colliding with another PC/NPC
  if (is_u) update_map(u.pos.x, u.pos.y);
 }
 

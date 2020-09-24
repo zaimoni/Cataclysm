@@ -130,6 +130,8 @@ class game
   const mission_type* find_mission_type(int id); // Same, but returns its type
   void process_missions(); // Process missions, see if time's run out
 
+  point teleport_destination(const point& origin, int tries); // Teleportation is safer for PCs and NPCs
+  point teleport_destination_unsafe(const point& origin, int tries); // than for monsters
   void teleport(player* p = nullptr);
   void plswim(int x, int y); // Called by plmove.  Handles swimming
   // when player is thrown (by impact or something)
