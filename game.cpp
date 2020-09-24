@@ -1328,9 +1328,7 @@ void game::get_input()
 
 int& game::scent(int x, int y)
 {
- if (x < 0 || x >= SEEX * MAPSIZE || y < 0 || y >= SEEY * MAPSIZE) {
-  return discard<int>::x = 0;	// Out-of-bounds - null scent
- }
+ if (!map::in_bounds(x,y)) return discard<int>::x = 0;	// Out-of-bounds - null scent
  return grscent[x][y];
 }
 
@@ -2790,7 +2788,7 @@ void game::cleanup_dead()
 void game::monmove()
 {
  cleanup_dead();
- static constexpr const zaimoni::gdi::box<point> extended_reality_bubble(point(-(SEE * MAPSIZE) / 6),point((SEEX * MAPSIZE * 7) / 6));
+ static constexpr const zaimoni::gdi::box<point> extended_reality_bubble(point(-(SEE * MAPSIZE) / 6),point((SEE * MAPSIZE * 7) / 6));
  for (int i = 0; i < z.size(); i++) {
   while (!z[i].dead && !z[i].can_move_to(m, z[i].pos)) {
 // If we can't move to our current position, assign us to a new one (terrain change after map generation?)
