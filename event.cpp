@@ -87,32 +87,33 @@ void event::actualize() const
 #endif
    }
    const bool horizontal = (t_fault == g->m.ter(*fault + Direction::W) || t_fault == g->m.ter(*fault + Direction::E));
+   // ? : of two lambda functions hard-errors (incompatible types)
+   auto amigara_position = horizontal ? std::function<point()>([&]() {
+       point ret(*fault);
+       ret.x += rng(0, 16); // C:Whales 2*SEE-8
+       for (int n = -1; n <= 1; n++) {
+           const int try_y = fault->y + n;
+           if (t_rock_floor == g->m.ter(ret.x, try_y)) ret.y = try_y;
+       }
+       return ret;
+   }) : [&]() { // vertical fault
+       point ret(*fault);
+       ret.y += rng(0, 16); // C:Whales 2*SEE-8
+       for (int n = -1; n <= 1; n++) {
+           const int try_x = fault->x + n;
+           if (t_rock_floor == g->m.ter(try_x, ret.y)) ret.x = try_x;
+       }
+       return ret;
+   };
+
    const int num_horrors = rng(3, 5);
    monster horror(mtype::types[mon_amigara_horror]);
    for (int i = 0; i < num_horrors; i++) {
-    int tries = 0;
-    int monx = -1, mony = -1;
-    do {
-     // unclear how this relates to mapgen
-     if (horizontal) {
-      monx = fault->x + rng(0, 16); // C:Whales 2*SEE-8 = 16
-      for (int n = -1; n <= 1; n++) {
-       const int try_y = fault->y + n;
-       if (t_rock_floor == g->m.ter(monx, try_y)) mony = try_y;
-      }
-     } else { // Vertical fault
-      mony = fault->y + rng(0, 16); // C:Whales 2*SEE-8 = 16
-      for (int n = -1; n <= 1; n++) {
-       const int try_x = fault->x + n;
-       if (t_rock_floor == g->m.ter(try_x, mony)) monx = try_x;
-      }
-     }
-     tries++;
-    } while ((monx == -1 || mony == -1 || !g->is_empty(monx, mony)) && tries < 10);
-    if (tries < 10) {
-     horror.spawn(monx, mony);
-     g->z.push_back(horror);
-    }
+       const auto mon = LasVegasChoice<point>(10, amigara_position, [&](const point& pt) { return t_rock_floor == g->m.ter(pt) && g->is_empty(pt); });
+       if (mon.has_value()) {
+           horror.spawn(*mon);
+           g->z.push_back(horror);
+       }
    }
   } break;
 

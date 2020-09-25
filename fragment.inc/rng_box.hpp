@@ -60,4 +60,15 @@ inline std::optional<point> find_first(const zaimoni::gdi::box<point>& src, std:
 	return std::nullopt;
 }
 
+// \todo does not belong here -- only needs std::optional and std::function
+template<class T>
+std::optional<T> LasVegasChoice(int tries, std::function<T()> generate, std::function<bool(const T&)> ok)
+{
+	while (0 <= --tries) {
+		auto test = generate();
+		if (ok(test)) return test;
+	}
+	return std::nullopt;
+}
+
 #endif
