@@ -20,6 +20,8 @@ class map
 {
  public:
  static constexpr const zaimoni::gdi::box<point> reality_bubble_extent = zaimoni::gdi::box<point>(point(0), point(SEE* MAPSIZE));
+ // views won't be constexpr after configuration goes up (and may belong elsewhere)
+ static constexpr const zaimoni::gdi::box<point> view_centered_extent = zaimoni::gdi::box<point>(point(-VIEW_CENTER), point(VIEW_CENTER));
  static std::vector <itype_id> items[num_itloc]; // Items at various map types
  static map_extra _force_map_extra; // debugging assistant
  static point _force_map_extra_pos; // debugging assistant

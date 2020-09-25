@@ -2256,18 +2256,15 @@ void game::draw_ter(const point& pos)
    if (u_see(_npc.pos)) _npc.draw(w_terrain, pos, false);
  }
  if (u.has_active_bionic(bio_scent_vision)) {	// overwriting normal vision isn't that useful
-  point temp;
-  for (temp.x = -VIEW_CENTER; temp.x <= VIEW_CENTER; temp.x++) {
-   for (temp.y = -VIEW_CENTER; temp.y <= VIEW_CENTER; temp.y++) {
-	if (2 <= Linf_dist(temp)) {
-	  const point real(temp+pos);
-      if (0 != scent(real)) {
-          const point draw_at(point(VIEW_CENTER) + temp);
-          mvwputch(w_terrain, draw_at.y, draw_at.x, c_white, (mon(real) ? '?' : '#'));
-      }
-	}
-   }
-  }
+  forall_do_inclusive(map::view_centered_extent, [&](point offset){
+          if (2 <= Linf_dist(offset)) {
+              const point real(offset + pos);
+              if (0 != scent(real)) {
+                  const point draw_at(offset+point(VIEW_CENTER));
+                  mvwputch(w_terrain, draw_at.y, draw_at.x, c_white, (mon(real) ? '?' : '#'));
+              }
+          }
+      });
  }
  wrefresh(w_terrain);
  if (u.has_disease(DI_VISUALS)) hallucinate();
@@ -4550,16 +4547,17 @@ void game::reassign_item()
 
 void game::pl_draw(const zaimoni::gdi::box<point>& bounds) const
 {
-    for (int j = u.pos.x - VIEW_CENTER; j <= u.pos.x + VIEW_CENTER; j++) {
-        for (int k = u.pos.y - VIEW_CENTER; k <= u.pos.y + VIEW_CENTER; k++) {
-            if (u_see(j, k)) {
-                if (bounds.contains(point(j, k)))
-                    m.drawsq(w_terrain, u, j, k, false, true);
-                else
-                    mvwputch(w_terrain, k + VIEW_CENTER - u.pos.y, j + VIEW_CENTER - u.pos.x, c_dkgray, '#');
+    forall_do_inclusive(map::view_centered_extent, [&](point offset) {
+            const point real(u.pos + offset);
+            if (u_see(real)) {
+                if (bounds.contains(real))
+                    m.drawsq(w_terrain, u, real.x, real.y, false, true);
+                else {
+                    const point draw_at(offset + point(VIEW_CENTER));
+                    mvwputch(w_terrain, draw_at.y, draw_at.x, c_dkgray, '#');
+                }
             }
-        }
-    }
+        });
 }
 
 int game::visible_monsters(std::vector<const monster*>& mon_targets, std::vector<int>& targetindices, std::function<bool(const monster&)> test) const
@@ -6051,13 +6049,11 @@ void game::display_scent()
 {
  int div = query_int("Sensitivity");
  draw_ter();
- for (int x = u.pos.x - SEEX; x <= u.pos.x + SEEX; x++) {
-  for (int y = u.pos.y - SEEY; y <= u.pos.y + SEEY; y++) {
-   int sn = scent(x, y) / (div * 2);
-   mvwprintz(w_terrain, SEEY + y - u.pos.y, SEEX + x - u.pos.x, sev(sn), "%d",
-             sn % 10);
-  }
- }
+ forall_do_inclusive(map::view_centered_extent, [&](point offset) {
+         int sn = scent(u.pos + offset) / (div * 2);
+         const point draw_at(offset + point(VIEW_CENTER));
+         mvwprintz(w_terrain, draw_at.y, draw_at.x, sev(sn), "%d", sn % 10);
+     });
  wrefresh(w_terrain);
  getch();
 }
