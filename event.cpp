@@ -5,6 +5,8 @@
 #include "rng.h"
 #include "recent_msg.h"
 
+#include <stdexcept>
+
 static const char* const JSON_transcode_events[] = {
     "HELP",
     "WANTED",
@@ -74,38 +76,39 @@ void event::actualize() const
   } break;
 
   case EVENT_AMIGARA: {
-   int num_horrors = rng(3, 5);
-   int faultx = -1, faulty = -1;
-   bool horizontal;
-   for (int x = 0; x < SEEX * MAPSIZE && faultx == -1; x++) {
-    for (int y = 0; y < SEEY * MAPSIZE && faulty == -1; y++) {
-     if (g->m.ter(x, y) == t_fault) {
-      faultx = x;
-      faulty = y;
-	  horizontal = (g->m.ter(x - 1, y) == t_fault || g->m.ter(x + 1, y) == t_fault);
-     }
-    }
+   const auto fault = find_first(map::reality_bubble_extent, [&](point pt) { return t_fault == g->m.ter(pt);});
+   if (!fault.has_value()) {
+       debuglog("Amigara event without faultline");
+#ifndef NDEBUG
+       throw std::logic_error("Amigara event without faultline");
+#else
+       debugmsg("Amigara event without faultline");
+       return;
+#endif
    }
+   const bool horizontal = (t_fault == g->m.ter(*fault + Direction::W) || t_fault == g->m.ter(*fault + Direction::E));
+   const int num_horrors = rng(3, 5);
    monster horror(mtype::types[mon_amigara_horror]);
    for (int i = 0; i < num_horrors; i++) {
     int tries = 0;
     int monx = -1, mony = -1;
     do {
+     // unclear how this relates to mapgen
      if (horizontal) {
-      monx = rng(faultx, faultx + 2 * SEEX - 8);
+      monx = fault->x + rng(0, 16); // C:Whales 2*SEE-8 = 16
       for (int n = -1; n <= 1; n++) {
-       if (g->m.ter(monx, faulty + n) == t_rock_floor)
-        mony = faulty + n;
+       const int try_y = fault->y + n;
+       if (t_rock_floor == g->m.ter(monx, try_y)) mony = try_y;
       }
      } else { // Vertical fault
-      mony = rng(faulty, faulty + 2 * SEEY - 8);
+      mony = fault->y + rng(0, 16); // C:Whales 2*SEE-8 = 16
       for (int n = -1; n <= 1; n++) {
-       if (g->m.ter(faultx + n, mony) == t_rock_floor)
-        monx = faultx + n;
+       const int try_x = fault->x + n;
+       if (t_rock_floor == g->m.ter(try_x, mony)) monx = try_x;
       }
      }
      tries++;
-    } while ((monx == -1 || mony == -1 || g->is_empty(monx, mony)) && tries < 10);
+    } while ((monx == -1 || mony == -1 || !g->is_empty(monx, mony)) && tries < 10);
     if (tries < 10) {
      horror.spawn(monx, mony);
      g->z.push_back(horror);
