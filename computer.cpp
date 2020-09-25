@@ -11,6 +11,7 @@
 #include <fstream>
 #include <utility>
 #include <cstdarg>
+#include <stdexcept>
 
 // JSON enum transcoding
 static const char* JSON_transcode_compact[] = {
@@ -557,39 +558,41 @@ INITIATING STANDARD TREMOR TEST...");
    }
    break;
 
-  case COMPACT_BLOOD_ANAL:
-   for (int x = g->u.pos.x - 2; x <= g->u.pos.x + 2; x++) {
-    for (int y = g->u.pos.y - 2; y <= g->u.pos.y + 2; y++) {
-     if (g->m.ter(x, y) == t_centrifuge) {
-	  auto& inv = g->m.i_at(x, y);
-      if (auto err = blood_analysis_precondition(inv)) {
-       print_error(err);
-      } else { // Success!
-       item *blood = &(inv[0].contents[0]);
-       if (blood->corpse == nullptr || blood->corpse->id == mon_null)
-        print_line("Result:  Human blood, no pathogens found.");
-       else if (blood->corpse->sym == 'Z') {
-        print_line("Result:  Human blood.  Unknown pathogen found.");
-        print_line("Pathogen bonded to erythrocytes and leukocytes.");
-        if (query_bool("Download data?")) {
-         if (!g->u.has_amount(itm_usb_drive, 1))
-          print_error("USB drive required!");
-         else {
-          if (item* usb_drive = g->u.pick_usb()) {
-              usb_drive->contents.clear();
-              usb_drive->put_in(item(item::types[itm_software_blood_data], messages.turn)); // recent scan, so use current turn
-              print_line("Software downloaded.");
-          }
-         }
-        }
-       } else
-        print_line("Result: Unknown blood type.  Test nonconclusive.");
-       print_line("Press any key...");
-       getch();
+  case COMPACT_BLOOD_ANAL: {
+      auto centrifuge_at = find_first(zaimoni::gdi::box<point>(g->u.pos + point(-2), g->u.pos + point(2)), [&](point pt) { return t_centrifuge == g->m.ter(pt); });
+      if (!centrifuge_at.has_value()) {
+          debuglog("blood analysis without centrifuge");
+#ifndef NDEBUG
+          throw std::logic_error("blood analysis without centrifuge");
+#else
+          debugmsg("blood analysis without centrifuge");
+          return;
+#endif
       }
-     }
-    }
-   }
+      const auto& inv = g->m.i_at(*centrifuge_at);
+      if (auto err = blood_analysis_precondition(inv)) {
+          print_error(err);
+          return;
+      }
+      const item& blood = inv[0].contents[0]; // Success!
+      if (blood.corpse == nullptr || blood.corpse->id == mon_null)
+          print_line("Result:  Human blood, no pathogens found.");
+      else if (blood.corpse->sym == 'Z') {
+          print_line("Result:  Human blood.  Unknown pathogen found.");
+          print_line("Pathogen bonded to erythrocytes and leukocytes.");
+          if (query_bool("Download data?")) {
+              if (!g->u.has_amount(itm_usb_drive, 1))
+                  print_error("USB drive required!");
+              else if (item* const usb_drive = g->u.pick_usb()) {
+                  usb_drive->contents.clear();
+                  usb_drive->put_in(item(item::types[itm_software_blood_data], messages.turn)); // recent scan, so use current turn
+                  print_line("Software downloaded.");
+              }
+          }
+      } else print_line("Result: Unknown blood type.  Test nonconclusive.");
+      print_line("Press any key...");
+      getch();
+  }
    break;
 
  } // switch (action)
