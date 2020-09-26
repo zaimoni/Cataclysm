@@ -3060,9 +3060,9 @@ void game::add_footstep(const point& orig, int volume, int distance)
 // draws footsteps that have been created by monsters moving about
 void game::draw_footsteps()
 {
- for (int i = 0; i < footsteps.size(); i++) {
-  mvwputch(w_terrain, SEEY + footsteps[i].y - u.pos.y, 
-           SEEX + footsteps[i].x - u.pos.x, c_yellow, '?');
+ for (const point& step : footsteps) {
+     const point draw_at(point(VIEW_CENTER) + step - u.pos);
+     mvwputch(w_terrain, draw_at.y, draw_at.x, c_yellow, '?');
  }
  footsteps.clear();
  wrefresh(w_terrain);
@@ -3221,14 +3221,14 @@ void game::use_computer(const point& pt)
 void game::resonance_cascade(const point& pt)
 {
  const int glow_decay = 5 * trig_dist(pt, u.pos);
- int maxglow = 100 - glow_decay;
- int minglow =  60 - glow_decay;
- if (minglow < 0) minglow = 0;
- if (maxglow > 0) u.add_disease(DI_TELEGLOW, rng(minglow, maxglow) * MINUTES(10));
- int startx = (pt.x < 8 ? 0 : pt.x - 8), endx = (pt.x+8 >= SEEX*3 ? SEEX*3 - 1 : pt.x + 8);
- int starty = (pt.y < 8 ? 0 : pt.y - 8), endy = (pt.y+8 >= SEEY*3 ? SEEY*3 - 1 : pt.y + 8);
- for (int i = startx; i <= endx; i++) {
-  for (int j = starty; j <= endy; j++) {
+ const int maxglow = 100 - glow_decay;
+ if (0 < maxglow) {
+     int minglow = clamped_lb<0>(maxglow - 40);
+     u.add_disease(DI_TELEGLOW, rng(minglow, maxglow) * MINUTES(10));
+ }
+ const zaimoni::gdi::box<point> resonance_aoe(clamped_lb(pt - point(8), point(0)), clamped_ub(pt + point(8), point(35)));
+ for (int i = resonance_aoe.tl_c().x; i <= resonance_aoe.br_c().x; i++) {
+  for (int j = resonance_aoe.tl_c().y; j <= resonance_aoe.br_c().y; j++) {
    switch (rng(1, 80)) {
    case 1:
    case 2:

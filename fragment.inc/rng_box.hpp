@@ -60,6 +60,26 @@ inline std::optional<point> find_first(const zaimoni::gdi::box<point>& src, std:
 	return std::nullopt;
 }
 
+inline point clamped(point src, const zaimoni::gdi::box<point>& bounds) {
+	if (src.x < bounds.tl_c().x) src.x = bounds.tl_c().x;
+	else if (bounds.br_c().x < src.x) src.x = bounds.br_c().x;
+	if (src.y < bounds.tl_c().y) src.y = bounds.tl_c().y;
+	else if (bounds.br_c().y < src.y) src.y = bounds.br_c().y;
+	return src;
+}
+
+inline point clamped_lb(point src, const point& ref) {
+	if (src.x < ref.x) src.x = ref.x;
+	if (src.y < ref.y) src.y = ref.y;
+	return src;
+}
+
+inline point clamped_ub(point src, const point& ref) {
+	if (ref.x < src.x) src.x = ref.x;
+	if (ref.y < src.y) src.y = ref.y;
+	return src;
+}
+
 // \todo does not belong here -- only needs std::optional and std::function
 template<class T>
 std::optional<T> LasVegasChoice(int tries, std::function<T()> generate, std::function<bool(const T&)> ok)
