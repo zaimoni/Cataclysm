@@ -3226,6 +3226,7 @@ void game::resonance_cascade(const point& pt)
      int minglow = clamped_lb<0>(maxglow - 40);
      u.add_disease(DI_TELEGLOW, rng(minglow, maxglow) * MINUTES(10));
  }
+ // this doesn't work like it looks if either coordinate exceeds 43 (note that top-left corner coming in is bounded by (50,50)
  const zaimoni::gdi::box<point> resonance_aoe(clamped_lb(pt - point(8), point(0)), clamped_ub(pt + point(8), point(35)));
  for (int i = resonance_aoe.tl_c().x; i <= resonance_aoe.br_c().x; i++) {
   for (int j = resonance_aoe.tl_c().y; j <= resonance_aoe.br_c().y; j++) {

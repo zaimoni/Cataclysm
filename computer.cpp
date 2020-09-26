@@ -297,15 +297,10 @@ void computer::activate_function(game *g, computer_action action)
   case COMPACT_CASCADE: {
    if (!query_bool("WARNING: Resonance cascade carries severe risk!  Continue?"))
     return;
-   std::vector<point> cascade_points;
-   for (int i = g->u.pos.x - 10; i <= g->u.pos.x + 10; i++) {
-    for (int j = g->u.pos.y - 10; j <= g->u.pos.y + 10; j++) {
-     if (g->m.ter(i, j) == t_radio_tower)
-      cascade_points.push_back(point(i, j));
-    }
-   }
+   const zaimoni::gdi::box<point> scan(g->u.pos - point(10), g->u.pos + point(10));
+   const std::vector<point> cascade_points(grep(scan, [&](point pt) { return t_radio_tower == g->m.ter(pt); }));
    if (const size_t ub = cascade_points.size()) {
-       g->resonance_cascade(cascade_points[rng(0, ub - 1)]);
+       g->resonance_cascade(cascade_points[rng(0, ub - 1)]); // usually fizzles
    } else {
        g->resonance_cascade(g->u.pos);
    }
