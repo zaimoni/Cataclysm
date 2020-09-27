@@ -5059,7 +5059,7 @@ void game::plmove(int x, int y)
   for (int cx = 0; cx < SEEX * MAPSIZE; cx++) {
    for (int cy = 0; cy < SEEY * MAPSIZE; cy++) {
     if (m.ter(cx, cy) == t_fault) {
-     int dist = rl_dist(cx, cy, u.pos.x, u.pos.y);
+     int dist = rl_dist(cx, cy, u.pos);
      if (dist < curdist) curdist = dist;
      dist = rl_dist(cx, cy, x, y);
      if (dist < newdist) newdist = dist;
@@ -5441,7 +5441,7 @@ void game::vertical_move(int movez, bool force)
  else { // We need to find the stairs.
   if (!tmpmap.find_stairs(u.pos, movez, stair)) { // No stairs found!
    if (movez < 0) {
-    if (tmpmap.move_cost(u.pos.x, u.pos.y) == 0) {
+    if (tmpmap.move_cost(u.pos) == 0) {
      popup("Halfway down, the way down becomes blocked off.");
      return;
     } else if (u.has_amount(itm_rope_30, 1)) {
