@@ -77,7 +77,7 @@ void event::actualize() const
 
   case EVENT_AMIGARA: {
    const auto fault = find_first(map::reality_bubble_extent, [&](point pt) { return t_fault == g->m.ter(pt);});
-   if (!fault.has_value()) {
+   if (!fault) {
        debuglog("Amigara event without faultline");
 #ifndef NDEBUG
        throw std::logic_error("Amigara event without faultline");
@@ -110,7 +110,7 @@ void event::actualize() const
    monster horror(mtype::types[mon_amigara_horror]);
    for (int i = 0; i < num_horrors; i++) {
        const auto mon = LasVegasChoice<point>(10, amigara_position, [&](const point& pt) { return t_rock_floor == g->m.ter(pt) && g->is_empty(pt); });
-       if (mon.has_value()) {
+       if (mon) {
            horror.spawn(*mon);
            g->z.push_back(horror);
        }

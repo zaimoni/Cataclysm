@@ -555,7 +555,7 @@ INITIATING STANDARD TREMOR TEST...");
 
   case COMPACT_BLOOD_ANAL: {
       auto centrifuge_at = find_first(zaimoni::gdi::box<point>(g->u.pos + point(-2), g->u.pos + point(2)), [&](point pt) { return t_centrifuge == g->m.ter(pt); });
-      if (!centrifuge_at.has_value()) {
+      if (!centrifuge_at) {
           debuglog("blood analysis without centrifuge");
 #ifndef NDEBUG
           throw std::logic_error("blood analysis without centrifuge");
@@ -602,6 +602,10 @@ void computer::activate_random_failure(game *g)
 
 void computer::activate_failure(game *g, computer_failure fail)
 {
+ // speculate CPU to try to minimize binary file size
+ zaimoni::gdi::box<point> robot_spawn_range(g->u.pos - point(3), g->u.pos + point(3));
+ auto nominate_robot_spawn_pos = [&]() { return rng(robot_spawn_range); };
+
  switch (fail) {
 
   case COMPFAIL_NULL:
@@ -623,16 +627,11 @@ void computer::activate_failure(game *g, computer_failure fail)
 
   case COMPFAIL_MANHACKS: {
    int num_robots = rng(4, 8);
+   zaimoni::gdi::box<point> spawn_range(g->u.pos - point(3), g->u.pos + point(3));
    for (int i = 0; i < num_robots; i++) {
-    int mx, my, tries = 0;
-    do {
-     mx = rng(g->u.pos.x - 3, g->u.pos.x + 3);
-     my = rng(g->u.pos.y - 3, g->u.pos.y + 3);
-     tries++;
-    } while (!g->is_empty(mx, my) && tries < 10);
-    if (tries != 10) {
-     messages.add("Manhacks drop from compartments in the ceiling.");
-     g->z.push_back(monster(mtype::types[mon_manhack], mx, my));
+    if (const auto fail = LasVegasChoice<point>(10, nominate_robot_spawn_pos, game::isEmpty)) {
+        messages.add("Manhacks drop from compartments in the ceiling.");
+        g->z.push_back(monster(mtype::types[mon_manhack], *fail));
     }
    }
   } break;
@@ -640,15 +639,9 @@ void computer::activate_failure(game *g, computer_failure fail)
   case COMPFAIL_SECUBOTS: {
    int num_robots = 1;
    for (int i = 0; i < num_robots; i++) {
-    int mx, my, tries = 0;
-    do {
-     mx = rng(g->u.pos.x - 3, g->u.pos.x + 3);
-     my = rng(g->u.pos.y - 3, g->u.pos.y + 3);
-     tries++;
-    } while (!g->is_empty(mx, my) && tries < 10);
-    if (tries != 10) {
-     messages.add("Secubots emerge from compartments in the floor.");
-     g->z.push_back(monster(mtype::types[mon_secubot], mx, my));
+    if (const auto fail = LasVegasChoice<point>(10, nominate_robot_spawn_pos, game::isEmpty)) {
+        messages.add("Secubots emerge from compartments in the floor.");
+        g->z.push_back(monster(mtype::types[mon_secubot], *fail));
     }
    }
   } break;

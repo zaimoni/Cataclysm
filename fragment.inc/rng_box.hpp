@@ -106,4 +106,14 @@ std::optional<T> LasVegasChoice(int tries, std::function<T()> generate, std::fun
 	return std::nullopt;
 }
 
+template<class T>
+std::optional<T> LasVegasChoice(int tries, std::function<T()> generate, bool (ok)(const T&))
+{
+	while (0 <= --tries) {
+		auto test = generate();
+		if (ok(test)) return test;
+	}
+	return std::nullopt;
+}
+
 #endif

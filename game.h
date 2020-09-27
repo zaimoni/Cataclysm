@@ -106,6 +106,7 @@ class game
 
   bool is_empty(int x, int y) const;	// True if no PC, no monster, move cost > 0
   bool is_empty(const point& pt) const { return is_empty(pt.x, pt.y); };
+  static bool isEmpty(const point& pt) { return game::active()->is_empty(pt); }
   bool is_in_sunlight(const point& pt) const; // Checks outdoors + sunny
   unsigned char light_level() const;
   // Kill that monster; fixes any pointers etc
