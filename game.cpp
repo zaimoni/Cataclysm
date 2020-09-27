@@ -4075,8 +4075,8 @@ void game::pickup(const point& pt, int min)
   return;
  }
 // Otherwise, we have 2 or more items and should list them, etc.
- std::unique_ptr<WINDOW, curses_full_delete> w_pickup(newwin(12, PANELX - MINIMAP_WIDTH_HEIGHT, 0, VIEW + MINIMAP_WIDTH_HEIGHT));
- std::unique_ptr<WINDOW, curses_full_delete> w_item_info(newwin(12, PANELX - MINIMAP_WIDTH_HEIGHT, 12, VIEW + MINIMAP_WIDTH_HEIGHT));
+ std::unique_ptr<WINDOW, curses_full_delete> w_pickup(newwin(SEEY, PANELX - MINIMAP_WIDTH_HEIGHT, 0, VIEW + MINIMAP_WIDTH_HEIGHT));
+ std::unique_ptr<WINDOW, curses_full_delete> w_item_info(newwin(SEEY, PANELX - MINIMAP_WIDTH_HEIGHT, 12, VIEW + MINIMAP_WIDTH_HEIGHT));
  constexpr const int maxitems = 9;	 // Number of items to show at one time.
  std::vector <item> here = from_veh? veh->parts[veh_part].items : m.i_at(pt);
  std::vector<bool> getitem(here.size(),false);
@@ -4088,7 +4088,7 @@ void game::pickup(const point& pt, int min)
 // Now print the two lists; those on the ground and about to be added to inv
 // Continue until we hit return or space
  do {
-  for (int i = 1; i < 12; i++) {
+  for (int i = 1; i < SEEY; i++) {
    for (int j = 0; j < PANELX - MINIMAP_WIDTH_HEIGHT; j++)
     mvwaddch(w_pickup.get(), i, j, ' ');
   }
