@@ -2634,6 +2634,7 @@ void game::mon_info()
 // 7 0 1	unique_types uses these indices;
 // 6 8 2	0-7 are provide by direction_from()
 // 5 4 3	8 is used for local monsters (for when we explain them below)
+// "local" interpreted as "on screen, no scrolling needed" 2020-09-27 zaimoni
  std::vector<int> unique_types[9];
 // dangerous_types tracks whether we should print in red to warn the player
  bool dangerous[8];
@@ -2646,7 +2647,7 @@ void game::mon_info()
    if (mon_dangerous) newseen++;
 
    direction dir_to_mon = direction_from(u.pos, mon.pos);
-   int index = (rl_dist(u.pos, mon.pos) <= SEEX ? 8 : dir_to_mon);
+   int index = (rl_dist(u.pos, mon.pos) <= VIEW_CENTER ? 8 : dir_to_mon);
    if (mon_dangerous && index < 8) dangerous[index] = true;
 
    if (!any(unique_types[dir_to_mon], mon.type->id)) unique_types[dir_to_mon].push_back(mon.type->id);
@@ -2656,7 +2657,7 @@ void game::mon_info()
   const auto& _npc = active_npc[i];
   if (u_see(_npc.pos)) { // TODO: NPC invis
    if (_npc.attitude == NPCATT_KILL) newseen++;
-   int index = (rl_dist(u.pos, _npc.pos) <= SEEX ? 8 : direction_from(u.pos, _npc.pos));
+   int index = (rl_dist(u.pos, _npc.pos) <= VIEW_CENTER ? 8 : direction_from(u.pos, _npc.pos));
    unique_types[index].push_back(-1 - i);
   }
  }
@@ -3952,7 +3953,7 @@ point game::look_around()
     m.drawsq(w_terrain, u, l.x, l.y, true, true, l.x, l.y);
 
   } else if (l == u.pos) {
-   mvwputch_inv(w_terrain, SEEX, SEEY, u.color(), '@');
+   mvwputch_inv(w_terrain, VIEW_CENTER, VIEW_CENTER, u.color(), '@');
    mvwprintw(w_look, 1, 1, "You (%s)", u.name.c_str());
    if (veh) {
     mvwprintw(w_look, 3, 1, "There is a %s there. Parts:", veh->name.c_str());
@@ -3961,7 +3962,7 @@ point game::look_around()
    }
 
   } else {
-   mvwputch(w_terrain, SEEY, SEEX, c_white, 'x');
+   mvwputch(w_terrain, VIEW_CENTER, VIEW_CENTER, c_white, 'x'); // \todo would be nice if some indicator made it past tiles display
    mvwprintw(w_look, 1, 1, "Unseen.");
   }
   wrefresh(w_look);
@@ -4074,8 +4075,8 @@ void game::pickup(const point& pt, int min)
   return;
  }
 // Otherwise, we have 2 or more items and should list them, etc.
- std::unique_ptr<WINDOW, curses_full_delete> w_pickup(newwin(12, 48, 0, SEEX * 2 + 8));
- std::unique_ptr<WINDOW, curses_full_delete> w_item_info(newwin(12, 48, 12, SEEX * 2 + 8));
+ std::unique_ptr<WINDOW, curses_full_delete> w_pickup(newwin(12, PANELX - MINIMAP_WIDTH_HEIGHT, 0, VIEW + MINIMAP_WIDTH_HEIGHT));
+ std::unique_ptr<WINDOW, curses_full_delete> w_item_info(newwin(12, PANELX - MINIMAP_WIDTH_HEIGHT, 12, VIEW + MINIMAP_WIDTH_HEIGHT));
  constexpr const int maxitems = 9;	 // Number of items to show at one time.
  std::vector <item> here = from_veh? veh->parts[veh_part].items : m.i_at(pt);
  std::vector<bool> getitem(here.size(),false);
@@ -4088,7 +4089,7 @@ void game::pickup(const point& pt, int min)
 // Continue until we hit return or space
  do {
   for (int i = 1; i < 12; i++) {
-   for (int j = 0; j < 48; j++)
+   for (int j = 0; j < PANELX - MINIMAP_WIDTH_HEIGHT; j++)
     mvwaddch(w_pickup.get(), i, j, ' ');
   }
   if (ch == '<' && start > 0) {
@@ -5685,18 +5686,16 @@ void game::update_map(int &x, int &y)
 // Shift NPCs
  {
  auto i = active_npc.size();
+ static constexpr const zaimoni::gdi::box<point> npc_valid_bubble(point(-2*SEE), point(SEE*(MAPSIZE + 2))); // \todo? SEE*(MAPSIZE + 2)-1?
  while (0 < i) {
 	 auto& _npc = active_npc[--i];
 	 _npc.shift(shift);
      // don't scope NPCs out *until* any vehicle containing them is outside of the reality bubble as well
-	 if (_npc.pos.x < 0 - SEEX * 2 ||
-		 _npc.pos.y < 0 - SEEX * 2 ||
-		 _npc.pos.x >     SEEX* (MAPSIZE + 2) ||
-		 _npc.pos.y >     SEEY* (MAPSIZE + 2)) {
-		 _npc.pos %= SEE;
-		 cur_om.npcs.push_back(std::move(active_npc[i]));
-		 EraseAt(active_npc, i);
-	 }
+     if (!npc_valid_bubble.contains(_npc.pos)) {
+         _npc.pos %= SEE;
+         cur_om.npcs.push_back(std::move(active_npc[i])); // \todo fix this as part of GPS conversion (GPS location could be "just over the overmap border")
+         EraseAt(active_npc, i);
+     }
  }
  }
  }	// if (0 != shift.x || 0 != shift.y)
