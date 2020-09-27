@@ -67,8 +67,6 @@ bool map::process_fields_in_submap(game *g, int gridn)
 
   if (cur->age == 0) curtype = fd_null;	// Don't process "newborn" fields
 
-  int part;
-  vehicle *veh;
   switch (curtype) {
 
    case fd_null:
@@ -200,8 +198,8 @@ bool map::process_fields_in_submap(game *g, int gridn)
      }
     }
 
-    veh = veh_at(x, y, part);
-    if (veh) veh->damage (part, cur->density * 10, false);
+    int part;
+    if (const auto veh = veh_at(x, y, part)) veh->damage (part, cur->density * 10, false);
 // Consume the terrain we're on
 	auto& terrain = ter(x, y);
     if (has_flag(explodes, x, y)) {
