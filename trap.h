@@ -17,8 +17,8 @@ enum trap_id {
  tr_crossbow,
  tr_shotgun_2,
  tr_shotgun_1,
- tr_engine,
- tr_blade,
+ tr_engine, // core for 3x3 blade trap
+ tr_blade, // edges of 3x3 blade trap
  tr_landmine,
  tr_telepad,
  tr_goo,

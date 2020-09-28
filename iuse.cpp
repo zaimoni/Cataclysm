@@ -1182,15 +1182,10 @@ void iuse::set_trap(game *g, player *p, item *it, bool t)
 
  messages.add(message.str().c_str());
  p->practice(sk_traps, practice);
- g->m.add_trap(trap_pos.x, trap_pos.y, type);
+ g->m.add_trap(trap_pos, type);
  p->moves -= 100 + practice * 25;
  if (type == tr_engine) {
-  for (int i = -1; i <= 1; i++) {
-   for (int j = -1; j <= 1; j++) {
-    if (i != 0 || j != 0)
-     g->m.add_trap(trap_pos.x + i, trap_pos.y + j, tr_blade);
-   }
-  }
+  for (decltype(auto) delta : Direction::vector) g->m.add_trap(trap_pos + delta, tr_blade);
  }
  it->invlet = 0; // Remove the trap from the player's inv
 }
@@ -1583,7 +1578,8 @@ void iuse::pheromone(game *g, player *p, item *it, bool t)
 
 void iuse::portal(game *g, player *p, item *it, bool t)
 {
- g->m.add_trap(p->pos.x + rng(-2, 2), p->pos.y + rng(-2, 2), tr_portal);
+ static constexpr const zaimoni::gdi::box<point> portal_range(point(-2), point(2));
+ g->m.add_trap(p->pos + rng(portal_range), tr_portal);
 }
 
 void iuse::manhack(game *g, player *p, item *it, bool t)
