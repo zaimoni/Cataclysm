@@ -32,13 +32,10 @@ enum astar_list {
  ASL_CLOSED
 };
 
-bool map::to(int x, int y, localPos& dest) const
+std::optional<reality_bubble_loc> map::to(const point& pt) const
 {
-    if (!inbounds(x, y)) return false;
-    dest.first = (x / SEEX) + (y / SEEY) * my_MAPSIZE;
-    dest.second.x = x % SEEX;
-    dest.second.y = y % SEEY;
-    return true;
+    if (!inbounds(pt.x, pt.y)) return std::nullopt;
+    return reality_bubble_loc((pt.x / SEE) + (pt.y / SEE) * my_MAPSIZE, pt % SEE);
 }
 
 bool map::find_stairs(const point& pt, const int movez, point& pos) const
@@ -92,7 +89,7 @@ std::vector<point> map::grep(const point& tl, const point& br, std::function<boo
 }
 
 
-vehicle* map::veh_at(const localPos& src, int& part_num) const
+vehicle* map::veh_at(const reality_bubble_loc& src, int& part_num) const
 {
     // must check 3x3 map chunks, as vehicle part may span to neighbour chunk
     // we presume that vehicles don't intersect (they shouldn't by any means)
@@ -143,9 +140,8 @@ vehicle* GPS_loc::veh_at(int& part_num) const
 
 vehicle* map::veh_at(int x, int y, int &part_num) const
 {
- localPos pos;
- if (!to(x, y, pos)) return nullptr;    // Out-of-bounds - null vehicle
- return veh_at(pos, part_num);
+ if (auto pos = to(x,y)) return veh_at(*pos, part_num);
+ return nullptr;
 }
 
 vehicle* map::veh_at(int x, int y) const
@@ -576,11 +572,10 @@ std::string map::features(const point& pt) const
  return ret;
 }
 
-int map::move_cost(const localPos& pos) const
+int map::move_cost(const reality_bubble_loc& pos) const
 {
  int vpart = -1;
- vehicle *veh = veh_at(pos, vpart);
- if (veh) {  // moving past vehicle cost
+ if (const vehicle* const veh = veh_at(pos, vpart)) {  // moving past vehicle cost
   int dpart = veh->part_with_feature(vpart, vpf_obstacle);
   if (dpart >= 0 &&
       (!veh->part_flag(dpart, vpf_openable) || !veh->parts[dpart].open))
@@ -611,7 +606,7 @@ int map::move_cost_ter_only(int x, int y) const
  return ter_t::list[ter(x, y)].movecost;
 }
 
-bool map::trans(const localPos& pos) const
+bool map::trans(const reality_bubble_loc& pos) const
 {
     // Control statement is a problem. Normally returning false on an out-of-bounds
     // is how we stop rays from going on forever.  Instead we'll have to include
@@ -635,15 +630,15 @@ bool map::trans(const localPos& pos) const
 
 bool map::trans(int x, int y) const
 {
- localPos pos;
- return to(x, y, pos) ? trans(pos) : true;
+ const auto pos = to(x, y);
+ return pos ? trans(*pos) : true;
 }
 
-bool map::has_flag(t_flag flag, const localPos& pos) const
+bool map::has_flag(t_flag flag, const reality_bubble_loc& pos) const
 {
     if (flag == bashable) {
         int vpart;
-        vehicle* veh = veh_at(pos, vpart);
+        const vehicle* const veh = veh_at(pos, vpart);
         if (veh && veh->parts[vpart].hp > 0 && // if there's a vehicle part here...
             veh->part_with_feature(vpart, vpf_obstacle) >= 0) {// & it is obstacle...
             int p = veh->part_with_feature(vpart, vpf_openable);
@@ -1248,11 +1243,11 @@ void map::shoot(game *g, int x, int y, int &dam, bool hit_items, unsigned flags)
  }
 
 // Now, destroy items on that tile.
- localPos pos;
- if (!to(x, y, pos) || (!hit_items && 2 == move_cost(pos))) return;	// Items on floor-type spaces won't be shot up.
+ const auto pos = to(x, y);
+ if (!pos || (!hit_items && 2 == move_cost(*pos))) return; // Items on floor-type spaces won't be shot up.
 
  {
- auto& stack = i_at(pos);
+ auto& stack = i_at(*pos);
  for (int i = 0; i < stack.size(); i++) {	// forward-increment so that containers do not grant invulnerability to their contents
   bool destroyed = false;
   auto& it = stack[i];
@@ -1478,37 +1473,33 @@ void map::add_item(int x, int y, const item& new_item)
 {
  if (new_item.is_style()) return;
 
- localPos pos_in;
- if (!to(x, y, pos_in)) return;
- if (new_item.made_of(LIQUID) && has_flag(swimmable, pos_in)) return;
+ auto pos_in = to(x, y);
+ if (!pos_in) return;
+ if (new_item.made_of(LIQUID) && has_flag(swimmable, *pos_in)) return;
 
- localPos pos;
-
- if (has_flag(noitem, pos_in) || i_at(pos_in).size() >= 26) {// Too many items there
-  std::vector<point> okay;
-  for (int i = x - 1; i <= x + 1; i++) {
-   for (int j = y - 1; j <= y + 1; j++) {
-    if (to(i, j, pos) && move_cost(pos) > 0 && !has_flag(noitem, pos) && i_at(pos).size() < 26)
-     okay.push_back(point(i, j));
-   }
+ if (has_flag(noitem, *pos_in) || i_at(*pos_in).size() >= 26) {// Too many items there
+  std::vector<reality_bubble_loc> okay;
+  for (decltype(auto) delta : Direction::vector) {
+      const auto pos = to(x + delta.x, y + delta.y);
+      if (pos && move_cost(*pos) > 0 && !has_flag(noitem, *pos) && i_at(*pos).size() < 26) okay.push_back(*pos);
   }
-  if (okay.size() == 0) {
-   for (int i = x - 2; i <= x + 2; i++) {
-    for (int j = y - 2; j <= y + 2; j++) {
-     if (to(i, j, pos) && move_cost(pos) > 0 && !has_flag(noitem, pos) && i_at(pos).size() < 26)
-      okay.push_back(point(i, j));
+  if (okay.empty()) {
+   for (int i = -2; i <= 2; i++) {
+    for (int j = -2; j <= 2; j++) {
+     if (-2 != i && 2 != i && -2 != j && 2 != j) continue;
+     const auto pos = to(x + i, y + j);
+     if (pos && move_cost(*pos) > 0 && !has_flag(noitem, *pos) && i_at(*pos).size() < 26) okay.push_back(*pos);
     }
    }
   }
-  if (okay.size() == 0) return; // STILL?	\todo decide what gets lost
-  point choice = okay[rng(0, okay.size() - 1)];
-  // do not recurse.
-  x = choice.x;
-  y = choice.y;
+  if (auto ub = okay.size()) {
+      // do not recurse.
+      pos_in = okay[rng(0, ub - 1)];
+  } // STILL?	\todo decide what gets lost
  }
 
- grid[pos_in.first]->itm[pos_in.second.x][pos_in.second.y].push_back(new_item);
- if (new_item.active) grid[pos_in.first]->active_item_count++;
+ grid[pos_in->first]->itm[pos_in->second.x][pos_in->second.y].push_back(new_item);
+ if (new_item.active) grid[pos_in->first]->active_item_count++;
 }
 
 void map::process_active_items(game *g)
@@ -1715,13 +1706,11 @@ void map::remove_field(int x, int y)
 
 computer* map::computer_at(const point& pt)
 {
- localPos pos;
- if (!to(pt, pos)) return nullptr;
-
- auto& c = grid[pos.first]->comp;
-
- if (c.name == "") return nullptr;
- return &c;
+ if (auto pos = to(pt)) {
+     auto& c = grid[pos->first]->comp;
+     if (!c.name.empty()) return &c;
+ }
+ return nullptr;
 }
 
 void map::debug()
@@ -1763,14 +1752,14 @@ void map::draw(game *g, WINDOW* w, point center)
 void map::drawsq(WINDOW* w, const player& u, int x, int y, bool invert,
                  bool show_items, int cx, int cy) const
 {
- localPos pos;
- if (!to(x, y, pos)) return;	// Out of bounds
+ const auto pos = to(x,y);
+ if (!pos) return;	// Out of bounds
  if (cx == -1) cx = u.pos.x;
  if (cy == -1) cy = u.pos.y;
  const int k = x + SEEX - cx;
  const int j = y + SEEY - cy;
  nc_color tercol;
- const auto terrain = ter(pos);
+ const auto terrain = ter(*pos);
  long sym = ter_t::list[terrain].sym;
  bool hi = false;
  bool normal_tercol = false;
@@ -1790,10 +1779,10 @@ void map::drawsq(WINDOW* w, const player& u, int x, int y, bool invert,
 	 if (mvwaddbgtile(w, j, k, ter_t::tiles[terrain].c_str())) sym = 0;
  }
 
- if (move_cost(pos) == 0 && has_flag(swimmable, x, y) && !u.underwater)
+ if (0 == move_cost(*pos) && has_flag(swimmable, x, y) && !u.underwater)
   show_items = false;	// Can only see underwater items if WE are underwater
 // If there's a trap here, and we have sufficient perception, draw that instead
- const auto tr_id = tr_at(pos);
+ const auto tr_id = tr_at(*pos);
  if (tr_id != tr_null){
    const trap* const tr = trap::traps[tr_id];
    if (u.per_cur - u.encumb(bp_eyes) >= tr->visibility) {
@@ -1810,7 +1799,7 @@ void map::drawsq(WINDOW* w, const player& u, int x, int y, bool invert,
    }
  }
  // If there's a field here, draw that instead (unless its symbol is %)
- const auto& fd = field_at(pos);
+ const auto& fd = field_at(*pos);
  if (fd.type != fd_null && field::list[fd.type].sym != '&') {
   tercol = field::list[fd.type].color[fd.density - 1];
   drew_field = true;
@@ -1842,7 +1831,7 @@ void map::drawsq(WINDOW* w, const player& u, int x, int y, bool invert,
  }
 
  int veh_part = 0;
- if (const vehicle* const veh = veh_at(pos, veh_part)) {
+ if (const vehicle* const veh = veh_at(*pos, veh_part)) {
   sym = special_symbol (veh->face.dir_symbol(veh->part_sym(veh_part)));
   if (normal_tercol) tercol = veh->part_color(veh_part);
  }
@@ -1858,7 +1847,7 @@ void map::drawsq(WINDOW* w, const player& u, int x, int y, bool invert,
 based off code by Steve Register [arns@arns.freeservers.com]
 http://roguebasin.roguelikedevelopment.org/index.php?title=Simple_Line_of_Sight
 */
-bool map::_BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range, int& tc, std::function<bool(localPos)> test) const
+bool map::_BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range, int& tc, std::function<bool(reality_bubble_loc)> test) const
 {
     int dx = Tx - Fx;
     int dy = Ty - Fy;
@@ -1874,7 +1863,7 @@ bool map::_BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range, int& tc, std
     int t = 0;
     int st;
 
-    localPos pos;
+    decltype(to(x,y)) pos;
 
     if (ax > ay) { // Mostly-horizontal line
         st = SGN(ay - (ax >> 1));
@@ -1896,7 +1885,7 @@ bool map::_BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range, int& tc, std
                     tc *= st;
                     return true;
                 }
-            } while (to(x, y, pos) && test(pos));
+            } while ((pos = to(x, y)) && test(*pos));
         }
         return false;
     } else { // Same as above, for mostly-vertical lines
@@ -1916,7 +1905,7 @@ bool map::_BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range, int& tc, std
                     tc *= st;
                     return true;
                 }
-            } while (to(x, y, pos) && test(pos));
+            } while ((pos = to(x, y)) && test(*pos));
         }
         return false;
     }
@@ -1931,13 +1920,13 @@ bool map::sees(int Fx, int Fy, int Tx, int Ty, int range) const
 
 bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc) const
 {
- return _BresenhamLine(Fx, Fy, Tx, Ty, range, tc, [&](localPos pos){ return trans(pos);});
+ return _BresenhamLine(Fx, Fy, Tx, Ty, range, tc, [&](reality_bubble_loc pos){ return trans(pos);});
 }
 
 bool map::clear_path(int Fx, int Fy, int Tx, int Ty, int range, int cost_min,
                      int cost_max, int &tc) const
 {
- return _BresenhamLine(Fx, Fy, Tx, Ty, range, tc, [&](localPos pos){ return is_between(cost_min, move_cost(pos), cost_max);});
+ return _BresenhamLine(Fx, Fy, Tx, Ty, range, tc, [&](reality_bubble_loc pos){ return is_between(cost_min, move_cost(pos), cost_max);});
 }
 
 // Bash defaults to true.

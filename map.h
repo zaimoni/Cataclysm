@@ -7,6 +7,7 @@
 #include "submap.h"
 #include <functional>
 #include <string>
+#include <optional>
 
 #define MAPSIZE 11
 
@@ -53,19 +54,19 @@ class map
  void clear_traps();
 
 // Movement and LOS
- bool to(int x, int y, localPos& dest) const;
- bool to(const point& pt, localPos& dest) const { return to(pt.x, pt.y, dest); };
+ std::optional<reality_bubble_loc> to(const point& pt) const;
+ std::optional<reality_bubble_loc> to(int x, int y) const { return to(point(x,y)); };
 
  bool find_stairs(const point& pt, int movez, point& pos) const;
  bool find_terrain(const point& pt, ter_id dest, point& pos) const;
 
  int move_cost(int x, int y) const; // Cost to move through; 0 = impassible
  int move_cost(const point& pt) const { return move_cost(pt.x, pt.y); };
- int move_cost(const localPos& pos) const;
+ int move_cost(const reality_bubble_loc& pos) const;
  int move_cost_ter_only(int x, int y) const; // same as above, but don't take vehicles into account
  bool trans(int x, int y) const; // Transparent?
- bool trans(const localPos& pos) const;
- bool _BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range, int& tc, std::function<bool(localPos)> test) const;
+ bool trans(const reality_bubble_loc& pos) const;
+ bool _BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range, int& tc, std::function<bool(reality_bubble_loc)> test) const;
  // (Fx, Fy) sees (Tx, Ty), within a range of (range)?
  // tc indicates the Bresenham line used to connect the two points, and may
  //  subsequently be used to form a path between them
@@ -90,7 +91,7 @@ class map
 // checks, if tile is occupied by vehicle and by which part
  vehicle* veh_at(int x, int y, int &part_num) const;
  vehicle* veh_at(const point& pt, int &part_num) const { return veh_at(pt.x, pt.y, part_num); };
- vehicle* veh_at(const localPos& src, int& part_num) const;
+ vehicle* veh_at(const reality_bubble_loc& src, int& part_num) const;
  vehicle* veh_at(int x, int y) const;
  vehicle* veh_at(const point& pt) const { return veh_at(pt.x, pt.y); };
  // put player on vehicle at x,y
@@ -109,8 +110,8 @@ class map
 // Terrain
  ter_id& ter(int x, int y); // Terrain at coord (x, y); {x|y}=(0, SEE{X|Y}*3]
  ter_id& ter(const point& pt) { return ter(pt.x, pt.y); };
- ter_id& ter(const localPos& src) { return grid[src.first]->ter[src.second.x][src.second.y]; };
- ter_id ter(const localPos& src) const { return grid[src.first]->ter[src.second.x][src.second.y]; };
+ ter_id& ter(const reality_bubble_loc& src) { return grid[src.first]->ter[src.second.x][src.second.y]; };
+ ter_id ter(const reality_bubble_loc& src) const { return grid[src.first]->ter[src.second.x][src.second.y]; };
  ter_id ter(int x, int y) const { return const_cast<map*>(this)->ter(x, y); };	// \todo specialize this properly
  ter_id ter(const point& pt) const { return const_cast<map*>(this)->ter(pt.x, pt.y); };
 
@@ -174,7 +175,7 @@ class map
  std::string features(const point& pt) const; // Words relevant to terrain (sharp, etc)
  bool has_flag(t_flag flag, int x, int y) const;  // checks terrain and vehicles
  bool has_flag(t_flag flag, const point& pt) const { return has_flag(flag, pt.x, pt.y); };
- bool has_flag(t_flag flag, const localPos& pos) const;
+ bool has_flag(t_flag flag, const reality_bubble_loc& pos) const;
  bool has_flag_ter_only(t_flag flag, int x, int y) const; // only checks terrain
  bool is_destructable(int x, int y) const;        // checks terrain and vehicles
  bool is_destructable_ter_only(int x, int y) const;       // only checks terrain
@@ -208,8 +209,8 @@ class map
 // Items
  std::vector<item>& i_at(int x, int y);
  std::vector<item>& i_at(const point& pt) { return i_at(pt.x, pt.y); };
- std::vector<item>& i_at(const localPos& pos) { return grid[pos.first]->itm[pos.second.x][pos.second.y]; };
- const std::vector<item>& i_at(const localPos& pos) const { return grid[pos.first]->itm[pos.second.x][pos.second.y]; };
+ std::vector<item>& i_at(const reality_bubble_loc& pos) { return grid[pos.first]->itm[pos.second.x][pos.second.y]; };
+ const std::vector<item>& i_at(const reality_bubble_loc& pos) const { return grid[pos.first]->itm[pos.second.x][pos.second.y]; };
  const std::vector<item>& i_at(int x, int y) const { return const_cast<map*>(this)->i_at(x, y); };
  const std::vector<item>& i_at(const point& pt) const { return const_cast<map*>(this)->i_at(pt.x, pt.y); };
  item water_from(int x, int y) const;
@@ -232,8 +233,8 @@ class map
 // Traps
  trap_id& tr_at(int x, int y);
  trap_id& tr_at(const point& pt) { return tr_at(pt.x, pt.y); };
- trap_id& tr_at(const localPos& src) { return grid[src.first]->trp[src.second.x][src.second.y]; };
- trap_id tr_at(const localPos& src) const { return grid[src.first]->trp[src.second.x][src.second.y]; };
+ trap_id& tr_at(const reality_bubble_loc& src) { return grid[src.first]->trp[src.second.x][src.second.y]; };
+ trap_id tr_at(const reality_bubble_loc& src) const { return grid[src.first]->trp[src.second.x][src.second.y]; };
  trap_id tr_at(int x, int y) const { return const_cast<map*>(this)->tr_at(x, y); };	// \todo specialize this properly
  trap_id tr_at(const point& pt) const { return const_cast<map*>(this)->tr_at(pt.x, pt.y); };
  void add_trap(int x, int y, trap_id t);
@@ -242,8 +243,8 @@ class map
 // Fields
  field& field_at(int x, int y);
  field& field_at(const point& pt) { return field_at(pt.x, pt.y); };
- field& field_at(const localPos& src) { return grid[src.first]->fld[src.second.x][src.second.y]; };
- const field& field_at(const localPos& src) const { return grid[src.first]->fld[src.second.x][src.second.y]; };
+ field& field_at(const reality_bubble_loc& src) { return grid[src.first]->fld[src.second.x][src.second.y]; };
+ const field& field_at(const reality_bubble_loc& src) const { return grid[src.first]->fld[src.second.x][src.second.y]; };
  const field& field_at(int x, int y) const { return const_cast<map*>(this)->field_at(x, y); };
  const field& field_at(const point& pt) const { return const_cast<map*>(this)->field_at(pt.x, pt.y); };
  bool add_field(game *g, int x, int y, field_id t, unsigned char density, unsigned int age=0);

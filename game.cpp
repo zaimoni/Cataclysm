@@ -5873,6 +5873,7 @@ void game::spawn_mon(int shiftx, int shifty)
   const long delta_spawn = group+z.size();
   nextspawn += rng(4*delta_spawn, 10*delta_spawn); // Advance timer: we want to spawn monsters
 
+  // \todo rethink this -- we would expect monsters spawned due to xy movement to appear within the new submaps
    for (int j = 0; j < group; j++) {	// For each monster in the group...
     mon_id type = valid_monster_from(mongroup::moncats[cur_om.zg[i].type]);
 	if (type == mon_null) break;	// No monsters may be spawned; not soon enough?
