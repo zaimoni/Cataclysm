@@ -529,16 +529,8 @@ bool map::displace_water (int x, int y)
 
 ter_id& map::ter(int x, int y)
 {
- if (!inbounds(x, y)) return (discard<ter_id>::x = t_null);	// Out-of-bounds - null terrain 
-/*
- int nonant;
- cast_to_nonant(x, y, nonant);
-*/
- int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
-
- x %= SEEX;
- y %= SEEY;
- return grid[nonant]->ter[x][y];
+    if (const auto pos = to(x, y)) return grid[pos->first]->ter[pos->second.x][pos->second.y];
+    return (discard<ter_id>::x = t_null); // Out-of-bounds - null terrain
 }
 
 void map::_translate(ter_id from, ter_id to)
@@ -1384,33 +1376,15 @@ bool map::close_door(const point& pt)
 
 int& map::radiation(int x, int y)
 {
- if (!inbounds(x, y)) return discard<int>::x = 0;
-/*
- int nonant;
- cast_to_nonant(x, y, nonant);
-*/
- int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
-
- x %= SEEX;
- y %= SEEY;
- return grid[nonant]->rad[x][y];
+    if (const auto pos = to(x, y)) return grid[pos->first]->rad[pos->second.x][pos->second.y];
+    return discard<int>::x = 0;
 }
 
 std::vector<item>& map::i_at(int x, int y)
 {
- if (!inbounds(x, y)) {
-  discard<std::vector<item> >::x.clear();
-  return discard<std::vector<item> >::x;
- }
-/*
- int nonant;
- cast_to_nonant(x, y, nonant);
-*/
- int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
-
- x %= SEEX;
- y %= SEEY;
- return grid[nonant]->itm[x][y];
+    if (const auto pos = to(x, y)) return grid[pos->first]->itm[pos->second.x][pos->second.y];
+    discard<std::vector<item> >::x.clear();
+    return discard<std::vector<item> >::x;
 }
 
 item map::water_from(int x, int y) const
@@ -1600,29 +1574,16 @@ void map::use_charges(point origin, int range, const itype_id type, int quantity
  
 trap_id& map::tr_at(int x, int y)
 {
- if (!inbounds(x, y)) return (discard<trap_id>::x = tr_null);	// Out-of-bounds, return our null trap
-/*
- int nonant;
- cast_to_nonant(x, y, nonant);
-*/
- int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
-
- x %= SEEX;
- y %= SEEY;
-
- if (ter_t::list[ grid[nonant]->ter[x][y] ].trap != tr_null) return (discard<trap_id>::x = ter_t::list[ grid[nonant]->ter[x][y] ].trap);
- 
- return grid[nonant]->trp[x][y];
+    if (const auto pos = to(x, y)) {
+        if (const auto terrain_trap = ter_t::list[grid[pos->first]->ter[pos->second.x][pos->second.y]].trap) return (discard<trap_id>::x = terrain_trap);
+        return grid[pos->first]->trp[pos->second.x][pos->second.y];
+    }
+    return (discard<trap_id>::x = tr_null);	// Out-of-bounds, return our null trap
 }
 
 void map::add_trap(int x, int y, trap_id t)
 {
- if (!inbounds(x, y)) return;
- int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
-
- x %= SEEX;
- y %= SEEY;
- grid[nonant]->trp[x][y] = t;
+    if (const auto pos = to(x, y)) grid[pos->first]->trp[pos->second.x][pos->second.y] = t;
 }
 
 // 2019-02-21: only the player may disarm traps
@@ -1663,16 +1624,8 @@ void map::disarm_trap(game *g, const point& pt)
  
 field& map::field_at(int x, int y)
 {
- if (!inbounds(x, y)) return (discard<field>::x = field());
-/*
- int nonant;
- cast_to_nonant(x, y, nonant);
-*/
- int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
-
- x %= SEEX;
- y %= SEEY;
- return grid[nonant]->fld[x][y];
+    if (const auto pos = to(x, y)) return grid[pos->first]->fld[pos->second.x][pos->second.y];
+    return (discard<field>::x = field());
 }
 
 bool map::add_field(game *g, int x, int y, field_id t, unsigned char density, unsigned int age)
@@ -1696,12 +1649,10 @@ bool map::add_field(game *g, int x, int y, field_id t, unsigned char density, un
 
 void map::remove_field(int x, int y)
 {
- if (!inbounds(x, y)) return;
- int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
- x %= SEEX;
- y %= SEEY;
- if (grid[nonant]->fld[x][y].type != fd_null) grid[nonant]->field_count--;
- grid[nonant]->fld[x][y] = field();
+    if (const auto pos = to(x, y)) {
+        if (grid[pos->first]->fld[pos->second.x][pos->second.y].type != fd_null) grid[pos->first]->field_count--;
+        grid[pos->first]->fld[pos->second.x][pos->second.y] = field();
+    }
 }
 
 computer* map::computer_at(const point& pt)
