@@ -1630,18 +1630,16 @@ field& map::field_at(int x, int y)
 
 bool map::add_field(game *g, int x, int y, field_id t, unsigned char density, unsigned int age)
 {
- if (!inbounds(x, y)) return false;
- auto& fd = field_at(x, y);
+ const auto pos = to(x,y);
+ if (!pos) return false; // wasn't in bounds
+ auto& fd = field_at(*pos);
  if (fd.type == fd_web && t == fd_fire) density++;
  else if (!fd.is_null()) return false; // Blood & bile are null too
  if (density > 3) density = 3;
  if (density <= 0) return false;
- int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
- x %= SEEX;
- y %= SEEY;
- if (grid[nonant]->fld[x][y].type == fd_null) grid[nonant]->field_count++;
- grid[nonant]->fld[x][y] = field(t, density, age);
- if (g && grid[nonant]->fld[x][y].is_dangerous()) {
+ if (fd.type == fd_null) grid[pos->first]->field_count++;
+ fd = field(t, density, age);
+ if (g && fd.is_dangerous()) {
      if (const auto _pc = g->survivor(x,y)) _pc->cancel_activity_query("You're in a %s!", field::list[t].name[density - 1].c_str());
  }
  return true;
