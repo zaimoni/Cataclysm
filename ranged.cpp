@@ -611,7 +611,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
    else if (m.sees(u.pos, tar, -1))
     m.drawsq(w_terrain, u, tar.x, tar.y, false, true, center.x, center.y);
    else
-    mvwputch(w_terrain, SEEY, SEEX, c_black, 'X');
+    mvwputch(w_terrain, VIEW_CENTER, VIEW_CENTER, c_black, 'X');
    tar += dir;
    // \todo two problems: bounds member names not that good, this might be a "clamp" member function
    if (tar.x < bounds.tl_c().x) tar.x = bounds.tl_c().x;
