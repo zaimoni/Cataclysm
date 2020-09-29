@@ -43,16 +43,14 @@ bool map::process_fields(game *g)
 bool map::process_fields_in_submap(game *g, int gridn)
 {
  bool found_field = false;
- field *cur;
- field_id curtype;
  for (int locx = 0; locx < SEEX; locx++) {
   for (int locy = 0; locy < SEEY; locy++) {
-   cur = &(grid[gridn]->fld[locx][locy]);
+   field * const cur = &(grid[gridn]->fld[locx][locy]);
    int x = locx + SEEX * (gridn % my_MAPSIZE),
        y = locy + SEEY * int(gridn / my_MAPSIZE);
    
-   curtype = cur->type;
-   if (!found_field && curtype != fd_null) found_field = true;
+   const field_id curtype = cur->type;
+   if (curtype != fd_null) found_field = true;
    // \todo ideally would use accessors and preclude this by construction
    if (cur->density > 3 || cur->density < 1) {
        if (const char* const json = JSON_key(curtype)) {
@@ -65,7 +63,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
        else cur->density = 1;
    }
 
-  if (cur->age == 0) curtype = fd_null;	// Don't process "newborn" fields
+  if (cur->age == 0) continue; // Don't process "newborn" fields
 
   switch (curtype) {
 
