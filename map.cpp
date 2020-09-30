@@ -1443,6 +1443,11 @@ void map::add_item(int x, int y, const itype* type, int birthday)
  add_item(x, y, tmp);
 }
 
+static bool item_location_ok(const map& m, const reality_bubble_loc& pos)
+{
+    return !m.has_flag(noitem, pos) && m.i_at(pos).size() < 26;
+}
+
 void map::add_item(int x, int y, const item& new_item)
 {
  if (new_item.is_style()) return;
@@ -1451,18 +1456,18 @@ void map::add_item(int x, int y, const item& new_item)
  if (!pos_in) return;
  if (new_item.made_of(LIQUID) && has_flag(swimmable, *pos_in)) return;
 
- if (has_flag(noitem, *pos_in) || i_at(*pos_in).size() >= 26) {// Too many items there
+ if (!item_location_ok(*this, *pos_in)) {// Too many items there
   std::vector<reality_bubble_loc> okay;
   for (decltype(auto) delta : Direction::vector) {
       const auto pos = to(x + delta.x, y + delta.y);
-      if (pos && move_cost(*pos) > 0 && !has_flag(noitem, *pos) && i_at(*pos).size() < 26) okay.push_back(*pos);
+      if (pos && move_cost(*pos) > 0 && item_location_ok(*this, *pos)) okay.push_back(*pos);
   }
   if (okay.empty()) {
    for (int i = -2; i <= 2; i++) {
     for (int j = -2; j <= 2; j++) {
      if (-2 != i && 2 != i && -2 != j && 2 != j) continue;
      const auto pos = to(x + i, y + j);
-     if (pos && move_cost(*pos) > 0 && !has_flag(noitem, *pos) && i_at(*pos).size() < 26) okay.push_back(*pos);
+     if (pos && move_cost(*pos) > 0 && item_location_ok(*this, *pos)) okay.push_back(*pos);
     }
    }
   }
