@@ -1440,7 +1440,7 @@ void map::add_item(int x, int y, const itype* type, int birthday)
  item tmp(type, birthday);
  tmp = tmp.in_its_container();
  if (tmp.made_of(LIQUID) && has_flag(swimmable, x, y)) return;
- add_item(x, y, tmp);
+ add_item(x, y, std::move(tmp));
 }
 
 static bool item_location_ok(const map& m, const reality_bubble_loc& pos)
@@ -1486,6 +1486,23 @@ void map::add_item(int x, int y, const item& new_item)
 
  grid[pos_in->first]->itm[pos_in->second.x][pos_in->second.y].push_back(new_item);
  if (new_item.active) grid[pos_in->first]->active_item_count++;
+}
+
+void map::add_item(int x, int y, item&& new_item)
+{
+    if (new_item.is_style()) return;
+
+    auto pos_in = to(x, y);
+    if (!pos_in) return;
+    if (new_item.made_of(LIQUID) && has_flag(swimmable, *pos_in)) return;
+    if (!item_location_ok(*this, *pos_in)) {
+        if (item_location_alternate(*this, point(x, y), *pos_in)) {
+            if (new_item.made_of(LIQUID) && has_flag(swimmable, *pos_in)) return;
+        } // STILL?	\todo decide what gets lost
+    }
+
+    if (new_item.active) grid[pos_in->first]->active_item_count++;
+    grid[pos_in->first]->itm[pos_in->second.x][pos_in->second.y].push_back(std::move(new_item));
 }
 
 void map::process_active_items(game *g)
