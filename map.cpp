@@ -1448,6 +1448,29 @@ static bool item_location_ok(const map& m, const reality_bubble_loc& pos)
     return !m.has_flag(noitem, pos) && m.i_at(pos).size() < 26;
 }
 
+static bool item_location_alternate(const map& m, point origin, reality_bubble_loc& dest)
+{
+    std::vector<reality_bubble_loc> okay;
+    for (decltype(auto) delta : Direction::vector) {
+        const auto pos = m.to(origin + delta);
+        if (pos && m.move_cost(*pos) > 0 && item_location_ok(m, *pos)) okay.push_back(*pos);
+    }
+    if (okay.empty()) {
+        for (int i = -2; i <= 2; i++) {
+            for (int j = -2; j <= 2; j++) {
+                if (-2 != i && 2 != i && -2 != j && 2 != j) continue;
+                const auto pos = m.to(origin + point(i, j));
+                if (pos && m.move_cost(*pos) > 0 && item_location_ok(m, *pos)) okay.push_back(*pos);
+            }
+        }
+    }
+    // do not recurse.
+    if (auto ub = okay.size()) {
+        dest = okay[rng(0, ub - 1)];
+    }
+    return !okay.empty();
+}
+
 void map::add_item(int x, int y, const item& new_item)
 {
  if (new_item.is_style()) return;
@@ -1455,26 +1478,10 @@ void map::add_item(int x, int y, const item& new_item)
  auto pos_in = to(x, y);
  if (!pos_in) return;
  if (new_item.made_of(LIQUID) && has_flag(swimmable, *pos_in)) return;
-
- if (!item_location_ok(*this, *pos_in)) {// Too many items there
-  std::vector<reality_bubble_loc> okay;
-  for (decltype(auto) delta : Direction::vector) {
-      const auto pos = to(x + delta.x, y + delta.y);
-      if (pos && move_cost(*pos) > 0 && item_location_ok(*this, *pos)) okay.push_back(*pos);
-  }
-  if (okay.empty()) {
-   for (int i = -2; i <= 2; i++) {
-    for (int j = -2; j <= 2; j++) {
-     if (-2 != i && 2 != i && -2 != j && 2 != j) continue;
-     const auto pos = to(x + i, y + j);
-     if (pos && move_cost(*pos) > 0 && item_location_ok(*this, *pos)) okay.push_back(*pos);
-    }
-   }
-  }
-  if (auto ub = okay.size()) {
-      // do not recurse.
-      pos_in = okay[rng(0, ub - 1)];
-  } // STILL?	\todo decide what gets lost
+ if (!item_location_ok(*this, *pos_in)) {
+     if (item_location_alternate(*this, point(x, y), *pos_in)) {
+         if (new_item.made_of(LIQUID) && has_flag(swimmable, *pos_in)) return;
+     } // STILL?	\todo decide what gets lost
  }
 
  grid[pos_in->first]->itm[pos_in->second.x][pos_in->second.y].push_back(new_item);
