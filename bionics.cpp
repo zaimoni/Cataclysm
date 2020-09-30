@@ -379,11 +379,6 @@ void player::activate_bionic(int b, game *g)
   power_level -= power_cost;
  }
 
- std::vector<point> traj;
- std::vector<std::string> good;
- std::vector<std::string> bad;
- WINDOW* w;
- int t, l;
  item tmp_item;
 
  switch (bio.id) {
@@ -434,8 +429,9 @@ void player::activate_bionic(int b, game *g)
 // TODO: More stuff here (and bio_blood_filter)
  case bio_blood_anal:
   {
-  std::unique_ptr<WINDOW, curses_full_delete> w(newwin(20, 40, 3, 10));
-  wborder(w.get(), LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX, LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
+  constexpr const point analysis_offset(10,3);
+  std::vector<std::string> bad;
+  std::vector<std::string> good;
   if (has_disease(DI_FUNGUS)) bad.push_back("Fungal Parasite");
   if (has_disease(DI_DERMATIK)) bad.push_back("Insect Parasite");
   if (has_disease(DI_POISON)) bad.push_back("Poison");
@@ -447,14 +443,19 @@ void player::activate_bionic(int b, game *g)
   if (has_disease(DI_DRUNK)) good.push_back("Alcohol");
   if (has_disease(DI_CIG)) good.push_back("Nicotine");
   if (has_disease(DI_HIGH)) good.push_back("Intoxicant: Other");
-  if (has_disease(DI_THC)) good.push_back("Intoxicant: Other");
+  if (has_disease(DI_THC)) good.push_back("Intoxicant: THC");
   if (has_disease(DI_TOOK_PROZAC)) good.push_back("Prozac");
   if (has_disease(DI_TOOK_FLUMED)) good.push_back("Antihistamines");
   if (has_disease(DI_ADRENALINE)) good.push_back("Adrenaline Spike");
+  const size_t ideal_lines = clamped_lb<1>(good.size()+bad.size());
+  const int analysis_height = clamped_ub(ideal_lines + 2, VIEW - analysis_offset.y - 2); // \todo why not VIEW - analysis_offset.y?
+  const int analysis_width = 40; // \todo why not SCREEN_WIDTH - analysis_offset.x
+  std::unique_ptr<WINDOW, curses_full_delete> w(newwin(analysis_height, analysis_width, analysis_offset.y, analysis_offset.x));
+  wborder(w.get(), LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX, LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
   if (good.empty() && bad.empty())
    mvwprintz(w.get(), 1, 1, c_white, "No effects.");
   else {
-   for (int line = 1; line < 39 && line <= good.size() + bad.size(); line++) {
+   for (int line = 1; line < analysis_height-1 && line <= good.size() + bad.size(); line++) {
     if (line <= bad.size())
      mvwprintz(w.get(), line, 1, c_red, bad[line - 1].c_str());
     else
@@ -492,8 +493,7 @@ void player::activate_bionic(int b, game *g)
 	 thirst = min_thirst;
    }
   } else {
-   t = g->inv("Choose a container:");
-   auto& it = i_at(t);
+   auto& it = i_at(g->inv("Choose a container:"));
    if (it.type == nullptr) {
     messages.add("You don't have that item!");
     power_level += bionic::type[bio_evap].power_cost;
@@ -594,8 +594,7 @@ void player::activate_bionic(int b, game *g)
    item tmp = g->m.i_at(pos)[i];
    if (tmp.type->id == itm_corpse && query_yn("Extract water from the %s", tmp.tname().c_str())) {
 	have_extracted = true;
-    t = g->inv("Choose a container:");
-	auto& it = i_at(t);
+	auto& it = i_at(g->inv("Choose a container:"));
     if (nullptr == it.type) {
      messages.add("You don't have that item!");
      power_level += bionic::type[bio_water_extractor].power_cost;
@@ -604,12 +603,12 @@ void player::activate_bionic(int b, game *g)
      power_level += bionic::type[bio_water_extractor].power_cost;
     } else {
      const it_container* const cont = dynamic_cast<const it_container*>(it.type);
-     if (i_at(t).volume_contained() + 1 > cont->contains) {
+     if (it.volume_contained() + 1 > cont->contains) {
       messages.add("There's no space left in your %s.", it.tname().c_str());
       power_level += bionic::type[bio_water_extractor].power_cost;
      } else {
       messages.add("You pour water into your %s.", it.tname().c_str());
-      i_at(t).put_in(item(item::types[itm_water], 0));
+	  it.put_in(item(item::types[itm_water], 0));
      }
     }
 	break;
@@ -624,28 +623,34 @@ void player::activate_bionic(int b, game *g)
    for (int j = pos.y - 10; j <= pos.y + 10; j++) {
 	auto& stack = g->m.i_at(i, j);
 	if (stack.empty()) continue;
-	traj = line_to(i, j, pos, (g->m.sees(i, j, pos, -1, t) ? t : 0));
+	int t;
+	std::vector<point> traj(line_to(i, j, pos, (g->m.sees(i, j, pos, -1, t) ? t : 0)));
     traj.insert(traj.begin(), point(i, j));
     for (int k = 0; k < stack.size(); k++) {
      if (stack[k].made_of(IRON) || stack[k].made_of(STEEL)){
+	  bool it_is_landed = false;
       tmp_item = stack[k];
       g->m.i_rem(i, j, k);
-      for (l = 0; l < traj.size(); l++) {
-       if (monster* const z = g->mon(traj[l])) {
-        if (z->hurt(tmp_item.weight() * 2)) g->kill_mon(*z, true);
-        g->m.add_item(traj[l], tmp_item);
-        l = traj.size() + 1;
-       } else if (l > 0 && g->m.move_cost(traj[l]) == 0) {
-		std::string snd;
-        g->m.bash(traj[l], tmp_item.weight() * 2, snd);
-        g->sound(traj[l], 12, snd);
-        if (g->m.move_cost(traj[l]) == 0) {
-         g->m.add_item(traj[l - 1], tmp_item);
-         l = traj.size() + 1;
-        }
-       }
-      }
-      if (l == traj.size()) g->m.add_item(pos, tmp_item);
+	  point prior;
+	  for (decltype(auto) pt : traj) {
+		  if (monster* const z = g->mon(pt)) {
+			  if (z->hurt(tmp_item.weight() * 2)) g->kill_mon(*z, true);
+			  g->m.add_item(pt, tmp_item);
+			  it_is_landed = true;
+			  break;
+		  } else if (pt != traj.front() && g->m.move_cost(pt) == 0) {
+			  std::string snd;
+			  g->m.bash(pt, tmp_item.weight() * 2, snd);
+			  g->sound(pt, 12, snd); // C:Whales coincidentally SEE
+			  if (g->m.move_cost(pt) == 0) {
+				  g->m.add_item(prior, tmp_item);
+				  it_is_landed = true;
+				  break;
+			  }
+		  }
+		  prior = pt;
+	  }
+      if (!it_is_landed) g->m.add_item(pos, tmp_item);
      }
     }
    }
