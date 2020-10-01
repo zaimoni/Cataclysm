@@ -235,16 +235,17 @@ void constructable::init()
 void game::construction_menu()
 {
  const auto c_size = constructable::constructions.size();
+ constexpr const int v_bar_x = 30;
  WINDOW *w_con = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  wborder(w_con, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                 LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  mvwprintz(w_con, 0, 1, c_red, "Construction");
- mvwputch(w_con,  0, 30, c_white, LINE_OXXX);
- mvwputch(w_con, VIEW-1, 30, c_white, LINE_XXOX);
+ mvwputch(w_con,  0, v_bar_x, c_white, LINE_OXXX);
+ mvwputch(w_con, VIEW-1, v_bar_x, c_white, LINE_XXOX);
  for (int i = 1; i < VIEW-1; i++)
-  mvwputch(w_con, i, 30, c_white, LINE_XOXO);
+  mvwputch(w_con, i, v_bar_x, c_white, LINE_XOXO);
 
- mvwprintz(w_con,  1, 31, c_white, "Difficulty:");
+ mvwprintz(w_con,  1, v_bar_x + 1, c_white, "Difficulty:");
 
  wrefresh(w_con);
 
@@ -264,7 +265,7 @@ void game::construction_menu()
  do {
 // Erase existing list of constructions
   for (int i = 1; i < VIEW-1; i++) {
-   for (int j = 1; j < 29; j++)
+   for (int j = 1; j < v_bar_x - 1; j++)
     mvwputch(w_con, i, j, c_black, 'x');
   }
 // Determine where in the master list to start printing
@@ -288,17 +289,17 @@ void game::construction_menu()
    mvwprintz(w_con, 1, 43, (pskill >= diff ? c_white : c_red),
              "%d   ", diff);
 // Clear out lines for tools & materials
-   for (int i = 2; i < 24; i++) {
-    for (int j = 31; j < 79; j++)
+   for (int i = 2; i < VIEW - 1; i++) {
+    for (int j = v_bar_x + 1; j < SCREEN_WIDTH - 1; j++)
      mvwputch(w_con, i, j, c_black, 'x');
    }
 
 // Print stages and their requirements
-   int posx = 33, posy = 2;
+   int posx = v_bar_x + 3, posy = 2;
    for (int n = 0; n < current_con->stages.size(); n++) {
     const nc_color color_stage = (player_can_build(u, total_inv, current_con, n) ? c_white : c_dkgray);
 	const construction_stage& stage = current_con->stages[n];
-	mvwprintz(w_con, posy, 31, color_stage, "Stage %d: %s", n + 1,
+	mvwprintz(w_con, posy, v_bar_x + 1, color_stage, "Stage %d: %s", n + 1,
               stage.terrain == t_null? "" : ter_t::list[stage.terrain].name.c_str());
     posy++;
 // Print tools
@@ -307,7 +308,7 @@ void game::construction_menu()
                         stage.tools[2].empty()};
     for (int i = 0; i < 3 && !has_tool[i]; i++) {
      posy++;
-     posx = 33;
+     posx = v_bar_x + 3;
      for (int j = 0; j < stage.tools[i].size(); j++) {
       const itype_id tool = stage.tools[i][j];
       nc_color col = c_red;
@@ -319,14 +320,14 @@ void game::construction_menu()
       const int length = t_type->name.length();
       if (posx + length > 79) {
        posy++;
-       posx = 33;
+       posx = v_bar_x + 3;
       }
       mvwprintz(w_con, posy, posx, col, t_type->name.c_str());
       posx += length + 1; // + 1 for an empty space
       if (j < stage.tools[i].size() - 1) { // "OR" if there's more
        if (posx > 77) {
         posy++;
-        posx = 33;
+        posx = v_bar_x + 3;
        }
        mvwprintz(w_con, posy, posx, c_white, "OR");
        posx += 3;
@@ -335,12 +336,12 @@ void game::construction_menu()
     }
 // Print components
     posy++;
-    posx = 33;
+    posx = v_bar_x + 3;
     bool has_component[3] = {stage.components[0].empty(),
                              stage.components[1].empty(),
                              stage.components[2].empty()};
     for (int i = 0; i < 3; i++) {
-     posx = 33;
+     posx = v_bar_x + 3;
 	 if (has_component[i]) continue;
      for (int j = 0; j < stage.components[i].size() && i < 3; j++) {
       nc_color col = c_red;
@@ -350,18 +351,18 @@ void game::construction_menu()
        col = c_green;
       }
       int length = item::types[comp.type]->name.length();
-      if (posx + length > 79) {
+      if (posx + length > SCREEN_WIDTH - 1) {
        posy++;
-       posx = 33;
+       posx = v_bar_x + 3;
       }
       mvwprintz(w_con, posy, posx, col, "%s x%d", item::types[comp.type]->name.c_str(), comp.count);
       posx += length + 3; // + 2 for " x", + 1 for an empty space
       posx += 1 + int_log10(comp.count);    // Add more space for the length of the count
 
       if (j < stage.components[i].size() - 1) { // "OR" if there's more
-       if (posx > 77) {
+       if (posx > SCREEN_WIDTH - 3) {
         posy++;
-        posx = 33;
+        posx = v_bar_x + 3;
        }
        mvwprintz(w_con, posy, posx, c_white, "OR");
        posx += 3;
@@ -394,7 +395,7 @@ void game::construction_menu()
      ch = 'q';
     } else {
      popup("You can't build that!");
-     for (int i = 1; i < 24; i++)
+     for (int i = 1; i < VIEW - 1; i++)
       mvwputch(w_con, i, 30, c_white, LINE_XOXO);
      update_info = true;
     }
