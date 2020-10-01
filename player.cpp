@@ -4828,15 +4828,15 @@ bool player::wear_item(const item& to_wear)
 bool player::takeoff(map& m, char let)
 {
  for (int i = 0; i < worn.size(); i++) {
-  const auto& it = worn[i];
+  auto& it = worn[i];
   if (it.invlet == let) {
    if (volume_capacity() - (dynamic_cast<const it_armor*>(it.type))->storage > volume_carried() + it.type->volume) {
-    inv.push_back(it);
+    inv.push_back(std::move(it));
     EraseAt(worn, i);
     inv_sorted = false;
     return true;
    } else if (query_yn("No room in inventory for your %s.  Drop it?", worn[i].tname().c_str())) {
-    m.add_item(pos, it);
+    m.add_item(pos, std::move(it));
     EraseAt(worn, i);
     return true;
    } else return false;

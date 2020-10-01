@@ -619,7 +619,7 @@ vehicle& complete_vehicle(game* g)
         veh->refill(g->u, part);
         break;
     case 'o':
-		for (const auto& it : veh->parts[part].items) g->m.add_item(g->u.pos, it);
+		for (decltype(auto) it : veh->parts[part].items) g->m.add_item(g->u.pos, std::move(it));
         veh->parts[part].items.clear();
         itm = veh->part_info(part).item;
         broken = veh->parts[part].hp <= 0;

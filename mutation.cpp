@@ -187,17 +187,19 @@ static void mutation_effect(player& p, pl_flag mut)
     }
 
     for (int i = 0; i < p.worn.size(); i++) {
+        item& armor = p.worn[i];
+        const auto coverage = (dynamic_cast<const it_armor*>(armor.type))->covers;
         for (int j = 0; j < bps.size(); j++) {
-            if ((dynamic_cast<const it_armor*>(p.worn[i].type))->covers& mfb(bps[j])) {
+            if (coverage & mfb(bps[j])) {
                 if (destroy) {
-                    if (is_u) messages.add("Your %s is destroyed!", p.worn[i].tname().c_str());
-                }
-                else {
-                    if (is_u) messages.add("Your %s is pushed off.", p.worn[i].tname().c_str());
-                    g->m.add_item(p.pos, p.worn[i]);
+                    if (is_u) messages.add("Your %s is destroyed!", armor.tname().c_str());
+                } else {
+                    if (is_u) messages.add("Your %s is pushed off.", armor.tname().c_str());
+                    g->m.add_item(p.pos, std::move(armor));
                 }
                 EraseAt(p.worn, i);
                 i--;
+                break;
             }
         }
     }

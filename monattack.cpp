@@ -771,8 +771,7 @@ void mattack::vortex(game *g, monster *z)
      std::vector<point> traj = continue_line(from_monster, distance);
      for (int i = 0; i < traj.size() && dam > 0; i++) {
       g->m.shoot(g, traj[i].x, traj[i].y, dam, false, 0);
-	  monster* const m_at = g->mon(traj[i]);
-      if (m_at) {
+      if (monster* const m_at = g->mon(traj[i])) {
        if (m_at->hurt(dam)) g->kill_mon(*m_at, (z->friendly != 0));
        dam = 0;
       }
@@ -800,8 +799,7 @@ void mattack::vortex(game *g, monster *z)
     } // Done throwing item
    } // Done getting items
 // Throw monsters
-   monster* const thrown = g->mon(x,y);
-   if (thrown) {
+   if (monster* const thrown = g->mon(x, y)) {
     int distance = base_mon_throw_range[thrown->type->size];
 	int damage = distance * 4;
     switch (thrown->type->mat) {
@@ -817,7 +815,7 @@ void mattack::vortex(game *g, monster *z)
      case WOOD:    distance += 1; damage +=  5; break;
      case PLASTIC: distance += 1; damage +=  5; break;
      case GLASS:   distance += 2; damage += 20; break;
-     case IRON:    distance -= 1; // fall through
+     case IRON:    distance -= 1; [[fallthrough]];
      case STEEL:
      case SILVER:  distance -= 3; damage -= 10; break;
     }

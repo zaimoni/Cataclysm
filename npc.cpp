@@ -1841,7 +1841,7 @@ void npc::die(game *g, bool your_fault)
 
  item my_body(messages.turn);
  my_body.name = name;
- g->m.add_item(pos, my_body);
+ g->m.add_item(pos, std::move(my_body));
  for (size_t i = 0; i < inv.size(); i++) g->m.add_item(pos, inv[i]);
  for (const auto& it : worn) g->m.add_item(pos, it);
  if (weapon.type->id != itm_null) g->m.add_item(pos, weapon);
