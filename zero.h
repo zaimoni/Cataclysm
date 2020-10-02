@@ -26,6 +26,7 @@ template<auto ref, class T> T clamped_lb(const T& x) { return ref > x ? ref : x;
 template<class T> T clamped_lb(const T& x, const T& ref) { return ref > x ? ref : x; }
 
 // bidrectional clamp
+template<class T, class U> T clamped(const T& x, const T& lb, const U& ub) { return (ub < x) ? ub : ((lb > x) ? lb : x); }
 template<class T, class U> T clamped(const T& x, const U& lb, const U& ub) { return (ub < x) ? ub : ((lb > x) ? lb : x); }
 template<auto lb, auto ub, class T> T clamped(const T& x) { return (ub < x) ? ub : ((lb > x) ? lb : x); }
 template<class T> T clamped(const T& x, const T& lb, const T& ub) { return (ub < x) ? ub : ((lb > x) ? lb : x); }

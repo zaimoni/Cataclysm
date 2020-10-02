@@ -10,6 +10,7 @@
 #include "line.h"
 #include "rng.h"
 #include "recent_msg.h"
+#include "zero.h"
 #include "setvector.h"
 #include <stdexcept>
 
@@ -249,6 +250,7 @@ void game::construction_menu()
 
  wrefresh(w_con);
 
+ const int listing_length = VIEW - 3;
  bool update_info = true;
  int select = 0;
  int ch;
@@ -269,11 +271,9 @@ void game::construction_menu()
     mvwputch(w_con, i, j, c_black, 'x');
   }
 // Determine where in the master list to start printing
-  int offset = select - 11;
-  if (offset > c_size - 22) offset = c_size - 22;
-  if (offset < 0) offset = 0;
+  int offset = clamped(select - listing_length / 2, 0, c_size - listing_length);
 // Print the constructions between offset and max (or how many will fit)
-  for (int i = 0; i < 22 && i + offset < c_size; i++) {
+  for (int i = 0; i < listing_length && i + offset < c_size; i++) {
    int current = i + offset;
    const constructable* const cur = constructable::constructions[current];
    nc_color col = (player_can_build(u, total_inv, cur, 0) ? c_white : c_dkgray);
@@ -318,14 +318,14 @@ void game::construction_menu()
       }
 	  const itype* const t_type = item::types[tool];
       const int length = t_type->name.length();
-      if (posx + length > 79) {
+      if (posx + length > SCREEN_WIDTH - 1) {
        posy++;
        posx = v_bar_x + 3;
       }
       mvwprintz(w_con, posy, posx, col, t_type->name.c_str());
       posx += length + 1; // + 1 for an empty space
       if (j < stage.tools[i].size() - 1) { // "OR" if there's more
-       if (posx > 77) {
+       if (posx > SCREEN_WIDTH - 3) {
         posy++;
         posx = v_bar_x + 3;
        }
@@ -396,7 +396,7 @@ void game::construction_menu()
     } else {
      popup("You can't build that!");
      for (int i = 1; i < VIEW - 1; i++)
-      mvwputch(w_con, i, 30, c_white, LINE_XOXO);
+      mvwputch(w_con, i, v_bar_x, c_white, LINE_XOXO);
      update_info = true;
     }
 	}
