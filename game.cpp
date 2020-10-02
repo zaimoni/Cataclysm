@@ -4616,7 +4616,7 @@ void game::plthrow()
  u.moves -= 125;
  u.practice(sk_throw, 10);
 
- throw_item(u, tar, thrown, trajectory);
+ throw_item(u, tar, std::move(thrown), trajectory);
 }
 
 void game::plfire(bool burst)

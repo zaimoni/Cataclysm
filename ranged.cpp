@@ -373,7 +373,7 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
 }
 
 
-void game::throw_item(player &p, point tar, const item &thrown, std::vector<point> &trajectory)
+void game::throw_item(player &p, point tar, item&& thrown, std::vector<point> &trajectory)
 {
  int deviation = 0;
  int trange = 1.5 * rl_dist(p.pos, tar);
@@ -389,9 +389,10 @@ void game::throw_item(player &p, point tar, const item &thrown, std::vector<poin
  if (p.per_cur < 6) deviation += rng(0, 8 - p.per_cur);
  else if (p.per_cur > 8) deviation -= p.per_cur - 8;
 
+ const int thrown_vol = thrown.volume();
  deviation += rng(0, p.encumb(bp_hands) * 2 + p.encumb(bp_eyes) + 1);
- if (thrown.volume() > 5) deviation += rng(0, 1 + (thrown.volume() - 5) / 4);
- else if (thrown.volume() == 0) deviation += rng(0, 3);
+ if (5 < thrown_vol) deviation += rng(0, 1 + (thrown_vol - 5) / 4);
+ else if (0 >= thrown_vol) deviation += rng(0, 3);
 
  deviation += rng(0, 1 + abs(p.str_cur - thrown.weight()));
 
@@ -415,10 +416,11 @@ void game::throw_item(player &p, point tar, const item &thrown, std::vector<poin
   if (!p.is_npc()) messages.add("You barely miss!");
  }
 
+ const int thrown_wgt = thrown.weight();
+
  std::string message;
- int dam = (thrown.weight() / 4 + thrown.type->melee_dam / 2 + p.str_cur / 2) /
-            double(2 + double(thrown.volume() / 4));
- if (dam > thrown.weight() * 3) dam = thrown.weight() * 3;
+ int dam = (thrown_wgt / 4 + thrown.type->melee_dam / 2 + p.str_cur / 2) / (2.0 + thrown_vol / 4);
+ clamp_lb(dam, thrown_wgt * 3);
 
  int i = 0;
  point t;
@@ -439,16 +441,11 @@ void game::throw_item(player &p, point tar, const item &thrown, std::vector<poin
 	const auto c_armor = m_at->armor_cut();
     if (thrown.type->melee_cut > c_armor) dam += (thrown.type->melee_cut - c_armor);
    }
-   if (thrown.made_of(GLASS) && !thrown.active && // active = molotov, etc.
-       rng(0, thrown.volume() + 8) - rng(0, p.str_cur) < thrown.volume()) {
-    if (u_see(t)) messages.add("The %s shatters!", thrown.tname().c_str());
-	for (const auto& obj : thrown.contents) m.add_item(t, obj);
-    sound(t, 16, "glass breaking!");
-    const int glassdam = rng(0, thrown.volume() * 2);
-	const auto c_armor = m_at->armor_cut();
-	if (glassdam > c_armor) dam += (glassdam - c_armor);
-   } else
-    m.add_item(t, thrown);
+   if (m.hard_landing(t, std::move(thrown), &p)) {
+       const int glassdam = rng(0, thrown_vol * 2);
+       const auto c_armor = m_at->armor_cut();
+       if (glassdam > c_armor) dam += (glassdam - c_armor);
+   }
    if (i < trajectory.size() - 1) goodhit = double(double(rand() / RAND_MAX) / 2);
    if (goodhit < .1 && !m_at->has_flag(MF_NOHEAD)) {
     message = "Headshot!";
@@ -478,14 +475,8 @@ void game::throw_item(player &p, point tar, const item &thrown, std::vector<poin
   }
  }
  if (m.move_cost(t) == 0) t = (i > 1) ? trajectory[i - 2] : u.pos;
- if (thrown.made_of(GLASS) && !thrown.active && // active means molotov, etc
-     rng(0, thrown.volume() + 8) - rng(0, p.str_cur) < thrown.volume()) {
-  if (u_see(t)) messages.add("The %s shatters!", thrown.tname().c_str());
-  for (const auto& obj : thrown.contents) m.add_item(t, obj);
-  sound(t, 16, "glass breaking!");
- } else {
-  sound(t, 8, "thud.");
-  m.add_item(t, thrown);
+ if (!m.hard_landing(t, std::move(thrown), &p)) {
+     sound(t, 8, "thud.");
  }
 }
 

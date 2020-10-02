@@ -788,12 +788,7 @@ void mattack::vortex(game *g, monster *z)
       }
 // TODO: Hit NPCs
       if (dam == 0 || i == traj.size() - 1) {
-       if (thrown.made_of(GLASS)) {
-        if (g->u_see(traj[i])) messages.add("The %s shatters!", thrown.tname().c_str());
-		for(const auto& obj : thrown.contents) g->m.add_item(traj[i], obj);
-        g->sound(traj[i], 16, "glass breaking!");
-       } else
-        g->m.add_item(traj[i], thrown);
+       g->m.hard_landing(traj[i], std::move(thrown));
       }
      }
     } // Done throwing item

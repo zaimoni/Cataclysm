@@ -1505,6 +1505,26 @@ void map::add_item(int x, int y, item&& new_item)
     grid[pos_in->first]->itm[pos_in->second.x][pos_in->second.y].push_back(std::move(new_item));
 }
 
+bool map::hard_landing(const point& pt, item&& thrown, player* p)
+{
+    const auto g = game::active();
+    if (thrown.made_of(GLASS)) {
+        bool break_this = !p;
+        if (!break_this && !thrown.active) {
+            const int vol = thrown.volume();
+            if (rng(0, vol + 8) - rng(0, p->str_cur) < vol) break_this = true;
+        }
+        if (break_this) {
+            if (g->u_see(pt)) messages.add("The %s shatters!", thrown.tname().c_str());
+            for (auto& obj : thrown.contents) add_item(pt, std::move(obj));
+            g->sound(pt, 16, "glass breaking!");
+            return true;
+        }
+    }
+    add_item(pt, std::move(thrown));
+    return false;
+}
+
 void map::process_active_items(game *g)
 {
  for (int gx = 0; gx < my_MAPSIZE; gx++) {

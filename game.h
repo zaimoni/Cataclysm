@@ -119,7 +119,7 @@ class game
   void plfire(bool burst);	// Player fires a gun (target selection)...
 // ... a gun is fired, maybe by an NPC (actual damage, etc.).
   void fire(player &p, point tar, std::vector<point> &trajectory, bool burst);
-  void throw_item(player &p, point tar, const item &thrown, std::vector<point> &trajectory);
+  void throw_item(player &p, point tar, item&& thrown, std::vector<point> &trajectory);
   mission& give_mission(mission_id type); // Create the mission and assign it
 // reserve_mission() creates a new mission of the given type and pushes it to
 // active_missions.  The function returns the UID of the new mission, which can

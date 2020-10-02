@@ -1511,7 +1511,7 @@ void npc::alt_attack(game *g, int target)
    moves -= 125;
    if (g->u_see(pos))
     messages.add("%s throws a %s.", name.c_str(), used->tname().c_str());
-   g->throw_item(*this, tar, *used, trajectory);
+   g->throw_item(*this, tar, std::move(*used), trajectory);
    i_remn(index);
 
   } else if (!no_friendly_fire) {// Danger of friendly fire
@@ -1561,7 +1561,7 @@ void npc::alt_attack(game *g, int target)
     moves -= 125;
     if (g->u_see(pos))
      messages.add("%s throws a %s.", name.c_str(), used->tname().c_str());
-    g->throw_item(*this, tar, *used, trajectory);
+	g->throw_item(*this, tar, std::move(*used), trajectory);
     i_remn(index);
    }
 
