@@ -379,8 +379,6 @@ void player::activate_bionic(int b, game *g)
   power_level -= power_cost;
  }
 
- item tmp_item;
-
  switch (bio.id) {
 
  case bio_painkiller:
@@ -485,7 +483,6 @@ void player::activate_bionic(int b, game *g)
 
  case bio_evap:
   if (query_yn("Drink directly? Otherwise you will need a container.")) {
-   tmp_item = item(item::types[itm_water], 0);
    thirst -= 50;
    const int min_thirst = has_trait(PF_GOURMAND) ? -60 : -20;
    if (min_thirst > thirst) {
@@ -510,7 +507,7 @@ void player::activate_bionic(int b, game *g)
      power_level += bionic::type[bio_evap].power_cost;
     } else {
      messages.add("You pour water into your %s.", it.tname().c_str());
-	 it.put_in(item(item::types[itm_water], 0));
+	 it.put_in(item(item::types[itm_water], 0)); // XXX \todo should this be the correct origin time?
     }
    }
   }
@@ -538,7 +535,7 @@ void player::activate_bionic(int b, game *g)
    weapon = item::null;
   } else if (weapon.type->id != 0) {
    messages.add("Your claws extend, forcing you to drop your %s.", weapon.tname().c_str());
-   g->m.add_item(pos, weapon);
+   g->m.add_item(pos, std::move(weapon));
    weapon = item(item::types[itm_bio_claws], 0);
    weapon.invlet = '#';
   } else {
@@ -548,24 +545,26 @@ void player::activate_bionic(int b, game *g)
   }
   break;
 
- case bio_blaster:
-  tmp_item = weapon;
+ case bio_blaster: {
+  item tmp_item(std::move(weapon));
   weapon = item(item::types[itm_bio_blaster], 0);
   weapon.curammo = dynamic_cast<it_ammo*>(item::types[itm_bio_fusion]);
   weapon.charges = 1;
   g->refresh_all();
   g->plfire(false);
-  weapon = tmp_item;
+  weapon = std::move(tmp_item);
+  }
   break;
 
- case bio_laser:
-  tmp_item = weapon;
+ case bio_laser: {
+  item tmp_item(std::move(weapon));
   weapon = item(item::types[itm_v29], 0);
   weapon.curammo = dynamic_cast<it_ammo*>(item::types[itm_laser_pack]);
   weapon.charges = 1;
   g->refresh_all();
   g->plfire(false);
-  weapon = tmp_item;
+  weapon = std::move(tmp_item);
+  }
   break;
 
  case bio_emp:
@@ -629,13 +628,13 @@ void player::activate_bionic(int b, game *g)
     for (int k = 0; k < stack.size(); k++) {
      if (stack[k].made_of(IRON) || stack[k].made_of(STEEL)){
 	  bool it_is_landed = false;
-      tmp_item = stack[k];
+      item tmp_item = stack[k];
       g->m.i_rem(i, j, k);
 	  point prior;
 	  for (decltype(auto) pt : traj) {
 		  if (monster* const z = g->mon(pt)) {
 			  if (z->hurt(tmp_item.weight() * 2)) g->kill_mon(*z, true);
-			  g->m.add_item(pt, tmp_item);
+			  g->m.add_item(pt, std::move(tmp_item));
 			  it_is_landed = true;
 			  break;
 		  } else if (pt != traj.front() && g->m.move_cost(pt) == 0) {
@@ -643,14 +642,14 @@ void player::activate_bionic(int b, game *g)
 			  g->m.bash(pt, tmp_item.weight() * 2, snd);
 			  g->sound(pt, 12, snd); // C:Whales coincidentally SEE
 			  if (g->m.move_cost(pt) == 0) {
-				  g->m.add_item(prior, tmp_item);
+				  g->m.add_item(prior, std::move(tmp_item));
 				  it_is_landed = true;
 				  break;
 			  }
 		  }
 		  prior = pt;
 	  }
-      if (!it_is_landed) g->m.add_item(pos, tmp_item);
+      if (!it_is_landed) g->m.add_item(pos, std::move(tmp_item));
      }
     }
    }

@@ -2586,8 +2586,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
          std::pair(mi_mil_food, 40)
      };
 
-     item body(0);  // \todo? something more specific
-     add_item(dest, body);
+     add_item(dest, item(0)); // \todo? something more specific than a corpse
      _place_items(*this, std::begin(deceased_stock), std::end(deceased_stock), dest, dest, true);
      add_item(dest, item::types[itm_id_military], 0);
     } else if (one_in(20))
@@ -3211,8 +3210,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      while (0 < num_bodies && !ok_pts.empty()) {
          const auto n = rng(0, ok_pts.size() - 1);
          const point& body = ok_pts[n];
-         item miner(0);
-         add_item(body, miner);
+         add_item(body, item(0)); // miner's corpse
          place_items(mi_mine_equipment, 60, body.x, body.y, body.x, body.y, false, 0);
          if (ok_pts.size() >= num_bodies) ok_pts.erase(ok_pts.begin() + n);
      };
@@ -3255,8 +3253,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      line(this, t_rock, miner_at + Direction::NW, nw_in + 3 * Direction::E);
      line(this, t_rock, miner_at + Direction::NW, miner_at + Direction::SW);
      ter(miner_at + Direction::S) = t_rock;
-     item miner(0);
-     add_item(miner_at, miner);
+     add_item(miner_at, item(0)); // the miner's corpse
      place_items(mi_mine_equipment, 60, miner_at.x, miner_at.y, miner_at.x, miner_at.y, false, 0);
     } break;
    }

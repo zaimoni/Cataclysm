@@ -1270,7 +1270,7 @@ void game::get_input()
     std::vector<item> tmp = u.inv_dump();
     item your_body(messages.turn);
     your_body.name = u.name;
-    m.add_item(u.pos, your_body);
+    m.add_item(u.pos, std::move(your_body));
 	for(const auto& it : tmp) m.add_item(u.pos, it);
     //m.save(&cur_om, turn, levx, levy);
     //MAPBUFFER.save();
@@ -1375,7 +1375,7 @@ bool game::is_game_over()
    std::vector<item> tmp = u.inv_dump();
    item your_body(messages.turn);
    your_body.name = u.name;
-   m.add_item(u.pos, your_body);
+   m.add_item(u.pos, std::move(your_body));
    for(const auto& it : tmp) m.add_item(u.pos, it);
    //m.save(&cur_om, turn, levx, levy);
    //MAPBUFFER.save();
@@ -3419,7 +3419,7 @@ void game::kill_mon(monster& target, bool u_did_it)
    if (target.type->species != species_hallu)
     kills[target.type->id]++;	// Increment our kill counter
   }
-  for(const auto& it : target.inv) m.add_item(target.pos, it);
+  for (const auto& it : target.inv) m.add_item(target.pos, it);
   target.die(this);
  }
 // z_erase(index);	// highly unsafe, do this compaction at end-of-turn
@@ -3564,14 +3564,14 @@ void game::smash()
   sound(u.pos, 18, bashsound);
   u.moves -= 80;
   if (u.sklevel[sk_melee] == 0) u.practice(sk_melee, rng(0, 1) * rng(0, 1));
-  if (u.weapon.made_of(GLASS) && rng(0, u.weapon.volume() + 3) < u.weapon.volume()) {
+  const int weapon_vol = u.weapon.volume();
+  if (u.weapon.made_of(GLASS) && rng(0, weapon_vol + 3) < weapon_vol) {
    messages.add("Your %s shatters!", u.weapon.tname().c_str());
-   for (int i = 0; i < u.weapon.contents.size(); i++)
-    m.add_item(u.pos, u.weapon.contents[i]);
+   for (decltype(auto) it : u.weapon.contents) m.add_item(u.pos, std::move(it));
    sound(u.pos, 16, "");
-   u.hit(this, bp_hands, 1, 0, rng(0, u.weapon.volume()));
-   if (u.weapon.volume() > 20)// Hurt left arm too, if it was big
-    u.hit(this, bp_hands, 0, 0, rng(0, u.weapon.volume() * .5));
+   u.hit(this, bp_hands, 1, 0, rng(0, weapon_vol));
+   if (weapon_vol > 20)// Hurt left arm too, if it was big
+    u.hit(this, bp_hands, 0, 0, rng(0, weapon_vol/2));
    u.remove_weapon();
   }
  } else
@@ -3797,9 +3797,9 @@ void game::examine()
   refresh_all();
  } else if (t_gas_pump == exam_t && query_yn("Pump gas?")) {
   item gas(item::types[itm_gasoline], messages.turn);
-  if (one_in(10 + u.dex_cur)) {
+  if (one_in(10 + u.dex_cur)) { // \todo this is *way* too high to be credible outside of extreme distraction/stress
    messages.add("You accidentally spill the gasoline.");
-   m.add_item(u.pos, gas);
+   m.add_item(u.pos, std::move(gas));
   } else {
    u.moves -= 300;
    handle_liquid(gas, false, true);
@@ -4448,7 +4448,9 @@ void game::drop()
    }
   if (vh_overflow) messages.add("The trunk is full, so some items fall on the ground.");
  }
- if (!to_veh || vh_overflow) for (const auto& it : dropped) m.add_item(u.pos, it);
+ if (!to_veh || vh_overflow) {
+     while (i < dropped.size()) m.add_item(u.pos, std::move(dropped[i++]));
+ }
 }
 
 void game::drop_in_direction()
@@ -4509,15 +4511,18 @@ void game::drop_in_direction()
    messages.add("You %s several items %s the %s.", verb.c_str(), prep.c_str(),
            m.tername(dir).c_str());
  }
+ bool vh_overflow = false;
+ int i = 0;
  if (to_veh) {
-  bool vh_overflow = false;
-  for (int i = 0; i < dropped.size(); i++) {
-   vh_overflow = vh_overflow || !veh->add_item (veh_part, dropped[i]);
-   if (vh_overflow) m.add_item(dir, dropped[i]);
-  }
-  if (vh_overflow) messages.add("Trunk is full, so some items fall on the ground.");
- } else {
-  for(const auto& it : dropped) m.add_item(dir, it);
+     for (i = 0; i < dropped.size(); i++)
+         if (!veh->add_item(veh_part, dropped[i])) {
+             vh_overflow = true;
+             break;
+         }
+     if (vh_overflow) messages.add("The trunk is full, so some items fall on the ground.");
+ }
+ if (!to_veh || vh_overflow) {
+     while (i < dropped.size()) m.add_item(u.pos, std::move(dropped[i++]));
  }
 }
 
@@ -4873,7 +4878,7 @@ void game::unload()
      u.i_add(content);
     } else {
      messages.add("You drop the %s on the ground.", content.tname().c_str());
-     m.add_item(u.pos, content);
+     m.add_item(u.pos, std::move(content));
     }
    }
    EraseAt(u.weapon.contents, 0);

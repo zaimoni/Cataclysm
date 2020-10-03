@@ -1084,16 +1084,16 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
  }
 
 // Glass weapons shatter sometimes
- if (weapon.made_of(GLASS) &&
-     rng(0, weapon.volume() + 8) < weapon.volume() + str_cur) {
+ const int weapon_vol = weapon.volume();
+ if (weapon.made_of(GLASS) && rng(0, weapon_vol + 8) < weapon_vol + str_cur) {
   if (can_see) messages.add("%s %s shatters!", Your.c_str(), weapon.tname().c_str());
   g->sound(pos, 16, "");
 // Dump its contents on the ground
-  for(const auto& obj : weapon.contents) g->m.add_item(pos, obj);
-  hit(g, bp_arms, 1, 0, rng(0, weapon.volume() * 2));// Take damage
+  for(const auto& obj : weapon.contents) g->m.add_item(pos, std::move(obj));
+  hit(g, bp_arms, 1, 0, rng(0, weapon_vol * 2));// Take damage
   if (weapon.is_two_handed(*this))// Hurt left arm too, if it was big
-   hit(g, bp_arms, 0, 0, rng(0, weapon.volume()));
-  cut_dam += rng(0, 5 + int(weapon.volume() * 1.5));// Hurt the monster extra
+   hit(g, bp_arms, 0, 0, rng(0, weapon_vol));
+  cut_dam += rng(0, 5 + int(weapon_vol * 1.5));// Hurt the monster extra
   remove_weapon();
  }
 

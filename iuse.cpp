@@ -798,7 +798,7 @@ void iuse::hammer(game *g, player *p, item *it, bool t)
  p->moves -= 500;
  item it_nails(item::types[itm_nail], 0, g->nextinv);
  it_nails.charges = std::get<1>(*deconstruct);
- g->m.add_item(p->pos, it_nails);
+ g->m.add_item(p->pos, std::move(it_nails));
  item board(item::types[itm_2x4], 0, g->nextinv);
  for (int i = 0; i < std::get<2>(*deconstruct); i++) g->m.add_item(p->pos, board);
  type = std::get<0>(*deconstruct);
@@ -1010,7 +1010,7 @@ void iuse::crowbar(game *g, player *p, item *it, bool t)
   p->moves -= 500;
   item it_nails(item::types[itm_nail], 0, g->nextinv);
   it_nails.charges = std::get<1>(*deconstruct);
-  g->m.add_item(p->pos, it_nails);
+  g->m.add_item(p->pos, std::move(it_nails));
   item board(item::types[itm_2x4], 0, g->nextinv);
   for (int i = 0; i < std::get<2>(*deconstruct); i++)
    g->m.add_item(p->pos, board);

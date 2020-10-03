@@ -974,9 +974,9 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
         g->u.weight_carried() + tmp.weight() <= g->u.weight_capacity() &&
         g->u.inv.size() < 52)
      g->u.i_add(tmp);
-    else { // Could fit it in the inventory!
+    else { // Could not fit it in the inventory!
      dropped_some = true;
-     g->m.add_item(g->u.pos, tmp);
+     g->m.add_item(g->u.pos, std::move(tmp));
     }
    }
   }
