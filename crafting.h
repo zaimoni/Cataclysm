@@ -19,7 +19,7 @@ struct component
  itype_id type;
  int count;
 
- component(itype_id TYPE = itm_null, int COUNT = 0) noexcept : type (TYPE), count (COUNT) {}
+ constexpr component(itype_id TYPE = itm_null, int COUNT = 0) noexcept : type (TYPE), count (COUNT) {}
 };
 
 struct recipe
@@ -37,12 +37,11 @@ struct recipe
  std::vector<component> tools[5];
  std::vector<component> components[5];
 
- recipe() { id = 0; result = itm_null; category = CC_NULL; sk_primary = sk_null;
-            sk_secondary = sk_null; difficulty = 0; time = 0; }
- recipe(int pid, itype_id pres, craft_cat cat, skill p1, skill p2, int pdiff,
-        int ptime) :
+ recipe(int pid, itype_id pres, craft_cat cat, skill p1, skill p2, int pdiff, int ptime) noexcept :
   id (pid), result (pres), category (cat), sk_primary (p1), sk_secondary (p2),
   difficulty (pdiff), time (ptime) {}
+ // could default everything, above, but that would allow even weirder initializations
+ recipe() noexcept : recipe(0, itm_null, CC_NULL, sk_null, sk_null, 0, 0) {}
 
  static void init();
 };

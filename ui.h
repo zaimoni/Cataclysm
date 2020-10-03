@@ -18,6 +18,7 @@ enum {
 	STATUS_BAR_HEIGHT = 4,
 	// mon info
 	MON_INFO_HEIGHT = 12,
+	TABBED_HEADER_HEIGHT = 3,
 	// the canonical view with the player-scale map had a 55-wide "control panel", for a total width of 25+55=80
 	PANELX = 55,
 	SCREEN_WIDTH = VIEW+PANELX

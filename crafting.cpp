@@ -11,8 +11,6 @@
 
 std::vector<recipe*> recipe::recipes;
 
-void draw_recipe_tabs(WINDOW *w, craft_cat tab);
-
 // This function just defines the recipes used throughout the game.
 void recipe::init()
 {
@@ -658,8 +656,7 @@ RECIPE(itm_boobytrap, CC_MISC, sk_mechanics, sk_traps,3,5000);
 }
 
 enum {
-	CRAFTING_HEADER_HEIGHT = 3,	// don't need to use this, close enough to usage to proofread
-	CRAFTING_WIN_HEIGHT = VIEW-CRAFTING_HEADER_HEIGHT
+	CRAFTING_WIN_HEIGHT = VIEW - TABBED_HEADER_HEIGHT
 };
 
 inventory crafting_inventory(const map& m, const player& u)  // 2020-05-28 NPC-valid
@@ -682,8 +679,9 @@ void game::craft()
   messages.add("Your morale is too low to craft...");
   return;
  }
- WINDOW *w_head = newwin( 3, SCREEN_WIDTH, 0, 0);
- WINDOW *w_data = newwin(CRAFTING_WIN_HEIGHT, SCREEN_WIDTH, 3, 0);
+ static constexpr const char* const labels[] = {"WEAPONS", "FOOD", "ELECTRONICS", "ARMOR", "MISC", nullptr};
+ WINDOW *w_head = newwin(TABBED_HEADER_HEIGHT, SCREEN_WIDTH, 0, 0);
+ WINDOW *w_data = newwin(CRAFTING_WIN_HEIGHT, SCREEN_WIDTH, TABBED_HEADER_HEIGHT, 0);
  craft_cat tab = CC_WEAPON;
  std::vector<const recipe*> current;
  std::vector<bool> available;
@@ -699,7 +697,7 @@ void game::craft()
   if (redraw) { // When we switch tabs, redraw the header
    redraw = false;
    line = 0;
-   draw_recipe_tabs(w_head, tab);
+   draw_tabs(w_head, tab - 1, labels); // \todo C:Whales colors were c_ltgray, h_ltgray rather than c_white, h_white
 // Set current to all recipes in the current tab; available are possible to make
    pick_recipes(current, available, tab);
   }
@@ -769,7 +767,7 @@ void game::craft()
       mvwprintz(w_data, ypos, xpos, toolcol, toolname.c_str());
       xpos += toolname.length();
       if (j < current[line]->tools[i].size() - 1) {
-       if (xpos >= 77) {
+       if (xpos >= SCREEN_WIDTH - 3) {
         xpos = 32;
         ypos++;
        }
@@ -809,7 +807,7 @@ void game::craft()
      mvwprintz(w_data, ypos, xpos, compcol, compname.c_str());
      xpos += compname.length();
      if (j < current[line]->components[i].size() - 1) {
-      if (xpos >= 77) {
+      if (xpos >= SCREEN_WIDTH - 3) {
        ypos++;
        xpos = 32;
       }
@@ -868,102 +866,6 @@ void game::craft()
  delwin(w_head);
  delwin(w_data);
  refresh_all();
-}
-
-void draw_recipe_tabs(WINDOW *w, craft_cat tab)
-{
- werase(w);
- for (int i = 0; i < SCREEN_WIDTH; i++) {
-  mvwputch(w, 2, i, c_ltgray, LINE_OXOX);
-  if ((i >  4 && i < 14) || (i > 20 && i < 27) || (i > 33 && i < 47) ||
-      (i > 53 && i < 61) || (i > 67 && i < 74))
-   mvwputch(w, 0, i, c_ltgray, LINE_OXOX);
- }
-
-
- mvwputch(w, 0,  4, c_ltgray, LINE_OXXO);
- mvwputch(w, 0, 20, c_ltgray, LINE_OXXO);
- mvwputch(w, 0, 33, c_ltgray, LINE_OXXO);
- mvwputch(w, 0, 53, c_ltgray, LINE_OXXO);
- mvwputch(w, 0, 67, c_ltgray, LINE_OXXO);
- mvwputch(w, 2,  4, c_ltgray, LINE_XXOX);
- mvwputch(w, 2, 20, c_ltgray, LINE_XXOX);
- mvwputch(w, 2, 33, c_ltgray, LINE_XXOX);
- mvwputch(w, 2, 53, c_ltgray, LINE_XXOX);
- mvwputch(w, 2, 67, c_ltgray, LINE_XXOX);
-
- mvwputch(w, 0, 14, c_ltgray, LINE_OOXX);
- mvwputch(w, 0, 27, c_ltgray, LINE_OOXX);
- mvwputch(w, 0, 47, c_ltgray, LINE_OOXX);
- mvwputch(w, 0, 61, c_ltgray, LINE_OOXX);
- mvwputch(w, 0, 74, c_ltgray, LINE_OOXX);
- mvwputch(w, 2, 14, c_ltgray, LINE_XXOX);
- mvwputch(w, 2, 27, c_ltgray, LINE_XXOX);
- mvwputch(w, 2, 47, c_ltgray, LINE_XXOX);
- mvwputch(w, 2, 61, c_ltgray, LINE_XXOX);
- mvwputch(w, 2, 74, c_ltgray, LINE_XXOX);
-
- mvwprintz(w, 1, 0, c_ltgray, "\
-      WEAPONS         FOOD         ELECTRONICS         ARMOR         MISC");
- mvwputch(w, 1,  4, c_ltgray, LINE_XOXO);
- mvwputch(w, 1, 20, c_ltgray, LINE_XOXO);
- mvwputch(w, 1, 33, c_ltgray, LINE_XOXO);
- mvwputch(w, 1, 53, c_ltgray, LINE_XOXO);
- mvwputch(w, 1, 67, c_ltgray, LINE_XOXO);
- mvwputch(w, 1, 14, c_ltgray, LINE_XOXO);
- mvwputch(w, 1, 27, c_ltgray, LINE_XOXO);
- mvwputch(w, 1, 47, c_ltgray, LINE_XOXO);
- mvwputch(w, 1, 61, c_ltgray, LINE_XOXO);
- mvwputch(w, 1, 74, c_ltgray, LINE_XOXO);
-
- switch (tab) {
- case CC_WEAPON:
-  for (int i = 5; i < 14; i++)
-   mvwputch(w, 2, i, c_black, ' ');
-  mvwprintz(w, 1, 6, h_ltgray, "WEAPONS");
-  mvwputch(w, 2,  4, c_ltgray, LINE_XOOX);
-  mvwputch(w, 2, 14, c_ltgray, LINE_XXOO);
-  mvwputch(w, 1,  2, h_ltgray, '<');
-  mvwputch(w, 1, 16, h_ltgray, '>');
-  break;
- case CC_FOOD:
-  for (int i = 21; i < 27; i++)
-   mvwputch(w, 2, i, c_black, ' ');
-  mvwprintz(w, 1, 22, h_ltgray, "FOOD");
-  mvwputch(w, 2, 20, c_ltgray, LINE_XOOX);
-  mvwputch(w, 2, 27, c_ltgray, LINE_XXOO);
-  mvwputch(w, 1, 18, h_ltgray, '<');
-  mvwputch(w, 1, 29, h_ltgray, '>');
-  break;
- case CC_ELECTRONIC:
-  for (int i = 34; i < 47; i++)
-   mvwputch(w, 2, i, c_black, ' ');
-  mvwprintz(w, 1, 35, h_ltgray, "ELECTRONICS");
-  mvwputch(w, 2, 33, c_ltgray, LINE_XOOX);
-  mvwputch(w, 2, 47, c_ltgray, LINE_XXOO);
-  mvwputch(w, 1, 31, h_ltgray, '<');
-  mvwputch(w, 1, 49, h_ltgray, '>');
-  break;
- case CC_ARMOR:
-  for (int i = 54; i < 61; i++)
-   mvwputch(w, 2, i, c_black, ' ');
-  mvwprintz(w, 1, 55, h_ltgray, "ARMOR");
-  mvwputch(w, 2, 53, c_ltgray, LINE_XOOX);
-  mvwputch(w, 2, 61, c_ltgray, LINE_XXOO);
-  mvwputch(w, 1, 51, h_ltgray, '<');
-  mvwputch(w, 1, 63, h_ltgray, '>');
-  break;
- case CC_MISC:
-  for (int i = 68; i < 74; i++)
-   mvwputch(w, 2, i, c_black, ' ');
-  mvwprintz(w, 1, 69, h_ltgray, "MISC");
-  mvwputch(w, 2, 67, c_ltgray, LINE_XOOX);
-  mvwputch(w, 2, 74, c_ltgray, LINE_XXOO);
-  mvwputch(w, 1, 65, h_ltgray, '<');
-  mvwputch(w, 1, 76, h_ltgray, '>');
-  break;
- }
- wrefresh(w);
 }
 
 void game::pick_recipes(std::vector<const recipe*> &current,

@@ -250,7 +250,7 @@ void game::construction_menu()
 
  wrefresh(w_con);
 
- const int listing_length = VIEW - 3;
+ const int listing_length = VIEW - TABBED_HEADER_HEIGHT;
  bool update_info = true;
  int select = 0;
  int ch;
@@ -286,8 +286,7 @@ void game::construction_menu()
    const constructable* const current_con = constructable::constructions[select];
 // Print difficulty
    int pskill = u.sklevel[sk_carpentry], diff = current_con->difficulty;
-   mvwprintz(w_con, 1, 43, (pskill >= diff ? c_white : c_red),
-             "%d   ", diff);
+   mvwprintz(w_con, 1, v_bar_x + 13, (pskill >= diff ? c_white : c_red), "%d   ", diff);
 // Clear out lines for tools & materials
    for (int i = 2; i < VIEW - 1; i++) {
     for (int j = v_bar_x + 1; j < SCREEN_WIDTH - 1; j++)

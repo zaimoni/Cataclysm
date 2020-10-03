@@ -208,6 +208,8 @@ void draw_tabs(WINDOW* w, int active_tab, const char* const labels[])
  for (int i = 0; i < labels_size; i++)
   total_width += strlen(labels[i]) + 6; // "< |four| >"
 
+ werase(w); // not really ACID
+
 // Draw the line under the tabs
  for (int x = 0; x < win_width; x++)
   mvwputch(w, 2, x, c_white, LINE_OXOX);
@@ -257,6 +259,7 @@ void draw_tabs(WINDOW* w, int active_tab, const char* const labels[])
   }
   xpos += length + 1 + buffer;
  }
+ wrefresh(w);
 }
 
 void debugmsg(const char* mes, ...)
