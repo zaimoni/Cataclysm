@@ -1928,33 +1928,34 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
   }
  }
 
+ // XXX yes inherited widths don't add up properly
  WINDOW* w_grid    = newwin(VIEW, SCREEN_WIDTH,  0,  0);
  WINDOW* w_stats   = newwin( 9, VIEW + 1,  2,  0);
  WINDOW* w_encumb  = newwin( 9, VIEW + 1, 12,  0);
- WINDOW* w_traits  = newwin( 9, VIEW + 1,  2, 27);
- WINDOW* w_effects = newwin( 9, VIEW + 1, 12, 27);
- WINDOW* w_skills  = newwin( 9, VIEW + 1,  2, 54);
- WINDOW* w_speed   = newwin( 9, VIEW + 1, 12, 54);
- WINDOW* w_info    = newwin( 3, SCREEN_WIDTH, 22,  0);
+ WINDOW* w_traits  = newwin( 9, VIEW + 1,  2, VIEW + 2);
+ WINDOW* w_effects = newwin( 9, VIEW + 1, 12, VIEW + 2);
+ WINDOW* w_skills  = newwin( 9, VIEW + 1,  2, 2 * VIEW + 4);
+ WINDOW* w_speed   = newwin( 9, VIEW + 1, 12, 2 * VIEW + 4);
+ WINDOW* w_info    = newwin( 3, SCREEN_WIDTH, VIEW - 3,  0);
 // Print name and header
  mvwprintw(w_grid, 0, 0, "%s - %s", name.c_str(), (male ? "Male" : "Female"));
- mvwprintz(w_grid, 0, 39, c_ltred, "| Press TAB to cycle, ESC or q to return.");
+ mvwprintz(w_grid, 0, SCREEN_WIDTH/2 - 1, c_ltred, "| Press TAB to cycle, ESC or q to return.");
 // Main line grid
  for (int i = 0; i < SCREEN_WIDTH; i++) {
   mvwputch(w_grid,  1, i, c_ltgray, LINE_OXOX);
   mvwputch(w_grid, 21, i, c_ltgray, LINE_OXOX);
   mvwputch(w_grid, 11, i, c_ltgray, LINE_OXOX);
   if (i > 1 && i < 21) {
-   mvwputch(w_grid, i, 26, c_ltgray, LINE_XOXO);
-   mvwputch(w_grid, i, 53, c_ltgray, LINE_XOXO);
+   mvwputch(w_grid, i, VIEW + 1, c_ltgray, LINE_XOXO);
+   mvwputch(w_grid, i, 2 * VIEW + 3, c_ltgray, LINE_XOXO);
   }
  }
- mvwputch(w_grid,  1, 26, c_ltgray, LINE_OXXX);
- mvwputch(w_grid,  1, 53, c_ltgray, LINE_OXXX);
- mvwputch(w_grid, 21, 26, c_ltgray, LINE_XXOX);
- mvwputch(w_grid, 21, 53, c_ltgray, LINE_XXOX);
- mvwputch(w_grid, 11, 26, c_ltgray, LINE_XXXX);
- mvwputch(w_grid, 11, 53, c_ltgray, LINE_XXXX);
+ mvwputch(w_grid,  1, VIEW + 1, c_ltgray, LINE_OXXX);
+ mvwputch(w_grid,  1, 2 * VIEW + 3, c_ltgray, LINE_OXXX);
+ mvwputch(w_grid, 21, VIEW + 1, c_ltgray, LINE_XXOX);
+ mvwputch(w_grid, 21, 2 * VIEW + 3, c_ltgray, LINE_XXOX);
+ mvwputch(w_grid, 11, VIEW + 1, c_ltgray, LINE_XXXX);
+ mvwputch(w_grid, 11, 2 * VIEW + 3, c_ltgray, LINE_XXXX);
  wrefresh(w_grid);	// w_grid should stay static.
 
 // First!  Default STATS screen.
