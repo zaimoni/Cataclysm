@@ -529,41 +529,32 @@ bool map::process_fields_in_submap(game *g, int gridn)
     break;
 
    case fd_push_items: {
-    std::vector<item> *it = &(i_at(x, y));
-    for (int i = 0; i < it->size(); i++) {
-     if ((*it)[i].type->id != itm_rock || (*it)[i].bday >= int(messages.turn) - 1)
-      i++;
-     else {
-      item tmp = (*it)[i];
-      tmp.bday = int(messages.turn);
-      it->erase(it->begin() + i);
-      i--;
-      std::vector<point> valid;
-      for (int xx = x - 1; xx <= x + 1; xx++) {
-       for (int yy = y - 1; yy <= y + 1; yy++) {
-        if (field_at(xx, yy).type == fd_push_items)
-         valid.push_back( point(xx, yy) );
-       }
-      }
-      if (!valid.empty()) {
-       point newp = valid[rng(0, valid.size() - 1)];
-       add_item(newp, tmp);
-       if (g->u.pos == newp) {
-        messages.add("A %s hits you!", tmp.tname().c_str());
-        g->u.hit(g, random_body_part(), rng(0, 1), 6, 0);
-       }
+    const point origin(x, y);
+    std::vector<point> valid(1, origin);
+    for (decltype(auto) delta : Direction::vector) {
+        const point pt(delta + origin);
+        if (fd_push_items == field_at(pt).type) valid.push_back(pt);
+    }
 
-       if (npc* const p = g->nPC(newp)) {
-        p->hit(g, random_body_part(), rng(0, 1), 6, 0);
-        if (g->u_see(newp)) messages.add("A %s hits %s!", tmp.tname().c_str(), p->name.c_str());
-       }
-
-       if (monster* const mon = g->mon(newp)) {
-        mon->hurt(6 - mon->armor_bash());
-        if (g->u_see(newp)) messages.add("A %s hits the %s!", tmp.tname().c_str(), mon->name().c_str());
-       }
-      }
-     }
+    std::vector<item>& stack = i_at(x, y);
+    int i = stack.size();
+    while (0 <= --i) {
+        item& obj = stack[i];
+        if (itm_rock != obj.type->id || int(messages.turn) - 1 <= obj.bday) continue;
+        item tmp(std::move(obj));
+        stack.erase(stack.begin() + i); // obj invalidated
+        const point newp = valid[rng(0, valid.size() - 1)];
+        if (g->u.pos == newp) {
+            messages.add("A %s hits you!", tmp.tname().c_str());
+            g->u.hit(g, random_body_part(), rng(0, 1), 6, 0);
+        } else if (npc* const p = g->nPC(newp)) {
+            p->hit(g, random_body_part(), rng(0, 1), 6, 0);
+            if (g->u_see(newp)) messages.add("A %s hits %s!", tmp.tname().c_str(), p->name.c_str());
+        } else if (monster* const mon = g->mon(newp)) {
+            mon->hurt(6 - mon->armor_bash());
+            if (g->u_see(newp)) messages.add("A %s hits the %s!", tmp.tname().c_str(), mon->name().c_str());
+        }
+        add_item(newp, std::move(tmp));
     }
    } break;
 
