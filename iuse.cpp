@@ -845,17 +845,33 @@ only_water:
 
 void iuse::two_way_radio(game *g, player *p, item *it, bool t)
 {
- WINDOW* w = newwin(6, 36, 9, 5);
+// TODO: More options here.  Thoughts...
+//       > Respond to the SOS of an NPC
+//       > Report something to a faction
+//       > Call another player
+ static constexpr const char* radio_options[] = {
+     "1: Radio a faction for help...",
+     "2: Call Acquaitance...", // not implemented properly
+     "3: General S.O.S.",
+     "0: Cancel"
+ };
+ constexpr const int radio_height = sizeof(radio_options) / sizeof(*radio_options) + 2;
+
+ // maximum string length...possible function target
+ // C++20: std::ranges::max?
+ int radio_width = 0;
+ for (const char* const line : radio_options) radio_width = cataclysm::max(radio_width, strlen(line));
+ radio_width += 5; // historical C:Whales
+
+ WINDOW* w = newwin(radio_height, radio_width, (VIEW - radio_height) / 2, (SCREEN_WIDTH - radio_width) / 2);
  wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
             LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
 // TODO: More options here.  Thoughts...
 //       > Respond to the SOS of an NPC
 //       > Report something to a faction
 //       > Call another player
- mvwprintz(w, 1, 1, c_white, "1: Radio a faction for help...");
- mvwprintz(w, 2, 1, c_white, "2: Call Acquaitance...");
- mvwprintz(w, 3, 1, c_white, "3: General S.O.S.");
- mvwprintz(w, 4, 1, c_white, "0: Cancel");
+ int row = 0;
+ for (const char* const line : radio_options) mvwprintz(w, ++row, 1, c_white, line);
  wrefresh(w);
  int ch = getch();
  if (ch == '1') {
