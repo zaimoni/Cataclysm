@@ -1089,7 +1089,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
   if (can_see) messages.add("%s %s shatters!", Your.c_str(), weapon.tname().c_str());
   g->sound(pos, 16, "");
 // Dump its contents on the ground
-  for(const auto& obj : weapon.contents) g->m.add_item(pos, std::move(obj));
+  for(decltype(auto) obj : weapon.contents) g->m.add_item(pos, std::move(obj));
   hit(g, bp_arms, 1, 0, rng(0, weapon_vol * 2));// Take damage
   if (weapon.is_two_handed(*this))// Hurt left arm too, if it was big
    hit(g, bp_arms, 0, 0, rng(0, weapon_vol));

@@ -3530,6 +3530,18 @@ int player::addiction_level(add_type type) const
  return 0;
 }
 
+void player::die(map& m)
+{
+    assert(map::in_bounds(pos));
+    item my_body(messages.turn);
+    my_body.name = name;
+    m.add_item(pos, std::move(my_body));
+    // we want all of these to be value-copy map::add_item so that the post-mortem for the player works
+    for (size_t i = 0; i < inv.size(); i++) m.add_item(pos, inv[i]);
+    for (const auto& it : worn) m.add_item(pos, it);
+    if (weapon.type->id != itm_null) m.add_item(pos, weapon);
+}
+
 void player::suffer(game *g)
 {
  for (int i = 0; i < my_bionics.size(); i++) {

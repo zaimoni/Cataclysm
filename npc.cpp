@@ -1839,12 +1839,7 @@ void npc::die(game *g, bool your_fault)
   else if (!is_enemy()) g->u.add_morale(MORALE_KILLED_INNOCENT, -100);
  }
 
- item my_body(messages.turn);
- my_body.name = name;
- g->m.add_item(pos, std::move(my_body));
- for (size_t i = 0; i < inv.size(); i++) g->m.add_item(pos, inv[i]);
- for (const auto& it : worn) g->m.add_item(pos, it);
- if (weapon.type->id != itm_null) g->m.add_item(pos, weapon);
+ player::die(g->m);
 
  for (auto& miss : g->active_missions) if (id == miss.npc_id) miss.fail();
 }

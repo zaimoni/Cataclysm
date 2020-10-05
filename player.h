@@ -168,6 +168,7 @@ public:
  bool has_addiction(add_type type) const;
  int  addiction_level(add_type type) const;
 
+ void die(map& m);
  void suffer(game *g);	// \todo V 0.2.1 extend fully to NPCs
  void vomit();	// \todo V 0.2.1 extend to NPCs
  
