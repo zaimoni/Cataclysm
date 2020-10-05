@@ -2018,7 +2018,7 @@ void game::disp_NPCs()
  delwin(w);
 }
 
-faction* game::list_factions(std::string title)
+faction* game::list_factions(const char* title)
 {
  std::vector<faction> valfac;	// Factions that we know of.
  for (int i = 0; i < factions.size(); i++) {
@@ -2029,35 +2029,34 @@ faction* game::list_factions(std::string title)
   popup("You don't know of any factions.  Press Spacebar...");
   return nullptr;
  }
- WINDOW* w_list = newwin(VIEW,      MAX_FAC_NAME_SIZE, 0, 0);
+ WINDOW* w_list = newwin(VIEW, MAX_FAC_NAME_SIZE, 0, 0);
  WINDOW* w_info = newwin(VIEW, SCREEN_WIDTH - MAX_FAC_NAME_SIZE, 0, MAX_FAC_NAME_SIZE);
- int maxlength = 79 - MAX_FAC_NAME_SIZE;
  int sel = 0;
 
 // Init w_list content
- mvwprintz(w_list, 0, 0, c_white, title.c_str());
+ mvwprintz(w_list, 0, 0, c_white, title);
  for (int i = 0; i < valfac.size(); i++) {
   nc_color col = (i == 0 ? h_white : c_white);
   mvwprintz(w_list, i + 1, 0, col, valfac[i].name.c_str());
  }
  wrefresh(w_list);
-// Init w_info content
 // fac_*_text() is in faction.cpp
- mvwprintz(w_info, 0, 0, c_white,
-          "Ranking: %s", fac_ranking_text(valfac[0].likes_u).c_str());
- mvwprintz(w_info, 1, 0, c_white,
-          "Respect: %s", fac_respect_text(valfac[0].respects_u).c_str());
- std::string desc = valfac[0].describe();
- int linenum = 3;
- while (desc.length() > maxlength) {
-  size_t split = desc.find_last_of(' ', maxlength);
-  std::string line = desc.substr(0, split);
-  mvwprintz(w_info, linenum, 0, c_white, line.c_str());
-  desc = desc.substr(split + 1);
-  linenum++;
- }
- mvwprintz(w_info, linenum, 0, c_white, desc.c_str());
- wrefresh(w_info);
+ auto faction_display = [w_info, maxlength = SCREEN_WIDTH - MAX_FAC_NAME_SIZE - 1](const faction& f) {
+     mvwprintz(w_info, 0, 0, c_white, "Ranking: %s", fac_ranking_text(f.likes_u).c_str());
+     mvwprintz(w_info, 1, 0, c_white, "Respect: %s", fac_respect_text(f.respects_u).c_str());
+     std::string desc = f.describe();
+     int linenum = 3;
+     while (desc.length() > maxlength) {
+         const size_t split = desc.find_last_of(' ', maxlength);
+         mvwprintz(w_info, linenum++, 0, c_white, desc.substr(0, split).c_str());
+         desc = desc.substr(split + 1);
+     }
+     mvwprintz(w_info, linenum, 0, c_white, desc.c_str());
+     wrefresh(w_info);
+ };
+
+ faction_display(valfac[0]); // Init w_info content
+
  int ch;
  do {
   ch = input();
@@ -2085,22 +2084,8 @@ faction* game::list_factions(std::string title)
    mvwprintz(w_list, sel + 1, 0, h_white, valfac[sel].name.c_str());
    wrefresh(w_list);
    werase(w_info);
-// fac_*_text() is in faction.cpp
-   mvwprintz(w_info, 0, 0, c_white,
-            "Ranking: %s", fac_ranking_text(valfac[sel].likes_u).c_str());
-   mvwprintz(w_info, 1, 0, c_white,
-            "Respect: %s", fac_respect_text(valfac[sel].respects_u).c_str());
-   std::string desc = valfac[sel].describe();
-   int linenum = 3;
-   while (desc.length() > maxlength) {
-    size_t split = desc.find_last_of(' ', maxlength);
-    std::string line = desc.substr(0, split);
-    mvwprintz(w_info, linenum, 0, c_white, line.c_str());
-    desc = desc.substr(split + 1);
-    linenum++;
-   }
-   mvwprintz(w_info, linenum, 0, c_white, desc.c_str());
-   wrefresh(w_info);
+
+   faction_display(valfac[sel]); // Init w_info content
   }
  } while (ch != KEY_ESCAPE && ch != '\n' && ch != 'q');
  werase(w_list);

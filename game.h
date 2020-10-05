@@ -174,7 +174,7 @@ class game
   point look_around();// Look at nearby terrain	';'
   char inv(std::string title = "Inventory:");
   std::vector<item> multidrop();
-  faction* list_factions(std::string title = "FACTIONS:");
+  faction* list_factions(const char* title = "FACTIONS:");
   point find_item(item *it) const;
   bool find_item(item* it, point& pos) const;
   void remove_item(item *it);
