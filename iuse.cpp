@@ -209,19 +209,34 @@ void iuse::firstaid(game *g, player *p, item *it, bool t)
          return;
      }
  } else { // Player--present a menu
-   
-  WINDOW* w = newwin(10, 20, 8, 1);
-  wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
-             LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
-  mvwprintz(w, 1, 1, c_ltred,  "Bandage where?");
-  mvwprintz(w, 2, 1, c_ltgray, "1: Head");
-  mvwprintz(w, 3, 1, c_ltgray, "2: Torso");
-  mvwprintz(w, 4, 1, c_ltgray, "3: Left Arm");
-  mvwprintz(w, 5, 1, c_ltgray, "4: Right Arm");
-  mvwprintz(w, 6, 1, c_ltgray, "5: Left Leg");
-  mvwprintz(w, 7, 1, c_ltgray, "6: Right Leg");
-  mvwprintz(w, 8, 1, c_ltgray, "7: Exit");
-  nc_color col;
+ static constexpr const char* firstaid_options[] = {
+     "Bandage where?",
+     "1: Head",
+     "2: Torso",
+     "3: Left Arm",
+     "4: Right Arm",
+     "5: Left Leg",
+     "6: Right Leg",
+     "7: Exit"
+ };
+ constexpr const int firstaid_height = sizeof(firstaid_options) / sizeof(*firstaid_options) + 2;
+
+ // maximum string length...possible function target
+ // C++20: std::ranges::max?
+ int firstaid_width = 0;
+ for (const char* const line : firstaid_options) firstaid_width = cataclysm::max(firstaid_width, strlen(line));
+ firstaid_width += 5; // historical C:Whales; 15 is magic constant for layout so likely want 20 width explicitly
+
+ WINDOW* w = newwin(firstaid_height, firstaid_width, (VIEW - firstaid_height) / 2, (SCREEN_WIDTH - firstaid_width) / 2);
+ wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
+     LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX);
+ int row = 0;
+ for (const char* const line : firstaid_options) {
+     ++row;
+     mvwprintz(w, row, 1, 1==row ? c_ltred : c_ltgray, line);
+ }
+
+ nc_color col;
   int curhp;
   for (int i = 0; i < num_hp_parts; i++) {
    curhp = p->hp_cur[i];
@@ -239,6 +254,7 @@ void iuse::firstaid(game *g, player *p, item *it, bool t)
     mvwprintz(w, i + 2, 15, c_dkgray, "---");
   }
   wrefresh(w);
+
   const bool ok = _get_heal_target(p, it, healed);
   werase(w);
   wrefresh(w);
