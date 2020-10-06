@@ -3396,7 +3396,8 @@ void game::kill_mon(monster& target, bool u_did_it)
    if (target.type->species != species_hallu)
     kills[target.type->id]++;	// Increment our kill counter
   }
-  for (const auto& it : target.inv) m.add_item(target.pos, it);
+  for (decltype(auto) it : target.inv) m.add_item(target.pos, std::move(it));
+  target.inv.clear();
   target.die(this);
  }
 // z_erase(index);	// highly unsafe, do this compaction at end-of-turn
