@@ -709,10 +709,10 @@ void overmap::add_note(const point& pt, std::string message)
  if (non_empty) notes.push_back(om_note(pt.x, pt.y, notes.size(), std::move(message)));
 }
 
-point overmap::find_note(point origin, const std::string& text) const
+std::optional<point> overmap::find_note(point origin, const std::string& text) const
 {
  int closest = 9999;
- point ret(-1, -1);
+ std::optional<point> ret;
  for (int i = 0; i < notes.size(); i++) {
   int dist = rl_dist(origin, notes[i].x, notes[i].y);
   if (notes[i].text.find(text) != std::string::npos && dist < closest) {
@@ -1420,41 +1420,40 @@ point overmap::choose_point(game *g)    // not const due to overmap::add_note
    std::string term = string_input_popup("Search term:");
    timeout(BLINK_SPEED);
    draw(w_map, g->u, curs, orig, ch, blink);
-   point found = find_note(curs, term);
-   if (found.x == -1) {	// Didn't find a note
-    std::vector<point> terlist(find_terrain(term));
-    if (!terlist.empty()){
-     int i = 0;
-     //Navigate through results
-     do {
-      //Draw search box
-      wborder(w_search, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
-              LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
-      mvwprintz(w_search, 1, 1, c_red, "Find place:");
-      mvwprintz(w_search, 2, 1, c_ltblue, "                         ");
-      mvwprintz(w_search, 2, 1, c_ltblue, "%s", term.c_str());
-      mvwprintz(w_search, 4, 1, c_white,
-       "'<' '>' Cycle targets.");
-      mvwprintz(w_search, 10, 1, c_white, "Enter/Spacebar to select.");
-      mvwprintz(w_search, 11, 1, c_white, "q to return.");
-      ch = input();
-      if (ch == ERR) blink = !blink;
-      else if (ch == '<') {
-       if(++i > terlist.size() - 1) i = 0;
-      } else if(ch == '>'){
-       if(--i < 0) i = terlist.size() - 1;
-      }
-      curs = terlist[i];
-      draw(w_map, g->u, curs, orig, ch, blink);
-      wrefresh(w_search);
-      timeout(BLINK_SPEED);
-     } while(ch != '\n' && ch != ' ' && ch != 'q'); 
-     //If q is hit, return to the last position
-     if(ch == 'q') curs = tmp;
-     ch = '.';
-    }
+   if (const auto found = find_note(curs, term))  curs = *found;
+   else {
+       std::vector<point> terlist(find_terrain(term));
+       if (!terlist.empty()) {
+           int i = 0;
+           //Navigate through results
+           do {
+               //Draw search box
+               wborder(w_search, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
+                   LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX);
+               mvwprintz(w_search, 1, 1, c_red, "Find place:");
+               mvwprintz(w_search, 2, 1, c_ltblue, "                         ");
+               mvwprintz(w_search, 2, 1, c_ltblue, "%s", term.c_str());
+               mvwprintz(w_search, 4, 1, c_white, "'<' '>' Cycle targets.");
+               mvwprintz(w_search, 10, 1, c_white, "Enter/Spacebar to select.");
+               mvwprintz(w_search, 11, 1, c_white, "q to return.");
+               ch = input();
+               if (ch == ERR) blink = !blink;
+               else if (ch == '<') {
+                   if (++i > terlist.size() - 1) i = 0;
+               }
+               else if (ch == '>') {
+                   if (--i < 0) i = terlist.size() - 1;
+               }
+               curs = terlist[i];
+               draw(w_map, g->u, curs, orig, ch, blink);
+               wrefresh(w_search);
+               timeout(BLINK_SPEED);
+           } while (ch != '\n' && ch != ' ' && ch != 'q');
+           //If q is hit, return to the last position
+           if (ch == 'q') curs = tmp;
+           ch = '.';
+       }
    }
-   if (found.x != -1) curs = found;
   }/* else if (ch == 't')  *** Legend always on for now! ***
    legend = !legend;
 */

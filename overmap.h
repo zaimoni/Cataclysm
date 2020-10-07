@@ -7,6 +7,7 @@
 #include "npc.h"
 #include <string.h>
 #include <vector>
+#include <optional>
 #include <iosfwd>
 
 enum {
@@ -106,7 +107,7 @@ class overmap
   static bool has_note(OM_loc OMpos, std::string& dest);
   void add_note(const point& pt, std::string message);
   void add_note(const point& pt, const char* const message) { add_note(pt, std::string(message)); };
-  point find_note(point origin, const std::string& text) const;
+  std::optional<point> find_note(point origin, const std::string& text) const;
   void delete_note(const point& pt);
   point display_notes() const;
 
