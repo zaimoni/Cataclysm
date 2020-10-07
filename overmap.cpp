@@ -1243,7 +1243,7 @@ int overmap::dist_from_city(point p) const
  return distance;
 }
 
-void overmap::draw(WINDOW *w, game *g, const point& curs, const point& orig, int ch, bool blink) const
+void overmap::draw(WINDOW *w, const player& u, const point& curs, const point& orig, int ch, bool blink) const
 {
  constexpr const bool legend = true;
  constexpr const int om_w = 51;	// overmap width
@@ -1252,9 +1252,8 @@ void overmap::draw(WINDOW *w, game *g, const point& curs, const point& orig, int
  std::string note_text, npc_name;
  
  OM_loc target(_ref<OM_loc>::invalid);
- if (g->u.active_mission >= 0 &&
-     g->u.active_mission < g->u.active_missions.size()) {
-    target = mission::from_id(g->u.active_missions[g->u.active_mission])->target;
+ if (u.active_mission >= 0 && u.active_mission < u.active_missions.size()) {
+    target = mission::from_id(u.active_missions[u.active_mission])->target;
     if (target.is_valid()) target.self_denormalize(pos);
  }
 /* First, determine if we're close enough to the edge to need to load an
@@ -1292,7 +1291,7 @@ void overmap::draw(WINDOW *w, game *g, const point& curs, const point& orig, int
       ter_color = c_yellow;
       ter_sym = 'N';
      } else if (orig == scan.second && blink) {
-      ter_color = g->u.color();
+      ter_color = u.color();
       ter_sym = '@';
      } else if (npc_here && blink) {
       ter_color = c_pink;
@@ -1393,7 +1392,7 @@ point overmap::choose_point(game *g)    // not const due to overmap::add_note
  point ret(-1, -1);
  
  do {  
-  draw(w_map, g, curs, orig, ch, blink);
+  draw(w_map, g->u, curs, orig, ch, blink);
   ch = input();
   if (ch != ERR) blink = true;	// If any input is detected, make the blinkies on
   point dir(get_direction(ch));
@@ -1420,7 +1419,7 @@ point overmap::choose_point(game *g)    // not const due to overmap::add_note
    timeout(-1);
    std::string term = string_input_popup("Search term:");
    timeout(BLINK_SPEED);
-   draw(w_map, g, curs, orig, ch, blink);
+   draw(w_map, g->u, curs, orig, ch, blink);
    point found = find_note(curs, term);
    if (found.x == -1) {	// Didn't find a note
     std::vector<point> terlist(find_terrain(term));
@@ -1446,7 +1445,7 @@ point overmap::choose_point(game *g)    // not const due to overmap::add_note
        if(--i < 0) i = terlist.size() - 1;
       }
       curs = terlist[i];
-      draw(w_map, g, curs, orig, ch, blink);
+      draw(w_map, g->u, curs, orig, ch, blink);
       wrefresh(w_search);
       timeout(BLINK_SPEED);
      } while(ch != '\n' && ch != ' ' && ch != 'q'); 
