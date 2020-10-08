@@ -1934,7 +1934,6 @@ void game::draw_overmap()
 
 void game::disp_kills()
 {
- WINDOW* w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  std::vector<const mtype*> types;
  std::vector<int> count;
  for (int i = 0; i < num_monsters; i++) {
@@ -1944,6 +1943,7 @@ void game::disp_kills()
   }
  }
 
+ WINDOW* w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  mvwprintz(w, 0, 35, c_red, "KILL COUNTS:");
 
  if (types.size() == 0) {
@@ -1957,14 +1957,19 @@ void game::disp_kills()
   return;
  }
 
+ // \todo account for monster name length in following
+ const int rows_per_col = VIEW - 1;
+ const int max_cols = SCREEN_WIDTH / 26;
+ const int want_cols = types.size() / rows_per_col + (0 != types.size() % rows_per_col);
+ const int cols = cataclysm::min(max_cols, want_cols);
+ const int padding = (SCREEN_WIDTH - cols * 25) / cols;
+
  for (int i = 0; i < types.size(); i++) {
-  if (i < VIEW - 1) {
-   mvwprintz(w, i + 1,  0, types[i]->color, "%c %s", types[i]->sym, types[i]->name.c_str());
-   mvwprintz(w, i + 1, 25 - int_log10(count[i]), c_white, "%d", count[i]);
-  } else {
-   mvwprintz(w, i + 1, 40, types[i]->color, "%c %s", types[i]->sym, types[i]->name.c_str());
-   mvwprintz(w, i + 1, 65 - int_log10(count[i]), c_white, "%d", count[i]);
-  }
+  const int row = i%rows_per_col;
+  const int col = i / rows_per_col;
+  if (cols <= col) break;   // we overflowed
+  mvwprintz(w, row, col*25+(col-1)*padding, types[i]->color, "%c %s", types[i]->sym, types[i]->name.c_str());
+  mvwprintz(w, row, (col+1)*25 + (col - 1) * padding - int_log10(count[i]), c_white, "%d", count[i]);
  }
 
  wrefresh(w);
