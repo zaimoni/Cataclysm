@@ -1394,10 +1394,12 @@ void game::death_screen()
  WINDOW* w_death = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  mvwprintz(w_death, 0, 35, c_red, "GAME OVER - Press Spacebar to Quit");
  mvwprintz(w_death, 2, 0, c_white, "Number of kills: %d", num_kills);
+ const int lines_per_col = VIEW - 5;
+ const int cols = (SCREEN_WIDTH - 2) / 39;  // \todo? do we need variable column width as well?
  int line = 0, mon = 0;
- while (line < 40 && mon < num_monsters) {
+ while (line < cols * lines_per_col && mon < num_monsters) {
   if (kills[mon] > 0) {
-   int y = line % 20 + 3, x = int(line / 20) * 40 + 1;
+   int y = line % lines_per_col + 3, x = (line / lines_per_col) * 39 + 1;
    mvwprintz(w_death, y, x, c_white, "%s: %d", mtype::types[mon]->name.c_str(), kills[mon]);
    line++;
   }
