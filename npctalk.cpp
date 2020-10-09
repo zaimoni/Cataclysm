@@ -1570,9 +1570,10 @@ talk_topic special_talk(char ch)
 
 bool trade(game *g, npc& p, int cost, std::string deal)
 {
- std::unique_ptr<WINDOW, curses_full_delete> w_head(newwin(4, SCREEN_WIDTH, 0, 0));
- std::unique_ptr<WINDOW, curses_full_delete> w_them(newwin(21, SCREEN_WIDTH / 2,  4,  0));
- std::unique_ptr<WINDOW, curses_full_delete> w_you(newwin(21, SCREEN_WIDTH / 2,  4, SCREEN_WIDTH / 2));
+ constexpr const int header_height = 4;
+ std::unique_ptr<WINDOW, curses_full_delete> w_head(newwin(header_height, SCREEN_WIDTH, 0, 0));
+ std::unique_ptr<WINDOW, curses_full_delete> w_them(newwin(VIEW - header_height, SCREEN_WIDTH / 2, header_height,  0));
+ std::unique_ptr<WINDOW, curses_full_delete> w_you(newwin(VIEW - header_height, SCREEN_WIDTH / 2, header_height, SCREEN_WIDTH / 2));
  mvwprintz(w_head.get(), 0, 0, c_white, "\
 Trading with %s\n\
 Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n\
@@ -1580,7 +1581,7 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
 
 // Set up line drawings
  for (int i = 0; i < SCREEN_WIDTH; i++)
-  mvwputch(w_head.get(),  3, i, c_white, LINE_OXOX);
+  mvwputch(w_head.get(), header_height - 1, i, c_white, LINE_OXOX);
  wrefresh(w_head.get());
  
   
@@ -1599,12 +1600,8 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
 // * if player is hyper-intelligent then negative prices possible both ways
 // Adjust the prices based on your barter skill.
  const double price_scale = price_adjustment(g->u.sklevel[sk_barter]) + (p.int_cur - g->u.int_cur) / 15;
- for (int i = 0; i < their_price.size(); i++) {
-  their_price[i] *= price_scale;
- }
- for (int i = 0; i < your_price.size(); i++) {
-  your_price[i] /= price_scale;
- }
+ for (int& his_price : their_price) his_price *= price_scale;
+ for (int& my_price : your_price) my_price /= price_scale;
 
  int  cash = cost;// How much cash you get in the deal (negative = losing money)
  bool focus_them = true;	// Is the focus on them?
@@ -1619,12 +1616,11 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
    werase(w_them.get());
    werase(w_you.get());
    for (int i = 1; i < SCREEN_WIDTH; i++)
-    mvwputch(w_head.get(), 3, i, c_white, LINE_OXOX);
-   mvwprintz(w_head.get(), 3, 30, ((cash <  0 && g->u.cash >= cash * -1) ||
-                             (cash >= 0 && p.cash  >= cash) ?
-                             c_green : c_red),
+    mvwputch(w_head.get(), header_height - 1, i, c_white, LINE_OXOX);
+   auto test = (cash < 0 ? g->u.cash >= cash * -1 : p.cash >= cash);
+   mvwprintz(w_head.get(), header_height - 1, SCREEN_WIDTH / 2 - 10, (cash < 0 ? g->u.cash >= cash * -1 : p.cash >= cash) ? c_green : c_red,
              "%s $%d", (cash >= 0 ? "Profit" : "Cost"), abs(cash));
-   if (!deal.empty()) mvwprintz(w_head.get(), 3, 45, (cost < 0 ? c_ltred : c_ltgreen), deal.c_str());
+   if (!deal.empty()) mvwprintz(w_head.get(), header_height - 1, SCREEN_WIDTH / 2 + 5, (cost < 0 ? c_ltred : c_ltgreen), deal.c_str());
    wattron((focus_them ? w_them : w_you).get(), c_yellow);
    wborder(w_them.get(), LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                    LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
@@ -1637,23 +1633,23 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
    mvwprintz(w_you.get(),  0, 2, (cash > 0 || g->u.cash>=cash*-1 ? c_green:c_red),
              "You: $%d", g->u.cash);
 // Draw their list of items, starting from them_off
-   for (int i = them_off; i < theirs.size() && i < 17; i++)
+   for (int i = them_off; i < theirs.size() && i < VIEW - 8; i++)
     mvwprintz(w_them.get(), i - them_off + 1, 1,
               (getting_theirs[i] ? c_white : c_ltgray), "%c %c %s - $%d",
               char(i + 'a'), (getting_theirs[i] ? '+' : '-'),
               p.inv[theirs[i + them_off]].tname().substr( 0,25).c_str(),
               their_price[i + them_off]);
-   if (them_off > 0) mvwprintw(w_them.get(), 19, 1, "< Back");
-   if (them_off + 17 < theirs.size()) mvwprintw(w_them.get(), 19, 9, "More >");
+   if (them_off > 0) mvwprintw(w_them.get(), VIEW - 6, 1, "< Back");
+   if (them_off + VIEW - 8 < theirs.size()) mvwprintw(w_them.get(), VIEW - 6, 9, "More >");
 // Draw your list of items, starting from you_off
-   for (int i = you_off; i < yours.size() && i < 17; i++)
+   for (int i = you_off; i < yours.size() && i < VIEW - 8; i++)
     mvwprintz(w_you.get(), i - you_off + 1, 1,
               (getting_yours[i] ? c_white : c_ltgray), "%c %c %s - $%d",
               char(i + 'a'), (getting_yours[i] ? '+' : '-'),
               g->u.inv[yours[i + you_off]].tname().substr( 0,25).c_str(),
               your_price[i + you_off]);
-   if (you_off > 0) mvwprintw(w_you.get(), 19, 1, "< Back");
-   if (you_off + 17 < yours.size()) mvwprintw(w_you.get(), 19, 9, "More >");
+   if (you_off > 0) mvwprintw(w_you.get(), VIEW - 6, 1, "< Back");
+   if (you_off + VIEW - 8 < yours.size()) mvwprintw(w_you.get(), VIEW - 6, 9, "More >");
    wrefresh(w_head.get());
    wrefresh(w_them.get());
    wrefresh(w_you.get());
@@ -1667,25 +1663,25 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
   case '<':
    if (focus_them) {
     if (them_off > 0) {
-     them_off -= 17;
+     them_off -= VIEW - 8;
      update = true;
     }
    } else {
     if (you_off > 0) {
-     you_off -= 17;
+     you_off -= VIEW - 8;
      update = true;
     }
    }
    break;
   case '>':
    if (focus_them) {
-    if (them_off + 17 < theirs.size()) {
-     them_off += 17;
+    if (them_off + VIEW - 8 < theirs.size()) {
+     them_off += VIEW - 8;
      update = true;
     }
    } else {
-    if (you_off + 17 < yours.size()) {
-     you_off += 17;
+    if (you_off + VIEW - 8 < yours.size()) {
+     you_off += VIEW - 8;
      update = true;
     }
    }
@@ -1711,6 +1707,7 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
    }
    break;
   case '\n':	// Check if we have enough cash...
+   // \todo major rework...how long pre-Cataclysm money is "valid" is very arguable
    if (cash < 0 && g->u.cash < cash * -1) {
     popup("Not enough cash!  You have $%d, price is $%d.", g->u.cash, cash);
     update = true;
