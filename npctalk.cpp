@@ -45,7 +45,7 @@ int topic_category(talk_topic topic);
 
 talk_topic special_talk(char ch);
 
-bool trade(game *g, npc& p, int cost, std::string deal);
+bool trade(player& u, npc& p, int cost, std::string deal);
 
 void npc::talk_to_u(game *g)
 {
@@ -1226,14 +1226,14 @@ void talk_function::mission_reward(game *g, npc& p)
 {
  int trade_amount = p.op_of_u.owed;
  p.op_of_u.owed = 0;
- trade(g, p, trade_amount, "Reward");
+ trade(g->u, p, trade_amount, "Reward");
 }
 
 void talk_function::start_trade(game *g, npc& p)
 {
  int trade_amount = p.op_of_u.owed;
  p.op_of_u.owed = 0;
- trade(g, p, trade_amount, "Trade");
+ trade(g->u, p, trade_amount, "Trade");
 }
  
 void talk_function::give_equipment(game *g, npc& p)
@@ -1340,7 +1340,7 @@ void talk_function::start_training(game *g, npc& p)
 // Pay for it
  if (p.op_of_u.owed >= 0 - cost)
   p.op_of_u.owed += cost;
- else if (!trade(g, p, cost, "Pay for training:"))
+ else if (!trade(g->u, p, cost, "Pay for training:"))
   return;
 // Then receive it
  g->u.assign_activity(ACT_TRAIN, time, p.chatbin.tempvalue);
@@ -1568,7 +1568,7 @@ talk_topic special_talk(char ch)
  return TALK_NONE;
 }
 
-bool trade(game *g, npc& p, int cost, std::string deal)
+bool trade(player& u, npc& p, int cost, std::string deal)
 {
  constexpr const int header_height = 4;
  std::unique_ptr<WINDOW, curses_full_delete> w_head(newwin(header_height, SCREEN_WIDTH, 0, 0));
@@ -1591,7 +1591,7 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
 // Note that the NPC's barter skill is factored into these prices.
  std::vector<int> theirs, their_price, yours, your_price;
  p.init_selling(theirs, their_price);
- p.init_buying(g->u.inv, yours, your_price);
+ p.init_buying(u.inv, yours, your_price);
  std::vector<bool> getting_theirs(theirs.size(),false);
  std::vector<bool> getting_yours(yours.size(),false);
 
@@ -1599,7 +1599,7 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
 // intelligence delta is almost always zero
 // * if player is hyper-intelligent then negative prices possible both ways
 // Adjust the prices based on your barter skill.
- const double price_scale = price_adjustment(g->u.sklevel[sk_barter]) + (p.int_cur - g->u.int_cur) / 15;
+ const double price_scale = price_adjustment(u.sklevel[sk_barter]) + (p.int_cur - u.int_cur) / 15;
  for (int& his_price : their_price) his_price *= price_scale;
  for (int& my_price : your_price) my_price /= price_scale;
 
@@ -1617,8 +1617,8 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
    werase(w_you.get());
    for (int i = 1; i < SCREEN_WIDTH; i++)
     mvwputch(w_head.get(), header_height - 1, i, c_white, LINE_OXOX);
-   auto test = (cash < 0 ? g->u.cash >= cash * -1 : p.cash >= cash);
-   mvwprintz(w_head.get(), header_height - 1, SCREEN_WIDTH / 2 - 10, (cash < 0 ? g->u.cash >= cash * -1 : p.cash >= cash) ? c_green : c_red,
+   auto test = (cash < 0 ? u.cash >= cash * -1 : p.cash >= cash);
+   mvwprintz(w_head.get(), header_height - 1, SCREEN_WIDTH / 2 - 10, (cash < 0 ? u.cash >= cash * -1 : p.cash >= cash) ? c_green : c_red,
              "%s $%d", (cash >= 0 ? "Profit" : "Cost"), abs(cash));
    if (!deal.empty()) mvwprintz(w_head.get(), header_height - 1, SCREEN_WIDTH / 2 + 5, (cost < 0 ? c_ltred : c_ltgreen), deal.c_str());
    wattron((focus_them ? w_them : w_you).get(), c_yellow);
@@ -1630,8 +1630,8 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
    wattroff(w_you.get(),  c_yellow);
    mvwprintz(w_them.get(), 0, 1, (cash < 0 || p.cash >= cash ? c_green : c_red),
              "%s: $%d", p.name.c_str(), p.cash);
-   mvwprintz(w_you.get(),  0, 2, (cash > 0 || g->u.cash>=cash*-1 ? c_green:c_red),
-             "You: $%d", g->u.cash);
+   mvwprintz(w_you.get(),  0, 2, (cash > 0 || u.cash>=cash*-1 ? c_green:c_red),
+             "You: $%d", u.cash);
 // Draw their list of items, starting from them_off
    for (int i = them_off; i < theirs.size() && i < VIEW - 8; i++)
     mvwprintz(w_them.get(), i - them_off + 1, 1,
@@ -1646,7 +1646,7 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
     mvwprintz(w_you.get(), i - you_off + 1, 1,
               (getting_yours[i] ? c_white : c_ltgray), "%c %c %s - $%d",
               char(i + 'a'), (getting_yours[i] ? '+' : '-'),
-              g->u.inv[yours[i + you_off]].tname().substr( 0,25).c_str(),
+              u.inv[yours[i + you_off]].tname().substr( 0,25).c_str(),
               your_price[i + you_off]);
    if (you_off > 0) mvwprintw(w_you.get(), VIEW - 6, 1, "< Back");
    if (you_off + VIEW - 8 < yours.size()) mvwprintw(w_you.get(), VIEW - 6, 9, "More >");
@@ -1703,13 +1703,13 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
      popup(p.inv[theirs[help]].info().c_str());
    } else {
     if (help >= 0 && help < yours.size())
-     popup(g->u.inv[yours[help]].info().c_str());
+     popup(u.inv[yours[help]].info().c_str());
    }
    break;
   case '\n':	// Check if we have enough cash...
    // \todo major rework...how long pre-Cataclysm money is "valid" is very arguable
-   if (cash < 0 && g->u.cash < cash * -1) {
-    popup("Not enough cash!  You have $%d, price is $%d.", g->u.cash, cash);
+   if (cash < 0 && u.cash < cash * -1) {
+    popup("Not enough cash!  You have $%d, price is $%d.", u.cash, cash);
     update = true;
     ch = ' ';
    } else if (cash > 0 && p.cash < cash)
@@ -1748,21 +1748,21 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
   std::vector<char> removing;
   for (int i = 0; i < yours.size(); i++) {
    if (getting_yours[i]) {
-    newinv.push_back(g->u.inv[yours[i]]);
+    newinv.push_back(u.inv[yours[i]]);
     practice++;
-    removing.push_back(g->u.inv[yours[i]].invlet);
+    removing.push_back(u.inv[yours[i]].invlet);
    }
   }
 // Do it in two passes, so removing items doesn't corrupt yours[]
   for (int i = 0; i < removing.size(); i++)
-   g->u.i_rem(removing[i]);
+   u.i_rem(removing[i]);
 
   for (int i = 0; i < theirs.size(); i++) {
    item tmp = p.inv[theirs[i]];
    if (getting_theirs[i]) {
     practice += 2;
     tmp.invlet = 'a';
-    while (g->u.has_item(tmp.invlet)) {
+    while (u.has_item(tmp.invlet)) {
      if (tmp.invlet == 'z')
       tmp.invlet = 'A';
      else if (tmp.invlet == 'Z')
@@ -1770,13 +1770,13 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
      else
       tmp.invlet++;
     }
-    g->u.inv.push_back(tmp);
+    u.inv.push_back(tmp);
    } else
     newinv.push_back(std::move(tmp));
   }
-  g->u.practice(sk_barter, practice / 2);
+  u.practice(sk_barter, practice / 2);
   p.inv = newinv;
-  g->u.cash += cash;
+  u.cash += cash;
   p.cash   -= cash;
  }
  return '\n' == ch;
