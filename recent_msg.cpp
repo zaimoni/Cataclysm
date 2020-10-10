@@ -4,6 +4,7 @@
 #include "keypress.h"
 #include "mapdata.h"
 #include "ui.h"
+#include "zero.h"
 #include <stdarg.h>
 #include <sstream>
 #endif
@@ -58,7 +59,7 @@ void recent_msg::buffer()
   int line = 1;
   int lasttime = -1;
   int i;
-  for (i = 1; i <= 20 && line <= 23 && offset + i <= msgs.size(); i++) {
+  for (i = 1; i <= VIEW - 5 && line <= VIEW - 2 && offset + i <= msgs.size(); i++) {
    game_message *mtmp = &(msgs[ msgs.size() - (offset + i) ]);
    calendar timepassed = turn - mtmp->turn;
 
@@ -73,7 +74,7 @@ void recent_msg::buffer()
     lasttime = int(timepassed);
    }
 
-   if (line <= 23) { // Print the actual message... we may have to split it
+   if (line <= VIEW - 2) { // Print the actual message... we may have to split it
     std::string mes = mtmp->message;
     if (mtmp->count > 1) {
      std::ostringstream mesSS;
@@ -81,32 +82,31 @@ void recent_msg::buffer()
      mes = mesSS.str();
     }
 // Split the message into many if we must!
-    size_t split;
-    while (mes.length() > 78 && line <= 23) {
-     split = mes.find_last_of(' ', 78);
-     if (split > 78)
-      split = 78;
+    while (mes.length() > SCREEN_WIDTH-2 && line <= VIEW - 2) {
+     const size_t split = clamped_ub(mes.find_last_of(' ', SCREEN_WIDTH - 2), SCREEN_WIDTH - 2);
      mvwprintz(w, line, 1, c_ltgray, mes.substr(0, split).c_str());
      line++;
      mes = mes.substr(split);
     }
-    if (line <= 23) {
+    if (line <= VIEW - 2) {
      mvwprintz(w, line, 1, col, mes.c_str());
      line++;
     }
    } // if (line <= 23)
   } //for (i = 1; i <= 10 && line <= 23 && offset + i <= msgs.size(); i++)
-  if (offset > 0)
-   mvwprintz(w, 24, 27, c_magenta, "^^^");
-  if (offset + i < msgs.size())
-   mvwprintz(w, 24, 51, c_magenta, "vvv");
+  // Arguable whether the arrows should "spread out" as the screen gets wider. 2020-10-10 zaimoni
+  if (offset > 0) mvwprintz(w, VIEW - 1, SCREEN_WIDTH / 2 - 13, c_magenta, "^^^");
+  if (offset + i < msgs.size()) mvwprintz(w, VIEW - 1, SCREEN_WIDTH / 2 + 10, c_magenta, "vvv");
   wrefresh(w);
 
   ch = input();
   point dir(get_direction(ch));
-  if (dir.y == -1 && offset > 0) offset--;
-  if (dir.y == 1 && offset < msgs.size()) offset++;
-
+  // \todo? some sort of fast-stepping at large message counts
+  if        (-1 == dir.y) {
+      if (0 < offset) offset--;
+  } else if (1 == dir.y) {
+      if (msgs.size() > offset) offset++;
+  }
  } while (ch != 'q' && ch != 'Q' && ch != ' ');
 
  werase(w);
