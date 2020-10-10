@@ -16,7 +16,13 @@ private:
 		int count;
 		std::string message;
 
-		game_message(calendar T = 0, std::string M="") : turn(T), count(1), message(M) {}
+		game_message(calendar T = 0) noexcept : turn(T), count(1) {}
+		game_message(calendar T, std::string M) : turn(T), count(1), message(M) {}
+		game_message(const game_message& src) = default;
+		game_message(game_message&& src) = default;
+		game_message& operator=(const game_message& src) = default;
+		game_message& operator=(game_message && src) = default;
+		~game_message() = default;
 	};
 
 	std::vector<game_message> msgs;   // Messages to be printed
