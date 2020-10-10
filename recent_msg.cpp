@@ -6,7 +6,6 @@
 #include "ui.h"
 #include "zero.h"
 #include <stdarg.h>
-#include <sstream>
 #endif
 
 recent_msg messages;
@@ -76,10 +75,9 @@ void recent_msg::buffer()
 
    if (line <= VIEW - 2) { // Print the actual message... we may have to split it
     std::string mes = mtmp->message;
-    if (mtmp->count > 1) {
-     std::ostringstream mesSS;
-     mesSS << mes << " x " << mtmp->count;
-     mes = mesSS.str();
+    if (1 < mtmp->count) {
+     mes += " x ";
+     mes += std::to_string(msgs[i].count);
     }
 // Split the message into many if we must!
     while (mes.length() > SCREEN_WIDTH-2 && line <= VIEW - 2) {
@@ -120,10 +118,9 @@ void recent_msg::write(WINDOW* w_messages)
  int line = 8;
  for (int i = msgs.size() - 1; i >= 0 && line < 9; i--) {
   std::string mes = msgs[i].message;
-  if (msgs[i].count > 1) {
-   std::ostringstream mesSS;
-   mesSS << mes << " x " << msgs[i].count;
-   mes = mesSS.str();
+  if (1 < msgs[i].count) {
+   mes += " x ";
+   mes += std::to_string(msgs[i].count);
   }
 // Split the message into many if we must!
   size_t split;
