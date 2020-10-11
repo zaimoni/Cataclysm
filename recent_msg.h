@@ -45,7 +45,7 @@ public:
 
 #ifndef SOCRATES_DAIMON
 	void add(const char* msg, ...);
-	void buffer();
+	void buffer() const;
 	void write(WINDOW* w_messages);
 #endif
 };

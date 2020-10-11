@@ -40,12 +40,9 @@ void recent_msg::add(const char* msg, ...)
 	msgs.push_back(game_message(turn, s));
 }
 
-void recent_msg::buffer()
+void recent_msg::buffer() const
 {
  WINDOW *w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
- wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
-            LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
- mvwprintz(w, VIEW - 1, 32, c_red, "Press q to return");
 
  int offset = 0;
  int ch;
@@ -53,14 +50,14 @@ void recent_msg::buffer()
   werase(w);
   wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
              LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
-  mvwprintz(w, VIEW - 1, 32, c_red, "Press q to return");
+  mvwprintz(w, VIEW - 1, SCREEN_WIDTH/2 - (sizeof("Press q to return")-1)/2, c_red, "Press q to return");
 
   int line = 1;
   int lasttime = -1;
   int i;
   for (i = 1; i <= VIEW - 5 && line <= VIEW - 2 && offset + i <= msgs.size(); i++) {
-   game_message *mtmp = &(msgs[ msgs.size() - (offset + i) ]);
-   calendar timepassed = turn - mtmp->turn;
+   const game_message& mtmp = msgs[msgs.size() - (offset + i)];
+   calendar timepassed = turn - mtmp.turn;
 
    int tp = int(timepassed);
    nc_color col = (tp <=  2 ? c_ltred : (tp <=  7 ? c_white :
@@ -74,10 +71,10 @@ void recent_msg::buffer()
    }
 
    if (line <= VIEW - 2) { // Print the actual message... we may have to split it
-    std::string mes = mtmp->message;
-    if (1 < mtmp->count) {
+    std::string mes = mtmp.message;
+    if (1 < mtmp.count) {
      mes += " x ";
-     mes += std::to_string(msgs[i].count);
+     mes += std::to_string(mtmp.count);
     }
 // Split the message into many if we must!
     while (mes.length() > SCREEN_WIDTH-2 && line <= VIEW - 2) {
