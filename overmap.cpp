@@ -732,11 +732,11 @@ void overmap::delete_note(const point& pt)
  }
 }
 
-point overmap::display_notes() const
+std::optional<point> overmap::display_notes() const
 {
  std::string title = "Notes:";
  WINDOW* w_notes = newwin(VIEW, SCREEN_WIDTH, 0, 0);
- const int maxitems = 20;	// Number of items to show at one time.
+ const int maxitems = cataclysm::min(VIEW-5, 26);	// Number of items to show at one time.  \todo? go beyond z if there is space
  int ch = '.';
  int start = 0, cur_it;
  mvwprintz(w_notes, 0, 0, c_ltgray, title.c_str());
@@ -757,7 +757,7 @@ point overmap::display_notes() const
   int cur_line = 2;
   int last_line = -1;
   char cur_let = 'a';
-  for (cur_it = start; cur_it < start + maxitems && cur_line < 23; cur_it++) {
+  for (cur_it = start; cur_it < start + maxitems && cur_line < maxitems+3; cur_it++) {
    if (cur_it < notes.size()) {
    mvwputch (w_notes, cur_line, 0, c_white, cur_let++);
    mvwprintz(w_notes, cur_line, 2, c_ltgray, "- %s", notes[cur_it].text.c_str());
@@ -768,23 +768,21 @@ point overmap::display_notes() const
    cur_line++;
   }
 
-  if(last_line == -1) last_line = 23;
-  if (start > 0)
-   mvwprintw(w_notes, maxitems + 4, 0, "< Go Back");
-  if (cur_it < notes.size())
-   mvwprintw(w_notes, maxitems + 4, 12, "> More notes"); 
-  if(ch >= 'a' && ch <= 't'){
+  if(last_line == -1) last_line = maxitems + 3;
+  if (start > 0) mvwprintw(w_notes, maxitems + 4, 0, "< Go Back");
+  if (cur_it < notes.size()) mvwprintw(w_notes, maxitems + 4, 12, "> More notes");
+  if(ch >= 'a' && ch < 'a' + maxitems){
    int chosen_line = (int)(ch % (int)'a');
    if(chosen_line < last_line)
     return point(notes[start + chosen_line].x, notes[start + chosen_line].y); 
   }
   mvwprintz(w_notes, 0, 40, c_white, "Press letter to center on note");
-  mvwprintz(w_notes, 24, 40, c_white, "Spacebar - Return to map  ");
+  mvwprintz(w_notes, VIEW - 1, 40, c_white, "Spacebar - Return to map  ");
   wrefresh(w_notes);
   ch = getch();
  } while(ch != ' ');
  delwin(w_notes);
- return point(-1,-1);
+ return std::nullopt;
 }
 
 void overmap::clear_terrain(oter_id src)
@@ -1410,8 +1408,7 @@ point overmap::choose_point(game *g)    // not const due to overmap::add_note
    timeout(BLINK_SPEED);
   } else if (ch == 'L'){
    timeout(-1);
-   point p(display_notes());
-   if (p.x != -1) curs = p;
+   if (const auto p = display_notes()) curs = *p;
    timeout(BLINK_SPEED);
    wrefresh(w_map);
   } else if (ch == '/') {

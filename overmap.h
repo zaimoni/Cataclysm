@@ -109,7 +109,7 @@ class overmap
   void add_note(const point& pt, const char* const message) { add_note(pt, std::string(message)); };
   std::optional<point> find_note(point origin, const std::string& text) const;
   void delete_note(const point& pt);
-  point display_notes() const;
+  std::optional<point> display_notes() const;
 
   static GPS_loc toGPS(const point& screen_pos);
   static OM_loc toOvermap(const GPS_loc GPSpos);
