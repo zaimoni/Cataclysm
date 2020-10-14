@@ -1,0 +1,21 @@
+# build files/dirs
+Zaimoni.STL/Pure.C/*.o
+Zaimoni.STL/Pure.C/*.a
+Zaimoni.STL/Pure.C/stdio.log/*.o
+Zaimoni.STL/Pure.C/stdio.log/*.a
+Zaimoni.STL/Pure.C/auto_int.h
+Zaimoni.STL/Pure.C/comptest.h
+Zaimoni.STL/Pure.C/int_probe.exe
+obj_cataclysm/
+obj_socrates_daimon/
+lib/host/*.a
+
+# output binaries
+cataclysm
+cataclysm.exe
+socrates-daimon
+socrates-daimon.exe
+
+# save data
+save/
+data/keymap.txt
