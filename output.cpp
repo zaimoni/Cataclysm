@@ -294,8 +294,8 @@ bool query_yn(const char* mes, ...)
  vsnprintf(buff, sizeof(buff), mes, ap);
 #endif
  va_end(ap);
- int win_width = strlen(buff) + 26;
- WINDOW* w = newwin(3, win_width, 11, 0);
+ int win_width = strlen(buff) + 26; // soft limit on main prompt SCREEN_WIDTH-26; C:Whales 54
+ WINDOW* w = newwin(3, win_width, (VIEW - 3) / 2, 0);
  wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
             LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  mvwprintz(w, 1, 1, c_ltred, "%s (%s)", buff,
@@ -323,8 +323,8 @@ int query_int(const char* mes, ...)
  vsnprintf(buff, sizeof(buff), mes, ap);
 #endif
  va_end(ap);
- int win_width = strlen(buff) + 10;
- WINDOW* w = newwin(3, win_width, 11, 0);
+ int win_width = strlen(buff) + 10; // soft limit on prompt SCREEN_WIDTH-10; C:Whales 70
+ WINDOW* w = newwin(3, win_width, (VIEW - 3) / 2, 0);
  wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
             LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  mvwprintz(w, 1, 1, c_ltred, "%s (0-9)", buff);
@@ -333,7 +333,7 @@ int query_int(const char* mes, ...)
  int temp;
  do
   temp = getch();
- while ((temp-48)<0 || (temp-48)>9);    // \todo magic constant: 48 is ASCII 0
+ while ((temp - '0')<0 || (temp - '0')>9);
  werase(w);
  wrefresh(w);
  delwin(w);
@@ -356,8 +356,8 @@ std::string string_input_popup(const char* mes, ...)
 #endif
  va_end(ap);
  reject_unescaped_percent(buff);
- int startx = strlen(buff) + 2;
- WINDOW* w = newwin(3, SCREEN_WIDTH, 11, 0);
+ int startx = strlen(buff) + 2; // soft limit on prompt SCREEN_WIDTH-2; C:Whales 78
+ WINDOW* w = newwin(3, SCREEN_WIDTH, (VIEW - 3) / 2, 0);
  wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
             LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  mvwprintz(w, 1, 1, c_ltred, "%s", buff);
@@ -368,7 +368,7 @@ std::string string_input_popup(const char* mes, ...)
  do {
   wrefresh(w);
   int ch = getch();
-  if (ch == 27) {	// Escape
+  if (ch == KEY_ESCAPE) {
    werase(w);
    wrefresh(w);
    delwin(w);
@@ -409,8 +409,8 @@ std::string string_input_popup(int max_length, const char* mes, ...)
 #endif
  va_end(ap);
  reject_unescaped_percent(buff);
- int startx = strlen(buff) + 2;
- WINDOW* w = newwin(3, SCREEN_WIDTH, 11, 0);
+ int startx = strlen(buff) + 2; // soft limit on prompt length SCREEN_WIDTH-2; C:Whales 78
+ WINDOW* w = newwin(3, SCREEN_WIDTH, (VIEW - 3) / 2, 0);
  wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
             LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  mvwprintz(w, 1, 1, c_ltred, "%s", buff);
@@ -421,7 +421,7 @@ std::string string_input_popup(int max_length, const char* mes, ...)
  do {
   wrefresh(w);
   int ch = getch();
-  if (ch == 27) {	// Escape
+  if (ch == KEY_ESCAPE) {
    werase(w);
    wrefresh(w);
    delwin(w);
@@ -473,8 +473,7 @@ char popup_getkey(const char* mes, ...)
  if (width == 0 || tmp.length() > width) width = tmp.length();
  width += 2;
  if (height > VIEW) height = VIEW;
- WINDOW* w = newwin(height + 1, width, int((VIEW - height) / 2),
-                    int((SCREEN_WIDTH - width) / 2));
+ WINDOW* w = newwin(height + 1, width, (VIEW - height) / 2, (SCREEN_WIDTH - width) / 2);
  wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
             LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  tmp = buff;
@@ -637,8 +636,7 @@ void popup(const char* mes, ...)
  if (width == 0 || tmp.length() > width) width = tmp.length();
  width += 2;
  if (height > VIEW) height = VIEW;
- WINDOW* w = newwin(height + 1, width, int((VIEW - height) / 2),
-                    int((SCREEN_WIDTH - width) / 2));
+ WINDOW* w = newwin(height + 1, width, (VIEW - height) / 2, (SCREEN_WIDTH - width) / 2);
  wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
             LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  tmp = buff;
@@ -692,8 +690,7 @@ void popup_nowait(const char* mes, ...)
  if (width == 0 || tmp.length() > width) width = tmp.length();
  width += 2;
  if (height > VIEW) height = VIEW;
- WINDOW* w = newwin(height + 1, width, int((VIEW - height) / 2),
-                    int((SCREEN_WIDTH - width) / 2));
+ WINDOW* w = newwin(height + 1, width, (VIEW - height) / 2, (SCREEN_WIDTH - width) / 2);
  wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
             LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  tmp = buff;
