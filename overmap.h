@@ -82,7 +82,7 @@ class overmap
   bool random_house_in_city(const city* c, OM_loc& dest) const;
   int dist_from_city(point p) const;
 // Interactive point choosing; used as the map screen
-  point choose_point(game *g);
+  std::optional<point> choose_point(game *g);
 
   oter_id& ter(int x, int y);
   oter_id& ter(const point& pt) { return ter(pt.x, pt.y); };

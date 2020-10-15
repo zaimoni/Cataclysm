@@ -1390,7 +1390,7 @@ void overmap::draw(WINDOW *w, const player& u, const point& curs, const point& o
   wrefresh(w);
 }
 
-point overmap::choose_point(game *g)    // not const due to overmap::add_note
+std::optional<point> overmap::choose_point(game *g)    // not const due to overmap::add_note
 {
     static constexpr const std::pair<int, const char*> search_text[] = {
         std::pair(1, "Find place:"),
@@ -1412,7 +1412,7 @@ point overmap::choose_point(game *g)    // not const due to overmap::add_note
  curs /= 2;
  point orig(curs);
  int ch = 0;
- point ret(-1, -1);
+ std::optional<point> ret;
  
  do {  
   draw(w_map, g->u, curs, orig, ch, blink);
@@ -1422,7 +1422,7 @@ point overmap::choose_point(game *g)    // not const due to overmap::add_note
   if (dir.x != -2) curs += dir;
   else if (ch == '0') curs = orig;
   else if (ch == '\n') ret = curs;
-  else if (ch == KEY_ESCAPE || ch == 'q' || ch == 'Q') ret = point(-1, -1);
+  else if (ch == KEY_ESCAPE || ch == 'q' || ch == 'Q') ret = std::nullopt;
   else if (ch == 'N') {
    timeout(-1);
    add_note(curs, string_input_popup(49, "Enter note")); // 49 char max
@@ -1483,8 +1483,7 @@ point overmap::choose_point(game *g)    // not const due to overmap::add_note
 */
   else if (ch == ERR)	// Hit timeout on input, so make characters blink
    blink = !blink;
- } while (ch != KEY_ESCAPE && ch != 'q' && ch != 'Q' && ch != ' ' &&
-          ch != '\n');
+ } while (ch != KEY_ESCAPE && ch != 'q' && ch != 'Q' && ch != ' ' && ch != '\n');
  timeout(-1);
  werase(w_map);
  wrefresh(w_map);

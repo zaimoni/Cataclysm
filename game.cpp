@@ -1766,12 +1766,11 @@ void game::debug()
    break;
 
   case 3: {
-   point tmp = cur_om.choose_point(this);
-   if (tmp.x != -1) {
+   if (const auto tmp = cur_om.choose_point(this)) {
     z.clear();
     //m.save(&cur_om, turn, levx, levy);
-    lev.x = tmp.x * 2 - int(MAPSIZE / 2);
-    lev.y = tmp.y * 2 - int(MAPSIZE / 2);
+    lev.x = tmp->x * 2 - int(MAPSIZE / 2);
+    lev.y = tmp->y * 2 - int(MAPSIZE / 2);
     m.load(this, point(lev.x, lev.y));
    }
   } break;
@@ -1927,10 +1926,8 @@ void game::groupdebug()
  getch();
 }
 
-void game::draw_overmap()
-{
- cur_om.choose_point(this);
-}
+// intentionally not inlining; this could get more complicated 2020-10-14 zaimoni
+void game::draw_overmap() { cur_om.choose_point(this); }
 
 void game::disp_kills()
 {

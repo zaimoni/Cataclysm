@@ -383,8 +383,8 @@ void computer::activate_function(game *g, computer_action action)
   case COMPACT_MISS_LAUNCH: {
    auto targ_om = om_cache::get().create(tripoint(g->cur_om.pos.x, g->cur_om.pos.y, 0));
 // Target Acquisition.
-   point target = targ_om.choose_point(g);
-   if (target.x == -1) {
+   const auto target = targ_om.choose_point(g);
+   if (!target) {
     print_line("Launch canceled.");
     return;
    }
@@ -409,8 +409,8 @@ void computer::activate_function(game *g, computer_action action)
     tmpmap.save(g->cur_om.pos, messages.turn, point(g->lev.x, g->lev.y));
    }
    om_cache::get().load(g->cur_om, revert_pos);
-   for (int x = target.x - 2; x <= target.x + 2; x++) {
-    for (int y = target.y -  2; y <= target.y + 2; y++)
+   for (int x = target->x - 2; x <= target->x + 2; x++) {
+    for (int y = target->y -  2; y <= target->y + 2; y++)
      g->nuke(point(x, y));  // \todo should be re-specified to take a rectangle; also needs to be cross-overmap aware
    }
   } break;
