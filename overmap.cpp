@@ -1241,10 +1241,28 @@ int overmap::dist_from_city(point p) const
  return distance;
 }
 
+enum {
+    search_window_width = 27,
+    search_window_padding_right = 2
+};
+
 void overmap::draw(WINDOW *w, const player& u, const point& curs, const point& orig, int ch, bool blink) const
 {
  constexpr const bool legend = true;
- constexpr const int om_w = 51;	// overmap width
+ constexpr const int om_w = SCREEN_WIDTH - search_window_width - search_window_padding_right;	// overmap width; C:Whales 51 @ SCREEN_WIDTH 80
+
+ constexpr const char* legend_text[] = {
+   "Use movement keys to pan.  ",
+   "0 - Center map on character",
+   "t - Toggle legend          ", // not really \todo remove this
+   "/ - Search                 ",
+   "N - Add a note             ",
+   "D - Delete a note          ",
+   "L - List notes             ",
+   "Esc or q - Return to game  "
+ };
+ constexpr const auto legend_len = sizeof(legend_text) / sizeof(*legend_text);
+ static_assert(search_window_width + search_window_padding_right > sizeof("0 - Center map on character") - 1); // C++20: review for more direct way to do this cross-check
 
  bool note_here = false, npc_here = false;
  std::string note_text, npc_name;
@@ -1364,14 +1382,9 @@ void overmap::draw(WINDOW *w, const player& u, const point& curs, const point& o
     int distance = rl_dist(orig, target.second);
     mvwprintz(w, 3, om_w, c_white, "Distance to target: %d", distance);
    }
-   mvwprintz(w, VIEW - 8, om_w, c_magenta,           "Use movement keys to pan.  ");
-   mvwprintz(w, VIEW - 7, om_w, c_magenta,           "0 - Center map on character");
-   mvwprintz(w, VIEW - 6, om_w, c_magenta,           "t - Toggle legend          ");
-   mvwprintz(w, VIEW - 5, om_w, c_magenta,           "/ - Search                 ");
-   mvwprintz(w, VIEW - 4, om_w, c_magenta,           "N - Add a note             ");
-   mvwprintz(w, VIEW - 3, om_w, c_magenta,           "D - Delete a note          ");
-   mvwprintz(w, VIEW - 2, om_w, c_magenta,           "L - List notes             ");
-   mvwprintz(w, VIEW - 1, om_w, c_magenta,           "Esc or q - Return to game  ");
+
+   int line = -1;
+   for (decltype(auto) x : legend_text) mvwprintz(w, VIEW - legend_len + ++line, om_w, c_magenta, x);
   }
 // Done with all drawing!
   wrefresh(w);
@@ -1379,8 +1392,20 @@ void overmap::draw(WINDOW *w, const player& u, const point& curs, const point& o
 
 point overmap::choose_point(game *g)    // not const due to overmap::add_note
 {
+    static constexpr const std::pair<int, const char*> search_text[] = {
+        std::pair(1, "Find place:"),
+        std::pair(2, "                         "),
+        std::pair(4, "'<' '>' Cycle targets."),
+        std::pair(10, "Enter/Spacebar to select."), // \todo unsure why this much whitespace here
+        std::pair(11, "q to return."),
+    };
+    static_assert(search_window_width > sizeof("Enter/Spacebar to select.")); // C++20: review whether possible to do this check more correctly
+
+ constexpr const int om_w = SCREEN_WIDTH - search_window_width - search_window_padding_right;	// overmap width; C:Whales 51 @ SCREEN_WIDTH 80
+
  WINDOW* w_map = newwin(VIEW, SCREEN_WIDTH, 0, 0);
- WINDOW* w_search = newwin(13, 27, 3, 51);
+ WINDOW* w_search = newwin((std::end(search_text)-1)->first+2, search_window_width, 3, om_w); // \todo this reasonably is strict upper bound on overmap width
+ // combined height+top padding of w_search must not collide with the legend; C:Whales line 17, 3+13=16 ok (17 would be flush)
  timeout(BLINK_SPEED);	// Enable blinking!
  bool blink = true;
  point curs((g->lev.x + int(MAPSIZE / 2)), (g->lev.y + int(MAPSIZE / 2)));
@@ -1427,12 +1452,14 @@ point overmap::choose_point(game *g)    // not const due to overmap::add_note
                //Draw search box
                wborder(w_search, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                    LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX);
-               mvwprintz(w_search, 1, 1, c_red, "Find place:");
-               mvwprintz(w_search, 2, 1, c_ltblue, "                         ");
-               mvwprintz(w_search, 2, 1, c_ltblue, "%s", term.c_str());
-               mvwprintz(w_search, 4, 1, c_white, "'<' '>' Cycle targets.");
-               mvwprintz(w_search, 10, 1, c_white, "Enter/Spacebar to select.");
-               mvwprintz(w_search, 11, 1, c_white, "q to return.");
+               int line = -1;
+               for (decltype(auto) x : search_text) {
+                   nc_color clr = c_white; // default;
+                   if (0 == ++line) clr = c_red;
+                   else if (1 == line) clr = c_ltblue;
+                   mvwprintz(w_search, x.first, 1, clr, x.second);
+                   if (1 == line) mvwprintz(w_search, 2, x.first, clr, "%s", term.c_str());
+               }
                ch = input();
                if (ch == ERR) blink = !blink;
                else if (ch == '<') {
