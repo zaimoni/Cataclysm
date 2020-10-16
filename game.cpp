@@ -2091,7 +2091,7 @@ void game::list_missions()
  static const char* const labels[] = { "ACTIVE MISSIONS", "COMPLETED MISSIONS", "FAILED MISSIONS", nullptr };
  const int tab_wrap = sizeof(labels) / sizeof(*labels) - 1;
 
-#define VBAR_X (30)
+ constexpr const int VBAR_X = 30;
 
  WINDOW *w_missions = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  int tab = 0, selection = 0;
@@ -2100,27 +2100,26 @@ void game::list_missions()
   werase(w_missions);
   draw_tabs(w_missions, tab, labels);
   const std::vector<int>& umissions = (0 == tab) ? u.active_missions : ((1 == tab) ? u.completed_missions : u.failed_missions);
-  for (int y = 3; y < VIEW; y++)
+  for (int y = TABBED_HEADER_HEIGHT; y < VIEW; y++)
    mvwputch(w_missions, y, VBAR_X, c_white, LINE_XOXO);
   for (int i = 0; i < umissions.size(); i++) {
    const mission* const miss = mission::from_id(umissions[i]);
    const nc_color col = (i == u.active_mission && tab == 0) ? c_ltred : c_white;
-   mvwprintz(w_missions, 3 + i, 0, ((selection == i) ? hilite(col) : col), miss->name());
+   mvwprintz(w_missions, TABBED_HEADER_HEIGHT + i, 0, ((selection == i) ? hilite(col) : col), miss->name());
   }
 
   if (selection >= 0 && selection < umissions.size()) {
    const mission* const miss = mission::from_id(umissions[selection]);
-   mvwprintz(w_missions, 4, VBAR_X+1, c_white,
-             miss->description.c_str());
+   mvwprintz(w_missions, TABBED_HEADER_HEIGHT + 1, VBAR_X + 1, c_white, miss->description.c_str());
    if (miss->deadline != 0)
-    mvwprintz(w_missions, 5, VBAR_X + 1, c_white, "Deadline: %d (%d)",
+    mvwprintz(w_missions, TABBED_HEADER_HEIGHT + 2, VBAR_X + 1, c_white, "Deadline: %d (%d)",
               miss->deadline, int(messages.turn));
-   mvwprintz(w_missions, 6, VBAR_X + 1, c_white, "Target: (%d, %d)   You: (%d, %d)",    // release block \todo fix
+   mvwprintz(w_missions, TABBED_HEADER_HEIGHT + 3, VBAR_X + 1, c_white, "Target: (%d, %d)   You: (%d, %d)",
              miss->target.second.x, miss->target.second.y,
-             (lev.x + int (MAPSIZE / 2)) / 2, (lev.y + int (MAPSIZE / 2)) / 2);
+             (lev.x + MAPSIZE / 2) / 2, (lev.y + MAPSIZE / 2) / 2);
   } else {
    const char* const nope = (0 == tab) ? "You have no active missions!" : ((1 == tab) ? "You haven't completed any missions!" : "You haven't failed any missions!");
-   mvwprintz(w_missions, 4, VBAR_X + 1, c_ltred, nope);
+   mvwprintz(w_missions, TABBED_HEADER_HEIGHT + 1, VBAR_X + 1, c_ltred, nope);
   }
 
   wrefresh(w_missions);
@@ -2144,8 +2143,6 @@ void game::list_missions()
   }
 
  } while (ch != 'q' && ch != 'Q' && ch != KEY_ESCAPE);
-
-#undef VBAR_X
 
  werase(w_missions);
  delwin(w_missions);
