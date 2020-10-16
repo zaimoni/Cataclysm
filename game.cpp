@@ -1941,32 +1941,25 @@ void game::disp_kills()
  }
 
  WINDOW* w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
- mvwprintz(w, 0, 35, c_red, "KILL COUNTS:");
+ mvwprintz(w, 0, (SCREEN_WIDTH-(sizeof("KILL COUNTS:")-1))/2, c_red, "KILL COUNTS:"); // C++20: use constexpr strlen here
 
- if (types.size() == 0) {
-  mvwprintz(w, 2, 2, c_white, "You haven't killed any monsters yet!");
-  wrefresh(w);
-  getch();
-  werase(w);
-  wrefresh(w);
-  delwin(w);
-  refresh_all();
-  return;
- }
+ if (const size_t ub = types.size()) {
+     // \todo account for monster name length in following
+     const int rows_per_col = VIEW - 1;
+     const int max_cols = SCREEN_WIDTH / 26;
+     const int want_cols = ub / rows_per_col + (0 != ub % rows_per_col);
+     const int cols = cataclysm::min(max_cols, want_cols);
+     const int padding = (SCREEN_WIDTH - cols * 25) / cols;
 
- // \todo account for monster name length in following
- const int rows_per_col = VIEW - 1;
- const int max_cols = SCREEN_WIDTH / 26;
- const int want_cols = types.size() / rows_per_col + (0 != types.size() % rows_per_col);
- const int cols = cataclysm::min(max_cols, want_cols);
- const int padding = (SCREEN_WIDTH - cols * 25) / cols;
-
- for (int i = 0; i < types.size(); i++) {
-  const int row = i%rows_per_col;
-  const int col = i / rows_per_col;
-  if (cols <= col) break;   // we overflowed
-  mvwprintz(w, row, col*25+(col-1)*padding, types[i]->color, "%c %s", types[i]->sym, types[i]->name.c_str());
-  mvwprintz(w, row, (col+1)*25 + (col - 1) * padding - int_log10(count[i]), c_white, "%d", count[i]);
+     for (int i = 0; i < ub; i++) {
+         const int row = i % rows_per_col;
+         const int col = i / rows_per_col;
+         if (cols <= col) break;   // we overflowed
+         mvwprintz(w, row, col * 25 + (col - 1) * padding, types[i]->color, "%c %s", types[i]->sym, types[i]->name.c_str());
+         mvwprintz(w, row, (col + 1) * 25 + (col - 1) * padding - int_log10(count[i]), c_white, "%d", count[i]);
+     }
+ } else {
+     mvwprintz(w, 2, 2, c_white, "You haven't killed any monsters yet!");
  }
 
  wrefresh(w);
