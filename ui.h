@@ -19,6 +19,7 @@ enum {
 	// mon info
 	MON_INFO_HEIGHT = 12,
 	TABBED_HEADER_HEIGHT = 3,
+	VBAR_X = 30, // number of screens have hard-coded left pane 30 width
 	// the canonical view with the player-scale map had a 55-wide "control panel", for a total width of 25+55=80
 	PANELX = 55,
 	SCREEN_WIDTH = VIEW+PANELX

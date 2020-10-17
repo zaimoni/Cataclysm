@@ -3,9 +3,6 @@
 #include "keypress.h"
 #include "recent_msg.h"
 
-
-constexpr const int VBAR_X = 30;
-
 void game::wish()
 {
  const auto t_size = item::types.size();

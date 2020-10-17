@@ -2091,8 +2091,6 @@ void game::list_missions()
  static const char* const labels[] = { "ACTIVE MISSIONS", "COMPLETED MISSIONS", "FAILED MISSIONS", nullptr };
  const int tab_wrap = sizeof(labels) / sizeof(*labels) - 1;
 
- constexpr const int VBAR_X = 30;
-
  WINDOW *w_missions = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  int tab = 0, selection = 0;
  int ch;
