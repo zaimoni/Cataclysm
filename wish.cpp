@@ -3,11 +3,14 @@
 #include "keypress.h"
 #include "recent_msg.h"
 
+
+constexpr const int VBAR_X = 30;
+
 void game::wish()
 {
  const auto t_size = item::types.size();
- WINDOW* const w_list = newwin(VIEW, 30, 0,  0);
- WINDOW* const w_info = newwin(VIEW, 50, 0, 30);
+ WINDOW* const w_list = newwin(VIEW, VBAR_X, 0,  0);
+ WINDOW* const w_info = newwin(VIEW, SCREEN_WIDTH - VBAR_X, 0, VBAR_X);
  int a = 0, shift = 0, result_selected = 0;
  int ch = '.';
  bool search = false, found = false;
@@ -37,9 +40,9 @@ void game::wish()
       result_selected = 0;
      shift = search_results[result_selected];
      a = 0;
-     if (shift + 23 > t_size) {
-      a = shift + 23 - t_size;
-      shift = t_size - 23;
+     if (shift + (VIEW - 2) > t_size) {
+      a = shift + (VIEW - 2) - t_size;
+      shift = t_size - (VIEW - 2);
      }
     }
    } else if (ch == '<') {
@@ -50,9 +53,9 @@ void game::wish()
       result_selected = search_results.size() - 1;
      shift = search_results[result_selected];
      a = 0;
-     if (shift + 23 > t_size) {
-      a = shift + 23 - t_size;
-      shift = t_size - 23;
+     if (shift + (VIEW - 2) > t_size) {
+      a = shift + (VIEW - 2) - t_size;
+      shift = t_size - (VIEW - 2);
      }
     }
    } else {
@@ -66,9 +69,9 @@ void game::wish()
       shift = i;
       a = 0;
       result_selected = 0;
-      if (shift + 23 > t_size) {
-       a = shift + 23 - t_size;
-       shift = t_size - 23;
+      if (shift + (VIEW - 2) > t_size) {
+       a = shift + (VIEW - 2) - t_size;
+       shift = t_size - (VIEW - 2);
       }
       found = true;
       search_results.push_back(i);
@@ -95,9 +98,9 @@ void game::wish()
      result_selected = 0;
     shift = search_results[result_selected];
     a = 0;
-    if (shift + 23 > t_size) {
-     a = shift + 23 - t_size;
-     shift = t_size - 23;
+    if (shift + (VIEW - 2) > t_size) {
+     a = shift + (VIEW - 2) - t_size;
+     shift = t_size - (VIEW - 2);
     }
    } else if (ch == '<' && !search_results.empty()) {
     result_selected--;
@@ -105,9 +108,9 @@ void game::wish()
      result_selected = search_results.size() - 1;
     shift = search_results[result_selected];
     a = 0;
-    if (shift + 23 > t_size) {
-     a = shift + 23 - t_size;
-     shift = t_size - 23;
+    if (shift + (VIEW - 2) > t_size) {
+     a = shift + (VIEW - 2) - t_size;
+     shift = t_size - (VIEW - 2);
     }
    }
   }
@@ -120,12 +123,12 @@ void game::wish()
    shift--;
    if (shift < 0) shift = 0;
   }
-  if (a > 22) {
-   a = 22;
+  if (a > (VIEW-3)) {
+   a = (VIEW - 3);
    shift++;
-   if (shift + 23 > t_size) shift = t_size - 23;
+   if (shift + (VIEW - 2) > t_size) shift = t_size - (VIEW - 2);
   }
-  for (int i = 1; i < 24 && i-1+shift < t_size; i++) {
+  for (int i = 1; i < VIEW - 1 && i-1+shift < t_size; i++) {
    const nc_color col = (a + 1 == i) ? h_white : c_white;
    const itype* const it = item::types[i - 1 + shift];
    mvwprintz(w_list, i, 0, col, it->name.c_str());
@@ -154,8 +157,8 @@ void game::wish()
 
 void game::monster_wish()
 {
- WINDOW* const w_list = newwin(VIEW, 30, 0,  0);
- WINDOW* const w_info = newwin(VIEW, 50, 0, 30);
+ WINDOW* const w_list = newwin(VIEW, VBAR_X, 0,  0);
+ WINDOW* const w_info = newwin(VIEW, SCREEN_WIDTH - VBAR_X, 0, VBAR_X);
  int a = 0, shift = 1, result_selected = 0;
  int ch = '.';
  bool search = false, found = false, friendly = false;
@@ -184,9 +187,9 @@ void game::monster_wish()
       result_selected = 0;
      shift = search_results[result_selected];
      a = 0;
-     if (shift + 23 > mtype::types.size()) {
-      a = shift + 23 - mtype::types.size();
-      shift = mtype::types.size() - 23;
+     if (shift + (VIEW-2) > mtype::types.size()) {
+      a = shift + (VIEW - 2) - mtype::types.size();
+      shift = mtype::types.size() - (VIEW - 2);
      }
     }
    } else if (ch == '<') {
@@ -197,9 +200,9 @@ void game::monster_wish()
       result_selected = search_results.size() - 1;
      shift = search_results[result_selected];
      a = 0;
-     if (shift + 23 > mtype::types.size()) {
-      a = shift + 23 - mtype::types.size();
-      shift = mtype::types.size() - 23;
+     if (shift + (VIEW - 2) > mtype::types.size()) {
+      a = shift + (VIEW - 2) - mtype::types.size();
+      shift = mtype::types.size() - (VIEW - 2);
      }
     }
    } else {
@@ -213,9 +216,9 @@ void game::monster_wish()
       shift = i;
       a = 0;
       result_selected = 0;
-      if (shift + 23 > mtype::types.size()) {
-       a = shift + 23 - mtype::types.size();
-       shift = mtype::types.size() - 23;
+      if (shift + (VIEW - 2) > mtype::types.size()) {
+       a = shift + (VIEW - 2) - mtype::types.size();
+       shift = mtype::types.size() - (VIEW - 2);
       }
       found = true;
       search_results.push_back(i);
@@ -239,9 +242,9 @@ void game::monster_wish()
      result_selected = 0;
     shift = search_results[result_selected];
     a = 0;
-    if (shift + 23 > mtype::types.size()) {
-     a = shift + 23 - mtype::types.size();
-     shift = mtype::types.size() - 23;
+    if (shift + (VIEW - 2) > mtype::types.size()) {
+     a = shift + (VIEW - 2) - mtype::types.size();
+     shift = mtype::types.size() - (VIEW - 2);
     }
    } else if (ch == '<' && !search_results.empty()) {
     result_selected--;
@@ -249,9 +252,9 @@ void game::monster_wish()
      result_selected = search_results.size() - 1;
     shift = search_results[result_selected];
     a = 0;
-    if (shift + 23 > mtype::types.size()) {
-     a = shift + 23 - mtype::types.size();
-     shift = mtype::types.size() - 23;
+    if (shift + (VIEW - 2) > mtype::types.size()) {
+     a = shift + (VIEW - 2) - mtype::types.size();
+     shift = mtype::types.size() - (VIEW - 2);
     }
    }
   }
@@ -264,12 +267,12 @@ void game::monster_wish()
    shift--;
    if (shift < 1) shift = 1;
   }
-  if (a > 22) {
-   a = 22;
+  if (a > (VIEW - 3)) {
+   a = (VIEW - 3);
    shift++;
-   if (shift + 23 > mtype::types.size()) shift = mtype::types.size() - 23;
+   if (shift + (VIEW - 2) > mtype::types.size()) shift = mtype::types.size() - (VIEW - 2);
   }
-  for (int i = 1; i < 24; i++) {
+  for (int i = 1; i < VIEW - 1; i++) {
    const nc_color col = (i == a + 1 ? h_white : c_white);
    const mtype* const type = mtype::types[i - 1 + shift];
    mvwprintz(w_list, i, 0, col, type->name.c_str());
@@ -295,8 +298,8 @@ void game::monster_wish()
 
 void game::mutation_wish()
 {
- WINDOW* const w_list = newwin(VIEW, 30, 0,  0);
- WINDOW* const w_info = newwin(VIEW, 50, 0, 30);
+ WINDOW* const w_list = newwin(VIEW, VBAR_X, 0,  0);
+ WINDOW* const w_info = newwin(VIEW, SCREEN_WIDTH - VBAR_X, 0, VBAR_X);
  int a = 0, shift = 0, result_selected = 0;
  int ch = '.';
  bool search = false, found = false;
@@ -324,9 +327,9 @@ void game::mutation_wish()
       result_selected = 0;
      shift = search_results[result_selected];
      a = 0;
-     if (shift + 23 > PF_MAX2) {
-      a = shift + 23 - PF_MAX2;
-      shift = PF_MAX2 - 23;
+     if (shift + (VIEW - 2) > PF_MAX2) {
+      a = shift + (VIEW - 2) - PF_MAX2;
+      shift = PF_MAX2 - (VIEW - 2);
      }
     }
    } else if (ch == '<') {
@@ -337,9 +340,9 @@ void game::mutation_wish()
       result_selected = search_results.size() - 1;
      shift = search_results[result_selected];
      a = 0;
-     if (shift + 23 > PF_MAX2) {
-      a = shift + 23 - PF_MAX2;
-      shift = PF_MAX2 - 23;
+     if (shift + (VIEW - 2) > PF_MAX2) {
+      a = shift + (VIEW - 2) - PF_MAX2;
+      shift = PF_MAX2 - (VIEW - 2);
      }
     }
    } else {
@@ -353,9 +356,9 @@ void game::mutation_wish()
       shift = i;
       a = 0;
       result_selected = 0;
-      if (shift + 23 > PF_MAX2) {
-       a = shift + 23 - PF_MAX2;
-       shift = PF_MAX2 - 23;
+      if (shift + (VIEW - 2) > PF_MAX2) {
+       a = shift + (VIEW - 2) - PF_MAX2;
+       shift = PF_MAX2 - (VIEW - 2);
       }
       found = true;
       search_results.push_back(i);
@@ -382,9 +385,9 @@ void game::mutation_wish()
      result_selected = 0;
     shift = search_results[result_selected];
     a = 0;
-    if (shift + 23 > PF_MAX2) {
-     a = shift + 23 - PF_MAX2;
-     shift = PF_MAX2 - 23;
+    if (shift + (VIEW - 2) > PF_MAX2) {
+     a = shift + (VIEW - 2) - PF_MAX2;
+     shift = PF_MAX2 - (VIEW - 2);
     }
    } else if (ch == '<' && !search_results.empty()) {
     result_selected--;
@@ -392,9 +395,9 @@ void game::mutation_wish()
      result_selected = search_results.size() - 1;
     shift = search_results[result_selected];
     a = 0;
-    if (shift + 23 > PF_MAX2) {
-     a = shift + 23 - PF_MAX2;
-     shift = PF_MAX2 - 23;
+    if (shift + (VIEW - 2) > PF_MAX2) {
+     a = shift + (VIEW - 2) - PF_MAX2;
+     shift = PF_MAX2 - (VIEW - 2);
     }
    }
   }
@@ -407,12 +410,12 @@ void game::mutation_wish()
    shift--;
    if (shift < 0) shift = 0;
   }
-  if (a > 22) {
-   a = 22;
+  if (a > VIEW - 3) {
+   a = VIEW - 3;
    shift++;
-   if (shift + 23 > PF_MAX2) shift = PF_MAX2 - 23;
+   if (shift + (VIEW - 2) > PF_MAX2) shift = PF_MAX2 - (VIEW - 2);
   }
-  for (int i = 1; i < 24; i++) {
+  for (int i = 1; i < VIEW - 1; i++) {
    const nc_color col = (i == a + 1 ? h_white : c_white);
    mvwprintz(w_list, i, 0, col, mutation_branch::traits[i-1+shift].name.c_str());
   }
