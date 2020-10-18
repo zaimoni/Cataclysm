@@ -1686,7 +1686,8 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
   case '?':
    update = true;
    {
-   std::unique_ptr<WINDOW, curses_full_delete> w_tmp(newwin(3, 21, 1, 30));
+   const size_t prompt_len = sizeof("Examine which item?")-1; // C++20: use constexpr strlen
+   std::unique_ptr<WINDOW, curses_full_delete> w_tmp(newwin(3, prompt_len+2, 1, (SCREEN_WIDTH-prompt_len)/2));
    mvwprintz(w_tmp.get(), 1, 1, c_red, "Examine which item?");
    wborder(w_tmp.get(), LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                   LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
@@ -1696,11 +1697,11 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
    }
    wrefresh(w_head.get());
    if (focus_them) {
-    if (help >= 0 && help < theirs.size())
-     popup(p.inv[theirs[help]].info().c_str());
+    if (help >= 0 && them_off + help < theirs.size())
+     popup(p.inv[theirs[them_off + help]].info().c_str());
    } else {
-    if (help >= 0 && help < yours.size())
-     popup(u.inv[yours[help]].info().c_str());
+    if (help >= 0 && you_off + help < yours.size())
+     popup(u.inv[yours[you_off + help]].info().c_str());
    }
    break;
   case '\n':	// Check if we have enough cash...
