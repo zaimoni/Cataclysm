@@ -1574,8 +1574,7 @@ bool trade(player& u, npc& p, int cost, std::string deal)
  std::unique_ptr<WINDOW, curses_full_delete> w_head(newwin(header_height, SCREEN_WIDTH, 0, 0));
  std::unique_ptr<WINDOW, curses_full_delete> w_them(newwin(VIEW - header_height, SCREEN_WIDTH / 2, header_height,  0));
  std::unique_ptr<WINDOW, curses_full_delete> w_you(newwin(VIEW - header_height, SCREEN_WIDTH / 2, header_height, SCREEN_WIDTH / 2));
- mvwprintz(w_head.get(), 0, 0, c_white, "\
-Trading with %s\n\
+ mvwprintz(w_head.get(), 0, 0, c_white, "Trading with %s\n\
 Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n\
 ? to get information on an item", p.name.c_str());
 
@@ -1583,9 +1582,8 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
  for (int i = 0; i < SCREEN_WIDTH; i++)
   mvwputch(w_head.get(), header_height - 1, i, c_white, LINE_OXOX);
  wrefresh(w_head.get());
- 
-  
-// End of line drawings
+
+ // End of line drawings
 
 // Populate the list of what the NPC is willing to buy, and the prices they pay
 // Note that the NPC's barter skill is factored into these prices.
@@ -1603,6 +1601,7 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
  for (int& his_price : their_price) his_price *= price_scale;
  for (int& my_price : your_price) my_price /= price_scale;
 
+ const int v_hgt = clamped_ub<26>(VIEW - 8); // view height into inventory listings; limit is due to menu implementation
  int  cash = cost;// How much cash you get in the deal (negative = losing money)
  bool focus_them = true;	// Is the focus on them?
  bool update = true;		// Re-draw the screen?
@@ -1628,28 +1627,26 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
                    LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
    wattroff(w_them.get(), c_yellow);
    wattroff(w_you.get(),  c_yellow);
-   mvwprintz(w_them.get(), 0, 1, (cash < 0 || p.cash >= cash ? c_green : c_red),
-             "%s: $%d", p.name.c_str(), p.cash);
-   mvwprintz(w_you.get(),  0, 2, (cash > 0 || u.cash>=cash*-1 ? c_green:c_red),
-             "You: $%d", u.cash);
+   mvwprintz(w_them.get(), 0, 1, (cash < 0 || p.cash >= cash ? c_green : c_red), "%s: $%d", p.name.c_str(), p.cash);
+   mvwprintz(w_you.get(),  0, 2, (cash > 0 || u.cash>=cash*-1 ? c_green:c_red), "You: $%d", u.cash);
 // Draw their list of items, starting from them_off
-   for (int i = them_off; i < theirs.size() && i < VIEW - 8; i++)
+   for (int i = them_off; i + them_off < theirs.size() && i < v_hgt; i++)
     mvwprintz(w_them.get(), i - them_off + 1, 1,
               (getting_theirs[i] ? c_white : c_ltgray), "%c %c %s - $%d",
               char(i + 'a'), (getting_theirs[i] ? '+' : '-'),
               p.inv[theirs[i + them_off]].tname().substr( 0,25).c_str(),
               their_price[i + them_off]);
-   if (them_off > 0) mvwprintw(w_them.get(), VIEW - 6, 1, "< Back");
-   if (them_off + VIEW - 8 < theirs.size()) mvwprintw(w_them.get(), VIEW - 6, 9, "More >");
+   if (them_off > 0) mvwprintw(w_them.get(), v_hgt+2, 1, "< Back");
+   if (them_off + v_hgt < theirs.size()) mvwprintw(w_them.get(), v_hgt + 2, 9, "More >");
 // Draw your list of items, starting from you_off
-   for (int i = you_off; i < yours.size() && i < VIEW - 8; i++)
+   for (int i = you_off; i + you_off < yours.size() && i < v_hgt; i++)
     mvwprintz(w_you.get(), i - you_off + 1, 1,
               (getting_yours[i] ? c_white : c_ltgray), "%c %c %s - $%d",
               char(i + 'a'), (getting_yours[i] ? '+' : '-'),
               u.inv[yours[i + you_off]].tname().substr( 0,25).c_str(),
               your_price[i + you_off]);
-   if (you_off > 0) mvwprintw(w_you.get(), VIEW - 6, 1, "< Back");
-   if (you_off + VIEW - 8 < yours.size()) mvwprintw(w_you.get(), VIEW - 6, 9, "More >");
+   if (you_off > 0) mvwprintw(w_you.get(), v_hgt + 2, 1, "< Back");
+   if (you_off + v_hgt < yours.size()) mvwprintw(w_you.get(), v_hgt + 2, 9, "More >");
    wrefresh(w_head.get());
    wrefresh(w_them.get());
    wrefresh(w_you.get());
@@ -1663,25 +1660,25 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
   case '<':
    if (focus_them) {
     if (them_off > 0) {
-     them_off -= VIEW - 8;
+     them_off -= v_hgt;
      update = true;
     }
    } else {
     if (you_off > 0) {
-     you_off -= VIEW - 8;
+     you_off -= v_hgt;
      update = true;
     }
    }
    break;
   case '>':
    if (focus_them) {
-    if (them_off + VIEW - 8 < theirs.size()) {
-     them_off += VIEW - 8;
+    if (them_off + v_hgt < theirs.size()) {
+     them_off += v_hgt;
      update = true;
     }
    } else {
-    if (you_off + VIEW - 8 < yours.size()) {
-     you_off += VIEW - 8;
+    if (you_off + v_hgt < yours.size()) {
+     you_off += v_hgt;
      update = true;
     }
    }
@@ -1745,17 +1742,19 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
  if (ch == '\n') {
   inventory newinv;
   int practice = 0;
+  {
   std::vector<char> removing;
   for (int i = 0; i < yours.size(); i++) {
    if (getting_yours[i]) {
-    newinv.push_back(u.inv[yours[i]]);
+    const item& it = u.inv[yours[i]];
+    newinv.push_back(it);
+    removing.push_back(it.invlet);
     practice++;
-    removing.push_back(u.inv[yours[i]].invlet);
    }
   }
 // Do it in two passes, so removing items doesn't corrupt yours[]
-  for (int i = 0; i < removing.size(); i++)
-   u.i_rem(removing[i]);
+  for(char invlet : removing) u.i_rem(invlet);
+  } // scope out removing to force its destructor to run
 
   for (int i = 0; i < theirs.size(); i++) {
    item tmp = p.inv[theirs[i]];
@@ -1777,7 +1776,7 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
   u.practice(sk_barter, practice / 2);
   p.inv = newinv;
   u.cash += cash;
-  p.cash   -= cash;
+  p.cash -= cash;
  }
  return '\n' == ch;
 }
