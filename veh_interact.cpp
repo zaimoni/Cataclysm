@@ -29,13 +29,11 @@ void veh_interact::exec ()
     const int winw12 = winw1 + winw2 + 1;
     const int winw3 = SCREEN_WIDTH - winw1 - winw2 - 2;
     const int winh3 = VIEW - TABBED_HEADER_HEIGHT - winh2 - 2;
-    const int winh23 = winh2 + winh3 + 1;
     const int winx1 = winw1;
     const int winx2 = winw1 + winw2 + 1;
     const int winy1 = TABBED_HEADER_HEIGHT;
     const int winy2 = TABBED_HEADER_HEIGHT + winh2 + 1;
 
-    page_size = winh23;
     //               h   w    y     x
 	WINDOW* const w_grid  = newwin(VIEW, SCREEN_WIDTH,  0,    0);
 	w_mode  = newwin(1, SCREEN_WIDTH, 0,    0);
@@ -43,7 +41,7 @@ void veh_interact::exec ()
     w_disp  = newwin(winh2, winw1,  winy1 + 1, 0);
     w_parts = newwin(winh2, winw2,  winy1 + 1, winx1 + 1);
     w_stats = newwin(winh3, winw12, winy2 + 1, 0);
-    w_list  = newwin(winh23, winw3, winy1 + 1, winx2 + 1);
+    w_list  = newwin(winh2 + winh3 + 1, winw3, winy1 + 1, winx2 + 1);
 
     for (int i = 0; i < VIEW; i++)
     {
@@ -551,6 +549,8 @@ void veh_interact::display_mode (char mode)
 
 void veh_interact::display_list (int pos)
 {
+    const int page_size = getmaxy(w_list);
+
     werase (w_list);
     int page = pos / page_size;
     for (int i = page * page_size; i < (page + 1) * page_size && i < can_mount.size(); i++)

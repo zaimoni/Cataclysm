@@ -15,7 +15,6 @@ public:
     char sel_cmd;
 private:
     int cpart;
-    int page_size;
     WINDOW *w_mode;
     WINDOW *w_msg;
     WINDOW *w_disp;
