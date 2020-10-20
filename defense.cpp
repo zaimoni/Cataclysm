@@ -20,12 +20,12 @@
 
 std::vector<itype_id> caravan_items(caravan_category cat);
 
-int caravan_price(player &u, int price);
+int caravan_price(const player &u, int price);
 
 void draw_caravan_borders(WINDOW *w, int current_window);
 void draw_caravan_categories(WINDOW *w, int category_selected, int total_price,
                              int cash);
-void draw_caravan_items(WINDOW *w, game *g, std::vector<itype_id> *items,
+void draw_caravan_items(WINDOW *w, const player& u, std::vector<itype_id> *items,
                         std::vector<int> *counts, int offset,
                         int item_selected);
 
@@ -794,7 +794,7 @@ Switch between category selection and item selecting by pressing Tab.\n\
 Pick an item with the up/down keys, press + to buy 1 more, - to buy 1 less.\n\
 Press Enter to buy everything in your cart, Esc to buy nothing.");
     draw_caravan_categories(w, category_selected, total_price, g->u.cash);
-    draw_caravan_items(w, g, &(items[category_selected]),
+    draw_caravan_items(w, g->u, &(items[category_selected]),
                        &(item_count[category_selected]), offset, item_selected);
     draw_caravan_borders(w, current_window);
     break;
@@ -807,7 +807,7 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
      draw_caravan_categories(w, category_selected, total_price, g->u.cash);
      offset = 0;
      item_selected = 0;
-     draw_caravan_items(w, g, &(items[category_selected]),
+     draw_caravan_items(w, g->u, &(items[category_selected]),
                         &(item_count[category_selected]), offset,
                         item_selected);
      draw_caravan_borders(w, current_window);
@@ -820,7 +820,7 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
      }
      if (item_selected > offset + 22)
       offset++;
-     draw_caravan_items(w, g, &(items[category_selected]),
+     draw_caravan_items(w, g->u, &(items[category_selected]),
                         &(item_count[category_selected]), offset,
                         item_selected);
      draw_caravan_borders(w, current_window);
@@ -838,7 +838,7 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
      draw_caravan_categories(w, category_selected, total_price, g->u.cash);
      offset = 0;
      item_selected = 0;
-     draw_caravan_items(w, g, &(items[category_selected]),
+     draw_caravan_items(w, g->u, &(items[category_selected]),
                         &(item_count[category_selected]), offset,
                         item_selected);
      draw_caravan_borders(w, current_window);
@@ -853,7 +853,7 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
      }
      if (item_selected < offset)
       offset--;
-     draw_caravan_items(w, g, &(items[category_selected]),
+     draw_caravan_items(w, g->u, &(items[category_selected]),
                         &(item_count[category_selected]), offset,
                         item_selected);
      draw_caravan_borders(w, current_window);
@@ -887,7 +887,7 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
       }
      }
      draw_caravan_categories(w, category_selected, total_price, g->u.cash);
-     draw_caravan_items(w, g, &(items[category_selected]),
+     draw_caravan_items(w, g->u, &(items[category_selected]),
                        &(item_count[category_selected]), offset, item_selected);
      draw_caravan_borders(w, current_window);
     }
@@ -921,7 +921,7 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
       }
      }
      draw_caravan_categories(w, category_selected, total_price, g->u.cash);
-     draw_caravan_items(w, g, &(items[category_selected]),
+     draw_caravan_items(w, g->u, &(items[category_selected]),
                        &(item_count[category_selected]), offset, item_selected);
      draw_caravan_borders(w, current_window);
     }
@@ -938,7 +938,7 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
      done = true;
     } else {
      draw_caravan_categories(w, category_selected, total_price, g->u.cash);
-     draw_caravan_items(w, g, &(items[category_selected]),
+     draw_caravan_items(w, g->u, &(items[category_selected]),
                        &(item_count[category_selected]), offset, item_selected);
      draw_caravan_borders(w, current_window);
     }
@@ -954,7 +954,7 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
      done = true;
     if (!done) { // We canceled, so redraw everything
      draw_caravan_categories(w, category_selected, total_price, g->u.cash);
-     draw_caravan_items(w, g, &(items[category_selected]),
+     draw_caravan_items(w, g->u, &(items[category_selected]),
                        &(item_count[category_selected]), offset, item_selected);
      draw_caravan_borders(w, current_window);
     }
@@ -1060,9 +1060,7 @@ itm_bot_turret, itm_UPS_off, itm_mininuke);
 void draw_caravan_borders(WINDOW *w, int current_window)
 {
 // First, do the borders for the category window
- nc_color col = c_ltgray;
- if (current_window == 0)
-  col = c_yellow;
+ nc_color col = (0 == current_window ? c_yellow : c_ltgray);
 
  mvwputch(w, 0, 0, col, LINE_OXXO);
  for (int i = 1; i <= 38; i++) {
@@ -1079,32 +1077,32 @@ void draw_caravan_borders(WINDOW *w, int current_window)
  mvwputch(w,  0, 39, c_yellow, LINE_OXXX);
  mvwputch(w, 11, 39, c_yellow, LINE_XOXX);
 
- col = (current_window == 1 ? c_yellow : c_ltgray);
+ col = (1 == current_window ? c_yellow : c_ltgray);
 // Next, draw the borders for the item description window--always "off" & gray
  for (int i = 12; i <= 23; i++) {
   mvwputch(w, i,  0, c_ltgray, LINE_XOXO);
   mvwputch(w, i, 39, col,      LINE_XOXO);
  }
  for (int i = 1; i <= 38; i++)
-  mvwputch(w, 24, i, c_ltgray, LINE_OXOX);
+  mvwputch(w, VIEW - 1, i, c_ltgray, LINE_OXOX);
 
- mvwputch(w, 24,  0, c_ltgray, LINE_XXOO);
- mvwputch(w, 24, 39, c_ltgray, LINE_XXOX);
+ mvwputch(w, VIEW - 1,  0, c_ltgray, LINE_XXOO);
+ mvwputch(w, VIEW - 1, 39, c_ltgray, LINE_XXOX);
 
 // Finally, draw the item section borders
  for (int i = 40; i <= 78; i++) {
   mvwputch(w,  0, i, col, LINE_OXOX);
-  mvwputch(w, 24, i, col, LINE_OXOX);
+  mvwputch(w, VIEW - 1, i, col, LINE_OXOX);
  }
  for (int i = 1; i <= 23; i++)
   mvwputch(w, i, 79, col, LINE_XOXO);
 
- mvwputch(w, 24, 39, col, LINE_XXOX);
+ mvwputch(w, VIEW - 1, 39, col, LINE_XXOX);
  mvwputch(w,  0, 79, col, LINE_OOXX);
- mvwputch(w, 24, 79, col, LINE_XOOX);
+ mvwputch(w, VIEW - 1, 79, col, LINE_XOOX);
 
 // Quick reminded about help.
- mvwprintz(w, 24, 2, c_red, "Press ? for help.");
+ mvwprintz(w, VIEW - 1, 2, c_red, "Press ? for help.");
  wrefresh(w);
 }
 
@@ -1126,7 +1124,7 @@ void draw_caravan_categories(WINDOW *w, int category_selected, int total_price,
  wrefresh(w);
 }
  
-void draw_caravan_items(WINDOW *w, game *g, std::vector<itype_id> *items,
+void draw_caravan_items(WINDOW *w, const player& u, std::vector<itype_id> *items,
                         std::vector<int> *counts, int offset,
                         int item_selected)
 {
@@ -1134,7 +1132,7 @@ void draw_caravan_items(WINDOW *w, game *g, std::vector<itype_id> *items,
 // will corrupt the item list.
 
 // Actually, clear the item info first.
- for (int i = 12; i <= 23; i++)
+ for (int i = 12; i <= VIEW - 2; i++)
   mvwprintz(w, i, 1, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 // THEN print it--if item_selected is valid
  if (item_selected < items->size()) {
@@ -1142,16 +1140,16 @@ void draw_caravan_items(WINDOW *w, game *g, std::vector<itype_id> *items,
   mvwprintz(w, 12, 0, c_white, tmp.info().c_str());
  }
 // Next, clear the item list on the right
- for (int i = 1; i <= 23; i++)
+ for (int i = 1; i <= VIEW - 2; i++)
   mvwprintz(w, i, 40, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 // Finally, print the item list on the right
- for (int i = offset; i <= offset + 23 && i < items->size(); i++) {
+ for (int i = offset; i <= offset + VIEW - 2 && i < items->size(); i++) {
   const itype* const i_type = item::types[(*items)[i]];
   mvwprintz(w, i - offset + 1, 40, (item_selected == i ? h_white : c_white), i_type->name.c_str());
   wprintz(w, c_white, " x %s%d", ((*counts)[i] >= 10 ? "" : " "), (*counts)[i]);
   if ((*counts)[i] > 0) {
-   int price = caravan_price(g->u, i_type->price *(*counts)[i]);
-   wprintz(w, (price > g->u.cash ? c_red : c_green),
+   int price = caravan_price(u, i_type->price *(*counts)[i]);
+   wprintz(w, (price > u.cash ? c_red : c_green),
               "($%s%d)", (price >= 100000 ? "" : (price >= 10000 ? " " :
                           (price >= 1000 ? "  " : (price >= 100 ? "   " :
                            (price >= 10 ? "    " : "     "))))), price);
@@ -1160,7 +1158,7 @@ void draw_caravan_items(WINDOW *w, game *g, std::vector<itype_id> *items,
  wrefresh(w);
 }
 
-int caravan_price(player &u, int price)
+int caravan_price(const player &u, int price)
 {
  if (u.sklevel[sk_barter] > 10)
   return int( double(price) * .5);
