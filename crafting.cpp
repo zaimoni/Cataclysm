@@ -716,35 +716,34 @@ void game::craft()
   }
   if (current.size() > 0) {
    nc_color col = (available[line] ? c_white : c_dkgray);
-   mvwprintz(w_data, 0, 30, col, "Primary skill: %s",
+   mvwprintz(w_data, 0, VBAR_X, col, "Primary skill: %s",
              (current[line]->sk_primary == sk_null ? "N/A" :
               skill_name(current[line]->sk_primary)));
-   mvwprintz(w_data, 1, 30, col, "Secondary skill: %s",
+   mvwprintz(w_data, 1, VBAR_X, col, "Secondary skill: %s",
              (current[line]->sk_secondary == sk_null ? "N/A" :
               skill_name(current[line]->sk_secondary)));
-   mvwprintz(w_data, 2, 30, col, "Difficulty: %d", current[line]->difficulty);
+   mvwprintz(w_data, 2, VBAR_X, col, "Difficulty: %d", current[line]->difficulty);
    if (current[line]->sk_primary == sk_null)
-    mvwprintz(w_data, 3, 30, col, "Your skill level: N/A");
+    mvwprintz(w_data, 3, VBAR_X, col, "Your skill level: N/A");
    else
-    mvwprintz(w_data, 3, 30, col, "Your skill level: %d",
-              u.sklevel[current[line]->sk_primary]);
+    mvwprintz(w_data, 3, VBAR_X, col, "Your skill level: %d", u.sklevel[current[line]->sk_primary]);
    // for some reason 1 turn == 100 time here
    if (current[line]->time >= MINUTES(100))
-    mvwprintz(w_data, 4, 30, col, "Time to complete: %d minutes", current[line]->time / MINUTES(100));
+    mvwprintz(w_data, 4, VBAR_X, col, "Time to complete: %d minutes", current[line]->time / MINUTES(100));
    else
-    mvwprintz(w_data, 4, 30, col, "Time to complete: %d turns", current[line]->time / 100);
-   mvwprintz(w_data, 5, 30, col, "Tools required:");
+    mvwprintz(w_data, 4, VBAR_X, col, "Time to complete: %d turns", current[line]->time / 100);
+   mvwprintz(w_data, 5, VBAR_X, col, "Tools required:");
    if (current[line]->tools[0].size() == 0) {
-    mvwputch(w_data, 6, 30, col, '>');
-    mvwprintz(w_data, 6, 32, c_green, "NONE");
+    mvwputch(w_data, 6, VBAR_X, col, '>');
+    mvwprintz(w_data, 6, VBAR_X + 2, c_green, "NONE");
     ypos = 6;
    } else {
     ypos = 5;
 // Loop to print the required tools
     for (int i = 0; i < 5 && current[line]->tools[i].size() > 0; i++) {
      ypos++;
-     xpos = 32;
-     mvwputch(w_data, ypos, 30, col, '>');
+     xpos = VBAR_X + 2;
+     mvwputch(w_data, ypos, VBAR_X, col, '>');
 
      for (int j = 0; j < current[line]->tools[i].size(); j++) {
 	  const component& tool = current[line]->tools[i][j];
@@ -761,14 +760,14 @@ void game::craft()
        toolinfo << "(" << charges << " charges) ";
       std::string toolname = toolinfo.str();
       if (xpos + toolname.length() >= SCREEN_WIDTH) {
-       xpos = 32;
+       xpos = VBAR_X + 2;
        ypos++;
       }
       mvwprintz(w_data, ypos, xpos, toolcol, toolname.c_str());
       xpos += toolname.length();
       if (j < current[line]->tools[i].size() - 1) {
        if (xpos >= SCREEN_WIDTH - 3) {
-        xpos = 32;
+        xpos = VBAR_X + 2;
         ypos++;
        }
        mvwprintz(w_data, ypos, xpos, c_white, "OR ");
@@ -779,14 +778,13 @@ void game::craft()
    }
  // Loop to print the required components
    ypos++;
-   mvwprintz(w_data, ypos, 30, col, "Components required:");
+   mvwprintz(w_data, ypos, VBAR_X, col, "Components required:");
    for (int i = 0; i < 5; i++) {
-    if (current[line]->components[i].size() > 0) {
-     ypos++;
-     mvwputch(w_data, ypos, 30, col, '>');
-    }
-    xpos = 32;
-    for (int j = 0; j < current[line]->components[i].size(); j++) {
+    const size_t ub = current[line]->components[i].size();
+    if (0 >= ub) continue;
+    mvwputch(w_data, ++ypos, VBAR_X, col, '>');
+    xpos = VBAR_X + 2;
+    for (int j = 0; j < ub; j++) {
 	 const component& comp = current[line]->components[i][j];
      const int count = comp.count;
      const itype_id type = comp.type;
@@ -802,14 +800,14 @@ void game::craft()
      std::string compname = dump.str();
      if (xpos + compname.length() >= SCREEN_WIDTH) {
       ypos++;
-      xpos = 32;
+      xpos = VBAR_X + 2;
      }
      mvwprintz(w_data, ypos, xpos, compcol, compname.c_str());
      xpos += compname.length();
-     if (j < current[line]->components[i].size() - 1) {
+     if (j < ub - 1) {
       if (xpos >= SCREEN_WIDTH - 3) {
        ypos++;
-       xpos = 32;
+       xpos = VBAR_X + 2;
       }
       mvwprintz(w_data, ypos, xpos, c_white, "OR ");
       xpos += 3;
