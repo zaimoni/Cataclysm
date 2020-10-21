@@ -91,7 +91,7 @@ void veh_interact::exec ()
             {
             case 'i': do_install(mval); break;
             case 'r': do_repair(mval);  break;
-            case 'f': do_refill(mval);  break;
+            case 'f': do_refill(mval);  break; // not morale-gated; other commands are
             case 'o': do_remove(mval);  break;
             default:;
             }
@@ -117,6 +117,7 @@ void veh_interact::exec ()
     erase();
 }
 
+// not really C error code convention -- 0 is all-clear, but positive values are hard errors rather than soft errors
 int veh_interact::cant_do (char mode)
 {
     switch (mode)
@@ -542,8 +543,9 @@ void veh_interact::display_mode (char mode)
         mvwprintz(w_mode, 0, 23, mo? c_ltgray : c_dkgray, "remove");
         mvwputch (w_mode, 0, 26, mo? c_ltgreen : c_green, 'o');
     }
-    mvwprintz(w_mode, 0, 71, c_ltgreen, "ESC");
-    mvwprintz(w_mode, 0, 74, c_ltgray, "-back");
+    // C++20: constexpr strlen?
+    mvwprintz(w_mode, 0, SCREEN_WIDTH - (sizeof("-back") + sizeof("ESC") - 1), c_ltgreen, "ESC");
+    mvwprintz(w_mode, 0, SCREEN_WIDTH - sizeof("-back"), c_ltgray, "-back");
     wrefresh (w_mode);
 }
 
