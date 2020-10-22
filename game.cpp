@@ -3913,7 +3913,7 @@ point game::look_around()
      mvwprintw(w_look, 3, 1, "There is an item there.");
    } else if (veh) {
      mvwprintw(w_look, 3, 1, "There is a %s there. Parts:", veh->name.c_str());
-     veh->print_part_desc(w_look, 4, 48, veh_part);
+     veh->print_part_desc(w_look, 4, veh_part);
      m.drawsq(w_terrain, u, l.x, l.y, true, true, l.x, l.y);
    } else if (!stack.empty()) {
     mvwprintw(w_look, 3, 1, "There is a %s there.", stack[0].tname().c_str());
@@ -3927,7 +3927,7 @@ point game::look_around()
    mvwprintw(w_look, 1, 1, "You (%s)", u.name.c_str());
    if (veh) {
     mvwprintw(w_look, 3, 1, "There is a %s there. Parts:", veh->name.c_str());
-    veh->print_part_desc(w_look, 4, 48, veh_part);
+    veh->print_part_desc(w_look, 4, veh_part);
     m.drawsq(w_terrain, u, l.x, l.y, true, true, l.x, l.y);
    }
 

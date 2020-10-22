@@ -303,10 +303,11 @@ nc_color vehicle::part_color (int p) const
     return part_info(pd).color;
 }
 
-void vehicle::print_part_desc (void *w, int y1, int width, int p, int hl)
+void vehicle::print_part_desc (void *w, int y1, int p, int hl)
 {
-    WINDOW *win = (WINDOW *) w;
     if (p < 0 || p >= parts.size()) return;
+    WINDOW* win = (WINDOW*)w;
+    const int width = getmaxx(win);
     std::vector<int> pl = internal_parts (p);
     pl.insert (pl.begin(), p);
     int y = y1;

@@ -22,10 +22,10 @@ void veh_interact::exec ()
     // y2 ----+------+
     //               |
     //               |
-    constexpr int winw1 = 12;
-// XXX probably should do something more auditable
-#define winw2 35
+    constexpr int winw1 = 12;  // these two tightly integrated with w_disp and veh_interact::move_cursor
     constexpr const int winh2 = 12;
+// XXX probably should do something more auditable
+    constexpr const int winw2 = 35;
     const int winw12 = winw1 + winw2 + 1;
     const int winw3 = SCREEN_WIDTH - winw1 - winw2 - 2;
     const int winh3 = VIEW - TABBED_HEADER_HEIGHT - winh2 - 2;
@@ -40,7 +40,7 @@ void veh_interact::exec ()
     w_msg   = newwin(TABBED_HEADER_HEIGHT - 1, SCREEN_WIDTH, 1,    0);
     w_disp  = newwin(winh2, winw1,  winy1 + 1, 0);
     w_parts = newwin(winh2, winw2,  winy1 + 1, winx1 + 1);
-    w_stats = newwin(winh3, winw12, winy2 + 1, 0);
+    w_stats = newwin(winh3, winw12, winy2 + 1, 0); // minimum height 7
     w_list  = newwin(winh2 + winh3 + 1, winw3, winy1 + 1, winx2 + 1);
 
     for (int i = 0; i < VIEW; i++)
@@ -248,7 +248,7 @@ void veh_interact::do_repair(int reason)
     while (true) {
         sel_part = parts_here[need_repair[pos]];
         werase (w_parts);
-        veh->print_part_desc (w_parts, 0, winw2, cpart, need_repair[pos]);
+        veh->print_part_desc(w_parts, 0, cpart, need_repair[pos]);
         wrefresh (w_parts);
         werase (w_msg);
         bool has_comps = true;
@@ -274,7 +274,7 @@ void veh_interact::do_repair(int reason)
             return;
         } else if (ch == KEY_ESCAPE) {
             werase (w_parts);
-            veh->print_part_desc (w_parts, 0, winw2, cpart, -1);
+            veh->print_part_desc(w_parts, 0, cpart, -1);
             wrefresh (w_parts);
             werase (w_msg);
             break;
@@ -353,7 +353,7 @@ void veh_interact::do_remove(int reason)
     {
         sel_part = parts_here[pos];
         werase (w_parts);
-        veh->print_part_desc (w_parts, 0, winw2, cpart, pos);
+        veh->print_part_desc(w_parts, 0, cpart, pos);
         wrefresh (w_parts);
         int ch = input(); // See keypress.h
         int dx, dy;
@@ -367,7 +367,7 @@ void veh_interact::do_remove(int reason)
         if (ch == KEY_ESCAPE)
         {
             werase (w_parts);
-            veh->print_part_desc (w_parts, 0, winw2, cpart, -1);
+            veh->print_part_desc(w_parts, 0, cpart, -1);
             wrefresh (w_parts);
             werase (w_msg);
             break;
@@ -409,7 +409,7 @@ void veh_interact::move_cursor (int dx, int dy)
                       special_symbol(cpart >= 0? veh->part_sym (cpart) : ' '));
     wrefresh (w_disp);
     werase (w_parts);
-    veh->print_part_desc (w_parts, 0, winw2, cpart, -1);
+    veh->print_part_desc(w_parts, 0, cpart, -1);
     wrefresh (w_parts);
 
     can_mount.clear();
