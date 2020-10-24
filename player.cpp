@@ -1930,12 +1930,12 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
 
  // XXX yes inherited widths don't add up properly
  WINDOW* w_grid    = newwin(VIEW, SCREEN_WIDTH,  0,  0);
- WINDOW* w_stats   = newwin( 9, VIEW + 1,  2,  0);
- WINDOW* w_encumb  = newwin( 9, VIEW + 1, 12,  0);
- WINDOW* w_traits  = newwin( 9, VIEW + 1,  2, VIEW + 2);
- WINDOW* w_effects = newwin( 9, VIEW + 1, 12, VIEW + 2);
- WINDOW* w_skills  = newwin( 9, VIEW + 1,  2, 2 * VIEW + 4);
- WINDOW* w_speed   = newwin( 9, VIEW + 1, 12, 2 * VIEW + 4);
+ WINDOW* w_stats   = newwin( 9, VIEW + 1,  2,  0); // minimum height 7
+ WINDOW* w_encumb  = newwin( 9, VIEW + 1, 12,  0); // minimum height 9
+ WINDOW* w_traits  = newwin( 9, VIEW + 1,  2, VIEW + 2); // would like to scale
+ WINDOW* w_effects = newwin( 9, VIEW + 1, 12, VIEW + 2); // would like to scale
+ WINDOW* w_skills  = newwin( 9, VIEW + 1,  2, 2 * VIEW + 4); // would like to scale
+ WINDOW* w_speed   = newwin( 9, VIEW + 1, 12, 2 * VIEW + 4); // would like to scale
  WINDOW* w_info    = newwin( 3, SCREEN_WIDTH, VIEW - 3,  0);
 // Print name and header
  mvwprintw(w_grid, 0, 0, "%s - %s", name.c_str(), (male ? "Male" : "Female"));

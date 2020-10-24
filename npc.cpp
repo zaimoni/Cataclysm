@@ -1687,9 +1687,9 @@ void npc::draw(WINDOW* w, const point& pt, bool inv) const
 void npc::print_info(WINDOW* w)
 {
 // First line of w is the border; the next 4 are terrain info, and after that
-// is a blank line. w is 13 characters tall, and we can't use the last one
+// is a blank line. w is historically 13 characters tall, and we can't use the last one
 // because it's a border as well; so we have lines 6 through 11.
-// w is also 48 characters wide - 2 characters for border = 46 characters for us
+// w is also historically 48 characters wide - 2 characters for border = 46 characters for us
  mvwprintz(w, 6, 1, c_white, "NPC: %s", name.c_str());
  mvwprintz(w, 7, 1, c_red, "Wielding %s%s", (weapon.type->id == 0 ? "" : "a "),
                                      weapon.tname().c_str());
@@ -1702,18 +1702,21 @@ void npc::print_info(WINDOW* w)
   wstr << worn[i].tname();
  }
  wearing = wstr.str();
+
+ const int line_ub = getmaxy(w) - 1;
+ const int width_ub = getmaxx(w) - 2;
  int line = 8;
  size_t split;
  do {
-  split = (wearing.length() <= 46) ? std::string::npos :
-                                     wearing.find_last_of(' ', 46);
-  if (split == std::string::npos)
+  split = (wearing.length() <= width_ub) ? std::string::npos :
+                                     wearing.find_last_of(' ', width_ub);
+  if (split == std::string::npos) {
    mvwprintz(w, line, 1, c_blue, wearing.c_str());
-  else
-   mvwprintz(w, line, 1, c_blue, wearing.substr(0, split).c_str());
+   break;
+  }
+  mvwprintz(w, line++, 1, c_blue, wearing.substr(0, split).c_str());
   wearing = wearing.substr(split + 1);
-  line++;
- } while (split != std::string::npos && line <= 11);
+ } while (line < line_ub);
 }
 
 std::string npc::short_description() const

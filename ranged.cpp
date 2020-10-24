@@ -504,7 +504,8 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
  } else
   target = -1;	// No monsters in range, don't use target, reset to -1
 
- WINDOW* w_target = newwin(SEEY + 1, PANELX - MINIMAP_WIDTH_HEIGHT, SEEY, VIEW + MINIMAP_WIDTH_HEIGHT);
+ // unclear why we should have a dependency on map dimensions
+ WINDOW* w_target = newwin(VIEW - SEEY, PANELX - MINIMAP_WIDTH_HEIGHT, SEEY, VIEW + MINIMAP_WIDTH_HEIGHT);
  wborder(w_target, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                  LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  if (!relevent) // currently targetting vehicle to refill with fuel

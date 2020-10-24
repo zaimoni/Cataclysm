@@ -3856,7 +3856,7 @@ point game::look_around()
  draw_ter();
  point l(u.pos);
  int ch;
- WINDOW* w_look = newwin(VIEW-SEE, SCREEN_WIDTH-(SEE * 2 + 8), SEE, SEE * 2 + 8);
+ WINDOW* w_look = newwin(VIEW-SEE, PANELX - MINIMAP_WIDTH_HEIGHT, SEE, VIEW + MINIMAP_WIDTH_HEIGHT);
  wborder(w_look, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                  LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  mvwprintz(w_look, 1, 1, c_white, "Looking Around");

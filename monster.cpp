@@ -104,9 +104,9 @@ std::string monster::name_with_armor() const
 void monster::print_info(const player& u, WINDOW* w) const
 {
 // First line of w is the border; the next two are terrain info, and after that
-// is a blank line. w is 13 characters tall, and we can't use the last one
+// is a blank line. w is historically 13 characters tall, and we can't use the last one
 // because it's a border as well; so we have lines 4 through 11.
-// w is also 48 characters wide - 2 characters for border = 46 characters for us
+// w is also historically 48 characters wide - 2 characters for border = 46 characters for us
  mvwprintz(w, 6, 1, c_white, "%s ", type->name.c_str());
  switch (attitude(&u)) {
   case MATT_FRIEND:
@@ -157,15 +157,15 @@ void monster::print_info(const player& u, WINDOW* w) const
  }
  mvwprintz(w, 7, 1, col, damage_info.c_str());
 
+ const int line_ub = getmaxy(w) - 1;
  std::string tmp = type->description;
  size_t pos;
  int line = 8;
  do {
   pos = tmp.find_first_of('\n');
-  mvwprintz(w, line, 1, c_white, tmp.substr(0, pos).c_str());
+  mvwprintz(w, line++, 1, c_white, tmp.substr(0, pos).c_str());
   tmp = tmp.substr(pos + 1);
-  line++;
- } while (pos != std::string::npos && line < 12);
+ } while (pos != std::string::npos && line < line_ub);
 }
 
 void monster::draw(WINDOW *w, const point& pl, bool inv) const
