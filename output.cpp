@@ -506,6 +506,10 @@ int menu_vec(const char* mes, const std::vector<std::string>& options)  // \todo
   debugmsg("0-length menu (\"%s\")", mes);
   return -1;
  }
+#ifndef NDEBUG
+ if (VIEW - 3 < options.size()) throw std::logic_error("menu height exceeds screen height");
+ if (36 < options.size()) throw std::logic_error("menu contains non-selectable options");
+#endif
  const int height = 3 + options.size();
  int width = strlen(mes) + 2;
  for (const auto& opt : options) {
