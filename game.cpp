@@ -73,7 +73,7 @@ game::game()
  werase(w_terrain);
  w_minimap = newwin(MINIMAP_WIDTH_HEIGHT, MINIMAP_WIDTH_HEIGHT, 0, VIEW);
  werase(w_minimap);
- w_HP = newwin(VIEW - MINIMAP_WIDTH_HEIGHT - STATUS_BAR_HEIGHT, MINIMAP_WIDTH_HEIGHT, MINIMAP_WIDTH_HEIGHT, VIEW);
+ w_HP = newwin(VIEW - MINIMAP_WIDTH_HEIGHT - STATUS_BAR_HEIGHT, MINIMAP_WIDTH_HEIGHT, MINIMAP_WIDTH_HEIGHT, VIEW); // minimum height 14, C:Whales 14
  werase(w_HP);
  w_moninfo = newwin(MON_INFO_HEIGHT, PANELX - MINIMAP_WIDTH_HEIGHT, 0, VIEW + MINIMAP_WIDTH_HEIGHT);
  werase(w_moninfo);

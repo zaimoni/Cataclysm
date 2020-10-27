@@ -111,9 +111,9 @@ void recent_msg::buffer() const
 void recent_msg::write(WINDOW* w_messages)
 {
  werase(w_messages);
- int maxlength = SCREEN_WIDTH - (VIEW + 9);	// Matches size of w_messages
- int line = 8;
- for (int i = msgs.size() - 1; i >= 0 && line < 9; i--) {
+ int maxlength = getmaxx(w_messages) - 2;
+ int line = getmaxy(w_messages) - 1;
+ for (int i = msgs.size() - 1; 0 <= i && 0 <= line; i--) {
   std::string mes = msgs[i].message;
   if (1 < msgs[i].count) {
    mes += " x ";
