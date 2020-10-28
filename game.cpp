@@ -1852,46 +1852,48 @@ z.size(), events.size());
     u.styles.push_back( itype_id(i) );
    break;
 
-  case 13: {
-   point p = look_around();
-   if (npc* const _npc = nPC(p)) {
-    std::ostringstream data;
-    data << _npc->name << " " << (_npc->male ? "Male" : "Female") << std::endl;
-    data << npc_class_name(_npc->myclass) << "; " <<
-            npc_attitude_name(_npc->attitude) << std::endl;
-    if (_npc->has_destination())
-     data << "Destination: " << _npc->goal.first << _npc->goal.second << "(" <<
-		     oter_t::list[ overmap::ter_c(_npc->goal) ].name << ")" <<
-             std::endl;
-    else
-     data << "No destination." << std::endl;
-    data << "Trust: " << _npc->op_of_u.trust << " Fear: " << _npc->op_of_u.fear <<
-            " Value: " << _npc->op_of_u.value << " Anger: " << _npc->op_of_u.anger <<
-            " Owed: " << _npc->op_of_u.owed << std::endl;
-    data << "Aggression: " << int(_npc->personality.aggression) << " Bravery: " <<
-            int(_npc->personality.bravery) << " Collector: " <<
-            int(_npc->personality.collector) << " Altruism: " <<
-            int(_npc->personality.altruism) << std::endl;
-    for (int i = 0; i < num_skill_types; i++) {
-     data << skill_name( skill(i) ) << ": " << _npc->sklevel[i];
-     if (i % 2 == 1)
-      data << std::endl;
-     else
-      data << "\t";
-    }
+  case 13:
+   if (const auto p = look_around()) {
+       if (npc* const _npc = nPC(*p)) {
+           std::ostringstream data;
+           data << _npc->name << " " << (_npc->male ? "Male" : "Female") << std::endl;
+           data << npc_class_name(_npc->myclass) << "; " <<
+               npc_attitude_name(_npc->attitude) << std::endl;
+           if (_npc->has_destination())
+               data << "Destination: " << _npc->goal.first << _npc->goal.second << "(" <<
+               oter_t::list[overmap::ter_c(_npc->goal)].name << ")" <<
+               std::endl;
+           else
+               data << "No destination." << std::endl;
+           data << "Trust: " << _npc->op_of_u.trust << " Fear: " << _npc->op_of_u.fear <<
+               " Value: " << _npc->op_of_u.value << " Anger: " << _npc->op_of_u.anger <<
+               " Owed: " << _npc->op_of_u.owed << std::endl;
+           data << "Aggression: " << int(_npc->personality.aggression) << " Bravery: " <<
+               int(_npc->personality.bravery) << " Collector: " <<
+               int(_npc->personality.collector) << " Altruism: " <<
+               int(_npc->personality.altruism) << std::endl;
+           for (int i = 0; i < num_skill_types; i++) {
+               data << skill_name(skill(i)) << ": " << _npc->sklevel[i];
+               if (i % 2 == 1)
+                   data << std::endl;
+               else
+                   data << "\t";
+           }
 
-    full_screen_popup(data.str().c_str());
-   } else {
-    popup("No NPC there.");
+           full_screen_popup(data.str().c_str());
+       }
+       else {
+           popup("No NPC there.");
+       }
    }
-  } break;
+   break;
 
   case 14:
-   point center = look_around();
-   artifact_natural_property prop =
-    artifact_natural_property(rng(ARTPROP_NULL + 1, ARTPROP_MAX - 1));
-   m.create_anomaly(center.x, center.y, prop);
-   m.add_item(center, new_natural_artifact(prop), 0);
+   if (const auto center = look_around()) {
+       artifact_natural_property prop = artifact_natural_property(rng(ARTPROP_NULL + 1, ARTPROP_MAX - 1));
+       m.create_anomaly(center->x, center->y, prop);
+       m.add_item(*center, new_natural_artifact(prop), 0);
+   }
    break;
  }
  erase();
@@ -3851,7 +3853,7 @@ shape, but with long, twisted, distended limbs.");
  }
 }
 
-point game::look_around()
+std::optional<point> game::look_around()
 {
  draw_ter();
  point l(u.pos);
@@ -3873,7 +3875,7 @@ point game::look_around()
   if (dir.x != -2) l += dir; // Directional key pressed
   draw_ter(l);
   for (int i = 1; i < VIEW - SEE-1; i++) {
-   for (int j = 1; j < SCREEN_WIDTH - (SEE * 2 + 8)-1; j++)
+   for (int j = 1; j < PANELX - MINIMAP_WIDTH_HEIGHT - 1; j++)
     mvwputch(w_look, i, j, c_white, ' ');
   }
   int veh_part = 0;
@@ -3939,7 +3941,7 @@ point game::look_around()
   wrefresh(w_terrain);
  } while (ch != ' ' && ch != KEY_ESCAPE && ch != '\n');
  if (ch == '\n') return l;
- return point(-1, -1);
+ return std::nullopt;
 }
 
 // Pick up items at (posx, posy).

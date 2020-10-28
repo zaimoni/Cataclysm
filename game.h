@@ -171,7 +171,7 @@ class game
   void process_artifact(item *it, player *p, bool wielded = false);	// \todo V 0.2.1 fully extend to NPCs
   static void add_artifact_messages(const std::vector<art_effect_passive>& effects);
 
-  point look_around();// Look at nearby terrain	';'
+  std::optional<point> look_around();// Look at nearby terrain	';'
   char inv(std::string title = "Inventory:");
   std::vector<item> multidrop();
   faction* list_factions(const char* title = "FACTIONS:");

@@ -1948,11 +1948,11 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
    }
   } break;
 
-  case AEA_FIREBALL: {
-   point fireball = g->look_around();
-   if (fireball.x != -1 && fireball.y != -1)
-    g->explosion(fireball, 8, 0, true);
-  } break;
+  case AEA_FIREBALL:
+   if (const auto fireball = g->look_around()) {
+       g->explosion(*fireball, 8, 0, true);
+   }
+   break;
 
   case AEA_ADRENALINE:
    messages.add("You're filled with a roaring energy!");
@@ -1997,20 +1997,19 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
    } else g->m.add_field(g, x, y, fd_fatigue, rng(1, 2));
   } break;
 
-  case AEA_ACIDBALL: {
-   point acidball = g->look_around();
-   if (acidball.x != -1 && acidball.y != -1) {
-    for (int x = acidball.x - 1; x <= acidball.x + 1; x++) {
-     for (int y = acidball.y - 1; y <= acidball.y + 1; y++) {
-	  auto& fd = g->m.field_at(x, y);
-      if (fd.type == fd_acid && fd.density < 3)
-       fd.density++;
-      else
-       g->m.add_field(g, x, y, fd_acid, rng(2, 3));
-     }
-    }
+  case AEA_ACIDBALL:
+   if (const auto acidball = g->look_around()) {
+       for (int x = acidball->x - 1; x <= acidball->x + 1; x++) {
+           for (int y = acidball->y - 1; y <= acidball->y + 1; y++) {
+               auto& fd = g->m.field_at(x, y);
+               if (fd.type == fd_acid && fd.density < 3)
+                   fd.density++;
+               else
+                   g->m.add_field(g, x, y, fd_acid, rng(2, 3));
+           }
+       }
    }
-  } break;
+   break;
 
   case AEA_PULSE:
    g->sound(p->pos, 30, "The earth shakes!");

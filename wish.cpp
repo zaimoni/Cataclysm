@@ -287,10 +287,10 @@ void game::monster_wish()
  delwin(w_list);
  refresh_all();
  wrefresh(w_terrain);
- point spawn = look_around();
- if (spawn.x == -1) return;
- tmp.spawn(spawn);
- z.push_back(tmp);
+ if (const auto spawn = look_around()) {
+     tmp.spawn(*spawn);
+     z.push_back(tmp);
+ }
 }
 
 void game::mutation_wish()
