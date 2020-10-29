@@ -1261,6 +1261,8 @@ WINDOW *initscr(void)
 //    WindowCount=0;
 
 	// cf mapdata.h: typical value of SEEX/SEEY is 12 so the console is 25x25 display, 55x25 readout
+	// \todo set default option values for windows; once mainwin is constructed it's too late
+
     mainwin = newwin(VIEW, SCREEN_WIDTH,0,0);
     return mainwin;   //create the 'stdscr' window and return its ref
 };
@@ -1596,14 +1598,14 @@ int wclear(WINDOW *win)
 //gets the max x of a window (the width)
 int getmaxx(WINDOW *win)
 {
-    if (win==0) return mainwin->width;     //StdScr
+    if (!win) return mainwin->width;     //StdScr
     return win->width;
 };
 
 //gets the max y of a window (the height)
 int getmaxy(WINDOW *win)
 {
-    if (win==0) return mainwin->height;     //StdScr
+    if (!win) return mainwin->height;     //StdScr
     return win->height;
 };
 
