@@ -2533,8 +2533,7 @@ bool game::pl_sees(player *p, monster *mon) const
 point game::find_item(item *it) const
 {
  if (u.has_item(it)) return u.pos;
- point ret = m.find_item(it);
- if (ret.x != -1 && ret.y != -1) return ret;
+ if (const auto ret = m.find_item(it)) return *ret;
  for (const auto& _npc : active_npc) {
   for (size_t j = 0; j < _npc.inv.size(); j++) {
    if (it == &(_npc.inv[j])) return _npc.pos;
@@ -2549,9 +2548,8 @@ bool game::find_item(item* it, point& pos) const
 		pos = u.pos;
 		return true;
 	}
-	point ret = m.find_item(it);
-	if (ret.x != -1 && ret.y != -1) {
-		pos = ret;
+    if (const auto ret = m.find_item(it)) {
+		pos = *ret;
 		return true;
 	}
 	for (const auto& _npc : active_npc) {	// \todo? why not _npc.has_item()?
@@ -2568,15 +2566,14 @@ bool game::find_item(item* it, point& pos) const
 void game::remove_item(item *it)
 {
  if (u.remove_item(it)) return;
- point ret = m.find_item(it);
- if (ret.x != -1 && ret.y != -1) {
-  auto& stack = m.i_at(ret);
-  for (int i = 0; i < stack.size(); i++) {
-   if (it == &stack[i]) {
-    m.i_rem(ret, i);
-    return;
-   }
-  }
+ if (const auto ret = m.find_item(it)) {
+     auto& stack = m.i_at(*ret);
+     for (int i = 0; i < stack.size(); i++) {
+         if (it == &stack[i]) {
+             EraseAt(stack, i); // inlined m.i_rem(*ret, i);
+             return;
+         }
+     }
  }
  for (auto& n_pc : active_npc) if (n_pc.remove_item(it)) return;
 }

@@ -1419,19 +1419,15 @@ void map::i_clear(int x, int y)
  i_at(x, y).clear();
 }
 
-point map::find_item(item *it) const
+std::optional<point> map::find_item(item *it) const
 {
  point ret;
  for (ret.x = 0; ret.x < SEEX * my_MAPSIZE; ret.x++) {
   for (ret.y = 0; ret.y < SEEY * my_MAPSIZE; ret.y++) {
-   for(auto& obj : i_at(ret)) {
-    if (it == &obj) return ret;
-   }
+   for(auto& obj : i_at(ret)) if (it == &obj) return ret;
   }
  }
- ret.x = -1;
- ret.y = -1;
- return ret;
+ return std::nullopt;
 }
 
 void map::add_item(int x, int y, const itype* type, int birthday)

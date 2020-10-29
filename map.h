@@ -218,7 +218,7 @@ class map
  void i_clear(const point& pt) { return i_clear(pt.x, pt.y); };
  void i_rem(int x, int y, int index);
  void i_rem(const point& pt, int index) { i_rem(pt.x, pt.y, index); };
- point find_item(item *it) const;
+ std::optional<point> find_item(item *it) const;
  void add_item(int x, int y, const itype* type, int birthday);
  void add_item(const point& pt, const itype* type, int birthday) { add_item(pt.x, pt.y, type, birthday); };
  void add_item(int x, int y, const item& new_item);
