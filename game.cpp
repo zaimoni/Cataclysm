@@ -4044,9 +4044,9 @@ void game::pickup(const point& pt, int min)
   return;
  }
 // Otherwise, we have 2 or more items and should list them, etc.
- std::unique_ptr<WINDOW, curses_full_delete> w_pickup(newwin(SEEY, PANELX - MINIMAP_WIDTH_HEIGHT, 0, VIEW + MINIMAP_WIDTH_HEIGHT));
- std::unique_ptr<WINDOW, curses_full_delete> w_item_info(newwin(SEEY, PANELX - MINIMAP_WIDTH_HEIGHT, 12, VIEW + MINIMAP_WIDTH_HEIGHT));
- constexpr const int maxitems = 9;	 // Number of items to show at one time.
+ std::unique_ptr<WINDOW, curses_full_delete> w_pickup(newwin(VIEW_CENTER, PANELX - MINIMAP_WIDTH_HEIGHT, 0, VIEW + MINIMAP_WIDTH_HEIGHT));
+ std::unique_ptr<WINDOW, curses_full_delete> w_item_info(newwin(VIEW - VIEW_CENTER, PANELX - MINIMAP_WIDTH_HEIGHT, VIEW_CENTER, VIEW + MINIMAP_WIDTH_HEIGHT));
+ const int maxitems = cataclysm::max(VIEW_CENTER - 3, 26);	 // Number of items to show at one time.
  std::vector <item> here = from_veh? veh->parts[veh_part].items : m.i_at(pt);
  std::vector<bool> getitem(here.size(),false);
  int ch = ' ';
@@ -4057,7 +4057,7 @@ void game::pickup(const point& pt, int min)
 // Now print the two lists; those on the ground and about to be added to inv
 // Continue until we hit return or space
  do {
-  for (int i = 1; i < SEEY; i++) {
+  for (int i = 1; i < VIEW_CENTER; i++) {
    for (int j = 0; j < PANELX - MINIMAP_WIDTH_HEIGHT; j++)
     mvwaddch(w_pickup.get(), i, j, ' ');
   }
@@ -4121,10 +4121,8 @@ void game::pickup(const point& pt, int min)
      wprintz(w_pickup.get(), it_color, " (%d)", here[cur_it].charges);
    }
   }
-  if (start > 0)
-   mvwprintw(w_pickup.get(), maxitems + 2, 0, "< Go Back");
-  if (cur_it < here.size())
-   mvwprintw(w_pickup.get(), maxitems + 2, 12, "> More items");
+  if (start > 0) mvwprintw(w_pickup.get(), maxitems + 2, 0, "< Go Back");
+  if (cur_it < here.size()) mvwprintw(w_pickup.get(), maxitems + 2, sizeof("< Go Back")+2, "> More items"); // C++20: constexpr strlen?
   if (update) {		// Update weight & volume information
    update = false;
    mvwprintw(w_pickup.get(), 0,  7, "                           ");
