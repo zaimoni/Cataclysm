@@ -175,8 +175,7 @@ class game
   char inv(std::string title = "Inventory:");
   std::vector<item> multidrop();
   faction* list_factions(const char* title = "FACTIONS:");
-  point find_item(item *it) const;
-  bool find_item(item* it, point& pos) const;
+  std::optional<point> find_item(item *it) const;
   void remove_item(item *it);
 
   signed char temperature;              // The air temperature

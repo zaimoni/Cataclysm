@@ -2530,37 +2530,16 @@ bool game::pl_sees(player *p, monster *mon) const
  return m.sees(p->pos, mon->pos, p->sight_range(light_level()));
 }
 
-point game::find_item(item *it) const
+std::optional<point> game::find_item(item *it) const
 {
  if (u.has_item(it)) return u.pos;
- if (const auto ret = m.find_item(it)) return *ret;
+ if (const auto ret = m.find_item(it)) return ret;
  for (const auto& _npc : active_npc) {
   for (size_t j = 0; j < _npc.inv.size(); j++) {
    if (it == &(_npc.inv[j])) return _npc.pos;
   }
  }
- throw std::logic_error("should have called allow-fail game::find_item?");
-}
-
-bool game::find_item(item* it, point& pos) const
-{
-	if (u.has_item(it)) {
-		pos = u.pos;
-		return true;
-	}
-    if (const auto ret = m.find_item(it)) {
-		pos = *ret;
-		return true;
-	}
-	for (const auto& _npc : active_npc) {	// \todo? why not _npc.has_item()?
-		for (size_t j = 0; j < _npc.inv.size(); j++) {
-			if (it == &(_npc.inv[j])) {
-				pos = _npc.pos;
-				return true;
-			}
-		}
-	}
-	return false;
+ return std::nullopt;
 }
 
 void game::remove_item(item *it)
