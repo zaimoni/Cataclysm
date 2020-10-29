@@ -4922,28 +4922,27 @@ void game::chat()
  for (auto& _npc : active_npc) {
 	 if (u_see(_npc.pos) && rl_dist(u.pos, _npc.pos) <= 24) available.push_back(&_npc);
  }
- if (available.empty()) {
-  messages.add("There's no-one close enough to talk to.");
+ const size_t ub = available.size();
+ if (0 >= ub) {
+  messages.add("There's no-one close enough to talk to.");  // \todo? Maybe we should get "talk to yourself" if no in-bubble NPCs are visible
   return;
- } else if (available.size() == 1)
+ } else if (1 == ub)
   available[0]->talk_to_u(this);
  else {
-  WINDOW *w = newwin(available.size() + 3, 40, 10, 20);    // \todo implied maximum NPCs VIEW-3
+  WINDOW *w = newwin(ub + 3, SCREEN_WIDTH / 2, cataclysm::max(0, VIEW - (ub + 3)) /2, SCREEN_WIDTH / 4);    // \todo implied maximum NPCs VIEW-3
   wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
              LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
-  for (int i = 0; i < available.size(); i++)
+  for (int i = 0; i < ub; i++)
    mvwprintz(w, i + 1, 1, c_white, "%d: %s", i + 1, available[i]->name.c_str());
-  mvwprintz(w, available.size() + 1, 1, c_white, "%d: Cancel",
-            available.size() + 1);
+  mvwprintz(w, ub + 1, 1, c_white, "%d: Cancel", ub + 1);
   wrefresh(w);
   int ch;
   do {
    ch = getch();
-  } while (ch < '1' || ch > '1' + available.size());
-  ch -= '1';
-  if (ch == available.size())
-   return;
+  } while (ch < '1' || ch > '1' + ub);
   delwin(w);
+  ch -= '1';
+  if (ch == ub) return;
   available[ch]->talk_to_u(this);
  }
  u.moves -= 100;
@@ -6036,7 +6035,7 @@ void game::display_scent()
  getch();
 }
 
-void intro()
+void intro() // includes screen size check \todo change target for resizable screen
 {
  int maxx, maxy;
  getmaxyx(stdscr, maxy, maxx);
