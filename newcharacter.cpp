@@ -28,7 +28,9 @@ int set_traits(WINDOW* w, player *u, int &points);
 int set_skills(WINDOW* w, player *u, int &points);
 int set_description(WINDOW* w, player *u, int &points);
 
-int random_skill();
+static int random_good_trait() { return rng(1, PF_SPLIT - 1); }
+static int random_bad_trait() { return rng(PF_SPLIT + 1, PF_MAX - 1); }
+static int random_skill() { return rng(1, num_skill_types - 1); }
 
 static int calc_HP(int strength, bool tough)
 {
@@ -770,19 +772,4 @@ Points left: %d    You must use the rest of your points!", points);
    }
   }
  } while (true);
-}
-
-int player::random_good_trait()
-{
- return rng(1, PF_SPLIT - 1);
-}
-
-int player::random_bad_trait()
-{
- return rng(PF_SPLIT + 1, PF_MAX - 1);
-}
-
-int random_skill()
-{
- return rng(1, num_skill_types - 1);
 }

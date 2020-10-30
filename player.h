@@ -45,8 +45,6 @@ public:
 
 // newcharacter.cpp 
  bool create(game *g, character_type type, std::string tempname = "");
- int  random_good_trait();
- int  random_bad_trait ();
  void normalize();	// Starting set up of HP
 // </newcharacter.cpp>
 
