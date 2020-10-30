@@ -51,11 +51,13 @@ bool player::create(game *g, character_type type, std::string tempname)
     dex_max = rng(6, 12);
     int_max = rng(6, 12);
     per_max = rng(6, 12);
-    points = points - str_max - dex_max - int_max - per_max;
-    if (str_max > HIGH_STAT) points -= (str_max - HIGH_STAT);
-    if (dex_max > HIGH_STAT) points -= (dex_max - HIGH_STAT);
-    if (int_max > HIGH_STAT) points -= (int_max - HIGH_STAT);
-    if (per_max > HIGH_STAT) points -= (per_max - HIGH_STAT);
+    points -= str_max + dex_max + int_max + per_max;
+    if constexpr (12 > HIGH_STAT) {
+        if (str_max > HIGH_STAT) points -= (str_max - HIGH_STAT);
+        if (dex_max > HIGH_STAT) points -= (dex_max - HIGH_STAT);
+        if (int_max > HIGH_STAT) points -= (int_max - HIGH_STAT);
+        if (per_max > HIGH_STAT) points -= (per_max - HIGH_STAT);
+    }
  
     int num_gtraits = 0, num_btraits = 0, rn, tries;
     while (points < 0 || rng(-3, 20) > points) {
