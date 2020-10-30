@@ -938,16 +938,21 @@ int item::pick_reload_ammo(const player &u, bool interactive) const
   am = u.have_ammo(ammo_type());
  }
 
- int index = -1;
+ const size_t ub = am.size();
+ if (0 >= ub) return -1; // arguably an invariant violation
 
- if (am.size() > 1 && interactive) {// More than one option; list 'em and pick
-  WINDOW* w_ammo = newwin(am.size() + 1, SCREEN_WIDTH, 0, 0);
+ int index = -1;
+ if (1 == ub || !interactive) index = am[0];
+ else {// More than one option; list 'em and pick
   if (charges == 0) {
+   // \todo? could get weird above lower-case z
+   WINDOW* w_ammo = newwin(am.size() + 1, SCREEN_WIDTH, 0, 0);
    int ch;
    clear();
+   // \todo? likely want extra width before the damage column
    mvwprintw(w_ammo, 0, 0, "\
 Choose ammo type:         Damage     Armor Pierce     Range     Accuracy");
-   for (int i = 0; i < am.size(); i++) {
+   for (int i = 0; i < ub; i++) {
     const it_ammo* ammo_type = dynamic_cast<const it_ammo*>(u.inv[am[i]].type);
     mvwaddch(w_ammo, i + 1, 1, i + 'a');
     mvwprintw(w_ammo, i + 1, 3, "%s (%d)", u.inv[am[i]].tname().c_str(),
@@ -960,11 +965,11 @@ Choose ammo type:         Damage     Armor Pierce     Range     Accuracy");
    refresh();
    wrefresh(w_ammo);
    do ch = getch();
-   while ((ch < 'a' || ch - 'a' > am.size() - 1) && ch != ' ' && ch != 27);
+   while ((ch < 'a' || ch - 'a' > ub - 1) && ch != ' ' && ch != KEY_ESCAPE);
    werase(w_ammo);
    delwin(w_ammo);
    erase();
-   index = (ch == ' ' || ch == 27) ? -1 : am[ch - 'a'];
+   index = (ch == ' ' || ch == KEY_ESCAPE) ? -1 : am[ch - 'a'];
   } else {
    int smallest = 500;
    for (int i = 0; i < am.size(); i++) {
@@ -975,8 +980,7 @@ Choose ammo type:         Damage     Armor Pierce     Range     Accuracy");
     }
    }
   }
- } else if (am.size() == 1 || !interactive)
-  index = am[0];
+ }
  return index;
 }
 
