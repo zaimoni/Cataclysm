@@ -23,8 +23,6 @@
 #define HIGH_STAT 14 // The point after which stats cost double
 #define MAX_TRAIT_POINTS 12 // How many points from traits
 
-void draw_tabs(WINDOW* w);
-
 int set_stats(WINDOW* w, player *u, int &points);
 int set_traits(WINDOW* w, player *u, int &points);
 int set_skills(WINDOW* w, player *u, int &points);
@@ -136,9 +134,11 @@ bool player::create(game *g, character_type type, std::string tempname)
  } else
   points = 6;
 
+ static constexpr const char* labels[] = {"STATS", "TRAITS", "SKILLS", "DESCRIPTION", nullptr};
+
  do {
   werase(w);
-  draw_tabs(w);
+  draw_tabs(w, tab, labels); // C:Whales color scheme c_ltgray, h_ltgray
   wrefresh(w);
   switch (tab) {
    case 0: tab += set_stats      (w, this, points); break;
@@ -146,11 +146,10 @@ bool player::create(game *g, character_type type, std::string tempname)
    case 2: tab += set_skills     (w, this, points); break;
    case 3: tab += set_description(w, this, points); break;
   }
- } while (tab >= 0 && tab < 4);
+ } while (0 <= tab && (std::end(labels) - std::begin(labels) - 1) > tab);
  delwin(w);
 
- if (tab < 0)
-  return false;
+ if (0 > tab) return false;
  
  // Character is finalized.  Now just set up HP, &c
  for (int i = 0; i < num_hp_parts; i++) {
@@ -221,62 +220,14 @@ End of cheatery */
  return true;
 }
 
-void draw_tabs(WINDOW* w)
-{
- for (int i = 0; i < 16; i++) {
-  if (i < 9)
-   mvwputch(w, 0, i +  5, c_ltgray, LINE_OXOX);
-  if (i < 10) {
-   mvwputch(w, 0, i + 22, c_ltgray, LINE_OXOX);
-   mvwputch(w, 0, i + 40, c_ltgray, LINE_OXOX);
-  }
-  mvwputch(w, 0, i + 57, c_ltgray, LINE_OXOX);
- }
- mvwputch(w, 0, 4, c_ltgray, LINE_OXXO);
- mvwputch(w, 0,21, c_ltgray, LINE_OXXO);
- mvwputch(w, 0,39, c_ltgray, LINE_OXXO);
- mvwputch(w, 0,57, c_ltgray, LINE_OXXO);
-
- mvwputch(w, 0,14, c_ltgray, LINE_OOXX);
- mvwputch(w, 0,32, c_ltgray, LINE_OOXX);
- mvwputch(w, 0,50, c_ltgray, LINE_OOXX);
- mvwputch(w, 0,73, c_ltgray, LINE_OOXX);
-
- mvwprintz(w, 1, 4, c_ltgray, "\
-   STATS            TRAITS            SKILLS            DESCRIPTION   ");
-
- mvwputch(w, 1, 4, c_ltgray, LINE_XOXO);
- mvwputch(w, 1,14, c_ltgray, LINE_XOXO);
- mvwputch(w, 1,21, c_ltgray, LINE_XOXO);
- mvwputch(w, 1,32, c_ltgray, LINE_XOXO);
- mvwputch(w, 1,39, c_ltgray, LINE_XOXO);
- mvwputch(w, 1,50, c_ltgray, LINE_XOXO);
- mvwputch(w, 1,57, c_ltgray, LINE_XOXO);
- mvwputch(w, 1,73, c_ltgray, LINE_XOXO);
-}
-
 int set_stats(WINDOW* w, player *u, int &points)
 {
  unsigned char sel = 1;
-// Draw horizontal lines, with a gap for the active tab
+// Draw horizontal lines
  for (int i = 0; i < SCREEN_WIDTH; i++) {
-  if (i < 4 || i > 14)
-   mvwputch(w,  2, i, c_ltgray, LINE_OXOX);
   mvwputch(w,  4, i, c_ltgray, LINE_OXOX);
   mvwputch(w, 21, i, c_ltgray, LINE_OXOX);
  }
-// Attaching lines for tabs
- mvwputch(w, 1,  2, h_ltgray, '<');
- mvwputch(w, 1, 16, h_ltgray, '>');
- mvwputch(w, 2,  4, c_ltgray, LINE_XOOX);
- mvwputch(w, 2, 14, c_ltgray, LINE_XXOO);
- mvwputch(w, 2, 21, c_ltgray, LINE_XXOX);
- mvwputch(w, 2, 32, c_ltgray, LINE_XXOX);
- mvwputch(w, 2, 39, c_ltgray, LINE_XXOX);
- mvwputch(w, 2, 50, c_ltgray, LINE_XXOX);
- mvwputch(w, 2, 57, c_ltgray, LINE_XXOX);
- mvwputch(w, 2, 73, c_ltgray, LINE_XXOX);
- mvwprintz(w, 1, 5, h_ltgray, "  STATS  ");
 
  mvwprintz(w, 11, 0, c_ltgray, "\
    j/k, 8/2, or arrows select\n\
@@ -453,25 +404,11 @@ int set_traits(WINDOW* w, player *u, int &points)
   if (u->has_trait(i))
    num_bad += abs(mutation_branch::traits[i].points);
  }
-// Draw horizontal lines, with a gap for the active tab
+// Draw horizontal lines
  for (int i = 0; i < SCREEN_WIDTH; i++) {
-  if (i < 21 || i > 32)
-   mvwputch(w,  2, i, c_ltgray, LINE_OXOX);
   mvwputch(w,  4, i, c_ltgray, LINE_OXOX);
   mvwputch(w, 21, i, c_ltgray, LINE_OXOX);
  }
-// Attaching lines for tabs
- mvwputch(w, 1,19, h_ltgray, '<');
- mvwputch(w, 1,34, h_ltgray, '>');
- mvwputch(w, 2, 4, c_ltgray, LINE_XXOX);
- mvwputch(w, 2,14, c_ltgray, LINE_XXOX);
- mvwputch(w, 2,21, c_ltgray, LINE_XOOX);
- mvwputch(w, 2,32, c_ltgray, LINE_XXOO);
- mvwputch(w, 2,39, c_ltgray, LINE_XXOX);
- mvwputch(w, 2,50, c_ltgray, LINE_XXOX);
- mvwputch(w, 2,57, c_ltgray, LINE_XXOX);
- mvwputch(w, 2,73, c_ltgray, LINE_XXOX);
- mvwprintz(w, 1,22, h_ltgray, "  TRAITS  ");
 
  for (int i = 0; i < 16; i++) {
   mvwprintz(w, 5 + i, 40, c_dkgray, "                                   ");
@@ -485,8 +422,7 @@ int set_traits(WINDOW* w, player *u, int &points)
 
  int cur_adv = 1, cur_dis = PF_SPLIT + 1, cur_trait, traitmin, traitmax, xoff;
  nc_color col_on, col_off, hi_on, hi_off;
- bool using_adv = true;	// True if we're selecting advantages, false if we're
-			// selecting disadvantages
+ bool using_adv = true;	// True if we're selecting advantages, false if we're selecting disadvantages
 
  do {
   mvwprintz(w,  3,  2, c_ltgray, "Points left: %d  ", points);
@@ -621,25 +557,11 @@ int set_traits(WINDOW* w, player *u, int &points)
 
 int set_skills(WINDOW* w, player *u, int &points)
 {
-// Draw horizontal lines, with a gap for the active tab
+// Draw horizontal lines
  for (int i = 0; i < SCREEN_WIDTH; i++) {
-  if (i < 39 || i > 50)
-   mvwputch(w,  2, i, c_ltgray, LINE_OXOX);
   mvwputch(w,  4, i, c_ltgray, LINE_OXOX);
   mvwputch(w, 21, i, c_ltgray, LINE_OXOX);
  }
-// Attaching lines for tabs
- mvwputch(w, 1,37, h_ltgray, '<');
- mvwputch(w, 1,52, h_ltgray, '>');
- mvwputch(w, 2, 4, c_ltgray, LINE_XXOX);
- mvwputch(w, 2,14, c_ltgray, LINE_XXOX);
- mvwputch(w, 2,21, c_ltgray, LINE_XXOX);
- mvwputch(w, 2,32, c_ltgray, LINE_XXOX);
- mvwputch(w, 2,39, c_ltgray, LINE_XOOX);
- mvwputch(w, 2,50, c_ltgray, LINE_XXOO);
- mvwputch(w, 2,57, c_ltgray, LINE_XXOX);
- mvwputch(w, 2,73, c_ltgray, LINE_XXOX);
- mvwprintz(w,1,40, h_ltgray, "  SKILLS  ");
  
  static const char* const CLEAR_LINE = "                                             ";
  static const char* const CLEAR_WHOLE_LINE = "                                                                             ";
@@ -742,25 +664,12 @@ void save_template(const player& u)
 
 int set_description(WINDOW* w, player *u, int &points)
 {
-// Draw horizontal lines, with a gap for the active tab
+// Draw horizontal lines
  for (int i = 0; i < SCREEN_WIDTH; i++) {
-  if (i < 57 || i > 73)
-   mvwputch(w,  2, i, c_ltgray, LINE_OXOX);
   mvwputch(w,  4, i, c_ltgray, LINE_OXOX);
   mvwputch(w, 21, i, c_ltgray, LINE_OXOX);
  }
-// Attaching lines for tabs
- mvwputch(w, 1,55, h_ltgray, '<');
- mvwputch(w, 1,75, h_ltgray, '>');
- mvwputch(w, 2, 4, c_ltgray, LINE_XXOX);
- mvwputch(w, 2,14, c_ltgray, LINE_XXOX);
- mvwputch(w, 2,21, c_ltgray, LINE_XXOX);
- mvwputch(w, 2,32, c_ltgray, LINE_XXOX);
- mvwputch(w, 2,39, c_ltgray, LINE_XXOX);
- mvwputch(w, 2,50, c_ltgray, LINE_XXOX);
- mvwputch(w, 2,57, c_ltgray, LINE_XOOX);
- mvwputch(w, 2,73, c_ltgray, LINE_XXOO);
- mvwprintz(w,1,58, h_ltgray, "  DESCRIPTION  ");
+
  mvwprintz(w,  3, 2, c_ltgray, "Points left: %d  ", points);
 
  mvwprintz(w, 6, 2, c_ltgray, "\
