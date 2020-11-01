@@ -145,6 +145,15 @@ void mvwputch_hi(WINDOW* w, int y, int x, nc_color FG, long ch)
  wattroff(w, HC);
 }
 
+void hline(WINDOW* w, int y, nc_color FG, long ch, int x0, int x1)
+{
+    if (0 > x0) x0 = 0;
+    if (0 > x1) x1 = getmaxx(w);
+    wattron(w, FG);
+    for (int x = x0; x < x1; x++) mvwaddch(w, y, x, ch);
+    wattroff(w, FG);
+}
+
 #ifndef NDEBUG
 static void reject_unescaped_percent(const std::string& src)
 {

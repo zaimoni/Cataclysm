@@ -139,9 +139,7 @@ bool player::create(game *g, character_type type, std::string tempname)
  static constexpr const char* labels[] = {"STATS", "TRAITS", "SKILLS", "DESCRIPTION", nullptr};
 
  do {
-  werase(w);
   draw_tabs(w, tab, labels); // C:Whales color scheme c_ltgray, h_ltgray
-  wrefresh(w);
   switch (tab) {
    case 0: tab += set_stats      (w, this, points); break;
    case 1: tab += set_traits     (w, this, points); break;
