@@ -3,6 +3,7 @@
 
 keymap<action_id> keys;
 
+/// <summary>mostly translates arrow keys to vi-keys</summary>
 int input()
 {
  int ch = getch();

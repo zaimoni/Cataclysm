@@ -224,10 +224,8 @@ int set_stats(WINDOW* w, player *u, int &points)
 {
  unsigned char sel = 1;
 // Draw horizontal lines
- for (int i = 0; i < SCREEN_WIDTH; i++) {
-  mvwputch(w,  4, i, c_ltgray, LINE_OXOX);
-  mvwputch(w, 21, i, c_ltgray, LINE_OXOX);
- }
+ hline(w, TABBED_HEADER_HEIGHT + 1, c_ltgray, LINE_OXOX);
+ hline(w, 21, c_ltgray, LINE_OXOX);
 
  mvwprintz(w, 11, 0, c_ltgray, "\
    j/k, 8/2, or arrows select\n\
@@ -240,155 +238,130 @@ int set_stats(WINDOW* w, player *u, int &points)
    > Takes you to the next tab.\n\
    < Returns you to the main menu.");
 
+ static constexpr const int col2 = 2 + sizeof("Points left: %d  ")+13; // C:Whales: 33
+ static constexpr const int flush_rows[] = { TABBED_HEADER_HEIGHT , 6, 7, 8, 9 };
+ static constexpr const int flush_rows_col2[] = { 10, 11 }; // 11 collides with legend, above
+
+ // these two may need to be exposed
+ static constexpr const int MIN_STAT = 4;
+ static constexpr const int MAX_STAT = 20;
+
+ // do not want capturing lambdas here (dynamic RAM allocation unacceptable)
+ static auto dec_stat = [](int& dest, decltype(points) pts) {
+     if (MIN_STAT < dest) {
+         pts += (dest > HIGH_STAT) ? 2 : 1;
+         dest--;
+     }
+ };
+ static auto inc_stat = [](int& dest, decltype(points) pts) {
+     const int cost = (dest > HIGH_STAT) ? 2 : 1;
+     if (MAX_STAT > dest && cost <= pts) {
+         pts -= cost;
+         dest++;
+     }
+ };
+
  do {
-  mvwprintz(w,  3, 2, c_ltgray, "Points left: %d  ", points);
+  // This is I/O; only need to conserve refresh calls, not CPU 2020-10-31 zaimoni
+  for (auto y : flush_rows) hline(w, TABBED_HEADER_HEIGHT, c_black, 'x', 2);
+  for (auto y : flush_rows_col2) hline(w, TABBED_HEADER_HEIGHT, c_black, 'x', col2);
+  mvwprintz(w, TABBED_HEADER_HEIGHT, 2, c_ltgray, "Points left: %d", points);
+
+  // draw stats
+  mvwprintz(w, 6, 2, (6 == 5 + sel) ? COL_STAT_ACT : c_ltgray, "Strength:     %d", u->str_max);
+  mvwprintz(w, 7, 2, (7 == 5 + sel) ? COL_STAT_ACT : c_ltgray, "Dexterity:    %d", u->dex_max);
+  mvwprintz(w, 8, 2, (8 == 5 + sel) ? COL_STAT_ACT : c_ltgray, "Intelligence: %d", u->int_max);
+  mvwprintz(w, 9, 2, (9 == 5 + sel) ? COL_STAT_ACT : c_ltgray, "Perception:   %d", u->per_max);
+
   switch (sel) {
   case 1:
-   if (u->str_max >= HIGH_STAT)
-    mvwprintz(w, 3, 33, c_ltred, "Increasing Str further costs 2 points.");
-   else
-    mvwprintz(w, 3, 33, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-   mvwprintz(w, 6,  2, COL_STAT_ACT, "Strength:     %d  ", u->str_max);
-   mvwprintz(w, 7,  2, c_ltgray,     "Dexterity:    %d  ", u->dex_max);
-   mvwprintz(w, 8,  2, c_ltgray,     "Intelligence: %d  ", u->int_max);
-   mvwprintz(w, 9,  2, c_ltgray,     "Perception:   %d  ", u->per_max);
-   mvwprintz(w, 6, 33, COL_STAT_ACT, "Base HP: %d                                 ",
-             calc_HP(u->str_max, u->has_trait(PF_TOUGH)));
-   mvwprintz(w, 7, 33, COL_STAT_ACT, "Carry weight: %d lbs                        ",
-             u->weight_capacity(false) / 4);
-   mvwprintz(w, 8, 33, COL_STAT_ACT, "Melee damage: %d                            ",
-             u->base_damage(false));
-   mvwprintz(w, 9, 33, COL_STAT_ACT, "  Strength also makes you more resistant to ");
-   mvwprintz(w,10, 33, COL_STAT_ACT, "many diseases and poisons, and makes actions");
-   mvwprintz(w,11, 33, COL_STAT_ACT, "which require brute force more effective.   ");
+   if (u->str_max >= HIGH_STAT) mvwprintz(w, TABBED_HEADER_HEIGHT, col2, c_ltred, "Increasing Str further costs 2 points.");
+   mvwprintz(w, 6, col2, COL_STAT_ACT, "Base HP: %d", calc_HP(u->str_max, u->has_trait(PF_TOUGH)));
+   mvwprintz(w, 7, col2, COL_STAT_ACT, "Carry weight: %d lbs", u->weight_capacity(false) / 4);
+   mvwprintz(w, 8, col2, COL_STAT_ACT, "Melee damage: %d", u->base_damage(false));
+   mvwprintz(w, 9, col2, COL_STAT_ACT, "  Strength also makes you more resistant to");
+   mvwprintz(w,10, col2, COL_STAT_ACT, "many diseases and poisons, and makes actions");
+   mvwprintz(w,11, col2, COL_STAT_ACT, "which require brute force more effective.");
    break;
 
   case 2:
-   if (u->dex_max >= HIGH_STAT)
-    mvwprintz(w, 3, 33, c_ltred, "Increasing Dex further costs 2 points.");
-   else
-    mvwprintz(w, 3, 33, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-   mvwprintz(w, 6,  2, c_ltgray,     "Strength:     %d  ", u->str_max);
-   mvwprintz(w, 7,  2, COL_STAT_ACT, "Dexterity:    %d  ", u->dex_max);
-   mvwprintz(w, 8,  2, c_ltgray,     "Intelligence: %d  ", u->int_max);
-   mvwprintz(w, 9,  2, c_ltgray,     "Perception:   %d  ", u->per_max);
-   mvwprintz(w, 6, 33, COL_STAT_ACT, "Melee to-hit bonus: +%d                      ",
-             u->base_to_hit(false));
-   mvwprintz(w, 7, 33, COL_STAT_ACT, "                                            ");
-   mvwprintz(w, 7, 33, COL_STAT_ACT, "Ranged %s: %s%d",
-             (u->ranged_dex_mod(false) <= 0 ? "bonus" : "penalty"),
-             (u->ranged_dex_mod(false) <= 0 ? "+" : "-"),
-             abs(u->ranged_dex_mod(false)));
-   mvwprintz(w, 8, 33, COL_STAT_ACT, "                                            ");
-   mvwprintz(w, 8, 33, COL_STAT_ACT, "Throwing %s: %s%d",
-             (u->throw_dex_mod(false) <= 0 ? "bonus" : "penalty"),
-             (u->throw_dex_mod(false) <= 0 ? "+" : "-"),
-             abs(u->throw_dex_mod(false)));
-   mvwprintz(w, 9, 33, COL_STAT_ACT, "  Dexterity also enhances many actions which");
-   mvwprintz(w,10, 33, COL_STAT_ACT, "require finesse.                            ");
-   mvwprintz(w,11, 33, COL_STAT_ACT, "                                            ");
+   if (u->dex_max >= HIGH_STAT) mvwprintz(w, TABBED_HEADER_HEIGHT, col2, c_ltred, "Increasing Dex further costs 2 points.");
+   mvwprintz(w, 6, col2, COL_STAT_ACT, "Melee to-hit bonus: +%d", u->base_to_hit(false));
+   {
+   int dex_mod = u->ranged_dex_mod(false);
+   mvwprintz(w, 7, col2, COL_STAT_ACT, "Ranged %s: %s%d", (0 >= dex_mod ? "bonus" : "penalty"), (0 >= dex_mod ? "+" : "-"), abs(dex_mod));
+   dex_mod = u->throw_dex_mod(false);
+   mvwprintz(w, 8, col2, COL_STAT_ACT, "Throwing %s: %s%d", (0 >= dex_mod ? "bonus" : "penalty"), (0 >= dex_mod ? "+" : "-"), abs(dex_mod));
+   }
+   mvwprintz(w, 9, col2, COL_STAT_ACT, "  Dexterity also enhances many actions which");
+   mvwprintz(w,10, col2, COL_STAT_ACT, "require finesse.");
    break;
 
   case 3:
-   if (u->int_max >= HIGH_STAT)
-    mvwprintz(w, 3, 33, c_ltred, "Increasing Int further costs 2 points.");
-   else
-    mvwprintz(w, 3, 33, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-   mvwprintz(w, 6,  2, c_ltgray,     "Strength:     %d  ", u->str_max);
-   mvwprintz(w, 7,  2, c_ltgray,     "Dexterity:    %d  ", u->dex_max);
-   mvwprintz(w, 8,  2, COL_STAT_ACT, "Intelligence: %d  ", u->int_max);
-   mvwprintz(w, 9,  2, c_ltgray,     "Perception:   %d  ", u->per_max);
-   mvwprintz(w, 6, 33, COL_STAT_ACT, "Skill comprehension: %d%%                     ",
-             u->comprehension_percent(sk_null, false));
-   mvwprintz(w, 7, 33, COL_STAT_ACT, "Read times: %d%%                              ",
-             u->read_speed(false));
-   mvwprintz(w, 8, 33, COL_STAT_ACT, "  Intelligence is also used when crafting,  ");
-   mvwprintz(w, 9, 33, COL_STAT_ACT, "installing bionics, and interacting with    ");
-   mvwprintz(w,10, 33, COL_STAT_ACT, "NPCs.                                       ");
-   mvwprintz(w,11, 33, COL_STAT_ACT, "                                            ");
+   if (u->int_max >= HIGH_STAT) mvwprintz(w, TABBED_HEADER_HEIGHT, col2, c_ltred, "Increasing Int further costs 2 points.");
+   mvwprintz(w, 6, col2, COL_STAT_ACT, "Skill comprehension: %d%%", u->comprehension_percent(sk_null, false));
+   mvwprintz(w, 7, col2, COL_STAT_ACT, "Read times: %d%%", u->read_speed(false));
+   mvwprintz(w, 8, col2, COL_STAT_ACT, "  Intelligence is also used when crafting,");
+   mvwprintz(w, 9, col2, COL_STAT_ACT, "installing bionics, and interacting with");
+   mvwprintz(w,10, col2, COL_STAT_ACT, "NPCs.");
    break;
 
   case 4:
-   if (u->per_max >= HIGH_STAT)
-    mvwprintz(w, 3, 33, c_ltred, "Increasing Per further costs 2 points.");
-   else
-    mvwprintz(w, 3, 33, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-   mvwprintz(w, 6,  2, c_ltgray,     "Strength:     %d  ", u->str_max);
-   mvwprintz(w, 7,  2, c_ltgray,     "Dexterity:    %d  ", u->dex_max);
-   mvwprintz(w, 8,  2, c_ltgray,     "Intelligence: %d  ", u->int_max);
-   mvwprintz(w, 9,  2, COL_STAT_ACT, "Perception:   %d  ", u->per_max);
-   mvwprintz(w, 6, 33, COL_STAT_ACT, "                                            ");
-   mvwprintz(w, 6, 33, COL_STAT_ACT, "Ranged %s: %s%d",
-             (u->ranged_per_mod(false) <= 0 ? "bonus" : "penalty"),
-             (u->ranged_per_mod(false) <= 0 ? "+" : "-"),
-             abs(u->ranged_per_mod(false)));
-   mvwprintz(w, 7, 33, COL_STAT_ACT, "  Perception is also used for detecting     ");
-   mvwprintz(w, 8, 33, COL_STAT_ACT, "traps and other things of interest.         ");
-   mvwprintz(w, 9, 33, COL_STAT_ACT, "                                            ");
-   mvwprintz(w,10, 33, COL_STAT_ACT, "                                            ");
-   mvwprintz(w,11, 33, COL_STAT_ACT, "                                            ");
+   if (u->per_max >= HIGH_STAT) mvwprintz(w, TABBED_HEADER_HEIGHT, col2, c_ltred, "Increasing Per further costs 2 points.");
+   {
+   int per_mod = u->ranged_per_mod(false);
+   mvwprintz(w, 6, col2, COL_STAT_ACT, "Ranged %s: %s%d", (0 >= per_mod ? "bonus" : "penalty"), (0 >= per_mod ? "+" : "-"), abs(per_mod));
+   }
+   mvwprintz(w, 7, col2, COL_STAT_ACT, "  Perception is also used for detecting");
+   mvwprintz(w, 8, col2, COL_STAT_ACT, "traps and other things of interest.");
    break;
   }
  
   wrefresh(w);
-  int ch = input();
-  if (ch == 'j' && sel < 4)
-   sel++;
-  if (ch == 'k' && sel > 1)
-   sel--;
-  if (ch == 'h') {
-   if (sel == 1 && u->str_max > 4) {
-    if (u->str_max > HIGH_STAT)
-     points++;
-    u->str_max--;
-    points++;
-   } else if (sel == 2 && u->dex_max > 4) {
-    if (u->dex_max > HIGH_STAT)
-     points++;
-    u->dex_max--;
-    points++;
-   } else if (sel == 3 && u->int_max > 4) {
-    if (u->int_max > HIGH_STAT)
-     points++;
-    u->int_max--;
-    points++;
-   } else if (sel == 4 && u->per_max > 4) {
-    if (u->per_max > HIGH_STAT)
-     points++;
-    u->per_max--;
-    points++;
-   }
+  switch (int ch = input()) {
+  case 'j':
+      if (4 > sel) sel++;
+      break;
+  case 'k':
+      if (1 < sel) sel--;
+      break;
+  case 'h':
+      switch (sel) {
+      case 1:
+          dec_stat(u->str_max, points);
+          break;
+      case 2:
+          dec_stat(u->dex_max, points);
+          break;
+      case 3:
+          dec_stat(u->int_max, points);
+          break;
+      case 4:
+          dec_stat(u->per_max, points);
+          break;
+      }
+      break;
+  case 'l':
+      switch (sel) {
+      case 1:
+          inc_stat(u->str_max, points);
+          break;
+      case 2:
+          inc_stat(u->dex_max, points);
+          break;
+      case 3:
+          inc_stat(u->int_max, points);
+          break;
+      case 4:
+          inc_stat(u->per_max, points);
+          break;
+      }
+      break;
+  case '<':
+      if (query_yn("Return to main menu?")) return -1;
+      break;
+  case '>':  return 1;
   }
-  if (ch == 'l' && points > 0) {
-   if (sel == 1 && u->str_max < 20 && (u->str_max < HIGH_STAT || points > 1)) {
-    points--;
-    if (u->str_max >= HIGH_STAT)
-     points--;
-    u->str_max++;
-   } else if (sel == 2 && u->dex_max < 20 &&
-              (u->dex_max < HIGH_STAT || points > 1)) {
-    points--;
-    if (u->dex_max >= HIGH_STAT)
-     points--;
-    u->dex_max++;
-   } else if (sel == 3 && u->int_max < 20 &&
-              (u->int_max < HIGH_STAT || points > 1)) {
-    points--;
-    if (u->int_max >= HIGH_STAT)
-     points--;
-    u->int_max++;
-   } else if (sel == 4 && u->per_max < 20 &&
-              (u->per_max < HIGH_STAT || points > 1)) {
-    points--;
-    if (u->per_max >= HIGH_STAT)
-     points--;
-    u->per_max++;
-   }
-  }
-  if (ch == '<' && query_yn("Return to main menu?"))
-   return -1;
-  if (ch == '>')
-   return 1;
  } while (true);
 }
 
