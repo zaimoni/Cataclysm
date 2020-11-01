@@ -12,12 +12,6 @@
 
 // Colors used in this file: (Most else defaults to c_ltgray)
 #define COL_STAT_ACT		c_ltred    // Selected stat
-#define COL_TR_GOOD		c_green    // Good trait descriptive text
-#define COL_TR_GOOD_OFF		c_ltgreen  // A toggled-off good trait
-#define COL_TR_GOOD_ON		c_green    // A toggled-on good trait
-#define COL_TR_BAD		c_red      // Bad trait descriptive text
-#define COL_TR_BAD_OFF		c_ltred    // A toggled-off bad trait
-#define COL_TR_BAD_ON		c_red      // A toggled-on bad trait
 #define COL_SKILL_USED		c_green    // A skill with at least one point
 
 #define HIGH_STAT 14 // The point after which stats cost double
@@ -377,34 +371,68 @@ int set_traits(WINDOW* w, player *u, int &points)
   if (u->has_trait(i))
    num_bad += abs(mutation_branch::traits[i].points);
  }
-// Draw horizontal lines
- for (int i = 0; i < SCREEN_WIDTH; i++) {
-  mvwputch(w,  4, i, c_ltgray, LINE_OXOX);
-  mvwputch(w, 21, i, c_ltgray, LINE_OXOX);
- }
 
- for (int i = 0; i < 16; i++) {
-  mvwprintz(w, 5 + i, 40, c_dkgray, "                                   ");
+ const int v_span = VIEW - (TABBED_HEADER_HEIGHT + 2 + 4 + 1); // vertical span
+ const int v_span_div_2 = v_span / 2;
+ const int mid_pt = SCREEN_WIDTH / 2;
+// Draw horizontal lines
+ draw_hline(w, TABBED_HEADER_HEIGHT + 1, c_ltgray, LINE_OXOX);
+ draw_hline(w, VIEW - 4, c_ltgray, LINE_OXOX);
+
+ for (int i = 0; i <= v_span; i++) {
+  draw_hline(w, 5 + i, c_dkgray, ' ', 40);
   mvwprintz(w, 5 + i, 40, c_dkgray, mutation_branch::traits[PF_SPLIT + 1 + i].name.c_str());
  }
+#if NO_OP_LEGEND
+ // this is being overwritten by the good traits
  mvwprintz(w,11,32, c_ltgray, "h   l");
  mvwprintz(w,12,32, c_ltgray, "<   >");
  mvwprintz(w,13,32, c_ltgray, "4   6");
  mvwprintz(w,15,32, c_ltgray, "Space");
  mvwprintz(w,16,31, c_ltgray,"Toggles");
+#endif
 
- int cur_adv = 1, cur_dis = PF_SPLIT + 1, cur_trait, traitmin, traitmax, xoff;
+ int cur_trait, xoff;
  nc_color col_on, col_off, hi_on, hi_off;
+
+ static auto draw_traits = [&](int origin) {
+     for (int delta = 0; delta <= v_span; delta++) { // has to be increasing order due to implementation details
+         const int i = origin + delta;
+         draw_hline(w, 5 + delta, c_ltgray, ' ', xoff, xoff + mid_pt); // Clear the line
+         if (i == cur_trait) {
+             mvwprintz(w, 5 + delta, xoff, (u->has_trait(i) ? hi_on : hi_off), mutation_branch::traits[i].name.c_str());
+         } else {
+             mvwprintz(w, 5 + delta, xoff, (u->has_trait(i) ? col_on : col_off), mutation_branch::traits[i].name.c_str());
+         }
+     }
+ };
+
+ static auto draw_inactive_traits = [&](int col, int origin) {
+     for (int delta = 0; delta <= v_span; delta++) {
+         draw_hline(w, 5 + delta, c_dkgray, ' ', col, col + mid_pt);
+         mvwprintz(w, 5 + delta, col, c_dkgray, mutation_branch::traits[origin + delta].name.c_str());
+     }
+ };
+
+ int cur_adv = 1, cur_dis = PF_SPLIT + 1, traitmin, traitmax;
  bool using_adv = true;	// True if we're selecting advantages, false if we're selecting disadvantages
 
+ static constexpr nc_color COL_TR_GOOD = c_green; // Good trait descriptive text
+ static constexpr nc_color COL_TR_GOOD_OFF = c_ltgreen; // A toggled-off good trait
+ static constexpr nc_color COL_TR_GOOD_ON = c_green; // A toggled-on good trait
+ static constexpr nc_color COL_TR_BAD = c_red; // Bad trait descriptive text
+ static constexpr nc_color COL_TR_BAD_OFF = c_ltred; // A toggled-off bad trait
+ static constexpr nc_color COL_TR_BAD_ON = c_red; // A toggled-on bad trait
+
  do {
-  mvwprintz(w,  3,  2, c_ltgray, "Points left: %d  ", points);
+  draw_hline(w, 3, c_ltgray, ' ');
+  mvwprintz(w,  3,  2, c_ltgray, "Points left: %d", points);
   mvwprintz(w,  3, 21 - int_log10(num_good), c_ltgreen, "%d/%d", num_good, MAX_TRAIT_POINTS);
   mvwprintz(w,  3, 34 - int_log10(num_bad), c_ltred, "%d/%d", num_bad, MAX_TRAIT_POINTS);
 // Clear the bottom of the screen.
-  mvwprintz(w, 22, 0, c_ltgray, "                                                                             ");
-  mvwprintz(w, 23, 0, c_ltgray, "                                                                             ");
-  mvwprintz(w, 24, 0, c_ltgray, "                                                                             ");
+  draw_hline(w, 22, c_ltgray, ' ');
+  draw_hline(w, 23, c_ltgray, ' ');
+  draw_hline(w, 24, c_ltgray, ' ');
   if (using_adv) {
    col_on  = COL_TR_GOOD_ON;
    col_off = COL_TR_GOOD_OFF;
@@ -414,51 +442,28 @@ int set_traits(WINDOW* w, player *u, int &points)
    cur_trait = cur_adv;
    traitmin = 1;
    traitmax = PF_SPLIT;
-   mvwprintz(w,  3, 40, c_ltgray, "                                       ");
-   mvwprintz(w,  3, 40, COL_TR_GOOD, "%s costs %d points",
+   mvwprintz(w,  3, mid_pt, COL_TR_GOOD, "%s costs %d points",
 	   mutation_branch::traits[cur_adv].name.c_str(), mutation_branch::traits[cur_adv].points);
-   mvwprintz(w, 22, 0, COL_TR_GOOD, "%s", mutation_branch::traits[cur_adv].description.c_str());
+   mvwprintz(w, VIEW - 3, 0, COL_TR_GOOD, "%s", mutation_branch::traits[cur_adv].description.c_str());
   } else {
    col_on  = COL_TR_BAD_ON;
    col_off = COL_TR_BAD_OFF;
    hi_on   = hilite(col_on);
    hi_off  = hilite(col_off);
-   xoff = 40;
+   xoff = mid_pt;
    cur_trait = cur_dis;
    traitmin = PF_SPLIT + 1;
    traitmax = PF_MAX;
-   mvwprintz(w,  3, 40, c_ltgray, "                                       ");
-   mvwprintz(w,  3, 40, COL_TR_BAD, "%s earns %d points",
+   mvwprintz(w,  3, mid_pt, COL_TR_BAD, "%s earns %d points",
 	   mutation_branch::traits[cur_dis].name.c_str(), mutation_branch::traits[cur_dis].points * -1);
-   mvwprintz(w, 22, 0, COL_TR_BAD, "%s", mutation_branch::traits[cur_dis].description.c_str());
+   mvwprintz(w, VIEW - 3, 0, COL_TR_BAD, "%s", mutation_branch::traits[cur_dis].description.c_str());
   }
   if (cur_trait <= traitmin + 7) {
-   for (int i = traitmin; i < traitmin + 16; i++) {
-    mvwprintz(w, 5 + i - traitmin, xoff, c_ltgray, "                                       ");	// Clear the line
-    if (i == cur_trait) {
-     mvwprintz(w, 5 + i - traitmin, xoff, (u->has_trait(i) ? hi_on : hi_off), mutation_branch::traits[i].name.c_str());
-    } else {
-     mvwprintz(w, 5 + i - traitmin, xoff, (u->has_trait(i) ? col_on : col_off), mutation_branch::traits[i].name.c_str());
-    }
-   }
+   draw_traits(traitmin);
   } else if (cur_trait >= traitmax - 9) {
-   for (int i = traitmax - 16; i < traitmax; i++) {
-    mvwprintz(w, 21 + i - traitmax, xoff, c_ltgray, "                                       ");	// Clear the line
-    if (i == cur_trait) {
-     mvwprintz(w, 21 + i - traitmax, xoff, (u->has_trait(i) ? hi_on : hi_off), mutation_branch::traits[i].name.c_str());
-    } else {
-     mvwprintz(w, 21 + i - traitmax, xoff, (u->has_trait(i) ? col_on : col_off), mutation_branch::traits[i].name.c_str());
-    }
-   }
+   draw_traits(traitmax - (v_span + 1));
   } else {
-   for (int i = cur_trait - 7; i < cur_trait + 9; i++) {
-    mvwprintz(w, 12 + i - cur_trait, xoff, c_ltgray, "                                      ");	// Clear the line
-    if (i == cur_trait) {
-     mvwprintz(w, 12 + i - cur_trait, xoff, (u->has_trait(i) ? hi_on : hi_off), mutation_branch::traits[i].name.c_str());
-    } else {
-     mvwprintz(w, 12 + i - cur_trait, xoff, (u->has_trait(i) ? col_on : col_off), mutation_branch::traits[i].name.c_str());
-    }
-   }
+   draw_traits(cur_trait - v_span_div_2);
   }
 
   wrefresh(w);
@@ -466,36 +471,23 @@ int set_traits(WINDOW* w, player *u, int &points)
    case 'h':
    case 'l':
    case '\t':
-    if (!using_adv) {
-     for (int i = 0; i < 16; i++) {
-      mvwprintz(w, 5 + i, 40, c_dkgray, "                                       ");
-      mvwprintz(w, 5 + i, 40, c_dkgray, mutation_branch::traits[PF_SPLIT + 1 + i].name.c_str());
-     }
-    } else {
-     for (int i = 0; i < 16; i++) {
-      mvwprintz(w, 5 + i, 0, c_dkgray, "                                       ");
-      mvwprintz(w, 5 + i, 0, c_dkgray, mutation_branch::traits[i + 1].name.c_str());
-     }
-    }
+    if (!using_adv) draw_inactive_traits(mid_pt, PF_SPLIT + 1);
+    else draw_inactive_traits(0, 1);
     using_adv = !using_adv;
     wrefresh(w);
     break;
    case 'k':
     if (using_adv) {
-     if (cur_adv > 1)
-      cur_adv--;
+     if (cur_adv > 1) --cur_adv;
     } else {
-     if (cur_dis > PF_SPLIT + 1)
-      cur_dis--;
+     if (cur_dis > PF_SPLIT + 1) --cur_dis;
     }
     break;
    case 'j':
    if (using_adv) {
-     if (cur_adv < PF_SPLIT - 1)
-      cur_adv++;
+     if (cur_adv < PF_SPLIT - 1) ++cur_adv;
     } else {
-     if (cur_dis < PF_MAX - 1)
-      cur_dis++;
+     if (cur_dis < PF_MAX - 1) ++cur_dis;
     }
     break;
    case ' ':
