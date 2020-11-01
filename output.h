@@ -31,7 +31,7 @@ void mvwputch(WINDOW* w, int y, int x, nc_color FG, long ch);
 void mvwputch_inv(WINDOW* w, int y, int x, nc_color FG, long ch);
 void mvwputch_hi(WINDOW* w, int y, int x, nc_color FG, long ch);
 
-void hline(WINDOW* w, int y, nc_color FG, long ch, int x0 = -1, int x1 = -1);
+void draw_hline(WINDOW* w, int y, nc_color FG, long ch, int x0 = -1, int x1 = -1);
 
 template<class...Args>
 void debuglog(const char* mes, Args...params)
