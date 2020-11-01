@@ -224,8 +224,8 @@ int set_stats(WINDOW* w, player *u, int &points)
 {
  unsigned char sel = 1;
 // Draw horizontal lines
- hline(w, TABBED_HEADER_HEIGHT + 1, c_ltgray, LINE_OXOX);
- hline(w, 21, c_ltgray, LINE_OXOX);
+ draw_hline(w, TABBED_HEADER_HEIGHT + 1, c_ltgray, LINE_OXOX);
+ draw_hline(w, 21, c_ltgray, LINE_OXOX);
 
  mvwprintz(w, 11, 0, c_ltgray, "\
    j/k, 8/2, or arrows select\n\
@@ -263,8 +263,8 @@ int set_stats(WINDOW* w, player *u, int &points)
 
  do {
   // This is I/O; only need to conserve refresh calls, not CPU 2020-10-31 zaimoni
-  for (auto y : flush_rows) hline(w, TABBED_HEADER_HEIGHT, c_black, 'x', 2);
-  for (auto y : flush_rows_col2) hline(w, TABBED_HEADER_HEIGHT, c_black, 'x', col2);
+  for (auto y : flush_rows) draw_hline(w, TABBED_HEADER_HEIGHT, c_black, 'x', 2);
+  for (auto y : flush_rows_col2) draw_hline(w, TABBED_HEADER_HEIGHT, c_black, 'x', col2);
   mvwprintz(w, TABBED_HEADER_HEIGHT, 2, c_ltgray, "Points left: %d", points);
 
   // draw stats
