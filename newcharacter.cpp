@@ -8,7 +8,6 @@
 #include "stl_limits.h"
 //#include <unistd.h>
 #include <fstream>
-#include <sstream>
 
 // Colors used in this file: (Most else defaults to c_ltgray)
 #define COL_STAT_ACT		c_ltred    // Selected stat
@@ -30,6 +29,13 @@ static int calc_HP(int strength, bool tough)
     int ret = (60 + 3 * strength);
     if (tough) cataclysm::rational_scale<6, 5>(ret);
     return ret;
+}
+
+static std::string template_filename(const std::string& src)
+{
+    std::string ret("data/");
+    ret += src;
+    return ret += ".template";
 }
 
 bool player::create(game *g, character_type type, std::string tempname)
@@ -114,11 +120,10 @@ bool player::create(game *g, character_type type, std::string tempname)
     }
    } break;
    case PLTYPE_TEMPLATE: {
-    std::ostringstream filename;
-    filename << "data/" << tempname << ".template";
-	std::ifstream fin(filename.str().c_str());
+    const std::string filename = template_filename(tempname);
+	std::ifstream fin(filename.c_str());
     if (!fin.is_open()) {
-     debugmsg("Couldn't open %s!", filename.str().c_str());
+     debugmsg("Couldn't open %s!", filename.c_str());
      return false;
     }
 	*this = player(cataclysm::JSON(fin));
@@ -597,11 +602,10 @@ void save_template(const player& u)
 {
 	std::string name = string_input_popup("Name of template:");
 	if (0 >= name.length()) return;
-	std::ostringstream playerfile;
-	playerfile << "data/" << name << ".template";
-	std::ofstream fout(playerfile.str().c_str());
+    const std::string playerfile = template_filename(name);
+	std::ofstream fout(playerfile.c_str());
 	if (fout.is_open()) fout << toJSON(u);
-	else debugmsg("Sorry, couldn't open %s.", playerfile.str().c_str());
+	else debugmsg("Sorry, couldn't open %s.", playerfile.c_str());
 }
 
 int set_description(WINDOW* w, player *u, int &points)
