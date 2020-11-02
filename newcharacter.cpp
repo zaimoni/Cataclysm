@@ -12,7 +12,6 @@
 
 // Colors used in this file: (Most else defaults to c_ltgray)
 #define COL_STAT_ACT		c_ltred    // Selected stat
-#define COL_SKILL_USED		c_green    // A skill with at least one point
 
 #define HIGH_STAT 14 // The point after which stats cost double
 #define MAX_TRAIT_POINTS 12 // How many points from traits
@@ -430,9 +429,9 @@ int set_traits(WINDOW* w, player *u, int &points)
   mvwprintz(w,  3, 21 - int_log10(num_good), c_ltgreen, "%d/%d", num_good, MAX_TRAIT_POINTS);
   mvwprintz(w,  3, 34 - int_log10(num_bad), c_ltred, "%d/%d", num_bad, MAX_TRAIT_POINTS);
 // Clear the bottom of the screen.
-  draw_hline(w, 22, c_ltgray, ' ');
-  draw_hline(w, 23, c_ltgray, ' ');
-  draw_hline(w, 24, c_ltgray, ' ');
+  draw_hline(w, VIEW - 3, c_ltgray, ' ');
+  draw_hline(w, VIEW - 2, c_ltgray, ' ');
+  draw_hline(w, VIEW - 1, c_ltgray, ' ');
   if (using_adv) {
    col_on  = COL_TR_GOOD_ON;
    col_off = COL_TR_GOOD_OFF;
@@ -458,9 +457,9 @@ int set_traits(WINDOW* w, player *u, int &points)
 	   mutation_branch::traits[cur_dis].name.c_str(), mutation_branch::traits[cur_dis].points * -1);
    mvwprintz(w, VIEW - 3, 0, COL_TR_BAD, "%s", mutation_branch::traits[cur_dis].description.c_str());
   }
-  if (cur_trait <= traitmin + 7) {
+  if (cur_trait <= traitmin + v_span_div_2) {
    draw_traits(traitmin);
-  } else if (cur_trait >= traitmax - 9) {
+  } else if (cur_trait >= traitmax - (v_span_div_2 + 2)) {
    draw_traits(traitmax - (v_span + 1));
   } else {
    draw_traits(cur_trait - v_span_div_2);
@@ -522,72 +521,50 @@ int set_traits(WINDOW* w, player *u, int &points)
 
 int set_skills(WINDOW* w, player *u, int &points)
 {
+ static constexpr const nc_color COL_SKILL_USED = c_green; // A skill with at least one point
+ const int v_span = VIEW - (TABBED_HEADER_HEIGHT + 2 + 4 + 1); // vertical span
+ const int v_span_div_2 = v_span / 2;
+
 // Draw horizontal lines
- for (int i = 0; i < SCREEN_WIDTH; i++) {
-  mvwputch(w,  4, i, c_ltgray, LINE_OXOX);
-  mvwputch(w, 21, i, c_ltgray, LINE_OXOX);
- }
- 
- static const char* const CLEAR_LINE = "                                             ";
- static const char* const CLEAR_WHOLE_LINE = "                                                                             ";
+ draw_hline(w, TABBED_HEADER_HEIGHT + 1, c_ltgray, LINE_OXOX);
+ draw_hline(w, VIEW - 4, c_ltgray, LINE_OXOX);
+
  int cur_sk = 1;
 
+ static auto draw_skills = [&](int origin) {
+     for (int delta = 0; delta <= v_span; delta++) { // has to be increasing order due to implementation details
+         const int i = origin + delta;
+         draw_hline(w, 5 + delta, c_ltgray, ' ');
+         if (0 == u->sklevel[i]) {
+             mvwprintz(w, 5 + delta, 0, (i == cur_sk ? h_ltgray : c_ltgray), skill_name(skill(i)));
+         } else {
+             mvwprintz(w, 5 + delta, 0, (i == cur_sk ? hilite(COL_SKILL_USED) : COL_SKILL_USED), "%s ", skill_name(skill(i)));
+             for (int j = 0; j < u->sklevel[i]; j++)
+                 wprintz(w, (i == cur_sk ? hilite(COL_SKILL_USED) : COL_SKILL_USED), "*");
+         }
+     }
+ };
+
  do {
+  draw_hline(w, 3, c_ltgray, ' ');
   mvwprintz(w,  3, 2, c_ltgray, "Points left: %d  ", points);
 // Clear the bottom of the screen.
-  mvwprintz(w, 22, 0, c_ltgray, CLEAR_WHOLE_LINE);
-  mvwprintz(w, 23, 0, c_ltgray, CLEAR_WHOLE_LINE);
-  mvwprintz(w, 24, 0, c_ltgray, CLEAR_WHOLE_LINE);
-  if (points >= u->sklevel[cur_sk] + 1)
-   mvwprintz(w,  3, 30, COL_SKILL_USED, "Upgrading %s costs %d points         ",
-             skill_name(skill(cur_sk)), u->sklevel[cur_sk] + 1);
+  draw_hline(w, VIEW - 3, c_ltgray, ' ');
+  draw_hline(w, VIEW - 2, c_ltgray, ' ');
+  draw_hline(w, VIEW - 1, c_ltgray, ' ');
+  const int cost = u->sklevel[cur_sk] + 1;
+  if (cost <= points)
+   mvwprintz(w,  3, 30, COL_SKILL_USED, "Upgrading %s costs %d points", skill_name(skill(cur_sk)), cost);
   else
-   mvwprintz(w,  3, 30, c_ltred, "Upgrading %s costs %d points         ",
-             skill_name(skill(cur_sk)), u->sklevel[cur_sk] + 1);
-  mvwprintz(w, 22, 0, COL_SKILL_USED, skill_description(skill(cur_sk)));
+   mvwprintz(w,  3, 30, c_ltred, "Upgrading %s costs %d points", skill_name(skill(cur_sk)), cost);
+  mvwprintz(w, VIEW - 3, 0, COL_SKILL_USED, skill_description(skill(cur_sk)));
 
-  if (cur_sk <= 7) {
-   for (int i = 1; i < 17; i++) {
-    mvwprintz(w, 4 + i, 0, c_ltgray, CLEAR_LINE);
-    if (u->sklevel[i] == 0) {
-     mvwprintz(w, 4 + i, 0, (i == cur_sk ? h_ltgray : c_ltgray),
-               skill_name(skill(i)));
-    } else {
-     mvwprintz(w, 4 + i, 0,
-               (i == cur_sk ? hilite(COL_SKILL_USED) : COL_SKILL_USED),
-               "%s ", skill_name(skill(i)));
-     for (int j = 0; j < u->sklevel[i]; j++)
-      wprintz(w, (i == cur_sk ? hilite(COL_SKILL_USED) : COL_SKILL_USED), "*");
-    }
-   }
-  } else if (cur_sk >= num_skill_types - 9) {
-   for (int i = num_skill_types - 16; i < num_skill_types; i++) {
-    mvwprintz(w, 21 + i - num_skill_types, 0, c_ltgray, CLEAR_LINE);
-    if (u->sklevel[i] == 0) {
-     mvwprintz(w, 21 + i - num_skill_types, 0,
-               (i == cur_sk ? h_ltgray : c_ltgray), skill_name(skill(i)));
-    } else {
-     mvwprintz(w, 21 + i - num_skill_types, 0,
-               (i == cur_sk ? hilite(COL_SKILL_USED) : COL_SKILL_USED), "%s ",
-               skill_name(skill(i)));
-     for (int j = 0; j < u->sklevel[i]; j++)
-      wprintz(w, (i == cur_sk ? hilite(COL_SKILL_USED) : COL_SKILL_USED), "*");
-    }
-   }
+  if (cur_sk <= v_span_div_2 + 1) {
+   draw_skills(1);
+  } else if (cur_sk >= num_skill_types - (v_span_div_2 + 2)) {
+   draw_skills(num_skill_types - (v_span + 1));
   } else {
-   for (int i = cur_sk - 7; i < cur_sk + 9; i++) {
-    mvwprintz(w, 12 + i - cur_sk, 0, c_ltgray, CLEAR_LINE);
-    if (u->sklevel[i] == 0) {
-     mvwprintz(w, 12 + i - cur_sk, 0, (i == cur_sk ? h_ltgray : c_ltgray),
-               skill_name(skill(i)));
-    } else {
-     mvwprintz(w, 12 + i - cur_sk, 0,
-               (i == cur_sk ? hilite(COL_SKILL_USED) : COL_SKILL_USED),
-               "%s ", skill_name(skill(i)));
-     for (int j = 0; j < u->sklevel[i]; j++)
-      wprintz(w, (i == cur_sk ? hilite(COL_SKILL_USED) : COL_SKILL_USED), "*");
-    }
-   }
+   draw_skills(cur_sk - v_span_div_2);
   }
    
   wrefresh(w);
@@ -605,8 +582,8 @@ int set_skills(WINDOW* w, player *u, int &points)
     }
     break;
    case 'l':
-    if (points >= u->sklevel[cur_sk] + 1) {
-     points -= u->sklevel[cur_sk] + 1;
+    if (cost <= points) {
+     points -= cost;
      u->sklevel[cur_sk] += 2;
     }
     break;
