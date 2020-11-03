@@ -138,6 +138,7 @@ bool player::create(game *g, character_type type, std::string tempname)
 
  do {
   draw_tabs(w, tab, labels); // C:Whales color scheme c_ltgray, h_ltgray
+  // We could lift the horizontal line drawing to here, but that interferes with proofreading. 2020-11-03 zaimoni
   switch (tab) {
    case 0: tab += set_stats      (w, this, points); break;
    case 1: tab += set_traits     (w, this, points); break;
@@ -223,7 +224,7 @@ int set_stats(WINDOW* w, player *u, int &points)
  unsigned char sel = 1;
 // Draw horizontal lines
  draw_hline(w, TABBED_HEADER_HEIGHT + 1, c_ltgray, LINE_OXOX);
- draw_hline(w, 21, c_ltgray, LINE_OXOX);
+ draw_hline(w, VIEW - 4, c_ltgray, LINE_OXOX);
 
  mvwprintz(w, 11, 0, c_ltgray, "\
    j/k, 8/2, or arrows select\n\
@@ -614,7 +615,7 @@ int set_description(WINDOW* w, player *u, int &points)
 
 // Draw horizontal lines
  draw_hline(w, TABBED_HEADER_HEIGHT + 1, c_ltgray, LINE_OXOX);
- draw_hline(w, 21, c_ltgray, LINE_OXOX);
+ draw_hline(w, VIEW - 4, c_ltgray, LINE_OXOX);
 
  mvwprintz(w,  3, 2, c_ltgray, "Points left: %d  ", points);
 
