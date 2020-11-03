@@ -610,26 +610,20 @@ void save_template(const player& u)
 
 int set_description(WINDOW* w, player *u, int &points)
 {
+ static constexpr const int MAX_NAME_LEN = 30;
+
 // Draw horizontal lines
- for (int i = 0; i < SCREEN_WIDTH; i++) {
-  mvwputch(w,  4, i, c_ltgray, LINE_OXOX);
-  mvwputch(w, 21, i, c_ltgray, LINE_OXOX);
- }
+ draw_hline(w, TABBED_HEADER_HEIGHT + 1, c_ltgray, LINE_OXOX);
+ draw_hline(w, 21, c_ltgray, LINE_OXOX);
 
  mvwprintz(w,  3, 2, c_ltgray, "Points left: %d  ", points);
 
- mvwprintz(w, 6, 2, c_ltgray, "\
-Name: ______________________________     (Press TAB to move off this line)");
- mvwprintz(w, 8, 2, c_ltgray, "\
-Gender: Male Female                      (Press spacebar to toggle)");
- mvwprintz(w,10, 2, c_ltgray, "\
-When your character is finished and you're ready to start playing, press >");
- mvwprintz(w,12, 2, c_ltgray, "\
-To go back and review your character, press <");
- mvwprintz(w, 14, 2, c_green, "\
-To pick a random name for your character, press ?.");
- mvwprintz(w, 16, 2, c_green, "\
-To save this character as a template, press !.");
+ mvwprintz(w, 6, 2, c_ltgray, "Name: ______________________________     (Press TAB to move off this line)");
+ mvwprintz(w, 8, 2, c_ltgray, "Gender: Male Female                      (Press spacebar to toggle)");
+ mvwprintz(w,10, 2, c_ltgray, "When your character is finished and you're ready to start playing, press >");
+ mvwprintz(w,12, 2, c_ltgray, "To go back and review your character, press <");
+ mvwprintz(w, 14, 2, c_green, "To pick a random name for your character, press ?.");
+ mvwprintz(w, 16, 2, c_green, "To save this character as a template, press !.");
  
  int line = 1;
  bool noname = false;
@@ -648,72 +642,66 @@ To save this character as a template, press !.");
    if (line == 1)
     wprintz(w, h_ltgray, "_");
   }
-  if (line == 2)
-   mvwprintz(w, 8, 2, h_ltgray, "Gender:");
-  else
-   mvwprintz(w, 8, 2, c_ltgray, "Gender:");
+  mvwprintz(w, 8, 2, (2 == line ? h_ltgray : c_ltgray), "Gender:");
 
   wrefresh(w);
-  int ch = getch();
   if (noname) {
-   mvwprintz(w, 6, 8, c_ltgray, "______________________________");
+   draw_hline(w, 6, c_ltgray, '_', 8, 8 + MAX_NAME_LEN);
    noname = false;
   }
 
-
-  if (ch == '>') {
-   if (points > 0)
-    mvwprintz(w,  3, 2, c_red, "\
-Points left: %d    You must use the rest of your points!", points);
-   else if (u->name.size() == 0) {
-    mvwprintz(w, 6, 8, h_ltgray, "______NO NAME ENTERED!!!!_____");
-    noname = true;
-    wrefresh(w);
-    if (query_yn("Are you SURE you're finished? Your name will be randomly generated.")){
-     u->pick_name();
-     return 1;
-    }
-   } else if (query_yn("Are you SURE you're finished?"))
-    return 1;
-   else
-    refresh();
-  } else if (ch == '<') {
-   return -1;
-  } else if (ch == '!') {
-   if (points > 0) {
-    popup("You cannot save a template with unused points!");
-   } else
-    save_template(*u);
-   mvwprintz(w,12, 2, c_ltgray,"To go back and review your character, press <");
-   wrefresh(w);
-  } else if (ch == '?') {
-   mvwprintz(w, 6, 8, c_ltgray, "______________________________");
-   u->pick_name();
-  } else {
-   switch (line) {
-    case 1:
-     if (ch == KEY_BACKSPACE || ch == 127) {
-      if (u->name.size() > 0) {
-       mvwprintz(w, 6, 8 + u->name.size(), c_ltgray, "_");
-       u->name.erase(u->name.end() - 1);
+  switch (int ch = getch())
+  {
+  case '>': {
+      if (points > 0) mvwprintz(w, 3, 2, c_red, "Points left: %d    You must use the rest of your points!", points);
+      else if (u->name.size() == 0) {
+          mvwprintz(w, 6, 8, h_ltgray, "______NO NAME ENTERED!!!!_____");
+          noname = true;
+          wrefresh(w);
+          if (query_yn("Are you SURE you're finished? Your name will be randomly generated.")) {
+              u->pick_name();
+              return 1;
+          }
+      } else if (query_yn("Are you SURE you're finished?")) return 1;
+      else refresh();
       }
-     } else if (ch == '\t') {
-      line = 2;
-      mvwprintz(w, 6, 8 + u->name.size(), c_ltgray, "_");
-     } else if (((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') ||
-                  ch == ' ') && u->name.size() < 30) {
-      u->name.push_back(ch);
-     }
-     break;
-    case 2:
-     if (ch == ' ')
-      u->male = !u->male;
-     else if (ch == 'k' || ch == '\t') {
-      line = 1;
-      mvwprintz(w, 8, 8, c_ltgray, ":");
-     }
-     break;
-   }
+      break;
+  case '<': return -1;
+  case '!': {
+      if (points > 0) popup("You cannot save a template with unused points!");
+      else save_template(*u);
+      mvwprintz(w, 12, 2, c_ltgray, "To go back and review your character, press <");
+      wrefresh(w);
+      }
+      break;
+  case '?':
+      draw_hline(w, 6, c_ltgray, '_', 8, 8 + MAX_NAME_LEN);
+      u->pick_name();
+      break;
+  default:
+      switch (line) {
+      case 1:
+          if (ch == KEY_BACKSPACE || ch == 127) {
+              if (u->name.size() > 0) {
+                  mvwprintz(w, 6, 8 + u->name.size(), c_ltgray, "_");
+                  u->name.erase(u->name.end() - 1);
+              }
+          } else if (ch == '\t') {
+              line = 2;
+              mvwprintz(w, 6, 8 + u->name.size(), c_ltgray, "_");
+          } else if (((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == ' ') && u->name.size() < MAX_NAME_LEN) {
+              u->name.push_back(ch);
+          }
+          break;
+      case 2:
+          if (ch == ' ') u->male = !u->male;
+          else if (ch == 'k' || ch == '\t') {
+              line = 1;
+              mvwprintz(w, 8, 8, c_ltgray, ":");
+          }
+          break;
+      }
+      break;
   }
  } while (true);
 }
