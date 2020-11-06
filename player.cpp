@@ -2856,14 +2856,14 @@ void player::power_bionics(game *g)
        messages.add("%s powered off.", bio_type.name.c_str());
       } else if (power_level >= bio_type.power_cost || (weapon.type->id == itm_bio_claws && tmp->id == bio_claws))
        activate_bionic(b, g);
-     } else
-      draw_hline(wBio, VIEW - 3, c_ltgray, ' ');
-      draw_hline(wBio, VIEW - 2, c_ltgray, ' ');
-      draw_hline(wBio, VIEW - 1, c_ltgray, ' ');
-      mvwprintz(wBio, VIEW - 3, 0, c_ltred, "\
+     } else {
+       draw_hline(wBio, VIEW - 3, c_ltgray, ' ');
+       draw_hline(wBio, VIEW - 2, c_ltgray, ' ');
+       draw_hline(wBio, VIEW - 1, c_ltgray, ' ');
+       mvwprintz(wBio, VIEW - 3, 0, c_ltred, "\
 You can not activate %s!  To read a description of \
-%s, press '!', then '%c'.", bio_type.name.c_str(),
-                            bio_type.name.c_str(), tmp->invlet);
+%s, press '!', then '%c'.", bio_type.name.c_str(), bio_type.name.c_str(), tmp->invlet);
+     }
     } else {	// Describing bionics, not activating them!
 // Clear the lines first
      ch = 0;
