@@ -2782,13 +2782,20 @@ void player::power_bionics(game *g)
  std::vector <bionic> passive;	// \todo should these two be std::vector<bionic*>?
  std::vector <bionic> active;
  mvwprintz(wBio, 0, 0, c_blue, "BIONICS -");
- mvwprintz(wBio, 0,10, c_white,
-           "Activating.  Press '!' to examine your implants.");
 
- for (int i = 0; i < SCREEN_WIDTH; i++) {
-  mvwputch(wBio,  1, i, c_ltgray, LINE_OXOX);
-  mvwputch(wBio, 21, i, c_ltgray, LINE_OXOX);
- }
+ bool activating = true;
+ static constexpr const int header_offset = sizeof("BIONICS -"); // C++20: constexpr strlen?
+
+ static auto mode_desc = [&]() {
+     draw_hline(wBio, 0, c_white, ' ', header_offset); // general-case pre-emptive clear
+     mvwprintz(wBio, 0, header_offset, c_white, activating ? "Activating.  Press '!' to examine your implants."
+                                                           : "Examining.  Press '!' to activate your implants.");
+ };
+
+ mode_desc();
+
+ draw_hline(wBio, 1, c_ltgray, LINE_OXOX);
+ draw_hline(wBio, VIEW - 4, c_ltgray, LINE_OXOX);
  for (int i = 0; i < my_bionics.size(); i++) {
   const auto& bio_type = bionic::type[my_bionics[i].id];
   if ( bio_type.power_source || !bio_type.activated)
@@ -2807,6 +2814,7 @@ void player::power_bionics(game *g)
   }
  }
  if (active.size() > 0) {
+  // unclear where this magic constant 32 comes from.  De-facto bionic name length limit?
   mvwprintz(wBio, 2, 32, c_ltblue, "Active:");
   for (int i = 0; i < active.size(); i++) {
    type = (active[i].powered ? c_red : c_ltred);
@@ -2822,20 +2830,16 @@ void player::power_bionics(game *g)
 
  wrefresh(wBio);
  int ch;
- bool activating = true;
  do {
-  bionic *tmp = nullptr;
-  int b;
   ch = getch();
   if (ch == '!') {
    activating = !activating;
-   if (activating)
-    mvwprintz(wBio, 0, 10, c_white, "Activating.  Press '!' to examine your implants.");
-   else
-    mvwprintz(wBio, 0, 10, c_white, "Examining.  Press '!' to activate your implants.");
+   mode_desc();
   } else if (ch == ' ')
    ch = KEY_ESCAPE;
   else if (ch != KEY_ESCAPE) {
+   bionic *tmp = nullptr;
+   int b;
    for (int i = 0; i < my_bionics.size(); i++) {
     if (ch == my_bionics[i].invlet) {
      tmp = &my_bionics[i];
@@ -2853,18 +2857,20 @@ void player::power_bionics(game *g)
       } else if (power_level >= bio_type.power_cost || (weapon.type->id == itm_bio_claws && tmp->id == bio_claws))
        activate_bionic(b, g);
      } else
-      mvwprintz(wBio, 22, 0, c_ltred, "\
+      draw_hline(wBio, VIEW - 3, c_ltgray, ' ');
+      draw_hline(wBio, VIEW - 2, c_ltgray, ' ');
+      draw_hline(wBio, VIEW - 1, c_ltgray, ' ');
+      mvwprintz(wBio, VIEW - 3, 0, c_ltred, "\
 You can not activate %s!  To read a description of \
 %s, press '!', then '%c'.", bio_type.name.c_str(),
                             bio_type.name.c_str(), tmp->invlet);
     } else {	// Describing bionics, not activating them!
 // Clear the lines first
      ch = 0;
-     mvwprintz(wBio, 22, 0, c_ltgray, "\
-                                                                               \
-                                                                               \
-                                                                             ");
-     mvwprintz(wBio, 22, 0, c_ltblue, bio_type.description.c_str());
+     draw_hline(wBio, VIEW - 3, c_ltgray, ' ');
+     draw_hline(wBio, VIEW - 2, c_ltgray, ' ');
+     draw_hline(wBio, VIEW - 1, c_ltgray, ' ');
+     mvwprintz(wBio, VIEW - 3, 0, c_ltblue, bio_type.description.c_str());
     }
    }
   }
