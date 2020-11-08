@@ -12,7 +12,6 @@
 #define SPECIAL_WAVE_CHANCE 5 // One in X chance of single-flavor wave
 #define SPECIAL_WAVE_MIN 5 // Don't use a special wave with < X monsters
 
-#define SELCOL(n) (selection == (n) ? c_yellow : c_blue)
 #define TOGCOL(n, b) (selection == (n) ? (b ? c_ltgreen : c_yellow) :\
                       (b ? c_green : c_dkgray))
 #define NUMALIGN(n) ((n) >= 10000 ? 20 : ((n) >= 1000 ? 21 :\
@@ -622,37 +621,37 @@ void defense_game::refresh_setup(WINDOW* w, int selection)
  mvwprintz(w,  0, 28, c_ltred, "Press +/- or >/< to cycle, spacebar to toggle");
  mvwprintz(w,  1, 28, c_ltred, "Press S to start, ! to save as a template");
  mvwprintz(w,  2,  2, c_ltgray, "Scenario:");
- mvwprintz(w,  3,  2, SELCOL(1), defense_style_name(style).c_str());
+ mvwprintz(w,  3,  2, 1 == selection ? c_yellow : c_blue, defense_style_name(style).c_str());
  mvwprintz(w,  3, 28, c_ltgray, defense_style_description(style).c_str());
  mvwprintz(w,  4,  2, c_ltgray, "Location:");
- mvwprintz(w,  5,  2, SELCOL(2), defense_location_name(location).c_str());
+ mvwprintz(w,  5,  2, 2 == selection ? c_yellow : c_blue, defense_location_name(location).c_str());
  mvwprintz(w,  5, 28, c_ltgray, defense_location_description(location).c_str());
 
  mvwprintz(w,  7,  2, c_ltgray, "Initial Difficulty:");
- mvwprintz(w,  7, NUMALIGN(initial_difficulty), SELCOL(3), "%d",
+ mvwprintz(w,  7, NUMALIGN(initial_difficulty), 3 == selection ? c_yellow : c_blue, "%d",
            initial_difficulty);
  mvwprintz(w,  7, 28, c_ltgray, "The difficulty of the first wave.");
  mvwprintz(w,  8,  2, c_ltgray, "Wave Difficulty:");
- mvwprintz(w,  8, NUMALIGN(wave_difficulty), SELCOL(4), "%d", wave_difficulty);
+ mvwprintz(w,  8, NUMALIGN(wave_difficulty), 4 == selection ? c_yellow : c_blue, "%d", wave_difficulty);
  mvwprintz(w,  8, 28, c_ltgray, "The increase of difficulty with each wave.");
 
  mvwprintz(w, 10,  2, c_ltgray, "Time b/w Waves:");
- mvwprintz(w, 10, NUMALIGN(time_between_waves), SELCOL(5), "%d",
+ mvwprintz(w, 10, NUMALIGN(time_between_waves), 5 == selection ? c_yellow : c_blue, "%d",
            time_between_waves);
  mvwprintz(w, 10, 28, c_ltgray, "The time, in minutes, between waves.");
  mvwprintz(w, 11,  2, c_ltgray, "Waves b/w Caravans:");
- mvwprintz(w, 11, NUMALIGN(waves_between_caravans), SELCOL(6), "%d",
+ mvwprintz(w, 11, NUMALIGN(waves_between_caravans), 6 == selection ? c_yellow : c_blue, "%d",
            waves_between_caravans);
  mvwprintz(w, 11, 28, c_ltgray, "The number of waves in between caravans.");
 
  mvwprintz(w, 13,  2, c_ltgray, "Initial Cash:");
- mvwprintz(w, 13, NUMALIGN(initial_cash), SELCOL(7), "%d", initial_cash);
+ mvwprintz(w, 13, NUMALIGN(initial_cash), 7 == selection ? c_yellow : c_blue, "%d", initial_cash);
  mvwprintz(w, 13, 28, c_ltgray, "The amount of money the player starts with.");
  mvwprintz(w, 14,  2, c_ltgray, "Cash for 1st Wave:");
- mvwprintz(w, 14, NUMALIGN(cash_per_wave), SELCOL(8), "%d", cash_per_wave);
+ mvwprintz(w, 14, NUMALIGN(cash_per_wave), 8 == selection ? c_yellow : c_blue, "%d", cash_per_wave);
  mvwprintz(w, 14, 28, c_ltgray, "The cash awarded for the first wave.");
  mvwprintz(w, 15,  2, c_ltgray, "Cash Increase:");
- mvwprintz(w, 15, NUMALIGN(cash_increase), SELCOL(9), "%d", cash_increase);
+ mvwprintz(w, 15, NUMALIGN(cash_increase), 9 == selection ? c_yellow : c_blue, "%d", cash_increase);
  mvwprintz(w, 15, 28, c_ltgray, "The increase in the award each wave.");
 
  mvwprintz(w, 17,  2, c_ltgray, "Enemy Selection:");
