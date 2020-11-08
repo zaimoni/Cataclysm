@@ -9,12 +9,6 @@
 #include "setvector.h"
 #include <sstream>
 
-#define SPECIAL_WAVE_CHANCE 5 // One in X chance of single-flavor wave
-#define SPECIAL_WAVE_MIN 5 // Don't use a special wave with < X monsters
-
-#define NUMALIGN(n) ((n) >= 10000 ? 20 : ((n) >= 1000 ? 21 :\
-                     ((n) >= 100 ? 22 : ((n) >= 10 ? 23 : 24))))
-
 std::vector<itype_id> caravan_items(caravan_category cat);
 
 int caravan_price(const player &u, int price);
@@ -410,6 +404,11 @@ void defense_game::setup()
  int selection = 1;
  refresh_setup(w, selection);
 
+ static auto redraw_numeric = [&](int y, int num, int ub) {
+     draw_hline(w, y, c_black, 'x', 25 - int_log10(ub) , 25);
+     mvwprintz(w, y, 25 - int_log10(num), c_yellow, "%d", num);
+ };
+
  while (true) {
   int ch = input();
  
@@ -474,70 +473,45 @@ void defense_game::setup()
      break;
  
     case 3:	// Difficulty of the first wave
-     if (ch == 'h' && initial_difficulty > 10)
-      initial_difficulty -= 5;
-     if (ch == 'l' && initial_difficulty < 995)
-      initial_difficulty += 5;
-     mvwprintz(w, 7, 22, c_black, "xxx");
-     mvwprintz(w, 7, NUMALIGN(initial_difficulty), c_yellow, "%d",
-               initial_difficulty);
+     if (ch == 'h' && initial_difficulty > 10) initial_difficulty -= 5;
+     if (ch == 'l' && initial_difficulty < 995) initial_difficulty += 5;
+     redraw_numeric(7, initial_difficulty, 995);
      break;
  
     case 4:	// Wave Difficulty
-     if (ch == 'h' && wave_difficulty > 10)
-      wave_difficulty -= 5;
-     if (ch == 'l' && wave_difficulty < 995)
-      wave_difficulty += 5;
-     mvwprintz(w, 8, 22, c_black, "xxx");
-     mvwprintz(w, 8, NUMALIGN(wave_difficulty), c_yellow, "%d",
-               wave_difficulty);
+     if (ch == 'h' && wave_difficulty > 10) wave_difficulty -= 5;
+     if (ch == 'l' && wave_difficulty < 995) wave_difficulty += 5;
+     redraw_numeric(8, wave_difficulty, 995);
      break;
  
     case 5:
-     if (ch == 'h' && time_between_waves > 5)
-      time_between_waves -= 5;
-     if (ch == 'l' && time_between_waves < 995)
-      time_between_waves += 5;
-     mvwprintz(w, 10, 22, c_black, "xxx");
-     mvwprintz(w, 10, NUMALIGN(time_between_waves), c_yellow, "%d",
-               time_between_waves);
+     if (ch == 'h' && time_between_waves > 5) time_between_waves -= 5;
+     if (ch == 'l' && time_between_waves < 995) time_between_waves += 5;
+     redraw_numeric(10, time_between_waves, 995);
      break;
  
     case 6:
-     if (ch == 'h' && waves_between_caravans > 1)
-      waves_between_caravans -= 1;
-     if (ch == 'l' && waves_between_caravans < 50)
-      waves_between_caravans += 1;
-     mvwprintz(w, 11, 22, c_black, "xxx");
-     mvwprintz(w, 11, NUMALIGN(waves_between_caravans), c_yellow, "%d",
-               waves_between_caravans);
+     if (ch == 'h' && waves_between_caravans > 1) waves_between_caravans -= 1;
+     if (ch == 'l' && waves_between_caravans < 50) waves_between_caravans += 1;
+     redraw_numeric(11, waves_between_caravans, 50);
      break;
  
     case 7:
-     if (ch == 'h' && initial_cash > 0)
-      initial_cash -= 100;
-     if (ch == 'l' && initial_cash < 99900)
-      initial_cash += 100;
-     mvwprintz(w, 13, 20, c_black, "xxxxx");
-     mvwprintz(w, 13, NUMALIGN(initial_cash), c_yellow, "%d", initial_cash);
+     if (ch == 'h' && initial_cash > 0) initial_cash -= 100;
+     if (ch == 'l' && initial_cash < 99900) initial_cash += 100;
+     redraw_numeric(13, initial_cash, 99900);
      break;
 
     case 8:
-     if (ch == 'h' && cash_per_wave > 0)
-      cash_per_wave -= 100;
-     if (ch == 'l' && cash_per_wave < 9900)
-      cash_per_wave += 100;
-     mvwprintz(w, 14, 21, c_black, "xxxx");
-     mvwprintz(w, 14, NUMALIGN(cash_per_wave), c_yellow, "%d", cash_per_wave);
+     if (ch == 'h' && cash_per_wave > 0) cash_per_wave -= 100;
+     if (ch == 'l' && cash_per_wave < 9900) cash_per_wave += 100;
+     redraw_numeric(14, cash_per_wave, 9900);
      break;
 
     case 9:
-     if (ch == 'h' && cash_increase > 0)
-      cash_increase -= 50;
-     if (ch == 'l' && cash_increase < 9950)
-      cash_increase += 50;
-     mvwprintz(w, 15, 21, c_black, "xxxx");
-     mvwprintz(w, 15, NUMALIGN(cash_increase), c_yellow, "%d", cash_increase);
+     if (ch == 'h' && cash_increase > 0) cash_increase -= 50;
+     if (ch == 'l' && cash_increase < 9950) cash_increase += 50;
+     redraw_numeric(15, cash_increase, 9950);
      break;
 
     case 10:
@@ -1150,6 +1124,9 @@ int caravan_price(const player &u, int price)
 
 void defense_game::spawn_wave(game *g)
 {
+ constexpr const int SPECIAL_WAVE_CHANCE = 5; // One in X chance of single-flavor wave
+ constexpr const int SPECIAL_WAVE_MIN = 5; // Don't use a special wave with < X monsters
+
  messages.add("********");
  int diff = initial_difficulty + current_wave * wave_difficulty;
  bool themed_wave = one_in(SPECIAL_WAVE_CHANCE); // All a single monster type
