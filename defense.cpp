@@ -471,11 +471,9 @@ void defense_game::setup()
       else
        location = defense_location(location - 1);
      }
-     mvwprintz(w, 5, 2, c_black, "\
- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+     draw_hline(w, 5, c_black, 'x', 2, 80);
      mvwprintz(w, 5, 2, c_yellow, defense_location_name(location).c_str());
-     mvwprintz(w,  5, 28, c_ltgray,
-               defense_location_description(location).c_str());
+     mvwprintz(w,  5, 28, c_ltgray, defense_location_description(location).c_str());
      break;
  
     case 3:	// Difficulty of the first wave
@@ -1063,10 +1061,8 @@ void draw_caravan_borders(WINDOW *w, int current_window)
  nc_color col = (0 == current_window ? c_yellow : c_ltgray);
 
  mvwputch(w, 0, 0, col, LINE_OXXO);
- for (int i = 1; i <= 38; i++) {
-  mvwputch(w,  0, i, col, LINE_OXOX);
-  mvwputch(w, 11, i, col, LINE_OXOX);
- }
+ draw_hline(w, 0, col, LINE_OXOX, 1, 39);
+ draw_hline(w, 11, col, LINE_OXOX, 1, 39);
  for (int i = 1; i <= 10; i++) {
   mvwputch(w, i,  0, col, LINE_XOXO);
   mvwputch(w, i, 39, c_yellow, LINE_XOXO); // Shared border, always yellow
@@ -1083,17 +1079,14 @@ void draw_caravan_borders(WINDOW *w, int current_window)
   mvwputch(w, i,  0, c_ltgray, LINE_XOXO);
   mvwputch(w, i, 39, col,      LINE_XOXO);
  }
- for (int i = 1; i <= 38; i++)
-  mvwputch(w, VIEW - 1, i, c_ltgray, LINE_OXOX);
+ draw_hline(w, VIEW - 1, c_ltgray, LINE_OXOX, 1, 39);
 
  mvwputch(w, VIEW - 1,  0, c_ltgray, LINE_XXOO);
  mvwputch(w, VIEW - 1, 39, c_ltgray, LINE_XXOX);
 
 // Finally, draw the item section borders
- for (int i = 40; i <= 78; i++) {
-  mvwputch(w,  0, i, col, LINE_OXOX);
-  mvwputch(w, VIEW - 1, i, col, LINE_OXOX);
- }
+ draw_hline(w, 0, col, LINE_OXOX, 40, 79);
+ draw_hline(w, VIEW - 1, col, LINE_OXOX, 40, 79);
  for (int i = 1; i <= 23; i++)
   mvwputch(w, i, 79, col, LINE_XOXO);
 
@@ -1111,7 +1104,7 @@ void draw_caravan_categories(WINDOW *w, int category_selected, int total_price,
 {
 // Clear the window
  for (int i = 1; i <= 10; i++)
-  mvwprintz(w, i, 1, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+  draw_hline(w, i, c_black, 'x', 1, 39);
  mvwprintz(w, 1, 1, c_white, "Your Cash:%s%d",
            (cash >= 10000 ? " " : (cash >= 1000 ? "  " : (cash >= 100 ? "   " :
             (cash >= 10 ? "    " : "     ")))), cash);
@@ -1133,7 +1126,7 @@ void draw_caravan_items(WINDOW *w, const player& u, std::vector<itype_id> *items
 
 // Actually, clear the item info first.
  for (int i = 12; i <= VIEW - 2; i++)
-  mvwprintz(w, i, 1, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+  draw_hline(w, i, c_black, 'x', 1, 39);
 // THEN print it--if item_selected is valid
  if (item_selected < items->size()) {
   item tmp(item::types[ (*items)[item_selected] ], 0); // Dummy item to get info
@@ -1141,7 +1134,7 @@ void draw_caravan_items(WINDOW *w, const player& u, std::vector<itype_id> *items
  }
 // Next, clear the item list on the right
  for (int i = 1; i <= VIEW - 2; i++)
-  mvwprintz(w, i, 40, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+  draw_hline(w, i, c_black, 'x', 40, 79);
 // Finally, print the item list on the right
  for (int i = offset; i <= offset + VIEW - 2 && i < items->size(); i++) {
   const itype* const i_type = item::types[(*items)[i]];
