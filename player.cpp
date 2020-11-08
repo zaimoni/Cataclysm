@@ -1823,6 +1823,15 @@ std::pair<int, nc_color> player::hp_color(hp_part part) const
     return std::pair(curhp, c_red);
 }
 
+static nc_color stat_color(int cur, int max) {
+    if (0 >= cur) return c_dkgray;
+    if (max / 2 > cur) return c_red;
+    if (max > cur) return c_ltred;
+    if (max == cur) return c_white;
+    if (2 * max > 3 * cur) return c_ltgreen;
+    return c_green;
+}
+
 static nc_color encumb_color(int level)
 {
 	if (level < 0) return c_green;
@@ -1941,14 +1950,12 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
  mvwprintw(w_grid, 0, 0, "%s - %s", name.c_str(), (male ? "Male" : "Female"));
  mvwprintz(w_grid, 0, SCREEN_WIDTH/2 - 1, c_ltred, "| Press TAB to cycle, ESC or q to return.");
 // Main line grid
- for (int i = 0; i < SCREEN_WIDTH; i++) {
-  mvwputch(w_grid,  1, i, c_ltgray, LINE_OXOX);
-  mvwputch(w_grid, 21, i, c_ltgray, LINE_OXOX);
-  mvwputch(w_grid, 11, i, c_ltgray, LINE_OXOX);
-  if (i > 1 && i < 21) {
+ draw_hline(w_grid,  1, c_ltgray, LINE_OXOX);
+ draw_hline(w_grid, 11, c_ltgray, LINE_OXOX);
+ draw_hline(w_grid, 21, c_ltgray, LINE_OXOX);
+ for (int i = 2; i < 21; i++) {
    mvwputch(w_grid, i, VIEW + 1, c_ltgray, LINE_XOXO);
    mvwputch(w_grid, i, 2 * VIEW + 3, c_ltgray, LINE_XOXO);
-  }
  }
  mvwputch(w_grid,  1, VIEW + 1, c_ltgray, LINE_OXXX);
  mvwputch(w_grid,  1, 2 * VIEW + 3, c_ltgray, LINE_OXXX);
@@ -1960,98 +1967,45 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
 
 // First!  Default STATS screen.
  mvwprintz(w_stats, 0, 10, c_ltgray, "STATS");
- mvwprintz(w_stats, 2,  2, c_ltgray, "Strength:%s(%d)",
-           (str_max < 10 ? "         " : "        "), str_max);
- mvwprintz(w_stats, 3,  2, c_ltgray, "Dexterity:%s(%d)",
-           (dex_max < 10 ? "        "  : "       "),  dex_max);
- mvwprintz(w_stats, 4,  2, c_ltgray, "Intelligence:%s(%d)",
-           (int_max < 10 ? "     "     : "    "),     int_max);
- mvwprintz(w_stats, 5,  2, c_ltgray, "Perception:%s(%d)",
-           (per_max < 10 ? "       "   : "      "),   per_max);
+ mvwprintz(w_stats, 2,  2, c_ltgray, "Strength:");
+ mvwprintz(w_stats, 2, 20 - int_log10(str_max), c_ltgray, "(%d)", str_max);
+ mvwprintz(w_stats, 3, 2, c_ltgray, "Dexterity:");
+ mvwprintz(w_stats, 3, 20 - int_log10(dex_max), c_ltgray, "(%d)", dex_max);
+ mvwprintz(w_stats, 4, 2, c_ltgray, "Intelligence:");
+ mvwprintz(w_stats, 4, 20 - int_log10(int_max), c_ltgray, "(%d)", int_max);
+ mvwprintz(w_stats, 5, 2, c_ltgray, "Perception:");
+ mvwprintz(w_stats, 5, 20 - int_log10(per_max), c_ltgray, "(%d)", per_max);
 
- nc_color status = c_white;
-
- if (str_cur <= 0)
-  status = c_dkgray;
- else if (str_cur < str_max / 2)
-  status = c_red;
- else if (str_cur < str_max)
-  status = c_ltred;
- else if (str_cur == str_max)
-  status = c_white;
- else if (str_cur < str_max * 1.5)
-  status = c_ltgreen;
- else
-  status = c_green;
- mvwprintz(w_stats,  2, 17-int_log10(str_cur), status, "%d", str_cur);
-
- if (dex_cur <= 0)
-  status = c_dkgray;
- else if (dex_cur < dex_max / 2)
-  status = c_red;
- else if (dex_cur < dex_max)
-  status = c_ltred;
- else if (dex_cur == dex_max)
-  status = c_white;
- else if (dex_cur < dex_max * 1.5)
-  status = c_ltgreen;
- else
-  status = c_green;
- mvwprintz(w_stats,  3, 17-int_log10(dex_cur), status, "%d", dex_cur);
-
- if (int_cur <= 0)
-  status = c_dkgray;
- else if (int_cur < int_max / 2)
-  status = c_red;
- else if (int_cur < int_max)
-  status = c_ltred;
- else if (int_cur == int_max)
-  status = c_white;
- else if (int_cur < int_max * 1.5)
-  status = c_ltgreen;
- else
-  status = c_green;
- mvwprintz(w_stats,  4, 17-int_log10(int_cur), status, "%d", int_cur);
-
- if (per_cur <= 0)
-  status = c_dkgray;
- else if (per_cur < per_max / 2)
-  status = c_red;
- else if (per_cur < per_max)
-  status = c_ltred;
- else if (per_cur == per_max)
-  status = c_white;
- else if (per_cur < per_max * 1.5)
-  status = c_ltgreen;
- else
-  status = c_green;
- mvwprintz(w_stats,  5, 17-int_log10(per_cur), status, "%d", per_cur);
+ mvwprintz(w_stats,  2, 17-int_log10(str_cur), stat_color(str_cur, str_max), "%d", str_cur);
+ mvwprintz(w_stats,  3, 17-int_log10(dex_cur), stat_color(dex_cur, dex_max), "%d", dex_cur);
+ mvwprintz(w_stats,  4, 17-int_log10(int_cur), stat_color(int_cur, int_max), "%d", int_cur);
+ mvwprintz(w_stats,  5, 17-int_log10(per_cur), stat_color(per_cur, per_max), "%d", per_cur);
 
  wrefresh(w_stats);
 
 // Next, draw encumberment.
  mvwprintz(w_encumb, 0, 6, c_ltgray, "ENCUMBERANCE");
  mvwprintz(w_encumb, 2, 2, c_ltgray, "Head................");
- auto enc = encumb(bp_head);    // problematic if this can be negative (need better function)
- mvwprintz(w_encumb, 2, 21 - int_log10(enc), encumb_color(enc), "%d", enc);
+ int enc = encumb(bp_head);    // problematic if this can be negative (need better function)
+ mvwprintz(w_encumb, 2, 21 - int_log10(abs(enc)) - (0 > enc), encumb_color(enc), "%d", enc);
  mvwprintz(w_encumb, 3, 2, c_ltgray, "Eyes................");
  enc = encumb(bp_eyes);
- mvwprintz(w_encumb, 3, 21 - int_log10(enc), encumb_color(enc), "%d", enc);
+ mvwprintz(w_encumb, 3, 21 - int_log10(abs(enc)) - (0 > enc), encumb_color(enc), "%d", enc);
  mvwprintz(w_encumb, 4, 2, c_ltgray, "Mouth...............");
  enc = encumb(bp_mouth);
- mvwprintz(w_encumb, 4, 21 - int_log10(enc), encumb_color(enc), "%d", enc);
+ mvwprintz(w_encumb, 4, 21 - int_log10(abs(enc)) - (0 > enc), encumb_color(enc), "%d", enc);
  mvwprintz(w_encumb, 5, 2, c_ltgray, "Torso...............");
  enc = encumb(bp_torso);
- mvwprintz(w_encumb, 5, 21 - int_log10(enc), encumb_color(enc), "%d", enc);
+ mvwprintz(w_encumb, 5, 21 - int_log10(abs(enc)) - (0 > enc), encumb_color(enc), "%d", enc);
  mvwprintz(w_encumb, 6, 2, c_ltgray, "Hands...............");
  enc = encumb(bp_hands);
- mvwprintz(w_encumb, 6, 21 - int_log10(enc), encumb_color(enc), "%d", enc);
+ mvwprintz(w_encumb, 6, 21 - int_log10(abs(enc)) - (0 > enc), encumb_color(enc), "%d", enc);
  mvwprintz(w_encumb, 7, 2, c_ltgray, "Legs................");
  enc = encumb(bp_legs);
- mvwprintz(w_encumb, 7, 21 - int_log10(enc), encumb_color(enc), "%d", enc);
+ mvwprintz(w_encumb, 7, 21 - int_log10(abs(enc)) - (0 > enc), encumb_color(enc), "%d", enc);
  mvwprintz(w_encumb, 8, 2, c_ltgray, "Feet................");
  enc = encumb(bp_feet);
- mvwprintz(w_encumb, 8, 21 - int_log10(enc), encumb_color(enc), "%d", enc);
+ mvwprintz(w_encumb, 8, 21 - int_log10(abs(enc)) - (0 > enc), encumb_color(enc), "%d", enc);
  wrefresh(w_encumb);
 
 // Next, draw traits.
@@ -2203,6 +2157,8 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
  int min, max;
  line = 0;
  bool done = false;
+
+ nc_color status = c_white;
 
 // Initial printing is DONE.  Now we give the player a chance to scroll around
 // and "hover" over different items for more info.
