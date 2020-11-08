@@ -12,8 +12,6 @@
 #define SPECIAL_WAVE_CHANCE 5 // One in X chance of single-flavor wave
 #define SPECIAL_WAVE_MIN 5 // Don't use a special wave with < X monsters
 
-#define TOGCOL(n, b) (selection == (n) ? (b ? c_ltgreen : c_yellow) :\
-                      (b ? c_green : c_dkgray))
 #define NUMALIGN(n) ((n) >= 10000 ? 20 : ((n) >= 1000 ? 21 :\
                      ((n) >= 100 ? 22 : ((n) >= 10 ? 23 : 24))))
 
@@ -627,32 +625,23 @@ void defense_game::refresh_setup(WINDOW* w, int selection)
  mvwprintz(w,  5,  2, 2 == selection ? c_yellow : c_blue, defense_location_name(location).c_str());
  mvwprintz(w,  5, 28, c_ltgray, defense_location_description(location).c_str());
 
- mvwprintz(w,  7,  2, c_ltgray, "Initial Difficulty:");
- mvwprintz(w,  7, NUMALIGN(initial_difficulty), 3 == selection ? c_yellow : c_blue, "%d",
-           initial_difficulty);
- mvwprintz(w,  7, 28, c_ltgray, "The difficulty of the first wave.");
- mvwprintz(w,  8,  2, c_ltgray, "Wave Difficulty:");
- mvwprintz(w,  8, NUMALIGN(wave_difficulty), 4 == selection ? c_yellow : c_blue, "%d", wave_difficulty);
- mvwprintz(w,  8, 28, c_ltgray, "The increase of difficulty with each wave.");
+ static auto draw_numeric_row = [&](int y, const char* label, nc_color col, int num, const char* desc) {
+     mvwprintz(w, y, 2, c_ltgray, label);
+     mvwprintz(w, y, 25 - int_log10(num), col, "%d", num);
+     mvwprintz(w, y, 28, c_ltgray, desc);
+ };
 
- mvwprintz(w, 10,  2, c_ltgray, "Time b/w Waves:");
- mvwprintz(w, 10, NUMALIGN(time_between_waves), 5 == selection ? c_yellow : c_blue, "%d",
-           time_between_waves);
- mvwprintz(w, 10, 28, c_ltgray, "The time, in minutes, between waves.");
- mvwprintz(w, 11,  2, c_ltgray, "Waves b/w Caravans:");
- mvwprintz(w, 11, NUMALIGN(waves_between_caravans), 6 == selection ? c_yellow : c_blue, "%d",
-           waves_between_caravans);
- mvwprintz(w, 11, 28, c_ltgray, "The number of waves in between caravans.");
+ draw_numeric_row(7, "Initial Difficulty:", 3 == selection ? c_yellow : c_blue, initial_difficulty, "The difficulty of the first wave.");
+ draw_numeric_row(8, "Wave Difficulty:", 4 == selection ? c_yellow : c_blue, wave_difficulty, "The increase of difficulty with each wave.");
 
- mvwprintz(w, 13,  2, c_ltgray, "Initial Cash:");
- mvwprintz(w, 13, NUMALIGN(initial_cash), 7 == selection ? c_yellow : c_blue, "%d", initial_cash);
- mvwprintz(w, 13, 28, c_ltgray, "The amount of money the player starts with.");
- mvwprintz(w, 14,  2, c_ltgray, "Cash for 1st Wave:");
- mvwprintz(w, 14, NUMALIGN(cash_per_wave), 8 == selection ? c_yellow : c_blue, "%d", cash_per_wave);
- mvwprintz(w, 14, 28, c_ltgray, "The cash awarded for the first wave.");
- mvwprintz(w, 15,  2, c_ltgray, "Cash Increase:");
- mvwprintz(w, 15, NUMALIGN(cash_increase), 9 == selection ? c_yellow : c_blue, "%d", cash_increase);
- mvwprintz(w, 15, 28, c_ltgray, "The increase in the award each wave.");
+ draw_numeric_row(10, "Time b/w Waves:", 5 == selection ? c_yellow : c_blue, time_between_waves, "The time, in minutes, between waves.");
+ draw_numeric_row(11, "Waves b/w Caravans:", 6 == selection ? c_yellow : c_blue, waves_between_caravans, "The number of waves in between caravans.");
+
+ draw_numeric_row(13, "Initial Cash:", 7 == selection ? c_yellow : c_blue, initial_cash, "The amount of money the player starts with.");
+ draw_numeric_row(14, "Cash for 1st Wave:", 8 == selection ? c_yellow : c_blue, cash_per_wave, "The cash awarded for the first wave.");
+ draw_numeric_row(15, "Cash Increase:", 9 == selection ? c_yellow : c_blue, cash_increase, "The increase in the award each wave.");
+
+#define TOGCOL(n, b) (selection == (n) ? (b ? c_ltgreen : c_yellow) : (b ? c_green : c_dkgray))
 
  mvwprintz(w, 17,  2, c_ltgray, "Enemy Selection:");
  mvwprintz(w, 18,  2, TOGCOL(10, zombies), "Zombies");
@@ -668,6 +657,8 @@ void defense_game::refresh_setup(WINDOW* w, int selection)
  mvwprintz(w, 21, 31, TOGCOL(18, sleep), "Sleep");
  mvwprintz(w, 21, 46, TOGCOL(19, mercenaries), "Mercenaries");
  wrefresh(w);
+
+#undef TOGCOL
 }
 
 std::string defense_style_name(defense_style style)
