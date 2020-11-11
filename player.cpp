@@ -1966,6 +1966,13 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
  wrefresh(w_grid);	// w_grid should stay static.
 
 // First!  Default STATS screen.
+ static constexpr const char* stat_labels[] = {
+     "Strength:",
+     "Dexterity:",
+     "Intelligence:",
+     "Perception:"
+ };
+
  mvwprintz(w_stats, 0, 10, c_ltgray, "STATS");
  mvwprintz(w_stats, 2,  2, c_ltgray, "Strength:");
  mvwprintz(w_stats, 2, 20 - int_log10(str_max), c_ltgray, "(%d)", str_max);
@@ -2168,52 +2175,50 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
      skills
  };
 
+ static constexpr const char* stat_desc[] = {
+     "\
+Strength affects your melee damage, the amount of weight you can carry, your\n\
+total HP, your resistance to many diseases, and the effectiveness of actions\n\
+which require brute force.",
+     "\
+Dexterity affects your chance to hit in melee combat, helps you steady your\n\
+gun for ranged combat, and enhances many actions that require finesse.",
+     "\
+Intelligence is less important in most situations, but it is vital for more\n\
+complex tasks like electronics crafting. It also affects how much skill you\n\
+can pick up from reading a book.",
+"\
+Perception is the most important stat for ranged combat. It's also used for\n\
+detecting traps and other things of interest."
+ };
+
+ static_assert(std::end(stat_labels)-std::begin(stat_labels) == std::end(stat_desc) - std::begin(stat_desc));
+
 // Initial printing is DONE.  Now we give the player a chance to scroll around
 // and "hover" over different items for more info.
  do {
   werase(w_info);
   switch (curtab) {
   case stats:	// Stats tab
-   mvwprintz(w_stats, 0, 0, h_ltgray, "          STATS           ");
-   if (line == 0) {
-    mvwprintz(w_stats, 2, 2, h_ltgray, "Strength:");
-    mvwprintz(w_info, 0, 0, c_magenta, "\
-Strength affects your melee damage, the amount of weight you can carry, your\n\
-total HP, your resistance to many diseases, and the effectiveness of actions\n\
-which require brute force.");
-   } else if (line == 1) {
-    mvwprintz(w_stats, 3, 2, h_ltgray, "Dexterity:");
-    mvwprintz(w_info, 0, 0, c_magenta, "\
-Dexterity affects your chance to hit in melee combat, helps you steady your\n\
-gun for ranged combat, and enhances many actions that require finesse."); 
-   } else if (line == 2) {
-    mvwprintz(w_stats, 4, 2, h_ltgray, "Intelligence:");
-    mvwprintz(w_info, 0, 0, c_magenta, "\
-Intelligence is less important in most situations, but it is vital for more\n\
-complex tasks like electronics crafting. It also affects how much skill you\n\
-can pick up from reading a book.");
-   } else if (line == 3) {
-    mvwprintz(w_stats, 5, 2, h_ltgray, "Perception:");
-    mvwprintz(w_info, 0, 0, c_magenta, "\
-Perception is the most important stat for ranged combat. It's also used for\n\
-detecting traps and other things of interest.");
-   }
+   mvwprintz(w_stats, 0, 10, h_ltgray, "STATS");
+   mvwprintz(w_stats, 2 + line, 2, h_ltgray, stat_labels[line]);
+   mvwprintz(w_info, 0, 0, c_magenta, stat_desc[line]);
    wrefresh(w_stats);
    wrefresh(w_info);
    switch (input()) {
     case 'j':
-     line++;
-     if (line == 4)
-      line = 0;
+     mvwprintz(w_stats, 2 + line, 2, c_ltgray, stat_labels[line]);
+     if (std::end(stat_labels) - std::begin(stat_labels) <= ++line) line = 0;
+     mvwprintz(w_stats, 2 + line, 2, h_ltgray, stat_labels[line]);
      break;
     case 'k':
-     line--;
-     if (line == -1)
-      line = 3;
+     mvwprintz(w_stats, 2 + line, 2, c_ltgray, stat_labels[line]);
+     if (0 > --line) line = std::end(stat_labels) - std::begin(stat_labels) - 1;
+     mvwprintz(w_stats, 2 + line, 2, h_ltgray, stat_labels[line]);
      break;
     case '\t':
-     mvwprintz(w_stats, 0, 0, c_ltgray, "          STATS           ");
-     wrefresh(w_stats);
+     mvwprintz(w_stats, 2 + line, 2, c_ltgray, stat_labels[line]);
+     mvwprintz(w_stats, 0, 10, c_ltgray, "STATS");
      line = 0;
      curtab++;
      break;
@@ -2221,13 +2226,7 @@ detecting traps and other things of interest.");
     case KEY_ESCAPE:
      done = true;
    }
-   if (!done) {
-       mvwprintz(w_stats, 2, 2, c_ltgray, "Strength:");
-       mvwprintz(w_stats, 3, 2, c_ltgray, "Dexterity:");
-       mvwprintz(w_stats, 4, 2, c_ltgray, "Intelligence:");
-       mvwprintz(w_stats, 5, 2, c_ltgray, "Perception:");
-       wrefresh(w_stats);
-   }
+   if (!done) wrefresh(w_stats);
    break;
   case encumbrance:	// Encumberment tab
    mvwprintz(w_encumb, 0, 0, h_ltgray, "      ENCUMBERANCE        ");
