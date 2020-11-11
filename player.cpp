@@ -2160,12 +2160,20 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
 
  nc_color status = c_white;
 
+ enum tabs {
+     stats = 1,
+     encumbrance,
+     traits,
+     effects,
+     skills
+ };
+
 // Initial printing is DONE.  Now we give the player a chance to scroll around
 // and "hover" over different items for more info.
  do {
   werase(w_info);
   switch (curtab) {
-  case 1:	// Stats tab
+  case stats:	// Stats tab
    mvwprintz(w_stats, 0, 0, h_ltgray, "          STATS           ");
    if (line == 0) {
     mvwprintz(w_stats, 2, 2, h_ltgray, "Strength:");
@@ -2213,13 +2221,15 @@ detecting traps and other things of interest.");
     case KEY_ESCAPE:
      done = true;
    }
-   mvwprintz(w_stats, 2, 2, c_ltgray, "Strength:");
-   mvwprintz(w_stats, 3, 2, c_ltgray, "Dexterity:");
-   mvwprintz(w_stats, 4, 2, c_ltgray, "Intelligence:");
-   mvwprintz(w_stats, 5, 2, c_ltgray, "Perception:");
-   wrefresh(w_stats);
+   if (!done) {
+       mvwprintz(w_stats, 2, 2, c_ltgray, "Strength:");
+       mvwprintz(w_stats, 3, 2, c_ltgray, "Dexterity:");
+       mvwprintz(w_stats, 4, 2, c_ltgray, "Intelligence:");
+       mvwprintz(w_stats, 5, 2, c_ltgray, "Perception:");
+       wrefresh(w_stats);
+   }
    break;
-  case 2:	// Encumberment tab
+  case encumbrance:	// Encumberment tab
    mvwprintz(w_encumb, 0, 0, h_ltgray, "      ENCUMBERANCE        ");
    if (line == 0) {
     mvwprintz(w_encumb, 2, 2, h_ltgray, "Head");
@@ -2282,16 +2292,18 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
     case KEY_ESCAPE:
      done = true;
    }
-   mvwprintz(w_encumb, 2, 2, c_ltgray, "Head");
-   mvwprintz(w_encumb, 3, 2, c_ltgray, "Eyes");
-   mvwprintz(w_encumb, 4, 2, c_ltgray, "Mouth");
-   mvwprintz(w_encumb, 5, 2, c_ltgray, "Torso");
-   mvwprintz(w_encumb, 6, 2, c_ltgray, "Hands");
-   mvwprintz(w_encumb, 7, 2, c_ltgray, "Legs");
-   mvwprintz(w_encumb, 8, 2, c_ltgray, "Feet");
-   wrefresh(w_encumb);
+   if (!done) {
+       mvwprintz(w_encumb, 2, 2, c_ltgray, "Head");
+       mvwprintz(w_encumb, 3, 2, c_ltgray, "Eyes");
+       mvwprintz(w_encumb, 4, 2, c_ltgray, "Mouth");
+       mvwprintz(w_encumb, 5, 2, c_ltgray, "Torso");
+       mvwprintz(w_encumb, 6, 2, c_ltgray, "Hands");
+       mvwprintz(w_encumb, 7, 2, c_ltgray, "Legs");
+       mvwprintz(w_encumb, 8, 2, c_ltgray, "Feet");
+       wrefresh(w_encumb);
+   }
    break;
-  case 3:	// Traits tab
+  case traits:	// Traits tab
    mvwprintz(w_traits, 0, 0, h_ltgray, "         TRAITS           ");
    if (line <= 2) {
     min = 0;
@@ -2348,7 +2360,7 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
    }
    break;
 
-  case 4:	// Effects tab
+  case effects:	// Effects tab
    mvwprintz(w_effects, 0, 0, h_ltgray, "        EFFECTS           ");
    if (line <= 2) {
     min = 0;
@@ -2397,7 +2409,7 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
    }
    break;
 
-  case 5:	// Skills tab
+  case skills:	// Skills tab
    mvwprintz(w_skills, 0, 0, h_ltgray, "           SKILLS         ");
    if (line <= 2) {
     min = 0;
