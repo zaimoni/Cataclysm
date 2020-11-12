@@ -2049,10 +2049,10 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
    skillslist.push_back(skill(i));
    if (line < 9) {
     mvwprintz(w_skills, line, 1, c_ltblue, "%s:", skill_name(skill(i)));
-    mvwprintz(w_skills, line,19, c_ltblue, "%d%s(%s%d%%)", sklevel[i],
-              (sklevel[i] < 10 ? " " : ""),
-              (skexercise[i] < 10 && skexercise[i] >= 0 ? " " : ""),
-              (skexercise[i] <  0 ? 0 : skexercise[i]));
+    mvwprintz(w_skills, line, 19, c_ltblue, "%d", sklevel[i]);
+    mvwprintz(w_skills, line, 21, c_ltblue, "(%s%d%%)",
+        (skexercise[i] < 10 && skexercise[i] >= 0 ? " " : ""),
+        (skexercise[i] < 0 ? 0 : skexercise[i]));
     line++;
    }
   }
@@ -2432,17 +2432,14 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
     mvwprintz(w_skills, 2 + i - min, 1, c_ltgray, "                         ");
     if (skexercise[i] >= 100) {
      mvwprintz(w_skills, 2 + i - min, 1, status, "%s:", skill_name(skill(skillslist[i])));
-     mvwprintz(w_skills, 2 + i - min,19, status, "%d (%s%d%%)",
-               sklevel[skillslist[i]],
-               (skexercise[skillslist[i]] < 10 &&
-                skexercise[skillslist[i]] >= 0 ? " " : ""),
+     mvwprintz(w_skills, 2 + i - min, 19, status, "%d", sklevel[skillslist[i]]);
+     mvwprintz(w_skills, 2 + i - min, 21, status, "(%s%d%%)",
                (skexercise[skillslist[i]] <  0 ? 0 :
                 skexercise[skillslist[i]]));
     } else {
-     mvwprintz(w_skills, 2 + i - min, 1, status, "%s:",
-               skill_name(skill(skillslist[i])));
-     mvwprintz(w_skills, 2 + i - min,19, status, "%d (%s%d%%)",
-               sklevel[skillslist[i]],
+     mvwprintz(w_skills, 2 + i - min, 1, status, "%s:", skill_name(skill(skillslist[i])));
+     mvwprintz(w_skills, 2 + i - min, 19, status, "%d", sklevel[skillslist[i]]);
+     mvwprintz(w_skills, 2 + i - min, 21, status, "(%s%d%%)",
                (skexercise[skillslist[i]] < 10 &&
                 skexercise[skillslist[i]] >= 0 ? " " : ""),
                (skexercise[skillslist[i]] <  0 ? 0 :
