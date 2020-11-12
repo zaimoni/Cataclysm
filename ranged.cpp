@@ -775,14 +775,14 @@ void shoot_player(game *g, player &p, player *h, int &dam, double goodhit)
  if (dam > 0) {
   h->moves -= rng(0, dam);
   if (h == &(g->u))
-   messages.add("%s shoots your %s for %d damage!", p.name.c_str(), body_part_name(hit, side).c_str(), dam);
+   messages.add("%s shoots your %s for %d damage!", p.name.c_str(), body_part_name(hit, side), dam);
   else {
    if (&p == &(g->u))
-    messages.add("You shoot %s's %s.", h->name.c_str(), body_part_name(hit, side).c_str());
+    messages.add("You shoot %s's %s.", h->name.c_str(), body_part_name(hit, side));
    else if (g->u_see(h->pos))
     messages.add("%s shoots %s's %s.",
                (g->u_see(p.pos) ? p.name.c_str() : "Someone"),
-               h->name.c_str(), body_part_name(hit, side).c_str());
+               h->name.c_str(), body_part_name(hit, side));
   }
   h->hit(g, hit, side, 0, dam);
  }

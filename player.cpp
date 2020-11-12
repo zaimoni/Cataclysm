@@ -4801,7 +4801,7 @@ bool player::wear_item(const item& to_wear)
      for (body_part i = bp_head; i < num_bp; i = body_part(i + 1)) {
          if (armor->covers & mfb(i) && encumb(i) >= 4)
              messages.add("Your %s %s very encumbered! %s",
-                 body_part_name(body_part(i), 2).c_str(),
+                 body_part_name(body_part(i), 2),
                  (i == bp_head || i == bp_torso || i == bp_mouth ? "is" : "are"),
                  encumb_text(i));
      }

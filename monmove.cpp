@@ -390,7 +390,7 @@ void monster::hit_player(game *g, player &p, bool can_grab)
  if (dam == 0 && u_see) messages.add("The %s misses %s.", name().c_str(), you.c_str());
  else if (dam > 0) {
   if (u_see && tech != TEC_BLOCK)
-   messages.add("The %s hits %s %s.", name().c_str(), your.c_str(), body_part_name(bphit, side).c_str());
+   messages.add("The %s hits %s %s.", name().c_str(), your.c_str(), body_part_name(bphit, side));
 // Attempt defensive moves
 
   if (!is_npc) {

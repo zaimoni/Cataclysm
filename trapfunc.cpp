@@ -94,7 +94,7 @@ void trapfunc::crossbow(game *g, int x, int y)
    case 10: hit = bp_head; break;
   }
   int side = rng(0, 1);
-  messages.add("Your %s is hit!", body_part_name(hit, side).c_str());
+  messages.add("Your %s is hit!", body_part_name(hit, side));
   g->u.hit(g, hit, side, 0, rng(20, 30));
   add_bolt = !one_in(10);
  } else messages.add("You dodge the shot!");
@@ -139,7 +139,7 @@ void trapfunc::shotgun(game *g, int x, int y)
    case 10: hit = bp_head; break;
   }
   int side = rng(0, 1);
-  messages.add("Your %s is hit!", body_part_name(hit, side).c_str());
+  messages.add("Your %s is hit!", body_part_name(hit, side));
   g->u.hit(g, hit, side, 0, rng(40 * shots, 60 * shots));
  } else
   messages.add("You dodge the shot!");
@@ -329,7 +329,7 @@ void trapfunc::pit_spikes(game *g, int x, int y)
    case 10: hit = bp_torso; break;
   }
   int side = rng(0, 1);
-  messages.add("The spikes impale your %s!", body_part_name(hit, side).c_str());
+  messages.add("The spikes impale your %s!", body_part_name(hit, side));
   g->u.hit(g, hit, side, 0, damage);
   if (one_in(4)) {
    messages.add("The spears break!");

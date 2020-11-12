@@ -292,7 +292,7 @@ void mattack::growplants(game *g, monster *z)
       if (one_in(4)) hit = bp_torso;
       else if (one_in(2)) hit = bp_feet;
 	  messages.add("A tree bursts forth from the earth and pierces your %s!",
-                 body_part_name(hit, side).c_str());
+                 body_part_name(hit, side));
       g->u.hit(g, hit, side, 0, rng(10, 30));
      } else if (npc* const nPC = g->nPC(dest)) {	// An NPC got hit
        body_part hit = bp_legs;
@@ -301,7 +301,7 @@ void mattack::growplants(game *g, monster *z)
        else if (one_in(2)) hit = bp_feet;
        if (g->u_see(dest))
         messages.add("A tree bursts forth from the earth and pierces %s's %s!",
-			nPC->name.c_str(), body_part_name(hit, side).c_str());
+			nPC->name.c_str(), body_part_name(hit, side));
 	   nPC->hit(g, hit, side, 0, rng(10, 30));
      }
 	 t = t_tree_young;
@@ -332,7 +332,7 @@ void mattack::growplants(game *g, monster *z)
        if (one_in(4)) hit = bp_torso;
        else if (one_in(2)) hit = bp_feet;
 	   messages.add("The underbrush beneath your feet grows and pierces your %s!",
-                  body_part_name(hit, side).c_str());
+                  body_part_name(hit, side));
        g->u.hit(g, hit, side, 0, rng(10, 30));
       } else if (npc* const nPC = g->nPC(dest)) {
         body_part hit = bp_legs;
@@ -341,7 +341,7 @@ void mattack::growplants(game *g, monster *z)
         else if (one_in(2)) hit = bp_feet;
         if (g->u_see(dest))
          messages.add("Underbrush grows into a tree, and it pierces %s's %s!",
-			 nPC->name.c_str(), body_part_name(hit, side).c_str());
+			 nPC->name.c_str(), body_part_name(hit, side));
 		nPC->hit(g, hit, side, 0, rng(10, 30));
        }
      }
@@ -381,7 +381,7 @@ void mattack::vine(game *g, monster *z)
    if (g->u.pos.x == x && g->u.pos.y == y) {
     body_part bphit = random_body_part();
     int side = rng(0, 1);
-    messages.add("The %s lashes your %s!", z->name().c_str(), body_part_name(bphit, side).c_str());
+    messages.add("The %s lashes your %s!", z->name().c_str(), body_part_name(bphit, side));
     g->u.hit(g, bphit, side, 4, 4);
     z->sp_timeout = z->type->sp_freq;
     z->moves -= 100;
@@ -622,7 +622,7 @@ void mattack::dermatik(game *g, monster *z)
   targeted = bp_feet;
  if (g->u.armor_cut(targeted) >= 2) {
   messages.add("The %s lands on your %s, but can't penetrate your armor.",
-             z->name().c_str(), body_part_name(targeted, rng(0, 1)).c_str());
+             z->name().c_str(), body_part_name(targeted, rng(0, 1)));
   z->moves -= 150; // Attemped laying takes a while
   return;
  }
@@ -734,7 +734,7 @@ void mattack::tentacle(game *g, monster *z)
  }
  body_part hit = random_body_part();
  int dam = rng(10, 20), side = rng(0, 1);
- messages.add("Your %s is hit for %d damage!", body_part_name(hit, side).c_str(), dam);
+ messages.add("Your %s is hit for %d damage!", body_part_name(hit, side), dam);
  g->u.hit(g, hit, side, dam, 0);
 }
 
@@ -781,8 +781,7 @@ void mattack::vortex(game *g, monster *z)
       } else if (traj[i] == g->u.pos) {
        body_part hit = random_body_part();
        int side = rng(0, 1);
-	   messages.add("A %s hits your %s for %d damage!", thrown.tname().c_str(),
-                  body_part_name(hit, side).c_str(), dam);
+	   messages.add("A %s hits your %s for %d damage!", thrown.tname().c_str(), body_part_name(hit, side), dam);
        g->u.hit(g, hit, side, dam, 0);
        dam = 0;
       }

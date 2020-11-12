@@ -890,12 +890,12 @@ void player::perform_defensive_technique(
    }
    if (u_see)
     messages.add("%s block%s with %s %s.", You.c_str(), (is_npc() ? "s" : ""),
-               your, body_part_name(bp_hit, side).c_str());
-   bash_dam *= .5;
+               your, body_part_name(bp_hit, side));
+   bash_dam /= 2;
    double reduction = 1.0;
 // Special reductions for certain styles
-   if (weapon.type->id == itm_style_tai_chi) reduction -= double(0.08 * double(per_cur - 6));
-   if (weapon.type->id == itm_style_taekwando) reduction -= double(0.08 * double(str_cur - 6));
+   if (weapon.type->id == itm_style_tai_chi) reduction -= double(0.08 * (per_cur - 6));
+   if (weapon.type->id == itm_style_taekwando) reduction -= double(0.08 * (str_cur - 6));
    if (reduction > 1.0) reduction = 1.0;
    if (reduction < 0.3) reduction = 0.3;
 

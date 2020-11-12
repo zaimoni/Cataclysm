@@ -3124,8 +3124,8 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
    } else if (traj[j] == u.pos) {
     body_part hit = random_body_part();
     int side = rng(0, 1);
-	messages.add("Shrapnel hits your %s!", body_part_name(hit, side).c_str());
-    u.hit(this, hit, rng(0, 1), 0, dam);
+	messages.add("Shrapnel hits your %s!", body_part_name(hit, side));
+    u.hit(this, hit, side, 0, dam);
    } else
     m.shoot(this, traj[j].x, traj[j].y, dam, j == traj.size() - 1, 0);
   }

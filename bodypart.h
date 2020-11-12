@@ -5,7 +5,7 @@
 
 #include <string>
 
-std::string body_part_name(body_part bp, int side);
+const char* body_part_name(body_part bp, int side);
 const char* encumb_text(body_part bp);
 
 body_part random_body_part();
