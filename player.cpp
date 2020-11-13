@@ -1990,6 +1990,17 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
 
  wrefresh(w_stats);
 
+// C++20: compute labels from body_part_name
+ static constexpr const char* enc_labels[] = {
+   "Head",
+   "Eyes",
+   "Mouth",
+   "Torso",
+   "Hands",
+   "Legs",
+   "Feet"
+ };
+
 // Next, draw encumberment.
  mvwprintz(w_encumb, 0, 6, c_ltgray, "ENCUMBERANCE");
  mvwprintz(w_encumb, 2, 2, c_ltgray, "Head................");
@@ -2229,32 +2240,27 @@ detecting traps and other things of interest."
    if (!done) wrefresh(w_stats);
    break;
   case encumbrance:	// Encumberment tab
-   mvwprintz(w_encumb, 0, 0, h_ltgray, "      ENCUMBERANCE        ");
+   mvwprintz(w_encumb, 0, 6, h_ltgray, "ENCUMBERANCE");
+   mvwprintz(w_encumb, 2 + line, 2, h_ltgray, enc_labels[line]);
    if (line == 0) {
-    mvwprintz(w_encumb, 2, 2, h_ltgray, "Head");
     mvwprintz(w_info, 0, 0, c_magenta, "Head encumberance has no effect; it simply limits how much you can put on.");
    } else if (line == 1) {
-    mvwprintz(w_encumb, 3, 2, h_ltgray, "Eyes");
     const int enc_eyes = encumb(bp_eyes);
     mvwprintz(w_info, 0, 0, c_magenta, "Perception -%d when checking traps or firing ranged weapons;\n\
 Perception -%.1f when throwing items", enc_eyes, enc_eyes / 2.0);
    } else if (line == 2) {
-    mvwprintz(w_encumb, 4, 2, h_ltgray, "Mouth");
     mvwprintz(w_info, 0, 0, c_magenta, "Running costs +%d movement points", encumb(bp_mouth) * 5);
    } else if (line == 3) {
-    mvwprintz(w_encumb, 5, 2, h_ltgray, "Torso");
     const int enc_torso = encumb(bp_torso);
     mvwprintz(w_info, 0, 0, c_magenta, "Melee skill -%d;      Dodge skill -%d;\n\
 Swimming costs +%d movement points;\n\
 Melee attacks cost +%d movement points", enc_torso, enc_torso,
 enc_torso * (80 - sklevel[sk_swimming] * 3), enc_torso * 20);
    } else if (line == 4) {
-    mvwprintz(w_encumb, 6, 2, h_ltgray, "Hands");
     const int enc_hands = encumb(bp_hands);
     mvwprintz(w_info, 0, 0, c_magenta, "Reloading costs +%d movement points;\n\
 Dexterity -%d when throwing items", enc_hands * 30, enc_hands);
    } else if (line == 5) {
-    mvwprintz(w_encumb, 7, 2, h_ltgray, "Legs");
     const int enc_legs = encumb(bp_legs);
     const char* const sign = (enc_legs >= 0 ? "+" : "");
     const char* const osign = (enc_legs < 0 ? "+" : "-");
@@ -2264,7 +2270,6 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
                      sign, enc_legs *(50 - sklevel[sk_swimming]),
                      osign, enc_legs / 2.0);
    } else if (line == 6) {
-    mvwprintz(w_encumb, 8, 2, h_ltgray, "Feet");
     const int enc_feet = encumb(bp_feet);
     mvwprintz(w_info, 0, 0, c_magenta, "Running costs %s%d movement points", (enc_feet >= 0 ? "+" : ""), enc_feet * 5);
    }
@@ -2272,17 +2277,18 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
    wrefresh(w_info);
    switch (input()) {
     case 'j':
-     line++;
-     if (line == 7)
-      line = 0;
+     mvwprintz(w_encumb, 2 + line, 2, c_ltgray, enc_labels[line]);
+     if (std::end(enc_labels) - std::begin(enc_labels) <= ++line) line = 0;
+     mvwprintz(w_encumb, 2 + line, 2, h_ltgray, enc_labels[line]);
      break;
     case 'k':
-     line--;
-     if (line == -1)
-      line = 6;
+     mvwprintz(w_encumb, 2 + line, 2, c_ltgray, enc_labels[line]);
+     if (0 > --line) line = std::end(enc_labels) - std::begin(enc_labels) - 1;
+     mvwprintz(w_encumb, 2 + line, 2, h_ltgray, enc_labels[line]);
      break;
     case '\t':
-     mvwprintz(w_encumb, 0, 0, c_ltgray, "      ENCUMBERANCE        ");
+     mvwprintz(w_encumb, 2 + line, 2, c_ltgray, enc_labels[line]);
+     mvwprintz(w_encumb, 0, 6, c_ltgray, "ENCUMBERANCE");
      wrefresh(w_encumb);
      line = 0;
      curtab++;
@@ -2291,16 +2297,7 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
     case KEY_ESCAPE:
      done = true;
    }
-   if (!done) {
-       mvwprintz(w_encumb, 2, 2, c_ltgray, "Head");
-       mvwprintz(w_encumb, 3, 2, c_ltgray, "Eyes");
-       mvwprintz(w_encumb, 4, 2, c_ltgray, "Mouth");
-       mvwprintz(w_encumb, 5, 2, c_ltgray, "Torso");
-       mvwprintz(w_encumb, 6, 2, c_ltgray, "Hands");
-       mvwprintz(w_encumb, 7, 2, c_ltgray, "Legs");
-       mvwprintz(w_encumb, 8, 2, c_ltgray, "Feet");
-       wrefresh(w_encumb);
-   }
+   if (!done) wrefresh(w_encumb);
    break;
   case traits:	// Traits tab
    mvwprintz(w_traits, 0, 0, h_ltgray, "         TRAITS           ");
