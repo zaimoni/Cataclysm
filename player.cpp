@@ -2028,18 +2028,26 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
 
 // Next, draw traits.
  line = 2;
- std::vector <pl_flag> traitslist;
  mvwprintz(w_traits, 0, 9, c_ltgray, "TRAITS");
- for (int i = 0; i < PF_MAX2; i++) {
-  if (my_traits[i]) {
-   traitslist.push_back(pl_flag(i));
-   if (line < 9) {
-    const auto& tr = mutation_branch::traits[i];
-    mvwprintz(w_traits, line, 1, (0 < tr.points ? c_ltgreen : c_ltred), tr.name.c_str());
-    line++;
-   }
-  }
- }
+
+ static auto traits_vector = [&]() {
+     std::vector<pl_flag> ret;
+     for (int i = 0; i < PF_MAX2; i++) {
+         if (my_traits[i]) {
+             ret.push_back(pl_flag(i));
+             if (line < 9) {
+                 const auto& tr = mutation_branch::traits[i];
+                 mvwprintz(w_traits, line, 1, (0 < tr.points ? c_ltgreen : c_ltred), tr.name.c_str());
+                 line++;
+             }
+         }
+     }
+     return ret;
+ };
+
+ const std::vector<pl_flag> traitslist = traits_vector();
+ const size_t traits_ub = traitslist.size();
+
  wrefresh(w_traits);
 
 // Next, draw effects.
@@ -2303,35 +2311,29 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
    mvwprintz(w_traits, 0, 0, h_ltgray, "         TRAITS           ");
    if (line <= 2) {
     min = 0;
-    max = 7;
-    if (traitslist.size() < max)
-     max = traitslist.size();
-   } else if (line >= traitslist.size() - 3) {
-    min = (traitslist.size() < 8 ? 0 : traitslist.size() - 7);
-    max = traitslist.size();
+    max = cataclysm::max(7, traits_ub);
+   } else if (line >= traits_ub - 3) {
+    min = (traits_ub < 8 ? 0 : traits_ub - 7);
+    max = traits_ub;
    } else {
     min = line - 3;
-    max = line + 4;
-    if (traitslist.size() < max) max = traitslist.size();
+    max = clamped_ub(line + 4, traits_ub);
    }
    for (int i = min; i < max; i++) {
     mvwprintz(w_traits, 2 + i - min, 1, c_ltgray, "                         ");
 	if (traitslist[i] >= PF_MAX2) continue;	// XXX out of bounds dereference \todo better recovery strategy
 	const auto& tr = mutation_branch::traits[traitslist[i]];
 	status = (tr.points > 0 ? c_ltgreen : c_ltred);
-    if (i == line)
-     mvwprintz(w_traits, 2 + i - min, 1, hilite(status), tr.name.c_str());
-    else
-     mvwprintz(w_traits, 2 + i - min, 1, status, tr.name.c_str());
+    mvwprintz(w_traits, 2 + i - min, 1, (i == line) ? hilite(status) : status, tr.name.c_str());
    }
-   if (line >= 0 && line < traitslist.size())
+   if (line >= 0 && line < traits_ub)
     mvwprintz(w_info, 0, 0, c_magenta, "%s",
 		mutation_branch::traits[traitslist[line]].description.c_str());
    wrefresh(w_traits);
    wrefresh(w_info);
    switch (input()) {
     case 'j':
-     if (line < traitslist.size() - 1)
+     if (line < traits_ub - 1)
       line++;
      break;
     case 'k':
@@ -2340,8 +2342,8 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
      break;
     case '\t':
      mvwprintz(w_traits, 0, 0, c_ltgray, "         TRAITS           ");
-     for (int i = 0; i < traitslist.size() && i < 7; i++) {
-      mvwprintz(w_traits, i + 2, 1, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxx");
+     for (int i = 0; i < traits_ub && i < 7; i++) {
+      draw_hline(w_traits, i + 2, c_black, 'x', 1);
 	  if (traitslist[i] >= PF_MAX2) continue;	// XXX out of bounds dereference \todo better recovery strategy
 	  const auto& tr = mutation_branch::traits[traitslist[i]];
       mvwprintz(w_traits, i + 2, 1, (0 < tr.points ? c_ltgreen : c_ltred), tr.name.c_str());
