@@ -3127,7 +3127,7 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
 	messages.add("Shrapnel hits your %s!", body_part_name(hit, side));
     u.hit(this, hit, side, 0, dam);
    } else
-    m.shoot(this, traj[j].x, traj[j].y, dam, j == traj.size() - 1, 0);
+    m.shoot(this, traj[j], dam, j == traj.size() - 1, 0);
   }
  }
 }

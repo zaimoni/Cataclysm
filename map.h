@@ -199,7 +199,7 @@ class map
  bool bash(int x, int y, int str, int* res = nullptr);
  bool bash(const point& pt, int str, int* res = nullptr) { return bash(pt.x, pt.y, str, res ); }
  void destroy(game *g, int x, int y, bool makesound);
- void shoot(game *g, int x, int y, int &dam, bool hit_items, unsigned flags);
+ void shoot(game *g, const point& pt, int &dam, bool hit_items, unsigned flags);
  bool hit_with_acid(game *g, int x, int y);
  void marlossify(int x, int y);
 

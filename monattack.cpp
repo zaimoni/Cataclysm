@@ -426,7 +426,7 @@ void mattack::spit_sap(game *g, monster *z)
   std::vector<point> line = line_to(z->pos, hitx, hity, 0);
   int dam = 5;
   for (int i = 0; i < line.size() && dam > 0; i++) {
-   g->m.shoot(g, line[i].x, line[i].y, dam, false, 0);
+   g->m.shoot(g, line[i], dam, false, 0);
    if (dam == 0 && g->u_see(line[i])) {
     messages.add("A glob of sap hits the %s!", g->m.tername(line[i]).c_str());
     return;
@@ -441,7 +441,7 @@ void mattack::spit_sap(game *g, monster *z)
  std::vector<point> line = line_to(z->pos, g->u.pos, t);
  int dam = 5;
  for (int i = 0; i < line.size() && dam > 0; i++) {
-  g->m.shoot(g, line[i].x, line[i].y, dam, false, 0);
+  g->m.shoot(g, line[i], dam, false, 0);
   if (dam == 0 && g->u_see(line[i])) {
    messages.add("A glob of sap hits the %s!", g->m.tername(line[i]).c_str());
    return;
@@ -725,10 +725,11 @@ void mattack::tentacle(game *g, monster *z)
  std::vector<point> line = line_to(z->pos, g->u.pos, t);
  for (int i = 0; i < line.size(); i++) {
   int tmpdam = 20;
-  g->m.shoot(g, line[i].x, line[i].y, tmpdam, true, 0);
+  g->m.shoot(g, line[i], tmpdam, true, 0);
  }
 
- if (rng(0, 20) > g->u.dodge(g) || one_in(g->u.dodge(g))) {
+ const int evasion = g->u.dodge(g);
+ if (rng(0, 20) > evasion || one_in(evasion)) {
   messages.add("You dodge it!");
   return;
  }
@@ -770,7 +771,7 @@ void mattack::vortex(game *g, monster *z)
      int dam = thrown.weight() / double(3 + double(thrown.volume() / 6));
      std::vector<point> traj = continue_line(from_monster, distance);
      for (int i = 0; i < traj.size() && dam > 0; i++) {
-      g->m.shoot(g, traj[i].x, traj[i].y, dam, false, 0);
+      g->m.shoot(g, traj[i], dam, false, 0);
       if (monster* const m_at = g->mon(traj[i])) {
        if (m_at->hurt(dam)) g->kill_mon(*m_at, (z->friendly != 0));
        dam = 0;
@@ -829,7 +830,7 @@ void mattack::vortex(game *g, monster *z)
        thrown->screenpos_set(traj[i - 1]);
       }
       int damage_copy = damage;
-      g->m.shoot(g, traj[i].x, traj[i].y, damage_copy, false, 0);
+      g->m.shoot(g, traj[i], damage_copy, false, 0);
       if (damage_copy < damage) thrown->hurt(damage - damage_copy);
      }
      if (hit_wall) damage *= 2;
@@ -856,9 +857,8 @@ void mattack::vortex(game *g, monster *z)
       g->u.screenpos_set(traj[i - 1]);
      }
      int damage_copy = damage;
-     g->m.shoot(g, traj[i].x, traj[i].y, damage_copy, false, 0);
-     if (damage_copy < damage)
-      g->u.hit(g, bp_torso, 0, damage - damage_copy, 0);
+     g->m.shoot(g, traj[i], damage_copy, false, 0);
+     if (damage_copy < damage) g->u.hit(g, bp_torso, 0, damage - damage_copy, 0);
     }
     if (hit_wall) damage *= 2;
     else {

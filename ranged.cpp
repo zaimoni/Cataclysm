@@ -356,7 +356,7 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
     shoot_player(this, p, h, dam, goodhit);
 
    } else
-    m.shoot(this, t.x, t.y, dam, i == trajectory.size() - 1, flags);
+    m.shoot(this, t, dam, i == trajectory.size() - 1, flags);
   } // Done with the trajectory!
 
   point last(trajectory.back());
@@ -468,7 +468,7 @@ void game::throw_item(player &p, point tar, item&& thrown, std::vector<point> &t
    if (m_at->hurt(dam)) kill_mon(*m_at, !p.is_npc());
    return;
   } else // No monster hit, but the terrain might be.
-   m.shoot(this, t.x, t.y, dam, false, 0);
+   m.shoot(this, t, dam, false, 0);
   if (m.move_cost(t) == 0) {
    t = (i > 0) ? trajectory[i - 1] : u.pos;
    break;

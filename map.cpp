@@ -1110,29 +1110,28 @@ void map::destroy(game *g, int x, int y, bool makesound)
  if (makesound) g->sound(x, y, 40, "SMASH!!");
 }
 
-void map::shoot(game *g, int x, int y, int &dam, bool hit_items, unsigned flags)
+void map::shoot(game *g, const point& pt, int &dam, bool hit_items, unsigned flags)
 {
  if (dam < 0) return;
 
- if (has_flag(alarmed, x, y) && !g->event_queued(EVENT_WANTED)) {
+ if (has_flag(alarmed, pt) && !g->event_queued(EVENT_WANTED)) {
   g->sound(g->u.pos, 30, "An alarm sounds!");
   g->add_event(EVENT_WANTED, int(messages.turn) + 300, 0, g->lev.x, g->lev.y);
  }
 
  int vpart;
- vehicle *veh = veh_at(x, y, vpart);
+ vehicle *veh = veh_at(pt, vpart);
  if (veh) {
   bool inc = (flags & mfb(IF_AMMO_INCENDIARY) || flags & mfb(IF_AMMO_FLAME));
   dam = veh->damage (vpart, dam, inc? 2 : 0, hit_items);
  }
 
- switch (ter(x, y)) {
+ switch (ter_id& terrain = ter(pt)) {
  case t_wall_wood_broken:
  case t_door_b:
   if (hit_items || one_in(8)) {	// 1 in 8 chance of hitting the door
    dam -= rng(20, 40);
-   if (dam > 0)
-    ter(x, y) = t_dirt;
+   if (dam > 0) terrain = t_dirt;
   } else
    dam -= rng(0, 1);
   break;
@@ -1142,26 +1141,23 @@ void map::shoot(game *g, int x, int y, int &dam, bool hit_items, unsigned flags)
  case t_door_locked:
  case t_door_locked_alarm:
   dam -= rng(15, 30);
-  if (dam > 0)
-   ter(x, y) = t_door_b;
+  if (dam > 0) terrain = t_door_b;
   break;
 
  case t_door_boarded:
   dam -= rng(15, 35);
-  if (dam > 0)
-   ter(x, y) = t_door_b;
+  if (dam > 0) terrain = t_door_b;
   break;
 
  case t_window:
  case t_window_alarm:
   dam -= rng(0, 5);
-  ter(x, y) = t_window_frame;
+  terrain = t_window_frame;
   break;
 
  case t_window_boarded:
   dam -= rng(10, 30);
-  if (dam > 0)
-   ter(x, y) = t_window_frame;
+  if (dam > 0) terrain = t_window_frame;
   break;
 
  case t_wall_glass_h:
@@ -1169,31 +1165,29 @@ void map::shoot(game *g, int x, int y, int &dam, bool hit_items, unsigned flags)
  case t_wall_glass_h_alarm:
  case t_wall_glass_v_alarm:
   dam -= rng(0, 8);
-  ter(x, y) = t_floor;
+  terrain = t_floor;
   break;
 
  case t_paper:
   dam -= rng(4, 16);
-  if (dam > 0)
-   ter(x, y) = t_dirt;
-  if (flags & mfb(IF_AMMO_INCENDIARY))
-   add_field(g, x, y, fd_fire, 1);
+  if (dam > 0) terrain = t_dirt;
+  if (flags & mfb(IF_AMMO_INCENDIARY)) add_field(g, pt, fd_fire, 1);
   break;
 
  case t_gas_pump:
   if (hit_items || one_in(3)) {
    if (dam > 15) {
     if (flags & mfb(IF_AMMO_INCENDIARY) || flags & mfb(IF_AMMO_FLAME))
-     g->explosion(x, y, 40, 0, true);
+     g->explosion(pt, 40, 0, true);
     else {
-     for (int i = x - 2; i <= x + 2; i++) {
-      for (int j = y - 2; j <= y + 2; j++) {
+     for (int i = pt.x - 2; i <= pt.x + 2; i++) {
+      for (int j = pt.y - 2; j <= pt.y + 2; j++) {
        if (move_cost(i, j) > 0 && one_in(3))
         add_item(i, j, item::types[itm_gasoline], 0);
       }
      }
     }
-    ter(x, y) = t_gas_pump_smashed;
+    terrain = t_gas_pump_smashed;
    }
    dam -= 60;
   }
@@ -1201,41 +1195,37 @@ void map::shoot(game *g, int x, int y, int &dam, bool hit_items, unsigned flags)
 
  case t_vat:
   if (dam >= 10) {
-   g->sound(x, y, 15, "ke-rash!");
-   ter(x, y) = t_floor;
+   g->sound(pt, 15, "ke-rash!");
+   terrain = t_floor;
   } else
    dam = 0;
   break;
 
  default:
-  if (move_cost(x, y) == 0 && !trans(x, y))
+  if (move_cost(pt) == 0 && !trans(pt.x, pt.y))
    dam = 0;	// TODO: Bullets can go through some walls?
   else
    dam -= (rng(0, 1) * rng(0, 1) * rng(0, 1));
  }
 
- if (flags & mfb(IF_AMMO_TRAIL) && !one_in(4))
-  add_field(g, x, y, fd_smoke, rng(1, 2));
-
-// Set damage to 0 if it's less
- if (dam < 0)
-  dam = 0;
+ if (flags & mfb(IF_AMMO_TRAIL) && !one_in(4)) add_field(g, pt, fd_smoke, rng(1, 2));
+ if (dam < 0) dam = 0; // Set damage to 0 if it's less
 
 // Check fields?
- field *fieldhit = &(field_at(x, y));
+ field *fieldhit = &(field_at(pt));
  switch (fieldhit->type) {
   case fd_web:
    if (flags & mfb(IF_AMMO_INCENDIARY) || flags & mfb(IF_AMMO_FLAME))
-    add_field(g, x, y, fd_fire, fieldhit->density - 1);
+    add_field(g, pt, fd_fire, fieldhit->density - 1);
    else if (dam > 5 + fieldhit->density * 5 && one_in(5 - fieldhit->density)) {
     dam -= rng(1, 2 + fieldhit->density * 2);
-    remove_field(x, y);
+    remove_field(pt);
    }
    break;
  }
 
 // Now, destroy items on that tile.
- const auto pos = to(x, y);
+ const auto pos = to(pt);
  if (!pos || (!hit_items && 2 == move_cost(*pos))) return; // Items on floor-type spaces won't be shot up.
 
  {
@@ -1262,7 +1252,7 @@ void map::shoot(game *g, int x, int y, int &dam, bool hit_items, unsigned flags)
   }
   if (destroyed) {
    for(auto& obj : it.contents) stack.push_back(obj);
-   i_rem(x, y, i);
+   i_rem(pt, i);
    i--;
   }
  }
