@@ -140,7 +140,7 @@ void mattack::boomer(game *g, monster *z)
    return;
   }
  }
- const int my_dodge = g->u.dodge(g);
+ const int my_dodge = g->u.dodge();
  if (rng(0, 10) > my_dodge || one_in(my_dodge))
   g->u.infect(DI_BOOMERED, bp_eyes, 3, 12);
  else if (u_see)
@@ -228,7 +228,7 @@ void mattack::science(game *g, monster *z)	// I said SCIENCE again!
  case 2:	// Radioactive beam
   messages.add("The %s opens it's mouth and a beam shoots towards you!", z->name().c_str());
   z->moves -= 400;
-  if (g->u.dodge(g) > rng(1, 16))
+  if (g->u.dodge() > rng(1, 16))
    messages.add("You dodge the beam!");
   else if (one_in(6))
    g->u.mutate();
@@ -728,7 +728,7 @@ void mattack::tentacle(game *g, monster *z)
   g->m.shoot(g, line[i], tmpdam, true, 0);
  }
 
- const int evasion = g->u.dodge(g);
+ const int evasion = g->u.dodge();
  if (rng(0, 20) > evasion || one_in(evasion)) {
   messages.add("You dodge it!");
   return;

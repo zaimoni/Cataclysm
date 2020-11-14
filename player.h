@@ -114,7 +114,7 @@ public:
                                   player *p, body_part &bp_hit, int &side,
                                   int &bash_dam, int &cut_dam, int &stab_dam);
 
- int  dodge(game* g);     // Returns the players's dodge, modded by clothing etc
+ int dodge(); // Returns the players's dodge, modded by clothing etc
  int  dodge_roll(game *g);// For comparison to hit_roll()
 
 // ranged.cpp (at some point, historically)

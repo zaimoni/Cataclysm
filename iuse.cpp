@@ -1740,7 +1740,7 @@ void iuse::tazer(game *g, player *p, item *it, bool t)
   if (foe->attitude != NPCATT_FLEE) foe->attitude = NPCATT_KILL;
   if (foe->str_max >= 17) numdice++;	// Minor bonus against huge people
   else if (foe->str_max <= 5) numdice--;	// Minor penalty against tiny people
-  if (dice(numdice, 10) <= dice(foe->dodge(g), 6)) {
+  if (dice(numdice, 10) <= dice(foe->dodge(), 6)) {
    messages.add("You attempt to shock %s, but miss.", foe->name.c_str());
    return;
   }

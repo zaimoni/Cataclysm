@@ -79,7 +79,7 @@ void trapfunc::crossbow(game *g, int x, int y)
 {
  bool add_bolt = true;
  messages.add("You trigger a crossbow trap!");
- if (!one_in(4) && rng(8, 20) > g->u.dodge(g)) {
+ if (!one_in(4) && rng(8, 20) > g->u.dodge()) {
   body_part hit;
   switch (rng(1, 10)) {
    case  1: hit = bp_feet; break;
@@ -124,7 +124,7 @@ void trapfunc::shotgun(game *g, int x, int y)
  messages.add("You trigger a shotgun trap!");
  auto& trap = g->m.tr_at(x, y);
  int shots = (tr_shotgun_1 != trap && (one_in(8) || one_in(20 - g->u.str_max))) ? 2 : 1;
- if (rng(5, 50) > g->u.dodge(g)) {
+ if (rng(5, 50) > g->u.dodge()) {
   body_part hit;
   switch (rng(1, 10)) {
    case  1: hit = bp_feet; break;
@@ -287,11 +287,11 @@ void trapfunc::pit(game *g, int x, int y)
  messages.add("You fall in a pit!");
  if (g->u.has_trait(PF_WINGS_BIRD)) messages.add("You flap your wings and flutter down gracefully.");
  else {
-  int dodge = g->u.dodge(g);
+  int dodge = g->u.dodge();
   int damage = rng(10, 20) - rng(dodge, dodge * 5);
   if (damage > 0) {
    messages.add("You hurt yourself!");
-   g->u.hurtall(rng(int(damage / 2), damage));
+   g->u.hurtall(rng(damage/2, damage));
    g->u.hit(g, bp_legs, 0, damage, 0);
    g->u.hit(g, bp_legs, 1, damage, 0);
   } else
@@ -310,10 +310,8 @@ void trapfuncm::pit(game *g, monster *z)
 void trapfunc::pit_spikes(game *g, int x, int y)
 {
  messages.add("You fall in a pit!");
- int dodge = g->u.dodge(g);
- int damage = rng(20, 50);
  if (g->u.has_trait(PF_WINGS_BIRD)) messages.add("You flap your wings and flutter down gracefully.");
- else if (rng(5, 30) < dodge) messages.add("You avoid the spikes within.");
+ else if (rng(5, 30) < g->u.dodge()) messages.add("You avoid the spikes within.");
  else {
   body_part hit;
   switch (rng(1, 10)) {
@@ -330,7 +328,7 @@ void trapfunc::pit_spikes(game *g, int x, int y)
   }
   int side = rng(0, 1);
   messages.add("The spikes impale your %s!", body_part_name(hit, side));
-  g->u.hit(g, hit, side, 0, damage);
+  g->u.hit(g, hit, side, 0, rng(20, 50));
   if (one_in(4)) {
    messages.add("The spears break!");
    g->m.ter(x, y) = t_pit;

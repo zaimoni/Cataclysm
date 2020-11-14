@@ -429,7 +429,7 @@ bool player::scored_crit(int target_dodge) const
  return false;
 }
 
-int player::dodge(game* g)
+int player::dodge()
 {
  if (has_disease(DI_SLEEP) || has_disease(DI_LYING_DOWN)) return 0;
  if (activity.type != ACT_NULL) return 0;
@@ -437,7 +437,7 @@ int player::dodge(game* g)
  ret += sklevel[sk_dodge];
  ret += disease_intensity(DI_DODGE_BOOST);
  ret -= (encumb(bp_legs) / 2) + encumb(bp_torso);
- ret += int(current_speed(g) / 150);
+ ret += int(current_speed(game::active()) / 150);
  if (has_trait(PF_TAIL_LONG)) ret += 4;
  if (has_trait(PF_TAIL_FLUFFY)) ret += 8;
  if (has_trait(PF_WHISKERS)) ret += 1;
@@ -459,7 +459,7 @@ int player::dodge(game* g)
 
 int player::dodge_roll(game *g)
 {
- return dice(dodge(g), 6);
+ return dice(dodge(), 6);
 }
 
 int player::base_damage(bool real_life, int stat) const

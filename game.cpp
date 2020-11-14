@@ -5481,8 +5481,9 @@ void game::vertical_move(int movez, bool force)
   if (u.has_trait(PF_WINGS_BIRD))
    messages.add("You flap your wings and flutter down gracefully.");
   else {
+   auto evasion = u.dodge();
    int dam = int((u.str_max / 4) + rng(5, 10)) * rng(1, 3);//The bigger they are
-   dam -= rng(u.dodge(this), u.dodge(this) * 3);
+   dam -= rng(evasion, evasion * 3);
    if (dam <= 0)
     messages.add("You fall expertly and take no damage.");
    else {

@@ -354,7 +354,7 @@ int monster::hit(game *g, player &p, body_part &bp_hit)
  static const int base_bodypart_hitrange[mtype::MS_MAX] = {3, 12, 20, 28, 35};
 
  int numdice = type->melee_skill;
- if (dice(numdice, 10) <= dice(p.dodge(g), 10) && !one_in(20)) {
+ if (dice(numdice, 10) <= dice(p.dodge(), 10) && !one_in(20)) {
   if (numdice > p.sklevel[sk_dodge])
    p.practice(sk_dodge, 10);
   return 0;	// We missed!
