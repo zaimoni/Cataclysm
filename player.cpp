@@ -1697,51 +1697,56 @@ void player::update_morale()
  }
 }
 
+template<bool want_details = false> static int _current_speed(const player& u, game* g, std::vector<std::pair<std::string, int> >* desc = nullptr)
+{
+    int newmoves = 100; // Start with 100 movement points...
+   // Minus some for weight...
+    int carry_penalty = 0;
+    const int wgt_capacity = u.weight_capacity();
+    const int wgt_carried = u.weight_carried();
+    if (wgt_carried > wgt_capacity/4)
+        carry_penalty = (75.0 * (wgt_carried - wgt_capacity/4)) / rational_scaled<3, 4>(wgt_capacity);
+
+    newmoves -= carry_penalty;
+
+    if (u.pain > u.pkill) newmoves -= clamped_ub<60>(rational_scaled<7, 10>(u.pain - u.pkill));
+    if (u.pkill >= 10) newmoves -= clamped_ub<30>(u.pkill / 10);
+    if (const int cur_morale = u.morale_level(); abs(cur_morale) >= 100) newmoves += clamped<-10, 10>(cur_morale / 25);
+    if (u.radiation >= 40) newmoves -= clamped_ub<20>(u.radiation / 40);
+    if (u.thirst >= 40 + 10) newmoves -= (u.thirst - 40) / 10;
+    if (u.hunger >= 100 + 10) newmoves -= (u.hunger - 100) / 10;
+    newmoves += clamped_ub<40>(u.stim);
+
+    for (const auto& cond : u.illness) newmoves += cond.speed_boost();
+
+    if (u.has_trait(PF_QUICK)) rational_scale<11, 10>(newmoves);
+
+    if (g) {
+        if (u.has_trait(PF_SUNLIGHT_DEPENDENT) && !g->is_in_sunlight(u.pos)) newmoves -= (g->light_level() >= 12 ? 5 : 10);
+        if (const int cold = u.is_cold_blooded()) {
+            if (const int delta = (65 - g->temperature) / mutation_branch::cold_blooded_severity[cold - 1]; 0 < delta) newmoves -= delta;
+        }
+    }
+
+    if (u.has_artifact_with(AEP_SPEED_UP)) newmoves += 20;
+    if (u.has_artifact_with(AEP_SPEED_DOWN)) newmoves -= 20;
+
+    if (newmoves < 1) newmoves = 1;
+
+    return newmoves;
+}
+
 int player::current_speed(game *g) const
 {
- int newmoves = 100; // Start with 100 movement points...
-// Minus some for weight...
- int carry_penalty = 0;
- if (weight_carried() > int(weight_capacity() * .25))
-  carry_penalty = 75 * double((weight_carried() - int(weight_capacity() * .25))/
-                              (weight_capacity() * .75));
-
- newmoves -= carry_penalty;
-
- if (pain > pkill) newmoves -= clamped_ub<60>(rational_scaled<7, 10>(pain - pkill));
- if (pkill >= 10) newmoves -= clamped_ub<30>(pkill / 10);
- if (const int cur_morale = morale_level(); abs(cur_morale) >= 100) newmoves += clamped<-10,10>(cur_morale /25);
- if (radiation >= 40) newmoves -= clamped_ub<20>(radiation / 40);
- if (thirst >= 40+10) newmoves -= (thirst - 40) / 10;
- if (hunger >= 100+10) newmoves -= (hunger - 100) / 10;
- newmoves += clamped_ub<40>(stim);
-
- for (const auto& cond : illness) newmoves += cond.speed_boost();
-
- if (has_trait(PF_QUICK)) rational_scale<11, 10>(newmoves);
-
- if (g) {
-  if (has_trait(PF_SUNLIGHT_DEPENDENT) && !g->is_in_sunlight(pos)) newmoves -= (g->light_level() >= 12 ? 5 : 10);
-  if (const int cold = is_cold_blooded()) {
-      if (const int delta = (65 - g->temperature) / mutation_branch::cold_blooded_severity[cold - 1]; 0 < delta) newmoves -= delta;
-  }
- }
-
- if (has_artifact_with(AEP_SPEED_UP)) newmoves += 20;
- if (has_artifact_with(AEP_SPEED_DOWN)) newmoves -= 20;
-
- if (newmoves < 1) newmoves = 1;
-
- return newmoves;
+ return _current_speed(*this, g);
 }
 
 int player::run_cost(int base_cost)
 {
  int movecost = base_cost;
  if (has_trait(PF_PARKOUR) && base_cost > 100) {
-  movecost *= .5;
-  if (movecost < 100)
-   movecost = 100;
+  movecost /= 2;
+  if (movecost < 100) movecost = 100;
  }
  if (hp_cur[hp_leg_l] == 0)
   movecost += 50;
