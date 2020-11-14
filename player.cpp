@@ -1937,14 +1937,33 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
   }
  }
 
+ enum tabs {
+     stats = 1,
+     traits,
+     encumbrance,
+     effects,
+     skills
+ };
+
  // XXX yes inherited widths don't add up properly
  WINDOW* w_grid    = newwin(VIEW, SCREEN_WIDTH,  0,  0);
- WINDOW* w_stats   = newwin( 9, VIEW + 1,  2,  0); // minimum height 7
- WINDOW* w_encumb  = newwin( 9, VIEW + 1, 12,  0); // minimum height 9
- WINDOW* w_traits  = newwin( 9, VIEW + 1,  2, VIEW + 2); // would like to scale
- WINDOW* w_effects = newwin( 9, VIEW + 1, 12, VIEW + 2); // would like to scale
- WINDOW* w_skills  = newwin( 9, VIEW + 1,  2, 2 * VIEW + 4); // would like to scale
- WINDOW* w_speed   = newwin( 9, VIEW + 1, 12, 2 * VIEW + 4); // would like to scale
+
+ // non-scaling row is top row
+ WINDOW* w_cells[] = {
+    newwin(9, VIEW + 1,  2,  0),
+    newwin(9, VIEW + 1, 12,  0),
+    newwin(9, VIEW + 1,  2, VIEW + 2),
+    newwin(9, VIEW + 1, 12, VIEW + 2),
+    newwin(9, VIEW + 1,  2, 2 * VIEW + 4),
+    newwin(9, VIEW + 1, 12, 2 * VIEW + 4)
+ };
+
+ WINDOW* w_stats   = w_cells[stats-1]; // minimum height 7
+ WINDOW* w_encumb  = w_cells[encumbrance - 1]; // minimum height 9
+ WINDOW* w_traits  = w_cells[traits - 1]; // would like to scale
+ WINDOW* w_effects = w_cells[effects - 1]; // would like to scale
+ WINDOW* w_skills  = w_cells[skills - 1]; // would like to scale
+ WINDOW* w_speed   = w_cells[skills]; // would like to scale
  WINDOW* w_info    = newwin( 3, SCREEN_WIDTH, VIEW - 3,  0);
 // Print name and header
  mvwprintw(w_grid, 0, 0, "%s - %s", name.c_str(), (male ? "Male" : "Female"));
@@ -2185,14 +2204,6 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
  bool done = false;
 
  nc_color status = c_white;
-
- enum tabs {
-     stats = 1,
-     encumbrance,
-     traits,
-     effects,
-     skills
- };
 
  static constexpr const char* stat_desc[] = {
      "\
