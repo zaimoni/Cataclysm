@@ -3647,7 +3647,7 @@ void game::examine()
   else if (abs(veh->velocity) > 0) messages.add("You can't do that on moving vehicle.");
   else exam_vehicle (*veh, exam.x, exam.y);
  } else if (m.has_flag(sealed, exam)) {
-  if (m.trans(exam.x, exam.y)) {
+  if (m.trans(exam)) {
    std::string buff;
    if (stack.size() <= 3 && !stack.empty()) {
     buff = "It contains ";

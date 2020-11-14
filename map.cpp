@@ -620,9 +620,9 @@ bool map::trans(const reality_bubble_loc& pos) const
     return tertr && (fd.type == 0 || field::list[fd.type].transparent[fd.density - 1]);	// Fields may obscure the view, too
 }
 
-bool map::trans(int x, int y) const
+bool map::trans(const point& pt) const
 {
- const auto pos = to(x, y);
+ const auto pos = to(pt);
  return pos ? trans(*pos) : true;
 }
 
@@ -1202,7 +1202,7 @@ void map::shoot(game *g, const point& pt, int &dam, bool hit_items, unsigned fla
   break;
 
  default:
-  if (move_cost(pt) == 0 && !trans(pt.x, pt.y))
+  if (move_cost(pt) == 0 && !trans(pt))
    dam = 0;	// TODO: Bullets can go through some walls?
   else
    dam -= (rng(0, 1) * rng(0, 1) * rng(0, 1));

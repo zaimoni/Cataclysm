@@ -64,7 +64,7 @@ class map
  int move_cost(const point& pt) const { return move_cost(pt.x, pt.y); };
  int move_cost(const reality_bubble_loc& pos) const;
  int move_cost_ter_only(int x, int y) const; // same as above, but don't take vehicles into account
- bool trans(int x, int y) const; // Transparent?
+ bool trans(const point& pt) const; // Transparent?
  bool trans(const reality_bubble_loc& pos) const;
  bool _BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range, int& tc, std::function<bool(reality_bubble_loc)> test) const;
  // (Fx, Fy) sees (Tx, Ty), within a range of (range)?
