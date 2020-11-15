@@ -592,8 +592,7 @@ void mattack::dermatik(game *g, monster *z)
 
 // Can we dodge the attack?
  int attack_roll = dice(z->type->melee_skill, 10);
- int player_dodge = g->u.dodge_roll(g);
- if (player_dodge > attack_roll) {
+ if (g->u.dodge_roll() > attack_roll) {
   messages.add("The %s tries to land on you, but you dodge.", z->name().c_str());
   z->stumble(g, false);
   return;

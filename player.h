@@ -115,7 +115,7 @@ public:
                                   int &bash_dam, int &cut_dam, int &stab_dam);
 
  int dodge(); // Returns the players's dodge, modded by clothing etc
- int  dodge_roll(game *g);// For comparison to hit_roll()
+ int  dodge_roll();// For comparison to hit_roll()
 
 // ranged.cpp (at some point, historically)
  int throw_range(int index) const; // Range of throwing item; -1:ERR 0:Can't throw

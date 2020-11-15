@@ -226,7 +226,7 @@ void player::hit_player(game *g, player &p, bool allow_grab)
  std::string verb = "hit";
 
 // Divide their dodge roll by 2 if this is a grab
- int target_dodge = (allow_grab ? p.dodge_roll(g) : p.dodge_roll(g) / 2);
+ int target_dodge = p.dodge_roll()/(allow_grab ? 1 : 2);
  int hit_value = hit_roll() - target_dodge;
  bool missed = (hit_roll() <= 0);
 
@@ -457,7 +457,7 @@ int player::dodge()
  return ret;
 }
 
-int player::dodge_roll(game *g)
+int player::dodge_roll()
 {
  return dice(dodge(), 6);
 }
@@ -780,7 +780,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
           }
       }
       if (const auto nPC = g->nPC(test)) {
-          if (hit_roll() >= rng(0, 5) + nPC->dodge_roll(g)) {
+          if (hit_roll() >= rng(0, 5) + nPC->dodge_roll()) {
               count_hit++;
               int dam = roll_bash_damage(nullptr, false);	// looks like (n)PC armor won't work, but covered in the hit function
               int cut = roll_cut_damage(nullptr, false);
@@ -812,7 +812,7 @@ technique_id player::pick_defensive_technique(game *g, const monster *z, player 
 
  int foe_dodge = 0;
  if (z != nullptr) foe_dodge = z->dodge_roll();
- else if (p != nullptr) foe_dodge = p->dodge_roll(g);
+ else if (p != nullptr) foe_dodge = p->dodge_roll();
 
  int foe_size = 0;
  if (z) foe_size = 4 + z->type->size * 4;
