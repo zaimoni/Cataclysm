@@ -1956,11 +1956,11 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
  // non-scaling row is top row
  WINDOW* w_cells[] = {
     newwin(9, VIEW + 1,  2,  0),
-    newwin(9, VIEW + 1, 12,  0),
+    newwin(VIEW - 16, VIEW + 1, 12,  0),
     newwin(9, VIEW + 1,  2, VIEW + 2),
-    newwin(9, VIEW + 1, 12, VIEW + 2),
+    newwin(VIEW - 16, VIEW + 1, 12, VIEW + 2),
     newwin(9, VIEW + 1,  2, 2 * VIEW + 4),
-    newwin(9, VIEW + 1, 12, 2 * VIEW + 4)
+    newwin(VIEW - 16, VIEW + 1, 12, 2 * VIEW + 4)
  };
 
  WINDOW* w_stats   = w_cells[stats-1]; // minimum height 7
@@ -1976,15 +1976,15 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
 // Main line grid
  draw_hline(w_grid,  1, c_ltgray, LINE_OXOX);
  draw_hline(w_grid, 11, c_ltgray, LINE_OXOX);
- draw_hline(w_grid, 21, c_ltgray, LINE_OXOX);
- for (int i = 2; i < 21; i++) {
+ draw_hline(w_grid, VIEW - 4, c_ltgray, LINE_OXOX);
+ for (int i = 2; i < VIEW - 4; i++) {
    mvwputch(w_grid, i, VIEW + 1, c_ltgray, LINE_XOXO);
    mvwputch(w_grid, i, 2 * VIEW + 3, c_ltgray, LINE_XOXO);
  }
  mvwputch(w_grid,  1, VIEW + 1, c_ltgray, LINE_OXXX);
  mvwputch(w_grid,  1, 2 * VIEW + 3, c_ltgray, LINE_OXXX);
- mvwputch(w_grid, 21, VIEW + 1, c_ltgray, LINE_XXOX);
- mvwputch(w_grid, 21, 2 * VIEW + 3, c_ltgray, LINE_XXOX);
+ mvwputch(w_grid, VIEW - 4, VIEW + 1, c_ltgray, LINE_XXOX);
+ mvwputch(w_grid, VIEW - 4, 2 * VIEW + 3, c_ltgray, LINE_XXOX);
  mvwputch(w_grid, 11, VIEW + 1, c_ltgray, LINE_XXXX);
  mvwputch(w_grid, 11, 2 * VIEW + 3, c_ltgray, LINE_XXXX);
  wrefresh(w_grid);	// w_grid should stay static.
