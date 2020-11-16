@@ -1708,10 +1708,23 @@ template<bool want_details = false> static int _current_speed(const player& u, g
         carry_penalty = (75.0 * (wgt_carried - wgt_capacity/4)) / rational_scaled<3, 4>(wgt_capacity);
 
     newmoves -= carry_penalty;
+    if constexpr (want_details) {
+        if (carry_penalty) desc->push_back({ "Overburdened", -carry_penalty });
+    }
 
-    if (u.pain > u.pkill) newmoves -= clamped_ub<60>(rational_scaled<7, 10>(u.pain - u.pkill));
+    if (const int cur_morale = u.morale_level(); abs(cur_morale) >= 100) {
+        const auto delta = clamped<-10, 10>(cur_morale / 25);
+        newmoves += delta;
+        if constexpr (want_details) desc->push_back({ 0 < delta ? "Good mood" : "Depressed", delta });
+    }
+
+    if (u.pain > u.pkill) {
+        const auto delta = clamped_ub<60>(rational_scaled<7, 10>(u.pain - u.pkill));
+        newmoves -= delta;
+        if constexpr (want_details) desc->push_back({ "Pain", -delta });
+    }
+
     if (u.pkill >= 10) newmoves -= clamped_ub<30>(u.pkill / 10);
-    if (const int cur_morale = u.morale_level(); abs(cur_morale) >= 100) newmoves += clamped<-10, 10>(cur_morale / 25);
     if (u.radiation >= 40) newmoves -= clamped_ub<20>(u.radiation / 40);
     if (u.thirst >= 40 + 10) newmoves -= (u.thirst - 40) / 10;
     if (u.hunger >= 100 + 10) newmoves -= (u.hunger - 100) / 10;
@@ -2103,40 +2116,20 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
  wrefresh(w_skills);
 
 // Finally, draw speed.
+ std::vector<std::pair<std::string, int> > speed_modifiers;
+
  mvwprintz(w_speed, 0, 11, c_ltgray, "SPEED");
  mvwprintz(w_speed, 1,  1, c_ltgray, "Base Move Cost:");
  mvwprintz(w_speed, 2,  1, c_ltgray, "Current Speed:");
- int newmoves = current_speed(g);
+ int newmoves = _current_speed<true>(*this, g, &speed_modifiers);
  int pen = 0;
  line = 3;
- if (weight_carried() > int(weight_capacity() * .25)) {
-  pen = 75 * double((weight_carried() - int(weight_capacity() * .25)) /
-                    (weight_capacity() * .75));
-  mvwprintz(w_speed, line, 1, c_red, "Overburdened        -%s%d%%",
-            (pen < 10 ? " " : ""), pen);
-  line++;
- }
- pen = int(morale_level() / 25);
- if (abs(pen) >= 4) {
-  if (pen > 10)
-   pen = 10;
-  else if (pen < -10)
-   pen = -10;
-  if (pen > 0)
-   mvwprintz(w_speed, line, 1, c_green, "Good mood           +%s%d%%",
-             (pen < 10 ? " " : ""), pen);
-  else
-   mvwprintz(w_speed, line, 1, c_red, "Depressed           -%s%d%%",
-             (abs(pen) < 10 ? " " : ""), abs(pen));
-  line++;
- }
- pen = int((pain - pkill) * .7);
- if (pen > 60)
-  pen = 60;
- if (pen >= 1) {
-  mvwprintz(w_speed, line, 1, c_red, "Pain                -%s%d%%",
-            (pen < 10 ? " " : ""), pen);
-  line++;
+ for (decltype(auto) x : speed_modifiers) {
+     auto display = (0 < x.second) ? std::pair(c_green, '+') : std::pair(c_red, '-');
+     mvwprintz(w_speed, line, 1, display.first, x.first.c_str());
+     mvwputch(w_speed, line, 23 - int_log10(abs(x.second)), display.first, abs(x.second));
+     mvwputch(w_speed, line, 20, display.first, display.second);
+     ++line;
  }
  if (pkill >= 10) {
   pen = pkill / 10;
