@@ -2424,7 +2424,7 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
    break;
 
   case skills:	// Skills tab
-   mvwprintz(w_skills, 0, 0, h_ltgray, "           SKILLS         ");
+   mvwprintz(w_skills, 0, 11, h_ltgray, "SKILLS");
    if (line <= 2) {
     min = 0;
     max = 7;
@@ -2444,21 +2444,15 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
     } else {
 	 status = (skexercise[skillslist[i]] < 0) ? c_ltred : c_ltblue;
     }
-    mvwprintz(w_skills, 2 + i - min, 1, c_ltgray, "                         ");
+    draw_hline(w_skills, 2 + i - min, c_ltgray, ' ');
+    mvwprintz(w_skills, 2 + i - min, 1, status, "%s:", skill_name(skill(skillslist[i])));
+    mvwprintz(w_skills, 2 + i - min, 19, status, "%d", sklevel[skillslist[i]]);
     if (skexercise[i] >= 100) {
-     mvwprintz(w_skills, 2 + i - min, 1, status, "%s:", skill_name(skill(skillslist[i])));
-     mvwprintz(w_skills, 2 + i - min, 19, status, "%d", sklevel[skillslist[i]]);
-     mvwprintz(w_skills, 2 + i - min, 21, status, "(%s%d%%)",
-               (skexercise[skillslist[i]] <  0 ? 0 :
-                skexercise[skillslist[i]]));
+     mvwprintz(w_skills, 2 + i - min, 21, status, "(%d%%)", skexercise[skillslist[i]]);
     } else {
-     mvwprintz(w_skills, 2 + i - min, 1, status, "%s:", skill_name(skill(skillslist[i])));
-     mvwprintz(w_skills, 2 + i - min, 19, status, "%d", sklevel[skillslist[i]]);
      mvwprintz(w_skills, 2 + i - min, 21, status, "(%s%d%%)",
-               (skexercise[skillslist[i]] < 10 &&
-                skexercise[skillslist[i]] >= 0 ? " " : ""),
-               (skexercise[skillslist[i]] <  0 ? 0 :
-                skexercise[skillslist[i]]));
+               (skexercise[skillslist[i]] < 10 && skexercise[skillslist[i]] >= 0 ? " " : ""),
+               (skexercise[skillslist[i]] <  0 ? 0 : skexercise[skillslist[i]]));
     }
    }
    werase(w_info);
@@ -2474,7 +2468,7 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
      if (line > 0) line--;
      break;
     case '\t':
-     mvwprintz(w_skills, 0, 0, c_ltgray, "           SKILLS         ");
+     mvwprintz(w_skills, 0, 11, c_ltgray, "SKILLS");
      for (int i = 0; i < skillslist.size() && i < 7; i++) {
 	  status = (skexercise[skillslist[i]] < 0) ? c_ltred : c_ltblue;
       mvwprintz(w_skills, i + 2,  1, status, "%s:", skill_name(skill(skillslist[i])));
