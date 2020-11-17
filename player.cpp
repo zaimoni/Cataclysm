@@ -1713,34 +1713,73 @@ template<bool want_details = false> static int _current_speed(const player& u, g
     }
 
     if (const int cur_morale = u.morale_level(); abs(cur_morale) >= 100) {
-        const auto delta = clamped<-10, 10>(cur_morale / 25);
+        const int delta = clamped<-10, 10>(cur_morale / 25);
         newmoves += delta;
         if constexpr (want_details) desc->push_back({ 0 < delta ? "Good mood" : "Depressed", delta });
     }
 
     if (u.pain > u.pkill) {
-        const auto delta = clamped_ub<60>(rational_scaled<7, 10>(u.pain - u.pkill));
+        const int delta = clamped_ub<60>(rational_scaled<7, 10>(u.pain - u.pkill));
         newmoves -= delta;
         if constexpr (want_details) desc->push_back({ "Pain", -delta });
     }
 
-    if (u.pkill >= 10) newmoves -= clamped_ub<30>(u.pkill / 10);
+    if (u.pkill >= 10) {
+        const int delta = clamped_ub<30>(u.pkill / 10);
+        newmoves -= delta;
+        if constexpr (want_details) desc->push_back({ "Painkillers", -delta });
+    }
+
+    if (0 != u.stim) {
+        const int delta = clamped_ub<40>(u.stim);
+        newmoves += delta;
+        if constexpr (want_details) desc->push_back({ 0 < delta ? "Stimulants" : "Depressants", delta });
+    }
+
+    // C:Whales does not have this in the UI
     if (u.radiation >= 40) newmoves -= clamped_ub<20>(u.radiation / 40);
-    if (u.thirst >= 40 + 10) newmoves -= (u.thirst - 40) / 10;
-    if (u.hunger >= 100 + 10) newmoves -= (u.hunger - 100) / 10;
-    newmoves += clamped_ub<40>(u.stim);
 
-    for (const auto& cond : u.illness) newmoves += cond.speed_boost();
+    if (u.thirst >= 40 + 10) {
+        const int delta = (u.thirst - 40) / 10;
+        newmoves -= delta;
+        if constexpr (want_details) desc->push_back({ "Thirst", -delta });
+    }
 
-    if (u.has_trait(PF_QUICK)) rational_scale<11, 10>(newmoves);
+    if (u.hunger >= 100 + 10) {
+        const int delta = (u.hunger - 100) / 10;
+        newmoves -= delta;
+        if constexpr (want_details) desc->push_back({ "Hunger", -delta });
+    }
 
     if (g) {
-        if (u.has_trait(PF_SUNLIGHT_DEPENDENT) && !g->is_in_sunlight(u.pos)) newmoves -= (g->light_level() >= 12 ? 5 : 10);
+        if (u.has_trait(PF_SUNLIGHT_DEPENDENT) && !g->is_in_sunlight(u.pos)) {
+            const int delta = (g->light_level() >= 12 ? 5 : 10);
+            newmoves -= delta;
+            if constexpr (want_details) desc->push_back({ "Out of Sunlight", -delta });
+        }
         if (const int cold = u.is_cold_blooded()) {
-            if (const int delta = (65 - g->temperature) / mutation_branch::cold_blooded_severity[cold - 1]; 0 < delta) newmoves -= delta;
+            if (const int delta = (65 - g->temperature) / mutation_branch::cold_blooded_severity[cold - 1]; 0 < delta) {
+                newmoves -= delta;
+                if constexpr (want_details) desc->push_back({ "Cold-Blooded", -delta });
+            }
         }
     }
 
+    for (const auto& cond : u.illness) {
+        if (const int delta = cond.speed_boost()) {
+            newmoves += delta;
+            if constexpr (want_details) desc->push_back({ cond.name(), delta });
+        }
+    }
+
+    if (u.has_trait(PF_QUICK)) {
+        if (const auto delta = newmoves / 10) {
+            newmoves += delta;
+            if constexpr (want_details) desc->push_back({ "Quick", delta });
+        }
+    }
+
+    // C:Whales does not have these in the UI
     if (u.has_artifact_with(AEP_SPEED_UP)) newmoves += 20;
     if (u.has_artifact_with(AEP_SPEED_DOWN)) newmoves -= 20;
 
@@ -2135,63 +2174,7 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
      mvwputch(w_speed, line, 20, display.first, display.second);
      ++line;
  }
- if (pkill >= 10) {
-  pen = pkill / 10;
-  mvwprintz(w_speed, line, 1, c_red, "Painkillers         -%s%d%%",
-            (pen < 10 ? " " : ""), pen);
-  line++;
- }
- if (stim != 0) {
-  pen = stim;
-  if (pen > 0)
-   mvwprintz(w_speed, line, 1, c_green, "Stimulants          +%s%d%%",
-            (pen < 10 ? " " : ""), pen);
-  else
-   mvwprintz(w_speed, line, 1, c_red, "Depressants         -%s%d%%",
-            (abs(pen) < 10 ? " " : ""), abs(pen));
-  line++;
- }
- if (thirst > 40) {
-  pen = int((thirst - 40) / 10);
-  mvwprintz(w_speed, line, 1, c_red, "Thirst              -%s%d%%",
-            (pen < 10 ? " " : ""), pen);
-  line++;
- }
- if (hunger > 100) {
-  pen = int((hunger - 100) / 10);
-  mvwprintz(w_speed, line, 1, c_red, "Hunger              -%s%d%%",
-            (pen < 10 ? " " : ""), pen);
-  line++;
- }
- if (has_trait(PF_SUNLIGHT_DEPENDENT) && !g->is_in_sunlight(pos)) {
-  pen = (g->light_level() >= 12 ? 5 : 10);
-  mvwprintz(w_speed, line, 1, c_red, "Out of Sunlight     -%s%d%%",
-            (pen < 10 ? " " : ""), pen);
-  line++;
- }
- if (const int cold = is_cold_blooded()) {
-     if (g->temperature < 65) {
-         pen = (65 - g->temperature) / mutation_branch::cold_blooded_severity[cold - 1];
-         mvwprintz(w_speed, line, 1, c_red, "Cold-Blooded        -%s%d%%", (pen < 10 ? " " : ""), pen);
-         line++;
-     }
- }
 
- for(const auto& cond : illness) {
-  int move_adjust = cond.speed_boost();
-  if (0 == move_adjust) continue;
-  const bool good = move_adjust > 0;
-  const nc_color col = (good ? c_green : c_red);
-  mvwprintz(w_speed, line,  1, col, cond.name());
-  mvwprintz(w_speed, line, 21, col, (good ? "+" : "-"));
-  if (good) move_adjust = -move_adjust;
-  mvwprintz(w_speed, line, 23 - int_log10(move_adjust), col, "%d%%", move_adjust);
- }
- if (has_trait(PF_QUICK)) {
-  pen = int(newmoves * .1);
-  mvwprintz(w_speed, line, 1, c_green, "Quick               +%s%d%%",
-            (pen < 10 ? " " : ""), pen);
- }
  int runcost = run_cost(100);
  nc_color col = (runcost <= 100 ? c_green : c_red);
  mvwprintz(w_speed, 1, 23 - int_log10(runcost), col, "%d", runcost);
