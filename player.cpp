@@ -1983,6 +1983,10 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
  WINDOW* w_skills  = w_cells[skills - 1]; // would like to scale
  WINDOW* w_speed   = w_cells[skills]; // would like to scale
  WINDOW* w_info    = newwin( 3, SCREEN_WIDTH, VIEW - 3,  0);
+
+ // This is UI; do not micro-optimize by wiring as constexpr 2020-11-17 zaimoni
+ const int traits_hgt = getmaxy(w_traits) - 2;
+
 // Print name and header
  mvwprintw(w_grid, 0, 0, "%s - %s", name.c_str(), (male ? "Male" : "Female"));
  mvwprintz(w_grid, 0, SCREEN_WIDTH/2 - 1, c_ltred, "| Press TAB to cycle, ESC or q to return.");
@@ -2317,16 +2321,16 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
    if (!done) wrefresh(w_encumb);
    break;
   case traits:	// Traits tab
-   mvwprintz(w_traits, 0, 0, h_ltgray, "         TRAITS           ");
+   mvwprintz(w_traits, 0, 9, h_ltgray, "TRAITS");
    if (line <= 2) {
     min = 0;
-    max = cataclysm::max(7, traits_ub);
-   } else if (line >= traits_ub - 3) {
-    min = (traits_ub < 8 ? 0 : traits_ub - 7);
+    max = cataclysm::max(traits_hgt, traits_ub);
+   } else if (line >= traits_ub - traits_hgt/2) {
+    min = (traits_ub <= traits_hgt ? 0 : traits_ub - traits_hgt);
     max = traits_ub;
    } else {
     min = line - 3;
-    max = clamped_ub(line + 4, traits_ub);
+    max = clamped_ub(line + (traits_hgt - traits_hgt / 2), traits_ub);
    }
    for (int i = min; i < max; i++) {
     mvwprintz(w_traits, 2 + i - min, 1, c_ltgray, "                         ");
@@ -2336,21 +2340,18 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
     mvwprintz(w_traits, 2 + i - min, 1, (i == line) ? hilite(status) : status, tr.name.c_str());
    }
    if (line >= 0 && line < traits_ub)
-    mvwprintz(w_info, 0, 0, c_magenta, "%s",
-		mutation_branch::traits[traitslist[line]].description.c_str());
+    mvwprintz(w_info, 0, 0, c_magenta, "%s", mutation_branch::traits[traitslist[line]].description.c_str());
    wrefresh(w_traits);
    wrefresh(w_info);
    switch (input()) {
     case 'j':
-     if (line < traits_ub - 1)
-      line++;
+     if (line < traits_ub - 1) line++;
      break;
     case 'k':
-     if (line > 0)
-      line--;
+     if (line > 0) line--;
      break;
     case '\t':
-     mvwprintz(w_traits, 0, 0, c_ltgray, "         TRAITS           ");
+     mvwprintz(w_traits, 0, 9, c_ltgray, "TRAITS");
      for (int i = 0; i < traits_ub && i < 7; i++) {
       draw_hline(w_traits, i + 2, c_black, 'x', 1);
 	  if (traitslist[i] >= PF_MAX2) continue;	// XXX out of bounds dereference \todo better recovery strategy
