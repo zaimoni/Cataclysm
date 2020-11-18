@@ -1974,15 +1974,15 @@ void player::disp_info(game *g)
 		 (has_trait(PF_TROGLO2) && g->weather != WEATHER_SUNNY)) {
 		 effect_name.push_back("In Sunlight");
 		 effect_text.push_back("The sunlight irritates you.\n\
-Strength - 1;    Dexterity - 1;    Intelligence - 1;    Dexterity - 1");
+Strength -1;    Dexterity -1;    Intelligence -1;    Perception -1");
 	 } else if (has_trait(PF_TROGLO2)) {
 		 effect_name.push_back("In Sunlight");
 		 effect_text.push_back("The sunlight irritates you badly.\n\
-Strength - 2;    Dexterity - 2;    Intelligence - 2;    Dexterity - 2");
+Strength -2;    Dexterity -2;    Intelligence -2;    Perception -2");
 	 } else if (has_trait(PF_TROGLO3)) {
 		 effect_name.push_back("In Sunlight");
 		 effect_text.push_back("The sunlight irritates you terribly.\n\
-Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
+Strength -4;    Dexterity -4;    Intelligence -4;    Perception -4");
 	 }
  }
 
@@ -2025,6 +2025,7 @@ Strength - 4;    Dexterity - 4;    Intelligence - 4;    Dexterity - 4");
 
  // This is UI; do not micro-optimize by wiring as constexpr 2020-11-17 zaimoni
  const int traits_hgt = getmaxy(w_traits) - 2;
+ const int effects_hgt = getmaxy(w_effects) - 2;
 
 // Print name and header
  mvwprintw(w_grid, 0, 0, "%s - %s", name.c_str(), (male ? "Male" : "Female"));
@@ -2352,26 +2353,19 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
    break;
 
   case effects:	// Effects tab
-   mvwprintz(w_effects, 0, 0, h_ltgray, "        EFFECTS           ");
+   mvwprintz(w_effects, 0, 8, h_ltgray, "EFFECTS");
    if (line <= 2) {
     min = 0;
-    max = 7;
-    if (effect_name.size() < max)
-     max = effect_name.size();
-   } else if (line >= effect_name.size() - 3) {
-    min = (effect_name.size() < 8 ? 0 : effect_name.size() - 7);
+    max = cataclysm::max(effects_hgt, effect_name.size());
+   } else if (line >= effect_name.size() - effects_hgt/2) {
+    min = (effect_name.size() <= effects_hgt ? 0 : effect_name.size() - effects_hgt);
     max = effect_name.size();
    } else {
     min = line - 2;
-    max = line + 4;
-    if (effect_name.size() < max)
-     max = effect_name.size();
+    max = cataclysm::min(line + (effects_hgt - effects_hgt / 2), effect_name.size());
    }
    for (int i = min; i < max; i++) {
-    if (i == line)
-     mvwprintz(w_effects, 2 + i - min, 1, h_ltgray, effect_name[i].c_str());
-    else
-     mvwprintz(w_effects, 2 + i - min, 1, c_ltgray, effect_name[i].c_str());
+    mvwprintz(w_effects, 2 + i - min, 1, (i == line) ? h_ltgray : c_ltgray, effect_name[i].c_str());
    }
    if (line >= 0 && line < effect_text.size())
     mvwprintz(w_info, 0, 0, c_magenta, effect_text[line].c_str());
@@ -2379,16 +2373,14 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
    wrefresh(w_info);
    switch (input()) {
     case 'j':
-     if (line < effect_name.size() - 1)
-      line++;
+     if (line < effect_name.size() - 1) line++;
      break;
     case 'k':
-     if (line > 0)
-      line--;
+     if (line > 0) line--;
      break;
     case '\t':
-     mvwprintz(w_effects, 0, 0, c_ltgray, "        EFFECTS           ");
-     for (int i = 0; i < effect_name.size() && i < 7; i++)
+     mvwprintz(w_effects, 0, 8, c_ltgray, "EFFECTS");
+     for (int i = 0; i < effect_name.size() && i < effects_hgt; i++)
       mvwprintz(w_effects, i + 2, 1, c_ltgray, effect_name[i].c_str());
      wrefresh(w_effects);
      line = 0;
