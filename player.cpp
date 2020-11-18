@@ -1906,6 +1906,31 @@ int player::is_cold_blooded() const
     return 0;
 }
 
+static stat_delta _troglodyte_sunburn(const player& u)
+{
+    stat_delta ret = {};
+    const game* const g = game::active();
+    if ((u.has_trait(PF_TROGLO) || u.has_trait(PF_TROGLO2)) && g->weather == WEATHER_SUNNY) {
+        ret.Str--;
+        ret.Dex--;
+        ret.Int--;
+        ret.Per--;
+    }
+    if (u.has_trait(PF_TROGLO2)) {
+        ret.Str--;
+        ret.Dex--;
+        ret.Int--;
+        ret.Per--;
+    }
+    if (u.has_trait(PF_TROGLO3)) {
+        ret.Str -= 4;
+        ret.Dex -= 4;
+        ret.Int -= 4;
+        ret.Per -= 4;
+    }
+    return ret;
+}
+
 void player::disp_info(game *g)
 {
  int line;
@@ -1969,21 +1994,23 @@ void player::disp_info(game *g)
   effect_text.push_back(stim_text.str());
  }
 
+ static auto sun_severity = [](int delta) {
+     if (-1 <= delta) return "The sunlight irritates you.\n";
+     if (-2 <= delta) return "The sunlight irritates you badly.\n";
+     return "The sunlight irritates you terribly.\n";
+ };
+
  if (g->is_in_sunlight(pos)) {
-	 if ((has_trait(PF_TROGLO) && g->weather == WEATHER_SUNNY) ||
-		 (has_trait(PF_TROGLO2) && g->weather != WEATHER_SUNNY)) {
-		 effect_name.push_back("In Sunlight");
-		 effect_text.push_back("The sunlight irritates you.\n\
-Strength -1;    Dexterity -1;    Intelligence -1;    Perception -1");
-	 } else if (has_trait(PF_TROGLO2)) {
-		 effect_name.push_back("In Sunlight");
-		 effect_text.push_back("The sunlight irritates you badly.\n\
-Strength -2;    Dexterity -2;    Intelligence -2;    Perception -2");
-	 } else if (has_trait(PF_TROGLO3)) {
-		 effect_name.push_back("In Sunlight");
-		 effect_text.push_back("The sunlight irritates you terribly.\n\
-Strength -4;    Dexterity -4;    Intelligence -4;    Perception -4");
-	 }
+     const auto trog_stats = _troglodyte_sunburn(*this);
+     if (0 > trog_stats.Str) { // Not really.  Historical coincidence that all four coordinates are equal
+         std::string trog_text(sun_severity(trog_stats.Str));
+         trog_text += "Strength " + std::to_string(trog_stats.Str);
+         if (trog_stats.Dex) trog_text += "; Dexterity " + std::to_string(trog_stats.Dex);
+         if (trog_stats.Int) trog_text += "; Intelligence " + std::to_string(trog_stats.Int);
+         if (trog_stats.Per) trog_text += "; Perception " + std::to_string(trog_stats.Per);
+         effect_name.push_back("In Sunlight");
+         effect_text.push_back(std::move(trog_text));
+     }
  }
 
  for (int i = 0; i < addictions.size(); i++) {
@@ -3674,24 +3701,11 @@ void player::suffer(game *g)
    hurtall(1);
   }
 
-  if ((has_trait(PF_TROGLO) || has_trait(PF_TROGLO2)) && g->weather == WEATHER_SUNNY) {
-   str_cur--;
-   dex_cur--;
-   int_cur--;
-   per_cur--;
-  }
-  if (has_trait(PF_TROGLO2)) {
-   str_cur--;
-   dex_cur--;
-   int_cur--;
-   per_cur--;
-  }
-  if (has_trait(PF_TROGLO3)) {
-   str_cur -= 4;
-   dex_cur -= 4;
-   int_cur -= 4;
-   per_cur -= 4;
-  }
+  const auto trog_stats = _troglodyte_sunburn(*this);
+  str_cur += trog_stats.Str;
+  dex_cur += trog_stats.Dex;
+  int_cur += trog_stats.Int;
+  per_cur += trog_stats.Per;
  }
 
  if (has_trait(PF_SORES)) {
