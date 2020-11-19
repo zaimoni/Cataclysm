@@ -1025,38 +1025,38 @@ void draw_caravan_borders(WINDOW *w, int current_window)
  nc_color col = (0 == current_window ? c_yellow : c_ltgray);
 
  mvwputch(w, 0, 0, col, LINE_OXXO);
- draw_hline(w, 0, col, LINE_OXOX, 1, 39);
- draw_hline(w, 11, col, LINE_OXOX, 1, 39);
+ draw_hline(w, 0, col, LINE_OXOX, 1, SCREEN_WIDTH / 2 - 1);
+ draw_hline(w, 11, col, LINE_OXOX, 1, SCREEN_WIDTH / 2 - 1);
  for (int i = 1; i <= 10; i++) {
   mvwputch(w, i,  0, col, LINE_XOXO);
-  mvwputch(w, i, 39, c_yellow, LINE_XOXO); // Shared border, always yellow
+  mvwputch(w, i, SCREEN_WIDTH / 2 - 1, c_yellow, LINE_XOXO); // Shared border, always yellow
  }
  mvwputch(w, 11,  0, col, LINE_XXXO);
 
 // These are shared with the items window, and so are always "on"
- mvwputch(w,  0, 39, c_yellow, LINE_OXXX);
- mvwputch(w, 11, 39, c_yellow, LINE_XOXX);
+ mvwputch(w,  0, SCREEN_WIDTH / 2 - 1, c_yellow, LINE_OXXX);
+ mvwputch(w, 11, SCREEN_WIDTH / 2 - 1, c_yellow, LINE_XOXX);
 
  col = (1 == current_window ? c_yellow : c_ltgray);
 // Next, draw the borders for the item description window--always "off" & gray
- for (int i = 12; i <= 23; i++) {
+ for (int i = 12; i < VIEW - 1; i++) {
   mvwputch(w, i,  0, c_ltgray, LINE_XOXO);
-  mvwputch(w, i, 39, col,      LINE_XOXO);
+  mvwputch(w, i, SCREEN_WIDTH / 2 - 1, col, LINE_XOXO);
  }
- draw_hline(w, VIEW - 1, c_ltgray, LINE_OXOX, 1, 39);
+ draw_hline(w, VIEW - 1, c_ltgray, LINE_OXOX, 1, SCREEN_WIDTH / 2 - 1);
 
  mvwputch(w, VIEW - 1,  0, c_ltgray, LINE_XXOO);
- mvwputch(w, VIEW - 1, 39, c_ltgray, LINE_XXOX);
+ mvwputch(w, VIEW - 1, SCREEN_WIDTH / 2 - 1, c_ltgray, LINE_XXOX);
 
 // Finally, draw the item section borders
- draw_hline(w, 0, col, LINE_OXOX, 40, 79);
- draw_hline(w, VIEW - 1, col, LINE_OXOX, 40, 79);
- for (int i = 1; i <= 23; i++)
-  mvwputch(w, i, 79, col, LINE_XOXO);
+ draw_hline(w, 0, col, LINE_OXOX, SCREEN_WIDTH / 2, SCREEN_WIDTH - 1);
+ draw_hline(w, VIEW - 1, col, LINE_OXOX, SCREEN_WIDTH / 2, SCREEN_WIDTH - 1);
+ for (int i = 1; i < VIEW - 1; i++)
+  mvwputch(w, i, SCREEN_WIDTH - 1, col, LINE_XOXO);
 
- mvwputch(w, VIEW - 1, 39, col, LINE_XXOX);
- mvwputch(w,  0, 79, col, LINE_OOXX);
- mvwputch(w, VIEW - 1, 79, col, LINE_XOOX);
+ mvwputch(w, VIEW - 1, SCREEN_WIDTH / 2 - 1, col, LINE_XXOX);
+ mvwputch(w,  0, SCREEN_WIDTH - 1, col, LINE_OOXX);
+ mvwputch(w, VIEW - 1, SCREEN_WIDTH / 2 - 1, col, LINE_XOOX);
 
 // Quick reminded about help.
  mvwprintz(w, VIEW - 1, 2, c_red, "Press ? for help.");
@@ -1068,10 +1068,9 @@ void draw_caravan_categories(WINDOW *w, int category_selected, int total_price,
 {
 // Clear the window
  for (int i = 1; i <= 10; i++)
-  draw_hline(w, i, c_black, 'x', 1, 39);
- mvwprintz(w, 1, 1, c_white, "Your Cash:%s%d",
-           (cash >= 10000 ? " " : (cash >= 1000 ? "  " : (cash >= 100 ? "   " :
-            (cash >= 10 ? "    " : "     ")))), cash);
+  draw_hline(w, i, c_black, 'x', 1, SCREEN_WIDTH / 2 - 1);
+ mvwprintz(w, 1, 1, c_white, "Your Cash:");
+ mvwprintz(w, 1, 17 - int_log10(cash), c_white, "%d", cash);
  wprintz(w, c_ltgray, " -> ");
  wprintz(w, (total_price > cash ? c_red : c_green), "%d", cash - total_price);
 
@@ -1090,7 +1089,7 @@ void draw_caravan_items(WINDOW *w, const player& u, std::vector<itype_id> *items
 
 // Actually, clear the item info first.
  for (int i = 12; i <= VIEW - 2; i++)
-  draw_hline(w, i, c_black, 'x', 1, 39);
+  draw_hline(w, i, c_black, 'x', 1, SCREEN_WIDTH / 2 - 1);
 // THEN print it--if item_selected is valid
  if (item_selected < items->size()) {
   item tmp(item::types[ (*items)[item_selected] ], 0); // Dummy item to get info
@@ -1098,7 +1097,7 @@ void draw_caravan_items(WINDOW *w, const player& u, std::vector<itype_id> *items
  }
 // Next, clear the item list on the right
  for (int i = 1; i <= VIEW - 2; i++)
-  draw_hline(w, i, c_black, 'x', 40, 79);
+  draw_hline(w, i, c_black, 'x', SCREEN_WIDTH / 2, SCREEN_WIDTH - 1);
 // Finally, print the item list on the right
  for (int i = offset; i <= offset + VIEW - 2 && i < items->size(); i++) {
   const itype* const i_type = item::types[(*items)[i]];
@@ -1117,8 +1116,7 @@ void draw_caravan_items(WINDOW *w, const player& u, std::vector<itype_id> *items
 
 int caravan_price(const player &u, int price)
 {
- if (u.sklevel[sk_barter] > 10)
-  return int( double(price) * .5);
+ if (u.sklevel[sk_barter] >= 10) return price/2;
  return int( double(price) * (1.0 - double(u.sklevel[sk_barter]) * .05));
 }
 
