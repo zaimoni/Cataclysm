@@ -9,6 +9,17 @@
 #include "setvector.h"
 #include <sstream>
 
+enum caravan_category {
+    CARAVAN_CART = 0,
+    CARAVAN_MELEE,
+    CARAVAN_GUNS,
+    CARAVAN_COMPONENTS,
+    CARAVAN_FOOD,
+    CARAVAN_CLOTHES,
+    CARAVAN_TOOLS,
+    NUM_CARAVAN_CATEGORIES
+};
+
 std::vector<itype_id> caravan_items(caravan_category cat);
 
 int caravan_price(const player &u, int price);
@@ -946,20 +957,6 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
  }
 }
 
-static std::string caravan_category_name(caravan_category cat)
-{
- switch (cat) {
-  case CARAVAN_CART:		return "Shopping Cart";
-  case CARAVAN_MELEE:		return "Melee Weapons";
-  case CARAVAN_GUNS:		return "Firearms & Ammo";
-  case CARAVAN_COMPONENTS:	return "Crafting & Construction Components";
-  case CARAVAN_FOOD:		return "Food & Drugs";
-  case CARAVAN_CLOTHES:		return "Clothing & Armor";
-  case CARAVAN_TOOLS:		return "Tools, Traps & Grenades";
- }
- return "BUG";
-}
-
 std::vector<itype_id> caravan_items(caravan_category cat)
 {
  std::vector<itype_id> ret;
@@ -1026,20 +1023,20 @@ void draw_caravan_borders(WINDOW *w, int current_window)
 
  mvwputch(w, 0, 0, col, LINE_OXXO);
  draw_hline(w, 0, col, LINE_OXOX, 1, SCREEN_WIDTH / 2 - 1);
- draw_hline(w, 11, col, LINE_OXOX, 1, SCREEN_WIDTH / 2 - 1);
- for (int i = 1; i <= 10; i++) {
+ draw_hline(w, NUM_CARAVAN_CATEGORIES + 4, col, LINE_OXOX, 1, SCREEN_WIDTH / 2 - 1);
+ for (int i = 1; i < NUM_CARAVAN_CATEGORIES + 4; i++) {
   mvwputch(w, i,  0, col, LINE_XOXO);
   mvwputch(w, i, SCREEN_WIDTH / 2 - 1, c_yellow, LINE_XOXO); // Shared border, always yellow
  }
- mvwputch(w, 11,  0, col, LINE_XXXO);
+ mvwputch(w, NUM_CARAVAN_CATEGORIES + 4,  0, col, LINE_XXXO);
 
 // These are shared with the items window, and so are always "on"
  mvwputch(w,  0, SCREEN_WIDTH / 2 - 1, c_yellow, LINE_OXXX);
- mvwputch(w, 11, SCREEN_WIDTH / 2 - 1, c_yellow, LINE_XOXX);
+ mvwputch(w, NUM_CARAVAN_CATEGORIES + 4, SCREEN_WIDTH / 2 - 1, c_yellow, LINE_XOXX);
 
  col = (1 == current_window ? c_yellow : c_ltgray);
 // Next, draw the borders for the item description window--always "off" & gray
- for (int i = 12; i < VIEW - 1; i++) {
+ for (int i = NUM_CARAVAN_CATEGORIES + 5; i < VIEW - 1; i++) {
   mvwputch(w, i,  0, c_ltgray, LINE_XOXO);
   mvwputch(w, i, SCREEN_WIDTH / 2 - 1, col, LINE_XOXO);
  }
@@ -1066,8 +1063,19 @@ void draw_caravan_borders(WINDOW *w, int current_window)
 void draw_caravan_categories(WINDOW *w, int category_selected, int total_price,
                              int cash)
 {
+    static constexpr const char* caravan_category_name[] = { // cf. enum caravan_category
+        "Shopping Cart",
+        "Melee Weapons",
+        "Firearms & Ammo",
+        "Crafting & Construction Components",
+        "Food & Drugs",
+        "Clothing & Armor",
+        "Tools, Traps & Grenades"
+    };
+    static_assert(NUM_CARAVAN_CATEGORIES == std::end(caravan_category_name)-std::begin(caravan_category_name));
+
 // Clear the window
- for (int i = 1; i <= 10; i++)
+ for (int i = 1; i < NUM_CARAVAN_CATEGORIES + 4; i++)
   draw_hline(w, i, c_black, 'x', 1, SCREEN_WIDTH / 2 - 1);
  mvwprintz(w, 1, 1, c_white, "Your Cash:");
  mvwprintz(w, 1, 17 - int_log10(cash), c_white, "%d", cash);
@@ -1075,8 +1083,7 @@ void draw_caravan_categories(WINDOW *w, int category_selected, int total_price,
  wprintz(w, (total_price > cash ? c_red : c_green), "%d", cash - total_price);
 
  for (int i = 0; i < NUM_CARAVAN_CATEGORIES; i++)
-  mvwprintz(w, i + 3, 1, (i == category_selected ? h_white : c_white),
-            caravan_category_name( caravan_category(i) ).c_str());
+  mvwprintz(w, i + 3, 1, (i == category_selected ? h_white : c_white), caravan_category_name[i]);
  wrefresh(w);
 }
  
@@ -1088,7 +1095,7 @@ void draw_caravan_items(WINDOW *w, const player& u, std::vector<itype_id> *items
 // will corrupt the item list.
 
 // Actually, clear the item info first.
- for (int i = 12; i <= VIEW - 2; i++)
+ for (int i = NUM_CARAVAN_CATEGORIES + 5; i <= VIEW - 2; i++)
   draw_hline(w, i, c_black, 'x', 1, SCREEN_WIDTH / 2 - 1);
 // THEN print it--if item_selected is valid
  if (item_selected < items->size()) {

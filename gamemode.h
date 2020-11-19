@@ -102,17 +102,6 @@ DEFLOC_MANSION,
 NUM_DEFENSE_LOCATIONS
 };
 
-enum caravan_category {
-CARAVAN_CART = 0,
-CARAVAN_MELEE,
-CARAVAN_GUNS,
-CARAVAN_COMPONENTS,
-CARAVAN_FOOD,
-CARAVAN_CLOTHES,
-CARAVAN_TOOLS,
-NUM_CARAVAN_CATEGORIES
-};
-
 struct defense_game : public special_game
 {
  defense_game();
