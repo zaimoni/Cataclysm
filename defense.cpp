@@ -33,8 +33,6 @@ void draw_caravan_items(WINDOW *w, const player& u, std::vector<itype_id> *items
 
 std::string defense_style_name(defense_style style);
 std::string defense_style_description(defense_style style);
-std::string defense_location_name(defense_location location);
-std::string defense_location_description(defense_location location);
 
 defense_game::defense_game()
 {
@@ -99,6 +97,20 @@ void defense_game::per_turn(game *g)
   spawn_wave(g);
  }
 }
+
+static constexpr const std::pair<const char*, const char*> defense_location_name_desc[] = {
+    std::pair("Nowhere?!  A bug!", "NULL Bug."),
+    std::pair("Hospital", "One entrance and many rooms.  Some medical supplies."),
+    std::pair("Megastore", "A large building with various supplies."),
+    std::pair("Bar", "A small building with plenty of alcohol."),
+    std::pair("Mansion", "A large house with many rooms and.")
+};
+
+static_assert(NUM_DEFENSE_LOCATIONS == std::end(defense_location_name_desc) - std::begin(defense_location_name_desc));
+
+// tolerate std::string construction here -- will be needed when translations are attempted
+static std::string defense_location_name(defense_location location) { return defense_location_name_desc[location].first; }
+static std::string defense_location_description(defense_location location) { return defense_location_name_desc[location].second; }
 
 void defense_game::pre_action(game *g, action_id &act)
 {
@@ -690,36 +702,6 @@ std::string defense_style_description(defense_style style)
    return "Ward off legions of eldritch horrors.";
   default:
    return "What the heck is this I don't even know. A bug!";
- }
-}
-
-std::string defense_location_name(defense_location location)
-{
- switch (location) {
- case DEFLOC_NULL:	return "Nowhere?!  A bug!";
- case DEFLOC_HOSPITAL:	return "Hospital";
- case DEFLOC_MALL:	return "Megastore";
- case DEFLOC_BAR:	return "Bar";
- case DEFLOC_MANSION:	return "Mansion";
- default:		return "a ghost's house (bug)";
- }
-}
-
-std::string defense_location_description(defense_location location)
-{
- switch (location) {
- case DEFLOC_NULL:
-  return "NULL Bug.";
- case DEFLOC_HOSPITAL:
-  return                 "One entrance and many rooms.  Some medical supplies.";
- case DEFLOC_MALL:
-  return                 "A large building with various supplies.";
- case DEFLOC_BAR:
-  return                 "A small building with plenty of alcohol.";
- case DEFLOC_MANSION:
-  return                 "A large house with many rooms and.";
- default:
-  return "Unknown data bug.";
  }
 }
 
