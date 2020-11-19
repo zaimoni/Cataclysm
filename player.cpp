@@ -2032,14 +2032,18 @@ void player::disp_info(game *g)
  // XXX yes inherited widths don't add up properly
  WINDOW* w_grid    = newwin(VIEW, SCREEN_WIDTH,  0,  0);
 
+ // intent is 3x2 subpanels of "roughly equal width"
+ const int subpanel_width = (SCREEN_WIDTH-2)/3; // C:Whales 26
+
  // non-scaling row is top row
+ // bottom row expands to fill up available screen space
  WINDOW* w_cells[] = {
-    newwin(9, VIEW + 1,  2,  0),
-    newwin(VIEW - 16, VIEW + 1, 12,  0),
-    newwin(9, VIEW + 1,  2, VIEW + 2),
-    newwin(VIEW - 16, VIEW + 1, 12, VIEW + 2),
-    newwin(9, VIEW + 1,  2, 2 * VIEW + 4),
-    newwin(VIEW - 16, VIEW + 1, 12, 2 * VIEW + 4)
+    newwin(9, subpanel_width,  2,  0),
+    newwin(VIEW - 16, subpanel_width, 12,  0),
+    newwin(9, subpanel_width,  2, subpanel_width + 1),
+    newwin(VIEW - 16, subpanel_width, 12, subpanel_width + 1),
+    newwin(9, subpanel_width,  2, 2 * subpanel_width + 2),
+    newwin(VIEW - 16, subpanel_width, 12, 2 * subpanel_width + 2)
  };
 
  WINDOW* w_stats   = w_cells[stats-1]; // minimum height 7
@@ -2062,15 +2066,15 @@ void player::disp_info(game *g)
  draw_hline(w_grid, 11, c_ltgray, LINE_OXOX);
  draw_hline(w_grid, VIEW - 4, c_ltgray, LINE_OXOX);
  for (int i = 2; i < VIEW - 4; i++) {
-   mvwputch(w_grid, i, VIEW + 1, c_ltgray, LINE_XOXO);
-   mvwputch(w_grid, i, 2 * VIEW + 3, c_ltgray, LINE_XOXO);
+   mvwputch(w_grid, i, subpanel_width, c_ltgray, LINE_XOXO);
+   mvwputch(w_grid, i, 2 * subpanel_width + 1, c_ltgray, LINE_XOXO);
  }
- mvwputch(w_grid,  1, VIEW + 1, c_ltgray, LINE_OXXX);
- mvwputch(w_grid,  1, 2 * VIEW + 3, c_ltgray, LINE_OXXX);
- mvwputch(w_grid, VIEW - 4, VIEW + 1, c_ltgray, LINE_XXOX);
- mvwputch(w_grid, VIEW - 4, 2 * VIEW + 3, c_ltgray, LINE_XXOX);
- mvwputch(w_grid, 11, VIEW + 1, c_ltgray, LINE_XXXX);
- mvwputch(w_grid, 11, 2 * VIEW + 3, c_ltgray, LINE_XXXX);
+ mvwputch(w_grid,  1, subpanel_width, c_ltgray, LINE_OXXX);
+ mvwputch(w_grid,  1, 2 * subpanel_width + 1, c_ltgray, LINE_OXXX);
+ mvwputch(w_grid, VIEW - 4, subpanel_width, c_ltgray, LINE_XXOX);
+ mvwputch(w_grid, VIEW - 4, 2 * subpanel_width + 1, c_ltgray, LINE_XXOX);
+ mvwputch(w_grid, 11, subpanel_width, c_ltgray, LINE_XXXX);
+ mvwputch(w_grid, 11, 2 * subpanel_width + 1, c_ltgray, LINE_XXXX);
  wrefresh(w_grid);	// w_grid should stay static.
 
 // First!  Default STATS screen.
@@ -2080,6 +2084,10 @@ void player::disp_info(game *g)
      "Intelligence:",
      "Perception:"
  };
+
+ // \todo? Technically the stats and encumbrance subpanels should use available width.
+ // However, they have other issues (the text labels need central configuration, and are one of
+ // the easier translation targets.)
 
  mvwprintz(w_stats, 0, 10, c_ltgray, "STATS");
  mvwprintz(w_stats, 2,  2, c_ltgray, "Strength:");
