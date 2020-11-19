@@ -109,8 +109,8 @@ static constexpr const std::pair<const char*, const char*> defense_location_name
 static_assert(NUM_DEFENSE_LOCATIONS == std::end(defense_location_name_desc) - std::begin(defense_location_name_desc));
 
 // tolerate std::string construction here -- will be needed when translations are attempted
-static std::string defense_location_name(defense_location location) { return defense_location_name_desc[location].first; }
-static std::string defense_location_description(defense_location location) { return defense_location_name_desc[location].second; }
+static std::string _name(defense_location location) { return defense_location_name_desc[location].first; }
+static std::string description(defense_location location) { return defense_location_name_desc[location].second; }
 
 void defense_game::pre_action(game *g, action_id &act)
 {
@@ -140,7 +140,7 @@ void defense_game::pre_action(game *g, action_id &act)
 	 || (act == ACTION_MOVE_NW &&
 	     (   (g->u.pos.y == SEEY * int(MAPSIZE / 2) && g->lev.y <=  93)
 		  || (g->u.pos.x == SEEX * int(MAPSIZE / 2) && g->lev.x <=  93)))) {
-  messages.add("You cannot leave the %s behind!", defense_location_name(location).c_str());
+  messages.add("You cannot leave the %s behind!", _name(location).c_str());
   act = ACTION_NULL;
  }
 }
@@ -491,8 +491,8 @@ void defense_game::setup()
        location = defense_location(location - 1);
      }
      draw_hline(w, 5, c_black, 'x', 2, 80);
-     mvwprintz(w, 5, 2, c_yellow, defense_location_name(location).c_str());
-     mvwprintz(w,  5, 28, c_ltgray, defense_location_description(location).c_str());
+     mvwprintz(w, 5, 2, c_yellow, _name(location).c_str());
+     mvwprintz(w,  5, 28, c_ltgray, description(location).c_str());
      break;
  
     case 3:	// Difficulty of the first wave
@@ -619,8 +619,8 @@ void defense_game::refresh_setup(WINDOW* w, int selection)
  mvwprintz(w,  3,  2, 1 == selection ? c_yellow : c_blue, defense_style_name(style).c_str());
  mvwprintz(w,  3, 28, c_ltgray, defense_style_description(style).c_str());
  mvwprintz(w,  4,  2, c_ltgray, "Location:");
- mvwprintz(w,  5,  2, 2 == selection ? c_yellow : c_blue, defense_location_name(location).c_str());
- mvwprintz(w,  5, 28, c_ltgray, defense_location_description(location).c_str());
+ mvwprintz(w,  5,  2, 2 == selection ? c_yellow : c_blue, _name(location).c_str());
+ mvwprintz(w,  5, 28, c_ltgray, description(location).c_str());
 
  static auto draw_numeric_row = [&](int y, const char* label, nc_color col, int num, const char* desc) {
      mvwprintz(w, y, 2, c_ltgray, label);
