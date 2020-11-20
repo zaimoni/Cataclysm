@@ -440,16 +440,16 @@ void veh_interact::move_cursor (int dx, int dy)
 
 void veh_interact::display_veh ()
 {
-    int x1 = 12, y1 = 12, x2 = -12, y2 = -12;
-    for (int ep = 0; ep < veh->external_parts.size(); ep++)
-    {
-        int p = veh->external_parts[ep];
-        if (veh->parts[p].mount_d.x < x1) x1 = veh->parts[p].mount_d.x;
-        if (veh->parts[p].mount_d.y < y1) y1 = veh->parts[p].mount_d.y;
-        if (veh->parts[p].mount_d.x > x2) x2 = veh->parts[p].mount_d.x;
-        if (veh->parts[p].mount_d.y > y2) y2 = veh->parts[p].mount_d.y;
+    int x1 = vehicle::radius, y1 = vehicle::radius, x2 = -vehicle::radius, y2 = -vehicle::radius;
+    for (int ep = 0; ep < veh->external_parts.size(); ep++) {
+        const point rel_pos = veh->parts[veh->external_parts[ep]].mount_d;
+        clamp_ub(x1, rel_pos.x);
+        clamp_ub(y1, rel_pos.y);
+        clamp_lb(x2, rel_pos.x);
+        clamp_lb(y2, rel_pos.y);
     }
-	dd = point(0, 0);
+    // \todo? scrolling setup?
+    dd = point(0, 0);
     if (x2 - x1 < 11) { x1--; x2++; }
     if (y2 - y1 < 11 ) { y1--; y2++; }
     if (x1 < -5) dd.x = -5 - x1;
@@ -462,6 +462,7 @@ void veh_interact::display_veh ()
         int p = veh->external_parts[ep];
         char sym = veh->part_sym (p);
         nc_color col = veh->part_color (p);
+        // cross-wiring here matched over in install_part
         int y = -(veh->parts[p].mount_d.x + dd.x);
         int x = veh->parts[p].mount_d.y + dd.y;
         mvwputch (w_disp, 6+y, 6+x, c.x == x && c.y == y? hilite(col) : col, special_symbol(sym));
