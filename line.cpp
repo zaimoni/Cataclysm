@@ -62,11 +62,11 @@ std::vector <point> line_to(int x1, int y1, int x2, int y2, int t)
  return ret;
 }
 
-double slope_of(const std::vector<point>& line)
+static double slope_of(const std::vector<point>& line)
 {
  const auto delta = line.back() - line.front();
  if (0 == delta.x) return SLOPE_VERTICAL;
- return (delta.y / delta.x);
+ return double(delta.y) / delta.x;
 }
 
 std::vector<point> continue_line(const std::vector<point>& line, int distance)
@@ -83,7 +83,7 @@ std::vector<point> continue_line(const std::vector<point>& line, int distance)
   end.y += int(distance * abs(slope) * sY);
  } else {
   end.y += distance * sY;
-  if (slope != SLOPE_VERTICAL)
+  if (SLOPE_VERTICAL > slope)
    end.x += int(distance / abs(slope)) * sX;
  }
  return line_to(start, end, 0);
