@@ -3,7 +3,6 @@
 #include "Zaimoni.STL/Logging.h"
 #include <math.h>
 
-#define SGN(a) (((a)<0) ? -1 : 1)
 #define SLOPE_VERTICAL 999999
 
 std::vector <point> line_to(int x1, int y1, int x2, int y2, int t)
@@ -13,13 +12,10 @@ std::vector <point> line_to(int x1, int y1, int x2, int y2, int t)
  int dy = y2 - y1;
  int ax = abs(dx)<<1;
  int ay = abs(dy)<<1;
- int sx = SGN(dx);
- int sy = SGN(dy);
- if (dy == 0) sy = 0;
- if (dx == 0) sx = 0;
- point cur;
- cur.x = x1;
- cur.y = y1;
+ int sx = cataclysm::signum(dx);
+ int sy = cataclysm::signum(dy);
+
+ point cur(x1, y1);
 
  int xmin = (x1 < x2 ? x1 : x2), ymin = (y1 < y2 ? y1 : y2),
      xmax = (x1 > x2 ? x1 : x2), ymax = (y1 > y2 ? y1 : y2);

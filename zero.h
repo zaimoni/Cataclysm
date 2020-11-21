@@ -40,6 +40,12 @@ inline constexpr T unconditional_v = v;
 
 namespace cataclysm {
 
+template<class T>
+constexpr int signum(const T& x) {
+	if (0 == x) return 0;
+	return (0 < x) ? 1 : -1;
+}
+
 template<class T, class U>
 constexpr auto min(const T& lhs, const U& rhs) { return lhs < rhs ? lhs : rhs; }
 

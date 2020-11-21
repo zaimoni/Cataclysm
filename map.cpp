@@ -24,8 +24,6 @@ template<> trap_id discard<trap_id>::x = tr_null;
 template<> field discard<field>::x = field();
 template<> std::vector<item> discard<std::vector<item> >::x(0);
 
-#define SGN(a) (((a)<0) ? -1 : 1)
-
 enum astar_list {
  ASL_NONE,
  ASL_OPEN,
@@ -1840,8 +1838,8 @@ bool map::_BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range, int& tc, std
 
     int ax = abs(dx) << 1;
     int ay = abs(dy) << 1;
-    int sx = SGN(dx);
-    int sy = SGN(dy);
+    int sx = signum(dx);
+    int sy = signum(dy);
     int x = Fx;
     int y = Fy;
     int t = 0;
@@ -1850,7 +1848,7 @@ bool map::_BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range, int& tc, std
     decltype(to(x,y)) pos;
 
     if (ax > ay) { // Mostly-horizontal line
-        st = SGN(ay - (ax >> 1));
+        st = signum(ay - (ax >> 1));
         // Doing it "backwards" prioritizes straight lines before diagonal.
         // This will help avoid creating a string of zombies behind you and will
         // promote "mobbing" behavior (zombies surround you to beat on you)
@@ -1873,7 +1871,7 @@ bool map::_BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range, int& tc, std
         }
         return false;
     } else { // Same as above, for mostly-vertical lines
-        st = SGN(ax - (ay >> 1));
+        st = signum(ax - (ay >> 1));
         for (tc = abs(ax - (ay >> 1)) * 2 + 1; tc >= -1; tc--) {
             t = tc * st;
             x = Fx;
