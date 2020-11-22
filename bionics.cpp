@@ -344,9 +344,6 @@ causing increased encumberance."}
 
 };
 
-
-#define BATTERY_AMOUNT 4 // How much batteries increase your power
-
 // Why put this in a Big Switch?  Why not let bionics have pointers to
 // functions, much like monsters and items?
 //
@@ -827,6 +824,8 @@ bool player::install_bionics(game *g, const it_bionic* type)
  mvwprintz(w.get(), 12, 40, c_white,       "or faulty installation.");
  wrefresh(w.get());
 
+ static constexpr const int BATTERY_AMOUNT = 4; // How much batteries increase your power
+
  if (type->id == itm_bionics_battery) {	// No selection list; just confirm
   mvwprintz(w.get(),  2, 0, h_ltblue, "Battery Level +%d", BATTERY_AMOUNT);
   mvwprintz(w.get(), 22, 0, c_ltblue, "\
@@ -858,17 +857,16 @@ charge mechanism, which must be installed from another CBM.");
  int ch;
 
  do {
-
   bionic_id id = type->options[selection];
   const auto& bio = bionic::type[id];
   mvwprintz(w.get(), 2 + selection, 0, (has_bionic(id) ? h_ltred : h_ltblue), bio.name.c_str());
 
 // Clear the bottom three lines...
-  mvwprintz(w.get(), 22, 0, c_ltgray, "\
-                                                                             \n\
-                                                                             \n\
-                                                                             ");
-// ...and then fill them with the description of the selected bionic
+  draw_hline(w.get(), 22, c_ltgray, ' ');
+  draw_hline(w.get(), 23, c_ltgray, ' ');
+  draw_hline(w.get(), 24, c_ltgray, ' ');
+
+  // ...and then fill them with the description of the selected bionic
   mvwprintz(w.get(), 22, 0, c_ltblue, bio.description.c_str());
 
   wrefresh(w.get());
