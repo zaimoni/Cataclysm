@@ -246,6 +246,8 @@ void npc::move(game *g)
    if (game::debugmon) debugmsg("NPC %s: Set target to PLAYER, danger = %d", name.c_str(), danger);
   }
  }
+
+ // \todo allow targeting npcs https://github.com/zaimoni/Cataclysm/issues/107
 #ifndef NDEBUG
  if (0 < danger && TARGET_PLAYER != target && (0 > target || g->z.size() <= target)) throw std::logic_error("danger without a target");
 #endif

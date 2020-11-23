@@ -340,9 +340,9 @@ public:
  std::vector<skill> skills_offered_to(const player& p) const; // Skills that are higher
  std::vector<itype_id> styles_offered_to(const player& p) const; // Martial Arts
 // State checks
- bool is_enemy() const; // We want to kill/mug/etc the player
+ bool is_enemy(const player* survivor = nullptr) const; // We want to kill/mug/etc the player
  bool is_following() const; // Traveling w/ player (whether as a friend or a slave)
- bool is_friend() const; // Allies with the player
+ bool is_friend(const player* survivor = nullptr) const; // Allies with the player
  bool is_leader() const; // Leading the player
  bool is_defending() const; // Putting the player's safety ahead of ours
 // What happens when the player makes a request

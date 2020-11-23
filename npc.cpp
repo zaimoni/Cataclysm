@@ -1498,12 +1498,16 @@ bool npc::took_painkiller() const
          has_disease(DI_PKILL3) || has_disease(DI_PKILL_L));
 }
 
-bool npc::is_friend() const
+// don't worry about CPU cost (yet), need something that fully works first 2020-11-22 zaimoni
+bool npc::is_friend(const player* survivor) const
 {
- if (attitude == NPCATT_FOLLOW || attitude == NPCATT_DEFEND ||
-     attitude == NPCATT_LEAD)
-  return true;
- return false;
+ const bool pc_friend = attitude == NPCATT_FOLLOW || attitude == NPCATT_DEFEND || attitude == NPCATT_LEAD;
+ if (!survivor) return pc_friend;
+ if (auto _npc = dynamic_cast<const npc*>(survivor)) {
+	 // \todo NPC-NPC relationss independent of the player
+	 return pc_friend == _npc->is_friend();
+ }
+ return pc_friend;
 }
 
 bool npc::is_following() const
@@ -1525,12 +1529,16 @@ bool npc::is_leader() const
  return (attitude == NPCATT_LEAD);
 }
 
-bool npc::is_enemy() const
+// don't worry about CPU cost (yet), need something that fully works first 2020-11-22 zaimoni
+bool npc::is_enemy(const player* survivor) const
 {
- if (attitude == NPCATT_KILL || attitude == NPCATT_MUG ||
-     attitude == NPCATT_FLEE)
-  return true;
- return  false;
+ const bool pc_hostile = attitude == NPCATT_KILL || attitude == NPCATT_MUG || attitude == NPCATT_FLEE;
+ if (!survivor) return pc_hostile;
+ if (auto _npc = dynamic_cast<const npc*>(survivor)) {
+	 // \todo NPC-NPC relations independent of the player
+	 return pc_hostile == _npc->is_enemy();
+ }
+ return pc_hostile;
 }
 
 bool npc::is_defending() const
@@ -1541,14 +1549,14 @@ bool npc::is_defending() const
 int npc::danger_assessment(game *g) const
 {
  int ret = 0;
- int sightdist = g->light_level();
- for (int i = 0; i < g->z.size(); i++) {
-  if (g->m.sees(pos, g->z[i].pos, sightdist))
-   ret += g->z[i].type->difficulty;
+ const int sightdist = g->light_level();
+ for (decltype(auto) _mon : g->z) {
+	 if (g->m.sees(pos, _mon.pos, sightdist)) ret += _mon.type->difficulty;
  }
  ret /= 10;
  if (ret <= 2) ret = -10 + 5 * ret;	// Low danger if no monsters around
 
+// \todo should take range into account https://github.com/zaimoni/Cataclysm/issues/106
 // Mod for the player
  if (is_enemy()) {
   const int dist = rl_dist(pos, g->u.pos);
@@ -1566,6 +1574,27 @@ int npc::danger_assessment(game *g) const
    else 
     ret -= 8 - dist;
   }
+ }
+
+ // Mod for other NPCs
+ for (const npc& _npc : g->active_npc) {
+	 if (is_enemy(&_npc)) {
+		 const int dist = rl_dist(pos, _npc.pos);
+		 if (dist < 10) {
+			 if (_npc.weapon.is_gun())
+				 ret += 10;
+			 else
+				 ret += 10 - dist;
+		 }
+	 } else if (is_friend(&_npc)) {
+		 const int dist = rl_dist(pos, _npc.pos);
+		 if (dist < 8) {
+			 if (_npc.weapon.is_gun())
+				 ret -= 8;
+			 else
+				 ret -= 8 - dist;
+		 }
+	 }
  }
 
  for (int i = 0; i < num_hp_parts; i++) {
