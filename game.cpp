@@ -4625,7 +4625,7 @@ void game::plfire(bool burst)
  std::vector<const monster*> mon_targets;
  std::vector<int> targetindices;
  int passtarget = visible_monsters(mon_targets, targetindices, [&](const monster& mon) {
-     return bounds.contains(mon.pos) && 0 == mon.friendly;
+     return bounds.contains(mon.pos) && mon.is_enemy();
  });
 
  // target() sets x and y, and returns an empty vector if we canceled (Esc)
@@ -4988,7 +4988,7 @@ void game::plmove(int x, int y)
  monster* const m_at = mon(x, y);
  bool displace = false;	// Are we displacing a monster?
  if (m_at) {
-  if (m_at->friendly == 0) {
+  if (m_at->is_enemy()) {
    int udam = u.hit_mon(this, m_at);
    if (m_at->hurt(udam)) kill_mon(*m_at, true);
    return;

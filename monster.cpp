@@ -179,7 +179,7 @@ void monster::draw(WINDOW *w, const point& pl, bool inv) const
      mvwaddfgtile(w, pt.y, pt.x, mtype::tiles[type->id].c_str());
  }
 
- if (friendly != 0 && !inv)
+ if (is_friend() && !inv) // viewpoint is PC
   mvwputch_hi(w, pt.y, pt.x, color, sym);
  else if (inv)
   mvwputch_inv(w, pt.y, pt.x, color, sym);

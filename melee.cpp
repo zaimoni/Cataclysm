@@ -681,7 +681,7 @@ technique_id player::pick_technique(const game *g, const monster *z, const playe
        const point pt(pos + delta);
        // XXX faction-unaware
        if (const monster* const m_at = g->mon(pt)) {
-           if (0 == m_at->friendly) enemy_count++;
+           if (m_at->is_enemy(this)) enemy_count++;
            else enemy_count -= 2;
        }
        if (const npc* const nPC = g->nPC(pt)) {

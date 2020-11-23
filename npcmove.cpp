@@ -421,7 +421,7 @@ void npc::choose_monster_target(game *g, int &enemy, int &danger,
    int monster_danger = (mon->type->difficulty * mon->hp) / mon->type->hp;
    if (!mon->is_fleeing(*this)) monster_danger++;
 
-   if (mon->friendly != 0) {
+   if (mon->is_friend(this)) {
     priority = -999;
     monster_danger *= -1;
    }/* else if (mon->speed < current_speed(g)) {

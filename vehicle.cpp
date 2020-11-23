@@ -1551,15 +1551,17 @@ bool vehicle::fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int
     int range = ammo.type == AT_GAS? 5 : 12;
     int closest = range + 1;
 	auto g = game::active();
+    // \todo should use driver (eventually, ai who usually is friendly to driver) as definer of is_enemy status
 	for(auto& _mon : g->z) {
         int dist = rl_dist(origin, _mon.pos);
-        if (_mon.friendly == 0 && dist < closest &&
+        if (_mon.is_enemy() && dist < closest &&
             g->m.sees(origin, _mon.pos, range, t)) {
             target = &_mon;
             closest = dist;
             fire_t = t;
         }
     }
+    // \todo allow targeting hostile NPCs https://github.com/zaimoni/Cataclysm/issues/108
     if (!target) return false;
 
     std::vector<point> traj = line_to(origin, target->pos, fire_t);
