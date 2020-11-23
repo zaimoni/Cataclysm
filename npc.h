@@ -12,12 +12,6 @@ namespace cataclysm {
 	class action;
 }
 
-#define NPC_LOW_VALUE       5
-#define NPC_HI_VALUE        8
-#define NPC_VERY_HI_VALUE  15
-#define NPC_DANGER_LEVEL   10
-#define NPC_DANGER_VERY_LOW 5
-
 /*
  * Talk:   Trust midlow->high, fear low->mid, need doesn't matter
  * Trade:  Trust mid->high, fear low->midlow, need is a bonus

@@ -8,6 +8,8 @@
 #include <sstream>
 
 #define TARGET_PLAYER -2
+#define NPC_DANGER_LEVEL   10
+#define NPC_DANGER_VERY_LOW 5
 
 // A list of items used for escape, in order from least to most valuable
 static const itype_id ESCAPE_ITEMS[] = {	// \todo mod target

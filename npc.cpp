@@ -13,6 +13,10 @@
 #include <sstream>
 #include <cstdarg>
 
+#define NPC_LOW_VALUE       5
+#define NPC_HI_VALUE        8
+#define NPC_VERY_HI_VALUE  15
+
 int npc::next_id = npc::MIN_ID;
 
 void npc::global_reset() {
