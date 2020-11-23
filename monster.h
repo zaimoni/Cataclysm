@@ -136,6 +136,8 @@ class monster {
 				// Returns false if no such monster exists
  void make_friendly();
  void add_item(const item& it);	// Add an item to inventory
+ bool is_enemy(const player* survivor = nullptr) const;
+ bool is_friend(const player* survivor = nullptr) const;
 
  bool is_static_spawn() const { return -1 != spawnmap.x; }
 

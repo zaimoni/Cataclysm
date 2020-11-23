@@ -637,6 +637,28 @@ void monster::make_friendly()
  friendly = rng(5, 30) + rng(0, 20);
 }
 
+bool monster::is_enemy(const player* survivor) const
+{
+    const bool pc_hostile = (0 == friendly);
+    if (!survivor) return pc_hostile;
+    if (auto _npc = dynamic_cast<const npc*>(survivor)) {
+        // \todo monster-NPC relations independent of the player
+        return pc_hostile == _npc->is_enemy();
+    }
+    return pc_hostile;
+}
+
+bool monster::is_friend(const player* survivor) const
+{
+    const bool pc_friendly = (0 != friendly);
+    if (!survivor) return pc_friendly;
+    if (auto _npc = dynamic_cast<const npc*>(survivor)) {
+        // \todo monster-NPC relations independent of the player
+        return pc_friendly == _npc->is_friend();
+    }
+    return pc_friendly;
+}
+
 void monster::add_item(const item& it)
 {
  inv.push_back(it);
