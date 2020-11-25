@@ -999,7 +999,6 @@ int inputdelay;         //How long getch will wait for a character to be typed
 //WINDOW *_windows;  //Probably need to change this to dynamic at some point
 //int WindowCount;        //The number of curses windows currently in use
 HFONT font = 0;             //Handle to the font created by CreateFont
-char szDirectory[MAX_PATH] = "";
 int haveCustomFont = 0;	// custom font was there and loaded
 
 // 
@@ -1057,7 +1056,7 @@ static LRESULT CALLBACK ProcessMessages(HWND__* hWnd, unsigned int Msg, WPARAM w
 }
 
 //Registers, creates, and shows the Window!!
-static bool WinCreate()
+static bool WinCreate(OS_Window& _win)
 {
     WNDCLASSEXW WindowClassType;
     const WCHAR *szTitle=  (L"Cataclysm" " (" __DATE__ ")");
@@ -1256,7 +1255,7 @@ WINDOW *initscr(void)
 		 PROOF_QUALITY, FF_MODERN, t_face);
  }
 
-    WinCreate();    //Create the actual window, register it, etc
+    WinCreate(_win);    //Create the actual window, register it, etc
 
 	// cf mapdata.h: typical value of SEEX/SEEY is 12 so the console is 25x25 display, 55x25 readout
 	// \todo set default option values for windows; once mainwin is constructed it's too late
