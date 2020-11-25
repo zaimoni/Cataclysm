@@ -49,7 +49,7 @@ private:
 	static HDC _last_dc;
 
 	BITMAPINFOHEADER _backbuffer_stats;
-	void (OS_Window::*_fillRect)(int x, int y, int w, int h, unsigned char c);
+	void (OS_Window::* _fillRect)(int x, int y, int w, int h, unsigned char c);
 	RGBQUAD* _color_table;
 	size_t _color_table_size;
 	HWND _window;
@@ -81,7 +81,7 @@ public:
 		SetBkMode(_backbuffer, TRANSPARENT);//Transparent font backgrounds
 		memset((void*)&src, 0, sizeof(OS_Window));
 	}
-	~OS_Window() { destroy();  }
+	~OS_Window() { destroy(); }
 
 	OS_Window& operator=(const OS_Window& src) = delete;
 	OS_Window& operator=(OS_Window&& src) {
@@ -165,13 +165,18 @@ public:
 
 	int X() const { return _dim.left; };
 	int Y() const { return _dim.top; };
-	int width() const { return _dim.right-_dim.left; }
+	int width() const { return _dim.right - _dim.left; }
 	int height() const { return _dim.bottom - _dim.top; }
 	void center(int w, int h) {
 		_dim.left = (OS_Window::ScreenWidth - w) / 2;
 		_dim.top = (OS_Window::ScreenHeight - h) / 2;
 		_dim.right = _dim.left + w;
 		_dim.bottom = _dim.top + h;
+		// arguably this should trigger update even if backbuffer is present
+		if (!_backbuffer) {
+			Bootstrap(_backbuffer_stats);
+			if (_backbuffer_stats.biBitCount) SetImageSize(_backbuffer_stats); // if we're zero-initialized, we don't know our color depth yet
+		}
 	}
 
 	void clear() {
@@ -194,27 +199,28 @@ public:
 		dest.biCompression = BI_RGB;   //store it in uncompressed bytes
 	}
 
-	static void SetColorDepth(BITMAPINFOHEADER& dest, unsigned char bits, unsigned long important_colors=0)
+	void Bootstrap() { Bootstrap(_backbuffer_stats); }
+
+	static void SetColorDepth(BITMAPINFOHEADER& dest, unsigned char bits, unsigned long important_colors = 0)
 	{
-		const unsigned long w = (0 < dest.biWidth ? dest.biWidth : -dest.biWidth);
-		const unsigned long h = (0 < dest.biHeight ? dest.biHeight : -dest.biHeight);
+		dest.biBitCount = bits;
+		SetImageSize(dest);
 		switch (bits)
 		{
 		case 32:
 			dest.biClrUsed = 0;
 			dest.biClrImportant = 0;
-			dest.biSizeImage = 4*w*h;
 			break;
 		case 8:
 			if (1 > important_colors || (UCHAR_MAX + 1) < important_colors) throw std::logic_error("color table has unreasonable number of entries");
 			dest.biClrUsed = important_colors;
 			dest.biClrImportant = important_colors;
-			dest.biSizeImage = w*h;
 			break;
 		default: throw std::logic_error("unsupported color depth");
 		}
-		dest.biBitCount = bits;
 	}
+
+	void SetColorDepth(unsigned char bits, unsigned long important_colors = 0) { SetColorDepth(_backbuffer_stats, bits, important_colors); }
 
 	bool SetBackbuffer(const BITMAPINFO& buffer_spec)
 	{
@@ -226,23 +232,32 @@ public:
 		_backbuffer_stats = buffer_spec.bmiHeader;
 		// handle invariant parts here
 		Bootstrap(_backbuffer_stats);
+		SetImageSize(_backbuffer_stats);
 		// we only handle 8 and 32 bits
 		if (32 == _backbuffer_stats.biBitCount) {
 			_backbuffer_stats.biClrUsed = 0;
 			_backbuffer_stats.biClrImportant = 0;
-			_backbuffer_stats.biSizeImage = width()*height()*4;
-		} else if (8 == _backbuffer_stats.biBitCount) {
+		}
+		else if (8 == _backbuffer_stats.biBitCount) {
 			// reality checks
 			SUCCEED_OR_DIE(_backbuffer_stats.biClrUsed == _backbuffer_stats.biClrImportant);
-			SUCCEED_OR_DIE(1 <= _backbuffer_stats.biClrUsed && (UCHAR_MAX+1) >= _backbuffer_stats.biClrUsed);
-			_backbuffer_stats.biSizeImage = width()*height();
-		} else SUCCEED_OR_DIE(!"unhandled color depth");
+			SUCCEED_OR_DIE(1 <= _backbuffer_stats.biClrUsed && (UCHAR_MAX + 1) >= _backbuffer_stats.biClrUsed);
+		}
+		else SUCCEED_OR_DIE(!"unhandled color depth");
 
 		HBITMAP backbit = CreateDIBSection(0, (BITMAPINFO*)&_backbuffer_stats, DIB_RGB_COLORS, (void**)&_dcbits, nullptr, 0);	// _dcbits doesn't play nice w/move constructor; would have to rebuild this
 		DeleteObject(SelectObject(_backbuffer, backbit));//load the buffer into DC
 		SetBkMode(_backbuffer, TRANSPARENT);//Transparent font backgrounds
 		if (8 >= _backbuffer_stats.biBitCount && _color_table && (1ULL << _backbuffer_stats.biBitCount) >= _color_table_size) return SetDIBColorTable(_backbuffer, 0, _color_table_size, _color_table);	// actually need this
 		return true;
+	}
+
+	bool SetBackbuffer()
+	{
+		BITMAPINFO working;
+		memset(&working, 0, sizeof(working));
+		working.bmiHeader = _backbuffer_stats;
+		return SetBackbuffer(working);
 	}
 
 	static RGBQUAD* CreateNewColorTable(size_t n) { return zaimoni::_new_buffer_nonNULL_throws<RGBQUAD>(n); }
@@ -277,17 +292,29 @@ public:
 		_dcbits = 0;
 
 		if (new_color_depth && new_color_depth != _backbuffer_stats.biBitCount) SetColorDepth(_backbuffer_stats, new_color_depth);
-
-		BITMAPINFO working;
-		memset(&working, 0, sizeof(working));
-		working.bmiHeader = _backbuffer_stats;
-		return SetBackbuffer(working);
+		SetBackbuffer();
 	}
 private:
 	void destroy() { 
 		clear();
 		free(_color_table);
 		_color_table = 0;
+	}
+
+	static void SetImageSize(BITMAPINFOHEADER& dest)
+	{
+		const unsigned long w = (0 < dest.biWidth ? dest.biWidth : -dest.biWidth);
+		const unsigned long h = (0 < dest.biHeight ? dest.biHeight : -dest.biHeight);
+		switch (dest.biBitCount)
+		{
+		case 32:
+			dest.biSizeImage = 4 * w * h;
+			break;
+		case 8:
+			dest.biSizeImage = w * h;
+			break;
+		default: throw std::logic_error("unsupported color depth");
+		}
 	}
 
 	// note non-use of HBRUSH
@@ -1084,12 +1111,9 @@ static bool WinCreate(OS_Window& _win)
                            _win.height() + OS_Window::BorderHeight + OS_Window::TitleSize,
                            0, 0, OS_Window::program, nullptr);
 
-	BITMAPINFO bmi;
-	ZeroMemory(&bmi, sizeof(BITMAPINFO));
-	_win.Bootstrap(bmi.bmiHeader);
-	OS_Window::SetColorDepth(bmi.bmiHeader, 8, 16);
-
-	_win.SetBackbuffer(bmi);
+	_win.Bootstrap();
+	_win.SetColorDepth(8, 16);
+	_win.SetBackbuffer();
 	SelectObject(_win.backbuffer(), font);//Load our font into the DC
 
     return _win;
