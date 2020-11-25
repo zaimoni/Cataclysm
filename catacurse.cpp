@@ -185,6 +185,15 @@ public:
 		if (_window && DestroyWindow(_window)) _window = 0;
 	}
 
+	void Bootstrap(BITMAPINFOHEADER& dest)
+	{
+		dest.biSize = sizeof(BITMAPINFOHEADER);
+		dest.biWidth = width();
+		dest.biHeight = -height();
+		dest.biPlanes = 1;
+		dest.biCompression = BI_RGB;   //store it in uncompressed bytes
+	}
+
 	static void SetColorDepth(BITMAPINFOHEADER& dest, unsigned char bits, unsigned long important_colors=0)
 	{
 		const unsigned long w = (0 < dest.biWidth ? dest.biWidth : -dest.biWidth);
@@ -216,10 +225,7 @@ public:
 		if (!_staging && !(_staging = CreateCompatibleDC(_dc))) return false;
 		_backbuffer_stats = buffer_spec.bmiHeader;
 		// handle invariant parts here
-		_backbuffer_stats.biSize = sizeof(BITMAPINFOHEADER);
-		_backbuffer_stats.biWidth = width();
-		_backbuffer_stats.biHeight = -height();
-		_backbuffer_stats.biPlanes = 1;
+		Bootstrap(_backbuffer_stats);
 		// we only handle 8 and 32 bits
 		if (32 == _backbuffer_stats.biBitCount) {
 			_backbuffer_stats.biClrUsed = 0;
@@ -231,8 +237,6 @@ public:
 			SUCCEED_OR_DIE(1 <= _backbuffer_stats.biClrUsed && (UCHAR_MAX+1) >= _backbuffer_stats.biClrUsed);
 			_backbuffer_stats.biSizeImage = width()*height();
 		} else SUCCEED_OR_DIE(!"unhandled color depth");
-
-		_backbuffer_stats.biCompression = BI_RGB;   //store it in uncompressed bytes
 
 		HBITMAP backbit = CreateDIBSection(0, (BITMAPINFO*)&_backbuffer_stats, DIB_RGB_COLORS, (void**)&_dcbits, nullptr, 0);	// _dcbits doesn't play nice w/move constructor; would have to rebuild this
 		DeleteObject(SelectObject(_backbuffer, backbit));//load the buffer into DC
@@ -1082,11 +1086,7 @@ static bool WinCreate(OS_Window& _win)
 
 	BITMAPINFO bmi;
 	ZeroMemory(&bmi, sizeof(BITMAPINFO));
-	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	bmi.bmiHeader.biWidth = _win.width();
-	bmi.bmiHeader.biHeight = -_win.height();
-	bmi.bmiHeader.biPlanes = 1;
-	bmi.bmiHeader.biCompression = BI_RGB;   //store it in uncompressed bytes
+	_win.Bootstrap(bmi.bmiHeader);
 	OS_Window::SetColorDepth(bmi.bmiHeader, 8, 16);
 
 	_win.SetBackbuffer(bmi);
