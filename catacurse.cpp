@@ -982,9 +982,7 @@ struct WINDOW {
 };
 
 //Window Functions, Do not call these outside of catacurse.cpp
-void WinDestroy();
 /// int FindWin(WINDOW *wnd);	// may want this at some point
-LRESULT CALLBACK ProcessMessages(HWND__ *hWnd, unsigned int Msg, WPARAM wParam, LPARAM lParam);
 
 /*
  Optimal tileset modification target is DrawWindow, with a mapping from codepoint,(foreground) color pairs to tiles with a transparent background.
@@ -1010,8 +1008,56 @@ int haveCustomFont = 0;	// custom font was there and loaded
 //Non-curses, Window functions      *
 //***********************************
 
+//This function processes any Windows messages we get. Keyboard, OnClose, etc
+static LRESULT CALLBACK ProcessMessages(HWND__* hWnd, unsigned int Msg, WPARAM wParam, LPARAM lParam)
+{
+	switch (Msg) {
+	case WM_CHAR:               //This handles most key presses
+		lastchar = (int)wParam;
+		switch (lastchar) {
+		case 13:            //Reroute ENTER key for compatilbity purposes
+			lastchar = 10;
+			break;
+		case 8:             //Reroute BACKSPACE key for compatilbity purposes
+			lastchar = 127;
+			break;
+		}
+		break;
+	case WM_KEYDOWN:                //Here we handle non-character input
+		switch (wParam) {
+		case VK_LEFT:
+			lastchar = KEY_LEFT;
+			break;
+		case VK_RIGHT:
+			lastchar = KEY_RIGHT;
+			break;
+		case VK_UP:
+			lastchar = KEY_UP;
+			break;
+		case VK_DOWN:
+			lastchar = KEY_DOWN;
+			break;
+		default:
+			break;
+		}
+		break;
+		// \todo we usually don't want to erase background but we have to when resizing or else.
+		// Control variable in OS_Window; starts true, set by resizing, cleared by redrawing background.
+		//      case WM_ERASEBKGND: return 1;
+	case WM_PAINT:              //Pull from our backbuffer, onto the screen
+		BitBlt(_win.dc(), 0, 0, _win.width(), _win.height(), _win.backbuffer(), 0, 0, SRCCOPY);
+		ValidateRect(_win, nullptr);
+		break;
+	case WM_DESTROY:
+		exit(0);//A messy exit, but easy way to escape game loop
+	default://If we didnt process a message, return the default value for it
+		return DefWindowProcW(hWnd, Msg, wParam, lParam);
+	}
+	return 0;
+}
+
 //Registers, creates, and shows the Window!!
-bool WinCreate()
+static bool WinCreate()
 {
     WNDCLASSEXW WindowClassType;
     const WCHAR *szTitle=  (L"Cataclysm" " (" __DATE__ ")");
@@ -1034,65 +1080,30 @@ bool WinCreate()
                            _win.Y(), _win.width() + OS_Window::BorderWidth,
                            _win.height() + OS_Window::BorderHeight + OS_Window::TitleSize,
                            0, 0, OS_Window::program, nullptr);
+
+	BITMAPINFO bmi;
+	ZeroMemory(&bmi, sizeof(BITMAPINFO));
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bmi.bmiHeader.biWidth = _win.width();
+	bmi.bmiHeader.biHeight = -_win.height();
+	bmi.bmiHeader.biPlanes = 1;
+	bmi.bmiHeader.biCompression = BI_RGB;   //store it in uncompressed bytes
+	OS_Window::SetColorDepth(bmi.bmiHeader, 8, 16);
+
+	_win.SetBackbuffer(bmi);
+	SelectObject(_win.backbuffer(), font);//Load our font into the DC
+
     return _win;
 }
 
 //Unregisters, releases the DC if needed, and destroys the window.
-void WinDestroy()
+static void WinDestroy()
 {
 	_win.clear();
 	UnregisterClassW(szWindowClass, OS_Window::program);	// would happen on program termination anyway
 };
 
-//This function processes any Windows messages we get. Keyboard, OnClose, etc
-LRESULT CALLBACK ProcessMessages(HWND__ *hWnd,unsigned int Msg, WPARAM wParam, LPARAM lParam)
-{
-    switch (Msg){
-        case WM_CHAR:               //This handles most key presses
-            lastchar=(int)wParam;
-            switch (lastchar){
-                case 13:            //Reroute ENTER key for compatilbity purposes
-                    lastchar=10;
-                    break;
-                case 8:             //Reroute BACKSPACE key for compatilbity purposes
-                    lastchar=127;
-                    break;
-            }
-            break;
-        case WM_KEYDOWN:                //Here we handle non-character input
-            switch (wParam){
-                case VK_LEFT:
-                    lastchar = KEY_LEFT;
-                    break;
-                case VK_RIGHT:
-                    lastchar = KEY_RIGHT;
-                    break;
-                case VK_UP:
-                    lastchar = KEY_UP;
-                    break;
-                case VK_DOWN:
-                    lastchar = KEY_DOWN;
-                    break;
-                default:
-                    break;
-            }
-            break;
-// \todo we usually don't want to erase background but we have to when resizing or else.
-// Control variable in OS_Window; starts true, set by resizing, cleared by redrawing background.
-//      case WM_ERASEBKGND: return 1;
-        case WM_PAINT:              //Pull from our backbuffer, onto the screen
-            BitBlt(_win.dc(), 0, 0, _win.width(), _win.height(), _win.backbuffer(), 0, 0,SRCCOPY);
-            ValidateRect(_win, nullptr);
-            break;
-        case WM_DESTROY:
-            exit(0);//A messy exit, but easy way to escape game loop
-        default://If we didnt process a message, return the default value for it
-            return DefWindowProcW(hWnd, Msg, wParam, lParam);
-    }
-    return 0;
-}
-
-void DrawWindow(WINDOW *win)
+static void DrawWindow(WINDOW *win)
 {
     int i,j;
     char tmp;	// following assumes char is signed
@@ -1208,7 +1219,6 @@ void DrawWindow(WINDOW *win)
 WINDOW *initscr(void)
 {
    // _windows = new WINDOW[20];         //initialize all of our variables
-    BITMAPINFO bmi;
     lastchar=-1;
     inputdelay=-1;
 
@@ -1247,18 +1257,6 @@ WINDOW *initscr(void)
  }
 
     WinCreate();    //Create the actual window, register it, etc
-    ZeroMemory(&bmi, sizeof(BITMAPINFO));
-    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bmi.bmiHeader.biWidth = _win.width();
-    bmi.bmiHeader.biHeight = -_win.height();
-    bmi.bmiHeader.biPlanes = 1;
-	bmi.bmiHeader.biCompression = BI_RGB;   //store it in uncompressed bytes
-	OS_Window::SetColorDepth(bmi.bmiHeader, 8, 16);
-
-	_win.SetBackbuffer(bmi);
-    
-    SelectObject(_win.backbuffer(), font);//Load our font into the DC
-//    WindowCount=0;
 
 	// cf mapdata.h: typical value of SEEX/SEEY is 12 so the console is 25x25 display, 55x25 readout
 	// \todo set default option values for windows; once mainwin is constructed it's too late
