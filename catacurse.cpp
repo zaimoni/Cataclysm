@@ -104,6 +104,9 @@ public:
 		ShowWindow(_window, SW_SHOW);
 		CheckMessages();    //Let the message queue handle setting up the window
 		_last = _window;
+		if (!_backbuffer_stats.biSize) Bootstrap();
+		if (!_backbuffer_stats.biBitCount) SetColorDepth(8, 16);
+		SetBackbuffer();
 		return *this;
 	}
 
@@ -294,7 +297,7 @@ public:
 		_dcbits = 0;
 
 		if (new_color_depth && new_color_depth != _backbuffer_stats.biBitCount) SetColorDepth(_backbuffer_stats, new_color_depth);
-		SetBackbuffer();
+		return SetBackbuffer();
 	}
 private:
 	void destroy() { 
@@ -1054,8 +1057,6 @@ int inputdelay;         //How long getch will wait for a character to be typed
 HFONT font = 0;             //Handle to the font created by CreateFont
 int haveCustomFont = 0;	// custom font was there and loaded
 
-// 
-
 //***********************************
 //Non-curses, Window functions      *
 //***********************************
@@ -1133,11 +1134,7 @@ static bool WinCreate(OS_Window& _win)
                            _win.height() + OS_Window::BorderHeight + OS_Window::TitleSize,
                            0, 0, OS_Window::program, nullptr);
 
-	_win.Bootstrap();
-	_win.SetColorDepth(8, 16);
-	_win.SetBackbuffer();
 	SelectObject(_win.backbuffer(), font);//Load our font into the DC
-
     return _win;
 }
 
