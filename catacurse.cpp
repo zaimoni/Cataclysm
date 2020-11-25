@@ -168,8 +168,10 @@ public:
 	int width() const { return _dim.right - _dim.left; }
 	int height() const { return _dim.bottom - _dim.top; }
 	void center(int w, int h) {
-		_dim.left = (OS_Window::ScreenWidth - w) / 2;
-		_dim.top = (OS_Window::ScreenHeight - h) / 2;
+		_dim.left = (OS_Window::ScreenWidth - w - OS_Window::BorderWidth) / 2;
+		if (0 > _dim.left) _dim.left = 0;
+		_dim.top = (OS_Window::ScreenHeight - h - OS_Window::BorderHeight - OS_Window::TitleSize) / 2;
+		if (0 > _dim.top) _dim.top = 0;
 		_dim.right = _dim.left + w;
 		_dim.bottom = _dim.top + h;
 		// arguably this should trigger update even if backbuffer is present
@@ -284,7 +286,7 @@ public:
 	{
 		RECT tmp;
 		if (!GetWindowRect(_window, &tmp)) return false;
-		if (!MoveWindow(_window, tmp.left, tmp.top, width() + OS_Window::BorderWidth, height() + OS_Window::BorderHeight + OS_Window::TitleSize, true)) return false;	// this does not handle the backbuffer bitmap
+		if (!MoveWindow(_window, _dim.left, _dim.top, width() + OS_Window::BorderWidth, height() + OS_Window::BorderHeight + OS_Window::TitleSize, true)) return false;	// this does not handle the backbuffer bitmap
 		// problem...probably have to undo both the backbuffer and its device context
 		if (_backbuffer && DeleteDC(_backbuffer)) _backbuffer = 0;
 		if (_last_dc == _dc) _last_dc = 0;
