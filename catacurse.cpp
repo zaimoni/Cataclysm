@@ -1103,18 +1103,18 @@ static void WinDestroy()
 	UnregisterClassW(szWindowClass, OS_Window::program);	// would happen on program termination anyway
 };
 
-static void DrawWindow(WINDOW *win)
+static void DrawWindow(WINDOW *w)
 {
     int i,j;
     char tmp;	// following assumes char is signed
-    for (j=0; j<win->height; j++){
-		auto& line = win->line[j];
+    for (j=0; j<w->height; j++){
+		auto& line = w->line[j];
 		if (!line.touched) continue;
 		line.touched = false;
-		const int drawy = ((win->y + j)*fontheight);//-j;
+		const int drawy = ((w->y + j)*fontheight);//-j;
 		if ((drawy + fontheight) > _win.height()) continue;	// reject out of bounds
-		for (i=0; i<win->width; i++){
-			const int drawx=((win->x+i)*fontwidth);
+		for (i=0; i<w->width; i++){
+			const int drawx=((w->x+i)*fontwidth);
 			if ((drawx + fontwidth) > _win.width()) continue;	// reject out of bounds
                 {
                 tmp = line.chars[i];	// \todo alternate data source here for tiles
@@ -1208,7 +1208,7 @@ static void DrawWindow(WINDOW *win)
                 }//(tmp < 0)
             };//for (i=0;i<_windows[w].width;i++)
     };// for (j=0;j<_windows[w].height;j++)
-    win->draw=false;                //We drew the window, mark it as so
+    w->draw=false;                //We drew the window, mark it as so
 };
 
 //***********************************
