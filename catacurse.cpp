@@ -776,6 +776,24 @@ std::map<std::string, OS_Image> _tilesheets;
 std::map<std::string, int > _tilesheet_tile;
 
 // globals used by the main curses simulation
+// accessors intended to allow computing accurate dimensions before physically creating the window
+static OS_Window& offscreen()
+{
+	static OS_Window ooao;
+	return ooao;
+}
+
+bool WinCreate(OS_Window& _win);
+static OS_Window& win()
+{
+	static bool initialized = false;
+	if (!initialized) { // C++20 [[unlikely]]
+		initialized = true;
+		WinCreate(offscreen());
+	}
+	return offscreen();
+}
+
 OS_Window _win;				// proxy for actual window
 int fontwidth = 0;          //the width of the font, background is always this size
 int fontheight = 0;         //the height of the font, background is always this size
@@ -895,13 +913,15 @@ bool load_tile(const char* src)
 			if (!image.handle()) return false;	// failed to load
 			_translate[base_tile] = ++_next;
 			_cache[_next] = std::move(image);
-			if (SetFontSize(16, 16) && _win) _win.Resize(32);
 		} else {
 			OS_Image image(base_tile.c_str());
 			if (!image.handle()) return false;	// failed to load
 			_translate[base_tile] = ++_next;
 			_cache[_next] = std::move(image);
-			if (SetFontSize(16, 16) && _win) _win.Resize(32);
+		}
+		if (SetFontSize(16, 16)) {
+			if (_win) _win.Resize(32);
+			else _win.SetColorDepth(32);
 		}
 	}
 //	if (!has_rotation_specification) return true;
