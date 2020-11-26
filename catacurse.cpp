@@ -1647,17 +1647,17 @@ int wclear(WINDOW *win)
 };
 
 //gets the max x of a window (the width)
-int getmaxx(WINDOW *win)
+int getmaxx(WINDOW* win)
 {
-    if (!win) return mainwin->width;     //StdScr
-    return win->width;
+	if (!win) return (OS_Window::ScreenWidth - OS_Window::BorderWidth) / fontwidth; // StdScr
+	return win->width;
 };
 
 //gets the max y of a window (the height)
-int getmaxy(WINDOW *win)
+int getmaxy(WINDOW* win)
 {
-    if (!win) return mainwin->height;     //StdScr
-    return win->height;
+	if (!win) return (OS_Window::ScreenHeight - OS_Window::BorderHeight - OS_Window::TitleSize) / fontheight; // StdScr
+	return win->height;
 };
 
 #define BGR(B,G,R) {B, G, R, 0}
