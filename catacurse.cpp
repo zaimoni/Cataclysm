@@ -428,15 +428,19 @@ public:
 		for (size_t scan_y = 0; scan_y < height; scan_y++) {
 			memmove(_pixels + (scan_y*width), incoming + ((scan_y + origin_y)*src.width()+origin_x), sizeof(RGBQUAD)*width);
 		}
-		_x = CreateCompatibleBitmap(OS_Window::last_dc(),width,height);
+		decltype(auto) local_dc = GetDC(nullptr); // \todo? std::unique_ptr with custom deleter?
+		_x = CreateCompatibleBitmap(local_dc, width, height);
 		if (!_x) {
+			ReleaseDC(nullptr, local_dc);
 			free(_pixels);
 			throw std::bad_alloc();
 		}
-		if (!SetDIBits(OS_Window::last_dc(), (HBITMAP)_x, 0, height, _pixels, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS)) {
+		if (!SetDIBits(local_dc, (HBITMAP)_x, 0, height, _pixels, (LPBITMAPINFO)(&_data), DIB_RGB_COLORS)) {
+			ReleaseDC(nullptr, local_dc);
 			free(_pixels);
 			throw std::bad_alloc();
 		}
+		ReleaseDC(nullptr, local_dc);
 		_have_info = true;
 	}
 
@@ -799,7 +803,6 @@ static OS_Window& win()
 	return offscreen();
 }
 
-OS_Window _win;				// proxy for actual window
 int fontwidth = 0;          //the width of the font, background is always this size
 int fontheight = 0;         //the height of the font, background is always this size
 int halfwidth = 0;          //half of the font width, used for centering lines
@@ -814,7 +817,7 @@ bool SetFontSize(const int x, const int y)
 	fontheight = y;
 	halfwidth = fontwidth / 2;
 	halfheight = fontheight / 2;
-	_win.center(SCREEN_WIDTH * fontwidth, VIEW * fontheight);
+	offscreen().center(SCREEN_WIDTH * fontwidth, VIEW * fontheight);
 	return true;
 }
 
@@ -925,6 +928,7 @@ bool load_tile(const char* src)
 			_cache[_next] = std::move(image);
 		}
 		if (SetFontSize(16, 16)) {
+			OS_Window& _win = offscreen();
 			if (_win) _win.Resize(32);
 			else _win.SetColorDepth(32);
 		}
@@ -939,7 +943,7 @@ bool load_tile(const char* src)
 		const OS_Image& tmp = _cache[_translate[base_tile]];
 		OS_Image working(tmp, 0, 0, tmp.width(), tmp.height());
 //		need to apply color as alpha-transparent tint only to pixels that already exist
-		working.tint(_win.color(color_code),UCHAR_MAX/2);
+		working.tint(offscreen().color(color_code),UCHAR_MAX/2);
 		_translate[src] = ++_next;
 		_cache[_next] = std::move(working);
 		return true;
@@ -1100,8 +1104,11 @@ static LRESULT CALLBACK ProcessMessages(HWND__* hWnd, unsigned int Msg, WPARAM w
 		// Control variable in OS_Window; starts true, set by resizing, cleared by redrawing background.
 		//      case WM_ERASEBKGND: return 1;
 	case WM_PAINT:              //Pull from our backbuffer, onto the screen
+		{
+		OS_Window& _win = win();
 		BitBlt(_win.dc(), 0, 0, _win.width(), _win.height(), _win.backbuffer(), 0, 0, SRCCOPY);
 		ValidateRect(_win, nullptr);
+		}
 		break;
 	case WM_DESTROY:
 		exit(0);//A messy exit, but easy way to escape game loop
@@ -1143,12 +1150,13 @@ static bool WinCreate(OS_Window& _win)
 //Unregisters, releases the DC if needed, and destroys the window.
 static void WinDestroy()
 {
-	_win.clear();
+	win().clear();
 	UnregisterClassW(szWindowClass, OS_Window::program);	// would happen on program termination anyway
 };
 
 static void DrawWindow(WINDOW *w)
 {
+	OS_Window& _win = win();
     int i,j;
     char tmp;	// following assumes char is signed
     for (j=0; j<w->height; j++){
@@ -1263,6 +1271,7 @@ static void DrawWindow(WINDOW *w)
 WINDOW *initscr(void)
 {
    // _windows = new WINDOW[20];         //initialize all of our variables
+	OS_Window& _win = offscreen();
     lastchar=-1;
     inputdelay=-1;
 
@@ -1300,7 +1309,7 @@ WINDOW *initscr(void)
 		 PROOF_QUALITY, FF_MODERN, t_face);
  }
 
-    WinCreate(_win);    //Create the actual window, register it, etc
+//    WinCreate(_win);    //Create the actual window, register it, etc
 
 	// cf mapdata.h: typical value of SEEX/SEEY is 12 so the console is 25x25 display, 55x25 readout
 	// \todo set default option values for windows; once mainwin is constructed it's too late
@@ -1448,7 +1457,7 @@ int refresh(void)
 int getch(void)
 {
  refresh();
- InvalidateRect(_win,nullptr,true);
+ InvalidateRect(win(),nullptr,true);
  lastchar=ERR;//ERR=-1
     if (inputdelay < 0)
     {
@@ -1672,7 +1681,7 @@ int start_color(void)
  windowsPalette[13]= BGR(240, 0, 255);
  windowsPalette[14]= BGR(255, 240, 0);
  windowsPalette[15]= BGR(255, 255, 255);
- return _win.SetColorTable(windowsPalette, 16);
+ return offscreen().SetColorTable(windowsPalette, 16);
 };
 #undef BGR
 
