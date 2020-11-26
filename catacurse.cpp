@@ -706,12 +706,14 @@ private:
 		working.biBitCount = 32;
 		working.biSizeImage = sizeof(RGBQUAD)*native_width*native_height;	// both PNG and JPEG use image buffer size
 
-		HBITMAP tmp = CreateCompatibleBitmap(OS_Window::last_dc(), native_width, native_height);
+		decltype(auto) local_dc = GetDC(nullptr);
+		HBITMAP tmp = CreateCompatibleBitmap(local_dc, native_width, native_height);
 		if (!tmp) {
 			free(pixels); pixels = 0;
 			return 0;
 		}
-		got_stats = SetDIBits(OS_Window::last_dc(), tmp, 0, native_height, pixels, (BITMAPINFO*)(&working), DIB_RGB_COLORS);
+		got_stats = SetDIBits(local_dc, tmp, 0, native_height, pixels, (BITMAPINFO*)(&working), DIB_RGB_COLORS);
+		ReleaseDC(nullptr, local_dc);
 		if (got_stats) return tmp;
 		DeleteObject(tmp);
 		return 0;
