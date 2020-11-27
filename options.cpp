@@ -20,13 +20,25 @@ static constexpr bool default_true(option_key opt)
 	}
 }
 
-static constexpr double default_numeric(option_key opt)
+static constexpr int default_int(option_key opt)
 {
 	switch (opt)
 	{
 	case OPT_FONT_HEIGHT: return 16;
+	case OPT_VIEW: return 25;
+	case OPT_PANELX: return 55;
+	case OPT_SCREENWIDTH: return default_int(OPT_VIEW) + default_int(OPT_PANELX);
 	default: return 0;
 	}
+}
+
+static constexpr double default_numeric(option_key opt)
+{
+/*	switch (opt)
+	{
+	default: */
+		return default_int(opt);
+//	}
 }
 
 static constexpr double min_numeric(option_key opt)
@@ -54,6 +66,9 @@ static constexpr const char* JSON_key(option_key opt)	// \todo micro-optimize th
 	case OPT_LOAD_TILES: return "load tiles";
 	case OPT_FONT_HEIGHT: return "font height";
 	case OPT_EXTRA_MARGIN: return "extra bottom-right margin";
+/*	case OPT_VIEW: return "screen height, i.e. view diameter"; // don't want to be able to set these by normal UI
+	case OPT_PANELX: return "side panel width";
+	case OPT_SCREENWIDTH: return "screen width"; */
 	case OPT_FONT:	return "font";
 	case OPT_FONTPATH:	return "font path";
 	default: return nullptr;
@@ -92,7 +107,7 @@ static JSON& get_JSON_opts() {
 			if (!x->has_key(key)) {
 				switch (option_table::type_code(option))
 				{
-				case OPTTYPE_INT: x->set(key, std::to_string((int)default_numeric(option)));
+				case OPTTYPE_INT: x->set(key, std::to_string(default_int(option)));
 					break;
 				case OPTTYPE_DOUBLE: x->set(key, std::to_string(default_numeric(option)));
 					break;

@@ -29,13 +29,17 @@ OPT_NPCS,	// NPCs generated in game world
 OPT_LOAD_TILES,	// use tileset
 OPT_FONT_HEIGHT,	// font height (ASCII)
 OPT_EXTRA_MARGIN,	// correction to margin to avoid clipping text
-NUM_OPTION_KEYS,
-OPT_FONT = NUM_OPTION_KEYS,
+NUM_OPTION_KEYS,	// strict upper bound for legacy option editing UI
+OPT_VIEW = NUM_OPTION_KEYS, // formerly ui.h constants -- regenerated on startup
+OPT_PANELX,
+OPT_SCREENWIDTH,
+OPT_FONT,
 OPT_FONTPATH
 };
 
 enum {
-    MAX_OPTIONS = OPT_FONTPATH+1
+	STR_OPTION_ORIGIN = OPT_FONT,
+    MAX_OPTIONS = OPT_FONTPATH + 1
 };
 
 enum {
@@ -49,8 +53,8 @@ enum {
 class option_table
 {
 private:
- double options[NUM_OPTION_KEYS];
- std::string str_opts[MAX_OPTIONS - NUM_OPTION_KEYS];
+ double options[STR_OPTION_ORIGIN];
+ std::string str_opts[MAX_OPTIONS - STR_OPTION_ORIGIN];
 
  option_table();
  option_table(const option_table& src) = delete;
@@ -71,7 +75,10 @@ public:
 	 {
 	 case OPT_FONT_HEIGHT:	return OPTTYPE_INT;
 	 case OPT_EXTRA_MARGIN:	return OPTTYPE_INT;
-     case OPT_FONT: return OPTTYPE_STRING;
+	 case OPT_VIEW:	return OPTTYPE_INT;
+	 case OPT_PANELX: return OPTTYPE_INT;
+	 case OPT_SCREENWIDTH: return OPTTYPE_INT;
+	 case OPT_FONT: return OPTTYPE_STRING;
      case OPT_FONTPATH: return OPTTYPE_STRING;
      default: return OPTTYPE_BOOL;	// default: boolean
 	 }
