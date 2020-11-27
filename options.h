@@ -88,6 +88,6 @@ public:
 };
 
 void save_options();
-std::string option_name(option_key key);
+const char* option_name(option_key key);
 
 #endif

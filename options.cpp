@@ -171,7 +171,7 @@ void option_table::set(option_key i, double val)
 	}
 }
 
-std::string option_name(option_key key)
+const char* option_name(option_key key)
 {
  switch (key) {
   case OPT_USE_CELSIUS:		return "Use Celsius";
@@ -189,7 +189,6 @@ std::string option_name(option_key key)
   case OPT_FONT:	return "Font (requires restart)";
   default:			return "Unknown Option (BUG)";
  }
- return "Big ol Bug";
 }
 
 void save_options()

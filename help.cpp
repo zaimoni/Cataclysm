@@ -499,8 +499,7 @@ easily drop unwanted items on the floor.");
 
     for (int i = 0; i < MENU_SPAN && offset + i < NUM_OPTION_KEYS; i++) {
 	 const auto opt = option_key(offset + i);
-     mvprintz(i, 3, c_white, "%s: ",
-              option_name(opt).c_str());
+     mvprintz(i, 3, c_white, "%s: ", option_name(opt));
 	 const auto on = OPTIONS[opt];
 	 switch (option_table::type_code(opt))
 	 {
