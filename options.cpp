@@ -183,6 +183,7 @@ bool option_table::set_screen_options(int x, int y)
 		return false;
 	}
 	int ub_view = x - default_int(OPT_PANELX);
+	if (2 * 5 * 12 + 1 < ub_view) ub_view = 2 * 5 * 12 + 1; // magic constant: 2*((MAPSIZE/2)*SEE)+1
 	if (y < ub_view) ub_view = y;
 	if (0 == ub_view % 2) --ub_view;
 
