@@ -171,6 +171,27 @@ void option_table::set(option_key i, double val)
 	}
 }
 
+// intended interpretation is that x and y are the return values from curses' getmaxx(stdscr) and getmaxy(stdscr)
+// logic error to call from option_table constructor? inability to guarantee initscr runs first in general
+bool option_table::set_screen_options(int x, int y)
+{
+	if (default_int(OPT_SCREENWIDTH) > x || default_int(OPT_VIEW) > y) {
+		// Fail-safe to C:Whales values, even though they don't fit.
+		options[OPT_VIEW] = default_int(OPT_VIEW);
+		options[OPT_PANELX] = default_int(OPT_PANELX);
+		options[OPT_SCREENWIDTH] = default_int(OPT_SCREENWIDTH);
+		return false;
+	}
+	int ub_view = x - default_int(OPT_PANELX);
+	if (y < ub_view) ub_view = y;
+	if (0 == ub_view % 2) --ub_view;
+
+	options[OPT_VIEW] = ub_view;
+	options[OPT_PANELX] = x - ub_view;
+	options[OPT_SCREENWIDTH] = x;
+	return true;
+}
+
 const char* option_name(option_key key)
 {
  switch (key) {

@@ -38,6 +38,8 @@ OPT_FONTPATH
 };
 
 enum {
+//	BOOL_OPTION_ORIGIN = OPT_FORCE_YN,
+//	INT_OPTION_ORIGIN = OPT_FONT_HEIGHT,
 	STR_OPTION_ORIGIN = OPT_FONT,
     MAX_OPTIONS = OPT_FONTPATH + 1
 };
@@ -68,6 +70,7 @@ public:
  const std::string& getopt(option_key i) const { return str_opts[i - NUM_OPTION_KEYS]; }
  const std::string& getopt(int i) const { return str_opts[i - NUM_OPTION_KEYS]; }
  void set(option_key i, double val);
+ bool set_screen_options(int x, int y);
 
  static constexpr int type_code(option_key id)
  {

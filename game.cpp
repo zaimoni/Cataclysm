@@ -6014,11 +6014,14 @@ void intro() // includes screen size check \todo change target for resizable scr
 {
  int maxx, maxy;
  getmaxyx(stdscr, maxy, maxx);
- // \todo set option defaults for VIEW and SCREEN_WIDTH, if needed
+
+ // set option defaults for VIEW and SCREEN_WIDTH, if needed
  // but if we're on the in-house simulation then *that* should have already happened (i.e., automatic success here
  // as we would have failed earlier)
- if (maxy >= VIEW && maxx >= SCREEN_WIDTH) return;
- WINDOW* tmp = newwin(VIEW, SCREEN_WIDTH, 0, 0);
+ if (option_table::get().set_screen_options(maxx, maxy)) return;
+
+ // This is invalid if the extensions for resizing curses windows don't exist, or are broken by environment variables.
+ WINDOW* tmp = newwin(maxy, maxx, 0, 0);
  do {
      werase(tmp);
      wprintw(tmp, "Whoa. Whoa. Hey. This game requires a minimum terminal size of 80x25. I'm\n\
@@ -6030,7 +6033,7 @@ bottom of your window downward so you get an extra line.\n");
      wrefresh(tmp);
      getch();
      getmaxyx(stdscr, maxy, maxx);
- } while (maxy < VIEW || maxx < SCREEN_WIDTH);
+ } while (!option_table::get().set_screen_options(maxx, maxy));
  werase(tmp);
  wrefresh(tmp);
  delwin(tmp);
