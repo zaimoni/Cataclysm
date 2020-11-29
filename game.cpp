@@ -2227,7 +2227,7 @@ void game::draw_ter(const point& pos)
    if (u_see(_npc.pos)) _npc.draw(w_terrain, pos, false);
  }
  if (u.has_active_bionic(bio_scent_vision)) {	// overwriting normal vision isn't that useful
-  forall_do_inclusive(map::view_centered_extent, [&](point offset){
+  forall_do_inclusive(map::view_center_extent(), [&](point offset){
           if (2 <= Linf_dist(offset)) {
               const point real(offset + pos);
               if (0 != scent(real)) {
@@ -4500,7 +4500,7 @@ void game::reassign_item()
 
 void game::pl_draw(const zaimoni::gdi::box<point>& bounds) const
 {
-    forall_do_inclusive(map::view_centered_extent, [&](point offset) {
+    forall_do_inclusive(map::view_center_extent(), [&](point offset) {
             const point real(u.pos + offset);
             if (u_see(real)) {
                 if (bounds.contains(real))
@@ -6001,7 +6001,7 @@ void game::display_scent()
 {
  int div = query_int("Sensitivity");
  draw_ter();
- forall_do_inclusive(map::view_centered_extent, [&](point offset) {
+ forall_do_inclusive(map::view_center_extent(), [&](point offset) {
          int sn = scent(u.pos + offset) / (div * 2);
          const point draw_at(offset + point(VIEW_CENTER));
          mvwprintz(w_terrain, draw_at.y, draw_at.x, sev(sn), "%d", sn % 10);
