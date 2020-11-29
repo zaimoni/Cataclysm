@@ -4,6 +4,7 @@
 #include "keypress.h"
 #include "mapdata.h"
 #include "ui.h"
+#include "options.h"
 #include "zero.h"
 #include <stdarg.h>
 #endif

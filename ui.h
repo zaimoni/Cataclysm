@@ -25,5 +25,11 @@ enum {
 	SCREEN_WIDTH = VIEW+PANELX
 };
 
+// Technical debt: macros dependent on option_table @ options.h
+#define VIEW ((int)(option_table::get()[OPT_VIEW]))
+#define VIEW_CENTER (VIEW/2)
+#define PANELX ((int)(option_table::get()[OPT_PANELX]))
+#define SCREEN_WIDTH ((int)(option_table::get()[OPT_SCREENWIDTH]))
+
 #endif
 
