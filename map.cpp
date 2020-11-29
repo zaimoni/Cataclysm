@@ -1715,7 +1715,7 @@ void map::debug()
 void map::draw(game *g, WINDOW* w, point center)
 {
  int light = g->u.sight_range(g->light_level());
- forall_do_inclusive(view_centered_extent, [&](point offset) {
+ forall_do_inclusive(view_center_extent(), [&](point offset) {
         const point real(center + offset);
         const int dist = rl_dist(g->u.pos, real);
         const point draw_at(offset + point(VIEW_CENTER));
