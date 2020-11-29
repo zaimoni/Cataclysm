@@ -818,7 +818,7 @@ bool SetFontSize(const int x, const int y)
 	halfwidth = fontwidth / 2;
 	halfheight = fontheight / 2;
 
-	option_table::get().set_screen_options(getmaxy(nullptr), getmaxx(nullptr));
+	option_table::get().set_screen_options(getmaxx(nullptr), getmaxy(nullptr));
 
 	offscreen().center(SCREEN_WIDTH * fontwidth, VIEW * fontheight);
 	return true;
