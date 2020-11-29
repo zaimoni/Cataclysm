@@ -1738,8 +1738,8 @@ void map::drawsq(WINDOW* w, const player& u, int x, int y, bool invert,
  if (!pos) return;	// Out of bounds
  if (cx == -1) cx = u.pos.x;
  if (cy == -1) cy = u.pos.y;
- const int k = x + SEEX - cx;
- const int j = y + SEEY - cy;
+ const int k = x + VIEW_CENTER - cx;
+ const int j = y + VIEW_CENTER - cy;
  nc_color tercol;
  const auto terrain = ter(*pos);
  long sym = ter_t::list[terrain].sym;
