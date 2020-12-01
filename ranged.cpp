@@ -233,20 +233,20 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
     for (int diff = 0 - radius; diff <= radius; diff++) {
 	 point test(tar+point(diff,-radius));
      m_at = mon(test);
-     if (m_at && 0 < m_at->hp && m_at->friendly == 0) new_targets.push_back(test);
+     if (m_at && 0 < m_at->hp && m_at->is_enemy(&p)) new_targets.push_back(test);
 
 	 test = tar + point(diff, radius);
 	 m_at = mon(test);
-	 if (m_at && 0 < m_at->hp && m_at->friendly == 0) new_targets.push_back(test);
+	 if (m_at && 0 < m_at->hp && m_at->is_enemy(&p)) new_targets.push_back(test);
 
      if (diff != 0 - radius && diff != radius) { // Corners were already checked
 	  test = tar + point(-radius, diff);
 	  m_at = mon(test);
-	  if (m_at && 0 < m_at->hp && m_at->friendly == 0) new_targets.push_back(test);
+	  if (m_at && 0 < m_at->hp && m_at->is_enemy(&p)) new_targets.push_back(test);
 
 	  test = tar + point(radius, diff);
 	  m_at = mon(test);
-	  if (m_at && 0 < m_at->hp && m_at->friendly == 0) new_targets.push_back(test);
+	  if (m_at && 0 < m_at->hp && m_at->is_enemy(&p)) new_targets.push_back(test);
 	 }
     }
    }
