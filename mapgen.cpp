@@ -5812,7 +5812,7 @@ void map::put_items_from(items_location loc, int num, int x, int y, int turn)
 void map::add_spawn(mon_id type, int count, int x, int y, bool friendly,
                     int faction_id, int mission_id, std::string name)
 {
- if (x < 0 || x >= SEEX * my_MAPSIZE || y < 0 || y >= SEEY * my_MAPSIZE) {
+ if (!inbounds(x, y)) {
   debugmsg("Bad add_spawn(%d, %d, %d, %d)", type, count, x, y);
   return;
  }
