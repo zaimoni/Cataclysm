@@ -792,7 +792,7 @@ static OS_Window& offscreen()
 	return ooao;
 }
 
-bool WinCreate(OS_Window& _win);
+static bool WinCreate(OS_Window& _win);
 static OS_Window& win()
 {
 	static bool initialized = false;
