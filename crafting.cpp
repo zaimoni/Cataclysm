@@ -655,9 +655,7 @@ RECIPE(itm_boobytrap, CC_MISC, sk_mechanics, sk_traps,3,5000);
   COMP({ { itm_battery, 500 },{ itm_plut_cell, 1 } });
 }
 
-enum {
-	CRAFTING_WIN_HEIGHT = VIEW - TABBED_HEADER_HEIGHT
-};
+static const int CRAFTING_WIN_HEIGHT = VIEW - TABBED_HEADER_HEIGHT;
 
 inventory crafting_inventory(const map& m, const player& u)  // 2020-05-28 NPC-valid
 {

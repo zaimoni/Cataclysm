@@ -1249,7 +1249,7 @@ enum {
 void overmap::draw(WINDOW *w, const player& u, const point& curs, const point& orig, int ch, bool blink) const
 {
  constexpr const bool legend = true;
- constexpr const int om_w = SCREEN_WIDTH - search_window_width - search_window_padding_right;	// overmap width; C:Whales 51 @ SCREEN_WIDTH 80
+ const int om_w = SCREEN_WIDTH - search_window_width - search_window_padding_right;	// overmap width; C:Whales 51 @ SCREEN_WIDTH 80
 
  constexpr const char* legend_text[] = {
    "Use movement keys to pan.  ",
@@ -1401,7 +1401,7 @@ std::optional<point> overmap::choose_point(game *g)    // not const due to overm
     };
     static_assert(search_window_width > sizeof("Enter/Spacebar to select.")); // C++20: review whether possible to do this check more correctly
 
- constexpr const int om_w = SCREEN_WIDTH - search_window_width - search_window_padding_right;	// overmap width; C:Whales 51 @ SCREEN_WIDTH 80
+ const int om_w = SCREEN_WIDTH - search_window_width - search_window_padding_right;	// overmap width; C:Whales 51 @ SCREEN_WIDTH 80
 
  WINDOW* w_map = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  WINDOW* w_search = newwin((std::end(search_text)-1)->first+2, search_window_width, 3, om_w); // \todo this reasonably is strict upper bound on overmap width

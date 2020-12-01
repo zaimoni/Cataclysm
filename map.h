@@ -5,6 +5,7 @@
 #include "mapitems.h"
 #include "overmap.h"
 #include "submap.h"
+#include "options.h"
 #include <functional>
 #include <string>
 #include <optional>
