@@ -271,35 +271,30 @@ void monster::footsteps(game *g, const point& pt)
 
 void monster::friendly_move(game *g)
 {
- point next;
- bool moved = false;
  moves -= 100;
- if (plans.size() > 0 && plans[0] != g->u.pos &&
-     (can_move_to(g->m, plans[0]) || (g->m.has_flag(bashable, plans[0]) && has_flag(MF_BASHES)))){
-  next = plans[0];
+ if (!plans.empty() && plans[0] != g->u.pos && (can_move_to(g->m, plans[0]) || (g->m.has_flag(bashable, plans[0]) && has_flag(MF_BASHES)))){
+  const point next(plans[0]);
   EraseAt(plans, 0);
-  moved = true;
- } else
-  stumble(g, moved);
- if (moved) {
   monster* const m_at = g->mon(next);
   npc* const nPC = g->nPC(next);
   if (m_at && m_at->friendly == 0 && type->melee_dice > 0)
-   hit_monster(g, *m_at);
-  else if (nPC && type->melee_dice > 0)
-   hit_player(g, *nPC);
+      hit_monster(g, *m_at);
+  else if (nPC && is_enemy(nPC) && type->melee_dice > 0)
+      hit_player(g, *nPC);
   else if (!m_at && !nPC && can_move_to(g->m, next)) move_to(g, next);
   else if ((!can_move_to(g->m, next) || one_in(3)) &&
-           g->m.has_flag(bashable, next) && has_flag(MF_BASHES)) {
-   std::string bashsound = "NOBASH"; // If we hear "NOBASH" it's time to debug!
-   int bashskill = int(type->melee_dice * type->melee_sides);
-   g->m.bash(next, bashskill, bashsound);
-   g->sound(next, 18, bashsound);
-  } else if (g->m.move_cost(next) == 0 && has_flag(MF_DESTROYS)) {
-   g->m.destroy(g, next.x, next.y, true);
-   moves -= 250;
+      g->m.has_flag(bashable, next) && has_flag(MF_BASHES)) {
+      std::string bashsound = "NOBASH"; // If we hear "NOBASH" it's time to debug!
+      int bashskill = int(type->melee_dice * type->melee_sides);
+      g->m.bash(next, bashskill, bashsound);
+      g->sound(next, 18, bashsound);
   }
- }
+  else if (g->m.move_cost(next) == 0 && has_flag(MF_DESTROYS)) {
+      g->m.destroy(g, next.x, next.y, true);
+      moves -= 250;
+  }
+ } else
+  stumble(g, false);
 }
 
 point monster::scent_move(const game *g)
