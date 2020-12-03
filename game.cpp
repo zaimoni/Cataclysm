@@ -2757,7 +2757,7 @@ void game::monmove()
 
   if (!z[i].dead) {
    z[i].process_effects();
-   if (z[i].hurt(0)) kill_mon(i);
+   if (z[i].hurt(0)) kill_mon(z[i]);
   }
 
   m.mon_in_field(this, z[i]);
