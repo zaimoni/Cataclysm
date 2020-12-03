@@ -6,7 +6,7 @@
 void trapfunc::bubble(game *g, int x, int y)
 {
  messages.add("You step on some bubblewrap!");
- g->sound(x, y, 18, "Pop!");
+ g->sound(point(x, y), 18, "Pop!");
  g->m.tr_at(x, y) = tr_null;
 }
 
@@ -19,7 +19,7 @@ void trapfuncm::bubble(game *g, monster *z)
 void trapfunc::beartrap(game *g, int x, int y)
 {
  messages.add("A bear trap closes on your foot!");
- g->sound(x, y, 8, "SNAP!");
+ g->sound(point(x, y), 8, "SNAP!");
  g->u.hit(g, bp_legs, rng(0, 1), 10, 16);
  g->u.add_disease(DI_BEARTRAP, -1);
  g->m.tr_at(x, y) = tr_null;
@@ -212,7 +212,7 @@ void trapfuncm::boobytrap(game *g, monster *z)
 
 void trapfunc::telepad(game *g, int x, int y)
 {
- g->sound(x, y, 6, "vvrrrRRMM*POP!*");
+ g->sound(point(x, y), 6, "vvrrrRRMM*POP!*");
  messages.add("The air shimmers around you...");
  g->teleport();
 }
@@ -263,7 +263,7 @@ void trapfuncm::goo(game *g, monster *z)
 void trapfunc::dissector(game *g, int x, int y)
 {
  messages.add("Electrical beams emit from the floor and slice your flesh!");
- g->sound(x, y, 10, "BRZZZAP!");
+ g->sound(point(x, y), 10, "BRZZZAP!");
  g->u.hit(g, bp_head,  0, 0, 15);
  g->u.hit(g, bp_torso, 0, 0, 20);
  g->u.hit(g, bp_arms,  0, 0, 12);
@@ -519,7 +519,7 @@ void trapfunc::hum(game *g, int x, int y)
  else
   sfx = "VRMMMMMM";
 
- g->sound(x, y, volume, sfx);
+ g->sound(point(x, y), volume, sfx);
 }
 
 void trapfuncm::hum(game *g, monster *z)
@@ -591,7 +591,7 @@ void trapfunc::snake(game *g, int x, int y)
    return;
   }
  }
- g->sound(x, y, 10, "ssssssss");
+ g->sound(point(x, y), 10, "ssssssss");
  if (one_in(6)) g->m.tr_at(x, y) = tr_null;
 }
 

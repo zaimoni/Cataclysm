@@ -755,7 +755,7 @@ void mattack::vortex(game *g, monster *z)
    if (x == z->pos.x && y == z->pos.y) y++; // Don't throw us!
    std::string sound;
    g->m.bash(x, y, 14, sound);
-   g->sound(x, y, 8, sound);
+   g->sound(point(x, y), 8, sound);
   }
  }
  for (int x = z->pos.x - 2; x <= z->pos.x + 2; x++) {

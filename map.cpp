@@ -1105,7 +1105,7 @@ void map::destroy(game *g, int x, int y, bool makesound)
   terrain = t_rubble;
  }
 
- if (makesound) g->sound(x, y, 40, "SMASH!!");
+ if (makesound) g->sound(point(x, y), 40, "SMASH!!");
 }
 
 void map::shoot(game *g, const point& pt, int &dam, bool hit_items, unsigned flags)

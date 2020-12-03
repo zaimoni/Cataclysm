@@ -72,9 +72,8 @@ class game
                  int x = -1, int y = -1);
   bool event_queued(event_type type) const;
 // Sound at (x, y) of intensity (vol), described to the player is (description)
-  void sound(int x, int y, int vol, std::string description);
-  void sound(const point& pt, int vol, const std::string& description) { sound(pt.x, pt.y, vol, description); };
-  void sound(const point& pt, int vol, const char* description) { sound(pt.x, pt.y, vol, description); };
+  void sound(const point& pt, int vol, std::string description);
+  void sound(const point& pt, int vol, const char* description) { sound(pt, vol, std::string(description)); };
   // creates a list of coordinates to draw footsteps
   void add_footstep(const point& pt, int volume, int distance);
 // Explosion at (x, y) of intensity (power), with (shrapnel) chunks of shrapnel

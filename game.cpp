@@ -2913,21 +2913,20 @@ void game::check_warmth()
  }
 }
 
-void game::sound(int x, int y, int vol, std::string description)
+void game::sound(const point& pt, int vol, std::string description)
 {
  rational_scale<3,2>(vol); // Scale it a little
 // First, alert all monsters (that can hear) to the sound
  for (auto& _mon : z) {
   if (_mon.can_hear()) {
-   int dist = rl_dist(x, y, _mon.pos);
+   int dist = rl_dist(pt, _mon.pos);
    int volume = vol - (_mon.has_flag(MF_GOODHEARING) ? int(dist / 2) : dist);
-   _mon.wander_to(x, y, volume);
+   _mon.wander_to(pt.x, pt.y, volume);
    _mon.process_trigger(MTRIG_SOUND, volume);
   }
  }
 // Loud sounds make the next spawn sooner!
- int spawn_range = int(MAPSIZE / 2) * SEEX;
- if (vol >= spawn_range) {
+ if (int spawn_range = int(MAPSIZE / 2) * SEEX; vol >= spawn_range) {
   int max = (vol - spawn_range);
   int min = int(max / 6);
   if (max > spawn_range * 4) max = spawn_range * 4;
@@ -2943,33 +2942,30 @@ void game::sound(int x, int y, int vol, std::string description)
  if (u.has_bionic(bio_ears)) rational_scale<7,2>(vol);
  if (u.has_trait(PF_BADHEARING)) vol /= 2;
  if (u.has_trait(PF_CANINE_EARS)) rational_scale<3,2>(vol);
- int dist = rl_dist(x, y, u.pos);
+ int dist = rl_dist(pt, u.pos);
  if (dist > vol) return;	// Too far away, we didn't hear it!
- if (u.has_disease(DI_SLEEP) &&
-     ((!u.has_trait(PF_HEAVYSLEEPER) && dice(2, 20) < vol - dist) ||
-      ( u.has_trait(PF_HEAVYSLEEPER) && dice(3, 20) < vol - dist)   )) {
+ const int damped_vol = vol - dist;
+ // unclear what proper level of abstraction is for the heavy sleeper test 2020-12-03 zaimoni
+ if (u.has_disease(DI_SLEEP) && (u.has_trait(PF_HEAVYSLEEPER) ? dice(3, 20) < damped_vol : dice(2, 20) < damped_vol)) {
   u.rem_disease(DI_SLEEP);
   messages.add("You're woken up by a noise.");
   return;
  }
- if (!u.has_bionic(bio_ears) && rng( (vol - dist) / 2, (vol - dist) ) >= 150) {
-  int duration = (vol - dist - 130) / 4;
-  if (duration > 40) duration = 40;
-  u.add_disease(DI_DEAF, duration);
+ if (!u.has_bionic(bio_ears) && 150 <= rng(damped_vol / 2, damped_vol)) {
+  u.add_disease(DI_DEAF, clamped_ub<40>((damped_vol - 130) / 4));
  }
- if (x != u.pos.x || y != u.pos.y)
+ if (pt != u.pos)
   u.cancel_activity_query("Heard %s!", (description == "" ? "a noise" : description.c_str()));
 // We need to figure out where it was coming from, relative to the player
- int dx = x - u.pos.x;
- int dy = y - u.pos.y;
+ const point delta(pt - u.pos);
 // If it came from us, don't print a direction
- if (dx == 0 && dy == 0) {
+ if (0 == delta.x && 0 == delta.y) {
   if (description[0] >= 'a' && description[0] <= 'z')
    description[0] += 'A' - 'a';	// Capitalize the sound
   messages.add("%s", description.c_str());
   return;
  }
- messages.add("From the %s you hear %s", direction_name(direction_from(u.pos, x, y)), description.c_str());
+ messages.add("From the %s you hear %s", direction_name(direction_from(u.pos, pt)), description.c_str());
 }
 
 // add_footstep will create a list of locations to draw monster
@@ -3025,9 +3021,9 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
  int radius = sqrt(double(power / 4));
  int dam;
  if (power >= 30)
-  sound(x, y, power * 10, "a huge explosion!");
+  sound(point(x, y), power * 10, "a huge explosion!");
  else
-  sound(x, y, power * 10, "an explosion!");
+  sound(point(x, y), power * 10, "an explosion!");
  for (int i = x - radius; i <= x + radius; i++) {
   for (int j = y - radius; j <= y + radius; j++) {
    if (i == x && j == y)
@@ -3147,7 +3143,7 @@ void game::flashbang(int x, int y)
   if (_mon.has_flag(MF_SEES) && m.sees(_mon.pos, x, y, 8)) _mon.add_effect(ME_BLIND, 18 - dist);
   if (_mon.has_flag(MF_HEARS)) _mon.add_effect(ME_DEAF, 60 - dist * 4);
  }
- sound(x, y, 12, "a huge boom!");
+ sound(point(x, y), 12, "a huge boom!");
 }
 
 void game::use_computer(const point& pt)
@@ -5101,10 +5097,10 @@ void game::plmove(int x, int y)
    }
   }
   if (!u.has_artifact_with(AEP_STEALTH) && !u.has_trait(PF_LEG_TENTACLES)) {
-   sound(x, y, (u.has_trait(PF_LIGHTSTEP) ? 2 : 6), "");	// Sound of footsteps may awaken nearby monsters
+   sound(point(x, y), (u.has_trait(PF_LIGHTSTEP) ? 2 : 6), "");	// Sound of footsteps may awaken nearby monsters
   }
   if (one_in(20) && u.has_artifact_with(AEP_MOVEMENT_NOISE))
-   sound(x, y, 40, "You emit a rattling sound.");
+   sound(point(x, y), 40, "You emit a rattling sound.");
 // If we moved out of the nonant, we need update our map data
   if (m.has_flag(swimmable, x, y) && u.has_disease(DI_ONFIRE)) {
    messages.add("The water puts out the flames!");
