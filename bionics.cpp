@@ -351,6 +351,7 @@ causing increased encumberance."}
 // share functions....
 void player::activate_bionic(int b, game *g)
 {
+ assert(this == &game::active()->u); // \todo eliminate this precondition
  bionic& bio = my_bionics[b];
  const auto& bio_type = bionic::type[bio.id];
  int power_cost = bionic::type[bio.id].power_cost;
@@ -630,7 +631,7 @@ void player::activate_bionic(int b, game *g)
 	  point prior;
 	  for (decltype(auto) pt : traj) {
 		  if (monster* const z = g->mon(pt)) {
-			  if (z->hurt(tmp_item.weight() * 2)) g->kill_mon(*z, true);
+			  if (z->hurt(tmp_item.weight() * 2)) g->kill_mon(*z, this);
 			  g->m.add_item(pt, std::move(tmp_item));
 			  it_is_landed = true;
 			  break;
