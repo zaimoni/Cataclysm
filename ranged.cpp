@@ -465,7 +465,7 @@ void game::throw_item(player &p, point tar, item&& thrown, std::vector<point> &t
     messages.add("%s You hit the %s for %d damage.", message.c_str(), m_at->name().c_str(), dam);
    else if (u_see(t))
     messages.add("%s hits the %s for %d damage.", message.c_str(), m_at->name().c_str(), dam);
-   if (m_at->hurt(dam)) kill_mon(*m_at, !p.is_npc());
+   if (m_at->hurt(dam)) kill_mon(*m_at, &p);
    return;
   } else // No monster hit, but the terrain might be.
    m.shoot(this, t, dam, false, 0);
@@ -734,7 +734,7 @@ void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit)
     messages.add("%s You hit the %s for %d damage.", message.c_str(), mon.name().c_str(), dam);
    else if (u_see_mon)
     messages.add("%s %s shoots the %s.", message.c_str(), p.name.c_str(), mon.name().c_str());
-   if (mon.hurt(dam)) g->kill_mon(mon, (&p == &(g->u)));
+   if (mon.hurt(dam)) g->kill_mon(mon, &p);
    else if (p.weapon.curammo->item_flags != 0)
     g->hit_monster_with_flags(mon, p.weapon.curammo->item_flags);
    dam = 0;

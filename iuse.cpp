@@ -777,7 +777,7 @@ void iuse::extinguisher(game *g, player *p, item *it, bool t)
   if (g->u_see(m_at)) messages.add("The %s is sprayed!", m_at->name().c_str());
   if (m_at->made_of(LIQUID)) {
    if (g->u_see(m_at)) messages.add("The %s is frozen!", m_at->name().c_str());
-   if (m_at->hurt(rng(20, 60))) g->kill_mon(*m_at, (p == &(g->u)));
+   if (m_at->hurt(rng(20, 60))) g->kill_mon(*m_at, &p);
    else m_at->speed /= 2;
   }
  }
@@ -1732,7 +1732,7 @@ void iuse::tazer(game *g, player *p, item *it, bool t)
   messages.add("You shock the %s!", z->name().c_str());
   int shock = rng(5, 25);
   z->moves -= shock * 100;
-  if (z->hurt(shock)) g->kill_mon(*z, (p == &(g->u)));
+  if (z->hurt(shock)) g->kill_mon(*z, &p);
   return;
  }
  

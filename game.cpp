@@ -3357,20 +3357,19 @@ bool game::is_in_sunlight(const point& pt) const
  return m.is_outside(pt) && light_level() >= 40 && (weather == WEATHER_CLEAR || weather == WEATHER_SUNNY);
 }
 
-void game::kill_mon(monster& target, bool u_did_it)
+void game::_kill_mon(monster& target, bool u_did_it)
 {
- if (!target.dead) {
-  target.dead = true;
-  if (u_did_it) {
-   if (target.has_flag(MF_GUILT)) mdeath::guilt(this, &target);
-   if (target.type->species != species_hallu)
-    kills[target.type->id]++;	// Increment our kill counter
-  }
-  for (decltype(auto) it : target.inv) m.add_item(target.pos, std::move(it));
-  target.inv.clear();
-  target.die(this);
- }
-// z_erase(index);	// highly unsafe, do this compaction at end-of-turn
+    assert(!target.dead);
+    target.dead = true;
+    if (u_did_it) {
+        if (target.has_flag(MF_GUILT)) mdeath::guilt(this, &target);
+        if (target.type->species != species_hallu)
+            kills[target.type->id]++;	// Increment our kill counter
+    }
+    for (decltype(auto) it : target.inv) m.add_item(target.pos, std::move(it));
+    target.inv.clear();
+    target.die(this);
+    // z_erase(index);	// highly unsafe, do this compaction at end-of-turn
 }
 
 void game::explode_mon(monster& target)

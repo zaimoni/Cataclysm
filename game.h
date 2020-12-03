@@ -110,7 +110,8 @@ class game
   bool is_in_sunlight(const point& pt) const; // Checks outdoors + sunny
   unsigned char light_level() const;
   // Kill that monster; fixes any pointers etc
-  void kill_mon(monster& target, bool u_did_it = false);
+  void kill_mon(monster& target, bool u_did_it = false) { if (!target.dead) _kill_mon(target, u_did_it); }
+  void kill_mon(monster& target, player* me) { if (!target.dead) _kill_mon(target, me == &u); }
   void explode_mon(monster& target);	// Explode a monster; like kill_mon but messier
 // hit_monster_with_flags processes ammo flags (e.g. incendiary, etc)
   void hit_monster_with_flags(monster &z, unsigned int flags);
@@ -284,6 +285,7 @@ class game
   void spawn_mon(int shift, int shifty); // Called by update_map, sometimes
   mongroup* valid_group(mon_id type, int x, int y);// Picks a group from cur_om
 private:
+  void _kill_mon(monster& target, bool u_did_it);
 
 // Routine loop functions, approximately in order of execution
   void cleanup_dead();     // Delete any dead NPCs/monsters
