@@ -3368,43 +3368,46 @@ void game::_kill_mon(monster& target, bool u_did_it)
     // z_erase(index);	// highly unsafe, do this compaction at end-of-turn
 }
 
-void game::explode_mon(monster& target)
+void game::_explode_mon(monster& target, player* me)
 {
- if (!target.dead) {
-  target.dead = true;
-// Send body parts and blood all over!
-  const mtype* const corpse = target.type;
-  kills[corpse->id]++;	// Increment our kill counter
-  const itype* const meat = corpse->chunk_material();
-  if (!meat) return;	// no chunks when return value is null
-  const int num_chunks = corpse->chunk_count();
-
-  point pos(target.pos);
-  for (int i = 0; i < num_chunks; i++) {
-   point tar(pos.x + rng(-3, 3), pos.y + rng(-3, 3));
-   std::vector<point> traj = line_to(pos, tar, 0);
- 
-   for (int j = 0; j < traj.size(); j++) {
-    tar = traj[j];
-// Choose a blood type and place it
-    if (auto blood_type = bleeds(target)) {
-        auto& f = m.field_at(tar);
-        if (f.type == blood_type && f.density < 3) f.density++;
-        else m.add_field(this, tar, blood_type, 1);
+    assert(!target.dead);
+    target.dead = true;
+    // Send body parts and blood all over!
+    const mtype* const corpse = target.type;
+    if (me == &u) {
+        if (target.has_flag(MF_GUILT)) mdeath::guilt(this, &target);
+        if (corpse->species != species_hallu)
+            kills[corpse->id]++;	// Increment our kill counter
     }
+    if (const itype* const meat = corpse->chunk_material()) {
+        const int num_chunks = corpse->chunk_count();
 
-    if (m.move_cost(tar) == 0) {
-     std::string tmp;
-     if (m.bash(tar, 3, tmp)) sound(tar, 18, tmp);
-     else {
-      if (j > 0) tar = traj[j - 1];
-	  break;
-     }
+        point pos(target.pos);
+        for (int i = 0; i < num_chunks; i++) {
+            point tar(pos.x + rng(-3, 3), pos.y + rng(-3, 3));
+            std::vector<point> traj = line_to(pos, tar, 0);
+
+            for (int j = 0; j < traj.size(); j++) {
+                tar = traj[j];
+                // Choose a blood type and place it
+                if (auto blood_type = bleeds(target)) {
+                    auto& f = m.field_at(tar);
+                    if (f.type == blood_type && f.density < 3) f.density++;
+                    else m.add_field(this, tar, blood_type, 1);
+                }
+
+                if (m.move_cost(tar) == 0) {
+                    std::string tmp;
+                    if (m.bash(tar, 3, tmp)) sound(tar, 18, tmp);
+                    else {
+                        if (j > 0) tar = traj[j - 1];
+                        break;
+                    }
+                }
+            }
+            m.add_item(tar, meat, messages.turn);
+        }
     }
-   }
-   m.add_item(tar, meat, messages.turn);
-  }
- }
 }
 
 void game::open()
@@ -5953,7 +5956,7 @@ void game::teleport(player *p)
    p->hurt(this, bp_torso, 0, 500);
  } else if (monster* const m_at = mon(dest)) {
    if (can_see) messages.add("%s teleport%s into the middle of a %s!", You.c_str(), (is_u ? "" : "s"), m_at->name().c_str());
-   explode_mon(*m_at);
+   explode_mon(*m_at, p);
  } // \todo handle colliding with another PC/NPC
  if (is_u) update_map(u.pos.x, u.pos.y);
 }
