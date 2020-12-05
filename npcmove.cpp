@@ -999,13 +999,12 @@ bool player::can_enter(const GPS_loc& _GPSpos) const // should act like player::
 {
     if (const auto sm = MAPBUFFER.lookup_submap(_GPSpos.first)) {
         auto g = game::active();
-        point pt;
-        if (g->toScreen(_GPSpos, pt)) {
-            // destination is actually in reality bubble: we are contemplating spawning
-            if (g->mon(pt) || g->nPC(pt)) return false; // so do not spawn on monsters or NPCs
-            const auto& m = g->m;
-            return 0 < m.move_cost(pt) /* || m.has_flag(bashable, pt) */;   // \todo would be interesting if we could bash from just outside the reality bubble?
-        } else {    // formally moving outside of the reality bubble
+		if (decltype(auto) pos = g->toScreen(_GPSpos)) {
+			// destination is actually in reality bubble: we are contemplating spawning
+			if (g->mon(*pos) || g->nPC(*pos)) return false; // so do not spawn on monsters or NPCs
+			const auto& m = g->m;
+			return 0 < m.move_cost(*pos) /* || m.has_flag(bashable, *pos) */;   // \todo would be interesting if we could bash from just outside the reality bubble?
+		} else {    // formally moving outside of the reality bubble
     //      return 0 < sm->move_cost(_GPSpos.second) || sm->has_flag(bashable, _GPSpos.second); // \todo includes vehicles
             return 0 < sm->move_cost_ter_only(_GPSpos.second) || sm->has_flag_ter_only<bashable>(_GPSpos.second);
         }

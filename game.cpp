@@ -2825,10 +2825,9 @@ void game::activate_npcs()   // blocked:? Earth coordinates, CPU, hard drive \to
 {
     const auto reality_anchor = toGPS(point(0, 0));
     auto i = cur_om.npcs.size();
-    point test;
     while (0 < i) {
         auto& _npc = cur_om.npcs[--i];
-        if (toScreen(_npc.GPSpos, test)) {
+        if (toScreen(_npc.GPSpos)) {
             _npc.spawn_at(_npc.GPSpos);
             if (_npc.marked_for_death) _npc.die(this, false);
             else active_npc.push_back(std::move(_npc));
@@ -5530,18 +5529,26 @@ GPS_loc game::toGPS(point screen_pos) const	// \todo overflow checking
 	return GPS_loc(anchor, screen_pos);
 }
 
-bool game::toScreen(GPS_loc GPS_pos, point& screen_pos) const
+std::optional<point> game::toScreen(GPS_loc GPS_pos) const
 {
-	if (GPS_pos.first.z != cur_om.pos.z) return false;	// \todo? z-level change target
-	const auto anchor(toGPS(point(0, 0)));	// \todo would be nice to short-circuit this stage, but may be moot after modeling Earth's radius.  Also, cache target
-	if (GPS_pos.first.x < anchor.first.x || GPS_pos.first.y < anchor.first.y) return false;
-	point delta;
-	delta.x = GPS_pos.first.x - anchor.first.x;
-	if (MAPSIZE <= delta.x) return false;
-	delta.y = GPS_pos.first.y - anchor.first.y;
-	if (MAPSIZE <= delta.y) return false;
-    screen_pos = GPS_pos.second + SEE * delta;
-	return true;
+    if (GPS_pos.first.z != cur_om.pos.z) return std::nullopt;	// \todo? z-level change target
+    const auto anchor(toGPS(point(0, 0)));	// \todo would be nice to short-circuit this stage, but may be moot after modeling Earth's radius.  Also, cache target
+    if (GPS_pos.first.x < anchor.first.x || GPS_pos.first.y < anchor.first.y) return std::nullopt;
+    point delta;
+    delta.x = GPS_pos.first.x - anchor.first.x;
+    if (MAPSIZE <= delta.x) return std::nullopt;
+    delta.y = GPS_pos.first.y - anchor.first.y;
+    if (MAPSIZE <= delta.y) return std::nullopt;
+    return GPS_pos.second + SEE * delta;
+}
+
+bool game::toScreen(const GPS_loc& GPS_pos, point& screen_pos) const
+{
+    if (const auto pos = toScreen(GPS_pos)) {
+        screen_pos = *pos;
+        return true;
+    }
+    return false;
 }
 
 std::optional<reality_bubble_loc> game::toSubmap(GPS_loc GPS_pos) const

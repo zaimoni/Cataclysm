@@ -158,7 +158,8 @@ class game
   bool pl_sees(player *p, monster *mon) const;
   void refresh_all();
   GPS_loc toGPS(point screen_pos) const;
-  bool toScreen(GPS_loc GPS_pos, point& screen_pos) const;
+  std::optional<point> toScreen(GPS_loc GPS_pos) const;
+  bool toScreen(const GPS_loc& GPS_pos, point& screen_pos) const;
   std::optional<reality_bubble_loc> toSubmap(GPS_loc GPS_pos) const;
   static bool update_map_would_scroll(const point& pt);
   void update_map(int &x, int &y);  // Called by plmove when the map updates
