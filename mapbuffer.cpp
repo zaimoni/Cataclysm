@@ -19,6 +19,9 @@ bool mapbuffer::add_submap(int x, int y, int z, submap *sm)
  if (submaps.count(p) != 0) return false;
 
  sm->turn_last_touched = int(messages.turn);
+ // Automatic-repair anything with GPSpos fields, here.  Catches mapgen mismatches between game::lev and the global position of the submap chunk.
+ for (decltype(auto) veh : sm->vehicles) veh.GPSpos.first = p;
+
  submaps[p] = sm;
  return true;
 }

@@ -5840,11 +5840,14 @@ vehicle* map::add_vehicle(vhtype_id type, point pos, int deg)
   debuglog("Bad add_vehicle t=%d d=%d x=%d y=%d", type, deg, pos.x, pos.y);
   return nullptr;
  }
+ // assume game::lev is valid (wrong for map generation, but that will be fixed up shortly)
+ vehicle veh(type);
+ veh.GPSpos = game::active()->toGPS(pos);
+
  const point sm = pos / SEE;
  int nonant = sm.x + sm.y * my_MAPSIZE;
  pos %= SEE;
 
- vehicle veh(type);
  veh.pos = pos;
  veh.sm = sm;
  veh.face.init(deg);
