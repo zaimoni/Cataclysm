@@ -3533,40 +3533,23 @@ void game::use_item()
  u.use(this, ch);
 }
 
-bool game::pl_choose_vehicle(point& vpos)
+std::optional<std::pair<point, vehicle*>> game::pl_choose_vehicle()
 {
- refresh_all();
- mvprintz(0, 0, c_red, "Choose a vehicle at direction:");
- point dir(get_direction(input()));
- if (dir.x == -2) {
-  messages.add("Invalid direction!");
-  return false;
- }
- vpos += dir;
- return true;
-/*
-int junk;
- int range = 3;
- int x0 = x - range;
- int y0 = y - range;
- int x1 = x + range;
- int y1 = y + range;
- for (int j = x - SEEX; j <= x + SEEX; j++) {
-  for (int k = y - SEEY; k <= y + SEEY; k++) {
-   if (u_see(j, k, junk)) {
-    if (k >= y0 && k <= y1 && j >= x0 && j <= x1)
-     m.drawsq(w_terrain, u, j, k, false, true);
-    else
-     mvwputch(w_terrain, k + SEEY - y, j + SEEX - x, c_dkgray, '#');
-   }
-  }
- }
-
- // target() sets x and y, and returns an empty vector if we canceled (Esc)
- std::vector <point> trajectory =
-    target(x, y, x0, y0, x1, y1, std::vector<monster> (), junk, 0);
- return trajectory.size() > 0;
-*/
+    const auto vehs = m.all_veh_near(u.pos);
+    if (!vehs) return std::nullopt;
+    if (1 == vehs->size()) return vehs->front();
+    // only require player to choose if more than one candidate
+    refresh_all();
+    mvprintz(0, 0, c_red, "Choose a vehicle at direction:");
+    point pos(get_direction(input()));
+    if (pos.x == -2) {
+        messages.add("Invalid direction!");
+        return std::nullopt;
+    }
+    pos += u.pos;
+    for (decltype(auto) x : *vehs) if (x.first == pos) return x;
+    messages.add("There isn't any vehicle there.");
+    return std::nullopt;
 }
 
 void game::exam_vehicle(vehicle &veh, int cx, int cy)
@@ -4192,31 +4175,28 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
   return false;
  }
  if (liquid.type->id == itm_gasoline && m.veh_near(u.pos) && query_yn ("Refill vehicle?")) {
-  point vpos(u.pos);
-  if (pl_choose_vehicle(vpos)) {
-   vehicle *veh = m.veh_at(vpos);
-   if (veh) {
-    constexpr const ammotype ftype = AT_GAS;
-    int fuel_cap = veh->fuel_capacity(ftype);
-    int fuel_amnt = veh->fuel_left(ftype);
-    if (fuel_cap < 1)
-     messages.add("This vehicle doesn't use %s.", vehicle::fuel_name(ftype));
-    else if (fuel_amnt == fuel_cap)
-     messages.add("Already full.");
-    else if (infinite && query_yn("Pump until full?")) {
-     u.assign_activity(ACT_REFILL_VEHICLE, 100 * (fuel_cap - fuel_amnt), vpos);
-    } else { // Not infinite
-     veh->refill (AT_GAS, liquid.charges);
-     messages.add("You refill %s with %s%s.", veh->name.c_str(),
+  if (decltype(auto) veh_pos = pl_choose_vehicle()) {
+      vehicle* veh = veh_pos->second; // backward compatibility
+      constexpr const ammotype ftype = AT_GAS;
+      int fuel_cap = veh->fuel_capacity(ftype);
+      int fuel_amnt = veh->fuel_left(ftype);
+      if (fuel_cap < 1)
+          messages.add("This vehicle doesn't use %s.", vehicle::fuel_name(ftype));
+      else if (fuel_amnt == fuel_cap)
+          messages.add("Already full.");
+      else if (infinite && query_yn("Pump until full?")) {
+          u.assign_activity(ACT_REFILL_VEHICLE, 100 * (fuel_cap - fuel_amnt), veh_pos->first);
+      }
+      else { // Not infinite
+          veh->refill(AT_GAS, liquid.charges);
+          messages.add("You refill %s with %s%s.", veh->name.c_str(),
               vehicle::fuel_name(ftype),
-              veh->fuel_left(ftype) >= fuel_cap? " to its maximum" : "");
-     u.moves -= 100;
-     return true;
-    }
-   } else // if (veh)
-    messages.add("There isn't any vehicle there.");
-   return false;
-  } // if (pl_choose_vehicle(vpos))
+              veh->fuel_left(ftype) >= fuel_cap ? " to its maximum" : "");
+          u.moves -= 100;
+          return true;
+      }
+      return false;
+  }
 
  } else if (!from_ground &&
             query_yn("Pour %s on the ground?", liquid.tname().c_str())) {

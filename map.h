@@ -100,6 +100,7 @@ class map
  vehicle* veh_at(const point& pt) const { return veh_at(pt.x, pt.y); }
 
  vehicle* veh_near(const point& pt) const;
+ std::optional<std::vector<std::pair<point, vehicle*> > > all_veh_near(const point& pt) const;
 
  // put player on vehicle at x,y
  bool try_board_vehicle(game* g, int x, int y, player& p);
