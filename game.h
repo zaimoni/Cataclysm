@@ -250,7 +250,6 @@ class game
   void place_construction(const constructable *con); // See construction.cpp
   void complete_construction();               // See construction.cpp
   bool pl_choose_vehicle(point& vpos);
-  bool vehicle_near ();
   void examine();// Examine nearby terrain	'e'
   // open vehicle interaction screen
   void exam_vehicle(vehicle &veh, int cx=0, int cy=0);

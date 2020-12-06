@@ -148,6 +148,16 @@ vehicle* map::veh_at(int x, int y) const
  return veh_at(x, y, part);
 }
 
+vehicle* map::veh_near(const point& pt) const
+{
+    for (int dx = -1; dx <= 1; dx++) {
+        for (int dy = -1; dy <= 1; dy++) {
+            if (auto veh = veh_at(pt.x + dx, pt.y + dy)) return veh;
+        }
+    }
+    return nullptr;
+}
+
 bool map::try_board_vehicle(game* g, int x, int y, player& p)
 {
     // p.in_vehicle theoretically could be true, it just usually isn't because boarding a vehicle from another vehicle isn't easy to set up

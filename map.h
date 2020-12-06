@@ -94,10 +94,13 @@ class map
 // vehicles
 // checks, if tile is occupied by vehicle and by which part
  vehicle* veh_at(int x, int y, int &part_num) const;
- vehicle* veh_at(const point& pt, int &part_num) const { return veh_at(pt.x, pt.y, part_num); };
+ vehicle* veh_at(const point& pt, int &part_num) const { return veh_at(pt.x, pt.y, part_num); }
  vehicle* veh_at(const reality_bubble_loc& src, int& part_num) const;
  vehicle* veh_at(int x, int y) const;
- vehicle* veh_at(const point& pt) const { return veh_at(pt.x, pt.y); };
+ vehicle* veh_at(const point& pt) const { return veh_at(pt.x, pt.y); }
+
+ vehicle* veh_near(const point& pt) const;
+
  // put player on vehicle at x,y
  bool try_board_vehicle(game* g, int x, int y, player& p);
 

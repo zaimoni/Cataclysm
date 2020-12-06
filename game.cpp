@@ -3569,16 +3569,6 @@ int junk;
 */
 }
 
-bool game::vehicle_near ()
-{
- for (int dx = -1; dx <= 1; dx++) {
-  for (int dy = -1; dy <= 1; dy++) {
-   if (m.veh_at(u.pos.x + dx, u.pos.y + dy)) return true;
-  }
- }
- return false;
-}
-
 void game::exam_vehicle(vehicle &veh, int cx, int cy)
 {
     veh_interact vehint(cx, cy, this, &veh);	// if this breaks try 0,0 instead
@@ -4201,7 +4191,7 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
   debugmsg("Tried to handle_liquid a non-liquid!");
   return false;
  }
- if (liquid.type->id == itm_gasoline && vehicle_near() && query_yn ("Refill vehicle?")) {
+ if (liquid.type->id == itm_gasoline && m.veh_near(u.pos) && query_yn ("Refill vehicle?")) {
   point vpos(u.pos);
   if (pl_choose_vehicle(vpos)) {
    vehicle *veh = m.veh_at(vpos);
