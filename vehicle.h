@@ -313,9 +313,6 @@ public:
     // fire the turret which is part p
     void fire_turret (int p, bool burst = true);
 
-    // internal procedure of turret firing
-    bool fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int charges);
-
 #if DEAD_FUNC
     // upgrades/refilling/etc. see veh_interact.cpp
     void interact ();
@@ -346,7 +343,10 @@ public:
     int moves;
     int turret_mode;    // turret firing mode: 0 = off, 1 = burst fire	; leave as int in case we want true autofire
 private:
-	// init parts state for randomly generated vehicle
+    // internal procedure of turret firing
+    bool fire_turret_internal(const vehicle_part& p, it_gun& gun, const it_ammo& ammo, int charges);
+
+    // init parts state for randomly generated vehicle
 	void init_state();
 };
 

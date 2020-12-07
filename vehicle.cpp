@@ -1505,18 +1505,19 @@ void vehicle::fire_turret (int p, bool burst)
 {
     const auto& p_info = part_info(p);
     if (!p_info.has_flag<vpf_turret>()) return;
+    // at this point we know p is "in bounds"
     it_gun *gun = dynamic_cast<it_gun*> (item::types[p_info.item]);
     if (!gun) return;
     int charges = burst? gun->burst : 1;
     if (!charges) charges = 1;
+    vehicle_part& turret = parts[p];
     const auto amt = p_info.fuel_type;
     if (amt == AT_GAS || amt == AT_PLASMA) {
-        if (amt == AT_GAS) charges = 20; // hacky
-        int fleft = fuel_left (amt);
-        if (fleft < 1) return;
-        const it_ammo* const ammo = dynamic_cast<it_ammo*>(item::types[amt == AT_GAS? itm_gasoline : itm_plasma]);
+        if (1 > fuel_left(amt)) return;
+        const it_ammo* const ammo = dynamic_cast<it_ammo*>(item::types[amt == AT_GAS ? itm_gasoline : itm_plasma]);
         if (!ammo) return;
-        if (fire_turret_internal (p, *gun, *ammo, charges))
+        if (amt == AT_GAS) charges = 20; // hacky
+        if (fire_turret_internal(turret, *gun, *ammo, charges))
         { // consume fuel
             if (amt == AT_PLASMA) charges *= 10; // hacky, too
             for (int p1 = 0; p1 < parts.size(); p1++) {
@@ -1527,24 +1528,24 @@ void vehicle::fire_turret (int p, bool burst)
                 }
             }
         }
-    } else if (!parts[p].items.empty()) {
-        decltype(auto) ammo_src = parts[p].items.front();
+    } else if (!turret.items.empty()) {
+        decltype(auto) ammo_src = turret.items.front();
         if (1 > ammo_src.charges) return;
         const it_ammo* const ammo = dynamic_cast<const it_ammo*>(ammo_src.type);
         if (!ammo || ammo->type != amt) return;
         clamp_ub(charges, ammo_src.charges);
-        if (fire_turret_internal(p, *gun, *ammo, charges)) { // consume ammo
+        if (fire_turret_internal(turret, *gun, *ammo, charges)) { // consume ammo
             if (charges >= ammo_src.charges)
-                EraseAt(parts[p].items, 0); // ammo_src invalidated
+                EraseAt(turret.items, 0); // ammo_src invalidated
             else
                 ammo_src.charges -= charges;
         }
     }
 }
 
-bool vehicle::fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int charges)
+bool vehicle::fire_turret_internal(const vehicle_part& p, it_gun &gun, const it_ammo &ammo, int charges)
 {
-	const point origin(global() + parts[p].precalc_d[0]);
+	const point origin(global() + p.precalc_d[0]);
     // code copied form mattack::smg, mattack::flamethrower
     int t, fire_t;
     monster* target = nullptr;
@@ -1567,9 +1568,9 @@ bool vehicle::fire_turret_internal (int p, it_gun &gun, const it_ammo &ammo, int
     std::vector<point> traj = line_to(origin, target->pos, fire_t);
     for (int i = 0; i < traj.size(); i++)
         if (traj[i] == g->u.pos) return false; // won't shoot at player
-    if (g->u_see(origin)) messages.add("The %s fires its %s!", name.c_str(), part_info(p).name);
+    if (g->u_see(origin)) messages.add("The %s fires its %s!", name.c_str(), p.info().name);
     player tmp;
-    tmp.name = std::string("The ") + part_info(p).name;
+    tmp.name = std::string("The ") + p.info().name;
     tmp.sklevel[gun.skill_used] = 1;
     tmp.sklevel[sk_gun] = 0;
     tmp.recoil = abs(velocity) / 100 / 4;
