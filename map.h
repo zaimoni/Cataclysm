@@ -95,6 +95,8 @@ class map
 // checks, if tile is occupied by vehicle and by which part
  vehicle* veh_at(int x, int y, int &part_num) const;
  vehicle* veh_at(const point& pt, int &part_num) const { return veh_at(pt.x, pt.y, part_num); }
+ std::optional<std::pair<const vehicle*, int>> veh_at(const reality_bubble_loc& src) const;
+ std::optional<std::pair<vehicle*, int>> veh_at(const reality_bubble_loc& src);
  vehicle* veh_at(const reality_bubble_loc& src, int& part_num) const;
  vehicle* veh_at(int x, int y) const;
  vehicle* veh_at(const point& pt) const { return veh_at(pt.x, pt.y); }

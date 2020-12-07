@@ -86,6 +86,41 @@ std::vector<point> map::grep(const point& tl, const point& br, std::function<boo
     return ret;
 }
 
+std::optional<std::pair<const vehicle*, int>> map::veh_at(const reality_bubble_loc& src) const
+{
+    // must check 3x3 map chunks, as vehicle part may span to neighbour chunk
+    // we presume that vehicles don't intersect (they shouldn't by any means)
+    const auto nonant_ub = my_MAPSIZE * my_MAPSIZE;
+    for (int mx = -1; mx <= 1; mx++) {
+        for (int my = -1; my <= 1; my++) {
+            int nonant1 = src.first + mx + my * my_MAPSIZE;
+            if (nonant1 < 0 || nonant1 >= nonant_ub) continue; // out of grid
+            for (auto& veh : grid[nonant1]->vehicles) { // profiler likes this; burns less CPU than testing for empty std::vector
+                int part = veh.part_at(src.second.x - (veh.pos.x + mx * SEEX), src.second.y - (veh.pos.y + my * SEEY));
+                if (0 <= part) return std::pair(&veh, part);
+            }
+        }
+    }
+    return std::nullopt;
+}
+
+std::optional<std::pair<vehicle*, int>> map::veh_at(const reality_bubble_loc& src)
+{
+    // must check 3x3 map chunks, as vehicle part may span to neighbour chunk
+    // we presume that vehicles don't intersect (they shouldn't by any means)
+    const auto nonant_ub = my_MAPSIZE * my_MAPSIZE;
+    for (int mx = -1; mx <= 1; mx++) {
+        for (int my = -1; my <= 1; my++) {
+            int nonant1 = src.first + mx + my * my_MAPSIZE;
+            if (nonant1 < 0 || nonant1 >= nonant_ub) continue; // out of grid
+            for (auto& veh : grid[nonant1]->vehicles) { // profiler likes this; burns less CPU than testing for empty std::vector
+                int part = veh.part_at(src.second.x - (veh.pos.x + mx * SEEX), src.second.y - (veh.pos.y + my * SEEY));
+                if (0 <= part) return std::pair(&veh, part);
+            }
+        }
+    }
+    return std::nullopt;
+}
 
 vehicle* map::veh_at(const reality_bubble_loc& src, int& part_num) const
 {
@@ -587,15 +622,16 @@ std::string map::features(const point& pt) const
 
 int map::move_cost(const reality_bubble_loc& pos) const
 {
- int vpart = -1;
- if (const vehicle* const veh = veh_at(pos, vpart)) {  // moving past vehicle cost
-  int dpart = veh->part_with_feature(vpart, vpf_obstacle);
-  if (dpart >= 0 &&
-      (!veh->part_flag(dpart, vpf_openable) || !veh->parts[dpart].open))
-   return 0;
-  else
-   return 8;
+ if (const auto v = veh_at(pos)) {
+     const vehicle* const veh = v->first; // backward compatibility
+     int dpart = veh->part_with_feature(v->second, vpf_obstacle);
+     if (dpart >= 0 &&
+         (!veh->part_flag(dpart, vpf_openable) || !veh->parts[dpart].open))
+         return 0;
+     else
+         return 8;
  }
+
  return ter_t::list[ter(pos)].movecost;
 }
 
@@ -624,13 +660,12 @@ bool map::trans(const reality_bubble_loc& pos) const
     // Control statement is a problem. Normally returning false on an out-of-bounds
     // is how we stop rays from going on forever.  Instead we'll have to include
     // this check in the ray loop.
-    int vpart = -1;
-
     bool tertr;
-    if (vehicle* const veh = veh_at(pos, vpart)) {
-        tertr = !veh->part_flag(vpart, vpf_opaque) || veh->parts[vpart].hp <= 0;
+    if (const auto v = veh_at(pos)) {
+        const vehicle* const veh = v->first; // backward compatibility
+        tertr = !veh->part_flag(v->second, vpf_opaque) || veh->parts[v->second].hp <= 0;
         if (!tertr) {
-            int dpart = veh->part_with_feature(vpart, vpf_openable);
+            int dpart = veh->part_with_feature(v->second, vpf_openable);
             if (dpart >= 0 && veh->parts[dpart].open)
                 tertr = true; // open opaque door
         }
@@ -650,13 +685,14 @@ bool map::trans(const point& pt) const
 bool map::has_flag(t_flag flag, const reality_bubble_loc& pos) const
 {
     if (flag == bashable) {
-        int vpart;
-        const vehicle* const veh = veh_at(pos, vpart);
-        if (veh && veh->parts[vpart].hp > 0 && // if there's a vehicle part here...
-            veh->part_with_feature(vpart, vpf_obstacle) >= 0) {// & it is obstacle...
-            int p = veh->part_with_feature(vpart, vpf_openable);
-            if (p < 0 || !veh->parts[p].open) // and not open door
-                return true;
+        if (const auto v = veh_at(pos)) {
+            const vehicle* const veh = v->first; // backward compatibility
+            if (veh->parts[v->second].hp > 0 && // if there's a vehicle part here...
+                veh->part_with_feature(v->second, vpf_obstacle) >= 0) {// & it is obstacle...
+                int p = veh->part_with_feature(v->second, vpf_openable);
+                if (p < 0 || !veh->parts[p].open) // and not open door
+                    return true;
+            }
         }
     }
     return ter_t::list[ter(pos)].flags & mfb(flag);
@@ -1835,10 +1871,10 @@ void map::drawsq(WINDOW* w, const player& u, int x, int y, bool invert,
 	 }
  }
 
- int veh_part = 0;
- if (const vehicle* const veh = veh_at(*pos, veh_part)) {
-  sym = special_symbol (veh->face.dir_symbol(veh->part_sym(veh_part)));
-  if (normal_tercol) tercol = veh->part_color(veh_part);
+ if (const auto v = veh_at(*pos)) {
+     const vehicle* const veh = v->first; // backward compatibility
+     sym = special_symbol(veh->face.dir_symbol(veh->part_sym(v->second)));
+     if (normal_tercol) tercol = veh->part_color(v->second);
  }
 
  if (sym) {
