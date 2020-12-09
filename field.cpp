@@ -196,8 +196,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
      }
     }
 
-    int part;
-    if (const auto veh = veh_at(x, y, part)) veh->damage (part, cur->density * 10, false);
+    if (const auto veh = _veh_at(x, y)) veh->first->damage(veh->second, cur->density * 10, false);
 // Consume the terrain we're on
 	auto& terrain = ter(x, y);
     if (has_flag(explodes, x, y)) {

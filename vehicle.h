@@ -284,8 +284,6 @@ public:
 
     void find_exhaust ();
 
-    void refresh_insides ();
-
     bool is_inside (int p);
 
     void unboard(int part);
@@ -348,6 +346,8 @@ private:
 
     // init parts state for randomly generated vehicle
 	void init_state();
+
+    void refresh_insides();
 };
 
 #endif

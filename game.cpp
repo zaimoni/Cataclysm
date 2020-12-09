@@ -3041,9 +3041,7 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
     else
      kill_mon(*m_hit); // TODO: player's fault?
 
-    int vpart;
-    vehicle* const veh = m.veh_at(i, j, vpart);
-    if (veh) veh->damage (vpart, dam, false);
+    if (const auto veh = m._veh_at(i, j)) veh->first->damage(veh->second, dam, false);
    }
 
    if (npc* const _npc = nPC(i,j)) {
@@ -5019,8 +5017,10 @@ void game::plmove(int x, int y)
   }
  }
 
- int vpart = -1, dpart = -1;
- vehicle *veh = m.veh_at(x, y, vpart);
+ int dpart = -1;
+ const auto v = m._veh_at(x, y);
+ vehicle* const veh = v ? v->first : nullptr; // backward compatibility
+ int vpart = v ? v->second : -1;
  bool veh_closed_door = false;
  if (veh) {
   dpart = veh->part_with_feature (vpart, vpf_openable);
@@ -5274,9 +5274,8 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
             else zz->hurt(dam1);
         } else if (m.move_cost(x, y) == 0 && !m.has_flag(swimmable, x, y)) {
             slam = true;
-            int vpart;
-            vehicle *veh = m.veh_at(x, y, vpart);
-            dname = veh ? veh->part_info(vpart).name : m.tername(x, y).c_str();
+            const auto veh = m._veh_at(x, y);
+            dname = veh ? veh->first->part_info(veh->second).name : m.tername(x, y).c_str();
             if (m.has_flag(bashable, x, y)) thru = m.bash(x, y, flvel, snd);
             else thru = false;
             if (snd.length() > 0) messages.add("You hear a %s", snd.c_str());

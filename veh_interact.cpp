@@ -402,7 +402,8 @@ void veh_interact::move_cursor (int dx, int dy)
 	const point vd(-dd.x - c.y, c.x - dd.y);
 	const point vpos(veh->global() + veh->coord_translate(vd));
     bool obstruct = _g->m.move_cost_ter_only (vpos.x, vpos.y) == 0;
-    vehicle * const oveh = _g->m.veh_at (vpos.x, vpos.y);
+    const auto v = _g->m._veh_at(vpos);
+    vehicle* const oveh = v ? v->first : nullptr; // backward compatibility
     if (oveh && oveh != veh) obstruct = true;
     nc_color col = cpart >= 0? veh->part_color (cpart) : c_black;
     mvwputch (w_disp, c.y+6, c.x+6, obstruct? red_background(col) : hilite(col),
@@ -573,8 +574,9 @@ void veh_interact::display_list (int pos)
 vehicle& complete_vehicle(game* g)
 {
     if (g->u.activity.values.size() < 7) throw std::string("Invalid activity ACT_VEHICLE values: ") + std::to_string(g->u.activity.values.size());
-    vehicle* const veh = g->m.veh_at (g->u.activity.values[0], g->u.activity.values[1]);
-    if (!veh) throw std::string("Activity ACT_VEHICLE: vehicle not found");
+    const auto v = g->m._veh_at(g->u.activity.values[0], g->u.activity.values[1]);
+    if (!v) throw std::string("Activity ACT_VEHICLE: vehicle not found");
+    vehicle* const veh = v->first; // backward compatibility
 
     char cmd = (char) g->u.activity.index;
     int dx = g->u.activity.values[4];

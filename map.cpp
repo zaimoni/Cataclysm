@@ -189,17 +189,11 @@ vehicle* map::veh_at(int x, int y, int &part_num) const
  return nullptr;
 }
 
-vehicle* map::veh_at(int x, int y) const
-{
- int part = 0;
- return veh_at(x, y, part);
-}
-
-vehicle* map::veh_near(const point& pt) const
+vehicle* map::veh_near(const point& pt)
 {
     for (int dx = -1; dx <= 1; dx++) {
         for (int dy = -1; dy <= 1; dy++) {
-            if (auto veh = veh_at(pt.x + dx, pt.y + dy)) return veh;
+            if (auto veh = _veh_at(pt.x + dx, pt.y + dy)) return veh->first;
         }
     }
     return nullptr;
@@ -223,10 +217,10 @@ bool map::try_board_vehicle(game* g, int x, int y, player& p)
     // p.in_vehicle theoretically could be true, it just usually isn't because boarding a vehicle from another vehicle isn't easy to set up
     const bool is_current_player = &p == &g->u;
 
-    int part = 0;
-    vehicle* const veh = veh_at(x, y, part);
-    if (!veh) return false;
-    const int seat_part = veh->part_with_feature(part, vpf_seat);
+    const auto v = _veh_at(x, y);
+    if (!v) return false;
+    vehicle* const veh = v->first; // backward compatibility
+    const int seat_part = veh->part_with_feature(v->second, vpf_seat);
     if (0 > seat_part) return false;
     if (veh->parts[seat_part].passenger) {
         if (player* psg = veh->get_passenger(seat_part)) {
@@ -649,15 +643,14 @@ int map::move_cost(const reality_bubble_loc& pos) const
 
 int map::move_cost(int x, int y) const
 {
- int vpart = -1;
- vehicle *veh = veh_at(x, y, vpart);
- if (veh) {  // moving past vehicle cost
-  int dpart = veh->part_with_feature(vpart, vpf_obstacle);
-  if (dpart >= 0 &&
-      (!veh->part_flag(dpart, vpf_openable) || !veh->parts[dpart].open))
-   return 0;
-  else
-   return 8;
+ if (const auto v = _veh_at(x, y)) {
+     const vehicle* const veh = v->first;
+     int dpart = veh->part_with_feature(v->second, vpf_obstacle);
+     if (dpart >= 0 &&
+         (!veh->part_flag(dpart, vpf_openable) || !veh->parts[dpart].open))
+         return 0;
+     else
+         return 8;
  }
  return ter_t::list[ter(x, y)].movecost;
 }
@@ -713,14 +706,16 @@ bool map::has_flag(t_flag flag, const reality_bubble_loc& pos) const
 bool map::has_flag(t_flag flag, int x, int y) const
 {
  if (flag == bashable) {
-  int vpart;
-  vehicle *veh = veh_at(x, y, vpart);
-  if (veh && veh->parts[vpart].hp > 0 && // if there's a vehicle part here...
-      veh->part_with_feature (vpart, vpf_obstacle) >= 0) {// & it is obstacle...
-   int p = veh->part_with_feature (vpart, vpf_openable);
-   if (p < 0 || !veh->parts[p].open) // and not open door
-    return true;
-  }
+     if (const auto v = _veh_at(x, y)) {
+         const vehicle* const veh = v->first; // backward compatibility
+         const int vpart = v->second;
+         if (veh->parts[vpart].hp > 0 && // if there's a vehicle part here...
+             veh->part_with_feature(vpart, vpf_obstacle) >= 0) {// & it is obstacle...
+             int p = veh->part_with_feature(vpart, vpf_openable);
+             if (p < 0 || !veh->parts[p].open) // and not open door
+                 return true;
+         }
+     }
  }
  return ter_t::list[ter(x, y)].flags & mfb(flag);
 }
@@ -838,10 +833,8 @@ bool map::bash(int x, int y, int str, std::string &sound, int *res)
  }
 
  int result = -1;
- int vpart;
- vehicle *veh = veh_at(x, y, vpart);
- if (veh) {
-  veh->damage (vpart, str, 1);
+ if (const auto veh = _veh_at(x, y)) {
+  veh->first->damage(veh->second, str, 1);
   result = str;
   sound += "crash!";
   return true;
