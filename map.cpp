@@ -171,6 +171,18 @@ vehicle* GPS_loc::veh_at(int& part_num) const
     return nullptr;
 }
 
+std::optional<std::pair<const vehicle*, int>> map::_veh_at(const point& src) const
+{
+    if (auto pos = to(src)) return veh_at(*pos);
+    return std::nullopt;
+}
+
+std::optional<std::pair<vehicle*, int>> map::_veh_at(const point& src)
+{
+    if (auto pos = to(src)) return veh_at(*pos);
+    return std::nullopt;
+}
+
 vehicle* map::veh_at(int x, int y, int &part_num) const
 {
  if (auto pos = to(x,y)) return veh_at(*pos, part_num);
@@ -193,13 +205,13 @@ vehicle* map::veh_near(const point& pt) const
     return nullptr;
 }
 
-std::optional<std::vector<std::pair<point, vehicle*> > > map::all_veh_near(const point& pt) const
+std::optional<std::vector<std::pair<point, vehicle*> > > map::all_veh_near(const point& pt)
 {
     std::vector<std::pair<point, vehicle*> > ret;
     for (int dx = -1; dx <= 1; dx++) {
         for (int dy = -1; dy <= 1; dy++) {
             const point pos(pt.x + dx, pt.y + dy);
-            if (auto veh = veh_at(pos)) ret.push_back({ pos, veh });
+            if (auto veh = _veh_at(pos)) ret.push_back({ pos, veh->first });
         }
     }
     if (!ret.empty()) return ret;
@@ -1176,11 +1188,9 @@ void map::shoot(game *g, const point& pt, int &dam, bool hit_items, unsigned fla
   g->add_event(EVENT_WANTED, int(messages.turn) + 300, 0, g->lev.x, g->lev.y);
  }
 
- int vpart;
- vehicle *veh = veh_at(pt, vpart);
- if (veh) {
-  bool inc = (flags & mfb(IF_AMMO_INCENDIARY) || flags & mfb(IF_AMMO_FLAME));
-  dam = veh->damage (vpart, dam, inc? 2 : 0, hit_items);
+ if (const auto veh = _veh_at(pt)) {
+     bool inc = flags & (mfb(IF_AMMO_INCENDIARY) | mfb(IF_AMMO_FLAME));
+     dam = veh->first->damage(veh->second, dam, inc ? 2 : 0, hit_items);
  }
 
  switch (ter_id& terrain = ter(pt)) {

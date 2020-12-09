@@ -748,8 +748,8 @@ void game::process_activity()
    u.activity.moves_left -= 100;
    u.pause();
   } else if (u.activity.type == ACT_REFILL_VEHICLE) {
-   if (vehicle* const veh = m.veh_at(u.activity.placement)) {
-    veh->refill(AT_GAS, 200);
+   if (const auto veh = m._veh_at(u.activity.placement)) {
+    veh->first->refill(AT_GAS, 200);
     u.pause();
     u.activity.moves_left -= 100;
    } else {  // Vehicle must've moved or something!
@@ -1042,8 +1042,9 @@ void game::get_input()
 // This has no action unless we're in a special game mode.
  gamemode->pre_action(this, act);
 
- int veh_part;
- vehicle *veh = m.veh_at(u.pos, veh_part);
+ const auto v = m._veh_at(u.pos);
+ vehicle* const veh = v ? v->first : nullptr; // backward compatibility
+ int veh_part = v ? v->second : 0;
  bool veh_ctrl = veh && veh->player_in_control(u);
 
  // verify low-level constraint before using C rewrite of enumeration values
@@ -1830,7 +1831,7 @@ z.size(), events.size());
    break;
 
   case 10:
-   if (m.veh_at(u.pos))
+   if (m._veh_at(u.pos))
     debugmsg ("There's already vehicle here");
    else {
 	for(auto v_type : vehicle::vtypes) 
@@ -3418,8 +3419,9 @@ void game::open()
  int ch = input();
  point open(get_direction(ch));
  if (open.x != -2) {
-  int vpart;
-  vehicle * const veh = m.veh_at(u.pos + open, vpart);
+  const auto v = m._veh_at(u.pos + open);
+  vehicle* const veh = v ? v->first : nullptr; // backward compatibility
+  int vpart = v ? v->second : 0;
   if (veh && veh->part_flag(vpart, vpf_openable)) {
    if (veh->parts[vpart].open) {
     messages.add("That door is already open.");
@@ -3464,8 +3466,9 @@ void game::close()
 
  if (const monster* const m_at = mon(close)) { messages.add("There's a %s in the way!", m_at->name().c_str()); return; }
 
- int vpart;
- vehicle * const veh = m.veh_at(close, vpart);
+ auto v = m._veh_at(close);
+ vehicle* const veh = v ? v->first : nullptr; // backward compatibility
+ int vpart = v ? v->second : 0;
  if (veh && veh->part_flag(vpart, vpf_openable) && veh->parts[vpart].open) {
    veh->parts[vpart].open = 0;
    veh->insides_dirty = true;
@@ -3578,20 +3581,19 @@ void game::exam_vehicle(vehicle &veh, int cx, int cy)
 void game::examine()
 {
  if (u.in_vehicle) {
-  int vpart;
-  vehicle *veh = m.veh_at(u.pos, vpart);
-  bool qexv = (veh && (veh->velocity != 0 ?
-                       query_yn("Really exit moving vehicle?") :
-                       query_yn("Exit vehicle?")));
-  if (qexv) {
-   veh->unboard(vpart);
-   u.moves -= 200;
-   if (veh->velocity) {      // TODO: move player out of harms way
-    int dsgn = veh->parts[vpart].mount_d.x > 0? 1 : -1;
-    fling_player_or_monster(&u, nullptr, veh->face.dir() + 90 * dsgn, 35);
-   }
-   return;
-  }
+     if (const auto v = m._veh_at(u.pos)) {
+         vehicle* const veh = v->first; // backward compatibility
+         bool qexv = (veh->velocity != 0 ? query_yn("Really exit moving vehicle?") : query_yn("Exit vehicle?"));
+         if (qexv) {
+             veh->unboard(v->second);
+             u.moves -= 200;
+             if (veh->velocity) {      // TODO: move player out of harms way
+                 int dsgn = veh->parts[v->second].mount_d.x > 0 ? 1 : -1;
+                 fling_player_or_monster(&u, nullptr, veh->face.dir() + 90 * dsgn, 35);
+             }
+             return;
+         }
+     }
  }
  mvwprintw(w_terrain, 0, 0, "Examine where? (Direction button) ");
  wrefresh(w_terrain);
@@ -3608,14 +3610,13 @@ void game::examine()
  auto& exam_t = m.ter(exam);
  auto& stack = m.i_at(exam);
 
- int veh_part = 0;
- vehicle *veh = m.veh_at(exam, veh_part);
- if (veh) {
-  int vpcargo = veh->part_with_feature(veh_part, vpf_cargo, false);
-  if (vpcargo >= 0 && veh->parts[vpcargo].items.size() > 0) pickup(exam, 0);
+ if (const auto v = m._veh_at(exam)) {
+  vehicle* const veh = v->first; // backward compatibility
+  int vpcargo = veh->part_with_feature(v->second, vpf_cargo, false);
+  if (vpcargo >= 0 && !veh->parts[vpcargo].items.empty()) pickup(exam, 0);
   else if (u.in_vehicle) messages.add("You can't do that while onboard.");
   else if (abs(veh->velocity) > 0) messages.add("You can't do that on moving vehicle.");
-  else exam_vehicle (*veh, exam.x, exam.y);
+  else exam_vehicle(*veh, exam.x, exam.y);
  } else if (m.has_flag(sealed, exam)) {
   if (m.trans(exam)) {
    std::string buff;
@@ -3821,17 +3822,16 @@ std::optional<point> game::look_around()
   if (dir.x != -2) l += dir; // Directional key pressed
   draw_ter(l);
   for (int i = 1; i < VIEW - SEE-1; i++) {
-   for (int j = 1; j < PANELX - MINIMAP_WIDTH_HEIGHT - 1; j++)
-    mvwputch(w_look, i, j, c_white, ' ');
+   draw_hline(w_look, i, c_white, ' ', 1, PANELX - MINIMAP_WIDTH_HEIGHT - 1);
   }
-  int veh_part = 0;
-  vehicle *veh = m.veh_at(l, veh_part);
+  const auto v = m._veh_at(l);
+  vehicle* const veh = v ? v->first : nullptr; // backward compatibility
+  const int veh_part = v ? v->second : 0;
   if (u_see(l)) {
-   const int mc = m.move_cost(l);
-   if (mc == 0)
-    mvwprintw(w_look, 1, 1, "%s; Impassable", m.tername(l).c_str());
+   if (const int mc = m.move_cost(l))
+       mvwprintw(w_look, 1, 1, "%s; Movement cost %d", m.tername(l).c_str(), mc * 50);
    else
-    mvwprintw(w_look, 1, 1, "%s; Movement cost %d", m.tername(l).c_str(), mc * 50);
+       mvwprintw(w_look, 1, 1, "%s; Impassable", m.tername(l).c_str());
    mvwprintw(w_look, 2, 1, "%s", m.features(l).c_str());
    const auto& f = m.field_at(l);
    if (f.type != fd_null)
@@ -3901,12 +3901,12 @@ void game::pickup(const point& pt, int min)
  bool weight_is_okay = (u.weight_carried() <= u.weight_capacity() * .25);
  bool volume_is_okay = (u.volume_carried() <= u.volume_capacity() -  2);
  bool from_veh = false;
- int veh_part = 0;
- vehicle *veh = m.veh_at(pt, veh_part);
+ const auto v = m._veh_at(pt);
+ vehicle* const veh = v ? v->first : nullptr; // backward compatibility
+ int veh_part = v ? v->second : 0;
  if (veh) {
   veh_part = veh->part_with_feature(veh_part, vpf_cargo, false);
-  from_veh = veh && veh_part >= 0 &&
-             veh->parts[veh_part].items.size() > 0 &&
+  from_veh = veh_part >= 0 && veh->parts[veh_part].items.size() > 0 &&
              query_yn("Get items from %s?", veh->part_info(veh_part).name);
  }
 // Picking up water?
@@ -4313,36 +4313,40 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
  return false;
 }
 
-
 void game::drop()
 {
  std::vector<item> dropped = multidrop();
- if (dropped.empty()) {
+ const auto dropped_ub = dropped.size();
+ if (0 >= dropped_ub) {
   messages.add("Never mind.");
   return;
  }
 
- itype_id first = itype_id(dropped[0].type->id);
+ const itype_id first = itype_id(dropped[0].type->id);
  bool same = true;
- for (int i = 1; i < dropped.size() && same; i++) {
-  if (dropped[i].type->id != first) same = false;
+ for (int i = 1; i < dropped_ub; i++) {
+  if (first != dropped[i].type->id) {
+      same = false;
+      break;
+  }
  }
 
- int veh_part = 0;
  bool to_veh = false;
- vehicle *veh = m.veh_at(u.pos, veh_part);
+ const auto v = m._veh_at(u.pos);
+ vehicle* const veh = v ? v->first : nullptr; // backward compatibility
+ int veh_part = v ? v->second : 0;
  if (veh) {
   veh_part = veh->part_with_feature (veh_part, vpf_cargo);
   to_veh = veh_part >= 0;
  }
- if (dropped.size() == 1 || same) {
+ if (1 == dropped_ub || same) {
   if (to_veh)
    messages.add("You put your %s%s in the %s's %s.", dropped[0].tname().c_str(),
-          (dropped.size() == 1 ? "" : "s"), veh->name.c_str(),
+          (1 == dropped_ub ? "" : "s"), veh->name.c_str(),
           veh->part_info(veh_part).name);
   else
    messages.add("You drop your %s%s.", dropped[0].tname().c_str(),
-          (dropped.size() == 1 ? "" : "s"));
+          (1 == dropped_ub ? "" : "s"));
  } else {
   if (to_veh)
    messages.add("You put several items in the %s's %s.", veh->name.c_str(),
@@ -4354,7 +4358,7 @@ void game::drop()
  bool vh_overflow = false;
  int i = 0;
  if (to_veh) {
-  for (i = 0; i < dropped.size(); i++)
+  for (i = 0; i < dropped_ub; i++)
    if (!veh->add_item (veh_part, dropped[i])) {
     vh_overflow = true;
     break;
@@ -4362,7 +4366,7 @@ void game::drop()
   if (vh_overflow) messages.add("The trunk is full, so some items fall on the ground.");
  }
  if (!to_veh || vh_overflow) {
-     while (i < dropped.size()) m.add_item(u.pos, std::move(dropped[i++]));
+     while (i < dropped_ub) m.add_item(u.pos, std::move(dropped[i++]));
  }
 }
 
@@ -4376,9 +4380,10 @@ void game::drop_in_direction()
   return;
  }
  dir += u.pos;
- int veh_part = 0;
  bool to_veh = false;
- vehicle *veh = m.veh_at(dir, veh_part);
+ const auto v = m._veh_at(dir);
+ vehicle * const veh = v ? v->first : nullptr; // backward compatibility
+ int veh_part = v ? v->second : 0;
  if (veh) {
   veh_part = veh->part_with_feature (veh_part, vpf_cargo);
   to_veh = veh->_type && veh_part >= 0;
@@ -4540,10 +4545,11 @@ void game::plthrow()
 void game::plfire(bool burst)
 {
  if (!u.weapon.is_gun()) return;
- vehicle *veh = m.veh_at(u.pos);
- if (veh && veh->player_in_control(u) && u.weapon.is_two_handed(u)) {
-  messages.add("You need free arm to drive!");
-  return;
+ if (const auto veh = m._veh_at(u.pos)) {
+     if (veh->first->player_in_control(u) && u.weapon.is_two_handed(u)) {
+         messages.add("You need free arm to drive!");
+         return;
+     }
  }
  if (u.weapon.has_flag(IF_CHARGE) && !u.weapon.active) {
   if (u.has_charges(itm_UPS_on, 1) || u.has_charges(itm_UPS_off, 1)) {
@@ -4901,14 +4907,15 @@ void game::pldrive(int x, int y)
   messages.add("Monster spotted--run mode is on! (Press '!' to turn it off or ' to ignore monster.)");
   return;
  }
- int part = -1;
- vehicle *veh = m.veh_at(u.pos, part);
- if (!veh) {
-  debugmsg ("game::pldrive error: can't find vehicle! Drive mode is now off.");
+ const auto v = m._veh_at(u.pos);
+ if (!v) {
+  debuglog("game::pldrive error: can't find vehicle! Drive mode is now off.");
+  debugmsg("game::pldrive error: can't find vehicle! Drive mode is now off.");
   u.in_vehicle = false;
   return;
  }
- if (0 > veh->part_with_feature(part, vpf_controls)) {
+ vehicle* const veh = v ? v->first : nullptr; // backward compatibility
+ if (0 > veh->part_with_feature(v->second, vpf_controls)) {
   messages.add("You can't drive the vehicle from here. You need controls!");
   return;
  }

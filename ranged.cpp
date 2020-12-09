@@ -572,8 +572,8 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
    }
 
    if (!relevent) { // currently targetting vehicle to refill with fuel
-    if (vehicle* const veh = m.veh_at(tar))
-     mvwprintw(w_target, 5, 1, "There is a %s", veh->name.c_str());
+    if (const auto veh = m._veh_at(tar))
+     mvwprintw(w_target, 5, 1, "There is a %s", veh->first->name.c_str());
    } else
     mvwprintw(w_target, 5, 1, "Range: %d", rl_dist(u.pos, tar));
 

@@ -96,10 +96,10 @@ DEFINE_ACID_ASSIGN_W_MOVE(vehicle)
 bool vehicle::player_in_control(player& p) const
 {
     if (!_type || !p.in_vehicle) return false;
-    int veh_part;
-    const vehicle* const veh = game::active()->m.veh_at(p.pos, veh_part);
-    if (!veh || veh != this) return false;
-    return part_with_feature(veh_part, vpf_controls, false) >= 0;
+    if (const auto veh = game::active()->m._veh_at(p.pos)) {
+        return veh->first == this && 0 <= part_with_feature(veh->second, vpf_controls, false);
+    }
+    return false;
 }
 
 void vehicle::init_state()
@@ -896,7 +896,8 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
     const bool u_here = dest == g->u.pos && !g->u.in_vehicle;
     monster* const z = g->mon(dest);
     player* const ph = (nPC ? nPC : (u_here? &g->u : nullptr));
-    vehicle* const oveh = g->m.veh_at(dest);
+    const auto v = g->m._veh_at(dest);
+    vehicle* const oveh = v ? v->first : nullptr; // backward compatibility
     const bool veh_collision = oveh && oveh->pos != pos;
     bool body_collision = u_here || z || nPC;
 

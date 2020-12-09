@@ -2628,7 +2628,8 @@ void player::disp_status(WINDOW *w, game *g)
  else
   mvwprintz(w, 3, 10, col_morale, "D:");
 
- const vehicle* const veh = g->m.veh_at(pos);
+ const auto v = g->m._veh_at(pos);
+ const vehicle* const veh = v ? v->first : nullptr; // backward compatibility
 
  if (in_vehicle && veh) {
   veh->print_fuel_indicator (w, 3, 49);
@@ -4970,10 +4971,11 @@ void player::use(game *g, char let)
 
 void player::read(game *g, char ch)
 {
- vehicle *veh = g->m.veh_at(pos);
- if (veh && veh->player_in_control(*this)) {
-  messages.add("It's bad idea to read while driving.");
-  return;
+ if (const auto veh = g->m._veh_at(pos)) {
+     if (veh->first->player_in_control(*this)) {
+         messages.add("It's bad idea to read while driving.");
+         return;
+     }
  }
  if (morale_level() < MIN_MORALE_READ) {	// See morale.h
   messages.add("What's the point of reading?  (Your morale is too low!)");
@@ -5047,9 +5049,8 @@ bool player::can_sleep(const map& m) const
  if (has_addiction(ADD_SLEEP)) sleepy -= 3;
  if (has_trait(PF_INSOMNIA)) sleepy -= 8;
 
- int vpart = -1;
- const vehicle* const veh = m.veh_at(pos, vpart);
- if (veh && veh->part_with_feature(vpart, vpf_seat) >= 0) sleepy += 4;
+ const auto veh = m._veh_at(pos);
+ if (veh && veh->first->part_with_feature(veh->second, vpf_seat) >= 0) sleepy += 4;
  else if (m.ter(pos) == t_bed) sleepy += 5;
  else if (m.ter(pos) == t_floor) sleepy += 1;
  else sleepy -= m.move_cost(pos);
