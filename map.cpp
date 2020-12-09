@@ -122,27 +122,6 @@ std::optional<std::pair<vehicle*, int>> map::veh_at(const reality_bubble_loc& sr
     return std::nullopt;
 }
 
-vehicle* map::veh_at(const reality_bubble_loc& src, int& part_num) const
-{
-    // must check 3x3 map chunks, as vehicle part may span to neighbour chunk
-    // we presume that vehicles don't intersect (they shouldn't by any means)
-    const auto nonant_ub = my_MAPSIZE * my_MAPSIZE;
-    for (int mx = -1; mx <= 1; mx++) {
-        for (int my = -1; my <= 1; my++) {
-            int nonant1 = src.first + mx + my * my_MAPSIZE;
-            if (nonant1 < 0 || nonant1 >= nonant_ub) continue; // out of grid
-            for (auto& veh : grid[nonant1]->vehicles) { // profiler likes this; burns less CPU than testing for empty std::vector
-                int part = veh.part_at(src.second.x - (veh.pos.x + mx * SEEX), src.second.y - (veh.pos.y + my * SEEY));
-                if (part >= 0) {
-                    part_num = part;
-                    return &veh;
-                }
-            }
-        }
-    }
-    return nullptr;
-}
-
 // \todo if map::veh_at goes dead code then relocate (overmap.cpp? new GPS_loc.cpp?)
 vehicle* GPS_loc::veh_at(int& part_num) const
 {
@@ -181,12 +160,6 @@ std::optional<std::pair<vehicle*, int>> map::_veh_at(const point& src)
 {
     if (auto pos = to(src)) return veh_at(*pos);
     return std::nullopt;
-}
-
-vehicle* map::veh_at(int x, int y, int &part_num) const
-{
- if (auto pos = to(x,y)) return veh_at(*pos, part_num);
- return nullptr;
 }
 
 vehicle* map::veh_near(const point& pt)
@@ -745,8 +718,9 @@ bool map::is_outside(int x, int y) const
      point pt = point(x, y) + direction_vector((direction)dir);
      if (any<t_floor, t_floor_wax>(ter(pt))) return false;
  }
- int vpart;
- if (vehicle* veh = veh_at(x, y, vpart); veh && veh->is_inside(vpart)) return false;
+ if (const auto veh = _veh_at(x, y)) {
+     if (veh->first->is_inside(veh->second)) return false;
+ }
  return true;
 }
 

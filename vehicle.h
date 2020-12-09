@@ -25,7 +25,7 @@ struct vehicle_part
     point precalc_d[2];     // mount_dx/mount_dy translated to face.dir [0] and turn_dir [1]
     int hp;                 // current durability, if 0, then broken
     int blood;              // how much blood covers part (in turns). only useful for external
-    bool inside;            // if tile provides cover. WARNING: do not read it directly, use vehicle::is_inside() instead
+    mutable bool inside;    // if tile provides cover. WARNING: do not read it directly, use vehicle::is_inside() instead
     union
     {
         int amount;         // amount of fuel for tank
@@ -284,7 +284,7 @@ public:
 
     void find_exhaust ();
 
-    bool is_inside (int p);
+    bool is_inside(int p) const;
 
     void unboard(int part);
     void unboard_all ();
@@ -325,7 +325,7 @@ public:
 
     // temp values
     point sm;   // submap coords. WARNING: must ALWAYS correspond to submap coords in grid, or i'm out [0..10,0..10]
-    bool insides_dirty; // if true, then parts' "inside" flags are outdated and need refreshing
+    mutable bool insides_dirty; // if true, then parts' "inside" flags are outdated and need refreshing
 
     // save values
     point pos;		// position within submap: valid values 0...SEEX/SEEY-1
@@ -347,7 +347,7 @@ private:
     // init parts state for randomly generated vehicle
 	void init_state();
 
-    void refresh_insides();
+    void refresh_insides() const;
 };
 
 #endif

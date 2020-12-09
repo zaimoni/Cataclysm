@@ -92,17 +92,13 @@ class map
  std::vector<point> route(int Fx, int Fy, const point& T, bool bash = true) const { return route(Fx, Fy, T.x, T.y, bash); };
 
 // vehicles
-// checks, if tile is occupied by vehicle and by which part
- // deep const correctness
+// checks, if tile is occupied by vehicle and by which part.  These are deep const correct
  std::optional<std::pair<const vehicle*, int>> _veh_at(const point& src) const;
  std::optional<std::pair<vehicle*, int>> _veh_at(const point& src);
  std::optional<std::pair<const vehicle*, int>> _veh_at(int x, int y) const { return _veh_at(point(x, y)); }
  std::optional<std::pair<vehicle*, int>> _veh_at(int x, int y) { return _veh_at(point(x, y)); }
  std::optional<std::pair<const vehicle*, int>> veh_at(const reality_bubble_loc& src) const;
  std::optional<std::pair<vehicle*, int>> veh_at(const reality_bubble_loc& src);
- // shallow const correctness
- vehicle* veh_at(int x, int y, int& part_num) const;
- vehicle* veh_at(const reality_bubble_loc& src, int& part_num) const;
 
  vehicle* veh_near(const point& pt);
  std::optional<std::vector<std::pair<point, vehicle*> > > all_veh_near(const point& pt);

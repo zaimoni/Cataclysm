@@ -1254,7 +1254,7 @@ void vehicle::find_exhaust ()
     exhaust_d.x--;
 }
 
-void vehicle::refresh_insides ()
+void vehicle::refresh_insides() const
 {
     insides_dirty = false;
     for(const int p : external_parts) {
@@ -1288,7 +1288,7 @@ void vehicle::refresh_insides ()
     }
 }
 
-bool vehicle::is_inside (int p)
+bool vehicle::is_inside(int p) const
 {
     if (p < 0 || p >= parts.size()) return false;
     if (insides_dirty) refresh_insides ();
