@@ -12,31 +12,12 @@
 std::vector<const mtype*> mtype::types;
 std::map<int, std::string> mtype::tiles;
 
-static std::vector<monster_trigger> default_anger(monster_species spec)
+static auto default_anger(monster_species spec)
 {
-	std::vector<monster_trigger> ret;
 	switch (spec) {
-	case species_mammal:
-		break;
-	case species_insect:
-		ret.push_back(MTRIG_FRIEND_DIED);
-		break;
-	case species_worm:
-		break;
-	case species_zombie:
-		break;
-	case species_plant:
-		break;
-	case species_fungus:
-		break;
-	case species_nether:
-		break;
-	case species_robot:
-		break;
-	case species_hallu:
-		break;
+	case species_insect: return mfb(MTRIG_FRIEND_DIED);
+	default: return 0ULL;
 	}
-	return ret;
 }
 
 static auto default_fears(monster_species spec)
@@ -78,6 +59,7 @@ mtype::mtype() {
 	sp_freq = 0;
 	item_chance = 0;
 
+	anger = 0;
 	fear = 0;
 	placate = 0;
 
@@ -329,7 +311,6 @@ types.push_back(working)
 #endif
 
 #define FLAGS(...)   SET_VECTOR(working->flags,   __VA_ARGS__)
-#define ANGER(...)   SET_VECTOR(working->anger,   __VA_ARGS__)
 
 // PLEASE NOTE: The description is AT MAX 4 lines of 46 characters each.
 
@@ -366,7 +347,7 @@ mon("wolf",	species_mammal, 'w',	c_dkgray,	MS_MEDIUM,	FLESH,
 A vicious and fast pack hunter."
 );
 FLAGS(MF_SEES, MF_HEARS, MF_SMELLS, MF_ANIMAL, MF_WARM, MF_FUR, MF_HIT_AND_RUN);
-ANGER(MTRIG_TIME, MTRIG_PLAYER_WEAK, MTRIG_HURT);
+working->anger = mfb(MTRIG_HURT) | mfb(MTRIG_PLAYER_WEAK) | mfb(MTRIG_TIME);
 working->placate = mfb(MTRIG_MEAT);
 
 mon("bear",	species_mammal, 'B',	c_dkgray,	MS_LARGE,	FLESH,
@@ -376,7 +357,7 @@ mon("bear",	species_mammal, 'B',	c_dkgray,	MS_LARGE,	FLESH,
 Remember, only YOU can prevent forest fires."
 );
 FLAGS(MF_SEES, MF_HEARS, MF_SMELLS, MF_ANIMAL, MF_WARM, MF_FUR);
-ANGER(MTRIG_PLAYER_CLOSE);
+working->anger = mfb(MTRIG_PLAYER_CLOSE);
 working->placate = mfb(MTRIG_MEAT);
 
 // DOMESICATED ANIMALS
@@ -457,7 +438,7 @@ buzzes angrily through the air, dagger-\n\
 sized sting pointed forward."
 );
 FLAGS(MF_SMELLS, MF_VENOM, MF_FLIES, MF_STUMBLES, MF_HIT_AND_RUN);
-ANGER(MTRIG_FRIEND_DIED, MTRIG_PLAYER_CLOSE);
+working->anger = mfb(MTRIG_FRIEND_DIED) | mfb(MTRIG_PLAYER_CLOSE);
 
 mon("giant wasp",species_insect, 'a', 	c_red,		MS_MEDIUM,	FLESH,
 //	frq dif agr mor spd msk mdi m## cut dge bsh cut itm  HP special freq
@@ -467,7 +448,7 @@ An evil-looking, slender-bodied wasp with\n\
 a vicious sting on its abdomen."
 );
 FLAGS(MF_SMELLS, MF_POISON, MF_VENOM, MF_FLIES);
-ANGER(MTRIG_FRIEND_DIED, MTRIG_PLAYER_CLOSE, MTRIG_SOUND);
+working->anger = mfb(MTRIG_FRIEND_DIED) | mfb(MTRIG_PLAYER_CLOSE) | mfb(MTRIG_SOUND);
 
 // GIANT WORMS
 
@@ -623,7 +604,7 @@ eyes.  As you look at it, you're gripped by a\n\
 feeling of dread and terror."
 );
 FLAGS(MF_SEES, MF_HEARS, MF_SMELLS, MF_STUMBLES, MF_WARM, MF_BASHES, MF_POISON);
-ANGER(MTRIG_HURT, MTRIG_PLAYER_WEAK);
+working->anger = mfb(MTRIG_HURT) | mfb(MTRIG_PLAYER_WEAK);
 
 mon("zombie scientist",species_zombie, 'Z',c_ltgray,	MS_MEDIUM,	FLESH,
 //	frq dif agr mor spd msk mdi m## cut dge bsh cut itm  HP special freq
@@ -667,7 +648,7 @@ dust surrounding it.  It also seems to have\n\
 a better grasp of movement than most..."
 );
 FLAGS(MF_SEES, MF_HEARS, MF_SMELLS, MF_WARM, MF_BASHES, MF_POISON);
-ANGER(MTRIG_HURT, MTRIG_PLAYER_WEAK);
+working->anger = mfb(MTRIG_HURT) | mfb(MTRIG_PLAYER_WEAK);
 
 // PLANTS & FUNGI
 mon("triffid",	species_plant, 'F',	c_ltgreen,	MS_MEDIUM,	VEGGY,
@@ -762,8 +743,8 @@ supporting a bloom at the top. A few\n\
 tendrils extend from the base, allowing\n\
 mobility and a weak attack."
 );
-ANGER(MTRIG_PLAYER_CLOSE, MTRIG_PLAYER_WEAK);
 FLAGS(MF_HEARS, MF_SMELLS, MF_POISON, MF_NOHEAD);
+working->anger = mfb(MTRIG_PLAYER_WEAK) | mfb(MTRIG_PLAYER_CLOSE);
 
 // This is a "dormant" fungaloid that doesn't waste CPU cycles ;)
 mon("fungaloid",species_fungus, 'F',	c_ltgray,	MS_MEDIUM,	VEGGY,
@@ -1035,7 +1016,7 @@ hourglass on its black carapace.  It is\n\
 known for its highly toxic venom."
 );
 FLAGS(MF_SMELLS, MF_HEARS, MF_BADVENOM, MF_WEBWALK);
-ANGER(MTRIG_PLAYER_WEAK, MTRIG_PLAYER_CLOSE, MTRIG_HURT);
+working->anger = mfb(MTRIG_PLAYER_WEAK) | mfb(MTRIG_PLAYER_CLOSE) | mfb(MTRIG_HURT);
 
 // UNEARTHED HORRORS
 mon("dark wyrm",species_none, 'S',	c_blue,		MS_LARGE,	FLESH,
@@ -1096,7 +1077,7 @@ mon("human snail",species_none, 'h',	c_green,	MS_LARGE,	FLESH,
 A large snail, with an oddly human face."
 );
 FLAGS(MF_SMELLS, MF_HEARS, MF_POISON, MF_ACIDPROOF, MF_ACIDTRAIL);
-ANGER(MTRIG_PLAYER_WEAK, MTRIG_FRIEND_DIED);
+working->anger = mfb(MTRIG_PLAYER_WEAK) | mfb(MTRIG_FRIEND_DIED);
 working->fear = mfb(MTRIG_PLAYER_CLOSE) | mfb(MTRIG_HURT);
 
 mon("twisted body",species_none, 'h',	c_pink,		MS_MEDIUM,	FLESH,

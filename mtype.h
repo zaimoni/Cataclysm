@@ -179,7 +179,7 @@ struct mtype {
 
  // \todo? hard-code these bitmaps as CHAR_BIT*sizeof(unsigned long long) when building out mod support
  std::vector<m_flag> flags;	// XXX should be unsigned long long	\todo fix
- std::vector<monster_trigger> anger;   // What angers us?
+ cataclysm::bitmap<N_MONSTER_TRIGGERS>::type anger;   // What angers us?
  cataclysm::bitmap<N_MONSTER_TRIGGERS>::type placate; // What reduces our anger?
  cataclysm::bitmap<N_MONSTER_TRIGGERS>::type fear; // What are we afraid of?
 

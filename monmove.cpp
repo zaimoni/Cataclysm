@@ -437,7 +437,7 @@ void monster::hit_player(game *g, player &p, bool can_grab)
 // Adjust anger/morale of same-species monsters, if appropriate
 // we do not use monster::process_trigger here as we're bulk-updating
  int anger_adjust = 0, morale_adjust = 0;
- for (const auto trigger : type->anger) if (MTRIG_FRIEND_ATTACKED == trigger) anger_adjust += 15;
+ if (type->anger & mfb(MTRIG_FRIEND_ATTACKED)) anger_adjust += 15;
  if (type->placate & mfb(MTRIG_FRIEND_ATTACKED)) anger_adjust -= 15;
  if (type->fear & mfb(MTRIG_FRIEND_ATTACKED)) morale_adjust -= 15;
 

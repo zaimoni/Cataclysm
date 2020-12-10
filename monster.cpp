@@ -287,66 +287,9 @@ void monster::process_triggers(const game *g)
 // This adjusts anger/morale levels given a single trigger.
 void monster::process_trigger(monster_trigger trig, int amount)
 {
- for (const auto trigger : type->anger) if (trigger == trig) anger += amount;
+ if (type->anger & mfb(trig)) anger += amount;
  if (type->placate & mfb(trig)) anger -= amount;
  if (type->fear & mfb(trig)) morale -= amount;
-}
-
-int monster::trigger_sum(const game *g, const std::vector<monster_trigger>& triggers) const
-{
- int ret = 0;
- bool check_meat = false, check_fire = false;
- for (const auto trigger : triggers) {
-
-  switch (trigger) {
-  case MTRIG_TIME:
-   if (one_in(20)) ret++;
-   break;
-
-  case MTRIG_MEAT:
-   check_meat = true;
-   break;
-
-  case MTRIG_PLAYER_CLOSE:
-   if (rl_dist(pos, g->u.pos) <= 5) ret += 5;
-   for (const auto& _npc : g->active_npc) if (5 >= rl_dist(pos, _npc.pos)) ret += 5;
-   break;
-
-  case MTRIG_FIRE:
-   check_fire = true;
-   break;
-
-  case MTRIG_PLAYER_WEAK:	// \todo why not NPCs?
-   if (const int hp_percent = g->u.hp_percentage(); 70 >= hp_percent) ret += hp_percent / 10;
-   break;
-
-  default: break; // The rest are handled when the impetus occurs
-  }
- }
-
- const bool check_terrain = check_meat || check_fire;
- if (check_terrain) {
-  for (int x = pos.x - 3; x <= pos.x + 3; x++) {
-   for (int y = pos.y - 3; y <= pos.y + 3; y++) {
-    if (check_meat) {
-	 for(const auto& obj : g->m.i_at(x, y)) {
-      if (obj.type->id == itm_corpse ||
-		  obj.type->id == itm_meat ||
-		  obj.type->id == itm_meat_tainted) {
-       ret += 3;
-       check_meat = false;
-      }
-     }
-    }
-    if (check_fire) {
-	 const auto fd = g->m.field_at(x, y);
-     if (fd.type == fd_fire) ret += 5 * fd.density;
-    }
-   }
-  }
- }
-
- return ret;
 }
 
 int monster::trigger_sum(const game* g, typename cataclysm::bitmap<N_MONSTER_TRIGGERS>::type triggers) const
@@ -561,7 +504,7 @@ void monster::die(game *g)
  (type->dies)(g, this);
 // If our species fears seeing one of our own die, process that
  int anger_adjust = 0, morale_adjust = 0;
- for (const auto tr : type->anger) if (tr == MTRIG_FRIEND_DIED) anger_adjust += 15;
+ if (type->anger & mfb(MTRIG_FRIEND_DIED)) anger_adjust += 15;
  if (type->placate & mfb(MTRIG_FRIEND_DIED)) anger_adjust -= 15;
  if (type->fear & mfb(MTRIG_FRIEND_DIED)) morale_adjust -= 15;
  if (anger_adjust != 0 || morale_adjust != 0) {
