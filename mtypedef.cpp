@@ -34,15 +34,9 @@ static auto default_fears(monster_species spec)
 }
 
 // Default constructor
-mtype::mtype() {
-	id = 0;
-	name = "human";
-	description = "";
-	species = species_none;
-	sym = ' ';
-	color = c_white;
-	size = MS_MEDIUM;
-	mat = FLESH;
+mtype::mtype()
+: id(0), name("human"), species(species_none), sym(' '), color(c_white), size(MS_MEDIUM), mat(FLESH)
+{
 	difficulty = 0;
 	frequency = 0;
 	agro = 0;
@@ -82,14 +76,9 @@ mtype::mtype(int pid, std::string pname, monster_species pspecies, char psym,
 	void(*pdies)      (game *, monster *),
 	void(*psp_attack)(game *, monster *),
 #endif
-	std::string pdescription) {
-	id = pid;
-	name = pname;
-	species = pspecies;
-	sym = psym;
-	color = pcolor;
-	size = psize;
-	mat = pmat;
+	std::string pdescription)
+: id(pid), name(pname), description(pdescription), species(pspecies), sym(psym), color(pcolor), size(psize), mat(pmat)
+{
 	frequency = pfreq;
 	difficulty = pdiff;
 	agro = pagro;
@@ -109,7 +98,6 @@ mtype::mtype(int pid, std::string pname, monster_species pspecies, char psym,
 	dies = pdies;
 	sp_attack = psp_attack;
 #endif
-	description = pdescription;
 
 	anger = default_anger(species);
 	fear = default_fears(species);

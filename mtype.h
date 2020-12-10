@@ -156,7 +156,7 @@ MF_HIT_AND_RUN,	// Flee for several turns after a melee attack
 MF_GUILT,	// You feel guilty for killing it
 MF_MAX		// Sets the length of the flags - obviously MUST be last
 };
-static_assert(CHAR_BIT * sizeof(unsigned long long) >= N_MONSTER_TRIGGERS);
+static_assert(CHAR_BIT * sizeof(unsigned long long) >= MF_MAX);
 
 struct mtype {
  static std::vector<const mtype*> types;
