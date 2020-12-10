@@ -39,36 +39,17 @@ static std::vector<monster_trigger> default_anger(monster_species spec)
 	return ret;
 }
 
-static std::vector<monster_trigger> default_fears(monster_species spec)
+static auto default_fears(monster_species spec)
 {
-	std::vector<monster_trigger> ret;
 	switch (spec) {
-	case species_mammal:
-		SET_VECTOR(ret, MTRIG_HURT, MTRIG_FIRE, MTRIG_FRIEND_DIED);
-		break;
-	case species_insect:
-		SET_VECTOR(ret, MTRIG_HURT, MTRIG_FIRE);
-		break;
-	case species_worm:
-		SET_VECTOR(ret, MTRIG_HURT);
-		break;
-	case species_zombie:
-		break;
-	case species_plant:
-		SET_VECTOR(ret, MTRIG_HURT, MTRIG_FIRE);
-		break;
-	case species_fungus:
-		SET_VECTOR(ret, MTRIG_HURT, MTRIG_FIRE);
-		break;
-	case species_nether:
-		SET_VECTOR(ret, MTRIG_HURT);
-		break;
-	case species_robot:
-		break;
-	case species_hallu:
-		break;
+	case species_mammal: return mfb(MTRIG_HURT) | mfb(MTRIG_FIRE) | mfb(MTRIG_FRIEND_DIED);
+	case species_insect: return mfb(MTRIG_HURT) | mfb(MTRIG_FIRE);
+	case species_worm: return mfb(MTRIG_HURT);
+	case species_plant: return mfb(MTRIG_HURT) | mfb(MTRIG_FIRE);
+	case species_fungus: return mfb(MTRIG_HURT) | mfb(MTRIG_FIRE);
+	case species_nether: return mfb(MTRIG_HURT);
+	default: return 0ULL;
 	}
-	return ret;
 }
 
 // Default constructor
@@ -344,7 +325,6 @@ types.push_back(working)
 
 #define FLAGS(...)   SET_VECTOR(working->flags,   __VA_ARGS__)
 #define ANGER(...)   SET_VECTOR(working->anger,   __VA_ARGS__)
-#define FEARS(...)   SET_VECTOR(working->fear,    __VA_ARGS__)
 #define PLACATE(...) SET_VECTOR(working->placate, __VA_ARGS__)
 
 // PLEASE NOTE: The description is AT MAX 4 lines of 46 characters each.
@@ -865,7 +845,7 @@ A human, turned pale and mad from years in\n\
 the subways."
 );
 FLAGS(MF_SEES, MF_HEARS, MF_WARM, MF_BASHES);
-FEARS(MTRIG_HURT, MTRIG_FIRE);
+working->fear = mfb(MTRIG_HURT) | mfb(MTRIG_FIRE);
 
 mon("one-eyed mutant",species_none, 'S',c_ltred,	MS_MEDIUM,	FLESH,
 //	frq dif agr mor spd msk mdi m## cut dge bsh cut itm  HP special freq
@@ -875,7 +855,7 @@ A relatively humanoid mutant with purple\n\
 hair and a grapefruit-sized bloodshot eye."
 );
 FLAGS(MF_SEES, MF_HEARS, MF_WARM, MF_BASHES);
-FEARS(MTRIG_HURT, MTRIG_FIRE);
+working->fear = mfb(MTRIG_HURT) | mfb(MTRIG_FIRE);
 
 mon("crawler mutant",species_none, 'S',	c_red,		MS_LARGE,	FLESH,
 //	frq dif agr mor spd msk mdi m## cut dge bsh cut itm  HP special freq
@@ -886,7 +866,7 @@ slowly dragging their thick-hided, hideous\n\
 body across the ground."
 );
 FLAGS(MF_SEES, MF_HEARS, MF_SMELLS, MF_WARM, MF_BASHES, MF_POISON);
-FEARS(MTRIG_HURT, MTRIG_FIRE);
+working->fear = mfb(MTRIG_HURT) | mfb(MTRIG_FIRE);
 
 mon("sewer fish",species_none, 's',	c_ltgreen,	MS_SMALL,	FLESH,
 //	frq dif agr mor spd msk mdi m## cut dge bsh cut itm  HP special freq
@@ -896,7 +876,7 @@ A large green fish, it's mouth lined with\n\
 three rows of razor-sharp teeth."
 );
 FLAGS(MF_SEES, MF_SMELLS, MF_WARM, MF_AQUATIC);
-FEARS(MTRIG_HURT);
+working->fear = mfb(MTRIG_HURT);
 
 mon("sewer snake",species_none, 's',	c_yellow,	MS_SMALL,	FLESH,
 //	frq dif agr mor spd msk mdi m## cut dge bsh cut itm  HP special freq
@@ -906,7 +886,7 @@ A large snake, turned pale yellow from its\n\
 underground life."
 );
 FLAGS(MF_SEES, MF_SMELLS, MF_WARM, MF_VENOM, MF_SWIMS, MF_LEATHER);
-FEARS(MTRIG_HURT);
+working->fear = mfb(MTRIG_HURT);
 
 mon("sewer rat",species_mammal, 's',	c_dkgray,	MS_SMALL,	FLESH,
 //	frq dif agr mor spd msk mdi m## cut dge bsh cut itm  HP special freq
@@ -965,7 +945,7 @@ A thick-skinned green frog.  It eyes you\n\
 much as you imagine it might eye an insect."
 );
 FLAGS(MF_SEES, MF_SMELLS, MF_HEARS, MF_SWIMS, MF_LEATHER);
-FEARS(MTRIG_HURT);
+working->fear = mfb(MTRIG_HURT);
 
 mon("giant slug",species_none, 'S',	c_yellow,	MS_HUGE,	FLESH,
 //	frq dif agr mor spd msk mdi m## cut dge bsh cut itm  HP special freq
@@ -976,7 +956,7 @@ It moves slowly, dribbling acidic goo from\n\
 its fang-lined mouth."
 );
 FLAGS(MF_SEES, MF_SMELLS, MF_BASHES, MF_ACIDPROOF, MF_ACIDTRAIL);
-FEARS(MTRIG_HURT, MTRIG_PLAYER_CLOSE);
+working->fear = mfb(MTRIG_PLAYER_CLOSE) | mfb(MTRIG_HURT);
 
 mon("dermatik larva",species_insect, 'i',c_white,	MS_TINY,	FLESH,
 //	frq dif agr mor spd msk mdi m## cut dge bsh cut itm  HP special freq
@@ -1113,7 +1093,7 @@ A large snail, with an oddly human face."
 );
 FLAGS(MF_SMELLS, MF_HEARS, MF_POISON, MF_ACIDPROOF, MF_ACIDTRAIL);
 ANGER(MTRIG_PLAYER_WEAK, MTRIG_FRIEND_DIED);
-FEARS(MTRIG_PLAYER_CLOSE, MTRIG_HURT);
+working->fear = mfb(MTRIG_PLAYER_CLOSE) | mfb(MTRIG_HURT);
 
 mon("twisted body",species_none, 'h',	c_pink,		MS_MEDIUM,	FLESH,
 //	frq dif agr mor spd msk mdi m## cut dge bsh cut itm  HP special freq

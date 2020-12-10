@@ -117,6 +117,7 @@ class monster {
  void process_triggers(const game *g);// Process things that anger/scare us
  void process_trigger(monster_trigger trig, int amount);// Single trigger
  int trigger_sum(const game *g, const std::vector<monster_trigger>& triggers) const;
+ int trigger_sum(const game* g, typename cataclysm::bitmap<N_MONSTER_TRIGGERS>::type triggers) const;
  int  hit(game *g, player &p, body_part &bp_hit); // Returns a damage
  void hit_monster(game *g, monster& target);
  bool hurt(int dam); 	// Deals this dam damage; returns true if we dead

@@ -7,6 +7,7 @@
 #include "material_enum.h"
 #include "enum_json.h"
 #include "color.h"
+#include "c_bitmap.h"
 #include <map>
 #include <vector>
 
@@ -111,6 +112,7 @@ MTRIG_FRIEND_ATTACKED,	// A monster of the same type attacked
 MTRIG_SOUND,		// Heard a sound
 N_MONSTER_TRIGGERS
 };
+static_assert(CHAR_BIT * sizeof(unsigned long long) >= N_MONSTER_TRIGGERS);
 
 // Feel free to add to m_flags.  Order shouldn't matter, just keep it tidy!
 // And comment them well. ;)
@@ -154,6 +156,7 @@ MF_HIT_AND_RUN,	// Flee for several turns after a melee attack
 MF_GUILT,	// You feel guilty for killing it
 MF_MAX		// Sets the length of the flags - obviously MUST be last
 };
+static_assert(CHAR_BIT * sizeof(unsigned long long) >= N_MONSTER_TRIGGERS);
 
 struct mtype {
  static std::vector<const mtype*> types;
@@ -173,10 +176,12 @@ struct mtype {
 
  m_size size;
  material mat;	// See enums.h for material list.  Generally, flesh; veggy?
+
+ // \todo? hard-code these bitmaps as CHAR_BIT*sizeof(unsigned long long) when building out mod support
  std::vector<m_flag> flags;	// XXX should be unsigned long long	\todo fix
  std::vector<monster_trigger> anger;   // What angers us?
  std::vector<monster_trigger> placate; // What reduces our anger?
- std::vector<monster_trigger> fear;    // What are we afraid of?
+ cataclysm::bitmap<N_MONSTER_TRIGGERS>::type fear; // What are we afraid of?
 
  unsigned char frequency;	// How often do these show up? 0 (never) to ??
  int difficulty;// Used all over; 30 min + (diff-3)*30 min = earlist appearance

@@ -284,12 +284,12 @@ void monster::process_triggers(const game *g)
   morale -= trigger_sum(g, type->fear);
 }
 
-// This Adjustes anger/morale levels given a single trigger.
+// This adjusts anger/morale levels given a single trigger.
 void monster::process_trigger(monster_trigger trig, int amount)
 {
  for (const auto trigger : type->anger) if (trigger == trig) anger += amount;
  for (const auto trigger : type->placate) if (trigger == trig) anger -= amount;
- for (const auto trigger : type->fear) if (trigger == trig) morale -= amount;
+ if (type->fear & mfb(trig)) morale -= amount;
 }
 
 int monster::trigger_sum(const game *g, const std::vector<monster_trigger>& triggers) const
@@ -347,6 +347,49 @@ int monster::trigger_sum(const game *g, const std::vector<monster_trigger>& trig
  }
 
  return ret;
+}
+
+int monster::trigger_sum(const game* g, typename cataclysm::bitmap<N_MONSTER_TRIGGERS>::type triggers) const
+{
+    int ret = 0;
+    bool check_meat = (triggers & mfb(MTRIG_MEAT)), check_fire = (triggers & mfb(MTRIG_FIRE));
+
+    if (triggers & mfb(MTRIG_TIME)) {
+        if (one_in(20)) ret++;
+    }
+
+    if (triggers & mfb(MTRIG_PLAYER_CLOSE)) {
+        if (rl_dist(pos, g->u.pos) <= 5) ret += 5;
+        for (const auto& _npc : g->active_npc) if (5 >= rl_dist(pos, _npc.pos)) ret += 5;
+    }
+
+    if (triggers & mfb(MTRIG_PLAYER_WEAK)) {	// \todo why not NPCs?
+        if (const int hp_percent = g->u.hp_percentage(); 70 >= hp_percent) ret += hp_percent / 10;
+    }
+
+    const bool check_terrain = check_meat || check_fire;
+    if (check_terrain) {
+        for (int x = pos.x - 3; x <= pos.x + 3; x++) {
+            for (int y = pos.y - 3; y <= pos.y + 3; y++) {
+                if (check_meat) {
+                    for (const auto& obj : g->m.i_at(x, y)) {
+                        if (obj.type->id == itm_corpse ||
+                            obj.type->id == itm_meat ||
+                            obj.type->id == itm_meat_tainted) {
+                            ret += 3;
+                            check_meat = false;
+                        }
+                    }
+                }
+                if (check_fire) {
+                    const auto fd = g->m.field_at(x, y);
+                    if (fd.type == fd_fire) ret += 5 * fd.density;
+                }
+            }
+        }
+    }
+
+    return ret;
 }
 
 int monster::hit(game *g, player &p, body_part &bp_hit)
@@ -520,7 +563,7 @@ void monster::die(game *g)
  int anger_adjust = 0, morale_adjust = 0;
  for (const auto tr : type->anger) if (tr == MTRIG_FRIEND_DIED) anger_adjust += 15;
  for (const auto tr : type->placate) if (tr == MTRIG_FRIEND_DIED) anger_adjust -= 15;
- for (const auto tr : type->fear) if (tr == MTRIG_FRIEND_DIED) morale_adjust -= 15;
+ if (type->fear & mfb(MTRIG_FRIEND_DIED)) morale_adjust -= 15;
  if (anger_adjust != 0 || morale_adjust != 0) {
   int light = g->light_level();
   for (auto& critter : g->z) {
