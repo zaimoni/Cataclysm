@@ -12,6 +12,65 @@
 std::vector<const mtype*> mtype::types;
 std::map<int, std::string> mtype::tiles;
 
+static std::vector<monster_trigger> default_anger(monster_species spec)
+{
+	std::vector<monster_trigger> ret;
+	switch (spec) {
+	case species_mammal:
+		break;
+	case species_insect:
+		ret.push_back(MTRIG_FRIEND_DIED);
+		break;
+	case species_worm:
+		break;
+	case species_zombie:
+		break;
+	case species_plant:
+		break;
+	case species_fungus:
+		break;
+	case species_nether:
+		break;
+	case species_robot:
+		break;
+	case species_hallu:
+		break;
+	}
+	return ret;
+}
+
+static std::vector<monster_trigger> default_fears(monster_species spec)
+{
+	std::vector<monster_trigger> ret;
+	switch (spec) {
+	case species_mammal:
+		SET_VECTOR(ret, MTRIG_HURT, MTRIG_FIRE, MTRIG_FRIEND_DIED);
+		break;
+	case species_insect:
+		SET_VECTOR(ret, MTRIG_HURT, MTRIG_FIRE);
+		break;
+	case species_worm:
+		SET_VECTOR(ret, MTRIG_HURT);
+		break;
+	case species_zombie:
+		break;
+	case species_plant:
+		SET_VECTOR(ret, MTRIG_HURT, MTRIG_FIRE);
+		break;
+	case species_fungus:
+		SET_VECTOR(ret, MTRIG_HURT, MTRIG_FIRE);
+		break;
+	case species_nether:
+		SET_VECTOR(ret, MTRIG_HURT);
+		break;
+	case species_robot:
+		break;
+	case species_hallu:
+		break;
+	}
+	return ret;
+}
+
 // Default constructor
 mtype::mtype() {
 	id = 0;
@@ -42,6 +101,7 @@ mtype::mtype() {
 	sp_attack = nullptr;
 #endif
 }
+
 // Non-default (messy)
 mtype::mtype(int pid, std::string pname, monster_species pspecies, char psym,
 	nc_color pcolor, m_size psize, material pmat,
@@ -1399,65 +1459,4 @@ FLAGS(MF_NOHEAD, MF_ACIDPROOF, MF_IMMOBILE);
 	if (j_tiles.empty()) JSON::cache.erase("tiles");	// reference j_tiles dies
 }
 
-}
-
-
-std::vector<monster_trigger> default_anger(monster_species spec)
-{
- std::vector<monster_trigger> ret;
- switch (spec) {
-  case species_mammal:
-   break;
-  case species_insect:
-   ret.push_back(MTRIG_FRIEND_DIED);
-   break;
-  case species_worm:
-   break;
-  case species_zombie:
-   break;
-  case species_plant:
-   break;
-  case species_fungus:
-   break;
-  case species_nether:
-   break;
-  case species_robot:
-   break;
-  case species_hallu:
-   break;
- }
- return ret;
-}
-
-
-std::vector<monster_trigger> default_fears(monster_species spec)
-{
- std::vector<monster_trigger> ret;
- switch (spec) {
-  case species_mammal:
-   SET_VECTOR(ret, MTRIG_HURT, MTRIG_FIRE, MTRIG_FRIEND_DIED);
-   break;
-  case species_insect:
-   SET_VECTOR(ret, MTRIG_HURT, MTRIG_FIRE);
-   break;
-  case species_worm:
-   SET_VECTOR(ret, MTRIG_HURT);
-   break;
-  case species_zombie:
-   break;
-  case species_plant:
-   SET_VECTOR(ret, MTRIG_HURT, MTRIG_FIRE);
-   break;
-  case species_fungus:
-   SET_VECTOR(ret, MTRIG_HURT, MTRIG_FIRE);
-   break;
-  case species_nether:
-   SET_VECTOR(ret, MTRIG_HURT);
-   break;
-  case species_robot:
-   break;
-  case species_hallu:
-   break;
- }
- return ret;
 }
