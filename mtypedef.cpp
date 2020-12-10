@@ -77,6 +77,10 @@ mtype::mtype() {
 	hp = 0;
 	sp_freq = 0;
 	item_chance = 0;
+
+	fear = 0;
+	placate = 0;
+
 #ifndef SOCRATES_DAIMON
 	dies = nullptr;
 	sp_attack = nullptr;
@@ -127,6 +131,7 @@ mtype::mtype(int pid, std::string pname, monster_species pspecies, char psym,
 
 	anger = default_anger(species);
 	fear = default_fears(species);
+	placate = 0;
 
 	assert(MS_TINY <= size && MS_HUGE >= size);
 }
@@ -325,7 +330,6 @@ types.push_back(working)
 
 #define FLAGS(...)   SET_VECTOR(working->flags,   __VA_ARGS__)
 #define ANGER(...)   SET_VECTOR(working->anger,   __VA_ARGS__)
-#define PLACATE(...) SET_VECTOR(working->placate, __VA_ARGS__)
 
 // PLEASE NOTE: The description is AT MAX 4 lines of 46 characters each.
 
@@ -363,7 +367,7 @@ A vicious and fast pack hunter."
 );
 FLAGS(MF_SEES, MF_HEARS, MF_SMELLS, MF_ANIMAL, MF_WARM, MF_FUR, MF_HIT_AND_RUN);
 ANGER(MTRIG_TIME, MTRIG_PLAYER_WEAK, MTRIG_HURT);
-PLACATE(MTRIG_MEAT);
+working->placate = mfb(MTRIG_MEAT);
 
 mon("bear",	species_mammal, 'B',	c_dkgray,	MS_LARGE,	FLESH,
 //	frq dif agr mor spd msk mdi m## cut dge bsh cut itm  HP special freq
@@ -373,7 +377,7 @@ Remember, only YOU can prevent forest fires."
 );
 FLAGS(MF_SEES, MF_HEARS, MF_SMELLS, MF_ANIMAL, MF_WARM, MF_FUR);
 ANGER(MTRIG_PLAYER_CLOSE);
-PLACATE(MTRIG_MEAT);
+working->placate = mfb(MTRIG_MEAT);
 
 // DOMESICATED ANIMALS
 mon("dog",	species_mammal, 'd',	c_white,	MS_SMALL,	FLESH,

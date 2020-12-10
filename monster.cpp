@@ -288,7 +288,7 @@ void monster::process_triggers(const game *g)
 void monster::process_trigger(monster_trigger trig, int amount)
 {
  for (const auto trigger : type->anger) if (trigger == trig) anger += amount;
- for (const auto trigger : type->placate) if (trigger == trig) anger -= amount;
+ if (type->placate & mfb(trig)) anger -= amount;
  if (type->fear & mfb(trig)) morale -= amount;
 }
 
@@ -562,7 +562,7 @@ void monster::die(game *g)
 // If our species fears seeing one of our own die, process that
  int anger_adjust = 0, morale_adjust = 0;
  for (const auto tr : type->anger) if (tr == MTRIG_FRIEND_DIED) anger_adjust += 15;
- for (const auto tr : type->placate) if (tr == MTRIG_FRIEND_DIED) anger_adjust -= 15;
+ if (type->placate & mfb(MTRIG_FRIEND_DIED)) anger_adjust -= 15;
  if (type->fear & mfb(MTRIG_FRIEND_DIED)) morale_adjust -= 15;
  if (anger_adjust != 0 || morale_adjust != 0) {
   int light = g->light_level();
