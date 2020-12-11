@@ -165,10 +165,7 @@ void defense_game::init_mtypes()
   mtype* const working = const_cast<mtype*>(m_type);
   working->difficulty *= 1.5;
   working->difficulty += int(m_type->difficulty / 5);
-  working->flags.push_back(MF_BASHES);
-  working->flags.push_back(MF_SMELLS);
-  working->flags.push_back(MF_HEARS);
-  working->flags.push_back(MF_SEES);
+  working->flags |= mfb(MF_BASHES) | mfb(MF_SMELLS) | mfb(MF_HEARS) | mfb(MF_SEES);
  }
 }
 

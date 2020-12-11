@@ -178,7 +178,7 @@ struct mtype {
  material mat;	// See enums.h for material list.  Generally, flesh; veggy?
 
  // \todo? hard-code these bitmaps as CHAR_BIT*sizeof(unsigned long long) when building out mod support
- std::vector<m_flag> flags;	// XXX should be unsigned long long	\todo fix
+ cataclysm::bitmap<MF_MAX>::type flags;
  cataclysm::bitmap<N_MONSTER_TRIGGERS>::type anger;   // What angers us?
  cataclysm::bitmap<N_MONSTER_TRIGGERS>::type placate; // What reduces our anger?
  cataclysm::bitmap<N_MONSTER_TRIGGERS>::type fear; // What are we afraid of?
@@ -224,7 +224,7 @@ struct mtype {
 #endif
 	 std::string pdescription);
 
- bool has_flag(m_flag flag) const;
+ bool has_flag(m_flag flag) const { return flags & mfb(flag); }
  int chunk_count() const;
  const itype* chunk_material() const;
  nc_color danger() const;
