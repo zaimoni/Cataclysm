@@ -34,32 +34,14 @@ static auto default_fears(monster_species spec)
 
 // Default constructor
 mtype::mtype()
-: id(0), name("human"), species(species_none), sym(' '), color(c_white), size(MS_MEDIUM), mat(FLESH)
-{
-	difficulty = 0;
-	frequency = 0;
-	agro = 0;
-	morale = 0;
-	speed = 0;
-	melee_skill = 0;
-	melee_dice = 0;
-	melee_sides = 0;
-	melee_cut = 0;
-	sk_dodge = 0;
-	armor_bash = 0;
-	armor_cut = 0;
-	hp = 0;
-	sp_freq = 0;
-	item_chance = 0;
-
-	anger = 0;
-	fear = 0;
-	placate = 0;
-
+: id(0), name("human"), species(species_none), sym(' '), color(c_white), size(MS_MEDIUM), mat(FLESH), flags(0),
+  anger(0), placate(0), fear(0), frequency(0), difficulty(0), agro(0),
+  morale(0), speed(0), melee_skill(0), melee_dice(0), melee_sides(0), melee_cut(0),
+  sk_dodge(0), armor_bash(0), armor_cut(0), item_chance(0), hp(0), sp_freq(0)
 #ifndef SOCRATES_DAIMON
-	dies = nullptr;
-	sp_attack = nullptr;
+  , dies(nullptr), sp_attack(nullptr)
 #endif
+{
 }
 
 // Non-default (messy)
@@ -76,32 +58,14 @@ mtype::mtype(int pid, std::string pname, monster_species pspecies, char psym,
 	void(*psp_attack)(game *, monster *),
 #endif
 	std::string pdescription)
-: id(pid), name(pname), description(pdescription), species(pspecies), sym(psym), color(pcolor), size(psize), mat(pmat)
-{
-	frequency = pfreq;
-	difficulty = pdiff;
-	agro = pagro;
-	morale = pmorale;
-	speed = pspeed;
-	melee_skill = pml_skill;
-	melee_dice = pml_dice;
-	melee_sides = pml_sides;
-	melee_cut = pml_cut;
-	sk_dodge = pdodge;
-	armor_bash = parmor_bash;
-	armor_cut = parmor_cut;
-	item_chance = pitem_chance;
-	hp = php;
-	sp_freq = psp_freq;
+: id(pid), name(pname), description(pdescription), species(pspecies), sym(psym), color(pcolor), size(psize), mat(pmat), flags(0),
+  anger(default_anger(species)), placate(0), fear(default_fears(species)), frequency(pfreq), difficulty(pdiff), agro(pagro),
+  morale(pmorale), speed(pspeed), melee_skill(pml_skill), melee_dice(pml_dice), melee_sides(pml_sides), melee_cut(pml_cut),
+  sk_dodge(pdodge), armor_bash(parmor_bash), armor_cut(parmor_cut), item_chance(pitem_chance), hp(php), sp_freq(psp_freq)
 #ifndef SOCRATES_DAIMON
-	dies = pdies;
-	sp_attack = psp_attack;
+  , dies(pdies), sp_attack(psp_attack)
 #endif
-
-	anger = default_anger(species);
-	fear = default_fears(species);
-	placate = 0;
-
+{
 	assert(MS_TINY <= size && MS_HUGE >= size);
 }
 
