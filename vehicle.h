@@ -119,6 +119,20 @@ public:
     static const constexpr int mph_1 = 100; // scaling factor between real-world velocity and internal representation
     static const constexpr int radius = 12; // should be ui.h SEE but that header isn't included.  vehicle only allowed to span 3x3 submaps
 
+    // damage types:
+    // 0 - piercing
+    // 1 - bashing (damage applied if it passes certain treshold)
+    // 2 - incendiary
+    // damage individual external part. bash means damage
+    // must exceed certain threshold to be subtracted from hp
+    // (a lot light collisions will not destroy parts)
+    // returns damage bypassed
+    enum class damage_type {
+        pierce = 0,
+        bash,
+        incendiary
+    };
+
     vehicle(vhtype_id type_id = veh_null);
 	vehicle(const vehicle& src) = default;
 	vehicle(vehicle&& src) = default;
@@ -297,16 +311,10 @@ public:
     // must exceed certain threshold to be subtracted from hp
     // (a lot light collisions will not destroy parts)
     // returns damage bypassed
-    int damage (int p, int dmg, int type = 1, bool aimed = true);
+    int damage(int p, int dmg, damage_type type = damage_type::bash, bool aimed = true);
 
     // damage all parts (like shake from strong collision), range from dmg1 to dmg2
-    void damage_all (int dmg1, int dmg2, int type = 1);
-
-    // direct damage to part (armor protection and internals are not counted)
-    // returns damage bypassed
-    int damage_direct (int p, int dmg, int type = 1);
-
-    void leak_fuel (int p);
+    void damage_all(int dmg1, int dmg2, damage_type type = damage_type::bash);
 
     // fire the turret which is part p
     void fire_turret (int p, bool burst = true);
@@ -341,6 +349,12 @@ public:
     int moves;
     int turret_mode;    // turret firing mode: 0 = off, 1 = burst fire	; leave as int in case we want true autofire
 private:
+    // direct damage to part (armor protection and internals are not counted)
+    // returns damage bypassed
+    int damage_direct(int p, int dmg, damage_type type);
+
+    void leak_fuel(int p);
+
     // internal procedure of turret firing
     bool fire_turret_internal(const vehicle_part& p, it_gun& gun, const it_ammo& ammo, int charges);
 

@@ -52,6 +52,11 @@ constexpr auto min(const T& lhs, const U& rhs) { return lhs < rhs ? lhs : rhs; }
 template<class T, class U>
 constexpr auto max(const T& lhs, const U& rhs) { return rhs < lhs ? rhs : lhs; }
 
+template<class T>
+constexpr int square(const T& x) {
+	return x * x;
+}
+
 }
 
 #endif

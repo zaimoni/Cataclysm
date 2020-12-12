@@ -3015,6 +3015,8 @@ void game::draw_footsteps()
 
 void game::explosion(int x, int y, int power, int shrapnel, bool fire)
 {
+ if (0 >= power) return; // no-op if zero power (could happen if vehicle gas tank near-empty
+
  timespec ts;	// Timespec for the animation of the explosion
  ts.tv_sec = 0;
  ts.tv_nsec = EXPLOSION_SPEED;
@@ -3041,7 +3043,7 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
     else
      kill_mon(*m_hit); // TODO: player's fault?
 
-    if (const auto veh = m._veh_at(i, j)) veh->first->damage(veh->second, dam, false);
+    if (const auto veh = m._veh_at(i, j)) veh->first->damage(veh->second, dam, vehicle::damage_type::pierce);
    }
 
    if (npc* const _npc = nPC(i,j)) {

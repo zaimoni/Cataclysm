@@ -674,14 +674,11 @@ float vehicle::k_mass() const
 
 float vehicle::strain() const
 {
-    int mv = max_velocity();
-    int sv = safe_velocity();
-    if (mv <= sv)
-        mv = sv + 1;
-    if (velocity < safe_velocity())
-        return 0;
-    else
-        return (float) (velocity - sv) / (float) (mv - sv);
+    const int sv = safe_velocity();
+    if (velocity <= sv) return 0.0f;
+    const int mv = max_velocity();
+    const float denominator = (mv <= sv) ? 1 : mv - sv;
+    return (velocity - sv) / denominator;
 }
 
 bool vehicle::valid_wheel_config() const
@@ -787,14 +784,14 @@ void vehicle::thrust (int thd)
 
         consume_fuel ();
 
-        int strn = (int) (strain () * strain() * 100);
+        int strn = (int) (cataclysm::square(strain()) * 100);
 
         for (int p = 0; p < parts.size(); p++) {
             const auto& p_info = part_info(p);
             if (   p_info.has_flag<vpf_engine>() && (fuel_left(p_info.fuel_type, true))
                 && parts[p].hp > 0 && rng(1, 100) < strn) {
                 int dmg = rng(strn * 2, strn * 4);
-                damage_direct(p, dmg, 0);
+                damage_direct(p, dmg, damage_type::pierce);
             }
         }
 
@@ -1060,7 +1057,7 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
         }
 
     }
-    damage (parm, imp2, 1);
+    damage(parm, imp2);
     return imp2;
 }
 
@@ -1153,7 +1150,7 @@ void vehicle::handle_trap(const point& pt, int part)
     if (msg && g->u_see(pt))
 		messages.add(msg, name.c_str(), part_info(part).name, trap::traps[t]->name.c_str());
     if (noise > 0) g->sound(pt, noise, snd);
-    if (wreckit && chance >= rng (1, 100)) damage (part, 500);
+    if (wreckit && chance >= rng (1, 100)) damage(part, 500);
     if (expl > 0) g->explosion(pt, expl, shrap, false);
 }
 
@@ -1320,7 +1317,7 @@ void vehicle::unboard_all ()
     for (int part : boarded_parts()) unboard(part);
 }
 
-int vehicle::damage (int p, int dmg, int type, bool aimed)
+int vehicle::damage(int p, int dmg, damage_type type, bool aimed)
 {
     if (dmg < 1) return dmg;
 
@@ -1350,7 +1347,7 @@ int vehicle::damage (int p, int dmg, int type, bool aimed)
     return dres;
 }
 
-void vehicle::damage_all (int dmg1, int dmg2, int type)
+void vehicle::damage_all(int dmg1, int dmg2, damage_type type)
 {
     if (dmg2 < dmg1)
     {
@@ -1365,13 +1362,12 @@ void vehicle::damage_all (int dmg1, int dmg2, int type)
             damage_direct (p, rng (dmg1, dmg2), type);
 }
 
-int vehicle::damage_direct (int p, int dmg, int type)
+int vehicle::damage_direct(int p, int dmg, damage_type type)
 {
     if (parts[p].hp <= 0) return dmg;
     const auto& p_info = part_info(p);
-    const int tsh = clamped_ub<20>(p_info.durability / 10);
     int dres = dmg;
-    if (dmg >= tsh || type != 1) {
+    if (damage_type::bash != type || clamped_ub<20>(p_info.durability / 10) <= dmg) {
         dres -= parts[p].hp;
         int last_hp = parts[p].hp;
         parts[p].hp -= dmg;
@@ -1383,7 +1379,7 @@ int vehicle::damage_direct (int p, int dmg, int type)
             if (ft == AT_GAS || ft == AT_PLASMA) {
                 int pow = parts[p].amount / 40;
                 if (parts[p].hp <= 0) leak_fuel (p);
-                if (type == 2 ||
+                if (damage_type::incendiary == type ||
                     (one_in (ft == AT_GAS? 2 : 4) && pow > 5 && rng (75, 150) < dmg)) {
                     g->explosion(global() + parts[p].precalc_d[0], pow, 0, ft == AT_GAS);
                     parts[p].hp = 0;

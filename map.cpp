@@ -413,7 +413,7 @@ void map::vehmove(game *g)
 
       int coll_turn = 0;
       if (imp > 0) {
-       if (imp > 100) veh->damage_all(imp / 20, imp / 10, 1);// shake veh because of collision
+       if (imp > 100) veh->damage_all(imp / 20, imp / 10, vehicle::damage_type::bash);// shake veh because of collision
 	   int vel2 = imp * k_mvel * 100 / (veh->total_mass() / 8);
 	   auto passengers = veh->passengers();
 	   for (const auto& pass : passengers) {
@@ -808,7 +808,7 @@ bool map::bash(int x, int y, int str, std::string &sound, int *res)
 
  int result = -1;
  if (const auto veh = _veh_at(x, y)) {
-  veh->first->damage(veh->second, str, 1);
+  veh->first->damage(veh->second, str);
   result = str;
   sound += "crash!";
   return true;
@@ -1157,7 +1157,7 @@ void map::shoot(game *g, const point& pt, int &dam, bool hit_items, unsigned fla
 
  if (const auto veh = _veh_at(pt)) {
      bool inc = flags & (mfb(IF_AMMO_INCENDIARY) | mfb(IF_AMMO_FLAME));
-     dam = veh->first->damage(veh->second, dam, inc ? 2 : 0, hit_items);
+     dam = veh->first->damage(veh->second, dam, inc ? vehicle::damage_type::incendiary : vehicle::damage_type::pierce, hit_items);
  }
 
  switch (ter_id& terrain = ter(pt)) {
