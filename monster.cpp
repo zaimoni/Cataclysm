@@ -385,7 +385,7 @@ void monster::hit_monster(game *g, monster& target)
  }
  if (g->u_see(this)) messages.add("The %s hits the %s!", name().c_str(), target.name().c_str());
  int damage = dice(type->melee_dice, type->melee_sides);
- if (target.hurt(damage)) g->kill_mon(target, (friendly != 0));
+ if (target.hurt(damage)) g->kill_mon(target, this);
 }
  
 

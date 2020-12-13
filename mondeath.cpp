@@ -117,7 +117,7 @@ void mdeath::fungus(game *g, monster *z)
 	monster* const m_at = g->mon(dest);
     if (m_at) {	// Spores hit a monster
      if (g->u_see(dest)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
-     if (!m_at->make_fungus()) g->kill_mon(*m_at, (z->friendly != 0));
+     if (!m_at->make_fungus()) g->kill_mon(*m_at, z);
     } else if (g->u.pos == dest)	// V 0.2.1 \todo infect npcs
      g->u.infect(DI_SPORES, bp_mouth, 4, 30);
     else {

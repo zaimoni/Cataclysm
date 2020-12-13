@@ -284,7 +284,7 @@ void mattack::growplants(game *g, monster *z)
        messages.add("A tree bursts forth from the earth and pierces the %s!", m_at->name().c_str());
       int rn = rng(10, 30) - m_at->armor_cut();
       if (rn < 0) rn = 0;
-      if (m_at->hurt(rn)) g->kill_mon(*m_at, (z->friendly != 0));
+      if (m_at->hurt(rn)) g->kill_mon(*m_at, z);
      } else if (g->u.pos == dest) {
 // Player is hit by a growing tree
       body_part hit = bp_legs;
@@ -325,7 +325,7 @@ void mattack::growplants(game *g, monster *z)
         messages.add("Underbrush forms into a tree, and it pierces the %s!", m_at->name().c_str());
        int rn = rng(10, 30) - m_at->armor_cut();
        if (rn < 0) rn = 0;
-       if (m_at->hurt(rn)) g->kill_mon(*m_at, (z->friendly != 0));
+       if (m_at->hurt(rn)) g->kill_mon(*m_at, z);
       } else if (g->u.pos == dest) {
        body_part hit = bp_legs;
        int side = rng(1, 2);
@@ -513,7 +513,7 @@ void mattack::fungus(game *g, monster *z)
 	monster* const m_at = g->mon(dest);
     if (m_at) {	// Spores hit a monster
      if (g->u_see(dest)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
-     if (!m_at->make_fungus()) g->kill_mon(*m_at, (z->friendly != 0));
+     if (!m_at->make_fungus()) g->kill_mon(*m_at, z);
 	// \todo infect NPCs
     } else if (g->u.pos == dest)
      g->u.infect(DI_SPORES, bp_mouth, 4, 30); // Spores hit the player
@@ -772,7 +772,7 @@ void mattack::vortex(game *g, monster *z)
      for (int i = 0; i < traj.size() && dam > 0; i++) {
       g->m.shoot(g, traj[i], dam, false, 0);
       if (monster* const m_at = g->mon(traj[i])) {
-       if (m_at->hurt(dam)) g->kill_mon(*m_at, (z->friendly != 0));
+       if (m_at->hurt(dam)) g->kill_mon(*m_at, z);
        dam = 0;
       }
       if (g->m.move_cost(traj[i]) == 0) {
@@ -821,7 +821,7 @@ void mattack::vortex(game *g, monster *z)
       monster* const m_hit = g->mon(traj[i]);
       if (i > 0 && m_hit && !m_hit->has_flag(MF_DIGS)) {
        if (g->u_see(traj[i])) messages.add("The %s hits a %s!", thrown->name().c_str(), m_hit->name().c_str());
-       if (m_hit->hurt(damage)) g->kill_mon(*m_hit, (z->friendly != 0));
+       if (m_hit->hurt(damage)) g->kill_mon(*m_hit, z);
        hit_wall = true;
        thrown->screenpos_set(traj[i - 1]);
       } else if (g->m.move_cost(traj[i]) == 0) {
@@ -834,7 +834,7 @@ void mattack::vortex(game *g, monster *z)
      }
      if (hit_wall) damage *= 2;
      else thrown->screenpos_set(traj.back());
-     if (thrown->hurt(damage)) g->kill_mon(*thrown, (z->friendly != 0));
+     if (thrown->hurt(damage)) g->kill_mon(*thrown, z);
     } // if (distance > 0)
    } // if (thrown)
 

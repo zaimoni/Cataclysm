@@ -109,8 +109,9 @@ class game
   bool is_in_sunlight(const point& pt) const; // Checks outdoors + sunny
   unsigned char light_level() const;
   // Kill that monster; fixes any pointers etc
-  void kill_mon(monster& target, bool u_did_it = false) { if (!target.dead) _kill_mon(target, u_did_it); }
+  void kill_mon(monster& target) { if (!target.dead) _kill_mon(target, false); }
   void kill_mon(monster& target, player* me) { if (!target.dead) _kill_mon(target, me == &u); }
+  void kill_mon(monster& target, monster* z) { if (!target.dead) _kill_mon(target, (0 != z->friendly)); } // not nearly enough detail
   // Explode a monster; like kill_mon but messier
   void explode_mon(monster& target, player* me = nullptr) { if (!target.dead) _explode_mon(target, me); }
 // hit_monster_with_flags processes ammo flags (e.g. incendiary, etc)
