@@ -44,11 +44,9 @@ private:
     void display_list (int pos);
 
     std::vector<int> can_mount;
-    std::vector<bool> has_mats;
     std::vector<int> need_repair;
     std::vector<int> parts_here;
     int ptank;
-    bool obstruct;
     bool has_fuel;
 public:
     veh_interact (int cx, int cy, game *gm, vehicle *v);

@@ -414,7 +414,6 @@ void veh_interact::move_cursor (int dx, int dy)
     wrefresh (w_parts);
 
     can_mount.clear();
-    has_mats.clear();
     if (!obstruct)
         for (int i = 1; i < num_vparts; i++) {
             if (veh->can_mount (vd.x, vd.y, (vpart_id) i)) can_mount.push_back (i);
