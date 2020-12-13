@@ -379,7 +379,7 @@ bool vehicle::any_boarded_parts() const
 {
 	for (const auto& part : parts) {
 		if (!part.has_flag(vpf_seat)) continue;
-        assert(parts[p].get_passenger(global()) == parts[p].get_passenger(GPSpos));
+		assert(part.get_passenger(global()) == part.get_passenger(GPSpos));
 		if (part.get_passenger(global())) return true;
 	}
 	return false;
