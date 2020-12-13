@@ -267,7 +267,7 @@ void computer::activate_function(game *g, computer_action action)
 	 case t_wall_h:
 	 case t_reinforced_glass_h:
 		 // abuse auto-conversion of enumerations to int and automatic type promotion
-		 if ((t_wall_h + t_reinforced_glass_h)-terrain == g->m.ter(x, y - 1)) g->kill_mon(*z, true);
+		 if ((t_wall_h + t_reinforced_glass_h)-terrain == g->m.ter(x, y - 1)) g->kill_mon(*z, &g->u);
 	 }
     }
    }

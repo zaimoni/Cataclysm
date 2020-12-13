@@ -4962,7 +4962,7 @@ void game::plmove(int x, int y)
  if (m_at) {
   if (m_at->is_enemy()) {
    int udam = u.hit_mon(this, m_at);
-   if (m_at->hurt(udam)) kill_mon(*m_at, true);
+   if (m_at->hurt(udam)) kill_mon(*m_at, &u);
    return;
   } else displace = true;
  }
