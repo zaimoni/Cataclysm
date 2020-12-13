@@ -380,7 +380,7 @@ bool vehicle::any_boarded_parts() const
 	for (const auto& part : parts) {
 		if (!part.has_flag(vpf_seat)) continue;
 		assert(part.get_passenger(global()) == part.get_passenger(GPSpos));
-		if (part.get_passenger(global())) return true;
+		if (part.get_passenger(GPSpos)) return true;
 	}
 	return false;
 }
@@ -421,7 +421,7 @@ player *vehicle::get_passenger(int p) const
     p = part_with_feature (p, vpf_seat, false);
     if (0 > p) return nullptr;
     assert(parts[p].get_passenger(global()) == parts[p].get_passenger(GPSpos));
-	return parts[p].get_passenger(global());    // legacy
+	return parts[p].get_passenger(GPSpos);
 }
 
 std::vector<std::pair<int, player*> > vehicle::passengers() const
@@ -432,7 +432,7 @@ std::vector<std::pair<int, player*> > vehicle::passengers() const
 		++p;
 		if (!part.has_flag(vpf_seat)) continue;
         assert(parts[p].get_passenger(global()) == parts[p].get_passenger(GPSpos));
-		if (auto pl = part.get_passenger(global())) res.push_back({ p, pl });
+		if (auto pl = part.get_passenger(GPSpos)) res.push_back({ p, pl });
 	}
 	return res;
 }
