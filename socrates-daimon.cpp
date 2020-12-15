@@ -1847,6 +1847,14 @@ int main(int argc, char *argv[])
 
 	*home_revert.first = std::move(home_revert.second);	// statusnav page family handled
 
+	// \todo monster types page (blocked by items)
+	// for now, just audit
+	for (auto x : mtype::types) {
+		if (x->anger & x->placate) throw new std::logic_error("unreasonable to be both angered and placated by same trigger");
+		if ((x->flags & mfb(MF_GOODHEARING)) && !(x->flags & mfb(MF_HEARS))) throw std::logic_error("the deaf cannot have good hearing");
+		if ((x->flags & mfb(MF_VENOM)) && (x->flags & mfb(MF_BADVENOM))) throw std::logic_error("no multiple-strength venoms");
+	}
+
 	// try to replicate some issues
 	std::vector<item> res;
 	std::vector<item> stack0;
