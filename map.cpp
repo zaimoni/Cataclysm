@@ -385,13 +385,7 @@ void map::vehmove(game *g)
  // eventually send it skidding if no control
       if (!veh->any_boarded_parts() && one_in (10))	// XXX \todo should be out of control? check C:DDA
        veh->skidding = true;
-      tileray mdir; // the direction we're moving
-      if (veh->skidding) // if skidding, it's the move vector
-       mdir = veh->move;
-      else if (veh->turn_dir != veh->face.dir())
-       mdir.init (veh->turn_dir); // driver turned vehicle, get turn_dir
-      else
-       mdir = veh->face;          // not turning, keep face.dir
+      tileray mdir(veh->physical_facing());
       mdir.advance (veh->velocity < 0? -1 : 1);
       int dx = mdir.dx();           // where do we go
       int dy = mdir.dy();           // where do we go
@@ -498,12 +492,7 @@ void map::vehmove(game *g)
       }
 
       if (can_move) {
-// accept new direction
-       if (veh->skidding)
-        veh->face.init (veh->turn_dir);
-       else
-        veh->face = mdir;
-       veh->move = mdir;
+       veh->physical_facing(mdir); // accept new direction
        if (coll_turn) {
         veh->skidding = true;
         veh->turn (coll_turn);

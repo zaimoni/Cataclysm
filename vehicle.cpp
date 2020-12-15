@@ -845,6 +845,20 @@ void vehicle::turn (int deg)
         turn_dir -= 360;
 }
 
+tileray vehicle::physical_facing() const
+{
+    if (skidding) return move; // if skidding, it's the move vector
+    if (turn_dir != face.dir()) return tileray(turn_dir); // driver turned vehicle, get turn_dir
+    return face; // not turning, keep face.dir
+}
+
+void vehicle::physical_facing(const tileray& src)
+{
+    if (skidding) face.init(turn_dir);
+    else face = src;
+    move = src;
+}
+
 void vehicle::stop ()
 {
     velocity = 0;

@@ -273,6 +273,10 @@ public:
 // turn vehicle left (negative) or right (positive), degrees
     void turn (int deg);
 
+// get/set physical facing
+    tileray physical_facing() const;
+    void physical_facing(const tileray& src);
+
 // handle given part collision with vehicle, monster/NPC/player or terrain obstacle
 // return impulse (damage) applied on vehicle for that collision
     int part_collision (int vx, int vy, int part, point dest);
