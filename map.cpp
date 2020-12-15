@@ -474,7 +474,7 @@ void map::vehmove(game *g)
        veh->last_turn -= last_turn_dec;
        if (veh->last_turn < last_turn_dec) veh->last_turn = 0;
       }
-      int slowdown = veh->skidding? 200 : 20; // mph lost per tile when coasting
+      int slowdown = veh->skidding? 2*vehicle::mph_1 : 2 * vehicle::mph_1 / 10; // mph lost per tile when coasting
       float kslw = (0.1 + veh->k_dynamics()) / ((0.1) + veh->k_mass());
       slowdown = (int) (slowdown * kslw);
       if (veh->velocity < 0)

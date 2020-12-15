@@ -222,8 +222,6 @@ public:
 // fuel consumption of vehicle engines of given type, in one-hundredth of fuel
     int basic_consumption(int ftype) const;
 
-    void consume_fuel ();
-
 // get the total mass of vehicle, including cargo and passengers
     int total_mass() const;
 
@@ -265,12 +263,6 @@ public:
 // calculate if it can move using its wheels configuration
     bool valid_wheel_config() const;
 
-// thrust (1) or brake (-1) vehicle
-    void thrust (int thd);
-
-// cruise control
-    void cruise_thrust (int amount);
-
 // turn vehicle left (negative) or right (positive), degrees
     void turn (int deg);
 
@@ -292,6 +284,8 @@ public:
     void remove_item (int part, int itemdex);
 
     void gain_moves (int mp);
+
+    void drive(int x, int y, const player& u);
 
 // reduces velocity to 0
     void stop ();
@@ -356,7 +350,11 @@ private:
     // returns damage bypassed
     int damage_direct(int p, int dmg, damage_type type);
 
+    void consume_fuel();
     void leak_fuel(int p);
+
+    void thrust(int thd); // thrust (1) or brake (-1) vehicle
+    void cruise_thrust(int amount); // cruise control
 
     // internal procedure of turret firing
     bool fire_turret_internal(const vehicle_part& p, it_gun& gun, const it_ammo& ammo, int charges);

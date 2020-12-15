@@ -866,6 +866,25 @@ void vehicle::physical_facing(const tileray& src)
     move = src;
 }
 
+void vehicle::drive(int x, int y, const player& u)
+{
+    const constexpr int thr_amount = 10 * mph_1;
+    if (cruise_on) cruise_thrust(-y * thr_amount);
+    else thrust(-y);
+
+    turn(15 * x);
+    if (skidding && valid_wheel_config()) {
+        if (rng(0, 40) < u.dex_cur + u.sklevel[sk_driving] * 2) {
+            const bool pc = !u.is_npc();
+            const bool vis_npc = u.is_npc() && game::active()->u_see(u.pos);
+            if (pc) messages.add("You regain control of the %s.", name.c_str());
+            else if (vis_npc) messages.add("%s regains control of the %s.", u.name.c_str(), name.c_str());
+            skidding = false;
+            move.init(turn_dir);
+        }
+    }
+}
+
 void vehicle::stop ()
 {
     velocity = 0;

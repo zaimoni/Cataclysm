@@ -4918,21 +4918,9 @@ void game::pldrive(int x, int y)
   return;
  }
 
- const constexpr int thr_amount = 10 * vehicle::mph_1;
- if (veh->cruise_on)
-  veh->cruise_thrust (-y * thr_amount);
- else {
-  veh->thrust (-y);
- }
- veh->turn (15 * x);
- if (veh->skidding && veh->valid_wheel_config()) {
-  if (rng (0, 40) < u.dex_cur + u.sklevel[sk_driving] * 2) {
-   messages.add("You regain control of the %s.", veh->name.c_str());
-   veh->skidding = false;
-   veh->move.init (veh->turn_dir);
-  }
- }
+ veh->drive(x, y, u);
 
+ // unclear whether these are PC-specific
  u.moves = 0;
  if (x != 0 && veh->velocity != 0 && one_in(4)) u.practice(sk_driving, 1);
 }
