@@ -91,6 +91,13 @@ vehicle::vehicle(vhtype_id type_id)
     precalc_mounts(0, face.dir());
 }
 
+vehicle::vehicle(vhtype_id type_id, int deg) : vehicle(type_id)
+{
+    face.init(deg);
+    turn_dir = deg;
+    precalc_mounts(0, deg);
+}
+
 DEFINE_ACID_ASSIGN_W_MOVE(vehicle)
 
 bool vehicle::player_in_control(player& p) const

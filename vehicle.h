@@ -134,7 +134,8 @@ public:
     };
 
     vehicle(vhtype_id type_id = veh_null);
-	vehicle(const vehicle& src) = default;
+    vehicle(vhtype_id type_id, int deg);
+    vehicle(const vehicle& src) = default;
 	vehicle(vehicle&& src) = default;
 	~vehicle() = default;
 	vehicle& operator=(const vehicle& src);
