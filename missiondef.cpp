@@ -3,7 +3,6 @@
 #include "rng.h"
 #include "recent_msg.h"
 #include "line.h"
-#include "setvector.h"
 #include <sstream>
 
 std::vector <mission_type> mission_type::types; // The list of mission templates
@@ -296,65 +295,49 @@ void mission_fail::kill_npc(game *g, mission *miss) { npc::die(miss->npc_id); }
 
 void mission_type::init()
 {
- #define MISSION(name, goal, diff, val, urgent, place, start, end, fail) \
- id++; types.push_back( \
-mission_type(id, name, goal, diff, val, urgent, place, start, end, fail) )
-
- #define ORIGINS(...) SET_VECTOR(types[id].origins, __VA_ARGS__)
- #define ITEM(itid)     types[id].item_id = itid
-
-// DEADLINE defines the low and high end time limits, in hours
-// Omitting DEADLINE means the mission never times out
- #define DEADLINE(low, high) types[id].deadline_low  = low  * 600;\
-                             types[id].deadline_high = high * 600
- //#define NPCS   (...) setvector(missions[id].npc
-
-
 // The order of missions should match enum mission_id in mission.h
- int id = -1;
+  int id = -1;
+  types.push_back(mission_type(++id, "Null mission", MGOAL_NULL, 0, 0, false,
+	  &mission_place::never, &mission_start::standard,
+	  &mission_end::standard, &mission_fail::standard));
+  static_assert(0 == MISSION_NULL);
 
- MISSION("Null mission", MGOAL_NULL, 0, 0, false,
-         &mission_place::never, &mission_start::standard,
-         &mission_end::standard, &mission_fail::standard);
+  types.push_back(mission_type(++id, "Find Antibiotics", MGOAL_FIND_ITEM, 2, 1500, true,
+	  &mission_place::no_antibiotics, &mission_start::infect_npc,
+	  &mission_end::heal_infection, &mission_fail::kill_npc, { ORIGIN_OPENER_NPC }, itm_antibiotics,
+	  HOURS(24), HOURS(48))); // 1-2 days
+  static_assert(MISSION_GET_ANTIBIOTICS == MISSION_NULL + 1);
 
- MISSION("Find Antibiotics", MGOAL_FIND_ITEM, 2, 1500, true,
-	&mission_place::no_antibiotics, &mission_start::infect_npc,
-	&mission_end::heal_infection, &mission_fail::kill_npc);
-  ORIGINS(ORIGIN_OPENER_NPC);
-  ITEM(itm_antibiotics);
-  DEADLINE(24, 48); // 1 - 2 days
+  types.push_back(mission_type(++id, "Retrieve Software", MGOAL_FIND_ANY_ITEM, 2, 800, false,
+	  &mission_place::near_town, &mission_start::place_npc_software,
+	  &mission_end::standard, &mission_fail::standard, { ORIGIN_OPENER_NPC, ORIGIN_ANY_NPC }));
+  static_assert(MISSION_GET_SOFTWARE == MISSION_GET_ANTIBIOTICS + 1);
 
- MISSION("Retrieve Software", MGOAL_FIND_ANY_ITEM, 2, 800, false,
-	&mission_place::near_town, &mission_start::place_npc_software,
-	&mission_end::standard, &mission_fail::standard);
-  ORIGINS(ORIGIN_OPENER_NPC, ORIGIN_ANY_NPC);
+  types.push_back(mission_type(++id, "Analyze Zombie Blood", MGOAL_FIND_ITEM, 8, 2500, false,
+	  &mission_place::always, &mission_start::reveal_hospital,
+	  &mission_end::standard, &mission_fail::standard, { ORIGIN_SECONDARY }, itm_software_blood_data));
+  static_assert(MISSION_GET_ZOMBIE_BLOOD_ANAL == MISSION_GET_SOFTWARE + 1);
 
- MISSION("Analyze Zombie Blood", MGOAL_FIND_ITEM, 8, 2500, false,
-	&mission_place::always, &mission_start::reveal_hospital,
-	&mission_end::standard, &mission_fail::standard);
-  ORIGINS(ORIGIN_SECONDARY);
-  ITEM(itm_software_blood_data);
+  types.push_back(mission_type(++id, "Find Lost Dog", MGOAL_FIND_MONSTER, 3, 1000, false,
+	  &mission_place::near_town, &mission_start::place_dog,
+	  &mission_end::standard, &mission_fail::standard, { ORIGIN_OPENER_NPC }));
+  static_assert(MISSION_RESCUE_DOG == MISSION_GET_ZOMBIE_BLOOD_ANAL + 1);
 
- MISSION("Find Lost Dog", MGOAL_FIND_MONSTER, 3, 1000, false,
-	&mission_place::near_town, &mission_start::place_dog,
-	&mission_end::standard, &mission_fail::standard);
-  ORIGINS(ORIGIN_OPENER_NPC);
+  types.push_back(mission_type(++id, "Kill Zombie Mom", MGOAL_KILL_MONSTER, 5, 1200, true,
+	  &mission_place::near_town, &mission_start::place_zombie_mom,
+	  &mission_end::standard, &mission_fail::standard, { ORIGIN_OPENER_NPC, ORIGIN_ANY_NPC }));
+  static_assert(MISSION_KILL_ZOMBIE_MOM == MISSION_RESCUE_DOG + 1);
 
- MISSION("Kill Zombie Mom", MGOAL_KILL_MONSTER, 5, 1200, true,
-	&mission_place::near_town, &mission_start::place_zombie_mom,
-	&mission_end::standard, &mission_fail::standard);
-  ORIGINS(ORIGIN_OPENER_NPC, ORIGIN_ANY_NPC);
-
- MISSION("Reach Safety", MGOAL_GO_TO, 1, 0, false,
-	&mission_place::always, &mission_start::find_safety,
-	&mission_end::standard, &mission_fail::standard);
-  ORIGINS(ORIGIN_NULL);
+  types.push_back(mission_type(++id, "Reach Safety", MGOAL_GO_TO, 1, 0, false,
+	  &mission_place::always, &mission_start::find_safety,
+	  &mission_end::standard, &mission_fail::standard, { ORIGIN_NULL }));
+  static_assert(MISSION_REACH_SAFETY == MISSION_KILL_ZOMBIE_MOM + 1);
 
   // **** NOTE: disabled until finished ****
-  //MISSION("Find a Book", MGOAL_FIND_ANY_ITEM, 2, 800, false,
-  //        &mission_place::always, &mission_start::place_book,
-  //        &mission_end::standard, &mission_fail::standard);
-  //ORIGINS(ORIGIN_ANY_NPC);
+/*  types.push_back(mission_type(++id, "Find a Book", MGOAL_FIND_ANY_ITEM, 2, 800, false,
+	  &mission_place::always, &mission_start::place_book,
+	  &mission_end::standard, &mission_fail::standard), { ORIGIN_ANY_NPC }); */
+  static_assert(MISSION_GET_BOOK == MISSION_REACH_SAFETY + 1);
 
   assert(NUM_MISSION_IDS >= types.size());	// postcondition check
 }

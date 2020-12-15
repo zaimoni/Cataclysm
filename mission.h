@@ -62,15 +62,18 @@ struct mission_type {
  void (*end  )(game *g, mission *);
  void (*fail )(game *g, mission *);
 
- mission_type(int ID, const char* NAME, mission_goal GOAL, int DIF, int VAL,
-              bool URGENT,
-              bool (*PLACE)(game *, int x, int y, int npc_id),
-              void (*START)(game *, mission *),
-              void (*END  )(game *, mission *),
-              void (*FAIL )(game *, mission *)) :
-  id(ID), name(NAME), goal(GOAL), difficulty(DIF), value(VAL),
-  deadline_low(0), deadline_high(0), urgent(URGENT), item_id(itm_null),
-  follow_up(MISSION_NULL), place(PLACE), start(START), end(END), fail(FAIL) {}
+ mission_type(int id, const char* name, mission_goal goal, int difficulty, int value,
+              bool urgent,
+              bool (*place)(game *, int x, int y, int npc_id),
+              void (*start)(game *, mission *),
+              void (*end)(game *, mission *),
+              void (*fail)(game *, mission *),
+              std::initializer_list<mission_origin> origins = {}, itype_id item_id = itm_null,
+              // omitting deadline_low/high makes the mission never time out
+              int deadline_low = 0, int deadline_high = 0) :
+  id(id), name(name), goal(goal), difficulty(difficulty), value(value),
+  deadline_low(deadline_low), deadline_high(deadline_high), urgent(urgent), item_id(item_id),
+  follow_up(MISSION_NULL), place(place), start(start), end(end), fail(fail), origins(origins) {}
 
  mission create(game *g, int npc_id = -1); // Create a mission
 
