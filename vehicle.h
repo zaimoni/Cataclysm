@@ -170,12 +170,10 @@ public:
 // returns true if given flag is present for given part index (WARNING: without mfb!)
     bool part_flag(int p, unsigned int f) const;
 
-// Translate seat-relative mount coords into tile coords
-    point coord_translate (point reld) const;
-
 // Translate seat-relative mount coords into tile coords using given face direction
-    static point coord_translate (int dir, point reld);
-    
+    static point coord_translate(int dir, point reld);
+    point coord_translate(point reld) const { return coord_translate(face.dir(), reld); }
+
 // Seek a vehicle part which obstructs tile with given coords relative to vehicle position
     int part_at(int dx, int dy) const;
 

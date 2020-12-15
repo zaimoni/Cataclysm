@@ -355,13 +355,6 @@ void vehicle::print_fuel_indicator(void *w, int y, int x) const
     }
 }
 
-point vehicle::coord_translate (point reld) const
-{
-    tileray tdir (face.dir());
-    tdir.advance (reld.x);
-	return point(tdir.dx() + tdir.ortho_dx(reld.y), tdir.dy() + tdir.ortho_dy(reld.y));
-}
-
 point vehicle::coord_translate (int dir, point reld)
 {
     tileray tdir (dir);
