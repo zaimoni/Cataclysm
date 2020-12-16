@@ -68,12 +68,12 @@ struct mission_type {
               void (*start)(game *, mission *),
               void (*end)(game *, mission *),
               void (*fail)(game *, mission *),
-              std::initializer_list<mission_origin> origins = {}, itype_id item_id = itm_null,
+              std::initializer_list<mission_origin> orgns = {}, itype_id item_id = itm_null,
               // omitting deadline_low/high makes the mission never time out
               int deadline_low = 0, int deadline_high = 0) :
   id(id), name(name), goal(goal), difficulty(difficulty), value(value),
-  deadline_low(deadline_low), deadline_high(deadline_high), urgent(urgent), item_id(item_id),
-  follow_up(MISSION_NULL), place(place), start(start), end(end), fail(fail), origins(origins) {}
+  deadline_low(deadline_low), deadline_high(deadline_high), urgent(urgent), origins(orgns),
+  item_id(item_id), follow_up(MISSION_NULL), place(place), start(start), end(end), fail(fail) {}
 
  mission create(game *g, int npc_id = -1); // Create a mission
 
