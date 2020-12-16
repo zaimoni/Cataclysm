@@ -928,7 +928,7 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
     player* const ph = (nPC ? nPC : (u_here? &g->u : nullptr));
     const auto v = g->m._veh_at(dest);
     vehicle* const oveh = v ? v->first : nullptr; // backward compatibility
-    const bool veh_collision = oveh && oveh->pos != pos;
+    const bool veh_collision = oveh && oveh->GPSpos != GPSpos;
     bool body_collision = u_here || z || nPC;
 
     // 0 - nothing, 1 - monster/player/npc, 2 - vehicle,

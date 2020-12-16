@@ -96,7 +96,10 @@ std::optional<std::pair<const vehicle*, int>> map::veh_at(const reality_bubble_l
             int nonant1 = src.first + mx + my * my_MAPSIZE;
             if (nonant1 < 0 || nonant1 >= nonant_ub) continue; // out of grid
             for (auto& veh : grid[nonant1]->vehicles) { // profiler likes this; burns less CPU than testing for empty std::vector
-                int part = veh.part_at(src.second.x - (veh.pos.x + mx * SEEX), src.second.y - (veh.pos.y + my * SEEY));
+                const auto veh_loc = game::active()->toSubmap(veh.GPSpos);
+                assert(veh_loc);
+                assert(veh_loc->first == nonant1);
+                int part = veh.part_at(src.second.x - (veh_loc->second.x + mx * SEEX), src.second.y - (veh_loc->second.y + my * SEEY));
                 if (0 <= part) return std::pair(&veh, part);
             }
         }
@@ -114,7 +117,10 @@ std::optional<std::pair<vehicle*, int>> map::veh_at(const reality_bubble_loc& sr
             int nonant1 = src.first + mx + my * my_MAPSIZE;
             if (nonant1 < 0 || nonant1 >= nonant_ub) continue; // out of grid
             for (auto& veh : grid[nonant1]->vehicles) { // profiler likes this; burns less CPU than testing for empty std::vector
-                int part = veh.part_at(src.second.x - (veh.pos.x + mx * SEEX), src.second.y - (veh.pos.y + my * SEEY));
+                const auto veh_loc = game::active()->toSubmap(veh.GPSpos);
+                assert(veh_loc);
+                assert(veh_loc->first == nonant1);
+                int part = veh.part_at(src.second.x - (veh_loc->second.x + mx * SEEX), src.second.y - (veh_loc->second.y + my * SEEY));
                 if (0 <= part) return std::pair(&veh, part);
             }
         }
@@ -253,7 +259,8 @@ bool map::displace_vehicle (game *g, int &x, int &y, const point& delta, bool te
  // first, let's find our position in current vehicles vector
  int our_i = -1;
  for (int i = 0; i < grid[src_na]->vehicles.size(); i++) {
-  if (grid[src_na]->vehicles[i].pos == src) {
+  decltype(auto) loc = g->toSubmap(grid[src_na]->vehicles[i].GPSpos);
+  if (loc && loc->second == src) {
    our_i = i;
    break;
   }
@@ -349,10 +356,12 @@ void map::vehmove(game *g)
      vehicle *veh = &(grid[sm]->vehicles[v]);
      bool pl_ctrl = veh->player_in_control(g->u);
      while (!sm_change && veh->moves > 0 && veh->velocity != 0) {
-      int x = veh->pos.x + i * SEEX;
-      int y = veh->pos.y + j * SEEY;
-      if (has_flag(swimmable, x, y) &&
-          move_cost_ter_only(x, y) == 0) { // deep water
+      auto pt = game::active()->toScreen(veh->GPSpos);
+      assert(pt);
+      assert(pt->x == i * SEEX + veh->pos.x);
+      assert(pt->y == j * SEEY + veh->pos.y);
+      const int mv_cost_terrain = move_cost_ter_only(pt->x, pt->y);
+      if (has_flag(swimmable, *pt) && 0 == mv_cost_terrain) { // deep water
        if (pl_ctrl) messages.add("Your %s sank.", veh->name.c_str());
        veh->unboard_all ();
 // destroy vehicle (sank to nowhere)
@@ -361,22 +370,21 @@ void map::vehmove(game *g)
        break;
       }
 // one-tile step take some of movement
-      int mpcost = 500 * move_cost_ter_only(i * SEEX + veh->pos.x, j * SEEY + veh->pos.y);
+      int mpcost = 500 * mv_cost_terrain;
       veh->moves -= mpcost;
 
       if (!veh->valid_wheel_config()) { // not enough wheels
        veh->velocity += veh->velocity < 0 ? 20 * vehicle::mph_1 : -20 * vehicle::mph_1;
        for (int ep = 0; ep < veh->external_parts.size(); ep++) {
         int p = veh->external_parts[ep];
-		const point origin(x + veh->parts[p].precalc_d[0].x, y + veh->parts[p].precalc_d[0].y);
+		const point origin(*pt + veh->parts[p].precalc_d[0]);
         ter_id &pter = ter(origin);
         if (pter == t_dirt || pter == t_grass) pter = t_dirtmound;
        }
       } // !veh->valid_wheel_config()
 
       if (veh->skidding && one_in(4)) // might turn uncontrollably while skidding
-       veh->move.init (veh->move.dir() +
-                       (one_in(2) ? -15 * rng(1, 3) : 15 * rng(1, 3)));
+       veh->move.init (veh->move.dir() + (one_in(2) ? -15 * rng(1, 3) : 15 * rng(1, 3)));
       else if (pl_ctrl && rng(0, 4) > g->u.sklevel[sk_driving] && one_in(20)) {
        messages.add("You fumble with the %s's controls.", veh->name.c_str());
        veh->turn (one_in(2) ? -15 : 15);
@@ -398,8 +406,8 @@ void map::vehmove(game *g)
        int p = veh->external_parts[ep];
 // coords of where part will go due to movement (dx/dy)
 // and turning (precalc_dx/dy [1])
-	   const point ds(x + dx + veh->parts[p].precalc_d[1].x, y + dy + veh->parts[p].precalc_d[1].y);
-       if (can_move) imp += veh->part_collision (x, y, p, ds);
+	   const point ds(pt->x + dx + veh->parts[p].precalc_d[1].x, pt->y + dy + veh->parts[p].precalc_d[1].y);
+       if (can_move) imp += veh->part_collision(pt->x, pt->y, p, ds);
        if (veh->velocity == 0) can_move = false;
        if (!can_move) break;
       }
@@ -457,7 +465,7 @@ void map::vehmove(game *g)
       if (can_move) {
        for (int ep = 0; ep < veh->external_parts.size(); ep++) {
         int p = veh->external_parts[ep];
-		const point origin(x + veh->parts[p].precalc_d[0].x, y + veh->parts[p].precalc_d[0].y);
+		const point origin(*pt + veh->parts[p].precalc_d[0]);
         if (veh->part_flag(p, vpf_wheel) && one_in(2))
          if (displace_water (origin.x, origin.y) && pl_ctrl)
           messages.add("You hear a splash!");
@@ -498,7 +506,7 @@ void map::vehmove(game *g)
        }
 // accept new position
 // if submap changed, we need to process grid from the beginning.
-       sm_change = displace_vehicle (g, x, y, point(dx, dy));
+       sm_change = displace_vehicle (g, pt->x, pt->y, point(dx, dy));
       } else // can_move
        veh->stop();
 // redraw scene
