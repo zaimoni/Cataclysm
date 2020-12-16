@@ -361,12 +361,11 @@ void map::vehmove(game *g)
        break;
       }
 // one-tile step take some of movement
-      int mpcost = 500 * move_cost_ter_only(i * SEEX + veh->pos.x,
-                                            j * SEEY + veh->pos.y);
+      int mpcost = 500 * move_cost_ter_only(i * SEEX + veh->pos.x, j * SEEY + veh->pos.y);
       veh->moves -= mpcost;
 
       if (!veh->valid_wheel_config()) { // not enough wheels
-       veh->velocity += veh->velocity < 0 ? 2000 : -2000;
+       veh->velocity += veh->velocity < 0 ? 20 * vehicle::mph_1 : -20 * vehicle::mph_1;
        for (int ep = 0; ep < veh->external_parts.size(); ep++) {
         int p = veh->external_parts[ep];
 		const point origin(x + veh->parts[p].precalc_d[0].x, y + veh->parts[p].precalc_d[0].y);
@@ -481,7 +480,7 @@ void map::vehmove(game *g)
        veh->velocity += slowdown;
       else
        veh->velocity -= slowdown;
-      if (abs(veh->velocity) < 100) veh->stop();
+      if (abs(veh->velocity) < vehicle::mph_1) veh->stop();
 
       if (pl_ctrl) {
 // a bit of delay for animation

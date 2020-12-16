@@ -1074,7 +1074,7 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
         stop();
         imp2 = imp;
     } else {
-        if (vel1 < 500) stop();
+        if (vel1 < 5 * mph_1) stop();
         else velocity = (velocity < 0) ? -vel1 : vel1;
 
         int turn_roll = rng (0, 100);
@@ -1083,7 +1083,7 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
         if (turn_amount < 1) turn_amount = 1;
         turn_amount *= 15;
         if (turn_amount > 120) turn_amount = 120;
-        bool turn_veh = turn_roll < (abs(velocity) - vel1) / 100;
+        bool turn_veh = turn_roll < (abs(velocity) - vel1) / mph_1;
         if (turn_veh) {
             skidding = true;
             turn (one_in (2)? turn_amount : -turn_amount);
@@ -1603,7 +1603,7 @@ bool vehicle::fire_turret_internal(const vehicle_part& p, it_gun &gun, const it_
     tmp.name = std::string("The ") + p.info().name;
     tmp.sklevel[gun.skill_used] = 1;
     tmp.sklevel[sk_gun] = 0;
-    tmp.recoil = abs(velocity) / 100 / 4;
+    tmp.recoil = abs(velocity) / (4 * mph_1);
     tmp.screenpos_set(origin);
     tmp.str_cur = 16;
     tmp.dex_cur =  6;
