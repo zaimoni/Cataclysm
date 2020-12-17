@@ -5846,10 +5846,7 @@ vehicle* map::add_vehicle(vhtype_id type, point pos, int deg)
 
  const point sm = pos / SEE;
  int nonant = sm.x + sm.y * my_MAPSIZE;
- pos %= SEE;
 
- veh.pos = pos;
- veh.sm = sm;
  grid[nonant]->vehicles.push_back(std::move(veh));
  return &grid[nonant]->vehicles.back();
 }

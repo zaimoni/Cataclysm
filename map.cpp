@@ -223,8 +223,7 @@ void map::destroy_vehicle(vehicle *veh)
 {
  assert(veh);
  if (const auto rloc = game::active()->toSubmap(veh->GPSpos)) {
-     int sm = veh->sm.x + veh->sm.y * my_MAPSIZE;   // legacy
-     SUCCEED_OR_DIE(sm == rloc->first);
+     const int sm = rloc->first; // backward compatibility
      int i = -1;
      for (decltype(auto) v : grid[sm]->vehicles) {
          ++i;
@@ -252,7 +251,6 @@ bool map::displace_vehicle (game *g, int &x, int &y, const point& delta, bool te
  src %= SEE;
 
  int dst_na = int(dest.x / SEEX) + int(dest.y / SEEY) * my_MAPSIZE;
- const point dst(dest % SEE);
 
  if (test) return src_na != dst_na;
 
@@ -301,10 +299,8 @@ bool map::displace_vehicle (game *g, int &x, int &y, const point& delta, bool te
  }
  for (auto& part : veh->parts) part.precalc_d[0] = part.precalc_d[1];
 
- veh->pos = dst;
  veh->GPSpos = g->toGPS(dest);
  if (src_na != dst_na) {
-  veh->sm = dest / SEE;
   grid[dst_na]->vehicles.push_back(std::move(*veh));
   EraseAt(grid[src_na]->vehicles, our_i);
  }
@@ -356,12 +352,8 @@ void map::vehmove(game *g)
      vehicle *veh = &(grid[sm]->vehicles[v]);
      bool pl_ctrl = veh->player_in_control(g->u);
      while (!sm_change && veh->moves > 0 && veh->velocity != 0) {
-      auto pt = game::active()->toScreen(veh->GPSpos);
-      assert(pt);
-      assert(pt->x == i * SEEX + veh->pos.x);
-      assert(pt->y == j * SEEY + veh->pos.y);
-      const int mv_cost_terrain = move_cost_ter_only(pt->x, pt->y);
-      if (has_flag(swimmable, *pt) && 0 == mv_cost_terrain) { // deep water
+      const int mv_cost_terrain = grid[sm]->move_cost_ter_only(veh->GPSpos.second);
+      if (grid[sm]->has_flag_ter_only<swimmable>(veh->GPSpos.second) && 0 == mv_cost_terrain) { // deep water
        if (pl_ctrl) messages.add("Your %s sank.", veh->name.c_str());
        veh->unboard_all ();
 // destroy vehicle (sank to nowhere)
@@ -372,6 +364,11 @@ void map::vehmove(game *g)
 // one-tile step take some of movement
       int mpcost = 500 * mv_cost_terrain;
       veh->moves -= mpcost;
+
+      auto pt = game::active()->toScreen(veh->GPSpos);
+      assert(pt);
+      assert(pt->x == i * SEEX + veh->GPSpos.second.x);
+      assert(pt->y == j * SEEY + veh->GPSpos.second.y);
 
       if (!veh->valid_wheel_config()) { // not enough wheels
        veh->velocity += veh->velocity < 0 ? 20 * vehicle::mph_1 : -20 * vehicle::mph_1;
@@ -394,8 +391,7 @@ void map::vehmove(game *g)
        veh->skidding = true;
       tileray mdir(veh->physical_facing());
       mdir.advance (veh->velocity < 0? -1 : 1);
-      int dx = mdir.dx();           // where do we go
-      int dy = mdir.dy();           // where do we go
+      const point delta(mdir.dx(), mdir.dy()); // where do we go
       bool can_move = true;
 // calculate parts' mount points @ next turn (put them into precalc[1])
       veh->precalc_mounts(1, veh->skidding ? veh->turn_dir : mdir.dir());
@@ -406,7 +402,7 @@ void map::vehmove(game *g)
        int p = veh->external_parts[ep];
 // coords of where part will go due to movement (dx/dy)
 // and turning (precalc_dx/dy [1])
-	   const point ds(pt->x + dx + veh->parts[p].precalc_d[1].x, pt->y + dy + veh->parts[p].precalc_d[1].y);
+	   const point ds(*pt + delta + veh->parts[p].precalc_d[1]);
        if (can_move) imp += veh->part_collision(pt->x, pt->y, p, ds);
        if (veh->velocity == 0) can_move = false;
        if (!can_move) break;
@@ -506,7 +502,7 @@ void map::vehmove(game *g)
        }
 // accept new position
 // if submap changed, we need to process grid from the beginning.
-       sm_change = displace_vehicle (g, pt->x, pt->y, point(dx, dy));
+       sm_change = displace_vehicle (g, pt->x, pt->y, delta);
       } else // can_move
        veh->stop();
 // redraw scene
@@ -2216,8 +2212,6 @@ bool map::loadn(game *g, const point& world, int gridx, int gridy)
      gridn = gridx + gridy * my_MAPSIZE;
  if (submap * const tmpsub = MAPBUFFER.lookup_submap(absx, absy, g->cur_om.pos.z)) {
   grid[gridn] = tmpsub;
-  const point _sm(gridx, gridy);
-  for (auto& veh : grid[gridn]->vehicles) veh.sm = _sm;
  } else { // It doesn't exist; we must generate it!
   map tmp_map;
 // overx, overy is where in the overmap we need to pull data from
@@ -2238,8 +2232,6 @@ bool map::loadn(const tripoint& GPS, int gridx, int gridy)
     const int gridn = gridx + gridy * my_MAPSIZE;
     if (submap* const tmpsub = MAPBUFFER.lookup_submap(GPS.x+gridx, GPS.y + gridy, GPS.z)) {
         grid[gridn] = tmpsub;
-        const point _sm(gridx, gridy);
-        for (auto& veh : grid[gridn]->vehicles) veh.sm = _sm;
     } else { // It doesn't exist; we must generate it!
         map tmp_map;
         // overx, overy is where in the overmap we need to pull data from
@@ -2258,8 +2250,6 @@ bool map::loadn(const tripoint& GPS, int gridx, int gridy)
 void map::copy_grid(int to, int from)
 {
  grid[to] = grid[from];
- const point _sm(to % my_MAPSIZE, to / my_MAPSIZE);
- for (auto& veh : grid[to]->vehicles) veh.sm = _sm;
 }
 
 void map::spawn_monsters(game *g)

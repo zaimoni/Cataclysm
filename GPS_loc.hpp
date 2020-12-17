@@ -8,6 +8,8 @@
 
 class vehicle;
 
+// normalized range for GPS_loc.second is 0..SEE-1, 0..SEE-1
+// reality_bubble_loc.second == GPS_loc.second for normalized GPS_loc corresponding to reality_bubble_loc
 struct GPS_loc : public std::pair<tripoint, point>
 {
 	GPS_loc() = default;

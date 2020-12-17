@@ -80,7 +80,7 @@ DEFINE_JSON_ENUM_SUPPORT_TYPICAL(vpart_id, JSON_transcode_vparts)
 std::vector <vehicle*> vehicle::vtypes;
 
 vehicle::vehicle(vhtype_id type_id)
-: _type(type_id), insides_dirty(true), pos(0,0), GPSpos(_ref<GPS_loc>::invalid), velocity(0), cruise_velocity(0), cruise_on(true),
+: _type(type_id), insides_dirty(true), GPSpos(_ref<GPS_loc>::invalid), velocity(0), cruise_velocity(0), cruise_on(true),
   turn_dir(0), skidding(false), last_turn(0), moves(0), turret_mode(0)
 {
     if (veh_custom < _type && vehicle::vtypes.size() > _type)

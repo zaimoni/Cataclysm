@@ -329,11 +329,9 @@ public:
 	point exhaust_d;
 
     // temp values
-    point sm;   // submap coords. WARNING: must ALWAYS correspond to submap coords in grid, or i'm out [0..10,0..10]
     mutable bool insides_dirty; // if true, then parts' "inside" flags are outdated and need refreshing
 
     // save values
-    point pos;		// position within submap: valid values 0...SEEX/SEEY-1
     GPS_loc GPSpos; // absolute location
     tileray face;       // frame direction
     tileray move;       // direction we are moving
