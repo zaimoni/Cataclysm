@@ -437,7 +437,11 @@ std::vector<std::pair<int, player*> > vehicle::passengers() const
 	return res;
 }
 
-point vehicle::global() const { return SEE * sm + pos; }
+point vehicle::global() const {
+    const auto ret = game::active()->toScreen(GPSpos);
+    if (!ret) throw std::logic_error("not in reality bubble");
+    return *ret;
+}
 
 int vehicle::total_mass() const
 {
