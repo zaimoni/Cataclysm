@@ -235,7 +235,7 @@ class map
  void add_item(int x, int y, item&& new_item);
  void add_item(const point& pt, item&& new_item) { return add_item(pt.x, pt.y, std::move(new_item)); }
  bool hard_landing(const point& pt, item&& thrown, player* p = nullptr); // for thrown objects
- void process_active_items(game *g);
+ void process_active_items();
 // void process_vehicles(game *g);	// undefined function
 
  void use_amount(point origin, int range, itype_id type, int quantity,
@@ -309,7 +309,6 @@ protected:
  int my_MAPSIZE;
  std::vector<submap*> grid;
 private:
- void process_active_items_in_submap(game *g, int nonant);
  bool process_fields_in_submap(game *g, int gridn);	// See fields.cpp
  void _translate(ter_id from, ter_id to);	// error-checked backend for map::translate
 };

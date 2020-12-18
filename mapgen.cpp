@@ -153,9 +153,7 @@ void map::generate(game *g, overmap *om, int x, int y)
 // We create all the submaps, even if we're not a tinymap, so that map
 //  generation which overflows won't cause a crash.  At the bottom of this
 //  function, we save the upper-left 4 submaps, and delete the rest.
- for (int i = 0; i < my_MAPSIZE * my_MAPSIZE; i++) {
-  (grid[i] = new submap)->turn_last_touched = turn;
- }
+  for (submap*& gr : grid) (gr = new submap)->turn_last_touched = turn;
 
  unsigned zones = 0;
  const auto physical = overmap_delta(x, y);
@@ -5980,8 +5978,7 @@ void map::rotate(int turns)
 // assert(turns >= 1 && turns <= 3);    // true due to above switch statement
 
 // change vehicles' directions
- for (int i = 0; i < my_MAPSIZE * my_MAPSIZE; i++)
-     for (auto& veh : grid[i]->vehicles) veh.turn(turns * 90);
+ for (submap* const gr : grid) for (auto& veh : gr->vehicles) veh.turn(turns * 90);
 
 // Set the spawn points
  grid[0]->spawns = std::move(sprot[0]);

@@ -242,8 +242,7 @@ bool map::displace_vehicle (game *g, int &x, int &y, const point& delta, bool te
  point src(x, y);
 
  if (!inbounds(src.x, src.y)) {
-  debugmsg ("map::displace_vehicle: coords out of bounds %d,%d->%d,%d",
-            src.x, src.y, dest.x, dest.y);
+  debuglog("map::displace_vehicle: coords out of bounds %d,%d->%d,%d", src.x, src.y, dest.x, dest.y);
   return false;
  }
 
@@ -264,7 +263,7 @@ bool map::displace_vehicle (game *g, int &x, int &y, const point& delta, bool te
   }
  }
  if (our_i < 0) {
-  debugmsg ("displace_vehicle our_i=%d", our_i);
+  debuglog("displace_vehicle our_i=%d", our_i);
   return false;
  }
  // move the vehicle
@@ -1537,44 +1536,40 @@ bool map::hard_landing(const point& pt, item&& thrown, player* p)
     return false;
 }
 
-void map::process_active_items(game *g)
+void submap::process_active_items()
 {
- for (int gx = 0; gx < my_MAPSIZE; gx++) {
-  for (int gy = 0; gy < my_MAPSIZE; gy++) {
-   if (grid[gx + gy * my_MAPSIZE]->active_item_count > 0)
-    process_active_items_in_submap(g, gx + gy * my_MAPSIZE);
-  }
- }
+    if (0 >= active_item_count) return;
+    const auto g = game::active();
+    for (int i = 0; i < SEEX; i++) {
+        for (int j = 0; j < SEEY; j++) {
+            std::vector<item>& items = itm[i][j];
+            int n = items.size();
+            while (0 < n) {
+                if (decltype(auto) it = items[--n]; it.active) {
+                    switch (int code = use_active_item(g->u, it))   // XXX \todo allow modeling active item effects w/o player
+                    { // ignore artifacts/code -2
+                    case -1:   // discharge charger gun
+                        it.active = false;
+                        it.charges = 0;
+                        active_item_count--;
+                        break;
+                    case 1:
+                        EraseAt(items, n);  // reference invalidated
+                        active_item_count--;
+                        break;
+                    case 0:
+                        if (!it.active) active_item_count--;
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }
 
-void map::process_active_items_in_submap(game *g, int nonant)
+void map::process_active_items()
 {
- for (int i = 0; i < SEEX; i++) {
-  for (int j = 0; j < SEEY; j++) {
-   std::vector<item>& items = grid[nonant]->itm[i][j];
-   int n = items.size();
-   while (0 < n) {
-    if (decltype(auto) it = items[--n]; it.active) {
-     switch(int code = use_active_item(g->u, it))   // XXX \todo allow modeling active item effects w/o player
-     {
-     // ignore artifacts/code -2
-     case -1:   // discharge charger gun
-         it.active = false;
-         it.charges = 0;
-         grid[nonant]->active_item_count--;
-         break;
-     case 1:
-         EraseAt(items, n);  // reference invalidated
-         grid[nonant]->active_item_count--;
-         break;
-     case 0:
-         if (!it.active) grid[nonant]->active_item_count--;
-         break;
-     }
-    }
-   }
-  }
- }
+    for(submap* const gr : grid) gr->process_active_items();
 }
 
 void map::use_amount(point origin, int range, const itype_id type, int quantity, bool use_container)
@@ -2293,18 +2288,12 @@ void map::spawn_monsters(game *g)
 
 void map::clear_spawns()
 {
- for (int i = 0; i < my_MAPSIZE * my_MAPSIZE; i++)
-  grid[i]->spawns.clear();
+    for (submap* const gr : grid) gr->spawns.clear();
 }
 
 void map::clear_traps()
 {
- for (int i = 0; i < my_MAPSIZE * my_MAPSIZE; i++) {
-  for (int x = 0; x < SEEX; x++) {
-   for (int y = 0; y < SEEY; y++)
-    grid[i]->trp[x][y] = tr_null;
-  }
- }
+    for (submap* const gr : grid) memset(gr->trp, 0, sizeof(gr->trp)); // tr_null defined as 0
 }
 
 

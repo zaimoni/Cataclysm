@@ -46,9 +46,12 @@ struct submap {
     friend std::ostream& operator<<(std::ostream& os, const submap& src);
 
     // including vehicles is more complicated
+    // 2020-12-18: vehicles only enable the bashable flag, others are as-if terrain only
    // bool has_flag_ter_only(t_flag flag, const point& pt) const { return ter_t::list[ter[pt.x][pt.y]].flags & mfb(flag); };
     template<t_flag flag> bool has_flag_ter_only(const point& pt) const { return ter_t::list[ter[pt.x][pt.y]].flags & mfb(flag); };
     int move_cost_ter_only(const point& pt) const { return ter_t::list[ter[pt.x][pt.y]].movecost; };
+
+    void process_active_items(); // map.cpp; only caller there
 };
 
 #endif
