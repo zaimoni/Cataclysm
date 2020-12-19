@@ -339,6 +339,34 @@ bool fromJSON(const JSON& src, const mission_type*& dest)
 	dest = type_id ? &mission_type::types[type_id] : nullptr;
 	return true;
 }
+
+mobile::mobile(const JSON& src)
+{
+	if (src.has_key("GPS_pos")) {	// provided by V0.2.1+
+		if (fromJSON(src["GPS_pos"], GPSpos)) {
+			// reality checks possible, but not here
+		}
+	}
+	if (src.has_key("moves")) fromJSON(src["moves"], moves);
+}
+
+bool fromJSON(const cataclysm::JSON& src, mobile& dest)
+{
+	if (JSON::object != src.mode()) return false;
+	bool GPS_ok = src.has_key("GPS_pos");
+	if (GPS_ok) GPS_ok = fromJSON(src["GPS_pos"], dest.GPSpos);
+	bool moves_ok = src.has_key("moves");
+	if (moves_ok) moves_ok = fromJSON(src["moves"], dest.moves);
+	return GPS_ok && moves_ok;
+}
+
+JSON toJSON(const mobile& src)
+{
+	JSON ret;
+	ret.set("GPS_pos", toJSON(src.GPSpos));
+	ret.set("moves", std::to_string(src.moves));
+	return ret;
+}
 #endif
 
 bool fromJSON(const JSON& src, const mtype*& dest)

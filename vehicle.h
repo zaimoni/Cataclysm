@@ -5,6 +5,7 @@
 #include "veh_type.h"
 #include "GPS_loc.hpp"
 #include "item.h"
+#include "mobile.h"
 #include "enums.h"
 #include <vector>
 #include <string>

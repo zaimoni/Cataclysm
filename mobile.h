@@ -4,9 +4,16 @@
 #include "GPS_loc.hpp"
 #include <type_traits>
 
+namespace cataclysm {
+
+	class JSON;
+
+}
+
 // intended base class for things that move
-struct mobile	// \todo V0.2.5+ wire-in
+class mobile	// \todo V0.2.5+ wire-in
 {
+public:
 	GPS_loc GPSpos;
 	int moves;
 
@@ -15,6 +22,9 @@ protected:
 	mobile(const GPS_loc& origin, int m) noexcept : GPSpos(origin), moves(m) {}
 	mobile(const mobile& src) = default;
 	mobile(mobile&& src) = default;
+
+	mobile(const cataclysm::JSON& src);
+
 	virtual ~mobile() = default;
 	mobile& operator=(const mobile& src) = default;
 	mobile& operator=(mobile&& src) = default;
