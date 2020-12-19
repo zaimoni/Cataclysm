@@ -11,14 +11,14 @@ namespace cataclysm {
 }
 
 // intended base class for things that move
-class mobile	// \todo V0.2.5+ wire-in
+class mobile
 {
 public:
-	GPS_loc GPSpos;
+	GPS_loc GPSpos; // absolute location
 	int moves;
 
 protected:
-	mobile() = default;
+	mobile() noexcept : GPSpos(_ref<GPS_loc>::invalid),moves(0) {}
 	mobile(const GPS_loc& origin, int m) noexcept : GPSpos(origin), moves(m) {}
 	mobile(const mobile& src) = default;
 	mobile(mobile&& src) = default;

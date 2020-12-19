@@ -113,7 +113,7 @@ struct vehicle_part
 //   of external part. Some functional parts can be only in single instance per tile, i. e.,
 //   no two engines at one mount point.
 //   If you can't understand, why installation fails, try to assemble your vehicle in game first.
-class vehicle
+class vehicle : public mobile
 {
 public:
 	static std::vector <vehicle*> vtypes;
@@ -333,7 +333,6 @@ public:
     mutable bool insides_dirty; // if true, then parts' "inside" flags are outdated and need refreshing
 
     // save values
-    GPS_loc GPSpos; // absolute location
     tileray face;       // frame direction
     tileray move;       // direction we are moving
     int velocity;       // vehicle current velocity, mph * 100
@@ -342,7 +341,6 @@ public:
     int turn_dir;       // direction, to wich vehicle is turning (player control). will rotate frame on next move
     bool skidding;      // skidding mode
     int last_turn;      // amount of last turning (for calculate skidding due to handbrake)
-    int moves;
     int turret_mode;    // turret firing mode: 0 = off, 1 = burst fire	; leave as int in case we want true autofire
 private:
     // direct damage to part (armor protection and internals are not counted)

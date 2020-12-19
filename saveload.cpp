@@ -852,17 +852,12 @@ bool fromJSON(const JSON& src, vehicle& dest)
 	if (src.has_key("name")) fromJSON(src["name"], dest.name);
 	// unlike NPCs, vehicles are loaded as part of the submap
 	if (src.has_key("pos")) fromJSON(src["pos"], dest.GPSpos.second); // V0.2.3- compatibility
-	if (src.has_key("GPS_pos")) {	// provided by V0.2.4+
-		if (fromJSON(src["GPS_pos"], dest.GPSpos)) {
-			// \todo reality checks possible
-		}
-	} // handle missing GPS_pos elsewhere
+	fromJSON(src, static_cast<mobile&>(dest));  // handle missing GPS_pos elsewhere V0.3.1+ can hard-fail here
 	if (src.has_key("turn_dir")) fromJSON(src["turn_dir"], dest.turn_dir);
 	if (src.has_key("velocity")) fromJSON(src["velocity"], dest.velocity);
 	if (src.has_key("cruise_velocity")) fromJSON(src["cruise_velocity"], dest.cruise_velocity);
 	if (src.has_key("cruise_on")) fromJSON(src["cruise_on"], dest.cruise_on);
 	if (src.has_key("skidding")) fromJSON(src["skidding"], dest.skidding);
-	if (src.has_key("moves")) fromJSON(src["moves"], dest.moves);
 	if (src.has_key("parts")) src["parts"].decode(dest.parts);
 
 	// \todo? auto-convert true/false literals to 1/0 for numeric destinations
@@ -883,9 +878,9 @@ JSON toJSON(const vehicle& src)
 {
 	JSON _vehicle(JSON::object);
 	if (const auto json = JSON_key(src._type)) {
+		_vehicle = toJSON(static_cast<const mobile&>(src)); // \todo? appendJSON would be more relevant here
 		_vehicle.set("type", json);
 		_vehicle.set("name", src.name);
-		_vehicle.set("GPS_pos", toJSON(src.GPSpos)); // V 0.2.4+
 		_vehicle.set("facing", std::to_string(src.face.dir()));
 		_vehicle.set("move_dir", std::to_string(src.move.dir()));
 		_vehicle.set("turn_dir", std::to_string(src.turn_dir));
@@ -894,7 +889,6 @@ JSON toJSON(const vehicle& src)
 		if (!src.cruise_on) _vehicle.set("cruise_on", "false");
 		if (src.turret_mode) _vehicle.set("turret_burst", "true");	// appears to be meant to be an enumeration (burst vs. autofire?)
 		if (src.skidding) _vehicle.set("skidding", "true");
-		_vehicle.set("moves", std::to_string(src.moves));
 		if (!src.parts.empty()) _vehicle.set("parts", JSON::encode(src.parts));
 	}
 	return _vehicle;
