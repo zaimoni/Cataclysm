@@ -5,6 +5,7 @@
 #include <limits.h>
 #include <utility>
 #include <variant>
+#include <optional>
 
 class vehicle;
 
@@ -22,7 +23,7 @@ struct GPS_loc : public std::pair<tripoint, point>
 	GPS_loc& operator+=(const point& src);
 
 	bool is_outside() const; // map.cpp
-	vehicle* veh_at(int& part_num) const; // map.cpp
+	std::optional<std::pair<vehicle*, int>> veh_at() const; // map.cpp
 };
 
 // \todo evaluate whether these should be out-of-line defined (likely a matter of binary size, compile+link time)

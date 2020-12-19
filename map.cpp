@@ -129,7 +129,7 @@ std::optional<std::pair<vehicle*, int>> map::veh_at(const reality_bubble_loc& sr
 }
 
 // \todo if map::veh_at goes dead code then relocate (overmap.cpp? new GPS_loc.cpp?)
-vehicle* GPS_loc::veh_at(int& part_num) const
+std::optional<std::pair<vehicle*, int>> GPS_loc::veh_at() const
 {
     // must check 3x3 map chunks, as vehicle part may span to neighbour chunk
     // we presume that vehicles don't intersect (they shouldn't by any means)
@@ -144,16 +144,13 @@ vehicle* GPS_loc::veh_at(int& part_num) const
                 const auto delta = *this - veh.GPSpos;
                 if (const point* const pt = std::get_if<point>(&delta)) { // gross invariant failure: vehicles should have GPSpos tripoint of their submap
                     int part = veh.part_at(pt->x, pt->y);
-                    if (part >= 0) {
-                        part_num = part;
-                        return &veh;
-                    }
+                    if (part >= 0) return std::pair(&veh, part);
                 }
             }
         }
     }
 
-    return nullptr;
+    return std::nullopt;
 }
 
 std::optional<std::pair<const vehicle*, int>> map::_veh_at(const point& src) const
@@ -731,8 +728,9 @@ bool GPS_loc::is_outside() const
             }
             // Just discard the test if the submap wasn't generated yet.  We'll still have some context.
         }
-        int vpart;
-        if (vehicle* veh = veh_at(vpart); veh && veh->is_inside(vpart)) return false;
+        if (const auto veh = veh_at()) {
+            if (veh->first->is_inside(veh->second)) return false;
+        }
         return true; // No guessing, we're outside.
     }
     return true;    // If we haven't generated the submap yet, just assume we're outside.
