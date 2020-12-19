@@ -639,28 +639,26 @@ int vehicle::wheels_area(int *cnt) const
 
 float vehicle::k_dynamics() const
 {
-    const int max_obst = 13;
-    int obst[max_obst];
-    for (int o = 0; o < max_obst; o++) obst[o] = 0;
-    for (int i = 0; i < external_parts.size(); i++) {
-        int p = external_parts[i];
-        int frame_size = part_flag(p, vpf_obstacle)? 30 : 10;
+    static constexpr const int max_obst = radius + 1;
+
+    int obst[max_obst] = {};
+
+    for (const int p : external_parts) {
+        int frame_size = part_flag(p, vpf_obstacle) ? 30 : 10;
         int pos = parts[p].mount_d.y + max_obst / 2;
         if (pos < 0) pos = 0;
-        if (pos >= max_obst) pos = max_obst -1;
+        else if (pos >= max_obst) pos = max_obst - 1;
         if (obst[pos] < frame_size) obst[pos] = frame_size;
     }
+
     int frame_obst = 0;
     for (int o = 0; o < max_obst; o++) frame_obst += obst[o];
-    float ae0 = 200.0;
-    float fr0 = 1000.0;
-    int wa = wheels_area();
 
-    // calculate aerodynamic coefficient
-    float ka = ae0 / (ae0 + frame_obst);
+    static constexpr const float ae0 = 200.0;
+    static constexpr const float fr0 = 1000.0;
 
-    // calculate safe speed reduction due to wheel friction
-    float kf = fr0 / (fr0 + wa);
+    float ka = ae0 / (ae0 + frame_obst); // calculate aerodynamic coefficient
+    float kf = fr0 / (fr0 + wheels_area()); // calculate safe speed reduction due to wheel friction
 
     return ka * kf;
 }
