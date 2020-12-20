@@ -379,7 +379,7 @@ bool vehicle::any_boarded_parts() const
 {
 	for (const auto& part : parts) {
 		if (!part.has_flag(vpf_seat)) continue;
-		assert(part.get_passenger(global()) == part.get_passenger(GPSpos));
+		assert(part.get_passenger(screenPos()) == part.get_passenger(GPSpos));
 		if (part.get_passenger(GPSpos)) return true;
 	}
 	return false;
@@ -420,7 +420,7 @@ player *vehicle::get_passenger(int p) const
 {
     p = part_with_feature (p, vpf_seat, false);
     if (0 > p) return nullptr;
-    assert(parts[p].get_passenger(global()) == parts[p].get_passenger(GPSpos));
+    assert(parts[p].get_passenger(screenPos()) == parts[p].get_passenger(GPSpos));
 	return parts[p].get_passenger(GPSpos);
 }
 
@@ -431,16 +431,10 @@ std::vector<std::pair<int, player*> > vehicle::passengers() const
 	for (const auto& part : parts) {
 		++p;
 		if (!part.has_flag(vpf_seat)) continue;
-        assert(parts[p].get_passenger(global()) == parts[p].get_passenger(GPSpos));
+        assert(parts[p].get_passenger(screenPos()) == parts[p].get_passenger(GPSpos));
 		if (auto pl = part.get_passenger(GPSpos)) res.push_back({ p, pl });
 	}
 	return res;
-}
-
-point vehicle::global() const {
-    const auto ret = game::active()->toScreen(GPSpos);
-    if (!ret) throw std::logic_error("not in reality bubble");
-    return *ret;
 }
 
 int vehicle::total_mass() const
@@ -798,7 +792,7 @@ void vehicle::thrust (int thd)
         }
 
         // add sound and smoke
-		const point origin(global());
+		const point origin(screenPos());
         if (int smk = noise(true, true); 0 < smk) {
             point rd(origin + coord_translate(exhaust_d));
             g->m.add_field(g, rd, fd_smoke, (smk / 50) + 1);
@@ -1223,7 +1217,7 @@ void vehicle::gain_moves (int mp)
             thrust (cruise_velocity > velocity? 1 : -1);
     }
 
-	const point anchor(global());
+	const point anchor(screenPos());
     if (g->is_in_sunlight(anchor)) {
         if (const int spw = solar_power()) {
             int fl = spw / 100;
@@ -1416,12 +1410,12 @@ int vehicle::damage_direct(int p, int dmg, damage_type type)
                 if (parts[p].hp <= 0) leak_fuel (p);
                 if (damage_type::incendiary == type ||
                     (one_in (ft == AT_GAS? 2 : 4) && pow > 5 && rng (75, 150) < dmg)) {
-                    g->explosion(global() + parts[p].precalc_d[0], pow, 0, ft == AT_GAS);
+                    g->explosion(screenPos() + parts[p].precalc_d[0], pow, 0, ft == AT_GAS);
                     parts[p].hp = 0;
                 }
             }
         } else if (parts[p].hp <= 0 && p_info.has_flag<vpf_unmount_on_damage>()) {
-			const point dest(global() + parts[p].precalc_d[0]);
+			const point dest(screenPos() + parts[p].precalc_d[0]);
             g->m.add_item(dest, item::types[p_info.item], messages.turn);
             remove_part(p);
         }
@@ -1435,7 +1429,7 @@ void vehicle::leak_fuel (int p)
     const auto& p_info = part_info(p);
     if (!p_info.has_flag<vpf_fuel_tank>()) return;
     if (AT_GAS == p_info.fuel_type) {
-		const point origin(global());
+		const point origin(screenPos());
 		auto g = game::active();
         for (int i = origin.x - 2; i <= origin.x + 2; i++)
             for (int j = origin.y - 2; j <= origin.y + 2; j++)
@@ -1577,7 +1571,7 @@ void vehicle::fire_turret (int p, bool burst)
 
 bool vehicle::fire_turret_internal(const vehicle_part& p, it_gun &gun, const it_ammo &ammo, int charges)
 {
-	const point origin(global() + p.precalc_d[0]);
+	const point origin(screenPos() + p.precalc_d[0]);
     // code copied form mattack::smg, mattack::flamethrower
     int t, fire_t;
     monster* target = nullptr;

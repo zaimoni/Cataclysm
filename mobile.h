@@ -2,6 +2,7 @@
 #define MOBILE_H
 
 #include "GPS_loc.hpp"
+#include <optional>
 #include <type_traits>
 
 namespace cataclysm {
@@ -16,6 +17,11 @@ class mobile
 public:
 	GPS_loc GPSpos; // absolute location
 	int moves;
+
+	std::optional<point> screen_pos() const;
+	point screenPos() const;
+	std::optional<reality_bubble_loc> bubble_pos() const;
+	reality_bubble_loc bubblePos() const;
 
 protected:
 	mobile() noexcept : GPSpos(_ref<GPS_loc>::invalid),moves(0) {}

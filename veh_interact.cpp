@@ -400,7 +400,7 @@ void veh_interact::move_cursor (int dx, int dy)
     c.y += dy;
     cpart = part_at (c);
 	const point vd(-dd.x - c.y, c.x - dd.y);
-	const point vpos(veh->global() + veh->coord_translate(vd));
+	const point vpos(veh->screenPos() + veh->coord_translate(vd));
     bool obstruct = _g->m.move_cost_ter_only (vpos.x, vpos.y) == 0;
     const auto v = _g->m._veh_at(vpos);
     vehicle* const oveh = v ? v->first : nullptr; // backward compatibility

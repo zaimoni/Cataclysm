@@ -203,9 +203,6 @@ public:
 // get passenger at part p
     player *get_passenger(int p) const;
 
-// get global coords for vehicle
-	point global() const;
-
 // Checks how much certain fuel left in tanks. If for_engine == true that means
 // ftype == AT_BATT is also takes in account AT_PLUT fuel (electric motors can use both)
     int fuel_left(ammotype ftype, bool for_engine = false) const;

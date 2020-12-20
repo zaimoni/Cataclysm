@@ -279,6 +279,7 @@
     <ClCompile Include="melee.cpp" />
     <ClCompile Include="mission.cpp" />
     <ClCompile Include="missiondef.cpp" />
+    <ClCompile Include="mobile.cpp" />
     <ClCompile Include="monattack.cpp" />
     <ClCompile Include="mondeath.cpp" />
     <ClCompile Include="mongroupdef.cpp" />
