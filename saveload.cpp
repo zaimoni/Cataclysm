@@ -1575,12 +1575,8 @@ JSON toJSON(const inventory& src)
 
 JSON toJSON(const player& src)
 {
-	JSON ret;
+	JSON ret(toJSON(static_cast<const mobile&>(src)));
 	ret.set("pos", toJSON(src.pos));
-
-	// V 0.2.1+
-	auto GPS = overmap::toGPS(src.pos);
-	ret.set("GPS_pos", toJSON(GPS));
 
 	if (!src.name.empty()) ret.set("name", src.name);
 	if (!src.male) ret.set("male", "false");
@@ -1609,7 +1605,6 @@ JSON toJSON(const player& src)
 	ret.set("scent", std::to_string(src.scent));
 	ret.set("dodges_left", std::to_string(src.dodges_left));
 	ret.set("blocks_left", std::to_string(src.blocks_left));
-	ret.set("moves", std::to_string(src.moves));
 	if (0 <= src.active_mission && src.active_mission<src.active_missions.size()) ret.set("active_mission_id", std::to_string(src.active_mission));
 
 	// enumerations
@@ -1667,12 +1662,9 @@ JSON toJSON(const player& src)
 
 player::player(const JSON& src) : player()
 {
+ fromJSON(src, static_cast<mobile&>(*this));	// V0.2.0- missing GPSpos is covered over at game::load
+
  if (src.has_key("pos")) fromJSON(src["pos"], pos);
- if (src.has_key("GPS_pos")) {	// provided by V0.2.1+
-	 if (fromJSON(src["GPS_pos"], GPSpos)) {
-		 // reality checks possible, but not here
-	 }
- }	// missing GPSpos is covered over at game::load
  if (src.has_key("in_vehicle")) fromJSON(src["in_vehicle"], in_vehicle);
  if (src.has_key("activity")) fromJSON(src["activity"], activity);
  if (src.has_key("backlog")) fromJSON(src["backlog"], backlog);
@@ -1725,7 +1717,6 @@ player::player(const JSON& src) : player()
  if (src.has_key("pkill")) fromJSON(src["pkill"], pkill);
  if (src.has_key("radiation")) fromJSON(src["radiation"], radiation);
  if (src.has_key("cash")) fromJSON(src["cash"], cash);
- if (src.has_key("moves")) fromJSON(src["moves"], moves);
  if (src.has_key("morale")) src["morale"].decode(morale);
  if (src.has_key("xp_pool")) fromJSON(src["xp_pool"], xp_pool);
  if (src.has_key("sklevel")) src["sklevel"].decode<skill>(sklevel, num_skill_types);

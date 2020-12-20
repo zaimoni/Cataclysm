@@ -6,7 +6,7 @@
 #include "morale.h"
 #include "inventory.h"
 #include "mutation.h"
-#include "GPS_loc.hpp"
+#include "mobile.h"
 #include "bodypart.h"
 #include "pldata.h"
 #include "zero.h"
@@ -31,7 +31,7 @@ struct special_attack
 std::string random_first_name(bool male);
 std::string random_last_name();
 
-class player {
+class player : public mobile {
 public:
  player();
  player(const cataclysm::JSON& src);
@@ -265,7 +265,6 @@ public:
 
 // ---------------VALUES-----------------
  point pos;
- GPS_loc GPSpos;
  bool in_vehicle;       // Means player sit inside vehicle on the tile he is now
  player_activity activity;
  player_activity backlog;
@@ -295,7 +294,6 @@ public:
  int dodges_left, blocks_left;
  int stim, pain, pkill, radiation;
  int cash;
- int moves;
  int hp_cur[num_hp_parts], hp_max[num_hp_parts];
 
  std::vector<morale_point> morale;
