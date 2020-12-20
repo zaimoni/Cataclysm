@@ -1226,13 +1226,12 @@ void vehicle::gain_moves (int mp)
         }
     }
     // check for smoking parts
-    for (int ep = 0; ep < external_parts.size(); ep++) {
-        int p = external_parts[ep];
+    for (const int p : external_parts) {
         if (parts[p].blood > 0) parts[p].blood--;
-        int p_eng = part_with_feature (p, vpf_engine, false);
+        int p_eng = part_with_feature(p, vpf_engine, false);
         if (p_eng < 0 || parts[p_eng].hp > 0 || parts[p_eng].amount < 1) continue;
         parts[p_eng].amount--;
-		const point origin(anchor + parts[p_eng].precalc_d[0]);
+        const point origin(anchor + parts[p_eng].precalc_d[0]);
         for (int ix = -1; ix <= 1; ix++)
             for (int iy = -1; iy <= 1; iy++)
                 if (!rng(0, 2)) g->m.add_field(g, origin.x + ix, origin.y + iy, fd_smoke, rng(2, 4));
