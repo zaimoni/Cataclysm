@@ -49,7 +49,7 @@ struct monster_effect
  ~monster_effect() = default;
 };
 
-class monster {
+class monster : public mobile {
  public:
  monster() noexcept;
  monster(const mtype *t) noexcept;
@@ -148,7 +148,6 @@ class monster {
 
 // TEMP VALUES
  point pos;
- GPS_loc GPSpos;
  countdown<point> wand;	// Wander destination - Just try to move in that direction.
  std::vector<item> inv; // Inventory
  std::vector<monster_effect> effects; // Active effects, e.g. on fire
@@ -158,7 +157,7 @@ class monster {
  point spawnpos;  // normal map position
 
 // DEFINING VALUES
- int moves, speed;
+ int speed;
  int hp;
  int sp_timeout;
  int friendly;	// -1: indefinitely friendly; positive: times out.  Hard-coded to PC

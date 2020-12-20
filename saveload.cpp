@@ -1209,17 +1209,12 @@ bool fromJSON(const JSON& _in, monster& dest)
 		fromJSON(_in["pos"], staging);
 		dest.screenpos_set(staging); // we load after game::lev is set in game::load, so this is safe
 	}
-	if (_in.has_key("GPS_pos")) {	// provided by V0.2.4+
-		if (fromJSON(_in["GPS_pos"], dest.GPSpos)) {
-			// reality checks possible, but not here
-		}
-	}
+	fromJSON(_in, static_cast<mobile&>(dest));  // handle missing GPS_pos elsewhere V0.3.1+ can hard-fail here
 	if (_in.has_key("wand")) fromJSON(_in["wand"], dest.wand);
 	if (_in.has_key("inv")) _in["inv"].decode(dest.inv);
 	if (_in.has_key("effects")) _in["effects"].decode(dest.effects);
 	if (_in.has_key("spawnmap")) fromJSON(_in["spawnmap"], dest.spawnmap);
 	if (_in.has_key("spawnpos")) fromJSON(_in["spawnpos"], dest.spawnpos);
-	if (_in.has_key("moves")) fromJSON(_in["moves"], dest.moves);
 	if (_in.has_key("speed")) fromJSON(_in["speed"], dest.speed);
 	if (_in.has_key("hp")) fromJSON(_in["hp"], dest.hp);
 	if (_in.has_key("sp_timeout")) fromJSON(_in["sp_timeout"], dest.sp_timeout);
@@ -1239,10 +1234,11 @@ JSON toJSON(const monster& src)
 {
 	JSON _monster(JSON::object);
 	if (auto json = JSON_key((mon_id)src.type->id)) {
+		_monster = toJSON(static_cast<const mobile&>(src)); // \todo? appendJSON would be more relevant here
 		_monster.set("type", json);
 		_monster.set("pos", toJSON(src.pos));
 
-		// V 0.2.4+
+		// V 0.2.4+ (redundant?)
 		auto GPS = overmap::toGPS(src.pos);
 		_monster.set("GPS_pos", toJSON(GPS));
 
@@ -1253,7 +1249,6 @@ JSON toJSON(const monster& src)
 			_monster.set("spawnmap", toJSON(src.spawnmap));
 			_monster.set("spawnpos", toJSON(src.spawnpos));
 		}
-		_monster.set("moves", std::to_string(src.moves));
 		_monster.set("speed", std::to_string(src.speed));
 		_monster.set("hp", std::to_string(src.hp));
 		if (0 < src.sp_timeout) _monster.set("sp_timeout", std::to_string(src.sp_timeout));
