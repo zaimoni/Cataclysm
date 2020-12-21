@@ -946,7 +946,7 @@ void mattack::smg(game *g, monster *z)
   for(auto& _mon : g->z) {
    const point pos(_mon.screenPos());
    int dist = rl_dist(z->pos, pos);
-   if (_mon.is_enemy() && dist < closest &&  g->m.sees(z->pos, pos, 18, t)) {
+   if (_mon.is_enemy(z) && dist < closest &&  g->m.sees(z->pos, pos, 18, t)) {
     target = &_mon;
     closest = dist;
     fire_t = t;

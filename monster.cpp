@@ -639,6 +639,18 @@ bool monster::is_friend(const player* survivor) const
     return pc_friendly;
 }
 
+bool monster::is_enemy(const monster* z) const
+{
+    if (has_flag(MF_ATTACKMON) || z->has_flag(MF_ATTACKMON)) {
+        if (type->species != z->type->species) return true; // would look weird for secubots to attack other secubots, etc.
+    }
+    const bool pc_hostile = (0 == friendly);
+    const bool other_pc_hostile = (0 == z->friendly);
+    return pc_hostile != other_pc_hostile;
+}
+
+bool monster::is_friend(const monster* z) const { return !is_enemy(z); } // not really; would like is_neutral category
+
 void monster::add_item(const item& it)
 {
  inv.push_back(it);

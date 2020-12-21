@@ -138,6 +138,8 @@ class monster : public mobile {
  void add_item(const item& it);	// Add an item to inventory
  bool is_enemy(const player* survivor = nullptr) const;
  bool is_friend(const player* survivor = nullptr) const;
+ bool is_enemy(const monster* z) const;
+ bool is_friend(const monster* z) const;
 
  bool is_static_spawn() const { return -1 != spawnmap.x; }
 
