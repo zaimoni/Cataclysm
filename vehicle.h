@@ -144,6 +144,7 @@ public:
 
 // check if given player controls this vehicle
     bool player_in_control(player& p) const;
+    player* driver() const;
 
 // get vpart type info for part number (part at given vector index)
     const vpart_info& part_info(int index) const;

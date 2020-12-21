@@ -109,6 +109,23 @@ bool vehicle::player_in_control(player& p) const
     return false;
 }
 
+player* vehicle::driver() const
+{
+    if (!_type) return nullptr;
+    const auto pos = screen_pos();
+    if (!pos) return nullptr; // not in reality bubble
+    for (int p = 0; p < parts.size(); p++) {
+        const auto& p_info = part_info(p);
+        if (p_info.has_flag<vpf_controls>()) {
+            if (player* pl = game::active()->survivor(*pos + parts[p].precalc_d[0])) {
+                if (pl->in_vehicle) return pl;
+            }
+        }
+    }
+    return nullptr;
+}
+
+
 void vehicle::init_state()
 {
     for (int p = 0; p < parts.size(); p++) {
@@ -1571,6 +1588,7 @@ void vehicle::fire_turret (int p, bool burst)
 bool vehicle::fire_turret_internal(const vehicle_part& p, it_gun &gun, const it_ammo &ammo, int charges)
 {
 	const point origin(screenPos() + p.precalc_d[0]);
+    player* driving = driver();
     // code copied form mattack::smg, mattack::flamethrower
     int t, fire_t;
     point target_pos;
@@ -1582,7 +1600,7 @@ bool vehicle::fire_turret_internal(const vehicle_part& p, it_gun &gun, const it_
 	for(auto& _mon : g->z) {
         const point pos(_mon.screenPos());
         int dist = rl_dist(origin, pos);
-        if (_mon.is_enemy() && dist < closest &&
+        if (_mon.is_enemy(driving) && dist < closest &&
             g->m.sees(origin, pos, range, t)) {
             target = &_mon;
             closest = dist;
