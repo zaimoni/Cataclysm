@@ -22,3 +22,5 @@ reality_bubble_loc mobile::bubblePos() const
 	return *ret;
 }
 
+void mobile::set_screenpos(point pt) { GPSpos = overmap::toGPS(pt); }
+

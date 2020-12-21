@@ -1573,24 +1573,27 @@ bool vehicle::fire_turret_internal(const vehicle_part& p, it_gun &gun, const it_
 	const point origin(screenPos() + p.precalc_d[0]);
     // code copied form mattack::smg, mattack::flamethrower
     int t, fire_t;
+    point target_pos;
     monster* target = nullptr;
-    int range = ammo.type == AT_GAS? 5 : 12;
+    const int range = ammo.type == AT_GAS? 5 : 12;
     int closest = range + 1;
 	auto g = game::active();
     // \todo should use driver (eventually, ai who usually is friendly to driver) as definer of is_enemy status
 	for(auto& _mon : g->z) {
-        int dist = rl_dist(origin, _mon.pos);
+        const point pos(_mon.screenPos());
+        int dist = rl_dist(origin, pos);
         if (_mon.is_enemy() && dist < closest &&
-            g->m.sees(origin, _mon.pos, range, t)) {
+            g->m.sees(origin, pos, range, t)) {
             target = &_mon;
             closest = dist;
             fire_t = t;
+            target_pos = pos;
         }
     }
     // \todo allow targeting hostile NPCs https://github.com/zaimoni/Cataclysm/issues/108
     if (!target) return false;
 
-    std::vector<point> traj = line_to(origin, target->pos, fire_t);
+    std::vector<point> traj = line_to(origin, target_pos, fire_t);
     for (int i = 0; i < traj.size(); i++)
         if (traj[i] == g->u.pos) return false; // won't shoot at player
     if (g->u_see(origin)) messages.add("The %s fires its %s!", name.c_str(), p.info().name);
@@ -1607,7 +1610,7 @@ bool vehicle::fire_turret_internal(const vehicle_part& p, it_gun &gun, const it_
     it_ammo curam = ammo;
     tmp.weapon.curammo = &curam;
     tmp.weapon.charges = charges;
-    g->fire(tmp, target->pos, traj, true);
+    g->fire(tmp, target_pos, traj, true);
     if (ammo.type == AT_GAS) {
 		for(const auto& pt : traj) g->m.add_field(g, pt, fd_fire, 1);
     }

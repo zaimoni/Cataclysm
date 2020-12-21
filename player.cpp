@@ -1553,13 +1553,22 @@ DEFINE_ACID_ASSIGN_W_MOVE(player)
 
 void player::screenpos_set(point pt)
 {
-	GPSpos = overmap::toGPS(pos = pt);
+    set_screenpos(pos = pt);
     auto g = game::active();
     if (this == &g->u && g->update_map_would_scroll(pos)) g->update_map(pos.x,pos.y);
 }
 
-void player::screenpos_set(int x, int y) { GPSpos = overmap::toGPS(pos = point(x, y)); }
-void player::screenpos_add(point delta) { GPSpos = overmap::toGPS(pos += delta); }
+void player::screenpos_set(int x, int y) {
+    set_screenpos(pos = point(x, y));
+    auto g = game::active();
+    if (this == &g->u && g->update_map_would_scroll(pos)) g->update_map(pos.x, pos.y);
+}
+
+void player::screenpos_add(point delta) {
+    set_screenpos(pos += delta);
+    auto g = game::active();
+    if (this == &g->u && g->update_map_would_scroll(pos)) g->update_map(pos.x, pos.y);
+}
 
 // \todo V0.2.1+ trigger uniform max hp recalculation on any change to str_max or the PF_TOUGH trait
 void player::normalize()

@@ -939,18 +939,22 @@ void mattack::tazer(game *g, monster *z)
 void mattack::smg(game *g, monster *z)
 {
  int t, fire_t;
- if (z->friendly != 0) { // Attacking monsters, not the player!
+ if (!z->is_enemy()) { // Attacking monsters, not the player!
   monster* target = nullptr;
+  point target_pos;
   int closest = 19;
   for(auto& _mon : g->z) {
-   int dist = rl_dist(z->pos, _mon.pos);
-   if (_mon.friendly == 0 && dist < closest &&  g->m.sees(z->pos, _mon.pos, 18, t)) {
+   const point pos(_mon.screenPos());
+   int dist = rl_dist(z->pos, pos);
+   if (_mon.is_enemy() && dist < closest &&  g->m.sees(z->pos, pos, 18, t)) {
     target = &_mon;
     closest = dist;
     fire_t = t;
+    target_pos = pos;
    }
   }
-  if (target == nullptr) return; // Couldn't find any targets!
+  if (!target) return; // Couldn't find any targets!
+
   z->sp_timeout = z->type->sp_freq;	// Reset timer
   z->moves = -150;			// It takes a while
   if (g->u_see(z->pos)) messages.add("The %s fires its smg!", z->name().c_str());
@@ -966,8 +970,8 @@ void mattack::smg(game *g, monster *z)
   tmp.weapon = item(item::types[itm_smg_9mm], 0);
   tmp.weapon.curammo = dynamic_cast<const it_ammo*>(item::types[itm_9mm]);
   tmp.weapon.charges = 10;
-  std::vector<point> traj = line_to(z->pos, target->pos, fire_t);
-  g->fire(tmp, target->pos, traj, true);
+  std::vector<point> traj = line_to(z->pos, target_pos, fire_t);
+  g->fire(tmp, target_pos, traj, true);
 
   return;
  }

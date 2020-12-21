@@ -35,6 +35,8 @@ protected:
 	virtual ~mobile() = default;
 	mobile& operator=(const mobile& src) = default;
 	mobile& operator=(mobile&& src) = default;
+
+	void set_screenpos(point pt); // could be public once synchronization with legacy point pos not needed
 };
 
 template<class T>
