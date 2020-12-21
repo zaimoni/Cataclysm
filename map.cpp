@@ -96,7 +96,7 @@ std::optional<std::pair<const vehicle*, int>> map::veh_at(const reality_bubble_l
             int nonant1 = src.first + mx + my * my_MAPSIZE;
             if (nonant1 < 0 || nonant1 >= nonant_ub) continue; // out of grid
             for (auto& veh : grid[nonant1]->vehicles) { // profiler likes this; burns less CPU than testing for empty std::vector
-                const auto veh_loc = game::active()->toSubmap(veh.GPSpos);
+                const auto veh_loc = veh.bubble_pos();
                 assert(veh_loc);
                 assert(veh_loc->first == nonant1);
                 int part = veh.part_at(src.second.x - (veh_loc->second.x + mx * SEEX), src.second.y - (veh_loc->second.y + my * SEEY));
@@ -117,7 +117,7 @@ std::optional<std::pair<vehicle*, int>> map::veh_at(const reality_bubble_loc& sr
             int nonant1 = src.first + mx + my * my_MAPSIZE;
             if (nonant1 < 0 || nonant1 >= nonant_ub) continue; // out of grid
             for (auto& veh : grid[nonant1]->vehicles) { // profiler likes this; burns less CPU than testing for empty std::vector
-                const auto veh_loc = game::active()->toSubmap(veh.GPSpos);
+                const auto veh_loc = veh.bubble_pos();
                 assert(veh_loc);
                 assert(veh_loc->first == nonant1);
                 int part = veh.part_at(src.second.x - (veh_loc->second.x + mx * SEEX), src.second.y - (veh_loc->second.y + my * SEEY));
@@ -219,7 +219,7 @@ bool map::try_board_vehicle(game* g, int x, int y, player& p)
 void map::destroy_vehicle(vehicle *veh)
 {
  assert(veh);
- if (const auto rloc = game::active()->toSubmap(veh->GPSpos)) {
+ if (const auto rloc = veh->bubble_pos()) {
      const int sm = rloc->first; // backward compatibility
      int i = -1;
      for (decltype(auto) v : grid[sm]->vehicles) {
@@ -253,10 +253,11 @@ bool map::displace_vehicle (game *g, int &x, int &y, const point& delta, bool te
  // first, let's find our position in current vehicles vector
  int our_i = -1;
  for (int i = 0; i < grid[src_na]->vehicles.size(); i++) {
-  decltype(auto) loc = g->toSubmap(grid[src_na]->vehicles[i].GPSpos);
-  if (loc && loc->second == src) {
-   our_i = i;
-   break;
+  if (const auto rloc = grid[src_na]->vehicles[i].bubble_pos()) {
+      if (rloc->second == src) {
+          our_i = i;
+          break;
+      }
   }
  }
  if (our_i < 0) {
@@ -361,7 +362,7 @@ void map::vehmove(game *g)
       int mpcost = 500 * mv_cost_terrain;
       veh->moves -= mpcost;
 
-      auto pt = game::active()->toScreen(veh->GPSpos);
+      auto pt = veh->screen_pos();
       assert(pt);
       assert(pt->x == i * SEEX + veh->GPSpos.second.x);
       assert(pt->y == j * SEEY + veh->GPSpos.second.y);

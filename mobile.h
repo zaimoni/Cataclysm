@@ -18,6 +18,7 @@ public:
 	GPS_loc GPSpos; // absolute location
 	int moves;
 
+	// Waterfall lifecycle here: unused member functions ok
 	std::optional<point> screen_pos() const;
 	point screenPos() const;
 	std::optional<reality_bubble_loc> bubble_pos() const;

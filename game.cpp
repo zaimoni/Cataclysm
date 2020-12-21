@@ -2828,7 +2828,7 @@ void game::activate_npcs()   // blocked:? Earth coordinates, CPU, hard drive \to
     auto i = cur_om.npcs.size();
     while (0 < i) {
         auto& _npc = cur_om.npcs[--i];
-        if (toScreen(_npc.GPSpos)) {
+        if (_npc.screen_pos()) {
             _npc.spawn_at(_npc.GPSpos);
             if (_npc.marked_for_death) _npc.die(this, false);
             else active_npc.push_back(std::move(_npc));
