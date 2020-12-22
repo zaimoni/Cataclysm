@@ -330,7 +330,9 @@ std::optional<point> monster::scent_move(const game *g)
 
 bool monster::can_sound_move_to(const game* g, const point& pt) const
 {
-	return can_move_to(g->m, pt) || pt == g->u.pos || (has_flag(MF_BASHES) && g->m.has_flag(bashable, pt));
+    if (can_move_to(g->m, pt)) return true;
+    if (const auto _survivor = g->survivor(pt)) return is_enemy(_survivor); // melee attack
+	return has_flag(MF_BASHES) && g->m.has_flag(bashable, pt);
 }
 
 bool monster::can_sound_move_to(const game* g, const point& pt, point& dest) const
