@@ -190,9 +190,8 @@ void monster::move(game *g)
  } else if (has_flag(MF_SMELLS)) {
 // No sight... or our plans are invalid (e.g. moving through a transparent, but
 //  solid, square of terrain).  Fall back to smell if we have it.
-  point tmp = scent_move(g);
-  if (tmp.x != -1) {
-   next = tmp;
+  if (const auto dest = scent_move(g)) {
+   next = *dest;
    moved = true;
   }
  }
@@ -297,34 +296,36 @@ void monster::friendly_move(game *g)
   stumble(g, false);
 }
 
-point monster::scent_move(const game *g)
+std::optional<point> monster::scent_move(const game *g)
 {
  plans.clear();
  std::vector<point> smoves;
  int maxsmell = 1; // Squares with smell 0 are not eligable targets
  int minsmell = 9999;
- point next(-1, -1);
- for (int x = -1; x <= 1; x++) {
-  for (int y = -1; y <= 1; y++) {
-   point test(pos.x + x, pos.y + y);
-   const auto smell = g->scent(test);
-   const auto m_at = g->mon(test);
-   if ((!m_at || is_enemy(m_at)) && can_sound_move_to(g, test)) {
-	const bool fleeing = is_fleeing(g->u);
-    if (   (!fleeing && smell > maxsmell)
-		|| ( fleeing && smell < minsmell)) {
-     smoves.clear();
-     smoves.push_back(test);
-     maxsmell = smell;
-     minsmell = smell;
-    } else if (smell == (fleeing ? minsmell : maxsmell)) {
-     smoves.push_back(test);
-    }
-   }
-  }
+ for (decltype(auto) dir : Direction::vector) {
+     point test(pos + dir);
+     const auto m_at = g->mon(test);
+     if ((!m_at || is_enemy(m_at)) && can_sound_move_to(g, test)) {
+         const auto smell = g->scent(test);
+         if (is_fleeing(g->u)) {
+             if (smell < minsmell) {
+                 smoves.clear();
+                 smoves.push_back(test);
+                 maxsmell = smell;
+                 minsmell = smell;
+             } else if (smell == minsmell) smoves.push_back(test);
+         } else {
+             if (smell > maxsmell) {
+                 smoves.clear();
+                 smoves.push_back(test);
+                 maxsmell = smell;
+                 minsmell = smell;
+             } else if (smell == maxsmell) smoves.push_back(test);
+         }
+     }
  }
- if (!smoves.empty()) next = smoves[rng(0, smoves.size() - 1)];
- return next;
+ if (!smoves.empty()) return smoves[rng(0, smoves.size() - 1)];
+ return std::nullopt;
 }
 
 bool monster::can_sound_move_to(const game* g, const point& pt) const
