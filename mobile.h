@@ -19,6 +19,7 @@ public:
 	int moves;
 
 	// Waterfall lifecycle here: unused member functions ok
+	// throwing interfaces only appropriate for vehicles and player; monsters and NPCs may be slightly out of bounds
 	std::optional<point> screen_pos() const;
 	point screenPos() const;
 	std::optional<reality_bubble_loc> bubble_pos() const;

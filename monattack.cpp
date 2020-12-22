@@ -944,13 +944,14 @@ void mattack::smg(game *g, monster *z)
   point target_pos;
   int closest = 19;
   for(auto& _mon : g->z) {
-   const point pos(_mon.screenPos());
-   int dist = rl_dist(z->pos, pos);
-   if (_mon.is_enemy(z) && dist < closest &&  g->m.sees(z->pos, pos, 18, t)) {
-    target = &_mon;
-    closest = dist;
-    fire_t = t;
-    target_pos = pos;
+   if (const auto pos = _mon.screen_pos()) { // \todo would be nice to attack off-screen like C:Whales
+       int dist = rl_dist(z->pos, *pos);
+       if (_mon.is_enemy(z) && dist < closest && g->m.sees(z->pos, *pos, 18, t)) {
+           target = &_mon;
+           closest = dist;
+           fire_t = t;
+           target_pos = *pos;
+       }
    }
   }
   if (!target) return; // Couldn't find any targets!
