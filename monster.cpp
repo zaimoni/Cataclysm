@@ -239,7 +239,7 @@ bool monster::is_fleeing(const player &u) const
 
 monster_attitude monster::attitude(const player *u) const
 {
- if (friendly != 0) return MATT_FRIEND;
+ if (is_friend(u)) return MATT_FRIEND;
  if (has_effect(ME_RUN)) return MATT_FLEE;
 
  int effective_anger  = anger;

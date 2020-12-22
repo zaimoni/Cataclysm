@@ -1606,7 +1606,7 @@ void iuse::pheromone(game *g, player *p, item *it, bool t)
  for (int x = pos.x - 4; x <= pos.x + 4; x++) {
   for (int y = pos.y - 4; y <= pos.y + 4; y++) {
    if (monster* const m_at = g->mon(x,y)) {
-     if (m_at->symbol() == 'Z' && m_at->friendly == 0 && rng(0, 500) > m_at->hp) {
+     if (m_at->symbol() == 'Z' && m_at->is_enemy(p) && rng(0, 500) > m_at->hp) {
       converts++;
 	  m_at->make_friendly();
      }
@@ -1823,7 +1823,7 @@ void iuse::dog_whistle(game *g, player *p, item *it, bool t)
 {
  if (!p->is_npc()) messages.add("You blow your dog whistle.");
  for (int i = 0; i < g->z.size(); i++) {
-  if (g->z[i].friendly != 0 && g->z[i].type->id == mon_dog) {
+  if (g->z[i].is_friend(p) && g->z[i].type->id == mon_dog) {
    const bool u_see = g->u_see(&(g->z[i]));
    if (g->z[i].has_effect(ME_DOCILE)) {
     if (u_see) messages.add("Your %s looks ready to attack.", g->z[i].name().c_str());
@@ -2043,7 +2043,7 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
    for (int x = p->pos.x - 8; x <= p->pos.x + 8; x++) {
     for (int y = p->pos.y - 8; y <= p->pos.y + 8; y++) {
 	 if (monster* const m_at = g->mon(x,y)) {
-	   if (0 == m_at->friendly && rng(0, 600) > m_at->hp) m_at->make_friendly();
+	   if (m_at->is_enemy(p) && rng(0, 600) > m_at->hp) m_at->make_friendly();
 	 }
     }
    }

@@ -46,12 +46,13 @@ void monster::plan(game *g)
  int dist = 1000;
  int tc, stc;
  bool fleeing = false;
- if (friendly != 0) {	// Target monsters, not the player!
+ if (is_friend()) {	// Target monsters, not the player!
   const monster* closest_mon = nullptr;
   if (!has_effect(ME_DOCILE)) {
    for (const auto& _mon : g->z) {
+    if (!is_enemy(&_mon)) continue;
     const int test = rl_dist(pos, _mon.pos);
-    if (_mon.friendly == 0 && test < dist && g->m.sees(pos, _mon.pos, sightrange, tc)) {
+    if (test < dist && g->m.sees(pos, _mon.pos, sightrange, tc)) {
      closest_mon = &_mon;
      dist = test;
      stc = tc;
@@ -107,7 +108,7 @@ void monster::plan(game *g)
   const monster* closest_mon = nullptr;
   for (const auto& _mon : g->z) {
    int mondist = rl_dist(pos, _mon.pos);
-   if (_mon.friendly != 0 && mondist < dist && can_see() && g->m.sees(pos, _mon.pos, sightrange, tc)) {
+   if (is_enemy(&_mon) && mondist < dist && can_see() && g->m.sees(pos, _mon.pos, sightrange, tc)) {
     dist = mondist;
     if (fleeing) wand.set(2 * pos - _mon.pos, 40);
     else {
@@ -168,8 +169,7 @@ void monster::move(game *g)
  monster_attitude current_attitude = attitude(0 == friendly ? &(g->u) : nullptr);
 // If our plans end in a player, set our attitude to consider that player
  if (!plans.empty()) {
-  if (plans.back() == g->u.pos) current_attitude = attitude(&(g->u));
-  else if (npc* const _npc = g->nPC(plans.back())) current_attitude = attitude(_npc);
+  if (const auto _survivor = g->survivor(plans.back())) current_attitude = attitude(_survivor);
  }
 
  if (current_attitude == MATT_IGNORE ||
@@ -180,10 +180,10 @@ void monster::move(game *g)
 
  bool moved = false;
  point next;
- monster* const m_plan = (plans.size() > 0 ? g->mon(plans[0]) : nullptr);
+ monster* const m_plan = plans.empty() ? nullptr : g->mon(plans[0]);
 
  if (!plans.empty() && !is_fleeing(g->u) &&
-     (!m_plan || m_plan->friendly != 0 || has_flag(MF_ATTACKMON)) && can_sound_move_to(g, plans[0])){
+     (!m_plan || is_enemy(m_plan)) && can_sound_move_to(g, plans[0])){
   // CONCRETE PLANS - Most likely based on sight
   next = plans[0];
   moved = true;
@@ -214,7 +214,7 @@ void monster::move(game *g)
    hit_player(g, g->u);
   else if (m_at && m_at->type->species == species_hallu)
    g->kill_mon(*m_at);
-  else if (m_at && type->melee_dice > 0 && (m_at->friendly != 0 || has_flag(MF_ATTACKMON)))
+  else if (m_at && type->melee_dice > 0 && is_enemy(m_at))
    hit_monster(g, *m_at);
   else if (nPC && type->melee_dice > 0)
    hit_player(g, *nPC);
@@ -277,7 +277,7 @@ void monster::friendly_move(game *g)
   EraseAt(plans, 0);
   monster* const m_at = g->mon(next);
   npc* const nPC = g->nPC(next);
-  if (m_at && m_at->friendly == 0 && type->melee_dice > 0)
+  if (m_at && is_enemy(m_at) && type->melee_dice > 0)
       hit_monster(g, *m_at);
   else if (nPC && is_enemy(nPC) && type->melee_dice > 0)
       hit_player(g, *nPC);
@@ -309,7 +309,7 @@ point monster::scent_move(const game *g)
    point test(pos.x + x, pos.y + y);
    const auto smell = g->scent(test);
    const auto m_at = g->mon(test);
-   if ((!m_at || m_at->friendly != 0 || has_flag(MF_ATTACKMON)) && can_sound_move_to(g, test)) {
+   if ((!m_at || is_enemy(m_at)) && can_sound_move_to(g, test)) {
 	const bool fleeing = is_fleeing(g->u);
     if (   (!fleeing && smell > maxsmell)
 		|| ( fleeing && smell < minsmell)) {
@@ -454,7 +454,7 @@ void monster::hit_player(game *g, player &p, bool can_grab)
 void monster::move_to(game *g, const point& pt)
 {
  if (const auto m_at = g->mon(pt)) {
-   if (has_flag(MF_ATTACKMON) || m_at->friendly != 0)
+   if (is_enemy(m_at))
 // If there IS a monster there, and we fight monsters, fight it!
      hit_monster(g, *m_at);
    // \todo other interesting behaviors (side-step, etc.)
