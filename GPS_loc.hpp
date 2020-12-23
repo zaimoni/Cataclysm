@@ -31,6 +31,7 @@ inline GPS_loc operator+(GPS_loc lhs, const point& rhs) { return lhs += rhs; }
 inline GPS_loc operator+(const point& lhs, GPS_loc rhs) { return rhs += lhs; }
 std::variant<point, tripoint> operator-(const GPS_loc& lhs, const GPS_loc& rhs);
 
+int rl_dist(GPS_loc lhs, GPS_loc rhs);
 
 struct OM_loc : public std::pair<tripoint, point>
 {

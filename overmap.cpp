@@ -140,6 +140,25 @@ bool reality_bubble_loc::is_valid() const
     return true;
 }
 
+constexpr unsigned int abs_diff(int x, int y) {
+    if (x > y) return abs_diff(y, x);
+    if (0 <= x || 0 >= y) return y - x;
+    return (unsigned int)(-x) + y;
+}
+
+int rl_dist(GPS_loc lhs, GPS_loc rhs)
+{
+    if (lhs.first.z != rhs.first.z) return INT_MAX; // \todo not really
+    static constexpr const int scaled_max = (INT_MAX / 12) - 1;
+    if (   scaled_max < abs_diff(lhs.first.x, rhs.first.x)
+        || scaled_max < abs_diff(lhs.first.y, rhs.first.y))
+        return INT_MAX; // not quite right
+    tripoint macro_delta = lhs.first - rhs.first;
+    point delta(12 * macro_delta.x, 12 * macro_delta.y);
+    delta += (lhs.second - rhs.second);
+    return cataclysm::max(abs(delta.x), abs(delta.y));
+}
+
 // would prefer for this to be a free function but we have to have some way to distinguish between overmap and GPS coordinates
 int rl_dist(OM_loc lhs, OM_loc rhs)
 {

@@ -944,9 +944,9 @@ void mattack::smg(game *g, monster *z)
   point target_pos;
   int closest = 19;
   for(auto& _mon : g->z) {
-   if (const auto pos = _mon.screen_pos()) { // \todo would be nice to attack off-screen like C:Whales
-       int dist = rl_dist(z->pos, *pos);
-       if (_mon.is_enemy(z) && dist < closest && g->m.sees(z->pos, *pos, 18, t)) {
+   if (!_mon.is_enemy(z)) continue;
+   if (int dist = rl_dist(z->GPSpos, _mon.GPSpos); dist < closest) {
+       if (const auto pos = _mon.screen_pos(); g->m.sees(z->pos, *pos, 18, t)) { // \todo would be nice to attack off-reality bubble
            target = &_mon;
            closest = dist;
            fire_t = t;

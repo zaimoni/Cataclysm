@@ -1587,7 +1587,7 @@ void vehicle::fire_turret (int p, bool burst)
 
 bool vehicle::fire_turret_internal(const vehicle_part& p, it_gun &gun, const it_ammo &ammo, int charges)
 {
-	const point origin(screenPos() + p.precalc_d[0]);
+    const auto origin_GPS(GPSpos + p.precalc_d[0]);
     player* driving = driver();
     // code copied form mattack::smg, mattack::flamethrower
     int t, fire_t;
@@ -1596,12 +1596,12 @@ bool vehicle::fire_turret_internal(const vehicle_part& p, it_gun &gun, const it_
     const int range = ammo.type == AT_GAS? 5 : 12;
     int closest = range + 1;
 	auto g = game::active();
+    const point origin(screenPos() + p.precalc_d[0]);
     // use driver (eventually, ai who usually is friendly to driver) as definer of is_enemy status
 	for(auto& _mon : g->z) {
-        if (const auto pos = _mon.screen_pos()) {
-            int dist = rl_dist(origin, *pos);
-            if (_mon.is_enemy(driving) && dist < closest &&
-                g->m.sees(origin, *pos, range, t)) {
+        if (!_mon.is_enemy(driving)) continue;
+        if (const int dist = rl_dist(origin_GPS, _mon.GPSpos); dist < closest) {
+            if (const auto pos = _mon.screen_pos(); g->m.sees(origin, *pos, range, t)) {
                 target = &_mon;
                 closest = dist;
                 fire_t = t;
