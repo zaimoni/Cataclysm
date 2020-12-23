@@ -41,195 +41,46 @@ std::vector<const trap*> trap::traps;
 void trap::init()
 {
  int id = -1;
-#define TRAP(name, sym, color, visibility, avoidance, ...) \
-id++;\
-traps.push_back(new trap(id, sym, color, name, visibility, avoidance,\
-			 __VA_ARGS__));
 #ifndef SOCRATES_DAIMON
- TRAP("none", '?', c_white, 20, 0, 0, &trapfunc::none, &trapfuncm::none);
-
-//	Name			Symbol	Color		Vis Avd Diff
- TRAP("bubblewrap",		'_',	c_ltcyan,	 0,  8,  0,
-	&trapfunc::bubble,	&trapfuncm::bubble, itm_bubblewrap);
-
-//	Name			Symbol	Color		Vis Avd Diff
- TRAP("bear trap",		'^',	c_blue,		 2,  7,  3,
-	&trapfunc::beartrap,	&trapfuncm::beartrap, itm_beartrap);
-
-//	Name			Symbol	Color		Vis Avd Diff
- TRAP("buried bear trap",	'^',	c_blue,		 9,  8,  4,
-	&trapfunc::beartrap,	&trapfuncm::beartrap, itm_beartrap);
-
-//	Name			Symbol	Color		Vis Avd Diff
- TRAP("rabbit snare",		'\\',	c_brown,	 5, 10,  2,
-	&trapfunc::snare,	&trapfuncm::snare, itm_stick, itm_string_36);
-
- TRAP("spiked board",		'_',	c_ltgray,	 1,  6,  0,
-	&trapfunc::board,	&trapfuncm::board, itm_board_trap);
-
- TRAP("tripwire",		'^',	c_ltred,	 6,  4,  3,
-	&trapfunc::tripwire,	&trapfuncm::tripwire, itm_string_36);
-
- TRAP("crossbow trap",		'^',	c_green,	 5,  4,  5,
-	&trapfunc::crossbow,	&trapfuncm::crossbow, itm_string_36, itm_crossbow);
-
- TRAP("shotgun trap",		'^',	c_red,		 4,  5,  6,// 2 shots
-	&trapfunc::shotgun,	&trapfuncm::shotgun, itm_string_36, itm_shotgun_sawn);
-
- TRAP("shotgun trap",		'^',	c_red,		 4,  5,  6,// 1 shot
-	&trapfunc::shotgun,	&trapfuncm::shotgun, itm_string_36, itm_shotgun_sawn);
-
- TRAP("spinning blade engine",	'_',	c_ltred,	 0,  0,  2,
-	&trapfunc::none,	&trapfuncm::none, itm_motor, itm_machete, itm_machete);
-
- TRAP("spinning blade",		'\\',	c_cyan,		 0,  4, 99,
-	&trapfunc::blade,	&trapfuncm::blade);
-
-//	Name			Symbol	Color		Vis Avd Diff
- TRAP("land mine",		'_',	c_red,		10, 14, 10,
-	&trapfunc::landmine,	&trapfuncm::landmine, itm_landmine);
-
-//	Name			Symbol	Color		Vis Avd Diff
- TRAP("teleport pad",		'_',	c_magenta,	 0, 15, 20,
-	&trapfunc::telepad,	&trapfuncm::telepad);
-
-//	Name			Symbol	Color		Vis Avd Diff
- TRAP("goo pit",		'_',	c_dkgray,	 0, 15, 15,
-	&trapfunc::goo,		&trapfuncm::goo);
-
-//	Name			Symbol	Color		Vis Avd Diff
- TRAP("dissector",		'7',	c_cyan,		 2, 20, 99,
-	&trapfunc::dissector,	&trapfuncm::dissector);
-
-//	Name			Symbol	Color		Vis Avd Diff
- TRAP("sinkhole",		'_',	c_brown,	10, 14, 99,
-	&trapfunc::sinkhole,	&trapfuncm::sinkhole);
-
- TRAP("pit",			'0',	c_brown,	 0,  8, 99,
-	&trapfunc::pit,		&trapfuncm::pit);
-
- TRAP("spiked pit",		'0',	c_blue,		 0,  8, 99,
-	&trapfunc::pit_spikes,	&trapfuncm::pit_spikes);
-
- TRAP("lava",			'~',	c_red,		 0, 99, 99,
-	&trapfunc::lava,	&trapfuncm::lava);
-
-// The '%' symbol makes the portal cycle through ~*0&
-//	Name			Symbol	Color		Vis Avd Diff
- TRAP("shimmering portal",	'%',	c_magenta,	 0, 30, 99,
-	&trapfunc::portal,	&trapfuncm::portal);
-
- TRAP("ledge",			' ',	c_black,	 0, 99, 99,
-	&trapfunc::ledge,	&trapfuncm::ledge);
-
- TRAP("boobytrap",		'^',	c_ltcyan,	 5,  4,  7,
- 	&trapfunc::boobytrap,	&trapfuncm::boobytrap);
-
- TRAP("raised tile",		'^',	c_ltgray,	 9, 20, 99,
-	&trapfunc::temple_flood,&trapfuncm::none);
-
-// Toggles through states of RGB walls
- TRAP("",			'^',	c_white,	99, 99, 99,
-	&trapfunc::temple_toggle,	&trapfuncm::none);
-
-// Glow attack
- TRAP("",			'^',	c_white,	99, 99, 99,
-	&trapfunc::glow,	&trapfuncm::glow);
-
-// Hum attack
- TRAP("",			'^',	c_white,	99, 99, 99,
-	&trapfunc::hum,		&trapfuncm::hum);
-
-// Shadow spawn
- TRAP("",			'^',	c_white,	99, 99, 99,
-	&trapfunc::shadow,	&trapfuncm::none);
-
-// Drain attack
- TRAP("",			'^',	c_white,	99, 99, 99,
-	&trapfunc::drain,	&trapfuncm::drain);
-
-// Snake spawn / hisssss
- TRAP("",			'^',	c_white,	99, 99, 99,
-	&trapfunc::snake,	&trapfuncm::snake);
+#define TRAP_HANDLERS(A,B) , A, B
 #else
-TRAP("none", '?', c_white, 20, 0, 0);
-
-//	Name			Symbol	Color		Vis Avd Diff
-TRAP("bubblewrap", '_', c_ltcyan, 0, 8, 0, itm_bubblewrap);
-
-//	Name			Symbol	Color		Vis Avd Diff
-TRAP("bear trap", '^', c_blue, 2, 7, 3, itm_beartrap);
-
-//	Name			Symbol	Color		Vis Avd Diff
-TRAP("buried bear trap", '^', c_blue, 9, 8, 4, itm_beartrap);
-
-//	Name			Symbol	Color		Vis Avd Diff
-TRAP("rabbit snare", '\\', c_brown, 5, 10, 2, itm_stick, itm_string_36);
-
-TRAP("spiked board", '_', c_ltgray, 1, 6, 0, itm_board_trap);
-
-TRAP("tripwire", '^', c_ltred, 6, 4, 3, itm_string_36);
-
-TRAP("crossbow trap", '^', c_green, 5, 4, 5, itm_string_36, itm_crossbow);
-
-TRAP("shotgun trap", '^', c_red, 4, 5, 6, itm_string_36, itm_shotgun_sawn);// 2 shots
-
-TRAP("shotgun trap", '^', c_red, 4, 5, 6, itm_string_36, itm_shotgun_sawn);// 1 shot
-
-TRAP("spinning blade engine", '_', c_ltred, 0, 0, 2, itm_motor, itm_machete, itm_machete);
-
-TRAP("spinning blade", '\\', c_cyan, 0, 4, 99);
-
-//	Name			Symbol	Color		Vis Avd Diff
-TRAP("land mine", '_', c_red, 10, 14, 10, itm_landmine);
-
-//	Name			Symbol	Color		Vis Avd Diff
-TRAP("teleport pad", '_', c_magenta, 0, 15, 20);
-
-//	Name			Symbol	Color		Vis Avd Diff
-TRAP("goo pit", '_', c_dkgray, 0, 15, 15);
-
-//	Name			Symbol	Color		Vis Avd Diff
-TRAP("dissector", '7', c_cyan, 2, 20, 99);
-
-//	Name			Symbol	Color		Vis Avd Diff
-TRAP("sinkhole", '_', c_brown, 10, 14, 99);
-
-TRAP("pit", '0', c_brown, 0, 8, 99);
-
-TRAP("spiked pit", '0', c_blue, 0, 8, 99);
-
-TRAP("lava", '~', c_red, 0, 99, 99);
-
-// The '%' symbol makes the portal cycle through ~*0&
-//	Name			Symbol	Color		Vis Avd Diff
-TRAP("shimmering portal", '%', c_magenta, 0, 30, 99);
-
-TRAP("ledge", ' ', c_black, 0, 99, 99);
-
-TRAP("boobytrap", '^', c_ltcyan, 5, 4, 7);
-
-TRAP("raised tile", '^', c_ltgray, 9, 20, 99);
-
-// Toggles through states of RGB walls
-TRAP("", '^', c_white, 99, 99, 99);
-
-// Glow attack
-TRAP("", '^', c_white, 99, 99, 99);
-
-// Hum attack
-TRAP("", '^', c_white, 99, 99, 99);
-
-// Shadow spawn
-TRAP("", '^', c_white, 99, 99, 99);
-
-// Drain attack
-TRAP("", '^', c_white, 99, 99, 99);
-
-// Snake spawn / hisssss
-TRAP("", '^', c_white, 99, 99, 99);
+#define TRAP_HANDLERS(A,B)
 #endif
-#undef TRAP
+
+//	Name			Symbol	Color		Vis Avd Diff
+ traps.push_back(new trap(++id, "none", '?', c_white, 20, 0, 0, {} TRAP_HANDLERS(&trapfunc::none, &trapfuncm::none)));
+ traps.push_back(new trap(++id, "bubblewrap", '_', c_ltcyan, 0, 8, 0, { itm_bubblewrap } TRAP_HANDLERS(&trapfunc::bubble, &trapfuncm::bubble)));
+ traps.push_back(new trap(++id, "bear trap", '^', c_blue, 2, 7, 3, { itm_beartrap } TRAP_HANDLERS(&trapfunc::beartrap, &trapfuncm::beartrap)));
+ traps.push_back(new trap(++id, "buried bear trap", '^', c_blue, 9, 8, 4, { itm_beartrap } TRAP_HANDLERS(&trapfunc::beartrap, &trapfuncm::beartrap)));
+ traps.push_back(new trap(++id, "rabbit snare", '\\', c_brown, 5, 10, 2, { itm_stick, itm_string_36 } TRAP_HANDLERS(&trapfunc::snare, &trapfuncm::snare)));
+ traps.push_back(new trap(++id, "spiked board", '_', c_ltgray, 1, 6, 0, { itm_board_trap } TRAP_HANDLERS(&trapfunc::board, &trapfuncm::board)));
+ traps.push_back(new trap(++id, "tripwire", '^', c_ltred, 6, 4, 3, { itm_string_36 } TRAP_HANDLERS(&trapfunc::tripwire, &trapfuncm::tripwire)));
+ traps.push_back(new trap(++id, "crossbow trap", '^', c_green, 5, 4, 5, { itm_string_36, itm_crossbow } TRAP_HANDLERS(&trapfunc::crossbow, &trapfuncm::crossbow)));
+ traps.push_back(new trap(++id, "shotgun trap", '^', c_red, 4, 5, 6, { itm_string_36, itm_shotgun_sawn } TRAP_HANDLERS(&trapfunc::shotgun, &trapfuncm::shotgun))); // 2 shots
+ traps.push_back(new trap(++id, "shotgun trap", '^', c_red, 4, 5, 6, { itm_string_36, itm_shotgun_sawn } TRAP_HANDLERS(&trapfunc::shotgun, &trapfuncm::shotgun))); // 1 shot
+ traps.push_back(new trap(++id, "spinning blade engine", '_', c_ltred, 0, 0, 2, { itm_motor, itm_machete, itm_machete } TRAP_HANDLERS(&trapfunc::none, &trapfuncm::none)));
+ traps.push_back(new trap(++id, "spinning blade", '\\', c_cyan, 0, 4, 99, {} TRAP_HANDLERS(&trapfunc::blade, &trapfuncm::blade)));
+ traps.push_back(new trap(++id, "land mine", '_', c_red, 10, 14, 10, { itm_landmine } TRAP_HANDLERS(&trapfunc::landmine, &trapfuncm::landmine)));
+ traps.push_back(new trap(++id, "teleport pad", '_', c_magenta, 0, 15, 20, {} TRAP_HANDLERS(&trapfunc::telepad, &trapfuncm::telepad)));
+ traps.push_back(new trap(++id, "goo pit", '_', c_dkgray, 0, 15, 15, {} TRAP_HANDLERS(&trapfunc::goo, &trapfuncm::goo)));
+ traps.push_back(new trap(++id, "dissector", '7', c_cyan, 2, 20, 99, {} TRAP_HANDLERS(&trapfunc::dissector, &trapfuncm::dissector)));
+ traps.push_back(new trap(++id, "sinkhole", '_', c_brown, 10, 14, 99, {} TRAP_HANDLERS(&trapfunc::sinkhole, &trapfuncm::sinkhole)));
+ traps.push_back(new trap(++id, "pit", '0', c_brown, 0, 8, 99, {} TRAP_HANDLERS(&trapfunc::pit, &trapfuncm::pit)));
+ traps.push_back(new trap(++id, "spiked pit", '0', c_blue, 0, 8, 99, {} TRAP_HANDLERS(&trapfunc::pit_spikes, &trapfuncm::pit_spikes)));
+ traps.push_back(new trap(++id, "lava", '~', c_red, 0, 99, 99, {} TRAP_HANDLERS(&trapfunc::lava, &trapfuncm::lava)));
+ // The '%' symbol makes the portal cycle through ~*0&
+ traps.push_back(new trap(++id, "shimmering portal", '%', c_magenta, 0, 30, 99, {} TRAP_HANDLERS(&trapfunc::portal, &trapfuncm::portal)));
+ traps.push_back(new trap(++id, "ledge", ' ', c_black, 0, 99, 99, {} TRAP_HANDLERS(&trapfunc::ledge, &trapfuncm::ledge)));
+ traps.push_back(new trap(++id, "boobytrap", '^', c_ltcyan, 5, 4, 7, {} TRAP_HANDLERS(&trapfunc::boobytrap, &trapfuncm::boobytrap)));
+ traps.push_back(new trap(++id, "raised tile", '^', c_ltgray, 9, 20, 99, {} TRAP_HANDLERS(&trapfunc::temple_flood, &trapfuncm::none)));
+ // Toggles through states of RGB walls
+ traps.push_back(new trap(++id, "", '^', c_white, 99, 99, 99, {} TRAP_HANDLERS(&trapfunc::temple_toggle, &trapfuncm::none)));
+ traps.push_back(new trap(++id, "", '^', c_white, 99, 99, 99, {} TRAP_HANDLERS(&trapfunc::glow, &trapfuncm::glow))); // Glow attack
+ traps.push_back(new trap(++id, "", '^', c_white, 99, 99, 99, {} TRAP_HANDLERS(&trapfunc::hum, &trapfuncm::hum))); // Hum attack
+ traps.push_back(new trap(++id, "", '^', c_white, 99, 99, 99, {} TRAP_HANDLERS(&trapfunc::shadow, &trapfuncm::none))); // Shadow spawn
+ traps.push_back(new trap(++id, "", '^', c_white, 99, 99, 99, {} TRAP_HANDLERS(&trapfunc::drain, &trapfuncm::drain))); // Drain attack
+ traps.push_back(new trap(++id, "", '^', c_white, 99, 99, 99, {} TRAP_HANDLERS(&trapfunc::snake, &trapfuncm::snake))); // Snake spawn / hisssss
+#undef TRAP_HANDLERS
 
 	assert(num_trap_types == traps.size());	// postcondition check
 }

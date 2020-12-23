@@ -122,24 +122,22 @@ struct trap {
  void (*actm)(game *, monster *);	// Monster stepped on it
 #endif
  
- trap(int pid, char psym, nc_color pcolor, std::string pname,
+ trap(int pid, std::string pname, char psym, nc_color pcolor,
       int pvisibility, int pavoidance, int pdifficulty, 
+      std::initializer_list<itype_id> pcomponents
 #ifndef SOCRATES_DAIMON
-      void (*pact)(game *, int x, int y),
-      void (*pactm)(game *, monster *),
+      , void (*pact)(game *, int x, int y),
+      void (*pactm)(game *, monster *)
 #endif
-      itype_id part = itm_null, itype_id part2 = itm_null, itype_id part3 = itm_null)
- : id(pid),sym(psym),color(pcolor),name(pname),visibility(pvisibility),avoidance(pavoidance),difficulty(pdifficulty)
+      )
+ : id(pid),sym(psym),color(pcolor),name(pname),visibility(pvisibility),avoidance(pavoidance),difficulty(pdifficulty),components(pcomponents)
 #ifndef SOCRATES_DAIMON
      ,act(pact),actm(pactm)
 #endif
  {
-  if (part) components.push_back(part);
-  if (part2) components.push_back(part2);
-  if (part3) components.push_back(part3);
- };
+ }
 
- bool disarm_legal() const { return id != tr_null && difficulty < 99; };
+ bool disarm_legal() const { return id != tr_null && difficulty < 99; }
 
  static void init();
 };
