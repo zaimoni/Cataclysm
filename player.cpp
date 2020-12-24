@@ -5058,11 +5058,14 @@ bool player::can_sleep(const map& m) const
  if (has_addiction(ADD_SLEEP)) sleepy -= 3;
  if (has_trait(PF_INSOMNIA)) sleepy -= 8;
 
- const auto veh = m._veh_at(pos);
+ const auto veh = GPSpos.veh_at();
  if (veh && veh->first->part_with_feature(veh->second, vpf_seat) >= 0) sleepy += 4;
- else if (m.ter(pos) == t_bed) sleepy += 5;
- else if (m.ter(pos) == t_floor) sleepy += 1;
- else sleepy -= m.move_cost(pos);
+ else {
+     decltype(auto) sleeping_on = GPSpos.ter();
+     if (t_bed == sleeping_on) sleepy += 5;
+     else if (t_floor == sleeping_on) sleepy += 1;
+     else sleepy -= m.move_cost(pos);
+ }
  sleepy = (192 > fatigue) ? (192-fatigue)/4 : (fatigue-192)/16;
  sleepy += rng(-8, 8);
  sleepy -= 2 * stim;

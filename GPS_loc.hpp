@@ -8,6 +8,7 @@
 #include <optional>
 
 class vehicle;
+enum ter_id;
 enum trap_id;
 
 // normalized range for GPS_loc.second is 0..SEE-1, 0..SEE-1
@@ -23,8 +24,11 @@ struct GPS_loc : public std::pair<tripoint, point>
 
 	GPS_loc& operator+=(const point& src);
 
-	bool is_outside() const; // map.cpp
-	std::optional<std::pair<vehicle*, int>> veh_at() const; // map.cpp
+	// following in map.cpp
+	ter_id& ter();
+	ter_id ter() const;
+	bool is_outside() const;
+	std::optional<std::pair<vehicle*, int>> veh_at() const;
 	trap_id& trap_at();
 	trap_id trap_at() const;
 };
@@ -32,8 +36,9 @@ struct GPS_loc : public std::pair<tripoint, point>
 // \todo evaluate whether these should be out-of-line defined (likely a matter of binary size, compile+link time)
 inline GPS_loc operator+(GPS_loc lhs, const point& rhs) { return lhs += rhs; }
 inline GPS_loc operator+(const point& lhs, GPS_loc rhs) { return rhs += lhs; }
-std::variant<point, tripoint> operator-(const GPS_loc& lhs, const GPS_loc& rhs);
 
+// following in overmap.cpp
+std::variant<point, tripoint> operator-(const GPS_loc& lhs, const GPS_loc& rhs);
 int rl_dist(GPS_loc lhs, GPS_loc rhs);
 
 struct OM_loc : public std::pair<tripoint, point>

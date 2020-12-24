@@ -551,6 +551,18 @@ bool map::displace_water (int x, int y)
     return false;
 }
 
+ter_id& GPS_loc::ter()
+{
+    if (submap* const sm = MAPBUFFER.lookup_submap(first)) return sm->ter[second.x][second.y];
+    return (discard<ter_id>::x = t_null); // Out-of-bounds - null terrain
+}
+
+ter_id GPS_loc::ter() const
+{
+    if (const submap* const sm = MAPBUFFER.lookup_submap(first)) return sm->ter[second.x][second.y];
+    return t_null; // Out-of-bounds - null terrain
+}
+
 ter_id& map::ter(int x, int y)
 {
     if (const auto pos = to(x, y)) return grid[pos->first]->ter[pos->second.x][pos->second.y];
