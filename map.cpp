@@ -1626,7 +1626,25 @@ void map::use_charges(point origin, int range, const itype_id type, int quantity
   }
  }
 }
- 
+
+trap_id& GPS_loc::trap_at()
+{
+    if (decltype(auto) sm = MAPBUFFER.lookup_submap(first)) {
+        if (const auto terrain_trap = ter_t::list[sm->ter[second.x][second.y]].trap) return (discard<trap_id>::x = terrain_trap);
+        return sm->trp[second.x][second.y];
+    }
+    return (discard<trap_id>::x = tr_null);	// Out-of-bounds, return our null trap
+}
+
+trap_id GPS_loc::trap_at() const
+{
+    if (decltype(auto) sm = MAPBUFFER.lookup_submap(first)) {
+        if (const auto terrain_trap = ter_t::list[sm->ter[second.x][second.y]].trap) return terrain_trap;
+        return sm->trp[second.x][second.y];
+    }
+    return tr_null;	// Out-of-bounds, return our null trap
+}
+
 trap_id& map::tr_at(int x, int y)
 {
     if (const auto pos = to(x, y)) {

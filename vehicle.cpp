@@ -1112,8 +1112,9 @@ void vehicle::handle_trap(const point& pt, int part)
     int pwh = part_with_feature (part, vpf_wheel);
     if (pwh < 0) return;
 	auto g = game::active();
-    trap_id t = g->m.tr_at(pt);
-    if (t == tr_null) return;
+    trap_id& tr = g->m.tr_at(pt);
+    if (tr_null == tr) return;
+    const std::string& tr_name = trap::traps[tr]->name; // message must refer to before-update trap
     int noise = 0;
     int chance = 100;
     int expl = 0;
@@ -1121,7 +1122,7 @@ void vehicle::handle_trap(const point& pt, int part)
     bool wreckit = false;
     const char* msg = "The %s's %s runs over %s.";
     std::string snd;
-    switch (t)
+    switch (tr)
     {
         case tr_bubblewrap:
             noise = 18;
@@ -1132,7 +1133,7 @@ void vehicle::handle_trap(const point& pt, int part)
             noise = 8;
             snd = "SNAP!";
             wreckit = true;
-            g->m.tr_at(pt) = tr_null;
+            tr = tr_null;
             g->m.add_item(pt, item::types[itm_beartrap], 0);
             break;
         case tr_nailboard:
@@ -1148,7 +1149,7 @@ void vehicle::handle_trap(const point& pt, int part)
             noise = 1;
             snd = "Clank!";
             wreckit = true;
-            g->m.tr_at(pt) = tr_null;
+            tr = tr_null;
             g->m.add_item(pt, item::types[itm_crossbow], 0);
             g->m.add_item(pt, item::types[itm_string_6], 0);
             if (!one_in(10)) g->m.add_item(pt, item::types[itm_bolt_steel], 0);
@@ -1159,9 +1160,9 @@ void vehicle::handle_trap(const point& pt, int part)
             snd = "Bang!";
             chance = 70;
             wreckit = true;
-            if (t == tr_shotgun_2) g->m.tr_at(pt) = tr_shotgun_1;
+            if (tr_shotgun_2 == tr) tr = tr_shotgun_1;
             else {
-                g->m.tr_at(pt) = tr_null;
+                tr = tr_null;
                 g->m.add_item(pt, item::types[itm_shotgun_sawn], 0);
                 g->m.add_item(pt, item::types[itm_string_6], 0);
             }
@@ -1194,7 +1195,7 @@ void vehicle::handle_trap(const point& pt, int part)
         default:;
     }
     if (msg && g->u_see(pt))
-		messages.add(msg, name.c_str(), part_info(part).name, trap::traps[t]->name.c_str());
+		messages.add(msg, name.c_str(), part_info(part).name, tr_name.c_str());
     if (noise > 0) g->sound(pt, noise, snd);
     if (wreckit && chance >= rng (1, 100)) damage(part, 500);
     if (expl > 0) g->explosion(pt, expl, shrap, false);

@@ -14,7 +14,7 @@ void trapfunc::bubble(game *g, int x, int y)
 void trapfuncm::bubble(game *g, monster *z)
 {
  g->sound(z->pos, 18, "Pop!");
- g->m.tr_at(z->pos) = tr_null;
+ z->GPSpos.trap_at() = tr_null;
 }
 
 void trapfunc::beartrap(game *g, int x, int y)
@@ -114,7 +114,7 @@ void trapfuncm::crossbow(game *g, monster *z)
   if (z->hurt(rng(20, 30))) g->kill_mon(*z);
   add_bolt = !one_in(10);
  } else if (seen) messages.add("A bolt shoots out, but misses the %s.", z->name().c_str());
- g->m.tr_at(z->pos) = tr_null;
+ z->GPSpos.trap_at() = tr_null;
  g->m.add_item(z->pos, item::types[itm_crossbow], 0);
  g->m.add_item(z->pos, item::types[itm_string_6], 0);
  if (add_bolt) g->m.add_item(z->pos, item::types[itm_bolt_steel], 0);
@@ -155,7 +155,7 @@ void trapfuncm::shotgun(game *g, monster *z)
 {
  const static int evade_double_shot[mtype::MS_MAX] = { 100, 16, 12, 8, 2 };	// corresponding typical PC strmax: sub-zero, 4, 8, 12, 18
  bool seen = g->u_see(z);
- auto& trap = g->m.tr_at(z->pos);
+ auto& trap = z->GPSpos.trap_at();
  int shots = (tr_shotgun_1 != trap && (one_in(8) || one_in(evade_double_shot[z->type->size]))) ? 2 : 1;
  if (seen) messages.add("A shotgun fires and hits the %s!", z->name().c_str());
  if (z->hurt(rng(40 * shots, 60 * shots))) g->kill_mon(*z);
@@ -194,7 +194,7 @@ void trapfuncm::landmine(game *g, monster *z)
 {
  if (g->u_see(z->pos)) messages.add("The %s steps on a landmine!", z->name().c_str());
  g->explosion(z->pos, 10, 8, false);
- g->m.tr_at(z->pos) = tr_null;
+ z->GPSpos.trap_at() = tr_null;
 }
 
 void trapfunc::boobytrap(game *g, int x, int y)
@@ -208,7 +208,7 @@ void trapfuncm::boobytrap(game *g, monster *z)
 {
  if (g->u_see(z->pos)) messages.add("The %s triggers a boobytrap!", z->name().c_str());
  g->explosion(z->pos, 18, 12, false);
- g->m.tr_at(z->pos) = tr_null;
+ z->GPSpos.trap_at() = tr_null;
 }
 
 void trapfunc::telepad(game *g, int x, int y)
@@ -258,7 +258,7 @@ void trapfuncm::goo(game *g, monster *z)
   z->speed -= 15;
   z->hp = z->speed;
  }
- g->m.tr_at(z->pos) = tr_null;
+ z->GPSpos.trap_at() = tr_null;
 }
 
 void trapfunc::dissector(game *g, int x, int y)
@@ -599,5 +599,5 @@ void trapfunc::snake(game *g, int x, int y)
 void trapfuncm::snake(game *g, monster *z)
 {
  g->sound(z->pos, 10, "ssssssss");
- if (one_in(6)) g->m.tr_at(z->pos) = tr_null;
+ if (one_in(6)) z->GPSpos.trap_at() = tr_null;
 }

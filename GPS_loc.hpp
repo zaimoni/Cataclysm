@@ -8,6 +8,7 @@
 #include <optional>
 
 class vehicle;
+enum trap_id;
 
 // normalized range for GPS_loc.second is 0..SEE-1, 0..SEE-1
 // reality_bubble_loc.second == GPS_loc.second for normalized GPS_loc corresponding to reality_bubble_loc
@@ -24,6 +25,8 @@ struct GPS_loc : public std::pair<tripoint, point>
 
 	bool is_outside() const; // map.cpp
 	std::optional<std::pair<vehicle*, int>> veh_at() const; // map.cpp
+	trap_id& trap_at();
+	trap_id trap_at() const;
 };
 
 // \todo evaluate whether these should be out-of-line defined (likely a matter of binary size, compile+link time)
