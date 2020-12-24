@@ -4713,13 +4713,15 @@ void game::complete_butcher(int index)
 
 void game::eat()
 {
- if (u.has_trait(PF_RUMINANT) && m.ter(u.pos) == t_underbrush &&
-     query_yn("Eat underbrush?")) {
-  u.moves -= 400;
-  u.hunger -= 10;
-  m.ter(u.pos) = t_grass;
-  messages.add("You eat the underbrush.");
-  return;
+ if (u.has_trait(PF_RUMINANT)) {
+     ter_id& terrain = u.GPSpos.ter();
+     if (t_underbrush == terrain && query_yn("Eat underbrush?")) {
+         u.moves -= 400;
+         u.hunger -= 10;
+         terrain = t_grass;
+         messages.add("You eat the underbrush.");
+         return;
+     }
  }
  char ch = inv("Consume item:");
  if (ch == KEY_ESCAPE) {

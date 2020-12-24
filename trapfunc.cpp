@@ -351,8 +351,8 @@ void trapfuncm::pit_spikes(game *g, monster *z)
 
  if (one_in(4)) {
   if (sees) messages.add("The spears break!");
-  g->m.ter(z->pos) = t_pit;
-  g->m.tr_at(z->pos) = tr_pit;
+  z->GPSpos.ter() = t_pit;
+  z->GPSpos.trap_at() = tr_pit;
   for (int i = 0; i < 4; i++) { // 4 spears to a pit
    if (one_in(3)) g->m.add_item(z->pos, item::types[itm_spear_wood], messages.turn);
   }
