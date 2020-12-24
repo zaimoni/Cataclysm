@@ -181,7 +181,7 @@ public:
  void use(game *g, char let);	// Use a tool \todo V 0.2.1 extend to NPCs? (UI-driven)
  bool install_bionics(game *g, const it_bionic* type);	// Install bionics \todo V 0.2.1 enable for NPCs
  void read(game *g, char let);	// Read a book	V 0.2.1 \todo enable for NPCs? (UI driven)
- void try_to_sleep(const map& m);	// '$' command; adds DIS_LYING_DOWN	\todo V 0.2.1 extend to NPCs
+ void try_to_sleep();	// '$' command; adds DIS_LYING_DOWN	\todo V 0.2.1 extend to NPCs
  bool can_sleep(const map& m) const;	// Checked each turn during DIS_LYING_DOWN
 
  int warmth(body_part bp) const;	// Warmth provided by armor &c; \todo cf game::check_warmth which might belong over in player

@@ -1221,7 +1221,7 @@ void game::get_input()
     veh->cruise_on = !veh->cruise_on;
 	messages.add("Cruise control turned %s.", veh->cruise_on? "on" : "off");
    } else if (query_yn("Are you sure you want to sleep?")) {
-    u.try_to_sleep(m);
+    u.try_to_sleep();
     u.moves = 0;
    }
    break;

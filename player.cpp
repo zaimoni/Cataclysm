@@ -5035,9 +5035,9 @@ void player::read(game *g, char ch)
  moves = 0;
 }
  
-void player::try_to_sleep(const map& m)
+void player::try_to_sleep()
 {
- switch (const auto terrain = m.ter(pos))
+ switch (const auto terrain = GPSpos.ter())
  {
  case t_floor: break;
  case t_bed:
