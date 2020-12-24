@@ -279,6 +279,9 @@
     <ClInclude Include="fragment.inc\rng_box.hpp">
       <Filter>Header Files\fragment.inc</Filter>
     </ClInclude>
+    <ClInclude Include="trap_handler.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

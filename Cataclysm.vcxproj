@@ -228,6 +228,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="tileray.h" />
     <ClInclude Include="trap.h" />
+    <ClInclude Include="trap_handler.hpp" />
     <ClInclude Include="tutorial.h" />
     <ClInclude Include="ui.h" />
     <ClInclude Include="vehicle.h" />

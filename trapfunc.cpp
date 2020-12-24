@@ -1,3 +1,4 @@
+#include "trap_handler.hpp"
 #include "trap.h"
 #include "rng.h"
 #include "game.h"

@@ -1,4 +1,7 @@
 #include "trap.h"
+#ifndef SOCRATES_DAIMON
+#include "trap_handler.hpp"
+#endif
 #include <string.h>
 #include "Zaimoni.STL/Logging.h"
 
