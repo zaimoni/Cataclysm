@@ -10,6 +10,8 @@
 #include <fstream>
 #include <array>
 
+void trap_fully_triggered(map& m, const point& pt, const std::vector<item_drop_spec>& drop_these); // trapfunc.cpp
+
 static const ammotype fuel_types[] = { AT_GAS, AT_BATT, AT_PLUT, AT_PLASMA };   // 2020-07-12 arguably could be sunk to vehicle::print_fuel_indicator
 static constexpr const size_t num_fuel_types = sizeof(fuel_types) / sizeof(*fuel_types);
 
@@ -1133,8 +1135,8 @@ void vehicle::handle_trap(const point& pt, int part)
             noise = 8;
             snd = "SNAP!";
             wreckit = true;
-            tr = tr_null;
-            g->m.add_item(pt, item::types[itm_beartrap], 0);
+            // the two beartraps have the same configuration
+            trap_fully_triggered(g->m, pt, trap::traps[tr_beartrap]->trigger_components);
             break;
         case tr_nailboard:
             wreckit = true;

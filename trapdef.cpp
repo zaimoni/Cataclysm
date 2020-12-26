@@ -53,8 +53,8 @@ void trap::init()
 //	Name			Symbol	Color		Vis Avd Diff
  traps.push_back(new trap(++id, "none", '?', c_white, 20, 0, 0, {}, {} TRAP_HANDLERS(&trapfunc::none, &trapfuncm::none)));
  traps.push_back(new trap(++id, "bubblewrap", '_', c_ltcyan, 0, 8, 0, { itm_bubblewrap }, {} TRAP_HANDLERS(&trapfunc::bubble, &trapfuncm::bubble)));
- traps.push_back(new trap(++id, "bear trap", '^', c_blue, 2, 7, 3, { itm_beartrap }, {} TRAP_HANDLERS(&trapfunc::beartrap, &trapfuncm::beartrap)));
- traps.push_back(new trap(++id, "buried bear trap", '^', c_blue, 9, 8, 4, { itm_beartrap }, {} TRAP_HANDLERS(&trapfunc::beartrap, &trapfuncm::beartrap)));
+ traps.push_back(new trap(++id, "bear trap", '^', c_blue, 2, 7, 3, { itm_beartrap }, { { itm_beartrap } } TRAP_HANDLERS(&trapfunc::beartrap, &trapfuncm::beartrap)));
+ traps.push_back(new trap(++id, "buried bear trap", '^', c_blue, 9, 8, 4, { itm_beartrap }, { { itm_beartrap } } TRAP_HANDLERS(&trapfunc::beartrap, &trapfuncm::beartrap)));
  traps.push_back(new trap(++id, "rabbit snare", '\\', c_brown, 5, 10, 2, { itm_stick, itm_string_36 }, {} TRAP_HANDLERS(&trapfunc::snare, &trapfuncm::snare)));
  traps.push_back(new trap(++id, "spiked board", '_', c_ltgray, 1, 6, 0, { itm_board_trap }, {} TRAP_HANDLERS(&trapfunc::board, &trapfuncm::board)));
  traps.push_back(new trap(++id, "tripwire", '^', c_ltred, 6, 4, 3, { itm_string_36 }, {} TRAP_HANDLERS(&trapfunc::tripwire, &trapfuncm::tripwire)));

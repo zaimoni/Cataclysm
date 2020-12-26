@@ -4,6 +4,20 @@
 #include "game.h"
 #include "recent_msg.h"
 
+// \todo replace this with a reality_bubble version
+void trap_fully_triggered(map& m, const point& pt, const std::vector<item_drop_spec>& drop_these)
+{
+    m.tr_at(pt) = tr_null;
+    for (decltype(auto) drop : drop_these) {
+        int n = drop.qty;
+        while (0 <= --n) {
+            // hard-code one_in processing for now
+            if (1 < drop.modifier && !one_in(drop.modifier)) continue;
+            m.add_item(pt, item::types[drop.what], 0); // could use messages.turn instead; current representation doesn't track age of components used to build the trap
+        }
+    }
+}
+
 void trapfunc::bubble(game *g, int x, int y)
 {
  messages.add("You step on some bubblewrap!");
@@ -23,8 +37,8 @@ void trapfunc::beartrap(game *g, int x, int y)
  g->sound(point(x, y), 8, "SNAP!");
  g->u.hit(g, bp_legs, rng(0, 1), 10, 16);
  g->u.add_disease(DI_BEARTRAP, -1);
- g->m.tr_at(x, y) = tr_null;
- g->m.add_item(x, y, item::types[itm_beartrap], messages.turn);
+ // the two beartraps have the same configuration
+ trap_fully_triggered(g->m, point(x, y), trap::traps[tr_beartrap]->trigger_components);
 }
 
 void trapfuncm::beartrap(game *g, monster *z)
