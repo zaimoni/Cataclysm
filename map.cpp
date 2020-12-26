@@ -9,6 +9,7 @@
 #include "json.h"
 #include "recent_msg.h"
 #include "om_cache.hpp"
+#include "stl_limits.h"
 #include <fstream>
 #include <iostream>
 #include <cmath>
@@ -1681,7 +1682,7 @@ void map::disarm_trap(game *g, const point& pt)
  int roll = rng(g->u.sklevel[sk_traps], 4 * g->u.sklevel[sk_traps]);
  while ((rng(5, 20) < g->u.per_cur || rng(1, 20) < g->u.dex_cur) && roll < 50) roll++;
 
- if (roll < diff * .8) {
+ if (roll < rational_scaled<4, 5>(diff)) {
   const bool will_get_xp = (diff - roll <= 6);
   messages.add(will_get_xp ? "You barely fail to disarm the trap, and you set it off!" 
 	: "You fail to disarm the trap, and you set it off!");
@@ -1693,7 +1694,7 @@ void map::disarm_trap(game *g, const point& pt)
  }
 
  // Learning is exciting and worth emphasis.  Skill must be no more than 80% of difficulty to learn.
- const bool will_get_xp = (diff > (1.25*g->u.sklevel[sk_traps]));
+ const bool will_get_xp = (diff > rational_scaled<5, 4>(g->u.sklevel[sk_traps]));
 
  if (roll >= diff) {
   messages.add(will_get_xp ? "You disarm the trap!" : "You disarm the trap.");
@@ -1704,7 +1705,7 @@ void map::disarm_trap(game *g, const point& pt)
  } else {
   messages.add(will_get_xp  ? "You fail to disarm the trap!" : "You fail to disarm the trap.");
  }
- if (will_get_xp) g->u.practice(sk_traps, 1.5*(diff - g->u.sklevel[sk_traps]));
+ if (will_get_xp) g->u.practice(sk_traps, rational_scaled<3, 2>(diff - g->u.sklevel[sk_traps]));
 }
  
 field& map::field_at(int x, int y)
