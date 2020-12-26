@@ -1697,7 +1697,7 @@ void map::disarm_trap(game *g, const point& pt)
 
  if (roll >= diff) {
   messages.add(will_get_xp ? "You disarm the trap!" : "You disarm the trap.");
-  for (const auto item_id : tr->components) {
+  for (const auto item_id : tr->disarm_components) {
    if (item_id != itm_null) add_item(pt, item::types[item_id], 0);
   }
   tr_at(pt) = tr_null;
