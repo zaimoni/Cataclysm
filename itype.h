@@ -208,6 +208,19 @@ num_all_items
 
 DECLARE_JSON_ENUM_SUPPORT(itype_id)
 
+struct item_drop_spec final
+{
+	itype_id what;
+	int qty;
+//	int mode; // will need this to specify formula type; for now implicitly requests one_in processing.  Credible scoped enumeration.
+	int modifier;
+
+	item_drop_spec(itype_id what, int qty = 1, int modifier = 0) noexcept : what(what), qty(qty), modifier(modifier) {}
+	item_drop_spec(const item_drop_spec&) = default;
+	~item_drop_spec() = default;
+	item_drop_spec& operator=(const item_drop_spec&) = default;
+};
+
 // IMPORTANT: If adding a new AT_*** ammotype, add it to the ammo_name function
 //  at the end of itypedef.cpp
 enum ammotype {

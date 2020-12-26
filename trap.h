@@ -55,7 +55,8 @@ struct trap {
  int visibility;// 1 to ??, affects detection
  int avoidance;	// 0 to ??, affects avoidance
  int difficulty; // 0 to ??, difficulty of assembly & disassembly
- std::vector<itype_id> disarm_components;	// For disassembly?
+ std::vector<itype_id> disarm_components;	// For disarming
+ std::vector<item_drop_spec> trigger_components; // When triggered
  
  // \todo trap action for npcs
 #ifndef SOCRATES_DAIMON
@@ -65,13 +66,15 @@ struct trap {
  
  trap(int pid, std::string pname, char psym, nc_color pcolor,
       int pvisibility, int pavoidance, int pdifficulty, 
-      std::initializer_list<itype_id> pcomponents
+      std::initializer_list<itype_id> pcomponents,
+      std::initializer_list<item_drop_spec> ptriggered
 #ifndef SOCRATES_DAIMON
       , void (*pact)(game *, int x, int y),
       void (*pactm)(game *, monster *)
 #endif
       )
- : id(pid),sym(psym),color(pcolor),name(pname),visibility(pvisibility),avoidance(pavoidance),difficulty(pdifficulty),disarm_components(pcomponents)
+ : id(pid), sym(psym), color(pcolor), name(pname), visibility(pvisibility), avoidance(pavoidance), difficulty(pdifficulty),
+   disarm_components(pcomponents), trigger_components(ptriggered)
 #ifndef SOCRATES_DAIMON
      ,act(pact),actm(pactm)
 #endif
