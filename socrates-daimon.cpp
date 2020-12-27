@@ -131,6 +131,7 @@ int main(int argc, char *argv[])
 	item::init();
 	mtype::init();
 //	mtype::init_items();     need to do this but at a later stage
+	trap::init();
 
 	// item HTML setup
 	const html::tag _html("html");	// stage-printed
@@ -1515,9 +1516,13 @@ int main(int argc, char *argv[])
 #define TERRAIN_HTML "terrain.html"
 #define TERRAIN_ID "terrain"
 #define TERRAIN_LINK_NAME "Terrain"
+#define TRAPS_HTML "traps.html"
+#define TRAPS_ID "traps"
+#define TRAPS_LINK_NAME "Traps"
 
 	mapnav_nav.append(typicalMenuLink(FIELDS_ID, FIELDS_LINK_NAME, "./" FIELDS_HTML));
 	mapnav_nav.append(typicalMenuLink(TERRAIN_ID, TERRAIN_LINK_NAME, "./" TERRAIN_HTML));
+	mapnav_nav.append(typicalMenuLink(TRAPS_ID, TRAPS_LINK_NAME, "./" TRAPS_HTML));
 
 	mapnav_point.append(mapnav_nav);
 
@@ -1714,6 +1719,112 @@ int main(int argc, char *argv[])
 				table_row[3]->clear();
 			}
 		}
+		while (page.end_print());
+		}
+
+		unlink(HTML_TARGET);
+		rename(HTML_TARGET ".tmp", HTML_TARGET);
+	}
+
+#undef HTML_TARGET
+
+#define HTML_TARGET HTML_DIR TRAPS_HTML
+
+	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
+		{
+		html::to_text page(out);
+		page.start_print(_html);
+		_title->append(html::tag::wrap("Cataclysm:Z " TRAPS_LINK_NAME));
+		page.print(_head);
+		_title->clear();
+		page.start_print(_body);
+		{
+		auto revert = swapDOM("#" TRAPS_ID "_link", global_nav, html::tag("b", TRAPS_LINK_NAME));
+		page.print(global_nav);
+		*revert.first = std::move(revert.second);
+		}
+
+		page.start_print(_data_table);
+		// actual content
+		{
+			html::tag table_header("tr");
+			table_header.set(attr_align, val_center);
+			table_header.append(html::tag("th", "Name"));
+			table_header.append(html::tag("th", "ASCII"));
+			table_header.append(html::tag("th", "visibility"));
+			table_header.append(html::tag("th", "avoidance"));
+			table_header.append(html::tag("th", "difficulty"));
+			table_header.append(html::tag("th", "disarmed parts"));
+			table_header.append(html::tag("th", "triggered parts"));
+			page.print(table_header);
+		}
+
+		{
+			static const std::string no_disarm("cannot disarm");
+
+			static const std::string color("color: ");
+			static const std::string background("; background-color:");
+			html::tag cell("td");
+			html::tag table_row("tr");
+			table_row.set(attr_align, val_left);
+			table_row.append(cell);
+			table_row.append(cell);
+			table_row.append(cell);
+			table_row.append(cell);
+			table_row.append(cell);
+			table_row.append(cell);
+			table_row.append(cell);
+
+			size_t ub = num_trap_types;
+			const char* css_fg = nullptr;
+			const char* css_bg = nullptr;
+			while (0 < --ub) {
+				const trap& x = *trap::traps[ub];
+				table_row[0]->append(html::tag::wrap(x.name));
+				if (to_css_colors(x.color, css_fg, css_bg)) {
+					html::tag colorize("span", std::string(1, x.sym));
+					colorize.set("style", color + css_fg + background + css_bg);
+					table_row[1]->append(std::move(colorize));
+				} else {
+					table_row[1]->append(html::tag::wrap(std::string(1, x.sym)));
+				}
+				table_row[2]->append(std::to_string(x.visibility));
+				table_row[3]->append(std::to_string(x.avoidance));
+				if (x.disarm_legal()) {
+					table_row[4]->append(std::to_string(x.difficulty));
+				} else {
+					table_row[4]->append(no_disarm);
+				}
+				if (!x.disarm_components.empty()) {
+					std::string desc;
+					// align with map::disarm_trap
+					for (const itype_id it : x.disarm_components) {
+						const itype& info = *item::types[it];
+						if (!desc.empty()) desc += "<br>\n";
+						desc += "1 ";
+						desc += info.name;
+					}
+					table_row[5]->append(std::move(desc));
+				}
+				if (!x.trigger_components.empty()) {
+					std::string desc;
+					for (decltype(auto) it : x.trigger_components) {
+						if (!desc.empty()) desc += "<br>\n";
+						desc += it.to_s();
+					}
+					table_row[6]->append(std::move(desc));
+				}
+
+				page.print(table_row);
+				table_row[0]->clear();
+				table_row[1]->clear();
+				table_row[2]->clear();
+				table_row[3]->clear();
+				table_row[4]->clear();
+				table_row[5]->clear();
+				table_row[6]->clear();
+			}
+			}
 		while (page.end_print());
 		}
 

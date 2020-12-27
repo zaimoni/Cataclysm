@@ -219,6 +219,8 @@ struct item_drop_spec final
 	item_drop_spec(const item_drop_spec&) = default;
 	~item_drop_spec() = default;
 	item_drop_spec& operator=(const item_drop_spec&) = default;
+
+	std::string to_s() const;
 };
 
 // IMPORTANT: If adding a new AT_*** ammotype, add it to the ammo_name function

@@ -16,6 +16,21 @@ static itype* const null_type = new itype;
 std::vector <itype*> item::types;
 const item item::null(null_type ,0);	// this must be in the same file as null_type, to avoid static order initialization fiasco
 
+std::string item_drop_spec::to_s() const
+{
+	const itype& const info = *item::types[what];
+	std::string desc(std::to_string(qty));
+	desc += " ";
+	// for now, hard-code the one-in processing mode
+	if (1 < modifier) {
+		desc += "one in ";
+		desc += std::to_string(modifier);
+		desc += " chance of ";
+	}
+	desc += info.name;
+	return desc;
+}
+
 // Armor colors
 #define C_SHOES  c_blue
 #define C_PANTS  c_brown
