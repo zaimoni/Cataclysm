@@ -51,7 +51,7 @@ void trapfuncm::beartrap(game *g, monster *z)
  }
  g->m.tr_at(z->pos) = tr_null;
  item beartrap(item::types[itm_beartrap], 0);
- z->add_item(beartrap);
+ z->add_item(beartrap); // \todo would prefer parity with player case
 }
 
 void trapfunc::board(game *g, int x, int y)
@@ -113,9 +113,7 @@ void trapfunc::crossbow(game *g, int x, int y)
   g->u.hit(g, hit, side, 0, rng(20, 30));
   add_bolt = !one_in(10);
  } else messages.add("You dodge the shot!");
- g->m.tr_at(x, y) = tr_null;
- g->m.add_item(x, y, item::types[itm_crossbow], 0);
- g->m.add_item(x, y, item::types[itm_string_6], 0);
+ trap_fully_triggered(g->m, point(x, y), trap::traps[tr_crossbow]->trigger_components);
  if (add_bolt) g->m.add_item(x, y, item::types[itm_bolt_steel], 0);
 }
   
@@ -128,9 +126,7 @@ void trapfuncm::crossbow(game *g, monster *z)
   if (z->hurt(rng(20, 30))) g->kill_mon(*z);
   add_bolt = !one_in(10);
  } else if (seen) messages.add("A bolt shoots out, but misses the %s.", z->name().c_str());
- z->GPSpos.trap_at() = tr_null;
- g->m.add_item(z->pos, item::types[itm_crossbow], 0);
- g->m.add_item(z->pos, item::types[itm_string_6], 0);
+ trap_fully_triggered(g->m, z->pos, trap::traps[tr_crossbow]->trigger_components);
  if (add_bolt) g->m.add_item(z->pos, item::types[itm_bolt_steel], 0);
 }
 
@@ -159,9 +155,8 @@ void trapfunc::shotgun(game *g, int x, int y)
  } else
   messages.add("You dodge the shot!");
  if (shots == 2 || tr_shotgun_1 == trap) {
-  g->m.add_item(x, y, item::types[itm_shotgun_sawn], 0);
-  g->m.add_item(x, y, item::types[itm_string_6], 0);
-  trap = tr_null;
+  // the two shotguns have the same configuration
+  trap_fully_triggered(g->m, point(x, y), trap::traps[tr_shotgun_2]->trigger_components);
  } else trap = tr_shotgun_1;
 }
  
@@ -174,9 +169,8 @@ void trapfuncm::shotgun(game *g, monster *z)
  if (seen) messages.add("A shotgun fires and hits the %s!", z->name().c_str());
  if (z->hurt(rng(40 * shots, 60 * shots))) g->kill_mon(*z);
  if (shots == 2 || tr_shotgun_1 == trap) {
-  trap = tr_null;
-  g->m.add_item(z->pos, item::types[itm_shotgun_sawn], 0);
-  g->m.add_item(z->pos, item::types[itm_string_6], 0);
+  // the two shotguns have the same configuration
+  trap_fully_triggered(g->m, z->pos, trap::traps[tr_shotgun_2]->trigger_components);
  } else trap = tr_shotgun_1;
 }
 
@@ -346,11 +340,10 @@ void trapfunc::pit_spikes(game *g, int x, int y)
   g->u.hit(g, hit, side, 0, rng(20, 50));
   if (one_in(4)) {
    messages.add("The spears break!");
+   trap_fully_triggered(g->m, point(x, y), trap::traps[tr_spike_pit]->trigger_components);
+   // override trap_at effects, above
    g->m.ter(x, y) = t_pit;
    g->m.tr_at(x, y) = tr_pit;
-   for (int i = 0; i < 4; i++) { // 4 spears to a pit
-    if (one_in(3)) g->m.add_item(x, y, item::types[itm_spear_wood], messages.turn);
-   }
   }
  }
  g->u.add_disease(DI_IN_PIT, -1);
@@ -365,11 +358,10 @@ void trapfuncm::pit_spikes(game *g, monster *z)
 
  if (one_in(4)) {
   if (sees) messages.add("The spears break!");
+  trap_fully_triggered(g->m, z->pos, trap::traps[tr_spike_pit]->trigger_components);
+  // override trap_at effects, above
   z->GPSpos.ter() = t_pit;
   z->GPSpos.trap_at() = tr_pit;
-  for (int i = 0; i < 4; i++) { // 4 spears to a pit
-   if (one_in(3)) g->m.add_item(z->pos, item::types[itm_spear_wood], messages.turn);
-  }
  }
 }
 

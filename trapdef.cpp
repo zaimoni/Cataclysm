@@ -58,9 +58,9 @@ void trap::init()
  traps.push_back(new trap(++id, "rabbit snare", '\\', c_brown, 5, 10, 2, { itm_stick, itm_string_36 }, {} TRAP_HANDLERS(&trapfunc::snare, &trapfuncm::snare)));
  traps.push_back(new trap(++id, "spiked board", '_', c_ltgray, 1, 6, 0, { itm_board_trap }, {} TRAP_HANDLERS(&trapfunc::board, &trapfuncm::board)));
  traps.push_back(new trap(++id, "tripwire", '^', c_ltred, 6, 4, 3, { itm_string_36 }, {} TRAP_HANDLERS(&trapfunc::tripwire, &trapfuncm::tripwire)));
- traps.push_back(new trap(++id, "crossbow trap", '^', c_green, 5, 4, 5, { itm_string_36, itm_crossbow }, {} TRAP_HANDLERS(&trapfunc::crossbow, &trapfuncm::crossbow)));
- traps.push_back(new trap(++id, "shotgun trap", '^', c_red, 4, 5, 6, { itm_string_36, itm_shotgun_sawn }, {} TRAP_HANDLERS(&trapfunc::shotgun, &trapfuncm::shotgun))); // 2 shots
- traps.push_back(new trap(++id, "shotgun trap", '^', c_red, 4, 5, 6, { itm_string_36, itm_shotgun_sawn }, {} TRAP_HANDLERS(&trapfunc::shotgun, &trapfuncm::shotgun))); // 1 shot
+ traps.push_back(new trap(++id, "crossbow trap", '^', c_green, 5, 4, 5, { itm_string_36, itm_crossbow }, { {itm_crossbow}, {itm_string_6} } TRAP_HANDLERS(&trapfunc::crossbow, &trapfuncm::crossbow)));
+ traps.push_back(new trap(++id, "shotgun trap", '^', c_red, 4, 5, 6, { itm_string_36, itm_shotgun_sawn }, { {itm_shotgun_sawn}, {itm_string_6} } TRAP_HANDLERS(&trapfunc::shotgun, &trapfuncm::shotgun))); // 2 shots
+ traps.push_back(new trap(++id, "shotgun trap", '^', c_red, 4, 5, 6, { itm_string_36, itm_shotgun_sawn }, { {itm_shotgun_sawn}, {itm_string_6} } TRAP_HANDLERS(&trapfunc::shotgun, &trapfuncm::shotgun))); // 1 shot
  traps.push_back(new trap(++id, "spinning blade engine", '_', c_ltred, 0, 0, 2, { itm_motor, itm_machete, itm_machete }, {} TRAP_HANDLERS(&trapfunc::none, &trapfuncm::none)));
  traps.push_back(new trap(++id, "spinning blade", '\\', c_cyan, 0, 4, 99, {}, {} TRAP_HANDLERS(&trapfunc::blade, &trapfuncm::blade)));
  traps.push_back(new trap(++id, "land mine", '_', c_red, 10, 14, 10, { itm_landmine }, {} TRAP_HANDLERS(&trapfunc::landmine, &trapfuncm::landmine)));
@@ -69,7 +69,7 @@ void trap::init()
  traps.push_back(new trap(++id, "dissector", '7', c_cyan, 2, 20, 99, {}, {} TRAP_HANDLERS(&trapfunc::dissector, &trapfuncm::dissector)));
  traps.push_back(new trap(++id, "sinkhole", '_', c_brown, 10, 14, 99, {}, {} TRAP_HANDLERS(&trapfunc::sinkhole, &trapfuncm::sinkhole)));
  traps.push_back(new trap(++id, "pit", '0', c_brown, 0, 8, 99, {}, {} TRAP_HANDLERS(&trapfunc::pit, &trapfuncm::pit)));
- traps.push_back(new trap(++id, "spiked pit", '0', c_blue, 0, 8, 99, {}, {} TRAP_HANDLERS(&trapfunc::pit_spikes, &trapfuncm::pit_spikes)));
+ traps.push_back(new trap(++id, "spiked pit", '0', c_blue, 0, 8, 99, {}, { {itm_spear_wood, 4, 3} } TRAP_HANDLERS(&trapfunc::pit_spikes, &trapfuncm::pit_spikes)));
  traps.push_back(new trap(++id, "lava", '~', c_red, 0, 99, 99, {}, {} TRAP_HANDLERS(&trapfunc::lava, &trapfuncm::lava)));
  // The '%' symbol makes the portal cycle through ~*0&
  traps.push_back(new trap(++id, "shimmering portal", '%', c_magenta, 0, 30, 99, {}, {} TRAP_HANDLERS(&trapfunc::portal, &trapfuncm::portal)));

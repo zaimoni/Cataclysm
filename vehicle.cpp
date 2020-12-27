@@ -1121,6 +1121,7 @@ void vehicle::handle_trap(const point& pt, int part)
     int chance = 100;
     int expl = 0;
     int shrap = 0;
+    trap_id triggered = tr_null;
     bool wreckit = false;
     const char* msg = "The %s's %s runs over %s.";
     std::string snd;
@@ -1151,9 +1152,7 @@ void vehicle::handle_trap(const point& pt, int part)
             noise = 1;
             snd = "Clank!";
             wreckit = true;
-            tr = tr_null;
-            g->m.add_item(pt, item::types[itm_crossbow], 0);
-            g->m.add_item(pt, item::types[itm_string_6], 0);
+            trap_fully_triggered(g->m, pt, trap::traps[tr_crossbow]->trigger_components);
             if (!one_in(10)) g->m.add_item(pt, item::types[itm_bolt_steel], 0);
             break;
         case tr_shotgun_2:
@@ -1163,11 +1162,7 @@ void vehicle::handle_trap(const point& pt, int part)
             chance = 70;
             wreckit = true;
             if (tr_shotgun_2 == tr) tr = tr_shotgun_1;
-            else {
-                tr = tr_null;
-                g->m.add_item(pt, item::types[itm_shotgun_sawn], 0);
-                g->m.add_item(pt, item::types[itm_string_6], 0);
-            }
+            else trap_fully_triggered(g->m, pt, trap::traps[tr_shotgun_2]->trigger_components); // the two shotguns have the same configuration
             break;
         case tr_landmine:
             expl = 10;
@@ -1182,9 +1177,11 @@ void vehicle::handle_trap(const point& pt, int part)
             snd = "BRZZZAP!";
             wreckit = true;
             break;
+        case tr_spike_pit:
+            if (one_in(4)) triggered = tr_spike_pit;
+            [[fallthrough]];
         case tr_sinkhole:
         case tr_pit:
-        case tr_spike_pit:
         case tr_ledge:
             wreckit = true;
             break;
@@ -1194,12 +1191,18 @@ void vehicle::handle_trap(const point& pt, int part)
         case tr_temple_flood:
         case tr_temple_toggle:
             msg = nullptr;
-        default:;
     }
     if (msg && g->u_see(pt))
 		messages.add(msg, name.c_str(), part_info(part).name, tr_name.c_str());
     if (noise > 0) g->sound(pt, noise, snd);
     if (wreckit && chance >= rng (1, 100)) damage(part, 500);
+    if (triggered) {
+        if (g->u_see(pt)) messages.add("The spears break!"); // hard-code the spiked pit trap, for now
+        trap_fully_triggered(g->m, pt, trap::traps[triggered]->trigger_components);
+        // hard-code overriding trap_at effects, above
+        g->m.ter(pt) = t_pit;
+        g->m.tr_at(pt) = tr_pit;
+    }
     if (expl > 0) g->explosion(pt, expl, shrap, false);
 }
 
