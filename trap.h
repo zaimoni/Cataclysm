@@ -6,7 +6,7 @@
 class monster;
 class game;
 
-enum trap_id {
+enum trap_id : int {
  tr_null,
  tr_bubblewrap,
  tr_beartrap,

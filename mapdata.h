@@ -29,7 +29,7 @@ enum t_flag {
  num_t_flags   // MUST be last
 };
 
-enum ter_id {
+enum ter_id : int {
 t_null = 0,
 t_hole,	// Real nothingness; makes you fall a z-level
 // Ground
