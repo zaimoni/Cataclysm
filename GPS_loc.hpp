@@ -8,8 +8,8 @@
 #include <optional>
 
 class vehicle;
-enum ter_id;
-enum trap_id;
+enum ter_id : int;
+enum trap_id : int;
 
 // normalized range for GPS_loc.second is 0..SEE-1, 0..SEE-1
 // reality_bubble_loc.second == GPS_loc.second for normalized GPS_loc corresponding to reality_bubble_loc

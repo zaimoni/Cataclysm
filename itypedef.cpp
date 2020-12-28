@@ -18,7 +18,7 @@ const item item::null(null_type ,0);	// this must be in the same file as null_ty
 
 std::string item_drop_spec::to_s() const
 {
-	const itype& const info = *item::types[what];
+	const itype& info = *item::types[what];
 	std::string desc(std::to_string(qty));
 	desc += " ";
 	// for now, hard-code the one-in processing mode
