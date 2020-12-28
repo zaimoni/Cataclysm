@@ -1,7 +1,7 @@
 #ifndef _GAME_H_
 #define _GAME_H_
 
-#include "map.h"
+#include "reality_bubble.hpp"
 #include "npc.h"
 #include "event.h"
 #include "mission.h"
@@ -48,7 +48,8 @@ struct monster_and_count
  monster_and_count(monster M, int C) : mon (M), count (C) {};
 };
 
-class game
+// arguably technical debt (implausible that game is-a reality bubble) 2020-12-28 zaimoni
+class game : public reality_bubble
 {
  private:
   static game* _active;	// while it is not a logic paradox to have more than one game object, historically it has been used as a singleton.
@@ -182,12 +183,6 @@ class game
   signed char temperature;              // The air temperature
   weather_type weather;			// Weather pattern--SEE weather.h
   char nextinv;	// Determines which letter the next inv item will have
-  overmap cur_om;
-  map m;
-  tripoint lev;	// Placement inside the overmap; x/y should be in 0...OMAPX/Y; offset from the player's submap coordinates
-	// but game::update_map thinks legal values are 0..2*OMAPX/Y
-    // lev.z is almost always cur_om.pos.z (possibly should be explicitly enforced as map loading responds to cur_om.pos.z)
-    // in savegames: lev = u.GPSpos.first+(-5,-5,0).  Should be true anytime except during reality bubble shift during a move between submaps
   player u;
   std::vector<monster> z;
   std::vector<monster_and_count> coming_to_stairs;

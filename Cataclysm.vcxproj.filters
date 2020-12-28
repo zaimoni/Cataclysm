@@ -282,6 +282,9 @@
     <ClInclude Include="trap_handler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="reality_bubble.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -498,6 +501,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mobile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="reality_bubble.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

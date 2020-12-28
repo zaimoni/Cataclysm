@@ -33,7 +33,7 @@ LDFLAGS = -static -lgdi32
 # MingW64-8.1.0 does.
 LDFLAGS += -pthread -Llib/host -lz_format_util -lz_stdio_log -lz_stdio_c
 
-SOURCES1 = $(filter-out stdafx.cpp socrates-daimon.cpp,$(wildcard *.cpp))
+SOURCES1 = $(filter-out html.cpp stdafx.cpp socrates-daimon.cpp,$(wildcard *.cpp))
 OBJS1 = $(addprefix $(ODIR1)/,$(SOURCES1:.cpp=.o))
 
 SOURCES2 = calendar.cpp catacurse.cpp color.cpp html.cpp item.cpp itypedef.cpp\

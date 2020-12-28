@@ -214,6 +214,7 @@
     <ClInclude Include="pldata.h" />
     <ClInclude Include="pldata_enum.h" />
     <ClInclude Include="posix_time.h" />
+    <ClInclude Include="reality_bubble.hpp" />
     <ClInclude Include="recent_msg.h" />
     <ClInclude Include="rng.h" />
     <ClInclude Include="saveload.h" />
@@ -302,6 +303,7 @@
     <ClCompile Include="pldata.cpp" />
     <ClCompile Include="posix_time.cpp" />
     <ClCompile Include="ranged.cpp" />
+    <ClCompile Include="reality_bubble.cpp" />
     <ClCompile Include="recent_msg.cpp" />
     <ClCompile Include="rng.cpp" />
     <ClCompile Include="saveload.cpp" />
