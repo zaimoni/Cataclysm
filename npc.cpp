@@ -7,6 +7,7 @@
 #include "json.h"
 #include "recent_msg.h"
 #include "stl_typetraits.h"
+#include "stl_limits.h"
 #include "saveload.h"
 
 #include <fstream>
@@ -1271,17 +1272,10 @@ std::vector<itype_id> npc::styles_offered_to(const player& p) const
  return ret;
 }
 
-
-int npc::minutes_to_u(const game *g) const
+int npc::minutes_to_u(const player& u) const
 {
- const auto om = overmap::toOvermap(GPSpos);
- int ret = abs(om.second.x - g->lev.x);
- if (abs(om.second.y - g->lev.y) < ret)
-  ret = abs(om.second.y - g->lev.y);
- ret *= 24;
- ret /= 10;
- while (ret % 5 != 0)	// Round up to nearest five-minute interval
-  ret++;
+ int ret = cataclysm::rational_scaled<24,10>(rl_dist(overmap::toOvermap(GPSpos), overmap::toOvermap(u.GPSpos)));
+ while (ret % 5 != 0) ret++; // Round up to nearest five-minute interval
  return ret;
 }
 
@@ -1296,7 +1290,6 @@ bool npc::fac_has_job(faction_job job) const
  if (my_fac == nullptr) return false;
  return my_fac->has_job(job);
 }
-
 
 void npc::decide_needs()
 {

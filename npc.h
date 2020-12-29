@@ -324,7 +324,7 @@ public:
 // Goal / mission functions
 // void pick_long_term_goal(game *g);	// no implementation, but likely would influence perform_mission
  void perform_mission(game *g);
- int  minutes_to_u(const game *g) const; // Time in minutes it takes to reach player
+ int  minutes_to_u(const player& u) const; // Time in minutes it takes to reach player
  bool fac_has_value(faction_value value) const;
  bool fac_has_job(faction_job job) const;
 

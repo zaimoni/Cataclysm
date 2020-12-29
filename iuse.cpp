@@ -937,17 +937,17 @@ void iuse::two_way_radio(game *g, player *p, item *it, bool t)
 // TODO: Implement me!
  } else if (ch == '3') {	// General S.O.S.
   p->moves -= 150;
+  const OM_loc my_om = overmap::toOvermap(g->u.GPSpos);
   std::vector<npc*> in_range;
   for (auto& _npc : g->cur_om.npcs) {
     if (4 > _npc.op_of_u.value) continue;
-	auto om = overmap::toOvermap(_npc.GPSpos);
-	if (30 >= rl_dist(g->lev.x, g->lev.y, om.second)) in_range.push_back(&_npc);
+	if (30 >= rl_dist(overmap::toOvermap(_npc.GPSpos), my_om)) in_range.push_back(&_npc);
   }
   const auto ub = in_range.size();
   if (0 < ub) {
    npc* coming = in_range[rng(0, ub - 1)];
    popup("A reply!  %s says, \"I'm on my way; give me %d minutes!\"",
-         coming->name.c_str(), coming->minutes_to_u(g));
+         coming->name.c_str(), coming->minutes_to_u(g->u));
    coming->mission = NPC_MISSION_RESCUE_U;
   } else
    popup("No-one seems to reply...");
