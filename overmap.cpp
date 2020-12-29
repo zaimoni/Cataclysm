@@ -1213,6 +1213,20 @@ std::vector<point> overmap::find_terrain(const std::string& term) const
  return found;
 }
 
+std::pair<int, std::string> overmap::best_radio_signal(OM_loc receiver) const
+{   // \todo building block for a cross-overmap best_radio_signal
+    std::pair<int, std::string> ret = std::pair(0, "Radio: Kssssssssssssh.");
+    for (decltype(auto) r : radios) {
+        const auto radio_pos = OM_loc(pos, point(r.x, r.y));
+        int signal = r.strength - rl_dist(radio_pos, receiver);
+        if (signal > ret.first) {
+            ret.first = signal;
+            ret.second = r.message;
+        }
+    }
+    return ret;
+}
+
 std::pair<const overmap*, const city*> overmap::closest_city(point p) const
 {
  const city* ret = nullptr;

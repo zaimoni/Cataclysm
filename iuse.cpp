@@ -974,16 +974,9 @@ void iuse::radio_on(game *g, player *p, item *it, bool t)
  static constexpr const int RADIO_PER_TURN = 25;
 
  if (t) {	// Normal use
-  int best_signal = 0;
-  std::string message = "Radio: Kssssssssssssh.";
-  for (int k = 0; k < g->cur_om.radios.size(); k++) {
-   int signal = g->cur_om.radios[k].strength -
-                rl_dist(g->cur_om.radios[k].x, g->cur_om.radios[k].y, g->lev.x, g->lev.y);
-   if (signal > best_signal) {
-    best_signal = signal;
-    message = g->cur_om.radios[k].message;
-   }
-  }
+  int best_signal; // backward compatibility
+  std::string message;
+  std::tie(best_signal, message) = g->cur_om.best_radio_signal(overmap::toOvermap(p->GPSpos));
   if (best_signal > 0) {
    for (int j = 0; j < message.length(); j++) {
     if (dice(10, 100) > dice(10, best_signal * 3)) message[j] = one_in(10) ? char(rng('a', 'z')) : '#';

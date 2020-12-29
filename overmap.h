@@ -79,6 +79,7 @@ class overmap
 #endif
   std::vector<point> find_terrain(const std::string& term) const;
   std::pair<const overmap*,const city*> closest_city(point p) const;
+  std::pair<int, std::string> best_radio_signal(OM_loc receiver) const;
   bool random_house_in_city(const city* c, OM_loc& dest) const;
   int dist_from_city(point p) const;
 // Interactive point choosing; used as the map screen
