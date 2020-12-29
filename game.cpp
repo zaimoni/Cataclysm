@@ -515,7 +515,7 @@ void game::start_game()
  lev.y = lev.y * 2 - 1;
 // Init the starting map at this location.
  //MAPBUFFER.load();
- m.load(this, point(lev.x, lev.y));
+ m.load(this, project_xy(lev));
 // Start us off somewhere in the shelter.
  u.screenpos_set(point(SEE * int(MAPSIZE / 2) + 5, SEE * int(MAPSIZE / 2) + 5));
  u.str_cur = u.str_max;
@@ -1546,7 +1546,7 @@ void game::load(std::string name)
 	cur_om = overmap(this, com.x, com.y, lev.z);
 	// m = map(&itypes, &mapitems, &traps); // Init the root map with our vectors
 	//MAPBUFFER.load();
-	m.load(this, point(lev.x, lev.y));
+	m.load(this, project_xy(lev));
 
 	// return to other non-recoverable keys
 	// scent map \todo? good candidate for uuencoding
@@ -1772,7 +1772,7 @@ void game::debug()
     //m.save(&cur_om, turn, levx, levy);
     lev.x = tmp->x * 2 - int(MAPSIZE / 2);
     lev.y = tmp->y * 2 - int(MAPSIZE / 2);
-    m.load(this, point(lev.x, lev.y));
+    m.load(this, project_xy(lev));
    }
   } break;
 
@@ -5577,7 +5577,7 @@ void game::update_map(int &x, int &y)
 
 void game::update_overmap_seen()
 {
- point om((lev.x + MAPSIZE / 2) / 2, (lev.y + MAPSIZE / 2) / 2);
+ point om(om_location().second); // UI; not critical to inline second coordinate
  int dist = u.overmap_sight_range(light_level());
  cur_om.seen(om.x, om.y) = true; // We can always see where we're standing
  if (dist == 0) return; // No need to run the rest!

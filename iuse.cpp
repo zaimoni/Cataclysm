@@ -978,8 +978,7 @@ void iuse::radio_on(game *g, player *p, item *it, bool t)
   std::string message = "Radio: Kssssssssssssh.";
   for (int k = 0; k < g->cur_om.radios.size(); k++) {
    int signal = g->cur_om.radios[k].strength -
-                rl_dist(g->cur_om.radios[k].x, g->cur_om.radios[k].y,
-                          g->lev.x, g->lev.y);
+                rl_dist(g->cur_om.radios[k].x, g->cur_om.radios[k].y, g->lev.x, g->lev.y);
    if (signal > best_signal) {
     best_signal = signal;
     message = g->cur_om.radios[k].message;

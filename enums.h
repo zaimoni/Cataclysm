@@ -142,6 +142,9 @@ inline bool operator<(const tripoint& lhs, const tripoint& rhs)
 	return lhs.z < rhs.z;
 }
 
+// coordinate projections
+inline constexpr point project_xy(const tripoint& src) { return point(src.x, src.y); }
+
 #ifdef RNG_H
 #ifdef ZAIMONI_STL_GDI_BOX_HPP
 #include "fragment.inc/rng_box.hpp"

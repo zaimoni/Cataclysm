@@ -347,10 +347,11 @@ void computer::activate_function(game *g, computer_action action)
   } break;
 
   case COMPACT_MAPS: {
-   int minx = int((g->lev.x + int(MAPSIZE / 2)) / 2) - 40;
-   int maxx = int((g->lev.x + int(MAPSIZE / 2)) / 2) + 40;
-   int miny = int((g->lev.y + int(MAPSIZE / 2)) / 2) - 40;
-   int maxy = int((g->lev.y + int(MAPSIZE / 2)) / 2) + 40;
+   const point anchor(g->om_location().second);
+   int minx = anchor.x - 60;
+   int maxx = anchor.x + 60;
+   int miny = anchor.y - 60;
+   int maxy = anchor.y + 60;
 
    OM_loc scan(tripoint(g->cur_om.pos.x, g->cur_om.pos.y, 0), point(0, 0));
    for (scan.second.x = minx; scan.second.x <= maxx; scan.second.x++) {
@@ -361,10 +362,11 @@ void computer::activate_function(game *g, computer_action action)
   } break;
 
   case COMPACT_MAP_SEWER: {
-   int minx = int((g->lev.x + int(MAPSIZE / 2)) / 2) - 60;
-   int maxx = int((g->lev.x + int(MAPSIZE / 2)) / 2) + 60;
-   int miny = int((g->lev.y + int(MAPSIZE / 2)) / 2) - 60;
-   int maxy = int((g->lev.y + int(MAPSIZE / 2)) / 2) + 60;
+   const point anchor(g->om_location().second);
+   int minx = anchor.x - 60;
+   int maxx = anchor.x + 60;
+   int miny = anchor.y - 60;
+   int maxy = anchor.y + 60;
 
    OM_loc scan(tripoint(g->cur_om.pos.x, g->cur_om.pos.y, 0), point(0, 0));
    for (scan.second.x = minx; scan.second.x <= maxx; scan.second.x++) {
@@ -404,7 +406,7 @@ void computer::activate_function(game *g, computer_action action)
    for (int level = g->cur_om.pos.z; level < 0; level++) {
     om_cache::get().load(g->cur_om, tripoint(revert_pos.x, revert_pos.y, level));
     tinymap tmpmap;
-    tmpmap.load(g, point(g->lev.x, g->lev.y));
+    tmpmap.load(g, project_xy(g->lev));
     tmpmap.translate<t_missile, t_hole>();
     tmpmap.save(g->cur_om.pos, messages.turn, point(g->lev.x, g->lev.y));
    }

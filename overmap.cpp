@@ -1427,9 +1427,8 @@ std::optional<point> overmap::choose_point(game *g)    // not const due to overm
  // combined height+top padding of w_search must not collide with the legend; C:Whales line 17, 3+13=16 ok (17 would be flush)
  timeout(BLINK_SPEED);	// Enable blinking!
  bool blink = true;
- point curs((g->lev.x + int(MAPSIZE / 2)), (g->lev.y + int(MAPSIZE / 2)));
- curs /= 2;
- point orig(curs);
+ point curs(g->om_location().second); // UI; not critical to inline second coordinate
+ const point orig(curs);
  int ch = 0;
  std::optional<point> ret;
  

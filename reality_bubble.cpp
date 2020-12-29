@@ -69,5 +69,5 @@ std::optional<reality_bubble_loc> reality_bubble::toSubmap(GPS_loc GPS_pos) cons
 
 OM_loc reality_bubble::om_location()
 {
-	return OM_loc(cur_om.pos, point((lev.x + MAPSIZE / 2) / 2, (lev.y + MAPSIZE / 2) / 2));
+	return OM_loc(cur_om.pos, (project_xy(lev) + point(MAPSIZE / 2))/2);
 }
