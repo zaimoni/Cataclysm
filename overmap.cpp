@@ -16,27 +16,25 @@
 
 GPS_loc overmap::toGPS(const point& screen_pos) { return game::active()->toGPS(screen_pos); }
 
-OM_loc overmap::toOvermap(const GPS_loc GPSpos)
+OM_loc overmap::toOvermap(const GPS_loc& GPSpos, int scale)
 {
-	OM_loc ret(GPSpos.first,point(0));
-	ret.second.x = (ret.first.x % (2 * OMAP));
-	ret.second.y = (ret.first.y % (2 * OMAP));
-	if (0 <= ret.first.x) {
-		ret.first.x /= (2 * OMAP);
-	} else {
-		ret.first.x = ((ret.first.x + 1) / (2 * OMAP)) - 1;
-		assert(0 >= ret.second.x);	// \todo remove this once live (test of algorithmic correctness)
-		ret.second.x += (2 * OMAP -1);
-	}
-	if (0 <= ret.first.y) {
-		ret.first.y /= (2 * OMAP);
-	}
-	else {
-		ret.first.y = ((ret.first.y + 1) / (2 * OMAP)) - 1;
-		assert(0 >= ret.second.y);	// \todo remove this once live (test of algorithmic correctness)
-		ret.second.y += (2 * OMAP - 1);
-	}
-	ret.second /= 2;
+    OM_loc ret(GPSpos.first, point(0));
+    ret.second.x = (ret.first.x % (2 * OMAP));
+    ret.second.y = (ret.first.y % (2 * OMAP));
+    if (0 <= ret.first.x) {
+        ret.first.x /= (2 * OMAP);
+    } else {
+        ret.first.x = ((ret.first.x + 1) / (2 * OMAP)) - 1;
+        assert(0 >= ret.second.x);	// \todo remove this once live (test of algorithmic correctness)
+        ret.second.x += (2 * OMAP - 1);
+    } if (0 <= ret.first.y) {
+        ret.first.y /= (2 * OMAP);
+    } else {
+        ret.first.y = ((ret.first.y + 1) / (2 * OMAP)) - 1;
+        assert(0 >= ret.second.y);	// \todo remove this once live (test of algorithmic correctness)
+        ret.second.y += (2 * OMAP - 1);
+    }
+    ret.second /= scale;
 	return ret;
 }
 
@@ -82,41 +80,41 @@ std::variant<point, tripoint> operator-(const GPS_loc& lhs, const GPS_loc& rhs)
     return ret;
 }
 
-void OM_loc::self_normalize()
+void OM_loc::self_normalize(int scale)
 {
     while (0 > second.x && INT_MIN < first.x) {
-        second.x += OMAPX;
+        second.x += 2 * OMAP / scale;
         first.x--;
     };
     while (OMAPX <= second.x && INT_MAX > first.x) {
-        second.x -= OMAPX;
+        second.x -= 2 * OMAP / scale;
         first.x++;
     };
     while (0 > second.y && INT_MIN < first.y) {
-        second.y += OMAPY;
+        second.y += 2 * OMAP / scale;
         first.y--;
     };
     while (OMAPY <= second.y && INT_MAX > first.y) {
-        second.y -= OMAPY;
+        second.y -= 2 * OMAP / scale;
         first.y++;
     };
 }
 
-OM_loc overmap::normalize(const OM_loc& OMpos)
+OM_loc overmap::normalize(const OM_loc& OMpos, int scale)
 {
     OM_loc ret(OMpos);
-    ret.self_normalize();
+    ret.self_normalize(scale);
     return ret;
 }
 
-void OM_loc::self_denormalize(const tripoint& view)
+void OM_loc::self_denormalize(const tripoint& view, int scale)
 {
 #define DENORMALIZE_COORD(X)    \
     if (view.X < first.X) {   \
-        do second.X += OMAP; \
+        do second.X += 2 * OMAP / scale; \
         while (view.X < --first.X);   \
     } else if (view.X > first.X) {    \
-        do second.X -= OMAP; \
+        do second.X -= 2 * OMAP / scale; \
         while (view.X > ++first.X);   \
     }
 
@@ -126,9 +124,9 @@ void OM_loc::self_denormalize(const tripoint& view)
 }
 
 
-bool OM_loc::is_valid() const
+bool OM_loc::is_valid(int scale) const
 {
-    if (_ref<OM_loc>::invalid.first == first) return zaimoni::gdi::box(point(0), point(OMAP)).contains(second);
+    if (_ref<OM_loc>::invalid.first == first) return zaimoni::gdi::box(point(0), point(2*OMAP/scale)).contains(second);
     return true;
 }
 
@@ -160,17 +158,17 @@ int rl_dist(GPS_loc lhs, GPS_loc rhs)
 }
 
 // would prefer for this to be a free function but we have to have some way to distinguish between overmap and GPS coordinates
-int rl_dist(OM_loc lhs, OM_loc rhs)
+int rl_dist(OM_loc lhs, OM_loc rhs, int scale)
 {
-    if (!lhs.is_valid() || !rhs.is_valid()) return INT_MAX;
+    if (!lhs.is_valid(scale) || !rhs.is_valid(scale)) return INT_MAX;
 
     if (lhs.first == rhs.first) return rl_dist(lhs.second, rhs.second);
 
     // release block \todo expand following in a non-overflowing way (always return INT_MAX if overflow)
     // prototype reductions (can overflow)
-    lhs.self_normalize();
-    rhs.self_normalize();
-    rhs.self_denormalize(lhs.first);
+    lhs.self_normalize(scale);
+    rhs.self_normalize(scale);
+    rhs.self_denormalize(lhs.first, scale);
     return rl_dist(lhs.second, rhs.second);
 }
 
@@ -1217,8 +1215,8 @@ std::pair<int, std::string> overmap::best_radio_signal(OM_loc receiver) const
 {   // \todo building block for a cross-overmap best_radio_signal
     std::pair<int, std::string> ret = std::pair(0, "Radio: Kssssssssssssh.");
     for (decltype(auto) r : radios) {
-        const auto radio_pos = OM_loc(pos, point(r.x, r.y));
-        int signal = r.strength - rl_dist(radio_pos, receiver);
+        const auto radio_pos = OM_loc(pos, point(r.x, r.y));  // C:Whales scaled this by 2 compared to OM_loc coordinates; use hires coordinates incoming
+        int signal = r.strength - rl_dist(radio_pos, receiver, 1);
         if (signal > ret.first) {
             ret.first = signal;
             ret.second = r.message;
@@ -2569,9 +2567,7 @@ void overmap::place_mongroups()
 // Cities are full of zombies
  for (int i = 0; i < cities.size(); i++) {
   if (!one_in(16) || cities[i].s > 5)
-   zg.push_back(
-	mongroup(mcat_zombie, (cities[i].x * 2), (cities[i].y * 2),
-	         int(cities[i].s * 2.5), cities[i].s * 80));
+   zg.push_back( mongroup(mcat_zombie, (cities[i].x * 2), (cities[i].y * 2), int(cities[i].s * 2.5), cities[i].s * 80));
  }
 
 // Figure out where swamps are, and place swamp monsters
@@ -2587,32 +2583,21 @@ void overmap::place_mongroups()
     }
    }
    if (swamp_count >= 25) // ~25% swamp or ~50% river
-    zg.push_back(mongroup(mcat_swamp, x * 2, y * 2, 3,
-                          rng(swamp_count * 8, swamp_count * 25)));
+    zg.push_back(mongroup(mcat_swamp, x * 2, y * 2, 3, rng(swamp_count * 8, swamp_count * 25)));
   }
  }
 
 // Place the "put me anywhere" groups
  int numgroups = rng(0, 3);
  for (int i = 0; i < numgroups; i++) {
-  zg.push_back(
-	mongroup(mcat_worm, rng(0, OMAPX * 2 - 1), rng(0, OMAPY * 2 - 1),
-	         rng(20, 40), rng(500, 1000)));
+  zg.push_back( mongroup(mcat_worm, rng(0, OMAPX * 2 - 1), rng(0, OMAPY * 2 - 1), rng(20, 40), rng(500, 1000)));
  }
 
 // Forest groups cover the entire map
- zg.push_back(
-	mongroup(mcat_forest, 0, OMAPY, OMAPY,
-                 rng(2000, 12000)));
- zg.push_back(
-	mongroup(mcat_forest, 0, OMAPY * 2 - 1, OMAPY,
-                 rng(2000, 12000)));
- zg.push_back(
-	mongroup(mcat_forest, OMAPX, 0, OMAPX,
-                 rng(2000, 12000)));
- zg.push_back(
-	mongroup(mcat_forest, OMAPX * 2 - 1, 0, OMAPX,
-                 rng(2000, 12000)));
+ zg.push_back(mongroup(mcat_forest, 0, OMAPY, OMAPY, rng(2000, 12000)));
+ zg.push_back(mongroup(mcat_forest, 0, OMAPY * 2 - 1, OMAPY, rng(2000, 12000)));
+ zg.push_back(mongroup(mcat_forest, OMAPX, 0, OMAPX, rng(2000, 12000)));
+ zg.push_back(mongroup(mcat_forest, OMAPX * 2 - 1, 0, OMAPX, rng(2000, 12000)));
 }
 
 void overmap::place_radios()

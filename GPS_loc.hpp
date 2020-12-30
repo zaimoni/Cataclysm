@@ -50,9 +50,9 @@ struct OM_loc : public std::pair<tripoint, point>
 	~OM_loc() = default;
 	OM_loc& operator=(const OM_loc& src) = default;
 
-	bool is_valid() const;
-	void self_normalize();
-	void self_denormalize(const tripoint& view);
+	bool is_valid(int scale=2) const;
+	void self_normalize(int scale = 2);
+	void self_denormalize(const tripoint& view, int scale = 2);
 };
 
 struct reality_bubble_loc : public std::pair<int, point>
@@ -67,7 +67,7 @@ struct reality_bubble_loc : public std::pair<int, point>
 	bool is_valid() const;
 };
 
-int rl_dist(OM_loc lhs, OM_loc rhs);
+int rl_dist(OM_loc lhs, OM_loc rhs, int scale=2);
 
 template<>
 struct _ref<GPS_loc>

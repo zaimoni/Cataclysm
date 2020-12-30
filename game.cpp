@@ -3706,7 +3706,7 @@ void game::examine()
   cur_om.save(u.name);
   om_cache::get().r_create(tripoint(cur_om.pos.x, cur_om.pos.y, -1));
   om_cache::get().load(cur_om, tripoint(cur_om.pos.x, cur_om.pos.y, cur_om.pos.z + movez));
-  m.load(this, point(lev.x, lev.y));
+  m.load(this, project_xy(lev));
   point test(u.pos);
   m.find_terrain(u.pos, t_elevator, test);
   u.screenpos_set(test);

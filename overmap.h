@@ -40,8 +40,8 @@ struct om_note {
 };
 
 struct radio_tower {
- int x;	// legal range 0...OMAPX-1
- int y;	// legal range 0...OMAPY-1
+ int x;	// legal range 0...2*OMAPX-1
+ int y;	// legal range 0...2*OMAPY-1
  int strength;
  std::string message;
 
@@ -113,8 +113,8 @@ class overmap
   std::optional<point> display_notes() const;
 
   static GPS_loc toGPS(const point& screen_pos);
-  static OM_loc toOvermap(const GPS_loc GPSpos);
-  static OM_loc normalize(const OM_loc& OMpos);
+  static OM_loc toOvermap(const GPS_loc& GPSpos, int scale=2); // scale=1 for high-resolution
+  static OM_loc normalize(const OM_loc& OMpos, int scale=2);
 
   tripoint pos;
   std::vector<city> cities;

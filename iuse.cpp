@@ -976,7 +976,7 @@ void iuse::radio_on(game *g, player *p, item *it, bool t)
  if (t) {	// Normal use
   int best_signal; // backward compatibility
   std::string message;
-  std::tie(best_signal, message) = g->cur_om.best_radio_signal(overmap::toOvermap(p->GPSpos));
+  std::tie(best_signal, message) = g->cur_om.best_radio_signal(overmap::toOvermap(p->GPSpos, 1));
   if (best_signal > 0) {
    for (int j = 0; j < message.length(); j++) {
     if (dice(10, 100) > dice(10, best_signal * 3)) message[j] = one_in(10) ? char(rng('a', 'z')) : '#';
