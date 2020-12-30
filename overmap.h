@@ -117,7 +117,6 @@ class overmap
   static OM_loc normalize(const OM_loc& OMpos, int scale=2);
 
   tripoint pos;
-  std::vector<city> cities;
 #if PROTOTYPE
   std::vector<settlement> towns;	// prototyping variable; #include "settlement.h" rather than overmap.cpp when taking live
 #endif
@@ -130,6 +129,7 @@ class overmap
   bool s[OMAPX][OMAPY];
   std::vector<om_note> notes;
   std::vector<city> roads_out;
+  std::vector<city> cities;
 
   void clear_seen() { memset(s,0,sizeof(s)); }
   void clear_terrain(oter_id src);
