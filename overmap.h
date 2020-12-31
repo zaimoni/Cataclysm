@@ -95,7 +95,9 @@ class overmap
   // unsigned zones(const point& pt);	// no definition
   std::vector<mongroup*> monsters_at(int x, int y);
   std::vector<const mongroup*> monsters_at(int x, int y) const;
+  mongroup* valid_group(mon_id type, const point& pt); // pt is from matching high-resolution OM_loc
   static bool is_safe(const OM_loc& loc); // true if monsters_at is empty, or only woodland
+
   bool& seen(int x, int y);
   bool& seen(const point& pt) { return seen(pt.x, pt.y); };
   static bool& seen(OM_loc OMpos);

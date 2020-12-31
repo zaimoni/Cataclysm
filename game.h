@@ -274,7 +274,6 @@ class game : public reality_bubble
   void replace_stair_monsters();
   void update_stair_monsters();
   void spawn_mon(int shift, int shifty); // Called by update_map, sometimes
-  mongroup* valid_group(mon_id type, int x, int y);// Picks a group from cur_om
 private:
   void _kill_mon(monster& target, bool u_did_it);
   void _explode_mon(monster& target, player* me);

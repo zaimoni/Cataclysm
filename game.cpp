@@ -576,7 +576,7 @@ bool game::do_turn()
     tmp.load(this, z[i].spawnmap);
     tmp.add_spawn(&(z[i]));
     tmp.save(cur_om.pos, messages.turn, z[i].spawnmap);
-   } else if (const auto m_group = valid_group((mon_id)(z[i].type->id), lev.x, lev.y)) {	// Absorb them back into a group
+   } else if (const auto m_group = cur_om.valid_group((mon_id)(z[i].type->id), project_xy(lev))) {	// Absorb them back into a group
        m_group->add_one();
    } else if (const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id))) {
        cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
@@ -2784,7 +2784,7 @@ void game::monmove()
 // We might have stumbled out of range of the player; if so, kill us
    if (!extended_reality_bubble.contains(z[i].pos)) {
 // Re-absorb into local group, if applicable
-    if (const auto m_group = valid_group((mon_id)(z[i].type->id), lev.x, lev.y)) {
+    if (const auto m_group = cur_om.valid_group((mon_id)(z[i].type->id), project_xy(lev))) {
         m_group->add_one();
     } else if (const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id))) {
         cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
@@ -5393,7 +5393,7 @@ void game::vertical_move(int movez, bool force)
     while (spawn.y < 0) spawn.y += SEEY;
     tmp.add_spawn(&(z[i]));
     tmp.save(cur_om.pos, messages.turn, point(lev.x, lev.y));
-   } else if (const auto m_group = valid_group((mon_id)(z[i].type->id), lev.x, lev.y)) {
+   } else if (const auto m_group = cur_om.valid_group((mon_id)(z[i].type->id), project_xy(lev))) {
        m_group->add_one();
    } else if (const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id))) {
        cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
@@ -5529,7 +5529,7 @@ void game::update_map(int &x, int &y)
     tmp.add_spawn(&(z[i]));
     tmp.save(cur_om.pos, messages.turn, z[i].spawnmap);
    } else {	// Absorb them back into a group
-    if (const auto m_group = valid_group((mon_id)(z[i].type->id), lev.x + shift.x, lev.y + shift.y)) {
+    if (const auto m_group = cur_om.valid_group((mon_id)(z[i].type->id), project_xy(lev) + shift)) {
         m_group->add_one();
     } else if (const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id))) {
 		cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
@@ -5759,36 +5759,6 @@ void game::spawn_mon(int shiftx, int shifty)
     i--;	// And don't increment i.
    }
  }
-}
-
-mongroup* game::valid_group(mon_id type, int x, int y)
-{
- std::vector<mongroup*> semi_valid;	// Groups that are ALMOST big enough
- {  // scoping brace
- std::vector<mongroup*> valid_groups;
- for (auto& _group : cur_om.zg) {
-     const int dist = trig_dist(x, y, _group.pos);
-     if (dist >= _group.radius + 3) continue;   // not even semi-valid
-     auto groups = (dist < _group.radius) ? &valid_groups : &semi_valid;    // unsure whether auto& avoids copy-construction
-     for (auto tmp_monid : mongroup::moncats[_group.type]) {
-         if (type == tmp_monid) {
-             groups->push_back(&_group);
-             break;
-         }
-     }
- }
- const auto v_size = valid_groups.size();
- if (0 < v_size) return valid_groups[rng(0, v_size - 1)];
- }  // end scoping brace: triggers destructor early
- // If there's a group that's ALMOST big enough, expand that group's radius
- // by one and absorb into that group.
- const auto sv_size = semi_valid.size();
- if (0 < sv_size) {
-     auto ret = semi_valid[rng(0, sv_size - 1)];
-     ret->radius++;
-     return ret;
- }
- return nullptr;
 }
 
 void game::wait()

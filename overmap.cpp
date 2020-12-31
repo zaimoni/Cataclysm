@@ -651,6 +651,34 @@ std::vector<const mongroup*> overmap::monsters_at(int x, int y) const
     return ret;
 }
 
+mongroup* overmap::valid_group(mon_id type, const point& pt)
+{
+    std::vector<mongroup*> semi_valid;	// Groups that are ALMOST big enough
+    {  // scoping brace
+    std::vector<mongroup*> valid_groups;
+    for (auto& _group : zg) {
+        const int dist = trig_dist(pt, _group.pos);
+        if (dist >= _group.radius + 3) continue;   // not even semi-valid
+        auto groups = (dist < _group.radius) ? &valid_groups : &semi_valid;    // unsure whether auto& avoids copy-construction
+        for (auto tmp_monid : mongroup::moncats[_group.type]) {
+            if (type == tmp_monid) {
+                groups->push_back(&_group);
+                break;
+            }
+        }
+    }
+    if (const auto v_size = valid_groups.size();  0 < v_size) return valid_groups[rng(0, v_size - 1)];
+    }  // end scoping brace: triggers destructor early
+    // If there's a group that's ALMOST big enough, expand that group's radius
+    // by one and absorb into that group.
+    if (const auto sv_size = semi_valid.size(); 0 < sv_size) {
+        auto ret = semi_valid[rng(0, sv_size - 1)];
+        ret->radius++;
+        return ret;
+    }
+    return nullptr;
+}
+
 bool overmap::is_safe(const OM_loc& loc)
 {
     if (0 <= loc.second.x && OMAPX > loc.second.x && 0 <= loc.second.y && OMAPY > loc.second.y) {
