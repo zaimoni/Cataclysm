@@ -2315,7 +2315,7 @@ void game::draw_minimap()
  point curs((lev.x + int(MAPSIZE / 2)) / 2, (lev.y + int(MAPSIZE / 2)) / 2);
 
  bool drew_mission = false;
- OM_loc target(_ref<OM_loc>::invalid);
+ OM_loc<2> target(_ref<OM_loc<2>>::invalid);
  if (u.active_mission >= 0 && u.active_mission < u.active_missions.size())
   target = mission::from_id(u.active_missions[u.active_mission])->target;
  else
@@ -2324,7 +2324,7 @@ void game::draw_minimap()
  if (!target.is_valid()) drew_mission = true;
  else target.self_denormalize(cur_om.pos);
 
- OM_loc scan(cur_om.pos, point(0));
+ OM_loc<2> scan(cur_om.pos, point(0));
  for (int i = -2; i <= 2; i++) {
   for (int j = -2; j <= 2; j++) {
    scan.second = curs + point(i, j);
@@ -5581,14 +5581,14 @@ void game::update_overmap_seen()
  int dist = u.overmap_sight_range(light_level());
  cur_om.seen(om.x, om.y) = true; // We can always see where we're standing
  if (dist == 0) return; // No need to run the rest!
- OM_loc scan(cur_om.pos, point(0, 0));
+ OM_loc<2> scan(cur_om.pos, point(0, 0));
  for (scan.second.x = om.x - dist; scan.second.x <= om.x + dist; scan.second.x++) {
   for (scan.second.y = om.y - dist; scan.second.y <= om.y + dist; scan.second.y++) {
    std::vector<point> line = line_to(om, scan.second, 0);
    int sight_points = dist;
    int cost = 0;
    for (int i = 0; i < line.size() && sight_points >= 0; i++) {
-    cost = oter_t::list[overmap::ter_c(OM_loc(scan.first,line[i]))].see_cost;
+    cost = oter_t::list[overmap::ter_c(OM_loc<2>(scan.first,line[i]))].see_cost;
     if (0 > (sight_points -= cost)) break;
    }
    if (sight_points >= 0) overmap::expose(scan);

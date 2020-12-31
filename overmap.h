@@ -73,41 +73,41 @@ class overmap
  * Use must_be_seen=true if only terrain seen by the player should be searched.
  * 2020-07-16 return value revised to distance estimate, 0 if and only if not found
  */
-  int find_closest(point origin, oter_id type, int type_range, OM_loc& dest, int max = OMAP / 2, bool must_be_seen = false) const;
+  int find_closest(point origin, oter_id type, int type_range, OM_loc<2>& dest, int max = OMAP / 2, bool must_be_seen = false) const;
 #if DEAD_FUNC
   std::vector<point> find_all(point origin, oter_id type, int type_range, int &dist, bool must_be_seen);
 #endif
   std::vector<point> find_terrain(const std::string& term) const;
   std::pair<const overmap*,const city*> closest_city(point p) const;
-  std::pair<int, std::string> best_radio_signal(OM_loc receiver) const;
-  bool random_house_in_city(const city* c, OM_loc& dest) const;
+  std::pair<int, std::string> best_radio_signal(OM_loc<1> receiver) const;
+  bool random_house_in_city(const city* c, OM_loc<2>& dest) const;
   int dist_from_city(point p) const;
 // Interactive point choosing; used as the map screen
   std::optional<point> choose_point(game *g);
 
   oter_id& ter(int x, int y);
   oter_id& ter(const point& pt) { return ter(pt.x, pt.y); };
-  static oter_id& ter(OM_loc OMpos);
+  static oter_id& ter(OM_loc<2> OMpos);
   oter_id ter(int x, int y) const;
   oter_id ter(const point& pt) const { return ter(pt.x, pt.y); };
-  static oter_id ter_c(OM_loc OMpos);
+  static oter_id ter_c(OM_loc<2> OMpos);
 
   // unsigned zones(const point& pt);	// no definition
   std::vector<mongroup*> monsters_at(int x, int y);
   std::vector<const mongroup*> monsters_at(int x, int y) const;
   mongroup* valid_group(mon_id type, const point& pt); // pt is from matching high-resolution OM_loc
-  static bool is_safe(const OM_loc& loc); // true if monsters_at is empty, or only woodland
+  static bool is_safe(const OM_loc<2>& loc); // true if monsters_at is empty, or only woodland
 
   bool& seen(int x, int y);
   bool& seen(const point& pt) { return seen(pt.x, pt.y); };
-  static bool& seen(OM_loc OMpos);
+  static bool& seen(OM_loc<2> OMpos);
   bool seen(int x, int y) const { return const_cast<overmap*>(this)->seen(x, y); };	// \todo specialize?
   bool seen(const point& pt) const { return const_cast<overmap*>(this)->seen(pt.x, pt.y); };
-  static bool seen_c(OM_loc OMpos);
-  static void expose(OM_loc OMpos);
+  static bool seen_c(OM_loc<2> OMpos);
+  static void expose(OM_loc<2> OMpos);
 
   bool has_note(const point& pt) const;
-  static bool has_note(OM_loc OMpos, std::string& dest);
+  static bool has_note(OM_loc<2> OMpos, std::string& dest);
   void add_note(const point& pt, std::string message);
   void add_note(const point& pt, const char* const message) { add_note(pt, std::string(message)); };
   std::optional<point> find_note(point origin, const std::string& text) const;
@@ -115,8 +115,10 @@ class overmap
   std::optional<point> display_notes() const;
 
   static GPS_loc toGPS(const point& screen_pos);
-  static OM_loc toOvermap(const GPS_loc& GPSpos, int scale=2); // scale=1 for high-resolution
-  static OM_loc normalize(const OM_loc& OMpos, int scale=2);
+  static OM_loc<2> toOvermap(const GPS_loc& GPSpos);
+  static OM_loc<1> toOvermapHires(const GPS_loc& GPSpos);
+  static OM_loc<2> normalize(const OM_loc<2>& OMpos);
+  static OM_loc<1> normalize(const OM_loc<1>& OMpos);
 
   tripoint pos;
 #if PROTOTYPE

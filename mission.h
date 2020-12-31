@@ -92,7 +92,7 @@ struct mission {
  int value;		// Cash/Favor value of completing this
  npc_favor reward;	// If there's a special reward for completing it
  int uid;		// Unique ID number, used for referencing elsewhere
- OM_loc target;		// Marked on the player's map.
+ OM_loc<2> target;		// Marked on the player's map.
  itype_id item_id;	// Item that needs to be found (or whatever)
  int count;		// How many of that item
  int deadline;		// Turn number

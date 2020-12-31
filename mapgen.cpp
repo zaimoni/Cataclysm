@@ -159,13 +159,13 @@ void map::generate(game *g, overmap *om, int x, int y)
  const auto physical = overmap_delta(x, y);
  overmap& om_actual = (0 == physical.second.x && 0 == physical.second.y) ? *om : om_cache::get().create(tripoint(om->pos.x+physical.second.x,om->pos.y + physical.second.y,om->pos.z));
  const oter_id t_above = (om_actual.pos.z < 0 || om_actual.pos.z == TUTORIAL_Z - 1)
-     ? overmap::ter_c(OM_loc(tripoint(om_actual.pos.x, om_actual.pos.y, om_actual.pos.z + 1), physical.first))
+     ? overmap::ter_c(OM_loc<2>(tripoint(om_actual.pos.x, om_actual.pos.y, om_actual.pos.z + 1), physical.first))
      : ot_null;
  const oter_id terrain_type = om_actual.ter(physical.first);
- const oter_id t_north = overmap::ter_c(OM_loc(om_actual.pos, physical.first + Direction::N));
- const oter_id t_east = overmap::ter_c(OM_loc(om_actual.pos, physical.first + Direction::E));
- const oter_id t_south = overmap::ter_c(OM_loc(om_actual.pos, physical.first + Direction::S));
- const oter_id t_west = overmap::ter_c(OM_loc(om_actual.pos, physical.first + Direction::W));
+ const oter_id t_north = overmap::ter_c(OM_loc<2>(om_actual.pos, physical.first + Direction::N));
+ const oter_id t_east = overmap::ter_c(OM_loc<2>(om_actual.pos, physical.first + Direction::E));
+ const oter_id t_south = overmap::ter_c(OM_loc<2>(om_actual.pos, physical.first + Direction::S));
+ const oter_id t_west = overmap::ter_c(OM_loc<2>(om_actual.pos, physical.first + Direction::W));
 
 // Okay, we know who are neighbors are.  Let's draw!
  draw_map(terrain_type, t_north, t_east, t_south, t_west, t_above, turn, g);

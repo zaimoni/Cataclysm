@@ -353,7 +353,7 @@ void computer::activate_function(game *g, computer_action action)
    int miny = anchor.y - 60;
    int maxy = anchor.y + 60;
 
-   OM_loc scan(tripoint(g->cur_om.pos.x, g->cur_om.pos.y, 0), point(0, 0));
+   OM_loc<2> scan(tripoint(g->cur_om.pos.x, g->cur_om.pos.y, 0), point(0, 0));
    for (scan.second.x = minx; scan.second.x <= maxx; scan.second.x++) {
        for (scan.second.y = miny; scan.second.y <= maxy; scan.second.y++) overmap::expose(scan);
    }
@@ -368,7 +368,7 @@ void computer::activate_function(game *g, computer_action action)
    int miny = anchor.y - 60;
    int maxy = anchor.y + 60;
 
-   OM_loc scan(tripoint(g->cur_om.pos.x, g->cur_om.pos.y, 0), point(0, 0));
+   OM_loc<2> scan(tripoint(g->cur_om.pos.x, g->cur_om.pos.y, 0), point(0, 0));
    for (scan.second.x = minx; scan.second.x <= maxx; scan.second.x++) {
        for (scan.second.y = miny; scan.second.y <= maxy; scan.second.y++) {
            const auto terrain = overmap::ter_c(scan);

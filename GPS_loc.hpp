@@ -41,19 +41,42 @@ inline GPS_loc operator+(const point& lhs, GPS_loc rhs) { return rhs += lhs; }
 std::variant<point, tripoint> operator-(const GPS_loc& lhs, const GPS_loc& rhs);
 int rl_dist(GPS_loc lhs, GPS_loc rhs);
 
-struct OM_loc : public std::pair<tripoint, point>
+struct _OM_loc : public std::pair<tripoint, point>
 {
-	OM_loc() = default;
-	constexpr OM_loc(tripoint _pos, point coord) noexcept : std::pair<tripoint, point>(_pos, coord) {}
-	constexpr explicit OM_loc(const std::pair<tripoint, point> & src) noexcept : std::pair<tripoint, point>(src) {}
-	OM_loc(const OM_loc& src) = default;
-	~OM_loc() = default;
-	OM_loc& operator=(const OM_loc& src) = default;
+protected:
+	_OM_loc() = default;
+	constexpr _OM_loc(tripoint _pos, point coord) noexcept : std::pair<tripoint, point>(_pos, coord) {}
+	constexpr explicit _OM_loc(const std::pair<tripoint, point> & src) noexcept : std::pair<tripoint, point>(src) {}
+	_OM_loc(const _OM_loc& src) = default;
+	~_OM_loc() = default;
+	_OM_loc& operator=(const _OM_loc& src) = default;
 
-	bool is_valid(int scale=2) const;
+public:
+	bool in_bounds(int scale = 2) const;
 	void self_normalize(int scale = 2);
 	void self_denormalize(const tripoint& view, int scale = 2);
 };
+
+template<size_t scale>
+struct OM_loc : public _OM_loc
+{
+	static_assert(1 == scale || 2 == scale);
+
+	OM_loc() = default;
+	constexpr OM_loc(tripoint _pos, point coord) noexcept : _OM_loc(_pos, coord) {}
+	constexpr explicit OM_loc(const std::pair<tripoint, point> &src) noexcept : _OM_loc(src) {}
+	OM_loc(const OM_loc & src) = default;
+	~OM_loc() = default;
+	OM_loc& operator=(const OM_loc & src) = default;
+
+	bool in_bounds() const { return static_cast<const _OM_loc*>(this)->in_bounds(scale); }
+	bool is_valid() const { return tripoint(INT_MAX) != first || in_bounds(); }
+	void self_normalize() { return static_cast<_OM_loc*>(this)->self_normalize(scale); }
+	void self_denormalize(const tripoint& view) { return static_cast<_OM_loc*>(this)->self_denormalize(view, scale); }
+};
+
+int rl_dist(OM_loc<1> lhs, OM_loc<1> rhs);
+int rl_dist(OM_loc<2> lhs, OM_loc<2> rhs);
 
 struct reality_bubble_loc : public std::pair<int, point>
 {
@@ -67,8 +90,6 @@ struct reality_bubble_loc : public std::pair<int, point>
 	bool is_valid() const;
 };
 
-int rl_dist(OM_loc lhs, OM_loc rhs, int scale=2);
-
 template<>
 struct _ref<GPS_loc>
 {
@@ -76,9 +97,15 @@ struct _ref<GPS_loc>
 };
 
 template<>
-struct _ref<OM_loc>
+struct _ref<OM_loc<2>>
 {
-	static constexpr const OM_loc invalid = OM_loc(tripoint(INT_MAX), point(-1));
+	static constexpr const OM_loc<2> invalid = OM_loc<2>(tripoint(INT_MAX), point(-1));
+};
+
+template<>
+struct _ref<OM_loc<1>>
+{
+	static constexpr const OM_loc<1> invalid = OM_loc<1>(tripoint(INT_MAX), point(-1));
 };
 
 

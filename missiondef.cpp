@@ -84,7 +84,7 @@ void mission_start::place_dog(game *g, mission *miss)
 	messages.add("%s gave you a dog whistle.", dev->name.c_str());
 
 	// Make it seen on our map
-	OM_loc scan(g->cur_om.pos, point(0, 0));
+	OM_loc<2> scan(g->cur_om.pos, point(0, 0));
 	for (scan.second.x = miss->target.second.x - 6; scan.second.x <= miss->target.second.x + 6; scan.second.x++) {
 		for (scan.second.y = miss->target.second.y - 6; scan.second.y <= miss->target.second.y + 6; scan.second.y++) overmap::expose(scan);
 	}
@@ -102,7 +102,7 @@ void mission_start::place_zombie_mom(game *g, mission *miss)
 	if (!city_id.first->random_house_in_city(city_id.second, miss->target)) throw std::string(__FUNCTION__) + " couldn't find house within mission city";
 
 	// Make it seen on our map
-	OM_loc scan(g->cur_om.pos, point(0, 0));
+	OM_loc<2> scan(g->cur_om.pos, point(0, 0));
 	for (scan.second.x = miss->target.second.x - 6; scan.second.x <= miss->target.second.x + 6; scan.second.x++) {
 		for (scan.second.y = miss->target.second.y - 6; scan.second.y <= miss->target.second.y + 6; scan.second.y++) overmap::expose(scan);
 	}
@@ -136,7 +136,7 @@ void mission_start::place_npc_software(game *g, mission *miss)
 		miss->item_id = itm_software_useless;
 	}
 
-	OM_loc place;
+	decltype(miss->target) place;
 	if (ter == ot_house_north) {
 		const auto city_id = g->cur_om.closest_city(g->om_location().second);
 		if (!city_id.second) throw std::string(__FUNCTION__) + " couldn't find mission city";
@@ -148,7 +148,7 @@ void mission_start::place_npc_software(game *g, mission *miss)
 
 	miss->target = place;
 	// Make it seen on our map
-	OM_loc scan(g->cur_om.pos, point(0, 0));
+	OM_loc<2> scan(g->cur_om.pos, point(0, 0));
 	for (scan.second.x = place.second.x - 6; scan.second.x <= place.second.x + 6; scan.second.x++) {
 		for (scan.second.y = place.second.y - 6; scan.second.y <= place.second.y + 6; scan.second.y++) overmap::expose(scan);
 	}
@@ -243,13 +243,13 @@ void mission_start::reveal_hospital(game *g, mission *miss)
 {
 	const auto dev = npc::find_alive_r(miss->npc_id);
 	if (!dev) throw std::string(__FUNCTION__) + " couldn't find an NPC!";
-	OM_loc dest;
+	decltype(miss->target) dest;
 	if (!g->cur_om.find_closest(g->om_location().second, ot_hospital, 1, dest)) throw std::string(__FUNCTION__) + " couldn't find a hospital!";
 
 	g->u.i_add(item(item::types[itm_vacutainer], 0));
 	messages.add("%s gave you a vacutainer.", dev->name.c_str());
 
-	OM_loc scan(g->cur_om.pos, point(0, 0));
+	OM_loc<2> scan(g->cur_om.pos, point(0, 0));
 	for (scan.second.x = dest.second.x - 3; scan.second.x <= dest.second.x + 3; scan.second.x++) {
 		for (scan.second.y = dest.second.y - 3; scan.second.y <= dest.second.y + 3; scan.second.y++) overmap::expose(scan);
 	}
@@ -279,7 +279,7 @@ void mission_start::find_safety(game *g, mission *miss)
 		}
 	}
 	// Couldn't find safety; so just set the target to far away
-	miss->target = OM_loc(g->cur_om.pos, place.second + 20*scan_dirs[rng(0, 3)]);
+	miss->target = decltype(miss->target)(g->cur_om.pos, place.second + 20*scan_dirs[rng(0, 3)]);
 }
 
 void mission_start::place_book(game *g, mission *miss)	// XXX doesn't look like it works \todo fix

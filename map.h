@@ -48,10 +48,12 @@ class map
 
 // File I/O
  void save(const tripoint& om_pos, unsigned int turn, const point& world);
- void save(const OM_loc& GPS, unsigned int turn) { save(GPS.first, turn, GPS.second); };
+ void save(const OM_loc<1>& GPS, unsigned int turn) { save(GPS.first, turn, GPS.second); };
+ void save(const OM_loc<2>& GPS, unsigned int turn) { save(GPS.first, turn, 2 * GPS.second); };
  void load(game *g, const point& world);
  void load(const tripoint& GPS);
- void load(const OM_loc& GPS);
+ void load(const OM_loc<1>& GPS);
+ void load(const OM_loc<2>& GPS) { load(OM_loc<1>(GPS.first, 2 * GPS.second)); }
  void shift(game *g, const point& world, const point& delta);
  void spawn_monsters(game *g);
  void clear_spawns();

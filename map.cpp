@@ -2127,7 +2127,7 @@ void map::load(const tripoint& GPS)
     }
 }
 
-void map::load(const OM_loc& GPS)
+void map::load(const OM_loc<1>& GPS)
 {
     // \todo extract this to to OM_loc::toGPS; needs to use exceptions for error reporting?
     if (INT_MAX / (2 * OMAP) < GPS.first.x || INT_MIN / (2 * OMAP) > GPS.first.x) return;   // does not represent

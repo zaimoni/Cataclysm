@@ -32,7 +32,7 @@ public:
 	std::optional<point> toScreen(GPS_loc GPS_pos) const;
 	bool toScreen(const GPS_loc& GPS_pos, point& screen_pos) const;
 	std::optional<reality_bubble_loc> toSubmap(GPS_loc GPS_pos) const;
-	OM_loc om_location(); // levx and levy converted to overmap coordinates
+	OM_loc<2> om_location(); // levx and levy converted to overmap coordinates
 };
 
 #endif

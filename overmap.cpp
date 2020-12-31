@@ -16,9 +16,9 @@
 
 GPS_loc overmap::toGPS(const point& screen_pos) { return game::active()->toGPS(screen_pos); }
 
-OM_loc overmap::toOvermap(const GPS_loc& GPSpos, int scale)
+OM_loc<1> overmap::toOvermapHires(const GPS_loc& GPSpos)
 {
-    OM_loc ret(GPSpos.first, point(0));
+    OM_loc<1> ret(GPSpos.first, point(0));
     ret.second.x = (ret.first.x % (2 * OMAP));
     ret.second.y = (ret.first.y % (2 * OMAP));
     if (0 <= ret.first.x) {
@@ -34,8 +34,13 @@ OM_loc overmap::toOvermap(const GPS_loc& GPSpos, int scale)
         assert(0 >= ret.second.y);	// \todo remove this once live (test of algorithmic correctness)
         ret.second.y += (2 * OMAP - 1);
     }
-    ret.second /= scale;
 	return ret;
+}
+
+OM_loc<2> overmap::toOvermap(const GPS_loc& GPSpos)
+{
+    auto staging(toOvermapHires(GPSpos));
+    return OM_loc<2>(staging.first, staging.second / 2);
 }
 
 // start inlined GPS_loc.cpp
@@ -80,7 +85,7 @@ std::variant<point, tripoint> operator-(const GPS_loc& lhs, const GPS_loc& rhs)
     return ret;
 }
 
-void OM_loc::self_normalize(int scale)
+void _OM_loc::self_normalize(int scale)
 {
     while (0 > second.x && INT_MIN < first.x) {
         second.x += 2 * OMAP / scale;
@@ -100,14 +105,21 @@ void OM_loc::self_normalize(int scale)
     };
 }
 
-OM_loc overmap::normalize(const OM_loc& OMpos, int scale)
+OM_loc<1> overmap::normalize(const OM_loc<1>& OMpos)
 {
     OM_loc ret(OMpos);
-    ret.self_normalize(scale);
+    ret.self_normalize();
     return ret;
 }
 
-void OM_loc::self_denormalize(const tripoint& view, int scale)
+OM_loc<2> overmap::normalize(const OM_loc<2>& OMpos)
+{
+    OM_loc ret(OMpos);
+    ret.self_normalize();
+    return ret;
+}
+
+void _OM_loc::self_denormalize(const tripoint& view, int scale)
 {
 #define DENORMALIZE_COORD(X)    \
     if (view.X < first.X) {   \
@@ -123,11 +135,9 @@ void OM_loc::self_denormalize(const tripoint& view, int scale)
 #undef DENORMALIZE_COORD
 }
 
-
-bool OM_loc::is_valid(int scale) const
+bool _OM_loc::in_bounds(int scale) const
 {
-    if (_ref<OM_loc>::invalid.first == first) return zaimoni::gdi::box(point(0), point(2*OMAP/scale)).contains(second);
-    return true;
+    return zaimoni::gdi::box(point(0), point(2 * OMAP / scale)).contains(second);
 }
 
 bool reality_bubble_loc::is_valid() const
@@ -158,17 +168,31 @@ int rl_dist(GPS_loc lhs, GPS_loc rhs)
 }
 
 // would prefer for this to be a free function but we have to have some way to distinguish between overmap and GPS coordinates
-int rl_dist(OM_loc lhs, OM_loc rhs, int scale)
+int rl_dist(OM_loc<1> lhs, OM_loc<1> rhs)
 {
-    if (!lhs.is_valid(scale) || !rhs.is_valid(scale)) return INT_MAX;
+    if (!lhs.is_valid() || !rhs.is_valid()) return INT_MAX;
 
     if (lhs.first == rhs.first) return rl_dist(lhs.second, rhs.second);
 
-    // release block \todo expand following in a non-overflowing way (always return INT_MAX if overflow)
+    // \todo expand following in a non-overflowing way (always return INT_MAX if overflow)
     // prototype reductions (can overflow)
-    lhs.self_normalize(scale);
-    rhs.self_normalize(scale);
-    rhs.self_denormalize(lhs.first, scale);
+    lhs.self_normalize();
+    rhs.self_normalize();
+    rhs.self_denormalize(lhs.first);
+    return rl_dist(lhs.second, rhs.second);
+}
+
+int rl_dist(OM_loc<2> lhs, OM_loc<2> rhs)
+{
+    if (!lhs.is_valid() || !rhs.is_valid()) return INT_MAX;
+
+    if (lhs.first == rhs.first) return rl_dist(lhs.second, rhs.second);
+
+    // \todo expand following in a non-overflowing way (always return INT_MAX if overflow)
+    // prototype reductions (can overflow)
+    lhs.self_normalize();
+    rhs.self_normalize();
+    rhs.self_denormalize(lhs.first);
     return rl_dist(lhs.second, rhs.second);
 }
 
@@ -621,13 +645,13 @@ oter_id overmap::ter(int x, int y) const
     return t[x][y];
 }
 
-oter_id& overmap::ter(OM_loc OMpos)
+oter_id& overmap::ter(OM_loc<2> OMpos)
 {
     OMpos.self_normalize();
     return om_cache::get().create(OMpos.first).ter(OMpos.second);
 }
 
-oter_id overmap::ter_c(OM_loc OMpos)
+oter_id overmap::ter_c(OM_loc<2> OMpos)
 {
     OMpos.self_normalize();
     const auto om = om_cache::get().r_get(OMpos.first);
@@ -679,7 +703,7 @@ mongroup* overmap::valid_group(mon_id type, const point& pt)
     return nullptr;
 }
 
-bool overmap::is_safe(const OM_loc& loc)
+bool overmap::is_safe(const OM_loc<2>& loc)
 {
     if (0 <= loc.second.x && OMAPX > loc.second.x && 0 <= loc.second.y && OMAPY > loc.second.y) {
         auto om = om_cache::get().r_get(loc.first);
@@ -696,13 +720,13 @@ bool& overmap::seen(int x, int y)
  return s[x][y];
 }
 
-bool& overmap::seen(OM_loc OMpos)
+bool& overmap::seen(OM_loc<2> OMpos)
 {
     OMpos.self_normalize();
     return om_cache::get().create(OMpos.first).seen(OMpos.second);
 }
 
-bool overmap::seen_c(OM_loc OMpos)
+bool overmap::seen_c(OM_loc<2> OMpos)
 {
     OMpos.self_normalize();
     const auto om = om_cache::get().r_get(OMpos.first);
@@ -710,7 +734,7 @@ bool overmap::seen_c(OM_loc OMpos)
     return om->seen(OMpos.second);
 }
 
-void overmap::expose(OM_loc OMpos)
+void overmap::expose(OM_loc<2> OMpos)
 {
     OMpos.self_normalize();
     const auto om = om_cache::get().r_get(OMpos.first);
@@ -727,7 +751,7 @@ bool overmap::has_note(const point& pt) const
  return false;
 }
 
-bool overmap::has_note(OM_loc OMpos, std::string& dest)
+bool overmap::has_note(OM_loc<2> OMpos, std::string& dest)
 {
     OMpos.self_normalize();
     const auto om = om_cache::get().r_get(OMpos.first);
@@ -1185,12 +1209,12 @@ void overmap::make_tutorial()
  zg.clear();
 }
 
-int overmap::find_closest(point origin, oter_id type, int type_range, OM_loc& dest, const int max, bool must_be_seen) const
+int overmap::find_closest(point origin, oter_id type, int type_range, OM_loc<2>& dest, const int max, bool must_be_seen) const
 {
     assert(0 < max);
     auto t_at = ter(origin);
     if (t_at >= type && t_at < type + type_range && (!must_be_seen || seen(origin))) {
-        dest = OM_loc(pos, origin);
+        dest = OM_loc<2>(pos, origin);
         return 1;   // not really, but "close" and C-true
     }
 
@@ -1199,7 +1223,7 @@ int overmap::find_closest(point origin, oter_id type, int type_range, OM_loc& de
         while (0 < i--) {
             point pt = origin + zaimoni::gdi::Linf_border_sweep<point>(dist, i, origin.x, origin.y);
             if ((t_at = ter(pt)) >= type && t_at < type + type_range && (!must_be_seen || seen(pt))) {  // this null-terrains if cross-overmap is attempted
-                dest = OM_loc(pos, pt);
+                dest = OM_loc<2>(pos, pt);
                 return dist;
             }
         }
@@ -1239,12 +1263,12 @@ std::vector<point> overmap::find_terrain(const std::string& term) const
  return found;
 }
 
-std::pair<int, std::string> overmap::best_radio_signal(OM_loc receiver) const
+std::pair<int, std::string> overmap::best_radio_signal(OM_loc<1> receiver) const
 {   // \todo building block for a cross-overmap best_radio_signal
     std::pair<int, std::string> ret = std::pair(0, "Radio: Kssssssssssssh.");
     for (decltype(auto) r : radios) {
-        const auto radio_pos = OM_loc(pos, point(r.x, r.y));  // C:Whales scaled this by 2 compared to OM_loc coordinates; use hires coordinates incoming
-        int signal = r.strength - rl_dist(radio_pos, receiver, 1);
+        const auto radio_pos = OM_loc<1>(pos, point(r.x, r.y));  // C:Whales scaled this by 2 compared to OM_loc coordinates; use hires coordinates incoming
+        int signal = r.strength - rl_dist(radio_pos, receiver);
         if (signal > ret.first) {
             ret.first = signal;
             ret.second = r.message;
@@ -1268,7 +1292,7 @@ std::pair<const overmap*, const city*> overmap::closest_city(point p) const
  return std::pair(this, ret);
 }
 
-bool overmap::random_house_in_city(const city* c, OM_loc& dest) const
+bool overmap::random_house_in_city(const city* c, OM_loc<2>& dest) const
 {
  if (!c) return false;  // \todo invariant violation...harder failure, at least in debug mode
 
@@ -1285,7 +1309,7 @@ bool overmap::random_house_in_city(const city* c, OM_loc& dest) const
  }
  if (valid.empty()) return false;
 
- dest = OM_loc(pos, valid[rng(0, valid.size() - 1)]);   // would need normalization if cross-overmap
+ dest = OM_loc<2>(pos, valid[rng(0, valid.size() - 1)]);   // would need normalization if cross-overmap
  return true;
 }
 
@@ -1326,7 +1350,7 @@ void overmap::draw(WINDOW *w, const player& u, const point& curs, const point& o
  bool note_here = false, npc_here = false;
  std::string note_text, npc_name;
  
- OM_loc target(_ref<OM_loc>::invalid);
+ OM_loc<2> target(_ref<OM_loc<2>>::invalid);
  if (u.active_mission >= 0 && u.active_mission < u.active_missions.size()) {
     target = mission::from_id(u.active_missions[u.active_mission])->target;
     if (target.is_valid()) target.self_denormalize(pos);
@@ -1341,7 +1365,7 @@ void overmap::draw(WINDOW *w, const player& u, const point& curs, const point& o
   oter_id ccur_ter;
   for (int i = -om_w / 2; i < om_w / 2; i++) {
    for (int j = -VIEW / 2; j <= (ch == 'j' ? VIEW / 2 + 1 : VIEW / 2); j++) {
-    OM_loc scan(pos, point(curs.x+i, curs.y+j));
+    OM_loc<2> scan(pos, point(curs.x+i, curs.y+j));
     oter_id cur_ter = overmap::ter_c(scan);
 	nc_color ter_color;
 	long ter_sym;
@@ -1407,7 +1431,7 @@ void overmap::draw(WINDOW *w, const player& u, const point& curs, const point& o
     case NORTHWEST:  mvwputch(w,  0,  0, c_red, LINE_OXXO); break;
    }
   }
-  if (has_note(OM_loc(pos, curs), note_text)) {
+  if (has_note(OM_loc<2>(pos, curs), note_text)) {
    for (int i = 0; i < note_text.length(); i++)
     mvwputch(w, 1, i, c_white, LINE_OXOX);
    mvwputch(w, 1, note_text.length(), c_white, LINE_XOOX);
