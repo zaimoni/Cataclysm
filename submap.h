@@ -45,6 +45,9 @@ struct submap {
     submap(std::istream& is);
     friend std::ostream& operator<<(std::ostream& os, const submap& src);
 
+    static constexpr bool in_bounds(int x, int y) { return 0 <= x && x < SEE && 0 <= y && y < SEE; }
+    static constexpr bool in_bounds(const point& p) { return in_bounds(p.x, p.y); }
+
     // including vehicles is more complicated
     // 2020-12-18: vehicles only enable the bashable flag, others are as-if terrain only
    // bool has_flag_ter_only(t_flag flag, const point& pt) const { return ter_t::list[ter[pt.x][pt.y]].flags & mfb(flag); };
@@ -52,6 +55,9 @@ struct submap {
     int move_cost_ter_only(const point& pt) const { return ter_t::list[ter[pt.x][pt.y]].movecost; };
 
     void process_active_items(); // map.cpp; only caller there
+
+    void add_spawn(mon_id type, int count, const point& pt, bool friendly, int faction_id, int mission_id, std::string name); // mapgen.cpp
+    void add_spawn(const monster& mon); // mapgen.cpp
 };
 
 #endif

@@ -28,11 +28,14 @@ public:
 	  // lev.z is almost always cur_om.pos.z (possibly should be explicitly enforced as map loading responds to cur_om.pos.z)
 	  // in savegames: lev = u.GPSpos.first+(-5,-5,0).  Should be true anytime except during reality bubble shift during a move between submaps
 
+	// coordinate juggling
 	GPS_loc toGPS(point screen_pos) const;
 	std::optional<point> toScreen(GPS_loc GPS_pos) const;
 	bool toScreen(const GPS_loc& GPS_pos, point& screen_pos) const;
 	std::optional<reality_bubble_loc> toSubmap(GPS_loc GPS_pos) const;
 	OM_loc<2> om_location(); // levx and levy converted to overmap coordinates
+
+	void despawn(monster& z, bool mortal = false);
 };
 
 #endif

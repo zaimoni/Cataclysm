@@ -5807,11 +5807,22 @@ void map::put_items_from(items_location loc, int num, int x, int y, int turn)
  }
 }
 
+void submap::add_spawn(mon_id type, int count, const point& pt, bool friendly, int faction_id, int mission_id, std::string name)
+{
+    if (!in_bounds(pt)) {
+        debugmsg("Bad add_spawn(%d, %d, %d, %d)", type, count, pt.x, pt.y);
+        debuglog("Bad add_spawn(%d, %d, %d, %d)", type, count, pt.x, pt.y);
+        return;
+    }
+    spawns.push_back(spawn_point(type, count, pt.x, pt.y, faction_id, mission_id, friendly, name));
+}
+
 void map::add_spawn(mon_id type, int count, int x, int y, bool friendly,
                     int faction_id, int mission_id, std::string name)
 {
  if (!inbounds(x, y)) {
   debugmsg("Bad add_spawn(%d, %d, %d, %d)", type, count, x, y);
+  debuglog("Bad add_spawn(%d, %d, %d, %d)", type, count, x, y);
   return;
  }
  int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
@@ -5830,6 +5841,12 @@ void map::add_spawn(monster *mon)
  spawn.y %= SEEY;
  add_spawn(mon_id(mon->type->id), 1, spawn.x, spawn.y, (mon->friendly < 0),
            mon->faction_id, mon->mission_id, spawnname);
+}
+
+void submap::add_spawn(const monster& mon)
+{
+    std::string spawnname = (mon.unique_name.empty() ? "NONE" : mon.unique_name);
+    add_spawn(mon_id(mon.type->id), 1, mon.GPSpos.second, (mon.friendly < 0), mon.faction_id, mon.mission_id, spawnname);
 }
 
 vehicle* map::add_vehicle(vhtype_id type, point pos, int deg)

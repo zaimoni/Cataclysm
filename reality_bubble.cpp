@@ -1,4 +1,8 @@
 #include "reality_bubble.hpp"
+#include "monster.h"
+#include "om_cache.hpp"
+#include "mapbuffer.h"
+#include "recent_msg.h"
 
 // cf map::loadn
 GPS_loc reality_bubble::toGPS(point screen_pos) const	// \todo overflow checking
@@ -70,4 +74,28 @@ std::optional<reality_bubble_loc> reality_bubble::toSubmap(GPS_loc GPS_pos) cons
 OM_loc<2> reality_bubble::om_location()
 {
 	return OM_loc<2>(cur_om.pos, (project_xy(lev) + point(MAPSIZE / 2))/2);
+}
+
+void reality_bubble::despawn(monster& z, bool mortal)
+{
+	if (z.is_static_spawn()) { // Static spawn, move them back there
+		if (submap* const sm = MAPBUFFER.lookup_submap(z.GPSpos.first)) sm->add_spawn(z);
+		else debuglog("reality_bubble::despawn failed (prearranged, submap), monster dropped");
+		return;
+	}
+	if (!mortal && 0 > z.friendly) { // Indefinitely friendly to PC, make it into a static spawn
+		if (submap* const sm = MAPBUFFER.lookup_submap(z.GPSpos.first)) sm->add_spawn(z);
+		else debuglog("reality_bubble::despawn failed (friendly, submap), monster dropped");
+		return;
+	}
+
+	const auto where_am_i = overmap::toOvermapHires(z.GPSpos);
+	if (overmap* const my_om = om_cache::get().get(where_am_i.first)) {
+		if (const auto m_group = my_om->valid_group((mon_id)(z.type->id), where_am_i.second)) {
+			m_group->add_one();
+		} else if (const auto m_cat = mongroup::to_mc((mon_id)(z.type->id))) {
+			my_om->zg.push_back(mongroup(m_cat, where_am_i.second, 1, 1));
+		}
+	} else debuglog("reality_bubble::despawn failed (overmap), monster dropped");
+
 }
