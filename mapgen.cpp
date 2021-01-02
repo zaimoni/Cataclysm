@@ -5831,18 +5831,6 @@ void map::add_spawn(mon_id type, int count, int x, int y, bool friendly,
  grid[nonant]->spawns.push_back(spawn_point(type, count, x, y, faction_id, mission_id, friendly, name));
 }
 
-void map::add_spawn(monster *mon)
-{
- std::string spawnname = (mon->unique_name.empty() ? "NONE" : mon->unique_name);
- point spawn = mon->is_static_spawn() ? mon->spawnpos : mon->pos;
- while (spawn.x < 0) spawn.x += SEEX;
- while (spawn.y < 0) spawn.y += SEEY;
- spawn.x %= SEEX;
- spawn.y %= SEEY;
- add_spawn(mon_id(mon->type->id), 1, spawn.x, spawn.y, (mon->friendly < 0),
-           mon->faction_id, mon->mission_id, spawnname);
-}
-
 void submap::add_spawn(const monster& mon)
 {
     std::string spawnname = (mon.unique_name.empty() ? "NONE" : mon.unique_name);

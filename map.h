@@ -285,7 +285,6 @@ class map
  void add_spawn(mon_id type, int count, int x, int y, bool friendly = false,
                 int faction_id = -1, int mission_id = -1,
                 std::string name = "NONE");
- void add_spawn(monster *mon);
  void create_anomaly(int cx, int cy, artifact_natural_property prop);
  vehicle* add_vehicle(vhtype_id type, point pos, int deg);
  computer* add_computer(int x, int y, std::string name, int security);
