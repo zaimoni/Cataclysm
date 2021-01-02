@@ -20,6 +20,11 @@ struct spawn_point {
         std::string N = "NONE") :
         pos(X, Y), count(C), type(T), faction_id(FAC),
         mission_id(MIS), friendly(F), name(N) {}
+    spawn_point(const spawn_point& src) = default;
+    spawn_point(spawn_point&& src) = default;
+    ~spawn_point() = default;
+    spawn_point& operator=(const spawn_point& src) = default;
+    spawn_point& operator=(spawn_point && src) = default;
 };
 
 struct submap {

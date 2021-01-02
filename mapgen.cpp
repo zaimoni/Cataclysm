@@ -5884,12 +5884,10 @@ void map::rotate(int turns)
 // Now, spawn points
   for (int sx = 0; sx < 2; sx++) {
    for (int sy = 0; sy < 2; sy++) {
-    int gridfrom = sx + sy * my_MAPSIZE;
-    int gridto = sx * my_MAPSIZE + 1 - sy;
-    for (int j = 0; j < grid[gridfrom]->spawns.size(); j++) {
-     spawn_point tmp = grid[gridfrom]->spawns[j];
-	 tmp.pos = point(SEEY - 1 - tmp.pos.y, tmp.pos.x);	// depends on SEEX==SEEY
-     sprot[gridto].push_back(tmp);
+    decltype(auto) dest = sprot[sx * my_MAPSIZE + 1 - sy];
+    for (spawn_point tmp : grid[sx + sy * my_MAPSIZE]->spawns) { // need value-copy here
+        tmp.pos = point(SEEY - 1 - tmp.pos.y, tmp.pos.x);	// depends on SEEX==SEEY
+        dest.push_back(std::move(tmp));
     }
    }
   }
@@ -5919,12 +5917,10 @@ void map::rotate(int turns)
 // Now, spawn points
   for (int sx = 0; sx < 2; sx++) {
    for (int sy = 0; sy < 2; sy++) {
-    int gridfrom = sx + sy * my_MAPSIZE;
-    int gridto = (1 - sy) * my_MAPSIZE + 1 - sx;
-    for (int j = 0; j < grid[gridfrom]->spawns.size(); j++) {
-     spawn_point tmp = grid[gridfrom]->spawns[j];
-	 tmp.pos = point(SEEX - 1 - tmp.pos.x, SEEY - 1 - tmp.pos.y);
-     sprot[gridto].push_back(tmp);
+    decltype(auto) dest = sprot[(1 - sy) * my_MAPSIZE + 1 - sx];
+    for (spawn_point tmp : grid[sx + sy * my_MAPSIZE]->spawns) { // need value-copy here
+        tmp.pos = point(SEEX - 1 - tmp.pos.x, SEEY - 1 - tmp.pos.y);	// depends on SEEX==SEEY
+        dest.push_back(std::move(tmp));
     }
    }
   }
@@ -5955,12 +5951,10 @@ void map::rotate(int turns)
 // Now, spawn points
   for (int sx = 0; sx < 2; sx++) {
    for (int sy = 0; sy < 2; sy++) {
-    int gridfrom = sx + sy * my_MAPSIZE;
-    int gridto = (1 - sx) * my_MAPSIZE + sy;
-    for (int j = 0; j < grid[gridfrom]->spawns.size(); j++) {
-     spawn_point tmp = grid[gridfrom]->spawns[j];
-	 tmp.pos = point(tmp.pos.y, SEEX - 1 - tmp.pos.x);	// depends on SEEX==SEEY
-     sprot[gridto].push_back(tmp);
+    decltype(auto) dest = sprot[(1 - sx) * my_MAPSIZE + sy];
+    for (spawn_point tmp : grid[sx + sy * my_MAPSIZE]->spawns) { // need value-copy here
+        tmp.pos = point(tmp.pos.y, SEEX - 1 - tmp.pos.x);	// depends on SEEX==SEEY
+        dest.push_back(std::move(tmp));
     }
    }
   }
