@@ -45,7 +45,12 @@ struct monster_and_count
 {
  monster mon;
  int count;
- monster_and_count(monster M, int C) : mon (M), count (C) {};
+ monster_and_count(const monster& M, int C) : mon (M), count (C) {}
+ monster_and_count(const monster_and_count& src) = default;
+ monster_and_count(monster_and_count&& src) = default;
+ ~monster_and_count() = default;
+ monster_and_count& operator=(const monster_and_count& src) = default;
+ monster_and_count& operator=(monster_and_count&& src) = default;
 };
 
 // arguably technical debt (implausible that game is-a reality bubble) 2020-12-28 zaimoni

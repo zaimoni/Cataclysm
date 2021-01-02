@@ -569,19 +569,7 @@ bool game::do_turn()
  om_cache::get().expire();  // flush unused overmaps to hard drive (not clearly correct placement)
  if (is_game_over()) {
   write_msg();
-// Save the monsters before we die!
-  for (int i = 0; i < z.size(); i++) {
-   if (z[i].is_static_spawn()) {	// Static spawn, move them back there
-    tinymap tmp;
-    tmp.load(this, z[i].spawnmap);
-    tmp.add_spawn(&(z[i]));
-    tmp.save(cur_om.pos, messages.turn, z[i].spawnmap);
-   } else if (const auto m_group = cur_om.valid_group((mon_id)(z[i].type->id), project_xy(lev))) {	// Absorb them back into a group
-       m_group->add_one();
-   } else if (const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id))) {
-       cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
-   }
-  }
+  for(decltype(auto) _mon : z) despawn(_mon, true); // Save the monsters before we die!
   if (uquit == QUIT_DIED) popup_top("Game over! Press spacebar...");
   if (uquit == QUIT_DIED || uquit == QUIT_SUICIDE) death_screen();
   return true;
@@ -5375,29 +5363,11 @@ void game::vertical_move(int movez, bool force)
   monstair.x = lev.x;
   monstair.y = lev.y;
   monstair.z = original_z;
-  for (int i = 0; i < z.size(); i++) {
-   if (z[i].will_reach(this, u.pos)) {
-    int turns = z[i].turns_to_reach(m, u.pos);
-    if (turns < 999)
-     coming_to_stairs.push_back( monster_and_count(z[i], 1 + turns) );
-   } else if (z[i].is_static_spawn()) { // Static spawn, move them back there
-    tinymap tmp;
-    tmp.load(this, z[i].spawnmap);
-    tmp.add_spawn(&(z[i]));
-    tmp.save(cur_om.pos, messages.turn, z[i].spawnmap);
-   } else if (z[i].friendly < 0) { // Friendly, make it into a static spawn
-    tinymap tmp;
-    tmp.load(this, point(lev.x, lev.y));
-	point spawn = z[i].pos;
-    while (spawn.x < 0) spawn.x += SEEX;
-    while (spawn.y < 0) spawn.y += SEEY;
-    tmp.add_spawn(&(z[i]));
-    tmp.save(cur_om.pos, messages.turn, point(lev.x, lev.y));
-   } else if (const auto m_group = cur_om.valid_group((mon_id)(z[i].type->id), project_xy(lev))) {
-       m_group->add_one();
-   } else if (const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id))) {
-       cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
-   }
+  for (decltype(auto) _mon : z) {
+      if (_mon.will_reach(this, u.pos)) {
+          int turns = _mon.turns_to_reach(m, u.pos);
+          if (turns < 999) coming_to_stairs.push_back(monster_and_count(_mon, 1 + turns)); // \todo? should this constructor use std::move(_mon)
+      } else despawn(_mon);
   }
  }
  z.clear();
@@ -5519,24 +5489,12 @@ void game::update_map(int &x, int &y)
  // Shift monsters
  if (0 != shift.x || 0 != shift.y) {
  static constexpr const zaimoni::gdi::box<point> extended_reality_bubble(point(-SEE), point(SEE*(MAPSIZE+1)));
- for (int i = 0; i < z.size(); i++) {
+ int i = z.size();
+ while(0 <= --i) {
   z[i].shift(shift);
   if (!extended_reality_bubble.contains(z[i].pos)) {
-// Despawn; we're out of bounds
-   if (z[i].is_static_spawn()) {	// Static spawn, move them back there
-    map tmp;
-    tmp.load(this, z[i].spawnmap);
-    tmp.add_spawn(&(z[i]));
-    tmp.save(cur_om.pos, messages.turn, z[i].spawnmap);
-   } else {	// Absorb them back into a group
-    if (const auto m_group = cur_om.valid_group((mon_id)(z[i].type->id), project_xy(lev) + shift)) {
-        m_group->add_one();
-    } else if (const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id))) {
-		cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
-	}
-   }
+   despawn(z[i]); // we're out of bounds
    z_erase(i);
-   i--;
   }
  }
 // Shift NPCs

@@ -76,7 +76,7 @@ OM_loc<2> reality_bubble::om_location()
 	return OM_loc<2>(cur_om.pos, (project_xy(lev) + point(MAPSIZE / 2))/2);
 }
 
-void reality_bubble::despawn(monster& z, bool mortal)
+void reality_bubble::despawn(const monster& z, bool mortal)
 {
 	if (z.is_static_spawn()) { // Static spawn, move them back there
 		if (submap* const sm = MAPBUFFER.lookup_submap(z.GPSpos.first)) sm->add_spawn(z);
