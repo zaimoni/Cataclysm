@@ -675,6 +675,24 @@ std::vector<const mongroup*> overmap::monsters_at(int x, int y) const
     return ret;
 }
 
+std::vector<mongroup*> overmap::monsters_at(const OM_loc<1>& loc)
+{
+    std::vector<mongroup*> ret;
+    if (decltype(auto) om = om_cache::get().get(loc.first)) {
+        for (auto& _group : om->zg) if (trig_dist(loc.second, _group.pos) <= _group.radius) ret.push_back(&_group);
+    }
+    return ret;
+}
+
+std::vector<const mongroup*> overmap::monsters_at_c(const OM_loc<1>& loc)
+{
+    std::vector<const mongroup*> ret;
+    if (decltype(auto) om = om_cache::get().r_get(loc.first)) {
+        for (auto& _group : om->zg) if (trig_dist(loc.second, _group.pos) <= _group.radius) ret.push_back(&_group);
+    }
+    return ret;
+}
+
 mongroup* overmap::valid_group(mon_id type, const point& pt)
 {
     std::vector<mongroup*> semi_valid;	// Groups that are ALMOST big enough
