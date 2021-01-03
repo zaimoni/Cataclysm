@@ -654,14 +654,6 @@ oter_id overmap::ter_c(OM_loc<2> OMpos)
     return om->ter(OMpos.second);
 }
 
-std::vector<mongroup*> overmap::monsters_at(int x, int y)
-{
- std::vector<mongroup*> ret;
- if (x < 0 || x >= OMAPX || y < 0 || y >= OMAPY) return ret;
- for (auto& _group : zg) if (trig_dist(x, y, _group.pos) <= _group.radius) ret.push_back(&_group);
- return ret;
-}
-
 std::vector<const mongroup*> overmap::monsters_at(int x, int y) const
 {
     std::vector<const mongroup*> ret;

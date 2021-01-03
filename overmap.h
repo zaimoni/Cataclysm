@@ -87,7 +87,6 @@ class overmap
   static oter_id ter_c(OM_loc<2> OMpos);
 
   // unsigned zones(const point& pt);	// no definition
-  std::vector<mongroup*> monsters_at(int x, int y);
   std::vector<const mongroup*> monsters_at(int x, int y) const;
   static std::vector<mongroup*> monsters_at(const OM_loc<1>& loc);
   static std::vector<const mongroup*> monsters_at_c(const OM_loc<1>& loc);

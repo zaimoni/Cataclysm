@@ -479,10 +479,11 @@ void monster::die(game *g)
 
 // If we're a queen, make nearby groups of our type start to die out
  if (has_flag(MF_QUEEN)) {
-  leaderless_hive(type->id, g->cur_om.monsters_at(g->lev.x, g->lev.y));
-// Do it for overmap above/below too
-  auto om = om_cache::get().get(tripoint(g->cur_om.pos.x, g->cur_om.pos.y, (g->cur_om.pos.z == 0 ? -1 : 0)));
-  if (om) leaderless_hive(type->id, om->monsters_at(g->lev.x, g->lev.y));
+  auto om_pos = overmap::toOvermapHires(GPSpos);
+  leaderless_hive(type->id, overmap::monsters_at(om_pos));
+  // Do it for overmap above/below too
+  om_pos.first.z = (0 == om_pos.first.z) ? -1 : 0;
+  leaderless_hive(type->id, overmap::monsters_at(om_pos));
  }
 // If we're a mission monster, update the mission
  if (mission_id != -1) {
