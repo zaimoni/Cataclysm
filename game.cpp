@@ -1965,17 +1965,18 @@ void game::disp_NPCs()
 {
  WINDOW* w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  mvwprintz(w, 0, 0, c_white, "Your position: %d:%d", lev.x, lev.y);
- std::vector<std::pair<npc*,std::pair<tripoint,point> > > closest;
+ const auto viewpoint = om_location();
+ std::vector<std::pair<npc*, OM_loc<2> > > closest;
  for (auto& _npc : cur_om.npcs) {
    const auto om = overmap::toOvermap(_npc.GPSpos);
    if (closest.size() < VIEW - 5) {
-     closest.push_back(std::make_pair(&_npc, om));
+     closest.push_back(std::pair(&_npc, om));
 	 continue;
    }
-   if (rl_dist(lev.x, lev.y, om.second) < rl_dist(lev.x, lev.y, closest.back().second.second)) {
+   if (const int dist = rl_dist(viewpoint, om); dist < rl_dist(viewpoint, closest.back().second)) {
     for (int j = 0; j < VIEW - 5; j++) {
-     if (rl_dist(lev.x, lev.y, closest[j].second.second) > rl_dist(lev.x, lev.y, om.second)) {
-      closest.insert(closest.begin() + j, std::make_pair(&_npc, om));
+     if (dist < rl_dist(viewpoint, closest[j].second)) {
+      closest.insert(closest.begin() + j, std::pair(&_npc, om));
       closest.erase(closest.end() - 1);
 	  break;
      }
@@ -1992,7 +1993,7 @@ void game::disp_NPCs()
  }
 
  wrefresh(w);
- getch();
+ getch(); // \todo? something safer, like wait for ESC
  werase(w);
  wrefresh(w);
  delwin(w);

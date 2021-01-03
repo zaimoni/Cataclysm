@@ -71,7 +71,7 @@ std::optional<reality_bubble_loc> reality_bubble::toSubmap(GPS_loc GPS_pos) cons
 	return reality_bubble_loc(delta.x + delta.y * MAPSIZE, GPS_pos.second);
 }
 
-OM_loc<2> reality_bubble::om_location()
+OM_loc<2> reality_bubble::om_location() const
 {
 	return OM_loc<2>(cur_om.pos, (project_xy(lev) + point(MAPSIZE / 2))/2);
 }
