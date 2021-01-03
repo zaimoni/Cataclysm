@@ -654,14 +654,6 @@ oter_id overmap::ter_c(OM_loc<2> OMpos)
     return om->ter(OMpos.second);
 }
 
-std::vector<const mongroup*> overmap::monsters_at(int x, int y) const
-{
-    std::vector<const mongroup*> ret;
-    if (x < 0 || x >= OMAPX || y < 0 || y >= OMAPY) return ret;
-    for (auto& _group : zg) if (trig_dist(x, y, _group.pos) <= _group.radius) ret.push_back(&_group);
-    return ret;
-}
-
 std::vector<mongroup*> overmap::monsters_at(const OM_loc<1>& loc)
 {
     std::vector<mongroup*> ret;
@@ -710,13 +702,16 @@ mongroup* overmap::valid_group(mon_id type, const point& pt)
 
 bool overmap::is_safe(const OM_loc<2>& loc)
 {
-    if (0 <= loc.second.x && OMAPX > loc.second.x && 0 <= loc.second.y && OMAPY > loc.second.y) {
-        auto om = om_cache::get().r_get(loc.first);
-        if (!om) return false;  // not yet generated: scary
-        for (auto& gr : om->monsters_at(loc.second.x, loc.second.y)) if (!gr->is_safe()) return false;
-        return true;
-    }
-    return is_safe(normalize(loc));
+    if (!loc.in_bounds()) return is_safe(normalize(loc));
+    return _is_safe(OM_loc<1>(loc.first, 2 * loc.second));
+}
+
+bool overmap::_is_safe(const OM_loc<1>& loc)
+{   // precondition: loc is normalized
+    auto om = om_cache::get().r_get(loc.first);
+    if (!om) return false;  // not yet generated: scary
+    for (auto& gr : om->monsters_at_c(loc)) if (!gr->is_safe()) return false;
+    return true;
 }
 
 bool& overmap::seen(int x, int y)

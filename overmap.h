@@ -87,7 +87,6 @@ class overmap
   static oter_id ter_c(OM_loc<2> OMpos);
 
   // unsigned zones(const point& pt);	// no definition
-  std::vector<const mongroup*> monsters_at(int x, int y) const;
   static std::vector<mongroup*> monsters_at(const OM_loc<1>& loc);
   static std::vector<const mongroup*> monsters_at_c(const OM_loc<1>& loc);
   mongroup* valid_group(mon_id type, const point& pt); // pt is from matching high-resolution OM_loc
@@ -132,6 +131,8 @@ class overmap
 
   void clear_seen() { memset(s,0,sizeof(s)); }
   void clear_terrain(oter_id src);
+
+  static bool _is_safe(const OM_loc<1>& loc);
 
   void generate(game* g, const overmap* north, const overmap* east, const overmap* south, const overmap* west);
   void generate_sub(const overmap* above);
