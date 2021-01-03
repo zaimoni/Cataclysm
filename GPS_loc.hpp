@@ -11,6 +11,12 @@ class vehicle;
 enum ter_id : int;
 enum trap_id : int;
 
+enum {
+	OMAP = 180,
+	OMAPX = OMAP,
+	OMAPY = OMAP
+};
+
 // normalized range for GPS_loc.second is 0..SEE-1, 0..SEE-1
 // reality_bubble_loc.second == GPS_loc.second for normalized GPS_loc corresponding to reality_bubble_loc
 struct GPS_loc : public std::pair<tripoint, point>
@@ -52,7 +58,6 @@ protected:
 	_OM_loc& operator=(const _OM_loc& src) = default;
 
 public:
-	bool in_bounds(int scale = 2) const;
 	void self_normalize(int scale = 2);
 	void self_denormalize(const tripoint& view, int scale = 2);
 };
@@ -69,7 +74,9 @@ struct OM_loc : public _OM_loc
 	~OM_loc() = default;
 	OM_loc& operator=(const OM_loc & src) = default;
 
-	bool in_bounds() const { return static_cast<const _OM_loc*>(this)->in_bounds(scale); }
+	static bool in_bounds(int x, int y) { return 0 <= x && 2 * OMAP / scale > x && 0 <= y && 2 * OMAP / scale > y; }
+	static bool in_bounds(const point& pt) { return 0 <= pt.x && 2 * OMAP / scale > pt.x && 0 <= pt.y && 2 * OMAP / scale > pt.y; }
+	bool in_bounds() const { return in_bounds(second); }
 	bool is_valid() const { return tripoint(INT_MAX) != first || in_bounds(); }
 	void self_normalize() { return static_cast<_OM_loc*>(this)->self_normalize(scale); }
 	void self_denormalize(const tripoint& view) { return static_cast<_OM_loc*>(this)->self_denormalize(view, scale); }

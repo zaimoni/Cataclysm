@@ -10,12 +10,6 @@
 #include <optional>
 #include <iosfwd>
 
-enum {
-	OMAP = 180,
-	OMAPX = OMAP,
-	OMAPY = OMAP
-};
-
 struct city {
  int x;	// legal range 0...OMAPX-1
  int y;	// legal range 0...OMAPY-1

@@ -135,11 +135,6 @@ void _OM_loc::self_denormalize(const tripoint& view, int scale)
 #undef DENORMALIZE_COORD
 }
 
-bool _OM_loc::in_bounds(int scale) const
-{
-    return zaimoni::gdi::box(point(0), point(2 * OMAP / scale)).contains(second);
-}
-
 bool reality_bubble_loc::is_valid() const
 {
     if (0 > second.x || SEE <= second.x) return false;
