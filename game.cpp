@@ -2102,11 +2102,11 @@ void game::list_missions()
    const mission* const miss = mission::from_id(umissions[selection]);
    mvwprintz(w_missions, TABBED_HEADER_HEIGHT + 1, VBAR_X + 1, c_white, miss->description.c_str());
    if (miss->deadline != 0)
-    mvwprintz(w_missions, TABBED_HEADER_HEIGHT + 2, VBAR_X + 1, c_white, "Deadline: %d (%d)",
-              miss->deadline, int(messages.turn));
+    mvwprintz(w_missions, TABBED_HEADER_HEIGHT + 2, VBAR_X + 1, c_white, "Deadline: %d (%d)", miss->deadline, int(messages.turn));
+   const auto my_om_loc = om_location();
    mvwprintz(w_missions, TABBED_HEADER_HEIGHT + 3, VBAR_X + 1, c_white, "Target: (%d, %d)   You: (%d, %d)",
              miss->target.second.x, miss->target.second.y,
-             (lev.x + MAPSIZE / 2) / 2, (lev.y + MAPSIZE / 2) / 2);
+             my_om_loc.second.x, my_om_loc.second.y);
   } else {
    const char* const nope = (0 == tab) ? "You have no active missions!" : ((1 == tab) ? "You haven't completed any missions!" : "You haven't failed any missions!");
    mvwprintz(w_missions, TABBED_HEADER_HEIGHT + 1, VBAR_X + 1, c_ltred, nope);
@@ -2156,8 +2156,7 @@ void game::draw()
  mvwprintz(w_status, 1, 41, c_white, messages.turn.print_time().c_str());
 
  {
- oter_id cur_ter = cur_om.ter((lev.x + int(MAPSIZE / 2)) / 2,
-                              (lev.y + int(MAPSIZE / 2)) / 2);
+ oter_id cur_ter = cur_om.ter(om_location().second);
  const auto& terrain = oter_t::list[cur_ter];
  std::string tername(terrain.name);
  if (tername.length() > 14) tername = tername.substr(0, 14);
@@ -2301,7 +2300,7 @@ void game::draw_minimap()
   mvwputch(w_minimap, 6, i, c_white, LINE_OXOX);
  }
 
- point curs((lev.x + int(MAPSIZE / 2)) / 2, (lev.y + int(MAPSIZE / 2)) / 2);
+ point curs(om_location().second);
 
  bool drew_mission = false;
  OM_loc<2> target(_ref<OM_loc<2>>::invalid);
@@ -2772,12 +2771,7 @@ void game::monmove()
    }
 // We might have stumbled out of range of the player; if so, kill us
    if (!extended_reality_bubble.contains(z[i].pos)) {
-// Re-absorb into local group, if applicable
-    if (const auto m_group = cur_om.valid_group((mon_id)(z[i].type->id), project_xy(lev))) {
-        m_group->add_one();
-    } else if (const auto m_cat = mongroup::to_mc((mon_id)(z[i].type->id))) {
-        cur_om.zg.push_back(mongroup(m_cat, lev.x, lev.y, 1, 1));
-    }
+    despawn(z[i]); // Re-absorb into local group, if applicable
     z[i].dead = true;
    } else z[i].receive_moves();
   }
@@ -5400,7 +5394,7 @@ void game::vertical_move(int movez, bool force)
  lev.z += movez;
  u.moves -= 100;
 
- m.load(this, point(lev.x, lev.y));
+ m.load(this, project_xy(lev));
  m.find_stairs(stair, movez, stair);
  u.screenpos_set(stair);
  if (rope_ladder) m.ter(u.pos) = t_rope_up;
@@ -5465,7 +5459,7 @@ void game::update_map(int &x, int &y)
   y -= SEEY;
   shift.y++;
  }
- m.shift(this, point(lev.x, lev.y), shift);
+ m.shift(this, project_xy(lev), shift);
  lev.x += shift.x;
  lev.y += shift.y;
  if (lev.x < 0) {
