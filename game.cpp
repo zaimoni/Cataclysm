@@ -1589,6 +1589,8 @@ void game::load(std::string name)
 
 void game::save()
 {
+ if (gamemode->id()) return; // no-op if we're not in the main game.
+
  overmap::saveall();
  std::ostringstream playerfile_stem;
  playerfile_stem << "save/" << u.name;

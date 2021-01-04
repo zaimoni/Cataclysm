@@ -106,6 +106,10 @@ void tutorial_game::per_turn(game *g)
 
 void tutorial_game::pre_action(game *g, action_id &act)
 {
+    if (act == ACTION_SAVE) {
+        messages.add("You cannot save from the tutorial!");
+        act = ACTION_NULL;
+    }
 }
 
 void tutorial_game::post_action(game *g, action_id act)
