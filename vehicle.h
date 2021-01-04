@@ -116,7 +116,7 @@ struct vehicle_part
 class vehicle : public mobile
 {
 public:
-	static std::vector <vehicle*> vtypes;
+	static std::vector<const vehicle*> vtypes;
     static const constexpr int mph_1 = 100; // scaling factor between real-world velocity and internal representation
     static const constexpr int radius = 12; // should be ui.h SEE but that header isn't included.  vehicle only allowed to span 3x3 submaps
 

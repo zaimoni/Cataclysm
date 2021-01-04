@@ -79,7 +79,7 @@ static const char* const JSON_transcode_vtypes[] = {
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(vhtype_id, JSON_transcode_vtypes)
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(vpart_id, JSON_transcode_vparts)
 
-std::vector <vehicle*> vehicle::vtypes;
+std::vector<const vehicle*> vehicle::vtypes;
 
 vehicle::vehicle(vhtype_id type_id)
 : _type(type_id), insides_dirty(true), velocity(0), cruise_velocity(0), cruise_on(true),

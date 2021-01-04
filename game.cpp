@@ -1743,7 +1743,6 @@ void game::debug()
                    "Spawn Artifact",         // 14
                    "Cancel",                 // 15
                    nullptr);
- int veh_num;
  std::vector<std::string> opts;
  switch (action) {
   case 1:
@@ -1819,13 +1818,11 @@ z.size(), events.size());
    break;
 
   case 10:
-   if (m._veh_at(u.pos))
-    debugmsg ("There's already vehicle here");
+   if (m._veh_at(u.pos)) debugmsg("There's already vehicle here");
    else {
-	for(auto v_type : vehicle::vtypes) 
-     opts.push_back (v_type->name);
-    opts.push_back (std::string("Cancel"));
-    veh_num = menu_vec ("Choose vehicle to spawn", opts) + 1;
+	for(auto v_type : vehicle::vtypes) opts.push_back(v_type->name);
+    opts.push_back(std::string("Cancel"));
+    int veh_num = menu_vec ("Choose vehicle to spawn", opts) + 1;
     if (veh_num > 1 && veh_num < num_vehicles)
      m.add_vehicle((vhtype_id)veh_num, u.pos, -90);
    }
