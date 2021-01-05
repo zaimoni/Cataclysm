@@ -166,18 +166,21 @@ bool item::stacks_with(const item& rhs) const
  if (corpse != nullptr && rhs.corpse != nullptr &&
      corpse->id != rhs.corpse->id)
   return false;
-  
- if (contents.size() != rhs.contents.size())
-  return false;
 
- bool stacks = (type == rhs.type   && damage == rhs.damage  &&
-	 active == rhs.active && charges == rhs.charges &&
-	 (!goes_bad() || bday == rhs.bday));
+ if (type != rhs.type) return false;
+ if (damage != rhs.damage) return false;
+ if (active != rhs.active) return false;
+ if (charges != rhs.charges) return false;
+ if (type->expires() && bday != rhs.bday) return false;
 
- for (int i = 0; i < contents.size() && stacks; i++)
-   stacks &= contents[i].stacks_with(rhs.contents[i]);
+ int i = contents.size();
+ if (rhs.contents.size() != i) return false;
 
- return stacks;
+ while (0 <= --i) {
+     if (!contents[i].stacks_with(rhs.contents[i])) return false;
+ }
+
+ return true;
 }
  
 void item::put_in(item payload)
@@ -577,12 +580,6 @@ bool item::rotten() const
  if (!is_food()) return false;
  const it_comest* const food = dynamic_cast<const it_comest*>(type);
  return (food->spoils != 0 && int(messages.turn) - bday > food->spoils * 600);
-}
-
-bool item::goes_bad() const
-{
- if (!is_food()) return false;
- return 0 != dynamic_cast<const it_comest*>(type)->spoils;
 }
 
 bool item::count_by_charges() const

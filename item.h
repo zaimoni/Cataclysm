@@ -106,7 +106,6 @@ public:
  bool has_technique(technique_id t, const player* p = nullptr) const;
  std::vector<technique_id> techniques() const;
 #endif
- bool goes_bad() const;
  bool count_by_charges() const;
  bool craft_has_charges() const;
  bool rotten() const;

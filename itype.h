@@ -385,6 +385,7 @@ struct itype
  virtual ~itype() = default;
 
  virtual int melee_value(const int skills[num_skill_types]) const;
+ virtual bool expires() const { return false; } // does it expire? C:Whales comestibles, but things like Zylon also expire
 protected:	// this is not a final type so these aren't public
  itype(const cataclysm::JSON& src);
  virtual void toJSON(cataclysm::JSON& dest) const;
@@ -429,6 +430,7 @@ struct it_comest : public itype
 
  bool is_food() const override { return true; }
  bool count_by_charges() const override { return charges > 1; }
+ bool expires() const override { return 0 != spoils; }
 };
 
 struct it_ammo : public itype
