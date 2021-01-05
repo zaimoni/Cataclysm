@@ -470,7 +470,7 @@ std::string item::tname() const
  const it_comest* food = nullptr;
  if (is_food()) food = dynamic_cast<const it_comest*>(type);
  else if (is_food_container()) food = dynamic_cast<const it_comest*>(contents[0].type);
- if (food != nullptr && food->spoils != 0 && int(messages.turn) - bday > food->spoils * 600)
+ if (food != nullptr && food->is_expired(int(messages.turn) - bday))
   ret << " (rotten)";
 
  if (owned > 0) ret << " (owned)";
@@ -575,11 +575,10 @@ std::vector<technique_id> item::techniques() const
 }
 #endif
 
+// sole caller is UI, so this doesn't need to be efficient 2021-01-05
 bool item::rotten() const
 {
- if (!is_food()) return false;
- const it_comest* const food = dynamic_cast<const it_comest*>(type);
- return (food->spoils != 0 && int(messages.turn) - bday > food->spoils * 600);
+    return is_food() && type->is_expired(int(messages.turn) - bday);
 }
 
 bool item::count_by_charges() const
