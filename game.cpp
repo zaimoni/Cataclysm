@@ -5715,18 +5715,17 @@ void game::spawn_mon(int shiftx, int shifty)
 
 void game::wait()
 {
- char ch = menu("Wait for how long?", "5 Minutes", "30 Minutes", "1 hour",
+ int ch = menu("Wait for how long?", "5 Minutes", "30 Minutes", "1 hour",
                 "2 hours", "3 hours", "6 hours", "Exit", nullptr);
  int time;
- if (ch == 7)
-  return;
  switch (ch) {
-  case 1: time =   5000; break;
-  case 2: time =  30000; break;
-  case 3: time =  60000; break;
-  case 4: time = 120000; break;
-  case 5: time = 180000; break;
-  case 6: time = 360000; break;
+  case 1: time = MINUTES(5) * 100; break;
+  case 2: time = MINUTES(30) * 100; break;
+  case 3: time = HOURS(1) * 100; break;
+  case 4: time = HOURS(2) * 100; break;
+  case 5: time = HOURS(3) * 100; break;
+  case 6: time = HOURS(6) * 100; break;
+  default: return;
  }
  u.assign_activity(ACT_WAIT, time, 0);
  u.moves = 0;
