@@ -9,8 +9,9 @@ struct construction_stage
 {
  ter_id terrain;
  int time; // In minutes, i.e. 10 turns
- std::vector<itype_id> tools[3];
- std::vector<component> components[3];
+ // Intent appears to be AND of OR for each of these.
+ std::vector<std::vector<itype_id> > tools;
+ std::vector<std::vector<component> > components;
 
  construction_stage(ter_id Terrain, int Time) noexcept : terrain (Terrain), time (Time) { };
 };

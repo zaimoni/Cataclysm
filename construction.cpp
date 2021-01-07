@@ -76,27 +76,25 @@ static bool player_can_build(player& p, inventory inv, const constructable* con,
  int start = cont ? level : 0;
  for (int i = start; i < con->stages.size() && i <= level; i++) {
   construction_stage stage = con->stages[i];
-  for (int j = 0; j < 3; j++) {
-   if (stage.tools[j].size() > 0) {
+  for (decltype(auto) min_term : stage.tools) {
     bool has_tool = false;
-	for (const auto tool : stage.tools[j]) {
+	for (const auto tool : min_term) {
      if (inv.has_amount(tool, 1)) {
 	  has_tool = true;
 	  break;
 	 }
     }
     if (!has_tool) return false;
-   }
-   if (stage.components[j].size() > 0) {
+  }
+  for (decltype(auto) min_term : stage.components) {
     bool has_component = false;
-	for(const auto& part : stage.components[j]) {
+	for(const auto& part : min_term) {
 	 if (item::types[part.type]->is_ammo() ? inv.has_charges(part.type, part.count) : inv.has_amount(part.type, part.count)) {
        has_component = true;
 	   break;
 	 }
     }
     if (!has_component) return false;
-   }
   }
  }
  return true;
@@ -106,15 +104,6 @@ void constructable::init()
 {
  int id = -1;
  int tl, cl;
-
- #define CONSTRUCT(name, difficulty, able, done) \
-  constructions.push_back(new constructable(++id, name, difficulty, able, done))
-
- #define STAGE(...)\
-  tl = 0; cl = 0; \
-  constructions[id]->stages.push_back(construction_stage(__VA_ARGS__));
- #define TOOL(...) SET_VECTOR(constructions.back()->stages.back().tools[tl], __VA_ARGS__); tl++
- #define COMP(...) SET_VECTOR_STRUCT(constructions.back()->stages.back().components[cl],component,__VA_ARGS__); cl++
 
 /* CONSTRUCT( name, time, able, done )
  * Name is the name as it appears in the menu; 30 characters or less, please.
@@ -128,99 +117,99 @@ void constructable::init()
  */
 
  constructions.push_back(new constructable(++id, "Dig Pit", 0, &construct::able_dig, &construct::done_nothing));
-  STAGE(t_pit_shallow, 10);
-   TOOL(itm_shovel);
-  STAGE(t_pit, 10);
-   TOOL(itm_shovel);
+  constructions.back()->stages.push_back(construction_stage(t_pit_shallow, 10));
+   constructions.back()->stages.back().tools.push_back({ itm_shovel });
+  constructions.back()->stages.push_back(construction_stage(t_pit, 10));
+   constructions.back()->stages.back().tools.push_back({ itm_shovel });
 
  constructions.push_back(new constructable(++id, "Spike Pit", 0, &construct::able_pit, &construct::done_nothing));
-  STAGE(t_pit_spiked, 5);
-  COMP({ { itm_spear_wood, 4 } });
+  constructions.back()->stages.push_back(construction_stage(t_pit_spiked, 5));
+   constructions.back()->stages.back().components.push_back({ { itm_spear_wood, 4 } });
 
  constructions.push_back(new constructable(++id, "Fill Pit", 0, &construct::able_pit, &construct::done_nothing));
-  STAGE(t_pit_shallow, 5);
-   TOOL(itm_shovel);
-  STAGE(t_dirt, 5);
-   TOOL(itm_shovel);
+  constructions.back()->stages.push_back(construction_stage(t_pit_shallow, 5));
+   constructions.back()->stages.back().tools.push_back({ itm_shovel});
+  constructions.back()->stages.push_back(construction_stage(t_dirt, 5));
+   constructions.back()->stages.back().tools.push_back({ itm_shovel});
 
  constructions.push_back(new constructable(++id, "Chop Down Tree", 0, &construct::able_tree, &construct::done_tree));
-  STAGE(t_dirt, 10);
-   TOOL(itm_ax, itm_chainsaw_on);
+  constructions.back()->stages.push_back(construction_stage(t_dirt, 10));
+   constructions.back()->stages.back().tools.push_back({ itm_ax, itm_chainsaw_on});
 
  constructions.push_back(new constructable(++id, "Chop Up Log", 0, &construct::able_log, &construct::done_log));
-  STAGE(t_dirt, 20);
-   TOOL(itm_ax, itm_chainsaw_on);
+  constructions.back()->stages.push_back(construction_stage(t_dirt, 20));
+   constructions.back()->stages.back().tools.push_back({ itm_ax, itm_chainsaw_on});
 
  constructions.push_back(new constructable(++id, "Clean Broken Window", 0, &construct::able_broken_window, &construct::done_nothing));
-  STAGE(t_window_empty, 5);
+  constructions.back()->stages.push_back(construction_stage(t_window_empty, 5));
 
  constructions.push_back(new constructable(++id, "Remove Window Pane",  1, &construct::able_window_pane, &construct::done_window_pane));
-  STAGE(t_window_empty, 10);
-   TOOL(itm_hammer, itm_rock, itm_hatchet);
-   TOOL(itm_screwdriver, itm_knife_butter, itm_toolset);
+  constructions.back()->stages.push_back(construction_stage(t_window_empty, 10));
+   constructions.back()->stages.back().tools.push_back({ itm_hammer, itm_rock, itm_hatchet});
+   constructions.back()->stages.back().tools.push_back({ itm_screwdriver, itm_knife_butter, itm_toolset });
 
  constructions.push_back(new constructable(++id, "Repair Door", 1, &construct::able_door_broken, &construct::done_nothing));
-  STAGE(t_door_c, 10);
-   TOOL(itm_hammer, itm_hatchet, itm_nailgun);
-   COMP({ { itm_2x4, 3 } });
-   COMP({ { itm_nail, 12 } });
+  constructions.back()->stages.push_back(construction_stage(t_door_c, 10));
+   constructions.back()->stages.back().tools.push_back({ itm_hammer, itm_hatchet, itm_nailgun });
+   constructions.back()->stages.back().components.push_back({ { itm_2x4, 3 } });
+   constructions.back()->stages.back().components.push_back({ { itm_nail, 12 } });
 
  constructions.push_back(new constructable(++id, "Board Up Door", 0, &construct::able_door, &construct::done_nothing));
-  STAGE(t_door_boarded, 8);
-   TOOL(itm_hammer, itm_hatchet, itm_nailgun);
-   COMP({ { itm_2x4, 4 } });
-   COMP({ { itm_nail, 8 } });
+  constructions.back()->stages.push_back(construction_stage(t_door_boarded, 8));
+   constructions.back()->stages.back().tools.push_back({ itm_hammer, itm_hatchet, itm_nailgun });
+   constructions.back()->stages.back().components.push_back({ { itm_2x4, 4 } });
+   constructions.back()->stages.back().components.push_back({ { itm_nail, 8 } });
 
  constructions.push_back(new constructable(++id, "Board Up Window", 0, &construct::able_window, &construct::done_nothing));
-  STAGE(t_window_boarded, 5);
-   TOOL(itm_hammer, itm_hatchet, itm_nailgun);
-   COMP({ { itm_2x4, 4 } });
-   COMP({ { itm_nail, 8 } });
+  constructions.back()->stages.push_back(construction_stage(t_window_boarded, 5));
+   constructions.back()->stages.back().tools.push_back({ itm_hammer, itm_hatchet, itm_nailgun });
+   constructions.back()->stages.back().components.push_back({ { itm_2x4, 4 } });
+   constructions.back()->stages.back().components.push_back({ { itm_nail, 8 } });
 
  constructions.push_back(new constructable(++id, "Build Wall", 2, &construct::able_empty, &construct::done_nothing));
-  STAGE(t_wall_half, 10);
-   TOOL(itm_hammer, itm_hatchet, itm_nailgun);
-   COMP({ { itm_2x4, 10 } });
-   COMP({ { itm_nail, 20 } });
-  STAGE(t_wall_wood, 10);
-   TOOL(itm_hammer, itm_hatchet, itm_nailgun);
-   COMP({ { itm_2x4, 10 } });
-   COMP({ { itm_nail, 20 } });
+  constructions.back()->stages.push_back(construction_stage(t_wall_half, 10));
+   constructions.back()->stages.back().tools.push_back({ itm_hammer, itm_hatchet, itm_nailgun });
+   constructions.back()->stages.back().components.push_back({ { itm_2x4, 10 } });
+   constructions.back()->stages.back().components.push_back({ { itm_nail, 20 } });
+  constructions.back()->stages.push_back(construction_stage(t_wall_wood, 10));
+   constructions.back()->stages.back().tools.push_back({ itm_hammer, itm_hatchet, itm_nailgun });
+   constructions.back()->stages.back().components.push_back({ { itm_2x4, 10 } });
+   constructions.back()->stages.back().components.push_back({ { itm_nail, 20 } });
 
  constructions.push_back(new constructable(++id, "Build Window", 3, &construct::able_wall_wood, &construct::done_nothing));
-  STAGE(t_window_empty, 10);
-   TOOL(itm_saw);
-  STAGE(t_window, 5);
-   COMP({ { itm_glass_sheet, 1 } });
+  constructions.back()->stages.push_back(construction_stage(t_window_empty, 10));
+   constructions.back()->stages.back().tools.push_back({ itm_saw });
+  constructions.back()->stages.push_back(construction_stage(t_window, 5));
+  constructions.back()->stages.back().components.push_back({ { itm_glass_sheet, 1 } });
 
  constructions.push_back(new constructable(++id, "Build Door", 4, &construct::able_wall_wood, &construct::done_nothing));
-  STAGE(t_door_frame, 15);
-   TOOL(itm_saw);
-  STAGE(t_door_b, 15);
-   TOOL(itm_hammer, itm_hatchet, itm_nailgun);
-   COMP({ { itm_2x4, 4 } });
-   COMP({ { itm_nail, 12 } });
-  STAGE(t_door_c, 15);
-   TOOL(itm_hammer, itm_hatchet, itm_nailgun);
-   COMP({ { itm_2x4, 4 } });
-   COMP({ { itm_nail, 12 } });
+  constructions.back()->stages.push_back(construction_stage(t_door_frame, 15));
+   constructions.back()->stages.back().tools.push_back({ itm_saw });
+  constructions.back()->stages.push_back(construction_stage(t_door_b, 15));
+   constructions.back()->stages.back().tools.push_back({ itm_hammer, itm_hatchet, itm_nailgun });
+   constructions.back()->stages.back().components.push_back({ { itm_2x4, 4 } });
+   constructions.back()->stages.back().components.push_back({ { itm_nail, 12 } });
+  constructions.back()->stages.push_back(construction_stage(t_door_c, 15));
+   constructions.back()->stages.back().tools.push_back({ itm_hammer, itm_hatchet, itm_nailgun });
+   constructions.back()->stages.back().components.push_back({ { itm_2x4, 4 } });
+   constructions.back()->stages.back().components.push_back({ { itm_nail, 12 } });
 
 /*  Removed until we have some way of auto-aligning fences!
  constructions.push_back(new constructable(++id, "Build Fence", 1, 15, &construct::able_empty));
-  STAGE(t_fence_h, 10);
-   TOOL(itm_hammer, itm_hatchet);
-   COMP({ { itm_2x4, 5, itm_nail, 8 } });
+  constructions[id]->stages.push_back(construction_stage(t_fence_h, 10));
+   constructions.back()->stages.back().tools.push_back({ itm_hammer, itm_hatchet });
+   constructions.back()->stages.back().components({ { itm_2x4, 5, itm_nail, 8 } });
 */
 
  constructions.push_back(new constructable(++id, "Build Roof", 4, &construct::able_between_walls, &construct::done_nothing));
-  STAGE(t_floor, 40);
-   TOOL(itm_hammer, itm_hatchet, itm_nailgun);
-   COMP({ { itm_2x4, 8 } });
-   COMP({ { itm_nail, 40 } });
+  constructions.back()->stages.push_back(construction_stage(t_floor, 40));
+   constructions.back()->stages.back().tools.push_back({ itm_hammer, itm_hatchet, itm_nailgun });
+   constructions.back()->stages.back().components.push_back({ { itm_2x4, 8 } });
+   constructions.back()->stages.back().components.push_back({ { itm_nail, 40 } });
 
  constructions.push_back(new constructable(++id, "Start vehicle construction", 0, &construct::able_empty, &construct::done_vehicle));
-  STAGE(t_null, 10);
-   COMP({ { itm_frame, 1 } });
+  constructions.back()->stages.push_back(construction_stage(t_null, 10));
+  constructions.back()->stages.back().components.push_back({ { itm_frame, 1 } });
 
 }
 
@@ -291,71 +280,73 @@ void game::construction_menu()
 	mvwprintz(w_con, posy, VBAR_X + 1, color_stage, "Stage %d: %s", n + 1,
               stage.terrain == t_null? "" : ter_t::list[stage.terrain].name.c_str());
     posy++;
-// Print tools
-    bool has_tool[3] = {stage.tools[0].empty(),
-                        stage.tools[1].empty(),
-                        stage.tools[2].empty()};
+// Print tools (fails if more than three tool minterms)
+    bool has_tool[3] = {0 >= stage.tools.size(),
+                        1 >= stage.tools.size(),
+                        2 >= stage.tools.size() };
     for (int i = 0; i < 3 && !has_tool[i]; i++) {
+	 if (has_tool[i]) break;
      posy++;
      posx = VBAR_X + 3;
-     for (int j = 0; j < stage.tools[i].size(); j++) {
-      const itype_id tool = stage.tools[i][j];
-      nc_color col = c_red;
-      if (total_inv.has_amount(tool, 1)) {
-       has_tool[i] = true;
-       col = c_green;
-      }
-	  const itype* const t_type = item::types[tool];
-      const int length = t_type->name.length();
-      if (posx + length > SCREEN_WIDTH - 1) {
-       posy++;
-       posx = VBAR_X + 3;
-      }
-      mvwprintz(w_con, posy, posx, col, t_type->name.c_str());
-      posx += length + 1; // + 1 for an empty space
-      if (j < stage.tools[i].size() - 1) { // "OR" if there's more
-       if (posx > SCREEN_WIDTH - 3) {
-        posy++;
-        posx = VBAR_X + 3;
-       }
-       mvwprintz(w_con, posy, posx, c_white, "OR");
-       posx += 3;
-      }
+     int j = -1;
+     for (const itype_id tool : stage.tools[i]) {
+         ++j;
+         if (0 < j) { // "OR" if there's more
+             if (posx > SCREEN_WIDTH - 3) {
+                 posy++;
+                 posx = VBAR_X + 3;
+             }
+             mvwprintz(w_con, posy, posx, c_white, "OR");
+             posx += 3;
+         }
+         nc_color col = c_red;
+         if (total_inv.has_amount(tool, 1)) {
+             has_tool[i] = true;
+             col = c_green;
+         }
+         const itype* const t_type = item::types[tool];
+         const int length = t_type->name.length();
+         if (posx + length > SCREEN_WIDTH - 1) {
+             posy++;
+             posx = VBAR_X + 3;
+         }
+         mvwprintz(w_con, posy, posx, col, t_type->name.c_str());
+         posx += length + 1; // + 1 for an empty space
      }
     }
-// Print components
+// Print components (fails if more than three component minterms)
     posy++;
     posx = VBAR_X + 3;
-    bool has_component[3] = {stage.components[0].empty(),
-                             stage.components[1].empty(),
-                             stage.components[2].empty()};
+    bool has_component[3] = { 0 >= stage.components.size(),
+                              1 >= stage.components.size(),
+                              2 >= stage.components.size() };
     for (int i = 0; i < 3; i++) {
+	 if (has_component[i]) break;
      posx = VBAR_X + 3;
-	 if (has_component[i]) continue;
-     for (int j = 0; j < stage.components[i].size() && i < 3; j++) {
-      nc_color col = c_red;
-      const component& comp = stage.components[i][j];
-	  if (item::types[comp.type]->is_ammo() ? total_inv.has_charges(comp.type, comp.count) : total_inv.has_amount(comp.type, comp.count)) {
-       has_component[i] = true;
-       col = c_green;
-      }
-      int length = item::types[comp.type]->name.length();
-      if (posx + length > SCREEN_WIDTH - 1) {
-       posy++;
-       posx = VBAR_X + 3;
-      }
-      mvwprintz(w_con, posy, posx, col, "%s x%d", item::types[comp.type]->name.c_str(), comp.count);
-      posx += length + 3; // + 2 for " x", + 1 for an empty space
-      posx += 1 + int_log10(comp.count);    // Add more space for the length of the count
-
-      if (j < stage.components[i].size() - 1) { // "OR" if there's more
-       if (posx > SCREEN_WIDTH - 3) {
-        posy++;
-        posx = VBAR_X + 3;
-       }
-       mvwprintz(w_con, posy, posx, c_white, "OR");
-       posx += 3;
-      }
+     int j = -1;
+     for (decltype(auto) comp : stage.components[i]) {
+         ++j;
+         if (0 < j) { // "OR" if there's more
+             if (posx > SCREEN_WIDTH - 3) {
+                 posy++;
+                 posx = VBAR_X + 3;
+             }
+             mvwprintz(w_con, posy, posx, c_white, "OR");
+             posx += 3;
+         }
+         nc_color col = c_red;
+         if (item::types[comp.type]->is_ammo() ? total_inv.has_charges(comp.type, comp.count) : total_inv.has_amount(comp.type, comp.count)) {
+             has_component[i] = true;
+             col = c_green;
+         }
+         int length = item::types[comp.type]->name.length();
+         if (posx + length > SCREEN_WIDTH - 1) {
+             posy++;
+             posx = VBAR_X + 3;
+         }
+         mvwprintz(w_con, posy, posx, col, "%s x%d", item::types[comp.type]->name.c_str(), comp.count);
+         posx += length + 3; // + 2 for " x", + 1 for an empty space
+         posx += 1 + int_log10(comp.count);    // Add more space for the length of the count
      }
      posy++;
     }
