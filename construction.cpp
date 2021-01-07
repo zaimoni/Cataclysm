@@ -105,18 +105,16 @@ static bool player_can_build(player& p, inventory inv, const constructable* con,
 void constructable::init()
 {
  int id = -1;
- int tl, cl, sl;
+ int tl, cl;
 
  #define CONSTRUCT(name, difficulty, able, done) \
-  sl = -1; id++; \
-  constructions.push_back( new constructable(id, name, difficulty, able, done))
+  constructions.push_back(new constructable(++id, name, difficulty, able, done))
 
  #define STAGE(...)\
-  tl = 0; cl = 0; sl++; \
+  tl = 0; cl = 0; \
   constructions[id]->stages.push_back(construction_stage(__VA_ARGS__));
- #define TOOL(...)   SET_VECTOR(constructions[id]->stages[sl].tools[tl], \
-                               __VA_ARGS__); tl++
- #define COMP(...) SET_VECTOR_STRUCT(constructions[id]->stages[sl].components[cl],component,__VA_ARGS__); cl++
+ #define TOOL(...) SET_VECTOR(constructions.back()->stages.back().tools[tl], __VA_ARGS__); tl++
+ #define COMP(...) SET_VECTOR_STRUCT(constructions.back()->stages.back().components[cl],component,__VA_ARGS__); cl++
 
 /* CONSTRUCT( name, time, able, done )
  * Name is the name as it appears in the menu; 30 characters or less, please.
@@ -129,61 +127,57 @@ void constructable::init()
  *  items after a deconstruction.
  */
 
- CONSTRUCT("Dig Pit", 0, &construct::able_dig, &construct::done_nothing);
+ constructions.push_back(new constructable(++id, "Dig Pit", 0, &construct::able_dig, &construct::done_nothing));
   STAGE(t_pit_shallow, 10);
    TOOL(itm_shovel);
   STAGE(t_pit, 10);
    TOOL(itm_shovel);
 
- CONSTRUCT("Spike Pit", 0, &construct::able_pit, &construct::done_nothing);
+ constructions.push_back(new constructable(++id, "Spike Pit", 0, &construct::able_pit, &construct::done_nothing));
   STAGE(t_pit_spiked, 5);
   COMP({ { itm_spear_wood, 4 } });
 
- CONSTRUCT("Fill Pit", 0, &construct::able_pit, &construct::done_nothing);
+ constructions.push_back(new constructable(++id, "Fill Pit", 0, &construct::able_pit, &construct::done_nothing));
   STAGE(t_pit_shallow, 5);
    TOOL(itm_shovel);
   STAGE(t_dirt, 5);
    TOOL(itm_shovel);
 
- CONSTRUCT("Chop Down Tree", 0, &construct::able_tree, &construct::done_tree);
+ constructions.push_back(new constructable(++id, "Chop Down Tree", 0, &construct::able_tree, &construct::done_tree));
   STAGE(t_dirt, 10);
    TOOL(itm_ax, itm_chainsaw_on);
 
- CONSTRUCT("Chop Up Log", 0, &construct::able_log, &construct::done_log);
+ constructions.push_back(new constructable(++id, "Chop Up Log", 0, &construct::able_log, &construct::done_log));
   STAGE(t_dirt, 20);
    TOOL(itm_ax, itm_chainsaw_on);
 
- CONSTRUCT("Clean Broken Window", 0, &construct::able_broken_window,
-                                     &construct::done_nothing);
+ constructions.push_back(new constructable(++id, "Clean Broken Window", 0, &construct::able_broken_window, &construct::done_nothing));
   STAGE(t_window_empty, 5);
 
- CONSTRUCT("Remove Window Pane",  1, &construct::able_window_pane,
-                                     &construct::done_window_pane);
+ constructions.push_back(new constructable(++id, "Remove Window Pane",  1, &construct::able_window_pane, &construct::done_window_pane));
   STAGE(t_window_empty, 10);
    TOOL(itm_hammer, itm_rock, itm_hatchet);
    TOOL(itm_screwdriver, itm_knife_butter, itm_toolset);
 
- CONSTRUCT("Repair Door", 1, &construct::able_door_broken,
-                             &construct::done_nothing);
+ constructions.push_back(new constructable(++id, "Repair Door", 1, &construct::able_door_broken, &construct::done_nothing));
   STAGE(t_door_c, 10);
    TOOL(itm_hammer, itm_hatchet, itm_nailgun);
    COMP({ { itm_2x4, 3 } });
    COMP({ { itm_nail, 12 } });
 
- CONSTRUCT("Board Up Door", 0, &construct::able_door, &construct::done_nothing);
+ constructions.push_back(new constructable(++id, "Board Up Door", 0, &construct::able_door, &construct::done_nothing));
   STAGE(t_door_boarded, 8);
    TOOL(itm_hammer, itm_hatchet, itm_nailgun);
    COMP({ { itm_2x4, 4 } });
    COMP({ { itm_nail, 8 } });
 
- CONSTRUCT("Board Up Window", 0, &construct::able_window,
-                                 &construct::done_nothing);
+ constructions.push_back(new constructable(++id, "Board Up Window", 0, &construct::able_window, &construct::done_nothing));
   STAGE(t_window_boarded, 5);
    TOOL(itm_hammer, itm_hatchet, itm_nailgun);
    COMP({ { itm_2x4, 4 } });
    COMP({ { itm_nail, 8 } });
 
- CONSTRUCT("Build Wall", 2, &construct::able_empty, &construct::done_nothing);
+ constructions.push_back(new constructable(++id, "Build Wall", 2, &construct::able_empty, &construct::done_nothing));
   STAGE(t_wall_half, 10);
    TOOL(itm_hammer, itm_hatchet, itm_nailgun);
    COMP({ { itm_2x4, 10 } });
@@ -193,15 +187,13 @@ void constructable::init()
    COMP({ { itm_2x4, 10 } });
    COMP({ { itm_nail, 20 } });
 
- CONSTRUCT("Build Window", 3, &construct::able_wall_wood,
-                              &construct::done_nothing);
+ constructions.push_back(new constructable(++id, "Build Window", 3, &construct::able_wall_wood, &construct::done_nothing));
   STAGE(t_window_empty, 10);
    TOOL(itm_saw);
   STAGE(t_window, 5);
    COMP({ { itm_glass_sheet, 1 } });
 
- CONSTRUCT("Build Door", 4, &construct::able_wall_wood,
-                              &construct::done_nothing);
+ constructions.push_back(new constructable(++id, "Build Door", 4, &construct::able_wall_wood, &construct::done_nothing));
   STAGE(t_door_frame, 15);
    TOOL(itm_saw);
   STAGE(t_door_b, 15);
@@ -214,20 +206,19 @@ void constructable::init()
    COMP({ { itm_nail, 12 } });
 
 /*  Removed until we have some way of auto-aligning fences!
- CONSTRUCT("Build Fence", 1, 15, &construct::able_empty);
+ constructions.push_back(new constructable(++id, "Build Fence", 1, 15, &construct::able_empty));
   STAGE(t_fence_h, 10);
    TOOL(itm_hammer, itm_hatchet);
    COMP({ { itm_2x4, 5, itm_nail, 8 } });
 */
 
- CONSTRUCT("Build Roof", 4, &construct::able_between_walls,
-                            &construct::done_nothing);
+ constructions.push_back(new constructable(++id, "Build Roof", 4, &construct::able_between_walls, &construct::done_nothing));
   STAGE(t_floor, 40);
    TOOL(itm_hammer, itm_hatchet, itm_nailgun);
    COMP({ { itm_2x4, 8 } });
    COMP({ { itm_nail, 40 } });
 
- CONSTRUCT("Start vehicle construction", 0, &construct::able_empty, &construct::done_vehicle);
+ constructions.push_back(new constructable(++id, "Start vehicle construction", 0, &construct::able_empty, &construct::done_vehicle));
   STAGE(t_null, 10);
    COMP({ { itm_frame, 1 } });
 
