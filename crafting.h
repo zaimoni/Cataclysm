@@ -34,8 +34,8 @@ struct recipe
  int difficulty;
  int time;
 
- std::vector<component> tools[5];
- std::vector<component> components[5];
+ std::vector<std::vector<component> > tools;
+ std::vector<std::vector<component> > components;
 
  recipe(int pid, itype_id pres, craft_cat cat, skill p1, skill p2, int pdiff, int ptime) noexcept :
   id (pid), result (pres), category (cat), sk_primary (p1), sk_secondary (p2),
