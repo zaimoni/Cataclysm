@@ -11,7 +11,6 @@
 #include "rng.h"
 #include "recent_msg.h"
 #include "zero.h"
-#include "setvector.h"
 #include <stdexcept>
 
 std::vector<constructable*> constructable::constructions; // The list of constructions
