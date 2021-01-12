@@ -201,7 +201,6 @@
     <ClInclude Include="pldata_enum.h" />
     <ClInclude Include="recent_msg.h" />
     <ClInclude Include="rng.h" />
-    <ClInclude Include="setvector.h" />
     <ClInclude Include="stl_typetraits.h" />
     <ClInclude Include="ui.h" />
     <ClInclude Include="wrap_curses.h" />

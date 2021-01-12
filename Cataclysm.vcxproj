@@ -219,7 +219,6 @@
     <ClInclude Include="rng.h" />
     <ClInclude Include="saveload.h" />
     <ClInclude Include="settlement.h" />
-    <ClInclude Include="setvector.h" />
     <ClInclude Include="skill.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="stl_limits.h" />

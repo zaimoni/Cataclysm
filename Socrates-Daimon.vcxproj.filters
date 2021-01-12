@@ -130,9 +130,6 @@
     <ClInclude Include="material_enum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="setvector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="artifact.h">
       <Filter>Header Files</Filter>
     </ClInclude>

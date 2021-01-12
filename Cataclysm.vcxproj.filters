@@ -162,9 +162,6 @@
     <ClInclude Include="settlement.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="setvector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="skill.h">
       <Filter>Header Files</Filter>
     </ClInclude>
