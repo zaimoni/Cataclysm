@@ -5,7 +5,6 @@
 #include "output.h"
 #include "json.h"
 #include "bodypart_enum.h"
-#include "setvector.h"
 #include "Zaimoni.STL/Logging.h"
 
 #include <string.h>
@@ -4175,7 +4174,7 @@ GUN("fusion blaster",	 0,0,c_magenta,	STEEL,	PLASTIC,
 {	\
 	index++; \
 	auto style = new it_style(index, name, description, '$',  c_white, dam, 0, 0, mfb(IF_UNARMED_WEAPON));	\
-	SET_VECTOR_STRUCT(style->moves, style_move, __VA_ARGS__); \
+	style->moves = __VA_ARGS__; \
 	types.push_back(style); \
 }
 
