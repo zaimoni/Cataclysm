@@ -6,7 +6,6 @@
 #include "mtype.h"
 #include "rng.h"
 #include "recent_msg.h"
-#include "setvector.h"
 #include <sstream>
 
 enum caravan_category {
@@ -950,55 +949,60 @@ std::vector<itype_id> caravan_items(caravan_category cat)
 {
  std::vector<itype_id> ret;
  switch (cat) {
- case CARAVAN_CART:
-  return ret;
+// case CARAVAN_CART: return ret;
 
  case CARAVAN_MELEE:
-  SET_VECTOR(ret,
+  ret = {
 itm_hammer, itm_bat, itm_mace, itm_morningstar, itm_hammer_sledge, itm_hatchet,
 itm_knife_combat, itm_rapier, itm_machete, itm_katana, itm_spear_knife,
-itm_pike, itm_chainsaw_off);
+itm_pike, itm_chainsaw_off
+  };
   break;
 
  case CARAVAN_GUNS:
-  SET_VECTOR(ret,
+  ret = {
 itm_crossbow, itm_bolt_steel, itm_compbow, itm_arrow_cf, itm_marlin_9a,
 itm_22_lr, itm_hk_mp5, itm_9mm, itm_taurus_38, itm_38_special, itm_deagle_44,
 itm_44magnum, itm_m1911, itm_hk_ump45, itm_45_acp, itm_fn_p90, itm_57mm,
 itm_remington_870, itm_shot_00, itm_shot_slug, itm_browning_blr, itm_3006,
 itm_ak47, itm_762_m87, itm_m4a1, itm_556, itm_savage_111f, itm_hk_g3,
-itm_762_51, itm_hk_g80, itm_12mm, itm_plasma_rifle, itm_plasma);
+itm_762_51, itm_hk_g80, itm_12mm, itm_plasma_rifle, itm_plasma
+  };
   break;
 
  case CARAVAN_COMPONENTS:
-  SET_VECTOR(ret,
+  ret = {
 itm_rag, itm_fur, itm_leather, itm_superglue, itm_string_36, itm_chain,
 itm_processor, itm_RAM, itm_power_supply, itm_motor, itm_hose, itm_pot,
-itm_2x4, itm_battery, itm_nail, itm_gasoline);
+itm_2x4, itm_battery, itm_nail, itm_gasoline
+  };
   break;
 
  case CARAVAN_FOOD:
-  SET_VECTOR(ret,
+  ret = {
 itm_1st_aid, itm_water, itm_energy_drink, itm_whiskey, itm_can_beans,
 itm_mre_beef, itm_flour, itm_inhaler, itm_codeine, itm_oxycodone, itm_adderall,
-itm_cig, itm_meth, itm_royal_jelly, itm_mutagen, itm_purifier);
+itm_cig, itm_meth, itm_royal_jelly, itm_mutagen, itm_purifier
+  };
  break;
 
  case CARAVAN_CLOTHES:
-  SET_VECTOR(ret,
+  ret = {
 itm_backpack, itm_vest, itm_trenchcoat, itm_jacket_leather, itm_kevlar,
 itm_gloves_fingerless, itm_mask_filter, itm_mask_gas, itm_glasses_eye,
 itm_glasses_safety, itm_goggles_ski, itm_goggles_nv, itm_helmet_ball,
-itm_helmet_riot);
+itm_helmet_riot
+  };
   break;
 
  case CARAVAN_TOOLS:
-  SET_VECTOR(ret,
+  ret = {
 itm_screwdriver, itm_wrench, itm_saw, itm_hacksaw, itm_lighter, itm_sewing_kit,
 itm_scissors, itm_extinguisher, itm_flashlight, itm_hotplate,
 itm_soldering_iron, itm_shovel, itm_jackhammer, itm_landmine, itm_teleporter,
 itm_grenade, itm_flashbang, itm_EMPbomb, itm_smokebomb, itm_bot_manhack,
-itm_bot_turret, itm_UPS_off, itm_mininuke);
+itm_bot_turret, itm_UPS_off, itm_mininuke
+  };
   break;
  }
 
