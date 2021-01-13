@@ -1597,7 +1597,7 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
 // intelligence delta is almost always zero
 // * if player is hyper-intelligent then negative prices possible both ways
 // Adjust the prices based on your barter skill.
- const double price_scale = price_adjustment(u.sklevel[sk_barter]) + (p.int_cur - u.int_cur) / 15;
+ const double price_scale = u.barter_price_adjustment() + (p.int_cur - u.int_cur) / 15;
  for (int& his_price : their_price) his_price *= price_scale;
  for (int& my_price : your_price) my_price /= price_scale;
 

@@ -1376,7 +1376,7 @@ void npc::init_selling(std::vector<int> &indices, std::vector<int> &prices) cons
    int val = value(it) - (pr / 50);
    if (val <= NPC_LOW_VALUE || mission == NPC_MISSION_SHOPKEEP) {
     indices.push_back(i);
-    int price = pr / price_adjustment(sklevel[sk_barter]);
+    int price = pr / barter_price_adjustment();
     prices.push_back(price);
    }
   }
@@ -1391,7 +1391,7 @@ void npc::init_buying(const inventory& you, std::vector<int> &indices, std::vect
    indices.push_back(i);
    int price = it.price();
    if (val >= NPC_VERY_HI_VALUE) price *= 2;
-   price *= price_adjustment(sklevel[sk_barter]);
+   price *= barter_price_adjustment();
    prices.push_back(price);
   }
  }

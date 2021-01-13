@@ -260,17 +260,3 @@ std::string skill_long_name(skill sk, int level)
  return "huh";
 }
 #endif
-
-double price_adjustment(int barter_skill)
-{
- switch (barter_skill) {
-  case 0:  return 1.5;
-  case 1:  return 1.4;
-  case 2:  return 1.2;
-  case 3:  return 1.0;
-  case 4:  return 0.8;
-  case 5:  return 0.6;
-  case 6:  return 0.5;
-  default: return double(int(100 * (.3 + 1 / barter_skill)) / 100);
- }
-}

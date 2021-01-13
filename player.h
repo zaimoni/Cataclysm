@@ -128,6 +128,7 @@ public:
  int read_speed		(bool real_life = true) const;
  int talk_skill() const; // Skill at convincing NPCs of stuff
  int intimidation() const; // Physical intimidation
+ double barter_price_adjustment() const; // charisma-like price scaling
 
 // Converts bphurt to a hp_part (if side == 0, the left), then does/heals dam
 // hit() processes damage through armor

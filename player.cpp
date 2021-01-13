@@ -3068,6 +3068,20 @@ int player::intimidation() const
  return ret;
 }
 
+double player::barter_price_adjustment() const
+{
+    switch(const int sk = sklevel[sk_barter]) {
+    case 0:  return 1.5;
+    case 1:  return 1.4;
+    case 2:  return 1.2;
+    case 3:  return 1.0;
+    case 4:  return 0.8;
+    case 5:  return 0.6;
+    case 6:  return 0.5;
+    default: return int(100 * (.3 + 1.0 / sk)) / 100.0;
+    }
+}
+
 void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
 {
  if (has_disease(DI_SLEEP)) {
