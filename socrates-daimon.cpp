@@ -1853,8 +1853,12 @@ int main(int argc, char *argv[])
 #define ADDICTIONS_HTML "addictions.html"
 #define ADDICTIONS_ID "addictions"
 #define ADDICTIONS_LINK_NAME "Addictions"
+#define SKILLS_HTML "skills.html"
+#define SKILLS_ID "skills"
+#define SKILLS_LINK_NAME "Skills"
 
 	statusnav_nav.append(typicalMenuLink(ADDICTIONS_ID, ADDICTIONS_LINK_NAME, "./" ADDICTIONS_HTML));
+	statusnav_nav.append(typicalMenuLink(SKILLS_ID, SKILLS_LINK_NAME, "./" SKILLS_HTML));
 
 	statusnav_point.append(statusnav_nav);
 
@@ -1945,6 +1949,62 @@ int main(int argc, char *argv[])
 					table_row[0]->clear();
 					table_row[1]->clear();
 					table_row[2]->clear();
+				}
+			}
+			while (page.end_print());
+		}
+
+		unlink(HTML_TARGET);
+		rename(HTML_TARGET ".tmp", HTML_TARGET);
+	}
+
+#undef HTML_TARGET
+
+#define HTML_TARGET HTML_DIR SKILLS_HTML
+
+	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
+		{
+			html::to_text page(out);
+			page.start_print(_html);
+			_title->append(html::tag::wrap("Cataclysm:Z " SKILLS_LINK_NAME));
+			page.print(_head);
+			_title->clear();
+			page.start_print(_body);
+			{
+				auto revert = swapDOM("#" SKILLS_ID "_link", global_nav, html::tag("b", SKILLS_LINK_NAME));
+				page.print(global_nav);
+				*revert.first = std::move(revert.second);
+			}
+
+			page.start_print(_data_table);
+			// actual content
+			{
+				html::tag table_header("tr");
+				table_header.set(attr_align, val_center);
+				table_header.append(html::tag("th", "Name"));
+				table_header.append(html::tag("th", "Description"));
+				page.print(table_header);
+			}
+
+			{
+				html::tag cell("td");
+				html::tag table_row("tr");
+				table_row.set(attr_align, val_left);
+				table_row.append(cell);
+				table_row.append(cell);
+
+				size_t ub = num_skill_types;
+				const char* css_fg = nullptr;
+				const char* css_bg = nullptr;
+				while (0 < --ub) {
+					std::string what;
+					skill test((skill)ub);
+					table_row[0]->append(html::tag::wrap(skill_name(test)));
+					table_row[1]->append(html::tag::wrap(skill_description(test)));
+
+					page.print(table_row);
+					table_row[0]->clear();
+					table_row[1]->clear();
 				}
 			}
 			while (page.end_print());

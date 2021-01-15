@@ -166,5 +166,8 @@
     <ClInclude Include="pldata_enum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="skill.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
