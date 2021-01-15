@@ -66,6 +66,16 @@ public:
 		_text.swap(discard2);
 	}
 	tag* operator[](size_t n) { return _content.size() > n ? _content.data() + n : nullptr; }
+	// iterator inteface: just forward to _content
+	// \todo C++20: these shadow constexpr as well
+	decltype(auto) begin() noexcept { return _content.begin(); }
+	decltype(auto) end() noexcept { return _content.end(); }
+	decltype(auto) rbegin() noexcept { return _content.rbegin(); }
+	decltype(auto) rend() noexcept { return _content.rend(); }
+	decltype(auto) cbegin() noexcept { return _content.cbegin(); }
+	decltype(auto) cend() noexcept { return _content.cend(); }
+	decltype(auto) crbegin() noexcept { return _content.crbegin(); }
+	decltype(auto) crend() noexcept { return _content.crend(); }
 
 	// attribute manipulation
 	void unset(const std::string& key) { _attr.erase(key); }

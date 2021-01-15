@@ -1609,10 +1609,7 @@ int main(int argc, char *argv[])
 				table_row[2]->append(html::tag::wrap(x.transparent[0] ? "yes" : ""));
 				table_row[3]->append(html::tag::wrap(x.dangerous[0] ? "yes" : ""));
 				page.print(table_row);
-				table_row[0]->clear();
-				table_row[1]->clear();
-				table_row[2]->clear();
-				table_row[3]->clear();
+				for (decltype(auto) tr : table_row) tr.clear();
 				table_row[0]->append(html::tag::wrap(x.name[1]));
 				if (to_css_colors(x.color[1], css_fg, css_bg)) {
 					html::tag colorize("span", std::string(1, x.sym));
@@ -1624,10 +1621,7 @@ int main(int argc, char *argv[])
 				table_row[2]->append(html::tag::wrap(x.transparent[1] ? "yes" : ""));
 				table_row[3]->append(html::tag::wrap(x.dangerous[1] ? "yes" : ""));
 				page.print(table_row);
-				table_row[0]->clear();
-				table_row[1]->clear();
-				table_row[2]->clear();
-				table_row[3]->clear();
+				for (decltype(auto) tr : table_row) tr.clear();
 				table_row[0]->append(html::tag::wrap(x.name[2]));
 				if (to_css_colors(x.color[2], css_fg, css_bg)) {
 					html::tag colorize("span", std::string(1, x.sym));
@@ -1639,10 +1633,7 @@ int main(int argc, char *argv[])
 				table_row[2]->append(html::tag::wrap(x.transparent[2] ? "yes" : ""));
 				table_row[3]->append(html::tag::wrap(x.dangerous[2] ? "yes" : ""));
 				page.print(table_row);
-				table_row[0]->clear();
-				table_row[1]->clear();
-				table_row[2]->clear();
-				table_row[3]->clear();
+				for (decltype(auto) tr : table_row) tr.clear();
 			}
 		}
 
@@ -1713,10 +1704,7 @@ int main(int argc, char *argv[])
 				if (x.movecost) table_row[2]->append(html::tag::wrap(std::to_string((int)x.movecost)));
 				if (const auto json = JSON_key(x.trap)) table_row[3]->append(html::tag::wrap(json));	// \todo hyperlink to traps page when we have it
 				page.print(table_row);
-				table_row[0]->clear();
-				table_row[1]->clear();
-				table_row[2]->clear();
-				table_row[3]->clear();
+				for (decltype(auto) tr : table_row) tr.clear();
 			}
 		}
 		while (page.end_print());
@@ -1816,13 +1804,7 @@ int main(int argc, char *argv[])
 				}
 
 				page.print(table_row);
-				table_row[0]->clear();
-				table_row[1]->clear();
-				table_row[2]->clear();
-				table_row[3]->clear();
-				table_row[4]->clear();
-				table_row[5]->clear();
-				table_row[6]->clear();
+				for (decltype(auto) tr : table_row) tr.clear();
 			}
 			}
 		while (page.end_print());
@@ -1946,9 +1928,7 @@ int main(int argc, char *argv[])
 					if (!what.empty()) table_row[2]->append(html::tag::wrap(std::move(what)));
 
 					page.print(table_row);
-					table_row[0]->clear();
-					table_row[1]->clear();
-					table_row[2]->clear();
+					for (decltype(auto) tr : table_row) tr.clear();
 				}
 			}
 			while (page.end_print());
@@ -2003,8 +1983,7 @@ int main(int argc, char *argv[])
 					table_row[1]->append(html::tag::wrap(skill_description(test)));
 
 					page.print(table_row);
-					table_row[0]->clear();
-					table_row[1]->clear();
+					for (decltype(auto) tr : table_row) tr.clear();
 				}
 			}
 			while (page.end_print());
