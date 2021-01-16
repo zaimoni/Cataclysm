@@ -65,7 +65,7 @@ public:
 		decltype(_text) discard2;
 		_text.swap(discard2);
 	}
-	tag* operator[](size_t n) { return _content.size() > n ? _content.data() + n : nullptr; }
+	decltype(auto) operator[](size_t n) { return _content[n]; }
 	// iterator inteface: just forward to _content
 	// \todo C++20: these shadow constexpr as well
 	decltype(auto) begin() noexcept { return _content.begin(); }

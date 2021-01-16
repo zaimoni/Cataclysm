@@ -528,29 +528,29 @@ int main(int argc, char *argv[])
 				page.print(global_nav);
 				*revert.first = std::move(revert.second);
 				}
+
+				static constexpr const char* table_headers[] = { "Name", "Description" };
 				page.start_print(_data_table);
 				// actual content
 				{
 					html::tag table_header("tr");
 					table_header.set(attr_align, val_center);
-					table_header.append(html::tag("th", "Name"));
-					table_header.append(html::tag("th", "Description"));
+					for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 					page.print(table_header);
 				}
 				{
 					html::tag table_row("tr");
 					table_row.set(attr_align, val_left);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row[1]->append(html::tag("pre"));
-					auto _pre = table_row.querySelector("pre");
+					for (decltype(auto) th : table_headers) table_row.append(cell);
+					decltype(auto) tr_alias = table_row.alias();
+					tr_alias[1]->append(html::tag("pre"));
+					tr_alias[1] = tr_alias[1]->querySelector("pre");
 
 					for (const auto& x : name_desc) {
-						table_row[0]->append(html::tag::wrap(x.first));
-						_pre->append(html::tag::wrap(x.second));
+						tr_alias[0]->append(html::tag::wrap(x.first));
+						tr_alias[1]->append(html::tag::wrap(x.second));
 						page.print(table_row);
-						table_row[0]->clear();
-						_pre->clear();
+						for (decltype(auto) tr : tr_alias) tr->clear();
 					}
 				}
 
@@ -585,33 +585,30 @@ int main(int argc, char *argv[])
 				page.print(global_nav);
 				*revert.first = std::move(revert.second);
 				}
+
+				static constexpr const char* table_headers[] = { "Name", "Description", "Material" };
 				page.start_print(_data_table);
 				// actual content
 				{
 					html::tag table_header("tr");
 					table_header.set(attr_align, val_center);
-					table_header.append(html::tag("th", "Name"));
-					table_header.append(html::tag("th", "Description"));
-					table_header.append(html::tag("th", "Material"));
+					for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 					page.print(table_header);
 				}
 				{
 					html::tag table_row("tr");
 					table_row.set(attr_align, val_left);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row[1]->append(html::tag("pre"));
-					auto _pre = table_row.querySelector("pre");
+					for (decltype(auto) th : table_headers) table_row.append(cell);
+					decltype(auto) tr_alias = table_row.alias();
+					tr_alias[1]->append(html::tag("pre"));
+					tr_alias[1] = tr_alias[1]->querySelector("pre");
 
 					for (const auto& x : name_desc) {
-						table_row[0]->append(html::tag::wrap(x.first));
-						_pre->append(html::tag::wrap(x.second));
-						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						tr_alias[0]->append(html::tag::wrap(x.first));
+						tr_alias[1]->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) tr_alias[2]->append(html::tag::wrap(mat));
 						page.print(table_row);
-						table_row[0]->clear();
-						_pre->clear();
-						table_row[2]->clear();
+						for (decltype(auto) tr : tr_alias) tr->clear();
 					}
 				}
 
@@ -646,33 +643,30 @@ int main(int argc, char *argv[])
 				page.print(global_nav);
 				*revert.first = std::move(revert.second);
 				}
+
+				static constexpr const char* table_headers[] = { "Name", "Description", "Material" };
 				page.start_print(_data_table);
 				// actual content
 				{
 					html::tag table_header("tr");
 					table_header.set(attr_align, val_center);
-					table_header.append(html::tag("th", "Name"));
-					table_header.append(html::tag("th", "Description"));
-					table_header.append(html::tag("th", "Material"));
+					for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 					page.print(table_header);
 				}
 				{
 					html::tag table_row("tr");
 					table_row.set(attr_align, val_left);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row[1]->append(html::tag("pre"));
-					auto _pre = table_row.querySelector("pre");
+					for (decltype(auto) th : table_headers) table_row.append(cell);
+					decltype(auto) tr_alias = table_row.alias();
+					tr_alias[1]->append(html::tag("pre"));
+					tr_alias[1] = tr_alias[1]->querySelector("pre");
 
 					for (const auto& x : name_desc) {
-						table_row[0]->append(html::tag::wrap(x.first));
-						_pre->append(html::tag::wrap(x.second));
-						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						tr_alias[0]->append(html::tag::wrap(x.first));
+						tr_alias[1]->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) tr_alias[2]->append(html::tag::wrap(mat));
 						page.print(table_row);
-						table_row[0]->clear();
-						_pre->clear();
-						table_row[2]->clear();
+						for (decltype(auto) tr : tr_alias) tr->clear();
 					}
 				}
 
@@ -702,6 +696,8 @@ int main(int argc, char *argv[])
 				_title->append(html::tag::wrap("Cataclysm:Z " BOOKS_LINK_NAME));
 				page.print(_head);
 				_title->clear();
+
+				static constexpr const char* table_headers[] = { "Name", "Description", "Material" };
 				page.start_print(_body);
 				{
 				auto revert = swapDOM("#" BOOKS_ID, global_nav, html::tag("b", BOOKS_LINK_NAME));
@@ -713,28 +709,23 @@ int main(int argc, char *argv[])
 				{
 					html::tag table_header("tr");
 					table_header.set(attr_align, val_center);
-					table_header.append(html::tag("th", "Name"));
-					table_header.append(html::tag("th", "Description"));
-					table_header.append(html::tag("th", "Material"));
+					for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 					page.print(table_header);
 				}
 				{
 					html::tag table_row("tr");
 					table_row.set(attr_align, val_left);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row[1]->append(html::tag("pre"));
-					auto _pre = table_row.querySelector("pre");
+					for (decltype(auto) th : table_headers) table_row.append(cell);
+					decltype(auto) tr_alias = table_row.alias();
+					tr_alias[1]->append(html::tag("pre"));
+					tr_alias[1] = tr_alias[1]->querySelector("pre");
 
 					for (const auto& x : name_desc) {
-						table_row[0]->append(html::tag::wrap(x.first));
-						_pre->append(html::tag::wrap(x.second));
-						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						tr_alias[0]->append(html::tag::wrap(x.first));
+						tr_alias[1]->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) tr_alias[2]->append(html::tag::wrap(mat));
 						page.print(table_row);
-						table_row[0]->clear();
-						_pre->clear();
-						table_row[2]->clear();
+						for (decltype(auto) tr : tr_alias) tr->clear();
 					}
 				}
 
@@ -769,33 +760,30 @@ int main(int argc, char *argv[])
 				page.print(global_nav);
 				*revert.first = std::move(revert.second);
 				}
+
+				static constexpr const char* table_headers[] = { "Name", "Description", "Material" };
 				page.start_print(_data_table);
 				// actual content
 				{
 					html::tag table_header("tr");
 					table_header.set(attr_align, val_center);
-					table_header.append(html::tag("th", "Name"));
-					table_header.append(html::tag("th", "Description"));
-					table_header.append(html::tag("th", "Material"));
+					for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 					page.print(table_header);
 				}
 				{
 					html::tag table_row("tr");
 					table_row.set(attr_align, val_left);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row[1]->append(html::tag("pre"));
-					auto _pre = table_row.querySelector("pre");
+					for (decltype(auto) th : table_headers) table_row.append(cell);
+					decltype(auto) tr_alias = table_row.alias();
+					tr_alias[1]->append(html::tag("pre"));
+					tr_alias[1] = tr_alias[1]->querySelector("pre");
 
 					for (const auto& x : name_desc) {
-						table_row[0]->append(html::tag::wrap(x.first));
-						_pre->append(html::tag::wrap(x.second));
-						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						tr_alias[0]->append(html::tag::wrap(x.first));
+						tr_alias[1]->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) tr_alias[2]->append(html::tag::wrap(mat));
 						page.print(table_row);
-						table_row[0]->clear();
-						_pre->clear();
-						table_row[2]->clear();
+						for (decltype(auto) tr : tr_alias) tr->clear();
 					}
 				}
 
@@ -831,41 +819,35 @@ int main(int argc, char *argv[])
 				page.print(global_nav);
 				*revert.first = std::move(revert.second);
 				}
+
+				static constexpr const char* table_headers[] = { "Name", "Description", "Material", "Addiction" };
 				page.start_print(_data_table);
 				// actual content
 				{
 					html::tag table_header("tr");
 					table_header.set(attr_align, val_center);
-					table_header.append(html::tag("th", "Name"));
-					table_header.append(html::tag("th", "Description"));
-					table_header.append(html::tag("th", "Material"));
-					table_header.append(html::tag("th", "Addiction"));
+					for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 					page.print(table_header);
 				}
 				{
 					html::tag table_row("tr");
 					table_row.set(attr_align, val_left);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row[1]->append(html::tag("pre"));
-					auto _pre = table_row.querySelector("pre");
+					for (decltype(auto) th : table_headers) table_row.append(cell);
+					decltype(auto) tr_alias = table_row.alias();
+					tr_alias[1]->append(html::tag("pre"));
+					tr_alias[1] = tr_alias[1]->querySelector("pre");
 
 					for (const auto& x : name_desc) {
 						auto med = dynamic_cast<it_comest*>(item::types.at(name_id[x.first]));
 						if (!med) continue;	// in container
-						table_row[0]->append(html::tag::wrap(x.first));
-						_pre->append(html::tag::wrap(x.second));
-						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						tr_alias[0]->append(html::tag::wrap(x.first));
+						tr_alias[1]->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) tr_alias[2]->append(html::tag::wrap(mat));
 						if (auto med = dynamic_cast<it_comest*>(item::types.at(name_id[x.first]))) {
-							if (auto add = addiction_target(med->add)) table_row[3]->append(html::tag::wrap(add));
+							if (auto add = addiction_target(med->add)) tr_alias[3]->append(html::tag::wrap(add));
 						} else throw std::logic_error(name_id[x.first]+" not really consumable");
 						page.print(table_row);
-						table_row[0]->clear();
-						_pre->clear();
-						table_row[2]->clear();
-						table_row[3]->clear();
+						for (decltype(auto) tr : tr_alias) tr->clear();
 					}
 				}
 
@@ -900,33 +882,30 @@ int main(int argc, char *argv[])
 				page.print(global_nav);
 				*revert.first = std::move(revert.second);
 				}
+
+				static constexpr const char* table_headers[] = { "Name", "Description", "Material" };
 				page.start_print(_data_table);
 				// actual content
 				{
 					html::tag table_header("tr");
 					table_header.set(attr_align, val_center);
-					table_header.append(html::tag("th", "Name"));
-					table_header.append(html::tag("th", "Description"));
-					table_header.append(html::tag("th", "Material"));
+					for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 					page.print(table_header);
 				}
 				{
 					html::tag table_row("tr");
 					table_row.set(attr_align, val_left);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row[1]->append(html::tag("pre"));
-					auto _pre = table_row.querySelector("pre");
+					for (decltype(auto) th : table_headers) table_row.append(cell);
+					decltype(auto) tr_alias = table_row.alias();
+					tr_alias[1]->append(html::tag("pre"));
+					tr_alias[1] = tr_alias[1]->querySelector("pre");
 
 					for (const auto& x : name_desc) {
-						table_row[0]->append(html::tag::wrap(x.first));
-						_pre->append(html::tag::wrap(x.second));
-						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						tr_alias[0]->append(html::tag::wrap(x.first));
+						tr_alias[1]->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) tr_alias[2]->append(html::tag::wrap(mat));
 						page.print(table_row);
-						table_row[0]->clear();
-						_pre->clear();
-						table_row[2]->clear();
+						for (decltype(auto) tr : tr_alias) tr->clear();
 					}
 				}
 
@@ -962,33 +941,30 @@ int main(int argc, char *argv[])
 				page.print(global_nav);
 				*revert.first = std::move(revert.second);
 				}
+
+				static constexpr const char* table_headers[] = { "Name", "Description", "Material" };
 				page.start_print(_data_table);
 				// actual content
 				{
 					html::tag table_header("tr");
 					table_header.set(attr_align, val_center);
-					table_header.append(html::tag("th", "Name"));
-					table_header.append(html::tag("th", "Description"));
-					table_header.append(html::tag("th", "Material"));
+					for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 					page.print(table_header);
 				}
 				{
 					html::tag table_row("tr");
 					table_row.set(attr_align, val_left);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row[1]->append(html::tag("pre"));
-					auto _pre = table_row.querySelector("pre");
+					for (decltype(auto) th : table_headers) table_row.append(cell);
+					decltype(auto) tr_alias = table_row.alias();
+					tr_alias[1]->append(html::tag("pre"));
+					tr_alias[1] = tr_alias[1]->querySelector("pre");
 
 					for (const auto& x : name_desc) {
-						table_row[0]->append(html::tag::wrap(x.first));
-						_pre->append(html::tag::wrap(x.second));
-						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						tr_alias[0]->append(html::tag::wrap(x.first));
+						tr_alias[1]->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) tr_alias[2]->append(html::tag::wrap(mat));
 						page.print(table_row);
-						table_row[0]->clear();
-						_pre->clear();
-						table_row[2]->clear();
+						for (decltype(auto) tr : tr_alias) tr->clear();
 					}
 				}
 
@@ -1025,33 +1001,30 @@ int main(int argc, char *argv[])
 				page.print(global_nav);
 				*revert.first = std::move(revert.second);
 				}
+
+				static constexpr const char* table_headers[] = { "Name", "Description", "Material" };
 				page.start_print(_data_table);
 				// actual content
 				{
 					html::tag table_header("tr");
 					table_header.set(attr_align, val_center);
-					table_header.append(html::tag("th", "Name"));
-					table_header.append(html::tag("th", "Description"));
-					table_header.append(html::tag("th", "Material"));
+					for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 					page.print(table_header);
 				}
 				{
 					html::tag table_row("tr");
 					table_row.set(attr_align, val_left);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row[1]->append(html::tag("pre"));
-					auto _pre = table_row.querySelector("pre");
+					for (decltype(auto) th : table_headers) table_row.append(cell);
+					decltype(auto) tr_alias = table_row.alias();
+					tr_alias[1]->append(html::tag("pre"));
+					tr_alias[1] = tr_alias[1]->querySelector("pre");
 
 					for (const auto& x : name_desc) {
-						table_row[0]->append(html::tag::wrap(x.first));
-						_pre->append(html::tag::wrap(x.second));
-						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						tr_alias[0]->append(html::tag::wrap(x.first));
+						tr_alias[1]->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) tr_alias[2]->append(html::tag::wrap(mat));
 						page.print(table_row);
-						table_row[0]->clear();
-						_pre->clear();
-						table_row[2]->clear();
+						for (decltype(auto) tr : tr_alias) tr->clear();
 					}
 				}
 
@@ -1088,33 +1061,30 @@ int main(int argc, char *argv[])
 				page.print(global_nav);
 				*revert.first = std::move(revert.second);
 				}
+
+				static constexpr const char* table_headers[] = { "Name", "Description", "Material" };
 				page.start_print(_data_table);
 				// actual content
 				{
 					html::tag table_header("tr");
 					table_header.set(attr_align, val_center);
-					table_header.append(html::tag("th", "Name"));
-					table_header.append(html::tag("th", "Description"));
-					table_header.append(html::tag("th", "Material"));
+					for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 					page.print(table_header);
 				}
 				{
 					html::tag table_row("tr");
 					table_row.set(attr_align, val_left);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row[1]->append(html::tag("pre"));
-					auto _pre = table_row.querySelector("pre");
+					for (decltype(auto) th : table_headers) table_row.append(cell);
+					decltype(auto) tr_alias = table_row.alias();
+					tr_alias[1]->append(html::tag("pre"));
+					tr_alias[1] = tr_alias[1]->querySelector("pre");
 
 					for (const auto& x : name_desc) {
-						table_row[0]->append(html::tag::wrap(x.first));
-						_pre->append(html::tag::wrap(x.second));
-						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						tr_alias[0]->append(html::tag::wrap(x.first));
+						tr_alias[1]->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) tr_alias[2]->append(html::tag::wrap(mat));
 						page.print(table_row);
-						table_row[0]->clear();
-						_pre->clear();
-						table_row[2]->clear();
+						for (decltype(auto) tr : tr_alias) tr->clear();
 					}
 				}
 
@@ -1149,33 +1119,30 @@ int main(int argc, char *argv[])
 				page.print(global_nav);
 				*revert.first = std::move(revert.second);
 				}
+
+				static constexpr const char* table_headers[] = { "Name", "Description", "Material" };
 				page.start_print(_data_table);
 				// actual content
 				{
 					html::tag table_header("tr");
 					table_header.set(attr_align, val_center);
-					table_header.append(html::tag("th", "Name"));
-					table_header.append(html::tag("th", "Description"));
-					table_header.append(html::tag("th", "Material"));
+					for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 					page.print(table_header);
 				}
 				{
 					html::tag table_row("tr");
 					table_row.set(attr_align, val_left);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row[1]->append(html::tag("pre"));
-					auto _pre = table_row.querySelector("pre");
+					for (decltype(auto) th : table_headers) table_row.append(cell);
+					decltype(auto) tr_alias = table_row.alias();
+					tr_alias[1]->append(html::tag("pre"));
+					tr_alias[1] = tr_alias[1]->querySelector("pre");
 
 					for (const auto& x : name_desc) {
-						table_row[0]->append(html::tag::wrap(x.first));
-						_pre->append(html::tag::wrap(x.second));
-						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						tr_alias[0]->append(html::tag::wrap(x.first));
+						tr_alias[1]->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) tr_alias[2]->append(html::tag::wrap(mat));
 						page.print(table_row);
-						table_row[0]->clear();
-						_pre->clear();
-						table_row[2]->clear();
+						for (decltype(auto) tr : tr_alias) tr->clear();
 					}
 				}
 
@@ -1210,33 +1177,30 @@ int main(int argc, char *argv[])
 				page.print(global_nav);
 				*revert.first = std::move(revert.second);
 				}
+
+				static constexpr const char* table_headers[] = { "Name", "Description", "Material" };
 				page.start_print(_data_table);
 				// actual content
 				{
 					html::tag table_header("tr");
 					table_header.set(attr_align, val_center);
-					table_header.append(html::tag("th", "Name"));
-					table_header.append(html::tag("th", "Description"));
-					table_header.append(html::tag("th", "Material"));
+					for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 					page.print(table_header);
 				}
 				{
 					html::tag table_row("tr");
 					table_row.set(attr_align, val_left);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row[1]->append(html::tag("pre"));
-					auto _pre = table_row.querySelector("pre");
+					for (decltype(auto) th : table_headers) table_row.append(cell);
+					decltype(auto) tr_alias = table_row.alias();
+					tr_alias[1]->append(html::tag("pre"));
+					tr_alias[1] = tr_alias[1]->querySelector("pre");
 
 					for (const auto& x : name_desc) {
-						table_row[0]->append(html::tag::wrap(x.first));
-						_pre->append(html::tag::wrap(x.second));
-						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						tr_alias[0]->append(html::tag::wrap(x.first));
+						tr_alias[1]->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) tr_alias[2]->append(html::tag::wrap(mat));
 						page.print(table_row);
-						table_row[0]->clear();
-						_pre->clear();
-						table_row[2]->clear();
+						for (decltype(auto) tr : tr_alias) tr->clear();
 					}
 				}
 
@@ -1271,33 +1235,30 @@ int main(int argc, char *argv[])
 				page.print(global_nav);
 				*revert.first = std::move(revert.second);
 				}
+
+				static constexpr const char* table_headers[] = { "Name", "Description", "Material" };
 				page.start_print(_data_table);
 				// actual content
 				{
 					html::tag table_header("tr");
 					table_header.set(attr_align, val_center);
-					table_header.append(html::tag("th", "Name"));
-					table_header.append(html::tag("th", "Description"));
-					table_header.append(html::tag("th", "Material"));
+					for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 					page.print(table_header);
 				}
 				{
 					html::tag table_row("tr");
 					table_row.set(attr_align, val_left);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row[1]->append(html::tag("pre"));
-					auto _pre = table_row.querySelector("pre");
+					for (decltype(auto) th : table_headers) table_row.append(cell);
+					decltype(auto) tr_alias = table_row.alias();
+					tr_alias[1]->append(html::tag("pre"));
+					tr_alias[1] = tr_alias[1]->querySelector("pre");
 
 					for (const auto& x : name_desc) {
-						table_row[0]->append(html::tag::wrap(x.first));
-						_pre->append(html::tag::wrap(x.second));
-						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						tr_alias[0]->append(html::tag::wrap(x.first));
+						tr_alias[1]->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) tr_alias[2]->append(html::tag::wrap(mat));
 						page.print(table_row);
-						table_row[0]->clear();
-						_pre->clear();
-						table_row[2]->clear();
+						for (decltype(auto) tr : tr_alias) tr->clear();
 					}
 				}
 
@@ -1332,33 +1293,30 @@ int main(int argc, char *argv[])
 				page.print(global_nav);
 				*revert.first = std::move(revert.second);
 				}
+
+				static constexpr const char* table_headers[] = { "Name", "Description", "Material" };
 				page.start_print(_data_table);
 				// actual content
 				{
 					html::tag table_header("tr");
 					table_header.set(attr_align, val_center);
-					table_header.append(html::tag("th", "Name"));
-					table_header.append(html::tag("th", "Description"));
-					table_header.append(html::tag("th", "Material"));
+					for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 					page.print(table_header);
 				}
 				{
 					html::tag table_row("tr");
 					table_row.set(attr_align, val_left);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row[1]->append(html::tag("pre"));
-					auto _pre = table_row.querySelector("pre");
+					for (decltype(auto) th : table_headers) table_row.append(cell);
+					decltype(auto) tr_alias = table_row.alias();
+					tr_alias[1]->append(html::tag("pre"));
+					tr_alias[1] = tr_alias[1]->querySelector("pre");
 
 					for (const auto& x : name_desc) {
-						table_row[0]->append(html::tag::wrap(x.first));
-						_pre->append(html::tag::wrap(x.second));
-						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						tr_alias[0]->append(html::tag::wrap(x.first));
+						tr_alias[1]->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) tr_alias[2]->append(html::tag::wrap(mat));
 						page.print(table_row);
-						table_row[0]->clear();
-						_pre->clear();
-						table_row[2]->clear();
+						for (decltype(auto) tr : tr_alias) tr->clear();
 					}
 				}
 
@@ -1393,33 +1351,30 @@ int main(int argc, char *argv[])
 				page.print(global_nav);
 				*revert.first = std::move(revert.second);
 				}
+
+				static constexpr const char* table_headers[] = { "Name", "Description", "Material" };
 				page.start_print(_data_table);
 				// actual content
 				{
 					html::tag table_header("tr");
 					table_header.set(attr_align, val_center);
-					table_header.append(html::tag("th", "Name"));
-					table_header.append(html::tag("th", "Description"));
-					table_header.append(html::tag("th", "Material"));
+					for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 					page.print(table_header);
 				}
 				{
 					html::tag table_row("tr");
 					table_row.set(attr_align, val_left);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row[1]->append(html::tag("pre"));
-					auto _pre = table_row.querySelector("pre");
+					for (decltype(auto) th : table_headers) table_row.append(cell);
+					decltype(auto) tr_alias = table_row.alias();
+					tr_alias[1]->append(html::tag("pre"));
+					tr_alias[1] = tr_alias[1]->querySelector("pre");
 
 					for (const auto& x : name_desc) {
-						table_row[0]->append(html::tag::wrap(x.first));
-						_pre->append(html::tag::wrap(x.second));
-						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						tr_alias[0]->append(html::tag::wrap(x.first));
+						tr_alias[1]->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) tr_alias[2]->append(html::tag::wrap(mat));
 						page.print(table_row);
-						table_row[0]->clear();
-						_pre->clear();
-						table_row[2]->clear();
+						for (decltype(auto) tr : tr_alias) tr->clear();
 					}
 				}
 
@@ -1455,32 +1410,29 @@ int main(int argc, char *argv[])
 				*revert.first = std::move(revert.second);
 				}
 				page.start_print(_data_table);
+
+				static constexpr const char* table_headers[] = { "Name" , "Description" , "Material" };
 				// actual content
 				{
 					html::tag table_header("tr");
 					table_header.set(attr_align, val_center);
-					table_header.append(html::tag("th", "Name"));
-					table_header.append(html::tag("th", "Description"));
-					table_header.append(html::tag("th", "Material"));
+					for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 					page.print(table_header);
 				}
 				{
 					html::tag table_row("tr");
 					table_row.set(attr_align, val_left);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row.append(cell);
-					table_row[1]->append(html::tag("pre"));
-					auto _pre = table_row.querySelector("pre");
+					for (decltype(auto) th : table_headers) table_row.append(cell);
+					decltype(auto) tr_alias = table_row.alias();
+					tr_alias[1]->append(html::tag("pre"));
+					tr_alias[1] = tr_alias[1]->querySelector("pre");
 
 					for (const auto& x : name_desc) {
-						table_row[0]->append(html::tag::wrap(x.first));
-						_pre->append(html::tag::wrap(x.second));
-						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) table_row[2]->append(html::tag::wrap(mat));
+						tr_alias[0]->append(html::tag::wrap(x.first));
+						tr_alias[1]->append(html::tag::wrap(x.second));
+						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) tr_alias[2]->append(html::tag::wrap(mat));
 						page.print(table_row);
-						table_row[0]->clear();
-						_pre->clear();
-						table_row[2]->clear();
+						for (decltype(auto) tr : tr_alias) tr->clear();
 					}
 				}
 
@@ -1569,15 +1521,13 @@ int main(int argc, char *argv[])
 		*revert.first = std::move(revert.second);
 		}
 
+		static constexpr const char* table_headers[] = { "Name", "ASCII", "Transparent?", "Dangerous?" };
 		page.start_print(_data_table);
 		// actual content
 		{
 			html::tag table_header("tr");
 			table_header.set(attr_align, val_center);
-			table_header.append(html::tag("th", "Name"));
-			table_header.append(html::tag("th", "ASCII"));
-			table_header.append(html::tag("th", "Transparent?"));
-			table_header.append(html::tag("th", "Dangerous?"));
+			for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 			page.print(table_header);
 		}
 
@@ -1588,50 +1538,47 @@ int main(int argc, char *argv[])
 			html::tag cell("td");
 			html::tag table_row("tr");
 			table_row.set(attr_align, val_left);
-			table_row.append(cell);
-			table_row.append(cell);
-			table_row.append(cell);
-			table_row.append(cell);
+			for (decltype(auto) th : table_headers) table_row.append(cell);
 
 			size_t ub = num_fields;
 			const char* css_fg = nullptr;
 			const char* css_bg = nullptr;
 			while (0 < --ub) {
 				const field_t& x = field::list[ub];
-				table_row[0]->append(html::tag::wrap(x.name[0]));
+				table_row[0].append(html::tag::wrap(x.name[0]));
 				if (to_css_colors(x.color[0], css_fg, css_bg)) {
 					html::tag colorize("span", std::string(1, x.sym));
 					colorize.set("style", color+ css_fg + background + css_bg);
-					table_row[1]->append(std::move(colorize));
+					table_row[1].append(std::move(colorize));
 				} else {
-					table_row[1]->append(html::tag::wrap(std::string(1, x.sym)));
+					table_row[1].append(html::tag::wrap(std::string(1, x.sym)));
 				}
-				table_row[2]->append(html::tag::wrap(x.transparent[0] ? "yes" : ""));
-				table_row[3]->append(html::tag::wrap(x.dangerous[0] ? "yes" : ""));
+				table_row[2].append(html::tag::wrap(x.transparent[0] ? "yes" : ""));
+				table_row[3].append(html::tag::wrap(x.dangerous[0] ? "yes" : ""));
 				page.print(table_row);
 				for (decltype(auto) tr : table_row) tr.clear();
-				table_row[0]->append(html::tag::wrap(x.name[1]));
+				table_row[0].append(html::tag::wrap(x.name[1]));
 				if (to_css_colors(x.color[1], css_fg, css_bg)) {
 					html::tag colorize("span", std::string(1, x.sym));
 					colorize.set("style", color + css_fg + background + css_bg);
-					table_row[1]->append(std::move(colorize));
+					table_row[1].append(std::move(colorize));
 				} else {
-					table_row[1]->append(html::tag::wrap(std::string(1, x.sym)));
+					table_row[1].append(html::tag::wrap(std::string(1, x.sym)));
 				}
-				table_row[2]->append(html::tag::wrap(x.transparent[1] ? "yes" : ""));
-				table_row[3]->append(html::tag::wrap(x.dangerous[1] ? "yes" : ""));
+				table_row[2].append(html::tag::wrap(x.transparent[1] ? "yes" : ""));
+				table_row[3].append(html::tag::wrap(x.dangerous[1] ? "yes" : ""));
 				page.print(table_row);
 				for (decltype(auto) tr : table_row) tr.clear();
-				table_row[0]->append(html::tag::wrap(x.name[2]));
+				table_row[0].append(html::tag::wrap(x.name[2]));
 				if (to_css_colors(x.color[2], css_fg, css_bg)) {
 					html::tag colorize("span", std::string(1, x.sym));
 					colorize.set("style", color + css_fg + background + css_bg);
-					table_row[1]->append(std::move(colorize));
+					table_row[1].append(std::move(colorize));
 				} else {
-					table_row[1]->append(html::tag::wrap(std::string(1, x.sym)));
+					table_row[1].append(html::tag::wrap(std::string(1, x.sym)));
 				}
-				table_row[2]->append(html::tag::wrap(x.transparent[2] ? "yes" : ""));
-				table_row[3]->append(html::tag::wrap(x.dangerous[2] ? "yes" : ""));
+				table_row[2].append(html::tag::wrap(x.transparent[2] ? "yes" : ""));
+				table_row[3].append(html::tag::wrap(x.dangerous[2] ? "yes" : ""));
 				page.print(table_row);
 				for (decltype(auto) tr : table_row) tr.clear();
 			}
@@ -1662,15 +1609,13 @@ int main(int argc, char *argv[])
 		*revert.first = std::move(revert.second);
 		}
 
+		static constexpr const char* table_headers[] = { "Name", "ASCII", "time cost", "Trap?" };
 		page.start_print(_data_table);
 		// actual content
 		{
 			html::tag table_header("tr");
 			table_header.set(attr_align, val_center);
-			table_header.append(html::tag("th", "Name"));
-			table_header.append(html::tag("th", "ASCII"));
-			table_header.append(html::tag("th", "time cost"));
-			table_header.append(html::tag("th", "Trap?"));
+			for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 			page.print(table_header);
 		}
 
@@ -1680,10 +1625,7 @@ int main(int argc, char *argv[])
 			html::tag cell("td");
 			html::tag table_row("tr");
 			table_row.set(attr_align, val_left);
-			table_row.append(cell);
-			table_row.append(cell);
-			table_row.append(cell);
-			table_row.append(cell);
+			for (decltype(auto) th : table_headers) table_row.append(cell);
 
 			size_t ub = num_terrain_types;
 			const char* css_fg = nullptr;
@@ -1693,16 +1635,16 @@ int main(int argc, char *argv[])
 				/*
 	unsigned long flags;// : num_t_flags;	// expanding this would be useful, but would be new support
 				*/
-				table_row[0]->append(html::tag::wrap(x.name));
+				table_row[0].append(html::tag::wrap(x.name));
 				if (to_css_colors(x.color, css_fg, css_bg)) {
 					html::tag colorize("span", std::string(1, x.sym));
 					colorize.set("style", color+ css_fg + background + css_bg);
-					table_row[1]->append(std::move(colorize));
+					table_row[1].append(std::move(colorize));
 				} else {
-					table_row[1]->append(html::tag::wrap(std::string(1, x.sym)));
+					table_row[1].append(html::tag::wrap(std::string(1, x.sym)));
 				}
-				if (x.movecost) table_row[2]->append(html::tag::wrap(std::to_string((int)x.movecost)));
-				if (const auto json = JSON_key(x.trap)) table_row[3]->append(html::tag::wrap(json));	// \todo hyperlink to traps page when we have it
+				if (x.movecost) table_row[2].append(html::tag::wrap(std::to_string((int)x.movecost)));
+				if (const auto json = JSON_key(x.trap)) table_row[3].append(html::tag::wrap(json));	// \todo hyperlink to traps page when we have it
 				page.print(table_row);
 				for (decltype(auto) tr : table_row) tr.clear();
 			}
@@ -1732,18 +1674,13 @@ int main(int argc, char *argv[])
 		*revert.first = std::move(revert.second);
 		}
 
+		static constexpr const char* table_headers[] = { "Name", "ASCII", "visibility", "avoidance", "difficulty", "disarmed parts", "triggered parts" };
 		page.start_print(_data_table);
 		// actual content
 		{
 			html::tag table_header("tr");
 			table_header.set(attr_align, val_center);
-			table_header.append(html::tag("th", "Name"));
-			table_header.append(html::tag("th", "ASCII"));
-			table_header.append(html::tag("th", "visibility"));
-			table_header.append(html::tag("th", "avoidance"));
-			table_header.append(html::tag("th", "difficulty"));
-			table_header.append(html::tag("th", "disarmed parts"));
-			table_header.append(html::tag("th", "triggered parts"));
+			for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 			page.print(table_header);
 		}
 
@@ -1755,33 +1692,27 @@ int main(int argc, char *argv[])
 			html::tag cell("td");
 			html::tag table_row("tr");
 			table_row.set(attr_align, val_left);
-			table_row.append(cell);
-			table_row.append(cell);
-			table_row.append(cell);
-			table_row.append(cell);
-			table_row.append(cell);
-			table_row.append(cell);
-			table_row.append(cell);
+			for (decltype(auto) th : table_headers) table_row.append(cell);
 
 			size_t ub = num_trap_types;
 			const char* css_fg = nullptr;
 			const char* css_bg = nullptr;
 			while (0 < --ub) {
 				const trap& x = *trap::traps[ub];
-				table_row[0]->append(html::tag::wrap(x.name));
+				table_row[0].append(html::tag::wrap(x.name));
 				if (to_css_colors(x.color, css_fg, css_bg)) {
 					html::tag colorize("span", std::string(1, x.sym));
 					colorize.set("style", color + css_fg + background + css_bg);
-					table_row[1]->append(std::move(colorize));
+					table_row[1].append(std::move(colorize));
 				} else {
-					table_row[1]->append(html::tag::wrap(std::string(1, x.sym)));
+					table_row[1].append(html::tag::wrap(std::string(1, x.sym)));
 				}
-				table_row[2]->append(std::to_string(x.visibility));
-				table_row[3]->append(std::to_string(x.avoidance));
+				table_row[2].append(std::to_string(x.visibility));
+				table_row[3].append(std::to_string(x.avoidance));
 				if (x.disarm_legal()) {
-					table_row[4]->append(std::to_string(x.difficulty));
+					table_row[4].append(std::to_string(x.difficulty));
 				} else {
-					table_row[4]->append(no_disarm);
+					table_row[4].append(no_disarm);
 				}
 				if (!x.disarm_components.empty()) {
 					std::string desc;
@@ -1792,7 +1723,7 @@ int main(int argc, char *argv[])
 						desc += "1 ";
 						desc += info.name;
 					}
-					table_row[5]->append(std::move(desc));
+					table_row[5].append(std::move(desc));
 				}
 				if (!x.trigger_components.empty()) {
 					std::string desc;
@@ -1800,7 +1731,7 @@ int main(int argc, char *argv[])
 						if (!desc.empty()) desc += "<br>\n";
 						desc += it.to_s();
 					}
-					table_row[6]->append(std::move(desc));
+					table_row[6].append(std::move(desc));
 				}
 
 				page.print(table_row);
@@ -1887,14 +1818,13 @@ int main(int argc, char *argv[])
 				*revert.first = std::move(revert.second);
 			}
 
+			static constexpr const char* table_headers[] = { "Name" , "Description", "Items" };
 			page.start_print(_data_table);
 			// actual content
 			{
 				html::tag table_header("tr");
 				table_header.set(attr_align, val_center);
-				table_header.append(html::tag("th", "Name"));
-				table_header.append(html::tag("th", "Description"));
-				table_header.append(html::tag("th", "Items"));
+				for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 				page.print(table_header);
 			}
 
@@ -1904,9 +1834,10 @@ int main(int argc, char *argv[])
 				html::tag cell("td");
 				html::tag table_row("tr");
 				table_row.set(attr_align, val_left);
-				table_row.append(cell);
-				table_row.append(cell);
-				table_row.append(cell);
+				for (decltype(auto) th : table_headers) table_row.append(cell);
+				decltype(auto) tr_alias = table_row.alias();
+				tr_alias[1]->append(html::tag("pre"));
+				tr_alias[1] = tr_alias[1]->querySelector("pre");
 
 				size_t ub = NUM_ADDICTIONS;
 				const char* css_fg = nullptr;
@@ -1914,8 +1845,8 @@ int main(int argc, char *argv[])
 				while (0 < --ub) {
 					std::string what;
 					addiction test((add_type)ub);
-					table_row[0]->append(html::tag::wrap(addiction_name(test)));
-					table_row[1]->append(html::tag::wrap(addiction_text(test)));
+					tr_alias[0]->append(html::tag::wrap(addiction_name(test)));
+					tr_alias[1]->append(html::tag::wrap(addiction_text(test)));
 
 					size_t xref_ub = xref_addictions.size();
 					while (0 < xref_ub) {
@@ -1925,10 +1856,10 @@ int main(int argc, char *argv[])
 						else what += ", " + entry.second->name;
 						xref_addictions.erase(xref_addictions.begin() + xref_ub);
 					}
-					if (!what.empty()) table_row[2]->append(html::tag::wrap(std::move(what)));
+					if (!what.empty()) tr_alias[2]->append(html::tag::wrap(std::move(what)));
 
 					page.print(table_row);
-					for (decltype(auto) tr : table_row) tr.clear();
+					for (decltype(auto) tr : tr_alias) tr->clear();
 				}
 			}
 			while (page.end_print());
@@ -1956,13 +1887,13 @@ int main(int argc, char *argv[])
 				*revert.first = std::move(revert.second);
 			}
 
+			static constexpr const char* table_headers[] = { "Name" , "Description" };
 			page.start_print(_data_table);
 			// actual content
 			{
 				html::tag table_header("tr");
 				table_header.set(attr_align, val_center);
-				table_header.append(html::tag("th", "Name"));
-				table_header.append(html::tag("th", "Description"));
+				for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 				page.print(table_header);
 			}
 
@@ -1970,18 +1901,20 @@ int main(int argc, char *argv[])
 				html::tag cell("td");
 				html::tag table_row("tr");
 				table_row.set(attr_align, val_left);
-				table_row.append(cell);
-				table_row.append(cell);
+				for (decltype(auto) th : table_headers) table_row.append(cell);
+				decltype(auto) tr_alias = table_row.alias();
+				tr_alias[1]->append(html::tag("pre"));
+				tr_alias[1] = tr_alias[1]->querySelector("pre");
 
 				size_t ub = num_skill_types;
 				while (0 < --ub) {
 					std::string what;
 					skill test((skill)ub);
-					table_row[0]->append(html::tag::wrap(skill_name(test)));
-					table_row[1]->append(html::tag::wrap(skill_description(test)));
+					tr_alias[0]->append(html::tag::wrap(skill_name(test)));
+					tr_alias[1]->append(html::tag::wrap(skill_description(test)));
 
 					page.print(table_row);
-					for (decltype(auto) tr : table_row) tr.clear();
+					for (decltype(auto) tr : tr_alias) tr->clear();
 				}
 			}
 			while (page.end_print());
