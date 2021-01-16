@@ -38,6 +38,21 @@ void tag::append(std::string&& src)
 	_content.push_back(wrap(std::move(src)));
 }
 
+std::vector<tag*> tag::alias()
+{
+	decltype(auto) ub = _content.size();
+	std::vector<tag*> ret(ub, nullptr);
+	if (0 < ub) {
+		const auto src = _content.data();
+		do {
+			--ub;
+			ret[ub] = src + ub;
+		} while (0 < ub);
+	}
+	return ret;
+}
+
+
 static void content_to_vector(const std::vector<tag>& src, std::vector<std::string>& dest)
 {
 	if (!src.empty()) for (auto& x : src) {

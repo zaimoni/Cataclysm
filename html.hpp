@@ -77,6 +77,9 @@ public:
 	decltype(auto) crbegin() noexcept { return _content.crbegin(); }
 	decltype(auto) crend() noexcept { return _content.crend(); }
 
+	// *anything* that invalidates the _content vector, invalidates this return value
+	std::vector<tag*> alias();
+
 	// attribute manipulation
 	void unset(const std::string& key) { _attr.erase(key); }
 	void set(const std::string& key, const std::string& val) {

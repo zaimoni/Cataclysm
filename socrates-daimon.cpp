@@ -1974,8 +1974,6 @@ int main(int argc, char *argv[])
 				table_row.append(cell);
 
 				size_t ub = num_skill_types;
-				const char* css_fg = nullptr;
-				const char* css_bg = nullptr;
 				while (0 < --ub) {
 					std::string what;
 					skill test((skill)ub);
