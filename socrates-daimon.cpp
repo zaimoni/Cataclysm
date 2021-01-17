@@ -93,6 +93,24 @@ static auto swapDOM(const std::string& selector, html::tag& src, html::tag&& nod
 	return std::pair(subheader, std::move(backup));
 }
 
+// HTML
+static auto wrap_in_anchor(const std::string& src, const char* const anchor)
+{
+	if (!anchor || !anchor[0]) return html::tag::wrap(src);
+	auto ret = html::tag("a", src);
+	ret.set("name", anchor);
+	return ret;
+}
+
+static auto link_to(const std::string& src, const char* const page, const char* const anchor)
+{
+	if (!anchor || !anchor[0]) return html::tag::wrap(src);
+	if (!page || !page[0]) return html::tag::wrap(src);
+	auto ret = html::tag("a", src);
+	ret.set("href", std::string(page) + '#' + anchor);
+	return ret;
+}
+
 int main(int argc, char *argv[])
 {
 	// these do not belong here
@@ -1644,7 +1662,7 @@ int main(int argc, char *argv[])
 					table_row[1].append(html::tag::wrap(std::string(1, x.sym)));
 				}
 				if (x.movecost) table_row[2].append(html::tag::wrap(std::to_string((int)x.movecost)));
-				if (const auto json = JSON_key(x.trap)) table_row[3].append(html::tag::wrap(json));	// \todo hyperlink to traps page when we have it
+				if (const auto json = JSON_key(x.trap)) table_row[3].append(link_to(json, TRAPS_HTML, json));
 				page.print(table_row);
 				for (decltype(auto) tr : table_row) tr.clear();
 			}
@@ -1699,7 +1717,7 @@ int main(int argc, char *argv[])
 			const char* css_bg = nullptr;
 			while (0 < --ub) {
 				const trap& x = *trap::traps[ub];
-				table_row[0].append(html::tag::wrap(x.name));
+				table_row[0].append(wrap_in_anchor(x.name, JSON_key((trap_id)ub)));
 				if (to_css_colors(x.color, css_fg, css_bg)) {
 					html::tag colorize("span", std::string(1, x.sym));
 					colorize.set("style", color + css_fg + background + css_bg);
