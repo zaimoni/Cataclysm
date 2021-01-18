@@ -2,6 +2,7 @@
 
 #include "color.h"
 #include "mtype.h"
+#include "crafting.h"
 #include "item.h"
 #include "output.h"
 #include "ios_file.h"
@@ -65,6 +66,20 @@ static const char* addiction_target(add_type cur)
 	case ADD_THC:	return "Marijuana";
 	}
 	throw std::logic_error("unhandled addiction type");
+}
+
+static const char* crafting_category(craft_cat cat)
+{
+	switch (cat)
+	{
+	case CC_WEAPON: return "weapon";
+	case CC_FOOD: return "food";
+	case CC_ELECTRONIC: return "electronic";
+	case CC_ARMOR: return "armor";
+	case CC_MISC: return "misc";
+	default: throw std::logic_error("unhandled crafting category");
+	};
+
 }
 
 static auto typicalMenuLink(std::string&& li_id, std::string&& a_name, std::string&& a_url)
@@ -150,6 +165,7 @@ int main(int argc, char *argv[])
 	mtype::init();
 //	mtype::init_items();     need to do this but at a later stage
 	trap::init();
+	recipe::init();
 
 	// item HTML setup
 	const html::tag _html("html");	// stage-printed
@@ -1784,11 +1800,16 @@ int main(int argc, char *argv[])
 #define ADDICTIONS_HTML "addictions.html"
 #define ADDICTIONS_ID "addictions"
 #define ADDICTIONS_LINK_NAME "Addictions"
+// this may rate its own heading
+#define CRAFTING_HTML "crafting.html"
+#define CRAFTING_ID "crafting"
+#define CRAFTING_LINK_NAME "Crafting"
 #define SKILLS_HTML "skills.html"
 #define SKILLS_ID "skills"
 #define SKILLS_LINK_NAME "Skills"
 
 	statusnav_nav.append(typicalMenuLink(ADDICTIONS_ID, ADDICTIONS_LINK_NAME, "./" ADDICTIONS_HTML));
+	statusnav_nav.append(typicalMenuLink(CRAFTING_ID, CRAFTING_LINK_NAME, "./" CRAFTING_HTML));
 	statusnav_nav.append(typicalMenuLink(SKILLS_ID, SKILLS_LINK_NAME, "./" SKILLS_HTML));
 
 	statusnav_point.append(statusnav_nav);
@@ -1926,13 +1947,73 @@ int main(int argc, char *argv[])
 
 				size_t ub = num_skill_types;
 				while (0 < --ub) {
-					std::string what;
 					skill test((skill)ub);
 					tr_alias[0]->append(html::tag::wrap(skill_name(test)));
 					tr_alias[1]->append(html::tag::wrap(skill_description(test)));
 
 					page.print(table_row);
 					for (decltype(auto) tr : tr_alias) tr->clear();
+				}
+			}
+			while (page.end_print());
+		}
+
+		unlink(HTML_TARGET);
+		rename(HTML_TARGET ".tmp", HTML_TARGET);
+	}
+
+#undef HTML_TARGET
+
+#define HTML_TARGET HTML_DIR CRAFTING_HTML
+
+	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
+		{
+			html::to_text page(out);
+			page.start_print(_html);
+			_title->append(html::tag::wrap("Cataclysm:Z " CRAFTING_LINK_NAME));
+			page.print(_head);
+			_title->clear();
+			page.start_print(_body);
+			{
+				auto revert = swapDOM("#" CRAFTING_ID "_link", global_nav, html::tag("b", CRAFTING_LINK_NAME));
+				page.print(global_nav);
+				*revert.first = std::move(revert.second);
+			}
+
+			static constexpr const char* table_headers[] = { "Result" , "Category", "Primary Skill", "Secondary Skill", "Difficulty", "Time" };
+			page.start_print(_data_table);
+			// actual content
+			{
+				html::tag table_header("tr");
+				table_header.set(attr_align, val_center);
+				for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
+				page.print(table_header);
+			}
+
+			{
+				html::tag cell("td");
+				html::tag table_row("tr");
+				table_row.set(attr_align, val_left);
+				for (decltype(auto) th : table_headers) table_row.append(cell);
+
+				int ub = recipe::recipes.size();
+				while (0 <= --ub) {
+/*
+ std::vector<std::vector<component> > tools;
+ std::vector<std::vector<component> > components;
+*/
+					const recipe* const test = recipe::recipes[ub];
+					if (auto json = JSON_key(test->result)) {
+						table_row[0].append(html::tag::wrap(json));
+						table_row[1].append(html::tag::wrap(crafting_category(test->category)));
+						if (auto primary = JSON_key((test->sk_primary))) table_row[2].append(html::tag::wrap(primary));
+						if (auto secondary = JSON_key((test->sk_secondary))) table_row[3].append(html::tag::wrap(secondary));
+						table_row[4].append(html::tag::wrap(std::to_string(test->difficulty)));
+						table_row[5].append(html::tag::wrap(std::to_string(test->time)));
+					} else throw std::logic_error("unidentified crafting result");
+
+					page.print(table_row);
+					for (decltype(auto) tr : table_row) tr.clear();
 				}
 			}
 			while (page.end_print());

@@ -80,6 +80,9 @@
     <ClCompile Include="pldata.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="recipe.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="color.h">

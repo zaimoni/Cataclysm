@@ -173,6 +173,7 @@
     <ClCompile Include="output.cpp" />
     <ClCompile Include="pldata.cpp" />
     <ClCompile Include="recent_msg.cpp" />
+    <ClCompile Include="recipe.cpp" />
     <ClCompile Include="rng.cpp" />
     <ClCompile Include="saveload.cpp" />
     <ClCompile Include="skill.cpp" />
