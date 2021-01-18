@@ -503,6 +503,9 @@
     <ClCompile Include="reality_bubble.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="recipe.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Zaimoni.STL\cstdio">

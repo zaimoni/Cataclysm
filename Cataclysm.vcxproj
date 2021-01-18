@@ -304,6 +304,7 @@
     <ClCompile Include="ranged.cpp" />
     <ClCompile Include="reality_bubble.cpp" />
     <ClCompile Include="recent_msg.cpp" />
+    <ClCompile Include="recipe.cpp" />
     <ClCompile Include="rng.cpp" />
     <ClCompile Include="saveload.cpp" />
     <ClCompile Include="settlement.cpp" />
