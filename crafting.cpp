@@ -226,8 +226,6 @@ void game::pick_recipes(std::vector<const recipe*> &current,
 {
  const inventory crafting_inv(crafting_inventory(m, u));
 
- bool have_tool[5], have_comp[5];
-
  current.clear();
  available.clear();
  for (const recipe* const tmp : recipe::recipes) {
@@ -240,39 +238,48 @@ void game::pick_recipes(std::vector<const recipe*> &current,
  }
  for (int i = 0; i < current.size() && i < CRAFTING_WIN_HEIGHT; i++) {
 //Check if we have the requisite tools and components
-  for (int j = 0; j < 5; j++) {
-   have_tool[j] = current[i]->tools.size() <= j;
-   have_comp[j] = current[i]->components.size() <= j;
-   if (!have_tool[j]) {
-	for (const component& tool : current[i]->tools[j]) {
-     const itype_id type = tool.type;
-     const int req = tool.count;	// -1 => 1
-	 if (req <= 0 ? crafting_inv.has_amount(type, 1) : crafting_inv.has_charges(type, req)) {
-      have_tool[j] = true;
-	  break;
-     }
-    }
-   }
-   if (!have_comp[j]) {
-	for(const component& comp : current[i]->components[j]) {
-     const itype_id type = comp.type;
-     const int count = comp.count;
-     if (item::types[type]->count_by_charges() && count > 0) {
-      if (crafting_inv.has_charges(type, count)) {
-       have_comp[j] = true;
-	   break;
+  bool have_all = true;
+
+  for(decltype(auto) min_term : current[i]->tools) {
+      bool have = false;
+      for (decltype(auto) tool : min_term) {
+          const itype_id type = tool.type;
+          const int req = tool.count;	// -1 => 1
+          if (req <= 0 ? crafting_inv.has_amount(type, 1) : crafting_inv.has_charges(type, req)) {
+              have = true;
+              break;
+          }
       }
-     } else if (crafting_inv.has_amount(type, abs(count))) {
-      have_comp[j] = true;
-	  break;
-	 }
-    }
-   }
+      if (!have) {
+          have_all = false;
+          break;
+      }
   }
-  if (have_tool[0] && have_tool[1] && have_tool[2] && have_tool[3] &&
-      have_tool[4] && have_comp[0] && have_comp[1] && have_comp[2] &&
-      have_comp[3] && have_comp[4])
-   available[i] = true;
+  if (!have_all) continue;
+
+  for (decltype(auto) min_term : current[i]->components) {
+      bool have = false;
+      for (decltype(auto) comp : min_term) {
+          const itype_id type = comp.type;
+          const int count = comp.count;
+          if (item::types[type]->count_by_charges() && count > 0) {
+              if (crafting_inv.has_charges(type, count)) {
+                  have = true;
+                  break;
+              }
+          } else if (crafting_inv.has_amount(type, abs(count))) {
+              have = true;
+              break;
+          }
+      }
+      if (!have) {
+          have_all = false;
+          break;
+      }
+  }
+  if (!have_all) continue;
+
+  available[i] = true;
  }
 }
 
