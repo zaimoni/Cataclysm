@@ -82,6 +82,33 @@ static const char* crafting_category(craft_cat cat)
 
 }
 
+static auto min_term_to_s(const std::vector<component>& src)
+{
+	std::string ret;
+	for (decltype(auto) min_term : src) {
+		const auto json = JSON_key(min_term.type);
+		if (!json) continue;
+		if (!ret.empty()) ret += ", OR ";
+		if (0 < min_term.count) ret += "<nobr>"+std::to_string(min_term.count) + ' ';
+		ret += json; // \todo hyperlink to item
+		if (0 < min_term.count) ret += "</nobr>";
+	}
+	return ret;
+}
+
+static auto to_s(const std::vector<std::vector<component> >& src)
+{
+	if (src.empty()) throw std::logic_error("precondition: can only format non-empty");
+	std::string ret;
+	for (decltype(auto) min_term : src) {
+		decltype(auto) line = min_term_to_s(min_term);
+		if (line.empty()) continue;
+		if (!ret.empty()) ret += "<br>\n";
+		ret += line;
+	}
+	return ret;
+}
+
 static auto typicalMenuLink(std::string&& li_id, std::string&& a_name, std::string&& a_url)
 {
 	html::tag ret_li("li");
@@ -1980,7 +2007,7 @@ int main(int argc, char *argv[])
 				*revert.first = std::move(revert.second);
 			}
 
-			static constexpr const char* table_headers[] = { "Result" , "Category", "Primary Skill", "Secondary Skill", "Difficulty", "Time" };
+			static constexpr const char* table_headers[] = { "Result" , "Category", "Primary Skill", "Secondary Skill", "Difficulty", "Time", "Tools", "Components" };
 			page.start_print(_data_table);
 			// actual content
 			{
@@ -1994,14 +2021,11 @@ int main(int argc, char *argv[])
 				html::tag cell("td");
 				html::tag table_row("tr");
 				table_row.set(attr_align, val_left);
+				table_row.set(attr_valign, val_top);
 				for (decltype(auto) th : table_headers) table_row.append(cell);
 
 				int ub = recipe::recipes.size();
 				while (0 <= --ub) {
-/*
- std::vector<std::vector<component> > tools;
- std::vector<std::vector<component> > components;
-*/
 					const recipe* const test = recipe::recipes[ub];
 					if (auto json = JSON_key(test->result)) {
 						table_row[0].append(html::tag::wrap(json));
@@ -2010,6 +2034,8 @@ int main(int argc, char *argv[])
 						if (auto secondary = JSON_key((test->sk_secondary))) table_row[3].append(html::tag::wrap(secondary));
 						table_row[4].append(html::tag::wrap(std::to_string(test->difficulty)));
 						table_row[5].append(html::tag::wrap(std::to_string(test->time)));
+						if (!test->tools.empty()) table_row[6].append(html::tag::wrap(to_s(test->tools)));
+						if (!test->components.empty()) table_row[7].append(html::tag::wrap(to_s(test->components)));
 					} else throw std::logic_error("unidentified crafting result");
 
 					page.print(table_row);
