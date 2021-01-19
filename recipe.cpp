@@ -1,14 +1,4 @@
 #include "crafting.h"
-#if 0
-#include "keypress.h"
-#include "game.h"
-#include "output.h"
-#include "skill.h"
-#include "inventory.h"
-#include "rng.h"
-#include "recent_msg.h"
-#include <sstream>
-#endif
 
 std::vector<recipe*> recipe::recipes;
 
