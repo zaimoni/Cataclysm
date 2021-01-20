@@ -279,75 +279,63 @@ void game::construction_menu()
 	mvwprintz(w_con, posy, VBAR_X + 1, color_stage, "Stage %d: %s", n + 1,
               stage.terrain == t_null? "" : ter_t::list[stage.terrain].name.c_str());
     posy++;
-// Print tools (fails if more than three tool minterms)
-    bool has_tool[3] = {0 >= stage.tools.size(),
-                        1 >= stage.tools.size(),
-                        2 >= stage.tools.size() };
-    for (int i = 0; i < 3 && !has_tool[i]; i++) {
-	 if (has_tool[i]) break;
-     posy++;
-     posx = VBAR_X + 3;
-     int j = -1;
-     for (const itype_id tool : stage.tools[i]) {
-         ++j;
-         if (0 < j) { // "OR" if there's more
-             if (posx > SCREEN_WIDTH - 3) {
-                 posy++;
-                 posx = VBAR_X + 3;
-             }
-             mvwprintz(w_con, posy, posx, c_white, "OR");
-             posx += 3;
-         }
-         nc_color col = c_red;
-         if (total_inv.has_amount(tool, 1)) {
-             has_tool[i] = true;
-             col = c_green;
-         }
-         const itype* const t_type = item::types[tool];
-         const int length = t_type->name.length();
-         if (posx + length > SCREEN_WIDTH - 1) {
-             posy++;
-             posx = VBAR_X + 3;
-         }
-         mvwprintz(w_con, posy, posx, col, t_type->name.c_str());
-         posx += length + 1; // + 1 for an empty space
-     }
+// Print tools (historically fails if more than three tool minterms)
+    for (decltype(auto) min_term : stage.tools) {
+        posy++;
+        posx = VBAR_X + 3;
+        int j = -1;
+        for (const itype_id tool : min_term) {
+            ++j;
+            if (0 < j) { // "OR" if there's more
+                if (posx > SCREEN_WIDTH - 3) {
+                    posy++;
+                    posx = VBAR_X + 3;
+                }
+                mvwprintz(w_con, posy, posx, c_white, "OR");
+                posx += 3;
+            }
+            const nc_color col = total_inv.has_amount(tool, 1) ? c_green : c_red;
+            const itype* const t_type = item::types[tool];
+            const int length = t_type->name.length();
+            if (posx + length > SCREEN_WIDTH - 1) {
+                posy++;
+                posx = VBAR_X + 3;
+            }
+            mvwprintz(w_con, posy, posx, col, t_type->name.c_str());
+            posx += length + 1; // + 1 for an empty space
+        }
     }
-// Print components (fails if more than three component minterms)
+
+    // Print components (fails if more than three component minterms)
     posy++;
     posx = VBAR_X + 3;
-    bool has_component[3] = { 0 >= stage.components.size(),
-                              1 >= stage.components.size(),
-                              2 >= stage.components.size() };
-    for (int i = 0; i < 3; i++) {
-	 if (has_component[i]) break;
-     posx = VBAR_X + 3;
-     int j = -1;
-     for (decltype(auto) comp : stage.components[i]) {
-         ++j;
-         if (0 < j) { // "OR" if there's more
-             if (posx > SCREEN_WIDTH - 3) {
-                 posy++;
-                 posx = VBAR_X + 3;
-             }
-             mvwprintz(w_con, posy, posx, c_white, "OR");
-             posx += 3;
-         }
-         nc_color col = c_red;
-         if (item::types[comp.type]->is_ammo() ? total_inv.has_charges(comp.type, comp.count) : total_inv.has_amount(comp.type, comp.count)) {
-             has_component[i] = true;
-             col = c_green;
-         }
-         int length = item::types[comp.type]->name.length();
-         if (posx + length > SCREEN_WIDTH - 1) {
-             posy++;
-             posx = VBAR_X + 3;
-         }
-         mvwprintz(w_con, posy, posx, col, "%s x%d", item::types[comp.type]->name.c_str(), comp.count);
-         posx += length + 3; // + 2 for " x", + 1 for an empty space
-         posx += 1 + int_log10(comp.count);    // Add more space for the length of the count
-     }
-     posy++;
+    for (decltype(auto) min_term : stage.components) {
+        posx = VBAR_X + 3;
+        int j = -1;
+        for (decltype(auto) comp : min_term) {
+            ++j;
+            if (0 < j) { // "OR" if there's more
+                if (posx > SCREEN_WIDTH - 3) {
+                    posy++;
+                    posx = VBAR_X + 3;
+                }
+                mvwprintz(w_con, posy, posx, c_white, "OR");
+                posx += 3;
+            }
+            nc_color col = c_red;
+            if (item::types[comp.type]->is_ammo() ? total_inv.has_charges(comp.type, comp.count) : total_inv.has_amount(comp.type, comp.count)) {
+                col = c_green;
+            }
+            int length = item::types[comp.type]->name.length();
+            if (posx + length > SCREEN_WIDTH - 1) {
+                posy++;
+                posx = VBAR_X + 3;
+            }
+            mvwprintz(w_con, posy, posx, col, "%s x%d", item::types[comp.type]->name.c_str(), comp.count);
+            posx += length + 3; // + 2 for " x", + 1 for an empty space
+            posx += 1 + int_log10(comp.count);    // Add more space for the length of the count
+        }
+        posy++;
     }
    }
    wrefresh(w_con);
