@@ -254,6 +254,7 @@
     <ClCompile Include="color.cpp" />
     <ClCompile Include="computer.cpp" />
     <ClCompile Include="construction.cpp" />
+    <ClCompile Include="constructiondef.cpp" />
     <ClCompile Include="crafting.cpp" />
     <ClCompile Include="defense.cpp" />
     <ClCompile Include="event.cpp" />

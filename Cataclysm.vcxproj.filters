@@ -506,6 +506,9 @@
     <ClCompile Include="recipe.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="constructiondef.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Zaimoni.STL\cstdio">
