@@ -83,6 +83,9 @@
     <ClCompile Include="recipe.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="constructiondef.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="color.h">
@@ -170,6 +173,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="skill.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="construction.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="crafting.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

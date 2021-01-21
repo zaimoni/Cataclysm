@@ -163,6 +163,7 @@
     <ClCompile Include="calendar.cpp" />
     <ClCompile Include="catacurse.cpp" />
     <ClCompile Include="color.cpp" />
+    <ClCompile Include="constructiondef.cpp" />
     <ClCompile Include="html.cpp" />
     <ClCompile Include="item.cpp" />
     <ClCompile Include="itypedef.cpp" />
@@ -186,6 +187,8 @@
     <ClInclude Include="calendar.h" />
     <ClInclude Include="catacurse.h" />
     <ClInclude Include="color.h" />
+    <ClInclude Include="construction.h" />
+    <ClInclude Include="crafting.h" />
     <ClInclude Include="c_bitmap.h" />
     <ClInclude Include="enum_json.h" />
     <ClInclude Include="html.hpp" />
