@@ -3,6 +3,7 @@
 #include "color.h"
 #include "mtype.h"
 #include "crafting.h"
+#include "construction.h"
 #include "item.h"
 #include "output.h"
 #include "ios_file.h"
@@ -109,6 +110,63 @@ static auto to_s(const std::vector<std::vector<component> >& src)
 	return ret;
 }
 
+static auto min_term_to_s(const std::vector<itype_id>& src)
+{
+	std::string ret;
+	for (decltype(auto) min_term : src) {
+		const auto json = JSON_key(min_term);
+		if (!json) continue;
+		if (!ret.empty()) ret += ", OR ";
+		ret += json; // \todo hyperlink to item
+	}
+	return ret;
+}
+
+static auto to_s(const std::vector<std::vector<itype_id> >& src)
+{
+	if (src.empty()) throw std::logic_error("precondition: can only format non-empty");
+	std::string ret;
+	for (decltype(auto) min_term : src) {
+		decltype(auto) line = min_term_to_s(min_term);
+		if (line.empty()) continue;
+		if (!ret.empty()) ret += "<br>\n";
+		ret += line;
+	}
+	return ret;
+}
+
+static auto to_table(const std::vector<construction_stage>& src)
+{
+	static constexpr const char* table_headers[] = { "Terrain" , "Minutes", "Tools", "Components" };
+	html::tag table("table");
+
+	{
+	// C++20: extract this using std::range
+	html::tag table_header("tr");
+	table_header.set("align", "center");
+	for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
+	table.append(std::move(table_header));
+	}
+
+	html::tag cell("td");
+	html::tag table_row("tr");
+	table_row.set("align", "left");
+	table_row.set("valign", "top");
+	for (decltype(auto) th : table_headers) table_row.append(cell);
+
+	for (decltype(auto) c_stage : src) {
+		if (const auto json = JSON_key(c_stage.terrain)) table_row[0].append(html::tag::wrap(json));
+		table_row[1].append(std::to_string(c_stage.time));
+		if (!c_stage.tools.empty()) table_row[2].append(to_s(c_stage.tools));
+		if (!c_stage.components.empty()) table_row[3].append(to_s(c_stage.components));
+
+		table.append(table_row);
+		for (decltype(auto) tr : table_row) tr.clear();
+	}
+
+	return table;
+}
+
 static auto typicalMenuLink(std::string&& li_id, std::string&& a_name, std::string&& a_url)
 {
 	html::tag ret_li("li");
@@ -193,6 +251,7 @@ int main(int argc, char *argv[])
 //	mtype::init_items();     need to do this but at a later stage
 	trap::init();
 	recipe::init();
+	constructable::init();
 
 	// item HTML setup
 	const html::tag _html("html");	// stage-printed
@@ -1827,15 +1886,19 @@ int main(int argc, char *argv[])
 #define ADDICTIONS_HTML "addictions.html"
 #define ADDICTIONS_ID "addictions"
 #define ADDICTIONS_LINK_NAME "Addictions"
-// this may rate its own heading
+// these two may rate their own heading
 #define CRAFTING_HTML "crafting.html"
 #define CRAFTING_ID "crafting"
 #define CRAFTING_LINK_NAME "Crafting"
+#define CONSTRUCTION_HTML "construction.html"
+#define CONSTRUCTION_ID "construction"
+#define CONSTRUCTION_LINK_NAME "Construction"
 #define SKILLS_HTML "skills.html"
 #define SKILLS_ID "skills"
 #define SKILLS_LINK_NAME "Skills"
 
 	statusnav_nav.append(typicalMenuLink(ADDICTIONS_ID, ADDICTIONS_LINK_NAME, "./" ADDICTIONS_HTML));
+	statusnav_nav.append(typicalMenuLink(CONSTRUCTION_ID, CONSTRUCTION_LINK_NAME, "./" CONSTRUCTION_HTML));
 	statusnav_nav.append(typicalMenuLink(CRAFTING_ID, CRAFTING_LINK_NAME, "./" CRAFTING_HTML));
 	statusnav_nav.append(typicalMenuLink(SKILLS_ID, SKILLS_LINK_NAME, "./" SKILLS_HTML));
 
@@ -2037,6 +2100,61 @@ int main(int argc, char *argv[])
 						if (!test->tools.empty()) table_row[6].append(html::tag::wrap(to_s(test->tools)));
 						if (!test->components.empty()) table_row[7].append(html::tag::wrap(to_s(test->components)));
 					} else throw std::logic_error("unidentified crafting result");
+
+					page.print(table_row);
+					for (decltype(auto) tr : table_row) tr.clear();
+				}
+			}
+			while (page.end_print());
+		}
+
+		unlink(HTML_TARGET);
+		rename(HTML_TARGET ".tmp", HTML_TARGET);
+	}
+
+#undef HTML_TARGET
+
+#define HTML_TARGET HTML_DIR CONSTRUCTION_HTML
+
+	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
+		{
+			html::to_text page(out);
+			page.start_print(_html);
+			_title->append(html::tag::wrap("Cataclysm:Z " CONSTRUCTION_LINK_NAME));
+			page.print(_head);
+			_title->clear();
+			page.start_print(_body);
+			{
+				auto revert = swapDOM("#" CONSTRUCTION_ID "_link", global_nav, html::tag("b", CONSTRUCTION_LINK_NAME));
+				page.print(global_nav);
+				*revert.first = std::move(revert.second);
+			}
+
+			page.print(html::tag::wrap("The (primary) skill for all constructions, is carpentry.")); // \todo hyperlink to carpentry skill
+
+			static constexpr const char* table_headers[] = { "Result" , "Difficulty", "Stages" };
+			page.start_print(_data_table);
+			// actual content
+			{
+				html::tag table_header("tr");
+				table_header.set(attr_align, val_center);
+				for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
+				page.print(table_header);
+			}
+
+			{
+				html::tag cell("td");
+				html::tag table_row("tr");
+				table_row.set(attr_align, val_left);
+				table_row.set(attr_valign, val_top);
+				for (decltype(auto) th : table_headers) table_row.append(cell);
+
+				int ub = constructable::constructions.size();
+				while (0 <= --ub) {
+					const constructable* const test = constructable::constructions[ub];
+					table_row[0].append(test->name);
+					table_row[1].append(html::tag::wrap(std::to_string(test->difficulty)));
+					table_row[2].append(to_table(test->stages));
 
 					page.print(table_row);
 					for (decltype(auto) tr : table_row) tr.clear();
