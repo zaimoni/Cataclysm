@@ -32,7 +32,7 @@ struct recipe
  skill sk_primary;
  skill sk_secondary;
  int difficulty;
- int time;
+ int time; // total move cost
 
  std::vector<std::vector<component> > tools;
  std::vector<std::vector<component> > components;

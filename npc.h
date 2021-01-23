@@ -4,7 +4,6 @@
 #include "player.h"
 #include "omdata.h"
 #include "faction.h"
-#include "mobile.h"
 #include <string>
 #include <memory>
 

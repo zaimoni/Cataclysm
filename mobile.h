@@ -15,6 +15,8 @@ namespace cataclysm {
 class mobile
 {
 public:
+	static constexpr const int mp_turn = 100; // move points/standard turn
+
 	GPS_loc GPSpos; // absolute location
 	int moves;
 

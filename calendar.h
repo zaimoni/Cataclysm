@@ -54,6 +54,8 @@ enum moon_phase {
 class calendar
 {
  public:
+  static constexpr const int mp_turn = 100; // move points/standard turn
+
 // The basic data; note that "second" should always be a multiple of 6
   int second;
   int minute;

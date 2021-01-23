@@ -16,6 +16,8 @@
 #include <memory>
 #include <optional>
 
+static_assert(mobile::mp_turn == calendar::mp_turn); // this is a god header and has the required includes \todo better location for this reality check
+
 #define LONG_RANGE 10
 #define BLINK_SPEED 300
 #define BULLET_SPEED 10000000
@@ -25,7 +27,6 @@
 
 struct constructable;
 struct special_game;
-class npc;
 
 enum tut_type {
  TUT_NULL,
