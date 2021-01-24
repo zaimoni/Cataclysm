@@ -4896,7 +4896,7 @@ void game::pldrive(int x, int y)
   u.in_vehicle = false;
   return;
  }
- vehicle* const veh = v ? v->first : nullptr; // backward compatibility
+ vehicle* const veh = v->first; // backward compatibility
  if (0 > veh->part_with_feature(v->second, vpf_controls)) {
   messages.add("You can't drive the vehicle from here. You need controls!");
   return;

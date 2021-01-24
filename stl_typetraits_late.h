@@ -6,6 +6,7 @@
 
 // example model for begin,end is container of std::pair<T,int>
 // example model n is rng(...,...)
+// C++20: std::range?
 template<class T>
 auto use_rarity_table(long n, T begin, T end)
 {

@@ -175,7 +175,6 @@ void iuse::bandage(game *g, player *p, item *it, bool t)
          mvwprintz(w, row, 1, 1 == row ? c_ltred : c_ltgray, line);
      }
 
-  nc_color col;
   int curhp;
   for (int i = 0; i < num_hp_parts; i++) {
    curhp = p->hp_cur[i];
@@ -251,7 +250,6 @@ void iuse::firstaid(game *g, player *p, item *it, bool t)
      mvwprintz(w, row, 1, 1==row ? c_ltred : c_ltgray, line);
  }
 
- nc_color col;
   int curhp;
   for (int i = 0; i < num_hp_parts; i++) {
    curhp = p->hp_cur[i];

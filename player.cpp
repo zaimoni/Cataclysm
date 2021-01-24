@@ -164,7 +164,6 @@ void addict_effect(player& u, addiction& add)   // \todo adapt for NPCs
 stat_delta dis_stat_effects(const player& p, const disease& dis)
 {
     stat_delta ret = { 0,0,0,0 };
-    int bonus;
     switch (dis.type) {
     case DI_GLARE:
         ret.Per = -1;

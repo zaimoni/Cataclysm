@@ -191,14 +191,8 @@ void event::actualize() const
   } break;
 
   case EVENT_TEMPLE_SPAWN: {
-   mon_id montype;
-   switch (rng(1, 4)) {
-    case 1: montype = mon_sewer_snake;  break;
-    case 2: montype = mon_centipede;    break;
-    case 3: montype = mon_dermatik;     break;
-    case 4: montype = mon_spider_widow; break;
-   }
-   monster spawned(mtype::types[montype]);
+   static constexpr const mon_id temple_spawn[] = { mon_sewer_snake, mon_centipede, mon_dermatik, mon_spider_widow };
+   monster spawned(mtype::types[temple_spawn[rng(0, (std::end(temple_spawn)-std::begin(temple_spawn)) - 1)]]);
    int tries = 0, x, y;
    do {
     x = rng(g->u.pos.x - 5, g->u.pos.x + 5);

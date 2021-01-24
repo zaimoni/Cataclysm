@@ -3,6 +3,7 @@
 #include "rng.h"
 #include "game.h"
 #include "recent_msg.h"
+#include "stl_typetraits_late.h"
 
 // \todo replace this with a reality_bubble version
 void trap_fully_triggered(map& m, const point& pt, const std::vector<item_drop_spec>& drop_these)
@@ -95,20 +96,9 @@ void trapfunc::crossbow(game *g, int x, int y)
  bool add_bolt = true;
  messages.add("You trigger a crossbow trap!");
  if (!one_in(4) && rng(8, 20) > g->u.dodge()) {
-  body_part hit;
-  switch (rng(1, 10)) {
-   case  1: hit = bp_feet; break;
-   case  2:
-   case  3:
-   case  4: hit = bp_legs; break;
-   case  5:
-   case  6:
-   case  7:
-   case  8:
-   case  9: hit = bp_torso; break;
-   case 10: hit = bp_head; break;
-  }
-  int side = rng(0, 1);
+  static constexpr const std::pair<body_part, int> bp_hit[] = { {bp_feet, 1}, {bp_legs, 3}, {bp_torso, 5}, {bp_head, 1} };
+  const body_part hit = use_rarity_table(rng(0, 9), std::begin(bp_hit), std::end(bp_hit));
+  const int side = rng(0, 1);
   messages.add("Your %s is hit!", body_part_name(hit, side));
   g->u.hit(g, hit, side, 0, rng(20, 30));
   add_bolt = !one_in(10);
@@ -136,20 +126,9 @@ void trapfunc::shotgun(game *g, int x, int y)
  auto& trap = g->m.tr_at(x, y);
  int shots = (tr_shotgun_1 != trap && (one_in(8) || one_in(20 - g->u.str_max))) ? 2 : 1;
  if (rng(5, 50) > g->u.dodge()) {
-  body_part hit;
-  switch (rng(1, 10)) {
-   case  1: hit = bp_feet; break;
-   case  2:
-   case  3:
-   case  4: hit = bp_legs; break;
-   case  5:
-   case  6:
-   case  7:
-   case  8:
-   case  9: hit = bp_torso; break;
-   case 10: hit = bp_head; break;
-  }
-  int side = rng(0, 1);
+  static constexpr const std::pair<body_part, int> bp_hit[] = { {bp_feet, 1}, {bp_legs, 3}, {bp_torso, 5}, {bp_head, 1} };
+  const body_part hit = use_rarity_table(rng(0, 9), std::begin(bp_hit), std::end(bp_hit));
+  const int side = rng(0, 1);
   messages.add("Your %s is hit!", body_part_name(hit, side));
   g->u.hit(g, hit, side, 0, rng(40 * shots, 60 * shots));
  } else
@@ -322,20 +301,9 @@ void trapfunc::pit_spikes(game *g, int x, int y)
  if (g->u.has_trait(PF_WINGS_BIRD)) messages.add("You flap your wings and flutter down gracefully.");
  else if (rng(5, 30) < g->u.dodge()) messages.add("You avoid the spikes within.");
  else {
-  body_part hit;
-  switch (rng(1, 10)) {
-   case  1:
-   case  2: hit = bp_legs; break;
-   case  3:
-   case  4: hit = bp_arms; break;
-   case  5:
-   case  6:
-   case  7:
-   case  8:
-   case  9:
-   case 10: hit = bp_torso; break;
-  }
-  int side = rng(0, 1);
+  static constexpr const std::pair<body_part, int> bp_hit[] = { {bp_legs, 2}, {bp_arms, 2}, {bp_torso, 6} };
+  const body_part hit = use_rarity_table(rng(0, 9), std::begin(bp_hit), std::end(bp_hit));
+  const int side = rng(0, 1);
   messages.add("The spikes impale your %s!", body_part_name(hit, side));
   g->u.hit(g, hit, side, 0, rng(20, 50));
   if (one_in(4)) {

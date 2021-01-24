@@ -207,7 +207,6 @@ void mattack::science(game *g, monster *z)	// I said SCIENCE again!
    if (const point pt(z->pos + delta); g->is_empty(pt)) free.push_back(pt);
  }
  std::vector<int> valid;// List of available attacks
- int index;
  if (dist == 1) valid.push_back(1);	// Shock
  if (dist <= 2) valid.push_back(2);	// Radiation
  if (!free.empty()) {
