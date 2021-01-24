@@ -2096,7 +2096,7 @@ int main(int argc, char *argv[])
 						if (auto primary = JSON_key((test->sk_primary))) table_row[2].append(html::tag::wrap(primary));
 						if (auto secondary = JSON_key((test->sk_secondary))) table_row[3].append(html::tag::wrap(secondary));
 						table_row[4].append(html::tag::wrap(std::to_string(test->difficulty)));
-						table_row[5].append(html::tag::wrap(std::to_string(test->time)));
+						table_row[5].append(html::tag::wrap("<nobr>" + test->time_desc() + "</nobr>"));
 						if (!test->tools.empty()) table_row[6].append(html::tag::wrap(to_s(test->tools)));
 						if (!test->components.empty()) table_row[7].append(html::tag::wrap(to_s(test->components)));
 					} else throw std::logic_error("unidentified crafting result");

@@ -43,6 +43,8 @@ struct recipe
  // could default everything, above, but that would allow even weirder initializations
  recipe() noexcept : recipe(0, itm_null, CC_NULL, sk_null, sk_null, 0, 0) {}
 
+ std::string time_desc() const;
+
  static void init();
 };
 

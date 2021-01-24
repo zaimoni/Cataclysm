@@ -626,3 +626,17 @@ recipes.push_back(new recipe(++id, itm_boobytrap, CC_MISC, sk_mechanics, sk_trap
   recipes.back()->components.push_back({ { itm_power_supply, 1 } });
   recipes.back()->components.push_back({ { itm_battery, 500 },{ itm_plut_cell, 1 } });
 }
+
+// general solution would hierarchically include hours, days, etc.
+static std::pair<int, const char*> time_scale(int mp)
+{
+	if (MINUTES(calendar::mp_turn) <= mp) return std::pair(mp / MINUTES(calendar::mp_turn), "minutes");
+	// default to turns
+	return std::pair(mp / calendar::mp_turn, "turns");
+}
+
+std::string recipe::time_desc() const
+{
+	const auto parsed = time_scale(time);
+	return std::to_string(parsed.first) + ' ' + parsed.second;
+}
