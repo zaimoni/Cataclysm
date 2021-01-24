@@ -6,7 +6,6 @@
 #include "inventory.h"
 #include "rng.h"
 #include "recent_msg.h"
-#include <sstream>
 
 static const int CRAFTING_WIN_HEIGHT = VIEW - TABBED_HEADER_HEIGHT;
 
@@ -111,11 +110,8 @@ void game::craft()
             if (charges <= 0 ? crafting_inv.has_amount(type, 1) : crafting_inv.has_charges(type, charges))
                 toolcol = c_green;
 
-            std::ostringstream toolinfo;
-            toolinfo << item::types[type]->name + " ";
-            if (charges > 0)
-                toolinfo << "(" << charges << " charges) ";
-            std::string toolname = toolinfo.str();
+            std::string toolname(item::types[type]->name);
+            if (0 < charges) toolname += " (" + std::to_string(charges) + " charges)";
             if (xpos + toolname.length() >= SCREEN_WIDTH) {
                 xpos = VBAR_X + 2;
                 ypos++;
@@ -140,8 +136,8 @@ void game::craft()
                    ypos++;
                    xpos = VBAR_X + 2;
                }
-               mvwprintz(w_data, ypos, xpos, c_white, "OR ");
-               xpos += 3;
+               mvwprintz(w_data, ypos, xpos, c_white, " OR ");
+               xpos += 4;
            }
 
            const int count = comp.count;
@@ -154,9 +150,8 @@ void game::craft()
            }
            else if (crafting_inv.has_amount(type, abs(count)))
                compcol = c_green;
-           std::ostringstream dump;
-           dump << abs(count) << "x " << i_type->name << " ";
-           std::string compname = dump.str();
+
+           std::string compname(std::to_string(abs(count)) + "x " + i_type->name);
            if (xpos + compname.length() >= SCREEN_WIDTH) {
                ypos++;
                xpos = VBAR_X + 2;
