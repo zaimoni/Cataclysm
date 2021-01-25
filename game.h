@@ -16,7 +16,10 @@
 #include <memory>
 #include <optional>
 
-static_assert(mobile::mp_turn == calendar::mp_turn); // this is a god header and has the required includes \todo better location for this reality check
+// this is a god header and has the required includes \todo better location for these reality checks
+static_assert(mobile::mp_turn == calendar::mp_turn);
+// daylight should view almost the entire reality bubble, at least until Earth's curvature matters
+static_assert(DAYLIGHT_LEVEL == (MAPSIZE / 2) * SEE);
 
 #define LONG_RANGE 10
 #define BLINK_SPEED 300

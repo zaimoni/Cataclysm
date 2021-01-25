@@ -40,10 +40,14 @@ constexpr int SUNSET_SUMMER   = 21;
 // How long, in minutes, does sunrise/sunset last?
 constexpr int TWILIGHT_MINUTES = 60;
 
-// How much light moon provides--double for full moon
-constexpr int MOONLIGHT_LEVEL = 4;
 // How much light is provided in full daylight
-constexpr int DAYLIGHT_LEVEL = 60;
+static constexpr const int DAYLIGHT_LEVEL = 60;
+
+// Moon's albedo is "just under 1/7" (0.139?)
+// How much light moon provides--double for full moon
+static constexpr const int MOONLIGHT_LEVEL = 4;
+static_assert(DAYLIGHT_LEVEL * 0.139 <= 2 * MOONLIGHT_LEVEL + 1);
+static_assert(DAYLIGHT_LEVEL * 0.139 >= 2 * MOONLIGHT_LEVEL - 1);
 
 enum moon_phase {
 	MOON_NEW = 0,

@@ -160,6 +160,7 @@ moon_phase calendar::moon() const
  return (MOON_FULL >= phase) ? moon_phase(phase) : moon_phase(2*MOON_FULL - phase);
 }
 
+// return value is last minute which is at just moonlight level
 calendar calendar::sunrise() const
 {
  int start_hour = 0, end_hour = 0;
@@ -192,6 +193,7 @@ calendar calendar::sunrise() const
  return ret;
 }
 
+// return value is last minute which is at just sunlight level
 calendar calendar::sunset() const
 {
  int start_hour = 0, end_hour = 0;
@@ -237,29 +239,24 @@ bool calendar::is_night() const
 
 int calendar::sunlight() const
 {
- calendar sunrise_time = sunrise(), sunset_time = sunset();
+ int mins = minutes_past_midnight();
+ int sunrise_mins = sunrise().minutes_past_midnight();
+ int sunset_mins = sunset().minutes_past_midnight();
 
- int mins = 0, sunrise_mins = 0, sunset_mins = 0;
- mins = minutes_past_midnight();
- sunrise_mins = sunrise_time.minutes_past_midnight();
- sunset_mins = sunset_time.minutes_past_midnight();
+ int moonlight = 1 + moon() * MOONLIGHT_LEVEL;
 
- int moonlight = 1 + int(moon()) * MOONLIGHT_LEVEL;
-
- if (mins > sunset_mins + TWILIGHT_MINUTES || mins < sunrise_mins) // Night
+ if (mins >= sunset_mins + TWILIGHT_MINUTES || mins <= sunrise_mins) // Night
   return moonlight;
 
- else if (mins >= sunrise_mins && mins <= sunrise_mins + TWILIGHT_MINUTES) {
+ else if (mins > sunrise_mins && mins < sunrise_mins + TWILIGHT_MINUTES) {
 
   double percent = double(mins - sunrise_mins) / TWILIGHT_MINUTES;
-  return int( double(moonlight)      * (1. - percent) +
-              double(DAYLIGHT_LEVEL) * percent         );
+  return int(moonlight * (1. - percent) + DAYLIGHT_LEVEL * percent);
 
- } else if (mins >= sunset_mins && mins <= sunset_mins + TWILIGHT_MINUTES) {
+ } else if (mins > sunset_mins && mins < sunset_mins + TWILIGHT_MINUTES) {
 
   double percent = double(mins - sunset_mins) / TWILIGHT_MINUTES;
-  return int( double(DAYLIGHT_LEVEL) * (1. - percent) +
-              double(moonlight)      * percent         );
+  return int(DAYLIGHT_LEVEL * (1. - percent) + moonlight * percent);
 
  } else
   return DAYLIGHT_LEVEL;

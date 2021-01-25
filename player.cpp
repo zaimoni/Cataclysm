@@ -2890,7 +2890,7 @@ int player::sight_range(int light_level) const
          ||   has_trait(PF_NIGHTVISION3))
          ret = 12;
      // Theoretically can push sight range over 12 i.e. be superior to 3rd level nightvision.
-     // Doesn't do that because the highest light level other than sunlight, is full moon which is 8.  2021-01-25 zaimoni
+     // Does do that because the highest light level other than sunlight, is full moon which is 9.  2021-01-25 zaimoni
      else if (has_trait(PF_NIGHTVISION2)) ret += 4;
      else if (has_trait(PF_NIGHTVISION))  ret += 1;
  }
