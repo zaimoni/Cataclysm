@@ -2871,20 +2871,32 @@ You can not activate %s!  To read a description of \
 
 int player::sight_range(int light_level) const
 {
+ // critical vision impairments.
+ if (has_disease(DI_BLIND)) return 0;
+ if (has_disease(DI_BOOMERED)) return 1;
+ if (has_disease(DI_IN_PIT)) return 1;
+
+ if (    underwater
+     && !has_bionic(bio_membrane)
+     && !has_trait(PF_MEMBRANE)
+     && !is_wearing(itm_goggles_swim))
+     return 1;
+
  int ret = light_level;
- if (((is_wearing(itm_goggles_nv) && has_active_item(itm_UPS_on)) ||
-     has_active_bionic(bio_night_vision)) &&
-     ret < 12)
-  ret = 12;
- if (has_trait(PF_NIGHTVISION) && ret < 12) ret += 1;
- if (has_trait(PF_NIGHTVISION2) && ret < 12) ret += 4;
- if (has_trait(PF_NIGHTVISION3) && ret < 12) ret = 12;
- if (underwater && !has_bionic(bio_membrane) && !has_trait(PF_MEMBRANE) &&
-     !is_wearing(itm_goggles_swim))
-  ret = 1;
- if (has_disease(DI_BOOMERED)) ret = 1;
- if (has_disease(DI_IN_PIT)) ret = 1;
- if (has_disease(DI_BLIND)) ret = 0;
+ if (12 > ret) { // night vision relevant
+     // the nightvision traits are configured to be mutually exclusive.
+     if (   ((is_wearing(itm_goggles_nv) && has_active_item(itm_UPS_on))
+         ||   has_active_bionic(bio_night_vision))
+         ||   has_trait(PF_NIGHTVISION3))
+         ret = 12;
+     // Theoretically can push sight range over 12 i.e. be superior to 3rd level nightvision.
+     // Doesn't do that because the highest light level other than sunlight, is full moon which is 8.  2021-01-25 zaimoni
+     else if (has_trait(PF_NIGHTVISION2)) ret += 4;
+     else if (has_trait(PF_NIGHTVISION))  ret += 1;
+ }
+ // check for near-sightedness
+ // \todo? what about presbyopia and far-sightedness?
+ // \todo? what about surgical correction for cataracts?  This can grant either near-sightedness or far-sightedness
  if (ret > 4 && has_trait(PF_MYOPIC) && !is_wearing(itm_glasses_eye) &&
      !is_wearing(itm_glasses_monocle))
   ret = 4;

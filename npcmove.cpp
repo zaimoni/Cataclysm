@@ -138,8 +138,7 @@ public:
 		auto g = game::active();
 		if (tar != actor.pos) {	// required for legality/performability
 			int linet;
-			const int light = g->light_level();
-			_trajectory = line_to(actor.pos, tar, (g->m.sees(actor.pos, tar, actor.sight_range(light), linet) ? linet : 0));
+			_trajectory = line_to(actor.pos, tar, (g->m.sees(actor.pos, tar, actor.sight_range(g->light_level()), linet) ? linet : 0));
 		}
 #ifndef NDEBUG
 		if (!IsLegal()) throw std::logic_error("unreasonable targeting");
@@ -1834,9 +1833,8 @@ int npc::can_look_for(const player& sought) const
 	int ret = 0;
 	// npc::pl is the point where we last saw the player
 	if (saw_player_recently() && g->m.sees(pos, pl.x, light)) ret += 1; // but nothing sets pl? 2019-11-19 zaimoni
-	const int range = sight_range(light);
 	// even if there are no possibilities in a detailed check, that counts as "possible"
-	if (!g->m.sees(pos, sought.pos, range)) ret += 2;
+	if (!g->m.sees(pos, sought.pos, sight_range(light))) ret += 2;
 	return ret;
 }
 
@@ -1847,7 +1845,6 @@ npc::ai_action npc::look_for_player(player& sought)
 	assert(1+2 >= code);
 
 	auto g = game::active();
-	const int light = g->light_level();
 
 	if (1 & code) {
 		// npc::pl is the point where we last saw the player
@@ -1857,7 +1854,7 @@ npc::ai_action npc::look_for_player(player& sought)
 
 	if (!(2 & code)) return ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
 
-	const int range = sight_range(light);
+	const int range = sight_range(g->light_level());
 	if (!path.empty() && !g->m.sees(pos, path.back(), range))
 		return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(*this, path.front(), "Look for player")));
 
