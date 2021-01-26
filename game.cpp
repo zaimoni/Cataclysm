@@ -1729,7 +1729,7 @@ bool game::event_queued(event_type type) const
 void game::debug()
 {
  int action = menu("Debug Functions - Using these is CHEATING!",
-                   "Wish for an item",       // 1
+                 { "Wish for an item",       // 1
                    "Teleport - Short Range", // 2
                    "Teleport - Long Range",  // 3
                    "Reveal map",             // 4
@@ -1743,8 +1743,7 @@ void game::debug()
                    "Learn all melee styles", // 12
                    "Check NPC",              // 13
                    "Spawn Artifact",         // 14
-                   "Cancel",                 // 15
-                   nullptr);
+                   "Cancel"});               // 15
  std::vector<std::string> opts;
  switch (action) {
   case 1:
@@ -3725,8 +3724,8 @@ void game::examine()
   }
  } else if (t_bulletin == exam_t) {
 // TODO: Bulletin Boards
-  switch (menu("Bulletin Board", "Check jobs", "Check events",
-               "Check other notices", "Post notice", "Cancel", nullptr)) {
+  switch (menu("Bulletin Board", { "Check jobs", "Check events",
+                  "Check other notices", "Post notice", "Cancel" })) {
    case 1:
     break;
    case 2:
@@ -5715,8 +5714,8 @@ void game::spawn_mon(int shiftx, int shifty)
 
 void game::wait()
 {
- int ch = menu("Wait for how long?", "5 Minutes", "30 Minutes", "1 hour",
-                "2 hours", "3 hours", "6 hours", "Exit", nullptr);
+ int ch = menu("Wait for how long?", { "5 Minutes", "30 Minutes", "1 hour",
+                   "2 hours", "3 hours", "6 hours", "Exit" });
  int time;
  switch (ch) {
   case 1: time = MINUTES(5) * 100; break;

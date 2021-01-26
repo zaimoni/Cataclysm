@@ -191,8 +191,7 @@ End of cheatery */
   static constexpr const itype_id ma_types[] = { itm_style_karate, itm_style_judo, itm_style_aikido, itm_style_tai_chi, itm_style_taekwando };
   itype_id ma_type;
   do {
-   int choice = menu("Pick your style:",
-                     "Karate", "Judo", "Aikido", "Tai Chi", "Taekwando", nullptr);
+   int choice = menu("Pick your style:", { "Karate", "Judo", "Aikido", "Tai Chi", "Taekwando"});
    ma_type = ma_types[choice - 1];
    item tmpitem = item(item::types[ma_type], 0);
    full_screen_popup(tmpitem.info(true).c_str());

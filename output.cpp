@@ -555,18 +555,9 @@ int menu_vec(const char* mes, const std::vector<std::string>& options)  // \todo
  return (res);
 }
 
-int menu(const char* mes, ...)
+int menu(const char* mes, const std::initializer_list<std::string>& opts)
 {
- va_list ap;
- va_start(ap, mes);
- std::vector<std::string> options;
- bool done = false;
- while (!done) {
-  char* tmp = va_arg(ap, char*);
-  if (tmp) options.push_back(std::string(tmp));
-  else done = true;
- }
- return (menu_vec(mes, options));
+ return (menu_vec(mes, opts));
 }
 
 void popup_top(const char* mes, ...)

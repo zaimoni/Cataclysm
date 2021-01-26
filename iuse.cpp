@@ -1246,17 +1246,13 @@ void iuse::geiger(game *g, player *p, item *it, bool t)
  }
 // Otherwise, we're activating the geiger counter
  const it_tool* const type = dynamic_cast<const it_tool*>(it->type);
- bool is_on = (type->id == itm_geiger_on);
- if (is_on) {
+ if (itm_geiger_on == type->id) {
   messages.add("The geiger counter's SCANNING LED flicks off.");
   it->make(item::types[itm_geiger_off]);
   it->active = false;
   return;
  }
- std::string toggle_text = "Turn continuous scan ";
- toggle_text += (is_on ? "off" : "on");
- int ch = menu("Geiger counter:", "Scan yourself", "Scan the ground",
-               toggle_text.c_str(), "Cancel", nullptr);
+ int ch = menu("Geiger counter:", { "Scan yourself", "Scan the ground", "Turn continuous scan on", "Cancel" });
  switch (ch) {
   case 1: messages.add("Your radiation level: %d", p->radiation); break;
   case 2: messages.add("The ground's radiation level: %d",

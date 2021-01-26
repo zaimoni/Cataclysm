@@ -4,6 +4,7 @@
 #include "color.h"
 #include <string>
 #include <vector>
+#include <initializer_list>
 
 //      LINE_NESW  - X for on, O for off
 #define LINE_XOXO 4194424
@@ -92,7 +93,7 @@ std::string string_input_popup(const char* mes, ...);
 std::string string_input_popup(int max_length, const char* mes, ...);
 char popup_getkey(const char* mes, ...);
 int  menu_vec(const char* mes, const std::vector<std::string>& options);
-int  menu(const char* mes, ...);
+int  menu(const char* mes, const std::initializer_list<std::string>& opts);
 void popup_top(const char* mes, ...); // Displayed at the top of the screen
 void popup(const char* mes, ...);
 void popup_nowait(const char* mes, ...); // Doesn't wait for spacebar
