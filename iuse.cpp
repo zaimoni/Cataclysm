@@ -2040,11 +2040,9 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
    mon_id bug = mon_null;
    int num = 0;
    std::vector<point> empty;
-   for (int x = p->pos.x - 1; x <= p->pos.x + 1; x++) {
-    for (int y = p->pos.y - 1; y <= p->pos.y + 1; y++) {
-     if (g->is_empty(x, y))
-      empty.push_back( point(x, y) );
-    }
+   for (decltype(auto) dir : Direction::vector) {
+       point pt(p->pos + dir);
+       if (g->is_empty(pt)) empty.push_back(pt);
    }
    if (empty.empty() || roll <= 4)
     messages.add("Flies buzz around you.");
