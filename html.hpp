@@ -130,6 +130,7 @@ public:
 	void start_print(const tag& src);
 	void start_print(tag&& src);
 	bool end_print(); // returns true iff no more tags to complete printing
+	void raw_copy(FILE* src);
 };
 
 }	// namespace html

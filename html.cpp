@@ -216,5 +216,13 @@ bool to_text::end_print() {
 	return !_stack.empty();
 }
 
+void to_text::raw_copy(FILE* src)
+{
+	int ch = fgetc(src);
+	while (EOF != ch) {
+		if (EOF == fputc(ch, dest)) break;
+	}
+}
+
 
 }	// namespace html

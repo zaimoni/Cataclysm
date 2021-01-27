@@ -211,6 +211,18 @@ static auto link_to(const std::string& src, const char* const page, const char* 
 	return ret;
 }
 
+static void inline_script(html::to_text& page, const char* const src)
+{
+	// wrapper for inline scripts
+	static const html::tag _script("script");
+	// would be better to punt to OS but we're in-progress
+	if (FILE* in = fopen(src, "r")) {
+		page.start_print(_script);
+		page.raw_copy(in);
+		page.end_print();
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	// these do not belong here
