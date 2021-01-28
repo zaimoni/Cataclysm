@@ -218,8 +218,8 @@ bool to_text::end_print() {
 
 void to_text::raw_copy(FILE* src)
 {
-	int ch = fgetc(src);
-	while (EOF != ch) {
+	int ch;
+	while (EOF != (ch = fgetc(src))) {
 		if (EOF == fputc(ch, dest)) break;
 	}
 }
