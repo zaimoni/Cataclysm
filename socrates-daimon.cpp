@@ -1800,6 +1800,7 @@ int main(int argc, char *argv[])
 		page.print(_head);
 		_title->clear();
 		page.start_print(_body);
+		inline_script(page, "data/js/ZQuery.js");
 		{
 		auto revert = swapDOM("#" TRAPS_ID "_link", global_nav, html::tag("b", TRAPS_LINK_NAME));
 		page.print(global_nav);
@@ -1870,6 +1871,7 @@ int main(int argc, char *argv[])
 				for (decltype(auto) tr : table_row) tr.clear();
 			}
 			}
+		inline_script(page, "data/js/colorize_landing.js");
 		while (page.end_print());
 		}
 
