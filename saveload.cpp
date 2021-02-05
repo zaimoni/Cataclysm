@@ -14,6 +14,7 @@
 #include "iuse.h"
 #else
 #include "mtype.h"
+#include "pldata.h"
 #endif
 #include "skill.h"
 #include "recent_msg.h"
@@ -251,8 +252,8 @@ bool fromJSON(const JSON& src, TYPE& dest)	\
 
 #ifndef SOCRATES_DAIMON
 JSON_ENUM(activity_type)
-JSON_ENUM(add_type)
 #endif
+JSON_ENUM(add_type)
 JSON_ENUM(ammotype)
 JSON_ENUM(art_charge)
 JSON_ENUM(art_effect_active)

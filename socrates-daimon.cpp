@@ -25,6 +25,7 @@ bool fromJSON(const JSON& _in, item& dest);
 JSON toJSON(const item& src);
 
 const char* JSON_key(material src);
+const char* JSON_key(add_type src);
 
 static void check_roundtrip_JSON(const item& src)
 {
@@ -1988,7 +1989,7 @@ int main(int argc, char *argv[])
 				while (0 < --ub) {
 					std::string what;
 					addiction test((add_type)ub);
-					tr_alias[0]->append(html::tag::wrap(addiction_name(test)));
+					tr_alias[0]->append(wrap_in_anchor(addiction_name(test), JSON_key((add_type)ub)));
 					tr_alias[1]->append(html::tag::wrap(addiction_text(test)));
 
 					size_t xref_ub = xref_addictions.size();

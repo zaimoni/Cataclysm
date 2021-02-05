@@ -1212,17 +1212,6 @@ static const char* const JSON_transcode_activity[] = {
 	"TRAIN"
 };
 
-static const char* const JSON_transcode_addiction[] = {
-	"CAFFEINE",
-	"ALCOHOL",
-	"SLEEP",
-	"PKILLER",
-	"SPEED",
-	"CIG",
-	"COKE",
-    "THC"
-};
-
 static const char* const JSON_transcode_disease[] = {
 	"GLARE",
 	"WET",
@@ -1520,7 +1509,6 @@ static const char* const JSON_transcode_pl_flags[] = {
 };
 
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(activity_type, JSON_transcode_activity)
-DEFINE_JSON_ENUM_SUPPORT_TYPICAL(add_type, JSON_transcode_addiction)
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(dis_type, JSON_transcode_disease)
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(hp_part, JSON_transcode_hp_parts)
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(morale_type, JSON_transcode_morale)

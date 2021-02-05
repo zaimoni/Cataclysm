@@ -2,6 +2,19 @@
 
 #include <sstream>
 
+static const char* const JSON_transcode_addiction[] = {
+    "CAFFEINE",
+    "ALCOHOL",
+    "SLEEP",
+    "PKILLER",
+    "SPEED",
+    "CIG",
+    "COKE",
+    "THC"
+};
+
+DEFINE_JSON_ENUM_SUPPORT_TYPICAL(add_type, JSON_transcode_addiction)
+
 // this file has to build without material changes for Socrates' Daimon, so no referring to the player class here until that builds for Socrates' Daimon.
 static stat_delta addict_linear_stat_step(const addiction& add)
 {
