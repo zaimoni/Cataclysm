@@ -931,6 +931,9 @@ int main(int argc, char *argv[])
 		name_desc.swap(discard);
 	}
 
+// duplicate definition, for hyperlinking
+#define ADDICTIONS_HTML "addictions.html"
+
 	// \todo need to document addictions related to these
 	if (!pharma.empty()) {
 		to_desc(pharma, name_desc, name_id);
@@ -977,7 +980,7 @@ int main(int argc, char *argv[])
 						tr_alias[1]->append(html::tag::wrap(x.second));
 						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) tr_alias[2]->append(html::tag::wrap(mat));
 						if (auto med = dynamic_cast<it_comest*>(item::types.at(name_id[x.first]))) {
-							if (auto add = addiction_target(med->add)) tr_alias[3]->append(html::tag::wrap(add));
+							if (auto add = addiction_target(med->add)) tr_alias[3]->append(link_to(add, ADDICTIONS_HTML, JSON_key(med->add)));
 						} else throw std::logic_error(name_id[x.first]+" not really consumable");
 						page.print(table_row);
 						for (decltype(auto) tr : tr_alias) tr->clear();
@@ -1956,6 +1959,7 @@ int main(int argc, char *argv[])
 			page.print(_head);
 			_title->clear();
 			page.start_print(_body);
+			inline_script(page, "data/js/ZQuery.js");
 			{
 				auto revert = swapDOM("#" ADDICTIONS_ID "_link", global_nav, html::tag("b", ADDICTIONS_LINK_NAME));
 				page.print(global_nav);
@@ -2006,6 +2010,7 @@ int main(int argc, char *argv[])
 					for (decltype(auto) tr : tr_alias) tr->clear();
 				}
 			}
+			inline_script(page, "data/js/colorize_landing.js");
 			while (page.end_print());
 		}
 
