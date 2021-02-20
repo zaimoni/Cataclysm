@@ -199,20 +199,11 @@ std::string item::info(bool showtext)
          " Moves per attack: " << attack_time() << "\n";
 
  if (is_food()) {
-  const it_comest* const food = dynamic_cast<const it_comest*>(type);
-  dump << " Nutrition: " << int(food->nutr) << "\n Quench: " <<
-          int(food->quench) << "\n Enjoyability: " << int(food->fun) <<
-          "\n Healthiness: " << int(food->healthy);
+  type->info(dump);
  } else if (is_food_container()) {
-  const it_comest* food = dynamic_cast<const it_comest*>(contents[0].type);
-  dump << " Nutrition: " << int(food->nutr) << "\n Quench: " <<
-          int(food->quench) << "\n Enjoyability: " << int(food->fun);
+  contents[0].type->info(dump);
  } else if (is_ammo()) {
-  const it_ammo* const ammo = dynamic_cast<const it_ammo*>(type);
-  dump << " Type: " << ammo_name(ammo->type) << "\n Damage: " <<
-           int(ammo->damage) << "\n Armor-pierce: " << int(ammo->pierce) <<
-           "\n Range: " << int(ammo->range) << "\n Accuracy: " <<
-           int(100 - ammo->accuracy) << "\n Recoil: " << int(ammo->recoil);
+  type->info(dump);
  } else if (is_gun()) {
   const it_gun* const gun = dynamic_cast<const it_gun*>(type);
   int ammo_dam = 0, ammo_recoil = 0;
@@ -263,21 +254,7 @@ std::string item::info(bool showtext)
   if (mod->used_on_smg) dump << "SMGs.  ";
   if (mod->used_on_rifle) dump << "Rifles.";
  } else if (is_armor()) {
-  const it_armor* armor = dynamic_cast<const it_armor*>(type);
-  dump << " Covers: ";
-  if (armor->covers & mfb(bp_head)) dump << "The head. ";
-  if (armor->covers & mfb(bp_eyes)) dump << "The eyes. ";
-  if (armor->covers & mfb(bp_mouth)) dump << "The mouth. ";
-  if (armor->covers & mfb(bp_torso)) dump << "The torso. ";
-  if (armor->covers & mfb(bp_hands)) dump << "The hands. ";
-  if (armor->covers & mfb(bp_legs)) dump << "The legs. ";
-  if (armor->covers & mfb(bp_feet)) dump << "The feet. ";
-  dump << "\n Encumberment: "			<< int(armor->encumber) <<
-          "\n Bashing protection: "		<< int(armor->dmg_resist) <<
-          "\n Cut protection: "			<< int(armor->cut_resist) <<
-          "\n Environmental protection: "	<< int(armor->env_resist) <<
-          "\n Warmth: "				<< int(armor->warmth) <<
-          "\n Storage: "			<< int(armor->storage);
+  type->info(dump);
  } else if (is_book()) {
   const it_book* const book = dynamic_cast<const it_book*>(type);
   if (book->type == sk_null) dump << " Just for fun.\n";

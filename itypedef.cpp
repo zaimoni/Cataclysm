@@ -4714,3 +4714,51 @@ it_artifact_armor::it_artifact_armor(int pid, unsigned int pprice, std::string p
 		pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags,
 		pcovers, pencumber, pdmg_resist, pcut_resist, penv_resist, pwarmth,
 		pstorage) { };
+
+// info text
+void it_comest::info(std::ostream& dest) const
+{
+	dest << " Nutrition: " << int(nutr) << "\n Quench: " << int(quench)
+		 << "\n Enjoyability: " << int(fun) << "\n Healthiness: " << int(healthy);
+}
+
+void it_ammo::info(std::ostream& dest) const
+{
+	dest << " Type: " << ammo_name(type) << "\n Damage: " << int(damage)
+		 << "\n Armor-pierce: " << int(pierce) << "\n Range: " << int(range)
+		 << "\n Accuracy: " << int(100 - accuracy) << "\n Recoil: " << int(recoil);
+}
+
+void it_armor::info(std::ostream& dest) const
+{
+	dest << " Covers: ";
+
+	size_t ub = 0;
+	const char* stack[num_bp];
+	if (covers & mfb(bp_head)) stack[ub++] = "head";
+	if (covers & mfb(bp_eyes)) stack[ub++] = "eyes";
+	if (covers & mfb(bp_mouth)) stack[ub++] = "mouth";
+	if (covers & mfb(bp_torso)) stack[ub++] = "torso";
+	if (covers & mfb(bp_hands)) stack[ub++] = "hands";
+	if (covers & mfb(bp_legs)) stack[ub++] = "legs";
+	if (covers & mfb(bp_feet)) stack[ub++] = "feet";
+	if (0 < ub) { // jewelry covers nothing
+		dest << "The ";
+		if (1 == ub) {
+			dest << stack[0];
+		} else {
+			decltype(ub) i = 0;
+			do {
+				dest << stack[i++] << ", ";
+			} while (i + 1 < ub);
+			dest << "and " << stack[i];
+		}
+		dest << ".";
+	}
+
+	dest << "\n Encumberment: " << int(encumber)
+		 << "\n Bashing protection: " << int(dmg_resist)
+		 << "\n Cut protection: " << int(cut_resist)
+		 << "\n Environmental protection: " << int(env_resist)
+		 << "\n Warmth: " << int(warmth) << "\n Storage: " << int(storage);
+}
