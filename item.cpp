@@ -199,28 +199,21 @@ std::string item::info(bool showtext)
          " Moves per attack: " << attack_time() << "\n";
 
  if (is_food()) {
-
   const it_comest* const food = dynamic_cast<const it_comest*>(type);
   dump << " Nutrition: " << int(food->nutr) << "\n Quench: " <<
           int(food->quench) << "\n Enjoyability: " << int(food->fun) <<
           "\n Healthiness: " << int(food->healthy);
-
  } else if (is_food_container()) {
-
   const it_comest* food = dynamic_cast<const it_comest*>(contents[0].type);
   dump << " Nutrition: " << int(food->nutr) << "\n Quench: " <<
           int(food->quench) << "\n Enjoyability: " << int(food->fun);
-
  } else if (is_ammo()) {
-
   const it_ammo* const ammo = dynamic_cast<const it_ammo*>(type);
   dump << " Type: " << ammo_name(ammo->type) << "\n Damage: " <<
            int(ammo->damage) << "\n Armor-pierce: " << int(ammo->pierce) <<
            "\n Range: " << int(ammo->range) << "\n Accuracy: " <<
            int(100 - ammo->accuracy) << "\n Recoil: " << int(ammo->recoil);
-
  } else if (is_gun()) {
-
   const it_gun* const gun = dynamic_cast<const it_gun*>(type);
   int ammo_dam = 0, ammo_recoil = 0;
   bool has_ammo = (curammo != nullptr && charges > 0);
@@ -247,30 +240,29 @@ std::string item::info(bool showtext)
   dump << "\n Reload time: " << int(gun->reload_time);
   if (has_flag(IF_RELOAD_ONE)) dump << " per round";
 
-  if (burst_size() == 0) {
-   if (gun->skill_used == sk_pistol && has_flag(IF_RELOAD_ONE)) dump << "\n Revolver.";
-   else dump << "\n Semi-automatic.";
-  } else dump << "\n Burst size: " << burst_size();
-  if (contents.size() > 0) dump << "\n";
-  for(const auto& it : contents) dump << "\n+" << it.tname();
-
+  if (const int burst_s = burst_size()) dump << "\n Burst size: " << burst_s;
+  else {
+      if (gun->skill_used == sk_pistol && has_flag(IF_RELOAD_ONE)) dump << "\n Revolver.";
+      else dump << "\n Semi-automatic.";
+  }
+  if (!contents.empty()) {
+      dump << "\n";
+      for (const auto& it : contents) dump << "\n+" << it.tname();
+  }
  } else if (is_gunmod()) {
-
   const it_gunmod* const mod = dynamic_cast<const it_gunmod*>(type);
   if (mod->accuracy != 0) dump << " Accuracy: " << (mod->accuracy > 0 ? "+" : "") << int(mod->accuracy);
   if (mod->damage != 0) dump << "\n Damage: " << (mod->damage > 0 ? "+" : "") << int(mod->damage);
-  if (mod->clip != 0) dump << "\n Clip: " << (mod->clip > 0 ? "+" : "") << int(mod->damage) << "%";
+  if (mod->clip != 0) dump << "\n Clip: " << (mod->clip > 0 ? "+" : "") << int(mod->clip) << "%";
   if (mod->recoil != 0) dump << "\n Recoil: " << int(mod->recoil);
-  if (mod->burst != 0) dump << "\n Burst: " << (mod->clip > 0 ? "+" : "") << int(mod->clip);
+  if (mod->burst != 0) dump << "\n Burst: " << (mod->burst > 0 ? "+" : "") << int(mod->burst);
   if (mod->newtype != AT_NULL) dump << "\n " << ammo_name(mod->newtype);
   dump << "\n Used on: ";
   if (mod->used_on_pistol) dump << "Pistols.  ";
   if (mod->used_on_shotgun) dump << "Shotguns.  ";
   if (mod->used_on_smg) dump << "SMGs.  ";
   if (mod->used_on_rifle) dump << "Rifles.";
-
  } else if (is_armor()) {
-
   const it_armor* armor = dynamic_cast<const it_armor*>(type);
   dump << " Covers: ";
   if (armor->covers & mfb(bp_head)) dump << "The head. ";
@@ -286,9 +278,7 @@ std::string item::info(bool showtext)
           "\n Environmental protection: "	<< int(armor->env_resist) <<
           "\n Warmth: "				<< int(armor->warmth) <<
           "\n Storage: "			<< int(armor->storage);
-
  } else if (is_book()) {
-
   const it_book* const book = dynamic_cast<const it_book*>(type);
   if (book->type == sk_null) dump << " Just for fun.\n";
   else {
@@ -304,29 +294,22 @@ std::string item::info(bool showtext)
    dump << " Reading this book affects your morale by " <<
            (book->fun > 0 ? "+" : "") << int(book->fun) << std::endl;
   dump << " This book takes " << int(book->time) << " minutes to read.";
-
  } else if (is_tool()) {
-
   const it_tool* const tool = dynamic_cast<const it_tool*>(type);
   dump << " Maximum " << tool->max_charges << " charges";
   if (tool->ammo == AT_NULL) dump << ".";
   else dump << " of " << ammo_name(tool->ammo) << ".";
-
  } else if (is_style()) {
-
   dump << "\n";
   for(const auto& m : dynamic_cast<const it_style*>(type)->moves) {
    dump << " " << default_technique_name(m.tech) << ". Requires Unarmed Skill of " << m.level << "\n";
   }
-
  } else if (type->techniques != 0) {
-
   dump << "\n";
   for (int i = 1; i < NUM_TECHNIQUES; i++) {
    if (type->techniques & mfb(i))
     dump << " " << default_technique_name( technique_id(i) ) << "; ";
   }
-
  }
 
  if (showtext) {
