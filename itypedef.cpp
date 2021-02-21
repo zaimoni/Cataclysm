@@ -4434,6 +4434,31 @@ itype_id default_ammo(ammotype guntype)
  return itm_null;
 }
 
+std::string default_technique_name(technique_id tech)
+{
+	switch (tech) {
+	case TEC_SWEEP: return "Sweep attack";
+	case TEC_PRECISE: return "Precision attack";
+	case TEC_BRUTAL: return "Knock-back attack";
+	case TEC_GRAB: return "Grab";
+	case TEC_WIDE: return "Hit all adjacent monsters";
+	case TEC_RAPID: return "Rapid attack";
+	case TEC_FEINT: return "Feint";
+	case TEC_THROW: return "Throw";
+	case TEC_BLOCK: return "Block";
+	case TEC_BLOCK_LEGS: return "Leg block";
+	case TEC_WBLOCK_1: return "Weak block";
+	case TEC_WBLOCK_2: return "Parry";
+	case TEC_WBLOCK_3: return "Shield";
+	case TEC_COUNTER: return "Counter-attack";
+	case TEC_BREAK: return "Grab break";
+	case TEC_DISARM: return "Disarm";
+	case TEC_DEF_THROW: return "Defensive throw";
+	case TEC_DEF_DISARM: return "Defense disarm";
+	default: return "A BUG!";
+	}
+}
+
 // itype-related implementation
 itype::itype()	// result is a proper null type
 : id(0),rarity(0),price(0),name("none"),sym('#'),color(c_white),m1(MNULL),m2(MNULL),volume(0),weight(0),
@@ -4716,6 +4741,13 @@ it_artifact_armor::it_artifact_armor(int pid, unsigned int pprice, std::string p
 		pstorage) { };
 
 // info text
+std::string itype::force_sign(int src)
+{
+	std::string ret = std::to_string(src);
+	if (0 < src) return "+"+ret;
+	return ret;
+}
+
 void it_comest::info(std::ostream& dest) const
 {
 	dest << " Nutrition: " << int(nutr) << "\n Quench: " << int(quench)
@@ -4727,6 +4759,21 @@ void it_ammo::info(std::ostream& dest) const
 	dest << " Type: " << ammo_name(type) << "\n Damage: " << int(damage)
 		 << "\n Armor-pierce: " << int(pierce) << "\n Range: " << int(range)
 		 << "\n Accuracy: " << int(100 - accuracy) << "\n Recoil: " << int(recoil);
+}
+
+void it_gunmod::info(std::ostream& dest) const
+{
+	if (accuracy != 0) dest << " Accuracy: " << force_sign(accuracy);
+	if (damage != 0) dest << "\n Damage: " << force_sign(damage);
+	if (clip != 0) dest << "\n Clip: " << force_sign(clip) << "%";
+	if (recoil != 0) dest << "\n Recoil: " << int(recoil);
+	if (burst != 0) dest << "\n Burst: " << force_sign(burst);
+	if (newtype) dest << "\n " << ammo_name(newtype);
+	dest << "\n Used on: ";
+	if (used_on_pistol) dest << "Pistols.  ";
+	if (used_on_shotgun) dest << "Shotguns.  ";
+	if (used_on_smg) dest << "SMGs.  ";
+	if (used_on_rifle) dest << "Rifles.";
 }
 
 void it_armor::info(std::ostream& dest) const
@@ -4761,4 +4808,33 @@ void it_armor::info(std::ostream& dest) const
 		 << "\n Cut protection: " << int(cut_resist)
 		 << "\n Environmental protection: " << int(env_resist)
 		 << "\n Warmth: " << int(warmth) << "\n Storage: " << int(storage);
+}
+
+void it_book::info(std::ostream& dest) const
+{
+	if (!type) dest << " Just for fun.\n";
+	else {
+		const auto sk_name = skill_name(type);
+		dest << " Can bring your " << sk_name << " skill to " << int(level) << std::endl;
+		if (req == 0) dest << " It can be understood by beginners.\n";
+		else dest << " Requires " << sk_name << " level " << int(req) << " to understand.\n";
+	}
+	dest << " Requires intelligence of " << int(intel) << std::endl;
+	if (fun != 0) dest << " Reading this book affects your morale by " << force_sign(fun) << std::endl;
+	dest << " This book takes " << int(time) << " minutes to read.";
+}
+
+void it_tool::info(std::ostream& dest) const
+{
+	dest << " Maximum " << max_charges << " charges";
+	if (ammo) dest << " of " << ammo_name(ammo);
+	dest << ".";
+}
+
+void it_style::info(std::ostream& dest) const
+{
+	dest << "\n";
+	for (const auto& m : moves) {
+		dest << " " << default_technique_name(m.tech) << ". Requires Unarmed Skill of " << m.level << "\n";
+	}
 }

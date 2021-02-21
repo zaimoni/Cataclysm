@@ -15,7 +15,7 @@
 // #define ITEM_CONSTRUCTOR_INVARIANTS 1
 #endif
 
-std::string default_technique_name(technique_id tech);
+std::string default_technique_name(technique_id tech); // itypedef.cpp
 
 #ifdef ITEM_CONSTRUCTOR_INVARIANTS
 #include "json.h"
@@ -193,9 +193,8 @@ std::string item::info(bool showtext)
  std::ostringstream dump;
  dump << " Volume: " << volume() << "    Weight: " << weight() << "\n" <<
          " Bash: " << int(type->melee_dam) <<
-         (has_flag(IF_SPEAR) ? "  Pierce: " : "  Cut: ") <<
-         int(type->melee_cut) << "  To-hit bonus: " <<
-         (type->m_to_hit > 0 ? "+" : "" ) << int(type->m_to_hit) << "\n" <<
+         (has_flag(IF_SPEAR) ? "  Pierce: " : "  Cut: ") << int(type->melee_cut) <<
+         "  To-hit bonus: " << itype::force_sign(type->m_to_hit) << "\n" <<
          " Moves per attack: " << attack_time() << "\n";
 
  if (is_food()) {
@@ -218,14 +217,14 @@ std::string item::info(bool showtext)
 
   dump << "\n Damage: ";
   if (has_ammo) dump << ammo_dam;
-  dump << (gun_damage(false) >= 0 ? "+" : "" ) << gun_damage(false);
+  dump << itype::force_sign(gun_damage(false));
   if (has_ammo) dump << " = " << gun_damage();
 
   dump << "\n Accuracy: " << int(100 - accuracy());
 
   dump << "\n Recoil: ";
   if (has_ammo) dump << ammo_recoil;
-  dump << (recoil(false) >= 0 ? "+" : "" ) << recoil(false);
+  dump << itype::force_sign(recoil(false));
   if (has_ammo) dump << " = " << recoil();
 
   dump << "\n Reload time: " << int(gun->reload_time);
@@ -241,46 +240,15 @@ std::string item::info(bool showtext)
       for (const auto& it : contents) dump << "\n+" << it.tname();
   }
  } else if (is_gunmod()) {
-  const it_gunmod* const mod = dynamic_cast<const it_gunmod*>(type);
-  if (mod->accuracy != 0) dump << " Accuracy: " << (mod->accuracy > 0 ? "+" : "") << int(mod->accuracy);
-  if (mod->damage != 0) dump << "\n Damage: " << (mod->damage > 0 ? "+" : "") << int(mod->damage);
-  if (mod->clip != 0) dump << "\n Clip: " << (mod->clip > 0 ? "+" : "") << int(mod->clip) << "%";
-  if (mod->recoil != 0) dump << "\n Recoil: " << int(mod->recoil);
-  if (mod->burst != 0) dump << "\n Burst: " << (mod->burst > 0 ? "+" : "") << int(mod->burst);
-  if (mod->newtype != AT_NULL) dump << "\n " << ammo_name(mod->newtype);
-  dump << "\n Used on: ";
-  if (mod->used_on_pistol) dump << "Pistols.  ";
-  if (mod->used_on_shotgun) dump << "Shotguns.  ";
-  if (mod->used_on_smg) dump << "SMGs.  ";
-  if (mod->used_on_rifle) dump << "Rifles.";
+  type->info(dump);
  } else if (is_armor()) {
   type->info(dump);
  } else if (is_book()) {
-  const it_book* const book = dynamic_cast<const it_book*>(type);
-  if (book->type == sk_null) dump << " Just for fun.\n";
-  else {
-   dump << " Can bring your " << skill_name(book->type) << " skill to " <<
-           int(book->level) << std::endl;
-   if (book->req == 0) dump << " It can be understood by beginners.\n";
-   else
-    dump << " Requires " << skill_name(book->type) << " level " <<
-            int(book->req) << " to understand.\n";
-  }
-  dump << " Requires intelligence of " << int(book->intel) << std::endl;
-  if (book->fun != 0)
-   dump << " Reading this book affects your morale by " <<
-           (book->fun > 0 ? "+" : "") << int(book->fun) << std::endl;
-  dump << " This book takes " << int(book->time) << " minutes to read.";
+  type->info(dump);
  } else if (is_tool()) {
-  const it_tool* const tool = dynamic_cast<const it_tool*>(type);
-  dump << " Maximum " << tool->max_charges << " charges";
-  if (tool->ammo == AT_NULL) dump << ".";
-  else dump << " of " << ammo_name(tool->ammo) << ".";
+  type->info(dump);
  } else if (is_style()) {
-  dump << "\n";
-  for(const auto& m : dynamic_cast<const it_style*>(type)->moves) {
-   dump << " " << default_technique_name(m.tech) << ". Requires Unarmed Skill of " << m.level << "\n";
-  }
+  type->info(dump);
  } else if (type->techniques != 0) {
   dump << "\n";
   for (int i = 1; i < NUM_TECHNIQUES; i++) {
@@ -291,10 +259,9 @@ std::string item::info(bool showtext)
 
  if (showtext) {
   dump << "\n\n" << type->description << "\n";
-  if (contents.size() > 0) {
+  if (!contents.empty()) {
    if (is_gun()) {
-    for (int i = 0; i < contents.size(); i++)
-     dump << "\n " << contents[i].type->description;
+    for(const auto& it : contents) dump << "\n " << it.type->description;
    } else
     dump << "\n " << contents[0].type->description;
    dump << "\n";
@@ -988,30 +955,4 @@ bool item::burn(int amount)
 {
  burnt += amount;
  return (burnt >= volume() * 3);
-}
-
-std::string default_technique_name(technique_id tech)
-{
- switch (tech) {
-  case TEC_SWEEP: return "Sweep attack";
-  case TEC_PRECISE: return "Precision attack";
-  case TEC_BRUTAL: return "Knock-back attack";
-  case TEC_GRAB: return "Grab";
-  case TEC_WIDE: return "Hit all adjacent monsters";
-  case TEC_RAPID: return "Rapid attack";
-  case TEC_FEINT: return "Feint";
-  case TEC_THROW: return "Throw";
-  case TEC_BLOCK: return "Block";
-  case TEC_BLOCK_LEGS: return "Leg block";
-  case TEC_WBLOCK_1: return "Weak block";
-  case TEC_WBLOCK_2: return "Parry";
-  case TEC_WBLOCK_3: return "Shield";
-  case TEC_COUNTER: return "Counter-attack";
-  case TEC_BREAK: return "Grab break";
-  case TEC_DISARM: return "Disarm";
-  case TEC_DEF_THROW: return "Defensive throw";
-  case TEC_DEF_DISARM: return "Defense disarm";
-  default: return "A BUG!";
- }
- return "A BUG!";
 }

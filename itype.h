@@ -388,6 +388,7 @@ struct itype
  virtual bool expires() const { return false; } // does it expire? C:Whales comestibles, but things like Zylon also expire
  virtual bool is_expired(int age) const { return false; }
 
+ static std::string force_sign(int src);
  virtual void info(std::ostream& dest) const {}
 protected:	// this is not a final type so these aren't public
  itype(const cataclysm::JSON& src);
@@ -514,8 +515,9 @@ struct it_gunmod : public itype
 	 bool shotgun, bool smg, bool rifle);
 
  bool is_gunmod() const override { return true; }
-};
 
+ void info(std::ostream& dest) const override;
+};
 
 struct it_armor : public itype
 {
@@ -569,7 +571,9 @@ struct it_book : public itype
 	 signed char pfun, unsigned char pintel, unsigned char ptime);
 
  bool is_book() const override { return true; }
-}; 
+
+ void info(std::ostream& dest) const override;
+};
  
 enum container_flags {
  con_rigid,
@@ -624,6 +628,8 @@ struct it_tool : public itype
  );
 
  bool is_tool() const override { return true; }
+
+ void info(std::ostream& dest) const override;
 protected:	// this is not a final type so these aren't public
 	it_tool(const cataclysm::JSON& src);
 	void toJSON(cataclysm::JSON& dest) const override;
@@ -690,6 +696,8 @@ struct it_style : public itype
  bool is_style() const override { return true; }
 
  int melee_value(const int skills[num_skill_types]) const override;
+
+ void info(std::ostream& dest) const override;
 };
 
 struct it_artifact_tool final : public it_tool
