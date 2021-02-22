@@ -2058,7 +2058,8 @@ int main(int argc, char *argv[])
 				size_t ub = num_skill_types;
 				while (0 < --ub) {
 					skill test((skill)ub);
-					tr_alias[0]->append(html::tag::wrap(skill_name(test)));
+					const auto sk_name = skill_name(test);
+					tr_alias[0]->append(wrap_in_anchor(sk_name, html::encode_id(sk_name).c_str()));
 					tr_alias[1]->append(html::tag::wrap(skill_description(test)));
 
 					page.print(table_row);

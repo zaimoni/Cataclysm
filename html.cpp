@@ -3,7 +3,7 @@
 
 namespace html {
 
-// no constexpr std::string constructors available in C++17
+// C++20: constexpr std::string constructors
 static const std::string start_opening_tag("<");
 static const std::string start_closing_tag("</");
 static const std::string end_tag(">");
@@ -224,5 +224,36 @@ void to_text::raw_copy(FILE* src)
 	}
 }
 
+static bool id_identity_char(unsigned char src)
+{
+	if ('-' == src) return true;
+	return isalnum(src);
+}
+
+std::string encode_id(const char* src)
+{
+	static_assert(16 * 16 > (unsigned char)(-1)); // check for needing more cases (grossly non-POSIX systems e.g. PDP-11).  EBCDIC would pass this.
+	static constexpr const char* hex_string = "0123456789ABCDEF";
+	std::string ret;
+	if (!src) return ret;
+	size_t i = 0;
+	while (unsigned char ch = src[i++]) {
+		if (id_identity_char(ch)) {
+			ret += ch;
+			continue;
+		}
+		if ('_' == ch) {
+			ret += "__";
+			continue;
+		}
+		// proper unicode:
+		// * _u for page 0
+		// * _U for astral characters
+		ret += "_x";
+		ret += hex_string[ch / 16];
+		ret += hex_string[ch % 16];
+	}
+	return ret;
+}
 
 }	// namespace html

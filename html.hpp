@@ -133,6 +133,8 @@ public:
 	void raw_copy(FILE* src);
 };
 
+std::string encode_id(const char* src);
+
 }	// namespace html
 
 #endif
