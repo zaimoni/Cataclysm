@@ -25,4 +25,11 @@ DECLARE_JSON_ENUM_SUPPORT(skill)
 
 const char* skill_name(skill);
 const char* skill_description(skill);
+
+#ifndef SOCRATES_DAIMON
+inline std::string skill_link(skill sk) { return skill_name(sk); }
+#else
+std::string skill_link(skill sk);
+#endif
+
 #endif

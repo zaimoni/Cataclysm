@@ -212,7 +212,7 @@ std::string item::info(bool showtext)
    ammo_recoil = curammo->recoil;
   }
    
-  dump << " Skill used: " << skill_name(gun->skill_used) << "\n Ammunition: " <<
+  dump << " Skill used: " << skill_link(gun->skill_used) << "\n Ammunition: " <<
           clip_size() << " rounds of " << ammo_name(ammo_type());
 
   dump << "\n Damage: ";

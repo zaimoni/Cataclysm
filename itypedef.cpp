@@ -4814,7 +4814,7 @@ void it_book::info(std::ostream& dest) const
 {
 	if (!type) dest << " Just for fun.\n";
 	else {
-		const auto sk_name = skill_name(type);
+		const auto sk_name = skill_link(type);
 		dest << " Can bring your " << sk_name << " skill to " << int(level) << std::endl;
 		if (req == 0) dest << " It can be understood by beginners.\n";
 		else dest << " Requires " << sk_name << " level " << int(req) << " to understand.\n";

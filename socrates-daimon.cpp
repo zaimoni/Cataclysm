@@ -224,6 +224,15 @@ static void inline_script(html::to_text& page, const char* const src)
 	}
 }
 
+// rely on redefinition being an error
+#define SKILLS_HTML "skills.html"
+
+std::string skill_link(skill sk)
+{
+	const auto sk_name = skill_name(sk);
+	return link_to(sk_name, SKILLS_HTML, html::encode_id(sk_name).c_str()).to_s();
+}
+
 int main(int argc, char *argv[])
 {
 	// these do not belong here
@@ -2030,6 +2039,7 @@ int main(int argc, char *argv[])
 			page.print(_head);
 			_title->clear();
 			page.start_print(_body);
+			inline_script(page, "data/js/ZQuery.js");
 			{
 				auto revert = swapDOM("#" SKILLS_ID "_link", global_nav, html::tag("b", SKILLS_LINK_NAME));
 				page.print(global_nav);
@@ -2066,6 +2076,7 @@ int main(int argc, char *argv[])
 					for (decltype(auto) tr : tr_alias) tr->clear();
 				}
 			}
+			inline_script(page, "data/js/colorize_landing.js");
 			while (page.end_print());
 		}
 
