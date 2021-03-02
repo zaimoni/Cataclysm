@@ -2291,7 +2291,7 @@ void map::spawn_monsters(game *g)
      tmp.spawnmap.y = g->lev.y + gy;
      tmp.faction_id = grid[n]->spawns[i].faction_id;
      tmp.mission_id = grid[n]->spawns[i].mission_id;
-     if (grid[n]->spawns[i].name != "NONE") tmp.unique_name = grid[n]->spawns[i].name;
+     if (!grid[n]->spawns[i]._name.empty()) tmp.unique_name = grid[n]->spawns[i]._name;
      if (grid[n]->spawns[i].friendly) tmp.friendly = -1;
      int fx = m.x + gx * SEEX, fy = m.y + gy * SEEY;
 

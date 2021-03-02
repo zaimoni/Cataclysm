@@ -5814,7 +5814,7 @@ void submap::add_spawn(mon_id type, int count, const point& pt, bool friendly, i
         debuglog("Bad add_spawn(%d, %d, %d, %d)", type, count, pt.x, pt.y);
         return;
     }
-    spawns.push_back(spawn_point(type, count, pt.x, pt.y, faction_id, mission_id, friendly, name));
+    spawns.emplace_back(type, count, pt.x, pt.y, faction_id, mission_id, friendly, name);
 }
 
 void map::add_spawn(mon_id type, int count, int x, int y, bool friendly,
@@ -5828,7 +5828,7 @@ void map::add_spawn(mon_id type, int count, int x, int y, bool friendly,
  int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
  x %= SEEX;
  y %= SEEY;
- grid[nonant]->spawns.push_back(spawn_point(type, count, x, y, faction_id, mission_id, friendly, name));
+ grid[nonant]->spawns.emplace_back(type, count, x, y, faction_id, mission_id, friendly, name);
 }
 
 void submap::add_spawn(const monster& mon)

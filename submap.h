@@ -14,12 +14,10 @@ struct spawn_point {
     int faction_id;
     int mission_id;
     bool friendly;
-    std::string name;
-    spawn_point(mon_id T = mon_null, int C = 0, int X = -1, int Y = -1,
-        int FAC = -1, int MIS = -1, bool F = false,
-        std::string N = "NONE") :
-        pos(X, Y), count(C), type(T), faction_id(FAC),
-        mission_id(MIS), friendly(F), name(N) {}
+    std::string _name;
+    spawn_point(mon_id T, int C, int X, int Y, int FAC, int MIS, bool F, const std::string& N)
+    : pos(X, Y), count(C), type(T), faction_id(FAC), mission_id(MIS), friendly(F), _name(N) {}
+    spawn_point() noexcept : pos(-1,-1), count(0), type(mon_null),faction_id(-1),mission_id(-1),friendly(false) {}
     spawn_point(const spawn_point& src) = default;
     spawn_point(spawn_point&& src) = default;
     ~spawn_point() = default;

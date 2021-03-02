@@ -794,7 +794,11 @@ JSON toJSON(const player_activity& src)
 bool fromJSON(const JSON& _in, spawn_point& dest)
 {
 	if (!_in.has_key("type") || !fromJSON(_in["type"], dest.type)) return true;
-	if (_in.has_key("name")) fromJSON(_in["name"], dest.name);
+	if (_in.has_key("name")) {
+		// V 0.2.5- defaulted to NONE
+		fromJSON(_in["name"], dest._name);
+		if (dest._name == "NONE") decltype(dest._name)().swap(dest._name); // V 0.3.1+ : remove this normalizer
+	}
 	if (_in.has_key("count")) fromJSON(_in["count"], dest.count);
 	if (_in.has_key("pos")) fromJSON(_in["pos"], dest.pos);
 	if (_in.has_key("faction_id")) loadFactionID(_in["faction_id"], dest.faction_id);
@@ -808,7 +812,7 @@ JSON toJSON(const spawn_point& src)
 	JSON _spawn(JSON::object);
 	if (const auto json = JSON_key(src.type)) {
 		_spawn.set("type", json);
-		_spawn.set("name", src.name);
+		if (!src._name.empty()) _spawn.set("name", src._name);
 		if (0 != src.count) _spawn.set("count", std::to_string(src.count));
 		if (point(-1, -1) != src.pos) _spawn.set("pos", toJSON(src.pos));
 		if (0 <= src.faction_id) _spawn.set("faction_id", std::to_string(src.faction_id));
