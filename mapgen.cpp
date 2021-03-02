@@ -5818,7 +5818,7 @@ void submap::add_spawn(mon_id type, int count, const point& pt, bool friendly, i
 }
 
 void map::add_spawn(mon_id type, int count, int x, int y, bool friendly,
-                    int faction_id, int mission_id, std::string name)
+                    int mission_id, std::string name, int faction_id)
 {
  if (!inbounds(x, y)) {
   debugmsg("Bad add_spawn(%d, %d, %d, %d)", type, count, x, y);
@@ -5833,8 +5833,7 @@ void map::add_spawn(mon_id type, int count, int x, int y, bool friendly,
 
 void submap::add_spawn(const monster& mon)
 {
-    std::string spawnname = (mon.unique_name.empty() ? "NONE" : mon.unique_name);
-    add_spawn(mon_id(mon.type->id), 1, mon.GPSpos.second, (mon.friendly < 0), mon.faction_id, mon.mission_id, spawnname);
+    add_spawn(mon_id(mon.type->id), 1, mon.GPSpos.second, (mon.friendly < 0), mon.faction_id, mon.mission_id, mon.unique_name);
 }
 
 vehicle* map::add_vehicle(vhtype_id type, point pos, int deg)

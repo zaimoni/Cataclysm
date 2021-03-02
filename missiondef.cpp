@@ -91,7 +91,7 @@ void mission_start::place_dog(game *g, mission *miss)
 
 	tinymap doghouse;
 	doghouse.load(miss->target);
-	doghouse.add_spawn(mon_dog, 1, SEEX, SEEY, true, -1, miss->uid);
+	doghouse.add_spawn(mon_dog, 1, SEEX, SEEY, true, miss->uid);
 	doghouse.save(miss->target, int(messages.turn));
 }
 
@@ -109,7 +109,7 @@ void mission_start::place_zombie_mom(game *g, mission *miss)
 
 	tinymap zomhouse;
 	zomhouse.load(miss->target);
-	zomhouse.add_spawn(mon_zombie, 1, SEEX, SEEY, false, -1, miss->uid, random_first_name(false));
+	zomhouse.add_spawn(mon_zombie, 1, SEEX, SEEY, false, miss->uid, random_first_name(false));
 	zomhouse.save(miss->target, int(messages.turn));
 }
 

@@ -283,8 +283,8 @@ class map
 // put_items_from puts exactly num items, based on chances
  void put_items_from(items_location loc, int num, int x, int y, int turn = 0);
  void add_spawn(mon_id type, int count, int x, int y, bool friendly = false,
-                int faction_id = -1, int mission_id = -1,
-                std::string name = "NONE");
+                int mission_id = -1, std::string name = std::string(),
+                int faction_id = -1);
  void create_anomaly(int cx, int cy, artifact_natural_property prop);
  vehicle* add_vehicle(vhtype_id type, point pos, int deg);
  computer* add_computer(int x, int y, std::string name, int security);
