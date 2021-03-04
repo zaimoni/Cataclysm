@@ -2279,35 +2279,35 @@ void map::copy_grid(int to, int from)
 
 void map::spawn_monsters(game *g)
 {
- for (int gx = 0; gx < my_MAPSIZE; gx++) {
-  for (int gy = 0; gy < my_MAPSIZE; gy++) {
-   int n = gx + gy * my_MAPSIZE;
-   for (int i = 0; i < grid[n]->spawns.size(); i++) {
-    for (int j = 0; j < grid[n]->spawns[i].count; j++) {
-     int tries = 0;
-	 point m(grid[n]->spawns[i].pos);
-     monster tmp(mtype::types[grid[n]->spawns[i].type]);
-     tmp.spawnmap.x = g->lev.x + gx;
-     tmp.spawnmap.y = g->lev.y + gy;
-     tmp.faction_id = grid[n]->spawns[i].faction_id;
-     tmp.mission_id = grid[n]->spawns[i].mission_id;
-     if (!grid[n]->spawns[i]._name.empty()) tmp.unique_name = grid[n]->spawns[i]._name;
-     if (grid[n]->spawns[i].friendly) tmp.friendly = -1;
-     int fx = m.x + gx * SEEX, fy = m.y + gy * SEEY;
+ static constexpr const zaimoni::gdi::box<point> spawn_scatter = zaimoni::gdi::box<point>(point(-3), point(3));
+ point scan;
 
-     while ((!g->is_empty(fx, fy) || !tmp.can_move_to(g->m, fx, fy)) &&  tries < 10) {
-      m.x = (grid[n]->spawns[i].pos.x + rng(-3, 3)) % SEEX;
-      m.y = (grid[n]->spawns[i].pos.y + rng(-3, 3)) % SEEY;
-      if (m.x < 0) m.x += SEEX;
-      if (m.y < 0) m.y += SEEY;
-      fx = m.x + gx * SEEX;
-      fy = m.y + gy * SEEY;
-      tries++;
-     }
-     if (tries != 10) {
-      tmp.spawnpos = point(fx,fy);
-      tmp.spawn(fx, fy);
-      g->z.push_back(tmp);
+ for (scan.x = 0; scan.x < my_MAPSIZE; scan.x++) {
+  for (scan.y = 0; scan.y < my_MAPSIZE; scan.y++) {
+   int n = scan.x + scan.y * my_MAPSIZE;
+   for (const auto& spawn_pt : grid[n]->spawns) {
+    for (int j = 0; j < spawn_pt.count; j++) {
+     monster tmp(mtype::types[spawn_pt.type]);
+     tmp.spawnmap.x = g->lev.x + scan.x;
+     tmp.spawnmap.y = g->lev.y + scan.y;
+     tmp.faction_id = spawn_pt.faction_id;
+     tmp.mission_id = spawn_pt.mission_id;
+     if (!spawn_pt._name.empty()) tmp.unique_name = spawn_pt._name;
+     if (spawn_pt.friendly) tmp.friendly = -1;
+
+     std::function<point()> nominate_spawn_pos = [&]() {
+         point m = (spawn_pt.pos + rng(spawn_scatter)) % SEE;
+         if (m.x < 0) m.x += SEE;
+         if (m.y < 0) m.y += SEE;
+         return m + scan * SEE;
+     };
+
+     std::function<bool(const point&)> spawn_ok = [&](const point& pt) { return g->is_empty(pt) && tmp.can_move_to(g->m, pt); };
+
+     if (decltype(auto) dest = LasVegasChoice(10, nominate_spawn_pos, spawn_ok)) {
+         tmp.spawnpos = *dest;
+         tmp.spawn(*dest);
+         g->z.push_back(std::move(tmp));
      }
     }
    }
