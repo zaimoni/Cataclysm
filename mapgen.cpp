@@ -5891,17 +5891,17 @@ void map::rotate(int turns)
    }
   }
 // Finally, computers
-  tmpcomp = grid[0]->comp;
-  grid[0]->comp = grid[my_MAPSIZE]->comp;
-  grid[my_MAPSIZE]->comp = grid[my_MAPSIZE + 1]->comp;
-  grid[my_MAPSIZE + 1]->comp = grid[1]->comp;
-  grid[1]->comp = tmpcomp;
+  tmpcomp = std::move(grid[0]->comp);
+  grid[0]->comp = std::move(grid[my_MAPSIZE]->comp);
+  grid[my_MAPSIZE]->comp = std::move(grid[my_MAPSIZE + 1]->comp);
+  grid[my_MAPSIZE + 1]->comp = std::move(grid[1]->comp);
+  grid[1]->comp = std::move(tmpcomp);
 // ...and vehicles
-  tmpveh = grid[0]->vehicles;
-  grid[0]->vehicles = grid[my_MAPSIZE]->vehicles;
-  grid[my_MAPSIZE]->vehicles = grid[my_MAPSIZE + 1]->vehicles;
-  grid[my_MAPSIZE + 1]->vehicles = grid[1]->vehicles;
-  grid[1]->vehicles = tmpveh;
+  tmpveh = std::move(grid[0]->vehicles);
+  grid[0]->vehicles = std::move(grid[my_MAPSIZE]->vehicles);
+  grid[my_MAPSIZE]->vehicles = std::move(grid[my_MAPSIZE + 1]->vehicles);
+  grid[my_MAPSIZE + 1]->vehicles = std::move(grid[1]->vehicles);
+  grid[1]->vehicles = std::move(tmpveh);
   break;
     
  case 2:
@@ -5923,19 +5923,15 @@ void map::rotate(int turns)
     }
    }
   }
-  tmpcomp = grid[0]->comp;
-  grid[0]->comp = grid[my_MAPSIZE + 1]->comp;
-  grid[my_MAPSIZE + 1]->comp = tmpcomp;
-  tmpcomp = grid[1]->comp;
-  grid[1]->comp = grid[my_MAPSIZE]->comp;
-  grid[my_MAPSIZE]->comp = tmpcomp;
+  tmpcomp = std::move(grid[0]->comp);
+  grid[0]->comp = std::move(grid[my_MAPSIZE + 1]->comp);
+  grid[my_MAPSIZE + 1]->comp = std::move(tmpcomp);
+  tmpcomp = std::move(grid[1]->comp);
+  grid[1]->comp = std::move(grid[my_MAPSIZE]->comp);
+  grid[my_MAPSIZE]->comp = std::move(tmpcomp);
 // ...and vehicles
-  tmpveh = grid[0]->vehicles;
-  grid[0]->vehicles = grid[my_MAPSIZE + 1]->vehicles;
-  grid[my_MAPSIZE + 1]->vehicles = tmpveh;
-  tmpveh = grid[1]->vehicles;
-  grid[1]->vehicles = grid[my_MAPSIZE]->vehicles;
-  grid[my_MAPSIZE]->vehicles = tmpveh;
+  grid[0]->vehicles.swap(grid[my_MAPSIZE + 1]->vehicles);
+  grid[1]->vehicles.swap(grid[my_MAPSIZE]->vehicles);
   break;
     
  case 3:
@@ -5957,17 +5953,17 @@ void map::rotate(int turns)
     }
    }
   }
-  tmpcomp = grid[0]->comp;
-  grid[0]->comp = grid[1]->comp;
-  grid[1]->comp = grid[my_MAPSIZE + 1]->comp;
-  grid[my_MAPSIZE + 1]->comp = grid[my_MAPSIZE]->comp;
-  grid[my_MAPSIZE]->comp = tmpcomp;
+  tmpcomp = std::move(grid[0]->comp);
+  grid[0]->comp = std::move(grid[1]->comp);
+  grid[1]->comp = std::move(grid[my_MAPSIZE + 1]->comp);
+  grid[my_MAPSIZE + 1]->comp = std::move(grid[my_MAPSIZE]->comp);
+  grid[my_MAPSIZE]->comp = std::move(tmpcomp);
 // ...and vehicles
-  tmpveh = grid[0]->vehicles;
-  grid[0]->vehicles = grid[1]->vehicles;
-  grid[1]->vehicles = grid[my_MAPSIZE + 1]->vehicles;
-  grid[my_MAPSIZE + 1]->vehicles = grid[my_MAPSIZE]->vehicles;
-  grid[my_MAPSIZE]->vehicles = tmpveh;
+  tmpveh = std::move(grid[0]->vehicles);
+  grid[0]->vehicles = std::move(grid[1]->vehicles);
+  grid[1]->vehicles = std::move(grid[my_MAPSIZE + 1]->vehicles);
+  grid[my_MAPSIZE + 1]->vehicles = std::move(grid[my_MAPSIZE]->vehicles);
+  grid[my_MAPSIZE]->vehicles = std::move(tmpveh);
   break;
 
  default:
