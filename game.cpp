@@ -1718,12 +1718,10 @@ void game::add_event(event_type type, int on_turn, int faction_id, int x, int y)
  events.push_back(tmp);
 }
 
-bool game::event_queued(event_type type) const
+const event* game::event_queued(const event_type type) const
 {
- for(auto& ev : events) {
-  if (ev.type == type) return true;
- }
- return false;
+ for(decltype(auto) ev : events) if (type == ev.type) return &ev;
+ return nullptr;
 }
 
 void game::debug()
@@ -2374,38 +2372,46 @@ void game::hallucinate()
  wrefresh(w_terrain);
 }
 
-unsigned char game::light_level() const
+unsigned char game::light_level(const GPS_loc& src)
 {
+ const game* const g = game::active();
  int ret;
- if (lev.z < 0)	// Underground!
+ if (src.first.z < 0)	// Underground!
   ret = 1;	// assumes solid roof overhead -- would want the inside of a crater to have the light level of the surface; cf C:DDA
  else {
   ret = messages.turn.sunlight();
-  ret -= weather_datum::data[weather].sight_penalty;
+  ret -= weather_datum::data[g->weather].sight_penalty; // \todo proper weather system
  }
- for (int i = 0; i < events.size(); i++) {
-  if (events[i].type == EVENT_DIM) {
-   int turns_left = events[i].turn - int(messages.turn);
-   if (turns_left > 25)
-    ret = (ret * (turns_left - 25)) / 25;
-   else
-    ret = (ret * (25 - turns_left)) / 25;
-   break;
-  }
+ const auto pos = g->toScreen(src);
+
+ const auto u = pos ? g->survivor(*pos) : nullptr;
+ const auto _is_pc = (!u || u->is_npc()) ? nullptr : u;
+
+ // events only make sense for PCs, currently
+
+ if (_is_pc) {
+     // The EVENT_DIM event slowly dims the sky, then relights it
+     // EVENT_DIM has an occurance date of turn + 50, so the first 25 dim it
+     if (const auto dimming = g->event_queued(EVENT_DIM)) {
+         int turns_left = dimming->turn - int(messages.turn);
+         if (turns_left > 25)
+             ret = (ret * (turns_left - 25)) / 25;
+         else
+             ret = (ret * (25 - turns_left)) / 25;
+     }
  }
- int flashlight = u.active_item_charges(itm_flashlight_on);
- if (ret < 10 && flashlight > 0) {
-/* additive so that low battery flashlights still increase the light level 
-	rather than decrease it 						*/
-  ret += flashlight;
-  if (ret > 10) ret = 10;
+ if (ret < 10 && u) {
+     int flashlight = u->active_item_charges(itm_flashlight_on);
+     if (0 < flashlight) {
+         /* additive so that low battery flashlights still increase the light level rather than decrease it */
+         ret += flashlight;
+         if (ret > 10) ret = 10;
+     }
  }
- if (ret < 8 && u.has_active_bionic(bio_flashlight)) ret = 8;
- if (ret < 8 && event_queued(EVENT_ARTIFACT_LIGHT)) ret = 8;
- if (ret < 4 && u.has_artifact_with(AEP_GLOW)) ret = 4;
+ if (ret < 8 && u->has_active_bionic(bio_flashlight)) ret = 8;
+ if (ret < 8 && _is_pc && g->event_queued(EVENT_ARTIFACT_LIGHT)) ret = 8;
+ if (ret < 4 && u->has_artifact_with(AEP_GLOW)) ret = 4;
  if (ret < 1) ret = 1;
-// The EVENT_DIM event slowly dims the sky, then relights it
-// EVENT_DIM has an occurance date of turn + 50, so the first 25 dim it
  return ret;
 }
 

@@ -80,7 +80,7 @@ class game : public reality_bubble
   bool assign_invlet_stacking_ok(item& it, const player& p);
   void add_event(event_type type, int on_turn, int faction_id = -1,
                  int x = -1, int y = -1);
-  bool event_queued(event_type type) const;
+  const event* event_queued(event_type type) const;
 // Sound at (x, y) of intensity (vol), described to the player is (description)
   void sound(const point& pt, int vol, std::string description);
   void sound(const point& pt, int vol, const char* description) { sound(pt, vol, std::string(description)); };
@@ -117,7 +117,8 @@ class game : public reality_bubble
   bool is_empty(const point& pt) const { return is_empty(pt.x, pt.y); };
   static bool isEmpty(const point& pt) { return game::active()->is_empty(pt); }
   bool is_in_sunlight(const point& pt) const; // Checks outdoors + sunny
-  unsigned char light_level() const;
+  static unsigned char light_level(const GPS_loc& src);
+  unsigned char light_level() const { return light_level(u.GPSpos); }
   // Kill that monster; fixes any pointers etc
   void kill_mon(monster& target) { if (!target.dead) _kill_mon(target, false); }
   void kill_mon(monster& target, player* me) { if (!target.dead) _kill_mon(target, me == &u); }
