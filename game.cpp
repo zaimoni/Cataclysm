@@ -2482,7 +2482,7 @@ bool game::sees_u(int x, int y, int &t)
 
 bool game::u_see(int x, int y) const
 {
- int range = u.sight_range(light_level());
+ int range = u.sight_range();
  if (u.has_artifact_with(AEP_CLAIRVOYANCE)) {
   int crange = (range > u.clairvoyance() ? u.clairvoyance() : range);
   if (rl_dist(u.pos, x, y) <= crange) return true;
@@ -2493,7 +2493,7 @@ bool game::u_see(int x, int y) const
 bool game::u_see(int x, int y, int &t) const
 {
 	t = 0;	// safe default in case of clairvoyance
-	int range = u.sight_range(light_level());
+	int range = u.sight_range();
 	if (u.has_artifact_with(AEP_CLAIRVOYANCE)) {
 		int crange = (range > u.clairvoyance() ? u.clairvoyance() : range);
 		if (rl_dist(u.pos, x, y) <= crange) return true;
@@ -2507,7 +2507,7 @@ bool game::u_see(const monster *mon) const
  if (u.has_trait(PF_ANTENNAE) && dist <= 3) return true;
  if (mon->has_flag(MF_DIGS) && !u.has_active_bionic(bio_ground_sonar) && dist > 1)
   return false;	// Can't see digging monsters until we're right next to them
- const int range = u.sight_range(light_level());
+ const int range = u.sight_range();
  if (u.has_artifact_with(AEP_CLAIRVOYANCE)) {
   int crange = (range > u.clairvoyance() ? u.clairvoyance() : range);
   if (dist <= crange) return true;
@@ -2520,7 +2520,7 @@ bool game::pl_sees(player *p, monster *mon) const
  if (mon->has_flag(MF_DIGS) && !p->has_active_bionic(bio_ground_sonar) &&
      rl_dist(p->pos, mon->pos) > 1)
   return false;	// Can't see digging monsters until we're right next to them
- return m.sees(p->pos, mon->pos, p->sight_range(light_level()));
+ return m.sees(p->pos, mon->pos, p->sight_range());
 }
 
 std::optional<point> game::find_item(item *it) const
@@ -4503,7 +4503,7 @@ void game::plthrow()
   return;
  }
 
- clamp_ub(range, u.sight_range(light_level()));
+ clamp_ub(range, u.sight_range());
  const point r(range);
  const zaimoni::gdi::box<point> bounds(u.pos-r,u.pos+r);
  pl_draw(bounds);
@@ -4573,7 +4573,7 @@ void game::plfire(bool burst)
  }
 
  int range = u.weapon.range(&u);
- int sight_range = u.sight_range(light_level());
+ int sight_range = u.sight_range();
  if (range > sight_range) range = sight_range;
  const point r(range);
  const zaimoni::gdi::box<point> bounds(u.pos - r, u.pos + r);

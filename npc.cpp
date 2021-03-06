@@ -1542,7 +1542,7 @@ bool npc::is_defending() const
 int npc::danger_assessment(game *g) const
 {
  int ret = 0;
- const int sightdist = g->light_level();
+ const int sightdist = g->light_level(GPSpos);
  for (decltype(auto) _mon : g->z) {
 	 if (g->m.sees(pos, _mon.pos, sightdist)) ret += _mon.type->difficulty;
  }

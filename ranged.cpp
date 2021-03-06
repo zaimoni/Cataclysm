@@ -483,7 +483,7 @@ void game::throw_item(player &p, point tar, item&& thrown, std::vector<point> &t
 std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& bounds, std::vector<const monster*> t, int &target, item *relevent)
 {
  std::vector<point> ret;
- const int sight_dist = u.sight_range(light_level());
+ const int sight_dist = u.sight_range();
 
 // First, decide on a target among the monsters, if there are any in range
  if (t.size() > 0) {

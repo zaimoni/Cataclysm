@@ -2891,6 +2891,11 @@ int player::sight_range(int light_level) const
  return ret;
 }
 
+int player::sight_range() const
+{
+    return sight_range(game::active()->light_level(GPSpos));
+}
+
 int player::overmap_sight_range(int light_level) const
 {
  int sight = sight_range(light_level);

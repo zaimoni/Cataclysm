@@ -83,6 +83,7 @@ public:
  void remove_child_flag(pl_flag mut);
 
  int  sight_range(int light_level) const;
+ int  sight_range() const; // uses light level for our GPSpos
  int  overmap_sight_range(int light_level) const;
  int  clairvoyance() const; // Sight through walls &c
  bool has_two_arms() const;

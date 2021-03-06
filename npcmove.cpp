@@ -138,7 +138,7 @@ public:
 		auto g = game::active();
 		if (tar != actor.pos) {	// required for legality/performability
 			int linet;
-			_trajectory = line_to(actor.pos, tar, (g->m.sees(actor.pos, tar, actor.sight_range(g->light_level()), linet) ? linet : 0));
+			_trajectory = line_to(actor.pos, tar, (g->m.sees(actor.pos, tar, actor.sight_range(), linet) ? linet : 0));
 		}
 #ifndef NDEBUG
 		if (!IsLegal()) throw std::logic_error("unreasonable targeting");
@@ -323,7 +323,6 @@ void npc::execute_action(game *g, const ai_action& action, int target)
  // C:Whales action processing
  npc::ai_target Target;
  const int oldmoves = moves;
- const int light = g->light_level();
 
  switch (action.first) {
 
@@ -806,7 +805,7 @@ bool npc::wont_hit_friend(game *g, int tarx, int tary, int index) const
 {
  if (rl_dist(pos, tarx, tary) == 1) return true; // If we're *really* sure that our aim is dead-on
 
- int linet = 0, dist = sight_range(g->light_level());
+ int linet = 0, dist = sight_range();
  int confident = confident_range(index);
 
  std::vector<point> traj = line_to(pos, tarx, tary, (g->m.sees(pos, tarx, tary, dist, linet) ? linet : 0));
@@ -1164,7 +1163,7 @@ void npc::find_item(game *g)
 {
  fetching_item = false;
  int best_value = minimum_item_value();
- int range = sight_range(g->light_level());
+ int range = sight_range();
  if (range > 12) range = 12;
  int minx = pos.x - range, maxx = pos.x + range,
      miny = pos.y - range, maxy = pos.y + range;
@@ -1500,7 +1499,7 @@ void npc::alt_attack(game *g, int target)
  else { // We are throwing it!
 
   std::vector<point> trajectory;
-  const int light = g->light_level();
+  const int light = g->light_level(GPSpos);
   const int dist = rl_dist(pos, tar);
   const bool no_friendly_fire = wont_hit_friend(g, tar, index);
   const int conf = confident_range(index);
@@ -1829,12 +1828,12 @@ void npc::mug_player(player &mark)
 int npc::can_look_for(const player& sought) const
 {
 	auto g = game::active();
-	const int light = g->light_level();
+	const int s_range = sight_range();
 	int ret = 0;
 	// npc::pl is the point where we last saw the player
-	if (saw_player_recently() && g->m.sees(pos, pl.x, light)) ret += 1; // but nothing sets pl? 2019-11-19 zaimoni
+	if (saw_player_recently() && g->m.sees(pos, pl.x, s_range)) ret += 1; // but nothing sets pl? 2019-11-19 zaimoni
 	// even if there are no possibilities in a detailed check, that counts as "possible"
-	if (!g->m.sees(pos, sought.pos, sight_range(light))) ret += 2;
+	if (!g->m.sees(pos, sought.pos, s_range)) ret += 2;
 	return ret;
 }
 
@@ -1854,7 +1853,7 @@ npc::ai_action npc::look_for_player(player& sought)
 
 	if (!(2 & code)) return ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
 
-	const int range = sight_range(g->light_level());
+	const int range = sight_range();
 	if (!path.empty() && !g->m.sees(pos, path.back(), range))
 		return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(*this, path.front(), "Look for player")));
 
@@ -1983,7 +1982,7 @@ void npc::go_to_destination(game *g)
 // sx and sy are now equal to the direction we need to move in
   point d;
   point target(pos + 8 * s);
-  int light = g->light_level();
+  int light = g->light_level(GPSpos);
 // x and y are now equal to a local square that's close by
   for (int i = 0; i < 8; i++) {
    for (d.x = 0 - i; d.x <= i; d.x++) {
