@@ -5535,7 +5535,7 @@ void game::update_map(int &x, int &y)
 void game::update_overmap_seen()
 {
  point om(om_location().second); // UI; not critical to inline second coordinate
- int dist = u.overmap_sight_range(light_level());
+ int dist = u.overmap_sight_range();
  cur_om.seen(om.x, om.y) = true; // We can always see where we're standing
  if (dist == 0) return; // No need to run the rest!
  OM_loc<2> scan(cur_om.pos, point(0, 0));

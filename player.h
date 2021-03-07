@@ -84,7 +84,7 @@ public:
 
  int  sight_range(int light_level) const;
  int  sight_range() const; // uses light level for our GPSpos
- int  overmap_sight_range(int light_level) const;
+ int  overmap_sight_range() const;
  int  clairvoyance() const; // Sight through walls &c
  bool has_two_arms() const;
 // bool can_wear_boots();	// no definition
