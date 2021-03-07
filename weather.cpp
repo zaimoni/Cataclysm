@@ -90,7 +90,7 @@ static constexpr const int LIGHTNING_CHANCE = MINUTES(60);
 
 void weather_effect::glare(game *g)
 {
- if (g->is_in_sunlight(g->u.pos)) g->u.infect(DI_GLARE, bp_eyes, 1, 2);
+ if (g->is_in_sunlight(g->u.GPSpos)) g->u.infect(DI_GLARE, bp_eyes, 1, 2);
 }
 
 void weather_effect::wet(game *g)

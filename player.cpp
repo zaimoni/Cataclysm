@@ -1748,7 +1748,7 @@ template<bool want_details = false> static int _current_speed(const player& u, g
     }
 
     if (g) {
-        if (u.has_trait(PF_SUNLIGHT_DEPENDENT) && !g->is_in_sunlight(u.pos)) {
+        if (u.has_trait(PF_SUNLIGHT_DEPENDENT) && !g->is_in_sunlight(u.GPSpos)) {
             const int delta = (g->light_level() >= 12 ? 5 : 10);
             newmoves -= delta;
             if constexpr (want_details) desc->push_back({ "Out of Sunlight", -delta });
@@ -1996,7 +1996,7 @@ void player::disp_info(game *g)
      return "The sunlight irritates you terribly.\n";
  };
 
- if (g->is_in_sunlight(pos)) {
+ if (g->is_in_sunlight(GPSpos)) {
      const auto trog_stats = _troglodyte_sunburn(*this);
      if (0 > trog_stats.Str) { // Not really.  Historical coincidence that all four coordinates are equal
          std::string trog_text(sun_severity(trog_stats.Str));
@@ -3725,7 +3725,7 @@ void player::suffer(game *g)
   if (has_trait(PF_PAINREC3) && one_in(MINUTES(15))) pain--;
  }
 
- if (g->is_in_sunlight(pos)) {
+ if (g->is_in_sunlight(GPSpos)) {
   if (has_trait(PF_LEAVES) && one_in(HOURS(1))) hunger--;
 
   if (has_trait(PF_ALBINO) && one_in(MINUTES(2))) {

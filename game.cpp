@@ -610,7 +610,7 @@ bool game::do_turn()
   if (u.stim > 0) u.stim--;
   if (u.pkill > 0) u.pkill--;
   if (u.pkill < 0) u.pkill++;
-  if (u.has_bionic(bio_solar) && is_in_sunlight(u.pos)) u.charge_power(1);
+  if (u.has_bionic(bio_solar) && is_in_sunlight(u.GPSpos)) u.charge_power(1);
  }
  if (messages.turn % 300 == 0) {	// Pain up/down every 30 minutes
   if (u.pain > 0)
@@ -3335,9 +3335,9 @@ bool game::is_empty(int x, int y) const
          (u.pos.x != x || u.pos.y != y));
 }
 
-bool game::is_in_sunlight(const point& pt) const
+bool game::is_in_sunlight(const GPS_loc& loc) const
 {
- return m.is_outside(pt) && light_level() >= 40 && (weather == WEATHER_CLEAR || weather == WEATHER_SUNNY);
+    return loc.is_outside() && light_level(loc) >= 40 && (weather == WEATHER_CLEAR || weather == WEATHER_SUNNY);
 }
 
 void game::_kill_mon(monster& target, bool u_did_it)

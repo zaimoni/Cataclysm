@@ -116,7 +116,7 @@ class game : public reality_bubble
   bool is_empty(int x, int y) const;	// True if no PC, no monster, move cost > 0
   bool is_empty(const point& pt) const { return is_empty(pt.x, pt.y); };
   static bool isEmpty(const point& pt) { return game::active()->is_empty(pt); }
-  bool is_in_sunlight(const point& pt) const; // Checks outdoors + sunny
+  bool is_in_sunlight(const GPS_loc& pt) const; // Checks outdoors + sunny
   static unsigned char light_level(const GPS_loc& src);
   unsigned char light_level() const { return light_level(u.GPSpos); }
   // Kill that monster; fixes any pointers etc

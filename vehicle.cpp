@@ -1240,15 +1240,16 @@ void vehicle::gain_moves (int mp)
             thrust (cruise_velocity > velocity? 1 : -1);
     }
 
-	const point anchor(screenPos());
-    if (g->is_in_sunlight(anchor)) {
+    if (g->is_in_sunlight(GPSpos)) {
         if (const int spw = solar_power()) {
             int fl = spw / 100;
             if (rng (0, 100) <= (spw % 100)) fl++;
             if (fl) refill (AT_BATT, fl);
         }
     }
+
     // check for smoking parts
+    const point anchor(screenPos());
     for (const int p : external_parts) {
         if (parts[p].blood > 0) parts[p].blood--;
         int p_eng = part_with_feature(p, vpf_engine, false);
