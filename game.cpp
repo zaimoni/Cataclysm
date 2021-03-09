@@ -2908,8 +2908,10 @@ void game::sound(const point& pt, int vol, std::string description)
   if (_mon.can_hear()) {
    int dist = rl_dist(pt, _mon.pos);
    int volume = vol - (_mon.has_flag(MF_GOODHEARING) ? int(dist / 2) : dist);
-   _mon.wander_to(pt.x, pt.y, volume);
-   _mon.process_trigger(MTRIG_SOUND, volume);
+   if (0 < volume) {
+       _mon.wander_to(pt, volume);
+       _mon.process_trigger(MTRIG_SOUND, volume);
+   }
   }
  }
 // Loud sounds make the next spawn sooner!

@@ -95,7 +95,7 @@ class monster : public mobile {
 
  void set_dest(const point& pt, int &t); // Go in a straight line to (x, y)
 				      // t determines WHICH Bresenham line
- void wander_to(int x, int y, int f); // Try to get to (x, y), we don't know
+ void wander_to(const point& pt, int f); // Try to get to (x, y), we don't know
 				      // the route.  Give up after f steps.
  void plan(game *g);
  void move(game *g); // Actual movement

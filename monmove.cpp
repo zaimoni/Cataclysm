@@ -34,10 +34,10 @@ void monster::set_dest(const point& pt, int &t)
 
 // Move towards (x,y) for f more turns--generally if we hear a sound there
 // "Stupid" movement; "if (wandx < posx) posx--;" etc.
-void monster::wander_to(int x, int y, int f)
+void monster::wander_to(const point& pt, int f)
 {
  if (has_flag(MF_GOODHEARING)) f *= 6;
- wand.set(point(x, y), f);
+ wand.set(pt, f);
 }
 
 void monster::plan(game *g)
