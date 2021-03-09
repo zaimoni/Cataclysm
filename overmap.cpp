@@ -1420,7 +1420,7 @@ void overmap::draw(WINDOW *w, const player& u, const point& curs, const point& o
    }
   }
   if (target.is_valid() && blink && zaimoni::gdi::box(curs - point(om_w, VIEW)/2, point(om_w, VIEW)).contains(target.second)) {
-   switch (direction_from(curs.x, curs.y, target.second)) {
+   switch (direction_from(curs, target.second)) {
     case NORTH:      mvwputch(w,  0, om_w / 2, c_red, '^');       break;
     case NORTHEAST:  mvwputch(w,  0, om_w - 2, c_red, LINE_OOXX); break;
     case EAST:       mvwputch(w, VIEW / 2, om_w - 2, c_red, '>');       break;

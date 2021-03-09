@@ -2923,7 +2923,7 @@ void game::sound(const point& pt, int vol, std::string description)
   else nextspawn -= change;
  }
 // Next, display the sound as the player hears it
- if (description == "") return;	// No description (e.g., footsteps)
+ if (description.empty()) return;	// No description (e.g., footsteps)
  if (u.has_disease(DI_DEAF)) return;	// We're deaf, can't hear it
 
  if (u.has_bionic(bio_ears)) rational_scale<7,2>(vol);
@@ -2942,11 +2942,8 @@ void game::sound(const point& pt, int vol, std::string description)
   u.add_disease(DI_DEAF, clamped_ub<40>((damped_vol - 130) / 4));
  }
  if (pt != u.pos)
-  u.cancel_activity_query("Heard %s!", (description == "" ? "a noise" : description.c_str()));
-// We need to figure out where it was coming from, relative to the player
- const point delta(pt - u.pos);
-// If it came from us, don't print a direction
- if (0 == delta.x && 0 == delta.y) {
+  u.cancel_activity_query("Heard %s!", (description == "" ? "a noise" : description.c_str())); // C:Whales legacy failsafe
+ else { // If it came from us, don't print a direction
   if (description[0] >= 'a' && description[0] <= 'z')
    description[0] += 'A' - 'a';	// Capitalize the sound
   messages.add("%s", description.c_str());
