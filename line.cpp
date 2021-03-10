@@ -85,30 +85,9 @@ std::vector<point> continue_line(const std::vector<point>& line, int distance)
  return line_to(start, end, 0);
 }
 
-direction direction_from(int x1, int y1, int x2, int y2)
-{
- int dx = x2 - x1;
- int dy = y2 - y1;
- if (dx < 0) {
-  if (abs(dx) / 2 > abs(dy) || dy == 0) return WEST;
-  else if (abs(dy) / 2 > abs(dx)) {
-   return (dy < 0) ? NORTH : SOUTH;
-  } else {
-   return (dy < 0) ? NORTHWEST : SOUTHWEST;
-  }
- } else {
-  if (dx / 2 > abs(dy) || dy == 0) return EAST;
-  else if (abs(dy) / 2 > dx || dx == 0) {
-   return (dy < 0) ? NORTH : SOUTH;
-  } else {
-   return (dy < 0) ? NORTHEAST : SOUTHEAST;
-  }
- }
-}
-
 const char* direction_name(direction dir)
 {
-	static const char* translate[] = {
+	static constexpr const char* const translate[] = {
 		"north",
 		"northeast",
 		"east",

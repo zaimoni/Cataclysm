@@ -109,7 +109,46 @@ inline int rl_dist(int x1, int y1, const point& pt2) { return rl_dist(x1, y1, pt
 
 std::vector<point> continue_line(const std::vector<point>& line, int distance);
 
-direction direction_from(int x1, int y1, int x2, int y2);
+inline constexpr direction direction_from(int delta_x, int delta_y)
+{	// 0,0 is degenerate; C:Whales returned EAST
+	if (0 == delta_y) return 0 <= delta_x ? EAST : WEST;
+	if (0 == delta_x) return 0 <= delta_y ? SOUTH : NORTH;
+	if (0 > delta_x) {
+		const int abs_delta_x = -delta_x;
+		if (0 > delta_y) {
+			const int abs_delta_y = -delta_y;
+			if (abs_delta_x / 2 > abs_delta_y) return WEST;
+			else if (abs_delta_y / 2 > abs_delta_x) return NORTH;
+			else return NORTHWEST;
+		} else {
+			if (abs_delta_x / 2 > delta_y) return WEST;
+			else if (delta_y / 2 > abs_delta_x) return SOUTH;
+			else return SOUTHWEST;
+		}
+	} else {
+		if (0 > delta_y) {
+			const int abs_delta_y = -delta_y;
+			if (delta_x / 2 > abs_delta_y) return EAST;
+			else if (abs_delta_y / 2 > delta_x) return NORTH;
+			else return NORTHEAST;
+		} else {
+			if (delta_x / 2 > delta_y) return EAST;
+			else if (delta_y / 2 > delta_x) return SOUTH;
+			else return SOUTHEAST;
+		}
+	}
+}
+
+static_assert(NORTH == direction_from(Direction::N.x, Direction::N.y));
+static_assert(NORTHEAST == direction_from(Direction::NE.x, Direction::NE.y));
+static_assert(EAST == direction_from(Direction::E.x, Direction::E.y));
+static_assert(SOUTHEAST == direction_from(Direction::SE.x, Direction::SE.y));
+static_assert(SOUTH == direction_from(Direction::S.x, Direction::S.y));
+static_assert(SOUTHWEST == direction_from(Direction::SW.x, Direction::SW.y));
+static_assert(WEST == direction_from(Direction::W.x, Direction::W.y));
+static_assert(NORTHWEST == direction_from(Direction::NW.x, Direction::NW.y));
+
+inline direction direction_from(int x1, int y1, int x2, int y2) { return direction_from(x2 - x1, y2 - y1); }
 inline direction direction_from(const point& pt, int x2, int y2) { return direction_from(pt.x, pt.y, x2, y2); };
 inline direction direction_from(const point& pt, const point& pt2) { return direction_from(pt.x, pt.y, pt2.x, pt2.y); };
 inline direction direction_from(int x1, int y1, const point& pt2) { return direction_from(x1, y1, pt2.x, pt2.y); };

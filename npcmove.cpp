@@ -259,12 +259,12 @@ void npc::move(game *g)
  else if (danger > 0 || (target == TARGET_PLAYER && attitude == NPCATT_KILL))
   action = method_of_attack(g, target, danger);
 
- if (!action.second && npc_undecided == action.first) {	// No present danger
+ if (!action.first && !action.second) {	// No present danger
   action = address_needs(g, danger);
   if (game::debugmon) debugmsg("address_needs %s", action.second ? action.second->name() : npc_action_name(action.first).c_str());
-  if (action.first == npc_undecided) action = address_player(g);
+  if (!action.first && !action.second) action = address_player(g);
   if (game::debugmon) debugmsg("address_player %s", action.second ? action.second->name() : npc_action_name(action.first).c_str());
-  if (action.first == npc_undecided) {
+  if (!action.first && !action.second) {
    if (mission == NPC_MISSION_SHELTER || has_disease(DI_INFECTION))
     action = ai_action(npc_pause, std::unique_ptr<cataclysm::action>());
    else if (has_new_items)
