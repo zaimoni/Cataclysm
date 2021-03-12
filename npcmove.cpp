@@ -1139,7 +1139,7 @@ bool player::move_away_from(const map& m, const point& tar, point& dest) const
 	else if (tar.y < pos.y) d.y = -1;
 
 	// 2019-02-16: re-implemented along Angband lines
-	direction best = direction_from(0, 0, d);
+	direction best = direction_from(d.x, d.y);
 	options.push_back(pos + direction_vector(best));	// consistency
 	int delta = 2 * rng(0, 1) - 1;
 	options.push_back(pos + direction_vector(rotate_clockwise(best, delta)));	// 45 degrees off

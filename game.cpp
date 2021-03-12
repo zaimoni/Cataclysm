@@ -2566,6 +2566,17 @@ static void local_mon_info_display(WINDOW* w_moninfo, const mtype* const type, p
     pr.x += 2 + name.length() + ws;
 }
 
+// needs both enum.h and line.h
+static direction direction_from(const GPS_loc& pt, const GPS_loc& pt2) {
+    decltype(auto) delta = pt2 - pt;
+    if (const point* const pos = std::get_if<point>(&delta)) {
+        return direction_from(pos->x, pos->y);
+    } else if (const tripoint* const pos = std::get_if<tripoint>(&delta)) {
+        return direction_from(pos->x, pos->y);
+    }
+    return direction_from(0, 0); // degenerate
+}
+
 void game::mon_info()
 {
  werase(w_moninfo);
@@ -2586,18 +2597,17 @@ void game::mon_info()
    const bool mon_dangerous = (att == MATT_ATTACK || att == MATT_FOLLOW);
    if (mon_dangerous) newseen++;
 
-   direction dir_to_mon = direction_from(u.pos, mon.pos);
-   int index = (rl_dist(u.pos, mon.pos) <= VIEW_CENTER ? 8 : dir_to_mon);
+   int index = (rl_dist(u.pos, mon.pos) <= VIEW_CENTER ? 8 : direction_from(u.GPSpos, mon.GPSpos));
    if (mon_dangerous && index < 8) dangerous[index] = true;
 
-   if (!any(unique_types[dir_to_mon], mon.type->id)) unique_types[dir_to_mon].push_back(mon.type->id);
+   if (!any(unique_types[index], mon.type->id)) unique_types[index].push_back(mon.type->id);
   }
  }
  for (int i = 0; i < active_npc.size(); i++) {
   const auto& _npc = active_npc[i];
   if (u_see(_npc.pos)) { // TODO: NPC invis
    if (_npc.attitude == NPCATT_KILL) newseen++;
-   int index = (rl_dist(u.pos, _npc.pos) <= VIEW_CENTER ? 8 : direction_from(u.pos, _npc.pos));
+   int index = (rl_dist(u.pos, _npc.pos) <= VIEW_CENTER ? 8 : direction_from(u.GPSpos, _npc.GPSpos));
    unique_types[index].push_back(-1 - i);
   }
  }

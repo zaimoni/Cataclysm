@@ -149,9 +149,7 @@ static_assert(WEST == direction_from(Direction::W.x, Direction::W.y));
 static_assert(NORTHWEST == direction_from(Direction::NW.x, Direction::NW.y));
 
 inline direction direction_from(int x1, int y1, int x2, int y2) { return direction_from(x2 - x1, y2 - y1); }
-inline direction direction_from(const point& pt, int x2, int y2) { return direction_from(pt.x, pt.y, x2, y2); };
-inline direction direction_from(const point& pt, const point& pt2) { return direction_from(pt.x, pt.y, pt2.x, pt2.y); };
-inline direction direction_from(int x1, int y1, const point& pt2) { return direction_from(x1, y1, pt2.x, pt2.y); };
+inline direction direction_from(const point& pt, const point& pt2) { return direction_from(pt.x, pt.y, pt2.x, pt2.y); }
 
 // more direction APIs
 const char* direction_name(direction dir);
