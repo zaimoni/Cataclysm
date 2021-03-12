@@ -490,11 +490,9 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
 // Check for previous target
   if (target == -1) {
 // If no previous target, target the closest there is
-   double closest = -1;
-   double dist;
+   int closest = INT_MAX;
    for (int i = 0; i < t.size(); i++) {
-    dist = rl_dist(t[i]->pos, u.pos);
-    if (closest < 0 || dist < closest) {
+    if (int dist = rl_dist(t[i]->pos, u.pos); dist < closest) {
      closest = dist;
      target = i;
     }
