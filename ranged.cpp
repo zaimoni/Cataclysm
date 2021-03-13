@@ -480,7 +480,8 @@ void game::throw_item(player &p, point tar, item&& thrown, std::vector<point> &t
  }
 }
 
-std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& bounds, std::vector<const monster*> t, int &target, item *relevent)
+// At some point, C:Whales also used this to target vehicles for refilling (different UI when forked).
+std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& bounds, const std::vector<const monster*>& t, int &target, item *relevent)
 {
  std::vector<point> ret;
  const int sight_dist = u.sight_range();
@@ -492,7 +493,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
 // If no previous target, target the closest there is
    int closest = INT_MAX;
    for (int i = 0; i < t.size(); i++) {
-    if (int dist = rl_dist(t[i]->pos, u.pos); dist < closest) {
+    if (int dist = rl_dist(t[i]->GPSpos, u.GPSpos); dist < closest) {
      closest = dist;
      target = i;
     }
@@ -506,9 +507,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
  WINDOW* w_target = newwin(VIEW - SEEY, PANELX - MINIMAP_WIDTH_HEIGHT, SEEY, VIEW + MINIMAP_WIDTH_HEIGHT);
  wborder(w_target, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                  LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
- if (!relevent) // currently targetting vehicle to refill with fuel
-  mvwprintz(w_target, 1, 1, c_red, "Select a vehicle");
- else
+
  if (relevent == &u.weapon && relevent->is_gun())
   mvwprintz(w_target, 1, 1, c_red, "Firing %s (%d)", // - %s (%d)",
             u.weapon.tname().c_str(),// u.weapon.curammo->name.c_str(),
@@ -516,10 +515,8 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
  else
   mvwprintz(w_target, 1, 1, c_red, "Throwing %s", relevent->tname().c_str());
  mvwprintz(w_target, 2, 1, c_white, "Move cursor to target with directional keys.");
- if (relevent) {
-  mvwprintz(w_target, 3, 1, c_white, "'<' '>' Cycle targets; 'f' or '.' to fire.");
-  mvwprintz(w_target, 4, 1, c_white,  "'0' target self; '*' toggle snap-to-target");
- }
+ mvwprintz(w_target, 3, 1, c_white, "'<' '>' Cycle targets; 'f' or '.' to fire.");
+ mvwprintz(w_target, 4, 1, c_white,  "'0' target self; '*' toggle snap-to-target");
 
  wrefresh(w_target);
  bool snap_to_target = option_table::get()[OPT_SNAP_TO_TARGET];
@@ -569,11 +566,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
     }
    }
 
-   if (!relevent) { // currently targetting vehicle to refill with fuel
-    if (const auto veh = m._veh_at(tar))
-     mvwprintw(w_target, 5, 1, "There is a %s", veh->first->name.c_str());
-   } else
-    mvwprintw(w_target, 5, 1, "Range: %d", rl_dist(u.pos, tar));
+   mvwprintw(w_target, 5, 1, "Range: %d", rl_dist(u.pos, tar));
 
    if (monster* const m_at = mon(tar)) {
        if (u_see(m_at)) m_at->print_info(u, w_target);
