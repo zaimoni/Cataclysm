@@ -94,10 +94,6 @@ int mvwaddch(WINDOW *win, int y, int x, const chtype ch);
 int wclear(WINDOW *win);
 int wprintw(WINDOW *win, const char *fmt, ...);
 WINDOW *initscr(void);
-int noecho(void);//PORTABILITY, DUMMY FUNCTION
-int cbreak(void);//PORTABILITY, DUMMY FUNCTION
-int keypad(WINDOW *faux, bool bf);//PORTABILITY, DUMMY FUNCTION
-int curs_set(int visibility);//PORTABILITY, DUMMY FUNCTION
 int mvaddch(int y, int x, const chtype ch);
 int wattron(WINDOW *win, int attrs);
 int wattroff(WINDOW *win, int attrs);
@@ -108,7 +104,23 @@ int printw(const char *fmt,...);
 int getmaxx(WINDOW *win);
 int getmaxy(WINDOW *win);
 int move(int y, int x);
-void timeout(int delay);//PORTABILITY, DUMMY FUNCTION
+
+int waddnstr(WINDOW* win, const char* str, int n);
+inline int waddstr(WINDOW* win, const char* str) { return waddnstr(win, str, -1); }
+inline int addstr(const char* str) { return waddstr(stdscr, str); }
+inline int addnstr(const char* str, int n) { return waddnstr(stdscr, str, n); }
+
+int mvwaddnstr(WINDOW* win, int y, int x, const char* str, int n);
+inline int mvwaddstr(WINDOW* win, int y, int x, const char* str) { return mvwaddnstr(win, y, x, str, -1); }
+inline int mvaddstr(int y, int x, const char* str) { return mvwaddstr(stdscr, y, x, str); }
+inline int mvaddnstr(int y, int x, const char* str, int n) { return mvwaddnstr(stdscr, y, x, str, n); }
+
+//PORTABILITY, DUMMY FUNCTIONS
+int noecho(void);
+int cbreak(void);
+int keypad(WINDOW* faux, bool bf);
+int curs_set(int visibility);
+void timeout(int delay);
 
 #define CURSES_HAS_TILESET 1
 // tileset extensions

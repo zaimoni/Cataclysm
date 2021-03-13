@@ -1353,7 +1353,8 @@ int delwin(WINDOW *win)
     return 1;
 };
 
-inline int newline(WINDOW *win){
+// these two are not curses API
+static int newline(WINDOW *win){
     if (win->cursory < win->height - 1){
         win->cursory++;
         win->cursorx=0;
@@ -1362,11 +1363,14 @@ inline int newline(WINDOW *win){
 	return 0;
 };
 
-inline void addedchar(WINDOW *win){
-    win->cursorx++;
+// if we supported scrolling, that would trigger here.
+static int addedchar(WINDOW *win){
     win->line[win->cursory].touched=true;
-    if (win->cursorx > win->width)
-        newline(win);
+	if (++win->cursorx >= win->width && !newline(win)) {
+		--win->cursorx;
+		return ERR;
+	}
+	return OK;
 };
 
 bool mvwaddbgtile(WINDOW *win, int y, int x, const char* bgtile)
@@ -1494,26 +1498,62 @@ int getch(void)
 };
 
 //The core printing function, prints characters to the array, and sets colors
-inline int printstring(WINDOW *win, char *fmt)
+// This is an incomplete implementation of waddstr(WINDOW*, char* fmt)
+inline int printstring(WINDOW* win, char* fmt)
 {
- size_t size = strlen(fmt);
- size_t j;
- for (j=0; j<size; j++){
-  if (!(fmt[j]==10)){//check that this isnt a newline char
-   if (win->cursorx <= win->width - 1 && win->cursory <= win->height - 1) {
-    win->line[win->cursory].chars[win->cursorx]=fmt[j];
-    win->line[win->cursory].FG[win->cursorx]=win->FG;
-    win->line[win->cursory].BG[win->cursorx]=win->BG;
-    win->line[win->cursory].touched=true;
-    addedchar(win);
-   } else
-   return 0; //if we try and write anything outside the window, abort completely
-  } else if (newline(win)==0){ // if the character is a newline, make sure to move down a line
-      return 0;
-  }
- }
- win->draw=true;
- return 1;
+	size_t size = strlen(fmt);
+	size_t j;
+	for (j = 0; j < size; j++) {
+		if (!(fmt[j] == 10)) {//check that this isnt a newline char
+			if (win->cursorx <= win->width - 1 && win->cursory <= win->height - 1) {
+				win->line[win->cursory].chars[win->cursorx] = fmt[j];
+				win->line[win->cursory].FG[win->cursorx] = win->FG;
+				win->line[win->cursory].BG[win->cursorx] = win->BG;
+				win->line[win->cursory].touched = true;
+				addedchar(win);
+			}
+			else
+				return 0; //if we try and write anything outside the window, abort completely
+		}
+		else if (newline(win) == 0) { // if the character is a newline, make sure to move down a line
+			return 0;
+		}
+	}
+	win->draw = true;
+	return 1;
+}
+
+int waddnstr(WINDOW* win, const char* str, int n)
+{
+	if (!str) return ERR;
+	if (const size_t size = strlen(str); 0 > n || size < n) n = size;
+	if (0 >= n) return OK;	// no-op
+
+	for (int j = 0; j < n; j++) {
+		switch (str[j])
+		{
+		case '\n':
+			if (!newline(win)) return ERR;
+			break;
+		case '\t':
+		case '\r':
+		case '\f':
+		case '\v':
+		case '\b':
+			break;	// ignore other defined non-printables.  \todo backspace and tab could be handled, others not as clear.
+		default:
+			if (OK != waddch(win, str[j])) return ERR;
+			break;
+		};
+	}
+	win->draw = true;
+	return OK;
+}
+
+int mvwaddnstr(WINDOW* win, int y, int x, const char* str, int n)
+{
+	wmove(win, y, x);	// \todo fix return code
+	return waddnstr(win, str, n);
 }
 
 //Prints a formatted string to a window at the current cursor, base function
@@ -1738,6 +1778,7 @@ int attroff(int attrs)
 {
     return wattroff(mainwin,attrs);
 };
+
 int waddch(WINDOW *win, const chtype ch)
 {
     char charcode;
@@ -1782,32 +1823,22 @@ int waddch(WINDOW *win, const chtype ch)
             break;
         }
 
+	int curx = win->cursorx;
+	decltype(auto) line_at_y = win->line[win->cursory];
 
-int curx=win->cursorx;
-int cury=win->cursory;
-
-//if (win2 > -1){
-   win->line[cury].chars[curx]=charcode;
-   win->line[cury].FG[curx]=win->FG;
-   win->line[cury].BG[curx]=win->BG;
+	line_at_y.chars[curx] = charcode;
+	line_at_y.FG[curx] = win->FG;
+	line_at_y.BG[curx] = win->BG;
 #if HAVE_TILES
-   if (!win->BG && (!win->FG || ' ' == ch)) {	// true display blank: erase the tile assignments
-	   win->line[cury].background_tiles[curx] = 0;
-	   win->line[cury].tiles[curx] = 0;
-   }
+	if (!win->BG && (!win->FG || ' ' == ch)) {	// true display blank: erase the tile assignments
+		line_at_y.background_tiles[curx] = 0;
+		line_at_y.tiles[curx] = 0;
+	}
 #endif
 
-
     win->draw=true;
-    addedchar(win);
-    return 1;
-  //  else{
-  //  win2=win2+1;
-
+    return addedchar(win);
 };
-
-
-
 
 //Move the cursor of windows 0 (stdscr)
 int move(int y, int x)
