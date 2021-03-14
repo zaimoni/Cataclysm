@@ -1379,7 +1379,7 @@ bool mvwaddbgtile(WINDOW *win, int y, int x, const char* bgtile)
 	if (!bgtile || !bgtile[0]) return false;
 	std::string tmp(bgtile);
 	if (!_translate.count(tmp)) return false;
-	if (!wmove(win, y, x)) return false;
+	if (OK != wmove(win, y, x)) return false;
 	// win->cursorx,cursory now set to x,y
 	const unsigned short t_index = _translate[tmp];	// invariant: tile index at least 1
 
@@ -1398,7 +1398,7 @@ bool mvwaddfgtile(WINDOW *win, int y, int x, const char* fgtile)
 	if (!fgtile || !fgtile[0]) return false;
 	std::string tmp(fgtile);
 	if (!_translate.count(tmp)) return false;
-	if (!wmove(win, y, x)) return false;
+	if (OK != wmove(win, y, x)) return false;
 	// win->cursorx,cursory now set to x,y
 	const unsigned short t_index = _translate[tmp];	// invariant: tile index at least 1
 
@@ -1438,20 +1438,17 @@ int wborder(WINDOW *win, chtype ls, chtype rs, chtype ts, chtype bs, chtype tl, 
         mvwaddch(win,win->height-1, 0, 192);
     if (br>0)
         mvwaddch(win,win->height-1, win->width-1, 217);
-    //_windows[w].cursorx=oldx;//methods above move the cursor, put it back
-    //_windows[w].cursory=oldy;//methods above move the cursor, put it back
-    wmove(win,oldy,oldx);
-    return 1;
+    return wmove(win,oldy,oldx); //methods above move the cursor, put it back
 };
 
 //Refreshes a window, causing it to redraw on top.
 int wrefresh(WINDOW *win)
 {
-    if (win==0) win=mainwin;
+    if (!win) win=mainwin;
     if (win->draw)
         DrawWindow(win);
     return 1;
-};
+}
 
 //Refreshes window 0 (stdscr), causing it to redraw on top.
 int refresh(void)
@@ -1552,7 +1549,7 @@ int waddnstr(WINDOW* win, const char* str, int n)
 
 int mvwaddnstr(WINDOW* win, int y, int x, const char* str, int n)
 {
-	wmove(win, y, x);	// \todo fix return code
+	if (OK != wmove(win, y, x)) return ERR;
 	return waddnstr(win, str, n);
 }
 
@@ -1577,7 +1574,7 @@ int mvwprintw(WINDOW *win, int y, int x, const char *fmt, ...)
 	char printbuf[2048];
 	vsprintf_s<sizeof(printbuf)>(printbuf, fmt, args);
 	va_end(args);
-    if (wmove(win,y,x)==0) return 0;
+    if (OK != wmove(win,y,x)) return 0;
     return printstring(win,printbuf);
 };
 
@@ -1590,7 +1587,7 @@ int mvprintw(int y, int x, const char *fmt, ...)
     char printbuf[2048];
     vsprintf_s<sizeof(printbuf)>(printbuf, fmt, args);
     va_end(args);
-    if (move(y,x)==0) return 0;
+    if (OK != move(y,x)) return 0;
     return printstring(mainwin,printbuf);
 };
 
@@ -1646,17 +1643,14 @@ int init_pair(short pair, short f, short b)
 //moves the cursor in a window
 int wmove(WINDOW *win, int y, int x)
 {
-    if (x>=win->width)
-     {return 0;}//FIXES MAP CRASH -> >= vs > only
-    if (y>=win->height)
-     {return 0;}// > crashes?
-    if (y<0)
-     {return 0;}
-    if (x<0)
-     {return 0;}
+	if (!win) win = mainwin;
+	if (x >= win->width) return ERR;
+	if (y >= win->height) return ERR;
+	if (y < 0) return ERR;
+	if (x < 0) return ERR;
     win->cursorx=x;
     win->cursory=y;
-    return 1;
+    return OK;
 };
 
 //Clears windows 0 (stdscr)     I'm not sure if its suppose to do this?
@@ -1677,7 +1671,7 @@ int endwin(void)
 //adds a character to the window
 int mvwaddch(WINDOW *win, int y, int x, const chtype ch)
 {
-   if (wmove(win,y,x)==0) return 0;
+   if (OK != wmove(win,y,x)) return 0;
    return waddch(win, ch);
 };
 
@@ -1840,16 +1834,10 @@ int waddch(WINDOW *win, const chtype ch)
     return addedchar(win);
 };
 
-//Move the cursor of windows 0 (stdscr)
-int move(int y, int x)
-{
-    return wmove(mainwin,y,x);
-};
-
 //Set the amount of time getch waits for input
 void timeout(int delay)
 {
     inputdelay=delay;
-};
+}
 
 #endif

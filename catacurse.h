@@ -85,7 +85,6 @@ int mvprintw(int y, int x, const char *fmt, ...);
 int werase(WINDOW *win);
 int start_color(void);
 int init_pair(short pair, short f, short b);
-int wmove(WINDOW *win, int y, int x);
 
 int clear(void);
 int erase(void);
@@ -103,7 +102,9 @@ int waddch(WINDOW *win, const chtype ch);
 int printw(const char *fmt,...);
 int getmaxx(WINDOW *win);
 int getmaxy(WINDOW *win);
-int move(int y, int x);
+
+int wmove(WINDOW* win, int y, int x);
+inline int move(int y, int x) { return wmove(stdscr, y, x); }
 
 int waddnstr(WINDOW* win, const char* str, int n);
 inline int waddstr(WINDOW* win, const char* str) { return waddnstr(win, str, -1); }
