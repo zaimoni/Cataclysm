@@ -283,7 +283,7 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
   if (missed_by >= 1.) {
 // We missed D:
 // Shoot a random nearby space?
-   const int delta = int(sqrt(double(missed_by)));
+   const int delta = int(sqrt(missed_by));
    tar.x += rng(-delta, delta);
    tar.y += rng(-delta, delta);
    trajectory = line_to(p.pos, tar, (m.sees(p.pos, tar, -1, tart) ? tart : 0));
@@ -331,15 +331,15 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
    monster* const m_at = mon(trajectory[i]);
    player* const h = (u.pos == trajectory[i]) ? &u : nPC(trajectory[i]);	// XXX would prefer not to pay CPU here when monster case processes
 // If we shot us a monster...
-   if (m_at && (!m_at->has_flag(MF_DIGS) || rl_dist(p.pos, m_at->pos) <= 1) &&
+   if (m_at && (!m_at->has_flag(MF_DIGS) || rl_dist(p.GPSpos, m_at->GPSpos) <= 1) &&
        ((!missed && i == trajectory.size() - 1) ||
         one_in((5 - int(m_at->type->size))))) {
 
     double goodhit = missed_by;
-    if (i < trajectory.size() - 1) goodhit = double(rand() / (RAND_MAX + 1.0)) / 2; // Unintentional hit
+    if (i < trajectory.size() - 1) goodhit = (rand() / (RAND_MAX + 1.0)) / 2; // Unintentional hit
 
 // Penalize for the monster's speed
-    if (m_at->speed > 80) goodhit *= double( double(m_at->speed) / 80.);
+    if (m_at->speed > 80) goodhit *= m_at->speed / 80.;
     
     std::vector<point> blood_traj = trajectory;
     blood_traj.insert(blood_traj.begin(), p.pos);
@@ -348,7 +348,7 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
 
    } else if ((!missed || one_in(3)) && h)  {
     double goodhit = missed_by;
-    if (i < trajectory.size() - 1) goodhit = double(rand() / (RAND_MAX + 1.0)) / 2;	 // Unintentional hit
+    if (i < trajectory.size() - 1) goodhit = (rand() / (RAND_MAX + 1.0)) / 2;	 // Unintentional hit
 
     std::vector<point> blood_traj = trajectory;
     blood_traj.insert(blood_traj.begin(), p.pos);
