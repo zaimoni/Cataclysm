@@ -224,7 +224,7 @@ void draw_tabs(WINDOW* w, int active_tab, const char* const labels[])
  if (total_width > win_width) return;	// insufficient space
 
 // Extra "buffer" space per each side of each tab
- double buffer_extra = (win_width - total_width) / (labels_size * 2);
+ double buffer_extra = (win_width - total_width) / (labels_size * 2.);
  const int buffer = int(buffer_extra);
 // Set buffer_extra to (0, 1); the "extra" whitespace that builds up
  buffer_extra = buffer_extra - buffer;

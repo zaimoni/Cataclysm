@@ -3013,9 +3013,7 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
 {
  if (0 >= power) return; // no-op if zero power (could happen if vehicle gas tank near-empty
 
- timespec ts;	// Timespec for the animation of the explosion
- ts.tv_sec = 0;
- ts.tv_nsec = EXPLOSION_SPEED;
+ timespec ts = { 0, EXPLOSION_SPEED };	// Timespec for the animation of the explosion
  int radius = sqrt(double(power / 4));
  int dam;
  if (power >= 30)
@@ -5275,9 +5273,7 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
         else zz->screenpos_set(point(x, y));
         range--;
         steps++;
-        timespec ts;   // Timespec for the animation
-        ts.tv_sec = 0;
-        ts.tv_nsec = 50000000;
+        timespec ts = { 0, 50000000 };   // Timespec for the animation
         nanosleep(&ts, nullptr);
     }
 

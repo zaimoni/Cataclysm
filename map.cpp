@@ -485,10 +485,7 @@ void map::vehmove(game *g)
       if (abs(veh->velocity) < vehicle::mph_1) veh->stop();
 
       if (pl_ctrl) {
-// a bit of delay for animation
-       timespec ts;   // Timespec for the animation
-       ts.tv_sec = 0;
-       ts.tv_nsec = 50000000;
+       timespec ts = { 0, 50000000 };   // Timespec for the animation
        nanosleep(&ts, nullptr);
       }
 

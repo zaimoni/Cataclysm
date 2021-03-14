@@ -218,9 +218,7 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
  // Make a sound at our location - Zombies will chase it
  make_gun_sound_effect(this, p, burst);
 // Set up a timespec for use in the nanosleep function below
- timespec ts;
- ts.tv_sec = 0;
- ts.tv_nsec = BULLET_SPEED;
+ timespec ts = { 0,  BULLET_SPEED };
 
  bool missed = false;
  int tart;
@@ -667,8 +665,8 @@ double calculate_missed_by(player &p, int trange)	// XXX real-world deviation is
 
   deviation += rng(0, p.weapon.curammo->accuracy);
   deviation += rng(0, p.weapon.accuracy());
-  int adj_recoil = p.recoil + p.driving_recoil;
-  deviation += rng(int(adj_recoil / 4), adj_recoil);
+  const int adj_recoil = p.recoil + p.driving_recoil;
+  deviation += rng(adj_recoil / 4, adj_recoil);
 
 // .013 * trange is a computationally cheap version of finding the tangent.
 // (note that .00325 * 4 = .013; .00325 is used because deviation is a number
