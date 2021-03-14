@@ -198,12 +198,10 @@ bool reject_not_whitelisted_printf(const std::string& src)
     return false;
 }
 
-static void mvwprintz_noformat(WINDOW* w, int y, int x, nc_color FG, const char* mes)
+void mvwaddstrz(WINDOW* w, int y, int x, nc_color FG, const char* mes)
 {
-    reject_unescaped_percent(mes);
     wattron(w, FG);
-    // wmove(w, y, x);
-    mvwprintw(w, y, x, mes);
+    mvwaddstr(w, y, x, mes);
     wattroff(w, FG);
 }
 
@@ -738,12 +736,12 @@ void full_screen_popup(const char* mes, ...)
  while (pos != std::string::npos) {
   std::string line = tmp.substr(0, pos);
   line_num++;
-  mvwprintz_noformat(w, line_num, 1, c_white, line.c_str());
+  mvwaddstrz(w, line_num, 1, c_white, line.c_str());
   tmp = tmp.substr(pos + 1);
   pos = tmp.find_first_of('\n');
  }
  line_num++;
- mvwprintz_noformat(w, line_num, 1, c_white, tmp.c_str());
+ mvwaddstrz(w, line_num, 1, c_white, tmp.c_str());
  wrefresh(w);
  int ch;
  do
