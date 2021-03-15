@@ -1784,10 +1784,8 @@ template<bool want_details = false> static int _current_speed(const player& u, g
     return newmoves;
 }
 
-int player::current_speed(game *g) const
-{
- return _current_speed(*this, g);
-}
+int player::current_speed(game *g) const { return _current_speed(*this, g); }
+int player::theoretical_speed() const { return _current_speed(*this, nullptr); }
 
 int player::run_cost(int base_cost)
 {
@@ -2691,9 +2689,9 @@ void player::disp_status(WINDOW *w, game *g)
   else if (per_cur > per_max) col_per = c_green;
 
   // C:Whales computed color w/o environmental effects, but did not display those effects either
-  int spd_cur = current_speed();
-  if (spd_cur < 100) col_spd = c_red;
-  else if (spd_cur > 100) col_spd = c_green;
+  int spd_cur = theoretical_speed();
+  if (mobile::mp_turn > spd_cur) col_spd = c_red;
+  else if (mobile::mp_turn < spd_cur) col_spd = c_green;
   spd_cur = current_speed(g);
 
   mvwprintz(w, 3, 13, col_str, "Str %s%d", str_cur >= 10 ? "" : " ", str_cur);

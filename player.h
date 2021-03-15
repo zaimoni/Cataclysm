@@ -61,6 +61,7 @@ public:
  void reset(game* g = nullptr);// Resets movement points, stats, applies effects
  void update_morale();	// Ticks down morale counters and removes them
  int  current_speed(game* g = nullptr) const; // Number of movement points we get a turn
+ int  theoretical_speed() const; // ", ignoring some environmental modifiers
  int  run_cost(int base_cost); // Adjust base_cost
  int  swim_speed();	// Our speed when swimming
 
