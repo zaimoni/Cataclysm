@@ -1637,15 +1637,16 @@ void player::reset(game *g)
  }
 
 // Set our scent towards the norm
- int norm_scent = 500;
+ decltype(scent) norm_scent = 500;
  if (has_trait(PF_SMELLY)) norm_scent = 800;
  if (has_trait(PF_SMELLY2)) norm_scent = 1200;
 
- if (scent < norm_scent) scent = int((scent + norm_scent) / 2) + 1;
- else if (scent > norm_scent) scent = int((scent + norm_scent) / 2) - 1;
+ // C:Whales rounded absolute value of change up, not integer-truncate
+ if (scent < norm_scent) scent += (norm_scent - scent + 1)/2;
+ else if (scent > norm_scent) scent -= (scent - norm_scent + 1) / 2;
 
 // Give us our movement points for the turn.
- moves += current_speed(g);
+ moves += current_speed();
 
 // Floor for our stats.  No stat changes should occur after this!
  if (dex_cur < 0) dex_cur = 0;
@@ -1784,7 +1785,7 @@ template<bool want_details = false> static int _current_speed(const player& u, g
     return newmoves;
 }
 
-int player::current_speed(game *g) const { return _current_speed(*this, g); }
+int player::current_speed() const { return _current_speed(*this, game::active()); }
 int player::theoretical_speed() const { return _current_speed(*this, nullptr); }
 
 int player::run_cost(int base_cost)
@@ -2692,7 +2693,7 @@ void player::disp_status(WINDOW *w, game *g)
   int spd_cur = theoretical_speed();
   if (mobile::mp_turn > spd_cur) col_spd = c_red;
   else if (mobile::mp_turn < spd_cur) col_spd = c_green;
-  spd_cur = current_speed(g);
+  spd_cur = current_speed();
 
   mvwprintz(w, 3, 13, col_str, "Str %s%d", str_cur >= 10 ? "" : " ", str_cur);
   mvwprintz(w, 3, 20, col_dex, "Dex %s%d", dex_cur >= 10 ? "" : " ", dex_cur);

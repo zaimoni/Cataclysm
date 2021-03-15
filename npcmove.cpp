@@ -461,9 +461,9 @@ void npc::choose_monster_target(game *g, int &enemy, int &danger,
     enemy = i;
    } else if (okay_by_rules && defend_u) {
     priority = mon->type->difficulty * (1 + hp_percent);
-    distance = (100 * rl_dist(g->u.pos, mon->pos)) / mon->speed;
+    distance = (mobile::mp_turn * rl_dist(g->u.pos, mon->pos)) / mon->speed;
     priority -= distance;
-    if (mon->speed < current_speed(g)) priority -= 10;
+    if (mon->speed < current_speed()) priority -= 10;
     priority *= (personality.bravery + personality.altruism + op_of_u.value) / 15;
     if (priority > highest_priority) {
      highest_priority = priority;
@@ -489,11 +489,11 @@ npc::ai_action npc::method_of_fleeing(game *g, int enemy) const
  if (0 <= it) // We have an escape item!
   return ai_action(npc_pause,std::unique_ptr<cataclysm::action>(new use_escape_obj(*const_cast<npc*>(this), it)));	// C:Whales failure mode was npc_pause
 
- int speed = (enemy == TARGET_PLAYER ? g->u.current_speed(g) : g->z[enemy].speed);
+ int speed = (enemy == TARGET_PLAYER ? g->u.current_speed() : g->z[enemy].speed);
  point enemy_loc = (enemy == TARGET_PLAYER ? g->u.pos : g->z[enemy].pos);
  int distance = rl_dist(pos, enemy_loc);
 
- if (speed > 0 && (100 * distance) / speed <= 4 && speed > current_speed(g))
+ if (speed > 0 && (mobile::mp_turn * distance) / speed <= 4 && speed > current_speed())
   return method_of_attack(g, enemy, -1); // Can't outrun, so attack
 
  return _flee(*this, enemy_loc);
@@ -903,14 +903,14 @@ bool npc::need_to_reload() const
 bool npc::enough_time_to_reload(game *g, int target, const item &gun) const
 {
  int rltime = gun.reload_time(*this);
- double turns_til_reloaded = rltime / current_speed(g);
+ double turns_til_reloaded = rltime / current_speed();
  int dist, speed;
 
  if (target == TARGET_PLAYER) {
   if (g->sees_u(pos) && g->u.weapon.is_gun() && rltime > 2 * mobile::mp_turn)
    return false; // Don't take longer than 2 turns if player has a gun
   dist = rl_dist(GPSpos, g->u.GPSpos);
-  speed = speed_estimate(g->u.current_speed(g));
+  speed = speed_estimate(g->u.current_speed());
  } else if (target >= 0) {
   dist = rl_dist(GPSpos, g->z[target].GPSpos);
   speed = speed_estimate(g->z[target].speed);
