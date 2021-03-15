@@ -4523,12 +4523,12 @@ void game::plthrow()
 
  // target() sets x and y, or returns false if we canceled (by pressing Esc)
  point tar(u.pos);
- std::vector<point> trajectory = target(tar, bounds, mon_targets, passtarget, &thrown);
+ std::vector<point> trajectory = target(tar, bounds, mon_targets, passtarget, "Throwing " + thrown.tname());
  if (trajectory.empty()) return;
  if (passtarget != -1) last_target = targetindices[passtarget];
 
  u.i_rem(ch);
- u.moves -= 125;
+ u.moves -= (mobile::mp_turn/4)*5;
  u.practice(sk_throw, 10);
 
  throw_item(u, tar, std::move(thrown), trajectory);
@@ -4595,7 +4595,8 @@ void game::plfire(bool burst)
 
  // target() sets x and y, and returns an empty vector if we canceled (Esc)
  point tar(u.pos);
- std::vector <point> trajectory = target(tar, bounds, mon_targets, passtarget, &u.weapon);
+ std::vector<point> trajectory = target(tar, bounds, mon_targets, passtarget,
+                                        "Firing " + u.weapon.tname() + " (" + std::to_string(u.weapon.charges) + ")");
  draw_ter(); // Recenter our view
  if (trajectory.size() == 0) return;
  if (passtarget != -1) { // We picked a real live target

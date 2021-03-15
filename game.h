@@ -275,10 +275,12 @@ class game : public reality_bubble
   void help();    // Help screen		'?'
 
 // Target is an interactive function which allows the player to choose a nearby
-// square.  It display information on any monster/NPC on that square, and also
+// square.  It displays information on any monster/NPC on that square, and also
 // returns a Bresenham line to that square.  It is called by plfire() and
 // throw().
-  std::vector<point> target(point& tar, const zaimoni::gdi::box<point>& bounds, const std::vector<const monster*>& t, int &target, item* relevent);
+  std::vector<point> target(point& tar, const zaimoni::gdi::box<point>& bounds,
+                            const std::vector<const monster*>& t, int& target,
+                            const std::string& prompt);
 
 // Map updating and monster spawning
   void replace_stair_monsters();

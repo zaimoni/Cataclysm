@@ -479,7 +479,7 @@ void game::throw_item(player &p, point tar, item&& thrown, std::vector<point> &t
 }
 
 // At some point, C:Whales also used this to target vehicles for refilling (different UI when forked).
-std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& bounds, const std::vector<const monster*>& t, int &target, item *relevent)
+std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& bounds, const std::vector<const monster*>& t, int &target, const std::string& prompt)
 {
  std::vector<point> ret;
  const int sight_dist = u.sight_range();
@@ -506,15 +506,10 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
  wborder(w_target, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                  LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
 
- if (relevent == &u.weapon && relevent->is_gun())
-  mvwprintz(w_target, 1, 1, c_red, "Firing %s (%d)", // - %s (%d)",
-            u.weapon.tname().c_str(),// u.weapon.curammo->name.c_str(),
-            u.weapon.charges);
- else
-  mvwprintz(w_target, 1, 1, c_red, "Throwing %s", relevent->tname().c_str());
- mvwprintz(w_target, 2, 1, c_white, "Move cursor to target with directional keys.");
- mvwprintz(w_target, 3, 1, c_white, "'<' '>' Cycle targets; 'f' or '.' to fire.");
- mvwprintz(w_target, 4, 1, c_white,  "'0' target self; '*' toggle snap-to-target");
+ mvwaddstrz(w_target, 1, 1, c_red, prompt.c_str());
+ mvwaddstrz(w_target, 2, 1, c_white, "Move cursor to target with directional keys.");
+ mvwaddstrz(w_target, 3, 1, c_white, "'<' '>' Cycle targets; 'f' or '.' to fire.");
+ mvwaddstrz(w_target, 4, 1, c_white,  "'0' target self; '*' toggle snap-to-target");
 
  wrefresh(w_target);
  bool snap_to_target = option_table::get()[OPT_SNAP_TO_TARGET];
