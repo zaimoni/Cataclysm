@@ -907,17 +907,17 @@ bool npc::enough_time_to_reload(game *g, int target, const item &gun) const
  int dist, speed;
 
  if (target == TARGET_PLAYER) {
-  if (g->sees_u(pos) && g->u.weapon.is_gun() && rltime > 200)
+  if (g->sees_u(pos) && g->u.weapon.is_gun() && rltime > 2 * mobile::mp_turn)
    return false; // Don't take longer than 2 turns if player has a gun
-  dist = rl_dist(pos, g->u.pos);
+  dist = rl_dist(GPSpos, g->u.GPSpos);
   speed = speed_estimate(g->u.current_speed(g));
  } else if (target >= 0) {
-  dist = rl_dist(pos, g->z[target].pos);
+  dist = rl_dist(GPSpos, g->z[target].GPSpos);
   speed = speed_estimate(g->z[target].speed);
  } else
   return true; // No target, plenty of time to reload
 
- double turns_til_reached = (dist * 100) / speed;
+ double turns_til_reached = (dist * mobile::mp_turn) / speed;
 
  return (turns_til_reloaded < turns_til_reached);
 }
