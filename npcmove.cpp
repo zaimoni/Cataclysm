@@ -413,8 +413,8 @@ void npc::choose_monster_target(game *g, int &enemy, int &danger,
  for (int i = 0; i < g->z.size(); i++) {
   monster *mon = &(g->z[i]);
   if (g->pl_sees(this, mon)) {
-   int distance = (100 * rl_dist(pos, mon->pos)) / mon->speed;
-   double hp_percent = (mon->type->hp - mon->hp) / mon->type->hp;
+   int distance = (mobile::mp_turn * rl_dist(GPSpos, mon->GPSpos)) / mon->speed;
+   double hp_percent = double(mon->type->hp - mon->hp) / mon->type->hp;
    int priority = mon->type->difficulty * (1 + hp_percent) - distance;
    int monster_danger = (mon->type->difficulty * mon->hp) / mon->type->hp;
    if (!mon->is_fleeing(*this)) monster_danger++;
@@ -428,7 +428,7 @@ void npc::choose_monster_target(game *g, int &enemy, int &danger,
    } else
     priority *= 1 + (.1 * distance);
 */
-   total_danger += int(monster_danger / (distance == 0 ? 1 : distance));
+   total_danger += monster_danger / (distance == 0 ? 1 : distance);
 
    bool okay_by_rules = true;
    if (is_following()) {
@@ -447,8 +447,9 @@ void npc::choose_monster_target(game *g, int &enemy, int &danger,
       break;
     }
    }
+   if (!okay_by_rules) continue;
 
-   if (okay_by_rules && monster_danger > danger) {
+   if (monster_danger > danger) {
     danger = monster_danger;
     if (enemy == -1) {
      highest_priority = priority;
@@ -456,12 +457,12 @@ void npc::choose_monster_target(game *g, int &enemy, int &danger,
     }
    }
 
-   if (okay_by_rules && priority > highest_priority) {
+   if (priority > highest_priority) {
     highest_priority = priority;
     enemy = i;
-   } else if (okay_by_rules && defend_u) {
+   } else if (defend_u) {
     priority = mon->type->difficulty * (1 + hp_percent);
-    distance = (mobile::mp_turn * rl_dist(g->u.pos, mon->pos)) / mon->speed;
+    distance = (mobile::mp_turn * rl_dist(g->u.GPSpos, mon->GPSpos)) / mon->speed;
     priority -= distance;
     if (mon->speed < current_speed()) priority -= 10;
     priority *= (personality.bravery + personality.altruism + op_of_u.value) / 15;
