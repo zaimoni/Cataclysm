@@ -159,10 +159,8 @@ class game : public reality_bubble
   faction* random_good_faction();
   faction* random_evil_faction();
 
-  bool sees_u(int x, int y);
-  bool sees_u(const point& pt) { return sees_u(pt.x, pt.y); };
-  bool sees_u(int x, int y, int &t);
-  bool sees_u(const point& pt, int &t) { return sees_u(pt.x, pt.y, t); };
+  bool sees_u(const point& origin) const;
+  bool sees_u(const point& origin, int &t) const;
   bool u_see(int x, int y) const;
   bool u_see(const point& pt) const { return u_see(pt.x, pt.y); };
   bool u_see(int x, int y, int &t) const;

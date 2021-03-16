@@ -2466,18 +2466,18 @@ faction* game::random_evil_faction()
  return &(factions[factions.size() - 1]);
 }
 
-bool game::sees_u(int x, int y)
+bool game::sees_u(const point& origin) const
 {
  return (!u.has_active_bionic(bio_cloak) &&
          !u.has_artifact_with(AEP_INVISIBLE) && 
-         m.sees(x, y, u.pos, light_level()));
+         m.sees(origin, u.pos, light_level()));
 }
 
-bool game::sees_u(int x, int y, int &t)
+bool game::sees_u(const point& origin, int &t) const
 {
 	return (!u.has_active_bionic(bio_cloak) &&
 		!u.has_artifact_with(AEP_INVISIBLE) &&
-		m.sees(x, y, u.pos, light_level(), t));
+		m.sees(origin, u.pos, light_level(), t));
 }
 
 bool game::u_see(int x, int y) const
