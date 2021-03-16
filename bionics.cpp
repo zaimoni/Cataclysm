@@ -782,29 +782,28 @@ bool player::install_bionics(game *g, const it_bionic* type)
  int skdec = ((pl_skill * 10) / 4) % 10;
 
 // Header text
- mvwprintz(w.get(), 0,  0, c_white, "Installing bionics:");
- mvwprintz(w.get(), 0, 20, type->color, bio_name.c_str());
+ mvwaddstrz(w.get(), 0,  0, c_white, "Installing bionics:");
+ mvwaddstrz(w.get(), 0, 20, type->color, bio_name.c_str());
 
 // Dividing bars
- for (int i = 0; i < SCREEN_WIDTH; i++) {
-  mvwputch(w.get(),  1, i, c_ltgray, LINE_OXOX);
-  mvwputch(w.get(), 21, i, c_ltgray, LINE_OXOX);
- }
+ draw_hline(w.get(), 1, c_ltgray, LINE_OXOX);
+ draw_hline(w.get(), 21, c_ltgray, LINE_OXOX);
+
 // Init the list of bionics
  for (int i = 1; i < type->options.size(); i++) {
   bionic_id id = type->options[i];
-  mvwprintz(w.get(), i + 2, 0, (has_bionic(id) ? c_ltred : c_ltblue), bionic::type[id].name.c_str());
+  mvwaddstrz(w.get(), i + 2, 0, (has_bionic(id) ? c_ltred : c_ltblue), bionic::type[id].name.c_str());
  }
 // Helper text
  mvwprintz(w.get(), 2, 40, c_white, "Difficulty of this module: %d", type->difficulty);
  mvwprintz(w.get(), 3, 40, c_white, "Your installation skill:   %d.%d", skint, skdec);
- mvwprintz(w.get(), 4, 40, c_white, "Installation requires high intelligence,");
- mvwprintz(w.get(), 5, 40, c_white, "and skill in electronics, first aid, and");
- mvwprintz(w.get(), 6, 40, c_white, "mechanics (in that order of importance).");
+ mvwaddstrz(w.get(), 4, 40, c_white, "Installation requires high intelligence,");
+ mvwaddstrz(w.get(), 5, 40, c_white, "and skill in electronics, first aid, and");
+ mvwaddstrz(w.get(), 6, 40, c_white, "mechanics (in that order of importance).");
 
  int chance_of_success = (100 * pl_skill) / (pl_skill + 4 * type->difficulty);
 
- mvwprintz(w.get(), 8, 40, c_white,        "Chance of success:");
+ mvwaddstrz(w.get(), 8, 40, c_white, "Chance of success:");
 
  nc_color col_suc;
  if (chance_of_success >= 95)
@@ -820,16 +819,16 @@ bool player::install_bionics(game *g, const it_bionic* type)
 
  mvwprintz(w.get(), 8, 59, col_suc, "%d%%", chance_of_success);
 
- mvwprintz(w.get(), 10, 40, c_white,       "Failure may result in crippling damage,");
- mvwprintz(w.get(), 11, 40, c_white,       "loss of existing bionics, genetic damage");
- mvwprintz(w.get(), 12, 40, c_white,       "or faulty installation.");
+ mvwaddstrz(w.get(), 10, 40, c_white, "Failure may result in crippling damage,");
+ mvwaddstrz(w.get(), 11, 40, c_white, "loss of existing bionics, genetic damage");
+ mvwaddstrz(w.get(), 12, 40, c_white, "or faulty installation.");
  wrefresh(w.get());
 
  static constexpr const int BATTERY_AMOUNT = 4; // How much batteries increase your power
 
  if (type->id == itm_bionics_battery) {	// No selection list; just confirm
   mvwprintz(w.get(),  2, 0, h_ltblue, "Battery Level +%d", BATTERY_AMOUNT);
-  mvwprintz(w.get(), 22, 0, c_ltblue, "\
+  mvwaddstrz(w.get(), 22, 0, c_ltblue, "\
 Installing this bionic will increase your total battery capacity by 10.\n\
 Batteries are necessary for most bionics to function.  They also require a\n\
 charge mechanism, which must be installed from another CBM.");
@@ -860,7 +859,7 @@ charge mechanism, which must be installed from another CBM.");
  do {
   bionic_id id = type->options[selection];
   const auto& bio = bionic::type[id];
-  mvwprintz(w.get(), 2 + selection, 0, (has_bionic(id) ? h_ltred : h_ltblue), bio.name.c_str());
+  mvwaddstrz(w.get(), 2 + selection, 0, (has_bionic(id) ? h_ltred : h_ltblue), bio.name.c_str());
 
 // Clear the bottom three lines...
   draw_hline(w.get(), 22, c_ltgray, ' ');
@@ -868,20 +867,20 @@ charge mechanism, which must be installed from another CBM.");
   draw_hline(w.get(), 24, c_ltgray, ' ');
 
   // ...and then fill them with the description of the selected bionic
-  mvwprintz(w.get(), 22, 0, c_ltblue, bio.description.c_str());
+  mvwaddstrz(w.get(), 22, 0, c_ltblue, bio.description.c_str());
 
   wrefresh(w.get());
   ch = input();
   switch (ch) {
 
   case 'j':
-   mvwprintz(w.get(), 2 + selection, 0, (has_bionic(id) ? c_ltred : c_ltblue), bio.name.c_str());
+   mvwaddstrz(w.get(), 2 + selection, 0, (has_bionic(id) ? c_ltred : c_ltblue), bio.name.c_str());
    if (selection == type->options.size() - 1) selection = 0;
    else selection++;
    break;
 
   case 'k':
-   mvwprintz(w.get(), 2 + selection, 0, (has_bionic(id) ? c_ltred : c_ltblue), bio.name.c_str());
+   mvwaddstrz(w.get(), 2 + selection, 0, (has_bionic(id) ? c_ltred : c_ltblue), bio.name.c_str());
    if (selection == 0) selection = type->options.size() - 1;
    else selection--;
    break;
