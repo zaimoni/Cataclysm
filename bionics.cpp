@@ -449,13 +449,13 @@ void player::activate_bionic(int b, game *g)
   std::unique_ptr<WINDOW, curses_full_delete> w(newwin(analysis_height, analysis_width, analysis_offset.y, analysis_offset.x));
   wborder(w.get(), LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX, LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
   if (good.empty() && bad.empty())
-   mvwprintz(w.get(), 1, 1, c_white, "No effects.");
+   mvwaddstrz(w.get(), 1, 1, c_white, "No effects.");
   else {
    for (int line = 1; line < analysis_height-1 && line <= good.size() + bad.size(); line++) {
     if (line <= bad.size())
-     mvwprintz(w.get(), line, 1, c_red, bad[line - 1].c_str());
+     mvwaddstrz(w.get(), line, 1, c_red, bad[line - 1].c_str());
     else
-     mvwprintz(w.get(), line, 1, c_green, good[line - 1 - bad.size()].c_str());
+     mvwaddstrz(w.get(), line, 1, c_green, good[line - 1 - bad.size()].c_str());
    }
   }
   }

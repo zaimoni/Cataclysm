@@ -43,13 +43,13 @@ void game::construction_menu()
  WINDOW *w_con = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  wborder(w_con, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                 LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
- mvwprintz(w_con, 0, 1, c_red, "Construction");
+ mvwaddstrz(w_con, 0, 1, c_red, "Construction");
  mvwputch(w_con,  0, VBAR_X, c_white, LINE_OXXX);
  mvwputch(w_con, VIEW-1, VBAR_X, c_white, LINE_XXOX);
  for (int i = 1; i < VIEW-1; i++)
   mvwputch(w_con, i, VBAR_X, c_white, LINE_XOXO);
 
- mvwprintz(w_con,  1, VBAR_X + 1, c_white, "Difficulty:");
+ mvwaddstrz(w_con,  1, VBAR_X + 1, c_white, "Difficulty:");
 
  wrefresh(w_con);
 
@@ -81,7 +81,7 @@ void game::construction_menu()
    const constructable* const cur = constructable::constructions[current];
    nc_color col = (player_can_build(u, total_inv, cur, 0) ? c_white : c_dkgray);
    if (current == select) col = hilite(col);
-   mvwprintz(w_con, 1 + i, 1, col, cur->name.c_str());
+   mvwaddstrz(w_con, 1 + i, 1, col, cur->name.c_str());
   }
 
   if (update_info) {
@@ -116,7 +116,7 @@ void game::construction_menu()
                     posy++;
                     posx = VBAR_X + 3;
                 }
-                mvwprintz(w_con, posy, posx, c_white, "OR");
+                mvwaddstrz(w_con, posy, posx, c_white, "OR");
                 posx += 3;
             }
             const nc_color col = total_inv.has_amount(tool, 1) ? c_green : c_red;
@@ -126,7 +126,7 @@ void game::construction_menu()
                 posy++;
                 posx = VBAR_X + 3;
             }
-            mvwprintz(w_con, posy, posx, col, t_type->name.c_str());
+            mvwaddstrz(w_con, posy, posx, col, t_type->name.c_str());
             posx += length + 1; // + 1 for an empty space
         }
     }
@@ -144,7 +144,7 @@ void game::construction_menu()
                     posy++;
                     posx = VBAR_X + 3;
                 }
-                mvwprintz(w_con, posy, posx, c_white, "OR");
+                mvwaddstrz(w_con, posy, posx, c_white, "OR");
                 posx += 3;
             }
             nc_color col = c_red;
