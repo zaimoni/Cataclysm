@@ -234,7 +234,7 @@ bool monster::is_fleeing(const player &u) const
  if (has_effect(ME_RUN)) return true;
  monster_attitude att = attitude(&u);
  return (att == MATT_FLEE ||
-         (att == MATT_FOLLOW && rl_dist(pos, u.pos) <= 4));
+         (att == MATT_FOLLOW && rl_dist(GPSpos, u.GPSpos) <= 4));
 }
 
 monster_attitude monster::attitude(const player *u) const
@@ -296,8 +296,8 @@ int monster::trigger_sum(const game* g, typename cataclysm::bitmap<N_MONSTER_TRI
     }
 
     if (triggers & mfb(MTRIG_PLAYER_CLOSE)) {
-        if (rl_dist(pos, g->u.pos) <= 5) ret += 5;
-        for (const auto& _npc : g->active_npc) if (5 >= rl_dist(pos, _npc.pos)) ret += 5;
+        if (rl_dist(GPSpos, g->u.GPSpos) <= 5) ret += 5;
+        for (const auto& _npc : g->active_npc) if (5 >= rl_dist(GPSpos, _npc.GPSpos)) ret += 5;
     }
 
     if (triggers & mfb(MTRIG_PLAYER_WEAK)) {	// \todo why not NPCs?

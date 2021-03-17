@@ -2503,7 +2503,7 @@ bool game::u_see(int x, int y, int &t) const
 
 bool game::u_see(const monster *mon) const
 {
- int dist = rl_dist(u.pos, mon->pos);
+ int dist = rl_dist(u.GPSpos, mon->GPSpos);
  if (u.has_trait(PF_ANTENNAE) && dist <= 3) return true;
  if (mon->has_flag(MF_DIGS) && !u.has_active_bionic(bio_ground_sonar) && dist > 1)
   return false;	// Can't see digging monsters until we're right next to them
@@ -2518,7 +2518,7 @@ bool game::u_see(const monster *mon) const
 bool game::pl_sees(player *p, monster *mon) const
 {
  if (mon->has_flag(MF_DIGS) && !p->has_active_bionic(bio_ground_sonar) &&
-     rl_dist(p->pos, mon->pos) > 1)
+     rl_dist(p->GPSpos, mon->GPSpos) > 1)
   return false;	// Can't see digging monsters until we're right next to them
  return m.sees(p->pos, mon->pos, p->sight_range());
 }
@@ -2597,7 +2597,7 @@ void game::mon_info()
    const bool mon_dangerous = (att == MATT_ATTACK || att == MATT_FOLLOW);
    if (mon_dangerous) newseen++;
 
-   int index = (rl_dist(u.pos, mon.pos) <= VIEW_CENTER ? 8 : direction_from(u.GPSpos, mon.GPSpos));
+   int index = (rl_dist(u.GPSpos, mon.GPSpos) <= VIEW_CENTER ? 8 : direction_from(u.GPSpos, mon.GPSpos));
    if (mon_dangerous && index < 8) dangerous[index] = true;
 
    if (!any(unique_types[index], mon.type->id)) unique_types[index].push_back(mon.type->id);
@@ -2607,7 +2607,7 @@ void game::mon_info()
   const auto& _npc = active_npc[i];
   if (u_see(_npc.pos)) { // TODO: NPC invis
    if (_npc.attitude == NPCATT_KILL) newseen++;
-   int index = (rl_dist(u.pos, _npc.pos) <= VIEW_CENTER ? 8 : direction_from(u.GPSpos, _npc.GPSpos));
+   int index = (rl_dist(u.GPSpos, _npc.GPSpos) <= VIEW_CENTER ? 8 : direction_from(u.GPSpos, _npc.GPSpos));
    unique_types[index].push_back(-1 - i);
   }
  }
@@ -2774,7 +2774,7 @@ void game::monmove()
   }
 
   if (!z[i].dead) {
-   if (u.has_active_bionic(bio_alarm) && u.power_level >= 1 && rl_dist(u.pos, z[i].pos) <= 5) {
+   if (u.has_active_bionic(bio_alarm) && u.power_level >= 1 && rl_dist(u.GPSpos, z[i].GPSpos) <= 5) {
     u.power_level--;
 	messages.add("Your motion alarm goes off!");
     u.cancel_activity_query("Your motion alarm goes off!");

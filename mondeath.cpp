@@ -46,7 +46,7 @@ void mdeath::boomer(game *g, monster *z)
    }
   }
  }
- if (rl_dist(z->pos, g->u.pos) == 1)
+ if (rl_dist(z->GPSpos, g->u.GPSpos) == 1)
   g->u.infect(DI_BOOMERED, bp_eyes, 2, 24);	// V 0.2.1 npcs
 }
 
@@ -169,7 +169,7 @@ void mdeath::disappear(game *g, monster *z)
 void mdeath::guilt(game *g, monster *z)
 {
  if (g->u.has_trait(PF_HEARTLESS)) return;	// We don't give a shit!
- if (rl_dist(z->pos, g->u.pos) > 1) return;	// Too far away, we can deal with it
+ if (rl_dist(z->GPSpos, g->u.GPSpos) > 1) return;	// Too far away, we can deal with it
  if (z->hp >= 0) return;	// It probably didn't die from damage
  messages.add("You feel terrible for killing %s!", z->name().c_str());
  g->u.add_morale(MORALE_KILLED_MONSTER, -50, -250);
