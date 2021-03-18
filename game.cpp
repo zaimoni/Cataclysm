@@ -4862,7 +4862,7 @@ void game::chat()
  }
  std::vector<npc*> available;
  for (auto& _npc : active_npc) {
-	 if (u_see(_npc.pos) && rl_dist(u.pos, _npc.pos) <= 24) available.push_back(&_npc);
+	 if (u_see(_npc.pos) && 24 >= rl_dist(u.GPSpos, _npc.GPSpos)) available.push_back(&_npc);
  }
  const size_t ub = available.size();
  if (0 >= ub) {
@@ -4887,7 +4887,7 @@ void game::chat()
   if (ch == ub) return;
   available[ch]->talk_to_u(this);
  }
- u.moves -= 100;
+ u.moves -= mobile::mp_turn;
 }
 
 void game::pldrive(direction dir)
