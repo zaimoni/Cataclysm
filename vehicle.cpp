@@ -12,9 +12,6 @@
 
 void trap_fully_triggered(map& m, const point& pt, const std::vector<item_drop_spec>& drop_these); // trapfunc.cpp
 
-static const ammotype fuel_types[] = { AT_GAS, AT_BATT, AT_PLUT, AT_PLASMA };   // 2020-07-12 arguably could be sunk to vehicle::print_fuel_indicator
-static constexpr const size_t num_fuel_types = sizeof(fuel_types) / sizeof(*fuel_types);
-
 static const char* const JSON_transcode_vparts[] = {
 	"seat",
 	"frame_h",
@@ -366,17 +363,22 @@ void vehicle::print_part_desc (void *w, int y1, int p, int hl)
 
 void vehicle::print_fuel_indicator(void *w, int y, int x) const
 {
+    static constexpr const ammotype fuel_types[] = { AT_GAS, AT_BATT, AT_PLUT, AT_PLASMA };   // 2020-07-12 arguably could be sunk to vehicle::print_fuel_indicator
+    static constexpr const nc_color fcs[] = { c_ltred, c_yellow, c_ltgreen, c_ltblue };
+    static_assert(sizeof(fuel_types) / sizeof(*fuel_types) == sizeof(fcs) / sizeof(*fcs));
+
+    static constexpr const char fsyms[] = { 'E', '\\', '|', '/', 'F' };
+    static_assert(sizeof(fsyms) / sizeof(*fsyms) == sizeof("E...F")-1);
+
+    static constexpr const size_t num_fuel_types = sizeof(fuel_types) / sizeof(*fuel_types);
+
     WINDOW *win = (WINDOW *) w;
-    const nc_color fcs[num_fuel_types] = { c_ltred, c_yellow, c_ltgreen, c_ltblue };
-    const char fsyms[5] = { 'E', '\\', '|', '/', 'F' };
-    nc_color col_indf1 = c_ltgray;
-    mvwprintz(win, y, x, col_indf1, "E...F");
+    mvwaddstrz(win, y, x, c_ltgray, "E...F");
     for (int i = 0; i < num_fuel_types; i++) {
-        int cap = fuel_capacity(fuel_types[i]);
-        if (cap > 0) {
-            int amnt = cap > 0? fuel_left(fuel_types[i]) * 99 / cap : 0;
+        if (int cap = fuel_capacity(fuel_types[i]); 0 < cap) {
+            int amnt = fuel_left(fuel_types[i]) * 99 / cap; // can't use 100 as then we might overflow
             int indf = (amnt / 20) % 5;
-            mvwprintz(win, y, x + indf, fcs[i], "%c", fsyms[indf]);
+            mvwputch(win, y, x + indf, fcs[i], fsyms[indf]);
         }
     }
 }
