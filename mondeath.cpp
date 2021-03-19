@@ -52,19 +52,25 @@ void mdeath::boomer(game *g, monster *z)
 
 void mdeath::kill_vines(game *g, monster *z)
 {
- std::vector<int> vines;
- std::vector<int> hubs;
- for (int i = 0; i < g->z.size(); i++) {
-  if (g->z[i].type->id == mon_creeper_hub && g->z[i].pos != z->pos) hubs.push_back(i);
-  if (g->z[i].type->id == mon_creeper_vine) vines.push_back(i);
+ std::vector<monster*> vines;
+ std::vector<const monster*> hubs;
+ for (decltype(auto) _mon : g->z) {
+     switch (_mon.type->id)
+     {
+     case mon_creeper_hub:
+         if (_mon.GPSpos != z->GPSpos) hubs.push_back(&_mon);
+         break;
+     case mon_creeper_vine:
+         vines.push_back(&_mon);
+         break;
+     }
  }
 
- for (int i = 0; i < vines.size(); i++) {
-  monster *vine = &(g->z[vines[i]]);
-  int dist = rl_dist(vine->pos, z->pos);
+ for (auto vine : vines) {
+  int dist = rl_dist(vine->GPSpos, z->GPSpos);
   bool closer_hub = false;
-  for (int j = 0; j < hubs.size() && !closer_hub; j++) {
-   if (rl_dist(vine->pos, g->z[hubs[j]].pos) < dist) {
+  for (auto hub : hubs) {
+   if (rl_dist(vine->GPSpos, hub->GPSpos) < dist) {
     closer_hub = true;
 	break;
    }
