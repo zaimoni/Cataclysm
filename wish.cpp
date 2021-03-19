@@ -112,9 +112,9 @@ void game::wish()
    }
   }
   if (!search_results.empty())
-   mvwprintz(w_list, 0, 11, c_green, "%s               ", pattern.c_str());
+   mvwprintz(w_list, 0, 11, c_green, "%s", pattern.c_str());
   else if (pattern.length() > 0)
-   mvwprintz(w_list, 0, 11, c_red, "%s not found!            ",pattern.c_str());
+   mvwprintz(w_list, 0, 11, c_red, "%s not found!",pattern.c_str());
   if (a < 0) {
    a = 0;
    shift--;
@@ -128,7 +128,7 @@ void game::wish()
   for (int i = 1; i < VIEW - 1 && i-1+shift < t_size; i++) {
    const nc_color col = (a + 1 == i) ? h_white : c_white;
    const itype* const it = item::types[i - 1 + shift];
-   mvwprintz(w_list, i, 0, col, it->name.c_str());
+   mvwaddstrz(w_list, i, 0, col, it->name.c_str());
    wprintz(w_list, it->color, "%c%", it->sym);
   }
   tmp.make(item::types[a + shift]);
@@ -256,9 +256,9 @@ void game::monster_wish()
    }
   }
   if (!search_results.empty())
-   mvwprintz(w_list, 0, 11, c_green, "%s               ", pattern.c_str());
+   mvwprintz(w_list, 0, 11, c_green, "%s", pattern.c_str());
   else if (pattern.length() > 0)
-   mvwprintz(w_list, 0, 11, c_red, "%s not found!            ",pattern.c_str());
+   mvwprintz(w_list, 0, 11, c_red, "%s not found!",pattern.c_str());
   if (a < 0) {
    a = 0;
    shift--;
@@ -272,7 +272,7 @@ void game::monster_wish()
   for (int i = 1; i < VIEW - 1; i++) {
    const nc_color col = (i == a + 1 ? h_white : c_white);
    const mtype* const type = mtype::types[i - 1 + shift];
-   mvwprintz(w_list, i, 0, col, type->name.c_str());
+   mvwaddstrz(w_list, i, 0, col, type->name.c_str());
    wprintz(w_list, type->color, " %c%", type->sym);
   }
   tmp = monster(mtype::types[a + shift]);
@@ -399,9 +399,9 @@ void game::mutation_wish()
    }
   }
   if (!search_results.empty())
-   mvwprintz(w_list, 0, 11, c_green, "%s               ", pattern.c_str());
+   mvwprintz(w_list, 0, 11, c_green, "%s", pattern.c_str());
   else if (pattern.length() > 0)
-   mvwprintz(w_list, 0, 11, c_red, "%s not found!            ",pattern.c_str());
+   mvwprintz(w_list, 0, 11, c_red, "%s not found!",pattern.c_str());
   if (a < 0) {
    a = 0;
    shift--;
@@ -414,7 +414,7 @@ void game::mutation_wish()
   }
   for (int i = 1; i < VIEW - 1; i++) {
    const nc_color col = (i == a + 1 ? h_white : c_white);
-   mvwprintz(w_list, i, 0, col, mutation_branch::traits[i-1+shift].name.c_str());
+   mvwaddstrz(w_list, i, 0, col, mutation_branch::traits[i-1+shift].name.c_str());
   }
   mvwprintw(w_info, 1, 0, mutation_branch::data[a+shift].valid ? "Valid" : "Nonvalid");
   int line2 = 2;
