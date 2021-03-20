@@ -95,6 +95,8 @@ public:
 
  void pause(); // '.' command; pauses & reduces recoil
 
+ static player get_proxy(std::string&& name, const point& origin, const it_gun& gun, unsigned int recoil, int charges);
+
  // npcmove.cpp (inherited location)
  // Physical movement from one tile to the next
  bool can_move_to(const map& m, const point& pt) const;

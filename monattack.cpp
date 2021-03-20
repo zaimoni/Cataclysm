@@ -956,20 +956,9 @@ void mattack::smg(game *g, monster *z)
   if (!target) return; // Couldn't find any targets!
 
   z->sp_timeout = z->type->sp_freq;	// Reset timer
-  z->moves = -150;			// It takes a while
+  z->moves -= (mobile::mp_turn / 2) * 3; // It takes a while
   if (g->u_see(z->pos)) messages.add("The %s fires its smg!", z->name().c_str());
-  player tmp;
-  tmp.name = "The " + z->name();
-  tmp.sklevel[sk_smg] = 1;
-  tmp.sklevel[sk_gun] = 0;
-  tmp.recoil = 0;
-  tmp.screenpos_set(z->pos);
-  tmp.str_cur = 16;
-  tmp.dex_cur =  6;
-  tmp.per_cur =  8;
-  tmp.weapon = item(item::types[itm_smg_9mm], 0);
-  tmp.weapon.curammo = dynamic_cast<const it_ammo*>(item::types[itm_9mm]);
-  tmp.weapon.charges = 10;
+  player tmp(player::get_proxy("The " + z->name(), z->pos, *static_cast<it_gun*>(item::types[itm_smg_9mm]), 0, 10));
   std::vector<point> traj = line_to(z->pos, target_pos, fire_t);
   g->fire(tmp, target_pos, traj, true);
 
@@ -977,31 +966,20 @@ void mattack::smg(game *g, monster *z)
  }
  
 // Not friendly; hence, firing at the player
- if (rl_dist(z->pos, g->u.pos) > 24 || !g->sees_u(z->pos, t)) return;
+ if (24 < rl_dist(z->GPSpos, g->u.GPSpos) || !g->sees_u(z->pos, t)) return;
  z->sp_timeout = z->type->sp_freq;	// Reset timer
 
  if (!z->has_effect(ME_TARGETED)) {
   g->sound(z->pos, 6, "beep-beep-beep!");
   z->add_effect(ME_TARGETED, 8);
-  z->moves -= 100;
+  z->moves -= mobile::mp_turn;
   return;
  }
- z->moves = -150;			// It takes a while
+ z->moves -= (mobile::mp_turn/2)*3; // It takes a while
 
  if (g->u_see(z->pos)) messages.add("The %s fires its smg!", z->name().c_str());
 // Set up a temporary player to fire this gun
- player tmp;
- tmp.name = "The " + z->name();
- tmp.sklevel[sk_smg] = 1;
- tmp.sklevel[sk_gun] = 0;
- tmp.recoil = 0;
- tmp.screenpos_set(z->pos);
- tmp.str_cur = 16;
- tmp.dex_cur =  6;
- tmp.per_cur =  8;
- tmp.weapon = item(item::types[itm_smg_9mm], 0);
- tmp.weapon.curammo = dynamic_cast<const it_ammo*>(item::types[itm_9mm]);
- tmp.weapon.charges = 10;
+ player tmp(player::get_proxy("The " + z->name(), z->pos, *static_cast<it_gun*>(item::types[itm_smg_9mm]), 0, 10));
  std::vector<point> traj = line_to(z->pos, g->u.pos, t);
  g->fire(tmp, g->u.pos, traj, true);
  z->add_effect(ME_TARGETED, 3);
@@ -1012,7 +990,7 @@ void mattack::flamethrower(game *g, monster *z)
  int t;
  if (5 < Linf_dist(g->u.pos - z->pos) || !g->sees_u(z->pos, t)) return;	// Out of range
  z->sp_timeout = z->type->sp_freq;	// Reset timer
- z->moves = -500;			// It takes a while
+ z->moves -= 5 * mobile::mp_turn;	// It takes a while
  std::vector<point> traj = line_to(z->pos, g->u.pos, t);
  for (int i = 0; i < traj.size(); i++)
   g->m.add_field(g, traj[i], fd_fire, 1);
@@ -1023,7 +1001,7 @@ void mattack::copbot(game *g, monster *z)
 {
  const bool sees_u = g->sees_u(z->pos);
  z->sp_timeout = z->type->sp_freq;	// Reset timer
- if (rl_dist(z->pos, g->u.pos) > 2 || !sees_u) {
+ if (rl_dist(z->GPSpos, g->u.GPSpos) > 2 || !sees_u) {
   if (one_in(3)) {
    if (sees_u) {
     if (g->u.unarmed_attack())
@@ -1044,7 +1022,7 @@ void mattack::multi_robot(game *g, monster *z)
  int mode = 0;
  if (!g->sees_u(z->pos)) return;	// Can't see you!
  {
- const auto range = rl_dist(z->pos, g->u.pos);
+ const auto range = rl_dist(z->GPSpos, g->u.GPSpos);
  if (range == 1 && one_in(2)) mode = 1;
  else if (range <= 5) mode = 2;
  else if (range <= 12) mode = 3;
@@ -1061,17 +1039,18 @@ void mattack::multi_robot(game *g, monster *z)
 
 void mattack::ratking(game *g, monster *z)
 {
- if (rl_dist(z->pos, g->u.pos) > 10) return;
+ if (rl_dist(z->GPSpos, g->u.GPSpos) > 10) return;
  z->sp_timeout = z->type->sp_freq;	// Reset timer
 
- switch (rng(1, 5)) { // What do we say?
-  case 1: messages.add("\"YOU... ARE FILTH...\""); break;
-  case 2: messages.add("\"VERMIN... YOU ARE VERMIN...\""); break;
-  case 3: messages.add("\"LEAVE NOW...\""); break;
-  case 4: messages.add("\"WE... WILL FEAST... UPON YOU...\""); break;
-  case 5: messages.add("\"FOUL INTERLOPER...\""); break;
- }
+ static constexpr const char* rat_chat[] = {  // What do we say?
+  "\"YOU... ARE FILTH...\"",
+  "\"VERMIN... YOU ARE VERMIN...\"",
+  "\"LEAVE NOW...\"",
+  "\"WE... WILL FEAST... UPON YOU...\"",
+  "\"FOUL INTERLOPER...\""
+ };
 
+ messages.add(rat_chat[rng(0, std::end(rat_chat)-std::begin(rat_chat))]);
  g->u.add_disease(DI_RAT, MINUTES(2));
 }
 

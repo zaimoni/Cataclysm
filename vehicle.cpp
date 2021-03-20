@@ -1625,19 +1625,7 @@ bool vehicle::fire_turret_internal(const vehicle_part& p, it_gun &gun, const it_
     for (int i = 0; i < traj.size(); i++)
         if (traj[i] == g->u.pos) return false; // won't shoot at player
     if (g->u_see(origin)) messages.add("The %s fires its %s!", name.c_str(), p.info().name);
-    player tmp;
-    tmp.name = std::string("The ") + p.info().name;
-    tmp.sklevel[gun.skill_used] = 1;
-    tmp.sklevel[sk_gun] = 0;
-    tmp.recoil = abs(velocity) / (4 * mph_1);
-    tmp.screenpos_set(origin);
-    tmp.str_cur = 16;
-    tmp.dex_cur =  6;
-    tmp.per_cur =  8;
-    tmp.weapon = item(&gun, 0);
-    it_ammo curam = ammo;
-    tmp.weapon.curammo = &curam;
-    tmp.weapon.charges = charges;
+    player tmp(player::get_proxy(std::string("The ") + p.info().name, origin, gun, abs(velocity) / (4 * mph_1), charges));
     g->fire(tmp, target_pos, traj, true);
     if (ammo.type == AT_GAS) {
 		for(const auto& pt : traj) g->m.add_field(g, pt, fd_fire, 1);
