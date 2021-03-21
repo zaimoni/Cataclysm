@@ -546,8 +546,8 @@ void mattack::leap(game *g, monster *z)
  if (!g->sees_u(z->pos)) return;	// Only leap if we can see you!
 
  std::vector<point> options;
- int best = 0;
- bool fleeing = z->is_fleeing(g->u);
+ const bool fleeing = z->is_fleeing(g->u);
+ int best = fleeing ? INT_MIN : INT_MAX;
 
  for (int x = z->pos.x - 3; x <= z->pos.x + 3; x++) {
   for (int y = z->pos.y - 3; y <= z->pos.y + 3; y++) {
@@ -555,26 +555,21 @@ void mattack::leap(game *g, monster *z)
  * from the player; otherwise, those tiles with the least distance from the
  * player.
  */
-   if (g->is_empty(x, y) && g->m.sees(z->pos, x, y, g->light_level()) &&
-       (( fleeing && rl_dist(g->u.pos, x, y) >= best) ||
-        (!fleeing && rl_dist(g->u.pos, x, y) <= best)   )) {
-    options.push_back( point(x, y) );
-    best = rl_dist(g->u.pos, x, y);
+   if (!g->is_empty(x, y) || !g->m.sees(z->pos, x, y, g->light_level())) continue;
+   const int dist = rl_dist(g->u.pos, x, y);
+   if (fleeing ? dist >= best : dist <= best) {
+       if (dist != best) {
+           options.clear();
+           best = dist;
+       }
+       options.push_back(point(x, y));
    }
   }
  }
 
-// Go back and remove all options that aren't tied for best
- for (int i = 0; i < options.size() && options.size() > 1; i++) {
-  if (rl_dist(g->u.pos, options[i]) != best) {
-   options.erase(options.begin() + i);
-   i--;
-  }
- }
+ if (options.empty()) return; // Nowhere to leap!
 
- if (options.size() == 0) return; // Nowhere to leap!
-
- z->moves -= 150;
+ z->moves -= (mobile::mp_turn / 2) * 3;
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  bool seen = g->u_see(z); // We can see them jump...
  z->screenpos_set(options[rng(0, options.size() - 1)]);
