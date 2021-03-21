@@ -584,7 +584,7 @@ void mattack::leap(game *g, monster *z)
 
 void mattack::dermatik(game *g, monster *z)
 {
- if (rl_dist(z->pos, g->u.pos) > 1 || g->u.has_disease(DI_DERMATIK))
+ if (rl_dist(z->GPSpos, g->u.GPSpos) > 1 || g->u.has_disease(DI_DERMATIK))
   return; // Too far to implant, or the player's already incubating bugs
 
  z->sp_timeout = z->type->sp_freq;	// Reset timer
@@ -621,12 +621,12 @@ void mattack::dermatik(game *g, monster *z)
  if (g->u.armor_cut(targeted) >= 2) {
   messages.add("The %s lands on your %s, but can't penetrate your armor.",
              z->name().c_str(), body_part_name(targeted, rng(0, 1)));
-  z->moves -= 150; // Attemped laying takes a while
+  z->moves -= (mobile::mp_turn / 2) * 3; // Attemped laying takes a while
   return;
  }
 
 // Success!
- z->moves -= 500; // Successful laying takes a long time
+ z->moves -= 5 * mobile::mp_turn; // Successful laying takes a long time
  messages.add("The %s sinks its ovipositor into you!", z->name().c_str());
  g->u.add_disease(DI_DERMATIK, -1); // -1 = infinite
 }
@@ -637,7 +637,7 @@ void mattack::plant(game *g, monster *z)
  if (g->m.has_flag(diggable, z->pos)) {
   if (g->u_see(z->pos)) messages.add("The %s takes seed and becomes a young fungaloid!", z->name().c_str());
   z->poly(mtype::types[mon_fungaloid_young]);
-  z->moves = -1000;	// It takes a while
+  z->moves -= 10 * mobile::mp_turn;	// It takes a while
  }
 }
 
@@ -742,7 +742,7 @@ void mattack::vortex(game *g, monster *z)
  static const int base_mon_throw_range[mtype::MS_MAX] = {5, 3, 2, 1, 0};
 
 // Make sure that the player's butchering is interrupted!
- if (g->u.activity.type == ACT_BUTCHER && rl_dist(z->pos, g->u.pos) <= 2) {
+ if (g->u.activity.type == ACT_BUTCHER && rl_dist(z->GPSpos, g->u.GPSpos) <= 2) {
   messages.add("The buffeting winds interrupt your butchering!");
   g->u.activity.type = ACT_NULL;
  }
@@ -871,9 +871,9 @@ void mattack::vortex(game *g, monster *z)
 
 void mattack::gene_sting(game *g, monster *z)
 {
- if (rl_dist(z->pos, g->u.pos) > 7 || !g->sees_u(z->pos)) return;	// Not within range and/or sight
+ if (rl_dist(z->GPSpos, g->u.GPSpos) > 7 || !g->sees_u(z->pos)) return;	// Not within range and/or sight
 
- z->moves -= 150;
+ z->moves -= (mobile::mp_turn/2)*3;
  z->sp_timeout = z->type->sp_freq;
  messages.add("The %s shoots a dart into you!", z->name().c_str());
  g->u.mutate();
