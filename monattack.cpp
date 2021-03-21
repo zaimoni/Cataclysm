@@ -275,7 +275,7 @@ void mattack::growplants(game *g, monster *z)
    auto& t = g->m.ter(dest);
    if (!g->m.has_flag(diggable, dest) && one_in(4))
     t = t_dirt;
-   else if (one_in(3) && g->m.is_destructable(dest.x, dest.y))
+   else if (one_in(3) && g->m.is_destructable(dest))
     t = t_dirtmound; // Destroy walls, &c
    else if (one_in(4)) {	// 1 in 4 chance to grow a tree
      if (monster* const m_at = g->mon(dest)) {
@@ -889,10 +889,10 @@ void mattack::stare(game *g, monster *z)
  } else {
   messages.add("A piercing beam of light bursts forth!");
   std::vector<point> sight = line_to(z->pos, g->u.pos, 0);
-  for (int i = 0; i < sight.size(); i++) {
-   auto& t = g->m.ter(sight[i]);
-   if (t_reinforced_glass_h == t || t_reinforced_glass_v == t) break;
-   if (g->m.is_destructable(sight[i].x, sight[i].y)) t = t_rubble;
+  for (const point& view : sight) {
+   auto& t = g->m.ter(view);
+   if (any<t_reinforced_glass_v, t_reinforced_glass_h>(t)) break;
+   if (g->m.is_destructable(view)) t = t_rubble;
   }
  }
 }

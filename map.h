@@ -189,6 +189,7 @@ class map
  bool has_flag(t_flag flag, const reality_bubble_loc& pos) const;
  bool has_flag_ter_only(t_flag flag, int x, int y) const; // only checks terrain
  bool is_destructable(int x, int y) const;        // checks terrain and vehicles
+ bool is_destructable(const point& pt) const { return is_destructable(pt.x, pt.y); }
  bool is_destructable_ter_only(int x, int y) const;       // only checks terrain
  bool is_outside(int x, int y) const;
  bool is_outside(const point& pt) const { return is_outside(pt.x, pt.y); };

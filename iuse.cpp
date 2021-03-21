@@ -1106,9 +1106,9 @@ void iuse::jackhammer(game *g, player *p, item *it, bool t)
   return;
  }
  dir += p->pos;
- if (g->m.is_destructable(dir.x, dir.y)) {
+ if (g->m.is_destructable(dir)) {
   g->m.destroy(g, dir.x, dir.y, false);
-  p->moves -= 500;
+  p->moves -= 5 * mobile::mp_turn;
   g->sound(dir, 45, "TATATATATATATAT!");
  } else {
   messages.add("You can't drill there.");
