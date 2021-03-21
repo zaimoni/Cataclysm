@@ -881,7 +881,7 @@ void mattack::gene_sting(game *g, monster *z)
 
 void mattack::stare(game *g, monster *z)
 {
- z->moves -= 200;
+ z->moves -= 2*mobile::mp_turn;
  z->sp_timeout = z->type->sp_freq;
  if (g->sees_u(z->pos)) {
   messages.add("The %s stares at you, and you shudder.", z->name().c_str());
@@ -905,7 +905,7 @@ void mattack::fear_paralyze(game *g, monster *z)
    messages.add("The %s probes your mind, but is rebuffed!", z->name().c_str());
   } else if (rng(1, 20) > g->u.int_cur) {
    messages.add("The terrifying visage of the %s paralyzes you.", z->name().c_str());
-   g->u.moves -= 100;
+   g->u.moves -= mobile::mp_turn;
   } else
    messages.add("You manage to avoid staring at the horrendous %s.", z->name().c_str());
  }
@@ -914,11 +914,11 @@ void mattack::fear_paralyze(game *g, monster *z)
 void mattack::photograph(game *g, monster *z)
 {
  if (z->faction_id == -1 ||
-     rl_dist(z->pos, g->u.pos) > 6 ||
+     rl_dist(z->GPSpos, g->u.GPSpos) > 6 ||
      !g->sees_u(z->pos))
   return;
  z->sp_timeout = z->type->sp_freq;
- z->moves -= 150;
+ z->moves -= (mobile::mp_turn/2)*3;
  messages.add("The %s takes your picture!", z->name().c_str());
 // TODO: Make the player known to the faction
  g->add_event(EVENT_ROBOT_ATTACK, int(messages.turn) + rng(15, 30), z->faction_id, g->lev.x, g->lev.y);
@@ -926,13 +926,13 @@ void mattack::photograph(game *g, monster *z)
 
 void mattack::tazer(game *g, monster *z)
 {
- if (rl_dist(z->pos, g->u.pos) > 2 || !g->sees_u(z->pos)) return;	// Out of range
- z->sp_timeout = z->type->sp_freq;	// Reset timer
- z->moves = -200;			// It takes a while
+ if (rl_dist(z->GPSpos, g->u.GPSpos) > 2 || !g->sees_u(z->pos)) return;	// Out of range
+ z->sp_timeout = z->type->sp_freq; // Reset timer
+ z->moves -= 2*mobile::mp_turn; // It takes a while
  messages.add("The %s shocks you!", z->name().c_str());
  int shock = rng(1, 5);
  g->u.hurt(g, bp_torso, 0, shock * rng(1, 3));
- g->u.moves -= shock * 20;
+ g->u.moves -= shock * (mobile::mp_turn/5);
 }
 
 void mattack::smg(game *g, monster *z)
