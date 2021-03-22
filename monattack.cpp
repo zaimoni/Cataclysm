@@ -455,13 +455,21 @@ void mattack::spit_sap(game *g, monster *z)
 void mattack::triffid_heartbeat(game *g, monster *z)
 {
  g->sound(z->pos, 14, "thu-THUMP.");
- z->moves -= 300;
+ z->moves -= 3 * mobile::mp_turn;
  z->sp_timeout = z->type->sp_freq;
  if (!map::in_bounds(z->pos)) return;
- if (rl_dist(z->pos, g->u.pos) > 5 && !g->m.route(g->u.pos, z->pos).empty()) {
+ if (rl_dist(z->GPSpos, g->u.GPSpos) > 5 && !g->m.route(g->u.pos, z->pos).empty()) {
   messages.add("The root walls creak around you.");
-  for (int x = g->u.pos.x; x <= z->pos.x - 3; x++) {
-   for (int y = g->u.pos.y; y <= z->pos.y - 3; y++) {
+
+  // overmap generation is as follows:
+  // ground level: triffid grove
+  // -1 z: triffid roots
+  // -2 z: triffid finale.
+  // i.e., this is happening underground; we are immobile and have a hard-coded relative location of 21,21
+  // and mapgen gives a hard guarantee the player is approaching from the northwest
+  const zaimoni::gdi::box<point> span(g->u.pos, z->pos + 3*Direction::NW);
+  for (int x = span.tl_c().x; x <= span.br_c().x; x++) {
+   for (int y = span.tl_c().y; y <= span.br_c().y; y++) {
 	auto& t = g->m.ter(x, y);
     if (g->is_empty(x, y) && one_in(4)) t = t_root_wall;
     else if (t_root_wall == t && one_in(10)) t = t_dirt;
@@ -470,19 +478,17 @@ void mattack::triffid_heartbeat(game *g, monster *z)
 // Open blank tiles as long as there's no possible route
   int tries = 0;
   while (g->m.route(g->u.pos, z->pos).empty() && tries < 20) {
-   int x = rng(g->u.pos.x, z->pos.x - 3), y = rng(g->u.pos.y, z->pos.y - 3);
+   const point pt = rng(span);
    tries++;
-   g->m.ter(x, y) = t_dirt;
-   if (rl_dist(x, y, g->u.pos) > 3 && g->z.size() < 30 &&
-       !g->mon(x, y) && one_in(20)) { // Spawn an extra monster
+   g->m.ter(pt) = t_dirt;
+   if (rl_dist(pt, g->u.pos) > 3 && g->z.size() < 30 &&
+       !g->mon(pt) && one_in(20)) { // Spawn an extra monster
     mon_id montype = mon_triffid;
     if (one_in(4)) montype = mon_creeper_hub;
     else if (one_in(3)) montype = mon_biollante;
-    monster plant(mtype::types[montype], x, y);
-    g->z.push_back(plant);
+    g->z.push_back(monster(mtype::types[montype], pt));
    }
   }
-
  } else { // The player is close enough for a fight!
   monster triffid(mtype::types[mon_triffid]);
   for (decltype(auto) delta : Direction::vector) {
