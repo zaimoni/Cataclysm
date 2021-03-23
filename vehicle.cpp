@@ -326,6 +326,44 @@ nc_color vehicle::part_color (int p) const
     return part_info(pd).color;
 }
 
+static constexpr nc_color part_desc_color(int hp, int max_hp)
+{
+    if (hp >= max_hp) return c_green;
+    else if (0 >= hp) return c_dkgray;
+
+    const int per_cond = hp * 100 / (max_hp < 1 ? 1 : max_hp);
+    if      (80 <= per_cond) return c_ltgreen;
+    else if (50 <= per_cond) return c_yellow;
+    else if (20 <= per_cond) return c_ltred;
+    else return c_red;
+}
+
+// normal use
+static_assert(c_green == part_desc_color(101, 100));
+static_assert(c_green == part_desc_color(100, 100));
+static_assert(c_ltgreen == part_desc_color(99, 100));
+static_assert(c_ltgreen == part_desc_color(80, 100));
+static_assert(c_yellow == part_desc_color(79, 100));
+static_assert(c_yellow == part_desc_color(50, 100));
+static_assert(c_ltred == part_desc_color(49, 100));
+static_assert(c_ltred == part_desc_color(20, 100));
+static_assert(c_red == part_desc_color(19, 100));
+static_assert(c_red == part_desc_color(1, 100));
+static_assert(c_dkgray == part_desc_color(0, 100));
+static_assert(c_dkgray == part_desc_color(-1, 100));
+
+// pathological cases -- ok to alter these test cases
+static_assert(c_green == part_desc_color(2, 0));
+static_assert(c_green == part_desc_color(1, 0));
+static_assert(c_green == part_desc_color(0, 0));
+static_assert(c_dkgray == part_desc_color(-1, 0));
+
+static_assert(c_green == part_desc_color(2, -1));
+static_assert(c_green == part_desc_color(1, -1));
+static_assert(c_green == part_desc_color(0, -1));
+static_assert(c_green == part_desc_color(-1, -1));
+static_assert(c_dkgray == part_desc_color(-2, -1));
+
 void vehicle::print_part_desc (void *w, int y1, int p, int hl)
 {
     if (p < 0 || p >= parts.size()) return;
@@ -336,27 +374,14 @@ void vehicle::print_part_desc (void *w, int y1, int p, int hl)
     int y = y1;
     for (int i = 0; i < pl.size(); i++) {
         const auto& pl_i_info = part_info(pl[i]);
-        int dur = pl_i_info.durability;
-        int per_cond = parts[pl[i]].hp * 100 / (dur < 1? 1 : dur);
-        nc_color col_cond = c_dkgray;
-        if (parts[pl[i]].hp >= dur)
-            col_cond = c_green;
-        else if (per_cond >= 80)
-            col_cond = c_ltgreen;
-        else if (per_cond >= 50)
-            col_cond = c_yellow;
-        else if (per_cond >= 20)
-            col_cond = c_ltred;
-        else if (parts[pl[i]].hp > 0)
-            col_cond = c_red;
+        nc_color col_cond = part_desc_color(parts[pl[i]].hp, pl_i_info.durability);
 
         const bool armor = pl_i_info.has_flag<vpf_armor>();
-        mvwprintz(win, y, 2, i == hl? hilite(col_cond) : col_cond, pl_i_info.name);
-        mvwprintz(win, y, 1, i == hl? hilite(c_ltgray) : c_ltgray, armor? "(" : (i? "-" : "["));
-        mvwprintz(win, y, 2 + strlen(pl_i_info.name), i == hl? hilite(c_ltgray) : c_ltgray, armor? ")" : (i? "-" : "]"));
-//         mvwprintz(win, y, 3 + strlen(part_info(pl[i]).name), c_ltred, "%d", parts[pl[i]].blood);
+        mvwputch(win, y, 1, i == hl ? hilite(c_ltgray) : c_ltgray, armor ? '(' : (i ? '-' : '['));
+        mvwaddstrz(win, y, 2, i == hl ? hilite(col_cond) : col_cond, pl_i_info.name);
+        mvwputch(win, y, 2 + strlen(pl_i_info.name), i == hl ? hilite(c_ltgray) : c_ltgray, armor ? ')' : (i ? '-' : ']'));
 
-        if (i == 0) mvwprintz(win, y, width-5, c_ltgray, is_inside(pl[i])? " In " : "Out ");
+        if (i == 0) mvwaddstrz(win, y, width-5, c_ltgray, is_inside(pl[i])? " In " : "Out ");
         y++;
     }
 }
