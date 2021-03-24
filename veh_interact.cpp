@@ -474,79 +474,75 @@ void veh_interact::display_veh ()
 void veh_interact::display_stats ()
 {
     bool conf = veh->valid_wheel_config();
-    mvwprintz(w_stats, 0, 1, c_ltgray, "Name: ");
-    mvwprintz(w_stats, 0, 7, c_ltgreen, veh->name.c_str());
+    mvwaddstrz(w_stats, 0, 1, c_ltgray, "Name: ");
+    mvwaddstrz(w_stats, 0, 7, c_ltgreen, veh->name.c_str());
     if (option_table::get()[OPT_USE_METRIC_SYS]) {
-     mvwprintz(w_stats, 1, 1, c_ltgray, "Safe speed:      Km/h");
+     mvwaddstrz(w_stats, 1, 1, c_ltgray, "Safe speed:      Km/h");
      mvwprintz(w_stats, 1, 14, c_ltgreen,"%3d", int(veh->safe_velocity(false) * 0.0161f));
-     mvwprintz(w_stats, 2, 1, c_ltgray, "Top speed:       Km/h");
+     mvwaddstrz(w_stats, 2, 1, c_ltgray, "Top speed:       Km/h");
      mvwprintz(w_stats, 2, 14, c_ltred, "%3d", int(veh->max_velocity(false) * 0.0161f));
-     mvwprintz(w_stats, 3, 1, c_ltgray, "Accel.:          Kmh/t");
+     mvwaddstrz(w_stats, 3, 1, c_ltgray, "Accel.:          Kmh/t");
      mvwprintz(w_stats, 3, 14, c_ltblue,"%3d", int(veh->acceleration(false) * 0.0161f));
     } else {
-     mvwprintz(w_stats, 1, 1, c_ltgray, "Safe speed:      mph");
-     mvwprintz(w_stats, 1, 14, c_ltgreen,"%3d", veh->safe_velocity(false) / 100);
-     mvwprintz(w_stats, 2, 1, c_ltgray, "Top speed:       mph");
-     mvwprintz(w_stats, 2, 14, c_ltred, "%3d", veh->max_velocity(false) / 100);
-     mvwprintz(w_stats, 3, 1, c_ltgray, "Accel.:          mph/t");
-     mvwprintz(w_stats, 3, 14, c_ltblue,"%3d", veh->acceleration(false) / 100);
+     mvwaddstrz(w_stats, 1, 1, c_ltgray, "Safe speed:      mph");
+     mvwprintz(w_stats, 1, 14, c_ltgreen,"%3d", veh->safe_velocity(false) / vehicle::mph_1);
+     mvwaddstrz(w_stats, 2, 1, c_ltgray, "Top speed:       mph");
+     mvwprintz(w_stats, 2, 14, c_ltred, "%3d", veh->max_velocity(false) / vehicle::mph_1);
+     mvwaddstrz(w_stats, 3, 1, c_ltgray, "Accel.:          mph/t");
+     mvwprintz(w_stats, 3, 14, c_ltblue,"%3d", veh->acceleration(false) / vehicle::mph_1);
     }
-    mvwprintz(w_stats, 4, 1, c_ltgray, "Mass:            kg");
+    mvwaddstrz(w_stats, 4, 1, c_ltgray, "Mass:            kg");
     mvwprintz(w_stats, 4, 12, c_ltblue,"%5d", (int) (veh->total_mass() / 4 * 0.45));
-    mvwprintz(w_stats, 1, 26, c_ltgray, "K dynamics:        ");
+    mvwaddstrz(w_stats, 1, 26, c_ltgray, "K dynamics:        ");
     mvwprintz(w_stats, 1, 37, c_ltblue, "%3d", (int) (veh->k_dynamics() * 100));
     mvwputch (w_stats, 1, 41, c_ltgray, '%');
-    mvwprintz(w_stats, 2, 26, c_ltgray, "K mass:            ");
+    mvwaddstrz(w_stats, 2, 26, c_ltgray, "K mass:            ");
     mvwprintz(w_stats, 2, 37, c_ltblue, "%3d", (int) (veh->k_mass() * 100));
     mvwputch (w_stats, 2, 41, c_ltgray, '%');
-    mvwprintz(w_stats, 5, 1, c_ltgray, "Wheels: ");
-    mvwprintz(w_stats, 5, 11, conf? c_ltgreen : c_ltred, conf? "enough" : "  lack");
-    mvwprintz(w_stats, 6, 1, c_ltgray,  "Fuel usage (safe):        ");
+    mvwaddstrz(w_stats, 5, 1, c_ltgray, "Wheels: ");
+    mvwaddstrz(w_stats, 5, 11, conf? c_ltgreen : c_ltred, conf? "enough" : "  lack");
+    mvwaddstrz(w_stats, 6, 1, c_ltgray,  "Fuel usage (safe):        ");
     int xfu = 20;
-    int ftypes[3] = { AT_GAS, AT_BATT, AT_PLASMA };
-    nc_color fcs[3] = { c_ltred, c_yellow, c_ltblue };
+
+    static constexpr const int ftypes[3] = { AT_GAS, AT_BATT, AT_PLASMA };
+    static constexpr const nc_color fcs[3] = { c_ltred, c_yellow, c_ltblue };
+    static_assert(std::end(ftypes) - std::begin(ftypes) == std::end(fcs) - std::begin(fcs));
+
     bool first = true;
-    for (int i = 0; i < 3; i++)
-    {
-        int fu = veh->basic_consumption (ftypes[i]);
-        if (fu > 0)
-        {
-            fu = fu / 100;
-            if (fu < 1)
-                fu = 1;
-            if (!first)
-                mvwprintz(w_stats, 6, xfu++, c_ltgray, "/");
+    for (int i = 0; i < std::end(ftypes) - std::begin(ftypes); i++) {
+        if (int fu = veh->basic_consumption(ftypes[i]); 0 < fu) {
+            if (1 > (fu /= 100)) fu = 1;
+            if (!first) mvwputch(w_stats, 6, xfu++, c_ltgray, '/');
             mvwprintz(w_stats, 6, xfu++, fcs[i], "%d", fu);
             if (fu > 9) xfu++;
             if (fu > 99) xfu++;
             first = false;
         }
     }
-    veh->print_fuel_indicator (w_stats, 0, 42);
-    wrefresh (w_stats);
+    veh->print_fuel_indicator(w_stats, 0, 42);
+    wrefresh(w_stats);
 }
 
 void veh_interact::display_mode (char mode)
 {
     werase (w_mode);
-    if (mode == ' ')
-    {
+    if (mode == ' ') {
         bool mi = !cant_do('i');
         bool mr = !cant_do('r');
         bool mf = !cant_do('f');
         bool mo = !cant_do('o');
-        mvwprintz(w_mode, 0, 1, mi? c_ltgray : c_dkgray, "install");
-        mvwputch (w_mode, 0, 1, mi? c_ltgreen : c_green, 'i');
-        mvwprintz(w_mode, 0, 9, mr? c_ltgray : c_dkgray, "repair");
-        mvwputch (w_mode, 0, 9, mr? c_ltgreen : c_green, 'r');
-        mvwprintz(w_mode, 0, 16, mf? c_ltgray : c_dkgray, "refill");
-        mvwputch (w_mode, 0, 18, mf? c_ltgreen : c_green, 'f');
-        mvwprintz(w_mode, 0, 23, mo? c_ltgray : c_dkgray, "remove");
-        mvwputch (w_mode, 0, 26, mo? c_ltgreen : c_green, 'o');
+        mvwaddstrz(w_mode, 0, 1, mi? c_ltgray : c_dkgray, "install");
+        mvwputch  (w_mode, 0, 1, mi? c_ltgreen : c_green, 'i');
+        mvwaddstrz(w_mode, 0, 9, mr? c_ltgray : c_dkgray, "repair");
+        mvwputch  (w_mode, 0, 9, mr? c_ltgreen : c_green, 'r');
+        mvwaddstrz(w_mode, 0, 16, mf? c_ltgray : c_dkgray, "refill");
+        mvwputch  (w_mode, 0, 18, mf? c_ltgreen : c_green, 'f');
+        mvwaddstrz(w_mode, 0, 23, mo? c_ltgray : c_dkgray, "remove");
+        mvwputch  (w_mode, 0, 26, mo? c_ltgreen : c_green, 'o');
     }
     // C++20: constexpr strlen?
-    mvwprintz(w_mode, 0, SCREEN_WIDTH - (sizeof("-back") + sizeof("ESC") - 1), c_ltgreen, "ESC");
-    mvwprintz(w_mode, 0, SCREEN_WIDTH - sizeof("-back"), c_ltgray, "-back");
+    mvwaddstrz(w_mode, 0, SCREEN_WIDTH - (sizeof("-back") + sizeof("ESC") - 1), c_ltgreen, "ESC");
+    mvwaddstrz(w_mode, 0, SCREEN_WIDTH - sizeof("-back"), c_ltgray, "-back");
     wrefresh (w_mode);
 }
 
@@ -564,8 +560,8 @@ void veh_interact::display_list (int pos)
         const bool has_comps = crafting_inv.has_amount(itm, 1);
         const bool has_skill = _g->u.sklevel[sk_mechanics] >= p_info.difficulty;
         const nc_color col = (has_comps && has_skill) ? c_white : c_dkgray;
-        mvwprintz(w_list, y, 3, pos == i ? hilite (col) : col, p_info.name);
-        mvwputch (w_list, y, 1,  p_info.color, special_symbol (p_info.sym));
+        mvwaddstrz(w_list, y, 3, pos == i ? hilite (col) : col, p_info.name);
+        mvwputch(w_list, y, 1,  p_info.color, special_symbol (p_info.sym));
     }
     wrefresh (w_list);
 }
