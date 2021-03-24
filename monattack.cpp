@@ -369,11 +369,10 @@ void mattack::grow_vine(game *g, monster *z)
 
 void mattack::vine(game *g, monster *z)
 {
- bool hit_u = false;
  std::vector<point> grow;
  int vine_neighbors = 0;
  z->sp_timeout = z->type->sp_freq;
- z->moves -= 100;
+ z->moves -= mobile::mp_turn;
  // Yes, we want to count ourselves as a neighbor.
  for (int x = z->pos.x - 1; x <= z->pos.x + 1; x++) {
   for (int y = z->pos.y - 1; y <= z->pos.y + 1; y++) {
@@ -383,7 +382,7 @@ void mattack::vine(game *g, monster *z)
     messages.add("The %s lashes your %s!", z->name().c_str(), body_part_name(bphit, side));
     g->u.hit(g, bphit, side, 4, 4);
     z->sp_timeout = z->type->sp_freq;
-    z->moves -= 100;
+    z->moves -= mobile::mp_turn;
     return;
    } else if (g->is_empty(x, y)) grow.push_back(point(x, y));
    else if (monster* const m_at = g->mon(x, y)) {
@@ -391,15 +390,16 @@ void mattack::vine(game *g, monster *z)
    }
   }
  }
-// Calculate distance from nearest hub
- int dist_from_hub = 999;
- for (int i = 0; i < g->z.size(); i++) {
-  if (g->z[i].type->id == mon_creeper_hub) {
-   int dist = rl_dist(z->pos, g->z[i].pos);
-   if (dist < dist_from_hub) dist_from_hub = dist;
-  }
+ // see if we want to grow
+ if (grow.empty() || vine_neighbors > 5 || one_in(7 - vine_neighbors)) return;
+
+// Calculate distance from nearest hub, then check against that
+ int dist_from_hub = INT_MAX;
+ for (const auto& v : g->z) {
+  if (mon_creeper_hub == v.type->id) clamp_ub(dist_from_hub, rl_dist(z->GPSpos, v.GPSpos));
  }
- if (grow.empty() || vine_neighbors > 5 || one_in(7 - vine_neighbors) || !one_in(dist_from_hub)) return;
+ if (!one_in(dist_from_hub)) return;
+
  monster vine(mtype::types[mon_creeper_vine], grow[rng(0, grow.size() - 1)]);
  vine.sp_timeout = 5;
  g->z.push_back(vine);
