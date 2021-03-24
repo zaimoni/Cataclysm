@@ -405,51 +405,51 @@ void mattack::vine(game *g, monster *z)
  g->z.push_back(vine);
 }
 
+static int route_sap(const std::vector<point>& line)
+{
+    auto g = game::active();
+    int dam = 5;
+    for (decltype(auto) pt : line) {
+        g->m.shoot(g, pt, dam, false, 0);
+        if (0 == dam) {
+            if (g->u_see(pt)) messages.add("A glob of sap hits the %s!", g->m.tername(pt).c_str());
+            g->m.add_field(g, pt, fd_sap, (dam >= 4 ? 3 : 2));
+            return 0;
+        }
+        // \todo maybe we should hit monsters/NPCs/players here?
+    }
+    return dam;
+}
+
 void mattack::spit_sap(game *g, monster *z)
 {
 // TODO: Friendly biollantes?
- const int dist = rl_dist(z->pos, g->u.pos);
+ const int dist = rl_dist(z->GPSpos, g->u.GPSpos);
  if (dist > 12 || !g->sees_u(z->pos)) return;
 
- z->moves -= 150;
+ z->moves -= (mobile::mp_turn / 2) * 3;
  z->sp_timeout = z->type->sp_freq;
 
  int deviation = rng(1, 10);
- double missed_by = (.0325 * deviation * dist);
+ double missed_by = (.0325 * deviation * dist); // cf. calculate_missed_by/ranged.cpp
 
  if (missed_by > 1.) {
   if (g->u_see(z->pos)) messages.add("The %s spits sap, but misses you.", z->name().c_str());
 
-  int hitx = g->u.pos.x + rng(0 - int(missed_by), int(missed_by)),
-      hity = g->u.pos.y + rng(0 - int(missed_by), int(missed_by));
-  std::vector<point> line = line_to(z->pos, hitx, hity, 0);
-  int dam = 5;
-  for (int i = 0; i < line.size() && dam > 0; i++) {
-   g->m.shoot(g, line[i], dam, false, 0);
-   if (dam == 0 && g->u_see(line[i])) {
-    messages.add("A glob of sap hits the %s!", g->m.tername(line[i]).c_str());
-    return;
-   }
-  }
-  g->m.add_field(g, hitx, hity, fd_sap, (dam >= 4 ? 3 : 2));
+  zaimoni::gdi::box<point> error(point(-missed_by), point(missed_by));
+  point hit = g->u.pos + rng(error);
+
+  if (int dam = route_sap(line_to(z->pos, hit, 0))) g->m.add_field(g, hit, fd_sap, (dam >= 4 ? 3 : 2));
   return;
  }
 
  int t = 0;
  if (g->u_see(z->pos.x, z->pos.y, t)) messages.add("The %s spits sap!", z->name().c_str());
- std::vector<point> line = line_to(z->pos, g->u.pos, t);
- int dam = 5;
- for (int i = 0; i < line.size() && dam > 0; i++) {
-  g->m.shoot(g, line[i], dam, false, 0);
-  if (dam == 0 && g->u_see(line[i])) {
-   messages.add("A glob of sap hits the %s!", g->m.tername(line[i]).c_str());
-   return;
-  }
+ if (int dam = route_sap(line_to(z->pos, g->u.pos, 0))) {
+     messages.add("A glob of sap hits you!");
+     g->u.hit(g, bp_torso, 0, dam, 0);
+     g->u.add_disease(DI_SAP, dam);
  }
- if (dam <= 0) return;
- messages.add("A glob of sap hits you!");
- g->u.hit(g, bp_torso, 0, dam, 0);
- g->u.add_disease(DI_SAP, dam);
 }
 
 void mattack::triffid_heartbeat(game *g, monster *z)
