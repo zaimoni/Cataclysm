@@ -319,33 +319,33 @@ void veh_interact::do_remove(int reason)
     werase (w_msg);
     if (_g->u.morale_level() < MIN_MORALE_CRAFT) 
     { // See morale.h
-        mvwprintz(w_msg, 0, 1, c_ltred, "Your morale is too low to construct...");
+        mvwaddstrz(w_msg, 0, 1, c_ltred, "Your morale is too low to construct...");
         wrefresh (w_msg);
         return;
     }
     switch (reason)
     {
     case 1:
-        mvwprintz(w_msg, 0, 1, c_ltred, "No parts here.");
+        mvwaddstrz(w_msg, 0, 1, c_ltred, "No parts here.");
         wrefresh (w_msg);
         return;
     case 2:
-        mvwprintz(w_msg, 0, 1, c_ltred, "You cannot remove mount point while something is attached to it.");
+        mvwaddstrz(w_msg, 0, 1, c_ltred, "You cannot remove mount point while something is attached to it.");
         wrefresh (w_msg);
         return;
     case 3:
-        mvwprintz(w_msg, 0, 1, c_ltgray, "You need a wrench and a hack saw to remove parts.");
-        mvwprintz(w_msg, 0, 12, has_wrench? c_ltgreen : c_red, "wrench");
-        mvwprintz(w_msg, 0, 25, has_hacksaw? c_ltgreen : c_red, "hack saw");
+        mvwaddstrz(w_msg, 0, 1, c_ltgray, "You need a wrench and a hack saw to remove parts.");
+        mvwaddstrz(w_msg, 0, sizeof("You need a "), has_wrench? c_ltgreen : c_red, "wrench");
+        mvwaddstrz(w_msg, 0, sizeof("You need a wrench and a "), has_hacksaw? c_ltgreen : c_red, "hack saw");
         wrefresh (w_msg);
         return;
     case 4:
-        mvwprintz(w_msg, 0, 1, c_ltred, "You need level 2 mechanics skill to remove parts.");
+        mvwaddstrz(w_msg, 0, 1, c_ltred, "You need level 2 mechanics skill to remove parts.");
         wrefresh (w_msg);
         return;
     default:;
     }
-    mvwprintz(w_mode, 0, 1, c_ltgray, "Choose a part here to remove:");
+    mvwaddstrz(w_mode, 0, 1, c_ltgray, "Choose a part here to remove:");
     wrefresh (w_mode);
     int first = parts_here.size() > 1? 1 : 0;
     int pos = first;
@@ -355,31 +355,31 @@ void veh_interact::do_remove(int reason)
         werase (w_parts);
         veh->print_part_desc(w_parts, 0, cpart, pos);
         wrefresh (w_parts);
-        int ch = input(); // See keypress.h
-        int dx, dy;
-        get_direction (dx, dy, ch);
-        if (ch == '\n' || ch == ' ')
+        switch(int ch = input()) // See keypress.h
         {
+        case '\n':
+        case ' ':
             sel_cmd = 'o';
             return;
-        }
-        else
-        if (ch == KEY_ESCAPE)
-        {
-            werase (w_parts);
+        case KEY_ESCAPE:
+            {
+            werase(w_parts);
             veh->print_part_desc(w_parts, 0, cpart, -1);
-            wrefresh (w_parts);
-            werase (w_msg);
+            wrefresh(w_parts);
+            werase(w_msg);
             break;
-        }
-        if (dy == -1 || dy == 1)
-        {
-            pos += dy;
-            if (pos < first)
-                pos = parts_here.size()-1;
-            else
-            if (pos >= parts_here.size())
-                pos = first;
+            }
+        default:
+            {
+            int dx, dy;
+            get_direction(dx, dy, ch);
+            if (dy == -1 || dy == 1) {
+                pos += dy;
+                const size_t ub = parts_here.size();
+                if (pos >= ub) pos = first;
+                else if (pos < first) pos = ub - 1;
+            }
+            }
         }
     }
 }
