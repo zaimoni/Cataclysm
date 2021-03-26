@@ -117,29 +117,31 @@ void mattack::shockstorm(game *g, monster *z)
 void mattack::boomer(game *g, monster *z)
 {
  int j;
- if (rl_dist(z->pos, g->u.pos) > 3 || !g->sees_u(z->pos, j)) return;	// Out of range
- std::vector<point> line = line_to(z->pos, g->u.pos, j);
- z->sp_timeout = z->type->sp_freq;	// Reset timer
- z->moves = -250;			// It takes a while
- bool u_see = g->u_see(z->pos);
+ if (rl_dist(z->GPSpos, g->u.GPSpos) > 3 || !g->sees_u(z->pos, j)) return;	// Out of range
+ const auto line = line_to(z->pos, g->u.pos, j);
+ z->sp_timeout = z->type->sp_freq; // Reset timer
+ z->moves -= (mobile::mp_turn/2)*5; // It takes a while
+ const bool u_see = g->u_see(z->pos);
  if (u_see) messages.add("The %s spews bile!", z->name().c_str());
- for (int i = 0; i < line.size(); i++) {
-  auto& fd = g->m.field_at(line[i]);
+ for (decltype(auto) pt : line) {
+  auto& fd = g->m.field_at(pt);
   if (fd.type == fd_blood) {
    fd.type = fd_bile;
    fd.density = 1;
   } else if (fd.type == fd_bile) {
-	  if (fd.density < 3) fd.density++;
+      if (fd.density < 3) fd.density++;
   } else
-   g->m.add_field(g, line[i], fd_bile, 1);
-// If bile hit a solid tile, return.
-  if (g->m.move_cost(line[i]) == 0) {
-   g->m.add_field(g, line[i], fd_bile, 3);
-   if (g->u_see(line[i]))
-    messages.add("Bile splatters on the %s!", g->m.tername(line[i]).c_str());
-   return;
+      g->m.add_field(g, pt, fd_bile, 1);
+
+  // If bile hit a solid tile, return.
+  if (0 == g->m.move_cost(pt)) {
+      g->m.add_field(g, pt, fd_bile, 3);
+      if (g->u_see(pt))
+          messages.add("Bile splatters on the %s!", g->m.tername(pt).c_str());
+      return;
   }
  }
+
  const int my_dodge = g->u.dodge();
  if (rng(0, 10) > my_dodge || one_in(my_dodge))
   g->u.infect(DI_BOOMERED, bp_eyes, 3, 12);
