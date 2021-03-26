@@ -297,14 +297,14 @@ void veh_interact::do_refill(int reason)
     switch (reason)
     {
     case 1:
-        mvwprintz(w_msg, 0, 1, c_ltred, "There's no fuel tank here.");
+        mvwaddstrz(w_msg, 0, 1, c_ltred, "There's no fuel tank here.");
         wrefresh (w_msg);
         return;
     case 2:
         {
         const auto f_name = vehicle::fuel_name(veh->part_info(ptank).fuel_type);
         mvwprintz(w_msg, 0, 1, c_ltgray, "You need %s.", f_name);
-        mvwprintz(w_msg, 0, 10, c_red, f_name);
+        mvwaddstrz(w_msg, 0, 10, c_red, f_name);
         }
         wrefresh (w_msg);
         return;
