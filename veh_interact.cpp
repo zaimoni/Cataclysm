@@ -8,9 +8,20 @@
 #include "recent_msg.h"
 #include <string>
 
+static bool inv_has_welder(const inventory& src)
+{
+    const int charges = dynamic_cast<it_tool*>(item::types[itm_welder])->charges_per_use;
+    return (src.has_amount(itm_welder, 1) && src.has_charges(itm_welder, charges))
+        || (src.has_amount(itm_toolset, 1) && src.has_charges(itm_toolset, charges / 5));
+}
 
+// no UI manipulation in the constructor; leave that in ...::exec
 veh_interact::veh_interact (int cx, int cy, game *gm, vehicle *v)
-: c(cx, cy), dd(0, 0), sel_cmd(' '), cpart(-1), veh(v), _g(gm)
+: c(cx, cy), dd(0, 0), sel_cmd(' '), cpart(-1), veh(v), _g(gm),
+  crafting_inv(crafting_inventory(_g->m, _g->u)),
+  has_wrench(crafting_inv.has_amount(itm_wrench, 1) || crafting_inv.has_amount(itm_toolset, 1)),
+  has_hacksaw(crafting_inv.has_amount(itm_hacksaw, 1) || crafting_inv.has_amount(itm_toolset, 1)),
+  has_welder(inv_has_welder(crafting_inv))
 {
 }
 
@@ -57,18 +68,6 @@ void veh_interact::exec ()
     }
     wrefresh(w_grid);
 
-    crafting_inv = crafting_inventory(_g->m, _g->u);
-
-    int charges = dynamic_cast<it_tool*>(item::types[itm_welder])->charges_per_use;
-    has_wrench = crafting_inv.has_amount(itm_wrench, 1) ||
-                 crafting_inv.has_amount(itm_toolset, 1);
-    has_hacksaw = crafting_inv.has_amount(itm_hacksaw, 1) ||
-                  crafting_inv.has_amount(itm_toolset, 1);
-    has_welder = (crafting_inv.has_amount(itm_welder, 1) &&
-                  crafting_inv.has_charges(itm_welder, charges)) ||
-                 (crafting_inv.has_amount(itm_toolset, 1) &&
-                 crafting_inv.has_charges(itm_toolset, charges/5));
-        
     display_stats ();
     display_veh   ();
     move_cursor (0, 0);
@@ -76,10 +75,10 @@ void veh_interact::exec ()
     while (!finish)
     {
         int ch = input(); // See keypress.h
+        if (KEY_ESCAPE == ch) break;
         int dx, dy;
         get_direction (dx, dy, ch);
-        if (ch == KEY_ESCAPE) finish = true;
-        else if (dx != -2 && (dx || dy) &&
+        if (dx != -2 && (dx || dy) &&
             c.x + dx >= -6 && c.x + dx < 6 &&
             c.y + dy >= -6 && c.y + dy < 6)
             move_cursor(dx, dy);

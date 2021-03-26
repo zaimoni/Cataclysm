@@ -13,6 +13,17 @@ public:
 	point dd;
     int sel_part;
     char sel_cmd;
+
+    // as a UI we're completely non-copyable
+    veh_interact(int cx, int cy, game* gm, vehicle* v);
+    veh_interact() = delete;
+    veh_interact(const veh_interact& src) = delete;
+    veh_interact(veh_interact&& src) = delete;
+    ~veh_interact() = default;
+    veh_interact& operator=(const veh_interact& src) = delete;
+    veh_interact& operator=(veh_interact&& src) = delete;
+
+    void exec();
 private:
     int cpart;
     WINDOW *w_mode;
@@ -24,10 +35,10 @@ private:
 
     vehicle* const veh;
     game* const _g;
-    bool has_wrench;
-    bool has_welder;
-    bool has_hacksaw;
-    inventory crafting_inv;
+    const inventory crafting_inv;
+    const bool has_wrench;
+    const bool has_hacksaw;
+    const bool has_welder;
 
     int part_at (point d);
     void move_cursor (int dx, int dy);
@@ -48,15 +59,6 @@ private:
     std::vector<int> parts_here;
     int ptank;
     bool has_fuel;
-public:
-    veh_interact (int cx, int cy, game *gm, vehicle *v);
-	veh_interact() = delete;
-	veh_interact(const veh_interact& src) = delete;
-	veh_interact(veh_interact&& src) = delete;
-	veh_interact& operator=(const veh_interact& src) = delete;
-	veh_interact& operator=(veh_interact&& src) = delete;
-
-    void exec ();
 };
 
 vehicle& complete_vehicle(game* g);
