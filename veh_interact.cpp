@@ -224,24 +224,24 @@ void veh_interact::do_repair(int reason)
     werase (w_msg);
     if (_g->u.morale_level() < MIN_MORALE_CRAFT) 
     { // See morale.h
-        mvwprintz(w_msg, 0, 1, c_ltred, "Your morale is too low to construct...");
+        mvwaddstrz(w_msg, 0, 1, c_ltred, "Your morale is too low to construct...");
         wrefresh (w_msg);
         return;
     }
     switch (reason)
     {
     case 1:
-        mvwprintz(w_msg, 0, 1, c_ltred, "There are no damaged parts here.");
+        mvwaddstrz(w_msg, 0, 1, c_ltred, "There are no damaged parts here.");
         wrefresh (w_msg);
         return;
     case 2:
-        mvwprintz(w_msg, 0, 1, c_ltgray, "You need a powered welder to repair.");
-        mvwprintz(w_msg, 0, 12, has_welder? c_ltgreen : c_red, "powered welder");
+        mvwaddstrz(w_msg, 0, 1, c_ltgray, "You need a powered welder to repair.");
+        mvwaddstrz(w_msg, 0, sizeof("You need a "), has_welder? c_ltgreen : c_red, "powered welder");
         wrefresh (w_msg);
         return;
     default:;
     }
-    mvwprintz(w_mode, 0, 1, c_ltgray, "Choose a part here to repair:");
+    mvwaddstrz(w_mode, 0, 1, c_ltgray, "Choose a part here to repair:");
     wrefresh (w_mode);
     int pos = 0;
     while (true) {
@@ -254,38 +254,43 @@ void veh_interact::do_repair(int reason)
         int dif = veh->part_info(sel_part).difficulty + (veh->parts[sel_part].hp <= 0? 0 : 2);
         bool has_skill = dif <= _g->u.sklevel[sk_mechanics];
         mvwprintz(w_msg, 0, 1, c_ltgray, "You need level %d skill in mechanics.", dif);
-        mvwprintz(w_msg, 0, 16, has_skill? c_ltgreen : c_red, "%d", dif);
+        mvwprintz(w_msg, 0, sizeof("You need level "), has_skill? c_ltgreen : c_red, "%d", dif);
         if (veh->parts[sel_part].hp <= 0) {
             itype_id itm = veh->part_info(sel_part).item;
             has_comps = crafting_inv.has_amount(itm, 1);
             mvwprintz(w_msg, 1, 1, c_ltgray, "You also need a wrench and %s to replace broken one.", 
                     item::types[itm]->name.c_str());
-            mvwprintz(w_msg, 1, 17, has_wrench? c_ltgreen : c_red, "wrench");
-            mvwprintz(w_msg, 1, 28, has_comps? c_ltgreen : c_red, item::types[itm]->name.c_str());            
+            mvwaddstrz(w_msg, 1, sizeof("You also need a "), has_wrench? c_ltgreen : c_red, "wrench");
+            mvwaddstrz(w_msg, 1, sizeof("You also need a wrench and "), has_comps? c_ltgreen : c_red, item::types[itm]->name.c_str());
         }
         wrefresh (w_msg);
-        int ch = input(); // See keypress.h
-        int dx, dy;
-        get_direction (dx, dy, ch);
-        if ((ch == '\n' || ch == ' ') && has_comps && (veh->parts[sel_part].hp > 0 || has_wrench) && has_skill)
+
+        switch (int ch = input())
         {
-            sel_cmd = 'r';
-            return;
-        } else if (ch == KEY_ESCAPE) {
-            werase (w_parts);
-            veh->print_part_desc(w_parts, 0, cpart, -1);
-            wrefresh (w_parts);
-            werase (w_msg);
+        case '\n':
+        case ' ':
+            if (has_comps && (veh->parts[sel_part].hp > 0 || has_wrench) && has_skill) {
+                sel_cmd = 'r';
+                return;
+            }
             break;
-        }
-        if (dy == -1 || dy == 1)
-        {
-            pos += dy;
-            if (pos < 0)
-                pos = need_repair.size()-1;
-            else
-            if (pos >= need_repair.size())
-                pos = 0;
+        case KEY_ESCAPE:
+            werase(w_parts);
+            veh->print_part_desc(w_parts, 0, cpart, -1);
+            wrefresh(w_parts);
+            werase(w_msg);
+            break;
+        default:
+            {
+            int dx, dy;
+            get_direction(dx, dy, ch);
+            if (dy == -1 || dy == 1) {
+                pos += dy;
+                const size_t ub = need_repair.size();
+                if (pos >= ub) pos = 0;
+                else if (0 > pos) pos = ub - 1;
+            }
+            }
         }
     }
 }
