@@ -198,7 +198,7 @@ void mattack::resurrect(game *g, monster *z)
 void mattack::science(game *g, monster *z)	// I said SCIENCE again!
 {
  int t;
- const int dist = rl_dist(z->pos, g->u.pos);
+ const int dist = rl_dist(z->GPSpos, g->u.GPSpos);
  if (dist > 5 || !g->sees_u(z->pos, t)) return;	// Out of range
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  std::vector<point> line = line_to(z->pos, g->u.pos, t);
@@ -209,7 +209,7 @@ void mattack::science(game *g, monster *z)	// I said SCIENCE again!
  std::vector<int> valid;// List of available attacks
  if (dist == 1) valid.push_back(1);	// Shock
  if (dist <= 2) valid.push_back(2);	// Radiation
- if (!free.empty()) {
+ if (!free.empty()) {   // \todo these two arguably should use "inventory"
   valid.push_back(3);	// Manhack
   valid.push_back(4);	// Acid pool
  }
@@ -217,16 +217,16 @@ void mattack::science(game *g, monster *z)	// I said SCIENCE again!
  switch (valid[rng(0, valid.size() - 1)]) {	// What kind of attack?
  case 1:	// Shock the player
   messages.add("The %s shocks you!", z->name().c_str());
-  z->moves -= 150;
+  z->moves -= (mobile::mp_turn / 2) * 3;
   g->u.hurtall(rng(1, 2));
   if (one_in(6) && !one_in(30 - g->u.str_cur)) {
    messages.add("You're paralyzed!");
-   g->u.moves -= 300;
+   g->u.moves -= 3 * mobile::mp_turn;
   }
   break;
  case 2:	// Radioactive beam
   messages.add("The %s opens it's mouth and a beam shoots towards you!", z->name().c_str());
-  z->moves -= 400;
+  z->moves -= 4 * mobile::mp_turn;
   if (g->u.dodge() > rng(1, 16))
    messages.add("You dodge the beam!");
   else if (one_in(6))
@@ -238,29 +238,29 @@ void mattack::science(game *g, monster *z)	// I said SCIENCE again!
   break;
  case 3:	// Spawn a manhack
   messages.add("The %s opens its coat, and a manhack flies out!", z->name().c_str());
-  z->moves -= 200;
+  z->moves -= 2 * mobile::mp_turn;
   g->z.push_back(monster(mtype::types[mon_manhack], free[rng(0, valid.size() - 1)]));
   break;
  case 4:	// Acid pool
   messages.add("The %s drops a flask of acid!", z->name().c_str());
-  z->moves -= 100;
+  z->moves -= mobile::mp_turn;
   for(const auto& pt : free) g->m.add_field(g, pt, fd_acid, 3);
   break;
  case 5:	// Flavor text
-  switch (rng(1, 4)) {
-  case 1:
-   messages.add("The %s gesticulates wildly!", z->name().c_str());
-   break;
-  case 2:
-   messages.add("The %s coughs up a strange dust.", z->name().c_str());
-   break;
-  case 3:
-   messages.add("The %s moans softly.", z->name().c_str());
-   break;
-  case 4:
-   messages.add("The %s's skin crackles with electricity.", z->name().c_str());
-   z->moves -= 80;
-   break;
+  {
+  static constexpr const char* const no_op[] = {
+    "The %s gesticulates wildly!",
+    "The %s coughs up a strange dust.",
+    "The %s moans softly.",
+    "The %s's skin crackles with electricity." // extra processing, but still mostly harmless
+  };
+
+  const auto index = rng(0, std::end(no_op) - std::begin(no_op) - 1);
+  messages.add(no_op[index], z->name().c_str());
+  if (3 == index) {
+      static_assert(3 == std::end(no_op) - std::begin(no_op) - 1);  // \todo need a policy decision when adding to no-op messages
+      z->moves -= (mobile::mp_turn / 5) * 4;
+  }
   }
   break;
  }
