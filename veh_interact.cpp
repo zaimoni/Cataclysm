@@ -140,12 +140,8 @@ int veh_interact::cant_do (char mode)
 void veh_interact::do_install(int reason)
 {
     werase (w_msg);
-    if (_g->u.morale_level() < MIN_MORALE_CRAFT) 
-    { // See morale.h
-        mvwprintz(w_msg, 0, 1, c_ltred, "Your morale is too low to construct...");
-        wrefresh (w_msg);
-        return;
-    }
+    if (morale_failed()) return;
+
     switch (reason)
     {
     case 1:
@@ -219,15 +215,22 @@ void veh_interact::do_install(int reason)
     }
 }
 
+bool veh_interact::morale_failed() const
+{
+    if (_g->u.morale_level() < MIN_MORALE_CRAFT) { // See morale.h
+        mvwaddstrz(w_msg, 0, 1, c_ltred, "Your morale is too low to construct...");
+        wrefresh(w_msg);
+        return false;
+    }
+    return true;
+}
+
+
 void veh_interact::do_repair(int reason)
 {
     werase (w_msg);
-    if (_g->u.morale_level() < MIN_MORALE_CRAFT) 
-    { // See morale.h
-        mvwaddstrz(w_msg, 0, 1, c_ltred, "Your morale is too low to construct...");
-        wrefresh (w_msg);
-        return;
-    }
+    if (morale_failed()) return;
+
     switch (reason)
     {
     case 1:
@@ -321,12 +324,8 @@ void veh_interact::do_refill(int reason)
 void veh_interact::do_remove(int reason)
 {
     werase (w_msg);
-    if (_g->u.morale_level() < MIN_MORALE_CRAFT) 
-    { // See morale.h
-        mvwaddstrz(w_msg, 0, 1, c_ltred, "Your morale is too low to construct...");
-        wrefresh (w_msg);
-        return;
-    }
+    if (morale_failed()) return;
+
     switch (reason)
     {
     case 1:

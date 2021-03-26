@@ -54,6 +54,8 @@ private:
     void display_mode (char mode);
     void display_list (int pos);
 
+    bool morale_failed() const;
+
     std::vector<int> can_mount;
     std::vector<int> need_repair;
     std::vector<int> parts_here;
