@@ -51,7 +51,7 @@ void recent_msg::buffer() const
   werase(w);
   wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
              LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
-  mvwprintz(w, VIEW - 1, SCREEN_WIDTH/2 - (sizeof("Press q to return")-1)/2, c_red, "Press q to return");
+  mvwaddstrz(w, VIEW - 1, SCREEN_WIDTH/2 - (sizeof("Press q to return")-1)/2, c_red, "Press q to return");
 
   int line = 1;
   int lasttime = -1;
@@ -65,8 +65,7 @@ void recent_msg::buffer() const
                    (tp <= 12 ? c_ltgray : c_dkgray)));
 
    if (int(timepassed) > lasttime) {
-    mvwprintz(w, line, 3, c_ltblue, "%s ago:",
-              timepassed.textify_period().c_str());
+    mvwprintz(w, line, 3, c_ltblue, "%s ago:", timepassed.textify_period().c_str());
     line++;
     lasttime = int(timepassed);
    }
@@ -80,19 +79,19 @@ void recent_msg::buffer() const
 // Split the message into many if we must!
     while (mes.length() > SCREEN_WIDTH-2 && line <= VIEW - 2) {
      const size_t split = clamped_ub(mes.find_last_of(' ', SCREEN_WIDTH - 2), SCREEN_WIDTH - 2);
-     mvwprintz(w, line, 1, c_ltgray, mes.substr(0, split).c_str());
+     mvwaddstrz(w, line, 1, c_ltgray, mes.substr(0, split).c_str());
      line++;
      mes = mes.substr(split);
     }
     if (line <= VIEW - 2) {
-     mvwprintz(w, line, 1, col, mes.c_str());
+     mvwaddstrz(w, line, 1, col, mes.c_str());
      line++;
     }
    } // if (line <= 23)
   } //for (i = 1; i <= 10 && line <= 23 && offset + i <= msgs.size(); i++)
   // Arguable whether the arrows should "spread out" as the screen gets wider. 2020-10-10 zaimoni
-  if (offset > 0) mvwprintz(w, VIEW - 1, SCREEN_WIDTH / 2 - 13, c_magenta, "^^^");
-  if (offset + i < msgs.size()) mvwprintz(w, VIEW - 1, SCREEN_WIDTH / 2 + 10, c_magenta, "vvv");
+  if (offset > 0) mvwaddstrz(w, VIEW - 1, SCREEN_WIDTH / 2 - 13, c_magenta, "^^^");
+  if (offset + i < msgs.size()) mvwaddstrz(w, VIEW - 1, SCREEN_WIDTH / 2 + 10, c_magenta, "vvv");
   wrefresh(w);
 
   ch = input();
@@ -131,8 +130,7 @@ void recent_msg::write(WINDOW* w_messages)
     col = c_ltred;
    else if (int(msgs[i].turn) + 5 >= curmes)
     col = c_ltgray;
-   //mvwprintz(w_messages, line, 0, col, mes.substr(0, split).c_str());
-   mvwprintz(w_messages, line, 0, col, mes.substr(split + 1).c_str());
+   mvwaddstrz(w_messages, line, 0, col, mes.substr(split + 1).c_str());
    mes = mes.substr(0, split);
    line--;
    //mes = mes.substr(split + 1);
@@ -143,7 +141,7 @@ void recent_msg::write(WINDOW* w_messages)
     col = c_ltred;
    else if (int(msgs[i].turn) + 5 >= curmes)
     col = c_ltgray;
-   mvwprintz(w_messages, line, 0, col, mes.c_str());
+   mvwaddstrz(w_messages, line, 0, col, mes.c_str());
    line--;
   }
  }
