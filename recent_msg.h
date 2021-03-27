@@ -44,10 +44,18 @@ public:
 	}
 
 #ifndef SOCRATES_DAIMON
-	void add(const char* msg, ...);
+	template<class...Args> void add(const char* msg, Args...params) {
+		if (!msg || !*msg) return;	// reject null and empty-string
+		if constexpr (0 == sizeof...(Args)) {
+			_record(msg);
+		} else {
+			_add(msg, params...);
+		}
+	}
 	void buffer() const;
 	void write(WINDOW* w_messages);
 private:
+	void _add(const char* msg, ...);
 	void _record(const char* msg);
 #endif
 };

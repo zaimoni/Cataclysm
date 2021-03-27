@@ -12,21 +12,20 @@
 recent_msg messages;
 
 #ifndef SOCRATES_DAIMON
-void recent_msg::add(const char* msg, ...)
+void recent_msg::_add(const char* msg, ...)
 {
-	if (!msg || !*msg) return;	// reject null and empty-string
     if (reject_not_whitelisted_printf(msg)) return;
 
-	char buff[1024];
-	va_list ap;
-	va_start(ap, msg);
+    char buff[1024];
+    va_list ap;
+    va_start(ap, msg);
 #ifdef _MSC_VER
-	vsprintf_s<sizeof(buff)>(buff, msg, ap);
+    vsprintf_s<sizeof(buff)>(buff, msg, ap);
 #else
-	vsnprintf(buff, sizeof(buff), msg, ap);
+    vsnprintf(buff, sizeof(buff), msg, ap);
 #endif
-	va_end(ap);
-	_record(buff);
+    va_end(ap);
+    _record(buff);
 }
 
 void recent_msg::_record(const char* msg)
