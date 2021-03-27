@@ -17,7 +17,7 @@ private:
 		std::string message;
 
 		game_message(calendar T = 0) noexcept : turn(T), count(1) {}
-		game_message(calendar T, std::string M) : turn(T), count(1), message(M) {}
+		game_message(calendar T, std::string&& M) noexcept : turn(T), count(1), message(std::move(M)) {}
 		game_message(const game_message& src) = default;
 		game_message(game_message&& src) = default;
 		game_message& operator=(const game_message& src) = default;
@@ -47,6 +47,8 @@ public:
 	void add(const char* msg, ...);
 	void buffer() const;
 	void write(WINDOW* w_messages);
+private:
+	void _record(const char* msg);
 #endif
 };
 

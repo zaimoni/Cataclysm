@@ -26,7 +26,12 @@ void recent_msg::add(const char* msg, ...)
 	vsnprintf(buff, sizeof(buff), msg, ap);
 #endif
 	va_end(ap);
-	std::string s(buff);
+	_record(buff);
+}
+
+void recent_msg::_record(const char* msg)
+{
+	std::string s(msg);
 	if (s.empty()) return;
 	if (!msgs.empty()) {
 		auto& msg = msgs.back();
@@ -37,8 +42,8 @@ void recent_msg::add(const char* msg, ...)
 		}
 	}
 
-	while(256 <= msgs.size()) msgs.erase(msgs.begin());
-	msgs.push_back(game_message(turn, s));
+	while (256 <= msgs.size()) msgs.erase(msgs.begin());
+	msgs.push_back(game_message(turn, std::move(s))); // UI; no measurable benefit from eliminating a move-assignment w/emplace_back
 }
 
 void recent_msg::buffer() const
