@@ -95,20 +95,24 @@ void mattack::acid(game *g, monster *z)
 
 void mattack::shockstorm(game *g, monster *z)
 {
- if (!g->sees_u(z->pos) || rl_dist(z->pos, g->u.pos) > 12) return;	// Can't see you, no attack
- z->moves = -50;			// It takes a while
- z->sp_timeout = z->type->sp_freq;	// Reset timer
+ if (rl_dist(z->GPSpos, g->u.GPSpos) > 12 || !g->sees_u(z->pos)) return; // Can't see you, no attack
+ z->moves -= mobile::mp_turn / 2; // It takes a while
+ z->sp_timeout = z->type->sp_freq; // Reset timer
  messages.add("A bolt of electricity arcs towards you!");
- int tarx = g->u.pos.x + rng(-1, 1) + rng(-1, 1),// 3 in 9 chance of direct hit,
-     tary = g->u.pos.y + rng(-1, 1) + rng(-1, 1);// 4 in 9 chance of near hit
+ static constexpr const auto spread = zaimoni::gdi::box<point>(point(-1), point(1));
+
+ // 2/9 near-miss for each of x, y axis; theoretical probability for hit if not obstructed 49/81
+ const auto tar = g->u.pos + rng(spread) + rng(spread);
+
  int t;
- std::vector<point> bolt = line_to(z->pos, tarx, tary, (g->m.sees(z->pos, tarx, tary, -1, t) ? t : 0));
- for (int i = 0; i < bolt.size(); i++) { // Fill the LOS with electricity
-  if (!one_in(4)) g->m.add_field(g, bolt[i], fd_electricity, rng(1, 3));
+ const auto bolt = line_to(z->pos, tar, (g->m.sees(z->pos, tar, -1, t) ? t : 0));
+ for (decltype(auto) pt : bolt) { // Fill the LOS with electricity
+     if (!one_in(4)) g->m.add_field(g, pt, fd_electricity, rng(1, 3));
  }
-// 3x3 cloud of electricity at the square hit
- for (int i = tarx - 1; i <= tarx + 1; i++) {
-  for (int j = tary - 1; j <= tary + 1; j++) {
+
+ // 3x3 cloud of electricity at the square hit
+ for (int i = tar.x - 1; i <= tar.x + 1; i++) {
+  for (int j = tar.y - 1; j <= tar.y + 1; j++) {
    if (!one_in(6)) g->m.add_field(g, i, j, fd_electricity, rng(1, 3));
   }
  }
