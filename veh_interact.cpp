@@ -145,28 +145,29 @@ void veh_interact::do_install(int reason)
     switch (reason)
     {
     case 1:
-        mvwprintz(w_msg, 0, 1, c_ltred, "Cannot install any part here.");
+        mvwaddstrz(w_msg, 0, 1, c_ltred, "Cannot install any part here.");
         wrefresh (w_msg);
         return;
     case 2:
-        mvwprintz(w_msg, 0, 1, c_ltgray, "You need a wrench and a powered welder to install parts.");
-        mvwprintz(w_msg, 0, 12, has_wrench? c_ltgreen : c_red, "wrench");
-        mvwprintz(w_msg, 0, 25, has_welder? c_ltgreen : c_red, "powered welder");
+        mvwaddstrz(w_msg, 0, 1, c_ltgray, "You need a wrench and a powered welder to install parts.");
+        mvwaddstrz(w_msg, 0, 12, has_wrench? c_ltgreen : c_red, "wrench");
+        mvwaddstrz(w_msg, 0, 25, has_welder? c_ltgreen : c_red, "powered welder");
         wrefresh (w_msg);
         return;
     default:;
     }
-    mvwprintz(w_mode, 0, 1, c_ltgray, "Choose new part to install here:");
+    mvwaddstrz(w_mode, 0, 1, c_ltgray, "Choose new part to install here:");
     wrefresh (w_mode);
     int pos = 0;
     int engines = 0;
     int dif_eng = 0;
-    for (int p = 0; p < veh->parts.size(); p++)
-        if (veh->part_flag (p, vpf_engine))
-        {
+    for (const auto& vpart : veh->parts) {
+        if (vpart.has_flag(vpf_engine)) {
             engines++;
             dif_eng = dif_eng / 2 + 12;
         }
+    }
+
     while (true) {
         sel_part = can_mount[pos];
         display_list (pos);
@@ -178,7 +179,7 @@ void veh_interact::do_install(int reason)
 		const int slen = item::types[itm]->name.length();
         mvwprintz(w_msg, 0, 1, c_ltgray, "Needs %s and level %d skill in mechanics.", 
                   item::types[itm]->name.c_str(), p_info.difficulty);
-        mvwprintz(w_msg, 0, 7, has_comps? c_ltgreen : c_red, item::types[itm]->name.c_str());
+        mvwaddstrz(w_msg, 0, 7, has_comps? c_ltgreen : c_red, item::types[itm]->name.c_str());
         mvwprintz(w_msg, 0, 18+slen, has_skill? c_ltgreen : c_red, "%d", p_info.difficulty);
 		const bool eng = p_info.flags & mfb (vpf_engine);
         const bool has_skill2 = !eng || (_g->u.sklevel[sk_mechanics] >= dif_eng);
@@ -190,27 +191,32 @@ void veh_interact::do_install(int reason)
             mvwprintz(w_msg, 1, 21, has_skill2? c_ltgreen : c_red, "%d", dif_eng);
         }
         wrefresh (w_msg);
-        int ch = input(); // See keypress.h
-        int dx, dy;
-        get_direction (dx, dy, ch);
-        if ((ch == '\n' || ch == ' ') && has_comps && has_skill && has_skill2)
+
+        switch (int ch = input()) // See keypress.h
         {
-            sel_cmd = 'i';
-            return;
-        } else if (ch == KEY_ESCAPE) {
-            werase (w_list);
-            wrefresh (w_list);
-            werase (w_msg);
+        case '\n':
+        case ' ':
+            if (has_comps && has_skill && has_skill2) {
+                sel_cmd = 'i';
+                return;
+            }
             break;
-        }
-        if (dy == -1 || dy == 1)
-        {
-            pos += dy;
-            if (pos < 0)
-                pos = can_mount.size()-1;
-            else
-            if (pos >= can_mount.size())
-                pos = 0;
+        case KEY_ESCAPE:
+            werase(w_list);
+            wrefresh(w_list);
+            werase(w_msg);
+            break;
+        default:
+            {
+            int dx, dy;
+            get_direction(dx, dy, ch);
+            if (dy == -1 || dy == 1) {
+                pos += dy;
+                const size_t ub = can_mount.size();
+                if (ub <= pos) pos = 0;
+                else if (0 > pos) pos = ub - 1;
+            }
+            }
         }
     }
 }
