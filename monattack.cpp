@@ -6,6 +6,7 @@
 #include "line.h"
 #include "bodypart.h"
 #include "recent_msg.h"
+#include "stl_typetraits_late.h"
 
 void mattack::antqueen(game *g, monster *z)
 {
@@ -66,7 +67,7 @@ void mattack::shriek(game *g, monster *z)
 void mattack::acid(game *g, monster *z)
 {
  int j;
- if (rl_dist(z->pos, g->u.pos) > 10 || !g->sees_u(z->pos, j)) return; // Out of range
+ if (rl_dist(z->GPSpos, g->u.GPSpos) > 10 || !g->sees_u(z->pos, j)) return; // Out of range
  z->moves -= 3*mobile::mp_turn; // It takes a while
  z->sp_timeout = z->type->sp_freq; // Reset timer
  g->sound(z->pos, 4, "a spitting noise.");
@@ -1069,49 +1070,40 @@ void mattack::generator(game *g, monster *z)
  if (int(messages.turn) % 10 == 0 && z->hp < z->type->hp) z->hp++;
 }
 
-void mattack::upgrade(game *g, monster *z)
+void mattack::upgrade(game* g, monster* z)
 {
- std::vector<int> targets;
- for (int i = 0; i < g->z.size(); i++) {
-  if (g->z[i].type->id == mon_zombie && rl_dist(z->pos, g->z[i].pos) <= 5)
-   targets.push_back(i);
- }
- if (targets.empty()) return;
- z->sp_timeout = z->type->sp_freq;	// Reset timer
- z->moves -= 150;			// It takes a while
+    assert(z && mon_zombie != z->type->id);
+    std::vector<monster*> targets;
+    for (decltype(auto) _mon : g->z) {
+        if (mon_zombie == _mon.type->id && 5 >= rl_dist(z->GPSpos, _mon.GPSpos))
+            targets.push_back(&_mon);
+    }
+    if (targets.empty()) return;
 
- monster *target = &( g->z[ targets[ rng(0, targets.size()-1) ] ] );
+    z->sp_timeout = z->type->sp_freq; // Reset timer
+    z->moves -= (mobile::mp_turn / 2) * 3; // It takes a while
 
- mon_id newtype = mon_zombie;
- 
- switch( rng(1, 10) ) {
-  case  1: newtype = mon_zombie_shrieker;
-           break;
-  case  2:
-  case  3: newtype = mon_zombie_spitter;
-           break;
-  case  4:
-  case  5: newtype = mon_zombie_electric;
-           break;
-  case  6:
-  case  7:
-  case  8: newtype = mon_zombie_fast;
-           break;
-  case  9: newtype = mon_zombie_brute;
-           break;
-  case 10: newtype = mon_boomer;
-           break;
- }
+    monster* const target = targets[rng(0, targets.size() - 1)];
 
- target->poly(mtype::types[newtype]);
- if (g->u_see(z->pos)) messages.add("The black mist around the %s grows...", z->name().c_str());
- if (g->u_see(target->pos)) messages.add("...a zombie becomes a %s!", target->name().c_str());
+    static constexpr const std::pair<mon_id, int> poly_to[] = {
+        {mon_zombie_shrieker, 1},
+        {mon_zombie_spitter, 2},
+        {mon_zombie_electric, 2},
+        {mon_zombie_fast, 3},
+        {mon_zombie_brute, 1},
+        {mon_boomer, 1}
+    };
+
+    target->poly(mtype::types[use_rarity_table(10, std::begin(poly_to), std::end(poly_to))]);
+
+    if (g->u_see(z->pos)) messages.add("The black mist around the %s grows...", z->name().c_str());
+    if (g->u_see(target->pos)) messages.add("...a zombie becomes a %s!", target->name().c_str());
 }
 
 void mattack::breathe(game *g, monster *z)
 {
- z->sp_timeout = z->type->sp_freq;	// Reset timer
- z->moves -= 100;			// It takes a while
+ z->sp_timeout = z->type->sp_freq; // Reset timer
+ z->moves -= mobile::mp_turn; // It takes a while
 
  bool able = (z->type->id == mon_breather_hub);
  if (!able) {
