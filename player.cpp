@@ -2753,16 +2753,16 @@ void player::power_bionics(game *g)
 {
  WINDOW *wBio = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  werase(wBio);
- std::vector <bionic> passive;	// \todo should these two be std::vector<bionic*>?
- std::vector <bionic> active;
- mvwprintz(wBio, 0, 0, c_blue, "BIONICS -");
+ std::vector<bionic*> passive;	// \todo should these two be std::vector<bionic*>?
+ std::vector<bionic*> active;
+ mvwaddstrz(wBio, 0, 0, c_blue, "BIONICS -");
 
  bool activating = true;
  static constexpr const int header_offset = sizeof("BIONICS -"); // C++20: constexpr strlen?
 
  static auto mode_desc = [&]() {
      draw_hline(wBio, 0, c_white, ' ', header_offset); // general-case pre-emptive clear
-     mvwprintz(wBio, 0, header_offset, c_white, activating ? "Activating.  Press '!' to examine your implants."
+     mvwaddstrz(wBio, 0, header_offset, c_white, activating ? "Activating.  Press '!' to examine your implants."
                                                            : "Examining.  Press '!' to activate your implants.");
  };
 
@@ -2770,35 +2770,38 @@ void player::power_bionics(game *g)
 
  draw_hline(wBio, 1, c_ltgray, LINE_OXOX);
  draw_hline(wBio, VIEW - 4, c_ltgray, LINE_OXOX);
- for (int i = 0; i < my_bionics.size(); i++) {
-  const auto& bio_type = bionic::type[my_bionics[i].id];
-  if ( bio_type.power_source || !bio_type.activated)
-   passive.push_back(my_bionics[i]);
-  else
-   active.push_back(my_bionics[i]);
+ for (decltype(auto) bio : my_bionics) {
+     const auto& bio_type = bionic::type[bio.id];
+     if (bio_type.power_source || !bio_type.activated)
+         passive.push_back(&bio);
+     else
+         active.push_back(&bio);
  }
+
  nc_color type;
- if (passive.size() > 0) {
-  mvwprintz(wBio, 2, 0, c_ltblue, "Passive:");
-  for (int i = 0; i < passive.size(); i++) {
-   const auto& bio_type = bionic::type[passive[i].id];
-   type = (bio_type.power_source ? c_ltcyan : c_cyan);
-   mvwputch(wBio, 3 + i, 0, type, passive[i].invlet);
-   mvwprintz(wBio, 3 + i, 2, type, bio_type.name.c_str());
+ if (!passive.empty()) {
+  mvwaddstrz(wBio, 2, 0, c_ltblue, "Passive:");
+  int i = passive.size();
+  while (0 <= --i) {
+      const auto& bio_type = bionic::type[passive[i]->id];
+      type = (bio_type.power_source ? c_ltcyan : c_cyan);
+      mvwputch(wBio, 3 + i, 0, type, passive[i]->invlet);
+      mvwprintz(wBio, 3 + i, 2, type, bio_type.name.c_str());
   }
  }
- if (active.size() > 0) {
+ if (!active.empty()) {
   // unclear where this magic constant 32 comes from.  De-facto bionic name length limit?
-  mvwprintz(wBio, 2, 32, c_ltblue, "Active:");
-  for (int i = 0; i < active.size(); i++) {
-   type = (active[i].powered ? c_red : c_ltred);
-   const auto& bio_type = bionic::type[active[i].id];
-   mvwputch(wBio, 3 + i, 32, type, active[i].invlet);
-   mvwprintz(wBio, 3 + i, 34, type,
-             (active[i].powered ? "%s - ON" : "%s - %d PU / %d trns"),
-             bio_type.name.c_str(),
-             bio_type.power_cost,
-             bio_type.charge_time);
+  mvwaddstrz(wBio, 2, 32, c_ltblue, "Active:");
+  int i = active.size();
+  while (0 <= --i) {
+      type = (active[i]->powered ? c_red : c_ltred);
+      const auto& bio_type = bionic::type[active[i]->id];
+      mvwputch(wBio, 3 + i, 32, type, active[i]->invlet);
+      mvwprintz(wBio, 3 + i, 34, type,
+          (active[i]->powered ? "%s - ON" : "%s - %d PU / %d trns"),
+          bio_type.name.c_str(),
+          bio_type.power_cost,
+          bio_type.charge_time);
   }
  }
 
@@ -2844,7 +2847,7 @@ You can not activate %s!  To read a description of \
      draw_hline(wBio, VIEW - 3, c_ltgray, ' ');
      draw_hline(wBio, VIEW - 2, c_ltgray, ' ');
      draw_hline(wBio, VIEW - 1, c_ltgray, ' ');
-     mvwprintz(wBio, VIEW - 3, 0, c_ltblue, bio_type.description.c_str());
+     mvwaddstrz(wBio, VIEW - 3, 0, c_ltblue, bio_type.description.c_str());
     }
    }
   }
