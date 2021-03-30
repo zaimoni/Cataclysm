@@ -57,27 +57,29 @@ void mattack::antqueen(game *g, monster *z)
 
 void mattack::shriek(game *g, monster *z)
 {
- if (rl_dist(z->pos, g->u.pos) > 4 || !g->sees_u(z->pos)) return;	// Out of range
- z->moves = -240;			// It takes a while
- z->sp_timeout = z->type->sp_freq;	// Reset timer
+ if (rl_dist(z->GPSpos, g->u.GPSpos) > 4 || !g->sees_u(z->pos)) return;	// Out of range
+ z->moves -= (mobile::mp_turn/5)*12; // It takes a while
+ z->sp_timeout = z->type->sp_freq; // Reset timer
  g->sound(z->pos, 50, "a terrible shriek!");
 }
 
 void mattack::acid(game *g, monster *z)
 {
- int junk;
- if (rl_dist(z->pos, g->u.pos) > 10 || !g->sees_u(z->pos, junk)) return;	// Out of range
- z->moves = -300;			// It takes a while
- z->sp_timeout = z->type->sp_freq;	// Reset timer
+ int j;
+ if (rl_dist(z->pos, g->u.pos) > 10 || !g->sees_u(z->pos, j)) return; // Out of range
+ z->moves -= 3*mobile::mp_turn; // It takes a while
+ z->sp_timeout = z->type->sp_freq; // Reset timer
  g->sound(z->pos, 4, "a spitting noise.");
- point hit(g->u.pos.x + rng(-2, 2), g->u.pos.y + rng(-2, 2));
- std::vector<point> line = line_to(z->pos, hit, junk);
- for (int i = 0; i < line.size(); i++) {
-  if (g->m.hit_with_acid(g, line[i].x, line[i].y)) {
-   if (g->u_see(line[i]))
-    messages.add("A glob of acid hits the %s!", g->m.tername(line[i]).c_str());
-   return;
-  }
+
+ static constexpr const zaimoni::gdi::box<point> spread(point(-2), point(2));
+
+ point hit(g->u.pos + rng(spread));
+ const auto line = line_to(z->pos, hit, j);
+ for (decltype(auto) pt : line) {
+     if (g->m.hit_with_acid(pt)) {
+         if (g->u_see(pt)) messages.add("A glob of acid hits the %s!", g->m.tername(pt).c_str());
+         return;
+     }
  }
  for (int i = -3; i <= 3; i++) {
   for (int j = -3; j <= 3; j++) {

@@ -1293,12 +1293,11 @@ void map::shoot(game *g, const point& pt, int &dam, bool hit_items, unsigned fla
  }
 }
 
-bool map::hit_with_acid(game *g, int x, int y)
+bool map::hit_with_acid(const point& pt)
 {
- if (move_cost(x, y) != 0) return false; // Didn't hit the tile!
+ if (0 != move_cost(pt)) return false; // Didn't hit the tile!
 
- auto& t = ter(x, y);
- switch(t) {
+ switch(auto& t = ter(pt)) {
   case t_wall_glass_v:
   case t_wall_glass_h:
   case t_wall_glass_v_alarm:
