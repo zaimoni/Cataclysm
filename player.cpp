@@ -2543,7 +2543,81 @@ void player::disp_morale()
  werase(w);
  delwin(w);
 }
- 
+
+static constexpr nc_color _xp_color(int xp)
+{
+    if (100 <= xp) return c_white;
+    if (  0 <  xp) return c_ltgray;
+    return c_dkgray;
+}
+
+static_assert(c_white  == _xp_color(101));
+static_assert(c_white  == _xp_color(100));
+static_assert(c_ltgray == _xp_color( 99));
+static_assert(c_ltgray == _xp_color(  1));
+static_assert(c_dkgray == _xp_color(  0));
+static_assert(c_dkgray == _xp_color( -1));
+
+static constexpr auto _morale_emoticon(int morale_cur)
+{
+    if ( 100 <= morale_cur) return std::pair(c_green, ":D");
+    if (  10 <= morale_cur) return std::pair(c_green, ":)");
+    if ( -10 <  morale_cur) return std::pair(c_white, ":|");
+    if (-100 <  morale_cur) return std::pair(c_red, ":(" );
+    return std::pair(c_red, "D:");
+}
+
+static_assert(std::pair(c_green, ":D") == _morale_emoticon(101));
+static_assert(std::pair(c_green, ":D") == _morale_emoticon(100));
+static_assert(std::pair(c_green, ":)") == _morale_emoticon(99));
+static_assert(std::pair(c_green, ":)") == _morale_emoticon(11));
+static_assert(std::pair(c_green, ":)") == _morale_emoticon(10));
+static_assert(std::pair(c_white, ":|") == _morale_emoticon(9));
+static_assert(std::pair(c_white, ":|") == _morale_emoticon(-9));
+static_assert(std::pair(c_red, ":(") == _morale_emoticon(-10));
+static_assert(std::pair(c_red, ":(") == _morale_emoticon(-11));
+static_assert(std::pair(c_red, ":(") == _morale_emoticon(-99));
+static_assert(std::pair(c_red, "D:") == _morale_emoticon(-100));
+static_assert(std::pair(c_red, "D:") == _morale_emoticon(-101));
+
+static constexpr nc_color _veh_strain_color(float strain)
+{
+    if (0.0f >= strain) return c_ltblue;
+    if (0.2f >= strain) return c_yellow;
+    if (0.4f >= strain) return c_ltred;
+    return c_red;
+}
+
+static_assert(c_ltblue == _veh_strain_color(-0.01f));
+static_assert(c_ltblue == _veh_strain_color(0.0f));
+static_assert(c_yellow == _veh_strain_color(0.01f));
+static_assert(c_yellow == _veh_strain_color(0.2f));
+static_assert(c_ltred == _veh_strain_color(0.201f));
+static_assert(c_ltred == _veh_strain_color(0.4f));
+static_assert(c_red == _veh_strain_color(0.401f));
+
+static constexpr nc_color _RGW_color(int test, int ref)
+{
+    if (ref > test) return c_red;
+    if (ref < test) return c_green;
+    return c_white;
+}
+
+static_assert(c_green == _RGW_color(11, 10));
+static_assert(c_white == _RGW_color(10, 10));
+static_assert(c_red == _RGW_color(9, 10));
+
+static constexpr nc_color _speed_color(int spd_cur)
+{
+    if (mobile::mp_turn > spd_cur) return c_red;
+    if (mobile::mp_turn < spd_cur) return c_green;
+    return c_white;
+}
+
+static_assert(c_green == _speed_color(mobile::mp_turn + 1));
+static_assert(c_white == _speed_color(mobile::mp_turn));
+static_assert(c_red   == _speed_color(mobile::mp_turn - 1));
+
 // 2020-08-04: unclear whether this should be in game class or not.
 // incoming window is game::w_status, canonical height 4 canonical width 55
 void player::disp_status(WINDOW *w, game *g)
@@ -2592,13 +2666,8 @@ void player::disp_status(WINDOW *w, game *g)
  else if (fatigue > 191)
   mvwprintz(w, 2, 30, c_yellow, "Tired");
 
- mvwprintz(w, 2, 41, c_white, "XP: ");
- nc_color col_xp = c_dkgray;
- if (xp_pool >= 100)
-  col_xp = c_white;
- else if (xp_pool >  0)
-  col_xp = c_ltgray;
- mvwprintz(w, 2, 45, col_xp, "%d", xp_pool);
+ mvwaddstrz(w, 2, 41, c_white, "XP: ");
+ mvwprintz(w, 2, 45, _xp_color(xp_pool), "%d", xp_pool);
 
  if (pain > pkill) {
      const int pain_delta = pain - pkill;
@@ -2606,66 +2675,49 @@ void player::disp_status(WINDOW *w, game *g)
      mvwprintz(w, 3, 0, col_pain, "Pain: %d", pain_delta);
  }
 
- int morale_cur = morale_level ();
- nc_color col_morale = c_white;
- if (morale_cur >= 10)
-  col_morale = c_green;
- else if (morale_cur <= -10)
-  col_morale = c_red;
- if (morale_cur >= 100)
-  mvwprintz(w, 3, 10, col_morale, ":D");
- else if (morale_cur >= 10)
-  mvwprintz(w, 3, 10, col_morale, ":)");
- else if (morale_cur > -10)
-  mvwprintz(w, 3, 10, col_morale, ":|");
- else if (morale_cur > -100)
-  mvwprintz(w, 3, 10, col_morale, ":(");
- else
-  mvwprintz(w, 3, 10, col_morale, "D:");
+ const auto morale_text = _morale_emoticon(morale_level());
+ mvwaddstrz(w, 3, 10, morale_text.first, morale_text.second);
 
  const auto v = g->m._veh_at(pos);
  const vehicle* const veh = v ? v->first : nullptr; // backward compatibility
 
  if (in_vehicle && veh) {
   veh->print_fuel_indicator (w, 3, 49);
-  nc_color col_indf1 = c_ltgray;
+  nc_color col_indf1 = c_ltgray; // \todo use or hard-code
 
-  float strain = veh->strain();
-  nc_color col_vel = strain <= 0? c_ltblue :
-                     (strain <= 0.2? c_yellow :
-                     (strain <= 0.4? c_ltred : c_red));
+  nc_color col_vel = _veh_strain_color(veh->strain());
 
   bool has_turrets = false;
-  for (int p = 0; p < veh->parts.size(); p++) {
-   if (veh->part_flag (p, vpf_turret)) {
-    has_turrets = true;
-    break;
-   }
+  for (decltype(auto) _part : veh->parts) {
+      if (_part.has_flag(vpf_turret)) {
+          has_turrets = true;
+          break;
+      }
   }
 
   if (has_turrets) {
-   mvwprintz(w, 3, 25, col_indf1, "Gun:");
-   mvwprintz(w, 3, 29, veh->turret_mode ? c_ltred : c_ltblue,
+   mvwaddstrz(w, 3, 25, col_indf1, "Gun:");
+   mvwaddstrz(w, 3, 29, veh->turret_mode ? c_ltred : c_ltblue,
                        veh->turret_mode ? "auto" : "off ");
   }
 
   const bool use_metric_system = option_table::get()[OPT_USE_METRIC_SYS];
   if (veh->cruise_on) {
    if(use_metric_system) {
-    mvwprintz(w, 3, 33, col_indf1, "{Km/h....>....}");
+    mvwaddstrz(w, 3, 33, col_indf1, "{Km/h....>....}");
     mvwprintz(w, 3, 38, col_vel, "%4d", int(veh->velocity * 0.0161f));
     mvwprintz(w, 3, 43, c_ltgreen, "%4d", int(veh->cruise_velocity * 0.0161f));	// not really a round fraction here...rational approximation 559/9
    } else {
-    mvwprintz(w, 3, 34, col_indf1, "{mph....>....}");
+    mvwaddstrz(w, 3, 34, col_indf1, "{mph....>....}");
     mvwprintz(w, 3, 38, col_vel, "%4d", veh->velocity / vehicle::mph_1);
     mvwprintz(w, 3, 43, c_ltgreen, "%4d", veh->cruise_velocity / vehicle::mph_1);
    }
   } else {
    if(use_metric_system) {
-    mvwprintz(w, 3, 33, col_indf1, "  {Km/h....}  ");
+    mvwaddstrz(w, 3, 33, col_indf1, "  {Km/h....}  ");
     mvwprintz(w, 3, 40, col_vel, "%4d", int(veh->velocity * 0.0161f));
    } else {
-    mvwprintz(w, 3, 34, col_indf1, "  {mph....}  ");
+    mvwaddstrz(w, 3, 34, col_indf1, "  {mph....}  ");
     mvwprintz(w, 3, 40, col_vel, "%4d", veh->velocity / vehicle::mph_1);
    }
   }
@@ -2673,27 +2725,19 @@ void player::disp_status(WINDOW *w, game *g)
   if (veh->velocity != 0) {
    nc_color col_indc = veh->skidding? c_red : c_green;
    int dfm = veh->face.dir() - veh->move.dir();
-   mvwprintz(w, 3, 21, col_indc, dfm < 0? "L" : ".");
-   mvwprintz(w, 3, 22, col_indc, dfm == 0? "0" : ".");
-   mvwprintz(w, 3, 23, col_indc, dfm > 0? "R" : ".");
+   mvwputch(w, 3, 21, col_indc, dfm < 0? 'L' : '.');
+   mvwputch(w, 3, 22, col_indc, dfm == 0? '0' : '.');
+   mvwputch(w, 3, 23, col_indc, dfm > 0? 'R' : '.');
   }
  } else {  // Not in vehicle
-  nc_color col_str = c_white, col_dex = c_white, col_int = c_white,
-           col_per = c_white, col_spd = c_white;
-  if (str_cur < str_max) col_str = c_red;
-  else if (str_cur > str_max) col_str = c_green;
-  if (dex_cur < dex_max) col_dex = c_red;
-  else if (dex_cur > dex_max) col_dex = c_green;
-  if (int_cur < int_max) col_int = c_red;
-  else if (int_cur > int_max) col_int = c_green;
-  if (per_cur < per_max) col_per = c_red;
-  else if (per_cur > per_max) col_per = c_green;
+  nc_color col_str = _RGW_color(str_cur, str_max);
+  nc_color col_dex = _RGW_color(dex_cur, dex_max);
+  nc_color col_int = _RGW_color(int_cur, int_max);
+  nc_color col_per = _RGW_color(per_cur, per_max);
 
   // C:Whales computed color w/o environmental effects, but did not display those effects either
-  int spd_cur = theoretical_speed();
-  if (mobile::mp_turn > spd_cur) col_spd = c_red;
-  else if (mobile::mp_turn < spd_cur) col_spd = c_green;
-  spd_cur = current_speed();
+  nc_color col_spd = _speed_color(theoretical_speed());
+  int spd_cur = current_speed();
 
   mvwprintz(w, 3, 13, col_str, "Str %s%d", str_cur >= 10 ? "" : " ", str_cur);
   mvwprintz(w, 3, 20, col_dex, "Dex %s%d", dex_cur >= 10 ? "" : " ", dex_cur);
@@ -2786,7 +2830,7 @@ void player::power_bionics(game *g)
       const auto& bio_type = bionic::type[passive[i]->id];
       type = (bio_type.power_source ? c_ltcyan : c_cyan);
       mvwputch(wBio, 3 + i, 0, type, passive[i]->invlet);
-      mvwprintz(wBio, 3 + i, 2, type, bio_type.name.c_str());
+      mvwaddstrz(wBio, 3 + i, 2, type, bio_type.name.c_str());
   }
  }
  if (!active.empty()) {
