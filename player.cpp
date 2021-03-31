@@ -2544,6 +2544,53 @@ void player::disp_morale()
  delwin(w);
 }
 
+// threshold table.  Won't be compile-time constant after translation tables built out.
+static constexpr const std::pair<std::pair<nc_color, const char*>, std::pair<int, bool> > _thirst_lookup[] = {
+    {std::pair(c_ltred, "Parched"), std::pair(520, true)},
+    {std::pair(c_ltred, "Dehydrated"), std::pair(240, true)},
+    {std::pair(c_yellow, "Very thirsty"), std::pair(80, true)},
+    {std::pair(c_yellow, "Thirsty"), std::pair(40, true)},
+    {std::pair(c_green, "Slaked"), std::pair(0, false)},
+};
+
+static constexpr std::optional<std::pair<nc_color, const char*> > _thirst_text(int thirst)
+{
+    for (decltype(auto) x : _thirst_lookup) if (x.second.second ? (thirst > x.second.first) : (thirst < x.second.first)) return x.first;
+    return std::nullopt;
+}
+
+static_assert(std::pair(c_ltred, "Parched") == _thirst_text(521));
+static_assert(std::pair(c_ltred, "Dehydrated") == _thirst_text(520));
+static_assert(std::pair(c_ltred, "Dehydrated") == _thirst_text(241));
+static_assert(std::pair(c_yellow, "Very thirsty") == _thirst_text(240));
+static_assert(std::pair(c_yellow, "Very thirsty") == _thirst_text(81));
+static_assert(std::pair(c_yellow, "Thirsty") == _thirst_text(80));
+static_assert(std::pair(c_yellow, "Thirsty") == _thirst_text(41));
+static_assert(!_thirst_text(40));
+static_assert(!_thirst_text(0));
+static_assert(std::pair(c_green, "Slaked") == _thirst_text(-1));
+
+// threshold table, hard-coded ... > x.second .  Won't be compile-time constant after translation tables built out.
+static constexpr const std::pair<std::pair<nc_color, const char*>, int> _fatigue_lookup[] = {
+    {std::pair(c_red, "Exhausted"), 575},
+    {std::pair(c_ltred, "Dead tired"), 383},
+    {std::pair(c_yellow, "Tired"), 191}
+};
+
+static constexpr std::optional<std::pair<nc_color, const char*> > _fatigue_text(int fatigue)
+{
+    for (decltype(auto) x : _fatigue_lookup) if (fatigue > x.second) return x.first;
+    return std::nullopt;
+}
+
+static_assert(std::pair(c_red, "Exhausted") == _fatigue_text(576));
+static_assert(std::pair(c_ltred, "Dead tired") == _fatigue_text(575));
+static_assert(std::pair(c_ltred, "Dead tired") == _fatigue_text(384));
+static_assert(std::pair(c_yellow, "Tired") == _fatigue_text(383));
+static_assert(std::pair(c_yellow, "Tired") == _fatigue_text(192));
+static_assert(!_fatigue_text(191));
+static_assert(!_fatigue_text(0));
+
 static constexpr nc_color _xp_color(int xp)
 {
     if (100 <= xp) return c_white;
@@ -2648,23 +2695,9 @@ void player::disp_status(WINDOW *w, game *g)
  else if (hunger < 0)
   mvwprintz(w, 2, 0, c_green,  "Full");
 
-      if (thirst > 520)
-  mvwprintz(w, 2, 15, c_ltred,  "Parched");
- else if (thirst > 240)
-  mvwprintz(w, 2, 15, c_ltred,  "Dehydrated");
- else if (thirst > 80)
-  mvwprintz(w, 2, 15, c_yellow, "Very thirsty");
- else if (thirst > 40)
-  mvwprintz(w, 2, 15, c_yellow, "Thirsty");
- else if (thirst < 0)
-  mvwprintz(w, 2, 15, c_green,  "Slaked");
-
-      if (fatigue > 575)
-  mvwprintz(w, 2, 30, c_red,    "Exhausted");
- else if (fatigue > 383)
-  mvwprintz(w, 2, 30, c_ltred,  "Dead tired");
- else if (fatigue > 191)
-  mvwprintz(w, 2, 30, c_yellow, "Tired");
+ // C++ 20: extract offset changes from string lookup tables (likely using views, to be translation-friendly)
+ if (const auto text = _thirst_text(thirst)) mvwaddstrz(w, 2, 15, text->first, text->second);
+ if (const auto text = _fatigue_text(fatigue)) mvwaddstrz(w, 2, 30, text->first, text->second);
 
  mvwaddstrz(w, 2, 41, c_white, "XP: ");
  mvwprintz(w, 2, 45, _xp_color(xp_pool), "%d", xp_pool);
