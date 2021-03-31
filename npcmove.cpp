@@ -642,50 +642,50 @@ npc::ai_action npc::address_needs(game *g, int danger) const
 
 npc::ai_action npc::address_player(game *g)
 {
- if ((attitude == NPCATT_TALK || attitude == NPCATT_TRADE) && g->sees_u(pos)) {
-  if (update_path(g->m, g->u.pos, 6)) {
-   if (one_in(10)) say(g, "<lets_talk>");
-   return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(const_cast<npc&>(*this), path.front(), "Follow player")));
-  } else
-   return ai_action(npc_talk_to_player, std::unique_ptr<cataclysm::action>()); // Close enough to talk to you
- }
-
- if (attitude == NPCATT_MUG && g->sees_u(pos)) {
-  if (update_path(g->m, g->u.pos, 0)) {
-	if (one_in(3)) say(g, "Don't move a <swear> muscle...");
-	return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_player(*this,g->u,&npc::mug_player, "Mug player")));
-  }
- }
-
- if (attitude == NPCATT_WAIT_FOR_LEAVE) {
-  patience--;
-  if (patience <= 0) {
-   patience = 0;
-   attitude = NPCATT_KILL;
-   return method_of_attack(g, TARGET_PLAYER, player_danger( &(g->u) ));
-  }
-  return ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
- }
- 
- if (attitude == NPCATT_FLEE) return _flee(*this, g->u.pos);
-
- if (attitude == NPCATT_LEAD) {
-  if (rl_dist(pos, g->u.pos) >= 12 || !g->sees_u(pos)) {
-   int intense = disease_intensity(DI_CATCH_UP);
-   if (intense < 10) {
-    say(g, "<keep_up>");
-    add_disease(DI_CATCH_UP, 5, 1, 15);
-    return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());
-   } else if (intense == 10) {
-    say(g, "<im_leaving_you>");
-    add_disease(DI_CATCH_UP, 5, 1, 15);
-    return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());
-   } else
-    return ai_action(npc_goto_destination, std::unique_ptr<cataclysm::action>());
-  } else
-   return ai_action(npc_goto_destination, std::unique_ptr<cataclysm::action>());
- }
- return ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
+	switch (attitude) {
+	case NPCATT_TALK:
+	case NPCATT_TRADE:
+		if (g->sees_u(pos)) {
+			if (update_path(g->m, g->u.pos, 6)) {
+				if (one_in(10)) say(g, "<lets_talk>");
+				return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(const_cast<npc&>(*this), path.front(), "Follow player")));
+			};
+			return ai_action(npc_talk_to_player, std::unique_ptr<cataclysm::action>()); // Close enough to talk to you
+		}
+		break;
+	case NPCATT_MUG:
+		if (g->sees_u(pos)) {
+			if (update_path(g->m, g->u.pos, 0)) {
+				if (one_in(3)) say(g, "Don't move a <swear> muscle...");
+				return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_player(*this, g->u, &npc::mug_player, "Mug player")));
+			}
+		}
+		break;
+	case NPCATT_WAIT_FOR_LEAVE:
+		if (--patience <= 0) {
+			patience = 0;
+			attitude = NPCATT_KILL;
+			return method_of_attack(g, TARGET_PLAYER, player_danger(&(g->u)));
+		}
+		return ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
+	case NPCATT_FLEE: return _flee(*this, g->u.pos);
+	case NPCATT_LEAD:
+		if (rl_dist(GPSpos, g->u.GPSpos) >= 12 || !g->sees_u(pos)) {
+			int intense = disease_intensity(DI_CATCH_UP);
+			if (intense < 10) {
+				say(g, "<keep_up>");
+				add_disease(DI_CATCH_UP, 5, 1, 15);
+				return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());
+			} else if (intense == 10) {
+				say(g, "<im_leaving_you>");
+				add_disease(DI_CATCH_UP, 5, 1, 15);
+				return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());
+			};
+			return ai_action(npc_goto_destination, std::unique_ptr<cataclysm::action>());
+		};
+		return ai_action(npc_goto_destination, std::unique_ptr<cataclysm::action>());
+	}
+	return ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
 }
 
 npc::ai_action npc::long_term_goal_action(game *g)	// XXX this was being prototyped
