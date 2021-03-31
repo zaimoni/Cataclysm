@@ -2519,16 +2519,16 @@ void player::disp_morale()
 
  static constexpr const int col_offset = sizeof("Morale Modifiers:") + 2; // C++20: constexpr strlen?
 
- mvwprintz(w, 1,  1, c_white, "Morale Modifiers:");
- mvwprintz(w, 2,  1, c_ltgray, "Name");
- mvwprintz(w, 2, col_offset, c_ltgray, "Value");
+ mvwaddstrz(w, 1,  1, c_white, "Morale Modifiers:");
+ mvwaddstrz(w, 2,  1, c_ltgray, "Name");
+ mvwaddstrz(w, 2, col_offset, c_ltgray, "Value");
 
  static auto draw_morale_row = [&](int y, const char* label, int val) {
      int bpos = col_offset + 4 - int_log10(abs(val));
-     if (val < 0) bpos--;
+     const nc_color morale_color = (val < 0) ? (--bpos ,c_red) : c_green;
 
-     mvwprintz(w, y, 1, (val < 0 ? c_red : c_green), label);
-     mvwprintz(w, y, bpos, (val < 0 ? c_red : c_green), "%d", val);
+     mvwaddstrz(w, y, 1, morale_color, label);
+     mvwprintz(w, y, bpos, morale_color, "%d", val);
  };
 
  for (int i = 0; i < morale.size(); i++) {
