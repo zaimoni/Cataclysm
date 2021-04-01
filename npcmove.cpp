@@ -1751,7 +1751,7 @@ int npc::pick_best_food(const inventory& _inv) const
 void npc::mug_player(player &mark)
 {
  auto g = game::active();
- if (rl_dist(pos, mark.pos) > 1) { // We have to travel; path already updated
+ if (rl_dist(GPSpos, mark.GPSpos) > 1) { // We have to travel; path already updated
   move_to_next(g);
   return;
  }
@@ -1779,12 +1779,12 @@ void npc::mug_player(player &mark)
   } else { // We already have their money; take some goodies!
 // value_mod affects at what point we "take the money and run"
 // A lower value means we'll take more stuff
-   double value_mod = 1 - double((10 - personality.bravery)    * .05) -
-                          double((10 - personality.aggression) * .04) -
-                          double((10 - personality.collector)  * .06);
+   double value_mod = 1 - (10 - personality.bravery)    * .05 -
+                          (10 - personality.aggression) * .04 -
+                          (10 - personality.collector)  * .06;
    if (!mark.is_npc()) {
-    value_mod += double(op_of_u.fear * .08);
-    value_mod -= double((8 - op_of_u.value) * .07);
+    value_mod += op_of_u.fear * .08;
+    value_mod -= (8 - op_of_u.value) * .07;
    }
    int best_value = minimum_item_value() * value_mod, index = -1;
    for (size_t i = 0; i < mark.inv.size(); i++) {
@@ -1800,7 +1800,7 @@ void npc::mug_player(player &mark)
    if (index == -1) { // Didn't find anything worthwhile!
     attitude = NPCATT_FLEE;
     if (!one_in(3)) say(g, "<done_mugging>");
-    moves -= 100;
+    moves -= mobile::mp_turn;
    } else {
     bool u_see_me   = g->u_see(pos),
          u_see_mark = g->u_see(mark.pos);
@@ -1820,7 +1820,7 @@ void npc::mug_player(player &mark)
       messages.add("Someone takes your %s.", stolen.tname().c_str());
     }
     i_add(stolen);
-    moves -= 100;
+    moves -= mobile::mp_turn;
     if (!mark.is_npc()) op_of_u.value -= rng(0, 1); // Decrease the value of the player
    }
   }

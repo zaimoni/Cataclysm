@@ -298,7 +298,7 @@ public:
  unsigned int scent;
  int dodges_left, blocks_left;
  int stim, pain, pkill, radiation;
- int cash;
+ int cash; // \todo re-implement; this is pre-apocalyptic cash
  int hp_cur[num_hp_parts], hp_max[num_hp_parts];
 
  std::vector<morale_point> morale;
