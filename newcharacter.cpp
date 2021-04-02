@@ -555,11 +555,8 @@ int set_skills(WINDOW* w, player *u, int &points)
   draw_hline(w, VIEW - 2, c_ltgray, ' ');
   draw_hline(w, VIEW - 1, c_ltgray, ' ');
   const int cost = u->sklevel[cur_sk] + 1;
-  if (cost <= points)
-   mvwprintz(w,  3, 30, COL_SKILL_USED, "Upgrading %s costs %d points", skill_name(skill(cur_sk)), cost);
-  else
-   mvwprintz(w,  3, 30, c_ltred, "Upgrading %s costs %d points", skill_name(skill(cur_sk)), cost);
-  mvwprintz(w, VIEW - 3, 0, COL_SKILL_USED, skill_description(skill(cur_sk)));
+  mvwprintz(w,  3, 30, ((cost <= points) ? COL_SKILL_USED : c_ltred), "Upgrading %s costs %d points", skill_name(skill(cur_sk)), cost);
+  mvwaddstrz(w, VIEW - 3, 0, COL_SKILL_USED, skill_description(skill(cur_sk)));
 
   if (cur_sk <= v_span_div_2 + 1) {
    draw_skills(1);

@@ -49,6 +49,7 @@ skill JSON_parse<skill>::operator()(const char* const src)
 	return sk_null;
 }
 
+// cf player::disp_info: implied maximum length 17?
 const char* skill_name(skill sk)
 {
  if (num_skill_types <= sk) return "out of bounds";
@@ -85,6 +86,7 @@ const char* skill_name(skill sk)
  }
 }
 
+// has to fit in three screen lines; maximum line length 79/80 historically
 const char* skill_description(skill sk)
 {
  if (num_skill_types <= sk) return "out of bounds";

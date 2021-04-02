@@ -2423,7 +2423,7 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
    break;
 
   case skills:	// Skills tab
-   mvwprintz(w_skills, 0, 11, h_ltgray, "SKILLS");
+   mvwaddstrz(w_skills, 0, 11, h_ltgray, "SKILLS");
    if (line <= 2) {
     min = 0;
     max = 7;
@@ -2456,7 +2456,7 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
    }
    werase(w_info);
    if (line >= 0 && line < skillslist.size())
-    mvwprintz(w_info, 0, 0, c_magenta, skill_description(skill(skillslist[line])));
+    mvwaddstrz(w_info, 0, 0, c_magenta, skill_description(skill(skillslist[line])));
    wrefresh(w_skills);
    wrefresh(w_info);
    switch (input()) {
@@ -2467,7 +2467,8 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
      if (line > 0) line--;
      break;
     case '\t':
-     mvwprintz(w_skills, 0, 11, c_ltgray, "SKILLS");
+     mvwaddstrz(w_skills, 0, 11, c_ltgray, "SKILLS");
+     // C++20: view?
      for (int i = 0; i < skillslist.size() && i < 7; i++) {
 	  status = (skexercise[skillslist[i]] < 0) ? c_ltred : c_ltblue;
       mvwprintz(w_skills, i + 2,  1, status, "%s:", skill_name(skill(skillslist[i])));
