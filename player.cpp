@@ -2544,6 +2544,53 @@ void player::disp_morale()
  delwin(w);
 }
 
+static constexpr std::optional<nc_color> _recoil_color(unsigned int adj_recoil)
+{
+    if (adj_recoil >= 36) return c_red;
+    if (adj_recoil >= 20) return c_ltred;
+    if (adj_recoil >= 4) return c_yellow;
+    if (adj_recoil > 0) return c_ltgray;
+    return std::nullopt;
+}
+
+static_assert(c_red == _recoil_color(36));
+static_assert(c_ltred == _recoil_color(35));
+static_assert(c_ltred == _recoil_color(20));
+static_assert(c_yellow == _recoil_color(19));
+static_assert(c_yellow == _recoil_color(4));
+static_assert(c_ltgray == _recoil_color(3));
+static_assert(c_ltgray == _recoil_color(1));
+static_assert(!_recoil_color(0));
+
+// threshold table.  Won't be compile-time constant after translation tables built out.
+static constexpr const std::pair<std::pair<nc_color, const char*>, std::pair<int, bool> > _hunger_lookup[] = {
+    {std::pair(c_red, "Starving!"), std::pair(2800, true)},
+    {std::pair(c_ltred, "Near starving"), std::pair(1400, true)},
+    {std::pair(c_ltred, "Famished"), std::pair(300, true)},
+    {std::pair(c_yellow, "Very hungry"), std::pair(100, true)},
+    {std::pair(c_yellow, "Hungry"), std::pair(40, true)},
+    {std::pair(c_green, "Full"), std::pair(0, false)},
+};
+
+static constexpr std::optional<std::pair<nc_color, const char*> > _hunger_text(int hunger)
+{
+    for (decltype(auto) x : _hunger_lookup) if (x.second.second ? (hunger > x.second.first) : (hunger < x.second.first)) return x.first;
+    return std::nullopt;
+}
+
+static_assert(std::pair(c_red, "Starving!") == _hunger_text(2801));
+static_assert(std::pair(c_ltred, "Near starving") == _hunger_text(2800));
+static_assert(std::pair(c_ltred, "Near starving") == _hunger_text(1401));
+static_assert(std::pair(c_ltred, "Famished") == _hunger_text(1400));
+static_assert(std::pair(c_ltred, "Famished") == _hunger_text(301));
+static_assert(std::pair(c_yellow, "Very hungry") == _hunger_text(300));
+static_assert(std::pair(c_yellow, "Very hungry") == _hunger_text(101));
+static_assert(std::pair(c_yellow, "Hungry") == _hunger_text(100));
+static_assert(std::pair(c_yellow, "Hungry") == _hunger_text(41));
+static_assert(!_hunger_text(40));
+static_assert(!_hunger_text(0));
+static_assert(std::pair(c_green, "Full") == _hunger_text(-1));
+
 // threshold table.  Won't be compile-time constant after translation tables built out.
 static constexpr const std::pair<std::pair<nc_color, const char*>, std::pair<int, bool> > _thirst_lookup[] = {
     {std::pair(c_ltred, "Parched"), std::pair(520, true)},
@@ -2671,31 +2718,13 @@ void player::disp_status(WINDOW *w, game *g)
 {
  mvwprintz(w, 1, 0, c_ltgray, "Weapon: %s", weapname().c_str());
  if (weapon.is_gun()) {
-   int adj_recoil = recoil + driving_recoil;
-       if (adj_recoil >= 36)
-   mvwprintz(w, 1, 30, c_red,    "Recoil");
-  else if (adj_recoil >= 20)
-   mvwprintz(w, 1, 30, c_ltred,  "Recoil");
-  else if (adj_recoil >= 4)
-   mvwprintz(w, 1, 30, c_yellow, "Recoil");
-  else if (adj_recoil > 0)
-   mvwprintz(w, 1, 30, c_ltgray, "Recoil");
+     if (const auto recoil_clr = _recoil_color(recoil + driving_recoil)) {
+         mvwprintz(w, 1, 30, *recoil_clr, "Recoil");
+     }
  }
 
-      if (hunger > 2800)
-  mvwprintz(w, 2, 0, c_red,    "Starving!");
- else if (hunger > 1400)
-  mvwprintz(w, 2, 0, c_ltred,  "Near starving");
- else if (hunger > 300)
-  mvwprintz(w, 2, 0, c_ltred,  "Famished");
- else if (hunger > 100)
-  mvwprintz(w, 2, 0, c_yellow, "Very hungry");
- else if (hunger > 40)
-  mvwprintz(w, 2, 0, c_yellow, "Hungry");
- else if (hunger < 0)
-  mvwprintz(w, 2, 0, c_green,  "Full");
-
  // C++ 20: extract offset changes from string lookup tables (likely using views, to be translation-friendly)
+ if (const auto text = _hunger_text(hunger)) mvwaddstrz(w, 2, 0, text->first, text->second);
  if (const auto text = _thirst_text(thirst)) mvwaddstrz(w, 2, 15, text->first, text->second);
  if (const auto text = _fatigue_text(fatigue)) mvwaddstrz(w, 2, 30, text->first, text->second);
 
