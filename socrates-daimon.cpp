@@ -456,7 +456,7 @@ int main(int argc, char *argv[])
 	std::vector<it_ammo*> ammunition;
 	std::vector<it_armor*> armor;
 	std::vector<it_bionic*> bionics;
-	std::vector<it_book*> books;
+	std::vector<const it_book*> books;
 	std::vector<it_container*> containers;
 	std::vector<it_comest*> drinks;
 	std::vector<it_comest*> edible;
@@ -823,7 +823,6 @@ int main(int argc, char *argv[])
 		name_desc.swap(discard);
 	}
 
-	// \todo skills page should provide book learning chain
 	if (!books.empty()) {
 		to_desc(books, name_desc, name_id);
 #define HTML_TARGET HTML_DIR BOOKS_HTML
@@ -1923,11 +1922,15 @@ int main(int argc, char *argv[])
 #define SKILLS_HTML "skills.html"
 #define SKILLS_ID "skills"
 #define SKILLS_LINK_NAME "Skills"
+#define SKILL_PLAN_HTML "skill_plan.html"
+#define SKILL_PLAN_ID "skill_plan"
+#define SKILL_PLAN_LINK_NAME "Skill planner"
 
 	statusnav_nav.append(typicalMenuLink(ADDICTIONS_ID, ADDICTIONS_LINK_NAME, "./" ADDICTIONS_HTML));
 	statusnav_nav.append(typicalMenuLink(CONSTRUCTION_ID, CONSTRUCTION_LINK_NAME, "./" CONSTRUCTION_HTML));
 	statusnav_nav.append(typicalMenuLink(CRAFTING_ID, CRAFTING_LINK_NAME, "./" CRAFTING_HTML));
 	statusnav_nav.append(typicalMenuLink(SKILLS_ID, SKILLS_LINK_NAME, "./" SKILLS_HTML));
+	statusnav_nav.append(typicalMenuLink(SKILL_PLAN_ID, SKILL_PLAN_LINK_NAME, "./" SKILL_PLAN_HTML));
 
 	statusnav_point.append(statusnav_nav);
 
@@ -2192,6 +2195,74 @@ int main(int argc, char *argv[])
 					for (decltype(auto) tr : table_row) tr.clear();
 				}
 			}
+			while (page.end_print());
+		}
+
+		unlink(HTML_TARGET);
+		rename(HTML_TARGET ".tmp", HTML_TARGET);
+	}
+
+#undef HTML_TARGET
+
+#define HTML_TARGET HTML_DIR SKILL_PLAN_HTML
+
+	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
+		{
+			html::to_text page(out);
+			page.start_print(_html);
+			_title->append(html::tag::wrap("Cataclysm:Z " SKILL_PLAN_LINK_NAME));
+			page.print(_head);
+			_title->clear();
+			page.start_print(_body);
+			{
+				auto revert = swapDOM("#" SKILL_PLAN_ID "_link", global_nav, html::tag("b", SKILL_PLAN_LINK_NAME));
+				page.print(global_nav);
+				*revert.first = std::move(revert.second);
+			}
+
+			// actual content -- unusual in that we analyze multiple sources here
+			if (!books.empty()) {
+				decltype(books) educational;
+				for (const auto book : books) if (book->type) educational.push_back(book);
+				std::sort(educational.begin(), educational.end(), [](auto x, auto y) {
+					if (auto test = strcmp(JSON_key(x->type), JSON_key(y->type))) return 0 < test;
+					return x->req > y->req;
+				});
+
+				page.start_print(_data_table);
+				static constexpr const char* table_headers[] = { "Name" , "Skill", "INT", "start at", "educates to"};
+				{
+					html::tag table_header("tr");
+					table_header.set(attr_align, val_center);
+					for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
+					page.print(table_header);
+				}
+				{
+					html::tag cell("td");
+					html::tag table_row("tr");
+					table_row.set(attr_align, val_left);
+					table_row.set(attr_valign, val_top);
+					for (decltype(auto) th : table_headers) table_row.append(cell);
+
+
+					int ub = educational.size();
+					while (0 <= --ub) {
+						const it_book* const book = educational[ub];
+						if (!book->type) continue;
+
+						table_row[0].append(book->name);
+						if (auto sk = JSON_key((book->type))) table_row[1].append(html::tag::wrap(sk));
+						if (book->intel) table_row[2].append(std::to_string((int)(book->intel)));
+						if (book->req) table_row[3].append(std::to_string((int)(book->req)));
+						if (book->level) table_row[4].append(std::to_string((int)(book->level)));
+
+						page.print(table_row);
+						for (decltype(auto) tr : table_row) tr.clear();
+					}
+				}
+				// page.end_print();
+			}
+
 			while (page.end_print());
 		}
 
