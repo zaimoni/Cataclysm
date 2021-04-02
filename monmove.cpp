@@ -43,15 +43,14 @@ void monster::wander_to(const point& pt, int f)
 void monster::plan(game *g)
 {
  int sightrange = g->light_level();
- int dist = 1000;
+ int dist = INT_MAX;
  int tc, stc;
- bool fleeing = false;
  if (is_friend()) {	// Target monsters, not the player!
   const monster* closest_mon = nullptr;
   if (!has_effect(ME_DOCILE)) {
    for (const auto& _mon : g->z) {
     if (!is_enemy(&_mon)) continue;
-    const int test = rl_dist(pos, _mon.pos);
+    const int test = rl_dist(GPSpos, _mon.GPSpos);
     if (test < dist && g->m.sees(pos, _mon.pos, sightrange, tc)) {
      closest_mon = &_mon;
      dist = test;
@@ -62,7 +61,7 @@ void monster::plan(game *g)
   if (closest_mon) set_dest(closest_mon->pos, stc);
   else if (friendly > 0 && one_in(3)) friendly--;	// Grow restless with no targets
   else if (friendly < 0 && g->sees_u(pos, tc)) {
-   if (rl_dist(pos, g->u.pos) > 2)
+   if (rl_dist(GPSpos, g->u.GPSpos) > 2)
     set_dest(g->u.pos, tc);
    else
     plans.clear();
@@ -70,25 +69,28 @@ void monster::plan(game *g)
   return;
  }
 
+ bool fleeing = false;
  int closest = -1;
  if (can_see()) {
-	 if (is_fleeing(g->u) && g->sees_u(pos)) {
-		 fleeing = true;
-		 wand.set(2 * pos - g->u.pos, 40);
-		 dist = rl_dist(pos, g->u.pos);
-	 }
-
-	 // If we can see, and we can see a character, start moving towards them
-	 if (!is_fleeing(g->u) && g->sees_u(pos, tc)) {
-		 dist = rl_dist(pos, g->u.pos);
-		 closest = -2;
-		 stc = tc;
-	 }
+     if (is_fleeing(g->u)) {
+         if (g->sees_u(pos)) {
+             fleeing = true;
+             wand.set(2 * pos - g->u.pos, 40);
+             dist = rl_dist(pos, g->u.pos);
+         }
+     } else {
+         // If we can see, and we can see a character, start moving towards them
+         if (g->sees_u(pos, tc)) {
+             dist = rl_dist(pos, g->u.pos);
+             closest = -2;
+             stc = tc;
+         }
+     }
 	 // check NPCs
      int i = -1;
      for (const auto& _npc : g->active_npc) {
          ++i;
-         int medist = rl_dist(pos, _npc.pos);
+         int medist = rl_dist(GPSpos, _npc.GPSpos);
          if ((medist < dist || (!fleeing && is_fleeing(_npc)))
              && g->m.sees(pos, _npc.pos, sightrange, tc)) {
              dist = medist;
@@ -103,11 +105,11 @@ void monster::plan(game *g)
      }
  }
 
- if (!fleeing) fleeing = attitude() == MATT_FLEE;
+ if (!fleeing) fleeing = attitude() == MATT_FLEE; // inlining partial definition of is_fleeing(g->u)
  if (!fleeing) {
   const monster* closest_mon = nullptr;
   for (const auto& _mon : g->z) {
-   int mondist = rl_dist(pos, _mon.pos);
+   int mondist = rl_dist(GPSpos, _mon.GPSpos);
    if (is_enemy(&_mon) && mondist < dist && can_see() && g->m.sees(pos, _mon.pos, sightrange, tc)) {
     dist = mondist;
     if (fleeing) wand.set(2 * pos - _mon.pos, 40);

@@ -814,27 +814,25 @@ bool npc::wont_hit_friend(game *g, int tarx, int tary, int index) const
  for (int i = 0; i < traj.size(); i++) {
   int dist = rl_dist(pos, traj[i]);
   int deviation = 1 + int(dist / confident);
+  // \todo this is trading CPU for RAM; also unclear why at low confidences we're checking behind us
   for (int x = traj[i].x - deviation; x <= traj[i].x + deviation; x++) {
    for (int y = traj[i].y - deviation; y <= traj[i].y + deviation; y++) {
 // Hit the player?
     if (is_friend() && g->u.pos.x == x && g->u.pos.y == y)
      return false;
+#if LEGACY_PROTOTYPE
 // Hit a friendly monster?
-/*
     for (int n = 0; n < g->z.size(); n++) {
-     if (g->z[n].friendly != 0 && g->z[n].posx == x && g->z[n].posy == y)
+     if (g->z[n].is_friend(this) && g->z[n].pos.x == x && g->z[n].pos.y == y)
       return false;
     }
-*/
-// Hit an NPC that's on our team?
-/*
+// Hit an NPC that's on our team? (including *myself* [sic])
     for (int n = 0; n < g->active_npc.size(); n++) {
      npc* guy = &(g->active_npc[n]);
-     if (guy != this && (is_friend() == guy->is_friend()) &&
-         guy->posx == x && guy->posy == y)
+     if (guy != this && is_friend(guy) && guy->pos.x == x && guy->pos.y == y)
       return false;
     }
-*/
+#endif
    }
   }
  }
