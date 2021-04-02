@@ -1539,17 +1539,23 @@ std::optional<point> overmap::choose_point(game *g)    // not const due to overm
                    nc_color clr = c_white; // default;
                    if (0 == ++line) clr = c_red;
                    else if (1 == line) clr = c_ltblue;
-                   mvwprintz(w_search, x.first, 1, clr, x.second);
-                   if (1 == line) mvwprintz(w_search, 2, x.first, clr, "%s", term.c_str());
+                   mvwaddstrz(w_search, x.first, 1, clr, x.second);
+                   if (1 == line) mvwaddstrz(w_search, 2, x.first, clr, term.c_str());
                }
                ch = input();
-               if (ch == ERR) blink = !blink;
-               else if (ch == '<') {
+               switch (ch)
+               {
+               case ERR:
+                   blink = !blink;
+                   break;
+               case '<':
                    if (++i > terlist.size() - 1) i = 0;
-               }
-               else if (ch == '>') {
+                   break;
+               case '>':
                    if (--i < 0) i = terlist.size() - 1;
+                   break;
                }
+
                curs = terlist[i];
                draw(w_map, g->u, curs, orig, ch, blink);
                wrefresh(w_search);
