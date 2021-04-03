@@ -555,7 +555,8 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
   }
   if (emergency(danger_assessment(g)) && alt_attack_available()) return ai_action(npc_alt_attack, std::unique_ptr<cataclysm::action>());
   if (weapon.is_gun() && weapon.charges > 0) {
-   if (dist > confident_range()) {
+   const int ideal_range = confident_range();
+   if (dist > ideal_range) {
 	const auto inv_index = can_reload();
     if (0 <= inv_index && enough_time_to_reload(g, target, weapon))
      return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), inv_index, &npc::reload, "Reload")));
@@ -564,7 +565,7 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
    }
    const it_gun* const gun = dynamic_cast<const it_gun*>(weapon.type);
    if (!wont_hit_friend(g, tar)) return ai_action(npc_avoid_friendly_fire, std::unique_ptr<cataclysm::action>());
-   const bool want_burst = (dist <= confident_range() / 3 && weapon.charges >= gun->burst && gun->burst > 1 &&
+   const bool want_burst = (dist <= ideal_range / 3 && weapon.charges >= gun->burst && gun->burst > 1 &&
 	   (target_HP >= weapon.curammo->damage * 3 || emergency(danger * 2)));
    return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new fire_weapon_screen(*const_cast<npc*>(this), tar, want_burst)));
   }
