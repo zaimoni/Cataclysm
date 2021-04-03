@@ -76,12 +76,12 @@ void monster::plan(game *g)
          if (g->sees_u(pos)) {
              fleeing = true;
              wand.set(2 * pos - g->u.pos, 40);
-             dist = rl_dist(pos, g->u.pos);
+             dist = rl_dist(GPSpos, g->u.GPSpos);
          }
      } else {
          // If we can see, and we can see a character, start moving towards them
          if (g->sees_u(pos, tc)) {
-             dist = rl_dist(pos, g->u.pos);
+             dist = rl_dist(GPSpos, g->u.GPSpos);
              closest = -2;
              stc = tc;
          }

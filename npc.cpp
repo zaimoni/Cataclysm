@@ -1552,7 +1552,7 @@ int npc::danger_assessment(game *g) const
 // \todo should take range into account https://github.com/zaimoni/Cataclysm/issues/106
 // Mod for the player
  if (is_enemy()) {
-  const int dist = rl_dist(pos, g->u.pos);
+  const int dist = rl_dist(GPSpos, g->u.GPSpos);
   if (dist < 10) {
    if (g->u.weapon.is_gun())
     ret += 10;
@@ -1560,7 +1560,7 @@ int npc::danger_assessment(game *g) const
     ret += 10 - dist;
   }
  } else if (is_friend()) {
-  const int dist = rl_dist(pos, g->u.pos);
+  const int dist = rl_dist(GPSpos, g->u.GPSpos);
   if (dist < 8) {
    if (g->u.weapon.is_gun())
     ret -= 8;
@@ -1572,7 +1572,7 @@ int npc::danger_assessment(game *g) const
  // Mod for other NPCs
  for (const npc& _npc : g->active_npc) {
 	 if (is_enemy(&_npc)) {
-		 const int dist = rl_dist(pos, _npc.pos);
+		 const int dist = rl_dist(GPSpos, _npc.GPSpos);
 		 if (dist < 10) {
 			 if (_npc.weapon.is_gun())
 				 ret += 10;
@@ -1580,7 +1580,7 @@ int npc::danger_assessment(game *g) const
 				 ret += 10 - dist;
 		 }
 	 } else if (is_friend(&_npc)) {
-		 const int dist = rl_dist(pos, _npc.pos);
+		 const int dist = rl_dist(GPSpos, _npc.GPSpos);
 		 if (dist < 8) {
 			 if (_npc.weapon.is_gun())
 				 ret -= 8;
