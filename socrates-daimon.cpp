@@ -17,6 +17,7 @@
 
 #include <fstream>
 #include <filesystem>
+#include <algorithm>
 
 using namespace cataclysm;
 
