@@ -2,6 +2,7 @@
 #define MOBILE_H
 
 #include "GPS_loc.hpp"
+#include "grammar.h"
 #include <optional>
 #include <type_traits>
 
@@ -12,7 +13,7 @@ namespace cataclysm {
 }
 
 // intended base class for things that move
-class mobile
+class mobile : public grammar::noun
 {
 public:
 	static constexpr const int mp_turn = 100; // move points/standard turn

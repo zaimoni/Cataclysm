@@ -263,7 +263,12 @@ public:
 // abstract ui
  virtual bool see_phantasm();  // would not be const for multi-PC case
 
-// integrity checks
+ // grammatical support
+ bool is_proper() const override final { return true; }
+ std::string direct_object() const override;
+ std::string possessive() const override;
+
+ // integrity checks
  void screenpos_set(point pt);
  void screenpos_set(int x, int y);
  void screenpos_add(point delta);

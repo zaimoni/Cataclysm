@@ -470,6 +470,10 @@ public:
 // abstract ui
     bool see_phantasm() override { return false; } // unclear how to implement this even for multi-PC case, let alone NPCs
 
+// grammatical support
+    std::string direct_object() const override;
+    std::string possessive() const override;
+
 // #############   VALUES   ################
 
  int id;	// A unique ID number, assigned by the game class

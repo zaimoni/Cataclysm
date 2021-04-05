@@ -95,6 +95,16 @@ std::string monster::name_with_armor() const
  return ret;
 }
 
+std::string monster::direct_object() const
+{
+    return name();
+}
+
+std::string monster::possessive() const
+{
+    return name() + "'s";
+}
+
 void monster::print_info(const player& u, WINDOW* w) const
 {
 // First line of w is the border; the next two are terrain info, and after that

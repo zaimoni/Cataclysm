@@ -1538,6 +1538,16 @@ player::player()
 
 DEFINE_ACID_ASSIGN_W_MOVE(player)
 
+std::string player::direct_object() const
+{
+    return "you";
+}
+
+std::string player::possessive() const
+{
+    return "your";
+}
+
 void player::screenpos_set(point pt)
 {
     set_screenpos(pos = pt);

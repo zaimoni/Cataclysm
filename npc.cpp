@@ -181,6 +181,16 @@ npc::npc()
 DEFINE_ACID_ASSIGN_W_MOVE(npc_chatbin)
 DEFINE_ACID_ASSIGN_W_MOVE(npc)
 
+std::string npc::direct_object() const
+{
+	return name;
+}
+
+std::string npc::possessive() const
+{
+	return name + "'s";
+}
+
 npc* npc::find(const int id) {
     auto g = game::active();
     for (auto& _npc : g->active_npc) if (id == _npc.id) return &_npc;

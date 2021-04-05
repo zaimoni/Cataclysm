@@ -320,6 +320,10 @@ public:
     void interact ();
 #endif
 
+    // grammatical support
+    std::string direct_object() const override;
+    std::string possessive() const override;
+
     // config values
     std::string name;   // vehicle name
 	vhtype_id _type;           // vehicle type
