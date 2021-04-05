@@ -36,4 +36,9 @@ std::string noun::desc(article prefix, role r)
 	return ret;
 }
 
+void noun::regular_possessive(std::string& src)
+{
+	src += "'s";
+}
+
 }

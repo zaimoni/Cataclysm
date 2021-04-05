@@ -471,7 +471,9 @@ public:
     bool see_phantasm() override { return false; } // unclear how to implement this even for multi-PC case, let alone NPCs
 
 // grammatical support
+    std::string subject() const override;
     std::string direct_object() const override;
+    std::string indirect_object() const override;
     std::string possessive() const override;
 
 // #############   VALUES   ################

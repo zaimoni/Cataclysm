@@ -99,14 +99,26 @@ vehicle::vehicle(vhtype_id type_id, int deg) : vehicle(type_id)
 
 DEFINE_ACID_ASSIGN_W_MOVE(vehicle)
 
+std::string vehicle::subject() const
+{
+    return name;
+}
+
 std::string vehicle::direct_object() const
+{
+    return name;
+}
+
+std::string vehicle::indirect_object() const
 {
     return name;
 }
 
 std::string vehicle::possessive() const
 {
-    return name + "'s";
+    auto ret(name);
+    regular_possessive(ret);
+    return ret;
 }
 
 bool vehicle::player_in_control(player& p) const

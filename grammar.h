@@ -24,10 +24,14 @@ struct noun
 	};
 
 	virtual bool is_proper() const { return false; }
+	virtual std::string subject() const = 0;
 	virtual std::string direct_object() const = 0;
+	virtual std::string indirect_object() const = 0;
 	virtual std::string possessive() const = 0;
 
 	std::string desc(article prefix, role r);
+protected:
+	static void regular_possessive(std::string& src);
 };
 
 }

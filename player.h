@@ -265,7 +265,9 @@ public:
 
  // grammatical support
  bool is_proper() const override final { return true; }
+ std::string subject() const override;
  std::string direct_object() const override;
+ std::string indirect_object() const override;
  std::string possessive() const override;
 
  // integrity checks

@@ -321,7 +321,9 @@ public:
 #endif
 
     // grammatical support
+    std::string subject() const override;
     std::string direct_object() const override;
+    std::string indirect_object() const override;
     std::string possessive() const override;
 
     // config values

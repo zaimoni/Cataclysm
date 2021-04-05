@@ -1538,7 +1538,17 @@ player::player()
 
 DEFINE_ACID_ASSIGN_W_MOVE(player)
 
+std::string player::subject() const
+{
+    return "you";
+}
+
 std::string player::direct_object() const
+{
+    return "you";
+}
+
+std::string player::indirect_object() const
 {
     return "you";
 }

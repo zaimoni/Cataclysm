@@ -95,14 +95,26 @@ std::string monster::name_with_armor() const
  return ret;
 }
 
+std::string monster::subject() const
+{
+    return name();
+}
+
 std::string monster::direct_object() const
+{
+    return name();
+}
+
+std::string monster::indirect_object() const
 {
     return name();
 }
 
 std::string monster::possessive() const
 {
-    return name() + "'s";
+    auto ret(name());
+    regular_possessive(ret);
+    return ret;
 }
 
 void monster::print_info(const player& u, WINDOW* w) const

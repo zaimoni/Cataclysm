@@ -181,14 +181,26 @@ npc::npc()
 DEFINE_ACID_ASSIGN_W_MOVE(npc_chatbin)
 DEFINE_ACID_ASSIGN_W_MOVE(npc)
 
+std::string npc::subject() const
+{
+	return name;
+}
+
 std::string npc::direct_object() const
+{
+	return name;
+}
+
+std::string npc::indirect_object() const
 {
 	return name;
 }
 
 std::string npc::possessive() const
 {
-	return name + "'s";
+	auto ret(name);
+	regular_possessive(ret);
+	return ret;
 }
 
 npc* npc::find(const int id) {

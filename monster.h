@@ -144,7 +144,9 @@ class monster : public mobile {
  bool is_static_spawn() const { return -1 != spawnmap.x; }
 
  // grammatical support
+ std::string subject() const override;
  std::string direct_object() const override;
+ std::string indirect_object() const override;
  std::string possessive() const override;
 
  // integrity checks
