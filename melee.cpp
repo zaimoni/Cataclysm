@@ -874,10 +874,21 @@ void player::perform_defensive_technique(
 
 {
  assert(z || p);
- std::string You = (is_npc() ? name : "You");
+ mobile* const mob = z ? static_cast<mobile*>(z) : p;
+ const std::string You = grammar::capitalize(desc(grammar::noun::role::subject));
  const char* const your = (is_npc() ? (male ? "his" : "her") : "your");
- std::string target = (z ? "the " + z->name() : p->name);
+ const std::string target = mob->desc(grammar::noun::role::direct_object, grammar::article::definite);
  const bool u_see = (!is_npc() || g->u_see(pos));
+ static constexpr const zaimoni::gdi::box<point> knockback_spread(point(-1), point(1));
+
+ static auto enhanced_block = [&](int ma) { // XXX itype_id
+     switch (ma)
+     {
+     case itm_style_tai_chi: return per_cur - 6;
+     case itm_style_taekwando: return str_cur - 6;
+     default: return 0;
+     }
+ };
 
  switch (technique) {
   case TEC_BLOCK:
@@ -893,14 +904,11 @@ void player::perform_defensive_technique(
     messages.add("%s block%s with %s %s.", You.c_str(), (is_npc() ? "s" : ""),
                your, body_part_name(bp_hit, side));
    bash_dam /= 2;
-   double reduction = 1.0;
-// Special reductions for certain styles
-   if (weapon.type->id == itm_style_tai_chi) reduction -= double(0.08 * (per_cur - 6));
-   if (weapon.type->id == itm_style_taekwando) reduction -= double(0.08 * (str_cur - 6));
-   if (reduction > 1.0) reduction = 1.0;
-   if (reduction < 0.3) reduction = 0.3;
-
-   bash_dam *= reduction;
+   // styles never are worse than an unskilled block
+   if (const int bonus = enhanced_block(weapon.type->id); 0 < bonus) {
+       bash_dam *= clamped_lb<30>(100 - 8 * bonus);
+       bash_dam /= 100;
+   }
   } break;
 
   case TEC_WBLOCK_1:
@@ -913,7 +921,7 @@ void player::perform_defensive_technique(
    if (u_see)
     messages.add("%s block%s with %s %s.", You.c_str(), (is_npc() ? "s" : ""),
                your, weapon.tname().c_str());
-
+   [[fallthrough]];
   case TEC_COUNTER:
    break; // Handled elsewhere
 
@@ -925,10 +933,10 @@ void player::perform_defensive_technique(
    stab_dam = 0;
    if (z) {
     z->add_effect(ME_DOWNED, rng(1, 2));
-    z->knock_back_from(g, pos.x + rng(-1, 1), pos.y + rng(-1, 1));
+    z->knock_back_from(g, pos + rng(knockback_spread));
    } else {
     p->add_disease(DI_DOWNED, rng(1, 2));
-    p->knock_back_from(g, pos.x + rng(-1, 1), pos.y + rng(-1, 1));
+    p->knock_back_from(g, pos + rng(knockback_spread));
    }
    break;
 
