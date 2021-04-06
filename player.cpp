@@ -1558,6 +1558,15 @@ std::string player::possessive() const
     return "your";
 }
 
+std::string player::pronoun(role r) const
+{
+    switch (r)
+    {
+    case noun::role::possessive: return "your";
+    default: return "you";
+    }
+}
+
 void player::screenpos_set(point pt)
 {
     set_screenpos(pos = pt);

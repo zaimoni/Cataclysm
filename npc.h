@@ -475,6 +475,7 @@ public:
     std::string direct_object() const override;
     std::string indirect_object() const override;
     std::string possessive() const override;
+    std::string pronoun(role r) const override { return typical_pronoun(r); }
 
 // #############   VALUES   ################
 

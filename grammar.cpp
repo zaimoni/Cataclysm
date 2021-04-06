@@ -39,6 +39,37 @@ std::string noun::desc(role r, article prefix)
 	return ret;
 }
 
+// for now, just "most precise singular"
+std::string noun::typical_pronoun(role r) const
+{
+	switch (r)
+	{
+	case noun::role::subject:
+		switch(gender())
+		{
+		case 1: return "he";
+		case 2: return "she";
+		default: return "it";
+		}
+	case noun::role::direct_object:
+	case noun::role::indirect_object:
+		switch(gender())
+		{
+		case 1: return "him";
+		case 2: return "her";
+		default: return "it";
+		}
+	case noun::role::possessive:
+		switch(gender())
+		{
+		case 1: return "his";
+		case 2: return "hers";
+		default: return "its";
+		}
+	default: return std::string();
+	}
+}
+
 void noun::regular_possessive(std::string& src)
 {
 	src += "'s";

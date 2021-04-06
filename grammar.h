@@ -24,13 +24,16 @@ struct noun
 	};
 
 	virtual bool is_proper() const { return false; }
+	virtual unsigned gender() const { return 0; } // 0: neuter; 1 masculine; 2 feminine (English); languages that need more genders use codes higher than 2
 	virtual std::string subject() const = 0;
 	virtual std::string direct_object() const = 0;
 	virtual std::string indirect_object() const = 0;
 	virtual std::string possessive() const = 0;
 
 	std::string desc(role r, article prefix = article::none);
+	virtual std::string pronoun(role r) const { return typical_pronoun(r); }
 protected:
+	std::string typical_pronoun(role r) const; // third person singular
 	static void regular_possessive(std::string& src);
 };
 
