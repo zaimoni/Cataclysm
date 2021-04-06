@@ -147,8 +147,7 @@ public:
  // checks armor. if vary > 0, then damage to parts are random within 'vary' percent (1-100)
  void hitall(game *g, int dam, int vary = 0);
 // Sends us flying one tile
- void knock_back_from(game *g, int x, int y);
- void knock_back_from(game *g, const point& pt) { knock_back_from(g, pt.x, pt.y); };
+ void knock_back_from(game *g, const point& pt);
 
  int hp_percentage() const;	// % of HP remaining, overall
  std::pair<hp_part, int> worst_injury() const;

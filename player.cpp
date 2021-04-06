@@ -3451,35 +3451,29 @@ void player::hitall(game *g, int dam, int vary)
  }
 }
 
-void player::knock_back_from(game *g, int x, int y)
+void player::knock_back_from(game *g, const point& pt)
 {
- if (x == pos.x && y == pos.y) return; // No effect
- point to(pos);
- if (x < pos.x) to.x++;
- else if (x > pos.x) to.x--;
- if (y < pos.y) to.y++;
- else if (y > pos.y) to.y--;
+ if (pt == pos) return; // No effect
+ const point to(pos + cmp(pos, pt));
 
  bool u_see = (!is_npc() || g->u_see(to));
 
- std::string You = (is_npc() ? name : "You");
+ const std::string You = grammar::capitalize(desc(grammar::noun::role::subject));
  const char* const s = (is_npc() ? "s" : "");
 
 // First, see if we hit a monster
  if (monster* const z = g->mon(to)) {
   hit(g, bp_torso, 0, z->type->size, 0);
   add_disease(DI_STUNNED, TURNS(1));
-  if ((str_max - 6) / 4 > z->type->size) {
-   z->knock_back_from(g, pos); // Chain reaction!
-   z->hurt((str_max - 6) / 4);
-   z->add_effect(ME_STUNNED, 1);
-  } else if ((str_max - 6) / 4 == z->type->size) {
-   z->hurt((str_max - 6) / 4);
+  const int effective_size = (str_max - 6) / 4;
+  const int size_delta = (effective_size+1) - z->type->size;
+  if (0 < size_delta) {
+   if (1 < size_delta) z->knock_back_from(g, pos); // Chain reaction!
+   z->hurt(effective_size);
    z->add_effect(ME_STUNNED, 1);
   }
 
   if (u_see) messages.add("%s bounce%s off a %s!", You.c_str(), s, z->name().c_str());
-
   return;
  }
 
@@ -3502,7 +3496,7 @@ void player::knock_back_from(game *g, int x, int y)
    add_disease(DI_STUNNED, TURNS(2));
    if (u_see) messages.add("%s bounce%s off a %s.", name.c_str(), s, g->m.tername(to).c_str());
   }
- } else pos == to;	// It's no wall	
+ } else screenpos_set(to);	// It's no wall
 }
 
 int player::hp_percentage() const

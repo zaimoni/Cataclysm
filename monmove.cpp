@@ -530,27 +530,20 @@ void monster::stumble(game *g, bool moved)
  }
 }
 
-void monster::knock_back_from(game *g, int x, int y)
+void monster::knock_back_from(game *g, const point& pt)
 {
- if (x == pos.x && y == pos.y) return; // No effect
- point to(pos);
- if (x < pos.x) to.x++;
- else if (x > pos.x) to.x--;
- if (y < pos.y) to.y++;
- else if (y > pos.y) to.y--;
+ if (pt == pos) return; // No effect
+ const point to(pos + cmp(pos, pt));
 
  const bool u_see = g->u_see(to);
 
 // First, see if we hit another monster
- monster* const z = g->mon(to);
- if (z) {
+ if (monster* const z = g->mon(to)) {
   hurt(z->type->size);
   add_effect(ME_STUNNED, 1);
-  if (type->size > 1 + z->type->size) {
-   z->knock_back_from(g, pos); // Chain reaction!
-   z->hurt(type->size);
-   z->add_effect(ME_STUNNED, 1);
-  } else if (type->size > z->type->size) {
+  const int size_delta = type->size - z->type->size;
+  if (0 < size_delta) {
+   if (1 < size_delta) z->knock_back_from(g, pos); // Chain reaction!
    z->hurt(type->size);
    z->add_effect(ME_STUNNED, 1);
   }

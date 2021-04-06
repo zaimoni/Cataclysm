@@ -107,8 +107,7 @@ class monster : public mobile {
  void hit_player(game *g, player &p, bool can_grab = true);
  void move_to(game *g, const point& pt);
  void stumble(game *g, bool moved);
- void knock_back_from(game *g, int posx, int posy);
- void knock_back_from(game *g, const point& pt) { knock_back_from(g, pt.x, pt.y); };
+ void knock_back_from(game *g, const point& pt);
 
 // Combat
  bool is_fleeing(const player &u) const;	// True if we're fleeing
