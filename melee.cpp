@@ -877,7 +877,7 @@ void player::perform_defensive_technique(
  assert(z || p);
  mobile* const mob = z ? static_cast<mobile*>(z) : p;
  const std::string You = grammar::capitalize(desc(grammar::noun::role::subject));
- const char* const your = (is_npc() ? (male ? "his" : "her") : "your");
+ const std::string your = pronoun(grammar::noun::role::possessive);
  const std::string target = mob->desc(grammar::noun::role::direct_object, grammar::article::definite);
  const bool u_see = (!is_npc() || g->u_see(pos));
  static constexpr const zaimoni::gdi::box<point> knockback_spread(point(-1), point(1));
@@ -903,7 +903,7 @@ void player::perform_defensive_technique(
    }
    if (u_see)
     messages.add("%s block%s with %s %s.", You.c_str(), (is_npc() ? "s" : ""),
-               your, body_part_name(bp_hit, side));
+               your.c_str(), body_part_name(bp_hit, side));
    bash_dam /= 2;
    // styles never are worse than an unskilled block
    if (const int bonus = enhanced_block(weapon.type->id); 0 < bonus) {
@@ -921,7 +921,7 @@ void player::perform_defensive_technique(
    stab_dam = 0;
    if (u_see)
     messages.add("%s block%s with %s %s.", You.c_str(), (is_npc() ? "s" : ""),
-               your, weapon.tname().c_str());
+               your.c_str(), weapon.tname().c_str());
    [[fallthrough]];
   case TEC_COUNTER:
    break; // Handled elsewhere
@@ -1077,7 +1077,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
      if (!wearing_something_on(bp_hands) && weapon.conductive()) {
          hurtall(rng(0, 1));
          moves -= rng(0, 50);
-         if (is_u) messages.add("Contact with the %s shocks you!", z->name().c_str());
+         if (is_u) messages.add("Contact with %s shocks you!", target.c_str());
      }
  }
 
@@ -1136,7 +1136,6 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
 
 // Finally, some special effects for martial arts
  switch (weapon.type->id) {
-
   case itm_style_karate:
    dodges_left++;
    blocks_left += 2;
@@ -1209,7 +1208,6 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
   case itm_style_zui_quan:
    dodges_left = 50; // Basically, unlimited.
    break;
-
  }
 }
 
