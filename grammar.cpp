@@ -1,5 +1,6 @@
 #include "grammar.h"
-#include <ctype.h>
+#include <cstring>
+#include <cctype>
 
 namespace grammar {
 
