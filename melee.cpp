@@ -3,6 +3,7 @@
 #include "rng.h"
 #include "line.h"
 #include "recent_msg.h"
+#include "stl_limits.h"
 
 #include <sstream>
 #include <stdlib.h>
@@ -992,25 +993,21 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
                                    int &bash_dam, int &cut_dam, int &stab_dam)
 {
  assert(z || p);
+ mobile* const mob = z ? static_cast<mobile*>(z) : p;
  bool is_u = !is_npc();
  bool can_see = (is_u || g->u_see(pos));
- std::string You = (is_u ? "You" : name);
- std::string Your = (is_u ? "Your" : name + "'s");
- std::string your = (is_u ? "your" : name + "'s");
- std::string target = (z ? "the " + z->name() :
-                       (p->is_npc() ? p->name : "you"));
- std::string target_possessive = (z ? "the " + z->name() + "'s" :
-                                  (p->is_npc() ? p->name + "'s" : your));
+ const std::string You = grammar::capitalize(desc(grammar::noun::role::subject));
+ const std::string Your = grammar::capitalize(desc(grammar::noun::role::possessive));
+ const std::string target = mob->desc(grammar::noun::role::direct_object, grammar::article::definite);
+ const std::string target_possessive = mob->desc(grammar::noun::role::possessive, grammar::article::definite);
  point tar = z ? z->pos : p->pos;
 
-// Bashing effecs
- if (z) z->moves -= rng(0, bash_dam * 2);
- else p->moves -= rng(0, bash_dam * 2);
+// Bashing effects
+ mob->moves -= rng(0, bash_dam * 2);
 
 // Bashing crit
  if (crit && !unarmed_attack()) {
-  int turns_stunned = int(bash_dam / 20) + rng(0, int(sklevel[sk_bashing] / 2));
-  if (turns_stunned > 6) turns_stunned = 6;
+  int turns_stunned = clamped_ub<6>(bash_dam / 20 + rng(0, sklevel[sk_bashing] / 2));
   if (turns_stunned > 0) {
    if (z)
     z->add_effect(ME_STUNNED, turns_stunned);
@@ -1020,28 +1017,23 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
  }
 
 // Stabbing effects
- int stab_moves = rng(stab_dam / 2, stab_dam * 1.5);
- if (crit) stab_moves *= 1.5;
- if (stab_moves >= 150) {
+ int stab_moves = rng(stab_dam / 2, 3 * stab_dam /2);
+ if (crit) cataclysm::rational_scale<3,2>(stab_moves);
+ if (stab_moves >= 3 * (mobile::mp_turn / 2)) {
   if (can_see)
-   messages.add("%s force%s the %s to the ground!", You.c_str(),
-              (is_u ? "" : "s"), target.c_str());
+   messages.add("%s force%s %s to the ground!", You.c_str(), (is_u ? "" : "s"), target.c_str());
+  mob->moves -= stab_moves / 2;
   if (z) {
    z->add_effect(ME_DOWNED, 1);
-   z->moves -= stab_moves / 2;
   } else {
    p->add_disease(DI_DOWNED, 1);
-   p->moves -= stab_moves / 2;
   }
- } else if (z)
-  z->moves -= stab_moves;
- else
-  p->moves -= stab_moves;
+ } else mob->moves -= stab_moves;
 
 // Bonus attacks!
- bool shock_them = (has_bionic(bio_shock) && power_level >= 2 &&
-                    unarmed_attack() && (!z || !z->has_flag(MF_ELECTRIC)) &&
-                    one_in(3));
+ const bool target_electrified = z && z->has_flag(MF_ELECTRIC);
+ bool shock_them = (!target_electrified && has_bionic(bio_shock)
+                 && 2 <= power_level && unarmed_attack() && one_in(3));
 
  bool drain_them = (has_bionic(bio_heat_absorb) && power_level >= 1 &&
                     !is_armed() && (!z || z->has_flag(MF_WARM)));
@@ -1054,12 +1046,12 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
   int shock = rng(2, 5);
   if (z) {
    z->hurt( shock * rng(1, 3) );
-   z->moves -= shock * 180;
+   z->moves -= shock * (mobile::mp_turn / 5) * 9;
    if (can_see)
     messages.add("%s shock%s %s!", You.c_str(), (is_u ? "" : "s"), target.c_str());
   } else {
    p->hurt(g, bp_torso, 0, shock * rng(1, 3));
-   p->moves -= shock * 80;
+   p->moves -= shock * (mobile::mp_turn / 5) * 4;
   }
  }
 
@@ -1068,19 +1060,16 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
   if (can_see)
    messages.add("%s drain%s %s body heat!", You.c_str(), (is_u ? "" : "s"),
                target_possessive.c_str());
-  if (z) {
-   z->moves -= rng(80, 120);
-   z->speed -= rng(4, 6);
-  } else
-   p->moves -= rng(80, 120);
+  mob->moves -= rng(80, 120);
+  if (z) z->speed -= rng(4, 6);
  }
 
- bool conductive = !wearing_something_on(bp_hands) && weapon.conductive();
-                   
- if (z && z->has_flag(MF_ELECTRIC) && conductive) {
-  hurtall(rng(0, 1));
-  moves -= rng(0, 50);
-  if (is_u) messages.add("Contact with the %s shocks you!", z->name().c_str());
+ if (target_electrified) {
+     if (!wearing_something_on(bp_hands) && weapon.conductive()) {
+         hurtall(rng(0, 1));
+         moves -= rng(0, 50);
+         if (is_u) messages.add("Contact with the %s shocks you!", z->name().c_str());
+     }
  }
 
 // Glass weapons shatter sometimes
@@ -1117,6 +1106,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
  }
  if (!unarmed_attack() && cutting_penalty > dice(str_cur * 2, 20)) {
   if (is_u)
+   // \todo need possessive pronoun to NPC-convert this message
    messages.add("Your %s gets stuck in %s, pulling it out of your hands!",
               weapon.tname().c_str(), target.c_str());
   if (z) {

@@ -29,10 +29,12 @@ struct noun
 	virtual std::string indirect_object() const = 0;
 	virtual std::string possessive() const = 0;
 
-	std::string desc(article prefix, role r);
+	std::string desc(role r, article prefix = article::none);
 protected:
 	static void regular_possessive(std::string& src);
 };
+
+std::string capitalize(std::string&& src);
 
 }
 

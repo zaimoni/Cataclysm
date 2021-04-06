@@ -1,4 +1,5 @@
 #include "grammar.h"
+#include <ctype.h>
 
 namespace grammar {
 
@@ -7,7 +8,9 @@ static std::string text(noun::role r, const noun& n)
 {
 	switch (r)
 	{
+	case noun::role::subject: return n.subject();
 	case noun::role::direct_object: return n.direct_object();
+	case noun::role::indirect_object: return n.indirect_object();
 	case noun::role::possessive: return n.possessive();
 	default: return std::string();
 	}
@@ -26,7 +29,7 @@ static const char* text(article prefix, const std::string& target)
 	}
 }
 
-std::string noun::desc(article prefix, role r)
+std::string noun::desc(role r, article prefix)
 {
 	auto ret(text(r, *this));
 	if (!is_proper()) {	// not *always*, but exceptions generally have an implicit reading that is consistent
@@ -39,6 +42,12 @@ std::string noun::desc(article prefix, role r)
 void noun::regular_possessive(std::string& src)
 {
 	src += "'s";
+}
+
+std::string capitalize(std::string&& src)
+{
+	if (!src.empty()) src.front() = toupper(src.front());
+	return src;
 }
 
 }
