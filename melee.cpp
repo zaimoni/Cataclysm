@@ -707,13 +707,14 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
                                int &stab_dam, int &pain)
 {
  assert(z || p);
- std::string You = (is_npc() ? name : "You");
- std::string target = (z ? "the " + z->name() :
-                       (p->is_npc() ? p->name : "you"));
+ mobile* const mob = z ? static_cast<mobile*>(z) : p;
+ const std::string You = desc(grammar::noun::role::subject);
+ const std::string target = mob->desc(grammar::noun::role::direct_object, grammar::article::definite);
  std::string s = (is_npc() ? "s" : "");
  point tar(z ? z->pos : p->pos);
 
  const bool u_see = (!is_npc() || g->u_see(pos));
+ static constexpr const zaimoni::gdi::box<point> knockback_spread(point(-1), point(1));
 
  if (technique == TEC_RAPID) {
   moves += int( attack_speed(*this, false) / 2);
@@ -759,9 +760,9 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
 // We knock them back from a tile adjacent to us!
   if (z != nullptr) {
    z->add_effect(ME_DOWNED, rng(1, 2));
-   z->knock_back_from(g, pos.x + rng(-1, 1), pos.y + rng(-1, 1));
+   z->knock_back_from(g, pos + rng(knockback_spread));
   } else if (p != nullptr) {
-   p->knock_back_from(g, pos.x + rng(-1, 1), pos.y + rng(-1, 1));
+   p->knock_back_from(g, pos + rng(knockback_spread));
    if (p->weapon.type->id != itm_style_judo)
     p->add_disease(DI_DOWNED, rng(1, 2));
   }
