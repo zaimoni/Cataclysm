@@ -64,29 +64,31 @@ void trapfunc::board(game *g, int x, int y)
 
 void trapfuncm::board(game *g, monster *z)
 {
- if (g->u_see(z)) messages.add("The %s steps on a spiked board!", z->name().c_str());
+ if (g->u.see(*z)) messages.add("%s steps on a spiked board!",
+     grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
  if (z->hurt(rng(6, 10))) g->kill_mon(*z);
  else z->moves -= 80;
 }
 
 void trapfunc::tripwire(game *g, int x, int y)
 {
+ const point pt(x, y);
  messages.add("You trip over a tripwire!");
  std::vector<point> valid;
- for (int j = x - 1; j <= x + 1; j++) {
-  for (int k = y - 1; k <= y + 1; k++) {
-   if (g->is_empty(j, k)) // No monster, NPC, or player, plus valid for movement
-    valid.push_back(point(j, k));
-  }
+ for (decltype(auto) dir : Direction::vector) {
+     const auto dest(pt + dir);
+     if (g->is_empty(dest)) valid.push_back(dest); // No monster, NPC, or player, plus valid for movement
  }
  if (!valid.empty()) g->u.screenpos_set(valid[rng(0, valid.size() - 1)]);
- g->u.moves -= 150;
+ g->u.moves -= (mobile::mp_turn / 2) * 3;
  if (rng(5, 20) > g->u.dex_cur) g->u.hurtall(rng(1, 4));
 }
 
 void trapfuncm::tripwire(game *g, monster *z)
 {
- if (g->u_see(z)) messages.add("The %s trips over a tripwire!", z->name().c_str());
+ if (g->u.see(*z))
+     messages.add("The %s trips over a tripwire!",
+                  grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
  z->stumble(g, false);
  if (rng(0, 10) > z->type->sk_dodge && z->hurt(rng(1, 4))) g->kill_mon(*z);
 }
@@ -110,12 +112,14 @@ void trapfunc::crossbow(game *g, int x, int y)
 void trapfuncm::crossbow(game *g, monster *z)
 {
  bool add_bolt = true;
- const bool seen = g->u_see(z);
+ std::optional<std::string> z_name;
+ const bool seen = g->u.see(*z);
+ if (seen) z_name = z->desc(grammar::noun::role::direct_object, grammar::article::definite);
  if (!one_in(4)) {
-  if (seen) messages.add("A bolt shoots out and hits the %s!", z->name().c_str());
+  if (seen) messages.add("A bolt shoots out and hits %s!", z_name->c_str());
   if (z->hurt(rng(20, 30))) g->kill_mon(*z);
   add_bolt = !one_in(10);
- } else if (seen) messages.add("A bolt shoots out, but misses the %s.", z->name().c_str());
+ } else if (seen) messages.add("A bolt shoots out, but misses %s.", z_name->c_str());
  trap_fully_triggered(g->m, z->pos, trap::traps[tr_crossbow]->trigger_components);
  if (add_bolt) g->m.add_item(z->pos, item::types[itm_bolt_steel], 0);
 }
@@ -142,10 +146,11 @@ void trapfunc::shotgun(game *g, int x, int y)
 void trapfuncm::shotgun(game *g, monster *z)
 {
  const static int evade_double_shot[mtype::MS_MAX] = { 100, 16, 12, 8, 2 };	// corresponding typical PC strmax: sub-zero, 4, 8, 12, 18
- bool seen = g->u_see(z);
  auto& trap = z->GPSpos.trap_at();
  int shots = (tr_shotgun_1 != trap && (one_in(8) || one_in(evade_double_shot[z->type->size]))) ? 2 : 1;
- if (seen) messages.add("A shotgun fires and hits the %s!", z->name().c_str());
+ if (g->u.see(*z))
+   messages.add("A shotgun fires and hits %s!",
+                z->desc(grammar::noun::role::direct_object, grammar::article::definite).c_str());
  if (z->hurt(rng(40 * shots, 60 * shots))) g->kill_mon(*z);
  if (shots == 2 || tr_shotgun_1 == trap) {
   // the two shotguns have the same configuration
@@ -162,11 +167,11 @@ void trapfunc::blade(game *g, int x, int y)
 
 void trapfuncm::blade(game *g, monster *z)
 {
- if (g->u_see(z)) messages.add("A machete swings out and hacks the %s!", z->name().c_str());
- int cutdam = 30 - z->armor_cut();
- int bashdam = 12 - z->armor_bash();
- if (cutdam < 0) cutdam = 0;
- if (bashdam < 0) bashdam = 0;
+ if (g->u.see(*z))
+     messages.add("A machete swings out and hacks %s!",
+         z->desc(grammar::noun::role::direct_object, grammar::article::definite));
+ int cutdam = clamped_lb<0>(30 - z->armor_cut());
+ int bashdam = clamped_lb<0>(12 - z->armor_bash());
  if (z->hurt(bashdam + cutdam)) g->kill_mon(*z);
 }
 
@@ -208,14 +213,21 @@ void trapfunc::telepad(game *g, int x, int y)
 void trapfuncm::telepad(game *g, monster *z)
 {
  g->sound(z->pos, 6, "vvrrrRRMM*POP!*");
- if (g->u_see(z)) messages.add("The air shimmers around the %s...", z->name().c_str());
+ const bool sees = g->u.see(*z);
+ if (sees) {
+     messages.add("The air shimmers around %s...",
+         z->desc(grammar::noun::role::direct_object, grammar::article::definite).c_str());
+ }
 
  const point newpos = g->teleport_destination_unsafe(z->pos, 10);
 
  // Cf. dimensional fatigue field fd_fatigue
  if (0 == g->m.move_cost(newpos)) g->explode_mon(*z);
  else if (monster* const m_hit = g->mon(newpos)) {	// must agree with LAB_NOTES
-   if (g->u_see(z)) messages.add("The %s teleports into a %s, killing the %s!", z->name().c_str(), m_hit->name().c_str(), m_hit->name().c_str());
+   if (sees) messages.add("%s teleports into %s, killing %s!",
+       grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str(),
+       m_hit->desc(grammar::noun::role::direct_object, grammar::article::indefinite).c_str(),
+       m_hit->desc(grammar::noun::role::direct_object, grammar::article::definite).c_str());
    g->explode_mon(*m_hit);
    z->screenpos_set(newpos);
  } else {
@@ -319,10 +331,10 @@ void trapfunc::pit_spikes(game *g, int x, int y)
 
 void trapfuncm::pit_spikes(game *g, monster *z)
 {
- const bool sees = g->u_see(z);
+ const bool sees = g->u.see(*z);
  if (sees) messages.add("The %s falls in a spiked pit!", z->name().c_str());
  if (z->hurt(rng(20, 50))) g->kill_mon(*z);
- else z->moves = -1000;
+ else z->moves -= 10 * mobile::mp_turn;
 
  if (one_in(4)) {
   if (sees) messages.add("The spears break!");
@@ -344,7 +356,7 @@ void trapfunc::lava(game *g, int x, int y)
 
 void trapfuncm::lava(game *g, monster *z)
 {
- if (g->u_see(z))
+ if (g->u.see(*z))
   messages.add("The %s burns the %s!", g->m.tername(z->pos).c_str(), z->name().c_str());
 
  int dam = 30;

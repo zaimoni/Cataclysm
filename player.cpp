@@ -3050,6 +3050,19 @@ int player::clairvoyance() const
  return 0;
 }
 
+bool player::see(const monster& mon) const
+{
+    int dist = rl_dist(GPSpos, mon.GPSpos);
+    if (has_trait(PF_ANTENNAE) && dist <= 3) return true;
+    if (mon.has_flag(MF_DIGS) && !has_active_bionic(bio_ground_sonar) && dist > 1)
+        return false;	// Can't see digging monsters until we're right next to them
+    const int range = sight_range();
+    if (const auto clairvoyant = clairvoyance()) {
+        if (dist <= clamped_lb(range, clairvoyant)) return true;
+    }
+    return game::active()->m.sees(pos, mon.pos, range);
+}
+
 bool player::has_two_arms() const
 {
  if (has_bionic(bio_blaster) || hp_cur[hp_arm_l] < 10 || hp_cur[hp_arm_r] < 10)

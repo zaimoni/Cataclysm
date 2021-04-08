@@ -762,7 +762,7 @@ void iuse::extinguisher(game *g, player *p, item *it, bool t)
   it->charges++;
   return;
  }
- p->moves -= 140;
+ p->moves -= (mobile::mp_turn / 5) * 7;
  point pt(dir + p->pos);
  {
  auto& fd = g->m.field_at(pt);
@@ -771,10 +771,14 @@ void iuse::extinguisher(game *g, player *p, item *it, bool t)
  }
  }
  if (monster* const m_at = g->mon(pt)) {
-  m_at->moves -= 150;
-  if (g->u_see(m_at)) messages.add("The %s is sprayed!", m_at->name().c_str());
-  if (m_at->made_of(LIQUID)) {
-   if (g->u_see(m_at)) messages.add("The %s is frozen!", m_at->name().c_str());
+  m_at->moves -= (mobile::mp_turn / 2) * 3;
+  const bool is_liquid = m_at->made_of(LIQUID); // assumed that liquid is water or similar -- dry ice extinguisher?
+  if (g->u.see(*m_at)) {
+      const auto z_name = grammar::capitalize(m_at->desc(grammar::noun::role::subject, grammar::article::definite));
+      messages.add("%s is sprayed!", z_name.c_str());
+      if (is_liquid) messages.add("%s is frozen!", z_name.c_str());
+  }
+  if (is_liquid) {
    if (m_at->hurt(rng(20, 60))) g->kill_mon(*m_at, p);
    else m_at->speed /= 2;
   }
@@ -1808,17 +1812,17 @@ void iuse::vortex(game *g, player *p, item *it, bool t)
 void iuse::dog_whistle(game *g, player *p, item *it, bool t)
 {
  if (!p->is_npc()) messages.add("You blow your dog whistle.");
- for (int i = 0; i < g->z.size(); i++) {
-  if (g->z[i].is_friend(p) && g->z[i].type->id == mon_dog) {
-   const bool u_see = g->u_see(&(g->z[i]));
-   if (g->z[i].has_effect(ME_DOCILE)) {
-    if (u_see) messages.add("Your %s looks ready to attack.", g->z[i].name().c_str());
-    g->z[i].rem_effect(ME_DOCILE);
-   } else {
-    if (u_see) messages.add("Your %s goes docile.", g->z[i].name().c_str());
-    g->z[i].add_effect(ME_DOCILE, -1);
-   }
-  }
+ for (decltype(auto) _dog : g->z) {
+     if (_dog.is_friend(p) && _dog.type->id == mon_dog) {
+         const bool is_docile = _dog.has_effect(ME_DOCILE);
+         if (g->u.see(_dog)) {
+             const auto d_name = _dog.desc(grammar::noun::role::subject);
+             if (is_docile) messages.add("Your %s looks ready to attack.", d_name.c_str());
+             else messages.add("Your %s goes docile.", d_name.c_str());
+         }
+         if (is_docile) _dog.rem_effect(ME_DOCILE);
+         else _dog.add_effect(ME_DOCILE, -1);
+     }
  }
 }
 

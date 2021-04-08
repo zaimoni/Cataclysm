@@ -2198,7 +2198,7 @@ void game::draw_ter(const point& pos)
  for(const auto& mon : z) {
   point delta(mon.pos - pos);
   if (VIEW_CENTER < Linf_dist(delta)) continue;
-  if (u_see(&mon))
+  if (u.see(mon))
    mon.draw(w_terrain, pos, false);
   else if (mon.has_flag(MF_WARM) && (u.has_active_bionic(bio_infrared) || u.has_trait(PF_INFRARED))) {
       const point draw_at(point(VIEW_CENTER) + delta);
@@ -2501,28 +2501,6 @@ bool game::u_see(int x, int y, int &t) const
 	return m.sees(u.pos, x, y, range, t);
 }
 
-bool game::u_see(const monster *mon) const
-{
- int dist = rl_dist(u.GPSpos, mon->GPSpos);
- if (u.has_trait(PF_ANTENNAE) && dist <= 3) return true;
- if (mon->has_flag(MF_DIGS) && !u.has_active_bionic(bio_ground_sonar) && dist > 1)
-  return false;	// Can't see digging monsters until we're right next to them
- const int range = u.sight_range();
- if (u.has_artifact_with(AEP_CLAIRVOYANCE)) {
-  int crange = (range > u.clairvoyance() ? u.clairvoyance() : range);
-  if (dist <= crange) return true;
- }
- return m.sees(u.pos, mon->pos, range);
-}
-
-bool game::pl_sees(player *p, monster *mon) const
-{
- if (mon->has_flag(MF_DIGS) && !p->has_active_bionic(bio_ground_sonar) &&
-     rl_dist(p->GPSpos, mon->GPSpos) > 1)
-  return false;	// Can't see digging monsters until we're right next to them
- return m.sees(p->pos, mon->pos, p->sight_range());
-}
-
 std::optional<point> game::find_item(item *it) const
 {
  if (u.has_item(it)) return u.pos;
@@ -2592,7 +2570,7 @@ void game::mon_info()
  for (int i = 0; i < 8; i++) dangerous[i] = false;
 
  for (const auto& mon : z) {
-  if (u_see(&mon)) {
+  if (u.see(mon)) {
    const auto att = mon.attitude(&u);
    const bool mon_dangerous = (att == MATT_ATTACK || att == MATT_FOLLOW);
    if (mon_dangerous) newseen++;
@@ -2628,21 +2606,21 @@ void game::mon_info()
 // 7 0 1	unique_types uses these indices;
 // 6 8 2	0-7 are provide by direction_from()
 // 5 4 3	8 is used for local monsters (for when we explain them below)
- mvwprintz(w_moninfo,  0,  0, (unique_types[7].empty() ?
+ mvwaddstrz(w_moninfo,  0,  0, (unique_types[7].empty() ?
            c_dkgray : (dangerous[7] ? c_ltred : c_ltgray)), "NW:");
- mvwprintz(w_moninfo,  0, 15, (unique_types[0].empty() ? 
+ mvwaddstrz(w_moninfo,  0, 15, (unique_types[0].empty() ?
            c_dkgray : (dangerous[0] ? c_ltred : c_ltgray)), "North:");
- mvwprintz(w_moninfo,  0, 33, (unique_types[1].empty() ? 
+ mvwaddstrz(w_moninfo,  0, 33, (unique_types[1].empty() ?
            c_dkgray : (dangerous[1] ? c_ltred : c_ltgray)), "NE:");
- mvwprintz(w_moninfo,  1,  0, (unique_types[6].empty() ?
+ mvwaddstrz(w_moninfo,  1,  0, (unique_types[6].empty() ?
            c_dkgray : (dangerous[6] ? c_ltred : c_ltgray)), "West:");
- mvwprintz(w_moninfo,  1, 31, (unique_types[2].empty() ?
+ mvwaddstrz(w_moninfo,  1, 31, (unique_types[2].empty() ?
            c_dkgray : (dangerous[2] ? c_ltred : c_ltgray)), "East:");
- mvwprintz(w_moninfo,  2,  0, (unique_types[5].empty() ?
+ mvwaddstrz(w_moninfo,  2,  0, (unique_types[5].empty() ?
            c_dkgray : (dangerous[5] ? c_ltred : c_ltgray)), "SW:");
- mvwprintz(w_moninfo,  2, 15, (unique_types[4].empty() ?
+ mvwaddstrz(w_moninfo,  2, 15, (unique_types[4].empty() ?
            c_dkgray : (dangerous[4] ? c_ltred : c_ltgray)), "South:");
- mvwprintz(w_moninfo,  2, 33, (unique_types[3].empty() ?
+ mvwaddstrz(w_moninfo,  2, 33, (unique_types[3].empty() ?
            c_dkgray : (dangerous[3] ? c_ltred : c_ltgray)), "SE:");
 
  static constexpr const point label_reference[8] = {
@@ -3800,9 +3778,9 @@ std::optional<point> game::look_around()
  WINDOW* w_look = newwin(VIEW-SEE, PANELX - MINIMAP_WIDTH_HEIGHT, SEE, VIEW + MINIMAP_WIDTH_HEIGHT);
  wborder(w_look, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                  LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
- mvwprintz(w_look, 1, 1, c_white, "Looking Around");
- mvwprintz(w_look, 2, 1, c_white, "Use directional keys to move the cursor");
- mvwprintz(w_look, 3, 1, c_white, "to a nearby square.");
+ mvwaddstrz(w_look, 1, 1, c_white, "Looking Around");
+ mvwaddstrz(w_look, 2, 1, c_white, "Use directional keys to move the cursor");
+ mvwaddstrz(w_look, 3, 1, c_white, "to a nearby square.");
  wrefresh(w_look);
  do {
   ch = input();
@@ -3824,40 +3802,39 @@ std::optional<point> game::look_around()
        mvwprintw(w_look, 1, 1, "%s; Movement cost %d", m.tername(l).c_str(), mc * 50);
    else
        mvwprintw(w_look, 1, 1, "%s; Impassable", m.tername(l).c_str());
-   mvwprintw(w_look, 2, 1, "%s", m.features(l).c_str());
+   mvwaddstr(w_look, 2, 1, m.features(l).c_str());
    const auto& f = m.field_at(l);
    if (f.type != fd_null)
-    mvwprintz(w_look, 4, 1, field::list[f.type].color[f.density-1],
-              "%s", f.name().c_str());
+    mvwaddstrz(w_look, 4, 1, field::list[f.type].color[f.density-1], f.name().c_str());
    if (const auto tr_id = m.tr_at(l)) {
 	 const trap* const tr = trap::traps[tr_id];
      if (u.per_cur - u.encumb(bp_eyes) >= tr->visibility)
-       mvwprintz(w_look, 5, 1, tr->color, "%s", tr->name.c_str());
+       mvwaddstrz(w_look, 5, 1, tr->color, tr->name.c_str());
    }
 
    monster* const m_at = mon(l);
    auto& stack = m.i_at(l);
-   if (m_at && u_see(m_at)) {
+   if (m_at && u.see(*m_at)) {
     m_at->draw(w_terrain, l, true);
     m_at->print_info(u, w_look);
     if (stack.size() > 1)
-     mvwprintw(w_look, 3, 1, "There are several items there.");
+     mvwaddstr(w_look, 3, 1, "There are several items there.");
     else if (stack.size() == 1)
-     mvwprintw(w_look, 3, 1, "There is an item there.");
+     mvwaddstr(w_look, 3, 1, "There is an item there.");
    } else if (npc* const _npc = nPC(l)) {
     _npc->draw(w_terrain, l, true);
 	_npc->print_info(w_look);
     if (stack.size() > 1)
-     mvwprintw(w_look, 3, 1, "There are several items there.");
+     mvwaddstr(w_look, 3, 1, "There are several items there.");
     else if (stack.size() == 1)
-     mvwprintw(w_look, 3, 1, "There is an item there.");
+     mvwaddstr(w_look, 3, 1, "There is an item there.");
    } else if (veh) {
      mvwprintw(w_look, 3, 1, "There is a %s there. Parts:", veh->name.c_str());
      veh->print_part_desc(w_look, 4, veh_part);
      m.drawsq(w_terrain, u, l.x, l.y, true, true, l.x, l.y);
    } else if (!stack.empty()) {
     mvwprintw(w_look, 3, 1, "There is a %s there.", stack[0].tname().c_str());
-    if (stack.size() > 1) mvwprintw(w_look, 4, 1, "There are other items there as well.");
+    if (stack.size() > 1) mvwaddstr(w_look, 4, 1, "There are other items there as well.");
     m.drawsq(w_terrain, u, l.x, l.y, true, true, l.x, l.y);
    } else
     m.drawsq(w_terrain, u, l.x, l.y, true, true, l.x, l.y);
@@ -3873,7 +3850,7 @@ std::optional<point> game::look_around()
 
   } else {
    mvwputch(w_terrain, VIEW_CENTER, VIEW_CENTER, c_white, 'x'); // \todo would be nice if some indicator made it past tiles display
-   mvwprintw(w_look, 1, 1, "Unseen.");
+   mvwaddstr(w_look, 1, 1, "Unseen.");
   }
   wrefresh(w_look);
   wrefresh(w_terrain);
@@ -4483,7 +4460,7 @@ int game::visible_monsters(std::vector<const monster*>& mon_targets, std::vector
     int i2 = -1;
     for (const auto& mon : z) {
         ++i2;
-        if (u_see(&mon) && test(mon)) {
+        if (u.see(mon) && test(mon)) {
             mon_targets.push_back(&mon);
             targetindices.push_back(i2);
             if (i2 == last_target) passtarget = mon_targets.size() - 1;

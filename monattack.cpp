@@ -175,8 +175,10 @@ void mattack::resurrect(game *g, monster *z)
  }
  if (corpses.empty()) return;	// No nearby corpses
  z->speed = (z->speed - rng(0, 10)) * .8;
- const bool sees_necromancer = g->u_see(z);
- if (sees_necromancer) messages.add("The %s throws its arms wide...", z->name().c_str());
+ const bool sees_necromancer = g->u.see(*z);
+ if (sees_necromancer)
+     messages.add("The %s throws its arms wide...",
+                  grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  z->moves = -500;			// It takes a while
  int raised = 0;
@@ -586,10 +588,12 @@ void mattack::leap(game *g, monster *z)
 
  z->moves -= (mobile::mp_turn / 2) * 3;
  z->sp_timeout = z->type->sp_freq;	// Reset timer
- bool seen = g->u_see(z); // We can see them jump...
+ bool seen = g->u.see(*z); // We can see them jump...
  z->screenpos_set(options[rng(0, options.size() - 1)]);
- seen |= g->u_see(z); // ... or we can see them land
- if (seen) messages.add("The %s leaps!", z->name().c_str());
+ seen |= g->u.see(*z); // ... or we can see them land
+ if (seen)
+     messages.add("%s leaps!",
+                  grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
 }
 
 void mattack::dermatik(game *g, monster *z)
@@ -706,9 +710,10 @@ void mattack::formblob(game *g, monster *z)
 
 void mattack::dogthing(game *g, monster *z)	// XXX only happens when PC can see it?
 {
- if (!g->u_see(z) || !one_in(3)) return;
+ if (!g->u.see(*z) || !one_in(3)) return;
 
- messages.add("The %s's head explodes in a mass of roiling tentacles!", z->name().c_str());
+ messages.add("The %s's head explodes in a mass of roiling tentacles!",
+               grammar::capitalize(z->desc(grammar::noun::role::possessive, grammar::article::definite)).c_str());
 
  for (int x = z->pos.x - 2; x <= z->pos.x + 2; x++) {
   for (int y = z->pos.y - 2; y <= z->pos.y + 2; y++) {
@@ -823,7 +828,9 @@ void mattack::vortex(game *g, monster *z)
      case SILVER:  distance -= 3; damage -= 10; break;
     }
     if (distance > 0) {
-     if (g->u_see(thrown)) messages.add("The %s is thrown by winds!", thrown->name().c_str());
+     if (g->u.see(*thrown))
+         messages.add("%s is thrown by winds!",
+                      grammar::capitalize(thrown->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
      std::vector<point> traj = continue_line(from_monster, distance);
      bool hit_wall = false;
      for (int i = 0; i < traj.size() && !hit_wall; i++) {

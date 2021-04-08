@@ -524,7 +524,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
   m.draw(this, w_terrain, center);
 // Draw the Monsters
   for(const auto& mon : z) {
-   if (bounds.contains(mon.pos) && u_see(&mon))
+   if (bounds.contains(mon.pos) && u.see(mon))
     mon.draw(w_terrain, center, false);
   }
 // Draw the NPCs
@@ -550,7 +550,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
      if (sight_dist >= Linf_dist(ret[i] - u.pos)) {
       monster* const m_at = mon(ret[i]);
 // NPCs and monsters get drawn with inverted colors
-      if (m_at && u_see(m_at)) m_at->draw(w_terrain, center, true);
+      if (m_at && u.see(*m_at)) m_at->draw(w_terrain, center, true);
       else if (npc* const _npc = nPC(ret[i]))
        _npc->draw(w_terrain, center, true);
       else
@@ -562,7 +562,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
    mvwprintw(w_target, 5, 1, "Range: %d", rl_dist(u.pos, tar));
 
    if (monster* const m_at = mon(tar)) {
-       if (u_see(m_at)) m_at->print_info(u, w_target);
+       if (u.see(*m_at)) m_at->print_info(u, w_target);
    } else {
        mvwprintw(w_status, 0, 9, "                             ");
        if (snap_to_target)
@@ -581,7 +581,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
   point dir(get_direction(ch));
   if (dir.x != -2 && ch != '.') {	// Direction character pressed
    monster* const m_at = mon(tar);
-   if (m_at && u_see(m_at)) m_at->draw(w_terrain, center, false);
+   if (m_at && u.see(*m_at)) m_at->draw(w_terrain, center, false);
    else if (npc* const _npc = nPC(tar))
 	_npc->draw(w_terrain, center, false);
    else if (m.sees(u.pos, tar, -1))
@@ -673,8 +673,7 @@ double calculate_missed_by(player &p, int trange)	// XXX real-world deviation is
 void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit)
 {
  const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
- std::string message;
- const bool u_see_mon = g->u_see(&(mon));
+ const bool u_see_mon = g->u.see(mon);
  if (mon.has_flag(MF_HARDTOSHOOT) && !one_in(4) &&
      p.weapon.curammo->m1 != LIQUID && 
      p.weapon.curammo->accuracy >= 4) { // Buckshot hits anyway
@@ -695,29 +694,33 @@ void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit)
    dam = 0;
    goodhit = 1;
   }
+  const char* message = "";
   if (goodhit < .1 && !mon.has_flag(MF_NOHEAD)) {
-   message = "Headshot!";
+   message = "Headshot! ";
    dam = rng(5 * dam, 8 * dam);
    p.practice(firing->skill_used, 5);
   } else if (goodhit < .2) {
-   message = "Critical!";
+   message = "Critical! ";
    dam = rng(dam * 2, dam * 3);
    p.practice(firing->skill_used, 2);
   } else if (goodhit < .4) {
    dam = rng(int(dam * .9), int(dam * 1.5));
    p.practice(firing->skill_used, rng(0, 2));
   } else if (goodhit <= .7) {
-   message = "Grazing hit.";
+   message = "Grazing hit. ";
    dam = rng(0, dam);
   } else dam = 0;
 
 // Find the zombie at (x, y) and hurt them, MAYBE kill them!
   if (dam > 0) {
    mon.moves -= dam * 5;
-   if (&p == &(g->u) && u_see_mon)
-    messages.add("%s You hit the %s for %d damage.", message.c_str(), mon.name().c_str(), dam);
-   else if (u_see_mon)
-    messages.add("%s %s shoots the %s.", message.c_str(), p.name.c_str(), mon.name().c_str());
+   if (u_see_mon) {
+       const auto z_name = mon.desc(grammar::noun::role::direct_object, grammar::article::definite);
+       if (&p == &(g->u))
+           messages.add("%sYou hit the %s for %d damage.", message, z_name.c_str(), dam);
+       else
+           messages.add("%s%s shoots the %s.", message, p.name.c_str(), z_name.c_str());
+   }
    if (mon.hurt(dam)) g->kill_mon(mon, &p);
    else if (p.weapon.curammo->item_flags != 0)
     g->hit_monster_with_flags(mon, p.weapon.curammo->item_flags);

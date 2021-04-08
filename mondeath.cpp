@@ -7,7 +7,7 @@
 
 void mdeath::normal(game *g, monster *z)
 {
- if (g->u_see(z)) messages.add("It dies!");
+ if (g->u.see(*z)) messages.add("It dies!");
  if (z->made_of(FLESH) && z->has_flag(MF_WARM)) {
   auto& f = g->m.field_at(z->pos);
   if (f.type == fd_blood) {
@@ -23,7 +23,9 @@ void mdeath::normal(game *g, monster *z)
 
 void mdeath::acid(game *g, monster *z)
 {
- if (g->u_see(z)) messages.add("The %s's corpse melts into a pool of acid.", z->name().c_str());
+ if (g->u.see(*z))
+     messages.add("%s corpse melts into a pool of acid.",
+                   grammar::capitalize(z->desc(grammar::noun::role::possessive, grammar::article::definite)).c_str());
  g->m.add_field(g, z->pos, fd_acid, 3);
 }
 
@@ -142,12 +144,14 @@ void mdeath::fungusawake(game *g, monster *z)
 
 void mdeath::disintegrate(game *g, monster *z)
 {
- if (g->u_see(z)) messages.add("It disintegrates!");
+ if (g->u.see(*z)) messages.add("It disintegrates!");
 }
 
 void mdeath::worm(game *g, monster *z)
 {
- if (g->u_see(z)) messages.add("The %s splits in two!", z->name().c_str());
+ if (g->u.see(*z))
+     messages.add("The %s splits in two!",
+                   grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
 
  std::vector <point> wormspots;
  for (int i = -1; i <= 1; i++) {
@@ -184,17 +188,20 @@ void mdeath::guilt(game *g, monster *z)
 void mdeath::blobsplit(game *g, monster *z)
 {
  const int speed = z->speed - rng(30, 50);
+ std::optional<std::string> z_name;
+ const bool seen = g->u.see(*z);
+ if (seen) z_name = grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite));
  if (speed <= 0) {
-  if (g->u_see(z)) messages.add("The %s splatters into tiny, dead pieces.", z->name().c_str());
+  if (seen) messages.add("The %s splatters into tiny, dead pieces.", z_name->c_str());
   return;
  }
  monster blob(mtype::types[(speed < 50 ? mon_blob_small : mon_blob)]);
  blob.speed = speed;
  blob.friendly = z->friendly; // If we're tame, our kids are too
- if (g->u_see(z)) messages.add("The %s splits!", z->name().c_str());
+ if (seen) messages.add("The %s splits!", z_name->c_str());
  blob.hp = blob.speed;
- std::vector <point> valid;
 
+ std::vector<point> valid;
  for (int i = -1; i <= 1; i++) {
   for (int j = -1; j <= 1; j++) {
    point test(z->pos.x + i, z->pos.y + j);
@@ -213,7 +220,9 @@ void mdeath::blobsplit(game *g, monster *z)
 
 void mdeath::melt(game *g, monster *z)
 {
- if (g->u_see(z)) messages.add("The %s melts away!", z->name().c_str());
+    if (g->u.see(*z))
+        messages.add("%s melts away!",
+                  grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
 }
 
 void mdeath::amigara(game *g, monster *z)

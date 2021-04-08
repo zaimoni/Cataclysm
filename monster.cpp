@@ -395,11 +395,19 @@ void monster::hit_monster(game *g, monster& target)
  int dodgedice = target.dodge() * 2;	// decidedly more agile than a typical dodge roll
  dodgedice += dodge_bonus[target.type->size];
 
+ std::optional<std::string> my_name;
+ std::optional<std::string> target_name;
+ const bool seen = g->u.see(*this);
+ if (seen) {
+     my_name = grammar::capitalize(desc(grammar::noun::role::subject, grammar::article::definite));
+     target_name = target.desc(grammar::noun::role::direct_object, grammar::article::definite);
+ }
+
  if (dice(numdice, 10) <= dice(dodgedice, 10)) {
-  if (g->u_see(this)) messages.add("The %s misses the %s!", name().c_str(), target.name().c_str());
+  if (seen) messages.add("%s misses %s!", my_name->c_str(), target_name->c_str());
   return;
  }
- if (g->u_see(this)) messages.add("The %s hits the %s!", name().c_str(), target.name().c_str());
+ if (seen) messages.add("%s hits %s!", my_name->c_str(), target_name->c_str());
  int damage = dice(type->melee_dice, type->melee_sides);
  if (target.hurt(damage)) g->kill_mon(target, this);
 }

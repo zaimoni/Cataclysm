@@ -412,7 +412,7 @@ void npc::choose_monster_target(game *g, int &enemy, int &danger,
 
  for (int i = 0; i < g->z.size(); i++) {
   monster *mon = &(g->z[i]);
-  if (g->pl_sees(this, mon)) {
+  if (see(*mon)) {
    int distance = (mobile::mp_turn * rl_dist(GPSpos, mon->GPSpos)) / mon->speed;
    double hp_percent = double(mon->type->hp - mon->hp) / mon->type->hp;
    int priority = mon->type->difficulty * (1 + hp_percent) - distance;

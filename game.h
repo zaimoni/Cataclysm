@@ -164,8 +164,6 @@ class game : public reality_bubble
   bool u_see(int x, int y) const;
   bool u_see(const point& pt) const { return u_see(pt.x, pt.y); };
   bool u_see(int x, int y, int &t) const;
-  bool u_see(const monster *mon) const;
-  bool pl_sees(player *p, monster *mon) const;
   void refresh_all();
   static bool update_map_would_scroll(const point& pt);
   void update_map(int &x, int &y);  // Called by plmove when the map updates
