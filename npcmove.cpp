@@ -1019,7 +1019,7 @@ bool player::can_move_to(const map& m, const point& pt) const
 void npc::move_to(game *g, point pt)
 {
  if (has_disease(DI_DOWNED)) {
-  moves -= 100;
+  moves -= mobile::mp_turn;
   return;
  }
  if (recoil > 0) {	// Start by dropping recoil a little
@@ -1036,38 +1036,32 @@ void npc::move_to(game *g, point pt)
  }
  // ok to try to path to something in sight
  if (rl_dist(pos, pt) > 1) {
-/*
-  debugmsg("Tried to move_to more than one space! (%d, %d) to (%d, %d)",
-           posx, posy, x, y);
-  debugmsg("Route is size %d.", path.size());
-*/
-  int linet;
-  if (g->m.sees(pos, pt, -1, linet)) pt = line_to(pos, pt, linet)[0];
+  if (const auto linet = g->m.sees(pos, pt, -1)) pt = line_to(pos, pt, *linet)[0];
  }
  if (pt == pos)	// We're just pausing!
-  moves -= 100;
+  moves -= mobile::mp_turn;
  else if (auto mon = g->mon(pt)) {	// Shouldn't happen, but it might.
   melee_monster(g, *mon);
  } else if (g->u.pos == pt) {
   say(g, "<let_me_pass>");
-  moves -= 100;
+  moves -= mobile::mp_turn;
  } else if (g->nPC(pt))
 // \todo Determine if it's an enemy NPC (hit them), or a friendly in the way
-  moves -= 100;
+  moves -= mobile::mp_turn;
  else if (g->m.move_cost(pt) > 0) {
   screenpos_set(pt);
-  moves -= run_cost(g->m.move_cost(pt) * 50);
+  moves -= run_cost(g->m.move_cost(pt) * (mobile::mp_turn/2));
   _normalize_path(path, pos); // maintain path (should cost CPU)
  } else if (g->m.open_door(pt.x, pt.y, (g->m.ter(pos) == t_floor)))
-  moves -= 100;
+  moves -= mobile::mp_turn;
  else if (g->m.has_flag(bashable, pt)) {
-  moves -= 110;
+  moves -= (mobile::mp_turn / 10) * 11;
   std::string bashsound;
   int smashskill = int(str_cur / 2 + weapon.type->melee_dam);
   g->m.bash(pt, smashskill, bashsound);
   g->sound(pt, 18, bashsound);
  } else
-  moves -= 100;
+  moves -= mobile::mp_turn;
 }
 
 void npc::move_to_next(game *g)

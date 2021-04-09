@@ -533,29 +533,24 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
   }
   if (tar != u.pos) {
 // Calculate the return vector (and draw it too)
-/*
-   for (int i = 0; i < ret.size(); i++)
-    m.drawsq(w_terrain, u, ret[i].x, ret[i].y, false, true, center.x, center.y);
-*/
 // Draw the player
    const point at(u.pos-center+point(VIEW_CENTER));
    if (at.x >= 0 && at.x < VIEW && at.y >= 0 && at.y < VIEW)
     mvwputch(w_terrain, at.y, at.x, u.color(), '@');
 
-   int tart;
-   if (m.sees(u.pos, tar, -1, tart)) {// Selects a valid line-of-sight
-    ret = line_to(u.pos, tar, tart); // Sets the vector to that LOS
+   if (const auto tart = m.sees(u.pos, tar, -1)) {// Selects a valid line-of-sight
+    ret = line_to(u.pos, tar, tart ? *tart : 0); // Sets the vector to that LOS
 // Draw the trajectory
-    for (int i = 0; i < ret.size(); i++) {
-     if (sight_dist >= Linf_dist(ret[i] - u.pos)) {
-      monster* const m_at = mon(ret[i]);
-// NPCs and monsters get drawn with inverted colors
-      if (m_at && u.see(*m_at)) m_at->draw(w_terrain, center, true);
-      else if (npc* const _npc = nPC(ret[i]))
-       _npc->draw(w_terrain, center, true);
-      else
-       m.drawsq(w_terrain, u, ret[i].x, ret[i].y, true,true,center.x, center.y);
-     }
+    for (const point& pt : ret) {
+        if (sight_dist >= Linf_dist(pt - u.pos)) {
+            monster* const m_at = mon(pt);
+            // NPCs and monsters get drawn with inverted colors
+            if (m_at && u.see(*m_at)) m_at->draw(w_terrain, center, true);
+            else if (npc* const _npc = nPC(pt))
+                _npc->draw(w_terrain, center, true);
+            else
+                m.drawsq(w_terrain, u, pt.x, pt.y, true, true, center.x, center.y);
+        }
     }
    }
 

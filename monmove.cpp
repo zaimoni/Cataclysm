@@ -499,7 +499,7 @@ void monster::move_to(game *g, const point& pt)
 // to fix this, we'd need both the previous and current location
 void monster::stumble(game *g, bool moved)
 {
- std::vector <point> valid_stumbles;
+ std::vector<point> valid_stumbles;
  for (int i = -1; i <= 1; i++) {
   for (int j = -1; j <= 1; j++) {
    const point dest(pos.x + i, pos.y + j);
@@ -509,23 +509,21 @@ void monster::stumble(game *g, bool moved)
    }
   }
  }
- if (valid_stumbles.size() > 0 && (one_in(8) || (!moved && one_in(3)))) {
-  screenpos_set(valid_stumbles[rng(0, valid_stumbles.size() - 1)]);
+ const size_t ub = valid_stumbles.size();
+ if (0 < ub && (one_in(8) || (!moved && one_in(3)))) {
+  screenpos_set(valid_stumbles[rng(0, ub - 1)]);
   if (!has_flag(MF_DIGS) || !has_flag(MF_FLIES))
-   moves -= (g->m.move_cost(pos) - 2) * 50;
+   moves -= (g->m.move_cost(pos) - 2) * (mobile::mp_turn / 2);
 // Here we have to fix our plans[] list, trying to get back to the last point
 // Otherwise the stumble will basically have no effect!
-  if (plans.size() > 0) {
-   int tc;
-   if (g->m.sees(pos, plans[0], -1, tc)) {
+  if (!plans.empty()) {
+   if (const auto tc = g->m.sees(pos, plans[0], -1)) {
 // Copy out old plans...
-    std::vector<point> plans2;
-	std::swap(plans2, plans);
+    const std::vector<point> plans2(std::move(plans));
 // Set plans to a route between where we are now, and where we were
-    set_dest(plans2[0], tc);
+    set_dest(plans2[0], *tc);
 // Append old plans to the new plans
-    for (int index = 0; index < plans2.size(); index++)
-     plans.push_back(plans2[index]);
+    for (decltype(auto) pt : plans2) plans.push_back(pt);
    } else
     plans.clear();
   }
