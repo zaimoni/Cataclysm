@@ -537,7 +537,7 @@ void monster::knock_back_from(game *g, const point& pt)
  if (pt == pos) return; // No effect
  const point to(pos + cmp(pos, pt));
 
- const bool u_see = g->u_see(to);
+ const bool u_see = (bool)g->u_see(to);
 
 // First, see if we hit another monster
  if (monster* const z = g->mon(to)) {

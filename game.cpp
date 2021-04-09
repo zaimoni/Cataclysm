@@ -2480,25 +2480,13 @@ bool game::sees_u(const point& origin, int &t) const
 		m.sees(origin, u.pos, light_level(), t));
 }
 
-bool game::u_see(int x, int y) const
+std::optional<int> game::u_see(int x, int y) const
 {
- int range = u.sight_range();
- if (u.has_artifact_with(AEP_CLAIRVOYANCE)) {
-  int crange = (range > u.clairvoyance() ? u.clairvoyance() : range);
-  if (rl_dist(u.pos, x, y) <= crange) return true;
- }
- return (bool)m.sees(u.pos, x, y, range);
-}
-
-bool game::u_see(int x, int y, int &t) const
-{
-	t = 0;	// safe default in case of clairvoyance
-	int range = u.sight_range();
-	if (u.has_artifact_with(AEP_CLAIRVOYANCE)) {
-		int crange = (range > u.clairvoyance() ? u.clairvoyance() : range);
-		if (rl_dist(u.pos, x, y) <= crange) return true;
-	}
-	return m.sees(u.pos, x, y, range, t);
+    const int range = u.sight_range();
+    if (const int c_range = u.clairvoyance()) {
+        if (rl_dist(u.pos, x, y) <= clamped_ub(range, c_range)) return 0; // clairvoyant default
+    }
+    return m.sees(u.pos, x, y, range);
 }
 
 std::optional<point> game::find_item(item *it) const

@@ -201,7 +201,7 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
  if (p.has_trait(PF_TRIGGERHAPPY) && one_in(30)) burst = true;
  if (burst && p.weapon.burst_size() < 2) burst = false; // Can't burst fire a semi-auto
 
- bool u_see_shooter = u_see(p.pos);
+ const bool u_see_shooter = (bool)u_see(p.pos);
 // Use different amounts of time depending on the type of gun and our skill
  p.moves -= time_to_fire(p, firing);
 // Decide how many shots to fire

@@ -1223,7 +1223,7 @@ void npc::pick_up_item()
   }
  }
 // Describe the pickup to the player
- bool u_see_me = g->u_see(pos), u_see_items = g->u_see(it);
+ bool u_see_me = (bool)g->u_see(pos), u_see_items = (bool)g->u_see(it);
  // \todo good use case for std::string or std::strstream here
  if (u_see_me) {
   if (pickup.size() == 1) {
@@ -1754,8 +1754,8 @@ void npc::mug_player(player &mark)
   move_to_next(g);
   return;
  }
-  bool u_see_me   = g->u_see(pos),
-       u_see_mark = g->u_see(mark.pos);
+  bool u_see_me   = (bool)g->u_see(pos),
+       u_see_mark = (bool)g->u_see(mark.pos);
   if (mark.cash > 0) {
    cash += mark.cash;
    mark.cash = 0;
@@ -1801,8 +1801,8 @@ void npc::mug_player(player &mark)
     if (!one_in(3)) say(g, "<done_mugging>");
     moves -= mobile::mp_turn;
    } else {
-    bool u_see_me   = g->u_see(pos),
-         u_see_mark = g->u_see(mark.pos);
+    bool u_see_me   = (bool)g->u_see(pos),
+         u_see_mark = (bool)g->u_see(mark.pos);
     item stolen = mark.i_remn(index);
     if (mark.is_npc()) {
      if (u_see_me) {

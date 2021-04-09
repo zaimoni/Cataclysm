@@ -128,8 +128,10 @@ void mattack::boomer(game *g, monster *z)
  const auto line = line_to(z->pos, g->u.pos, j);
  z->sp_timeout = z->type->sp_freq; // Reset timer
  z->moves -= (mobile::mp_turn/2)*5; // It takes a while
- const bool u_see = g->u_see(z->pos);
- if (u_see) messages.add("The %s spews bile!", z->name().c_str());
+ const bool u_see = (bool)g->u_see(z->pos);
+ if (u_see)
+     messages.add("The %s spews bile!",
+                  grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
  for (decltype(auto) pt : line) {
   auto& fd = g->m.field_at(pt);
   if (fd.type == fd_blood) {
@@ -444,9 +446,13 @@ void mattack::spit_sap(game *g, monster *z)
  int deviation = rng(1, 10);
  double missed_by = (.0325 * deviation * dist); // cf. calculate_missed_by/ranged.cpp
 
- if (missed_by > 1.) {
-  if (g->u_see(z->pos)) messages.add("The %s spits sap, but misses you.", z->name().c_str());
+ if (g->u_see(z->pos)) {
+     const auto z_name = grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite));
+     if (missed_by > 1.) messages.add("%s spits sap, but misses you.", z_name.c_str());
+     else messages.add("%s spits sap!", z_name.c_str());
+ }
 
+ if (missed_by > 1.) {
   zaimoni::gdi::box<point> error(point(-missed_by), point(missed_by));
   point hit = g->u.pos + rng(error);
 
@@ -454,8 +460,6 @@ void mattack::spit_sap(game *g, monster *z)
   return;
  }
 
- int t = 0;
- if (g->u_see(z->pos.x, z->pos.y, t)) messages.add("The %s spits sap!", z->name().c_str());
  if (int dam = route_sap(line_to(z->pos, g->u.pos, 0))) {
      messages.add("A glob of sap hits you!");
      g->u.hit(g, bp_torso, 0, dam, 0);
