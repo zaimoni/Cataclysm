@@ -1878,12 +1878,12 @@ void map::drawsq(WINDOW* w, const player& u, int x, int y, bool invert,
 based off code by Steve Register [arns@arns.freeservers.com]
 http://roguebasin.roguelikedevelopment.org/index.php?title=Simple_Line_of_Sight
 */
-bool map::_BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range, int& tc, std::function<bool(reality_bubble_loc)> test) const
+std::optional<int> map::_BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range, std::function<bool(reality_bubble_loc)> test) const
 {
     int dx = Tx - Fx;
     int dy = Ty - Fy;
 
-    if (range >= 0 && (abs(dx) > range || abs(dy) > range)) return false;	// Out of range!
+    if (range >= 0 && (abs(dx) > range || abs(dy) > range)) return std::nullopt;	// Out of range!
 
     int ax = abs(dx) << 1;
     int ay = abs(dy) << 1;
@@ -1901,7 +1901,7 @@ bool map::_BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range, int& tc, std
         // Doing it "backwards" prioritizes straight lines before diagonal.
         // This will help avoid creating a string of zombies behind you and will
         // promote "mobbing" behavior (zombies surround you to beat on you)
-        for (tc = abs(ay - (ax >> 1)) * 2 + 1; tc >= -1; tc--) {
+        for (int tc = abs(ay - (ax >> 1)) * 2 + 1; tc >= -1; tc--) {
             t = tc * st;
             x = Fx;
             y = Fy;
@@ -1914,14 +1914,14 @@ bool map::_BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range, int& tc, std
                 t += ay;
                 if (x == Tx && y == Ty) {
                     tc *= st;
-                    return true;
+                    return tc;
                 }
             } while ((pos = to(x, y)) && test(*pos));
         }
-        return false;
+        return std::nullopt;
     } else { // Same as above, for mostly-vertical lines
         st = signum(ax - (ay >> 1));
-        for (tc = abs(ax - (ay >> 1)) * 2 + 1; tc >= -1; tc--) {
+        for (int tc = abs(ax - (ay >> 1)) * 2 + 1; tc >= -1; tc--) {
             t = tc * st;
             x = Fx;
             y = Fy;
@@ -1934,13 +1934,13 @@ bool map::_BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range, int& tc, std
                 t += ax;
                 if (x == Tx && y == Ty) {
                     tc *= st;
-                    return true;
+                    return tc;
                 }
             } while ((pos = to(x, y)) && test(*pos));
         }
-        return false;
+        return std::nullopt;
     }
-    return false; // Shouldn't ever be reached, but there it is.
+    return std::nullopt; // Shouldn't ever be reached, but there it is.
 }
 
 bool map::sees(int Fx, int Fy, int Tx, int Ty, int range) const
@@ -1951,13 +1951,17 @@ bool map::sees(int Fx, int Fy, int Tx, int Ty, int range) const
 
 bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc) const
 {
- return _BresenhamLine(Fx, Fy, Tx, Ty, range, tc, [&](reality_bubble_loc pos){ return trans(pos);});
+    const auto ret = _BresenhamLine(Fx, Fy, Tx, Ty, range, [&](reality_bubble_loc pos) { return trans(pos); });
+    if (ret) tc = *ret;
+    return (bool)ret;
 }
 
 bool map::clear_path(int Fx, int Fy, int Tx, int Ty, int range, int cost_min,
                      int cost_max, int &tc) const
 {
- return _BresenhamLine(Fx, Fy, Tx, Ty, range, tc, [&](reality_bubble_loc pos){ return is_between(cost_min, move_cost(pos), cost_max);});
+    const auto ret = _BresenhamLine(Fx, Fy, Tx, Ty, range, [&](reality_bubble_loc pos){ return is_between(cost_min, move_cost(pos), cost_max);});
+    if (ret) tc = *ret;
+    return (bool)ret;
 }
 
 // Bash defaults to true.

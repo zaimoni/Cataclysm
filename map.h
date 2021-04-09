@@ -72,7 +72,7 @@ class map
  int move_cost_ter_only(int x, int y) const; // same as above, but don't take vehicles into account
  bool trans(const point& pt) const; // Transparent?
  bool trans(const reality_bubble_loc& pos) const;
- bool _BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range, int& tc, std::function<bool(reality_bubble_loc)> test) const;
+ std::optional<int> _BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range, std::function<bool(reality_bubble_loc)> test) const;
  // (Fx, Fy) sees (Tx, Ty), within a range of (range)?
  // tc indicates the Bresenham line used to connect the two points, and may
  //  subsequently be used to form a path between them
