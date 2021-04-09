@@ -620,8 +620,8 @@ void player::activate_bionic(int b, game *g)
    for (int j = pos.y - 10; j <= pos.y + 10; j++) {
 	auto& stack = g->m.i_at(i, j);
 	if (stack.empty()) continue;
-	int t;
-	std::vector<point> traj(line_to(i, j, pos, (g->m.sees(i, j, pos, -1, t) ? t : 0)));
+	const auto t = g->m.sees(i, j, pos, -1);
+	std::vector<point> traj(line_to(i, j, pos, (t ? *t : 0)));
     traj.insert(traj.begin(), point(i, j));
     for (int k = 0; k < stack.size(); k++) {
      if (stack[k].made_of(IRON) || stack[k].made_of(STEEL)){

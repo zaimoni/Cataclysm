@@ -81,9 +81,7 @@ class map
  std::optional<int> sees(const point& F, const point& T, int range) const { return sees(F.x, F.y, T.x, T.y, range); };
  std::optional<int> sees(int Fx, int Fy, const point& T, int range) const { return sees(Fx, Fy, T.x, T.y, range); };
  bool sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc) const;
- bool sees(const point& F, int Tx, int Ty, int range, int &tc) const { return sees(F.x, F.y, Tx, Ty, range, tc); };
  bool sees(const point& F, const point& T, int range, int &tc) const { return sees(F.x, F.y, T.x, T.y, range, tc); };
- bool sees(int Fx, int Fy, const point& T, int range, int &tc) const { return sees(Fx, Fy, T.x, T.y, range, tc); };
  // clear_path is the same idea, but uses cost_min <= move_cost <= cost_max
  std::optional<int> clear_path(int Fx, int Fy, int Tx, int Ty, int range, int cost_min, int cost_max) const;
 // route() generates an A* best path; if bash is true, we can bash through doors
