@@ -2487,7 +2487,7 @@ bool game::u_see(int x, int y) const
   int crange = (range > u.clairvoyance() ? u.clairvoyance() : range);
   if (rl_dist(u.pos, x, y) <= crange) return true;
  }
- return m.sees(u.pos, x, y, range);
+ return (bool)m.sees(u.pos, x, y, range);
 }
 
 bool game::u_see(int x, int y, int &t) const

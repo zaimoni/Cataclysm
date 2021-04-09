@@ -3060,7 +3060,7 @@ bool player::see(const monster& mon) const
     if (const auto clairvoyant = clairvoyance()) {
         if (dist <= clamped_lb(range, clairvoyant)) return true;
     }
-    return game::active()->m.sees(pos, mon.pos, range);
+    return (bool)game::active()->m.sees(pos, mon.pos, range);
 }
 
 bool player::has_two_arms() const

@@ -1943,10 +1943,9 @@ std::optional<int> map::_BresenhamLine(int Fx, int Fy, int Tx, int Ty, int range
     return std::nullopt; // Shouldn't ever be reached, but there it is.
 }
 
-bool map::sees(int Fx, int Fy, int Tx, int Ty, int range) const
+std::optional<int> map::sees(int Fx, int Fy, int Tx, int Ty, int range) const
 {
-  int tc = 0;
-  return sees(Fx, Fy, Tx, Ty, range, tc);
+  return _BresenhamLine(Fx, Fy, Tx, Ty, range, [&](reality_bubble_loc pos) { return trans(pos); });
 }
 
 bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc) const

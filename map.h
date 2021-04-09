@@ -76,10 +76,10 @@ class map
  // (Fx, Fy) sees (Tx, Ty), within a range of (range)?
  // tc indicates the Bresenham line used to connect the two points, and may
  //  subsequently be used to form a path between them
- bool sees(int Fx, int Fy, int Tx, int Ty, int range) const;
- bool sees(const point& F, int Tx, int Ty, int range) const { return sees(F.x, F.y, Tx, Ty, range); };
- bool sees(const point& F, const point& T, int range) const { return sees(F.x, F.y, T.x, T.y, range); };
- bool sees(int Fx, int Fy, const point& T, int range) const { return sees(Fx, Fy, T.x, T.y, range); };
+ std::optional<int> sees(int Fx, int Fy, int Tx, int Ty, int range) const;
+ std::optional<int> sees(const point& F, int Tx, int Ty, int range) const { return sees(F.x, F.y, Tx, Ty, range); };
+ std::optional<int> sees(const point& F, const point& T, int range) const { return sees(F.x, F.y, T.x, T.y, range); };
+ std::optional<int> sees(int Fx, int Fy, const point& T, int range) const { return sees(Fx, Fy, T.x, T.y, range); };
  bool sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc) const;
  bool sees(const point& F, int Tx, int Ty, int range, int &tc) const { return sees(F.x, F.y, Tx, Ty, range, tc); };
  bool sees(const point& F, const point& T, int range, int &tc) const { return sees(F.x, F.y, T.x, T.y, range, tc); };
