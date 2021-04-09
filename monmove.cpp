@@ -26,9 +26,8 @@ bool monster::can_move_to(const map &m, int x, int y) const
 // to the destination (x,y). t is used to choose which eligable line to use.
 // Currently, this assumes we can see (x,y), so shouldn't be used in any other
 // circumstance (or else the monster will "phase" through solid terrain!)
-void monster::set_dest(const point& pt, int &t)
+void monster::set_dest(const point& pt, int t)
 { 
- plans.clear();
  plans = line_to(pos, pt, t);
 }
 
@@ -58,15 +57,18 @@ void monster::plan(game *g)
     }
    }
   }
+
   if (closest_mon) set_dest(closest_mon->pos, stc);
-  else if (friendly > 0 && one_in(3)) friendly--;	// Grow restless with no targets
-  else if (friendly < 0 && g->sees_u(pos, tc)) {
-   if (rl_dist(GPSpos, g->u.GPSpos) > 2)
-    set_dest(g->u.pos, tc);
-   else
-    plans.clear();
+  else if (0 < friendly) {
+      if (one_in(3)) friendly--;	// Grow restless with no targets
+  } else if (0 > friendly) {
+      if (g->sees_u(pos, tc)) {
+          if (rl_dist(GPSpos, g->u.GPSpos) > 2)
+              set_dest(g->u.pos, tc);
+          else
+              plans.clear();
+      }
   }
-  return;
  }
 
  bool fleeing = false;

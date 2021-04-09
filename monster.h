@@ -93,7 +93,7 @@ class monster : public mobile {
  bool will_reach(const game *g, const point& pt) const; // Do we have plans to get to (x, y)?
  int  turns_to_reach(const map& m, const point& pt) const; // How long will it take?
 
- void set_dest(const point& pt, int &t); // Go in a straight line to (x, y)
+ void set_dest(const point& pt, int t); // Go in a straight line to (x, y)
 				      // t determines WHICH Bresenham line
  void wander_to(const point& pt, int f); // Try to get to (x, y), we don't know
 				      // the route.  Give up after f steps.
