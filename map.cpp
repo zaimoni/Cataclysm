@@ -1956,12 +1956,9 @@ bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc) const
     return (bool)ret;
 }
 
-bool map::clear_path(int Fx, int Fy, int Tx, int Ty, int range, int cost_min,
-                     int cost_max, int &tc) const
+std::optional<int> map::clear_path(int Fx, int Fy, int Tx, int Ty, int range, int cost_min, int cost_max) const
 {
-    const auto ret = _BresenhamLine(Fx, Fy, Tx, Ty, range, [&](reality_bubble_loc pos){ return is_between(cost_min, move_cost(pos), cost_max);});
-    if (ret) tc = *ret;
-    return (bool)ret;
+    return _BresenhamLine(Fx, Fy, Tx, Ty, range, [&](reality_bubble_loc pos){ return is_between(cost_min, move_cost(pos), cost_max);});
 }
 
 // Bash defaults to true.
@@ -1980,17 +1977,8 @@ std::vector<point> map::route(int Fx, int Fy, int Tx, int Ty, bool bash) const
   }
  }
 // First, check for a simple straight line on flat ground
- int linet = 0;
- if (clear_path(Fx, Fy, Tx, Ty, -1, 2, 2, linet))
-  return line_to(Fx, Fy, Tx, Ty, linet);
-/*
- if (move_cost(Tx, Ty) == 0)
-  debugmsg("%d:%d wanted to move to %d:%d, a %s!", Fx, Fy, Tx, Ty,
-           tername(Tx, Ty).c_str());
- if (move_cost(Fx, Fy) == 0)
-  debugmsg("%d:%d, a %s, wanted to move to %d:%d!", Fx, Fy,
-           tername(Fx, Fy).c_str(), Tx, Ty);
-*/
+ if (const auto linet = clear_path(Fx, Fy, Tx, Ty, -1, 2, 2)) return line_to(Fx, Fy, Tx, Ty, *linet);
+
  std::vector<point> open;
  // Zaimoni: we're taking a memory management hit converting from C99 stack-allocated arrays to std::vector here.
  std::vector<std::vector<astar_list> > list(SEEX * my_MAPSIZE, std::vector<astar_list>(SEEY * my_MAPSIZE, ASL_NONE)); // Init to not being on any list
