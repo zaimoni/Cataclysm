@@ -66,8 +66,9 @@ void mattack::shriek(game *g, monster *z)
 
 void mattack::acid(game *g, monster *z)
 {
- int j;
- if (rl_dist(z->GPSpos, g->u.GPSpos) > 10 || !g->sees_u(z->pos, j)) return; // Out of range
+ if (rl_dist(z->GPSpos, g->u.GPSpos) > 10) return; // Out of range
+ const auto j = g->sees_u(z->pos);
+ if (!j) return; // Unseen
  z->moves -= 3*mobile::mp_turn; // It takes a while
  z->sp_timeout = z->type->sp_freq; // Reset timer
  g->sound(z->pos, 4, "a spitting noise.");
@@ -75,8 +76,7 @@ void mattack::acid(game *g, monster *z)
  static constexpr const zaimoni::gdi::box<point> spread(point(-2), point(2));
 
  point hit(g->u.pos + rng(spread));
- const auto line = line_to(z->pos, hit, j);
- for (decltype(auto) pt : line) {
+ for (const auto& pt : line_to(z->pos, hit, *j)) {
      if (g->m.hit_with_acid(pt)) {
          if (g->u_see(pt)) messages.add("A glob of acid hits the %s!", g->m.tername(pt).c_str());
          return;
@@ -123,16 +123,16 @@ void mattack::shockstorm(game *g, monster *z)
 
 void mattack::boomer(game *g, monster *z)
 {
- int j;
- if (rl_dist(z->GPSpos, g->u.GPSpos) > 3 || !g->sees_u(z->pos, j)) return;	// Out of range
- const auto line = line_to(z->pos, g->u.pos, j);
+ if (rl_dist(z->GPSpos, g->u.GPSpos) > 3) return;	// Out of range
+ const auto j = g->sees_u(z->pos);
+ if (!j) return; // Unseen
  z->sp_timeout = z->type->sp_freq; // Reset timer
  z->moves -= (mobile::mp_turn/2)*5; // It takes a while
  const bool u_see = (bool)g->u_see(z->pos);
  if (u_see)
      messages.add("The %s spews bile!",
                   grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
- for (decltype(auto) pt : line) {
+ for (const auto& pt : line_to(z->pos, g->u.pos, *j)) {
   auto& fd = g->m.field_at(pt);
   if (fd.type == fd_blood) {
    fd.type = fd_bile;
@@ -210,11 +210,12 @@ void mattack::resurrect(game *g, monster *z)
 
 void mattack::science(game *g, monster *z)	// I said SCIENCE again!
 {
- int t;
  const int dist = rl_dist(z->GPSpos, g->u.GPSpos);
- if (dist > 5 || !g->sees_u(z->pos, t)) return;	// Out of range
+ if (dist > 5) return;	// Out of range
+ const auto t = g->sees_u(z->pos);
+ if (!t) return; // Unseen
  z->sp_timeout = z->type->sp_freq;	// Reset timer
- std::vector<point> line = line_to(z->pos, g->u.pos, t);
+ std::vector<point> line = line_to(z->pos, g->u.pos, *t);
  std::vector<point> free;
  for (decltype(auto) delta : Direction::vector) {
    if (const point pt(z->pos + delta); g->is_empty(pt)) free.push_back(pt);
@@ -238,7 +239,7 @@ void mattack::science(game *g, monster *z)	// I said SCIENCE again!
   }
   break;
  case 2:	// Radioactive beam
-  messages.add("The %s opens it's mouth and a beam shoots towards you!", z->name().c_str());
+  messages.add("The %s opens its mouth and a beam shoots towards you!", z->name().c_str());
   z->moves -= 4 * mobile::mp_turn;
   if (g->u.dodge() > rng(1, 16))
    messages.add("You dodge the beam!");
@@ -732,17 +733,17 @@ void mattack::dogthing(game *g, monster *z)	// XXX only happens when PC can see 
 
 void mattack::tentacle(game *g, monster *z)
 {
- int t;
- if (!g->sees_u(z->pos, t)) return;
+ const auto t = g->sees_u(z->pos);
+ if (!t) return;
 
- messages.add("The %s lashes its tentacle at you!", z->name().c_str());
- z->moves -= 100;
+ messages.add("%s lashes its tentacle at you!",
+               grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
+ z->moves -= mobile::mp_turn;
  z->sp_timeout = z->type->sp_freq;	// Reset timer
 
- std::vector<point> line = line_to(z->pos, g->u.pos, t);
- for (int i = 0; i < line.size(); i++) {
-  int tmpdam = 20;
-  g->m.shoot(g, line[i], tmpdam, true, 0);
+ for (const auto& pt : line_to(z->pos, g->u.pos, *t)) {
+     int tmpdam = 20;
+     g->m.shoot(g, pt, tmpdam, true, 0);
  }
 
  const int evasion = g->u.dodge();
@@ -958,8 +959,8 @@ void mattack::tazer(game *g, monster *z)
 
 void mattack::smg(game *g, monster *z)
 {
- int t, fire_t;
  if (!z->is_enemy()) { // Attacking monsters, not the player!
+  int t, fire_t;
   monster* target = nullptr;
   point target_pos;
   int closest = 19;
@@ -987,7 +988,9 @@ void mattack::smg(game *g, monster *z)
  }
  
 // Not friendly; hence, firing at the player
- if (24 < rl_dist(z->GPSpos, g->u.GPSpos) || !g->sees_u(z->pos, t)) return;
+ if (24 < rl_dist(z->GPSpos, g->u.GPSpos)) return; // Out of range
+ const auto t = g->sees_u(z->pos);
+ if (!t) return; // Unseen
  z->sp_timeout = z->type->sp_freq;	// Reset timer
 
  if (!z->has_effect(ME_TARGETED)) {
@@ -1001,38 +1004,40 @@ void mattack::smg(game *g, monster *z)
  if (g->u_see(z->pos)) messages.add("The %s fires its smg!", z->name().c_str());
 // Set up a temporary player to fire this gun
  player tmp(player::get_proxy("The " + z->name(), z->pos, *static_cast<it_gun*>(item::types[itm_smg_9mm]), 0, 10));
- std::vector<point> traj = line_to(z->pos, g->u.pos, t);
+ std::vector<point> traj = line_to(z->pos, g->u.pos, *t);
  g->fire(tmp, g->u.pos, traj, true);
  z->add_effect(ME_TARGETED, 3);
 }
 
 void mattack::flamethrower(game *g, monster *z)
 {
- int t;
- if (5 < Linf_dist(g->u.pos - z->pos) || !g->sees_u(z->pos, t)) return;	// Out of range
+ if (5 < Linf_dist(g->u.pos - z->pos)) return;	// Out of range
+ const auto t = g->sees_u(z->pos);
+ if (!t) return; // Unseen
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  z->moves -= 5 * mobile::mp_turn;	// It takes a while
- std::vector<point> traj = line_to(z->pos, g->u.pos, t);
- for (int i = 0; i < traj.size(); i++)
-  g->m.add_field(g, traj[i], fd_fire, 1);
+ for (const auto& pt : line_to(z->pos, g->u.pos, *t)) g->m.add_field(g, pt, fd_fire, 1);
  g->u.add_disease(DI_ONFIRE, TURNS(8));
 }
 
 void mattack::copbot(game *g, monster *z)
 {
- const bool sees_u = g->sees_u(z->pos);
+ const bool sees_u = (bool)g->sees_u(z->pos);
+
+ static auto speech = [&]() {
+     if (one_in(3)) {
+         if (sees_u) {
+             if (g->u.unarmed_attack()) return "a robotic voice booms, \"Citizen, Halt!\"";
+             else return "a robotic voice booms, \"Please put down your weapon.\"";
+         } else
+             return "a robotic voice booms, \"Come out with your hands up!\"";
+     } else
+         return "a police siren, whoop WHOOP";
+ };
+
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  if (rl_dist(z->GPSpos, g->u.GPSpos) > 2 || !sees_u) {
-  if (one_in(3)) {
-   if (sees_u) {
-    if (g->u.unarmed_attack())
-     g->sound(z->pos, 18, "a robotic voice boom, \"Citizen, Halt!\"");
-    else
-     g->sound(z->pos, 18, "a robotic voice boom, \"Please put down your weapon.\"");
-   } else
-    g->sound(z->pos, 18, "a robotic voice boom, \"Come out with your hands up!\"");
-  } else
-   g->sound(z->pos, 18, "a police siren, whoop WHOOP");
+  g->sound(z->pos, 18, speech());
   return;
  }
  tazer(g, z);

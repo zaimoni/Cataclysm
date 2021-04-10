@@ -62,9 +62,9 @@ void monster::plan(game *g)
   else if (0 < friendly) {
       if (one_in(3)) friendly--;	// Grow restless with no targets
   } else if (0 > friendly) {
-      if (g->sees_u(pos, tc)) {
+      if (const auto tc = g->sees_u(pos)) {
           if (rl_dist(GPSpos, g->u.GPSpos) > 2)
-              set_dest(g->u.pos, tc);
+              set_dest(g->u.pos, *tc);
           else
               plans.clear();
       }
@@ -82,10 +82,10 @@ void monster::plan(game *g)
          }
      } else {
          // If we can see, and we can see a character, start moving towards them
-         if (g->sees_u(pos, tc)) {
+         if (const auto tc = g->sees_u(pos)) {
              dist = rl_dist(GPSpos, g->u.GPSpos);
              closest = -2;
-             stc = tc;
+             stc = *tc;
          }
      }
 	 // check NPCs
