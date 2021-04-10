@@ -159,7 +159,6 @@ class game : public reality_bubble
   faction* random_good_faction();
   faction* random_evil_faction();
 
-  std::optional<int> sees_u(const point& origin) const;
   std::optional<int> u_see(int x, int y) const;
   std::optional<int> u_see(const point& pt) const { return u_see(pt.x, pt.y); };
   void refresh_all();

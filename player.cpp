@@ -3063,6 +3063,18 @@ bool player::see(const monster& mon) const
     return (bool)game::active()->m.sees(pos, mon.pos, range);
 }
 
+std::optional<int> player::see(const player& u) const
+{
+    int dist = rl_dist(GPSpos, u.GPSpos);
+    if (has_trait(PF_ANTENNAE) && dist <= 3) return true;
+    if (u.has_active_bionic(bio_cloak) || u.has_artifact_with(AEP_INVISIBLE)) return std::nullopt;
+    const int range = sight_range();
+    if (const auto clairvoyant = clairvoyance()) {
+        if (dist <= clamped_lb(range, clairvoyant)) return true;
+    }
+    return game::active()->m.sees(pos, u.pos, range);
+}
+
 bool player::has_two_arms() const
 {
  if (has_bionic(bio_blaster) || hp_cur[hp_arm_l] < 10 || hp_cur[hp_arm_r] < 10)

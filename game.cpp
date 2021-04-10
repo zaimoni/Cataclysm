@@ -2466,12 +2466,6 @@ faction* game::random_evil_faction()
  return &(factions[factions.size() - 1]);
 }
 
-std::optional<int> game::sees_u(const point& origin) const
-{
-    if (u.has_active_bionic(bio_cloak) || u.has_artifact_with(AEP_INVISIBLE)) return std::nullopt;
-    return m.sees(origin, u.pos, light_level());
-}
-
 std::optional<int> game::u_see(int x, int y) const
 {
     const int range = u.sight_range();

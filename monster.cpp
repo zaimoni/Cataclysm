@@ -230,7 +230,14 @@ bool monster::made_of(material m) const
 {
  return type->mat == m;
 }
- 
+
+std::optional<int> monster::see(const player& u) const
+{
+    if (u.has_active_bionic(bio_cloak) || u.has_artifact_with(AEP_INVISIBLE)) return std::nullopt;
+    const auto g = game::active();
+    return g->m.sees(pos, u.pos, g->light_level());
+}
+
 void monster::debug(player &u)
 {
  char buff[16];

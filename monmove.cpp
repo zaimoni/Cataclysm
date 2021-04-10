@@ -62,7 +62,7 @@ void monster::plan(game *g)
   else if (0 < friendly) {
       if (one_in(3)) friendly--;	// Grow restless with no targets
   } else if (0 > friendly) {
-      if (const auto tc = g->sees_u(pos)) {
+      if (const auto tc = see(g->u)) {
           if (rl_dist(GPSpos, g->u.GPSpos) > 2)
               set_dest(g->u.pos, *tc);
           else
@@ -74,15 +74,13 @@ void monster::plan(game *g)
  bool fleeing = false;
  int closest = -1;
  if (can_see()) {
-     if (is_fleeing(g->u)) {
-         if (g->sees_u(pos)) {
+     auto tc = see(g->u);
+     if (tc) {
+         if (is_fleeing(g->u)) {
              fleeing = true;
              wand.set(2 * pos - g->u.pos, 40);
              dist = rl_dist(GPSpos, g->u.GPSpos);
-         }
-     } else {
-         // If we can see, and we can see a character, start moving towards them
-         if (const auto tc = g->sees_u(pos)) {
+         } else { // If we can see, and we can see a character, start moving towards them
              dist = rl_dist(GPSpos, g->u.GPSpos);
              closest = -2;
              stc = *tc;
@@ -93,15 +91,17 @@ void monster::plan(game *g)
      for (const auto& _npc : g->active_npc) {
          ++i;
          int medist = rl_dist(GPSpos, _npc.GPSpos);
-         if ((medist < dist || (!fleeing && is_fleeing(_npc)))
-             && g->m.sees(pos, _npc.pos, sightrange, tc)) {
-             dist = medist;
-             if (is_fleeing(_npc)) {
-                 fleeing = true;
-                 wand.set(2 * pos - _npc.pos, 40);
-             } else /* if (g->m.sees(pos, _npc.pos, sightrange, tc)) */ {
-                 closest = i;
-                 stc = tc;
+         if ((medist < dist || (!fleeing && is_fleeing(_npc)))) {
+             tc = see(_npc);
+             if (tc) {
+                 dist = medist;
+                 if (is_fleeing(_npc)) {
+                     fleeing = true;
+                     wand.set(2 * pos - _npc.pos, 40);
+                 } else /* if (g->m.sees(pos, _npc.pos, sightrange, tc)) */ {
+                     closest = i;
+                     stc = *tc;
+                 }
              }
          }
      }

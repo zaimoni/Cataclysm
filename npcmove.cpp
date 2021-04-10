@@ -406,7 +406,7 @@ void npc::execute_action(game *g, const ai_action& action, int target)
 void npc::choose_monster_target(game *g, int &enemy, int &danger,
                                 int &total_danger)
 {
- const bool defend_u = g->sees_u(pos) && is_defending();
+ const bool defend_u = see(g->u) && is_defending();
  int highest_priority = 0;
  total_danger = 0;
 
@@ -646,7 +646,7 @@ npc::ai_action npc::address_player(game *g)
 	switch (attitude) {
 	case NPCATT_TALK:
 	case NPCATT_TRADE:
-		if (g->sees_u(pos)) {
+		if (see(g->u)) {
 			if (update_path(g->m, g->u.pos, 6)) {
 				if (one_in(10)) say(g, "<lets_talk>");
 				return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(const_cast<npc&>(*this), path.front(), "Follow player")));
@@ -655,7 +655,7 @@ npc::ai_action npc::address_player(game *g)
 		}
 		break;
 	case NPCATT_MUG:
-		if (g->sees_u(pos)) {
+		if (see(g->u)) {
 			if (update_path(g->m, g->u.pos, 0)) {
 				if (one_in(3)) say(g, "Don't move a <swear> muscle...");
 				return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_player(*this, g->u, &npc::mug_player, "Mug player")));
@@ -671,7 +671,7 @@ npc::ai_action npc::address_player(game *g)
 		return ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
 	case NPCATT_FLEE: return _flee(*this, g->u.pos);
 	case NPCATT_LEAD:
-		if (rl_dist(GPSpos, g->u.GPSpos) >= 12 || !g->sees_u(pos)) {
+		if (rl_dist(GPSpos, g->u.GPSpos) >= 12 || !see(g->u)) {
 			int intense = disease_intensity(DI_CATCH_UP);
 			if (intense < 10) {
 				say(g, "<keep_up>");
@@ -908,7 +908,7 @@ bool npc::enough_time_to_reload(game *g, int target, const item &gun) const
  int dist, speed;
 
  if (target == TARGET_PLAYER) {
-  if (g->sees_u(pos) && g->u.weapon.is_gun() && rltime > 2 * mobile::mp_turn)
+  if (see(g->u) && g->u.weapon.is_gun() && rltime > 2 * mobile::mp_turn)
    return false; // Don't take longer than 2 turns if player has a gun
   dist = rl_dist(GPSpos, g->u.GPSpos);
   speed = speed_estimate(g->u.current_speed());

@@ -58,7 +58,7 @@ void mattack::antqueen(game *g, monster *z)
 
 void mattack::shriek(game *g, monster *z)
 {
- if (rl_dist(z->GPSpos, g->u.GPSpos) > 4 || !g->sees_u(z->pos)) return;	// Out of range
+ if (rl_dist(z->GPSpos, g->u.GPSpos) > 4 || !z->see(g->u)) return;	// Out of range
  z->moves -= (mobile::mp_turn/5)*12; // It takes a while
  z->sp_timeout = z->type->sp_freq; // Reset timer
  g->sound(z->pos, 50, "a terrible shriek!");
@@ -67,7 +67,7 @@ void mattack::shriek(game *g, monster *z)
 void mattack::acid(game *g, monster *z)
 {
  if (rl_dist(z->GPSpos, g->u.GPSpos) > 10) return; // Out of range
- const auto j = g->sees_u(z->pos);
+ const auto j = z->see(g->u);
  if (!j) return; // Unseen
  z->moves -= 3*mobile::mp_turn; // It takes a while
  z->sp_timeout = z->type->sp_freq; // Reset timer
@@ -98,7 +98,7 @@ void mattack::acid(game *g, monster *z)
 
 void mattack::shockstorm(game *g, monster *z)
 {
- if (rl_dist(z->GPSpos, g->u.GPSpos) > 12 || !g->sees_u(z->pos)) return; // Can't see you, no attack
+ if (rl_dist(z->GPSpos, g->u.GPSpos) > 12 || !z->see(g->u)) return; // Can't see you, no attack
  z->moves -= mobile::mp_turn / 2; // It takes a while
  z->sp_timeout = z->type->sp_freq; // Reset timer
  messages.add("A bolt of electricity arcs towards you!");
@@ -124,7 +124,7 @@ void mattack::shockstorm(game *g, monster *z)
 void mattack::boomer(game *g, monster *z)
 {
  if (rl_dist(z->GPSpos, g->u.GPSpos) > 3) return;	// Out of range
- const auto j = g->sees_u(z->pos);
+ const auto j = z->see(g->u);
  if (!j) return; // Unseen
  z->sp_timeout = z->type->sp_freq; // Reset timer
  z->moves -= (mobile::mp_turn/2)*5; // It takes a while
@@ -212,7 +212,7 @@ void mattack::science(game *g, monster *z)	// I said SCIENCE again!
 {
  const int dist = rl_dist(z->GPSpos, g->u.GPSpos);
  if (dist > 5) return;	// Out of range
- const auto t = g->sees_u(z->pos);
+ const auto t = z->see(g->u);
  if (!t) return; // Unseen
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  std::vector<point> line = line_to(z->pos, g->u.pos, *t);
@@ -439,7 +439,7 @@ void mattack::spit_sap(game *g, monster *z)
 {
 // TODO: Friendly biollantes?
  const int dist = rl_dist(z->GPSpos, g->u.GPSpos);
- if (dist > 12 || !g->sees_u(z->pos)) return;
+ if (dist > 12 || !z->see(g->u)) return;
 
  z->moves -= (mobile::mp_turn / 2) * 3;
  z->sp_timeout = z->type->sp_freq;
@@ -565,7 +565,7 @@ void mattack::fungus_sprout(game *g, monster *z)
 
 void mattack::leap(game *g, monster *z)
 {
- if (!g->sees_u(z->pos)) return;	// Only leap if we can see you!
+ if (!z->see(g->u)) return;	// Only leap if we can see you!
 
  std::vector<point> options;
  const bool fleeing = z->is_fleeing(g->u);
@@ -733,7 +733,7 @@ void mattack::dogthing(game *g, monster *z)	// XXX only happens when PC can see 
 
 void mattack::tentacle(game *g, monster *z)
 {
- const auto t = g->sees_u(z->pos);
+ const auto t = z->see(g->u);
  if (!t) return;
 
  messages.add("%s lashes its tentacle at you!",
@@ -893,11 +893,12 @@ void mattack::vortex(game *g, monster *z)
 
 void mattack::gene_sting(game *g, monster *z)
 {
- if (rl_dist(z->GPSpos, g->u.GPSpos) > 7 || !g->sees_u(z->pos)) return;	// Not within range and/or sight
+ if (rl_dist(z->GPSpos, g->u.GPSpos) > 7 || !z->see(g->u)) return;	// Not within range and/or sight
 
  z->moves -= (mobile::mp_turn/2)*3;
  z->sp_timeout = z->type->sp_freq;
- messages.add("The %s shoots a dart into you!", z->name().c_str());
+ messages.add("%s shoots a dart into you!",
+              grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
  g->u.mutate();
 }
 
@@ -905,8 +906,9 @@ void mattack::stare(game *g, monster *z)
 {
  z->moves -= 2*mobile::mp_turn;
  z->sp_timeout = z->type->sp_freq;
- if (g->sees_u(z->pos)) {
-  messages.add("The %s stares at you, and you shudder.", z->name().c_str());
+ if (z->see(g->u)) {
+  messages.add("%s stares at you, and you shudder.",
+                grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
   g->u.add_disease(DI_TELEGLOW, MINUTES(80));
  } else {
   messages.add("A piercing beam of light bursts forth!");
@@ -937,21 +939,23 @@ void mattack::photograph(game *g, monster *z)
 {
  if (z->faction_id == -1 ||
      rl_dist(z->GPSpos, g->u.GPSpos) > 6 ||
-     !g->sees_u(z->pos))
+     !z->see(g->u))
   return;
  z->sp_timeout = z->type->sp_freq;
  z->moves -= (mobile::mp_turn/2)*3;
- messages.add("The %s takes your picture!", z->name().c_str());
+ messages.add("%s takes your picture!",
+              grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
 // TODO: Make the player known to the faction
  g->add_event(EVENT_ROBOT_ATTACK, int(messages.turn) + rng(15, 30), z->faction_id, g->lev.x, g->lev.y);
 }
 
 void mattack::tazer(game *g, monster *z)
 {
- if (rl_dist(z->GPSpos, g->u.GPSpos) > 2 || !g->sees_u(z->pos)) return;	// Out of range
+ if (rl_dist(z->GPSpos, g->u.GPSpos) > 2 || !z->see(g->u)) return;	// Out of range
  z->sp_timeout = z->type->sp_freq; // Reset timer
  z->moves -= 2*mobile::mp_turn; // It takes a while
- messages.add("The %s shocks you!", z->name().c_str());
+ messages.add("%s shocks you!",
+              grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
  int shock = rng(1, 5);
  g->u.hurt(g, bp_torso, 0, shock * rng(1, 3));
  g->u.moves -= shock * (mobile::mp_turn/5);
@@ -989,7 +993,7 @@ void mattack::smg(game *g, monster *z)
  
 // Not friendly; hence, firing at the player
  if (24 < rl_dist(z->GPSpos, g->u.GPSpos)) return; // Out of range
- const auto t = g->sees_u(z->pos);
+ const auto t = z->see(g->u);
  if (!t) return; // Unseen
  z->sp_timeout = z->type->sp_freq;	// Reset timer
 
@@ -1012,7 +1016,7 @@ void mattack::smg(game *g, monster *z)
 void mattack::flamethrower(game *g, monster *z)
 {
  if (5 < Linf_dist(g->u.pos - z->pos)) return;	// Out of range
- const auto t = g->sees_u(z->pos);
+ const auto t = z->see(g->u);
  if (!t) return; // Unseen
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  z->moves -= 5 * mobile::mp_turn;	// It takes a while
@@ -1022,7 +1026,7 @@ void mattack::flamethrower(game *g, monster *z)
 
 void mattack::copbot(game *g, monster *z)
 {
- const bool sees_u = (bool)g->sees_u(z->pos);
+ const bool sees_u = (bool)z->see(g->u);
 
  static auto speech = [&]() {
      if (one_in(3)) {
@@ -1046,7 +1050,7 @@ void mattack::copbot(game *g, monster *z)
 void mattack::multi_robot(game *g, monster *z)
 {
  int mode = 0;
- if (!g->sees_u(z->pos)) return;	// Can't see you!
+ if (!z->see(g->u)) return;	// Can't see you!
  {
  const auto range = rl_dist(z->GPSpos, g->u.GPSpos);
  if (range == 1 && one_in(2)) mode = 1;
