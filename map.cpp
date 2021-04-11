@@ -1968,9 +1968,8 @@ std::vector<point> map::route(int Fx, int Fy, int Tx, int Ty, bool bash) const
  */
 
  if (!inbounds(Fx, Fy) || !inbounds(Tx, Ty)) {
-  int linet;
-  if (sees(Fx, Fy, Tx, Ty, -1, linet))
-   return line_to(Fx, Fy, Tx, Ty, linet);
+  if (const auto linet = sees(Fx, Fy, Tx, Ty, -1))
+   return line_to(Fx, Fy, Tx, Ty, *linet);
   else {
    return std::vector<point>();
   }

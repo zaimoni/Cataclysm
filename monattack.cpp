@@ -964,18 +964,20 @@ void mattack::tazer(game *g, monster *z)
 void mattack::smg(game *g, monster *z)
 {
  if (!z->is_enemy()) { // Attacking monsters, not the player!
-  int t, fire_t;
+  int fire_t;
   monster* target = nullptr;
   point target_pos;
   int closest = 19;
   for(auto& _mon : g->z) {
    if (!_mon.is_enemy(z)) continue;
    if (int dist = rl_dist(z->GPSpos, _mon.GPSpos); dist < closest) {
-       if (const auto pos = _mon.screen_pos(); g->m.sees(z->pos, *pos, 18, t)) { // \todo would be nice to attack off-reality bubble
-           target = &_mon;
-           closest = dist;
-           fire_t = t;
-           target_pos = *pos;
+       if (const auto pos = _mon.screen_pos()) { // \todo would be nice to attack off-reality bubble
+           if (const auto t = g->m.sees(z->pos, *pos, 18)) {
+               target = &_mon;
+               closest = dist;
+               fire_t = *t;
+               target_pos = *pos;
+           }
        }
    }
   }

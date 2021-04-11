@@ -43,17 +43,19 @@ void monster::plan(game *g)
 {
  int sightrange = g->light_level();
  int dist = INT_MAX;
- int tc, stc;
+ int stc;
  if (is_friend()) {	// Target monsters, not the player!
   const monster* closest_mon = nullptr;
   if (!has_effect(ME_DOCILE)) {
    for (const auto& _mon : g->z) {
     if (!is_enemy(&_mon)) continue;
     const int test = rl_dist(GPSpos, _mon.GPSpos);
-    if (test < dist && g->m.sees(pos, _mon.pos, sightrange, tc)) {
-     closest_mon = &_mon;
-     dist = test;
-     stc = tc;
+    if (test < dist) {
+        if (const auto tc = g->m.sees(pos, _mon.pos, sightrange)) {
+            closest_mon = &_mon;
+            dist = test;
+            stc = *tc;
+        }
     }
    }
   }
@@ -112,13 +114,15 @@ void monster::plan(game *g)
   const monster* closest_mon = nullptr;
   for (const auto& _mon : g->z) {
    int mondist = rl_dist(GPSpos, _mon.GPSpos);
-   if (is_enemy(&_mon) && mondist < dist && can_see() && g->m.sees(pos, _mon.pos, sightrange, tc)) {
-    dist = mondist;
-    if (fleeing) wand.set(2 * pos - _mon.pos, 40);
-    else {
-     closest_mon = &_mon;
-     stc = tc;
-    }
+   if (is_enemy(&_mon) && mondist < dist && can_see()) {
+       if (const auto tc = g->m.sees(pos, _mon.pos, sightrange)) {
+           dist = mondist;
+           if (fleeing) wand.set(2 * pos - _mon.pos, 40);
+           else {
+               closest_mon = &_mon;
+               stc = *tc;
+           }
+       }
    }
   }
 
