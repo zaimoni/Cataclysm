@@ -3036,14 +3036,14 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
 
 // The rest of the function is shrapnel
  if (shrapnel <= 0) return;
- int sx, sy, t;
+ int sx, sy;
  std::vector<point> traj;
  ts.tv_sec = 0;
  ts.tv_nsec = BULLET_SPEED;	// Reset for animation of bullets
  for (int i = 0; i < shrapnel; i++) {
   sx = rng(x - 2 * radius, x + 2 * radius);
   sy = rng(y - 2 * radius, y + 2 * radius);
-  traj = line_to(x, y, sx, sy, (m.sees(x, y, sx, sy, 50, t) ? t : 0));
+  traj = line_to(x, y, sx, sy, m.sees(x, y, sx, sy, 50));
   dam = rng(20, 60);
   for (int j = 0; j < traj.size(); j++) {
    if (j > 0 && u_see(traj[j - 1]))

@@ -137,8 +137,7 @@ public:
 	fire_weapon_screen(npc& actor, const point& tar, bool burst, const char* desc=nullptr) : _actor(actor), _tar(tar), _burst(burst), _desc(desc) {
 		auto g = game::active();
 		if (tar != actor.pos) {	// required for legality/performability
-			int linet;
-			_trajectory = line_to(actor.pos, tar, (g->m.sees(actor.pos, tar, actor.sight_range(), linet) ? linet : 0));
+			_trajectory = line_to(actor.pos, tar, g->m.sees(actor.pos, tar, actor.sight_range()));
 		}
 #ifndef NDEBUG
 		if (!IsLegal()) throw std::logic_error("unreasonable targeting");
@@ -1500,18 +1499,13 @@ void npc::alt_attack(game *g, int target)
   const int conf = confident_range(index);
 
   if (dist <= conf && no_friendly_fire) {
-   {
-   int linet;
-   trajectory = line_to(pos, tar, (g->m.sees(pos, tar, light, linet) ? linet : 0));
-   }
-   moves -= 125;
+   trajectory = line_to(pos, tar, g->m.sees(pos, tar, light));
+   moves -= (mobile::mp_turn / 4) * 5;
    if (g->u_see(pos))
     messages.add("%s throws a %s.", name.c_str(), used->tname().c_str());
    g->throw_item(*this, tar, std::move(*used), trajectory);
    i_remn(index);
-
   } else if (!no_friendly_fire) {// Danger of friendly fire
-
    if (!used->active || used->charges > 2) // Safe to hold on to, for now
     avoid_friendly_fire(g, target); // Maneuver around player
    else { // We need to throw this live (grenade, etc) NOW! Pick another target?
@@ -1550,17 +1544,13 @@ void npc::alt_attack(game *g, int target)
  * should be equal to the original location of our target, and risking friendly
  * fire is better than holding on to a live grenade / whatever.
  */
-	{
-    int linet;
-	trajectory = line_to(pos, tar, ((g->m.sees(pos, tar, light, linet)) ? linet : 0));
-	}
-    moves -= 125;
+	trajectory = line_to(pos, tar, g->m.sees(pos, tar, light));
+    moves -= (mobile::mp_turn / 4) * 5;
     if (g->u_see(pos))
      messages.add("%s throws a %s.", name.c_str(), used->tname().c_str());
 	g->throw_item(*this, tar, std::move(*used), trajectory);
     i_remn(index);
    }
-
   } else { // Within this block, our chosen target is outside of our range
    update_path(g->m, tar);
    move_to_next(g); // Move towards the target

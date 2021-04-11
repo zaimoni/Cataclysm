@@ -249,9 +249,8 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
     }
    }
    if (!new_targets.empty()) {
-    int target_picked = rng(0, new_targets.size() - 1);
-    tar = new_targets[target_picked];
-	trajectory = line_to(p.pos, tar, (m.sees(p.pos, tar, 0, tart) ? tart : 0));
+    tar = new_targets[rng(0, new_targets.size() - 1)];
+	trajectory = line_to(p.pos, tar, m.sees(p.pos, tar, 0));
    } else if ((!p.has_trait(PF_TRIGGERHAPPY) || one_in(3)) &&
               (p.sklevel[sk_gun] >= 7 || one_in(7 - p.sklevel[sk_gun])))
     return; // No targets, so return
@@ -284,7 +283,7 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
    const int delta = int(sqrt(missed_by));
    tar.x += rng(-delta, delta);
    tar.y += rng(-delta, delta);
-   trajectory = line_to(p.pos, tar, (m.sees(p.pos, tar, -1, tart) ? tart : 0));
+   trajectory = line_to(p.pos, tar, m.sees(p.pos, tar, -1));
    missed = true;
    if (!burst) {
     if (&p == &u) messages.add("You miss!");
@@ -396,7 +395,6 @@ void game::throw_item(player &p, point tar, item&& thrown, std::vector<point> &t
 
  double missed_by = .01 * deviation * trange;
  bool missed = false;
- int tart;
 
  if (missed_by >= 1) {
 // We missed D:
@@ -405,7 +403,7 @@ void game::throw_item(player &p, point tar, item&& thrown, std::vector<point> &t
   const int delta = int(sqrt(double(missed_by)));
   tar.x += rng(-delta, delta);
   tar.y += rng(-delta, delta);
-  trajectory = line_to(p.pos, tar, (m.sees(p.pos, tar, -1, tart) ? tart : 0));
+  trajectory = line_to(p.pos, tar, m.sees(p.pos, tar, -1));
   missed = true;
   if (!p.is_npc()) messages.add("You miss!");
  } else if (missed_by >= .6) {
@@ -539,7 +537,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
     mvwputch(w_terrain, at.y, at.x, u.color(), '@');
 
    if (const auto tart = m.sees(u.pos, tar, -1)) {// Selects a valid line-of-sight
-    ret = line_to(u.pos, tar, tart ? *tart : 0); // Sets the vector to that LOS
+    ret = line_to(u.pos, tar, *tart); // Sets the vector to that LOS
 // Draw the trajectory
     for (const point& pt : ret) {
         if (sight_dist >= Linf_dist(pt - u.pos)) {

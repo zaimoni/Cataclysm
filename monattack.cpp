@@ -107,8 +107,7 @@ void mattack::shockstorm(game *g, monster *z)
  // 2/9 near-miss for each of x, y axis; theoretical probability for hit if not obstructed 49/81
  const auto tar = g->u.pos + rng(spread) + rng(spread);
 
- int t;
- const auto bolt = line_to(z->pos, tar, (g->m.sees(z->pos, tar, -1, t) ? t : 0));
+ const auto bolt = line_to(z->pos, tar, g->m.sees(z->pos, tar, -1));
  for (decltype(auto) pt : bolt) { // Fill the LOS with electricity
      if (!one_in(4)) g->m.add_field(g, pt, fd_electricity, rng(1, 3));
  }

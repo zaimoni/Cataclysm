@@ -1948,13 +1948,6 @@ std::optional<int> map::sees(int Fx, int Fy, int Tx, int Ty, int range) const
   return _BresenhamLine(Fx, Fy, Tx, Ty, range, [&](reality_bubble_loc pos) { return trans(pos); });
 }
 
-bool map::sees(int Fx, int Fy, int Tx, int Ty, int range, int &tc) const
-{
-    const auto ret = _BresenhamLine(Fx, Fy, Tx, Ty, range, [&](reality_bubble_loc pos) { return trans(pos); });
-    if (ret) tc = *ret;
-    return (bool)ret;
-}
-
 std::optional<int> map::clear_path(int Fx, int Fy, int Tx, int Ty, int range, int cost_min, int cost_max) const
 {
     return _BresenhamLine(Fx, Fy, Tx, Ty, range, [&](reality_bubble_loc pos){ return is_between(cost_min, move_cost(pos), cost_max);});

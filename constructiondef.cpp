@@ -264,10 +264,9 @@ void construct::done_tree(game *g, point p)
  point dest(-2, -2);
  while (-2 == dest.x) dest = get_direction(input());
  ((dest *= 3) += p) += point(rng(-1, 1), rng(-1, 1));
- std::vector<point> tree = line_to(p, dest, rng(1, 8));
- for (int i = 0; i < tree.size(); i++) {
-  g->m.destroy(g, tree[i].x, tree[i].y, true);
-  g->m.ter(tree[i]) = t_log;
+ for (const auto& pt : line_to(p, dest, rng(1, 8))) { // rng values not necessarily "legal" from map::sees
+	 g->m.destroy(g, pt.x, pt.y, true);
+	 g->m.ter(pt) = t_log;
  }
 }
 
