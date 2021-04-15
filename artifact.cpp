@@ -411,17 +411,17 @@ std::string artifact_name(std::string type)
 
 void game::process_artifact(item *it, player *p, bool wielded)
 {
+ static constexpr const zaimoni::gdi::box<point> spread(point(-1), point(1));
  std::vector<art_effect_passive> effects;
+
  if (it->is_armor()) effects = dynamic_cast<const it_artifact_armor*>(it->type)->effects_worn;
  else if (it->is_tool()) {
   const it_artifact_tool* const tool = dynamic_cast<const it_artifact_tool*>(it->type);
   effects = tool->effects_carried;
-  if (wielded) {
-   for (int i = 0; i < tool->effects_wielded.size(); i++)
-    effects.push_back(tool->effects_wielded[i]);
-  }
+  if (wielded) for (decltype(auto) e : tool->effects_wielded) effects.push_back(e);
 // Recharge it if necessary
   if (it->charges < tool->max_charges) {
+   // recharge triggers that are not locked down to on-the-minute are imaginable; leave that explicit
    switch (tool->charge_type) {
     case ARTC_TIME:
      if (messages.turn.second == 0 && messages.turn.minute == 0) // Once per hour
@@ -477,9 +477,8 @@ void game::process_artifact(item *it, player *p, bool wielded)
    break;
 
   case AEP_SMOKE:
-   if (one_in(10)) {
-    int x = p->pos.x + rng(-1, 1), y = p->pos.y + rng(-1, 1);
-    if (m.add_field(this, x, y, fd_smoke, rng(1, 3)))
+   if (one_in(MINUTES(1))) {
+    if (m.add_field(this, p->pos + rng(spread), fd_smoke, rng(1, 3)))
      messages.add("The %s emits some smoke.", it->tname().c_str());
    }
    break;
@@ -500,15 +499,15 @@ void game::process_artifact(item *it, player *p, bool wielded)
    break;
 
   case AEP_HUNGER:
-   if (one_in(100)) p->hunger++;
+   if (one_in(MINUTES(10))) p->hunger++;
    break;
 
   case AEP_THIRST:
-   if (one_in(120)) p->thirst++;
+   if (one_in(MINUTES(12))) p->thirst++;
    break;
 
   case AEP_EVIL:
-   if (one_in(150)) { // Once every 15 minutes, on average
+   if (one_in(MINUTES(15))) { // Once every 15 minutes, on average
     p->add_disease(DI_EVIL, MINUTES(30));
     if (!wielded && !it->is_armor())	// V 0.2.1 or bugfix: evil armor should process
      messages.add("You have an urge to %s the %s.",

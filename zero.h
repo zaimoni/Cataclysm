@@ -38,6 +38,10 @@ using unconditional_t = T;
 template<typename T, T v, typename...>
 inline constexpr T unconditional_v = v;
 
+// https://artificial-mind.net/blog/2020/11/14/cpp17-consteval
+template <auto V>
+static constexpr const auto force_consteval = V;
+
 namespace cataclysm {
 
 template<class T>
