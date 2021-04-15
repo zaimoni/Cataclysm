@@ -2461,7 +2461,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
          std::pair(std::pair(mi_bionics_mil, 78), 1)
      };
 
-     const auto stock = use_rarity_table(rng(0,13), std::begin(bunker_stock), std::end(bunker_stock));
+     const auto stock = use_rarity_table(rng(0, force_consteval<rarity_table_nonstrict_ub(std::begin(bunker_stock), std::end(bunker_stock))>), std::begin(bunker_stock), std::end(bunker_stock));
      place_items(stock.first, stock.second, i, j, i + 6, j + 5, false, 0);
     }
    }
@@ -6531,6 +6531,8 @@ void silo_rooms(map *m)
    std::pair(mi_none, 10),
  };
 
+ static_assert(rarity_table_nonstrict_ub(std::begin(primary_room_stock), std::end(primary_room_stock)) == rarity_table_nonstrict_ub(std::begin(secondary_room_stock), std::end(secondary_room_stock)));
+
  std::vector<point> rooms;
  std::vector<point> room_sizes;
  bool okay = true;
@@ -6564,7 +6566,7 @@ void silo_rooms(map *m)
 	 m->rewrite<t_rock, t_floor>(i,j);
     }
    }
-   const auto index = rng(0, 13);	// What type of items go here?
+   const auto index = rng(0, force_consteval<rarity_table_nonstrict_ub(std::begin(primary_room_stock), std::end(primary_room_stock))>);	// What type of items go here?
    if (auto used = use_rarity_table(index, std::begin(primary_room_stock), std::end(primary_room_stock)))
      m->place_items(used, 78, x, y, x + width, y + height, false, 0);
    if (auto used = use_rarity_table(index, std::begin(secondary_room_stock), std::end(secondary_room_stock)))

@@ -99,7 +99,7 @@ void trapfunc::crossbow(game *g, int x, int y)
  messages.add("You trigger a crossbow trap!");
  if (!one_in(4) && rng(8, 20) > g->u.dodge()) {
   static constexpr const std::pair<body_part, int> bp_hit[] = { {bp_feet, 1}, {bp_legs, 3}, {bp_torso, 5}, {bp_head, 1} };
-  const body_part hit = use_rarity_table(rng(0, 9), std::begin(bp_hit), std::end(bp_hit));
+  const body_part hit = use_rarity_table(rng(0, force_consteval<rarity_table_nonstrict_ub(std::begin(bp_hit), std::end(bp_hit))>), std::begin(bp_hit), std::end(bp_hit));
   const int side = rng(0, 1);
   messages.add("Your %s is hit!", body_part_name(hit, side));
   g->u.hit(g, hit, side, 0, rng(20, 30));
@@ -131,7 +131,7 @@ void trapfunc::shotgun(game *g, int x, int y)
  int shots = (tr_shotgun_1 != trap && (one_in(8) || one_in(20 - g->u.str_max))) ? 2 : 1;
  if (rng(5, 50) > g->u.dodge()) {
   static constexpr const std::pair<body_part, int> bp_hit[] = { {bp_feet, 1}, {bp_legs, 3}, {bp_torso, 5}, {bp_head, 1} };
-  const body_part hit = use_rarity_table(rng(0, 9), std::begin(bp_hit), std::end(bp_hit));
+  const body_part hit = use_rarity_table(rng(0, force_consteval<rarity_table_nonstrict_ub(std::begin(bp_hit), std::end(bp_hit))>), std::begin(bp_hit), std::end(bp_hit));
   const int side = rng(0, 1);
   messages.add("Your %s is hit!", body_part_name(hit, side));
   g->u.hit(g, hit, side, 0, rng(40 * shots, 60 * shots));
@@ -314,7 +314,7 @@ void trapfunc::pit_spikes(game *g, int x, int y)
  else if (rng(5, 30) < g->u.dodge()) messages.add("You avoid the spikes within.");
  else {
   static constexpr const std::pair<body_part, int> bp_hit[] = { {bp_legs, 2}, {bp_arms, 2}, {bp_torso, 6} };
-  const body_part hit = use_rarity_table(rng(0, 9), std::begin(bp_hit), std::end(bp_hit));
+  const body_part hit = use_rarity_table(rng(0, force_consteval<rarity_table_nonstrict_ub(std::begin(bp_hit), std::end(bp_hit))>), std::begin(bp_hit), std::end(bp_hit));
   const int side = rng(0, 1);
   messages.add("The spikes impale your %s!", body_part_name(hit, side));
   g->u.hit(g, hit, side, 0, rng(20, 50));

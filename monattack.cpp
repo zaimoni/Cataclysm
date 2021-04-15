@@ -1115,7 +1115,7 @@ void mattack::upgrade(game* g, monster* z)
         {mon_boomer, 1}
     };
 
-    target->poly(mtype::types[use_rarity_table(10, std::begin(poly_to), std::end(poly_to))]);
+    target->poly(mtype::types[use_rarity_table(rng(0, force_consteval<rarity_table_nonstrict_ub(std::begin(poly_to), std::end(poly_to))>), std::begin(poly_to), std::end(poly_to))]);
 
     if (g->u_see(z->pos)) messages.add("The black mist around the %s grows...", z->name().c_str());
     if (g->u_see(target->pos)) messages.add("...a zombie becomes a %s!", target->name().c_str());
