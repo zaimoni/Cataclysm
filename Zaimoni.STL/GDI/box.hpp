@@ -1,7 +1,7 @@
 #ifndef ZAIMONI_STL_GDI_BOX_HPP
 #define ZAIMONI_STL_GDI_BOX_HPP 1
 
-/* (C)2019,2020 Kenneth Boyd, license: MIT.txt */
+/* (C)2019,2020,2021 Kenneth Boyd */
 
 #include <functional>
 #include <type_traits>
@@ -13,7 +13,7 @@ namespace zaimoni {
 namespace gdi {
 
 template<class T>	// T assumed to be "like a vector space"
-class box
+class box final
 {
 private:
 	T _top_left;		// nonstrict bounds
@@ -25,10 +25,10 @@ public:
 	~box() = default;
 	box& operator=(const box& src) = default;
 
-	T& tl_c() { return _top_left; }
-	T& br_c() { return _bottom_right; }
-	const T& tl_c() const { return _top_left; }
-	const T& br_c() const { return _bottom_right; }
+	constexpr T& tl_c() { return _top_left; }
+	constexpr T& br_c() { return _bottom_right; }
+	constexpr const T& tl_c() const { return _top_left; }
+	constexpr const T& br_c() const { return _bottom_right; }
 
 	bool contains(const T& src) const {
 		static std::less_equal<typename T::coord_type> lte;
@@ -59,6 +59,12 @@ public:
 		return *this;
 	}
 };
+
+template<class T>
+inline constexpr bool operator==(const zaimoni::gdi::box<T>& lhs, const zaimoni::gdi::box<T>& rhs) { return lhs._top_left == rhs._top_left && lhs._bottom_right == rhs._bottom_right; }
+
+template<class T>
+inline constexpr bool operator!=(const zaimoni::gdi::box<T>& lhs, const zaimoni::gdi::box<T>& rhs) { return lhs._top_left != rhs._top_left || lhs._bottom_right != rhs._bottom_right; }
 
 // enumerate coordinates "on edge of box" is practical for integer coordinates, but viable canonical schemas are dimension-dependent
 // prototyped in Rogue Survivor Revived, relicensed for here
