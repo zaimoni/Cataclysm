@@ -2304,10 +2304,10 @@ detecting traps and other things of interest."
    if (!done) wrefresh(w_stats);
    break;
   case encumbrance:	// Encumberment tab
-   mvwprintz(w_encumb, 0, 6, h_ltgray, "ENCUMBERANCE");
-   mvwprintz(w_encumb, 2 + line, 2, h_ltgray, enc_labels[line]);
+   mvwaddstrz(w_encumb, 0, 6, h_ltgray, "ENCUMBERANCE");
+   mvwaddstrz(w_encumb, 2 + line, 2, h_ltgray, enc_labels[line]);
    if (line == 0) {
-    mvwprintz(w_info, 0, 0, c_magenta, "Head encumberance has no effect; it simply limits how much you can put on.");
+    mvwaddstrz(w_info, 0, 0, c_magenta, "Head encumberance has no effect; it simply limits how much you can put on.");
    } else if (line == 1) {
     const int enc_eyes = encumb(bp_eyes);
     mvwprintz(w_info, 0, 0, c_magenta, "Perception -%d when checking traps or firing ranged weapons;\n\
@@ -2341,18 +2341,18 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
    wrefresh(w_info);
    switch (input()) {
     case 'j':
-     mvwprintz(w_encumb, 2 + line, 2, c_ltgray, enc_labels[line]);
+     mvwaddstrz(w_encumb, 2 + line, 2, c_ltgray, enc_labels[line]);
      if (std::end(enc_labels) - std::begin(enc_labels) <= ++line) line = 0;
-     mvwprintz(w_encumb, 2 + line, 2, h_ltgray, enc_labels[line]);
+     mvwaddstrz(w_encumb, 2 + line, 2, h_ltgray, enc_labels[line]);
      break;
     case 'k':
-     mvwprintz(w_encumb, 2 + line, 2, c_ltgray, enc_labels[line]);
+     mvwaddstrz(w_encumb, 2 + line, 2, c_ltgray, enc_labels[line]);
      if (0 > --line) line = std::end(enc_labels) - std::begin(enc_labels) - 1;
-     mvwprintz(w_encumb, 2 + line, 2, h_ltgray, enc_labels[line]);
+     mvwaddstrz(w_encumb, 2 + line, 2, h_ltgray, enc_labels[line]);
      break;
     case '\t':
-     mvwprintz(w_encumb, 2 + line, 2, c_ltgray, enc_labels[line]);
-     mvwprintz(w_encumb, 0, 6, c_ltgray, "ENCUMBERANCE");
+     mvwaddstrz(w_encumb, 2 + line, 2, c_ltgray, enc_labels[line]);
+     mvwaddstrz(w_encumb, 0, 6, c_ltgray, "ENCUMBERANCE");
      wrefresh(w_encumb);
      line = 0;
      curtab++;
@@ -2364,7 +2364,7 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
    if (!done) wrefresh(w_encumb);
    break;
   case traits:	// Traits tab
-   mvwprintz(w_traits, 0, 9, h_ltgray, "TRAITS");
+   mvwaddstrz(w_traits, 0, 9, h_ltgray, "TRAITS");
    if (line <= 2) {
     min = 0;
     max = cataclysm::max(traits_hgt, traits_ub);
@@ -2380,10 +2380,10 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
 	if (traitslist[i] >= PF_MAX2) continue;	// XXX out of bounds dereference \todo better recovery strategy
 	const auto& tr = mutation_branch::traits[traitslist[i]];
 	status = (tr.points > 0 ? c_ltgreen : c_ltred);
-    mvwprintz(w_traits, 2 + i - min, 1, (i == line) ? hilite(status) : status, tr.name.c_str());
+    mvwaddstrz(w_traits, 2 + i - min, 1, (i == line) ? hilite(status) : status, tr.name.c_str());
    }
    if (line >= 0 && line < traits_ub)
-    mvwprintz(w_info, 0, 0, c_magenta, "%s", mutation_branch::traits[traitslist[line]].description.c_str());
+    mvwaddstrz(w_info, 0, 0, c_magenta, mutation_branch::traits[traitslist[line]].description.c_str());
    wrefresh(w_traits);
    wrefresh(w_info);
    switch (input()) {
@@ -2394,12 +2394,12 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
      if (line > 0) line--;
      break;
     case '\t':
-     mvwprintz(w_traits, 0, 9, c_ltgray, "TRAITS");
+     mvwaddstrz(w_traits, 0, 9, c_ltgray, "TRAITS");
      for (int i = 0; i < traits_ub && i < 7; i++) {
       draw_hline(w_traits, i + 2, c_black, 'x', 1);
 	  if (traitslist[i] >= PF_MAX2) continue;	// XXX out of bounds dereference \todo better recovery strategy
 	  const auto& tr = mutation_branch::traits[traitslist[i]];
-      mvwprintz(w_traits, i + 2, 1, (0 < tr.points ? c_ltgreen : c_ltred), tr.name.c_str());
+      mvwaddstrz(w_traits, i + 2, 1, (0 < tr.points ? c_ltgreen : c_ltred), tr.name.c_str());
      }
      wrefresh(w_traits);
      line = 0;
@@ -2412,7 +2412,7 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
    break;
 
   case effects:	// Effects tab
-   mvwprintz(w_effects, 0, 8, h_ltgray, "EFFECTS");
+   mvwaddstrz(w_effects, 0, 8, h_ltgray, "EFFECTS");
    if (line <= 2) {
     min = 0;
     max = cataclysm::max(effects_hgt, effect_name.size());
@@ -2424,10 +2424,10 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
     max = cataclysm::min(line + (effects_hgt - effects_hgt / 2), effect_name.size());
    }
    for (int i = min; i < max; i++) {
-    mvwprintz(w_effects, 2 + i - min, 1, (i == line) ? h_ltgray : c_ltgray, effect_name[i].c_str());
+    mvwaddstrz(w_effects, 2 + i - min, 1, (i == line) ? h_ltgray : c_ltgray, effect_name[i].c_str());
    }
    if (line >= 0 && line < effect_text.size())
-    mvwprintz(w_info, 0, 0, c_magenta, effect_text[line].c_str());
+    mvwaddstrz(w_info, 0, 0, c_magenta, effect_text[line].c_str());
    wrefresh(w_effects);
    wrefresh(w_info);
    switch (input()) {
@@ -2438,9 +2438,9 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
      if (line > 0) line--;
      break;
     case '\t':
-     mvwprintz(w_effects, 0, 8, c_ltgray, "EFFECTS");
+     mvwaddstrz(w_effects, 0, 8, c_ltgray, "EFFECTS");
      for (int i = 0; i < effect_name.size() && i < effects_hgt; i++)
-      mvwprintz(w_effects, i + 2, 1, c_ltgray, effect_name[i].c_str());
+      mvwaddstrz(w_effects, i + 2, 1, c_ltgray, effect_name[i].c_str());
      wrefresh(w_effects);
      line = 0;
      curtab++;
