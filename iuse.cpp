@@ -1226,7 +1226,7 @@ void iuse::set_trap(game *g, player *p, item *it, bool t)
  messages.add(message.str().c_str());
  p->practice(sk_traps, practice);
  g->m.add_trap(trap_pos, type);
- p->moves -= 100 + practice * 25;
+ p->moves -= mobile::mp_turn + practice * (mobile::mp_turn/4);
  if (type == tr_engine) {
   for (decltype(auto) delta : Direction::vector) g->m.add_trap(trap_pos + delta, tr_blade);
  }
@@ -1236,7 +1236,7 @@ void iuse::set_trap(game *g, player *p, item *it, bool t)
 void iuse::geiger(game *g, player *p, item *it, bool t)
 {
  if (t) { // Every-turn use when it's on
-  int rads = g->m.radiation(p->pos.x, p->pos.y);
+  int rads = g->m.radiation(p->GPSpos);
   if (rads == 0) return;
   g->sound(p->pos, 6, "");
   if (rads > 50) messages.add("The geiger counter buzzes intensely.");
@@ -1259,8 +1259,7 @@ void iuse::geiger(game *g, player *p, item *it, bool t)
  int ch = menu("Geiger counter:", { "Scan yourself", "Scan the ground", "Turn continuous scan on", "Cancel" });
  switch (ch) {
   case 1: messages.add("Your radiation level: %d", p->radiation); break;
-  case 2: messages.add("The ground's radiation level: %d",
-                     g->m.radiation(p->pos.x, p->pos.y));
+  case 2: messages.add("The ground's radiation level: %d", g->m.radiation(p->GPSpos));
 	  break;
   case 3:
    messages.add("The geiger counter's scan LED flicks on.");
@@ -1275,7 +1274,7 @@ void iuse::geiger(game *g, player *p, item *it, bool t)
 
 void iuse::teleport(game *g, player *p, item *it, bool t)
 {
- p->moves -= 100;
+ p->moves -= mobile::mp_turn;
  g->teleport(p);
 }
 

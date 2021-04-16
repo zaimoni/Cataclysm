@@ -3920,15 +3920,15 @@ void player::suffer(game *g)
  }
 
  if (has_trait(PF_RADIOACTIVE1)) {
-  auto& rad = g->m.radiation(pos.x, pos.y);
+  auto& rad = g->m.radiation(GPSpos);
   if (rad < 10 && one_in(MINUTES(5))) rad++;
  }
  if (has_trait(PF_RADIOACTIVE2)) {
-  auto& rad = g->m.radiation(pos.x, pos.y);
+  auto& rad = g->m.radiation(GPSpos);
   if (rad < 20 && one_in(MINUTES(5)/2)) rad++;
  }
  if (has_trait(PF_RADIOACTIVE3)) {
-  auto& rad = g->m.radiation(pos.x, pos.y);
+  auto& rad = g->m.radiation(GPSpos);
   if (rad < 30 && one_in(MINUTES(1))) rad++;
  }
 
@@ -3936,7 +3936,7 @@ void player::suffer(game *g)
  if (has_artifact_with(AEP_MUTAGENIC) && one_in(DAYS(2))) mutate();
  if (has_artifact_with(AEP_FORCE_TELEPORT) && one_in(HOURS(1))) g->teleport(this);
 
- const auto rad = g->m.radiation(pos.x, pos.y);
+ const auto rad = g->m.radiation(GPSpos);
  // \todo? this is exceptionally 1950's
  const int rad_resist = is_wearing(itm_hazmat_suit) ? 20 : 8;
  if (rad_resist <= rad) {

@@ -37,6 +37,11 @@ std::optional<reality_bubble_loc> map::to(const point& pt) const
     return reality_bubble_loc((pt.x / SEE) + (pt.y / SEE) * my_MAPSIZE, pt % SEE);
 }
 
+std::optional<reality_bubble_loc> map::to(const GPS_loc& pt)
+{
+    return game::active()->toSubmap(pt);
+}
+
 bool map::find_stairs(const point& pt, const int movez, point& pos) const
 {
     int best = 999;
@@ -1395,12 +1400,6 @@ bool map::close_door(const point& pt)
 	 return true;
  default: return false;
  }
-}
-
-int& map::radiation(int x, int y)
-{
-    if (const auto pos = to(x, y)) return grid[pos->first]->rad[pos->second.x][pos->second.y];
-    return discard<int>::x = 0;
 }
 
 std::vector<item>& map::i_at(int x, int y)

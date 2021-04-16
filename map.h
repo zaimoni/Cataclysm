@@ -62,6 +62,7 @@ class map
 // Movement and LOS
  std::optional<reality_bubble_loc> to(const point& pt) const;
  std::optional<reality_bubble_loc> to(int x, int y) const { return to(point(x,y)); };
+ static std::optional<reality_bubble_loc> to(const GPS_loc& pt);
 
  bool find_stairs(const point& pt, int movez, point& pos) const;
  bool find_terrain(const point& pt, ter_id dest, point& pos) const;
@@ -211,7 +212,12 @@ class map
  void marlossify(int x, int y);
 
 // Radiation
- int& radiation(int x, int y);	// Amount of radiation at (x, y);
+ template<class...Args>
+ int& radiation(Args...params)
+ {
+	 if (const auto pos = to(params...)) return grid[pos->first]->rad[pos->second.x][pos->second.y];
+	 return cataclysm::discard<int>::x = 0;
+ }
 
 // Items
  std::vector<item>& i_at(int x, int y);
