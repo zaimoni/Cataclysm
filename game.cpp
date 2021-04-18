@@ -4578,7 +4578,7 @@ void game::butcher()
  static const int corpse_time_to_cut[mtype::MS_MAX] = {2, 5, 10, 18, 40};	// in turns
 
  std::vector<int> corpses;
- const auto& items = m.i_at(u.pos);
+ const auto& items = m.i_at(u.GPSpos);
  for (int i = 0; i < items.size(); i++) {
   if (items[i].type->id == itm_corpse) corpses.push_back(i);
  }
@@ -4597,9 +4597,9 @@ void game::butcher()
   const mtype* const corpse = items[corpses[i]].corpse;
   if (query_yn("Butcher the %s corpse?", corpse->name.c_str())) {
    int time_to_cut = corpse_time_to_cut[corpse->size];
-   time_to_cut *= 100;	// Convert to movement points
+   time_to_cut *= mobile::mp_turn;	// Convert to movement points
    time_to_cut += factor * 5;	// Penalty for poor tool
-   if (time_to_cut < 250) time_to_cut = 250;
+   clamp_lb<5 * (mobile::mp_turn / 2)>(time_to_cut);
    u.assign_activity(ACT_BUTCHER, time_to_cut, corpses[i]);
    u.moves = 0;
    return;
@@ -4611,7 +4611,7 @@ void game::complete_butcher(int index)
 {
  static const int pelts_from_corpse[mtype::MS_MAX] = {1, 3, 6, 10, 18};
 
- auto& it = m.i_at(u.pos)[index];
+ auto& it = m.i_at(u.GPSpos)[index];
  const mtype* const corpse = it.corpse;
  int age = it.bday;
  m.i_rem(u.pos.x, u.pos.y, index);	// reference it dies here
@@ -4630,9 +4630,7 @@ void game::complete_butcher(int index)
  if (u.str_cur < 4) skill_shift -= rng(0, 5 * (4 - u.str_cur)) / 4;
  if (factor > 0) skill_shift -= rng(0, factor / 5);
 
- int practice = 4 + pieces;
- if (practice > 20) practice = 20;
- u.practice(sk_survival, practice);
+ u.practice(sk_survival, clamped_ub<20>(4 + pieces));
 
  pieces += int(skill_shift);
  if (skill_shift < 5) pelts += (skill_shift - 5);	// Lose some pelts

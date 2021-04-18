@@ -1836,7 +1836,7 @@ void iuse::vacutainer(game *g, player *p, item *it, bool t)	// XXX disabled for 
 
  item blood(item::types[itm_blood], messages.turn);
  bool drew_blood = false;
- for(const auto& it : g->m.i_at(p->pos)) {
+ for(const auto& it : g->m.i_at(p->GPSpos)) {
   if (it.type->id == itm_corpse && query_yn("Draw blood from %s?", it.tname().c_str())) {
    blood.corpse = it.corpse;
    drew_blood = true;
@@ -1844,8 +1844,7 @@ void iuse::vacutainer(game *g, player *p, item *it, bool t)	// XXX disabled for 
   }
  }
 
- if (!drew_blood && query_yn("Draw your own blood?")) drew_blood = true;
- if (!drew_blood) return;
+ if (!drew_blood && !query_yn("Draw your own blood?")) return;
 
  it->put_in(blood);
 }

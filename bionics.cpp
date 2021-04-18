@@ -585,33 +585,32 @@ void player::activate_bionic(int b, game *g)
   break;
 
  case bio_water_extractor:
-  {
-  bool have_extracted = false;
-  for (int i = 0; i < g->m.i_at(pos).size(); i++) {
-   item tmp = g->m.i_at(pos)[i];
-   if (tmp.type->id == itm_corpse && query_yn("Extract water from the %s", tmp.tname().c_str())) {
-	have_extracted = true;
-	auto& it = i_at(g->inv("Choose a container:"));
-    if (nullptr == it.type) {
-     messages.add("You don't have that item!");
-     power_level += bionic::type[bio_water_extractor].power_cost;
-    } else if (!it.is_container()) {
-     messages.add("That %s isn't a container!", it.tname().c_str());
-     power_level += bionic::type[bio_water_extractor].power_cost;
-    } else {
-     const it_container* const cont = dynamic_cast<const it_container*>(it.type);
-     if (it.volume_contained() + 1 > cont->contains) {
-      messages.add("There's no space left in your %s.", it.tname().c_str());
-      power_level += bionic::type[bio_water_extractor].power_cost;
-     } else {
-      messages.add("You pour water into your %s.", it.tname().c_str());
-	  it.put_in(item(item::types[itm_water], 0));
-     }
-    }
-	break;
+   {
+   bool have_extracted = false;
+   for (const auto& tmp : g->m.i_at(GPSpos)) {
+	   if (tmp.type->id == itm_corpse && query_yn("Extract water from the %s", tmp.tname().c_str())) {
+		   have_extracted = true;
+		   auto& it = i_at(g->inv("Choose a container:"));
+		   if (nullptr == it.type) {
+			   messages.add("You don't have that item!");
+			   power_level += bionic::type[bio_water_extractor].power_cost;
+		   } else if (!it.is_container()) {
+			   messages.add("That %s isn't a container!", it.tname().c_str());
+			   power_level += bionic::type[bio_water_extractor].power_cost;
+		   } else {
+			   const it_container* const cont = dynamic_cast<const it_container*>(it.type);
+			   if (it.volume_contained() + 1 > cont->contains) {
+				   messages.add("There's no space left in your %s.", it.tname().c_str());
+				   power_level += bionic::type[bio_water_extractor].power_cost;
+			   } else {
+				   messages.add("You pour water into your %s.", it.tname().c_str());
+				   it.put_in(item(item::types[itm_water], 0));
+			   }
+		   }
+		   break;
+	   }
+	   if (!have_extracted) power_level += bionic::type[bio_water_extractor].power_cost;	// We never chose a corpse
    }
-   if (!have_extracted) power_level += bionic::type[bio_water_extractor].power_cost;	// We never chose a corpse
-  }
   }
   break;
 

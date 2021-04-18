@@ -220,12 +220,19 @@ class map
  }
 
 // Items
- std::vector<item>& i_at(int x, int y);
- std::vector<item>& i_at(const point& pt) { return i_at(pt.x, pt.y); };
- std::vector<item>& i_at(const reality_bubble_loc& pos) { return grid[pos.first]->itm[pos.second.x][pos.second.y]; };
- const std::vector<item>& i_at(const reality_bubble_loc& pos) const { return grid[pos.first]->itm[pos.second.x][pos.second.y]; };
- const std::vector<item>& i_at(int x, int y) const { return const_cast<map*>(this)->i_at(x, y); };
- const std::vector<item>& i_at(const point& pt) const { return const_cast<map*>(this)->i_at(pt.x, pt.y); };
+ template<class...Args>
+ std::vector<item>& i_at(Args...params)
+ {
+	 if (const auto pos = to(params...)) return grid[pos->first]->itm[pos->second.x][pos->second.y];
+	 cataclysm::discard<std::vector<item> >::x.clear();
+	 return cataclysm::discard<std::vector<item> >::x;
+ }
+
+ std::vector<item>& i_at(const reality_bubble_loc& pos) { return grid[pos.first]->itm[pos.second.x][pos.second.y]; }
+
+ template<class...Args>
+ const std::vector<item>& i_at(Args...params) const { return const_cast<map*>(this)->i_at(params...); }
+
  item water_from(int x, int y) const;
  void i_clear(int x, int y);
  void i_clear(const point& pt) { return i_clear(pt.x, pt.y); };

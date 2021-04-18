@@ -69,7 +69,7 @@ void tutorial_game::per_turn(game *g)
  if (g->u.recoil >= 5) add_message(g, LESSON_RECOIL);
 
  if (!tutorials_seen[LESSON_BUTCHER]) {
-  for(const auto& it : g->m.i_at(g->u.pos)) {
+  for(const auto& it : g->m.i_at(g->u.GPSpos)) {
    if (it.type->id == itm_corpse) {
     add_message(g, LESSON_BUTCHER);
 	break;
@@ -101,7 +101,7 @@ void tutorial_game::per_turn(game *g)
      }
  }
 
- if (!g->m.i_at(g->u.pos).empty()) add_message(g, LESSON_PICKUP);
+ if (!g->m.i_at(g->u.GPSpos).empty()) add_message(g, LESSON_PICKUP);
 }
 
 void tutorial_game::pre_action(game *g, action_id &act)

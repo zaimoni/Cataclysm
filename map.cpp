@@ -1402,13 +1402,6 @@ bool map::close_door(const point& pt)
  }
 }
 
-std::vector<item>& map::i_at(int x, int y)
-{
-    if (const auto pos = to(x, y)) return grid[pos->first]->itm[pos->second.x][pos->second.y];
-    discard<std::vector<item> >::x.clear();
-    return discard<std::vector<item> >::x;
-}
-
 item map::water_from(int x, int y) const
 {
  item ret(item::types[itm_water], 0);
