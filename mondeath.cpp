@@ -84,25 +84,21 @@ void mdeath::kill_vines(game *g, monster *z)
 void mdeath::vine_cut(game *g, monster *z)
 {
  std::vector<monster*> vines;
- for (int x = z->pos.x - 1; x <= z->pos.x + 1; x++) {
-  for (int y = z->pos.y - 1; y <= z->pos.y + 1; y++) {
-   if (x == z->pos.x && y == z->pos.y) y++; // Skip ourselves
-   monster* m_at = g->mon(x,y);
-   if (m_at && m_at->type->id == mon_creeper_vine) vines.push_back(m_at);
-  }
+ for (decltype(auto) dir : Direction::vector) {
+     if (monster* const m_at = g->mon(z->pos + dir)) {
+         if (mon_creeper_vine == m_at->type->id) vines.push_back(m_at);
+     }
  }
 
  for(auto vine : vines) {
   bool found_neighbor = false;
-  for (int x = vine->pos.x - 1; x <= vine->pos.x + 1 && !found_neighbor; x++) {
-   for (int y = vine->pos.y - 1; y <= vine->pos.y + 1 && !found_neighbor; y++) {
-    if (x != z->pos.x || y != z->pos.y) { // Not the dying vine
-	 monster* const m_at = g->mon(x,y);
-     if (m_at && (m_at->type->id == mon_creeper_hub ||
-		          m_at->type->id == mon_creeper_vine  ))
-      found_neighbor = true;
-    }
-   }
+  for (decltype(auto) dir : Direction::vector) {
+      if (const monster* const m_at = g->mon(vine->pos + dir)) {
+          if (m_at->type->id == mon_creeper_hub || m_at->type->id == mon_creeper_vine) {
+              found_neighbor = true;
+              break;
+          }
+      }
   }
   if (!found_neighbor) vine->hp = 0;
  }
