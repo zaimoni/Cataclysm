@@ -3854,10 +3854,10 @@ void game::pickup(const point& pt, int min)
    if (query_yn("Drink from your hands?")) {
     u.inv.push_back(water);
     u.eat(u.inv.size() - 1);
-    u.moves -= 350;
+    u.moves -= (mobile::mp_turn / 2) * 7;
    } else {
     handle_liquid(water, true, false);
-    u.moves -= 100;
+    u.moves -= mobile::mp_turn;
    }
   }
   return;
@@ -3891,7 +3891,7 @@ void game::pickup(const point& pt, int min)
       m.add_item(pt, u.unwield());
       u.i_add(newit);
       u.wield(u.inv.size() - 1);
-      u.moves -= 100;
+      u.moves -= mobile::mp_turn;
       messages.add("Wielding %c - %s", newit.invlet, newit.tname().c_str());
      } else
       decrease_nextinv();
@@ -3905,7 +3905,7 @@ void game::pickup(const point& pt, int min)
     u.wield(u.inv.size() - 1);
     if (from_veh) veh->remove_item (veh_part, 0);
     else m.i_clear(pt);
-    u.moves -= 100;
+    u.moves -= mobile::mp_turn;
 	messages.add("Wielding %c - %s", newit.invlet, newit.tname().c_str());
    }
   } else if (!u.is_armed() &&
@@ -3914,13 +3914,13 @@ void game::pickup(const point& pt, int min)
    u.weapon = newit;
    if (from_veh) veh->remove_item (veh_part, 0);
    else m.i_clear(pt);
-   u.moves -= 100;
+   u.moves -= mobile::mp_turn;
    messages.add("Wielding %c - %s", newit.invlet, newit.tname().c_str());
   } else {
    u.i_add(newit);
    if (from_veh) veh->remove_item (veh_part, 0);
    else m.i_clear(pt);
-   u.moves -= 100;
+   u.moves -= mobile::mp_turn;
    messages.add("%c - %s", newit.invlet, newit.tname().c_str());
   }
   if (weight_is_okay && u.weight_carried() >= u.weight_capacity() * .25)
@@ -4061,7 +4061,7 @@ void game::pickup(const point& pt, int min)
        u.i_add(here[i]);
        u.wield(u.inv.size() - 1);
        curmit--;
-       u.moves -= 100;
+       u.moves -= mobile::mp_turn;
 	   messages.add("Wielding %c - %s", u.weapon.invlet, u.weapon.tname().c_str());
       } else
        decrease_nextinv();
@@ -4076,7 +4076,7 @@ void game::pickup(const point& pt, int min)
      if (from_veh) veh->remove_item (veh_part, curmit);
      else m.i_rem(pt, curmit);
      curmit--;
-     u.moves -= 100;
+     u.moves -= mobile::mp_turn;
     }
    } else if (!u.is_armed() &&
             (u.volume_carried() + here[i].volume() > u.volume_capacity() - 2 ||
@@ -4084,13 +4084,13 @@ void game::pickup(const point& pt, int min)
     u.weapon = here[i];
     if (from_veh) veh->remove_item (veh_part, curmit);
     else m.i_rem(pt, curmit);
-    u.moves -= 100;
+    u.moves -= mobile::mp_turn;
     curmit--;
    } else {
     u.i_add(here[i]);
     if (from_veh) veh->remove_item (veh_part, curmit);
     else m.i_rem(pt, curmit);
-    u.moves -= 100;
+    u.moves -= mobile::mp_turn;
     curmit--;
    }
   }
