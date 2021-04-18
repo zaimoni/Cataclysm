@@ -54,14 +54,14 @@ void game::craft()
 
 // Clear the screen of recipe data, and draw it anew
   werase(w_data);
-  mvwprintz(w_data, 20, 0, c_white, "Press ? to describe object.  Press <ENTER> to attempt to craft object.");
+  mvwaddstrz(w_data, 20, 0, c_white, "Press ? to describe object.  Press <ENTER> to attempt to craft object.");
   wrefresh(w_data);
   for (int i = 0; i < current.size() && i < CRAFTING_WIN_HEIGHT; i++) {
    if (i == line)
-    mvwprintz(w_data, i, 0, (available[i] ? h_white : h_dkgray),
+    mvwaddstrz(w_data, i, 0, (available[i] ? h_white : h_dkgray),
 		item::types[current[i]->result]->name.c_str());
    else
-    mvwprintz(w_data, i, 0, (available[i] ? c_white : c_dkgray),
+    mvwaddstrz(w_data, i, 0, (available[i] ? c_white : c_dkgray),
 		item::types[current[i]->result]->name.c_str());
   }
   if (current.size() > 0) {
@@ -74,14 +74,14 @@ void game::craft()
               skill_name(current[line]->sk_secondary)));
    mvwprintz(w_data, 2, VBAR_X, col, "Difficulty: %d", current[line]->difficulty);
    if (current[line]->sk_primary == sk_null)
-    mvwprintz(w_data, 3, VBAR_X, col, "Your skill level: N/A");
+    mvwaddstrz(w_data, 3, VBAR_X, col, "Your skill level: N/A");
    else
     mvwprintz(w_data, 3, VBAR_X, col, "Your skill level: %d", u.sklevel[current[line]->sk_primary]);
    mvwprintz(w_data, 4, VBAR_X, col, "Time to complete: %s", current[line]->time_desc().c_str());
-   mvwprintz(w_data, 5, VBAR_X, col, "Tools required:");
+   mvwaddstrz(w_data, 5, VBAR_X, col, "Tools required:");
    if (current[line]->tools[0].empty()) {
     mvwputch(w_data, 6, VBAR_X, col, '>');
-    mvwprintz(w_data, 6, VBAR_X + 2, c_green, "NONE");
+    mvwaddstrz(w_data, 6, VBAR_X + 2, c_green, "NONE");
     ypos = 6;
    } else {
     ypos = 5;
@@ -99,7 +99,7 @@ void game::craft()
                     xpos = VBAR_X + 2;
                     ypos++;
                 }
-                mvwprintz(w_data, ypos, xpos, c_white, "OR ");
+                mvwaddstrz(w_data, ypos, xpos, c_white, "OR ");
                 xpos += 3;
             }
 
@@ -116,14 +116,14 @@ void game::craft()
                 xpos = VBAR_X + 2;
                 ypos++;
             }
-            mvwprintz(w_data, ypos, xpos, toolcol, toolname.c_str());
+            mvwaddstrz(w_data, ypos, xpos, toolcol, toolname.c_str());
             xpos += toolname.length();
         }
     }
    }
  // Loop to print the required components
    ypos++;
-   mvwprintz(w_data, ypos, VBAR_X, col, "Components required:");
+   mvwaddstrz(w_data, ypos, VBAR_X, col, "Components required:");
    for (decltype(auto) min_term : current[line]->components) {
        mvwputch(w_data, ++ypos, VBAR_X, col, '>');
        xpos = VBAR_X + 2;
@@ -136,7 +136,7 @@ void game::craft()
                    ypos++;
                    xpos = VBAR_X + 2;
                }
-               mvwprintz(w_data, ypos, xpos, c_white, " OR ");
+               mvwaddstrz(w_data, ypos, xpos, c_white, " OR ");
                xpos += 4;
            }
 
@@ -156,7 +156,7 @@ void game::craft()
                ypos++;
                xpos = VBAR_X + 2;
            }
-           mvwprintz(w_data, ypos, xpos, compcol, compname.c_str());
+           mvwaddstrz(w_data, ypos, xpos, compcol, compname.c_str());
            xpos += compname.length();
        }
    }
