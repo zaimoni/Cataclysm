@@ -2478,7 +2478,7 @@ std::optional<int> game::u_see(int x, int y) const
 std::optional<point> game::find_item(item *it) const
 {
  if (u.has_item(it)) return u.pos;
- if (const auto ret = m.find_item(it)) return ret;
+ if (const auto ret = m.find_item(it)) return ret->first;
  for (const auto& _npc : active_npc) {
   for (size_t j = 0; j < _npc.inv.size(); j++) {
    if (it == &(_npc.inv[j])) return _npc.pos;
@@ -2491,13 +2491,8 @@ void game::remove_item(item *it)
 {
  if (u.remove_item(it)) return;
  if (const auto ret = m.find_item(it)) {
-     auto& stack = m.i_at(*ret);
-     for (int i = 0; i < stack.size(); i++) {
-         if (it == &stack[i]) {
-             EraseAt(stack, i); // inlined m.i_rem(*ret, i);
-             return;
-         }
-     }
+     EraseAt(m.i_at(ret->first), ret->second); // inlined m.i_rem(*ret, i);
+     return;
  }
  for (auto& n_pc : active_npc) if (n_pc.remove_item(it)) return;
 }
