@@ -518,31 +518,29 @@ void mattack::triffid_heartbeat(game *g, monster *z)
 void mattack::fungus(game *g, monster *z)
 {
  if (g->z.size() > 100) return; // Prevent crowding the monster list.
-// TODO: Infect NPCs?
- z->moves = -200;			// It takes a while
- z->sp_timeout = z->type->sp_freq;	// Reset timer
+ z->moves -= 2 * mobile::mp_turn; // It takes a while
+ z->sp_timeout = z->type->sp_freq; // Reset timer
  monster spore(mtype::types[mon_spore]);
  int moncount = 0;
  g->sound(z->pos, 10, "Pouf!");
- if (g->u_see(z->pos)) messages.add("Spores are released from the %s!", z->name().c_str());
- for (int i = -1; i <= 1; i++) {
-  for (int j = -1; j <= 1; j++) {
-   if (i == 0 && j == 0) j++;	// No need to check 0, 0
-   point dest(z->pos.x + i, z->pos.y + j);
-   if (g->m.move_cost(dest) > 0 && one_in(5)) {
-	monster* const m_at = g->mon(dest);
-    if (m_at) {	// Spores hit a monster
-     if (g->u_see(dest)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
-     if (!m_at->make_fungus()) g->kill_mon(*m_at, z);
-	// \todo infect NPCs
-    } else if (g->u.pos == dest)
-     g->u.infect(DI_SPORES, bp_mouth, 4, 30); // Spores hit the player
-    else { // Spawn a spore
-     spore.spawn(dest);
-     g->z.push_back(spore);
-    }
-   }
-  }
+ if (g->u.see(*z)) messages.add("Spores are released from the %s!", z->name().c_str());
+ for (decltype(auto) dir : Direction::vector) {
+     point dest(z->pos + dir);
+     monster* const m_at = g->mon(dest);
+     if (m_at) ++moncount;
+     if (g->m.move_cost(dest) > 0 && one_in(5)) {
+         if (m_at) {	// Spores hit a monster
+             // \todo? Is it correct for spores to affect digging monsters (current behavior)
+             if (g->u.see(*m_at)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
+             if (!m_at->make_fungus()) g->kill_mon(*m_at, z);
+             // \todo infect NPCs (both DI_SPORES and DI_FUNGUS have to become NPC-competent)
+         } else if (g->u.pos == dest)
+             g->u.infect(DI_SPORES, bp_mouth, 4, 30); // Spores hit the player
+         else { // Spawn a spore
+             spore.spawn(dest);
+             g->z.push_back(spore);
+         }
+     }
  }
  if (moncount >= 7) z->poly(mtype::types[mon_fungaloid_dormant]);	// If we're surrounded by monsters, go dormant
 }
