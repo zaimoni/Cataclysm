@@ -484,8 +484,8 @@ void defense_game::setup()
        location = defense_location(location - 1);
      }
      draw_hline(w, 5, c_black, 'x', 2, 80);
-     mvwprintz(w, 5, 2, c_yellow, _name(location).c_str());
-     mvwprintz(w,  5, 28, c_ltgray, description(location).c_str());
+     mvwaddstrz(w, 5, 2, c_yellow, _name(location).c_str());
+     mvwaddstrz(w,  5, 28, c_ltgray, description(location).c_str());
      break;
  
     case 3:	// Difficulty of the first wave
@@ -535,8 +535,8 @@ void defense_game::setup()
       zombies = !zombies;
       specials = false;
      }
-     mvwprintz(w, 18, 2, (zombies ? c_ltgreen : c_yellow), "Zombies");
-     mvwprintz(w, 18, 14, c_yellow, "Special Zombies");
+     mvwaddstrz(w, 18, 2, (zombies ? c_ltgreen : c_yellow), "Zombies");
+     mvwaddstrz(w, 18, 14, c_yellow, "Special Zombies");
      break;
 
     case 11:
@@ -544,56 +544,48 @@ void defense_game::setup()
       specials = !specials;
       zombies = false;
      }
-     mvwprintz(w, 18, 2, c_yellow, "Zombies");
-     mvwprintz(w, 18, 14, (specials ? c_ltgreen : c_yellow), "Special Zombies");
+     mvwaddstrz(w, 18, 2, c_yellow, "Zombies");
+     mvwaddstrz(w, 18, 14, (specials ? c_ltgreen : c_yellow), "Special Zombies");
      break;
 
     case 12:
-     if (ch == ' ' || ch == '\n')
-      spiders = !spiders;
-     mvwprintz(w, 18, 34, (spiders ? c_ltgreen : c_yellow), "Spiders");
+     if (ch == ' ' || ch == '\n') spiders = !spiders;
+     mvwaddstrz(w, 18, 34, (spiders ? c_ltgreen : c_yellow), "Spiders");
      break;
 
     case 13:
-     if (ch == ' ' || ch == '\n')
-      triffids = !triffids;
-     mvwprintz(w, 18, 46, (triffids ? c_ltgreen : c_yellow), "Triffids");
+     if (ch == ' ' || ch == '\n') triffids = !triffids;
+     mvwaddstrz(w, 18, 46, (triffids ? c_ltgreen : c_yellow), "Triffids");
      break;
 
     case 14:
-     if (ch == ' ' || ch == '\n')
-      robots = !robots;
-     mvwprintz(w, 18, 59, (robots ? c_ltgreen : c_yellow), "Robots");
+     if (ch == ' ' || ch == '\n') robots = !robots;
+     mvwaddstrz(w, 18, 59, (robots ? c_ltgreen : c_yellow), "Robots");
      break;
 
     case 15:
-     if (ch == ' ' || ch == '\n')
-      subspace = !subspace;
-     mvwprintz(w, 18, 70, (subspace ? c_ltgreen : c_yellow), "Subspace");
+     if (ch == ' ' || ch == '\n') subspace = !subspace;
+     mvwaddstrz(w, 18, 70, (subspace ? c_ltgreen : c_yellow), "Subspace");
      break;
 
     case 16:
-     if (ch == ' ' || ch == '\n')
-      hunger = !hunger;
-     mvwprintz(w, 21, 2, (hunger ? c_ltgreen : c_yellow), "Food");
+     if (ch == ' ' || ch == '\n') hunger = !hunger;
+     mvwaddstrz(w, 21, 2, (hunger ? c_ltgreen : c_yellow), "Food");
      break;
 
     case 17:
-     if (ch == ' ' || ch == '\n')
-      thirst = !thirst;
-     mvwprintz(w, 21, 16, (thirst ? c_ltgreen : c_yellow), "Water");
+     if (ch == ' ' || ch == '\n') thirst = !thirst;
+     mvwaddstrz(w, 21, 16, (thirst ? c_ltgreen : c_yellow), "Water");
      break;
 
     case 18:
-     if (ch == ' ' || ch == '\n')
-      sleep = !sleep;
-     mvwprintz(w, 21, 31, (sleep ? c_ltgreen : c_yellow), "Sleep");
+     if (ch == ' ' || ch == '\n') sleep = !sleep;
+     mvwaddstrz(w, 21, 31, (sleep ? c_ltgreen : c_yellow), "Sleep");
      break;
 
     case 19:
-     if (ch == ' ' || ch == '\n')
-      mercenaries = !mercenaries;
-     mvwprintz(w, 21, 46, (mercenaries ? c_ltgreen : c_yellow), "Mercenaries");
+     if (ch == ' ' || ch == '\n') mercenaries = !mercenaries;
+     mvwaddstrz(w, 21, 46, (mercenaries ? c_ltgreen : c_yellow), "Mercenaries");
      break;
    }
   }
@@ -605,20 +597,20 @@ void defense_game::setup()
 void defense_game::refresh_setup(WINDOW* w, int selection)
 {
  werase(w);
- mvwprintz(w,  0,  1, c_ltred, "DEFENSE MODE");
- mvwprintz(w,  0, 28, c_ltred, "Press +/- or >/< to cycle, spacebar to toggle");
- mvwprintz(w,  1, 28, c_ltred, "Press S to start, ! to save as a template");
- mvwprintz(w,  2,  2, c_ltgray, "Scenario:");
- mvwprintz(w,  3,  2, 1 == selection ? c_yellow : c_blue, defense_style_name(style).c_str());
- mvwprintz(w,  3, 28, c_ltgray, defense_style_description(style).c_str());
- mvwprintz(w,  4,  2, c_ltgray, "Location:");
- mvwprintz(w,  5,  2, 2 == selection ? c_yellow : c_blue, _name(location).c_str());
- mvwprintz(w,  5, 28, c_ltgray, description(location).c_str());
+ mvwaddstrz(w,  0,  1, c_ltred, "DEFENSE MODE");
+ mvwaddstrz(w,  0, 28, c_ltred, "Press +/- or >/< to cycle, spacebar to toggle");
+ mvwaddstrz(w,  1, 28, c_ltred, "Press S to start, ! to save as a template");
+ mvwaddstrz(w,  2,  2, c_ltgray, "Scenario:");
+ mvwaddstrz(w,  3,  2, 1 == selection ? c_yellow : c_blue, defense_style_name(style).c_str());
+ mvwaddstrz(w,  3, 28, c_ltgray, defense_style_description(style).c_str());
+ mvwaddstrz(w,  4,  2, c_ltgray, "Location:");
+ mvwaddstrz(w,  5,  2, 2 == selection ? c_yellow : c_blue, _name(location).c_str());
+ mvwaddstrz(w,  5, 28, c_ltgray, description(location).c_str());
 
  static auto draw_numeric_row = [&](int y, const char* label, nc_color col, int num, const char* desc) {
-     mvwprintz(w, y, 2, c_ltgray, label);
+     mvwaddstrz(w, y, 2, c_ltgray, label);
      mvwprintz(w, y, 25 - int_log10(num), col, "%d", num);
-     mvwprintz(w, y, 28, c_ltgray, desc);
+     mvwaddstrz(w, y, 28, c_ltgray, desc);
  };
 
  draw_numeric_row(7, "Initial Difficulty:", 3 == selection ? c_yellow : c_blue, initial_difficulty, "The difficulty of the first wave.");
@@ -633,19 +625,19 @@ void defense_game::refresh_setup(WINDOW* w, int selection)
 
 #define TOGCOL(n, b) (selection == (n) ? (b ? c_ltgreen : c_yellow) : (b ? c_green : c_dkgray))
 
- mvwprintz(w, 17,  2, c_ltgray, "Enemy Selection:");
- mvwprintz(w, 18,  2, TOGCOL(10, zombies), "Zombies");
- mvwprintz(w, 18, 14, TOGCOL(11, specials), "Special Zombies");
- mvwprintz(w, 18, 34, TOGCOL(12, spiders), "Spiders");
- mvwprintz(w, 18, 46, TOGCOL(13, triffids), "Triffids");
- mvwprintz(w, 18, 59, TOGCOL(14, robots), "Robots");
- mvwprintz(w, 18, 70, TOGCOL(15, subspace), "Subspace");
+ mvwaddstrz(w, 17,  2, c_ltgray, "Enemy Selection:");
+ mvwaddstrz(w, 18,  2, TOGCOL(10, zombies), "Zombies");
+ mvwaddstrz(w, 18, 14, TOGCOL(11, specials), "Special Zombies");
+ mvwaddstrz(w, 18, 34, TOGCOL(12, spiders), "Spiders");
+ mvwaddstrz(w, 18, 46, TOGCOL(13, triffids), "Triffids");
+ mvwaddstrz(w, 18, 59, TOGCOL(14, robots), "Robots");
+ mvwaddstrz(w, 18, 70, TOGCOL(15, subspace), "Subspace");
 
- mvwprintz(w, 20,  2, c_ltgray, "Needs:");
- mvwprintz(w, 21,  2, TOGCOL(16, hunger), "Food");
- mvwprintz(w, 21, 16, TOGCOL(17, thirst), "Water");
- mvwprintz(w, 21, 31, TOGCOL(18, sleep), "Sleep");
- mvwprintz(w, 21, 46, TOGCOL(19, mercenaries), "Mercenaries");
+ mvwaddstrz(w, 20,  2, c_ltgray, "Needs:");
+ mvwaddstrz(w, 21,  2, TOGCOL(16, hunger), "Food");
+ mvwaddstrz(w, 21, 16, TOGCOL(17, thirst), "Water");
+ mvwaddstrz(w, 21, 31, TOGCOL(18, sleep), "Sleep");
+ mvwaddstrz(w, 21, 46, TOGCOL(19, mercenaries), "Mercenaries");
  wrefresh(w);
 
 #undef TOGCOL
@@ -710,7 +702,7 @@ static void draw_caravan_items(WINDOW* w, const player& u, const std::vector<ity
     // THEN print it--if item_selected is valid
     if (item_selected < items.size()) {
         item tmp(item::types[items[item_selected]], 0); // Dummy item to get info
-        mvwprintz(w, 12, 0, c_white, tmp.info().c_str());
+        mvwaddstrz(w, 12, 0, c_white, tmp.info().c_str());
     }
     // Next, clear the item list on the right
     for (int i = 1; i <= VIEW - 2; i++)
@@ -718,7 +710,7 @@ static void draw_caravan_items(WINDOW* w, const player& u, const std::vector<ity
     // Finally, print the item list on the right
     for (int i = offset; i <= offset + VIEW - 2 && i < items.size(); i++) {
         const itype* const i_type = item::types[items[i]];
-        mvwprintz(w, i - offset + 1, 40, (item_selected == i ? h_white : c_white), i_type->name.c_str());
+        mvwaddstrz(w, i - offset + 1, 40, (item_selected == i ? h_white : c_white), i_type->name.c_str());
         wprintz(w, c_white, " x %s%d", (counts[i] >= 10 ? "" : " "), counts[i]);
         if (counts[i] > 0) {
             int price = caravan_price(u, i_type->price * counts[i]);
@@ -1049,7 +1041,7 @@ void draw_caravan_borders(WINDOW *w, int current_window)
  mvwputch(w, VIEW - 1, SCREEN_WIDTH / 2 - 1, col, LINE_XOOX);
 
 // Quick reminded about help.
- mvwprintz(w, VIEW - 1, 2, c_red, "Press ? for help.");
+ mvwaddstrz(w, VIEW - 1, 2, c_red, "Press ? for help.");
  wrefresh(w);
 }
 
@@ -1070,13 +1062,13 @@ void draw_caravan_categories(WINDOW *w, int category_selected, int total_price,
 // Clear the window
  for (int i = 1; i < NUM_CARAVAN_CATEGORIES + 4; i++)
   draw_hline(w, i, c_black, 'x', 1, SCREEN_WIDTH / 2 - 1);
- mvwprintz(w, 1, 1, c_white, "Your Cash:");
+ mvwaddstrz(w, 1, 1, c_white, "Your Cash:");
  mvwprintz(w, 1, 17 - int_log10(cash), c_white, "%d", cash);
  wprintz(w, c_ltgray, " -> ");
  wprintz(w, (total_price > cash ? c_red : c_green), "%d", cash - total_price);
 
  for (int i = 0; i < NUM_CARAVAN_CATEGORIES; i++)
-  mvwprintz(w, i + 3, 1, (i == category_selected ? h_white : c_white), caravan_category_name[i]);
+  mvwaddstrz(w, i + 3, 1, (i == category_selected ? h_white : c_white), caravan_category_name[i]);
  wrefresh(w);
 }
  
