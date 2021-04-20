@@ -5139,7 +5139,7 @@ void game::plswim(int x, int y)
  }
  int movecost = u.swim_speed();
  u.practice(sk_swimming, 1);
- if (movecost >= 500) {
+ if (movecost >= 5 * mobile::mp_turn) {
   if (!u.underwater) {
    messages.add("You sink%s!", (movecost >= 400 ? " like a rock" : ""));	// \todo V 0.2.1+ either adjust adjective threshold, or hard-code this
    u.underwater = true;
@@ -5147,12 +5147,12 @@ void game::plswim(int x, int y)
   }
  }
  if (u.oxygen <= 5 && u.underwater) {
-  if (movecost < 500)
+  if (movecost < 5 * mobile::mp_turn)
    popup("You need to breathe! (Press '<' to surface.)");
   else
    popup("You need to breathe but you can't swim!  Get to dry land, quick!");	// \todo V 0.2.1+ check for bionic gills which mitigate the consequences
  }
- u.moves -= (movecost > 200 ? 200 : movecost);
+ u.moves -= (movecost > 2 * mobile::mp_turn ? 2 * mobile::mp_turn : movecost);
  for (size_t i = 0; i < u.inv.size(); i++) {
   decltype(auto) it = u.inv[i];
   if (IRON == it.type->m1 && it.damage < 5 && one_in(8)) it.damage++;
@@ -5182,18 +5182,15 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
     else sname = zz->name() + " is";
     int range = flvel / 10;
     int vel1 = flvel;
-    int x = (is_player? p->pos.x : zz->pos.x);
-    int y = (is_player? p->pos.y : zz->pos.y);
+    decltype(auto) pt = is_player ? p->pos : zz->pos;
     while (range > 0) {
         tdir.advance();
-        x = (is_player? p->pos.x : zz->pos.x) + tdir.dx();
-        y = (is_player? p->pos.y : zz->pos.y) + tdir.dy();
+        pt = (is_player ? p->pos : zz->pos) + point(tdir.dx(), tdir.dy());
         std::string dname;
         bool thru = true;
         bool slam = false;
-		monster* const m_at = mon(x, y);
-        dam1 = flvel / 3 + rng (0, flvel * 1 / 3);
-        if (m_at) {
+        dam1 = flvel / 3 + rng(0, flvel * 1 / 3);
+        if (monster* const m_at = mon(pt)) {
             slam = true;
             dname = m_at->name();
             dam2 = flvel / 3 + rng (0, flvel * 1 / 3);
@@ -5201,11 +5198,11 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
             else thru = false;
             if (is_player) p->hitall (this, dam1, 40);
             else zz->hurt(dam1);
-        } else if (m.move_cost(x, y) == 0 && !m.has_flag(swimmable, x, y)) {
+        } else if (m.move_cost(pt) == 0 && !m.has_flag(swimmable, pt)) {
             slam = true;
-            const auto veh = m._veh_at(x, y);
-            dname = veh ? veh->first->part_info(veh->second).name : m.tername(x, y).c_str();
-            if (m.has_flag(bashable, x, y)) thru = m.bash(x, y, flvel, snd);
+            const auto veh = m._veh_at(pt);
+            dname = veh ? veh->first->part_info(veh->second).name : m.tername(pt).c_str();
+            if (m.has_flag(bashable, pt)) thru = m.bash(pt, flvel, snd);
             else thru = false;
             if (snd.length() > 0) messages.add("You hear a %s", snd.c_str());
             if (is_player) p->hitall (this, dam1, 40);
@@ -5214,36 +5211,31 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
         }
         if (slam) messages.add("%s slammed against the %s for %d damage!", sname.c_str(), dname.c_str(), dam1);
 		if (!thru) break;
-        if (is_player) p->screenpos_set(point(x, y));
-        else zz->screenpos_set(point(x, y));
+        if (is_player) p->screenpos_set(pt);
+        else zz->screenpos_set(pt);
         range--;
         steps++;
         timespec ts = { 0, 50000000 };   // Timespec for the animation
         nanosleep(&ts, nullptr);
     }
 
-    if (!m.has_flag(swimmable, x, y))
-    {
+    if (!m.has_flag(swimmable, pt)) {
         // fall on ground
         dam1 = rng (flvel / 3, flvel * 2 / 3) / 2;
-        if (is_player)
-        {
+        if (is_player) {
             int dex_reduce = p->dex_cur < 4? 4 : p->dex_cur;
             dam1 = dam1 * 8 / dex_reduce;
             if (p->has_trait(PF_PARKOUR)) dam1 /= 2;
             if (dam1 > 0) p->hitall (this, dam1, 40);
-        }
-        else zz->hurt (dam1);
+        } else zz->hurt (dam1);
 
-        if (is_u)
-        {
+        if (is_u) {
             if (dam1 > 0)
 				messages.add("You fall on the ground for %d damage.", dam1);
             else
 				messages.add("You fall on the ground.");
         }
-    }
-    else if (is_u) messages.add("You fall into water.");
+    } else if (is_u) messages.add("You fall into water.");
 }
 
 void game::vertical_move(int movez, bool force)
