@@ -50,7 +50,7 @@ void trapfuncm::beartrap(game *g, monster *z)
   z->moves = 0;
   z->add_effect(ME_BEARTRAP, rng(8, 15));
  }
- g->m.tr_at(z->pos) = tr_null;
+ z->GPSpos.trap_at() = tr_null;
  item beartrap(item::types[itm_beartrap], 0);
  z->add_item(beartrap); // \todo would prefer parity with player case
 }
@@ -393,14 +393,14 @@ void trapfunc::sinkhole(game *g, int x, int y)
      messages.add("There's nowhere to pull yourself to, and you sink!");
      g->u.use_amount(itm_rope_30, 1);
      g->m.add_item(g->u.pos + rng(adjacent_span), item::types[itm_rope_30], messages.turn);
-     g->m.tr_at(g->u.pos) = tr_pit;
+     g->u.GPSpos.trap_at() = tr_pit;
      g->vertical_move(-1, true);
     } else {
      messages.add("You pull yourself to safety!  The sinkhole collapses.");
      int index = rng(0, safe.size() - 1);
      g->u.screenpos_set(safe[index]);
      g->update_map(g->u.pos.x, g->u.pos.y);
-     g->m.tr_at(g->u.pos) = tr_pit;
+     g->u.GPSpos.trap_at() = tr_pit;
     }
    } else {
     messages.add("You're not strong enough to pull yourself out...");
@@ -415,7 +415,7 @@ void trapfunc::sinkhole(game *g, int x, int y)
     g->u.use_amount(itm_rope_30, 1);
     g->m.add_item(g->u.pos + rng(adjacent_span), item::types[itm_rope_30], messages.turn);
    }
-   g->m.tr_at(g->u.pos) = tr_pit;
+   g->u.GPSpos.trap_at() = tr_pit;
    g->vertical_move(-1, true);
   }
  } else {

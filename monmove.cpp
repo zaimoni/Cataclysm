@@ -482,7 +482,7 @@ void monster::move_to(game *g, const point& pt)
   screenpos_set(pt);
   footsteps(g, pt);
   if (!not_landbound) {
-      if (const auto tr_at = g->m.tr_at(pos)) { // Monster stepped on a trap!
+      if (const auto tr_at = GPSpos.trap_at()) { // Monster stepped on a trap!
           const trap* const tr = trap::traps[tr_at];
           if (dice(3, sk_dodge + 1) < dice(3, tr->avoidance)) (tr->actm)(g, this);
       }

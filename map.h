@@ -63,6 +63,8 @@ class map
  std::optional<reality_bubble_loc> to(const point& pt) const;
  std::optional<reality_bubble_loc> to(int x, int y) const { return to(point(x,y)); };
  static std::optional<reality_bubble_loc> to(const GPS_loc& pt);
+ submap* chunk(const GPS_loc& pt);
+ const submap* chunk(const GPS_loc& pt) const { return const_cast<map*>(this)->chunk(pt); }
 
  bool find_stairs(const point& pt, int movez, point& pos) const;
  bool find_terrain(const point& pt, ter_id dest, point& pos) const;

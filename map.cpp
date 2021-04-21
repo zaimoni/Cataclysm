@@ -42,6 +42,12 @@ std::optional<reality_bubble_loc> map::to(const GPS_loc& pt)
     return game::active()->toSubmap(pt);
 }
 
+submap* map::chunk(const GPS_loc& pt)
+{
+    if (const auto pos = to(pt)) return grid[pos->first]; // check internal cache first
+    return MAPBUFFER.lookup_submap(pt.first);
+}
+
 bool map::find_stairs(const point& pt, const int movez, point& pos) const
 {
     int best = 999;
@@ -1634,7 +1640,7 @@ void map::use_charges(point origin, int range, const itype_id type, int quantity
 
 trap_id& GPS_loc::trap_at()
 {
-    if (decltype(auto) sm = MAPBUFFER.lookup_submap(first)) {
+    if (decltype(auto) sm = game::active()->m.chunk(*this)) {
         if (const auto terrain_trap = ter_t::list[sm->ter[second.x][second.y]].trap) return (discard<trap_id>::x = terrain_trap);
         return sm->trp[second.x][second.y];
     }
@@ -1643,7 +1649,7 @@ trap_id& GPS_loc::trap_at()
 
 trap_id GPS_loc::trap_at() const
 {
-    if (decltype(auto) sm = MAPBUFFER.lookup_submap(first)) {
+    if (decltype(auto) sm = game::active()->m.chunk(*this)) {
         if (const auto terrain_trap = ter_t::list[sm->ter[second.x][second.y]].trap) return terrain_trap;
         return sm->trp[second.x][second.y];
     }

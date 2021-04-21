@@ -138,7 +138,7 @@ void tutorial_game::post_action(game *g, action_id act)
  case ACTION_USE:
   if (g->u.has_amount(itm_grenade_act, 1)) add_message(g, LESSON_ACT_GRENADE);
   for (decltype(auto) delta : Direction::vector) {
-      if (tr_bubblewrap == g->m.tr_at(g->u.pos + delta)) add_message(g, LESSON_ACT_BUBBLEWRAP);
+      if (tr_bubblewrap == (g->u.GPSpos + delta).trap_at()) add_message(g, LESSON_ACT_BUBBLEWRAP);
   }
   break;
 

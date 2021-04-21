@@ -5367,7 +5367,7 @@ void game::vertical_move(int movez, bool force)
   }
  }
 
- if (const auto tr_id = m.tr_at(u.pos)) { // We stepped on a trap!
+ if (const auto tr_id = u.GPSpos.trap_at()) { // We stepped on a trap!
   const trap* const tr = trap::traps[tr_id];
   if (force || !u.avoid_trap(tr)) (tr->act)(this, u.pos.x, u.pos.y);
  }
