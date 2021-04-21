@@ -58,7 +58,7 @@ bool reality_bubble::toScreen(const GPS_loc& GPS_pos, point& screen_pos) const
 	return false;
 }
 
-std::optional<reality_bubble_loc> reality_bubble::toSubmap(GPS_loc GPS_pos) const
+std::optional<reality_bubble_loc> reality_bubble::toSubmap(const GPS_loc& GPS_pos) const
 {
 	if (GPS_pos.first.z != cur_om.pos.z) return std::nullopt;	// \todo? z-level change target
 	const auto anchor(toGPS(point(0, 0)));	// \todo would be nice to short-circuit this stage, but may be moot after modeling Earth's radius.  Also, cache target
