@@ -4974,7 +4974,7 @@ void game::plmove(int x, int y)
   }
 
 // Calculate cost of moving
-  u.moves -= u.run_cost(m.move_cost(x, y) * 50);
+  u.moves -= u.run_cost(m.move_cost(x, y) * (mobile::mp_turn / 2));
 
 // Adjust recoil down
   if (u.recoil > 0) {

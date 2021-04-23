@@ -62,7 +62,7 @@ public:
  void update_morale();	// Ticks down morale counters and removes them
  int  current_speed() const; // Number of movement points we get a turn
  int  theoretical_speed() const; // ", ignoring some environmental modifiers
- int  run_cost(int base_cost); // Adjust base_cost
+ int  run_cost(int base_cost) const; // Adjust base_cost
  int  swim_speed();	// Our speed when swimming
 
  int is_cold_blooded() const;

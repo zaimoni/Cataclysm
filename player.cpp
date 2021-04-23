@@ -1817,27 +1817,29 @@ template<bool want_details = false> static int _current_speed(const player& u, g
 int player::current_speed() const { return _current_speed(*this, game::active()); }
 int player::theoretical_speed() const { return _current_speed(*this, nullptr); }
 
-int player::run_cost(int base_cost)
+int player::run_cost(int base_cost) const
 {
  int movecost = base_cost;
- if (has_trait(PF_PARKOUR) && base_cost > 100) {
-  movecost /= 2;
-  if (movecost < 100) movecost = 100;
+ if (has_trait(PF_PARKOUR) && base_cost > mobile::mp_turn) {
+  clamp_lb<mobile::mp_turn>(movecost /= 2);
  }
- if (hp_cur[hp_leg_l] == 0)
-  movecost += 50;
- else if (hp_cur[hp_leg_l] < 40)
-  movecost += 25;
- if (hp_cur[hp_leg_r] == 0)
-  movecost += 50;
- else if (hp_cur[hp_leg_r] < 40)
-  movecost += 25;
+ if (40 > hp_cur[hp_leg_l]) {
+     movecost += (0 >= hp_cur[hp_leg_l]) ? (mobile::mp_turn / 2) : (mobile::mp_turn / 4);
+ }
+ if (40 > hp_cur[hp_leg_r]) {
+     movecost += (0 >= hp_cur[hp_leg_r]) ? (mobile::mp_turn / 2) : (mobile::mp_turn / 4);
+ }
 
- if (has_trait(PF_FLEET) && base_cost == 100)
-  movecost = int(movecost * .85);
- if (has_trait(PF_FLEET2) && base_cost == 100)
-  movecost = int(movecost * .7);
- if (has_trait(PF_PADDED_FEET) && !wearing_something_on(bp_feet))
+ if (mobile::mp_turn == base_cost) {
+     if (has_trait(PF_FLEET))
+         movecost = int(movecost * .85);
+     if (has_trait(PF_FLEET2))
+         movecost = int(movecost * .7);
+ }
+
+ const bool is_barefoot = !wearing_something_on(bp_feet);
+
+ if (is_barefoot && has_trait(PF_PADDED_FEET))
   movecost = int(movecost * .9);
  if (has_trait(PF_LIGHT_BONES))
   movecost = int(movecost * .9);
@@ -1853,10 +1855,8 @@ int player::run_cost(int base_cost)
   movecost = int(movecost * 1.2);
  if (has_trait(PF_PONDEROUS3))
   movecost = int(movecost * 1.3);
- movecost += encumb(bp_mouth) * 5 + encumb(bp_feet) * 5 +
-             encumb(bp_legs) * 3;
- if (!wearing_something_on(bp_feet) && !has_trait(PF_PADDED_FEET) &&
-     !has_trait(PF_HOOVES))
+ movecost += encumb(bp_mouth) * 5 + encumb(bp_feet) * 5 + encumb(bp_legs) * 3;
+ if (is_barefoot && !has_trait(PF_PADDED_FEET) && !has_trait(PF_HOOVES))
   movecost += 15;
 
  return movecost;
@@ -2235,10 +2235,10 @@ void player::disp_info(game *g)
      ++line;
  }
 
- int runcost = run_cost(100);
- nc_color col = (runcost <= 100 ? c_green : c_red);
+ int runcost = run_cost(mobile::mp_turn);
+ nc_color col = (runcost <= mobile::mp_turn ? c_green : c_red);
  mvwprintz(w_speed, 1, 23 - int_log10(runcost), col, "%d", runcost);
- col = (newmoves >= 100 ? c_green : c_red);
+ col = (newmoves >= mobile::mp_turn ? c_green : c_red);
  mvwprintz(w_speed, 2, 23 - int_log10(newmoves), col, "%d", newmoves);
  wrefresh(w_speed);
 
