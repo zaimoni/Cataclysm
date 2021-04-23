@@ -2221,15 +2221,15 @@ void player::disp_info(game *g)
 // Finally, draw speed.
  std::vector<std::pair<std::string, int> > speed_modifiers;
 
- mvwprintz(w_speed, 0, 11, c_ltgray, "SPEED");
- mvwprintz(w_speed, 1,  1, c_ltgray, "Base Move Cost:");
- mvwprintz(w_speed, 2,  1, c_ltgray, "Current Speed:");
+ mvwaddstrz(w_speed, 0, 11, c_ltgray, "SPEED");
+ mvwaddstrz(w_speed, 1,  1, c_ltgray, "Base Move Cost:");
+ mvwaddstrz(w_speed, 2,  1, c_ltgray, "Current Speed:");
  int newmoves = _current_speed<true>(*this, g, &speed_modifiers);
  int pen = 0;
  line = 3;
  for (decltype(auto) x : speed_modifiers) {
      auto display = (0 < x.second) ? std::pair(c_green, '+') : std::pair(c_red, '-');
-     mvwprintz(w_speed, line, 1, display.first, x.first.c_str());
+     mvwaddstrz(w_speed, line, 1, display.first, x.first.c_str());
      mvwputch(w_speed, line, 23 - int_log10(abs(x.second)), display.first, abs(x.second));
      mvwputch(w_speed, line, 20, display.first, display.second);
      ++line;
@@ -2275,25 +2275,25 @@ detecting traps and other things of interest."
   werase(w_info);
   switch (curtab) {
   case stats:	// Stats tab
-   mvwprintz(w_stats, 0, 10, h_ltgray, "STATS");
-   mvwprintz(w_stats, 2 + line, 2, h_ltgray, stat_labels[line]);
-   mvwprintz(w_info, 0, 0, c_magenta, stat_desc[line]);
+   mvwaddstrz(w_stats, 0, 10, h_ltgray, "STATS");
+   mvwaddstrz(w_stats, 2 + line, 2, h_ltgray, stat_labels[line]);
+   mvwaddstrz(w_info, 0, 0, c_magenta, stat_desc[line]);
    wrefresh(w_stats);
    wrefresh(w_info);
    switch (input()) {
     case 'j':
-     mvwprintz(w_stats, 2 + line, 2, c_ltgray, stat_labels[line]);
+     mvwaddstrz(w_stats, 2 + line, 2, c_ltgray, stat_labels[line]);
      if (std::end(stat_labels) - std::begin(stat_labels) <= ++line) line = 0;
-     mvwprintz(w_stats, 2 + line, 2, h_ltgray, stat_labels[line]);
+     mvwaddstrz(w_stats, 2 + line, 2, h_ltgray, stat_labels[line]);
      break;
     case 'k':
-     mvwprintz(w_stats, 2 + line, 2, c_ltgray, stat_labels[line]);
+     mvwaddstrz(w_stats, 2 + line, 2, c_ltgray, stat_labels[line]);
      if (0 > --line) line = std::end(stat_labels) - std::begin(stat_labels) - 1;
-     mvwprintz(w_stats, 2 + line, 2, h_ltgray, stat_labels[line]);
+     mvwaddstrz(w_stats, 2 + line, 2, h_ltgray, stat_labels[line]);
      break;
     case '\t':
-     mvwprintz(w_stats, 2 + line, 2, c_ltgray, stat_labels[line]);
-     mvwprintz(w_stats, 0, 10, c_ltgray, "STATS");
+     mvwaddstrz(w_stats, 2 + line, 2, c_ltgray, stat_labels[line]);
+     mvwaddstrz(w_stats, 0, 10, c_ltgray, "STATS");
      line = 0;
      curtab++;
      break;
