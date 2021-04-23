@@ -1051,7 +1051,7 @@ void npc::move_to(game *g, point pt)
   screenpos_set(pt);
   moves -= run_cost(g->m.move_cost(pt) * (mobile::mp_turn/2));
   _normalize_path(path, pos); // maintain path (should cost CPU)
- } else if (g->m.open_door(pt.x, pt.y, (g->m.ter(pos) == t_floor)))
+ } else if (g->m.open_door(pt.x, pt.y, (t_floor == GPSpos.ter())))
   moves -= mobile::mp_turn;
  else if (g->m.has_flag(bashable, pt)) {
   moves -= (mobile::mp_turn / 10) * 11;

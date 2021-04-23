@@ -3353,7 +3353,7 @@ void game::_explode_mon(monster& target, player* me)
 
 void game::open()
 {
- u.moves -= 100;
+ u.moves -= mobile::mp_turn;
  bool didit = false;
  mvwprintw(w_terrain, 0, 0, "Open where? (hjklyubn) ");
  wrefresh(w_terrain);
@@ -3366,7 +3366,7 @@ void game::open()
   if (veh && veh->part_flag(vpart, vpf_openable)) {
    if (veh->parts[vpart].open) {
     messages.add("That door is already open.");
-    u.moves += 100;
+    u.moves += mobile::mp_turn;
    } else {
     veh->parts[vpart].open = 1;
     veh->insides_dirty = true;
@@ -3374,7 +3374,7 @@ void game::open()
    return;
   }
 
-  didit = m.open_door(u.pos.x + open.x, u.pos.y + open.y, (m.ter(u.pos) == t_floor));
+  didit = m.open_door(u.pos.x + open.x, u.pos.y + open.y, (t_floor == u.GPSpos.ter()));
  }
  else
   messages.add("Invalid direction.");
@@ -3386,11 +3386,11 @@ void game::open()
    break;	// Trying to open a locked door uses the full turn's movement
   case t_door_o:
    messages.add("That door is already open.");
-   u.moves += 100;
+   u.moves += mobile::mp_turn;
    break;
   default:
    messages.add("No door there.");
-   u.moves += 100;
+   u.moves += mobile::mp_turn;
   }
  }
 }
@@ -5101,7 +5101,7 @@ void game::plmove(int x, int y)
  } else if (veh_closed_door) { // move_cost <= 0
   veh->parts[dpart].open = 1;
   veh->insides_dirty = true;
-  u.moves -= 100;
+  u.moves -= mobile::mp_turn;
   messages.add("You open the %s's %s.", veh->name.c_str(),
                                     veh->part_info(dpart).name);
 
@@ -5118,11 +5118,11 @@ void game::plmove(int x, int y)
   if (u.has_disease(DI_BLIND) || u.has_disease(DI_STUNNED)) {
 // Only lose movement if we're blind
    messages.add("You bump into a %s!", m.tername(x, y).c_str());
-   u.moves -= 100;
-  } else if (m.open_door(x, y, m.ter(u.pos) == t_floor))
-   u.moves -= 100;
+   u.moves -= mobile::mp_turn;
+  } else if (m.open_door(x, y, t_floor == u.GPSpos.ter()))
+   u.moves -= mobile::mp_turn;
   else if (m.ter(x, y) == t_door_locked || m.ter(x, y) == t_door_locked_alarm) {
-   u.moves -= 100;
+   u.moves -= mobile::mp_turn;
    messages.add("That door is locked!");
   }
  }
@@ -5338,12 +5338,12 @@ void game::vertical_move(int movez, bool force)
  }
 
  lev.z += movez;
- u.moves -= 100;
+ u.moves -= mobile::mp_turn;
 
  m.load(this, project_xy(lev));
  m.find_stairs(stair, movez, stair);
  u.screenpos_set(stair);
- if (rope_ladder) m.ter(u.pos) = t_rope_up;
+ if (rope_ladder) u.GPSpos.ter() = t_rope_up;
  if (m.rewrite_test<t_manhole_cover, t_manhole>(stairx, stairy)) 
    m.add_item(stairx + rng(-1, 1), stairy + rng(-1, 1), item::types[itm_manhole_cover], 0);
 

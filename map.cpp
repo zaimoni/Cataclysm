@@ -562,13 +562,13 @@ bool map::displace_water (int x, int y)
 
 ter_id& GPS_loc::ter()
 {
-    if (submap* const sm = MAPBUFFER.lookup_submap(first)) return sm->ter[second.x][second.y];
+    if (submap* const sm = game::active()->m.chunk(*this)) return sm->ter[second.x][second.y];
     return (discard<ter_id>::x = t_null); // Out-of-bounds - null terrain
 }
 
 ter_id GPS_loc::ter() const
 {
-    if (const submap* const sm = MAPBUFFER.lookup_submap(first)) return sm->ter[second.x][second.y];
+    if (const submap* const sm = game::active()->m.chunk(*this)) return sm->ter[second.x][second.y];
     return t_null; // Out-of-bounds - null terrain
 }
 
@@ -1640,7 +1640,7 @@ void map::use_charges(point origin, int range, const itype_id type, int quantity
 
 trap_id& GPS_loc::trap_at()
 {
-    if (decltype(auto) sm = game::active()->m.chunk(*this)) {
+    if (submap* const sm = game::active()->m.chunk(*this)) {
         if (const auto terrain_trap = ter_t::list[sm->ter[second.x][second.y]].trap) return (discard<trap_id>::x = terrain_trap);
         return sm->trp[second.x][second.y];
     }
@@ -1649,7 +1649,7 @@ trap_id& GPS_loc::trap_at()
 
 trap_id GPS_loc::trap_at() const
 {
-    if (decltype(auto) sm = game::active()->m.chunk(*this)) {
+    if (const submap* const sm = game::active()->m.chunk(*this)) {
         if (const auto terrain_trap = ter_t::list[sm->ter[second.x][second.y]].trap) return terrain_trap;
         return sm->trp[second.x][second.y];
     }

@@ -828,7 +828,7 @@ void iuse::hammer(game *g, player *p, item *it, bool t)
      messages.add("To board up a window or door, press *");
      return;
  }
- p->moves -= 500;
+ p->moves -= 5 * mobile::mp_turn;
  item it_nails(item::types[itm_nail], 0, g->nextinv);
  it_nails.charges = std::get<1>(*deconstruct);
  g->m.add_item(p->pos, std::move(it_nails));
@@ -1019,30 +1019,30 @@ void iuse::crowbar(game *g, player *p, item *it, bool t)
  if (type == t_door_c || type == t_door_locked || type == t_door_locked_alarm) {
   if (dice(4, 6) < dice(4, p->str_cur)) {
    messages.add("You pry the door open.");
-   p->moves -= (150 - (p->str_cur * 5));
+   p->moves -= (mobile::mp_turn / 2) * 3 - (p->str_cur * (mobile::mp_turn / 20));
    type = t_door_o;
   } else {
    messages.add("You pry, but cannot open the door.");
-   p->moves -= 100;
+   p->moves -= mobile::mp_turn;
   }
  } else if (type == t_manhole_cover) {
   if (dice(8, 8) < dice(8, p->str_cur)) {
    messages.add("You lift the manhole cover.");
-   p->moves -= (500 - (p->str_cur * 5));
+   p->moves -= 5 * mobile::mp_turn - (p->str_cur * (mobile::mp_turn / 20));
    type = t_manhole;
    g->m.add_item(p->pos, item::types[itm_manhole_cover], 0);
   } else {
    messages.add("You pry, but cannot lift the manhole cover.");
-   p->moves -= 100;
+   p->moves -= mobile::mp_turn;
   }
  } else if (type == t_crate_c) {
   if (p->str_cur >= rng(3, 30)) {
    messages.add("You pop the crate open.");
-   p->moves -= (150 - (p->str_cur * 5));
+   p->moves -= (mobile::mp_turn / 2) * 3 - (p->str_cur * (mobile::mp_turn / 20));
    type = t_crate_o;
   } else {
    messages.add("You pry, but cannot open the crate.");
-   p->moves -= 100;
+   p->moves -= mobile::mp_turn;
   } 
  } else {
   auto deconstruct = linear_search(type, std::begin(deconstruct_boarded), std::end(deconstruct_boarded));
@@ -1050,7 +1050,7 @@ void iuse::crowbar(game *g, player *p, item *it, bool t)
       messages.add("There's nothing to pry there.");
       return;
   }
-  p->moves -= 500;
+  p->moves -= 5 * mobile::mp_turn;
   item it_nails(item::types[itm_nail], 0, g->nextinv);
   it_nails.charges = std::get<1>(*deconstruct);
   g->m.add_item(p->pos, std::move(it_nails));
@@ -1065,8 +1065,8 @@ void iuse::makemound(game *g, player *p, item *it, bool t)
 {
  if (g->m.has_flag(diggable, p->pos)) {
   messages.add("You churn up the earth here.");
-  p->moves = -300;
-  g->m.ter(p->pos) = t_dirtmound;
+  p->moves -= 3 * mobile::mp_turn;
+  p->GPSpos.ter() = t_dirtmound;
  } else
   messages.add("You can't churn up this ground.");
 }
@@ -1078,10 +1078,9 @@ void iuse::dig(game *g, player *p, item *it, bool t)
 
 void iuse::chainsaw_off(game *g, player *p, item *it, bool t)
 {
- p->moves -= 80;
+ p->moves -= (mobile::mp_turn / 5) * 4;
  if (rng(0, 10) - it->damage > 5 && it->charges > 0) {
-  g->sound(p->pos, 20,
-           "With a roar, the chainsaw leaps to life!");
+  g->sound(p->pos, 20, "With a roar, the chainsaw leaps to life!");
   it->make(item::types[itm_chainsaw_on]);
   it->active = true;
  } else
@@ -1091,8 +1090,7 @@ void iuse::chainsaw_off(game *g, player *p, item *it, bool t)
 void iuse::chainsaw_on(game *g, player *p, item *it, bool t)
 {
  if (t) {	// Effects while simply on
-  if (one_in(15))
-   g->sound(p->pos, 12, "Your chainsaw rumbles.");
+  if (one_in(15)) g->sound(p->pos, 12, "Your chainsaw rumbles.");
  } else {	// Toggling
   messages.add("Your chainsaw dies.");
   it->make(item::types[itm_chainsaw_off]);

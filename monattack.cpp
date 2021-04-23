@@ -322,40 +322,39 @@ void mattack::growplants(game *g, monster *z)
   }
  }
 
- if (one_in(5)) { // 1 in 5 chance of making exisiting vegetation grow larger
+ if (one_in(5)) { // 1 in 5 chance of making existing vegetation grow larger
   for (int i = -5; i <= 5; i++) {
    for (int j = -5; j <= 5; j++) {
 	if (0 == i && 0 == j) j++;
 	point dest(z->pos.x + i, z->pos.y + j);
 	auto& t = g->m.ter(dest);
      if (t_tree_young == t) t = t_tree; // Young tree => tree
-     else if (t_underbrush == t) {
-// Underbrush => young tree
-	  monster* const m_at = g->mon(dest);
-      if (m_at) {
-       if (g->u_see(dest))
-        messages.add("Underbrush forms into a tree, and it pierces the %s!", m_at->name().c_str());
-       int rn = rng(10, 30) - m_at->armor_cut();
-       if (rn < 0) rn = 0;
-       if (m_at->hurt(rn)) g->kill_mon(*m_at, z);
-      } else if (g->u.pos == dest) {
-       body_part hit = bp_legs;
-       int side = rng(1, 2);
-       if (one_in(4)) hit = bp_torso;
-       else if (one_in(2)) hit = bp_feet;
-	   messages.add("The underbrush beneath your feet grows and pierces your %s!",
-                  body_part_name(hit, side));
-       g->u.hit(g, hit, side, 0, rng(10, 30));
-      } else if (npc* const nPC = g->nPC(dest)) {
-        body_part hit = bp_legs;
-        int side = rng(1, 2);
-        if (one_in(4)) hit = bp_torso;
-        else if (one_in(2)) hit = bp_feet;
-        if (g->u_see(dest))
-         messages.add("Underbrush grows into a tree, and it pierces %s's %s!",
-			 nPC->name.c_str(), body_part_name(hit, side));
-		nPC->hit(g, hit, side, 0, rng(10, 30));
-       }
+     else if (t_underbrush == t) { // Underbrush => young tree
+         monster* const m_at = g->mon(dest);
+         if (m_at) {
+             if (g->u_see(dest))
+                 messages.add("Underbrush grows, and it pierces the %s!", m_at->name().c_str());
+             int rn = rng(10, 30) - m_at->armor_cut();
+             if (rn < 0) rn = 0;
+             if (m_at->hurt(rn)) g->kill_mon(*m_at, z);
+         } else if (g->u.pos == dest) {
+             body_part hit = bp_legs;
+             int side = rng(1, 2);
+             if (one_in(4)) hit = bp_torso;
+             else if (one_in(2)) hit = bp_feet;
+             messages.add("The underbrush beneath your feet grows and pierces your %s!",
+                 body_part_name(hit, side));
+             g->u.hit(g, hit, side, 0, rng(10, 30));
+         } else if (npc* const nPC = g->nPC(dest)) {
+             body_part hit = bp_legs;
+             int side = rng(1, 2);
+             if (one_in(4)) hit = bp_torso;
+             else if (one_in(2)) hit = bp_feet;
+             if (g->u_see(dest))
+                 messages.add("Underbrush grows, and it pierces %s's %s!",
+                     nPC->name.c_str(), body_part_name(hit, side));
+             nPC->hit(g, hit, side, 0, rng(10, 30));
+         } else t = t_tree_young;
      }
    }
   }

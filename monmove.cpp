@@ -477,8 +477,8 @@ void monster::move_to(game *g, const point& pt)
   if (!plans.empty()) EraseAt(plans, 0);
   const unsigned int not_landbound = has_flag(MF_DIGS) + 2 * has_flag(MF_FLIES);
   const bool is_swimming = (has_flag(MF_SWIMS) && g->m.has_flag(swimmable, pt));
-  if (is_swimming) moves += 50;
-  else if (!not_landbound) moves -= (g->m.move_cost(pt) - 2) * 50;
+  if (is_swimming) moves += mobile::mp_turn / 2;
+  else if (!not_landbound) moves -= (g->m.move_cost(pt) - 2) * (mobile::mp_turn / 2);
   screenpos_set(pt);
   footsteps(g, pt);
   if (!not_landbound) {
@@ -488,7 +488,7 @@ void monster::move_to(game *g, const point& pt)
       }
   }
 // Diggers turn the dirt into dirtmound
-  if (1== not_landbound%2) g->m.ter(pos) = t_dirtmound;
+  if (1== not_landbound%2) GPSpos.ter() = t_dirtmound;
 // Acid trail monsters leave... a trail of acid
   if (has_flag(MF_ACIDTRAIL)) g->m.add_field(g, pos, fd_acid, 1);
  }
