@@ -122,54 +122,6 @@ struct ter_t {
 	static void init();
 };
 
-enum map_extra {
- mx_null = 0,
- mx_helicopter,
- mx_military,
- mx_science,
- mx_stash,
- mx_drugdeal,
- mx_supplydrop,
- mx_portal,
- mx_minefield,
- mx_wolfpack,
- mx_puddle,
- mx_crater,
- mx_fumarole,
- mx_portal_in,
- mx_anomaly,
- num_map_extras
-};
-
-// Chances are relative to each other; e.g. a 200 chance is twice as likely
-// as a 100 chance to appear.
-struct map_extras {
- unsigned int chance;
- int chances[num_map_extras];
- map_extras(unsigned int embellished, int helicopter = 0, int mili = 0,
-            int sci = 0, int stash = 0, int drug = 0, int supply = 0,
-            int portal = 0, int minefield = 0, int wolves = 0, int puddle = 0, 
-            int crater = 0, int lava = 0, int marloss = 0, int anomaly = 0)
-            : chance(embellished)
- {
-  chances[mx_null] = 0;
-  chances[mx_helicopter] = helicopter;
-  chances[mx_military] = mili;
-  chances[mx_science] = sci;
-  chances[mx_stash] = stash;
-  chances[mx_drugdeal] = drug;
-  chances[mx_supplydrop] = supply;
-  chances[mx_portal] = portal;
-  chances[mx_minefield] = minefield;
-  chances[mx_wolfpack] = wolves;
-  chances[mx_puddle] = puddle;
-  chances[mx_crater] = crater;
-  chances[mx_fumarole] = lava;
-  chances[mx_portal_in] = marloss;
-  chances[mx_anomaly] = anomaly;
- }
-};
-
 struct field_t {
  std::string name[3];
  char sym;

@@ -181,5 +181,8 @@
     <ClInclude Include="crafting.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="trap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
