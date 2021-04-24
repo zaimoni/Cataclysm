@@ -2084,7 +2084,7 @@ void player::disp_info(game *g)
 
 // Print name and header
  mvwprintw(w_grid, 0, 0, "%s - %s", name.c_str(), (male ? "Male" : "Female"));
- mvwprintz(w_grid, 0, SCREEN_WIDTH/2 - 1, c_ltred, "| Press TAB to cycle, ESC or q to return.");
+ mvwaddstrz(w_grid, 0, SCREEN_WIDTH/2 - 1, c_ltred, "| Press TAB to cycle, ESC or q to return.");
 // Main line grid
  draw_hline(w_grid,  1, c_ltgray, LINE_OXOX);
  draw_hline(w_grid, 11, c_ltgray, LINE_OXOX);
@@ -2113,14 +2113,14 @@ void player::disp_info(game *g)
  // However, they have other issues (the text labels need central configuration, and are one of
  // the easier translation targets.)
 
- mvwprintz(w_stats, 0, 10, c_ltgray, "STATS");
- mvwprintz(w_stats, 2,  2, c_ltgray, "Strength:");
+ mvwaddstrz(w_stats, 0, 10, c_ltgray, "STATS");
+ mvwaddstrz(w_stats, 2,  2, c_ltgray, "Strength:");
  mvwprintz(w_stats, 2, 20 - int_log10(str_max), c_ltgray, "(%d)", str_max);
- mvwprintz(w_stats, 3, 2, c_ltgray, "Dexterity:");
+ mvwaddstrz(w_stats, 3, 2, c_ltgray, "Dexterity:");
  mvwprintz(w_stats, 3, 20 - int_log10(dex_max), c_ltgray, "(%d)", dex_max);
- mvwprintz(w_stats, 4, 2, c_ltgray, "Intelligence:");
+ mvwaddstrz(w_stats, 4, 2, c_ltgray, "Intelligence:");
  mvwprintz(w_stats, 4, 20 - int_log10(int_max), c_ltgray, "(%d)", int_max);
- mvwprintz(w_stats, 5, 2, c_ltgray, "Perception:");
+ mvwaddstrz(w_stats, 5, 2, c_ltgray, "Perception:");
  mvwprintz(w_stats, 5, 20 - int_log10(per_max), c_ltgray, "(%d)", per_max);
 
  mvwprintz(w_stats,  2, 17-int_log10(str_cur), stat_color(str_cur, str_max), "%d", str_cur);
@@ -2142,33 +2142,33 @@ void player::disp_info(game *g)
  };
 
 // Next, draw encumberment.
- mvwprintz(w_encumb, 0, 6, c_ltgray, "ENCUMBERANCE");
- mvwprintz(w_encumb, 2, 2, c_ltgray, "Head................");
+ mvwaddstrz(w_encumb, 0, 6, c_ltgray, "ENCUMBERANCE");
+ mvwaddstrz(w_encumb, 2, 2, c_ltgray, "Head................");
  int enc = encumb(bp_head);    // problematic if this can be negative (need better function)
  mvwprintz(w_encumb, 2, 21 - int_log10(abs(enc)) - (0 > enc), encumb_color(enc), "%d", enc);
- mvwprintz(w_encumb, 3, 2, c_ltgray, "Eyes................");
+ mvwaddstrz(w_encumb, 3, 2, c_ltgray, "Eyes................");
  enc = encumb(bp_eyes);
  mvwprintz(w_encumb, 3, 21 - int_log10(abs(enc)) - (0 > enc), encumb_color(enc), "%d", enc);
- mvwprintz(w_encumb, 4, 2, c_ltgray, "Mouth...............");
+ mvwaddstrz(w_encumb, 4, 2, c_ltgray, "Mouth...............");
  enc = encumb(bp_mouth);
  mvwprintz(w_encumb, 4, 21 - int_log10(abs(enc)) - (0 > enc), encumb_color(enc), "%d", enc);
- mvwprintz(w_encumb, 5, 2, c_ltgray, "Torso...............");
+ mvwaddstrz(w_encumb, 5, 2, c_ltgray, "Torso...............");
  enc = encumb(bp_torso);
  mvwprintz(w_encumb, 5, 21 - int_log10(abs(enc)) - (0 > enc), encumb_color(enc), "%d", enc);
- mvwprintz(w_encumb, 6, 2, c_ltgray, "Hands...............");
+ mvwaddstrz(w_encumb, 6, 2, c_ltgray, "Hands...............");
  enc = encumb(bp_hands);
  mvwprintz(w_encumb, 6, 21 - int_log10(abs(enc)) - (0 > enc), encumb_color(enc), "%d", enc);
- mvwprintz(w_encumb, 7, 2, c_ltgray, "Legs................");
+ mvwaddstrz(w_encumb, 7, 2, c_ltgray, "Legs................");
  enc = encumb(bp_legs);
  mvwprintz(w_encumb, 7, 21 - int_log10(abs(enc)) - (0 > enc), encumb_color(enc), "%d", enc);
- mvwprintz(w_encumb, 8, 2, c_ltgray, "Feet................");
+ mvwaddstrz(w_encumb, 8, 2, c_ltgray, "Feet................");
  enc = encumb(bp_feet);
  mvwprintz(w_encumb, 8, 21 - int_log10(abs(enc)) - (0 > enc), encumb_color(enc), "%d", enc);
  wrefresh(w_encumb);
 
 // Next, draw traits.
  line = 2;
- mvwprintz(w_traits, 0, 9, c_ltgray, "TRAITS");
+ mvwaddstrz(w_traits, 0, 9, c_ltgray, "TRAITS");
 
  static auto traits_vector = [&]() {
      std::vector<pl_flag> ret;
@@ -2177,7 +2177,7 @@ void player::disp_info(game *g)
              ret.push_back(pl_flag(i));
              if (line < 9) {
                  const auto& tr = mutation_branch::traits[i];
-                 mvwprintz(w_traits, line, 1, (0 < tr.points ? c_ltgreen : c_ltred), tr.name.c_str());
+                 mvwaddstrz(w_traits, line, 1, (0 < tr.points ? c_ltgreen : c_ltred), tr.name.c_str());
                  line++;
              }
          }
@@ -2192,9 +2192,9 @@ void player::disp_info(game *g)
 
 // Next, draw effects.
  line = 2;
- mvwprintz(w_effects, 0, 8, c_ltgray, "EFFECTS");
+ mvwaddstrz(w_effects, 0, 8, c_ltgray, "EFFECTS");
  for (int i = 0; i < effect_name.size() && line < 9; i++) {
-  mvwprintz(w_effects, line, 1, c_ltgray, effect_name[i].c_str());
+  mvwaddstrz(w_effects, line, 1, c_ltgray, effect_name[i].c_str());
   line++;
  }
  wrefresh(w_effects);
@@ -2202,7 +2202,7 @@ void player::disp_info(game *g)
 // Next, draw skills.
  line = 2;
  std::vector <skill> skillslist;
- mvwprintz(w_skills, 0, 11, c_ltgray, "SKILLS");
+ mvwaddstrz(w_skills, 0, 11, c_ltgray, "SKILLS");
  for (int i = 1; i < num_skill_types; i++) {
   if (sklevel[i] > 0) {
    skillslist.push_back(skill(i));
