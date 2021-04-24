@@ -119,6 +119,8 @@ struct ter_t {
 	trap_id trap;
 	unsigned long flags;// : num_t_flags;
 
+	static bool has_flag(t_flag flag, ter_id terrain) { return ter_t::list[terrain].flags & mfb(flag); }
+
 	static void init();
 };
 

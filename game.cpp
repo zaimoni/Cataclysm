@@ -3849,16 +3849,15 @@ void game::pickup(const point& pt, int min)
  }
 // Picking up water?
  if ((!from_veh) && m.i_at(pt).empty()) {
-  if (m.has_flag(swimmable, pt) || m.ter(pt) == t_toilet) {
-   item water = m.water_from(pt.x, pt.y);
-   if (query_yn("Drink from your hands?")) {
-    u.inv.push_back(water);
-    u.eat(u.inv.size() - 1);
-    u.moves -= (mobile::mp_turn / 2) * 7;
-   } else {
-    handle_liquid(water, true, false);
-    u.moves -= mobile::mp_turn;
-   }
+  if (auto water = m.water_from(pt)) {
+      if (query_yn("Drink from your hands?")) {
+          u.inv.push_back(*water);
+          u.eat(u.inv.size() - 1);
+          u.moves -= (mobile::mp_turn / 2) * 7;
+      } else {
+          handle_liquid(*water, true, false);
+          u.moves -= mobile::mp_turn;
+      }
   }
   return;
 // Few item here, just get it

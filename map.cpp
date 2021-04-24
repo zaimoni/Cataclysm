@@ -1408,10 +1408,17 @@ bool map::close_door(const point& pt)
  }
 }
 
-item map::water_from(int x, int y) const
+std::optional<item> map::water_from(const point& pt) const
 {
+ // 2021-04-24: technically want to re-implement the toilet
+ // as a map feature (C:DDA/C:BN) or map object (Rogue Survivor Revived).
+ // Fully extracting this to take terrain as a parameter, is not future-correct.
+ const ter_id terrain = ter(pt);
+
+ if (!ter_t::has_flag(swimmable, terrain) && t_toilet != terrain) return std::nullopt;
+
  item ret(item::types[itm_water], 0);
- switch(ter(x, y)) {
+ switch(terrain) {
  case t_water_sh:
    if (one_in(3)) ret.poison = rng(1, 4);
    break;
