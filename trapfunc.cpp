@@ -559,24 +559,26 @@ void trapfuncm::drain(game *g, monster *z)
 void trapfunc::snake(game *g, int x, int y)
 {
  if (one_in(3)) {
-  int tries = 0, monx, mony;
-  do {
-   if (one_in(2)) {
-    monx = rng(g->u.pos.x - 5, g->u.pos.x + 5);
-    mony = (one_in(2) ? g->u.pos.y - 5 : g->u.pos.y + 5);
-   } else {
-    monx = (one_in(2) ? g->u.pos.x - 5 : g->u.pos.x + 5);
-    mony = rng(g->u.pos.y - 5, g->u.pos.y + 5);
-   }
-  } while (tries < 5 && !g->is_empty(monx, mony) &&
-           !g->m.sees(monx, mony, g->u.pos, 10));
+     static std::function<point()> nominate_spawn_pos = [&]() {
+         point ret;
+         if (one_in(2)) {
+             ret.x = rng(-5, 5);
+             ret.y = (one_in(2) ? -5 : 5);
+         } else {
+             ret.x = (one_in(2) ? -5 : 5);
+             ret.y = rng(-5, 5);
+         };
+         return g->u.pos + ret;
+     };
 
-  if (tries < 5) {
-   messages.add("A shadowy snake forms nearby.");
-   g->z.push_back(monster(mtype::types[mon_shadow_snake], monx, mony));
-   g->m.tr_at(x, y) = tr_null;
-   return;
-  }
+     static std::function<bool(const point&)> spawn_ok = [&](const point& pt) { return g->is_empty(pt) && g->m.sees(pt, g->u.pos, 10); };
+
+     if (const auto spawn = LasVegasChoice(5, nominate_spawn_pos, spawn_ok)) {
+         messages.add("A shadowy snake forms nearby.");
+         g->z.push_back(monster(mtype::types[mon_shadow_snake], *spawn));
+         g->m.tr_at(*spawn) = tr_null;
+         return;
+     }
  }
  g->sound(point(x, y), 10, "ssssssss");
  if (one_in(6)) g->m.tr_at(x, y) = tr_null;
