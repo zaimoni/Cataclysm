@@ -2770,7 +2770,7 @@ void player::disp_status(WINDOW *w, game *g)
  const auto morale_text = _morale_emoticon(morale_level());
  mvwaddstrz(w, 3, 10, morale_text.first, morale_text.second);
 
- const auto v = g->m._veh_at(pos);
+ const auto v = GPSpos.veh_at();
  const vehicle* const veh = v ? v->first : nullptr; // backward compatibility
 
  if (in_vehicle && veh) {
@@ -5149,7 +5149,7 @@ void player::use(game *g, char let)
 
 void player::read(game *g, char ch)
 {
- if (const auto veh = g->m._veh_at(pos)) {
+ if (const auto veh = GPSpos.veh_at()) {
      if (veh->first->player_in_control(*this)) {
          messages.add("It's bad idea to read while driving.");
          return;

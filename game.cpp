@@ -1030,7 +1030,7 @@ void game::get_input()
 // This has no action unless we're in a special game mode.
  gamemode->pre_action(this, act);
 
- const auto v = m._veh_at(u.pos);
+ const auto v = u.GPSpos.veh_at();
  vehicle* const veh = v ? v->first : nullptr; // backward compatibility
  int veh_part = v ? v->second : 0;
  bool veh_ctrl = veh && veh->player_in_control(u);
@@ -1817,7 +1817,7 @@ z.size(), events.size());
    break;
 
   case 10:
-   if (m._veh_at(u.pos)) debugmsg("There's already vehicle here");
+   if (u.GPSpos.veh_at()) debugmsg("There's already vehicle here");
    else {
 	for(auto v_type : vehicle::vtypes) opts.push_back(v_type->name);
     opts.push_back(std::string("Cancel"));
@@ -3360,7 +3360,7 @@ void game::open()
  int ch = input();
  point open(get_direction(ch));
  if (open.x != -2) {
-  const auto v = m._veh_at(u.pos + open);
+  const auto v = (u.GPSpos+open).veh_at();
   vehicle* const veh = v ? v->first : nullptr; // backward compatibility
   int vpart = v ? v->second : 0;
   if (veh && veh->part_flag(vpart, vpf_openable)) {
@@ -3423,7 +3423,7 @@ void game::close()
    if (close == u.pos) { messages.add("There's some buffoon in the way!"); return; }
    didit = m.close_door(close);
  }
- if (didit) u.moves -= 90;
+ if (didit) u.moves -= (mobile::mp_turn / 10) * 9;
 }
 
 void game::smash()
@@ -3520,7 +3520,7 @@ void game::exam_vehicle(vehicle &veh, int cx, int cy)
 void game::examine()
 {
  if (u.in_vehicle) {
-     if (const auto v = m._veh_at(u.pos)) {
+     if (const auto v = u.GPSpos.veh_at()) {
          vehicle* const veh = v->first; // backward compatibility
          bool qexv = (veh->velocity != 0 ? query_yn("Really exit moving vehicle?") : query_yn("Exit vehicle?"));
          if (qexv) {
@@ -4269,7 +4269,7 @@ void game::drop()
  }
 
  bool to_veh = false;
- const auto v = m._veh_at(u.pos);
+ const auto v = u.GPSpos.veh_at();
  vehicle* const veh = v ? v->first : nullptr; // backward compatibility
  int veh_part = v ? v->second : 0;
  if (veh) {
@@ -4482,7 +4482,7 @@ void game::plthrow()
 void game::plfire(bool burst)
 {
  if (!u.weapon.is_gun()) return;
- if (const auto veh = m._veh_at(u.pos)) {
+ if (const auto veh = u.GPSpos.veh_at()) {
      if (veh->first->player_in_control(u) && u.weapon.is_two_handed(u)) {
          messages.add("You need free arm to drive!");
          return;
@@ -4845,7 +4845,7 @@ void game::pldrive(int x, int y)
   messages.add("Monster spotted--run mode is on! (Press '!' to turn it off or ' to ignore monster.)");
   return;
  }
- const auto v = m._veh_at(u.pos);
+ const auto v = u.GPSpos.veh_at();
  if (!v) {
   debuglog("game::pldrive error: can't find vehicle! Drive mode is now off.");
   debugmsg("game::pldrive error: can't find vehicle! Drive mode is now off.");

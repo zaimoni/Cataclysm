@@ -124,7 +124,7 @@ std::string vehicle::possessive() const
 bool vehicle::player_in_control(player& p) const
 {
     if (!_type || !p.in_vehicle) return false;
-    if (const auto veh = game::active()->m._veh_at(p.pos)) {
+    if (const auto veh = p.GPSpos.veh_at()) {
         return veh->first == this && 0 <= part_with_feature(veh->second, vpf_controls, false);
     }
     return false;
