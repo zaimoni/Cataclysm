@@ -3282,6 +3282,12 @@ monster* game::mon(const point& pt)
 	return nullptr;
 }
 
+monster* game::mon(const GPS_loc& gps)
+{
+    for (auto& m : z) if (m.GPSpos == gps && !m.dead) return &m;
+    return nullptr;
+}
+
 bool game::is_empty(int x, int y) const
 {
  return ((m.move_cost(x, y) > 0 || m.has_flag(liquid, x, y)) &&

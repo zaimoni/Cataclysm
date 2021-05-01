@@ -44,7 +44,7 @@ void mdeath::boomer(game *g, monster *z)
    }
    if (monster* const m_at = g->mon(dest)) {
 	m_at->stumble(g, false);
-	m_at->moves -= 250;
+	m_at->moves -= (mobile::mp_turn / 2) * 5;
    }
   }
  }
@@ -107,7 +107,7 @@ void mdeath::vine_cut(game *g, monster *z)
 void mdeath::triffid_heart(game *g, monster *z)
 {
  messages.add("The root walls begin to crumble around you.");
- g->add_event(EVENT_ROOTS_DIE, int(messages.turn) + 100);
+ g->add_event(EVENT_ROOTS_DIE, int(messages.turn) + MINUTES(10));
 }
 
 void mdeath::fungus(game *g, monster *z)

@@ -578,9 +578,8 @@ void iuse::dogfood(game *g, player *p, item *it, bool t)
   messages.add("Invalid direction.");
   return;
  }
- p->moves -= 15;
- dir += p->pos;
- if (monster* const m_at = g->mon(dir)) {
+ p->moves -= (mobile::mp_turn / 20) * 3;
+ if (monster* const m_at = g->mon(p->GPSpos+dir)) {
   if (m_at->type->id == mon_dog) {
    messages.add("The dog seems to like you!");
    m_at->friendly = -1;
@@ -1699,16 +1698,16 @@ void iuse::tazer(game *g, player *p, item *it, bool t)
   it->charges += (dynamic_cast<const it_tool*>(it->type))->charges_per_use;
   return;
  }
- point target(dir + p->pos);
+ const auto target(dir + p->GPSpos);
  monster* const z = g->mon(target);
  npc* const foe = g->nPC(target);
  if (!z && !foe) {
-  messages.add("Your tazer crackles in the air.");
+  messages.add("Your tazer crackles in the air."); // XXX no time cost for this?
   return;
  }
 
  int numdice = 3 + (p->dex_cur / 2.5) + p->sklevel[sk_melee] * 2;
- p->moves -= 100;
+ p->moves -= mobile::mp_turn;
 
  if (z) {
   numdice += tazer_hit_modifier[z->type->size];
@@ -1718,7 +1717,7 @@ void iuse::tazer(game *g, player *p, item *it, bool t)
   }
   messages.add("You shock the %s!", z->name().c_str());
   int shock = rng(5, 25);
-  z->moves -= shock * 100;
+  z->moves -= shock * mobile::mp_turn;
   if (z->hurt(shock)) g->kill_mon(*z, p);
   return;
  }
@@ -1733,7 +1732,7 @@ void iuse::tazer(game *g, player *p, item *it, bool t)
   }
   messages.add("You shock %s!", foe->name.c_str());
   int shock = rng(5, 20);
-  foe->moves -= shock * 100;
+  foe->moves -= shock * mobile::mp_turn;
   foe->hurtall(shock);
   if (foe->hp_cur[hp_head]  <= 0 || foe->hp_cur[hp_torso] <= 0) foe->die(g, true);
  }

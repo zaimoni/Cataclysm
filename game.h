@@ -110,8 +110,10 @@ class game : public reality_bubble
   int  mon_at(int x, int y) const;	// Index of the monster at (x, y); -1 for none
   monster* mon(int x, int y);
   monster* mon(const point& pt);
+  monster* mon(const GPS_loc& gps);
   const monster* mon(int x, int y) const { return const_cast<game*>(this)->mon(x, y); };
   const monster* mon(const point& pt) const { return const_cast<game*>(this)->mon(pt); };
+  const monster* mon(const GPS_loc& gps) const { return const_cast<game*>(this)->mon(gps); };
 
   bool is_empty(int x, int y) const;	// True if no PC, no monster, move cost > 0
   bool is_empty(const point& pt) const { return is_empty(pt.x, pt.y); };

@@ -172,7 +172,7 @@ void monster::move(game *g)
   return;
  }
 
- moves -= 100;
+ moves -= mobile::mp_turn;
 
  monster_attitude current_attitude = attitude(0 == friendly ? &(g->u) : nullptr);
 // If our plans end in a player, set our attitude to consider that player
@@ -235,12 +235,12 @@ void monster::move(game *g)
    g->sound(next, 18, bashsound);
   } else if (g->m.move_cost(next) == 0 && has_flag(MF_DESTROYS)) {
    g->m.destroy(g, next.x, next.y, true);
-   moves -= 250;
+   moves -= (mobile::mp_turn / 2) * 5;
   // end C:DDA refactor target monster::bash_at
   } else if (can_move_to(g->m, next) && g->is_empty(next))
    move_to(g, next);
   else
-   moves -= 100;
+   moves -= mobile::mp_turn;
  }
 
 // If we're close to our target, we get focused and don't stumble
@@ -278,7 +278,7 @@ void monster::footsteps(game *g, const point& pt)
 
 void monster::friendly_move(game *g)
 {
- moves -= 100;
+ moves -= mobile::mp_turn;
  if (!plans.empty() && plans[0] != g->u.pos && (can_move_to(g->m, plans[0]) || (g->m.has_flag(bashable, plans[0]) && has_flag(MF_BASHES)))){
   const point next(plans[0]);
   EraseAt(plans, 0);
@@ -298,7 +298,7 @@ void monster::friendly_move(game *g)
   }
   else if (g->m.move_cost(next) == 0 && has_flag(MF_DESTROYS)) {
       g->m.destroy(g, next.x, next.y, true);
-      moves -= 250;
+      moves -= (mobile::mp_turn / 2) * 5;
   }
  } else
   stumble(g, false);

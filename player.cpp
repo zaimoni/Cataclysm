@@ -532,7 +532,7 @@ void dis_effect(game* g, player& p, disease& dis)
 
     case DI_FUNGUS:
         bonus = p.has_trait(PF_POISRESIST) ? 100 : 0;
-        p.moves -= 10;
+        p.moves -= mobile::mp_turn / 10;
         if (dis.duration > HOURS(-1)) {	// First hour symptoms
             if (one_in(160 + bonus)) {
                 if (!p.is_npc()) {
@@ -553,7 +553,7 @@ void dis_effect(game* g, player& p, disease& dis)
         else if (dis.duration > HOURS(-6)) {	// One to six hours
             if (one_in(600 + bonus * 3)) {
                 if (!p.is_npc()) messages.add("You spasm suddenly!");
-                p.moves -= 100;
+                p.moves -= mobile::mp_turn;
                 p.hurt(g, bp_torso, 0, 5);
             }
             if ((p.has_trait(PF_WEAKSTOMACH) && one_in(1600 + bonus * 8)) ||
@@ -561,7 +561,7 @@ void dis_effect(game* g, player& p, disease& dis)
                 one_in(2000 + bonus * 10)) {
                 if (!p.is_npc()) messages.add("You vomit a thick, gray goop.");
                 else if (g->u_see(p.pos)) messages.add("%s vomits a thick, gray goop.", p.name.c_str());
-                p.moves = -200;
+                p.moves -= 2 * mobile::mp_turn;
                 p.hunger += 50;
                 p.thirst += 68;
             }
@@ -570,21 +570,17 @@ void dis_effect(game* g, player& p, disease& dis)
             if (one_in(1000 + bonus * 8)) {
                 if (!p.is_npc()) messages.add("You double over, spewing live spores from your mouth!");
                 else if (g->u_see(p.pos)) messages.add("%s coughs up a stream of live spores!", p.name.c_str());
-                p.moves = -500;
+                p.moves -= 5 * mobile::mp_turn;
                 monster spore(mtype::types[mon_spore]);
-                for (int i = -1; i <= 1; i++) {
-                    for (int j = -1; j <= 1; j++) {
-                        point dest(p.pos.x + i, p.pos.y + j);
-                        monster* const m_at = g->mon(dest);
-                        if (g->m.move_cost(dest) > 0 && one_in(5)) {
-                            if (m_at) {	// Spores hit a monster
-                                if (g->u_see(dest)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
-                                if (!m_at->make_fungus()) g->kill_mon(*m_at);
-                            }
-                            else {	// \todo infect npcs
-                                spore.spawn(dest);
-                                g->z.push_back(spore);
-                            }
+                for (decltype(auto) dir : Direction::vector) {
+                    decltype(auto) dest = p.pos + dir;
+                    if (g->m.move_cost(dest) > 0 && one_in(5)) {
+                        if (monster* const m_at = g->mon(dest)) {	// Spores hit a monster
+                            if (g->u_see(dest)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
+                            if (!m_at->make_fungus()) g->kill_mon(*m_at);
+                        } else {	// \todo infect npcs or players
+                            spore.spawn(dest);
+                            g->z.push_back(spore);
                         }
                     }
                 }

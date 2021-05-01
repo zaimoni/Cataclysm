@@ -330,8 +330,7 @@ void mattack::growplants(game *g, monster *z)
 	auto& t = g->m.ter(dest);
      if (t_tree_young == t) t = t_tree; // Young tree => tree
      else if (t_underbrush == t) { // Underbrush => young tree
-         monster* const m_at = g->mon(dest);
-         if (m_at) {
+         if (monster* const m_at = g->mon(dest)) {
              if (g->u_see(dest))
                  messages.add("Underbrush grows, and it pierces the %s!", m_at->name().c_str());
              int rn = rng(10, 30) - m_at->armor_cut();
