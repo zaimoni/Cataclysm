@@ -493,34 +493,27 @@ void trapfuncm::glow(game *g, monster *z)
  }
 }
 
+static const char* desc_hum(int volume)
+{
+    if (10 >= volume) return "hrm";
+    else if (50 >= volume) return "hrmmm";
+    else if (100 >= volume) return "HRMMM";
+    else return "VRMMMMMM";
+}
+
 void trapfunc::hum(game *g, int x, int y)
 {
- int volume = rng(1, 200);
- std::string sfx;
- if (volume <= 10)
-  sfx = "hrm";
- else if (volume <= 50)
-  sfx = "hrmmm";
- else if (volume <= 100)
-  sfx = "HRMMM";
- else
-  sfx = "VRMMMMMM";
-
- g->sound(point(x, y), volume, sfx);
+ const int volume = rng(1, 200);
+ g->sound(point(x, y), volume, desc_hum(volume));
 }
 
 void trapfuncm::hum(game *g, monster *z)
 {
- int volume = rng(1, 200);
- std::string sfx;
- if (volume <= 10) sfx = "hrm";
- else if (volume <= 50) sfx = "hrmmm";
- else if (volume <= 100) sfx = "HRMMM";
- else sfx = "VRMMMMMM";
+ const int volume = rng(1, 200);
 
  if (volume >= 150) z->add_effect(ME_DEAF, volume - 140);
 
- g->sound(z->pos, volume, sfx);
+ g->sound(z->pos, volume, desc_hum(volume));
 }
 
 void trapfunc::shadow(game *g, int x, int y)
