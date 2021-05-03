@@ -804,15 +804,14 @@ bool map::bash(int x, int y, int str, std::string &sound, int *res)
  {
  auto& stack = i_at(x, y);
  for (int i = 0; i < stack.size(); i++) {	// Destroy glass items (maybe)
-  auto& it = i_at(x, y)[i];
+  item& it = stack[i];
   if (it.made_of(GLASS) && one_in(2)) {
    if (sound == "")
     sound = "A " + it.tname() + " shatters!  ";
    else
     sound = "Some items shatter!  ";
-   for(auto& obj : it.contents) stack.push_back(obj);
-   i_rem(x, y, i);
-   i--;
+   for(decltype(auto) obj : it.contents) stack.push_back(obj);  // count-forward loop enables chain breakage
+   EraseAt(stack, i--); // inline i_rem(x, y, i); i--;
   }
  }
  }
