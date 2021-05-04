@@ -803,16 +803,15 @@ void overmap::delete_note(const point& pt)
 
 std::optional<point> overmap::display_notes() const
 {
- std::string title = "Notes:";
  WINDOW* w_notes = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  const int maxitems = cataclysm::min(VIEW-5, 26);	// Number of items to show at one time.  \todo? go beyond z if there is space
  int ch = '.';
  int start = 0, cur_it;
- mvwprintz(w_notes, 0, 0, c_ltgray, title.c_str());
+ mvwaddstrz(w_notes, 0, 0, c_ltgray, "Notes:");
  do{
   if (ch == '<' && start > 0) {
    for (int i = 1; i < VIEW; i++)
-    mvwprintz(w_notes, i, 0, c_black, "                                                     ");
+    draw_hline(w_notes, i, c_black, 0, 53);
    start -= maxitems;
    if (start < 0) start = 0;
    mvwprintw(w_notes, maxitems + 2, 0, "         ");
@@ -821,7 +820,7 @@ std::optional<point> overmap::display_notes() const
    start = cur_it;
    mvwprintw(w_notes, maxitems + 2, 12, "            ");
    for (int i = 1; i < VIEW; i++)
-    mvwprintz(w_notes, i, 0, c_black, "                                                     ");
+    draw_hline(w_notes, i, c_black, 0, 53);
   }
   int cur_line = 2;
   int last_line = -1;
@@ -845,8 +844,8 @@ std::optional<point> overmap::display_notes() const
    if(chosen_line < last_line)
     return point(notes[start + chosen_line].x, notes[start + chosen_line].y); 
   }
-  mvwprintz(w_notes, 0, 40, c_white, "Press letter to center on note");
-  mvwprintz(w_notes, VIEW - 1, 40, c_white, "Spacebar - Return to map  ");
+  mvwaddstrz(w_notes, 0, 40, c_white, "Press letter to center on note");
+  mvwaddstrz(w_notes, VIEW - 1, 40, c_white, "Spacebar - Return to map  ");
   wrefresh(w_notes);
   ch = getch();
  } while(ch != ' ');
