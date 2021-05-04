@@ -1436,13 +1436,13 @@ void overmap::draw(WINDOW *w, const player& u, const point& curs, const point& o
     mvwputch(w, 1, i, c_white, LINE_OXOX);
    mvwputch(w, 1, note_text.length(), c_white, LINE_XOOX);
    mvwputch(w, 0, note_text.length(), c_white, LINE_XOXO);
-   mvwprintz(w, 0, 0, c_yellow, note_text.c_str());
+   mvwaddstrz(w, 0, 0, c_yellow, note_text.c_str());
   } else if (npc_here) {
    for (int i = 0; i < npc_name.length(); i++)
     mvwputch(w, 1, i, c_white, LINE_OXOX);
    mvwputch(w, 1, npc_name.length(), c_white, LINE_XOOX);
    mvwputch(w, 0, npc_name.length(), c_white, LINE_XOXO);
-   mvwprintz(w, 0, 0, c_yellow, npc_name.c_str());
+   mvwaddstrz(w, 0, 0, c_yellow, npc_name.c_str());
   }
   if (legend) {
 // Draw the vertical line
@@ -1457,9 +1457,9 @@ void overmap::draw(WINDOW *w, const player& u, const point& curs, const point& o
    if (csee) {
 	decltype(oter_t::list[ccur_ter])& terrain = oter_t::list[ccur_ter];
     mvwputch(w, 1, om_w, terrain.color, terrain.sym);
-    mvwprintz(w, 1, om_w + 2, terrain.color, "%s", terrain.name.c_str());
+    mvwaddstrz(w, 1, om_w + 2, terrain.color, terrain.name.c_str());
    } else
-    mvwprintz(w, 1, om_w, c_dkgray, "# Unexplored");
+    mvwaddstrz(w, 1, om_w, c_dkgray, "# Unexplored");
 
    if (target.is_valid()) {
     int distance = rl_dist(orig, target.second);
