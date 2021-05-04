@@ -2680,6 +2680,22 @@ void game::cleanup_dead()
  }
 }
 
+static void decorrupt_monster_pos(monster& z, map& m)
+{
+    int xdir = rng(0, 1) * 2 - 1, ydir = rng(0, 1) * 2 - 1; // -1 or 1
+    int startx = z.pos.x - 3 * xdir, endx = z.pos.x + 3 * xdir;
+    int starty = z.pos.y - 3 * ydir, endy = z.pos.y + 3 * ydir;
+    for (int x = startx; x != endx; x += xdir) {
+        for (int y = starty; y != endy; y += ydir) {
+            if (z.can_move_to(m, x, y)) {
+                z.screenpos_set(x, y);
+                return;
+            }
+        }
+    }
+    z.dead = true;
+}
+
 void game::monmove()
 {
  cleanup_dead();
@@ -2690,19 +2706,7 @@ void game::monmove()
    if (debugmon)
     debugmsg("%s can't move to its location! (%d:%d), %s", z[i].name().c_str(),
              z[i].pos.x, z[i].pos.y, m.tername(z[i].pos).c_str());
-   bool okay = false;
-   int xdir = rng(0, 1) * 2 - 1, ydir = rng(0, 1) * 2 - 1; // -1 or 1
-   int startx = z[i].pos.x - 3 * xdir, endx = z[i].pos.x + 3 * xdir;
-   int starty = z[i].pos.y - 3 * ydir, endy = z[i].pos.y + 3 * ydir;
-   for (int x = startx; x != endx && !okay; x += xdir) {
-    for (int y = starty; y != endy && !okay; y += ydir){
-     if (z[i].can_move_to(m, x, y)) {
-      z[i].screenpos_set(x, y);
-      okay = true;
-     }
-    }
-   }
-   if (!okay) z[i].dead = true;
+   decorrupt_monster_pos(z[i], m);
   }
 
   if (!z[i].dead) {
@@ -2719,9 +2723,9 @@ void game::monmove()
    z[i].process_triggers(this);
    m.mon_in_field(this, z[i]);
   }
+  if (z[i].dead) continue;
 
-  if (!z[i].dead) {
-   if (u.has_active_bionic(bio_alarm) && u.power_level >= 1 && rl_dist(u.GPSpos, z[i].GPSpos) <= 5) {
+  if (u.has_active_bionic(bio_alarm) && u.power_level >= 1 && rl_dist(u.GPSpos, z[i].GPSpos) <= 5) {
     u.power_level--;
 	messages.add("Your motion alarm goes off!");
     u.cancel_activity_query("Your motion alarm goes off!");
@@ -2729,22 +2733,21 @@ void game::monmove()
      u.rem_disease(DI_SLEEP);
      u.rem_disease(DI_LYING_DOWN);
     }
-   }
+  }
 // We might have stumbled out of range of the player; if so, kill us
-   if (!extended_reality_bubble.contains(z[i].pos)) {
+  if (!extended_reality_bubble.contains(z[i].pos)) {
     despawn(z[i]); // Re-absorb into local group, if applicable
     z[i].dead = true;
-   } else z[i].receive_moves();
-  }
+  } else z[i].receive_moves();
  }
 
  cleanup_dead();
 
 // Now, do active NPCs.
  for (auto& _npc : active_npc) {
-  int turns = 0;
   if(_npc.hp_cur[hp_head] <= 0 || _npc.hp_cur[hp_torso] <= 0) _npc.die(this);
   else {
+   int turns = 0;
    _npc.reset(this);
    _npc.suffer(this);
    while (!_npc.dead && _npc.moves > 0 && turns < 10) {	// 10 moves in one turn is lethal; assuming this is a bug intercept
