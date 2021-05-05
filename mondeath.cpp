@@ -183,6 +183,8 @@ void mdeath::guilt(game *g, monster *z)
 
 void mdeath::blobsplit(game *g, monster *z)
 {
+ static constexpr const zaimoni::gdi::box<point> spread(point(-1), point(1));
+
  const int speed = z->speed - rng(30, 50);
  std::optional<std::string> z_name;
  const bool seen = g->u.see(*z);
@@ -197,18 +199,16 @@ void mdeath::blobsplit(game *g, monster *z)
  if (seen) messages.add("The %s splits!", z_name->c_str());
  blob.hp = blob.speed;
 
- std::vector<point> valid;
- for (int i = -1; i <= 1; i++) {
-  for (int j = -1; j <= 1; j++) {
-   point test(z->pos.x + i, z->pos.y + j);
-   if (g->m.move_cost(test) > 0 && !g->mon(test) && g->u.pos != test)
-    valid.push_back(test);
-  }
- }
- 
+ static auto dest_clear = [&](point delta) {
+     decltype(auto) test = z->pos + delta;
+     return g->m.move_cost(test) > 0 && !g->mon(test) && !g->survivor(test);
+ };
+
+ auto valid(grep(spread, dest_clear));
+
  for (int s = 0; s < 2 && valid.size() > 0; s++) {
   const int rn = rng(0, valid.size() - 1);
-  blob.spawn(valid[rn]);
+  blob.spawn(valid[rn] + z->pos);
   g->z.push_back(blob);
   valid.erase(valid.begin() + rn);
  }
