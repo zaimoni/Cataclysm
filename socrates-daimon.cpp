@@ -2221,6 +2221,8 @@ int main(int argc, char *argv[])
 				*revert.first = std::move(revert.second);
 			}
 
+			page.print(html::tag("p","All constructions train carpentry, including the difficulty zero ones.")); // \todo hyperlink to carpentry skill
+
 			// actual content -- unusual in that we analyze multiple sources here
 			if (!books.empty()) {
 				decltype(books) educational;
@@ -2235,6 +2237,13 @@ int main(int argc, char *argv[])
 				{
 					html::tag table_header("tr");
 					table_header.set(attr_align, val_center);
+					{
+					html::tag header_cell("th", "Learning from books");
+					header_cell.set("colspan", std::to_string(std::end(table_headers)-std::begin(table_headers)));
+					table_header.append(std::move(header_cell));
+					}
+					page.print(table_header);
+					table_header.clear();
 					for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
 					page.print(table_header);
 				}

@@ -265,8 +265,7 @@ void game::complete_construction()
  const constructable* const built = constructable::constructions[u.activity.index];
  construction_stage stage = built->stages[u.activity.values[0]];
 
- u.practice(sk_carpentry, built->difficulty * 10);
- if (built->difficulty < 1) u.practice(sk_carpentry, 10);
+ u.practice(sk_carpentry, 10 * clamped_lb<1>(built->difficulty));
  for(const auto& comp : stage.components) if (!comp.empty()) consume_items(m, u, comp);
  
 // Make the terrain change
