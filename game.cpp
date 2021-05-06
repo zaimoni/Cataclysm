@@ -1994,10 +1994,9 @@ void game::disp_NPCs()
 
 faction* game::list_factions(const char* title)
 {
- std::vector<faction> valfac;	// Factions that we know of.
- for (int i = 0; i < factions.size(); i++) {
-  if (factions[i].known_by_u)
-   valfac.push_back(factions[i]);
+ std::vector<faction*> valfac;	// Factions that we know of.
+ for (decltype(auto) fac : factions) {
+     if (fac.known_by_u) valfac.push_back(&fac);
  }
  if (valfac.size() == 0) {	// We don't know of any factions!
   popup("You don't know of any factions.  Press Spacebar...");
@@ -2011,7 +2010,7 @@ faction* game::list_factions(const char* title)
  mvwaddstrz(w_list, 0, 0, c_white, title);
  for (int i = 0; i < valfac.size(); i++) {
   nc_color col = (i == 0 ? h_white : c_white);
-  mvwaddstrz(w_list, i + 1, 0, col, valfac[i].name.c_str());
+  mvwaddstrz(w_list, i + 1, 0, col, valfac[i]->name.c_str());
  }
  wrefresh(w_list);
 // fac_*_text() is in faction.cpp
@@ -2029,21 +2028,21 @@ faction* game::list_factions(const char* title)
      wrefresh(w_info);
  };
 
- faction_display(valfac[0]); // Init w_info content
+ faction_display(*valfac[0]); // Init w_info content
 
  int ch;
  do {
   ch = input();
   switch ( ch ) {
   case 'j':	// Move selection down
-   mvwaddstrz(w_list, sel + 1, 0, c_white, valfac[sel].name.c_str());
+   mvwaddstrz(w_list, sel + 1, 0, c_white, valfac[sel]->name.c_str());
    if (sel == valfac.size() - 1)
     sel = 0;	// Wrap around
    else
     sel++;
    break;
   case 'k':	// Move selection up
-   mvwaddstrz(w_list, sel + 1, 0, c_white, valfac[sel].name.c_str());
+   mvwaddstrz(w_list, sel + 1, 0, c_white, valfac[sel]->name.c_str());
    if (sel == 0)
     sel = valfac.size() - 1;	// Wrap around
    else
@@ -2055,11 +2054,11 @@ faction* game::list_factions(const char* title)
    break;
   }
   if (ch == 'j' || ch == 'k') {	// Changed our selection... update the windows
-   mvwaddstrz(w_list, sel + 1, 0, h_white, valfac[sel].name.c_str());
+   mvwaddstrz(w_list, sel + 1, 0, h_white, valfac[sel]->name.c_str());
    wrefresh(w_list);
    werase(w_info);
 
-   faction_display(valfac[sel]); // Init w_info content
+   faction_display(*valfac[sel]); // Init w_info content
   }
  } while (ch != KEY_ESCAPE && ch != '\n' && ch != 'q');
  werase(w_list);
@@ -2068,7 +2067,7 @@ faction* game::list_factions(const char* title)
  delwin(w_info);
  refresh_all();
  if (sel == -1) return nullptr;
- return &(factions[valfac[sel].id]);
+ return valfac[sel];
 }
 
 void game::list_missions()
