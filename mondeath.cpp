@@ -145,23 +145,23 @@ void mdeath::disintegrate(game *g, monster *z)
 
 void mdeath::worm(game *g, monster *z)
 {
+ static constexpr const zaimoni::gdi::box<point> spread(point(-1), point(1));
+
  if (g->u.see(*z))
      messages.add("The %s splits in two!",
                    grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
 
- std::vector <point> wormspots;
- for (int i = -1; i <= 1; i++) {
-  for (int j = -1; j <= 1; j++) {
-   point worm(z->pos.x + i, z->pos.y + j);
-   if (g->m.has_flag(diggable, worm) && !g->mon(worm) && g->u.pos != worm) {
-    wormspots.push_back(worm);
-   }
-  }
- }
+ static auto dest_clear = [&](point delta) {
+     decltype(auto) test = z->pos + delta;
+     return g->m.has_flag(diggable, test) && !g->mon(test) && !g->survivor(test);
+ };
+
+ auto wormspots(grep(spread, dest_clear));
+
  monster worm(mtype::types[mon_halfworm]);
  for (int worms = 0; worms < 2 && wormspots.size() > 0; worms++) {
   const int rn = rng(0, wormspots.size() - 1);
-  worm.spawn(wormspots[rn]);
+  worm.spawn(wormspots[rn] + z->pos);
   g->z.push_back(worm);
   wormspots.erase(wormspots.begin() + rn);
  }
