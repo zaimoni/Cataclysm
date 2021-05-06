@@ -123,25 +123,25 @@ void monster::print_info(const player& u, WINDOW* w) const
 // is a blank line. w is historically 13 characters tall, and we can't use the last one
 // because it's a border as well; so we have lines 4 through 11.
 // w is also historically 48 characters wide - 2 characters for border = 46 characters for us
- mvwprintz(w, 6, 1, c_white, "%s ", type->name.c_str());
+ mvwaddstrz(w, 6, 1, c_white, type->name.c_str());
  switch (attitude(&u)) {
   case MATT_FRIEND:
-   wprintz(w, h_white, "Friendly! ");
+   wprintz(w, h_white, " Friendly! ");
    break;
   case MATT_FLEE:
-   wprintz(w, c_green, "Fleeing! ");
+   wprintz(w, c_green, " Fleeing! ");
    break;
   case MATT_IGNORE:
-   wprintz(w, c_ltgray, "Ignoring ");
+   wprintz(w, c_ltgray, " Ignoring ");
    break;
   case MATT_FOLLOW:
-   wprintz(w, c_yellow, "Tracking ");
+   wprintz(w, c_yellow, " Tracking ");
    break;
   case MATT_ATTACK:
-   wprintz(w, c_red, "Hostile! ");
+   wprintz(w, c_red, " Hostile! ");
    break;
   default:
-   wprintz(w, h_red, "BUG: Behavior unnamed ");
+   wprintz(w, h_red, " BUG: Behavior unnamed ");
    break;
  }
  if (has_effect(ME_DOWNED))
@@ -171,7 +171,7 @@ void monster::print_info(const player& u, WINDOW* w) const
   damage_info = "it is nearly dead";
   col = c_red;
  }
- mvwprintz(w, 7, 1, col, damage_info.c_str());
+ mvwaddstrz(w, 7, 1, col, damage_info.c_str());
 
  const int line_ub = getmaxy(w) - 1;
  std::string tmp = type->description;
@@ -179,7 +179,7 @@ void monster::print_info(const player& u, WINDOW* w) const
  int line = 8;
  do {
   pos = tmp.find_first_of('\n');
-  mvwprintz(w, line++, 1, c_white, tmp.substr(0, pos).c_str());
+  mvwaddstrz(w, line++, 1, c_white, tmp.substr(0, pos).c_str());
   tmp = tmp.substr(pos + 1);
  } while (pos != std::string::npos && line < line_ub);
 }

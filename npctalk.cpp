@@ -105,7 +105,7 @@ void npc::talk_to_u(game *g)
  mvwputch(d.win,  0, SCREEN_WIDTH / 2 + 1, c_ltgray, LINE_OXXX);
  mvwputch(d.win, VIEW-1, SCREEN_WIDTH / 2 + 1, c_ltgray, LINE_XXOX);
  mvwprintz(d.win, 1,  1, c_white, "Dialogue with %s", name.c_str());
- mvwprintz(d.win, 1, SCREEN_WIDTH / 2 + 3, c_white, "Your response:");
+ mvwaddstrz(d.win, 1, SCREEN_WIDTH / 2 + 3, c_white, "Your response:");
 
 // Main dialogue loop
  do { 
@@ -1461,7 +1461,7 @@ talk_topic dialogue::opt(talk_topic topic, game *g)
 
  int curline = VIEW - 2, curhist = 1;
  while (curhist <= history.size() && curline > 0) {
-  mvwprintz(win, curline, 1, ((curhist <= hilight_lines) ? c_red : c_dkgray), history[history.size() - curhist].c_str());
+  mvwaddstrz(win, curline, 1, ((curhist <= hilight_lines) ? c_red : c_dkgray), history[history.size() - curhist].c_str());
   curline--;
   curhist++;
  }
@@ -1470,15 +1470,15 @@ talk_topic dialogue::opt(talk_topic topic, game *g)
  for (int i = 0; i < options.size(); i++) {
   while (options[i].size() > MID_WIDTH - 4) {
    split = options[i].find_last_of(' ', MID_WIDTH - 4);
-   mvwprintz(win, curline, MID_WIDTH + 2, colors[i], options[i].substr(0, split).c_str());
+   mvwaddstrz(win, curline, MID_WIDTH + 2, colors[i], options[i].substr(0, split).c_str());
    options[i] = "  " + options[i].substr(split);
    curline++;
   }
-  mvwprintz(win, curline, MID_WIDTH + 2, colors[i], options[i].c_str());
+  mvwaddstrz(win, curline, MID_WIDTH + 2, colors[i], options[i].c_str());
   curline++;
  }
- mvwprintz(win, curline + 2, MID_WIDTH + 2, c_magenta, "L: Look at");
- mvwprintz(win, curline + 3, MID_WIDTH + 2, c_magenta, "S: Size up stats");
+ mvwaddstrz(win, curline + 2, MID_WIDTH + 2, c_magenta, "L: Look at");
+ mvwaddstrz(win, curline + 3, MID_WIDTH + 2, c_magenta, "S: Size up stats");
 
  wrefresh(win);
 
@@ -1619,7 +1619,7 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
    auto test = (cash < 0 ? u.cash >= cash * -1 : p.cash >= cash);
    mvwprintz(w_head.get(), header_height - 1, SCREEN_WIDTH / 2 - 10, (cash < 0 ? u.cash >= cash * -1 : p.cash >= cash) ? c_green : c_red,
              "%s $%d", (cash >= 0 ? "Profit" : "Cost"), abs(cash));
-   if (!deal.empty()) mvwprintz(w_head.get(), header_height - 1, SCREEN_WIDTH / 2 + 5, (cost < 0 ? c_ltred : c_ltgreen), deal.c_str());
+   if (!deal.empty()) mvwaddstrz(w_head.get(), header_height - 1, SCREEN_WIDTH / 2 + 5, (cost < 0 ? c_ltred : c_ltgreen), deal.c_str());
    wattron((focus_them ? w_them : w_you).get(), c_yellow);
    wborder(w_them.get(), LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                    LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
@@ -1688,7 +1688,7 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
    {
    const size_t prompt_len = sizeof("Examine which item?")-1; // C++20: use constexpr strlen
    std::unique_ptr<WINDOW, curses_full_delete> w_tmp(newwin(3, prompt_len+2, 1, (SCREEN_WIDTH-prompt_len)/2));
-   mvwprintz(w_tmp.get(), 1, 1, c_red, "Examine which item?");
+   mvwaddstrz(w_tmp.get(), 1, 1, c_red, "Examine which item?");
    wborder(w_tmp.get(), LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                   LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
    wrefresh(w_tmp.get());

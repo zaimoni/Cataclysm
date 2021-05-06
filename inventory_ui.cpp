@@ -32,7 +32,7 @@ static void print_inv_statics(game *g, WINDOW* w_inv, std::string title, const s
  wprintw(w_inv, "/%d", my_v_capacity);
 
 // Print our weapon
- mvwprintz(w_inv, 2, mid_pt, c_magenta, "WEAPON:");
+ mvwaddstrz(w_inv, 2, mid_pt, c_magenta, "WEAPON:");
  if (g->u.is_armed()) {
   const bool dropping_weapon = cataclysm::any(dropped_items, g->u.weapon.invlet);
   if (dropping_weapon)
@@ -42,10 +42,10 @@ static void print_inv_statics(game *g, WINDOW* w_inv, std::string title, const s
  } else if (g->u.weapon.is_style())
   mvwprintz(w_inv, 3, mid_pt, c_ltgray, "%c - %s", g->u.weapon.invlet, g->u.weapname().c_str());
  else
-  mvwprintz(w_inv, 3, mid_pt + 2, c_ltgray, g->u.weapname().c_str());
+  mvwaddstrz(w_inv, 3, mid_pt + 2, c_ltgray, g->u.weapname().c_str());
 // Print worn items
  if (!g->u.worn.empty()) {
-     mvwprintz(w_inv, 5, mid_pt, c_magenta, "ITEMS WORN:");
+     mvwaddstrz(w_inv, 5, mid_pt, c_magenta, "ITEMS WORN:");
      int row = 6;
      for (const item& armor : g->u.worn) {
          const bool dropping_armor = cataclysm::any(dropped_items, armor.invlet);
@@ -116,14 +116,14 @@ char game::inv(std::string title)
 // Print category header
    for (int i = 0; i < 8; i++) {
     if (cur_it == firsts[i]) {
-     mvwprintz(w_inv.get(), cur_line, 0, c_magenta, CATEGORIES[i].c_str());
+     mvwaddstrz(w_inv.get(), cur_line, 0, c_magenta, CATEGORIES[i].c_str());
      cur_line++;
     }
    }
    if (cur_it < u.inv.size()) {
     const item& it = u.inv[cur_it];
     mvwputch (w_inv.get(), cur_line, 0, c_white, it.invlet);
-    mvwprintz(w_inv.get(), cur_line, 1, it.color_in_inventory(u), " %s", it.tname().c_str());
+    mvwaddstrz(w_inv.get(), cur_line, 1, it.color_in_inventory(u), it.tname().c_str());
     if (u.inv.stack_at(cur_it).size() > 1)
      wprintw(w_inv.get(), " [%d]", u.inv.stack_at(cur_it).size());
     if (it.charges > 0)
@@ -181,7 +181,7 @@ std::vector<item> game::multidrop()
 // Print category header
    for (int i = 0; i < 8; i++) {
     if (cur_it == firsts[i]) {
-     mvwprintz(w_inv, cur_line, 0, c_magenta, CATEGORIES[i].c_str());
+     mvwaddstrz(w_inv, cur_line, 0, c_magenta, CATEGORIES[i].c_str());
      cur_line++;
     }
    }

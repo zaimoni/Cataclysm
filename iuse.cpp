@@ -59,7 +59,7 @@ static void _display_hp(WINDOW* w, player* p, int curhp, int i)
 {
     const auto cur_hp_color = p->hp_color(hp_part(i));
     if (p->has_trait(PF_HPIGNORANT))
-        mvwprintz(w, i + 2, 15, cur_hp_color.second, "***");
+        mvwaddstrz(w, i + 2, 15, cur_hp_color.second, "***");
     else {
         mvwprintz(w, i + 2, 17-int_log10(curhp), cur_hp_color.second, "%d", cur_hp_color.first);
     }
@@ -172,7 +172,7 @@ void iuse::bandage(game *g, player *p, item *it, bool t)
      int row = 0;
      for (const char* const line : bandage_options) {
          ++row;
-         mvwprintz(w, row, 1, 1 == row ? c_ltred : c_ltgray, line);
+         mvwaddstrz(w, row, 1, 1 == row ? c_ltred : c_ltgray, line);
      }
 
   int curhp;
@@ -189,7 +189,7 @@ void iuse::bandage(game *g, player *p, item *it, bool t)
     clamp_ub(curhp, p->hp_max[i]);
     _display_hp(w, p, curhp, i);
    } else	// curhp is 0; requires surgical attention
-    mvwprintz(w, i + 2, 15, c_dkgray, "---");
+    mvwaddstrz(w, i + 2, 15, c_dkgray, "---");
   }
   wrefresh(w);
   const bool ok = _get_heal_target(p, it, healed);
@@ -247,7 +247,7 @@ void iuse::firstaid(game *g, player *p, item *it, bool t)
  int row = 0;
  for (const char* const line : firstaid_options) {
      ++row;
-     mvwprintz(w, row, 1, 1==row ? c_ltred : c_ltgray, line);
+     mvwaddstrz(w, row, 1, 1==row ? c_ltred : c_ltgray, line);
  }
 
   int curhp;
@@ -264,7 +264,7 @@ void iuse::firstaid(game *g, player *p, item *it, bool t)
     clamp_ub(curhp, p->hp_max[i]);
     _display_hp(w, p, curhp, i);
    } else	// curhp is 0; requires surgical attention
-    mvwprintz(w, i + 2, 15, c_dkgray, "---");
+    mvwaddstrz(w, i + 2, 15, c_dkgray, "---");
   }
   wrefresh(w);
 
@@ -903,7 +903,7 @@ void iuse::two_way_radio(game *g, player *p, item *it, bool t)
 //       > Report something to a faction
 //       > Call another player
  int row = 0;
- for (const char* const line : radio_options) mvwprintz(w, ++row, 1, c_white, line);
+ for (const char* const line : radio_options) mvwaddstrz(w, ++row, 1, c_white, line);
  wrefresh(w);
  int ch = getch();
  if (ch == '1') {

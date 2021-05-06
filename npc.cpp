@@ -1759,10 +1759,10 @@ void npc::print_info(WINDOW* w)
   split = (wearing.length() <= width_ub) ? std::string::npos :
                                      wearing.find_last_of(' ', width_ub);
   if (split == std::string::npos) {
-   mvwprintz(w, line, 1, c_blue, wearing.c_str());
+   mvwaddstrz(w, line, 1, c_blue, wearing.c_str());
    break;
   }
-  mvwprintz(w, line++, 1, c_blue, wearing.substr(0, split).c_str());
+  mvwaddstrz(w, line++, 1, c_blue, wearing.substr(0, split).c_str());
   wearing = wearing.substr(split + 1);
  } while (line < line_ub);
 }

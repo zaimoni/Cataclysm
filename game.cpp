@@ -147,7 +147,7 @@ static void _main_menu(WINDOW* const w_open, const int sel1)
 		{ 8, "Help" },
 		{ 9, "Quit" } };
 	for (auto x : menu) {
-		mvwprintz(w_open, x.first, 1, (sel1 == x.first - 4 ? h_white : c_white), x.second);
+        mvwaddstrz(w_open, x.first, 1, (sel1 == x.first - 4 ? h_white : c_white), x.second);
 	}
 }
 
@@ -159,7 +159,7 @@ static void _game_type_menu(WINDOW* const w_open,const int sel2)
 		{6, "Template Character" },
 		{7, "Random Character"} };
 	for (auto x : menu) {
-		mvwprintz(w_open, x.first, 12, (sel2 == x.first-4 ? h_white : c_white), x.second);
+        mvwaddstrz(w_open, x.first, 12, (sel2 == x.first-4 ? h_white : c_white), x.second);
 	}
 }
 
@@ -170,8 +170,8 @@ bool game::opening_screen()
  erase();
  for (int i = 0; i < SCREEN_WIDTH; i++)
   mvwputch(w_open, 21, i, c_white, LINE_OXOX);
- mvwprintz(w_open, 0, 1, c_blue, "Welcome to Cataclysm!");
- mvwprintz(w_open, 1, 0, c_red, "\
+ mvwaddstrz(w_open, 0, 1, c_blue, "Welcome to Cataclysm!");
+ mvwaddstrz(w_open, 1, 0, c_red, "\
 This alpha release is highly unstable. Please report any crashes or bugs to\n\
 http://github.com/zaimoni/Cataclysm .");
  refresh();
@@ -258,7 +258,7 @@ http://github.com/zaimoni/Cataclysm .");
    
    if (sel1 == 0) {	// Print the MOTD.
     for (int i = 0; i < motd.size() && i < 16; i++)
-     mvwprintz(w_open, i + 4, 12, c_ltred, motd[i].c_str());
+     mvwaddstrz(w_open, i + 4, 12, c_ltred, motd[i].c_str());
    } else {	// Clear the lines if not viewing MOTD.
     for (int i = 4; i < 20; i++) {
      for (int j = 12; j < 79; j++)
@@ -286,8 +286,8 @@ http://github.com/zaimoni/Cataclysm .");
     } else if (sel1 == 4) {
      help();
      clear();
-     mvwprintz(w_open, 0, 1, c_blue, "Welcome to Cataclysm!");
-     mvwprintz(w_open, 1, 0, c_red, "\
+     mvwaddstrz(w_open, 0, 1, c_blue, "Welcome to Cataclysm!");
+     mvwaddstrz(w_open, 1, 0, c_red, "\
 This alpha release is highly unstable. Please report any crashes or bugs to\n\
 http://github.com/zaimoni/Cataclysm .");
      refresh();
@@ -351,7 +351,7 @@ http://github.com/zaimoni/Cataclysm .");
     }
    } else if (sel1 == 2) {	// Load Character
     if (savegames.size() == 0)
-     mvwprintz(w_open, 6, 12, c_red, "No save games found!");
+     mvwaddstrz(w_open, 6, 12, c_red, "No save games found!");
     else {
      int savestart = (sel2 < 7 ?  0 : sel2 - 7),
          saveend   = (sel2 < 7 ? 14 : sel2 + 7);
@@ -359,8 +359,7 @@ http://github.com/zaimoni/Cataclysm .");
       int line = 6 + i - savestart;
       mvwprintz(w_open, line, 12, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
       if (i < savegames.size())
-       mvwprintz(w_open, line, 12, (sel2 - 1 == i ? h_white : c_white),
-                 savegames[i].c_str());
+       mvwaddstrz(w_open, line, 12, (sel2 - 1 == i ? h_white : c_white), savegames[i].c_str());
      }
     }
     wrefresh(w_open);
@@ -396,8 +395,7 @@ http://github.com/zaimoni/Cataclysm .");
    } else if (sel1 == 3) {	// Special game
     for (int i = 1; i < NUM_SPECIAL_GAMES; i++) {
      mvwprintz(w_open, 6 + i, 12, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-     mvwprintz(w_open, 6 + i, 12, (sel2 == i ? h_white : c_white),
-               special_game_name(special_game_id(i)));
+     mvwaddstrz(w_open, 6 + i, 12, (sel2 == i ? h_white : c_white), special_game_name(special_game_id(i)));
     }
     wrefresh(w_open);
     refresh();
@@ -433,7 +431,7 @@ http://github.com/zaimoni/Cataclysm .");
    }
   } else if (layer == 3) {	// Character Templates
    if (templates.size() == 0)
-    mvwprintz(w_open, 6, 12, c_red, "No templates found!");
+    mvwaddstrz(w_open, 6, 12, c_red, "No templates found!");
    else {
     int tempstart = (sel1 < 6 ?  0 : sel1 - 6),
         tempend   = (sel1 < 6 ? 14 : sel1 + 6);
@@ -441,8 +439,7 @@ http://github.com/zaimoni/Cataclysm .");
      int line = 6 + i - tempstart;
      mvwprintz(w_open, line, 29, c_black, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
      if (i < templates.size())
-      mvwprintz(w_open, line, 29, (sel1 == i ? h_white : c_white),
-                templates[i].c_str());
+      mvwaddstrz(w_open, line, 29, (sel1 == i ? h_white : c_white), templates[i].c_str());
     }
    }
    wrefresh(w_open);
@@ -1381,7 +1378,7 @@ void game::death_screen()
   num_kills += kills[i];
 
  WINDOW* w_death = newwin(VIEW, SCREEN_WIDTH, 0, 0);
- mvwprintz(w_death, 0, 35, c_red, "GAME OVER - Press Spacebar to Quit");
+ mvwaddstrz(w_death, 0, 35, c_red, "GAME OVER - Press Spacebar to Quit");
  mvwprintz(w_death, 2, 0, c_white, "Number of kills: %d", num_kills);
  const int lines_per_col = VIEW - 5;
  const int cols = (SCREEN_WIDTH - 2) / 39;  // \todo? do we need variable column width as well?
@@ -1928,7 +1925,7 @@ void game::disp_kills()
  }
 
  WINDOW* w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
- mvwprintz(w, 0, (SCREEN_WIDTH-(sizeof("KILL COUNTS:")-1))/2, c_red, "KILL COUNTS:"); // C++20: use constexpr strlen here
+ mvwaddstrz(w, 0, (SCREEN_WIDTH-(sizeof("KILL COUNTS:")-1))/2, c_red, "KILL COUNTS:"); // C++20: use constexpr strlen here
 
  if (const size_t ub = types.size()) {
      // \todo account for monster name length in following
@@ -1946,7 +1943,7 @@ void game::disp_kills()
          mvwprintz(w, row, (col + 1) * 25 + (col - 1) * padding - int_log10(count[i]), c_white, "%d", count[i]);
      }
  } else {
-     mvwprintz(w, 2, 2, c_white, "You haven't killed any monsters yet!");
+     mvwaddstrz(w, 2, 2, c_white, "You haven't killed any monsters yet!");
  }
 
  wrefresh(w);
@@ -2011,10 +2008,10 @@ faction* game::list_factions(const char* title)
  int sel = 0;
 
 // Init w_list content
- mvwprintz(w_list, 0, 0, c_white, title);
+ mvwaddstrz(w_list, 0, 0, c_white, title);
  for (int i = 0; i < valfac.size(); i++) {
   nc_color col = (i == 0 ? h_white : c_white);
-  mvwprintz(w_list, i + 1, 0, col, valfac[i].name.c_str());
+  mvwaddstrz(w_list, i + 1, 0, col, valfac[i].name.c_str());
  }
  wrefresh(w_list);
 // fac_*_text() is in faction.cpp
@@ -2025,10 +2022,10 @@ faction* game::list_factions(const char* title)
      int linenum = 3;
      while (desc.length() > maxlength) {
          const size_t split = desc.find_last_of(' ', maxlength);
-         mvwprintz(w_info, linenum++, 0, c_white, desc.substr(0, split).c_str());
+         mvwaddstrz(w_info, linenum++, 0, c_white, desc.substr(0, split).c_str());
          desc = desc.substr(split + 1);
      }
-     mvwprintz(w_info, linenum, 0, c_white, desc.c_str());
+     mvwaddstrz(w_info, linenum, 0, c_white, desc.c_str());
      wrefresh(w_info);
  };
 
@@ -2039,14 +2036,14 @@ faction* game::list_factions(const char* title)
   ch = input();
   switch ( ch ) {
   case 'j':	// Move selection down
-   mvwprintz(w_list, sel + 1, 0, c_white, valfac[sel].name.c_str());
+   mvwaddstrz(w_list, sel + 1, 0, c_white, valfac[sel].name.c_str());
    if (sel == valfac.size() - 1)
     sel = 0;	// Wrap around
    else
     sel++;
    break;
   case 'k':	// Move selection up
-   mvwprintz(w_list, sel + 1, 0, c_white, valfac[sel].name.c_str());
+   mvwaddstrz(w_list, sel + 1, 0, c_white, valfac[sel].name.c_str());
    if (sel == 0)
     sel = valfac.size() - 1;	// Wrap around
    else
@@ -2058,7 +2055,7 @@ faction* game::list_factions(const char* title)
    break;
   }
   if (ch == 'j' || ch == 'k') {	// Changed our selection... update the windows
-   mvwprintz(w_list, sel + 1, 0, h_white, valfac[sel].name.c_str());
+   mvwaddstrz(w_list, sel + 1, 0, h_white, valfac[sel].name.c_str());
    wrefresh(w_list);
    werase(w_info);
 
@@ -2091,12 +2088,12 @@ void game::list_missions()
   for (int i = 0; i < umissions.size(); i++) {
    const mission* const miss = mission::from_id(umissions[i]);
    const nc_color col = (i == u.active_mission && tab == 0) ? c_ltred : c_white;
-   mvwprintz(w_missions, TABBED_HEADER_HEIGHT + i, 0, ((selection == i) ? hilite(col) : col), miss->name());
+   mvwaddstrz(w_missions, TABBED_HEADER_HEIGHT + i, 0, ((selection == i) ? hilite(col) : col), miss->name());
   }
 
   if (selection >= 0 && selection < umissions.size()) {
    const mission* const miss = mission::from_id(umissions[selection]);
-   mvwprintz(w_missions, TABBED_HEADER_HEIGHT + 1, VBAR_X + 1, c_white, miss->description.c_str());
+   mvwaddstrz(w_missions, TABBED_HEADER_HEIGHT + 1, VBAR_X + 1, c_white, miss->description.c_str());
    if (miss->deadline != 0)
     mvwprintz(w_missions, TABBED_HEADER_HEIGHT + 2, VBAR_X + 1, c_white, "Deadline: %d (%d)", miss->deadline, int(messages.turn));
    const auto my_om_loc = om_location();
@@ -2105,7 +2102,7 @@ void game::list_missions()
              my_om_loc.second.x, my_om_loc.second.y);
   } else {
    const char* const nope = (0 == tab) ? "You have no active missions!" : ((1 == tab) ? "You haven't completed any missions!" : "You haven't failed any missions!");
-   mvwprintz(w_missions, TABBED_HEADER_HEIGHT + 1, VBAR_X + 1, c_ltred, nope);
+   mvwaddstrz(w_missions, TABBED_HEADER_HEIGHT + 1, VBAR_X + 1, c_ltred, nope);
   }
 
   wrefresh(w_missions);
@@ -2149,19 +2146,19 @@ void game::draw()
  werase(w_status);
  u.disp_status(w_status, this);
 // TODO: Allow for a 24-hour option--already supported by calendar turn
- mvwprintz(w_status, 1, 41, c_white, messages.turn.print_time().c_str());
+ mvwaddstrz(w_status, 1, 41, c_white, messages.turn.print_time().c_str());
 
  {
  oter_id cur_ter = cur_om.ter(om_location().second);
  const auto& terrain = oter_t::list[cur_ter];
  std::string tername(terrain.name);
  if (tername.length() > 14) tername = tername.substr(0, 14);
- mvwprintz(w_status, 0,  0, terrain.color, tername.c_str());
+ mvwaddstrz(w_status, 0,  0, terrain.color, tername.c_str());
  }
  if (lev.z < 0)
-  mvwprintz(w_status, 0, 18, c_ltgray, "Underground");
+  mvwaddstrz(w_status, 0, 18, c_ltgray, "Underground");
  else
-  mvwprintz(w_status, 0, 18, weather_datum::data[weather].color,
+  mvwaddstrz(w_status, 0, 18, weather_datum::data[weather].color,
                              weather_datum::data[weather].name.c_str());
  nc_color col_temp = c_blue;
  if (temperature >= 90)
@@ -2180,10 +2177,10 @@ void game::draw()
   wprintz(w_status, col_temp, " %dF", temperature);
  mvwprintz(w_status, 0, 41, c_white, "%s, day %d",
            season_name[messages.turn.season], messages.turn.day + 1);
- if (run_mode != 0) mvwprintz(w_status, 2, 51, c_red, "SAFE");
+ if (run_mode != 0) mvwaddstrz(w_status, 2, 51, c_red, "SAFE");
 
  // no good place for the "stderr log is live" indicator.  Overwrite location/weather information for now.
- if (have_used_stderr_log()) mvwprintz(w_status, 0, 0, h_red, get_stderr_logname().c_str());
+ if (have_used_stderr_log()) mvwaddstrz(w_status, 0, 0, h_red, get_stderr_logname().c_str());
 
  wrefresh(w_status);
  // Draw messages
@@ -2242,7 +2239,7 @@ void game::draw_HP()
  for (int i = 0; i < num_hp_parts; i++) {
   const auto cur_hp_color = u.hp_color(hp_part(i));
   if (u.has_trait(PF_HPIGNORANT)) {
-   mvwprintz(w_HP, i * 2 + 1, 0, cur_hp_color.second, " ***  ");
+   mvwaddstrz(w_HP, i * 2 + 1, 0, cur_hp_color.second, " ***  ");
   } else {
    if (cur_hp_color.first >= 100)
     mvwprintz(w_HP, i * 2 + 1, 0, cur_hp_color.second, "%d     ", cur_hp_color.first);
@@ -2252,15 +2249,15 @@ void game::draw_HP()
     mvwprintz(w_HP, i * 2 + 1, 0, cur_hp_color.second, "  %d    ", cur_hp_color.first);
   }
  }
- mvwprintz(w_HP,  0, 0, c_ltgray, "HEAD:  ");
- mvwprintz(w_HP,  2, 0, c_ltgray, "TORSO: ");
- mvwprintz(w_HP,  4, 0, c_ltgray, "L ARM: ");
- mvwprintz(w_HP,  6, 0, c_ltgray, "R ARM: ");
- mvwprintz(w_HP,  8, 0, c_ltgray, "L LEG: ");
- mvwprintz(w_HP, 10, 0, c_ltgray, "R LEG: ");
- mvwprintz(w_HP, 12, 0, c_ltgray, "POW:   ");
+ mvwaddstrz(w_HP,  0, 0, c_ltgray, "HEAD:  ");
+ mvwaddstrz(w_HP,  2, 0, c_ltgray, "TORSO: ");
+ mvwaddstrz(w_HP,  4, 0, c_ltgray, "L ARM: ");
+ mvwaddstrz(w_HP,  6, 0, c_ltgray, "R ARM: ");
+ mvwaddstrz(w_HP,  8, 0, c_ltgray, "L LEG: ");
+ mvwaddstrz(w_HP, 10, 0, c_ltgray, "R LEG: ");
+ mvwaddstrz(w_HP, 12, 0, c_ltgray, "POW:   ");
  if (u.max_power_level == 0)
-  mvwprintz(w_HP, 13, 0, c_ltgray, " --   ");
+  mvwaddstrz(w_HP, 13, 0, c_ltgray, " --   ");
  else {
   nc_color col;
   if (u.power_level == u.max_power_level)
@@ -2507,7 +2504,7 @@ static void local_mon_info_display(WINDOW* w_moninfo, const mtype* const type, p
     }
     if (pr.y < 12) { // Don't print if we've overflowed
         mvwputch(w_moninfo, pr.y, pr.x, type->color, type->sym);
-        mvwprintz(w_moninfo, pr.y, pr.x + 2, type->danger(), name.c_str());
+        mvwaddstrz(w_moninfo, pr.y, pr.x + 2, type->danger(), name.c_str());
     }
     // +2 for the "Z "; trailing whitespace
     pr.x += 2 + name.length() + ws;
