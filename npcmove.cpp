@@ -476,9 +476,8 @@ void npc::choose_monster_target(game *g, int &enemy, int &danger,
 
 static npc::ai_action _flee(const npc& actor, const point& fear)
 {
-	point escape;
-	if (actor.move_away_from(game::active()->m, fear, escape)) {
-		return npc::ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(const_cast<npc&>(actor), escape, "Fleeing")));	// C:Whales failure mode was npc_pause
+	if (const auto escape = actor.move_away_from(game::active()->m, fear)) {
+		return npc::ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(const_cast<npc&>(actor), *escape, "Fleeing")));	// C:Whales failure mode was npc_pause
 	}
 	return npc::ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
 }
@@ -1123,7 +1122,7 @@ void npc::avoid_friendly_fire(game *g, int target)
  execute_action(g, action, target);
 }
 
-bool player::move_away_from(const map& m, const point& tar, point& dest) const
+std::optional<point> player::move_away_from(const map& m, const point& tar) const
 {
 	std::vector<point> options;
 	point d(0, 0);
@@ -1147,10 +1146,9 @@ bool player::move_away_from(const map& m, const point& tar, point& dest) const
 	if (trig_dist(tar, options[4]) < trig_dist(tar, options[3])) std::swap(options[3], options[4]);
 
 	for (const auto& pt : options) if (can_move_to(m, pt)) {
-		dest = pt;
-		return true;
+		return pt;
 	}
-	return false;
+	return std::nullopt;
 }
 
 void npc::find_item(game *g)

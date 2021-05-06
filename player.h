@@ -104,7 +104,7 @@ public:
  bool can_move_to(const map& m, const point& pt) const;
  bool can_enter(const GPS_loc& _GPSpos) const;
  bool landing_zone_ok();   // returns true if final location is deemed ok; that is, no-op is true
- bool move_away_from(const map& m, const point& tar, point& dest) const;
+ std::optional<point> move_away_from(const map& m, const point& tar) const;
  virtual int can_reload() const; // Wielding a gun that is not fully loaded; return value is inventory index, or -1
 
  // melee.cpp
