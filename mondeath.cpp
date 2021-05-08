@@ -151,9 +151,9 @@ void mdeath::worm(game *g, monster *z)
      messages.add("The %s splits in two!",
                    grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
 
- static auto dest_clear = [&](point delta) {
+ static std::function<std::optional<point>(point)> dest_clear = [&](point delta) {
      decltype(auto) test = z->pos + delta;
-     return g->m.has_flag(diggable, test) && !g->mon(test) && !g->survivor(test);
+     return g->m.has_flag(diggable, test) && !g->mon(test) && !g->survivor(test) ? std::optional<point>(test) : std::nullopt;
  };
 
  auto wormspots(grep(spread, dest_clear));
@@ -161,7 +161,7 @@ void mdeath::worm(game *g, monster *z)
  monster worm(mtype::types[mon_halfworm]);
  for (int worms = 0; worms < 2 && wormspots.size() > 0; worms++) {
   const int rn = rng(0, wormspots.size() - 1);
-  worm.spawn(wormspots[rn] + z->pos);
+  worm.spawn(wormspots[rn]);
   g->z.push_back(worm);
   wormspots.erase(wormspots.begin() + rn);
  }
@@ -199,16 +199,16 @@ void mdeath::blobsplit(game *g, monster *z)
  if (seen) messages.add("The %s splits!", z_name->c_str());
  blob.hp = blob.speed;
 
- static auto dest_clear = [&](point delta) {
+ static std::function<std::optional<point>(point)> dest_clear = [&](point delta) {
      decltype(auto) test = z->pos + delta;
-     return g->m.move_cost(test) > 0 && !g->mon(test) && !g->survivor(test);
+     return g->m.move_cost(test) > 0 && !g->mon(test) && !g->survivor(test) ? std::optional<point>(test) : std::nullopt;
  };
 
  auto valid(grep(spread, dest_clear));
 
  for (int s = 0; s < 2 && valid.size() > 0; s++) {
   const int rn = rng(0, valid.size() - 1);
-  blob.spawn(valid[rn] + z->pos);
+  blob.spawn(valid[rn]);
   g->z.push_back(blob);
   valid.erase(valid.begin() + rn);
  }
