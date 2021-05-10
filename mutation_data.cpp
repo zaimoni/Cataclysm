@@ -4,16 +4,15 @@
 mutation_branch mutation_branch::data[PF_MAX2]; // Mutation data
 
 const trait mutation_branch::traits[PF_MAX2] = {
-	{ "NULL trait!", 0, 0, 0, "\
-This is a bug.  Weird." },
+	{ "NULL trait!", 0, 0, 0, "This is a bug.  Weird." },
 { "Fleet-Footed", 3, 0, 0, "\
-You can run more quickly than most, resulting in a 15%% speed bonus on sure\n\
+You can run more quickly than most, resulting in a 15% speed bonus on sure\n\
 footing." },
 { "Parkour Expert", 2, 0, 0, "\
 You're skilled at clearing obstacles; terrain like railings or counters are\n\
 as easy for you to move on as solid ground." },
 { "Quick", 3, 0, 0, "\
-You're just generally quick!  You get a 10%% bonus to action points." },
+You're just generally quick!  You get a 10% bonus to action points." },
 { "Optimist", 2, 0, 0, "\
 Nothing gets you down!  Your morale will generally be higher than average." },
 { "Fast Healer", 2, 0, 0, "\
@@ -31,13 +30,13 @@ you less." },
 { "Fast Reader", 1, 0, 0, "\
 You're a quick reader, and can get through books a lot faster than most." },
 { "Tough", 5, 0, 0, "\
-It takes a lot to bring you down!  You get a 20%% bonus to all hit points." },
+It takes a lot to bring you down!  You get a 20% bonus to all hit points." },
 { "Thick-Skinned", 2, 0, 0, "\
 Your skin is tough.  Cutting damage is slightly reduced for you." },
 { "Packmule", 3, 0, 0, "\
-You can manage to find space for anything!  You can carry 40%% more volume." },
+You can manage to find space for anything!  You can carry 40% more volume." },
 { "Fast Learner", 3, 0, 0, "\
-Your skill comprehension is 50%% higher, allowing you to learn skills much\n\
+Your skill comprehension is 50% higher, allowing you to learn skills much\n\
 faster than others.  Note that this only applies to real-world experience,\n\
 not to skill gain from other sources like books." },
 { "Deft", 2, 0, 0, "\
@@ -98,7 +97,7 @@ You will occasionally need to use an inhaler, or else suffer severe physical\n\
 limitations.  However, you are guaranteed to start with an inhaler." },
 { "Bad Back", -3, 0, 0, "\
 You simply can not carry as much as people with a similar strength could.\n\
-Your maximum weight carried is reduced by 35%%." },
+Your maximum weight carried is reduced by 35%." },
 { "Illiterate", -5, 0, 0, "\
 You never learned to read!  Books and computers are off-limits to you." },
 { "Poor Hearing", -2, 0, 0, "\
@@ -109,7 +108,7 @@ You have a hard time falling asleep, even under the best circumstances!" },
 You have moral objections to eating meat.  You may consume it, but doing so\n\
 will hurt your morale." },
 { "Glass Jaw", -3, 0, 0, "\
-Your head can't take much abuse.  Its maximum HP is 15%% lower than usual." },
+Your head can't take much abuse.  Its maximum HP is 15% lower than usual." },
 { "Forgetful", -3, 0, 0, "\
 You have a hard time remembering things.  Your skills will erode slightly\n\
 faster than usual." },
@@ -208,8 +207,8 @@ A set of very flexible and slick scales have grown to cover your body.  These\n\
 act as a weak set of armor, improve your ability to swim, and make you\n\
 difficult to grab." },
 { "Light Bones", 2, 0, 0, "\
-Your bones are very light.  This enables you to run and attack 10%% faster,\n\
-but also reduces your carrying weight by 20%% and makes bashing attacks hurt\n\
+Your bones are very light.  This enables you to run and attack 10% faster,\n\
+but also reduces your carrying weight by 20% and makes bashing attacks hurt\n\
 a little more." },
 { "Feathers", 2, 10, 3, "\
 Iridescent feathers have grown to cover your entire body, providing a\n\
@@ -290,7 +289,7 @@ Your eyes are compound, like those of an insect.  This increases your\n\
 perception by 2 so long as you aren't wearing eyewear." },
 { "Padded Feet", 1, 1, 0, "\
 The bottoms of your feet are strongly padded.  You receive no movement\n\
-penalty for not wearing shoes, and even receive a 10%% bonus when running\n\
+penalty for not wearing shoes, and even receive a 10% bonus when running\n\
 barefoot." },
 { "Hooves", -4, 2, 2, "\
 Your feet have fused into hooves.  This allows kicking attacks to do much\n\
@@ -320,7 +319,7 @@ You have a pair of antennae.  They allow you to detect the presence of\n\
 monsters up to a few tiles away, even if you can't see or hear them, but\n\
 prevent you from wearing headwear that is not made of fabric." },
 { "Road-Runner", 4, 0, 0, "\
-Your legs are extremely limber and fast-moving.  You run 30%% faster on\n\
+Your legs are extremely limber and fast-moving.  You run 30% faster on\n\
 flat surfaces." },
 { "Stubby Tail", 0, 1, 2, "\
 You have a short, stubby tail, like a rabbit's.  It serves no purpose." },
@@ -447,8 +446,8 @@ Your visage is disgusting and liable to induce vomiting.  People will not\n\
 want to interact with you unless they have a very good reason to." },
 { "Hollow Bones", -6, 0, 0, "\
 You have Avian Bone Syndrome--your bones are nearly hollow.  Your body is\n\
-very light as a result, enabling you to run and attack 20%% faster, but\n\
-also frail; you can carry 40%% less, and bashing attacks injure you more." },
+very light as a result, enabling you to run and attack 20% faster, but\n\
+also frail; you can carry 40% less, and bashing attacks injure you more." },
 { "Nausea", -3, 0, 0, "\
 You feel nauseous almost constantly, and are more liable to throw up from\n\
 food poisoning, alcohol, etc." },
@@ -512,22 +511,22 @@ down, its nutritional value is greatly reduced." },
 Your body's ability to digest fruits, vegetables and grains is severely\n\
 hampered.  You cannot eat anything besides meat." },
 { "Ponderous", -3, 0, 0, "\
-Your muscles are generally slow to move.  You run 10%% slower." },
+Your muscles are generally slow to move.  You run 10% slower." },
 { "Very Ponderous", -5, 0, 0, "\
-Your muscles are quite slow to move.  You run 20%% slower." },
+Your muscles are quite slow to move.  You run 20% slower." },
 { "Extremely Ponderous", -8, 0, 0, "\
-Your muscles are very slow to move.  You run 30%% slower." },
+Your muscles are very slow to move.  You run 30% slower." },
 { "Sunlight dependent", -5, 0, 0, "\
-You feel very sluggish when not in direct sunlight.  You suffer a 5%% drop in\n\
-speed when in shade, and a 10%% drop in speed when in the dark." },
+You feel very sluggish when not in direct sunlight.  You suffer a 5% drop in\n\
+speed when in shade, and a 10% drop in speed when in the dark." },
 { "Heat dependent", -2, 0, 0, "\
-Your muscle response is dependent on ambient temperatures.  You lose 1%% of\n\
+Your muscle response is dependent on ambient temperatures.  You lose 1% of\n\
 your speed for every "+std::to_string(mutation_branch::cold_blooded_severity[0])+" degrees below 65 F." },
 { "Very Heat dependent", -3, 0, 0, "\
 Your muscle response is highly dependent on ambient temperatures.  You lose\n\
-1%% of your speed for every " + std::to_string(mutation_branch::cold_blooded_severity[1]) + " degrees below 65 F." },
+1% of your speed for every " + std::to_string(mutation_branch::cold_blooded_severity[1]) + " degrees below 65 F." },
 { "Cold Blooded", -5, 0, 0, "\
-You are cold-blooded and rely on heat to keep moving.  Your lose 1%% of your\n\
+You are cold-blooded and rely on heat to keep moving.  Your lose 1% of your\n\
 speed for every " + std::to_string(mutation_branch::cold_blooded_severity[2]) + " degrees below 65 F." },
 { "Growling Voice", -1, 0, 0, "\
 You have a growling, rough voice.  Persuading NPCs will be more difficult,\n\
