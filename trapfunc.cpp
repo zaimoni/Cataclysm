@@ -510,9 +510,6 @@ void trapfunc::hum(game *g, int x, int y)
 void trapfuncm::hum(game *g, monster *z)
 {
  const int volume = rng(1, 200);
-
- if (volume >= 150) z->add_effect(ME_DEAF, volume - 140);
-
  g->sound(z->pos, volume, desc_hum(volume));
 }
 

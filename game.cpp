@@ -2867,6 +2867,8 @@ void game::sound(const point& pt, int vol, std::string description)
    if (0 < volume) {
        _mon.wander_to(pt, volume);
        _mon.process_trigger(MTRIG_SOUND, volume);
+       // historically if the volume was excessive we still had other monster sound processing effects
+       if (volume >= 150) _mon.add_effect(ME_DEAF, volume - 140);
    }
   }
  }
@@ -2880,6 +2882,36 @@ void game::sound(const point& pt, int vol, std::string description)
   if (nextspawn < change) nextspawn = 0;
   else nextspawn -= change;
  }
+// alert all NPCs
+ for (decltype(auto) _npc : active_npc) {
+     if (_npc.has_disease(DI_DEAF)) continue;	// We're deaf, can't hear it
+     int volume = vol;
+     if (_npc.has_bionic(bio_ears)) rational_scale<7, 2>(volume);
+     if (_npc.has_trait(PF_BADHEARING)) volume /= 2;
+     if (_npc.has_trait(PF_CANINE_EARS)) rational_scale<3, 2>(volume);
+     int dist = rl_dist(pt, _npc.pos);
+     if (dist > vol) continue;	// Too far away, we didn't hear it!
+     const int damped_vol = vol - dist;
+     // unclear what proper level of abstraction is for the heavy sleeper test 2020-12-03 zaimoni
+     if (_npc.has_disease(DI_SLEEP) && (_npc.has_trait(PF_HEAVYSLEEPER) ? dice(3, 20) < damped_vol : dice(2, 20) < damped_vol)) {
+         _npc.rem_disease(DI_SLEEP);
+         if (u.see(_npc)) messages.add("%s is woken up by a noise.", _npc.name.c_str());
+     }
+     if (!_npc.has_bionic(bio_ears) && 150 <= rng(damped_vol / 2, damped_vol)) {
+         _npc.add_disease(DI_DEAF, clamped_ub<40>((damped_vol - 130) / 4));
+     }
+     if (pt != _npc.pos)
+         _npc.cancel_activity_query("Heard %s!", (description == "" ? "a noise" : description.c_str())); // C:Whales legacy failsafe
+     // sound UI is player-specific
+/*     else { // If it came from us, don't print a direction
+         if (description[0] >= 'a' && description[0] <= 'z')
+             description[0] += 'A' - 'a';	// Capitalize the sound
+         messages.add(description.c_str());
+         return;
+     } */
+//     messages.add("From the %s you hear %s", direction_name(direction_from(u.pos, pt)), description.c_str());
+ }
+
 // Next, display the sound as the player hears it
  if (description.empty()) return;	// No description (e.g., footsteps)
  if (u.has_disease(DI_DEAF)) return;	// We're deaf, can't hear it
@@ -2894,7 +2926,6 @@ void game::sound(const point& pt, int vol, std::string description)
  if (u.has_disease(DI_SLEEP) && (u.has_trait(PF_HEAVYSLEEPER) ? dice(3, 20) < damped_vol : dice(2, 20) < damped_vol)) {
   u.rem_disease(DI_SLEEP);
   messages.add("You're woken up by a noise.");
-  return;
  }
  if (!u.has_bionic(bio_ears) && 150 <= rng(damped_vol / 2, damped_vol)) {
   u.add_disease(DI_DEAF, clamped_ub<40>((damped_vol - 130) / 4));
@@ -2904,7 +2935,7 @@ void game::sound(const point& pt, int vol, std::string description)
  else { // If it came from us, don't print a direction
   if (description[0] >= 'a' && description[0] <= 'z')
    description[0] += 'A' - 'a';	// Capitalize the sound
-  messages.add("%s", description.c_str());
+  messages.add(description.c_str());
   return;
  }
  messages.add("From the %s you hear %s", direction_name(direction_from(u.pos, pt)), description.c_str());
