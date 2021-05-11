@@ -4,6 +4,12 @@
 #include "mapbuffer.h"
 #include "recent_msg.h"
 
+int& reality_bubble::scent(int x, int y)
+{
+	if (!map::in_bounds(x, y)) return cataclysm::discard<int>::x = 0;	// Out-of-bounds - null scent
+	return grscent[x][y];
+}
+
 // cf map::loadn
 GPS_loc reality_bubble::toGPS(point screen_pos) const	// \todo overflow checking
 {

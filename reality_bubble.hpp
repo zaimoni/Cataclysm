@@ -24,9 +24,21 @@ public:
 	overmap cur_om;
 	map m;
 	tripoint lev;	// Placement inside the overmap; x/y should be in 0...OMAPX/Y; offset from the player's submap coordinates
+
+protected:
+	int grscent[SEEX * MAPSIZE][SEEY * MAPSIZE];	// The scent map
+
+public:
 	  // but game::update_map thinks legal values are 0..2*OMAPX/Y
 	  // lev.z is almost always cur_om.pos.z (possibly should be explicitly enforced as map loading responds to cur_om.pos.z)
 	  // in savegames: lev = u.GPSpos.first+(-5,-5,0).  Should be true anytime except during reality bubble shift during a move between submaps
+
+	// scent processing
+	int& scent(int x, int y);
+	int& scent(const point& pt) { return scent(pt.x, pt.y); };
+	int scent(int x, int y) const { return const_cast<reality_bubble*>(this)->scent(x, y); };	// consider optimized implementation
+	int scent(const point& pt) const { return const_cast<reality_bubble*>(this)->scent(pt.x, pt.y); };
+	void clear_scents() { memset(grscent, 0, sizeof(grscent)); }
 
 	// coordinate juggling
 	GPS_loc toGPS(point screen_pos) const;

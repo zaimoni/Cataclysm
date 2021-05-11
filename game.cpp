@@ -1308,12 +1308,6 @@ void game::get_input()
  gamemode->post_action(this, act);
 }
 
-int& game::scent(int x, int y)
-{
- if (!map::in_bounds(x,y)) return discard<int>::x = 0;	// Out-of-bounds - null scent
- return grscent[x][y];
-}
-
 void game::update_scent()
 {
  decltype(grscent) newscent;

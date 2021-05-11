@@ -152,11 +152,6 @@ class game : public reality_bubble
   void fling_player_or_monster(player *p, monster *zz, int dir, int flvel);
 
   void nuke(const point& world_div_2);
-  int& scent(int x, int y);
-  int& scent(const point& pt) { return scent(pt.x, pt.y); };
-  int scent(int x, int y) const { return const_cast<game*>(this)->scent(x, y); };	// consider optimized implementation
-  int scent(const point& pt) const { return const_cast<game*>(this)->scent(pt.x, pt.y); };
-  void clear_scents() { memset(grscent, 0, sizeof(grscent)); }
   faction* faction_by_id(int it);
   faction* random_good_faction();
   faction* random_evil_faction();
@@ -348,8 +343,6 @@ public:
   // This would be a wrapper for input(), possibly ignoring canceled actions.
 
   std::unique_ptr<special_game> gamemode;
-
-  int grscent[SEEX * MAPSIZE][SEEY * MAPSIZE];	// The scent map
 };
 
 // doesn't actually have to be active.  Once NPCs up, could refactor to a member function
