@@ -6,7 +6,7 @@ WARNINGS = -Wall -Wextra\
   -Wno-unused-but-set-variable -Wno-unused-function -Wno-unused-parameter
 #DEBUG = -g
 #PROFILE = -pg
-OTHERS = -O3 -std=gnu++17 -MMD -MP
+OTHERS = -O3 -std=gnu++20 -MMD -MP
 
 TARGET1 = cataclysm
 TARGET2 = socrates-daimon
