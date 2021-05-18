@@ -144,7 +144,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;HAVE_MS_COM;CATACLYSM; %(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -215,6 +215,7 @@
     <ClInclude Include="pldata.h" />
     <ClInclude Include="pldata_enum.h" />
     <ClInclude Include="posix_time.h" />
+    <ClInclude Include="rational.hpp" />
     <ClInclude Include="reality_bubble.hpp" />
     <ClInclude Include="recent_msg.h" />
     <ClInclude Include="rng.h" />

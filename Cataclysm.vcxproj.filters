@@ -285,6 +285,9 @@
     <ClInclude Include="grammar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="rational.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

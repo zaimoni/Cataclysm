@@ -487,11 +487,11 @@ void veh_interact::display_stats ()
     mvwaddstrz(w_stats, 0, 7, c_ltgreen, veh->name.c_str());
     if (option_table::get()[OPT_USE_METRIC_SYS]) {
      mvwaddstrz(w_stats, 1, 1, c_ltgray, "Safe speed:      Km/h");
-     mvwprintz(w_stats, 1, 14, c_ltgreen,"%3d", int(veh->safe_velocity(false) * 0.0161f));
+     mvwprintz(w_stats, 1, 14, c_ltgreen,"%3d", int(veh->safe_velocity(false) / vehicle::km_1));
      mvwaddstrz(w_stats, 2, 1, c_ltgray, "Top speed:       Km/h");
-     mvwprintz(w_stats, 2, 14, c_ltred, "%3d", int(veh->max_velocity(false) * 0.0161f));
+     mvwprintz(w_stats, 2, 14, c_ltred, "%3d", int(veh->max_velocity(false) / vehicle::km_1));
      mvwaddstrz(w_stats, 3, 1, c_ltgray, "Accel.:          Kmh/t");
-     mvwprintz(w_stats, 3, 14, c_ltblue,"%3d", int(veh->acceleration(false) * 0.0161f));
+     mvwprintz(w_stats, 3, 14, c_ltblue,"%3d", int(veh->acceleration(false) / vehicle::km_1));
     } else {
      mvwaddstrz(w_stats, 1, 1, c_ltgray, "Safe speed:      mph");
      mvwprintz(w_stats, 1, 14, c_ltgreen,"%3d", veh->safe_velocity(false) / vehicle::mph_1);
