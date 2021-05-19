@@ -21,14 +21,14 @@ class mapbuffer // \todo natural singleton, but likely needs pre-requisites load
 
   bool add_submap(int x, int y, int z, submap *sm);
   submap* lookup_submap(const tripoint& src);
-  submap* lookup_submap(int x, int y, int z) { return lookup_submap(tripoint(x, y, z)); };
+  submap* lookup_submap(int x, int y, int z) { return lookup_submap(tripoint(x, y, z)); }
 
-  size_t size() const { return submaps.size(); };
+  std::size_t size() const { return submaps.size(); }
 
  private:
   std::map<tripoint, submap*> submaps;	// candidate for absolute coordinates: tripoint (submap index),point (legal values 0..SEE-1 for both x,y)
 };
-  
+
 extern mapbuffer MAPBUFFER;
 
 #endif
