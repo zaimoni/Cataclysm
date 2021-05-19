@@ -17,7 +17,7 @@ static const itype_id ESCAPE_ITEMS[] = {	// \todo mod target
  itm_smokebomb_act, itm_adderall, itm_coke, itm_meth, itm_teleporter,
  itm_pheromone
 };
-#define NUM_ESCAPE_ITEMS (sizeof(ESCAPE_ITEMS)/sizeof(ESCAPE_ITEMS))
+#define NUM_ESCAPE_ITEMS (sizeof(ESCAPE_ITEMS)/sizeof(itype_id))
 
 // A list of alternate attack items (e.g. grenades), from least to most valuable
 static const itype_id ALT_ATTACK_ITEMS[] = {	// \todo mod target
@@ -26,7 +26,7 @@ static const itype_id ALT_ATTACK_ITEMS[] = {	// \todo mod target
  itm_molotov_lit, itm_pipebomb_act, itm_grenade_act, itm_gasbomb_act,
  itm_dynamite_act, itm_mininuke_act
 };
-#define NUM_ALT_ATTACK_ITEMS (sizeof(ALT_ATTACK_ITEMS)/sizeof(ALT_ATTACK_ITEMS))
+#define NUM_ALT_ATTACK_ITEMS (sizeof(ALT_ATTACK_ITEMS)/sizeof(itype_id))
 
 // all of these classes are designed for immediate use, not scheduling (i.e., IsLegal implementation may include parts that belong in IsPerformable)
 class use_escape_obj : public cataclysm::action
