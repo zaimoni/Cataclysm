@@ -757,7 +757,7 @@ std::ostream& JSON::write_object(std::ostream& os, const _object_JSON& src, int 
 	os.put('{');
 	const auto ub = src.size();
 	auto i = 0;
-	for (const auto x : src) {
+	for (const auto& x : src) {
 		write_literal(os, x.first);
 		os.put(':');
 		x.second.write(os, indent + 1);

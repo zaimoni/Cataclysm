@@ -11,11 +11,9 @@ class vehicle;
 enum ter_id : int;
 enum trap_id : int;
 
-enum {
-	OMAP = 180,
-	OMAPX = OMAP,
-	OMAPY = OMAP
-};
+constexpr int OMAP = 180;
+constexpr int OMAPX = OMAP;
+constexpr int OMAPY = OMAP;
 
 // normalized range for GPS_loc.second is 0..SEE-1, 0..SEE-1
 // reality_bubble_loc.second == GPS_loc.second for normalized GPS_loc corresponding to reality_bubble_loc
