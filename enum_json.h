@@ -49,7 +49,7 @@ namespace cataclysm {	\
 	TYPE JSON_parse<TYPE>::operator()(const char* const src)	\
 	{	\
 		if (!src || !src[0]) return TYPE(0);	\
-		ptrdiff_t i = sizeof(STATIC_REF) / sizeof(*STATIC_REF);	\
+        std::ptrdiff_t i = sizeof(STATIC_REF) / sizeof(*STATIC_REF);    \
 		while (0 < i--) if (!strcmp(STATIC_REF[i], src)) return TYPE(i + JSON_parse<TYPE>::origin);	\
 		return TYPE(0);	\
 	}	\
@@ -67,7 +67,7 @@ namespace cataclysm {	\
 	TYPE JSON_parse<TYPE>::operator()(const char* const src)	\
 	{	\
 		if (!src || !src[0]) return TYPE(0);	\
-		ptrdiff_t i = sizeof(STATIC_REF) / sizeof(*STATIC_REF);	\
+        std::ptrdiff_t i = sizeof(STATIC_REF) / sizeof(*STATIC_REF);    \
 		while (0 < i--) if (!strcmp(STATIC_REF[i], src)) return TYPE(i + 1);	\
 		return TYPE(0);	\
 	}	\
