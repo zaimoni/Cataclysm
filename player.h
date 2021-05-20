@@ -80,8 +80,8 @@ public:
  void mutate();
  void mutate_towards(pl_flag mut);
  bool remove_mutation(pl_flag mut);
- bool has_child_flag(pl_flag mut) const;
- void remove_child_flag(pl_flag mut);
+ pl_flag has_child_flag(pl_flag mut) const;
+ bool remove_child_flag(pl_flag mut);
 
  int  sight_range(int light_level) const;
  int  sight_range() const; // uses light level for our GPSpos

@@ -219,10 +219,7 @@ static pl_flag regress_mutation(pl_flag mut, const player& p)
 
 void player::mutate_towards(pl_flag mut)
 {
- if (has_child_flag(mut)) {
-  remove_child_flag(mut);
-  return;
- }
+ if (remove_child_flag(mut)) return;
 
  std::vector<pl_flag> cancel(mutation_branch::data[mut].cancels);
  int ub = cancel.size();
@@ -343,22 +340,19 @@ bool player::remove_mutation(pl_flag mut)
  return true;
 }
 
-bool player::has_child_flag(pl_flag flag) const
+// these two could be sunk into static functions, but would have less legible source code afterwards
+pl_flag player::has_child_flag(pl_flag flag) const
 {
  for(const auto tmp : mutation_branch::data[flag].replacements) {
-  if (has_trait(tmp) || has_child_flag(tmp))	// XXX depth-first search
-   return true;
+  // XXX depth-first search
+  if (has_trait(tmp)) return tmp;
+  if (pl_flag ret = has_child_flag(tmp)) return ret;
  }
- return false;
+ return PF_NULL;
 }
 
-void player::remove_child_flag(pl_flag flag)
+bool player::remove_child_flag(pl_flag flag)
 {
- for(const auto tmp : mutation_branch::data[flag].replacements) {
-  if (remove_mutation(tmp)) return;
-  if (has_child_flag(tmp)) {
-   remove_child_flag(tmp);
-   return;
-  }
- }
+ if (pl_flag remove = has_child_flag(flag)) return remove_mutation(remove);
+ return false;
 }
