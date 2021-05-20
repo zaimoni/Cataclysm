@@ -79,7 +79,7 @@ public:
 
  void mutate();
  void mutate_towards(pl_flag mut);
- void remove_mutation(pl_flag mut);
+ bool remove_mutation(pl_flag mut);
  bool has_child_flag(pl_flag mut) const;
  void remove_child_flag(pl_flag mut);
 

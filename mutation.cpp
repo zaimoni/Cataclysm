@@ -322,18 +322,12 @@ static void mutation_loss_effect(player& p, pl_flag mut)
     }
 }
 
-void player::remove_mutation(pl_flag mut)
+bool player::remove_mutation(pl_flag mut)
 {
+ if (!has_trait(mut)) return false;
+
 // Check if there's a prereq we should shrink back into
- pl_flag replacing = PF_NULL;
- for(const auto pre : mutation_branch::data[mut].prereqs) {
-  for(const auto tmp : mutation_branch::data[pre].replacements) {
-   if (tmp == mut) {
-    replacing = pre;
-    break;
-   }
-  }
- }
+ pl_flag replacing = regress_mutation(mut, *this);
 
  toggle_trait(mut);
  if (replacing != PF_NULL) {
@@ -346,6 +340,7 @@ void player::remove_mutation(pl_flag mut)
   mutation_loss_effect(*this, mut);
  }
 
+ return true;
 }
 
 bool player::has_child_flag(pl_flag flag) const
@@ -360,10 +355,8 @@ bool player::has_child_flag(pl_flag flag) const
 void player::remove_child_flag(pl_flag flag)
 {
  for(const auto tmp : mutation_branch::data[flag].replacements) {
-  if (has_trait(tmp)) {
-   remove_mutation(tmp);
-   return;
-  } else if (has_child_flag(tmp)) {
+  if (remove_mutation(tmp)) return;
+  if (has_child_flag(tmp)) {
    remove_child_flag(tmp);
    return;
   }
