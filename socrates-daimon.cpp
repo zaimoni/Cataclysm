@@ -1792,6 +1792,18 @@ int main(int argc, char *argv[])
 				if (const auto json = JSON_key(x.trap)) table_row[3].append(link_to(json, TRAPS_HTML, json));
 				page.print(table_row);
 				for (decltype(auto) tr : table_row) tr.clear();
+
+				// swimmable terrains must be water sources
+				if (x.flags & mfb(swimmable)) {
+					bool ok = false;
+					for (decltype(auto) x : ter_t::water_from_terrain) {
+						if (x.first == ub) {
+							ok = true;
+							break;
+						}
+					}
+					if (!ok) throw std::logic_error(x.name + " is swimmable, but not a water source");
+				}
 			}
 		}
 		while (page.end_print());
@@ -2141,6 +2153,40 @@ int main(int argc, char *argv[])
 					for (decltype(auto) tr : table_row) tr.clear();
 				}
 			}
+			page.end_print();
+
+			page.print(html::tag::wrap("Water may be taken from some terrain types.  Purifying before drinking recommended."));
+
+			static constexpr const char* water_table_headers[] = { "Terrain", "Chance of food poisoning when drunk", "Severity" };
+			page.start_print(_data_table);
+			// actual content
+			{
+				html::tag table_header("tr");
+				table_header.set(attr_align, val_center);
+				for (decltype(auto) th : water_table_headers) table_header.append(html::tag("th", th));
+				page.print(table_header);
+			}
+
+			{
+				html::tag cell("td");
+				html::tag table_row("tr");
+				table_row.set(attr_align, val_left);
+				table_row.set(attr_valign, val_top);
+				for (decltype(auto) th : water_table_headers) table_row.append(cell);
+
+				for (decltype(auto) x : ter_t::water_from_terrain) {
+					if (auto json = JSON_key(x.first)) {
+						table_row[0].append(html::tag::wrap(json));
+						table_row[1].append(html::tag::wrap(std::to_string(x.second.first.numerator()) + " in " + std::to_string(x.second.first.denominator())));
+						table_row[2].append(html::tag::wrap(std::to_string(x.second.second.first) + " ... " + std::to_string(x.second.second.second)));
+					}
+					else throw std::logic_error("unhandled terrain as water source");
+
+					page.print(table_row);
+					for (decltype(auto) tr : table_row) tr.clear();
+				}
+			}
+
 			while (page.end_print());
 		}
 

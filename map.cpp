@@ -1416,22 +1416,13 @@ std::optional<item> map::water_from(const point& pt) const
 
  if (!ter_t::has_flag(swimmable, terrain) && t_toilet != terrain) return std::nullopt;
 
- item ret(item::types[itm_water], 0);
- switch(terrain) {
- case t_water_sh:
-   if (one_in(3)) ret.poison = rng(1, 4);
-   break;
- case t_water_dp:
-   if (one_in(4)) ret.poison = rng(1, 4);
-   break;
- case t_sewage:
-   ret.poison = rng(1, 7);
-   break;
- case t_toilet:
-   if (!one_in(3)) ret.poison = rng(1, 3);
-   break;
- }
- return ret;
+ for (decltype(auto) x : ter_t::water_from_terrain) {
+     if (terrain != x.first) continue;
+     item ret(item::types[itm_water], 0);
+     if (x.second.first.numerator() >= rng(1, x.second.first.denominator())) ret.poison = rng(x.second.second.first, x.second.second.second);
+     return ret;
+ };
+ return std::nullopt;
 }
 
 void map::i_rem(int x, int y, int index)

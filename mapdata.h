@@ -2,6 +2,7 @@
 #define _MAPDATA_H_
 
 #include "trap.h"
+#include "rational.hpp"
 
 #include <map>
 
@@ -111,6 +112,12 @@ template<int lb, int ub> constexpr bool any(ter_id src) {
 struct ter_t {
 	static const ter_t list[num_terrain_types];
 	static std::map<ter_id, std::string> tiles;
+	static constexpr const std::pair<ter_id, std::pair<rational, std::pair<int, int> > > water_from_terrain[] = {
+		{t_water_sh, {rational(1, 3), std::pair(1, 4)}},
+		{t_water_dp, {rational(1, 4), std::pair(1, 4)}},
+		{t_sewage, {rational(1), std::pair(1, 7)}},
+		{t_toilet, {rational(2, 3), std::pair(1, 3)}}
+	};
 
 	std::string name;
 	char sym;
