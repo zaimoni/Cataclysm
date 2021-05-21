@@ -42,7 +42,7 @@ using namespace cataclysm;
 skill JSON_parse<skill>::operator()(const char* const src)
 {
 	if (!src || !src[0]) return sk_null;
-	ptrdiff_t i = sizeof(JSON_transcode) / sizeof(*JSON_transcode);
+    std::ptrdiff_t i = sizeof(JSON_transcode) / sizeof(*JSON_transcode);
 	while (0 < i--) {
 		if (!strcmp(JSON_transcode[i], src)) return (skill)(i + 1);
 	}
