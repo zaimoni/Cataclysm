@@ -26,10 +26,11 @@ namespace trapfunc {
 	void temple_flood(game* g, int x, int y);
 	void temple_toggle(game* g, int x, int y);
 	void glow(game* g, int x, int y);
-	void hum(game* g, int x, int y);
 	void shadow(game* g, int x, int y);
 	void drain(game* g, int x, int y);
 	void snake(game* g, int x, int y);
+
+	void hum(const point& pt);
 };
 
 namespace trapfuncm {
@@ -50,7 +51,6 @@ namespace trapfuncm {
 	void ledge(game* g, monster* z);
 	void boobytrap(game* g, monster* z);
 	void glow(game* g, monster* z);
-	void hum(game* g, monster* z);
 	void drain(game* g, monster* z);
 	void snake(game* g, monster* z);
 };

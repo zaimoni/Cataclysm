@@ -21,16 +21,19 @@ void trap_fully_triggered(map& m, const point& pt, const std::vector<item_drop_s
 
 void trap::trigger(monster& mon) const
 {
+    if (act_pos) act_pos(mon.pos);
     if (actm) actm(game::active(), &mon); // legacy adapter
 }
 
 void trap::trigger(player& u) const
 {
+    if (act_pos) act_pos(u.pos);
     if (act) act(game::active(), u.pos.x, u.pos.y); // legacy adapter
 }
 
 void trap::trigger(player& u, const point& tr_pos) const
 {
+    if (act_pos) act_pos(tr_pos);
     if (act) act(game::active(), tr_pos.x, tr_pos.y); // legacy adapter
 }
 
@@ -517,16 +520,10 @@ static const char* desc_hum(int volume)
     else return "VRMMMMMM";
 }
 
-void trapfunc::hum(game *g, int x, int y)
+void trapfunc::hum(const point& pt)
 {
- const int volume = rng(1, 200);
- g->sound(point(x, y), volume, desc_hum(volume));
-}
-
-void trapfuncm::hum(game *g, monster *z)
-{
- const int volume = rng(1, 200);
- g->sound(z->pos, volume, desc_hum(volume));
+    const int volume = rng(1, 200);
+    game::active()->sound(pt, volume, desc_hum(volume));
 }
 
 void trapfunc::shadow(game *g, int x, int y)

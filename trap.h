@@ -64,6 +64,7 @@ struct trap {
 private:
  void (*act)(game *, int x, int y);	// You stepped on it (or failed a disarm)
  void (*actm)(game *, monster *);	// Monster stepped on it
+ void (*act_pos)(const point& pt);
 
 public:
 #endif
@@ -73,14 +74,15 @@ public:
       std::initializer_list<itype_id> pcomponents,
       std::initializer_list<item_drop_spec> ptriggered
 #ifndef SOCRATES_DAIMON
-      , void (*pact)(game *, int x, int y),
-      void (*pactm)(game *, monster *)
+      , void (*pact)(game *, int x, int y) = nullptr,
+      void (*pactm)(game *, monster *) = nullptr,
+      void (*pactp)(const point&) = nullptr
 #endif
       )
  : id(pid), sym(psym), color(pcolor), name(pname), visibility(pvisibility), avoidance(pavoidance), difficulty(pdifficulty),
    disarm_components(pcomponents), trigger_components(ptriggered)
 #ifndef SOCRATES_DAIMON
-     ,act(pact),actm(pactm)
+     ,act(pact),actm(pactm),act_pos(pactp)
 #endif
  {
  }
