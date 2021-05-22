@@ -127,8 +127,6 @@ class game : public reality_bubble
   void kill_mon(monster& target, monster* z) { if (!target.dead) _kill_mon(target, (0 != z->friendly)); } // not nearly enough detail
   // Explode a monster; like kill_mon but messier
   void explode_mon(monster& target, player* me = nullptr) { if (!target.dead) _explode_mon(target, me); }
-// hit_monster_with_flags processes ammo flags (e.g. incendiary, etc)
-  void hit_monster_with_flags(monster &z, unsigned int flags);
   void plfire(bool burst);	// Player fires a gun (target selection)...
 // ... a gun is fired, maybe by an NPC (actual damage, etc.).
   void fire(player &p, point tar, std::vector<point> &trajectory, bool burst);

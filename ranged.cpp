@@ -21,7 +21,6 @@ field_id bleeds(const monster& mon)
     return fd_blood;
 }
 
-double calculate_missed_by(player &p, int trange);
 void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit);
 void shoot_player(game *g, player &p, player *h, int &dam, double goodhit);
 
@@ -148,6 +147,39 @@ static int calculate_range(player& p, const point& tar)
         trange = LONG_RANGE + .6 * (trange - LONG_RANGE);
 
     return trange;
+}
+
+static double calculate_missed_by(player& p, int trange)	// XXX real-world deviation is normal distribution with arithmetic mean zero \todo fix
+{
+    const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
+    // Calculate deviation from intended target (assuming we shoot for the head)
+    double deviation = 0.; // Measured in quarter-degrees
+  // Up to 1.5 degrees for each skill point < 4; up to 1.25 for each point > 4
+    if (p.sklevel[firing->skill_used] < 4)
+        deviation += rng(0, 6 * (4 - p.sklevel[firing->skill_used]));
+    else if (p.sklevel[firing->skill_used] > 4)
+        deviation -= rng(0, 5 * (p.sklevel[firing->skill_used] - 4));
+
+    if (p.sklevel[sk_gun] < 3)
+        deviation += rng(0, 3 * (3 - p.sklevel[sk_gun]));
+    else
+        deviation -= rng(0, 2 * (p.sklevel[sk_gun] - 3));
+
+    deviation += p.ranged_dex_mod();
+    deviation += p.ranged_per_mod();
+
+    deviation += rng(0, 2 * p.encumb(bp_arms)) + rng(0, 4 * p.encumb(bp_eyes));
+
+    deviation += rng(0, p.weapon.curammo->accuracy);
+    deviation += rng(0, p.weapon.accuracy());
+    const int adj_recoil = p.recoil + p.driving_recoil;
+    deviation += rng(adj_recoil / 4, adj_recoil);
+
+    // .013 * trange is a computationally cheap version of finding the tangent.
+    // (note that .00325 * 4 = .013; .00325 is used because deviation is a number
+    //  of quarter-degrees)
+    // It's also generous; missed_by will be rather short.
+    return (.00325 * deviation * trange);
 }
 
 void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst)
@@ -609,58 +641,25 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
  } while (true);
 }
 
-void game::hit_monster_with_flags(monster &z, unsigned int flags)
+// monster class currently doesn't have IF_AMMO_... flags visible
+static void hit_monster_with_flags(monster& z, unsigned int flags)
 {
- if (flags & mfb(IF_AMMO_FLAME)) {
+    if (flags & mfb(IF_AMMO_FLAME)) {
 
-  if (z.made_of(VEGGY) || z.made_of(COTTON) || z.made_of(WOOL) ||
-      z.made_of(PAPER) || z.made_of(WOOD))
-   z.add_effect(ME_ONFIRE, rng(8, 20));
-  else if (z.made_of(FLESH))
-   z.add_effect(ME_ONFIRE, rng(5, 10));
-  
- } else if (flags & mfb(IF_AMMO_INCENDIARY)) {
+        if (z.made_of(VEGGY) || z.made_of(COTTON) || z.made_of(WOOL) ||
+            z.made_of(PAPER) || z.made_of(WOOD))
+            z.add_effect(ME_ONFIRE, rng(8, 20));
+        else if (z.made_of(FLESH))
+            z.add_effect(ME_ONFIRE, rng(5, 10));
 
-  if (z.made_of(VEGGY) || z.made_of(COTTON) || z.made_of(WOOL) ||
-      z.made_of(PAPER) || z.made_of(WOOD))
-   z.add_effect(ME_ONFIRE, rng(2, 6));
-  else if (z.made_of(FLESH) && one_in(4))
-   z.add_effect(ME_ONFIRE, rng(1, 4));
+    } else if (flags & mfb(IF_AMMO_INCENDIARY)) {
 
- }
-}
-
-double calculate_missed_by(player &p, int trange)	// XXX real-world deviation is normal distribution with arithmetic mean zero \todo fix
-{
-  const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
-// Calculate deviation from intended target (assuming we shoot for the head)
-  double deviation = 0.; // Measured in quarter-degrees
-// Up to 1.5 degrees for each skill point < 4; up to 1.25 for each point > 4
-  if (p.sklevel[firing->skill_used] < 4)
-   deviation += rng(0, 6 * (4 - p.sklevel[firing->skill_used]));
-  else if (p.sklevel[firing->skill_used] > 4)
-   deviation -= rng(0, 5 * (p.sklevel[firing->skill_used] - 4));
-
-  if (p.sklevel[sk_gun] < 3)
-   deviation += rng(0, 3 * (3 - p.sklevel[sk_gun]));
-  else
-   deviation -= rng(0, 2 * (p.sklevel[sk_gun] - 3));
-
-  deviation += p.ranged_dex_mod();
-  deviation += p.ranged_per_mod();
-
-  deviation += rng(0, 2 * p.encumb(bp_arms)) + rng(0, 4 * p.encumb(bp_eyes));
-
-  deviation += rng(0, p.weapon.curammo->accuracy);
-  deviation += rng(0, p.weapon.accuracy());
-  const int adj_recoil = p.recoil + p.driving_recoil;
-  deviation += rng(adj_recoil / 4, adj_recoil);
-
-// .013 * trange is a computationally cheap version of finding the tangent.
-// (note that .00325 * 4 = .013; .00325 is used because deviation is a number
-//  of quarter-degrees)
-// It's also generous; missed_by will be rather short.
-  return (.00325 * deviation * trange);
+        if (z.made_of(VEGGY) || z.made_of(COTTON) || z.made_of(WOOL) ||
+            z.made_of(PAPER) || z.made_of(WOOD))
+            z.add_effect(ME_ONFIRE, rng(2, 6));
+        else if (z.made_of(FLESH) && one_in(4))
+            z.add_effect(ME_ONFIRE, rng(1, 4));
+    }
 }
 
 void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit)
@@ -715,8 +714,7 @@ void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit)
            messages.add("%s%s shoots the %s.", message, p.name.c_str(), z_name.c_str());
    }
    if (mon.hurt(dam)) g->kill_mon(mon, &p);
-   else if (p.weapon.curammo->item_flags != 0)
-    g->hit_monster_with_flags(mon, p.weapon.curammo->item_flags);
+   else hit_monster_with_flags(mon, p.weapon.curammo->item_flags); // could pre-test for no-op if there is a profiled CPU problem
    dam = 0;
   }
  }
