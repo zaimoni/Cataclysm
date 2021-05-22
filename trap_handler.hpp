@@ -5,7 +5,6 @@ class game;
 class monster;
 
 struct trapfunc {
-	static void none(game* g, int x, int y) { };
 	static void bubble(game* g, int x, int y);
 	static void beartrap(game* g, int x, int y);
 	static void snare(game* g, int x, int y) { }; // \todo? implement
@@ -35,7 +34,6 @@ struct trapfunc {
 };
 
 struct trapfuncm {
-	static void none(game* g, monster* z) { };
 	static void bubble(game* g, monster* z);
 	static void beartrap(game* g, monster* z);
 	static void board(game* g, monster* z);
