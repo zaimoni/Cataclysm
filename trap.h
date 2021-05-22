@@ -5,6 +5,7 @@
 
 class monster;
 class game;
+struct point;
 
 enum trap_id : int {
  tr_null,
@@ -60,8 +61,11 @@ struct trap {
  
  // \todo trap action for npcs
 #ifndef SOCRATES_DAIMON
+private:
  void (*act)(game *, int x, int y);	// You stepped on it (or failed a disarm)
  void (*actm)(game *, monster *);	// Monster stepped on it
+
+public:
 #endif
  
  trap(int pid, std::string pname, char psym, nc_color pcolor,
@@ -82,6 +86,11 @@ struct trap {
  }
 
  bool disarm_legal() const { return id != tr_null && difficulty < 99; }
+#ifndef SOCRATES_DAIMON
+ void trigger(monster& mon) const; // stepped on
+ void trigger(player& u) const; // stepped on
+ void trigger(player& u, const point& tr_pos) const; // disarm failure
+#endif
 
  static void init();
 };

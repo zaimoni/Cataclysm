@@ -484,7 +484,7 @@ void monster::move_to(game *g, const point& pt)
   if (!not_landbound) {
       if (const auto tr_at = GPSpos.trap_at()) { // Monster stepped on a trap!
           const trap* const tr = trap::traps[tr_at];
-          if (dice(3, sk_dodge + 1) < dice(3, tr->avoidance)) (tr->actm)(g, this);
+          if (dice(3, sk_dodge + 1) < dice(3, tr->avoidance)) tr->trigger(*this);
       }
   }
 // Diggers turn the dirt into dirtmound

@@ -5068,7 +5068,7 @@ void game::plmove(int x, int y)
   u.screenpos_set(point(x, y));
   if (tr_id != tr_null) { // We stepped on a trap!
    const trap* const tr = trap::traps[tr_id];
-   if (!u.avoid_trap(tr)) (*tr->act)(this, x, y);
+   if (!u.avoid_trap(tr)) tr->trigger(u);
   }
 
 // Some martial art styles have special effects that trigger when we move
@@ -5398,7 +5398,7 @@ void game::vertical_move(int movez, bool force)
 
  if (const auto tr_id = u.GPSpos.trap_at()) { // We stepped on a trap!
   const trap* const tr = trap::traps[tr_id];
-  if (force || !u.avoid_trap(tr)) (tr->act)(this, u.pos.x, u.pos.y);
+  if (force || !u.avoid_trap(tr)) tr->trigger(u);
  }
 
  refresh_all();

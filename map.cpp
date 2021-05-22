@@ -1681,7 +1681,8 @@ void map::disarm_trap(game *g, const point& pt)
   const bool will_get_xp = (diff - roll <= 6);
   messages.add(will_get_xp ? "You barely fail to disarm the trap, and you set it off!" 
 	: "You fail to disarm the trap, and you set it off!");
-  (*tr->act)(g, pt.x, pt.y);
+  tr->trigger(g->u, pt);
+
   // Give xp for failing, but not if we failed terribly (in which
   // case the trap may not be disarmable).
   if (will_get_xp) g->u.practice(sk_traps, 2*diff);

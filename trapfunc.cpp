@@ -19,6 +19,22 @@ void trap_fully_triggered(map& m, const point& pt, const std::vector<item_drop_s
     }
 }
 
+void trap::trigger(monster& mon) const
+{
+    if (actm) actm(game::active(), &mon); // legacy adapter
+}
+
+void trap::trigger(player& u) const
+{
+    if (act) act(game::active(), u.pos.x, u.pos.y); // legacy adapter
+}
+
+void trap::trigger(player& u, const point& tr_pos) const
+{
+    if (act) act(game::active(), tr_pos.x, tr_pos.y); // legacy adapter
+}
+
+
 void trapfunc::bubble(game *g, int x, int y)
 {
  messages.add("You step on some bubblewrap!");
