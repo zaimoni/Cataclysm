@@ -1037,7 +1037,7 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
     if (!collision_type) return 0;  // hit nothing
 
     int degree = rng (70, 100);
-    int imp = abs(velocity) * mass / k_mvel / 100 ;
+    int imp = abs(velocity) * mass / k_mvel ;
     int imp2 = imp * mass2 / (mass + mass2) * degree / 100;
     bool smashed = true;
     std::string snd;
@@ -1081,8 +1081,8 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
     }
     if (p_info.has_flag<vpf_sharp>() && smashed) imp2 /= 2;
     int imp1 = imp - imp2;
-    int vel1 = imp1 * k_mvel * 100 / mass;
-    int vel2 = imp2 * k_mvel * 100 / mass2;
+    int vel1 = imp1 * k_mvel / mass;
+    int vel2 = imp2 * k_mvel / mass2;
 
     if (collision_type == 1) {
         int dam = imp1 * dmg_mod / 100;

@@ -420,7 +420,7 @@ void map::vehmove(game *g)
       int coll_turn = 0;
       if (imp > 0) {
        if (imp > 100) veh->damage_all(imp / 20, imp / 10, vehicle::damage_type::bash);// shake veh because of collision
-	   int vel2 = imp * k_mvel * 100 / (veh->total_mass() / 8);
+	   int vel2 = imp * vehicle::k_mvel / (veh->total_mass() / 8);
 	   auto passengers = veh->passengers();
 	   for (const auto& pass : passengers) {
 		   assert(pass.second);

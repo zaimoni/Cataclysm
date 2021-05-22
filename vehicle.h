@@ -16,8 +16,6 @@ class map;
 class player;
 class game;
 
-const int k_mvel = 200;
-
 // Structure, describing vehicle part (ie, wheel, seat)
 struct vehicle_part
 {
@@ -121,6 +119,7 @@ public:
     static const constexpr int mph_1 = 100; // scaling factor between real-world velocity and internal representation
     static const constexpr rational km_1 = rational(559, 9); // approximate scaling factor between real-world velocity and internal representation
     static const constexpr int radius = 12; // should be ui.h SEE but that header isn't included.  vehicle only allowed to span 3x3 submaps
+    static const constexpr int k_mvel = 200 * 100; // some sort of empirical collision scaling factor; unclear whether 100 should be mph_1
 
     // damage types:
     // 0 - piercing
