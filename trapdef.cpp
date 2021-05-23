@@ -52,7 +52,7 @@ void trap::init()
 
 //	Name			Symbol	Color		Vis Avd Diff
  traps.push_back(new trap(++id, "none", '?', c_white, 20, 0, 0, {}, {}));
- traps.push_back(new trap(++id, "bubblewrap", '_', c_ltcyan, 0, 8, 0, { itm_bubblewrap }, {} TRAP_HANDLERS(&trapfunc::bubble, &trapfuncm::bubble)));
+ traps.push_back(new trap(++id, "bubblewrap", '_', c_ltcyan, 0, 8, 0, { itm_bubblewrap }, {} TRAP_HANDLERS(&trapfunc::bubble, nullptr, &trapfunc::bubble)));
  traps.push_back(new trap(++id, "bear trap", '^', c_blue, 2, 7, 3, { itm_beartrap }, { { itm_beartrap } } TRAP_HANDLERS(&trapfunc::beartrap, &trapfuncm::beartrap)));
  traps.push_back(new trap(++id, "buried bear trap", '^', c_blue, 9, 8, 4, { itm_beartrap }, { { itm_beartrap } } TRAP_HANDLERS(&trapfunc::beartrap, &trapfuncm::beartrap)));
  traps.push_back(new trap(++id, "rabbit snare", '\\', c_brown, 5, 10, 2, { itm_stick, itm_string_36 }, {})); // \todo implement ...::snare
@@ -63,7 +63,7 @@ void trap::init()
  traps.push_back(new trap(++id, "shotgun trap", '^', c_red, 4, 5, 6, { itm_string_36, itm_shotgun_sawn }, { {itm_shotgun_sawn}, {itm_string_6} } TRAP_HANDLERS(&trapfunc::shotgun, &trapfuncm::shotgun))); // 1 shot
  traps.push_back(new trap(++id, "spinning blade engine", '_', c_ltred, 0, 0, 2, { itm_motor, itm_machete, itm_machete }, {}));
  traps.push_back(new trap(++id, "spinning blade", '\\', c_cyan, 0, 4, 99, {}, {} TRAP_HANDLERS(&trapfunc::blade, &trapfuncm::blade)));
- traps.push_back(new trap(++id, "land mine", '_', c_red, 10, 14, 10, { itm_landmine }, {} TRAP_HANDLERS(&trapfunc::landmine, &trapfuncm::landmine)));
+ traps.push_back(new trap(++id, "land mine", '_', c_red, 10, 14, 10, { itm_landmine }, {} TRAP_HANDLERS(&trapfunc::landmine, &trapfuncm::landmine, &trapfunc::landmine)));
  traps.push_back(new trap(++id, "teleport pad", '_', c_magenta, 0, 15, 20, {}, {} TRAP_HANDLERS(&trapfunc::telepad, &trapfuncm::telepad)));
  traps.push_back(new trap(++id, "goo pit", '_', c_dkgray, 0, 15, 15, {}, {} TRAP_HANDLERS(&trapfunc::goo, &trapfuncm::goo)));
  traps.push_back(new trap(++id, "dissector", '7', c_cyan, 2, 20, 99, {}, {} TRAP_HANDLERS(&trapfunc::dissector, &trapfuncm::dissector)));
@@ -74,7 +74,7 @@ void trap::init()
  // The '%' symbol makes the portal cycle through ~*0&
  traps.push_back(new trap(++id, "shimmering portal", '%', c_magenta, 0, 30, 99, {}, {})); // \todo implement major game feature; ...::portal
  traps.push_back(new trap(++id, "ledge", ' ', c_black, 0, 99, 99, {}, {} TRAP_HANDLERS(&trapfunc::ledge, &trapfuncm::ledge)));
- traps.push_back(new trap(++id, "boobytrap", '^', c_ltcyan, 5, 4, 7, {}, {} TRAP_HANDLERS(&trapfunc::boobytrap, &trapfuncm::boobytrap)));
+ traps.push_back(new trap(++id, "boobytrap", '^', c_ltcyan, 5, 4, 7, {}, {} TRAP_HANDLERS(&trapfunc::boobytrap, &trapfuncm::boobytrap, &trapfunc::boobytrap)));
  traps.push_back(new trap(++id, "raised tile", '^', c_ltgray, 9, 20, 99, {}, {} TRAP_HANDLERS(&trapfunc::temple_flood)));
  // Toggles through states of RGB walls
  traps.push_back(new trap(++id, "", '^', c_white, 99, 99, 99, {}, {} TRAP_HANDLERS(&trapfunc::temple_toggle)));

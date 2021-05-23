@@ -30,6 +30,9 @@ namespace trapfunc {
 	void drain(game* g, int x, int y);
 	void snake(game* g, int x, int y);
 
+	void bubble(const point& pt); // bubblewrap \todo? rename
+	void boobytrap(const point& pt);
+	void landmine(const point& pt); // structurally similar to boobytrap
 	void hum(const point& pt);
 	void snake(const point& pt);
 };

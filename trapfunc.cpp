@@ -41,14 +41,13 @@ void trap::trigger(player& u, const point& tr_pos) const
 void trapfunc::bubble(game *g, int x, int y)
 {
  messages.add("You step on some bubblewrap!");
- g->sound(point(x, y), 18, "Pop!");
- g->m.tr_at(x, y) = tr_null;
 }
 
-void trapfuncm::bubble(game *g, monster *z)
+void trapfunc::bubble(const point& pt)
 {
- g->sound(z->pos, 18, "Pop!");
- z->GPSpos.trap_at() = tr_null;
+    auto g = game::active();
+    g->sound(pt, 18, "Pop!");
+    g->m.tr_at(pt) = tr_null;
 }
 
 void trapfunc::beartrap(game *g, int x, int y)
@@ -197,29 +196,35 @@ void trapfuncm::blade(game *g, monster *z)
 void trapfunc::landmine(game *g, int x, int y)
 {
  messages.add("You trigger a landmine!");
- g->explosion(x, y, 10, 8, false);
- g->m.tr_at(x, y) = tr_null;
 }
 
 void trapfuncm::landmine(game *g, monster *z)
 {
  if (g->u_see(z->pos)) messages.add("The %s steps on a landmine!", z->name().c_str());
- g->explosion(z->pos, 10, 8, false);
- z->GPSpos.trap_at() = tr_null;
+}
+
+void trapfunc::landmine(const point& pt)
+{
+    auto g = game::active();
+    g->explosion(pt, 10, 8, false);
+    g->m.tr_at(pt) = tr_null;
 }
 
 void trapfunc::boobytrap(game *g, int x, int y)
 {
  messages.add("You trigger a boobytrap!");
- g->explosion(x, y, 18, 12, false);
- g->m.tr_at(x, y) = tr_null;
 }
 
 void trapfuncm::boobytrap(game *g, monster *z)
 {
  if (g->u_see(z->pos)) messages.add("The %s triggers a boobytrap!", z->name().c_str());
- g->explosion(z->pos, 18, 12, false);
- z->GPSpos.trap_at() = tr_null;
+}
+
+void trapfunc::boobytrap(const point& pt)
+{
+    auto g = game::active();
+    g->explosion(pt, 18, 12, false);
+    g->m.tr_at(pt) = tr_null;
 }
 
 void trapfunc::telepad(game *g, int x, int y)
