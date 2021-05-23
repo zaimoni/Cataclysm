@@ -82,7 +82,7 @@ void trap::init()
  traps.push_back(new trap(++id, "", '^', c_white, 99, 99, 99, {}, {} TRAP_HANDLERS(nullptr, nullptr, &trapfunc::hum))); // Hum attack
  traps.push_back(new trap(++id, "", '^', c_white, 99, 99, 99, {}, {} TRAP_HANDLERS(&trapfunc::shadow))); // Shadow spawn
  traps.push_back(new trap(++id, "", '^', c_white, 99, 99, 99, {}, {} TRAP_HANDLERS(&trapfunc::drain, &trapfuncm::drain))); // Drain attack
- traps.push_back(new trap(++id, "", '^', c_white, 99, 99, 99, {}, {} TRAP_HANDLERS(&trapfunc::snake, &trapfuncm::snake))); // Snake spawn / hisssss
+ traps.push_back(new trap(++id, "", '^', c_white, 99, 99, 99, {}, {} TRAP_HANDLERS(&trapfunc::snake, nullptr, &trapfunc::snake))); // Snake spawn / hisssss
 #undef TRAP_HANDLERS
 
 	assert(num_trap_types == traps.size());	// postcondition check

@@ -31,6 +31,7 @@ namespace trapfunc {
 	void snake(game* g, int x, int y);
 
 	void hum(const point& pt);
+	void snake(const point& pt);
 };
 
 namespace trapfuncm {
@@ -52,7 +53,6 @@ namespace trapfuncm {
 	void boobytrap(game* g, monster* z);
 	void glow(game* g, monster* z);
 	void drain(game* g, monster* z);
-	void snake(game* g, monster* z);
 };
 
 #endif

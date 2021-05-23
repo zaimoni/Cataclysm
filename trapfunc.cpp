@@ -21,20 +21,20 @@ void trap_fully_triggered(map& m, const point& pt, const std::vector<item_drop_s
 
 void trap::trigger(monster& mon) const
 {
-    if (act_pos) act_pos(mon.pos);
     if (actm) actm(game::active(), &mon); // legacy adapter
+    if (act_pos) act_pos(mon.pos);
 }
 
 void trap::trigger(player& u) const
 {
-    if (act_pos) act_pos(u.pos);
     if (act) act(game::active(), u.pos.x, u.pos.y); // legacy adapter
+    if (act_pos) act_pos(u.pos);
 }
 
 void trap::trigger(player& u, const point& tr_pos) const
 {
-    if (act_pos) act_pos(tr_pos);
     if (act) act(game::active(), tr_pos.x, tr_pos.y); // legacy adapter
+    if (act_pos) act_pos(tr_pos);
 }
 
 
@@ -583,12 +583,11 @@ void trapfunc::snake(game *g, int x, int y)
          return;
      }
  }
- g->sound(point(x, y), 10, "ssssssss");
- if (one_in(6)) g->m.tr_at(x, y) = tr_null;
 }
 
-void trapfuncm::snake(game *g, monster *z)
+void trapfunc::snake(const point& pt)
 {
- g->sound(z->pos, 10, "ssssssss");
- if (one_in(6)) z->GPSpos.trap_at() = tr_null;
+    auto g = game::active();
+    g->sound(pt, 10, "ssssssss");
+    if (one_in(6)) g->m.tr_at(pt) = tr_null;
 }
