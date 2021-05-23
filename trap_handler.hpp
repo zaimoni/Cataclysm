@@ -38,7 +38,6 @@ namespace trapfunc {
 };
 
 namespace trapfuncm {
-	void bubble(game* g, monster* z);
 	void beartrap(game* g, monster* z);
 	void board(game* g, monster* z);
 	void tripwire(game* g, monster* z);
