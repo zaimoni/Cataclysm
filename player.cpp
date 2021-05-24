@@ -5277,89 +5277,116 @@ int player::encumb(body_part bp) const
  return ret;
 }
 
-int player::armor_bash(body_part bp) const
+static std::pair<int, int> armor(body_part bp, const player& p)
 {
- int ret = 0;
- for (const auto& it : worn) {
-  const it_armor* const armor = dynamic_cast<const it_armor*>(it.type);
-  if (armor->covers & mfb(bp)) ret += armor->dmg_resist;
- }
- if (has_bionic(bio_carbon)) ret += 2;
- if (bp == bp_head && has_bionic(bio_armor_head)) ret += 3;
- else if (bp == bp_arms && has_bionic(bio_armor_arms)) ret += 3;
- else if (bp == bp_torso && has_bionic(bio_armor_torso)) ret += 3;
- else if (bp == bp_legs && has_bionic(bio_armor_legs)) ret += 3;
- if (has_trait(PF_FUR)) ret++;
- if (has_trait(PF_CHITIN)) ret += 2;
- if (has_trait(PF_SHELL) && bp == bp_torso) ret += 6;
- ret += rng(0, disease_intensity(DI_ARMOR_BOOST));
- return ret;
+    std::pair<int, int> ret(0, 0); // bash, cut armor values
+
+    // See, we do it backwards, which assumes the player put on their jacket after
+    //  their T shirt, for example.  TODO: don't assume! ASS out of U & ME, etc.
+    for (int i = p.worn.size() - 1; i >= 0; i--) {
+        decltype(auto) armor = p.worn[i];
+        const it_armor* const tmp = dynamic_cast<const it_armor*>(armor.type);
+        if ((tmp->covers & mfb(bp))) continue;
+        int arm_bash = tmp->dmg_resist;
+        int arm_cut = tmp->cut_resist;
+        if (tmp->storage < 20) { // e.g., trenchcoat is large enough to get in the way even if tattered
+            if (5 <= armor.damage) continue;  // V0.2.7 : damage level 5+ is no protection at all
+            switch (armor.damage) {
+            case 1:
+                arm_bash *= .8;
+                arm_cut *= .9;
+                break;
+            case 2:
+                arm_bash *= .7;
+                arm_cut *= .7;
+                break;
+            case 3:
+                arm_bash *= .5;
+                arm_cut *= .4;
+                break;
+            case 4:
+                arm_bash *= .2;
+                arm_cut *= .1;
+                break;
+            }
+        }
+        ret.first += arm_bash;
+        ret.second += arm_cut;
+    }
+
+    if (p.has_bionic(bio_carbon)) {
+        ret.first -= 2;
+        ret.second -= 4;
+    }
+    if (bp == bp_head && p.has_bionic(bio_armor_head)) {
+        ret.first -= 3;
+        ret.second -= 3;
+    }
+    else if (bp == bp_arms && p.has_bionic(bio_armor_arms)) {
+        ret.first -= 3;
+        ret.second -= 3;
+    }
+    else if (bp == bp_torso && p.has_bionic(bio_armor_torso)) {
+        ret.first -= 3;
+        ret.second -= 3;
+    }
+    else if (bp == bp_legs && p.has_bionic(bio_armor_legs)) {
+        ret.first -= 3;
+        ret.second -= 3;
+    }
+    if (p.has_trait(PF_THICKSKIN)) --ret.second;
+    if (p.has_trait(PF_SCALES)) ret.second -= 2;
+    if (p.has_trait(PF_THICK_SCALES)) ret.second -= 4;
+    if (p.has_trait(PF_SLEEK_SCALES)) --ret.second;
+    if (p.has_trait(PF_FEATHERS)) --ret.first;
+    if (p.has_trait(PF_FUR)) --ret.first;
+    if (p.has_trait(PF_CHITIN)) ret.second -= 2;
+    if (p.has_trait(PF_CHITIN2)) {
+        --ret.first;
+        ret.second -= 4;
+    }
+    if (p.has_trait(PF_CHITIN3)) {
+        ret.first -= 2;
+        ret.second -= 8;
+    }
+    if (p.has_trait(PF_PLANTSKIN)) --ret.first;
+    if (p.has_trait(PF_BARK)) ret.first -= 2;
+    if (bp == bp_feet && p.has_trait(PF_HOOVES)) --ret.second;
+    if (bp == bp_torso && p.has_trait(PF_SHELL)) {
+        ret.first += 6;
+        ret.second += 14;
+    }
+    if (const int armor_boost = p.disease_intensity(DI_ARMOR_BOOST); 0 < armor_boost) {
+        ret.first += rng(0, armor_boost);
+        ret.second += rng(0, armor_boost);
+    }
+    return ret;
 }
 
-int player::armor_cut(body_part bp) const
-{
- int ret = 0;
- for (const auto& it : worn) {
-  const it_armor* const armor = dynamic_cast<const it_armor*>(it.type);
-  if (armor->covers & mfb(bp)) ret += armor->cut_resist;
- }
- if (has_bionic(bio_carbon)) ret += 4;
- if (bp == bp_head && has_bionic(bio_armor_head)) ret += 3;
- else if (bp == bp_arms && has_bionic(bio_armor_arms)) ret += 3;
- else if (bp == bp_torso && has_bionic(bio_armor_torso)) ret += 3;
- else if (bp == bp_legs && has_bionic(bio_armor_legs)) ret += 3;
- if (has_trait(PF_THICKSKIN)) ret++;
- if (has_trait(PF_SCALES)) ret += 2;
- if (has_trait(PF_THICK_SCALES)) ret += 4;
- if (has_trait(PF_SLEEK_SCALES)) ret += 1;
- if (has_trait(PF_CHITIN)) ret += 2;
- if (has_trait(PF_CHITIN2)) ret += 4;
- if (has_trait(PF_CHITIN3)) ret += 8;
- if (has_trait(PF_SHELL) && bp == bp_torso) ret += 14;
- ret += rng(0, disease_intensity(DI_ARMOR_BOOST));
- return ret;
-}
+int player::armor_bash(body_part bp) const { return armor(bp, *this).first; }
+int player::armor_cut(body_part bp) const { return armor(bp, *this).second; }
 
 void player::absorb(game *g, body_part bp, int &dam, int &cut)
 {
- int arm_bash = 0, arm_cut = 0;
  if (has_active_bionic(bio_ads)) {
   if (dam > 0 && power_level > 1) {
-   dam -= rng(1, 8);
+   clamp_lb<0>(dam -= rng(1, 8));
    power_level--;
   }
   if (cut > 0 && power_level > 1) {
-   cut -= rng(0, 4);
+   clamp_lb<0>(cut -= rng(0, 4));
    power_level--;
   }
-  if (dam < 0) dam = 0;
-  if (cut < 0) cut = 0;
+  if (0 >= dam && 0 >= cut) return;
  }
+
+ const auto damage_reduction = armor(bp, *this); // destroyed armor still protects one last time
+
 // See, we do it backwards, which assumes the player put on their jacket after
 //  their T shirt, for example.  TODO: don't assume! ASS out of U & ME, etc.
  for (int i = worn.size() - 1; i >= 0; i--) {
   const it_armor* const tmp = dynamic_cast<const it_armor*>(worn[i].type);
-  if ((tmp->covers & mfb(bp)) && tmp->storage < 20) {
-   arm_bash = tmp->dmg_resist;
-   arm_cut  = tmp->cut_resist;
-   switch (worn[i].damage) {	// \todo V0.2.1+ : damage level 5+ should be no protection at all (multiplier zero)?
-   case 1:
-    arm_bash *= .8;
-    arm_cut  *= .9;
-    break;
-   case 2:
-    arm_bash *= .7;
-    arm_cut  *= .7;
-    break;
-   case 3:
-    arm_bash *= .5;
-    arm_cut  *= .4;
-    break;
-   case 4:
-    arm_bash *= .2;
-    arm_cut  *= .1;
-    break;
-   }
+  if ((tmp->covers & mfb(bp)) && tmp->storage < 20) { // \todo? trenchcoats are too large to damage with weapons?!?
 // Wool, leather, and cotton clothing may be damaged by CUTTING damage
    if ((worn[i].made_of(WOOL)   || worn[i].made_of(LEATHER) ||
         worn[i].made_of(COTTON) || worn[i].made_of(GLASS)   ||
@@ -5379,54 +5406,14 @@ void player::absorb(game *g, body_part bp, int &dam, int &cut)
     EraseAt(worn, i);
    }
   }
-  dam -= arm_bash;
-  cut -= arm_cut;
  }
- if (has_bionic(bio_carbon)) {
-  dam -= 2;
-  cut -= 4;
- }
- if (bp == bp_head && has_bionic(bio_armor_head)) {
-  dam -= 3;
-  cut -= 3;
- } else if (bp == bp_arms && has_bionic(bio_armor_arms)) {
-  dam -= 3;
-  cut -= 3;
- } else if (bp == bp_torso && has_bionic(bio_armor_torso)) {
-  dam -= 3;
-  cut -= 3;
- } else if (bp == bp_legs && has_bionic(bio_armor_legs)) {
-  dam -= 3;
-  cut -= 3;
- }
- if (has_trait(PF_THICKSKIN))
-  cut--;
- if (has_trait(PF_SCALES))
-  cut -= 2;
- if (has_trait(PF_THICK_SCALES))
-  cut -= 4;
- if (has_trait(PF_SLEEK_SCALES))
-  cut -= 1;
- if (has_trait(PF_FEATHERS))
-  dam--;
- if (has_trait(PF_FUR))
-  dam--;
- if (has_trait(PF_CHITIN)) cut -= 2;
- if (has_trait(PF_CHITIN2)) {
-  dam--;
-  cut -= 4;
- }
- if (has_trait(PF_CHITIN3)) {
-  dam -= 2;
-  cut -= 8;
- }
- if (has_trait(PF_PLANTSKIN)) dam--;
- if (has_trait(PF_BARK)) dam -= 2;
- if (bp == bp_feet && has_trait(PF_HOOVES)) cut--;
+
+ clamp_lb<0>(dam -= damage_reduction.first);
+ clamp_lb<0>(cut -= damage_reduction.second);
+ if (0 >= dam && 0 >= cut) return;
+
  if (has_trait(PF_LIGHT_BONES)) dam *= 1.4;
  if (has_trait(PF_HOLLOW_BONES)) dam *= 1.8;
- if (dam < 0) dam = 0;
- if (cut < 0) cut = 0;
 }
   
 int player::resist(body_part bp) const
