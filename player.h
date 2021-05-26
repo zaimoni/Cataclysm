@@ -106,6 +106,7 @@ public:
  bool landing_zone_ok();   // returns true if final location is deemed ok; that is, no-op is true
  std::optional<point> move_away_from(const map& m, const point& tar) const;
  virtual int can_reload() const; // Wielding a gun that is not fully loaded; return value is inventory index, or -1
+ virtual bool can_fire();
 
  // melee.cpp
  int  hit_mon(game *g, monster *z, bool allow_grab = true);

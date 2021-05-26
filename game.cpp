@@ -4511,48 +4511,7 @@ void game::plthrow()
 
 void game::plfire(bool burst)
 {
- if (!u.weapon.is_gun()) return;
- if (const auto veh = u.GPSpos.veh_at()) {
-     if (veh->first->player_in_control(u) && u.weapon.is_two_handed(u)) {
-         messages.add("You need free arm to drive!");
-         return;
-     }
- }
- if (u.weapon.has_flag(IF_CHARGE) && !u.weapon.active) {
-  if (u.has_charges(itm_UPS_on, 1) || u.has_charges(itm_UPS_off, 1)) {
-   messages.add("Your %s starts charging.", u.weapon.tname().c_str());
-   u.weapon.charges = 0;
-   u.weapon.curammo = dynamic_cast<it_ammo*>(item::types[itm_charge_shot]);
-   u.weapon.active = true;
-   return;
-  } else {
-   messages.add("You need a charged UPS.");
-   return;
-  }
- }
- if (u.weapon.has_flag(IF_RELOAD_AND_SHOOT)) {
-  const int reload_index = u.weapon.pick_reload_ammo(u, true);
-  if (0 > reload_index) {
-   messages.add("Out of ammo!");
-   return;
-  }
-  u.weapon.reload(u, reload_index);
-  u.moves -= u.weapon.reload_time(u);
-  refresh_all();
- } else if (0 == u.weapon.charges) {
-   messages.add("You need to reload!");
-   return;
- }
-
- if (u.weapon.has_flag(IF_FIRE_100) && u.weapon.charges < 100) {
-  messages.add("Your %s needs 100 charges to fire!", u.weapon.tname().c_str());
-  return;
- }
- if (u.weapon.has_flag(IF_USE_UPS) && !u.has_charges(itm_UPS_off, 5) &&
-     !u.has_charges(itm_UPS_on, 5)) {
-  messages.add("You need a UPS with at least 5 charges to fire that!");
-  return;
- }
+ if (!u.can_fire()) return;
 
  int range = u.weapon.range(&u);
  int sight_range = u.sight_range();

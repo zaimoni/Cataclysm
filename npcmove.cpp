@@ -147,6 +147,9 @@ public:
 	bool IsLegal() const override {
 		return _actor.weapon.is_gun() && _tar != _actor.pos;
 	}
+	bool IsPerformable() const override {
+		return _tar != _actor.pos && _actor.can_fire();
+	}
 	void Perform() const override {
 		game::active()->fire(_actor, _tar, _trajectory, _burst);
 	}
@@ -837,6 +840,87 @@ bool npc::wont_hit_friend(game *g, int tarx, int tary, int index) const
 	 }
  }
  return true;
+}
+
+bool player::can_fire()
+{
+	if (!weapon.is_gun()) return false;
+	if (const auto veh = GPSpos.veh_at()) {
+		if (veh->first->player_in_control(*this) && weapon.is_two_handed(*this)) {
+			messages.add("You need free arm to drive!");
+			return false;
+		}
+	}
+	if (weapon.has_flag(IF_CHARGE) && !weapon.active) {
+		if (has_charges(itm_UPS_on, 1) || has_charges(itm_UPS_off, 1)) {
+			messages.add("Your %s starts charging.", weapon.tname().c_str());
+			weapon.charges = 0;
+			weapon.curammo = dynamic_cast<it_ammo*>(item::types[itm_charge_shot]);
+			weapon.active = true;
+			return false;
+		} else {
+			messages.add("You need a charged UPS.");
+			return false;
+		}
+	}
+	if (weapon.has_flag(IF_RELOAD_AND_SHOOT)) {
+		const int reload_index = weapon.pick_reload_ammo(*this, true);
+		if (0 > reload_index) {
+			messages.add("Out of ammo!");
+			return false;
+		}
+		weapon.reload(*this, reload_index);
+		moves -= weapon.reload_time(*this);
+		game::active()->refresh_all();
+	} else if (0 == weapon.charges) {
+		messages.add("You need to reload!");
+		return false;
+	}
+
+	if (weapon.has_flag(IF_FIRE_100) && weapon.charges < 100) {
+		messages.add("Your %s needs 100 charges to fire!", weapon.tname().c_str());
+		return false;
+	}
+	if (weapon.has_flag(IF_USE_UPS) && !has_charges(itm_UPS_off, 5) && !has_charges(itm_UPS_on, 5)) {
+		messages.add("You need a UPS with at least 5 charges to fire that!");
+		return false;
+	}
+	if ((weapon.has_flag(IF_STR8_DRAW) && str_cur < 4) || (weapon.has_flag(IF_STR10_DRAW) && str_cur < 5)) {
+		messages.add("You're not strong enough to draw the bow!");
+		return false;
+	}
+	return true;
+}
+
+bool npc::can_fire()
+{
+	if (!weapon.is_gun()) return false;
+	if (const auto veh = GPSpos.veh_at()) {
+		if (veh->first->player_in_control(*this) && weapon.is_two_handed(*this)) return false;
+	}
+	if (weapon.has_flag(IF_CHARGE) && !weapon.active) {
+		if (has_charges(itm_UPS_on, 1) || has_charges(itm_UPS_off, 1)) {
+			weapon.charges = 0;
+			weapon.curammo = dynamic_cast<it_ammo*>(item::types[itm_charge_shot]);
+			weapon.active = true;
+		}
+		return false;
+	}
+	if (weapon.has_flag(IF_RELOAD_AND_SHOOT)) {
+		const int reload_index = weapon.pick_reload_ammo(*this, false);
+		if (0 > reload_index) {
+			messages.add("Out of ammo!");
+			return false;
+		}
+		weapon.reload(*this, reload_index);
+		moves -= weapon.reload_time(*this);
+	} else if (0 == weapon.charges) {
+		return false;
+	}
+
+	if (weapon.has_flag(IF_FIRE_100) && weapon.charges < 100) return false;
+	if (weapon.has_flag(IF_USE_UPS) && !has_charges(itm_UPS_off, 5) && !has_charges(itm_UPS_on, 5)) return false;
+	if ((weapon.has_flag(IF_STR8_DRAW) && str_cur < 4) || (weapon.has_flag(IF_STR10_DRAW) && str_cur < 5)) return false;
 }
 
 int player::can_reload() const

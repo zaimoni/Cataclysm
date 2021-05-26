@@ -222,12 +222,6 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
  unsigned int flags = p.weapon.curammo->item_flags;
 // Bolts and arrows are silent
  const bool is_bolt = (p.weapon.curammo->type == AT_BOLT || p.weapon.curammo->type == AT_ARROW);
-// TODO: Move this check to game::plfire
- if ((p.weapon.has_flag(IF_STR8_DRAW)  && p.str_cur <  4) ||
-     (p.weapon.has_flag(IF_STR10_DRAW) && p.str_cur <  5)   ) {
-  messages.add("You're not strong enough to draw the bow!");
-  return;
- }
 
  const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
  if (p.has_trait(PF_TRIGGERHAPPY) && one_in(30)) burst = true;
