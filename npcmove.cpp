@@ -921,6 +921,7 @@ bool npc::can_fire()
 	if (weapon.has_flag(IF_FIRE_100) && weapon.charges < 100) return false;
 	if (weapon.has_flag(IF_USE_UPS) && !has_charges(itm_UPS_off, 5) && !has_charges(itm_UPS_on, 5)) return false;
 	if ((weapon.has_flag(IF_STR8_DRAW) && str_cur < 4) || (weapon.has_flag(IF_STR10_DRAW) && str_cur < 5)) return false;
+	return true;
 }
 
 int player::can_reload() const
