@@ -80,6 +80,7 @@ class monster : public mobile {
  bool can_see() const;		// MF_SEES and no ME_BLIND
  bool can_hear() const;		// MF_HEARS and no ME_DEAF
  bool made_of(material m) const;	// Returns true if it's made of m
+ bool ignitable() const;    // legal to apply ME_ONFIRE to
  std::optional<int> see(const player& u) const;
 
  void debug(player &u); 	// Gives debug info

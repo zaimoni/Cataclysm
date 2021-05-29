@@ -231,6 +231,11 @@ bool monster::made_of(material m) const
  return type->mat == m;
 }
 
+bool monster::ignitable() const
+{
+    return !made_of(LIQUID) && !made_of(STONE) && !made_of(KEVLAR) && !made_of(STEEL) && !has_flag(MF_FIREY);
+}
+
 std::optional<int> monster::see(const player& u) const
 {
     if (u.has_active_bionic(bio_cloak) || u.has_artifact_with(AEP_INVISIBLE)) return std::nullopt;

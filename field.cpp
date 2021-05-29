@@ -821,19 +821,15 @@ void map::mon_in_field(game* g, monster& z)
         else if (cur.density == 2) {
             dam += rng(6, 12);
             if (!z.has_flag(MF_FLIES)) {
-                z.moves -= 20;
-                if (!z.made_of(LIQUID) && !z.made_of(STONE) && !z.made_of(KEVLAR) &&
-                    !z.made_of(STEEL) && !z.has_flag(MF_FIREY))
-                    z.add_effect(ME_ONFIRE, rng(3, 8));
+                z.moves -= mobile::mp_turn / 5;
+                if (!z.ignitable()) z.add_effect(ME_ONFIRE, rng(3, 8));
             }
         }
         else if (cur.density == 3) {
             dam += rng(10, 20);
             if (!z.has_flag(MF_FLIES) || one_in(3)) {
-                z.moves -= 40;
-                if (!z.made_of(LIQUID) && !z.made_of(STONE) && !z.made_of(KEVLAR) &&
-                    !z.made_of(STEEL) && !z.has_flag(MF_FIREY))
-                    z.add_effect(ME_ONFIRE, rng(8, 12));
+                z.moves -= (mobile::mp_turn / 5) * 2;
+                if (!z.ignitable()) z.add_effect(ME_ONFIRE, rng(8, 12));
             }
         }
         [[fallthrough]]; // Drop through to smoke

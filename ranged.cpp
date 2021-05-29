@@ -638,21 +638,28 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
 // monster class currently doesn't have IF_AMMO_... flags visible
 static void hit_monster_with_flags(monster& z, unsigned int flags)
 {
-    if (flags & mfb(IF_AMMO_FLAME)) {
+    static constexpr const material easy_ignite[] = { VEGGY, COTTON, WOOL, PAPER, WOOD };
+    static auto m_mat = [&z](material src) { return z.made_of(src); };
 
-        if (z.made_of(VEGGY) || z.made_of(COTTON) || z.made_of(WOOL) ||
-            z.made_of(PAPER) || z.made_of(WOOD))
-            z.add_effect(ME_ONFIRE, rng(8, 20));
-        else if (z.made_of(FLESH))
-            z.add_effect(ME_ONFIRE, rng(5, 10));
+    // 2021-05-28: unclear whether always-on-fire monsters can be ignited by ammunition (fields do not ignite them).
+    // C:Whales was ignitable by ammunition, but not by fire fields.
+    // Cf. monster::ignitable
+    if (!z.has_flag(MF_FIREY)) {
+        if (flags & mfb(IF_AMMO_FLAME)) {
 
-    } else if (flags & mfb(IF_AMMO_INCENDIARY)) {
+            if (std::ranges::any_of(easy_ignite, m_mat))
+                z.add_effect(ME_ONFIRE, rng(8, 20));
+            else if (z.made_of(FLESH))
+                z.add_effect(ME_ONFIRE, rng(5, 10));
 
-        if (z.made_of(VEGGY) || z.made_of(COTTON) || z.made_of(WOOL) ||
-            z.made_of(PAPER) || z.made_of(WOOD))
-            z.add_effect(ME_ONFIRE, rng(2, 6));
-        else if (z.made_of(FLESH) && one_in(4))
-            z.add_effect(ME_ONFIRE, rng(1, 4));
+        }
+        else if (flags & mfb(IF_AMMO_INCENDIARY)) {
+
+            if (std::ranges::any_of(easy_ignite, m_mat))
+                z.add_effect(ME_ONFIRE, rng(2, 6));
+            else if (z.made_of(FLESH) && one_in(4))
+                z.add_effect(ME_ONFIRE, rng(1, 4));
+        }
     }
 }
 
