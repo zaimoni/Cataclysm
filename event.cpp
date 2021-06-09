@@ -54,25 +54,23 @@ void event::actualize() const
   } break;
 
   case EVENT_SPAWN_WYRMS: {
-   if (g->lev.z >= 0) return;
-   monster wyrm(mtype::types[mon_dark_wyrm]);
-   int num_wyrms = rng(1, 4);
-   for (int i = 0; i < num_wyrms; i++) {
-    int tries = 0;
-    int monx = -1, mony = -1;
-    do {
-     monx = rng(0, SEEX * MAPSIZE);
-     mony = rng(0, SEEY * MAPSIZE);
-     tries++;
-    } while (tries < 10 && !g->is_empty(monx, mony) &&
-             rl_dist(g->u.pos, monx, mony) <= 2);
-    if (tries < 10) {
-     wyrm.spawn(monx, mony);
-     g->z.push_back(wyrm);
-    }
-   }
-   if (!one_in(25)) // They just keep coming!
-    g->add_event(EVENT_SPAWN_WYRMS, int(messages.turn) + rng(15, 25));
+      if (g->lev.z >= 0) return;
+
+      static constexpr const zaimoni::gdi::box<point> spawn_zone(point(0), point(SEE * MAPSIZE));
+      static std::function<point()> candidate = [&]() { return g->u.pos + rng(spawn_zone); };
+
+      static std::function<bool(const point&)> ok = [&](const point& pt) {
+          return g->is_empty(pt) && 2 < rl_dist(pt, g->u.pos);
+      };
+
+      int num_wyrms = rng(1, 4);
+      for (int i = 0; i < num_wyrms; i++) {
+          if (auto pt = LasVegasChoice(10, candidate, ok)) {
+              g->z.push_back(monster(mtype::types[mon_dark_wyrm], *pt));
+          }
+      }
+      if (!one_in(25)) // They just keep coming!
+          g->add_event(EVENT_SPAWN_WYRMS, int(messages.turn) + rng(15, 25));
   } break;
 
   case EVENT_AMIGARA: {
@@ -191,19 +189,18 @@ void event::actualize() const
   } break;
 
   case EVENT_TEMPLE_SPAWN: {
-   static constexpr const mon_id temple_spawn[] = { mon_sewer_snake, mon_centipede, mon_dermatik, mon_spider_widow };
-   monster spawned(mtype::types[temple_spawn[rng(0, (std::end(temple_spawn)-std::begin(temple_spawn)) - 1)]]);
-   int tries = 0, x, y;
-   do {
-    x = rng(g->u.pos.x - 5, g->u.pos.x + 5);
-    y = rng(g->u.pos.y - 5, g->u.pos.y + 5);
-    tries++;
-   } while (tries < 20 && !g->is_empty(x, y) &&
-            rl_dist(x, y, g->u.pos) <= 2);
-   if (tries < 20) {
-    spawned.spawn(x, y);
-    g->z.push_back(spawned);
-   }
+      static constexpr const mon_id temple_spawn[] = { mon_sewer_snake, mon_centipede, mon_dermatik, mon_spider_widow };
+      static constexpr const zaimoni::gdi::box<point> spawn_zone(point(-5), point(5));
+
+      static std::function<point()> candidate = [&]() { return g->u.pos + rng(spawn_zone); };
+
+      static std::function<bool(const point&)> ok = [&](const point& pt) {
+          return g->is_empty(pt) && 2 < rl_dist(pt, g->u.pos);
+      };
+
+      if (auto pt = LasVegasChoice(20, candidate, ok)) {
+          g->z.push_back(monster(mtype::types[temple_spawn[rng(0, (std::end(temple_spawn) - std::begin(temple_spawn)) - 1)]], *pt));
+      }
   } break;
 
   default:

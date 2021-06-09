@@ -2156,29 +2156,34 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
    p->vomit();
    break;
 
+  // cf. trapfunc::shadow
   case AEA_SHADOWS: {
    int num_shadows = rng(4, 8);
    monster spawned(mtype::types[mon_shadow]);
    int num_spawned = 0;
+
+   static std::function<point()> candidate = [&]() {
+       if (one_in(2)) {
+           return point(rng(p->pos.x - 5, p->pos.x + 5), one_in(2) ? p->pos.y - 5 : p->pos.y + 5);
+       }
+       else {
+           return point(one_in(2) ? p->pos.x - 5 : p->pos.x + 5, rng(p->pos.y - 5, p->pos.y + 5));
+       }
+   };
+
+   static std::function<bool(const point&)> ok = [&](const point& pt) {
+       return g->is_empty(pt) && g->m.sees(pt, p->pos, 10);
+   };
+
    for (int i = 0; i < num_shadows; i++) {
-    int tries = 0, monx, mony;
-    do {
-     if (one_in(2)) {
-      monx = rng(p->pos.x - 5, p->pos.x + 5);
-      mony = (one_in(2) ? p->pos.y - 5 : p->pos.y + 5);
-     } else {
-      monx = (one_in(2) ? p->pos.x - 5 : p->pos.x + 5);
-      mony = rng(p->pos.y - 5, p->pos.y + 5);
-     }
-    } while (tries < 5 && !g->is_empty(monx, mony) &&
-             !g->m.sees(monx, mony, p->pos, 10));
-    if (tries < 5) {
-     num_spawned++;
-     spawned.sp_timeout = rng(8, 20);
-     spawned.spawn(monx, mony);
-     g->z.push_back(spawned);
-    }
+       if (auto pt = LasVegasChoice(5, candidate, ok)) {
+           num_spawned++;
+           spawned.sp_timeout = rng(8, 20);
+           spawned.spawn(*pt);
+           g->z.push_back(spawned);
+       }
    }
+
    if (num_spawned > 1)
     messages.add("Shadows form around you.");
    else if (num_spawned == 1)

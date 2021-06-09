@@ -531,26 +531,28 @@ void trapfunc::hum(const point& pt)
     game::active()->sound(pt, volume, desc_hum(volume));
 }
 
+// cf. AEA_SHADOWS
 void trapfunc::shadow(game *g, int x, int y)
 {
- int tries = 0, monx, mony;
- do {
-  if (one_in(2)) {
-   monx = rng(g->u.pos.x - 5, g->u.pos.x + 5);
-   mony = (one_in(2) ? g->u.pos.y - 5 : g->u.pos.y + 5);
-  } else {
-   monx = (one_in(2) ? g->u.pos.x - 5 : g->u.pos.x + 5);
-   mony = rng(g->u.pos.y - 5, g->u.pos.y + 5);
-  }
- } while (tries < 5 && !g->is_empty(monx, mony) && !g->m.sees(monx, mony, g->u.pos, 10));
+    static std::function<point()> candidate = [&]() {
+        if (one_in(2)) {
+            return point(rng(g->u.pos.x - 5, g->u.pos.x + 5), one_in(2) ? g->u.pos.y - 5 : g->u.pos.y + 5);
+        } else {
+            return point(one_in(2) ? g->u.pos.x - 5 : g->u.pos.x + 5, rng(g->u.pos.y - 5, g->u.pos.y + 5));
+        }
+    };
 
- if (tries < 5) {
-  messages.add("A shadow forms nearby.");
-  monster spawned(mtype::types[mon_shadow], monx, mony);
-  spawned.sp_timeout = rng(2, 10);
-  g->z.push_back(spawned);
-  g->m.tr_at(x, y) = tr_null;
- }
+    static std::function<bool(const point&)> ok = [&](const point& pt) {
+        return g->is_empty(pt) && g->m.sees(pt, g->u.pos, 10);
+    };
+
+    if (auto pt = LasVegasChoice(5, candidate, ok)) {
+        messages.add("A shadow forms nearby.");
+        monster spawned(mtype::types[mon_shadow], *pt);
+        spawned.sp_timeout = rng(2, 10);
+        g->z.push_back(spawned);
+        g->m.tr_at(x, y) = tr_null;
+    }
 }
 
 void trapfunc::drain(game *g, int x, int y)
