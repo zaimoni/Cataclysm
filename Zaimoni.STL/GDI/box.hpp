@@ -30,6 +30,10 @@ public:
 	constexpr const T& tl_c() const { return _top_left; }
 	constexpr const T& br_c() const { return _bottom_right; }
 
+	friend constexpr bool operator==(const zaimoni::gdi::box<T>& lhs, const zaimoni::gdi::box<T>& rhs) {
+		return lhs._top_left == rhs._top_left && lhs._bottom_right == rhs._bottom_right;
+	}
+
 	bool contains(const T& src) const {
 		static std::less_equal<typename T::coord_type> lte;
 		return pointwise_test(_top_left, src, lte) && pointwise_test(src, _bottom_right, lte);
@@ -59,12 +63,6 @@ public:
 		return *this;
 	}
 };
-
-template<class T>
-inline constexpr bool operator==(const zaimoni::gdi::box<T>& lhs, const zaimoni::gdi::box<T>& rhs) { return lhs._top_left == rhs._top_left && lhs._bottom_right == rhs._bottom_right; }
-
-template<class T>
-inline constexpr bool operator!=(const zaimoni::gdi::box<T>& lhs, const zaimoni::gdi::box<T>& rhs) { return lhs._top_left != rhs._top_left || lhs._bottom_right != rhs._bottom_right; }
 
 // enumerate coordinates "on edge of box" is practical for integer coordinates, but viable canonical schemas are dimension-dependent
 // prototyped in Rogue Survivor Revived, relicensed for here
