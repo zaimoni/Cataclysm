@@ -8,6 +8,7 @@
 #include "recent_msg.h"
 #include "stl_limits.h"
 #include "stl_typetraits_late.h"
+#include "Zaimoni.STL/GDI/box.hpp"
 
 void mattack::antqueen(game *g, monster *z)
 {
@@ -161,21 +162,22 @@ void mattack::boomer(game *g, monster *z)
 void mattack::resurrect(game *g, monster *z)
 {
  if (z->speed < z->type->speed / 2) return;	// We can only resurrect so many times!
- std::vector<point> corpses;
+
 // Find all corposes that we can see within 4 tiles.
- for (int x = z->pos.x - 4; x <= z->pos.x + 4; x++) {
-  for (int y = z->pos.y - 4; y <= z->pos.y + 4; y++) {
-   if (g->is_empty(x, y) && g->m.sees(z->pos, x, y, -1)) {
-	for(auto& obj : g->m.i_at(x, y)) {
-     if (obj.type->id == itm_corpse && obj.corpse->species == species_zombie) {
-      corpses.push_back(point(x, y));
-	  break;
+ static constexpr const zaimoni::gdi::box<point> spread(point(-4), point(-4));
+ static std::function<std::optional<point>(point)> ok = [&](point pt) {
+     auto pos(pt + z->pos);
+     if (!g->is_empty(pos) || !g->m.sees(z->pos, pos, -1)) return std::optional<point>();
+     for (auto& obj : g->m.i_at(pos)) {
+         if (obj.type->id == itm_corpse && obj.corpse->species == species_zombie) return std::optional<point>(pos);
      }
-    }
-   }
-  }
- }
- if (corpses.empty()) return;	// No nearby corpses
+     return std::optional<point>();
+ };
+
+ // Find all corpses that we can see within 4 tiles.
+ const auto corpse_locations = grep(spread, ok);
+ if (corpse_locations.empty()) return;	// No nearby corpses
+
  z->speed = cataclysm::rational_scaled<4, 5>(z->speed - rng(0, 10));
  const bool sees_necromancer = g->u.see(*z);
  if (sees_necromancer)
@@ -184,22 +186,24 @@ void mattack::resurrect(game *g, monster *z)
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  z->moves -= 5 * mobile::mp_turn; // It takes a while
  int raised = 0;
- for (int i = 0; i < corpses.size(); i++) {
-  int n = -1;
-  for(auto& obj : g->m.i_at(corpses[i])) {
-   ++n;
-   if (obj.type->id == itm_corpse && obj.corpse->species == species_zombie && one_in(2)) {
-    if (g->u_see(corpses[i])) raised++;
-    int burnt_penalty = obj.burnt;
-    monster mon(obj.corpse, corpses[i]);
-    mon.speed = cataclysm::rational_scaled<4, 5>(mon.speed) - burnt_penalty / 2;
-    mon.hp    = cataclysm::rational_scaled<7, 10>(mon.hp) - burnt_penalty;
-    g->m.i_rem(corpses[i], n);
-    g->z.push_back(mon);
-	break;
-   }
-  }
+ for (decltype(auto) pt : corpse_locations) {
+     decltype(auto) stack = g->m.i_at(pt);
+     int n = -1;
+     for (auto& obj : stack) {
+         ++n;
+         if (obj.type->id == itm_corpse && obj.corpse->species == species_zombie && one_in(2)) {
+             if (g->u_see(pt)) raised++;
+             int burnt_penalty = obj.burnt;
+             monster mon(obj.corpse, pt);
+             mon.speed = cataclysm::rational_scaled<4, 5>(mon.speed) - burnt_penalty / 2;
+             mon.hp = cataclysm::rational_scaled<7, 10>(mon.hp) - burnt_penalty;
+             EraseAt(stack, n); // invalidates iterator
+             g->z.push_back(mon);
+             break;
+         }
+     }
  }
+
  if (raised > 0) {
   if (raised == 1) messages.add("A nearby corpse rises from the dead!");
   else if (raised < 4) messages.add("A few corpses rise from the dead!");
