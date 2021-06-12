@@ -6,6 +6,7 @@
 #include "line.h"
 #include "bodypart.h"
 #include "recent_msg.h"
+#include "stl_limits.h"
 #include "stl_typetraits_late.h"
 
 void mattack::antqueen(game *g, monster *z)
@@ -175,13 +176,13 @@ void mattack::resurrect(game *g, monster *z)
   }
  }
  if (corpses.empty()) return;	// No nearby corpses
- z->speed = (z->speed - rng(0, 10)) * .8;
+ z->speed = cataclysm::rational_scaled<4, 5>(z->speed - rng(0, 10));
  const bool sees_necromancer = g->u.see(*z);
  if (sees_necromancer)
      messages.add("The %s throws its arms wide...",
                   grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
  z->sp_timeout = z->type->sp_freq;	// Reset timer
- z->moves = -500;			// It takes a while
+ z->moves -= 5 * mobile::mp_turn; // It takes a while
  int raised = 0;
  for (int i = 0; i < corpses.size(); i++) {
   int n = -1;
@@ -191,8 +192,8 @@ void mattack::resurrect(game *g, monster *z)
     if (g->u_see(corpses[i])) raised++;
     int burnt_penalty = obj.burnt;
     monster mon(obj.corpse, corpses[i]);
-    mon.speed = int(mon.speed * .8) - burnt_penalty / 2;
-    mon.hp    = int(mon.hp    * .7) - burnt_penalty;
+    mon.speed = cataclysm::rational_scaled<4, 5>(mon.speed) - burnt_penalty / 2;
+    mon.hp    = cataclysm::rational_scaled<7, 10>(mon.hp) - burnt_penalty;
     g->m.i_rem(corpses[i], n);
     g->z.push_back(mon);
 	break;
