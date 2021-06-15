@@ -398,24 +398,29 @@ void trapfuncm::lava(game *g, monster *z)
 
 void trapfunc::sinkhole(game *g, int x, int y)
 {
+    static std::function<std::optional<point>(point)> dest_ok = [&](point pt) {
+        std::optional<point> ret;
+        auto pos = g->u.pos + pt;
+        if (0 < g->m.move_cost(pos) && tr_pit != g->m.tr_at(pos)) ret = pos;
+        return ret;
+    };
+
+    static auto waste_rope = [&]() {
+        g->u.use_amount(itm_rope_30, 1);
+        g->m.add_item(g->u.pos + rng(within_rldist<1>), item::types[itm_rope_30], messages.turn);
+    };
+
  messages.add("You step into a sinkhole, and start to sink down!");
  if (g->u.has_amount(itm_rope_30, 1) && query_yn("Throw your rope to try to catch soemthing?")) {
   const int throwroll = g->u.sklevel[sk_throw] + rng(0, g->u.str_cur + g->u.dex_cur);
   if (throwroll >= 12) {
    messages.add("The rope catches something!");
    if (6 < g->u.sklevel[sk_unarmed] + rng(0, g->u.str_cur)) {
-// Determine safe places for the character to get pulled to
-    std::vector<point> safe;
-    for (int i = g->u.pos.x - 1; i <= g->u.pos.x + 1; i++) {
-     for (int j = g->u.pos.y - 1; j <= g->u.pos.y + 1; j++) {
-      if (g->m.move_cost(i, j) > 0 && g->m.tr_at(i, j) != tr_pit)
-       safe.push_back(point(i, j));
-     }
-    }
+       auto safe = grep(within_rldist<1>, dest_ok);
+
     if (safe.empty()) {
      messages.add("There's nowhere to pull yourself to, and you sink!");
-     g->u.use_amount(itm_rope_30, 1);
-     g->m.add_item(g->u.pos + rng(within_rldist<1>), item::types[itm_rope_30], messages.turn);
+     waste_rope();
      g->u.GPSpos.trap_at() = tr_pit;
      g->vertical_move(-1, true);
     } else {
@@ -427,17 +432,13 @@ void trapfunc::sinkhole(game *g, int x, int y)
     }
    } else {
     messages.add("You're not strong enough to pull yourself out...");
-    g->u.moves -= 100;
-    g->u.use_amount(itm_rope_30, 1);
-    g->m.add_item(g->u.pos + rng(within_rldist<1>), item::types[itm_rope_30], messages.turn);
+    g->u.moves -= mobile::mp_turn;
+    waste_rope();
     g->vertical_move(-1, true);
    }
   } else {
    messages.add("Your throw misses completely, and you sink!");
-   if (one_in((g->u.str_cur + g->u.dex_cur) / 3)) {
-    g->u.use_amount(itm_rope_30, 1);
-    g->m.add_item(g->u.pos + rng(within_rldist<1>), item::types[itm_rope_30], messages.turn);
-   }
+   if (one_in((g->u.str_cur + g->u.dex_cur) / 3)) waste_rope();
    g->u.GPSpos.trap_at() = tr_pit;
    g->vertical_move(-1, true);
   }
