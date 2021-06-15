@@ -290,7 +290,7 @@ int main(int argc, char *argv[])
 	html::tag _body("body");	// stage-printed
 	// navigation sidebar will be "common", at least between page types
 	html::tag global_nav("ul");
-	global_nav.set(attr_style, std::move(val_thin_border + CSS_sep + val_left_align + CSS_sep + val_list_none + CSS_sep + "margin:0px; padding:10px"));
+	global_nav.set(attr_style, val_thin_border + CSS_sep + val_left_align + CSS_sep + val_list_none + CSS_sep + "margin:0px; padding:10px");
 
 #define HTML_DIR "html/"
 
@@ -990,7 +990,7 @@ int main(int argc, char *argv[])
 						if (auto mat = JSON_key((material)item::types[name_id[x.first]]->m1)) tr_alias[2]->append(html::tag::wrap(mat));
 						if (auto med = dynamic_cast<it_comest*>(item::types.at(name_id[x.first]))) {
 							if (auto add = addiction_target(med->add)) tr_alias[3]->append(link_to(add, ADDICTIONS_HTML, JSON_key(med->add)));
-						} else throw std::logic_error(name_id[x.first]+" not really consumable");
+						} else throw std::logic_error(x.first+" not really consumable");
 						page.print(table_row);
 						for (decltype(auto) tr : tr_alias) tr->clear();
 					}
