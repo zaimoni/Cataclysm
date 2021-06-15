@@ -75,9 +75,7 @@ void mattack::acid(game *g, monster *z)
  z->sp_timeout = z->type->sp_freq; // Reset timer
  g->sound(z->pos, 4, "a spitting noise.");
 
- static constexpr const zaimoni::gdi::box<point> spread(point(-2), point(2));
-
- point hit(g->u.pos + rng(spread));
+ point hit(g->u.pos + rng(within_rldist<2>));
  for (const auto& pt : line_to(z->pos, hit, *j)) {
      if (g->m.hit_with_acid(pt)) {
          if (g->u_see(pt)) messages.add("A glob of acid hits the %s!", g->m.tername(pt).c_str());
@@ -104,10 +102,9 @@ void mattack::shockstorm(game *g, monster *z)
  z->moves -= mobile::mp_turn / 2; // It takes a while
  z->sp_timeout = z->type->sp_freq; // Reset timer
  messages.add("A bolt of electricity arcs towards you!");
- static constexpr const auto spread = zaimoni::gdi::box<point>(point(-1), point(1));
 
  // 2/9 near-miss for each of x, y axis; theoretical probability for hit if not obstructed 49/81
- const auto tar = g->u.pos + rng(spread) + rng(spread);
+ const auto tar = g->u.pos + rng(within_rldist<1>) + rng(within_rldist<1>);
 
  const auto bolt = line_to(z->pos, tar, g->m.sees(z->pos, tar, -1));
  for (decltype(auto) pt : bolt) { // Fill the LOS with electricity
@@ -164,7 +161,6 @@ void mattack::resurrect(game *g, monster *z)
  if (z->speed < z->type->speed / 2) return;	// We can only resurrect so many times!
 
 // Find all corposes that we can see within 4 tiles.
- static constexpr const zaimoni::gdi::box<point> spread(point(-4), point(-4));
  static std::function<std::optional<point>(point)> ok = [&](point pt) {
      auto pos(pt + z->pos);
      if (!g->is_empty(pos) || !g->m.sees(z->pos, pos, -1)) return std::optional<point>();
@@ -175,7 +171,7 @@ void mattack::resurrect(game *g, monster *z)
  };
 
  // Find all corpses that we can see within 4 tiles.
- const auto corpse_locations = grep(spread, ok);
+ const auto corpse_locations = grep(within_rldist<4>, ok);
  if (corpse_locations.empty()) return;	// No nearby corpses
 
  z->speed = cataclysm::rational_scaled<4, 5>(z->speed - rng(0, 10));

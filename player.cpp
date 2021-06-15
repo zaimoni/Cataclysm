@@ -410,9 +410,8 @@ stat_delta dis_stat_effects(const player& p, const disease& dis)
 
 bool player::see_phantasm()
 {
-    static constexpr const zaimoni::gdi::box<point> hallu_range(point(-10), point(10));
     auto g = game::active();
-    const point pt(pos + rng(hallu_range));
+    const point pt(pos + rng(within_rldist<10>));
     if (!g->mon(pt)) {
         g->z.push_back(monster(mtype::types[mon_hallu_zom + rng(0, 3)], pt));
         return true;
@@ -892,11 +891,10 @@ void dis_effect(game* g, player& p, disease& dis)
 
     case DI_ATTENTION:
         if (one_in(100000 / dis.duration) && one_in(100000 / dis.duration) && one_in(250)) {
-            static constexpr const zaimoni::gdi::box<point> portal_range(point(-4), point(4));
             point pt;
             int tries = 0;
             do {
-                pt = p.pos + rng(portal_range);
+                pt = p.pos + rng(within_rldist<4>);
                 tries++;
             } while ((g->survivor(pt) || g->mon(pt)) && tries < 10);
             if (tries < 10) {
@@ -4195,9 +4193,8 @@ void player::process_active_items(game *g)
             if (maintain) {
                 if (one_in(20)) {
                     // do not think range of this dischage is fundamentally linked to map generation's SEE 2020-09-23 zaimoni
-                    static constexpr const zaimoni::gdi::box<point> discharge_range(point(-12), point(12));
                     messages.add("Your %s discharges!", weapon.tname().c_str());
-                    const point target(pos + rng(discharge_range));
+                    const point target(pos + rng(within_rldist<12>));
                     std::vector<point> traj = line_to(pos, target, 0);
                     g->fire(*this, target, traj, false);
                 }

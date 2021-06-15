@@ -714,7 +714,6 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
  point tar(z ? z->pos : p->pos);
 
  const bool u_see = (!is_npc() || g->u_see(pos));
- static constexpr const zaimoni::gdi::box<point> knockback_spread(point(-1), point(1));
 
  if (technique == TEC_RAPID) {
   moves += int( attack_speed(*this, false) / 2);
@@ -760,9 +759,9 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
 // We knock them back from a tile adjacent to us!
   if (z != nullptr) {
    z->add_effect(ME_DOWNED, rng(1, 2));
-   z->knock_back_from(g, pos + rng(knockback_spread));
+   z->knock_back_from(g, pos + rng(within_rldist<1>));
   } else if (p != nullptr) {
-   p->knock_back_from(g, pos + rng(knockback_spread));
+   p->knock_back_from(g, pos + rng(within_rldist<1>));
    if (p->weapon.type->id != itm_style_judo)
     p->add_disease(DI_DOWNED, rng(1, 2));
   }
@@ -880,7 +879,6 @@ void player::perform_defensive_technique(
  const std::string your = pronoun(grammar::noun::role::possessive);
  const std::string target = mob->desc(grammar::noun::role::direct_object, grammar::article::definite);
  const bool u_see = (!is_npc() || g->u_see(pos));
- static constexpr const zaimoni::gdi::box<point> knockback_spread(point(-1), point(1));
 
  static auto enhanced_block = [&](int ma) { // XXX itype_id
      switch (ma)
@@ -934,10 +932,10 @@ void player::perform_defensive_technique(
    stab_dam = 0;
    if (z) {
     z->add_effect(ME_DOWNED, rng(1, 2));
-    z->knock_back_from(g, pos + rng(knockback_spread));
+    z->knock_back_from(g, pos + rng(within_rldist<1>));
    } else {
     p->add_disease(DI_DOWNED, rng(1, 2));
-    p->knock_back_from(g, pos + rng(knockback_spread));
+    p->knock_back_from(g, pos + rng(within_rldist<1>));
    }
    break;
 

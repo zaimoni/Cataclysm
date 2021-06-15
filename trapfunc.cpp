@@ -400,7 +400,6 @@ void trapfunc::sinkhole(game *g, int x, int y)
 {
  messages.add("You step into a sinkhole, and start to sink down!");
  if (g->u.has_amount(itm_rope_30, 1) && query_yn("Throw your rope to try to catch soemthing?")) {
-  static constexpr const zaimoni::gdi::box<point> adjacent_span(point(-1), point(1));
   const int throwroll = g->u.sklevel[sk_throw] + rng(0, g->u.str_cur + g->u.dex_cur);
   if (throwroll >= 12) {
    messages.add("The rope catches something!");
@@ -416,7 +415,7 @@ void trapfunc::sinkhole(game *g, int x, int y)
     if (safe.empty()) {
      messages.add("There's nowhere to pull yourself to, and you sink!");
      g->u.use_amount(itm_rope_30, 1);
-     g->m.add_item(g->u.pos + rng(adjacent_span), item::types[itm_rope_30], messages.turn);
+     g->m.add_item(g->u.pos + rng(within_rldist<1>), item::types[itm_rope_30], messages.turn);
      g->u.GPSpos.trap_at() = tr_pit;
      g->vertical_move(-1, true);
     } else {
@@ -430,14 +429,14 @@ void trapfunc::sinkhole(game *g, int x, int y)
     messages.add("You're not strong enough to pull yourself out...");
     g->u.moves -= 100;
     g->u.use_amount(itm_rope_30, 1);
-    g->m.add_item(g->u.pos + rng(adjacent_span), item::types[itm_rope_30], messages.turn);
+    g->m.add_item(g->u.pos + rng(within_rldist<1>), item::types[itm_rope_30], messages.turn);
     g->vertical_move(-1, true);
    }
   } else {
    messages.add("Your throw misses completely, and you sink!");
    if (one_in((g->u.str_cur + g->u.dex_cur) / 3)) {
     g->u.use_amount(itm_rope_30, 1);
-    g->m.add_item(g->u.pos + rng(adjacent_span), item::types[itm_rope_30], messages.turn);
+    g->m.add_item(g->u.pos + rng(within_rldist<1>), item::types[itm_rope_30], messages.turn);
    }
    g->u.GPSpos.trap_at() = tr_pit;
    g->vertical_move(-1, true);

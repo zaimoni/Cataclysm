@@ -15,6 +15,9 @@
 #include <optional>
 #include <vector>
 
+template <int radius>
+static constexpr const auto within_rldist = zaimoni::gdi::box<point>(point(-radius), point(radius));
+
 // All of these can have their bodies moved out-of-line, if needed for compile time management.
 
 /// <summary>

@@ -145,8 +145,6 @@ void mdeath::disintegrate(game *g, monster *z)
 
 void mdeath::worm(game *g, monster *z)
 {
- static constexpr const zaimoni::gdi::box<point> spread(point(-1), point(1));
-
  if (g->u.see(*z))
      messages.add("The %s splits in two!",
                    grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
@@ -156,7 +154,7 @@ void mdeath::worm(game *g, monster *z)
      return g->m.has_flag(diggable, test) && !g->mon(test) && !g->survivor(test) ? std::optional<point>(test) : std::nullopt;
  };
 
- auto wormspots(grep(spread, dest_clear));
+ auto wormspots(grep(within_rldist<1>, dest_clear));
 
  monster worm(mtype::types[mon_halfworm]);
  for (int worms = 0; worms < 2 && wormspots.size() > 0; worms++) {
@@ -183,8 +181,6 @@ void mdeath::guilt(game *g, monster *z)
 
 void mdeath::blobsplit(game *g, monster *z)
 {
- static constexpr const zaimoni::gdi::box<point> spread(point(-1), point(1));
-
  const int speed = z->speed - rng(30, 50);
  std::optional<std::string> z_name;
  const bool seen = g->u.see(*z);
@@ -204,7 +200,7 @@ void mdeath::blobsplit(game *g, monster *z)
      return g->m.move_cost(test) > 0 && !g->mon(test) && !g->survivor(test) ? std::optional<point>(test) : std::nullopt;
  };
 
- auto valid(grep(spread, dest_clear));
+ auto valid(grep(within_rldist<1>, dest_clear));
 
  for (int s = 0; s < 2 && valid.size() > 0; s++) {
   const int rn = rng(0, valid.size() - 1);

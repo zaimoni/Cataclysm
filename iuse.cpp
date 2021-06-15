@@ -1613,8 +1613,7 @@ void iuse::pheromone(game *g, player *p, item *it, bool t)
 
 void iuse::portal(game *g, player *p, item *it, bool t)
 {
- static constexpr const zaimoni::gdi::box<point> portal_range(point(-2), point(2));
- g->m.add_trap(p->pos + rng(portal_range), tr_portal);
+ g->m.add_trap(p->pos + rng(within_rldist<2>), tr_portal);
 }
 
 void iuse::manhack(game *g, player *p, item *it, bool t)

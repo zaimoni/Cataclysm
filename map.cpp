@@ -2258,7 +2258,6 @@ void map::copy_grid(int to, int from)
 
 void map::spawn_monsters(game *g)
 {
- static constexpr const zaimoni::gdi::box<point> spawn_scatter = zaimoni::gdi::box<point>(point(-3), point(3));
  point scan;
 
  for (scan.x = 0; scan.x < my_MAPSIZE; scan.x++) {
@@ -2275,7 +2274,7 @@ void map::spawn_monsters(game *g)
      if (spawn_pt.friendly) tmp.friendly = -1;
 
      std::function<point()> nominate_spawn_pos = [&]() {
-         point m = (spawn_pt.pos + rng(spawn_scatter)) % SEE;
+         point m = (spawn_pt.pos + rng(within_rldist<3>)) % SEE;
          if (m.x < 0) m.x += SEE;
          if (m.y < 0) m.y += SEE;
          return m + scan * SEE;
