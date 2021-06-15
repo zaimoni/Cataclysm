@@ -98,13 +98,13 @@ const char* direction_name(direction dir)
 		"northwest"
 	};
 
-	DEBUG_FAIL_OR_LEAVE(0 > dir || sizeof(translate) / sizeof(*translate) <= dir, return "WEIRD DIRECTION_NAME() BUG");
+	DEBUG_FAIL_OR_LEAVE(0 > int(dir) || sizeof(translate) / sizeof(*translate) <= int(dir), return "WEIRD DIRECTION_NAME() BUG");
 	return translate[dir];
 }
 
 point direction_vector(direction dir)
 {
-	DEBUG_FAIL_OR_LEAVE(0 > dir || sizeof(Direction::vector) / sizeof(*Direction::vector) <= dir, return point((unsigned int)(-1) / 2, (unsigned int)(-1) / 2));
+	DEBUG_FAIL_OR_LEAVE(0 > int(dir) || sizeof(Direction::vector) / sizeof(*Direction::vector) <= int(dir), return point((unsigned int)(-1) / 2, (unsigned int)(-1) / 2));
 	return Direction::vector[dir];
 }
 
