@@ -159,7 +159,7 @@ class JSON;
 template<class T>
 struct discard
 {
-	static T x;
+	inline static T x;
 };
 
 }
