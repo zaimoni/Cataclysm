@@ -187,7 +187,7 @@ void trapfuncm::blade(game *g, monster *z)
 {
  if (g->u.see(*z))
      messages.add("A machete swings out and hacks %s!",
-         z->desc(grammar::noun::role::direct_object, grammar::article::definite));
+                  z->desc(grammar::noun::role::direct_object, grammar::article::definite).c_str());
  int cutdam = clamped_lb<0>(30 - z->armor_cut());
  int bashdam = clamped_lb<0>(12 - z->armor_bash());
  if (z->hurt(bashdam + cutdam)) g->kill_mon(*z);
