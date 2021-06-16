@@ -79,7 +79,7 @@ void noun::regular_possessive(std::string& src)
 std::string capitalize(std::string&& src)
 {
 	if (!src.empty()) src.front() = toupper(src.front());
-	return src;
+	return std::move(src);
 }
 
 }

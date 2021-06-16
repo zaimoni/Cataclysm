@@ -213,7 +213,7 @@ struct mtype {
  mtype(int pid, std::string pname, monster_species pspecies, char psym,
 	 nc_color pcolor, m_size psize, material pmat,
 	 unsigned char pfreq, unsigned int pdiff, signed char pagro,
-	 signed char pmorale, unsigned int pspeed, unsigned char pml_skill,
+	 int pmorale, unsigned int pspeed, unsigned char pml_skill,
 	 unsigned char pml_dice, unsigned char pml_sides, unsigned char pml_cut,
 	 unsigned char pdodge, unsigned char parmor_bash,
 	 unsigned char parmor_cut, signed char pitem_chance, int php,

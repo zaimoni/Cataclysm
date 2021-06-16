@@ -1559,7 +1559,7 @@ inventory::inventory(const JSON& src)
 bool fromJSON(const JSON& src, inventory& dest)
 {
 	if (JSON::array != src.mode()) return false;
-	dest = std::move(inventory(src));
+	dest = inventory(src);
 	return true;
 }
 

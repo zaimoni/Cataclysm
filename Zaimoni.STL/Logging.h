@@ -95,12 +95,6 @@ void LOG(long double B);
 void INC_INFORM(long double B);
 
 #ifdef __GNUC__
-inline void INFORM(unsigned long B) {return INFORM((uintmax_t)(B));}
-inline void LOG(unsigned long B) {return LOG((uintmax_t)(B));}
-inline void INC_INFORM(unsigned long B) {return INC_INFORM((uintmax_t)(B));}
-#endif
-
-#ifdef __GNUC__
 inline void INFORM(unsigned int B) {return INFORM((uintmax_t)(B));}
 inline void LOG(unsigned int B) {return LOG((uintmax_t)(B));}
 inline void INC_INFORM(unsigned int B) {return INC_INFORM((uintmax_t)(B));}

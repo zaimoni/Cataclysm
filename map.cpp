@@ -212,7 +212,7 @@ bool map::try_board_vehicle(game* g, int x, int y, player& p)
     if (0 > seat_part) return false;
     if (veh->parts[seat_part].passenger) {
         if (player* psg = veh->get_passenger(seat_part)) {
-            if (is_current_player) messages.add("Not boarding %s; %s already there.", veh->name.c_str(), psg->name);
+            if (is_current_player) messages.add("Not boarding %s; %s already there.", veh->name.c_str(), psg->name.c_str());
             return false;
         }
         veh->parts[seat_part].passenger = false; // invariant violation.  Enforced at map::displace_vehicle
@@ -2082,8 +2082,8 @@ void map::load(game *g, const point& world)
    const int i = gridx + gridy * my_MAPSIZE;
    // null pointer is a hard crash...just exit, now
    if (!grid[i]) {
-     debuglog("grid %d (%d, %d) is null! mapbuffer size = %s", i, i % my_MAPSIZE, i / my_MAPSIZE, std::to_string(MAPBUFFER.size()));
-	 debugmsg("grid %d (%d, %d) is null! mapbuffer size = %s", i, i % my_MAPSIZE, i / my_MAPSIZE, std::to_string(MAPBUFFER.size())); // historical UI
+     debuglog("grid %d (%d, %d) is null! mapbuffer size = %d", i, i % my_MAPSIZE, i / my_MAPSIZE, MAPBUFFER.size());
+	 debugmsg("grid %d (%d, %d) is null! mapbuffer size = %d", i, i % my_MAPSIZE, i / my_MAPSIZE, MAPBUFFER.size()); // historical UI
      exit(EXIT_FAILURE);
    }
   }
@@ -2098,8 +2098,8 @@ void map::load(const tripoint& GPS)
             const int i = gridx + gridy * my_MAPSIZE;
             // null pointer is a hard crash...just exit, now
             if (!grid[i]) {
-                debuglog("grid %d (%d, %d) is null! mapbuffer size = %s", i, i % my_MAPSIZE, i / my_MAPSIZE, std::to_string(MAPBUFFER.size()));
-                debugmsg("grid %d (%d, %d) is null! mapbuffer size = %s", i, i % my_MAPSIZE, i / my_MAPSIZE, std::to_string(MAPBUFFER.size())); // historical UI
+                debuglog("grid %d (%d, %d) is null! mapbuffer size = %d", i, i % my_MAPSIZE, i / my_MAPSIZE, MAPBUFFER.size());
+                debugmsg("grid %d (%d, %d) is null! mapbuffer size = %d", i, i % my_MAPSIZE, i / my_MAPSIZE, MAPBUFFER.size()); // historical UI
                 exit(EXIT_FAILURE);
             }
         }

@@ -4500,7 +4500,7 @@ it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
 	signed char pmelee_dam, signed char pmelee_cut,
 	signed char pm_to_hit, unsigned pitem_flags,
 
-	signed char pquench, unsigned char pnutr, signed char pspoils,
+	signed char pquench, unsigned char pnutr, unsigned char pspoils,
 	signed char pstim, signed char phealthy, unsigned char paddict,
 	unsigned char pcharges, signed char pfun, itype_id pcontainer,
 	itype_id ptool,
