@@ -20,10 +20,12 @@ point map::_force_map_extra_pos = point(-1, -1);
 
 using namespace cataclysm;
 
+#if NONINLINE_EXPLICIT_INSTANTIATION
 template<> ter_id discard<ter_id>::x = t_null;
 template<> trap_id discard<trap_id>::x = tr_null;
 template<> field discard<field>::x = field();
 template<> std::vector<item> discard<std::vector<item> >::x(0);
+#endif
 
 enum astar_list {
  ASL_NONE,

@@ -913,7 +913,9 @@ void dis_effect(game* g, player& p, disease& dis)
 
 #include <fstream>
 
+#if NONINLINE_EXPLICIT_INSTANTIATION
 template<> item discard<item>::x = item();
+#endif
 
 // start prototype for morale.cpp
 const std::string morale_point::data[NUM_MORALE_TYPES] = {

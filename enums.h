@@ -156,11 +156,20 @@ namespace cataclysm {
 class JSON;
 
 // exceptionally un-threadsafe; intent is to provide a standard "overflow" for reference returns
+// We *always* have to set these variables to a known-good state.  They're used to fake data in out-of-bounds
+// array dereferences, etc.  So it doesn't matter if the linker doesn't de-duplicate these.
 template<class T>
 struct discard
 {
-	inline static T x;
+	inline static T x; // MSVC++ hard-errors on any external template instantiations when inline is present
 };
+
+// We do *not* want to declare external template instantiations here, to turn off a Clang warning.
+
+// preprocessor blocks controlled by #if NONINLINE_EXPLICIT_INSTANTIATION
+// contain the explicit template instantiations needed when the inline keyword is absent.
+// If there are no issues evident by 2021-07-15, it is ok to remove all of those preprocessor blocks
+// and these instructions 2021-06-16 zaimoni
 
 }
 

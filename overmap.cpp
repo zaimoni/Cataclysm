@@ -209,8 +209,10 @@ int rl_dist(OM_loc<2> lhs, OM_loc<2> rhs)
 
 using namespace cataclysm;
 
+#if NONINLINE_EXPLICIT_INSTANTIATION
 template<> bool discard<bool>::x = false;
 template<> oter_id discard<oter_id>::x = ot_null;
+#endif
 
 const map_extras no_extras(0);
 const map_extras road_extras(

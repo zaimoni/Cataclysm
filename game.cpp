@@ -28,7 +28,9 @@
 
 using namespace cataclysm;
 
+#if NONINLINE_EXPLICIT_INSTANTIATION
 template<> int discard<int>::x = 0;
+#endif
 bool game::debugmon = false;
 game* game::_active = nullptr;
 
