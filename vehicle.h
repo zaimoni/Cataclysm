@@ -147,6 +147,10 @@ public:
     bool player_in_control(player& p) const;
     player* driver() const;
 
+    // stub for unified effects (likely want pass-through to AI pilots)
+    void add(effect src, int duration) override {}
+    bool has(effect src) const override { return false; }
+
 // get vpart type info for part number (part at given vector index)
     const vpart_info& part_info(int index) const;
 

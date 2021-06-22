@@ -165,6 +165,8 @@ public:
  bool has_disease(dis_type type) const;
  int  disease_level(dis_type type) const;
  int  disease_intensity(dis_type type) const;
+ void add(effect src, int duration) override;
+ bool has(effect src) const override;
 
  void add_addiction(add_type type, int strength);
 #if DEAD_FUNC

@@ -555,6 +555,20 @@ void monster::die(game *g)
  }
 }
 
+static constexpr monster_effect_type translate(mobile::effect src)
+{
+    switch (src)
+    {
+    case mobile::effect::DOWNED: return ME_DOWNED;
+    case mobile::effect::STUNNED: return ME_STUNNED;
+    case mobile::effect::DEAF: return ME_DEAF;
+    default: return ME_NULL;    // \todo should be hard error
+    }
+}
+
+void monster::add(effect src, int duration) { return add_effect(translate(src), duration); }
+bool monster::has(effect src) const { return has_effect(translate(src)); }
+
 void monster::add_effect(monster_effect_type effect, int duration)
 {
  for (auto& e : effects) {

@@ -3602,6 +3602,20 @@ const char* describe(dis_type type)
 	}
 }
 
+static constexpr dis_type translate(mobile::effect src)
+{
+    switch (src)
+    {
+    case mobile::effect::DOWNED: return DI_DOWNED;
+    case mobile::effect::STUNNED: return DI_STUNNED;
+    case mobile::effect::DEAF: return DI_DEAF;
+    default: return DI_NULL;    // \todo should be hard error
+    }
+}
+
+void player::add(effect src, int duration) { return add_disease(translate(src), duration); }
+bool player::has(effect src) const { return has_disease(translate(src)); }
+
 void player::add_disease(dis_type type, int duration, int intensity, int max_intensity)
 {
  if (duration == 0) return;

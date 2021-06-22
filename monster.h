@@ -129,6 +129,8 @@ class monster : public mobile {
  void die(game *g);
 
 // Other
+ void add(effect src, int duration) override;
+ bool has(effect src) const override;
  void add_effect(monster_effect_type effect, int duration);
  bool has_effect(monster_effect_type effect) const; // True if we have the effect
  void rem_effect(monster_effect_type effect); // Remove a given effect

@@ -18,6 +18,13 @@ class mobile : public grammar::noun
 public:
 	static constexpr const int mp_turn = 100; // move points/standard turn
 
+	// ultimately would be handled centrally but for now, forward; not necessarily sensible for vehicles
+	enum class effect {
+		DOWNED = 1,
+		STUNNED,
+		DEAF
+	};
+
 	GPS_loc GPSpos; // absolute location
 	int moves;
 
@@ -27,6 +34,10 @@ public:
 	point screenPos() const;
 	std::optional<reality_bubble_loc> bubble_pos() const;
 	reality_bubble_loc bubblePos() const;
+
+	// unified effects/diseases
+	virtual void add(effect src, int duration) = 0;
+	virtual bool has(effect src) const = 0;
 
 protected:
 	mobile() noexcept : GPSpos(_ref<GPS_loc>::invalid),moves(0) {}
