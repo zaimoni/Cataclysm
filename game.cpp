@@ -3097,14 +3097,20 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
 
 void game::flashbang(int x, int y)
 {
- int dist = rl_dist(u.pos, x, y);
- if (dist <= 8) {
-  if (!u.has_bionic(bio_ears)) u.add_disease(DI_DEAF, 40 - dist * 4);
-  if (m.sees(u.pos, x, y, 8)) u.infect(DI_BLIND, bp_eyes, (12 - dist) / 2, 10 - dist);
- }
- // TODO: Blind/deafen NPC
+    // arguably should be separated into guard clause and action body
+    static auto pc_flashbanged = [&](player& pc) {
+        int dist = rl_dist(pc.pos, x, y);
+        if (8 >= dist) {
+            if (!pc.has_bionic(bio_ears)) pc.add_disease(DI_DEAF, 40 - dist * 4);
+            if (m.sees(pc.pos, x, y, 8)) pc.infect(DI_BLIND, bp_eyes, (12 - dist) / 2, 10 - dist);
+        }
+    };
+
+    pc_flashbanged(u);
+    for (auto& _npc : active_npc) pc_flashbanged(_npc);
+
  for (auto& _mon : z) {
-  dist = rl_dist(_mon.pos, x, y);
+  int dist = rl_dist(_mon.pos, x, y);
   if (8 < dist) continue;
   if (dist <= 4) _mon.add_effect(ME_STUNNED, 10 - dist);
   if (_mon.has_flag(MF_SEES) && m.sees(_mon.pos, x, y, 8)) _mon.add_effect(ME_BLIND, 18 - dist);

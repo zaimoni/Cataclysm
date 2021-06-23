@@ -22,7 +22,8 @@ public:
 	enum class effect {
 		DOWNED = 1,
 		STUNNED,
-		DEAF
+		DEAF,
+		BLIND
 	};
 
 	GPS_loc GPSpos; // absolute location

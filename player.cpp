@@ -3609,6 +3609,7 @@ static constexpr dis_type translate(mobile::effect src)
     case mobile::effect::DOWNED: return DI_DOWNED;
     case mobile::effect::STUNNED: return DI_STUNNED;
     case mobile::effect::DEAF: return DI_DEAF;
+    case mobile::effect::BLIND: return DI_BLIND;
     default: return DI_NULL;    // \todo should be hard error
     }
 }
