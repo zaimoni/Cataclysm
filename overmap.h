@@ -159,7 +159,7 @@ class overmap
   void building_on_hiway(int x, int y, int dir);
 #endif
   // Polishing
-  bool is_road(oter_id base, int x, int y) const; // Dependant on road type
+  bool is_road(const std::pair<oter_id, oter_id>& ot_range, int x, int y) const; // Dependant on road type
   bool is_road(int x, int y) const;
   void polish(oter_id min = ot_null, oter_id max = ot_tutorial);
   void good_road(oter_id base, int x, int y);

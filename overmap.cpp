@@ -2044,28 +2044,21 @@ void overmap::place_rifts()
  }
 }
 
-static constexpr std::pair<oter_id, oter_id> _road_range(oter_id _base)
+static constexpr std::optional<std::pair<oter_id, oter_id> > _road_range(oter_id _base)
 {
     if (is_between<ot_road_null, ot_bridge_ew>(_base)) return std::pair(ot_road_null, ot_bridge_ew);
     if (is_between<ot_subway_ns, ot_subway_nesw>(_base)) return std::pair(ot_subway_station, ot_subway_nesw);
     if (is_between<ot_sewer_ns, ot_sewer_nesw>(_base)) return std::pair(ot_sewer_ns, ot_sewer_nesw);
     if (is_between<ot_ants_ns, ot_ants_queen>(_base)) return std::pair(ot_ants_ns, ot_ants_queen);
-    throw std::logic_error(oter_t::list[_base].name + " is not road-like");
+    return std::nullopt;
 }
 
-static bool _is_roadlike(oter_id x)
-{
-    try {
-        const auto test = _road_range(x);
-        return true;
-    } catch (std::logic_error& e) {
-        return false;
-    }
-}
+static bool _is_roadlike(oter_id x) { return (bool)_road_range(x); }
 
 void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
 {
- assert(_is_roadlike(base));
+ const auto ot_range = _road_range(base);
+ assert(ot_range);
  std::vector<point> next;
  int dir = 0;
  int x = x1, y = y1;
@@ -2085,7 +2078,7 @@ void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
   else if (y2 < y) next.push_back(point(x, y - 1));
 
   for (int i = 0; i < next.size(); i++) { // Take an existing road if we can
-   if (next[i].x != -1 && is_road(base, next[i].x, next[i].y)) {
+   if (next[i].x != -1 && is_road(*ot_range, next[i].x, next[i].y)) {
     x = next[i].x;
     y = next[i].y;
     dir = i; // We are moving... whichever way that highway is moving
@@ -2101,7 +2094,7 @@ void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
     y = next[1].y;
 	auto& terrain = ter(x, y);
     if (is_river(terrain)) terrain = ot_bridge_ns;
-    else if (!is_road(base, x, y)) terrain = base;
+    else if (!is_road(*ot_range, x, y)) terrain = base;
    } else if (next.size() == 1) { // Y must be correct, take the x-change
     if (dir == 1) ter(x, y) = base;
     dir = 0; // We are moving horizontally
@@ -2109,7 +2102,7 @@ void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
     y = next[0].y;
 	auto& terrain = ter(x, y);
 	if (is_river(terrain)) terrain = ot_bridge_ew;
-    else if (!is_road(base, x, y)) terrain = base;
+    else if (!is_road(*ot_range, x, y)) terrain = base;
    } else {	// More than one eligable route; pick one randomly
     if (one_in(12) &&
        !is_river(ter(next[(dir + 1) % 2].x, next[(dir + 1) % 2].y)))
@@ -2123,7 +2116,7 @@ void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
       if (x2 > x) xdir = 1;
       tmp = x;
       while (is_river(ter(tmp, y))) {
-       if (is_road(base, tmp, y)) bridge_is_okay = false;	// Collides with another bridge!
+       if (is_road(*ot_range, tmp, y)) bridge_is_okay = false;	// Collides with another bridge!
        tmp += xdir;
       }
       if (bridge_is_okay) {
@@ -2133,7 +2126,7 @@ void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
        }
        ter(x, y) = base;
       }
-     } else if (!is_road(base, x, y))
+     } else if (!is_road(*ot_range, x, y))
       ter(x, y) = base;
     } else {		// Moving vertically
      if (is_river(ter(x, y))) {
@@ -2142,7 +2135,7 @@ void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
       if (y2 > y) ydir = 1;
       tmp = y;
       while (is_river(ter(x, tmp))) {
-       if (is_road(base, x, tmp)) bridge_is_okay = false;	// Collides with another bridge!
+       if (is_road(*ot_range, x, tmp)) bridge_is_okay = false;	// Collides with another bridge!
        tmp += ydir;
       }
       if (bridge_is_okay) {
@@ -2152,7 +2145,7 @@ void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
        }
        ter(x, y) = base;
       }
-     } else if (!is_road(base, x, y))
+     } else if (!is_road(*ot_range, x, y))
       ter(x, y) = base;
     }
    }
@@ -2317,10 +2310,9 @@ bool overmap::is_road(int x, int y) const
  return false;
 }
 
-bool overmap::is_road(oter_id base, int x, int y) const
+bool overmap::is_road(const std::pair<oter_id, oter_id>& ot_range, int x, int y) const
 {
- const auto _range = _road_range(base);
- if (ot_sewer_ns == _range.first) {
+ if (ot_sewer_ns == ot_range.first) {
      if (is_between<ot_sewage_treatment_hub, ot_sewage_treatment_under>(ter(x, y))) return true;
  }
  if (x < 0 || x >= OMAPX || y < 0 || y >= OMAPY) {
@@ -2329,17 +2321,18 @@ bool overmap::is_road(oter_id base, int x, int y) const
     return true;
   }
  }
- return is_between(_range.first, ter(x, y), _range.second);
+ return is_between(ot_range.first, ter(x, y), ot_range.second);
 }
 
 void overmap::good_road(oter_id base, int x, int y)
 {
- assert(_is_roadlike(base));
+ const auto ot_range = _road_range(base);
+ assert(ot_range);
  const int delta = base - ot_road_ns;
- const bool road_to_west = is_road(base, x - 1, y);
- const bool road_to_south = is_road(base, x, y + 1);
- const bool road_to_east = is_road(base, x + 1, y);
- if (is_road(base, x, y-1)) {
+ const bool road_to_west = is_road(*ot_range, x - 1, y);
+ const bool road_to_south = is_road(*ot_range, x, y + 1);
+ const bool road_to_east = is_road(*ot_range, x + 1, y);
+ if (is_road(*ot_range, x, y-1)) {
   if (road_to_east) {
    if (road_to_south) {
     if (road_to_west)
