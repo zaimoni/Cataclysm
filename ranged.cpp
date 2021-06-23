@@ -247,7 +247,6 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
  timespec ts = { 0,  BULLET_SPEED };
 
  bool missed = false;
- int tart;
  for (int curshot = 0; curshot < num_shots; curshot++) {
 // Burst-fire weapons allow us to pick a new target after killing the first
   monster* m_at = mon(tar);	// code below assumes kill processing is not "immediate"
