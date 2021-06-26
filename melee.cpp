@@ -634,11 +634,11 @@ int player::roll_stuck_penalty(const monster *z, bool stabbing) const
 
 technique_id player::pick_technique(const game *g, const monster *z, const player *p, bool crit, bool allowgrab) const
 {
- if (z == nullptr && p == nullptr) return TEC_NULL;
+ if (z == nullptr && p == nullptr) return TEC_NULL; // \todo error condition?
+ const mobile* const mob = z ? static_cast<const mobile*>(z) : p;
+ const bool downed = mob->has(effect::DOWNED);
 
  std::vector<technique_id> possible;
- bool downed = ((z != nullptr && !z->has_effect(ME_DOWNED)) ||
-                (p != nullptr && !p->has_disease(DI_DOWNED))  );
  int base_str_req = 0;
  if (z) base_str_req = z->type->size;
  else if (p) base_str_req = 1 + (2 + p->str_cur) / 4;
@@ -737,19 +737,15 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
   break;
 
  case TEC_PRECISE:
-  if (z != nullptr)
-   z->add_effect(ME_STUNNED, rng(1, 4));
-  else if (p != nullptr)
-   p->add_disease(DI_STUNNED, rng(1, 2));
+  mob->add(effect::STUNNED, rng(1, 4));
   pain += rng(5, 8);
   break;
 
  case TEC_BRUTAL:
+  mob->add(effect::STUNNED, 1);
   if (z != nullptr) {
-   z->add_effect(ME_STUNNED, 1);
    z->knock_back_from(g, pos);
   } else if (p != nullptr) {
-   p->add_disease(DI_STUNNED, 1);
    p->knock_back_from(g, pos);
   }
   break;
@@ -930,11 +926,10 @@ void player::perform_defensive_technique(
    bash_dam = 0;
    cut_dam  = 0;
    stab_dam = 0;
+   mob->add(effect::DOWNED, rng(1, 2));
    if (z) {
-    z->add_effect(ME_DOWNED, rng(1, 2));
     z->knock_back_from(g, pos + rng(within_rldist<1>));
    } else {
-    p->add_disease(DI_DOWNED, rng(1, 2));
     p->knock_back_from(g, pos + rng(within_rldist<1>));
    }
    break;
@@ -1015,12 +1010,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
 // Bashing crit
  if (crit && !unarmed_attack()) {
   int turns_stunned = clamped_ub<6>(bash_dam / 20 + rng(0, sklevel[sk_bashing] / 2));
-  if (turns_stunned > 0) {
-   if (z)
-    z->add_effect(ME_STUNNED, turns_stunned);
-   else
-    p->add_disease(DI_STUNNED, 1 + turns_stunned / 2);
-  }
+  if (turns_stunned > 0) mob->add(effect::STUNNED, turns_stunned);
  }
 
 // Stabbing effects
@@ -1030,11 +1020,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
   if (can_see)
    messages.add("%s force%s %s to the ground!", You.c_str(), (is_u ? "" : "s"), target.c_str());
   mob->moves -= stab_moves / 2;
-  if (z) {
-   z->add_effect(ME_DOWNED, 1);
-  } else {
-   p->add_disease(DI_DOWNED, 1);
-  }
+  mob->add(effect::DOWNED, 1);
  } else mob->moves -= stab_moves;
 
 // Bonus attacks!
@@ -1189,13 +1175,12 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
   case itm_style_scorpion:
    if (crit) {
     if (!is_npc()) messages.add("Stinger Strike!");
+    mob->add(effect::STUNNED, TURNS(2));
     if (z) {
-     z->add_effect(ME_STUNNED, 3);
 	 const point zpos(z->pos);
      z->knock_back_from(g, pos);
 	 if (zpos != z->pos) z->knock_back_from(g, pos); // Knock a 2nd time if the first worked
     } else {
-     p->add_disease(DI_STUNNED, TURNS(2));
      const point ppos(p->pos);
      p->knock_back_from(g, pos);
      if (p->pos != ppos) p->knock_back_from(g, pos); // Knock a 2nd time if the first worked

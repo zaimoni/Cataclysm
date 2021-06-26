@@ -4922,7 +4922,7 @@ void game::plmove(int x, int y)
  if (u.has_disease(DI_IN_PIT)) {
   if (rng(0, 40) > u.str_cur + int(u.dex_cur / 2)) {
    messages.add("You try to escape the pit, but slip back in.");
-   u.moves -= 100;
+   u.moves -= mobile::mp_turn;
    return;
   } else {
    messages.add("You escape the pit!");
@@ -4932,12 +4932,12 @@ void game::plmove(int x, int y)
  if (u.has_disease(DI_DOWNED)) {
   if (rng(0, 40) > u.dex_cur + int(u.str_cur / 2)) {
    messages.add("You struggle to stand.");
-   u.moves -= 100;
+   u.moves -= mobile::mp_turn;
    return;
   } else {
    messages.add("You stand up.");
    u.rem_disease(DI_DOWNED);
-   u.moves -= 100;
+   u.moves -= mobile::mp_turn;
    return;
   }
  }
@@ -4955,7 +4955,7 @@ void game::plmove(int x, int y)
  if (m.move_cost(x, y) > 0) { // move_cost() of 0 = impassible (e.g. a wall)
   if (u.underwater) u.underwater = false;
   if (m.try_board_vehicle(this, x, y, u)) {
-      u.moves -= 200;
+      u.moves -= 2 * mobile::mp_turn;
       return;
   }
 
