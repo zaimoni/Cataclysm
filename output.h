@@ -85,6 +85,7 @@ void wprintz(WINDOW* w, nc_color FG, const char* mes, Args...params)
 }
 
 void mvwaddstrz(WINDOW* w, int y, int x, nc_color FG, const char* mes);
+void waddstrz(WINDOW* w, nc_color FG, const char* mes);
 
 void draw_tabs(WINDOW* w, int active_tab, const char* const labels[]);
 

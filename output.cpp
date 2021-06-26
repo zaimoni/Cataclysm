@@ -205,6 +205,14 @@ void mvwaddstrz(WINDOW* w, int y, int x, nc_color FG, const char* mes)
     wattroff(w, FG);
 }
 
+void waddstrz(WINDOW* w, nc_color FG, const char* mes)
+{
+    if (!mes) return;
+    wattron(w, FG);
+    waddstr(w, mes);
+    wattroff(w, FG);
+}
+
 void draw_tabs(WINDOW* w, int active_tab, const char* const labels[])
 {
  const int win_width = getmaxx(w);
