@@ -200,6 +200,7 @@ bool reject_not_whitelisted_printf(const std::string& src)
 
 void mvwaddstrz(WINDOW* w, int y, int x, nc_color FG, const char* mes)
 {
+    if (!mes) return;
     wattron(w, FG);
     mvwaddstr(w, y, x, mes);
     wattroff(w, FG);

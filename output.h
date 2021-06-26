@@ -4,6 +4,7 @@
 #include "color.h"
 #include <string>
 #include <vector>
+#include <utility>
 #include <initializer_list>
 
 //      LINE_NESW  - X for on, O for off
@@ -85,7 +86,9 @@ void wprintz(WINDOW* w, nc_color FG, const char* mes, Args...params)
 }
 
 void mvwaddstrz(WINDOW* w, int y, int x, nc_color FG, const char* mes);
+inline void mvwaddstrz(WINDOW* w, int y, int x, const std::pair<nc_color, const char*>& mes) { mvwaddstrz(w, y, x, mes.first, mes.second); }
 void waddstrz(WINDOW* w, nc_color FG, const char* mes);
+inline void waddstrz(WINDOW* w, const std::pair<nc_color, const char*>& mes) { waddstrz(w, mes.first, mes.second); }
 
 void draw_tabs(WINDOW* w, int active_tab, const char* const labels[]);
 

@@ -5,6 +5,7 @@
 #include "recent_msg.h"
 #include "om_cache.hpp"
 #include "saveload.h"
+#include "stl_limits.h"
 
 #include <fstream>
 #include <stdlib.h>
@@ -117,6 +118,35 @@ std::string monster::possessive() const
     return ret;
 }
 
+static std::pair<nc_color, const char*> behavior_text(monster_attitude src)
+{
+    switch (src) {
+    case MATT_FRIEND: return std::pair(h_white, " Friendly! ");
+    case MATT_FLEE: return std::pair(c_green, " Fleeing! ");
+    case MATT_IGNORE: return std::pair(c_ltgray, " Ignoring ");
+    case MATT_FOLLOW: return std::pair(c_yellow, " Tracking ");
+    case MATT_ATTACK: return std::pair(c_red, " Hostile! ");
+    default: return std::pair(h_red, " BUG: Behavior unnamed ");
+    }
+}
+
+static const char* mobility_text(const monster& _mon) {
+    if (_mon.has_effect(ME_DOWNED)) return "On ground";
+    if (_mon.has_effect(ME_STUNNED)) return "Stunned";
+    if (_mon.has_effect(ME_BEARTRAP)) return "Trapped";
+    return nullptr;
+}
+
+static std::pair<nc_color, const char*> health_text(int hp, int max_hp)
+{
+    if (hp >= max_hp) return std::pair(c_green, "It is uninjured");
+    if (hp >= cataclysm::rational_scaled<4, 5>(max_hp)) return std::pair(c_ltgreen, "It is lightly injured");
+    if (hp >= cataclysm::rational_scaled<3, 5>(max_hp)) return std::pair(c_yellow, "It is moderately injured");
+    if (hp >= cataclysm::rational_scaled<3, 10>(max_hp)) return std::pair(c_yellow, "It is heavily injured");
+    if (hp >= max_hp/10) return std::pair(c_ltred, "It is severly injured");
+    return std::pair(c_red, "it is nearly dead");
+}
+
 void monster::print_info(const player& u, WINDOW* w) const
 {
 // First line of w is the border; the next two are terrain info, and after that
@@ -124,54 +154,9 @@ void monster::print_info(const player& u, WINDOW* w) const
 // because it's a border as well; so we have lines 4 through 11.
 // w is also historically 48 characters wide - 2 characters for border = 46 characters for us
  mvwaddstrz(w, 6, 1, c_white, type->name.c_str());
- switch (attitude(&u)) {
-  case MATT_FRIEND:
-   wprintz(w, h_white, " Friendly! ");
-   break;
-  case MATT_FLEE:
-   wprintz(w, c_green, " Fleeing! ");
-   break;
-  case MATT_IGNORE:
-   wprintz(w, c_ltgray, " Ignoring ");
-   break;
-  case MATT_FOLLOW:
-   wprintz(w, c_yellow, " Tracking ");
-   break;
-  case MATT_ATTACK:
-   wprintz(w, c_red, " Hostile! ");
-   break;
-  default:
-   wprintz(w, h_red, " BUG: Behavior unnamed ");
-   break;
- }
- if (has_effect(ME_DOWNED))
-  wprintz(w, h_white, "On ground");
- else if (has_effect(ME_STUNNED))
-  wprintz(w, h_white, "Stunned");
- else if (has_effect(ME_BEARTRAP))
-  wprintz(w, h_white, "Trapped");
- std::string damage_info;
- nc_color col;
- if (hp == type->hp) {
-  damage_info = "It is uninjured";
-  col = c_green;
- } else if (hp >= type->hp * .8) {
-  damage_info = "It is lightly injured";
-  col = c_ltgreen;
- } else if (hp >= type->hp * .6) {
-  damage_info = "It is moderately injured";
-  col = c_yellow;
- } else if (hp >= type->hp * .3) {
-  damage_info = "It is heavily injured";
-  col = c_yellow;
- } else if (hp >= type->hp * .1) {
-  damage_info = "It is severly injured";
-  col = c_ltred;
- } else {
-  damage_info = "it is nearly dead";
-  col = c_red;
- }
- mvwaddstrz(w, 7, 1, col, damage_info.c_str());
+ waddstrz(w, behavior_text(attitude(&u)));
+ waddstrz(w, h_white, mobility_text(*this));
+ mvwaddstrz(w, 7, 1, health_text(hp, type->hp));
 
  const int line_ub = getmaxy(w) - 1;
  std::string tmp = type->description;
