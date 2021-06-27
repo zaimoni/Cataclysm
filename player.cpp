@@ -427,6 +427,11 @@ void dis_effect(game* g, player& p, disease& dis)
     p.int_cur += delta.Int;
     p.per_cur += delta.Per;
 
+    static std::function<point()> within_four = [&]() { return p.pos + rng(within_rldist<4>); };
+    static std::function<bool(const point&)> ok = [&](const point& test) {
+        return !g->survivor(test) && !g->mon(test);
+    };
+
     int bonus;
     switch (dis.type) {
     case DI_WET:
@@ -843,64 +848,53 @@ void dis_effect(game* g, player& p, disease& dis)
             }
         }
         if (dis.duration > HOURS(6)) { // 12 teles
-            if (one_in(4000 - (dis.duration - HOURS(6)) / 4)) {
-                int x, y, tries = 0;
-                do {
-                    x = p.pos.x + rng(-4, 4);
-                    y = p.pos.y + rng(-4, 4);
-                    tries++;
-                } while ((g->survivor(x, y) || g->mon(x, y)) && tries < 10);
-                if (tries < 10) {
-                    if (g->m.move_cost(x, y) == 0) g->m.ter(x, y) = t_rubble;
-                    g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], x, y));
-                    if (g->u_see(x, y)) {
+            if (one_in(HOURS(6) + MINUTES(40) - (dis.duration - HOURS(6)) / 4)) {
+                if (auto dest = LasVegasChoice(10, within_four, ok)) {
+                    if (0 >= g->m.move_cost(*dest)) g->m.ter(*dest) = t_rubble;
+                    g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], *dest));
+                    if (g->u_see(*dest)) {
                         g->u.cancel_activity_query("A monster appears nearby!");
                         messages.add("A portal opens nearby, and a monster crawls through!");
                     }
                     if (one_in(2)) p.rem_disease(DI_TELEGLOW);
                 }
             }
-            if (one_in(3500 - (dis.duration - HOURS(6)) / 4)) {
+            if (one_in(HOURS(6)-MINUTES(10) - (dis.duration - HOURS(6)) / 4)) {
                 if (!p.is_npc()) messages.add("You shudder suddenly.");
                 p.mutate();
                 if (one_in(4)) p.rem_disease(DI_TELEGLOW);
             }
         }
         if (dis.duration > HOURS(4)) {	// 8 teleports
-            if (one_in(10000 - dis.duration)) p.add_disease(DI_SHAKES, rng(MINUTES(4), MINUTES(8)));
-            if (one_in(12000 - dis.duration)) {
+            if (one_in(HOURS(16) + MINUTES(40) - dis.duration)) p.add_disease(DI_SHAKES, rng(MINUTES(4), MINUTES(8)));
+            if (one_in(HOURS(20) - dis.duration)) {
                 if (!p.is_npc()) messages.add("Your vision is filled with bright lights...");
                 p.add_disease(DI_BLIND, rng(MINUTES(1), MINUTES(2)));
                 if (one_in(8)) p.rem_disease(DI_TELEGLOW);
             }
-            if (one_in(5000) && !p.has_disease(DI_HALLU)) {
+            if (one_in(HOURS(8)+MINUTES(20)) && !p.has_disease(DI_HALLU)) {
                 p.add_disease(DI_HALLU, HOURS(6));
                 if (one_in(5)) p.rem_disease(DI_TELEGLOW);
             }
         }
-        if (one_in(4000)) {
+        if (one_in(HOURS(6) + MINUTES(40))) {
             if (!p.is_npc()) messages.add("You're suddenly covered in ectoplasm.");
             p.add_disease(DI_BOOMERED, MINUTES(10));
             if (one_in(4)) p.rem_disease(DI_TELEGLOW);
         }
-        if (one_in(10000)) {
+        if (one_in(HOURS(16)+MINUTES(40))) {
             p.add_disease(DI_FUNGUS, -1);
             p.rem_disease(DI_TELEGLOW);
         }
         break;
 
     case DI_ATTENTION:
-        if (one_in(100000 / dis.duration) && one_in(100000 / dis.duration) && one_in(250)) {
-            point pt;
-            int tries = 0;
-            do {
-                pt = p.pos + rng(within_rldist<4>);
-                tries++;
-            } while ((g->survivor(pt) || g->mon(pt)) && tries < 10);
-            if (tries < 10) {
-                if (g->m.move_cost(pt) == 0) g->m.ter(pt) = t_rubble;
-                g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], pt));
-                if (g->u_see(pt)) {
+        // C: Whales scale factor 100000 slightly less than one week 2021-06-27 zaimoni
+        if (one_in(DAYS(7) / dis.duration) && one_in(DAYS(7) / dis.duration) && one_in(MINUTES(25))) {
+            if (auto dest = LasVegasChoice(10, within_four, ok)) {
+                if (0 >= g->m.move_cost(*dest)) g->m.ter(*dest) = t_rubble;
+                g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], *dest));
+                if (g->u_see(*dest)) {
                     g->u.cancel_activity_query("A monster appears nearby!");
                     messages.add("A portal opens nearby, and a monster crawls through!");
                 }
