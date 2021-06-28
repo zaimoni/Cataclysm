@@ -330,7 +330,7 @@ void player::hit_player(game *g, player &p, bool allow_grab)
       dice(p.dex_cur + p.sklevel[sk_melee], 12) >
       dice(dex_cur + sklevel[sk_melee], 10)) {
    if (is_u)
-    messages.add("%s break%s the grab!", target.c_str(), (p.is_npc() ? "s" : ""));
+    messages.add("%s %s the grab!", target.c_str(), p.regular_verb_agreement("break").c_str());
   } else if (!unarmed_attack()) {
    item tmpweap = unwield();
    hit_player(g, p, false); // False means a second grab isn't allowed
@@ -710,7 +710,6 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
  mobile* const mob = z ? static_cast<mobile*>(z) : p;
  const std::string You = desc(grammar::noun::role::subject);
  const std::string target = mob->desc(grammar::noun::role::direct_object, grammar::article::definite);
- std::string s = (is_npc() ? "s" : "");
  point tar(z ? z->pos : p->pos);
 
  const bool u_see = (!is_npc() || g->u_see(pos));
@@ -773,7 +772,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
               count_hit++;
               int dam = roll_bash_damage(m_at, false) + roll_cut_damage(m_at, false);
               m_at->hurt(dam);
-              if (u_see) messages.add("%s hit%s %s for %d damage!", You.c_str(), s.c_str(), target.c_str(), dam);
+              if (u_see) messages.add("%s %s %s for %d damage!", You.c_str(), regular_verb_agreement("hit").c_str(), target.c_str(), dam);
           }
       }
       if (const auto nPC = g->nPC(test)) {
@@ -782,7 +781,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
               int dam = roll_bash_damage(nullptr, false);	// looks like (n)PC armor won't work, but covered in the hit function
               int cut = roll_cut_damage(nullptr, false);
               nPC->hit(g, bp_legs, 3, dam, cut);
-              if (u_see) messages.add("%s hit%s %s for %d damage!", You.c_str(), s.c_str(), nPC->name.c_str(), dam + cut);
+              if (u_see) messages.add("%s %s %s for %d damage!", You.c_str(), regular_verb_agreement("hit").c_str(), nPC->name.c_str(), dam + cut);
           }
       }
       // XXX \todo FIX: genuine players immune to TEC_WIDE multi-attack
@@ -793,7 +792,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
 
  case TEC_DISARM:
   g->m.add_item(p->pos, p->unwield());
-  if (u_see) messages.add("%s disarm%s %s!", You.c_str(), s.c_str(), target.c_str());
+  if (u_see) messages.add("%s %s %s!", You.c_str(), regular_verb_agreement("disarm").c_str(), target.c_str());
   break;
 
  } // switch (tech)
@@ -896,8 +895,7 @@ void player::perform_defensive_technique(
 	side = (hp_cur[hp_leg_l] >= hp_cur[hp_leg_r]) ? 0 : 1;
    }
    if (u_see)
-    messages.add("%s block%s with %s %s.", You.c_str(), (is_npc() ? "s" : ""),
-               your.c_str(), body_part_name(bp_hit, side));
+    messages.add("%s %s with %s %s.", You.c_str(), regular_verb_agreement("block").c_str(), your.c_str(), body_part_name(bp_hit, side));
    bash_dam /= 2;
    // styles never are worse than an unskilled block
    if (const int bonus = enhanced_block(weapon.type->id); 0 < bonus) {
@@ -914,15 +912,14 @@ void player::perform_defensive_technique(
    cut_dam = 0;
    stab_dam = 0;
    if (u_see)
-    messages.add("%s block%s with %s %s.", You.c_str(), (is_npc() ? "s" : ""),
-               your.c_str(), weapon.tname().c_str());
+    messages.add("%s %s with %s %s.", You.c_str(), regular_verb_agreement("block").c_str(), your.c_str(), weapon.tname().c_str());
    [[fallthrough]];
   case TEC_COUNTER:
    break; // Handled elsewhere
 
   case TEC_DEF_THROW:
    if (u_see)
-    messages.add("%s throw%s %s!", You.c_str(), (is_npc() ? "s" : ""), target.c_str());
+    messages.add("%s %s %s!", You.c_str(), regular_verb_agreement("throw").c_str(), target.c_str());
    bash_dam = 0;
    cut_dam  = 0;
    stab_dam = 0;
@@ -941,8 +938,7 @@ void player::perform_defensive_technique(
    cut_dam  = p->roll_cut_damage(nullptr, false);
    stab_dam = p->roll_stab_damage(nullptr, false);
    if (u_see)
-    messages.add("%s disarm%s %s!", You.c_str(), (is_npc() ? "s" : ""),
-                                  target.c_str());
+    messages.add("%s disarm%s %s!", You.c_str(), regular_verb_agreement("disarm").c_str(), target.c_str());
    break;
 
  } // switch (technique)
@@ -1312,58 +1308,55 @@ std::vector<special_attack> player::mutation_attacks(const monster *z, const pla
 std::string melee_verb(technique_id tech, std::string your, player &p,
                        int bash_dam, int cut_dam, int stab_dam)
 {
- std::string s = (p.is_npc() ? "s" : "");
-
- if (tech != TEC_NULL && p.weapon.is_style() && p.weapon.style_data(tech).name != "")
-  return p.weapon.style_data(tech).name + s;
+ if (tech != TEC_NULL && p.weapon.is_style() && !p.weapon.style_data(tech).name.empty())
+  return p.regular_verb_agreement(p.weapon.style_data(tech).name);
 
  std::ostringstream ret;
 
  switch (tech) {
 
   case TEC_SWEEP:
-   ret << "sweep" << s << "" << s << " " << your << " " << p.weapon.tname() <<
-          " at";
+   ret << p.regular_verb_agreement("sweep") << " " << your << " " << p.weapon.tname() << " at";
    break;
 
   case TEC_PRECISE:
-   ret << "jab" << s << " " << your << " " << p.weapon.tname() << " at";
+   ret << p.regular_verb_agreement("jab") << " " << your << " " << p.weapon.tname() << " at";
    break;
 
   case TEC_BRUTAL:
-   ret << "slam" << s << " " << your << " " << p.weapon.tname() << " against";
+   ret << p.regular_verb_agreement("slam") << " " << your << " " << p.weapon.tname() << " against";
    break;
 
   case TEC_GRAB:
-   ret << "wrap" << s << " " << your << " " << p.weapon.tname() << " around";
+   ret << p.regular_verb_agreement("wrap") << " " << your << " " << p.weapon.tname() << " around";
    break;
 
   case TEC_WIDE:
-   ret << "swing" << s << " " << your << " " << p.weapon.tname() << " wide at";
+   ret << p.regular_verb_agreement("swing") << " " << your << " " << p.weapon.tname() << " wide at";
    break;
 
   case TEC_THROW:
-   ret << "use" << s << " " << your << " " << p.weapon.tname() << " to toss";
+   ret << p.regular_verb_agreement("use") << " " << your << " " << p.weapon.tname() << " to toss";
    break;
 
   default: // No tech, so check our damage levels
    if (bash_dam >= cut_dam && bash_dam >= stab_dam) {
-    if (bash_dam >= 30) return "clobber" + s;
-    if (bash_dam >= 20) return "batter" + s;
-    if (bash_dam >= 10) return "whack" + s;
-    return "hit" + s;
+    if (bash_dam >= 30) return p.regular_verb_agreement("clobber");
+    if (bash_dam >= 20) return p.regular_verb_agreement("batter");
+    if (bash_dam >= 10) return p.regular_verb_agreement("whack");
+    return p.regular_verb_agreement("hit");
    }
    if (cut_dam >= stab_dam) {
-    if (cut_dam >= 30) return "hack" + s;
-    if (cut_dam >= 20) return "slice" + s;
-    if (cut_dam >= 10) return "cut" + s;
-    return "nick" + s;
+    if (cut_dam >= 30) return p.regular_verb_agreement("hack");
+    if (cut_dam >= 20) return p.regular_verb_agreement("slice");
+    if (cut_dam >= 10) return p.regular_verb_agreement("cut");
+    return p.regular_verb_agreement("nick");
    }
 // Only stab damage is left
-   if (stab_dam >= 30) return "impale" + s;
-   if (stab_dam >= 20) return "pierce" + s;
-   if (stab_dam >= 10) return "stab" + s;
-   return "poke" + s;
+   if (stab_dam >= 30) return p.regular_verb_agreement("impale");
+   if (stab_dam >= 20) return p.regular_verb_agreement("pierce");
+   if (stab_dam >= 10) return p.regular_verb_agreement("stab");
+   return p.regular_verb_agreement("poke");
  } // switch (tech)
 
  return ret.str();

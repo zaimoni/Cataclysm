@@ -71,6 +71,11 @@ std::string noun::typical_pronoun(role r) const
 	}
 }
 
+std::string noun::regular_verb_agreement(const std::string& verb) const
+{	// \todo more precise handling
+	return verb + "s";
+}
+
 void noun::regular_possessive(std::string& src)
 {
 	src += "'s";

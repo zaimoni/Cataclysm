@@ -1557,6 +1557,13 @@ std::string player::pronoun(role r) const
     }
 }
 
+std::string player::regular_verb_agreement(const std::string& verb) const
+{
+
+    if (is_npc()) return verb + "s";
+    return verb;
+}
+
 void player::screenpos_set(point pt)
 {
     set_screenpos(pos = pt);
@@ -3483,7 +3490,7 @@ void player::knock_back_from(game *g, const point& pt)
  bool u_see = (!is_npc() || g->u_see(to));
 
  const std::string You = grammar::capitalize(desc(grammar::noun::role::subject));
- const char* const s = (is_npc() ? "s" : "");
+ const auto bounce(regular_verb_agreement("bounce"));
 
 // First, see if we hit a monster
  if (monster* const z = g->mon(to)) {
@@ -3497,7 +3504,7 @@ void player::knock_back_from(game *g, const point& pt)
    z->add_effect(ME_STUNNED, 1);
   }
 
-  if (u_see) messages.add("%s bounce%s off a %s!", You.c_str(), s, z->name().c_str());
+  if (u_see) messages.add("%s %s off a %s!", You.c_str(), bounce.c_str(), z->name().c_str());
   return;
  }
 
@@ -3505,7 +3512,7 @@ void player::knock_back_from(game *g, const point& pt)
   hit(g, bp_torso, 0, 3, 0);
   add_disease(DI_STUNNED, TURNS(1));
   p->hit(g, bp_torso, 0, 3, 0);
-  if (u_see) messages.add("%s bounce%s off %s!", You.c_str(), s, p->name.c_str());
+  if (u_see) messages.add("%s %s off %s!", You.c_str(), bounce.c_str(), p->name.c_str());
   return;
  }
 
@@ -3518,7 +3525,7 @@ void player::knock_back_from(game *g, const point& pt)
   } else { // It's some kind of wall.
    hurt(g, bp_torso, 0, 3);
    add_disease(DI_STUNNED, TURNS(2));
-   if (u_see) messages.add("%s bounce%s off a %s.", name.c_str(), s, g->m.tername(to).c_str());
+   if (u_see) messages.add("%s %s off a %s.", You.c_str(), bounce.c_str(), g->m.tername(to).c_str());
   }
  } else screenpos_set(to);	// It's no wall
 }
