@@ -4040,7 +4040,7 @@ void game::pickup(const point& pt, int min)
 	const nc_color it_color = here[cur_it].color(u);
     mvwputch(w_pickup.get(), 1 + (cur_it % maxitems), 0, it_color, char(cur_it + 'a'));
     wprintw(w_pickup.get(), (getitem[cur_it] ? " + " : " - "));
-    wprintz(w_pickup.get(), it_color, here[cur_it].tname().c_str());
+    waddstrz(w_pickup.get(), it_color, here[cur_it].tname().c_str());
     if (here[cur_it].charges > 0)
      wprintz(w_pickup.get(), it_color, " (%d)", here[cur_it].charges);
    }

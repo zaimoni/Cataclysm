@@ -1064,7 +1064,7 @@ void draw_caravan_categories(WINDOW *w, int category_selected, int total_price,
   draw_hline(w, i, c_black, 'x', 1, SCREEN_WIDTH / 2 - 1);
  mvwaddstrz(w, 1, 1, c_white, "Your Cash:");
  mvwprintz(w, 1, 17 - int_log10(cash), c_white, "%d", cash);
- wprintz(w, c_ltgray, " -> ");
+ waddstrz(w, c_ltgray, " -> ");
  wprintz(w, (total_price > cash ? c_red : c_green), "%d", cash - total_price);
 
  for (int i = 0; i < NUM_CARAVAN_CATEGORIES; i++)

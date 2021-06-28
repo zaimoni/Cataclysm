@@ -821,7 +821,7 @@ void computer::print_gibberish_line()
   case 4: gibberish += 'A' + rng(0, 25); break;
   }
  }
- wprintz(w_terminal, c_yellow, gibberish.c_str());
+ waddstrz(w_terminal, c_yellow, gibberish.c_str());
  wborder(w_terminal, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
                      LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
  wrefresh(w_terminal);
