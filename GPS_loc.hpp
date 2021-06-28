@@ -27,6 +27,7 @@ struct GPS_loc : public std::pair<tripoint, point>
 	GPS_loc& operator=(const GPS_loc& src) = default;
 
 	GPS_loc& operator+=(const point& src);
+	GPS_loc& operator+=(const tripoint& src);
 
 	// following in map.cpp
 	ter_id& ter();
@@ -40,9 +41,20 @@ struct GPS_loc : public std::pair<tripoint, point>
 // \todo evaluate whether these should be out-of-line defined (likely a matter of binary size, compile+link time)
 inline GPS_loc operator+(GPS_loc lhs, const point& rhs) { return lhs += rhs; }
 inline GPS_loc operator+(const point& lhs, GPS_loc rhs) { return rhs += lhs; }
+inline GPS_loc operator+(GPS_loc lhs, const tripoint& rhs) { return lhs += rhs; }
+inline GPS_loc operator+(const tripoint& lhs, GPS_loc rhs) { return rhs += lhs; }
+inline GPS_loc operator+(GPS_loc lhs, const std::variant<point, tripoint>& rhs) {
+	if (auto test = std::get_if<point>(&rhs)) return lhs += *test;
+	return lhs += std::get<tripoint>(rhs);
+}
+inline GPS_loc operator+(const std::variant<point, tripoint>& lhs, GPS_loc rhs) {
+	if (auto test = std::get_if<point>(&lhs)) return rhs += *test;
+	return rhs += std::get<tripoint>(lhs);
+}
 
 // following in overmap.cpp
 std::variant<point, tripoint> operator-(const GPS_loc& lhs, const GPS_loc& rhs);
+std::variant<point, tripoint> cmp(const GPS_loc& lhs, const GPS_loc& rhs);
 int rl_dist(GPS_loc lhs, GPS_loc rhs);
 
 struct _OM_loc : public std::pair<tripoint, point>

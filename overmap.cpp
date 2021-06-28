@@ -72,6 +72,13 @@ GPS_loc& GPS_loc::operator+=(const point& src)
     return *this;
 }
 
+GPS_loc& GPS_loc::operator+=(const tripoint& src)
+{
+    *this += point(src.x, src.y);
+    first.z += src.z;
+    return *this;
+}
+
 std::variant<point, tripoint> operator-(const GPS_loc& lhs, const GPS_loc& rhs)
 {
     // \todo decide what to do about overflow here
@@ -82,6 +89,21 @@ std::variant<point, tripoint> operator-(const GPS_loc& lhs, const GPS_loc& rhs)
     ret.y *= SEE;
     ret += delta;
     if (lhs.first.z == rhs.first.z) return point(ret.x, ret.y);
+    return ret;
+}
+
+std::variant<point, tripoint> cmp(const GPS_loc& lhs, const GPS_loc& rhs)
+{
+    auto ret = rhs - lhs;
+    if (auto test = std::get_if<point>(&ret)) {
+        test->x = cataclysm::signum(test->x);
+        test->y = cataclysm::signum(test->y);
+    } else {
+        decltype(auto) test2 = std::get<tripoint>(ret);
+        test2.x = cataclysm::signum(test2.x);
+        test2.y = cataclysm::signum(test2.y);
+        test2.z = cataclysm::signum(test2.z);
+    }
     return ret;
 }
 
