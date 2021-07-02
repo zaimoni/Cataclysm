@@ -640,6 +640,21 @@ int map::move_cost(int x, int y) const
  return ter_t::list[ter(x, y)].movecost;
 }
 
+int GPS_loc::move_cost() const
+{
+    if (const auto v = veh_at()) {
+        const vehicle* const veh = v->first;
+        int dpart = veh->part_with_feature(v->second, vpf_obstacle);
+        if (dpart >= 0 &&
+            (!veh->part_flag(dpart, vpf_openable) || !veh->parts[dpart].open))
+            return 0;
+        else
+            return 8;
+    }
+    return ter_t::list[ter()].movecost;
+}
+
+
 int map::move_cost_ter_only(int x, int y) const
 {
  return ter_t::list[ter(x, y)].movecost;

@@ -638,11 +638,9 @@ void player::activate_bionic(int b, game *g)
 			  std::string snd;
 			  g->m.bash(pt, tmp_item.weight() * 2, snd);
 			  g->sound(pt, 12, snd); // C:Whales coincidentally SEE
-			  if (g->m.move_cost(pt) == 0) {
-				  g->m.add_item(prior, std::move(tmp_item));
-				  it_is_landed = true;
-				  break;
-			  }
+			  g->m.add_item(prior, std::move(tmp_item));
+			  it_is_landed = true;
+			  break;
 		  }
 		  prior = pt;
 	  }
