@@ -151,6 +151,8 @@ public:
  void hitall(game *g, int dam, int vary = 0);
 // Sends us flying one tile
  void knock_back_from(game *g, const point& pt);
+ // calibration: STR 3 -> 1; STR 20 -> 4; STR 8 -> 2
+ int knockback_size() const override { return (str_max - 2) / 5 + 1; /* C:Whales: (str_max - 6) / 4; */ }
 
  int hp_percentage() const;	// % of HP remaining, overall
  std::pair<hp_part, int> worst_injury() const;

@@ -129,6 +129,8 @@ class monster : public mobile {
  void die(game *g);
 
 // Other
+ int knockback_size() const override { return type->size; }
+
  void add(effect src, int duration) override;
  bool has(effect src) const override;
  void add_effect(monster_effect_type effect, int duration);

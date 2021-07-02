@@ -151,6 +151,9 @@ public:
     void add(effect src, int duration) override {}
     bool has(effect src) const override { return false; }
 
+    // stub for knockback support
+    int knockback_size() const override { return 4; } // motorcycle more like a cow than a tank; cf enum m_size
+
 // get vpart type info for part number (part at given vector index)
     const vpart_info& part_info(int index) const;
 

@@ -40,6 +40,9 @@ public:
 	virtual void add(effect src, int duration) = 0;
 	virtual bool has(effect src) const = 0;
 
+	// unified knockback
+	virtual int knockback_size() const = 0;
+
 protected:
 	mobile() noexcept : GPSpos(_ref<GPS_loc>::invalid),moves(0) {}
 	mobile(const GPS_loc& origin, int m) noexcept : GPSpos(origin), moves(m) {}
