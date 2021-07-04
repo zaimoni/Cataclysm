@@ -3391,7 +3391,7 @@ void player::hurt(game *g, body_part bphurt, int side, int dam)
 }
 
 bool player::hurt(int dam) {
-    hurt(game::active(), bp_torso, 0, dam);
+    hit(game::active(), bp_torso, 0, dam, 0); // as required by mobile::knock_back_from
     return 0 >= hp_cur[hp_torso] || 0 >= hp_cur[hp_head];
 }
 
