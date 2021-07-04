@@ -42,6 +42,7 @@ public:
 
 	// unified knockback
 	virtual int knockback_size() const = 0;
+	virtual bool hurt(int dam) = 0; // Deals this dam damage; returns true if we died
 
 protected:
 	mobile() noexcept : GPSpos(_ref<GPS_loc>::invalid),moves(0) {}

@@ -3249,7 +3249,7 @@ double player::barter_price_adjustment() const
 void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
 {
  if (has_disease(DI_SLEEP)) {
-  messages.add("You wake up!");
+  if (!is_npc()) messages.add("You wake up!"); // \todo adapt for NPCs
   rem_disease(DI_SLEEP);
  } else if (has_disease(DI_LYING_DOWN))
   rem_disease(DI_LYING_DOWN);
@@ -3273,7 +3273,8 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
   }
   clamp_ub(snakes, valid.size());
   if (0 < snakes) {
-      messages.add(1 == snakes ? "A snake sprouts from your body!" : "Some snakes sprout from your body!");
+      // \todo adapt message for NPCs
+      if (!is_npc()) messages.add(1 == snakes ? "A snake sprouts from your body!" : "Some snakes sprout from your body!");
       monster snake(mtype::types[mon_shadow_snake]);
       snake.friendly = -1;
       for (int i = 0; i < snakes; i++) {
@@ -3342,7 +3343,7 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
 void player::hurt(game *g, body_part bphurt, int side, int dam)
 {
  if (has_disease(DI_SLEEP) && rng(0, dam) > 2) {
-  messages.add("You wake up!");
+  if (!is_npc()) messages.add("You wake up!");
   rem_disease(DI_SLEEP);
  } else if (has_disease(DI_LYING_DOWN))
   rem_disease(DI_LYING_DOWN);
@@ -3387,6 +3388,11 @@ void player::hurt(game *g, body_part bphurt, int side, int dam)
  }
  if (has_trait(PF_ADRENALINE) && !has_disease(DI_ADRENALINE) && (hp_cur[hp_head] < 25 || hp_cur[hp_torso] < 15))
   add_disease(DI_ADRENALINE, MINUTES(20));
+}
+
+bool player::hurt(int dam) {
+    hurt(game::active(), bp_torso, 0, dam);
+    return 0 >= hp_cur[hp_torso] || 0 >= hp_cur[hp_head];
 }
 
 void player::heal(body_part healed, int side, int dam)

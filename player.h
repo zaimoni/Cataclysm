@@ -139,9 +139,10 @@ public:
 
 // Converts bphurt to a hp_part (if side == 0, the left), then does/heals dam
 // hit() processes damage through armor
- void hit   (game *g, body_part bphurt, int side, int  dam, int  cut);	// \todo V 0.2.1 enable for NPCs?
+ void hit (game *g, body_part bphurt, int side, int dam, int cut);
 // hurt() doesn't--effects of disease, what have you
- void hurt  (game *g, body_part bphurt, int side, int  dam);	// \todo V 0.2.1 enable for NPCs?
+ void hurt(game *g, body_part bphurt, int side, int dam);
+ bool hurt(int dam) override;
 
  void heal(body_part healed, int side, int dam);	// dead function?
  void heal(hp_part healed, int dam);

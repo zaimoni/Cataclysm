@@ -120,7 +120,7 @@ class monster : public mobile {
  int trigger_sum(const game* g, typename cataclysm::bitmap<N_MONSTER_TRIGGERS>::type triggers) const;
  int  hit(game *g, player &p, body_part &bp_hit); // Returns a damage
  void hit_monster(game *g, monster& target);
- bool hurt(int dam); 	// Deals this dam damage; returns true if we dead
+ bool hurt(int dam) override; 	// Deals this dam damage; returns true if we dead
  int  armor_cut() const;	// Natural armor, plus any worn armor
  int  armor_bash() const;	// Natural armor, plus any worn armor
  int  dodge() const;		// Natural dodge, or 0 if we're occupied
