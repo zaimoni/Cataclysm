@@ -2458,6 +2458,14 @@ faction* game::random_evil_faction()
  return &(factions[factions.size() - 1]);
 }
 
+std::optional<int> game::u_see(const GPS_loc& loc) const
+{
+    if (loc == u.GPSpos) return 0; // always aware of own location
+    // \todo? primary implementation, rather than forward
+    if (auto pt = toScreen(loc)) return u_see(*pt);
+    return std::nullopt;
+}
+
 std::optional<int> game::u_see(int x, int y) const
 {
     const int range = u.sight_range();
@@ -2544,7 +2552,7 @@ void game::mon_info()
  }
  for (int i = 0; i < active_npc.size(); i++) {
   const auto& _npc = active_npc[i];
-  if (u_see(_npc.pos)) { // TODO: NPC invis
+  if (u.see(_npc)) {
    if (_npc.attitude == NPCATT_KILL) newseen++;
    int index = (rl_dist(u.GPSpos, _npc.GPSpos) <= VIEW_CENTER ? 8 : direction_from(u.GPSpos, _npc.GPSpos));
    unique_types[index].push_back(-1 - i);
@@ -4802,7 +4810,7 @@ void game::chat()
  }
  std::vector<npc*> available;
  for (auto& _npc : active_npc) {
-	 if (u_see(_npc.pos) && 24 >= rl_dist(u.GPSpos, _npc.GPSpos)) available.push_back(&_npc);
+	 if (u.see(_npc) && 24 >= rl_dist(u.GPSpos, _npc.GPSpos)) available.push_back(&_npc);
  }
  const size_t ub = available.size();
  if (0 >= ub) {

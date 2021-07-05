@@ -961,15 +961,24 @@ void vehicle::stop ()
 /// <param name="u">The operator of the controls.</param>
 void vehicle::handbrake(player& u)
 {
-    const bool pc = !u.is_npc();
-    const bool vis_npc = u.is_npc() && game::active()->u_see(u.pos);
-    if (pc) messages.add("You pull a handbrake.");
-    else if (vis_npc) messages.add("%s pulls a handbrake.", u.name.c_str());
+    std::string you;
+    std::string pull;
+    decltype(game::active()->u_see(u.pos)) vis_loc = std::nullopt;
+    const auto vis_npc = game::active()->u.see(u);
+    if (vis_npc) {
+        you = grammar::capitalize(u.desc(grammar::noun::role::subject));
+        messages.add("%s %s a handbrake.", you.c_str(), u.regular_verb_agreement("pull").c_str());
+    } else if (vis_loc = game::active()->u_see(u.pos)) {
+        messages.add("Someone pulls a handbrake.");
+    }
     cruise_velocity = 0;
     if (last_turn != 0 && rng(15, 60) * mph_1 < abs(velocity)) {
         skidding = true;
-        if (pc) messages.add("You lose control of %s.", name.c_str());
-        else if (vis_npc) messages.add("%s loses control of %s.", u.name.c_str() , name.c_str());
+        if (vis_npc) {
+            messages.add("%s loses control of %s.", you.c_str(), u.regular_verb_agreement("lose").c_str(), name.c_str());
+        } else if (vis_loc = game::active()->u_see(u.pos)) {
+            messages.add("Someone loses control of %s.", name.c_str());
+        }
         turn(last_turn > 0 ? 60 : -60);
     } else if (velocity < 0) stop();
     else {

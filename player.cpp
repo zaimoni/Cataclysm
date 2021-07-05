@@ -5421,9 +5421,10 @@ void player::absorb(game *g, body_part bp, int &dam, int &cut)
        rng(0, tmp->dmg_resist * 2) < dam && !one_in(dam))
     worn[i].damage++;
    if (worn[i].damage >= 5) {
-    if (!is_npc()) messages.add("Your %s is completely destroyed!", worn[i].tname().c_str());
-    else if (g->u_see(pos))
-     messages.add("%s's %s is destroyed!", name.c_str(), worn[i].tname().c_str());
+    if (g->u_see(GPSpos)) {
+        const auto your = grammar::capitalize(possessive());
+        messages.add("%s %s is destroyed!", your.c_str(), worn[i].tname().c_str());
+    }
     EraseAt(worn, i);
    }
   }
