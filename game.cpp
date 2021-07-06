@@ -2705,7 +2705,7 @@ void game::monmove()
 // If we can't move to our current position, assign us to a new one (terrain change after map generation?)
    if (debugmon)
     debugmsg("%s can't move to its location! (%d:%d), %s", z[i].name().c_str(),
-             z[i].pos.x, z[i].pos.y, m.tername(z[i].pos).c_str());
+             z[i].pos.x, z[i].pos.y, name_of(m.ter(z[i].pos)).c_str());
    decorrupt_monster_pos(z[i], m);
   }
 
@@ -3213,7 +3213,7 @@ void game::emp_blast(int x, int y)
 {
  int rn;
  if (m.has_flag(console, x, y)) {
-  messages.add("The %s is rendered non-functional!", m.tername(x, y).c_str());
+  messages.add("The %s is rendered non-functional!", name_of(m.ter(x, y)).c_str());
   m.ter(x, y) = t_console_broken;
   return;
  }
@@ -3590,7 +3590,7 @@ void game::examine()
   return;
  }
  exam += u.pos;
- messages.add("That is a %s.", m.tername(exam).c_str());
+ messages.add("That is a %s.", name_of(m.ter(exam)).c_str());
 
  auto& exam_t = m.ter(exam);
  auto& stack = m.i_at(exam);
@@ -3617,7 +3617,7 @@ void game::examine()
    buff += " but is firmly sealed.";
    messages.add(buff.c_str());
   } else {
-   messages.add("There's something in there, but you can't see what it is, and the %s is firmly sealed.", m.tername(exam).c_str());
+   messages.add("There's something in there, but you can't see what it is, and the %s is firmly sealed.", name_of(m.ter(exam)).c_str());
   }
  } else {
   if (stack.empty() && m.has_flag(container, exam) && !(m.has_flag(swimmable, exam) || t_toilet == exam_t))
@@ -3764,8 +3764,8 @@ shape, but with long, twisted, distended limbs.");
    add_event(EVENT_TEMPLE_OPEN, int(messages.turn) + 4);
   } else
    messages.add("This pedestal is engraved in eye-shaped diagrams, and has a large semi-spherical indentation at the top.");
- } else if (t_switch_rg <= exam_t && t_switch_even >= exam_t && query_yn("Flip the %s?", m.tername(exam).c_str())) {
-  u.moves -= 100;
+ } else if (t_switch_rg <= exam_t && t_switch_even >= exam_t && query_yn("Flip the %s?", name_of(m.ter(exam)).c_str())) {
+  u.moves -= mobile::mp_turn;
   for (int y = exam.y; y <= exam.y + 5; y++) {
    for (int x = 0; x < SEEX * MAPSIZE; x++) {
 	m.apply_temple_switch(exam_t,exam.y,x,y);
@@ -3814,9 +3814,9 @@ std::optional<point> game::look_around()
   const int veh_part = v ? v->second : 0;
   if (u_see(l)) {
    if (const int mc = m.move_cost(l))
-       mvwprintw(w_look, 1, 1, "%s; Movement cost %d", m.tername(l).c_str(), mc * 50);
+       mvwprintw(w_look, 1, 1, "%s; Movement cost %d", name_of(m.ter(l)).c_str(), mc * 50);
    else
-       mvwprintw(w_look, 1, 1, "%s; Impassable", m.tername(l).c_str());
+       mvwprintw(w_look, 1, 1, "%s; Impassable", name_of(m.ter(l)).c_str());
    mvwaddstr(w_look, 2, 1, m.features(l).c_str());
    const auto& f = m.field_at(l);
    if (f.type != fd_null)
@@ -4403,14 +4403,14 @@ void game::drop_in_direction()
    messages.add("You %s your %s%s %s the %s.", verb.c_str(),
            dropped[0].tname().c_str(),
            (dropped.size() == 1 ? "" : "s"), prep.c_str(),
-           m.tername(dir).c_str());
+           name_of(m.ter(dir)).c_str());
  } else {
   if (to_veh)
    messages.add("You put several items in the %s's %s.", veh->name.c_str(),
            veh->part_info(veh_part).name);
   else
    messages.add("You %s several items %s the %s.", verb.c_str(), prep.c_str(),
-           m.tername(dir).c_str());
+           name_of(m.ter(dir)).c_str());
  }
  bool vh_overflow = false;
  int i = 0;
@@ -4993,18 +4993,18 @@ void game::plmove(int x, int y)
       ( u.has_trait(PF_PARKOUR) && m.move_cost(x, y) > 4    ))
   {
    if (veh) messages.add("Moving past this %s is slow!", veh->part_info(vpart).name);
-   else messages.add("Moving past this %s is slow!", m.tername(x, y).c_str());
+   else messages.add("Moving past this %s is slow!", name_of(m.ter(x, y)).c_str());
   }
   if (m.has_flag(rough, x, y)) {
    if (one_in(5) && u.armor_bash(bp_feet) < rng(1, 5)) {
-    messages.add("You hurt your feet on the %s!", m.tername(x, y).c_str());
+    messages.add("You hurt your feet on the %s!", name_of(m.ter(x, y)).c_str());
     u.hit(this, bp_feet, 0, 0, 1);
     u.hit(this, bp_feet, 1, 0, 1);
    }
   }
   if (m.has_flag(sharp, x, y) && !one_in(3) && !one_in(40 - int(u.dex_cur/2))) {
    if (!u.has_trait(PF_PARKOUR) || one_in(4)) {
-    messages.add("You cut yourself on the %s!", m.tername(x, y).c_str());
+    messages.add("You cut yourself on the %s!", name_of(m.ter(x, y)).c_str());
     u.hit(this, bp_torso, 0, 0, rng(1, 4));
    }
   }
@@ -5121,7 +5121,7 @@ void game::plmove(int x, int y)
  } else { // Invalid move
   if (u.has_disease(DI_BLIND) || u.has_disease(DI_STUNNED)) {
 // Only lose movement if we're blind
-   messages.add("You bump into a %s!", m.tername(x, y).c_str());
+   messages.add("You bump into a %s!", name_of(m.ter(x, y)).c_str());
    u.moves -= mobile::mp_turn;
   } else if (m.open_door(x, y, t_floor == u.GPSpos.ter()))
    u.moves -= mobile::mp_turn;
@@ -5205,7 +5205,7 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
         } else if (m.move_cost(pt) == 0 && !m.has_flag(swimmable, pt)) {
             slam = true;
             const auto veh = m._veh_at(pt);
-            dname = veh ? veh->first->part_info(veh->second).name : m.tername(pt).c_str();
+            dname = veh ? veh->first->part_info(veh->second).name : name_of(m.ter(pt)).c_str();
             if (m.has_flag(bashable, pt)) thru = m.bash(pt, flvel, snd);
             else thru = false;
             if (snd.length() > 0) messages.add("You hear a %s", snd.c_str());
@@ -5534,7 +5534,7 @@ void game::update_stair_monsters()
        if (u_see(sx, sy))
         messages.add("A %s comes %s the %s!", coming_to_stairs[i].mon.name().c_str(),
                 (m.has_flag(goes_up, sx, sy) ? "down" : "up"),
-                m.tername(sx, sy).c_str());
+                name_of(m.ter(sx, sy)).c_str());
       }
      }
     }
@@ -5726,7 +5726,7 @@ void game::teleport(player *p)
  std::string You = (is_u ? "You" : p->name);
  p->screenpos_set(dest);
  if (m.move_cost(dest) == 0) {	// \todo? C:Whales TODO: If we land in water, swim
-   if (can_see) messages.add("%s teleport%s into the middle of a %s!", You.c_str(), (is_u ? "" : "s"), m.tername(dest).c_str());
+   if (can_see) messages.add("%s teleport%s into the middle of a %s!", You.c_str(), (is_u ? "" : "s"), name_of(m.ter(dest)).c_str());
    p->hurt(this, bp_torso, 0, 500);
  } else if (monster* const m_at = mon(dest)) {
    if (can_see) messages.add("%s teleport%s into the middle of a %s!", You.c_str(), (is_u ? "" : "s"), m_at->name().c_str());

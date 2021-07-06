@@ -131,6 +131,8 @@ struct ter_t {
 	static void init();
 };
 
+inline const std::string& name_of(ter_id terrain) { return ter_t::list[terrain].name; }
+
 struct field_t {
  std::string name[3];
  char sym;

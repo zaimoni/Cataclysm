@@ -178,9 +178,6 @@ class map
 	 return ret;
  }
 
- const std::string& tername(int x, int y) const; // Name of terrain at (x, y)
- const std::string& tername(const point& pt) const { return tername(pt.x, pt.y); };
-
  std::string features(const point& pt) const; // Words relevant to terrain (sharp, etc)
  bool has_flag(t_flag flag, int x, int y) const;  // checks terrain and vehicles
  bool has_flag(t_flag flag, const point& pt) const { return has_flag(flag, pt.x, pt.y); };

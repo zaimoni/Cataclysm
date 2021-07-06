@@ -371,7 +371,7 @@ void trapfuncm::pit_spikes(game *g, monster *z)
 
 void trapfunc::lava(game *g, int x, int y)
 {
- messages.add("The %s burns you horribly!", g->m.tername(x, y).c_str());
+ messages.add("The %s burns you horribly!", name_of(g->m.ter(x, y)).c_str());
  g->u.hit(g, bp_feet, 0, 0, 20);
  g->u.hit(g, bp_feet, 1, 0, 20);
  g->u.hit(g, bp_legs, 0, 0, 20);
@@ -381,7 +381,7 @@ void trapfunc::lava(game *g, int x, int y)
 void trapfuncm::lava(game *g, monster *z)
 {
  if (g->u.see(*z))
-  messages.add("The %s burns the %s!", g->m.tername(z->pos).c_str(), z->name().c_str());
+  messages.add("The %s burns the %s!", name_of(g->m.ter(z->pos)).c_str(), z->name().c_str());
 
  int dam = 30;
  if (z->made_of(FLESH)) dam = 50;

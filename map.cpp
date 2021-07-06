@@ -590,11 +590,6 @@ void map::_translate(ter_id from, ter_id to)
 	}
 }
 
-const std::string& map::tername(int x, int y) const
-{
- return ter_t::list[ter(x, y)].name;
-}
-
 std::string map::features(const point& pt) const
 {
 // This is used in an info window that is 46 characters wide, and is expected

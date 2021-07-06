@@ -78,7 +78,7 @@ void mattack::acid(game *g, monster *z)
  point hit(g->u.pos + rng(within_rldist<2>));
  for (const auto& pt : line_to(z->pos, hit, *j)) {
      if (g->m.hit_with_acid(pt)) {
-         if (g->u_see(pt)) messages.add("A glob of acid hits the %s!", g->m.tername(pt).c_str());
+         if (g->u_see(pt)) messages.add("A glob of acid hits the %s!", name_of(g->m.ter(pt)).c_str());
          return;
      }
  }
@@ -144,7 +144,7 @@ void mattack::boomer(game *g, monster *z)
   if (0 == g->m.move_cost(pt)) {
       g->m.add_field(g, pt, fd_bile, 3);
       if (g->u_see(pt))
-          messages.add("Bile splatters on the %s!", g->m.tername(pt).c_str());
+          messages.add("Bile splatters on the %s!", name_of(g->m.ter(pt)).c_str());
       return;
   }
  }
@@ -424,7 +424,7 @@ static int route_sap(const std::vector<point>& line)
     for (decltype(auto) pt : line) {
         g->m.shoot(g, pt, dam, false, 0);
         if (0 == dam) {
-            if (g->u_see(pt)) messages.add("A glob of sap hits the %s!", g->m.tername(pt).c_str());
+            if (g->u_see(pt)) messages.add("A glob of sap hits the %s!", name_of(g->m.ter(pt)).c_str());
             g->m.add_field(g, pt, fd_sap, (dam >= 4 ? 3 : 2));
             return 0;
         }
@@ -868,7 +868,7 @@ void mattack::vortex(game *g, monster *z)
       hit_wall = true;
       g->u.screenpos_set(traj[i - 1]);
      } else if (g->m.move_cost(traj[i]) == 0) {
-      messages.add("You slam into a %s", g->m.tername(traj[i]).c_str());
+      messages.add("You slam into a %s", name_of(g->m.ter(traj[i])).c_str());
       hit_wall = true;
       g->u.screenpos_set(traj[i - 1]);
      }

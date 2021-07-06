@@ -1157,7 +1157,7 @@ void iuse::set_trap(game *g, player *p, item *it, bool t)
   practice = (buried ? 7 : 4); 
   break;
  case itm_board_trap:
-  message << "You set the board trap on the " << g->m.tername(trap_pos) << ", nails facing up.";
+  message << "You set the board trap on the " << name_of(g->m.ter(trap_pos)) << ", nails facing up.";
   type = tr_nailboard;
   practice = 2;
   break;
@@ -1215,7 +1215,7 @@ void iuse::set_trap(game *g, player *p, item *it, bool t)
    messages.add("You need a shovel.");
    return;
   } else if (!g->m.has_flag(diggable, trap_pos)) {
-   messages.add("You can't dig in that %s", g->m.tername(trap_pos).c_str());
+   messages.add("You can't dig in that %s", name_of(g->m.ter(trap_pos)).c_str());
    return;
   }
  }
