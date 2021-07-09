@@ -91,7 +91,7 @@ class game : public reality_bubble
   void explosion(const point& pt, int power, int shrapnel, bool fire) { explosion(pt.x, pt.y, power, shrapnel, fire); };
   // Flashback at (x, y)
   void flashbang(int x, int y);
-  void flashbang(const point& pt) { flashbang(pt.x, pt.y); };
+  void flashbang(const point& pt) { flashbang(pt.x, pt.y); }
   // Move the player vertically, if (force) then they fell
   void vertical_move(int z, bool force);
   void use_computer(const point& pt);
@@ -99,21 +99,25 @@ class game : public reality_bubble
   void emp_blast(int x, int y);
   player* survivor(int x, int y);
   player* survivor(const point& pt);
-  const player* survivor(int x, int y) const { return const_cast<game*>(this)->survivor(x, y); };
-  const player* survivor(const point& pt) const { return const_cast<game*>(this)->survivor(pt); };
+  player* survivor(const GPS_loc& gps);
+  const player* survivor(int x, int y) const { return const_cast<game*>(this)->survivor(x, y); }
+  const player* survivor(const point& pt) const { return const_cast<game*>(this)->survivor(pt); }
+  const player* survivor(const GPS_loc& gps) const { return const_cast<game*>(this)->survivor(gps); }
   npc* nPC(int x, int y);
   npc* nPC(const point& pt);
   npc* nPC(const GPS_loc& gps);
-  const npc* nPC(int x, int y) const { return const_cast<game*>(this)->nPC(x, y); };
-  const npc* nPC(const point& pt) const { return const_cast<game*>(this)->nPC(pt); };
-  const npc* nPC(const GPS_loc& gps) const { return const_cast<game*>(this)->nPC(gps); };
+  const npc* nPC(int x, int y) const { return const_cast<game*>(this)->nPC(x, y); }
+  const npc* nPC(const point& pt) const { return const_cast<game*>(this)->nPC(pt); }
+  const npc* nPC(const GPS_loc& gps) const { return const_cast<game*>(this)->nPC(gps); }
   int  mon_at(int x, int y) const;	// Index of the monster at (x, y); -1 for none
   monster* mon(int x, int y);
   monster* mon(const point& pt);
   monster* mon(const GPS_loc& gps);
-  const monster* mon(int x, int y) const { return const_cast<game*>(this)->mon(x, y); };
-  const monster* mon(const point& pt) const { return const_cast<game*>(this)->mon(pt); };
-  const monster* mon(const GPS_loc& gps) const { return const_cast<game*>(this)->mon(gps); };
+  const monster* mon(int x, int y) const { return const_cast<game*>(this)->mon(x, y); }
+  const monster* mon(const point& pt) const { return const_cast<game*>(this)->mon(pt); }
+  const monster* mon(const GPS_loc& gps) const { return const_cast<game*>(this)->mon(gps); }
+  mobile* mob(const GPS_loc& gps);  // does not include vehicles
+  const mobile* mob(const GPS_loc& gps) const { return const_cast<game*>(this)->mob(gps); }
 
   bool is_empty(int x, int y) const;	// True if no PC, no monster, move cost > 0
   bool is_empty(const point& pt) const { return is_empty(pt.x, pt.y); };

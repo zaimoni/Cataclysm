@@ -3301,6 +3301,11 @@ player* game::survivor(const point& pt)
     return nPC(pt);
 }
 
+player* game::survivor(const GPS_loc& gps)
+{
+    if (gps == u.GPSpos) return &u;
+    return nPC(gps);
+}
 
 int game::mon_at(int x, int y) const
 {
@@ -3324,6 +3329,14 @@ monster* game::mon(const point& pt)
 
 monster* game::mon(const GPS_loc& gps)
 {
+    for (auto& m : z) if (m.GPSpos == gps && !m.dead) return &m;
+    return nullptr;
+}
+
+mobile* game::mob(const GPS_loc& gps)
+{
+    if (auto _mon = mon(gps)) return _mon;
+    return survivor(gps);
     for (auto& m : z) if (m.GPSpos == gps && !m.dead) return &m;
     return nullptr;
 }
