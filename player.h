@@ -336,6 +336,8 @@ public:
  std::vector <addiction> addictions;
 
 private:
+ void _set_screenpos() override { if (auto pt = screen_pos()) pos = *pt; }
+
  // melee.cpp
  int  hit_roll() const; // Our basic hit roll, compared to our target's dodge roll
  bool scored_crit(int target_dodge = 0) const; // Critical hit?

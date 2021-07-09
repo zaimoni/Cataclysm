@@ -356,6 +356,8 @@ public:
     int last_turn;      // amount of last turning (for calculate skidding due to handbrake)
     int turret_mode;    // turret firing mode: 0 = off, 1 = burst fire	; leave as int in case we want true autofire
 private:
+    void _set_screenpos() override {}
+
     // direct damage to part (armor protection and internals are not counted)
     // returns damage bypassed
     int damage_direct(int p, int dmg, damage_type type);

@@ -187,6 +187,8 @@ private:
 
  bool can_sound_move_to(const game* g, const point& pt) const;
  bool can_sound_move_to(const game* g, const point& pt, point& dest) const;
+
+ void _set_screenpos() override { if (auto pt = screen_pos()) pos = *pt; }
 };
 
 #endif

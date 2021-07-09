@@ -35,6 +35,7 @@ public:
 	point screenPos() const;
 	std::optional<reality_bubble_loc> bubble_pos() const;
 	reality_bubble_loc bubblePos() const;
+	void set_screenpos(const GPS_loc& loc);
 
 	// unified effects/diseases
 	virtual void add(effect src, int duration) = 0;
@@ -57,6 +58,7 @@ protected:
 	mobile& operator=(mobile&& src) = default;
 
 	void set_screenpos(point pt); // could be public once synchronization with legacy point pos not needed
+	virtual void _set_screenpos() = 0;
 };
 
 template<class T>
