@@ -1035,8 +1035,7 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
             collision_type = 4; // bashable (door, window)
             mass2 = 50;    // special case: instead of calculating absorb based on mass of obstacle later, we let
                            // map::bash function deside, how much absorb is
-        }
-        else if (0 == g->m.move_cost_ter_only(dest.x, dest.y)) {
+        } else if (0 == move_cost_of(terrain)) {
             if (g->m.is_destructable_ter_only(dest.x, dest.y)) {
                 collision_type = 5; // destructible (wall)
                 mass2 = 200;

@@ -130,6 +130,7 @@ struct ter_t {
 };
 
 template<t_flag flag> bool is(ter_id terrain) { return ter_t::list[terrain].flags & mfb(flag); }
+inline int move_cost_of(ter_id terrain) { return ter_t::list[terrain].movecost; }
 inline const std::string& name_of(ter_id terrain) { return ter_t::list[terrain].name; }
 
 struct field_t {
