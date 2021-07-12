@@ -715,21 +715,10 @@ bool map::has_flag(t_flag flag, int x, int y) const
  return ter_t::list[ter(x, y)].flags & mfb(flag);
 }
 
-bool map::has_flag_ter_only(t_flag flag, int x, int y) const
-{
- return ter_t::list[ter(x, y)].flags & mfb(flag);
-}
-
 bool map::is_destructable(int x, int y) const
 {
  return (has_flag(bashable, x, y) ||
          (move_cost(x, y) == 0 && !has_flag(liquid, x, y)));
-}
-
-bool map::is_destructable_ter_only(int x, int y) const
-{
- return (has_flag_ter_only(bashable, x, y) ||
-         (move_cost_ter_only(x, y) == 0 && !has_flag(liquid, x, y)));
 }
 
 bool map::is_outside(int x, int y) const
@@ -1118,12 +1107,14 @@ bool map::bash(int x, int y, int str, std::string &sound, int *res)
 // creatures call map::destroy only if the terrain is NOT bashable.  Map generation usually pre-emptively bashes.
 void map::destroy(game *g, int x, int y, bool makesound)
 {
+ auto& terrain = ter(x, y);
+
  // contrary to what one would expect, vehicle destruction not directly processed here
- if (!is_destructable_ter_only(x,y)) return;
+ if (!is_destructible(terrain)) return;
 
  // \todo V0.3.0 bash bashable terrain (seems to give more detailed results)?
 
- switch(auto& terrain = ter(x, y)) {
+ switch(terrain) {
  case t_gas_pump:
   if (makesound && one_in(3)) g->explosion(x, y, 40, 0, true);
   else {

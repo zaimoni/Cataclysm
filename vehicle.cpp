@@ -1036,7 +1036,7 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
             mass2 = 50;    // special case: instead of calculating absorb based on mass of obstacle later, we let
                            // map::bash function deside, how much absorb is
         } else if (0 == move_cost_of(terrain)) {
-            if (g->m.is_destructable_ter_only(dest.x, dest.y)) {
+            if (is_destructible(terrain)) {
                 collision_type = 5; // destructible (wall)
                 mass2 = 200;
             } else if (!is<swimmable>(terrain)) {

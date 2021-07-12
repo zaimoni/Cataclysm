@@ -133,6 +133,12 @@ template<t_flag flag> bool is(ter_id terrain) { return ter_t::list[terrain].flag
 inline int move_cost_of(ter_id terrain) { return ter_t::list[terrain].movecost; }
 inline const std::string& name_of(ter_id terrain) { return ter_t::list[terrain].name; }
 
+inline bool is_destructible(ter_id terrain) // misspelling avoids naming clash with map::is_destructable
+{
+	return is<bashable>(terrain) || (0 >= move_cost_of(terrain) && !is<liquid>(terrain));
+}
+
+
 struct field_t {
  std::string name[3];
  char sym;
