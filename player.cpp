@@ -1880,6 +1880,37 @@ int player::swim_speed()
  return ret;
 }
 
+// Przybylski's Star \todo npc overload with correct messaging; npc AI has to be somewhat aware
+void player::swim(const GPS_loc& loc)
+{
+    DEBUG_FAIL_OR_LEAVE(!is<swimmable>(GPSpos.ter()), return);
+    set_screenpos(loc);
+    if (has_disease(DI_ONFIRE)) {	// VAPORWARE: not for phosphorus or lithium ...
+        messages.add("The water puts out the flames!");
+        rem_disease(DI_ONFIRE);
+    }
+    int movecost = swim_speed();
+    practice(sk_swimming, 1);
+    if (movecost >= 5 * mobile::mp_turn) {
+        if (!underwater) {
+            messages.add("You sink%s!", (movecost >= 400 ? " like a rock" : ""));	// \todo V 0.2.1+ either adjust adjective threshold, or hard-code this
+            underwater = true;
+            oxygen = 30 + 2 * str_cur;
+        }
+    }
+    if (oxygen <= 5 && underwater) {
+        if (movecost < 5 * mobile::mp_turn)
+            popup("You need to breathe! (Press '<' to surface.)");
+        else
+            popup("You need to breathe but you can't swim!  Get to dry land, quick!");	// \todo V 0.2.1+ check for bionic gills which mitigate the consequences
+    }
+    moves -= (movecost > 2 * mobile::mp_turn ? 2 * mobile::mp_turn : movecost);
+    for (size_t i = 0; i < inv.size(); i++) {
+        decltype(auto) it = inv[i];
+        if (IRON == it.type->m1 && it.damage < 5 && one_in(8)) it.damage++; // \todo this is way too fast; also, item::damage invariant not checked for properly
+    }
+}
+
 nc_color player::color() const
 {
  if (has_disease(DI_ONFIRE)) return c_red;

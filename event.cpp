@@ -177,7 +177,7 @@ void event::actualize() const
      messages.add("Water quickly floods up to your knees.");
     else { // Must be deep water!
      messages.add("Water fills nearly to the ceiling!");
-     g->plswim(g->u.pos.x, g->u.pos.y);
+     g->u.swim(g->u.GPSpos);
     }
    }
 // copy is filled with correct tiles; now copy them back to g->m
