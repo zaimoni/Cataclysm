@@ -396,14 +396,18 @@ int set_traits(WINDOW* w, player *u, int &points)
  int cur_trait, xoff;
  nc_color col_on, col_off, hi_on, hi_off;
 
+ int traitmin, traitmax;
  static auto draw_traits = [&](int origin) {
      for (int delta = 0; delta <= v_span; delta++) { // has to be increasing order due to implementation details
          const int i = origin + delta;
          draw_hline(w, 5 + delta, c_ltgray, ' ', xoff, xoff + mid_pt); // Clear the line
-         if (i == cur_trait) {
-             mvwaddstrz(w, 5 + delta, xoff, (u->has_trait(i) ? hi_on : hi_off), mutation_branch::traits[i].name.c_str());
-         } else {
-             mvwaddstrz(w, 5 + delta, xoff, (u->has_trait(i) ? col_on : col_off), mutation_branch::traits[i].name.c_str());
+         if (i < traitmax) {
+             if (i == cur_trait) {
+                 mvwaddstrz(w, 5 + delta, xoff, (u->has_trait(i) ? hi_on : hi_off), mutation_branch::traits[i].name.c_str());
+             }
+             else {
+                 mvwaddstrz(w, 5 + delta, xoff, (u->has_trait(i) ? col_on : col_off), mutation_branch::traits[i].name.c_str());
+             }
          }
      }
  };
@@ -415,7 +419,7 @@ int set_traits(WINDOW* w, player *u, int &points)
      }
  };
 
- int cur_adv = 1, cur_dis = PF_SPLIT + 1, traitmin, traitmax;
+ int cur_adv = 1, cur_dis = PF_SPLIT + 1;
  bool using_adv = true;	// True if we're selecting advantages, false if we're selecting disadvantages
 
  static constexpr nc_color COL_TR_GOOD = c_green; // Good trait descriptive text
@@ -459,7 +463,7 @@ int set_traits(WINDOW* w, player *u, int &points)
 	   mutation_branch::traits[cur_dis].name.c_str(), mutation_branch::traits[cur_dis].points * -1);
    mvwaddstrz(w, VIEW - 3, 0, COL_TR_BAD, mutation_branch::traits[cur_dis].description.c_str());
   }
-  if (cur_trait <= traitmin + v_span_div_2) {
+  if (v_span >= traitmax - traitmin || cur_trait <= traitmin + v_span_div_2) {
    draw_traits(traitmin);
   } else if (cur_trait >= traitmax - (v_span_div_2 + 2)) {
    draw_traits(traitmax - (v_span + 1));
