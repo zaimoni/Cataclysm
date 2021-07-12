@@ -4885,25 +4885,21 @@ void game::pldrive(int x, int y)
 
 void game::plmove(direction dir)
 {
-    auto pt = direction_vector(dir);
-    plmove(pt.x, pt.y);
+    plmove(direction_vector(dir));
 }
 
-void game::plmove(int x, int y)
+void game::plmove(point delta)
 {
  if (run_mode == 2) { // Monsters around and we don't wanna run
   messages.add("Monster spotted--safe mode is on! (Press '!' to turn it off or ' to ignore monster.)");
   return;
  }
- if (u.has_disease(DI_STUNNED)) {
-  x = rng(u.pos.x - 1, u.pos.x + 1);
-  y = rng(u.pos.y - 1, u.pos.y + 1);
- } else {
-  x += u.pos.x;
-  y += u.pos.y;
- }
-// Check if our movement is actually an attack on a monster
- monster* const m_at = mon(x, y);
+ if (u.has_disease(DI_STUNNED)) delta = rng(within_rldist<1>);
+ const auto dest(u.GPSpos + delta);
+ auto local_dest(u.pos + delta);
+
+ // Check if our movement is actually an attack on a monster
+ monster* const m_at = mon(dest);
  bool displace = false;	// Are we displacing a monster?
  if (m_at) {
   if (m_at->is_enemy()) {
@@ -4913,7 +4909,7 @@ void game::plmove(int x, int y)
   } else displace = true;
  }
 // If not a monster, maybe there's an NPC there
- if (npc* const _npc = nPC(x,y)) { 
+ if (npc* const _npc = nPC(dest)) {
   if (!_npc->is_enemy() && !query_yn("Really attack %s?", _npc->name.c_str())) return;	// Cancel the attack
   u.hit_player(this, *_npc);
   _npc->make_angry();
@@ -4927,10 +4923,8 @@ void game::plmove(int x, int y)
   for (int cx = 0; cx < SEEX * MAPSIZE; cx++) {
    for (int cy = 0; cy < SEEY * MAPSIZE; cy++) {
     if (m.ter(cx, cy) == t_fault) {
-     int dist = rl_dist(cx, cy, u.pos);
-     if (dist < curdist) curdist = dist;
-     dist = rl_dist(cx, cy, x, y);
-     if (dist < newdist) newdist = dist;
+     clamped_ub(curdist, rl_dist(cx, cy, u.pos));
+     clamped_ub(newdist, rl_dist(cx, cy, local_dest));
     }
    }
   }
@@ -4964,7 +4958,7 @@ void game::plmove(int x, int y)
  }
 
  int dpart = -1;
- const auto v = m._veh_at(x, y);
+ const auto v = m._veh_at(local_dest);
  vehicle* const veh = v ? v->first : nullptr; // backward compatibility
  int vpart = v ? v->second : -1;
  bool veh_closed_door = false;
@@ -4973,16 +4967,16 @@ void game::plmove(int x, int y)
   veh_closed_door = dpart >= 0 && !veh->parts[dpart].open;
  }
 
- if (m.move_cost(x, y) > 0) { // move_cost() of 0 = impassible (e.g. a wall)
+ if (const int mv_cost = m.move_cost(local_dest); 0 < mv_cost) { // move_cost() of 0 = impassible (e.g. a wall)
   if (u.underwater) u.underwater = false;
-  if (m.try_board_vehicle(this, x, y, u)) {
+  if (m.try_board_vehicle(this, local_dest.x, local_dest.y, u)) {
       u.moves -= 2 * mobile::mp_turn;
       return;
   }
 
-  const auto& fd = m.field_at(x, y);
+  const auto& fd = m.field_at(local_dest);
   if (fd.is_dangerous() && !query_yn("Really step into that %s?", fd.name().c_str())) return;
-  const auto tr_id = m.tr_at(x, y);
+  const auto tr_id = m.tr_at(local_dest);
   if (tr_id != tr_null) {
 	 const trap* const tr = trap::traps[tr_id];
      if (    u.per_cur - u.encumb(bp_eyes) >= tr->visibility
@@ -4991,7 +4985,7 @@ void game::plmove(int x, int y)
   }
 
 // Calculate cost of moving
-  u.moves -= u.run_cost(m.move_cost(x, y) * (mobile::mp_turn / 2));
+  u.moves -= u.run_cost(mv_cost * (mobile::mp_turn / 2));
 
 // Adjust recoil down
   if (u.recoil > 0) {
@@ -5002,32 +4996,32 @@ void game::plmove(int x, int y)
     u.recoil /= 2;
    }
   }
-  if ((!u.has_trait(PF_PARKOUR) && m.move_cost(x, y) > 2) ||
-      ( u.has_trait(PF_PARKOUR) && m.move_cost(x, y) > 4    ))
+  if ((!u.has_trait(PF_PARKOUR) && mv_cost > 2) ||
+      ( u.has_trait(PF_PARKOUR) && mv_cost > 4    ))
   {
    if (veh) messages.add("Moving past this %s is slow!", veh->part_info(vpart).name);
-   else messages.add("Moving past this %s is slow!", name_of(m.ter(x, y)).c_str());
+   else messages.add("Moving past this %s is slow!", name_of(m.ter(local_dest)).c_str());
   }
-  if (m.has_flag(rough, x, y)) {
+  if (m.has_flag(rough, local_dest)) {
    if (one_in(5) && u.armor_bash(bp_feet) < rng(1, 5)) {
-    messages.add("You hurt your feet on the %s!", name_of(m.ter(x, y)).c_str());
+    messages.add("You hurt your feet on the %s!", name_of(m.ter(local_dest)).c_str());
     u.hit(this, bp_feet, 0, 0, 1);
     u.hit(this, bp_feet, 1, 0, 1);
    }
   }
-  if (m.has_flag(sharp, x, y) && !one_in(3) && !one_in(40 - int(u.dex_cur/2))) {
+  if (m.has_flag(sharp, local_dest) && !one_in(3) && !one_in(40 - int(u.dex_cur/2))) {
    if (!u.has_trait(PF_PARKOUR) || one_in(4)) {
-    messages.add("You cut yourself on the %s!", name_of(m.ter(x, y)).c_str());
+    messages.add("You cut yourself on the %s!", name_of(m.ter(local_dest)).c_str());
     u.hit(this, bp_torso, 0, 0, rng(1, 4));
    }
   }
   if (!u.has_artifact_with(AEP_STEALTH) && !u.has_trait(PF_LEG_TENTACLES)) {
-   sound(point(x, y), (u.has_trait(PF_LIGHTSTEP) ? 2 : 6), "");	// Sound of footsteps may awaken nearby monsters
+   sound(local_dest, (u.has_trait(PF_LIGHTSTEP) ? 2 : 6), "");	// Sound of footsteps may awaken nearby monsters
   }
   if (one_in(20) && u.has_artifact_with(AEP_MOVEMENT_NOISE))
-   sound(point(x, y), 40, "You emit a rattling sound.");
+   sound(local_dest, 40, "You emit a rattling sound.");
 // If we moved out of the nonant, we need update our map data
-  if (m.has_flag(swimmable, x, y) && u.has_disease(DI_ONFIRE)) {
+  if (m.has_flag(swimmable, local_dest) && u.has_disease(DI_ONFIRE)) {
    messages.add("The water puts out the flames!");
    u.rem_disease(DI_ONFIRE);
   }
@@ -5040,8 +5034,8 @@ void game::plmove(int x, int y)
     if (m_at->type->id == mon_turret) {
      if (query_yn("Deactivate the turret?")) {
       m.add_item(m_at->pos, item::types[itm_bot_turret], messages.turn);
-	  z_erase(mon_at(x, y));
-      u.moves -= 100;
+	  z_erase(mon_at(local_dest.x, local_dest.y));
+      u.moves -= mobile::mp_turn;
      }
      return;
     } else {
@@ -5052,8 +5046,8 @@ void game::plmove(int x, int y)
    m_at->move_to(this, u.pos);
    messages.add("You displace the %s.", m_at->name().c_str());
   }
-  if (update_map_would_scroll(point(x,y))) update_map(x, y);
-  u.screenpos_set(point(x, y));
+  if (update_map_would_scroll(local_dest)) update_map(local_dest.x, local_dest.y);
+  u.screenpos_set(local_dest);
   if (tr_id != tr_null) { // We stepped on a trap!
    const trap* const tr = trap::traps[tr_id];
    if (!u.avoid_trap(tr)) tr->trigger(u);
@@ -5085,8 +5079,8 @@ void game::plmove(int x, int y)
 
    case itm_style_lizard: {
     bool wall = false;
-    for (int wallx = x - 1; wallx <= x + 1 && !wall; wallx++) {
-     for (int wally = y - 1; wally <= y + 1 && !wall; wally++) {
+    for (int wallx = local_dest.x - 1; wallx <= local_dest.x + 1 && !wall; wallx++) {
+     for (int wally = local_dest.y - 1; wally <= local_dest.y + 1 && !wall; wally++) {
       if (m.has_flag(supports_roof, wallx, wally))
        wall = true;
      }
@@ -5099,7 +5093,7 @@ void game::plmove(int x, int y)
   }
 
 // List items here
-  auto& stack = m.i_at(x, y);
+  auto& stack = m.i_at(local_dest);
   if (!stack.empty()) {
 	  if (!u.has_disease(DI_BLIND) && stack.size() <= 3) {
 		  std::string buff = "You see here ";
@@ -5122,57 +5116,26 @@ void game::plmove(int x, int y)
   messages.add("You open the %s's %s.", veh->name.c_str(),
                                     veh->part_info(dpart).name);
 
- } else if (m.has_flag(swimmable, x, y)) { // Dive into water!
+ } else if (m.has_flag(swimmable, local_dest)) { // Dive into water!
 // Requires confirmation if we were on dry land previously
   if ((m.has_flag(swimmable, u.pos) &&
       m.move_cost(u.pos) == 0) || query_yn("Dive into the water?")) {
    if (m.move_cost(u.pos) > 0 && u.swim_speed() < 500)
     messages.add("You start swimming.  Press '>' to dive underwater.");
-   plswim(x, y);
+   u.swim(dest);
   }
 
  } else { // Invalid move
   if (u.has_disease(DI_BLIND) || u.has_disease(DI_STUNNED)) {
 // Only lose movement if we're blind
-   messages.add("You bump into a %s!", name_of(m.ter(x, y)).c_str());
+   messages.add("You bump into a %s!", name_of(m.ter(local_dest)).c_str());
    u.moves -= mobile::mp_turn;
-  } else if (m.open_door(x, y, t_floor == u.GPSpos.ter()))
+  } else if (m.open_door(local_dest.x, local_dest.y, t_floor == u.GPSpos.ter()))
    u.moves -= mobile::mp_turn;
-  else if (m.ter(x, y) == t_door_locked || m.ter(x, y) == t_door_locked_alarm) {
+  else if (m.ter(local_dest) == t_door_locked || m.ter(local_dest) == t_door_locked_alarm) {
    u.moves -= mobile::mp_turn;
    messages.add("That door is locked!");
   }
- }
-}
-
-void game::plswim(int x, int y)
-{
- if (update_map_would_scroll(point(x,y))) update_map(x, y);
- u.screenpos_set(point(x,y));
- DEBUG_FAIL_OR_LEAVE(!m.has_flag(swimmable, x, y), return);
- if (u.has_disease(DI_ONFIRE)) {	// VAPORWARE: not for phosphorus or lithium ...
-  messages.add("The water puts out the flames!");
-  u.rem_disease(DI_ONFIRE);
- }
- int movecost = u.swim_speed();
- u.practice(sk_swimming, 1);
- if (movecost >= 5 * mobile::mp_turn) {
-  if (!u.underwater) {
-   messages.add("You sink%s!", (movecost >= 400 ? " like a rock" : ""));	// \todo V 0.2.1+ either adjust adjective threshold, or hard-code this
-   u.underwater = true;
-   u.oxygen = 30 + 2 * u.str_cur;
-  }
- }
- if (u.oxygen <= 5 && u.underwater) {
-  if (movecost < 5 * mobile::mp_turn)
-   popup("You need to breathe! (Press '<' to surface.)");
-  else
-   popup("You need to breathe but you can't swim!  Get to dry land, quick!");	// \todo V 0.2.1+ check for bionic gills which mitigate the consequences
- }
- u.moves -= (movecost > 2 * mobile::mp_turn ? 2 * mobile::mp_turn : movecost);
- for (size_t i = 0; i < u.inv.size(); i++) {
-  decltype(auto) it = u.inv[i];
-  if (IRON == it.type->m1 && it.damage < 5 && one_in(8)) it.damage++;
  }
 }
 

@@ -149,7 +149,6 @@ class game : public reality_bubble
   point teleport_destination(const point& origin, int tries); // Teleportation is safer for PCs and NPCs
   point teleport_destination_unsafe(const point& origin, int tries); // than for monsters
   void teleport(player* p = nullptr);
-  void plswim(int x, int y); // Called by plmove.  Handles swimming
   // when player is thrown (by impact or something)
   void fling_player_or_monster(player *p, monster *zz, int dir, int flvel);
 
@@ -226,7 +225,7 @@ class game : public reality_bubble
   void mutation_wish(); // Mutate
 
   void pldrive(int x, int y); // drive vehicle
-  void plmove(int x, int y); // Standard movement; handles attacks, traps, &c
+  void plmove(point delta); // Standard movement; handles attacks, traps, &c
 
   void pldrive(direction dir); // drive vehicle; turtle direction
   void plmove(direction dir); // Standard movement; handles attacks, traps, &c; absolute direction
