@@ -1025,24 +1025,27 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
     { // then, check any monster/NPC/player on the way
         collision_type = 1; // body
 		mass2 = mass_from_msize[z ? z->type->size : MS_MEDIUM];
+    } else // if all above fails, go for terrain which might obstruct moving
+    {
+        const auto terrain = g->m.ter(dest);
+        if (is<thin_obstacle>(terrain)) {
+            collision_type = 3; // some fence
+            mass2 = 20;
+        } else if (is<bashable>(terrain)) {
+            collision_type = 4; // bashable (door, window)
+            mass2 = 50;    // special case: instead of calculating absorb based on mass of obstacle later, we let
+                           // map::bash function deside, how much absorb is
+        }
+        else if (0 == g->m.move_cost_ter_only(dest.x, dest.y)) {
+            if (g->m.is_destructable_ter_only(dest.x, dest.y)) {
+                collision_type = 5; // destructible (wall)
+                mass2 = 200;
+            } else if (!is<swimmable>(terrain)) {
+                collision_type = 6; // not destructible
+                mass2 = 1000;
+            }
+        }
     }
-    else // if all above fails, go for terrain which might obstruct moving
-    if (g->m.has_flag_ter_only (thin_obstacle, dest.x, dest.y)) {
-        collision_type = 3; // some fence
-        mass2 = 20;
-    } else if (g->m.has_flag_ter_only(bashable, dest.x, dest.y)) {
-        collision_type = 4; // bashable (door, window)
-        mass2 = 50;    // special case: instead of calculating absorb based on mass of obstacle later, we let
-                       // map::bash function deside, how much absorb is
-    } else if (0 == g->m.move_cost_ter_only(dest.x, dest.y)) {
-		if (g->m.is_destructable_ter_only(dest.x, dest.y)) {
-			collision_type = 5; // destructible (wall)
-			mass2 = 200;
-		} else if (!g->m.has_flag_ter_only(swimmable, dest.x, dest.y)) {
-			collision_type = 6; // not destructible
-			mass2 = 1000;
-		}
-	}
     if (!collision_type) return 0;  // hit nothing
 
     int degree = rng (70, 100);

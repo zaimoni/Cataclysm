@@ -126,11 +126,10 @@ struct ter_t {
 	trap_id trap;
 	unsigned long flags;// : num_t_flags;
 
-	static bool has_flag(t_flag flag, ter_id terrain) { return ter_t::list[terrain].flags & mfb(flag); }
-
 	static void init();
 };
 
+template<t_flag flag> bool is(ter_id terrain) { return ter_t::list[terrain].flags & mfb(flag); }
 inline const std::string& name_of(ter_id terrain) { return ter_t::list[terrain].name; }
 
 struct field_t {

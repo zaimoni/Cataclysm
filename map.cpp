@@ -1426,7 +1426,7 @@ std::optional<item> map::water_from(const point& pt) const
  // Fully extracting this to take terrain as a parameter, is not future-correct.
  const ter_id terrain = ter(pt);
 
- if (!ter_t::has_flag(swimmable, terrain) && t_toilet != terrain) return std::nullopt;
+ if (!is<swimmable>(terrain) && t_toilet != terrain) return std::nullopt;
 
  for (decltype(auto) x : ter_t::water_from_terrain) {
      if (terrain != x.first) continue;
