@@ -534,60 +534,6 @@ void monster::stumble(game *g, bool moved)
  }
 }
 
-void monster::knock_back_from(game *g, const point& pt)
-{
- if (pt == pos) return; // No effect
- const point to(pos + cmp(pos, pt));
-
- const bool u_see = (bool)g->u_see(to);
-
-// First, see if we hit another monster
- if (monster* const z = g->mon(to)) {
-  hurt(z->type->size);
-  add_effect(ME_STUNNED, 1);
-  const int size_delta = type->size - z->type->size;
-  if (0 < size_delta) {
-   if (1 < size_delta) z->knock_back_from(g, pos); // Chain reaction!
-   z->hurt(type->size);
-   z->add_effect(ME_STUNNED, 1);
-  }
-
-  if (u_see) messages.add("The %s bounces off a %s!", name().c_str(), z->name().c_str());
-  return;
- }
-
- if (npc* const p = g->nPC(to)) {
-  hurt(3);
-  add_effect(ME_STUNNED, 1);
-  p->hit(g, bp_torso, 0, type->size, 0);
-  if (u_see) messages.add("The %s bounces off %s!", name().c_str(), p->name.c_str());
-  return;
- }
-
-// If we're still in the function at this point, we're actually moving a tile!
- if (g->m.move_cost(to) == 0) { // Wait, it's a wall (or water)
-
-  if (g->m.has_flag(liquid, to)) {
-   if (!has_flag(MF_SWIMS) && !has_flag(MF_AQUATIC)) {
-    hurt(9999);
-    if (u_see) messages.add("The %s drowns!", name().c_str());
-   }
-
-  } else if (has_flag(MF_AQUATIC)) { // We swim but we're NOT in water
-   hurt(9999);
-   if (u_see) messages.add("The %s flops around and dies!", name().c_str());
-
-  } else { // It's some kind of wall.
-   hurt(type->size);
-   add_effect(ME_STUNNED, 2);
-   if (u_see)
-    messages.add("The %s bounces off a %s.", name().c_str(), name_of(g->m.ter(to)).c_str());
-  }
-
- } else screenpos_set(to); // It's no wall
-}
-
-
 /* will_reach() is used for determining whether we'll get to stairs (and 
  * potentially other locations of interest).  It is generally permissive.
  * TODO: Pathfinding;

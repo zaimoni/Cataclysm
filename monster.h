@@ -109,7 +109,6 @@ class monster : public mobile {
  void hit_player(game *g, player &p, bool can_grab = true);
  void move_to(game *g, const point& pt);
  void stumble(game *g, bool moved);
- void knock_back_from(game *g, const point& pt);
 
 // Combat
  bool is_fleeing(const player &u) const;	// True if we're fleeing
@@ -189,6 +188,7 @@ private:
  bool can_sound_move_to(const game* g, const point& pt, point& dest) const;
 
  void _set_screenpos() override { if (auto pt = screen_pos()) pos = *pt; }
+ bool handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim) override;
 };
 
 #endif

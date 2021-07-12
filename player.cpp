@@ -3519,52 +3519,13 @@ void player::hitall(game *g, int dam, int vary)
  }
 }
 
-void player::knock_back_from(game *g, const point& pt)
+bool player::handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim)
 {
- if (pt == pos) return; // No effect
- const point to(pos + cmp(pos, pt));
-
- bool u_see = (!is_npc() || g->u_see(to));
-
- const std::string You = grammar::capitalize(desc(grammar::noun::role::subject));
- const auto bounce(regular_verb_agreement("bounce"));
-
-// First, see if we hit a monster
- if (monster* const z = g->mon(to)) {
-  hit(g, bp_torso, 0, z->type->size, 0);
-  add_disease(DI_STUNNED, TURNS(1));
-  const int effective_size = (str_max - 6) / 4;
-  const int size_delta = (effective_size+1) - z->type->size;
-  if (0 < size_delta) {
-   if (1 < size_delta) z->knock_back_from(g, pos); // Chain reaction!
-   z->hurt(effective_size);
-   z->add_effect(ME_STUNNED, 1);
-  }
-
-  if (u_see) messages.add("%s %s off a %s!", You.c_str(), bounce.c_str(), z->name().c_str());
-  return;
- }
-
- if (npc* const p = g->nPC(to)) {
-  hit(g, bp_torso, 0, 3, 0);
-  add_disease(DI_STUNNED, TURNS(1));
-  p->hit(g, bp_torso, 0, 3, 0);
-  if (u_see) messages.add("%s %s off %s!", You.c_str(), bounce.c_str(), p->name.c_str());
-  return;
- }
-
-// If we're still in the function at this point, we're actually moving a tile!
- if (g->m.move_cost(to) == 0) { // Wait, it's a wall (or water)
-  if (g->m.has_flag(swimmable, to)) {
-   if (!is_npc())
-    g->plswim(to.x, to.y);
-// TODO: NPCs can't swim!
-  } else { // It's some kind of wall.
-   hurt(g, bp_torso, 0, 3);
-   add_disease(DI_STUNNED, TURNS(2));
-   if (u_see) messages.add("%s %s off a %s.", You.c_str(), bounce.c_str(), name_of(g->m.ter(to)).c_str());
-  }
- } else screenpos_set(to);	// It's no wall
+    if (is<swimmable>(dest.ter())) {
+        swim(dest);
+        return true;
+    }
+    return false;
 }
 
 int player::hp_percentage() const

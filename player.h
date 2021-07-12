@@ -151,8 +151,6 @@ public:
  void hurtall(int dam);
  // checks armor. if vary > 0, then damage to parts are random within 'vary' percent (1-100)
  void hitall(game *g, int dam, int vary = 0);
-// Sends us flying one tile
- void knock_back_from(game *g, const point& pt);
  // calibration: STR 3 -> 1; STR 20 -> 4; STR 8 -> 2
  int knockback_size() const override { return (str_max - 2) / 5 + 1; /* C:Whales: (str_max - 6) / 4; */ }
 
@@ -338,6 +336,7 @@ public:
 
 private:
  void _set_screenpos() override { if (auto pt = screen_pos()) pos = *pt; }
+ bool handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim) override;
 
  // melee.cpp
  int  hit_roll() const; // Our basic hit roll, compared to our target's dodge roll

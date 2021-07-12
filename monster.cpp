@@ -698,3 +698,21 @@ void monster::add_item(const item& it)
 {
  inv.push_back(it);
 }
+
+bool monster::handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim)
+{
+    const bool u_see = (bool)game::active()->u_see(dest);
+
+    if (is<liquid>(dest.ter())) {
+        if (!has_flag(MF_SWIMS) && !has_flag(MF_AQUATIC)) {
+            hurt(9999);
+            if (u_see) messages.add("%s drowns!", victim.c_str());
+            return true;
+        }
+    } else if (has_flag(MF_AQUATIC)) { // We swim but we're NOT in water
+        hurt(9999);
+        if (u_see) messages.add("%s flops around and dies!", victim.c_str());
+        return true;
+    }
+    return false;
+}

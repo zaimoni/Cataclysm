@@ -742,21 +742,16 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
 
  case TEC_BRUTAL:
   mob->add(effect::STUNNED, 1);
-  if (z != nullptr) {
-   z->knock_back_from(g, pos);
-  } else if (p != nullptr) {
-   p->knock_back_from(g, pos);
-  }
+  mob->knockback_from(GPSpos);
   break;
 
  case TEC_THROW:
 // Throws are less predictable than brutal strikes.
 // We knock them back from a tile adjacent to us!
+  mob->knockback_from(GPSpos + rng(within_rldist<1>));
   if (z != nullptr) {
    z->add_effect(ME_DOWNED, rng(1, 2));
-   z->knock_back_from(g, pos + rng(within_rldist<1>));
   } else if (p != nullptr) {
-   p->knock_back_from(g, pos + rng(within_rldist<1>));
    if (p->weapon.type->id != itm_style_judo)
     p->add_disease(DI_DOWNED, rng(1, 2));
   }
@@ -924,11 +919,7 @@ void player::perform_defensive_technique(
    cut_dam  = 0;
    stab_dam = 0;
    mob->add(effect::DOWNED, rng(1, 2));
-   if (z) {
-    z->knock_back_from(g, pos + rng(within_rldist<1>));
-   } else {
-    p->knock_back_from(g, pos + rng(within_rldist<1>));
-   }
+   mob->knockback_from(GPSpos + rng(within_rldist<1>));
    break;
 
   case TEC_DEF_DISARM:
@@ -1172,15 +1163,9 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
    if (crit) {
     if (!is_npc()) messages.add("Stinger Strike!");
     mob->add(effect::STUNNED, TURNS(2));
-    if (z) {
-	 const point zpos(z->pos);
-     z->knock_back_from(g, pos);
-	 if (zpos != z->pos) z->knock_back_from(g, pos); // Knock a 2nd time if the first worked
-    } else {
-     const point ppos(p->pos);
-     p->knock_back_from(g, pos);
-     if (p->pos != ppos) p->knock_back_from(g, pos); // Knock a 2nd time if the first worked
-    }
+    const auto origin(mob->GPSpos);
+    mob->knockback_from(origin);
+    if (origin != mob->GPSpos) mob->knockback_from(origin); // Knock a 2nd time if the first worked
    }
    break;
 

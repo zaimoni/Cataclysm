@@ -41,7 +41,8 @@ public:
 	virtual void add(effect src, int duration) = 0;
 	virtual bool has(effect src) const = 0;
 
-	// unified knockback
+	// unified knockback (flying back one tile)
+	void knockback_from(const GPS_loc& loc);
 	virtual int knockback_size() const = 0;
 	virtual bool hurt(int dam) = 0; // Deals this dam damage; returns true if we died
 
@@ -59,6 +60,9 @@ protected:
 
 	void set_screenpos(point pt); // could be public once synchronization with legacy point pos not needed
 	virtual void _set_screenpos() = 0;
+
+private:
+	virtual bool handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim) = 0;
 };
 
 template<class T>
