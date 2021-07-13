@@ -1895,6 +1895,34 @@ void npc::die(game *g, bool your_fault)
  for (auto& miss : g->active_missions) if (id == miss.npc_id) miss.fail();
 }
 
+void npc::swim(const GPS_loc& loc)
+{
+	DEBUG_FAIL_OR_LEAVE(!is<swimmable>(GPSpos.ter()), return);
+	auto g = game::active();
+	const bool u_see = g->u_see(loc) || g->u.see(*this);
+	std::string text;
+
+	if (has_disease(DI_ONFIRE)) {	// VAPORWARE: not for phosphorus or lithium ...
+		if (u_see) messages.add("The water puts out the flames!");
+		rem_disease(DI_ONFIRE);
+	}
+	int movecost = swim_speed();
+	practice(sk_swimming, 1);
+	if (movecost >= 5 * mobile::mp_turn) {
+		if (!underwater) {
+			text = grammar::capitalize(desc(grammar::noun::role::subject));
+			if (u_see) messages.add("%s sink%s!", text.c_str(), (movecost >= 6 * mobile::mp_turn ? " like a rock" : ""));
+			swimming_dive(); // Involuntarily.
+		}
+	}
+
+	moves -= (movecost > 2 * mobile::mp_turn ? 2 * mobile::mp_turn : movecost);
+	for (size_t i = 0; i < inv.size(); i++) {
+		decltype(auto) it = inv[i];
+		if (IRON == it.type->m1 && it.damage < 5 && one_in(8)) it.damage++; // \todo this is way too fast; also, item::damage invariant not checked for properly
+	}
+}
+
 // NPCs don't use the text UI, so override the player version
 void npc::cancel_activity_query(const char* message, ...)
 {

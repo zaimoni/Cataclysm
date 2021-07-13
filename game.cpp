@@ -5223,19 +5223,9 @@ void game::vertical_move(int movez, bool force)
 // > and < are used for diving underwater.
  if (m.move_cost(u.pos) == 0 && m.has_flag(swimmable, u.pos)){
   if (movez == -1) {
-   if (u.underwater) {
-    messages.add("You are already underwater!");
-    return;
-   }
-   u.underwater = true;
-   u.oxygen = 30 + 2 * u.str_cur;
-   messages.add("You dive underwater!");
+   messages.add(u.swimming_dive() ? "You dive underwater!" : "You are already underwater!");
   } else {
-   if (u.swim_speed() < 500) {
-    u.underwater = false;
-    messages.add("You surface.");
-   } else
-    messages.add("You can't surface!");
+   messages.add(u.swimming_surface() ? "You surface." : "You can't surface!");
   }
   return;
  }

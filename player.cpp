@@ -1859,7 +1859,6 @@ int player::run_cost(int base_cost) const
  return movecost;
 }
  
-
 int player::swim_speed()
 {
  int ret = 440 + 2 * weight_carried() - 50 * sklevel[sk_swimming];
@@ -1880,7 +1879,6 @@ int player::swim_speed()
  return ret;
 }
 
-// Przybylski's Star \todo npc overload with correct messaging; npc AI has to be somewhat aware
 void player::swim(const GPS_loc& loc)
 {
     DEBUG_FAIL_OR_LEAVE(!is<swimmable>(GPSpos.ter()), return);
@@ -1893,22 +1891,47 @@ void player::swim(const GPS_loc& loc)
     practice(sk_swimming, 1);
     if (movecost >= 5 * mobile::mp_turn) {
         if (!underwater) {
-            messages.add("You sink%s!", (movecost >= 400 ? " like a rock" : ""));	// \todo V 0.2.1+ either adjust adjective threshold, or hard-code this
-            underwater = true;
-            oxygen = 30 + 2 * str_cur;
+            messages.add("You sink%s!", (movecost >= 6 * mobile::mp_turn ? " like a rock" : ""));
+            swimming_dive(); // Involuntarily.
         }
     }
-    if (oxygen <= 5 && underwater) {
+    if (is_drowning()) {
         if (movecost < 5 * mobile::mp_turn)
             popup("You need to breathe! (Press '<' to surface.)");
         else
-            popup("You need to breathe but you can't swim!  Get to dry land, quick!");	// \todo V 0.2.1+ check for bionic gills which mitigate the consequences
+            popup("You need to breathe but you can't swim!  Get to dry land, quick!");
     }
     moves -= (movecost > 2 * mobile::mp_turn ? 2 * mobile::mp_turn : movecost);
     for (size_t i = 0; i < inv.size(); i++) {
         decltype(auto) it = inv[i];
         if (IRON == it.type->m1 && it.damage < 5 && one_in(8)) it.damage++; // \todo this is way too fast; also, item::damage invariant not checked for properly
     }
+}
+
+bool player::swimming_surface()
+{
+    if (500 > swim_speed() < 500) {
+        underwater = false;
+        return true;
+    };
+    return false;
+}
+
+bool player::swimming_dive()
+{
+    if (underwater) return false;
+    underwater = true;
+    oxygen = 30 + 2 * str_cur;
+    return true;
+}
+
+// coordinates with player::suffer, player::swim
+int player::is_drowning() const
+{
+    if (!underwater || 5 < oxygen) return 0; // not out of breath yet
+    if (has_trait(PF_GILLS)) return 0;  // breathe water: Magick.
+    if (has_bionic(bio_gills) && 0 < power_level) return 0; // breathe water: Hypertechnology.
+    return 0 < oxygen ? 1 : -1;
 }
 
 nc_color player::color() const
@@ -3720,7 +3743,7 @@ void player::suffer(game *g)
  for (int i = 0; i < my_bionics.size(); i++) {
   if (my_bionics[i].powered) activate_bionic(i, g);
  }
- if (underwater) {
+ if (underwater) { // player::is_drowning must agree with this
   if (!has_trait(PF_GILLS)) oxygen--;
   if (oxygen < 0) {
    if (has_bionic(bio_gills) && power_level > 0) {

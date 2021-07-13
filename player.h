@@ -65,6 +65,10 @@ public:
  int  run_cost(int base_cost) const; // Adjust base_cost
  int  swim_speed();	// Our speed when swimming
  virtual void swim(const GPS_loc& loc);
+ bool swimming_surface();
+ bool swimming_dive();
+ /// <returns>C error code convention. 0 no problem, 1 "about to" (warn), -1 "is" (error)</returns>
+ int is_drowning() const;
 
  int is_cold_blooded() const;
  bool has_trait(int flag) const;

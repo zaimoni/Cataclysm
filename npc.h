@@ -469,6 +469,7 @@ public:
 // The preceding are in npcmove.cpp
 
 // abstract ui
+    void swim(const GPS_loc& loc) override;
     bool see_phantasm() override { return false; } // unclear how to implement this even for multi-PC case, let alone NPCs
 
 // grammatical support

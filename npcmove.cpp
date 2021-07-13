@@ -231,6 +231,9 @@ void npc::move(game *g)
  wand.tick();	// countdown timers
  pl.tick();
 
+ // \todo allow AI to voluntarily enter water, rather than just be knocked back into it
+ // \todo AI should pathfind in response to drowning
+
  ai_action action(npc_undecided,std::unique_ptr<cataclysm::action>());
  int danger = 0, total_danger = 0, target = -1;
 
@@ -1143,6 +1146,12 @@ void npc::move_to(game *g, point pt)
   int smashskill = int(str_cur / 2 + weapon.type->melee_dam);
   g->m.bash(pt, smashskill, bashsound);
   g->sound(pt, 18, bashsound);
+ } else if (g->m.has_flag(swimmable, pt)) { // Dive into water!
+  // Requires confirmation if we were on dry land previously
+  if (   (g->m.has_flag(swimmable, pos) && 0 >= g->m.move_cost(pos))
+	  /* || query_yn("Dive into the water?") */) { // \todo NPC decision to enter water
+   swim(GPSpos + (pt-pos));
+  } else moves -= mobile::mp_turn;
  } else
   moves -= mobile::mp_turn;
 }
