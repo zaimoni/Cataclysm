@@ -408,6 +408,8 @@ stat_delta dis_stat_effects(const player& p, const disease& dis)
     return ret;
 }
 
+void player::subjective_message(const char* msg) const { messages.add(msg); }
+
 bool player::see_phantasm()
 {
     auto g = game::active();

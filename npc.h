@@ -470,6 +470,7 @@ public:
 
 // abstract ui
     void swim(const GPS_loc& loc) override;
+    void subjective_message(const char* msg) const override {}
     bool see_phantasm() override { return false; } // unclear how to implement this even for multi-PC case, let alone NPCs
 
 // grammatical support
