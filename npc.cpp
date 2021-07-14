@@ -1900,7 +1900,6 @@ void npc::swim(const GPS_loc& loc)
 	DEBUG_FAIL_OR_LEAVE(!is<swimmable>(GPSpos.ter()), return);
 	auto g = game::active();
 	const bool u_see = g->u_see(loc) || g->u.see(*this);
-	std::string text;
 
 	if (has_disease(DI_ONFIRE)) {	// VAPORWARE: not for phosphorus or lithium ...
 		if (u_see) messages.add("The water puts out the flames!");
@@ -1910,8 +1909,8 @@ void npc::swim(const GPS_loc& loc)
 	practice(sk_swimming, 1);
 	if (movecost >= 5 * mobile::mp_turn) {
 		if (!underwater) {
-			text = grammar::capitalize(desc(grammar::noun::role::subject));
-			if (u_see) messages.add("%s sink%s!", text.c_str(), (movecost >= 6 * mobile::mp_turn ? " like a rock" : ""));
+			if (u_see) messages.add("%s sink%s!", grammar::capitalize(desc(grammar::noun::role::subject)).c_str(),
+				                    (movecost >= 6 * mobile::mp_turn ? " like a rock" : ""));
 			swimming_dive(); // Involuntarily.
 		}
 	}

@@ -48,7 +48,7 @@ void mobile::knockback_from(const GPS_loc& loc)
 		const int targ_size = knockback_size();
 		const int size_delta = effective_size - targ_size;
 		hurt(targ_size);
-		if (u_see) messages.add("%s %s off a %s!", You.c_str(), bounce.c_str(), _mob->desc(grammar::noun::role::direct_object, grammar::article::indefinite));
+		if (u_see) messages.add("%s %s off a %s!", You.c_str(), bounce.c_str(), _mob->desc(grammar::noun::role::direct_object, grammar::article::indefinite).c_str());
 		if (0 <= size_delta) {
 			if (0 < size_delta) knockback_from(to); // Chain reaction!
 			hurt(effective_size);
