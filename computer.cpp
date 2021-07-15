@@ -629,23 +629,26 @@ void computer::activate_failure(game *g, computer_failure fail)
 
   case COMPFAIL_MANHACKS: {
    int num_robots = rng(4, 8);
-   zaimoni::gdi::box<point> spawn_range(g->u.pos - point(3), g->u.pos + point(3));
+   const char* msg = nullptr;
    for (int i = 0; i < num_robots; i++) {
     if (const auto fail = LasVegasChoice<point>(10, nominate_robot_spawn_pos, game::isEmpty)) {
-        messages.add("Manhacks drop from compartments in the ceiling.");
+        msg = "Manhacks drop from compartments in the ceiling.";
         g->z.push_back(monster(mtype::types[mon_manhack], *fail));
     }
    }
+   if (msg) messages.add(msg);
   } break;
 
   case COMPFAIL_SECUBOTS: {
    int num_robots = 1;
+   const char* msg = nullptr;
    for (int i = 0; i < num_robots; i++) {
     if (const auto fail = LasVegasChoice<point>(10, nominate_robot_spawn_pos, game::isEmpty)) {
-        messages.add("Secubots emerge from compartments in the floor.");
+        msg = "Secubots emerge from compartments in the floor.";
         g->z.push_back(monster(mtype::types[mon_secubot], *fail));
     }
    }
+   if (msg) messages.add(msg);
   } break;
 
   case COMPFAIL_DAMAGE:
