@@ -430,11 +430,11 @@ void game::throw_item(player &p, point tar, item&& thrown, std::vector<point> &t
   tar.y += rng(-delta, delta);
   trajectory = line_to(p.pos, tar, m.sees(p.pos, tar, -1));
   missed = true;
-  if (!p.is_npc()) messages.add("You miss!");
+  p.subjective_message("You miss!");
  } else if (missed_by >= .6) {
 // Hit the space, but not necessarily the monster there
   missed = true;
-  if (!p.is_npc()) messages.add("You barely miss!");
+  p.subjective_message("You barely miss!");
  }
 
  const int thrown_wgt = thrown.weight();
