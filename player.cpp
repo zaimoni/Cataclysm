@@ -5285,6 +5285,87 @@ int player::warmth(body_part bp) const
  return ret;
 }
 
+// we would like a contrafactual version suitable for use by NPC AI and Socrates' Daimon
+void player::check_warmth(int ambient_F)
+{
+    const auto g = game::active();
+    // no attempt to model wind chill, heat index, radiant heat, etc.  \todo fix this?
+    const int F_delta = (ambient_F - 65) / 10;
+
+    // HEAD
+    int temp_code = warmth(bp_head) + F_delta;
+    if (temp_code <= -6) {
+        subjective_message("Your head is freezing!");
+        add_disease(DI_COLD, abs(temp_code * 2));// Heat loss via head is bad
+        hurt(g, bp_head, 0, rng(0, abs(temp_code / 3)));
+    } else if (temp_code <= -3) {
+        subjective_message("Your head is cold.");
+        add_disease(DI_COLD, abs(temp_code * 2));
+    } else if (temp_code >= 8) {
+        subjective_message("Your head is overheating!");
+        add_disease(DI_HOT, rational_scaled<3,2>(temp_code));
+    }
+    // FACE -- Mouth and eyes
+    temp_code = warmth(bp_eyes) + warmth(bp_mouth) + F_delta;
+    if (temp_code <= -6) {
+        subjective_message("Your face is freezing!");
+        add_disease(DI_COLD_FACE, abs(temp_code));
+        hurt(g, bp_head, 0, rng(0, abs(temp_code / 3)));
+    } else if (temp_code <= -4) {
+        subjective_message("Your face is cold.");
+        add_disease(DI_COLD_FACE, abs(temp_code));
+    } else if (temp_code >= 12) {
+        subjective_message("Your face is overheating!");
+        add_disease(DI_HOT, temp_code);
+    }
+    // TORSO
+    temp_code = warmth(bp_torso) + F_delta;
+    if (temp_code <= -8) {
+        subjective_message("Your body is freezing!");
+        add_disease(DI_COLD, abs(temp_code));
+        hurt(g, bp_torso, 0, rng(0, abs(temp_code / 4)));
+    } else if (temp_code <= -2) {
+        subjective_message("Your body is cold.");
+        add_disease(DI_COLD, abs(temp_code));
+    } else if (temp_code >= 12) {
+        subjective_message("Your body is too hot.");
+        add_disease(DI_HOT, temp_code * 2);
+    }
+    // \todo: frostbite
+    // HANDS
+    temp_code = warmth(bp_hands) + F_delta;
+    if (temp_code <= -4) {
+        subjective_message("Your hands are freezing!");
+        add_disease(DI_COLD_HANDS, abs(temp_code));
+    } else if (temp_code >= 8) {
+        subjective_message("Your hands are overheating!");
+        add_disease(DI_HOT, rng(0, temp_code / 2));
+    }
+    // LEGS
+    // \todo: frostbite
+    temp_code = warmth(bp_legs) + F_delta;
+    if (temp_code <= -6) {
+        subjective_message("Your legs are freezing!");
+        add_disease(DI_COLD_LEGS, abs(temp_code));
+    } else if (temp_code <= -3) {
+        subjective_message("Your legs are very cold.");
+        add_disease(DI_COLD_LEGS, abs(temp_code));
+    } else if (temp_code >= 8) {
+        subjective_message("Your legs are overheating!");
+        add_disease(DI_HOT, rng(0, temp_code));
+    }
+    // FEET
+    // \todo: frostbite
+    temp_code = warmth(bp_feet) + F_delta;
+    if (temp_code <= -3) {
+        subjective_message("Your feet are freezing!");
+        add_disease(DI_COLD_FEET, temp_code);
+    } else if (temp_code >= 12) {
+        subjective_message("Your feet are overheating!");
+        add_disease(DI_HOT, rng(0, temp_code));
+    }
+}
+
 int player::encumb(body_part bp) const
 {
  int ret = 0;

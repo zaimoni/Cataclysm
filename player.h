@@ -200,6 +200,7 @@ public:
  bool can_sleep(const map& m) const;	// Checked each turn during DIS_LYING_DOWN
 
  int warmth(body_part bp) const;	// Warmth provided by armor &c; \todo cf game::check_warmth which might belong over in player
+ void check_warmth(int ambient_F);
  int encumb(body_part bp) const;	// Encumberance from armor &c
  int armor_bash(body_part bp) const;	// Bashing resistance
  int armor_cut(body_part bp) const;	// Cutting  resistance
