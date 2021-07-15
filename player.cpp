@@ -5267,7 +5267,7 @@ bool player::can_sleep(const map& m) const
      decltype(auto) sleeping_on = GPSpos.ter();
      if (t_bed == sleeping_on) sleepy += 5;
      else if (t_floor == sleeping_on) sleepy += 1;
-     else sleepy -= m.move_cost(pos);
+     else sleepy -= move_cost_of(sleeping_on);
  }
  sleepy = (192 > fatigue) ? (192-fatigue)/4 : (fatigue-192)/16;
  sleepy += rng(-8, 8);
