@@ -97,40 +97,31 @@ static int time_to_fire(player& p, const it_gun* const firing)
     return time;
 }
 
-static void make_gun_sound_effect(game* g, player& p, bool burst)
+static std::optional<std::pair<int, const char*> > gun_sound(const item& gun, bool burst)
 {
-    switch (p.weapon.curammo->type)
+    switch (gun.curammo->type)
     {
     case AT_FUSION:
     case AT_BATT:
-    case AT_PLUT:
-        g->sound(p.pos, 8, "Fzzt!");
-        break;
-    case AT_40MM:
-        g->sound(p.pos, 8, "Thunk!");
-        break;
-    case AT_GAS:
-        g->sound(p.pos, 4, "Fwoosh!");
-        break;
+    case AT_PLUT: return std::pair(8, "Fzzt!");
+    case AT_40MM: return std::pair(8, "Thunk!");
+    case AT_GAS: return std::pair(4, "Fwoosh!");
     case AT_BOLT:
-    case AT_ARROW: return;  // negligible compared to firearms
-    default:
-        {
-        std::string gunsound;
-        int noise = p.weapon.noise();
-        if (noise < 5) {
-            gunsound = burst ? "Brrrip!" : "plink!";
-        } else if (noise < 25) {
-            gunsound = burst ? "Brrrap!" : "bang!";
-        } else if (noise < 60) {
-            gunsound = burst ? "P-p-p-pow!" : "blam!";
-        } else {
-            gunsound = burst ? "Kaboom!!" : "kerblam!";
-        }
-        g->sound(p.pos, noise, gunsound);
-        }
-        break;
+    case AT_ARROW: return std::nullopt;  // negligible compared to firearms
+    default: {
+        int noise = gun.noise();
+        if (noise < 5) return std::pair(noise, burst ? "Brrrip!" : "plink!");
+        else if (noise < 25) return std::pair(noise, burst ? "Brrrap!" : "bang!");
+        else if (noise < 60) return std::pair(noise, burst ? "P-p-p-pow!" : "blam!");
+        else return std::pair(noise, burst ? "Kaboom!!" : "kerblam!");;
     }
+    break;
+    }
+}
+
+static void make_gun_sound_effect(game* g, player& p, bool burst)
+{
+    if (const auto sound = gun_sound(p.weapon, burst)) g->sound(p.pos, sound->first, sound->second);
 }
 
 static int calculate_range(player& p, const point& tar)
