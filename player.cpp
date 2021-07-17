@@ -5589,6 +5589,40 @@ void player::practice(skill s, int amount)
  }
 }
 
+// NPC AI should be trying to learn skills, before exposing them to this.
+void player::update_skills()
+{
+    static const std::string Your_skill_in("Your skill in ");
+
+    //  SKILL   TURNS/--
+    //	1	4096
+    //	2	2048
+    //	3	1024
+    //	4	 512
+    //	5	 256
+    //	6	 128
+    //	7+	  64
+    for (int i = 0; i < num_skill_types; i++) {
+        int tmp = sklevel[i] > 7 ? 7 : sklevel[i];
+        if (sklevel[i] > 0 && messages.turn % (8192 / int(pow(2, double(tmp - 1)))) == 0 &&
+            (one_in(has_trait(PF_FORGETFUL) ? 3 : 4))) {
+            if (has_bionic(bio_memory) && power_level > 0) {
+                if (one_in(5)) power_level--;
+            } else
+                skexercise[i]--;
+        }
+        if (skexercise[i] < -100) {
+            sklevel[i]--;
+            subjective_message(Your_skill_in + skill_name(skill(i)) +" has reduced to "+ std::to_string(sklevel[i])  +"!");
+            skexercise[i] = 0;
+        } else if (skexercise[i] >= 100) {
+            sklevel[i]++;
+            subjective_message(Your_skill_in + skill_name(skill(i)) +" has increased to "+ std::to_string(sklevel[i]) +"!");
+            skexercise[i] = 0;
+        }
+    }
+}
+
 void player::assign_activity(activity_type type, int moves, int index)
 {
  if (backlog.type == type && backlog.index == index && query_yn("Resume task?")) {

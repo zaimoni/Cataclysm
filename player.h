@@ -208,6 +208,7 @@ public:
  bool wearing_something_on(body_part bp) const; // True if wearing something on bp
 
  void practice(skill s, int amount);	// Practice a skill
+ void update_skills(); // Degrades practice levels, checks & upgrades skills
 
  void assign_activity(activity_type type, int moves, int index = -1);	// \todo V 0.2.5+ extend to NPCs
  void assign_activity(activity_type type, int moves, const point& pt, int index = -1);

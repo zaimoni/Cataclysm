@@ -673,42 +673,9 @@ bool game::do_turn()
   refresh();
  }
 
- update_skills();
+ u.update_skills();
  if (messages.turn % 10 == 0) u.update_morale();
  return false;
-}
-
-void game::update_skills()
-{
-//    SKILL   TURNS/--
-//	1	4096
-//	2	2048
-//	3	1024
-//	4	 512
-//	5	 256
-//	6	 128
-//	7+	  64
- for (int i = 0; i < num_skill_types; i++) {
-  int tmp = u.sklevel[i] > 7 ? 7 : u.sklevel[i];
-  if (u.sklevel[i] > 0 && messages.turn % (8192 / int(pow(2, double(tmp - 1)))) == 0 &&
-      (( u.has_trait(PF_FORGETFUL) && one_in(3)) ||
-       (!u.has_trait(PF_FORGETFUL) && one_in(4))   )) {
-   if (u.has_bionic(bio_memory) && u.power_level > 0) {
-    if (one_in(5))
-     u.power_level--;
-   } else
-    u.skexercise[i]--;
-  }
-  if (u.skexercise[i] < -100) {
-   u.sklevel[i]--;
-   messages.add("Your skill in %s has reduced to %d!", skill_name(skill(i)), u.sklevel[i]);
-   u.skexercise[i] = 0;
-  } else if (u.skexercise[i] >= 100) {
-   u.sklevel[i]++;
-   messages.add("Your skill in %s has increased to %d!", skill_name(skill(i)) ,u.sklevel[i]);
-   u.skexercise[i] = 0;
-  }
- }
 }
 
 void game::process_events()
@@ -2751,6 +2718,7 @@ void game::monmove()
    _npc.reset(this);
    _npc.suffer(this);
    // \todo _npc.check_warmth call
+   // \todo _npc.update_skills call
    while (!_npc.dead && _npc.moves > 0 && turns < 10) {	// 10 moves in one turn is lethal; assuming this is a bug intercept
     turns++;
 	_npc.move(this);

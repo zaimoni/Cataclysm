@@ -287,7 +287,6 @@ private:
   void monmove();          // Monster movement
   void om_npcs_move();     // Movement of NPCs on the overmap (non-local)
   void activate_npcs();
-  void update_skills();    // Degrades practice levels, checks & upgrades skills
   void process_events();   // Processes and enacts long-term events
   void process_activity(); // Processes and enacts the player's activity
   void update_weather();   // Updates the temperature and weather patten
