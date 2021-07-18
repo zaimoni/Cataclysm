@@ -3105,19 +3105,22 @@ void game::resonance_cascade(const point& pt)
 void game::emp_blast(int x, int y)
 {
  int rn;
- if (m.has_flag(console, x, y)) {
-  messages.add("The %s is rendered non-functional!", name_of(m.ter(x, y)).c_str());
-  m.ter(x, y) = t_console_broken;
+
+ ter_id& terrain = m.ter(x, y);
+
+ if (is<console>(terrain)) {
+  messages.add("The %s is rendered non-functional!", name_of(terrain).c_str());
+  terrain = t_console_broken;
   return;
  }
 // TODO: More terrain effects.
- switch (m.ter(x, y)) {
+ switch (terrain) {
  case t_card_science:
  case t_card_military:
   rn = rng(1, 100);
   if (rn > 92 || rn < 40) {
    messages.add("The card reader is rendered non-functional.");
-   m.ter(x, y) = t_card_reader_broken;
+   terrain = t_card_reader_broken;
   }
   if (rn > 80) {
    messages.add("The nearby doors slide open!");
@@ -3130,8 +3133,7 @@ void game::emp_blast(int x, int y)
   if (rn >= 40 && rn <= 80) messages.add("Nothing happens.");
   break;
  }
- monster* const m_at = mon(x, y);
- if (m_at) {
+ if (monster* const m_at = mon(x, y)) {
   if (m_at->has_flag(MF_ELECTRONIC)) {
    messages.add("The EMP blast fries the %s!", m_at->name().c_str());
    int dam = dice(10, 10);
@@ -3142,19 +3144,19 @@ void game::emp_blast(int x, int y)
   } else
    messages.add("The %s is unaffected by the EMP blast.", m_at->name().c_str());
  }
- if (u.pos.x == x && u.pos.y == y) {
-  if (u.power_level > 0) {
-   messages.add("The EMP blast drains your power.");
-   int max_drain = (u.power_level > 40 ? 40 : u.power_level);
-   u.charge_power(0 - rng(1 + max_drain / 3, max_drain));
-  }
-// TODO: More effects?
+ if (player* const _pc = survivor(x, y)) {
+     if (0 < _pc->power_level) {
+         _pc->subjective_message("The EMP blast drains your power.");
+         int max_drain = clamped_ub<40>(_pc->power_level);
+         _pc->charge_power(0 - rng(1 + max_drain / 3, max_drain));
+     }
+     // TODO: More effects?
  }
+
 // Drain any items of their battery charge
  for(auto& it : m.i_at(x, y)) {
   if (it.is_tool() && (dynamic_cast<const it_tool*>(it.type))->ammo == AT_BATT) it.charges = 0;
  }
-// TODO: Drain NPC energy reserves
 }
 
 // 2019-02-15
