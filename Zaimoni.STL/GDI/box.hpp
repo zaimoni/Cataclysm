@@ -39,30 +39,66 @@ public:
 		return pointwise_test(_top_left, src, lte) && pointwise_test(src, _bottom_right, lte);
 	}
 
-	box& operator+=(const T& rhs) {
+	template<class U>
+	box& operator+=(const U& rhs) requires requires() { _top_left += rhs; }
+	{
 		_top_left += rhs;
 		_bottom_right += rhs;
 		return *this;
 	}
 
-	box& operator-=(const T& rhs) {
+	template<class U>
+	box& operator-=(const U& rhs) requires requires() { _top_left -= rhs; }
+	{
 		_top_left -= rhs;
 		_bottom_right -= rhs;
 		return *this;
 	}
 
-	box& operator*=(const typename T::coord_type& rhs) {
+	template<class U>
+	box& operator*=(const U& rhs) requires requires() { _top_left *= rhs; }
+	{
 		_top_left *= rhs;
 		_bottom_right *= rhs;
 		return *this;
 	}
 
-	box& operator/=(const typename T::coord_type& rhs) {
+	template<class U>
+	box& operator/=(const U& rhs) requires requires() { _top_left /= rhs; }
+	{
 		_top_left /= rhs;
 		_bottom_right /= rhs;
 		return *this;
 	}
 };
+
+template<class T, class U>
+auto operator+(box<T> lhs, const U& rhs) requires requires() { lhs += rhs; }
+{
+	lhs += rhs;
+	return lhs;
+}
+
+template<class T, class U>
+auto operator+(const T& lhs, box<U> rhs) requires requires() { rhs += lhs; }
+{
+	rhs += lhs;
+	return rhs;
+}
+
+template<class T, class U>
+auto operator*(box<T> lhs, const U& rhs) requires requires() { lhs *= rhs; }
+{
+	lhs *= rhs;
+	return lhs;
+}
+
+template<class T, class U>
+auto operator/(box<T> lhs, const U& rhs) requires requires() { lhs /= rhs; }
+{
+	lhs /= rhs;
+	return lhs;
+}
 
 // enumerate coordinates "on edge of box" is practical for integer coordinates, but viable canonical schemas are dimension-dependent
 // prototyped in Rogue Survivor Revived, relicensed for here

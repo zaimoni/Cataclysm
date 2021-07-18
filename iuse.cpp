@@ -1416,10 +1416,8 @@ void iuse::EMPbomb_act(game *g, player *p, item *it, bool t)
  if (t)	// Simple timer effects
   g->sound(*pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
  else {	// When that timer runs down...
-  for (int x = pos->x - 4; x <= pos->x + 4; x++) {
-   for (int y = pos->y - 4; y <= pos->y + 4; y++)
-    g->emp_blast(x, y);
-  }
+  static auto explode = [&](point pt) { g->emp_blast(pt.x, pt.y); };
+  forall_do_inclusive(*pos + within_rldist<4>, explode);
  }
 }
 
