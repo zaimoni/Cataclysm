@@ -5596,6 +5596,22 @@ void game::teleport(player *p)
  if (is_u) update_map(u.pos.x, u.pos.y);
 }
 
+void game::teleport_to(monster& z, const point& dest) {
+    if (0 == m.move_cost(dest)) {
+        explode_mon(z);
+        return;
+    }
+    if (monster* const m_hit = mon(dest)) {
+        if (u.see(z)) messages.add("%s teleports into %s, killing %s!",
+            grammar::capitalize(z.desc(grammar::noun::role::subject, grammar::article::definite)).c_str(),
+            m_hit->desc(grammar::noun::role::direct_object, grammar::article::indefinite).c_str(),
+            m_hit->desc(grammar::noun::role::direct_object, grammar::article::definite).c_str());
+        explode_mon(*m_hit);
+    }
+    // \todo explode PC/NPCs @ destination
+    z.screenpos_set(dest);
+}
+
 void game::nuke(const point& world_div_2)   // \todo parameter should be OM_loc
 {
  if (world_div_2.x < 0 || world_div_2.y < 0 || world_div_2.x >= OMAPX || world_div_2.y >= OMAPY) return;	// precondition

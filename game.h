@@ -149,6 +149,7 @@ class game : public reality_bubble
   point teleport_destination(const point& origin, int tries); // Teleportation is safer for PCs and NPCs
   point teleport_destination_unsafe(const point& origin, int tries); // than for monsters
   void teleport(player* p = nullptr);
+  void teleport_to(monster& z, const point& dest);
   // when player is thrown (by impact or something)
   void fling_player_or_monster(player *p, monster *zz, int dir, int flvel);
 

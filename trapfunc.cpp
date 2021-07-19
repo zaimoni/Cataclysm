@@ -237,26 +237,12 @@ void trapfunc::telepad(game *g, int x, int y)
 void trapfuncm::telepad(game *g, monster *z)
 {
  g->sound(z->pos, 6, "vvrrrRRMM*POP!*");
- const bool sees = g->u.see(*z);
- if (sees) {
+ if (g->u.see(*z)) {
      messages.add("The air shimmers around %s...",
          z->desc(grammar::noun::role::direct_object, grammar::article::definite).c_str());
  }
 
- const point newpos = g->teleport_destination_unsafe(z->pos, 10);
-
- // Cf. dimensional fatigue field fd_fatigue
- if (0 == g->m.move_cost(newpos)) g->explode_mon(*z);
- else if (monster* const m_hit = g->mon(newpos)) {	// must agree with LAB_NOTES
-   if (sees) messages.add("%s teleports into %s, killing %s!",
-       grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str(),
-       m_hit->desc(grammar::noun::role::direct_object, grammar::article::indefinite).c_str(),
-       m_hit->desc(grammar::noun::role::direct_object, grammar::article::definite).c_str());
-   g->explode_mon(*m_hit);
-   z->screenpos_set(newpos);
- } else {
-   z->screenpos_set(newpos);
- }
+ g->teleport_to(*z, g->teleport_destination_unsafe(z->pos, 10));
 }
 
 void trapfunc::goo(game *g, int x, int y)
