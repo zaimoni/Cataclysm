@@ -3782,6 +3782,7 @@ std::optional<point> game::look_around()
  return std::nullopt;
 }
 
+// \todo use player::use_stack_at (may be a high-risk commit)
 // Pick up items at (posx, posy).
 void game::pickup(const point& pt, int min)
 {

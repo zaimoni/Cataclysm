@@ -421,6 +421,24 @@ bool player::see_phantasm()
     return false;
 }
 
+std::vector<item>* player::use_stack_at(const point& pt) const
+{
+    std::vector<item>* ret = nullptr;
+    auto g = game::active();
+    decltype(auto) stack = g->m.i_at(pt);
+    if (!stack.empty()) ret = &stack;
+
+    const auto v = g->m._veh_at(pt);
+    vehicle* const veh = v ? v->first : nullptr; // backward compatibility
+    if (veh) {
+        int veh_part = v ? v->second : 0;
+        veh_part = veh->part_with_feature(veh_part, vpf_cargo, false);
+        if (veh_part >= 0 && !veh->parts[veh_part].items.empty() && query_yn("Get items from %s?", veh->part_info(veh_part).name))
+            ret = &veh->parts[veh_part].items;
+    }
+    return ret;
+}
+
 void dis_effect(game* g, player& p, disease& dis)
 {
     const auto delta = dis_stat_effects(p, dis);

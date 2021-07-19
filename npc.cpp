@@ -1922,6 +1922,27 @@ void npc::swim(const GPS_loc& loc)
 	}
 }
 
+std::vector<item>* npc::use_stack_at(const point& pt) const
+{
+	std::vector<item>* ret = nullptr;
+	auto g = game::active();
+	decltype(auto) stack = g->m.i_at(pt);
+	if (!stack.empty()) ret = &stack;
+
+	// NPCs only check for vehicle inventory if the ground inventory is unsuitable
+	if (!ret) {
+		const auto v = g->m._veh_at(pt);
+		vehicle* const veh = v ? v->first : nullptr; // backward compatibility
+		if (veh) {
+			int veh_part = v ? v->second : 0;
+			veh_part = veh->part_with_feature(veh_part, vpf_cargo, false);
+			if (veh_part >= 0 && !veh->parts[veh_part].items.empty())
+				ret = &veh->parts[veh_part].items;
+		}
+	}
+	return ret;
+}
+
 // NPCs don't use the text UI, so override the player version
 void npc::cancel_activity_query(const char* message, ...)
 {

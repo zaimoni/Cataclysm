@@ -472,6 +472,7 @@ public:
     void swim(const GPS_loc& loc) override;
     void subjective_message(const char* msg) const override {}
     bool see_phantasm() override { return false; } // unclear how to implement this even for multi-PC case, let alone NPCs
+    std::vector<item>* use_stack_at(const point& pt) const override;
 
 // grammatical support
     std::string subject() const override;
