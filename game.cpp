@@ -3793,6 +3793,18 @@ void game::pickup(const point& pt, int min)
  }
  bool weight_is_okay = (u.weight_carried() <= u.weight_capacity() * .25);
  bool volume_is_okay = (u.volume_carried() <= u.volume_capacity() -  2);
+
+ static auto cant_pick_up = [&](const item& it) {
+     if (it.made_of(LIQUID)) return std::string("You can't pick up a liquid!");
+     if (u.weight_carried() + it.weight() > u.weight_capacity()) return "The" + it.tname() + " is too heavy!";
+     if (u.volume_carried() + it.volume() > u.volume_capacity()) {
+         if (u.is_armed() && u.weapon.has_flag(IF_NO_UNWIELD)) {
+             return "There's no room in your inventory for the " + it.tname() + ", and you can't unwield your "+ u.weapon.tname() +".";
+         }
+     }
+     return std::string();
+ };
+
  bool from_veh = false;
  const auto v = m._veh_at(pt);
  vehicle* const veh = v ? v->first : nullptr; // backward compatibility
@@ -3819,11 +3831,8 @@ void game::pickup(const point& pt, int min)
  } else if ((from_veh ? veh->parts[veh_part].items.size() :
                         m.i_at(pt).size()          ) <= min) {
   item newit = from_veh ? veh->parts[veh_part].items[0] : m.i_at(pt)[0];
-  if (newit.made_of(LIQUID)) {
-   messages.add("You can't pick up a liquid!");
-   return;
-  } else if (u.weight_carried() + newit.weight() > u.weight_capacity()) {
-      messages.add("The %s is too heavy!", newit.tname().c_str());
+  if (const auto err = cant_pick_up(newit); !err.empty()) {
+      messages.add(err.c_str());
       return;
   }
 
@@ -3832,7 +3841,7 @@ void game::pickup(const point& pt, int min)
    return;
   } else if (u.volume_carried() + newit.volume() > u.volume_capacity()) {
    if (u.is_armed()) {
-    if (!u.weapon.has_flag(IF_NO_UNWIELD)) {
+    assert(!u.weapon.has_flag(IF_NO_UNWIELD));
      if (newit.is_armor() && query_yn("Put on the %s?", newit.tname().c_str())) { // Armor can be instantly worn
       if(u.wear_item(newit)){
        if (from_veh) veh->remove_item (veh_part, 0);
@@ -3849,11 +3858,6 @@ void game::pickup(const point& pt, int min)
       messages.add("Wielding %c - %s", newit.invlet, newit.tname().c_str());
      } else
       decrease_nextinv();
-    } else {
-     messages.add("There's no room in your inventory for the %s, and you can't\
- unwield your %s.", newit.tname().c_str(), u.weapon.tname().c_str());
-     decrease_nextinv();
-    }
    } else {
     u.i_add(newit);
     u.wield(u.inv.size() - 1);
@@ -3912,7 +3916,12 @@ void game::pickup(const point& pt, int min)
   }
   if (ch >= 'a' && ch <= 'a' + here.size() - 1) {
    ch -= 'a';
-   getitem[ch] = !getitem[ch];
+   if (getitem[ch] = !getitem[ch]) {
+       if (const auto err = cant_pick_up(here[ch]); !err.empty()) {
+           messages.add(err.c_str());
+           getitem[ch] = false;
+       }
+   }
    wclear(w_item_info.get());
    if (getitem[ch]) {
     mvwprintw(w_item_info.get(), 1, 0, here[ch].info().c_str());
@@ -3985,73 +3994,61 @@ void game::pickup(const point& pt, int min)
  }
 // At this point we've selected our items, now we add them to our inventory
  int curmit = 0;
- bool got_water = false;	// Did we try to pick up water?
  for (int i = 0; i < here.size(); i++) {
 // This while loop guarantees the inventory letter won't be a repeat. If it
 // tries all 52 letters, it fails and we don't pick it up.
-  if (getitem[i] && here[i].made_of(LIQUID))
-   got_water = true;
-  else if (getitem[i]) {
-   if (!assign_invlet_stacking_ok(here[i], u)) {
-    messages.add("You're carrying too many items!");
-    return;
-   } else if (u.weight_carried() + here[i].weight() > u.weight_capacity()) {
-    messages.add("The %s is too heavy!", here[i].tname().c_str());
-    decrease_nextinv();
-   } else if (u.volume_carried() + here[i].volume() > u.volume_capacity()) {
-    if (u.is_armed()) {
-     if (!u.weapon.has_flag(IF_NO_UNWIELD)) {
-      if (here[i].is_armor() && query_yn("Put on the %s?", here[i].tname().c_str())) {	// Armor can be instantly worn
-       if(u.wear_item(here[i])) {
-        if (from_veh) veh->remove_item (veh_part, curmit);
-        else m.i_rem(pt, curmit);
-        curmit--;
-       }
-      } else if (query_yn("Drop your %s and pick up %s?",
-                u.weapon.tname().c_str(), here[i].tname().c_str())) {
-       if (from_veh) veh->remove_item (veh_part, curmit);
-       else m.i_rem(pt, curmit);
-       m.add_item(pt, u.unwield());
-       u.i_add(here[i]);
-       u.wield(u.inv.size() - 1);
-       curmit--;
-       u.moves -= mobile::mp_turn;
-	   messages.add("Wielding %c - %s", u.weapon.invlet, u.weapon.tname().c_str());
-      } else
-       decrease_nextinv();
-     } else {
-      messages.add("There's no room in your inventory for the %s, and you can't\
-  unwield your %s.", here[i].tname().c_str(), u.weapon.tname().c_str());
-      decrease_nextinv();
-     }
-    } else {
-     u.i_add(here[i]);
-     u.wield(u.inv.size() - 1);
-     if (from_veh) veh->remove_item (veh_part, curmit);
-     else m.i_rem(pt, curmit);
-     curmit--;
-     u.moves -= mobile::mp_turn;
-    }
-   } else if (!u.is_armed() &&
-            (u.volume_carried() + here[i].volume() > u.volume_capacity() - 2 ||
+  if (getitem[i]) {
+      assert(!here[i].made_of(LIQUID));
+      if (!assign_invlet_stacking_ok(here[i], u)) {
+          messages.add("You're carrying too many items!");
+          return;
+      } else if (u.volume_carried() + here[i].volume() > u.volume_capacity()) {
+          if (u.is_armed()) {
+              assert(!u.weapon.has_flag(IF_NO_UNWIELD));
+              if (here[i].is_armor() && query_yn("Put on the %s?", here[i].tname().c_str())) {	// Armor can be instantly worn
+                  if (u.wear_item(here[i])) {
+                      if (from_veh) veh->remove_item(veh_part, curmit);
+                      else m.i_rem(pt, curmit);
+                      curmit--;
+                  }
+              } else if (query_yn("Drop your %s and pick up %s?",
+                  u.weapon.tname().c_str(), here[i].tname().c_str())) {
+                  if (from_veh) veh->remove_item(veh_part, curmit);
+                  else m.i_rem(pt, curmit);
+                  m.add_item(pt, u.unwield());
+                  u.i_add(here[i]);
+                  u.wield(u.inv.size() - 1);
+                  curmit--;
+                  u.moves -= mobile::mp_turn;
+                  messages.add("Wielding %c - %s", u.weapon.invlet, u.weapon.tname().c_str());
+              } else
+                  decrease_nextinv();
+          } else {
+              u.i_add(here[i]);
+              u.wield(u.inv.size() - 1);
+              if (from_veh) veh->remove_item(veh_part, curmit);
+              else m.i_rem(pt, curmit);
+              curmit--;
+              u.moves -= mobile::mp_turn;
+          }
+      } else if (!u.is_armed() &&
+          (u.volume_carried() + here[i].volume() > u.volume_capacity() - 2 ||
               here[i].is_weap() || here[i].is_gun())) {
-    u.weapon = here[i];
-    if (from_veh) veh->remove_item (veh_part, curmit);
-    else m.i_rem(pt, curmit);
-    u.moves -= mobile::mp_turn;
-    curmit--;
-   } else {
-    u.i_add(here[i]);
-    if (from_veh) veh->remove_item (veh_part, curmit);
-    else m.i_rem(pt, curmit);
-    u.moves -= mobile::mp_turn;
-    curmit--;
-   }
+          u.weapon = here[i];
+          if (from_veh) veh->remove_item(veh_part, curmit);
+          else m.i_rem(pt, curmit);
+          u.moves -= mobile::mp_turn;
+          curmit--;
+      } else {
+          u.i_add(here[i]);
+          if (from_veh) veh->remove_item(veh_part, curmit);
+          else m.i_rem(pt, curmit);
+          u.moves -= mobile::mp_turn;
+          curmit--;
+      }
   }
   curmit++;
  }
- if (got_water)
-  messages.add("You can't pick up a liquid!");
  if (weight_is_okay && u.weight_carried() >= u.weight_capacity() * .25)
   messages.add("You're overburdened!");
  if (volume_is_okay && u.volume_carried() > u.volume_capacity() - 2) {
