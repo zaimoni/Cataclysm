@@ -3782,7 +3782,6 @@ std::optional<point> game::look_around()
  return std::nullopt;
 }
 
-// \todo use player::use_stack_at (may be a high-risk commit)
 // Pick up items at (posx, posy).
 void game::pickup(const point& pt, int min)
 {
@@ -3805,17 +3804,10 @@ void game::pickup(const point& pt, int min)
      return std::string();
  };
 
- bool from_veh = false;
- const auto v = m._veh_at(pt);
- vehicle* const veh = v ? v->first : nullptr; // backward compatibility
- int veh_part = v ? v->second : 0;
- if (veh) {
-  veh_part = veh->part_with_feature(veh_part, vpf_cargo, false);
-  from_veh = veh_part >= 0 && veh->parts[veh_part].items.size() > 0 &&
-             query_yn("Get items from %s?", veh->part_info(veh_part).name);
- }
+ const auto stack_src = u.use_stack_at(pt);
+
 // Picking up water?
- if ((!from_veh) && m.i_at(pt).empty()) {
+ if (!stack_src) {
   if (auto water = m.water_from(pt)) {
       if (query_yn("Drink from your hands?")) {
           u.inv.push_back(*water);
@@ -3828,9 +3820,8 @@ void game::pickup(const point& pt, int min)
   }
   return;
 // Few item here, just get it
- } else if ((from_veh ? veh->parts[veh_part].items.size() :
-                        m.i_at(pt).size()          ) <= min) {
-  item newit = from_veh ? veh->parts[veh_part].items[0] : m.i_at(pt)[0];
+ } else if (stack_src->size() <= min) {
+  item newit = (*stack_src)[0];
   if (const auto err = cant_pick_up(newit); !err.empty()) {
       messages.add(err.c_str());
       return;
@@ -3843,14 +3834,10 @@ void game::pickup(const point& pt, int min)
    if (u.is_armed()) {
     assert(!u.weapon.has_flag(IF_NO_UNWIELD));
      if (newit.is_armor() && query_yn("Put on the %s?", newit.tname().c_str())) { // Armor can be instantly worn
-      if(u.wear_item(newit)){
-       if (from_veh) veh->remove_item (veh_part, 0);
-       else m.i_clear(pt);
-      }
+      if (u.wear_item(newit)) EraseAt(*stack_src, 0);
      } else if (query_yn("Drop your %s and pick up %s?",
                 u.weapon.tname().c_str(), newit.tname().c_str())) {
-      if (from_veh) veh->remove_item (veh_part, 0);
-      else m.i_clear(pt);
+      EraseAt(*stack_src, 0);
       m.add_item(pt, u.unwield());
       u.i_add(newit);
       u.wield(u.inv.size() - 1);
@@ -3861,8 +3848,7 @@ void game::pickup(const point& pt, int min)
    } else {
     u.i_add(newit);
     u.wield(u.inv.size() - 1);
-    if (from_veh) veh->remove_item (veh_part, 0);
-    else m.i_clear(pt);
+    EraseAt(*stack_src, 0);
     u.moves -= mobile::mp_turn;
 	messages.add("Wielding %c - %s", newit.invlet, newit.tname().c_str());
    }
@@ -3870,14 +3856,12 @@ void game::pickup(const point& pt, int min)
              (u.volume_carried() + newit.volume() > u.volume_capacity() - 2 ||
               newit.is_weap() || newit.is_gun())) {
    u.weapon = newit;
-   if (from_veh) veh->remove_item (veh_part, 0);
-   else m.i_clear(pt);
+   EraseAt(*stack_src, 0);
    u.moves -= mobile::mp_turn;
    messages.add("Wielding %c - %s", newit.invlet, newit.tname().c_str());
   } else {
    u.i_add(newit);
-   if (from_veh) veh->remove_item (veh_part, 0);
-   else m.i_clear(pt);
+   EraseAt(*stack_src, 0);
    u.moves -= mobile::mp_turn;
    messages.add("%c - %s", newit.invlet, newit.tname().c_str());
   }
@@ -3892,7 +3876,7 @@ void game::pickup(const point& pt, int min)
  std::unique_ptr<WINDOW, curses_full_delete> w_pickup(newwin(VIEW_CENTER, PANELX - MINIMAP_WIDTH_HEIGHT, 0, VIEW + MINIMAP_WIDTH_HEIGHT));
  std::unique_ptr<WINDOW, curses_full_delete> w_item_info(newwin(VIEW - VIEW_CENTER, PANELX - MINIMAP_WIDTH_HEIGHT, VIEW_CENTER, VIEW + MINIMAP_WIDTH_HEIGHT));
  const int maxitems = cataclysm::max(VIEW_CENTER - 3, 26);	 // Number of items to show at one time.
- std::vector <item> here = from_veh? veh->parts[veh_part].items : m.i_at(pt);
+ std::vector <item> here = *stack_src; // backward-compatibility \todo evaluate whether value copy needed here
  std::vector<bool> getitem(here.size(),false);
  int ch = ' ';
  int start = 0, cur_it;
@@ -3920,6 +3904,7 @@ void game::pickup(const point& pt, int min)
        if (const auto err = cant_pick_up(here[ch]); !err.empty()) {
            messages.add(err.c_str());
            getitem[ch] = false;
+           continue; // don't actually update weight/volume
        }
    }
    wclear(w_item_info.get());
@@ -4007,14 +3992,12 @@ void game::pickup(const point& pt, int min)
               assert(!u.weapon.has_flag(IF_NO_UNWIELD));
               if (here[i].is_armor() && query_yn("Put on the %s?", here[i].tname().c_str())) {	// Armor can be instantly worn
                   if (u.wear_item(here[i])) {
-                      if (from_veh) veh->remove_item(veh_part, curmit);
-                      else m.i_rem(pt, curmit);
+                      EraseAt(*stack_src, curmit);
                       curmit--;
                   }
               } else if (query_yn("Drop your %s and pick up %s?",
                   u.weapon.tname().c_str(), here[i].tname().c_str())) {
-                  if (from_veh) veh->remove_item(veh_part, curmit);
-                  else m.i_rem(pt, curmit);
+                  EraseAt(*stack_src, curmit);
                   m.add_item(pt, u.unwield());
                   u.i_add(here[i]);
                   u.wield(u.inv.size() - 1);
@@ -4026,8 +4009,7 @@ void game::pickup(const point& pt, int min)
           } else {
               u.i_add(here[i]);
               u.wield(u.inv.size() - 1);
-              if (from_veh) veh->remove_item(veh_part, curmit);
-              else m.i_rem(pt, curmit);
+              EraseAt(*stack_src, curmit);
               curmit--;
               u.moves -= mobile::mp_turn;
           }
@@ -4035,14 +4017,12 @@ void game::pickup(const point& pt, int min)
           (u.volume_carried() + here[i].volume() > u.volume_capacity() - 2 ||
               here[i].is_weap() || here[i].is_gun())) {
           u.weapon = here[i];
-          if (from_veh) veh->remove_item(veh_part, curmit);
-          else m.i_rem(pt, curmit);
+          EraseAt(*stack_src, curmit);
           u.moves -= mobile::mp_turn;
           curmit--;
       } else {
           u.i_add(here[i]);
-          if (from_veh) veh->remove_item(veh_part, curmit);
-          else m.i_rem(pt, curmit);
+          EraseAt(*stack_src, curmit);
           u.moves -= mobile::mp_turn;
           curmit--;
       }
