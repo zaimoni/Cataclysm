@@ -567,6 +567,25 @@ int menu(const char* mes, const std::initializer_list<std::string>& opts)
  return (menu_vec(mes, opts));
 }
 
+/// <returns>(width, height)</returns>
+static std::pair<int, int> _popup_size(std::string tmp)
+{
+    std::pair<int, int> ret(0, 2);
+
+    size_t pos = tmp.find_first_of('\n');
+    while (pos != std::string::npos) {
+        ret.second++;
+        if (pos > ret.first) ret.first = pos;
+        tmp = tmp.substr(pos + 1);
+        pos = tmp.find_first_of('\n');
+    }
+    if (ret.first == 0 || tmp.length() > ret.first)
+        ret.first = tmp.length();
+    ret.first += 2;
+    if (ret.second > VIEW) ret.second = VIEW;
+    return ret;
+}
+
 void popup_top(const char* mes, ...)
 {
  if (reject_not_whitelisted_printf(mes)) return;
@@ -579,25 +598,16 @@ void popup_top(const char* mes, ...)
  vsnprintf(buff, sizeof(buff), mes, ap);
 #endif
  va_end(ap);
- std::string tmp = buff;
- int width = 0;
- int height = 2;
- size_t pos = tmp.find_first_of('\n');
- while (pos != std::string::npos) {
-  height++;
-  if (pos > width)
-   width = pos;
-  tmp = tmp.substr(pos + 1);
-  pos = tmp.find_first_of('\n');
- }
- if (width == 0 || tmp.length() > width)
-  width = tmp.length();
- width += 2;
+
+ const auto width_height = _popup_size(buff);
+ const int width = width_height.first;  // backward compatibility: could use std::tie but no reduction in line count
+ const int height = width_height.second;
+
  WINDOW* w = newwin(height + 1, width, 0, int((SCREEN_WIDTH - width) / 2));
  wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
             LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
- tmp = buff;
- pos = tmp.find_first_of('\n');
+ std::string tmp(buff);
+ size_t pos = tmp.find_first_of('\n');
  int line_num = 0;
  while (pos != std::string::npos) {
   std::string line = tmp.substr(0, pos);
@@ -634,24 +644,16 @@ void popup(const char* mes, ...)
  vsnprintf(buff, sizeof(buff), mes, ap);
 #endif
  va_end(ap);
- std::string tmp = buff;
- int width = 0;
- int height = 2;
- size_t pos = tmp.find_first_of('\n');
- while (pos != std::string::npos) {
-  height++;
-  if (pos > width) width = pos;
-  tmp = tmp.substr(pos + 1);
-  pos = tmp.find_first_of('\n');
- }
- if (width == 0 || tmp.length() > width) width = tmp.length();
- width += 2;
- if (height > VIEW) height = VIEW;
+
+ const auto width_height = _popup_size(buff);
+ const int width = width_height.first;  // backward compatibility: could use std::tie but no reduction in line count
+ const int height = width_height.second;
+
  WINDOW* w = newwin(height + 1, width, (VIEW - height) / 2, (SCREEN_WIDTH - width) / 2);
  wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
             LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
- tmp = buff;
- pos = tmp.find_first_of('\n');
+ std::string tmp(buff);
+ size_t pos = tmp.find_first_of('\n');
  int line_num = 0;
  while (pos != std::string::npos) {
   std::string line = tmp.substr(0, pos);
@@ -688,24 +690,16 @@ void popup_nowait(const char* mes, ...)
  vsnprintf(buff, sizeof(buff), mes, ap);
 #endif
  va_end(ap);
- std::string tmp = buff;
- int width = 0;
- int height = 2;
- size_t pos = tmp.find_first_of('\n');
- while (pos != std::string::npos) {
-  height++;
-  if (pos > width) width = pos;
-  tmp = tmp.substr(pos + 1);
-  pos = tmp.find_first_of('\n');
- }
- if (width == 0 || tmp.length() > width) width = tmp.length();
- width += 2;
- if (height > VIEW) height = VIEW;
+
+ const auto width_height = _popup_size(buff);
+ const int width = width_height.first;  // backward compatibility: could use std::tie but no reduction in line count
+ const int height = width_height.second;
+
  WINDOW* w = newwin(height + 1, width, (VIEW - height) / 2, (SCREEN_WIDTH - width) / 2);
  wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
             LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
- tmp = buff;
- pos = tmp.find_first_of('\n');
+ std::string tmp(buff);
+ size_t pos = tmp.find_first_of('\n');
  int line_num = 0;
  while (pos != std::string::npos) {
   std::string line = tmp.substr(0, pos);
