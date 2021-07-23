@@ -586,6 +586,22 @@ static std::pair<int, int> _popup_size(std::string tmp)
     return ret;
 }
 
+static WINDOW* _render_popup(std::string tmp, const std::pair<int, int>& dims, int y0)
+{
+    WINDOW* w = newwin(dims.second + 1, dims.first, y0, int((SCREEN_WIDTH - dims.first) / 2));
+    wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
+        LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX);
+    size_t pos;
+    int line_num = 0;
+    while ((pos = tmp.find_first_of('\n')) != std::string::npos) {
+        mvwaddstrz(w, ++line_num, 1, c_white, tmp.substr(0, pos).c_str());
+        tmp = tmp.substr(pos + 1);
+    }
+    mvwaddstrz(w, ++line_num, 1, c_white, tmp.c_str());
+    wrefresh(w);
+    return w;
+}
+
 void popup_top(const char* mes, ...)
 {
  if (reject_not_whitelisted_printf(mes)) return;
@@ -600,28 +616,9 @@ void popup_top(const char* mes, ...)
  va_end(ap);
 
  const auto width_height = _popup_size(buff);
- const int width = width_height.first;  // backward compatibility: could use std::tie but no reduction in line count
- const int height = width_height.second;
 
- WINDOW* w = newwin(height + 1, width, 0, int((SCREEN_WIDTH - width) / 2));
- wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
-            LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
- std::string tmp(buff);
- size_t pos = tmp.find_first_of('\n');
- int line_num = 0;
- while (pos != std::string::npos) {
-  std::string line = tmp.substr(0, pos);
-  line_num++;
-  reject_unescaped_percent(line);
-  mvwprintz(w, line_num, 1, c_white, line.c_str());
-  tmp = tmp.substr(pos + 1);
-  pos = tmp.find_first_of('\n');
- }
- line_num++;
- reject_unescaped_percent(tmp);
- mvwprintz(w, line_num, 1, c_white, tmp.c_str());
+ WINDOW* w = _render_popup(buff, width_height, 0);
 
- wrefresh(w);
  int ch;
  do
   ch = getch();
@@ -646,28 +643,9 @@ void popup(const char* mes, ...)
  va_end(ap);
 
  const auto width_height = _popup_size(buff);
- const int width = width_height.first;  // backward compatibility: could use std::tie but no reduction in line count
- const int height = width_height.second;
 
- WINDOW* w = newwin(height + 1, width, (VIEW - height) / 2, (SCREEN_WIDTH - width) / 2);
- wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
-            LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
- std::string tmp(buff);
- size_t pos = tmp.find_first_of('\n');
- int line_num = 0;
- while (pos != std::string::npos) {
-  std::string line = tmp.substr(0, pos);
-  line_num++;
-  reject_unescaped_percent(line);
-  mvwprintz(w, line_num, 1, c_white, line.c_str());
-  tmp = tmp.substr(pos + 1);
-  pos = tmp.find_first_of('\n');
- }
- line_num++;
- reject_unescaped_percent(tmp);
- mvwprintz(w, line_num, 1, c_white, tmp.c_str());
+ WINDOW* w = _render_popup(buff, width_height, (VIEW - width_height.second) / 2);
 
- wrefresh(w);
  int ch;
  do
   ch = getch();
@@ -692,28 +670,9 @@ void popup_nowait(const char* mes, ...)
  va_end(ap);
 
  const auto width_height = _popup_size(buff);
- const int width = width_height.first;  // backward compatibility: could use std::tie but no reduction in line count
- const int height = width_height.second;
 
- WINDOW* w = newwin(height + 1, width, (VIEW - height) / 2, (SCREEN_WIDTH - width) / 2);
- wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
-            LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
- std::string tmp(buff);
- size_t pos = tmp.find_first_of('\n');
- int line_num = 0;
- while (pos != std::string::npos) {
-  std::string line = tmp.substr(0, pos);
-  line_num++;
-  reject_unescaped_percent(line);
-  mvwprintz(w, line_num, 1, c_white, line.c_str());
-  tmp = tmp.substr(pos + 1);
-  pos = tmp.find_first_of('\n');
- }
- line_num++;
- reject_unescaped_percent(tmp);
- mvwprintz(w, line_num, 1, c_white, tmp.c_str());
+ WINDOW* w = _render_popup(buff, width_height, (VIEW - width_height.second) / 2);
 
- wrefresh(w);
  delwin(w);
  refresh();
 }
@@ -730,22 +689,9 @@ void full_screen_popup(const char* mes, ...)
  vsnprintf(buff, sizeof(buff), mes, ap);
 #endif
  va_end(ap);
- std::string tmp = buff;
- WINDOW* const w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
- wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
-            LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
- size_t pos = tmp.find_first_of('\n');
- int line_num = 0;
- while (pos != std::string::npos) {
-  std::string line = tmp.substr(0, pos);
-  line_num++;
-  mvwaddstrz(w, line_num, 1, c_white, line.c_str());
-  tmp = tmp.substr(pos + 1);
-  pos = tmp.find_first_of('\n');
- }
- line_num++;
- mvwaddstrz(w, line_num, 1, c_white, tmp.c_str());
- wrefresh(w);
+
+ WINDOW* w = _render_popup(buff, std::pair(SCREEN_WIDTH, VIEW), 0);
+
  int ch;
  do
   ch = getch();
