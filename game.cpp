@@ -3823,7 +3823,7 @@ void game::pickup(const point& pt, int min)
  } else if (stack_src->size() <= min) {
   item newit = (*stack_src)[0];
   if (const auto err = cant_pick_up(newit); !err.empty()) {
-      messages.add(err.c_str());
+      popup(err);
       return;
   }
 
@@ -3902,7 +3902,7 @@ void game::pickup(const point& pt, int min)
    ch -= 'a';
    if (getitem[ch] = !getitem[ch]) {
        if (const auto err = cant_pick_up(here[ch]); !err.empty()) {
-           messages.add(err.c_str());
+           popup(err);
            getitem[ch] = false;
            continue; // don't actually update weight/volume
        }

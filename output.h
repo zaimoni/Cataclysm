@@ -102,6 +102,8 @@ int  menu_vec(const char* mes, const std::vector<std::string>& options);
 int  menu(const char* mes, const std::initializer_list<std::string>& opts);
 void popup_top(const char* mes, ...); // Displayed at the top of the screen
 void popup(const char* mes, ...);
+void popup_raw(const char* mes);
+inline void popup(const std::string& msg) { popup_raw(msg.c_str()); }
 void popup_nowait(const char* mes, ...); // Doesn't wait for spacebar
 void full_screen_popup(const char* mes, ...);
 

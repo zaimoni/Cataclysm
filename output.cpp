@@ -656,6 +656,22 @@ void popup(const char* mes, ...)
  refresh();
 }
 
+void popup_raw(const char* mes)
+{
+    const auto width_height = _popup_size(mes);
+
+    WINDOW* w = _render_popup(mes, width_height, (VIEW - width_height.second) / 2);
+
+    int ch;
+    do
+        ch = getch();
+    while (ch != ' ' && ch != '\n' && ch != KEY_ESCAPE);
+    werase(w);
+    wrefresh(w);
+    delwin(w);
+    refresh();
+}
+
 void popup_nowait(const char* mes, ...)
 {
  if (reject_not_whitelisted_printf(mes)) return;
