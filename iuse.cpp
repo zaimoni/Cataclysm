@@ -65,60 +65,51 @@ static void _display_hp(WINDOW* w, player* p, int curhp, int i)
     }
 }
 
-static bool _get_heal_target(player* p, item* it, hp_part& healed)
+static std::optional<hp_part> _get_heal_target(player* p, item* it)
 {
     int ch;
     do {
         ch = getch();
-        if (ch == '1')
-            healed = hp_head;
-        else if (ch == '2')
-            healed = hp_torso;
+        if (ch == '1') return hp_head;
+        else if (ch == '2') return hp_torso;
         else if (ch == '3') {
             if (p->hp_cur[hp_arm_l] == 0) {
-                messages.add("That arm is broken.  It needs surgical attention.");
+                p->subjective_message("That arm is broken.  It needs surgical attention.");
                 it->charges++;
-                return false;
+                return std::nullopt;
             }
-            else
-                healed = hp_arm_l;
+            return hp_arm_l;
         }
         else if (ch == '4') {
             if (p->hp_cur[hp_arm_r] == 0) {
-                messages.add("That arm is broken.  It needs surgical attention.");
+                p->subjective_message("That arm is broken.  It needs surgical attention.");
                 it->charges++;
-                return false;
+                return std::nullopt;
             }
-            else
-                healed = hp_arm_r;
-        }
-        else if (ch == '5') {
+            return hp_arm_r;
+        } else if (ch == '5') {
             if (p->hp_cur[hp_leg_l] == 0) {
-                messages.add("That leg is broken.  It needs surgical attention.");
+                p->subjective_message("That leg is broken.  It needs surgical attention.");
                 it->charges++;
-                return false;
+                return std::nullopt;
             }
-            else
-                healed = hp_leg_l;
-        }
-        else if (ch == '6') {
+            return hp_leg_l;
+        } else if (ch == '6') {
             if (p->hp_cur[hp_leg_r] == 0) {
-                messages.add("That leg is broken.  It needs surgical attention.");
+                p->subjective_message("That leg is broken.  It needs surgical attention.");
                 it->charges++;
-                return false;
+                return std::nullopt;
             }
-            else
-                healed = hp_leg_r;
-        }
-        else if (ch == '7') {
-            messages.add("Never mind.");
+            return hp_leg_r;
+        } else if (ch == '7') {
+            p->subjective_message("Never mind.");
             it->charges++;
-            return false;
+            return std::nullopt;
         }
-    } while (ch < '1' || ch > '7');
-    return true;
+    } while (true);
 }
 
+// apparently NPCs have full surgery kits automatically?
 // returns -1 if nothing needs healing
 static int _npc_get_heal_target(npc* p)
 {
@@ -136,7 +127,8 @@ static int _npc_get_heal_target(npc* p)
     return healed;
 }
 
-void iuse::bandage(game *g, player *p, item *it, bool t) 
+// \todo adjust to allow treating other (N)PCs
+void iuse::bandage(game *g, player *p, item *it, bool t)
 {
  int bonus = p->sklevel[sk_firstaid];
  hp_part healed;
@@ -192,12 +184,13 @@ void iuse::bandage(game *g, player *p, item *it, bool t)
     mvwaddstrz(w, i + 2, 15, c_dkgray, "---");
   }
   wrefresh(w);
-  const bool ok = _get_heal_target(p, it, healed);
+  const auto ok = _get_heal_target(p, it);
   werase(w);
   wrefresh(w);
   delwin(w);
   refresh();
-  if (!ok) return;
+  if (ok) healed = *ok;
+  else return;
  }
 
  p->practice(sk_firstaid, 8);
@@ -211,7 +204,8 @@ void iuse::bandage(game *g, player *p, item *it, bool t)
  p->heal(healed, dam);
 }
 
-void iuse::firstaid(game *g, player *p, item *it, bool t) 
+// \todo adjust to allow treating other (N)PCs
+void iuse::firstaid(game *g, player *p, item *it, bool t)
 {
  int bonus = p->sklevel[sk_firstaid];
  hp_part healed;
@@ -268,12 +262,13 @@ void iuse::firstaid(game *g, player *p, item *it, bool t)
   }
   wrefresh(w);
 
-  const bool ok = _get_heal_target(p, it, healed);
+  const auto ok = _get_heal_target(p, it);
   werase(w);
   wrefresh(w);
   delwin(w);
   refresh();
-  if (!ok) return;
+  if (ok) healed = *ok;
+  else return;
  }
 
  p->practice(sk_firstaid, 8);
@@ -287,10 +282,11 @@ void iuse::firstaid(game *g, player *p, item *it, bool t)
  p->heal(healed, dam);
 }
 
+// \todo guard clause -- this is relatively easy to NPC-convert
 void iuse::vitamins(game *g, player *p, item *it, bool t)
 {
  if (p->has_disease(DI_TOOK_VITAMINS)) {
-  if (p == &(g->u)) messages.add("You have the feeling that these vitamins won't do you any good.");
+  p->subjective_message("You have the feeling that these vitamins won't do you any good.");
   return;
  }
 
