@@ -103,6 +103,134 @@ debug_mode ~\n\
 # debug_scent -\n\
 ";
 
+static std::string action_ident(action_id act)
+{
+    switch (act) {
+    case ACTION_PAUSE:
+        return "pause";
+    case ACTION_MOVE_N:
+        return "move_n";
+    case ACTION_MOVE_NE:
+        return "move_ne";
+    case ACTION_MOVE_E:
+        return "move_e";
+    case ACTION_MOVE_SE:
+        return "move_se";
+    case ACTION_MOVE_S:
+        return "move_s";
+    case ACTION_MOVE_SW:
+        return "move_sw";
+    case ACTION_MOVE_W:
+        return "move_w";
+    case ACTION_MOVE_NW:
+        return "move_nw";
+    case ACTION_MOVE_DOWN:
+        return "move_down";
+    case ACTION_MOVE_UP:
+        return "move_up";
+    case ACTION_OPEN:
+        return "open";
+    case ACTION_CLOSE:
+        return "close";
+    case ACTION_SMASH:
+        return "smash";
+    case ACTION_EXAMINE:
+        return "examine";
+    case ACTION_PICKUP:
+        return "pickup";
+    case ACTION_BUTCHER:
+        return "butcher";
+    case ACTION_CHAT:
+        return "chat";
+    case ACTION_LOOK:
+        return "look";
+    case ACTION_INVENTORY:
+        return "inventory";
+    case ACTION_ORGANIZE:
+        return "organize";
+    case ACTION_USE:
+        return "apply";
+    case ACTION_WEAR:
+        return "wear";
+    case ACTION_TAKE_OFF:
+        return "take_off";
+    case ACTION_EAT:
+        return "eat";
+    case ACTION_READ:
+        return "read";
+    case ACTION_WIELD:
+        return "wield";
+    case ACTION_PICK_STYLE:
+        return "pick_style";
+    case ACTION_RELOAD:
+        return "reload";
+    case ACTION_UNLOAD:
+        return "unload";
+    case ACTION_THROW:
+        return "throw";
+    case ACTION_FIRE:
+        return "fire";
+    case ACTION_FIRE_BURST:
+        return "fire_burst";
+    case ACTION_DROP:
+        return "drop";
+    case ACTION_DIR_DROP:
+        return "drop_adj";
+    case ACTION_BIONICS:
+        return "bionics";
+    case ACTION_WAIT:
+        return "wait";
+    case ACTION_CRAFT:
+        return "craft";
+    case ACTION_CONSTRUCT:
+        return "construct";
+    case ACTION_SLEEP:
+        return "sleep";
+    case ACTION_TOGGLE_SAFEMODE:
+        return "safemode";
+    case ACTION_TOGGLE_AUTOSAFE:
+        return "autosafe";
+    case ACTION_IGNORE_ENEMY:
+        return "ignore_enemy";
+    case ACTION_SAVE:
+        return "save";
+    case ACTION_QUIT:
+        return "quit";
+    case ACTION_PL_INFO:
+        return "player_data";
+    case ACTION_MAP:
+        return "map";
+    case ACTION_MISSIONS:
+        return "missions";
+    case ACTION_FACTIONS:
+        return "factions";
+    case ACTION_MORALE:
+        return "morale";
+    case ACTION_MESSAGES:
+        return "messages";
+    case ACTION_HELP:
+        return "help";
+    case ACTION_DEBUG:
+        return "debug";
+    case ACTION_DISPLAY_SCENT:
+        return "debug_scent";
+    case ACTION_TOGGLE_DEBUGMON:
+        return "debug_mode";
+    case ACTION_NULL:
+        return "null";
+    }
+    return "unknown";
+}
+
+static action_id look_up_action(std::string ident)
+{
+    for (int i = 0; i < NUM_ACTIONS; i++) {
+        if (action_ident(action_id(i)) == ident)
+            return action_id(i);
+    }
+    return ACTION_NULL;
+}
+
 #define KEY_FILE "data/keymap.txt"
 void game::load_keyboard_settings()
 {
@@ -152,134 +280,6 @@ void game::save_keymap()
  OFSTREAM_ACID_CLOSE(fout, KEY_FILE)
 }
 #undef KEY_FILE
-
-std::string action_ident(action_id act)
-{
- switch (act) {
-  case ACTION_PAUSE:
-   return "pause";
-  case ACTION_MOVE_N:
-   return "move_n";
-  case ACTION_MOVE_NE:
-   return "move_ne";
-  case ACTION_MOVE_E:
-   return "move_e";
-  case ACTION_MOVE_SE:
-   return "move_se";
-  case ACTION_MOVE_S:
-   return "move_s";
-  case ACTION_MOVE_SW:
-   return "move_sw";
-  case ACTION_MOVE_W:
-   return "move_w";
-  case ACTION_MOVE_NW:
-   return "move_nw";
-  case ACTION_MOVE_DOWN:
-   return "move_down";
-  case ACTION_MOVE_UP:
-   return "move_up";
-  case ACTION_OPEN:
-   return "open";
-  case ACTION_CLOSE:
-   return "close";
-  case ACTION_SMASH:
-   return "smash";
-  case ACTION_EXAMINE:
-   return "examine";
-  case ACTION_PICKUP:
-   return "pickup";
-  case ACTION_BUTCHER:
-   return "butcher";
-  case ACTION_CHAT:
-   return "chat";
-  case ACTION_LOOK:
-   return "look";
-  case ACTION_INVENTORY:
-   return "inventory";
-  case ACTION_ORGANIZE:
-   return "organize";
-  case ACTION_USE:
-   return "apply";
-  case ACTION_WEAR:
-   return "wear";
-  case ACTION_TAKE_OFF:
-   return "take_off";
-  case ACTION_EAT:
-   return "eat";
-  case ACTION_READ:
-   return "read";
-  case ACTION_WIELD:
-   return "wield";
-  case ACTION_PICK_STYLE:
-   return "pick_style";
-  case ACTION_RELOAD:
-   return "reload";
-  case ACTION_UNLOAD:
-   return "unload";
-  case ACTION_THROW:
-   return "throw";
-  case ACTION_FIRE:
-   return "fire";
-  case ACTION_FIRE_BURST:
-   return "fire_burst";
-  case ACTION_DROP:
-   return "drop";
-  case ACTION_DIR_DROP:
-   return "drop_adj";
-  case ACTION_BIONICS:
-   return "bionics";
-  case ACTION_WAIT:
-   return "wait";
-  case ACTION_CRAFT:
-   return "craft";
-  case ACTION_CONSTRUCT:
-   return "construct";
-  case ACTION_SLEEP:
-   return "sleep";
-  case ACTION_TOGGLE_SAFEMODE:
-   return "safemode";
-  case ACTION_TOGGLE_AUTOSAFE:
-   return "autosafe";
-  case ACTION_IGNORE_ENEMY:
-   return "ignore_enemy";
-  case ACTION_SAVE:
-   return "save";
-  case ACTION_QUIT:
-   return "quit";
-  case ACTION_PL_INFO:
-   return "player_data";
-  case ACTION_MAP:
-   return "map";
-  case ACTION_MISSIONS:
-   return "missions";
-  case ACTION_FACTIONS:
-   return "factions";
-  case ACTION_MORALE:
-   return "morale";
-  case ACTION_MESSAGES:
-   return "messages";
-  case ACTION_HELP:
-   return "help";
-  case ACTION_DEBUG:
-   return "debug";
-  case ACTION_DISPLAY_SCENT:
-   return "debug_scent";
-  case ACTION_TOGGLE_DEBUGMON:
-   return "debug_mode";
-  case ACTION_NULL:
-   return "null";
- }
- return "unknown";
-}
-
-action_id look_up_action(std::string ident)
-{
- for (int i = 0; i < NUM_ACTIONS; i++) {
-  if (action_ident( action_id(i) ) == ident)
-   return action_id(i);
- }
- return ACTION_NULL;
-}
 
 std::string action_name(action_id act)
 {
