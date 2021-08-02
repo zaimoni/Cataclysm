@@ -103,7 +103,7 @@ debug_mode ~\n\
 # debug_scent -\n\
 ";
 
-static std::string action_ident(action_id act)
+constexpr static const char* action_ident(action_id act)
 {
     switch (act) {
     case ACTION_PAUSE:
@@ -219,14 +219,24 @@ static std::string action_ident(action_id act)
     case ACTION_NULL:
         return "null";
     }
-    return "unknown";
+    return nullptr;
 }
+
+// integrity checking
+static consteval bool verify_action_ident()
+{
+    for (int i = 0; i < NUM_ACTIONS; i++) {
+        if (!action_ident(action_id(i))) return false;
+    }
+    return true;
+}
+
+static_assert(verify_action_ident());
 
 static action_id look_up_action(std::string ident)
 {
     for (int i = 0; i < NUM_ACTIONS; i++) {
-        if (action_ident(action_id(i)) == ident)
-            return action_id(i);
+        if (action_ident(action_id(i)) == ident) return action_id(i);
     }
     return ACTION_NULL;
 }
