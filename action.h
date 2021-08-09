@@ -69,7 +69,4 @@ ACTION_TOGGLE_DEBUGMON,
 NUM_ACTIONS
 };
 
-// retain std::string return type, for translations
-std::string action_name(action_id);
-
 #endif

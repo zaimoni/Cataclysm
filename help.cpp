@@ -2,6 +2,137 @@
 #include "keypress.h"
 #include "options.h"
 
+// retain std::string return type, for translations
+static constexpr std::string action_name(action_id act)
+{
+    switch (act) {
+    case ACTION_PAUSE:
+        return "Pause";
+    case ACTION_MOVE_N:
+        return "Move North";
+    case ACTION_MOVE_NE:
+        return "Move Northeast";
+    case ACTION_MOVE_E:
+        return "Move East";
+    case ACTION_MOVE_SE:
+        return "Move Southeast";
+    case ACTION_MOVE_S:
+        return "Move South";
+    case ACTION_MOVE_SW:
+        return "Move Southwest";
+    case ACTION_MOVE_W:
+        return "Move West";
+    case ACTION_MOVE_NW:
+        return "Move Northwest";
+    case ACTION_MOVE_DOWN:
+        return "Descend Stairs";
+    case ACTION_MOVE_UP:
+        return "Ascend Stairs";
+    case ACTION_OPEN:
+        return "Open Door";
+    case ACTION_CLOSE:
+        return "Close Door";
+    case ACTION_SMASH:
+        return "Smash Nearby Terrain";
+    case ACTION_EXAMINE:
+        return "Examine Nearby Terrain";
+    case ACTION_PICKUP:
+        return "Pick Item(s) Up";
+    case ACTION_BUTCHER:
+        return "Butcher";
+    case ACTION_CHAT:
+        return "Chat with NPC";
+    case ACTION_LOOK:
+        return "Look Around";
+    case ACTION_INVENTORY:
+        return "Open Inventory";
+    case ACTION_ORGANIZE:
+        return "Swap Inventory Letters";
+    case ACTION_USE:
+        return "Apply or Use Item";
+    case ACTION_WEAR:
+        return "Wear Item";
+    case ACTION_TAKE_OFF:
+        return "Take Off Worn Item";
+    case ACTION_EAT:
+        return "Eat";
+    case ACTION_READ:
+        return "Read";
+    case ACTION_WIELD:
+        return "Wield";
+    case ACTION_PICK_STYLE:
+        return "Select Unarmed Style";
+    case ACTION_RELOAD:
+        return "Reload Wielded Item";
+    case ACTION_UNLOAD:
+        return "Unload or Empty Wielded Item";
+    case ACTION_THROW:
+        return "Throw Item";
+    case ACTION_FIRE:
+        return "Fire Wielded Item";
+    case ACTION_FIRE_BURST:
+        return "Burst-Fire Wielded Item";
+    case ACTION_DROP:
+        return "Drop Item";
+    case ACTION_DIR_DROP:
+        return "Drop Item to Adjacent Tile";
+    case ACTION_BIONICS:
+        return "View/Activate Bionics";
+    case ACTION_WAIT:
+        return "Wait for Several Minutes";
+    case ACTION_CRAFT:
+        return "Craft Items";
+    case ACTION_CONSTRUCT:
+        return "Construct Terrain";
+    case ACTION_SLEEP:
+        return "Sleep";
+    case ACTION_TOGGLE_SAFEMODE:
+        return "Toggle Safemode";
+    case ACTION_TOGGLE_AUTOSAFE:
+        return "Toggle Auto-Safemode";
+    case ACTION_IGNORE_ENEMY:
+        return "Ignore Nearby Enemy";
+    case ACTION_SAVE:
+        return "Save and Quit";
+    case ACTION_QUIT:
+        return "Commit Suicide";
+    case ACTION_PL_INFO:
+        return "View Player Info";
+    case ACTION_MAP:
+        return "View Map";
+    case ACTION_MISSIONS:
+        return "View Missions";
+    case ACTION_FACTIONS:
+        return "View Factions";
+    case ACTION_MORALE:
+        return "View Morale";
+    case ACTION_MESSAGES:
+        return "View Message Log";
+    case ACTION_HELP:
+        return "View Help";
+    case ACTION_DEBUG:
+        return "Debug Menu";
+    case ACTION_DISPLAY_SCENT:
+        return "View Scentmap";
+    case ACTION_TOGGLE_DEBUGMON:
+        return "Toggle Debug Messages";
+    case ACTION_NULL:
+        return "No Action";
+    }
+    return nullptr;
+}
+
+// integrity checking
+static consteval bool verify_action_name()
+{
+    for (int i = 0; i < NUM_ACTIONS; i++) {
+        if (action_name(action_id(i)).empty()) return false;
+    }
+    return true;
+}
+
+static_assert(verify_action_name());
+
 // \todo convert this to configuration file-driven help
 void game::help()
 {
