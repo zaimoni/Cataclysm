@@ -1,8 +1,6 @@
 #ifndef _ACTION_H_
 #define _ACTION_H_
 
-#include <string>
-
 enum action_id {
 ACTION_NULL = 0,
 // Movement
