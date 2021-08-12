@@ -2,8 +2,9 @@
 #include "keypress.h"
 #include "options.h"
 
-// retain std::string return type, for translations
-static constexpr std::string action_name(action_id act)
+// revert to std::string return type when introducing translations
+// MSVC++ 19 can handle constexpr std::string::empty, but GCC 11.2 does not
+static constexpr const char* action_name(action_id act)
 {
     switch (act) {
     case ACTION_PAUSE:
@@ -126,7 +127,7 @@ static constexpr std::string action_name(action_id act)
 static consteval bool verify_action_name()
 {
     for (int i = 0; i < NUM_ACTIONS; i++) {
-        if (action_name(action_id(i)).empty()) return false;
+        if (!action_name(action_id(i))) return false;
     }
     return true;
 }
@@ -565,7 +566,7 @@ easily drop unwanted items on the floor.");
     for (int i = 0; i < MENU_SPAN && offset + i < NUM_ACTIONS; i++) {
      std::vector<char> k = keys.translate(action_id(offset + i));
      nc_color col = (k.empty() ? c_ltred : c_white);
-     mvprintz(i, 3, col, "%s: ", action_name( action_id(offset + i) ).c_str());
+     mvprintz(i, 3, col, "%s: ", action_name( action_id(offset + i) ));
      if (k.empty())
       printz(c_red, "Unbound!");
      else {
@@ -589,13 +590,13 @@ easily drop unwanted items on the floor.");
      int actch = getch();
      if (actch >= 'a' && actch < 'a' + MENU_SPAN && actch - 'a' + offset < NUM_ACTIONS) {
       action_id act = action_id(actch - 'a' + offset);
-      if (ch == '-' && query_yn("Clear keys for %s?",action_name(act).c_str())){
+      if (ch == '-' && query_yn("Clear keys for %s?",action_name(act))){
 	   keys.unset(act);
        changed_keymap = true;
       } else if (ch == '+') {
-       const char newbind = popup_getkey("New key for %s:", action_name(act).c_str());
+       const char newbind = popup_getkey("New key for %s:", action_name(act));
 	   if (keys.set(newbind, act)) changed_keymap = true;
-	   else popup("%c is used for %s.", newbind, action_name(keys.translate(newbind)).c_str());
+	   else popup("%c is used for %s.", newbind, action_name(keys.translate(newbind)));
       }
      }
     }
