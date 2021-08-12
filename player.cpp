@@ -1930,7 +1930,7 @@ void player::swim(const GPS_loc& loc)
 
 bool player::swimming_surface()
 {
-    if (500 > swim_speed() < 500) {
+    if (500 > swim_speed()) {
         underwater = false;
         return true;
     };
