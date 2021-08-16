@@ -34,8 +34,6 @@ template<> int discard<int>::x = 0;
 bool game::debugmon = false;
 game* game::_active = nullptr;
 
-#define MAX_MONSTERS_MOVING 40 // Efficiency!
-
 void intro();
 
 // inline hypothetical mongroup.cpp
@@ -2491,10 +2489,19 @@ static direction direction_from(const GPS_loc& pt, const GPS_loc& pt2) {
     return direction_from(0, 0); // degenerate
 }
 
+static constexpr nc_color attitude_color(npc_attitude src)
+{
+    switch (src) {
+        case NPCATT_KILL:   return c_red;
+        case NPCATT_FOLLOW: return c_ltgreen;
+        case NPCATT_DEFEND: return c_green;
+        default: return c_pink;
+    }
+}
+
 void game::mon_info()
 {
  werase(w_moninfo);
- int buff;
  int newseen = 0;
 // 7 0 1	unique_types uses these indices;
 // 6 8 2	0-7 are provide by direction_from()
@@ -2575,24 +2582,18 @@ void game::mon_info()
   point pr(label_reference[i]);
 
   for (int j = 0; j < unique_types[i].size() && j < 10; j++) {
-   buff = unique_types[i][j];
+   int buff = unique_types[i][j];
 
    if (buff < 0) { // It's an NPC!
-    nc_color tmpcol(c_pink);
-    switch (active_npc[(buff + 1) * -1].attitude) {
-     case NPCATT_KILL:   tmpcol = c_red;     break;
-     case NPCATT_FOLLOW: tmpcol = c_ltgreen; break;
-     case NPCATT_DEFEND: tmpcol = c_green;   break;
-    }
-    mvwputch (w_moninfo, pr.y, pr.x, tmpcol, '@');
+    mvwputch(w_moninfo, pr.y, pr.x, attitude_color(active_npc[(buff + 1) * -1].attitude), '@');
 
    } else // It's a monster!  easier.
-    mvwputch (w_moninfo, pr.y, pr.x, mtype::types[buff]->color, mtype::types[buff]->sym);
+    mvwputch(w_moninfo, pr.y, pr.x, mtype::types[buff]->color, mtype::types[buff]->sym);
 
    pr.x++;
   }
   if (unique_types[i].size() > 10) // Couldn't print them all!
-   mvwputch (w_moninfo, pr.y, pr.x - 1, c_white, '+');
+   mvwputch(w_moninfo, pr.y, pr.x - 1, c_white, '+');
  } // for (int i = 0; i < 8; i++)
 
 // Now we print their full names!
