@@ -2889,8 +2889,8 @@ void player::disp_status(WINDOW *w, game *g)
    nc_color col_indc = veh->skidding? c_red : c_green;
    int dfm = veh->face.dir() - veh->move.dir();
    mvwputch(w, 3, 21, col_indc, dfm < 0? 'L' : '.');
-   mvwputch(w, 3, 22, col_indc, dfm == 0? '0' : '.');
-   mvwputch(w, 3, 23, col_indc, dfm > 0? 'R' : '.');
+   wputch(w, col_indc, dfm == 0? '0' : '.');
+   wputch(w, col_indc, dfm > 0? 'R' : '.');
   }
  } else {  // Not in vehicle
   nc_color col_str = _RGW_color(str_cur, str_max);

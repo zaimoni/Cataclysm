@@ -551,7 +551,7 @@ int set_skills(WINDOW* w, player *u, int &points)
          } else {
              mvwaddstrz(w, 5 + delta, 0, (i == cur_sk ? hilite(COL_SKILL_USED) : COL_SKILL_USED), skill_name(skill(i)));
              for (int j = 0; j < u->sklevel[i]; j++)
-                 wprintz(w, (i == cur_sk ? hilite(COL_SKILL_USED) : COL_SKILL_USED), "*");
+                 wputch(w, (i == cur_sk ? hilite(COL_SKILL_USED) : COL_SKILL_USED), '*');
          }
      }
  };
@@ -641,9 +641,8 @@ int set_description(WINDOW* w, player *u, int &points)
   }
 
   if (!noname) {
-      mvwaddstrz(w, 6, 8, c_ltgray, u->name.c_str());
-   if (line == 1)
-    wprintz(w, h_ltgray, "_");
+   mvwaddstrz(w, 6, 8, c_ltgray, u->name.c_str());
+   if (line == 1) wputch(w, h_ltgray, '_');
   }
   mvwaddstrz(w, 8, 2, (2 == line ? h_ltgray : c_ltgray), "Gender:");
 

@@ -145,6 +145,13 @@ void mvwputch_hi(WINDOW* w, int y, int x, nc_color FG, long ch)
  wattroff(w, HC);
 }
 
+void wputch(WINDOW* w, nc_color FG, long ch)
+{
+    wattron(w, FG);
+    waddch(w, ch);
+    wattroff(w, FG);
+}
+
 void draw_hline(WINDOW* w, int y, nc_color FG, long ch, int x0, int x1)
 {
     if (0 > x0) x0 = 0;
@@ -405,8 +412,7 @@ std::string string_input_popup(const char* mes, ...)
   } else {
    ret += ch;
    mvwputch(w, 1, posx, c_magenta, ch);
-   posx++;
-   mvwputch(w, 1, posx, h_ltgray, '_');
+   wputch(w, h_ltgray, '_');
   }
  } while (true);
 }
@@ -458,8 +464,7 @@ std::string string_input_popup(int max_length, const char* mes, ...)
   } else if(ret.size() < max_length || max_length == 0) {
    ret += ch;
    mvwputch(w, 1, posx, c_magenta, ch);
-   posx++;
-   mvwputch(w, 1, posx, h_ltgray, '_');
+   wputch(w, h_ltgray, '_');
   }
  } while (true);
 }
