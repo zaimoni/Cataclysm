@@ -39,7 +39,9 @@ class inventory
 
   void clear() { items.clear(); }
   void add_stack(const std::vector<item>& newits);
+#if DEAD_FUNC
   void push_back(const std::vector<item>& newits) { add_stack(newits); }
+#endif
   void add_item (item newit, bool keep_invlet = false);
   void add_item_keep_invlet(item newit) { add_item(newit, true); }
   void push_back(item newit) { add_item(newit); }

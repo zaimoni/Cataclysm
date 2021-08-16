@@ -98,12 +98,7 @@ void inventory::add_item(item newit, bool keep_invlet)
  for (auto& stack : items) {
   item& first = stack[0];
   if (first.stacks_with(newit)) {
-/*
-   if (keep_invlet)
-    first.invlet = newit.invlet;
-   else
-*/
-    newit.invlet = first.invlet;
+   newit.invlet = first.invlet;
    stack.push_back(newit);
    return;
   } else if (keep_invlet && first.invlet == newit.invlet)
@@ -114,7 +109,7 @@ void inventory::add_item(item newit, bool keep_invlet)
 
  std::vector<item> newstack;
  newstack.push_back(newit);
- items.push_back(newstack);
+ items.push_back(std::move(newstack));
 }
 
 void inventory::restack(player *p)
