@@ -90,6 +90,7 @@ void inventory::add_stack(const std::vector<item>& newits)
  for (const auto& it : newits) add_item(it, true);
 }
 
+// C++20: item&& signature is ambiguous in conjunction with this signature
 void inventory::add_item(item newit, bool keep_invlet)
 {
  if (keep_invlet && !newit.invlet_is_okay()) assign_empty_invlet(newit); // Keep invlet is true, but invlet is invalid!
@@ -99,7 +100,7 @@ void inventory::add_item(item newit, bool keep_invlet)
   item& first = stack[0];
   if (first.stacks_with(newit)) {
    newit.invlet = first.invlet;
-   stack.push_back(newit);
+   stack.push_back(std::move(newit));
    return;
   } else if (keep_invlet && first.invlet == newit.invlet)
    assign_empty_invlet(first);
@@ -107,8 +108,9 @@ void inventory::add_item(item newit, bool keep_invlet)
  if (!newit.invlet_is_okay() || index_by_letter(newit.invlet) != -1) 
   assign_empty_invlet(newit);
 
+ // C++20: no relevant move-constructor for std::vector
  std::vector<item> newstack;
- newstack.push_back(newit);
+ newstack.push_back(std::move(newit));
  items.push_back(std::move(newstack));
 }
 
