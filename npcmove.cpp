@@ -1678,8 +1678,8 @@ std::pair<hp_part, int> player::worst_injury() const
 		}
 	}
 	// deflate before return for accuracy later on
-	if (hp_head == ret.second) ret.second /= 3;
-	else if (hp_torso == ret.second) ret.second /= 2;
+	if (hp_head == ret.first) ret.second /= 3;
+	else if (hp_torso == ret.first) ret.second /= 2;
 	return ret;
 }
 
