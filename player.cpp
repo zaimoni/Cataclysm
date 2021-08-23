@@ -1605,9 +1605,7 @@ void player::screenpos_add(point delta) {
 
 void player::pick_name()
 {
- std::ostringstream ss;
- ss << random_first_name(male) << " " << random_last_name();
- name = ss.str();
+    name = random_first_name(male) + " " + random_last_name();
 }
  
 void player::reset(game *g)
