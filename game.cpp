@@ -536,7 +536,7 @@ void game::create_factions()
  for (int i = 0; i < num; i++) {
   tmp = faction(faction::assign_id());
   tmp.randomize();
-  tmp.likes_u = 100;
+  tmp.likes_u = 100;    // early debugging mode, evidently
   tmp.respects_u = 100;
   tmp.known_by_u = true;
   factions.push_back(tmp);

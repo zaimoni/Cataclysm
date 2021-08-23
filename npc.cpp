@@ -394,10 +394,7 @@ void npc::randomize(game *g, npc_class type)
   personality.bravery += rng(0, 5);
   break;
  }
- for (int i = 0; i < num_hp_parts; i++) {
-  hp_max[i] = 60 + str_max * 3;
-  hp_cur[i] = hp_max[i];
- }
+ normalize();
  starting_weapon(g);
  worn = starting_clothes(type, male, g);
  inv.clear();

@@ -1603,15 +1603,6 @@ void player::screenpos_add(point delta) {
     if (this == &g->u && g->update_map_would_scroll(pos)) g->update_map(pos.x, pos.y);
 }
 
-// \todo V0.2.1+ trigger uniform max hp recalculation on any change to str_max or the PF_TOUGH trait
-void player::normalize()
-{
- int max_hp = 60 + str_max * 3;
- if (has_trait(PF_TOUGH)) max_hp = int(max_hp * 1.2);
-
- for (int i = 0; i < num_hp_parts; i++) hp_cur[i] = hp_max[i] = max_hp;
-}
-
 void player::pick_name()
 {
  std::ostringstream ss;

@@ -32,6 +32,14 @@ static int calc_HP(int strength, bool tough)
     return ret;
 }
 
+// \todo V0.2.1+ trigger uniform max hp recalculation on any change to str_max or the PF_TOUGH trait
+void player::normalize()
+{
+    int max_hp = calc_HP(str_max, has_trait(PF_TOUGH));
+
+    for (int i = 0; i < num_hp_parts; i++) hp_cur[i] = hp_max[i] = max_hp;
+}
+
 static std::string template_filename(const std::string& src)
 {
     std::string ret("data/");
@@ -152,16 +160,17 @@ bool player::create(game *g, character_type type, std::string tempname)
  if (0 > tab) return false;
  
  // Character is finalized.  Now just set up HP, &c
- for (int i = 0; i < num_hp_parts; i++) {
-  hp_max[i] = calc_HP(str_max, has_trait(PF_TOUGH));
-  hp_cur[i] = hp_max[i];
- }
+ normalize();
+
+ // \todo lift these up into normalize when NPCs can start with traits
  if (has_trait(PF_GLASSJAW)) {
   hp_max[hp_head] = int(hp_max[hp_head] * .85);
   hp_cur[hp_head] = hp_max[hp_head];
  }
  if (has_trait(PF_SMELLY))
   scent = 800;
+
+ // bionics were inherited as PC-only \todo catch this when NPC bionics go up
  if (has_trait(PF_ANDROID)) {
   add_bionic(bionic_id(rng(bio_memory, max_bio_start - 1)));// Other
   if (bionic::type[my_bionics[0].id].power_cost > 0) {
@@ -177,6 +186,7 @@ bool player::create(game *g, character_type type, std::string tempname)
    power_level = 0;
   }
 
+  // \todo character creation debugging hook
 /* CHEATER'S STUFF
 
   add_bionic(bionic_id(rng(0, bio_ethanol)));	// Power Source
