@@ -2814,9 +2814,9 @@ void player::disp_status(WINDOW *w, game *g)
  }
 
  // C++ 20: extract offset changes from string lookup tables (likely using views, to be translation-friendly)
- if (const auto text = _hunger_text(hunger)) mvwaddstrz(w, 2, 0, text->first, text->second);
- if (const auto text = _thirst_text(thirst)) mvwaddstrz(w, 2, 15, text->first, text->second);
- if (const auto text = _fatigue_text(fatigue)) mvwaddstrz(w, 2, 30, text->first, text->second);
+ if (const auto text = _hunger_text(hunger)) mvwaddstrz(w, 2, 0, *text);
+ if (const auto text = _thirst_text(thirst)) mvwaddstrz(w, 2, 15, *text);
+ if (const auto text = _fatigue_text(fatigue)) mvwaddstrz(w, 2, 30, *text);
 
  mvwaddstrz(w, 2, 41, c_white, "XP: ");
  mvwprintz(w, 2, 45, _xp_color(xp_pool), "%d", xp_pool);
