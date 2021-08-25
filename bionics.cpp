@@ -825,10 +825,7 @@ bool player::install_bionics(game *g, const it_bionic* type)
 
  if (type->id == itm_bionics_battery) {	// No selection list; just confirm
   mvwprintz(w.get(),  2, 0, h_ltblue, "Battery Level +%d", BATTERY_AMOUNT);
-  mvwaddstrz(w.get(), 22, 0, c_ltblue, "\
-Installing this bionic will increase your total battery capacity by 10.\n\
-Batteries are necessary for most bionics to function.  They also require a\n\
-charge mechanism, which must be installed from another CBM.");
+  mvwaddstrz(w.get(), 22, 0, c_ltblue, bionic::type[bio_batteries].description.c_str());
   int ch;
   wrefresh(w.get());
   do ch = getch();
