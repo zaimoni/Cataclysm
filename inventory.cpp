@@ -90,28 +90,28 @@ void inventory::add_stack(const std::vector<item>& newits)
  for (const auto& it : newits) add_item(it, true);
 }
 
-// C++20: item&& signature is ambiguous in conjunction with this signature
-void inventory::add_item(item newit, bool keep_invlet)
+void inventory::_add_item(item&& newit, bool keep_invlet)
 {
- if (keep_invlet && !newit.invlet_is_okay()) assign_empty_invlet(newit); // Keep invlet is true, but invlet is invalid!
- if (newit.is_style()) return; // Styles never belong in our inventory.
+    if (newit.is_style()) throw std::logic_error("tried to add style to inventory");
+    if (keep_invlet && !newit.invlet_is_okay()) assign_empty_invlet(newit); // Keep invlet is true, but invlet is invalid!
 
- for (auto& stack : items) {
-  item& first = stack[0];
-  if (first.stacks_with(newit)) {
-   newit.invlet = first.invlet;
-   stack.push_back(std::move(newit));
-   return;
-  } else if (keep_invlet && first.invlet == newit.invlet)
-   assign_empty_invlet(first);
- }
- if (!newit.invlet_is_okay() || index_by_letter(newit.invlet) != -1) 
-  assign_empty_invlet(newit);
+    for (auto& stack : items) {
+        item& first = stack[0];
+        if (first.stacks_with(newit)) {
+            newit.invlet = first.invlet;
+            stack.push_back(std::move(newit));
+            return;
+        }
+        else if (keep_invlet && first.invlet == newit.invlet)
+            assign_empty_invlet(first);
+    }
+    if (!newit.invlet_is_okay() || index_by_letter(newit.invlet) != -1)
+        assign_empty_invlet(newit);
 
- // C++20: no relevant move-constructor for std::vector
- std::vector<item> newstack;
- newstack.push_back(std::move(newit));
- items.push_back(std::move(newstack));
+    // C++20: no relevant move-constructor for std::vector
+    std::vector<item> newstack;
+    newstack.push_back(std::move(newit));
+    items.push_back(std::move(newstack));
 }
 
 void inventory::restack(player *p)
@@ -151,7 +151,7 @@ void inventory::form_from_map(const map& m, point origin, int range)
    if (m.field_at(x, y).type == fd_fire) {
     item fire(item::types[itm_fire], 0);
     fire.charges = 1;
-    add_item(fire);
+    add_item(std::move(fire));
    }
   }
  }

@@ -42,9 +42,10 @@ class inventory
 #if DEAD_FUNC
   void push_back(const std::vector<item>& newits) { add_stack(newits); }
 #endif
-  void add_item (item newit, bool keep_invlet = false);
-  void add_item_keep_invlet(item newit) { add_item(newit, true); }
-  void push_back(item newit) { add_item(newit); }
+  void add_item(const item& newit, bool keep_invlet = false) { _add_item(item(newit), keep_invlet); }
+  void add_item(item&& newit, bool keep_invlet = false) { _add_item(std::move(newit), keep_invlet); }
+  void push_back(const item& newit) { add_item(newit); }
+  void push_back(item&& newit) { add_item(std::move(newit)); }
 
 /* Check all items for proper stacking, rearranging as needed
  * game pointer is not necessary, but if supplied, will ensure no overlap with
@@ -81,6 +82,7 @@ class inventory
   std::vector< std::vector<item> > items;
 
   void assign_empty_invlet(item &it, player* p = nullptr);
+  void _add_item(item&& newit, bool keep_invlet);
 };
 
 #endif

@@ -4193,13 +4193,13 @@ void player::i_add(item it)
     } else it.charges = 0;	// requires full working copy to be valid
    }
   }
-  if (it.charges > 0) inv.push_back(it);
+  if (it.charges > 0) inv.push_back(std::move(it));
   return;
  }
  if (it.is_artifact() && it.is_tool()) {
   game::add_artifact_messages(dynamic_cast<const it_artifact_tool*>(it.type)->effects_carried);
  }
- inv.push_back(it);
+ inv.push_back(std::move(it));
 }
 
 bool player::has_active_item(itype_id id) const
@@ -5079,7 +5079,7 @@ void player::use(game *g, char let)
 
   if (tool->use == &iuse::dogfood) replace_item = false;
 
-  if (replace_item && used->invlet != 0) inv.add_item_keep_invlet(copy);
+  if (replace_item && used->invlet != 0) inv.add_item(copy, true);
   else if (used->invlet == 0 && used == &weapon) remove_weapon();
   return;
  } else if (used->is_gunmod()) {
