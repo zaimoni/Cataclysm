@@ -463,7 +463,7 @@ int main(int argc, char *argv[])
 	std::vector<it_comest*> edible;
 	std::vector<it_ammo*> fuel;	// XXX conflation in type system
 	std::vector<it_gun*> guns;
-	std::vector<it_gunmod*> gun_mods;
+	std::vector<const it_gunmod*> gun_mods;
 	std::vector<it_style*> ma_styles;	// martial arts styles
 	std::vector<it_macguffin*> macguffins;
 	std::vector<it_comest*> pharma;
@@ -616,10 +616,7 @@ int main(int argc, char *argv[])
 
 			guns.push_back(gun);
 			will_handle_as_html = true;
-		} else if (it->is_gunmod()) {
-			const auto mod = static_cast<it_gunmod*>(it);
-			if (!mod) throw std::logic_error(it->name + ": static cast to gun mod failed");
-
+		} else if (const auto mod = it->is_gunmod()) {
 			gun_mods.push_back(mod);
 			will_handle_as_html = true;
 		} else if (it->is_bionic()) {

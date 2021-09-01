@@ -330,6 +330,9 @@ std::string ammo_name(ammotype t);
 // Returns the default ammo for a category of ammo (e.g. "itm_00_shot")
 itype_id default_ammo(ammotype guntype);
 
+// forward-declares
+struct it_gunmod;
+
 struct itype
 {
  int id;		// ID # that matches its place in master itype list
@@ -361,7 +364,7 @@ struct itype
  virtual bool is_food() const    { return false; }
  virtual bool is_ammo() const    { return false; }
  virtual bool is_gun() const     { return false; }
- virtual bool is_gunmod() const  { return false; }
+ virtual const it_gunmod* is_gunmod() const  { return nullptr; }
  virtual bool is_bionic() const  { return false; }
  virtual bool is_armor() const   { return false; }
  virtual bool is_book() const    { return false; }
@@ -492,7 +495,7 @@ struct it_gun : public itype
  bool is_gun() const override { return true; }
 };
 
-struct it_gunmod : public itype
+struct it_gunmod final : public itype
 {
  signed char accuracy, damage, loudness, clip, recoil, burst;
  ammotype newtype;
@@ -514,7 +517,7 @@ struct it_gunmod : public itype
 	 ammotype pnewtype, long a_a_t, bool pistol,
 	 bool shotgun, bool smg, bool rifle);
 
- bool is_gunmod() const override { return true; }
+ const it_gunmod* is_gunmod() const override { return this; }
 
  void info(std::ostream& dest) const override;
 };

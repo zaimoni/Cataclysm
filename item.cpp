@@ -682,8 +682,8 @@ int item::clip_size() const
  if (gun->ammo != AT_40MM && charges > 0 && curammo->type == AT_40MM) return 1; // M203 mod in use
  int ret = gun->clip;
  for (const auto& it : contents) {
-  if (it.is_gunmod()) {
-   int bonus = (ret * (dynamic_cast<const it_gunmod*>(it.type))->clip) / 100;
+  if (const auto mod = it.is_gunmod()) {
+   int bonus = (ret * mod->clip) / 100;
    ret += bonus;
   }
  }
@@ -696,7 +696,7 @@ int item::accuracy() const
  const it_gun* const gun = dynamic_cast<const it_gun*>(type);
  int ret = gun->accuracy;
  for(const auto& it : contents)  {
-  if (it.is_gunmod()) ret -= (dynamic_cast<const it_gunmod*>(it.type))->accuracy;
+  if (const auto mod = it.is_gunmod()) ret -= mod->accuracy;
  }
  ret += damage * 2;
  return ret;
@@ -709,7 +709,7 @@ int item::gun_damage(bool with_ammo) const
  int ret = gun->dmg_bonus;
  if (with_ammo && curammo != nullptr) ret += curammo->damage;
  for(const auto& it : contents) {
-  if (it.is_gunmod()) ret += (dynamic_cast<const it_gunmod*>(it.type))->damage;
+  if (const auto mod = it.is_gunmod()) ret += mod->damage;
  }
  ret -= damage * 2;
  return ret;
@@ -721,7 +721,7 @@ int item::noise() const
  int ret = curammo ? curammo->damage : 0;
  if (ret >= 5) ret += 20;
  for (const auto& it : contents) {
-  if (it.is_gunmod()) ret += (dynamic_cast<const it_gunmod*>(it.type))->loudness;
+  if (const auto mod = it.is_gunmod()) ret += mod->loudness;
  }
  return ret;
 }
@@ -732,7 +732,7 @@ int item::burst_size() const
  const it_gun* const gun = dynamic_cast<const it_gun*>(type);
  int ret = gun->burst;
  for(const auto& it : contents) {
-  if (it.is_gunmod()) ret += (dynamic_cast<const it_gunmod*>(it.type))->burst;
+  if (const auto mod = it.is_gunmod()) ret += mod->burst;
  }
  return (ret < 0) ? 0 : ret;
 }
@@ -744,7 +744,7 @@ int item::recoil(bool with_ammo) const
  int ret = gun->recoil;
  if (with_ammo && curammo != nullptr) ret += curammo->recoil;
  for (const auto& it : contents) {
-  if (it.is_gunmod()) ret += (dynamic_cast<const it_gunmod*>(it.type))->recoil;
+  if (const auto mod = it.is_gunmod()) ret += mod->recoil;
  }
  return ret;
 }
@@ -776,10 +776,8 @@ ammotype item::ammo_type() const
  if (is_gun()) {
   ammotype ret = dynamic_cast<const it_gun*>(type)->ammo;
   for (int i = 0; i < contents.size(); i++) {
-   if (contents[i].is_gunmod()) {
-    const it_gunmod* const mod = dynamic_cast<const it_gunmod*>(contents[i].type);
-    if (mod->newtype != AT_NULL)
-     ret = mod->newtype;
+   if (const auto mod = contents[i].is_gunmod()) {
+    if (mod->newtype != AT_NULL) ret = mod->newtype;
    }
   }
   return ret;
@@ -807,8 +805,7 @@ void item::uses_ammo_type(itype_id src, std::vector<ammotype>& dest)
 {
     const auto it = item(item::types[src],0);
     if (auto am = it.uses_ammo_type()) dest.push_back(am);
-    else if (it.is_gunmod()) {
-        const it_gunmod* const mod = dynamic_cast<const it_gunmod*>(it.type);
+    else if (const auto mod = it.is_gunmod()) {
         if (mod->newtype) dest.push_back(mod->newtype);
         if (itm_m203 == src) dest.push_back(AT_40MM);
     }
@@ -819,8 +816,7 @@ ammotype item::uses_ammo_type() const
     if (is_gun()) {
         ammotype ret = dynamic_cast<const it_gun*>(type)->ammo;
         for (const auto& it : contents) {
-            if (it.is_gunmod()) {
-                const it_gunmod* const mod = dynamic_cast<const it_gunmod*>(it.type);
+            if (const auto mod = it.is_gunmod()) {
                 if (mod->newtype != AT_NULL) ret = mod->newtype;
             }
         }

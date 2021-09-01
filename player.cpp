@@ -5097,14 +5097,13 @@ void player::use(game *g, char let)
   if (replace_item && used->invlet != 0) inv.add_item(copy, true);
   else if (used->invlet == 0 && used == &weapon) remove_weapon();
   return;
- } else if (used->is_gunmod()) {
+ } else if (const auto mod = used->is_gunmod()) {
   if (sklevel[sk_gun] == 0) {
    messages.add("You need to be at least level 1 in the firearms skill before you can modify guns.");
    if (replace_item) inv.add_item(copy);
    return;
   }
   char gunlet = g->inv("Select gun to modify:");
-  const it_gunmod* const mod = dynamic_cast<const it_gunmod*>(used->type);
   item& gun = i_at(gunlet);
   if (gun.is_null()) {
    messages.add("You do not have that item.");
