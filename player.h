@@ -242,6 +242,7 @@ public:
  item i_remn(int index);// Remove item from inventory; returns ret_null on fail
  item& i_at(char let);	// Returns the item with inventory letter let
  const item& i_at(char let) const { return const_cast<player*>(this)->i_at(let); };
+ std::optional<std::pair<item*, int> > from_invlet(char let);
  item& i_of_type(itype_id type); // Returns the first item with this type
  const item& i_of_type(itype_id type) const { return const_cast<player*>(this)->i_of_type(type); };
  std::vector<item> inv_dump() const; // Inventory + weapon + worn (for death, etc)

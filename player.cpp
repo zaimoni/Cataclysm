@@ -4378,6 +4378,21 @@ item& player::i_at(char let)
  return inv[index];
 }
 
+std::optional<std::pair<item*, int> > player::from_invlet(char let)
+{
+    if (KEY_ESCAPE == let) return std::nullopt;
+    if (let == weapon.invlet) return std::pair(&weapon, -1);
+    int worn_index = -2;
+    for (decltype(auto) it : worn) {
+        if (let == it.invlet) return std::pair(&it, worn_index);
+        worn_index--;
+    }
+    int index = inv.index_by_letter(let);
+    if (0 > index) return std::nullopt;
+    return std::pair(&inv[index], index);
+}
+
+
 item& player::i_of_type(itype_id type)
 {
  if (weapon.type->id == type) return weapon;

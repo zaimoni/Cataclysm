@@ -4078,14 +4078,12 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
   std::ostringstream text;
   text << "Container for " << liquid.tname();
   char ch = inv(text.str().c_str());
-  if (!u.has_item(ch))
-   return false;
-  item& cont = u.i_at(ch);
-  if (cont.is_null()) {
-   messages.add("Never mind.");
-   return false;
+  auto dest = u.from_invlet(ch);
+  if (!dest) return false;
 
-  } else if (liquid.is_ammo() && (cont.is_tool() || cont.is_gun())) {
+  item& cont = *(dest->first); // backward compatibility
+
+  if (liquid.is_ammo() && (cont.is_tool() || cont.is_gun())) {
 
    ammotype ammo = AT_NULL;
    int max = 0;
@@ -4374,17 +4372,26 @@ int game::visible_monsters(std::vector<const monster*>& mon_targets, std::vector
 void game::plthrow()
 {
  char ch = inv("Throw item:");
- int range = u.throw_range(u.lookup_item(ch));
- if (range < 0) {
+ auto src = u.from_invlet(ch);
+ if (!src) {
+     messages.add("You don't have that item.");
+     return;
+ } else if (-2 >= src->second) {
+     messages.add("You have to take that off before throwing it.");
+     return;
+ }
+
+ if (is_between(num_items+1, src->first->type->id, num_all_items-1)) {
+     messages.add("That's part of your body, you can't throw that!");
+     return;
+ }
+
+ int range = u.throw_range(src->second);
+ if (range < 0) { // \todo remove dead code
   messages.add("You don't have that item.");
   return;
  } else if (range == 0) {
   messages.add("That is too heavy to throw.");
-  return;
- }
- item thrown = u.i_at(ch); // copy needed due to u.i_rem(ch) call before actually throwing
- if (thrown.type->id > num_items && thrown.type->id < num_all_items) {
-  messages.add("That's part of your body, you can't throw that!");
   return;
  }
 
@@ -4401,10 +4408,11 @@ void game::plthrow()
 
  // target() sets x and y, or returns false if we canceled (by pressing Esc)
  point tar(u.pos);
- std::vector<point> trajectory = target(tar, bounds, mon_targets, passtarget, "Throwing " + thrown.tname());
+ std::vector<point> trajectory = target(tar, bounds, mon_targets, passtarget, "Throwing " + src->first->tname());
  if (trajectory.empty()) return;
  if (passtarget != -1) last_target = targetindices[passtarget];
 
+ item thrown(*src->first); // copy needed due to u.i_rem(ch) call before actually throwing
  u.i_rem(ch);
  u.moves -= (mobile::mp_turn/4)*5;
  u.practice(sk_throw, 10);
