@@ -5787,8 +5787,10 @@ void map::place_items(items_location loc, int chance, int x1, int y1,
      add_item(x.second, it, turn);
      // Guns in the home and behind counters are generated with their ammo
      // TODO: Make this less of a hack
-     if (it->is_gun() && will_autospawn_ammo) {
-         add_item(x.second, item::types[default_ammo(dynamic_cast<it_gun*> (it)->ammo)], turn);
+     if (will_autospawn_ammo) {
+         if (const auto gun = it->is_gun()) {
+             add_item(x.second, item::types[default_ammo(gun->ammo)], turn);
+         }
      }
  }
 }

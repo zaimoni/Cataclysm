@@ -134,7 +134,7 @@ public:
  bool is_weap() const;
  bool is_bashing_weapon() const;
  bool is_cutting_weapon() const;
- bool is_gun() const { return type->is_gun(); }
+ auto is_gun() const { return type->is_gun(); }
  auto is_gunmod() const { return type->is_gunmod(); }
  bool is_bionic() const { return type->is_bionic(); }
  bool is_ammo() const { return type->is_ammo(); }

@@ -331,6 +331,7 @@ std::string ammo_name(ammotype t);
 itype_id default_ammo(ammotype guntype);
 
 // forward-declares
+struct it_gun;
 struct it_gunmod;
 
 struct itype
@@ -363,7 +364,7 @@ struct itype
  
  virtual bool is_food() const    { return false; }
  virtual bool is_ammo() const    { return false; }
- virtual bool is_gun() const     { return false; }
+ virtual const it_gun* is_gun() const     { return nullptr; }
  virtual const it_gunmod* is_gunmod() const  { return nullptr; }
  virtual bool is_bionic() const  { return false; }
  virtual bool is_armor() const   { return false; }
@@ -469,7 +470,7 @@ struct it_ammo : public itype
  void info(std::ostream& dest) const override;
 };
 
-struct it_gun : public itype
+struct it_gun final : public itype
 {
  ammotype ammo;
  skill skill_used;
@@ -492,7 +493,7 @@ struct it_gun : public itype
 	signed char paccuracy, signed char precoil, unsigned char pdurability,
         unsigned char pburst, int pclip, int preload_time);
 
- bool is_gun() const override { return true; }
+ const it_gun* is_gun() const override { return this; }
 };
 
 struct it_gunmod final : public itype

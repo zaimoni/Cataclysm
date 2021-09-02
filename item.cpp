@@ -835,14 +835,15 @@ ammotype item::provides_ammo_type() const
 #ifndef SOCRATES_DAIMON
 int item::pick_reload_ammo(const player &u, bool interactive) const
 {
- if (!type->is_gun() && !type->is_tool()) {
+    const auto reload_gun = type->is_gun();
+ if (!reload_gun && !type->is_tool()) {
   debugmsg("RELOADING NON-GUN NON-TOOL");
   return -1;
  }
 
  std::vector<int> am;	// List of indicies of valid ammo
 
- if (type->is_gun()) {
+ if (reload_gun) {
   if (charges > 0) {
    const itype_id aid = itype_id(curammo->id);
    const auto& inv = u.inv;
