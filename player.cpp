@@ -4444,6 +4444,28 @@ bool player::remove_item(item* it)
 	return false;
 }
 
+bool player::remove_discard(const std::pair<item*, int>& it)
+{
+    assert(it.first);
+    if (-1 == it.second) {
+        assert(it.first == &weapon);
+        remove_weapon();
+        return true;
+    }
+    if (0 <= it.second && inv.size() > it.second) {
+        assert(it.first = &inv[it.second]);
+        i_remn(it.second);
+        return true;
+    }
+    if (-2 >= it.second && -2 - worn.size() < it.second) {
+        auto worn_at = -(2 + it.second);
+        assert(it.first = &worn[worn_at]);
+        EraseAt(worn, worn_at);
+        return true;
+    }
+    return false;
+}
+
 
 void player::use_amount(itype_id it, int quantity, bool use_container)
 {

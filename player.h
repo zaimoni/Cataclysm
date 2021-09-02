@@ -247,6 +247,7 @@ public:
  const item& i_of_type(itype_id type) const { return const_cast<player*>(this)->i_of_type(type); };
  std::vector<item> inv_dump() const; // Inventory + weapon + worn (for death, etc)
  bool remove_item(item* it);
+ bool remove_discard(const std::pair<item*, int>& it);
  int  butcher_factor() const;	// Automatically picks our best butchering tool
  item* pick_usb(); // Pick a usb drive, interactively if it matters
  bool is_wearing(itype_id it) const;	// Are we wearing a specific itype?
@@ -268,6 +269,8 @@ public:
  bool has_mission_item(int mission_id) const;	// Has item with mission_id
  bool has_ammo(ammotype at) const;// Returns a list of indices of the ammo
  std::vector<int> have_ammo(ammotype at) const;// Returns a list of indices of the ammo
+
+ // these four compete with from_invlet; use from_invlet for new code (no decoding from index; slightly different index convention)
  std::pair<int, item*> have_item(char let);
  std::pair<int, const item*> have_item(char let) const;
  item* decode_item_index(int n);

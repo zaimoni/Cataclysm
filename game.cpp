@@ -4413,7 +4413,7 @@ void game::plthrow()
  if (passtarget != -1) last_target = targetindices[passtarget];
 
  item thrown(*src->first); // copy needed due to u.i_rem(ch) call before actually throwing
- u.i_rem(ch);
+ u.remove_discard(*src);
  u.moves -= (mobile::mp_turn/4)*5;
  u.practice(sk_throw, 10);
 
