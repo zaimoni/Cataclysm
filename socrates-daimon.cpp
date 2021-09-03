@@ -464,7 +464,7 @@ int main(int argc, char *argv[])
 	std::vector<it_ammo*> fuel;	// XXX conflation in type system
 	std::vector<const it_gun*> guns;
 	std::vector<const it_gunmod*> gun_mods;
-	std::vector<it_style*> ma_styles;	// martial arts styles
+	std::vector<const it_style*> ma_styles;	// martial arts styles
 	std::vector<it_macguffin*> macguffins;
 	std::vector<it_comest*> pharma;
 	std::vector<it_software*> software;
@@ -486,9 +486,8 @@ int main(int argc, char *argv[])
         if (it->id != ub) throw std::logic_error("reverse lookup failure: " + std::to_string(it->id)+" for " + std::to_string(ub));
         // item material reality checks
 		if (!it->m1 && it->m2) throw std::logic_error("non-null secondary material for null primary material");
-		if (it->is_style()) {
+		if (const auto style = it->is_style()) {
 			// constructor hard-coding (specification)
-			const auto style = static_cast<it_style*>(it);
 			if (!style) throw std::logic_error(it->name + ": static cast to style failed");
 			if (0 != it->rarity) throw std::logic_error("unexpected rarity");
 			if (0 != it->price) throw std::logic_error("unexpected pre-apocalypse value");

@@ -482,8 +482,7 @@ bool item::has_flag(item_flag f) const
 #ifndef SOCRATES_DAIMON
 bool item::has_technique(technique_id tech, const player *p) const
 {
- if (is_style()) {
-  const it_style* const style = dynamic_cast<const it_style*>(type);
+ if (const auto style = is_style()) {
   for (const auto& m : style->moves) {
    if (m.tech == tech && (p == nullptr || p->sklevel[sk_unarmed] >= m.level)) return true;
   }
@@ -544,15 +543,11 @@ int item::weapon_value(const int skills[num_skill_types]) const
 
 style_move item::style_data(technique_id tech) const
 {
- style_move ret;
+    if (const auto style = is_style()) {
+        for (const auto& m : style->moves) if (m.tech == tech) return m;
+    }
 
- if (!is_style()) return ret;
-
- const it_style* const style = dynamic_cast<const it_style*>(type);
-
- for(const auto& m : style->moves) if (m.tech == tech) return m;
-
- return ret;
+    return style_move();
 }
  
 #ifndef SOCRATES_DAIMON

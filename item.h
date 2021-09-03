@@ -144,7 +144,7 @@ public:
  bool is_tool() const { return type->is_tool(); }
  bool is_software() const { return type->is_software(); }
  bool is_macguffin() const { return type->is_macguffin(); }
- bool is_style() const { return type->is_style(); }
+ auto is_style() const { return type->is_style(); }
  bool is_other() const; // Doesn't belong in other categories
  bool is_artifact() const { return type->is_artifact(); }
 

@@ -333,6 +333,7 @@ itype_id default_ammo(ammotype guntype);
 // forward-declares
 struct it_gun;
 struct it_gunmod;
+struct it_style;
 
 struct itype
 {
@@ -373,7 +374,7 @@ struct itype
  virtual bool is_container() const { return false; }
  virtual bool is_software() const { return false; }
  virtual bool is_macguffin() const { return false; }
- virtual bool is_style() const   { return false; }
+ virtual const it_style* is_style() const   { return nullptr; }
  virtual bool is_artifact() const { return false; }
  virtual bool count_by_charges() const { return false; }
  virtual std::string save_data() { return std::string(); }
@@ -697,7 +698,7 @@ struct it_style : public itype
      signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
      unsigned pitem_flags);
 
- bool is_style() const override { return true; }
+ const it_style* is_style() const override { return this; }
 
  int melee_value(const int skills[num_skill_types]) const override;
 
