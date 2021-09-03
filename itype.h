@@ -688,7 +688,7 @@ struct it_software : public itype
  bool is_software() const override { return true; }
 };
 
-struct it_style : public itype
+struct it_style final : public itype
 {
  using base = itype; // Cf. Objective-C
 

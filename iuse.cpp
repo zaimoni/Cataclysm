@@ -689,40 +689,53 @@ void iuse::sew(game *g, player *p, item *it, bool t)
 void iuse::scissors(game *g, player *p, item *it, bool t)
 {
  char ch = g->inv("Chop up what?");
- item* cut = &(p->i_at(ch));
- if (cut->type->id == 0) {
-  messages.add("You do not have that item!");
-  return;
+ auto src = p->from_invlet(ch);
+ if (!src) {
+     messages.add("You do not have that item!");
+     return;
  }
+
+ item* cut = src->first; // backward compatibility
+ static auto is_string_like = [](int it) {
+     switch (it)
+     {
+     case itm_string_36: return std::optional(std::pair("string", std::pair(6, itm_string_6)));
+     case itm_rope_30: return std::optional(std::pair("rope", std::pair(5, itm_rope_6)));
+     default: return std::optional<std::pair<const char*, std::pair<int, itype_id> > >();
+     };
+ };
+
+ static auto drop_n_clone = [&](int n, item&& obj) {
+     bool drop = false;
+     while (0 < n--) {
+         if (!drop) {
+             if (p->volume_carried() >= p->volume_capacity() || !g->assign_invlet(obj, *p)) drop = true;
+         }
+         if (drop) g->m.add_item(p->pos, obj);
+         else p->i_add(obj);
+     }
+ };
+
  if (cut->type->id == itm_rag) {
   messages.add("There's no point in cutting a rag.");
   return;
  }
- if (cut->type->id == itm_string_36 || cut->type->id == itm_rope_30) {
-  p->moves -= 150;
-  bool is_string = (cut->type->id == itm_string_36);
-  int pieces = (is_string ? 6 : 5);
-  messages.add("You cut the %s into %d smaller pieces.",
-             (is_string ? "string" : "rope"), pieces);
-  itype_id piece_id = (is_string ? itm_string_6 : itm_rope_6);
-  item string(item::types[piece_id], int(messages.turn), g->nextinv);
-  p->i_rem(ch);
-  bool drop = false;
-  for (int i = 0; i < pieces; i++) {
-   if (!drop) {
-       if (p->volume_carried() >= p->volume_capacity() || !g->assign_invlet(string, *p)) drop = true;
-   }
-   if (drop) g->m.add_item(p->pos, string);
-   else p->i_add(string);
-  }
-  return;
+ if (const auto dest = is_string_like(cut->type->id)) {
+     p->moves -= 3 * (mobile::mp_turn) / 2;
+     int pieces = dest->second.first; // backward compatibility
+     auto i_type = dest->second.second;
+     messages.add("You cut the %s into %d smaller pieces.", dest->first, dest->second.first);
+     p->remove_discard(*src);
+     drop_n_clone(pieces, item(item::types[i_type], int(messages.turn), g->nextinv));
+     return;
  }
  if (!cut->made_of(COTTON)) {
   messages.add("You can only slice items made of cotton.");
   return;
  }
- p->moves -= 25 * cut->volume();
- int count = cut->volume();
+ const auto vol = cut->volume();
+ p->moves -= (mobile::mp_turn / 4) * vol;
+ int count = vol;
  if (p->sklevel[sk_tailor] == 0) count = rng(0, count);
  else if (p->sklevel[sk_tailor] == 1 && count >= 2) count -= rng(0, 2);
 
@@ -730,21 +743,14 @@ void iuse::scissors(game *g, player *p, item *it, bool t)
 
  if (count <= 0) {
   messages.add("You clumsily cut the %s into useless ribbons.", cut->tname().c_str());
-  p->i_rem(ch);
+  p->remove_discard(*src);
   return;
  }
  messages.add("You slice the %s into %d rag%s.", cut->tname().c_str(), count,
             (count == 1 ? "" : "s"));
  item rag(item::types[itm_rag], int(messages.turn), g->nextinv);
- p->i_rem(ch);
- bool drop = false;
- for (int i = 0; i < count; i++) {
-  if (!drop) {
-      if (p->volume_carried() >= p->volume_capacity() || !g->assign_invlet(rag, *p)) drop = true;
-  }
-  if (drop) g->m.add_item(p->pos, rag);
-  else p->i_add(rag);
- }
+ p->remove_discard(*src);
+ drop_n_clone(count, item(item::types[itm_rag], int(messages.turn), g->nextinv));
 }
 
 void iuse::extinguisher(game *g, player *p, item *it, bool t)
