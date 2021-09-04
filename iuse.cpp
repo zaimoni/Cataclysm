@@ -610,12 +610,14 @@ void iuse::lighter(game *g, player *p, item *it, bool t)
 void iuse::sew(game *g, player *p, item *it, bool t)
 {
  char ch = g->inv("Repair what?");
- item* fix = &(p->i_at(ch));
- if (fix == nullptr || fix->is_null()) {
-  messages.add("You do not have that item!");
-  it->charges++;
-  return;
+ const auto src = p->from_invlet(ch);
+ if (!src) {
+     messages.add("You do not have that item!");
+     it->charges++;
+     return;
  }
+
+ item* fix = src->first; // backward compatibility
  if (!fix->is_armor()) {
   messages.add("That isn't clothing!");
   it->charges++;
@@ -630,13 +632,16 @@ void iuse::sew(game *g, player *p, item *it, bool t)
   messages.add("Your %s is already enhanced.", fix->tname().c_str());
   it->charges++;
   return;
- } else if (fix->damage == 0) {
-  p->moves -= 500;
+ };
+
+ p->moves -= 5 * mobile::mp_turn;
+ int rn = dice(4, 2 + p->sklevel[sk_tailor]);
+ if (p->dex_cur < 8 && one_in(p->dex_cur)) rn -= rng(2, 6);
+ if (p->dex_cur >= 16 || (p->dex_cur > 8 && one_in(16 - p->dex_cur))) rn += rng(2, 6);
+ if (p->dex_cur > 16) rn += rng(0, p->dex_cur - 16);
+
+ if (fix->damage == 0) {
   p->practice(sk_tailor, 10);
-  int rn = dice(4, 2 + p->sklevel[sk_tailor]);
-  if (p->dex_cur < 8 && one_in(p->dex_cur)) rn -= rng(2, 6);
-  if (p->dex_cur >= 16 || (p->dex_cur > 8 && one_in(16 - p->dex_cur))) rn += rng(2, 6);
-  if (p->dex_cur > 16) rn += rng(0, p->dex_cur - 16);
   if (rn <= 4) {
    messages.add("You damage your %s!", fix->tname().c_str());
    fix->damage++;
@@ -646,36 +651,24 @@ void iuse::sew(game *g, player *p, item *it, bool t)
   } else
    messages.add("You practice your sewing.");
  } else {
-  p->moves -= 500;
   p->practice(sk_tailor, 8);
-  int rn = dice(4, 2 + p->sklevel[sk_tailor]);
-  rn -= rng(fix->damage, fix->damage * 2);
-  if (p->dex_cur < 8 && one_in(p->dex_cur)) rn -= rng(2, 6);
-  if (p->dex_cur >= 8 && (p->dex_cur >= 16 || one_in(16 - p->dex_cur))) rn += rng(2, 6);
-  if (p->dex_cur > 16) rn += rng(0, p->dex_cur - 16);
+
+  rn -= rng(fix->damage, fix->damage * 2); // unclear that repair is actually more difficult than enhancement
 
   if (rn <= 4) {
    messages.add("You damage your %s further!", fix->tname().c_str());
    fix->damage++;
    if (fix->damage >= 5) {
     messages.add("You destroy it!");
-    p->i_rem(ch);
+    p->remove_discard(*src);
    }
   } else if (rn <= 6) {
    messages.add("You don't repair your %s, but you waste lots of thread.", fix->tname().c_str());
-   int waste = rng(1, 8);
-   if (waste > it->charges)
-    it->charges = 0;
-   else
-    it->charges -= waste;
+   clamp_lb<0>(it->charges -= rng(1, 8));
   } else if (rn <= 8) {
    messages.add("You repair your %s, but waste lots of thread.", fix->tname().c_str());
    fix->damage--;
-   int waste = rng(1, 8);
-   if (waste > it->charges)
-    it->charges = 0;
-   else
-    it->charges -= waste;
+   clamp_lb<0>(it->charges -= rng(1, 8));
   } else if (rn <= 16) {
    messages.add("You repair your %s!", fix->tname().c_str());
    fix->damage--;
