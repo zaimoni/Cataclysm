@@ -331,6 +331,7 @@ std::string ammo_name(ammotype t);
 itype_id default_ammo(ammotype guntype);
 
 // forward-declares
+struct it_bionic;
 struct it_gun;
 struct it_gunmod;
 struct it_style;
@@ -367,13 +368,13 @@ struct itype
  virtual bool is_ammo() const    { return false; }
  virtual const it_gun* is_gun() const     { return nullptr; }
  virtual const it_gunmod* is_gunmod() const  { return nullptr; }
- virtual bool is_bionic() const  { return false; }
+ virtual const it_bionic* is_bionic() const  { return nullptr; }
  virtual bool is_armor() const   { return false; }
  virtual bool is_book() const    { return false; }
  virtual bool is_tool() const    { return false; }
  virtual bool is_container() const { return false; }
  virtual bool is_software() const { return false; }
- virtual bool is_macguffin() const { return false; }
+ virtual bool is_macguffin() const { return false; } // leave this alone until this is revamped
  virtual const it_style* is_style() const   { return nullptr; }
  virtual bool is_artifact() const { return false; }
  virtual bool count_by_charges() const { return false; }
@@ -640,7 +641,7 @@ protected:	// this is not a final type so these aren't public
 	void toJSON(cataclysm::JSON& dest) const override;
 };
         
-struct it_bionic : public itype
+struct it_bionic final : public itype
 {
  std::vector<bionic_id> options;
  int difficulty;
@@ -649,7 +650,7 @@ struct it_bionic : public itype
 	 char psym, nc_color pcolor, int pdifficulty,
 	 std::string pdes, const std::initializer_list<bionic_id>& _opts);
 
- bool is_bionic() const override { return true; }
+ const it_bionic* is_bionic() const override { return this; }
 };
 
 struct it_macguffin : public itype

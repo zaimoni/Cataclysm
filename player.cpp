@@ -5200,8 +5200,7 @@ void player::use(game *g, char let)
   messages.add("You attach the %s to your %s.", used->tname().c_str(), gun.tname().c_str());
   gun.contents.push_back(replace_item ? copy : i_rem(let));
   return;
- } else if (used->is_bionic()) {
-  const it_bionic* const tmp = dynamic_cast<const it_bionic*>(used->type);
+ } else if (const auto tmp = used->is_bionic()) {
   if (install_bionics(g, tmp)) {
    if (!replace_item) i_rem(let);
   } else if (replace_item) inv.add_item(copy);

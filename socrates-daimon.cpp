@@ -456,7 +456,7 @@ int main(int argc, char *argv[])
 
 	std::vector<it_ammo*> ammunition;
 	std::vector<it_armor*> armor;
-	std::vector<it_bionic*> bionics;
+	std::vector<const it_bionic*> bionics;
 	std::vector<const it_book*> books;
 	std::vector<it_container*> containers;
 	std::vector<it_comest*> drinks;
@@ -617,8 +617,7 @@ int main(int argc, char *argv[])
 		} else if (const auto mod = it->is_gunmod()) {
 			gun_mods.push_back(mod);
 			will_handle_as_html = true;
-		} else if (it->is_bionic()) {
-			const auto bionic = static_cast<it_bionic*>(it);
+		} else if (const auto bionic = it->is_bionic()) {
 			if (!bionic) throw std::logic_error(it->name + ": static cast to bionic failed");
 
 			bionics.push_back(bionic);
