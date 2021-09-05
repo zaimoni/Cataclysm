@@ -141,12 +141,14 @@ public:
  bool is_armor() const { return type->is_armor(); }
  bool is_book() const;
  bool is_container() const { return type->is_container(); }
- bool is_tool() const { return type->is_tool(); }
+ auto is_tool() const { return type->is_tool(); }
  bool is_software() const { return type->is_software(); }
  bool is_macguffin() const { return type->is_macguffin(); }
  auto is_style() const { return type->is_style(); }
  bool is_other() const; // Doesn't belong in other categories
  bool is_artifact() const { return type->is_artifact(); }
+ auto is_artifact_armor() const { return type->is_artifact_armor(); }
+ auto is_artifact_tool() const { return type->is_artifact_tool(); }
 
  bool is_mission_item(int _id) const;
 

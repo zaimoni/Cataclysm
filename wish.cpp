@@ -133,7 +133,7 @@ void game::wish()
   }
   tmp.make(item::types[a + shift]);
   tmp.bday = messages.turn;
-  if (tmp.is_tool()) tmp.charges = dynamic_cast<const it_tool*>(tmp.type)->max_charges;
+  if (const auto tool = tmp.is_tool()) tmp.charges = tool->max_charges;
   else if (tmp.is_ammo()) tmp.charges = 100;
   else tmp.charges = -1;
   info = tmp.info(true);

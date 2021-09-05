@@ -331,10 +331,13 @@ std::string ammo_name(ammotype t);
 itype_id default_ammo(ammotype guntype);
 
 // forward-declares
+struct it_artifact_armor;
+struct it_artifact_tool;
 struct it_bionic;
 struct it_gun;
 struct it_gunmod;
 struct it_style;
+struct it_tool;
 
 struct itype
 {
@@ -371,12 +374,14 @@ struct itype
  virtual const it_bionic* is_bionic() const  { return nullptr; }
  virtual bool is_armor() const   { return false; }
  virtual bool is_book() const    { return false; }
- virtual bool is_tool() const    { return false; }
+ virtual const it_tool* is_tool() const    { return nullptr; }
  virtual bool is_container() const { return false; }
  virtual bool is_software() const { return false; }
  virtual bool is_macguffin() const { return false; } // leave this alone until this is revamped
  virtual const it_style* is_style() const   { return nullptr; }
  virtual bool is_artifact() const { return false; }
+ virtual const it_artifact_armor* is_artifact_armor() const { return nullptr; }
+ virtual const it_artifact_tool* is_artifact_tool() const { return nullptr; }
  virtual bool count_by_charges() const { return false; }
  virtual std::string save_data() { return std::string(); }
 
@@ -633,7 +638,7 @@ struct it_tool : public itype
 #endif
  );
 
- bool is_tool() const override { return true; }
+ const it_tool* is_tool() const override final { return this; }
 
  void info(std::ostream& dest) const override;
 protected:	// this is not a final type so these aren't public
@@ -725,6 +730,7 @@ struct it_artifact_tool final : public it_tool
 	 signed char pm_to_hit, unsigned pitem_flags);
 
  bool is_artifact() const override { return true; }
+ const it_artifact_tool* is_artifact_tool() const override { return this; }
  std::string save_data() override;
 };
 
@@ -748,6 +754,7 @@ struct it_artifact_armor final : public it_armor
  void toJSON(cataclysm::JSON& dest) const override;
 
  bool is_artifact() const override { return true; }
+ const it_artifact_armor* is_artifact_armor() const override { return this; }
  std::string save_data() override;
 };
 

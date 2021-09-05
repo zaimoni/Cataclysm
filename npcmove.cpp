@@ -948,8 +948,7 @@ int player::can_reload() const
 			return -1;
 		}
 		return index;
-	} else if (weapon.is_tool()) {
-		const it_tool* const tool = dynamic_cast<const it_tool*>(weapon.type);
+	} else if (const auto tool = weapon.is_tool()) {
 		if (tool->ammo == AT_NULL) {
 			messages.add("You can't reload a %s!", weapon.tname().c_str());
 			return -1;
@@ -1652,8 +1651,7 @@ void npc::alt_attack(game *g, int target)
 
 void npc::activate_item(game *g, item& it)	// unclear whether this "works"; parallel is npc::use_escape_item
 {
- if (it.is_tool()) {
-  const it_tool* const tool = dynamic_cast<const it_tool*>(it.type);
+ if (const auto tool = it.is_tool()) {
   (*tool->use)(g, this, &it, false);
  } else if (it.is_food()) {
   const it_comest* const comest = dynamic_cast<const it_comest*>(it.type);

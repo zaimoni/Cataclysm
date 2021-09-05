@@ -43,8 +43,7 @@ static void _bootstrap_item_charges(int& charges, const itype* const it)
 		const it_comest* const comest = dynamic_cast<const it_comest*>(it);
 		charges = (1 == comest->charges) ? -1 : comest->charges;
 	}
-	else if (it->is_tool()) {
-		const it_tool* const tool = dynamic_cast<const it_tool*>(it);
+	else if (const auto tool = it->is_tool()) {
 		charges = (0 == tool->max_charges) ? -1 : tool->def_charges;;
 	}
 }
@@ -776,7 +775,7 @@ ammotype item::ammo_type() const
    }
   }
   return ret;
- } else if (is_tool()) return dynamic_cast<const it_tool*>(type)->ammo;
+ } else if (const auto tool = is_tool()) return tool->ammo;
  else if (is_ammo()) return dynamic_cast<const it_ammo*>(type)->type;
  return AT_NULL;
 }
@@ -817,7 +816,7 @@ ammotype item::uses_ammo_type() const
         }
         return ret;
     }
-    else if (is_tool()) return dynamic_cast<const it_tool*>(type)->ammo;
+    else if (const auto tool = is_tool()) return tool->ammo;
     return AT_NULL;
 }
 
@@ -909,9 +908,9 @@ bool item::reload(player &u, int index)
    max_load = 1;
   else
    max_load = clip_size();
- } else if (is_tool()) {
+ } else if (const auto tool = is_tool()) {
   single_load = false;
-  max_load = dynamic_cast<const it_tool*>(type)->max_charges;
+  max_load = tool->max_charges;
  }
  if (index > -1) {
 // If the gun is currently loaded with a different type of ammo, reloading fails

@@ -3156,7 +3156,9 @@ void game::emp_blast(int x, int y)
 
 // Drain any items of their battery charge
  for(auto& it : m.i_at(x, y)) {
-  if (it.is_tool() && (dynamic_cast<const it_tool*>(it.type))->ammo == AT_BATT) it.charges = 0;
+     if (const auto tool = it.is_tool()) {
+         if (AT_BATT == tool->ammo) it.charges = 0;
+     }
  }
 }
 
@@ -4088,8 +4090,7 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
    ammotype ammo = AT_NULL;
    int max = 0;
 
-   if (cont.is_tool()) {
-    const it_tool* const tool = dynamic_cast<const it_tool*>(cont.type);
+   if (const auto tool = cont.is_tool()) {
     ammo = tool->ammo;
     max = tool->max_charges;
    } else {

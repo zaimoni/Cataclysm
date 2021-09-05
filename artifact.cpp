@@ -414,9 +414,8 @@ void game::process_artifact(item *it, player *p, bool wielded)
  static constexpr const zaimoni::gdi::box<point> spread(point(-1), point(1));
  std::vector<art_effect_passive> effects;
 
- if (it->is_armor()) effects = dynamic_cast<const it_artifact_armor*>(it->type)->effects_worn;
- else if (it->is_tool()) {
-  const it_artifact_tool* const tool = dynamic_cast<const it_artifact_tool*>(it->type);
+ if (const auto armor = it->is_artifact_armor()) effects = armor->effects_worn;
+ else if (const auto tool = it->is_artifact_tool()) {
   effects = tool->effects_carried;
   if (wielded) for (decltype(auto) e : tool->effects_wielded) effects.push_back(e);
 // Recharge it if necessary

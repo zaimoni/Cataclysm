@@ -1890,16 +1890,17 @@ you can, I need to know you're alright.";
 
 void iuse::artifact(game *g, player *p, item *it, bool t)
 {
- if (!it->is_artifact()) {
-  debugmsg("iuse::artifact called on a non-artifact item! %s",
-           it->tname().c_str());
-  return;
- } else if (!it->is_tool()) {
-  debugmsg("iuse::artifact called on a non-tool artifact! %s",
-           it->tname().c_str());
-  return;
- }
- const it_artifact_tool* const art = dynamic_cast<const it_artifact_tool*>(it->type);
+    const auto art = it->is_artifact_tool();
+    if (!art) {
+        if (!it->is_artifact()) {
+            debugmsg("iuse::artifact called on a non-artifact item! %s", it->tname().c_str());
+            return;
+        } else {
+            debugmsg("iuse::artifact called on a non-tool artifact! %s", it->tname().c_str());
+            return;
+        }
+    }
+
  int num_used = rng(1, art->effects_activated.size());
  if (num_used < art->effects_activated.size())
   num_used += rng(1, art->effects_activated.size() - num_used);

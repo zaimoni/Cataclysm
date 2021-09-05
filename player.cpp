@@ -376,15 +376,15 @@ stat_delta dis_stat_effects(const player& p, const disease& dis)
 
     case DI_EVIL: {
         bool lesser = false; // Worn or wielded; diminished effects
-        if (p.weapon.is_artifact() && p.weapon.is_tool()) {
-            const it_artifact_tool* const tool = dynamic_cast<const it_artifact_tool*>(p.weapon.type);
-            lesser = any(tool->effects_carried, AEP_EVIL) || any(tool->effects_wielded, AEP_EVIL);
+        if (const auto art_tool = p.weapon.is_artifact_tool()) {
+            lesser = any(art_tool->effects_carried, AEP_EVIL) || any(art_tool->effects_wielded, AEP_EVIL);
         }
         if (!lesser) {
             for (const auto& it : p.worn) {
-                if (!it.is_artifact()) continue;
-                lesser = any(dynamic_cast<const it_artifact_armor*>(it.type)->effects_worn, AEP_EVIL);
-                if (lesser) break;
+                if (const auto art_armor = it.is_artifact_armor()) {
+                    lesser = any(art_armor->effects_worn, AEP_EVIL);
+                    if (lesser) break;
+                }
             }
         }
 
@@ -4196,8 +4196,8 @@ void player::i_add(item it)
   if (it.charges > 0) inv.push_back(std::move(it));
   return;
  }
- if (it.is_artifact() && it.is_tool()) {
-  game::add_artifact_messages(dynamic_cast<const it_artifact_tool*>(it.type)->effects_carried);
+ if (const auto art_tool = it.is_artifact_tool()) {
+  game::add_artifact_messages(art_tool->effects_carried);
  }
  inv.push_back(std::move(it));
 }
@@ -4559,20 +4559,20 @@ bool player::is_wearing(itype_id it) const
 
 bool player::has_artifact_with(art_effect_passive effect) const
 {
- if (weapon.is_artifact() && weapon.is_tool()) {
-  const it_artifact_tool* const tool = dynamic_cast<const it_artifact_tool*>(weapon.type);
-  if (any(tool->effects_wielded, effect)) return true;
-  if (any(tool->effects_carried, effect)) return true;
+ if (const auto art_tool = weapon.is_artifact_tool()) {
+     if (any(art_tool->effects_wielded, effect)) return true;
+     if (any(art_tool->effects_carried, effect)) return true;
  }
  for (size_t i = 0; i < inv.size(); i++) {
-  const auto& it = inv[i];
-  if (it.is_artifact() && it.is_tool()) {
-   if (any(dynamic_cast<const it_artifact_tool*>(it.type)->effects_carried, effect)) return true;
-  }
+     const auto& it = inv[i];
+     if (const auto art_tool = it.is_artifact_tool()) {
+         if (any(art_tool->effects_carried, effect)) return true;
+     }
  }
  for (const auto& it : worn) {
-  if (!it.is_artifact()) continue;
-  if (any(dynamic_cast<const it_artifact_armor*>(it.type)->effects_worn, effect)) return true;
+     if (const auto art_armor = it.is_artifact_armor()) {
+         if (any(art_armor->effects_worn, effect)) return true;
+     }
  }
  return false;
 }
@@ -4922,8 +4922,8 @@ bool player::wield(int index)
  }
  if (!is_armed()) {
   weapon = inv.remove_item(index);
-  if (weapon.is_artifact() && weapon.is_tool()) game::add_artifact_messages(dynamic_cast<const it_artifact_tool*>(weapon.type)->effects_wielded);
-  moves -= 30;
+  if (const auto art_tool = weapon.is_artifact_tool()) game::add_artifact_messages(art_tool->effects_wielded);
+  moves -= 3 * (mobile::mp_turn / 10);
   last_item = itype_id(weapon.type->id);
   return true;
  } else if (volume_carried() + weapon.volume() - inv[index].volume() < volume_capacity()) {
@@ -4931,8 +4931,8 @@ bool player::wield(int index)
   weapon = inv.remove_item(index);
   inv.push_back(std::move(tmpweap));
   inv_sorted = false;
-  moves -= 45;
-  if (weapon.is_artifact() && weapon.is_tool()) game::add_artifact_messages(dynamic_cast<const it_artifact_tool*>(weapon.type)->effects_wielded);
+  moves -= 9 * (mobile::mp_turn / 20);
+  if (const auto art_tool = weapon.is_artifact_tool()) game::add_artifact_messages(art_tool->effects_wielded);
   last_item = itype_id(weapon.type->id);
   return true;
  } else if (query_yn("No space in inventory for your %s.  Drop it?",
@@ -4940,9 +4940,9 @@ bool player::wield(int index)
   game::active()->m.add_item(pos, unwield());
   weapon = inv.remove_item(index);
   inv_sorted = false;
-  moves -= 30;
-  if (weapon.is_artifact() && weapon.is_tool()) {
-   game::add_artifact_messages(dynamic_cast<const it_artifact_tool*>(weapon.type)->effects_wielded);
+  moves -= 3 * (mobile::mp_turn / 10);
+  if (const auto art_tool = weapon.is_artifact_tool()) {
+   game::add_artifact_messages(art_tool->effects_wielded);
   }
   last_item = itype_id(weapon.type->id);
   return true;
@@ -5050,8 +5050,8 @@ bool player::wear_item(const item& to_wear)
  if (!armor) return false;
 
  if (!is_npc()) messages.add("You put on your %s.", to_wear.tname().c_str());
- if (to_wear.is_artifact()) game::add_artifact_messages(dynamic_cast<const it_artifact_armor*>(to_wear.type)->effects_worn);
- moves -= 350; // TODO: Make this variable?
+ if (const auto art_armor = to_wear.is_artifact_armor()) game::add_artifact_messages(art_armor->effects_worn);
+ moves -= 7 * (mobile::mp_turn / 2); // \todo? Make this variable
  last_item = itype_id(to_wear.type->id);
  worn.push_back(to_wear);
  if (!is_npc()) {
@@ -5106,8 +5106,7 @@ void player::use(game *g, char let)
  
  last_item = itype_id(used->type->id);
 
- if (used->is_tool()) {
-  const it_tool* const tool = dynamic_cast<const it_tool*>(used->type);
+ if (const auto tool = used->is_tool()) {
   if (tool->charges_per_use == 0 || used->charges >= tool->charges_per_use) {
    (*tool->use)(g, this, used, false);
    used->charges -= tool->charges_per_use;

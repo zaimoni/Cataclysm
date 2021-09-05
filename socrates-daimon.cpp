@@ -468,7 +468,7 @@ int main(int argc, char *argv[])
 	std::vector<it_macguffin*> macguffins;
 	std::vector<it_comest*> pharma;
 	std::vector<it_software*> software;
-	std::vector<it_tool*> tools;
+	std::vector<const it_tool*> tools;
 
 	std::vector<itype*> unclassified;
 
@@ -603,10 +603,7 @@ int main(int argc, char *argv[])
 
 			armor.push_back(armour);
 			will_handle_as_html = true;
-		} else if (it->is_tool()) {
-			const auto tool = static_cast<it_tool*>(it);
-			if (!tool) throw std::logic_error(it->name + ": static cast to tool failed");
-
+		} else if (const auto tool = it->is_tool()) {
 			tools.push_back(tool);
 			will_handle_as_html = true;
 		} else if (const auto gun = it->is_gun()) {
