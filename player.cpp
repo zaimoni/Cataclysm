@@ -4453,13 +4453,13 @@ bool player::remove_discard(const std::pair<item*, int>& it)
         return true;
     }
     if (0 <= it.second && inv.size() > it.second) {
-        assert(it.first = &inv[it.second]);
+        assert(it.first == &inv[it.second]);
         i_remn(it.second);
         return true;
     }
     if (-2 >= it.second && -2 - worn.size() < it.second) {
         auto worn_at = -(2 + it.second);
-        assert(it.first = &worn[worn_at]);
+        assert(it.first == &worn[worn_at]);
         EraseAt(worn, worn_at);
         return true;
     }
