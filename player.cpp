@@ -5089,12 +5089,29 @@ bool player::takeoff(map& m, char let)
 
 void player::use(game *g, char let)
 {
- item* used = &i_at(let);
- if (used->is_null()) {
-     messages.add("You do not have that item.");
+    const auto src = from_invlet(let);
+    if (!src) {
+        messages.add("You do not have that item.");
+        return;
+    }
+
+ item* used = src->first; // backward compatibility
+ last_item = itype_id(used->type->id);
+
+ if (const auto tool = used->is_tool()) {
+     if (0 < tool->charges_per_use && used->charges < tool->charges_per_use) {
+         messages.add("Your %s has %d charges but needs %d.", used->tname().c_str(), used->charges, tool->charges_per_use);
+         return;
+     }
+
+     (*tool->use)(g, this, used, false);
+     used->charges -= tool->charges_per_use;
+
+     if (tool->use == &iuse::dogfood || 0 == used->invlet) remove_discard(*src);
      return;
  }
 
+ // legacy implementation -- not ACID
  item copy;
  bool replace_item = false;
  if (inv.index_by_letter(let) != -1) {
@@ -5104,21 +5121,7 @@ void player::use(game *g, char let)
   replace_item = true;
  }
  
- last_item = itype_id(used->type->id);
-
- if (const auto tool = used->is_tool()) {
-  if (tool->charges_per_use == 0 || used->charges >= tool->charges_per_use) {
-   (*tool->use)(g, this, used, false);
-   used->charges -= tool->charges_per_use;
-  } else
-   messages.add("Your %s has %d charges but needs %d.", used->tname().c_str(), used->charges, tool->charges_per_use);
-
-  if (tool->use == &iuse::dogfood) replace_item = false;
-
-  if (replace_item && used->invlet != 0) inv.add_item(copy, true);
-  else if (used->invlet == 0 && used == &weapon) remove_weapon();
-  return;
- } else if (const auto mod = used->is_gunmod()) {
+ if (const auto mod = used->is_gunmod()) {
   if (sklevel[sk_gun] == 0) {
    messages.add("You need to be at least level 1 in the firearms skill before you can modify guns.");
    if (replace_item) inv.add_item(copy);
