@@ -1327,11 +1327,11 @@ void npc::decide_needs()
  needrank[need_food] = 15 - hunger;
  needrank[need_drink] = 15 - thirst;
  for (size_t i = 0; i < inv.size(); i++) {
-  const it_comest* food = nullptr;
-  if (inv[i].is_food())
-   food = dynamic_cast<const it_comest*>(inv[i].type);
-  else if (inv[i].is_food_container())
-   food = dynamic_cast<const it_comest*>(inv[i].contents[0].type);
+  const it_comest* food = inv[i].is_food();
+  if (!food) {
+	  if (inv[i].is_food_container())
+		  food = dynamic_cast<const it_comest*>(inv[i].contents[0].type);
+  }
   if (food != nullptr) {
    needrank[need_food] += food->nutr / 4;
    needrank[need_drink] += food->quench / 4;
@@ -1444,8 +1444,7 @@ int npc::value(const item &it) const
  }
  }
 
- if (it.is_food()) {
-  const it_comest* const comest = dynamic_cast<const it_comest*>(it.type);
+ if (const auto comest = it.is_food()) {
   if (comest->nutr > 0 || comest->quench > 0) ret++;
   if (hunger > 40) ret += (comest->nutr + hunger - 40) / 6;
   if (thirst > 40) ret += (comest->quench + thirst - 40) / 4;
@@ -1482,8 +1481,11 @@ int npc::value(const item &it) const
 
 // TODO: Artifact hunting from relevant factions
 // ALSO TODO: Bionics hunting from relevant factions
- if (fac_has_job(FACJOB_DRUGS) && it.is_food() && (dynamic_cast<const it_comest*>(it.type))->addict >= 5)
-  ret += 10;
+ if (fac_has_job(FACJOB_DRUGS)) {
+	 if (const auto food = it.is_food()) {
+		 if (5 <= food->addict) ret += 10;
+	 }
+ }
  if (fac_has_job(FACJOB_DOCTORS) && it.type->id >= itm_bandages && it.type->id <= itm_prozac)
   ret += 10;
  if (fac_has_value(FACVAL_BOOKS) && it.is_book())

@@ -731,7 +731,7 @@ int npc::choose_escape_item() const
    if (it.type->id != ESCAPE_ITEMS[j]) continue;	// \todo some sort of relevance check (needs context)
    if (j < best) continue;
    if (j == best && it.charges >= inv[ret].charges) continue;
-   if (!food && it.is_food()) food = dynamic_cast<const it_comest*>(inv[i].type);
+   if (!food) food = it.is_food();
    if ((!food || stim < food->stim ||            // Avoid guzzling down
         (food->stim >= 10 && stim < food->stim * 2))) { //  Adderall etc.
     ret = i;
@@ -1653,8 +1653,7 @@ void npc::activate_item(game *g, item& it)	// unclear whether this "works"; para
 {
  if (const auto tool = it.is_tool()) {
   (*tool->use)(g, this, &it, false);
- } else if (it.is_food()) {
-  const it_comest* const comest = dynamic_cast<const it_comest*>(it.type);
+ } else if (const auto comest = it.is_food()) {
   (*comest->use)(g, this, &it, false);
  }
 }
@@ -1805,7 +1804,7 @@ int npc::pick_best_food(const inventory& _inv) const
   int eaten_hunger = -1, eaten_thirst = -1;
   const item& it = _inv[i];
   const it_comest* food = nullptr;
-  if (it.is_food()) food = dynamic_cast<const it_comest*>(it.type);
+  if (const auto test = it.is_food()) food = test;
   else if (it.is_food_container()) food = dynamic_cast<const it_comest*>(it.contents[0].type);
   if (!food) continue;
   eaten_hunger = hunger - food->nutr;

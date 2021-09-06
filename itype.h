@@ -334,6 +334,7 @@ itype_id default_ammo(ammotype guntype);
 struct it_artifact_armor;
 struct it_artifact_tool;
 struct it_bionic;
+struct it_comest;
 struct it_gun;
 struct it_gunmod;
 struct it_style;
@@ -367,7 +368,7 @@ struct itype
  typename cataclysm::bitmap<NUM_ITEM_FLAGS>::type item_flags;
  typename cataclysm::bitmap<NUM_TECHNIQUES>::type techniques;
  
- virtual bool is_food() const    { return false; }
+ virtual const it_comest* is_food() const    { return nullptr; }
  virtual bool is_ammo() const    { return false; }
  virtual const it_gun* is_gun() const     { return nullptr; }
  virtual const it_gunmod* is_gunmod() const  { return nullptr; }
@@ -443,7 +444,7 @@ struct it_comest : public itype
 #endif
      add_type padd);
 
- bool is_food() const override { return true; }
+ const it_comest* is_food() const override { return this; }
  bool count_by_charges() const override { return charges > 1; }
  bool expires() const override { return 0 != spoils; }
  bool is_expired(int age) const override { return 0 != spoils && age > spoils * 600 /* HOURS(1) */; }

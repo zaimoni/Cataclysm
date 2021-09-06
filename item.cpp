@@ -39,8 +39,7 @@ static void _bootstrap_item_charges(int& charges, const itype* const it)
 {
 	if (it->is_gun()) charges = 0;
 	else if (it->is_ammo()) charges = dynamic_cast<const it_ammo*>(it)->count;
-	else if (it->is_food()) {
-		const it_comest* const comest = dynamic_cast<const it_comest*>(it);
+	else if (const auto comest = it->is_food()) {
 		charges = (1 == comest->charges) ? -1 : comest->charges;
 	}
 	else if (const auto tool = it->is_tool()) {
@@ -393,9 +392,8 @@ std::string item::tname() const
  else ret << type->name;
  }
 
- const it_comest* food = nullptr;
- if (is_food()) food = dynamic_cast<const it_comest*>(type);
- else if (is_food_container()) food = dynamic_cast<const it_comest*>(contents[0].type);
+ const it_comest* food = is_food();
+ if (!food && is_food_container()) food = dynamic_cast<const it_comest*>(contents[0].type);
  if (food != nullptr && food->is_expired(int(messages.turn) - bday))
   ret << " (rotten)";
 
@@ -509,7 +507,7 @@ bool item::rotten() const
 bool item::count_by_charges() const
 {
  if (is_ammo()) return true;
- if (is_food()) return 1 < dynamic_cast<const it_comest*>(type)->charges;
+ if (const auto food = is_food()) return 1 < food->charges;
  return false;
 }
 

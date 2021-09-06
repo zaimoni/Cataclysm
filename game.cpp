@@ -4157,8 +4157,8 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
 
    int default_charges = 1;
 
-   if (liquid.is_food()) {
-    default_charges = dynamic_cast<const it_comest*>(liquid.type)->charges;
+   if (const auto drink = liquid.is_food()) {
+    default_charges = drink->charges;
    } else if (liquid.is_ammo()) {
     default_charges = dynamic_cast<const it_ammo*>(liquid.type)->count;
    }

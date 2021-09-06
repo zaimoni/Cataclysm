@@ -128,7 +128,7 @@ public:
  bool is_food(const player& u) const;// Some non-food items are food to certain players
  bool is_food_container(const player& u) const;  // Ditto
 #endif
- bool is_food() const { return type->is_food(); };	// Ignoring the ability to eat batteries, etc.
+ auto is_food() const { return type->is_food(); };	// Ignoring the ability to eat batteries, etc.
  bool is_food_container() const;      // Ignoring the ability to eat batteries, etc.
  bool is_drink() const;
  bool is_weap() const;

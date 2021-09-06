@@ -459,20 +459,20 @@ int main(int argc, char *argv[])
 	std::vector<const it_bionic*> bionics;
 	std::vector<const it_book*> books;
 	std::vector<it_container*> containers;
-	std::vector<it_comest*> drinks;
-	std::vector<it_comest*> edible;
+	std::vector<const it_comest*> drinks;
+	std::vector<const it_comest*> edible;
 	std::vector<it_ammo*> fuel;	// XXX conflation in type system
 	std::vector<const it_gun*> guns;
 	std::vector<const it_gunmod*> gun_mods;
 	std::vector<const it_style*> ma_styles;	// martial arts styles
 	std::vector<it_macguffin*> macguffins;
-	std::vector<it_comest*> pharma;
+	std::vector<const it_comest*> pharma;
 	std::vector<it_software*> software;
 	std::vector<const it_tool*> tools;
 
 	std::vector<itype*> unclassified;
 
-	std::vector<std::pair<add_type, it_comest*> > xref_addictions;
+	std::vector<std::pair<add_type, const it_comest*> > xref_addictions;
 
 	std::map<std::string, std::string> name_desc;
 	std::map<std::string, int> name_id;
@@ -570,11 +570,8 @@ int main(int argc, char *argv[])
 
 			books.push_back(book);
 			will_handle_as_html = true;
-		} else if (it->is_food()) {
+		} else if (const auto food = it->is_food()) {
 			// actually, all of food/drink/medicine -- should split this into 3 pages
-			const auto food = static_cast<it_comest*>(it);
-			if (!food) throw std::logic_error(it->name + ": static cast to comestible failed");
-
 			if (LIQUID == it->m1) {
 				drinks.push_back(food);
 				if (food->addict) {
