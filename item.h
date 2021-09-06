@@ -129,8 +129,10 @@ public:
  bool is_food_container(const player& u) const;  // Ditto
 #endif
  auto is_food() const { return type->is_food(); };	// Ignoring the ability to eat batteries, etc.
- bool is_food_container() const;      // Ignoring the ability to eat batteries, etc.
+ auto is_food_container() const { return contents.empty() ? nullptr : contents[0].is_food(); }      // Ignoring the ability to eat batteries, etc.
+#if DEAD_FUNC
  bool is_drink() const;
+#endif
  bool is_weap() const;
  bool is_bashing_weapon() const;
  bool is_cutting_weapon() const;

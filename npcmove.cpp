@@ -1803,9 +1803,8 @@ int npc::pick_best_food(const inventory& _inv) const
  for (size_t i = 0; i < _inv.size(); i++) {
   int eaten_hunger = -1, eaten_thirst = -1;
   const item& it = _inv[i];
-  const it_comest* food = nullptr;
-  if (const auto test = it.is_food()) food = test;
-  else if (it.is_food_container()) food = dynamic_cast<const it_comest*>(it.contents[0].type);
+  const it_comest* food = it.is_food();
+  if (!food) food = it.is_food_container();
   if (!food) continue;
   eaten_hunger = hunger - food->nutr;
   eaten_thirst = thirst - food->quench;

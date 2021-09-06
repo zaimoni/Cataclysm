@@ -393,7 +393,7 @@ std::string item::tname() const
  }
 
  const it_comest* food = is_food();
- if (!food && is_food_container()) food = dynamic_cast<const it_comest*>(contents[0].type);
+ if (!food) food = is_food_container();
  if (food != nullptr && food->is_expired(int(messages.turn) - bday))
   ret << " (rotten)";
 
@@ -594,15 +594,12 @@ bool item::is_food_container(const player& u) const
 }
 #endif
 
-bool item::is_food_container() const
-{
- return (contents.size() >= 1 && contents[0].is_food());
-}
-
+#if DEAD_FUNC
 bool item::is_drink() const
 {
  return type->is_food() && type->m1 == LIQUID;
 }
+#endif
 
 bool item::is_weap() const
 {

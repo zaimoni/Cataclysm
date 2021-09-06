@@ -1328,10 +1328,7 @@ void npc::decide_needs()
  needrank[need_drink] = 15 - thirst;
  for (size_t i = 0; i < inv.size(); i++) {
   const it_comest* food = inv[i].is_food();
-  if (!food) {
-	  if (inv[i].is_food_container())
-		  food = dynamic_cast<const it_comest*>(inv[i].contents[0].type);
-  }
+  if (!food) food = inv[i].is_food_container();
   if (food != nullptr) {
    needrank[need_food] += food->nutr / 4;
    needrank[need_drink] += food->quench / 4;
