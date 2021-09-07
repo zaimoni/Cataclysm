@@ -331,6 +331,7 @@ std::string ammo_name(ammotype t);
 itype_id default_ammo(ammotype guntype);
 
 // forward-declares
+struct it_ammo;
 struct it_artifact_armor;
 struct it_artifact_tool;
 struct it_bionic;
@@ -369,7 +370,7 @@ struct itype
  typename cataclysm::bitmap<NUM_TECHNIQUES>::type techniques;
  
  virtual const it_comest* is_food() const    { return nullptr; }
- virtual bool is_ammo() const    { return false; }
+ virtual const it_ammo* is_ammo() const    { return nullptr; }
  virtual const it_gun* is_gun() const     { return nullptr; }
  virtual const it_gunmod* is_gunmod() const  { return nullptr; }
  virtual const it_bionic* is_bionic() const  { return nullptr; }
@@ -472,7 +473,7 @@ struct it_ammo : public itype
 	 signed char paccuracy, unsigned char precoil, unsigned char prange,
 	 unsigned char pcount);
 
- bool is_ammo() const override { return true; }
+ const it_ammo* is_ammo() const override { return this; }
  bool count_by_charges() const override { return id != itm_gasoline; }
 
  void info(std::ostream& dest) const override;

@@ -139,7 +139,7 @@ public:
  auto is_gun() const { return type->is_gun(); }
  auto is_gunmod() const { return type->is_gunmod(); }
  auto is_bionic() const { return type->is_bionic(); }
- bool is_ammo() const { return type->is_ammo(); }
+ auto is_ammo() const { return type->is_ammo(); }
  bool is_armor() const { return type->is_armor(); }
  bool is_book() const;
  bool is_container() const { return type->is_container(); }

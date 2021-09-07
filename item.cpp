@@ -38,7 +38,7 @@ item::item() noexcept
 static void _bootstrap_item_charges(int& charges, const itype* const it)
 {
 	if (it->is_gun()) charges = 0;
-	else if (it->is_ammo()) charges = dynamic_cast<const it_ammo*>(it)->count;
+	else if (const auto ammo = it->is_ammo()) charges = ammo->count;
 	else if (const auto comest = it->is_food()) {
 		charges = (1 == comest->charges) ? -1 : comest->charges;
 	}
@@ -583,7 +583,11 @@ bool is_flammable(material m)
 bool item::is_food(const player& u) const
 {
  if (type->is_food()) return true;
- if (u.has_bionic(bio_batteries) && is_ammo() && (dynamic_cast<const it_ammo*>(type))->type == AT_BATT) return true;
+ if (u.has_bionic(bio_batteries)) {
+     if (const auto ammo = is_ammo()) {
+         if (AT_BATT == ammo->type) return true;
+     }
+ }
  if (u.has_bionic(bio_furnace) && is_flammable(type->m1) && is_flammable(type->m2) && type->id != itm_corpse) return true;
  return false;
 }
@@ -771,7 +775,7 @@ ammotype item::ammo_type() const
   }
   return ret;
  } else if (const auto tool = is_tool()) return tool->ammo;
- else if (is_ammo()) return dynamic_cast<const it_ammo*>(type)->type;
+ else if (const auto ammo = is_ammo()) return ammo->type;
  return AT_NULL;
 }
 
@@ -817,7 +821,7 @@ ammotype item::uses_ammo_type() const
 
 ammotype item::provides_ammo_type() const
 {
-    if (is_ammo()) return dynamic_cast<const it_ammo*>(type)->type;
+    if (const auto ammo = is_ammo()) return ammo->type;
     return AT_NULL;
 }
 
@@ -912,12 +916,12 @@ bool item::reload(player &u, int index)
   if (is_gun() && charges > 0 && curammo->id != u.inv[index].type->id)
    return false;
   if (is_gun()) {
-   if (!u.inv[index].is_ammo()) {
-    debugmsg("Tried to reload %s with %s!", tname().c_str(),
-             u.inv[index].tname().c_str());
-    return false;
-   }
-   curammo = dynamic_cast<const it_ammo*>((u.inv[index].type));
+      if (const auto test = u.inv[index].is_ammo()) {
+          curammo = test;
+      } else {
+          debugmsg("Tried to reload %s with %s!", tname().c_str(), u.inv[index].tname().c_str());
+          return false;
+      }
   }
   if (single_load || max_load == 1) {	// Only insert one cartridge!
    charges++;

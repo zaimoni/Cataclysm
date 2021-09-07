@@ -4159,8 +4159,8 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
 
    if (const auto drink = liquid.is_food()) {
     default_charges = drink->charges;
-   } else if (liquid.is_ammo()) {
-    default_charges = dynamic_cast<const it_ammo*>(liquid.type)->count;
+   } else if (const auto ammo = liquid.is_ammo()) {
+    default_charges = ammo->count;
    }
 
    if (liquid.charges > container->contains * default_charges) {
@@ -4649,14 +4649,14 @@ void game::unload()
  if (u.weapon.is_gun()) {	// Gun ammo is combined with existing items
   for (size_t i = 0; i < u.inv.size() && u.weapon.charges > 0; i++) {
       decltype(auto) it = u.inv[i];
-      if (!it.is_ammo()) continue;
-      const it_ammo* tmpammo = dynamic_cast<const it_ammo*>(it.type);
-      if (tmpammo->id == u.weapon.curammo->id && it.charges < tmpammo->count) {
-          u.weapon.charges -= (tmpammo->count - it.charges);
-          it.charges = tmpammo->count;
-          if (u.weapon.charges < 0) {
-              it.charges += u.weapon.charges;
-              u.weapon.charges = 0;
+      if (const auto tmpammo = it.is_ammo()) {
+          if (tmpammo->id == u.weapon.curammo->id && it.charges < tmpammo->count) {
+              u.weapon.charges -= (tmpammo->count - it.charges);
+              it.charges = tmpammo->count;
+              if (u.weapon.charges < 0) {
+                  it.charges += u.weapon.charges;
+                  u.weapon.charges = 0;
+              }
           }
       }
   }

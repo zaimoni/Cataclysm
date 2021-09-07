@@ -454,14 +454,14 @@ int main(int argc, char *argv[])
 
 	const html::tag _data_table("table");	// stage-printed
 
-	std::vector<it_ammo*> ammunition;
+	std::vector<const it_ammo*> ammunition;
 	std::vector<it_armor*> armor;
 	std::vector<const it_bionic*> bionics;
 	std::vector<const it_book*> books;
 	std::vector<it_container*> containers;
 	std::vector<const it_comest*> drinks;
 	std::vector<const it_comest*> edible;
-	std::vector<it_ammo*> fuel;	// XXX conflation in type system
+	std::vector<const it_ammo*> fuel;	// XXX conflation in type system
 	std::vector<const it_gun*> guns;
 	std::vector<const it_gunmod*> gun_mods;
 	std::vector<const it_style*> ma_styles;	// martial arts styles
@@ -505,10 +505,7 @@ int main(int argc, char *argv[])
 
 			ma_styles.push_back(style);
 			will_handle_as_html = true;
-		} else if (it->is_ammo()) {
-			// constructor hard-coding (specification)
-			const auto ammo = static_cast<it_ammo*>(it);
-			if (!ammo) throw std::logic_error(it->name + ": static cast to ammo failed");
+		} else if (const auto ammo = it->is_ammo()) {
 			// constructor hard-coding (specification)
 			if (it->m2) throw std::logic_error("unexpected secondary material");
 			if (0 != it->melee_cut) throw std::logic_error("unexpected cutting damage");

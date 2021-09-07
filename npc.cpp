@@ -1447,8 +1447,7 @@ int npc::value(const item &it) const
   if (thirst > 40) ret += (comest->quench + thirst - 40) / 4;
  }
 
- if (it.is_ammo()) {
-  const it_ammo* const ammo = dynamic_cast<const it_ammo*>(it.type);
+ if (const auto ammo = it.is_ammo()) {
   const it_gun* gun;
   if (weapon.is_gun()) {
    gun = dynamic_cast<const it_gun*>(weapon.type);

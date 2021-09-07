@@ -4180,11 +4180,10 @@ void player::i_add(item it)
  if (it.is_food() || it.is_ammo() || it.is_gun()  || it.is_armor() || 
      it.is_book() || it.is_tool() || it.is_weap() || it.is_food_container())
   inv_sorted = false;
- if (it.is_ammo()) {	// Possibly combine with other ammo
+ if (const auto ammo = it.is_ammo()) {	// Possibly combine with other ammo
   for (size_t i = 0; i < inv.size(); i++) {
    auto& obj = inv[i];
    if (obj.type->id != it.type->id) continue;
-   const it_ammo* const ammo = dynamic_cast<const it_ammo*>(obj.type);
    if (obj.charges < ammo->count) {
 	obj.charges += it.charges;
     if (obj.charges > ammo->count) {
@@ -5795,9 +5794,9 @@ bool player::has_ammo(ammotype at) const
 {
  bool newtype = true;
  for (size_t a = 0; a < inv.size(); a++) {
-  if (!inv[a].is_ammo()) continue;
-  const it_ammo* ammo = dynamic_cast<const it_ammo*>(inv[a].type);
-  if (at == ammo->type) return true;
+     if (const auto ammo = inv[a].is_ammo()) {
+         if (at == ammo->type) return true;
+     }
  }
  return false;
 }
@@ -5807,20 +5806,20 @@ std::vector<int> player::have_ammo(ammotype at) const
     std::vector<int> ret;
     bool newtype = true;
     for (size_t a = 0; a < inv.size(); a++) {
-        if (!inv[a].is_ammo()) continue;
-        const it_ammo* ammo = dynamic_cast<const it_ammo*>(inv[a].type);
-        if (ammo->type != at) continue;
-        bool newtype = true;
-        for (const auto n : ret) {
-            const auto& it = inv[n];
-            if (ammo->id == it.type->id && inv[a].charges == it.charges) {
-                // They're effectively the same; don't add it to the list
-                // TODO: Bullets may become rusted, etc., so this if statement may change
-                newtype = false;
-                break;
+        if (const auto ammo = inv[a].is_ammo()) {
+            if (ammo->type != at) continue;
+            bool newtype = true;
+            for (const auto n : ret) {
+                const auto& it = inv[n];
+                if (ammo->id == it.type->id && inv[a].charges == it.charges) {
+                    // They're effectively the same; don't add it to the list
+                    // TODO: Bullets may become rusted, etc., so this if statement may change
+                    newtype = false;
+                    break;
+                }
             }
+            if (newtype) ret.push_back(a);
         }
-        if (newtype) ret.push_back(a);
     }
     return ret;
 }
