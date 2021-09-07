@@ -4555,7 +4555,7 @@ void game::eat()
  if (u.has_trait(PF_RUMINANT)) {
      ter_id& terrain = u.GPSpos.ter();
      if (t_underbrush == terrain && query_yn("Eat underbrush?")) {
-         u.moves -= 400;
+         u.moves -= 4 * mobile::mp_turn;
          u.hunger -= 10;
          terrain = t_grass;
          messages.add("You eat the underbrush.");
@@ -4567,15 +4567,15 @@ void game::eat()
   messages.add("Never mind.");
   return;
  }
- auto it = u.have_item(ch);
- if (!it.second) {
-	 messages.add("You don't have item '%c'!", ch);
-	 return;
- } else if (-2 > it.first) {
-	 messages.add("Please take off '%c' before eating it.", ch);
-	 return;
+ auto src = u.from_invlet(ch);
+ if (!src) {
+     messages.add("You don't have item '%c'!", ch);
+     return;
+ } else if (-1 > src->second) {
+     messages.add("Please take off '%c' before eating it.", ch);
+     return;
  }
- u.eat(0 > it.first ? -1 : it.first);	// translate between conventions
+ u.eat(*src);
 }
 
 void game::wear()
