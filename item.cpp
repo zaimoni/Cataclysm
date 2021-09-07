@@ -580,6 +580,18 @@ bool is_flammable(material m)
 }
 
 #ifndef SOCRATES_DAIMON
+std::optional<std::variant<const it_comest*, const it_ammo*, const item*> > item::is_food2(const player& u) const
+{
+    if (const auto food = type->is_food()) return food;
+    if (u.has_bionic(bio_batteries)) {
+        if (const auto ammo = is_ammo()) {
+            if (AT_BATT == ammo->type) return ammo;
+        }
+    }
+    if (u.has_bionic(bio_furnace) && is_flammable(type->m1) && is_flammable(type->m2) && type->id != itm_corpse) return this;
+    return std::nullopt;
+}
+
 bool item::is_food(const player& u) const
 {
  if (type->is_food()) return true;

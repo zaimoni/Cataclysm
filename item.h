@@ -6,6 +6,9 @@
 struct mtype;
 #ifndef SOCRATES_DAIMON
 class player;
+
+#include <optional>
+#include <variant>
 #endif
 
 class item
@@ -125,6 +128,8 @@ public:
 // Most of the is_whatever() functions call the same function in our itype
  bool is_null() const; // True if type is null, or points to the null item (id == 0)
 #ifndef SOCRATES_DAIMON
+ std::optional<std::variant<const it_comest*, const it_ammo*, const item*> > is_food2(const player& u) const;// Some non-food items are food to certain players
+ auto is_food_container2(const player& u) const { return contents.empty() ? std::nullopt : contents[0].is_food2(u); }  // Ditto
  bool is_food(const player& u) const;// Some non-food items are food to certain players
  bool is_food_container(const player& u) const;  // Ditto
 #endif
