@@ -3814,7 +3814,8 @@ void game::pickup(const point& pt, int min)
   if (auto water = m.water_from(pt)) {
       if (query_yn("Drink from your hands?")) {
           u.inv.push_back(*water);
-          u.eat(u.inv.size() - 1);
+          int offset = u.inv.size() - 1;
+          u.eat(std::pair(&u.inv[offset], offset));
           u.moves -= (mobile::mp_turn / 2) * 7;
       } else {
           handle_liquid(*water, true, false);
