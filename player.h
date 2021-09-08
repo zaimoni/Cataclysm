@@ -186,8 +186,7 @@ public:
  void vomit();	// \todo V 0.2.1 extend to NPCs
  
  int  lookup_item(char let) const;
- bool eat(int index);	// Eat item; returns false on fail
- bool eat(const std::pair<item*, int>& src);
+ bool eat(const std::pair<item*, int>& src);	// Eat item; returns false on fail
  virtual bool wield(int index);// Wield item; returns false on fail
  void pick_style(); // Pick a style
  bool wear(char let);	// Wear item; returns false on fail
