@@ -215,12 +215,12 @@ template<class PC/*=npc */>	// default class works for MSVC++, not MingW64
 class target_inventory_alt : public cataclysm::action
 {
 	PC& _actor;
-	std::pair<item*, int> _inv_spec;
-	bool (PC::* _op)(const std::pair<item*, int>& src);
+	player::item_spec _inv_spec;
+	bool (PC::* _op)(const player::item_spec& src);
 	const char* _desc;
 
 public:
-	target_inventory_alt(PC& actor, const std::pair<item*, int>& inv_spec, bool (PC::* op)(const std::pair<item*, int>& src), const char* desc) : _actor(actor), _inv_spec(inv_spec), _op(op), _desc(desc) {
+	target_inventory_alt(PC& actor, const player::item_spec& inv_spec, decltype(_op) op, const char* desc) : _actor(actor), _inv_spec(inv_spec), _op(op), _desc(desc) {
 #ifndef NDEBUG
 		if (!IsLegal()) throw std::logic_error("illegal targeting of inventory");
 #endif

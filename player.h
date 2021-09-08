@@ -184,9 +184,26 @@ public:
  void die(map& m);
  void suffer(game *g);	// \todo V 0.2.1 extend fully to NPCs
  void vomit();	// \todo V 0.2.1 extend to NPCs
- 
+
+ // 2021-09-08: modernized standard for identifying local items for various sorts of use
+ using item_spec = std::pair<item*, int>;
+ /// <summary>
+ /// legacy analog: item& i_at(char let)
+ /// legacy analog: bool has_item(char let) const;
+ /// legacy analog: int  lookup_item(char let) const; (conversion must exclude or handle worn armor)
+ /// </summary>
+ /// <param name="let">invlet from player UI</param>
+ std::optional<item_spec> from_invlet(char let);
+ /// <summary>
+ /// legacy analog: bool remove_item(item* it);
+ /// legacy analog: item i_rem(char let); when return value unused
+ /// legacy analog: item i_remn(int index); when return value unused
+ /// </summary>
+ /// <returns>true if and only if successful (but always succeeds if precondition met)</returns>
+ bool remove_discard(const item_spec& it);
+
  int  lookup_item(char let) const;
- bool eat(const std::pair<item*, int>& src);	// Eat item; returns false on fail
+ bool eat(const item_spec& src);	// Eat item; returns false on fail
  virtual bool wield(int index);// Wield item; returns false on fail
  void pick_style(); // Pick a style
  bool wear(char let);	// Wear item; returns false on fail
@@ -242,12 +259,10 @@ public:
  item i_remn(int index);// Remove item from inventory; returns ret_null on fail
  item& i_at(char let);	// Returns the item with inventory letter let
  const item& i_at(char let) const { return const_cast<player*>(this)->i_at(let); };
- std::optional<std::pair<item*, int> > from_invlet(char let);
  item& i_of_type(itype_id type); // Returns the first item with this type
  const item& i_of_type(itype_id type) const { return const_cast<player*>(this)->i_of_type(type); };
  std::vector<item> inv_dump() const; // Inventory + weapon + worn (for death, etc)
  bool remove_item(item* it);
- bool remove_discard(const std::pair<item*, int>& it);
  int  butcher_factor() const;	// Automatically picks our best butchering tool
  item* pick_usb(); // Pick a usb drive, interactively if it matters
  bool is_wearing(itype_id it) const;	// Are we wearing a specific itype?

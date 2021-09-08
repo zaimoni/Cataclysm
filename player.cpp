@@ -4377,7 +4377,7 @@ item& player::i_at(char let)
  return inv[index];
 }
 
-std::optional<std::pair<item*, int> > player::from_invlet(char let)
+std::optional<player::item_spec> player::from_invlet(char let)
 {
     if (KEY_ESCAPE == let) return std::nullopt;
     if (let == weapon.invlet) return std::pair(&weapon, -1);
@@ -4443,7 +4443,7 @@ bool player::remove_item(item* it)
 	return false;
 }
 
-bool player::remove_discard(const std::pair<item*, int>& it)
+bool player::remove_discard(const item_spec& it)
 {
     assert(it.first);
     if (-1 == it.second) {
@@ -4715,7 +4715,7 @@ const item* player::decode_item_index(const int n) const
     return nullptr;
 }
 
-bool player::eat(const std::pair<item*, int>& src)
+bool player::eat(const item_spec& src)
 {
     if (-1 > src.second) { // \todo: sink this down
         messages.add("You need to take that off before eating it.");
