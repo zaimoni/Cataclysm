@@ -29,6 +29,7 @@ static const itype_id ALT_ATTACK_ITEMS[] = {	// \todo mod target
 #define NUM_ALT_ATTACK_ITEMS (sizeof(ALT_ATTACK_ITEMS)/sizeof(itype_id))
 
 // all of these classes are designed for immediate use, not scheduling (i.e., IsLegal implementation may include parts that belong in IsPerformable)
+// 2021-09-08: use_escape_obj now obsolete, use target_inventory_alt instead
 class use_escape_obj : public cataclysm::action
 {
 	player& _actor;
@@ -42,8 +43,7 @@ public:
 	~use_escape_obj() = default;
 	bool IsLegal() const override {
 		if (0 > inv_index || _actor.inv.size() <= inv_index) return false;
-		const auto& used = _actor.inv[inv_index];
-		return used.is_food() || used.is_food_container() || used.is_tool();
+		return _actor.inv[inv_index].is_tool();
 	}
 	void Perform() const override {
 		// C:Whales npc::use_escape_item inlined
@@ -55,10 +55,6 @@ public:
 
 		auto& used = _actor.inv[inv_index];
 
-		if (used.is_food() || used.is_food_container()) {
-			_actor.eat(inv_index);
-			return;
-		}
 #ifndef NDEBUG
 		if (!used.is_tool()) throw std::logic_error("escape item was neither edible nor a tool");
 #endif
@@ -184,6 +180,7 @@ public:
 	}
 };
 
+// 2021-09-08: target_inventory now obsolete, use target_inventory_alt instead
 template<class PC/*=npc */>	// default class works for MSVC++, not MingW64
 class target_inventory : public cataclysm::action
 {
@@ -207,6 +204,37 @@ public:
 		// \todo need to checkpoint before/after for actor state; if "no change" and _op fails then critical bug (infinite loop)
 		// C:Whales handled this for eating by forcing moves=0 afterwards, but this resulted in NPCs eating faster than PCs
 		(_actor.*_op)(_inv_index);
+	}
+	const char* name() const override {
+		if (_desc && *_desc) return _desc;
+		return "targeting inventory";	// failover
+	}
+};
+
+template<class PC/*=npc */>	// default class works for MSVC++, not MingW64
+class target_inventory_alt : public cataclysm::action
+{
+	PC& _actor;
+	std::pair<item*, int> _inv_spec;
+	bool (PC::* _op)(const std::pair<item*, int>& src);
+	const char* _desc;
+
+public:
+	target_inventory_alt(PC& actor, const std::pair<item*, int>& inv_spec, bool (PC::* op)(const std::pair<item*, int>& src), const char* desc) : _actor(actor), _inv_spec(inv_spec), _op(op), _desc(desc) {
+#ifndef NDEBUG
+		if (!IsLegal()) throw std::logic_error("illegal targeting of inventory");
+#endif
+	}
+	~target_inventory_alt() = default;
+	bool IsLegal() const override {
+		if (0 <= _inv_spec.second) return _actor.inv.size() > _inv_spec.second;
+		else if (-1 == _inv_spec.second) return true;
+		else return _actor.worn.size() > (-2 - _inv_spec.second);
+	}
+	void Perform() const override {
+		// \todo need to checkpoint before/after for actor state; if "no change" and _op fails then critical bug (infinite loop)
+		// C:Whales handled this for eating by forcing moves=0 afterwards, but this resulted in NPCs eating faster than PCs
+		(_actor.*_op)(_inv_spec);
 	}
 	const char* name() const override {
 		if (_desc && *_desc) return _desc;
@@ -491,8 +519,14 @@ static npc::ai_action _flee(const npc& actor, const point& fear)
 npc::ai_action npc::method_of_fleeing(game *g, int enemy) const
 {
  int it = choose_escape_item();
- if (0 <= it) // We have an escape item!
-  return ai_action(npc_pause,std::unique_ptr<cataclysm::action>(new use_escape_obj(*const_cast<npc*>(this), it)));	// C:Whales failure mode was npc_pause
+ if (0 <= it) { // We have an escape item!
+	 auto used = &inv[it];
+	 if (used->is_food() || used->is_food_container()) {
+		 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory_alt<player>(*const_cast<npc*>(this), std::pair(const_cast<item*>(used), it), &player::eat, "Use escape item")));
+	 }
+
+	 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new use_escape_obj(*const_cast<npc*>(this), it)));	// C:Whales failure mode was npc_pause
+ };
 
  int speed = (enemy == TARGET_PLAYER ? g->u.current_speed() : g->z[enemy].speed);
  point enemy_loc = (enemy == TARGET_PLAYER ? g->u.pos : g->z[enemy].pos);
@@ -614,7 +648,7 @@ npc::ai_action npc::address_needs(game *g, int danger) const
  int inv_index;
  if (!took_painkiller() && pain - pkill >= 15) {
    inv_index = pick_best_painkiller(inv);
-   if (0 <= inv_index) ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<player>(*const_cast<npc*>(this), inv_index, &player::eat, "Use painkillers")));
+   if (0 <= inv_index) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory_alt<player>(*const_cast<npc*>(this), std::pair(const_cast<item*>(&inv[inv_index]), inv_index), &player::eat, "Use painkillers")));
  }
 
  inv_index = can_reload();
@@ -625,7 +659,7 @@ npc::ai_action npc::address_needs(game *g, int danger) const
 	 || hunger > 160) {
 	inv_index = pick_best_food(inv);
 	if (0 <= inv_index)
-	  return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<player>(*const_cast<npc*>(this), inv_index, &player::eat, "Eat")));
+	  return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory_alt<player>(*const_cast<npc*>(this), std::pair(const_cast<item*>(&inv[inv_index]), inv_index), &player::eat, "Eat")));
   }
 
 #if DEAD_FUNC
