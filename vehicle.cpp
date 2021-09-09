@@ -121,7 +121,7 @@ std::string vehicle::possessive() const
     return ret;
 }
 
-bool vehicle::player_in_control(player& p) const
+bool vehicle::player_in_control(const player& p) const
 {
     if (!_type || !p.in_vehicle) return false;
     if (const auto veh = p.GPSpos.veh_at()) {

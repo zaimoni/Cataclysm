@@ -144,7 +144,7 @@ public:
 	vehicle& operator=(vehicle&& src) = default;
 
 // check if given player controls this vehicle
-    bool player_in_control(player& p) const;
+    bool player_in_control(const player& p) const;
     player* driver() const;
 
     // stub for unified effects (likely want pass-through to AI pilots)

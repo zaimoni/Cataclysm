@@ -212,6 +212,7 @@ public:
  bool takeoff(map& m, char let);// Take off item; returns false on fail	\todo V 0.2.1 extend to NPC? (this is UI-driven so maybe not)
  void use(game *g, char let);	// Use a tool \todo V 0.2.1 extend to NPCs? (UI-driven)
  bool install_bionics(game *g, const it_bionic* type);	// Install bionics \todo V 0.2.1 enable for NPCs
+ std::optional<std::string> cannot_read() const;  // can read at all (environment check, etc.)
  void read(game *g, char let);	// Read a book	V 0.2.1 \todo enable for NPCs? (UI driven)
  void try_to_sleep();	// '$' command; adds DIS_LYING_DOWN	\todo V 0.2.1 extend to NPCs
  bool can_sleep(const map& m) const;	// Checked each turn during DIS_LYING_DOWN

@@ -5223,23 +5223,25 @@ void player::use(game *g, char let)
  if (replace_item) inv.add_item(copy);
 }
 
+std::optional<std::string> player::cannot_read() const
+{
+    if (const auto veh = GPSpos.veh_at()) {
+        if (veh->first->player_in_control(*this)) return "It's bad idea to read while driving.";
+    }
+    if (morale_level() < MIN_MORALE_READ) return "What's the point of reading?  (Your morale is too low!)";	// See morale.h
+    // following does not account for reading by touch (braille, or embossed/inlaid text)
+    if (has(mobile::effect::BLIND)) return "You're blind!";
+    // This is likely not fully correct (more light with say cataracts, somewhat less light when dark-adapted)
+    if (2 * MOONLIGHT_LEVEL > game::active()->light_level()) return "It's too dark to read!";
+    return std::nullopt;
+}
+
 void player::read(game *g, char ch)
 {
- if (const auto veh = GPSpos.veh_at()) {
-     if (veh->first->player_in_control(*this)) {
-         messages.add("It's bad idea to read while driving.");
-         return;
-     }
- }
- if (morale_level() < MIN_MORALE_READ) {	// See morale.h
-  messages.add("What's the point of reading?  (Your morale is too low!)");
-  return;
- }
-// Check if reading is okay
- if (g->light_level() < 8) {
-  messages.add("It's too dark to read!");
-  return;
- }
+    if (const auto err = cannot_read()) {
+        subjective_message(*err);
+        return;
+    }
 
 // Find the object
  auto used = have_item(ch);
