@@ -211,9 +211,8 @@ std::vector<item> game::multidrop()
    ch -= '0';
    count *= 10;
    count += ch;
-  } else if (u.has_item(ch)) {
-   int index = u.inv.index_by_letter(ch);
-   if (index == -1) { // Not from inventory
+  } else if (auto obj = u.from_invlet(ch)) {
+   if (0 > obj->second) { // Not from inventory
     int found = false;
     for (int i = 0; i < weapon_and_armor.size() && !found; i++) {
      if (weapon_and_armor[i] == ch) {
@@ -233,6 +232,7 @@ std::vector<item> game::multidrop()
      }
     }
    } else {
+    const int index = obj->second;
     const size_t ub = u.inv.stack_at(index).size();
     if (count == 0) {
      dropping[index] = (0 == dropping[index]) ? ub : 0;
