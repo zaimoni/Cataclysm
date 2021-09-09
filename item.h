@@ -145,7 +145,7 @@ public:
  auto is_gunmod() const { return type->is_gunmod(); }
  auto is_bionic() const { return type->is_bionic(); }
  auto is_ammo() const { return type->is_ammo(); }
- bool is_armor() const { return type->is_armor(); }
+ auto is_armor() const { return type->is_armor(); }
  bool is_book() const;
  bool is_container() const { return type->is_container(); }
  auto is_tool() const { return type->is_tool(); }

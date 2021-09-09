@@ -455,7 +455,7 @@ int main(int argc, char *argv[])
 	const html::tag _data_table("table");	// stage-printed
 
 	std::vector<const it_ammo*> ammunition;
-	std::vector<it_armor*> armor;
+	std::vector<const it_armor*> armor;
 	std::vector<const it_bionic*> bionics;
 	std::vector<const it_book*> books;
 	std::vector<it_container*> containers;
@@ -591,10 +591,7 @@ int main(int argc, char *argv[])
 			// \todo the addiction consistency tests should be constructor, but itypedef.cpp doesn't use assert or SUCCEED_OR_DIE
 			will_handle_as_html = true;
 		// these two implicitly cover artifacts
-		} else if (it->is_armor()) {
-			const auto armour = static_cast<it_armor*>(it);
-			if (!armour) throw std::logic_error(it->name + ": static cast to armor failed");
-
+		} else if (const auto armour = it->is_armor()) {
 			armor.push_back(armour);
 			will_handle_as_html = true;
 		} else if (const auto tool = it->is_tool()) {

@@ -4974,11 +4974,11 @@ bool player::wear(char let)
 
 const it_armor* player::wear_is_performable(const item& to_wear) const
 {
-    if (!to_wear.is_armor()) {
+    const auto armor = to_wear.is_armor();
+    if (!armor) {
         if (!is_npc()) messages.add("Putting on a %s would be tricky.", to_wear.tname().c_str());
         return nullptr;
     }
-    const it_armor* const armor = dynamic_cast<const it_armor*>(to_wear.type);
 
     // Make sure we're not wearing 2 of the item already
     int count = 0;
@@ -4993,35 +4993,35 @@ const it_armor* player::wear_is_performable(const item& to_wear) const
         if (!is_npc()) messages.add("You can't wear that, it's made of wool!");
         return nullptr;
     }
-    if (armor->covers & mfb(bp_head) && encumb(bp_head) != 0) {
+    if ((armor->covers & mfb(bp_head)) && encumb(bp_head) != 0) {
         if (!is_npc()) messages.add("You can't wear a%s helmet!", wearing_something_on(bp_head) ? "nother" : "");
         return nullptr;
     }
-    if (armor->covers & mfb(bp_hands) && has_trait(PF_WEBBED)) {
+    if ((armor->covers & mfb(bp_hands)) && has_trait(PF_WEBBED)) {
         if (!is_npc()) messages.add("You cannot put %s over your webbed hands.", armor->name.c_str());
         return nullptr;
     }
-    if (armor->covers & mfb(bp_hands) && has_trait(PF_TALONS)) {
+    if ((armor->covers & mfb(bp_hands)) && has_trait(PF_TALONS)) {
         if (!is_npc()) messages.add("You cannot put %s over your talons.", armor->name.c_str());
         return nullptr;
     }
-    if (armor->covers & mfb(bp_mouth) && has_trait(PF_BEAK)) {
+    if ((armor->covers & mfb(bp_mouth)) && has_trait(PF_BEAK)) {
         if (!is_npc()) messages.add("You cannot put a %s over your beak.", armor->name.c_str());
         return nullptr;
     }
-    if (armor->covers & mfb(bp_feet) && has_trait(PF_HOOVES)) {
+    if ((armor->covers & mfb(bp_feet)) && has_trait(PF_HOOVES)) {
         if (!is_npc()) messages.add("You cannot wear footwear on your hooves.");
         return nullptr;
     }
-    if (armor->covers & mfb(bp_head) && has_trait(PF_HORNS_CURLED)) {
+    if ((armor->covers & mfb(bp_head)) && has_trait(PF_HORNS_CURLED)) {
         if (!is_npc()) messages.add("You cannot wear headgear over your horns.");
         return nullptr;
     }
-    if (armor->covers & mfb(bp_torso) && has_trait(PF_SHELL)) {
+    if ((armor->covers & mfb(bp_torso)) && has_trait(PF_SHELL)) {
         if (!is_npc()) messages.add("You cannot wear anything over your shell.");
         return nullptr;
     }
-    if (armor->covers & mfb(bp_head) && !to_wear.made_of(WOOL) &&
+    if ((armor->covers & mfb(bp_head)) && !to_wear.made_of(WOOL) &&
         !to_wear.made_of(COTTON) && !to_wear.made_of(LEATHER) &&
         (has_trait(PF_HORNS_POINTED) || has_trait(PF_ANTENNAE) ||
             has_trait(PF_ANTLERS))) {
@@ -5030,7 +5030,7 @@ const it_armor* player::wear_is_performable(const item& to_wear) const
                 (has_trait(PF_ANTENNAE) ? "antennae" : "antlers")));
         return nullptr;
     }
-    if (armor->covers & mfb(bp_feet) && wearing_something_on(bp_feet)) {
+    if ((armor->covers & mfb(bp_feet)) && wearing_something_on(bp_feet)) {
         if (!is_npc()) messages.add("You're already wearing footwear!");
         return nullptr;
     }

@@ -332,6 +332,7 @@ itype_id default_ammo(ammotype guntype);
 
 // forward-declares
 struct it_ammo;
+struct it_armor;
 struct it_artifact_armor;
 struct it_artifact_tool;
 struct it_bionic;
@@ -374,7 +375,7 @@ struct itype
  virtual const it_gun* is_gun() const     { return nullptr; }
  virtual const it_gunmod* is_gunmod() const  { return nullptr; }
  virtual const it_bionic* is_bionic() const  { return nullptr; }
- virtual bool is_armor() const   { return false; }
+ virtual const it_armor* is_armor() const   { return nullptr; }
  virtual bool is_book() const    { return false; }
  virtual const it_tool* is_tool() const    { return nullptr; }
  virtual bool is_container() const { return false; }
@@ -555,7 +556,7 @@ struct it_armor : public itype
 	 unsigned char penv_resist, signed char pwarmth,
 	 unsigned char pstorage);
 
- bool is_armor() const override { return true; }
+ const it_armor* is_armor() const override final { return this; }
 
  void info(std::ostream& dest) const override;
 protected:	// this is not a final type so these aren't public

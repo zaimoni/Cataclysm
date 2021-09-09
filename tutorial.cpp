@@ -150,8 +150,7 @@ void tutorial_game::post_action(game *g, action_id act)
 
  case ACTION_WEAR: {
   const itype* const it = item::types[ g->u.last_item];
-  if (it->is_armor()) {
-   const it_armor* const armor = dynamic_cast<const it_armor*>(it);
+  if (const auto armor = it->is_armor()) {
    if (armor->dmg_resist >= 2 || armor->cut_resist >= 4) add_message(g, LESSON_WORE_ARMOR);
    if (armor->storage >= 20) add_message(g, LESSON_WORE_STORAGE);
    if (armor->env_resist >= 2) add_message(g, LESSON_WORE_MASK);
