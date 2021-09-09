@@ -5105,8 +5105,12 @@ void player::use(game *g, char let)
  }
 
  // \todo gun mods up here
- // \todo bionics up here
- // above two restore C:Whales behavior where gun mods or bionics as food containers were not food sources
+ // above restores C:Whales behavior where gun mods as food containers were not food sources
+ if (const auto bionic = used->is_bionic()) {
+     if (install_bionics(g, bionic)) remove_discard(*src);
+     return;
+ }
+
  if (used->is_food() || used->is_food_container()) {
      eat(*src);
      return;
@@ -5204,11 +5208,6 @@ void player::use(game *g, char let)
   }
   messages.add("You attach the %s to your %s.", used->tname().c_str(), gun.tname().c_str());
   gun.contents.push_back(replace_item ? copy : i_rem(let));
-  return;
- } else if (const auto tmp = used->is_bionic()) {
-  if (install_bionics(g, tmp)) {
-   if (!replace_item) i_rem(let);
-  } else if (replace_item) inv.add_item(copy);
   return;
  } else if (used->is_book()) {
   if (replace_item) inv.add_item(copy);
