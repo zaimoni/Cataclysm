@@ -5252,7 +5252,7 @@ void player::read(game *g, char ch)
  }
 
 // Some macguffins can be read, but they aren't treated like books.
- if (const it_macguffin* mac = used.second->is_macguffin() ? dynamic_cast<const it_macguffin*>(used.second->type) : nullptr) {
+ if (const auto mac = used.second->is_macguffin()) {
      (*mac->use)(g, this, used.second, false);
      return;
  }

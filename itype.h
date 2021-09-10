@@ -340,6 +340,7 @@ struct it_book;
 struct it_comest;
 struct it_gun;
 struct it_gunmod;
+struct it_macguffin;
 struct it_style;
 struct it_tool;
 
@@ -381,7 +382,7 @@ struct itype
  virtual const it_tool* is_tool() const    { return nullptr; }
  virtual bool is_container() const { return false; }
  virtual bool is_software() const { return false; }
- virtual bool is_macguffin() const { return false; } // leave this alone until this is revamped?
+ virtual const it_macguffin* is_macguffin() const { return nullptr; }
  virtual const it_style* is_style() const   { return nullptr; }
  virtual bool is_artifact() const { return false; }
  virtual const it_artifact_armor* is_artifact_armor() const { return nullptr; }
@@ -565,7 +566,7 @@ protected:	// this is not a final type so these aren't public
  void toJSON(cataclysm::JSON& dest) const override;
 };
 
-struct it_book : public itype
+struct it_book final : public itype
 {
  skill type;		// Which skill it upgrades
  unsigned char level;	// The value it takes the skill to
@@ -662,7 +663,7 @@ struct it_bionic final : public itype
  const it_bionic* is_bionic() const override { return this; }
 };
 
-struct it_macguffin : public itype
+struct it_macguffin final : public itype
 {
  bool readable; // If true, activated with 'R'
 #ifndef SOCRATES_DAIMON
@@ -682,7 +683,7 @@ struct it_macguffin : public itype
 #endif
  );
 
- bool is_macguffin() const override { return true; }
+ const it_macguffin* is_macguffin() const override { return this; }
 };
 
 struct it_software : public itype

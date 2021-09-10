@@ -465,7 +465,7 @@ int main(int argc, char *argv[])
 	std::vector<const it_gun*> guns;
 	std::vector<const it_gunmod*> gun_mods;
 	std::vector<const it_style*> ma_styles;	// martial arts styles
-	std::vector<it_macguffin*> macguffins;
+	std::vector<const it_macguffin*> macguffins;
 	std::vector<const it_comest*> pharma;
 	std::vector<it_software*> software;
 	std::vector<const it_tool*> tools;
@@ -607,10 +607,7 @@ int main(int argc, char *argv[])
 
 			bionics.push_back(bionic);
 			will_handle_as_html = true;
-		} else if (it->is_macguffin()) {
-			const auto macguffin = static_cast<it_macguffin*>(it);
-			if (!macguffin) throw std::logic_error(it->name + ": static cast to bionic failed");
-
+		} else if (const auto macguffin = it->is_macguffin()) {
 			macguffins.push_back(macguffin);
 			will_handle_as_html = true;
 		} else if (itm_corpse == it->id) continue;	// corpses need their own testing path
