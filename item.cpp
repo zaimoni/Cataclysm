@@ -289,11 +289,10 @@ nc_color item::color(const player& u) const
     }
    }
   }
- } else if (is_book()) {
-  const it_book* const tmp = dynamic_cast<const it_book*>(type);
-  if (tmp->type !=sk_null && tmp->intel <= u.int_cur + u.sklevel[tmp->type] &&
-      (tmp->intel == 0 || !u.has_trait(PF_ILLITERATE)) &&
-      tmp->req <= u.sklevel[tmp->type] && tmp->level > u.sklevel[tmp->type])
+ } else if (const auto book = is_book()) {
+  if (book->type !=sk_null && book->intel <= u.int_cur + u.sklevel[book->type] &&
+      (book->intel == 0 || !u.has_trait(PF_ILLITERATE)) &&
+      book->req <= u.sklevel[book->type] && book->level > u.sklevel[book->type])
    ret = c_ltblue;
  }
  return ret;
@@ -633,17 +632,6 @@ bool item::is_bashing_weapon() const
 bool item::is_cutting_weapon() const
 {
  return (type->melee_cut >= 8 && !has_flag(IF_SPEAR));
-}
-
-bool item::is_book() const
-{
-/*
- if (type->is_macguffin()) {
-  it_macguffin* mac = dynamic_cast<it_macguffin*>(type);
-  return mac->readable;
- }
-*/
- return type->is_book();
 }
 
 bool item::is_other() const

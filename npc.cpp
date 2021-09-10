@@ -1461,8 +1461,7 @@ int npc::value(const item &it) const
   }
  }
 
- if (it.is_book()) {
-  const it_book* const book = dynamic_cast<const it_book*>(it.type);
+ if (const auto book = it.is_book()) {
   if (book->intel <= int_cur) {
    ret += book->fun;
    if (sklevel[book->type] < book->level && sklevel[book->type] >= book->req)

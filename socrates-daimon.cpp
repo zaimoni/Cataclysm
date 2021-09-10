@@ -561,10 +561,7 @@ int main(int argc, char *argv[])
 
 			containers.push_back(cont);
 			will_handle_as_html = true;
-		} else if (it->is_book()) {
-			const auto book = static_cast<it_book*>(it);
-			if (!book) throw std::logic_error(it->name + ": static cast to book failed");
-
+		} else if (const auto book = it->is_book()) {
 			books.push_back(book);
 			will_handle_as_html = true;
 		} else if (const auto food = it->is_food()) {

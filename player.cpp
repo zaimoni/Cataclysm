@@ -5257,12 +5257,12 @@ void player::read(game *g, char ch)
      return;
  }
 
- if (!used.second->is_book()) {
+ const auto book = used.second->is_book();
+ if (!book) {
   messages.add("Your %s is not good reading material.", used.second->tname().c_str());
   return;
  }
 
- const it_book* const book = dynamic_cast<const it_book*>(used.second->type);
  if (book->intel > 0 && has_trait(PF_ILLITERATE)) {
   messages.add("You're illiterate!");
   return;

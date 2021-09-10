@@ -336,6 +336,7 @@ struct it_armor;
 struct it_artifact_armor;
 struct it_artifact_tool;
 struct it_bionic;
+struct it_book;
 struct it_comest;
 struct it_gun;
 struct it_gunmod;
@@ -376,11 +377,11 @@ struct itype
  virtual const it_gunmod* is_gunmod() const  { return nullptr; }
  virtual const it_bionic* is_bionic() const  { return nullptr; }
  virtual const it_armor* is_armor() const   { return nullptr; }
- virtual bool is_book() const    { return false; }
+ virtual const it_book* is_book() const    { return nullptr; }
  virtual const it_tool* is_tool() const    { return nullptr; }
  virtual bool is_container() const { return false; }
  virtual bool is_software() const { return false; }
- virtual bool is_macguffin() const { return false; } // leave this alone until this is revamped
+ virtual bool is_macguffin() const { return false; } // leave this alone until this is revamped?
  virtual const it_style* is_style() const   { return nullptr; }
  virtual bool is_artifact() const { return false; }
  virtual const it_artifact_armor* is_artifact_armor() const { return nullptr; }
@@ -584,7 +585,7 @@ struct it_book : public itype
 	 skill ptype, unsigned char plevel, unsigned char preq,
 	 signed char pfun, unsigned char pintel, unsigned char ptime);
 
- bool is_book() const override { return true; }
+ const it_book* is_book() const override { return this; }
 
  void info(std::ostream& dest) const override;
 };
