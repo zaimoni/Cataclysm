@@ -52,6 +52,7 @@ public:
 			_add(msg, params...);
 		}
 	}
+	void add(const std::string& src) { _record(src.c_str()); }
 	void buffer() const;
 	void write(WINDOW* w_messages);
 private:
