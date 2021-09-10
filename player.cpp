@@ -408,7 +408,7 @@ stat_delta dis_stat_effects(const player& p, const disease& dis)
     return ret;
 }
 
-void player::subjective_message(const std::string& msg) const { messages.add(msg); }
+void player::subjective_message(const std::string& msg) const { if (!msg.empty()) messages.add(msg); }
 
 bool player::see_phantasm()
 {
@@ -5236,6 +5236,29 @@ std::optional<std::string> player::cannot_read() const
     return std::nullopt;
 }
 
+std::optional<std::string> player::cannot_read(const std::variant<const it_macguffin*, const it_book*>& src) const
+{
+    if (const auto book2 = std::get_if<const it_book*>(&src)) {
+        const auto book = *book2;   // backward compatibility
+        if (book->intel > 0 && has_trait(PF_ILLITERATE)) return "You're illiterate!";
+        else if (book->intel > int_cur) return "This book is way too complex for you to understand.";
+        else if (book->req > sklevel[book->type]) return std::string("The ") + skill_name(skill(book->type)) + "-related jargon flies over your head!";
+        else if (book->level <= sklevel[book->type] && book->fun <= 0 &&
+            !query_yn("Your %s skill won't be improved.  Read anyway?", skill_name(skill(book->type))))
+            return std::string();
+    }
+    return std::nullopt;
+}
+
+// \todo lift to more logical location when needed
+static std::optional<std::variant<const it_macguffin*, const it_book*> > is_readable(const item& it) {
+    if (const auto mac = it.is_macguffin()) {
+        if (mac->readable) return mac;
+    }
+    if (const auto book = it.is_book()) return book;
+    return std::nullopt;
+}
+
 void player::read(game *g, char ch)
 {
     if (const auto err = cannot_read()) {
@@ -5251,35 +5274,37 @@ void player::read(game *g, char ch)
   return;
  }
 
-// Some macguffins can be read, but they aren't treated like books.
- if (const auto mac = used.second->is_macguffin()) {
-     (*mac->use)(g, this, used.second, false);
+ const auto read_this = is_readable(*used.second);
+ if (!read_this) {
+     messages.add("Your %s is not good reading material.", used.second->tname().c_str());
      return;
  }
 
- const auto book = used.second->is_book();
- if (!book) {
-  messages.add("Your %s is not good reading material.", used.second->tname().c_str());
-  return;
+ if (const auto err = cannot_read(*read_this)) {
+     subjective_message(*err);
+     return;
  }
 
- if (book->intel > 0 && has_trait(PF_ILLITERATE)) {
-  messages.add("You're illiterate!");
-  return;
- } else if (book->intel > int_cur) {
-  messages.add("This book is way too complex for you to understand.");
-  return;
- } else if (book->req > sklevel[book->type]) {
-  messages.add("The %s-related jargon flies over your head!", skill_name(skill(book->type)));
-  return;
- } else if (book->level <= sklevel[book->type] && book->fun <= 0 &&
-            !query_yn("Your %s skill won't be improved.  Read anyway?", skill_name(skill(book->type))))
-  return;
+ // \todo lift this out when needed
+ class readme {
+     std::function<void(const it_macguffin*)> handle_mac;
+     std::function<void(const it_book*)> handle_book;
+ public:
+     readme(decltype(handle_mac) handle_mac, decltype(handle_book) handle_book) : handle_mac(handle_mac), handle_book(handle_book) {}
 
-// Base read_speed() is 1000 move points (1 minute per tmp->time)
- int time = book->time * read_speed();
- activity = player_activity(ACT_READ, time, used.first);
- moves = 0;
+     void operator()(const it_macguffin* mac) { handle_mac(mac); }
+     void operator()(const it_book* book) { handle_book(book); }
+ };
+
+ std::visit(readme([&](const it_macguffin* mac) {
+    // Some macguffins can be read, but they aren't treated like books.
+    (*mac->use)(g, this, used.second, false);
+ } , [&](const it_book* book) {
+     // Base read_speed() is 1000 move points (1 minute per tmp->time)
+     int time = book->time * read_speed();
+     activity = player_activity(ACT_READ, time, used.first);
+     moves = 0;
+ }), *read_this);
 }
  
 void player::try_to_sleep()
