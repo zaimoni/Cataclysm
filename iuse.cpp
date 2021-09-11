@@ -1835,7 +1835,7 @@ void iuse::vacutainer(game *g, player *p, item *it, bool t)	// XXX disabled for 
 
  if (!drew_blood && !query_yn("Draw your own blood?")) return;
 
- it->put_in(blood);
+ it->put_in(std::move(blood));
 }
  
 

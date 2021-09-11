@@ -549,7 +549,7 @@ INITIATING STANDARD TREMOR TEST...");
         item software(item::types[miss->item_id], 0);   // this software is pre-Cataclysm
         software.mission_id = mission_id;
         usb_drive->contents.clear();
-        usb_drive->put_in(software);
+        usb_drive->put_in(std::move(software));
         print_line("Software downloaded.");
     }
    }

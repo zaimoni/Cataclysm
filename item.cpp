@@ -182,10 +182,11 @@ bool item::stacks_with(const item& rhs) const
 
  return true;
 }
- 
-void item::put_in(item payload)
+
+// retain this as we may want to do further reality checks
+void item::put_in(item&& payload)
 {
- contents.push_back(payload);
+ contents.push_back(std::move(payload));
 }
  
 std::string item::info(bool showtext)
