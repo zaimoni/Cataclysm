@@ -467,7 +467,7 @@ int main(int argc, char *argv[])
 	std::vector<const it_style*> ma_styles;	// martial arts styles
 	std::vector<const it_macguffin*> macguffins;
 	std::vector<const it_comest*> pharma;
-	std::vector<it_software*> software;
+	std::vector<const it_software*> software;
 	std::vector<const it_tool*> tools;
 
 	std::vector<itype*> unclassified;
@@ -531,9 +531,7 @@ int main(int argc, char *argv[])
 				ammunition.push_back(ammo);
 				will_handle_as_html = true;
 			}
-		} else if (it->is_software()) {
-			const auto sw = static_cast<it_software*>(it);
-			if (!sw) throw std::logic_error(it->name + ": static cast to software failed");
+		} else if (const auto sw = it->is_software()) {
 			// constructor hard-coding (specification)
 			if (0 != it->rarity) throw std::logic_error("unexpected rarity");	// 2020-03-14 these don't randomly spawn; might want to change that
 			// the container may have volume, etc. but the software itself isn't very physical
@@ -617,7 +615,7 @@ int main(int argc, char *argv[])
 		// check what happens when item is created.
 			item test(it, 0);
 			name_id[test.tname()] = it->id;
-			if (it->is_food() || it->is_software()) {	// i.e., can create in own container
+			if (test.my_preferred_container()) {	// i.e., can create in own container
 				auto test2 = test.in_its_container();
 				if (test2.type != test.type) check_roundtrip_JSON(test2);
 			}

@@ -342,6 +342,7 @@ struct it_container;
 struct it_gun;
 struct it_gunmod;
 struct it_macguffin;
+struct it_software;
 struct it_style;
 struct it_tool;
 
@@ -382,7 +383,7 @@ struct itype
  virtual const it_book* is_book() const    { return nullptr; }
  virtual const it_tool* is_tool() const    { return nullptr; }
  virtual const it_container* is_container() const { return nullptr; }
- virtual bool is_software() const { return false; }
+ virtual const it_software* is_software() const { return nullptr; }
  virtual const it_macguffin* is_macguffin() const { return nullptr; }
  virtual const it_style* is_style() const   { return nullptr; }
  virtual bool is_artifact() const { return false; }
@@ -697,7 +698,7 @@ struct it_software : public itype
 	 char psym, nc_color pcolor,
 	 software_type pswtype, int ppower);
 
- bool is_software() const override { return true; }
+ const it_software* is_software() const override { return this; }
 };
 
 struct it_style final : public itype

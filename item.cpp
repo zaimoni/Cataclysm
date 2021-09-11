@@ -135,19 +135,21 @@ bool item::is_null() const
  return (type == nullptr || type->id == 0);
 }
 
+std::optional<std::pair<itype_id, int> > item::my_preferred_container() const
+{
+    if (is_software()) return std::pair(itm_usb_drive, 0); // these are pre-Cataclysm no matter what
+    if (const auto food = is_food()) return std::pair(food->container, bday);
+    return std::nullopt;
+}
+
 item item::in_its_container() const
 {
- if (is_software()) {
-  item ret(item::types[itm_usb_drive], 0, invlet);
-  ret.contents.push_back(*this);
-  return ret;
- }
- const it_comest* const food = dynamic_cast<const it_comest*>(type);
- if (!food || !food->container) return *this;
- item ret(item::types[food->container], bday);
- ret.contents.push_back(*this);
- ret.invlet = invlet;
- return ret;
+    if (const auto my_container = my_preferred_container()) {
+        item ret(item::types[my_container->first], my_container->second, invlet);
+        ret.contents.push_back(*this);
+        return ret;
+    }
+    return *this;
 }
 
 bool item::invlet_is_okay() const

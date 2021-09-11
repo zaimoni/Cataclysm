@@ -7,9 +7,9 @@ struct mtype;
 #ifndef SOCRATES_DAIMON
 class player;
 
-#include <optional>
 #include <variant>
 #endif
+#include <optional>
 
 class item
 {
@@ -51,6 +51,7 @@ public:
  friend bool operator==(const item& lhs, const item& rhs);
  friend bool operator!=(const item& lhs, const item& rhs) { return !(lhs==rhs); };
 
+ std::optional<std::pair<itype_id, int> > my_preferred_container() const;
 // returns the default container of this item, with this item in it
  item in_its_container() const;
 
@@ -149,7 +150,7 @@ public:
  auto is_book() const { return type->is_book(); }
  auto is_container() const { return type->is_container(); }
  auto is_tool() const { return type->is_tool(); }
- bool is_software() const { return type->is_software(); }
+ auto is_software() const { return type->is_software(); }
  auto is_macguffin() const { return type->is_macguffin(); }
  auto is_style() const { return type->is_style(); }
  bool is_other() const; // Doesn't belong in other categories
