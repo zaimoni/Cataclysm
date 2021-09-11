@@ -338,6 +338,7 @@ struct it_artifact_tool;
 struct it_bionic;
 struct it_book;
 struct it_comest;
+struct it_container;
 struct it_gun;
 struct it_gunmod;
 struct it_macguffin;
@@ -380,7 +381,7 @@ struct itype
  virtual const it_armor* is_armor() const   { return nullptr; }
  virtual const it_book* is_book() const    { return nullptr; }
  virtual const it_tool* is_tool() const    { return nullptr; }
- virtual bool is_container() const { return false; }
+ virtual const it_container* is_container() const { return nullptr; }
  virtual bool is_software() const { return false; }
  virtual const it_macguffin* is_macguffin() const { return nullptr; }
  virtual const it_style* is_style() const   { return nullptr; }
@@ -601,7 +602,7 @@ enum container_flags {
 struct it_container : public itype
 {
  unsigned char contains;	// Internal volume
- unsigned flags : num_con_flags;
+ typename cataclysm::bitmap<num_con_flags>::type flags;
 
  it_container(int pid, unsigned char prarity, unsigned int pprice,
 	 std::string pname, std::string pdes,
@@ -610,9 +611,9 @@ struct it_container : public itype
 	 signed char pmelee_dam, signed char pmelee_cut,
 	 signed char pm_to_hit, unsigned pitem_flags,
 
-	 unsigned char pcontains, unsigned pflags);
+	 unsigned char pcontains, decltype(flags) pflags);
 
- bool is_container() const override { return true; }
+ const it_container* is_container() const override { return this; }
 };
 
 struct it_tool : public itype

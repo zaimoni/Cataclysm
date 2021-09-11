@@ -4616,11 +4616,12 @@ int player::charges_of(itype_id it) const
 bool player::has_watertight_container() const
 {
  for (size_t i = 0; i < inv.size(); i++) {
-  if (inv[i].is_container() && inv[i].contents.empty()) {
-   const it_container* const cont = dynamic_cast<const it_container*>(inv[i].type);
-   if (cont->flags & mfb(con_wtight) && cont->flags & mfb(con_seals))
-    return true;
-  }
+     if (const auto cont = inv[i].is_container()) {
+         if (inv[i].contents.empty()) {
+             if ((mfb(con_wtight) | mfb(con_seals)) == (cont->flags & (mfb(con_wtight) | mfb(con_seals))))
+                 return true;
+         }
+     }
  }
  return false;
 }

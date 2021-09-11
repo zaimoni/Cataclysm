@@ -492,21 +492,20 @@ void player::activate_bionic(int b, game *g)
    if (it.type == nullptr) {
     messages.add("You don't have that item!");
     power_level += bionic::type[bio_evap].power_cost;
-   } else if (!it.is_container()) {
+   } else if (const auto cont = it.is_container()) {
+	   if (it.volume_contained() + 1 > cont->contains) {
+		   messages.add("There's no space left in your %s.", it.tname().c_str());
+		   power_level += bionic::type[bio_evap].power_cost;
+	   } else if (!(cont->flags & con_wtight)) {
+		   messages.add("Your %s isn't watertight!", it.tname().c_str());
+		   power_level += bionic::type[bio_evap].power_cost;
+	   } else {
+		   messages.add("You pour water into your %s.", it.tname().c_str());
+		   it.put_in(item(item::types[itm_water], 0)); // XXX \todo should this be the correct origin time?
+	   }
+   } else {
     messages.add("That %s isn't a container!", it.tname().c_str());
     power_level += bionic::type[bio_evap].power_cost;
-   } else {
-    const it_container* const cont = dynamic_cast<const it_container*>(it.type);
-    if (it.volume_contained() + 1 > cont->contains) {
-     messages.add("There's no space left in your %s.", it.tname().c_str());
-     power_level += bionic::type[bio_evap].power_cost;
-    } else if (!(cont->flags & con_wtight)) {
-     messages.add("Your %s isn't watertight!", it.tname().c_str());
-     power_level += bionic::type[bio_evap].power_cost;
-    } else {
-     messages.add("You pour water into your %s.", it.tname().c_str());
-	 it.put_in(item(item::types[itm_water], 0)); // XXX \todo should this be the correct origin time?
-    }
    }
   }
   break;
@@ -594,18 +593,18 @@ void player::activate_bionic(int b, game *g)
 		   if (nullptr == it.type) {
 			   messages.add("You don't have that item!");
 			   power_level += bionic::type[bio_water_extractor].power_cost;
-		   } else if (!it.is_container()) {
-			   messages.add("That %s isn't a container!", it.tname().c_str());
-			   power_level += bionic::type[bio_water_extractor].power_cost;
-		   } else {
-			   const it_container* const cont = dynamic_cast<const it_container*>(it.type);
+		   } else if (const auto cont = it.is_container()) {
 			   if (it.volume_contained() + 1 > cont->contains) {
 				   messages.add("There's no space left in your %s.", it.tname().c_str());
 				   power_level += bionic::type[bio_water_extractor].power_cost;
-			   } else {
+			   }
+			   else {
 				   messages.add("You pour water into your %s.", it.tname().c_str());
 				   it.put_in(item(item::types[itm_water], 0));
 			   }
+		   } else {
+			   messages.add("That %s isn't a container!", it.tname().c_str());
+			   power_level += bionic::type[bio_water_extractor].power_cost;
 		   }
 		   break;
 	   }

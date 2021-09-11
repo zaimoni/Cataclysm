@@ -4617,7 +4617,7 @@ it_container::it_container(int pid, unsigned char prarity, unsigned int pprice,
 	signed char pmelee_dam, signed char pmelee_cut,
 	signed char pm_to_hit, unsigned pitem_flags,
 
-	unsigned char pcontains, unsigned pflags)
+	unsigned char pcontains, decltype(flags) pflags)
 :itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
  contains(pcontains),flags(pflags)
 {

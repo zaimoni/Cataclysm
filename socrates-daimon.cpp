@@ -458,7 +458,7 @@ int main(int argc, char *argv[])
 	std::vector<const it_armor*> armor;
 	std::vector<const it_bionic*> bionics;
 	std::vector<const it_book*> books;
-	std::vector<it_container*> containers;
+	std::vector<const it_container*> containers;
 	std::vector<const it_comest*> drinks;
 	std::vector<const it_comest*> edible;
 	std::vector<const it_ammo*> fuel;	// XXX conflation in type system
@@ -555,10 +555,7 @@ int main(int argc, char *argv[])
             }
 		}
 
-		if (it->is_container()) {
-			const auto cont = static_cast<it_container*>(it);
-			if (!cont) throw std::logic_error(it->name + ": static cast to container failed");
-
+		if (const auto cont = it->is_container()) {
 			containers.push_back(cont);
 			will_handle_as_html = true;
 		} else if (const auto book = it->is_book()) {
