@@ -5286,6 +5286,18 @@ void player::read(game *g, char ch)
      return;
  }
 
+ static auto read_macguffin = [&](const it_macguffin* mac) {
+     // Some macguffins can be read, but they aren't treated like books.
+     (*mac->use)(g, this, used.second, false);
+ };
+
+ static auto read_book = [&](const it_book* book) {
+     // Base read_speed() is 1000 move points (1 minute per tmp->time)
+     int time = book->time * read_speed();
+     activity = player_activity(ACT_READ, time, used.first);
+     moves = 0;
+ };
+
  // \todo lift this out when needed
  class readme {
      std::function<void(const it_macguffin*)> handle_mac;
@@ -5297,15 +5309,7 @@ void player::read(game *g, char ch)
      void operator()(const it_book* book) { handle_book(book); }
  };
 
- std::visit(readme([&](const it_macguffin* mac) {
-    // Some macguffins can be read, but they aren't treated like books.
-    (*mac->use)(g, this, used.second, false);
- } , [&](const it_book* book) {
-     // Base read_speed() is 1000 move points (1 minute per tmp->time)
-     int time = book->time * read_speed();
-     activity = player_activity(ACT_READ, time, used.first);
-     moves = 0;
- }), *read_this);
+ std::visit(readme(read_macguffin, read_book), *read_this);
 }
  
 void player::try_to_sleep()
