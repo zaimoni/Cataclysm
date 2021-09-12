@@ -11,6 +11,7 @@
 #include "recent_msg.h"
 #include "saveload.h"
 #include "zero.h"
+#include "Zaimoni.STL/functional.hpp"
 
 #include <array>
 #include <math.h>
@@ -5298,18 +5299,7 @@ void player::read(game *g, char ch)
      moves = 0;
  };
 
- // \todo lift this out when needed
- class readme {
-     std::function<void(const it_macguffin*)> handle_mac;
-     std::function<void(const it_book*)> handle_book;
- public:
-     readme(decltype(handle_mac) handle_mac, decltype(handle_book) handle_book) : handle_mac(handle_mac), handle_book(handle_book) {}
-
-     void operator()(const it_macguffin* mac) { handle_mac(mac); }
-     void operator()(const it_book* book) { handle_book(book); }
- };
-
- std::visit(readme(read_macguffin, read_book), *read_this);
+ std::visit(zaimoni::handler<void, const it_macguffin*, const it_book*>(read_macguffin, read_book), *read_this);
 }
  
 void player::try_to_sleep()

@@ -16,6 +16,9 @@
     <Filter Include="Header Files\fragment.inc">
       <UniqueIdentifier>{3997287f-87bd-48be-b2fe-b8ac7afcc6cc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Zaimoni.STL">
+      <UniqueIdentifier>{3c04c742-3063-459f-b853-91ae0b5aff4e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -287,6 +290,9 @@
     </ClInclude>
     <ClInclude Include="rational.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Zaimoni.STL\functional.hpp">
+      <Filter>Header Files\Zaimoni.STL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
