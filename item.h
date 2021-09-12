@@ -6,9 +6,9 @@
 struct mtype;
 #ifndef SOCRATES_DAIMON
 class player;
+#endif
 
 #include <variant>
-#endif
 #include <optional>
 
 class item
@@ -75,6 +75,8 @@ public:
 #ifndef SOCRATES_DAIMON
  int range(const player* p = nullptr) const;
 #endif
+ std::optional<std::string> cannot_reload() const;
+ std::optional<std::variant<const it_gun*, const it_tool* > > can_reload() const;
  ammotype ammo_type() const;
  bool gun_uses_ammo_type(ammotype am) const;
  static void uses_ammo_type(itype_id src, std::vector<ammotype>& dest);

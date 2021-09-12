@@ -767,6 +767,40 @@ int item::range(const player *p) const	// return value can be negative at this t
 }
 #endif
 
+std::optional<std::string> item::cannot_reload() const
+{
+    if (const auto gun = is_gun()) {
+        // charger guns don't reload
+        if (AT_NULL == gun->ammo) return std::string("Your ") + tname().c_str() + " does not reload normally.";
+        // integrated reload/shoot
+        if (has_flag(IF_RELOAD_AND_SHOOT)) return std::string("Your ") + tname().c_str() + " does not need to be reloaded; it reloads and fires in a single action.";
+        if (charges >= clip_size()) return std::string("Your ") + tname().c_str() + " is fully loaded!";
+        return std::nullopt;
+    } else if (const auto tool = is_tool()) {
+        if (AT_NULL != tool->ammo) return std::nullopt;
+    } else if (is_null() || is_style()) { // logical negation of player::is_armed
+        return "You're not wielding anything.";
+    }
+    return std::string("You can't reload a ") + tname().c_str() + "!";
+}
+
+std::optional<std::variant<const it_gun*, const it_tool* > > item::can_reload() const
+{
+    if (const auto gun = is_gun()) {
+        // charger guns don't reload
+        if (AT_NULL == gun->ammo) return std::nullopt;
+        // integrated reload/shoot
+        if (has_flag(IF_RELOAD_AND_SHOOT)) return std::nullopt;
+        if (charges >= clip_size()) return std::nullopt;
+        return gun;
+    }
+    if (const auto tool = is_tool()) {
+        if (AT_NULL == tool->ammo) return std::nullopt;
+        return tool;
+    }
+    return std::nullopt;
+}
+
 ammotype item::ammo_type() const
 {
  if (is_gun()) {

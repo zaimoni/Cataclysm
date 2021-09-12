@@ -5,6 +5,8 @@
 #include "mapbuffer.h"
 #include "act_obj.h"
 #include "recent_msg.h"
+#include "Zaimoni.STL/functional.hpp"
+
 #include <sstream>
 
 #define TARGET_PLAYER -2
@@ -963,43 +965,27 @@ bool npc::can_fire()
 
 int player::can_reload() const
 {
-	if (weapon.is_gun()) {
-		if (weapon.has_flag(IF_RELOAD_AND_SHOOT)) {
-			messages.add("Your %s does not need to be reloaded; it reloads and fires in a single action.", weapon.tname().c_str());
-			return -1;
-		}
-		if (weapon.ammo_type() == AT_NULL) {
-			messages.add("Your %s does not reload normally.", weapon.tname().c_str());
-			return -1;
-		}
-		if (weapon.charges == weapon.clip_size()) {
-			messages.add("Your %s is fully loaded!", weapon.tname().c_str());
-			return -1;
-		}
-		int index = weapon.pick_reload_ammo(*this, true);
-		if (0 > index) {
-			messages.add("Out of ammo!");
-			return -1;
-		}
-		return index;
-	} else if (const auto tool = weapon.is_tool()) {
-		if (tool->ammo == AT_NULL) {
-			messages.add("You can't reload a %s!", weapon.tname().c_str());
-			return -1;
-		}
-		const int index = weapon.pick_reload_ammo(*this, true);
-		if (0 > index) {
-			// Reload failed
-			messages.add("Out of %s!", ammo_name(tool->ammo).c_str());
-			return -1;
-		}
-		return index;
-	} else if (!is_armed()) {
-		messages.add("You're not wielding anything.");
+	if (const auto err = weapon.cannot_reload()) {
+		subjective_message(*err);
 		return -1;
 	}
-	messages.add("You can't reload a %s!", weapon.tname().c_str());
-	return -1;
+	const auto reloadable = weapon.can_reload().value();
+
+	static auto reload_gun_err = [&](const it_gun*) {
+		return std::string("Out of ammo!");
+	};
+
+	static auto reload_tool_err = [&](const it_tool* tool) {
+		return std::string("Out of ") + ammo_name(tool->ammo) + "!";
+	};
+
+	const int index = weapon.pick_reload_ammo(*this, true);
+	if (0 > index) {
+		// Reload failed
+		subjective_message(std::visit(zaimoni::handler<std::string, const it_gun*, const it_tool*>(reload_gun_err, reload_tool_err), reloadable));
+		return -1;
+	}
+	return index;
 }
 
 // \todo adjust NPC logic to correctly handle IF_RELOAD_AND_SHOOT flag
