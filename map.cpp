@@ -1556,7 +1556,7 @@ void submap::process_active_items()
             int n = items.size();
             while (0 < n) {
                 if (decltype(auto) it = items[--n]; it.active) {
-                    switch (int code = use_active_item(g->u, it))   // XXX \todo allow modeling active item effects w/o player
+                    switch (int code = g->u.use_active(it))   // XXX \todo allow modeling active item effects w/o player
                     { // ignore artifacts/code -2
                     case -1:   // discharge charger gun
                         it.active = false;

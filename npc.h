@@ -268,7 +268,7 @@ struct npc_chatbin
  npc_chatbin& operator=(npc_chatbin&& src) = default;
 };
 
-class npc : public player {
+class npc final : public player {
 
 public:
 #undef MIN_ID
@@ -474,6 +474,7 @@ public:
     void subjective_message(const std::string& msg) const override {}
     bool see_phantasm() override { return false; } // unclear how to implement this even for multi-PC case, let alone NPCs
     std::vector<item>* use_stack_at(const point& pt) const override;
+    constexpr int use_active(item& it) override { return 0; } // stub
 
 // grammatical support
     std::string subject() const override;
