@@ -995,14 +995,14 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
 	auto g = game::active();
 
     const bool pl_ctrl = player_in_control(g->u);
-	npc* const nPC = g->nPC(dest);
-    const bool u_here = dest == g->u.pos && !g->u.in_vehicle;
+    // automatic collision w/NPCs until they can board \todo fix
+	player* ph = g->survivor(dest);
     monster* const z = g->mon(dest);
-    player* const ph = (nPC ? nPC : (u_here? &g->u : nullptr));
+    if (ph->in_vehicle) ph = nullptr;
     const auto v = g->m._veh_at(dest);
     vehicle* const oveh = v ? v->first : nullptr; // backward compatibility
     const bool veh_collision = oveh && oveh->GPSpos != GPSpos;
-    bool body_collision = u_here || z || nPC;
+    bool body_collision = ph || z;
 
     // 0 - nothing, 1 - monster/player/npc, 2 - vehicle,
     // 3 - thin_obstacle, 4 - bashable, 5 - destructible, 6 - other

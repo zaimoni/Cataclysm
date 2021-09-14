@@ -342,7 +342,7 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
 // If there's a monster in the path of our bullet, and either our aim was true,
 //  OR it's not the monster we were aiming at and we were lucky enough to hit it
    monster* const m_at = mon(trajectory[i]);
-   player* const h = (u.pos == trajectory[i]) ? &u : nPC(trajectory[i]);	// XXX would prefer not to pay CPU here when monster case processes
+   player* const h = survivor(trajectory[i]);	// XXX would prefer not to pay CPU here when monster case processes
 // If we shot us a monster...
    if (m_at && (!m_at->has_flag(MF_DIGS) || rl_dist(p.GPSpos, m_at->GPSpos) <= 1) &&
        ((!missed && i == trajectory.size() - 1) ||

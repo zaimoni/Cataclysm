@@ -95,7 +95,7 @@ game::~game()
 
 void game::setup()	// early part looks like it belongs in game::game (but we return to the start screen rather than completely drop out
 {
- u = player();
+ u = pc();
  m = map(); // Init the root map with our vectors
  z.reserve(1000); // Reserve some space
 
@@ -325,7 +325,7 @@ http://github.com/zaimoni/Cataclysm .");
     if (ch == 'l' || ch == '\n' || ch == '>') {
      if (sel2 == 1) {
       if (!u.create(this, PLTYPE_CUSTOM)) {
-       u = player();
+       u = pc();
        delwin(w_open);
        return (opening_screen());
       }
@@ -340,7 +340,7 @@ http://github.com/zaimoni/Cataclysm .");
      }
      if (sel2 == 3) {
       if (!u.create(this, PLTYPE_RANDOM)) {
-       u = player();
+       u = pc();
        delwin(w_open);
        return (opening_screen());
       }
@@ -420,7 +420,7 @@ http://github.com/zaimoni/Cataclysm .");
       gamemode = decltype(gamemode)(get_special_game( special_game_id(sel2) ));
       if (!gamemode->init(this)) {
        gamemode = decltype(gamemode)(new special_game);
-       u = player();
+       u = pc();
        delwin(w_open);
        return (opening_screen());
       }
@@ -466,7 +466,7 @@ http://github.com/zaimoni/Cataclysm .");
    }
    if (ch == 'l' || ch == '\n' || ch == '>') {
     if (!u.create(this, PLTYPE_TEMPLATE, templates[sel1])) {
-     u = player();
+     u = pc();
      delwin(w_open);
      return (opening_screen());
     }
@@ -1486,7 +1486,7 @@ void game::load(std::string name)
     }
 
     // player -- do this here or otherwise visibility info, etc. lost
-	u = player(saved["player"]);	// \todo fromJSON idiom, so we can signal failure w/o throwing?
+	u = pc(saved["player"]);	// \todo fromJSON idiom, so we can signal failure w/o throwing?
 
 	// deal with map now (historical ordering)
 	cur_om = overmap(this, com.x, com.y, lev.z);

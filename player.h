@@ -31,6 +31,9 @@ struct special_attack
 std::string random_first_name(bool male);
 std::string random_last_name();
 
+// C:Whales considered npc a subclass of player but allowed player to have PC-specific UI.
+// It's too invasive to try to extract the player vs NPC differences into an actor controller class,
+// but we don't want per-player UI within the game object either.
 class player : public mobile {
 public:
  player();

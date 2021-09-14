@@ -3,6 +3,7 @@
 
 #include "reality_bubble.hpp"
 #include "npc.h"
+#include "pc.hpp"
 #include "event.h"
 #include "mission.h"
 #include "weather.h"
@@ -181,7 +182,7 @@ class game : public reality_bubble
   signed char temperature;              // The air temperature
   weather_type weather;			// Weather pattern--SEE weather.h
   char nextinv;	// Determines which letter the next inv item will have
-  player u;
+  pc u;
   std::vector<monster> z;
   std::vector<monster_and_count> coming_to_stairs;
   tripoint monstair;
