@@ -5194,31 +5194,18 @@ void player::use(game *g, char let)
      eat(*src);
      return;
  }
- // \todo books up here
- // \todo armor up here
 
- // legacy implementation -- not ACID
- item copy;
- bool replace_item = false;
- if (inv.index_by_letter(let) != -1) {
-  copy = inv.remove_item_by_letter(let);
-  copy.invlet = let;
-  used = &copy;
-  replace_item = true;
- }
- 
  if (used->is_book()) {
-  if (replace_item) inv.add_item(copy);
-  read(g, let);
-  return;
- } else if (used->is_armor()) {
-  if (replace_item) inv.add_item(copy);
-  wear(let);
-  return;
- } else
-  messages.add("You can't do anything interesting with your %s.", used->tname().c_str());
+     read(g, let);
+     return;
+ }
 
- if (replace_item) inv.add_item(copy);
+ if (used->is_armor()) {
+     wear(let);
+     return;
+ }
+
+ messages.add("You can't do anything interesting with your %s.", used->tname().c_str());
 }
 
 std::optional<std::string> player::cannot_read() const
