@@ -4419,6 +4419,18 @@ std::optional<player::item_spec> player::from_invlet(char let)
     return std::pair(&inv[index], index);
 }
 
+std::optional<player::item_spec> player::lookup(item* it)
+{
+    if (!it) return std::nullopt;
+    if (it == &weapon) return std::pair(&weapon, -1);
+    int worn_index = -2;
+    for (decltype(auto) obj : worn) {
+        if (&obj == it) return std::pair(&obj, worn_index);
+        worn_index--;
+    }
+    if (auto code = inv.index_of(*it); 0 <= code) return std::pair(&inv[code], code);
+    return std::nullopt;
+}
 
 item& player::i_of_type(itype_id type)
 {

@@ -257,6 +257,18 @@ std::pair<int, const item*> inventory::by_letter(const char ch) const
 	return std::pair<int, const item*>(-1, nullptr);
 }
 
+int inventory::index_of(const item& it) const
+{
+    int i = -1;
+    for (decltype(auto) stack : items) {
+        ++i;
+        if (&it == &(stack.front())) return i;
+    }
+
+    return -1;
+}
+
+
 int inventory::amount_of(itype_id it) const
 {
  int count = 0;

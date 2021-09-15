@@ -67,6 +67,10 @@ class inventory
   std::pair<int, item*> by_letter(char ch);
   std::pair<int, const item*> by_letter(char ch) const;
 
+  /// <summary>Inverts operator[]</summary>
+  /// <returns>-1 on failure, or valid index for operator[]</returns>
+  int index_of(const item& it) const;
+
 // Below, "amount" refers to quantity
 //        "charges" refers to charges
   int  amount_of (itype_id it) const;
@@ -78,6 +82,7 @@ class inventory
   bool has_amount(itype_id it, int quantity) const { return amount_of(it) >= quantity; }
   bool has_charges(itype_id it, int quantity) const { return charges_of(it) >= quantity; }
   bool has_item(item *it) const; // Looks for a specific item
+
  private:
   std::vector< std::vector<item> > items;
 

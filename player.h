@@ -197,6 +197,7 @@ public:
  /// </summary>
  /// <param name="let">invlet from player UI</param>
  std::optional<item_spec> from_invlet(char let);
+ std::optional<item_spec> lookup(item* it);
  /// <summary>
  /// legacy analog: bool remove_item(item* it);
  /// legacy analog: item i_rem(char let); when return value unused
