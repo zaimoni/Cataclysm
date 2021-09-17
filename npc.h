@@ -313,7 +313,7 @@ public:
 #endif
  void spawn_at(const GPS_loc& _GPSpos);
  skill best_skill() const;
- void starting_weapon(game *g);
+ void starting_weapon();
 
 // Display
  void draw(WINDOW* w, const point& pt, bool inv) const;

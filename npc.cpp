@@ -395,7 +395,7 @@ void npc::randomize(game *g, npc_class type)
   break;
  }
  normalize();
- starting_weapon(g);
+ starting_weapon();
  worn = starting_clothes(type, male, g);
  inv.clear();
  inv.add_stack(starting_inv(this, type, g));
@@ -952,7 +952,7 @@ skill npc::best_skill() const
  return skill(best_skills[index]);
 }
 
-void npc::starting_weapon(game *g)
+void npc::starting_weapon()
 {
  if (!styles.empty()) {
   weapon.make(item::types[styles[rng(0, styles.size() - 1)]]);
@@ -983,8 +983,7 @@ void npc::starting_weapon(game *g)
   weapon.make(item::types[_get_itype(map::items[mi_rifles])]);
   break;
  }
- if (weapon.is_gun()) {
-  const it_gun* const gun = dynamic_cast<const it_gun*>(weapon.type);
+ if (const auto gun = weapon.is_gun()) {
   weapon.charges = gun->clip;
   weapon.curammo = dynamic_cast<const it_ammo*>(item::types[default_ammo(gun->ammo)]);
  }
