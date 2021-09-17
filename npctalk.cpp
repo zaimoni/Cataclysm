@@ -1763,14 +1763,10 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
     practice += 2;
     tmp.invlet = 'a';
     while (u.has_item(tmp.invlet)) {
-     if (tmp.invlet == 'z')
-      tmp.invlet = 'A';
-     else if (tmp.invlet == 'Z')
-      return false;	// TODO: Do something else with these.
-     else
-      tmp.invlet++;
+     tmp.invlet = pc::inc_invlet(tmp.invlet);
+     if ('Z' == tmp.invlet) return false; // \todo Do something else with these.
     }
-    u.inv.push_back(tmp);
+    u.inv.push_back(std::move(tmp));
    } else
     newinv.push_back(std::move(tmp));
   }

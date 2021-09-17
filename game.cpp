@@ -1622,27 +1622,9 @@ void game::save()
  MAPBUFFER.save();
 }
 
-// game::nextinv feels like it should be player::nextinv, but it's UI-specific
-void game::advance_nextinv()
-{
- if (nextinv == 'z')
-  nextinv = 'A';
- else if (nextinv == 'Z')
-  nextinv = 'a';
- else
-  nextinv++;
-}
-
-// \todo? do we even need this for anything other than formal completeness?
-void game::decrease_nextinv()
-{
- if (nextinv == 'a')
-  nextinv = 'Z';
- else if (nextinv == 'A')
-  nextinv = 'z';
- else
-  nextinv--;
-}
+// game::nextinv feels like it should be pc::nextinv
+void game::advance_nextinv() { nextinv = pc::inc_invlet(nextinv); }
+void game::decrease_nextinv() { nextinv = pc::dec_invlet(nextinv); }
 
 bool game::assign_invlet(item& it, const player& p)
 {

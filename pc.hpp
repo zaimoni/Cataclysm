@@ -20,6 +20,9 @@ public:
 	char get_invlet(std::string title = "Inventory:");
 	std::vector<item> multidrop();
 
+	static char inc_invlet(char src);
+	static char dec_invlet(char src);
+
 	// over in game.cpp(!)
 	void refresh_all() const;
 };
