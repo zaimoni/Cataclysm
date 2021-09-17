@@ -2194,6 +2194,11 @@ void game::refresh_all()
  refresh();
 }
 
+void pc::refresh_all() const
+{
+    game::active()->refresh_all();
+}
+
 void game::draw_HP()
 {
  for (int i = 0; i < num_hp_parts; i++) {

@@ -16,6 +16,12 @@ public:
 
 	pc& operator=(const pc& rhs);
 	pc& operator=(pc&& rhs) = default;
+
+	char get_invlet(std::string title);
+	std::vector<item> multidrop();
+
+	// over in game.cpp(!)
+	void refresh_all() const;
 };
 
 #endif

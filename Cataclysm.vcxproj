@@ -210,6 +210,7 @@
     <ClInclude Include="options.h" />
     <ClInclude Include="output.h" />
     <ClInclude Include="overmap.h" />
+    <ClInclude Include="pc.hpp" />
     <ClInclude Include="player.h" />
     <ClInclude Include="pldata.h" />
     <ClInclude Include="pldata_enum.h" />
@@ -302,6 +303,7 @@
     <ClCompile Include="options.cpp" />
     <ClCompile Include="output.cpp" />
     <ClCompile Include="overmap.cpp" />
+    <ClCompile Include="pc.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="pldata.cpp" />
     <ClCompile Include="posix_time.cpp" />

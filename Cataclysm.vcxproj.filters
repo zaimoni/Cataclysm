@@ -294,6 +294,9 @@
     <ClInclude Include="Zaimoni.STL\functional.hpp">
       <Filter>Header Files\Zaimoni.STL</Filter>
     </ClInclude>
+    <ClInclude Include="pc.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -522,6 +525,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="grammar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
