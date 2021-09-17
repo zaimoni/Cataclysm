@@ -3848,31 +3848,31 @@ void game::pickup(const point& pt, int min)
                 u.weapon.tname().c_str(), newit.tname().c_str())) {
       EraseAt(*stack_src, 0);
       m.add_item(pt, u.unwield());
-      u.i_add(newit);
+      messages.add("Wielding %c - %s", newit.invlet, newit.tname().c_str());
+      u.i_add(std::move(newit));
       u.wield(u.inv.size() - 1);
       u.moves -= mobile::mp_turn;
-      messages.add("Wielding %c - %s", newit.invlet, newit.tname().c_str());
      } else
       decrease_nextinv();
    } else {
-    u.i_add(newit);
+	messages.add("Wielding %c - %s", newit.invlet, newit.tname().c_str());
+    u.i_add(std::move(newit));
     u.wield(u.inv.size() - 1);
     EraseAt(*stack_src, 0);
     u.moves -= mobile::mp_turn;
-	messages.add("Wielding %c - %s", newit.invlet, newit.tname().c_str());
    }
   } else if (!u.is_armed() &&
              (u.volume_carried() + newit.volume() > u.volume_capacity() - 2 ||
               newit.is_weap() || newit.is_gun())) {
-   u.weapon = newit;
-   EraseAt(*stack_src, 0);
-   u.moves -= mobile::mp_turn;
    messages.add("Wielding %c - %s", newit.invlet, newit.tname().c_str());
-  } else {
-   u.i_add(newit);
+   u.weapon = std::move(newit);
    EraseAt(*stack_src, 0);
    u.moves -= mobile::mp_turn;
+  } else {
    messages.add("%c - %s", newit.invlet, newit.tname().c_str());
+   u.i_add(std::move(newit));
+   EraseAt(*stack_src, 0);
+   u.moves -= mobile::mp_turn;
   }
   if (weight_is_okay && u.weight_carried() >= u.weight_capacity() * .25)
    messages.add("You're overburdened!");
@@ -4639,7 +4639,7 @@ void game::unload()
         u.weight_carried() + content.weight() <= u.weight_capacity() &&
         inv_ok) {
      messages.add("You put the %s in your inventory.", content.tname().c_str());
-     u.i_add(content);
+     u.i_add(std::move(content));
     } else {
      messages.add("You drop the %s on the ground.", content.tname().c_str());
      m.add_item(u.pos, std::move(content));

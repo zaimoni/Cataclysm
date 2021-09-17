@@ -337,8 +337,8 @@ void game::complete_craft()
    messages.add("The %s is too heavy to carry, so you drop it.", newit.tname().c_str());
    m.add_item(u.pos, std::move(newit));
   } else {
-   u.i_add(newit);
    messages.add("%c - %s", newit.invlet, newit.tname().c_str());
+   u.i_add(std::move(newit));
   }
  }
 }

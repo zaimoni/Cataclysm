@@ -4202,7 +4202,7 @@ void player::sort_inv()
  inv_sorted = true;
 }
 
-void player::i_add(item it)
+void player::i_add(item&& it)
 {
  last_item = itype_id(it.type->id);
  if (it.is_food() || it.is_ammo() || it.is_gun()  || it.is_armor() || 

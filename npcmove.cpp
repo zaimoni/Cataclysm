@@ -1911,7 +1911,7 @@ void npc::mug_player(player &mark)
      else
       messages.add("Someone takes your %s.", stolen.tname().c_str());
     }
-    i_add(stolen);
+    i_add(std::move(stolen));
     moves -= mobile::mp_turn;
     if (!mark.is_npc()) op_of_u.value -= rng(0, 1); // Decrease the value of the player
    }

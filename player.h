@@ -253,7 +253,8 @@ public:
  void sort_inv();	// Sort inventory by type
  std::string weapname(bool charges = true) const;
 
- void i_add(item it);
+ void i_add(item&& it);
+ void i_add(const item& it) { i_add(item(it)); }
  bool has_active_item(itype_id id) const;
  int  active_item_charges(itype_id id) const;
  void process_active_items(game *g);
