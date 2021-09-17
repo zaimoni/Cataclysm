@@ -704,7 +704,7 @@ void iuse::scissors(game *g, player *p, item *it, bool t)
          if (!drop) {
              if (p->volume_carried() >= p->volume_capacity() || !g->assign_invlet(obj, *p)) drop = true;
          }
-         if (drop) g->m.add_item(p->pos, obj);
+         if (drop) g->m.add_item(p->pos, std::move(obj));
          else p->i_add(std::move(obj));
      }
  };
@@ -741,7 +741,6 @@ void iuse::scissors(game *g, player *p, item *it, bool t)
  }
  messages.add("You slice the %s into %d rag%s.", cut->tname().c_str(), count,
             (count == 1 ? "" : "s"));
- item rag(item::types[itm_rag], int(messages.turn), g->nextinv);
  p->remove_discard(*src);
  drop_n_clone(count, item(item::types[itm_rag], int(messages.turn), g->nextinv));
 }
@@ -823,10 +822,10 @@ void iuse::hammer(game *g, player *p, item *it, bool t)
      return;
  }
  p->moves -= 5 * mobile::mp_turn;
- item it_nails(item::types[itm_nail], 0, g->nextinv);
+ item it_nails(item::types[itm_nail], 0); // assumed pre-apocalypse
  it_nails.charges = std::get<1>(*deconstruct);
  g->m.add_item(p->pos, std::move(it_nails));
- item board(item::types[itm_2x4], 0, g->nextinv);
+ item board(item::types[itm_2x4], 0);
  for (int i = 0; i < std::get<2>(*deconstruct); i++) g->m.add_item(p->pos, board);
  type = std::get<0>(*deconstruct);
 }
@@ -1045,10 +1044,10 @@ void iuse::crowbar(game *g, player *p, item *it, bool t)
       return;
   }
   p->moves -= 5 * mobile::mp_turn;
-  item it_nails(item::types[itm_nail], 0, g->nextinv);
+  item it_nails(item::types[itm_nail], 0); // assumed pre-apocalypse
   it_nails.charges = std::get<1>(*deconstruct);
   g->m.add_item(p->pos, std::move(it_nails));
-  item board(item::types[itm_2x4], 0, g->nextinv);
+  item board(item::types[itm_2x4], 0);
   for (int i = 0; i < std::get<2>(*deconstruct); i++)
    g->m.add_item(p->pos, board);
   type = std::get<0>(*deconstruct);
