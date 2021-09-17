@@ -366,7 +366,10 @@ public:
  int  minimum_item_value() const; // The minimum value to want to pick up an item
  int  worst_item_value() const; // Find the worst value in our inventory; dead function currently
  int  value(const item &it) const;
+#if DEAD_FUNC
  bool wear_if_wanted(item it);
+#endif
+
 private:
  bool wield(int index) override;
 public:

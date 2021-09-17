@@ -990,6 +990,7 @@ void npc::starting_weapon(game *g)
  }
 }
 
+#if DEAD_FUNC
 bool npc::wear_if_wanted(item it)
 {
  static const int max_encumb[num_bp] = {2, 3, 3, 4, 3, 3, 3, 2};
@@ -1025,7 +1026,8 @@ bool npc::wear_if_wanted(item it)
   }
  }
  return false;
-} 
+}
+#endif
 
 bool npc::wield(int index)
 {
