@@ -356,9 +356,6 @@
     <ClCompile Include="inventory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="inventory_ui.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="item.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

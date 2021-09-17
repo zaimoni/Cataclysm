@@ -269,7 +269,6 @@
     <ClCompile Include="grammar.cpp" />
     <ClCompile Include="help.cpp" />
     <ClCompile Include="inventory.cpp" />
-    <ClCompile Include="inventory_ui.cpp" />
     <ClCompile Include="item.cpp" />
     <ClCompile Include="itypedef.cpp" />
     <ClCompile Include="iuse.cpp" />

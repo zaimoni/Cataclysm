@@ -173,8 +173,6 @@ class game : public reality_bubble
   static void add_artifact_messages(const std::vector<art_effect_passive>& effects);
 
   std::optional<point> look_around();// Look at nearby terrain	';'
-  char inv(std::string title = "Inventory:");
-  std::vector<item> multidrop();
   faction* list_factions(const char* title = "FACTIONS:");
   std::optional<point> find_item(item *it) const;
   void remove_item(item *it);
