@@ -488,7 +488,7 @@ void player::activate_bionic(int b, game *g)
 	 thirst = min_thirst;
    }
   } else {
-   auto& it = i_at(g->inv("Choose a container:"));
+   auto& it = i_at(g->u.get_invlet("Choose a container:"));
    if (it.type == nullptr) {
     messages.add("You don't have that item!");
     power_level += bionic::type[bio_evap].power_cost;
@@ -589,7 +589,7 @@ void player::activate_bionic(int b, game *g)
    for (const auto& tmp : g->m.i_at(GPSpos)) {
 	   if (tmp.type->id == itm_corpse && query_yn("Extract water from the %s", tmp.tname().c_str())) {
 		   have_extracted = true;
-		   auto& it = i_at(g->inv("Choose a container:"));
+		   auto& it = i_at(g->u.get_invlet("Choose a container:"));
 		   if (nullptr == it.type) {
 			   messages.add("You don't have that item!");
 			   power_level += bionic::type[bio_water_extractor].power_cost;

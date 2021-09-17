@@ -609,7 +609,7 @@ void iuse::lighter(game *g, player *p, item *it, bool t)
 
 void iuse::sew(game *g, player *p, item *it, bool t)
 {
- char ch = g->inv("Repair what?");
+ char ch = g->u.get_invlet("Repair what?");
  const auto src = p->from_invlet(ch);
  if (!src) {
      messages.add("You do not have that item!");
@@ -681,7 +681,7 @@ void iuse::sew(game *g, player *p, item *it, bool t)
 
 void iuse::scissors(game *g, player *p, item *it, bool t)
 {
- char ch = g->inv("Chop up what?");
+ char ch = g->u.get_invlet("Chop up what?");
  auto src = p->from_invlet(ch);
  if (!src) {
      messages.add("You do not have that item!");
@@ -854,7 +854,7 @@ void iuse::light_on(game *g, player *p, item *it, bool t)
 
 void iuse::water_purifier(game *g, player *p, item *it, bool t)
 {
- const auto purify = p->have_item(g->inv("Purify what?"));
+ const auto purify = p->have_item(g->u.get_invlet("Purify what?"));
  if (!purify.second) {
 	 messages.add("You do not have that idea!");
 	 return;

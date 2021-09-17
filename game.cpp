@@ -1074,10 +1074,10 @@ void game::get_input()
    break;
 
   case ACTION_INVENTORY: {
-   auto has = u.have_item(inv());
+   auto has = u.have_item(u.get_invlet());
    while (has.second) {
 	   full_screen_popup(has.second->info(true).c_str());
-	   has = u.have_item(inv());
+	   has = u.have_item(u.get_invlet());
    }
    refresh_all();
   } break;
@@ -3431,7 +3431,7 @@ void game::smash()
 
 void game::use_item()
 {
- char ch = inv("Use item:");
+ char ch = u.get_invlet("Use item:");
  if (ch == KEY_ESCAPE) {
   messages.add("Never mind.");
   return;
@@ -4085,7 +4085,7 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
 
   std::ostringstream text;
   text << "Container for " << liquid.tname();
-  char ch = inv(text.str().c_str());
+  char ch = u.get_invlet(text.str().c_str());
   auto dest = u.from_invlet(ch);
   if (!dest) return false;
 
@@ -4190,7 +4190,7 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
 
 void game::drop()
 {
- std::vector<item> dropped = multidrop();
+ std::vector<item> dropped = u.multidrop();
  const auto dropped_ub = dropped.size();
  if (0 >= dropped_ub) {
   messages.add("Never mind.");
@@ -4273,7 +4273,7 @@ void game::drop_in_direction()
  std::string verb = (0 >= cost ? "put" : "drop");
  std::string prep = (0 >= cost ? "in"  : "on"  );
 
- std::vector<item> dropped = multidrop();
+ std::vector<item> dropped = u.multidrop();
 
  if (dropped.empty()) {
   messages.add("Never mind.");
@@ -4321,7 +4321,7 @@ void game::drop_in_direction()
 
 void game::reassign_item()
 {
- char ch = inv("Reassign item:");
+ char ch = u.get_invlet("Reassign item:");
  if (ch == KEY_ESCAPE) {
   messages.add("Never mind.");
   return;
@@ -4378,7 +4378,7 @@ int game::visible_monsters(std::vector<const monster*>& mon_targets, std::vector
 
 void game::plthrow()
 {
- char ch = inv("Throw item:");
+ char ch = u.get_invlet("Throw item:");
  auto src = u.from_invlet(ch);
  if (!src) {
      messages.add("You don't have that item.");
@@ -4568,7 +4568,7 @@ void game::eat()
          return;
      }
  }
- char ch = inv("Consume item:");
+ char ch = u.get_invlet("Consume item:");
  if (ch == KEY_ESCAPE) {
   messages.add("Never mind.");
   return;
@@ -4586,7 +4586,7 @@ void game::eat()
 
 void game::wear()
 {
- char ch = inv("Wear item:");
+ char ch = u.get_invlet("Wear item:");
  if (ch == KEY_ESCAPE) {
   messages.add("Never mind.");
   return;
@@ -4596,7 +4596,7 @@ void game::wear()
 
 void game::takeoff()
 {
- if (u.takeoff(m, inv("Take off item:")))
+ if (u.takeoff(m, u.get_invlet("Take off item:")))
   u.moves -= 250; // TODO: Make this variable
  else
   messages.add("Invalid selection.");
@@ -4695,13 +4695,13 @@ void game::wield()
   messages.add("You cannot unwield your %s.", u.weapon.tname().c_str());
   return;
  }
- char ch = inv(u.styles.empty() ? "Wield item:" : "Wield item: Press - to choose a style");
+ char ch = u.get_invlet(u.styles.empty() ? "Wield item:" : "Wield item: Press - to choose a style");
  if (u.wield('-' == ch ? -3 : u.lookup_item(ch))) u.recoil = 5;
 }
 
 void game::read()
 {
- u.read(this, inv("Read:"));
+ u.read(this, u.get_invlet("Read:"));
 }
 
 void game::chat()

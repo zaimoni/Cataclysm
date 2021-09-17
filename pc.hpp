@@ -17,7 +17,7 @@ public:
 	pc& operator=(const pc& rhs);
 	pc& operator=(pc&& rhs) = default;
 
-	char get_invlet(std::string title);
+	char get_invlet(std::string title = "Inventory:");
 	std::vector<item> multidrop();
 
 	// over in game.cpp(!)

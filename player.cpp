@@ -5150,7 +5150,7 @@ void player::use(game *g, char let)
          messages.add("You need to be at least level 1 in the firearms skill before you can modify guns.");
          return;
      }
-     char gunlet = g->inv("Select gun to modify:");
+     char gunlet = g->u.get_invlet("Select gun to modify:");
      const auto src_gun = from_invlet(gunlet);
      if (!src_gun) {
          messages.add("You do not have that item.");
