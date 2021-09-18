@@ -12,6 +12,7 @@
 #include "monster.h"
 #include "weather.h"
 #include "iuse.h"
+#include "pc.hpp"
 #else
 #include "mtype.h"
 #include "pldata.h"
@@ -1735,6 +1736,18 @@ player::player(const JSON& src) : player()
  if (src.has_key("weapon")) fromJSON(src["weapon"], weapon);
  if (src.has_key("illness")) src["illness"].decode(illness);
  if (src.has_key("addictions")) src["addictions"].decode(addictions);
+}
+
+pc::pc(const cataclysm::JSON& src)
+: player(src),next_inv('a') {
+	if (src.has_key("next_inv")) fromJSON(src["next_inv"], next_inv); // After C:Z 0.3.0 release: \todo remove guard clause
+}
+
+JSON toJSON(const pc& src)
+{
+	JSON ret = toJSON(static_cast<const player&>(src));
+	ret.set("next_inv", std::string(1, src.next_inv));
+	return ret;
 }
 
 JSON toJSON(const npc_opinion& src)

@@ -8,13 +8,13 @@ class pc final : public player
 {
 public:
 	pc() = default;
-	pc(const cataclysm::JSON& src) : player(src) {}
+	pc(const cataclysm::JSON& src);
 	pc(const pc& rhs) = default;
 	pc(pc&& rhs) = default;
 	virtual ~pc() = default;
-//	friend cataclysm::JSON toJSON(const player & src); // will need to adjust this eventually
+	friend cataclysm::JSON toJSON(const pc& src);
 
-	pc& operator=(const pc& rhs);
+	pc& operator=(const pc& rhs) = default;
 	pc& operator=(pc&& rhs) = default;
 
 	char get_invlet(std::string title = "Inventory:");
@@ -25,6 +25,9 @@ public:
 
 	// over in game.cpp(!)
 	void refresh_all() const;
+
+private:
+	char next_inv;	// Determines which letter the next inv item will have
 };
 
 #endif
