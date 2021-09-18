@@ -702,6 +702,7 @@ void iuse::scissors(game *g, player *p, item *it, bool t)
      bool drop = false;
      while (0 < n--) {
          if (!drop) {
+             // \todo do we want stacking here?
              if (p->volume_carried() >= p->volume_capacity() || !g->u.assign_invlet(obj)) drop = true;
          }
          if (drop) g->m.add_item(p->pos, std::move(obj));
@@ -719,7 +720,7 @@ void iuse::scissors(game *g, player *p, item *it, bool t)
      auto i_type = dest->second.second;
      messages.add("You cut the %s into %d smaller pieces.", dest->first, dest->second.first);
      p->remove_discard(*src);
-     drop_n_clone(pieces, item(item::types[i_type], int(messages.turn), g->nextinv));
+     drop_n_clone(pieces, item(item::types[i_type], int(messages.turn)));
      return;
  }
  if (!cut->made_of(COTTON)) {
@@ -742,7 +743,7 @@ void iuse::scissors(game *g, player *p, item *it, bool t)
  messages.add("You slice the %s into %d rag%s.", cut->tname().c_str(), count,
             (count == 1 ? "" : "s"));
  p->remove_discard(*src);
- drop_n_clone(count, item(item::types[itm_rag], int(messages.turn), g->nextinv));
+ drop_n_clone(count, item(item::types[itm_rag], int(messages.turn)));
 }
 
 void iuse::extinguisher(game *g, player *p, item *it, bool t)

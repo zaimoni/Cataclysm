@@ -322,7 +322,7 @@ void game::complete_craft()
  for (const auto& tools : making->tools) if (!tools.empty()) consume_tools(m, u, tools);
 
   // Set up the new item, and pick an inventory letter
- item newit(item::types[making->result], messages.turn, nextinv);
+ item newit(item::types[making->result], messages.turn);
  if (!newit.craft_has_charges()) newit.charges = 0;
  const bool inv_ok = u.assign_invlet(newit);
  //newit = newit.in_its_container();
