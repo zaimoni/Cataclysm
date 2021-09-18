@@ -1622,10 +1622,6 @@ void game::save()
  MAPBUFFER.save();
 }
 
-// game::nextinv feels like it should be pc::nextinv
-void game::advance_nextinv() { nextinv = pc::inc_invlet(nextinv); }
-void game::decrease_nextinv() { nextinv = pc::dec_invlet(nextinv); }
-
 void game::add_event(event_type type, int on_turn, int faction_id, int x, int y)
 {
  event tmp(type, on_turn, faction_id, x, y);
@@ -3808,8 +3804,7 @@ void game::pickup(const point& pt, int min)
       u.i_add(std::move(newit));
       u.wield(u.inv.size() - 1);
       u.moves -= mobile::mp_turn;
-     } else
-      decrease_nextinv();
+     };
    } else {
 	messages.add("Wielding %c - %s", newit.invlet, newit.tname().c_str());
     u.i_add(std::move(newit));
@@ -3969,8 +3964,7 @@ void game::pickup(const point& pt, int min)
                   curmit--;
                   u.moves -= mobile::mp_turn;
                   messages.add("Wielding %c - %s", u.weapon.invlet, u.weapon.tname().c_str());
-              } else
-                  decrease_nextinv();
+              };
           } else {
               u.i_add(here[i]);
               u.wield(u.inv.size() - 1);
