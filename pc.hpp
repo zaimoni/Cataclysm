@@ -22,12 +22,14 @@ public:
 
 	static char inc_invlet(char src);
 	static char dec_invlet(char src);
+	bool assign_invlet(item& it) const;
+	bool assign_invlet_stacking_ok(item& it) const;
 
 	// over in game.cpp(!)
 	void refresh_all() const;
 
 private:
-	char next_inv;	// Determines which letter the next inv item will have
+	mutable char next_inv;	// Determines which letter the next inv item will have
 };
 
 #endif

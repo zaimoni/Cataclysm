@@ -702,7 +702,7 @@ void iuse::scissors(game *g, player *p, item *it, bool t)
      bool drop = false;
      while (0 < n--) {
          if (!drop) {
-             if (p->volume_carried() >= p->volume_capacity() || !g->assign_invlet(obj, *p)) drop = true;
+             if (p->volume_carried() >= p->volume_capacity() || !g->u.assign_invlet(obj)) drop = true;
          }
          if (drop) g->m.add_item(p->pos, std::move(obj));
          else p->i_add(std::move(obj));

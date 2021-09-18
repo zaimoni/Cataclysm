@@ -324,7 +324,7 @@ void game::complete_craft()
   // Set up the new item, and pick an inventory letter
  item newit(item::types[making->result], messages.turn, nextinv);
  if (!newit.craft_has_charges()) newit.charges = 0;
- const bool inv_ok = assign_invlet(newit, u);
+ const bool inv_ok = u.assign_invlet(newit);
  //newit = newit.in_its_container();
  if (newit.made_of(LIQUID))
   handle_liquid(newit, false, false);

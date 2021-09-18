@@ -1626,32 +1626,6 @@ void game::save()
 void game::advance_nextinv() { nextinv = pc::inc_invlet(nextinv); }
 void game::decrease_nextinv() { nextinv = pc::dec_invlet(nextinv); }
 
-bool game::assign_invlet(item& it, const player& p)
-{
-    // This while loop guarantees the inventory letter won't be a repeat. If it
-    // tries all 52 letters, it fails.
-    int iter = 0;
-    while(p.has_item(nextinv)) {
-        advance_nextinv();
-        if (52 <= ++iter) return false;
-    }
-    it.invlet = nextinv;
-    return true;
-}
-
-bool game::assign_invlet_stacking_ok(item& it, const player& p)
-{
-    // This while loop guarantees the inventory letter won't be a repeat. If it
-    // tries all 52 letters, it fails.
-    int iter = 0;
-    while (p.has_item(nextinv) && !p.i_at(nextinv).stacks_with(it)) {
-        advance_nextinv();
-        if (52 <= ++iter) return false;
-    }
-    it.invlet = nextinv;
-    return true;
-}
-
 void game::add_event(event_type type, int on_turn, int faction_id, int x, int y)
 {
  event tmp(type, on_turn, faction_id, x, y);
@@ -3818,7 +3792,7 @@ void game::pickup(const point& pt, int min)
       return;
   }
 
-  if (!assign_invlet_stacking_ok(newit, u)) {
+  if (!u.assign_invlet_stacking_ok(newit)) {
    messages.add("You're carrying too many items!");
    return;
   } else if (u.volume_carried() + newit.volume() > u.volume_capacity()) {
@@ -3975,7 +3949,7 @@ void game::pickup(const point& pt, int min)
 // tries all 52 letters, it fails and we don't pick it up.
   if (getitem[i]) {
       assert(!here[i].made_of(LIQUID));
-      if (!assign_invlet_stacking_ok(here[i], u)) {
+      if (!u.assign_invlet_stacking_ok(here[i])) {
           messages.add("You're carrying too many items!");
           return;
       } else if (u.volume_carried() + here[i].volume() > u.volume_capacity()) {
@@ -4612,7 +4586,7 @@ void game::unload()
   std::vector<item> new_contents;	// In case we put stuff back
   while (!u.weapon.contents.empty()) {
    item content = u.weapon.contents[0];
-   const bool inv_ok = assign_invlet(content, u);
+   const bool inv_ok = u.assign_invlet(content);
    if (content.made_of(LIQUID)) {
     if (!handle_liquid(content, false, false))
      new_contents.push_back(std::move(content));// Put it back in (we canceled)
@@ -4651,7 +4625,7 @@ void game::unload()
  }
  item newam((u.weapon.is_gun() && u.weapon.curammo) ? u.weapon.curammo : item::types[default_ammo(u.weapon.ammo_type())], messages.turn);
  while (u.weapon.charges > 0) {
-  const bool inv_ok = assign_invlet(newam, u);
+  const bool inv_ok = u.assign_invlet(newam);
   if (newam.made_of(LIQUID)) newam.charges = u.weapon.charges;
   u.weapon.charges -= newam.charges;
   if (u.weapon.charges < 0) {
