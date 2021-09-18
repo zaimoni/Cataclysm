@@ -99,8 +99,6 @@ void game::setup()	// early part looks like it belongs in game::game (but we ret
  m = map(); // Init the root map with our vectors
  z.reserve(1000); // Reserve some space
 
-// Even though we may already have 'd', nextinv will be incremented as needed
- nextinv = 'd';
  npc::global_reset();
  mission::global_reset();
  faction::global_reset();
@@ -1465,7 +1463,6 @@ void game::load(std::string name)
 		if (!next.has_key("spawn") || !next.has_key("weather")) throw corrupted + " 3";
 		if (fromJSON(next["spawn"], tmp)) nextspawn = tmp; else throw corrupted + " 4";
 		if (fromJSON(next["weather"], tmp)) nextweather = tmp; else throw corrupted + " 5";
-		if (!next.has_key("inv") || !fromJSON(next["inv"], nextinv)) nextinv = 'd';	// recoverable; here due to when accessible
 	}
 	if (!fromJSON(saved["weather"], weather)) throw corrupted + " 6";
 	if (fromJSON(saved["temperature"], tmp)) temperature = tmp; else throw corrupted + " 7";
@@ -1555,7 +1552,6 @@ void game::save()
  JSON saved(JSON::object);
  JSON tmp(JSON::object);
 
- tmp.set("inv", std::string(1, nextinv));
  tmp.set("spawn", std::to_string(nextspawn));
  tmp.set("weather", std::to_string(nextweather));
  saved.set("next", std::move(tmp));

@@ -175,7 +175,6 @@ class game : public reality_bubble
 
   signed char temperature;              // The air temperature
   weather_type weather;			// Weather pattern--SEE weather.h
-  char nextinv;	// Determines which letter the next inv item will have
   pc u;
   std::vector<monster> z;
   std::vector<monster_and_count> coming_to_stairs;
