@@ -2795,10 +2795,12 @@ void game::sound(const point& pt, int vol, std::string description)
 // add_footstep will create a list of locations to draw monster
 // footsteps. these will be more or less accurate depending on the
 // characters hearing and how close they are
-void game::add_footstep(const point& orig, int volume, int distance)
+void game::add_footstep(const point& orig, int volume)
 {
  if (orig == u.pos) return;
  else if (u_see(orig)) return;
+
+ int distance = rl_dist(orig, u.pos);
  int err_offset;
  // \todo V 0.2.1 rethink this (effect is very loud, very close sounds don't have good precision
  if (volume / distance < 2)
@@ -2815,13 +2817,14 @@ void game::add_footstep(const point& orig, int volume, int distance)
    return;
  }
 
+ const zaimoni::gdi::box<point> spread(point(-err_offset), point(err_offset));
  int tries = 0;
  do {
-   point pt(orig.x + rng(-err_offset, err_offset), orig.y + rng(-err_offset, err_offset));
-   if (pt != u.pos && !u_see(pt)) {
-     footsteps.push_back(pt);
-	 return;
-   }
+     const auto pt = orig + rng(spread);
+     if (pt != u.pos && !u_see(pt)) {
+         footsteps.push_back(pt);
+         return;
+     }
  } while (++tries < 10);
 }
 

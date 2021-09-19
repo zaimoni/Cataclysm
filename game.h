@@ -82,7 +82,7 @@ class game : public reality_bubble
   void sound(const point& pt, int vol, std::string description);
   void sound(const point& pt, int vol, const char* description) { sound(pt, vol, std::string(description)); };
   // creates a list of coordinates to draw footsteps
-  void add_footstep(const point& pt, int volume, int distance);
+  void add_footstep(const point& pt, int volume);
 // Explosion at (x, y) of intensity (power), with (shrapnel) chunks of shrapnel
   void explosion(int x, int y, int power, int shrapnel, bool fire);
   void explosion(const point& pt, int power, int shrapnel, bool fire) { explosion(pt.x, pt.y, power, shrapnel, fire); };
