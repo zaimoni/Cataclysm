@@ -36,7 +36,7 @@ void mobile::knockback_from(const GPS_loc& loc)
 
 	const auto to(GPSpos + cmp(GPSpos, loc));
 	const auto g = game::active();
-	const bool u_see = (bool)g->u_see(loc);
+	const bool u_see = (bool)g->u.see(loc);
 
 	const std::string You = grammar::capitalize(desc(grammar::noun::role::subject, grammar::article::definite));
 	const auto bounce(regular_verb_agreement("bounce"));

@@ -2376,14 +2376,6 @@ faction* game::random_evil_faction()
  return &(factions[factions.size() - 1]);
 }
 
-std::optional<int> game::u_see(const GPS_loc& loc) const
-{
-    if (loc == u.GPSpos) return 0; // always aware of own location
-    // \todo? primary implementation, rather than forward
-    if (auto pt = toScreen(loc)) return u.see(*pt);
-    return std::nullopt;
-}
-
 std::optional<point> game::find_item(item *it) const
 {
  if (u.has_item(it)) return u.pos;

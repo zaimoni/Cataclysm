@@ -1894,7 +1894,7 @@ void npc::swim(const GPS_loc& loc)
 {
 	DEBUG_FAIL_OR_LEAVE(!is<swimmable>(GPSpos.ter()), return);
 	auto g = game::active();
-	const bool u_see = g->u_see(loc) || g->u.see(*this);
+	const bool u_see = g->u.see(loc) || g->u.see(*this);
 
 	if (has_disease(DI_ONFIRE)) {	// VAPORWARE: not for phosphorus or lithium ...
 		if (u_see) messages.add("The water puts out the flames!");

@@ -701,7 +701,7 @@ void monster::add_item(const item& it)
 
 bool monster::handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim)
 {
-    const bool u_see = (bool)game::active()->u_see(dest);
+    const bool u_see = (bool)game::active()->u.see(dest);
 
     if (is<liquid>(dest.ter())) {
         if (!has_flag(MF_SWIMS) && !has_flag(MF_AQUATIC)) {

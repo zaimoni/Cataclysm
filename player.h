@@ -96,6 +96,7 @@ public:
  int  overmap_sight_range() const;
  bool see(const monster& mon) const;
  std::optional<int> see(const player& u) const;
+ std::optional<int> see(const GPS_loc& pt) const;
  std::optional<int> see(const point& pt) const;
  std::optional<int> see(int x, int y) const { return see(point(x, y)); }
  int  clairvoyance() const; // Sight through walls &c

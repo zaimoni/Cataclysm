@@ -3163,6 +3163,14 @@ std::optional<int> player::see(const player& u) const
     return game::active()->m.sees(pos, u.pos, range);
 }
 
+std::optional<int> player::see(const GPS_loc& loc) const
+{
+    if (loc == GPSpos) return 0; // always aware of own location
+    // \todo? primary implementation, rather than forward
+    if (auto pt = game::active()->toScreen(loc)) return see(*pt);
+    return std::nullopt;
+}
+
 std::optional<int> player::see(const point& pt) const
 {
     const int range = sight_range();
@@ -5614,7 +5622,7 @@ void player::absorb(game *g, body_part bp, int &dam, int &cut)
        rng(0, tmp->dmg_resist * 2) < dam && !one_in(dam))
     worn[i].damage++;
    if (worn[i].damage >= 5) {
-    if (g->u_see(GPSpos)) {
+    if (g->u.see(GPSpos)) {
         const auto your = grammar::capitalize(possessive());
         messages.add("%s %s is destroyed!", your.c_str(), worn[i].tname().c_str());
     }
