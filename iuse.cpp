@@ -1281,13 +1281,13 @@ void iuse::can_goo(game *g, player *p, item *it, bool t)
  } while (g->m.move_cost(goox, gooy) == 0 && tries < 10);
  if (tries == 10) return;
  if (monster* const m_at = g->mon(goox, gooy)) {
-  if (g->u_see(goox, gooy))
+  if (g->u.see(goox, gooy))
    messages.add("Black goo emerges from the canister and envelopes a %s!", m_at->name().c_str());
   m_at->poly(mtype::types[mon_blob]);
   m_at->speed -= rng(5, 25);
   m_at->hp = m_at->speed;
  } else {
-  if (g->u_see(goox, gooy))
+  if (g->u.see(goox, gooy))
    messages.add("Living black goo emerges from the canister!");
   monster goo(mtype::types[mon_blob], goox, gooy);
   goo.friendly = -1;
@@ -1303,7 +1303,7 @@ void iuse::can_goo(game *g, player *p, item *it, bool t)
   } while (g->m.move_cost(goox, gooy) == 0 &&
            g->m.tr_at(goox, gooy) == tr_null && tries < 10);
   if (tries < 10) {
-   if (g->u_see(goox, gooy))
+   if (g->u.see(goox, gooy))
     messages.add("A nearby splatter of goo forms into a goo pit.");
    g->m.tr_at(goox, gooy) = tr_goo;
   }
@@ -1330,7 +1330,7 @@ void iuse::pipebomb_act(game *g, player *p, item *it, bool t)
  if (t) // Simple timer effects
   g->sound(*pos, 0, "Ssssss");	// Vol 0 = only heard if you hold it
  else {	// The timer has run down
-  if (one_in(10) && g->u_see(*pos))
+  if (one_in(10) && g->u.see(*pos))
    messages.add("The pipe bomb fizzles out.");
   else
    g->explosion(*pos, rng(6, 14), rng(0, 4), false);
@@ -1572,7 +1572,7 @@ void iuse::pheromone(game *g, player *p, item *it, bool t)
 {
  point pos(p->pos);
 
- bool is_u = !p->is_npc(), can_see = (is_u || g->u_see(p->pos));
+ bool is_u = !p->is_npc(), can_see = (is_u || g->u.see(p->pos));
  if (pos.x == -999 || pos.y == -999) return;
 
  if (is_u)
@@ -1961,7 +1961,7 @@ void iuse::artifact(game *g, player *p, item *it, bool t)
    for (int x = p->pos.x - 4; x <= p->pos.x + 4; x++) {
     for (int y = p->pos.y - 4; y <= p->pos.y + 4; y++) {
      if (!one_in(4) && g->m.add_field(g, x, y, fd_blood, 3) &&
-         (blood || g->u_see(x, y)))
+         (blood || g->u.see(x, y)))
       blood = true;
     }
    }

@@ -218,7 +218,7 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
  if (p.has_trait(PF_TRIGGERHAPPY) && one_in(30)) burst = true;
  if (burst && p.weapon.burst_size() < 2) burst = false; // Can't burst fire a semi-auto
 
- const bool u_see_shooter = (bool)u_see(p.pos);
+ const bool u_see_shooter = (bool)u.see(p.pos);
 // Use different amounts of time depending on the type of gun and our skill
  p.moves -= time_to_fire(p, firing);
 // Decide how many shots to fire
@@ -320,7 +320,7 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
     m.drawsq(w_terrain, u, trajectory[i-1].x, trajectory[i-1].y, false, true);
 // Drawing the bullet uses player u, and not player p, because it's drawn
 // relative to YOUR position, which may not be the gunman's position.
-   if (u_see(trajectory[i])) {
+   if (u.see(trajectory[i])) {
     char bullet = (flags & mfb(IF_AMMO_FLAME)) ? '#' : '*';
     const point pt(trajectory[i] + point(VIEW_CENTER) - u.pos);
     mvwputch(w_terrain, pt.y, pt.x, c_red, bullet);
@@ -475,7 +475,7 @@ void game::throw_item(player &p, point tar, item&& thrown, std::vector<point> &t
    }
    if (!p.is_npc())
     messages.add("%s You hit the %s for %d damage.", message.c_str(), m_at->name().c_str(), dam);
-   else if (u_see(t))
+   else if (u.see(t))
     messages.add("%s hits the %s for %d damage.", message.c_str(), m_at->name().c_str(), dam);
    if (m_at->hurt(dam)) kill_mon(*m_at, &p);
    return;
@@ -543,7 +543,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
   }
 // Draw the NPCs
   for (const auto& NPC : active_npc) {
-   if (u_see(NPC.pos)) NPC.draw(w_terrain, center, false);
+   if (u.see(NPC.pos)) NPC.draw(w_terrain, center, false);
   }
   if (tar != u.pos) {
 // Calculate the return vector (and draw it too)
@@ -748,9 +748,9 @@ void shoot_player(game *g, player &p, player *h, int &dam, double goodhit)
   else {
    if (&p == &(g->u))
     messages.add("You shoot %s's %s.", h->name.c_str(), body_part_name(hit, side));
-   else if (g->u_see(h->pos))
+   else if (g->u.see(h->pos))
     messages.add("%s shoots %s's %s.",
-               (g->u_see(p.pos) ? p.name.c_str() : "Someone"),
+               (g->u.see(p.pos) ? p.name.c_str() : "Someone"),
                h->name.c_str(), body_part_name(hit, side));
   }
   h->hit(g, hit, side, 0, dam);

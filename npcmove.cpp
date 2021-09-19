@@ -371,7 +371,7 @@ void npc::execute_action(game *g, const ai_action& action, int target)
  * we get some sleep, how long watch shifts should be, etc.
  */
   //add_disease(DI_LYING_DOWN, 300, g);
-  if (is_friend() && g->u_see(pos))
+  if (is_friend() && g->u.see(pos))
    say(g, "I'm going to sleep.");
   break;
 #endif
@@ -548,7 +548,7 @@ bool npc::reload(int inv_index)
 		return false;
 	}
 	recoil = 6;
-	if (game::active()->u_see(pos)) messages.add("%s reloads %s %s.", name.c_str(), (male ? "his" : "her"), weapon.tname().c_str());
+	if (game::active()->u.see(pos)) messages.add("%s reloads %s %s.", name.c_str(), (male ? "his" : "her"), weapon.tname().c_str());
 	return true;
 }
 
@@ -1328,7 +1328,7 @@ void npc::pick_up_item()
   }
  }
 // Describe the pickup to the player
- bool u_see_me = (bool)g->u_see(pos), u_see_items = (bool)g->u_see(it);
+ bool u_see_me = (bool)g->u.see(pos), u_see_items = (bool)g->u.see(it);
  // \todo good use case for std::string or std::strstream here
  if (u_see_me) {
   if (pickup.size() == 1) {
@@ -1448,7 +1448,7 @@ void npc::drop_items(game *g, int weight, int volume)
  }
 // Finally, describe the action if u can see it
  std::string item_name_str = item_name.str();
- if (g->u_see(pos)) {
+ if (g->u.see(pos)) {
   if (num_items_dropped >= 3)
    messages.add("%s drops %d items.", name.c_str(), num_items_dropped);
   else
@@ -1612,7 +1612,7 @@ void npc::alt_attack(game *g, int target)
   if (dist <= conf && no_friendly_fire) {
    trajectory = line_to(pos, tar, g->m.sees(pos, tar, light));
    moves -= (mobile::mp_turn / 4) * 5;
-   if (g->u_see(pos))
+   if (g->u.see(pos))
     messages.add("%s throws a %s.", name.c_str(), used->tname().c_str());
    g->throw_item(*this, tar, std::move(*used), trajectory);
    i_remn(index);
@@ -1657,7 +1657,7 @@ void npc::alt_attack(game *g, int target)
  */
 	trajectory = line_to(pos, tar, g->m.sees(pos, tar, light));
     moves -= (mobile::mp_turn / 4) * 5;
-    if (g->u_see(pos))
+    if (g->u.see(pos))
      messages.add("%s throws a %s.", name.c_str(), used->tname().c_str());
 	g->throw_item(*this, tar, std::move(*used), trajectory);
     i_remn(index);
@@ -1735,8 +1735,8 @@ void npc::heal_player(game *g, player &patient)
   const auto predicted_heal = would_heal(injury);
   if (!predicted_heal.first) FATAL("tried to heal w/o means to heal");	// \todo consider action-looping instead, or converting later action loops to FATAL
 
-  bool u_see_me      = g->u_see(pos),
-       u_see_patient = g->u_see(patient.pos);
+  bool u_see_me      = g->u.see(pos),
+       u_see_patient = g->u.see(patient.pos);
   if (patient.is_npc()) {
    if (u_see_me) {
     if (u_see_patient)
@@ -1778,7 +1778,7 @@ void npc::heal_self(game *g)
  heal(injury.first, predicted_heal.second);
  moves -= 250;
 
- if (g->u_see(pos))
+ if (g->u.see(pos))
 	 messages.add("%s heals %sself.", name.c_str(), (male ? "him" : "her"));
 }
 
@@ -1847,8 +1847,8 @@ void npc::mug_player(player &mark)
   move_to_next(g);
   return;
  }
-  bool u_see_me   = (bool)g->u_see(pos),
-       u_see_mark = (bool)g->u_see(mark.pos);
+  bool u_see_me   = (bool)g->u.see(pos),
+       u_see_mark = (bool)g->u.see(mark.pos);
   if (mark.cash > 0) {
    cash += mark.cash;
    mark.cash = 0;
@@ -1894,8 +1894,8 @@ void npc::mug_player(player &mark)
     if (!one_in(3)) say(g, "<done_mugging>");
     moves -= mobile::mp_turn;
    } else {
-    bool u_see_me   = (bool)g->u_see(pos),
-         u_see_mark = (bool)g->u_see(mark.pos);
+    bool u_see_me   = (bool)g->u.see(pos),
+         u_see_mark = (bool)g->u.see(mark.pos);
     item stolen = mark.i_remn(index);
     if (mark.is_npc()) {
      if (u_see_me) {

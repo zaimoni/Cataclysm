@@ -612,7 +612,7 @@ void dis_effect(game* g, player& p, disease& dis)
                 (p.has_trait(PF_NAUSEA) && one_in(800 + bonus * 6)) ||
                 one_in(2000 + bonus * 10)) {
                 if (!p.is_npc()) messages.add("You vomit a thick, gray goop.");
-                else if (g->u_see(p.pos)) messages.add("%s vomits a thick, gray goop.", p.name.c_str());
+                else if (g->u.see(p.pos)) messages.add("%s vomits a thick, gray goop.", p.name.c_str());
                 p.moves -= 2 * mobile::mp_turn;
                 p.hunger += 50;
                 p.thirst += 68;
@@ -621,14 +621,14 @@ void dis_effect(game* g, player& p, disease& dis)
         else {	// Full symptoms
             if (one_in(1000 + bonus * 8)) {
                 if (!p.is_npc()) messages.add("You double over, spewing live spores from your mouth!");
-                else if (g->u_see(p.pos)) messages.add("%s coughs up a stream of live spores!", p.name.c_str());
+                else if (g->u.see(p.pos)) messages.add("%s coughs up a stream of live spores!", p.name.c_str());
                 p.moves -= 5 * mobile::mp_turn;
                 monster spore(mtype::types[mon_spore]);
                 for (decltype(auto) dir : Direction::vector) {
                     decltype(auto) dest = p.pos + dir;
                     if (g->m.move_cost(dest) > 0 && one_in(5)) {
                         if (monster* const m_at = g->mon(dest)) {	// Spores hit a monster
-                            if (g->u_see(dest)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
+                            if (g->u.see(dest)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
                             if (!m_at->make_fungus()) g->kill_mon(*m_at);
                         } else {	// \todo infect npcs or players
                             spore.spawn(dest);
@@ -639,7 +639,7 @@ void dis_effect(game* g, player& p, disease& dis)
             }
             else if (one_in(6000 + bonus * 20)) {
                 if (!p.is_npc()) messages.add("Fungus stalks burst through your hands!");
-                else if (g->u_see(p.pos)) messages.add("Fungus stalks burst through %s's hands!", p.name.c_str());
+                else if (g->u.see(p.pos)) messages.add("Fungus stalks burst through %s's hands!", p.name.c_str());
                 p.hurt(g, bp_arms, 0, 60);
                 p.hurt(g, bp_arms, 1, 60);
             }
@@ -792,7 +792,7 @@ void dis_effect(game* g, player& p, disease& dis)
             if (valid_spawns.size() >= 1) {
                 p.rem_disease(DI_DERMATIK); // No more infection!  yay.
                 if (!p.is_npc()) messages.add("Insects erupt from your skin!");
-                else if (g->u_see(p.pos)) messages.add("Insects erupt from %s's skin!", p.name.c_str());
+                else if (g->u.see(p.pos)) messages.add("Insects erupt from %s's skin!", p.name.c_str());
                 p.moves -= 600;
                 monster grub(mtype::types[mon_dermatik_larva]);
                 while (valid_spawns.size() > 0 && num_insects > 0) {
@@ -824,7 +824,7 @@ void dis_effect(game* g, player& p, disease& dis)
         if (one_in(10 + 40 * p.int_cur)) {
             if (!p.is_npc())
                 messages.add("You start scratching yourself all over!");
-            else if (g->u_see(p.pos))
+            else if (g->u.see(p.pos))
                 messages.add("%s starts scratching %s all over!", p.name.c_str(), (p.male ? "himself" : "herself"));
             p.cancel_activity();
             p.moves -= 150;
@@ -900,7 +900,7 @@ void dis_effect(game* g, player& p, disease& dis)
                 if (auto dest = LasVegasChoice(10, within_four, ok)) {
                     if (0 >= g->m.move_cost(*dest)) g->m.ter(*dest) = t_rubble;
                     g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], *dest));
-                    if (g->u_see(*dest)) {
+                    if (g->u.see(*dest)) {
                         g->u.cancel_activity_query("A monster appears nearby!");
                         messages.add("A portal opens nearby, and a monster crawls through!");
                     }
@@ -942,7 +942,7 @@ void dis_effect(game* g, player& p, disease& dis)
             if (auto dest = LasVegasChoice(10, within_four, ok)) {
                 if (0 >= g->m.move_cost(*dest)) g->m.ter(*dest) = t_rubble;
                 g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], *dest));
-                if (g->u_see(*dest)) {
+                if (g->u.see(*dest)) {
                     g->u.cancel_activity_query("A monster appears nearby!");
                     messages.add("A portal opens nearby, and a monster crawls through!");
                 }
@@ -3163,6 +3163,15 @@ std::optional<int> player::see(const player& u) const
     return game::active()->m.sees(pos, u.pos, range);
 }
 
+std::optional<int> player::see(const point& pt) const
+{
+    const int range = sight_range();
+    if (const int c_range = clairvoyance()) {
+        if (rl_dist(pos, pt) <= clamped_ub(range, c_range)) return 0; // clairvoyant default
+    }
+    return game::active()->m.sees(pos, pt, range);
+}
+
 bool player::has_two_arms() const
 {
  if (has_bionic(bio_blaster) || hp_cur[hp_arm_l] < 10 || hp_cur[hp_arm_r] < 10)
@@ -4837,7 +4846,7 @@ bool player::eat(const item_spec& src)
             if (eaten->made_of(LIQUID)) messages.add("You drink your %s.", eaten->tname().c_str());
             else if (comest->nutr >= 5) messages.add("You eat your %s.", eaten->tname().c_str());    // XXX \todo is this an invariant?
         }
-        else if (g->u_see(pos)) {
+        else if (g->u.see(pos)) {
             if (eaten->made_of(LIQUID)) messages.add("%s drinks a %s.", name.c_str(), eaten->tname().c_str());
             else messages.add("%s eats a %s.", name.c_str(), eaten->tname().c_str());
         }

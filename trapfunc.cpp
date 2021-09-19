@@ -200,7 +200,7 @@ void trapfunc::landmine(game *g, int x, int y)
 
 void trapfuncm::landmine(game *g, monster *z)
 {
- if (g->u_see(z->pos)) messages.add("The %s steps on a landmine!", z->name().c_str());
+ if (g->u.see(z->pos)) messages.add("The %s steps on a landmine!", z->name().c_str());
 }
 
 void trapfunc::landmine(const point& pt)
@@ -217,7 +217,7 @@ void trapfunc::boobytrap(game *g, int x, int y)
 
 void trapfuncm::boobytrap(game *g, monster *z)
 {
- if (g->u_see(z->pos)) messages.add("The %s triggers a boobytrap!", z->name().c_str());
+ if (g->u.see(z->pos)) messages.add("The %s triggers a boobytrap!", z->name().c_str());
 }
 
 void trapfunc::boobytrap(const point& pt)
@@ -312,7 +312,7 @@ void trapfunc::pit(game *g, int x, int y)
 
 void trapfuncm::pit(game *g, monster *z)
 {
- if (g->u_see(z->pos)) messages.add("The %s falls in a pit!", z->name().c_str());	// the trap is visible, even if the monster normally isn't
+ if (g->u.see(z->pos)) messages.add("The %s falls in a pit!", z->name().c_str());	// the trap is visible, even if the monster normally isn't
  if (z->hurt(rng(10, 20))) g->kill_mon(*z);
  else z->moves = -1000;
 }

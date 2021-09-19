@@ -1536,7 +1536,7 @@ bool map::hard_landing(const point& pt, item&& thrown, player* p)
             if (rng(0, vol + 8) - rng(0, p->str_cur) < vol) break_this = true;
         }
         if (break_this) {
-            if (g->u_see(pt)) messages.add("The %s shatters!", thrown.tname().c_str());
+            if (g->u.see(pt)) messages.add("The %s shatters!", thrown.tname().c_str());
             for (auto& obj : thrown.contents) add_item(pt, std::move(obj));
             g->sound(pt, 16, "glass breaking!");
             return true;

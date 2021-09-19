@@ -2114,7 +2114,7 @@ void game::draw_ter(const point& pos)
  for (const auto& _npc : active_npc) {
    const point delta(_npc.pos-pos);
    if (VIEW_CENTER < Linf_dist(delta)) continue;
-   if (u_see(_npc.pos)) _npc.draw(w_terrain, pos, false);
+   if (u.see(_npc.pos)) _npc.draw(w_terrain, pos, false);
  }
  if (u.has_active_bionic(bio_scent_vision)) {	// overwriting normal vision isn't that useful
   forall_do_inclusive(map::view_center_extent(), [&](point offset){
@@ -2380,17 +2380,8 @@ std::optional<int> game::u_see(const GPS_loc& loc) const
 {
     if (loc == u.GPSpos) return 0; // always aware of own location
     // \todo? primary implementation, rather than forward
-    if (auto pt = toScreen(loc)) return u_see(*pt);
+    if (auto pt = toScreen(loc)) return u.see(*pt);
     return std::nullopt;
-}
-
-std::optional<int> game::u_see(int x, int y) const
-{
-    const int range = u.sight_range();
-    if (const int c_range = u.clairvoyance()) {
-        if (rl_dist(u.pos, x, y) <= clamped_ub(range, c_range)) return 0; // clairvoyant default
-    }
-    return m.sees(u.pos, x, y, range);
 }
 
 std::optional<point> game::find_item(item *it) const
@@ -2798,7 +2789,7 @@ void game::sound(const point& pt, int vol, std::string description)
 void game::add_footstep(const point& orig, int volume)
 {
  if (orig == u.pos) return;
- else if (u_see(orig)) return;
+ else if (u.see(orig)) return;
 
  int distance = rl_dist(orig, u.pos);
  int err_offset;
@@ -2821,7 +2812,7 @@ void game::add_footstep(const point& orig, int volume)
  int tries = 0;
  do {
      const auto pt = orig + rng(spread);
-     if (pt != u.pos && !u_see(pt)) {
+     if (pt != u.pos && !u.see(pt)) {
          footsteps.push_back(pt);
          return;
      }
@@ -2925,9 +2916,9 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
   traj = line_to(x, y, sx, sy, m.sees(x, y, sx, sy, 50));
   dam = rng(20, 60);
   for (int j = 0; j < traj.size(); j++) {
-   if (j > 0 && u_see(traj[j - 1]))
+   if (j > 0 && u.see(traj[j - 1]))
     m.drawsq(w_terrain, u, traj[j - 1].x, traj[j - 1].y, false, true);
-   if (u_see(traj[j])) {
+   if (u.see(traj[j])) {
     const point draw_at(traj[j] + point(VIEW_CENTER) - u.pos);
     mvwputch(w_terrain, draw_at.y, draw_at.x, c_red, '`');
     wrefresh(w_terrain);
@@ -3666,7 +3657,7 @@ std::optional<point> game::look_around()
  wrefresh(w_look);
  do {
   ch = input();
-  if (!u_see(l)) {
+  if (!u.see(l)) {
    const point draw_at(l - u.pos + point(VIEW_CENTER));
    mvwputch(w_terrain, draw_at.y, draw_at.x, c_black, ' ');
   }
@@ -3679,7 +3670,7 @@ std::optional<point> game::look_around()
   const auto v = m._veh_at(l);
   vehicle* const veh = v ? v->first : nullptr; // backward compatibility
   const int veh_part = v ? v->second : 0;
-  if (u_see(l)) {
+  if (u.see(l)) {
    if (const int mc = m.move_cost(l))
        mvwprintw(w_look, 1, 1, "%s; Movement cost %d", name_of(m.ter(l)).c_str(), mc * 50);
    else
@@ -4298,7 +4289,7 @@ void game::pl_draw(const zaimoni::gdi::box<point>& bounds) const
 {
     forall_do_inclusive(map::view_center_extent(), [&](point offset) {
             const point real(u.pos + offset);
-            if (u_see(real)) {
+            if (u.see(real)) {
                 if (bounds.contains(real))
                     m.drawsq(w_terrain, u, real.x, real.y, false, true);
                 else {
@@ -5335,7 +5326,7 @@ void game::update_stair_monsters()
       if (tries < 10) {
        coming_to_stairs[i].mon.screenpos_set(sx, sy);
        z.push_back( coming_to_stairs[i].mon );
-       if (u_see(sx, sy))
+       if (u.see(sx, sy))
         messages.add("A %s comes %s the %s!", coming_to_stairs[i].mon.name().c_str(),
                 (m.has_flag(goes_up, sx, sy) ? "down" : "up"),
                 name_of(m.ter(sx, sy)).c_str());
@@ -5526,7 +5517,7 @@ void game::teleport(player *p)
  const bool is_u = (p == &u);
  p->add_disease(DI_TELEGLOW, MINUTES(30));
  const point dest = teleport_destination(p->pos, 15);
- const bool can_see = (is_u || u_see(dest));
+ const bool can_see = (is_u || u.see(dest));
  std::string You = (is_u ? "You" : p->name);
  p->screenpos_set(dest);
  if (m.move_cost(dest) == 0) {	// \todo? C:Whales TODO: If we land in water, swim

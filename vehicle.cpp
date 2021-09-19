@@ -940,7 +940,7 @@ void vehicle::drive(int x, int y, const player& u)
     if (skidding && valid_wheel_config()) {
         if (rng(0, 40) < u.dex_cur + u.sklevel[sk_driving] * 2) {
             const bool pc = !u.is_npc();
-            const bool vis_npc = u.is_npc() && game::active()->u_see(u.pos);
+            const bool vis_npc = u.is_npc() && game::active()->u.see(u.pos);
             if (pc) messages.add("You regain control of the %s.", name.c_str());
             else if (vis_npc) messages.add("%s regains control of the %s.", u.name.c_str(), name.c_str());
             skidding = false;
@@ -963,12 +963,12 @@ void vehicle::handbrake(player& u)
 {
     std::string you;
     std::string pull;
-    decltype(game::active()->u_see(u.pos)) vis_loc = std::nullopt;
+    decltype(game::active()->u.see(u.pos)) vis_loc = std::nullopt;
     const auto vis_npc = game::active()->u.see(u);
     if (vis_npc) {
         you = grammar::capitalize(u.desc(grammar::noun::role::subject));
         messages.add("%s %s a handbrake.", you.c_str(), u.regular_verb_agreement("pull").c_str());
-    } else if (vis_loc = game::active()->u_see(u.pos)) {
+    } else if (vis_loc = game::active()->u.see(u.pos)) {
         messages.add("Someone pulls a handbrake.");
     }
     cruise_velocity = 0;
@@ -976,7 +976,7 @@ void vehicle::handbrake(player& u)
         skidding = true;
         if (vis_npc) {
             messages.add("%s loses control of %s.", you.c_str(), u.regular_verb_agreement("lose").c_str(), name.c_str());
-        } else if (vis_loc = game::active()->u_see(u.pos)) {
+        } else if (vis_loc = game::active()->u.see(u.pos)) {
             messages.add("Someone loses control of %s.", name.c_str());
         }
         turn(last_turn > 0 ? 60 : -60);
@@ -1252,12 +1252,12 @@ void vehicle::handle_trap(const point& pt, int part)
         case tr_temple_toggle:
             msg = nullptr;
     }
-    if (msg && g->u_see(pt))
+    if (msg && g->u.see(pt))
 		messages.add(msg, name.c_str(), part_info(part).name, tr_name.c_str());
     if (noise > 0) g->sound(pt, noise, snd);
     if (wreckit && chance >= rng (1, 100)) damage(part, 500);
     if (triggered) {
-        if (g->u_see(pt)) messages.add("The spears break!"); // hard-code the spiked pit trap, for now
+        if (g->u.see(pt)) messages.add("The spears break!"); // hard-code the spiked pit trap, for now
         trap_fully_triggered(g->m, pt, trap::traps[triggered]->trigger_components);
         // hard-code overriding trap_at effects, above
         g->m.ter(pt) = t_pit;
@@ -1684,7 +1684,7 @@ bool vehicle::fire_turret_internal(const vehicle_part& p, it_gun &gun, const it_
     std::vector<point> traj = line_to(origin, target_pos, fire_t);
     for (int i = 0; i < traj.size(); i++)
         if (traj[i] == g->u.pos) return false; // won't shoot at player
-    if (g->u_see(origin)) messages.add("The %s fires its %s!", name.c_str(), p.info().name);
+    if (g->u.see(origin)) messages.add("The %s fires its %s!", name.c_str(), p.info().name);
     player tmp(player::get_proxy(std::string("The ") + p.info().name, origin, gun, abs(velocity) / (4 * mph_1), charges));
     g->fire(tmp, target_pos, traj, true);
     if (ammo.type == AT_GAS) {

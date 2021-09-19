@@ -1043,7 +1043,7 @@ bool npc::wield(int index)
    game::active()->m.add_item(pos, unwield());
   moves -= 15;
   weapon.make(item::types[styles[index]] );
-  if (game::active()->u_see(pos)) messages.add("%s assumes a %s stance.", name.c_str(), weapon.tname().c_str());
+  if (game::active()->u.see(pos)) messages.add("%s assumes a %s stance.", name.c_str(), weapon.tname().c_str());
   return true;
  }
 
@@ -1058,7 +1058,7 @@ bool npc::wield(int index)
   game::active()->m.add_item(pos, unwield());
  moves -= 15;
  weapon = i_remn(index);
- if (game::active()->u_see(pos)) messages.add("%s wields a %s.", name.c_str(), weapon.tname().c_str());
+ if (game::active()->u.see(pos)) messages.add("%s wields a %s.", name.c_str(), weapon.tname().c_str());
  return true;
 }
 
@@ -1373,7 +1373,7 @@ void npc::say(game *g, std::string line, ...)
  va_end(ap);
  line = buff;
  parse_tags(line, g->u, *this);
- if (g->u_see(pos)) {
+ if (g->u.see(pos)) {
   messages.add("%s says, \"%s\"", name.c_str(), line.c_str());
   g->sound(pos, 16, "");
  } else {
@@ -1879,7 +1879,7 @@ void npc::die(game *g, bool your_fault)
 {
  if (dead) return;
  dead = true;
- if (g->u_see(pos)) messages.add("%s dies!", name.c_str());
+ if (g->u.see(pos)) messages.add("%s dies!", name.c_str());
  if (your_fault && !g->u.has_trait(PF_HEARTLESS)) {
   if (is_friend()) g->u.add_morale(MORALE_KILLED_FRIEND, -500);
   else if (!is_enemy()) g->u.add_morale(MORALE_KILLED_INNOCENT, -100);

@@ -125,7 +125,7 @@ int player::hit_mon(game *g, monster *z, bool allow_grab) // defaults to true
  bool is_u = (this == &(g->u));	// Affects how we'll display messages
  if (is_u)
   z->add_effect(ME_HIT_BY_PLAYER, 100); // Flag as attacked by us
- const bool can_see = (is_u || g->u_see(pos));	// XXX this non-use suggests this function is never called by npcs
+ const bool can_see = (is_u || g->u.see(pos));	// XXX this non-use suggests this function is never called by npcs
 
  std::string You  = (is_u ? "You"  : name);
  std::string Your = (is_u ? "Your" : name + "'s");
@@ -218,7 +218,7 @@ int player::hit_mon(game *g, monster *z, bool allow_grab) // defaults to true
 void player::hit_player(game *g, player &p, bool allow_grab)
 {
  const bool is_u = (this == &(g->u));	// Affects how we'll display messages
- const bool can_see = (is_u || g->u_see(pos));
+ const bool can_see = (is_u || g->u.see(pos));
  if (is_u && p.is_npc()) dynamic_cast<npc&>(p).make_angry();
 
  std::string You  = (is_u ? "You"  : name);
@@ -712,7 +712,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
  const std::string target = mob->desc(grammar::noun::role::direct_object, grammar::article::definite);
  point tar(z ? z->pos : p->pos);
 
- const bool u_see = (!is_npc() || g->u_see(pos));
+ const bool u_see = (!is_npc() || g->u.see(pos));
 
  if (technique == TEC_RAPID) {
   moves += int( attack_speed(*this, false) / 2);
@@ -868,7 +868,7 @@ void player::perform_defensive_technique(
  const std::string You = grammar::capitalize(desc(grammar::noun::role::subject));
  const std::string your = pronoun(grammar::noun::role::possessive);
  const std::string target = mob->desc(grammar::noun::role::direct_object, grammar::article::definite);
- const bool u_see = (!is_npc() || g->u_see(pos));
+ const bool u_see = (!is_npc() || g->u.see(pos));
 
  static auto enhanced_block = [&](int ma) { // XXX itype_id
      switch (ma)
@@ -984,7 +984,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
  assert(z || p);
  mobile* const mob = z ? static_cast<mobile*>(z) : p;
  bool is_u = !is_npc();
- bool can_see = (is_u || g->u_see(pos));
+ bool can_see = (is_u || g->u.see(pos));
  const std::string You = grammar::capitalize(desc(grammar::noun::role::subject));
  const std::string Your = grammar::capitalize(desc(grammar::noun::role::possessive));
  const std::string target = mob->desc(grammar::noun::role::direct_object, grammar::article::definite);

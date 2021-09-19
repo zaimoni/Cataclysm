@@ -156,8 +156,6 @@ class game : public reality_bubble
   faction* random_evil_faction();
 
   std::optional<int> u_see(const GPS_loc& loc) const;
-  std::optional<int> u_see(int x, int y) const;
-  std::optional<int> u_see(const point& pt) const { return u_see(pt.x, pt.y); }
   void refresh_all();
   static bool update_map_would_scroll(const point& pt);
   void update_map(int &x, int &y);  // Called by plmove when the map updates

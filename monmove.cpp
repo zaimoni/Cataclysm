@@ -383,7 +383,7 @@ void monster::hit_player(game *g, player &p, bool can_grab)
  add_effect(ME_HIT_BY_PLAYER, 3); // Make us a valid target for a few turns
  if (has_flag(MF_HIT_AND_RUN)) add_effect(ME_RUN, 4);
  bool is_npc = p.is_npc();
- bool u_see = (!is_npc || g->u_see(p.pos));
+ bool u_see = (!is_npc || g->u.see(p.pos));
  std::string you  = (is_npc ? p.name : "you");
  std::string You  = (is_npc ? p.name : "You");
  std::string your = (is_npc ? p.name + "'s" : "your");
