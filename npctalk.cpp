@@ -1771,7 +1771,7 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
     newinv.push_back(std::move(tmp));
   }
   u.practice(sk_barter, practice / 2);
-  p.inv = newinv;
+  p.inv = std::move(newinv);
   u.cash += cash;
   p.cash -= cash;
  }
