@@ -25,11 +25,15 @@ public:
 	bool assign_invlet(item& it) const;
 	bool assign_invlet_stacking_ok(item& it) const;
 
+	void add_footstep(const point& orig, int volume);
+	void draw_footsteps(/* WINDOW* */ void* w);
+
 	// over in game.cpp(!)
 	void refresh_all() const;
 
 private:
 	mutable char next_inv;	// Determines which letter the next inv item will have
+	std::vector<point> footsteps;	// visual cue to monsters moving out of the players sight
 };
 
 #endif

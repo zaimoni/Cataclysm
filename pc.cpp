@@ -8,6 +8,7 @@
 #include "line.h"
 #include "Zaimoni.STL/GDI/box.hpp"
 #include "fragment.inc/rng_box.hpp"
+#include "wrap_curses.h"
 #include <array>
 #include <memory>
 
@@ -330,4 +331,54 @@ std::vector<item> pc::multidrop()
         ret.push_back(i_rem(weapon_and_armor[i]));
 
     return ret;
+}
+
+// add_footstep will create a list of locations to draw monster
+// footsteps. these will be more or less accurate depending on the
+// characters hearing and how close they are
+void pc::add_footstep(const point& orig, int volume)
+{
+    if (orig == pos) return;
+    else if (see(orig)) return;
+
+    int distance = rl_dist(orig, pos);
+    int err_offset;
+    // \todo V 0.2.1 rethink this (effect is very loud, very close sounds don't have good precision
+    if (volume / distance < 2)
+        err_offset = 3;
+    else if (volume / distance < 3)
+        err_offset = 2;
+    else
+        err_offset = 1;
+    if (has_bionic(bio_ears)) err_offset--;
+    if (has_trait(PF_BADHEARING)) err_offset++;
+
+    if (0 >= err_offset) {
+        footsteps.push_back(orig);
+        return;
+    }
+
+    const zaimoni::gdi::box<point> spread(point(-err_offset), point(err_offset));
+    int tries = 0;
+    do {
+        const auto pt = orig + rng(spread);
+        if (pt != pos && !see(pt)) {
+            footsteps.push_back(pt);
+            return;
+        }
+    } while (++tries < 10);
+}
+
+// draws footsteps that have been created by monsters moving about
+void pc::draw_footsteps(void* w)
+{
+    auto w_terrain = reinterpret_cast<WINDOW*>(w);
+
+    for (const point& step : footsteps) {
+        const point draw_at(point(VIEW_CENTER) + step - pos);
+        mvwputch(w_terrain, draw_at.y, draw_at.x, c_yellow, '?');
+    }
+    footsteps.clear(); // C:Whales behavior; never reaches savefile, display cleared on save/load cycling
+    wrefresh(w_terrain);
+    return;
 }

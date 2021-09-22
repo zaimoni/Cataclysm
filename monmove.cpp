@@ -272,7 +272,7 @@ void monster::footsteps(game *g, const point& pt)
    break;
   default: break;
  }
- g->add_footstep(pt, volume);	// \todo V 0.2.1+ would be interesting, but very expensive in CPU, to put npcs on the same infrastructure (moves footsteps storage to player object)
+ g->u.add_footstep(pt, volume);	// \todo V 0.2.1+ would be interesting, but very expensive in CPU, to put npcs on the same infrastructure (moves footsteps storage to player object)
  return;
 }
 

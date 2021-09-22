@@ -112,7 +112,6 @@ void game::setup()	// early part looks like it belongs in game::game (but we ret
  turnssincelastmon = 0; //Auto safe mode init
  autosafemode = option_table::get()[OPT_AUTOSAFEMODE];
 
- footsteps.clear();
  z.clear();
  coming_to_stairs.clear();
  active_npc.clear();
@@ -2047,7 +2046,7 @@ void game::draw()
  // Draw map
  werase(w_terrain);
  draw_ter();
- draw_footsteps();
+ u.draw_footsteps(w_terrain);
  mon_info();
  // Draw Status
  draw_HP();
@@ -2773,54 +2772,6 @@ void game::sound(const point& pt, int vol, std::string description)
   return;
  }
  messages.add("From the %s you hear %s", direction_name(direction_from(u.pos, pt)), description.c_str());
-}
-
-// add_footstep will create a list of locations to draw monster
-// footsteps. these will be more or less accurate depending on the
-// characters hearing and how close they are
-void game::add_footstep(const point& orig, int volume)
-{
- if (orig == u.pos) return;
- else if (u.see(orig)) return;
-
- int distance = rl_dist(orig, u.pos);
- int err_offset;
- // \todo V 0.2.1 rethink this (effect is very loud, very close sounds don't have good precision
- if (volume / distance < 2)
-  err_offset = 3;
- else if (volume / distance < 3)
-  err_offset = 2;
- else
-  err_offset = 1;
- if (u.has_bionic(bio_ears)) err_offset--;
- if (u.has_trait(PF_BADHEARING)) err_offset++;
-
- if (0 >= err_offset) {
-   footsteps.push_back(orig);
-   return;
- }
-
- const zaimoni::gdi::box<point> spread(point(-err_offset), point(err_offset));
- int tries = 0;
- do {
-     const auto pt = orig + rng(spread);
-     if (pt != u.pos && !u.see(pt)) {
-         footsteps.push_back(pt);
-         return;
-     }
- } while (++tries < 10);
-}
-
-// draws footsteps that have been created by monsters moving about
-void game::draw_footsteps()
-{
- for (const point& step : footsteps) {
-     const point draw_at(point(VIEW_CENTER) + step - u.pos);
-     mvwputch(w_terrain, draw_at.y, draw_at.x, c_yellow, '?');
- }
- footsteps.clear();
- wrefresh(w_terrain);
- return;
 }
 
 void game::explosion(int x, int y, int power, int shrapnel, bool fire)

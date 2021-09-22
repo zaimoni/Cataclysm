@@ -81,8 +81,6 @@ class game : public reality_bubble
 // Sound at (x, y) of intensity (vol), described to the player is (description)
   void sound(const point& pt, int vol, std::string description);
   void sound(const point& pt, int vol, const char* description) { sound(pt, vol, std::string(description)); };
-  // creates a list of coordinates to draw footsteps
-  void add_footstep(const point& pt, int volume);
 // Explosion at (x, y) of intensity (power), with (shrapnel) chunks of shrapnel
   void explosion(int x, int y, int power, int shrapnel, bool fire);
   void explosion(const point& pt, int power, int shrapnel, bool fire) { explosion(pt.x, pt.y, power, shrapnel, fire); };
@@ -311,11 +309,7 @@ public:
   // data integrity
   void z_erase(int z_index);	// morally z.erase(z.begin()+z_index), with required side effects
 
-  void draw_footsteps();
-
 // ########################## DATA ################################
-
-  std::vector<point> footsteps;	// visual cue to monsters moving out of the players sight
 
   int last_target;// The last monster targeted. -1, or a positional index in z
   char run_mode; // 0 - Normal run always; 1 - Running allowed, but if a new
