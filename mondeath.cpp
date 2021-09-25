@@ -179,6 +179,15 @@ void mdeath::guilt(game *g, monster *z)
  g->u.add_morale(MORALE_KILLED_MONSTER, -50, -250);
 }
 
+void mdeath::guilt(pc& u, const monster& z) // Morale penalty
+{
+    if (u.has_trait(PF_HEARTLESS)) return;	// We don't give a shit!
+    if (rl_dist(z.GPSpos, u.GPSpos) > 1) return;	// Too far away, we can deal with it
+    if (0 <= z.hp) return;	// It probably didn't die from damage
+    messages.add("You feel terrible for killing %s!", z.name().c_str());
+    u.add_morale(MORALE_KILLED_MONSTER, -50, -250);
+}
+
 void mdeath::blobsplit(game *g, monster *z)
 {
  const int speed = z->speed - rng(30, 50);

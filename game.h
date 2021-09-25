@@ -320,7 +320,7 @@ public:
   calendar nextweather; // The turn on which weather will shift next.
   std::vector<event> events;        // V 0.2.2+ convert to fake entity-component-system metaphor hosted at class event?
   // (Also, unclear if event should be a base class for polymorphism)
-  int kills[num_monsters];	        // Player's kill count
+
   // Historically, we had a keypress recorder for tracking the last action taken.
   // There was no "clearing" or "archival" operation, however.
   // This would be a wrapper for input(), possibly ignoring canceled actions.

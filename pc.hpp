@@ -35,6 +35,9 @@ public:
 	std::optional<std::string> move_is_unsafe() const;
 	bool feels_safe() const { return 0 < run_mode; }
 
+	void record_kill(const monster& m) override;
+	std::vector<std::pair<const mtype*, int> > summarize_kills();
+
 	// over in game.cpp(!)
 	void refresh_all() const;
 

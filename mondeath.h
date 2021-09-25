@@ -3,6 +3,7 @@
 
 class game;
 class monster;
+class pc;
 
 class mdeath
 {
@@ -20,6 +21,7 @@ public:
  static void worm		(game *g, monster *z); // Spawns 2 half-worms
  static void disappear		(game *g, monster *z); // Hallucination disappears
  static void guilt		(game *g, monster *z); // Morale penalty
+ static void guilt(pc& u, const monster& z); // Morale penalty
  static void blobsplit		(game *g, monster *z); // Creates more blobs
  static void melt		(game *g, monster *z); // Normal death, but melts
  static void amigara		(game *g, monster *z); // Removes hypnosis if last one

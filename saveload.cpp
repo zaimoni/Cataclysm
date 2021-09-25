@@ -1740,7 +1740,7 @@ player::player(const JSON& src) : player()
 }
 
 pc::pc(const cataclysm::JSON& src)
-: player(src), kills(mon_type_count(), 0), next_inv('a'), mostseen(0), turnssincelastmon(0), run_mode(option_table::get()[OPT_SAFEMODE] ? 1 : 0), autosafemode(option_table::get()[OPT_AUTOSAFEMODE]) {
+: player(src), kills(num_monsters, 0), next_inv('a'), mostseen(0), turnssincelastmon(0), run_mode(option_table::get()[OPT_SAFEMODE] ? 1 : 0), autosafemode(option_table::get()[OPT_AUTOSAFEMODE]) {
 	if (src.has_key("next_inv")) fromJSON(src["next_inv"], next_inv); // After C:Z 0.3.0 release: \todo remove guard clause
 
 	int tmp;
@@ -1750,6 +1750,10 @@ pc::pc(const cataclysm::JSON& src)
 		run_mode = tmp;
 		if (0 == run_mode && option_table::get()[OPT_SAFEMODE]) run_mode = 1;
 	}
+
+	decltype(kills) tmp_vec;
+	if (src.has_key("kill_counts") && src["kill_counts"].decode(tmp_vec) && tmp_vec.size() >= kills.size()) kills = std::move(tmp_vec);
+	// \todo handle truncation "sensibly"
 }
 
 JSON toJSON(const pc& src)
@@ -1758,6 +1762,7 @@ JSON toJSON(const pc& src)
 	ret.set("next_inv", std::string(1, src.next_inv));
 	ret.set("mostseen", std::to_string(src.mostseen));
 	ret.set("run_mode", std::to_string((int)src.run_mode));
+	ret.set("kill_counts", JSON::encode(src.kills));
 	return ret;
 }
 

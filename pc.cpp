@@ -1,4 +1,6 @@
 #include "pc.hpp"
+#include "monster.h"
+#include "mondeath.h"
 #include "output.h"
 #include "ui.h"
 #include "stl_typetraits.h"
@@ -13,7 +15,7 @@
 #include <memory>
 
 pc::pc()
-: kills(mon_type_count(), 0), next_inv('d'), mostseen(0), turnssincelastmon(0), run_mode(option_table::get()[OPT_SAFEMODE] ? 1 : 0), autosafemode(option_table::get()[OPT_AUTOSAFEMODE])
+: kills(num_monsters, 0), next_inv('d'), mostseen(0), turnssincelastmon(0), run_mode(option_table::get()[OPT_SAFEMODE] ? 1 : 0), autosafemode(option_table::get()[OPT_AUTOSAFEMODE])
 {
 }
 
@@ -441,4 +443,22 @@ std::optional<std::string> pc::move_is_unsafe() const
     // Monsters around and we don't wanna run
     if (2 == run_mode) return "Monster spotted--safe mode is on! (Press '!' to turn it off or ' to ignore monster.)";
     return std::nullopt;
+}
+
+void pc::record_kill(const monster& m)
+{
+    const mtype* const corpse = m.type;
+    if (m.has_flag(MF_GUILT)) mdeath::guilt(*this, m);
+    if (corpse->species != species_hallu) kills[corpse->id]++;
+}
+
+std::vector<std::pair<const mtype*, int> > pc::summarize_kills()
+{
+    std::vector<std::pair<const mtype*, int> > ret;
+
+    for (int i = 0; i < num_monsters; i++) {
+        if (0 < kills[i]) ret.push_back(std::pair(mtype::types[i], kills[i]));
+    }
+
+    return ret;
 }

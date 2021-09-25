@@ -122,8 +122,6 @@ void game::setup()	// early part looks like it belongs in game::game (but we ret
 
  messages.turn.season = SUMMER;    // ... with winter conveniently a long ways off
 
- for (int i = 0; i < num_monsters; i++)	// Reset kill counts to 0
-  kills[i] = 0;
  if (opening_screen()) {// Opening menu
 // Finally, draw the screen!
   refresh_all();
@@ -1309,23 +1307,24 @@ void game::death_screen()
  std::ostringstream playerfile;
  playerfile << "save/" << u.name << ".sav";
  unlink(playerfile.str().c_str());
+
+ const auto summary = u.summarize_kills();
+
  int num_kills = 0;
- for (int i = 0; i < num_monsters; i++)
-  num_kills += kills[i];
+ for (decltype(auto) rec : summary) num_kills += rec.second;
 
  WINDOW* w_death = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  mvwaddstrz(w_death, 0, 35, c_red, "GAME OVER - Press Spacebar to Quit");
  mvwprintz(w_death, 2, 0, c_white, "Number of kills: %d", num_kills);
  const int lines_per_col = VIEW - 5;
  const int cols = (SCREEN_WIDTH - 2) / 39;  // \todo? do we need variable column width as well?
- int line = 0, mon = 0;
- while (line < cols * lines_per_col && mon < num_monsters) {
-  if (kills[mon] > 0) {
-   int y = line % lines_per_col + 3, x = (line / lines_per_col) * 39 + 1;
-   mvwprintz(w_death, y, x, c_white, "%s: %d", mtype::types[mon]->name.c_str(), kills[mon]);
-   line++;
-  }
-  mon++;
+
+ int line = 0;
+ for (decltype(auto) rec : summary) {
+     int y = line % lines_per_col + 3, x = (line / lines_per_col) * 39 + 1;
+     mvwprintz(w_death, y, x, c_white, "%s: %d", rec.first->name.c_str(), rec.second);
+     line++;
+     if (line >= cols * lines_per_col) break;
  }
 
  wrefresh(w_death);
@@ -1481,8 +1480,6 @@ void game::load(std::string name)
 
 	// monsters (allows validating last_target)
 	if (!saved["monsters"].decode(z) && z.empty()) throw corrupted+" 11";
-	// kill count
-	if (!saved["kill_counts"].decode<mon_id>(kills, num_monsters)) throw corrupted+" 12; "+std::to_string((int)saved["kill_counts"].mode());
 
 	// recoverable hacked-missing fields below
 	if (saved.has_key("turn") && fromJSON(saved["turn"], tmp)) messages.turn = tmp;
@@ -1540,7 +1537,6 @@ void game::save()
  saved.set("scents", std::move(tmp));
  }
  saved.set("monsters", JSON::encode(z));
- saved.set("kill_counts", JSON::encode<mon_id>(kills, num_monsters));
  saved.set("player", toJSON(u));
  saved.set("turn", std::to_string(messages.turn));
  if (-1 < last_target && z.size() > last_target) saved.set("last_target", std::to_string(last_target));
@@ -1793,19 +1789,12 @@ void game::draw_overmap() { cur_om.choose_point(this); }
 
 void game::disp_kills()
 {
- std::vector<const mtype*> types;
- std::vector<int> count;
- for (int i = 0; i < num_monsters; i++) {
-  if (kills[i] > 0) {
-   types.push_back(mtype::types[i]);
-   count.push_back(kills[i]);
-  }
- }
+    const auto summary = u.summarize_kills();
 
  WINDOW* w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
  mvwaddstrz(w, 0, (SCREEN_WIDTH-(sizeof("KILL COUNTS:")-1))/2, c_red, "KILL COUNTS:"); // C++20: use constexpr strlen here
 
- if (const size_t ub = types.size()) {
+ if (const size_t ub = summary.size()) {
      // \todo account for monster name length in following
      const int rows_per_col = VIEW - 1;
      const int max_cols = SCREEN_WIDTH / 26;
@@ -1817,8 +1806,8 @@ void game::disp_kills()
          const int row = i % rows_per_col;
          const int col = i / rows_per_col;
          if (cols <= col) break;   // we overflowed
-         mvwprintz(w, row, col * 25 + (col - 1) * padding, types[i]->color, "%c %s", types[i]->sym, types[i]->name.c_str());
-         mvwprintz(w, row, (col + 1) * 25 + (col - 1) * padding - int_log10(count[i]), c_white, "%d", count[i]);
+         mvwprintz(w, row, col * 25 + (col - 1) * padding, summary[i].first->color, "%c %s", summary[i].first->sym, summary[i].first->name.c_str());
+         mvwprintz(w, row, (col + 1) * 25 + (col - 1) * padding - int_log10(summary[i].second), c_white, "%d", summary[i].second);
      }
  } else {
      mvwaddstrz(w, 2, 2, c_white, "You haven't killed any monsters yet!");
@@ -3106,11 +3095,7 @@ void game::_kill_mon(monster& target, bool u_did_it)
 {
     assert(!target.dead);
     target.dead = true;
-    if (u_did_it) {
-        if (target.has_flag(MF_GUILT)) mdeath::guilt(this, &target);
-        if (target.type->species != species_hallu)
-            kills[target.type->id]++;	// Increment our kill counter
-    }
+    if (u_did_it) u.record_kill(target);
     for (decltype(auto) it : target.inv) m.add_item(target.pos, std::move(it));
     target.inv.clear();
     target.die(this);
@@ -3121,13 +3106,9 @@ void game::_explode_mon(monster& target, player* me)
 {
     assert(!target.dead);
     target.dead = true;
+    me->record_kill(target);
     // Send body parts and blood all over!
     const mtype* const corpse = target.type;
-    if (me == &u) {
-        if (target.has_flag(MF_GUILT)) mdeath::guilt(this, &target);
-        if (corpse->species != species_hallu)
-            kills[corpse->id]++;	// Increment our kill counter
-    }
     if (const itype* const meat = corpse->chunk_material()) {
         const int num_chunks = corpse->chunk_count();
 

@@ -307,6 +307,7 @@ public:
  virtual bool see_phantasm();  // would not be const for multi-PC case
  virtual std::vector<item>* use_stack_at(const point& pt) const;
  virtual int use_active(item& it);
+ virtual void record_kill(const monster& m) {}
 
  // grammatical support
  bool is_proper() const override final { return true; }
@@ -372,9 +373,6 @@ public:
  
  std::vector <disease> illness;
  std::vector <addiction> addictions;
-
-protected:
- static int mon_type_count();
 
 private:
  void _set_screenpos() override { if (auto pt = screen_pos()) pos = *pt; }
