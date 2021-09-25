@@ -13,6 +13,7 @@
 #include "weather.h"
 #include "iuse.h"
 #include "pc.hpp"
+#include "options.h"
 #else
 #include "mtype.h"
 #include "pldata.h"
@@ -1739,14 +1740,24 @@ player::player(const JSON& src) : player()
 }
 
 pc::pc(const cataclysm::JSON& src)
-: player(src),next_inv('a') {
+: player(src),next_inv('a'), mostseen(0), turnssincelastmon(0), run_mode(option_table::get()[OPT_SAFEMODE] ? 1 : 0), autosafemode(option_table::get()[OPT_AUTOSAFEMODE]) {
 	if (src.has_key("next_inv")) fromJSON(src["next_inv"], next_inv); // After C:Z 0.3.0 release: \todo remove guard clause
+
+	int tmp;
+	if (src.has_key("mostseen") && fromJSON(src["mostseen"], tmp) && 0 <= tmp) mostseen = tmp; else mostseen = 0;
+
+	if (src.has_key("run_mode") && fromJSON(src["run_mode"], tmp) && 0 <= tmp && 2 >= tmp) {
+		run_mode = tmp;
+		if (0 == run_mode && option_table::get()[OPT_SAFEMODE]) run_mode = 1;
+	}
 }
 
 JSON toJSON(const pc& src)
 {
 	JSON ret = toJSON(static_cast<const player&>(src));
 	ret.set("next_inv", std::string(1, src.next_inv));
+	ret.set("mostseen", std::to_string(src.mostseen));
+	ret.set("run_mode", std::to_string((int)src.run_mode));
 	return ret;
 }
 

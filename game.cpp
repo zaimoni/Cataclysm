@@ -109,9 +109,7 @@ void game::setup()	// early part looks like it belongs in game::game (but we ret
  debugmon = false;	// We're not printing debug messages
  weather = WEATHER_CLEAR; // Start with some nice weather...
  nextweather = MINUTES(STARTING_MINUTES + 30); // Weather shift in 30
- turnssincelastmon = 0; //Auto safe mode init
- autosafemode = option_table::get()[OPT_AUTOSAFEMODE];
-
+ 
  z.clear();
  coming_to_stairs.clear();
  active_npc.clear();
@@ -482,8 +480,6 @@ http://github.com/zaimoni/Cataclysm .");
 void game::start_game()
 {
  messages.turn = MINUTES(STARTING_MINUTES);// It's turn 0...
- run_mode = (option_table::get()[OPT_SAFEMODE] ? 1 : 0);
- mostseen = 0;	// ...and mostseen is 0, we haven't seen any monsters yet.
 
 // Init some factions.
  if (!load_master())	// Master data record contains factions.
@@ -1009,11 +1005,12 @@ void game::get_input()
  switch (act) {
 
   case ACTION_PAUSE:
-   if (run_mode == 2) // Monsters around and we don't wanna pause
-    messages.add("Monster spotted--safe mode is on! (Press '!' to turn it off.)");
-   else
-    u.pause();
-   break;
+      if (const auto err = u.move_is_unsafe()) {
+          messages.add(*err);
+      } else {
+          u.pause();
+      }
+      break;
 
   case ACTION_MOVE_N:
   case ACTION_MOVE_NE:
@@ -1176,34 +1173,15 @@ void game::get_input()
    break;
 
   case ACTION_TOGGLE_SAFEMODE:
-   if (run_mode == 0 ) {
-    run_mode = 1;
-    messages.add("Safe mode ON!");
-   } else {
-    turnssincelastmon = 0;
-    run_mode = 0;
-    if (autosafemode)
-    messages.add("Safe mode OFF! (Auto safe mode still enabled!)");
-    else
-    messages.add("Safe mode OFF!");
-   }
+   u.toggle_safe_mode();
    break;
 
   case ACTION_TOGGLE_AUTOSAFE:
-   if (autosafemode) {
-    messages.add("Auto safe mode OFF!");
-    autosafemode = false;
-   } else {
-    messages.add("Auto safe mode ON");
-    autosafemode = true;
-   }
+   u.toggle_autosafe_mode();
    break;
 
   case ACTION_IGNORE_ENEMY:
-   if (run_mode == 2) {
-    messages.add("Ignoring enemy!");
-    run_mode = 1;
-   }
+   u.ignore_enemy();
    break;
 
   case ACTION_SAVE:
@@ -1507,13 +1485,7 @@ void game::load(std::string name)
 	if (!saved["kill_counts"].decode<mon_id>(kills, num_monsters)) throw corrupted+" 12; "+std::to_string((int)saved["kill_counts"].mode());
 
 	// recoverable hacked-missing fields below
-	autosafemode = option_table::get()[OPT_AUTOSAFEMODE];
 	if (saved.has_key("turn") && fromJSON(saved["turn"], tmp)) messages.turn = tmp;
-	if (saved.has_key("mostseen") && fromJSON(saved["mostseen"], tmp) && 0 <= tmp) mostseen = tmp; else mostseen = 0;
-	if (saved.has_key("run_mode") && fromJSON(saved["run_mode"], tmp) && 0 <= tmp && 2 >= tmp) {
-		run_mode = tmp;
-		if (0 == run_mode && option_table::get()[OPT_SAFEMODE]) run_mode = 1;
-	}  else run_mode = (option_table::get()[OPT_SAFEMODE] ? 1 : 0);
 	if (saved.has_key("last_target") && fromJSON(saved["last_target"], tmp) && 0 <= tmp && z.size() > tmp) last_target = tmp; else last_target = -1;
 	// do not worry about next_npc_id/next_faction_id/next_mission_id, the master save catches these
 
@@ -1571,8 +1543,6 @@ void game::save()
  saved.set("kill_counts", JSON::encode<mon_id>(kills, num_monsters));
  saved.set("player", toJSON(u));
  saved.set("turn", std::to_string(messages.turn));
- saved.set("mostseen", std::to_string(mostseen));
- saved.set("run_mode", std::to_string((int)run_mode));
  if (-1 < last_target && z.size() > last_target) saved.set("last_target", std::to_string(last_target));
 
  std::ofstream fout((playerfile_stem.str() + ".tmp").c_str());
@@ -2084,7 +2054,7 @@ void game::draw()
   wprintz(w_status, col_temp, " %dF", temperature);
  mvwprintz(w_status, 0, 41, c_white, "%s, day %d",
            season_name[messages.turn.season], messages.turn.day + 1);
- if (run_mode != 0) mvwaddstrz(w_status, 2, 51, c_red, "SAFE");
+ if (u.feels_safe()) mvwaddstrz(w_status, 2, 51, c_red, "SAFE");
 
  // no good place for the "stderr log is live" indicator.  Overwrite location/weather information for now.
  if (have_used_stderr_log()) mvwaddstrz(w_status, 0, 0, h_red, get_stderr_logname().c_str());
@@ -2468,17 +2438,8 @@ void game::mon_info()
   }
  }
 
- if (newseen > mostseen) {
-  u.cancel_activity_query("Monster spotted!");
-  turnssincelastmon = 0;
-  if (run_mode == 1) run_mode = 2;	// Stop movement!
- } else if (autosafemode) { // Auto-safemode
-  turnssincelastmon++;
-  if(turnssincelastmon >= 50 && run_mode == 0) run_mode = 1;
- }
+ u.stop_on_sighting(newseen);
 
-
- mostseen = newseen;
 // Print the direction headings
 // Reminder:
 // 7 0 1	unique_types uses these indices;
@@ -4631,10 +4592,11 @@ void game::pldrive(direction dir)
 
 void game::pldrive(int x, int y)
 {
- if (run_mode == 2) { // Monsters around and we don't wanna run
-  messages.add("Monster spotted--run mode is on! (Press '!' to turn it off or ' to ignore monster.)");
-  return;
- }
+    if (const auto err = u.move_is_unsafe()) {
+        messages.add(*err);
+        return;
+    }
+
  const auto v = u.GPSpos.veh_at();
  if (!v) {
   debuglog("game::pldrive error: can't find vehicle! Drive mode is now off.");
@@ -4662,10 +4624,11 @@ void game::plmove(direction dir)
 
 void game::plmove(point delta)
 {
- if (run_mode == 2) { // Monsters around and we don't wanna run
-  messages.add("Monster spotted--safe mode is on! (Press '!' to turn it off or ' to ignore monster.)");
-  return;
- }
+    if (const auto err = u.move_is_unsafe()) {
+        messages.add(*err);
+        return;
+    }
+
  if (u.has_disease(DI_STUNNED)) delta = rng(within_rldist<1>);
  const auto dest(u.GPSpos + delta);
  auto local_dest(u.pos + delta);

@@ -12,6 +12,11 @@
 #include <array>
 #include <memory>
 
+pc::pc()
+: next_inv('d'), mostseen(0), turnssincelastmon(0), run_mode(option_table::get()[OPT_SAFEMODE] ? 1 : 0), autosafemode(option_table::get()[OPT_AUTOSAFEMODE])
+{
+}
+
 char pc::inc_invlet(char src)
 {
     switch (src) {
@@ -381,4 +386,59 @@ void pc::draw_footsteps(void* w)
     footsteps.clear(); // C:Whales behavior; never reaches savefile, display cleared on save/load cycling
     wrefresh(w_terrain);
     return;
+}
+
+void pc::toggle_safe_mode()
+{
+    if (0 == run_mode) {
+        run_mode = 1;
+        messages.add("Safe mode ON!");
+    } else {
+        turnssincelastmon = 0;
+        run_mode = 0;
+        if (autosafemode)
+            messages.add("Safe mode OFF! (Auto safe mode still enabled!)");
+        else
+            messages.add("Safe mode OFF!");
+    }
+}
+
+void pc::toggle_autosafe_mode()
+{
+    if (autosafemode) {
+        messages.add("Auto safe mode OFF!");
+        autosafemode = false;
+    } else {
+        messages.add("Auto safe mode ON");
+        autosafemode = true;
+    }
+}
+
+void pc::stop_on_sighting(int new_seen)
+{
+    if (new_seen > mostseen) {
+        cancel_activity_query("Monster spotted!");
+        turnssincelastmon = 0;
+        if (1 == run_mode) run_mode = 2;	// Stop movement!
+    } else if (autosafemode) { // Auto-safemode
+        turnssincelastmon++;
+        if (turnssincelastmon >= 50 && 0 == run_mode) run_mode = 1;
+    }
+
+    mostseen = new_seen;
+}
+
+void pc::ignore_enemy()
+{
+    if (2 == run_mode) {
+        messages.add("Ignoring enemy!");
+        run_mode = 1;
+    }
+}
+
+std::optional<std::string> pc::move_is_unsafe() const
+{
+    // Monsters around and we don't wanna run
+    if (2 == run_mode) return "Monster spotted--safe mode is on! (Press '!' to turn it off or ' to ignore monster.)";
+    return std::nullopt;
 }
