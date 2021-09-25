@@ -40,6 +40,7 @@ public:
 
 private:
 	std::vector<point> footsteps;	// visual cue to monsters moving out of the players sight
+	std::vector<int> kills; // per monster type
 
 	// autorun UI
 	int mostseen;	 // # of mons seen last turn; if this increases, run_mode++

@@ -1740,7 +1740,7 @@ player::player(const JSON& src) : player()
 }
 
 pc::pc(const cataclysm::JSON& src)
-: player(src),next_inv('a'), mostseen(0), turnssincelastmon(0), run_mode(option_table::get()[OPT_SAFEMODE] ? 1 : 0), autosafemode(option_table::get()[OPT_AUTOSAFEMODE]) {
+: player(src), kills(mon_type_count(), 0), next_inv('a'), mostseen(0), turnssincelastmon(0), run_mode(option_table::get()[OPT_SAFEMODE] ? 1 : 0), autosafemode(option_table::get()[OPT_AUTOSAFEMODE]) {
 	if (src.has_key("next_inv")) fromJSON(src["next_inv"], next_inv); // After C:Z 0.3.0 release: \todo remove guard clause
 
 	int tmp;

@@ -13,7 +13,7 @@
 #include <memory>
 
 pc::pc()
-: next_inv('d'), mostseen(0), turnssincelastmon(0), run_mode(option_table::get()[OPT_SAFEMODE] ? 1 : 0), autosafemode(option_table::get()[OPT_AUTOSAFEMODE])
+: kills(mon_type_count(), 0), next_inv('d'), mostseen(0), turnssincelastmon(0), run_mode(option_table::get()[OPT_SAFEMODE] ? 1 : 0), autosafemode(option_table::get()[OPT_AUTOSAFEMODE])
 {
 }
 

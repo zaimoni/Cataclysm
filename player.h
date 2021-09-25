@@ -373,6 +373,9 @@ public:
  std::vector <disease> illness;
  std::vector <addiction> addictions;
 
+protected:
+ static int mon_type_count();
+
 private:
  void _set_screenpos() override { if (auto pt = screen_pos()) pos = *pt; }
  bool handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim) override;

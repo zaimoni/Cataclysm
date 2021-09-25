@@ -1552,6 +1552,8 @@ DEFINE_JSON_ENUM_SUPPORT_TYPICAL(hp_part, JSON_transcode_hp_parts)
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(morale_type, JSON_transcode_morale)
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(pl_flag, JSON_transcode_pl_flags)
 
+int player::mon_type_count() { return num_monsters; }
+
 player::player()
 : mobile(GPS_loc(tripoint(0, 0, 0), point(-1,-1)), 100), pos(-1,-1), in_vehicle(false), active_mission(-1), male(true),
   str_cur(8),dex_cur(8),int_cur(8),per_cur(8),str_max(8),dex_max(8),int_max(8),per_max(8),
