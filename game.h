@@ -311,9 +311,9 @@ public:
 
 // ########################## DATA ################################
 
-  int last_target;// The last monster targeted. -1, or a positional index in z
-//  char run_mode; // 0 - Normal run always; 1 - Running allowed, but if a new
-		 //  monsters spawns, go to 2 - No movement allowed
+  // The last monster targeted. -1, or a positional index in z
+  // Validating this requires access to game::z
+  int last_target;
   quit_status uquit;    // Set to true if the player quits ('Q')
 
   calendar nextspawn; // The turn on which monsters will spawn next.

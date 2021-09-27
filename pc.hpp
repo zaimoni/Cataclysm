@@ -17,6 +17,7 @@ public:
 	pc& operator=(const pc& rhs) = default;
 	pc& operator=(pc&& rhs) = default;
 
+	// invlets
 	char get_invlet(std::string title = "Inventory:");
 	std::vector<item> multidrop();
 
@@ -25,16 +26,21 @@ public:
 	bool assign_invlet(item& it) const;
 	bool assign_invlet_stacking_ok(item& it) const;
 
+	// footstep UI
 	void add_footstep(const point& orig, int volume);
 	void draw_footsteps(/* WINDOW* */ void* w);
 
+	// safe mode/auto-run commands
 	void toggle_safe_mode();
 	void toggle_autosafe_mode();
-	void stop_on_sighting(int new_seen);
 	void ignore_enemy();
+
+	// safe mode/auto-run implementation
+	void stop_on_sighting(int new_seen);
 	std::optional<std::string> move_is_unsafe() const;
 	bool feels_safe() const { return 0 < run_mode; }
 
+	// player kill tracking
 	void record_kill(const monster& m) override;
 	std::vector<std::pair<const mtype*, int> > summarize_kills();
 
