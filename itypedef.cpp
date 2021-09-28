@@ -757,25 +757,23 @@ void item::init()
             "A fake item.  If you are reading this it's a bug!",
             '$', c_red, MNULL, MNULL, 0, 0, 0, 0, 0, 0));
  int index = types.size()-1;
- 
+
+#ifdef SOCRATES_DAIMON
+#define NOT_DAIMON(A)
+#else
+#define NOT_DAIMON(A) , (A)
+#endif
+
 // Drinks
 // Stim should be -8 to 8.
 // quench MAY be less than zero--salt water and liquor make you thirstier.
 // Thirst goes up by 1 every 5 minutes; so a quench of 12 lasts for 1 hour
 
-#ifdef SOCRATES_DAIMON
 #define DRINK(name,rarity,price,color,container,quench,nutr,spoils,stim,\
 healthy,addict,charges,fun,use_func,addict_func,des) \
 	index++;types.push_back(new it_comest(index,rarity,price,name,des,'~',\
-color,LIQUID,2,1,0,0,0,0,quench,nutr,spoils,stim,healthy,addict,charges,\
-fun,container,itm_null,addict_func));
-#else
-#define DRINK(name,rarity,price,color,container,quench,nutr,spoils,stim,\
-healthy,addict,charges,fun,use_func,addict_func,des) \
-	index++;types.push_back(new it_comest(index,rarity,price,name,des,'~',\
-color,LIQUID,2,1,0,0,0,0,quench,nutr,spoils,stim,healthy,addict,charges,\
-fun,container,itm_null,use_func,addict_func));
-#endif
+color,LIQUID,2,1,quench,nutr,spoils,stim,healthy,addict,charges,\
+fun,container,itm_null NOT_DAIMON(use_func),addict_func));
 
 //     NAME		RAR PRC	COLOR     CONTAINER
 DRINK("water",		90, 50,	c_ltcyan, itm_bottle_plastic,
@@ -887,19 +885,11 @@ DRINK("blood",		 20,  0, c_red, itm_vacutainer,
 	  5,  5,  0,  0, -8,  0,  1,-50,&iuse::none,	ADD_NULL, "\
 Blood, possibly that of a human.  Disgusting!");
 
-#if SOCRATES_DAIMON
 #define FOOD(name,rarity,price,color,mat1,container,volume,weight,quench,\
 nutr,spoils,stim,healthy,addict,charges,fun,use_func,addict_func,des) \
 	index++;types.push_back(new it_comest(index,rarity,price,name,des,'%',\
-color,mat1,volume,weight,0,0,0,0,quench,nutr,spoils,stim,healthy,addict,charges,\
-fun,container,itm_null,addict_func));
-#else
-#define FOOD(name,rarity,price,color,mat1,container,volume,weight,quench,\
-nutr,spoils,stim,healthy,addict,charges,fun,use_func,addict_func,des) \
-	index++;types.push_back(new it_comest(index,rarity,price,name,des,'%',\
-color,mat1,volume,weight,0,0,0,0,quench,nutr,spoils,stim,healthy,addict,charges,\
-fun,container,itm_null,use_func,addict_func));
-#endif
+color,mat1,volume,weight,quench,nutr,spoils,stim,healthy,addict,charges,\
+fun,container,itm_null NOT_DAIMON(use_func),addict_func));
 // FOOD
 
 //   NAME		RAR PRC	COLOR		MAT1	CONTAINER
@@ -1178,19 +1168,11 @@ Ground coffee beans. You can boil it into a mediocre stimulant,\n\
 or swallow it raw for a lesser stimulative boost.");
 
 // MEDS
-#if SOCRATES_DAIMON
 #define MED(name,rarity,price,color,tool,mat,stim,healthy,addict,\
 charges,fun,use_func,addict_func,des) \
 	index++;types.push_back(new it_comest(index,rarity,price,name,des,'!',\
-color,mat,1,1,0,0,0,0,0,0,0,stim,healthy,addict,charges,\
-fun,itm_null,tool,addict_func));
-#else
-#define MED(name,rarity,price,color,tool,mat,stim,healthy,addict,\
-charges,fun,use_func,addict_func,des) \
-	index++;types.push_back(new it_comest(index,rarity,price,name,des,'!',\
-color,mat,1,1,0,0,0,0,0,0,0,stim,healthy,addict,charges,\
-fun,itm_null,tool,use_func,addict_func));
-#endif
+color,mat,1,1,0,0,0,stim,healthy,addict,charges,\
+fun,itm_null,tool NOT_DAIMON(use_func),addict_func));
 
 //  NAME		RAR PRC	COLOR		TOOL
 MED("bandages",		50, 60,	c_white,	itm_null,
@@ -4497,8 +4479,6 @@ it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
 	std::string pname, std::string pdes,
 	char psym, nc_color pcolor, material pm1,
 	unsigned short pvolume, unsigned short pweight,
-	signed char pmelee_dam, signed char pmelee_cut,
-	signed char pm_to_hit, unsigned pitem_flags,
 
 	signed char pquench, unsigned char pnutr, unsigned char pspoils,
 	signed char pstim, signed char phealthy, unsigned char paddict,
@@ -4508,7 +4488,7 @@ it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
 	void (*puse)(game*, player*, item*, bool),
 #endif
 	add_type padd)
-:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, 0, 0, 0, 0),
 	quench(pquench),nutr(pnutr),spoils(pspoils),addict(paddict),charges(pcharges),stim(pstim),healthy(phealthy),fun(pfun),container(pcontainer),
 	tool(ptool),
 #ifndef SOCRATES_DAIMON

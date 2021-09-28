@@ -438,8 +438,6 @@ struct it_comest : public itype
 	 std::string pname, std::string pdes,
 	 char psym, nc_color pcolor, material pm1,
 	 unsigned short pvolume, unsigned short pweight,
-	 signed char pmelee_dam, signed char pmelee_cut,
-	 signed char pm_to_hit, unsigned pitem_flags,
 
 	 signed char pquench, unsigned char pnutr, unsigned char pspoils,
 	 signed char pstim, signed char phealthy, unsigned char paddict,
