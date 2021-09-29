@@ -4867,9 +4867,8 @@ bool player::eat(const item_spec& src)
             else if (comest->stim >= 10 && stim < comest->stim * 3) stim += comest->stim;
         }
 
-        (*comest->use)(this, eaten, false);
+        comest->consumed_by(*eaten, *this);
         add_addiction(comest->add, comest->addict);
-        if (has_bionic(bio_ethanol) && comest->use == &iuse::alcohol) charge_power(rng(2, 8));
 
         if (has_trait(PF_VEGETARIAN) && eaten->made_of(FLESH)) {
             if (!is_npc()) messages.add("You feel bad about eating this meat...");

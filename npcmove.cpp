@@ -1674,7 +1674,7 @@ void npc::activate_item(item& it)	// unclear whether this "works"; parallel is n
  if (const auto tool = it.is_tool()) {
   (*tool->use)(this, &it, false);
  } else if (const auto comest = it.is_food()) {
-  (*comest->use)(this, &it, false);
+  comest->consumed_by(it, *this);
  }
 }
 

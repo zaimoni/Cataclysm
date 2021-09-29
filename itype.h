@@ -430,7 +430,10 @@ struct it_comest : public itype
  itype_id tool;		// Tool needed to consume (e.g. lighter for cigarettes)
 
 #ifndef SOCRATES_DAIMON
+private:
  void (*use)(player*, item*, bool);// Special effects of use
+
+public:
 #endif
  add_type add;				// Effects of addiction
 
@@ -452,6 +455,10 @@ struct it_comest : public itype
  bool count_by_charges() const override { return charges > 1; }
  bool expires() const override { return 0 != spoils; }
  bool is_expired(int age) const override { return 0 != spoils && age > spoils * 600 /* HOURS(1) */; }
+
+#ifndef SOCRATES_DAIMON
+ void consumed_by(item& it, player& u) const;
+#endif
 
  void info(std::ostream& dest) const override;
 };

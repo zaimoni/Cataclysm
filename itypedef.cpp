@@ -4729,6 +4729,13 @@ std::string itype::force_sign(int src)
 	return ret;
 }
 
+#ifndef SOCRATES_DAIMON
+void it_comest::consumed_by(item& it, player& u)  const
+{
+	if (use) use(&u, &it, false);
+}
+#endif
+
 void it_comest::info(std::ostream& dest) const
 {
 	dest << " Nutrition: " << int(nutr) << "\n Quench: " << int(quench)

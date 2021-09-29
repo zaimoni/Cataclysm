@@ -361,6 +361,7 @@ void iuse::alcohol(player *p, item *it, bool t)
  if (p->has_trait(PF_LIGHTWEIGHT)) duration += MINUTES(30);
  p->pkill += 8;
  p->add_disease(DI_DRUNK, duration);
+ if (p->has_bionic(bio_ethanol)) p->charge_power(rng(2, 8));
 }
 
 void iuse::cig(player *p, item *it, bool t)
