@@ -4526,7 +4526,7 @@ void game::wield()
 
 void game::read()
 {
- u.read(this, u.get_invlet("Read:"));
+ u.read(u.get_invlet("Read:"));
 }
 
 void game::chat()

@@ -62,7 +62,7 @@ public:
 #endif
 
 		const it_tool* const tool = dynamic_cast<const it_tool*>(used.type);
-		(*tool->use)(game::active(), &_actor, &used, false);
+		(*tool->use)(&_actor, &used, false);
 		used.charges -= tool->charges_per_use;
 		if (0 == used.invlet) _actor.inv.remove_item(inv_index);
 	}
@@ -1600,7 +1600,7 @@ void npc::alt_attack(game *g, int target)
  DEBUG_FAIL_OR_LEAVE(!used, return);	// invariant violation
 
 // Are we going to throw this item?
- if (!thrown_item(*used)) activate_item(g, *used);
+ if (!thrown_item(*used)) activate_item(*used);
  else { // We are throwing it!
 
   std::vector<point> trajectory;
@@ -1669,12 +1669,12 @@ void npc::alt_attack(game *g, int target)
  } // Done with throwing-item block
 }
 
-void npc::activate_item(game *g, item& it)	// unclear whether this "works"; parallel is npc::use_escape_item
+void npc::activate_item(item& it)	// unclear whether this "works"; parallel is npc::use_escape_item
 {
  if (const auto tool = it.is_tool()) {
-  (*tool->use)(g, this, &it, false);
+  (*tool->use)(this, &it, false);
  } else if (const auto comest = it.is_food()) {
-  (*comest->use)(g, this, &it, false);
+  (*comest->use)(this, &it, false);
  }
 }
 

@@ -430,7 +430,7 @@ struct it_comest : public itype
  itype_id tool;		// Tool needed to consume (e.g. lighter for cigarettes)
 
 #ifndef SOCRATES_DAIMON
- void (*use)(game*, player*, item*, bool);// Special effects of use
+ void (*use)(player*, item*, bool);// Special effects of use
 #endif
  add_type add;				// Effects of addiction
 
@@ -444,9 +444,9 @@ struct it_comest : public itype
 	 unsigned char pcharges, signed char pfun, itype_id pcontainer,
 	 itype_id ptool,
 #ifndef SOCRATES_DAIMON
-     void (*puse)(game*, player*, item*, bool),
+	 decltype(use) puse,
 #endif
-     add_type padd);
+	 add_type padd);
 
  const it_comest* is_food() const override { return this; }
  bool count_by_charges() const override { return charges > 1; }
@@ -624,7 +624,7 @@ struct it_tool : public itype
  unsigned char turns_per_charge;
  itype_id revert_to;
 #ifndef SOCRATES_DAIMON
- void (*use)(game *, player *, item *, bool);
+ void (*use)(player *, item *, bool);
 #endif
 
  it_tool();
@@ -639,7 +639,7 @@ struct it_tool : public itype
 	 unsigned char pcharges_per_use, unsigned char pturns_per_charge,
 	 ammotype pammo, itype_id prevert_to
 #ifndef SOCRATES_DAIMON
-     , void (*puse)(game*, player*, item*, bool)
+     , decltype(use) puse
 #endif
  );
 
@@ -667,7 +667,7 @@ struct it_macguffin final : public itype
 {
  bool readable; // If true, activated with 'R'
 #ifndef SOCRATES_DAIMON
- void (*use)(game *, player *, item *, bool);
+ void (*use)(player *, item *, bool);
 #endif
 
  it_macguffin(int pid, unsigned char prarity, unsigned int pprice,
@@ -679,7 +679,7 @@ struct it_macguffin final : public itype
 
 	 bool preadable
 #ifndef SOCRATES_DAIMON
-     , void (*puse)(game*, player*, item*, bool)
+	 , decltype(use) puse
 #endif
  );
 

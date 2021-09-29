@@ -452,12 +452,11 @@ int player::use_active(item& it) {
     if (it.is_artifact()) return -2;
     if (!it.active) return 0;
 
-    auto g = game::active();
-    (*tool->use)(g, this, &it, true);
+    (*tool->use)(this, &it, true);
     if (tool->turns_per_charge > 0 && int(messages.turn) % tool->turns_per_charge == 0) it.charges--;
     // separate this so we respond to bugs reasonably
     if (it.charges <= 0) {
-        (*tool->use)(g, this, &it, false); // turns off
+        (*tool->use)(this, &it, false); // turns off
         if (tool->revert_to == itm_null) {
             it = item::null;
             return 1;
@@ -4868,7 +4867,7 @@ bool player::eat(const item_spec& src)
             else if (comest->stim >= 10 && stim < comest->stim * 3) stim += comest->stim;
         }
 
-        (*comest->use)(g, this, eaten, false);
+        (*comest->use)(this, eaten, false);
         add_addiction(comest->add, comest->addict);
         if (has_bionic(bio_ethanol) && comest->use == &iuse::alcohol) charge_power(rng(2, 8));
 
@@ -5155,7 +5154,7 @@ void player::use(game *g, char let)
          return;
      }
 
-     (*tool->use)(g, this, used, false);
+     (*tool->use)(this, used, false);
      used->charges -= tool->charges_per_use;
 
      if (tool->use == &iuse::dogfood || 0 == used->invlet) remove_discard(*src);
@@ -5252,7 +5251,7 @@ void player::use(game *g, char let)
  }
 
  if (used->is_book()) {
-     read(g, let);
+     read(let);
      return;
  }
 
@@ -5300,7 +5299,7 @@ static std::optional<std::variant<const it_macguffin*, const it_book*> > is_read
     return std::nullopt;
 }
 
-void player::read(game *g, char ch)
+void player::read(char ch)
 {
     if (const auto err = cannot_read()) {
         subjective_message(*err);
@@ -5328,7 +5327,7 @@ void player::read(game *g, char ch)
 
  static auto read_macguffin = [&](const it_macguffin* mac) {
      // Some macguffins can be read, but they aren't treated like books.
-     (*mac->use)(g, this, used.second, false);
+     (*mac->use)(this, used.second, false);
  };
 
  static auto read_book = [&](const it_book* book) {

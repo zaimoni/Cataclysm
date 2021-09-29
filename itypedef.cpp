@@ -4485,7 +4485,7 @@ it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
 	unsigned char pcharges, signed char pfun, itype_id pcontainer,
 	itype_id ptool,
 #ifndef SOCRATES_DAIMON
-	void (*puse)(game*, player*, item*, bool),
+	decltype(use) puse,
 #endif
 	add_type padd)
 :itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, 0, 0, 0, 0),
@@ -4622,7 +4622,7 @@ it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
 	unsigned char pcharges_per_use, unsigned char pturns_per_charge,
 	ammotype pammo, itype_id prevert_to
 #ifndef SOCRATES_DAIMON
-	, void (*puse)(game*, player*, item*, bool)
+	, decltype(use) puse
 #endif
 )
 :itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
@@ -4652,7 +4652,7 @@ it_macguffin::it_macguffin(int pid, unsigned char prarity, unsigned int pprice,
 
 	bool preadable
 #ifndef SOCRATES_DAIMON
-	, void (*puse)(game*, player*, item*, bool)
+	, decltype(use) puse
 #endif
 )
 :itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
