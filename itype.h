@@ -674,7 +674,10 @@ struct it_macguffin final : public itype
 {
  bool readable; // If true, activated with 'R'
 #ifndef SOCRATES_DAIMON
+private:
  void (*use)(player *, item *, bool);
+
+public:
 #endif
 
  it_macguffin(int pid, unsigned char prarity, unsigned int pprice,
@@ -689,6 +692,10 @@ struct it_macguffin final : public itype
 	 , decltype(use) puse
 #endif
  );
+
+#ifndef SOCRATES_DAIMON
+ void used_by(item& it, player& u) const;
+#endif
 
  const it_macguffin* is_macguffin() const override { return this; }
 };

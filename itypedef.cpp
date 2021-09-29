@@ -4734,6 +4734,11 @@ void it_comest::consumed_by(item& it, player& u)  const
 {
 	if (use) use(&u, &it, false);
 }
+
+void it_macguffin::used_by(item& it, player& u)  const
+{
+	if (use) use(&u, &it, false);
+}
 #endif
 
 void it_comest::info(std::ostream& dest) const

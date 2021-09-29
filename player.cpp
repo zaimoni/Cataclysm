@@ -5326,7 +5326,7 @@ void player::read(char ch)
 
  static auto read_macguffin = [&](const it_macguffin* mac) {
      // Some macguffins can be read, but they aren't treated like books.
-     (*mac->use)(this, used.second, false);
+     mac->used_by(*used.second, *this);
  };
 
  static auto read_book = [&](const it_book* book) {
