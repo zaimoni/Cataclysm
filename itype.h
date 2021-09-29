@@ -631,10 +631,19 @@ struct it_tool : public itype
  unsigned char turns_per_charge;
  itype_id revert_to;
 #ifndef SOCRATES_DAIMON
+private:
  void (*use)(player *, item *, bool);
+
+public:
 #endif
 
  it_tool();
+#ifndef SOCRATES_DAIMON
+protected:
+	it_tool(decltype(use) puse); // assistant for it_artifact_tool default constructor
+
+public:
+#endif
  it_tool(int pid, unsigned char prarity, unsigned int pprice,
 	 std::string pname, std::string pdes,
 	 char psym, nc_color pcolor, material pm1, material pm2,
@@ -652,9 +661,17 @@ struct it_tool : public itype
 
  const it_tool* is_tool() const override final { return this; }
 
+#ifndef SOCRATES_DAIMON
+ void used_by(item& it, player& u) const;
+ void turned_off_by(item& it, player& u) const;
+#endif
+
  void info(std::ostream& dest) const override;
 protected:	// this is not a final type so these aren't public
 	it_tool(const cataclysm::JSON& src);
+#ifndef SOCRATES_DAIMON
+	it_tool(const cataclysm::JSON& src, decltype(use) puse);
+#endif
 	void toJSON(cataclysm::JSON& dest) const override;
 };
         

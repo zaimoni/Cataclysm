@@ -1422,6 +1422,26 @@ std::ostream& operator<<(std::ostream& os, const it_artifact_armor& src)
 	return os << tmp;
 }
 
+#ifndef SOCRATES_DAIMON
+it_tool::it_tool(const cataclysm::JSON& src, decltype(use) puse)
+: itype(src), ammo(AT_NULL), max_charges(0), def_charges(0), charges_per_use(0), turns_per_charge(0), revert_to(itm_null), use(puse)
+{
+	int tmp;
+	if (src.has_key("ammo")) fromJSON(src["ammo"], ammo);
+	if (src.has_key("max_charges")) fromJSON(src["max_charges"], max_charges);
+	if (src.has_key("def_charges")) fromJSON(src["def_charges"], def_charges);
+	if (src.has_key("charges_per_use")) {
+		fromJSON(src["charges_per_use"], tmp);
+		charges_per_use = tmp;
+	}
+	if (src.has_key("turns_per_charge")) {
+		fromJSON(src["turns_per_charge"], tmp);
+		turns_per_charge = tmp;
+	}
+	if (src.has_key("revert_to")) fromJSON(src["revert_to"], revert_to);
+}
+#endif
+
 it_tool::it_tool(const cataclysm::JSON& src)
 : itype(src),ammo(AT_NULL), max_charges(0), def_charges(0), charges_per_use(0), turns_per_charge(0), revert_to(itm_null)
 #ifndef SOCRATES_DAIMON
@@ -1456,15 +1476,16 @@ void it_tool::toJSON(JSON& dest) const
 }
 
 it_artifact_tool::it_artifact_tool(const cataclysm::JSON& src)
-: it_tool(src)
+: it_tool(src
+#ifndef SOCRATES_DAIMON
+	, &iuse::artifact
+#endif
+), charge_type(ARTC_NULL)
 {
 	if (src.has_key("charge_type")) fromJSON(src["charge_type"], charge_type);
 	if (src.has_key("effects_wielded")) src["effects_wielded"].decode(effects_wielded);
 	if (src.has_key("effects_activated")) src["effects_activated"].decode(effects_activated);
 	if (src.has_key("effects_carried")) src["effects_carried"].decode(effects_carried);
-#ifndef SOCRATES_DAIMON
-	use = &iuse::artifact;
-#endif
 }
 
 void it_artifact_tool::toJSON(JSON& dest) const

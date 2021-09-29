@@ -4611,6 +4611,17 @@ it_tool::it_tool()
 {
 }
 
+#ifndef SOCRATES_DAIMON
+it_tool::it_tool(decltype(use) puse)
+: it_tool()
+{
+	price = 0;
+	charges_per_use = 1;
+	turns_per_charge = 0;
+	use = puse;
+}
+#endif
+
 it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
 	std::string pname, std::string pdes,
 	char psym, nc_color pcolor, material pm1, material pm2,
@@ -4682,17 +4693,11 @@ it_style::it_style(int pid,
 { }
 
 it_artifact_tool::it_artifact_tool()
-{
-	ammo = AT_NULL;
-	price = 0;
-	def_charges = 0;
-	charges_per_use = 1;
-	turns_per_charge = 0;
-	revert_to = itm_null;
+: it_tool(
 #ifndef SOCRATES_DAIMON
-	use = &iuse::artifact;
+	&iuse::artifact
 #endif
-};
+), charge_type(ARTC_NULL) {}
 
 it_artifact_tool::it_artifact_tool(int pid, unsigned int pprice, std::string pname,
 	std::string pdes, char psym, nc_color pcolor, material pm1,
@@ -4704,7 +4709,7 @@ it_artifact_tool::it_artifact_tool(int pid, unsigned int pprice, std::string pna
 #ifndef SOCRATES_DAIMON
 	, &iuse::artifact
 #endif
-) { };
+), charge_type(ARTC_NULL) {}
 
 it_artifact_armor::it_artifact_armor(int pid, unsigned int pprice, std::string pname,
 	std::string pdes, char psym, nc_color pcolor, material pm1,
@@ -4739,6 +4744,17 @@ void it_macguffin::used_by(item& it, player& u)  const
 {
 	if (use) use(&u, &it, false);
 }
+
+void it_tool::used_by(item& it, player& u) const
+{
+	if (use) use(&u, &it, true);
+}
+
+void it_tool::turned_off_by(item& it, player& u) const
+{
+	if (use) use(&u, &it, false);
+}
+
 #endif
 
 void it_comest::info(std::ostream& dest) const

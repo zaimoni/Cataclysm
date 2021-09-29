@@ -452,11 +452,11 @@ int player::use_active(item& it) {
     if (it.is_artifact()) return -2;
     if (!it.active) return 0;
 
-    (*tool->use)(this, &it, true);
+    tool->used_by(it, *this);
     if (tool->turns_per_charge > 0 && int(messages.turn) % tool->turns_per_charge == 0) it.charges--;
     // separate this so we respond to bugs reasonably
     if (it.charges <= 0) {
-        (*tool->use)(this, &it, false); // turns off
+        tool->turned_off_by(it, *this);
         if (tool->revert_to == itm_null) {
             it = item::null;
             return 1;
@@ -5153,10 +5153,10 @@ void player::use(game *g, char let)
          return;
      }
 
-     (*tool->use)(this, used, false);
+     tool->used_by(*used, *this);
      used->charges -= tool->charges_per_use;
 
-     if (tool->use == &iuse::dogfood || 0 == used->invlet) remove_discard(*src);
+     if (0 == used->invlet) remove_discard(*src);
      return;
  }
 

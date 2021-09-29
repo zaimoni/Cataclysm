@@ -572,6 +572,8 @@ void iuse::dogfood(player *p, item *it, bool t)
 {
  const auto g = game::active();
 
+ it->invlet = 0;    // C:Whales: unconditional discard after use(opening)
+
  g->draw();
  mvprintw(0, 0, "Which direction?");
  point dir(get_direction(input()));

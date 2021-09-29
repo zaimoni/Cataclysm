@@ -61,8 +61,8 @@ public:
 		if (!used.is_tool()) throw std::logic_error("escape item was neither edible nor a tool");
 #endif
 
-		const it_tool* const tool = dynamic_cast<const it_tool*>(used.type);
-		(*tool->use)(&_actor, &used, false);
+		const auto tool = used.is_tool();
+		tool->used_by(used, _actor);
 		used.charges -= tool->charges_per_use;
 		if (0 == used.invlet) _actor.inv.remove_item(inv_index);
 	}
@@ -1672,7 +1672,7 @@ void npc::alt_attack(game *g, int target)
 void npc::activate_item(item& it)	// unclear whether this "works"; parallel is npc::use_escape_item
 {
  if (const auto tool = it.is_tool()) {
-  (*tool->use)(this, &it, false);
+  tool->used_by(it, *this);
  } else if (const auto comest = it.is_food()) {
   comest->consumed_by(it, *this);
  }
