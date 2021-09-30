@@ -21,8 +21,10 @@ void EraseAt(std::vector<T>& x, size_t i) {
 
 #ifndef SOCRATES_DAIMON
 class game;
-class player;
 class item;
+class player;
+class npc;
+class pc;
 #endif
 
 namespace cataclysm {
@@ -458,6 +460,8 @@ public:
 
 #ifndef SOCRATES_DAIMON
  void consumed_by(item& it, player& u) const;
+ void consumed_by(item& it, npc& u) const;
+ void consumed_by(item& it, pc& u) const;
 #endif
 
  void info(std::ostream& dest) const override;
@@ -663,7 +667,11 @@ public:
 
 #ifndef SOCRATES_DAIMON
  void used_by(item& it, player& u) const;
+ void used_by(item& it, npc& u) const;
+ void used_by(item& it, pc& u) const;
  void turned_off_by(item& it, player& u) const;
+ void turned_off_by(item& it, npc& u) const;
+ void turned_off_by(item& it, pc& u) const;
 #endif
 
  void info(std::ostream& dest) const override;
@@ -712,6 +720,8 @@ public:
 
 #ifndef SOCRATES_DAIMON
  void used_by(item& it, player& u) const;
+ void used_by(item& it, npc& u) const;
+ void used_by(item& it, pc& u) const;
 #endif
 
  const it_macguffin* is_macguffin() const override { return this; }

@@ -1,6 +1,8 @@
 #include "item.h"
 #ifndef SOCRATES_DAIMON
 #include "iuse.h"
+#include "pc.hpp"
+#include "npc.h"
 #endif
 #include "output.h"
 #include "json.h"
@@ -4740,7 +4742,27 @@ void it_comest::consumed_by(item& it, player& u)  const
 	if (use) use(&u, &it, false);
 }
 
+void it_comest::consumed_by(item& it, npc& u)  const
+{
+	if (use) use(&u, &it, false);
+}
+
+void it_comest::consumed_by(item& it, pc& u)  const
+{
+	if (use) use(&u, &it, false);
+}
+
 void it_macguffin::used_by(item& it, player& u)  const
+{
+	if (use) use(&u, &it, false);
+}
+
+void it_macguffin::used_by(item& it, npc& u)  const
+{
+	if (use) use(&u, &it, false);
+}
+
+void it_macguffin::used_by(item& it, pc& u)  const
 {
 	if (use) use(&u, &it, false);
 }
@@ -4750,7 +4772,27 @@ void it_tool::used_by(item& it, player& u) const
 	if (use) use(&u, &it, true);
 }
 
+void it_tool::used_by(item& it, npc& u) const
+{
+	if (use) use(&u, &it, true);
+}
+
+void it_tool::used_by(item& it, pc& u) const
+{
+	if (use) use(&u, &it, true);
+}
+
 void it_tool::turned_off_by(item& it, player& u) const
+{
+	if (use) use(&u, &it, false);
+}
+
+void it_tool::turned_off_by(item& it, npc& u) const
+{
+	if (use) use(&u, &it, false);
+}
+
+void it_tool::turned_off_by(item& it, pc& u) const
 {
 	if (use) use(&u, &it, false);
 }
