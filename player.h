@@ -217,8 +217,6 @@ public:
  bool wear_item(const item& to_wear);
  const it_armor* wear_is_performable(const item& to_wear) const;
  bool takeoff(map& m, char let);// Take off item; returns false on fail	\todo V 0.2.1 extend to NPC? (this is UI-driven so maybe not)
- void use(game *g, char let);	// Use a tool \todo V 0.2.1 extend to NPCs? (UI-driven)
- bool install_bionics(game *g, const it_bionic* type);	// Install bionics \todo V 0.2.1 enable for NPCs
  std::optional<std::string> cannot_read() const;  // can read at all (environment check, etc.)
  std::optional<std::string> cannot_read(const std::variant<const it_macguffin*, const it_book*>& src) const;
  void read(char let);	// Read a book	V 0.2.1 \todo enable for NPCs? (UI driven)

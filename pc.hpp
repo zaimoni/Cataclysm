@@ -26,6 +26,9 @@ public:
 	bool assign_invlet(item& it) const;
 	bool assign_invlet_stacking_ok(item& it) const;
 
+	// invlet UI
+	void use(char let);
+
 	// footstep UI
 	void add_footstep(const point& orig, int volume);
 	void draw_footsteps(/* WINDOW* */ void* w);
@@ -48,6 +51,8 @@ public:
 	void refresh_all() const;
 
 private:
+	bool install_bionics(const it_bionic* type);
+
 	std::vector<point> footsteps;	// visual cue to monsters moving out of the players sight
 	std::vector<int> kills; // per monster type
 

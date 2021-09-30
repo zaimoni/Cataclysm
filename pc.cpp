@@ -340,6 +340,141 @@ std::vector<item> pc::multidrop()
     return ret;
 }
 
+void pc::use(char let)
+{
+    const auto src = from_invlet(let);
+    if (!src) {
+        messages.add("You do not have that item.");
+        return;
+    }
+
+    item* used = src->first; // backward compatibility
+    last_item = itype_id(used->type->id);
+
+    if (const auto tool = used->is_tool()) {
+        if (0 < tool->charges_per_use && used->charges < tool->charges_per_use) {
+            messages.add("Your %s has %d charges but needs %d.", used->tname().c_str(), used->charges, tool->charges_per_use);
+            return;
+        }
+
+        tool->used_by(*used, *this);
+        used->charges -= tool->charges_per_use;
+
+        if (0 == used->invlet) remove_discard(*src);
+        return;
+    }
+
+    if (const auto mod = used->is_gunmod()) {
+        if (sklevel[sk_gun] == 0) {
+            messages.add("You need to be at least level 1 in the firearms skill before you can modify guns.");
+            return;
+        }
+        char gunlet = get_invlet("Select gun to modify:");
+        const auto src_gun = from_invlet(gunlet);
+        if (!src_gun) {
+            messages.add("You do not have that item.");
+            return;
+        }
+
+        item& gun = *(src_gun->first); // backward compatibility
+        const auto guntype = gun.is_gun();
+        if (!guntype) {
+            messages.add("That %s is not a gun.", gun.tname().c_str());
+            return;
+        }
+
+        switch (guntype->skill_used)
+        {
+        case sk_pistol:
+            if (!mod->used_on_pistol) {
+                messages.add("That %s cannot be attached to a handgun.", used->tname().c_str());
+                return;
+            }
+            break;
+        case sk_shotgun:
+            if (!mod->used_on_shotgun) {
+                messages.add("That %s cannot be attached to a shotgun.", used->tname().c_str());
+                return;
+            }
+            break;
+        case sk_smg:
+            if (!mod->used_on_smg) {
+                messages.add("That %s cannot be attached to a submachine gun.", used->tname().c_str());
+                return;
+            }
+            break;
+        case sk_rifle:
+            if (!mod->used_on_rifle) {
+                messages.add("That %s cannot be attached to a rifle.", used->tname().c_str());
+                return;
+            }
+            break;
+        default: // sk_archery, sk_launcher
+            messages.add("You cannot mod your %s.", gun.tname().c_str());
+            return;
+        }
+
+        if (mod->acceptible_ammo_types != 0 &&
+            !(mfb(guntype->ammo) & mod->acceptible_ammo_types)) {
+            messages.add("That %s cannot be used on a %s gun.", used->tname().c_str(), ammo_name(guntype->ammo).c_str());
+            return;
+        } else if (gun.contents.size() >= 4) {
+            messages.add("Your %s already has 4 mods installed!  To remove the mods, press 'U' while wielding the unloaded gun.", gun.tname().c_str());
+            return;
+        }
+        if ((mod->id == itm_clip || mod->id == itm_clip2) && gun.clip_size() <= 2) {
+            messages.add("You can not extend the ammo capacity of your %s.", gun.tname().c_str());
+            return;
+        }
+        for (const auto& it : gun.contents) {
+            if (it.type->id == used->type->id) {
+                messages.add("Your %s already has a %s.", gun.tname().c_str(), used->tname().c_str());
+                return;
+            } else if (mod->newtype != AT_NULL &&
+                (dynamic_cast<const it_gunmod*>(it.type))->newtype != AT_NULL) {
+                messages.add("Your %s's caliber has already been modified.", gun.tname().c_str());
+                return;
+            } else if ((mod->id == itm_barrel_big || mod->id == itm_barrel_small) &&
+                (it.type->id == itm_barrel_big ||
+                    it.type->id == itm_barrel_small)) {
+                messages.add("Your %s already has a barrel replacement.", gun.tname().c_str());
+                return;
+            } else if ((mod->id == itm_clip || mod->id == itm_clip2) &&
+                (it.type->id == itm_clip ||
+                    it.type->id == itm_clip2)) {
+                messages.add("Your %s already has its clip size extended.", gun.tname().c_str());
+                return;
+            }
+        }
+        messages.add("You attach the %s to your %s.", used->tname().c_str(), gun.tname().c_str());
+        gun.contents.push_back(std::move(*used));
+        remove_discard(*src);
+        return;
+    }
+
+    if (const auto bionic = used->is_bionic()) {
+        if (install_bionics(bionic)) remove_discard(*src);
+        return;
+    }
+
+    if (used->is_food() || used->is_food_container()) {
+        eat(*src);
+        return;
+    }
+
+    if (used->is_book()) {
+        read(let);
+        return;
+    }
+
+    if (used->is_armor()) {
+        wear(let);
+        return;
+    }
+
+    messages.add("You can't do anything interesting with your %s.", used->tname().c_str());
+}
+
 // add_footstep will create a list of locations to draw monster
 // footsteps. these will be more or less accurate depending on the
 // characters hearing and how close they are

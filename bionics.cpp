@@ -672,7 +672,7 @@ void player::activate_bionic(int b, game *g)
  }
 }
 
-static void bionics_install_failure(player *u, int success)
+static void bionics_install_failure(pc* u, int success)
 {
  success = abs(success) - rng(1, 10);
  int failure_level = 0;
@@ -757,148 +757,149 @@ static void bionics_install_failure(player *u, int success)
 }
 
 // forcing the sole caller to handler the null pointer just complicates the "bypass code" for that critical data design error.
-bool player::install_bionics(game *g, const it_bionic* type)
+bool pc::install_bionics(const it_bionic* type)
 {
- if (type == nullptr) {
+	if (type == nullptr) {
 #ifdef ZAIMONI_ASSERT_STD_LOGIC
-  assert(0 && "Tried to install null bionic");	// for stacktrace in debug build
+		assert(0 && "Tried to install null bionic");	// for stacktrace in debug build
 #endif
-  debuglog("Tried to install null bionic");	// audit trail
-  debugmsg("Tried to install null bionic");	// UI (player action failure)
-  return false;
- }
- std::string bio_name = type->name.substr(5);	// Strip off "CBM: "
- std::unique_ptr<WINDOW, curses_full_delete> w(newwin(VIEW, SCREEN_WIDTH, 0, 0));
+		debuglog("Tried to install null bionic");	// audit trail
+		debugmsg("Tried to install null bionic");	// UI (player action failure)
+		return false;
+	}
+	std::string bio_name = type->name.substr(5);	// Strip off "CBM: "
+	std::unique_ptr<WINDOW, curses_full_delete> w(newwin(VIEW, SCREEN_WIDTH, 0, 0));
 
- int pl_skill = int_cur + sklevel[sk_electronics] * 4 +
-                          sklevel[sk_firstaid]    * 3 +
-                          sklevel[sk_mechanics]   * 2;
+	int pl_skill = int_cur + sklevel[sk_electronics] * 4 +
+		sklevel[sk_firstaid] * 3 +
+		sklevel[sk_mechanics] * 2;
 
- int skint = pl_skill / 4;
- int skdec = ((pl_skill * 10) / 4) % 10;
+	int skint = pl_skill / 4;
+	int skdec = ((pl_skill * 10) / 4) % 10;
 
-// Header text
- mvwaddstrz(w.get(), 0,  0, c_white, "Installing bionics:");
- mvwaddstrz(w.get(), 0, 20, type->color, bio_name.c_str());
+	// Header text
+	mvwaddstrz(w.get(), 0, 0, c_white, "Installing bionics:");
+	mvwaddstrz(w.get(), 0, 20, type->color, bio_name.c_str());
 
-// Dividing bars
- draw_hline(w.get(), 1, c_ltgray, LINE_OXOX);
- draw_hline(w.get(), 21, c_ltgray, LINE_OXOX);
+	// Dividing bars
+	draw_hline(w.get(), 1, c_ltgray, LINE_OXOX);
+	draw_hline(w.get(), 21, c_ltgray, LINE_OXOX);
 
-// Init the list of bionics
- for (int i = 1; i < type->options.size(); i++) {
-  bionic_id id = type->options[i];
-  mvwaddstrz(w.get(), i + 2, 0, (has_bionic(id) ? c_ltred : c_ltblue), bionic::type[id].name.c_str());
- }
-// Helper text
- mvwprintz(w.get(), 2, 40, c_white, "Difficulty of this module: %d", type->difficulty);
- mvwprintz(w.get(), 3, 40, c_white, "Your installation skill:   %d.%d", skint, skdec);
- mvwaddstrz(w.get(), 4, 40, c_white, "Installation requires high intelligence,");
- mvwaddstrz(w.get(), 5, 40, c_white, "and skill in electronics, first aid, and");
- mvwaddstrz(w.get(), 6, 40, c_white, "mechanics (in that order of importance).");
+	// Init the list of bionics
+	for (int i = 1; i < type->options.size(); i++) {
+		bionic_id id = type->options[i];
+		mvwaddstrz(w.get(), i + 2, 0, (has_bionic(id) ? c_ltred : c_ltblue), bionic::type[id].name.c_str());
+	}
+	// Helper text
+	mvwprintz(w.get(), 2, 40, c_white, "Difficulty of this module: %d", type->difficulty);
+	mvwprintz(w.get(), 3, 40, c_white, "Your installation skill:   %d.%d", skint, skdec);
+	mvwaddstrz(w.get(), 4, 40, c_white, "Installation requires high intelligence,");
+	mvwaddstrz(w.get(), 5, 40, c_white, "and skill in electronics, first aid, and");
+	mvwaddstrz(w.get(), 6, 40, c_white, "mechanics (in that order of importance).");
 
- int chance_of_success = (100 * pl_skill) / (pl_skill + 4 * type->difficulty);
+	int chance_of_success = (100 * pl_skill) / (pl_skill + 4 * type->difficulty);
 
- mvwaddstrz(w.get(), 8, 40, c_white, "Chance of success:");
+	mvwaddstrz(w.get(), 8, 40, c_white, "Chance of success:");
 
- nc_color col_suc;
- if (chance_of_success >= 95)
-  col_suc = c_green;
- else if (chance_of_success >= 80)
-  col_suc = c_ltgreen;
- else if (chance_of_success >= 60)
-  col_suc = c_yellow;
- else if (chance_of_success >= 35)
-  col_suc = c_ltred;
- else
-  col_suc = c_red;
+	nc_color col_suc;
+	if (chance_of_success >= 95)
+		col_suc = c_green;
+	else if (chance_of_success >= 80)
+		col_suc = c_ltgreen;
+	else if (chance_of_success >= 60)
+		col_suc = c_yellow;
+	else if (chance_of_success >= 35)
+		col_suc = c_ltred;
+	else
+		col_suc = c_red;
 
- mvwprintz(w.get(), 8, 59, col_suc, "%d%%", chance_of_success);
+	mvwprintz(w.get(), 8, 59, col_suc, "%d%%", chance_of_success);
 
- mvwaddstrz(w.get(), 10, 40, c_white, "Failure may result in crippling damage,");
- mvwaddstrz(w.get(), 11, 40, c_white, "loss of existing bionics, genetic damage");
- mvwaddstrz(w.get(), 12, 40, c_white, "or faulty installation.");
- wrefresh(w.get());
+	mvwaddstrz(w.get(), 10, 40, c_white, "Failure may result in crippling damage,");
+	mvwaddstrz(w.get(), 11, 40, c_white, "loss of existing bionics, genetic damage");
+	mvwaddstrz(w.get(), 12, 40, c_white, "or faulty installation.");
+	wrefresh(w.get());
 
- static constexpr const int BATTERY_AMOUNT = 4; // How much batteries increase your power
+	static constexpr const int BATTERY_AMOUNT = 4; // How much batteries increase your power
 
- if (type->id == itm_bionics_battery) {	// No selection list; just confirm
-  mvwprintz(w.get(),  2, 0, h_ltblue, "Battery Level +%d", BATTERY_AMOUNT);
-  mvwaddstrz(w.get(), 22, 0, c_ltblue, bionic::type[bio_batteries].description.c_str());
-  int ch;
-  wrefresh(w.get());
-  do ch = getch();
-  while (ch != 'q' && ch != '\n' && ch != KEY_ESCAPE);
-  if (ch == '\n') {
-   practice(sk_electronics, (100 - chance_of_success) * 1.5);
-   practice(sk_firstaid, (100 - chance_of_success) * 1.0);
-   practice(sk_mechanics, (100 - chance_of_success) * 0.5);
-   int success = chance_of_success - rng(1, 100);
-   if (success > 0) {
-    messages.add("Successfully installed batteries.");
-    max_power_level += BATTERY_AMOUNT;
-   } else
-    bionics_install_failure(this, success);
-   g->refresh_all();
-   return true;
-  }
-  g->refresh_all();
-  return false;
- }
+	if (type->id == itm_bionics_battery) {	// No selection list; just confirm
+		mvwprintz(w.get(), 2, 0, h_ltblue, "Battery Level +%d", BATTERY_AMOUNT);
+		mvwaddstrz(w.get(), 22, 0, c_ltblue, bionic::type[bio_batteries].description.c_str());
+		int ch;
+		wrefresh(w.get());
+		do ch = getch();
+		while (ch != 'q' && ch != '\n' && ch != KEY_ESCAPE);
+		if (ch == '\n') {
+			practice(sk_electronics, (100 - chance_of_success) * 1.5);
+			practice(sk_firstaid, (100 - chance_of_success) * 1.0);
+			practice(sk_mechanics, (100 - chance_of_success) * 0.5);
+			int success = chance_of_success - rng(1, 100);
+			if (success > 0) {
+				messages.add("Successfully installed batteries.");
+				max_power_level += BATTERY_AMOUNT;
+			} else
+				bionics_install_failure(this, success);
+			refresh_all();
+			return true;
+		}
+		refresh_all();
+		return false;
+	}
 
- int selection = 0;
- int ch;
+	int selection = 0;
+	int ch;
 
- do {
-  bionic_id id = type->options[selection];
-  const auto& bio = bionic::type[id];
-  mvwaddstrz(w.get(), 2 + selection, 0, (has_bionic(id) ? h_ltred : h_ltblue), bio.name.c_str());
+	do {
+		bionic_id id = type->options[selection];
+		const auto& bio = bionic::type[id];
+		mvwaddstrz(w.get(), 2 + selection, 0, (has_bionic(id) ? h_ltred : h_ltblue), bio.name.c_str());
 
-// Clear the bottom three lines...
-  draw_hline(w.get(), 22, c_ltgray, ' ');
-  draw_hline(w.get(), 23, c_ltgray, ' ');
-  draw_hline(w.get(), 24, c_ltgray, ' ');
+		// Clear the bottom three lines...
+		draw_hline(w.get(), 22, c_ltgray, ' ');
+		draw_hline(w.get(), 23, c_ltgray, ' ');
+		draw_hline(w.get(), 24, c_ltgray, ' ');
 
-  // ...and then fill them with the description of the selected bionic
-  mvwaddstrz(w.get(), 22, 0, c_ltblue, bio.description.c_str());
+		// ...and then fill them with the description of the selected bionic
+		mvwaddstrz(w.get(), 22, 0, c_ltblue, bio.description.c_str());
 
-  wrefresh(w.get());
-  ch = input();
-  switch (ch) {
+		wrefresh(w.get());
+		ch = input();
+		switch (ch) {
 
-  case 'j':
-   mvwaddstrz(w.get(), 2 + selection, 0, (has_bionic(id) ? c_ltred : c_ltblue), bio.name.c_str());
-   if (selection == type->options.size() - 1) selection = 0;
-   else selection++;
-   break;
+		case 'j':
+			mvwaddstrz(w.get(), 2 + selection, 0, (has_bionic(id) ? c_ltred : c_ltblue), bio.name.c_str());
+			if (selection == type->options.size() - 1) selection = 0;
+			else selection++;
+			break;
 
-  case 'k':
-   mvwaddstrz(w.get(), 2 + selection, 0, (has_bionic(id) ? c_ltred : c_ltblue), bio.name.c_str());
-   if (selection == 0) selection = type->options.size() - 1;
-   else selection--;
-   break;
+		case 'k':
+			mvwaddstrz(w.get(), 2 + selection, 0, (has_bionic(id) ? c_ltred : c_ltblue), bio.name.c_str());
+			if (selection == 0) selection = type->options.size() - 1;
+			else selection--;
+			break;
 
-  }
-  if (ch == '\n' && has_bionic(id)) {
-   popup("You already have a %s!", bio.name.c_str());
-   ch = 'a';
-  }
- } while (ch != '\n' && ch != 'q' && ch != KEY_ESCAPE);
+		}
+		if (ch == '\n' && has_bionic(id)) {
+			popup("You already have a %s!", bio.name.c_str());
+			ch = 'a';
+		}
+	} while (ch != '\n' && ch != 'q' && ch != KEY_ESCAPE);
 
- if (ch == '\n') {
-  practice(sk_electronics, (100 - chance_of_success) * 1.5);
-  practice(sk_firstaid, (100 - chance_of_success) * 1.0);
-  practice(sk_mechanics, (100 - chance_of_success) * 0.5);
-  bionic_id id = type->options[selection];
-  int success = chance_of_success - rng(1, 100);
-  if (success > 0) {
-   messages.add("Successfully installed %s.", bionic::type[id].name.c_str());
-   add_bionic(id);
-  } else
-   bionics_install_failure(this, success);
-  g->refresh_all();
-  return true;
- }
- g->refresh_all();
- return false;
+	if (ch == '\n') {
+		practice(sk_electronics, (100 - chance_of_success) * 1.5);
+		practice(sk_firstaid, (100 - chance_of_success) * 1.0);
+		practice(sk_mechanics, (100 - chance_of_success) * 0.5);
+		bionic_id id = type->options[selection];
+		int success = chance_of_success - rng(1, 100);
+		if (success > 0) {
+			messages.add("Successfully installed %s.", bionic::type[id].name.c_str());
+			add_bionic(id);
+		}
+		else
+			bionics_install_failure(this, success);
+		refresh_all();
+		return true;
+	}
+	refresh_all();
+	return false;
 }

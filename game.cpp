@@ -3263,7 +3263,7 @@ void game::use_item()
   messages.add("Never mind.");
   return;
  }
- u.use(this, ch);
+ u.use(ch);
 }
 
 std::optional<std::pair<point, vehicle*>> game::pl_choose_vehicle()
