@@ -4665,13 +4665,13 @@ it_macguffin::it_macguffin(int pid, unsigned char prarity, unsigned int pprice,
 
 	bool preadable
 #ifndef SOCRATES_DAIMON
-	, decltype(use) puse
+	, decltype(use_pc) puse
 #endif
 )
 :itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
   readable(preadable)
 #ifndef SOCRATES_DAIMON
-  ,use(puse)
+  , use_pc(puse)
 #endif
 {
 }
@@ -4752,19 +4752,9 @@ void it_comest::consumed_by(item& it, pc& u)  const
 	if (use) use(&u, &it, false);
 }
 
-void it_macguffin::used_by(item& it, player& u)  const
-{
-	if (use) use(&u, &it, false);
-}
-
-void it_macguffin::used_by(item& it, npc& u)  const
-{
-	if (use) use(&u, &it, false);
-}
-
 void it_macguffin::used_by(item& it, pc& u)  const
 {
-	if (use) use(&u, &it, false);
+	if (use_pc) use_pc(u, it);
 }
 
 void it_tool::used_by(item& it, player& u) const

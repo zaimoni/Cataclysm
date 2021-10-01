@@ -700,7 +700,7 @@ struct it_macguffin final : public itype
  bool readable; // If true, activated with 'R'
 #ifndef SOCRATES_DAIMON
 private:
- void (*use)(player *, item *, bool);
+ void (*use_pc)(pc&, item&);
 
 public:
 #endif
@@ -714,13 +714,11 @@ public:
 
 	 bool preadable
 #ifndef SOCRATES_DAIMON
-	 , decltype(use) puse
+	 , decltype(use_pc) puse
 #endif
  );
 
 #ifndef SOCRATES_DAIMON
- void used_by(item& it, player& u) const;
- void used_by(item& it, npc& u) const;
  void used_by(item& it, pc& u) const;
 #endif
 

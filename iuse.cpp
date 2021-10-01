@@ -1895,13 +1895,15 @@ void iuse::vacutainer(player *p, item *it, bool t)	// XXX disabled for npcs; \to
 }
  
 
+// 2021-10-01: archaic stub implementation.
+// Cf. Gearhead I for what could be done.
 /* MACGUFFIN FUNCTIONS
  * These functions should refer to it->associated_mission for the particulars
  */
-void iuse::mcg_note(player *p, item *it, bool t)
+void iuse::mcg_note(pc& p, item& it)
 {
  std::ostringstream message;
- message << "Dear " << it->name << ":\n";
+ message << "Dear " << it.name << ":\n";
 /*
  faction* fac = nullptr;
  direction dir = NORTH;

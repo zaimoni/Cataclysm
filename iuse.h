@@ -4,6 +4,8 @@
 class game;
 class item;
 class player;
+// class npc;
+class pc;
 
 class iuse
 {
@@ -100,7 +102,7 @@ class iuse
   static void dog_whistle	(player *p, item *it, bool t);
   static void vacutainer	(player *p, item *it, bool t);
 // MACGUFFINS
-  static void mcg_note		(player *p, item *it, bool t);
+  static void mcg_note		(pc& p, item& it);
 // ARTIFACTS
 // This function is used when an artifact is activated
 // It examines the item's artifact-specific properties
