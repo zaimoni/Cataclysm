@@ -11,7 +11,6 @@
 #include "recent_msg.h"
 #include "saveload.h"
 #include "zero.h"
-#include "Zaimoni.STL/functional.hpp"
 
 #include <array>
 #include <math.h>
@@ -5163,56 +5162,6 @@ std::optional<std::string> player::cannot_read(const std::variant<const it_macgu
     return std::nullopt;
 }
 
-// \todo lift to more logical location when needed
-static std::optional<std::variant<const it_macguffin*, const it_book*> > is_readable(const item& it) {
-    if (const auto mac = it.is_macguffin()) {
-        if (mac->readable) return mac;
-    }
-    if (const auto book = it.is_book()) return book;
-    return std::nullopt;
-}
-
-void player::read(char ch)
-{
-    if (const auto err = cannot_read()) {
-        subjective_message(*err);
-        return;
-    }
-
-// Find the object
- auto used = have_item(ch);
-
- if (!used.second) {
-  messages.add("You do not have that item.");
-  return;
- }
-
- const auto read_this = is_readable(*used.second);
- if (!read_this) {
-     messages.add("Your %s is not good reading material.", used.second->tname().c_str());
-     return;
- }
-
- if (const auto err = cannot_read(*read_this)) {
-     subjective_message(*err);
-     return;
- }
-
- static auto read_macguffin = [&](const it_macguffin* mac) {
-     // Some macguffins can be read, but they aren't treated like books.
-     mac->used_by(*used.second, *this);
- };
-
- static auto read_book = [&](const it_book* book) {
-     // Base read_speed() is 1000 move points (1 minute per tmp->time)
-     int time = book->time * read_speed();
-     activity = player_activity(ACT_READ, time, used.first);
-     moves = 0;
- };
-
- std::visit(zaimoni::handler<void, const it_macguffin*, const it_book*>(read_macguffin, read_book), *read_this);
-}
- 
 void player::try_to_sleep()
 {
  switch (const auto terrain = GPSpos.ter())

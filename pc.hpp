@@ -28,6 +28,7 @@ public:
 
 	// invlet UI
 	void use(char let);
+	void read(char let); // Read a book	V 0.2.8+ \todo enable for NPCs
 
 	// footstep UI
 	void add_footstep(const point& orig, int volume);
