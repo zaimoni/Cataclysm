@@ -99,7 +99,7 @@ class iuse
   static void mp3_on		(player *p, item *it, bool t);
   static void vortex		(player *p, item *it, bool t);
   static void dog_whistle	(player *p, item *it, bool t);
-  static void vacutainer	(player *p, item *it, bool t);
+  static void vacutainer	(pc& p, item& it);
 // MACGUFFINS
   static void mcg_note		(pc& p, item& it);
 // ARTIFACTS

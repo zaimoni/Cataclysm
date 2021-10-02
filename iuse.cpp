@@ -1869,21 +1869,20 @@ void iuse::dog_whistle(player *p, item *it, bool t)
  }
 }
 
-void iuse::vacutainer(player *p, item *it, bool t)	// XXX disabled for npcs; \todo fix
+// layman-usable blood drawing equipment.  No medical skill required.
+void iuse::vacutainer(pc& p, item& it)
 {
- if (p->is_npc()) return; // No NPCs for now!
-
- if (!it->contents.empty()) {
-  messages.add("That %s is full!", it->tname().c_str());
+ if (!it.contents.empty()) {
+  messages.add("That %s is full!", it.tname().c_str());
   return;
  }
 
  const auto g = game::active();
  item blood(item::types[itm_blood], messages.turn);
  bool drew_blood = false;
- for(const auto& it : g->m.i_at(p->GPSpos)) {
-  if (it.type->id == itm_corpse && query_yn("Draw blood from %s?", it.tname().c_str())) {
-   blood.corpse = it.corpse;
+ for(const auto& corpse : g->m.i_at(p.GPSpos)) {
+  if (corpse.type->id == itm_corpse && query_yn("Draw blood from %s?", corpse.tname().c_str())) {
+   blood.corpse = corpse.corpse;
    drew_blood = true;
    break;
   }
@@ -1891,7 +1890,7 @@ void iuse::vacutainer(player *p, item *it, bool t)	// XXX disabled for npcs; \to
 
  if (!drew_blood && !query_yn("Draw your own blood?")) return;
 
- it->put_in(std::move(blood));
+ it.put_in(std::move(blood));
 }
  
 

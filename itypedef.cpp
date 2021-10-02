@@ -4604,7 +4604,7 @@ it_container::it_container(int pid, unsigned char prarity, unsigned int pprice,
 it_tool::it_tool()
 : ammo(AT_NULL),max_charges(0),def_charges(0),charges_per_use(0),turns_per_charge(0),revert_to(itm_null)
 #ifndef SOCRATES_DAIMON
-  ,use(nullptr)
+  , use(nullptr), use_npc(nullptr), use_pc(nullptr), off_npc(nullptr), off_pc(nullptr)
 #endif
 {
 }
@@ -4617,6 +4617,25 @@ it_tool::it_tool(decltype(use) puse)
 	charges_per_use = 1;
 	turns_per_charge = 0;
 	use = puse;
+}
+
+it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1, material pm2,
+	unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
+	unsigned pitem_flags,
+
+	unsigned int pmax_charges, unsigned int pdef_charges,
+	unsigned char pcharges_per_use, unsigned char pturns_per_charge,
+	ammotype pammo, itype_id prevert_to,
+	decltype(use_pc) puse
+)
+	:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+	ammo(pammo), max_charges(pmax_charges), def_charges(pdef_charges), charges_per_use(pcharges_per_use),
+	turns_per_charge(pturns_per_charge), revert_to(prevert_to),
+	use(nullptr), use_npc(nullptr), use_pc(puse), off_npc(nullptr), off_pc(nullptr)
+{
 }
 #endif
 
@@ -4638,7 +4657,7 @@ it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
   ammo(pammo), max_charges(pmax_charges), def_charges(pdef_charges), charges_per_use(pcharges_per_use),
   turns_per_charge(pturns_per_charge), revert_to(prevert_to)
 #ifndef SOCRATES_DAIMON
-  , use(puse)
+  , use(puse), use_npc(nullptr), use_pc(nullptr), off_npc(nullptr), off_pc(nullptr)
 #endif
 {
 }
@@ -4760,11 +4779,13 @@ void it_tool::used_by(item& it, player& u) const
 
 void it_tool::used_by(item& it, npc& u) const
 {
+	if (use_npc) use_npc(u, it);
 	if (use) use(&u, &it, true);
 }
 
 void it_tool::used_by(item& it, pc& u) const
 {
+	if (use_pc) use_pc(u, it);
 	if (use) use(&u, &it, true);
 }
 
@@ -4775,11 +4796,13 @@ void it_tool::turned_off_by(item& it, player& u) const
 
 void it_tool::turned_off_by(item& it, npc& u) const
 {
+	if (off_npc) off_npc(u, it);
 	if (use) use(&u, &it, false);
 }
 
 void it_tool::turned_off_by(item& it, pc& u) const
 {
+	if (off_pc) off_pc(u, it);
 	if (use) use(&u, &it, false);
 }
 

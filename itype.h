@@ -637,6 +637,10 @@ struct it_tool : public itype
 #ifndef SOCRATES_DAIMON
 private:
  void (*use)(player *, item *, bool);
+ void (*use_npc)(npc&, item&);	// waterfall/SSADM sofware lifecycle for these four
+ void (*use_pc)(pc&, item&);
+ void (*off_npc)(npc&, item&);
+ void (*off_pc)(pc&, item&);
 
 public:
 #endif
@@ -647,6 +651,19 @@ protected:
 	it_tool(decltype(use) puse); // assistant for it_artifact_tool default constructor
 
 public:
+	it_tool(int pid, unsigned char prarity, unsigned int pprice,
+		std::string pname, std::string pdes,
+		char psym, nc_color pcolor, material pm1, material pm2,
+		unsigned short pvolume, unsigned short pweight,
+		signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
+		unsigned pitem_flags,
+
+		unsigned int pmax_charges, unsigned int pdef_charges,
+		unsigned char pcharges_per_use, unsigned char pturns_per_charge,
+		ammotype pammo, itype_id prevert_to,
+		decltype(use_pc) puse
+	);
+
 #endif
  it_tool(int pid, unsigned char prarity, unsigned int pprice,
 	 std::string pname, std::string pdes,
