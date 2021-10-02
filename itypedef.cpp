@@ -3559,21 +3559,19 @@ A small cardboard box.  No bigger than a foot in any dimension.");
  *  turn if the tool is active.  The same function can be used for both.  See
  *  iuse.h and iuse.cpp for functions.
  */
-#ifdef SOCRATES_DAIMON
 #define TOOL(name,rarity,price,sym,color,mat1,mat2,volume,wgt,melee_dam,\
 melee_cut,to_hit,max_charge,def_charge,charge_per_use,charge_per_sec,fuel,\
 revert,func,flags,des) \
+	index++;types.push_back(new it_tool(index,rarity,price,name,des,sym,\
+color,mat1,mat2,volume,wgt,melee_dam,melee_cut,to_hit,flags,max_charge,\
+def_charge,charge_per_use,charge_per_sec,fuel,revert NOT_DAIMON(func)))
+
+#define TOOL_NO_USE(name,rarity,price,sym,color,mat1,mat2,volume,wgt,melee_dam,\
+melee_cut,to_hit,max_charge,def_charge,charge_per_use,charge_per_sec,fuel,\
+revert,flags,des) \
 	index++;types.push_back(new it_tool(index,rarity,price,name,des,sym,\
 color,mat1,mat2,volume,wgt,melee_dam,melee_cut,to_hit,flags,max_charge,\
 def_charge,charge_per_use,charge_per_sec,fuel,revert))
-#else
-#define TOOL(name,rarity,price,sym,color,mat1,mat2,volume,wgt,melee_dam,\
-melee_cut,to_hit,max_charge,def_charge,charge_per_use,charge_per_sec,fuel,\
-revert,func,flags,des) \
-	index++;types.push_back(new it_tool(index,rarity,price,name,des,sym,\
-color,mat1,mat2,volume,wgt,melee_dam,melee_cut,to_hit,flags,max_charge,\
-def_charge,charge_per_use,charge_per_sec,fuel,revert,func))
-#endif
 
 //	NAME		RAR PRC	SYM  COLOR	MAT1	MAT
 TOOL("lighter",		60,  35,',', c_blue,	PLASTIC,IRON,
@@ -3616,16 +3614,15 @@ mfb(IF_LIGHT_8),
 "This flashlight is turned on, and continually draining its batteries.  It\n\
 provides light during the night or while underground.  Use it to turn it off.");
 
-TOOL("hotplate",	10, 250,';', c_green,	IRON,	PLASTIC,
-    5,  6,  8,  0, -1, 40, 20,  0,  0, AT_BATT, itm_null, nullptr, 0,"\
-A small heating element.  Indispensable for cooking and chemistry.");
+TOOL_NO_USE("hotplate",	10, 250,';', c_green,	IRON,	PLASTIC,
+    5,  6,  8,  0, -1, 40, 20,  0,  0, AT_BATT, itm_null, 0,
+	"A small heating element.  Indispensable for cooking and chemistry.");
 
 //	NAME		RAR PRC	SYM  COLOR	MAT1	MAT
-TOOL("soldering iron",	70, 200,',', c_ltblue,	IRON,	MNULL,
+TOOL_NO_USE("soldering iron",	70, 200,',', c_ltblue,	IRON,	MNULL,
 // VOL WGT DAM CUT HIT MAX DEF USE SEC FUEL	REVERT	  FUNCTION
-    3,  1,  2,  6,  0, 50, 20,  0,  0, AT_BATT, itm_null, nullptr,
-mfb(IF_SPEAR), "\
-A piece of metal that can get very hot.  Necessary for electronics crafting.");
+    3,  1,  2,  6,  0, 50, 20,  0,  0, AT_BATT, itm_null, mfb(IF_SPEAR),
+	"A piece of metal that can get very hot.  Necessary for electronics crafting.");
 
 TOOL("water purifier",   5,1200,';', c_ltblue,	PLASTIC, IRON,
    12, 20,  2,  0, -3, 100,100, 1,  0, AT_BATT,itm_null,&iuse::water_purifier,0,
@@ -3976,9 +3973,9 @@ sample.  Use this tool to draw blood, either from yourself or from a corpse\n\
 you are standing on.");
 
 //  NAME        RAR PRC SYM  COLOR  MAT1    MAT
-TOOL("welder",   25,900,';', c_ltred,  IRON,MNULL,
+TOOL_NO_USE("welder",   25,900,';', c_ltred,  IRON,MNULL,
 // VOL WGT DAM CUT HIT   MAX DEF  USE SEC   FUEL    REVERT    FUNCTION
-     6, 24,  7,  0, -1, 1000,  0,  50,  0, AT_BATT, itm_null, nullptr, 0,
+     6, 24,  7,  0, -1, 1000,  0,  50,  0, AT_BATT, itm_null, 0,
 	"A tool for welding metal pieces together.  Useful for construction.");
 
 // BIONICS

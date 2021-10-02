@@ -659,7 +659,7 @@ public:
 	 unsigned char pcharges_per_use, unsigned char pturns_per_charge,
 	 ammotype pammo, itype_id prevert_to
 #ifndef SOCRATES_DAIMON
-     , decltype(use) puse
+     , decltype(use) puse = nullptr
 #endif
  );
 
