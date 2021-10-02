@@ -10,7 +10,6 @@ class pc;
 class iuse
 {
  public:
-  static void none		(player *p, item *it, bool t) { };
 // FOOD AND DRUGS (ADMINISTRATION)
   static void sewage		(player *p, item *it, bool t);
   static void royal_jelly	(player *p, item *it, bool t);

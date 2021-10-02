@@ -1445,7 +1445,7 @@ it_tool::it_tool(const cataclysm::JSON& src, decltype(use) puse)
 it_tool::it_tool(const cataclysm::JSON& src)
 : itype(src),ammo(AT_NULL), max_charges(0), def_charges(0), charges_per_use(0), turns_per_charge(0), revert_to(itm_null)
 #ifndef SOCRATES_DAIMON
-, use(&iuse::none)
+, use(nullptr)
 #endif
 {
 	int tmp;
