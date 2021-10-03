@@ -5792,23 +5792,6 @@ std::string player::weapname(bool charges) const
   return weapon.tname();
 }
 
-player player::get_proxy(std::string&& name, const point& origin, const it_gun& gun, unsigned int recoil, int charges)
-{
-    player tmp;
-    tmp.name = std::move(name);
-    if (gun.skill_used) tmp.sklevel[gun.skill_used] = 1;
-    tmp.sklevel[sk_gun] = 0;
-    tmp.recoil = recoil;
-    tmp.screenpos_set(origin);
-    tmp.str_cur = 16;
-    tmp.dex_cur = 6;
-    tmp.per_cur = 8;
-    tmp.weapon = item(&gun, 0);
-    if (gun.ammo) tmp.weapon.curammo = dynamic_cast<const it_ammo*>(item::types[gun.ammo]);
-    tmp.weapon.charges = charges;
-    return tmp;
-}
-
 static bool file_to_string_vector(const char* src, std::vector<std::string>& dest)
 {
 	if (!src || !src[0]) return false;

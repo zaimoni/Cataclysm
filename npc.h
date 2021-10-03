@@ -471,6 +471,8 @@ public:
 
 // The preceding are in npcmove.cpp
 
+    static npc get_proxy(std::string&& name, const point& origin, const it_gun& gun, unsigned int recoil, int charges);
+
 // abstract ui
     void swim(const GPS_loc& loc) override;
     void subjective_message(const char* msg) const override {}

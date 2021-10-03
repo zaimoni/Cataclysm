@@ -982,7 +982,7 @@ void mattack::smg(game *g, monster *z)
   z->sp_timeout = z->type->sp_freq;	// Reset timer
   z->moves -= (mobile::mp_turn / 2) * 3; // It takes a while
   if (g->u.see(z->pos)) messages.add("The %s fires its smg!", z->name().c_str());
-  player tmp(player::get_proxy("The " + z->name(), z->pos, *static_cast<it_gun*>(item::types[itm_smg_9mm]), 0, 10));
+  auto tmp(npc::get_proxy("The " + z->name(), z->pos, *static_cast<it_gun*>(item::types[itm_smg_9mm]), 0, 10));
   std::vector<point> traj = line_to(z->pos, target_pos, fire_t);
   g->fire(tmp, target_pos, traj, true);
 
@@ -1005,7 +1005,7 @@ void mattack::smg(game *g, monster *z)
 
  if (g->u.see(z->pos)) messages.add("The %s fires its smg!", z->name().c_str());
 // Set up a temporary player to fire this gun
- player tmp(player::get_proxy("The " + z->name(), z->pos, *static_cast<it_gun*>(item::types[itm_smg_9mm]), 0, 10));
+ auto tmp(npc::get_proxy("The " + z->name(), z->pos, *static_cast<it_gun*>(item::types[itm_smg_9mm]), 0, 10));
  std::vector<point> traj = line_to(z->pos, g->u.pos, *t);
  g->fire(tmp, g->u.pos, traj, true);
  z->add_effect(ME_TARGETED, 3);

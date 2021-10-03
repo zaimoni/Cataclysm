@@ -1890,6 +1890,23 @@ void npc::die(game *g, bool your_fault)
  for (auto& miss : g->active_missions) if (id == miss.npc_id) miss.fail();
 }
 
+npc npc::get_proxy(std::string&& name, const point& origin, const it_gun& gun, unsigned int recoil, int charges)
+{
+	npc tmp;
+	tmp.name = std::move(name);
+	if (gun.skill_used) tmp.sklevel[gun.skill_used] = 1;
+	tmp.sklevel[sk_gun] = 0;
+	tmp.recoil = recoil;
+	tmp.screenpos_set(origin);
+	tmp.str_cur = 16;
+	tmp.dex_cur = 6;
+	tmp.per_cur = 8;
+	tmp.weapon = item(&gun, 0);
+	if (gun.ammo) tmp.weapon.curammo = dynamic_cast<const it_ammo*>(item::types[gun.ammo]);
+	tmp.weapon.charges = charges;
+	return tmp;
+}
+
 void npc::swim(const GPS_loc& loc)
 {
 	DEBUG_FAIL_OR_LEAVE(!is<swimmable>(GPSpos.ter()), return);
