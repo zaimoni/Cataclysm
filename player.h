@@ -10,6 +10,7 @@
 #include "bodypart.h"
 #include "pldata.h"
 #include "zero.h"
+#include <functional>
 
 enum art_effect_passive;
 class game;
@@ -299,6 +300,7 @@ public:
 // abstract ui
  virtual void subjective_message(const std::string& msg) const;
  virtual void subjective_message(const char* msg) const { subjective_message(std::string(msg)); }
+ virtual void if_visible_message(std::function<std::string()> me, std::function<std::string()> other) const;
  virtual bool see_phantasm();  // would not be const for multi-PC case
  virtual std::vector<item>* use_stack_at(const point& pt) const;
  virtual int use_active(item& it);

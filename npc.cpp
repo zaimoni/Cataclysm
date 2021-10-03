@@ -1934,6 +1934,17 @@ void npc::swim(const GPS_loc& loc)
 	}
 }
 
+void npc::if_visible_message(std::function<std::string()> me, std::function<std::string()> other) const
+{
+	if (other) {
+		auto g = game::active();
+		if (g->u.see(*this)) {
+			auto msg = other();
+			if (!msg.empty()) messages.add(msg);
+		}
+	}
+}
+
 std::vector<item>* npc::use_stack_at(const point& pt) const
 {
 	std::vector<item>* ret = nullptr;

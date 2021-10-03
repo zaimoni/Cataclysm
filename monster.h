@@ -4,6 +4,7 @@
 #include "mtype.h"
 #include "bodypart.h"
 #include "mobile.h"
+#include <functional>
 
 class map;
 class game;
@@ -146,6 +147,8 @@ class monster : public mobile {
  bool is_friend(const monster* z) const;
 
  bool is_static_spawn() const { return -1 != spawnmap.x; }
+
+ void if_visible_message(std::function<std::string()> other) const;
 
  // grammatical support
  std::string subject() const override;
