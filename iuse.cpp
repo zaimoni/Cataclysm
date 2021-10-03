@@ -1852,17 +1852,29 @@ void iuse::vortex(player *p, item *it, bool t)
 
 void iuse::dog_whistle(player *p, item *it, bool t)
 {
+    static auto pc_blows = []() { return std::string("You blow your dog whistle.");  };
+    static auto npc_blows = [&]() {
+        const auto subject = grammar::capitalize(p->subject());
+        const auto possessive = p->pronoun(grammar::noun::role::possessive);
+        return subject + " blows " + possessive + " dog whistle.";
+    };
+
+    p->if_visible_message(pc_blows, npc_blows);
+
  const auto g = game::active();
 
- if (!p->is_npc()) messages.add("You blow your dog whistle.");
  for (decltype(auto) _dog : g->z) {
      if (_dog.is_friend(p) && _dog.type->id == mon_dog) {
          const bool is_docile = _dog.has_effect(ME_DOCILE);
-         if (g->u.see(_dog)) {
-             const auto d_name = _dog.desc(grammar::noun::role::subject);
-             if (is_docile) messages.add("Your %s looks ready to attack.", d_name.c_str());
-             else messages.add("Your %s goes docile.", d_name.c_str());
-         }
+
+         static auto dog_reacts = [&]() {
+             const auto d_name = grammar::capitalize(p->desc(grammar::noun::role::possessive)) + " " + _dog.desc(grammar::noun::role::subject);
+             if (is_docile) return d_name + " looks ready to attack.";
+             else return d_name + " goes docile.";
+         };
+
+         _dog.if_visible_message(dog_reacts);
+
          if (is_docile) _dog.rem_effect(ME_DOCILE);
          else _dog.add_effect(ME_DOCILE, -1);
      }
