@@ -4806,6 +4806,13 @@ void it_tool::turned_off_by(item& it, pc& u) const
 	if (use) use(&u, &it, false);
 }
 
+std::optional<std::any> it_tool::is_relevant(const item& it, const npc& _npc) const
+{
+	if (!use_npc && !use) return std::nullopt;
+	// \todo hook for specific item types
+	return std::any();
+}
+
 std::optional<std::string> it_tool::cannot_use(const item& it) const
 {
 	if (0 < charges_per_use && it.charges < charges_per_use) {

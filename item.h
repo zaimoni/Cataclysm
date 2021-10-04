@@ -6,10 +6,14 @@
 struct mtype;
 #ifndef SOCRATES_DAIMON
 class player;
+class npc;
 #endif
 
 #include <variant>
 #include <optional>
+#ifndef SOCRATES_DAIMON
+#include <any>
+#endif
 
 class item
 {
@@ -35,7 +39,12 @@ public:
 
  int mission_id;// Refers to a mission in game's master list
  int player_id;	// Only give a mission to the right player!	(dead field, this would be for multi-PC case)
+#ifndef SOCRATES_DAIMON
+private:
+ mutable std::optional<std::any> _AI_relevant; // XXX as untyped as Perl, PHP, Python, ...; not for savefile; cache variable
+#endif
 
+public:
  item() noexcept;
  item(const itype* it, unsigned int turn) noexcept;
  item(const itype* it, unsigned int turn, char let) noexcept;
@@ -162,6 +171,12 @@ public:
  auto is_artifact_tool() const { return type->is_artifact_tool(); }
 
  bool is_mission_item(int _id) const;
+
+#ifndef SOCRATES_DAIMON
+ // NPC AI support
+ std::optional<std::any> is_relevant(const npc& _npc) const;
+ void clear_relevance() const { _AI_relevant = std::nullopt; }
+#endif
 
  static void init();
 };

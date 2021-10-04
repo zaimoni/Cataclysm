@@ -13,6 +13,7 @@
 #include <initializer_list>
 #ifndef SOCRATES_DAIMON
 #include <optional>
+#include <any>
 #endif
 
 // ideally this would be in a vector header extension
@@ -692,6 +693,7 @@ public:
  void turned_off_by(item& it, player& u) const;
  void turned_off_by(item& it, npc& u) const;
  void turned_off_by(item& it, pc& u) const;
+ std::optional<std::any> is_relevant(const item& it, const npc& _npc) const;
  std::optional<std::string> cannot_use(const item& it) const;
 #endif
 
