@@ -1785,13 +1785,15 @@ void iuse::tazer(player *p, item *it, bool t)
 void iuse::mp3(player *p, item *it, bool t)
 {
  if (it->charges == 0)
-  messages.add("The mp3 player's batteries are dead.");
+  p->subjective_message("The mp3 player's batteries are dead.");
  else if (p->has_active_item(itm_mp3_on))
-  messages.add("You are already listening to an mp3 player!");
+  p->subjective_message("You are already listening to an mp3 player!");
  else {
-  messages.add("You put in the earbuds and start listening to music.");
-  it->make(item::types[itm_mp3_on]);
-  it->active = true;
+     static auto pc_play = []() { return std::string("You put in the earbuds and start listening to music."); };
+     static auto npc_play = [&]() { return grammar::capitalize(p->desc(grammar::noun::role::subject) + " puts in the earbuds and start listening to music."); };
+     p->if_visible_message(pc_play, npc_play);
+     it->make(item::types[itm_mp3_on]);
+     it->active = true;
  }
 }
 
@@ -1802,7 +1804,7 @@ void iuse::mp3_on(player *p, item *it, bool t)
   p->add_morale(MORALE_MUSIC, 1, 50);
 
   if (int(messages.turn) % 10 == 0) {	// Every 10 turns, describe the music
-   std::string sound = "";
+   std::string sound;
    switch (rng(1, 10)) {
     case 1: sound = "a sweet guitar solo!";	p->stim++;	break;
     case 2: sound = "a funky bassline.";			break;
@@ -1812,10 +1814,10 @@ void iuse::mp3_on(player *p, item *it, bool t)
       if (p->int_cur >= 10) p->add_morale(MORALE_MUSIC, 1, 100);
 	  break;
    }
-   if (sound.length() > 0) messages.add("You listen to %s", sound.c_str());
+   if (!sound.empty()) p->subjective_message(std::string("You listen to ") + sound.c_str());
   }
  } else {	// Turning it off
-  messages.add("The mp3 player turns off.");
+  p->subjective_message("The mp3 player turns off.");
   it->make(item::types[itm_mp3]);
   it->active = false;
  }
