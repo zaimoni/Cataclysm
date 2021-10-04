@@ -353,8 +353,8 @@ void pc::use(char let)
     last_item = itype_id(used->type->id);
 
     if (const auto tool = used->is_tool()) {
-        if (0 < tool->charges_per_use && used->charges < tool->charges_per_use) {
-            messages.add("Your %s has %d charges but needs %d.", used->tname().c_str(), used->charges, tool->charges_per_use);
+        if (auto err = tool->cannot_use(*used)) {
+            messages.add(*err);
             return;
         }
 

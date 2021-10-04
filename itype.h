@@ -11,6 +11,9 @@
 #include "enum_json.h"
 #include <vector>
 #include <initializer_list>
+#ifndef SOCRATES_DAIMON
+#include <optional>
+#endif
 
 // ideally this would be in a vector header extension
 template<class T>
@@ -689,6 +692,7 @@ public:
  void turned_off_by(item& it, player& u) const;
  void turned_off_by(item& it, npc& u) const;
  void turned_off_by(item& it, pc& u) const;
+ std::optional<std::string> cannot_use(const item& it) const;
 #endif
 
  void info(std::ostream& dest) const override;

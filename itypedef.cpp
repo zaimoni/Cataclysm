@@ -4806,6 +4806,13 @@ void it_tool::turned_off_by(item& it, pc& u) const
 	if (use) use(&u, &it, false);
 }
 
+std::optional<std::string> it_tool::cannot_use(const item& it) const
+{
+	if (0 < charges_per_use && it.charges < charges_per_use) {
+		return std::string("Your ") + it.tname() + " has " + std::to_string(it.charges) + " but needs " + std::to_string((int)charges_per_use);
+	}
+	return std::nullopt;
+}
 #endif
 
 void it_comest::info(std::ostream& dest) const

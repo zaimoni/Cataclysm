@@ -769,7 +769,7 @@ void game::process_activity()
    case ACT_VEHICLE:
     try {
         exam_vehicle(complete_vehicle(this), u.activity.values[2], u.activity.values[3]);
-    } catch(std::string& e) {
+    } catch (const std::string& e) {
         debuglog(e.c_str());    // failure
         debugmsg(e.c_str());
         u.activity.clear(); // technically could fall-through

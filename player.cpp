@@ -5634,7 +5634,7 @@ void player::accept(mission* const miss)
     assert(miss);
     try {
         (*miss->type->start)(game::active(), miss);
-    } catch(const std::string& e) {
+    } catch (const std::string& e) {
         debugmsg(e.c_str());
         return;
     }

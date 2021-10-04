@@ -1782,6 +1782,7 @@ void iuse::tazer(player *p, item *it, bool t)
 
 }
 
+// \todo allow NPCs to use this to fix morale
 void iuse::mp3(player *p, item *it, bool t)
 {
  if (it->charges == 0)
