@@ -97,7 +97,7 @@ class iuse
   static void tazer		(player *p, item *it, bool t);
   static void mp3		(player *p, item *it, bool t);
   static void mp3_on		(player *p, item *it, bool t);
-  static void vortex		(player *p, item *it, bool t);
+  static void vortex		(pc& p, item& it);
   static void dog_whistle	(player *p, item *it, bool t);
   static void vacutainer	(pc& p, item& it);
 // MACGUFFINS

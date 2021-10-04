@@ -1821,30 +1821,33 @@ void iuse::mp3_on(player *p, item *it, bool t)
  }
 }
 
-void iuse::vortex(player *p, item *it, bool t)
+// Vortex stones are only found in the spiral map special,
+// which has the mine finale *above* it.  PC-only until NPCs
+// can navigate here.
+void iuse::vortex(pc& p, item& it)
 {
  const auto g = game::active();
 
  std::vector<point> spawn;
  for (int i = -3; i <= 3; i++) {
-  point test(p->pos.x - 3, p->pos.y+i);
+  point test(p.pos.x - 3, p.pos.y+i);
   if (g->is_empty(test)) spawn.push_back(test);
-  test = point(p->pos.x + 3, p->pos.y + i);
+  test = point(p.pos.x + 3, p.pos.y + i);
   if (g->is_empty(test)) spawn.push_back(test);
-  test = point(p->pos.x + i, p->pos.y - 3);
+  test = point(p.pos.x + i, p.pos.y - 3);
   if (g->is_empty(test)) spawn.push_back(test);
-  test = point(p->pos.x + i, p->pos.y + 3);
+  test = point(p.pos.x + i, p.pos.y + 3);
   if (g->is_empty(test)) spawn.push_back(test);
  }
  if (spawn.empty()) {
-  p->subjective_message("Air swirls around you for a moment.");
-  it->make(item::types[itm_spiral_stone]);
+  p.subjective_message("Air swirls around you for a moment.");
+  it.make(item::types[itm_spiral_stone]);
   return;
  }
 
  messages.add("Air swirls all over...");
- p->moves -= mobile::mp_turn;
- it->make(item::types[itm_spiral_stone]);
+ p.moves -= mobile::mp_turn;
+ it.make(item::types[itm_spiral_stone]);
  monster vortex(mtype::types[mon_vortex], spawn[rng(0, spawn.size() - 1)]);
  vortex.friendly = -1;
  g->z.push_back(vortex);
