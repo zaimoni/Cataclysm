@@ -40,7 +40,6 @@ public:
  int mission_id;// Refers to a mission in game's master list
  int player_id;	// Only give a mission to the right player!	(dead field, this would be for multi-PC case)
 #ifndef SOCRATES_DAIMON
-private:
  mutable std::optional<std::any> _AI_relevant; // XXX as untyped as Perl, PHP, Python, ...; not for savefile; cache variable
 #endif
 

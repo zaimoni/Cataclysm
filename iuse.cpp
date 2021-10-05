@@ -1727,6 +1727,37 @@ void iuse::UPS_on(player *p, item *it, bool t)
  }
 }
 
+class is_friend_of
+{
+    const npc& whom;
+
+public:
+    is_friend_of(const npc& whom) noexcept : whom(whom) {}
+    ~is_friend_of() = default;
+
+    bool operator()(monster* m) { return m->is_friend(&whom); }
+    bool operator()(npc* p) { return whom.is_friend(p); }
+    bool operator()(pc* p) { return whom.is_friend(p); }
+};
+
+std::optional<std::any> iuse::can_use_tazer(const npc& p)
+{
+    const auto g = game::active();
+    std::vector<std::remove_reference_t<decltype(*(g->mob_at(p.GPSpos)))> > ret;
+
+    for (decltype(auto) dir : Direction::vector) {
+        const auto target(dir + p.GPSpos);
+        if (auto who = g->mob_at(target)) {
+            if (!std::visit(is_friend_of(p), *who)) {
+                if (std::holds_alternative<monster*>(*who)) // don't have complete implementation yet
+                    ret.push_back(std::move(*who));
+            }
+        }
+    }
+    if (ret.empty()) return std::nullopt;
+    return ret;
+}
+
 void iuse::tazer(player *p, item *it, bool t)
 {
  static const int tazer_hit_modifier[mtype::MS_MAX] = {-2, -1, 0, 2, 4};
@@ -1779,7 +1810,52 @@ void iuse::tazer(player *p, item *it, bool t)
   foe->hurtall(shock);
   if (foe->hp_cur[hp_head]  <= 0 || foe->hp_cur[hp_torso] <= 0) foe->die(g, true);
  }
+}
 
+void iuse::tazer(npc& p, item& it)
+{
+    static const int tazer_hit_modifier[mtype::MS_MAX] = { -2, -1, 0, 2, 4 };
+
+    const auto g = game::active();
+
+    auto test = std::any_cast<std::vector<std::remove_reference_t<decltype(*(g->mob_at(p.GPSpos)))> > >(&(*it._AI_relevant));
+    decltype(auto) threat = (*test)[rng(0, test->size() - 1)];
+
+    int numdice = 3 + (p.dex_cur / 2.5) + p.sklevel[sk_melee] * 2;
+    p.moves -= mobile::mp_turn;
+
+    if (auto zz = std::get_if<monster*>(&threat)) {
+        const auto z = *zz; // backward compatibility
+        numdice += tazer_hit_modifier[z->type->size];
+        static auto miss_msg = [&]() { return p.subject() + " attempts to shock " + z->desc(grammar::noun::role::direct_object, grammar::article::definite) + ", but misses."; };
+        static auto hit_msg = [&]() { return p.subject() + " shocks " + z->desc(grammar::noun::role::direct_object, grammar::article::definite) + "!"; };
+
+        if (dice(numdice, 10) < dice(z->dodge(), 10)) {	// A miss!
+            p.if_visible_message(nullptr, miss_msg);
+            return;
+        }
+        p.if_visible_message(nullptr, hit_msg);
+        int shock = rng(5, 25);
+        z->moves -= shock * mobile::mp_turn;
+        if (z->hurt(shock)) g->kill_mon(*z, &p);
+        return;
+    }
+/*
+    if (foe) {
+        if (foe->attitude != NPCATT_FLEE) foe->attitude = NPCATT_KILL;
+        if (foe->str_max >= 17) numdice++;	// Minor bonus against huge people
+        else if (foe->str_max <= 5) numdice--;	// Minor penalty against tiny people
+        if (dice(numdice, 10) <= foe->dodge_roll()) {
+            messages.add("You attempt to shock %s, but miss.", foe->name.c_str());
+            return;
+        }
+        messages.add("You shock %s!", foe->name.c_str());
+        int shock = rng(5, 20);
+        foe->moves -= shock * mobile::mp_turn;
+        foe->hurtall(shock);
+        if (foe->hp_cur[hp_head] <= 0 || foe->hp_cur[hp_torso] <= 0) foe->die(g, true);
+    }
+*/
 }
 
 // \todo allow NPCs to use this to fix morale
