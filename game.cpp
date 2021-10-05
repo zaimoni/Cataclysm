@@ -3075,8 +3075,14 @@ mobile* game::mob(const GPS_loc& gps)
 {
     if (auto _mon = mon(gps)) return _mon;
     return survivor(gps);
-    for (auto& m : z) if (m.GPSpos == gps && !m.dead) return &m;
-    return nullptr;
+}
+
+std::optional<std::variant<monster*, npc*, pc*> > game::mob_at(const GPS_loc& gps)
+{
+    if (auto _mon = mon(gps)) return _mon;
+    if (auto _npc = nPC(gps)) return _npc;
+    if (gps == u.GPSpos) return &u;
+    return std::nullopt;
 }
 
 bool game::is_empty(int x, int y) const

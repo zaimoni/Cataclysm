@@ -113,6 +113,7 @@ class game : public reality_bubble
   const monster* mon(const GPS_loc& gps) const { return const_cast<game*>(this)->mon(gps); }
   mobile* mob(const GPS_loc& gps);  // does not include vehicles
   const mobile* mob(const GPS_loc& gps) const { return const_cast<game*>(this)->mob(gps); }
+  std::optional<std::variant<monster*, npc*, pc*> > mob_at(const GPS_loc& gps);
 
   bool is_empty(int x, int y) const;	// True if no PC, no monster, move cost > 0
   bool is_empty(const point& pt) const { return is_empty(pt.x, pt.y); };
