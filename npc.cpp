@@ -1945,6 +1945,13 @@ void npc::if_visible_message(std::function<std::string()> me, std::function<std:
 	}
 }
 
+void npc::if_visible_message(const char* msg) const
+{
+	if (msg) {
+		if (game::active()->u.see(*this)) messages.add(std::string(msg));
+	}
+}
+
 std::vector<item>* npc::use_stack_at(const point& pt) const
 {
 	std::vector<item>* ret = nullptr;

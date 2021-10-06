@@ -1721,7 +1721,7 @@ void iuse::UPS_on(player *p, item *it, bool t)
  if (t) {	// Normal use
 	// Does nothing
  } else {	// Turning it off
-  messages.add("The UPS powers off with a soft hum.");
+  p->if_visible_message("The UPS powers off with a soft hum.");
   it->make(item::types[itm_UPS_off]);
   it->active = false;
  }

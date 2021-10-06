@@ -415,6 +415,11 @@ void player::if_visible_message(std::function<std::string()> me, std::function<s
     if (me) subjective_message(me());
 }
 
+void player::if_visible_message(const char* msg) const
+{
+    if (msg) subjective_message(msg);
+}
+
 bool player::see_phantasm()
 {
     auto g = game::active();
