@@ -98,7 +98,7 @@ class iuse
   static void UPS_off		(player *p, item *it, bool t);
   static void UPS_on		(player *p, item *it, bool t);
   static std::optional<std::any> can_use_tazer(const npc& p);
-  static void tazer		(player *p, item *it, bool t);
+  static void tazer(pc& p, item& it);
   static void tazer(npc& p, item& it);
   static void mp3		(player *p, item *it, bool t);
   static void mp3_on		(player *p, item *it, bool t);

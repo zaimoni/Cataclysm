@@ -3573,6 +3573,14 @@ revert,flags,des) \
 color,mat1,mat2,volume,wgt,melee_dam,melee_cut,to_hit,flags,max_charge,\
 def_charge,charge_per_use,charge_per_sec,fuel,revert))
 
+#define TOOL_NPC(name,rarity,price,sym,color,mat1,mat2,volume,wgt,melee_dam,\
+melee_cut,to_hit,max_charge,def_charge,charge_per_use,charge_per_sec,fuel,\
+revert,func,npc_func,npc_can_func,flags,des) \
+	index++;types.push_back(new it_tool(index,rarity,price,name,des,sym,\
+color,mat1,mat2,volume,wgt,melee_dam,melee_cut,to_hit,flags,max_charge,\
+def_charge,charge_per_use,charge_per_sec,fuel,revert NOT_DAIMON(func) NOT_DAIMON(npc_func) NOT_DAIMON(npc_can_func)))
+
+
 //	NAME		RAR PRC	SYM  COLOR	MAT1	MAT
 TOOL("lighter",		60,  35,',', c_blue,	PLASTIC,IRON,
 // VOL WGT DAM CUT HIT MAX DEF USE SEC FUEL	REVERT	  FUNCTION
@@ -3912,8 +3920,8 @@ A unified power supply, or UPS, is a device developed jointly by military and\n\
 scientific interests for use in combat and the field.  The UPS is designed to\n\
 power armor and some guns, but drains batteries quickly.");
 
-TOOL("tazer",		 3,1400,';',c_ltred,	IRON,	PLASTIC,
-    1,  3,  6,  0, -1, 500, 0,100, 0, AT_BATT, itm_null, &iuse::tazer,0,"\
+TOOL_NPC("tazer",		 3,1400,';',c_ltred,	IRON,	PLASTIC,
+    1,  3,  6,  0, -1, 500, 0,100, 0, AT_BATT, itm_null, &iuse::tazer, &iuse::tazer, &iuse::can_use_tazer, 0, "\
 A high-powered stun gun.  Use this item to attempt to electrocute an adjacent\n\
 enemy, damaging and temporarily paralyzing them.  Because the shock can\n\
 actually jump through the air, it is difficult to miss.");
@@ -4604,7 +4612,7 @@ it_container::it_container(int pid, unsigned char prarity, unsigned int pprice,
 it_tool::it_tool()
 : ammo(AT_NULL),max_charges(0),def_charges(0),charges_per_use(0),turns_per_charge(0),revert_to(itm_null)
 #ifndef SOCRATES_DAIMON
-  , use(nullptr), use_npc(nullptr), use_pc(nullptr), off_npc(nullptr), off_pc(nullptr)
+  , use(nullptr), use_npc(nullptr), use_pc(nullptr), off_npc(nullptr), off_pc(nullptr), can_use_npc(nullptr)
 #endif
 {
 }
@@ -4634,7 +4642,26 @@ it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
 	:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
 	ammo(pammo), max_charges(pmax_charges), def_charges(pdef_charges), charges_per_use(pcharges_per_use),
 	turns_per_charge(pturns_per_charge), revert_to(prevert_to),
-	use(nullptr), use_npc(nullptr), use_pc(puse), off_npc(nullptr), off_pc(nullptr)
+	use(nullptr), use_npc(nullptr), use_pc(puse), off_npc(nullptr), off_pc(nullptr), can_use_npc(nullptr)
+{
+}
+
+it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1, material pm2,
+	unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
+	unsigned pitem_flags,
+
+	unsigned int pmax_charges, unsigned int pdef_charges,
+	unsigned char pcharges_per_use, unsigned char pturns_per_charge,
+	ammotype pammo, itype_id prevert_to,
+	decltype(use_pc) use_pc, decltype(use_npc) use_npc, decltype(can_use_npc) can_use_npc
+)
+	:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+	ammo(pammo), max_charges(pmax_charges), def_charges(pdef_charges), charges_per_use(pcharges_per_use),
+	turns_per_charge(pturns_per_charge), revert_to(prevert_to),
+	use(nullptr), use_npc(use_npc), use_pc(use_pc), off_npc(nullptr), off_pc(nullptr), can_use_npc(can_use_npc)
 {
 }
 #endif
@@ -4657,7 +4684,7 @@ it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
   ammo(pammo), max_charges(pmax_charges), def_charges(pdef_charges), charges_per_use(pcharges_per_use),
   turns_per_charge(pturns_per_charge), revert_to(prevert_to)
 #ifndef SOCRATES_DAIMON
-  , use(puse), use_npc(nullptr), use_pc(nullptr), off_npc(nullptr), off_pc(nullptr)
+  , use(puse), use_npc(nullptr), use_pc(nullptr), off_npc(nullptr), off_pc(nullptr), can_use_npc(nullptr)
 #endif
 {
 }
@@ -4809,7 +4836,7 @@ void it_tool::turned_off_by(item& it, pc& u) const
 std::optional<std::any> it_tool::is_relevant(const item& it, const npc& _npc) const
 {
 	if (!use_npc && !use) return std::nullopt;
-	// \todo hook for specific item types
+	if (can_use_npc) return can_use_npc(_npc);
 	return std::any();
 }
 

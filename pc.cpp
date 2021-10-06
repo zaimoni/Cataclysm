@@ -358,7 +358,12 @@ void pc::use(char let)
             return;
         }
 
-        tool->used_by(*used, *this);
+        try {
+            tool->used_by(*used, *this);
+        } catch (const std::string& e) {
+            messages.add(e);
+            return;
+        }
         used->charges -= tool->charges_per_use;
 
         if (0 == used->invlet) remove_discard(*src);
