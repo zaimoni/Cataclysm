@@ -1678,7 +1678,7 @@ void iuse::manhack(player *p, item *it, bool t)
  g->z.push_back(manhack);
 }
 
-void iuse::turret(player *p, item *it, bool t)
+void iuse::turret(pc& p, item& it)
 {
  const auto g = game::active();
 
@@ -1689,20 +1689,21 @@ void iuse::turret(player *p, item *it, bool t)
   messages.add("Invalid direction.");
   return;
  }
- p->moves -= mobile::mp_turn;
- dir += p->pos;
- if (!g->is_empty(dir)) {
+ p.moves -= mobile::mp_turn;
+ auto dest(dir + p.pos);
+
+ if (!g->is_empty(dest)) {
   messages.add("You cannot place a turret there.");
   return;
  }
- it->invlet = 0; // Remove the turret from the player's inv
- monster turret(mtype::types[mon_turret], dir);
- if (rng(0, p->int_cur / 2) + p->sklevel[sk_electronics] / 2 +
-     p->sklevel[sk_computer] < rng(0, 6))
+ it.invlet = 0; // Remove the turret from the player's inv
+ monster turret(mtype::types[mon_turret], dest);
+ if (rng(0, p.int_cur / 2) + p.sklevel[sk_electronics] / 2 +
+     p.sklevel[sk_computer] < rng(0, 6))
   messages.add("You misprogram the turret; it's hostile!");
  else
   turret.friendly = -1;
- g->z.push_back(turret);
+ g->z.push_back(std::move(turret));
 }
 
 void iuse::UPS_off(player *p, item *it, bool t)
