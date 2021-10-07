@@ -4845,6 +4845,8 @@ std::optional<std::string> it_tool::cannot_use(const item& it) const
 	if (0 < charges_per_use && it.charges < charges_per_use) {
 		return std::string("Your ") + it.tname() + " has " + std::to_string(it.charges) + " but needs " + std::to_string((int)charges_per_use);
 	}
+	// following should be a function hook call
+	if (itm_UPS_off == id && 0 == it.charges) return std::string("The power supply's batteries are dead.");
 	return std::nullopt;
 }
 #endif

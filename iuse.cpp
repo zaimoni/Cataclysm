@@ -1707,13 +1707,13 @@ void iuse::turret(player *p, item *it, bool t)
 
 void iuse::UPS_off(player *p, item *it, bool t)
 {
- if (it->charges == 0) messages.add("The power supply's batteries are dead.");
- else {
-  messages.add("You turn the power supply on.");
-  if (p->is_wearing(itm_goggles_nv)) messages.add("Your light amp goggles power on.");
-  it->make(item::types[itm_UPS_on]);
-  it->active = true;
- }
+    static auto pc_on = []() { return std::string("You turn the power supply on."); };
+    static auto npc_on = [&]() { return grammar::capitalize(p->subject()) + " turns the power supply on."; };
+
+    p->if_visible_message(pc_on, npc_on);
+    if (p->is_wearing(itm_goggles_nv)) p->subjective_message("Your light amp goggles power on.");
+    it->make(item::types[itm_UPS_on]);
+    it->active = true;
 }
  
 void iuse::UPS_on(player *p, item *it, bool t)
@@ -1721,7 +1721,7 @@ void iuse::UPS_on(player *p, item *it, bool t)
  if (t) {	// Normal use
 	// Does nothing
  } else {	// Turning it off
-  p->if_visible_message("The UPS powers off with a soft hum.");
+  p->if_visible_message("The UPS powers off with a soft hum."); // \todo? should be if_audible_message or g->sound
   it->make(item::types[itm_UPS_off]);
   it->active = false;
  }
