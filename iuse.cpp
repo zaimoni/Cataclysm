@@ -1654,6 +1654,20 @@ void iuse::portal(player *p, item *it, bool t)
  game::active()->m.add_trap(p->pos + rng(within_rldist<2>), tr_portal);
 }
 
+std::optional<std::any> iuse::can_use_manhack(const npc& p)
+{
+    const auto g = game::active();
+
+    std::vector<point> valid;	// Valid spawn locations
+    for (decltype(auto) delta : Direction::vector) {
+        const auto pt(p.pos + delta);
+        if (g->is_empty(pt)) valid.push_back(pt);
+    }
+
+    if (valid.empty()) return std::nullopt;
+    return valid;
+}
+
 void iuse::manhack(player *p, item *it, bool t)
 {
  const auto g = game::active();
@@ -1676,6 +1690,21 @@ void iuse::manhack(player *p, item *it, bool t)
  else
   manhack.friendly = -1;
  g->z.push_back(manhack);
+}
+
+void iuse::manhack(npc& p, item& it)
+{
+    const auto g = game::active();
+
+    auto valid = *std::any_cast<std::vector<point> >(&(*it._AI_relevant)); // Valid spawn locations
+
+    p.moves -= (3 * mobile::mp_turn) / 5;
+    it.invlet = 0; // Remove the manhack from the player's inv
+    monster manhack(mtype::types[mon_manhack], valid[rng(0, valid.size() - 1)]);
+    if (rng(0, p.int_cur / 2) + p.sklevel[sk_electronics] / 2 + p.sklevel[sk_computer] >= rng(0, 4))
+        manhack.friendly = -1; // should be friendly to NPC, not unconditionally
+    // else { ... } // misprogrammed, hostile to NPC
+    g->z.push_back(manhack);
 }
 
 void iuse::turret(pc& p, item& it)

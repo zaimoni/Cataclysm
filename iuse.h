@@ -94,6 +94,8 @@ class iuse
   static void pheromone	(player *p, item *it, bool t);
   static void portal		(player *p, item *it, bool t);
   static void manhack		(player *p, item *it, bool t);
+  static void manhack(npc& p, item& it);
+  static std::optional<std::any> can_use_manhack(const npc& p);
   static void turret		(pc& p, item& it);
   static void UPS_off		(player *p, item *it, bool t);
   static void UPS_on		(player *p, item *it, bool t);
