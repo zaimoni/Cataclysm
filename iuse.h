@@ -93,7 +93,7 @@ class iuse
   static void mininuke_act	(player *p, item *it, bool t);
   static void pheromone	(player *p, item *it, bool t);
   static void portal		(player *p, item *it, bool t);
-  static void manhack		(player *p, item *it, bool t);
+  static void manhack(pc& p, item& it);
   static void manhack(npc& p, item& it);
   static std::optional<std::any> can_use_manhack(const npc& p);
   static void turret		(pc& p, item& it);

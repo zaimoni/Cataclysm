@@ -3894,8 +3894,8 @@ TOOL("portal generator",2, 6600, ';', c_magenta, STEEL,	PLASTIC,
     2, 10,  6,  0, -1, 10, 10,  5,  0, AT_NULL,	itm_null, &iuse::portal,0,"\
 A rare and arcane device, covered in alien markings.");
 
-TOOL("inactive manhack",1,  600, ',', c_ltgreen, STEEL, PLASTIC,
-    1,  3,  6,  6, -3,  0,  0,  0,  0, AT_NULL, itm_null, &iuse::manhack,0,"\
+TOOL_NPC("inactive manhack",1,  600, ',', c_ltgreen, STEEL, PLASTIC,
+    1,  3,  6,  6, -3,  0,  0,  0,  0, AT_NULL, itm_null, &iuse::manhack, &iuse::manhack, &iuse::can_use_manhack, 0,"\
 An inactive manhack.  Manhacks are fist-sized robots which fly through the\n\
 air.  They are covered with whirring blades and attack by throwing themselves\n\
 against their target.  Use this item to activate the manhack.");
