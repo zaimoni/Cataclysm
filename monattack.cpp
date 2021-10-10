@@ -723,7 +723,7 @@ void mattack::dogthing(game *g, monster *z)	// XXX only happens when PC can see 
   }
  }
 
- z->friendly = 0;
+ z->make_threat(g->u);
  z->poly(mtype::types[mon_headless_dog_thing]);
 }
 

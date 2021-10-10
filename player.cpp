@@ -815,7 +815,8 @@ void dis_effect(game* g, player& p, disease& dis)
                     grub.spawn(valid_spawns[sel]);
                     valid_spawns.erase(valid_spawns.begin() + sel);
                     // Sometimes it's a friendly larva!
-                    grub.friendly = (one_in(3) ? -1 : 0);
+                    if (one_in(3)) grub.make_ally(p);
+                    else grub.make_threat(p);
                     g->z.push_back(grub);
                 }
             }

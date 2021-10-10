@@ -140,6 +140,8 @@ class monster : public mobile {
  bool make_fungus();	// Makes this monster into a fungus version
 				// Returns false if no such monster exists
  void make_friendly();
+ void make_ally(const player& u);
+ void make_threat(const player& u);
  void add_item(const item& it);	// Add an item to inventory
  bool is_enemy(const player* survivor = nullptr) const;
  bool is_friend(const player* survivor = nullptr) const;

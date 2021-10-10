@@ -660,6 +660,34 @@ void monster::make_friendly()
  friendly = rng(5, 30) + rng(0, 20);
 }
 
+void monster::make_ally(const player& u)
+{
+    if (is_friend(&u)) return; // already friendly
+
+    const auto g = game::active();
+    if (is_friend(&(game::active()->u))) {
+        // u is enemy of the player
+        friendly = 0;
+    } else {
+        // u is friend of the player
+        friendly = -1;
+    }
+}
+
+void monster::make_threat(const player& u)
+{
+    if (is_enemy(&u)) return; // already hostile
+
+    const auto g = game::active();
+    if (is_enemy(&(game::active()->u))) {
+        // u is friend of the player
+        friendly = -1;
+    } else {
+        // u is enemy of the player
+        friendly = 0;
+    }
+}
+
 bool monster::is_enemy(const player* survivor) const
 {
     const bool pc_hostile = (0 == friendly);

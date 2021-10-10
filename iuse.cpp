@@ -1701,9 +1701,8 @@ void iuse::manhack(npc& p, item& it)
     p.moves -= (3 * mobile::mp_turn) / 5;
     it.invlet = 0; // Remove the manhack from the player's inv
     monster manhack(mtype::types[mon_manhack], valid[rng(0, valid.size() - 1)]);
-    if (rng(0, p.int_cur / 2) + p.sklevel[sk_electronics] / 2 + p.sklevel[sk_computer] >= rng(0, 4))
-        manhack.friendly = -1; // should be friendly to NPC, not unconditionally
-    // else { ... } // misprogrammed, hostile to NPC
+    if (rng(0, p.int_cur / 2) + p.sklevel[sk_electronics] / 2 + p.sklevel[sk_computer] >= rng(0, 4)) manhack.make_ally(p);
+    else manhack.make_threat(p); // misprogrammed, hostile to NPC
     g->z.push_back(manhack);
 }
 
