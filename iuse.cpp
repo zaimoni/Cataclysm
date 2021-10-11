@@ -1611,6 +1611,32 @@ void iuse::mininuke_act(player *p, item *it, bool t)
  }
 }
 
+static auto _can_use_pheromone(const player& p)
+{
+    const auto pos(p.pos);
+
+    const auto g = game::active();
+
+    std::vector<monster*> valid;	// Valid targets
+    for (int x = pos.x - 4; x <= pos.x + 4; x++) {
+        for (int y = pos.y - 4; y <= pos.y + 4; y++) {
+            if (monster* const m_at = g->mon(x, y)) {
+                if ('Z' == m_at->symbol() && m_at->is_enemy(&p)) valid.push_back(m_at);
+            }
+        }
+    }
+
+    return valid;
+}
+
+std::optional<std::any> iuse::can_use_pheromone(const npc& p)
+{
+    auto valid(_can_use_pheromone(p));
+
+    if (valid.empty()) return std::nullopt;
+    return valid;
+}
+
 void iuse::pheromone(player *p, item *it, bool t)
 {
  const auto g = game::active();
@@ -1624,18 +1650,17 @@ void iuse::pheromone(player *p, item *it, bool t)
   messages.add("You squeeze the pheromone ball...");
  else if (can_see)
   messages.add("%s squeezes a pheromone ball...", p->name.c_str());
+
+ auto valid(_can_use_pheromone(*p));
+
  p->moves -= (3 * mobile::mp_turn) / 20;
 
  int converts = 0;
- for (int x = pos.x - 4; x <= pos.x + 4; x++) {
-  for (int y = pos.y - 4; y <= pos.y + 4; y++) {
-   if (monster* const m_at = g->mon(x,y)) {
-     if (m_at->symbol() == 'Z' && m_at->is_enemy(p) && rng(0, 500) > m_at->hp) {
-      converts++;
-	  m_at->make_friendly();
+ for (decltype(auto) m_at : valid) {
+     if (rng(0, 500) > m_at->hp) {
+         converts++;
+         m_at->make_friendly();
      }
-   }
-  }
  }
 
  if (can_see) {
@@ -1647,7 +1672,28 @@ void iuse::pheromone(player *p, item *it, bool t)
    messages.add("...and several nearby zombies turn friendly!");
  }
 }
- 
+
+void iuse::pheromone(npc& p, item& it)
+{
+    p.if_visible_message((p.name + " squeezes a pheromone ball...").c_str());
+
+    decltype(auto) valid = *std::any_cast<std::vector<monster*> >(&(*it._AI_relevant)); // Valid spawn locations
+
+    p.moves -= (3 * mobile::mp_turn) / 20;
+
+    int converts = 0;
+    for (decltype(auto) m_at : valid) {
+        if (rng(0, 500) > m_at->hp) {
+            converts++;
+            m_at->make_friendly(); // \todo fix before taking live -- friendly to NPC, not necessarily player
+        }
+    }
+
+    // \todo fix before taking live -- would like "but nothing happens" to not be displayed if NPC isn't visible either
+    p.if_visible_message(0 == converts ? "...but nothing happens." :
+        (1 == converts ? "...and a nearby zombie turns friendly!" :
+            "...and several nearby zombies turn friendly!"));
+}
 
 void iuse::portal(player *p, item *it, bool t)
 {
