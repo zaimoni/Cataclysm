@@ -477,8 +477,8 @@ public:
     void swim(const GPS_loc& loc) override;
     void subjective_message(const char* msg) const override {}
     void subjective_message(const std::string& msg) const override {}
-    void if_visible_message(std::function<std::string()> me, std::function<std::string()> other) const override;
-    void if_visible_message(const char* msg) const override;
+    bool if_visible_message(std::function<std::string()> me, std::function<std::string()> other) const override;
+    bool if_visible_message(const char* msg) const override;
     bool see_phantasm() override { return false; } // unclear how to implement this even for multi-PC case, let alone NPCs
     std::vector<item>* use_stack_at(const point& pt) const override;
     constexpr int use_active(item& it) override { return 0; } // stub

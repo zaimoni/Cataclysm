@@ -410,14 +410,22 @@ stat_delta dis_stat_effects(const player& p, const disease& dis)
 
 void player::subjective_message(const std::string& msg) const { if (!msg.empty()) messages.add(msg); }
 
-void player::if_visible_message(std::function<std::string()> me, std::function<std::string()> other) const
+bool player::if_visible_message(std::function<std::string()> me, std::function<std::string()> other) const
 {
-    if (me) subjective_message(me());
+    if (me) {
+        subjective_message(me());
+        return true;
+    }
+    return false;
 }
 
-void player::if_visible_message(const char* msg) const
+bool player::if_visible_message(const char* msg) const
 {
-    if (msg) subjective_message(msg);
+    if (msg) {
+        subjective_message(msg);
+        return true;
+    }
+    return false;
 }
 
 bool player::see_phantasm()

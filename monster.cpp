@@ -745,13 +745,17 @@ bool monster::handle_knockback_into_impassable(const GPS_loc& dest, const std::s
     return false;
 }
 
-void monster::if_visible_message(std::function<std::string()> other) const
+bool monster::if_visible_message(std::function<std::string()> other) const
 {
     if (other) {
         auto g = game::active();
         if (g->u.see(*this)) {
             auto msg = other();
-            if (!msg.empty()) messages.add(msg);
+            if (!msg.empty()) {
+                messages.add(msg);
+                return true;
+            }
         }
     }
+    return false;
 }

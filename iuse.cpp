@@ -1675,9 +1675,9 @@ void iuse::pheromone(player *p, item *it, bool t)
 
 void iuse::pheromone(npc& p, item& it)
 {
-    p.if_visible_message((p.name + " squeezes a pheromone ball...").c_str());
+    const bool seen = p.if_visible_message((p.name + " squeezes a pheromone ball...").c_str());
 
-    decltype(auto) valid = *std::any_cast<std::vector<monster*> >(&(*it._AI_relevant)); // Valid spawn locations
+    decltype(auto) valid = *std::any_cast<std::vector<monster*> >(&(*it._AI_relevant)); // Valid targets
 
     p.moves -= (3 * mobile::mp_turn) / 20;
 
@@ -1689,10 +1689,15 @@ void iuse::pheromone(npc& p, item& it)
         }
     }
 
-    // \todo fix before taking live -- would like "but nothing happens" to not be displayed if NPC isn't visible either
-    p.if_visible_message(0 == converts ? "...but nothing happens." :
-        (1 == converts ? "...and a nearby zombie turns friendly!" :
-            "...and several nearby zombies turn friendly!"));
+    if (seen) {
+        p.if_visible_message(0 == converts ? "...but nothing happens." :
+            (1 == converts ? "...and a nearby zombie turns friendly!" :
+                "...and several nearby zombies turn friendly!"));
+    } else {
+        p.if_visible_message(0 == converts ? nullptr :
+            (1 == converts ? "A nearby zombie turns friendly!" :
+                "Several nearby zombies turn friendly!"));
+    }
 }
 
 void iuse::portal(player *p, item *it, bool t)

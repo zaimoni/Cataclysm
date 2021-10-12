@@ -1934,22 +1934,30 @@ void npc::swim(const GPS_loc& loc)
 	}
 }
 
-void npc::if_visible_message(std::function<std::string()> me, std::function<std::string()> other) const
+bool npc::if_visible_message(std::function<std::string()> me, std::function<std::string()> other) const
 {
 	if (other) {
 		auto g = game::active();
 		if (g->u.see(*this)) {
 			auto msg = other();
-			if (!msg.empty()) messages.add(msg);
+			if (!msg.empty()) {
+				messages.add(msg);
+				return true;
+			}
 		}
 	}
+	return false;
 }
 
-void npc::if_visible_message(const char* msg) const
+bool npc::if_visible_message(const char* msg) const
 {
 	if (msg) {
-		if (game::active()->u.see(*this)) messages.add(std::string(msg));
+		if (game::active()->u.see(*this)) {
+			messages.add(std::string(msg));
+			return true;
+		}
 	}
+	return false;
 }
 
 std::vector<item>* npc::use_stack_at(const point& pt) const
