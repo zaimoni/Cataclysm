@@ -745,16 +745,47 @@ npc::ai_action npc::long_term_goal_action(game *g)	// XXX this was being prototy
 
  return ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
 }
- 
-itype_id npc::alt_attack_available() const
+
+static bool thrown_item(const item& used)	// not general enough to migrate to item member function
 {
- for (int i = 0; i < NUM_ALT_ATTACK_ITEMS; i++) {
-  if ((!is_following() || combat_rules.use_grenades ||
-       !(item::types[ALT_ATTACK_ITEMS[i]]->item_flags & mfb(IF_GRENADE))) &&
-      has_amount(ALT_ATTACK_ITEMS[i], 1))
-   return ALT_ATTACK_ITEMS[i];
- }
- return itm_null;
+	if (used.active) return true;	// already activated
+	switch (used.type->id)
+	{
+	case itm_knife_combat:
+	case itm_spear_wood: return true; // whitelist of throwing weapons \todo? bitflag to enable JSON configuration
+	default: return false;
+	}
+}
+
+std::optional<npc::item_spec> npc::alt_attack_available() const
+{
+	for (int i = 0; i < NUM_ALT_ATTACK_ITEMS; i++) {
+		const itype_id which = ALT_ATTACK_ITEMS[i]; // backward compatibility
+		if (item::types[which]->item_flags & mfb(IF_GRENADE)) {
+			if (is_following() && !combat_rules.use_grenades) continue;
+		}
+		if (has_amount(which, 1)) {
+			if (weapon.type->id == which) {
+				if (thrown_item(weapon)) return item_spec(const_cast<item*>(&weapon), -1);
+				if (const auto tool = weapon.is_tool()) {
+					if (tool->cannot_use(weapon)) continue;
+					if (!tool->is_relevant(weapon, *this)) continue;
+				}
+				return item_spec(const_cast<item*>(&weapon), -1);
+			}
+			for (int i = 0; i < inv.size(); i++) {
+				if (inv[i].type->id == which) {
+					if (thrown_item(inv[i])) return item_spec(const_cast<item*>(&(inv[i])), i);
+					if (const auto tool = inv[i].is_tool()) {
+						if (tool->cannot_use(inv[i])) continue;
+						if (!tool->is_relevant(inv[i], *this)) continue;
+					}
+					return item_spec(const_cast<item*>(&(inv[i])), i);
+				}
+			}
+		}
+	}
+	return std::nullopt;
 }
 
 int npc::choose_escape_item() const
@@ -1556,17 +1587,6 @@ bool npc::best_gun(const int target, int& inv_index, std::vector<int>& empty_gun
 	return ret;
 }
 
-static bool thrown_item(const item& used)	// not general enough to migrate to item member function
-{
-	if (used.active) return true;	// already activated
-	switch (used.type->id)
-	{
-	case itm_knife_combat:
-	case itm_spear_wood: return true; // whitelist of throwing weapons \todo? bitflag to enable JSON configuration
-	default: return false;
-	}
-}
-
 void npc::alt_attack(game *g, int target)
 {
  ai_target Target;
@@ -1583,23 +1603,11 @@ void npc::alt_attack(game *g, int target)
 
  point tar = Target.first;	// backward compatibility
 
- const itype_id which = alt_attack_available();
- DEBUG_FAIL_OR_LEAVE(itm_null == which, return);	// We ain't got shit!  Definitely should not happen.
+ const auto which = alt_attack_available();
+ DEBUG_FAIL_OR_LEAVE(!which, return);	// We ain't got shit!  Definitely should not happen.
 
- int index;
- item *used = nullptr;
- if (weapon.type->id == which) {
-  used = &weapon;
-  index = -1;
- } else {
-  for (size_t i = 0; i < inv.size(); i++) {
-   if (inv[i].type->id == which) {
-    used = &(inv[i]);
-    index = i;
-   }
-  }
- }
- DEBUG_FAIL_OR_LEAVE(!used, return);	// invariant violation
+ int index = which->second; // backward compatibility
+ item *used = which->first; // backward compatibility
 
 // Are we going to throw this item?
  if (!thrown_item(*used)) activate_item(*used);

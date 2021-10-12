@@ -412,7 +412,7 @@ public:
  ai_action address_needs	(game *g, int danger) const;
  ai_action address_player	(game *g);
  ai_action long_term_goal_action(game *g);
- itype_id alt_attack_available() const;	// Do we have grenades, molotov, etc?
+ std::optional<item_spec> alt_attack_available() const;	// Do we have grenades, molotov, etc?
  int  choose_escape_item() const; // Returns index of our best escape aid
 
 // Helper functions for ranged combat
