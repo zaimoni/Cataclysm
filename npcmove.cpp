@@ -761,19 +761,21 @@ int npc::choose_escape_item() const
 {
  int best = -1, ret = -1;
  for (size_t i = 0; i < inv.size(); i++) {
-  const it_comest* food = nullptr;
   const auto& it = inv[i];
   for (int j = 0; j < NUM_ESCAPE_ITEMS; j++) {
    if (it.type->id != ESCAPE_ITEMS[j]) continue;	// \todo some sort of relevance check (needs context)
-   if (j < best) continue;
-   if (j == best && it.charges >= inv[ret].charges) continue;
-   if (!food) food = it.is_food();
-   if ((!food || stim < food->stim ||            // Avoid guzzling down
-        (food->stim >= 10 && stim < food->stim * 2))) { //  Adderall etc.
-    ret = i;
-    best = j;
-	break;
+   if (j < best) break;
+   if (j == best && it.charges >= inv[ret].charges) break;
+   if (const auto tool = it.is_tool()) {
+	   if (tool->cannot_use(it)) break;
+	   if (!tool->is_relevant(it, *this)) break;
    }
+   if (const auto food = it.is_food()) { // Avoid guzzling down Adderall etc.
+	   if (stim >= food->stim && (10 > food->stim || stim >= food->stim * 2)) continue;
+   }
+   ret = i;
+   best = j;
+   break;
   }
  }
  return ret;

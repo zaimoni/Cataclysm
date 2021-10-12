@@ -1637,23 +1637,15 @@ std::optional<std::any> iuse::can_use_pheromone(const npc& p)
     return valid;
 }
 
-void iuse::pheromone(player *p, item *it, bool t)
+void iuse::pheromone(pc& p, item& it)
 {
  const auto g = game::active();
 
- point pos(p->pos);
+ messages.add("You squeeze the pheromone ball...");
 
- bool is_u = !p->is_npc(), can_see = (is_u || g->u.see(p->pos));
- if (pos.x == -999 || pos.y == -999) return;
+ auto valid(_can_use_pheromone(p));
 
- if (is_u)
-  messages.add("You squeeze the pheromone ball...");
- else if (can_see)
-  messages.add("%s squeezes a pheromone ball...", p->name.c_str());
-
- auto valid(_can_use_pheromone(*p));
-
- p->moves -= (3 * mobile::mp_turn) / 20;
+ p.moves -= (3 * mobile::mp_turn) / 20;
 
  int converts = 0;
  for (decltype(auto) m_at : valid) {
@@ -1663,14 +1655,12 @@ void iuse::pheromone(player *p, item *it, bool t)
      }
  }
 
- if (can_see) {
   if (converts == 0)
    messages.add("...but nothing happens.");
   else if (converts == 1)
    messages.add("...and a nearby zombie turns friendly!");
   else
    messages.add("...and several nearby zombies turn friendly!");
- }
 }
 
 void iuse::pheromone(npc& p, item& it)

@@ -3883,9 +3883,9 @@ TOOL("mininuke (active)",0,   0,'*', c_ltgreen,	STEEL,	PLASTIC,
 it will soon explode.  You should probably get far away from it.");
 
 //	NAME		RAR PRC SYM  COLOR	MAT1	MAT
-TOOL("zombie pheromone",1,  400,'*', c_yellow,	FLESH,	PLASTIC,
+TOOL_NPC("zombie pheromone",1,  400,'*', c_yellow,	FLESH,	PLASTIC,
 // VOL WGT DAM CUT HIT MAX DEF USE SEC FUEL	REVERT	  FUNCTION
-    1,  1, -5,  0, -1,  3,  3,  1,  0, AT_NULL,	itm_null, &iuse::pheromone,0,"\
+    1,  1, -5,  0, -1,  3,  3,  1,  0, AT_NULL,	itm_null, &iuse::pheromone, &iuse::pheromone, &iuse::can_use_pheromone, 0, "\
 This is some kind of disgusting ball of rotting meat.  Squeezing it causes a\n\
 small cloud of pheromones to spray into the air, causing nearby zombies to\n\
 become friendly for a short period of time.");
