@@ -140,6 +140,7 @@ class monster : public mobile {
  bool make_fungus();	// Makes this monster into a fungus version
 				// Returns false if no such monster exists
  void make_friendly();
+ void make_friendly(const player& u);
  void make_ally(const player& u);
  void make_threat(const player& u);
  void add_item(const item& it);	// Add an item to inventory
@@ -194,6 +195,8 @@ private:
 
  void _set_screenpos() override { if (auto pt = screen_pos()) pos = *pt; }
  bool handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim) override;
+
+ void make_friendly(int duration);
 };
 
 #endif

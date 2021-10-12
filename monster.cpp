@@ -654,38 +654,37 @@ bool monster::make_fungus()
  return false;
 }
 
-void monster::make_friendly()
+void monster::make_friendly(int duration)
 {
- plans.clear();
- friendly = rng(5, 30) + rng(0, 20);
+    if (0 != duration) plans.clear();
+    friendly = duration;
+}
+
+void monster::make_friendly() { make_friendly(rng(5, 30) + rng(0, 20)); }
+
+void monster::make_friendly(const player& u)
+{
+    if (is_friend(&u)) return; // already friendly
+
+    if (is_friend(&(game::active()->u))) {
+        make_friendly(0);
+    } {
+        make_friendly();
+    }
 }
 
 void monster::make_ally(const player& u)
 {
     if (is_friend(&u)) return; // already friendly
 
-    const auto g = game::active();
-    if (is_friend(&(game::active()->u))) {
-        // u is enemy of the player
-        friendly = 0;
-    } else {
-        // u is friend of the player
-        friendly = -1;
-    }
+    make_friendly(is_friend(&(game::active()->u)) ? 0 : -1);
 }
 
 void monster::make_threat(const player& u)
 {
     if (is_enemy(&u)) return; // already hostile
 
-    const auto g = game::active();
-    if (is_enemy(&(game::active()->u))) {
-        // u is friend of the player
-        friendly = -1;
-    } else {
-        // u is enemy of the player
-        friendly = 0;
-    }
+    make_friendly(is_enemy(&(game::active()->u)) ? -1 : 0);
 }
 
 bool monster::is_enemy(const player* survivor) const

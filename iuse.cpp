@@ -1685,7 +1685,7 @@ void iuse::pheromone(npc& p, item& it)
     for (decltype(auto) m_at : valid) {
         if (rng(0, 500) > m_at->hp) {
             converts++;
-            m_at->make_friendly(); // \todo fix before taking live -- friendly to NPC, not necessarily player
+            m_at->make_friendly(p);
         }
     }
 
