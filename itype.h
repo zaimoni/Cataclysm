@@ -708,7 +708,7 @@ public:
  void turned_off_by(item& it, npc& u) const;
  void turned_off_by(item& it, pc& u) const;
  std::optional<std::any> is_relevant(const item& it, const npc& _npc) const;
- std::optional<std::string> cannot_use(const item& it) const;
+ std::optional<std::string> cannot_use(const item& it, const player& u) const;
 #endif
 
  void info(std::ostream& dest) const override;

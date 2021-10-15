@@ -353,7 +353,7 @@ void pc::use(char let)
     last_item = itype_id(used->type->id);
 
     if (const auto tool = used->is_tool()) {
-        if (auto err = tool->cannot_use(*used)) {
+        if (auto err = tool->cannot_use(*used, *this)) {
             messages.add(*err);
             return;
         }

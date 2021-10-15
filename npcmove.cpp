@@ -768,7 +768,7 @@ std::optional<npc::item_spec> npc::alt_attack_available() const
 			if (weapon.type->id == which) {
 				if (thrown_item(weapon)) return item_spec(const_cast<item*>(&weapon), -1);
 				if (const auto tool = weapon.is_tool()) {
-					if (tool->cannot_use(weapon)) continue;
+					if (tool->cannot_use(weapon, *this)) continue;
 					if (!tool->is_relevant(weapon, *this)) continue;
 				}
 				return item_spec(const_cast<item*>(&weapon), -1);
@@ -777,7 +777,7 @@ std::optional<npc::item_spec> npc::alt_attack_available() const
 				if (inv[i].type->id == which) {
 					if (thrown_item(inv[i])) return item_spec(const_cast<item*>(&(inv[i])), i);
 					if (const auto tool = inv[i].is_tool()) {
-						if (tool->cannot_use(inv[i])) continue;
+						if (tool->cannot_use(inv[i], *this)) continue;
 						if (!tool->is_relevant(inv[i], *this)) continue;
 					}
 					return item_spec(const_cast<item*>(&(inv[i])), i);
@@ -798,7 +798,7 @@ int npc::choose_escape_item() const
    if (j < best) break;
    if (j == best && it.charges >= inv[ret].charges) break;
    if (const auto tool = it.is_tool()) {
-	   if (tool->cannot_use(it)) break;
+	   if (tool->cannot_use(it, *this)) break;
 	   if (!tool->is_relevant(it, *this)) break;
    }
    if (const auto food = it.is_food()) { // Avoid guzzling down Adderall etc.

@@ -4840,7 +4840,7 @@ std::optional<std::any> it_tool::is_relevant(const item& it, const npc& _npc) co
 	return std::any();
 }
 
-std::optional<std::string> it_tool::cannot_use(const item& it) const
+std::optional<std::string> it_tool::cannot_use(const item& it, const player& u) const
 {
 	if (0 < charges_per_use && it.charges < charges_per_use) {
 		return std::string("Your ") + it.tname() + " has " + std::to_string(it.charges) + " but needs " + std::to_string((int)charges_per_use);

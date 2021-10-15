@@ -988,7 +988,7 @@ bool item::burn(int amount)
 std::optional<std::any> item::is_relevant(const npc& _npc) const {
     if (!_AI_relevant) {
         if (const auto tool = is_tool()) {
-            if (tool->cannot_use(*this)) return std::nullopt;
+            if (tool->cannot_use(*this, _npc)) return std::nullopt;
             _AI_relevant = tool->is_relevant(*this, _npc);
         } else if (const auto comest = is_food()) {
             _AI_relevant = std::any();
