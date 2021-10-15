@@ -167,6 +167,11 @@ class game : public reality_bubble
   std::optional<point> look_around();// Look at nearby terrain	';'
   faction* list_factions(const char* title = "FACTIONS:");
   std::optional<point> find_item(item *it) const;
+  std::optional<
+      std::variant<GPS_loc,
+        std::pair<pc*, int>,
+        std::pair<npc*, int> > > find(item& it);
+
   void remove_item(item *it);
 
   signed char temperature;              // The air temperature

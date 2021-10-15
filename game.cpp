@@ -2346,6 +2346,19 @@ std::optional<point> game::find_item(item *it) const
  return std::nullopt;
 }
 
+std::optional<
+    std::variant<GPS_loc,
+    std::pair<pc*, int>,
+    std::pair<npc*, int> > > game::find(item& it)
+{
+    if (const auto found = u.lookup(&it)) return std::pair(&u, found->second);
+    for (auto& n_pc : active_npc) if (const auto found = n_pc.lookup(&it)) return std::pair(&n_pc, found->second);
+    // \todo technically should scan all submaps, but the reality bubble ones are in m
+    if (const auto ret = m.find_item(&it)) return toGPS(ret->first);
+    return std::nullopt;
+}
+
+
 void game::remove_item(item *it)
 {
  if (u.remove_item(it)) return;
