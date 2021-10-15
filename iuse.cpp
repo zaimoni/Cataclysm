@@ -1532,17 +1532,16 @@ void iuse::acidbomb_act(player *p, item *it, bool t)
 
 void iuse::molotov(player *p, item *it, bool t)
 {
- if (!p->has_charges(itm_lighter, 1)) {
-  messages.add("You need a lighter!");
-  return;
- }
- p->use_charges(itm_lighter, 1);
- messages.add("You light the molotov cocktail.");
- p->moves -= (3 * mobile::mp_turn) / 2;
- it->make(item::types[itm_molotov_lit]);
- it->charges = 1;
- it->bday = int(messages.turn);
- it->active = true;
+    static auto me = []() { return std::string("You light the molotov cocktail."); };
+    static auto other = [&]() { return p->name + " lights the molotov cocktail."; };
+
+    p->if_visible_message(me, other);
+    p->use_charges(itm_lighter, 1);
+    p->moves -= (3 * mobile::mp_turn) / 2;
+    it->make(item::types[itm_molotov_lit]);
+    it->charges = 1;
+    it->bday = int(messages.turn);
+    it->active = true;
 }
  
 class burn_molotov
@@ -1583,12 +1582,9 @@ public:
 
 void iuse::molotov_lit(player *p, item *it, bool t)
 {
- const auto g = game::active();
+ const auto where_is = game::active()->find(*it).value(); // invariant violation if this fails
 
- const auto where_is = g->find(*it);
- if (!where_is) return; // invariant violation, most likely
-
- std::visit(burn_molotov(*it), *where_is);
+ std::visit(burn_molotov(*it), where_is);
 }
 
 void iuse::dynamite(player *p, item *it, bool t)
