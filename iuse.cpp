@@ -1565,15 +1565,14 @@ void iuse::molotov_lit(player *p, item *it, bool t)
 
 void iuse::dynamite(player *p, item *it, bool t)
 {
- if (!p->has_charges(itm_lighter, 1)) {
-  messages.add("You need a lighter!");
-  return;
- }
- p->use_charges(itm_lighter, 1);
- messages.add("You light the dynamite.");
- it->make(item::types[itm_dynamite_act]);
- it->charges = 20;
- it->active = true;
+    static auto me = []() { return std::string("You light the dynamite."); };
+    static auto other = [&]() { return p->name + " lights the dynamite."; };
+
+    p->if_visible_message(me, other);
+    p->use_charges(itm_lighter, 1);
+    it->make(item::types[itm_dynamite_act]);
+    it->charges = 20;
+    it->active = true;
 }
 
 void iuse::dynamite_act(player *p, item *it, bool t)
