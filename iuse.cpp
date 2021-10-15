@@ -1587,10 +1587,12 @@ void iuse::dynamite_act(player *p, item *it, bool t)
 
 void iuse::mininuke(player *p, item *it, bool t)
 {
- messages.add("You activate the mininuke.");
- it->make(item::types[itm_mininuke_act]);
- it->charges = 10;
- it->active = true;
+    static auto me = []() { return std::string("You activate the mininuke."); };
+    static auto other = [&]() { return p->name+" activates the mininuke."; };
+    p->if_visible_message(me, other);
+    it->make(item::types[itm_mininuke_act]);
+    it->charges = 10;
+    it->active = true;
 }
 
 void iuse::mininuke_act(player *p, item *it, bool t)
