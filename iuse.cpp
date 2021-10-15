@@ -1545,22 +1545,50 @@ void iuse::molotov(player *p, item *it, bool t)
  it->active = true;
 }
  
+class burn_molotov
+{
+    item& it;
+
+public:
+    burn_molotov(item& it) noexcept : it(it) {}
+
+    void operator()(const GPS_loc& loc) {
+        const auto g = game::active();
+
+        if (const auto pos = g->toScreen(loc)) {
+            it.charges = -1;
+            g->explosion(*pos, 8, 0, true);
+        }
+    }
+
+    void operator()(const std::pair<pc*, int>& who) {
+        int age = int(messages.turn) - it.bday;
+        if (5 <= age && rng(1, 50) < age) {
+            messages.add("Your lit molotov goes out.");
+            it.make(item::types[itm_molotov]);
+            it.charges = 0;
+            it.active = false;
+        }
+    }
+    void operator()(const std::pair<npc*, int>& who) {
+        int age = int(messages.turn) - it.bday;
+        if (5 <= age && rng(1, 50) < age) {
+            who.first->if_visible_message((who.first->possessive()+ " lit molotov goes out.").c_str());
+            it.make(item::types[itm_molotov]);
+            it.charges = 0;
+            it.active = false;
+        }
+    }
+};
+
 void iuse::molotov_lit(player *p, item *it, bool t)
 {
  const auto g = game::active();
 
- int age = int(messages.turn) - it->bday;
- if (!p->has_item(it)) {
-  it->charges = -1;
-  g->explosion(g->find_item(it).value(), 8, 0, true);
- } else if (age >= 5) { // More than 5 turns old = chance of going out
-  if (rng(1, 50) < age) {
-   messages.add("Your lit molotov goes out.");
-   it->make(item::types[itm_molotov]);
-   it->charges = 0;
-   it->active = false;
-  }
- }
+ const auto where_is = g->find(*it);
+ if (!where_is) return; // invariant violation, most likely
+
+ std::visit(burn_molotov(*it), *where_is);
 }
 
 void iuse::dynamite(player *p, item *it, bool t)
