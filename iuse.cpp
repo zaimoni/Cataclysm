@@ -1508,26 +1508,31 @@ void iuse::smokebomb_act(player *p, item *it, bool t)
 
 void iuse::acidbomb(player *p, item *it, bool t)
 {
- messages.add("You remove the divider, and the chemicals mix.");
- p->moves -= (3 * mobile::mp_turn) / 2;
- it->make(item::types[itm_acidbomb_act]);
- it->charges = 1;
- it->bday = int(messages.turn);
- it->active = true;
+    static auto me = []() { return std::string("You remove the divider, and the chemicals mix."); };
+    static auto other = [&]() { return p->name + " removes the divider, and the chemicals mix."; };
+
+    p->if_visible_message(me, other);
+    p->moves -= (3 * mobile::mp_turn) / 2;
+    it->make(item::types[itm_acidbomb_act]);
+    it->charges = 1;
+    it->bday = int(messages.turn);
+    it->active = true;
 }
  
 void iuse::acidbomb_act(player *p, item *it, bool t)
 {
- if (!p->has_item(it)) {
-  const auto g = game::active();
-  const auto pos = g->find_item(it).value();
+    const auto g = game::active();
+    const auto where_is = g->find(*it).value(); // invariant violation if this fails
 
-  it->charges = 0;
-  for (int x = pos.x - 1; x <= pos.x + 1; x++) {
-   for (int y = pos.y - 1; y <= pos.y + 1; y++)
-    g->m.add_field(g, x, y, fd_acid, 3);
-  }
- }
+    if (auto loc = std::get_if<GPS_loc>(&where_is)) { // not held by anyone
+        if (const auto pos = g->toScreen(*loc)) {
+            it->charges = 0;
+            for (int x = pos->x - 1; x <= pos->x + 1; x++) {
+                for (int y = pos->y - 1; y <= pos->y + 1; y++)
+                    g->m.add_field(g, x, y, fd_acid, 3);
+            }
+        }
+    }
 }
 
 void iuse::molotov(player *p, item *it, bool t)
