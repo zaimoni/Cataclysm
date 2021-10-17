@@ -62,7 +62,14 @@ public:
 #endif
 
 		const auto tool = used.is_tool();
-		tool->used_by(used, _actor);
+		try {
+			tool->used_by(used, _actor);
+		} catch (const std::string& e) {
+			debuglog(e);
+			_actor.inv.remove_item(inv_index); // break action loop here
+			return;
+		}
+
 		used.charges -= tool->charges_per_use;
 		if (0 == used.invlet) _actor.inv.remove_item(inv_index);
 	}
@@ -1682,7 +1689,11 @@ void npc::alt_attack(game *g, int target)
 void npc::activate_item(item& it)	// unclear whether this "works"; parallel is npc::use_escape_item
 {
  if (const auto tool = it.is_tool()) {
-  tool->used_by(it, *this);
+	 try {
+		 tool->used_by(it, *this);
+	 } catch (const std::string& err) {
+		 debuglog(err);
+	 }
  } else if (const auto comest = it.is_food()) {
   comest->consumed_by(it, *this);
  }

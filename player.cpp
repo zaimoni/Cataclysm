@@ -469,7 +469,13 @@ int player::use_active(item& it) {
     if (it.is_artifact()) return -2;
     if (!it.active) return 0;
 
-    tool->used_by(it, *this);
+    try {
+        tool->used_by(it, *this);
+    } catch (const std::string& e) {
+        messages.add(e);
+        return 0;
+    }
+
     if (tool->turns_per_charge > 0 && int(messages.turn) % tool->turns_per_charge == 0) it.charges--;
     // separate this so we respond to bugs reasonably
     if (it.charges <= 0) {

@@ -1613,15 +1613,24 @@ void iuse::dynamite_act(player *p, item *it, bool t)
  else g->explosion(pos, 60, 0, false);		// When that timer runs down...
 }
 
-void iuse::mininuke(player *p, item *it, bool t)
+static std::pair<itype_id, std::tuple<std::string, std::string, itype_id, int > > activate_spec[] = {
+    std::pair(itm_mininuke, std::tuple("activate", "the mininuke." , itm_mininuke_act, 10))
+};
+
+static void activate(player& p, item& it)
 {
-    static auto me = []() { return std::string("You activate the mininuke."); };
-    static auto other = [&]() { return p->name+" activates the mininuke."; };
-    p->if_visible_message(me, other);
-    it->make(item::types[itm_mininuke_act]);
-    it->charges = 10;
-    it->active = true;
+    auto record = linear_search(it.type->id, std::begin(activate_spec), std::end(activate_spec));
+    if (!record) throw std::string("Unconfigured item for activate: ") + JSON_key(itype_id(it.type->id));    // invariant failure
+
+    static auto msg = [&]() {return grammar::capitalize(p.subject()) + " " + p.regular_verb_agreement(std::get<0>(*record)) + " " + std::get<1>(*record); };
+
+    p.if_visible_message(msg, msg); // \todo?  special-case this?
+    it.make(item::types[std::get<2>(*record)]);
+    it.charges = std::get<3>(*record);
+    it.active = true;
 }
+
+void iuse::mininuke(player *p, item *it, bool t) { activate(*p, *it); }
 
 void iuse::mininuke_act(player *p, item *it, bool t)
 {

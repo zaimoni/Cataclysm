@@ -40,9 +40,9 @@ void draw_hline(WINDOW* w, int y, nc_color FG, long ch, int x0 = -1, int x1 = -1
 template<class...Args>
 void debuglog(const char* mes, Args...params)
 {
-	if (reject_not_whitelisted_printf(mes)) return;
 	if (decltype(auto) err = get_stderr_log()) {
 		if constexpr (0 < sizeof...(params)) {
+			if (reject_not_whitelisted_printf(mes)) return;
 			fprintf(err, mes, params...);
 		} else {
 			fputs(mes, err);
@@ -50,6 +50,8 @@ void debuglog(const char* mes, Args...params)
 		fputc('\n', err);
 	}
 }
+
+void debuglog(const std::string& msg);
 
 template<class...Args>
 void mvprintz(int y, int x, nc_color FG, const char* mes, Args...params)

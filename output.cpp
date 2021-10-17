@@ -30,6 +30,13 @@ FILE* get_stderr_log() {
     return stderr_log;
 }
 
+void debuglog(const std::string& msg) {
+    if (decltype(auto) err = get_stderr_log()) {
+        fputs(msg.c_str(), err);
+        fputc('\n', err);
+    }
+}
+
 nc_color hilite(nc_color c)
 {
  switch (c) {
