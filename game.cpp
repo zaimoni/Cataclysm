@@ -380,7 +380,7 @@ http://github.com/zaimoni/Cataclysm .");
 		  start = true;
 		  ch = 0;
 	  } catch (const std::string& e) {	// debug message failure
-          debuglog(e.c_str());
+          debuglog(e);
           debugmsg(e.c_str());  // UI for player
 	  }
      }
@@ -770,7 +770,7 @@ void game::process_activity()
     try {
         exam_vehicle(complete_vehicle(this), u.activity.values[2], u.activity.values[3]);
     } catch (const std::string& e) {
-        debuglog(e.c_str());    // failure
+        debuglog(e);    // failure
         debugmsg(e.c_str());
         u.activity.clear(); // technically could fall-through
         return;
