@@ -1387,7 +1387,7 @@ void iuse::grenade_act(player *p, item *it, bool t)
  const auto pos = g->find_item(it).value();
 
  if (t) g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
- else g->flashbang(pos); // When that timer runs down...
+ else g->explosion(pos, 12, 28, false); // When that timer runs down...
 }
 
 static std::pair<itype_id, std::tuple<std::string, std::string, itype_id, int > > activate_spec[] = {
