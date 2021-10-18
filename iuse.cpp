@@ -1390,13 +1390,31 @@ void iuse::grenade_act(player *p, item *it, bool t)
  else g->flashbang(pos); // When that timer runs down...
 }
 
-void iuse::flashbang(player *p, item *it, bool t)
+static std::pair<itype_id, std::tuple<std::string, std::string, itype_id, int > > activate_spec[] = {
+    std::pair(itm_flashbang, std::tuple("pull", "the pin on the flashbang." , itm_flashbang_act, 5)),
+    std::pair(itm_EMPbomb, std::tuple("pull", "the pin on the EMP grenade." , itm_EMPbomb_act, 3)),
+    std::pair(itm_gasbomb, std::tuple("pull", "the pin on the teargas canister." , itm_gasbomb_act, 20)),
+    std::pair(itm_smokebomb, std::tuple("pull", "the pin on the smoke bomb." , itm_smokebomb_act, 20)),
+    std::pair(itm_molotov, std::tuple("light", "the molotov cocktail." , itm_molotov_lit, 1)),
+    std::pair(itm_acidbomb, std::tuple("remove", "the divider, and the chemicals mix." , itm_acidbomb_act, 1)),
+    std::pair(itm_dynamite, std::tuple("light", "the dynamite." , itm_dynamite_act, 20)),
+    std::pair(itm_mininuke, std::tuple("activate", "the mininuke." , itm_mininuke_act, 10))
+};
+
+static void activate(player& p, item& it)
 {
- messages.add("You pull the pin on the flashbang.");
- it->make(item::types[itm_flashbang_act]);
- it->charges = 5;
- it->active = true;
+    auto record = linear_search(it.type->id, std::begin(activate_spec), std::end(activate_spec));
+    if (!record) throw std::string("Unconfigured item for activate: ") + JSON_key(itype_id(it.type->id));    // invariant failure
+
+    static auto msg = [&]() {return grammar::capitalize(p.subject()) + " " + p.regular_verb_agreement(std::get<0>(*record)) + " " + std::get<1>(*record); };
+
+    p.if_visible_message(msg, msg); // \todo?  special-case this?
+    it.make(item::types[std::get<2>(*record)]);
+    it.charges = std::get<3>(*record);
+    it.active = true;
 }
+
+void iuse::flashbang(player *p, item *it, bool t) { activate(*p, *it); }
 
 void iuse::flashbang_act(player *p, item *it, bool t)
 {
@@ -1431,13 +1449,7 @@ void iuse::c4armed(player *p, item *it, bool t)
   g->explosion(pos, 40, 3, false);
 }
 
-void iuse::EMPbomb(player *p, item *it, bool t)
-{
- messages.add("You pull the pin on the EMP grenade.");
- it->make(item::types[itm_EMPbomb_act]);
- it->charges = 3;
- it->active = true;
-}
+void iuse::EMPbomb(player *p, item *it, bool t) { activate(*p, *it); }
 
 void iuse::EMPbomb_act(player *p, item *it, bool t)
 {
@@ -1452,13 +1464,7 @@ void iuse::EMPbomb_act(player *p, item *it, bool t)
  }
 }
 
-void iuse::gasbomb(player *p, item *it, bool t)
-{
- messages.add("You pull the pin on the teargas canister.");
- it->make(item::types[itm_gasbomb_act]);
- it->charges = 20;
- it->active = true;
-}
+void iuse::gasbomb(player *p, item *it, bool t) { activate(*p, *it); }
 
 void iuse::gasbomb_act(player *p, item *it, bool t)
 {
@@ -1479,13 +1485,7 @@ void iuse::gasbomb_act(player *p, item *it, bool t)
  } else it->make(item::types[itm_canister_empty]);
 }
 
-void iuse::smokebomb(player *p, item *it, bool t)
-{
- messages.add("You pull the pin on the smoke bomb.");
- it->make(item::types[itm_smokebomb_act]);
- it->charges = 20;
- it->active = true;
-}
+void iuse::smokebomb(player *p, item *it, bool t) { activate(*p, *it); }
 
 void iuse::smokebomb_act(player *p, item *it, bool t)
 {
@@ -1508,15 +1508,10 @@ void iuse::smokebomb_act(player *p, item *it, bool t)
 
 void iuse::acidbomb(player *p, item *it, bool t)
 {
-    static auto me = []() { return std::string("You remove the divider, and the chemicals mix."); };
-    static auto other = [&]() { return p->name + " removes the divider, and the chemicals mix."; };
+    activate(*p, *it);
 
-    p->if_visible_message(me, other);
     p->moves -= (3 * mobile::mp_turn) / 2;
-    it->make(item::types[itm_acidbomb_act]);
-    it->charges = 1;
     it->bday = int(messages.turn);
-    it->active = true;
 }
  
 void iuse::acidbomb_act(player *p, item *it, bool t)
@@ -1537,16 +1532,11 @@ void iuse::acidbomb_act(player *p, item *it, bool t)
 
 void iuse::molotov(player *p, item *it, bool t)
 {
-    static auto me = []() { return std::string("You light the molotov cocktail."); };
-    static auto other = [&]() { return p->name + " lights the molotov cocktail."; };
+    activate(*p, *it);
 
-    p->if_visible_message(me, other);
     p->use_charges(itm_lighter, 1);
     p->moves -= (3 * mobile::mp_turn) / 2;
-    it->make(item::types[itm_molotov_lit]);
-    it->charges = 1;
     it->bday = int(messages.turn);
-    it->active = true;
 }
  
 class burn_molotov
@@ -1594,14 +1584,8 @@ void iuse::molotov_lit(player *p, item *it, bool t)
 
 void iuse::dynamite(player *p, item *it, bool t)
 {
-    static auto me = []() { return std::string("You light the dynamite."); };
-    static auto other = [&]() { return p->name + " lights the dynamite."; };
-
-    p->if_visible_message(me, other);
+    activate(*p, *it);
     p->use_charges(itm_lighter, 1);
-    it->make(item::types[itm_dynamite_act]);
-    it->charges = 20;
-    it->active = true;
 }
 
 void iuse::dynamite_act(player *p, item *it, bool t)
@@ -1611,23 +1595,6 @@ void iuse::dynamite_act(player *p, item *it, bool t)
 
  if (t) g->sound(pos, 0, "ssss...");	 // Simple timer effects
  else g->explosion(pos, 60, 0, false);		// When that timer runs down...
-}
-
-static std::pair<itype_id, std::tuple<std::string, std::string, itype_id, int > > activate_spec[] = {
-    std::pair(itm_mininuke, std::tuple("activate", "the mininuke." , itm_mininuke_act, 10))
-};
-
-static void activate(player& p, item& it)
-{
-    auto record = linear_search(it.type->id, std::begin(activate_spec), std::end(activate_spec));
-    if (!record) throw std::string("Unconfigured item for activate: ") + JSON_key(itype_id(it.type->id));    // invariant failure
-
-    static auto msg = [&]() {return grammar::capitalize(p.subject()) + " " + p.regular_verb_agreement(std::get<0>(*record)) + " " + std::get<1>(*record); };
-
-    p.if_visible_message(msg, msg); // \todo?  special-case this?
-    it.make(item::types[std::get<2>(*record)]);
-    it.charges = std::get<3>(*record);
-    it.active = true;
 }
 
 void iuse::mininuke(player *p, item *it, bool t) { activate(*p, *it); }
