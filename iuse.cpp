@@ -1346,51 +1346,9 @@ void iuse::can_goo(player *p, item *it, bool t)
  }
 }
 
-void iuse::pipebomb(player *p, item *it, bool t)
-{
- if (!p->has_charges(itm_lighter, 1)) {
-  messages.add("You need a lighter!");
-  return;
- }
- p->use_charges(itm_lighter, 1);
- messages.add("You light the fuse on the pipe bomb.");
- it->make(item::types[itm_pipebomb_act]);
- it->charges = 3;
- it->active = true;
-}
-
-void iuse::pipebomb_act(player *p, item *it, bool t)
-{
- const auto g = game::active();
- const auto pos = g->find_item(it).value();
-
- if (t) g->sound(pos, 0, "Ssssss"); // Vol 0 = only heard if you hold it
- else {	// The timer has run down
-  if (one_in(10) && g->u.see(pos)) // \todo? allow fizzling out when not in sight?
-   messages.add("The pipe bomb fizzles out.");
-  else
-   g->explosion(pos, rng(6, 14), rng(0, 4), false);
- }
-}
- 
-void iuse::grenade(player *p, item *it, bool t)
-{
- messages.add("You pull the pin on the grenade.");
- it->make(item::types[itm_grenade_act]);
- it->charges = 5;
- it->active = true;
-}
-
-void iuse::grenade_act(player *p, item *it, bool t)
-{
- const auto g = game::active();
- const auto pos = g->find_item(it).value();
-
- if (t) g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
- else g->explosion(pos, 12, 28, false); // When that timer runs down...
-}
-
 static std::pair<itype_id, std::tuple<std::string, std::string, itype_id, int > > activate_spec[] = {
+    std::pair(itm_pipebomb, std::tuple("light", "the fuse on the pipe bomb." , itm_pipebomb_act, 3)),
+    std::pair(itm_grenade, std::tuple("pull", "the pin on the grenade." , itm_grenade_act, 5)),
     std::pair(itm_flashbang, std::tuple("pull", "the pin on the flashbang." , itm_flashbang_act, 5)),
     std::pair(itm_EMPbomb, std::tuple("pull", "the pin on the EMP grenade." , itm_EMPbomb_act, 3)),
     std::pair(itm_gasbomb, std::tuple("pull", "the pin on the teargas canister." , itm_gasbomb_act, 20)),
@@ -1412,6 +1370,37 @@ static void activate(player& p, item& it)
     it.make(item::types[std::get<2>(*record)]);
     it.charges = std::get<3>(*record);
     it.active = true;
+}
+
+void iuse::pipebomb(player *p, item *it, bool t)
+{
+    activate(*p, *it);
+    p->use_charges(itm_lighter, 1);
+}
+
+void iuse::pipebomb_act(player *p, item *it, bool t)
+{
+ const auto g = game::active();
+ const auto pos = g->find_item(it).value();
+
+ if (t) g->sound(pos, 0, "Ssssss"); // Vol 0 = only heard if you hold it
+ else {	// The timer has run down
+  if (one_in(10) && g->u.see(pos)) // \todo? allow fizzling out when not in sight?
+   messages.add("The pipe bomb fizzles out.");
+  else
+   g->explosion(pos, rng(6, 14), rng(0, 4), false);
+ }
+}
+
+void iuse::grenade(player *p, item *it, bool t) { activate(*p, *it); }
+
+void iuse::grenade_act(player *p, item *it, bool t)
+{
+ const auto g = game::active();
+ const auto pos = g->find_item(it).value();
+
+ if (t) g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
+ else g->explosion(pos, 12, 28, false); // When that timer runs down...
 }
 
 void iuse::flashbang(player *p, item *it, bool t) { activate(*p, *it); }
@@ -1606,14 +1595,12 @@ void iuse::mininuke_act(player *p, item *it, bool t)
 
  if (t) g->sound(pos, 2, "Tick."); 	// Simple timer effects
  else {	// When that timer runs down...
-  g->explosion(pos, 200, 0, false);
-  for (int i = -4; i <= 4; i++) {
-   for (int j = -4; j <= 4; j++) {
-	point dest(pos.x + i, pos.y + j);
-    if (g->m.sees(pos, dest, 3) && g->m.move_cost(dest) > 0)
-     g->m.add_field(g, dest, fd_nuke_gas, 3);
-   }
-  }
+     g->explosion(pos, 200, 0, false);
+
+     static auto contaminate = [&](point dest) {
+         if (g->m.sees(pos, dest, 3) && g->m.move_cost(dest) > 0) g->m.add_field(g, dest, fd_nuke_gas, 3);
+     };
+     forall_do_inclusive(pos + within_rldist<3>, contaminate);
  }
 }
 

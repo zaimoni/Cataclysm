@@ -4849,6 +4849,7 @@ std::optional<std::string> it_tool::cannot_use(const item& it, const player& u) 
 	if (itm_UPS_off == id && 0 == it.charges) return std::string("The power supply's batteries are dead.");
 	if (itm_dynamite == id && !u.has_charges(itm_lighter, 1)) return std::string("You need a lighter!");
 	if (itm_molotov == id && !u.has_charges(itm_lighter, 1)) return std::string("You need a lighter!");
+	if (itm_pipebomb == id && !u.has_charges(itm_lighter, 1)) return std::string("You need a lighter!");
 	return std::nullopt;
 }
 #endif
