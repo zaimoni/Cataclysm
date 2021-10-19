@@ -1463,13 +1463,12 @@ void iuse::gasbomb_act(player *p, item *it, bool t)
  if (t) {
   if (it->charges > 15) g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
   else {
-   for (int i = -2; i <= 2; i++) {
-    for (int j = -2; j <= 2; j++) {
-	 point dest(pos.x + i, pos.y + j);
-     if (g->m.sees(pos, dest, 3) && g->m.move_cost(dest) > 0)
-      g->m.add_field(g, dest, fd_tear_gas, 3);
-    }
-   }
+      static auto contaminate = [&](point dest) {
+          if (g->m.sees(pos, dest, 2) && g->m.move_cost(dest) > 0)
+              g->m.add_field(g, dest, fd_tear_gas, 3);
+      };
+
+      forall_do_inclusive(pos + within_rldist<2>, contaminate);
   }
  } else it->make(item::types[itm_canister_empty]);
 }
@@ -1484,13 +1483,12 @@ void iuse::smokebomb_act(player *p, item *it, bool t)
  if (t) {
   if (it->charges > 17) g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
   else {
-   for (int i = -2; i <= 2; i++) {
-    for (int j = -2; j <= 2; j++) {
-	 point dest(pos.x + i, pos.y + j);
-     if (g->m.sees(pos, dest, 3) && g->m.move_cost(dest) > 0)
-      g->m.add_field(g, dest, fd_smoke, rng(1, 2) + rng(0, 1));
-    }
-   }
+      static auto contaminate = [&](point dest) {
+          if (g->m.sees(pos, dest, 2) && g->m.move_cost(dest) > 0)
+              g->m.add_field(g, dest, fd_smoke, rng(1, 2) + rng(0, 1));
+      };
+
+      forall_do_inclusive(pos + within_rldist<2>, contaminate);
   }
  } else it->make(item::types[itm_canister_empty]);
 }
@@ -1511,10 +1509,11 @@ void iuse::acidbomb_act(player *p, item *it, bool t)
     if (auto loc = std::get_if<GPS_loc>(&where_is)) { // not held by anyone
         if (const auto pos = g->toScreen(*loc)) {
             it->charges = 0;
-            for (int x = pos->x - 1; x <= pos->x + 1; x++) {
-                for (int y = pos->y - 1; y <= pos->y + 1; y++)
-                    g->m.add_field(g, x, y, fd_acid, 3);
-            }
+            static auto contaminate = [&](point pt) {
+                g->m.add_field(g, pt, fd_acid, 3);
+            };
+
+            forall_do_inclusive(*pos + within_rldist<1>, contaminate);
         }
     }
 }
