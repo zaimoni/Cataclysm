@@ -4840,16 +4840,25 @@ std::optional<std::any> it_tool::is_relevant(const item& it, const npc& _npc) co
 	return std::any();
 }
 
+const std::pair<itype_id, std::tuple<itype_id, int, std::string> > prereq_charged_items[] = {
+	std::pair(itm_pipebomb, std::tuple(itm_lighter, 1, "a lighter")),
+	std::pair(itm_molotov, std::tuple(itm_lighter, 1, "a lighter")),
+	std::pair(itm_dynamite, std::tuple(itm_lighter, 1, "a lighter"))
+};
+
 std::optional<std::string> it_tool::cannot_use(const item& it, const player& u) const
 {
 	if (0 < charges_per_use && it.charges < charges_per_use) {
 		return std::string("Your ") + it.tname() + " has " + std::to_string(it.charges) + " but needs " + std::to_string((int)charges_per_use);
 	}
+	for (decltype(auto) req : prereq_charged_items) {
+		if (req.first == it.type->id && !u.has_charges(std::get<0>(req.second), std::get<1>(req.second))) {
+			// \todo? treat items as nouns: get the item name as a direct object
+			return std::string("You need ") + std::get<2>(req.second) +"!";
+		}
+	}
 	// following should be a function hook call
 	if (itm_UPS_off == id && 0 == it.charges) return std::string("The power supply's batteries are dead.");
-	if (itm_dynamite == id && !u.has_charges(itm_lighter, 1)) return std::string("You need a lighter!");
-	if (itm_molotov == id && !u.has_charges(itm_lighter, 1)) return std::string("You need a lighter!");
-	if (itm_pipebomb == id && !u.has_charges(itm_lighter, 1)) return std::string("You need a lighter!");
 	return std::nullopt;
 }
 #endif
