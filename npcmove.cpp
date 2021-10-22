@@ -13,13 +13,12 @@
 #define NPC_DANGER_LEVEL   10
 #define NPC_DANGER_VERY_LOW 5
 
-// A list of items used for escape, in order from least to most valuable
+// A list of items used for escape, in order from most to least valuable
 static const itype_id ESCAPE_ITEMS[] = {	// \todo mod target
- itm_cola, itm_caffeine, itm_energy_drink, itm_canister_goo, itm_smokebomb,
- itm_smokebomb_act, itm_adderall, itm_coke, itm_meth, itm_teleporter,
- itm_pheromone
+ itm_smokebomb_act, itm_pheromone, itm_teleporter, itm_meth, itm_coke,
+ itm_adderall, itm_smokebomb, itm_canister_goo, itm_energy_drink,
+ itm_caffeine, itm_cola
 };
-#define NUM_ESCAPE_ITEMS (sizeof(ESCAPE_ITEMS)/sizeof(itype_id))
 
 // A list of alternate attack items (e.g. grenades), from least to most valuable
 // note that activated explosives are to be thrown before attempting others
@@ -770,7 +769,7 @@ std::optional<npc::item_spec> npc::alt_attack_available() const
 		if (thrown_item(it)) return true;
 		if (const auto tool = it.is_tool()) {
 			if (tool->cannot_use(it, *this)) return false;
-			if (!tool->is_relevant(it, *this)) return false;;
+			if (!tool->is_relevant(it, *this)) return false;
 		}
 		return true;
 	};
@@ -797,26 +796,35 @@ std::optional<npc::item_spec> npc::alt_attack_available() const
 
 int npc::choose_escape_item() const
 {
- int best = -1, ret = -1;
- for (size_t i = 0; i < inv.size(); i++) {
-  const auto& it = inv[i];
-  for (int j = 0; j < NUM_ESCAPE_ITEMS; j++) {
-   if (it.type->id != ESCAPE_ITEMS[j]) continue;	// \todo some sort of relevance check (needs context)
-   if (j < best) break;
-   if (j == best && it.charges >= inv[ret].charges) break;
-   if (const auto tool = it.is_tool()) {
-	   if (tool->cannot_use(it, *this)) break;
-	   if (!tool->is_relevant(it, *this)) break;
-   }
-   if (const auto food = it.is_food()) { // Avoid guzzling down Adderall etc.
-	   if (stim >= food->stim && (10 > food->stim || stim >= food->stim * 2)) continue;
-   }
-   ret = i;
-   best = j;
-   break;
-  }
- }
- return ret;
+	static auto accept = [&](const item& it) {
+		if (const auto tool = it.is_tool()) {
+			if (tool->cannot_use(it, *this)) return false;
+			if (!tool->is_relevant(it, *this)) return false;
+		}
+		if (const auto food = it.is_food()) { // Avoid guzzling down Adderall etc.
+			if (stim >= food->stim && (10 > food->stim || stim >= food->stim * 2)) return false;
+		}
+		return true;
+	};
+
+	for (const auto which : ESCAPE_ITEMS) {
+		if (has_amount(which, 1)) {
+			// weapon slot not considered for escape items, just inventory
+/*
+			if (weapon.type->id == which) {
+				if (!accept(weapon)) continue;
+				return -1;
+			}
+*/
+			for (int i = 0; i < inv.size(); i++) {
+				if (inv[i].type->id == which) {
+					if (!accept(inv[i])) continue;
+					return i;
+				}
+			}
+		}
+	}
+	return -1; // default to weapon if not actually there \todo respec this
 }
 
 // Index defaults to -1, i.e., wielded weapon
