@@ -22,13 +22,13 @@ static const itype_id ESCAPE_ITEMS[] = {	// \todo mod target
 #define NUM_ESCAPE_ITEMS (sizeof(ESCAPE_ITEMS)/sizeof(itype_id))
 
 // A list of alternate attack items (e.g. grenades), from least to most valuable
+// note that activated explosives are to be thrown before attempting others
 static const itype_id ALT_ATTACK_ITEMS[] = {	// \todo mod target
- itm_knife_combat, itm_spear_wood, itm_molotov, itm_pipebomb, itm_grenade,
- itm_gasbomb, itm_bot_manhack, itm_tazer, itm_dynamite, itm_mininuke,
- itm_molotov_lit, itm_pipebomb_act, itm_grenade_act, itm_gasbomb_act,
- itm_dynamite_act, itm_mininuke_act
+ itm_mininuke_act, itm_dynamite_act, itm_gasbomb_act, itm_grenade_act,
+ itm_pipebomb_act, itm_molotov_lit, itm_knife_combat, itm_spear_wood,
+ itm_molotov, itm_pipebomb, itm_grenade, itm_gasbomb, itm_bot_manhack,
+ itm_tazer, itm_dynamite, itm_mininuke,
 };
-#define NUM_ALT_ATTACK_ITEMS (sizeof(ALT_ATTACK_ITEMS)/sizeof(itype_id))
 
 // all of these classes are designed for immediate use, not scheduling (i.e., IsLegal implementation may include parts that belong in IsPerformable)
 // 2021-09-08: use_escape_obj now obsolete, use target_inventory_alt instead
@@ -766,27 +766,27 @@ static bool thrown_item(const item& used)	// not general enough to migrate to it
 
 std::optional<npc::item_spec> npc::alt_attack_available() const
 {
-	for (int i = 0; i < NUM_ALT_ATTACK_ITEMS; i++) {
-		const itype_id which = ALT_ATTACK_ITEMS[i]; // backward compatibility
+	static auto accept = [&](const item& it) {
+		if (thrown_item(it)) return true;
+		if (const auto tool = it.is_tool()) {
+			if (tool->cannot_use(it, *this)) return false;
+			if (!tool->is_relevant(it, *this)) return false;;
+		}
+		return true;
+	};
+
+	for (const auto which : ALT_ATTACK_ITEMS) {
 		if (item::types[which]->item_flags & mfb(IF_GRENADE)) {
 			if (is_following() && !combat_rules.use_grenades) continue;
 		}
 		if (has_amount(which, 1)) {
 			if (weapon.type->id == which) {
-				if (thrown_item(weapon)) return item_spec(const_cast<item*>(&weapon), -1);
-				if (const auto tool = weapon.is_tool()) {
-					if (tool->cannot_use(weapon, *this)) continue;
-					if (!tool->is_relevant(weapon, *this)) continue;
-				}
+				if (!accept(weapon)) continue;
 				return item_spec(const_cast<item*>(&weapon), -1);
 			}
 			for (int i = 0; i < inv.size(); i++) {
 				if (inv[i].type->id == which) {
-					if (thrown_item(inv[i])) return item_spec(const_cast<item*>(&(inv[i])), i);
-					if (const auto tool = inv[i].is_tool()) {
-						if (tool->cannot_use(inv[i], *this)) continue;
-						if (!tool->is_relevant(inv[i], *this)) continue;
-					}
+					if (!accept(inv[i])) continue;
 					return item_spec(const_cast<item*>(&(inv[i])), i);
 				}
 			}
