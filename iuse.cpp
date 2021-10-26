@@ -1414,7 +1414,7 @@ void iuse::flashbang_act(player *p, item *it, bool t)
  else g->flashbang(pos); // When that timer runs down...
 }
 
-void iuse::c4(player *p, item *it, bool t)
+void iuse::c4(pc& p, item& it)
 {
  int time = query_int("Set the timer to (0 to cancel)?");
  if (time == 0) {
@@ -1422,9 +1422,9 @@ void iuse::c4(player *p, item *it, bool t)
   return;
  }
  messages.add("You set the timer to %d.", time);
- it->make(item::types[itm_c4armed]);
- it->charges = time;
- it->active = true;
+ it.make(item::types[itm_c4armed]);
+ it.charges = time;
+ it.active = true;
 }
 
 void iuse::c4armed(player *p, item *it, bool t)

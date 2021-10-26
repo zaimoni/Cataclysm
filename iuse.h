@@ -75,7 +75,7 @@ class iuse
   static void grenade_act	(player *p, item *it, bool t);
   static void flashbang	(player *p, item *it, bool t);
   static void flashbang_act	(player *p, item *it, bool t);
-  static void c4    		(player *p, item *it, bool t);
+  static void c4(pc& p, item& it);
   static void c4armed  	(player *p, item *it, bool t);
   static void EMPbomb		(player *p, item *it, bool t);
   static void EMPbomb_act	(player *p, item *it, bool t);
