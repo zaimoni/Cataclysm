@@ -1309,41 +1309,35 @@ void iuse::can_goo(player *p, item *it, bool t)
  const auto g = game::active();
 
  it->make(item::types[itm_canister_empty]);
- int tries = 0, goox, gooy;
- do {
-  goox = p->pos.x + rng(-2, 2);
-  gooy = p->pos.y + rng(-2, 2);
-  tries++;
- } while (g->m.move_cost(goox, gooy) == 0 && tries < 10);
- if (tries == 10) return;
- if (monster* const m_at = g->mon(goox, gooy)) {
-  if (g->u.see(goox, gooy))
-   messages.add("Black goo emerges from the canister and envelopes a %s!", m_at->name().c_str());
+
+ static std::function<point()> where_is = [&]() {return p->pos + rng(within_rldist<2>); };
+ static std::function<bool(const point&)> ok = [&](const point& dest) {return 0 < g->m.move_cost(dest); };
+
+ auto goo_pos = LasVegasChoice(10, where_is, ok);
+ if (!goo_pos) return;
+ bool u_see = (bool)g->u.see(*goo_pos);
+
+ if (monster* const m_at = g->mon(*goo_pos)) {
+  if (u_see) messages.add("Black goo emerges from the canister and envelopes a %s!", m_at->name().c_str());
   m_at->poly(mtype::types[mon_blob]);
   m_at->speed -= rng(5, 25);
   m_at->hp = m_at->speed;
  } else {
-  if (g->u.see(goox, gooy))
-   messages.add("Living black goo emerges from the canister!");
-  monster goo(mtype::types[mon_blob], goox, gooy);
+  if (u_see) messages.add("Living black goo emerges from the canister!");
+  monster goo(mtype::types[mon_blob], *goo_pos);
   goo.friendly = -1;
-  g->z.push_back(goo);
+  g->z.push_back(std::move(goo));
  }
- tries = 0;
- while (!one_in(4) && tries < 10) {
-  tries = 0;
-  do {
-   goox = p->pos.x + rng(-2, 2);
-   gooy = p->pos.y + rng(-2, 2);
-   tries++;
-  } while (g->m.move_cost(goox, gooy) == 0 &&
-           g->m.tr_at(goox, gooy) == tr_null && tries < 10);
-  if (tries < 10) {
-   if (g->u.see(goox, gooy))
-    messages.add("A nearby splatter of goo forms into a goo pit.");
-   g->m.tr_at(goox, gooy) = tr_goo;
-  }
- }
+
+ // Unsure whether C:Whales is reasonable behavior (accept: can move through, *or* already has trap)
+ static std::function<bool()> continue_ok = []() {return !one_in(4); };
+ static std::function<bool(const point&)> ok_for_trap = [&](const point& dest) {return 0 < g->m.move_cost(dest) || tr_null != g->m.tr_at(dest); };
+
+ goo_pos = LasVegasChoice(10, where_is, ok_for_trap, continue_ok);
+ if (goo_pos) {
+     if (g->u.see(*goo_pos)) messages.add("A nearby splatter of goo forms into a goo pit.");
+     g->m.tr_at(*goo_pos) = tr_goo;
+ };
 }
 
 static std::pair<itype_id, std::tuple<std::string, std::string, itype_id, int > > activate_spec[] = {

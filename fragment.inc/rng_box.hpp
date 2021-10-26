@@ -115,6 +115,16 @@ inline point clamped_ub(point src, const point& ref) {
 
 // \todo does not belong here -- only needs std::optional and std::function
 template<class T>
+std::optional<T> LasVegasChoice(int tries, std::function<T()> generate, std::function<bool(const T&)> ok, std::function<bool()> continue_ok)
+{
+	while (0 <= --tries && continue_ok()) {
+		auto test = generate();
+		if (ok(test)) return test;
+	}
+	return std::nullopt;
+}
+
+template<class T>
 std::optional<T> LasVegasChoice(int tries, std::function<T()> generate, std::function<bool(const T&)> ok)
 {
 	while (0 <= --tries) {
