@@ -594,7 +594,7 @@ void iuse::dogfood(player *p, item *it, bool t)
 
 // TOOLS below this point!
 
-void iuse::lighter(player *p, item *it, bool t)
+void iuse::lighter(pc& p, item& it)
 {
  const auto g = game::active();
 
@@ -603,57 +603,55 @@ void iuse::lighter(player *p, item *it, bool t)
  const point dir(get_direction(input()));
  if (dir.x == -2) {
   messages.add("Invalid direction.");
-  it->charges++;
+  it.charges++;
   return;
  }
- p->moves -= (3 * mobile::mp_turn) / 20;
- const auto dest = dir + p->pos;
+ p.moves -= (3 * mobile::mp_turn) / 20;
+ const auto dest = dir + p.pos;
 
  if (g->m.flammable_items_at(dest.x, dest.y)) {
   g->m.add_field(g, dest, fd_fire, 1, 30);
  } else {
   messages.add("There's nothing to light there.");
-  it->charges++;
+  it.charges++;
  }
 }
 
-void iuse::sew(player *p, item *it, bool t)
+void iuse::sew(pc& p, item& it)
 {
- const auto g = game::active();
-
- char ch = g->u.get_invlet("Repair what?");
- const auto src = p->from_invlet(ch);
+ char ch = p.get_invlet("Repair what?");
+ const auto src = p.from_invlet(ch);
  if (!src) {
      messages.add("You do not have that item!");
-     it->charges++;
+     it.charges++;
      return;
  }
 
  item* fix = src->first; // backward compatibility
  if (!fix->is_armor()) {
   messages.add("That isn't clothing!");
-  it->charges++;
+  it.charges++;
   return;
  }
  if (!fix->made_of(COTTON) && !fix->made_of(WOOL)) {
   messages.add("Your %s is not made of cotton or wool.", fix->tname().c_str());
-  it->charges++;
+  it.charges++;
   return;
  }
  if (fix->damage < 0) {
   messages.add("Your %s is already enhanced.", fix->tname().c_str());
-  it->charges++;
+  it.charges++;
   return;
  };
 
- p->moves -= 5 * mobile::mp_turn;
- int rn = dice(4, 2 + p->sklevel[sk_tailor]);
- if (p->dex_cur < 8 && one_in(p->dex_cur)) rn -= rng(2, 6);
- if (p->dex_cur >= 16 || (p->dex_cur > 8 && one_in(16 - p->dex_cur))) rn += rng(2, 6);
- if (p->dex_cur > 16) rn += rng(0, p->dex_cur - 16);
+ p.moves -= 5 * mobile::mp_turn;
+ int rn = dice(4, 2 + p.sklevel[sk_tailor]);
+ if (p.dex_cur < 8 && one_in(p.dex_cur)) rn -= rng(2, 6);
+ if (p.dex_cur >= 16 || (p.dex_cur > 8 && one_in(16 - p.dex_cur))) rn += rng(2, 6);
+ if (p.dex_cur > 16) rn += rng(0, p.dex_cur - 16);
 
  if (fix->damage == 0) {
-  p->practice(sk_tailor, 10);
+  p.practice(sk_tailor, 10);
   if (rn <= 4) {
    messages.add("You damage your %s!", fix->tname().c_str());
    fix->damage++;
@@ -663,7 +661,7 @@ void iuse::sew(player *p, item *it, bool t)
   } else
    messages.add("You practice your sewing.");
  } else {
-  p->practice(sk_tailor, 8);
+  p.practice(sk_tailor, 8);
 
   rn -= rng(fix->damage, fix->damage * 2); // unclear that repair is actually more difficult than enhancement
 
@@ -672,15 +670,15 @@ void iuse::sew(player *p, item *it, bool t)
    fix->damage++;
    if (fix->damage >= 5) {
     messages.add("You destroy it!");
-    p->remove_discard(*src);
+    p.remove_discard(*src);
    }
   } else if (rn <= 6) {
    messages.add("You don't repair your %s, but you waste lots of thread.", fix->tname().c_str());
-   clamp_lb<0>(it->charges -= rng(1, 8));
+   clamp_lb<0>(it.charges -= rng(1, 8));
   } else if (rn <= 8) {
    messages.add("You repair your %s, but waste lots of thread.", fix->tname().c_str());
    fix->damage--;
-   clamp_lb<0>(it->charges -= rng(1, 8));
+   clamp_lb<0>(it.charges -= rng(1, 8));
   } else if (rn <= 16) {
    messages.add("You repair your %s!", fix->tname().c_str());
    fix->damage--;
@@ -691,11 +689,10 @@ void iuse::sew(player *p, item *it, bool t)
  }
 }
 
-void iuse::scissors(player *p, item *it, bool t)
+void iuse::scissors(pc& p, item& it)
 {
- const auto g = game::active();
- char ch = g->u.get_invlet("Chop up what?");
- auto src = p->from_invlet(ch);
+ char ch = p.get_invlet("Chop up what?");
+ auto src = p.from_invlet(ch);
  if (!src) {
      messages.add("You do not have that item!");
      return;
@@ -716,10 +713,10 @@ void iuse::scissors(player *p, item *it, bool t)
      while (0 < n--) {
          if (!drop) {
              // \todo do we want stacking here?
-             if (p->volume_carried() >= p->volume_capacity() || !g->u.assign_invlet(obj)) drop = true;
+             if (p.volume_carried() >= p.volume_capacity() || !p.assign_invlet(obj)) drop = true;
          }
-         if (drop) g->m.add_item(p->pos, std::move(obj));
-         else p->i_add(std::move(obj));
+         if (drop) game::active()->m.add_item(p.pos, std::move(obj));
+         else p.i_add(std::move(obj));
      }
  };
 
@@ -728,11 +725,11 @@ void iuse::scissors(player *p, item *it, bool t)
   return;
  }
  if (const auto dest = is_string_like(cut->type->id)) {
-     p->moves -= 3 * (mobile::mp_turn) / 2;
+     p.moves -= 3 * (mobile::mp_turn) / 2;
      int pieces = dest->second.first; // backward compatibility
      auto i_type = dest->second.second;
      messages.add("You cut the %s into %d smaller pieces.", dest->first, dest->second.first);
-     p->remove_discard(*src);
+     p.remove_discard(*src);
      drop_n_clone(pieces, item(item::types[i_type], int(messages.turn)));
      return;
  }
@@ -741,25 +738,25 @@ void iuse::scissors(player *p, item *it, bool t)
   return;
  }
  const auto vol = cut->volume();
- p->moves -= (mobile::mp_turn / 4) * vol;
+ p.moves -= (mobile::mp_turn / 4) * vol;
  int count = vol;
- if (p->sklevel[sk_tailor] == 0) count = rng(0, count);
- else if (p->sklevel[sk_tailor] == 1 && count >= 2) count -= rng(0, 2);
+ if (p.sklevel[sk_tailor] == 0) count = rng(0, count);
+ else if (p.sklevel[sk_tailor] == 1 && count >= 2) count -= rng(0, 2);
 
- if (dice(3, 3) > p->dex_cur) count -= rng(1, 3);
+ if (dice(3, 3) > p.dex_cur) count -= rng(1, 3);
 
  if (count <= 0) {
   messages.add("You clumsily cut the %s into useless ribbons.", cut->tname().c_str());
-  p->remove_discard(*src);
+  p.remove_discard(*src);
   return;
  }
  messages.add("You slice the %s into %d rag%s.", cut->tname().c_str(), count,
             (count == 1 ? "" : "s"));
- p->remove_discard(*src);
+ p.remove_discard(*src);
  drop_n_clone(count, item(item::types[itm_rag], int(messages.turn)));
 }
 
-void iuse::extinguisher(player *p, item *it, bool t)
+void iuse::extinguisher(pc& p, item& it)
 {
  const auto g = game::active();
 
@@ -768,11 +765,11 @@ void iuse::extinguisher(player *p, item *it, bool t)
  const point dir(get_direction(input()));
  if (dir.x == -2) {
   messages.add("Invalid direction!");
-  it->charges++;
+  it.charges++;
   return;
  }
- p->moves -= (mobile::mp_turn / 5) * 7;
- auto pt(dir + p->pos);
+ p.moves -= (mobile::mp_turn / 5) * 7;
+ auto pt(dir + p.pos);
  {
  auto& fd = g->m.field_at(pt);
  if (fd.type == fd_fire) {
@@ -782,13 +779,13 @@ void iuse::extinguisher(player *p, item *it, bool t)
  if (monster* const m_at = g->mon(pt)) {
   m_at->moves -= (mobile::mp_turn / 2) * 3;
   const bool is_liquid = m_at->made_of(LIQUID); // assumed that liquid is water or similar -- dry ice extinguisher?
-  if (g->u.see(*m_at)) {
+  if (p.see(*m_at)) {
       const auto z_name = grammar::capitalize(m_at->desc(grammar::noun::role::subject, grammar::article::definite));
       messages.add("%s is sprayed!", z_name.c_str());
       if (is_liquid) messages.add("%s is frozen!", z_name.c_str());
   }
   if (is_liquid) {
-   if (m_at->hurt(rng(20, 60))) g->kill_mon(*m_at, p);
+   if (m_at->hurt(rng(20, 60))) g->kill_mon(*m_at, &p);
    else m_at->speed /= 2;
   }
  }
@@ -820,7 +817,7 @@ auto linear_search(K key, range origin, range _end) // \todo migrate to zero.h
     return decltype(&origin->second)(nullptr);
 }
 
-void iuse::hammer(player *p, item *it, bool t)
+void iuse::hammer(pc& p, item& it)
 {
  const auto g = game::active();
 
@@ -832,19 +829,19 @@ void iuse::hammer(player *p, item *it, bool t)
   return;
  }
 
- auto& type = g->m.ter(dir + p->pos);
+ auto& type = g->m.ter(dir + p.pos);
  auto deconstruct = linear_search(type, std::begin(deconstruct_boarded), std::end(deconstruct_boarded));
  if (!deconstruct) {
      messages.add("Hammers can only remove boards from windows and doors.");
      messages.add("To board up a window or door, press *");
      return;
  }
- p->moves -= 5 * mobile::mp_turn;
+ p.moves -= 5 * mobile::mp_turn;
  item it_nails(item::types[itm_nail], 0); // assumed pre-apocalypse
  it_nails.charges = std::get<1>(*deconstruct);
- g->m.add_item(p->pos, std::move(it_nails));
+ g->m.add_item(p.pos, std::move(it_nails));
  item board(item::types[itm_2x4], 0);
- for (int i = 0; i < std::get<2>(*deconstruct); i++) g->m.add_item(p->pos, board);
+ for (int i = 0; i < std::get<2>(*deconstruct); i++) g->m.add_item(p.pos, board);
  type = std::get<0>(*deconstruct);
 }
  
@@ -869,10 +866,9 @@ void iuse::light_on(player *p, item *it, bool t)
  }
 }
 
-void iuse::water_purifier(player *p, item *it, bool t)
+void iuse::water_purifier(pc& p, item& it)
 {
- const auto g = game::active();
- const auto purify = p->have_item(g->u.get_invlet("Purify what?"));
+ const auto purify = p.have_item(p.get_invlet("Purify what?"));
  if (!purify.second) {
 	 messages.add("You do not have that idea!");
 	 return;
@@ -888,7 +884,7 @@ only_water:
  pure.poison = 0;
 }
 
-void iuse::two_way_radio(player *p, item *it, bool t)
+void iuse::two_way_radio(pc& p, item& it)
 {
 // TODO: More options here.  Thoughts...
 //       > Respond to the SOS of an NPC
@@ -921,10 +917,10 @@ void iuse::two_way_radio(player *p, item *it, bool t)
  wrefresh(w);
  int ch = getch();
  if (ch == '1') {
-  p->moves -= 3 * mobile::mp_turn;
+  p.moves -= 3 * mobile::mp_turn;
   faction* fac = g->list_factions("Call for help...");
   if (fac == nullptr) {
-   it->charges++;
+   it.charges++;
    return;
   }
   int bonus = 0;
@@ -951,7 +947,7 @@ void iuse::two_way_radio(player *p, item *it, bool t)
  } else if (ch == '2') {	// Call Acquaitance
 // TODO: Implement me!
  } else if (ch == '3') {	// General S.O.S.
-  p->moves -= (3 * mobile::mp_turn) / 2;
+  p.moves -= (3 * mobile::mp_turn) / 2;
   const OM_loc my_om = overmap::toOvermap(g->u.GPSpos);
   std::vector<npc*> in_range;
   for (auto& _npc : g->cur_om.npcs) {
@@ -967,24 +963,24 @@ void iuse::two_way_radio(player *p, item *it, bool t)
   } else
    popup("No-one seems to reply...");
  } else
-  it->charges++;	// Canceled the call, get our charge back
+  it.charges++;	// Canceled the call, get our charge back
  werase(w);
  wrefresh(w);
  delwin(w);
  refresh();
 }
  
-void iuse::radio_off(player *p, item *it, bool t)
+void iuse::radio_off(pc& p, item& it)
 {
- if (it->charges == 0) messages.add("It's dead.");
+ if (it.charges == 0) messages.add("It's dead.");
  else {
   messages.add("You turn the radio on.");
-  it->make(item::types[itm_radio_on]);
-  it->active = true;
+  it.make(item::types[itm_radio_on]);
+  it.active = true;
  }
 }
 
-void iuse::radio_on(player *p, item *it, bool t)
+void iuse::radio_on(player* p, item* it, bool t)
 {
  static constexpr const int RADIO_PER_TURN = 25;
  const auto g = game::active();
@@ -1019,7 +1015,7 @@ void iuse::radio_on(player *p, item *it, bool t)
  }
 }
 
-void iuse::crowbar(player *p, item *it, bool t)
+void iuse::crowbar(pc& p, item& it)
 {
  const auto g = game::active();
 
@@ -1031,34 +1027,34 @@ void iuse::crowbar(player *p, item *it, bool t)
   return;
  }
 
- auto& type = g->m.ter(dir + p->pos);
+ auto& type = g->m.ter(dir + p.pos);
  if (type == t_door_c || type == t_door_locked || type == t_door_locked_alarm) {
-  if (dice(4, 6) < dice(4, p->str_cur)) {
+  if (dice(4, 6) < dice(4, p.str_cur)) {
    messages.add("You pry the door open.");
-   p->moves -= (mobile::mp_turn / 2) * 3 - (p->str_cur * (mobile::mp_turn / 20));
+   p.moves -= (mobile::mp_turn / 2) * 3 - (p.str_cur * (mobile::mp_turn / 20));
    type = t_door_o;
   } else {
    messages.add("You pry, but cannot open the door.");
-   p->moves -= mobile::mp_turn;
+   p.moves -= mobile::mp_turn;
   }
  } else if (type == t_manhole_cover) {
-  if (dice(8, 8) < dice(8, p->str_cur)) {
+  if (dice(8, 8) < dice(8, p.str_cur)) {
    messages.add("You lift the manhole cover.");
-   p->moves -= 5 * mobile::mp_turn - (p->str_cur * (mobile::mp_turn / 20));
+   p.moves -= 5 * mobile::mp_turn - (p.str_cur * (mobile::mp_turn / 20));
    type = t_manhole;
-   g->m.add_item(p->pos, item::types[itm_manhole_cover], 0);
+   g->m.add_item(p.pos, item::types[itm_manhole_cover], 0);
   } else {
    messages.add("You pry, but cannot lift the manhole cover.");
-   p->moves -= mobile::mp_turn;
+   p.moves -= mobile::mp_turn;
   }
  } else if (type == t_crate_c) {
-  if (p->str_cur >= rng(3, 30)) {
+  if (p.str_cur >= rng(3, 30)) {
    messages.add("You pop the crate open.");
-   p->moves -= (mobile::mp_turn / 2) * 3 - (p->str_cur * (mobile::mp_turn / 20));
+   p.moves -= (mobile::mp_turn / 2) * 3 - (p.str_cur * (mobile::mp_turn / 20));
    type = t_crate_o;
   } else {
    messages.add("You pry, but cannot open the crate.");
-   p->moves -= mobile::mp_turn;
+   p.moves -= mobile::mp_turn;
   } 
  } else {
   auto deconstruct = linear_search(type, std::begin(deconstruct_boarded), std::end(deconstruct_boarded));
@@ -1066,13 +1062,13 @@ void iuse::crowbar(player *p, item *it, bool t)
       messages.add("There's nothing to pry there.");
       return;
   }
-  p->moves -= 5 * mobile::mp_turn;
+  p.moves -= 5 * mobile::mp_turn;
   item it_nails(item::types[itm_nail], 0); // assumed pre-apocalypse
   it_nails.charges = std::get<1>(*deconstruct);
-  g->m.add_item(p->pos, std::move(it_nails));
+  g->m.add_item(p.pos, std::move(it_nails));
   item board(item::types[itm_2x4], 0);
   for (int i = 0; i < std::get<2>(*deconstruct); i++)
-   g->m.add_item(p->pos, board);
+   g->m.add_item(p.pos, board);
   type = std::get<0>(*deconstruct);
  }
 }
@@ -1088,7 +1084,7 @@ void iuse::makemound(player *p, item *it, bool t)
   messages.add("You can't churn up this ground.");
 }
 
-void iuse::dig(player *p, item *it, bool t)
+void iuse::dig(pc& p, item& it)
 {
  messages.add("You can dig a pit via the construction menu--hit *");
 }
@@ -1115,7 +1111,7 @@ void iuse::chainsaw_on(player *p, item *it, bool t)
  }
 }
 
-void iuse::jackhammer(player *p, item *it, bool t)
+void iuse::jackhammer(pc& p, item& it)
 {
  const auto g = game::active();
 
@@ -1126,15 +1122,15 @@ void iuse::jackhammer(player *p, item *it, bool t)
   messages.add("Invalid direction.");
   return;
  }
- const auto dest = dir + p->pos;
+ const auto dest = dir + p.pos;
 
  if (g->m.is_destructable(dest)) {
   g->m.destroy(g, dest.x, dest.y, false);
-  p->moves -= 5 * mobile::mp_turn;
+  p.moves -= 5 * mobile::mp_turn;
   g->sound(dir, 45, "TATATATATATATAT!");
  } else {
   messages.add("You can't drill there.");
-  it->charges += it->is_tool()->charges_per_use;
+  it.charges += it.is_tool()->charges_per_use;
  }
 }
 
@@ -1299,10 +1295,8 @@ void iuse::geiger(player *p, item *it, bool t)
 
 void iuse::teleport(player *p, item *it, bool t)
 {
- const auto g = game::active();
-
  p->moves -= mobile::mp_turn;
- g->teleport(p);
+ game::active()->teleport(p);
 }
 
 void iuse::can_goo(player *p, item *it, bool t)

@@ -48,23 +48,23 @@ class iuse
   static void dogfood		(player *p, item *it, bool t);
 
 // TOOLS
-  static void lighter		(player *p, item *it, bool t);
-  static void sew		(player *p, item *it, bool t);
-  static void scissors		(player *p, item *it, bool t);
-  static void extinguisher	(player *p, item *it, bool t);
-  static void hammer		(player *p, item *it, bool t);
+  static void lighter(pc& p, item& it);
+  static void sew(pc& p, item& it);
+  static void scissors(pc& p, item& it);
+  static void extinguisher(pc& p, item& it);
+  static void hammer(pc& p, item& it);
   static void light_off	(player *p, item *it, bool t);
   static void light_on		(player *p, item *it, bool t);
-  static void water_purifier	(player *p, item *it, bool t);
-  static void two_way_radio	(player *p, item *it, bool t);
-  static void radio_off	(player *p, item *it, bool t);
-  static void radio_on		(player *p, item *it, bool t);
-  static void crowbar		(player *p, item *it, bool t);
+  static void water_purifier(pc& p, item& it);
+  static void two_way_radio(pc& p, item& it);
+  static void radio_off(pc& p, item& it);
+  static void radio_on	(player* p, item* it, bool t);
+  static void crowbar(pc& p, item& it);
   static void makemound	(player *p, item *it, bool t);
-  static void dig		(player *p, item *it, bool t);
+  static void dig(pc& p, item& it);
   static void chainsaw_off	(player *p, item *it, bool t);
   static void chainsaw_on	(player *p, item *it, bool t);
-  static void jackhammer	(player *p, item *it, bool t);
+  static void jackhammer(pc& p, item& it);
   static void set_trap(pc& p, item& it);
   static void geiger		(player *p, item *it, bool t);
   static void teleport		(player *p, item *it, bool t);
