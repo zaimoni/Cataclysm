@@ -1138,7 +1138,7 @@ void iuse::jackhammer(player *p, item *it, bool t)
  }
 }
 
-void iuse::set_trap(player *p, item *it, bool t)
+void iuse::set_trap(pc& p, item& it)
 {
  const auto g = game::active();
 
@@ -1149,18 +1149,24 @@ void iuse::set_trap(player *p, item *it, bool t)
   messages.add("Invalid direction.");
   return;
  }
- point trap_pos(dir + p->pos);
+ point trap_pos(dir + p.pos);
  if (g->m.move_cost(trap_pos) != 2) {
-  messages.add("You can't place a %s there.", it->tname().c_str());
+  messages.add("You can't place a %s there.", it.tname().c_str());
   return;
  }
+
+ static auto err_bury = [&]() {
+     if (!p.has_amount(itm_shovel, 1)) return std::optional(std::string("You need a shovel."));
+     else if (!g->m.has_flag(diggable, trap_pos)) return std::optional(std::string("You can't dig in that ") + name_of(g->m.ter(trap_pos)));
+     return std::optional<std::string>(std::nullopt);
+ };
 
  trap_id type = tr_null;
  bool buried = false;
  std::ostringstream message;
  int practice;
 
- switch (it->type->id) {
+ switch (it.type->id) {
  case itm_boobytrap:
   message << "You set the boobytrap up and activate the grenade.";
   type = tr_boobytrap;
@@ -1172,9 +1178,7 @@ void iuse::set_trap(player *p, item *it, bool t)
   practice = 2;
   break;
  case itm_beartrap:
-  buried = (p->has_amount(itm_shovel, 1) &&
-            g->m.has_flag(diggable, trap_pos) &&
-            query_yn("Bury the beartrap?"));
+  buried = (!err_bury() && query_yn("Bury the beartrap?"));
   type = (buried ? tr_beartrap_buried : tr_beartrap);
   message << "You " << (buried ? "bury" : "set") << " the beartrap.";
   practice = (buried ? 7 : 4); 
@@ -1229,28 +1233,25 @@ void iuse::set_trap(player *p, item *it, bool t)
   practice = 7;
   break;
  default:
-  messages.add("Tried to set a trap.  But got confused! %s", it->tname().c_str());
+  messages.add("Tried to set a trap.  But got confused! %s", it.tname().c_str());
   return;
  }
 
  if (buried) {
-  if (!p->has_amount(itm_shovel, 1)) {
-   messages.add("You need a shovel.");
-   return;
-  } else if (!g->m.has_flag(diggable, trap_pos)) {
-   messages.add("You can't dig in that %s", name_of(g->m.ter(trap_pos)).c_str());
-   return;
-  }
+     if (const auto err = err_bury()) {
+         messages.add(*err);
+         return;
+     }
  }
 
  messages.add(message.str().c_str());
- p->practice(sk_traps, practice);
+ p.practice(sk_traps, practice);
  g->m.add_trap(trap_pos, type);
- p->moves -= mobile::mp_turn + practice * (mobile::mp_turn/4);
+ p.moves -= mobile::mp_turn + practice * (mobile::mp_turn/4);
  if (type == tr_engine) {
   for (decltype(auto) delta : Direction::vector) g->m.add_trap(trap_pos + delta, tr_blade);
  }
- it->invlet = 0; // Remove the trap from the player's inv
+ it.invlet = 0; // Remove the trap from the player's inv
 }
 
 void iuse::geiger(player *p, item *it, bool t)
