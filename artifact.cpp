@@ -665,7 +665,7 @@ void game::add_artifact_messages(const std::vector<art_effect_passive>& effects)
   stat_info << "Per " << (net_per > 0 ? "+" : "") << net_per << "! ";
 
  if (stat_info.str().length() > 0)
-  messages.add(stat_info.str().c_str());
+  messages.add(stat_info.str());
 
  if (net_speed != 0)
   messages.add("Speed %s%d", (net_speed > 0 ? "+" : ""), net_speed);

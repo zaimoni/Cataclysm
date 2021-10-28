@@ -724,7 +724,7 @@ static void bionics_install_failure(pc* u, int success)
 
  case 4:
   fail_text += " and do damage to your genetics, causing mutation.";
-  messages.add(fail_text.c_str()); // Failure text comes BEFORE mutation text
+  messages.add(fail_text); // Failure text comes BEFORE mutation text
   while (failure_level > 0) {
    u->mutate();
    failure_level -= rng(1, failure_level + 2);
@@ -753,7 +753,7 @@ static void bionics_install_failure(pc* u, int success)
   break;
  }
 
- messages.add(fail_text.c_str());
+ messages.add(fail_text);
 }
 
 // forcing the sole caller to handler the null pointer just complicates the "bypass code" for that critical data design error.

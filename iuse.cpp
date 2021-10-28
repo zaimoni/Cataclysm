@@ -52,7 +52,7 @@ void iuse::royal_jelly(player *p, item *it, bool t)
   p->rem_disease(DI_COMMON_COLD);
   p->rem_disease(DI_FLU);
  }
- if (!p->is_npc()) messages.add(message.c_str());
+ p->subjective_message(message);
 }
 
 static void _display_hp(WINDOW* w, player* p, int curhp, int i)
@@ -1244,7 +1244,7 @@ void iuse::set_trap(pc& p, item& it)
      }
  }
 
- messages.add(message.str().c_str());
+ messages.add(message.str());
  p.practice(sk_traps, practice);
  g->m.add_trap(trap_pos, type);
  p.moves -= mobile::mp_turn + practice * (mobile::mp_turn/4);

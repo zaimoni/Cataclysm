@@ -2702,7 +2702,7 @@ void game::sound(const point& pt, int vol, std::string description)
 /*     else { // If it came from us, don't print a direction
          if (description[0] >= 'a' && description[0] <= 'z')
              description[0] += 'A' - 'a';	// Capitalize the sound
-         messages.add(description.c_str());
+         messages.add(description);
          return;
      } */
 //     messages.add("From the %s you hear %s", direction_name(direction_from(u.pos, pt)), description.c_str());
@@ -2731,7 +2731,7 @@ void game::sound(const point& pt, int vol, std::string description)
  else { // If it came from us, don't print a direction
   if (description[0] >= 'a' && description[0] <= 'z')
    description[0] += 'A' - 'a';	// Capitalize the sound
-  messages.add(description.c_str());
+  messages.add(description);
   return;
  }
  messages.add("From the %s you hear %s", direction_name(direction_from(u.pos, pt)), description.c_str());
@@ -3257,7 +3257,7 @@ void game::smash()
    didit = m.bash(u.pos + smash, smashskill, bashsound);
  }
  if (didit) {
-  if (extra != "") messages.add(extra.c_str());
+  if (!extra.empty()) messages.add(extra);
   sound(u.pos, 18, bashsound);
   u.moves -= 80;
   if (u.sklevel[sk_melee] == 0) u.practice(sk_melee, rng(0, 1) * rng(0, 1));
@@ -3377,7 +3377,7 @@ void game::examine()
     buff += ",";
    } else if (!stack.empty()) buff = "It contains many items,";
    buff += " but is firmly sealed.";
-   messages.add(buff.c_str());
+   messages.add(buff);
   } else {
    messages.add("There's something in there, but you can't see what it is, and the %s is firmly sealed.", name_of(m.ter(exam)).c_str());
   }
@@ -4840,7 +4840,7 @@ void game::plmove(point delta)
 			  else if (i + 1 < stack.size()) buff += ", and ";
 		  }
 		  buff += ".";
-		  messages.add(buff.c_str());
+		  messages.add(buff);
 	  } else messages.add("There are many items here.");
   }
 
