@@ -847,12 +847,9 @@ void iuse::hammer(pc& p, item& it)
  
 void iuse::light_off(player *p, item *it, bool t)
 {
- if (it->charges == 0) messages.add("The flashlight's batteries are dead.");
- else {
   messages.add("You turn the flashlight on.");
   it->make(item::types[itm_flashlight_on]);
   it->active = true;
- }
 }
  
 void iuse::light_on(player *p, item *it, bool t)
@@ -972,12 +969,9 @@ void iuse::two_way_radio(pc& p, item& it)
  
 void iuse::radio_off(pc& p, item& it)
 {
- if (it.charges == 0) messages.add("It's dead.");
- else {
   messages.add("You turn the radio on.");
   it.make(item::types[itm_radio_on]);
   it.active = true;
- }
 }
 
 void iuse::radio_on(player* p, item* it, bool t)
@@ -1917,9 +1911,7 @@ void iuse::tazer(npc& p, item& it)
 // \todo allow NPCs to use this to fix morale
 void iuse::mp3(player *p, item *it, bool t)
 {
- if (it->charges == 0)
-  p->subjective_message("The mp3 player's batteries are dead.");
- else if (p->has_active_item(itm_mp3_on))
+ if (p->has_active_item(itm_mp3_on))
   p->subjective_message("You are already listening to an mp3 player!");
  else {
      static auto pc_play = []() { return std::string("You put in the earbuds and start listening to music."); };
