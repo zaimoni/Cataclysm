@@ -664,32 +664,29 @@ void mattack::disappear(game *g, monster *z)
 void mattack::formblob(game *g, monster *z)
 {
  bool didit = false;
- int thatmon = -1;
- for (int i = -1; i <= 1; i++) {
-  for (int j = -1; j <= 1; j++) {
-   point test(z->pos.x + i, z->pos.y + j);
-   if (g->u.pos == test) {
-// If we hit the player, cover them with slime
-    didit = true;
-    g->u.add_disease(DI_SLIMED, rng(0, z->hp));
-   } else if (monster* const m_at = g->mon(test)) {
-       didit = m_at->hit_by_blob(z, rng(0, z->hp) > rng(0, m_at->hp));
-   } else if (z->speed >= 85 && rng(0, 250) < z->speed) {
-// If we're big enough, spawn a baby blob.
-    didit = true;
-    z->speed -= 15;
-    monster blob(mtype::types[mon_blob_small], test);
-    blob.speed = z->speed - rng(30, 60);
-    blob.hp = blob.speed;
-    g->z.push_back(blob);
-   }
-  }
-  if (didit) {	// We did SOMEthing.
-   if (z->type->id == mon_blob && z->speed <= 50) z->poly(mtype::types[mon_blob_small]);	// We shrank!
-   z->moves -= 5 * mobile::mp_turn;
-   z->sp_timeout = z->type->sp_freq;	// Reset timer
-   return;
-  }
+ for (decltype(auto) dir : Direction::vector) {
+     auto test = z->pos + dir;
+     if (const auto whom = g->survivor(test)) {
+         // If we hit the player, cover them with slime
+         didit = true;
+         g->u.add_disease(DI_SLIMED, rng(0, z->hp));
+     } else if (monster* const m_at = g->mon(test)) {
+         didit = m_at->hit_by_blob(z, rng(0, z->hp) > rng(0, m_at->hp));
+     } else if (z->speed >= 85 && rng(0, 250) < z->speed) {
+         // If we're big enough, spawn a baby blob.
+         didit = true;
+         z->speed -= 15;
+         monster blob(mtype::types[mon_blob_small], test);
+         blob.speed = z->speed - rng(30, 60);
+         blob.hp = blob.speed;
+         g->z.push_back(blob);
+     }
+     if (didit) {	// We did SOMEthing.
+         if (z->type->id == mon_blob && z->speed <= 50) z->poly(mtype::types[mon_blob_small]);	// We shrank!
+         z->moves -= 5 * mobile::mp_turn;
+         z->sp_timeout = z->type->sp_freq;	// Reset timer
+         return;
+     }
  }
 }
 
