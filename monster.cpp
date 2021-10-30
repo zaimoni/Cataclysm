@@ -408,7 +408,60 @@ void monster::hit_monster(game *g, monster& target)
  int damage = dice(type->melee_dice, type->melee_sides);
  if (target.hurt(damage)) g->kill_mon(target, this);
 }
- 
+
+bool monster::hit_by_blob(monster* origin, bool force)
+{
+    // actual validity test is whether the attack handler is mattack::formblob
+    assert(!origin || mon_blob == origin->type->id || mon_blob_small == origin->type->id);
+    // origin's viewpoint: Hit a monster.  If it's a blob, give it our speed.  Otherwise, blobify it?
+    switch (type->id) {
+    case mon_blob:
+        if (85 > speed) {
+            if (origin) {
+                if (20 < origin->speed) {
+                    speed += 5;
+                    origin->speed -= 5;
+                    return true;
+                }
+            } else {
+                speed += 15;
+                hp = speed;
+                return true;
+            };
+        };
+        break;
+    case mon_blob_small:
+        // We expect our speed to be less than 85.
+        if (origin) {
+            if (20 < origin->speed) {
+                speed += 5;
+                origin->speed -= 5;
+                if (60 <= speed) poly(mtype::types[mon_blob]);
+                return true;
+            }
+        } else {
+            speed += 15;
+            hp = speed;
+            if (60 <= speed) poly(mtype::types[mon_blob]);
+            return true;
+        };
+        break;
+    default:
+        if (force && (made_of(FLESH) || made_of(VEGGY))) {	// Blobify!
+            static auto enveloped = [&]() {
+                return std::string("The goo envelops ")+ desc(grammar::noun::role::direct_object, grammar::article::indefinite)  +"!";
+            };
+
+            if_visible_message(enveloped);
+            poly(mtype::types[mon_blob]);
+            speed = (origin ? origin : this)->speed - rng(5, 25);
+            hp = speed;
+            return true;
+        };
+        break;
+    }
+    return false;
+}
 
 bool monster::hurt(int dam)
 {

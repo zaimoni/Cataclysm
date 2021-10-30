@@ -673,23 +673,7 @@ void mattack::formblob(game *g, monster *z)
     didit = true;
     g->u.add_disease(DI_SLIMED, rng(0, z->hp));
    } else if (monster* const m_at = g->mon(test)) {
-// Hit a monster.  If it's a blob, give it our speed.  Otherwise, blobify it?
-    if (z->speed > 20 && m_at->type->id == mon_blob && m_at->speed < 85) {
-     didit = true;
-	 m_at->speed += 5;
-     z->speed -= 5;
-    } else if (z->speed > 20 && m_at->type->id == mon_blob_small) {
-     didit = true;
-     z->speed -= 5;
-	 m_at->speed += 5;
-     if (m_at->speed >= 60) g->z[thatmon].poly(mtype::types[mon_blob]);
-    } else if ((m_at->made_of(FLESH) || m_at->made_of(VEGGY)) &&
-               rng(0, z->hp) > rng(0, g->z[thatmon].hp)) {	// Blobify!
-     didit = true;
-	 m_at->poly(mtype::types[mon_blob]);
-	 m_at->speed = z->speed - rng(5, 25);
-	 m_at->hp = g->z[thatmon].speed;
-    }
+       didit = m_at->hit_by_blob(z, rng(0, z->hp) > rng(0, m_at->hp));
    } else if (z->speed >= 85 && rng(0, 250) < z->speed) {
 // If we're big enough, spawn a baby blob.
     didit = true;
@@ -702,7 +686,7 @@ void mattack::formblob(game *g, monster *z)
   }
   if (didit) {	// We did SOMEthing.
    if (z->type->id == mon_blob && z->speed <= 50) z->poly(mtype::types[mon_blob_small]);	// We shrank!
-   z->moves = -500;
+   z->moves -= 5 * mobile::mp_turn;
    z->sp_timeout = z->type->sp_freq;	// Reset timer
    return;
   }

@@ -1305,16 +1305,14 @@ void iuse::can_goo(player *p, item *it, bool t)
  auto goo_pos = LasVegasChoice(10, where_is, ok);
  if (!goo_pos) return;
  bool u_see = (bool)g->u.see(*goo_pos);
+ if (u_see) messages.add("Living black goo emerges from the canister!");
 
  if (monster* const m_at = g->mon(*goo_pos)) {
-  if (u_see) messages.add("Black goo emerges from the canister and envelopes a %s!", m_at->name().c_str());
-  m_at->poly(mtype::types[mon_blob]);
-  m_at->speed -= rng(5, 25);
-  m_at->hp = m_at->speed;
+     m_at->hit_by_blob();  // \todo handle robots ignoring this, etc.
+     // \todo? yes, still hostile even if blob-converted ... does this make sense?
  } else {
-  if (u_see) messages.add("Living black goo emerges from the canister!");
   monster goo(mtype::types[mon_blob], *goo_pos);
-  goo.friendly = -1;
+  goo.make_friendly(*p);
   g->z.push_back(std::move(goo));
  }
 

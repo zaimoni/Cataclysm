@@ -259,15 +259,7 @@ void trapfunc::goo(game *g, int x, int y)
 
 void trapfuncm::goo(game *g, monster *z)
 {
- if (z->type->id == mon_blob) {
-  z->speed += 15;
-  z->hp = z->speed;
- } else {
-  z->poly(mtype::types[mon_blob]);
-  z->speed -= 15;
-  z->hp = z->speed;
- }
- z->GPSpos.trap_at() = tr_null;
+    if (z->hit_by_blob()) z->GPSpos.trap_at() = tr_null;
 }
 
 void trapfunc::dissector(game *g, int x, int y)
