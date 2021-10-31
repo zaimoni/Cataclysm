@@ -4656,6 +4656,25 @@ it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
 	unsigned int pmax_charges, unsigned int pdef_charges,
 	unsigned char pcharges_per_use, unsigned char pturns_per_charge,
 	ammotype pammo, itype_id prevert_to,
+	decltype(use_player) puse
+)
+	:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+	ammo(pammo), max_charges(pmax_charges), def_charges(pdef_charges), charges_per_use(pcharges_per_use),
+	turns_per_charge(pturns_per_charge), revert_to(prevert_to),
+	use(nullptr), use_npc(nullptr), use_pc(nullptr), use_player(puse), off_npc(nullptr), off_pc(nullptr), off_player(nullptr), can_use_npc(nullptr)
+{
+}
+
+it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1, material pm2,
+	unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
+	unsigned pitem_flags,
+
+	unsigned int pmax_charges, unsigned int pdef_charges,
+	unsigned char pcharges_per_use, unsigned char pturns_per_charge,
+	ammotype pammo, itype_id prevert_to,
 	decltype(use_pc) use_pc, decltype(use_npc) use_npc, decltype(can_use_npc) can_use_npc
 )
 	:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),

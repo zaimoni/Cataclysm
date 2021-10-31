@@ -1287,19 +1287,19 @@ void iuse::geiger(player *p, item *it, bool t)
  }
 }
 
-void iuse::teleport(player *p, item *it, bool t)
+void iuse::teleport(player& p, item& it)
 {
- p->moves -= mobile::mp_turn;
- game::active()->teleport(p);
+ p.moves -= mobile::mp_turn;
+ game::active()->teleport(&p);
 }
 
-void iuse::can_goo(player *p, item *it, bool t)
+void iuse::can_goo(player& p, item& it)
 {
  const auto g = game::active();
 
- it->make(item::types[itm_canister_empty]);
+ it.make(item::types[itm_canister_empty]);
 
- static std::function<point()> where_is = [&]() {return p->pos + rng(within_rldist<2>); };
+ static std::function<point()> where_is = [&]() {return p.pos + rng(within_rldist<2>); };
  static std::function<bool(const point&)> ok = [&](const point& dest) {return 0 < g->m.move_cost(dest); };
 
  auto goo_pos = LasVegasChoice(10, where_is, ok);
@@ -1312,7 +1312,7 @@ void iuse::can_goo(player *p, item *it, bool t)
      // \todo? yes, still hostile even if blob-converted ... does this make sense?
  } else {
   monster goo(mtype::types[mon_blob], *goo_pos);
-  goo.make_friendly(*p);
+  goo.make_friendly(p);
   g->z.push_back(std::move(goo));
  }
 
@@ -1353,10 +1353,10 @@ static void activate(player& p, item& it)
     it.active = true;
 }
 
-void iuse::pipebomb(player *p, item *it, bool t)
+void iuse::pipebomb(player& p, item& it)
 {
-    activate(*p, *it);
-    p->use_charges(itm_lighter, 1);
+    activate(p, it);
+    p.use_charges(itm_lighter, 1);
 }
 
 void iuse::pipebomb_act(player *p, item *it, bool t)
@@ -1373,7 +1373,7 @@ void iuse::pipebomb_act(player *p, item *it, bool t)
  }
 }
 
-void iuse::grenade(player *p, item *it, bool t) { activate(*p, *it); }
+void iuse::grenade(player& p, item& it) { activate(p, it); }
 
 void iuse::grenade_act(player *p, item *it, bool t)
 {
@@ -1384,7 +1384,7 @@ void iuse::grenade_act(player *p, item *it, bool t)
  else g->explosion(pos, 12, 28, false); // When that timer runs down...
 }
 
-void iuse::flashbang(player *p, item *it, bool t) { activate(*p, *it); }
+void iuse::flashbang(player& p, item& it) { activate(p, it); }
 
 void iuse::flashbang_act(player *p, item *it, bool t)
 {
@@ -1419,7 +1419,7 @@ void iuse::c4armed(player *p, item *it, bool t)
   g->explosion(pos, 40, 3, false);
 }
 
-void iuse::EMPbomb(player *p, item *it, bool t) { activate(*p, *it); }
+void iuse::EMPbomb(player& p, item& it) { activate(p, it); }
 
 void iuse::EMPbomb_act(player *p, item *it, bool t)
 {
@@ -1434,7 +1434,7 @@ void iuse::EMPbomb_act(player *p, item *it, bool t)
  }
 }
 
-void iuse::gasbomb(player *p, item *it, bool t) { activate(*p, *it); }
+void iuse::gasbomb(player& p, item& it) { activate(p, it); }
 
 void iuse::gasbomb_act(player *p, item *it, bool t)
 {
@@ -1454,7 +1454,7 @@ void iuse::gasbomb_act(player *p, item *it, bool t)
  } else it->make(item::types[itm_canister_empty]);
 }
 
-void iuse::smokebomb(player *p, item *it, bool t) { activate(*p, *it); }
+void iuse::smokebomb(player& p, item& it) { activate(p, it); }
 
 void iuse::smokebomb_act(player *p, item *it, bool t)
 {
@@ -1474,12 +1474,12 @@ void iuse::smokebomb_act(player *p, item *it, bool t)
  } else it->make(item::types[itm_canister_empty]);
 }
 
-void iuse::acidbomb(player *p, item *it, bool t)
+void iuse::acidbomb(player& p, item& it)
 {
-    activate(*p, *it);
+    activate(p, it);
 
-    p->moves -= (3 * mobile::mp_turn) / 2;
-    it->bday = int(messages.turn);
+    p.moves -= (3 * mobile::mp_turn) / 2;
+    it.bday = int(messages.turn);
 }
  
 void iuse::acidbomb_act(player *p, item *it, bool t)
@@ -1499,13 +1499,13 @@ void iuse::acidbomb_act(player *p, item *it, bool t)
     }
 }
 
-void iuse::molotov(player *p, item *it, bool t)
+void iuse::molotov(player& p, item& it)
 {
-    activate(*p, *it);
+    activate(p, it);
 
-    p->use_charges(itm_lighter, 1);
-    p->moves -= (3 * mobile::mp_turn) / 2;
-    it->bday = int(messages.turn);
+    p.use_charges(itm_lighter, 1);
+    p.moves -= (3 * mobile::mp_turn) / 2;
+    it.bday = int(messages.turn);
 }
  
 class burn_molotov
@@ -1551,10 +1551,10 @@ void iuse::molotov_lit(player *p, item *it, bool t)
  std::visit(burn_molotov(*it), where_is);
 }
 
-void iuse::dynamite(player *p, item *it, bool t)
+void iuse::dynamite(player& p, item& it)
 {
-    activate(*p, *it);
-    p->use_charges(itm_lighter, 1);
+    activate(p, it);
+    p.use_charges(itm_lighter, 1);
 }
 
 void iuse::dynamite_act(player *p, item *it, bool t)
@@ -1566,7 +1566,7 @@ void iuse::dynamite_act(player *p, item *it, bool t)
  else g->explosion(pos, 60, 0, false);		// When that timer runs down...
 }
 
-void iuse::mininuke(player *p, item *it, bool t) { activate(*p, *it); }
+void iuse::mininuke(player& p, item& it) { activate(p, it); }
 
 void iuse::mininuke_act(player *p, item *it, bool t)
 {
@@ -1663,9 +1663,9 @@ void iuse::pheromone(npc& p, item& it)
     }
 }
 
-void iuse::portal(player *p, item *it, bool t)
+void iuse::portal(player& p, item& it)
 {
- game::active()->m.add_trap(p->pos + rng(within_rldist<2>), tr_portal);
+ game::active()->m.add_trap(p.pos + rng(within_rldist<2>), tr_portal);
 }
 
 static auto _can_use_manhack(const player& p)
@@ -1755,15 +1755,15 @@ void iuse::turret(pc& p, item& it)
  g->z.push_back(std::move(turret));
 }
 
-void iuse::UPS_off(player *p, item *it, bool t)
+void iuse::UPS_off(player& p, item& it)
 {
     static auto pc_on = []() { return std::string("You turn the power supply on."); };
-    static auto npc_on = [&]() { return grammar::capitalize(p->subject()) + " turns the power supply on."; };
+    static auto npc_on = [&]() { return grammar::capitalize(p.subject()) + " turns the power supply on."; };
 
-    p->if_visible_message(pc_on, npc_on);
-    if (p->is_wearing(itm_goggles_nv)) p->subjective_message("Your light amp goggles power on.");
-    it->make(item::types[itm_UPS_on]);
-    it->active = true;
+    p.if_visible_message(pc_on, npc_on);
+    if (p.is_wearing(itm_goggles_nv)) p.subjective_message("Your light amp goggles power on.");
+    it.make(item::types[itm_UPS_on]);
+    it.active = true;
 }
  
 void iuse::UPS_on(player *p, item *it, bool t)
@@ -1907,16 +1907,16 @@ void iuse::tazer(npc& p, item& it)
 }
 
 // \todo allow NPCs to use this to fix morale
-void iuse::mp3(player *p, item *it, bool t)
+void iuse::mp3(player& p, item& it)
 {
- if (p->has_active_item(itm_mp3_on))
-  p->subjective_message("You are already listening to an mp3 player!");
+ if (p.has_active_item(itm_mp3_on))
+  p.subjective_message("You are already listening to an mp3 player!");
  else {
      static auto pc_play = []() { return std::string("You put in the earbuds and start listening to music."); };
-     static auto npc_play = [&]() { return grammar::capitalize(p->desc(grammar::noun::role::subject) + " puts in the earbuds and start listening to music."); };
-     p->if_visible_message(pc_play, npc_play);
-     it->make(item::types[itm_mp3_on]);
-     it->active = true;
+     static auto npc_play = [&]() { return grammar::capitalize(p.desc(grammar::noun::role::subject) + " puts in the earbuds and start listening to music."); };
+     p.if_visible_message(pc_play, npc_play);
+     it.make(item::types[itm_mp3_on]);
+     it.active = true;
  }
 }
 
@@ -1978,32 +1978,32 @@ void iuse::vortex(pc& p, item& it)
  g->z.push_back(vortex);
 }
 
-void iuse::dog_whistle(player *p, item *it, bool t)
+void iuse::dog_whistle(player& p, item& it)
 {
     static auto pc_blows = []() { return std::string("You blow your dog whistle.");  };
     static auto npc_blows = [&]() {
-        const auto subject = grammar::capitalize(p->subject());
-        const auto possessive = p->pronoun(grammar::noun::role::possessive);
+        const auto subject = grammar::capitalize(p.subject());
+        const auto possessive = p.pronoun(grammar::noun::role::possessive);
         return subject + " blows " + possessive + " dog whistle.";
     };
 
-    p->if_visible_message(pc_blows, npc_blows);
+    p.if_visible_message(pc_blows, npc_blows);
 
  const auto g = game::active();
 
  for (decltype(auto) _dog : g->z) {
-     if (_dog.is_friend(p) && _dog.type->id == mon_dog) {
+     if (mon_dog == _dog.type->id && _dog.is_friend(&p)) {
          const bool is_docile = _dog.has_effect(ME_DOCILE);
 
          static auto dog_reacts = [&]() {
-             const auto d_name = grammar::capitalize(p->desc(grammar::noun::role::possessive)) + " " + _dog.desc(grammar::noun::role::subject);
+             const auto d_name = grammar::capitalize(p.desc(grammar::noun::role::possessive)) + " " + _dog.desc(grammar::noun::role::subject);
              if (is_docile) return d_name + " looks ready to attack.";
              else return d_name + " goes docile.";
          };
 
          _dog.if_visible_message(dog_reacts);
 
-         if (is_docile) _dog.rem_effect(ME_DOCILE);
+         if (is_docile) _dog.rem_effect(ME_DOCILE); // \todo fix docility effect to be relative to master
          else _dog.add_effect(ME_DOCILE, -1);
      }
  }
