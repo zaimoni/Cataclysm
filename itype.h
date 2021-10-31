@@ -641,11 +641,13 @@ struct it_tool : public itype
 #ifndef SOCRATES_DAIMON
 private:
  void (*use)(player *, item *, bool);
- void (*use_npc)(npc&, item&);	// waterfall/SSADM sofware lifecycle for these four
+ void (*use_npc)(npc&, item&);	// waterfall/SSADM sofware lifecycle for these seven
  void (*use_pc)(pc&, item&);
+ void (*use_player)(player&, item&);
  void (*off_npc)(npc&, item&);
  void (*off_pc)(pc&, item&);
- std::optional<std::any> (*can_use_npc)(const npc&);	// waterfall/SSADM sofware lifecycle for these four
+ void (*off_player)(player&, item&);
+ std::optional<std::any> (*can_use_npc)(const npc&);
 
 public:
 #endif
