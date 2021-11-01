@@ -62,8 +62,9 @@ class iuse
   static void crowbar(pc& p, item& it);
   static void makemound	(player *p, item *it, bool t);
   static void dig(pc& p, item& it);
-  static void chainsaw_off	(player *p, item *it, bool t);
-  static void chainsaw_on	(player *p, item *it, bool t);
+  static void chainsaw_off(player& p, item& it);
+  static void chainsaw_on(player& p, item& it);
+  static void chainsaw_on_turnoff(player& p, item& it);
   static void jackhammer(pc& p, item& it);
   static void set_trap(pc& p, item& it);
   static void geiger		(player *p, item *it, bool t);

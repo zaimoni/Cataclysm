@@ -3566,6 +3566,13 @@ revert,func,flags,des) \
 color,mat1,mat2,volume,wgt,melee_dam,melee_cut,to_hit,flags,max_charge,\
 def_charge,charge_per_use,charge_per_sec,fuel,revert NOT_DAIMON(func)))
 
+#define TOOL_PLAYER(name,rarity,price,sym,color,mat1,mat2,volume,wgt,melee_dam,\
+melee_cut,to_hit,max_charge,def_charge,charge_per_use,charge_per_sec,fuel,\
+revert,func,off_func,flags,des) \
+	index++;types.push_back(new it_tool(index,rarity,price,name,des,sym,\
+color,mat1,mat2,volume,wgt,melee_dam,melee_cut,to_hit,flags,max_charge,\
+def_charge,charge_per_use,charge_per_sec,fuel,revert NOT_DAIMON(func) NOT_DAIMON(off_func)))
+
 #define TOOL_NO_USE(name,rarity,price,sym,color,mat1,mat2,volume,wgt,melee_dam,\
 melee_cut,to_hit,max_charge,def_charge,charge_per_use,charge_per_sec,fuel,\
 revert,flags,des) \
@@ -3676,10 +3683,10 @@ powerful, but slow, unwieldy, and noisy, melee weapon.");
 TECH( mfb(TEC_SWEEP) );
 
 //	NAME		RAR VAL	SYM  COLOR	MAT1	MAT
-TOOL("chainsaw (on)",	 0, 350,'/', c_red,	IRON,	PLASTIC,
+TOOL_PLAYER("chainsaw (on)",	 0, 350,'/', c_red,	IRON,	PLASTIC,
 // VOL WGT DAM CUT HIT MAX DEF USE SEC FUEL	REVERT	  FUNCTION
    12, 40,  4, 70, -5, 400, 0,  0,  1, AT_GAS,	itm_chainsaw_off,
-	&iuse::chainsaw_on, mfb(IF_MESSY), "\
+	&iuse::chainsaw_on, &iuse::chainsaw_on_turnoff, mfb(IF_MESSY), "\
 This chainsaw is on, and is continuously draining gasoline.  Use it to turn\n\
 it off.");
 TECH( mfb(TEC_SWEEP) );
@@ -4662,6 +4669,25 @@ it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
 	ammo(pammo), max_charges(pmax_charges), def_charges(pdef_charges), charges_per_use(pcharges_per_use),
 	turns_per_charge(pturns_per_charge), revert_to(prevert_to),
 	use(nullptr), use_npc(nullptr), use_pc(nullptr), use_player(puse), off_npc(nullptr), off_pc(nullptr), off_player(nullptr), can_use_npc(nullptr)
+{
+}
+
+it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1, material pm2,
+	unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
+	unsigned pitem_flags,
+
+	unsigned int pmax_charges, unsigned int pdef_charges,
+	unsigned char pcharges_per_use, unsigned char pturns_per_charge,
+	ammotype pammo, itype_id prevert_to,
+	decltype(use_player) puse, decltype(off_player) poff
+)
+	:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+	ammo(pammo), max_charges(pmax_charges), def_charges(pdef_charges), charges_per_use(pcharges_per_use),
+	turns_per_charge(pturns_per_charge), revert_to(prevert_to),
+	use(nullptr), use_npc(nullptr), use_pc(nullptr), use_player(puse), off_npc(nullptr), off_pc(nullptr), off_player(poff), can_use_npc(nullptr)
 {
 }
 

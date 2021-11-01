@@ -1083,26 +1083,34 @@ void iuse::dig(pc& p, item& it)
  messages.add("You can dig a pit via the construction menu--hit *");
 }
 
-void iuse::chainsaw_off(player *p, item *it, bool t)
+void iuse::chainsaw_off(player& p, item& it)
 {
- p->moves -= (mobile::mp_turn / 5) * 4;
- if (rng(0, 10) - it->damage > 5 && it->charges > 0) {
-  game::active()->sound(p->pos, 20, "With a roar, the chainsaw leaps to life!");
-  it->make(item::types[itm_chainsaw_on]);
-  it->active = true;
- } else
-  messages.add("You yank the cord, but nothing happens.");
+    static auto me_fail = []() { return "You yank the cord, but nothing happens.";  };
+    static auto other_fail = [&]() { return grammar::capitalize(p.pronoun(grammar::noun::role::subject)) + " yanks the cord, but nothing happens.";  };
+
+    p.moves -= (mobile::mp_turn / 5) * 4;
+    if (rng(0, 10) - it.damage > 5 && it.charges > 0) {
+        game::active()->sound(p.pos, 20, "With a roar, the chainsaw leaps to life!");
+        it.make(item::types[itm_chainsaw_on]);
+        it.active = true;
+    } else
+        p.if_visible_message(me_fail, other_fail);
 }
 
-void iuse::chainsaw_on(player *p, item *it, bool t)
+void iuse::chainsaw_on(player& p, item& it)
 {
- if (t) {	// Effects while simply on
-  if (one_in(15)) game::active()->sound(p->pos, 12, "Your chainsaw rumbles.");
- } else {	// Toggling
-  messages.add("Your chainsaw dies.");
-  it->make(item::types[itm_chainsaw_off]);
-  it->active = false;
- }
+ // Effects while simply on
+ if (one_in(15)) game::active()->sound(p.pos, 12, grammar::capitalize(p.pronoun(grammar::noun::role::possessive)) + " chainsaw rumbles.");
+}
+
+void iuse::chainsaw_on_turnoff(player& p, item& it)
+{
+    static auto me = []() { return "Your chainsaw dies.";  };
+    static auto other = [&]() { return p.possessive() + " chainsaw dies.";  };
+
+    p.if_visible_message(me, other);
+    it.make(item::types[itm_chainsaw_off]);
+    it.active = false;
 }
 
 void iuse::jackhammer(pc& p, item& it)
