@@ -1714,8 +1714,6 @@ static void _use_manhack(player& p, item& it, const point& dest)
 
 void iuse::manhack(pc& p, item& it)
 {
-    const auto g = game::active();
-
     auto valid(_can_use_manhack(p));
     if (valid.empty()) {	// No valid points!
         messages.add("There is no adjacent square to release the manhack in!");
@@ -1727,8 +1725,6 @@ void iuse::manhack(pc& p, item& it)
 
 void iuse::manhack(npc& p, item& it)
 {
-    const auto g = game::active();
-
     decltype(auto) valid = *std::any_cast<std::vector<point> >(&(*it._AI_relevant)); // Valid spawn locations
 
     _use_manhack(p, it, valid[rng(0, valid.size() - 1)]);
@@ -1774,15 +1770,11 @@ void iuse::UPS_off(player& p, item& it)
     it.active = true;
 }
  
-void iuse::UPS_on(player *p, item *it, bool t)
+void iuse::UPS_on_turnoff(player& p, item& it)
 {
- if (t) {	// Normal use
-	// Does nothing
- } else {	// Turning it off
-  p->if_visible_message("The UPS powers off with a soft hum."); // \todo? should be if_audible_message or g->sound
-  it->make(item::types[itm_UPS_off]);
-  it->active = false;
- }
+  p.if_visible_message("The UPS powers off with a soft hum."); // \todo? should be if_audible_message or g->sound
+  it.make(item::types[itm_UPS_off]);
+  it.active = false;
 }
 
 class is_friend_of
@@ -1928,30 +1920,31 @@ void iuse::mp3(player& p, item& it)
  }
 }
 
-void iuse::mp3_on(player *p, item *it, bool t)
+void iuse::mp3_on(player& p, item& it)
 {
- if (t) {	// Normal use
-  if (!p->has_item(it)) return;	// We're not carrying it!
-  p->add_morale(MORALE_MUSIC, 1, 50);
+  if (!p.has_item(&it)) return;	// We're not carrying it!
+  p.add_morale(MORALE_MUSIC, 1, 50);
 
-  if (int(messages.turn) % 10 == 0) {	// Every 10 turns, describe the music
+  if (0 == int(messages.turn) % 10) {	// Every 10 turns, describe the music
    std::string sound;
    switch (rng(1, 10)) {
-    case 1: sound = "a sweet guitar solo!";	p->stim++;	break;
+    case 1: sound = "a sweet guitar solo!";	p.stim++;	break;
     case 2: sound = "a funky bassline.";			break;
     case 3: sound = "some amazing vocals.";			break;
     case 4: sound = "some pumping bass.";			break;
     case 5: sound = "dramatic classical music.";
-      if (p->int_cur >= 10) p->add_morale(MORALE_MUSIC, 1, 100);
+      if (p.int_cur >= 10) p.add_morale(MORALE_MUSIC, 1, 100);
 	  break;
    }
-   if (!sound.empty()) p->subjective_message(std::string("You listen to ") + sound.c_str());
+   if (!sound.empty()) p.subjective_message(std::string("You listen to ") + sound);
   }
- } else {	// Turning it off
-  p->subjective_message("The mp3 player turns off.");
-  it->make(item::types[itm_mp3]);
-  it->active = false;
- }
+}
+
+void iuse::mp3_on_turnoff(player& p, item& it)
+{
+    p.subjective_message("The mp3 player turns off.");
+    it.make(item::types[itm_mp3]);
+    it.active = false;
 }
 
 // Vortex stones are only found in the spiral map special,

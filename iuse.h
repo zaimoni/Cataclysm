@@ -101,12 +101,13 @@ class iuse
   static std::optional<std::any> can_use_manhack(const npc& p);
   static void turret(pc& p, item& it);
   static void UPS_off(player& p, item& it);
-  static void UPS_on		(player *p, item *it, bool t);
+  static void UPS_on_turnoff(player& p, item& it);
   static std::optional<std::any> can_use_tazer(const npc& p);
   static void tazer(pc& p, item& it);
   static void tazer(npc& p, item& it);
   static void mp3(player& p, item& it);
-  static void mp3_on		(player *p, item *it, bool t);
+  static void mp3_on(player& p, item& it);
+  static void mp3_on_turnoff(player& p, item& it);
   static void vortex(pc& p, item& it);
   static void dog_whistle(player& p, item& it);
   static void vacutainer(pc& p, item& it);

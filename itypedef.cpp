@@ -3921,8 +3921,8 @@ A unified power supply, or UPS, is a device developed jointly by military and\n\
 scientific interests for use in combat and the field.  The UPS is designed to\n\
 power armor and some guns, but drains batteries quickly.");
 
-TOOL("UPS (on)",	 0,2800,';',c_ltgreen,	STEEL,	PLASTIC,
-   12,  6, 10,  0, -1,1000, 0,  0,  2, AT_BATT,	itm_UPS_off, &iuse::UPS_on,0,"\
+TOOL_PLAYER("UPS (on)",	 0,2800,';',c_ltgreen,	STEEL,	PLASTIC,
+   12,  6, 10,  0, -1,1000, 0,  0,  2, AT_BATT,	itm_UPS_off, nullptr, &iuse::UPS_on_turnoff, 0, "\
 A unified power supply, or UPS, is a device developed jointly by military and\n\
 scientific interests for use in combat and the field.  The UPS is designed to\n\
 power armor and some guns, but drains batteries quickly.");
@@ -3941,8 +3941,8 @@ This battery-devouring device is loaded up with someone's music collection.\n\
 Fortunately, there's lots of songs you like, and listening to it will raise\n\
 your morale slightly.  Use it to turn it on.");
 
-TOOL("mp3 player (on)",	 0, 800,';',c_ltblue,	IRON,	PLASTIC,
-    1,  1,  0,  0,  0, 100,100, 0, 10, AT_BATT, itm_mp3, &iuse::mp3_on,0,"\
+TOOL_PLAYER("mp3 player (on)",	 0, 800,';',c_ltblue,	IRON,	PLASTIC,
+    1,  1,  0,  0,  0, 100,100, 0, 10, AT_BATT, itm_mp3, &iuse::mp3_on, &iuse::mp3_on_turnoff, 0, "\
 This mp3 player is turned on and playing some great tunes, raising your\n\
 morale steadily while on your person.  It runs through batteries quickly; you\n\
 can turn it off by using it.  It also obscures your hearing.");
