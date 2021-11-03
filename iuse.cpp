@@ -1576,20 +1576,26 @@ void iuse::dynamite_act(player *p, item *it, bool t)
 
 void iuse::mininuke(player& p, item& it) { activate(p, it); }
 
-void iuse::mininuke_act(player *p, item *it, bool t)
+void iuse::mininuke_act(item& it)
 {
- const auto g = game::active();
- const auto pos = g->find_item(it).value();
+    const auto g = game::active();
+    const auto pos = g->find_item(&it).value();
 
- if (t) g->sound(pos, 2, "Tick."); 	// Simple timer effects
- else {	// When that timer runs down...
-     g->explosion(pos, 200, 0, false);
+    g->sound(pos, 2, "Tick."); 	// Simple timer effects
+}
 
-     static auto contaminate = [&](point dest) {
-         if (g->m.sees(pos, dest, 3) && g->m.move_cost(dest) > 0) g->m.add_field(g, dest, fd_nuke_gas, 3);
-     };
-     forall_do_inclusive(pos + within_rldist<3>, contaminate);
- }
+void iuse::mininuke_act_off(item& it)
+{
+    const auto g = game::active();
+    const auto pos = g->find_item(&it).value();
+
+    // When that timer runs down...
+    g->explosion(pos, 200, 0, false);
+
+    static auto contaminate = [&](point dest) {
+        if (g->m.sees(pos, dest, 3) && g->m.move_cost(dest) > 0) g->m.add_field(g, dest, fd_nuke_gas, 3);
+    };
+    forall_do_inclusive(pos + within_rldist<3>, contaminate);
 }
 
 static auto _can_use_pheromone(const player& p)

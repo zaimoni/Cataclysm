@@ -91,7 +91,8 @@ class iuse
   static void dynamite(player& p, item& it);
   static void dynamite_act	(player *p, item *it, bool t);
   static void mininuke(player& p, item& it);
-  static void mininuke_act	(player *p, item *it, bool t);
+  static void mininuke_act(item& it);
+  static void mininuke_act_off(item& it);
   static void pheromone(pc& p, item& it);
   static void pheromone(npc& p, item& it);
   static std::optional<std::any> can_use_pheromone(const npc& p);

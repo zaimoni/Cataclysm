@@ -3884,8 +3884,8 @@ An extremely powerful weapon--essentially a hand-held nuclear bomb.  Use it\n\
 to activate the timer.  Ten turns later it will explode, leaving behind a\n\
 radioactive crater.  The explosion is large enough to take out a house.");
 
-TOOL("mininuke (active)",0,   0,'*', c_ltgreen,	STEEL,	PLASTIC,
-    3,  4,  8,  0, -2,  0,  0,  0,  1, AT_NULL, itm_null, &iuse::mininuke_act,0,
+TOOL_PLAYER("mininuke (active)",0,   0,'*', c_ltgreen,	STEEL,	PLASTIC,
+    3,  4,  8,  0, -2,  0,  0,  0,  1, AT_NULL, itm_null, &iuse::mininuke_act, &iuse::mininuke_act_off, 0,
 "This miniature nuclear bomb has a light blinking on the side, showing that\n\
 it will soon explode.  You should probably get far away from it.");
 
@@ -4688,6 +4688,25 @@ it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
 	ammo(pammo), max_charges(pmax_charges), def_charges(pdef_charges), charges_per_use(pcharges_per_use),
 	turns_per_charge(pturns_per_charge), revert_to(prevert_to),
 	use(nullptr), use_npc(nullptr), use_pc(nullptr), use_player(puse), use_item(nullptr), off_npc(nullptr), off_pc(nullptr), off_player(poff), off_item(nullptr), can_use_npc(nullptr)
+{
+}
+
+it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1, material pm2,
+	unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
+	unsigned pitem_flags,
+
+	unsigned int pmax_charges, unsigned int pdef_charges,
+	unsigned char pcharges_per_use, unsigned char pturns_per_charge,
+	ammotype pammo, itype_id prevert_to,
+	decltype(use_item) puse, decltype(off_item) poff
+)
+	:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+	ammo(pammo), max_charges(pmax_charges), def_charges(pdef_charges), charges_per_use(pcharges_per_use),
+	turns_per_charge(pturns_per_charge), revert_to(prevert_to),
+	use(nullptr), use_npc(nullptr), use_pc(nullptr), use_player(nullptr), use_item(puse), off_npc(nullptr), off_pc(nullptr), off_player(nullptr), off_item(poff), can_use_npc(nullptr)
 {
 }
 
