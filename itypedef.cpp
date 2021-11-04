@@ -3823,9 +3823,9 @@ to expell a highly toxic gas for several turns.  This gas damages and slows\n\
 those who enter it, as well as obscuring vision and scent.");
 
 //	NAME		RAR PRC SYM  COLOR	MAT1	MAT
-TOOL("active teargas",	0,    0,'*', c_yellow,	STEEL, MNULL,
+TOOL_PLAYER("active teargas",	0,    0,'*', c_yellow,	STEEL, MNULL,
 // VOL WGT DAM CUT HIT MAX DEF USE SEC FUEL	REVERT	  FUNCTION
-    1,  1,  6,  0, -1,  5,  5,  0,  1, AT_NULL, itm_null, &iuse::gasbomb_act,0,
+    1,  1,  6,  0, -1,  5,  5,  0,  1, AT_NULL, itm_null, &iuse::gasbomb_act, &iuse::gasbomb_act_off, 0,
 "This canister of teargas has had its pin removed, indicating that it is (or\n\
 will shortly be) expelling highly toxic gas.");
 
@@ -3835,8 +3835,8 @@ Use this item to pull the pin.  Five turns after you do that, it will begin\n\
 to expell a thick black smoke.  This smoke will slow those who enter it, as\n\
 well as obscuring vision and scent.");
 
-TOOL("active smoke bomb",0,  0, '*', c_dkgray,	STEEL,	MNULL,
-    1,  1,  5,  0, -1,  0,  0,  0,  1, AT_NULL, itm_null,&iuse::smokebomb_act,0,
+TOOL_PLAYER("active smoke bomb",0,  0, '*', c_dkgray,	STEEL,	MNULL,
+    1,  1,  5,  0, -1,  0,  0,  0,  1, AT_NULL, itm_null, &iuse::smokebomb_act, &iuse::smokebomb_act_off, 0,
 "This smoke bomb has had its pin removed, indicating that it is (or will\n\
 shortly be) expelling thick smoke.");
 
@@ -3874,8 +3874,8 @@ Several sticks of explosives with a fuse attached.  Use this item to light\n\
 the fuse; you will, of course, need a lighter in your inventory to do this.\n\
 Shortly after lighting the fuse, this item will explode, so get away!");
 
-TOOL("dynamite (lit)",	5,    0,'*', c_red,	PLASTIC,MNULL,
-    6, 10,  4,  0, -3,  0,  0,  0,  1, AT_NULL,	itm_null, &iuse::dynamite_act,0,
+TOOL_PLAYER("dynamite (lit)",	5,    0,'*', c_red,	PLASTIC,MNULL,
+    6, 10,  4,  0, -3,  0,  0,  0,  1, AT_NULL,	itm_null, &iuse::dynamite_act, &iuse::dynamite_act_off, 0,
 "The fuse on this dynamite is lit and hissing.  It'll explode any moment now.");
 
 TOOL("mininuke",	1, 1800,'*', c_ltgreen,	STEEL,	PLASTIC,
@@ -3922,7 +3922,7 @@ scientific interests for use in combat and the field.  The UPS is designed to\n\
 power armor and some guns, but drains batteries quickly.");
 
 TOOL_PLAYER("UPS (on)",	 0,2800,';',c_ltgreen,	STEEL,	PLASTIC,
-   12,  6, 10,  0, -1,1000, 0,  0,  2, AT_BATT,	itm_UPS_off, nullptr, &iuse::UPS_on_turnoff, 0, "\
+   12,  6, 10,  0, -1,1000, 0,  0,  2, AT_BATT,	itm_UPS_off, nullptr, &iuse::UPS_on_off, 0, "\
 A unified power supply, or UPS, is a device developed jointly by military and\n\
 scientific interests for use in combat and the field.  The UPS is designed to\n\
 power armor and some guns, but drains batteries quickly.");
@@ -4669,6 +4669,25 @@ it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
 	ammo(pammo), max_charges(pmax_charges), def_charges(pdef_charges), charges_per_use(pcharges_per_use),
 	turns_per_charge(pturns_per_charge), revert_to(prevert_to),
 	use(nullptr), use_npc(nullptr), use_pc(nullptr), use_player(puse), use_item(nullptr), off_npc(nullptr), off_pc(nullptr), off_player(nullptr), off_item(nullptr), can_use_npc(nullptr)
+{
+}
+
+it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1, material pm2,
+	unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
+	unsigned pitem_flags,
+
+	unsigned int pmax_charges, unsigned int pdef_charges,
+	unsigned char pcharges_per_use, unsigned char pturns_per_charge,
+	ammotype pammo, itype_id prevert_to,
+	decltype(use_item) puse
+)
+	:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+	ammo(pammo), max_charges(pmax_charges), def_charges(pdef_charges), charges_per_use(pcharges_per_use),
+	turns_per_charge(pturns_per_charge), revert_to(prevert_to),
+	use(nullptr), use_npc(nullptr), use_pc(nullptr), use_player(nullptr), use_item(puse), off_npc(nullptr), off_pc(nullptr), off_player(nullptr), off_item(nullptr), can_use_npc(nullptr)
 {
 }
 

@@ -1444,42 +1444,48 @@ void iuse::EMPbomb_act(player *p, item *it, bool t)
 
 void iuse::gasbomb(player& p, item& it) { activate(p, it); }
 
-void iuse::gasbomb_act(player *p, item *it, bool t)
+void iuse::gasbomb_act(item& it)
 {
- const auto g = game::active();
- const auto pos = g->find_item(it).value();
+    const auto g = game::active();
+    const auto pos = g->find_item(&it).value();
 
- if (t) {
-  if (it->charges > 15) g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
-  else {
-      static auto contaminate = [&](point dest) {
-          if (g->m.sees(pos, dest, 2) && g->m.move_cost(dest) > 0)
-              g->m.add_field(g, dest, fd_tear_gas, 3);
-      };
+    if (it.charges > 15) g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
+    else {
+        static auto contaminate = [&](point dest) {
+            if (g->m.sees(pos, dest, 2) && g->m.move_cost(dest) > 0)
+                g->m.add_field(g, dest, fd_tear_gas, 3);
+        };
 
-      forall_do_inclusive(pos + within_rldist<2>, contaminate);
-  }
- } else it->make(item::types[itm_canister_empty]);
+        forall_do_inclusive(pos + within_rldist<2>, contaminate);
+    }
+}
+
+void iuse::gasbomb_act_off(item& it)
+{
+    it.make(item::types[itm_canister_empty]);
 }
 
 void iuse::smokebomb(player& p, item& it) { activate(p, it); }
 
-void iuse::smokebomb_act(player *p, item *it, bool t)
+void iuse::smokebomb_act(item& it)
 {
- const auto g = game::active();
- const auto pos = g->find_item(it).value();
+    const auto g = game::active();
+    const auto pos = g->find_item(&it).value();
 
- if (t) {
-  if (it->charges > 17) g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
-  else {
-      static auto contaminate = [&](point dest) {
-          if (g->m.sees(pos, dest, 2) && g->m.move_cost(dest) > 0)
-              g->m.add_field(g, dest, fd_smoke, rng(1, 2) + rng(0, 1));
-      };
+    if (it.charges > 17) g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
+    else {
+        static auto contaminate = [&](point dest) {
+            if (g->m.sees(pos, dest, 2) && g->m.move_cost(dest) > 0)
+                g->m.add_field(g, dest, fd_smoke, rng(1, 2) + rng(0, 1));
+        };
 
-      forall_do_inclusive(pos + within_rldist<2>, contaminate);
-  }
- } else it->make(item::types[itm_canister_empty]);
+        forall_do_inclusive(pos + within_rldist<2>, contaminate);
+    }
+}
+
+void iuse::smokebomb_act_off(item& it)
+{
+    it.make(item::types[itm_canister_empty]);
 }
 
 void iuse::acidbomb(player& p, item& it)
@@ -1490,14 +1496,14 @@ void iuse::acidbomb(player& p, item& it)
     it.bday = int(messages.turn);
 }
  
-void iuse::acidbomb_act(player *p, item *it, bool t)
+void iuse::acidbomb_act(item& it)
 {
     const auto g = game::active();
-    const auto where_is = g->find(*it).value(); // invariant violation if this fails
+    const auto where_is = g->find(it).value(); // invariant violation if this fails
 
     if (auto loc = std::get_if<GPS_loc>(&where_is)) { // not held by anyone
         if (const auto pos = g->toScreen(*loc)) {
-            it->charges = 0;
+            it.charges = 0;
             static auto contaminate = [&](point pt) {
                 g->m.add_field(g, pt, fd_acid, 3);
             };
@@ -1552,11 +1558,11 @@ public:
     }
 };
 
-void iuse::molotov_lit(player *p, item *it, bool t)
+void iuse::molotov_lit(item& it)
 {
- const auto where_is = game::active()->find(*it).value(); // invariant violation if this fails
+ const auto where_is = game::active()->find(it).value(); // invariant violation if this fails
 
- std::visit(burn_molotov(*it), where_is);
+ std::visit(burn_molotov(it), where_is);
 }
 
 void iuse::dynamite(player& p, item& it)
@@ -1565,13 +1571,19 @@ void iuse::dynamite(player& p, item& it)
     p.use_charges(itm_lighter, 1);
 }
 
-void iuse::dynamite_act(player *p, item *it, bool t)
+void iuse::dynamite_act(item& it)
 {
- const auto g = game::active();
- const auto pos = g->find_item(it).value();
+    const auto g = game::active();
+    const auto pos = g->find_item(&it).value();
+    g->sound(pos, 0, "ssss...");	 // Simple timer effects
+}
 
- if (t) g->sound(pos, 0, "ssss...");	 // Simple timer effects
- else g->explosion(pos, 60, 0, false);		// When that timer runs down...
+void iuse::dynamite_act_off(item& it)
+{
+    const auto g = game::active();
+    const auto pos = g->find_item(&it).value();
+
+    g->explosion(pos, 60, 0, false);		// When that timer runs down...
 }
 
 void iuse::mininuke(player& p, item& it) { activate(p, it); }
@@ -1776,7 +1788,7 @@ void iuse::UPS_off(player& p, item& it)
     it.active = true;
 }
  
-void iuse::UPS_on_turnoff(player& p, item& it)
+void iuse::UPS_on_off(player& p, item& it)
 {
   p.if_visible_message("The UPS powers off with a soft hum."); // \todo? should be if_audible_message or g->sound
   it.make(item::types[itm_UPS_off]);
