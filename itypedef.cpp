@@ -3776,8 +3776,8 @@ A section of a pipe filled with explosive materials.  Use this item to light\n\
 the fuse, which gives you 3 turns before it detonates.  You will need a\n\
 lighter.  It is somewhat unreliable, and may fail to detonate.");
 
-TOOL("active pipe bomb", 0,   0,'*', c_white,	IRON,	MNULL,
-    2,  3, 11,  0,  1,  3,  3,  0,  1, AT_NULL,	itm_null, &iuse::pipebomb_act,0,
+TOOL_PLAYER("active pipe bomb", 0,   0,'*', c_white,	IRON,	MNULL,
+    2,  3, 11,  0,  1,  3,  3,  0,  1, AT_NULL,	itm_null, &iuse::pipebomb_act, &iuse::pipebomb_act_explode, 0,
 "This pipe bomb's fuse is lit, and it will explode any second now.  Throw it\n\
 immediately!");
 
@@ -3788,8 +3788,8 @@ TOOL("grenade",		 3, 400,'*', c_green,	IRON,	PLASTIC,
 Use this item to pull the pin, turning it into an active grenade.  You will\n\
 then have five turns before it explodes; throwing it would be a good idea.");
 
-TOOL("active grenade",	 0,   0,'*', c_green,	IRON,	PLASTIC,
-    1,  1, 10,  0, -1,  5,  5,  0,  1, AT_NULL, itm_null, &iuse::grenade_act,0,
+TOOL_PLAYER("active grenade",	 0,   0,'*', c_green,	IRON,	PLASTIC,
+    1,  1, 10,  0, -1,  5,  5,  0,  1, AT_NULL, itm_null, &iuse::grenade_act, &iuse::grenade_act_explode, 0,
 "This grenade is active, and will explode any second now.  Better throw it!");
 
 TOOL("flashbang",	 3, 380,'*', c_white,	STEEL,	PLASTIC,
@@ -3798,21 +3798,21 @@ Use this item to pull the pin, turning it into an active flashbang.  You will\n\
 then have five turns before it detonates with intense light and sound,\n\
 blinding, deafening and disorienting anyone nearby.");
 
-TOOL("active flashbang", 0,   0,'*', c_white,	STEEL,	PLASTIC,
-    1,  1,  8,  0, -1,  5,  5,  0,  1, AT_NULL,	itm_null, &iuse::flashbang_act,
+TOOL_PLAYER("active flashbang", 0,   0,'*', c_white,	STEEL,	PLASTIC,
+    1,  1,  8,  0, -1,  5,  5,  0,  1, AT_NULL,	itm_null, &iuse::flashbang_act, &iuse::flashbang_act_explode,
 0,"This flashbang is active, and will soon detonate with intense light and\n\
 sound, blinding, deafening and disorienting anyone nearby.");
 
 //	NAME		RAR VAL	SYM  COLOR	MAT1	MAT
 TOOL("EMP grenade",	 2, 600,'*', c_cyan,	STEEL,	PLASTIC,
 // VOL WGT DAM CUT HIT MAX DEF USE SEC FUEL	REVERT	  FUNCTION
-    1,  1,  8,  0, -1,  0,  0,  0,  0, AT_NULL,	itm_null, &iuse::EMPbomb,0,"\
+    1,  1,  8,  0, -1,  0,  0,  0,  0, AT_NULL,	itm_null, &iuse::EMPbomb, 0,"\
 Use this item to pull the pin, turning it into an active EMP grenade.  You\n\
 will then have three turns before it detonates, creating an EMP field which\n\
 damages robots and drains bionic energy.");
 
-TOOL("active EMP grenade",0,  0,'*', c_cyan,	STEEL,	PLASTIC,
-    1,  1,  8,  0, -1,  3,  3,  0,  1, AT_NULL,	itm_null, &iuse::EMPbomb_act,0,
+TOOL_PLAYER("active EMP grenade",0,  0,'*', c_cyan,	STEEL,	PLASTIC,
+    1,  1,  8,  0, -1,  3,  3,  0,  1, AT_NULL,	itm_null, &iuse::EMPbomb_act, &iuse::EMPbomb_act_explode, 0,
 "This EMP grenade is active, and will shortly detonate, creating a large EMP\n\
 field which damages robots and drains bionic energy.");
 
@@ -3966,8 +3966,8 @@ TOOL("C4-Explosive",      5, 6000,';',c_ltcyan, PLASTIC,     STEEL,
      6,  2,  0,  0, -4,  0,  0,  0,  0, AT_NULL, itm_null, &iuse::c4, 0, "\
 Highly explosive, use with caution! Armed with a small timer.");
 
-TOOL("C4-Explosive(armed)",0,6000,';',c_ltcyan, PLASTIC,     STEEL,
-     6,  2,  0,  0, -4,  9,  9,  0,  1, AT_NULL, itm_null, &iuse::c4armed, 0, "\
+TOOL_PLAYER("C4-Explosive(armed)",0,6000,';',c_ltcyan, PLASTIC,     STEEL,
+     6,  2,  0,  0, -4,  9,  9,  0,  1, AT_NULL, itm_null, &iuse::c4armed, &iuse::c4armed_explode, 0, "\
 Highly explosive, use with caution. Comes with a small timer.\n\
 It's armed and ticking!");
 

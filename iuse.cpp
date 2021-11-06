@@ -1367,40 +1367,60 @@ void iuse::pipebomb(player& p, item& it)
     p.use_charges(itm_lighter, 1);
 }
 
-void iuse::pipebomb_act(player *p, item *it, bool t)
+void iuse::pipebomb_act(item& it)
 {
- const auto g = game::active();
- const auto pos = g->find_item(it).value();
+    const auto g = game::active();
+    const auto pos = g->find_item(&it).value();
 
- if (t) g->sound(pos, 0, "Ssssss"); // Vol 0 = only heard if you hold it
- else {	// The timer has run down
-  if (one_in(10) && g->u.see(pos)) // \todo? allow fizzling out when not in sight?
-   messages.add("The pipe bomb fizzles out.");
-  else
-   g->explosion(pos, rng(6, 14), rng(0, 4), false);
- }
+    g->sound(pos, 0, "Ssssss"); // Vol 0 = only heard if you hold it
+}
+
+void iuse::pipebomb_act_explode(item& it)
+{
+    const auto g = game::active();
+    const auto pos = g->find_item(&it).value();
+
+    // The timer has run down
+    if (one_in(10) && g->u.see(pos)) // \todo? allow fizzling out when not in sight?
+        messages.add("The pipe bomb fizzles out.");
+    else
+        g->explosion(pos, rng(6, 14), rng(0, 4), false);
 }
 
 void iuse::grenade(player& p, item& it) { activate(p, it); }
 
-void iuse::grenade_act(player *p, item *it, bool t)
+void iuse::grenade_act(item& it)
 {
- const auto g = game::active();
- const auto pos = g->find_item(it).value();
+    const auto g = game::active();
+    const auto pos = g->find_item(&it).value();
 
- if (t) g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
- else g->explosion(pos, 12, 28, false); // When that timer runs down...
+    g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
+}
+
+void iuse::grenade_act_explode(item& it)
+{
+    const auto g = game::active();
+    const auto pos = g->find_item(&it).value();
+
+    g->explosion(pos, 12, 28, false); // When that timer runs down...
 }
 
 void iuse::flashbang(player& p, item& it) { activate(p, it); }
 
-void iuse::flashbang_act(player *p, item *it, bool t)
+void iuse::flashbang_act(item& it)
 {
  const auto g = game::active();
- const auto pos = g->find_item(it).value();
+ const auto pos = g->find_item(&it).value();
 
- if (t) g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
- else g->flashbang(pos); // When that timer runs down...
+ g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
+}
+
+void iuse::flashbang_act_explode(item& it)
+{
+    const auto g = game::active();
+    const auto pos = g->find_item(&it).value();
+
+    g->flashbang(pos); // When that timer runs down...
 }
 
 void iuse::c4(pc& p, item& it)
@@ -1416,30 +1436,39 @@ void iuse::c4(pc& p, item& it)
  it.active = true;
 }
 
-void iuse::c4armed(player *p, item *it, bool t)
+void iuse::c4armed(item& it)
 {
- const auto g = game::active();
- const auto pos = g->find_item(it).value();
+    const auto g = game::active();
+    const auto pos = g->find_item(&it).value();
 
- if (t) // Simple timer effects
-  g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
- else	// When that timer runs down...
-  g->explosion(pos, 40, 3, false);
+    g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
+}
+
+void iuse::c4armed_explode(item& it)
+{
+    const auto g = game::active();
+    const auto pos = g->find_item(&it).value();
+
+    g->explosion(pos, 40, 3, false); // When that timer runs down...
 }
 
 void iuse::EMPbomb(player& p, item& it) { activate(p, it); }
 
-void iuse::EMPbomb_act(player *p, item *it, bool t)
+void iuse::EMPbomb_act(item& it)
 {
- const auto g = game::active();
- const auto pos = g->find_item(it).value();
+    const auto g = game::active();
+    const auto pos = g->find_item(&it).value();
 
- if (t)	// Simple timer effects
-  g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
- else {	// When that timer runs down...
-  static auto explode = [&](point pt) { g->emp_blast(pt.x, pt.y); };
-  forall_do_inclusive(pos + within_rldist<4>, explode);
- }
+    g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
+}
+
+void iuse::EMPbomb_act_explode(item& it)
+{
+    const auto g = game::active();
+    const auto pos = g->find_item(&it).value();
+
+    static auto explode = [&](point pt) { g->emp_blast(pt.x, pt.y); };
+    forall_do_inclusive(pos + within_rldist<4>, explode);
 }
 
 void iuse::gasbomb(player& p, item& it) { activate(p, it); }
