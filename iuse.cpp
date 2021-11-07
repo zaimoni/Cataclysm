@@ -845,22 +845,41 @@ void iuse::hammer(pc& p, item& it)
  type = std::get<0>(*deconstruct);
 }
  
-void iuse::light_off(player *p, item *it, bool t)
+void iuse::light_off(player &p, item& it)
 {
-  messages.add("You turn the flashlight on.");
-  it->make(item::types[itm_flashlight_on]);
-  it->active = true;
+    static auto me = []() { return "You turn the flashlight on.";  };
+    static auto other = [&]() { return p.subject() + " turns the flashlight on.";  };
+
+    p.if_visible_message(me, other);
+    it.make(item::types[itm_flashlight_on]);
+    it.active = true;
 }
- 
-void iuse::light_on(player *p, item *it, bool t)
+
+class message_relay
 {
- if (t) {	// Normal use
-// Do nothing... game::light_level() handles this
- } else {	// Turning it off
-  messages.add("The flashlight flicks off.");
-  it->make(item::types[itm_flashlight]);
-  it->active = false;
- }
+    const char* msg;
+
+public:
+    message_relay(decltype(msg) msg) noexcept : msg(msg) {}
+
+    void operator()(const GPS_loc& view) {
+        game::active()->if_visible_message(msg, view);
+    }
+    void operator()(const std::pair<pc*, int>& view) { messages.add(msg); }
+    void operator()(const std::pair<npc*, int>& view) {
+        game::active()->if_visible_message(msg, *(view.first));
+    }
+};
+
+void iuse::light_on_off(item& it)
+{
+    const auto g = game::active();
+    const auto pos = g->find(*it).value();
+
+    // Turning it off
+    std::visit(message_relay("The flashlight flicks off."), pos);
+    it.make(item::types[itm_flashlight]);
+    it.active = false;
 }
 
 void iuse::water_purifier(pc& p, item& it)

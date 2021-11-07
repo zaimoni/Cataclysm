@@ -1936,27 +1936,13 @@ void npc::swim(const GPS_loc& loc)
 
 bool npc::if_visible_message(std::function<std::string()> me, std::function<std::string()> other) const
 {
-	if (other) {
-		auto g = game::active();
-		if (g->u.see(*this)) {
-			auto msg = other();
-			if (!msg.empty()) {
-				messages.add(msg);
-				return true;
-			}
-		}
-	}
+	if (other) return game::active()->if_visible_message(other, *this);
 	return false;
 }
 
 bool npc::if_visible_message(const char* msg) const
 {
-	if (msg) {
-		if (game::active()->u.see(*this)) {
-			messages.add(std::string(msg));
-			return true;
-		}
-	}
+	if (msg) return game::active()->if_visible_message(msg, *this);
 	return false;
 }
 

@@ -53,8 +53,8 @@ class iuse
   static void scissors(pc& p, item& it);
   static void extinguisher(pc& p, item& it);
   static void hammer(pc& p, item& it);
-  static void light_off	(player *p, item *it, bool t);
-  static void light_on		(player *p, item *it, bool t);
+  static void light_off(player& p, item& it);
+  static void light_on_off(item& it);
   static void water_purifier(pc& p, item& it);
   static void two_way_radio(pc& p, item& it);
   static void radio_off(pc& p, item& it);

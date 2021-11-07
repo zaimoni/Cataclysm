@@ -3623,8 +3623,8 @@ Using this flashlight will turn it on, assuming it is charged with batteries.\n\
 A turned-on flashlight will provide light during the night or while\n\
 underground.");
 
-TOOL("flashlight (on)",  0, 380,';', c_blue,	PLASTIC, IRON,
-    3,  2,  1,  0,  2, 100,100, 0, 15, AT_BATT,itm_flashlight,&iuse::light_on,
+TOOL_PLAYER("flashlight (on)",  0, 380,';', c_blue,	PLASTIC, IRON,
+    3,  2,  1,  0,  2, 100, 100, 0, 15, AT_BATT, itm_flashlight, nullptr, &iuse::light_on_off,
 mfb(IF_LIGHT_8),
 "This flashlight is turned on, and continually draining its batteries.  It\n\
 provides light during the night or while underground.  Use it to turn it off.");

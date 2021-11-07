@@ -45,6 +45,17 @@ bool mongroup::add_one() {
 }
 // end inline hypothetical mongroup.cpp
 
+// thin-wrapper
+bool game::relay_message(const std::string& msg)
+{
+    if (!msg.empty()) {
+        messages.add(msg);
+        return true;
+    }
+    return false;
+}
+
+
 // This is the main game set-up process.
 game::game()
 : gamemode(new special_game)

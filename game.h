@@ -63,6 +63,10 @@ class game : public reality_bubble
 {
  private:
   static game* _active;	// while it is not a logic paradox to have more than one game object, historically it has been used as a singleton.
+
+  // UI support
+  static bool relay_message(const std::string& msg);
+
  public:
   static game* active() { return _active; }
 
@@ -78,9 +82,27 @@ class game : public reality_bubble
   void add_event(event_type type, int on_turn, int faction_id = -1,
                  int x = -1, int y = -1);
   const event* event_queued(event_type type) const;
+
 // Sound at (x, y) of intensity (vol), described to the player is (description)
   void sound(const point& pt, int vol, std::string description);
   void sound(const point& pt, int vol, const char* description) { sound(pt, vol, std::string(description)); };
+
+  template<class T>
+  bool if_visible_message(std::function<std::string()> msg, const T& view) requires requires(const pc& u) { u.see(view); }
+  {
+	  if (msg) {
+		  if (u.see(view)) return relay_message(msg());
+	  }
+	  return false;
+  }
+
+  template<class M, class T>
+  bool if_visible_message(const M& msg, const T& view) requires requires(const pc& u) { u.see(view); game::relay_message(msg); }
+  {
+	  if (u.see(view)) return relay_message(msg);
+	  return false;
+  }
+
 // Explosion at (x, y) of intensity (power), with (shrapnel) chunks of shrapnel
   void explosion(int x, int y, int power, int shrapnel, bool fire);
   void explosion(const point& pt, int power, int shrapnel, bool fire) { explosion(pt.x, pt.y, power, shrapnel, fire); };
@@ -274,7 +296,6 @@ class game : public reality_bubble
   void replace_stair_monsters();
   void update_stair_monsters();
   void spawn_mon(int shift, int shifty); // Called by update_map, sometimes
-private:
   void _kill_mon(monster& target, bool u_did_it);
   void _explode_mon(monster& target, player* me);
 
