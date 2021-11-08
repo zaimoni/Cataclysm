@@ -874,7 +874,7 @@ public:
 void iuse::light_on_off(item& it)
 {
     const auto g = game::active();
-    const auto pos = g->find(*it).value();
+    const auto pos = g->find(it).value();
 
     // Turning it off
     std::visit(message_relay("The flashlight flicks off."), pos);
