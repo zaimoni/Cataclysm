@@ -67,7 +67,9 @@ class iuse
   static void chainsaw_on_turnoff(player& p, item& it);
   static void jackhammer(pc& p, item& it);
   static void set_trap(pc& p, item& it);
-  static void geiger		(player *p, item *it, bool t);
+  static void geiger(pc& p, item& it);
+  static void geiger_on(player& p, item& it);
+  static void geiger_on_off(player& p, item& it);
   static void teleport(player& p, item& it);
   static void can_goo(player& p, item& it);
   static void pipebomb(player& p, item& it);

@@ -1271,47 +1271,55 @@ void iuse::set_trap(pc& p, item& it)
  it.invlet = 0; // Remove the trap from the player's inv
 }
 
-void iuse::geiger(player *p, item *it, bool t)
+void iuse::geiger(pc& p, item& it)
 {
  const auto g = game::active();
 
- if (t) { // Every-turn use when it's on
-  int rads = g->m.radiation(p->GPSpos);
-  if (rads == 0) return;
-  g->sound(p->pos, 6, "");
-  if (rads > 50) messages.add("The geiger counter buzzes intensely.");
-  else if (rads > 35) messages.add("The geiger counter clicks wildly.");
-  else if (rads > 25) messages.add("The geiger counter clicks rapidly.");
-  else if (rads > 15) messages.add("The geiger counter clicks steadily.");
-  else if (rads > 8) messages.add("The geiger counter clicks slowly.");
-  else if (rads > 4) messages.add("The geiger counter clicks intermittantly.");
-  else messages.add("The geiger counter clicks once.");
-  return;
- }
 // Otherwise, we're activating the geiger counter
- const auto type = it->is_tool();
- assert(type);
-
- if (itm_geiger_on == type->id) {
-  messages.add("The geiger counter's SCANNING LED flicks off.");
-  it->make(item::types[itm_geiger_off]);
-  it->active = false;
-  return;
- }
  int ch = menu("Geiger counter:", { "Scan yourself", "Scan the ground", "Turn continuous scan on", "Cancel" });
  switch (ch) {
-  case 1: messages.add("Your radiation level: %d", p->radiation); break;
-  case 2: messages.add("The ground's radiation level: %d", g->m.radiation(p->GPSpos));
+  case 1: messages.add("Your radiation level: %d", p.radiation); break;
+  case 2: messages.add("The ground's radiation level: %d", g->m.radiation(p.GPSpos));
 	  break;
   case 3:
    messages.add("The geiger counter's scan LED flicks on.");
-   it->make(item::types[itm_geiger_on]);
-   it->active = true;
+   it.make(item::types[itm_geiger_on]);
+   it.active = true;
    break;
   case 4:
-   it->charges++;
+   it.charges++;
    break;
  }
+}
+
+// would need to be std::string-related when translation needed
+static const char* rads_to_desc(int rads)
+{
+    if (0 >= rads) return nullptr;
+    if (rads > 50) return "The geiger counter buzzes intensely.";
+    else if (rads > 35) return "The geiger counter clicks wildly.";
+    else if (rads > 25) return "The geiger counter clicks rapidly.";
+    else if (rads > 15) return "The geiger counter clicks steadily.";
+    else if (rads > 8) return "The geiger counter clicks slowly.";
+    else if (rads > 4) return "The geiger counter clicks intermittantly.";
+    else return "The geiger counter clicks once.";
+}
+
+// \todo reduce down to just item
+void iuse::geiger_on(player& p, item& it)
+{
+    const auto g = game::active();
+
+    int rads = g->m.radiation(p.GPSpos);
+    const auto desc = rads_to_desc(rads);
+    if (desc) g->sound(p.pos, 6, desc);
+}
+
+void iuse::geiger_on_off(player& p, item& it)
+{
+    p.if_visible_message("The geiger counter's SCANNING LED flicks off.");
+    it.make(item::types[itm_geiger_off]);
+    it.active = false;
 }
 
 void iuse::teleport(player& p, item& it)

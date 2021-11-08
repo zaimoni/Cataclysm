@@ -3752,8 +3752,8 @@ A tool for measuring radiation.  Using it will prompt you to choose whether\n\
 to scan yourself or the terrain, or to turn it on, which will provide\n\
 continuous feedback on ambient radiation.");
 
-TOOL("geiger ctr (on)",	0, 300, ';', c_green,	PLASTIC,STEEL,
-    2,  2,  2,  0,  0,100,100,  0, 10, AT_BATT, itm_geiger_off,&iuse::geiger,0,
+TOOL_PLAYER("geiger ctr (on)",	0, 300, ';', c_green,	PLASTIC,STEEL,
+    2,  2,  2,  0,  0,100,100,  0, 10, AT_BATT, itm_geiger_off, &iuse::geiger_on, &iuse::geiger_on_off, 0,
 "A tool for measuring radiation.  It is in continuous scan mode, and will\n\
 produce quiet clicking sounds in the presence of ambient radiation. Using it\n\
 allows you to turn it off, or scan yourself or the ground.");
@@ -4944,6 +4944,7 @@ static const std::pair<itype_id, std::tuple<itype_id, int, std::string> > prereq
 static const std::pair<itype_id, std::string> prereq_charges[] = {
 	std::pair(itm_flashlight, "flashlight's"),
 	std::pair(itm_radio, "radio's"),
+	std::pair(itm_geiger_off, "geiger counter's"),	// relying on control flow for itm_geiger_on
 	std::pair(itm_UPS_off, "power supply's"),
 	std::pair(itm_mp3, "mp3 player's")
 };
