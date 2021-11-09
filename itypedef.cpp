@@ -3655,10 +3655,10 @@ Using this radio turns it on.  It will pick up any nearby signals being\n\
 broadcast and play them audibly.");
 
 //	NAME		RAR PRC	SYM  COLOR	MAT1	MAT
-TOOL("radio (on)",	 0, 420,';', c_yellow,	PLASTIC, IRON,
+TOOL_PLAYER("radio (on)",	 0, 420,';', c_yellow,	PLASTIC, IRON,
 // VOL WGT DAM CUT HIT MAX DEF USE SEC FUEL	REVERT	  FUNCTION
-    4,  2,  4,  0, -1, 100,100, 0,  8, AT_BATT, itm_radio,&iuse::radio_on, 0,"\
-This radio is turned on, and continually draining its batteries.  It is\n\
+    4,  2,  4,  0, -1, 100,100, 0,  8, AT_BATT, itm_radio, &iuse::radio_on, &iuse::radio_on_off, 0,
+"This radio is turned on, and continually draining its batteries.  It is\n\
 playing the broadcast being sent from any nearby radio towers.");
 
 TOOL("crowbar",		18, 130,';', c_ltblue,	IRON,	MNULL,
@@ -4688,6 +4688,25 @@ it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
 	ammo(pammo), max_charges(pmax_charges), def_charges(pdef_charges), charges_per_use(pcharges_per_use),
 	turns_per_charge(pturns_per_charge), revert_to(prevert_to),
 	use(nullptr), use_npc(nullptr), use_pc(nullptr), use_player(nullptr), use_item(puse), off_npc(nullptr), off_pc(nullptr), off_player(nullptr), off_item(nullptr), can_use_npc(nullptr)
+{
+}
+
+it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1, material pm2,
+	unsigned short pvolume, unsigned short pweight,
+	signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
+	unsigned pitem_flags,
+
+	unsigned int pmax_charges, unsigned int pdef_charges,
+	unsigned char pcharges_per_use, unsigned char pturns_per_charge,
+	ammotype pammo, itype_id prevert_to,
+	decltype(use_pc) puse, decltype(off_pc) poff
+)
+	:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
+	ammo(pammo), max_charges(pmax_charges), def_charges(pdef_charges), charges_per_use(pcharges_per_use),
+	turns_per_charge(pturns_per_charge), revert_to(prevert_to),
+	use(nullptr), use_npc(nullptr), use_pc(puse), use_player(nullptr), use_item(nullptr), off_npc(nullptr), off_pc(poff), off_player(nullptr), off_item(nullptr), can_use_npc(nullptr)
 {
 }
 

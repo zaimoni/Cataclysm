@@ -993,39 +993,41 @@ void iuse::radio_off(pc& p, item& it)
   it.active = true;
 }
 
-void iuse::radio_on(player* p, item* it, bool t)
+void iuse::radio_on(pc& p, item& it)
 {
- static constexpr const int RADIO_PER_TURN = 25;
- const auto g = game::active();
+    static constexpr const int RADIO_PER_TURN = 25;
+    const auto g = game::active();
 
- if (t) {	// Normal use
-  int best_signal; // backward compatibility
-  std::string message;
-  std::tie(best_signal, message) = g->cur_om.best_radio_signal(overmap::toOvermapHires(p->GPSpos));
-  if (best_signal > 0) {
-   for (int j = 0; j < message.length(); j++) {
-    if (dice(10, 100) > dice(10, best_signal * 3)) message[j] = one_in(10) ? char(rng('a', 'z')) : '#';
-   }
+    // Normal use
+    int best_signal; // backward compatibility
+    std::string message;
+    std::tie(best_signal, message) = g->cur_om.best_radio_signal(overmap::toOvermapHires(p.GPSpos));
+    if (best_signal > 0) {
+        for (int j = 0; j < message.length(); j++) {
+            if (dice(10, 100) > dice(10, best_signal * 3)) message[j] = one_in(10) ? char(rng('a', 'z')) : '#';
+        }
 
-   std::vector<std::string> segments;
-   while (message.length() > RADIO_PER_TURN) {
-    int spot = message.find_last_of(' ', RADIO_PER_TURN);
-    if (spot == std::string::npos) spot = RADIO_PER_TURN;
-    segments.push_back( message.substr(0, spot) );
-    message = message.substr(spot + 1);
-   }
-   segments.push_back(message);
-   int index = messages.turn % (segments.size());
-   std::ostringstream messtream;
-   messtream << "radio: " << segments[index];
-   message = messtream.str();
-  }
-  g->sound(g->find_item(it).value(), 6, message.c_str());
- } else {	// Turning it off
-  messages.add("The radio dies.");
-  it->make(item::types[itm_radio]);
-  it->active = false;
- }
+        std::vector<std::string> segments;
+        while (message.length() > RADIO_PER_TURN) {
+            int spot = message.find_last_of(' ', RADIO_PER_TURN);
+            if (spot == std::string::npos) spot = RADIO_PER_TURN;
+            segments.push_back(message.substr(0, spot));
+            message = message.substr(spot + 1);
+        }
+        segments.push_back(message);
+        int index = messages.turn % (segments.size());
+        std::ostringstream messtream;
+        messtream << "radio: " << segments[index];
+        message = messtream.str();
+    }
+    g->sound(g->find_item(&it).value(), 6, message);
+}
+
+void iuse::radio_on_off(pc& p, item& it) // \todo adjust this to item-only
+{
+    messages.add("The radio dies.");
+    it.make(item::types[itm_radio]);
+    it.active = false;
 }
 
 void iuse::crowbar(pc& p, item& it)
@@ -1086,12 +1088,12 @@ void iuse::crowbar(pc& p, item& it)
  }
 }
 
-void iuse::makemound(player *p, item *it, bool t)
+void iuse::makemound(pc& p, item& it) // \todo lift cannot use check
 {
- decltype(auto) terrain = p->GPSpos.ter();
+ decltype(auto) terrain = p.GPSpos.ter();
  if (is<diggable>(terrain)) {
   messages.add("You churn up the earth here.");
-  p->moves -= 3 * mobile::mp_turn;
+  p.moves -= 3 * mobile::mp_turn;
   terrain = t_dirtmound;
  } else
   messages.add("You can't churn up this ground.");

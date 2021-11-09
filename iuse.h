@@ -58,9 +58,10 @@ class iuse
   static void water_purifier(pc& p, item& it);
   static void two_way_radio(pc& p, item& it);
   static void radio_off(pc& p, item& it);
-  static void radio_on	(player* p, item* it, bool t);
+  static void radio_on(pc& p, item& it);
+  static void radio_on_off(pc& p, item& it);
   static void crowbar(pc& p, item& it);
-  static void makemound	(player *p, item *it, bool t);
+  static void makemound(pc& p, item& it);
   static void dig(pc& p, item& it);
   static void chainsaw_off(player& p, item& it);
   static void chainsaw_on(player& p, item& it);
