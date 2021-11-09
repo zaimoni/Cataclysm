@@ -45,7 +45,7 @@ class iuse
   static void mutagen_3	(player *p, item *it, bool t);
   static void purifier		(player *p, item *it, bool t);
   static void marloss		(player *p, item *it, bool t);
-  static void dogfood		(player *p, item *it, bool t);
+  static void dogfood(pc& p, item& it); // but eating by player is unimplemented
 
 // TOOLS
   static void lighter(pc& p, item& it);

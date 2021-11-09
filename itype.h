@@ -640,7 +640,6 @@ struct it_tool : public itype
  itype_id revert_to;
 #ifndef SOCRATES_DAIMON
 private:
- void (*use)(player *, item *, bool);
  void (*use_npc)(npc&, item&);	// waterfall/SSADM sofware lifecycle for these nine
  void (*use_pc)(pc&, item&);
  void (*use_player)(player&, item&);
@@ -764,9 +763,6 @@ public:
 	 unsigned int pmax_charges, unsigned int pdef_charges,
 	 unsigned char pcharges_per_use, unsigned char pturns_per_charge,
 	 ammotype pammo, itype_id prevert_to
-#ifndef SOCRATES_DAIMON
-     , decltype(use) puse = nullptr
-#endif
  );
 
  const it_tool* is_tool() const override final { return this; }

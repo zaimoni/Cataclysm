@@ -568,11 +568,11 @@ void iuse::marloss(player *p, item *it, bool t)
  if (effect == 6) p->radiation = 0;
 }
 
-void iuse::dogfood(player *p, item *it, bool t)
+void iuse::dogfood(pc& p, item& it)
 {
  const auto g = game::active();
 
- it->invlet = 0;    // C:Whales: unconditional discard after use(opening)
+ it.invlet = 0;    // C:Whales: unconditional discard after use(opening)
 
  g->draw();
  mvprintw(0, 0, "Which direction?");
@@ -581,8 +581,8 @@ void iuse::dogfood(player *p, item *it, bool t)
   messages.add("Invalid direction.");
   return;
  }
- p->moves -= (mobile::mp_turn / 20) * 3;
- if (monster* const m_at = g->mon(p->GPSpos+dir)) {
+ p.moves -= (mobile::mp_turn / 20) * 3;
+ if (monster* const m_at = g->mon(p.GPSpos+dir)) {
   if (m_at->type->id == mon_dog) {
    messages.add("The dog seems to like you!");
    m_at->friendly = -1;
