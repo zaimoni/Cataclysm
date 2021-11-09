@@ -4625,13 +4625,13 @@ it_tool::it_tool()
 }
 
 #ifndef SOCRATES_DAIMON
-it_tool::it_tool(decltype(use) puse)
+it_tool::it_tool(decltype(use_pc) puse)
 : it_tool()
 {
 	price = 0;
 	charges_per_use = 1;
 	turns_per_charge = 0;
-	use = puse;
+	use_pc = puse;
 }
 
 it_tool::it_tool(int pid, unsigned char prarity, unsigned int pprice,

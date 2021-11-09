@@ -659,7 +659,7 @@ public:
  it_tool();
 #ifndef SOCRATES_DAIMON
 protected:
-	it_tool(decltype(use) puse); // assistant for it_artifact_tool default constructor
+	it_tool(decltype(use_pc) puse); // assistant for it_artifact_tool default constructor
 
 public:
 	it_tool(int pid, unsigned char prarity, unsigned int pprice,
@@ -786,7 +786,7 @@ public:
 protected:	// this is not a final type so these aren't public
 	it_tool(const cataclysm::JSON& src);
 #ifndef SOCRATES_DAIMON
-	it_tool(const cataclysm::JSON& src, decltype(use) puse);
+	it_tool(const cataclysm::JSON& src, decltype(use_pc) puse);
 #endif
 	void toJSON(cataclysm::JSON& dest) const override;
 };

@@ -2162,15 +2162,15 @@ you can, I need to know you're alright.";
 */
 }
 
-void iuse::artifact(player *p, item *it, bool t)
+void iuse::artifact(pc& p, item& it)
 {
-    const auto art = it->is_artifact_tool();
+    const auto art = it.is_artifact_tool();
     if (!art) {
-        if (!it->is_artifact()) {
-            debugmsg("iuse::artifact called on a non-artifact item! %s", it->tname().c_str());
+        if (!it.is_artifact()) {
+            debugmsg("iuse::artifact called on a non-artifact item! %s", it.tname().c_str());
             return;
         } else {
-            debugmsg("iuse::artifact called on a non-tool artifact! %s", it->tname().c_str());
+            debugmsg("iuse::artifact called on a non-tool artifact! %s", it.tname().c_str());
             return;
         }
     }
@@ -2189,12 +2189,12 @@ void iuse::artifact(player *p, item *it, bool t)
 
   switch (used) {
   case AEA_STORM: {
-   g->sound(p->pos, 10, "Ka-BOOM!");
+   g->sound(p.pos, 10, "Ka-BOOM!");
    int num_bolts = rng(2, 4);
    for (int j = 0; j < num_bolts; j++) {
 	point dir(direction_vector(direction(rng(NORTH,NORTHWEST))));
     int dist = rng(4, 12);
-	point bolt(p->pos);
+	point bolt(p.pos);
     for (int n = 0; n < dist; n++) {
 	 bolt += dir;
      g->m.add_field(g, bolt, fd_electricity, rng(2, 3));
@@ -2212,7 +2212,7 @@ void iuse::artifact(player *p, item *it, bool t)
 
   case AEA_ADRENALINE:
    messages.add("You're filled with a roaring energy!");
-   p->add_disease(DI_ADRENALINE, rng(MINUTES(20), MINUTES(25)));
+   p.add_disease(DI_ADRENALINE, rng(MINUTES(20), MINUTES(25)));
    break;
 
   case AEA_MAP: {
@@ -2228,79 +2228,82 @@ void iuse::artifact(player *p, item *it, bool t)
    }
    if (new_map) {
     messages.add("You have a vision of the surrounding area...");
-    p->moves -= 100;
+    p.moves -= mobile::mp_turn;
    }
   } break;
 
   case AEA_BLOOD: {
-   bool blood = false;
-   for (int x = p->pos.x - 4; x <= p->pos.x + 4; x++) {
-    for (int y = p->pos.y - 4; y <= p->pos.y + 4; y++) {
-     if (!one_in(4) && g->m.add_field(g, x, y, fd_blood, 3) &&
-         (blood || g->u.see(x, y)))
-      blood = true;
-    }
-   }
-   if (blood) messages.add("Blood soaks out of the ground and walls.");
+      static std::function<bool(point)> ooze_blood = [&](const decltype(p.pos)& dest) {
+          if (  !one_in(4) && g->m.add_field(g, dest, fd_blood, 3)
+              && g->u.see(dest))    // \todo? optimize out this visibility check?
+              return true;
+          return false;
+      };
+
+      if (forall_do_inclusive(p.pos + within_rldist<4>, ooze_blood)) {
+          messages.add("Blood soaks out of the ground and walls.");
+      }
   } break;
 
   case AEA_FATIGUE: {
    messages.add("The fabric of space seems to decay.");
-   int x = rng(p->pos.x - 3, p->pos.x + 3), y = rng(p->pos.y - 3, p->pos.y + 3);
-   auto& fd = g->m.field_at(x, y);
+   auto dest = p.pos + rng(within_rldist<3>);
+   auto& fd = g->m.field_at(dest);
    if (fd.type == fd_fatigue) { 
 	   if (fd.density < 3) fd.density++;
-   } else g->m.add_field(g, x, y, fd_fatigue, rng(1, 2));
+   } else g->m.add_field(g, dest, fd_fatigue, rng(1, 2));
   } break;
 
   case AEA_ACIDBALL:
    if (const auto acidball = g->look_around()) {
-       for (int x = acidball->x - 1; x <= acidball->x + 1; x++) {
-           for (int y = acidball->y - 1; y <= acidball->y + 1; y++) {
-               auto& fd = g->m.field_at(x, y);
-               if (fd.type == fd_acid && fd.density < 3)
-                   fd.density++;
-               else
-                   g->m.add_field(g, x, y, fd_acid, rng(2, 3));
-           }
-       }
+       static auto acidify = [&](const decltype(*acidball) dest) {
+           auto& fd = g->m.field_at(dest);
+           if (fd.type == fd_acid) {
+               if (3 > fd.density) fd.density++;
+           } else
+               g->m.add_field(g, dest, fd_acid, rng(2, 3));
+       };
+
+       forall_do_inclusive(*acidball + within_rldist<1>, acidify);
    }
    break;
 
-  case AEA_PULSE:
-   g->sound(p->pos, 30, "The earth shakes!");
-   for (int x = p->pos.x - 2; x <= p->pos.x + 2; x++) {
-    for (int y = p->pos.y - 2; y <= p->pos.y + 2; y++) {
-     g->m.bash(x, y, 40);
-     g->m.bash(x, y, 40);  // Multibash effect, so that doors &c will fall
-     g->m.bash(x, y, 40);
-     if (g->m.is_destructable(x, y) && rng(1, 10) >= 3)
-      g->m.ter(x, y) = t_rubble;
-    }
-   }
+  case AEA_PULSE: {
+      static auto pummel = [&](const decltype(p.pos)& dest) {
+          g->m.bash(dest, 40);
+          g->m.bash(dest, 40);  // Multibash effect, so that doors &c will fall
+          g->m.bash(dest, 40);
+          if (g->m.is_destructable(dest) && rng(1, 10) >= 3) g->m.ter(dest) = t_rubble;
+      };
+
+      g->sound(p.pos, 30, "The earth shakes!");
+      forall_do_inclusive(p.pos + within_rldist<2>, pummel);
+  }
    break;
 
   case AEA_HEAL:
    messages.add("You feel healed.");
-   p->healall(2);
+   p.healall(2);
    break;
 
-  case AEA_CONFUSED:
-   for (int x = p->pos.x - 8; x <= p->pos.x + 8; x++) {
-    for (int y = p->pos.y - 8; y <= p->pos.y + 8; y++) {
-	 if (monster* const m_at = g->mon(x,y)) m_at->add_effect(ME_STUNNED, rng(5, 15));
-    }
-   }
+  case AEA_CONFUSED: {
+      static auto confuse = [&](const decltype(p.pos)& dest) {
+          if (const auto m_at = g->mon(dest)) m_at->add_effect(ME_STUNNED, rng(5, 15));
+      };
+
+      forall_do_inclusive(p.pos + within_rldist<8>, confuse);
+  }
    break;
 
-  case AEA_ENTRANCE:
-   for (int x = p->pos.x - 8; x <= p->pos.x + 8; x++) {
-    for (int y = p->pos.y - 8; y <= p->pos.y + 8; y++) {
-	 if (monster* const m_at = g->mon(x,y)) {
-	   if (m_at->is_enemy(p) && rng(0, 600) > m_at->hp) m_at->make_friendly();
-	 }
-    }
-   }
+  case AEA_ENTRANCE: {
+      static auto charm = [&](const decltype(p.pos)& dest) {
+          if (const auto m_at = g->mon(dest)) {
+              if (m_at->is_enemy(&p) && rng(0, 600) > m_at->hp) m_at->make_friendly();
+          }
+      };
+
+      forall_do_inclusive(p.pos + within_rldist<8>, charm);
+  }
    break;
 
   case AEA_BUGS: {
@@ -2309,7 +2312,7 @@ void iuse::artifact(player *p, item *it, bool t)
    int num = 0;
    std::vector<point> empty;
    for (decltype(auto) dir : Direction::vector) {
-       point pt(p->pos + dir);
+       point pt(p.pos + dir);
        if (g->is_empty(pt)) empty.push_back(pt);
    }
    if (empty.empty() || roll <= 4)
@@ -2340,16 +2343,16 @@ void iuse::artifact(player *p, item *it, bool t)
   } break;
 
   case AEA_TELEPORT:
-   g->teleport(p);
+   g->teleport(&p);
    break;
 
   case AEA_LIGHT:
-   messages.add("The %s glows brightly!", it->tname().c_str());
+   messages.add("The %s glows brightly!", it.tname().c_str());
    g->add_event(EVENT_ARTIFACT_LIGHT, int(messages.turn) + 30);
    break;
 
   case AEA_GROWTH: {
-   monster tmptriffid(mtype::types[0], p->pos);
+   monster tmptriffid(mtype::types[0], p.pos);
    mattack::growplants(g, &tmptriffid);
   } break;
 
@@ -2358,56 +2361,59 @@ void iuse::artifact(player *p, item *it, bool t)
     g->z[i].hurt(rng(0, 5));
    break;
 
-  case AEA_RADIATION:
-   messages.add("Horrible gasses are emitted!");
-   for (int x = p->pos.x - 1; x <= p->pos.x + 1; x++) {
-    for (int y = p->pos.y - 1; y <= p->pos.y + 1; y++)
-     g->m.add_field(g, x, y, fd_nuke_gas, rng(2, 3));
-   }
+  case AEA_RADIATION: {
+      static auto contaminate = [&](const decltype(p.pos)& dest) {
+          g->m.add_field(g, dest, fd_nuke_gas, rng(2, 3));
+      };
+
+      messages.add("Horrible gasses are emitted!");
+      forall_do_inclusive(p.pos + within_rldist<1>, contaminate);
+  }
    break;
 
   case AEA_PAIN:
    messages.add("You're wracked with pain!");
-   p->pain += rng(5, 15);
+   p.pain += rng(5, 15);
    break;
 
   case AEA_MUTATE:
-   if (!one_in(3)) p->mutate();
+   if (!one_in(3)) p.mutate();
    break;
 
   case AEA_PARALYZE:
    messages.add("You're paralyzed!");
-   p->moves -= rng(50, 200);
+   p.moves -= rng(mobile::mp_turn / 2, 2 * mobile::mp_turn);
    break;
 
-  case AEA_FIRESTORM:
-   messages.add("Fire rains down around you!");
-   for (int x = p->pos.x - 3; x <= p->pos.x + 3; x++) {
-    for (int y = p->pos.y - 3; y <= p->pos.y + 3; y++) {
-     if (!one_in(3)) g->m.add_field(g, x, y, fd_fire, 1 + rng(0, 1) * rng(0, 1), 30);
-    }
-   }
+  case AEA_FIRESTORM: {
+      static auto incinerate = [&](const decltype(p.pos)& dest) {
+          if (!one_in(3)) g->m.add_field(g, dest, fd_fire, 1 + rng(0, 1) * rng(0, 1), 30);
+      };
+
+      messages.add("Fire rains down around you!");
+      forall_do_inclusive(p.pos + within_rldist<3>, incinerate);
+  }
    break;
 
   case AEA_ATTENTION:
    messages.add("You feel like your action has attracted attention.");
-   p->add_disease(DI_ATTENTION, HOURS(1) * rng(1, 3));
+   p.add_disease(DI_ATTENTION, HOURS(1) * rng(1, 3));
    break;
 
   case AEA_TELEGLOW:
    messages.add("You feel unhinged.");
-   p->add_disease(DI_TELEGLOW, MINUTES(10) * rng(3, 12));
+   p.add_disease(DI_TELEGLOW, MINUTES(10) * rng(3, 12));
    break;
 
   case AEA_NOISE:
-   messages.add("Your %s emits a deafening boom!", it->tname().c_str());
-   g->sound(p->pos, 100, "");
+   messages.add("Your %s emits a deafening boom!", it.tname().c_str());
+   g->sound(p.pos, 100, "");
    break;
 
   case AEA_SCREAM:
-   messages.add("Your %s screams disturbingly.", it->tname().c_str());
-   g->sound(p->pos, 40, "");
-   p->add_morale(MORALE_SCREAM, -10);
+   messages.add("Your %s screams disturbingly.", it.tname().c_str());
+   g->sound(p.pos, 40, "");
+   p.add_morale(MORALE_SCREAM, -10);
    break;
 
   case AEA_DIM:
@@ -2416,13 +2422,13 @@ void iuse::artifact(player *p, item *it, bool t)
    break;
 
   case AEA_FLASH:
-   messages.add("The %s flashes brightly!", it->tname().c_str());
-   g->flashbang(p->pos);
+   messages.add("The %s flashes brightly!", it.tname().c_str());
+   g->flashbang(p.pos);
    break;
 
   case AEA_VOMIT:
    messages.add("A wave of nausea passes through you!");
-   p->vomit();
+   p.vomit();
    break;
 
   // cf. trapfunc::shadow
@@ -2433,15 +2439,15 @@ void iuse::artifact(player *p, item *it, bool t)
 
    static std::function<point()> candidate = [&]() {
        if (one_in(2)) {
-           return point(rng(p->pos.x - 5, p->pos.x + 5), one_in(2) ? p->pos.y - 5 : p->pos.y + 5);
+           return point(p.pos.x + rng(-5, 5), p.pos.y + (one_in(2) ? -5 : 5));
        }
        else {
-           return point(one_in(2) ? p->pos.x - 5 : p->pos.x + 5, rng(p->pos.y - 5, p->pos.y + 5));
+           return point(p.pos.x + (one_in(2) ? -5 : 5), p.pos.y + rng(-5, 5));
        }
    };
 
    static std::function<bool(const point&)> ok = [&](const point& pt) {
-       return g->is_empty(pt) && g->m.sees(pt, p->pos, 10);
+       return g->is_empty(pt) && g->m.sees(pt, p.pos, 10);
    };
 
    for (int i = 0; i < num_shadows; i++) {

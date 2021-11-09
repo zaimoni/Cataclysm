@@ -1423,8 +1423,9 @@ std::ostream& operator<<(std::ostream& os, const it_artifact_armor& src)
 }
 
 #ifndef SOCRATES_DAIMON
-it_tool::it_tool(const cataclysm::JSON& src, decltype(use) puse)
-: itype(src), ammo(AT_NULL), max_charges(0), def_charges(0), charges_per_use(0), turns_per_charge(0), revert_to(itm_null), use(puse)
+it_tool::it_tool(const cataclysm::JSON& src, decltype(use_pc) puse)
+: itype(src), ammo(AT_NULL), max_charges(0), def_charges(0), charges_per_use(0), turns_per_charge(0), revert_to(itm_null),
+  use(nullptr), use_npc(nullptr), use_pc(puse), use_player(nullptr), use_item(nullptr), off_npc(nullptr), off_pc(nullptr), off_player(nullptr), can_use_npc(nullptr)
 {
 	int tmp;
 	if (src.has_key("ammo")) fromJSON(src["ammo"], ammo);
@@ -1445,7 +1446,7 @@ it_tool::it_tool(const cataclysm::JSON& src, decltype(use) puse)
 it_tool::it_tool(const cataclysm::JSON& src)
 : itype(src),ammo(AT_NULL), max_charges(0), def_charges(0), charges_per_use(0), turns_per_charge(0), revert_to(itm_null)
 #ifndef SOCRATES_DAIMON
-, use(nullptr)
+, use(nullptr), use_npc(nullptr), use_pc(nullptr), use_player(nullptr), use_item(nullptr), off_npc(nullptr), off_pc(nullptr), off_player(nullptr), can_use_npc(nullptr)
 #endif
 {
 	int tmp;

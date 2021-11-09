@@ -129,7 +129,7 @@ class iuse
 // This function is used when an artifact is activated
 // It examines the item's artifact-specific properties
 // See artifact.h for a list
-  static void artifact		(player *p, item *it, bool t);
+  static void artifact(pc& p, item& it);
   // historical declarations without definitions
 /*  static void heal		(player *p, item *it, bool t);
   static void twist_space	(player *p, item *it, bool t);

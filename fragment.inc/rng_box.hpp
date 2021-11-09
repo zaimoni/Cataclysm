@@ -51,6 +51,20 @@ inline void forall_do_inclusive(const zaimoni::gdi::box<point>& src, std::functi
 	}
 }
 
+inline bool forall_do_inclusive(const zaimoni::gdi::box<point>& src, std::function<bool(point)> op) {
+	// this will need revision if we want to actually use INT_MAX upper bound
+	bool ret = false;
+	const point anchor = src.tl_c();
+	const point nonstrict_ub = src.br_c();
+	point pt;
+	for (pt.x = anchor.x; pt.x <= nonstrict_ub.x; ++pt.x) {
+		for (pt.y = anchor.y; pt.y <= nonstrict_ub.y; ++pt.y) {
+			if (op(pt)) ret = true;
+		}
+	}
+	return ret;
+}
+
 inline std::optional<point> find_first(const zaimoni::gdi::box<point>& src, std::function<bool(point)> test) {
 	// this will need revision if we want to actually use INT_MAX upper bound
 	const point anchor = src.tl_c();
