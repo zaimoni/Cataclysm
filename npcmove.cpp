@@ -33,10 +33,10 @@ static const itype_id ALT_ATTACK_ITEMS[] = {	// \todo mod target
 // 2021-09-08: use_escape_obj now obsolete, use target_inventory_alt instead
 class use_escape_obj : public cataclysm::action
 {
-	player& _actor;
+	npc& _actor;
 	int inv_index;
 public:
-	use_escape_obj(player& actor, int index) : _actor(actor), inv_index(index) {
+	use_escape_obj(decltype(_actor) actor, int index) : _actor(actor), inv_index(index) {
 #ifndef NDEBUG
 		if (!IsLegal()) throw std::logic_error("illegal escape item");
 #endif
