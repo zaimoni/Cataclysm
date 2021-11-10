@@ -775,7 +775,7 @@ void item::init()
 healthy,addict,charges,fun,use_func,addict_func,des) \
 	index++;types.push_back(new it_comest(index,rarity,price,name,des,'~',\
 color,LIQUID,2,1,quench,nutr,spoils,stim,healthy,addict,charges,\
-fun,container,itm_null NOT_DAIMON(use_func),addict_func));
+fun,container,itm_null,addict_func NOT_DAIMON(use_func)));
 
 //     NAME		RAR PRC	COLOR     CONTAINER
 DRINK("water",		90, 50,	c_ltcyan, itm_bottle_plastic,
@@ -891,7 +891,7 @@ Blood, possibly that of a human.  Disgusting!");
 nutr,spoils,stim,healthy,addict,charges,fun,use_func,addict_func,des) \
 	index++;types.push_back(new it_comest(index,rarity,price,name,des,'%',\
 color,mat1,volume,weight,quench,nutr,spoils,stim,healthy,addict,charges,\
-fun,container,itm_null NOT_DAIMON(use_func),addict_func));
+fun,container,itm_null,addict_func NOT_DAIMON(use_func)));
 // FOOD
 
 //   NAME		RAR PRC	COLOR		MAT1	CONTAINER
@@ -1174,7 +1174,7 @@ or swallow it raw for a lesser stimulative boost.");
 charges,fun,use_func,addict_func,des) \
 	index++;types.push_back(new it_comest(index,rarity,price,name,des,'!',\
 color,mat,1,1,0,0,0,stim,healthy,addict,charges,\
-fun,itm_null,tool NOT_DAIMON(use_func),addict_func));
+fun,itm_null,tool,addict_func NOT_DAIMON(use_func)));
 
 //  NAME		RAR PRC	COLOR		TOOL
 MED("bandages",		50, 60,	c_white,	itm_null,
@@ -4497,17 +4497,17 @@ it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
 	signed char pstim, signed char phealthy, unsigned char paddict,
 	unsigned char pcharges, signed char pfun, itype_id pcontainer,
 	itype_id ptool,
+	add_type padd
 #ifndef SOCRATES_DAIMON
-	decltype(use) puse,
+	, decltype(use) puse
 #endif
-	add_type padd)
+	)
 :itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, 0, 0, 0, 0),
 	quench(pquench),nutr(pnutr),spoils(pspoils),addict(paddict),charges(pcharges),stim(pstim),healthy(phealthy),fun(pfun),container(pcontainer),
-	tool(ptool),
+	tool(ptool), add(padd)
 #ifndef SOCRATES_DAIMON
-	use(puse),
+	, use(puse), use_npc(nullptr), use_pc(nullptr), use_player(nullptr)
 #endif
-	add(padd)
 {
 }
 
@@ -4880,16 +4880,21 @@ std::string itype::force_sign(int src)
 #ifndef SOCRATES_DAIMON
 void it_comest::consumed_by(item& it, player& u)  const
 {
+	if (use_player) use_player(u, it);
 	if (use) use(&u, &it, false);
 }
 
 void it_comest::consumed_by(item& it, npc& u)  const
 {
+	if (use_npc) use_npc(u, it);
+	if (use_player) use_player(u, it);
 	if (use) use(&u, &it, false);
 }
 
 void it_comest::consumed_by(item& it, pc& u)  const
 {
+	if (use_pc) use_pc(u, it);
+	if (use_player) use_player(u, it);
 	if (use) use(&u, &it, false);
 }
 
