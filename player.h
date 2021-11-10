@@ -209,6 +209,7 @@ public:
  bool remove_discard(const item_spec& it);
 
  int  lookup_item(char let) const;
+ std::optional<std::string> cannot_eat(const item_spec& src) const;
  bool eat(const item_spec& src);	// Eat item; returns false on fail
  virtual bool wield(int index);// Wield item; returns false on fail
  void pick_style(); // Pick a style

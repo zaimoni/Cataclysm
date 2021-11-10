@@ -4753,10 +4753,16 @@ const item* player::decode_item_index(const int n) const
     return nullptr;
 }
 
+std::optional<std::string> player::cannot_eat(const item_spec& src) const
+{
+    if (-1 > src.second) return "You need to take that off before eating it.";
+    return std::nullopt;
+}
+
 bool player::eat(const item_spec& src)
 {
-    if (-1 > src.second) { // \todo: sink this down
-        messages.add("You need to take that off before eating it.");
+    if (const auto inedible = cannot_eat(src)) {
+        subjective_message(*inedible);
         return false;
     }
 
@@ -4829,15 +4835,17 @@ bool player::eat(const item_spec& src)
         if (eaten->poison >= rng(2, 4)) add_disease(DI_POISON, eaten->poison * MINUTES(10));
         if (eaten->poison > 0) add_disease(DI_FOODPOISON, eaten->poison * MINUTES(30));
 
-        // Descriptive text
-        if (!is_npc()) {
-            if (eaten->made_of(LIQUID)) messages.add("You drink your %s.", eaten->tname().c_str());
-            else if (comest->nutr >= 5) messages.add("You eat your %s.", eaten->tname().c_str());    // XXX \todo is this an invariant?
-        }
-        else if (g->u.see(pos)) {
-            if (eaten->made_of(LIQUID)) messages.add("%s drinks a %s.", name.c_str(), eaten->tname().c_str());
-            else messages.add("%s eats a %s.", name.c_str(), eaten->tname().c_str());
-        }
+        static auto me = [&]() {
+            if (eaten->made_of(LIQUID)) return std::string("You drink your ")+ eaten->tname() + ".";
+            else return std::string("You eat your ") + eaten->tname() + ".";
+        };
+
+        static auto other = [&]() {
+            if (eaten->made_of(LIQUID)) return name + " drinks a " + eaten->tname() + ".";
+            else return name + " eats a " + eaten->tname() + ".";
+        };
+
+        if_visible_message(me, other);
 
         if (item::types[comest->tool]->is_tool()) use_charges(comest->tool, 1); // Tools like lighters get used
         if (comest->stim > 0) {
