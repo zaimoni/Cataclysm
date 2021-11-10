@@ -36,7 +36,7 @@ std::string random_last_name();
 // It's too invasive to try to extract the player vs NPC differences into an actor controller class,
 // but we don't want per-player UI within the game object either.
 class player : public mobile {
-public:
+protected:
  player();
  player(const cataclysm::JSON& src);
  player(const player &rhs) = default;
@@ -47,6 +47,7 @@ public:
  player& operator=(const player& rhs);
  player& operator=(player&& rhs) = default;
 
+public:
 // newcharacter.cpp 
  bool create(game *g, character_type type, std::string tempname = "");
  void normalize();	// Starting set up of HP
