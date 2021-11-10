@@ -419,15 +419,6 @@ bool player::if_visible_message(std::function<std::string()> me, std::function<s
     return false;
 }
 
-bool player::if_visible_message(const char* msg) const
-{
-    if (msg) {
-        subjective_message(msg);
-        return true;
-    }
-    return false;
-}
-
 bool player::see_phantasm()
 {
     auto g = game::active();
@@ -1596,8 +1587,6 @@ player::player()
  for (int i = 1; i < NUM_MUTATION_CATEGORIES; i++)
   mutation_category_level[i] = 0;
 }
-
-DEFINE_ACID_ASSIGN_W_MOVE(player)
 
 std::string player::subject() const
 {

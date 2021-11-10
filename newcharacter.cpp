@@ -47,7 +47,7 @@ static std::string template_filename(const std::string& src)
     return ret += ".template";
 }
 
-bool player::create(game *g, character_type type, std::string tempname)
+bool pc::create(game *g, character_type type, std::string tempname)
 {
  weapon = item::null;
  WINDOW* w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
@@ -135,7 +135,7 @@ bool player::create(game *g, character_type type, std::string tempname)
      debugmsg("Couldn't open %s!", filename.c_str());
      return false;
     }
-	*this = player(cataclysm::JSON(fin));
+	*this = pc(cataclysm::JSON(fin));
     points = 0;
    } break;
   }

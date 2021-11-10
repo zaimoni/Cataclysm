@@ -44,14 +44,13 @@ protected:
  virtual ~player() = default;
  friend cataclysm::JSON toJSON(const player& src);
 
- player& operator=(const player& rhs);
+ player& operator=(const player& rhs) = default;
  player& operator=(player&& rhs) = default;
 
 public:
-// newcharacter.cpp 
- bool create(game *g, character_type type, std::string tempname = "");
+// newcharacter.cpp
  void normalize();	// Starting set up of HP
-// </newcharacter.cpp>
+// end newcharacter.cpp
 
  void pick_name(); // Picks a name from NAMES_*
 
@@ -302,7 +301,7 @@ public:
  virtual void subjective_message(const std::string& msg) const;
  virtual void subjective_message(const char* msg) const { subjective_message(std::string(msg)); }
  virtual bool if_visible_message(std::function<std::string()> me, std::function<std::string()> other) const;
- virtual bool if_visible_message(const char* msg) const;
+ virtual bool if_visible_message(const char* msg) const = 0;
  virtual bool see_phantasm();  // would not be const for multi-PC case
  virtual std::vector<item>* use_stack_at(const point& pt) const;
  virtual int use_active(item& it);

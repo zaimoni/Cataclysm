@@ -20,6 +20,15 @@ pc::pc()
 {
 }
 
+bool pc::if_visible_message(const char* msg) const
+{
+    if (msg) {
+        subjective_message(msg);
+        return true;
+    }
+    return false;
+}
+
 char pc::inc_invlet(char src)
 {
     switch (src) {

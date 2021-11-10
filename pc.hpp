@@ -17,6 +17,9 @@ public:
 	pc& operator=(const pc& rhs) = default;
 	pc& operator=(pc&& rhs) = default;
 
+	// abstract ui
+	bool if_visible_message(const char* msg) const override;
+
 	// invlets
 	char get_invlet(std::string title = "Inventory:");
 	std::vector<item> multidrop();
@@ -48,7 +51,10 @@ public:
 	void record_kill(const monster& m) override;
 	std::vector<std::pair<const mtype*, int> > summarize_kills();
 
-	// over in game.cpp(!)
+	// newcharacter.cpp
+	bool create(game* g, character_type type, std::string tempname = "");
+
+	// game.cpp(!)
 	void refresh_all() const;
 
 private:
