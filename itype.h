@@ -772,10 +772,8 @@ public:
  const it_tool* is_tool() const override final { return this; }
 
 #ifndef SOCRATES_DAIMON
- void used_by(item& it, player& u) const;
  void used_by(item& it, npc& u) const;
  void used_by(item& it, pc& u) const;
- void turned_off_by(item& it, player& u) const;
  void turned_off_by(item& it, npc& u) const;
  void turned_off_by(item& it, pc& u) const;
  std::optional<std::any> is_relevant(const item& it, const npc& _npc) const;

@@ -4903,12 +4903,6 @@ void it_macguffin::used_by(item& it, pc& u)  const
 	if (use_pc) use_pc(u, it);
 }
 
-void it_tool::used_by(item& it, player& u) const
-{
-	if (use_item) use_item(it);
-	if (use_player) use_player(u, it);
-}
-
 void it_tool::used_by(item& it, npc& u) const
 {
 	if (use_item) use_item(it);
@@ -4921,12 +4915,6 @@ void it_tool::used_by(item& it, pc& u) const
 	if (use_item) use_item(it);
 	if (use_pc) use_pc(u, it);
 	if (use_player) use_player(u, it);
-}
-
-void it_tool::turned_off_by(item& it, player& u) const
-{
-	if (off_item) off_item(it);
-	if (off_player) off_player(u, it);
 }
 
 void it_tool::turned_off_by(item& it, npc& u) const
