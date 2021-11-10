@@ -19,6 +19,7 @@ public:
 
 	// abstract ui
 	bool if_visible_message(const char* msg) const override;
+	int use_active(item& it) override;
 
 	// invlets
 	char get_invlet(std::string title = "Inventory:");

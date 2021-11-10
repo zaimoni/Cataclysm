@@ -448,38 +448,6 @@ std::vector<item>* player::use_stack_at(const point& pt) const
     return ret;
 }
 
-/// <returns>0: no-op; -1 charger gun; -2 artifact; 1 now null item</returns>
-int player::use_active(item& it) {
-    const auto tool = it.is_tool();
-    if (!tool) {
-        if (!it.active) return 0;
-        if (it.has_flag(IF_CHARGE)) return -1;  // process as charger gun
-        it.active = false;  // restore invariant; for debugging purposes we'd use accessors and intercept on set
-        return 0;
-    }
-    if (it.is_artifact()) return -2;
-    if (!it.active) return 0;
-
-    try {
-        tool->used_by(it, *this);
-    } catch (const std::string& e) {
-        messages.add(e);
-        return 0;
-    }
-
-    if (tool->turns_per_charge > 0 && int(messages.turn) % tool->turns_per_charge == 0) it.charges--;
-    // separate this so we respond to bugs reasonably
-    if (it.charges <= 0) {
-        tool->turned_off_by(it, *this);
-        if (tool->revert_to == itm_null) {
-            it = item::null;
-            return 1;
-        }
-        it.type = item::types[tool->revert_to];
-    }
-    return 0;
-}
-
 void dis_effect(game* g, player& p, disease& dis)
 {
     const auto delta = dis_stat_effects(p, dis);

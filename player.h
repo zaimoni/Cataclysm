@@ -304,7 +304,7 @@ public:
  virtual bool if_visible_message(const char* msg) const = 0;
  virtual bool see_phantasm();  // would not be const for multi-PC case
  virtual std::vector<item>* use_stack_at(const point& pt) const;
- virtual int use_active(item& it);
+ virtual int use_active(item& it) = 0;
  virtual void record_kill(const monster& m) {}
 
  // grammatical support
