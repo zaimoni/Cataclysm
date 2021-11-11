@@ -4766,7 +4766,6 @@ bool player::eat(const item_spec& src)
         return false;
     }
 
-    auto g = game::active();
     const auto eating_from = src.first->is_food_container2(*this);
     auto eating = eating_from ? eating_from : src.first->is_food2(*this);
     item* const eaten = eating_from ? &src.first->contents[0] : src.first;
@@ -4830,7 +4829,7 @@ bool player::eat(const item_spec& src)
             health += comest->healthy;
         }
         // At this point, we've definitely eaten the item, so use up some turns.
-        moves -= has_trait(PF_GOURMAND) ? 150 : 250;
+        moves -= has_trait(PF_GOURMAND) ? 3 * (mobile::mp_turn / 2) : 5 * (mobile::mp_turn / 2);
         // If it's poisonous... poison us.  TODO: More several poison effects
         if (eaten->poison >= rng(2, 4)) add_disease(DI_POISON, eaten->poison * MINUTES(10));
         if (eaten->poison > 0) add_disease(DI_FOODPOISON, eaten->poison * MINUTES(30));
@@ -4859,21 +4858,23 @@ bool player::eat(const item_spec& src)
         comest->consumed_by(*eaten, *this);
         add_addiction(comest->add, comest->addict);
 
-        if (has_trait(PF_VEGETARIAN) && eaten->made_of(FLESH)) {
-            if (!is_npc()) messages.add("You feel bad about eating this meat...");
-            add_morale(MORALE_VEGETARIAN, -75, -400);
-        }
-        if ((has_trait(PF_HERBIVORE) || has_trait(PF_RUMINANT)) && eaten->made_of(FLESH)) {
-            if (!one_in(3)) vomit();
-            if (comest->quench >= 2) thirst += int(comest->quench / 2);
-            if (comest->nutr >= 2) hunger += int(comest->nutr * .75);
+        if (eaten->made_of(FLESH)) {
+            if (has_trait(PF_VEGETARIAN)) {
+                subjective_message("You feel bad about eating this meat...");
+                add_morale(MORALE_VEGETARIAN, -75, -400);
+            }
+            if (has_trait(PF_HERBIVORE) || has_trait(PF_RUMINANT)) {
+                if (!one_in(3)) vomit();
+                if (comest->quench >= 2) thirst += int(comest->quench / 2);
+                if (comest->nutr >= 2) hunger += int(comest->nutr * .75);
+            }
         }
         if (has_trait(PF_GOURMAND)) {
             if (comest->fun < -2)
                 add_morale(MORALE_FOOD_BAD, comest->fun * 2, comest->fun * 4, comest);
             else if (comest->fun > 0)
                 add_morale(MORALE_FOOD_GOOD, comest->fun * 3, comest->fun * 6, comest);
-            if (!is_npc() && (hunger < -60 || thirst < -60)) messages.add("You can't finish it all!");
+            if (hunger < -60 || thirst < -60) subjective_message("You can't finish it all!");
             if (hunger < -60) hunger = -60;
             if (thirst < -60) thirst = -60;
         }
@@ -4882,7 +4883,7 @@ bool player::eat(const item_spec& src)
                 add_morale(MORALE_FOOD_BAD, comest->fun * 2, comest->fun * 6, comest);
             else if (comest->fun > 0)
                 add_morale(MORALE_FOOD_GOOD, comest->fun * 2, comest->fun * 4, comest);
-            if (!is_npc() && (hunger < -20 || thirst < -20)) messages.add("You can't finish it all!");
+            if (hunger < -20 || thirst < -20) subjective_message("You can't finish it all!");
             if (hunger < -20) hunger = -20;
             if (thirst < -20) thirst = -20;
         }
