@@ -9,6 +9,8 @@
 #include <stdexcept>
 #endif
 
+_query_yn query_yn;
+
 static FILE* stderr_log = nullptr;
 
 bool have_used_stderr_log() { return stderr_log; }
@@ -311,34 +313,54 @@ void debugmsg(const char* mes, ...)
  attroff(c_red);
 }
 
-bool query_yn(const char* mes, ...)
+bool _query_yn::_add(const char* mes, ...)
 {
- if (reject_not_whitelisted_printf(mes)) return false;
- const bool force_uc = option_table::get()[OPT_FORCE_YN];
- va_list ap;
- va_start(ap, mes);
- char buff[1024];
+    if (reject_not_whitelisted_printf(mes)) return false;
+    const bool force_uc = option_table::get()[OPT_FORCE_YN];
+    va_list ap;
+    va_start(ap, mes);
+    char buff[1024];
 #ifdef _MSC_VER
- vsprintf_s<sizeof(buff)>(buff, mes, ap);
+    vsprintf_s<sizeof(buff)>(buff, mes, ap);
 #else
- vsnprintf(buff, sizeof(buff), mes, ap);
+    vsnprintf(buff, sizeof(buff), mes, ap);
 #endif
- va_end(ap);
- int win_width = strlen(buff) + 26; // soft limit on main prompt SCREEN_WIDTH-26; C:Whales 54
- WINDOW* w = newwin(3, win_width, (VIEW - 3) / 2, 0);
- wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
-            LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX );
- mvwprintz(w, 1, 1, c_ltred, "%s (%s)", buff,
-           (force_uc ? "Y/N - Case Sensitive" : "y/n"));
- wrefresh(w);
- int ch;
- do ch = getch();
- while (ch != 'Y' && ch != 'N' && (force_uc || (ch != 'y' && ch != 'n')));
- werase(w);
- wrefresh(w);
- delwin(w);
- refresh();
- return ch == 'Y' || ch == 'y';
+    va_end(ap);
+    int win_width = strlen(buff) + 26; // soft limit on main prompt SCREEN_WIDTH-26; C:Whales 54
+    WINDOW* w = newwin(3, win_width, (VIEW - 3) / 2, 0);
+    wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
+        LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX);
+    mvwprintz(w, 1, 1, c_ltred, "%s (%s)", buff,
+        (force_uc ? "Y/N - Case Sensitive" : "y/n"));
+    wrefresh(w);
+    int ch;
+    do ch = getch();
+    while (ch != 'Y' && ch != 'N' && (force_uc || (ch != 'y' && ch != 'n')));
+    werase(w);
+    wrefresh(w);
+    delwin(w);
+    refresh();
+    return ch == 'Y' || ch == 'y';
+}
+
+bool _query_yn::_record(const char* msg)
+{
+    const bool force_uc = option_table::get()[OPT_FORCE_YN];
+    int win_width = strlen(msg) + 26; // soft limit on main prompt SCREEN_WIDTH-26; C:Whales 54
+    WINDOW* w = newwin(3, win_width, (VIEW - 3) / 2, 0);
+    wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
+        LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX);
+    mvwprintz(w, 1, 1, c_ltred, "%s (%s)", msg,
+        (force_uc ? "Y/N - Case Sensitive" : "y/n"));
+    wrefresh(w);
+    int ch;
+    do ch = getch();
+    while (ch != 'Y' && ch != 'N' && (force_uc || (ch != 'y' && ch != 'n')));
+    werase(w);
+    wrefresh(w);
+    delwin(w);
+    refresh();
+    return ch == 'Y' || ch == 'y';
 }
 
 int query_int(const char* mes, ...)

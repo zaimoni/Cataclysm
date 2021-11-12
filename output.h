@@ -97,7 +97,6 @@ inline void waddstrz(WINDOW* w, const std::pair<nc_color, const char*>& mes) { w
 void draw_tabs(WINDOW* w, int active_tab, const char* const labels[]);
 
 void debugmsg(const char* mes, ...);
-bool query_yn(const char* mes, ...);
 int  query_int(const char* mes, ...);
 std::string string_input_popup(const char* mes, ...);
 std::string string_input_popup(int max_length, const char* mes, ...);
@@ -115,5 +114,30 @@ nc_color hilite(nc_color c);
 nc_color invert_color(nc_color c);
 nc_color red_background(nc_color c);
 long special_symbol(char sym);
+
+struct _query_yn
+{
+	_query_yn() = default;
+	_query_yn(const _query_yn& src) = delete;
+	_query_yn(_query_yn&& src) = delete;
+	~_query_yn() = default;
+	_query_yn& operator=(const _query_yn& src) = delete;
+	_query_yn& operator=(_query_yn&& src) = delete;
+
+	template<class...Args> bool operator()(const char* msg, Args...params) {
+		if (!msg || !*msg) return false;	// reject null and empty-string
+		if constexpr (0 == sizeof...(Args)) {
+			return _record(msg);
+		} else {
+			return _add(msg, params...);
+		}
+	}
+	bool operator()(const std::string& src) { return _record(src.c_str()); }
+private:
+	bool _add(const char* msg, ...);
+	bool _record(const char* msg);
+};
+
+extern _query_yn query_yn;
 
 #endif
