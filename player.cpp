@@ -4753,9 +4753,21 @@ const item* player::decode_item_index(const int n) const
     return nullptr;
 }
 
+static auto parse_food(const player::item_spec & src, const player & u)
+{
+    const auto eating_from = src.first->is_food_container2(u);
+    auto eating = eating_from ? eating_from : src.first->is_food2(u);
+    item* const eaten = eating_from ? &src.first->contents[0] : src.first;
+
+    return std::tuple(eating_from, eating, eaten);
+}
+
 std::optional<std::string> player::cannot_eat(const item_spec& src) const
 {
     if (-1 > src.second) return "You need to take that off before eating it.";
+    auto [eating_from, eating, eaten] = parse_food(src, *this);
+    if (!eating) return std::string("You can't eat your ") + eaten->tname() + ".";
+
     return std::nullopt;
 }
 
@@ -4766,15 +4778,8 @@ bool player::eat(const item_spec& src)
         return false;
     }
 
-    const auto eating_from = src.first->is_food_container2(*this);
-    auto eating = eating_from ? eating_from : src.first->is_food2(*this);
-    item* const eaten = eating_from ? &src.first->contents[0] : src.first;
-
-    if (!eating) {
-        if (!is_npc()) messages.add("You can't eat your %s.", eaten->tname().c_str());
-        else debugmsg("%s tried to eat a %s", name.c_str(), eaten->tname().c_str());
-        return false;
-    }
+    auto [eating_from, eating, eaten] = parse_food(src, *this);
+    assert(eating);
 
     if (const auto food_ptr = std::get_if<const it_comest*>(&(*eating))) {
         // Remember, comest points to the it_comest data
