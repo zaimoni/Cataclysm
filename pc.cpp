@@ -29,6 +29,8 @@ bool pc::if_visible_message(const char* msg) const
     return false;
 }
 
+bool pc::ask_yn(const char* msg, std::function<bool()> ai) const { return query_yn(msg); }
+
 /// <returns>0: no-op; -1 charger gun; -2 artifact; 1 now null item</returns>
 int pc::use_active(item& it) {
     const auto tool = it.is_tool();
