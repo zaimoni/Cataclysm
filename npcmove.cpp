@@ -803,6 +803,7 @@ int npc::choose_escape_item() const
 		}
 		if (const auto food = it.is_food()) { // Avoid guzzling down Adderall etc.
 			if (stim >= food->stim && (10 > food->stim || stim >= food->stim * 2)) return false;
+			if (cannot_eat(item_spec(const_cast<item*>(&it), 1))) return false;
 		}
 		return true;
 	};
@@ -1838,6 +1839,7 @@ int npc::pick_best_painkiller(const inventory& _inv) const
 		default: continue;	// not a painkiller
 		}
 		if (diff < difference) {
+			if (cannot_eat(item_spec(const_cast<item*>(&_inv[i]), 1))) continue;
 			difference = diff;
 			index = i;
 		}
@@ -1852,6 +1854,9 @@ int npc::pick_best_food(const inventory& _inv) const
  for (size_t i = 0; i < _inv.size(); i++) {
   int eaten_hunger = -1, eaten_thirst = -1;
   const item& it = _inv[i];
+  if (cannot_eat(item_spec(const_cast<item*>(&it), 1))) continue;
+  // \todo? make parse_food in-scope here to allow using it
+
   const it_comest* food = it.is_food();
   if (!food) food = it.is_food_container();
   if (!food) continue;
