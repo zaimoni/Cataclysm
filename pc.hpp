@@ -20,6 +20,7 @@ public:
 	// abstract ui
 	bool if_visible_message(const char* msg) const override;
 	bool ask_yn(const char* msg, std::function<bool()> ai = nullptr) const override;
+	bool ask_yn(const std::string& msg, std::function<bool()> ai = nullptr) const { return ask_yn(msg.c_str(), ai); }
 	int use_active(item& it) override;
 
 	// invlets

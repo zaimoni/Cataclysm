@@ -304,6 +304,7 @@ public:
  virtual bool if_visible_message(std::function<std::string()> me, std::function<std::string()> other) const;
  virtual bool if_visible_message(const char* msg) const = 0;
  virtual bool ask_yn(const char* msg, std::function<bool()> ai = nullptr) const = 0;
+ bool ask_yn(const std::string& msg, std::function<bool()> ai = nullptr) const { return ask_yn(msg.c_str(), ai); }
  virtual bool see_phantasm();  // would not be const for multi-PC case
  virtual std::vector<item>* use_stack_at(const point& pt) const;
  virtual int use_active(item& it) = 0;

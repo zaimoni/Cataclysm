@@ -1197,7 +1197,7 @@ void iuse::set_trap(pc& p, item& it)
   practice = 2;
   break;
  case itm_beartrap:
-  buried = (!err_bury() && query_yn("Bury the beartrap?"));
+  buried = (!err_bury() && p.ask_yn("Bury the beartrap?"));
   type = (buried ? tr_beartrap_buried : tr_beartrap);
   message << "You " << (buried ? "bury" : "set") << " the beartrap.";
   practice = (buried ? 7 : 4); 
@@ -2098,14 +2098,14 @@ void iuse::vacutainer(pc& p, item& it)
  item blood(item::types[itm_blood], messages.turn);
  bool drew_blood = false;
  for(const auto& corpse : g->m.i_at(p.GPSpos)) {
-  if (corpse.type->id == itm_corpse && query_yn("Draw blood from %s?", corpse.tname().c_str())) {
+  if (corpse.type->id == itm_corpse && p.ask_yn(std::string("Draw blood from ")+ corpse.tname() +"? ")) {
    blood.corpse = corpse.corpse;
    drew_blood = true;
    break;
   }
  }
 
- if (!drew_blood && !query_yn("Draw your own blood?")) return;
+ if (!drew_blood && !p.ask_yn("Draw your own blood?")) return;
 
  it.put_in(std::move(blood));
 }

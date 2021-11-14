@@ -4797,7 +4797,7 @@ bool player::eat(const item_spec& src)
 
         last_item = itype_id(eaten->type->id);
 
-        if (overeating && !is_npc() && !query_yn("You're full.  Force yourself to eat?")) return false;
+        if (overeating && !ask_yn("You're full.  Force yourself to eat?")) return false;
 
         if (has_trait(PF_CARNIVORE) && eaten->made_of(VEGGY) && comest->nutr > 0) {
             if (!is_npc())
@@ -4807,16 +4807,13 @@ bool player::eat(const item_spec& src)
             return false;
         }
 
-        if (has_trait(PF_VEGETARIAN) && eaten->made_of(FLESH) && !is_npc() && !query_yn("Really eat that meat? (The poor animals!)")) return false;
+        if (has_trait(PF_VEGETARIAN) && eaten->made_of(FLESH) && !ask_yn("Really eat that meat? (The poor animals!)")) return false;
 
         if (spoiled) {
             const bool immune = has_trait(PF_SAPROVORE);
             if (!immune) {
-                if (is_npc()) return false;
-                else {
-                    if (!query_yn("This %s smells awful!  Eat it?", eaten->tname().c_str())) return false;
-                    messages.add("Ick, this %s doesn't taste so good...", eaten->tname().c_str());
-                }
+                if (!ask_yn(std::string("This ") + eaten->tname() + " smells awful!Eat it ? ")) return false;
+                messages.add("Ick, this %s doesn't taste so good...", eaten->tname().c_str());
             }
             const bool resistant = has_bionic(bio_digestion);
             if (!immune && (!resistant || one_in(3))) add_disease(DI_FOODPOISON, rng(MINUTES(6), (comest->nutr + 1) * MINUTES(6)));
@@ -4940,7 +4937,7 @@ bool player::wield(int index)
    moves -= 20;
    recoil = 0;
    if (!pickstyle) return true;
-  } else if (query_yn("No space in inventory for your %s.  Drop it?", weapon.tname().c_str())) {
+  } else if (ask_yn("No room in inventory for your " + weapon.tname() + ".  Drop it?")) {
    game::active()->m.add_item(pos, unwield());
    recoil = 0;
    if (!pickstyle) return true;
@@ -4979,8 +4976,7 @@ bool player::wield(int index)
   if (const auto art_tool = weapon.is_artifact_tool()) game::add_artifact_messages(art_tool->effects_wielded);
   last_item = itype_id(weapon.type->id);
   return true;
- } else if (query_yn("No space in inventory for your %s.  Drop it?",
-                     weapon.tname().c_str())) {
+ } else if (ask_yn("No room in inventory for your " + weapon.tname() + ".  Drop it?")) {
   game::active()->m.add_item(pos, unwield());
   weapon = inv.remove_item(index);
   inv_sorted = false;
@@ -5120,7 +5116,7 @@ bool player::takeoff(map& m, char let)
     EraseAt(worn, i);
     inv_sorted = false;
     return true;
-   } else if (query_yn("No room in inventory for your %s.  Drop it?", worn[i].tname().c_str())) {
+   } else if (ask_yn("No room in inventory for your " + worn[i].tname() + ".  Drop it?")) {
     m.add_item(pos, std::move(it));
     EraseAt(worn, i);
     return true;
@@ -5152,7 +5148,7 @@ std::optional<std::string> player::cannot_read(const std::variant<const it_macgu
         else if (book->intel > int_cur) return "This book is way too complex for you to understand.";
         else if (book->req > sklevel[book->type]) return std::string("The ") + skill_name(skill(book->type)) + "-related jargon flies over your head!";
         else if (book->level <= sklevel[book->type] && book->fun <= 0 &&
-            !query_yn("Your %s skill won't be improved.  Read anyway?", skill_name(skill(book->type))))
+            !ask_yn(std::string("Your ") + skill_name(skill(book->type)) + " skill won't be improved.  Read anyway?"))
             return std::string();
     }
     return std::nullopt;
