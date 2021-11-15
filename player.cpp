@@ -4768,106 +4768,11 @@ std::optional<std::string> player::cannot_eat(const item_spec& src) const
         if (overeating && !ask_yn("You're full.  Force yourself to eat?")) return std::string();
 
         if (has_trait(PF_CARNIVORE) && eaten->made_of(VEGGY) && comest->nutr > 0) return "You can only eat meat!";
+        if (has_trait(PF_VEGETARIAN) && eaten->made_of(FLESH) && !ask_yn("Really eat that meat? (The poor animals!)")) return std::string();
 
-#if 0
-        bool overeating = (!has_trait(PF_GOURMAND) && hunger < 0 && comest->nutr >= 15);
-        bool spoiled = eaten->rotten();
-
-        last_item = itype_id(eaten->type->id);
-
-        if (overeating && !ask_yn("You're full.  Force yourself to eat?")) return false;
-
-        if (has_trait(PF_CARNIVORE) && eaten->made_of(VEGGY) && comest->nutr > 0) {
-            if (!is_npc())
-                messages.add("You can only eat meat!");
-            else
-                messages.add("Carnivore %s tried to eat plants!", name.c_str());
-            return false;
-        }
-
-        if (has_trait(PF_VEGETARIAN) && eaten->made_of(FLESH) && !ask_yn("Really eat that meat? (The poor animals!)")) return false;
-
-        if (spoiled) {
-            const bool immune = has_trait(PF_SAPROVORE);
-            if (!immune) {
-                if (!ask_yn(std::string("This ") + eaten->tname() + " smells awful!Eat it ? ")) return false;
-                messages.add("Ick, this %s doesn't taste so good...", eaten->tname().c_str());
-            }
-            const bool resistant = has_bionic(bio_digestion);
-            if (!immune && (!resistant || one_in(3))) add_disease(DI_FOODPOISON, rng(MINUTES(6), (comest->nutr + 1) * MINUTES(6)));
-            hunger -= rng(0, comest->nutr);
-            thirst -= comest->quench;
-            if (!immune && !resistant) health -= 3;
-        }
-        else {
-            hunger -= comest->nutr;
-            thirst -= comest->quench;
-            if (has_bionic(bio_digestion)) hunger -= rng(0, comest->nutr);
-            else if (!has_trait(PF_GOURMAND)) {
-                if ((overeating && rng(-200, 0) > hunger)) vomit();
-            }
-            health += comest->healthy;
-        }
-        // At this point, we've definitely eaten the item, so use up some turns.
-        moves -= has_trait(PF_GOURMAND) ? 3 * (mobile::mp_turn / 2) : 5 * (mobile::mp_turn / 2);
-        // If it's poisonous... poison us.  TODO: More several poison effects
-        if (eaten->poison >= rng(2, 4)) add_disease(DI_POISON, eaten->poison * MINUTES(10));
-        if (eaten->poison > 0) add_disease(DI_FOODPOISON, eaten->poison * MINUTES(30));
-
-        static auto me = [&]() {
-            if (eaten->made_of(LIQUID)) return std::string("You drink your ") + eaten->tname() + ".";
-            else return std::string("You eat your ") + eaten->tname() + ".";
-        };
-
-        static auto other = [&]() {
-            if (eaten->made_of(LIQUID)) return name + " drinks a " + eaten->tname() + ".";
-            else return name + " eats a " + eaten->tname() + ".";
-        };
-
-        if_visible_message(me, other);
-
-        if (item::types[comest->tool]->is_tool()) use_charges(comest->tool, 1); // Tools like lighters get used
-        if (comest->stim > 0) {
-            if (comest->stim < 10 && stim < comest->stim) {
-                stim += comest->stim;
-                if (stim > comest->stim) stim = comest->stim;
-            }
-            else if (comest->stim >= 10 && stim < comest->stim * 3) stim += comest->stim;
-        }
-
-        comest->consumed_by(*eaten, *this);
-        add_addiction(comest->add, comest->addict);
-
-        if (eaten->made_of(FLESH)) {
-            if (has_trait(PF_VEGETARIAN)) {
-                subjective_message("You feel bad about eating this meat...");
-                add_morale(MORALE_VEGETARIAN, -75, -400);
-            }
-            if (has_trait(PF_HERBIVORE) || has_trait(PF_RUMINANT)) {
-                if (!one_in(3)) vomit();
-                if (comest->quench >= 2) thirst += int(comest->quench / 2);
-                if (comest->nutr >= 2) hunger += int(comest->nutr * .75);
-            }
-        }
-        if (has_trait(PF_GOURMAND)) {
-            if (comest->fun < -2)
-                add_morale(MORALE_FOOD_BAD, comest->fun * 2, comest->fun * 4, comest);
-            else if (comest->fun > 0)
-                add_morale(MORALE_FOOD_GOOD, comest->fun * 3, comest->fun * 6, comest);
-            if (hunger < -60 || thirst < -60) subjective_message("You can't finish it all!");
-            if (hunger < -60) hunger = -60;
-            if (thirst < -60) thirst = -60;
-        }
-        else {
-            if (comest->fun < 0)
-                add_morale(MORALE_FOOD_BAD, comest->fun * 2, comest->fun * 6, comest);
-            else if (comest->fun > 0)
-                add_morale(MORALE_FOOD_GOOD, comest->fun * 2, comest->fun * 4, comest);
-            if (hunger < -20 || thirst < -20) subjective_message("You can't finish it all!");
-            if (hunger < -20) hunger = -20;
-            if (thirst < -20) thirst = -20;
-        }
-#endif
+        if (    eaten->rotten() && !has_trait(PF_SAPROVORE)
+            && !ask_yn(std::string("This ") + eaten->tname() + " smells awful!Eat it ? "))
+            return std::string();
     }
 
     return std::nullopt;
@@ -4889,18 +4794,14 @@ bool player::eat(const item_spec& src)
 
         // \todo restart migration of precondition testing into player::cannot_eat
         bool overeating = (!has_trait(PF_GOURMAND) && hunger < 0 && comest->nutr >= 15);
-        bool spoiled = eaten->rotten();
 
         last_item = itype_id(eaten->type->id);
 
-        if (has_trait(PF_VEGETARIAN) && eaten->made_of(FLESH) && !ask_yn("Really eat that meat? (The poor animals!)")) return false;
-
-        if (spoiled) {
+        if (eaten->rotten()) {
             const bool immune = has_trait(PF_SAPROVORE);
-            if (!immune) {
-                if (!ask_yn(std::string("This ") + eaten->tname() + " smells awful!Eat it ? ")) return false;
+            if (!immune) // NPCs reject at player::cannot_eat
                 messages.add("Ick, this %s doesn't taste so good...", eaten->tname().c_str());
-            }
+
             const bool resistant = has_bionic(bio_digestion);
             if (!immune && (!resistant || one_in(3))) add_disease(DI_FOODPOISON, rng(MINUTES(6), (comest->nutr + 1) * MINUTES(6)));
             hunger -= rng(0, comest->nutr);
