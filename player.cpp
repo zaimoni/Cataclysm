@@ -4795,7 +4795,7 @@ bool player::eat(const item_spec& src)
         // \todo restart migration of precondition testing into player::cannot_eat
         bool overeating = (!has_trait(PF_GOURMAND) && hunger < 0 && comest->nutr >= 15);
 
-        last_item = itype_id(eaten->type->id);
+        last_item = itype_id(eaten->type->id); // strictly pc-only, but last_item is *only* used by the tutorial and warrants a re-implementation
 
         if (eaten->rotten()) {
             const bool immune = has_trait(PF_SAPROVORE);
@@ -4844,7 +4844,7 @@ bool player::eat(const item_spec& src)
             else if (comest->stim >= 10 && stim < comest->stim * 3) stim += comest->stim;
         }
 
-        comest->consumed_by(*eaten, *this);
+        consume(*eaten); // to ensure correct type is seen by the handler
         add_addiction(comest->add, comest->addict);
 
         if (eaten->made_of(FLESH)) {

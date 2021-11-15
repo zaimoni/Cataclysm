@@ -4878,12 +4878,6 @@ std::string itype::force_sign(int src)
 }
 
 #ifndef SOCRATES_DAIMON
-void it_comest::consumed_by(item& it, player& u)  const
-{
-	if (use_player) use_player(u, it);
-	if (use) use(&u, &it, false);
-}
-
 void it_comest::consumed_by(item& it, npc& u)  const
 {
 	if (use_npc) use_npc(u, it);

@@ -219,6 +219,12 @@ const npc* npc::find_r(const int id) {
     return nullptr;
 }
 
+// Intentionally thin wrapper to force correct type for handler call.
+void npc::consume(item& food) {
+	if (const auto comest = food.is_food()) comest->consumed_by(food, *this);
+	else throw std::logic_error("called player::consume on non-food");
+}
+
 void npc::die(const int id)
 {
     auto g = game::active();

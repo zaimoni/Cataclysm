@@ -378,6 +378,7 @@ public:
 private:
  void _set_screenpos() override { if (auto pt = screen_pos()) pos = *pt; }
  bool handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim) override;
+ virtual void consume(item& food) = 0;
 
  // melee.cpp
  int  hit_roll() const; // Our basic hit roll, compared to our target's dodge roll

@@ -14,10 +14,17 @@
 #include "wrap_curses.h"
 #include <array>
 #include <memory>
+#include <stdexcept>
 
 pc::pc()
 : kills(num_monsters, 0), next_inv('d'), mostseen(0), turnssincelastmon(0), run_mode(option_table::get()[OPT_SAFEMODE] ? 1 : 0), autosafemode(option_table::get()[OPT_AUTOSAFEMODE])
 {
+}
+
+// Intentionally thin wrapper to force correct type for handler call.
+void pc::consume(item& food) {
+    if (const auto comest = food.is_food()) comest->consumed_by(food, *this);
+    else throw std::logic_error("called player::consume on non-food");
 }
 
 bool pc::if_visible_message(const char* msg) const

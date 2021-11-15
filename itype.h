@@ -467,7 +467,6 @@ public:
  bool is_expired(int age) const override { return 0 != spoils && age > spoils * 600 /* HOURS(1) */; }
 
 #ifndef SOCRATES_DAIMON
- void consumed_by(item& it, player& u) const;
  void consumed_by(item& it, npc& u) const;
  void consumed_by(item& it, pc& u) const;
 #endif

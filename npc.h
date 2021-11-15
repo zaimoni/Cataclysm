@@ -529,6 +529,8 @@ public:
 private:
  static int next_id;   // mininum/default next mission id
  void assign_id() { id = next_id++; }
+
+ void consume(item& food) override;
 };
 
 void parse_tags(std::string& phrase, player& u, npc& me);

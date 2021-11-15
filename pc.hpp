@@ -61,6 +61,7 @@ public:
 	void refresh_all() const;
 
 private:
+	void consume(item& food) override;
 	bool install_bionics(const it_bionic* type);
 
 	std::vector<point> footsteps;	// visual cue to monsters moving out of the players sight
