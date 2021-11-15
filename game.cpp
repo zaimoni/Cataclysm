@@ -2287,9 +2287,9 @@ unsigned char game::light_level(const GPS_loc& src)
          if (ret > 10) ret = 10;
      }
  }
- if (ret < 8 && u->has_active_bionic(bio_flashlight)) ret = 8;
+ if (ret < 8 && u && u->has_active_bionic(bio_flashlight)) ret = 8;
  if (ret < 8 && _is_pc && g->event_queued(EVENT_ARTIFACT_LIGHT)) ret = 8;
- if (ret < 4 && u->has_artifact_with(AEP_GLOW)) ret = 4;
+ if (ret < 4 && u && u->has_artifact_with(AEP_GLOW)) ret = 4;
  if (ret < 1) ret = 1;
  return ret;
 }
