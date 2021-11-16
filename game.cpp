@@ -547,17 +547,19 @@ void game::create_factions()
 
 void game::create_starting_npcs()
 {
- npc tmp;
- tmp.normalize();
- tmp.randomize(one_in(2) ? NC_DOCTOR : NC_NONE);
- tmp.spawn_at(toGPS(point(SEEX * int(MAPSIZE / 2) + SEEX, SEEY * int(MAPSIZE / 2) + 6)));
- tmp.form_opinion(&u);
- tmp.attitude = NPCATT_NULL;
- tmp.mission = NPC_MISSION_SHELTER;
- tmp.chatbin.first_topic = TALK_SHELTER;
- tmp.chatbin.missions.push_back(reserve_random_mission(ORIGIN_OPENER_NPC, om_location().second, tmp.id) );
+    if (!option_table::get()[OPT_NPCS]) return;
 
- active_npc.push_back(std::move(tmp));
+    npc tmp;
+    tmp.normalize();
+    tmp.randomize(one_in(2) ? NC_DOCTOR : NC_NONE);
+    tmp.spawn_at(toGPS(point(SEEX * int(MAPSIZE / 2) + SEEX, SEEY * int(MAPSIZE / 2) + 6)));
+    tmp.form_opinion(&u);
+    tmp.attitude = NPCATT_NULL;
+    tmp.mission = NPC_MISSION_SHELTER;
+    tmp.chatbin.first_topic = TALK_SHELTER;
+    tmp.chatbin.missions.push_back(reserve_random_mission(ORIGIN_OPENER_NPC, om_location().second, tmp.id));
+
+    active_npc.push_back(std::move(tmp));
 }
  
 
