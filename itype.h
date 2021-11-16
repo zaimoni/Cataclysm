@@ -457,9 +457,24 @@ public:
 	 itype_id ptool,
 	 add_type padd
 #ifndef SOCRATES_DAIMON
-	 , decltype(use) puse
+	 , decltype(use) puse = nullptr
 #endif
 	 );
+
+#ifndef SOCRATES_DAIMON
+ it_comest(int pid, unsigned char prarity, unsigned int pprice,
+	 std::string pname, std::string pdes,
+	 char psym, nc_color pcolor, material pm1,
+	 unsigned short pvolume, unsigned short pweight,
+
+	 signed char pquench, unsigned char pnutr, unsigned char pspoils,
+	 signed char pstim, signed char phealthy, unsigned char paddict,
+	 unsigned char pcharges, signed char pfun, itype_id pcontainer,
+	 itype_id ptool,
+	 add_type padd,
+	 decltype(use_pc) puse
+ );
+#endif
 
  const it_comest* is_food() const override { return this; }
  bool count_by_charges() const override { return charges > 1; }

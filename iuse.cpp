@@ -507,26 +507,23 @@ void iuse::purifier(player *p, item *it, bool t)
  }
 }
 
-void iuse::marloss(player *p, item *it, bool t)
+void iuse::marloss(pc& p, item& it)
 {
- if (p->is_npc()) return;
  const auto g = game::active();
 
  // If we have the marloss in our veins, we are a "breeder" and will spread
 // alien lifeforms.
- if (p->has_trait(PF_MARLOSS)) {
+ if (p.has_trait(PF_MARLOSS)) {
   messages.add("As you eat the berry, you have a near-religious experience, feeling at one with your surroundings...");
-  p->add_morale(MORALE_MARLOSS, 100, 1000);
-  p->hunger = -100;
+  p.add_morale(MORALE_MARLOSS, 100, 1000);
+  p.hunger = -100;
   monster goo(mtype::types[mon_blob]);
   goo.friendly = -1;
   int goo_spawned = 0;
-  for (int x = p->pos.x - 4; x <= p->pos.x + 4; x++) {
-   for (int y = p->pos.y - 4; y <= p->pos.y + 4; y++) {
-	const auto dist = trig_dist(x, y, p->pos);
-    if (rng(0, 10) > dist &&
-        rng(0, 10) > dist)
-     g->m.marlossify(x, y);
+  for (int x = p.pos.x - 4; x <= p.pos.x + 4; x++) {
+   for (int y = p.pos.y - 4; y <= p.pos.y + 4; y++) {
+	const auto dist = trig_dist(x, y, p.pos);
+    if (rng(0, 10) > dist && rng(0, 10) > dist) g->m.marlossify(x, y);
     if (one_in(10 + 5 * dist) && (goo_spawned == 0 || one_in(goo_spawned * 2))) {
      goo.spawn(x, y);
      g->z.push_back(goo);
@@ -550,22 +547,22 @@ void iuse::marloss(player *p, item *it, bool t)
  int effect = rng(1, 9);
  if (effect <= 3) {
   messages.add("This berry tastes extremely strange!");
-  p->mutate();
+  p.mutate();
  } else if (effect <= 6) { // Radiation cleanse is below
   messages.add("This berry makes you feel better all over.");
-  p->pkill += 30;
-  purifier(p, it, t);
+  p.pkill += 30;
+  purifier(&p, &it, true);
  } else if (effect == 7) {
   messages.add("This berry is delicious, and very filling!");
-  p->hunger = -100;
+  p.hunger = -100;
  } else if (effect == 8) {
   messages.add("You take one bite, and immediately vomit!");
-  p->vomit();
- } else if (!p->has_trait(PF_MARLOSS)) {
+  p.vomit();
+ } else if (!p.has_trait(PF_MARLOSS)) {
   messages.add("You feel a strange warmth spreading throughout your body...");
-  p->toggle_trait(PF_MARLOSS);
+  p.toggle_trait(PF_MARLOSS);
  }
- if (effect == 6) p->radiation = 0;
+ if (effect == 6) p.radiation = 0;
 }
 
 void iuse::dogfood(pc& p, item& it)

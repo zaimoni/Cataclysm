@@ -777,26 +777,32 @@ healthy,addict,charges,fun,use_func,addict_func,des) \
 color,LIQUID,2,1,quench,nutr,spoils,stim,healthy,addict,charges,\
 fun,container,itm_null,addict_func NOT_DAIMON(use_func)));
 
+#define DRINK_TYPICAL(name,rarity,price,color,container,quench,nutr,spoils,stim,\
+healthy,addict,charges,fun,addict_func,des) \
+	index++;types.push_back(new it_comest(index,rarity,price,name,des,'~',\
+color,LIQUID,2,1,quench,nutr,spoils,stim,healthy,addict,charges,\
+fun,container,itm_null,addict_func));
+
 //     NAME		RAR PRC	COLOR     CONTAINER
-DRINK("water",		90, 50,	c_ltcyan, itm_bottle_plastic,
+DRINK_TYPICAL("water",		90, 50,	c_ltcyan, itm_bottle_plastic,
 //	QUE NUT SPO STM HTH ADD CHG FUN use_func	addiction type
-	50,  0,  0,  0,  0,  0,  1,  0, nullptr, ADD_NULL, "\
+	50,  0,  0,  0,  0,  0,  1,  0, ADD_NULL, "\
 Water, the stuff of life, the best thirst-quencher available.");
 
 DRINK("sewage sample",	 5,  5, c_ltgreen, itm_bottle_plastic,
 	 5,  0,  0,  0,-10,  0,  1,-20,&iuse::sewage,	ADD_NULL, "\
 A sample of sewage from a treatment plant.  Gross.");
 
-DRINK("salt water",	20,  5,	c_ltcyan, itm_bottle_plastic,
-	-30, 0,  0,  0,  1,  0,  1, -1, nullptr, ADD_NULL, "\
+DRINK_TYPICAL("salt water",	20,  5,	c_ltcyan, itm_bottle_plastic,
+	-30, 0,  0,  0,  1,  0,  1, -1, ADD_NULL, "\
 Water with salt added.  Not good for drinking.");
 
-DRINK("orange juice",	50, 38,	c_yellow, itm_bottle_plastic,
-	35,  4,120,  0,  2,  0,  1,  3, nullptr, ADD_NULL, "\
+DRINK_TYPICAL("orange juice",	50, 38,	c_yellow, itm_bottle_plastic,
+	35,  4,120,  0,  2,  0,  1,  3, ADD_NULL, "\
 Fresh squeezed from real oranges!  Tasty and nutritious.");
 
-DRINK("apple cider",	50, 38, c_brown,  itm_bottle_plastic,
-	35,  6,144,  0,  3,  0,  1,  2, nullptr, ADD_NULL, "\
+DRINK_TYPICAL("apple cider",	50, 38, c_brown,  itm_bottle_plastic,
+	35,  6,144,  0,  3,  0,  1,  2, ADD_NULL, "\
 Pressed from fresh apples.  Tasty and nutritious.");
 
 DRINK("energy drink",	55, 45,	c_magenta,itm_can_drink,
@@ -809,26 +815,26 @@ DRINK("cola",		70, 35,	c_brown,  itm_can_drink,
 	18,  3,  0,  6, -1,  2,  1,  5,&iuse::caff,	ADD_CAFFEINE, "\
 Things go better with cola.  Sugar water with caffeine added.");
 
-DRINK("root beer",	65, 30,	c_brown,  itm_can_drink,
-	18,  3,  0,  1, -1,  0,  1,  3, nullptr, ADD_NULL, "\
+DRINK_TYPICAL("root beer",	65, 30,	c_brown,  itm_can_drink,
+	18,  3,  0,  1, -1,  0,  1,  3, ADD_NULL, "\
 Like cola, but without caffeine.  Still not that healthy.");
 
-DRINK("milk",		50, 35,	c_white,  itm_bottle_glass,
-	25,  8,  8,  0,  1,  0,  1,  0, nullptr, ADD_NULL, "\
+DRINK_TYPICAL("milk",		50, 35,	c_white,  itm_bottle_glass,
+	25,  8,  8,  0,  1,  0,  1,  0, ADD_NULL, "\
 Baby cow food, appropriated for adult humans.  Spoils rapidly.");
 
-DRINK("V8",		15, 35,	c_red,    itm_can_drink,
-	 6, 28,240,  0,  1,  0,  1,  0, nullptr, ADD_NULL, "\
+DRINK_TYPICAL("V8",		15, 35,	c_red,    itm_can_drink,
+	 6, 28,240,  0,  1,  0,  1,  0, ADD_NULL, "\
 Contains up to 8 vegetables!  Nutritious and tasty.");
 
 //     NAME		RAR PRC	COLOR     CONTAINER
-DRINK("broth",		15, 35, c_yellow, itm_can_food,
+DRINK_TYPICAL("broth",		15, 35, c_yellow, itm_can_food,
 //	QUE NUT SPO STM HTH ADD CHG FUN use_func	addiction type
-	10, 15,160,  0,  0,  0,  1,  1, nullptr, ADD_NULL, "\
+	10, 15,160,  0,  0,  0,  1,  1, ADD_NULL, "\
 Vegetable stock.  Tasty and fairly nutritious.");
 
-DRINK("soup",		15, 60, c_red,    itm_can_food,
-	10, 60,120,  0,  2,  0,  1,  2, nullptr, ADD_NULL, "\
+DRINK_TYPICAL("soup",		15, 60, c_red,    itm_can_food,
+	10, 60,120,  0,  2,  0,  1,  2, ADD_NULL, "\
 A nutritious and delicious hearty vegetable soup.");
 
 DRINK("whiskey",	16, 85,	c_brown,  itm_bottle_glass,
@@ -872,9 +878,10 @@ DRINK("purifier",	12, 6000,c_pink,  itm_bottle_glass,
 A rare stem-cell treatment, which causes mutations and other genetic defects\n\
 to fade away.");
 
-DRINK("tea",		1, 50,	c_green, itm_bottle_plastic,
+// \todo? this is de-caffienated...maybe allow both decaf and normal versions of both tea and coffee
+DRINK_TYPICAL("tea",		1, 50,	c_green, itm_bottle_plastic,
 //	QUE NUT SPO STM HTH ADD CHG FUN use_func	addiction type
-	40,  3,  0,  0,  0,  0,  1, 6, nullptr, ADD_NULL, "\
+	40,  3,  0,  0,  0,  0,  1, 6, ADD_NULL, "\
 Tea, the beverage of gentlemen everywhere.");
 
 DRINK("coffee",		1, 50,	c_brown, itm_bottle_plastic,
@@ -882,9 +889,9 @@ DRINK("coffee",		1, 50,	c_brown, itm_bottle_plastic,
 Coffee. The morning ritual of the pre-apocalypse world.");
 
 //     NAME		RAR PRC	COLOR     CONTAINER
-DRINK("blood",		 20,  0, c_red, itm_vacutainer,
+DRINK_TYPICAL("blood",		 20,  0, c_red, itm_vacutainer,
 //	QUE NUT SPO STM HTH ADD CHG FUN use_func	addiction type
-	  5,  5,  0,  0, -8,  0,  1,-50, nullptr, ADD_NULL, "\
+	  5,  5,  0,  0, -8,  0,  1,-50, ADD_NULL, "\
 Blood, possibly that of a human.  Disgusting!");
 
 #define FOOD(name,rarity,price,color,mat1,container,volume,weight,quench,\
@@ -892,16 +899,22 @@ nutr,spoils,stim,healthy,addict,charges,fun,use_func,addict_func,des) \
 	index++;types.push_back(new it_comest(index,rarity,price,name,des,'%',\
 color,mat1,volume,weight,quench,nutr,spoils,stim,healthy,addict,charges,\
 fun,container,itm_null,addict_func NOT_DAIMON(use_func)));
+
+#define FOOD_TYPICAL(name,rarity,price,color,mat1,container,volume,weight,quench,\
+nutr,spoils,stim,healthy,addict,charges,fun,addict_func,des) \
+	index++;types.push_back(new it_comest(index,rarity,price,name,des,'%',\
+color,mat1,volume,weight,quench,nutr,spoils,stim,healthy,addict,charges,\
+fun,container,itm_null,addict_func));
 // FOOD
 
 //   NAME		RAR PRC	COLOR		MAT1	CONTAINER
-FOOD("chunk of meat",	50, 50,	c_red,		FLESH,  itm_null,
+FOOD_TYPICAL("chunk of meat",	50, 50,	c_red,		FLESH,  itm_null,
 // VOL WGT QUE NUT SPO STM HTH ADD CHG FUN	 use_func    addiction type
-    1,  2,  0, 20, 24,  0, -1,  0,  1,-10, nullptr, ADD_NULL, "\
+    1,  2,  0, 20, 24,  0, -1,  0,  1,-10, ADD_NULL, "\
 Freshly butchered meat.  You could eat it raw, but cooking it is better.");
 
-FOOD("chunk of veggy",	30, 60,	c_green,	VEGGY,	itm_null,
-    1,  2,  0, 20, 80,  0,  1,  0,  1,  0, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("chunk of veggy",	30, 60,	c_green,	VEGGY,	itm_null,
+    1,  2,  0, 20, 80,  0,  1,  0,  1,  0, ADD_NULL, "\
 A raw chunk of vegetable.  Fine for eating raw, tastier when cooked.");
 
 FOOD("tainted meat",	60,  4,	c_red,		FLESH,	itm_null,
@@ -912,56 +925,54 @@ FOOD("tainted veggy",	35,  5,	c_green,	VEGGY,	itm_null,
     1,  2,  0, 20, 10,  0,  1,  0,  1,  0,	&iuse::poison, ADD_NULL, "\
 Vegetable that looks poisonous.  You could eat it, but it will poison you.");
 
-FOOD("cooked meat",	 0, 75, c_red,		FLESH,	itm_null,
-    1,  2,  0, 50, 24,  0,  0,  0,  1,  8, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("cooked meat",	 0, 75, c_red,		FLESH,	itm_null,
+    1,  2,  0, 50, 24,  0,  0,  0,  1,  8, ADD_NULL, "\
 Freshly cooked meat.  Very nutritious.");
 
-FOOD("cooked veggy",	 0, 70, c_green,	VEGGY,	itm_null,
-    1,  2,  0, 40, 50,  0,  1,  0,  1,  0, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("cooked veggy",	 0, 70, c_green,	VEGGY,	itm_null,
+    1,  2,  0, 40, 50,  0,  1,  0,  1,  0, ADD_NULL, "\
 Freshly cooked vegetables.  Very nutritious.");
 
 //   NAME		RAR PRC	COLOR		MAT1	CONTAINER
-FOOD("apple",		70, 16,	c_red,		VEGGY,  itm_null,
+FOOD_TYPICAL("apple",		70, 16,	c_red,		VEGGY,  itm_null,
 // VOL WGT QUE NUT SPO STM HTH ADD CHG FUN	 use_func    addiction type
-    1,  1,  3, 16,160,  0,  4,  0,  1,  3, nullptr, ADD_NULL, "\
+    1,  1,  3, 16,160,  0,  4,  0,  1,  3, ADD_NULL, "\
 An apple a day keeps the doctor away.");
 
-FOOD("orange",		65, 18,	c_yellow,	VEGGY,	itm_null,
-    1,  1,  8, 14, 96,  0,  0,  0,  1,  3, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("orange",		65, 18,	c_yellow,	VEGGY,	itm_null,
+    1,  1,  8, 14, 96,  0,  0,  0,  1,  3, ADD_NULL, "\
 Sweet citrus fruit.  Also comes in juice form.");
 
-FOOD("lemon",		50, 12, c_yellow,	VEGGY,	itm_null,
-    1,  1,  5,  5,180,  0,  0,  0,  1, -4, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("lemon",		50, 12, c_yellow,	VEGGY,	itm_null,
+    1,  1,  5,  5,180,  0,  0,  0,  1, -4, ADD_NULL, "\
 Very sour citrus.  Can be eaten if you really want.");
 
-FOOD("potato chips",	65, 12,	c_magenta,	VEGGY,	itm_bag_plastic,
-    2,  1, -2,  8,  0,  0,  0,  0,  3,  6, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("potato chips",	65, 12,	c_magenta,	VEGGY,	itm_bag_plastic,
+    2,  1, -2,  8,  0,  0,  0,  0,  3,  6, ADD_NULL, "\
 Betcha can't eat just one.");
 
-FOOD("pretzels",	55, 13,	c_brown,	VEGGY,	itm_bag_plastic,
-    2,  1, -2,  9,  0,  0,  0,  0,  3,  2, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("pretzels",	55, 13,	c_brown,	VEGGY,	itm_bag_plastic,
+    2,  1, -2,  9,  0,  0,  0,  0,  3,  2, ADD_NULL, "\
 A salty treat of a snack.");
 
-FOOD("chocolate bar",	50, 20,	c_brown,	VEGGY,	itm_wrapper,
-    1,  1,  0,  8,  0,  1,  0,  0,  1,  8, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("chocolate bar",	50, 20,	c_brown,	VEGGY,	itm_wrapper,
+    1,  1,  0,  8,  0,  1,  0,  0,  1,  8, ADD_NULL, "\
 Chocolate isn't very healthy, but it does make a delicious treat.");
 
-FOOD("beef jerky",	55, 24,	c_red,		FLESH,  itm_bag_plastic,
-    1,  1, -3, 12,  0,  0, -1,  0,  3,  4, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("beef jerky",	55, 24,	c_red,		FLESH,  itm_bag_plastic,
+    1,  1, -3, 12,  0,  0, -1,  0,  3,  4, ADD_NULL, "\
 Salty dried meat that never goes bad, but will make you thirsty.");
 
-//   NAME		RAR PRC	COLOR		MAT1	CONTAINER
-FOOD("meat sandwich", 30, 60,	c_ltgray,	FLESH,	itm_wrapper,
-// VOL WGT QUE NUT SPO STM HTH ADD CHG FUN	 use_func    addiction type
-    1,  2,  0, 50, 36,  0,  0,  0,  1,  5, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("meat sandwich", 30, 60,	c_ltgray,	FLESH,	itm_wrapper,
+    1,  2,  0, 50, 36,  0,  0,  0,  1,  5, ADD_NULL, "\
 Bread and turkey, that's it.");
 
-FOOD("candy",		80, 14,	c_magenta,	VEGGY,	itm_bag_plastic,
-    0, 0,  -1,  2,  0,  1, -2,  0,  3,  4, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("candy",		80, 14,	c_magenta,	VEGGY,	itm_bag_plastic,
+    0, 0,  -1,  2,  0,  1, -2,  0,  3,  4, ADD_NULL, "\
 A big bag of peanut butter cups... your favorite!");
 
-FOOD("mushroom",         4, 14,	c_brown,	VEGGY,	itm_null,
-    1,  0,  0, 14,  0,  0,  1,  0,  1,  0, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("mushroom",         4, 14,	c_brown,	VEGGY,	itm_null,
+    1,  0,  0, 14,  0,  0,  1,  0,  1,  0, ADD_NULL, "\
 Mushrooms are tasty, but be careful.  Some can poison you, while others are\n\
 hallucinogenic.");
 
@@ -975,107 +986,101 @@ FOOD("mushroom",	 1, 14,	c_brown,	VEGGY,	itm_null,
 Mushrooms are tasty, but be careful.  Some can poison you, while others are\n\
 hallucinogenic.");
 
-FOOD("blueberries",	 3, 20,	c_blue,		VEGGY,	itm_null,
-    1,  1,  2, 16, 60,  0,  0,  0,  1,  0, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("blueberries",	 3, 20,	c_blue,		VEGGY,	itm_null,
+    1,  1,  2, 16, 60,  0,  0,  0,  1,  0, ADD_NULL, "\
 They're blue, but that doesn't mean they're sad.");
 
-FOOD("strawberries",	 2, 10,	c_red,		VEGGY,	itm_null,
-    1,  1,  3, 18, 60,  0,  0,  0,  1,  0, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("strawberries",	 2, 10,	c_red,		VEGGY,	itm_null,
+    1,  1,  3, 18, 60,  0,  0,  0,  1,  0, ADD_NULL, "\
 Tasty juicy berry, often found growing wild in fields.");
 
-//   NAME		RAR PRC	COLOR		MAT1	CONTAINER
-FOOD("tomato",		 9, 25,	c_red,		VEGGY,  itm_null,
-// VOL WGT QUE NUT SPO STM HTH ADD CHG FUN	 use_func    addiction type
-    1,  1,  3, 18, 90,  0,  0,  0,  1,  0, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("tomato",		 9, 25,	c_red,		VEGGY,  itm_null,
+    1,  1,  3, 18, 90,  0,  0,  0,  1,  0, ADD_NULL, "\
 Juicy red tomato.  It gained popularity in Italy after being brought back\n\
 from the New World.");
 
-FOOD("broccoli",	 9, 40,	c_green,	VEGGY,	itm_null,
-    2,  2,  0, 30,160,  0,  1,  0,  1,  0, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("broccoli",	 9, 40,	c_green,	VEGGY,	itm_null,
+    2,  2,  0, 30,160,  0,  1,  0,  1,  0, ADD_NULL, "\
 It's a bit tough, but quite delicious.");
 
-FOOD("zucchini",	 7, 30,	c_ltgreen,	VEGGY,	itm_null,
-    2,  1,  0, 20,120,  0,  1,  0,  1,  0, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("zucchini",	 7, 30,	c_ltgreen,	VEGGY,	itm_null,
+    2,  1,  0, 20,120,  0,  1,  0,  1,  0, ADD_NULL, "\
 A tasty summer squash.");
 
-FOOD("frozen dinner",	50, 80,	c_magenta,	FLESH,	itm_box_small,
-    5,  4, -2, 60, 60,  0, -2,  0,  1, -3, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("frozen dinner",	50, 80,	c_magenta,	FLESH,	itm_box_small,
+    5,  4, -2, 60, 60,  0, -2,  0,  1, -3, ADD_NULL, "\
 Now with ONE POUND of meat and ONE POUND of carbs!  Not as appetizing or\n\
 nutritious as it would be if heated up.");
 
-FOOD("cooked TV dinner", 0,  0, c_magenta,	FLESH,  itm_null,
-    5,  4, -2, 72, 12,  0, -2,  0,  1,  5, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("cooked TV dinner", 0,  0, c_magenta,	FLESH,  itm_null,
+    5,  4, -2, 72, 12,  0, -2,  0,  1,  5, ADD_NULL, "\
 Now with ONE POUND of meat and ONE POUND of carbs!  Nice and heated up.  It's\n\
 tastier and more filling, but will also spoil quickly.");
 
-FOOD("raw spaghetti",	40, 12,	c_yellow,	VEGGY,	itm_box_small,
-    6,  2,  0,  6,  0,  0,  0,  0,  1, -8, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("raw spaghetti",	40, 12,	c_yellow,	VEGGY,	itm_box_small,
+    6,  2,  0,  6,  0,  0,  0,  0,  1, -8, ADD_NULL, "\
 It could be eaten raw if you're desperate, but is much better cooked.");
 
-FOOD("cooked spaghetti", 0, 28,	c_yellow,	VEGGY,	itm_box_small,
-   10,  3,  0, 60, 20,  0,  0,  0,  1,  2, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("cooked spaghetti", 0, 28,	c_yellow,	VEGGY,	itm_box_small,
+   10,  3,  0, 60, 20,  0,  0,  0,  1,  2, ADD_NULL, "\
 Fresh wet noodles.  Very tasty.");
 
 //   NAME		RAR PRC	COLOR		MAT1	CONTAINER
-FOOD("raw macaroni",	40, 15,	c_yellow,	VEGGY,	itm_box_small,
+FOOD_TYPICAL("raw macaroni",	40, 15,	c_yellow,	VEGGY,	itm_box_small,
 // VOL WGT QUE NUT SPO STM HTH ADD CHG FUN	 use_func    addiction type
-    3,  1,  0,  3,  0,  0,  0,  0,  1, -8, nullptr, ADD_NULL, "\
+    3,  1,  0,  3,  0,  0,  0,  0,  1, -8, ADD_NULL, "\
 It could be eaten raw if you're desperate, but is much better cooked.");
 
-FOOD("mac & cheese",	 0, 38,	c_yellow,	VEGGY,	itm_box_small,
-    4,  2,  0, 60, 10,  0, -1,  0,  1,  3, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("mac & cheese",	 0, 38,	c_yellow,	VEGGY,	itm_box_small,
+    4,  2,  0, 60, 10,  0, -1,  0,  1,  3, ADD_NULL, "\
 When the cheese starts flowing, Kraft gets your noodle going.");
 
-FOOD("ravioli",		25, 75,	c_cyan,		FLESH,	itm_can_food,
-    1,  2,  0, 48,  0,  0,  0,  0,  1,  0, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("ravioli",		25, 75,	c_cyan,		FLESH,	itm_can_food,
+    1,  2,  0, 48,  0,  0,  0,  0,  1,  0, ADD_NULL, "\
 Meat encased in little dough satchels.  Tastes fine raw.");
 
-FOOD("red sauce",	20, 24,	c_red,		VEGGY,	itm_can_food,
-    2,  3,  0, 20,  0,  0,  0,  0,  1,  1, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("red sauce",	20, 24,	c_red,		VEGGY,	itm_can_food,
+    2,  3,  0, 20,  0,  0,  0,  0,  1,  1, ADD_NULL, "\
 Tomato sauce, yum yum.");
 
-FOOD("pesto",		15, 20,	c_ltgreen,	VEGGY,	itm_can_food,
-    2,  3,  0, 18,  0,  0,  1,  0,  1,  4, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("pesto",		15, 20,	c_ltgreen,	VEGGY,	itm_can_food,
+    2,  3,  0, 18,  0,  0,  1,  0,  1,  4, ADD_NULL, "\
 Olive oil, basil, garlic, pine nuts.  Simple and delicious.");
 
-//   NAME		RAR PRC	COLOR		MAT1	CONTAINER
-FOOD("beans",		40, 55,	c_cyan,		VEGGY,	itm_can_food,
-// VOL WGT QUE NUT SPO STM HTH ADD CHG FUN	 use_func    addiction type
-    1,  2,  0, 40,  0,  0,  0,  0,  1,  0, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("beans",		40, 55,	c_cyan,		VEGGY,	itm_can_food,
+    1,  2,  0, 40,  0,  0,  0,  0,  1,  0, ADD_NULL, "\
 Canned beans.  A staple for hobos.");
 
-FOOD("corn",		35, 40,	c_cyan,		VEGGY,	itm_can_food,
-    1,  2,  5, 30,  0,  0,  0,  0,  1, -2, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("corn",		35, 40,	c_cyan,		VEGGY,	itm_can_food,
+    1,  2,  5, 30,  0,  0,  0,  0,  1, -2, ADD_NULL, "\
 Canned corn in water.  Eat up!");
 
-FOOD("SPAM",		30, 50,	c_cyan,		FLESH,	itm_can_food,
-    1,  2, -3, 48,  0,  0,  0,  0,  1, -8, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("SPAM",		30, 50,	c_cyan,		FLESH,	itm_can_food,
+    1,  2, -3, 48,  0,  0,  0,  0,  1, -8, ADD_NULL, "\
 Yuck, not very tasty.  But it is quite filling.");
 
-FOOD("pineapple",	30, 50,	c_cyan,		VEGGY,	itm_can_food,
-    1,  2,  5, 26,  0,  0,  1,  0,  1,  7, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("pineapple",	30, 50,	c_cyan,		VEGGY,	itm_can_food,
+    1,  2,  5, 26,  0,  0,  1,  0,  1,  7, ADD_NULL, "\
 Canned pinapple rings in water.  Quite tasty.");
 
-FOOD("coconut milk",	10, 45,	c_cyan,		VEGGY,	itm_can_food,
-    1,  2,  5, 30,  0,  0,  0,  0,  1,  0, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("coconut milk",	10, 45,	c_cyan,		VEGGY,	itm_can_food,
+    1,  2,  5, 30,  0,  0,  0,  0,  1,  0, ADD_NULL, "\
 A dense, sweet creamy sauce, often used in curries.");
 
-FOOD("sardines",	14, 25,	c_cyan,		FLESH,	itm_can_food,
-    1,  1, -8, 14,  0,  0,  0,  0,  1,  0, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("sardines",	14, 25,	c_cyan,		FLESH,	itm_can_food,
+    1,  1, -8, 14,  0,  0,  0,  0,  1,  0, ADD_NULL, "\
 Salty little fish.  They'll make you thirsty.");
 
-//   NAME		RAR PRC	COLOR		MAT1	CONTAINER
-FOOD("tuna fish",	35, 35,	c_cyan,		FLESH,	itm_can_food,
-// VOL WGT QUE NUT SPO STM HTH ADD CHG FUN	 use_func    addiction type
-    1,  2,  0, 24,  0,  0,  0,  0,  1,  0, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("tuna fish",	35, 35,	c_cyan,		FLESH,	itm_can_food,
+    1,  2,  0, 24,  0,  0,  0,  0,  1,  0, ADD_NULL, "\
 Now with 95 percent less dolphins!");
 
-FOOD("cat food",	20,  8,	c_cyan,		FLESH,	itm_can_food,
-    1,  2,  0, 10,  0,  0, -1,  0,  1,-24, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("cat food",	20,  8,	c_cyan,		FLESH,	itm_can_food,
+    1,  2,  0, 10,  0,  0, -1,  0,  1,-24, ADD_NULL, "\
 Blech, so gross.  Save it for when you're about to die of starvation.");
 
-FOOD("honey comb",	10, 35,	c_yellow,	VEGGY,	itm_null,
-    1,  1,  0, 20,  0,  0, -2,  0,  1,  9, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("honey comb",	10, 35,	c_yellow,	VEGGY,	itm_null,
+    1,  1,  0, 20,  0,  0, -2,  0,  1,  9, ADD_NULL, "\
 A large chunk of wax, filled with honey.  Very tasty.");
 
 FOOD("royal jelly",	 8,200,	c_magenta,	VEGGY,	itm_null,
@@ -1098,8 +1103,8 @@ FOOD("leg",		 4,250,	c_brown,	FLESH,	itm_null,
    12, 24,  0, 16,  0,  0, -8,  0,  1, -20,	&iuse::mutagen, ADD_NULL, "\
 Eating this would be pretty gross.  It causes you to mutate.");
 
-FOOD("ant egg",		 5, 80,	c_white,	FLESH,	itm_null,
-    4,  2, 10, 100, 0,  0, -1,  0,  1, -10, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("ant egg",		 5, 80,	c_white,	FLESH,	itm_null,
+    4,  2, 10, 100, 0,  0, -1,  0,  1, -10, ADD_NULL, "\
 A large ant egg, the size of a softball.  Extremely nutrtious, but gross.");
 
 FOOD("marloss berry",	 2,600, c_pink,		VEGGY,	itm_null,
@@ -1108,59 +1113,54 @@ This looks like a blueberry the size of your fist, but pinkish in color.  It\n\
 has a strong but delicious aroma, but is clearly either mutated or of alien\n\
 origin.");
 
-//   NAME		RAR PRC	COLOR		MAT1	CONTAINER
-FOOD("flour",		20, 25, c_white,	POWDER, itm_box_small,
-// VOL WGT QUE NUT SPO STM HTH ADD CHG FUN	 use_func       addiction type
-    2,  4,  0,  1,  0,  0,  0,  0,  8, -5, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("flour",		20, 25, c_white,	POWDER, itm_box_small,
+    2,  4,  0,  1,  0,  0,  0,  0,  8, -5, ADD_NULL, "\
 This white flour is useful for baking.");
 
-FOOD("sugar",		20, 25, c_white,	POWDER, itm_box_small,
-    2,  3,  0,  3,  0,  4, -3,  0,  8,  1, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("sugar",		20, 25, c_white,	POWDER, itm_box_small,
+    2,  3,  0,  3,  0,  4, -3,  0,  8,  1, ADD_NULL, "\
 Sweet, sweet sugar.  Bad for your teeth and surprisingly not very tasty\n\
 on its own.");
 
-FOOD("salt",		20, 18, c_white,	POWDER, itm_box_small,
-    2,  2,-10,  0,  0,  0,  0,  0,  8, -8, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("salt",		20, 18, c_white,	POWDER, itm_box_small,
+    2,  2,-10,  0,  0,  0,  0,  0,  8, -8, ADD_NULL, "\
 Yuck, you surely wouldn't want to eat this.  It's good for preserving meat\n\
 and cooking with, though.");
 
-FOOD("raw potato",	10, 10, c_brown,	VEGGY,  itm_null,
-    1,  1,  0,  8,240,  0, -2,  0,  1, -3, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("raw potato",	10, 10, c_brown,	VEGGY,  itm_null,
+    1,  1,  0,  8,240,  0, -2,  0,  1, -3, ADD_NULL, "\
 Mildly toxic and not very tasty raw.  When cooked, it is delicious.");
 
-//   NAME		RAR PRC	COLOR		MAT1	CONTAINER
-FOOD("baked potato",	 0, 30, c_brown,	VEGGY,  itm_null,
-// VOL WGT QUE NUT SPO STM HTH ADD CHG FUN	 use_func       addiction type
-    1,  1,  0, 20, 48,  0,  1,  0,  1,  3, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("baked potato",	 0, 30, c_brown,	VEGGY,  itm_null,
+    1,  1,  0, 20, 48,  0,  1,  0,  1,  3, ADD_NULL, "\
 A delicious baked potato.  Got any sour cream?");
 
-FOOD("bread",		14, 50, c_brown,	VEGGY,  itm_bag_plastic,
-    4,  1,  0, 20,240,  0,  1,  0,  4,  1, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("bread",		14, 50, c_brown,	VEGGY,  itm_bag_plastic,
+    4,  1,  0, 20,240,  0,  1,  0,  4,  1, ADD_NULL, "\
 Healthy and filling.");
 
-FOOD("fruit pie",	20, 80, c_yellow,	VEGGY,  itm_box_small,
-    6,  3,  5, 16, 72,  2,  1,  0,  6,  3, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("fruit pie",	20, 80, c_yellow,	VEGGY,  itm_box_small,
+    6,  3,  5, 16, 72,  2,  1,  0,  6,  3, ADD_NULL, "\
 A delicious baked pie with a sweet fruit filling.");
 
-//   NAME		RAR PRC	COLOR		MAT1	CONTAINER
-FOOD("pizza",		 8, 80, c_ltred,	VEGGY,	itm_box_small,
-// VOL WGT QUE NUT SPO STM HTH ADD CHG FUN	 use_func       addiction type
-    8,  4,  0, 18, 48,  0,  0,  0,  8,  6, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("pizza",		 8, 80, c_ltred,	VEGGY,	itm_box_small,
+    8,  4,  0, 18, 48,  0,  0,  0,  8,  6, ADD_NULL, "\
 A vegetarian pizza, with delicious tomato sauce and a fluffy crust.  Its\n\
 smell brings back great memories.");
 
-FOOD("MRE - beef",		50,100, c_green,	FLESH,	itm_null,
-    2,  1,  0, 50,  0,  0,  1,  0,  1, -4, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("MRE - beef",		50,100, c_green,	FLESH,	itm_null,
+    2,  1,  0, 50,  0,  0,  1,  0,  1, -4, ADD_NULL, "\
 Meal Ready to Eat.  A military ration.  Though not very tasty, it is very\n\
 filling and will not spoil.");
 
-FOOD("MRE - vegetable",		50,100, c_green,	VEGGY,	itm_null,
-    2,  1,  0, 40,  0,  0,  1,  0,  1, -4, nullptr, ADD_NULL, "\
+FOOD_TYPICAL("MRE - vegetable",		50,100, c_green,	VEGGY,	itm_null,
+    2,  1,  0, 40,  0,  0,  1,  0,  1, -4, ADD_NULL, "\
 Meal Ready to Eat.  A military ration.  Though not very tasty, it is very\n\
 filling and will not spoil.");
 
-FOOD("tea leaves",	10, 13,	c_green,	VEGGY,	itm_bag_plastic,
-    2,  1, 0,  2,  0,  0,  0,  0,  5, -1, nullptr, ADD_NULL, "\
+// \todo? this should be caffienated, once we have caffienated tea
+FOOD_TYPICAL("tea leaves",	10, 13,	c_green,	VEGGY,	itm_bag_plastic,
+    2,  1, 0,  2,  0,  0,  0,  0,  5, -1, ADD_NULL, "\
 Dried leaves of a tropical plant. You cam boil them into tea, or you\n\
 can just eat them raw. They aren't too filling though.");
 
@@ -1175,6 +1175,12 @@ charges,fun,use_func,addict_func,des) \
 	index++;types.push_back(new it_comest(index,rarity,price,name,des,'!',\
 color,mat,1,1,0,0,0,stim,healthy,addict,charges,\
 fun,itm_null,tool,addict_func NOT_DAIMON(use_func)));
+
+#define MED_PLACEBO(name,rarity,price,color,tool,mat,stim,healthy,addict,\
+charges,fun,addict_func,des) \
+	index++;types.push_back(new it_comest(index,rarity,price,name,des,'!',\
+color,mat,1,1,0,0,0,stim,healthy,addict,charges,\
+fun,itm_null,tool,addict_func));
 
 //  NAME		RAR PRC	COLOR		TOOL
 MED("bandages",		50, 60,	c_white,	itm_null,
@@ -1245,9 +1251,9 @@ Anti-anxiety medication.  It will reduce your stimulant level steadily, and\n\
 will temporarily cancel the effects of anxiety, like the Hoarder trait.");
 
 //  NAME		RAR PRC	COLOR		TOOL
-MED("Adderall",		10,450,	c_cyan,		itm_null,
+MED_PLACEBO("Adderall",		10,450,	c_cyan,		itm_null,
 //	MATERIAL STM HTH ADD CHG FUN use_func		addiction type
-	PLASTIC, 24,  0, 10, 10, 10, nullptr, ADD_SPEED, "\
+	PLASTIC, 24,  0, 10, 10, 10, ADD_SPEED, "\
 A strong stimulant prescribed for ADD.  It will greatly increase your\n\
 stimulant level, but is quite addictive.");
 
@@ -1291,8 +1297,8 @@ MED("cigars",		 5,120,	c_dkgray,	itm_lighter,
 	VEGGY,    1, -1, 40, 10, 15,&iuse::cig,		ADD_CIG, "\
 A gentleman's vice. Cigars are what separates a gentleman from a savage.");
 
-MED("antibiotics",	25,900, c_pink,		itm_null,
-	PLASTIC,   0, -2,  0, 15,  0, nullptr, ADD_NULL, "\
+MED_PLACEBO("antibiotics",	25,900, c_pink,		itm_null,
+	PLASTIC,   0, -2,  0, 15,  0, ADD_NULL, "\
 Medication designed to stop the spread of, and kill, bacteria infections.");
 
 // MELEE WEAPONS
@@ -4510,6 +4516,26 @@ it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
 #endif
 {
 }
+
+#ifndef SOCRATES_DAIMON
+it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1,
+	unsigned short pvolume, unsigned short pweight,
+
+	signed char pquench, unsigned char pnutr, unsigned char pspoils,
+	signed char pstim, signed char phealthy, unsigned char paddict,
+	unsigned char pcharges, signed char pfun, itype_id pcontainer,
+	itype_id ptool,
+	add_type padd,
+	decltype(use_pc) puse)
+:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, 0, 0, 0, 0),
+quench(pquench), nutr(pnutr), spoils(pspoils), addict(paddict), charges(pcharges), stim(pstim), healthy(phealthy), fun(pfun), container(pcontainer),
+tool(ptool), add(padd),
+use(nullptr), use_npc(nullptr), use_pc(puse), use_player(nullptr)
+{
+}
+#endif
 
 it_ammo::it_ammo(int pid, unsigned char prarity, unsigned int pprice,
 	std::string pname, std::string pdes,
