@@ -549,7 +549,7 @@ void game::create_starting_npcs()
 {
  npc tmp;
  tmp.normalize();
- tmp.randomize(this, (one_in(2) ? NC_DOCTOR : NC_NONE));
+ tmp.randomize(one_in(2) ? NC_DOCTOR : NC_NONE);
  tmp.spawn_at(toGPS(point(SEEX * int(MAPSIZE / 2) + SEEX, SEEY * int(MAPSIZE / 2) + 6)));
  tmp.form_opinion(&u);
  tmp.attitude = NPCATT_NULL;
@@ -1655,7 +1655,7 @@ void game::debug()
   case 5: {
    npc temp;
    temp.normalize();
-   temp.randomize(this);
+   temp.randomize();
    temp.attitude = NPCATT_TALK;
    temp.spawn_at(toGPS(u.pos - point(4)));
    temp.form_opinion(&u);
@@ -5291,7 +5291,7 @@ void game::spawn_mon(int shiftx, int shifty)
 
   npc tmp;
   tmp.normalize();
-  tmp.randomize(this);
+  tmp.randomize();
 
   // assume spawned NPCs arrive on the outer edge, not within vehicle: enumerate legal landing zones and choose one
   // \todo prefer outdoors if "sensible"

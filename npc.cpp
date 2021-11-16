@@ -38,9 +38,6 @@ void npc::global_toJSON(cataclysm::JSON& dest)
     if (MIN_ID < next_id) dest.set("npc", std::to_string(next_id));
 }
 
-std::vector<item> starting_clothes(npc_class type, bool male, game *g);
-std::vector<item> starting_inv(npc *me, npc_class type, game *g);
-
 static const char* const JSON_transcode_favors[] = {
 	"CASH",
 	"ITEM",
@@ -246,7 +243,242 @@ void npc::die(const int id)
     // \todo check other overmaps...first those already loaded, then those *not* loaded
 }
 
-void npc::randomize(game *g, npc_class type)
+static std::vector<item> starting_clothes(npc_class type, bool male)
+{
+	static constexpr const itype_id ref_pants[] = {
+		itm_jeans,
+		itm_pants,
+		itm_pants_leather,
+		itm_pants_cargo,
+		itm_skirt
+	};
+
+	static constexpr const itype_id ref_shirt[] = {
+		itm_tshirt,
+		itm_polo_shirt,
+		itm_dress_shirt,
+		itm_tank_top
+	};
+
+	static constexpr const itype_id ref_gloves[] = {
+		itm_gloves_leather,
+		itm_gloves_fingerless,
+		itm_fire_gauntlets	// \todo? lock this down to fireman profession
+	};
+
+	std::vector<item> ret;
+
+	itype_id pants = ref_pants[rng(0, (std::end(ref_pants) - std::begin(ref_pants)) - (male ? 2 : 1))];
+	itype_id shoes = itm_sneakers;
+	itype_id shirt = ref_shirt[rng(0, std::end(ref_shirt) - std::begin(ref_shirt))];
+
+	itype_id gloves = itm_null, coat = itm_null, mask = itm_null,
+		glasses = itm_null, hat = itm_null;
+
+	auto r = rng(0, (std::end(ref_gloves) - std::begin(ref_gloves)) + 7);
+	if (std::end(ref_gloves) - std::begin(ref_gloves) > r) gloves = ref_gloves[r];
+
+	switch (rng(0, 6)) {
+	case 2: coat = itm_hoodie; break;
+	case 3: coat = itm_jacket_light; break;
+	case 4: coat = itm_jacket_jean; break;
+	case 5: coat = itm_jacket_leather; break;
+	case 6: coat = itm_trenchcoat; break;
+	}
+	if (one_in(30)) coat = itm_kevlar;
+
+	if (one_in(8)) {
+		switch (rng(0, 2)) {
+		case 0: mask = itm_mask_dust; break;
+		case 1: mask = itm_bandana; break;
+		case 2: mask = itm_mask_filter; break;
+		}
+	}
+
+	if (one_in(8)) glasses = itm_glasses_safety;
+
+	if (one_in(6)) {
+		switch (rng(0, 5)) {
+		case 0: hat = itm_hat_ball; break;
+		case 1: hat = itm_hat_hunting; break;
+		case 2: hat = itm_hat_hard; break;
+		case 3: hat = itm_helmet_bike; break;
+		case 4: hat = itm_helmet_riot; break;
+		case 5: hat = itm_helmet_motor; break;
+		}
+	}
+
+	// Now, more specific stuff for certain classes.
+	switch (type) {
+	case NC_DOCTOR:
+		if (one_in(2)) pants = itm_pants;
+		if (one_in(3)) shirt = (one_in(2) ? itm_polo_shirt : itm_dress_shirt);
+		if (!one_in(8)) coat = itm_coat_lab;
+		if (one_in(3)) mask = itm_mask_dust;
+		if (one_in(4)) glasses = itm_glasses_safety;
+		if (gloves != itm_null || one_in(3)) gloves = itm_gloves_medical;
+		break;
+
+	case NC_TRADER:
+		if (one_in(2)) pants = itm_pants_cargo;
+		switch (rng(0, 8)) {
+		case 1: coat = itm_hoodie; break;
+		case 2: coat = itm_jacket_jean; break;
+		case 3: case 4: coat = itm_vest; break;
+		case 5: case 6: case 7: case 8: coat = itm_trenchcoat; break;
+		}
+		break;
+
+	case NC_NINJA:
+		if (one_in(4)) shirt = itm_null;
+		else if (one_in(3)) shirt = itm_tank_top;
+		if (one_in(5)) gloves = itm_gloves_leather;
+		if (one_in(2)) mask = itm_bandana;
+		if (one_in(3)) hat = itm_null;
+		break;
+
+	case NC_COWBOY:
+		if (one_in(2)) shoes = itm_boots;
+		if (one_in(2)) pants = itm_jeans;
+		if (one_in(3)) shirt = itm_tshirt;
+		if (one_in(4)) gloves = itm_gloves_leather;
+		if (one_in(4)) coat = itm_jacket_jean;
+		if (one_in(3)) hat = itm_hat_boonie;
+		break;
+
+	case NC_SCIENTIST:
+		if (one_in(4)) glasses = itm_glasses_eye;
+		else if (one_in(2)) glasses = itm_glasses_safety;
+		if (one_in(5)) coat = itm_coat_lab;
+		break;
+
+	case NC_BOUNTY_HUNTER:
+		if (one_in(3)) pants = itm_pants_cargo;
+		if (one_in(2)) shoes = itm_boots_steel;
+		if (one_in(4)) coat = itm_jacket_leather;
+		if (one_in(4)) mask = itm_mask_filter;
+		if (one_in(5)) glasses = itm_goggles_ski;
+		if (one_in(3)) {
+			mask = itm_null;
+			hat = itm_helmet_motor;
+		}
+		break;
+	}
+	// Fill in the standard things we wear
+	if (shoes != itm_null) ret.push_back(item(item::types[shoes], 0));
+	if (pants != itm_null) ret.push_back(item(item::types[pants], 0));
+	if (shirt != itm_null) ret.push_back(item(item::types[shirt], 0));
+	if (coat != itm_null) ret.push_back(item(item::types[coat], 0));
+	if (gloves != itm_null) ret.push_back(item(item::types[gloves], 0));
+	// Bad to wear a mask under a motorcycle helmet
+	if (mask != itm_null && hat != itm_helmet_motor) ret.push_back(item(item::types[mask], 0));
+	if (glasses != itm_null) ret.push_back(item(item::types[glasses], 0));
+	if (hat != itm_null) ret.push_back(item(item::types[hat], 0));
+
+	// Second pass--for extra stuff like backpacks, etc
+	switch (type) {
+	case NC_NONE:
+	case NC_DOCTOR:
+	case NC_SCIENTIST:
+		if (one_in(10)) ret.push_back(item(item::types[itm_backpack], 0));
+		break;
+	case NC_COWBOY:
+	case NC_BOUNTY_HUNTER:
+		if (one_in(2)) ret.push_back(item(item::types[itm_backpack], 0));
+		break;
+	case NC_TRADER:
+		if (!one_in(15)) ret.push_back(item(item::types[itm_backpack], 0));
+		break;
+	}
+
+	return ret;
+}
+
+// XXX really should be a template choose function, but doesn't belong in rng.h, which is a thin header
+static itype_id _get_itype(const std::vector<itype_id>& src)
+{
+	return src[rng(0, src.size() - 1)];
+}
+
+static std::vector<item> starting_inv(npc* me, npc_class type)
+{
+	int total_space = me->volume_capacity() - 2;
+	std::vector<item> ret;
+	ret.push_back(item(item::types[itm_lighter], 0));
+
+	// First, if we're wielding a gun, get some ammo for it
+	if (const auto gun = me->weapon.is_gun()) {
+		const itype* const i_type = item::types[default_ammo(gun->ammo)];
+		if (total_space >= i_type->volume) {
+			ret.push_back(item(i_type, 0));
+			total_space -= ret[ret.size() - 1].volume();
+		}
+		while ((type == NC_COWBOY || type == NC_BOUNTY_HUNTER || !one_in(3)) &&
+			!one_in(4) && total_space >= i_type->volume) {
+			ret.push_back(item(i_type, 0));
+			total_space -= ret[ret.size() - 1].volume();
+		}
+	}
+	if (type == NC_TRADER) {	// Traders just have tons of random junk
+		while (total_space > 0 && !one_in(50)) {
+			const itype* const i_type = item::types[rng(2, num_items - 1)];
+			if (total_space >= i_type->volume) {
+				const auto n = ret.size();
+				ret.push_back(item(i_type, 0));
+				ret[n] = ret[n].in_its_container();
+				total_space -= ret[n].volume();
+			}
+		}
+	}
+
+	if (type == NC_HACKER) {
+		while (total_space > 0 && !one_in(10)) {
+			item tmpit(item::types[_get_itype(map::items[mi_npc_hacker])], 0);
+			tmpit = tmpit.in_its_container();
+			if (total_space >= tmpit.volume()) {
+				ret.push_back(tmpit);
+				total_space -= tmpit.volume();
+			}
+		}
+	}
+	if (type == NC_DOCTOR) {
+		while (total_space > 0 && !one_in(10)) {
+			item tmpit(item::types[_get_itype(map::items[one_in(3) ? mi_softdrugs : mi_harddrugs])], 0);
+			tmpit = tmpit.in_its_container();
+			if (total_space >= tmpit.volume()) {
+				ret.push_back(tmpit);
+				total_space -= tmpit.volume();
+			}
+		}
+	}
+	// TODO: More specifics.
+
+	while (total_space > 0 && !one_in(8)) {
+		const itype* const i_type = item::types[rng(4, num_items - 1)];
+		if (total_space >= i_type->volume) {
+			const auto n = ret.size();
+			ret.push_back(item(i_type, 0));
+			ret[n] = ret[n].in_its_container();
+			total_space -= ret[n].volume();
+		}
+	}
+
+	{
+		int i = ret.size();
+		while (0 < i--) {
+			for (const auto type : map::items[mi_trader_avoid]) {
+				if (ret[i].type->id == type) {
+					EraseAt(ret, i);
+					break;
+				}
+			}
+		}
+	}
+
+	return ret;
+}
+
+void npc::randomize(npc_class type)
 {
  assign_id();
  str_max = dice(4, 3);
@@ -402,16 +634,16 @@ void npc::randomize(game *g, npc_class type)
  }
  normalize();
  starting_weapon();
- worn = starting_clothes(type, male, g);
+ worn = starting_clothes(type, male);
  inv.clear();
- inv.add_stack(starting_inv(this, type, g));
+ inv.add_stack(starting_inv(this, type));
 }
 
 void npc::randomize_from_faction(game *g, faction *fac)
 {
 // Personality = aggression, bravery, altruism, collector
  my_fac = fac;
- randomize(g);
+ randomize();
  if (!fac) return;
 
  switch (fac->goal) {
@@ -448,8 +680,7 @@ void npc::randomize_from_faction(game *g, faction *fac)
    str_max += rng(0, 3);
    break;
   case FACGOAL_KNOWLEDGE:
-   if (one_in(2))
-    randomize(g, NC_SCIENTIST);
+   if (one_in(2)) randomize(NC_SCIENTIST);
    personality.aggression -= rng(2, 5);
    personality.bravery -= rng(1, 4);
    personality.collector += rng(2, 4);
@@ -481,8 +712,7 @@ void npc::randomize_from_faction(game *g, faction *fac)
   personality.collector += rng(1, 3);
  }
  if (fac->has_job(FACJOB_TRADE) || fac->has_job(FACJOB_CARAVANS)) {
-  if (!one_in(3))
-   randomize(g, NC_TRADER);
+  if (!one_in(3)) randomize(NC_TRADER);
   personality.aggression -= rng(1, 5);
   personality.collector += rng(1, 4);
   personality.altruism -= rng(0, 3);
@@ -492,9 +722,9 @@ void npc::randomize_from_faction(game *g, faction *fac)
  if (fac->has_job(FACJOB_MERCENARIES)) {
   if (!one_in(3)) {
    switch (rng(1, 3)) {
-    case 1: randomize(g, NC_NINJA);		break;
-    case 2: randomize(g, NC_COWBOY);		break;
-    case 3: randomize(g, NC_BOUNTY_HUNTER);	break;
+    case 1: randomize(NC_NINJA);		break;
+    case 2: randomize(NC_COWBOY);		break;
+    case 3: randomize(NC_BOUNTY_HUNTER);	break;
    }
   }
   personality.aggression += rng(0, 2);
@@ -511,8 +741,7 @@ void npc::randomize_from_faction(game *g, faction *fac)
   dex_max += rng(0, 2);
  }
  if (fac->has_job(FACJOB_RAIDERS)) {
-  if (one_in(3))
-   randomize(g, NC_COWBOY);
+  if (one_in(3)) randomize(NC_COWBOY);
   personality.aggression += rng(3, 5);
   personality.bravery += rng(0, 2);
   personality.altruism -= rng(3, 6);
@@ -520,8 +749,7 @@ void npc::randomize_from_faction(game *g, faction *fac)
   int_max -= rng(0, 2);
  }
  if (fac->has_job(FACJOB_THIEVES)) {
-  if (one_in(3))
-   randomize(g, NC_NINJA);
+  if (one_in(3)) randomize(NC_NINJA);
   personality.aggression -= rng(2, 5);
   personality.bravery -= rng(1, 3);
   personality.altruism -= rng(1, 4);
@@ -530,8 +758,7 @@ void npc::randomize_from_faction(game *g, faction *fac)
   dex_max += rng(1, 3);
  }
  if (fac->has_job(FACJOB_DOCTORS)) {
-  if (!one_in(4))
-   randomize(g, NC_DOCTOR);
+  if (!one_in(4)) randomize(NC_DOCTOR);
   personality.aggression -= rng(3, 6);
   personality.bravery += rng(0, 4);
   personality.altruism += rng(0, 4);
@@ -633,12 +860,6 @@ void npc::randomize_from_faction(game *g, faction *fac)
  }
 }
 
-// XXX really should be a template choose function, but doesn't belong in rng.h, which is a thin header
-static itype_id _get_itype(const std::vector<itype_id>& src)
-{
-	return src[rng(0, src.size() - 1)];
-}
-
 #if DEAD_FUNC
 void npc::make_shopkeep(game *g, oter_id type)  // some other enum was intended
 {
@@ -709,231 +930,6 @@ void npc::make_shopkeep(game *g, oter_id type)  // some other enum was intended
  mission = NPC_MISSION_SHOPKEEP;
 }
 #endif
-
-std::vector<item> starting_clothes(npc_class type, bool male, game *g)
-{
- std::vector<item> ret;
- itype_id pants = itm_null, shoes = itm_null, shirt = itm_null,
-                  gloves = itm_null, coat = itm_null, mask = itm_null,
-                  glasses = itm_null, hat = itm_null;
-
- switch(rng(0, (male ? 3 : 4))) {
-  case 0: pants = itm_jeans; break;
-  case 1: pants = itm_pants; break;
-  case 2: pants = itm_pants_leather; break;
-  case 3: pants = itm_pants_cargo; break;
-  case 4: pants = itm_skirt; break;
- }
- switch (rng(0, 3)) {
-  case 0: shirt = itm_tshirt; break;
-  case 1: shirt = itm_polo_shirt; break;
-  case 2: shirt = itm_dress_shirt; break;
-  case 3: shirt = itm_tank_top; break;
- }
- switch(rng(0, 10)) {
-  case  8: gloves = itm_gloves_leather; break;
-  case  9: gloves = itm_gloves_fingerless; break;
-  case 10: gloves = itm_fire_gauntlets; break;
- }
- switch (rng(0, 6)) {
-  case 2: coat = itm_hoodie; break;
-  case 3: coat = itm_jacket_light; break;
-  case 4: coat = itm_jacket_jean; break;
-  case 5: coat = itm_jacket_leather; break;
-  case 6: coat = itm_trenchcoat; break;
- }
- if (one_in(30))
-  coat = itm_kevlar;
- shoes = itm_sneakers;
- mask = itm_null;
- if (one_in(8)) {
-  switch(rng(0, 2)) {
-   case 0: mask = itm_mask_dust; break;
-   case 1: mask = itm_bandana; break;
-   case 2: mask = itm_mask_filter; break;
-  }
- }
- glasses = itm_null;
- if (one_in(8))
-  glasses = itm_glasses_safety;
- hat = itm_null;
- if (one_in(6)) {
-  switch(rng(0, 5)) {
-   case 0: hat = itm_hat_ball; break;
-   case 1: hat = itm_hat_hunting; break;
-   case 2: hat = itm_hat_hard; break;
-   case 3: hat = itm_helmet_bike; break;
-   case 4: hat = itm_helmet_riot; break;
-   case 5: hat = itm_helmet_motor; break;
-  }
- }
-
-// Now, more specific stuff for certain classes.
- switch (type) {
- case NC_DOCTOR:
-  if (one_in(2)) pants = itm_pants;
-  if (one_in(3)) shirt = (one_in(2) ? itm_polo_shirt : itm_dress_shirt);
-  if (!one_in(8)) coat = itm_coat_lab;
-  if (one_in(3)) mask = itm_mask_dust;
-  if (one_in(4)) glasses = itm_glasses_safety;
-  if (gloves != itm_null || one_in(3)) gloves = itm_gloves_medical;
-  break;
-
- case NC_TRADER:
-  if (one_in(2)) pants = itm_pants_cargo;
-  switch (rng(0, 8)) {
-   case 1: coat = itm_hoodie; break;
-   case 2: coat = itm_jacket_jean; break;
-   case 3: case 4: coat = itm_vest; break;
-   case 5: case 6: case 7: case 8: coat = itm_trenchcoat; break;
-  }
-  break;
-
- case NC_NINJA:
-  if (one_in(4)) shirt = itm_null;
-  else if (one_in(3)) shirt = itm_tank_top;
-  if (one_in(5)) gloves = itm_gloves_leather;
-  if (one_in(2)) mask = itm_bandana;
-  if (one_in(3)) hat = itm_null;
-  break;
-
- case NC_COWBOY:
-  if (one_in(2)) shoes = itm_boots;
-  if (one_in(2)) pants = itm_jeans;
-  if (one_in(3)) shirt = itm_tshirt;
-  if (one_in(4)) gloves = itm_gloves_leather;
-  if (one_in(4)) coat = itm_jacket_jean;
-  if (one_in(3)) hat = itm_hat_boonie;
-  break;
-
- case NC_SCIENTIST:
-  if (one_in(4)) glasses = itm_glasses_eye;
-  else if (one_in(2)) glasses = itm_glasses_safety;
-  if (one_in(5)) coat = itm_coat_lab;
-  break;
-
- case NC_BOUNTY_HUNTER:
-  if (one_in(3)) pants = itm_pants_cargo;
-  if (one_in(2)) shoes = itm_boots_steel;
-  if (one_in(4)) coat = itm_jacket_leather;
-  if (one_in(4)) mask = itm_mask_filter;
-  if (one_in(5)) glasses = itm_goggles_ski;
-  if (one_in(3)) {
-   mask = itm_null;
-   hat = itm_helmet_motor;
-  }
-  break;
- }
-// Fill in the standard things we wear
- if (shoes != itm_null) ret.push_back(item(item::types[shoes], 0));
- if (pants != itm_null) ret.push_back(item(item::types[pants], 0));
- if (shirt != itm_null) ret.push_back(item(item::types[shirt], 0));
- if (coat != itm_null) ret.push_back(item(item::types[coat], 0));
- if (gloves != itm_null) ret.push_back(item(item::types[gloves], 0));
-// Bad to wear a mask under a motorcycle helmet
- if (mask != itm_null && hat != itm_helmet_motor) ret.push_back(item(item::types[mask], 0));
- if (glasses != itm_null) ret.push_back(item(item::types[glasses], 0));
- if (hat != itm_null) ret.push_back(item(item::types[hat], 0));
-
-// Second pass--for extra stuff like backpacks, etc
- switch (type) {
- case NC_NONE:
- case NC_DOCTOR:
- case NC_SCIENTIST:
-  if (one_in(10)) ret.push_back(item(item::types[itm_backpack], 0));
-  break;
- case NC_COWBOY:
- case NC_BOUNTY_HUNTER:
-  if (one_in(2)) ret.push_back(item(item::types[itm_backpack], 0));
-  break;
- case NC_TRADER:
-  if (!one_in(15)) ret.push_back(item(item::types[itm_backpack], 0));
-  break;
- }
-
- return ret;
-}
-
-std::vector<item> starting_inv(npc *me, npc_class type, game *g)
-{
- int total_space = me->volume_capacity() - 2;
- std::vector<item> ret;
- ret.push_back(item(item::types[itm_lighter], 0));
-
-// First, if we're wielding a gun, get some ammo for it
- if (me->weapon.is_gun()) {
-  const it_gun* const gun = dynamic_cast<const it_gun*>(me->weapon.type);
-  const itype* const i_type = item::types[default_ammo(gun->ammo)];
-  if (total_space >= i_type->volume) {
-   ret.push_back(item(i_type, 0));
-   total_space -= ret[ret.size() - 1].volume();
-  }
-  while ((type == NC_COWBOY || type == NC_BOUNTY_HUNTER || !one_in(3)) &&
-         !one_in(4) && total_space >= i_type->volume) {
-   ret.push_back(item(i_type, 0));
-   total_space -= ret[ret.size() - 1].volume();
-  }
- }
- if (type == NC_TRADER) {	// Traders just have tons of random junk
-  while (total_space > 0 && !one_in(50)) {
-   const itype* const i_type = item::types[rng(2, num_items - 1)];
-   if (total_space >= i_type->volume) {
-	const auto n = ret.size();
-    ret.push_back(item(i_type, 0));
-    ret[n] = ret[n].in_its_container();
-    total_space -= ret[n].volume();
-   }
-  }
- }
- items_location from;
- if (type == NC_HACKER) {
-  from = mi_npc_hacker;
-  while(total_space > 0 && !one_in(10)) {
-   item tmpit(item::types[_get_itype(map::items[from])], 0);
-   tmpit = tmpit.in_its_container();
-   if (total_space >= tmpit.volume()) {
-    ret.push_back(tmpit);
-    total_space -= tmpit.volume();
-   }
-  }
- }
- if (type == NC_DOCTOR) {
-  while(total_space > 0 && !one_in(10)) {
-   from = (one_in(3) ? mi_softdrugs : mi_harddrugs);
-   item tmpit(item::types[_get_itype(map::items[from])], 0);
-   tmpit = tmpit.in_its_container();
-   if (total_space >= tmpit.volume()) {
-    ret.push_back(tmpit);
-    total_space -= tmpit.volume();
-   }
-  }
- }
-// TODO: More specifics.
-
- while (total_space > 0 && !one_in(8)) {
-  const itype* const i_type = item::types[rng(4, num_items - 1)];
-  if (total_space >= i_type->volume) {
-   const auto n = ret.size();
-   ret.push_back(item(i_type, 0));
-   ret[n] = ret[n].in_its_container();
-   total_space -= ret[n].volume();
-  }
- }
-
- {
- int i = ret.size();
- while(0 < i--) {
-  for (const auto type : map::items[mi_trader_avoid]) {
-   if (ret[i].type->id == type) {
-    EraseAt(ret, i);
-	break;
-   }
-  }
- }
- }
- 
- return ret;
-}
 
 void npc::spawn_at(const GPS_loc& _GPSpos)
 {

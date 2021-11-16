@@ -306,7 +306,7 @@ public:
  };
 
 // Generating our stats, etc.
- void randomize(game *g, npc_class type = NC_NONE);
+ void randomize(npc_class type = NC_NONE);
  void randomize_from_faction(game *g, faction *fac);
 #if DEAD_FUNC
  void make_shopkeep(game *g, oter_id type);
