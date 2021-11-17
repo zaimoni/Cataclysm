@@ -323,18 +323,34 @@ bool player::remove_mutation(pl_flag mut)
 {
  if (!has_trait(mut)) return false;
 
+ static auto me_lose = [&]() {
+     return std::string("You lose your ") + mutation_branch::traits[mut].name + ".";
+ };
+
+ static auto other_lose = [&]() {
+     return name+" loses their " + mutation_branch::traits[mut].name + ".";
+ };
+
 // Check if there's a prereq we should shrink back into
  pl_flag replacing = regress_mutation(mut, *this);
 
+ static auto me_replace = [&]() {
+     return std::string("Your ") + mutation_branch::traits[mut].name + " turns into " + mutation_branch::traits[replacing].name + ".";
+ };
+
+ static auto other_replace = [&]() {
+     return possessive() + mutation_branch::traits[mut].name + " turns into " + mutation_branch::traits[replacing].name + ".";
+ };
+
  toggle_trait(mut);
  if (replacing != PF_NULL) {
-  messages.add("Your %s turns into %s.", mutation_branch::traits[mut].name.c_str(), mutation_branch::traits[replacing].name.c_str());
-  toggle_trait(replacing);
-  mutation_loss_effect(*this, mut);
-  mutation_effect(*this, replacing);
+     if_visible_message(me_replace, other_replace);
+     toggle_trait(replacing);
+     mutation_loss_effect(*this, mut);
+     mutation_effect(*this, replacing);
  } else {
-  messages.add("You lose your %s.", mutation_branch::traits[mut].name.c_str());
-  mutation_loss_effect(*this, mut);
+     if_visible_message(me_lose, other_lose);
+     mutation_loss_effect(*this, mut);
  }
 
  return true;
