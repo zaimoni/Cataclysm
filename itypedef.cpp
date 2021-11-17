@@ -4535,6 +4535,24 @@ tool(ptool), add(padd),
 use(nullptr), use_npc(nullptr), use_pc(puse), use_player(nullptr)
 {
 }
+
+it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1,
+	unsigned short pvolume, unsigned short pweight,
+
+	signed char pquench, unsigned char pnutr, unsigned char pspoils,
+	signed char pstim, signed char phealthy, unsigned char paddict,
+	unsigned char pcharges, signed char pfun, itype_id pcontainer,
+	itype_id ptool,
+	add_type padd,
+	decltype(use_player) puse)
+	:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, 0, 0, 0, 0),
+	quench(pquench), nutr(pnutr), spoils(pspoils), addict(paddict), charges(pcharges), stim(pstim), healthy(phealthy), fun(pfun), container(pcontainer),
+	tool(ptool), add(padd),
+	use(nullptr), use_npc(nullptr), use_pc(nullptr), use_player(puse)
+{
+}
 #endif
 
 it_ammo::it_ammo(int pid, unsigned char prarity, unsigned int pprice,

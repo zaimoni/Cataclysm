@@ -488,21 +488,20 @@ void iuse::mutagen_3(player *p, item *it, bool t)
  if (one_in(2)) p->mutate();
 }
 
-void iuse::purifier(player *p, item *it, bool t)
+void iuse::purifier(player& p, item& it)
 {
  std::vector<int> valid;	// Which flags the player has
  for (int i = 1; i < PF_MAX2; i++) {
-  if (p->has_trait(pl_flag(i)) && p->has_mutation(pl_flag(i))) valid.push_back(i);
+  if (p.has_trait(pl_flag(i)) && p.has_mutation(pl_flag(i))) valid.push_back(i);
  }
  if (valid.empty()) {
-  messages.add("You feel cleansed.");
+  p.subjective_message("You feel cleansed.");
   return;
  }
- int num_cured = rng(1, valid.size());
- if (num_cured > 4) num_cured = 4;
- for (int i = 0; i < num_cured && valid.size() > 0; i++) {
+ int num_cured = clamped_ub<4>(rng(1, valid.size()));
+ while (0 <= --num_cured) {
   int index = rng(0, valid.size() - 1);
-  p->remove_mutation(pl_flag(valid[index]) );
+  p.remove_mutation(pl_flag(valid[index]));
   valid.erase(valid.begin() + index);
  }
 }
@@ -551,7 +550,7 @@ void iuse::marloss(pc& p, item& it)
  } else if (effect <= 6) { // Radiation cleanse is below
   messages.add("This berry makes you feel better all over.");
   p.pkill += 30;
-  purifier(&p, &it, true);
+  purifier(p, it);
  } else if (effect == 7) {
   messages.add("This berry is delicious, and very filling!");
   p.hunger = -100;
