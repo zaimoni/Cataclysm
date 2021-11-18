@@ -41,8 +41,8 @@ class iuse
   static void flusleep		(player *p, item *it, bool t);
   static void inhaler		(player *p, item *it, bool t);
   static void blech		(player *p, item *it, bool t);
-  static void mutagen		(player *p, item *it, bool t);
-  static void mutagen_3	(player *p, item *it, bool t);
+  static void mutagen(player& p, item& it);
+  static void mutagen_3(player& p, item& it);
   static void purifier(player& p, item& it);
   static void marloss(pc& p, item& it);
   static void dogfood(pc& p, item& it); // but eating by player is unimplemented

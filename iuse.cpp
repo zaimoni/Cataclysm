@@ -476,16 +476,16 @@ void iuse::blech(player *p, item *it, bool t)
  p->vomit();
 }
 
-void iuse::mutagen(player *p, item *it, bool t)
+void iuse::mutagen(player& p, item& it)
 {
- if (!one_in(3)) p->mutate();
+ if (!one_in(3)) p.mutate();
 }
 
-void iuse::mutagen_3(player *p, item *it, bool t)
+void iuse::mutagen_3(player& p, item& it)
 {
- p->mutate();
- if (!one_in(3)) p->mutate();
- if (one_in(2)) p->mutate();
+ p.mutate();
+ if (!one_in(3)) p.mutate();
+ if (one_in(2)) p.mutate();
 }
 
 void iuse::purifier(player& p, item& it)
