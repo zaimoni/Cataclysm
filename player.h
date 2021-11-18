@@ -159,7 +159,7 @@ public:
  void healall(int dam);
  void hurtall(int dam);
  // checks armor. if vary > 0, then damage to parts are random within 'vary' percent (1-100)
- void hitall(game *g, int dam, int vary = 0);
+ void hitall(int dam, int vary = 0);
  // calibration: STR 3 -> 1; STR 20 -> 4; STR 8 -> 2
  int knockback_size() const override { return (str_max - 2) / 5 + 1; /* C:Whales: (str_max - 6) / 4; */ }
 
@@ -402,7 +402,7 @@ private:
 
  // player.cpp
 // absorb() reduces dam and cut by your armor (and bionics, traits, etc)
- void absorb(game *g, body_part bp, int &dam, int &cut);	// \todo V 0.2.1 enable for NPCs?
+ void absorb(body_part bp, int &dam, int &cut);	// \todo V 0.2.1 enable for NPCs?
 };
 
 inventory crafting_inventory(const map& m, const player& u);

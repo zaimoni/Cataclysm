@@ -3342,7 +3342,7 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
  } else if (has_disease(DI_LYING_DOWN))
   rem_disease(DI_LYING_DOWN);
 
- absorb(g, bphurt, dam, cut);
+ absorb(bphurt, dam, cut);
 
  dam += cut;
  if (dam <= 0) return;
@@ -3553,7 +3553,7 @@ void player::hurtall(int dam)
  }
 }
 
-void player::hitall(game *g, int dam, int vary)
+void player::hitall(int dam, int vary)
 {
  if (has_disease(DI_SLEEP)) {
   messages.add("You wake up!");
@@ -3564,7 +3564,7 @@ void player::hitall(game *g, int dam, int vary)
  for (int i = 0; i < num_hp_parts; i++) {
   int ddam = vary? dam * rng (100 - vary, 100) / 100 : dam;
   int cut = 0;
-  absorb(g, (body_part) i, ddam, cut);
+  absorb((body_part) i, ddam, cut);
   int painadd = 0;
   hp_cur[i] -= ddam;
   clamp_lb<0>(hp_cur[i]);
@@ -4065,7 +4065,7 @@ void player::vomit()
         return name + " throws up heavily!";
     };
 
-    if_visible_message(me, other);
+    if_visible_message(me, other); // \todo? sound for when not in sight at all
     hunger += rng(30, 50);
     thirst += rng(30, 50);
     moves -= mobile::mp_turn;
@@ -5406,7 +5406,7 @@ static std::pair<int, int> armor(body_part bp, const player& p)
 int player::armor_bash(body_part bp) const { return armor(bp, *this).first; }
 int player::armor_cut(body_part bp) const { return armor(bp, *this).second; }
 
-void player::absorb(game *g, body_part bp, int &dam, int &cut)
+void player::absorb(body_part bp, int &dam, int &cut)
 {
  if (has_active_bionic(bio_ads)) {
   if (dam > 0 && power_level > 1) {
@@ -5426,6 +5426,10 @@ void player::absorb(game *g, body_part bp, int &dam, int &cut)
 //  their T shirt, for example.  TODO: don't assume! ASS out of U & ME, etc.
  for (int i = worn.size() - 1; i >= 0; i--) {
   const it_armor* const tmp = dynamic_cast<const it_armor*>(worn[i].type);
+  static auto is_gone = [&]() {
+      return grammar::capitalize(possessive()) + " " + worn[i].tname() + " is destroyed!";
+  };
+
   if ((tmp->covers & mfb(bp)) && tmp->storage < 20) { // \todo? trenchcoats are too large to damage with weapons?!?
 // Wool, leather, and cotton clothing may be damaged by CUTTING damage
    if ((worn[i].made_of(WOOL)   || worn[i].made_of(LEATHER) ||
@@ -5440,10 +5444,7 @@ void player::absorb(game *g, body_part bp, int &dam, int &cut)
        rng(0, tmp->dmg_resist * 2) < dam && !one_in(dam))
     worn[i].damage++;
    if (worn[i].damage >= 5) {
-    if (g->u.see(GPSpos)) {
-        const auto your = grammar::capitalize(possessive());
-        messages.add("%s %s is destroyed!", your.c_str(), worn[i].tname().c_str());
-    }
+    if_visible_message(is_gone, is_gone);
     EraseAt(worn, i);
    }
   }

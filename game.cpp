@@ -4924,7 +4924,7 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
             dam2 = flvel / 3 + rng (0, flvel * 1 / 3);
             if (m_at->hurt(dam2)) kill_mon(*m_at);
             else thru = false;
-            if (is_player) p->hitall (this, dam1, 40);
+            if (is_player) p->hitall(dam1, 40);
             else zz->hurt(dam1);
         } else if (m.move_cost(pt) == 0 && !m.has_flag(swimmable, pt)) {
             slam = true;
@@ -4933,7 +4933,7 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
             if (m.has_flag(bashable, pt)) thru = m.bash(pt, flvel, snd);
             else thru = false;
             if (snd.length() > 0) messages.add("You hear a %s", snd.c_str());
-            if (is_player) p->hitall (this, dam1, 40);
+            if (is_player) p->hitall(dam1, 40);
             else zz->hurt (dam1);
             flvel = flvel / 2;
         }
@@ -4954,7 +4954,7 @@ void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
             int dex_reduce = p->dex_cur < 4? 4 : p->dex_cur;
             dam1 = dam1 * 8 / dex_reduce;
             if (p->has_trait(PF_PARKOUR)) dam1 /= 2;
-            if (dam1 > 0) p->hitall (this, dam1, 40);
+            if (dam1 > 0) p->hitall(dam1, 40);
         } else zz->hurt (dam1);
 
         if (is_u) {

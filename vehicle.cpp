@@ -1127,7 +1127,7 @@ int vehicle::part_collision (int vx, int vy, int part, point dest)
                 g->fling_player_or_monster(nullptr, z, move.dir() + angle, vel2 / 100);
             if (z->hp < 1) g->kill_mon(*z, pl_ctrl ? &g->u : nullptr);
         } else {
-            ph->hitall (g, dam, 40);
+            ph->hitall(dam, 40);
             if (vel2 > rng (5, 30))
                 g->fling_player_or_monster(ph, nullptr, move.dir() + angle, vel2 / 100);
         }
