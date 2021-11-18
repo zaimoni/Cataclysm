@@ -3336,11 +3336,8 @@ double player::barter_price_adjustment() const
 
 void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
 {
- if (has_disease(DI_SLEEP)) {
-  if (!is_npc()) messages.add("You wake up!"); // \todo adapt for NPCs
-  rem_disease(DI_SLEEP);
- } else if (has_disease(DI_LYING_DOWN))
-  rem_disease(DI_LYING_DOWN);
+    if (!rude_awakening() && has_disease(DI_LYING_DOWN))
+        rem_disease(DI_LYING_DOWN);
 
  absorb(bphurt, dam, cut);
 
@@ -3430,11 +3427,9 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
 
 void player::hurt(game *g, body_part bphurt, int side, int dam)
 {
- if (has_disease(DI_SLEEP) && rng(0, dam) > 2) {
-  if (!is_npc()) messages.add("You wake up!");
-  rem_disease(DI_SLEEP);
- } else if (has_disease(DI_LYING_DOWN))
-  rem_disease(DI_LYING_DOWN);
+    if (2 < rng(0, dam) && rude_awakening()) {}
+    else if (has_disease(DI_LYING_DOWN))
+        rem_disease(DI_LYING_DOWN);
 
  if (dam <= 0) return;
 
@@ -3555,11 +3550,8 @@ void player::hurtall(int dam)
 
 void player::hitall(int dam, int vary)
 {
- if (has_disease(DI_SLEEP)) {
-  messages.add("You wake up!");
-  rem_disease(DI_SLEEP);
- } else if (has_disease(DI_LYING_DOWN))
-  rem_disease(DI_LYING_DOWN);
+    if (!rude_awakening() && has_disease(DI_LYING_DOWN))
+        rem_disease(DI_LYING_DOWN);
 
  for (int i = 0; i < num_hp_parts; i++) {
   int ddam = vary? dam * rng (100 - vary, 100) / 100 : dam;
@@ -3723,6 +3715,20 @@ int player::disease_intensity(dis_type type) const
  for (decltype(auto) ill : illness) if (ill.type == type) return ill.intensity;
  return 0;
 }
+
+bool player::rude_awakening()
+{
+    static auto i_awake = []() { return std::string("You wake up!"); };
+    static auto other_awake = [&]() { return subject() + " wakes up!"; };
+
+    if (has_disease(DI_SLEEP)) {
+        rem_disease(DI_SLEEP);
+        if_visible_message(i_awake, other_awake);
+        return true;
+    }
+    return false;
+}
+
 
 void player::add_addiction(add_type type, int strength)
 {
@@ -3955,11 +3961,8 @@ void player::suffer(game *g)
   if (has_trait(PF_LEAVES) && one_in(HOURS(1))) hunger--;
 
   if (has_trait(PF_ALBINO) && one_in(MINUTES(2))) {
-   messages.add("The sunlight burns your skin!");
-   if (has_disease(DI_SLEEP)) {
-    rem_disease(DI_SLEEP);
-    messages.add("You wake up!");
-   }
+   subjective_message("The sunlight burns your skin!");
+   rude_awakening();
    hurtall(1);
   }
 
