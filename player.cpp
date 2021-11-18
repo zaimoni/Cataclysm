@@ -3698,6 +3698,14 @@ void player::rem_disease(dis_type type)
  }
 }
 
+void player::rem_disease(std::function<bool(disease&)> op)
+{
+    int ub = illness.size();
+    while (0 <= --ub) {
+        if (op(illness[ub])) EraseAt(illness, ub);
+    }
+}
+
 bool player::has_disease(dis_type type) const
 {
  for (decltype(auto) ill : illness) if (ill.type == type) return true;
@@ -4052,23 +4060,32 @@ void player::suffer(game *g)
 
 void player::vomit()
 {
- messages.add("You throw up heavily!");
- hunger += rng(30, 50);
- thirst += rng(30, 50);
- moves -= 100;
- int i = illness.size();
- while (0 <= --i) {
-  auto& ill = illness[i];
-  if (DI_FOODPOISON == ill.type) {
-   if (0 > (ill.duration -= MINUTES(30))) rem_disease(DI_FOODPOISON);
-  } else if (DI_DRUNK == ill.type) {
-   if (0 > (ill.duration -= rng(1, 5) * MINUTES(10))) rem_disease(DI_DRUNK);
-  }
- }
- rem_disease(DI_PKILL1);
- rem_disease(DI_PKILL2);
- rem_disease(DI_PKILL3);
- rem_disease(DI_SLEEP);
+    static auto me = []() { return std::string("You throw up heavily!"); };
+    static auto other = [&]() {
+        return name + " throws up heavily!";
+    };
+
+    if_visible_message(me, other);
+    hunger += rng(30, 50);
+    thirst += rng(30, 50);
+    moves -= mobile::mp_turn;
+
+    static auto purge = [](disease& ill) {
+        switch (ill.type) {
+        case DI_PKILL1:
+        case DI_PKILL2:
+        case DI_PKILL3:
+        case DI_SLEEP:
+            return true;
+        case DI_FOODPOISON:
+            return 0 > (ill.duration -= MINUTES(30));
+        case DI_DRUNK:
+            return 0 > (ill.duration -= rng(1, 5) * MINUTES(10));
+        default: return false;
+        }
+    };
+
+    rem_disease(purge);
 }
 
 int player::weight_carried() const

@@ -173,6 +173,7 @@ public:
 // add_disease() does NOT give us a chance to save
  void add_disease(dis_type type, int duration, int intensity = 0, int max_intensity = -1);
  void rem_disease(dis_type type);
+ void rem_disease(std::function<bool(disease&)> op);
  bool has_disease(dis_type type) const;
  int  disease_level(dis_type type) const;
  int  disease_intensity(dis_type type) const;
