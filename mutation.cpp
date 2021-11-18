@@ -219,36 +219,57 @@ static pl_flag regress_mutation(pl_flag mut, const player& p)
 
 void player::mutate_towards(pl_flag mut)
 {
+retry:
  if (remove_child_flag(mut)) return;
 
- std::vector<pl_flag> cancel(mutation_branch::data[mut].cancels);
- int ub = cancel.size();
- while (0 <= --ub) if (!has_trait(cancel[ub])) cancel.erase(cancel.begin() + ub);
+ if (!mutation_branch::data[mut].cancels.empty()) {
+     auto cancel(mutation_branch::data[mut].cancels);
+     int ub = cancel.size();
+     while (0 <= --ub) if (!has_trait(cancel[ub])) cancel.erase(cancel.begin() + ub);
 
- if (!cancel.empty()) {
-  remove_mutation(cancel[rng(0, cancel.size() - 1)]);
-  return;
+     if (!cancel.empty()) {
+         remove_mutation(cancel[rng(0, cancel.size() - 1)]);
+         return;
+     }
  }
 
- bool has_prereqs = false;
- std::vector<pl_flag> prereq(mutation_branch::data[mut].prereqs);
- for (int i = 0; i < prereq.size(); i++) {
-  if (has_trait(prereq[i])) {
-    has_prereqs = true;
-    break;
-  }
+ const auto& prereq = mutation_branch::data[mut].prereqs;
+ if (!prereq.empty()) {
+     bool has_prereqs = false;
+     for (decltype(auto) pre : prereq) {
+         if (has_trait(pre)) {
+             has_prereqs = true;
+             break;
+         }
+     }
+     if (!has_prereqs) { // tail-recurse to pre-requisite
+         mut = prereq[rng(0, prereq.size() - 1)];
+         goto retry;
+     }
  }
- if (!has_prereqs && !prereq.empty()) {
-  mutate_towards(prereq[rng(0, prereq.size() - 1)]);
-  return;
- }
+
+ auto replacing = regress_mutation(mut, *this);
+
+ static auto me_replace = [&]() {
+     return std::string("Your ") + mutation_branch::traits[replacing].name + " turns into " + mutation_branch::traits[mut].name + "!";
+ };
+ static auto other_replace = [&]() {
+     return possessive() + mutation_branch::traits[replacing].name + " turns into " + mutation_branch::traits[mut].name + "!";
+ };
+
+ static auto me_gain = [&]() {
+     return std::string("You gain ") + mutation_branch::traits[mut].name + "!";
+ };
+ static auto other_gain = [&]() {
+     return name + " gains " + mutation_branch::traits[mut].name + "!";
+ };
 
  toggle_trait(mut);
- if (auto replacing = regress_mutation(mut, *this)) {  // Check if one of the prereqs that we have TURNS INTO this one
-  messages.add("Your %s turns into %s!", mutation_branch::traits[replacing].name.c_str(), mutation_branch::traits[mut].name.c_str());
+ if (replacing) {  // Check if one of the prereqs that we have TURNS INTO this one
+  if_visible_message(me_replace, other_replace);
   toggle_trait(replacing);
  } else
-  messages.add("You gain %s!", mutation_branch::traits[mut].name.c_str());
+  if_visible_message(me_gain, other_gain);
  mutation_effect(*this, mut);
 
 // Weight us towards any categories that include this mutation
