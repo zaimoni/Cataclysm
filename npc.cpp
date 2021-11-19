@@ -1935,9 +1935,9 @@ void npc::swim(const GPS_loc& loc)
 	}
 }
 
-bool npc::if_visible_message(std::function<std::string()> me, std::function<std::string()> other) const
+bool npc::if_visible_message(std::function<std::string()> msg) const
 {
-	if (other) return game::active()->if_visible_message(other, *this);
+	if (msg) return game::active()->if_visible_message(msg, *this);
 	return false;
 }
 

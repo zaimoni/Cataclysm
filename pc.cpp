@@ -27,6 +27,17 @@ void pc::consume(item& food) {
     else throw std::logic_error("called player::consume on non-food");
 }
 
+void pc::subjective_message(const std::string& msg) const { if (!msg.empty()) messages.add(msg); }
+
+bool pc::if_visible_message(std::function<std::string()> msg) const
+{
+    if (msg) {
+        subjective_message(msg());
+        return true;
+    }
+    return false;
+}
+
 bool pc::if_visible_message(const char* msg) const
 {
     if (msg) {

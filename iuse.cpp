@@ -464,17 +464,21 @@ void iuse::flusleep(player *p, item *it, bool t)
  p->subjective_message("You feel very sleepy...");
 }
 
-void iuse::inhaler(player *p, item *it, bool t)
+void iuse::inhaler(player& p, item& it)
 {
- p->rem_disease(DI_ASTHMA);
- p->subjective_message("You take a puff from your inhaler.");
+    static auto use_inhaler = [&]() {
+        return grammar::capitalize(p.subject()) + " " + p.regular_verb_agreement("take") + " a puff from " + p.possessive() + " " + it.tname() + ".";
+    };
+
+    p.rem_disease(DI_ASTHMA);
+    p.if_visible_message(use_inhaler);
 }
 
-void iuse::blech(player *p, item *it, bool t)
+void iuse::blech(player& p, item& it)
 {
 // TODO: Add more effects?
- p->subjective_message("Blech, that burns your throat!");
- p->vomit();
+ p.subjective_message("Blech, that burns your throat!");
+ p.vomit();
 }
 
 void iuse::mutagen(player& p, item& it)

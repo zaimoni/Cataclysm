@@ -39,8 +39,8 @@ class iuse
   static void iodine		(player *p, item *it, bool t);
   static void flumed		(player *p, item *it, bool t);
   static void flusleep		(player *p, item *it, bool t);
-  static void inhaler		(player *p, item *it, bool t);
-  static void blech		(player *p, item *it, bool t);
+  static void inhaler(player& p, item& it);
+  static void blech(player& p, item& it);
   static void mutagen(player& p, item& it);
   static void mutagen_3(player& p, item& it);
   static void purifier(player& p, item& it);

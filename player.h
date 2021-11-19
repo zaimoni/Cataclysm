@@ -301,9 +301,10 @@ public:
  const item* decode_item_index(int n) const;
 
 // abstract ui
- virtual void subjective_message(const std::string& msg) const;
- virtual void subjective_message(const char* msg) const { subjective_message(std::string(msg)); }
- virtual bool if_visible_message(std::function<std::string()> me, std::function<std::string()> other) const;
+ virtual void subjective_message(const std::string& msg) const = 0;
+ virtual void subjective_message(const char* msg) const = 0;
+ virtual bool if_visible_message(std::function<std::string()> msg) const = 0;
+ virtual bool if_visible_message(std::function<std::string()> me, std::function<std::string()> other) const = 0;
  virtual bool if_visible_message(const char* msg) const = 0;
  virtual bool ask_yn(const char* msg, std::function<bool()> ai = nullptr) const = 0;
  bool ask_yn(const std::string& msg, std::function<bool()> ai = nullptr) const { return ask_yn(msg.c_str(), ai); }
