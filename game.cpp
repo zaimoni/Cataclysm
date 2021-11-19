@@ -2604,14 +2604,19 @@ void game::monmove()
   }
   if (z[i].dead) continue;
 
+  // \todo make this work for NPCs
   if (u.has_active_bionic(bio_alarm) && u.power_level >= 1 && rl_dist(u.GPSpos, z[i].GPSpos) <= 5) {
     u.power_level--;
 	messages.add("Your motion alarm goes off!");
     u.cancel_activity_query("Your motion alarm goes off!");
-    if (u.has_disease(DI_SLEEP) || u.has_disease(DI_LYING_DOWN)) {
-     u.rem_disease(DI_SLEEP);
-     u.rem_disease(DI_LYING_DOWN);
-    }
+
+    static const decltype(DI_SLEEP) drowse[] = {
+        DI_SLEEP,
+        DI_LYING_DOWN
+    };
+
+    static auto decline = [&](disease& ill) { return any(drowse, ill.type); };
+    u.rem_disease(decline);
   }
 // We might have stumbled out of range of the player; if so, kill us
   if (!extended_reality_bubble.contains(z[i].pos)) {

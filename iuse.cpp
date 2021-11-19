@@ -9,6 +9,7 @@
 #include "recent_msg.h"
 #include "zero.h"
 #include "stl_limits.h"
+#include "stl_typetraits.h"
 
 #include <sstream>
 
@@ -27,32 +28,32 @@ void iuse::royal_jelly(player *p, item *it, bool t)
 {
 // TODO: Add other diseases here; royal jelly is a cure-all!
  p->pkill += 5;
- std::string message;
- if (p->has_disease(DI_FUNGUS)) {
-  message = "You feel cleansed inside!";
-  p->rem_disease(DI_FUNGUS);
- }
- if (p->has_disease(DI_BLIND)) {
-  message = "Your sight returns!";
-  p->rem_disease(DI_BLIND);
- }
- if (p->has_disease(DI_POISON) || p->has_disease(DI_FOODPOISON) ||
-     p->has_disease(DI_BADPOISON)) {
-  message = "You feel much better!";
-  p->rem_disease(DI_POISON);
-  p->rem_disease(DI_BADPOISON);
-  p->rem_disease(DI_FOODPOISON);
- }
- if (p->has_disease(DI_ASTHMA)) {
-  message = "Your breathing clears up!";
-  p->rem_disease(DI_ASTHMA);
- }
- if (p->has_disease(DI_COMMON_COLD) || p->has_disease(DI_FLU)) {
-  message = "You feel healther!";
-  p->rem_disease(DI_COMMON_COLD);
-  p->rem_disease(DI_FLU);
- }
- p->subjective_message(message);
+ if (p->rem_disease(DI_FUNGUS))
+     p->subjective_message("You feel cleansed inside!");
+ if (p->rem_disease(DI_FUNGUS))
+     p->subjective_message("Your sight returns!");
+
+ static const decltype(DI_POISON) toxic[] = {
+     DI_POISON,
+     DI_BADPOISON,
+     DI_FOODPOISON
+ };
+
+ static auto detox = [&](disease& ill) { return cataclysm::any(toxic, ill.type); };
+ if (p->rem_disease(detox))
+     p->subjective_message("You feel much better!");
+
+ if (p->rem_disease(DI_ASTHMA))
+     p->subjective_message("Your breathing clears up!");
+
+ static const decltype(DI_POISON) cold_like[] = {
+    DI_COMMON_COLD,
+    DI_FLU
+ };
+
+ static auto cure_common_cold = [&](disease& ill) { return cataclysm::any(toxic, ill.type); };
+ if (p->rem_disease(cure_common_cold))
+     p->subjective_message("You feel healther!");
 }
 
 static void _display_hp(WINDOW* w, player* p, int curhp, int i)

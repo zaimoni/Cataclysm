@@ -6,6 +6,7 @@
 #include "item.h"
 #include "line.h"
 #include "recent_msg.h"
+#include "stl_typetraits.h"
 
 static const char* JSON_transcode[] = {
 	"batteries",
@@ -464,19 +465,26 @@ void player::activate_bionic(int b, game *g)
   break;
 
  case bio_blood_filter:
-  rem_disease(DI_FUNGUS);
-  rem_disease(DI_POISON);
-  rem_disease(DI_PKILL1);
-  rem_disease(DI_PKILL2);
-  rem_disease(DI_PKILL3);
-  rem_disease(DI_PKILL_L);
-  rem_disease(DI_DRUNK);
-  rem_disease(DI_CIG);
-  rem_disease(DI_HIGH);
-  rem_disease(DI_THC);
-  rem_disease(DI_TOOK_PROZAC);
-  rem_disease(DI_TOOK_FLUMED);
-  rem_disease(DI_ADRENALINE);
+ {
+	 static const decltype(DI_FUNGUS) drowse[] = {
+		 DI_FUNGUS,
+		 DI_POISON,
+		 DI_PKILL1,
+		 DI_PKILL2,
+		 DI_PKILL3,
+		 DI_PKILL_L,
+		 DI_DRUNK,
+		 DI_CIG,
+		 DI_HIGH,
+		 DI_THC,
+		 DI_TOOK_PROZAC,
+		 DI_TOOK_FLUMED,
+		 DI_ADRENALINE
+	 };
+
+	 static auto decline = [&](disease& ill) { return cataclysm::any(drowse, ill.type); };
+	 rem_disease(decline);
+ }
   break;
 
  case bio_evap:

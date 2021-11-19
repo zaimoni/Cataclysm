@@ -1900,9 +1900,8 @@ void player::swim(const GPS_loc& loc)
 {
     DEBUG_FAIL_OR_LEAVE(!is<swimmable>(GPSpos.ter()), return);
     set_screenpos(loc);
-    if (has_disease(DI_ONFIRE)) {	// VAPORWARE: not for phosphorus or lithium ...
+    if (rem_disease(DI_ONFIRE)) {	// VAPORWARE: not for phosphorus or lithium ...
         messages.add("The water puts out the flames!");
-        rem_disease(DI_ONFIRE);
     }
     int movecost = swim_speed();
     practice(sk_swimming, 1);
@@ -3428,8 +3427,7 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
 void player::hurt(game *g, body_part bphurt, int side, int dam)
 {
     if (2 < rng(0, dam) && rude_awakening()) {}
-    else if (has_disease(DI_LYING_DOWN))
-        rem_disease(DI_LYING_DOWN);
+    else rem_disease(DI_LYING_DOWN);
 
  if (dam <= 0) return;
 
@@ -3550,8 +3548,7 @@ void player::hurtall(int dam)
 
 void player::hitall(int dam, int vary)
 {
-    if (!rude_awakening() && has_disease(DI_LYING_DOWN))
-        rem_disease(DI_LYING_DOWN);
+    if (!rude_awakening()) rem_disease(DI_LYING_DOWN);
 
  for (int i = 0; i < num_hp_parts; i++) {
   int ddam = vary? dam * rng (100 - vary, 100) / 100 : dam;
@@ -3683,19 +3680,30 @@ void player::add_disease(dis_type type, int duration, int intensity, int max_int
  illness.push_back(tmp);
 }
 
-void player::rem_disease(dis_type type)
+bool player::rem_disease(dis_type type)
 {
- for (int i = 0; i < illness.size(); i++) {
-  if (illness[i].type == type) EraseAt(illness, i);
- }
-}
-
-void player::rem_disease(std::function<bool(disease&)> op)
-{
+    bool ret = false;
     int ub = illness.size();
     while (0 <= --ub) {
-        if (op(illness[ub])) EraseAt(illness, ub);
+        if (type == illness[ub].type) {
+            EraseAt(illness, ub);
+            ret = true;
+        }
     }
+    return ret;
+}
+
+bool player::rem_disease(std::function<bool(disease&)> op)
+{
+    bool ret = false;
+    int ub = illness.size();
+    while (0 <= --ub) {
+        if (op(illness[ub])) {
+            EraseAt(illness, ub);
+            ret = true;
+        }
+    }
+    return ret;
 }
 
 bool player::has_disease(dis_type type) const
@@ -3721,8 +3729,7 @@ bool player::rude_awakening()
     static auto i_awake = []() { return std::string("You wake up!"); };
     static auto other_awake = [&]() { return subject() + " wakes up!"; };
 
-    if (has_disease(DI_SLEEP)) {
-        rem_disease(DI_SLEEP);
+    if (rem_disease(DI_SLEEP)) {
         if_visible_message(i_awake, other_awake);
         return true;
     }
@@ -3938,10 +3945,9 @@ void player::suffer(game *g)
    oxygen /= 2;
    auto_use = false;
   }
-  if (has_disease(DI_SLEEP)) {
-   rem_disease(DI_SLEEP);
-   messages.add("Your asthma wakes you up!");
-   auto_use = false;
+  if (rem_disease(DI_SLEEP)) {
+      messages.add("Your asthma wakes you up!");
+      auto_use = false;
   }
   if (auto_use)
    use_charges(itm_inhaler, 1);
@@ -4350,12 +4356,17 @@ void player::remove_weapon()
 {
  weapon = item::null;
 // We need to remove any boosts related to our style
- rem_disease(DI_ATTACK_BOOST);
- rem_disease(DI_DODGE_BOOST);
- rem_disease(DI_DAMAGE_BOOST);
- rem_disease(DI_SPEED_BOOST);
- rem_disease(DI_ARMOR_BOOST);
- rem_disease(DI_VIPER_COMBO);
+ static const decltype(DI_ATTACK_BOOST) attack_boosts[] = {
+     DI_ATTACK_BOOST,
+     DI_DODGE_BOOST,
+     DI_DAMAGE_BOOST,
+     DI_SPEED_BOOST,
+     DI_ARMOR_BOOST,
+     DI_VIPER_COMBO
+ };
+
+ static auto decline = [&](disease& ill) { return any(attack_boosts, ill.type); };
+ rem_disease(decline);
 }
 
 item player::unwield()
