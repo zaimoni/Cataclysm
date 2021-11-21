@@ -415,10 +415,8 @@ void iuse::poison(player *p, item *it, bool t)
  p->add_disease(DI_FOODPOISON, HOURS(3));
 }
 
-void iuse::hallu(player *p, item *it, bool t)
-{
- p->add_disease(DI_HALLU, HOURS(4));
-}
+// the mushroom version
+void iuse::hallu(player& p, item& it) { p.add_disease(DI_HALLU, HOURS(4)); }
 
 void iuse::thorazine(player *p, item *it, bool t)
 {
@@ -451,17 +449,22 @@ void iuse::iodine(player *p, item *it, bool t)
  p->subjective_message("You take an iodine tablet.");
 }
 
-void iuse::flumed(player *p, item *it, bool t)
+void iuse::flumed(player& p, item& it)
 {
- p->add_disease(DI_TOOK_FLUMED, HOURS(10));
- if (!p->is_npc()) messages.add("You take some %s", it->tname().c_str());
+    static auto took_med = [&]() { return grammar::capitalize(p.subject()) + " " + p.regular_verb_agreement("take") + " some " + it.tname(); };
+
+    p.add_disease(DI_TOOK_FLUMED, HOURS(10));
+    p.if_visible_message(took_med);
 }
 
-void iuse::flusleep(player *p, item *it, bool t)
+void iuse::flusleep(player& p, item& it)
 {
- p->add_disease(DI_TOOK_FLUMED, HOURS(12));
- p->fatigue += 30;
- p->subjective_message("You feel very sleepy...");
+    static auto took_med = [&]() { return grammar::capitalize(p.subject()) + " " + p.regular_verb_agreement("take") + " some " + it.tname(); };
+
+    p.add_disease(DI_TOOK_FLUMED, HOURS(12));
+    p.fatigue += 30;
+    p.if_visible_message(took_med);
+    p.subjective_message("You feel very sleepy...");
 }
 
 void iuse::inhaler(player& p, item& it)

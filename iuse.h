@@ -32,13 +32,13 @@ class iuse
   static void coke		(player *p, item *it, bool t);
   static void meth		(player *p, item *it, bool t);
   static void poison		(player *p, item *it, bool t);
-  static void hallu		(player *p, item *it, bool t);
+  static void hallu(player& p, item& it);
   static void thorazine	(player *p, item *it, bool t);
   static void prozac		(player *p, item *it, bool t);
   static void sleep		(player *p, item *it, bool t);
   static void iodine		(player *p, item *it, bool t);
-  static void flumed		(player *p, item *it, bool t);
-  static void flusleep		(player *p, item *it, bool t);
+  static void flumed(player& p, item& it);
+  static void flusleep(player& p, item& it);
   static void inhaler(player& p, item& it);
   static void blech(player& p, item& it);
   static void mutagen(player& p, item& it);
