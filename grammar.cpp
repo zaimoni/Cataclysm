@@ -81,10 +81,22 @@ void noun::regular_possessive(std::string& src)
 	src += "'s";
 }
 
+std::string noun::VO_phrase(const std::string& verb, const std::string& obj) const
+{
+	return regular_verb_agreement(verb) + " " + obj;
+}
+
+
 std::string capitalize(std::string&& src)
 {
 	if (!src.empty()) src.front() = toupper(src.front());
 	return std::move(src);
 }
+
+std::string SVO_sentence(const noun& s, const std::string& verb, const std::string& obj, const char* terminate)
+{
+	return grammar::capitalize(s.subject()) + " " + s.regular_verb_agreement(verb) + " " + obj + terminate;
+}
+
 
 }

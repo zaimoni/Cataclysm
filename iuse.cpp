@@ -451,7 +451,9 @@ void iuse::iodine(player *p, item *it, bool t)
 
 void iuse::flumed(player& p, item& it)
 {
-    static auto took_med = [&]() { return grammar::capitalize(p.subject()) + " " + p.regular_verb_agreement("take") + " some " + it.tname(); };
+    static auto took_med = [&]() {
+        return grammar::SVO_sentence(p, "take", std::string("some ") + it.type->name);
+    };
 
     p.add_disease(DI_TOOK_FLUMED, HOURS(10));
     p.if_visible_message(took_med);
@@ -459,7 +461,9 @@ void iuse::flumed(player& p, item& it)
 
 void iuse::flusleep(player& p, item& it)
 {
-    static auto took_med = [&]() { return grammar::capitalize(p.subject()) + " " + p.regular_verb_agreement("take") + " some " + it.tname(); };
+    static auto took_med = [&]() {
+        return grammar::SVO_sentence(p, "take", std::string("some ") + it.type->name);
+    };
 
     p.add_disease(DI_TOOK_FLUMED, HOURS(12));
     p.fatigue += 30;
@@ -470,7 +474,7 @@ void iuse::flusleep(player& p, item& it)
 void iuse::inhaler(player& p, item& it)
 {
     static auto use_inhaler = [&]() {
-        return grammar::capitalize(p.subject()) + " " + p.regular_verb_agreement("take") + " a puff from " + p.possessive() + " " + it.tname() + ".";
+        return grammar::SVO_sentence(p, "take", std::string("a puff from ") + p.possessive() + " " + it.type->name);
     };
 
     p.rem_disease(DI_ASTHMA);
@@ -1841,10 +1845,9 @@ void iuse::turret(pc& p, item& it)
 
 void iuse::UPS_off(player& p, item& it)
 {
-    static auto pc_on = []() { return std::string("You turn the power supply on."); };
-    static auto npc_on = [&]() { return grammar::capitalize(p.subject()) + " turns the power supply on."; };
+    static auto on = [&]() { return SVO_sentence(p, "turn", "the power supply on"); };
 
-    p.if_visible_message(pc_on, npc_on);
+    p.if_visible_message(on);
     if (p.is_wearing(itm_goggles_nv)) p.subjective_message("Your light amp goggles power on.");
     it.make(item::types[itm_UPS_on]);
     it.active = true;
@@ -1992,9 +1995,9 @@ void iuse::mp3(player& p, item& it)
  if (p.has_active_item(itm_mp3_on))
   p.subjective_message("You are already listening to an mp3 player!");
  else {
-     static auto pc_play = []() { return std::string("You put in the earbuds and start listening to music."); };
-     static auto npc_play = [&]() { return grammar::capitalize(p.desc(grammar::noun::role::subject) + " puts in the earbuds and start listening to music."); };
-     p.if_visible_message(pc_play, npc_play);
+     static auto play = [&]() {return grammar::capitalize(p.desc(grammar::noun::role::subject)) + " " + p.VO_phrase("put", "in the earbuds and") + " " + p.VO_phrase("start", "listening to music."); };
+
+     p.if_visible_message(play, play);
      it.make(item::types[itm_mp3_on]);
      it.active = true;
  }
@@ -2061,14 +2064,9 @@ void iuse::vortex(pc& p, item& it)
 
 void iuse::dog_whistle(player& p, item& it)
 {
-    static auto pc_blows = []() { return std::string("You blow your dog whistle.");  };
-    static auto npc_blows = [&]() {
-        const auto subject = grammar::capitalize(p.subject());
-        const auto possessive = p.pronoun(grammar::noun::role::possessive);
-        return subject + " blows " + possessive + " dog whistle.";
-    };
+    static auto blows = [&]() {return grammar::SVO_sentence(p, "blow", p.pronoun(grammar::noun::role::possessive) + " " + it.type->name); };
 
-    p.if_visible_message(pc_blows, npc_blows);
+    p.if_visible_message(blows);
 
  const auto g = game::active();
 

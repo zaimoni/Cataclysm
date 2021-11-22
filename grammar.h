@@ -33,12 +33,14 @@ struct noun
 	std::string desc(role r, article prefix = article::none);
 	virtual std::string pronoun(role r) const { return typical_pronoun(r); }
 	virtual std::string regular_verb_agreement(const std::string& verb) const;
+	std::string VO_phrase(const std::string& verb, const std::string& obj) const;
 protected:
 	std::string typical_pronoun(role r) const; // third person singular
 	static void regular_possessive(std::string& src);
 };
 
 std::string capitalize(std::string&& src);
+std::string SVO_sentence(const noun& s, const std::string& verb, const std::string& obj, const char* terminate = ".");
 
 }
 
