@@ -396,23 +396,28 @@ void iuse::coke(player *p, item *it, bool t)
  p->add_disease(DI_HIGH, duration);
 }
 
-void iuse::meth(player *p, item *it, bool t)
+void iuse::meth(player& p, item& it)
 {
- int duration = MINUTES(1) * (40 - p->str_cur);
- if (p->has_charges(itm_lighter, 1)) {
-  if (!p->is_npc()) messages.add("You smoke some crystals.");
-  duration *= 1.5;
- } else if (!p->is_npc()) messages.add("You snort some crystals.");
- if (!p->has_disease(DI_METH)) duration += HOURS(1);
- int hungerpen = (p->str_cur < 10 ? 20 : 30 - p->str_cur);
- p->hunger -= hungerpen;
- p->add_disease(DI_METH, duration);
+    static auto smoke = [&]() { return grammar::SVO_sentence(p, "smoke", "some crystals"); };
+    static auto snort = [&]() { return grammar::SVO_sentence(p, "snort", "some crystals"); };
+
+    int duration = MINUTES(1) * (40 - p.str_cur);
+    if (p.has_charges(itm_lighter, 1)) {
+        p.if_visible_message(smoke);
+        duration *= 1.5;
+        p.use_charges(itm_lighter, 1);  // not free
+    } else
+        p.if_visible_message(snort);
+
+    if (!p.has_disease(DI_METH)) duration += HOURS(1);
+    p.hunger -= clamped_ub<20>(30 - p.str_cur);
+    p.add_disease(DI_METH, duration);
 }
 
-void iuse::poison(player *p, item *it, bool t)
+void iuse::poison(player& p, item& it)
 {
- p->add_disease(DI_POISON, HOURS(1));
- p->add_disease(DI_FOODPOISON, HOURS(3));
+    p.add_disease(DI_POISON, HOURS(1));
+    p.add_disease(DI_FOODPOISON, HOURS(3));
 }
 
 // the mushroom version

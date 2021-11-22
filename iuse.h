@@ -30,8 +30,8 @@ class iuse
   static void cig		(player *p, item *it, bool t);
   static void weed		(player *p, item *it, bool t);
   static void coke		(player *p, item *it, bool t);
-  static void meth		(player *p, item *it, bool t);
-  static void poison		(player *p, item *it, bool t);
+  static void meth(player& p, item& it);
+  static void poison(player& p, item& it);
   static void hallu(player& p, item& it);
   static void thorazine	(player *p, item *it, bool t);
   static void prozac		(player *p, item *it, bool t);
