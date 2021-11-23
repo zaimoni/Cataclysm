@@ -714,6 +714,8 @@ void dis_effect(game* g, player& p, disease& dis)
                 (p.has_trait(PF_NAUSEA) && one_in(20))))
                 p.vomit();
         }
+        // non-overdosable stimulant: too close to nicotinic acid a.k.a. niacin
+        if (0 == messages.turn % MINUTES(1) && 15 > p.stim) ++p.stim;
         break;
 
     case DI_POISON:

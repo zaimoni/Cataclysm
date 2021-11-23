@@ -592,7 +592,7 @@ bool game::do_turn()
   u.hp_cur[hp_torso] = 0;
  }
 
- if (messages.turn % 50 == 0) {	// Hunger, thirst, & fatigue up every 5 minutes
+ if (0 == messages.turn % MINUTES(5)) {	// Hunger, thirst, & fatigue up every 5 minutes
   if ((!u.has_trait(PF_LIGHTEATER) || !one_in(3)) &&
       (!u.has_bionic(bio_recycler) || messages.turn % 300 == 0))
    u.hunger++;
