@@ -365,35 +365,43 @@ void iuse::alcohol(player *p, item *it, bool t)
  if (p->has_bionic(bio_ethanol)) p->charge_power(rng(2, 8));
 }
 
-void iuse::cig(player *p, item *it, bool t)
+void iuse::cig(player& p, item& it)
 {
- if (!p->is_npc()) messages.add("You light a cigarette and smoke it.");
- p->add_disease(DI_CIG, MINUTES(20));
- for (int i = 0; i < p->illness.size(); i++) {
-  if (p->illness[i].type == DI_CIG && p->illness[i].duration > HOURS(1) && !p->is_npc())
-   messages.add("Ugh, too much smoke... you feel gross.");
- }
+    static auto smoke = [&]() {return p.subject() + " " + p.VO_phrase("light", "a cigarette") + "and" + p.VO_phrase("smoke", "it") + "."; };
+
+    p.if_visible_message(smoke);
+    p.add_disease(DI_CIG, MINUTES(20));
+    if (!p.is_npc()) { // hard-code subjective_message test
+        for (decltype(auto) ill : p.illness) {
+            if (DI_CIG == ill.type && HOURS(1) < ill.duration)
+                messages.add("Ugh, too much smoke... you feel gross."); // hard-code subjective_message body
+        }
+    }
 }
 
-void iuse::weed(player *p, item *it, bool t)
+void iuse::weed(player& p, item& it)
 {
- if (!p->is_npc()) messages.add("Good stuff, man!");
+    static auto feel_good = [&]() {return std::string("Good stuff, man!"); };
+    static auto smoke = [&]() {return p.subject() + " " + p.VO_phrase("light", "a cigarette") + "and" + p.VO_phrase("smoke", "it") + "."; };
 
- int duration = MINUTES(6);
- if (p->has_trait(PF_LIGHTWEIGHT)) duration = MINUTES(9);
- p->hunger += 8;
- if (p->pkill < 15) p->pkill += 5;
- p->add_disease(DI_THC, duration);
+    p.if_visible_message(feel_good, smoke);
+
+    int duration = MINUTES(6);
+    if (p.has_trait(PF_LIGHTWEIGHT)) duration = MINUTES(9);
+    p.hunger += 8;
+    if (p.pkill < 15) p.pkill += 5;
+    p.add_disease(DI_THC, duration);
 }
 
-void iuse::coke(player *p, item *it, bool t)
+void iuse::coke(player& p, item& it)
 {
- if (!p->is_npc()) messages.add("You snort a bump.");
+    static auto snort = [&]() { return grammar::SVO_sentence(p, "snort", "a bump"); };
+    p.if_visible_message(snort);
 
- int duration = TURNS(21 - p->str_cur);
- if (p->has_trait(PF_LIGHTWEIGHT)) duration += MINUTES(2);
- p->hunger -= 8;
- p->add_disease(DI_HIGH, duration);
+    int duration = TURNS(21 - p.str_cur);
+    if (p.has_trait(PF_LIGHTWEIGHT)) duration += MINUTES(2);
+    p.hunger -= 8;
+    p.add_disease(DI_HIGH, duration);
 }
 
 void iuse::meth(player& p, item& it)

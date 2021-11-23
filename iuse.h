@@ -27,9 +27,9 @@ class iuse
   static void pkill_4		(player *p, item *it, bool t);
   static void pkill_l		(player *p, item *it, bool t);
   static void xanax		(player *p, item *it, bool t);
-  static void cig		(player *p, item *it, bool t);
-  static void weed		(player *p, item *it, bool t);
-  static void coke		(player *p, item *it, bool t);
+  static void cig(player& p, item& it);
+  static void weed(player& p, item& it);
+  static void coke(player& p, item& it);
   static void meth(player& p, item& it);
   static void poison(player& p, item& it);
   static void hallu(player& p, item& it);
