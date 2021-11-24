@@ -20,7 +20,7 @@ class iuse
   static void firstaid		(player *p, item *it, bool t);
   static void vitamins		(player *p, item *it, bool t);
   static void caff		(player *p, item *it, bool t);
-  static void alcohol		(player *p, item *it, bool t);
+  static void alcohol(player& p, item& it);
   static void pkill_1		(player *p, item *it, bool t);
   static void pkill_2		(player *p, item *it, bool t);
   static void pkill_3		(player *p, item *it, bool t);

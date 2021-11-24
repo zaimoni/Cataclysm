@@ -351,18 +351,18 @@ void iuse::xanax(player *p, item *it, bool t)
  p->add_disease(DI_TOOK_XANAX, (!p->has_disease(DI_TOOK_XANAX) ? MINUTES(90): MINUTES(20)));
 }
 
-void iuse::caff(player *p, item *it, bool t)
+void iuse::caff(player *p, item *it, bool t) // \todo const it_comest& it when updating this
 {
  p->fatigue -= dynamic_cast<const it_comest*>(it->type)->stim * 3;
 }
 
-void iuse::alcohol(player *p, item *it, bool t)
+void iuse::alcohol(player& p, item& it)
 {
- int duration = MINUTES(68 - p->str_max); // Weaker characters are cheap drunks
- if (p->has_trait(PF_LIGHTWEIGHT)) duration += MINUTES(30);
- p->pkill += 8;
- p->add_disease(DI_DRUNK, duration);
- if (p->has_bionic(bio_ethanol)) p->charge_power(rng(2, 8));
+    int duration = MINUTES(68 - p.str_max); // Weaker characters are cheap drunks
+    if (p.has_trait(PF_LIGHTWEIGHT)) duration += MINUTES(30);
+    p.pkill += 8;
+    p.add_disease(DI_DRUNK, duration);
+    if (p.has_bionic(bio_ethanol)) p.charge_power(rng(2, 8));
 }
 
 void iuse::cig(player& p, item& it)
