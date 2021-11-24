@@ -438,9 +438,15 @@ struct it_comest : public itype
 #ifndef SOCRATES_DAIMON
 private:
  void (*use)(player*, item*, bool);// Special effects of use
- void (*use_npc)(npc&, item&);	// waterfall/SSADM sofware lifecycle for these three
+ void (*use_npc)(npc&, item&);	// waterfall/SSADM software lifecycle for these three
  void (*use_pc)(pc&, item&);
  void (*use_player)(player&, item&);
+ void (*use_npc_none)(npc&);
+ void (*use_pc_none)(pc&);
+ void (*use_player_none)(player&);
+ void (*use_npc_type)(npc&, const it_comest& food);
+ void (*use_pc_type)(pc&, const it_comest& food);
+ void (*use_player_type)(player&, const it_comest& food);
 
 public:
 #endif

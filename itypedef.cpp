@@ -4512,7 +4512,7 @@ it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
 	quench(pquench),nutr(pnutr),spoils(pspoils),addict(paddict),charges(pcharges),stim(pstim),healthy(phealthy),fun(pfun),container(pcontainer),
 	tool(ptool), add(padd)
 #ifndef SOCRATES_DAIMON
-	, use(puse), use_npc(nullptr), use_pc(nullptr), use_player(nullptr)
+	, use(puse), use_npc(nullptr), use_pc(nullptr), use_player(nullptr), use_npc_none(nullptr), use_pc_none(nullptr), use_player_none(nullptr), use_npc_type(nullptr), use_pc_type(nullptr), use_player_type(nullptr)
 #endif
 {
 }
@@ -4532,7 +4532,7 @@ it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
 :itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, 0, 0, 0, 0),
 quench(pquench), nutr(pnutr), spoils(pspoils), addict(paddict), charges(pcharges), stim(pstim), healthy(phealthy), fun(pfun), container(pcontainer),
 tool(ptool), add(padd),
-use(nullptr), use_npc(nullptr), use_pc(puse), use_player(nullptr)
+use(nullptr), use_npc(nullptr), use_pc(puse), use_player(nullptr), use_npc_none(nullptr), use_pc_none(nullptr), use_player_none(nullptr), use_npc_type(nullptr), use_pc_type(nullptr), use_player_type(nullptr)
 {
 }
 
@@ -4550,7 +4550,7 @@ it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
 	:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, 0, 0, 0, 0),
 	quench(pquench), nutr(pnutr), spoils(pspoils), addict(paddict), charges(pcharges), stim(pstim), healthy(phealthy), fun(pfun), container(pcontainer),
 	tool(ptool), add(padd),
-	use(nullptr), use_npc(nullptr), use_pc(nullptr), use_player(puse)
+	use(nullptr), use_npc(nullptr), use_pc(nullptr), use_player(puse), use_npc_none(nullptr), use_pc_none(nullptr), use_player_none(nullptr), use_npc_type(nullptr), use_pc_type(nullptr), use_player_type(nullptr)
 {
 }
 #endif
@@ -4924,14 +4924,22 @@ std::string itype::force_sign(int src)
 #ifndef SOCRATES_DAIMON
 void it_comest::consumed_by(item& it, npc& u)  const
 {
+	if (use_npc_none) use_npc_none(u);
+	if (use_npc_type) use_npc_type(u, *this);
 	if (use_npc) use_npc(u, it);
+	if (use_player_none) use_player_none(u);
+	if (use_player_type) use_player_type(u, *this);
 	if (use_player) use_player(u, it);
 	if (use) use(&u, &it, false);
 }
 
 void it_comest::consumed_by(item& it, pc& u)  const
 {
+	if (use_pc_none) use_pc_none(u);
+	if (use_pc_type) use_pc_type(u, *this);
 	if (use_pc) use_pc(u, it);
+	if (use_player_none) use_player_none(u);
+	if (use_player_type) use_player_type(u, *this);
 	if (use_player) use_player(u, it);
 	if (use) use(&u, &it, false);
 }
