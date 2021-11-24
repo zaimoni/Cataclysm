@@ -40,10 +40,10 @@ class iuse
   static void flumed(player& p, item& it);
   static void flusleep(player& p, item& it);
   static void inhaler(player& p, item& it);
-  static void blech(player& p, item& it);
-  static void mutagen(player& p, item& it);
-  static void mutagen_3(player& p, item& it);
-  static void purifier(player& p, item& it);
+  static void blech(player& p);
+  static void mutagen(player& p);
+  static void mutagen_3(player& p);
+  static void purifier(player& p);
   static void marloss(pc& p, item& it);
   static void dogfood(pc& p, item& it); // but eating by player is unimplemented
 

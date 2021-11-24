@@ -494,26 +494,26 @@ void iuse::inhaler(player& p, item& it)
     p.if_visible_message(use_inhaler);
 }
 
-void iuse::blech(player& p, item& it)
+void iuse::blech(player& p)
 {
 // TODO: Add more effects?
  p.subjective_message("Blech, that burns your throat!");
  p.vomit();
 }
 
-void iuse::mutagen(player& p, item& it)
+void iuse::mutagen(player& p)
 {
  if (!one_in(3)) p.mutate();
 }
 
-void iuse::mutagen_3(player& p, item& it)
+void iuse::mutagen_3(player& p)
 {
  p.mutate();
  if (!one_in(3)) p.mutate();
  if (one_in(2)) p.mutate();
 }
 
-void iuse::purifier(player& p, item& it)
+void iuse::purifier(player& p)
 {
  std::vector<int> valid;	// Which flags the player has
  for (int i = 1; i < PF_MAX2; i++) {
@@ -575,7 +575,7 @@ void iuse::marloss(pc& p, item& it)
  } else if (effect <= 6) { // Radiation cleanse is below
   messages.add("This berry makes you feel better all over.");
   p.pkill += 30;
-  purifier(p, it);
+  purifier(p);
  } else if (effect == 7) {
   messages.add("This berry is delicious, and very filling!");
   p.hunger = -100;
