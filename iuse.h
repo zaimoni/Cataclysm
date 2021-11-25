@@ -4,8 +4,8 @@
 #include <optional>
 #include <any>
 
-class game;
 class item;
+struct it_comest;
 class player;
 class npc;
 class pc;
@@ -19,27 +19,27 @@ class iuse
   static void bandage		(player *p, item *it, bool t);
   static void firstaid		(player *p, item *it, bool t);
   static void vitamins		(player *p, item *it, bool t);
-  static void caff		(player *p, item *it, bool t);
-  static void alcohol(player& p, item& it);
-  static void pkill_1		(player *p, item *it, bool t);
-  static void pkill_2		(player *p, item *it, bool t);
-  static void pkill_3		(player *p, item *it, bool t);
-  static void pkill_4		(player *p, item *it, bool t);
-  static void pkill_l		(player *p, item *it, bool t);
-  static void xanax		(player *p, item *it, bool t);
-  static void cig(player& p, item& it);
-  static void weed(player& p, item& it);
-  static void coke(player& p, item& it);
-  static void meth(player& p, item& it);
-  static void poison(player& p, item& it);
-  static void hallu(player& p, item& it);
+  static void caff(player& p, const it_comest& drink);  // doesn't matter what kind of comestible
+  static void alcohol(player& p);
+  static void pkill_1(player& p, const it_comest& med);
+  static void pkill_2(player& p, const it_comest& med);
+  static void pkill_3(player& p, const it_comest& med);
+  static void pkill_4(player& p);
+  static void pkill_l(player& p, const it_comest& med);
+  static void xanax(player& p, const it_comest& med);
+  static void cig(player& p);
+  static void weed(player& p);
+  static void coke(player& p);
+  static void meth(player& p);
+  static void poison(player& p);
+  static void hallu(player& p);
   static void thorazine	(player *p, item *it, bool t);
   static void prozac		(player *p, item *it, bool t);
   static void sleep		(player *p, item *it, bool t);
   static void iodine		(player *p, item *it, bool t);
-  static void flumed(player& p, item& it);
-  static void flusleep(player& p, item& it);
-  static void inhaler(player& p, item& it);
+  static void flumed(player& p, const it_comest& med);
+  static void flusleep(player& p, const it_comest& med);
+  static void inhaler(player& p, const it_comest& med);
   static void blech(player& p);
   static void mutagen(player& p);
   static void mutagen_3(player& p);

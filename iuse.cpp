@@ -297,66 +297,71 @@ void iuse::vitamins(player *p, item *it, bool t)
 }
 
 // Aspirin
-void iuse::pkill_1(player *p, item *it, bool t)
+void iuse::pkill_1(player& p, const it_comest& med)
 {
- if (!p->is_npc()) messages.add("You take some %s.", it->tname().c_str());
+    static auto take = [&]() { return grammar::SVO_sentence(p, "take", "some " + med.name); };
 
- if (!p->has_disease(DI_PKILL1))
-  p->add_disease(DI_PKILL1, MINUTES(12));
- else {
-  for (int i = 0; i < p->illness.size(); i++) {
-   if (p->illness[i].type == DI_PKILL1) {
-    p->illness[i].duration = MINUTES(12);
-    i = p->illness.size();
-   }
-  }
- }
+    p.if_visible_message(take);
+    if (!p.has_disease(DI_PKILL1)) p.add_disease(DI_PKILL1, MINUTES(12));
+    else {
+        for (decltype(auto) ill : p.illness) {
+            if (DI_PKILL1 == ill.type) {
+                ill.duration = MINUTES(12);
+                break;
+            }
+        }
+    }
 }
 
 // Codeine
-void iuse::pkill_2(player *p, item *it, bool t)
+void iuse::pkill_2(player& p, const it_comest& med)
 {
- if (!p->is_npc()) messages.add("You take some %s.", it->tname().c_str());
+    static auto take = [&]() { return grammar::SVO_sentence(p, "take", "some " + med.name); };
 
- p->add_disease(DI_PKILL2, MINUTES(18));
+    p.if_visible_message(take);
+    p.add_disease(DI_PKILL2, MINUTES(18));
 }
 
-void iuse::pkill_3(player *p, item *it, bool t)
+void iuse::pkill_3(player& p, const it_comest& med)
 {
- if (!p->is_npc()) messages.add("You take some %s.", it->tname().c_str());
+    static auto take = [&]() { return grammar::SVO_sentence(p, "take", "some " + med.name); };
 
- p->add_disease(DI_PKILL3, MINUTES(2));
- p->add_disease(DI_PKILL2, MINUTES(20));
+    p.if_visible_message(take);
+    p.add_disease(DI_PKILL3, MINUTES(2));
+    p.add_disease(DI_PKILL2, MINUTES(20));
 }
 
-void iuse::pkill_4(player *p, item *it, bool t)
+void iuse::pkill_4(player& p)
 {
- if (!p->is_npc()) messages.add("You shoot up.");
+    static auto shoot_up = [&]() { return grammar::SVO_sentence(p, "shoot", "up"); };
 
- p->add_disease(DI_PKILL3, MINUTES(8));
- p->add_disease(DI_PKILL2, MINUTES(20));
+    p.if_visible_message(shoot_up);
+    p.add_disease(DI_PKILL3, MINUTES(8));
+    p.add_disease(DI_PKILL2, MINUTES(20));
 }
 
-void iuse::pkill_l(player *p, item *it, bool t)
+void iuse::pkill_l(player& p, const it_comest& med)
 {
- if (!p->is_npc()) messages.add("You take some %s.", it->tname().c_str());
+    static auto take = [&]() { return grammar::SVO_sentence(p, "take", "some "+ med.name); };
 
- p->add_disease(DI_PKILL_L, rng(12, 18) * MINUTES(30));
+    p.if_visible_message(take);
+    p.add_disease(DI_PKILL_L, rng(12, 18) * MINUTES(30));
 }
 
-void iuse::xanax(player *p, item *it, bool t)
+void iuse::xanax(player& p, const it_comest& med)
 {
- if (!p->is_npc()) messages.add("You take some %s.", it->tname().c_str());
+    static auto take = [&]() { return grammar::SVO_sentence(p, "take", "some " + med.name); };
 
- p->add_disease(DI_TOOK_XANAX, (!p->has_disease(DI_TOOK_XANAX) ? MINUTES(90): MINUTES(20)));
+    p.if_visible_message(take);
+    p.add_disease(DI_TOOK_XANAX, (!p.has_disease(DI_TOOK_XANAX) ? MINUTES(90) : MINUTES(20)));
 }
 
-void iuse::caff(player *p, item *it, bool t) // \todo const it_comest& it when updating this
+void iuse::caff(player& p, const it_comest& drink)
 {
- p->fatigue -= dynamic_cast<const it_comest*>(it->type)->stim * 3;
+    p.fatigue -= drink.stim * 3;
 }
 
-void iuse::alcohol(player& p, item& it)
+void iuse::alcohol(player& p)
 {
     int duration = MINUTES(68 - p.str_max); // Weaker characters are cheap drunks
     if (p.has_trait(PF_LIGHTWEIGHT)) duration += MINUTES(30);
@@ -365,7 +370,7 @@ void iuse::alcohol(player& p, item& it)
     if (p.has_bionic(bio_ethanol)) p.charge_power(rng(2, 8));
 }
 
-void iuse::cig(player& p, item& it)
+void iuse::cig(player& p)
 {
     static auto smoke = [&]() {return p.subject() + " " + p.VO_phrase("light", "a cigarette") + "and" + p.VO_phrase("smoke", "it") + "."; };
 
@@ -379,10 +384,10 @@ void iuse::cig(player& p, item& it)
     }
 }
 
-void iuse::weed(player& p, item& it)
+void iuse::weed(player& p)
 {
     static auto feel_good = [&]() {return std::string("Good stuff, man!"); };
-    static auto smoke = [&]() {return p.subject() + " " + p.VO_phrase("light", "a cigarette") + "and" + p.VO_phrase("smoke", "it") + "."; };
+    static auto smoke = [&]() {return p.subject() + " " + p.VO_phrase("light", "a toke") + "and" + p.VO_phrase("smoke", "it") + "."; };
 
     p.if_visible_message(feel_good, smoke);
 
@@ -393,7 +398,7 @@ void iuse::weed(player& p, item& it)
     p.add_disease(DI_THC, duration);
 }
 
-void iuse::coke(player& p, item& it)
+void iuse::coke(player& p)
 {
     static auto snort = [&]() { return grammar::SVO_sentence(p, "snort", "a bump"); };
     p.if_visible_message(snort);
@@ -404,7 +409,7 @@ void iuse::coke(player& p, item& it)
     p.add_disease(DI_HIGH, duration);
 }
 
-void iuse::meth(player& p, item& it)
+void iuse::meth(player& p)
 {
     static auto smoke = [&]() { return grammar::SVO_sentence(p, "smoke", "some crystals"); };
     static auto snort = [&]() { return grammar::SVO_sentence(p, "snort", "some crystals"); };
@@ -422,14 +427,14 @@ void iuse::meth(player& p, item& it)
     p.add_disease(DI_METH, duration);
 }
 
-void iuse::poison(player& p, item& it)
+void iuse::poison(player& p)
 {
     p.add_disease(DI_POISON, HOURS(1));
     p.add_disease(DI_FOODPOISON, HOURS(3));
 }
 
 // the mushroom version
-void iuse::hallu(player& p, item& it) { p.add_disease(DI_HALLU, HOURS(4)); }
+void iuse::hallu(player& p) { p.add_disease(DI_HALLU, HOURS(4)); }
 
 void iuse::thorazine(player *p, item *it, bool t)
 {
@@ -462,20 +467,20 @@ void iuse::iodine(player *p, item *it, bool t)
  p->subjective_message("You take an iodine tablet.");
 }
 
-void iuse::flumed(player& p, item& it)
+void iuse::flumed(player& p, const it_comest& med)
 {
     static auto took_med = [&]() {
-        return grammar::SVO_sentence(p, "take", std::string("some ") + it.type->name);
+        return grammar::SVO_sentence(p, "take", std::string("some ") + med.name);
     };
 
     p.add_disease(DI_TOOK_FLUMED, HOURS(10));
     p.if_visible_message(took_med);
 }
 
-void iuse::flusleep(player& p, item& it)
+void iuse::flusleep(player& p, const it_comest& med)
 {
     static auto took_med = [&]() {
-        return grammar::SVO_sentence(p, "take", std::string("some ") + it.type->name);
+        return grammar::SVO_sentence(p, "take", std::string("some ") + med.name);
     };
 
     p.add_disease(DI_TOOK_FLUMED, HOURS(12));
@@ -484,10 +489,10 @@ void iuse::flusleep(player& p, item& it)
     p.subjective_message("You feel very sleepy...");
 }
 
-void iuse::inhaler(player& p, item& it)
+void iuse::inhaler(player& p, const it_comest& med)
 {
     static auto use_inhaler = [&]() {
-        return grammar::SVO_sentence(p, "take", std::string("a puff from ") + p.possessive() + " " + it.type->name);
+        return grammar::SVO_sentence(p, "take", std::string("a puff from ") + p.possessive() + " " + med.name);
     };
 
     p.rem_disease(DI_ASTHMA);
