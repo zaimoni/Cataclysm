@@ -283,7 +283,11 @@ int set_stats(WINDOW* w, player *u, int &points)
   case 1:
    if (u->str_max >= HIGH_STAT) mvwaddstrz(w, TABBED_HEADER_HEIGHT, col2, c_ltred, "Increasing Str further costs 2 points.");
    mvwprintz(w, 6, col2, COL_STAT_ACT, "Base HP: %d", calc_HP(u->str_max, u->has_trait(PF_TOUGH)));
-   mvwprintz(w, 7, col2, COL_STAT_ACT, "Carry weight: %d lbs", u->weight_capacity(false) / 4);
+   if (option_table::get()[OPT_USE_METRIC_SYS]) {
+       mvwprintz(w, 7, col2, COL_STAT_ACT, "Carry weight: %d kg", u->weight_capacity(false) / 9); // slight underestimate: 2.25lbs vs. 2.20-ish lbs per kilogram
+   } else {
+       mvwprintz(w, 7, col2, COL_STAT_ACT, "Carry weight: %d lbs", u->weight_capacity(false) / 4);
+   }
    mvwprintz(w, 8, col2, COL_STAT_ACT, "Melee damage: %d", u->base_damage(false));
    mvwaddstrz(w, 9, col2, COL_STAT_ACT, "  Strength also makes you more resistant to");
    mvwaddstrz(w,10, col2, COL_STAT_ACT, "many diseases and poisons, and makes actions");
