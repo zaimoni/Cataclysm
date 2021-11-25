@@ -96,10 +96,12 @@ int player::hit_roll() const
 
 // Drunken master makes us hit better
  if (has_trait(PF_DRUNKEN)) {
-  if (unarmed_attack())
-   numdice += int(disease_level(DI_DRUNK) / 300);
-  else
-   numdice += int(disease_level(DI_DRUNK) / 400);
+     if (const auto drunk = disease_level(DI_DRUNK)) {
+         if (unarmed_attack())
+             numdice += drunk / MINUTES(30);
+         else
+             numdice += drunk / MINUTES(40);
+     }
  }
 
  if (numdice < 1) {
@@ -499,17 +501,19 @@ int player::roll_bash_damage(const monster *z, bool crit) const
  ret = base_damage(true, stat);
 
 // Drunken Master damage bonuses
- if (has_trait(PF_DRUNKEN) && has_disease(DI_DRUNK)) {
-// Remember, a single drink gives 600 levels of DI_DRUNK
-  int mindrunk, maxdrunk;
-  if (unarmed_attack()) {
-   mindrunk = disease_level(DI_DRUNK) / 600;
-   maxdrunk = disease_level(DI_DRUNK) / 250;
-  } else {
-   mindrunk = disease_level(DI_DRUNK) / 900;
-   maxdrunk = disease_level(DI_DRUNK) / 400;
-  }
-  ret += rng(mindrunk, maxdrunk);
+ if (has_trait(PF_DRUNKEN)) {
+     if (const auto drunk = disease_level(DI_DRUNK)) {  // zero if doesn't have this "disease"
+        // Remember, a single drink gives 1 hour's levels of DI_DRUNK
+         int mindrunk, maxdrunk;
+         if (unarmed_attack()) {
+             mindrunk = drunk / MINUTES(60);
+             maxdrunk = drunk / MINUTES(25);
+         } else {
+             mindrunk = drunk / MINUTES(90);
+             maxdrunk = drunk / MINUTES(40);
+         }
+         ret += rng(mindrunk, maxdrunk);
+     }
  }
 
  int bash_dam = int(stat / 2) + weapon.damage_bash(),
