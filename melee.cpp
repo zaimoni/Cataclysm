@@ -380,7 +380,7 @@ bool player::scored_crit(int target_dodge) const
  if (rng(0, 99) < chance + 4 * disease_intensity(DI_ATTACK_BOOST)) num_crits++;
 
 // Dexterity to-hit roll
-// ... except sometimes we don't use dexteiry!
+// ... except sometimes we don't use dexterity!
  int stat = dex_cur;
 // Some martial arts use something else to determine hits!
  switch (weapon.type->id) {
@@ -1140,27 +1140,30 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
    break;
 
   case itm_style_venom_snake:
-   if (has_disease(DI_VIPER_COMBO)) {
-    if (disease_intensity(DI_VIPER_COMBO) == 1) {
-     if (is_u) messages.add("Snakebite!");
-     int dambuf = bash_dam;
-     bash_dam = stab_dam;
-     stab_dam = dambuf;
-     add_disease(DI_VIPER_COMBO, 2, 1, 2); // Upgrade to Viper Strike
-    } else if (disease_intensity(DI_VIPER_COMBO) == 2) {
-     if (hp_cur[hp_arm_l] >= hp_max[hp_arm_l] * .75 &&
-         hp_cur[hp_arm_r] >= hp_max[hp_arm_r] * .75   ) {
-      if (is_u) messages.add("Viper STRIKE!");
-      bash_dam *= 3;
-     } else if (is_u)
-      messages.add("Your injured arms prevent a viper strike!");
-     rem_disease(DI_VIPER_COMBO);
-    }
-   } else if (crit) {
-    if (is_u) messages.add("Tail whip!  Viper Combo Initiated!");
-    bash_dam += 5;
-    add_disease(DI_VIPER_COMBO, 2, 1, 2);
-   }
+      switch (disease_intensity(DI_VIPER_COMBO))
+      {
+      case 0:
+          if (crit) {
+              subjective_message("Tail whip!  Viper Combo Initiated!");
+              bash_dam += 5;
+              add_disease(DI_VIPER_COMBO, 2, 1, 2);
+          }
+          break;
+      case 1:
+          subjective_message("Snakebite!");
+          std::swap(bash_dam, stab_dam);
+          add_disease(DI_VIPER_COMBO, 2, 1, 2); // Upgrade to Viper Strike
+          break;
+      default: // intended to be case 2
+          if (hp_cur[hp_arm_l] >= cataclysm::rational_scaled<3, 4>(hp_max[hp_arm_l]) &&
+              hp_cur[hp_arm_r] >= cataclysm::rational_scaled<3, 4>(hp_max[hp_arm_r])) {
+              subjective_message("Viper STRIKE!");
+              bash_dam *= 3;
+          } else
+              subjective_message("Your injured arms prevent a viper strike!");
+          rem_disease(DI_VIPER_COMBO);
+          break;
+      }
    break;
 
   case itm_style_scorpion:
