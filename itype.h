@@ -529,6 +529,7 @@ public:
 #ifndef SOCRATES_DAIMON
  void consumed_by(item& it, npc& u) const;
  void consumed_by(item& it, pc& u) const;
+ std::optional<std::string> cannot_consume(const item& it, const player& u) const;
 #endif
 
  void info(std::ostream& dest) const override;

@@ -4980,6 +4980,15 @@ void it_comest::consumed_by(item& it, pc& u)  const
 	if (use) use(&u, &it, false);
 }
 
+std::optional<std::string> it_comest::cannot_consume(const item& it, const player& u) const
+{
+	if (itm_vitamins == it.type->id) {
+		if (u.has_disease(DI_TOOK_VITAMINS)) return "You have the feeling that these vitamins won't do you any good.";
+	}
+
+	return std::nullopt;
+}
+
 void it_macguffin::used_by(item& it, pc& u)  const
 {
 	if (use_pc) use_pc(u, it);

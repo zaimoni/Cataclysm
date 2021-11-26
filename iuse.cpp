@@ -18,20 +18,20 @@
 /* To mark an item as "removed from inventory", set its invlet to 0
    This is useful for traps (placed on ground), inactive bots, etc
  */
-void iuse::sewage(player *p, item *it, bool t)
+void iuse::sewage(player& p)
 {
- p->vomit();
- if (one_in(4)) p->mutate();
+    p.vomit();
+    if (one_in(4)) p.mutate();
 }
 
-void iuse::royal_jelly(player *p, item *it, bool t)
+void iuse::royal_jelly(player& p)
 {
 // TODO: Add other diseases here; royal jelly is a cure-all!
- p->pkill += 5;
- if (p->rem_disease(DI_FUNGUS))
-     p->subjective_message("You feel cleansed inside!");
- if (p->rem_disease(DI_FUNGUS))
-     p->subjective_message("Your sight returns!");
+ p.pkill += 5;
+ if (p.rem_disease(DI_FUNGUS))
+     p.subjective_message("You feel cleansed inside!");
+ if (p.rem_disease(DI_FUNGUS))
+     p.subjective_message("Your sight returns!");
 
  static const decltype(DI_POISON) toxic[] = {
      DI_POISON,
@@ -40,11 +40,11 @@ void iuse::royal_jelly(player *p, item *it, bool t)
  };
 
  static auto detox = [&](disease& ill) { return cataclysm::any(toxic, ill.type); };
- if (p->rem_disease(detox))
-     p->subjective_message("You feel much better!");
+ if (p.rem_disease(detox))
+     p.subjective_message("You feel much better!");
 
- if (p->rem_disease(DI_ASTHMA))
-     p->subjective_message("Your breathing clears up!");
+ if (p.rem_disease(DI_ASTHMA))
+     p.subjective_message("Your breathing clears up!");
 
  static const decltype(DI_POISON) cold_like[] = {
     DI_COMMON_COLD,
@@ -52,8 +52,8 @@ void iuse::royal_jelly(player *p, item *it, bool t)
  };
 
  static auto cure_common_cold = [&](disease& ill) { return cataclysm::any(toxic, ill.type); };
- if (p->rem_disease(cure_common_cold))
-     p->subjective_message("You feel healther!");
+ if (p.rem_disease(cure_common_cold))
+     p.subjective_message("You feel healther!");
 }
 
 static void _display_hp(WINDOW* w, player* p, int curhp, int i)
@@ -283,17 +283,11 @@ void iuse::firstaid(player *p, item *it, bool t)
  p->heal(healed, dam);
 }
 
-// \todo guard clause -- this is relatively easy to NPC-convert
-void iuse::vitamins(player *p, item *it, bool t)
+void iuse::vitamins(player& p)
 {
- if (p->has_disease(DI_TOOK_VITAMINS)) {
-  p->subjective_message("You have the feeling that these vitamins won't do you any good.");
-  return;
- }
-
- p->add_disease(DI_TOOK_VITAMINS, DAYS(1));
- if (p->health <= -2) p->health -= (p->health / 2);
- p->health += 3;
+    p.add_disease(DI_TOOK_VITAMINS, DAYS(1));
+    if (p.health <= -2) p.health -= (p.health / 2);
+    p.health += 3;
 }
 
 // Aspirin

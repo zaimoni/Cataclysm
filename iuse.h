@@ -14,11 +14,11 @@ class iuse
 {
  public:
 // FOOD AND DRUGS (ADMINISTRATION)
-  static void sewage		(player *p, item *it, bool t);
-  static void royal_jelly	(player *p, item *it, bool t);
+  static void sewage(player& p);
+  static void royal_jelly(player& p);
   static void bandage		(player *p, item *it, bool t);
   static void firstaid		(player *p, item *it, bool t);
-  static void vitamins		(player *p, item *it, bool t);
+  static void vitamins(player& p);
   static void caff(player& p, const it_comest& drink);  // doesn't matter what kind of comestible
   static void alcohol(player& p);
   static void pkill_1(player& p, const it_comest& med);

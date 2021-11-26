@@ -4789,6 +4789,8 @@ std::optional<std::string> player::cannot_eat(const item_spec& src) const
             if (!has) return std::string("You need a ")+ item::types[comest->tool]->name +" to consume that!";
         }
 
+        if (const auto err = comest->cannot_consume(*src.first, *this)) return err;
+
         bool overeating = (!has_trait(PF_GOURMAND) && hunger < 0 && comest->nutr >= 15);
         if (overeating && !ask_yn("You're full.  Force yourself to eat?")) return std::string();
 
