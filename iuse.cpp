@@ -66,7 +66,7 @@ static void _display_hp(WINDOW* w, player* p, int curhp, int i)
     }
 }
 
-static std::optional<hp_part> _get_heal_target(player* p, item* it)
+static std::optional<hp_part> _get_heal_target(pc& p)
 {
     int ch;
     do {
@@ -74,50 +74,29 @@ static std::optional<hp_part> _get_heal_target(player* p, item* it)
         if (ch == '1') return hp_head;
         else if (ch == '2') return hp_torso;
         else if (ch == '3') {
-            if (p->hp_cur[hp_arm_l] == 0) {
-                p->subjective_message("That arm is broken.  It needs surgical attention.");
-                it->charges++;
-                return std::nullopt;
-            }
+            if (p.hp_cur[hp_arm_l] == 0) throw std::string("That arm is broken.  It needs surgical attention.");
             return hp_arm_l;
-        }
-        else if (ch == '4') {
-            if (p->hp_cur[hp_arm_r] == 0) {
-                p->subjective_message("That arm is broken.  It needs surgical attention.");
-                it->charges++;
-                return std::nullopt;
-            }
+        } else if (ch == '4') {
+            if (p.hp_cur[hp_arm_r] == 0) throw std::string("That arm is broken.  It needs surgical attention.");
             return hp_arm_r;
         } else if (ch == '5') {
-            if (p->hp_cur[hp_leg_l] == 0) {
-                p->subjective_message("That leg is broken.  It needs surgical attention.");
-                it->charges++;
-                return std::nullopt;
-            }
+            if (p.hp_cur[hp_leg_l] == 0) throw std::string("That leg is broken.  It needs surgical attention.");
             return hp_leg_l;
         } else if (ch == '6') {
-            if (p->hp_cur[hp_leg_r] == 0) {
-                p->subjective_message("That leg is broken.  It needs surgical attention.");
-                it->charges++;
-                return std::nullopt;
-            }
+            if (p.hp_cur[hp_leg_r] == 0) throw std::string("That leg is broken.  It needs surgical attention.");
             return hp_leg_r;
-        } else if (ch == '7') {
-            p->subjective_message("Never mind.");
-            it->charges++;
-            return std::nullopt;
-        }
+        } else if (ch == '7') throw std::string("Never mind.");
     } while (true);
 }
 
 // apparently NPCs have full surgery kits automatically?
 // returns -1 if nothing needs healing
-static int _npc_get_heal_target(npc* p)
+static int _npc_get_heal_target(const npc& p)
 {
     int healed = -1;
     int highest_damage = 0;
     for (int i = 0; i < num_hp_parts; i++) {
-        int damage = p->hp_max[i] - p->hp_cur[i];
+        int damage = p.hp_max[i] - p.hp_cur[i];
         if (i == hp_head) cataclysm::rational_scale<3,2>(damage);
         if (i == hp_torso) cataclysm::rational_scale<6,5>(damage);
         if (damage > highest_damage) {
@@ -128,159 +107,148 @@ static int _npc_get_heal_target(npc* p)
     return healed;
 }
 
-// \todo adjust to allow treating other (N)PCs
-void iuse::bandage(player *p, item *it, bool t)
-{
- int bonus = p->sklevel[sk_firstaid];
- hp_part healed;
-
- if (p->is_npc()) { // NPCs heal whichever has sustained the most damage
-     if (auto code = _npc_get_heal_target(static_cast<npc*>(p)); 0 <= code) {
-         healed = hp_part(code);
-     } else {
-         return;
-     }
- } else { // Player--present a menu
-     static constexpr const char* bandage_options[] = {
-         "Bandage where?",
-         "1: Head",
-         "2: Torso",
-         "3: Left Arm",
-         "4: Right Arm",
-         "5: Left Leg",
-         "6: Right Leg",
-         "7: Exit"
-     };
-     constexpr const int bandage_height = sizeof(bandage_options) / sizeof(*bandage_options) + 2;
-
-     // maximum string length...possible function target
-     // C++20: std::ranges::max?
-     int bandage_width = 0;
-     for (const char* const line : bandage_options) bandage_width = cataclysm::max(bandage_width, strlen(line));
-     bandage_width += 5; // historical C:Whales; 15 is magic constant for layout so likely want 20 width explicitly
-
-     WINDOW* w = newwin(bandage_height, bandage_width, (VIEW - bandage_height) / 2, (SCREEN_WIDTH - bandage_width) / 2);
-     wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
-         LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX);
-     int row = 0;
-     for (const char* const line : bandage_options) {
-         ++row;
-         mvwaddstrz(w, row, 1, 1 == row ? c_ltred : c_ltgray, line);
-     }
-
-  int curhp;
-  for (int i = 0; i < num_hp_parts; i++) {
-   curhp = p->hp_cur[i];
-   int tmpbonus = bonus;
-   if (curhp != 0) {
-    switch (hp_part(i)) {
-     case hp_head:  curhp += 1;	tmpbonus *=  .8;	break;
-     case hp_torso: curhp += 4;	tmpbonus *= 1.5;	break;
-     default:       curhp += 3;				break;
+static auto _predicted_bandage(const player& actor, hp_part healed) {
+    int bonus = actor.sklevel[sk_firstaid]; // may want to be a parameter
+    switch (healed)
+    {
+    case hp_head: return 1 + cataclysm::rational_scaled<4, 5>(bonus);
+    case hp_torso: return 4 + cataclysm::rational_scaled<3, 2>(bonus);
+    default: return 3 + bonus;
     }
-    curhp += tmpbonus;
-    clamp_ub(curhp, p->hp_max[i]);
-    _display_hp(w, p, curhp, i);
-   } else	// curhp is 0; requires surgical attention
-    mvwaddstrz(w, i + 2, 15, c_dkgray, "---");
-  }
-  wrefresh(w);
-  const auto ok = _get_heal_target(p, it);
-  werase(w);
-  wrefresh(w);
-  delwin(w);
-  refresh();
-  if (ok) healed = *ok;
-  else return;
- }
+}
 
- p->practice(sk_firstaid, 8);
- int dam = 0;
- if (healed == hp_head)
-  dam = 1 + bonus * .8;
- else if (healed == hp_torso)
-  dam = 4 + bonus * 1.5;
- else
-  dam = 3 + bonus;
- p->heal(healed, dam);
+static void _bandage(player& actor, player& target, hp_part healed)
+{
+    int bonus = actor.sklevel[sk_firstaid]; // may want to be a parameter
+    actor.practice(sk_firstaid, 8);
+    target.heal(healed, _predicted_bandage(actor, healed));
 }
 
 // \todo adjust to allow treating other (N)PCs
-void iuse::firstaid(player *p, item *it, bool t)
+void iuse::bandage(pc& p)
 {
- int bonus = p->sklevel[sk_firstaid];
- hp_part healed;
+ // Player--present a menu
+    static constexpr const char* bandage_options[] = {
+        "Bandage where?",
+        "1: Head",
+        "2: Torso",
+        "3: Left Arm",
+        "4: Right Arm",
+        "5: Left Leg",
+        "6: Right Leg",
+        "7: Exit"
+    };
+    constexpr const int bandage_height = sizeof(bandage_options) / sizeof(*bandage_options) + 2;
 
- if (p->is_npc()) { // NPCs heal whichever has sustained the most damage
-     if (auto code = _npc_get_heal_target(static_cast<npc*>(p)); 0 <= code) {
-         healed = hp_part(code);
-     } else {
-         return;
-     }
- } else { // Player--present a menu
- static constexpr const char* firstaid_options[] = {
-     "Bandage where?",
-     "1: Head",
-     "2: Torso",
-     "3: Left Arm",
-     "4: Right Arm",
-     "5: Left Leg",
-     "6: Right Leg",
-     "7: Exit"
- };
- constexpr const int firstaid_height = sizeof(firstaid_options) / sizeof(*firstaid_options) + 2;
+    // maximum string length...possible function target
+    // C++20: std::ranges::max?
+    int bandage_width = 0;
+    for (const char* const line : bandage_options) bandage_width = cataclysm::max(bandage_width, strlen(line));
+    bandage_width += 5; // historical C:Whales; 15 is magic constant for layout so likely want 20 width explicitly
 
- // maximum string length...possible function target
- // C++20: std::ranges::max?
- int firstaid_width = 0;
- for (const char* const line : firstaid_options) firstaid_width = cataclysm::max(firstaid_width, strlen(line));
- firstaid_width += 5; // historical C:Whales; 15 is magic constant for layout so likely want 20 width explicitly
-
- WINDOW* w = newwin(firstaid_height, firstaid_width, (VIEW - firstaid_height) / 2, (SCREEN_WIDTH - firstaid_width) / 2);
- wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
-     LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX);
- int row = 0;
- for (const char* const line : firstaid_options) {
-     ++row;
-     mvwaddstrz(w, row, 1, 1==row ? c_ltred : c_ltgray, line);
- }
-
-  int curhp;
-  for (int i = 0; i < num_hp_parts; i++) {
-   curhp = p->hp_cur[i];
-   int tmpbonus = bonus;
-   if (curhp != 0) {
-    switch (hp_part(i)) {
-     case hp_head:  curhp += 10; tmpbonus *=  .8;	break;
-     case hp_torso: curhp += 18; tmpbonus *= 1.5;	break;
-     default:       curhp += 14;			break;
+    WINDOW* w = newwin(bandage_height, bandage_width, (VIEW - bandage_height) / 2, (SCREEN_WIDTH - bandage_width) / 2);
+    wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
+        LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX);
+    int row = 0;
+    for (const char* const line : bandage_options) {
+        ++row;
+        mvwaddstrz(w, row, 1, 1 == row ? c_ltred : c_ltgray, line);
     }
-    curhp += tmpbonus;
-    clamp_ub(curhp, p->hp_max[i]);
-    _display_hp(w, p, curhp, i);
-   } else	// curhp is 0; requires surgical attention
-    mvwaddstrz(w, i + 2, 15, c_dkgray, "---");
-  }
-  wrefresh(w);
 
-  const auto ok = _get_heal_target(p, it);
-  werase(w);
-  wrefresh(w);
-  delwin(w);
-  refresh();
-  if (ok) healed = *ok;
-  else return;
- }
+    for (int i = 0; i < num_hp_parts; i++) {
+        int curhp = p.hp_cur[i];
+        if (curhp != 0) {
+            clamp_ub(curhp += _predicted_bandage(p, hp_part(i)), p.hp_max[i]);
+            _display_hp(w, &p, curhp, i);
+        } else	// curhp is 0; requires surgical attention
+            mvwaddstrz(w, i + 2, 15, c_dkgray, "---");
+    }
+    wrefresh(w);
+    const auto ok = _get_heal_target(p);
+    werase(w);
+    wrefresh(w);
+    delwin(w);
+    refresh();
+    if (ok) _bandage(p, p, *ok);
+}
 
- p->practice(sk_firstaid, 8);
- int dam = 0;
- if (healed == hp_head)
-  dam = 10 + bonus * .8;
- else if (healed == hp_torso)
-  dam = 18 + bonus * 1.5;
- else
-  dam = 14 + bonus;
- p->heal(healed, dam);
+void iuse::bandage(npc& p)
+{
+    // NPCs heal whichever has sustained the most damage
+    if (auto code = _npc_get_heal_target(p); 0 <= code) _bandage(p, p, hp_part(code));
+}
+
+static auto _predicted_first_aid(const player& actor, hp_part healed) {
+    int bonus = actor.sklevel[sk_firstaid]; // may want to be a parameter
+    switch (healed)
+    {
+    case hp_head: return 10 + cataclysm::rational_scaled<4, 5>(bonus);
+    case hp_torso: return 18 + cataclysm::rational_scaled<3, 2>(bonus);
+    default: return 14 + bonus;
+    }
+}
+
+static void _first_aid(player& actor, player& target, hp_part healed)
+{
+    int bonus = actor.sklevel[sk_firstaid]; // may want to be a parameter
+    actor.practice(sk_firstaid, 8);
+    target.heal(healed, _predicted_first_aid(actor, healed));
+}
+
+// \todo adjust to allow treating other (N)PCs
+void iuse::firstaid(pc& p)
+{
+// Player--present a menu
+    static constexpr const char* firstaid_options[] = {
+        "Bandage where?",
+        "1: Head",
+        "2: Torso",
+        "3: Left Arm",
+        "4: Right Arm",
+        "5: Left Leg",
+        "6: Right Leg",
+        "7: Exit"
+    };
+    constexpr const int firstaid_height = sizeof(firstaid_options) / sizeof(*firstaid_options) + 2;
+
+    // maximum string length...possible function target
+    // C++20: std::ranges::max?
+    int firstaid_width = 0;
+    for (const char* const line : firstaid_options) firstaid_width = cataclysm::max(firstaid_width, strlen(line));
+    firstaid_width += 5; // historical C:Whales; 15 is magic constant for layout so likely want 20 width explicitly
+
+    WINDOW* w = newwin(firstaid_height, firstaid_width, (VIEW - firstaid_height) / 2, (SCREEN_WIDTH - firstaid_width) / 2);
+    wborder(w, LINE_XOXO, LINE_XOXO, LINE_OXOX, LINE_OXOX,
+        LINE_OXXO, LINE_OOXX, LINE_XXOO, LINE_XOOX);
+    int row = 0;
+    for (const char* const line : firstaid_options) {
+        ++row;
+        mvwaddstrz(w, row, 1, 1 == row ? c_ltred : c_ltgray, line);
+    }
+
+    for (int i = 0; i < num_hp_parts; i++) {
+        int curhp = p.hp_cur[i];
+        if (curhp != 0) {
+            clamp_ub(curhp += _predicted_first_aid(p, hp_part(i)), p.hp_max[i]);
+            _display_hp(w, &p, curhp, i);
+        } else	// curhp is 0; requires surgical attention
+            mvwaddstrz(w, i + 2, 15, c_dkgray, "---");
+    }
+    wrefresh(w);
+
+    const auto ok = _get_heal_target(p);
+    werase(w);
+    wrefresh(w);
+    delwin(w);
+    refresh();
+    if (ok) _first_aid(p, p, *ok);
+}
+
+// \todo adjust to allow treating other (N)PCs
+void iuse::firstaid(npc& p)
+{
+    // NPCs heal whichever has sustained the most damage
+    if (auto code = _npc_get_heal_target(p); 0 <= code) _first_aid(p, p, hp_part(code));
 }
 
 void iuse::vitamins(player& p)

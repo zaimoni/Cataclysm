@@ -4860,7 +4860,7 @@ bool player::eat(const item_spec& src)
             else return name + " eats a " + eaten->tname() + ".";
         };
 
-        if_visible_message(me, other);
+        if_visible_message(me, other);  // \todo this is *not* correct for first aid/bandages
 
         if (item::types[comest->tool]->is_tool()) use_charges(comest->tool, 1); // Tools like lighters get used
         if (comest->stim > 0) {
@@ -4871,7 +4871,12 @@ bool player::eat(const item_spec& src)
             else if (comest->stim >= 10 && stim < comest->stim * 3) stim += comest->stim;
         }
 
-        consume(*eaten); // to ensure correct type is seen by the handler
+        try {
+            consume(*eaten); // to ensure correct type is seen by the handler
+        } catch (const std::string e) {
+            debugmsg(e.c_str());
+            return false;
+        }
         add_addiction(comest->add, comest->addict);
 
         if (eaten->made_of(FLESH)) {

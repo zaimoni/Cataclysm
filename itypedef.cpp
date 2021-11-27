@@ -1182,14 +1182,20 @@ charges,fun,addict_func,des) \
 color,mat,1,1,0,0,0,stim,healthy,addict,charges,\
 fun,itm_null,tool,addict_func));
 
+#define MED_NPC(name,rarity,price,color,tool,mat,stim,healthy,addict,\
+charges,fun,use_func,npc_use_func,addict_func,des) \
+	index++;types.push_back(new it_comest(index,rarity,price,name,des,'!',\
+color,mat,1,1,0,0,0,stim,healthy,addict,charges,\
+fun,itm_null,tool,addict_func NOT_DAIMON(use_func) NOT_DAIMON(npc_use_func)));
+
 //  NAME		RAR PRC	COLOR		TOOL
-MED("bandages",		50, 60,	c_white,	itm_null,
 //	MATERIAL STM HTH ADD CHG FUN use_func		addiction type
-	COTTON,   0,  0,  0,  3,  0,&iuse::bandage,	ADD_NULL, "\
+MED_NPC("bandages",		50, 60,	c_white,	itm_null,
+	COTTON,   0,  0,  0,  3,  0, &iuse::bandage, &iuse::bandage, ADD_NULL, "\
 Simple cloth bandages.  Used for healing small amounts of damage.");
 
-MED("first aid",	35,350,	c_red,		itm_null,
-	PLASTIC,  0,  0,  0,  2,  0,&iuse::firstaid,	ADD_NULL, "\
+MED_NPC("first aid",	35,350,	c_red,		itm_null,
+	PLASTIC,  0,  0,  0,  2,  0, &iuse::firstaid, &iuse::firstaid, ADD_NULL, "\
 A full medical kit, with bandages, anti-biotics, and rapid healing agents.\n\
 Used for healing large amounts of damage.");
 
@@ -4587,6 +4593,24 @@ it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
 	quench(pquench), nutr(pnutr), spoils(pspoils), addict(paddict), charges(pcharges), stim(pstim), healthy(phealthy), fun(pfun), container(pcontainer),
 	tool(ptool), add(padd),
 	use(nullptr), use_npc(nullptr), use_pc(nullptr), use_player(nullptr), use_npc_none(nullptr), use_pc_none(nullptr), use_player_none(nullptr), use_npc_type(nullptr), use_pc_type(nullptr), use_player_type(puse)
+{
+}
+
+it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
+	std::string pname, std::string pdes,
+	char psym, nc_color pcolor, material pm1,
+	unsigned short pvolume, unsigned short pweight,
+
+	signed char pquench, unsigned char pnutr, unsigned char pspoils,
+	signed char pstim, signed char phealthy, unsigned char paddict,
+	unsigned char pcharges, signed char pfun, itype_id pcontainer,
+	itype_id ptool,
+	add_type padd,
+	decltype(use_pc_none) pc_use, decltype(use_npc_none) npc_use)
+	:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, 0, 0, 0, 0),
+	quench(pquench), nutr(pnutr), spoils(pspoils), addict(paddict), charges(pcharges), stim(pstim), healthy(phealthy), fun(pfun), container(pcontainer),
+	tool(ptool), add(padd),
+	use(nullptr), use_npc(nullptr), use_pc(nullptr), use_player(nullptr), use_npc_none(npc_use), use_pc_none(pc_use), use_player_none(nullptr), use_npc_type(nullptr), use_pc_type(nullptr), use_player_type(nullptr)
 {
 }
 #endif

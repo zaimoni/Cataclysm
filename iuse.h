@@ -16,8 +16,10 @@ class iuse
 // FOOD AND DRUGS (ADMINISTRATION)
   static void sewage(player& p);
   static void royal_jelly(player& p);
-  static void bandage		(player *p, item *it, bool t);
-  static void firstaid		(player *p, item *it, bool t);
+  static void bandage(pc& p);
+  static void bandage(npc& p);
+  static void firstaid(pc& p);
+  static void firstaid(npc& p);
   static void vitamins(player& p);
   static void caff(player& p, const it_comest& drink);  // doesn't matter what kind of comestible
   static void alcohol(player& p);
