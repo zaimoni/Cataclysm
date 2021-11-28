@@ -4140,29 +4140,26 @@ int player::morale_level() const
  for (const auto& tmp : morale) ret += tmp.bonus;
 
  if (has_trait(PF_HOARDER)) {
-  int pen = int((volume_capacity()-volume_carried()) / 2);
-  if (pen > 70) pen = 70;
-  if (has_disease(DI_TOOK_XANAX)) pen = int(pen / 7);
-  else if (has_disease(DI_TOOK_PROZAC)) pen = int(pen / 2);
+  int pen = clamped_ub<70>((volume_capacity() - volume_carried()) / 2);
+  if (has_disease(DI_TOOK_XANAX)) pen /= 7;
+  else if (has_disease(DI_TOOK_PROZAC)) pen /= 2;
   ret -= pen;
  }
 
  if (has_trait(PF_MASOCHIST)) {
-  int bonus = pain / 2.5;
-  if (bonus > 25) bonus = 25;
-  if (has_disease(DI_TOOK_PROZAC)) bonus = int(bonus / 3);
+  int bonus = clamped_ub<25>(rational_scaled<5,2>(pain));
+  if (has_disease(DI_TOOK_PROZAC)) bonus /= 3;
   ret += bonus;
  }
 
  if (has_trait(PF_OPTIMISTIC)) {
   if (ret < 0) {	// Up to -30 is canceled out
-   ret += 30;
-   if (ret > 0) ret = 0;
+   clamp_ub<0>(ret += 30);
   } else		// Otherwise, we're just extra-happy
    ret += 20;
  }
 
- if (has_disease(DI_TOOK_PROZAC) && ret < 0) ret = int(ret / 4);
+ if (has_disease(DI_TOOK_PROZAC) && ret < 0) ret /= 4;
 
  return ret;
 }

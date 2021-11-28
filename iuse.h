@@ -37,8 +37,8 @@ class iuse
   static void hallu(player& p);
   static void thorazine	(player *p, item *it, bool t);
   static void prozac		(player *p, item *it, bool t);
-  static void sleep		(player *p, item *it, bool t);
-  static void iodine		(player *p, item *it, bool t);
+  static void sleep(player& p);
+  static void iodine(player& p);
   static void flumed(player& p, const it_comest& med);
   static void flusleep(player& p, const it_comest& med);
   static void inhaler(player& p, const it_comest& med);

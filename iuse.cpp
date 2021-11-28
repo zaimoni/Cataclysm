@@ -398,6 +398,7 @@ void iuse::poison(player& p)
 // the mushroom version
 void iuse::hallu(player& p) { p.add_disease(DI_HALLU, HOURS(4)); }
 
+// \todo want DI_TOOK_THORAZINE
 void iuse::thorazine(player *p, item *it, bool t)
 {
  p->fatigue += 15;
@@ -409,6 +410,7 @@ void iuse::thorazine(player *p, item *it, bool t)
  p->subjective_message("You feel somewhat sedated.");
 }
 
+// General indication for prozac is negative morale.
 void iuse::prozac(player *p, item *it, bool t) // \todo not powerful enough
 {
  if (!p->has_disease(DI_TOOK_PROZAC) && p->morale_level() < 0)
@@ -417,16 +419,31 @@ void iuse::prozac(player *p, item *it, bool t) // \todo not powerful enough
   p->stim += 3;
 }
 
-void iuse::sleep(player *p, item *it, bool t)
+void iuse::sleep(player& p)
 {
- p->fatigue += 40;
- p->subjective_message("You feel very sleepy...");
+    static auto i_took_med = [&]() {
+        return std::string("You feel very sleepy...");
+    };
+
+    static auto other_took_med = [&]() {
+        return grammar::SVO_sentence(p, "take", "a sleeping pill");
+    };
+
+    p.fatigue += 40; // starts as placebo effect, ends up as chemistry
+    p.if_visible_message(i_took_med, other_took_med);
 }
 
-void iuse::iodine(player *p, item *it, bool t)
+// Iodine is a specific blocker for I-131; it dilutes the existing
+// dose and triggers excretion.
+// \todo track both current radioactivity, and accumulated radiation damage.
+void iuse::iodine(player& p)
 {
- p->add_disease(DI_IODINE, HOURS(2));
- p->subjective_message("You take an iodine tablet.");
+    static auto took_med = [&]() {
+        return grammar::SVO_sentence(p, "take", "an iodine tablet");
+    };
+
+    p.add_disease(DI_IODINE, HOURS(2));
+    p.if_visible_message(took_med);
 }
 
 void iuse::flumed(player& p, const it_comest& med)
