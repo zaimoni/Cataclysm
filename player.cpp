@@ -1798,12 +1798,15 @@ template<bool want_details = false> static int _current_speed(const player& u, g
         }
     }
 
-    for (const auto& cond : u.illness) {
+    static auto describe_illness = [&](const disease& cond) {
         if (const int delta = cond.speed_boost()) {
             newmoves += delta;
             if constexpr (want_details) desc->push_back({ cond.name(), delta });
         }
-    }
+        return false;
+    };
+
+    u.do_foreach(describe_illness);
 
     if (u.has_trait(PF_QUICK)) {
         if (const auto delta = newmoves / 10) {
@@ -3659,18 +3662,17 @@ void player::add_disease(dis_type type, int duration, int intensity, int max_int
 {
  if (duration == 0) return;
  for(decltype(auto) ill : illness) {
-  if (type != ill.type) continue;
+  if (type != ill.type) continue; // invariant: at most one "disease" of a given type
   ill.duration += duration;
   ill.intensity += intensity;
   if (max_intensity != -1 && ill.intensity > max_intensity) ill.intensity = max_intensity;
   return;
  }
  if (!is_npc()) {
-	if (DI_ADRENALINE == type) moves += 800;	// \todo V 0.2.3+: handle NPC adrenaline
+	if (DI_ADRENALINE == type) moves += 8 * mobile::mp_turn;	// \todo V 0.2.3+: handle NPC adrenaline
 	messages.add(describe(type));
  }
- disease tmp(type, duration, intensity);
- illness.push_back(tmp);
+ illness.emplace_back(type, duration, intensity);
 }
 
 bool player::rem_disease(dis_type type)
@@ -3690,6 +3692,8 @@ bool player::rem_disease(std::function<bool(disease&)> op)
 {
     bool ret = false;
     int ub = illness.size();
+    // do a complete scan, as that repairs the data integrity error
+    // of duplicate "disease" entries of the same type
     while (0 <= --ub) {
         if (op(illness[ub])) {
             EraseAt(illness, ub);
@@ -3697,6 +3701,16 @@ bool player::rem_disease(std::function<bool(disease&)> op)
         }
     }
     return ret;
+}
+
+bool player::do_foreach(std::function<bool(disease&)> op) {
+    for (decltype(auto) ill : illness) if (op(ill)) return true;
+    return false;
+}
+
+bool player::do_foreach(std::function<bool(const disease&)> op) const {
+    for (decltype(auto) ill : illness) if (op(ill)) return true;
+    return false;
 }
 
 bool player::has_disease(dis_type type) const
@@ -3728,7 +3742,6 @@ bool player::rude_awakening()
     }
     return false;
 }
-
 
 void player::add_addiction(add_type type, int strength)
 {

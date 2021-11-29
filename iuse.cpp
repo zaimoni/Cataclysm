@@ -262,17 +262,16 @@ void iuse::vitamins(player& p)
 void iuse::pkill_1(player& p, const it_comest& med)
 {
     static auto take = [&]() { return grammar::SVO_sentence(p, "take", "some " + med.name); };
+    static auto reset_duration = [](disease& ill) {
+        if (DI_PKILL1 == ill.type) {
+            ill.duration = MINUTES(12);
+            return true;
+        }
+        return false;
+    };
 
     p.if_visible_message(take);
-    if (!p.has_disease(DI_PKILL1)) p.add_disease(DI_PKILL1, MINUTES(12));
-    else {
-        for (decltype(auto) ill : p.illness) {
-            if (DI_PKILL1 == ill.type) {
-                ill.duration = MINUTES(12);
-                break;
-            }
-        }
-    }
+    if (!p.do_foreach(reset_duration)) p.add_disease(DI_PKILL1, MINUTES(12));
 }
 
 // Codeine
@@ -335,15 +334,17 @@ void iuse::alcohol(player& p)
 void iuse::cig(player& p)
 {
     static auto smoke = [&]() {return p.subject() + " " + p.VO_phrase("light", "a cigarette") + "and" + p.VO_phrase("smoke", "it") + "."; };
+    static auto feel_gross = [](const disease& ill) {
+        if (DI_CIG == ill.type && HOURS(1) < ill.duration) {
+            messages.add("Ugh, too much smoke... you feel gross."); // hard-code subjective_message body
+            return true;
+        }
+        return false;
+    };
 
     p.if_visible_message(smoke);
     p.add_disease(DI_CIG, MINUTES(20));
-    if (!p.is_npc()) { // hard-code subjective_message test
-        for (decltype(auto) ill : p.illness) {
-            if (DI_CIG == ill.type && HOURS(1) < ill.duration)
-                messages.add("Ugh, too much smoke... you feel gross."); // hard-code subjective_message body
-        }
-    }
+    if (!p.is_npc()) p.do_foreach(feel_gross); // hard-code subjective_message test
 }
 
 void iuse::weed(player& p)

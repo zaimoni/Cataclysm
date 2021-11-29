@@ -174,6 +174,8 @@ public:
  void add_disease(dis_type type, int duration, int intensity = 0, int max_intensity = -1);
  bool rem_disease(dis_type type);
  bool rem_disease(std::function<bool(disease&)> op);
+ bool do_foreach(std::function<bool(disease&)> op);
+ bool do_foreach(std::function<bool(const disease&)> op) const;
  bool has_disease(dis_type type) const;
  int  disease_level(dis_type type) const;
  int  disease_intensity(dis_type type) const;
@@ -375,10 +377,11 @@ public:
  itype_id style_selected;
  item weapon;
  
- std::vector <disease> illness;
  std::vector <addiction> addictions;
 
 private:
+ std::vector <disease> illness;
+
  void _set_screenpos() override { if (auto pt = screen_pos()) pos = *pt; }
  bool handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim) override;
  virtual void consume(item& food) = 0;

@@ -22,7 +22,7 @@ struct disease
  dis_type type;
  int intensity;
  int duration;
- disease(dis_type t = DI_NULL, int d = 0, int i = 0) : type(t),intensity(i),duration(d) {}
+ disease(dis_type t = DI_NULL, int d = 0, int i = 0) noexcept : type(t),intensity(i),duration(d) {}
 
  int speed_boost() const;
  const char* name() const;
