@@ -411,13 +411,43 @@ void iuse::thorazine(player *p, item *it, bool t)
  p->subjective_message("You feel somewhat sedated.");
 }
 
-// General indication for prozac is negative morale.
-void iuse::prozac(player *p, item *it, bool t) // \todo not powerful enough
+// Cf. https://www.rxlist.com/prozac-drug.htm
+// General in-game indication for prozac is negative morale -- proxy for clinical depression.
+// proper pharmakinetic modeling is an invasive rewrite (at least triple buffer setup, not just double buffer)
+// detox pathway is CYP2D6; half-life situation is complicated (lower bound one day)
+// ok to treat SSRI reuptake inhibitors as lethal stimulants in-game, for now
+void iuse::prozac(player& p) // \todo not powerful enough
 {
- if (!p->has_disease(DI_TOOK_PROZAC) && p->morale_level() < 0)
-  p->add_disease(DI_TOOK_PROZAC, HOURS(6));
- else
-  p->stim += 3;
+    static auto reset_duration = [](disease& ill) {
+        constexpr const int raw_dose = HOURS(24);
+        constexpr const int ineffective_dose = HOURS(18);
+        if (DI_TOOK_PROZAC == ill.type) {
+            // not remotely correct.
+            int current_dose = ill.duration + ineffective_dose;
+            int delta = raw_dose;
+            int burn_rate = 1;
+            int new_dose = 0;
+            while (current_dose >= raw_dose) {
+                new_dose += raw_dose;
+                current_dose -= raw_dose;
+                burn_rate *= 2;
+                if (0 >= (delta /= 2)) return true;
+            }
+            current_dose += delta;
+            while (current_dose >= raw_dose) {
+                new_dose += raw_dose;
+                current_dose -= raw_dose;
+                burn_rate *= 2;
+                current_dose /= 2;
+            }
+            ill.duration = new_dose + current_dose;
+            return true;
+        }
+        return false;
+    };
+
+    if (!p.do_foreach(reset_duration)) p.add_disease(DI_TOOK_PROZAC, HOURS(6));
+    p.stim += 3;
 }
 
 void iuse::sleep(player& p)
