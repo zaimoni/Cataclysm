@@ -4509,16 +4509,12 @@ it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
 	signed char pstim, signed char phealthy, unsigned char paddict,
 	unsigned char pcharges, signed char pfun, itype_id pcontainer,
 	itype_id ptool,
-	add_type padd
-#ifndef SOCRATES_DAIMON
-	, decltype(use) puse
-#endif
-	)
+	add_type padd)
 :itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, 0, 0, 0, 0),
 	quench(pquench),nutr(pnutr),spoils(pspoils),addict(paddict),charges(pcharges),stim(pstim),healthy(phealthy),fun(pfun),container(pcontainer),
 	tool(ptool), add(padd)
 #ifndef SOCRATES_DAIMON
-	, use(puse), use_npc(nullptr), use_pc(nullptr), use_player(nullptr), use_npc_none(nullptr), use_pc_none(nullptr), use_player_none(nullptr), use_npc_type(nullptr), use_pc_type(nullptr), use_player_type(nullptr)
+	, use_npc(nullptr), use_pc(nullptr), use_player(nullptr), use_npc_none(nullptr), use_pc_none(nullptr), use_player_none(nullptr), use_npc_type(nullptr), use_pc_type(nullptr), use_player_type(nullptr)
 #endif
 {
 }
@@ -4538,7 +4534,7 @@ it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
 :itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, 0, 0, 0, 0),
 quench(pquench), nutr(pnutr), spoils(pspoils), addict(paddict), charges(pcharges), stim(pstim), healthy(phealthy), fun(pfun), container(pcontainer),
 tool(ptool), add(padd),
-use(nullptr), use_npc(nullptr), use_pc(puse), use_player(nullptr), use_npc_none(nullptr), use_pc_none(nullptr), use_player_none(nullptr), use_npc_type(nullptr), use_pc_type(nullptr), use_player_type(nullptr)
+use_npc(nullptr), use_pc(puse), use_player(nullptr), use_npc_none(nullptr), use_pc_none(nullptr), use_player_none(nullptr), use_npc_type(nullptr), use_pc_type(nullptr), use_player_type(nullptr)
 {
 }
 
@@ -4556,7 +4552,7 @@ it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
 	:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, 0, 0, 0, 0),
 	quench(pquench), nutr(pnutr), spoils(pspoils), addict(paddict), charges(pcharges), stim(pstim), healthy(phealthy), fun(pfun), container(pcontainer),
 	tool(ptool), add(padd),
-	use(nullptr), use_npc(nullptr), use_pc(nullptr), use_player(puse), use_npc_none(nullptr), use_pc_none(nullptr), use_player_none(nullptr), use_npc_type(nullptr), use_pc_type(nullptr), use_player_type(nullptr)
+	use_npc(nullptr), use_pc(nullptr), use_player(puse), use_npc_none(nullptr), use_pc_none(nullptr), use_player_none(nullptr), use_npc_type(nullptr), use_pc_type(nullptr), use_player_type(nullptr)
 {
 }
 
@@ -4574,7 +4570,7 @@ it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
 	:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, 0, 0, 0, 0),
 	quench(pquench), nutr(pnutr), spoils(pspoils), addict(paddict), charges(pcharges), stim(pstim), healthy(phealthy), fun(pfun), container(pcontainer),
 	tool(ptool), add(padd),
-	use(nullptr), use_npc(nullptr), use_pc(nullptr), use_player(nullptr), use_npc_none(nullptr), use_pc_none(nullptr), use_player_none(puse), use_npc_type(nullptr), use_pc_type(nullptr), use_player_type(nullptr)
+	use_npc(nullptr), use_pc(nullptr), use_player(nullptr), use_npc_none(nullptr), use_pc_none(nullptr), use_player_none(puse), use_npc_type(nullptr), use_pc_type(nullptr), use_player_type(nullptr)
 {
 }
 
@@ -4592,7 +4588,7 @@ it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
 	:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, 0, 0, 0, 0),
 	quench(pquench), nutr(pnutr), spoils(pspoils), addict(paddict), charges(pcharges), stim(pstim), healthy(phealthy), fun(pfun), container(pcontainer),
 	tool(ptool), add(padd),
-	use(nullptr), use_npc(nullptr), use_pc(nullptr), use_player(nullptr), use_npc_none(nullptr), use_pc_none(nullptr), use_player_none(nullptr), use_npc_type(nullptr), use_pc_type(nullptr), use_player_type(puse)
+	use_npc(nullptr), use_pc(nullptr), use_player(nullptr), use_npc_none(nullptr), use_pc_none(nullptr), use_player_none(nullptr), use_npc_type(nullptr), use_pc_type(nullptr), use_player_type(puse)
 {
 }
 
@@ -4610,7 +4606,7 @@ it_comest::it_comest(int pid, unsigned char prarity, unsigned int pprice,
 	:itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, MNULL, pvolume, pweight, 0, 0, 0, 0),
 	quench(pquench), nutr(pnutr), spoils(pspoils), addict(paddict), charges(pcharges), stim(pstim), healthy(phealthy), fun(pfun), container(pcontainer),
 	tool(ptool), add(padd),
-	use(nullptr), use_npc(nullptr), use_pc(nullptr), use_player(nullptr), use_npc_none(npc_use), use_pc_none(pc_use), use_player_none(nullptr), use_npc_type(nullptr), use_pc_type(nullptr), use_player_type(nullptr)
+	use_npc(nullptr), use_pc(nullptr), use_player(nullptr), use_npc_none(npc_use), use_pc_none(pc_use), use_player_none(nullptr), use_npc_type(nullptr), use_pc_type(nullptr), use_player_type(nullptr)
 {
 }
 #endif
@@ -4990,7 +4986,6 @@ void it_comest::consumed_by(item& it, npc& u)  const
 	if (use_player_none) use_player_none(u);
 	if (use_player_type) use_player_type(u, *this);
 	if (use_player) use_player(u, it);
-	if (use) use(&u, &it, false);
 }
 
 void it_comest::consumed_by(item& it, pc& u)  const
@@ -5001,7 +4996,6 @@ void it_comest::consumed_by(item& it, pc& u)  const
 	if (use_player_none) use_player_none(u);
 	if (use_player_type) use_player_type(u, *this);
 	if (use_player) use_player(u, it);
-	if (use) use(&u, &it, false);
 }
 
 std::optional<std::string> it_comest::cannot_consume(const item& it, const player& u) const

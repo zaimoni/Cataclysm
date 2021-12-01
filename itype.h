@@ -437,8 +437,7 @@ struct it_comest : public itype
 
 #ifndef SOCRATES_DAIMON
 private:
- void (*use)(player*, item*, bool);// Special effects of use
- void (*use_npc)(npc&, item&);	// waterfall/SSADM software lifecycle for these three
+ void (*use_npc)(npc&, item&);	// waterfall/SSADM software lifecycle for these nine
  void (*use_pc)(pc&, item&);
  void (*use_player)(player&, item&);
  void (*use_npc_none)(npc&);
@@ -461,11 +460,7 @@ public:
 	 signed char pstim, signed char phealthy, unsigned char paddict,
 	 unsigned char pcharges, signed char pfun, itype_id pcontainer,
 	 itype_id ptool,
-	 add_type padd
-#ifndef SOCRATES_DAIMON
-	 , decltype(use) puse = nullptr
-#endif
-	 );
+	 add_type padd);
 
 #ifndef SOCRATES_DAIMON
  it_comest(int pid, unsigned char prarity, unsigned int pprice,
@@ -532,7 +527,6 @@ public:
 	 add_type padd,
 	 decltype(use_pc_none) pc_use, decltype(use_npc_none) npc_use
  );
-
 #endif
 
  const it_comest* is_food() const override { return this; }
