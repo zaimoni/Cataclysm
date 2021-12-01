@@ -714,7 +714,6 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
  mobile* const mob = z ? static_cast<mobile*>(z) : p;
  const std::string You = desc(grammar::noun::role::subject);
  const std::string target = mob->desc(grammar::noun::role::direct_object, grammar::article::definite);
- point tar(z ? z->pos : p->pos);
 
  const bool u_see = (!is_npc() || g->u.see(pos));
 
@@ -763,8 +762,9 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
 
  case TEC_WIDE: {
   int count_hit = 0;
+  const auto tar = mob->GPSpos;
   for (int dir = direction::NORTH; dir <= direction::NORTHWEST; ++dir) {
-      point test = tar + direction_vector((direction)dir);
+      const auto test = tar + direction_vector((direction)dir);
       if (tar == test) continue; // Don't double-hit our target
       if (const auto m_at = g->mon(test)) {
           if (hit_roll() >= rng(0, 5) + m_at->dodge_roll()) {
