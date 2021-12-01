@@ -23,7 +23,8 @@ public:
 		DOWNED = 1,
 		STUNNED,
 		DEAF,
-		BLIND
+		BLIND,
+		POISONED
 	};
 
 	GPS_loc GPSpos; // absolute location

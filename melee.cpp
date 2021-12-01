@@ -943,6 +943,7 @@ void player::perform_special_attacks(game *g, monster *z, player *p,
                                      int &bash_dam, int &cut_dam, int &stab_dam)
 {
  assert(z || p);
+ mobile* const mob = z ? static_cast<mobile*>(z) : p;
  bool can_poison = false;
  int bash_armor = (z == nullptr ? 0 : z->armor_bash());
  int cut_armor  = (z == nullptr ? 0 : z->armor_cut());
@@ -972,13 +973,8 @@ void player::perform_special_attacks(game *g, monster *z, player *p,
  }
 
  if (can_poison && has_trait(PF_POISONOUS)) {
-  if (z != nullptr) {
-   if (!is_npc() && !z->has_effect(ME_POISONED)) messages.add("You poison the %s!", z->name().c_str());
-   z->add_effect(ME_POISONED, 6);
-  } else if (p != nullptr) {
-   if (!is_npc() && !p->has_disease(DI_POISON)) messages.add("You poison %s!", p->name.c_str());
-   p->add_disease(DI_POISON, 6);
-  }
+  if (!is_npc() && !mob->has(effect::POISONED)) messages.add("You poison %s!", mob->desc(grammar::noun::role::direct_object, grammar::article::definite).c_str());
+  mob->add(effect::POISONED, TURNS(6));
  }
 }
 
