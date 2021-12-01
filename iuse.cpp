@@ -400,15 +400,15 @@ void iuse::poison(player& p)
 void iuse::hallu(player& p) { p.add_disease(DI_HALLU, HOURS(4)); }
 
 // \todo want DI_TOOK_THORAZINE
-void iuse::thorazine(player *p, item *it, bool t)
+void iuse::thorazine(player& p)
 {
- p->fatigue += 15;
- p->rem_disease(DI_HALLU);
- p->rem_disease(DI_VISUALS);
- p->rem_disease(DI_HIGH);
- p->rem_disease(DI_THC);    // B-movie; situation in real life is more complicated
- if (!p->has_disease(DI_DERMATIK)) p->rem_disease(DI_FORMICATION);
- p->subjective_message("You feel somewhat sedated.");
+    p.fatigue += 15;
+    p.rem_disease(DI_HALLU);
+    p.rem_disease(DI_VISUALS);
+    p.rem_disease(DI_HIGH);
+    p.rem_disease(DI_THC);    // B-movie; situation in real life is more complicated
+    if (!p.has_disease(DI_DERMATIK)) p.rem_disease(DI_FORMICATION);
+    p.subjective_message("You feel somewhat sedated.");
 }
 
 // Cf. https://www.rxlist.com/prozac-drug.htm
@@ -416,7 +416,7 @@ void iuse::thorazine(player *p, item *it, bool t)
 // proper pharmakinetic modeling is an invasive rewrite (at least triple buffer setup, not just double buffer)
 // detox pathway is CYP2D6; half-life situation is complicated (lower bound one day)
 // ok to treat SSRI reuptake inhibitors as lethal stimulants in-game, for now
-void iuse::prozac(player& p) // \todo not powerful enough
+void iuse::prozac(player& p)
 {
     static auto reset_duration = [](disease& ill) {
         constexpr const int raw_dose = HOURS(24);
