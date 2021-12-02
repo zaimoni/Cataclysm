@@ -628,12 +628,12 @@ bool monster::has_effect(monster_effect_type effect) const
 
 void monster::rem_effect(monster_effect_type effect)
 {
- for (int i = 0; i < effects.size(); i++) {
-  if (effects[i].type == effect) {
-   EraseAt(effects, i);
-   i--;	// \todo micro-optimize: return here since add effect guarantees only one effect of any given type?
-  }
- }
+    int i = effects.size();
+    // intentionally check everything even though add effect guarantees only one effect of any type
+    // as an automatic data repair
+    while (0 <= --i) {
+        if (effect == effects[i].type) EraseAt(effects, i);
+    }
 }
 
 void monster::process_effects()
