@@ -983,8 +983,10 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
  mobile* const mob = z ? static_cast<mobile*>(z) : p;
  bool is_u = !is_npc();
  bool can_see = (is_u || g->u.see(pos));
- const std::string You = grammar::capitalize(desc(grammar::noun::role::subject));
- const std::string Your = grammar::capitalize(desc(grammar::noun::role::possessive));
+ const std::string you = desc(grammar::noun::role::subject);
+ const std::string You = grammar::capitalize(std::string(you));
+ const std::string your = desc(grammar::noun::role::possessive);
+ const std::string Your = grammar::capitalize(std::string(your));
  const std::string target = mob->desc(grammar::noun::role::direct_object, grammar::article::definite);
  const std::string target_possessive = mob->desc(grammar::noun::role::possessive, grammar::article::definite);
  point tar = z ? z->pos : p->pos;
@@ -1083,23 +1085,27 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
   }
  }
  if (!unarmed_attack() && cutting_penalty > dice(str_cur * 2, 20)) {
-  if (is_u)
-   // \todo need possessive pronoun to NPC-convert this message
-   messages.add("Your %s gets stuck in %s, pulling it out of your hands!",
-              weapon.tname().c_str(), target.c_str());
+     static auto weapon_is_stuck = [&]() {
+         return Your + weapon.tname() + " gets stuck in " + target + ", pulling it out of " + your + " hands!";
+     };
+
+     if_visible_message(weapon_is_stuck);
   if (z) {
    z->speed *= (weapon.has_flag(IF_SPEAR) || weapon.has_flag(IF_STAB)) ? .7 : .85;
    z->add_item(unwield());
   } else
    g->m.add_item(pos, unwield());
  } else {
+     static auto weapon_is_almost_stuck = [&]() {
+         return Your + weapon.tname() + " gets stuck in " + target + ", but " + you + " yank it free.";
+     };
+
   if (z && (cut_dam >= z->hp || stab_dam >= z->hp)) {
    cutting_penalty /= 2;
    cutting_penalty -= rng(sklevel[sk_cutting], sklevel[sk_cutting] * 2 + 2);
   }
   if (cutting_penalty > 0) moves -= cutting_penalty;
-  if (cutting_penalty >= 50 && is_u)
-   messages.add("Your %s gets stuck in %s, but you yank it free.", weapon.tname().c_str(), target.c_str());
+  if (cutting_penalty >= 50) if_visible_message(weapon_is_almost_stuck);
   if (z && (weapon.has_flag(IF_SPEAR) || weapon.has_flag(IF_STAB))) z->speed *= .9;
  }
 
