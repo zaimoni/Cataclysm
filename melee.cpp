@@ -622,17 +622,15 @@ int player::roll_stab_damage(const monster *z, bool crit) const
 int player::roll_stuck_penalty(const monster *z, bool stabbing) const
 {
  int ret = 0;
- int basharm = (z ? z->armor_bash() : 6),
-     cutarm  = (z ? z->armor_cut() : 6);
+ const int basharm = (z ? z->armor_bash() : 6);
+ const int cutarm  = (z ? z->armor_cut() : 6);
+ const int cutdam = weapon.damage_cut();
  if (stabbing)
-  ret = weapon.damage_cut() * 3 + basharm * 3 + cutarm * 3 -
-        dice(sklevel[sk_stabbing], 10);
+  ret = cutdam * 3 + basharm * 3 + cutarm * 3 - dice(sklevel[sk_stabbing], 10);
  else
-  ret = weapon.damage_cut() * 4 + basharm * 5 + cutarm * 4 -
-        dice(sklevel[sk_cutting], 10);
+  ret = cutdam * 4 + basharm * 5 + cutarm * 4 - dice(sklevel[sk_cutting], 10);
 
- if (ret >= weapon.damage_cut() * 10)
-  return weapon.damage_cut() * 10;
+ if (ret >= cutdam * 10) return cutdam * 10;
  return (ret < 0 ? 0 : ret);
 }
 
