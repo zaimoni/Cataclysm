@@ -131,7 +131,7 @@ public:
                                   player *p, body_part &bp_hit, int &side,
                                   int &bash_dam, int &cut_dam, int &stab_dam);
 
- int dodge(); // Returns the players's dodge, modded by clothing etc
+ int dodge() const; // Returns the players's dodge, modded by clothing etc
  int  dodge_roll();// For comparison to hit_roll()
 
 // ranged.cpp (at some point, historically)
@@ -358,7 +358,6 @@ public:
  unsigned int recoil;
  unsigned int driving_recoil;
  unsigned int scent;
- int dodges_left, blocks_left;
  int stim, pain, pkill, radiation;
  int cash; // \todo re-implement; this is pre-apocalyptic cash
  int hp_cur[num_hp_parts], hp_max[num_hp_parts];
@@ -380,6 +379,8 @@ public:
  std::vector <addiction> addictions;
 
 private:
+ mutable int dodges_left;
+ int blocks_left;
  std::vector <disease> illness;
 
  void _set_screenpos() override { if (auto pt = screen_pos()) pos = *pt; }

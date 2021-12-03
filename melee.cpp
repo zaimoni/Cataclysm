@@ -432,7 +432,7 @@ bool player::scored_crit(int target_dodge) const
  return false;
 }
 
-int player::dodge()
+int player::dodge() const
 {
  if (has_disease(DI_SLEEP) || has_disease(DI_LYING_DOWN)) return 0;
  if (activity.type != ACT_NULL) return 0;
