@@ -62,7 +62,7 @@ public:
  void disp_morale();		// '%' key; morale info
  void disp_status(WINDOW* w, game *g);// On-screen data
 
- void reset(game* g = nullptr);// Resets movement points, stats, applies effects
+ void reset(const Badge<game>&);// Resets movement points, stats, applies effects
  void update_morale();	// Ticks down morale counters and removes them
  int  current_speed() const; // Number of movement points we get a turn
  int  theoretical_speed() const; // ", ignoring some environmental modifiers

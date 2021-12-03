@@ -1609,7 +1609,7 @@ void player::pick_name()
     name = random_first_name(male) + " " + random_last_name();
 }
  
-void player::reset(game *g)
+void player::reset(const Badge<game>& auth)
 {
 // Reset our stats to normal levels
 // Any persistent buffs/debuffs will take place in disease.h,

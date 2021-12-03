@@ -661,7 +661,7 @@ bool game::do_turn()
  monmove();
  update_stair_monsters();
  om_npcs_move();
- u.reset(this);
+ u.reset(Badge<game>());
  u.process_active_items(this);
  u.suffer(this);
 
@@ -2632,7 +2632,7 @@ void game::monmove()
   if(_npc.hp_cur[hp_head] <= 0 || _npc.hp_cur[hp_torso] <= 0) _npc.die(this);
   else {
    int turns = 0;
-   _npc.reset(this);
+   _npc.reset(Badge<game>());
    _npc.suffer(this);
    // \todo _npc.check_warmth call
    // \todo _npc.update_skills call

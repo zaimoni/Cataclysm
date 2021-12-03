@@ -42,6 +42,16 @@ inline constexpr T unconditional_v = v;
 template <auto V>
 static constexpr const auto force_consteval = V;
 
+// proof of caller
+// https://awesomekling.github.io/Serenity-C++-patterns-The-Badge/
+
+template<class T>
+class Badge
+{
+	friend T;
+	Badge() = default;
+};
+
 namespace cataclysm {
 
 template<class T>
