@@ -125,7 +125,8 @@ class monster : public mobile {
  int  armor_cut() const;	// Natural armor, plus any worn armor
  int  armor_bash() const;	// Natural armor, plus any worn armor
  int  dodge() const;		// Natural dodge, or 0 if we're occupied
- int  dodge_roll() const;	// For the purposes of comparing to player::hit_roll()
+ int  dodge_roll() const override; // For the purposes of comparing to player::hit_roll()
+ int  melee_skill() const override { return type->melee_skill; }
  int  fall_damage() const;	// How much a fall hurts us
  void die(game *g);
 

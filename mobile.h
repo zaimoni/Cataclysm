@@ -46,6 +46,8 @@ public:
 	void knockback_from(const GPS_loc& loc);
 	virtual int knockback_size() const = 0;
 	virtual bool hurt(int dam) = 0; // Deals this dam damage; returns true if we died
+	virtual int dodge_roll() const = 0; // For comparison to hit_roll()
+	virtual int melee_skill() const = 0;
 
 protected:
 	mobile() noexcept : GPSpos(_ref<GPS_loc>::invalid),moves(0) {}

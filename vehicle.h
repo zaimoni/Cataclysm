@@ -154,6 +154,8 @@ public:
     // stub for knockback support
     int knockback_size() const override { return 4; } // motorcycle more like a cow than a tank; cf enum m_size
     bool hurt(int dam) override { return false; } // \todo? implement stub
+    int dodge_roll() const override { return 0; } // stub; For the purposes of comparing to player::hit_roll()
+    int melee_skill() const override { return 0; } // stub
 
 // get vpart type info for part number (part at given vector index)
     const vpart_info& part_info(int index) const;

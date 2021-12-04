@@ -352,7 +352,7 @@ int monster::hit(game *g, player &p, body_part &bp_hit)
 {
  static const int base_bodypart_hitrange[mtype::MS_MAX] = {3, 12, 20, 28, 35};
 
- int numdice = type->melee_skill;
+ int numdice = melee_skill();
  if (!one_in(20) && dice(numdice, 10) <= dice(p.dodge(), 10)) {
   if (numdice > p.sklevel[sk_dodge])
    p.practice(sk_dodge, 10);
@@ -388,7 +388,7 @@ void monster::hit_monster(game *g, monster& target)
 {
  static const int dodge_bonus[mtype::MS_MAX] = {6, 3, 0, -2, -4};
 
- int numdice = type->melee_skill;
+ int numdice = melee_skill();
  int dodgedice = target.dodge() * 2;	// decidedly more agile than a typical dodge roll
  dodgedice += dodge_bonus[target.type->size];
 

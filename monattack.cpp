@@ -605,7 +605,7 @@ void mattack::dermatik(game *g, monster *z)
  z->sp_timeout = z->type->sp_freq;	// Reset timer
 
 // Can we dodge the attack?
- int attack_roll = dice(z->type->melee_skill, 10);
+ int attack_roll = dice(z->melee_skill(), 10);
  if (g->u.dodge_roll() > attack_roll) {
   messages.add("The %s tries to land on you, but you dodge.", z->name().c_str());
   z->stumble(g, false);

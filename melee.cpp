@@ -329,8 +329,7 @@ void player::hit_player(game *g, player &p, bool allow_grab)
  if (allow_grab && technique == TEC_GRAB) {
 // Move our weapon to a temp slot, if it's not unarmed
   if (p.weapon.has_technique(TEC_BREAK, &p) &&
-      dice(p.dex_cur + p.sklevel[sk_melee], 12) >
-      dice(dex_cur + sklevel[sk_melee], 10)) {
+      dice(p.melee_skill(), 12) > dice(melee_skill(), 10)) {
    if (is_u)
     messages.add("%s %s the grab!", target.c_str(), p.regular_verb_agreement("break").c_str());
   } else if (!unarmed_attack()) {
@@ -460,10 +459,7 @@ int player::dodge() const
  return ret;
 }
 
-int player::dodge_roll()
-{
- return dice(dodge(), 6);
-}
+int player::dodge_roll() const { return dice(dodge(), 6); }
 
 int player::base_damage(bool real_life, int stat) const
 {
@@ -667,8 +663,7 @@ technique_id player::pick_technique(const game *g, const monster *z, const playe
 
   if (weapon.has_technique(TEC_DISARM, this) && !z &&
       p->weapon.type->id != 0 && !p->weapon.has_flag(IF_UNARMED_WEAPON) &&
-      dice(   dex_cur +    sklevel[sk_unarmed],  8) >
-      dice(p->dex_cur + p->sklevel[sk_melee],   10))
+      dice(dex_cur + sklevel[sk_unarmed], 8) > dice(p->melee_skill(), 10))
    possible.push_back(TEC_DISARM);
 
   if (weapon.has_technique(TEC_GRAB, this) && allowgrab) possible.push_back(TEC_GRAB);
@@ -799,13 +794,11 @@ technique_id player::pick_defensive_technique(game *g, const monster *z, player 
 {
  if (blocks_left == 0) return TEC_NULL;
 
- int foe_melee_skill = 0;
- if (z != nullptr) foe_melee_skill = z->type->melee_skill;
- else if (p != nullptr) foe_melee_skill = p->dex_cur + p->sklevel[sk_melee];
+ assert(z || p);
+ const mobile* const mob = z ? static_cast<const mobile*>(z) : p;
 
- int foe_dodge = 0;
- if (z != nullptr) foe_dodge = z->dodge_roll();
- else if (p != nullptr) foe_dodge = p->dodge_roll();
+ const int foe_melee_skill = mob->melee_skill();
+ const int foe_dodge = mob->dodge_roll();
 
  int foe_size = 0;
  if (z) foe_size = 4 + z->type->size * 4;
@@ -817,22 +810,21 @@ technique_id player::pick_defensive_technique(game *g, const monster *z, player 
 
  blocks_left--;
  if (weapon.has_technique(TEC_WBLOCK_3) &&
-     dice(dex_cur + sklevel[sk_melee], 12) > dice(foe_melee_skill, 10))
+     dice(melee_skill(), 12) > dice(foe_melee_skill, 10))
   return TEC_WBLOCK_3;
 
  if (weapon.has_technique(TEC_WBLOCK_2) &&
-     dice(dex_cur + sklevel[sk_melee], 6) > dice(foe_melee_skill, 10))
+     dice(melee_skill(), 6) > dice(foe_melee_skill, 10))
   return TEC_WBLOCK_2;
  
  if (weapon.has_technique(TEC_WBLOCK_1) &&
-     dice(dex_cur + sklevel[sk_melee], 3) > dice(foe_melee_skill, 10))
+     dice(melee_skill(), 3) > dice(foe_melee_skill, 10))
   return TEC_WBLOCK_1;
 
  if (weapon.has_technique(TEC_DEF_DISARM, this) &&
      z == nullptr && p->weapon.type->id != 0 &&
      !p->weapon.has_flag(IF_UNARMED_WEAPON) &&
-     dice(   dex_cur +    sklevel[sk_unarmed], 8) >
-     dice(p->dex_cur + p->sklevel[sk_melee],  10))
+     dice(dex_cur + sklevel[sk_unarmed], 8) > dice(foe_melee_skill,  10))
   return TEC_DEF_DISARM;
 
  if (weapon.has_technique(TEC_DEF_THROW, this) && 
@@ -846,13 +838,13 @@ technique_id player::pick_defensive_technique(game *g, const monster *z, player 
 
  if (weapon.has_technique(TEC_BLOCK_LEGS, this) &&
      (hp_cur[hp_leg_l] >= 20 || hp_cur[hp_leg_r] >= 20) &&
-     dice(dex_cur + sklevel[sk_unarmed] + sklevel[sk_melee], 13) >
+     dice(melee_skill() + sklevel[sk_unarmed], 13) >
      dice(8 + foe_melee_skill, 10))
   return TEC_BLOCK_LEGS;
 
  if (weapon.has_technique(TEC_BLOCK, this) &&
      (hp_cur[hp_arm_l] >= 20 || hp_cur[hp_arm_r] >= 20) &&
-     dice(dex_cur + sklevel[sk_unarmed] + sklevel[sk_melee], 16) >
+     dice(melee_skill() + sklevel[sk_unarmed], 16) >
      dice(6 + foe_melee_skill, 10))
   return TEC_BLOCK;
 
