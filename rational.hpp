@@ -68,6 +68,26 @@ public:
 		return rational(is_positive ? *new_numerator : -(signed long long)(*new_numerator), *new_denominator);
 	}
 
+	constexpr friend int& operator*=(int& lhs, const rational& rhs) {
+		if (0 != lhs) {
+			auto lhs_rhs_gcd = gcd(lhs, rhs._denominator);
+			auto new_denominator = rhs._denominator / lhs_rhs_gcd;
+			long long extended_lhs = lhs;
+			unsigned long long abs_lhs = 0 < extended_lhs ? extended_lhs : -extended_lhs;
+			unsigned long long abs_lhs_factored = abs_lhs / lhs_rhs_gcd;
+			auto numerator_test = product(abs_lhs_factored, rhs.abs_numerator());
+			bool is_positive = (0 < lhs) == (0 < rhs._numerator);
+			if (auto new_numerator = std::get_if<unsigned long long>(&numerator_test)) {
+				unsigned long long ret = *new_numerator / new_denominator;
+				if ((unsigned int)(-1) / 2 >= ret) {
+					lhs = is_positive ? (int)(ret) : -(int)(ret);
+				} else lhs = is_positive ? (int)((unsigned int)(-1) / 2) : -(int)((unsigned int)(-1) / 2); // technically clamped early
+			} else throw std::runtime_error("rational * overflow: numerator");
+		}
+		return lhs;
+	}
+
+
 	constexpr friend std::strong_ordering operator<=>(const rational& lhs, const rational& rhs) {
 		if (0 == lhs._numerator && 0 == rhs._numerator) return std::strong_ordering::equal;
 		if (0 >= lhs._numerator && 0 <= rhs._numerator) return std::strong_ordering::less;
