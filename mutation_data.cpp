@@ -210,6 +210,10 @@ difficult to grab." },
 Your bones are very light.  This enables you to run and attack 10% faster,\n\
 but also reduces your carrying weight by 20% and makes bashing attacks hurt\n\
 a little more." },
+{ "Hollow Bones", -6, 0, 0, "\
+You have Avian Bone Syndrome--your bones are nearly hollow.  Your body is\n\
+very light as a result, enabling you to run and attack 20% faster, but\n\
+also frail; you can carry 40% less, and bashing attacks injure you more." },
 { "Feathers", 2, 10, 3, "\
 Iridescent feathers have grown to cover your entire body, providing a\n\
 marginal protection against attacks and minor protection from cold. They\n\
@@ -444,10 +448,6 @@ to your appearance." },
 { "Grotesque", -7, 10, 10, "\
 Your visage is disgusting and liable to induce vomiting.  People will not\n\
 want to interact with you unless they have a very good reason to." },
-{ "Hollow Bones", -6, 0, 0, "\
-You have Avian Bone Syndrome--your bones are nearly hollow.  Your body is\n\
-very light as a result, enabling you to run and attack 20% faster, but\n\
-also frail; you can carry 40% less, and bashing attacks injure you more." },
 { "Nausea", -3, 0, 0, "\
 You feel nauseous almost constantly, and are more liable to throw up from\n\
 food poisoning, alcohol, etc." },

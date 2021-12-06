@@ -135,6 +135,7 @@ enum pl_flag {
  PF_THICK_SCALES,//
  PF_SLEEK_SCALES,//
  PF_LIGHT_BONES,//
+ PF_HOLLOW_BONES,//
  PF_FEATHERS,//
  PF_LIGHTFUR,// TODO: Warmth effects
  PF_FUR,// TODO: Warmth effects
@@ -215,7 +216,6 @@ enum pl_flag {
  PF_DEFORMED,
  PF_DEFORMED2,
  PF_DEFORMED3,
- PF_HOLLOW_BONES,//
  PF_NAUSEA,//
  PF_VOMITOUS,//
  PF_HUNGER,//
@@ -261,6 +261,7 @@ enum pl_flag {
 // integrity checks
 static_assert(1 == PF_COLDBLOOD2 - PF_COLDBLOOD);
 static_assert(2 == PF_COLDBLOOD3 - PF_COLDBLOOD);
+static_assert(1 == PF_HOLLOW_BONES - PF_LIGHT_BONES);
 
 enum hp_part {
  hp_head = 0,
