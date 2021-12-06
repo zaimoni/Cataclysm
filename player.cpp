@@ -3557,6 +3557,8 @@ void player::hitall(int dam, int vary)
   int ddam = vary? dam * rng (100 - vary, 100) / 100 : dam;
   int cut = 0;
   absorb((body_part) i, ddam, cut);
+  //dam += cut;
+  if (dam <= 0) continue;
   int painadd = 0;
   hp_cur[i] -= ddam;
   clamp_lb<0>(hp_cur[i]);
