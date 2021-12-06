@@ -1993,6 +1993,13 @@ int player::is_cold_blooded() const
     return 0;
 }
 
+int player::has_light_bones() const
+{
+    if (has_trait(PF_LIGHT_BONES)) return 1;
+    if (has_trait(PF_HOLLOW_BONES)) return 1 + (PF_HOLLOW_BONES - PF_LIGHT_BONES);
+    return 0;
+}
+
 static stat_delta _troglodyte_sunburn(const player& u)
 {
     stat_delta ret = {};
@@ -5477,10 +5484,9 @@ void player::absorb(body_part bp, int &dam, int &cut)
 
  clamp_lb<0>(dam -= damage_reduction.first);
  clamp_lb<0>(cut -= damage_reduction.second);
- if (0 >= dam && 0 >= cut) return;
+ if (0 >= dam /* && 0 >= cut */ ) return;
 
- if (has_trait(PF_LIGHT_BONES)) dam *= 1.4;
- if (has_trait(PF_HOLLOW_BONES)) dam *= 1.8;
+ if (auto weak = has_light_bones()) dam *= mutation_branch::light_bones_damage[weak - 1];
 }
   
 int player::resist(body_part bp) const

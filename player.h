@@ -75,6 +75,7 @@ public:
  int is_drowning() const;
 
  int is_cold_blooded() const;
+ int has_light_bones() const;
  bool has_trait(int flag) const;
  bool has_mutation(int flag) const;
  void toggle_trait(int flag);
