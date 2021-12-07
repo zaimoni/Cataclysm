@@ -138,7 +138,9 @@ bool item::is_null() const
 std::optional<std::pair<itype_id, int> > item::my_preferred_container() const
 {
     if (is_software()) return std::pair(itm_usb_drive, 0); // these are pre-Cataclysm no matter what
-    if (const auto food = is_food()) return std::pair(food->container, bday);
+    if (const auto food = is_food()) {
+        if (food->container) return std::pair(food->container, bday);
+    }
     return std::nullopt;
 }
 

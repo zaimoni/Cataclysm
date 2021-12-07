@@ -206,14 +206,14 @@ flexibility, resulting in a -2 penalty to Dexterity." },
 A set of very flexible and slick scales have grown to cover your body.  These\n\
 act as a weak set of armor, improve your ability to swim, and make you\n\
 difficult to grab." },
-{ "Light Bones", 2, 0, 0, "\
-Your bones are very light.  This enables you to run and attack 10% faster,\n\
-but also reduces your carrying weight by 20% and makes bashing attacks hurt\n\
+{ "Light Bones", 2, 0, 0, std::string("Your bones are very light.  This enables you to run and attack 10% faster,\n\
+but also reduces your carrying weight by ") + std::to_string(rational(100) * mutation_branch::light_bones_carrying[PF_LIGHT_BONES - PF_LIGHT_BONES]) +
+"% and makes bashing attacks hurt\n\
 a little more." },
-{ "Hollow Bones", -6, 0, 0, "\
-You have Avian Bone Syndrome--your bones are nearly hollow.  Your body is\n\
+{ "Hollow Bones", -6, 0, 0, std::string("You have Avian Bone Syndrome--your bones are nearly hollow.  Your body is\n\
 very light as a result, enabling you to run and attack 20% faster, but\n\
-also frail; you can carry 40% less, and bashing attacks injure you more." },
+also frail; you can carry ") + std::to_string(rational(100) * mutation_branch::light_bones_carrying[PF_HOLLOW_BONES - PF_LIGHT_BONES]) +
+"% less, and bashing attacks injure you more." },
 { "Feathers", 2, 10, 3, "\
 Iridescent feathers have grown to cover your entire body, providing a\n\
 marginal protection against attacks and minor protection from cold. They\n\

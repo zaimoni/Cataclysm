@@ -45,6 +45,7 @@ struct mutation_branch
  static const trait traits[PF_MAX2];	// descriptions for above
  static const constexpr int cold_blooded_severity[] = { 5, 3, 2 };
  static const constexpr rational light_bones_damage[] = { rational(7,5), rational(9,5) };
+ static const constexpr rational light_bones_carrying[] = { rational(4,5), rational(3,5) };
 
  bool valid = false; // True if this is a valid mutation (only used for flags < PF_MAX)
  std::vector<pl_flag> prereqs; // Prerequisites; Only one is required
@@ -57,5 +58,6 @@ struct mutation_branch
 
 static_assert((PF_COLDBLOOD3 - PF_COLDBLOOD) + 1 == std::end(mutation_branch::cold_blooded_severity) - std::begin(mutation_branch::cold_blooded_severity));
 static_assert((PF_HOLLOW_BONES - PF_LIGHT_BONES) + 1 == std::end(mutation_branch::light_bones_damage) - std::begin(mutation_branch::light_bones_damage));
+static_assert((PF_HOLLOW_BONES - PF_LIGHT_BONES) + 1 == std::end(mutation_branch::light_bones_carrying) - std::begin(mutation_branch::light_bones_carrying));
 
 #endif

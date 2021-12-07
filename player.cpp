@@ -4139,8 +4139,7 @@ int player::weight_capacity(bool real_life) const
  int str = (real_life ? str_cur : str_max);
  int ret = 400 + str * 35;
  if (has_trait(PF_BADBACK)) rational_scale<13,20>(ret);
- if (has_trait(PF_LIGHT_BONES)) rational_scale<4,5>(ret);
- if (has_trait(PF_HOLLOW_BONES)) rational_scale<3,5>(ret);
+ if (auto weak = has_light_bones()) ret *= mutation_branch::light_bones_carrying[weak - 1];
  if (has_artifact_with(AEP_CARRY_MORE)) ret += 200;
  return ret;
 }
