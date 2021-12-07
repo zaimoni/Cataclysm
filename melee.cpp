@@ -8,8 +8,6 @@
 #include <sstream>
 #include <stdlib.h>
 
-void melee_practice(player &u, bool hit, bool unarmed, bool bashing,
-                               bool cutting, bool stabbing);
 int  stumble(player &u);
 std::string melee_verb(technique_id tech, std::string your, player &p,
                        int bash_dam, int cut_dam, int stab_dam);
@@ -126,6 +124,24 @@ static int attack_speed(const player& u, bool missed)
     int move_cost = u.weapon.attack_time() + 20 * u.encumb(bp_torso);
     if (auto weak = u.has_light_bones()) move_cost *= mutation_branch::light_bones_attack_tus[weak - 1];
     return clamped_lb<25>(move_cost - u.disease_intensity(DI_SPEED_BOOST));
+}
+
+// could micro-optimize based on call graph, but this is not CPU-intensive
+static void melee_practice(player& u, bool hit, bool unarmed, bool bashing, bool cutting, bool stabbing)
+{
+    if (!hit) {
+        u.practice(sk_melee, rng(2, 5));
+        if (unarmed) u.practice(sk_unarmed, 2);
+        if (bashing) u.practice(sk_bashing, 2);
+        if (cutting) u.practice(sk_cutting, 2);
+        if (stabbing) u.practice(sk_stabbing, 2);
+    } else {
+        u.practice(sk_melee, rng(5, 10));
+        if (unarmed) u.practice(sk_unarmed, rng(5, 10));
+        if (bashing) u.practice(sk_bashing, rng(5, 10));
+        if (cutting) u.practice(sk_cutting, rng(5, 10));
+        if (stabbing) u.practice(sk_stabbing, rng(5, 10));
+    }
 }
 
 int player::hit_mon(game *g, monster *z, bool allow_grab) // defaults to true
@@ -1352,20 +1368,3 @@ std::string melee_verb(technique_id tech, std::string your, player &p,
  return ret.str();
 }
  
-void melee_practice(player &u, bool hit, bool unarmed, bool bashing,
-                               bool cutting, bool stabbing)
-{
- if (!hit) {
-  u.practice(sk_melee, rng(2, 5));
-  if (unarmed) u.practice(sk_unarmed, 2);
-  if (bashing) u.practice(sk_bashing, 2);
-  if (cutting) u.practice(sk_cutting, 2);
-  if (stabbing) u.practice(sk_stabbing, 2);
- } else {
-  u.practice(sk_melee, rng(5, 10));
-  if (unarmed) u.practice(sk_unarmed, rng(5, 10));
-  if (bashing) u.practice(sk_bashing, rng(5, 10));
-  if (cutting) u.practice(sk_cutting, rng(5, 10));
-  if (stabbing) u.practice(sk_stabbing, rng(5, 10));
- }
-}
