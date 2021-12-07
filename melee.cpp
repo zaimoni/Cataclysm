@@ -10,7 +10,6 @@
 
 void melee_practice(player &u, bool hit, bool unarmed, bool bashing,
                                bool cutting, bool stabbing);
-int  attack_speed(player &u, bool missed);
 int  stumble(player &u);
 std::string melee_verb(technique_id tech, std::string your, player &p,
                        int bash_dam, int cut_dam, int stab_dam);
@@ -120,6 +119,13 @@ static void hit_message(std::string subject, std::string verb, std::string targe
   else
 	messages.add("%s%s %s %s for %d damage.", (crit ? "Critical! " : ""),
 			subject.c_str(), verb.c_str(), target.c_str(), dam);
+}
+
+static int attack_speed(const player& u, bool missed)
+{
+    int move_cost = u.weapon.attack_time() + 20 * u.encumb(bp_torso);
+    if (auto weak = u.has_light_bones()) move_cost *= mutation_branch::light_bones_attack_tus[weak - 1];
+    return clamped_lb<25>(move_cost - u.disease_intensity(DI_SPEED_BOOST));
 }
 
 int player::hit_mon(game *g, monster *z, bool allow_grab) // defaults to true
@@ -1362,15 +1368,4 @@ void melee_practice(player &u, bool hit, bool unarmed, bool bashing,
   if (cutting) u.practice(sk_cutting, rng(5, 10));
   if (stabbing) u.practice(sk_stabbing, rng(5, 10));
  }
-}
-
-int attack_speed(player &u, bool missed)
-{
- int move_cost = u.weapon.attack_time() + 20 * u.encumb(bp_torso);
- if (u.has_trait(PF_LIGHT_BONES)) move_cost *= .9;
- if (u.has_trait(PF_HOLLOW_BONES)) move_cost *= .8;
-
- move_cost -= u.disease_intensity(DI_SPEED_BOOST);
-
- return (move_cost < 25) ? 25 : move_cost;
 }
