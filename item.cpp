@@ -490,16 +490,6 @@ bool item::has_technique(technique_id tech, const player *p) const
  }
  return (type->techniques & mfb(tech));
 }
-
-std::vector<technique_id> item::techniques() const
-{
- std::vector<technique_id> ret;
- for (int i = 0; i < NUM_TECHNIQUES; i++) {
-  if (has_technique( technique_id(i) ))
-   ret.push_back( technique_id(i) );
- }
- return ret;
-}
 #endif
 
 // sole caller is UI, so this doesn't need to be efficient 2021-01-05
