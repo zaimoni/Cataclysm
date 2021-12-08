@@ -919,8 +919,9 @@ struct it_style final : public itype
  std::vector<style_move> moves;
  
  it_style(int pid, std::string pname, std::string pdes, char psym, nc_color pcolor,
-     signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
-     unsigned pitem_flags);
+	 signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
+	 const std::initializer_list<style_move>& moves);
+
 
  const it_style* is_style() const override { return this; }
 

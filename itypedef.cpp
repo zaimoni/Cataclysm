@@ -4178,12 +4178,9 @@ GUN("fusion blaster",	 0,0,c_magenta,	STEEL,	PLASTIC,
 // Unarmed Styles
 
 #define STYLE(name,dam,description,...)	\
-{	\
-	index++; \
-	auto style = new it_style(index, name, description, '$',  c_white, dam, 0, 0, mfb(IF_UNARMED_WEAPON));	\
-	style->moves = __VA_ARGS__; \
-	types.push_back(style); \
-}
+do {	\
+	types.push_back(new it_style(++index, name, description, '$',  c_white, dam, 0, 0, __VA_ARGS__)); \
+} while(0)
 
 STYLE("karate", 2, "\
 Karate is a popular martial art, originating from Japan.  It focuses on\n\
@@ -4927,12 +4924,10 @@ it_software::it_software(int pid, unsigned int pprice,
 	power = ppower;
 }
 
-it_style::it_style(int pid,
-	std::string pname, std::string pdes,
-	char psym, nc_color pcolor,
-	signed char pmelee_dam, signed char pmelee_cut,
-	signed char pm_to_hit, unsigned pitem_flags)
-:itype(pid, 0, 0, pname, pdes, psym, pcolor, MNULL, MNULL, 0, 0, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags)
+it_style::it_style(int pid, std::string pname, std::string pdes, char psym, nc_color pcolor,
+	signed char pmelee_dam, signed char pmelee_cut, signed char pm_to_hit,
+	const std::initializer_list<style_move>& moves)
+	:itype(pid, 0, 0, pname, pdes, psym, pcolor, MNULL, MNULL, 0, 0, pmelee_dam, pmelee_cut, pm_to_hit, mfb(IF_UNARMED_WEAPON)), moves(moves)
 { }
 
 it_artifact_tool::it_artifact_tool()

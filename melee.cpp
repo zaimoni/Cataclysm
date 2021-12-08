@@ -34,8 +34,8 @@ bool player::is_armed() const
 }
 
 bool player::unarmed_attack() const
-{
- return (weapon.type->id == 0 || weapon.is_style() ||
+{   // 2021-12-08 all styles have the IF_UNARMED_WEAPON set in their constructor
+ return (weapon.type->id == 0 || /* weapon.is_style() || */
          weapon.has_flag(IF_UNARMED_WEAPON));
 }
 
@@ -841,8 +841,7 @@ technique_id player::pick_defensive_technique(game *g, const monster *z, player 
   return TEC_WBLOCK_1;
 
  if (weapon.has_technique(TEC_DEF_DISARM, this) &&
-     z == nullptr && p->weapon.type->id != 0 &&
-     !p->weapon.has_flag(IF_UNARMED_WEAPON) &&
+     z == nullptr && !p->unarmed_attack() &&
      dice(dex_cur + sklevel[sk_unarmed], 8) > dice(foe_melee_skill,  10))
   return TEC_DEF_DISARM;
 
