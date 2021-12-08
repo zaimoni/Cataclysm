@@ -657,11 +657,9 @@ technique_id player::pick_technique(const game *g, const monster *z, const playe
  if (z == nullptr && p == nullptr) return TEC_NULL; // \todo error condition?
  const mobile* const mob = z ? static_cast<const mobile*>(z) : p;
  const bool downed = mob->has(effect::DOWNED);
+ const int base_str_req = mob->min_technique_power();
 
  std::vector<technique_id> possible;
- int base_str_req = 0;
- if (z) base_str_req = z->type->size;
- else if (p) base_str_req = 1 + (2 + p->str_cur) / 4;
 
  if (allowgrab) { // Check if grabs AREN'T REALLY ALLOWED
   if (z && z->has_flag(MF_PLASTIC)) allowgrab = false;
@@ -683,8 +681,7 @@ technique_id player::pick_technique(const game *g, const monster *z, const playe
 
  if (possible.empty()) { // Use non-crits only if any crit-onlies aren't used
 
-  if (weapon.has_technique(TEC_DISARM, this) && !z &&
-      p->weapon.type->id != 0 && !p->weapon.has_flag(IF_UNARMED_WEAPON) &&
+  if (weapon.has_technique(TEC_DISARM, this) && !z && !p->unarmed_attack() &&
       dice(dex_cur + sklevel[sk_unarmed], 8) > dice(p->melee_skill(), 10))
    possible.push_back(TEC_DISARM);
 
@@ -718,7 +715,7 @@ technique_id player::pick_technique(const game *g, const monster *z, const playe
 
  possible.push_back(TEC_NULL); // Always a chance to not use any technique
 
- return possible[ rng(0, possible.size() - 1) ];
+ return possible[rng(0, possible.size() - 1)];
 }
 
 void player::perform_technique(technique_id technique, game *g, monster *z,

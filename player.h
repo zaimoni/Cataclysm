@@ -135,6 +135,7 @@ public:
  int dodge() const; // Returns the players's dodge, modded by clothing etc
  int dodge_roll() const override; // For comparison to hit_roll()
  int melee_skill() const override { return dex_cur + sklevel[sk_melee]; }
+ int min_technique_power() const override { return 1 + (2 + str_cur) / 4; }
 
 // ranged.cpp (at some point, historically)
  int throw_range(int index) const; // Range of throwing item; -1:ERR 0:Can't throw

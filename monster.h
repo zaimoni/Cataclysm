@@ -127,6 +127,7 @@ class monster : public mobile {
  int  dodge() const;		// Natural dodge, or 0 if we're occupied
  int  dodge_roll() const override; // For the purposes of comparing to player::hit_roll()
  int  melee_skill() const override { return type->melee_skill; }
+ int min_technique_power() const override { return type->size; }
  int  fall_damage() const;	// How much a fall hurts us
  void die(game *g);
 
