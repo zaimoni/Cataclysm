@@ -128,8 +128,6 @@ public:
  int  weapon_value(const int skills[num_skill_types]) const;
 // As above, but discounts its use as a ranged weapon
  int  melee_value(const int skills[num_skill_types]) const { return type->melee_value(skills); }
-// Returns the data associated with tech, if we are an it_style
- style_move style_data(technique_id tech) const;
 #ifndef SOCRATES_DAIMON
  bool is_two_handed(const player& u) const;
 #endif

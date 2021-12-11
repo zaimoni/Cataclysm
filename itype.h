@@ -928,6 +928,8 @@ struct it_style final : public itype
  int melee_value(const int skills[num_skill_types]) const override;
 
  void info(std::ostream& dest) const override;
+
+ const style_move* data(technique_id src) const;
 };
 
 struct it_artifact_tool final : public it_tool

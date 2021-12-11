@@ -4930,6 +4930,13 @@ it_style::it_style(int pid, std::string pname, std::string pdes, char psym, nc_c
 	:itype(pid, 0, 0, pname, pdes, psym, pcolor, MNULL, MNULL, 0, 0, pmelee_dam, pmelee_cut, pm_to_hit, mfb(IF_UNARMED_WEAPON)), moves(moves)
 { }
 
+const style_move* it_style::data(technique_id src) const
+{
+	for (decltype(auto) m : moves) if (m.tech == src) return &m;
+	return nullptr;
+}
+
+
 it_artifact_tool::it_artifact_tool()
 : it_tool(
 #ifndef SOCRATES_DAIMON

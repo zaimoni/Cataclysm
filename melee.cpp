@@ -1310,8 +1310,11 @@ std::vector<special_attack> player::mutation_attacks(const monster *z, const pla
 std::string melee_verb(technique_id tech, std::string your, player &p,
                        int bash_dam, int cut_dam, int stab_dam)
 {
- if (tech != TEC_NULL && p.weapon.is_style() && !p.weapon.style_data(tech).name.empty())
-  return p.regular_verb_agreement(p.weapon.style_data(tech).name);
+    if (tech) {
+        if (const auto style = p.weapon.is_style()) {
+            if (const auto m = style->data(tech)) return p.regular_verb_agreement(m->name);
+        }
+    }
 
  std::ostringstream ret;
 

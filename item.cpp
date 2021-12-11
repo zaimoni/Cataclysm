@@ -484,9 +484,9 @@ bool item::has_flag(item_flag f) const
 bool item::has_technique(technique_id tech, const player *p) const
 {
  if (const auto style = is_style()) {
-  for (const auto& m : style->moves) {
-   if (m.tech == tech && (p == nullptr || p->sklevel[sk_unarmed] >= m.level)) return true;
-  }
+     if (const auto m = style->data(tech)) {
+         if (p == nullptr || p->sklevel[sk_unarmed] >= m->level) return true;
+     }
  }
  return (type->techniques & mfb(tech));
 }
@@ -532,15 +532,6 @@ int item::weapon_value(const int skills[num_skill_types]) const
  return my_value;
 }
 
-style_move item::style_data(technique_id tech) const
-{
-    if (const auto style = is_style()) {
-        for (const auto& m : style->moves) if (m.tech == tech) return m;
-    }
-
-    return style_move();
-}
- 
 #ifndef SOCRATES_DAIMON
 bool item::is_two_handed(const player& u) const
 {
