@@ -1196,10 +1196,9 @@ std::vector<special_attack> player::mutation_attacks(const monster *z, const pla
 {
  std::vector<special_attack> ret;
 
- bool is_u = (!is_npc());// Affects how we'll display messages
- const std::string You  = (is_u ? "You"  : name);
- const std::string Your = (is_u ? "Your" : name + "'s");
- const std::string your = (is_u ? "your" : (male ? "his" : "her"));
+ const std::string You  = grammar::capitalize(subject());
+ const std::string Your = grammar::capitalize(possessive());
+ const std::string your = pronoun(grammar::noun::role::possessive);
  const std::string target = (z ? "the " + z->name() : p->name);
 
  std::ostringstream text;
