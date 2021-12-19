@@ -178,21 +178,6 @@ npc::npc()
 DEFINE_ACID_ASSIGN_W_MOVE(npc_chatbin)
 DEFINE_ACID_ASSIGN_W_MOVE(npc)
 
-std::string npc::subject() const
-{
-	return name;
-}
-
-std::string npc::direct_object() const
-{
-	return name;
-}
-
-std::string npc::indirect_object() const
-{
-	return name;
-}
-
 std::string npc::possessive() const
 {
 	auto ret(name);

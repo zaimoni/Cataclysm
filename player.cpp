@@ -1549,35 +1549,6 @@ player::player()
   mutation_category_level[i] = 0;
 }
 
-std::string player::subject() const
-{
-    return "you";
-}
-
-std::string player::direct_object() const
-{
-    return "you";
-}
-
-std::string player::indirect_object() const
-{
-    return "you";
-}
-
-std::string player::possessive() const
-{
-    return "your";
-}
-
-std::string player::pronoun(role r) const
-{
-    switch (r)
-    {
-    case noun::role::possessive: return "your";
-    default: return "you";
-    }
-}
-
 void player::screenpos_set(point pt)
 {
     set_screenpos(pos = pt);

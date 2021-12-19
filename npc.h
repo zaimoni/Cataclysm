@@ -486,11 +486,10 @@ public:
     constexpr int use_active(item& it) override { return 0; } // stub
 
 // grammatical support
-    std::string subject() const override;
-    std::string direct_object() const override;
-    std::string indirect_object() const override;
+    std::string subject() const override { return name; }
+    std::string direct_object() const override { return name; }
+    std::string indirect_object() const override { return name; }
     std::string possessive() const override;
-    std::string pronoun(role r) const override { return typical_pronoun(r); }
 
 // #############   VALUES   ################
 

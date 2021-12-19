@@ -321,11 +321,6 @@ public:
  // grammatical support
  bool is_proper() const override final { return true; }
  unsigned gender() const override final { return male ? 1 : 2; }
- std::string subject() const override;
- std::string direct_object() const override;
- std::string indirect_object() const override;
- std::string possessive() const override;
- std::string pronoun(role r) const override;
 
  // integrity checks
  void screenpos_set(point pt);

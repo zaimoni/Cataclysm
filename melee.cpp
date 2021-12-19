@@ -1207,7 +1207,7 @@ std::vector<special_attack> player::mutation_attacks(const monster *z, const pla
  if (has_trait(PF_FANGS) && !wearing_something_on(bp_mouth) &&
      one_in(20 - dex_cur - sklevel[sk_unarmed])) {
   text.str(You);
-  text << " sink" << (is_u ? " " : "s ") << your << " fangs into " << target << "!";
+  text << regular_verb_agreement(" sink") << your << " fangs into " << target << "!";
   special_attack tmp(text.str());
   tmp.stab = 20;
   ret.push_back(tmp);
@@ -1215,7 +1215,7 @@ std::vector<special_attack> player::mutation_attacks(const monster *z, const pla
 
  if (has_trait(PF_MANDIBLES) && one_in(22 - dex_cur - sklevel[sk_unarmed])) {
   text.str(You);
-  text << " slice" << (is_u ? " " : "s ") << target << " with " << your << " mandibles!";
+  text << regular_verb_agreement(" slice") << target << " with " << your << " mandibles!";
   special_attack tmp(text.str());
   tmp.cut = 12;
   ret.push_back(tmp);
@@ -1223,7 +1223,7 @@ std::vector<special_attack> player::mutation_attacks(const monster *z, const pla
 
  if (has_trait(PF_BEAK) && one_in(15 - dex_cur - sklevel[sk_unarmed])) {
   text.str(You);
-  text << " peck" << (is_u ? " " : "s ") << target << "!";
+  text << regular_verb_agreement(" peck") << target << "!";
   special_attack tmp(text.str());
   tmp.stab = 15;
   ret.push_back(tmp);
@@ -1231,7 +1231,7 @@ std::vector<special_attack> player::mutation_attacks(const monster *z, const pla
   
  if (has_trait(PF_HOOVES) && one_in(25 - dex_cur - 2 * sklevel[sk_unarmed])) {
   text.str(You);
-  text << " kick" << (is_u ? " " : "s ") << target << " with " << your << " hooves!";
+  text << regular_verb_agreement(" kick") << target << " with " << your << " hooves!";
   special_attack tmp(text.str());
   tmp.bash = clamped_ub<40>(str_cur * 3);
   ret.push_back(tmp);
@@ -1239,7 +1239,7 @@ std::vector<special_attack> player::mutation_attacks(const monster *z, const pla
 
  if (has_trait(PF_HORNS) && one_in(20 - dex_cur - sklevel[sk_unarmed])) {
   text.str(You);
-  text << " headbutt" << (is_u ? " " : "s ") << target << " with " << your << " horns!";
+  text << regular_verb_agreement(" headbutt") << target << " with " << your << " horns!";
   special_attack tmp(text.str());
   tmp.bash = 3;
   tmp.stab = 3;
@@ -1248,7 +1248,7 @@ std::vector<special_attack> player::mutation_attacks(const monster *z, const pla
 
  if (has_trait(PF_HORNS_CURLED) && one_in(20 - dex_cur - sklevel[sk_unarmed])) {
   text.str(You);
-  text << " headbutt" << (is_u ? " " : "s ") << target << " with " << your << " curled horns!";
+  text << regular_verb_agreement(" headbutt") << target << " with " << your << " curled horns!";
   special_attack tmp(text.str());
   tmp.bash = 14;
   ret.push_back(tmp);
@@ -1256,7 +1256,7 @@ std::vector<special_attack> player::mutation_attacks(const monster *z, const pla
 
  if (has_trait(PF_HORNS_POINTED) && one_in(22 - dex_cur - sklevel[sk_unarmed])){
   text.str(You);
-  text << " stab" << (is_u ? " " : "s ") << target << " with " << your << " pointed horns!";
+  text << regular_verb_agreement(" stab") << target << " with " << your << " pointed horns!";
   special_attack tmp(text.str());
   tmp.stab = 24;
   ret.push_back(tmp);
@@ -1264,7 +1264,7 @@ std::vector<special_attack> player::mutation_attacks(const monster *z, const pla
 
  if (has_trait(PF_ANTLERS) && one_in(20 - dex_cur - sklevel[sk_unarmed])) {
   text.str(You);
-  text << " butt" << (is_u ? " " : "s ") << target << " with " << your << " antlers!";
+  text << regular_verb_agreement(" butt") << target << " with " << your << " antlers!";
   special_attack tmp(text.str());
   tmp.bash = 4;
   ret.push_back(tmp);
@@ -1272,7 +1272,7 @@ std::vector<special_attack> player::mutation_attacks(const monster *z, const pla
 
  if (has_trait(PF_TAIL_STING) && one_in(3) && one_in(10 - dex_cur)) {
   text.str(You);
-  text << " sting" << (is_u ? " " : "s ") << target << " with " << your << " tail!";
+  text << regular_verb_agreement(" sting") << target << " with " << your << " tail!";
   special_attack tmp(text.str());
   tmp.stab = 20;
   ret.push_back(tmp);
@@ -1280,7 +1280,7 @@ std::vector<special_attack> player::mutation_attacks(const monster *z, const pla
 
  if (has_trait(PF_TAIL_CLUB) && one_in(3) && one_in(10 - dex_cur)) {
   text.str(You);
-  text << " hit" << (is_u ? " " : "s ") << target << " with " << your << " tail!";
+  text << regular_verb_agreement(" hit") << target << " with " << your << " tail!";
   special_attack tmp(text.str());
   tmp.bash = 18;
   ret.push_back(tmp);
@@ -1296,7 +1296,7 @@ std::vector<special_attack> player::mutation_attacks(const monster *z, const pla
   for (int i = 0; i < num_attacks; i++) {
    if (one_in(18 - dex_cur - sklevel[sk_unarmed])) {
     text.str(You);
-    text << " slap" << (is_u ? " " : "s ") << target << " with " << your << " tentacle!";
+    text << regular_verb_agreement(" slap") << target << " with " << your << " tentacle!";
     special_attack tmp(text.str());
     tmp.bash = str_cur / 2;
     ret.push_back(tmp);

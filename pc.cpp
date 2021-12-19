@@ -82,6 +82,15 @@ int pc::use_active(item& it) {
     return 0;
 }
 
+std::string pc::pronoun(role r) const
+{
+    switch (r)
+    {
+    case noun::role::possessive: return "your";
+    default: return "you";
+    }
+}
+
 char pc::inc_invlet(char src)
 {
     switch (src) {
