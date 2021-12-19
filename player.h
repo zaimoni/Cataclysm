@@ -399,7 +399,7 @@ private:
                        int &bash_dam, int &cut_dam, int &pierce_dam, int &pain);
 
  void perform_special_attacks(game *g, monster *z, player *p, int &bash_dam, int &cut_dam, int &pierce_dam);	// V 0.2.1 \todo enable for NPCs
- std::vector<special_attack> mutation_attacks(const monster *z, const player *p) const;	// V 0.2.1 \todo enable for NPCs
+ std::vector<special_attack> mutation_attacks(const mobile& mob) const;	// V 0.2.1 \todo enable for NPCs
 
  void melee_special_effects(game *g, monster *z, player *p, bool crit, int &bash_dam, int &cut_dam, int &stab_dam);
 

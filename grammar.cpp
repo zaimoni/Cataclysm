@@ -30,7 +30,7 @@ static const char* text(article prefix, const std::string& target)
 	}
 }
 
-std::string noun::desc(role r, article prefix)
+std::string noun::desc(role r, article prefix) const
 {
 	auto ret(text(r, *this));
 	if (!is_proper()) {	// not *always*, but exceptions generally have an implicit reading that is consistent

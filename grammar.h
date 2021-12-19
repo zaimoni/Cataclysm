@@ -30,7 +30,7 @@ struct noun
 	virtual std::string indirect_object() const = 0;
 	virtual std::string possessive() const = 0;
 
-	std::string desc(role r, article prefix = article::none);
+	std::string desc(role r, article prefix = article::none) const;
 	virtual std::string pronoun(role r) const { return typical_pronoun(r); }
 	virtual std::string regular_verb_agreement(const std::string& verb) const;
 	std::string VO_phrase(const std::string& verb, const std::string& obj) const;

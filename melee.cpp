@@ -955,7 +955,7 @@ void player::perform_special_attacks(game *g, monster *z, player *p,
  bool can_poison = false;
  int bash_armor = (z == nullptr ? 0 : z->armor_bash());
  int cut_armor  = (z == nullptr ? 0 : z->armor_cut());
- std::vector<special_attack> special_attacks = mutation_attacks(z, p);
+ std::vector<special_attack> special_attacks = mutation_attacks(*mob);
 
  for (int i = 0; i < special_attacks.size(); i++) {
   bool did_damage = false;
@@ -1192,14 +1192,14 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
  }
 }
 
-std::vector<special_attack> player::mutation_attacks(const monster *z, const player *p) const
+std::vector<special_attack> player::mutation_attacks(const mobile& mob) const
 {
  std::vector<special_attack> ret;
 
  const std::string You  = grammar::capitalize(subject());
  const std::string Your = grammar::capitalize(possessive());
  const std::string your = pronoun(grammar::noun::role::possessive);
- const std::string target = (z ? "the " + z->name() : p->name);
+ const std::string target = mob.desc(grammar::noun::role::direct_object, grammar::article::definite);
 
  std::ostringstream text;
 
