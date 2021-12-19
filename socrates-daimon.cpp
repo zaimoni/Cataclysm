@@ -11,6 +11,7 @@
 #include "html.hpp"
 #include "mapdata.h"
 #include "pldata.h"
+#include "mutation.h"
 #include <stdexcept>
 #include <stdlib.h>
 #include <time.h>
@@ -269,6 +270,7 @@ int main(int argc, char *argv[])
 	// roundtrip tests to schedule: mon_id, itype_id, item_flag, technique_id, art_charge, art_effect_active, art_effect_passive
 
 	// bootstrap
+	mutation_branch::init();
 	item::init();
 	mtype::init();
 //	mtype::init_items();     need to do this but at a later stage
@@ -1903,6 +1905,9 @@ int main(int argc, char *argv[])
 #define CONSTRUCTION_HTML "construction.html"
 #define CONSTRUCTION_ID "construction"
 #define CONSTRUCTION_LINK_NAME "Construction"
+#define MUTATIONS_HTML "mutations.html"
+#define MUTATIONS_ID "mutations"
+#define MUTATIONS_LINK_NAME "Mutations"
 #define SKILLS_HTML "skills.html"
 #define SKILLS_ID "skills"
 #define SKILLS_LINK_NAME "Skills"
@@ -1913,6 +1918,7 @@ int main(int argc, char *argv[])
 	statusnav_nav.append(typicalMenuLink(ADDICTIONS_ID, ADDICTIONS_LINK_NAME, "./" ADDICTIONS_HTML));
 	statusnav_nav.append(typicalMenuLink(CONSTRUCTION_ID, CONSTRUCTION_LINK_NAME, "./" CONSTRUCTION_HTML));
 	statusnav_nav.append(typicalMenuLink(CRAFTING_ID, CRAFTING_LINK_NAME, "./" CRAFTING_HTML));
+	statusnav_nav.append(typicalMenuLink(MUTATIONS_ID, MUTATIONS_LINK_NAME, "./" MUTATIONS_HTML));
 	statusnav_nav.append(typicalMenuLink(SKILLS_ID, SKILLS_LINK_NAME, "./" SKILLS_HTML));
 	statusnav_nav.append(typicalMenuLink(SKILL_PLAN_ID, SKILL_PLAN_LINK_NAME, "./" SKILL_PLAN_HTML));
 
@@ -2290,6 +2296,61 @@ int main(int argc, char *argv[])
 				// page.end_print();
 			}
 
+			while (page.end_print());
+		}
+
+		unlink(HTML_TARGET);
+		rename(HTML_TARGET ".tmp", HTML_TARGET);
+	}
+
+#undef HTML_TARGET
+
+#define HTML_TARGET HTML_DIR MUTATIONS_HTML
+
+	if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
+		{
+			html::to_text page(out);
+			page.start_print(_html);
+			_title->append(html::tag::wrap("Cataclysm:Z " MUTATIONS_LINK_NAME));
+			page.print(_head);
+			_title->clear();
+			page.start_print(_body);
+			{
+				auto revert = swapDOM("#" MUTATIONS_ID "_link", global_nav, html::tag("b", MUTATIONS_LINK_NAME));
+				page.print(global_nav);
+				*revert.first = std::move(revert.second);
+			}
+
+			// base display
+			{
+				page.start_print(_data_table);
+				static constexpr const char* table_headers[] = { "Name" , "Points", "Visibility", "Ugliness", "Description" };
+				{
+					html::tag table_header("tr");
+					for (decltype(auto) th : table_headers) table_header.append(html::tag("th", th));
+					page.print(table_header);
+				}
+				{
+					html::tag cell("td");
+					html::tag table_row("tr");
+					table_row.set(attr_align, val_left);
+					table_row.set(attr_valign, val_top);
+					for (decltype(auto) th : table_headers) table_row.append(cell);
+
+					for (decltype(auto) mut : mutation_branch::traits) {
+						table_row[0].append(mut.name);
+						table_row[1].append(std::to_string(mut.points));
+						table_row[2].append(std::to_string(mut.visiblity));
+						table_row[3].append(std::to_string(mut.ugliness));
+						table_row[4].append(mut.description);
+
+						page.print(table_row);
+						for (decltype(auto) tr : table_row) tr.clear();
+					}
+				}
+//				page.end_print();
+			}
+			// \todo dependency graph
 			while (page.end_print());
 		}
 

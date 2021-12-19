@@ -86,6 +86,9 @@
     <ClCompile Include="constructiondef.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mutation_data.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="color.h">
@@ -182,6 +185,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="trap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mutation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

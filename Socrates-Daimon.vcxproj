@@ -169,6 +169,7 @@
     <ClCompile Include="json.cpp" />
     <ClCompile Include="mapdata.cpp" />
     <ClCompile Include="mtypedef.cpp" />
+    <ClCompile Include="mutation_data.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="output.cpp" />
     <ClCompile Include="pldata.cpp" />
@@ -199,6 +200,7 @@
     <ClInclude Include="mapdata.h" />
     <ClInclude Include="material_enum.h" />
     <ClInclude Include="mtype.h" />
+    <ClInclude Include="mutation.h" />
     <ClInclude Include="options.h" />
     <ClInclude Include="output.h" />
     <ClInclude Include="pldata_enum.h" />
