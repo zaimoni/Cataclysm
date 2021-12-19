@@ -326,7 +326,6 @@ public:
  std::string indirect_object() const override;
  std::string possessive() const override;
  std::string pronoun(role r) const override;
- std::string regular_verb_agreement(const std::string& verb) const override;
 
  // integrity checks
  void screenpos_set(point pt);

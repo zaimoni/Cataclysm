@@ -1578,13 +1578,6 @@ std::string player::pronoun(role r) const
     }
 }
 
-std::string player::regular_verb_agreement(const std::string& verb) const
-{
-
-    if (is_npc()) return verb + "s";
-    return verb;
-}
-
 void player::screenpos_set(point pt)
 {
     set_screenpos(pos = pt);
