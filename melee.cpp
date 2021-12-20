@@ -955,34 +955,38 @@ void player::perform_special_attacks(game *g, monster *z, player *p,
  bool can_poison = false;
  int bash_armor = (z == nullptr ? 0 : z->armor_bash());
  int cut_armor  = (z == nullptr ? 0 : z->armor_cut());
- std::vector<special_attack> special_attacks = mutation_attacks(*mob);
+ int stab_armor = cataclysm::rational_scaled<4, 5>(cut_armor);
+ const auto special_attacks = mutation_attacks(*mob);
 
- for (int i = 0; i < special_attacks.size(); i++) {
-  bool did_damage = false;
-  if (special_attacks[i].bash > bash_armor) {
-   bash_dam += special_attacks[i].bash;
-   did_damage = true;
-  }
-  if (special_attacks[i].cut > cut_armor) {
-   cut_dam += special_attacks[i].cut - cut_armor;
-   did_damage = true;
-  }
-  if (special_attacks[i].stab > cut_armor * .8) {
-   stab_dam += special_attacks[i].stab - cut_armor * .8;
-   did_damage = true;
-  }
+ for (decltype(auto) attack : special_attacks) {
+     bool did_damage = false;
+     if (attack.bash > bash_armor) {
+         bash_dam += attack.bash;
+         did_damage = true;
+     }
+     if (attack.cut > cut_armor) {
+         cut_dam += attack.cut - cut_armor;
+         did_damage = true;
+     }
+     if (attack.stab > stab_armor) {
+         stab_dam += attack.stab - stab_armor;
+         did_damage = true;
+     }
 
-  if (!can_poison && one_in(2) &&
-      (special_attacks[i].cut > cut_armor ||
-       special_attacks[i].stab > cut_armor * .8))
-   can_poison = true;
+     if (   !can_poison && has_trait(PF_POISONOUS)
+         && (attack.cut > cut_armor || attack.stab > stab_armor) && one_in(2))
+         can_poison = true;
 
-  if (did_damage) messages.add( special_attacks[i].text.c_str() );
+     if (did_damage) subjective_message(attack.text); // \todo NPC-competent messaging
  }
 
- if (can_poison && has_trait(PF_POISONOUS)) {
-  if (!is_npc() && !mob->has(effect::POISONED)) messages.add("You poison %s!", mob->desc(grammar::noun::role::direct_object, grammar::article::definite).c_str());
-  mob->add(effect::POISONED, TURNS(6));
+ static auto am_toxic = [&]() {
+     return grammar::SVO_sentence(*this, "poison", mob->desc(grammar::noun::role::direct_object, grammar::article::definite), "!");
+ };
+
+ if (can_poison) {
+     if (!mob->has(effect::POISONED)) if_visible_message(am_toxic);
+     mob->add(effect::POISONED, TURNS(6));
  }
 }
 
