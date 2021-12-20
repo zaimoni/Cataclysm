@@ -409,11 +409,11 @@ void player::activate_bionic(int b, game *g)
   messages.add("Your speed suddenly increases!");
   if (one_in(3)) {
    messages.add("Your muscles tear with the strain.");
-   hurt(g, bp_arms, 0, rng(5, 10));
-   hurt(g, bp_arms, 1, rng(5, 10));
-   hurt(g, bp_legs, 0, rng(7, 12));
-   hurt(g, bp_legs, 1, rng(7, 12));
-   hurt(g, bp_torso, 0, rng(5, 15));
+   hurt(bp_arms, 0, rng(5, 10));
+   hurt(bp_arms, 1, rng(5, 10));
+   hurt(bp_legs, 0, rng(7, 12));
+   hurt(bp_legs, 1, rng(7, 12));
+   hurt(bp_torso, 0, rng(5, 15));
   }
   if (one_in(5)) add_disease(DI_TELEGLOW, rng(MINUTES(5), MINUTES(40)));
   break;

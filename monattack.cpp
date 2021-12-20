@@ -934,7 +934,7 @@ void mattack::tazer(game *g, monster *z)
  messages.add("%s shocks you!",
               grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
  int shock = rng(1, 5);
- g->u.hurt(g, bp_torso, 0, shock * rng(1, 3));
+ g->u.hurt(bp_torso, 0, shock * rng(1, 3));
  g->u.moves -= shock * (mobile::mp_turn/5);
 }
 

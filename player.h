@@ -154,7 +154,7 @@ public:
 // hit() processes damage through armor
  void hit (game *g, body_part bphurt, int side, int dam, int cut);
 // hurt() doesn't--effects of disease, what have you
- void hurt(game *g, body_part bphurt, int side, int dam);
+ void hurt(body_part bphurt, int side, int dam);
  bool hurt(int dam) override;
 
  void heal(body_part healed, int side, int dam);	// dead function?

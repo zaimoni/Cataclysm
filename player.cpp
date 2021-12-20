@@ -514,8 +514,8 @@ void dis_effect(game* g, player& p, disease& dis)
             }
             else
                 g->sound(p.pos, 12, "a hacking cough.");
-            p.moves -= 80;
-            p.hurt(g, bp_torso, 0, 1 - (rng(0, 1) * rng(0, 1)));
+            p.moves -= 4 * (mobile::mp_turn / 5);
+            p.hurt(bp_torso, 0, 1 - (rng(0, 1) * rng(0, 1)));
         }
         break;
 
@@ -527,8 +527,8 @@ void dis_effect(game* g, player& p, disease& dis)
             }
             else
                 g->sound(p.pos, 12, "a hacking cough");
-            p.moves -= 100;
-            p.hurt(g, bp_torso, 0, rng(0, 3) * rng(0, 1));
+            p.moves -= mobile::mp_turn;
+            p.hurt(bp_torso, 0, rng(0, 3) * rng(0, 1));
         }
         break;
 
@@ -578,7 +578,7 @@ void dis_effect(game* g, player& p, disease& dis)
             if (one_in(600 + bonus * 3)) {
                 if (!p.is_npc()) messages.add("You spasm suddenly!");
                 p.moves -= mobile::mp_turn;
-                p.hurt(g, bp_torso, 0, 5);
+                p.hurt(bp_torso, 0, 5);
             }
             if ((p.has_trait(PF_WEAKSTOMACH) && one_in(1600 + bonus * 8)) ||
                 (p.has_trait(PF_NAUSEA) && one_in(800 + bonus * 6)) ||
@@ -612,8 +612,8 @@ void dis_effect(game* g, player& p, disease& dis)
             else if (one_in(6000 + bonus * 20)) {
                 if (!p.is_npc()) messages.add("Fungus stalks burst through your hands!");
                 else if (g->u.see(p.pos)) messages.add("Fungus stalks burst through %s's hands!", p.name.c_str());
-                p.hurt(g, bp_arms, 0, 60);
-                p.hurt(g, bp_arms, 1, 60);
+                p.hurt(bp_arms, 0, 60);
+                p.hurt(bp_arms, 1, 60);
             }
         }
         break;
@@ -722,7 +722,7 @@ void dis_effect(game* g, player& p, disease& dis)
         if (one_in(p.has_trait(PF_POISRESIST) ? 900 : 150)) {
             if (!p.is_npc()) messages.add("You're suddenly wracked with pain!");
             p.pain++;
-            p.hurt(g, bp_torso, 0, rng(0, 2) * rng(0, 1));
+            p.hurt(bp_torso, 0, rng(0, 2) * rng(0, 1));
         }
         break;
 
@@ -730,7 +730,7 @@ void dis_effect(game* g, player& p, disease& dis)
         if (one_in(p.has_trait(PF_POISRESIST) ? 500 : 100)) {
             if (!p.is_npc()) messages.add("You're suddenly wracked with pain!");
             p.pain += 2;
-            p.hurt(g, bp_torso, 0, rng(0, 2));
+            p.hurt(bp_torso, 0, rng(0, 2));
         }
         break;
 
@@ -738,7 +738,7 @@ void dis_effect(game* g, player& p, disease& dis)
         bonus = p.has_trait(PF_POISRESIST) ? 600 : 0;
         if (one_in(300 + bonus)) {
             if (!p.is_npc()) messages.add("You're suddenly wracked with pain and nausea!");
-            p.hurt(g, bp_torso, 0, 1);
+            p.hurt(bp_torso, 0, 1);
         }
         if ((p.has_trait(PF_WEAKSTOMACH) && one_in(300 + bonus)) ||
             (p.has_trait(PF_NAUSEA) && one_in(50 + bonus)) ||
@@ -775,7 +775,7 @@ void dis_effect(game* g, player& p, disease& dis)
                     body_part burst = bp_torso;
                     if (one_in(3)) burst = bp_arms;
                     else if (one_in(3)) burst = bp_legs;
-                    p.hurt(g, burst, rng(0, 1), rng(4, 8));
+                    p.hurt(burst, rng(0, 1), rng(4, 8));
                     // Spawn a larva
                     int sel = rng(0, valid_spawns.size() - 1);
                     grub.spawn(valid_spawns[sel]);
@@ -802,8 +802,8 @@ void dis_effect(game* g, player& p, disease& dis)
             else if (g->u.see(p.pos))
                 messages.add("%s starts scratching %s all over!", p.name.c_str(), (p.male ? "himself" : "herself"));
             p.cancel_activity();
-            p.moves -= 150;
-            p.hurt(g, bp_torso, 0, 1);
+            p.moves -= 3 * (mobile::mp_turn / 2);
+            p.hurt(bp_torso, 0, 1);
         }
         break;
 
@@ -3391,7 +3391,7 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
   add_disease(DI_ADRENALINE, MINUTES(20));
 }
 
-void player::hurt(game *g, body_part bphurt, int side, int dam)
+void player::hurt(body_part bphurt, int side, int dam)
 {
     if (2 < rng(0, dam) && rude_awakening()) {}
     else rem_disease(DI_LYING_DOWN);
@@ -3786,7 +3786,7 @@ void player::suffer(game *g)
     power_level--;
    } else {
     messages.add("You're drowning!");
-    hurt(g, bp_torso, 0, rng(1, 4));
+    hurt(bp_torso, 0, rng(1, 4));
    }
   }
  }
@@ -5215,7 +5215,7 @@ void player::check_warmth(int ambient_F)
     if (temp_code <= -6) {
         subjective_message("Your head is freezing!");
         add_disease(DI_COLD, abs(temp_code * 2));// Heat loss via head is bad
-        hurt(g, bp_head, 0, rng(0, abs(temp_code / 3)));
+        hurt(bp_head, 0, rng(0, abs(temp_code / 3)));
     } else if (temp_code <= -3) {
         subjective_message("Your head is cold.");
         add_disease(DI_COLD, abs(temp_code * 2));
@@ -5228,7 +5228,7 @@ void player::check_warmth(int ambient_F)
     if (temp_code <= -6) {
         subjective_message("Your face is freezing!");
         add_disease(DI_COLD_FACE, abs(temp_code));
-        hurt(g, bp_head, 0, rng(0, abs(temp_code / 3)));
+        hurt(bp_head, 0, rng(0, abs(temp_code / 3)));
     } else if (temp_code <= -4) {
         subjective_message("Your face is cold.");
         add_disease(DI_COLD_FACE, abs(temp_code));
@@ -5241,7 +5241,7 @@ void player::check_warmth(int ambient_F)
     if (temp_code <= -8) {
         subjective_message("Your body is freezing!");
         add_disease(DI_COLD, abs(temp_code));
-        hurt(g, bp_torso, 0, rng(0, abs(temp_code / 4)));
+        hurt(bp_torso, 0, rng(0, abs(temp_code / 4)));
     } else if (temp_code <= -2) {
         subjective_message("Your body is cold.");
         add_disease(DI_COLD, abs(temp_code));

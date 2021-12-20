@@ -5446,7 +5446,7 @@ void game::teleport(player *p)
  p->screenpos_set(dest);
  if (m.move_cost(dest) == 0) {	// \todo? C:Whales TODO: If we land in water, swim
    if (can_see) messages.add("%s teleport%s into the middle of a %s!", You.c_str(), (is_u ? "" : "s"), name_of(m.ter(dest)).c_str());
-   p->hurt(this, bp_torso, 0, 500);
+   p->hurt(bp_torso, 0, 500);
  } else if (monster* const m_at = mon(dest)) {
    if (can_see) messages.add("%s teleport%s into the middle of a %s!", You.c_str(), (is_u ? "" : "s"), m_at->name().c_str());
    explode_mon(*m_at, p);

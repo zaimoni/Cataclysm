@@ -1044,7 +1044,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
    if (can_see)
     messages.add("%s shock%s %s!", You.c_str(), (is_u ? "" : "s"), target.c_str());
   } else {
-   p->hurt(g, bp_torso, 0, shock * rng(1, 3));
+   p->hurt(bp_torso, 0, shock * rng(1, 3));
    p->moves -= shock * (mobile::mp_turn / 5) * 4;
   }
  }
