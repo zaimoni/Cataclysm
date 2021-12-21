@@ -59,15 +59,11 @@ void monster::poly(const mtype *t)
 }
 
 // definitely could be a complex implementation, so retain out-of-line definition
-void monster::spawn(int x, int y)
-{
-    screenpos_set(x, y);
-}
+void monster::spawn(int x, int y) { screenpos_set(x, y); }
+void monster::spawn(const point& pt) { screenpos_set(pt); }
 
-void monster::spawn(const point& pt)
-{
-    screenpos_set(pt);
-}
+// yes, could intentionally inline function body here
+void monster::spawn(const GPS_loc& loc) { set_screenpos(loc); }
 
 std::string monster::name() const
 {

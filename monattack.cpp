@@ -506,8 +506,8 @@ void mattack::triffid_heartbeat(game *g, monster *z)
  } else { // The player is close enough for a fight!
   monster triffid(mtype::types[mon_triffid]);
   for (decltype(auto) delta : Direction::vector) {
-      if (const point pt(z->pos + delta); g->is_empty(pt) && one_in(2)) {
-          triffid.spawn(pt);
+      if (const auto loc(z->GPSpos + delta); loc.is_empty() && one_in(2)) {
+          triffid.spawn(loc);
           g->z.push_back(triffid);
       }
   }

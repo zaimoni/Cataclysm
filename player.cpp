@@ -758,16 +758,16 @@ void dis_effect(game* g, player& p, disease& dis)
             int num_insects = 1;
             while (num_insects < 6 && rng(0, 10) < p.str_max) num_insects++;
             // Figure out where they may be placed
-            std::vector<point> valid_spawns;
+            std::vector<GPS_loc> valid_spawns;
             for (decltype(auto) delta : Direction::vector) {
-                const point pt(p.pos + delta);
-                if (g->is_empty(pt)) valid_spawns.push_back(pt);
+                const auto loc(p.GPSpos + delta);
+                if (loc.is_empty()) valid_spawns.push_back(loc);
             }
             if (valid_spawns.size() >= 1) {
                 p.rem_disease(DI_DERMATIK); // No more infection!  yay.
                 if (!p.is_npc()) messages.add("Insects erupt from your skin!");
                 else if (g->u.see(p.pos)) messages.add("Insects erupt from %s's skin!", p.name.c_str());
-                p.moves -= 600;
+                p.moves -= 6 * mobile::mp_turn;
                 monster grub(mtype::types[mon_dermatik_larva]);
                 while (valid_spawns.size() > 0 && num_insects > 0) {
                     num_insects--;
@@ -3317,10 +3317,10 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
 
  if (has_artifact_with(AEP_SNAKES) && dam >= 6) {
   int snakes = dam / 6;
-  std::vector<point> valid;
+  std::vector<GPS_loc> valid;
   for (decltype(auto) delta : Direction::vector) {
-      const point pt(pos + delta);
-      if (g->is_empty(pt)) valid.push_back(pt);
+      const auto loc(GPSpos + delta);
+      if (loc.is_empty()) valid.push_back(loc);
   }
   clamp_ub(snakes, valid.size());
   if (0 < snakes) {
@@ -3330,9 +3330,8 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
       snake.friendly = -1;
       for (int i = 0; i < snakes; i++) {
           int index = rng(0, valid.size() - 1);
-          point sp = valid[index];
+          snake.spawn(valid[index]);
           valid.erase(valid.begin() + index);
-          snake.spawn(sp);
           g->z.push_back(snake);
       }
   }

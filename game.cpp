@@ -3123,6 +3123,11 @@ bool game::is_empty(int x, int y) const
          (u.pos.x != x || u.pos.y != y));
 }
 
+bool GPS_loc::is_empty() const
+{
+    return (0 < move_cost() || is<liquid>(ter())) && !game::active()->mob_at(*this);
+}
+
 bool game::is_in_sunlight(const GPS_loc& loc) const
 {
     return loc.is_outside() && light_level(loc) >= 40 && (weather == WEATHER_CLEAR || weather == WEATHER_SUNNY);

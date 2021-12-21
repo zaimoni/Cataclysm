@@ -37,6 +37,9 @@ struct GPS_loc : public std::pair<tripoint, point>
 	trap_id& trap_at();
 	trap_id trap_at() const;
 	int move_cost() const;
+
+	// following in game.cpp
+	bool is_empty() const;
 };
 
 // \todo evaluate whether these should be out-of-line defined (likely a matter of binary size, compile+link time)

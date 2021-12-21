@@ -68,6 +68,7 @@ class monster : public mobile {
  void poly(const mtype *t);
  void spawn(int x, int y); // All this does is moves the monster to x,y
  void spawn(const point& pt);
+ void spawn(const GPS_loc& loc);
 
 // Access
  std::string name() const; 		// Returns the monster's formal name
