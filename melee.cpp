@@ -777,13 +777,13 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
   const auto tar = mob->GPSpos;
   for (int dir = direction::NORTH; dir <= direction::NORTHWEST; ++dir) {
       const auto test = tar + direction_vector((direction)dir);
-      if (tar == test) continue; // Don't double-hit our target
+      if (test == GPSpos) continue; // Don't self-hit
       if (const auto m_at = g->mon(test)) {
           if (hit_roll() >= rng(0, 5) + m_at->dodge_roll()) {
               count_hit++;
               int dam = roll_bash_damage(m_at, false) + roll_cut_damage(m_at, false);
               m_at->hurt(dam);
-              if (u_see) messages.add("%s %s %s for %d damage!", You.c_str(), regular_verb_agreement("hit").c_str(), target.c_str(), dam);
+              if (u_see) messages.add("%s %s %s for %d damage!", You.c_str(), regular_verb_agreement("hit").c_str(), m_at->desc(grammar::noun::role::direct_object, grammar::article::definite).c_str(), dam);
           }
       }
       if (const auto nPC = g->nPC(test)) {
