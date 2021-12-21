@@ -671,7 +671,7 @@ bool map::trans(const reality_bubble_loc& pos) const
         }
     }
     else
-        tertr = ter_t::list[ter(pos)].flags & mfb(transparent);
+        tertr = is<transparent>(ter(pos));
     const auto& fd = field_at(pos);
     return tertr && (fd.type == 0 || field::list[fd.type].transparent[fd.density - 1]);	// Fields may obscure the view, too
 }

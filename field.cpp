@@ -215,7 +215,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
      smoke += 10;
      if (cur->density == 3) terrain = t_rubble;
 
-    } else if (ter_t::list[terrain].flags & mfb(swimmable))
+    } else if (is<swimmable>(terrain))
      cur->age += 800;	// Flames die quickly on water
 
 // If we consumed a lot, the flames grow higher
