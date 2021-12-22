@@ -203,4 +203,7 @@ private:
  void make_friendly(int duration);
 };
 
+template<m_flag f> bool is(const monster* z) { return z && z->has_flag(f); }
+template<m_flag f> bool is_not(const monster* z) { return z && !z->has_flag(f); }
+
 #endif

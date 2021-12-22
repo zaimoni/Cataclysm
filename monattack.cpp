@@ -817,7 +817,7 @@ void mattack::vortex(game *g, monster *z)
      bool hit_wall = false;
      for (int i = 0; i < traj.size() && !hit_wall; i++) {
       monster* const m_hit = g->mon(traj[i]);
-      if (i > 0 && m_hit && !m_hit->has_flag(MF_DIGS)) {
+      if (i > 0 && is_not<MF_DIGS>(m_hit)) {
        if (g->u.see(traj[i])) messages.add("The %s hits a %s!", thrown->name().c_str(), m_hit->name().c_str());
        if (m_hit->hurt(damage)) g->kill_mon(*m_hit, z);
        hit_wall = true;
@@ -843,7 +843,7 @@ void mattack::vortex(game *g, monster *z)
     int damage = rng(5, 10);
     for (int i = 0; i < traj.size() && !hit_wall; i++) {
 	 monster* const m_hit = g->mon(traj[i]);
-     if (i > 0 && m_hit && !m_hit->has_flag(MF_DIGS)) {
+     if (i > 0 && is_not<MF_DIGS>(m_hit)) {
       if (g->u.see(traj[i])) messages.add("You hit a %s!", m_hit->name().c_str());
       if (m_hit->hurt(damage)) g->kill_mon(*m_hit, &g->u); // We get the kill :)
       hit_wall = true;

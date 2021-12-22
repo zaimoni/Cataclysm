@@ -541,15 +541,14 @@ int player::roll_bash_damage(const monster *z, bool crit) const
   bash_dam = rng(0, int(stat / 2) + sklevel[sk_unarmed]);
 
  if (crit) {
-  bash_dam *= 1.5;
+  cataclysm::rational_scale<3,2>(bash_dam);
   bash_cap *= 2;
  }
 
  if (bash_dam > bash_cap)// Cap for weak characters
   bash_dam = (bash_cap * 3 + bash_dam) / 4;
 
- if (z != nullptr && z->has_flag(MF_PLASTIC))
-  bash_dam /= rng(2, 4);
+ if (is<MF_PLASTIC>(z)) bash_dam /= rng(2, 4);
 
  int bash_min = bash_dam / 4;
 
@@ -585,7 +584,7 @@ int player::roll_cut_damage(const monster *z, bool crit) const
  if (unarmed_attack() && !wearing_something_on(bp_hands)) {
   if (has_trait(PF_CLAWS)) ret += 6;
   if (has_trait(PF_TALONS)) ret += 6 + (sklevel[sk_unarmed] > 8 ? 8 : sklevel[sk_unarmed]);
-  if (has_trait(PF_SLIME_HANDS) && (!z || !z->has_flag(MF_ACIDPROOF))) ret += rng(4, 6);
+  if (has_trait(PF_SLIME_HANDS) && !is<MF_ACIDPROOF>(z)) ret += rng(4, 6);
  }
 
  if (ret <= 0) return 0; // No negative damage!
@@ -662,13 +661,12 @@ technique_id player::pick_technique(const game *g, const monster *z, const playe
  std::vector<technique_id> possible;
 
  if (allowgrab) { // Check if grabs AREN'T REALLY ALLOWED
-  if (z && z->has_flag(MF_PLASTIC)) allowgrab = false;
+  if (is<MF_PLASTIC>(z)) allowgrab = false;
  }
 
  if (crit) { // Some are crit-only
 
-  if (weapon.has_technique(TEC_SWEEP, this) &&
-      (!z || !z->has_flag(MF_FLIES)) && !downed)
+  if (weapon.has_technique(TEC_SWEEP, this) && !is<MF_FLIES>(z) && !downed)
    possible.push_back(TEC_SWEEP);
 
   if (weapon.has_technique(TEC_PRECISE, this)) possible.push_back(TEC_PRECISE);
@@ -744,7 +742,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
  switch (technique) {
 
  case TEC_SWEEP:
-  if (z != nullptr && !z->has_flag(MF_FLIES)) {
+  if (is_not<MF_FLIES>(z)) {
    z->add_effect(ME_DOWNED, rng(1, 2));
    bash_dam += z->fall_damage();
   } else if (p != nullptr && p->weapon.type->id != itm_style_judo) {
@@ -1028,12 +1026,12 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
  } else mob->moves -= stab_moves;
 
 // Bonus attacks!
- const bool target_electrified = z && z->has_flag(MF_ELECTRIC);
+ const bool target_electrified = is<MF_ELECTRIC>(z);
  bool shock_them = (!target_electrified && has_bionic(bio_shock)
                  && 2 <= power_level && unarmed_attack() && one_in(3));
 
  bool drain_them = (has_bionic(bio_heat_absorb) && power_level >= 1 &&
-                    !is_armed() && (!z || z->has_flag(MF_WARM)));
+                    !is_armed() && !is_not<MF_WARM>(z));
 
  if (drain_them) power_level--;
  if (one_in(2)) drain_them = false;	// Only works half the time
