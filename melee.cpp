@@ -723,20 +723,23 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
                                int &stab_dam, int &pain)
 {
  assert(z || p);
+
+ // self-affecting techniques
+ switch (technique) {
+ case TEC_RAPID:
+     moves += attack_speed(*this, false) / 2;
+     return;
+ case TEC_BLOCK:
+     cataclysm::rational_scale<7, 10>(bash_dam);
+     return;
+ }
+
  mobile* const mob = z ? static_cast<mobile*>(z) : p;
  const std::string You = desc(grammar::noun::role::subject);
  const std::string target = mob->desc(grammar::noun::role::direct_object, grammar::article::definite);
 
  const bool u_see = (!is_npc() || g->u.see(pos));
 
- if (technique == TEC_RAPID) {
-  moves += int( attack_speed(*this, false) / 2);
-  return;
- }
- if (technique == TEC_BLOCK) {
-  bash_dam *= .7;
-  return;
- }
 // The rest affect our target, and thus depend on z vs. p
  switch (technique) {
 
