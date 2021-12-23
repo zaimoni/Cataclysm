@@ -8,7 +8,6 @@
 #include <sstream>
 #include <stdlib.h>
 
-int  stumble(player &u);
 std::string melee_verb(technique_id tech, std::string your, player &p,
                        int bash_dam, int cut_dam, int stab_dam);
 
@@ -144,6 +143,29 @@ static void melee_practice(player& u, bool hit, bool unarmed, bool bashing, bool
     }
 }
 
+/// <returns>move point cost to deduct</returns>
+static int stumble(player& u)
+{
+    int stumble_pen = 2 * u.weapon.volume() + u.weapon.weight();
+    if (u.has_trait(PF_DEFT)) stumble_pen = int(stumble_pen * .3) - 10;
+    if (stumble_pen < 0) stumble_pen = 0;
+    // TODO: Reflect high strength bonus in newcharacter.cpp
+    if (stumble_pen > 0 && (u.str_cur >= 15 || u.dex_cur >= 21 ||
+        one_in(16 - u.str_cur) || one_in(22 - u.dex_cur)))
+        stumble_pen = rng(0, stumble_pen);
+
+    return stumble_pen;
+}
+
+// PC-only
+static auto interpret_miss(const player& u, int cost)
+{
+    if (u.weapon.has_technique(TEC_FEINT, &u)) return "You feint.";
+    else if (60 <= cost) return "You miss and stumble with the momentum.";
+    else if (10 <= cost) return "You swing wildly and miss.";
+    return "You miss.";
+}
+
 int player::hit_mon(game *g, monster *z, bool allow_grab) // defaults to true
 {
  bool is_u = (this == &(g->u));	// Affects how we'll display messages
@@ -167,16 +189,7 @@ int player::hit_mon(game *g, monster *z, bool allow_grab) // defaults to true
 
  if (missed) {
   int stumble_pen = stumble(*this);
-  if (is_u) {	// Only display messages if this is the player
-   if (weapon.has_technique(TEC_FEINT, this))
-    messages.add("You feint.");
-   else if (stumble_pen >= 60)
-    messages.add("You miss and stumble with the momentum.");
-   else if (stumble_pen >= 10)
-    messages.add("You swing wildly and miss.");
-   else
-    messages.add("You miss.");
-  }
+  if (is_u) messages.add(interpret_miss(*this, stumble_pen)); // Only display messages if this is the player
   melee_practice(*this, false, unarmed_attack(),
                  weapon.is_bashing_weapon(), weapon.is_cutting_weapon(),
                  (weapon.has_flag(IF_SPEAR) || weapon.has_flag(IF_STAB)));
@@ -257,16 +270,7 @@ void player::hit_player(game *g, player &p, bool allow_grab)
 
  if (missed) {
   int stumble_pen = stumble(*this);
-  if (is_u) {	// Only display messages if this is the player
-   if (weapon.has_technique(TEC_FEINT, this))
-    messages.add("You feint.");
-   else if (stumble_pen >= 60)
-    messages.add("You miss and stumble with the momentum.");
-   else if (stumble_pen >= 10)
-    messages.add("You swing wildly and miss.");
-   else
-    messages.add("You miss.");
-  }
+  if (is_u) messages.add(interpret_miss(*this, stumble_pen)); // Only display messages if this is the player
   melee_practice(*this, false, unarmed_attack(),
                  weapon.is_bashing_weapon(), weapon.is_cutting_weapon(),
                  (weapon.has_flag(IF_SPEAR) || weapon.has_flag(IF_STAB)));
@@ -359,19 +363,6 @@ void player::hit_player(game *g, player &p, bool allow_grab)
   p.subjective_message("Counter-attack!");
   p.hit_player(g, *this);
  }
-}
-
-int stumble(player &u)
-{
- int stumble_pen = 2 * u.weapon.volume() + u.weapon.weight();
- if (u.has_trait(PF_DEFT)) stumble_pen = int(stumble_pen * .3) - 10;
- if (stumble_pen < 0) stumble_pen = 0;
-// TODO: Reflect high strength bonus in newcharacter.cpp
- if (stumble_pen > 0 && (u.str_cur >= 15 || u.dex_cur >= 21 ||
-                         one_in(16 - u.str_cur) || one_in(22 - u.dex_cur)))
-  stumble_pen = rng(0, stumble_pen);
-
- return stumble_pen;
 }
 
 bool player::scored_crit(int target_dodge) const
