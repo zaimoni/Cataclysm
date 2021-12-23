@@ -248,11 +248,9 @@ void player::hit_player(game *g, player &p, bool allow_grab)
  std::string You  = (is_u ? "You"  : name);
  std::string Your = (is_u ? "Your" : name + "'s");
  std::string your = (is_u ? "your" : (male ? "his" : "her"));
- std::string verb = "hit";
 
 // Divide their dodge roll by 2 if this is a grab
  int target_dodge = p.dodge_roll()/(allow_grab ? 1 : 2);
- int hit_value = hit_roll() - target_dodge;
  bool missed = (hit_roll() <= 0);
 
  int move_cost = attack_speed(*this, missed);
@@ -280,22 +278,17 @@ void player::hit_player(game *g, player &p, bool allow_grab)
  }
  moves -= move_cost;
 
- body_part bp_hit;
- int side = rng(0, 1);
- hit_value += rng(-10, 10);
- if (hit_value >= 30)
-  bp_hit = bp_eyes;
- else if (hit_value >= 20)
-  bp_hit = bp_head;
- else if (hit_value >= 10)
-  bp_hit = bp_torso;
- else if (one_in(4))
-  bp_hit = bp_legs;
- else
-  bp_hit = bp_arms;
+ static auto hit_this = [&]() {
+     int hit_value = hit_roll() - target_dodge + rng(-10, 10);
+     if (hit_value >= 30) return bp_eyes;
+     else if (hit_value >= 20) return bp_head;
+     else if (hit_value >= 10) return bp_torso;
+     else if (one_in(4)) return bp_legs;
+     else return bp_arms;
+ };
 
- std::string target = (p.is_npc() ? p.name + "'s " : "your ");
- target += body_part_name(bp_hit, side);
+ body_part bp_hit = hit_this();
+ int side = rng(0, 1);
 
  bool critical_hit = scored_crit(target_dodge);
 
@@ -307,8 +300,7 @@ void player::hit_player(game *g, player &p, bool allow_grab)
  p.perform_defensive_technique(tech_def, g, nullptr, this, bp_hit, side,
                                bash_dam, cut_dam, stab_dam);
 
- if (bash_dam + cut_dam + stab_dam <= 0)
-  return; // Defensive technique canceled our attack!
+ if (bash_dam + cut_dam + stab_dam <= 0) return; // Defensive technique canceled our attack!
 
  if (critical_hit) // Crits cancel out Toad Style's armor boost
   p.rem_disease(DI_ARMOR_BOOST);
@@ -337,7 +329,9 @@ void player::hit_player(game *g, player &p, bool allow_grab)
 
  p.hit(g, bp_hit, side, bash_dam, (cut_dam > stab_dam ? cut_dam : stab_dam));
 
- verb = melee_verb(technique, your, *this, bash_dam, cut_dam, stab_dam);
+ const std::string target = p.possessive() + " " + body_part_name(bp_hit, side);
+
+ const std::string verb = melee_verb(technique, your, *this, bash_dam, cut_dam, stab_dam);
  int dam = bash_dam + (cut_dam > stab_dam ? cut_dam : stab_dam);
  hit_message(You.c_str(), verb.c_str(), target.c_str(), dam, critical_hit);
 
@@ -362,7 +356,7 @@ void player::hit_player(game *g, player &p, bool allow_grab)
    hit_player(g, p, false); // False means a second grab isn't allowed
  }
  if (tech_def == TEC_COUNTER) {
-  if (!p.is_npc()) messages.add("Counter-attack!");
+  p.subjective_message("Counter-attack!");
   p.hit_player(g, *this);
  }
 }
