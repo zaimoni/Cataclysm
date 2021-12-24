@@ -173,12 +173,6 @@ int player::hit_mon(game *g, monster *z, bool allow_grab) // defaults to true
   z->add_effect(ME_HIT_BY_PLAYER, 100); // Flag as attacked by us
  const bool can_see = (is_u || g->u.see(pos));	// XXX this non-use suggests this function is never called by npcs
 
- std::string You  = (is_u ? "You"  : name);
- std::string Your = (is_u ? "Your" : name + "'s");
- std::string your = (is_u ? "your" : (male ? "his" : "her"));
- std::string verb = "hit";
- std::string target = "the " + z->name();
-
 // If !allow_grab, then we already grabbed them--meaning their dodge is hampered
  int mondodge = (allow_grab ? z->dodge_roll() : z->dodge_roll() / 3);
 
@@ -227,10 +221,13 @@ int player::hit_mon(game *g, monster *z, bool allow_grab) // defaults to true
 // Make a rather quiet sound, to alert any nearby monsters
  if (weapon.type->id != itm_style_ninjutsu) g->sound(pos, 8, ""); // Ninjutsu is silent!
 
- verb = melee_verb(technique, your, *this, bash_dam, cut_dam, stab_dam);
+ const std::string your = pronoun(grammar::noun::role::possessive);
+ const std::string verb = melee_verb(technique, your, *this, bash_dam, cut_dam, stab_dam);
 
  int dam = bash_dam + (cut_dam > stab_dam ? cut_dam : stab_dam);
 
+ const std::string You = grammar::capitalize(subject());
+ const std::string target = z->desc(grammar::noun::role::direct_object, grammar::article::definite);
  hit_message(You.c_str(), verb.c_str(), target.c_str(), dam, critical_hit);
 
  bool bashing = (bash_dam >= 10 && !unarmed_attack());
@@ -257,10 +254,6 @@ void player::hit_player(game *g, player &p, bool allow_grab)
  const bool is_u = (this == &(g->u));	// Affects how we'll display messages
  const bool can_see = (is_u || g->u.see(pos));
  if (is_u && p.is_npc()) dynamic_cast<npc&>(p).make_angry();
-
- std::string You  = (is_u ? "You"  : name);
- std::string Your = (is_u ? "Your" : name + "'s");
- std::string your = (is_u ? "your" : (male ? "his" : "her"));
 
 // Divide their dodge roll by 2 if this is a grab
  int target_dodge = p.dodge_roll()/(allow_grab ? 1 : 2);
@@ -333,10 +326,12 @@ void player::hit_player(game *g, player &p, bool allow_grab)
 
  p.hit(g, bp_hit, side, bash_dam, (cut_dam > stab_dam ? cut_dam : stab_dam));
 
- const std::string target = p.possessive() + " " + body_part_name(bp_hit, side);
-
+ const std::string your = pronoun(grammar::noun::role::possessive);
  const std::string verb = melee_verb(technique, your, *this, bash_dam, cut_dam, stab_dam);
+
  int dam = bash_dam + (cut_dam > stab_dam ? cut_dam : stab_dam);
+ const std::string You = grammar::capitalize(subject());
+ const std::string target = p.possessive() + " " + body_part_name(bp_hit, side);
  hit_message(You.c_str(), verb.c_str(), target.c_str(), dam, critical_hit);
 
  bool bashing = (bash_dam >= 10 && !unarmed_attack());
