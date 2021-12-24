@@ -8,9 +8,6 @@
 #include <sstream>
 #include <stdlib.h>
 
-std::string melee_verb(technique_id tech, std::string your, player &p,
-                       int bash_dam, int cut_dam, int stab_dam);
-
 /* Melee Functions!
  * These all belong to class player.
  *
@@ -106,6 +103,64 @@ int player::hit_roll() const
  }
 
  return dice(numdice, sides);
+}
+
+static std::string melee_verb(technique_id tech, std::string your, player& p, int bash_dam, int cut_dam, int stab_dam)
+{
+    if (tech) {
+        if (const auto style = p.weapon.is_style()) {
+            if (const auto m = style->data(tech)) return p.regular_verb_agreement(m->name);
+        }
+    }
+
+    std::ostringstream ret;
+
+    switch (tech) {
+    case TEC_SWEEP:
+        ret << p.regular_verb_agreement("sweep") << " " << your << " " << p.weapon.tname() << " at";
+        break;
+
+    case TEC_PRECISE:
+        ret << p.regular_verb_agreement("jab") << " " << your << " " << p.weapon.tname() << " at";
+        break;
+
+    case TEC_BRUTAL:
+        ret << p.regular_verb_agreement("slam") << " " << your << " " << p.weapon.tname() << " against";
+        break;
+
+    case TEC_GRAB:
+        ret << p.regular_verb_agreement("wrap") << " " << your << " " << p.weapon.tname() << " around";
+        break;
+
+    case TEC_WIDE:
+        ret << p.regular_verb_agreement("swing") << " " << your << " " << p.weapon.tname() << " wide at";
+        break;
+
+    case TEC_THROW:
+        ret << p.regular_verb_agreement("use") << " " << your << " " << p.weapon.tname() << " to toss";
+        break;
+
+    default: // No tech, so check our damage levels
+        if (bash_dam >= cut_dam && bash_dam >= stab_dam) {
+            if (bash_dam >= 30) return p.regular_verb_agreement("clobber");
+            if (bash_dam >= 20) return p.regular_verb_agreement("batter");
+            if (bash_dam >= 10) return p.regular_verb_agreement("whack");
+            return p.regular_verb_agreement("hit");
+        }
+        if (cut_dam >= stab_dam) {
+            if (cut_dam >= 30) return p.regular_verb_agreement("hack");
+            if (cut_dam >= 20) return p.regular_verb_agreement("slice");
+            if (cut_dam >= 10) return p.regular_verb_agreement("cut");
+            return p.regular_verb_agreement("nick");
+        }
+        // Only stab damage is left
+        if (stab_dam >= 30) return p.regular_verb_agreement("impale");
+        if (stab_dam >= 20) return p.regular_verb_agreement("pierce");
+        if (stab_dam >= 10) return p.regular_verb_agreement("stab");
+        return p.regular_verb_agreement("poke");
+    } // switch (tech)
+
+    return ret.str();
 }
 
 static void hit_message(std::string subject, std::string verb, std::string target, int dam, bool crit)
@@ -1289,65 +1344,5 @@ std::vector<special_attack> player::mutation_attacks(const mobile& mob) const
  }
 
  return ret;
-}
-
-std::string melee_verb(technique_id tech, std::string your, player &p,
-                       int bash_dam, int cut_dam, int stab_dam)
-{
-    if (tech) {
-        if (const auto style = p.weapon.is_style()) {
-            if (const auto m = style->data(tech)) return p.regular_verb_agreement(m->name);
-        }
-    }
-
- std::ostringstream ret;
-
- switch (tech) {
-
-  case TEC_SWEEP:
-   ret << p.regular_verb_agreement("sweep") << " " << your << " " << p.weapon.tname() << " at";
-   break;
-
-  case TEC_PRECISE:
-   ret << p.regular_verb_agreement("jab") << " " << your << " " << p.weapon.tname() << " at";
-   break;
-
-  case TEC_BRUTAL:
-   ret << p.regular_verb_agreement("slam") << " " << your << " " << p.weapon.tname() << " against";
-   break;
-
-  case TEC_GRAB:
-   ret << p.regular_verb_agreement("wrap") << " " << your << " " << p.weapon.tname() << " around";
-   break;
-
-  case TEC_WIDE:
-   ret << p.regular_verb_agreement("swing") << " " << your << " " << p.weapon.tname() << " wide at";
-   break;
-
-  case TEC_THROW:
-   ret << p.regular_verb_agreement("use") << " " << your << " " << p.weapon.tname() << " to toss";
-   break;
-
-  default: // No tech, so check our damage levels
-   if (bash_dam >= cut_dam && bash_dam >= stab_dam) {
-    if (bash_dam >= 30) return p.regular_verb_agreement("clobber");
-    if (bash_dam >= 20) return p.regular_verb_agreement("batter");
-    if (bash_dam >= 10) return p.regular_verb_agreement("whack");
-    return p.regular_verb_agreement("hit");
-   }
-   if (cut_dam >= stab_dam) {
-    if (cut_dam >= 30) return p.regular_verb_agreement("hack");
-    if (cut_dam >= 20) return p.regular_verb_agreement("slice");
-    if (cut_dam >= 10) return p.regular_verb_agreement("cut");
-    return p.regular_verb_agreement("nick");
-   }
-// Only stab damage is left
-   if (stab_dam >= 30) return p.regular_verb_agreement("impale");
-   if (stab_dam >= 20) return p.regular_verb_agreement("pierce");
-   if (stab_dam >= 10) return p.regular_verb_agreement("stab");
-   return p.regular_verb_agreement("poke");
- } // switch (tech)
-
- return ret.str();
 }
  
