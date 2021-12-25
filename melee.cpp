@@ -221,6 +221,21 @@ static auto interpret_miss(const player& u, int cost)
     return "You miss.";
 }
 
+static int roll_stuck_penalty(const player& u, const monster* z, bool stabbing)
+{
+    int ret = 0;
+    const int basharm = (z ? z->armor_bash() : 6);
+    const int cutarm = (z ? z->armor_cut() : 6);
+    const int cutdam = u.weapon.damage_cut();
+    if (stabbing)
+        ret = cutdam * 3 + basharm * 3 + cutarm * 3 - dice(u.sklevel[sk_stabbing], 10);
+    else
+        ret = cutdam * 4 + basharm * 5 + cutarm * 4 - dice(u.sklevel[sk_cutting], 10);
+
+    if (const int ub = cutdam * 10; ret >= ub) return ub;
+    return (ret < 0 ? 0 : ret);
+}
+
 int player::hit_mon(game *g, monster *z, bool allow_grab) // defaults to true
 {
  bool is_u = (this == &(g->u));	// Affects how we'll display messages
@@ -258,7 +273,7 @@ int player::hit_mon(game *g, monster *z, bool allow_grab) // defaults to true
  int pain = 0; // Boost to pain; required for perform_technique
 
 // Moves lost to getting your weapon stuck
- const int stuck_penalty = weapon.is_style() ? 0 : roll_stuck_penalty(z, (stab_dam >= cut_dam));
+ const int stuck_penalty = weapon.is_style() ? 0 : roll_stuck_penalty(*this, z, (stab_dam >= cut_dam));
 
 // Pick one or more special attacks
  technique_id technique = pick_technique(g, z, nullptr, critical_hit, allow_grab);
@@ -360,7 +375,7 @@ void player::hit_player(game *g, player &p, bool allow_grab)
  int pain = 0; // Boost to pain; required for perform_technique
 
 // Moves lost to getting your weapon stuck
- const int stuck_penalty = weapon.is_style() ? 0 : roll_stuck_penalty(nullptr, (stab_dam >= cut_dam));
+ const int stuck_penalty = weapon.is_style() ? 0 : roll_stuck_penalty(*this, nullptr, (stab_dam >= cut_dam));
 
 // Pick one or more special attacks
  technique_id technique = pick_technique(g, nullptr, &p, critical_hit, allow_grab);
@@ -669,21 +684,6 @@ int player::roll_stab_damage(const monster *z, bool crit) const
  }
 
  return ret;
-}
-
-int player::roll_stuck_penalty(const monster *z, bool stabbing) const
-{
- int ret = 0;
- const int basharm = (z ? z->armor_bash() : 6);
- const int cutarm  = (z ? z->armor_cut() : 6);
- const int cutdam = weapon.damage_cut();
- if (stabbing)
-  ret = cutdam * 3 + basharm * 3 + cutarm * 3 - dice(sklevel[sk_stabbing], 10);
- else
-  ret = cutdam * 4 + basharm * 5 + cutarm * 4 - dice(sklevel[sk_cutting], 10);
-
- if (ret >= cutdam * 10) return cutdam * 10;
- return (ret < 0 ? 0 : ret);
 }
 
 technique_id player::pick_technique(const game *g, const monster *z, const player *p, bool crit, bool allowgrab) const
@@ -1117,7 +1117,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
  }
 
 // Getting your weapon stuck
- int cutting_penalty = roll_stuck_penalty(z, stab_dam > cut_dam);
+ int cutting_penalty = roll_stuck_penalty(*this, z, stab_dam > cut_dam);
  if (weapon.has_flag(IF_MESSY)) { // e.g. chainsaws
   cutting_penalty /= 6; // Harder to get stuck
 

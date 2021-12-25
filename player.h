@@ -392,7 +392,6 @@ private:
  int roll_bash_damage(const monster *z, bool crit) const;
  int roll_cut_damage(const monster *z, bool crit) const;
  int roll_stab_damage(const monster *z, bool crit) const;
- int roll_stuck_penalty(const monster *z, bool stabbing) const;
 
  technique_id pick_technique(const game *g, const monster *z, const player *p, bool crit, bool allowgrab) const;
  void perform_technique(technique_id technique, game *g, monster *z, player *p,
