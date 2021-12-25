@@ -1120,18 +1120,18 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
  int cutting_penalty = roll_stuck_penalty(z, stab_dam > cut_dam);
  if (weapon.has_flag(IF_MESSY)) { // e.g. chainsaws
   cutting_penalty /= 6; // Harder to get stuck
-  for (int x = tar.x - 1; x <= tar.x + 1; x++) {
-   for (int y = tar.y - 1; y <= tar.y + 1; y++) {
-    if (!one_in(3)) {
-     if (const auto blood = bleeds(z)) {
-         auto& fd = g->m.field_at(x, y);
-         if (fd.type == blood) {
-             if (fd.density < 3) fd.density++;
-         }
-         else g->m.add_field(g, x, y, blood, 1);
-     }
-    }
-   }
+
+  if (const auto blood = bleeds(z)) {
+      static auto splatter = [&](const point& delta) {
+          if (one_in(3)) return;
+          auto pos = tar + delta;
+          auto& fd = g->m.field_at(pos);
+          if (fd.type == blood) {
+              if (fd.density < 3) fd.density++;
+          } else g->m.add_field(g, pos, blood, 1);  // XXX destructive overwrite \todo re-implement to fix
+      };
+
+      forall_do(within_rldist<1>, splatter);
   }
  }
  if (!unarmed_attack() && cutting_penalty > dice(str_cur * 2, 20)) {
