@@ -348,7 +348,7 @@ void player::hit_player(game *g, player &p, bool allow_grab)
  int cut_dam  = roll_cut_damage(nullptr, critical_hit);
  int stab_dam = roll_stab_damage(nullptr, critical_hit);
 
- technique_id tech_def = p.pick_defensive_technique(g, nullptr, this);
+ technique_id tech_def = p.pick_defensive_technique(nullptr, this);
  p.perform_defensive_technique(tech_def, g, nullptr, this, bp_hit, side,
                                bash_dam, cut_dam, stab_dam);
 
@@ -845,7 +845,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
  } // switch (tech)
 }
 
-technique_id player::pick_defensive_technique(game *g, const monster *z, player *p)
+technique_id player::pick_defensive_technique(const monster *z, player *p)
 {
  if (blocks_left == 0) return TEC_NULL;
 

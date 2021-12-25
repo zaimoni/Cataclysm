@@ -126,7 +126,7 @@ public:
  int base_damage(bool real_life = true, int stat = -999) const;
  int base_to_hit(bool real_life = true, int stat = -999) const;
 
- technique_id pick_defensive_technique(game *g, const monster *z, player *p);
+ technique_id pick_defensive_technique(const monster *z, player *p);
 
  void perform_defensive_technique(technique_id technique, game *g, monster *z,
                                   player *p, body_part &bp_hit, int &side,

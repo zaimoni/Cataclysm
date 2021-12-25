@@ -391,7 +391,7 @@ void monster::hit_player(game *g, player &p, bool can_grab)
  body_part bphit;
  int side = rng(0, 1);
  int dam = hit(g, p, bphit), cut = type->melee_cut, stab = 0;
- technique_id tech = p.pick_defensive_technique(g, this, nullptr);
+ technique_id tech = p.pick_defensive_technique(this, nullptr);
  p.perform_defensive_technique(tech, g, this, nullptr, bphit, side, dam, cut, stab);
  if (dam == 0 && u_see) messages.add("The %s misses %s.", name().c_str(), you.c_str());
  else if (dam > 0) {
