@@ -22,6 +22,12 @@ bool monster::can_move_to(const map &m, int x, int y) const
  return true;
 }
 
+bool monster::can_enter(const map& m, const point& pt) const
+{
+    if (can_move_to(m, pt)) return true;
+    return has_flag(MF_BASHES) && m.has_flag(bashable, pt);
+}
+
 // Resets plans (list of squares to visit) and builds it as a straight line
 // to the destination (x,y). t is used to choose which eligable line to use.
 // Currently, this assumes we can see (x,y), so shouldn't be used in any other
@@ -134,7 +140,36 @@ void monster::plan(game *g)
    set_dest(g->active_npc[closest].pos, stc);
  }
 }
- 
+
+class melee_target
+{
+    monster& viewpoint;
+public:
+    static bool can_construct(const monster& origin) { return 0 < origin.type->melee_dice; }
+    melee_target(monster& origin) noexcept : viewpoint(origin) {}; // \todo? enforce suggested invariant, above
+
+    bool operator()(monster* target) {
+        if (!target) return false;
+        if (species_hallu == target->type->species) {
+            game::active()->kill_mon(*target);
+            return false;   // *We* did not interact w/the hallucination
+        }
+        if (viewpoint.is_enemy(target)) {
+            viewpoint.hit_monster(game::active(), *target);
+            return true;
+        }
+        return false;
+    }
+    bool operator()(player* target) {
+        if (!target) return false;
+        if (viewpoint.is_enemy(target) && !viewpoint.is_fleeing(*target)) {
+            viewpoint.hit_player(game::active(), *target);
+            return true;
+        }
+        return false;
+    }
+};
+
 // General movement.
 // Currently, priority goes:
 // 1) Special Attack
@@ -166,6 +201,25 @@ void monster::move(game *g)
   moves = 0;
   return;
  }
+
+ std::optional<GPS_loc> next_loc = std::nullopt;
+
+ static auto update_next_loc = [&](const GPS_loc& dest) {
+     next_loc = dest;
+     if (const auto mob_plan = next_loc ? g->mob_at(*next_loc) : std::nullopt) {
+         // can't reuse mob_plan because of dead hallucination path
+         if (can_enter(g->m, plans[0]) && melee_target::can_construct(*this) && std::visit(melee_target(*this), *mob_plan)) {
+             // we have  melee'ed a hostile target
+             moves -= mobile::mp_turn;
+             if (0 < friendly) friendly--;
+             return true;
+         }
+     }
+     return false;
+ };
+
+ if (!plans.empty() && update_next_loc(g->toGPS(plans[0]))) return;
+
  if (friendly != 0) {
   if (friendly > 0) friendly--;
   friendly_move(g);
@@ -199,6 +253,7 @@ void monster::move(game *g)
 // No sight... or our plans are invalid (e.g. moving through a transparent, but
 //  solid, square of terrain).  Fall back to smell if we have it.
   if (const auto dest = scent_move(g)) {
+   if (update_next_loc(g->toGPS(*dest))) return;
    next = *dest;
    moved = true;
   }
@@ -206,6 +261,7 @@ void monster::move(game *g)
  if (wand.live() && !moved) { // No LOS, no scent, so as a fall-back follow sound
   point tmp = sound_move(g);
   if (tmp != pos) {
+   if (update_next_loc(g->toGPS(tmp))) return;
    next = tmp;
    moved = true;
   }
@@ -217,14 +273,19 @@ void monster::move(game *g)
   // \todo start C:DDA refactor target monster::attack_at
   monster* const m_at = g->mon(next);
   npc* const nPC = g->nPC(next);
-  if (next == g->u.pos && type->melee_dice > 0)
-   hit_player(g, g->u);
-  else if (m_at && m_at->type->species == species_hallu)
-   g->kill_mon(*m_at);
-  else if (m_at && type->melee_dice > 0 && is_enemy(m_at))
-   hit_monster(g, *m_at);
-  else if (nPC && type->melee_dice > 0)
-   hit_player(g, *nPC);
+  if (next == g->u.pos && type->melee_dice > 0) {
+      debuglog("should not be executing: monster::move/next == g->u.pos && type->melee_dice > 0");
+      return;
+  } else if (m_at && m_at->type->species == species_hallu) {
+      debuglog("should not be executing: monster::move/m_at && m_at->type->species == species_hallu");
+      return;
+  } else if (m_at && type->melee_dice > 0 && is_enemy(m_at)) {
+      debuglog("should not be executing: monster::move/m_at && type->melee_dice > 0 && is_enemy(m_at)");
+      return;
+  } else if (nPC && type->melee_dice > 0) {
+      debuglog("should not be executing: monster::move/nPC && type->melee_dice > 0");
+      return;
+  }
   // end C:DDA refactor target monster::attack_at
   // \todo C:DDA refactor target monster::bash_at
   else if ((!can_move_to(g->m, next) || one_in(3)) &&
@@ -279,15 +340,19 @@ void monster::footsteps(game *g, const point& pt)
 void monster::friendly_move(game *g)
 {
  moves -= mobile::mp_turn;
- if (!plans.empty() && plans[0] != g->u.pos && (can_move_to(g->m, plans[0]) || (g->m.has_flag(bashable, plans[0]) && has_flag(MF_BASHES)))){
+ if (!plans.empty() && plans[0] != g->u.pos && can_enter(g->m, plans[0])){
   const point next(plans[0]);
   EraseAt(plans, 0);
   monster* const m_at = g->mon(next);
   npc* const nPC = g->nPC(next);
-  if (m_at && is_enemy(m_at) && type->melee_dice > 0)
-      hit_monster(g, *m_at);
-  else if (nPC && is_enemy(nPC) && type->melee_dice > 0)
-      hit_player(g, *nPC);
+  if (m_at && is_enemy(m_at) && type->melee_dice > 0) {
+      debuglog("should not be executing: monster::friendly_move/m_at && is_enemy(m_at) && type->melee_dice > 0");
+      return;
+  }
+  else if (nPC && is_enemy(nPC) && type->melee_dice > 0) {
+      debuglog("should not be executing: monster::friendly_move/nPC && is_enemy(nPC) && type->melee_dice > 0");
+      return;
+  }
   else if (!m_at && !nPC && can_move_to(g->m, next)) move_to(g, next);
   else if ((!can_move_to(g->m, next) || one_in(3)) &&
       g->m.has_flag(bashable, next) && has_flag(MF_BASHES)) {
@@ -338,9 +403,9 @@ std::optional<point> monster::scent_move(const game *g)
 
 bool monster::can_sound_move_to(const game* g, const point& pt) const
 {
-    if (can_move_to(g->m, pt)) return true;
+    if (can_enter(g->m, pt)) return true;
     if (const auto _survivor = g->survivor(pt)) return is_enemy(_survivor); // melee attack
-	return has_flag(MF_BASHES) && g->m.has_flag(bashable, pt);
+    return false;
 }
 
 bool monster::can_sound_move_to(const game* g, const point& pt, point& dest) const

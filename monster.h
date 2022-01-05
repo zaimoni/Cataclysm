@@ -93,7 +93,8 @@ class monster : public mobile {
 			     	// Updates current pos AND our plans
  bool wander() const { return plans.empty(); } 		// Returns true if we have no plans
  bool can_move_to(const map &m, int x, int y) const; // Can we move to (x, y)?
- bool can_move_to(const map &m, const point& pt) const { return can_move_to(m, pt.x, pt.y); };
+ bool can_move_to(const map &m, const point& pt) const { return can_move_to(m, pt.x, pt.y); }
+ bool can_enter(const map& m, const point& pt) const;
  bool will_reach(const game *g, const point& pt) const; // Do we have plans to get to (x, y)?
  int  turns_to_reach(const map& m, const point& pt) const; // How long will it take?
 
