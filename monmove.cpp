@@ -529,34 +529,38 @@ void monster::hit_player(game *g, player &p, bool can_grab)
 
 void monster::move_to(game *g, const point& pt)
 {
- if (const auto m_at = g->mon(pt)) {
-   if (is_enemy(m_at))
-// If there IS a monster there, and we fight monsters, fight it!
-     hit_monster(g, *m_at);
-   // \todo other interesting behaviors (side-step, etc.)
- } else {
-  if (has_effect(ME_BEARTRAP)) {
-   moves = 0;
-   return;
-  }
-  if (!plans.empty()) EraseAt(plans, 0);
-  const unsigned int not_landbound = has_flag(MF_DIGS) + 2 * has_flag(MF_FLIES);
-  const bool is_swimming = (has_flag(MF_SWIMS) && g->m.has_flag(swimmable, pt));
-  if (is_swimming) moves += mobile::mp_turn / 2;
-  else if (!not_landbound) moves -= (g->m.move_cost(pt) - 2) * (mobile::mp_turn / 2);
-  screenpos_set(pt);
-  footsteps(g, pt);
-  if (!not_landbound) {
-      if (const auto tr_at = GPSpos.trap_at()) { // Monster stepped on a trap!
-          const trap* const tr = trap::traps[tr_at];
-          if (dice(3, sk_dodge + 1) < dice(3, tr->avoidance)) tr->trigger(*this);
-      }
-  }
-// Diggers turn the dirt into dirtmound
-  if (1== not_landbound%2) GPSpos.ter() = t_dirtmound;
-// Acid trail monsters leave... a trail of acid
-  if (has_flag(MF_ACIDTRAIL)) g->m.add_field(g, pos, fd_acid, 1);
- }
+    if (const auto mob_plan = g->mob_at(g->toGPS(pt))) {
+        // can't reuse mob_plan because of dead hallucination path
+        if (melee_target::can_construct(*this) && std::visit(melee_target(*this), *mob_plan)) {
+            // we have  melee'ed a hostile target
+            // unlike our exemplar, move points have already been deducted
+            return;
+        }
+        // \todo other interesting behaviors (side-step, etc.)
+        return;
+    }
+
+    if (has_effect(ME_BEARTRAP)) {
+        moves = 0;
+        return;
+    }
+    if (!plans.empty()) EraseAt(plans, 0);
+    const unsigned int not_landbound = has_flag(MF_DIGS) + 2 * has_flag(MF_FLIES);
+    const bool is_swimming = (has_flag(MF_SWIMS) && g->m.has_flag(swimmable, pt));
+    if (is_swimming) moves += mobile::mp_turn / 2;
+    else if (!not_landbound) moves -= (g->m.move_cost(pt) - 2) * (mobile::mp_turn / 2);
+    screenpos_set(pt);
+    footsteps(g, pt);
+    if (!not_landbound) {
+        if (const auto tr_at = GPSpos.trap_at()) { // Monster stepped on a trap!
+            const trap* const tr = trap::traps[tr_at];
+            if (dice(3, sk_dodge + 1) < dice(3, tr->avoidance)) tr->trigger(*this);
+        }
+    }
+    // Diggers turn the dirt into dirtmound
+    if (1 == not_landbound % 2) GPSpos.ter() = t_dirtmound;
+    // Acid trail monsters leave... a trail of acid
+    if (has_flag(MF_ACIDTRAIL)) g->m.add_field(g, pos, fd_acid, 1);
 }
 
 /* Random walking even when we've moved
