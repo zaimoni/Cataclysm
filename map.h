@@ -262,12 +262,18 @@ class map
  void disarm_trap( game *g, const point& pt);
 
 // Fields
- field& field_at(int x, int y);
- field& field_at(const point& pt) { return field_at(pt.x, pt.y); };
- field& field_at(const reality_bubble_loc& src) { return grid[src.first]->fld[src.second.x][src.second.y]; };
- const field& field_at(const reality_bubble_loc& src) const { return grid[src.first]->fld[src.second.x][src.second.y]; };
- const field& field_at(int x, int y) const { return const_cast<map*>(this)->field_at(x, y); };
- const field& field_at(const point& pt) const { return const_cast<map*>(this)->field_at(pt.x, pt.y); };
+ template<class...Args>
+ field& field_at(Args...params) {
+	 if (const auto pos = to(params...)) return grid[pos->first]->field_at(pos->second);
+	 return (cataclysm::discard<field>::x = field());
+ }
+
+ template<class...Args>
+ const field& field_at(Args...params) const {
+	 if (const auto pos = to(params...)) return grid[pos->first]->field_at(pos->second);
+	 return (cataclysm::discard<field>::x = field());
+ }
+
  bool add_field(game *g, int x, int y, field_id t, unsigned char density, unsigned int age=0);
  bool add_field(game *g, const point& pt, field_id t, unsigned char density, unsigned int age = 0) { return add_field(g, pt.x, pt.y, t, density, age); };
  void remove_field(int x, int y);

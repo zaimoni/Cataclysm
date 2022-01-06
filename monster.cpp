@@ -334,7 +334,7 @@ int monster::trigger_sum(const game* g, typename cataclysm::bitmap<N_MONSTER_TRI
                     }
                 }
                 if (check_fire) {
-                    const auto fd = g->m.field_at(x, y);
+                    const auto& fd = g->m.field_at(x, y);
                     if (fd.type == fd_fire) ret += 5 * fd.density;
                 }
             }

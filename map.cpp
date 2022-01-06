@@ -672,7 +672,7 @@ bool map::trans(const reality_bubble_loc& pos) const
     }
     else
         tertr = is<transparent>(ter(pos));
-    const auto& fd = field_at(pos);
+    const auto& fd = grid[pos.first]->field_at(pos.second);
     return tertr && (fd.type == 0 || field::list[fd.type].transparent[fd.density - 1]);	// Fields may obscure the view, too
 }
 
@@ -1259,13 +1259,13 @@ void map::shoot(game *g, const point& pt, int &dam, bool hit_items, unsigned fla
  if (dam < 0) dam = 0; // Set damage to 0 if it's less
 
 // Check fields?
- field *fieldhit = &(field_at(pt));
- switch (fieldhit->type) {
+ field& fieldhit = field_at(pt);
+ switch (fieldhit.type) {
   case fd_web:
-   if (flags & mfb(IF_AMMO_INCENDIARY) || flags & mfb(IF_AMMO_FLAME))
-    add_field(g, pt, fd_fire, fieldhit->density - 1);
-   else if (dam > 5 + fieldhit->density * 5 && one_in(5 - fieldhit->density)) {
-    dam -= rng(1, 2 + fieldhit->density * 2);
+   if (flags & (mfb(IF_AMMO_INCENDIARY) | mfb(IF_AMMO_FLAME)))
+    add_field(g, pt, fd_fire, fieldhit.density - 1);
+   else if (dam > 5 + fieldhit.density * 5 && one_in(5 - fieldhit.density)) {
+    dam -= rng(1, 2 + fieldhit.density * 2);
     remove_field(pt);
    }
    break;
@@ -1707,17 +1707,11 @@ void map::disarm_trap(game *g, const point& pt)
  if (will_get_xp) g->u.practice(sk_traps, rational_scaled<3, 2>(diff - g->u.sklevel[sk_traps]));
 }
  
-field& map::field_at(int x, int y)
-{
-    if (const auto pos = to(x, y)) return grid[pos->first]->fld[pos->second.x][pos->second.y];
-    return (discard<field>::x = field());
-}
-
 bool map::add_field(game *g, int x, int y, field_id t, unsigned char density, unsigned int age)
 {
  const auto pos = to(x,y);
  if (!pos) return false; // wasn't in bounds
- auto& fd = field_at(*pos);
+ auto& fd = grid[pos->first]->field_at(pos->second);
  if (fd.type == fd_web && t == fd_fire) density++;
  else if (!fd.is_null()) return false; // Blood & bile are null too
  if (density > 3) density = 3;
@@ -1730,12 +1724,14 @@ bool map::add_field(game *g, int x, int y, field_id t, unsigned char density, un
  return true;
 }
 
+void submap::remove_field(const point& p) {
+    if (fld[p.x][p.y].type != fd_null) field_count--;
+    fld[p.x][p.y] = field();
+}
+
 void map::remove_field(int x, int y)
 {
-    if (const auto pos = to(x, y)) {
-        if (grid[pos->first]->fld[pos->second.x][pos->second.y].type != fd_null) grid[pos->first]->field_count--;
-        grid[pos->first]->fld[pos->second.x][pos->second.y] = field();
-    }
+    if (const auto pos = to(x, y)) grid[pos->first]->remove_field(pos->second);
 }
 
 computer* map::computer_at(const point& pt)
@@ -1833,7 +1829,7 @@ void map::drawsq(WINDOW* w, const player& u, int x, int y, bool invert,
    }
  }
  // If there's a field here, draw that instead (unless its symbol is %)
- const auto& fd = field_at(*pos);
+ const auto& fd = grid[pos->first]->field_at(pos->second);
  if (fd.type != fd_null && field::list[fd.type].sym != '&') {
   tercol = field::list[fd.type].color[fd.density - 1];
   drew_field = true;

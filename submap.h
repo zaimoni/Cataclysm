@@ -51,6 +51,10 @@ struct submap {
     static constexpr bool in_bounds(int x, int y) { return 0 <= x && x < SEE && 0 <= y && y < SEE; }
     static constexpr bool in_bounds(const point& p) { return in_bounds(p.x, p.y); }
 
+    field& field_at(const point& p) { return fld[p.x][p.y]; }
+    const field& field_at(const point& p) const { return fld[p.x][p.y]; }
+    void remove_field(const point& p);
+
     // including vehicles is more complicated
     // 2020-12-18: vehicles only enable the bashable flag, others are as-if terrain only
    // bool has_flag_ter_only(t_flag flag, const point& pt) const { return ter_t::list[ter[pt.x][pt.y]].flags & mfb(flag); };
