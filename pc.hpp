@@ -65,6 +65,10 @@ public:
 	// player kill tracking
 	void record_kill(const monster& m) override;
 	std::vector<std::pair<const mtype*, int> > summarize_kills();
+	void target_dead(int deceased);
+	void set_target(int whom) { target = whom; }
+	bool is_target(int whom) const { return target == whom; }
+	void validate_target(std::function<bool(int)> ok) { if (!ok(target)) target = -1; }
 
 	// newcharacter.cpp
 	bool create(game* g, character_type type, std::string tempname = "");
@@ -85,6 +89,8 @@ private:
 	char run_mode; // 0 - Normal run always; 1 - Running allowed, but if a new
 		   //  monsters spawns, go to 2 - No movement allowed
 	bool autosafemode; // is autosafemode enabled?
+
+	int target; // non-negative values are index into game::z.  Negative values would signal targeting NPCs or other PCs; -1 is self-targeting.
 
 	mutable char next_inv;	// Determines which letter the next inv item will have
 };

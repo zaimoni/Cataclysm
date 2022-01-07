@@ -115,7 +115,6 @@ void game::setup()	// early part looks like it belongs in game::game (but we ret
  faction::global_reset();
 // Clear monstair values
  monstair = tripoint(-1,-1,-1);
- last_target = -1;	// We haven't targeted any monsters yet
  uquit = QUIT_NO;	// We haven't quit the game
  debugmon = false;	// We're not printing debug messages
  weather = WEATHER_CLEAR; // Start with some nice weather...
@@ -1493,10 +1492,17 @@ void game::load(std::string name)
 
 	// monsters (allows validating last_target)
 	if (!saved["monsters"].decode(z) && z.empty()) throw corrupted+" 11";
+    // C:Z 0.3.1+: remove this backward-fit
+    if (saved.has_key("last_target") && fromJSON(saved["last_target"], tmp)) u.set_target(tmp);
+
+    static auto validate_target = [&](int src) {
+        // \todo handle targeting NPCs
+        return 0 <= src && z.size() > src;
+    };
 
 	// recoverable hacked-missing fields below
 	if (saved.has_key("turn") && fromJSON(saved["turn"], tmp)) messages.turn = tmp;
-	if (saved.has_key("last_target") && fromJSON(saved["last_target"], tmp) && 0 <= tmp && z.size() > tmp) last_target = tmp; else last_target = -1;
+    u.validate_target(validate_target);
 	// do not worry about next_npc_id/next_faction_id/next_mission_id, the master save catches these
 
  fin.close();
@@ -1552,7 +1558,6 @@ void game::save()
  saved.set("monsters", JSON::encode(z));
  saved.set("player", toJSON(u));
  saved.set("turn", std::to_string(messages.turn));
- if (-1 < last_target && z.size() > last_target) saved.set("last_target", std::to_string(last_target));
 
  std::ofstream fout((playerfile_stem.str() + ".tmp").c_str());
  fout << saved;
@@ -2542,8 +2547,7 @@ void game::mon_info()
 void game::z_erase(int z_index)
 {
    EraseAt(z, z_index);
-   if (last_target == z_index) last_target = -1;
-   else if (last_target > z_index) last_target--;
+   u.target_dead(z_index);
 }
 
 void game::cleanup_dead()
@@ -4236,7 +4240,7 @@ int game::visible_monsters(std::vector<const monster*>& mon_targets, std::vector
         if (u.see(mon) && test(mon)) {
             mon_targets.push_back(&mon);
             targetindices.push_back(i2);
-            if (i2 == last_target) passtarget = mon_targets.size() - 1;
+            if (u.is_target(i2)) passtarget = mon_targets.size() - 1;
             mon.draw(w_terrain, u.pos, true);
         }
     }
@@ -4284,7 +4288,7 @@ void game::plthrow()
  point tar(u.pos);
  std::vector<point> trajectory = target(tar, bounds, mon_targets, passtarget, "Throwing " + src->first->tname());
  if (trajectory.empty()) return;
- if (passtarget != -1) last_target = targetindices[passtarget];
+ if (passtarget != -1) u.set_target(targetindices[passtarget]);
 
  item thrown(*src->first); // copy needed due to u.i_rem(ch) call before actually throwing
  u.remove_discard(*src);
@@ -4319,7 +4323,7 @@ void game::plfire(bool burst)
  draw_ter(); // Recenter our view
  if (trajectory.size() == 0) return;
  if (passtarget != -1) { // We picked a real live target
-  last_target = targetindices[passtarget]; // Make it our default for next time
+  u.set_target(targetindices[passtarget]); // Make it our default for next time
   z[targetindices[passtarget]].add_effect(ME_HIT_BY_PLAYER, 100);
  }
 

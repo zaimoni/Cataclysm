@@ -1762,8 +1762,9 @@ player::player(const JSON& src) : player()
 }
 
 pc::pc(const cataclysm::JSON& src)
-: player(src), kills(num_monsters, 0), next_inv('a'), mostseen(0), turnssincelastmon(0), run_mode(option_table::get()[OPT_SAFEMODE] ? 1 : 0), autosafemode(option_table::get()[OPT_AUTOSAFEMODE]) {
+: player(src), kills(num_monsters, 0), next_inv('a'), mostseen(0), turnssincelastmon(0), run_mode(option_table::get()[OPT_SAFEMODE] ? 1 : 0), target(-1), autosafemode(option_table::get()[OPT_AUTOSAFEMODE]) {
 	if (src.has_key("next_inv")) fromJSON(src["next_inv"], next_inv); // After C:Z 0.3.0 release: \todo remove guard clause
+	if (src.has_key("target")) fromJSON(src["target"], target);
 
 	int tmp;
 	if (src.has_key("mostseen") && fromJSON(src["mostseen"], tmp) && 0 <= tmp) mostseen = tmp; else mostseen = 0;
@@ -1783,6 +1784,7 @@ JSON toJSON(const pc& src)
 	JSON ret = toJSON(static_cast<const player&>(src));
 	ret.set("next_inv", std::string(1, src.next_inv));
 	ret.set("mostseen", std::to_string(src.mostseen));
+	if (-1 != src.target) ret.set("target", std::to_string(src.target)); // don't record self-targeting to savefile
 	ret.set("run_mode", std::to_string((int)src.run_mode));
 	ret.set("kill_counts", JSON::encode(src.kills));
 	return ret;

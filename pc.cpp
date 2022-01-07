@@ -17,7 +17,7 @@
 #include <stdexcept>
 
 pc::pc()
-: kills(num_monsters, 0), next_inv('d'), mostseen(0), turnssincelastmon(0), run_mode(option_table::get()[OPT_SAFEMODE] ? 1 : 0), autosafemode(option_table::get()[OPT_AUTOSAFEMODE])
+: kills(num_monsters, 0), next_inv('d'), mostseen(0), turnssincelastmon(0), run_mode(option_table::get()[OPT_SAFEMODE] ? 1 : 0), target(-1), autosafemode(option_table::get()[OPT_AUTOSAFEMODE])
 {
 }
 
@@ -723,4 +723,10 @@ std::vector<std::pair<const mtype*, int> > pc::summarize_kills()
     }
 
     return ret;
+}
+
+void pc::target_dead(int deceased)
+{   // \todo handlle NPC targeting
+    if (target == deceased) target = -1;
+    else if (target > deceased) target--;
 }

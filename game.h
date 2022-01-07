@@ -338,9 +338,6 @@ public:
 
 // ########################## DATA ################################
 
-  // The last monster targeted. -1, or a positional index in z
-  // Validating this requires access to game::z
-  int last_target;
   quit_status uquit;    // Set to true if the player quits ('Q')
 
   calendar nextspawn; // The turn on which monsters will spawn next.
