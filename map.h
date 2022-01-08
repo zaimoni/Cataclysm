@@ -276,8 +276,13 @@ class map
 
  bool add_field(game *g, int x, int y, field_id t, unsigned char density, unsigned int age=0);
  bool add_field(game *g, const point& pt, field_id t, unsigned char density, unsigned int age = 0) { return add_field(g, pt.x, pt.y, t, density, age); };
- void remove_field(int x, int y);
- void remove_field(const point& pt) { remove_field(pt.x, pt.y); };
+
+ template<class...Args>
+ void remove_field(Args...params)
+ {
+	 if (const auto pos = to(params...)) grid[pos->first]->remove_field(pos->second);
+ }
+
  bool process_fields(game *g);				// See field.cpp
  void step_in_field(game* g, player& u);		// See field.cpp	// V 0.2.5+ break hard-coding to player g->u
  void mon_in_field(game* g, monster& z);	// See field.cpp

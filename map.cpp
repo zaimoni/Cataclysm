@@ -1729,11 +1729,6 @@ void submap::remove_field(const point& p) {
     fld[p.x][p.y] = field();
 }
 
-void map::remove_field(int x, int y)
-{
-    if (const auto pos = to(x, y)) grid[pos->first]->remove_field(pos->second);
-}
-
 computer* map::computer_at(const point& pt)
 {
  if (auto pos = to(pt)) {
