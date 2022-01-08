@@ -1025,10 +1025,10 @@ bool npc::wield(int index)
   }
   if (volume_carried() + weapon.volume() <= volume_capacity()) {
    i_add(unwield());
-   moves -= 15; // Extra penalty for putting weapon away
+   moves -= 3 * (mobile::mp_turn / 20); // Extra penalty for putting weapon away
   } else // No room for weapon, so we drop it
-   game::active()->m.add_item(pos, unwield());
-  moves -= 15;
+   GPSpos.add(unwield());
+  moves -= 3 * (mobile::mp_turn / 20);
   weapon.make(item::types[styles[index]] );
   if (game::active()->u.see(pos)) messages.add("%s assumes a %s stance.", name.c_str(), weapon.tname().c_str());
   return true;
@@ -1040,10 +1040,10 @@ bool npc::wield(int index)
  }
  if (volume_carried() + weapon.volume() <= volume_capacity()) {
   i_add(unwield());
-  moves -= 15;
+  moves -= 3 * (mobile::mp_turn / 20);
  } else // No room for weapon, so we drop it
-  game::active()->m.add_item(pos, unwield());
- moves -= 15;
+  GPSpos.add(unwield());
+ moves -= 3 * (mobile::mp_turn / 20);
  weapon = i_remn(index);
  if (game::active()->u.see(pos)) messages.add("%s wields a %s.", name.c_str(), weapon.tname().c_str());
  return true;

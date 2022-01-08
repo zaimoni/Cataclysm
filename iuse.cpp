@@ -751,7 +751,7 @@ void iuse::scissors(pc& p, item& it)
              // \todo do we want stacking here?
              if (p.volume_carried() >= p.volume_capacity() || !p.assign_invlet(obj)) drop = true;
          }
-         if (drop) game::active()->m.add_item(p.pos, std::move(obj));
+         if (drop) p.GPSpos.add(std::move(obj));
          else p.i_add(std::move(obj));
      }
  };
@@ -875,9 +875,9 @@ void iuse::hammer(pc& p, item& it)
  p.moves -= 5 * mobile::mp_turn;
  item it_nails(item::types[itm_nail], 0); // assumed pre-apocalypse
  it_nails.charges = std::get<1>(*deconstruct);
- g->m.add_item(p.pos, std::move(it_nails));
+ p.GPSpos.add(std::move(it_nails));
  item board(item::types[itm_2x4], 0);
- for (int i = 0; i < std::get<2>(*deconstruct); i++) g->m.add_item(p.pos, board);
+ for (int i = 0; i < std::get<2>(*deconstruct); i++) p.GPSpos.add(board);
  type = std::get<0>(*deconstruct);
 }
  
@@ -1116,10 +1116,9 @@ void iuse::crowbar(pc& p, item& it)
   p.moves -= 5 * mobile::mp_turn;
   item it_nails(item::types[itm_nail], 0); // assumed pre-apocalypse
   it_nails.charges = std::get<1>(*deconstruct);
-  g->m.add_item(p.pos, std::move(it_nails));
+  p.GPSpos.add(std::move(it_nails));
   item board(item::types[itm_2x4], 0);
-  for (int i = 0; i < std::get<2>(*deconstruct); i++)
-   g->m.add_item(p.pos, board);
+  for (int i = 0; i < std::get<2>(*deconstruct); i++) p.GPSpos.add(board);
   type = std::get<0>(*deconstruct);
  }
 }

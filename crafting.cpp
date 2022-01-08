@@ -332,10 +332,10 @@ void game::complete_craft()
 // We might not have space for the item
   if (!inv_ok || u.volume_carried()+newit.volume() > u.volume_capacity()) {
    messages.add("There's no room in your inventory for the %s, so you drop it.", newit.tname().c_str());
-   m.add_item(u.pos, std::move(newit));
+   u.GPSpos.add(std::move(newit));
   } else if (u.weight_carried() + newit.volume() > u.weight_capacity()) {
    messages.add("The %s is too heavy to carry, so you drop it.", newit.tname().c_str());
-   m.add_item(u.pos, std::move(newit));
+   u.GPSpos.add(std::move(newit));
   } else {
    messages.add("%c - %s", newit.invlet, newit.tname().c_str());
    u.i_add(std::move(newit));

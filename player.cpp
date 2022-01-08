@@ -3765,11 +3765,11 @@ void player::die(map& m)
     assert(map::in_bounds(pos));
     item my_body(messages.turn);
     my_body.name = name;
-    m.add_item(pos, std::move(my_body));
+    GPSpos.add(std::move(my_body));
     // we want all of these to be value-copy map::add_item so that the post-mortem for the player works
-    for (size_t i = 0; i < inv.size(); i++) m.add_item(pos, inv[i]);
-    for (const auto& it : worn) m.add_item(pos, it);
-    if (weapon.type->id != itm_null) m.add_item(pos, weapon);
+    for (size_t i = 0; i < inv.size(); i++) GPSpos.add(inv[i]);
+    for (const auto& it : worn) GPSpos.add(it);
+    if (weapon.type->id != itm_null) GPSpos.add(weapon);
 }
 
 void player::suffer(game *g)
@@ -4939,7 +4939,7 @@ bool player::wield(int index)
    recoil = 0;
    if (!pickstyle) return true;
   } else if (ask_yn("No room in inventory for your " + weapon.tname() + ".  Drop it?")) {
-   game::active()->m.add_item(pos, unwield());
+   GPSpos.add(unwield());
    recoil = 0;
    if (!pickstyle) return true;
   } else return false;
@@ -4978,7 +4978,7 @@ bool player::wield(int index)
   last_item = itype_id(weapon.type->id);
   return true;
  } else if (ask_yn("No room in inventory for your " + weapon.tname() + ".  Drop it?")) {
-  game::active()->m.add_item(pos, unwield());
+  GPSpos.add(unwield());
   weapon = inv.remove_item(index);
   inv_sorted = false;
   moves -= 3 * (mobile::mp_turn / 10);
@@ -5118,7 +5118,7 @@ bool player::takeoff(map& m, char let)
     inv_sorted = false;
     return true;
    } else if (ask_yn("No room in inventory for your " + worn[i].tname() + ".  Drop it?")) {
-    m.add_item(pos, std::move(it));
+    GPSpos.add(std::move(it));
     EraseAt(worn, i);
     return true;
    } else return false;

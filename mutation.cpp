@@ -195,7 +195,7 @@ static void mutation_effect(player& p, pl_flag mut)
                     if (is_u) messages.add("Your %s is destroyed!", armor.tname().c_str());
                 } else {
                     if (is_u) messages.add("Your %s is pushed off.", armor.tname().c_str());
-                    g->m.add_item(p.pos, std::move(armor));
+                    p.GPSpos.add(std::move(armor));
                 }
                 EraseAt(p.worn, i);
                 i--;

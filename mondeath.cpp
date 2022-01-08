@@ -17,7 +17,7 @@ void mdeath::normal(game *g, monster *z)
 // Drop a dang ol' corpse
 // If their hp is less than -50, we destroyed them so badly no corpse was left
  if ((z->hp >= -50 || z->hp >= 0 - 2 * z->type->hp) && (z->made_of(FLESH) || z->made_of(VEGGY))) {
-  g->m.add_item(z->pos, item(messages.turn, z->type->id));
+  z->GPSpos.add(item(messages.turn, z->type->id));
  }
 }
 
@@ -236,7 +236,7 @@ void mdeath::amigara(game *g, monster *z)
   if (count <= 1) { // We're the last!
    g->u.rem_disease(DI_AMIGARA);
    messages.add("Your obsession with the fault fades away...");
-   g->m.add_item(z->pos, item(g->new_artifact(), messages.turn));
+   z->GPSpos.add(item(g->new_artifact(), messages.turn));
   }
  }
  normal(g, z);

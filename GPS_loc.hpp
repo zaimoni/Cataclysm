@@ -7,6 +7,7 @@
 #include <variant>
 #include <optional>
 
+class item;
 class vehicle;
 enum ter_id : int;
 enum trap_id : int;
@@ -37,6 +38,8 @@ struct GPS_loc : public std::pair<tripoint, point>
 	trap_id& trap_at();
 	trap_id trap_at() const;
 	int move_cost() const;
+	void add(const item& new_item);
+	void add(item&& new_item);
 
 	// following in game.cpp
 	bool is_empty() const;

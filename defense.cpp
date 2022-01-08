@@ -929,7 +929,7 @@ Press Enter to buy everything in your cart, Esc to buy nothing.");
      g->u.i_add(std::move(tmp));
     else { // Could not fit it in the inventory!
      dropped_some = true;
-     g->m.add_item(g->u.pos, std::move(tmp));
+     g->u.GPSpos.add(std::move(tmp));
     }
    }
   }

@@ -1303,9 +1303,9 @@ void talk_function::player_leaving(game *g, npc& p)
  p.patience = 15 - p.personality.aggression;
 }
 
-void talk_function::drop_weapon(game *g, npc& p) { g->m.add_item(p.pos, p.unwield()); }
+void talk_function::drop_weapon(game *g, npc& p) { p.GPSpos.add(p.unwield()); }
 void talk_function::player_weapon_away(game *g, npc& p) { g->u.i_add(g->u.unwield()); }
-void talk_function::player_weapon_drop(game *g, npc& p) { g->m.add_item(g->u.pos, g->u.unwield()); }
+void talk_function::player_weapon_drop(game *g, npc& p) { g->u.GPSpos.add(g->u.unwield()); }
 
 void talk_function::lead_to_safety(game *g, npc& p)
 {

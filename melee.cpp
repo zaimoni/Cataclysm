@@ -838,7 +838,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
  } break;
 
  case TEC_DISARM:
-  g->m.add_item(p->pos, p->unwield());
+  p->GPSpos.add(p->unwield());
   if (u_see) messages.add("%s %s %s!", You.c_str(), regular_verb_agreement("disarm").c_str(), target.c_str());
   break;
 
@@ -971,7 +971,7 @@ void player::perform_defensive_technique(
    break;
 
   case TEC_DEF_DISARM:
-   g->m.add_item(p->pos, p->unwield());
+   p->GPSpos.add(p->unwield());
 // Re-roll damage, without our weapon
    bash_dam = p->roll_bash_damage(nullptr, false);
    cut_dam  = p->roll_cut_damage(nullptr, false);
@@ -1108,7 +1108,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
   if (can_see) messages.add("%s %s shatters!", Your.c_str(), weapon.tname().c_str());
   g->sound(pos, 16, "");
 // Dump its contents on the ground
-  for(decltype(auto) obj : weapon.contents) g->m.add_item(pos, std::move(obj));
+  for(decltype(auto) obj : weapon.contents) GPSpos.add(std::move(obj));
   hit(g, bp_arms, 1, 0, rng(0, weapon_vol * 2));// Take damage
   if (weapon.is_two_handed(*this))// Hurt left arm too, if it was big
    hit(g, bp_arms, 0, 0, rng(0, weapon_vol));
@@ -1144,7 +1144,7 @@ void player::melee_special_effects(game *g, monster *z, player *p, bool crit,
    z->speed *= (weapon.has_flag(IF_SPEAR) || weapon.has_flag(IF_STAB)) ? .7 : .85;
    z->add_item(unwield());
   } else
-   g->m.add_item(pos, unwield());
+   GPSpos.add(unwield());
  } else {
      static auto weapon_is_almost_stuck = [&]() {
          return Your + weapon.tname() + " gets stuck in " + target + ", but " + you + " yank it free.";

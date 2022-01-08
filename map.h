@@ -236,6 +236,7 @@ class map
  void i_rem(int x, int y, int index);
  void i_rem(const point& pt, int index) { i_rem(pt.x, pt.y, index); };
  std::optional<std::pair<point, int>> find_item(item* it) const;
+ // consider GPS_loc::add instead of these
  void add_item(int x, int y, const itype* type, int birthday);
  void add_item(const point& pt, const itype* type, int birthday) { add_item(pt.x, pt.y, type, birthday); };
  void add_item(int x, int y, const item& new_item);

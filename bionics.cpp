@@ -540,7 +540,7 @@ void player::activate_bionic(int b, game *g)
    weapon = item::null;
   } else if (weapon.type->id != 0) {
    messages.add("Your claws extend, forcing you to drop your %s.", weapon.tname().c_str());
-   g->m.add_item(pos, std::move(weapon));
+   GPSpos.add(std::move(weapon));
    weapon = item(item::types[itm_bio_claws], 0);
    weapon.invlet = '#';
   } else {
@@ -651,7 +651,7 @@ void player::activate_bionic(int b, game *g)
 		  }
 		  prior = pt;
 	  }
-      if (!it_is_landed) g->m.add_item(pos, std::move(tmp_item));
+      if (!it_is_landed) GPSpos.add(std::move(tmp_item));
      }
     }
    }

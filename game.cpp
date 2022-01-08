@@ -3142,7 +3142,7 @@ void game::_kill_mon(monster& target, bool u_did_it)
     assert(!target.dead);
     target.dead = true;
     if (u_did_it) u.record_kill(target);
-    for (decltype(auto) it : target.inv) m.add_item(target.pos, std::move(it));
+    for (decltype(auto) it : target.inv) target.GPSpos.add(std::move(it));
     target.inv.clear();
     target.die(this);
     // z_erase(index);	// highly unsafe, do this compaction at end-of-turn
@@ -3291,7 +3291,7 @@ void game::smash()
   const int weapon_vol = u.weapon.volume();
   if (u.weapon.made_of(GLASS) && rng(0, weapon_vol + 3) < weapon_vol) {
    messages.add("Your %s shatters!", u.weapon.tname().c_str());
-   for (decltype(auto) it : u.weapon.contents) m.add_item(u.pos, std::move(it));
+   for (decltype(auto) it : u.weapon.contents) u.GPSpos.add(std::move(it));
    sound(u.pos, 16, "");
    u.hit(this, bp_hands, 1, 0, rng(0, weapon_vol));
    if (weapon_vol > 20)// Hurt left arm too, if it was big
@@ -3492,9 +3492,9 @@ void game::examine()
   item gas(item::types[itm_gasoline], messages.turn);
   if (one_in(10 + u.dex_cur)) { // \todo this is *way* too high to be credible outside of extreme distraction/stress
    messages.add("You accidentally spill the gasoline.");
-   m.add_item(u.pos, std::move(gas));
+   u.GPSpos.add(std::move(gas));
   } else {
-   u.moves -= 300;
+   u.moves -= 3 * mobile::mp_turn;
    handle_liquid(gas, false, true);
   }
  } else if (t_slot_machine == exam_t) {
@@ -3949,7 +3949,7 @@ bool game::handle_liquid(item &liquid, bool from_ground, bool infinite)
 
  } else if (!from_ground &&
             query_yn("Pour %s on the ground?", liquid.tname().c_str())) {
-  m.add_item(u.pos, liquid);
+  u.GPSpos.add(liquid);
   return true;
 
  } else { // Not filling vehicle
@@ -4112,7 +4112,7 @@ void game::drop()
   if (vh_overflow) messages.add("The trunk is full, so some items fall on the ground.");
  }
  if (!to_veh || vh_overflow) {
-     while (i < dropped_ub) m.add_item(u.pos, std::move(dropped[i++]));
+     while (i < dropped_ub) u.GPSpos.add(std::move(dropped[i++]));
  }
 }
 
@@ -4186,7 +4186,7 @@ void game::drop_in_direction()
      if (vh_overflow) messages.add("The trunk is full, so some items fall on the ground.");
  }
  if (!to_veh || vh_overflow) {
-     while (i < dropped.size()) m.add_item(u.pos, std::move(dropped[i++]));
+     while (i < dropped.size()) u.GPSpos.add(std::move(dropped[i++]));
  }
 }
 
@@ -4513,7 +4513,7 @@ void game::unload()
      u.i_add(std::move(content));
     } else {
      messages.add("You drop the %s on the ground.", content.tname().c_str());
-     m.add_item(u.pos, std::move(content));
+     u.GPSpos.add(std::move(content));
     }
    }
    EraseAt(u.weapon.contents, 0);
@@ -4554,7 +4554,7 @@ void game::unload()
    } else
     u.i_add(newam);
   } else
-   m.add_item(u.pos, newam);
+   u.GPSpos.add(newam);
  }
  u.weapon.curammo = nullptr;
 }

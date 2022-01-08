@@ -1509,6 +1509,19 @@ void map::add_item(int x, int y, const item& new_item)
  if (new_item.active) grid[pos_in->first]->active_item_count++;
 }
 
+// \todo: make these bypass map class
+void GPS_loc::add(const item& new_item)
+{
+    const auto g = game::active();
+    if (auto pos = g->toScreen(*this)) g->m.add_item(*pos, new_item);
+}
+
+void GPS_loc::add(item&& new_item)
+{
+    const auto g = game::active();
+    if (auto pos = g->toScreen(*this)) g->m.add_item(*pos, std::move(new_item));
+}
+
 void map::add_item(int x, int y, item&& new_item)
 {
     if (new_item.is_style()) return;
