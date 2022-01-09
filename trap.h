@@ -6,6 +6,7 @@
 class monster;
 class game;
 struct point;
+struct GPS_loc;
 
 enum trap_id : int {
  tr_null,
@@ -92,6 +93,7 @@ public:
  void trigger(monster& mon) const; // stepped on
  void trigger(player& u) const; // stepped on
  void trigger(player& u, const point& tr_pos) const; // disarm failure
+ void trigger(player& u, const GPS_loc& tr_loc) const; // disarm failure
 #endif
 
  static void init();

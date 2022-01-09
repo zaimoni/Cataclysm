@@ -50,6 +50,7 @@ struct submap {
 
     static constexpr bool in_bounds(int x, int y) { return 0 <= x && x < SEE && 0 <= y && y < SEE; }
     static constexpr bool in_bounds(const point& p) { return in_bounds(p.x, p.y); }
+    static std::optional<item> for_drop(ter_id dest, const itype* type, int birthday);
 
     field& field_at(const point& p) { return fld[p.x][p.y]; }
     const field& field_at(const point& p) const { return fld[p.x][p.y]; }

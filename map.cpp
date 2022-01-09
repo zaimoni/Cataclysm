@@ -1457,11 +1457,7 @@ std::optional<std::pair<point, int> > map::find_item(item* it) const
 
 void map::add_item(int x, int y, const itype* type, int birthday)
 {
- if (type->is_style()) return;
- item tmp(type, birthday);
- tmp = tmp.in_its_container();
- if (tmp.made_of(LIQUID) && has_flag(swimmable, x, y)) return;
- add_item(x, y, std::move(tmp));
+    if (const auto it = submap::for_drop(ter(x, y), type, birthday)) add_item(x, y, std::move(*it));
 }
 
 static bool item_location_ok(const map& m, const reality_bubble_loc& pos)
@@ -1683,43 +1679,16 @@ void map::add_trap(int x, int y, trap_id t)
     if (const auto pos = to(x, y)) grid[pos->first]->trp[pos->second.x][pos->second.y] = t;
 }
 
-// 2019-02-21: only the player may disarm traps
-void map::disarm_trap(game *g, const point& pt)
+std::optional<item> submap::for_drop(ter_id dest, const itype* type, int birthday)
 {
- const auto tr_id = tr_at(pt);
- const trap* const tr = trap::traps[tr_id];
- assert(tr->disarm_legal());
- const int diff = tr->difficulty;
- int roll = rng(g->u.sklevel[sk_traps], 4 * g->u.sklevel[sk_traps]);
- while ((rng(5, 20) < g->u.per_cur || rng(1, 20) < g->u.dex_cur) && roll < 50) roll++;
-
- if (roll < rational_scaled<4, 5>(diff)) {
-  const bool will_get_xp = (diff - roll <= 6);
-  messages.add(will_get_xp ? "You barely fail to disarm the trap, and you set it off!" 
-	: "You fail to disarm the trap, and you set it off!");
-  tr->trigger(g->u, pt);
-
-  // Give xp for failing, but not if we failed terribly (in which
-  // case the trap may not be disarmable).
-  if (will_get_xp) g->u.practice(sk_traps, 2*diff);
-  return;
- }
-
- // Learning is exciting and worth emphasis.  Skill must be no more than 80% of difficulty to learn.
- const bool will_get_xp = (diff > rational_scaled<5, 4>(g->u.sklevel[sk_traps]));
-
- if (roll >= diff) {
-  messages.add(will_get_xp ? "You disarm the trap!" : "You disarm the trap.");
-  for (const auto item_id : tr->disarm_components) {
-   if (item_id != itm_null) add_item(pt, item::types[item_id], 0);
-  }
-  tr_at(pt) = tr_null;
- } else {
-  messages.add(will_get_xp  ? "You fail to disarm the trap!" : "You fail to disarm the trap.");
- }
- if (will_get_xp) g->u.practice(sk_traps, rational_scaled<3, 2>(diff - g->u.sklevel[sk_traps]));
+    if (type->is_style()) return std::nullopt;
+    // ignore corpse special case here when inlining item::made_of
+    if ((type->m1 == LIQUID || type->m2 == LIQUID)
+        && is<swimmable>(dest))
+        return std::nullopt;
+    return item(type, birthday).in_its_container();
 }
- 
+
 bool map::add_field(game *g, int x, int y, field_id t, unsigned char density, unsigned int age)
 {
  const auto pos = to(x,y);

@@ -138,7 +138,6 @@ inline bool is_destructible(ter_id terrain) // misspelling avoids naming clash w
 	return is<bashable>(terrain) || (0 >= move_cost_of(terrain) && !is<liquid>(terrain));
 }
 
-
 struct field_t {
  std::string name[3];
  char sym;

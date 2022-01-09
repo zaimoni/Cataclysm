@@ -37,6 +37,13 @@ void trap::trigger(player& u, const point& tr_pos) const
     if (act_pos) act_pos(tr_pos);
 }
 
+void trap::trigger(player& u, const GPS_loc& tr_loc) const
+{
+    if (const auto pos = game::active()->toScreen(tr_loc)) {
+        if (act) act(game::active(), pos->x, pos->y); // legacy adapter
+        if (act_pos) act_pos(*pos);
+    }
+}
 
 void trapfunc::bubble(game *g, int x, int y)
 {

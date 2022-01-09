@@ -1,8 +1,11 @@
 #include "pc.hpp"
 #include "monster.h"
 #include "mondeath.h"
+#include "trap.h"
+#include "submap.h"
 #include "output.h"
 #include "ui.h"
+#include "stl_limits.h"
 #include "stl_typetraits.h"
 #include "options.h"
 #include "recent_msg.h"
@@ -12,6 +15,7 @@
 #include "Zaimoni.STL/functional.hpp"
 #include "fragment.inc/rng_box.hpp"
 #include "wrap_curses.h"
+#include "Zaimoni.STL/Logging.h"
 #include <array>
 #include <memory>
 #include <stdexcept>
@@ -80,6 +84,46 @@ int pc::use_active(item& it) {
         it.type = item::types[tool->revert_to];
     }
     return 0;
+}
+
+// 2019-02-21: C:Whales: only the player may disarm traps \todo allow NPCs
+void pc::disarm(GPS_loc loc)
+{
+    decltype(auto) tr_id = loc.trap_at();
+    const trap* const tr = trap::traps[tr_id];
+    assert(tr->disarm_legal());
+    const int diff = tr->difficulty;
+    int roll = rng(sklevel[sk_traps], 4 * sklevel[sk_traps]);
+    while ((rng(5, 20) < per_cur || rng(1, 20) < dex_cur) && roll < 50) roll++;
+
+    if (roll < cataclysm::rational_scaled<4, 5>(diff)) {
+        const bool will_get_xp = (diff - roll <= 6);
+        messages.add(will_get_xp ? "You barely fail to disarm the trap, and you set it off!"
+            : "You fail to disarm the trap, and you set it off!");
+        tr->trigger(*this, loc);
+
+        // Give xp for failing, but not if we failed terribly (in which
+        // case the trap may not be disarmable).
+        if (will_get_xp) practice(sk_traps, 2 * diff);
+        return;
+    }
+
+    // Learning is exciting and worth emphasis.  Skill must be no more than 80% of difficulty to learn.
+    const bool will_get_xp = (diff > cataclysm::rational_scaled<5, 4>(sklevel[sk_traps]));
+
+    if (roll >= diff) {
+        messages.add(will_get_xp ? "You disarm the trap!" : "You disarm the trap.");
+        for (const auto item_id : tr->disarm_components) {
+            if (item_id != itm_null) {
+                if (auto it = submap::for_drop(loc.ter(), item::types[item_id], 0)) loc.add(std::move(*it));
+            }
+        }
+        tr_id = tr_null;
+    }
+    else {
+        messages.add(will_get_xp ? "You fail to disarm the trap!" : "You fail to disarm the trap.");
+    }
+    if (will_get_xp) practice(sk_traps, cataclysm::rational_scaled<3, 2>(diff - sklevel[sk_traps]));
 }
 
 std::string pc::pronoun(role r) const

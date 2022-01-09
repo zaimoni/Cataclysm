@@ -3378,6 +3378,7 @@ void game::examine()
   messages.add("Invalid direction.");
   return;
  }
+ const auto exam_loc = u.GPSpos + exam;
  exam += u.pos;
  messages.add("That is a %s.", name_of(m.ter(exam)).c_str());
 
@@ -3564,13 +3565,12 @@ shape, but with long, twisted, distended limbs.");
   add_event(EVENT_TEMPLE_SPAWN, messages.turn + 3);
  }
 
- const auto tr_id = m.tr_at(exam);
- if (tr_id != tr_null) {
+ if (const auto tr_id = m.tr_at(exam)) {
    const trap* const tr = trap::traps[tr_id];
-   if (   tr->disarm_legal()
-       && u.per_cur-u.encumb(bp_eyes) >= tr->visibility
+   if (tr->disarm_legal()
+       && u.per_cur - u.encumb(bp_eyes) >= tr->visibility
        && query_yn("There is a %s there.  Disarm?", tr->name.c_str()))
-     m.disarm_trap(this, exam);
+       u.disarm(exam_loc);
  }
 }
 

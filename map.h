@@ -260,7 +260,6 @@ class map
  trap_id tr_at(const point& pt) const { return const_cast<map*>(this)->tr_at(pt.x, pt.y); };
  void add_trap(int x, int y, trap_id t);
  void add_trap(const point& pt, trap_id t) { add_trap(pt.x, pt.y, t); }
- void disarm_trap( game *g, const point& pt);
 
 // Fields
  template<class...Args>
