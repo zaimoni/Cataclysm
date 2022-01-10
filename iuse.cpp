@@ -1093,7 +1093,7 @@ void iuse::crowbar(pc& p, item& it)
    messages.add("You lift the manhole cover.");
    p.moves -= 5 * mobile::mp_turn - (p.str_cur * (mobile::mp_turn / 20));
    type = t_manhole;
-   g->m.add_item(p.pos, item::types[itm_manhole_cover], 0);
+   p.GPSpos.add(submap::for_drop(p.GPSpos.ter(), item::types[itm_manhole_cover], 0).value());
   } else {
    messages.add("You pry, but cannot lift the manhole cover.");
    p.moves -= mobile::mp_turn;

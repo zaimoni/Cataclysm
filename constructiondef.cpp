@@ -255,7 +255,7 @@ bool construct::able_pit(map& m, point p)
 
 void construct::done_window_pane(game *g, point p)
 {
- g->m.add_item(g->u.pos, item::types[itm_glass_sheet], 0);
+	g->u.GPSpos.add(submap::for_drop(g->u.GPSpos.ter(), item::types[itm_glass_sheet], 0).value());
 }
 
 void construct::done_tree(game *g, point p)

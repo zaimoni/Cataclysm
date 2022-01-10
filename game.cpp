@@ -4416,13 +4416,13 @@ void game::complete_butcher(int index)
    } else {
 	pelt = item::types[corpse->has_flag(MF_FUR) ? itm_fur : itm_leather];
    }
-   m.add_item(u.pos, pelt, age);
+   u.GPSpos.add(submap::for_drop(u.GPSpos.ter(), pelt, age).value());
   }
  }
  if (pieces <= 0) messages.add("Your clumsy butchering destroys the meat!");
  else {
   const itype* const meat = corpse->chunk_material();	// assumed non-null: precondition
-  for (int i = 0; i < pieces; i++) m.add_item(u.pos, meat, age);
+  for (int i = 0; i < pieces; i++) u.GPSpos.add(submap::for_drop(u.GPSpos.ter(), meat, age).value());
   messages.add("You butcher the corpse.");
  }
 }
@@ -4795,9 +4795,9 @@ void game::plmove(point delta)
 // TODO: Make there a flag, instead of hard-coded to mon_turret
     if (m_at->type->id == mon_turret) {
      if (query_yn("Deactivate the turret?")) {
-      m.add_item(m_at->pos, item::types[itm_bot_turret], messages.turn);
-	  z_erase(mon_at(local_dest.x, local_dest.y));
-      u.moves -= mobile::mp_turn;
+         m_at->GPSpos.add(submap::for_drop(m_at->GPSpos.ter(), item::types[itm_bot_turret], messages.turn).value());
+         z_erase(mon_at(local_dest.x, local_dest.y));
+         u.moves -= mobile::mp_turn;
      }
      return;
     } else {
