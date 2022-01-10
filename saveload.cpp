@@ -961,13 +961,8 @@ JSON toJSON(const item& src) {
 }
 
 #ifndef SOCRATES_DAIMON
-submap::submap(std::istream& is)
-: active_item_count(0), field_count(0)	// turn_last_touched omitted, will be caught later
+submap::submap(std::istream& is) : submap()
 {
-	memset(ter, 0, sizeof(ter));
-	memset(trp, 0, sizeof(trp));
-	memset(rad, 0, sizeof(rad));	// reasonably redundant given below, but matches zero-parameter constructor
-
 	is >> turn_last_touched;
 	int turndif = int(messages.turn);
 	if (turndif < 0) turndif = 0;

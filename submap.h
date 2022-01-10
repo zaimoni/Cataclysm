@@ -45,7 +45,7 @@ struct submap {
     submap& operator=(const submap& src) = default;	// plausibly should make ACID but we don't actually copy submaps frequently
     submap& operator=(submap&& src) = default;
 
-    submap(std::istream& is);
+    explicit submap(std::istream& is);
     friend std::ostream& operator<<(std::ostream& os, const submap& src);
 
     static constexpr bool in_bounds(int x, int y) { return 0 <= x && x < SEE && 0 <= y && y < SEE; }
