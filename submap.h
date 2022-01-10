@@ -55,6 +55,7 @@ struct submap {
     field& field_at(const point& p) { return fld[p.x][p.y]; }
     const field& field_at(const point& p) const { return fld[p.x][p.y]; }
     void remove_field(const point& p);
+    field* add(const point& p, field&& src);
 
     // including vehicles is more complicated
     // 2020-12-18: vehicles only enable the bashable flag, others are as-if terrain only

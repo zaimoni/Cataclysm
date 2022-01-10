@@ -1689,21 +1689,28 @@ std::optional<item> submap::for_drop(ter_id dest, const itype* type, int birthda
     return item(type, birthday).in_its_container();
 }
 
+field* submap::add(const point& p, field&& src)
+{
+    auto& fd = field_at(p);
+    if (fd.type == fd_web && src.type == fd_fire) src.density++;
+    else if (!fd.is_null()) return nullptr; // Blood & bile are null too
+    if (3 < src.density) src.density = 3;
+    if (0 >= src.density) return nullptr;
+    if (fd.type == fd_null) field_count++;
+    return &(fd = std::move(src));
+}
+
 bool map::add_field(game *g, int x, int y, field_id t, unsigned char density, unsigned int age)
 {
- const auto pos = to(x,y);
- if (!pos) return false; // wasn't in bounds
- auto& fd = grid[pos->first]->field_at(pos->second);
- if (fd.type == fd_web && t == fd_fire) density++;
- else if (!fd.is_null()) return false; // Blood & bile are null too
- if (density > 3) density = 3;
- if (density <= 0) return false;
- if (fd.type == fd_null) grid[pos->first]->field_count++;
- fd = field(t, density, age);
- if (g && fd.is_dangerous()) {
-     if (const auto _pc = g->survivor(x,y)) _pc->cancel_activity_query("You're in a %s!", field::list[t].name[density - 1].c_str());
- }
- return true;
+    const auto pos = to(x, y);
+    if (!pos) return false; // wasn't in bounds
+    if (decltype(auto) fd = grid[pos->first]->add(pos->second, field(t, density, age))) {
+        if (g && fd->is_dangerous()) {
+            if (const auto _pc = g->survivor(x, y)) _pc->cancel_activity_query("You're in a %s!", field::list[t].name[fd->density - 1].c_str());
+        }
+        return true;
+    }
+    return false;
 }
 
 void submap::remove_field(const point& p) {
