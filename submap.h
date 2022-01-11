@@ -6,6 +6,9 @@
 #include "computer.h"
 #include "mapdata.h"
 #include "mtype.h"
+#include "zero.h"
+
+class mapbuffer;
 
 struct spawn_point {
     point pos;
@@ -37,7 +40,10 @@ struct submap {
     std::vector<spawn_point> spawns;
     std::vector<vehicle> vehicles;
     computer comp;
+private:
+    tripoint GPS;   // cache field -- GPS_loc first coordinate, where we are
 
+public:
     submap();	// mapgen.cpp: sole caller there
     submap(const submap& src) = default;
     submap(submap&& src) = default;
@@ -47,6 +53,8 @@ struct submap {
 
     explicit submap(std::istream& is);
     friend std::ostream& operator<<(std::ostream& os, const submap& src);
+
+    void set(const tripoint src, const Badge<mapbuffer>& auth) { GPS = src; }
 
     static constexpr bool in_bounds(int x, int y) { return 0 <= x && x < SEE && 0 <= y && y < SEE; }
     static constexpr bool in_bounds(const point& p) { return in_bounds(p.x, p.y); }
