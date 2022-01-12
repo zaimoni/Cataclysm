@@ -1501,7 +1501,7 @@ void map::add_item(int x, int y, const item& new_item)
      } // STILL?	\todo decide what gets lost
  }
 
- grid[pos_in->first]->itm[pos_in->second.x][pos_in->second.y].push_back(new_item);
+ grid[pos_in->first]->items_at(pos_in->second).push_back(new_item);
  if (new_item.active) grid[pos_in->first]->active_item_count++;
 }
 
@@ -1532,7 +1532,7 @@ void map::add_item(int x, int y, item&& new_item)
     }
 
     if (new_item.active) grid[pos_in->first]->active_item_count++;
-    grid[pos_in->first]->itm[pos_in->second.x][pos_in->second.y].push_back(std::move(new_item));
+    grid[pos_in->first]->items_at(pos_in->second).push_back(std::move(new_item));
 }
 
 bool map::hard_landing(const point& pt, item&& thrown, player* p)
@@ -1663,6 +1663,22 @@ trap_id GPS_loc::trap_at() const
         return sm->trp[second.x][second.y];
     }
     return tr_null;	// Out-of-bounds, return our null trap
+}
+
+field& GPS_loc::field_at()
+{
+    if (submap* const sm = game::active()->m.chunk(*this)) {
+        return sm->field_at(second);
+    }
+    return (discard<field>::x = field());	// Out-of-bounds, return null field
+}
+
+std::vector<item>& GPS_loc::items_at()
+{
+    if (submap* const sm = game::active()->m.chunk(*this)) {
+        return sm->items_at(second);
+    }
+    return (discard<std::vector<item> >::x = std::vector<item>());	// Out-of-bounds, return null field
 }
 
 trap_id& map::tr_at(int x, int y)

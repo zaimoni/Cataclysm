@@ -225,7 +225,7 @@ class map
 	 return cataclysm::discard<std::vector<item> >::x;
  }
 
- std::vector<item>& i_at(const reality_bubble_loc& pos) { return grid[pos.first]->itm[pos.second.x][pos.second.y]; }
+ std::vector<item>& i_at(const reality_bubble_loc& pos) { return grid[pos.first]->items_at(pos.second); }
 
  template<class...Args>
  const std::vector<item>& i_at(Args...params) const { return const_cast<map*>(this)->i_at(params...); }

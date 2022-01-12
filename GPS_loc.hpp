@@ -6,7 +6,9 @@
 #include <utility>
 #include <variant>
 #include <optional>
+#include <vector>
 
+struct field;
 class item;
 class vehicle;
 enum ter_id : int;
@@ -37,6 +39,10 @@ struct GPS_loc : public std::pair<tripoint, point>
 	std::optional<std::pair<vehicle*, int>> veh_at() const;
 	trap_id& trap_at();
 	trap_id trap_at() const;
+	field& field_at();
+	const field& field_at() const { return const_cast<GPS_loc*>(this)->field_at(); }
+	std::vector<item>& items_at();
+	const std::vector<item>& items_at() const { return const_cast<GPS_loc*>(this)->items_at(); }
 	int move_cost() const;
 	void add(const item& new_item);
 	void add(item&& new_item);
