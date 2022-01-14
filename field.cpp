@@ -91,20 +91,25 @@ bool map::process_fields_in_submap(game *g, int gridn)
     if (has_flag(swimmable, x, y)) cur->age += 20;	// Dissipate faster in water
 	{
 	auto& stack = i_at(x, y);
-	for (int i = 0; i < stack.size(); i++) {
-     item *melting = &stack[i];
-     if (melting->made_of(LIQUID) || melting->made_of(VEGGY)   ||
-         melting->made_of(FLESH)  || melting->made_of(POWDER)  ||
-         melting->made_of(COTTON) || melting->made_of(WOOL)    ||
-         melting->made_of(PAPER)  || melting->made_of(PLASTIC) ||
-         (melting->made_of(GLASS) && !one_in(3)) || one_in(4)) {
+    int i = stack.size();
+    while(0 <= --i) {
+     item& melting = stack[i];
+     if (melting.made_of(LIQUID) || melting.made_of(VEGGY)   ||
+         melting.made_of(FLESH)  || melting.made_of(POWDER)  ||
+         melting.made_of(COTTON) || melting.made_of(WOOL)    ||
+         melting.made_of(PAPER)  || melting.made_of(PLASTIC) ||
+         (melting.made_of(GLASS) && !one_in(3)) || one_in(4)) {
 // Acid destructible objects here
-      melting->damage++;
-      if (melting->damage >= 5 || (melting->made_of(PAPER) && melting->damage >= 3)) {
-       cur->age += melting->volume();
-	   for(auto it : melting->contents) stack.push_back(it);
+      melting.damage++;
+      if (5 <= melting.damage || (melting.made_of(PAPER) && 3 <= melting.damage)) {
+       cur->age += melting.volume();
+       decltype(melting.contents) stage;
+       stage.swap(melting.contents);
 	   EraseAt(stack, i);
-       i--;
+       if (auto ub = stage.size()) {
+           stack.reserve(stack.size() + ub);
+           for (decltype(auto) it : stage) stack.push_back(std::move(it));
+       }
       }
      }
     }
@@ -116,11 +121,11 @@ bool map::process_fields_in_submap(game *g, int gridn)
 
    case fd_fire: {
 // Consume items as fuel to help us grow/last longer.
-    bool destroyed = false;
     int smoke = 0, consumed = 0;
 	auto& stack = i_at(x, y);
-	for (int i = 0; i < stack.size() && consumed < cur->density * 2; i++) {
-     destroyed = false;
+    int i = stack.size();
+    while(0 <= --i && consumed < cur->density * 2) {
+     bool destroyed = false;
      item *it = &stack[i];
 	 const int vol = it->volume();
 
@@ -202,9 +207,13 @@ bool map::process_fields_in_submap(game *g, int gridn)
      }
 
      if (destroyed) {
-	  for(auto& obj : stack[i].contents) stack.push_back(obj);
+      decltype(it->contents) stage;
+      stage.swap(it->contents);
 	  EraseAt(stack, i);
-      i--;
+      if (auto ub = stage.size()) {
+          stack.reserve(stack.size() + ub);
+          for (decltype(auto) obj : stage) stack.push_back(std::move(obj));
+      }
      }
     }
 
