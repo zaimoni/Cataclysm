@@ -315,7 +315,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
         spread.push_back(dest);
       }
      }
-     if (cur->density > 0 && cur->age > 0 && spread.size() > 0) {
+     if (cur->age > 0 && spread.size() > 0) {
       point p = spread[rng(0, spread.size() - 1)];
 	  auto& f = field_at(p);
       if (f.type == fd_smoke) {
@@ -345,7 +345,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
       }
      }
 // Then, spread to a nearby point
-     if (cur->density > 0 && cur->age > 0 && spread.size() > 0) {
+     if (cur->age > 0 && spread.size() > 0) {
       point p = spread[rng(0, spread.size() - 1)];
 	  auto& f = field_at(p);
 	  switch (f.type) {
@@ -366,7 +366,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
    case fd_toxic_gas:
     clear_nearby_scent(loc);
     if (loc.is_outside()) cur->age += 40;
-    if (cur->density > 0 && cur->age > 0 && one_in(2)) {
+    if (cur->age > 0 && one_in(2)) {
      std::vector <point> spread;
 // Pick all eligible points to spread to
      for (int a = -1; a <= 1; a++) {
@@ -407,7 +407,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
     if (loc.is_outside()) cur->age += 40;
 // Increase long-term radiation in the land underneath
     radiation(x, y) += rng(0, cur->density);
-    if (cur->density > 0 && cur->age > 0 && one_in(2)) {
+    if (cur->age > 0 && one_in(2)) {
      std::vector <point> spread;
 // Pick all eligible points to spread to
      for (int a = -1; a <= 1; a++) {
