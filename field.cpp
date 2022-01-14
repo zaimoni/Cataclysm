@@ -40,6 +40,17 @@ bool map::process_fields(game *g)
  return found_field;
 }
 
+static void clear_nearby_scent(GPS_loc loc)
+{
+    const auto g = game::active();
+    auto pos = g->toScreen(loc);
+    if (pos) g->scent(*pos) = 0;
+    for (decltype(auto) dir : Direction::vector) {
+        auto pos = g->toScreen(loc+dir);
+        if (pos) g->scent(*pos) = 0;
+    }
+}
+
 bool map::process_fields_in_submap(game *g, int gridn)
 {
  bool found_field = false;
@@ -48,6 +59,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
    field * const cur = &(grid[gridn]->fld[locx][locy]);
    int x = locx + SEEX * (gridn % my_MAPSIZE),
        y = locy + SEEY * int(gridn / my_MAPSIZE);
+   const auto loc = g->toGPS(point(x, y));
    
    const field_id curtype = cur->type;
    if (curtype != fd_null) found_field = true;
@@ -290,11 +302,8 @@ bool map::process_fields_in_submap(game *g, int gridn)
    } break;
   
    case fd_smoke:
-    for (int i = -1; i <= 1; i++) {
-     for (int j = -1; j <= 1; j++)
-      g->scent(x+i, y+j) = 0;
-    }
-    if (is_outside(x, y)) cur->age += 50;
+    clear_nearby_scent(loc);
+    if (loc.is_outside()) cur->age += 50;
     if (one_in(2)) {
      std::vector <point> spread;
      for (int a = -1; a <= 1; a++) {
@@ -318,12 +327,8 @@ bool map::process_fields_in_submap(game *g, int gridn)
    break;
 
    case fd_tear_gas:
-// Reset nearby scents to zero
-    for (int i = -1; i <= 1; i++) {
-     for (int j = -1; j <= 1; j++)
-      g->scent(x+i, y+j) = 0;
-    }
-    if (is_outside(x, y)) cur->age += 30;
+    clear_nearby_scent(loc);
+    if (loc.is_outside()) cur->age += 30;
 // One in three chance that it spreads (less than smoke!)
     if (one_in(3)) {
      std::vector <point> spread;
@@ -359,12 +364,8 @@ bool map::process_fields_in_submap(game *g, int gridn)
     break;
 
    case fd_toxic_gas:
-// Reset nearby scents to zero
-    for (int i = -1; i <= 1; i++) {
-     for (int j = -1; j <= 1; j++)
-      g->scent(x+i, y+j) = 0;
-    }
-    if (is_outside(x, y)) cur->age += 40;
+    clear_nearby_scent(loc);
+    if (loc.is_outside()) cur->age += 40;
     if (cur->density > 0 && cur->age > 0 && one_in(2)) {
      std::vector <point> spread;
 // Pick all eligible points to spread to
@@ -402,12 +403,8 @@ bool map::process_fields_in_submap(game *g, int gridn)
 
 
    case fd_nuke_gas:
-// Reset nearby scents to zero
-    for (int i = -1; i <= 1; i++) {
-     for (int j = -1; j <= 1; j++)
-      g->scent(x+i, y+j) = 0;
-    }
-    if (is_outside(x, y)) cur->age += 40;
+    clear_nearby_scent(loc);
+    if (loc.is_outside()) cur->age += 40;
 // Increase long-term radiation in the land underneath
     radiation(x, y) += rng(0, cur->density);
     if (cur->density > 0 && cur->age > 0 && one_in(2)) {
