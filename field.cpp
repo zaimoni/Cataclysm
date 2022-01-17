@@ -59,8 +59,8 @@ bool map::process_fields_in_submap(game *g, int gridn)
    field * const cur = &(grid[gridn]->fld[locx][locy]);
    int x = locx + SEEX * (gridn % my_MAPSIZE),
        y = locy + SEEY * int(gridn / my_MAPSIZE);
-   const auto loc = g->toGPS(point(x, y));
-   
+   auto loc = g->toGPS(point(x, y));
+
    const field_id curtype = cur->type;
    if (curtype != fd_null) found_field = true;
    // \todo ideally would use accessors and preclude this by construction
@@ -84,13 +84,13 @@ bool map::process_fields_in_submap(game *g, int gridn)
 
    case fd_blood:
    case fd_bile:
-    if (has_flag(swimmable, x, y)) cur->age += 250;	// Dissipate faster in water
+    if (is<swimmable>(loc.ter())) cur->age += 250;	// Dissipate faster in water
     break;
 
    case fd_acid:
-    if (has_flag(swimmable, x, y)) cur->age += 20;	// Dissipate faster in water
+    if (is<swimmable>(loc.ter())) cur->age += 20;	// Dissipate faster in water
 	{
-	auto& stack = i_at(x, y);
+	auto& stack = loc.items_at();
     int i = stack.size();
     while(0 <= --i) {
      item& melting = stack[i];
@@ -122,15 +122,15 @@ bool map::process_fields_in_submap(game *g, int gridn)
    case fd_fire: {
 // Consume items as fuel to help us grow/last longer.
     int smoke = 0, consumed = 0;
-	auto& stack = i_at(x, y);
+	auto& stack = loc.items_at();
     int i = stack.size();
     while(0 <= --i && consumed < cur->density * 2) {
      bool destroyed = false;
-     item *it = &stack[i];
-	 const int vol = it->volume();
+     item& it = stack[i];
+	 const int vol = it.volume();
 
 	 // firearms ammo cooks easily in B movies
-     if (ammotype am = it->provides_ammo_type(); am && am != AT_BATT && am != AT_NAIL && am != AT_BB && am != AT_BOLT && am != AT_ARROW) {
+     if (ammotype am = it.provides_ammo_type(); am && am != AT_BATT && am != AT_NAIL && am != AT_BB && am != AT_BOLT && am != AT_ARROW) {
       // as charger rounds are not typically found in naked ground inventories, their new (2020-04-10) inability to burn should be a non-issue
       cur->age /= 2;
       cur->age -= 600;
@@ -138,47 +138,47 @@ bool map::process_fields_in_submap(game *g, int gridn)
       smoke += 6;
       consumed++;
 
-     } else if (it->made_of(PAPER)) {
-      destroyed = it->burn(cur->density * 3);
+     } else if (it.made_of(PAPER)) {
+      destroyed = it.burn(cur->density * 3);
       consumed++;
       if (cur->density == 1) cur->age -= vol * 10;
       if (vol >= 4) smoke++;
 
-     } else if ((it->made_of(WOOD) || it->made_of(VEGGY))) {
-      if (vol <= cur->density * 10 || cur->density == 3) {
+     } else if ((it.made_of(WOOD) || it.made_of(VEGGY))) {
+      if (vol <= cur->density * 10 || 3 == cur->density) {
        cur->age -= 4;
-       destroyed = it->burn(cur->density);
+       destroyed = it.burn(cur->density);
        smoke++;
        consumed++;
-      } else if (it->burnt < cur->density) {
-       destroyed = it->burn(1);
+      } else if (it.burnt < cur->density) {
+       destroyed = it.burn(1);
        smoke++;
       }
 
-     } else if ((it->made_of(COTTON) || it->made_of(WOOL))) {
-      if (vol <= cur->density * 5 || cur->density == 3) {
+     } else if ((it.made_of(COTTON) || it.made_of(WOOL))) {
+      if (vol <= cur->density * 5 || 3 == cur->density) {
        cur->age--;
-       destroyed = it->burn(cur->density);
+       destroyed = it.burn(cur->density);
        smoke++;
        consumed++;
-      } else if (it->burnt < cur->density) {
-       destroyed = it->burn(1);
+      } else if (it.burnt < cur->density) {
+       destroyed = it.burn(1);
        smoke++;
       }
 
-     } else if (it->made_of(FLESH)) {
-      if (vol <= cur->density * 5 || (cur->density == 3 && one_in(vol / 20))) {
+     } else if (it.made_of(FLESH)) {
+      if (vol <= cur->density * 5 || (3 == cur->density && one_in(vol / 20))) {
        cur->age--;
-       destroyed = it->burn(cur->density);
+       destroyed = it.burn(cur->density);
        smoke += 3;
        consumed++;
-      } else if (it->burnt < cur->density * 5 || cur->density >= 2) {
-       destroyed = it->burn(1);
+      } else if (it.burnt < cur->density * 5 || 2 <= cur->density) {
+       destroyed = it.burn(1);
        smoke++;
       }
 
-     } else if (it->made_of(LIQUID)) {
-      switch (it->type->id) { // TODO: Make this be not a hack.
+     } else if (it.made_of(LIQUID)) {
+      switch (it.type->id) { // TODO: Make this be not a hack.
        case itm_whiskey:
        case itm_vodka:
        case itm_rum:
@@ -193,22 +193,22 @@ bool map::process_fields_in_submap(game *g, int gridn)
       destroyed = true;
       consumed++;
 
-     } else if (it->made_of(POWDER)) {
+     } else if (it.made_of(POWDER)) {
       cur->age -= vol;
       destroyed = true;
       smoke += 2;
 
-     } else if (it->made_of(PLASTIC)) {
+     } else if (it.made_of(PLASTIC)) {
       smoke += 3;
-      if (it->burnt <= cur->density * 2 || (cur->density == 3 && one_in(vol))) {
-       destroyed = it->burn(cur->density);
-       if (one_in(vol + it->burnt)) cur->age--;
+      if (it.burnt <= cur->density * 2 || (3 == cur->density && one_in(vol))) {
+       destroyed = it.burn(cur->density);
+       if (one_in(vol + it.burnt)) cur->age--;
       }
      }
 
      if (destroyed) {
-      decltype(it->contents) stage;
-      stage.swap(it->contents);
+      decltype(it.contents) stage;
+      stage.swap(it.contents);
 	  EraseAt(stack, i);
       if (auto ub = stage.size()) {
           stack.reserve(stack.size() + ub);
@@ -217,21 +217,21 @@ bool map::process_fields_in_submap(game *g, int gridn)
      }
     }
 
-    if (const auto veh = _veh_at(x, y)) veh->first->damage(veh->second, cur->density * 10, vehicle::damage_type::incendiary);
+    if (const auto veh = loc.veh_at()) veh->first->damage(veh->second, cur->density * 10, vehicle::damage_type::incendiary);
 // Consume the terrain we're on
-	auto& terrain = ter(x, y);
-    if (has_flag(explodes, x, y)) {
+	auto& terrain = loc.ter();
+    if (is<explodes>(terrain)) {
      terrain = ter_id(int(terrain) + 1);
      cur->age = 0;
      cur->density = 3;
      g->explosion(x, y, 40, 0, true);
 
-    } else if (has_flag(flammable, x, y) && one_in(32 - cur->density * 10)) {
+    } else if (is<flammable>(terrain) && one_in(32 - cur->density * 10)) {
      cur->age -= cur->density * cur->density * 40;
      smoke += 15;
      if (cur->density == 3) terrain = t_rubble;
 
-    } else if (has_flag(l_flammable, x, y) && one_in(62 - cur->density * 10)) {
+    } else if (is<l_flammable>(terrain) && one_in(62 - cur->density * 10)) {
      cur->age -= cur->density * cur->density * 30;
      smoke += 10;
      if (cur->density == 3) terrain = t_rubble;
@@ -275,13 +275,13 @@ bool map::process_fields_in_submap(game *g, int gridn)
 	   auto& f = field_at(fx, fy);
        if (f.type == fd_web) spread_chance = 50 + spread_chance / 2;
 	   auto& t = ter(fx, fy);
-       if (has_flag(explodes, fx, fy) && one_in(8 - cur->density)) {
+       if (is<explodes>(t) && one_in(8 - cur->density)) {
         t = ter_id(t + 1);
         g->explosion(fx, fy, 40, 0, true);
        } else if ((i != 0 || j != 0) && rng(1, 100) < spread_chance &&
                   (!in_pit || t_pit == t) &&
-                  ((cur->density == 3 && (has_flag(flammable, fx, fy) || one_in(20))) ||
-                   (cur->density == 3 && (has_flag(l_flammable, fx, fy) && one_in(10))) ||
+                  ((3 == cur->density && (is<flammable>(t) || one_in(20))) ||
+                   (3 == cur->density && (is<l_flammable>(t) && one_in(10))) ||
                    flammable_items_at(fx, fy) ||
                    f.type == fd_web)) {
         if (f.type == fd_smoke || f.type == fd_web)
@@ -541,7 +541,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
         if (fd_push_items == field_at(pt).type) valid.push_back(pt);
     }
 
-    std::vector<item>& stack = i_at(x, y);
+    std::vector<item>& stack = loc.items_at();
     int i = stack.size();
     while (0 <= --i) {
         item& obj = stack[i];
