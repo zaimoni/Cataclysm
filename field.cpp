@@ -40,6 +40,26 @@ bool map::process_fields(game *g)
  return found_field;
 }
 
+// \todo this belongs in its own header
+#include <array>
+template<class T, size_t N>
+class inline_stack final
+{
+    size_t ub;
+    std::array<T, N> x;
+
+public:
+    inline_stack() : ub(0) {}
+    // implicit defaults for now
+
+    bool empty() const { return 0 >= ub; }
+    auto size() const { return ub; }
+    void push(const T& src) { x[ub++] = src; }
+    void push(T&& src) { x[ub++] = src; }
+    T& operator[](ptrdiff_t n) { return x[n]; }
+    const T& operator[](ptrdiff_t n) const { return x[n]; }
+};
+
 static void clear_nearby_scent(GPS_loc loc)
 {
     const auto g = game::active();
@@ -248,20 +268,18 @@ bool map::process_fields_in_submap(game *g, int gridn)
     const bool in_pit = (t_pit == terrain);
 // If the flames are REALLY big, they contribute to adjacent flames
     if (cur->density == 3 && cur->age < 0) {
-// Randomly offset our x/y shifts by 0-2, to randomly pick a square to spread to
-     int starti = rng(0, 2);
-     int startj = rng(0, 2);
-     for (int i = 0; i < 3 && cur->age < 0; i++) {
-      for (int j = 0; j < 3 && cur->age < 0; j++) {
-	   const point f_pt(x + ((i + starti) % 3) - 1,  y + ((j + startj) % 3) - 1);
-	   auto& fd = field_at(f_pt);
-       if (fd.type == fd_fire && fd.density < 3 && (!in_pit || ter(f_pt) == t_pit)) {
-        fd.density++; 
-        fd.age = 0;
-        cur->age = 0;
-       }
-      }
-     }
+        inline_stack<field*, std::end(Direction::vector) - std::begin(Direction::vector)> stage;
+        for (decltype(auto) dir : Direction::vector) {
+            auto dest = loc + dir;
+            auto& fd = dest.field_at();
+            if (fd_fire == fd.type && 3 > fd.density && (!in_pit || t_pit == dest.ter())) stage.push(&fd);
+        }
+        if (auto ub = stage.size()) {
+            auto& fd = *stage[rng(0, ub - 1)];
+            fd.density++;
+            fd.age = 0;
+            cur->age = 0;
+        }
     }
 // Consume adjacent fuel / terrain / webs to spread.
 // Randomly offset our x/y shifts by 0-2, to randomly pick a square to spread to
@@ -534,12 +552,12 @@ bool map::process_fields_in_submap(game *g, int gridn)
     break;
 
    case fd_push_items: {
-    const point origin(x, y);
-    std::vector<point> valid(1, origin);
-    for (decltype(auto) delta : Direction::vector) {
-        const point pt(delta + origin);
-        if (fd_push_items == field_at(pt).type) valid.push_back(pt);
-    }
+       std::vector<GPS_loc> valid2(1, loc);
+       for (decltype(auto) delta : Direction::vector) {
+           const auto dest(delta + loc);
+           if (fd_push_items == dest.field_at().type) valid2.push_back(dest);
+       }
+       if (1 == valid2.size() && !g->mob_at(loc)) break;    // no-op
 
     std::vector<item>& stack = loc.items_at();
     int i = stack.size();
@@ -548,18 +566,22 @@ bool map::process_fields_in_submap(game *g, int gridn)
         if (itm_rock != obj.type->id || int(messages.turn) - 1 <= obj.bday) continue;
         item tmp(std::move(obj));
         stack.erase(stack.begin() + i); // obj invalidated
-        const point newp = valid[rng(0, valid.size() - 1)];
-        if (g->u.pos == newp) {
-            messages.add("A %s hits you!", tmp.tname().c_str());
-            g->u.hit(g, random_body_part(), rng(0, 1), 6, 0);
-        } else if (npc* const p = g->nPC(newp)) {
-            p->hit(g, random_body_part(), rng(0, 1), 6, 0);
-            if (g->u.see(newp)) messages.add("A %s hits %s!", tmp.tname().c_str(), p->name.c_str());
-        } else if (monster* const mon = g->mon(newp)) {
-            mon->hurt(6 - mon->armor_bash());
-            if (g->u.see(newp)) messages.add("A %s hits the %s!", tmp.tname().c_str(), mon->name().c_str());
+        auto dest = valid2[rng(0, valid2.size() - 1)];
+        // \todo convert to std::visit
+        if (const auto whom = g->mob_at(dest)) {
+            if (auto u = std::get_if<pc*>(&*whom)) {
+                messages.add("A %s hits you!", tmp.tname().c_str());
+                (*u)->hit(g, random_body_part(), rng(0, 1), 6, 0);
+            } else if (auto p = std::get_if<npc*>(&*whom)) {
+                (*p)->hit(g, random_body_part(), rng(0, 1), 6, 0);
+                if (g->u.see(dest)) messages.add("A %s hits %s!", tmp.tname().c_str(), (*p)->name.c_str());
+            } else {
+                auto mon = std::get<monster*>(*whom);
+                mon->hurt(6 - mon->armor_bash());
+                if (g->u.see(dest)) messages.add("A %s hits the %s!", tmp.tname().c_str(), mon->name().c_str());
+            }
         }
-        add_item(newp, std::move(tmp));
+        dest.add(std::move(tmp));
     }
    } break;
 
