@@ -634,6 +634,16 @@ bool item::is_mission_item(int _id) const
     return false;
 }
 
+bool item::is_ignitable() const
+{
+    if (made_of(PAPER) || made_of(WOOD) || made_of(COTTON) ||
+        made_of(POWDER) || made_of(VEGGY) || is_ammo() ||
+        type->id == itm_whiskey || type->id == itm_vodka ||
+        type->id == itm_rum || type->id == itm_tequila)
+        return true;
+    return false;
+}
+
 #ifndef SOCRATES_DAIMON
 int item::reload_time(const player &u) const
 {

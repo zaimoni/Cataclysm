@@ -41,12 +41,11 @@ bool map::process_fields(game *g)
 }
 
 // \todo this belongs in its own header
-#include <array>
 template<class T, size_t N>
 class inline_stack final
 {
     size_t ub;
-    std::array<T, N> x;
+    T x[N];
 
 public:
     inline_stack() : ub(0) {}
@@ -300,7 +299,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
                   (!in_pit || t_pit == t) &&
                   ((3 == cur->density && (is<flammable>(t) || one_in(20))) ||
                    (3 == cur->density && (is<l_flammable>(t) && one_in(10))) ||
-                   flammable_items_at(fx, fy) ||
+                   contains_ignitable(i_at(fx, fy)) ||
                    f.type == fd_web)) {
         if (f.type == fd_smoke || f.type == fd_web)
          f = field(fd_fire);

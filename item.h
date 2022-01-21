@@ -11,6 +11,7 @@ class npc;
 
 #include <variant>
 #include <optional>
+#include <ranges>
 #ifndef SOCRATES_DAIMON
 #include <any>
 #endif
@@ -167,6 +168,7 @@ public:
  auto is_artifact_tool() const { return type->is_artifact_tool(); }
 
  bool is_mission_item(int _id) const;
+ bool is_ignitable() const;
 
 #ifndef SOCRATES_DAIMON
  // NPC AI support
@@ -176,5 +178,14 @@ public:
 
  static void init();
 };
+
+template<class T> requires std::ranges::range<T> && requires(const T& x) { x.begin()->is_ignitable(); }
+static bool contains_ignitable(const T& src)
+{
+	for (decltype(auto) it : src) {
+		if (it.is_ignitable()) return true;
+	}
+	return false;
+}
 
 #endif

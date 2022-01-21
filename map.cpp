@@ -760,18 +760,6 @@ bool GPS_loc::is_outside() const
     // \todo This could be improved by using overmap terrain, e.g. houses are likely inside.
 }
 
-bool map::flammable_items_at(int x, int y) const
-{
- for(auto& it : i_at(x,y)) {
-  if (it.made_of(PAPER) || it.made_of(WOOD) || it.made_of(COTTON) ||
-      it.made_of(POWDER) || it.made_of(VEGGY) || it.is_ammo() ||
-      it.type->id == itm_whiskey || it.type->id == itm_vodka ||
-      it.type->id == itm_rum || it.type->id == itm_tequila)
-   return true;
- }
- return false;
-}
-
 point map::random_outdoor_tile()
 {
  std::vector<point> options;

@@ -645,7 +645,7 @@ void iuse::lighter(pc& p, item& it)
  p.moves -= (3 * mobile::mp_turn) / 20;
  const auto dest = dir + p.pos;
 
- if (g->m.flammable_items_at(dest.x, dest.y)) {
+ if (contains_ignitable(g->m.i_at(dest))) {
   g->m.add_field(g, dest, fd_fire, 1, 30);
  } else {
   messages.add("There's nothing to light there.");
