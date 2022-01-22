@@ -197,21 +197,15 @@ bool map::process_fields_in_submap(game *g, int gridn)
       }
 
      } else if (it.made_of(LIQUID)) {
-      switch (it.type->id) { // TODO: Make this be not a hack.
-       case itm_whiskey:
-       case itm_vodka:
-       case itm_rum:
-       case itm_tequila:
-        cur->age -= 300;
-        smoke += 6;
-        break;
-       default:
-        cur->age += rng(80 * vol, 300 * vol);
-        smoke++;
-      }
-      destroyed = true;
-      consumed++;
-
+         if (is_hard_liquor(it.type->id)) { // TODO: Make this be not a hack.
+             cur->age -= 300;
+             smoke += 6;
+         } else {
+             cur->age += rng(80 * vol, 300 * vol);
+             smoke++;
+         }
+         destroyed = true;
+         consumed++;
      } else if (it.made_of(POWDER)) {
       cur->age -= vol;
       destroyed = true;

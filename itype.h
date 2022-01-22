@@ -9,6 +9,7 @@
 #include "c_bitmap.h"
 #include "material_enum.h"
 #include "enum_json.h"
+#include "is_between.hpp"
 #include <vector>
 #include <initializer_list>
 #ifndef SOCRATES_DAIMON
@@ -213,6 +214,9 @@ num_all_items
 // others exist in our reality
 
 DECLARE_JSON_ENUM_SUPPORT(itype_id)
+
+// C-level dependency on enum order
+constexpr inline bool is_hard_liquor(auto x) { return is_between<itm_whiskey, itm_tequila>(x); }
 
 struct item_drop_spec final
 {

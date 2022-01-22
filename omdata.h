@@ -143,10 +143,6 @@ enum oter_id {
 };
 
 static_assert((unsigned char)(-1) + 1 - 32 >= num_ter_types, "save/load of game will fail");	// must fit in byte with origin 32
-template<int lb, int ub> constexpr bool is_between(oter_id src) {
-	static_assert(lb < ub);
-	return lb <= src && ub >= src;
-}
 
 template<int lb, int ub> constexpr bool any(oter_id src) {
     static_assert(lb < ub);

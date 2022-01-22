@@ -7,11 +7,6 @@ constexpr int cmp(int lhs, int rhs)
 	return (lhs < rhs) ? -1 : (lhs > rhs);
 }
 
-constexpr int is_between(int lb, int src , int ub)
-{
-	return lb <= src && src <= ub;
-}
-
 struct point {
  typedef int coord_type;
 

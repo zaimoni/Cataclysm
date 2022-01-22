@@ -190,5 +190,8 @@
     <ClInclude Include="mutation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="is_between.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

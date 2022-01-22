@@ -183,6 +183,7 @@
     <ClInclude Include="grammar.h" />
     <ClInclude Include="inventory.h" />
     <ClInclude Include="ios_file.h" />
+    <ClInclude Include="is_between.hpp" />
     <ClInclude Include="item.h" />
     <ClInclude Include="itype.h" />
     <ClInclude Include="iuse.h" />

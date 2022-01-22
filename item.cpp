@@ -639,8 +639,7 @@ bool item::is_ignitable() const
 {
     if (made_of(PAPER) || made_of(WOOD) || made_of(COTTON) ||
         made_of(POWDER) || made_of(VEGGY) || is_ammo() ||
-        type->id == itm_whiskey || type->id == itm_vodka ||
-        type->id == itm_rum || type->id == itm_tequila)
+        is_hard_liquor(type->id))
         return true;
     return false;
 }
