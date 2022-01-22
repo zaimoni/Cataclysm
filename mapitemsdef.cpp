@@ -197,7 +197,7 @@ void map::init()
 	itm_compbow, itm_arrow_wood, itm_arrow_cf
  };
 
- items[mi_alcohol] = { itm_whiskey, itm_vodka, itm_rum, itm_tequila };
+ items[mi_alcohol] = { itm_whiskey, itm_vodka, itm_rum, itm_tequila, itm_beer };
  items[mi_pool_table] = { itm_pool_cue, itm_pool_ball };
 
  items[mi_trash] = {

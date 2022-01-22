@@ -634,6 +634,7 @@ bool item::is_mission_item(int _id) const
     return false;
 }
 
+// beer doesn't have enough alcohol to be ignitable, that's a hard liquor trait
 bool item::is_ignitable() const
 {
     if (made_of(PAPER) || made_of(WOOD) || made_of(COTTON) ||
