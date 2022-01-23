@@ -1717,6 +1717,20 @@ bool map::add_field(game *g, int x, int y, field_id t, unsigned char density, un
     return false;
 }
 
+// return value is per waterfall/SSADM software lifecycle
+bool GPS_loc::add(field&& src)
+{   // intentionally no-op if submap doesn't exist
+    if (submap* const sm = MAPBUFFER.lookup_submap(first)) {
+        if (src.is_dangerous()) {
+            if (const auto _pc = game::active()->survivor(*this)) _pc->cancel_activity_query("You're in a %s!", src.name().c_str());
+        }
+        sm->add(second, std::move(src));
+        return true;
+    }
+    return false;
+}
+
+
 void submap::remove_field(const point& p) {
     if (fld[p.x][p.y].type != fd_null) field_count--;
     fld[p.x][p.y] = field();

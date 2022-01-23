@@ -466,13 +466,14 @@ bool map::process_fields_in_submap(game *g, int gridn)
     break;
 
    case fd_gas_vent:
-    for (int i = x - 1; i <= x + 1; i++) {
-     for (int j = y - 1; j <= y + 1; j++) {
-	  auto& fd = field_at(i, j);
-	  if (fd.type == fd_toxic_gas) {
-		  if (fd.density < 3) fd.density++;
-	  } else add_field(g, i, j, fd_toxic_gas, 3);
-     }
+    { // Used only by the mine shaft; fires on entrance into reality bubble
+       for (decltype(auto) dir : Direction::vector) {
+           auto dest = loc + dir;
+           auto& fd = loc.field_at();
+           if (fd_toxic_gas == fd.type) fd.density++; // C:Whales grace (would expect 3)
+           else dest.add(field(fd_toxic_gas, 3));
+       }
+       loc.add(field(fd_toxic_gas, 3)); // C:Whales: self-erasing
     }
     break;
 
@@ -586,37 +587,22 @@ bool map::process_fields_in_submap(game *g, int gridn)
      cur->density = 3;
      int num_bolts = rng(3, 6);
      for (int i = 0; i < num_bolts; i++) {
-      int xdir = 0, ydir = 0;
-      while (xdir == 0 && ydir == 0) {
-       xdir = rng(-1, 1);
-       ydir = rng(-1, 1);
-      }
-      int dist = rng(4, 12);
-      int boltx = x, bolty = y;
-      for (int n = 0; n < dist; n++) {
-       boltx += xdir;
-       bolty += ydir;
-       add_field(g, boltx, bolty, fd_electricity, rng(2, 3));
-       if (one_in(4)) {
-        if (xdir == 0)
-         xdir = rng(0, 1) * 2 - 1;
-        else
-         xdir = 0;
-       }
-       if (one_in(4)) {
-        if (ydir == 0)
-         ydir = rng(0, 1) * 2 - 1;
-        else
-         ydir = 0;
-       }
-      }
+         point dir = Direction::vector[rng(0, std::end(Direction::vector) - std::begin(Direction::vector) - 1)];
+         point bolt = point(x, y);
+         int n = rng(4, 12);
+         while (0 <= --n) {
+             bolt += dir;
+             add_field(g, bolt.x, bolt.y, fd_electricity, rng(2, 3));
+             if (one_in(4)) dir.x = (0 == dir.x) ? rng(0, 1) * 2 - 1 : 0;
+             if (one_in(4)) dir.y = (0 == dir.y) ? rng(0, 1) * 2 - 1 : 0;
+         }
      }
     }
     break;
 
    case fd_acid_vent:
     if (cur->density > 1) {
-     if (cur->age >= 10) {
+     if (cur->age >= MINUTES(1)) {
       cur->density--;
       cur->age = 0;
      }

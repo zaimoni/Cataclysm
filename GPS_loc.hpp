@@ -46,6 +46,7 @@ struct GPS_loc : public std::pair<tripoint, point>
 	int move_cost() const;
 	void add(const item& new_item);
 	void add(item&& new_item);
+	bool add(field&& src);
 
 	// following in game.cpp
 	bool is_empty() const;
