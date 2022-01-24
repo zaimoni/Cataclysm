@@ -78,7 +78,8 @@ bool map::process_fields_in_submap(game *g, int gridn)
    field * const cur = &(grid[gridn]->fld[locx][locy]);
    int x = locx + SEEX * (gridn % my_MAPSIZE),
        y = locy + SEEY * int(gridn / my_MAPSIZE);
-   auto loc = g->toGPS(point(x, y));
+   const std::optional<point> pt = point(x, y);
+   auto loc = g->toGPS(*pt);
 
    const field_id curtype = cur->type;
    if (curtype != fd_null) found_field = true;
@@ -274,53 +275,70 @@ bool map::process_fields_in_submap(game *g, int gridn)
             cur->age = 0;
         }
     }
-// Consume adjacent fuel / terrain / webs to spread.
-// Randomly offset our x/y shifts by 0-2, to randomly pick a square to spread to
-    int starti = rng(0, 2);
-    int startj = rng(0, 2);
-    for (int i = 0; i < 3; i++) {
-     for (int j = 0; j < 3; j++) {
-      int fx = x + ((i + starti) % 3) - 1, fy = y + ((j + startj) % 3) - 1;
-      if (inbounds(fx, fy)) {
-       int spread_chance = 20 * (cur->density - 1) + 10 * smoke;
-	   auto& f = field_at(fx, fy);
-       if (f.type == fd_web) spread_chance = 50 + spread_chance / 2;
-	   auto& t = ter(fx, fy);
-       if (is<explodes>(t) && one_in(8 - cur->density)) {
-        t = ter_id(t + 1);
-        g->explosion(fx, fy, 40, 0, true);
-       } else if ((i != 0 || j != 0) && rng(1, 100) < spread_chance &&
-                  (!in_pit || t_pit == t) &&
-                  ((3 == cur->density && (is<flammable>(t) || one_in(20))) ||
-                   (3 == cur->density && (is<l_flammable>(t) && one_in(10))) ||
-                   contains_ignitable(i_at(fx, fy)) ||
-                   f.type == fd_web)) {
-        if (f.type == fd_smoke || f.type == fd_web)
-         f = field(fd_fire);
-        else
-         add_field(g, fx, fy, fd_fire, 1);
-       } else {
+
+    // Consume adjacent fuel / terrain / webs to spread.
+    inline_stack<point, std::end(Direction::vector) - std::begin(Direction::vector) + 1> exploding;
+    inline_stack<GPS_loc, std::end(Direction::vector) - std::begin(Direction::vector) + 1> spreading;
+    inline_stack<GPS_loc, std::end(Direction::vector) - std::begin(Direction::vector) + 1> smoking;
+
+    static auto decide_behavior = [&](point pt) {
+        auto dest = loc + pt;
+        if (auto pos = game::active()->toScreen(dest)) {
+            int spread_chance = 20 * (cur->density - 1) + 10 * smoke;
+            auto& f = loc.field_at();
+            if (f.type == fd_web) spread_chance = 50 + spread_chance / 2;
+            auto& t = loc.ter();
+            if (is<explodes>(t) && one_in(8 - cur->density)) {
+                exploding.push(*pos);
+            } else if ((0 != pos->x || 0 != pos->y) && rng(1, 100) < spread_chance &&
+                (!in_pit || t_pit == t) &&
+                ((3 == cur->density && (is<flammable>(t) || one_in(20))) ||
+                    (3 == cur->density && (is<l_flammable>(t) && one_in(10))) ||
+                    contains_ignitable(loc.items_at()) ||
+                    f.type == fd_web)) {
+                spreading.push(dest);
+            } else {
+                smoking.push(dest);
+            }
+        }
+    };
+
+    forall_do_inclusive(within_rldist<1>, decide_behavior);
+
+    int ub = smoking.size();
+    while(0 <= --ub) {
         bool nosmoke = true;
-        for (int ii = -1; ii <= 1; ii++) {
-         for (int jj = -1; jj <= 1; jj++) {
-		  auto& f = field_at(x + ii, y + jj);
-          if (f.type == fd_fire && f.density == 3) smoke++;
-          else if (f.type == fd_smoke) nosmoke = false;
-         }
-        }
-// If we're not spreading, maybe we'll stick out some smoke, huh?
-        if (move_cost(fx, fy) > 0 &&
-            (!one_in(smoke) || (nosmoke && one_in(40))) && 
+
+        static auto find_smoke = [&](point pt) {
+            auto& f = (loc + pt).field_at();
+            if (f.type == fd_fire && f.density == 3) smoke++;
+            else if (f.type == fd_smoke) nosmoke = false;
+        };
+
+        // \todo should be allowed to have smoke over water
+        // If we're not spreading, maybe we'll stick out some smoke, huh?
+        if (0 < smoking[ub].move_cost() &&
+            (!one_in(smoke) || (nosmoke && one_in(40))) &&
             rng(3, 35) < cur->density * 10 && cur->age < 1000) {
-         smoke--;
-         add_field(g, fx, fy, fd_smoke, rng(1, cur->density));
+            smoke--;
+            smoking[ub].add(field(fd_smoke, rng(1, cur->density))); // C:Whales: can self-extinguish!
         }
-       }
-      }
-     }
     }
+
+    ub = spreading.size();
+    while (0 <= --ub) {
+        spreading[ub].add(field(fd_fire));
+    };
+
+    ub = exploding.size();
+    while (0 <= --ub) {
+        auto& t = ter(exploding[ub]);
+        t = ter_id(t + 1);
+        g->explosion(exploding[ub], 40, 0, true);
+    };
    } break;
-  
+
+   // \todo The smoke/gas fields need to be split out from the main implementation
    case fd_smoke:
     clear_nearby_scent(loc);
     if (loc.is_outside()) cur->age += 50;
@@ -496,6 +514,7 @@ bool map::process_fields_in_submap(game *g, int gridn)
     }
     break;
 
+   // \todo needs re-implementation
    case fd_electricity:
     if (!one_in(5)) {	// 4 in 5 chance to spread
      if (move_cost(x, y) == 0 && cur->density > 1) { // We're grounded
@@ -538,13 +557,19 @@ bool map::process_fields_in_submap(game *g, int gridn)
     break;
 
    case fd_fatigue:
-    if (cur->density < 3 && int(messages.turn) % 3600 == 0 && one_in(10))
-     cur->density++;
-    else if (cur->density == 3 && one_in(600)) { // Spawn nether creature!
-     mon_id type = mon_id(rng(mon_flying_polyp, mon_blank));
-     g->z.push_back(monster(mtype::types[type], x + rng(-3, 3), y + rng(-3, 3)));
-    }
-    break;
+       if (3 > cur->density) {
+           if (int(messages.turn) % HOURS(6) == 0 && one_in(10)) cur->density++;
+       } else {
+            if (one_in(600)) { // Spawn nether creature!
+                auto dest = loc + rng(within_rldist<3>);
+                if (auto pt_dest = game::active()->toScreen(dest)) {
+                    mon_id type = mon_id(rng(mon_flying_polyp, mon_blank));
+                    g->z.push_back(monster(mtype::types[type], *pt_dest));
+                }
+                // \todo? handle outside of reality bubble; map generation won't trigger this but the artifact can
+            }
+       }
+       break;
 
    case fd_push_items: {
        std::vector<GPS_loc> valid2(1, loc);
@@ -608,16 +633,18 @@ bool map::process_fields_in_submap(game *g, int gridn)
      }
     } else {
      cur->density = 3;
-     for (int i = x - 5; i <= x + 5; i++) {
-      for (int j = y - 5; j <= y + 5; j++) {
-	   const auto& fd = field_at(i, j);
-       if (fd.type == fd_null || fd.density == 0) {
-        int newdens = 3 - (rl_dist(x, y, i, j) / 2) + (one_in(3) ? 1 : 0);
-        if (newdens > 3) newdens = 3;
-        if (newdens > 0) add_field(g, i, j, fd_acid, newdens);
-       }
-      }
-     }
+
+     static auto drench = [&](point pt) {
+         auto dest = loc + pt;
+         const auto& fd = dest.field_at();
+         if (fd.type == fd_null || fd.density == 0) {
+             int newdens = 3 - (Linf_dist(pt) / 2) + (one_in(3) ? 1 : 0);
+             if (newdens > 3) newdens = 3;
+             if (newdens > 0) dest.add(field(fd_acid, newdens));
+         }
+     };
+
+     forall_do_inclusive(within_rldist<5>, drench);
     }
     break;
 
