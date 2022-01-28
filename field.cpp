@@ -516,9 +516,140 @@ bool map::process_fields_in_submap(game *g, int gridn)
 
    // \todo needs re-implementation
    case fd_electricity:
-    if (!one_in(5)) {	// 4 in 5 chance to spread
-     if (move_cost(x, y) == 0 && cur->density > 1) { // We're grounded
-         if (MINUTES(5) <= cur->age) break; // too old to spread (???)
+       if (one_in(5)) break; // 4 in 5 chance to spread
+       {    // interpret our grounding, or lack thereof
+           bool did_something = false;
+retry:
+           inline_stack<GPS_loc, std::end(Direction::vector) - std::begin(Direction::vector)> grounded;
+           inline_stack<GPS_loc, std::end(Direction::vector) - std::begin(Direction::vector)> ungrounded;
+           inline_stack<GPS_loc, std::end(Direction::vector) - std::begin(Direction::vector)> electrified_less_grounded;
+           inline_stack<GPS_loc, std::end(Direction::vector) - std::begin(Direction::vector)> electrified_less_ungrounded;
+           inline_stack<GPS_loc, std::end(Direction::vector) - std::begin(Direction::vector)> electrified_same_grounded;
+           inline_stack<GPS_loc, std::end(Direction::vector) - std::begin(Direction::vector)> electrified_same_ungrounded;
+           inline_stack<GPS_loc, std::end(Direction::vector) - std::begin(Direction::vector)> electrified_more_grounded;
+           inline_stack<GPS_loc, std::end(Direction::vector) - std::begin(Direction::vector)> electrified_more_ungrounded;
+           inline_stack<GPS_loc, std::end(Direction::vector) - std::begin(Direction::vector)> electrified_overcharged;
+           bool any_electrified = false;
+           // \todo want more resolution on electrified
+           for (decltype(auto) dir : Direction::vector) {
+               auto dest_loc = loc + dir;
+               // \todo? check whether otherwise grounded terrain is electrically conductive
+               const bool is_grounded = 0 == dest_loc.move_cost();
+               const auto& fd = dest_loc.field_at();
+               if (!dest_loc.field_at().is_null()) {
+                   if (fd_electricity == fd.type) {
+                       any_electrified = true;
+                       if (fd.density < cur->density) {
+                           if (is_grounded) electrified_less_grounded.push(dest_loc);
+                           else electrified_less_ungrounded.push(dest_loc);
+                       } else if (fd.density > cur->density) {
+                           if (2 == fd.density - cur->density) electrified_overcharged.push(dest_loc);
+                           if (is_grounded) electrified_more_grounded.push(dest_loc);
+                           else electrified_more_ungrounded.push(dest_loc);
+                       } else {
+                           if (is_grounded) electrified_same_grounded.push(dest_loc);
+                           else electrified_same_ungrounded.push(dest_loc);
+                       }
+                   }
+                   continue; // no destructive overwrite
+               }
+               if (is_grounded) grounded.push(dest_loc);
+               else ungrounded.push(dest_loc);
+           };
+           // electricity is configured to have a short half-life, so do not be too concerned about being too old to spread
+
+
+           if (0 == loc.move_cost()) { // We're grounded
+               if (const auto ub = electrified_overcharged.size()) {
+                   // C:Z: suck up overcharge regardless of grounding
+                   const auto index = rng(0, ub - 1);
+                   auto& remote_fd = electrified_overcharged[index].field_at();
+                   remote_fd.density--;
+                   remote_fd.age = 0;
+                   cur->density++;
+                   cur->age = 0;
+                   did_something = true;
+                   goto retry;
+               }
+
+               if (const auto ub = electrified_more_ungrounded.size()) {
+                   // C:Z: suck up free charge
+                   const auto index = rng(0, ub - 1);
+                   auto& remote_fd = electrified_more_ungrounded[index].field_at();
+                   remote_fd.density--;
+                   remote_fd.age = 0;
+                   cur->density++;
+                   cur->age = 0;
+                   did_something = true;
+                   goto retry;
+               }
+
+               // C:Whales: spark into ungrounded areas, if possible
+               if (1 < cur->density) {
+                   if (auto ub = ungrounded.size()) {
+                       auto index = rng(0, ub - 1);
+                       ungrounded[index].add(field(fd_electricity));
+                       cur->density--;
+                       cur->age = 0;
+                       did_something = true;
+                       goto retry;
+                   }
+               }
+               if (!any_electrified) {
+                   if (auto ub = grounded.size()) {
+                       // C:Z: discharge into other grounded tiles
+                       if (1 == cur->density) {
+                           *cur = field();  // gone
+                           continue;
+                       }
+                       grounded[rng(0, ub - 1)].add(field(fd_electricity));
+                       cur->density--;
+                       cur->age = 0;
+                       continue; // processed
+                   }
+               }
+           } else { // ungrounded.
+               if (const auto ub = grounded.size()) {
+                   int index = rng(0, ub);
+                   if (const auto ub2 = electrified_overcharged.size()) {
+                       // we are sustained by the overcharge
+                       grounded[index].add(field(fd_electricity));
+                       auto& remote_fd = electrified_overcharged[rng(0, ub2 - 1)].field_at();
+                       remote_fd.density--;
+                       remote_fd.age = 0;
+                       cur->age = 0;
+                       did_something = true;
+                       goto retry;
+                   }
+                   if (const auto ub2 = electrified_more_ungrounded.size()) {
+                       // we are sustained by a larger ungrounded charge
+                       grounded[index].add(field(fd_electricity));
+                       auto& remote_fd = electrified_more_ungrounded[rng(0, ub2 - 1)].field_at();
+                       remote_fd.density--;
+                       remote_fd.age = 0;
+                       cur->age = 0;
+                       did_something = true;
+                       goto retry;
+                   }
+
+                   if (1 == cur->density) {
+                       if (did_something) continue; // don't wink out completely right after doing something
+                       grounded[index].add(field(fd_electricity));
+                       *cur = field();  // gone
+                       continue;
+                   }
+                   grounded[index].add(field(fd_electricity));
+                   cur->density--;
+                   cur->age = 0;
+                   did_something = true;
+                   goto retry;
+               }
+           }
+           if (did_something) continue;    // new processing kicked in, so don't need legacy processing
+       }
+    {	
+     if (0 == loc.move_cost() && cur->density > 1) { // We're grounded
+         if (MINUTES(5) <= cur->age) break; // too old to spread (???) (halflife 2 turns, looks like failsafe)
 
          inline_stack<point, std::end(Direction::vector) - std::begin(Direction::vector)> stage;
          for (decltype(auto) dir : Direction::vector) {
