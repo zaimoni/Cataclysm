@@ -2872,6 +2872,12 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
  }
 }
 
+void GPS_loc::explosion(int power, int shrapnel, bool fire) const
+{
+    const auto g = game::active();
+    if (auto pos = g->toScreen(*this)) g->explosion(*pos, power, shrapnel, fire);
+}
+
 void game::flashbang(int x, int y)
 {
     // arguably should be separated into guard clause and action body

@@ -1623,12 +1623,8 @@ public:
     burn_molotov(item& it) noexcept : it(it) {}
 
     void operator()(const GPS_loc& loc) {
-        const auto g = game::active();
-
-        if (const auto pos = g->toScreen(loc)) {
-            it.charges = -1;
-            g->explosion(*pos, 8, 0, true);
-        }
+        it.charges = -1;
+        loc.explosion(8, 0, true);
     }
 
     void operator()(const std::pair<pc*, int>& who) {

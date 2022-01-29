@@ -50,6 +50,7 @@ struct GPS_loc : public std::pair<tripoint, point>
 
 	// following in game.cpp
 	bool is_empty() const;
+	void explosion(int power, int shrapnel, bool fire) const;	// may not be a reasonable API
 };
 
 // \todo evaluate whether these should be out-of-line defined (likely a matter of binary size, compile+link time)

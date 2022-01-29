@@ -277,19 +277,19 @@ bool map::process_fields_in_submap(game *g, int gridn)
     }
 
     // Consume adjacent fuel / terrain / webs to spread.
-    inline_stack<point, std::end(Direction::vector) - std::begin(Direction::vector) + 1> exploding;
+    inline_stack<GPS_loc, std::end(Direction::vector) - std::begin(Direction::vector) + 1> exploding;
     inline_stack<GPS_loc, std::end(Direction::vector) - std::begin(Direction::vector) + 1> spreading;
     inline_stack<GPS_loc, std::end(Direction::vector) - std::begin(Direction::vector) + 1> smoking;
 
     static auto decide_behavior = [&](point pt) {
         auto dest = loc + pt;
-        if (auto pos = game::active()->toScreen(dest)) {
+        if (auto pos = game::active()->toScreen(dest)) { // \todo disconnect this test, no longer a data integrity issue
             int spread_chance = 20 * (cur->density - 1) + 10 * smoke;
             auto& f = loc.field_at();
             if (f.type == fd_web) spread_chance = 50 + spread_chance / 2;
             auto& t = loc.ter();
             if (is<explodes>(t) && one_in(8 - cur->density)) {
-                exploding.push(*pos);
+                exploding.push(dest);
             } else if ((0 != pos->x || 0 != pos->y) && rng(1, 100) < spread_chance &&
                 (!in_pit || t_pit == t) &&
                 ((3 == cur->density && (is<flammable>(t) || one_in(20))) ||
@@ -332,9 +332,9 @@ bool map::process_fields_in_submap(game *g, int gridn)
 
     ub = exploding.size();
     while (0 <= --ub) {
-        auto& t = ter(exploding[ub]);
+        auto& t = exploding[ub].ter();
         t = ter_id(t + 1);
-        g->explosion(exploding[ub], 40, 0, true);
+        exploding[ub].explosion(40, 0, true);
     };
    } break;
 

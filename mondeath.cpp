@@ -251,7 +251,7 @@ void mdeath::explode(game *g, monster *z)
 {
  static const int explosion_size[mtype::MS_MAX] = {4, 8, 14, 20, 26 };
 
- g->explosion(z->pos, explosion_size[z->type->size], 0, false);
+ z->GPSpos.explosion(explosion_size[z->type->size], 0, false);
 }
 
 void mdeath::ratking(game *g, monster *z)
