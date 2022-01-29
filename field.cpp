@@ -514,7 +514,6 @@ bool map::process_fields_in_submap(game *g, int gridn)
     }
     break;
 
-   // \todo needs re-implementation
    case fd_electricity:
        if (one_in(5)) break; // 4 in 5 chance to spread
        {    // interpret our grounding, or lack thereof
@@ -557,7 +556,6 @@ retry:
                else ungrounded.push(dest_loc);
            };
            // electricity is configured to have a short half-life, so do not be too concerned about being too old to spread
-
 
            if (0 == loc.move_cost()) { // We're grounded
                if (const auto ub = electrified_overcharged.size()) {
@@ -644,47 +642,45 @@ retry:
                    did_something = true;
                    goto retry;
                }
+               // repeat above, but into ungrounded areas
+               if (const auto ub = ungrounded.size()) {
+                   int index = rng(0, ub);
+                   if (const auto ub2 = electrified_overcharged.size()) {
+                       // we are sustained by the overcharge
+                       ungrounded[index].add(field(fd_electricity));
+                       auto& remote_fd = electrified_overcharged[rng(0, ub2 - 1)].field_at();
+                       remote_fd.density--;
+                       remote_fd.age = 0;
+                       cur->age = 0;
+                       did_something = true;
+                       goto retry;
+                   }
+                   if (const auto ub2 = electrified_more_ungrounded.size()) {
+                       // we are sustained by a larger ungrounded charge
+                       ungrounded[index].add(field(fd_electricity));
+                       auto& remote_fd = electrified_more_ungrounded[rng(0, ub2 - 1)].field_at();
+                       remote_fd.density--;
+                       remote_fd.age = 0;
+                       cur->age = 0;
+                       did_something = true;
+                       goto retry;
+                   }
+
+                   if (1 == cur->density) {
+                       if (did_something) continue; // don't wink out completely right after doing something
+                       ungrounded[index].add(field(fd_electricity));
+                       *cur = field();  // gone
+                       continue;
+                   }
+                   ungrounded[index].add(field(fd_electricity));
+                   cur->density--;
+                   cur->age = 0;
+                   did_something = true;
+                   goto retry;
+               }
            }
            if (did_something) continue;    // new processing kicked in, so don't need legacy processing
        }
-    {	
-     if (0 == loc.move_cost() && cur->density > 1) { // We're grounded
-         if (MINUTES(5) <= cur->age) break; // too old to spread (???) (halflife 2 turns, looks like failsafe)
-
-         inline_stack<point, std::end(Direction::vector) - std::begin(Direction::vector)> stage;
-         for (decltype(auto) dir : Direction::vector) {
-             auto dest = point(x, y) + dir;
-             if (0 < move_cost(dest) && field_at(dest).is_null()) stage.push(dest);
-         };
-         if (auto ub = stage.size()) {
-             add_field(g, stage[rng(0, ub - 1)], fd_electricity, 1);
-             cur->density--;
-         }
-     } else {	// We're not grounded; attempt to ground
-         std::vector<point> valid;
-         for (decltype(auto) dir : Direction::vector) {
-             auto dest = point(x, y) + dir;
-             if (move_cost(dest) == 0 && field_at(dest).is_null())	// Grounded, unelectrified tiles first
-                 valid.push_back(dest);
-         };
-         if (int ub = valid.size()) {
-             while (0 <= --ub && 0 < cur->density) {
-                 int index = rng(0, ub);
-                 add_field(g, valid[index], fd_electricity, 1);
-                 cur->density--;
-                 valid.erase(valid.begin() + index);
-             }
-         } else {
-             point dest(x + rng(-1, 1), y + rng(-1, 1));
-             if (move_cost(dest) > 0) {
-                 auto& f = field_at(dest);
-                 if (f.type == fd_electricity && f.density < 3) f.density++;
-                 else add_field(g, dest, fd_electricity, 1);
-             }
-             cur->density--;
-         }
-     }
-    }
     break;
 
    case fd_fatigue:
