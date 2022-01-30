@@ -643,10 +643,10 @@ void iuse::lighter(pc& p, item& it)
   return;
  }
  p.moves -= (3 * mobile::mp_turn) / 20;
- const auto dest = dir + p.pos;
+ auto dest = p.GPSpos + dir;
 
- if (contains_ignitable(g->m.i_at(dest))) {
-  g->m.add_field(g, dest, fd_fire, 1, 30);
+ if (contains_ignitable(dest.items_at())) {
+  dest.add(field(fd_fire, 1, 30));
  } else {
   messages.add("There's nothing to light there.");
   it.charges++;
@@ -2213,16 +2213,16 @@ void iuse::artifact(pc& p, item& it)
   effects.erase(effects.begin() + index);
 
   switch (used) {
-  case AEA_STORM: {
+  case AEA_STORM: { // similar to fd_shock_vent
    g->sound(p.pos, 10, "Ka-BOOM!");
    int num_bolts = rng(2, 4);
    for (int j = 0; j < num_bolts; j++) {
 	point dir(direction_vector(direction(rng(NORTH,NORTHWEST))));
     int dist = rng(4, 12);
-	point bolt(p.pos);
+	auto bolt(p.GPSpos);
     for (int n = 0; n < dist; n++) {
 	 bolt += dir;
-     g->m.add_field(g, bolt, fd_electricity, rng(2, 3));
+     bolt.add(field(fd_electricity, rng(2, 3)));
      if (one_in(4)) dir.x = (dir.x == 0) ? rng(0, 1) * 2 - 1 : 0;
      if (one_in(4)) dir.y = (dir.y == 0) ? rng(0, 1) * 2 - 1 : 0;
     }
@@ -2258,25 +2258,26 @@ void iuse::artifact(pc& p, item& it)
   } break;
 
   case AEA_BLOOD: {
-      static std::function<bool(point)> ooze_blood = [&](const decltype(p.pos)& dest) {
-          if (  !one_in(4) && g->m.add_field(g, dest, fd_blood, 3)
+      static std::function<bool(point)> ooze_blood = [&](point delta) {
+          auto dest = p.GPSpos + delta;
+          if (  !one_in(4) && dest.add(field(fd_blood, 3))
               && g->u.see(dest))    // \todo? optimize out this visibility check?
               return true;
           return false;
       };
 
-      if (forall_do_inclusive(p.pos + within_rldist<4>, ooze_blood)) {
+      if (forall_do_inclusive(within_rldist<4>, ooze_blood)) {
           messages.add("Blood soaks out of the ground and walls.");
       }
   } break;
 
   case AEA_FATIGUE: {
    messages.add("The fabric of space seems to decay.");
-   auto dest = p.pos + rng(within_rldist<3>);
-   auto& fd = g->m.field_at(dest);
+   auto dest = p.GPSpos + rng(within_rldist<3>);
+   auto& fd = dest.field_at();
    if (fd.type == fd_fatigue) { 
 	   if (fd.density < 3) fd.density++;
-   } else g->m.add_field(g, dest, fd_fatigue, rng(1, 2));
+   } else dest.add(field(fd_fatigue, rng(1, 2)));
   } break;
 
   case AEA_ACIDBALL:
@@ -2387,12 +2388,12 @@ void iuse::artifact(pc& p, item& it)
    break;
 
   case AEA_RADIATION: {
-      static auto contaminate = [&](const decltype(p.pos)& dest) {
-          g->m.add_field(g, dest, fd_nuke_gas, rng(2, 3));
+      static auto contaminate = [&](point delta) {
+          (p.GPSpos+delta).add(field(fd_nuke_gas, rng(2, 3)));
       };
 
       messages.add("Horrible gasses are emitted!");
-      forall_do_inclusive(p.pos + within_rldist<1>, contaminate);
+      forall_do_inclusive(within_rldist<1>, contaminate);
   }
    break;
 
@@ -2411,12 +2412,15 @@ void iuse::artifact(pc& p, item& it)
    break;
 
   case AEA_FIRESTORM: {
-      static auto incinerate = [&](const decltype(p.pos)& dest) {
-          if (!one_in(3)) g->m.add_field(g, dest, fd_fire, 1 + rng(0, 1) * rng(0, 1), 30);
+      static auto incinerate = [&](point delta) {
+          if (!one_in(3)) {
+              auto dest = p.GPSpos + delta;
+              dest.add(field(fd_fire, 1 + rng(0, 1) * rng(0, 1), 30));
+          }
       };
 
       messages.add("Fire rains down around you!");
-      forall_do_inclusive(p.pos + within_rldist<3>, incinerate);
+      forall_do_inclusive(within_rldist<3>, incinerate);
   }
    break;
 

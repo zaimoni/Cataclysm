@@ -477,7 +477,7 @@ void game::process_artifact(item *it, player *p, bool wielded)
 
   case AEP_SMOKE:
    if (one_in(MINUTES(1))) {
-    if (m.add_field(this, p->pos + rng(spread), fd_smoke, rng(1, 3)))
+    if ((p->GPSpos + rng(spread)).add(field(fd_smoke, rng(1, 3))))
      messages.add("The %s emits some smoke.", it->tname().c_str());
    }
    break;

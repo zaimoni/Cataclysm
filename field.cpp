@@ -713,7 +713,7 @@ retry:
        }
    } break;
 
-   case fd_shock_vent:
+   case fd_shock_vent: // similar to AEA_STORM
        if (1 < cur.density) {
            if (one_in(5)) cur.density--;
        } else {
