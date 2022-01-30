@@ -64,7 +64,10 @@ template<class T, class U>
 constexpr auto min(const T& lhs, const U& rhs) { return lhs < rhs ? lhs : rhs; }
 
 template<class T, class U>
-constexpr auto max(const T& lhs, const U& rhs) { return rhs < lhs ? rhs : lhs; }
+constexpr auto max(const T& lhs, const U& rhs) { return lhs < rhs ? rhs : lhs; }
+
+static_assert(1 == min(1, 2));
+static_assert(2 == max(1, 2));
 
 template<class T>
 constexpr int square(const T& x) {
