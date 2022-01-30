@@ -653,7 +653,7 @@ bool game::do_turn()
  }
  update_scent();
  m.vehmove(this);
- m.process_fields(this);
+ m.process_fields();
  m.process_active_items();
  m.step_in_field(this, u);
 

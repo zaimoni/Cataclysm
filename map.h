@@ -282,7 +282,7 @@ class map
 	 if (const auto pos = to(params...)) grid[pos->first]->remove_field(pos->second);
  }
 
- bool process_fields(game *g);				// See field.cpp
+ bool process_fields();				// See field.cpp
  void step_in_field(game* g, player& u);		// See field.cpp	// V 0.2.5+ break hard-coding to player g->u
  void mon_in_field(game* g, monster& z);	// See field.cpp
 
@@ -326,7 +326,6 @@ protected:
  int my_MAPSIZE;
  std::vector<submap*> grid;
 private:
- bool process_fields_in_submap(game *g, int gridn);	// See fields.cpp
  void _translate(ter_id from, ter_id to);	// error-checked backend for map::translate
 };
 

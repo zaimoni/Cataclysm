@@ -35,12 +35,13 @@ struct submap {
     field			fld[SEEX][SEEY]; // Field on each square
     int			rad[SEEX][SEEY]; // Irradiation of each square
     int active_item_count;
-    int field_count;
+//  int field_count;
     int turn_last_touched;
     std::vector<spawn_point> spawns;
     std::vector<vehicle> vehicles;
     computer comp;
 private:
+    int field_count;
     tripoint GPS;   // cache field -- GPS_loc first coordinate, where we are
 
 public:
@@ -75,6 +76,7 @@ public:
     int move_cost_ter_only(const point& pt) const { return ter_t::list[ter[pt.x][pt.y]].movecost; };
 
     void process_active_items(); // map.cpp; only caller there
+    bool process_fields(); // field.cpp
 
     void add_spawn(mon_id type, int count, const point& pt, bool friendly, int faction_id, int mission_id, std::string name); // mapgen.cpp
     void add_spawn(const monster& mon); // mapgen.cpp
