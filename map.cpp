@@ -760,21 +760,6 @@ bool GPS_loc::is_outside() const
     // \todo This could be improved by using overmap terrain, e.g. houses are likely inside.
 }
 
-point map::random_outdoor_tile()
-{
- std::vector<point> options;
- for (int x = 0; x < SEEX * my_MAPSIZE; x++) {
-  for (int y = 0; y < SEEY * my_MAPSIZE; y++) {
-   if (is_outside(x, y))
-    options.push_back(point(x, y));
-  }
- }
- if (options.empty()) // Nowhere is outdoors!
-  return point(-1, -1);
-
- return options[rng(0, options.size() - 1)];
-}
-
 bool map::bash(int x, int y, int str, int *res)
 {
 	std::string discard;

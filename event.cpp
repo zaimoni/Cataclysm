@@ -208,6 +208,22 @@ void event::actualize() const
  }
 }
 
+// formerly map::random_outdoor_tile
+static std::optional<GPS_loc> random_outdoor_tile(GPS_loc loc)
+{
+    static std::function<std::optional<GPS_loc>(point)> ok = [&](point delta) {
+        auto test = loc + delta;
+        if (test.is_outside()) return std::optional(test);
+        return std::optional<decltype(test)>();
+    };
+
+    // C:Whales: reality bubble scope (11*SEE x 11*SEE but not strictly centered on player)
+    auto options = grep(within_rldist<5 * SEE>, ok);
+
+    if (options.empty()) return std::nullopt; // Nowhere is outdoors!
+    return options[rng(0, options.size() - 1)];
+}
+
 bool event::per_turn()
 {
  auto g = game::active();
@@ -215,12 +231,16 @@ bool event::per_turn()
  switch (type) {
   case EVENT_WANTED: {
    if (g->lev.z >= 0 && one_in(100)) { // About once every 10 minutes
-    point place = g->m.random_outdoor_tile();
-    if (place.x == -1 && place.y == -1) return true; // We're safely indoors!
-    monster eyebot(mtype::types[mon_eyebot], place);
-    eyebot.faction_id = faction_id;
-    g->z.push_back(eyebot);
-    if (g->u.see(place)) messages.add("An eyebot swoops down nearby!");
+       if (auto dest = random_outdoor_tile(g->u.GPSpos)) { // someplace outside, close enough
+           if (auto pos = g->toScreen(*dest)) { // and within reality bubble
+               monster eyebot(mtype::types[mon_eyebot], *pos);
+               eyebot.faction_id = faction_id;
+               g->z.push_back(eyebot);
+               if (g->u.see(*dest)) messages.add("An eyebot swoops down nearby!");
+               // \todo They shouldn't be coming *indefinitely*
+               // but this event is up for complete re-implementation anyway
+           }
+       }
    }
   }
    return true;

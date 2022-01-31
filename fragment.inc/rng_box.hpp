@@ -95,7 +95,7 @@ inline std::vector<point> grep(const zaimoni::gdi::box<point>& src, std::functio
 template<class T>
 std::vector<T> grep(const zaimoni::gdi::box<point>& src, std::function<std::optional<T>(point)> ok) { // Cf. Perl map; don't want to get confused with std::map
 	// this will need revision if we want to actually use INT_MAX upper bound
-	std::vector<point> ret;
+	std::vector<T> ret;
 	const point anchor = src.tl_c();
 	const point nonstrict_ub = src.br_c();
 	point pt;
