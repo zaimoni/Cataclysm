@@ -79,9 +79,6 @@ class game : public reality_bubble
   void draw();
   void draw_ter(const point& pos);
   void draw_ter() { return draw_ter(u.pos); };
-  void add_event(event_type type, int on_turn, int faction_id = -1,
-                 int x = -1, int y = -1);
-  const event* event_queued(event_type type) const;
 
 // Sound at (x, y) of intensity (vol), described to the player is (description)
   void sound(const point& pt, int vol, std::string description);
@@ -304,7 +301,6 @@ class game : public reality_bubble
   void monmove();          // Monster movement
   void om_npcs_move();     // Movement of NPCs on the overmap (non-local)
   void activate_npcs();
-  void process_events();   // Processes and enacts long-term events
   void process_activity(); // Processes and enacts the player's activity
   void update_weather();   // Updates the temperature and weather patten
   void hallucinate();      // Prints hallucination junk to the screen
@@ -342,8 +338,6 @@ public:
 
   calendar nextspawn; // The turn on which monsters will spawn next.
   calendar nextweather; // The turn on which weather will shift next.
-  std::vector<event> events;        // V 0.2.2+ convert to fake entity-component-system metaphor hosted at class event?
-  // (Also, unclear if event should be a base class for polymorphism)
 
   // Historically, we had a keypress recorder for tracking the last action taken.
   // There was no "clearing" or "archival" operation, however.

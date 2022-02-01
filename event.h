@@ -3,10 +3,15 @@
 
 #include "enums.h"
 #include "enum_json.h"
+#include "zero.h"
+#include <vector>
+
+class game;
 
 enum event_type {
  EVENT_NULL,
  EVENT_HELP,
+ // \todo these two up for re-implementation: arbitrary target
  EVENT_WANTED,
  EVENT_ROBOT_ATTACK,
  EVENT_SPAWN_WYRMS,
@@ -22,7 +27,10 @@ enum event_type {
 
 DECLARE_JSON_ENUM_SUPPORT(event_type)
 
-struct event {
+class event {
+	static std::vector<event> _events;
+
+public:
  event_type type;
  int turn;
  // core data above; event-specific data below
@@ -34,6 +42,17 @@ struct event {
 
  void actualize() const; // When the time runs out
  bool per_turn();  // Every turn.  Return false to request self-deletion i.e. no longer relevant
+
+ static int are_queued() { return _events.size(); }
+ static const event* queued(event_type type);
+ static void add(const event& src) { _events.push_back(src); }
+ static void add(event&& src) { _events.push_back(std::move(src)); }
+ static void process(const Badge<game>& badge);
+
+ // save/load support
+ static void global_reset(const Badge<game>& badge);
+ static void global_fromJSON(const cataclysm::JSON& src);
+ static void global_toJSON(cataclysm::JSON& dest);
 };
 
 #endif

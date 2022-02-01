@@ -923,7 +923,7 @@ void mattack::photograph(game *g, monster *z)
  messages.add("%s takes your picture!",
               grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
 // TODO: Make the player known to the faction
- g->add_event(EVENT_ROBOT_ATTACK, int(messages.turn) + rng(15, 30), z->faction_id, g->lev.x, g->lev.y);
+ event::add(event(EVENT_ROBOT_ATTACK, int(messages.turn) + rng(15, 30), z->faction_id, g->lev.x, g->lev.y));
 }
 
 void mattack::tazer(game *g, monster *z)

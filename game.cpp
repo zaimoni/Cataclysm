@@ -113,7 +113,8 @@ void game::setup()	// early part looks like it belongs in game::game (but we ret
  npc::global_reset();
  mission::global_reset();
  faction::global_reset();
-// Clear monstair values
+ event::global_reset(Badge<game>());
+ // Clear monstair values
  monstair = tripoint(-1,-1,-1);
  uquit = QUIT_NO;	// We haven't quit the game
  debugmon = false;	// We're not printing debug messages
@@ -127,7 +128,6 @@ void game::setup()	// early part looks like it belongs in game::game (but we ret
  active_missions.clear();
 // items_dragged.clear();
  messages.clear();
- events.clear();
  clear_scents();
 
  messages.turn.season = SUMMER;    // ... with winter conveniently a long ways off
@@ -577,7 +577,7 @@ bool game::do_turn()
 // Actual stuff
  gamemode->per_turn(this);
  messages.turn.increment();
- process_events();
+ event::process(Badge<game>());
  process_missions();
  if (messages.turn.hour == 0 && messages.turn.minute == 0 && messages.turn.second == 0) // Midnight!
   cur_om.process_mongroups();
@@ -679,34 +679,18 @@ bool game::do_turn()
  return false;
 }
 
-void game::process_events()
-{
- // We want to go forward, to allow for the possibility of events scheduling events for same-turn
- for (int i = 0; i < events.size(); i++) {
-  if (!events[i].per_turn()) {
-      EraseAt(events, i--);
-      continue;
-  }
-  if (events[i].turn <= int(messages.turn)) {
-   events[i].actualize();
-   EraseAt(events, i--);
-   continue;
-  }
- }
-}
-
 void game::process_activity()
 {
  if (u.activity.type != ACT_NULL) {
-  if (int(messages.turn) % 150 == 0) draw();
+  if (int(messages.turn) % MINUTES(15) == 0) draw();
   if (u.activity.type == ACT_WAIT) {	// Based on time, not speed
-   u.activity.moves_left -= 100;
+   u.activity.moves_left -= mobile::mp_turn;
    u.pause();
   } else if (u.activity.type == ACT_REFILL_VEHICLE) {
    if (const auto veh = m._veh_at(u.activity.placement)) {
     veh->first->refill(AT_GAS, 200);
     u.pause();
-    u.activity.moves_left -= 100;
+    u.activity.moves_left -= mobile::mp_turn;
    } else {  // Vehicle must've moved or something!
     u.activity.moves_left = 0;
     return;
@@ -1347,47 +1331,6 @@ void game::death_screen()
  delwin(w_death);
 }
 
-#define JSON_ENUM(TYPE)	\
-JSON toJSON(TYPE src) {	\
-	auto x = JSON_key(src);	\
-	if (x) return JSON(x);	\
-	throw std::runtime_error(std::string("encoding failure: " #TYPE " value ")+std::to_string((int)src));	\
-}	\
-	\
-bool fromJSON(const JSON& src, TYPE& dest)	\
-{	\
-	if (!src.is_scalar()) return false;	\
-	cataclysm::JSON_parse<TYPE> parse;	\
-	dest = parse(src.scalar());	\
-	return true;	\
-}
-
-JSON_ENUM(event_type)
-
-JSON toJSON(const event& src) {
-    JSON ret(JSON::object);
-    point map_point;   // usage is against game::lev.x,y
-
-    if (auto json = JSON_key(src.type)) {
-        ret.set("type", json);
-        ret.set("turn", std::to_string(src.turn));
-        if (faction::MIN_ID <= src.faction_id) ret.set("faction", std::to_string(src.faction_id));
-        if (src.map_point != point(-1, -1)) ret.set("map_point", toJSON(src.map_point));
-    }
-
-    return ret;
-}
-
-bool fromJSON(const JSON& src, event& dest)
-{
-    if (!src.has_key("turn") || !src.has_key("type")) return false;
-    bool ret = fromJSON(src["type"], dest.type);
-    if (!fromJSON(src["turn"], dest.turn)) ret = false;
-    if (src.has_key("faction")) fromJSON(src["faction"], dest.faction_id);
-    if (src.has_key("map_point")) fromJSON(src["map_point"], dest.map_point);
-    return ret;
-}
-
 bool game::load_master()
 {
  std::ifstream fin;
@@ -1407,11 +1350,10 @@ bool game::load_master()
 	 active_missions.clear();
 	 factions.clear();
 	 active_npc.clear();
-     events.clear();
      if (master.has_key("active_missions")) master["active_missions"].decode(active_missions);
 	 if (master.has_key("factions")) master["factions"].decode(factions);
 	 if (master.has_key("npcs")) master["npcs"].decode(active_npc);
-     if (master.has_key("events")) master["events"].decode(events);
+     event::global_fromJSON(master);
 
 	 fin.close();
 	 return true;
@@ -1578,7 +1520,7 @@ void game::save()
  if (!active_missions.empty()) saved.set("active_missions", JSON::encode(active_missions));
  if (!factions.empty()) saved.set("factions", JSON::encode(factions));
  if (!active_npc.empty()) saved.set("npcs", JSON::encode(active_npc));
- if (!events.empty()) saved.set("events", JSON::encode(events));
+ event::global_toJSON(tmp);
 
  fout.open("save/master.tmp");
  fout << saved;
@@ -1599,18 +1541,6 @@ void game::save()
  cur_om.save(u.name);
  //m.save(&cur_om, turn, levx, levy);
  MAPBUFFER.save();
-}
-
-void game::add_event(event_type type, int on_turn, int faction_id, int x, int y)
-{
- event tmp(type, on_turn, faction_id, x, y);
- events.push_back(tmp);
-}
-
-const event* game::event_queued(const event_type type) const
-{
- for(decltype(auto) ev : events) if (type == ev.type) return &ev;
- return nullptr;
 }
 
 void game::debug()
@@ -1687,7 +1617,7 @@ NPCs are %s spawn.\n\
 %d events planned.", u.pos.x, u.pos.y, lev.x, lev.y,
 oter_t::list[cur_om.ter(lev.x / 2, lev.y / 2)].name.c_str(),
 int(messages.turn), int(nextspawn), (option_table::get()[OPT_NPCS] ? "going to" : "NOT going to"),
-z.size(), events.size());
+z.size(), event::are_queued());
 
    if (!active_npc.empty())
     popup_top("%s: %d:%d (you: %d:%d)", active_npc[0].name.c_str(),
@@ -2278,7 +2208,7 @@ unsigned char game::light_level(const GPS_loc& src)
  if (_is_pc) {
      // The EVENT_DIM event slowly dims the sky, then relights it
      // EVENT_DIM has an occurance date of turn + 50, so the first 25 dim it
-     if (const auto dimming = g->event_queued(EVENT_DIM)) {
+     if (const auto dimming = event::queued(EVENT_DIM)) {
          int turns_left = dimming->turn - int(messages.turn);
          if (turns_left > 25)
              ret = (ret * (turns_left - 25)) / 25;
@@ -2295,7 +2225,7 @@ unsigned char game::light_level(const GPS_loc& src)
      }
  }
  if (ret < 8 && u && u->has_active_bionic(bio_flashlight)) ret = 8;
- if (ret < 8 && _is_pc && g->event_queued(EVENT_ARTIFACT_LIGHT)) ret = 8;
+ if (ret < 8 && _is_pc && event::queued(EVENT_ARTIFACT_LIGHT)) ret = 8;
  if (ret < 4 && u && u->has_artifact_with(AEP_GLOW)) ret = 4;
  if (ret < 1) ret = 1;
  return ret;
@@ -3283,9 +3213,9 @@ void game::smash()
  if (smash.x == -2) messages.add("Invalid direction.");
  else {
    // TODO: Move this elsewhere.
-   if (m.has_flag(alarmed, u.pos+smash) && !event_queued(EVENT_WANTED)) {
+   if (m.has_flag(alarmed, u.pos+smash) && !event::queued(EVENT_WANTED)) {
      sound(u.pos, 30, "An alarm sounds!");
-     add_event(EVENT_WANTED, int(messages.turn) + 300, 0, lev.x, lev.y);
+     event::add(event(EVENT_WANTED, int(messages.turn) + MINUTES(30), 0, lev.x, lev.y));
    }
    didit = m.bash(u.pos + smash, smashskill, bashsound);
  }
@@ -3545,19 +3475,19 @@ shape, but with long, twisted, distended limbs.");
  } else if (t_pedestal_wyrm == exam_t && stack.empty()) {
   messages.add("The pedestal sinks into the ground...");
   exam_t = t_rock_floor;
-  add_event(EVENT_SPAWN_WYRMS, int(messages.turn) + rng(5, 10));
+  event::add(event(EVENT_SPAWN_WYRMS, int(messages.turn) + TURNS(rng(5, 10))));
  } else if (t_pedestal_temple == exam_t) {
   if (stack.size() == 1 && stack[0].type->id == itm_petrified_eye) {
    messages.add("The pedestal sinks into the ground...");
    exam_t = t_dirt;
    stack.clear();
-   add_event(EVENT_TEMPLE_OPEN, int(messages.turn) + 4);
+   event::add(event(EVENT_TEMPLE_OPEN, int(messages.turn) + TURNS(4)));
   } else if (u.has_amount(itm_petrified_eye, 1) &&
              query_yn("Place your petrified eye on the pedestal?")) {
    u.use_amount(itm_petrified_eye, 1);
    messages.add("The pedestal sinks into the ground...");
    exam_t = t_dirt;
-   add_event(EVENT_TEMPLE_OPEN, int(messages.turn) + 4);
+   event::add(event(EVENT_TEMPLE_OPEN, int(messages.turn) + TURNS(4)));
   } else
    messages.add("This pedestal is engraved in eye-shaped diagrams, and has a large semi-spherical indentation at the top.");
  } else if (t_switch_rg <= exam_t && t_switch_even >= exam_t && query_yn("Flip the %s?", name_of(m.ter(exam)).c_str())) {
@@ -3568,7 +3498,7 @@ shape, but with long, twisted, distended limbs.");
    }
   }
   messages.add("You hear the rumble of rock shifting.");
-  add_event(EVENT_TEMPLE_SPAWN, messages.turn + 3);
+  event::add(event(EVENT_TEMPLE_SPAWN, messages.turn + TURNS(3)));
  }
 
  if (const auto tr_id = m.tr_at(exam)) {

@@ -1136,9 +1136,9 @@ void map::shoot(game *g, const point& pt, int &dam, bool hit_items, unsigned fla
 {
  if (dam < 0) return;
 
- if (has_flag(alarmed, pt) && !g->event_queued(EVENT_WANTED)) {
-  g->sound(g->u.pos, 30, "An alarm sounds!");
-  g->add_event(EVENT_WANTED, int(messages.turn) + 300, 0, g->lev.x, g->lev.y);
+ if (has_flag(alarmed, pt) && !event::queued(EVENT_WANTED)) {
+  g->sound(g->u.pos, 30, "An alarm sounds!");   // \todo should alarm at destination, not PC
+  event::add(event(EVENT_WANTED, int(messages.turn) + MINUTES(30), 0, g->lev.x, g->lev.y));
  }
 
  if (const auto veh = _veh_at(pt)) {

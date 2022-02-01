@@ -4,8 +4,11 @@
 #include "line.h"
 #include "rng.h"
 #include "recent_msg.h"
+#include "json.h"
 
 #include <stdexcept>
+
+std::vector<event> event::_events;
 
 static const char* const JSON_transcode_events[] = {
     "HELP",
@@ -22,6 +25,83 @@ static const char* const JSON_transcode_events[] = {
 };
 
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(event_type, JSON_transcode_events)
+
+#define JSON_ENUM(TYPE)	\
+cataclysm::JSON toJSON(TYPE src) {	\
+	auto x = JSON_key(src);	\
+	if (x) return cataclysm::JSON(x);	\
+	throw std::runtime_error(std::string("encoding failure: " #TYPE " value ")+std::to_string((int)src));	\
+}	\
+	\
+bool fromJSON(const cataclysm::JSON& src, TYPE& dest)	\
+{	\
+	if (!src.is_scalar()) return false;	\
+	cataclysm::JSON_parse<TYPE> parse;	\
+	dest = parse(src.scalar());	\
+	return true;	\
+}
+
+JSON_ENUM(event_type)
+
+cataclysm::JSON toJSON(const event& src) {
+    cataclysm::JSON ret(cataclysm::JSON::object);
+    point map_point;   // usage is against game::lev.x,y
+
+    if (auto json = JSON_key(src.type)) {
+        ret.set("type", json);
+        ret.set("turn", std::to_string(src.turn));
+        if (faction::MIN_ID <= src.faction_id) ret.set("faction", std::to_string(src.faction_id));
+        if (src.map_point != point(-1, -1)) ret.set("map_point", toJSON(src.map_point));
+    }
+
+    return ret;
+}
+
+bool fromJSON(const cataclysm::JSON& src, event& dest)
+{
+    if (!src.has_key("turn") || !src.has_key("type")) return false;
+    bool ret = fromJSON(src["type"], dest.type);
+    if (!fromJSON(src["turn"], dest.turn)) ret = false;
+    if (src.has_key("faction")) fromJSON(src["faction"], dest.faction_id);
+    if (src.has_key("map_point")) fromJSON(src["map_point"], dest.map_point);
+    return ret;
+}
+
+const event* event::queued(event_type type)
+{
+    for (decltype(auto) ev : _events) if (type == ev.type) return &ev;
+    return nullptr;
+}
+
+void event::global_reset(const Badge<game>& badge) { _events.clear(); }
+
+void event::global_fromJSON(const cataclysm::JSON& src)
+{
+    _events.clear();
+    if (src.has_key("events")) src["events"].decode(_events);
+}
+
+void event::global_toJSON(cataclysm::JSON& dest)
+{
+    if (!_events.empty()) dest.set("events", cataclysm::JSON::encode(_events));
+}
+
+void event::process(const Badge<game>& badge)
+{
+    // We want to go forward, to allow for the possibility of events scheduling events for same-turn
+    for (int i = 0; i < _events.size(); i++) {
+        decltype(auto) e = _events[i];
+        if (!e.per_turn()) {
+            EraseAt(_events, i--);
+            continue;
+        }
+        if (e.turn <= int(messages.turn)) {
+            e.actualize();
+            EraseAt(_events, i--);
+            continue;
+        }
+    }
+}
 
 void event::actualize() const
 {
@@ -70,7 +150,7 @@ void event::actualize() const
           }
       }
       if (!one_in(25)) // They just keep coming!
-          g->add_event(EVENT_SPAWN_WYRMS, int(messages.turn) + rng(15, 25));
+          event::add(event(EVENT_SPAWN_WYRMS, int(messages.turn) + TURNS(rng(15, 25))));
   } break;
 
   case EVENT_AMIGARA: {
@@ -185,7 +265,7 @@ void event::actualize() const
     for (int y = 0; y < SEEY * MAPSIZE; y++)
      g->m.ter(x, y) = copy.ter(x, y);
    }
-   g->add_event(EVENT_TEMPLE_FLOOD, int(messages.turn) + rng(2, 3));
+   event::add(event(EVENT_TEMPLE_FLOOD, int(messages.turn) + TURNS(rng(2, 3))));
   } break;
 
   case EVENT_TEMPLE_SPAWN: {

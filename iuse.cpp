@@ -985,7 +985,7 @@ void iuse::two_way_radio(pc& p, item& it)
   bonus += fac->respects_u + 3 * fac->likes_u;
   if (bonus >= 25) {
    popup("They reply, \"Help is on the way!\"");
-   g->add_event(EVENT_HELP, int(messages.turn) + fac->response_time(g->lev), fac->id, -1, -1);
+   event::add(event(EVENT_HELP, int(messages.turn) + fac->response_time(g->lev), fac->id, -1, -1));
    fac->respects_u -= rng(0, 8);
    fac->likes_u -= rng(3, 5);
   } else if (bonus >= -5) {
@@ -2374,7 +2374,7 @@ void iuse::artifact(pc& p, item& it)
 
   case AEA_LIGHT:
    messages.add("The %s glows brightly!", it.tname().c_str());
-   g->add_event(EVENT_ARTIFACT_LIGHT, int(messages.turn) + 30);
+   event::add(event(EVENT_ARTIFACT_LIGHT, int(messages.turn) + MINUTES(3)));
    break;
 
   case AEA_GROWTH: {
@@ -2447,7 +2447,7 @@ void iuse::artifact(pc& p, item& it)
 
   case AEA_DIM:
    messages.add("The sky starts to dim.");
-   g->add_event(EVENT_DIM, int(messages.turn) + 50);
+   event::add(event(EVENT_DIM, int(messages.turn) + MINUTES(5)));
    break;
 
   case AEA_FLASH:

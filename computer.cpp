@@ -532,7 +532,7 @@ INITIATING STANDARD TREMOR TEST...");
    break;
 
   case COMPACT_AMIGARA_START:
-   g->add_event(EVENT_AMIGARA, int(messages.turn) + 10, 0, 0, 0);
+   event::add(event(EVENT_AMIGARA, int(messages.turn) + 10));
    if (!g->u.has_artifact_with(AEP_PSYSHIELD)) g->u.add_disease(DI_AMIGARA, MINUTES(2));
    break;
 
@@ -623,8 +623,8 @@ void computer::activate_failure(game *g, computer_failure fail)
 
   case COMPFAIL_ALARM:
    g->sound(g->u.pos, 60, "An alarm sounds!");
-   if (g->lev.z > 0 && !g->event_queued(EVENT_WANTED))
-    g->add_event(EVENT_WANTED, int(messages.turn) + 300, 0, g->lev.x, g->lev.y);
+   if (g->lev.z > 0 && !event::queued(EVENT_WANTED))
+       event::add(event(EVENT_WANTED, int(messages.turn) + MINUTES(30), 0, g->lev.x, g->lev.y));
    break;
 
   case COMPFAIL_MANHACKS: {
@@ -694,7 +694,7 @@ void computer::activate_failure(game *g, computer_failure fail)
    break;
 
   case COMPFAIL_AMIGARA:
-   g->add_event(EVENT_AMIGARA, int(messages.turn) + 5, 0, 0, 0);
+   event::add(event(EVENT_AMIGARA, int(messages.turn) + TURNS(5)));
    g->u.add_disease(DI_AMIGARA, MINUTES(2));
    g->explosion(rng(map::reality_bubble_extent), 10, 10, false);
    g->explosion(rng(map::reality_bubble_extent), 10, 10, false);

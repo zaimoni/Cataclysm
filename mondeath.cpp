@@ -107,7 +107,7 @@ void mdeath::vine_cut(game *g, monster *z)
 void mdeath::triffid_heart(game *g, monster *z)
 {
  messages.add("The root walls begin to crumble around you.");
- g->add_event(EVENT_ROOTS_DIE, int(messages.turn) + MINUTES(10));
+ event::add(event(EVENT_ROOTS_DIE, int(messages.turn) + MINUTES(10)));
 }
 
 void mdeath::fungus(game *g, monster *z)

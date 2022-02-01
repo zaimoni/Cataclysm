@@ -454,7 +454,7 @@ void trapfunc::temple_flood(game *g, int x, int y)
     g->m.tr_at(i, j) = tr_null;
   }
  }
- g->add_event(EVENT_TEMPLE_FLOOD, messages.turn + 3);
+ event::add(event(EVENT_TEMPLE_FLOOD, messages.turn + 3));
 }
 
 void trapfunc::temple_toggle(game *g, int x, int y)
