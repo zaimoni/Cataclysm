@@ -157,7 +157,7 @@ bool submap::process_fields()
                     } else if (it.made_of(PAPER)) {
                         destroyed = it.burn(cur.density * 3);
                         consumed++;
-                        if (1 == cur.density == 1) cur.age -= vol * 10;
+                        if (1 == cur.density) cur.age -= vol * 10;
                         if (4 <= vol) smoke++;
                     } else if ((it.made_of(WOOD) || it.made_of(VEGGY))) {
                         if (vol <= cur.density * 10 || 3 == cur.density) {
