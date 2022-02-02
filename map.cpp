@@ -1939,6 +1939,144 @@ std::optional<int> map::clear_path(int Fx, int Fy, int Tx, int Ty, int range, in
     return _BresenhamLine(Fx, Fy, Tx, Ty, range, [&](reality_bubble_loc pos){ return is_between(cost_min, move_cost(pos), cost_max);});
 }
 
+#if 0
+static std::optional<int> _BresenhamLine(GPS_loc origin, tripoint delta, int range, std::function<bool(GPS_loc)> test)
+{
+    int dx = Tx - Fx;
+    int dy = Ty - Fy;
+
+    if (range >= 0 && (abs(dx) > range || abs(dy) > range)) return std::nullopt;	// Out of range!
+
+    int ax = abs(dx) << 1;
+    int ay = abs(dy) << 1;
+    int sx = signum(dx);
+    int sy = signum(dy);
+    int x = Fx;
+    int y = Fy;
+    int t = 0;
+    int st;
+
+    GPS_loc loc;
+
+    if (ax > ay) { // Mostly-horizontal line
+        st = signum(ay - (ax >> 1));
+        // Doing it "backwards" prioritizes straight lines before diagonal.
+        // This will help avoid creating a string of zombies behind you and will
+        // promote "mobbing" behavior (zombies surround you to beat on you)
+        for (int tc = abs(ay - (ax >> 1)) * 2 + 1; tc >= -1; tc--) {
+            t = tc * st;
+            GPS_loc loc(origin);
+            decltype(delta) delta_loc(0);
+            do {
+                if (t > 0) {
+                    y += sy;
+                    t -= ax;
+                }
+                x += sx;
+                t += ay;
+                if (delta == delta_loc) {
+                    tc *= st;
+                    return tc;
+                }
+            } while (test(loc));
+        }
+        return std::nullopt;
+    }
+    else { // Same as above, for mostly-vertical lines
+        st = signum(ax - (ay >> 1));
+        for (int tc = abs(ax - (ay >> 1)) * 2 + 1; tc >= -1; tc--) {
+            t = tc * st;
+            GPS_loc loc(origin);
+            decltype(delta) delta_loc(0);
+            do {
+                if (t > 0) {
+                    x += sx;
+                    t -= ay;
+                }
+                y += sy;
+                t += ax;
+                if (delta == delta_loc) {
+                    tc *= st;
+                    return tc;
+                }
+            } while (test(loc));
+        }
+        return std::nullopt;
+    }
+    return std::nullopt; // Shouldn't ever be reached, but there it is.
+}
+
+static std::optional<int> _BresenhamLine(GPS_loc origin, const point delta, int range, std::function<bool(GPS_loc)> test)
+{
+    if (0 <= range && Linf_dist(delta) > range) return std::nullopt;	// Out of range!
+
+    int ax = abs(delta.x) << 1;
+    int ay = abs(delta.y) << 1;
+    int sx = signum(delta.x);
+    int sy = signum(delta.y);
+/*  int x = Fx;
+    int y = Fy; */
+    int t = 0;
+    int st;
+
+    GPS_loc loc;
+
+    if (ax > ay) { // Mostly-horizontal line
+        st = signum(ay - (ax >> 1));
+        // Doing it "backwards" prioritizes straight lines before diagonal.
+        // This will help avoid creating a string of zombies behind you and will
+        // promote "mobbing" behavior (zombies surround you to beat on you)
+        for (int tc = abs(ay - (ax >> 1)) * 2 + 1; tc >= -1; tc--) {
+            t = tc * st;
+            GPS_loc loc(origin);
+            decltype(delta) delta_loc(0);
+            do {
+                if (t > 0) {
+                    y += sy;
+                    t -= ax;
+                }
+                x += sx;
+                t += ay;
+                if (delta == delta_loc) {
+                    tc *= st;
+                    return tc;
+                }
+            } while (test(loc));
+        }
+        return std::nullopt;
+    } else { // Same as above, for mostly-vertical lines
+        st = signum(ax - (ay >> 1));
+        for (int tc = abs(ax - (ay >> 1)) * 2 + 1; tc >= -1; tc--) {
+            t = tc * st;
+            GPS_loc loc(origin);
+            decltype(delta) delta_loc(0);
+            do {
+                if (t > 0) {
+                    x += sx;
+                    t -= ay;
+                }
+                y += sy;
+                t += ax;
+                if (delta == delta_loc) {
+                    tc *= st;
+                    return tc;
+                }
+            } while (test(loc));
+        }
+        return std::nullopt;
+    }
+    return std::nullopt; // Shouldn't ever be reached, but there it is.
+}
+
+static std::optional<int> _BresenhamLine(GPS_loc origin, GPS_loc dest, int range, std::function<bool(GPS_loc)> test) const
+{
+    auto delta = dest - origin;
+    // \todo convert to std::visit so we have compile-time checking that all cases are handled
+    if (auto pt = std::get_if<point>(&delta)) return _BresenhamLine(origin, *pt, range, test);
+    return _BresenhamLine(origin, std::get<tripoint>(delta), range, test);
+}
+#endif
+
 // Bash defaults to true.
 std::vector<point> map::route(int Fx, int Fy, int Tx, int Ty, bool bash) const
 {
