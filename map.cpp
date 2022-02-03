@@ -655,6 +655,27 @@ int map::move_cost_ter_only(int x, int y) const
  return ter_t::list[ter(x, y)].movecost;
 }
 
+bool GPS_loc::is_transparent() const
+{
+    // Control statement is a problem. Normally returning false on an out-of-bounds
+    // is how we stop rays from going on forever.  Instead we'll have to include
+    // this check in the ray loop.
+    bool tertr;
+    if (const auto v = veh_at()) {
+        const vehicle* const veh = v->first; // backward compatibility
+        tertr = !veh->part_flag(v->second, vpf_opaque) || veh->parts[v->second].hp <= 0;
+        if (!tertr) {
+            int dpart = veh->part_with_feature(v->second, vpf_openable);
+            if (dpart >= 0 && veh->parts[dpart].open)
+                tertr = true; // open opaque door
+        }
+    }
+    else
+        tertr = is<transparent>(ter());
+    const auto& fd = field_at();
+    return tertr && (fd.type == 0 || field::list[fd.type].transparent[fd.density - 1]);	// Fields may obscure the view, too
+}
+
 bool map::trans(const reality_bubble_loc& pos) const
 {
     // Control statement is a problem. Normally returning false on an out-of-bounds
@@ -2082,6 +2103,11 @@ static auto _BresenhamLine(GPS_loc origin, GPS_loc dest, int range, std::functio
     // \todo convert to std::visit so we have compile-time checking that all cases are handled
     if (auto pt = std::get_if<point>(&delta)) return _BresenhamLine(origin, *pt, range, test);
     return _BresenhamLine(origin, std::get<tripoint>(delta), range, test);
+}
+
+std::optional<std::vector<GPS_loc> > GPS_loc::sees(const GPS_loc& dest, int range) const
+{
+    return _BresenhamLine(*this, dest, range, [&](GPS_loc loc) { return loc.is_transparent(); });
 }
 
 // Bash defaults to true.

@@ -36,6 +36,7 @@ struct GPS_loc : public std::pair<tripoint, point>
 	ter_id& ter();
 	ter_id ter() const;
 	bool is_outside() const;
+	bool is_transparent() const;
 	std::optional<std::pair<vehicle*, int>> veh_at() const;
 	trap_id& trap_at();
 	trap_id trap_at() const;
@@ -47,6 +48,7 @@ struct GPS_loc : public std::pair<tripoint, point>
 	void add(const item& new_item);
 	void add(item&& new_item);
 	bool add(field&& src);
+	std::optional<std::vector<GPS_loc> > sees(const GPS_loc& dest, int range) const;
 
 	// following in game.cpp
 	bool is_empty() const;
