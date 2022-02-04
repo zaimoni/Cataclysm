@@ -1961,7 +1961,8 @@ std::optional<int> map::clear_path(int Fx, int Fy, int Tx, int Ty, int range, in
 }
 
 // stub to enable building
-static std::optional<std::vector<GPS_loc> > _BresenhamLine(GPS_loc origin, tripoint delta, int range, std::function<bool(GPS_loc)> test)
+template<bool want_path=false>
+static std::conditional_t<want_path, std::optional<std::vector<GPS_loc> >, bool> _BresenhamLine(GPS_loc origin, tripoint delta, int range, std::function<bool(GPS_loc)> test)
 {
 #if 0
     int dx = Tx - Fx;
@@ -2028,12 +2029,18 @@ static std::optional<std::vector<GPS_loc> > _BresenhamLine(GPS_loc origin, tripo
         return std::nullopt;
     }
 #endif
-    return std::nullopt; // Shouldn't ever be reached, but there it is.
+    // Shouldn't ever be reached, but there it is.
+    if constexpr (want_path) return std::nullopt;
+    else return false;
 }
 
-static std::optional<std::vector<GPS_loc> > _BresenhamLine(GPS_loc origin, const point delta, int range, std::function<bool(GPS_loc)> test)
+template<bool want_path = false>
+static std::conditional_t<want_path, std::optional<std::vector<GPS_loc> >, bool> _BresenhamLine(GPS_loc origin, const point delta, int range, std::function<bool(GPS_loc)> test)
 {
-    if (0 <= range && Linf_dist(delta) > range) return std::nullopt;	// Out of range!
+    if (0 <= range && Linf_dist(delta) > range) {	// Out of range!
+        if constexpr (want_path) return std::nullopt;
+        else return false;
+    }
 
     int ax = abs(delta.x) << 1;
     int ay = abs(delta.y) << 1;
@@ -2048,7 +2055,9 @@ static std::optional<std::vector<GPS_loc> > _BresenhamLine(GPS_loc origin, const
 
     GPS_loc loc;
     std::vector<GPS_loc> ret;
-    if (0 < range) ret.reserve((size_t)range+1);
+    if constexpr (want_path) {
+        if (0 < range) ret.reserve((size_t)range + 1);
+    }
 
     if (ax > ay) { // Mostly-horizontal line
         st = signum(ay - (ax >> 1));
@@ -2056,10 +2065,10 @@ static std::optional<std::vector<GPS_loc> > _BresenhamLine(GPS_loc origin, const
         // This will help avoid creating a string of zombies behind you and will
         // promote "mobbing" behavior (zombies surround you to beat on you)
         for (int tc = abs(ay - (ax >> 1)) * 2 + 1; tc >= -1; tc--) {
-            ret.clear();
+            if constexpr (want_path) ret.clear();
             t = tc * st;
             GPS_loc loc(origin);
-            ret.push_back(loc);
+            if constexpr (want_path) ret.push_back(loc);
             decltype(delta) delta_loc(0);
             do {
                 if (t > 0) {
@@ -2068,18 +2077,22 @@ static std::optional<std::vector<GPS_loc> > _BresenhamLine(GPS_loc origin, const
                 }
                 loc += dir_x;
                 t += ay;
-                ret.push_back(loc);
-                if (delta == delta_loc) return ret;
+                if constexpr (want_path) ret.push_back(loc);
+                if (delta == delta_loc) {
+                    if constexpr (want_path) return ret;
+                    else return true;
+                }
             } while (test(loc));
         }
-        return std::nullopt;
+        if constexpr (want_path) return std::nullopt;
+        else return false;
     } else { // Same as above, for mostly-vertical lines
         st = signum(ax - (ay >> 1));
         for (int tc = abs(ax - (ay >> 1)) * 2 + 1; tc >= -1; tc--) {
-            ret.clear();
+            if constexpr (want_path) ret.clear();
             t = tc * st;
             GPS_loc loc(origin);
-            ret.push_back(loc);
+            if constexpr (want_path) ret.push_back(loc);
             decltype(delta) delta_loc(0);
             do {
                 if (t > 0) {
@@ -2088,24 +2101,36 @@ static std::optional<std::vector<GPS_loc> > _BresenhamLine(GPS_loc origin, const
                 }
                 loc += dir_y;
                 t += ax;
-                ret.push_back(loc);
-                if (delta == delta_loc) return ret;
+                if constexpr (want_path) ret.push_back(loc);
+                if (delta == delta_loc) {
+                    if constexpr (want_path) return ret;
+                    else return true;
+                }
             } while (test(loc));
         }
-        return std::nullopt;
+        if constexpr (want_path) return std::nullopt;
+        else return false;
     }
-    return std::nullopt; // Shouldn't ever be reached, but there it is.
+    // Shouldn't ever be reached, but there it is.
+    if constexpr (want_path) return std::nullopt;
+    else return false;
 }
 
+template<bool want_path = false>
 static auto _BresenhamLine(GPS_loc origin, GPS_loc dest, int range, std::function<bool(GPS_loc)> test)
 {
     auto delta = dest - origin;
     // \todo convert to std::visit so we have compile-time checking that all cases are handled
-    if (auto pt = std::get_if<point>(&delta)) return _BresenhamLine(origin, *pt, range, test);
-    return _BresenhamLine(origin, std::get<tripoint>(delta), range, test);
+    if (auto pt = std::get_if<point>(&delta)) return _BresenhamLine<want_path>(origin, *pt, range, test);
+    return _BresenhamLine<want_path>(origin, std::get<tripoint>(delta), range, test);
 }
 
 std::optional<std::vector<GPS_loc> > GPS_loc::sees(const GPS_loc& dest, int range) const
+{
+    return _BresenhamLine<true>(*this, dest, range, [&](GPS_loc loc) { return loc.is_transparent(); });
+}
+
+bool GPS_loc::can_see(const GPS_loc& dest, int range) const
 {
     return _BresenhamLine(*this, dest, range, [&](GPS_loc loc) { return loc.is_transparent(); });
 }

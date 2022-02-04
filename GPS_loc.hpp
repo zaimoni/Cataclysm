@@ -49,6 +49,7 @@ struct GPS_loc : public std::pair<tripoint, point>
 	void add(item&& new_item);
 	bool add(field&& src);
 	std::optional<std::vector<GPS_loc> > sees(const GPS_loc& dest, int range) const;
+	bool can_see(const GPS_loc& dest, int range) const;
 
 	// following in game.cpp
 	bool is_empty() const;
