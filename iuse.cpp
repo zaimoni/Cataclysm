@@ -13,6 +13,14 @@
 
 #include <sstream>
 
+struct to_GPS
+{
+    GPS_loc operator()(const GPS_loc& src) { return src; }
+    template<class PC, class X>
+    GPS_loc operator()(const std::pair<PC*, X>& src) requires requires() { src.first->GPSpos; }
+    { return src.first->GPSpos; }
+};
+
 // all callers of these handlers have a well-defined item available (and thus *should* have a valid pos from game::find_item
 
 /* To mark an item as "removed from inventory", set its invlet to 0
@@ -1433,40 +1441,37 @@ void iuse::pipebomb(player& p, item& it)
 
 void iuse::pipebomb_act(item& it)
 {
-    const auto g = game::active();
-    const auto pos = g->find_item(&it).value();
+    const auto loc = std::visit(to_GPS(), game::active()->find(it).value());
 
-    g->sound(pos, 0, "Ssssss"); // Vol 0 = only heard if you hold it
+    loc.sound(0, "Ssssss"); // Vol 0 = only heard if you hold it
 }
 
 void iuse::pipebomb_act_explode(item& it)
 {
     const auto g = game::active();
-    const auto pos = g->find_item(&it).value();
+    const auto loc = std::visit(to_GPS(), g->find(it).value());
 
     // The timer has run down
-    if (one_in(10) && g->u.see(pos)) // \todo? allow fizzling out when not in sight?
+    if (one_in(10) && g->u.see(loc)) // \todo? allow fizzling out when not in sight?
         messages.add("The pipe bomb fizzles out.");
     else
-        g->explosion(pos, rng(6, 14), rng(0, 4), false);
+        loc.explosion(rng(6, 14), rng(0, 4), false);
 }
 
 void iuse::grenade(player& p, item& it) { activate(p, it); }
 
 void iuse::grenade_act(item& it)
 {
-    const auto g = game::active();
-    const auto pos = g->find_item(&it).value();
+    const auto loc = std::visit(to_GPS(), game::active()->find(it).value());
 
-    g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
+    loc.sound(0, "Tick.");	// Vol 0 = only heard if you hold it
 }
 
 void iuse::grenade_act_explode(item& it)
 {
-    const auto g = game::active();
-    const auto pos = g->find_item(&it).value();
+    const auto loc = std::visit(to_GPS(), game::active()->find(it).value());
 
-    g->explosion(pos, 12, 28, false); // When that timer runs down...
+    loc.explosion(12, 28, false); // When that timer runs down...
 }
 
 void iuse::flashbang(player& p, item& it) { activate(p, it); }
@@ -1502,18 +1507,16 @@ void iuse::c4(pc& p, item& it)
 
 void iuse::c4armed(item& it)
 {
-    const auto g = game::active();
-    const auto pos = g->find_item(&it).value();
+    const auto loc = std::visit(to_GPS(), game::active()->find(it).value());
 
-    g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
+    loc.sound(0, "Tick.");	// Vol 0 = only heard if you hold it
 }
 
 void iuse::c4armed_explode(item& it)
 {
-    const auto g = game::active();
-    const auto pos = g->find_item(&it).value();
+    const auto loc = std::visit(to_GPS(), game::active()->find(it).value());
 
-    g->explosion(pos, 40, 3, false); // When that timer runs down...
+    loc.explosion(40, 3, false); // When that timer runs down...
 }
 
 void iuse::EMPbomb(player& p, item& it) { activate(p, it); }
@@ -1539,17 +1542,16 @@ void iuse::gasbomb(player& p, item& it) { activate(p, it); }
 
 void iuse::gasbomb_act(item& it)
 {
-    const auto g = game::active();
-    const auto pos = g->find_item(&it).value();
+    const auto loc = std::visit(to_GPS(), game::active()->find(it).value());
 
-    if (it.charges > 15) g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
+    if (it.charges > 15) loc.sound(0, "Tick.");	// Vol 0 = only heard if you hold it
     else {
-        static auto contaminate = [&](point dest) {
-            if (g->m.sees(pos, dest, 2) && g->m.move_cost(dest) > 0)
-                g->m.add_field(g, dest, fd_tear_gas, 3);
+        static auto contaminate = [&](point delta) {
+            auto dest = loc + delta;
+            if (loc.can_see(dest, 2) && 0 < dest.move_cost()) dest.add(field(fd_tear_gas, 3));
         };
 
-        forall_do_inclusive(pos + within_rldist<2>, contaminate);
+        forall_do_inclusive(within_rldist<2>, contaminate);
     }
 }
 
@@ -1562,17 +1564,16 @@ void iuse::smokebomb(player& p, item& it) { activate(p, it); }
 
 void iuse::smokebomb_act(item& it)
 {
-    const auto g = game::active();
-    const auto pos = g->find_item(&it).value();
+    const auto loc = std::visit(to_GPS(), game::active()->find(it).value());
 
-    if (it.charges > 17) g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
+    if (it.charges > 17) loc.sound(0, "Tick.");	// Vol 0 = only heard if you hold it
     else {
-        static auto contaminate = [&](point dest) {
-            if (g->m.sees(pos, dest, 2) && g->m.move_cost(dest) > 0)
-                g->m.add_field(g, dest, fd_smoke, rng(1, 2) + rng(0, 1));
+        static auto contaminate = [&](point delta) {
+            auto dest = loc + delta;
+            if (loc.can_see(dest, 2) && 0 < dest.move_cost()) dest.add(field(fd_smoke, rng(1, 2) + rng(0, 1)));
         };
 
-        forall_do_inclusive(pos + within_rldist<2>, contaminate);
+        forall_do_inclusive(within_rldist<2>, contaminate);
     }
 }
 
@@ -1662,41 +1663,36 @@ void iuse::dynamite(player& p, item& it)
 
 void iuse::dynamite_act(item& it)
 {
-    const auto g = game::active();
-    const auto pos = g->find_item(&it).value();
-    g->sound(pos, 0, "ssss...");	 // Simple timer effects
+    const auto loc = std::visit(to_GPS(), game::active()->find(it).value());
+    loc.sound(0, "ssss...");	 // Simple timer effects
 }
 
 void iuse::dynamite_act_off(item& it)
 {
-    const auto g = game::active();
-    const auto pos = g->find_item(&it).value();
+    const auto loc = std::visit(to_GPS(), game::active()->find(it).value());
 
-    g->explosion(pos, 60, 0, false);		// When that timer runs down...
+    loc.explosion(60, 0, false); // When that timer runs down...
 }
 
 void iuse::mininuke(player& p, item& it) { activate(p, it); }
 
 void iuse::mininuke_act(item& it)
 {
-    const auto g = game::active();
-    const auto pos = g->find_item(&it).value();
-
-    g->sound(pos, 2, "Tick."); 	// Simple timer effects
+    const auto loc = std::visit(to_GPS(), game::active()->find(it).value());
+    loc.sound(2, "Tick."); 	// Simple timer effects
 }
 
 void iuse::mininuke_act_off(item& it)
 {
-    const auto g = game::active();
-    const auto pos = g->find_item(&it).value();
+    const auto loc = std::visit(to_GPS(), game::active()->find(it).value());
 
-    // When that timer runs down...
-    g->explosion(pos, 200, 0, false);
+    loc.explosion(200, 0, false); // When that timer runs down...
 
-    static auto contaminate = [&](point dest) {
-        if (g->m.sees(pos, dest, 3) && g->m.move_cost(dest) > 0) g->m.add_field(g, dest, fd_nuke_gas, 3);
+    static auto contaminate = [&](point delta) {
+        auto dest = loc + delta;
+        if (loc.can_see(dest, 3) && 0 < dest.move_cost()) dest.add(field(fd_nuke_gas, 3));
     };
-    forall_do_inclusive(pos + within_rldist<3>, contaminate);
+    forall_do_inclusive(within_rldist<3>, contaminate);
 }
 
 static auto _can_use_pheromone(const player& p)
