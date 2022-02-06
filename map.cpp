@@ -2068,7 +2068,7 @@ static std::conditional_t<want_path, std::optional<std::vector<GPS_loc> >, bool>
             if constexpr (want_path) ret.clear();
             t = tc * st;
             GPS_loc loc(origin);
-            if constexpr (want_path) ret.push_back(loc);
+//          if constexpr (want_path) ret.push_back(loc); // C:Whales does not include origin in path
             decltype(delta) delta_loc(0);
             do {
                 if (t > 0) {

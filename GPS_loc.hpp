@@ -7,6 +7,7 @@
 #include <variant>
 #include <optional>
 #include <vector>
+#include <string>
 
 struct field;
 class item;
@@ -55,6 +56,8 @@ struct GPS_loc : public std::pair<tripoint, point>
 	bool is_empty() const;
 	void explosion(int power, int shrapnel, bool fire) const;	// may not be a reasonable API
 	void sound(int vol, const char* description) const;
+	void sound(int vol, const std::string& description) const;
+	bool bash(int str, std::string& sound, int* res = nullptr) const;
 };
 
 // \todo evaluate whether these should be out-of-line defined (likely a matter of binary size, compile+link time)

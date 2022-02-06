@@ -2814,6 +2814,19 @@ void GPS_loc::sound(int vol, const char* description) const
     if (auto pos = g->toScreen(*this)) g->sound(*pos, vol, description);
 }
 
+void GPS_loc::sound(int vol, const std::string& description) const
+{
+    const auto g = game::active();
+    if (auto pos = g->toScreen(*this)) g->sound(*pos, vol, description);
+}
+
+bool GPS_loc::bash(int str, std::string& sound, int* res) const
+{
+    const auto g = game::active();
+    if (auto pos = g->toScreen(*this)) return g->m.bash(*pos, str, sound, res);
+    return false;
+}
+
 void game::flashbang(int x, int y)
 {
     // arguably should be separated into guard clause and action body

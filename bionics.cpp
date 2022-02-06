@@ -622,40 +622,45 @@ void player::activate_bionic(int b, game *g)
   break;
 
  case bio_magnet:
-  for (int i = pos.x - 10; i <= pos.x + 10; i++) {
-   for (int j = pos.y - 10; j <= pos.y + 10; j++) {
-	auto& stack = g->m.i_at(i, j);
-	if (stack.empty()) continue;
-	const auto t = g->m.sees(i, j, pos, -1);
-	std::vector<point> traj(line_to(i, j, pos, (t ? *t : 0)));
-    traj.insert(traj.begin(), point(i, j));
-    for (int k = 0; k < stack.size(); k++) {
-     if (stack[k].made_of(IRON) || stack[k].made_of(STEEL)){
-	  bool it_is_landed = false;
-      item tmp_item = stack[k];
-      g->m.i_rem(i, j, k);
-	  point prior;
-	  for (decltype(auto) pt : traj) {
-		  if (monster* const z = g->mon(pt)) {
-			  if (z->hurt(tmp_item.weight() * 2)) g->kill_mon(*z, this);
-			  g->m.add_item(pt, std::move(tmp_item));
-			  it_is_landed = true;
-			  break;
-		  } else if (pt != traj.front() && g->m.move_cost(pt) == 0) {
-			  std::string snd;
-			  g->m.bash(pt, tmp_item.weight() * 2, snd);
-			  g->sound(pt, 12, snd); // C:Whales coincidentally SEE
-			  g->m.add_item(prior, std::move(tmp_item));
-			  it_is_landed = true;
-			  break;
-		  }
-		  prior = pt;
-	  }
-      if (!it_is_landed) GPSpos.add(std::move(tmp_item));
-     }
-    }
-   }
-  }
+	{
+	 static auto magnetic_grab = [&](point delta) {
+		 auto src = GPSpos + delta;
+		 decltype(auto) stack = src.items_at();
+		 auto traj = src.sees(GPSpos, -1);
+		 if (!traj) return;
+		 traj->insert(traj->begin(), src); // want path origin in path
+		 ptrdiff_t ub = stack.size();
+		 while (0 <= --ub) {
+			 auto& it = stack[ub];
+			 if (!it.made_of(IRON) && !it.made_of(STEEL)) continue;	// not (ferro)magnetic
+			 bool it_is_landed = false;
+			 item tmp_item = std::move(stack[ub]);
+			 stack.erase(stack.begin() + ub);	// it goes invalid
+			 GPS_loc prior;
+			 for (decltype(auto) pt : *traj) {
+				 // \todo? fix loophole
+				 if (monster* const z = g->mon(pt)) {
+					 if (z->hurt(tmp_item.weight() * 2)) g->kill_mon(*z, this);
+					 pt.add(std::move(tmp_item));
+					 it_is_landed = true;
+					 break;
+				 }
+				 else if (pt != traj->front() && 0 >= pt.move_cost()) {
+					 std::string snd;
+					 pt.bash(tmp_item.weight() * 2, snd);
+					 pt.sound(12, snd); // C:Whales coincidentally SEE
+					 prior.add(std::move(tmp_item));
+					 it_is_landed = true;
+					 break;
+				 }
+				 prior = pt;
+			 }
+			 if (!it_is_landed) GPSpos.add(std::move(tmp_item));
+		 }
+	 };
+
+	 forall_do_inclusive(within_rldist<10>, magnetic_grab);
+	}
   break;
 
  case bio_lockpick:
