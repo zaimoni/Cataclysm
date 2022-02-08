@@ -81,9 +81,7 @@ public:
  int noise() const;
  int burst_size() const;
  int recoil(bool with_ammo = true) const;
-#ifndef SOCRATES_DAIMON
- int range(const player* p = nullptr) const;
-#endif
+ unsigned int range() const;
  std::optional<std::string> cannot_reload() const;
  std::optional<std::variant<const it_gun*, const it_tool* > > can_reload() const;
  ammotype ammo_type() const;

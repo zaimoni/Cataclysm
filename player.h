@@ -93,9 +93,9 @@ public:
  pl_flag has_child_flag(pl_flag mut) const;
  bool remove_child_flag(pl_flag mut);
 
- int  sight_range(int light_level) const;
- int  sight_range() const; // uses light level for our GPSpos
- int  overmap_sight_range() const;
+ unsigned int sight_range(int light_level) const;
+ unsigned int sight_range() const; // uses light level for our GPSpos
+ unsigned int overmap_sight_range() const;
  bool see(const monster& mon) const;
  std::optional<int> see(const player& u) const;
  std::optional<int> see(const GPS_loc& pt) const;
@@ -138,6 +138,7 @@ public:
  int min_technique_power() const override { return 1 + (2 + str_cur) / 4; }
 
 // ranged.cpp (at some point, historically)
+ unsigned int aiming_range(const item& aimed) const;
  unsigned int throw_range(const item& thrown) const; // Range of throwing item
  int ranged_dex_mod	(bool real_life = true) const;
  int ranged_per_mod	(bool real_life = true) const;

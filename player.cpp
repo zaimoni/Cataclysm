@@ -3029,7 +3029,7 @@ You can not activate %s!  To read a description of \
  erase();
 }
 
-int player::sight_range(int light_level) const
+unsigned int player::sight_range(int light_level) const
 {
  // critical vision impairments.
  if (has_disease(DI_BLIND)) return 0;
@@ -3063,14 +3063,11 @@ int player::sight_range(int light_level) const
  return ret;
 }
 
-int player::sight_range() const
-{
-    return sight_range(game::active()->light_level(GPSpos));
-}
+unsigned int player::sight_range() const { return sight_range(game::active()->light_level(GPSpos)); }
 
-int player::overmap_sight_range() const
+unsigned int player::overmap_sight_range() const
 {
- int sight = sight_range();
+ auto sight = sight_range();
  // low-light interferes with overmap sight range
  if (4*SEE >= sight) return (SEE > sight) ? 0 : SEE/2;
  // technology overrides
@@ -3090,7 +3087,7 @@ bool player::see(const monster& mon) const
     if (has_trait(PF_ANTENNAE) && dist <= 3) return true;
     if (mon.has_flag(MF_DIGS) && !has_active_bionic(bio_ground_sonar) && dist > 1)
         return false;	// Can't see digging monsters until we're right next to them
-    const int range = sight_range();
+    const auto range = sight_range();
     if (const auto clairvoyant = clairvoyance()) {
         if (dist <= clamped_lb(range, clairvoyant)) return true;
     }
@@ -3102,7 +3099,7 @@ std::optional<int> player::see(const player& u) const
     int dist = rl_dist(GPSpos, u.GPSpos);
     if (has_trait(PF_ANTENNAE) && dist <= 3) return true;
     if (u.has_active_bionic(bio_cloak) || u.has_artifact_with(AEP_INVISIBLE)) return std::nullopt;
-    const int range = sight_range();
+    const auto range = sight_range();
     if (const auto clairvoyant = clairvoyance()) {
         if (dist <= clamped_lb(range, clairvoyant)) return true;
     }
@@ -3119,8 +3116,8 @@ std::optional<int> player::see(const GPS_loc& loc) const
 
 std::optional<int> player::see(const point& pt) const
 {
-    const int range = sight_range();
-    if (const int c_range = clairvoyance()) {
+    const auto range = sight_range();
+    if (const auto c_range = clairvoyance()) {
         if (rl_dist(pos, pt) <= clamped_ub(range, c_range)) return 0; // clairvoyant default
     }
     return game::active()->m.sees(pos, pt, range);
@@ -3165,6 +3162,22 @@ void player::pause()
   if (arm_max > 20) arm_max = 20;
   add_disease(DI_ARMOR_BOOST, 2, arm_amount, arm_max);
  }
+}
+
+unsigned int player::aiming_range(const item& aimed) const	// return value can be negative at this time
+{
+    auto ret = aimed.range();
+
+    // We delegate preventing negative ranges to Socrates' Daimon.
+    if (aimed.has_flag(IF_STR8_DRAW)) {
+        if (4 > str_cur) return 0;
+        else if (8 > str_cur) ret -= 2 * (8 - str_cur);
+    } else if (aimed.has_flag(IF_STR10_DRAW)) {
+        if (5 > str_cur) return 0;
+        else if (10 > str_cur) ret -= 2 * (10 - str_cur);
+    }
+
+    return ret;
 }
 
 unsigned int player::throw_range(const item& thrown) const

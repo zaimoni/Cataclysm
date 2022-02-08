@@ -738,27 +738,12 @@ int item::recoil(bool with_ammo) const
  return ret;
 }
 
-#ifndef SOCRATES_DAIMON
-int item::range(const player *p) const	// return value can be negative at this time
+unsigned int item::range() const
 {
- if (!is_gun()) return 0;
- if (!curammo) return 0;
- int ret = curammo->range;
-
- if (p) {
-	 if (has_flag(IF_STR8_DRAW)) {
-		 if (p->str_cur < 4) return 0;
-		 else if (p->str_cur < 8) ret -= 2 * (8 - p->str_cur);
-	 }
-	 else if (has_flag(IF_STR10_DRAW)) {
-		 if (p->str_cur < 5) return 0;
-		 else if (p->str_cur < 10) ret -= 2 * (10 - p->str_cur);
-	 }
- }
-
- return ret;
+    if (!is_gun()) return 0;
+    if (!curammo) return 0;
+    return curammo->range;
 }
-#endif
 
 std::optional<std::string> item::cannot_reload() const
 {

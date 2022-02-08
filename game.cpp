@@ -4254,11 +4254,11 @@ void game::plfire(bool burst)
 {
  if (!u.can_fire()) return;
 
- int range = u.weapon.range(&u);
- int sight_range = u.sight_range();
+ auto range = u.aiming_range(u.weapon);
+ auto sight_range = u.sight_range();
  if (range > sight_range) range = sight_range;
  const point r(range);
- const zaimoni::gdi::box<point> bounds(u.pos - r, u.pos + r);
+ const zaimoni::gdi::box<point> bounds(u.pos - r, u.pos + r); // things go very wrong if r is negative
  pl_draw(bounds);
 
  // Populate a list of targets with the zombies in range and visible
@@ -5161,9 +5161,9 @@ void game::update_map(int &x, int &y)
 void game::update_overmap_seen()
 {
  point om(om_location().second); // UI; not critical to inline second coordinate
- int dist = u.overmap_sight_range();
+ const auto dist = u.overmap_sight_range();
  cur_om.seen(om.x, om.y) = true; // We can always see where we're standing
- if (dist == 0) return; // No need to run the rest!
+ if (0 >= dist) return; // No need to run the rest!
  OM_loc<2> scan(cur_om.pos, point(0, 0));
  for (scan.second.x = om.x - dist; scan.second.x <= om.x + dist; scan.second.x++) {
   for (scan.second.y = om.y - dist; scan.second.y <= om.y + dist; scan.second.y++) {

@@ -496,7 +496,6 @@ void game::throw_item(player &p, point tar, item&& thrown, std::vector<point> &t
 std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& bounds, const std::vector<const monster*>& t, int &target, const std::string& prompt)
 {
  std::vector<point> ret;
- const int sight_dist = u.sight_range();
 
 // First, decide on a target among the monsters, if there are any in range
  if (t.size() > 0) {
@@ -553,19 +552,20 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
     mvwputch(w_terrain, at.y, at.x, u.color(), '@');
 
    if (const auto tart = m.sees(u.pos, tar, -1)) {// Selects a valid line-of-sight
-    ret = line_to(u.pos, tar, *tart); // Sets the vector to that LOS
-// Draw the trajectory
-    for (const point& pt : ret) {
-        if (sight_dist >= Linf_dist(pt - u.pos)) {
-            monster* const m_at = mon(pt);
-            // NPCs and monsters get drawn with inverted colors
-            if (m_at && u.see(*m_at)) m_at->draw(w_terrain, center, true);
-            else if (npc* const _npc = nPC(pt))
-                _npc->draw(w_terrain, center, true);
-            else
-                m.drawsq(w_terrain, u, pt.x, pt.y, true, true, center.x, center.y);
-        }
-    }
+       const auto sight_dist = u.sight_range();
+       ret = line_to(u.pos, tar, *tart); // Sets the vector to that LOS
+   // Draw the trajectory
+       for (const point& pt : ret) {
+           if (sight_dist >= Linf_dist(pt - u.pos)) {
+               monster* const m_at = mon(pt);
+               // NPCs and monsters get drawn with inverted colors
+               if (m_at && u.see(*m_at)) m_at->draw(w_terrain, center, true);
+               else if (npc* const _npc = nPC(pt))
+                   _npc->draw(w_terrain, center, true);
+               else
+                   m.drawsq(w_terrain, u, pt.x, pt.y, true, true, center.x, center.y);
+           }
+       }
    }
 
    mvwprintw(w_target, 5, 1, "Range: %d", rl_dist(u.pos, tar));

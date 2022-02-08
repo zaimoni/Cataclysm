@@ -1162,6 +1162,12 @@ int main(int argc, char *argv[])
 		to_desc(ammunition, name_desc, name_id);
 #define HTML_TARGET HTML_DIR AMMO_HTML
 
+		// XXX AT_ARROW must have range at least 10 to avoid breaking the longbow
+		// \todo make this fully computed
+		for (decltype(auto) x : ammunition) {
+			if (AT_ARROW == x->type && 10 > x->range) throw std::logic_error("longbow cannot handle weak arrows");
+		}
+
 		// \todo cross-link to what it reloads, etc.
 		if (FILE* out = fopen(HTML_TARGET ".tmp", "w")) {
 			html::tag cell("td");
