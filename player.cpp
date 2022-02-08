@@ -3167,25 +3167,20 @@ void player::pause()
  }
 }
 
-int player::throw_range(int index) const
+unsigned int player::throw_range(const item& thrown) const
 {
- item tmp;
- if (index == -1) tmp = weapon;
- else if (index == -2) return -1;
- else tmp = inv[index];
-
- if (tmp.weight() > int(str_cur * 15)) return 0;
- int ret = int((str_cur * 8) / (tmp.weight() > 0 ? tmp.weight() : 10));
- ret -= int(tmp.volume() / 10);
- if (ret < 1) return 1;
-// Cap at one and a half of our strength, plus skill
- int ub = str_cur;
- rational_scale<3, 2>(ub);
- ub += sklevel[sk_throw];
- if (ret > ub) return ub;
- return ret;
+    if (thrown.weight() > str_cur * 15) return 0;
+    int ret = int((str_cur * 8) / (thrown.weight() > 0 ? thrown.weight() : 10));
+    ret -= int(thrown.volume() / 10);
+    if (ret < 1) return 1;
+    // Cap at one and a half of our strength, plus skill
+    int ub = str_cur;
+    rational_scale<3, 2>(ub);
+    ub += sklevel[sk_throw];
+    if (ret > ub) return ub;
+    return ret;
 }
- 
+
 int player::ranged_dex_mod(bool real_life) const
 {
  int dex = (real_life ? dex_cur : dex_max);

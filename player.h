@@ -138,7 +138,7 @@ public:
  int min_technique_power() const override { return 1 + (2 + str_cur) / 4; }
 
 // ranged.cpp (at some point, historically)
- int throw_range(int index) const; // Range of throwing item; -1:ERR 0:Can't throw
+ unsigned int throw_range(const item& thrown) const; // Range of throwing item
  int ranged_dex_mod	(bool real_life = true) const;
  int ranged_per_mod	(bool real_life = true) const;
  int throw_dex_mod	(bool real_life = true) const;

@@ -868,7 +868,7 @@ int npc::confident_range(int index) const
  } else { // We aren't firing a gun, we're throwing something!
 
   const item& thrown = inv[index];
-  max = throw_range(index); // The max distance we can throw
+  max = throw_range(thrown); // The max distance we can throw
   int deviation = 0;
   if (sklevel[sk_throw] < 8) deviation += rng(0, 8 - sklevel[sk_throw]);
   else deviation -= sklevel[sk_throw] - 6;

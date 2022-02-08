@@ -4219,11 +4219,8 @@ void game::plthrow()
      return;
  }
 
- int range = u.throw_range(src->second);
- if (range < 0) { // \todo remove dead code
-  messages.add("You don't have that item.");
-  return;
- } else if (range == 0) {
+ auto range = u.throw_range(*src->first);
+ if (0 >= range) {
   messages.add("That is too heavy to throw.");
   return;
  }
