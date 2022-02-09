@@ -21,7 +21,7 @@
 #include <stdexcept>
 
 pc::pc()
-: kills(num_monsters, 0), next_inv('d'), mostseen(0), turnssincelastmon(0), run_mode(option_table::get()[OPT_SAFEMODE] ? 1 : 0), target(-1), autosafemode(option_table::get()[OPT_AUTOSAFEMODE])
+: kills(num_monsters, 0), mostseen(0), turnssincelastmon(0), run_mode(option_table::get()[OPT_SAFEMODE] ? 1 : 0), autosafemode(option_table::get()[OPT_AUTOSAFEMODE]), target(-1), next_inv('d')
 {
 }
 
