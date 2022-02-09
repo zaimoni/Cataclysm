@@ -828,67 +828,82 @@ int npc::choose_escape_item() const
 	return -1; // default to weapon if not actually there \todo respec this
 }
 
+static auto confident_firing_range(const player& u, const item& weapon)
+{
+	const it_gun* const firing = dynamic_cast<const it_gun*>(weapon.type);
+	if (!firing || 0 >= weapon.charges) return std::pair(1.0, 0U);
+	// We want at least 50% confidence that missed_by will be < .5.
+	// missed_by = .00325 * deviation * range <= .5; deviation * range <= 156
+	// (range <= 156 / deviation) is okay, so confident range is (156 / deviation)
+	// Here we're using median values for deviation, for a around-50% estimate.
+	// See game::fire (ranged.cpp) for where these computations come from
+	double deviation = 0;
+
+	if (u.sklevel[firing->skill_used] < 5) deviation += 3.5 * (5 - u.sklevel[firing->skill_used]);
+	else deviation -= 2.5 * (u.sklevel[firing->skill_used] - 5);
+	if (u.sklevel[sk_gun] < 3) deviation += 1.5 * (3 - u.sklevel[sk_gun]);
+	else deviation -= .5 * (u.sklevel[sk_gun] - 3);
+
+	if (u.per_cur < 8) deviation += 2 * (9 - u.per_cur);
+	else deviation -= (u.per_cur > 16 ? 8 : u.per_cur - 8);
+	if (u.dex_cur < 6) deviation += 4 * (6 - u.dex_cur);
+	else if (u.dex_cur < 8) deviation += 8 - u.dex_cur;
+	else if (u.dex_cur > 8) deviation -= .5 * (u.dex_cur - 8);
+
+	deviation += .5 * u.encumb(bp_torso) + 2 * u.encumb(bp_eyes);
+
+	if (weapon.curammo == nullptr)	// This shouldn't happen, but it does sometimes
+		debugmsg("%s has null curammo!", weapon.name.c_str()); // TODO: investigate this bug
+	else {
+		deviation += .5 * weapon.curammo->accuracy;
+	}
+	deviation += .5 * firing->accuracy;
+	deviation += 3 * u.recoil;
+
+	return std::pair(deviation, u.aiming_range(weapon));
+}
+
+static auto confident_throw_range(const player& u, const item& thrown)
+{
+	double deviation = 0;
+
+	// If there is Dunning-Kruger effect, it is intentional
+	if (u.sklevel[sk_throw] < 8) deviation += rng(0, 8 - u.sklevel[sk_throw]);
+	else deviation -= u.sklevel[sk_throw] - 6;
+
+	deviation += u.throw_dex_mod();
+
+	if (u.per_cur < 6) deviation += rng(0, 8 - u.per_cur);
+	else if (u.per_cur > 8) deviation -= u.per_cur - 8;
+
+	deviation += rng(0, u.encumb(bp_hands) * 2 + u.encumb(bp_eyes) + 1);
+	const auto vol = thrown.volume();
+	if (5 < vol) deviation += rng(0, 1 + (vol - 5) / 4);
+	if (0 >= vol) deviation += rng(0, 3);
+
+	deviation += rng(0, 1 + abs(u.str_cur - thrown.weight()));
+	return std::pair(deviation, u.throw_range(thrown));
+}
+
 // Index defaults to -1, i.e., wielded weapon
 int npc::confident_range(int index) const
 {
- if (index == -1 && (!weapon.is_gun() || weapon.charges <= 0)) return 1;
+	double deviation = 0;
+	int max = 0;
+	if (index == -1) {
+		auto stage = confident_firing_range(*this, weapon);
+		deviation = stage.first;	// backward compatibility
+		max = stage.second;
+	} else { // We aren't firing a gun, we're throwing something!
+		auto stage = confident_throw_range(*this, inv[index]);
+		deviation = stage.first;	// backward compatibility
+		max = stage.second;
+	}
 
- double deviation = 0;
- int max = 0;
- if (index == -1) {
-  const it_gun* const firing = dynamic_cast<const it_gun*>(weapon.type);
-// We want at least 50% confidence that missed_by will be < .5.
-// missed_by = .00325 * deviation * range <= .5; deviation * range <= 156
-// (range <= 156 / deviation) is okay, so confident range is (156 / deviation)
-// Here we're using median values for deviation, for a around-50% estimate.
-// See game::fire (ranged.cpp) for where these computations come from
-
-  if (sklevel[firing->skill_used] < 5) deviation += 3.5 * (5 - sklevel[firing->skill_used]);
-  else deviation -= 2.5 * (sklevel[firing->skill_used] - 5);
-  if (sklevel[sk_gun] < 3) deviation += 1.5 * (3 - sklevel[sk_gun]);
-  else deviation -= .5 * (sklevel[sk_gun] - 3);
-
-  if (per_cur < 8) deviation += 2 * (9 - per_cur);
-  else deviation -= (per_cur > 16 ? 8 : per_cur - 8);
-  if (dex_cur < 6) deviation += 4 * (6 - dex_cur);
-  else if (dex_cur < 8) deviation += 8 - dex_cur;
-  else if (dex_cur > 8) deviation -= .5 * (dex_cur - 8);
-
-  deviation += .5 * encumb(bp_torso) + 2 * encumb(bp_eyes);
-
-  if (weapon.curammo == nullptr)	// This shouldn't happen, but it does sometimes
-   debugmsg("%s has null curammo!", name.c_str()); // TODO: investigate this bug
-  else {
-   deviation += .5 * weapon.curammo->accuracy;
-   max = weapon.range();
-  }
-  deviation += .5 * firing->accuracy;
-  deviation += 3 * recoil;
-
- } else { // We aren't firing a gun, we're throwing something!
-
-  const item& thrown = inv[index];
-  max = throw_range(thrown); // The max distance we can throw
-  int deviation = 0;
-  if (sklevel[sk_throw] < 8) deviation += rng(0, 8 - sklevel[sk_throw]);
-  else deviation -= sklevel[sk_throw] - 6;
-
-  deviation += throw_dex_mod();
-
-  if (per_cur < 6) deviation += rng(0, 8 - per_cur);
-  else if (per_cur > 8) deviation -= per_cur - 8;
-
-  deviation += rng(0, encumb(bp_hands) * 2 + encumb(bp_eyes) + 1);
-  if (thrown.volume() > 5) deviation += rng(0, 1 + (thrown.volume() - 5) / 4);
-  if (thrown.volume() == 0) deviation += rng(0, 3);
-
-  deviation += rng(0, 1 + abs(str_cur - thrown.weight()));
- }
-
-// Using 180 for now for extra-confident NPCs.
- int ret = (max > int(180 / deviation) ? max : int(180 / deviation));
- if (ret > weapon.curammo->range) return weapon.curammo->range;
- return ret;
+	// Using 180 for now for extra-confident NPCs.
+	int ret = (0 >= deviation || max > int(180 / deviation) ? max : int(180 / deviation));
+	if (ret > weapon.curammo->range) return weapon.curammo->range;
+	return ret;
 }
 
 // Index defaults to -1, i.e., wielded weapon
@@ -898,6 +913,15 @@ bool npc::wont_hit_friend(game *g, int tarx, int tary, int index) const
 
  int dist = sight_range();
  int confident = confident_range(index);
+
+ /*
+ *  how a miss actually works, game::fire @ ranged.cpp
+	const int delta = int(sqrt(missed_by));
+	tar.x += rng(-delta, delta);
+	tar.y += rng(-delta, delta);
+	trajectory = line_to(p.pos, tar, m.sees(p.pos, tar, -1));
+
+ */
 
  const auto linet = g->m.sees(pos, tarx, tary, dist);
  const std::vector<point> traj = line_to(pos, tarx, tary, (linet ? *linet : 0));
