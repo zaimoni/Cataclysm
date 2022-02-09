@@ -438,6 +438,7 @@ struct it_comest : public itype
 
  itype_id container;	// The container it comes in
  itype_id tool;		// Tool needed to consume (e.g. lighter for cigarettes)
+ add_type add;				// Effects of addiction
 
 #ifndef SOCRATES_DAIMON
 private:
@@ -453,7 +454,6 @@ private:
 
 public:
 #endif
- add_type add;				// Effects of addiction
 
  it_comest(int pid, unsigned char prarity, unsigned int pprice,
 	 std::string pname, std::string pdes,
