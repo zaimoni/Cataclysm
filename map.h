@@ -113,7 +113,7 @@ class map
  bool displace_vehicle(game *g, int &x, int &y, const point& delta, bool test=false);
  void vehmove(game* g);          // Vehicle movement
 // move water under wheels. true if moved
- bool displace_water (int x, int y);
+ bool displace_water(const point& pt);
 
 // Terrain
  ter_id& ter(int x, int y); // Terrain at coord (x, y); {x|y}=(0, SEE{X|Y}*3]

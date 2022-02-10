@@ -10,6 +10,7 @@
 #include "recent_msg.h"
 #include "om_cache.hpp"
 #include "stl_limits.h"
+#include "inline_stack.hpp"
 #include <fstream>
 #include <iostream>
 #include <cmath>
@@ -474,7 +475,7 @@ void map::vehmove(game *g)
         int p = veh->external_parts[ep];
 		const point origin(*pt + veh->parts[p].precalc_d[0]);
         if (veh->part_flag(p, vpf_wheel) && one_in(2))
-         if (displace_water (origin.x, origin.y) && pl_ctrl)
+         if (displace_water(origin) && pl_ctrl)
           messages.add("You hear a splash!");
         veh->handle_trap(origin, p);
        }
@@ -526,38 +527,28 @@ void map::vehmove(game *g)
  } while (sm_change);
 }
 
-bool map::displace_water (int x, int y)
+bool map::displace_water(const point& pt)
 {
-    if (move_cost_ter_only(x, y) > 0 && has_flag(swimmable, x, y)) // shallow water
+    if (0 < move_cost_ter_only(pt.x, pt.y) && has_flag(swimmable, pt)) // shallow water
     { // displace it
-        int dis_places = 0, sel_place = 0;
-        for (int pass = 0; pass < 2; pass++)
-        { // we do 2 passes.
-        // first, count how many non-water places around
-        // then choose one within count and fill it with water on second pass
-            if (pass)
-            {
-                sel_place = rng (0, dis_places - 1);
-                dis_places = 0;
-            }
-            for (int tx = -1; tx <= 1; tx++)
-                for (int ty = -1; ty <= 1; ty++)
-                {
-                    if ((!tx && !ty) || move_cost_ter_only(x + tx, y + ty) == 0)
-                        continue;
-                    ter_id ter0 = ter (x + tx, y + ty);
-                    if (ter0 == t_water_sh ||
-                        ter0 == t_water_dp)
-                        continue;
-                    if (pass && dis_places == sel_place)
-                    {
-                        ter (x + tx, y + ty) = t_water_sh;
-                        ter (x, y) = t_dirt;
-                        return true;
-                    }
-                    dis_places++;
-                }
+        inline_stack<point, std::end(Direction::vector) - std::begin(Direction::vector)> can_displace_to;
+
+        for (decltype(auto) dir : Direction::vector) {
+            auto dest = pt + dir;
+            if (0 == move_cost_ter_only(dest.x, dest.y)) continue;
+            ter_id ter0 = ter(dest);
+            if (ter0 == t_water_sh || ter0 == t_water_dp) continue;
+            // C:Z water is not acid.  Until we can record the terrain under shallow water, disallow acidic displacement
+            if (ter0 != t_dirt) continue;
+            can_displace_to.push(dest);
         }
+
+        if (auto ub = can_displace_to.size()) {
+            ter(can_displace_to[rng(0, ub-1)]) = t_water_sh;
+            ter(pt) = t_dirt;
+            return true;
+        }
+
     }
     return false;
 }
