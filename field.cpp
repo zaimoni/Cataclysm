@@ -3,6 +3,7 @@
 #include "line.h"
 #include "stl_limits.h"
 #include "recent_msg.h"
+#include "inline_stack.hpp"
 
 static const char* JSON_transcode[] = {
 	"blood",
@@ -38,26 +39,6 @@ bool map::process_fields()
  }
  return found_field;
 }
-
-// \todo this belongs in its own header
-// need policy decision re push vs. push_back (std::vector compatibility) when migrating
-template<class T, size_t N>
-class inline_stack final
-{
-    size_t ub;
-    T x[N];
-
-public:
-    inline_stack() : ub(0) {}
-    // implicit defaults for now
-
-    bool empty() const { return 0 >= ub; }
-    auto size() const { return ub; }
-    void push(const T& src) { x[ub++] = src; }
-    void push(T&& src) { x[ub++] = src; }
-    T& operator[](ptrdiff_t n) { return x[n]; }
-    const T& operator[](ptrdiff_t n) const { return x[n]; }
-};
 
 static void clear_nearby_scent(GPS_loc loc)
 {
