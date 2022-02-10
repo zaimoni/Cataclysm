@@ -563,7 +563,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
                else if (npc* const _npc = nPC(pt))
                    _npc->draw(w_terrain, center, true);
                else
-                   m.drawsq(w_terrain, u, pt.x, pt.y, true, true, center.x, center.y);
+                   m.drawsq(w_terrain, u, pt.x, pt.y, true, true, center);
            }
        }
    }
@@ -594,7 +594,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
    else if (npc* const _npc = nPC(tar))
 	_npc->draw(w_terrain, center, false);
    else if (m.sees(u.pos, tar, -1))
-    m.drawsq(w_terrain, u, tar.x, tar.y, false, true, center.x, center.y);
+    m.drawsq(w_terrain, u, tar.x, tar.y, false, true, center);
    else
     mvwputch(w_terrain, VIEW_CENTER, VIEW_CENTER, c_black, 'X');
    tar += dir;

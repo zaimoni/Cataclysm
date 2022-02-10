@@ -3590,13 +3590,13 @@ std::optional<point> game::look_around()
    } else if (veh) {
      mvwprintw(w_look, 3, 1, "There is a %s there. Parts:", veh->name.c_str());
      veh->print_part_desc(w_look, 4, veh_part);
-     m.drawsq(w_terrain, u, l.x, l.y, true, true, l.x, l.y);
+     m.drawsq(w_terrain, u, l.x, l.y, true, true, l);
    } else if (!stack.empty()) {
     mvwprintw(w_look, 3, 1, "There is a %s there.", stack[0].tname().c_str());
     if (stack.size() > 1) mvwaddstr(w_look, 4, 1, "There are other items there as well.");
-    m.drawsq(w_terrain, u, l.x, l.y, true, true, l.x, l.y);
+    m.drawsq(w_terrain, u, l.x, l.y, true, true, l);
    } else
-    m.drawsq(w_terrain, u, l.x, l.y, true, true, l.x, l.y);
+    m.drawsq(w_terrain, u, l.x, l.y, true, true, l);
 
   } else if (l == u.pos) {
    mvwputch_inv(w_terrain, VIEW_CENTER, VIEW_CENTER, u.color(), '@');
@@ -3604,7 +3604,7 @@ std::optional<point> game::look_around()
    if (veh) {
     mvwprintw(w_look, 3, 1, "There is a %s there. Parts:", veh->name.c_str());
     veh->print_part_desc(w_look, 4, veh_part);
-    m.drawsq(w_terrain, u, l.x, l.y, true, true, l.x, l.y);
+    m.drawsq(w_terrain, u, l.x, l.y, true, true, l);
    }
 
   } else {

@@ -1778,7 +1778,7 @@ void map::draw(game *g, WINDOW* w, point center)
         if (dist > light) {
             mvwputch(w, draw_at.y, draw_at.x, (g->u.has_disease(DI_BOOMERED) ? c_magenta : c_dkgray), '#');
         } else if (dist <= g->u.clairvoyance() || sees(g->u.pos, real, light))
-            drawsq(w, g->u, real.x, real.y, false, true, center.x, center.y);
+            drawsq(w, g->u, real.x, real.y, false, true, center);
         else
             mvwputch(w, draw_at.y, draw_at.x, c_black, '#');
      });
@@ -1787,98 +1787,96 @@ void map::draw(game *g, WINDOW* w, point center)
   mvwputch(w, at.y, at.x, g->u.color(), '@');
 }
 
-void map::drawsq(WINDOW* w, const player& u, int x, int y, bool invert,
-                 bool show_items, int cx, int cy) const
+void map::drawsq(WINDOW* w, const player& u, int x, int y, bool invert, bool show_items, std::optional<point> viewpoint) const
 {
- const auto pos = to(x,y);
- if (!pos) return;	// Out of bounds
- if (cx == -1) cx = u.pos.x;
- if (cy == -1) cy = u.pos.y;
- const int k = x + VIEW_CENTER - cx;
- const int j = y + VIEW_CENTER - cy;
- nc_color tercol;
- const auto terrain = ter(*pos);
- long sym = ter_t::list[terrain].sym;
- bool hi = false;
- bool normal_tercol = false;
- bool drew_field = false; 
- mvwputch(w, j, k, c_black, ' ');	// actively clear
- if (u.has_disease(DI_BOOMERED))
-  tercol = c_magenta;
- else if ((u.is_wearing(itm_goggles_nv) && u.has_active_item(itm_UPS_on)) ||
-          u.has_active_bionic(bio_night_vision))
-  tercol = c_ltgreen;
- else {
-  normal_tercol = true;
-  tercol = ter_t::list[terrain].color;
- }
- // background tile should show no matter what
- if (ter_t::tiles.count(terrain)) {
-	 if (mvwaddbgtile(w, j, k, ter_t::tiles[terrain].c_str())) sym = 0;
- }
+    const auto pos = to(x, y);
+    if (!pos) return;	// Out of bounds
+    if (!viewpoint) viewpoint = u.pos;
+    const int k = x + VIEW_CENTER - viewpoint->x;
+    const int j = y + VIEW_CENTER - viewpoint->y;
+    nc_color tercol;
+    const auto terrain = ter(*pos);
+    long sym = ter_t::list[terrain].sym;
+    bool hi = false;
+    bool normal_tercol = false;
+    bool drew_field = false;
+    mvwputch(w, j, k, c_black, ' ');	// actively clear
+    if (u.has_disease(DI_BOOMERED))
+        tercol = c_magenta;
+    else if ((u.is_wearing(itm_goggles_nv) && u.has_active_item(itm_UPS_on)) ||
+        u.has_active_bionic(bio_night_vision))
+        tercol = c_ltgreen;
+    else {
+        normal_tercol = true;
+        tercol = ter_t::list[terrain].color;
+    }
+    // background tile should show no matter what
+    if (ter_t::tiles.count(terrain)) {
+        if (mvwaddbgtile(w, j, k, ter_t::tiles[terrain].c_str())) sym = 0;
+    }
 
- if (0 == move_cost(*pos) && has_flag(swimmable, x, y) && !u.underwater)
-  show_items = false;	// Can only see underwater items if WE are underwater
-// If there's a trap here, and we have sufficient perception, draw that instead
- const auto tr_id = tr_at(*pos);
- if (tr_id != tr_null){
-   const trap* const tr = trap::traps[tr_id];
-   if (u.per_cur - u.encumb(bp_eyes) >= tr->visibility) {
-     tercol = tr->color;
-     if (tr->sym == '%') {
-       switch(rng(1, 5)) {
-       case 1: sym = '*'; break;
-       case 2: sym = '0'; break;
-       case 3: sym = '8'; break;
-       case 4: sym = '&'; break;
-       case 5: sym = '+'; break;
-       }
-     } else sym = tr->sym;
-   }
- }
- // If there's a field here, draw that instead (unless its symbol is %)
- const auto& fd = grid[pos->first]->field_at(pos->second);
- if (fd.type != fd_null && field::list[fd.type].sym != '&') {
-  tercol = field::list[fd.type].color[fd.density - 1];
-  drew_field = true;
-  if (field::list[fd.type].sym == '*') {
-   switch (rng(1, 5)) {
-    case 1: sym = '*'; break;
-    case 2: sym = '0'; break;
-    case 3: sym = '8'; break;
-    case 4: sym = '&'; break;
-    case 5: sym = '+'; break;
-   }
-  } else if (field::list[fd.type].sym != '%') {
-   sym = field::list[fd.type].sym;
-   drew_field = false;
-  }
- }
-// If there's items here, draw those instead
- if (show_items && !drew_field) {
-	 const auto& stack = i_at(x, y);
-	 if (!stack.empty()) {
-		 if ((ter_t::list[ter(x, y)].sym != '.')) hi = true;
-		 else {
-			 auto& top = stack.back();
-			 tercol = top.color();
-			 sym = top.symbol();
-			 if (stack.size() > 1) invert = !invert;
-		 }
-	 }
- }
+    if (0 == move_cost(*pos) && has_flag(swimmable, x, y) && !u.underwater)
+        show_items = false;	// Can only see underwater items if WE are underwater
+      // If there's a trap here, and we have sufficient perception, draw that instead
+    const auto tr_id = tr_at(*pos);
+    if (tr_id != tr_null) {
+        const trap* const tr = trap::traps[tr_id];
+        if (u.per_cur - u.encumb(bp_eyes) >= tr->visibility) {
+            tercol = tr->color;
+            if (tr->sym == '%') {
+                switch (rng(1, 5)) {
+                case 1: sym = '*'; break;
+                case 2: sym = '0'; break;
+                case 3: sym = '8'; break;
+                case 4: sym = '&'; break;
+                case 5: sym = '+'; break;
+                }
+            } else sym = tr->sym;
+        }
+    }
+    // If there's a field here, draw that instead (unless its symbol is %)
+    const auto& fd = grid[pos->first]->field_at(pos->second);
+    if (fd.type != fd_null && field::list[fd.type].sym != '&') {
+        tercol = field::list[fd.type].color[fd.density - 1];
+        drew_field = true;
+        if (field::list[fd.type].sym == '*') {
+            switch (rng(1, 5)) {
+            case 1: sym = '*'; break;
+            case 2: sym = '0'; break;
+            case 3: sym = '8'; break;
+            case 4: sym = '&'; break;
+            case 5: sym = '+'; break;
+            }
+        } else if (field::list[fd.type].sym != '%') {
+            sym = field::list[fd.type].sym;
+            drew_field = false;
+        }
+    }
+    // If there's items here, draw those instead
+    if (show_items && !drew_field) {
+        const auto& stack = i_at(x, y);
+        if (!stack.empty()) {
+            if ((ter_t::list[ter(x, y)].sym != '.')) hi = true;
+            else {
+                auto& top = stack.back();
+                tercol = top.color();
+                sym = top.symbol();
+                if (stack.size() > 1) invert = !invert;
+            }
+        }
+    }
 
- if (const auto v = veh_at(*pos)) {
-     const vehicle* const veh = v->first; // backward compatibility
-     sym = special_symbol(veh->face.dir_symbol(veh->part_sym(v->second)));
-     if (normal_tercol) tercol = veh->part_color(v->second);
- }
+    if (const auto v = veh_at(*pos)) {
+        const vehicle* const veh = v->first; // backward compatibility
+        sym = special_symbol(veh->face.dir_symbol(veh->part_sym(v->second)));
+        if (normal_tercol) tercol = veh->part_color(v->second);
+    }
 
- if (sym) {
-	 if (invert) mvwputch_inv(w, j, k, tercol, sym);
-	 else if (hi) mvwputch_hi(w, j, k, tercol, sym);
-	 else mvwputch(w, j, k, tercol, sym);
- }
+    if (sym) {
+        if (invert) mvwputch_inv(w, j, k, tercol, sym);
+        else if (hi) mvwputch_hi(w, j, k, tercol, sym);
+        else mvwputch(w, j, k, tercol, sym);
+    }
 }
 
 /*
