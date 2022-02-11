@@ -1870,6 +1870,91 @@ void map::drawsq(WINDOW* w, const player& u, int x, int y, bool invert, bool sho
     }
 }
 
+void map::drawsq(WINDOW* w, const player& u, GPS_loc dest, bool invert, bool show_items, std::optional<GPS_loc> viewpoint)
+{
+    if (!viewpoint) viewpoint = u.GPSpos;
+    const auto delta = dest - *viewpoint;
+    if (std::get_if<tripoint>(&delta)) return;  // we don't handle cross-layer view
+    decltype(auto) delta_pt = std::get<point>(delta);
+    zaimoni::gdi::box<point> viewport(point(-VIEW_CENTER), point(VIEW_CENTER));
+    if (!viewport.contains(delta_pt)) return; // not within viewport
+
+    const auto draw_at = delta_pt + point(VIEW_CENTER);
+
+    nc_color tercol;
+    const auto terrain = dest.ter();
+    long sym = ter_t::list[terrain].sym;
+    bool hi = false;
+    bool normal_tercol = false;
+    bool drew_field = false;
+    mvwputch(w, draw_at.y, draw_at.x, c_black, ' ');	// actively clear
+    if (u.has_disease(DI_BOOMERED))
+        tercol = c_magenta;
+    else if ((u.is_wearing(itm_goggles_nv) && u.has_active_item(itm_UPS_on)) ||
+        u.has_active_bionic(bio_night_vision))
+        tercol = c_ltgreen;
+    else {
+        normal_tercol = true;
+        tercol = ter_t::list[terrain].color;
+    }
+    // background tile should show no matter what
+    if (ter_t::tiles.count(terrain)) {
+        if (mvwaddbgtile(w, draw_at.y, draw_at.x, ter_t::tiles[terrain].c_str())) sym = 0;
+    }
+
+    if (0 == dest.move_cost() && is<swimmable>(terrain) && !u.underwater)
+        show_items = false;	// Can only see underwater items if WE are underwater
+
+    static constexpr const char random_glyph[] = { '*', '0', '8', '&', '+' };
+
+      // If there's a trap here, and we have sufficient perception, draw that instead
+    if (const auto tr_id = dest.trap_at()) {
+        const trap* const tr = trap::traps[tr_id];
+        if (u.per_cur - u.encumb(bp_eyes) >= tr->visibility) {
+            tercol = tr->color;
+            if (tr->sym == '%') sym = random_glyph[rng(0, (std::end(random_glyph) - std::begin(random_glyph)) - 1)];
+            else sym = tr->sym;
+        }
+    }
+    // If there's a field here, draw that instead (unless its symbol is %)
+    const auto& fd = dest.field_at();
+    if (fd.type != fd_null && field::list[fd.type].sym != '&') {
+        tercol = field::list[fd.type].color[fd.density - 1];
+        drew_field = true;
+        if (field::list[fd.type].sym == '*') {
+            sym = random_glyph[rng(0, (std::end(random_glyph) - std::begin(random_glyph)) - 1)];
+        } else if (field::list[fd.type].sym != '%') {
+            sym = field::list[fd.type].sym;
+            drew_field = false;
+        }
+    }
+    // If there's items here, draw those instead
+    if (show_items && !drew_field) {
+        const auto& stack = dest.items_at();
+        if (!stack.empty()) {
+            if ((ter_t::list[terrain].sym != '.')) hi = true;
+            else {
+                auto& top = stack.back();
+                tercol = top.color();
+                sym = top.symbol();
+                if (stack.size() > 1) invert = !invert;
+            }
+        }
+    }
+
+    if (const auto v = dest.veh_at()) {
+        const vehicle* const veh = v->first; // backward compatibility
+        sym = special_symbol(veh->face.dir_symbol(veh->part_sym(v->second)));
+        if (normal_tercol) tercol = veh->part_color(v->second);
+    }
+
+    if (sym) {
+        if (invert) mvwputch_inv(w, draw_at.y, draw_at.x, tercol, sym);
+        else if (hi) mvwputch_hi(w, draw_at.y, draw_at.x, tercol, sym);
+        else mvwputch(w, draw_at.y, draw_at.x, tercol, sym);
+    }
+}
+
 /*
 based off code by Steve Register [arns@arns.freeservers.com]
 http://roguebasin.roguelikedevelopment.org/index.php?title=Simple_Line_of_Sight
