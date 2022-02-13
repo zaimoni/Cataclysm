@@ -104,6 +104,7 @@ class game : public reality_bubble
   void explosion(int x, int y, int power, int shrapnel, bool fire);
   void explosion(const point& pt, int power, int shrapnel, bool fire) { explosion(pt.x, pt.y, power, shrapnel, fire); };
   void flashbang(const point& pt);
+  void flashbang(const GPS_loc& pt);
   // Move the player vertically, if (force) then they fell
   void vertical_move(int z, bool force);
   void use_computer(const point& pt);

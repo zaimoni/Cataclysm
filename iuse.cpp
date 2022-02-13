@@ -1478,18 +1478,17 @@ void iuse::flashbang(player& p, item& it) { activate(p, it); }
 
 void iuse::flashbang_act(item& it)
 {
- const auto g = game::active();
- const auto pos = g->find_item(&it).value();
+ const auto loc = std::visit(to_GPS(), game::active()->find(it).value());
 
- g->sound(pos, 0, "Tick.");	// Vol 0 = only heard if you hold it
+ loc.sound(0, "Tick.");	// Vol 0 = only heard if you hold it
 }
 
 void iuse::flashbang_act_explode(item& it)
 {
     const auto g = game::active();
-    const auto pos = g->find_item(&it).value();
+    const auto loc = std::visit(to_GPS(), g->find(it).value());
 
-    g->flashbang(pos); // When that timer runs down...
+    g->flashbang(loc); // When that timer runs down...
 }
 
 void iuse::c4(pc& p, item& it)
@@ -2448,7 +2447,7 @@ void iuse::artifact(pc& p, item& it)
 
   case AEA_FLASH:
    messages.add("The %s flashes brightly!", it.tname().c_str());
-   g->flashbang(p.pos);
+   g->flashbang(p.GPSpos);
    break;
 
   case AEA_VOMIT:

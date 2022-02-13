@@ -2851,6 +2851,30 @@ void game::flashbang(const point& pt)
  sound(pt, 12, "a huge boom!");
 }
 
+void game::flashbang(const GPS_loc& loc)
+{
+    // arguably should be separated into guard clause and action body
+    static auto pc_flashbanged = [&](player& pc) {
+        int dist = rl_dist(pc.GPSpos, loc);
+        if (8 >= dist) {
+            if (!pc.has_bionic(bio_ears)) pc.add_disease(DI_DEAF, 40 - dist * 4);
+            if (pc.GPSpos.sees(loc, 8)) pc.infect(DI_BLIND, bp_eyes, (12 - dist) / 2, 10 - dist);
+        }
+    };
+
+    pc_flashbanged(u);
+    for (auto& _npc : active_npc) pc_flashbanged(_npc);
+
+    for (auto& _mon : z) {
+        int dist = rl_dist(_mon.GPSpos, loc);
+        if (8 < dist) continue;
+        if (dist <= 4) _mon.add_effect(ME_STUNNED, 10 - dist);
+        if (_mon.has_flag(MF_SEES) && _mon.GPSpos.sees(loc, 8)) _mon.add_effect(ME_BLIND, 18 - dist);
+        if (_mon.has_flag(MF_HEARS)) _mon.add_effect(ME_DEAF, 60 - dist * 4);
+    }
+    loc.sound(12, "a huge boom!");
+}
+
 void game::use_computer(const point& pt)
 {
  if (u.has_trait(PF_ILLITERATE)) {
