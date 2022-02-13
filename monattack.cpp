@@ -9,6 +9,7 @@
 #include "stl_limits.h"
 #include "stl_typetraits_late.h"
 #include "Zaimoni.STL/GDI/box.hpp"
+#include "fragment.inc/rng_box.hpp"
 
 void mattack::antqueen(game *g, monster *z)
 {
@@ -563,34 +564,32 @@ void mattack::leap(game *g, monster *z)
 {
  if (!z->see(g->u)) return;	// Only leap if we can see you!
 
- std::vector<point> options;
+ std::vector<GPS_loc> options;
  const bool fleeing = z->is_fleeing(g->u);
  int best = fleeing ? INT_MIN : INT_MAX;
 
- for (int x = z->pos.x - 3; x <= z->pos.x + 3; x++) {
-  for (int y = z->pos.y - 3; y <= z->pos.y + 3; y++) {
-/* If we're fleeing, we want to pick those tiles with the greatest distance
- * from the player; otherwise, those tiles with the least distance from the
- * player.
- */
-   if (!g->is_empty(x, y) || !g->m.sees(z->pos, x, y, g->light_level())) continue;
-   const int dist = rl_dist(g->u.pos, x, y);
-   if (fleeing ? dist >= best : dist <= best) {
-       if (dist != best) {
-           options.clear();
-           best = dist;
-       }
-       options.push_back(point(x, y));
-   }
-  }
- }
+ static auto jump_to = [&](const point delta) {
+     auto dest = z->GPSpos + delta;
+     if (0 >= dest.move_cost()) return;
+     if (g->mob_at(dest)) return;  // these two simulate is_empty(point)
+     if (!z->GPSpos.can_see(dest, game::light_level(dest))) return;
+     const int dist = rl_dist(g->u.GPSpos, dest);
+     if (fleeing ? dist >= best : dist <= best) {
+         if (dist != best) {
+             options.clear();
+             best = dist;
+         }
+         options.push_back(dest);
+     }
+ };
 
+ forall_do_inclusive(within_rldist<3>, jump_to);
  if (options.empty()) return; // Nowhere to leap!
 
  z->moves -= (mobile::mp_turn / 2) * 3;
  z->sp_timeout = z->type->sp_freq;	// Reset timer
  bool seen = g->u.see(*z); // We can see them jump...
- z->screenpos_set(options[rng(0, options.size() - 1)]);
+ z->set_screenpos(options[rng(0, options.size() - 1)]);
  seen |= g->u.see(*z); // ... or we can see them land
  if (seen)
      messages.add("%s leaps!",
