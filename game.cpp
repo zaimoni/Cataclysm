@@ -2827,14 +2827,14 @@ bool GPS_loc::bash(int str, std::string& sound, int* res) const
     return false;
 }
 
-void game::flashbang(int x, int y)
+void game::flashbang(const point& pt)
 {
     // arguably should be separated into guard clause and action body
     static auto pc_flashbanged = [&](player& pc) {
-        int dist = rl_dist(pc.pos, x, y);
+        int dist = rl_dist(pc.pos, pt);
         if (8 >= dist) {
             if (!pc.has_bionic(bio_ears)) pc.add_disease(DI_DEAF, 40 - dist * 4);
-            if (m.sees(pc.pos, x, y, 8)) pc.infect(DI_BLIND, bp_eyes, (12 - dist) / 2, 10 - dist);
+            if (m.sees(pc.pos, pt, 8)) pc.infect(DI_BLIND, bp_eyes, (12 - dist) / 2, 10 - dist);
         }
     };
 
@@ -2842,13 +2842,13 @@ void game::flashbang(int x, int y)
     for (auto& _npc : active_npc) pc_flashbanged(_npc);
 
  for (auto& _mon : z) {
-  int dist = rl_dist(_mon.pos, x, y);
+  int dist = rl_dist(_mon.pos, pt);
   if (8 < dist) continue;
   if (dist <= 4) _mon.add_effect(ME_STUNNED, 10 - dist);
-  if (_mon.has_flag(MF_SEES) && m.sees(_mon.pos, x, y, 8)) _mon.add_effect(ME_BLIND, 18 - dist);
+  if (_mon.has_flag(MF_SEES) && m.sees(_mon.pos, pt, 8)) _mon.add_effect(ME_BLIND, 18 - dist);
   if (_mon.has_flag(MF_HEARS)) _mon.add_effect(ME_DEAF, 60 - dist * 4);
  }
- sound(point(x, y), 12, "a huge boom!");
+ sound(pt, 12, "a huge boom!");
 }
 
 void game::use_computer(const point& pt)
