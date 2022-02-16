@@ -248,12 +248,12 @@ void map::destroy_vehicle(vehicle *veh)
  debugmsg("destroy_vehicle can't find it!");
 }
 
-bool map::displace_vehicle (game *g, int &x, int &y, const point& delta, bool test)
+bool map::displace_vehicle(vehicle* const veh, const point& delta, bool test)
 {
- const point dest(x+delta.x, y+delta.y);
- point src(x, y);
+ point src = veh->screen_pos().value();
+ const point dest = src + delta;
 
- if (!inbounds(src.x, src.y)) {
+ if (!inbounds(src.x, src.y)) { // possibly dead code
   debuglog("map::displace_vehicle: coords out of bounds %d,%d->%d,%d", src.x, src.y, dest.x, dest.y);
   return false;
  }
@@ -268,19 +268,16 @@ bool map::displace_vehicle (game *g, int &x, int &y, const point& delta, bool te
  // first, let's find our position in current vehicles vector
  int our_i = -1;
  for (int i = 0; i < grid[src_na]->vehicles.size(); i++) {
-  if (const auto rloc = grid[src_na]->vehicles[i].bubble_pos()) {
-      if (rloc->second == src) {
+     if (veh == &(grid[src_na]->vehicles[i])) {
           our_i = i;
           break;
-      }
-  }
+     }
  }
  if (our_i < 0) {
   debuglog("displace_vehicle our_i=%d", our_i);
   return false;
  }
  // move the vehicle
- vehicle *veh = &(grid[src_na]->vehicles[our_i]);
  // don't let it go off grid
  if (!inbounds(dest.x, dest.y)) veh->stop();
 
@@ -291,6 +288,8 @@ bool map::displace_vehicle (game *g, int &x, int &y, const point& delta, bool te
 
  bool need_update = false;
  point upd;
+ const auto g = game::active();
+
  // move passengers
  for (const auto& pass : passengers) {
   assert(pass.second);
@@ -317,17 +316,10 @@ bool map::displace_vehicle (game *g, int &x, int &y, const point& delta, bool te
   EraseAt(grid[src_na]->vehicles, our_i);
  }
 
- x += delta.x;	// cf dest
- y += delta.y;
-
  bool was_update = false;
  if (need_update && game::update_map_would_scroll(upd)) {
   assert(MAPSIZE == my_MAPSIZE);	// critical fail if this doesn't hold, but map doesn't provide an accessor for testing this
-// map will shift, so adjust vehicle coords we've been passed
-  if (upd.x < SEEX * int(MAPSIZE / 2)) x += SEEX;
-  else if (upd.x >= SEEX * (1+int(MAPSIZE / 2))) x -= SEEX;
-  if (upd.y < SEEY * int(MAPSIZE / 2)) y += SEEY;
-  else if (upd.y >= SEEY * (1+int(MAPSIZE / 2))) y -= SEEY;
+// map will shift
   g->update_map(upd.x, upd.y);	// player coords were already updated so don't re-update them
   was_update = true;
  }
@@ -511,7 +503,7 @@ void map::vehmove(game *g)
        }
 // accept new position
 // if submap changed, we need to process grid from the beginning.
-       sm_change = displace_vehicle (g, pt->x, pt->y, delta);
+       sm_change = displace_vehicle(veh, delta);
       } else // can_move
        veh->stop();
 // redraw scene
