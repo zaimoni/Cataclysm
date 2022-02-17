@@ -143,6 +143,8 @@ public:
 	vehicle& operator=(const vehicle& src);
 	vehicle& operator=(vehicle&& src) = default;
 
+    static void destroy(vehicle& veh);
+
 // check if given player controls this vehicle
     bool player_in_control(const player& p) const;
     player* driver() const;
@@ -333,9 +335,9 @@ public:
 #endif
 
     // grammatical support
-    std::string subject() const override;
-    std::string direct_object() const override;
-    std::string indirect_object() const override;
+    std::string subject() const override { return name; }
+    std::string direct_object() const override { return name; }
+    std::string indirect_object() const override { return name; }
     std::string possessive() const override;
 
     // config values

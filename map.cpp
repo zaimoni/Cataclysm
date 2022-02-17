@@ -231,23 +231,6 @@ bool map::try_board_vehicle(game* g, int x, int y, player& p)
     return true;
 }
 
-void map::destroy_vehicle(vehicle *veh)
-{
- assert(veh);
- if (const auto rloc = veh->bubble_pos()) {
-     const int sm = rloc->first; // backward compatibility
-     int i = -1;
-     for (decltype(auto) v : grid[sm]->vehicles) {
-         ++i;
-         if (&v == veh) {
-             EraseAt(grid[sm]->vehicles, i);
-             return;
-         }
-     }
- }
- debugmsg("destroy_vehicle can't find it!");
-}
-
 bool map::displace_vehicle(vehicle* const veh, const point& delta, bool test)
 {
  point src = veh->screen_pos().value();

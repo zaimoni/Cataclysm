@@ -106,7 +106,6 @@ class map
  // put player on vehicle at x,y
  bool try_board_vehicle(game* g, int x, int y, player& p);
 
- void destroy_vehicle (vehicle *veh);
 // Change vehicle coords and move vehicle's driver along.
 // Returns true, if there was a submap change.
 // If test is true, function only checks for submap change, no displacement

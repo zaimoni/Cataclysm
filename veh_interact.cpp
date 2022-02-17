@@ -589,8 +589,6 @@ vehicle& complete_vehicle(game* g)
     std::vector<component> comps;
     std::vector<component> tools;
     int welder_charges = dynamic_cast<it_tool*>(item::types[itm_welder])->charges_per_use;
-    itype_id itm;
-    bool broken;
 
     int dd = 2;
     switch (cmd)
@@ -627,21 +625,23 @@ vehicle& complete_vehicle(game* g)
         veh->refill(g->u, part);
         break;
     case 'o':
-		for (decltype(auto) it : veh->parts[part].items) g->u.GPSpos.add(std::move(it));
+        {
+        for (decltype(auto) it : veh->parts[part].items) g->u.GPSpos.add(std::move(it));
         veh->parts[part].items.clear();
-        itm = veh->part_info(part).item;
-        broken = veh->parts[part].hp <= 0;
+        const itype_id itm = veh->part_info(part).item;
+        const bool broken = veh->parts[part].hp <= 0;
         if (veh->parts.size() < 2) {
-			messages.add("You completely dismantle %s.", veh->name.c_str());
+            messages.add("You completely dismantle %s.", veh->name.c_str());
             g->u.activity.type = ACT_NULL;
-            g->m.destroy_vehicle (veh);
+            vehicle::destroy(*veh);
         } else {
-            messages.add("You remove %s%s from %s.", broken? "broken " : "",
-                        veh->part_info(part).name, veh->name.c_str());
-            veh->remove_part (part);
+            messages.add("You remove %s%s from %s.", broken ? "broken " : "",
+                veh->part_info(part).name, veh->name.c_str());
+            veh->remove_part(part);
         }
         if (!broken) g->m.add_item(g->u.pos, item::types[itm], messages.turn);
-        g->u.practice (sk_mechanics, 2 * 5 + 20);
+        g->u.practice(sk_mechanics, 2 * 5 + 20);
+        }
         break;
     default:;
         

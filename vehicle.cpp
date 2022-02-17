@@ -4,6 +4,7 @@
 #include "recent_msg.h"
 #include "rng.h"
 #include "saveload.h"
+#include "mapbuffer.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -99,19 +100,20 @@ vehicle::vehicle(vhtype_id type_id, int deg) : vehicle(type_id)
 
 DEFINE_ACID_ASSIGN_W_MOVE(vehicle)
 
-std::string vehicle::subject() const
+void vehicle::destroy(vehicle& veh)
 {
-    return name;
-}
+    if (const auto sm = MAPBUFFER.lookup_submap(veh.GPSpos.first)) {
+        int i = -1;
+        for (decltype(auto) v : sm->vehicles) {
+            ++i;
+            if (&v == &veh) {
+                EraseAt(sm->vehicles, i);
+                return;
+            }
+        }
+    }
 
-std::string vehicle::direct_object() const
-{
-    return name;
-}
-
-std::string vehicle::indirect_object() const
-{
-    return name;
+    debuglog("vehicle::destroy can't find it!");
 }
 
 std::string vehicle::possessive() const
