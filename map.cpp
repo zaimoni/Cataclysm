@@ -349,8 +349,7 @@ void map::vehmove(game *g)
        break;
       }
 // one-tile step take some of movement
-      int mpcost = 500 * mv_cost_terrain;
-      veh->moves -= mpcost;
+      veh->moves -= (5 * mobile::mp_turn) * mv_cost_terrain;
 
       auto pt = veh->screen_pos();
       assert(pt);
@@ -443,7 +442,7 @@ void map::vehmove(game *g)
       }
 // now we're gonna handle traps we're standing on (if we're still moving).
 // this is done here before displacement because
-// after displacement veh reference would be invdalid.
+// after displacement veh reference would be invalid.
 // damn references!
       if (can_move) {
        for (int ep = 0; ep < veh->external_parts.size(); ep++) {
@@ -456,14 +455,9 @@ void map::vehmove(game *g)
        }
       }
 
-      int last_turn_dec = 1;
-      if (veh->last_turn < 0) {
-       veh->last_turn += last_turn_dec;
-       if (veh->last_turn > -last_turn_dec) veh->last_turn = 0;
-      } else if (veh->last_turn > 0) {
-       veh->last_turn -= last_turn_dec;
-       if (veh->last_turn < last_turn_dec) veh->last_turn = 0;
-      }
+      if (veh->last_turn < 0) veh->last_turn += 1;
+      else if (veh->last_turn > 0) veh->last_turn -= 1;
+
       int slowdown = veh->skidding? 2*vehicle::mph_1 : 2 * vehicle::mph_1 / 10; // mph lost per tile when coasting
       float kslw = (0.1 + veh->k_dynamics()) / ((0.1) + veh->k_mass());
       slowdown = (int) (slowdown * kslw);
