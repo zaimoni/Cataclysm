@@ -19,6 +19,9 @@
     <Filter Include="Header Files\Zaimoni.STL">
       <UniqueIdentifier>{3c04c742-3063-459f-b853-91ae0b5aff4e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Zaimoni.STL\augment.STL">
+      <UniqueIdentifier>{7902fcd5-e6d4-4fca-9434-b9150ed660f9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -536,7 +539,7 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="Zaimoni.STL\augment.STL\typetraits">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Zaimoni.STL\augment.STL</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

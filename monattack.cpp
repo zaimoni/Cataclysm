@@ -1105,25 +1105,28 @@ void mattack::breathe(game *g, monster *z)
 
  bool able = (z->type->id == mon_breather_hub);
  if (!able) {
-  for (int x = z->pos.x - 3; x <= z->pos.x + 3 && !able; x++) {
-   for (int y = z->pos.y - 3; y <= z->pos.y + 3 && !able; y++) {
-    if (monster* const m_at = g->mon(x, y)) {
-	  if (m_at->type->id == mon_breather_hub) able = true;
-	}
-   }
-  }
+     static auto has_hub = [&](const point delta) {
+         auto loc = z->GPSpos + delta;
+         if (const auto m_at = g->mon(loc)) {
+             if (mon_breather_hub == m_at->type->id) return true;
+         }
+         return false;
+     };
+
+     if (find_first(within_rldist<3>, has_hub)) able = true;
  }
  if (!able) return;
 
- std::vector<point> valid;
+ std::vector<GPS_loc> valid;
  for (decltype(auto) delta : Direction::vector) {
-     const point test(z->pos + delta);
-     if (g->is_empty(test)) valid.push_back(test);
+     const auto test(z->GPSpos + delta);
+     if (test.is_empty()) valid.push_back(test);
  }
 
  if (!valid.empty()) {
-  monster spawned(mtype::types[mon_breather], valid[rng(0, valid.size() - 1)]);
+  monster spawned(mtype::types[mon_breather]);
+  spawned.spawn(valid[rng(0, valid.size() - 1)]);
   spawned.sp_timeout = 12;
-  g->z.push_back(spawned);
+  g->z.push_back(std::move(spawned));
  }
 }
