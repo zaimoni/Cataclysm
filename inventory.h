@@ -8,6 +8,7 @@
 
 class game;
 class map;
+class player;
 
 class inventory
 {

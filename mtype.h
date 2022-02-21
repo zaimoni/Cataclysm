@@ -203,10 +203,14 @@ struct mtype {
  unsigned char sp_freq;			// How long sp_attack takes to charge
 #ifndef SOCRATES_DAIMON
  void (*dies)(game *, monster *); // What happens when this monster dies
+
+private:
  void (*sp_attack)(game *, monster *); // This monster's special attack
+ void (*special_attack)(monster&); // This monster's special attack
 #endif
  
   // Default constructor
+public:
  mtype();
 
  // Non-default (messy)
@@ -228,6 +232,9 @@ struct mtype {
  int chunk_count() const;
  const itype* chunk_material() const;
  nc_color danger() const;
+#ifndef SOCRATES_DAIMON
+ void do_special_attack(monster& viewpoint) const;
+#endif
 
  static void init();
  static void init_items();

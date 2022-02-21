@@ -5,6 +5,7 @@
 #include "mondeath.h"
 #endif
 #include "json.h"
+#include "game_aux.hpp"
 
 #include "Zaimoni.STL/Logging.h"
 
@@ -39,7 +40,7 @@ mtype::mtype()
   morale(0), speed(0), melee_skill(0), melee_dice(0), melee_sides(0), melee_cut(0),
   sk_dodge(0), armor_bash(0), armor_cut(0), item_chance(0), hp(0), sp_freq(0)
 #ifndef SOCRATES_DAIMON
-  , dies(nullptr), sp_attack(nullptr)
+  , dies(nullptr), sp_attack(nullptr), special_attack(nullptr)
 #endif
 {
 }
@@ -63,7 +64,7 @@ mtype::mtype(int pid, std::string pname, monster_species pspecies, char psym,
   morale(pmorale), speed(pspeed), melee_skill(pml_skill), melee_dice(pml_dice), melee_sides(pml_sides), melee_cut(pml_cut),
   sk_dodge(pdodge), armor_bash(parmor_bash), armor_cut(parmor_cut), item_chance(pitem_chance), hp(php), sp_freq(psp_freq)
 #ifndef SOCRATES_DAIMON
-  , dies(pdies), sp_attack(psp_attack)
+  , dies(pdies), sp_attack(psp_attack), special_attack(nullptr)
 #endif
 {
 	assert(MS_TINY <= size && MS_HUGE >= size);
@@ -99,6 +100,14 @@ int mtype::chunk_count() const
 	default: return 0;
 	}
 }
+
+#ifndef SOCRATES_DAIMON
+void mtype::do_special_attack(monster& viewpoint) const
+{
+	if (special_attack) special_attack(viewpoint);
+	if (sp_attack) sp_attack(active_game(), &viewpoint);
+}
+#endif
 
 static const char* JSON_transcode[num_monsters] = {
 	"mon_null",

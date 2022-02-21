@@ -19,6 +19,7 @@
 #include "om_cache.hpp"
 #include "stl_limits.h"
 #include "stl_typetraits.h"
+#include "game_aux.hpp"
 
 #include <fstream>
 #include <sstream>
@@ -33,6 +34,8 @@ template<> int discard<int>::x = 0;
 #endif
 bool game::debugmon = false;
 game* game::_active = nullptr;
+
+game* active_game() { return game::active(); }
 
 void intro();
 

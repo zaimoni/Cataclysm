@@ -185,7 +185,7 @@ void monster::move(game *g)
 // First, use the special attack, if we can!
  if (sp_timeout > 0) sp_timeout--;
  if (sp_timeout == 0 && (friendly == 0 || has_flag(MF_FRIENDLY_SPECIAL))) {
-  (type->sp_attack)(g, this);
+     type->do_special_attack(*this);
  }
  if (moves < 0) return;
  if (has_flag(MF_IMMOBILE)) {
