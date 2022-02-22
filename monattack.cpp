@@ -1098,16 +1098,16 @@ void mattack::upgrade(game* g, monster* z)
     if (g->u.see(target->pos)) messages.add("...a zombie becomes a %s!", target->name().c_str());
 }
 
-void mattack::breathe(game *g, monster *z)
+void mattack::breathe(monster& z)
 {
- z->sp_timeout = z->type->sp_freq; // Reset timer
- z->moves -= mobile::mp_turn; // It takes a while
+ z.sp_timeout = z.type->sp_freq; // Reset timer
+ z.moves -= mobile::mp_turn; // It takes a while
 
- bool able = (z->type->id == mon_breather_hub);
+ bool able = (z.type->id == mon_breather_hub);
  if (!able) {
      static auto has_hub = [&](const point delta) {
-         auto loc = z->GPSpos + delta;
-         if (const auto m_at = g->mon(loc)) {
+         auto loc = z.GPSpos + delta;
+         if (const auto m_at = game::active()->mon(loc)) {
              if (mon_breather_hub == m_at->type->id) return true;
          }
          return false;
@@ -1119,7 +1119,7 @@ void mattack::breathe(game *g, monster *z)
 
  std::vector<GPS_loc> valid;
  for (decltype(auto) delta : Direction::vector) {
-     const auto test(z->GPSpos + delta);
+     const auto test(z.GPSpos + delta);
      if (test.is_empty()) valid.push_back(test);
  }
 
@@ -1127,6 +1127,6 @@ void mattack::breathe(game *g, monster *z)
   monster spawned(mtype::types[mon_breather]);
   spawned.spawn(valid[rng(0, valid.size() - 1)]);
   spawned.sp_timeout = 12;
-  g->z.push_back(std::move(spawned));
+  game::active()->z.push_back(std::move(spawned));
  }
 }

@@ -228,6 +228,20 @@ public:
 #endif
 	 std::string pdescription);
 
+#ifndef SOCRATES_DAIMON
+ mtype(int pid, std::string pname, monster_species pspecies, char psym,
+	 nc_color pcolor, m_size psize, material pmat,
+	 unsigned char pfreq, unsigned int pdiff, signed char pagro,
+	 int pmorale, unsigned int pspeed, unsigned char pml_skill,
+	 unsigned char pml_dice, unsigned char pml_sides, unsigned char pml_cut,
+	 unsigned char pdodge, unsigned char parmor_bash,
+	 unsigned char parmor_cut, signed char pitem_chance, int php,
+	 unsigned char psp_freq,
+	 decltype(dies) pdies,
+	 decltype(special_attack) psp_attack,
+	 std::string pdescription);
+#endif
+
  bool has_flag(m_flag flag) const { return flags & mfb(flag); }
  int chunk_count() const;
  const itype* chunk_material() const;

@@ -70,6 +70,28 @@ mtype::mtype(int pid, std::string pname, monster_species pspecies, char psym,
 	assert(MS_TINY <= size && MS_HUGE >= size);
 }
 
+#ifndef SOCRATES_DAIMON
+mtype::mtype(int pid, std::string pname, monster_species pspecies, char psym,
+	nc_color pcolor, m_size psize, material pmat,
+	unsigned char pfreq, unsigned int pdiff, signed char pagro,
+	int pmorale, unsigned int pspeed, unsigned char pml_skill,
+	unsigned char pml_dice, unsigned char pml_sides, unsigned char pml_cut,
+	unsigned char pdodge, unsigned char parmor_bash,
+	unsigned char parmor_cut, signed char pitem_chance, int php,
+	unsigned char psp_freq,
+	decltype(dies) pdies,
+	decltype(special_attack) psp_attack,
+	std::string pdescription)
+	: id(pid), name(pname), description(pdescription), species(pspecies), sym(psym), color(pcolor), size(psize), mat(pmat), flags(0),
+	anger(default_anger(species)), placate(0), fear(default_fears(species)), frequency(pfreq), difficulty(pdiff), agro(pagro),
+	morale(pmorale), speed(pspeed), melee_skill(pml_skill), melee_dice(pml_dice), melee_sides(pml_sides), melee_cut(pml_cut),
+	sk_dodge(pdodge), armor_bash(parmor_bash), armor_cut(parmor_cut), item_chance(pitem_chance), hp(php), sp_freq(psp_freq)
+	, dies(pdies), sp_attack(nullptr), special_attack(psp_attack)
+{
+	assert(MS_TINY <= size && MS_HUGE >= size);
+}
+#endif
+
 nc_color mtype::danger() const
 {
 	if (30 <= difficulty) return c_red;

@@ -42,7 +42,7 @@ class mattack
   static void ratking	(game *g, monster *z);
   static void generator	(game *g, monster *z);
   static void upgrade	(game *g, monster *z);
-  static void breathe	(game *g, monster *z);
+  static void breathe(monster& z);
 };
 
 #endif
