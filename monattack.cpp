@@ -1058,28 +1058,29 @@ void mattack::ratking(game *g, monster *z)
   "\"FOUL INTERLOPER...\""
  };
 
- messages.add(rat_chat[rng(0, std::end(rat_chat)-std::begin(rat_chat))]);
+ messages.add(rat_chat[rng(0, (std::end(rat_chat)-std::begin(rat_chat))-1)]);
  g->u.add_disease(DI_RAT, MINUTES(2));
 }
 
-void mattack::generator(game *g, monster *z)
+void mattack::generator(monster& z)
 {
- g->sound(z->pos, 100, "");
- if (int(messages.turn) % 10 == 0 && z->hp < z->type->hp) z->hp++;
+ z.GPSpos.sound(100, "");
+ if (int(messages.turn) % 10 == 0 && z.hp < z.type->hp) z.hp++; // self-heal (for defense scenario)
 }
 
-void mattack::upgrade(game* g, monster* z)
+void mattack::upgrade(monster& z)
 {
-    assert(z && mon_zombie != z->type->id);
+    assert(mon_zombie != z.type->id);
+    const auto g = game::active();
     std::vector<monster*> targets;
     for (decltype(auto) _mon : g->z) {
-        if (mon_zombie == _mon.type->id && 5 >= rl_dist(z->GPSpos, _mon.GPSpos))
+        if (mon_zombie == _mon.type->id && 5 >= rl_dist(z.GPSpos, _mon.GPSpos))
             targets.push_back(&_mon);
     }
     if (targets.empty()) return;
 
-    z->sp_timeout = z->type->sp_freq; // Reset timer
-    z->moves -= (mobile::mp_turn / 2) * 3; // It takes a while
+    z.sp_timeout = z.type->sp_freq; // Reset timer
+    z.moves -= (mobile::mp_turn / 2) * 3; // It takes a while
 
     monster* const target = targets[rng(0, targets.size() - 1)];
 
@@ -1094,8 +1095,8 @@ void mattack::upgrade(game* g, monster* z)
 
     target->poly(mtype::types[use_rarity_table(rng(0, force_consteval<rarity_table_nonstrict_ub(std::begin(poly_to), std::end(poly_to))>), std::begin(poly_to), std::end(poly_to))]);
 
-    if (g->u.see(z->pos)) messages.add("The black mist around the %s grows...", z->name().c_str());
-    if (g->u.see(target->pos)) messages.add("...a zombie becomes a %s!", target->name().c_str());
+    if (g->u.see(z.GPSpos)) messages.add("The black mist around the %s grows...", z.name().c_str());
+    if (g->u.see(target->GPSpos)) messages.add("...a zombie becomes a %s!", target->name().c_str());
 }
 
 void mattack::breathe(monster& z)

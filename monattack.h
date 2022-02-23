@@ -40,8 +40,8 @@ class mattack
   static void copbot		(game *g, monster *z);
   static void multi_robot	(game *g, monster *z); // Pick from tazer, smg, flame
   static void ratking	(game *g, monster *z);
-  static void generator	(game *g, monster *z);
-  static void upgrade	(game *g, monster *z);
+  static void generator(monster& z);
+  static void upgrade(monster& z);
   static void breathe(monster& z);
 };
 
