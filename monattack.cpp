@@ -1045,10 +1045,13 @@ void mattack::multi_robot(game *g, monster *z)
  }
 }
 
-void mattack::ratking(game *g, monster *z)
+// This attack curses the player with a disease that rapidly mutates.
+// extending this to NPCs, requires NPC support for mutations, etc.
+void mattack::ratking(monster& z)
 {
- if (rl_dist(z->GPSpos, g->u.GPSpos) > 10) return;
- z->sp_timeout = z->type->sp_freq;	// Reset timer
+    const auto g = game::active();
+    if (rl_dist(z.GPSpos, g->u.GPSpos) > 10) return;
+    z.sp_timeout = z.type->sp_freq;	// Reset timer
 
  static constexpr const char* rat_chat[] = {  // What do we say?
   "\"YOU... ARE FILTH...\"",
