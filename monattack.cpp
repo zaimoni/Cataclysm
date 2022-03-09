@@ -8,6 +8,7 @@
 #include "recent_msg.h"
 #include "stl_limits.h"
 #include "stl_typetraits_late.h"
+#include "inline_stack.hpp"
 #include "Zaimoni.STL/GDI/box.hpp"
 #include "fragment.inc/rng_box.hpp"
 
@@ -925,16 +926,80 @@ void mattack::photograph(game *g, monster *z)
  event::add(event(EVENT_ROBOT_ATTACK, int(messages.turn) + rng(15, 30), z->faction_id, g->lev.x, g->lev.y));
 }
 
-void mattack::tazer(game *g, monster *z)
+struct is_enemy_of {
+    monster& z;
+
+    is_enemy_of(monster& z) noexcept : z(z) {}
+    is_enemy_of(const is_enemy_of& src) = delete;
+    is_enemy_of(is_enemy_of&& src) = delete;
+    is_enemy_of& operator=(const is_enemy_of& src) = delete;
+    is_enemy_of& operator=(is_enemy_of&& src) = delete;
+    ~is_enemy_of() = default;
+
+    auto operator()(const monster* target) const { return z.is_enemy(target); }
+    auto operator()(const player* target) const { return z.is_enemy(target); }
+};
+
+struct can_tase {
+    monster& z;
+
+    can_tase(monster& z) noexcept : z(z) {}
+    can_tase(const can_tase& src) = delete;
+    can_tase(can_tase&& src) = delete;
+    can_tase& operator=(const can_tase& src) = delete;
+    can_tase& operator=(can_tase&& src) = delete;
+    ~can_tase() = default;
+
+    // following is highly asymmetric
+    bool operator()(const monster* target) const {
+        return !target->has_flag(MF_ELECTRIC); // we assume immune to tasers if electrified
+    }
+    bool operator()(const player* target) const {
+        return bool(z.see(*target));
+    }
+};
+
+struct to_mob_ref
 {
- if (rl_dist(z->GPSpos, g->u.GPSpos) > 2 || !z->see(g->u)) return;	// Out of range
- z->sp_timeout = z->type->sp_freq; // Reset timer
- z->moves -= 2*mobile::mp_turn; // It takes a while
- messages.add("%s shocks you!",
-              grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
- int shock = rng(1, 5);
- g->u.hurt(bp_torso, 0, shock * rng(1, 3));
- g->u.moves -= shock * (mobile::mp_turn/5);
+    to_mob_ref() = default;
+    to_mob_ref(const to_mob_ref& src) = delete;
+    to_mob_ref(to_mob_ref&& src) = delete;
+    to_mob_ref& operator=(const to_mob_ref& src) = delete;
+    to_mob_ref& operator=(to_mob_ref&& src) = delete;
+    ~to_mob_ref() = default;
+
+    mobile& operator()(mobile* target) const { return *target; }
+};
+
+void mattack::tazer(monster& z)
+{
+    if (!z.can_see()) return;  // everything automatically out of range?
+
+    const auto g = game::active();
+    inline_stack<std::remove_reference_t<decltype(*(g->mob_at(z.GPSpos)))>, std::end(Direction::vector)-std::begin(Direction::vector)> threats;
+
+    for (decltype(auto) dir : Direction::vector) {
+        auto dest = z.GPSpos + dir;
+        if (auto mob = g->mob_at(dest)) {
+            if (!std::visit(is_enemy_of(z), *mob)) continue;
+            if (!std::visit(can_tase(z), *mob)) continue;
+            threats.push(*mob);
+        }
+    }
+    if (threats.empty()) return;    // no hostile, taseable targets in range
+    mobile& target = std::visit(to_mob_ref(), threats[rng(0, threats.size() - 1)]);
+
+    z.sp_timeout = z.type->sp_freq; // Reset timer
+    z.moves -= 2 * mobile::mp_turn; // It takes a while
+
+    static auto shocked = [&]() {
+        return SVO_sentence(z, "shock", target.desc(grammar::noun::role::direct_object, grammar::article::definite), "!");
+    };
+
+    z.if_visible_message(shocked);
+    int shock = rng(1, 5);
+    target.hurt(shock * rng(1, 3));    // \todo B-movie: bypass metallic armor?  Or be immune if in self-insulated metallic armor?
+    target.moves -= shock * (mobile::mp_turn / 5);
 }
 
 void mattack::smg(game *g, monster *z)
@@ -1022,7 +1087,7 @@ void mattack::copbot(game *g, monster *z)
   g->sound(z->pos, 18, speech());
   return;
  }
- tazer(g, z);
+ tazer(*z);
 }
 
 void mattack::multi_robot(game *g, monster *z)
@@ -1039,7 +1104,7 @@ void mattack::multi_robot(game *g, monster *z)
  if (mode == 0) return;	// No attacks were valid!
 
  switch (mode) {
-  case 1: tazer(g, z);        break;
+  case 1: tazer(*z);        break;
   case 2: flamethrower(g, z); break;
   case 3: smg(g, z);          break;
  }

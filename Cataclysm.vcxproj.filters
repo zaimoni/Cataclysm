@@ -303,6 +303,9 @@
     <ClInclude Include="is_between.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inline_stack.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
