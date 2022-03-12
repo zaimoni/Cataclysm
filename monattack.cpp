@@ -927,9 +927,9 @@ void mattack::photograph(game *g, monster *z)
 }
 
 struct is_enemy_of {
-    monster& z;
+    const monster& z;
 
-    is_enemy_of(monster& z) noexcept : z(z) {}
+    is_enemy_of(const monster& z) noexcept : z(z) {}
     is_enemy_of(const is_enemy_of& src) = delete;
     is_enemy_of(is_enemy_of&& src) = delete;
     is_enemy_of& operator=(const is_enemy_of& src) = delete;
@@ -939,6 +939,40 @@ struct is_enemy_of {
     auto operator()(const monster* target) const { return z.is_enemy(target); }
     auto operator()(const player* target) const { return z.is_enemy(target); }
 };
+
+struct is_seen_by {
+    const monster& z;
+
+    is_seen_by(const monster& z) noexcept : z(z) {}
+    is_seen_by(const is_seen_by& src) = delete;
+    is_seen_by(is_seen_by&& src) = delete;
+    is_seen_by& operator=(const is_seen_by& src) = delete;
+    is_seen_by& operator=(is_seen_by&& src) = delete;
+    ~is_seen_by() = default;
+
+    auto operator()(const monster* target) const { return true; }   // stub \todo implement
+        // note that Mi-go might be expected to have technological communication i.e. be "aware" of other mi-go without line of sight
+    auto operator()(const player* target) const { return (bool)z.see(*target); }
+};
+
+static auto mobs_seen_by(const monster& z, const zaimoni::gdi::box<point>& scan)
+{
+    std::pair<std::vector<std::variant<monster*, npc*, pc*> >, std::vector<std::variant<monster*, npc*, pc*> > > ret;
+    const auto g = game::active();
+
+    static auto classify = [&](const point& pos) {
+        if (point(0) == pos) return;
+        auto loc = z.GPSpos + pos;
+        if (auto mob = g->mob_at(loc)) {
+            if (!std::visit(is_seen_by(z), *mob)) return;
+            if (std::visit(is_enemy_of(z), *mob)) ret.first.push_back(*mob);
+            else ret.second.push_back(*mob);
+        }
+    };
+
+    forall_do_inclusive(scan, classify);
+    return ret;
+}
 
 struct can_tase {
     monster& z;
@@ -959,6 +993,7 @@ struct can_tase {
     }
 };
 
+// \todo template rewrite target
 struct to_mob_ref
 {
     to_mob_ref() = default;
@@ -1058,6 +1093,14 @@ void mattack::smg(game *g, monster *z)
 
 void mattack::flamethrower(game *g, monster *z)
 {
+/*
+    auto mobs_seen = mobs_seen_by(*z, within_rldist<5>);
+    if (mobs_seen.first.empty()) return;    // no enemies in range
+
+    // \todo screen out immune targets
+    // \todo avoid friendly fire
+*/
+
  if (5 < Linf_dist(g->u.pos - z->pos)) return;	// Out of range
  const auto t = z->see(g->u);
  if (!t) return; // Unseen
