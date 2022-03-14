@@ -598,6 +598,7 @@ static constexpr monster_effect_type translate(mobile::effect src)
     case mobile::effect::DEAF: return ME_DEAF;
     case mobile::effect::BLIND: return ME_BLIND;
     case mobile::effect::POISONED: return ME_POISONED;
+    case mobile::effect::ONFIRE: return ME_ONFIRE;
     default: return ME_NULL;    // \todo should be hard error
     }
 }

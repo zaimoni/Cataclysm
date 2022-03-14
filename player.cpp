@@ -3632,6 +3632,7 @@ static constexpr dis_type translate(mobile::effect src)
     case mobile::effect::DEAF: return DI_DEAF;
     case mobile::effect::BLIND: return DI_BLIND;
     case mobile::effect::POISONED: return DI_POISON;
+    case mobile::effect::ONFIRE: return DI_ONFIRE;
     default: return DI_NULL;    // \todo should be hard error
     }
 }

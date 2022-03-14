@@ -1091,23 +1091,20 @@ void mattack::smg(game *g, monster *z)
  z->add_effect(ME_TARGETED, 3);
 }
 
-void mattack::flamethrower(game *g, monster *z)
+void mattack::flamethrower(monster& z)
 {
-/*
-    auto mobs_seen = mobs_seen_by(*z, within_rldist<5>);
+    auto mobs_seen = mobs_seen_by(z, within_rldist<5>);
     if (mobs_seen.first.empty()) return;    // no enemies in range
 
     // \todo screen out immune targets
     // \todo avoid friendly fire
-*/
 
- if (5 < Linf_dist(g->u.pos - z->pos)) return;	// Out of range
- const auto t = z->see(g->u);
- if (!t) return; // Unseen
- z->sp_timeout = z->type->sp_freq;	// Reset timer
- z->moves -= 5 * mobile::mp_turn;	// It takes a while
- for (const auto& pt : line_to(z->pos, g->u.pos, *t)) g->m.add_field(g, pt, fd_fire, 1);
- g->u.add_disease(DI_ONFIRE, TURNS(8));
+    mobile& target = std::visit(to_mob_ref(), mobs_seen.first[rng(0, mobs_seen.first.size() - 1)]);
+
+    z.sp_timeout = z.type->sp_freq;	// Reset timer
+    z.moves -= 5 * mobile::mp_turn;	// It takes a while
+    for (auto& loc : *z.GPSpos.sees(target.GPSpos, 5)) loc.add(field(fd_fire, 1));
+    target.add(mobile::effect::ONFIRE, TURNS(8));
 }
 
 void mattack::copbot(game *g, monster *z)
@@ -1148,7 +1145,7 @@ void mattack::multi_robot(game *g, monster *z)
 
  switch (mode) {
   case 1: tazer(*z);        break;
-  case 2: flamethrower(g, z); break;
+  case 2: flamethrower(*z); break;
   case 3: smg(g, z);          break;
  }
 }

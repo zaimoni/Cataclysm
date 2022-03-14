@@ -24,7 +24,8 @@ public:
 		STUNNED,
 		DEAF,
 		BLIND,
-		POISONED
+		POISONED,
+		ONFIRE
 	};
 
 	GPS_loc GPSpos; // absolute location
