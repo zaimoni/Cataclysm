@@ -385,6 +385,226 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
  if (p.weapon.charges == 0) p.weapon.curammo = nullptr;
 }
 
+#if 0
+void game::fire(player& p, std::vector<GPS_loc>& trajectory, bool burst)
+{
+#ifndef NDEBUG
+    assert(p.weapon.is_gun());
+#else
+    if (!p.weapon.is_gun()) {
+        debuglog("%s tried to fire a non-gun (%s).", p.name.c_str(), p.weapon.tname().c_str());
+        return;
+    }
+#endif
+    decltype(auto) tar = trajectory.back();
+
+    item ammotmp;
+    if (p.weapon.has_flag(IF_CHARGE)) { // It's a charger gun, so make up a type
+   // Charges maxes out at 8.
+        it_ammo* const tmpammo = dynamic_cast<it_ammo*>(item::types[itm_charge_shot]);	// XXX should be copy-construction \todo fix
+        tmpammo->damage = p.weapon.charges * p.weapon.charges;
+        tmpammo->pierce = (p.weapon.charges >= 4 ? (p.weapon.charges - 3) * 2.5 : 0);
+        tmpammo->range = 5 + p.weapon.charges * 5;
+        if (p.weapon.charges <= 4)
+            tmpammo->accuracy = 14 - p.weapon.charges * 2;
+        else // 5, 12, 21, 32
+            tmpammo->accuracy = p.weapon.charges * (p.weapon.charges - 4);
+        tmpammo->recoil = tmpammo->accuracy * .8;
+        tmpammo->item_flags = 0;
+        if (p.weapon.charges == 8) tmpammo->item_flags |= mfb(IF_AMMO_EXPLOSIVE_BIG);
+        else if (p.weapon.charges >= 6) tmpammo->item_flags |= mfb(IF_AMMO_EXPLOSIVE);
+        if (p.weapon.charges >= 5) tmpammo->item_flags |= mfb(IF_AMMO_FLAME);
+        else if (p.weapon.charges >= 4) tmpammo->item_flags |= mfb(IF_AMMO_INCENDIARY);
+
+        ammotmp = item(tmpammo, 0);
+        p.weapon.curammo = tmpammo;
+        p.weapon.active = false;
+        p.weapon.charges = 0;
+
+    }
+    else // Just a normal gun. If we're here, we know curammo is valid.
+        ammotmp = item(p.weapon.curammo, 0);
+
+    ammotmp.charges = 1;
+    unsigned int flags = p.weapon.curammo->item_flags;
+    // Bolts and arrows are silent
+    const bool is_bolt = (p.weapon.curammo->type == AT_BOLT || p.weapon.curammo->type == AT_ARROW);
+
+    const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
+    if (p.has_trait(PF_TRIGGERHAPPY) && one_in(30)) burst = true;
+    if (burst && p.weapon.burst_size() < 2) burst = false; // Can't burst fire a semi-auto
+
+    const bool u_see_shooter = (bool)u.see(p.pos);
+    // Use different amounts of time depending on the type of gun and our skill
+    p.moves -= time_to_fire(p, firing);
+    // Decide how many shots to fire
+    int num_shots = 1;
+    if (burst) num_shots = p.weapon.burst_size();
+    if (num_shots > p.weapon.charges && !p.weapon.has_flag(IF_CHARGE)) num_shots = p.weapon.charges;
+
+#ifndef NDEBUG
+    assert(0 < num_shots);
+#else
+    if (0 >= num_shots) debuglog("game::fire() - num_shots = 0!");
+#endif
+
+    // Make a sound at our location - Zombies will chase it
+    make_gun_sound_effect(this, p, burst);
+    // Set up a timespec for use in the nanosleep function below
+    timespec ts = { 0,  BULLET_SPEED };
+
+    bool missed = false;
+    for (int curshot = 0; curshot < num_shots; curshot++) {
+        // Burst-fire weapons allow us to pick a new target after killing the first
+        monster* m_at = mon(tar);	// code below assumes kill processing is not "immediate"
+        if (curshot > 0 && (!m_at || m_at->hp <= 0)) {
+            std::vector<point> new_targets;
+            for (int radius = 1; radius <= 2 + p.sklevel[sk_gun] && new_targets.empty(); radius++) {
+                for (int diff = 0 - radius; diff <= radius; diff++) {
+                    point test(tar + point(diff, -radius));
+                    m_at = mon(test);
+                    if (m_at && 0 < m_at->hp && m_at->is_enemy(&p)) new_targets.push_back(test);
+
+                    test = tar + point(diff, radius);
+                    m_at = mon(test);
+                    if (m_at && 0 < m_at->hp && m_at->is_enemy(&p)) new_targets.push_back(test);
+
+                    if (diff != 0 - radius && diff != radius) { // Corners were already checked
+                        test = tar + point(-radius, diff);
+                        m_at = mon(test);
+                        if (m_at && 0 < m_at->hp && m_at->is_enemy(&p)) new_targets.push_back(test);
+
+                        test = tar + point(radius, diff);
+                        m_at = mon(test);
+                        if (m_at && 0 < m_at->hp && m_at->is_enemy(&p)) new_targets.push_back(test);
+                    }
+                }
+            }
+            if (!new_targets.empty()) {
+                tar = new_targets[rng(0, new_targets.size() - 1)];
+                trajectory = line_to(p.pos, tar, m.sees(p.pos, tar, 0));
+            }
+            else if ((!p.has_trait(PF_TRIGGERHAPPY) || one_in(3)) &&
+                (p.sklevel[sk_gun] >= 7 || one_in(7 - p.sklevel[sk_gun])))
+                return; // No targets, so return
+        }
+        // Use up a round (or 100)
+        if (p.weapon.has_flag(IF_FIRE_100))
+            p.weapon.charges -= 100;
+        else
+            p.weapon.charges--;
+
+        int trange = calculate_range(p, tar);
+        double missed_by = calculate_missed_by(p, trange);
+        // Calculate a penalty based on the monster's speed
+        double monster_speed_penalty = 1.;
+        if (monster* const m_at = mon(tar)) {
+            monster_speed_penalty = double(m_at->speed) / 80.;
+            if (monster_speed_penalty < 1.) monster_speed_penalty = 1.;
+        }
+
+        const auto recoil_delta = recoil_add(p);
+        if (curshot > 0) {
+            if (recoil_delta % 2 == 1) p.recoil++;
+            p.recoil += recoil_delta / 2;
+        }
+        else
+            p.recoil += recoil_delta;
+
+        if (missed_by >= 1.) {
+            // We missed D:
+            // Shoot a random nearby space?
+            const int delta = int(sqrt(missed_by));
+            tar += point(rng(-delta, delta), rng(-delta, delta));
+            trajectory = line_to(p.pos, tar, m.sees(p.pos, tar, -1));
+            missed = true;
+            if (!burst) {
+                if (&p == &u) messages.add("You miss!");
+                else if (u_see_shooter) messages.add("%s misses!", p.name.c_str());
+            }
+        }
+        else if (missed_by >= .7 / monster_speed_penalty) {
+            // Hit the space, but not necessarily the monster there
+            missed = true;
+            if (!burst) {
+                if (&p == &u) messages.add("You barely miss!");
+                else if (u_see_shooter) messages.add("%s barely misses!", p.name.c_str());
+            }
+        }
+
+        int dam = p.weapon.gun_damage();
+        for (int i = 0; i < trajectory.size() && (dam > 0 || (flags & IF_AMMO_FLAME)); i++) {
+            if (i > 0)
+                map::drawsq(w_terrain, u, trajectory[i - 1], false, true);
+            // Drawing the bullet uses player u, and not player p, because it's drawn
+            // relative to YOUR position, which may not be the gunman's position.
+            if (u.see(trajectory[i])) {
+                char bullet = (flags & mfb(IF_AMMO_FLAME)) ? '#' : '*';
+                const point pt(trajectory[i] + point(VIEW_CENTER) - u.pos);
+                mvwputch(w_terrain, pt.y, pt.x, c_red, bullet);
+                wrefresh(w_terrain);
+                if (&p == &u) nanosleep(&ts, nullptr);
+            }
+
+            if (dam <= 0) { // Ran out of momentum.
+                ammo_effects(this, trajectory[i], flags);
+                if (is_bolt &&
+                    ((p.weapon.curammo->m1 == WOOD && !one_in(4)) ||
+                        (p.weapon.curammo->m1 != WOOD && !one_in(15))))
+                    trajectory[i].add(std::move(ammotmp));
+                if (p.weapon.charges == 0) p.weapon.curammo = nullptr;
+                return;
+            }
+
+            const auto t(trajectory[i]);
+            // If there's a monster in the path of our bullet, and either our aim was true,
+            //  OR it's not the monster we were aiming at and we were lucky enough to hit it
+            monster* const m_at = mon(trajectory[i]);
+            player* const h = survivor(trajectory[i]);	// XXX would prefer not to pay CPU here when monster case processes
+         // If we shot us a monster...
+            if (m_at && (!m_at->has_flag(MF_DIGS) || rl_dist(p.GPSpos, m_at->GPSpos) <= 1) &&
+                ((!missed && i == trajectory.size() - 1) ||
+                    one_in((5 - int(m_at->type->size))))) {
+
+                double goodhit = missed_by;
+                if (i < trajectory.size() - 1) goodhit = (rand() / (RAND_MAX + 1.0)) / 2; // Unintentional hit
+
+            // Penalize for the monster's speed
+                if (m_at->speed > 80) goodhit *= m_at->speed / 80.;
+
+                auto blood_traj(trajectory);
+                blood_traj.insert(blood_traj.begin(), p.GPSpos);
+                splatter(this, blood_traj, dam, m_at);
+                shoot_monster(this, p, *m_at, dam, goodhit);
+
+            }
+            else if ((!missed || one_in(3)) && h) {
+                double goodhit = missed_by;
+                if (i < trajectory.size() - 1) goodhit = (rand() / (RAND_MAX + 1.0)) / 2;	 // Unintentional hit
+
+                auto blood_traj(trajectory);
+                blood_traj.insert(blood_traj.begin(), p.GPSpos);
+                splatter(this, blood_traj, dam);
+                shoot_player(this, p, h, dam, goodhit);
+
+            }
+            else
+                m.shoot(this, t, dam, i == trajectory.size() - 1, flags);
+        } // Done with the trajectory!
+
+        auto last(trajectory.back());
+        ammo_effects(this, last, flags);
+
+        if (0 == last.move_cost()) last = trajectory[trajectory.size() - 2];
+        if (is_bolt &&
+            ((p.weapon.curammo->m1 == WOOD && !one_in(5)) ||	// leave this verbose in case we want additional complexity
+                (p.weapon.curammo->m1 != WOOD && !one_in(15))))
+            last.add(std::move(ammotmp));
+    }
+
+    if (p.weapon.charges == 0) p.weapon.curammo = nullptr;
+}
+#endif
 
 void game::throw_item(player &p, point tar, item&& thrown, std::vector<point> &trajectory)
 {
