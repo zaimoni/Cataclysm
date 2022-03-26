@@ -49,6 +49,31 @@ static void ammo_effects(game *g, point pt, long flags)
 	if (flags & mfb(IF_AMMO_FLAME)) g->m.add_field(g, pt, fd_fire, 1, 800);
 }
 
+static void ammo_effects(game* g, GPS_loc loc, long flags)
+{
+    if (flags & mfb(IF_AMMO_EXPLOSIVE)) loc.explosion(24, 0, false);
+    if (flags & mfb(IF_AMMO_FRAG)) loc.explosion(12, 28, false);
+    if (flags & mfb(IF_AMMO_NAPALM)) loc.explosion(18, 0, true);
+    if (flags & mfb(IF_AMMO_EXPLOSIVE_BIG)) loc.explosion(40, 0, false);
+
+    static auto teargas = [&](const point& delta) {
+        auto dest(loc + delta);
+        dest.add(field(fd_tear_gas, 3));
+    };
+
+    static auto smoke = [&](const point& delta) {
+        auto dest(loc + delta);
+        dest.add(field(fd_tear_gas, 3));
+    };
+
+    if (flags & mfb(IF_AMMO_TEARGAS)) forall_do_inclusive(within_rldist<2>, teargas);
+    if (flags & mfb(IF_AMMO_SMOKE)) forall_do_inclusive(within_rldist<1>, smoke);
+    if (flags & mfb(IF_AMMO_FLASHBANG)) {
+        if (auto pos = g->toScreen(loc)) g->flashbang(*pos);
+    }
+    if (flags & mfb(IF_AMMO_FLAME)) loc.add(field(fd_fire, 1, 800));
+}
+
 // no real advantage to const member function of player over free static function
 static int recoil_add(const player &p)
 {
@@ -127,6 +152,22 @@ static void make_gun_sound_effect(game* g, player& p, bool burst)
 static int calculate_range(player& p, const point& tar)
 {
     int trange = rl_dist(p.pos, tar);
+    const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
+    if (trange < int(firing->volume / 3) && firing->ammo != AT_SHOT)
+        trange = int(firing->volume / 3);
+    else if (p.has_bionic(bio_targeting)) {
+        trange = int(trange * ((LONG_RANGE < trange) ? .65 : .8));
+    }
+
+    if (firing->skill_used == sk_rifle && trange > LONG_RANGE)
+        trange = LONG_RANGE + .6 * (trange - LONG_RANGE);
+
+    return trange;
+}
+
+static int calculate_range(player& p, const GPS_loc& tar)
+{
+    int trange = rl_dist(p.GPSpos, tar);
     const it_gun* const firing = dynamic_cast<const it_gun*>(p.weapon.type);
     if (trange < int(firing->volume / 3) && firing->ammo != AT_SHOT)
         trange = int(firing->volume / 3);
@@ -397,6 +438,7 @@ void game::fire(player& p, std::vector<GPS_loc>& trajectory, bool burst)
     }
 #endif
     decltype(auto) tar = trajectory.back();
+    decltype(auto) origin = p.GPSpos; // \todo we want to allow for remote-controlled weapons
 
     item ammotmp;
     if (p.weapon.has_flag(IF_CHARGE)) { // It's a charger gun, so make up a type
@@ -458,10 +500,10 @@ void game::fire(player& p, std::vector<GPS_loc>& trajectory, bool burst)
         // Burst-fire weapons allow us to pick a new target after killing the first
         monster* m_at = mon(tar);	// code below assumes kill processing is not "immediate"
         if (curshot > 0 && (!m_at || m_at->hp <= 0)) {
-            std::vector<point> new_targets;
+            std::vector<GPS_loc> new_targets;
             for (int radius = 1; radius <= 2 + p.sklevel[sk_gun] && new_targets.empty(); radius++) {
                 for (int diff = 0 - radius; diff <= radius; diff++) {
-                    point test(tar + point(diff, -radius));
+                    auto test(tar + point(diff, -radius));
                     m_at = mon(test);
                     if (m_at && 0 < m_at->hp && m_at->is_enemy(&p)) new_targets.push_back(test);
 
@@ -480,9 +522,15 @@ void game::fire(player& p, std::vector<GPS_loc>& trajectory, bool burst)
                     }
                 }
             }
+retry_new_target:
             if (!new_targets.empty()) {
-                tar = new_targets[rng(0, new_targets.size() - 1)];
-                trajectory = line_to(p.pos, tar, m.sees(p.pos, tar, 0));
+                const auto n = rng(0, new_targets.size() - 1);
+                tar = new_targets[n];
+                if (auto line = origin.sees(tar, 0)) trajectory = std::move(*line);
+                else {
+                    new_targets.erase(new_targets.begin() + n);
+                    goto retry_new_target;
+                }
             }
             else if ((!p.has_trait(PF_TRIGGERHAPPY) || one_in(3)) &&
                 (p.sklevel[sk_gun] >= 7 || one_in(7 - p.sklevel[sk_gun])))
@@ -516,7 +564,7 @@ void game::fire(player& p, std::vector<GPS_loc>& trajectory, bool burst)
             // Shoot a random nearby space?
             const int delta = int(sqrt(missed_by));
             tar += point(rng(-delta, delta), rng(-delta, delta));
-            trajectory = line_to(p.pos, tar, m.sees(p.pos, tar, -1));
+            if (auto line = origin.sees(tar, -1)) trajectory = std::move(*line); // \todo prevent false-negatives, but don't infinite-loop
             missed = true;
             if (!burst) {
                 if (&p == &u) messages.add("You miss!");
