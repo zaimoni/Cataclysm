@@ -3,8 +3,6 @@
 #include "Zaimoni.STL/Logging.h"
 #include <math.h>
 
-#define SLOPE_VERTICAL 999999
-
 std::vector <point> line_to(int x1, int y1, int x2, int y2, int t)
 {
  std::vector<point> ret;
@@ -58,31 +56,64 @@ std::vector <point> line_to(int x1, int y1, int x2, int y2, int t)
  return ret;
 }
 
-static double slope_of(const std::vector<point>& line)
+static std::vector<point> line_from(const point& origin, const point& delta, int distance)
 {
- const auto delta = line.back() - line.front();
- if (0 == delta.x) return SLOPE_VERTICAL;
- return double(delta.y) / delta.x;
+	std::vector<point> ret;
+//	if (0 >= distance) return ret;	// should not happen so don't test for it
+	const point abs_delta(abs(delta.x), abs(delta.y));
+	point counter(0);
+	if (abs_delta == counter) return ret;
+	const int ub = 2*Linf_dist(abs_delta);
+
+	point thresholds(2 * delta);	// \todo fix, or reject, signed overflow here
+	point primary(0);
+
+	// \todo re-architect point and tripoint?
+	if (ub == thresholds.x) {
+		primary.x = 1;
+		thresholds.x = 0;
+	} else if (ub == -thresholds.x) {
+		primary.x = -1;
+		thresholds.x = 0;
+	}
+
+	if (ub == thresholds.y) {
+		primary.y = 1;
+		thresholds.y = 0;
+	} else if (ub == -thresholds.y) {
+		primary.y = -1;
+		thresholds.y = 0;
+	}
+
+	// \todo handle chess knight-move issue
+	point scan(origin);
+	while (0 <= --distance) {
+		scan += primary;
+		counter += thresholds;
+		if (ub <= counter.x) {
+			counter.x -= ub;
+			scan.x++;
+		} else if (ub <= -counter.x) {
+			counter.x += ub;
+			scan.x--;
+		}
+
+		if (ub <= counter.y) {
+			counter.y -= ub;
+			scan.y++;
+		} else if (ub <= -counter.y) {
+			counter.y += ub;
+			scan.y--;
+		}
+		ret.push_back(scan);
+	}
+
+	return ret;
 }
 
 std::vector<point> continue_line(const std::vector<point>& line, int distance)
 {
- point start = line.back(), end = line.back();
- double slope = slope_of(line);
- int sX = (line.front().x < line.back().x ? 1 : -1),
-     sY = (line.front().y < line.back().y ? 1 : -1);
- if (abs(slope) == 1) {
-  end.x += distance * sX;
-  end.y += distance * sY;
- } else if (abs(slope) < 1) {
-  end.x += distance * sX;
-  end.y += int(distance * abs(slope) * sY);
- } else {
-  end.y += distance * sY;
-  if (SLOPE_VERTICAL > slope)
-   end.x += int(distance / abs(slope)) * sX;
- }
- return line_to(start, end, 0);
+	return line_from(line.back(), line.back()-line.front(), distance);
 }
 
 const char* direction_name(direction dir)
