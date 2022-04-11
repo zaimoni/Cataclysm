@@ -56,55 +56,73 @@ std::vector <point> line_to(int x1, int y1, int x2, int y2, int t)
  return ret;
 }
 
+static void transfer_ub_to_orthogonal_delta(int& test, int& ortho_delta, const int ub)
+{
+	if (ub == test) {
+		ortho_delta = 1;
+		test = 0;
+	} else if (ub == -test) {
+		ortho_delta = -1;
+		test = 0;
+	}
+}
+
+static void transfer_ub_to_orthogonal_delta(point& test, point& ortho_delta, const int ub)
+{
+	transfer_ub_to_orthogonal_delta(test.x, ortho_delta.x, ub);
+	transfer_ub_to_orthogonal_delta(test.y, ortho_delta.y, ub);
+}
+
+static void transfer_ub_to_orthogonal_delta(tripoint& test, tripoint& ortho_delta, const int ub)
+{
+	transfer_ub_to_orthogonal_delta(test.x, ortho_delta.x, ub);
+	transfer_ub_to_orthogonal_delta(test.y, ortho_delta.y, ub);
+	transfer_ub_to_orthogonal_delta(test.z, ortho_delta.z, ub);
+}
+
+// \todo handle chess knight-move issue for == case
+static void normalize_step(int& test, int& dest, const int ub)
+{
+	if (ub <= test) {
+		test -= 2 * ub;
+		dest++;
+	} else if (ub <= -test) {
+		test += 2 * ub;
+		dest--;
+	}
+}
+
+static void normalize_step(point& test, point& dest, const int ub)
+{
+	normalize_step(test.x, dest.x, ub);
+	normalize_step(test.y, dest.y, ub);
+}
+
+static void normalize_step(tripoint& test, tripoint& dest, const int ub)
+{
+	normalize_step(test.x, dest.x, ub);
+	normalize_step(test.y, dest.y, ub);
+	normalize_step(test.z, dest.z, ub);
+}
+
 static std::vector<point> line_from(const point& origin, const point& delta, int distance)
 {
 	std::vector<point> ret;
 //	if (0 >= distance) return ret;	// should not happen so don't test for it
-	const point abs_delta(abs(delta.x), abs(delta.y));
-	point counter(0);
-	if (abs_delta == counter) return ret;
-	const int ub = 2*Linf_dist(abs_delta);
+	const auto ub = Linf_dist(delta);
+	if (0 >= ub) return ret;
 
 	point thresholds(2 * delta);	// \todo fix, or reject, signed overflow here
 	point primary(0);
 
-	// \todo re-architect point and tripoint?
-	if (ub == thresholds.x) {
-		primary.x = 1;
-		thresholds.x = 0;
-	} else if (ub == -thresholds.x) {
-		primary.x = -1;
-		thresholds.x = 0;
-	}
+	transfer_ub_to_orthogonal_delta(thresholds, primary, 2 * ub);
 
-	if (ub == thresholds.y) {
-		primary.y = 1;
-		thresholds.y = 0;
-	} else if (ub == -thresholds.y) {
-		primary.y = -1;
-		thresholds.y = 0;
-	}
-
-	// \todo handle chess knight-move issue
 	point scan(origin);
+	point counter(0);
 	while (0 <= --distance) {
 		scan += primary;
 		counter += thresholds;
-		if (ub <= counter.x) {
-			counter.x -= ub;
-			scan.x++;
-		} else if (ub <= -counter.x) {
-			counter.x += ub;
-			scan.x--;
-		}
-
-		if (ub <= counter.y) {
-			counter.y -= ub;
-			scan.y++;
-		} else if (ub <= -counter.y) {
-			counter.y += ub;
-			scan.y--;
-		}
+		normalize_step(counter, scan, ub);
 		ret.push_back(scan);
 	}
 
