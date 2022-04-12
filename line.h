@@ -82,22 +82,26 @@ struct dist
 		}
 	}
 
-	static constexpr auto Linf(typename zaimoni::const_param<T>::type x0, typename zaimoni::const_param<T>::type x1) {
-		if constexpr (!std::is_same_v<T, typename zaimoni::types<T>::norm>) return dist<typename zaimoni::types<T>::norm>::Linf(zaimoni::norm(x0), zaimoni::norm(x1));
-		else {
-			if (0 == x0) return zaimoni::norm(x1);
-			else if (0 > x0) return Linf(zaimoni::norm(x0), x1);
-			if (0 == x1) return zaimoni::norm(x0);
-			else if (0 > x1) return Linf(x0, zaimoni::norm(x1));
-			return x0 <= x1 ? x1 : x0;
+	template<class...Args>
+	static constexpr auto Linf(typename zaimoni::const_param<T>::type x0, Args...params)
+	{
+		if constexpr (0 == sizeof...(Args)) {
+			return zaimoni::norm(x0);
+		} else {
+			const auto now = zaimoni::norm(x0);
+			const auto later = Linf(params...);
+			return now < later ? later : now;
 		}
 	}
 };
 
 template<class T> double L2_dist(T x0, T x1) { return dist<std::remove_cv_t<T>>::L2(x0, x1); }
 
-template<class T> constexpr auto Linf_dist(T x0, T x1) { return dist<std::remove_cv_t<T>>::Linf(x0, x1); }
+template<class T, class...Args>
+constexpr auto Linf_dist(T x0, Args...params) { return dist<std::remove_cv_t<T> >::Linf(x0, params...); }
+
 constexpr auto Linf_dist(const point& pt) { return Linf_dist(pt.x, pt.y); }
+constexpr auto Linf_dist(const tripoint& pt) { return Linf_dist(pt.x, pt.y, pt.z); }
 
 inline int trig_dist(int x1, int y1, int x2, int y2) { return L2_dist(x1 - x2, y1 - y2); }
 inline int trig_dist(const point& pt, int x2, int y2) { return trig_dist(pt.x, pt.y, x2, y2); };
@@ -112,6 +116,7 @@ inline int rl_dist(int x1, int y1, const point& pt2) { return rl_dist(x1, y1, pt
 // possible micro-optimization: if we are just doing a range check, we sometimes only need to confirm one coordinate to fail
 
 std::vector<point> continue_line(const std::vector<point>& line, int distance);
+std::vector<tripoint> line_from(const tripoint& origin, const tripoint& delta, int distance);
 
 inline constexpr direction direction_from(int delta_x, int delta_y)
 {	// 0,0 is degenerate; C:Whales returned EAST

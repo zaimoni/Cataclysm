@@ -80,6 +80,7 @@ static void transfer_ub_to_orthogonal_delta(tripoint& test, tripoint& ortho_delt
 	transfer_ub_to_orthogonal_delta(test.z, ortho_delta.z, ub);
 }
 
+// note that we have several notions of "visibility" so what counts as "blocking" is a parameter
 // \todo handle chess knight-move issue for == case
 static void normalize_step(int& test, int& dest, const int ub)
 {
@@ -105,6 +106,7 @@ static void normalize_step(tripoint& test, tripoint& dest, const int ub)
 	normalize_step(test.z, dest.z, ub);
 }
 
+// direct template conversion for these two fails MSVC++
 static std::vector<point> line_from(const point& origin, const point& delta, int distance)
 {
 	std::vector<point> ret;
@@ -129,9 +131,38 @@ static std::vector<point> line_from(const point& origin, const point& delta, int
 	return ret;
 }
 
+static std::vector<tripoint> line_from(const tripoint& origin, const tripoint& delta, int distance)
+{
+	std::vector<tripoint> ret;
+	//	if (0 >= distance) return ret;	// should not happen so don't test for it
+	const auto ub = Linf_dist(delta);
+	if (0 >= ub) return ret;
+
+	auto thresholds(2 * delta);	// \todo fix, or reject, signed overflow here
+	tripoint primary(0);
+
+	transfer_ub_to_orthogonal_delta(thresholds, primary, 2 * ub);
+
+	auto scan(origin);
+	decltype(scan) counter(0);
+	while (0 <= --distance) {
+		scan += primary;
+		counter += thresholds;
+		normalize_step(counter, scan, ub);
+		ret.push_back(scan);
+	}
+
+	return ret;
+}
+
 std::vector<point> continue_line(const std::vector<point>& line, int distance)
 {
 	return line_from(line.back(), line.back()-line.front(), distance);
+}
+
+std::vector<tripoint> continue_line(const std::vector<tripoint>& line, int distance)
+{
+	return line_from(line.back(), line.back() - line.front(), distance);
 }
 
 const char* direction_name(direction dir)
