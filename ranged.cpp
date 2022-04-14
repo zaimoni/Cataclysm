@@ -102,6 +102,25 @@ static void splatter(game* g, const std::vector<point>& trajectory, int dam, mon
 	}
 }
 
+static void splatter(const std::vector<GPS_loc>& trajectory, int dam, monster* mon = nullptr)
+{
+    field_id blood = bleeds(mon);   // null mon would be a player
+    if (!blood) return;
+
+    int distance = 1;
+    if (dam > 50) distance = 3;
+    else if (dam > 20) distance = 2;
+
+    for (auto& tar : continue_line(trajectory, distance)) {
+        auto& fd = tar.field_at();
+        if (blood == fd.type) {
+            if (3 > fd.density) fd.density++;
+        }
+        else tar.add(field(blood, 1));
+    }
+}
+
+
 static int time_to_fire(player& p, const it_gun* const firing)
 {
     int time = 0;
@@ -426,7 +445,6 @@ void game::fire(player &p, point tar, std::vector<point> &trajectory, bool burst
  if (p.weapon.charges == 0) p.weapon.curammo = nullptr;
 }
 
-#if 0
 void game::fire(player& p, std::vector<GPS_loc>& trajectory, bool burst)
 {
 #ifndef NDEBUG
@@ -587,11 +605,13 @@ retry_new_target:
             // Drawing the bullet uses player u, and not player p, because it's drawn
             // relative to YOUR position, which may not be the gunman's position.
             if (u.see(trajectory[i])) {
-                char bullet = (flags & mfb(IF_AMMO_FLAME)) ? '#' : '*';
-                const point pt(trajectory[i] + point(VIEW_CENTER) - u.pos);
-                mvwputch(w_terrain, pt.y, pt.x, c_red, bullet);
-                wrefresh(w_terrain);
-                if (&p == &u) nanosleep(&ts, nullptr);
+                if (const auto pos = toScreen(trajectory[i])) {
+                    char bullet = (flags & mfb(IF_AMMO_FLAME)) ? '#' : '*';
+                    const point pt(*pos + point(VIEW_CENTER) - u.pos);
+                    mvwputch(w_terrain, pt.y, pt.x, c_red, bullet);
+                    wrefresh(w_terrain);
+                    if (&p == &u) nanosleep(&ts, nullptr);
+                }
             }
 
             if (dam <= 0) { // Ran out of momentum.
@@ -622,7 +642,7 @@ retry_new_target:
 
                 auto blood_traj(trajectory);
                 blood_traj.insert(blood_traj.begin(), p.GPSpos);
-                splatter(this, blood_traj, dam, m_at);
+                splatter(blood_traj, dam, m_at);
                 shoot_monster(this, p, *m_at, dam, goodhit);
 
             }
@@ -632,12 +652,12 @@ retry_new_target:
 
                 auto blood_traj(trajectory);
                 blood_traj.insert(blood_traj.begin(), p.GPSpos);
-                splatter(this, blood_traj, dam);
+                splatter(blood_traj, dam);
                 shoot_player(this, p, h, dam, goodhit);
 
             }
             else
-                m.shoot(this, t, dam, i == trajectory.size() - 1, flags);
+                trajectory[i].shoot(dam, i == trajectory.size() - 1, flags);
         } // Done with the trajectory!
 
         auto last(trajectory.back());
@@ -652,7 +672,6 @@ retry_new_target:
 
     if (p.weapon.charges == 0) p.weapon.curammo = nullptr;
 }
-#endif
 
 void game::throw_item(player &p, point tar, item&& thrown, std::vector<point> &trajectory)
 {

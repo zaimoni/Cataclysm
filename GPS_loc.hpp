@@ -52,12 +52,15 @@ struct GPS_loc : public std::pair<tripoint, point>
 	std::optional<std::vector<GPS_loc> > sees(const GPS_loc& dest, int range) const;
 	bool can_see(const GPS_loc& dest, int range) const;
 
-	// following in game.cpp
+	// following thin adapters in game.cpp
 	bool is_empty() const;
 	void explosion(int power, int shrapnel, bool fire) const;	// may not be a reasonable API
 	void sound(int vol, const char* description) const;
 	void sound(int vol, const std::string& description) const;
 	bool bash(int str, std::string& sound, int* res = nullptr) const;
+
+	// following thin adapters in map.cpp
+	void shoot(int& dam, bool hit_items, unsigned flags);
 };
 
 // \todo evaluate whether these should be out-of-line defined (likely a matter of binary size, compile+link time)
@@ -73,6 +76,9 @@ inline GPS_loc operator+(const std::variant<point, tripoint>& lhs, GPS_loc rhs) 
 	if (auto test = std::get_if<point>(&lhs)) return rhs += *test;
 	return rhs += std::get<tripoint>(lhs);
 }
+
+// following in line.cpp
+std::vector<GPS_loc> continue_line(const std::vector<GPS_loc>& line, int distance);
 
 // following in overmap.cpp
 std::variant<point, tripoint> operator-(const GPS_loc& lhs, const GPS_loc& rhs);

@@ -1260,6 +1260,12 @@ void map::shoot(game *g, const point& pt, int &dam, bool hit_items, unsigned fla
  }
 }
 
+void GPS_loc::shoot(int& dam, bool hit_items, unsigned flags)
+{
+    const auto g = game::active();
+    if (auto pos = g->toScreen(*this)) g->m.shoot(g,*pos, dam, hit_items, flags);
+}
+
 bool map::hit_with_acid(const point& pt)
 {
  if (0 != move_cost(pt)) return false; // Didn't hit the tile!

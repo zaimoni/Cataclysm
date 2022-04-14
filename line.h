@@ -116,7 +116,6 @@ inline int rl_dist(int x1, int y1, const point& pt2) { return rl_dist(x1, y1, pt
 // possible micro-optimization: if we are just doing a range check, we sometimes only need to confirm one coordinate to fail
 
 std::vector<point> continue_line(const std::vector<point>& line, int distance);
-std::vector<tripoint> line_from(const tripoint& origin, const tripoint& delta, int distance);
 
 inline constexpr direction direction_from(int delta_x, int delta_y)
 {	// 0,0 is degenerate; C:Whales returned EAST

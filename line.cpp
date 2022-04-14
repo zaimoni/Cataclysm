@@ -131,38 +131,47 @@ static std::vector<point> line_from(const point& origin, const point& delta, int
 	return ret;
 }
 
-static std::vector<tripoint> line_from(const tripoint& origin, const tripoint& delta, int distance)
+struct _line_from final
 {
-	std::vector<tripoint> ret;
-	//	if (0 >= distance) return ret;	// should not happen so don't test for it
-	const auto ub = Linf_dist(delta);
-	if (0 >= ub) return ret;
+	const GPS_loc& origin;
+	int distance;
 
-	auto thresholds(2 * delta);	// \todo fix, or reject, signed overflow here
-	tripoint primary(0);
+	_line_from(const GPS_loc& origin, int distance) noexcept : origin(origin), distance(distance) {}
 
-	transfer_ub_to_orthogonal_delta(thresholds, primary, 2 * ub);
+	std::vector<GPS_loc> operator()(const tripoint& delta) {
+		std::vector<GPS_loc> ret;
+		//	if (0 >= distance) return ret;	// should not happen so don't test for it
+		const auto ub = Linf_dist(delta);
+		if (0 >= ub) return ret;
 
-	auto scan(origin);
-	decltype(scan) counter(0);
-	while (0 <= --distance) {
-		scan += primary;
-		counter += thresholds;
-		normalize_step(counter, scan, ub);
-		ret.push_back(scan);
+		auto thresholds(2 * delta);	// \todo fix, or reject, signed overflow here
+		tripoint primary(0);
+
+		transfer_ub_to_orthogonal_delta(thresholds, primary, 2 * ub);
+
+		tripoint scan(0);
+		decltype(scan) counter(0);
+		while (0 <= --distance) {
+			scan += primary;
+			counter += thresholds;
+			normalize_step(counter, scan, ub);
+			ret.push_back(origin + scan);
+		}
+
+		return ret;
 	}
 
-	return ret;
-}
+	std::vector<GPS_loc> operator()(const point& delta) { return (*this)(tripoint(delta.x, delta.y, 0)); }
+};
 
 std::vector<point> continue_line(const std::vector<point>& line, int distance)
 {
 	return line_from(line.back(), line.back()-line.front(), distance);
 }
 
-std::vector<tripoint> continue_line(const std::vector<tripoint>& line, int distance)
+std::vector<GPS_loc> continue_line(const std::vector<GPS_loc>& line, int distance)
 {
-	return line_from(line.back(), line.back() - line.front(), distance);
+	return std::visit(_line_from(line.back(), distance), line.back() - line.front());
 }
 
 const char* direction_name(direction dir)
