@@ -4277,11 +4277,12 @@ void player::process_active_items(game *g)
                 if (one_in(20)) {
                     // do not think range of this dischage is fundamentally linked to map generation's SEE 2020-09-23 zaimoni
                     messages.add("Your %s discharges!", weapon.tname().c_str());
-                    const point target(pos + rng(within_rldist<12>));
-                    std::vector<point> traj = line_to(pos, target, 0);
-                    g->fire(*this, target, traj, false);
-                }
-                else
+
+                    const auto target2(GPSpos + rng(within_rldist<12>));
+                    if (auto traj2 = GPSpos.sees(target2, 0)) {
+                        g->fire(*this, *traj2, false);
+                    };
+                } else
                     messages.add("Your %s beeps alarmingly.", weapon.tname().c_str());
             }
         } else {

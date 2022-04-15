@@ -1073,6 +1073,8 @@ void mattack::smg(game *g, monster *z)
  if (24 < rl_dist(z->GPSpos, g->u.GPSpos)) return; // Out of range
  const auto t = z->see(g->u);
  if (!t) return; // Unseen
+ auto traj = z->GPSpos.sees(g->u.GPSpos, 0);
+ if (!traj) return; // no line of fire
  z->sp_timeout = z->type->sp_freq;	// Reset timer
 
  if (!z->has_effect(ME_TARGETED)) {
@@ -1083,11 +1085,10 @@ void mattack::smg(game *g, monster *z)
  }
  z->moves -= (mobile::mp_turn/2)*3; // It takes a while
 
- if (g->u.see(z->pos)) messages.add("The %s fires its smg!", z->name().c_str());
+ if (g->u.see(z->GPSpos)) messages.add("The %s fires its smg!", z->name().c_str());
 // Set up a temporary player to fire this gun
  auto tmp(npc::get_proxy("The " + z->name(), z->pos, *static_cast<it_gun*>(item::types[itm_smg_9mm]), 0, 10));
- std::vector<point> traj = line_to(z->pos, g->u.pos, *t);
- g->fire(tmp, g->u.pos, traj, true);
+ g->fire(tmp, *traj, true);
  z->add_effect(ME_TARGETED, 3);
 }
 
