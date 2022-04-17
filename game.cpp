@@ -3102,6 +3102,20 @@ std::optional<std::variant<monster*, npc*, pc*> > game::mob_at(const GPS_loc& gp
     return std::nullopt;
 }
 
+std::optional<std::vector<std::variant<monster*, npc*, pc*> > > game::mobs_in_range(const GPS_loc& gps, int range)
+{
+    std::vector<std::variant<monster*, npc*, pc*> > ret;
+    if (0 >= range || range >= rl_dist(gps, u.GPSpos)) ret.push_back(&u);
+    for (auto& m : active_npc) {
+        if (!m.dead && (0 >= range || range >= rl_dist(gps, m.GPSpos))) ret.push_back(&m);
+    }
+    for (auto& m : z) {
+        if (!m.dead && (0 >= range || range >= rl_dist(gps, m.GPSpos))) ret.push_back(&m);
+    }
+    if (!ret.empty()) return ret;
+    return std::nullopt;
+}
+
 bool game::is_empty(int x, int y) const
 {
  return ((m.move_cost(x, y) > 0 || m.has_flag(liquid, x, y)) &&
