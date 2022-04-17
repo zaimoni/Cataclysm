@@ -169,6 +169,21 @@ class monster : public mobile {
  void screenpos_set(int x, int y);
  void screenpos_add(point delta);
 
+ // adapter for std::visit
+ struct is_enemy_of {
+     const monster& z;
+
+     is_enemy_of(const monster& z) noexcept : z(z) {}
+     is_enemy_of(const is_enemy_of& src) = delete;
+     is_enemy_of(is_enemy_of&& src) = delete;
+     is_enemy_of& operator=(const is_enemy_of& src) = delete;
+     is_enemy_of& operator=(is_enemy_of&& src) = delete;
+     ~is_enemy_of() = default;
+
+     auto operator()(const monster* target) const { return z.is_enemy(target); }
+     auto operator()(const player* target) const { return z.is_enemy(target); }
+ };
+
 // TEMP VALUES
  point pos;
  countdown<point> wand;	// Wander destination - Just try to move in that direction.

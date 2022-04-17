@@ -926,20 +926,6 @@ void mattack::photograph(game *g, monster *z)
  event::add(event(EVENT_ROBOT_ATTACK, int(messages.turn) + rng(15, 30), z->faction_id, g->lev.x, g->lev.y));
 }
 
-struct is_enemy_of {
-    const monster& z;
-
-    is_enemy_of(const monster& z) noexcept : z(z) {}
-    is_enemy_of(const is_enemy_of& src) = delete;
-    is_enemy_of(is_enemy_of&& src) = delete;
-    is_enemy_of& operator=(const is_enemy_of& src) = delete;
-    is_enemy_of& operator=(is_enemy_of&& src) = delete;
-    ~is_enemy_of() = default;
-
-    auto operator()(const monster* target) const { return z.is_enemy(target); }
-    auto operator()(const player* target) const { return z.is_enemy(target); }
-};
-
 struct is_seen_by {
     const monster& z;
 
@@ -965,7 +951,7 @@ static auto mobs_seen_by(const monster& z, const zaimoni::gdi::box<point>& scan)
         auto loc = z.GPSpos + pos;
         if (auto mob = g->mob_at(loc)) {
             if (!std::visit(is_seen_by(z), *mob)) return;
-            if (std::visit(is_enemy_of(z), *mob)) ret.first.push_back(*mob);
+            if (std::visit(monster::is_enemy_of(z), *mob)) ret.first.push_back(*mob);
             else ret.second.push_back(*mob);
         }
     };
@@ -1016,7 +1002,7 @@ void mattack::tazer(monster& z)
     for (decltype(auto) dir : Direction::vector) {
         auto dest = z.GPSpos + dir;
         if (auto mob = g->mob_at(dest)) {
-            if (!std::visit(is_enemy_of(z), *mob)) continue;
+            if (!std::visit(monster::is_enemy_of(z), *mob)) continue;
             if (!std::visit(can_tase(z), *mob)) continue;
             threats.push(*mob);
         }
