@@ -979,19 +979,6 @@ struct can_tase {
     }
 };
 
-// \todo template rewrite target
-struct to_mob_ref
-{
-    to_mob_ref() = default;
-    to_mob_ref(const to_mob_ref& src) = delete;
-    to_mob_ref(to_mob_ref&& src) = delete;
-    to_mob_ref& operator=(const to_mob_ref& src) = delete;
-    to_mob_ref& operator=(to_mob_ref&& src) = delete;
-    ~to_mob_ref() = default;
-
-    mobile& operator()(mobile* target) const { return *target; }
-};
-
 void mattack::tazer(monster& z)
 {
     if (!z.can_see()) return;  // everything automatically out of range?
@@ -1008,7 +995,7 @@ void mattack::tazer(monster& z)
         }
     }
     if (threats.empty()) return;    // no hostile, taseable targets in range
-    mobile& target = std::visit(to_mob_ref(), threats[rng(0, threats.size() - 1)]);
+    mobile& target = std::visit(to_ref<mobile>(), threats[rng(0, threats.size() - 1)]);
 
     z.sp_timeout = z.type->sp_freq; // Reset timer
     z.moves -= 2 * mobile::mp_turn; // It takes a while
@@ -1036,9 +1023,9 @@ void mattack::smg(monster& z)
 
     for (decltype(auto) x : *in_range) {
         if (std::visit(monster::is_enemy_of(z), x)) {
-            if (auto path = z.GPSpos.sees(std::visit(to_mob_ref(), x).GPSpos, -1)) targets.push_back(std::pair(x, std::move(*path)));
+            if (auto path = z.GPSpos.sees(std::visit(to_ref<mobile>(), x).GPSpos, -1)) targets.push_back(std::pair(x, std::move(*path)));
         } else {
-            friendly_fire.push_back(std::visit(to_mob_ref(), x).GPSpos);
+            friendly_fire.push_back(std::visit(to_ref<mobile>(), x).GPSpos);
         }
     };
     }   // end scope of in_range
@@ -1050,7 +1037,7 @@ void mattack::smg(monster& z)
             --ub;
             for (decltype(auto) x : targets[ub].second) {
                 for (decltype(auto) loc : friendly_fire) {
-                    if (loc == std::visit(to_mob_ref(), targets[ub].first).GPSpos) {
+                    if (loc == std::visit(to_ref<mobile>(), targets[ub].first).GPSpos) {
                         remove = true;
                         break;
                     }
@@ -1098,7 +1085,7 @@ void mattack::flamethrower(monster& z)
     // \todo screen out immune targets
     // \todo avoid friendly fire
 
-    mobile& target = std::visit(to_mob_ref(), mobs_seen.first[rng(0, mobs_seen.first.size() - 1)]);
+    mobile& target = std::visit(to_ref<mobile>(), mobs_seen.first[rng(0, mobs_seen.first.size() - 1)]);
 
     z.sp_timeout = z.type->sp_freq;	// Reset timer
     z.moves -= 5 * mobile::mp_turn;	// It takes a while

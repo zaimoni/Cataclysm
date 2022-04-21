@@ -31,6 +31,20 @@ template<class T, class U> T clamped(const T& x, const U& lb, const U& ub) { ret
 template<auto lb, auto ub, class T> T clamped(const T& x) { return (ub < x) ? ub : ((lb > x) ? lb : x); }
 template<class T> T clamped(const T& x, const T& lb, const T& ub) { return (ub < x) ? ub : ((lb > x) ? lb : x); }
 
+// std::visit wrappers
+template<class T>
+struct to_ref
+{
+    to_ref() = default;
+    to_ref(const to_ref& src) = delete;
+    to_ref(to_ref&& src) = delete;
+    to_ref& operator=(const to_ref& src) = delete;
+    to_ref& operator=(to_ref&& src) = delete;
+    ~to_ref() = default;
+
+    T& operator()(T* target) const { return *target; }
+};
+
 // https://devblogs.microsoft.com/oldnewthing/20200413-00/?p=103669 [Raymond Chen/"The Old New Thing"]
 template<typename T, typename...>
 using unconditional_t = T;
