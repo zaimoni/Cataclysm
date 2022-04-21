@@ -35,7 +35,7 @@ class mattack
   static void fear_paralyze	(game *g, monster *z);
   static void photograph	(game *g, monster *z);
   static void tazer(monster& z);
-  static void smg		(game *g, monster *z);
+  static void smg(monster& z);
   static void flamethrower(monster& z);
   static void copbot		(game *g, monster *z);
   static void multi_robot	(game *g, monster *z); // Pick from tazer, smg, flame

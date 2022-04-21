@@ -1023,59 +1023,71 @@ void mattack::tazer(monster& z)
     target.moves -= shock * (mobile::mp_turn / 5);
 }
 
-void mattack::smg(game *g, monster *z)
+void mattack::smg(monster& z)
 {
- if (!z->is_enemy()) { // Attacking monsters, not the player!
-  int fire_t;
-  monster* target = nullptr;
-  point target_pos;
-  int closest = 19;
-  for(auto& _mon : g->z) {
-   if (!_mon.is_enemy(z)) continue;
-   if (int dist = rl_dist(z->GPSpos, _mon.GPSpos); dist < closest) {
-       if (const auto pos = _mon.screen_pos()) { // \todo would be nice to attack off-reality bubble
-           if (const auto t = g->m.sees(z->pos, *pos, 18)) {
-               target = &_mon;
-               closest = dist;
-               fire_t = *t;
-               target_pos = *pos;
-           }
-       }
-   }
-  }
-  if (!target) return; // Couldn't find any targets!
+    const auto g = game::active();
+    std::vector<std::pair<std::variant<monster*, npc*, pc*>, std::vector<GPS_loc> > > targets;
+    {
+    std::vector<GPS_loc> friendly_fire;
 
-  z->sp_timeout = z->type->sp_freq;	// Reset timer
-  z->moves -= (mobile::mp_turn / 2) * 3; // It takes a while
-  if (g->u.see(z->pos)) messages.add("The %s fires its smg!", z->name().c_str());
-  auto tmp(npc::get_proxy("The " + z->name(), z->pos, *static_cast<it_gun*>(item::types[itm_smg_9mm]), 0, 10));
-  std::vector<point> traj = line_to(z->pos, target_pos, fire_t);
-  g->fire(tmp, target_pos, traj, true);
+    {
+    auto in_range = g->mobs_in_range(z.GPSpos, 24);    // use target-PC range 24. rather than target-monster range of 19
+    if (!in_range) return;  // couldn't find any targets, even clairvoyantly
 
-  return;
- }
- 
-// Not friendly; hence, firing at the player
- if (24 < rl_dist(z->GPSpos, g->u.GPSpos)) return; // Out of range
- const auto t = z->see(g->u);
- if (!t) return; // Unseen
- auto traj = z->GPSpos.sees(g->u.GPSpos, 0);
- if (!traj) return; // no line of fire
- z->sp_timeout = z->type->sp_freq;	// Reset timer
+    for (decltype(auto) x : *in_range) {
+        if (std::visit(monster::is_enemy_of(z), x)) {
+            if (auto path = z.GPSpos.sees(std::visit(to_mob_ref(), x).GPSpos, -1)) targets.push_back(std::pair(x, std::move(*path)));
+        } else {
+            friendly_fire.push_back(std::visit(to_mob_ref(), x).GPSpos);
+        }
+    };
+    }   // end scope of in_range
+    if (targets.empty()) return;  // no hostile targets in Line Of Sight
+    if (!friendly_fire.empty()) {
+        auto ub = targets.size();
+        do {
+            bool remove = false;
+            --ub;
+            for (decltype(auto) x : targets[ub].second) {
+                for (decltype(auto) loc : friendly_fire) {
+                    if (loc == std::visit(to_mob_ref(), targets[ub].first).GPSpos) {
+                        remove = true;
+                        break;
+                    }
+                }
+                if (remove) break;
+            };
+            if (remove) EraseAt(targets, ub);
+            while (targets[ub].second.size() != targets.back().second.size()) {
+                if (targets[ub].second.size() < targets.back().second.size()) EraseAt(targets, targets.size() - 1);
+                else EraseAt(targets, ub);
+            };
+        } while(0<ub);
+        if (targets.empty()) return;  // no usable hostile targets in Line Of Sight
+    }
+    }   // end scope of friendly_fire
 
- if (!z->has_effect(ME_TARGETED)) {
-  g->sound(z->pos, 6, "beep-beep-beep!");
-  z->add_effect(ME_TARGETED, 8);
-  z->moves -= mobile::mp_turn;
-  return;
- }
- z->moves -= (mobile::mp_turn/2)*3; // It takes a while
+    z.sp_timeout = z.type->sp_freq;	// Reset timer
 
- if (g->u.see(z->GPSpos)) messages.add("The %s fires its smg!", z->name().c_str());
-// Set up a temporary player to fire this gun
- auto tmp(npc::get_proxy("The " + z->name(), z->pos, *static_cast<it_gun*>(item::types[itm_smg_9mm]), 0, 10));
- g->fire(tmp, *traj, true);
- z->add_effect(ME_TARGETED, 3);
+    // XXX Players are Special (arguably a game balance issue)
+    if (std::get_if<pc*>(&(targets[0]).first)) {
+        if (!z.has_effect(ME_TARGETED)) {
+            g->sound(z.pos, 6, "beep-beep-beep!");
+            z.add_effect(ME_TARGETED, 8);
+            z.moves -= mobile::mp_turn;
+            return;
+        }
+    };
+
+    z.moves -= (mobile::mp_turn / 2) * 3; // It takes a while
+    if (g->u.see(z.GPSpos)) messages.add("The %s fires its smg!", z.name().c_str());
+    auto tmp(npc::get_proxy("The " + z.name(), z.pos, *static_cast<it_gun*>(item::types[itm_smg_9mm]), 0, 10));
+    g->fire(tmp, targets[0].second, true);
+
+    // XXX Players are Special (arguably a game balance issue)
+    if (std::get_if<pc*>(&(targets[0]).first)) {
+        z.add_effect(ME_TARGETED, 3);
+    };
 }
 
 void mattack::flamethrower(monster& z)
@@ -1133,7 +1145,7 @@ void mattack::multi_robot(game *g, monster *z)
  switch (mode) {
   case 1: tazer(*z);        break;
   case 2: flamethrower(*z); break;
-  case 3: smg(g, z);          break;
+  case 3: smg(*z);          break;
  }
 }
 
