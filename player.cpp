@@ -1568,6 +1568,8 @@ void player::screenpos_add(point delta) {
     if (this == &g->u && g->update_map_would_scroll(pos)) g->update_map(pos.x, pos.y);
 }
 
+bool player::is_enemy(const monster* z) const { return z->is_enemy(this); }
+
 void player::pick_name()
 {
     name = random_first_name(male) + " " + random_last_name();

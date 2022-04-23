@@ -307,6 +307,8 @@ public:
  const item* decode_item_index(int n) const;
 
 // abstract ui
+ bool is_enemy(const monster* z) const;
+ virtual bool is_enemy(const player* survivor = nullptr) const = 0;
  virtual void subjective_message(const std::string& msg) const = 0;
  virtual void subjective_message(const char* msg) const = 0;
  virtual bool if_visible_message(std::function<std::string()> msg) const = 0;

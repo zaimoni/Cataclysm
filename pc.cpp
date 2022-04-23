@@ -1,5 +1,6 @@
 #include "pc.hpp"
 #include "monster.h"
+#include "npc.h"
 #include "mondeath.h"
 #include "trap.h"
 #include "submap.h"
@@ -29,6 +30,15 @@ pc::pc()
 void pc::consume(item& food) {
     if (const auto comest = food.is_food()) comest->consumed_by(food, *this);
     else throw std::logic_error("called player::consume on non-food");
+}
+
+bool pc::is_enemy(const player* survivor) const
+{
+    if (!survivor) return false;
+    if (auto _npc = dynamic_cast<const npc*>(survivor)) {
+        return _npc->is_enemy(this);
+    }
+    return false; // \todo proper multi-PC would support hostile PCs
 }
 
 void pc::subjective_message(const std::string& msg) const { if (!msg.empty()) messages.add(msg); }

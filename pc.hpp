@@ -18,6 +18,7 @@ public:
 	pc& operator=(pc&& rhs) = default;
 
 	// abstract ui
+	bool is_enemy(const player* survivor = nullptr) const override; // target wants to kill/mug us
 	void subjective_message(const std::string& msg) const override;
 	void subjective_message(const char* msg) const override { subjective_message(std::string(msg)); }
 	bool if_visible_message(std::function<std::string()> msg) const override;
