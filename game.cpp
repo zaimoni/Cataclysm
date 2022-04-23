@@ -4302,6 +4302,50 @@ void game::plfire(bool burst)
  const zaimoni::gdi::box<point> bounds(u.pos - r, u.pos + r); // things go very wrong if r is negative
  pl_draw(bounds);
 
+#if 0
+ std::vector<std::pair<std::variant<monster*, npc*, pc*>, std::vector<GPS_loc> > > targets;
+ {
+ std::vector<GPS_loc> friendly_fire;
+
+ {
+ auto in_range = mobs_in_range(u.GPSpos, range);
+ if (!in_range) return;  // couldn't find any targets, even clairvoyantly
+
+ for (decltype(auto) x : *in_range) {
+     // \todo sees check, to even consider enumerating; also mattack::smg which is our reference
+     if (std::visit(player::is_enemy_of(u), x)) {
+         if (auto path = u.GPSpos.sees(std::visit(to_ref<mobile>(), x).GPSpos, -1)) targets.push_back(std::pair(x, std::move(*path)));
+     } else {
+         friendly_fire.push_back(std::visit(to_ref<mobile>(), x).GPSpos);
+     }
+ };
+ }   // end scope of in_range
+ if (targets.empty()) return;  // no hostile targets in Line Of Sight
+ if (!friendly_fire.empty()) {
+     auto ub = targets.size();
+     do {
+         bool remove = false;
+         --ub;
+         for (decltype(auto) x : targets[ub].second) {
+             for (decltype(auto) loc : friendly_fire) {
+                 if (loc == std::visit(to_ref<mobile>(), targets[ub].first).GPSpos) {
+                     remove = true;
+                     break;
+                 }
+             }
+             if (remove) break;
+         };
+         if (remove) EraseAt(targets, ub);
+         while (targets[ub].second.size() != targets.back().second.size()) {
+             if (targets[ub].second.size() < targets.back().second.size()) EraseAt(targets, targets.size() - 1);
+             else EraseAt(targets, ub);
+         };
+     } while (0 < ub);
+     if (targets.empty()) return;  // no usable hostile targets in Line Of Sight
+ }
+ }   // end scope of friendly_fire
+#endif
+
  // Populate a list of targets with the zombies in range and visible
  std::vector<const monster*> mon_targets;
  std::vector<int> targetindices;
