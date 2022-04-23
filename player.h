@@ -330,7 +330,22 @@ public:
  void screenpos_set(int x, int y);
  void screenpos_add(point delta);
 
-// ---------------VALUES-----------------
+ // adapter for std::visit
+ struct is_enemy_of {
+     const player& p;
+
+     is_enemy_of(const player& p) noexcept : p(p) {}
+     is_enemy_of(const is_enemy_of& src) = delete;
+     is_enemy_of(is_enemy_of&& src) = delete;
+     is_enemy_of& operator=(const is_enemy_of& src) = delete;
+     is_enemy_of& operator=(is_enemy_of&& src) = delete;
+     ~is_enemy_of() = default;
+
+     auto operator()(const monster* target) const { return p.is_enemy(target); }
+     auto operator()(const player* target) const { return p.is_enemy(target); }
+ };
+
+ // ---------------VALUES-----------------
  point pos;
  bool in_vehicle;       // Means player sit inside vehicle on the tile he is now
  player_activity activity;
