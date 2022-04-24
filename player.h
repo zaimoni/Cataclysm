@@ -80,6 +80,9 @@ public:
  bool has_mutation(int flag) const;
  void toggle_trait(int flag);
 
+ // \todo once MSVC++ has std::ranges support, consider cutting over to that
+ const char* interpret_trait(const std::pair<pl_flag, const char*>* origin, ptrdiff_t ub) const;
+
  bool has_bionic(bionic_id b) const;
  bool has_active_bionic(bionic_id b) const;
  void add_bionic(bionic_id b);
@@ -93,6 +96,7 @@ public:
  pl_flag has_child_flag(pl_flag mut) const;
  bool remove_child_flag(pl_flag mut);
 
+ unsigned int seismic_range() const;
  unsigned int sight_range(int light_level) const;
  unsigned int sight_range() const; // uses light level for our GPSpos
  unsigned int overmap_sight_range() const;
@@ -322,8 +326,8 @@ public:
  virtual void record_kill(const monster& m) {}
 
  // grammatical support
- bool is_proper() const override final { return true; }
- unsigned gender() const override final { return male ? 1 : 2; }
+ bool is_proper() const final { return true; }
+ unsigned gender() const final { return male ? 1 : 2; }
 
  // integrity checks
  void screenpos_set(point pt);

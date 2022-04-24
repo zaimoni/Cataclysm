@@ -2892,6 +2892,15 @@ void player::toggle_trait(int flag)
  my_mutations[flag] = !my_mutations[flag];
 }
 
+const char* player::interpret_trait(const std::pair<pl_flag, const char*>* origin, ptrdiff_t ub) const
+{
+    while (0 < ub--) {
+        if (has_trait(origin[ub].first)) return origin[ub].second;
+    }
+    return nullptr;
+}
+
+
 bool player::has_bionic(bionic_id b) const
 {
  for (const auto& bionic : my_bionics) if (bionic.id == b) return true;
@@ -3065,6 +3074,8 @@ unsigned int player::sight_range(int light_level) const
  return ret;
 }
 
+/// includes aerial vibrations, not just ground vibrations -- flying creatures noticed as well
+unsigned int player::seismic_range() const { return has_trait(PF_ANTENNAE) ? 3 : 0; }
 unsigned int player::sight_range() const { return sight_range(game::active()->light_level(GPSpos)); }
 
 unsigned int player::overmap_sight_range() const
@@ -3086,7 +3097,7 @@ int player::clairvoyance() const
 bool player::see(const monster& mon) const
 {
     int dist = rl_dist(GPSpos, mon.GPSpos);
-    if (has_trait(PF_ANTENNAE) && dist <= 3) return true;
+    if (dist <= seismic_range()) return true;
     if (mon.has_flag(MF_DIGS) && !has_active_bionic(bio_ground_sonar) && dist > 1)
         return false;	// Can't see digging monsters until we're right next to them
     const auto range = sight_range();
@@ -3099,7 +3110,7 @@ bool player::see(const monster& mon) const
 std::optional<int> player::see(const player& u) const
 {
     int dist = rl_dist(GPSpos, u.GPSpos);
-    if (has_trait(PF_ANTENNAE) && dist <= 3) return true;
+    if (dist <= seismic_range()) return true;
     if (u.has_active_bionic(bio_cloak) || u.has_artifact_with(AEP_INVISIBLE)) return std::nullopt;
     const auto range = sight_range();
     if (const auto clairvoyant = clairvoyance()) {
@@ -5081,14 +5092,19 @@ const it_armor* player::wear_is_performable(const item& to_wear) const
         if (!is_npc()) messages.add("You cannot wear anything over your shell.");
         return nullptr;
     }
+
+    static constexpr const std::pair<pl_flag, const char*> transcode[] = {
+        {PF_HORNS_POINTED, "horns"},
+        {PF_ANTENNAE, "antennae"},
+        {PF_ANTLERS, "antlers"},
+    };
+
     if ((armor->covers & mfb(bp_head)) && !to_wear.made_of(WOOL) &&
-        !to_wear.made_of(COTTON) && !to_wear.made_of(LEATHER) &&
-        (has_trait(PF_HORNS_POINTED) || has_trait(PF_ANTENNAE) ||
-            has_trait(PF_ANTLERS))) {
-        if (!is_npc()) messages.add("You cannot wear a helmet over your %s.",
-            (has_trait(PF_HORNS_POINTED) ? "horns" :
-                (has_trait(PF_ANTENNAE) ? "antennae" : "antlers")));
-        return nullptr;
+        !to_wear.made_of(COTTON) && !to_wear.made_of(LEATHER)) {
+        if (const auto text = interpret_trait(std::begin(transcode), std::end(transcode) - std::begin(transcode))) {
+            if (!is_npc()) messages.add("You cannot wear a helmet over your %s.", text);
+            return nullptr;
+        }
     }
     if ((armor->covers & mfb(bp_feet)) && wearing_something_on(bp_feet)) {
         if (!is_npc()) messages.add("You're already wearing footwear!");
