@@ -3143,6 +3143,24 @@ bool player::has_two_arms() const
  return true;
 }
 
+#if 0
+std::optional<std::vector<GPS_loc> > player::see(const std::variant<monster*, npc*, pc*>& dest, int range) const
+{
+    auto loc = std::visit(to_ref<mobile>(), dest).GPSpos;
+    int dist = rl_dist(loc, GPSpos);
+    if (0 == dist) return std::vector<GPS_loc>();   // self-targeting...assume friendly-fire legal, for now
+    if (dist > seismic_range()) {
+        // \todo need invisible-to check before taking live
+        const auto range = sight_range();
+        if (const auto c_range = clairvoyance()) {
+            if (dist > clamped_ub(range, c_range)) return std::nullopt;
+        }
+    }
+    if (dist <= seismic_range()) return GPSpos.sees(loc, -1);
+    return GPSpos.sees(loc, -1);
+}
+#endif
+
 bool player::avoid_trap(const trap* const tr) const
 {
  int myroll = dice(3, dex_cur + sklevel[sk_dodge] * 1.5);

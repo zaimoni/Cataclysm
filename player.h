@@ -105,6 +105,7 @@ public:
  std::optional<int> see(const GPS_loc& pt) const;
  std::optional<int> see(const point& pt) const;
  std::optional<int> see(int x, int y) const { return see(point(x, y)); }
+ std::optional<std::vector<GPS_loc> > see(const std::variant<monster*, npc*, pc*>& dest, int range) const;
  int  clairvoyance() const; // Sight through walls &c
  bool has_two_arms() const;
 // bool can_wear_boots();	// no definition
