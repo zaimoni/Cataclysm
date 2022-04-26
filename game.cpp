@@ -4314,7 +4314,7 @@ void game::plfire(bool burst)
  for (decltype(auto) x : *in_range) {
      // \todo sees check, to even consider enumerating; also mattack::smg which is our reference
      if (std::visit(player::is_enemy_of(u), x)) {
-         if (auto path = u.GPSpos.sees(std::visit(to_ref<mobile>(), x).GPSpos, -1)) targets.push_back(std::pair(x, std::move(*path)));
+         if (auto path = u.see(x, -1)) targets.push_back(std::pair(x, std::move(*path)));
      } else {
          friendly_fire.push_back(std::visit(to_ref<mobile>(), x).GPSpos);
      }

@@ -75,9 +75,8 @@ class monster : public mobile {
  std::string name_with_armor() const; // Name, with whatever our armor is called
  void print_info(const player& u, WINDOW* w) const; // Prints information to w.
  char symbol() const { return type->sym; };			// Just our type's symbol; no context
- void draw(WINDOW* w, const point& pl, bool inv) const;
+ void draw(WINDOW* w, const point& pl, bool inv) const; // Inverts color if inv==true
  nc_color color_with_effects() const;	// Color with fire, beartrapped, etc.
-				// Inverts color if inv==true
  bool has_flag(m_flag f) const { return type->has_flag(f); };
  bool can_see() const;		// MF_SEES and no ME_BLIND
  bool can_hear() const;		// MF_HEARS and no ME_DEAF

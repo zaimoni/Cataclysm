@@ -3143,14 +3143,41 @@ bool player::has_two_arms() const
  return true;
 }
 
-#if 0
+namespace {
+
+// do not want to expose player forward declaration to mobile subclass
+struct CanSee
+{
+    const player& viewpoint;
+    int dist;
+
+    CanSee(const player& v, int dist) noexcept : viewpoint(v),dist(dist) {}
+    CanSee(const CanSee& src) = delete;
+    CanSee(CanSee&& src) = delete;
+    CanSee& operator=(const CanSee& src) = delete;
+    CanSee& operator=(CanSee&& src) = delete;
+    ~CanSee() = default;
+
+    bool operator()(monster* m) {
+        if (m->has_flag(MF_DIGS) && !viewpoint.has_active_bionic(bio_ground_sonar) && 1 < dist)
+            return false; // Can't see digging monsters until we're right next to them
+        return true;
+    }
+    bool operator()(player* p) {
+        if (p->has_active_bionic(bio_cloak) || p->has_artifact_with(AEP_INVISIBLE)) return false;
+        return true;
+    }
+};
+
+}
+
 std::optional<std::vector<GPS_loc> > player::see(const std::variant<monster*, npc*, pc*>& dest, int range) const
 {
     auto loc = std::visit(to_ref<mobile>(), dest).GPSpos;
     int dist = rl_dist(loc, GPSpos);
     if (0 == dist) return std::vector<GPS_loc>();   // self-targeting...assume friendly-fire legal, for now
     if (dist > seismic_range()) {
-        // \todo need invisible-to check before taking live
+        if (!std::visit(CanSee(*this, dist), dest)) return std::nullopt;
         const auto range = sight_range();
         if (const auto c_range = clairvoyance()) {
             if (dist > clamped_ub(range, c_range)) return std::nullopt;
@@ -3159,7 +3186,6 @@ std::optional<std::vector<GPS_loc> > player::see(const std::variant<monster*, np
     if (dist <= seismic_range()) return GPSpos.sees(loc, -1);
     return GPSpos.sees(loc, -1);
 }
-#endif
 
 bool player::avoid_trap(const trap* const tr) const
 {
