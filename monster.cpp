@@ -167,7 +167,7 @@ void monster::print_info(const player& u, WINDOW* w) const
 
 void monster::draw(WINDOW *w, const point& pl, bool inv) const
 {
- point pt = pos - pl + point(SEE);
+ point pt = pos - pl + point(VIEW_CENTER);
  nc_color color = type->color;
  char sym = type->sym;
 
