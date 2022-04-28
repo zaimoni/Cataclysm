@@ -315,6 +315,7 @@ class game : public reality_bubble
   void draw_minimap();     // Draw the 5x5 minimap
   void draw_HP();          // Draws the player's HP and Power level
   void pl_draw(const zaimoni::gdi::box<point>& bounds) const;          // close-up map, centered on player
+  void draw_targets(const std::vector<std::pair<std::variant<monster*, npc*, pc*>, std::vector<GPS_loc> > >& src) const;
   int visible_monsters(std::vector<const monster*>& mon_targets, std::vector<int>& targetindices, std::function<bool(const monster&)> test) const;
 
 // On-request draw functions

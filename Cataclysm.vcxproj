@@ -181,6 +181,7 @@
     <ClInclude Include="gamemode.h" />
     <ClInclude Include="GPS_loc.hpp" />
     <ClInclude Include="grammar.h" />
+    <ClInclude Include="gui.hpp" />
     <ClInclude Include="inline_stack.hpp" />
     <ClInclude Include="inventory.h" />
     <ClInclude Include="ios_file.h" />
@@ -269,6 +270,7 @@
     <ClCompile Include="game.cpp" />
     <ClCompile Include="gamemode.cpp" />
     <ClCompile Include="grammar.cpp" />
+    <ClCompile Include="gui.cpp" />
     <ClCompile Include="help.cpp" />
     <ClCompile Include="inventory.cpp" />
     <ClCompile Include="item.cpp" />

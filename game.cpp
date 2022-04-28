@@ -20,6 +20,7 @@
 #include "stl_limits.h"
 #include "stl_typetraits.h"
 #include "game_aux.hpp"
+#include "gui.hpp"
 
 #include <fstream>
 #include <sstream>
@@ -4227,6 +4228,11 @@ void game::pl_draw(const zaimoni::gdi::box<point>& bounds) const
         });
 }
 
+void game::draw_targets(const std::vector<std::pair<std::variant<monster*, npc*, pc*>, std::vector<GPS_loc> > >& src) const {
+    draw_mob scr(w_terrain, u.pos, true);
+    for (decltype(auto) x : src) std::visit(scr, x.first);
+}
+
 int game::visible_monsters(std::vector<const monster*>& mon_targets, std::vector<int>& targetindices, std::function<bool(const monster&)> test) const
 {
     int passtarget = -1;
@@ -4344,6 +4350,8 @@ void game::plfire(bool burst)
      if (targets.empty()) return;  // no usable hostile targets in Line Of Sight
  }
  }   // end scope of friendly_fire
+
+ draw_targets(targets);
 #endif
 
  // Populate a list of targets with the zombies in range and visible
