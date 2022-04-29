@@ -3183,7 +3183,6 @@ std::optional<std::vector<GPS_loc> > player::see(const std::variant<monster*, np
             if (dist > clamped_ub(range, c_range)) return std::nullopt;
         }
     }
-    if (dist <= seismic_range()) return GPSpos.sees(loc, -1);
     return GPSpos.sees(loc, -1);
 }
 
