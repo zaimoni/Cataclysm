@@ -455,7 +455,7 @@ void game::fire(player& p, std::vector<GPS_loc>& trajectory, bool burst)
         return;
     }
 #endif
-    decltype(auto) tar = trajectory.back();
+    auto tar = trajectory.back();
     decltype(auto) origin = p.GPSpos; // \todo we want to allow for remote-controlled weapons
 
     item ammotmp;
