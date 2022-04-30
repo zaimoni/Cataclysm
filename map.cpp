@@ -1515,6 +1515,25 @@ bool map::hard_landing(const point& pt, item&& thrown, player* p)
     return false;
 }
 
+bool GPS_loc::hard_landing(item&& thrown, player* p)
+{
+    if (thrown.made_of(GLASS)) {
+        bool break_this = !p;
+        if (!break_this && !thrown.active) {
+            const int vol = thrown.volume();
+            if (rng(0, vol + 8) - rng(0, p->str_cur) < vol) break_this = true;
+        }
+        if (break_this) {
+            if (game::active()->u.see(*this)) messages.add("The %s shatters!", thrown.tname().c_str());
+            for (auto& obj : thrown.contents) add(std::move(obj));
+            sound(16, "glass breaking!");
+            return true;
+        }
+    }
+    add(std::move(thrown));
+    return false;
+}
+
 void submap::process_active_items()
 {
     if (0 >= active_item_count) return;

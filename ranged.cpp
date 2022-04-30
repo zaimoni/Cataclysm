@@ -779,6 +779,115 @@ void game::throw_item(player &p, point tar, item&& thrown, std::vector<point> &t
  }
 }
 
+void game::throw_item(player& p, item&& thrown, std::vector<GPS_loc>& trajectory)
+{
+    auto tar = trajectory.back();
+    decltype(auto) origin = p.GPSpos; // \todo we want to allow for remote-controlled weapons
+
+    int deviation = 0;
+    int trange = 1.5 * rl_dist(origin, tar);
+
+    // Throwing attempts below "Basic Competency" level are extra-bad
+    if (p.sklevel[sk_throw] < 3) deviation += rng(0, 8 - p.sklevel[sk_throw]);
+
+    if (p.sklevel[sk_throw] < 8) deviation += rng(0, 8 - p.sklevel[sk_throw]);
+    else deviation -= p.sklevel[sk_throw] - 6;
+
+    deviation += p.throw_dex_mod();
+
+    if (p.per_cur < 6) deviation += rng(0, 8 - p.per_cur);
+    else if (p.per_cur > 8) deviation -= p.per_cur - 8;
+
+    const int thrown_vol = thrown.volume();
+    deviation += rng(0, p.encumb(bp_hands) * 2 + p.encumb(bp_eyes) + 1);
+    if (5 < thrown_vol) deviation += rng(0, 1 + (thrown_vol - 5) / 4);
+    else if (0 >= thrown_vol) deviation += rng(0, 3);
+
+    deviation += rng(0, 1 + abs(p.str_cur - thrown.weight()));
+
+    double missed_by = .01 * deviation * trange;
+    bool missed = false;
+
+    if (missed_by >= 1) {
+        // We missed D:
+        // Shoot a random nearby space?
+        if (missed_by > 9) missed_by = 9;
+        const int delta = int(sqrt(double(missed_by)));
+        tar += point(rng(-delta, delta), rng(-delta, delta));
+        if (auto traj = origin.sees(tar, -1)) trajectory = std::move(*traj);
+        missed = true;
+        p.subjective_message("You miss!");
+    } else if (missed_by >= .6) {
+        // Hit the space, but not necessarily the monster there
+        missed = true;
+        p.subjective_message("You barely miss!");
+    }
+
+    const int thrown_wgt = thrown.weight();
+
+    std::string message;
+    int dam = (thrown_wgt / 4 + thrown.type->melee_dam / 2 + p.str_cur / 2) / (2.0 + thrown_vol / 4);
+    clamp_lb(dam, thrown_wgt * 3);
+
+    int i = 0;
+    GPS_loc t;
+    for (i = 0; i < trajectory.size() && dam > -10; i++) {
+        message = "";
+        double goodhit = missed_by;
+        t = trajectory[i];
+        monster* const m_at = mon(trajectory[i]);
+        // If there's a monster in the path of our item, and either our aim was true,
+        //  OR it's not the monster we were aiming at and we were lucky enough to hit it
+        if (m_at && (!missed || one_in(7 - int(m_at->type->size)))) {
+            if (0 < thrown.type->melee_cut && rng(0, 100) < 20 + p.sklevel[sk_throw] * 12) {
+                if (!p.is_npc()) {
+                    message += " You cut the ";
+                    message += m_at->name();
+                    message += "!";
+                }
+                const auto c_armor = m_at->armor_cut();
+                if (thrown.type->melee_cut > c_armor) dam += (thrown.type->melee_cut - c_armor);
+            }
+            if (t.hard_landing(std::move(thrown), &p)) {
+                const int glassdam = rng(0, thrown_vol * 2);
+                const auto c_armor = m_at->armor_cut();
+                if (glassdam > c_armor) dam += (glassdam - c_armor);
+            }
+            if (i < trajectory.size() - 1) goodhit = (double(rand()) / RAND_MAX) / 2.0;
+            if (goodhit < .1 && !m_at->has_flag(MF_NOHEAD)) {
+                message = "Headshot!";
+                dam = rng(dam, dam * 3);
+                p.practice(sk_throw, 5);
+            } else if (goodhit < .2) {
+                message = "Critical!";
+                dam = rng(dam, dam * 2);
+                p.practice(sk_throw, 2);
+            } else if (goodhit < .4)
+                dam = rng(int(dam / 2), int(dam * 1.5));
+            else if (goodhit < .5) {
+                message = "Grazing hit.";
+                dam = rng(0, dam);
+            }
+            if (!p.is_npc())
+                messages.add("%s You hit the %s for %d damage.", message.c_str(), m_at->name().c_str(), dam);
+            else if (u.see(t))
+                messages.add("%s hits the %s for %d damage.", message.c_str(), m_at->name().c_str(), dam);
+            if (m_at->hurt(dam)) kill_mon(*m_at, &p);
+            return;
+        }
+        else // No monster hit, but the terrain might be.
+            t.shoot(dam, false, 0);
+        if (0 >= t.move_cost()) {
+            t = (i > 0) ? trajectory[i - 1] : origin;
+            break;
+        }
+    }
+    if (0 >= t.move_cost()) t = (i > 1) ? trajectory[i - 2] : origin;
+    if (!t.hard_landing(std::move(thrown), &p)) {
+        t.sound(8, "thud.");
+    }
+}
+
 // At some point, C:Whales also used this to target vehicles for refilling (different UI when forked).
 std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& bounds, const std::vector<const monster*>& t, int &target, const std::string& prompt)
 {

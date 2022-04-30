@@ -11,6 +11,7 @@
 
 struct field;
 class item;
+class player;
 class vehicle;
 enum ter_id : int;
 enum trap_id : int;
@@ -61,6 +62,7 @@ struct GPS_loc : public std::pair<tripoint, point>
 
 	// following thin adapters in map.cpp
 	void shoot(int& dam, bool hit_items, unsigned flags);
+	bool hard_landing(item&& thrown, player* p = nullptr); // for thrown objects
 };
 
 // \todo evaluate whether these should be out-of-line defined (likely a matter of binary size, compile+link time)
