@@ -965,12 +965,11 @@ void vehicle::handbrake(player& u)
 {
     std::string you;
     std::string pull;
-    decltype(game::active()->u.see(u.pos)) vis_loc = std::nullopt;
     const auto vis_npc = game::active()->u.see(u);
     if (vis_npc) {
         you = grammar::capitalize(u.desc(grammar::noun::role::subject));
         messages.add("%s %s a handbrake.", you.c_str(), u.regular_verb_agreement("pull").c_str());
-    } else if (vis_loc = game::active()->u.see(u.pos)) {
+    } else if (game::active()->u.see(u.GPSpos)) {
         messages.add("Someone pulls a handbrake.");
     }
     cruise_velocity = 0;
@@ -978,7 +977,7 @@ void vehicle::handbrake(player& u)
         skidding = true;
         if (vis_npc) {
             messages.add("%s loses control of %s.", you.c_str(), u.regular_verb_agreement("lose").c_str(), name.c_str());
-        } else if (vis_loc = game::active()->u.see(u.pos)) {
+        } else if (game::active()->u.see(u.GPSpos)) {
             messages.add("Someone loses control of %s.", name.c_str());
         }
         turn(last_turn > 0 ? 60 : -60);
