@@ -287,7 +287,7 @@ class game : public reality_bubble
 // square.  It displays information on any monster/NPC on that square, and also
 // returns a Bresenham line to that square.  It is called by plfire() and
 // throw().
-  std::vector<point> target(point& tar, const zaimoni::gdi::box<point>& bounds,
+  std::optional<std::vector<GPS_loc> > target(GPS_loc& tar, const zaimoni::gdi::box<point>& bounds,
                             const std::vector<const monster*>& t, int& target,
                             const std::string& prompt);
 

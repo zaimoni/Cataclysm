@@ -4283,18 +4283,18 @@ void game::plthrow()
      return bounds.contains(mon.pos);
  });
 
- // target() sets x and y, or returns false if we canceled (by pressing Esc)
- point tar(u.pos);
- std::vector<point> trajectory = target(tar, bounds, mon_targets, passtarget, "Throwing " + src->first->tname());
- if (trajectory.empty()) return;
- if (passtarget != -1) u.set_target(targetindices[passtarget]);
+ // target() sets tar, or returns false if we canceled (by pressing Esc)
+ GPS_loc tar(u.GPSpos);
+ if (auto trajectory = target(tar, bounds, mon_targets, passtarget, std::string("Throwing ") + src->first->tname())) {
+     if (passtarget != -1) u.set_target(targetindices[passtarget]);
 
- item thrown(*src->first); // copy needed due to u.i_rem(ch) call before actually throwing
- u.remove_discard(*src);
- u.moves -= (mobile::mp_turn/4)*5;
- u.practice(sk_throw, 10);
+     item thrown(*src->first);
+     u.remove_discard(*src); // requires copy
+     u.moves -= (mobile::mp_turn / 4) * 5;
+     u.practice(sk_throw, 10);
 
- throw_item(u, tar, std::move(thrown), trajectory);
+     throw_item(u, std::move(thrown), *trajectory);
+ };
 }
 
 void game::plfire(bool burst)
@@ -4362,11 +4362,11 @@ void game::plfire(bool burst)
  });
 
  // target() sets x and y, and returns an empty vector if we canceled (Esc)
- point tar(u.pos);
- std::vector<point> trajectory = target(tar, bounds, mon_targets, passtarget,
-                                        "Firing " + u.weapon.tname() + " (" + std::to_string(u.weapon.charges) + ")");
+ GPS_loc tar(u.GPSpos);
+ auto trajectory = target(tar, bounds, mon_targets, passtarget,
+                                        std::string("Firing ") + u.weapon.tname() + " (" + std::to_string(u.weapon.charges) + ")");
  draw_ter(); // Recenter our view
- if (trajectory.size() == 0) return;
+ if (!trajectory) return;
  if (passtarget != -1) { // We picked a real live target
   u.set_target(targetindices[passtarget]); // Make it our default for next time
   z[targetindices[passtarget]].add_effect(ME_HIT_BY_PLAYER, 100);
@@ -4387,7 +4387,7 @@ void game::plfire(bool burst)
  if (u.sklevel[sk_gun] == 0 || (firing->ammo != AT_BB && firing->ammo != AT_NAIL))
   u.practice(sk_gun, 5);
 
- fire(u, tar, trajectory, burst);
+ fire(u, *trajectory, burst);
 }
 
 void game::butcher()

@@ -7,6 +7,7 @@
 #include "item.h"
 #include "options.h"
 #include "mondeath.h"
+#include "gui.hpp"
 #include "posix_time.h"
 #include "recent_msg.h"
 
@@ -889,9 +890,9 @@ void game::throw_item(player& p, item&& thrown, std::vector<GPS_loc>& trajectory
 }
 
 // At some point, C:Whales also used this to target vehicles for refilling (different UI when forked).
-std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& bounds, const std::vector<const monster*>& t, int &target, const std::string& prompt)
+std::optional<std::vector<GPS_loc> > game::target(GPS_loc& tar, const zaimoni::gdi::box<point>& bounds, const std::vector<const monster*>& t, int &target, const std::string& prompt)
 {
- std::vector<point> ret;
+ std::vector<GPS_loc> ret;
 
 // First, decide on a target among the monsters, if there are any in range
  if (t.size() > 0) {
@@ -906,7 +907,7 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
     }
    }
   }
-  tar = t[target]->pos;
+  tar = t[target]->GPSpos;
  } else
   target = -1;	// No monsters in range, don't use target, reset to -1
 
@@ -924,7 +925,8 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
  bool snap_to_target = option_table::get()[OPT_SNAP_TO_TARGET];
 // The main loop.
  do {
-  point center(snap_to_target ? tar : u.pos);
+  GPS_loc center_GPS(snap_to_target ? tar : u.GPSpos);
+  const point center = toScreen(center_GPS).value();
 // Clear the target window.
   for (int i = 5; i < SEEY; i++) {
    for (int j = 1; j < PANELX - MINIMAP_WIDTH_HEIGHT - 2; j++)
@@ -940,31 +942,28 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
   for (const auto& NPC : active_npc) {
    if (u.see(NPC.pos)) NPC.draw(w_terrain, center, false);
   }
-  if (tar != u.pos) {
+  if (tar != u.GPSpos) {
 // Calculate the return vector (and draw it too)
 // Draw the player
    const point at(u.pos-center+point(VIEW_CENTER));
    if (at.x >= 0 && at.x < VIEW && at.y >= 0 && at.y < VIEW)
     mvwputch(w_terrain, at.y, at.x, u.color(), '@');
 
-   if (const auto tart = m.sees(u.pos, tar, -1)) {// Selects a valid line-of-sight
+   if (auto los = u.GPSpos.sees(tar, -1)) { // Selects a valid line-of-sight
        const auto sight_dist = u.sight_range();
-       ret = line_to(u.pos, tar, *tart); // Sets the vector to that LOS
-   // Draw the trajectory
-       for (const point& pt : ret) {
-           if (sight_dist >= Linf_dist(pt - u.pos)) {
-               monster* const m_at = mon(pt);
-               // NPCs and monsters get drawn with inverted colors
-               if (m_at && u.see(*m_at)) m_at->draw(w_terrain, center, true);
-               else if (npc* const _npc = nPC(pt))
-                   _npc->draw(w_terrain, center, true);
-               else
-                   m.drawsq(w_terrain, u, pt.x, pt.y, true, true, center);
+       while (sight_dist < los->size()) los->pop_back();
+       draw_mob render_inverted(w_terrain, center, true);
+       for (decltype(auto) loc : *los) {
+           // NPCs and monsters get drawn with inverted colors
+           if (auto mob = mob_at(loc)) std::visit(render_inverted, *mob);
+           else {
+               if (auto pos = toScreen(loc)) m.drawsq(w_terrain, u, pos->x, pos->y, true, true, center);
            }
        }
+       ret = std::move(*los);
    }
 
-   mvwprintw(w_target, 5, 1, "Range: %d", rl_dist(u.pos, tar));
+   mvwprintw(w_target, 5, 1, "Range: %d", rl_dist(u.GPSpos, tar));
 
    if (monster* const m_at = mon(tar)) {
        if (u.see(*m_at)) m_at->print_info(u, w_target);
@@ -973,8 +972,11 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
        if (snap_to_target)
            mvwputch(w_terrain, VIEW_CENTER, VIEW_CENTER, c_red, '*');
        else {
-           const point pt(tar + point(VIEW_CENTER) - u.pos);
-           mvwputch(w_terrain, pt.y, pt.x, c_red, '*');
+           auto delta = tar - u.GPSpos;
+           if (auto pos = std::get_if<point>(&delta)) {
+               const point pt = point(VIEW_CENTER) + *pos;
+               mvwputch(w_terrain, pt.y, pt.x, c_red, '*');
+           }
        }
    }
   }
@@ -985,39 +987,39 @@ std::vector<point> game::target(point& tar, const zaimoni::gdi::box<point>& boun
   int ch = input();
   point dir(get_direction(ch));
   if (dir.x != -2 && ch != '.') {	// Direction character pressed
-   monster* const m_at = mon(tar);
-   if (m_at && u.see(*m_at)) m_at->draw(w_terrain, center, false);
-   else if (npc* const _npc = nPC(tar))
-	_npc->draw(w_terrain, center, false);
-   else if (m.sees(u.pos, tar, -1))
-    m.drawsq(w_terrain, u, tar.x, tar.y, false, true, center);
-   else
-    mvwputch(w_terrain, VIEW_CENTER, VIEW_CENTER, c_black, 'X');
+   draw_mob render(w_terrain, center, false);
+   auto pos = toScreen(tar);
+   if (auto mob = mob_at(tar)) std::visit(render, *mob);
+   else if (u.GPSpos.can_see(tar, -1)) {
+       if (pos) m.drawsq(w_terrain, u, pos->x, pos->y, false, true, center);
+   } else mvwputch(w_terrain, VIEW_CENTER, VIEW_CENTER, c_black, 'X');
+
    tar += dir;
-   // \todo two problems: bounds member names not that good, this might be a "clamp" member function
-   if (tar.x < bounds.tl_c().x) tar.x = bounds.tl_c().x;
-   else if (tar.x > bounds.br_c().x) tar.x = bounds.br_c().x;
-   if (tar.y < bounds.tl_c().y) tar.y = bounds.tl_c().y;
-   else if (tar.y > bounds.br_c().y) tar.y = bounds.br_c().y;
-  } else if ((ch == '<') && (target != -1)) {
+   if (pos) {
+       *pos += dir;
+       point in_bounds_delta(0);
+       if (pos->x < bounds.tl_c().x) in_bounds_delta += Direction::E;
+       else if (pos->x > bounds.br_c().x) in_bounds_delta += Direction::W;
+       if (pos->y < bounds.tl_c().y) in_bounds_delta += Direction::S;
+       else if (pos->y > bounds.br_c().y) in_bounds_delta += Direction::N;
+       if (point(0) != in_bounds_delta) tar += in_bounds_delta;
+   }
+  } else if ((ch == '<') && (0 <= target)) {
    target--;
-   if (target == -1) target = t.size() - 1;
-   tar = t[target]->pos;
-  } else if ((ch == '>') && (target != -1)) {
+   if (0 > target) target = t.size() - 1;
+   tar = t[target]->GPSpos;
+  } else if ((ch == '>') && (0 <= target)) {
    target++;
    if (target == t.size()) target = 0;
-   tar = t[target]->pos;
+   tar = t[target]->GPSpos;
   } else if (ch == '.' || ch == 'f' || ch == 'F' || ch == '\n') {
    for (int i = 0; i < t.size(); i++) {
-    if (t[i]->pos == tar) target = i;
+    if (t[i]->GPSpos == tar) target = i;
    }
    return ret;
-  } else if (ch == '0') tar = u.pos;
+  } else if (ch == '0') tar = u.GPSpos;
   else if (ch == '*') snap_to_target = !snap_to_target;
-  else if (ch == KEY_ESCAPE || ch == 'q') { // return empty vector (cancel)
-   ret.clear();
-   return ret;
-  }
+  else if (ch == KEY_ESCAPE || ch == 'q') return std::nullopt; // cancel
  } while (true);
 }
 
