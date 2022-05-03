@@ -277,7 +277,6 @@ public:
  };
 
  typedef std::pair<npc_action, std::unique_ptr<cataclysm::action> > ai_action;	// transition typedef
- typedef std::pair<point, std::tuple<monster*, player*, npc*> > ai_target;	// expect to simplify this
 
  npc();
  npc(const cataclysm::JSON& src);
@@ -441,7 +440,6 @@ public:
 
 // Combat functions and player interaction functions
  void melee_monster	(game *g, monster& monhit);
- void melee_player	(game *g, player &foe);
  void alt_attack	(game *g, int target);
  void heal_self		(game *g);
 private:
@@ -490,6 +488,21 @@ public:
     std::string direct_object() const override { return name; }
     std::string indirect_object() const override { return name; }
     std::string possessive() const override;
+
+// adapter for std::visit
+    struct melee {
+        npc& p;
+
+        melee(npc& p) noexcept : p(p) {}
+        melee(const melee& src) = delete;
+        melee(melee&& src) = delete;
+        melee& operator=(const melee& src) = delete;
+        melee& operator=(melee&& src) = delete;
+        ~melee() = default;
+
+        void operator()(monster* target) const;
+        void operator()(player* target) const;
+    };
 
 // #############   VALUES   ################
 

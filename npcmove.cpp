@@ -5,6 +5,7 @@
 #include "mapbuffer.h"
 #include "act_obj.h"
 #include "recent_msg.h"
+#include "fragment.inc/rng_box.hpp"
 #include "Zaimoni.STL/functional.hpp"
 
 #include <sstream>
@@ -332,26 +333,42 @@ void npc::move(game *g)
  execute_action(g, action, target);
 }
 
-static bool decode_target(int target, npc::ai_target& dest)
+typedef std::pair<point, std::variant<monster*, npc*, pc*> > ai_target;	// expect to simplify this
+
+static bool decode_target(int target, ai_target& dest)
 {
 	auto g = game::active();
 	if (0 <= target && g->z.size() > target) {
 		auto& mon = g->z[target];
-		dest = npc::ai_target(mon.pos, std::tuple<monster*, player*, npc*>(&mon, nullptr, nullptr));
+		dest = ai_target(mon.pos, &mon);
 		return true;
 	} else if (TARGET_PLAYER == target) {
 		auto& u = g->u;
-		dest = npc::ai_target(u.pos, std::tuple<monster*, player*, npc*>(nullptr, &u, nullptr));
+		dest = ai_target(u.pos, &u);
 		return true;
 	} else if (TARGET_PLAYER > target && g->active_npc.size()>((TARGET_PLAYER-1) - target)) {	// 2019-11-21: UNTESTED
 		auto npc_index = (TARGET_PLAYER - 1) - target;
 		if (g->active_npc.size() > npc_index) {
 			auto& nPC = g->active_npc[npc_index];
-			dest = npc::ai_target(nPC.pos, std::tuple<monster*, player*, npc*>(nullptr, nullptr, &nPC));
+			dest = ai_target(nPC.pos, &nPC);
 			return true;
 		}
 	}
 	return false;
+}
+
+static std::optional<std::variant<monster*, npc*, pc*> > decode_target(int target)
+{
+	auto g = game::active();
+	if (0 <= target && g->z.size() > target) return &g->z[target];
+	else if (TARGET_PLAYER == target) return &g->u;
+	else if (TARGET_PLAYER > target && g->active_npc.size() > ((TARGET_PLAYER - 1) - target)) {	// 2019-11-21: UNTESTED
+		auto npc_index = (TARGET_PLAYER - 1) - target;
+		if (g->active_npc.size() > npc_index) {
+			return &g->active_npc[npc_index];
+		}
+	}
+	return std::nullopt;
 }
 
 void npc::execute_action(game *g, const ai_action& action, int target)
@@ -362,7 +379,7 @@ void npc::execute_action(game *g, const ai_action& action, int target)
  }
  
  // C:Whales action processing
- npc::ai_target Target;
+ ai_target Target;
  const int oldmoves = moves;
 
  switch (action.first) {
@@ -394,11 +411,8 @@ void npc::execute_action(game *g, const ai_action& action, int target)
 #endif
 
  case npc_melee:
-  if (decode_target(target, Target)) {
-	  if (auto mon = std::get<0>(Target.second)) melee_monster(g, *mon);
-	  else if (auto pc = std::get<1>(Target.second)) melee_player(g, *pc);
-	  else if (auto nPC = std::get<2>(Target.second)) melee_player(g, *nPC);
-	  // invariant violation if no case processes
+  if (auto mob = decode_target(target)) {
+	  std::visit(npc::melee(*this), *mob);
 	  break;
   }
 #ifndef NDEBUG
@@ -1208,10 +1222,8 @@ void npc::move_to(game *g, point pt)
    recoil /= 2;
   }
  }
- if (has_disease(DI_STUNNED)) {
-  pt.x = rng(pos.x - 1, pos.x + 1);
-  pt.y = rng(pos.y - 1, pos.y + 1);
- }
+ if (has_disease(DI_STUNNED)) pt = pos + rng(within_rldist<1>);
+
  // ok to try to path to something in sight
  if (rl_dist(pos, pt) > 1) {
   if (const auto linet = g->m.sees(pos, pt, -1)) pt = line_to(pos, pt, *linet)[0];
@@ -1563,10 +1575,8 @@ void npc::melee_monster(game *g, monster& monhit)
  if (monhit.hurt(dam)) g->kill_mon(monhit);
 }
 
-void npc::melee_player(game *g, player &foe)
-{
- hit_player(g, foe);
-}
+void npc::melee::operator()(monster* target) const { p.melee_monster(game::active(), *target); }
+void npc::melee::operator()(player* target) const { p.hit_player(game::active(), *target); }
 
 bool npc::best_melee_weapon(int& inv_index) const
 {
