@@ -1230,14 +1230,14 @@ void npc::move_to(game *g, point pt)
  }
  if (pt == pos)	// We're just pausing!
   moves -= mobile::mp_turn;
- else if (auto mon = g->mon(pt)) {	// Shouldn't happen, but it might.
-  melee_monster(g, *mon);
- } else if (g->u.pos == pt) {
-  say(g, "<let_me_pass>");
-  moves -= mobile::mp_turn;
- } else if (g->nPC(pt))
-// \todo Determine if it's an enemy NPC (hit them), or a friendly in the way
-  moves -= mobile::mp_turn;
+ else if (auto mob = g->mob_at(pt)) { // Shouldn't happen, but it might.
+	 if (std::visit(player::is_enemy_of(*this), *mob)) {
+		 std::visit(npc::melee(*this), *mob);
+	 } else {
+		 say(g, "<let_me_pass>");
+		 moves -= mobile::mp_turn;
+	 }
+ }
  else if (g->m.move_cost(pt) > 0) {
   screenpos_set(pt);
   moves -= run_cost(g->m.move_cost(pt) * (mobile::mp_turn/2));
@@ -1569,13 +1569,12 @@ npc::ai_action npc::scan_new_items(game *g, int target)
  return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());
 }
 
-void npc::melee_monster(game *g, monster& monhit)
-{
- int dam = hit_mon(g, &monhit);
- if (monhit.hurt(dam)) g->kill_mon(monhit);
+void npc::melee::operator()(monster* target) const {
+	const auto g = game::active();
+	int dam = p.hit_mon(g, target);
+	if (target->hurt(dam)) g->kill_mon(*target);
 }
 
-void npc::melee::operator()(monster* target) const { p.melee_monster(game::active(), *target); }
 void npc::melee::operator()(player* target) const { p.hit_player(game::active(), *target); }
 
 bool npc::best_melee_weapon(int& inv_index) const

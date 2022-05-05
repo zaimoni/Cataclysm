@@ -131,6 +131,7 @@ class game : public reality_bubble
   const monster* mon(const GPS_loc& gps) const { return const_cast<game*>(this)->mon(gps); }
   mobile* mob(const GPS_loc& gps);  // does not include vehicles
   const mobile* mob(const GPS_loc& gps) const { return const_cast<game*>(this)->mob(gps); }
+  std::optional<std::variant<monster*, npc*, pc*> > mob_at(const point& pt);
   std::optional<std::variant<monster*, npc*, pc*> > mob_at(const GPS_loc& gps);
   std::optional<std::vector<std::variant<monster*, npc*, pc*> > > mobs_in_range(const GPS_loc& gps, int range);
 
