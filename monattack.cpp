@@ -746,14 +746,16 @@ void mattack::vortex(game *g, monster *z)
 // Moves are NOT used up by this attack, as it is "passive"
  z->sp_timeout = z->type->sp_freq;
 // Before anything else, smash terrain!
- for (int x = z->pos.x - 2; x <= z->pos.x + 2; x++) {
-  for (int y = z->pos.y - 2; y <= z->pos.y + 2; y++) {
-   if (x == z->pos.x && y == z->pos.y) y++; // Don't throw us!
-   std::string sound;
-   g->m.bash(x, y, 14, sound);
-   g->sound(point(x, y), 8, sound);
-  }
- }
+ auto wind_damage = [&](point delta) {
+     if (point(0) == delta) return;
+     std::string sound;
+     auto loc = z->GPSpos + delta;
+     loc.bash(14, sound);
+     loc.sound(8, sound);
+ };
+
+ forall_do_inclusive(within_rldist<2>, wind_damage);
+
  for (int x = z->pos.x - 2; x <= z->pos.x + 2; x++) {
   for (int y = z->pos.y - 2; y <= z->pos.y + 2; y++) {
    if (x == z->pos.x && y == z->pos.y) y++; // Don't throw us!
