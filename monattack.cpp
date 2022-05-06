@@ -734,6 +734,46 @@ void mattack::tentacle(game *g, monster *z)
  g->u.hit(g, hit, side, dam, 0);
 }
 
+namespace {
+
+    struct hit_by_item {
+        item& obj;
+        int dam;
+        monster* killed_by_mon;
+        player* killed_by_player;
+
+        // Waterfall/SSADM lifecycle for these constructors
+        hit_by_item(item& obj, int dam) noexcept : obj(obj), dam(dam), killed_by_mon(nullptr), killed_by_player(nullptr) {};
+        hit_by_item(item& obj, int dam, monster* killed_by_mon) noexcept : obj(obj), dam(dam), killed_by_mon(killed_by_mon), killed_by_player(nullptr) {};
+        hit_by_item(item& obj, int dam, player* killed_by_player) noexcept : obj(obj), dam(dam), killed_by_mon(nullptr), killed_by_player(killed_by_player) {};
+        hit_by_item(const hit_by_item& src) = delete;
+        hit_by_item(hit_by_item&& src) = delete;
+        hit_by_item& operator=(const hit_by_item& src) = delete;
+        hit_by_item& operator=(hit_by_item&& src) = delete;
+        ~hit_by_item() = default;
+
+        void operator()(monster* target) {
+            if (target->hurt(dam)) {
+                const auto g = game::active();
+                if (killed_by_mon) g->kill_mon(*target, killed_by_mon);
+                else if (killed_by_player) g->kill_mon(*target, killed_by_player);
+                else g->kill_mon(*target);
+            }
+        }
+
+        void operator()(player* target) {
+            body_part hit = random_body_part();
+            int side = rng(0, 1);
+            static auto hit_by = [&]() {
+                return std::string("A ") + obj.tname() + " hits " + target->possessive() + " " + body_part_name(hit, side) + " for " + std::to_string(dam) + " damage!";
+            };
+            target->if_visible_message(hit_by);
+            target->hit(game::active(), hit, side, dam, 0);
+        }
+    };
+
+}
+
 void mattack::vortex(game *g, monster *z)
 {
  static const int base_mon_throw_range[mtype::MS_MAX] = {5, 3, 2, 1, 0};
@@ -769,21 +809,16 @@ void mattack::vortex(game *g, monster *z)
      std::vector<point> traj = continue_line(from_monster, distance);
      for (int i = 0; i < traj.size() && dam > 0; i++) {
       g->m.shoot(g, traj[i], dam, false, 0);
-      if (monster* const m_at = g->mon(traj[i])) {
-       if (m_at->hurt(dam)) g->kill_mon(*m_at, z);
-       dam = 0;
-      }
+      if (auto mob = g->mob_at(traj[i])) {
+          std::visit(hit_by_item(thrown, dam, z), *mob);
+          dam = 0;
+      };
+
       if (g->m.move_cost(traj[i]) == 0) {
        dam = 0;
        i--;
-      } else if (traj[i] == g->u.pos) {
-       body_part hit = random_body_part();
-       int side = rng(0, 1);
-	   messages.add("A %s hits your %s for %d damage!", thrown.tname().c_str(), body_part_name(hit, side), dam);
-       g->u.hit(g, hit, side, dam, 0);
-       dam = 0;
       }
-// TODO: Hit NPCs
+
       if (dam == 0 || i == traj.size() - 1) {
        g->m.hard_landing(traj[i], std::move(thrown));
       }
