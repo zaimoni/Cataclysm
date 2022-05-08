@@ -10,6 +10,7 @@ class map;
 class game;
 class item;
 class player;
+class pc;
 
 // note partial overlap with disease effects for the player
 enum monster_effect_type {
@@ -130,7 +131,7 @@ class monster : public mobile {
  int  melee_skill() const override { return type->melee_skill; }
  int min_technique_power() const override { return type->size; }
  int  fall_damage() const;	// How much a fall hurts us
- void die();
+ void killed(pc* by = nullptr);
 
 // Other
  int knockback_size() const override { return type->size; }
@@ -216,6 +217,8 @@ private:
  bool handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim) override;
 
  void make_friendly(int duration);
+
+ void die(); // \todo? inline into sole caller
 };
 
 template<m_flag f> bool is(const monster* z) { return z && z->has_flag(f); }

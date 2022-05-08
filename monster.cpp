@@ -591,6 +591,16 @@ void monster::die()
  }
 }
 
+void monster::killed(pc* by)
+{
+    assert(!dead);
+    dead = true;
+    if (by) by->record_kill(*this);
+    for (decltype(auto) it : inv) GPSpos.add(std::move(it));
+    inv.clear();
+    die();
+}
+
 static constexpr monster_effect_type translate(mobile::effect src)
 {
     switch (src)

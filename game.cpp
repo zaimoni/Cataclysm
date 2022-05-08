@@ -3142,17 +3142,6 @@ bool game::is_in_sunlight(const GPS_loc& loc) const
     return loc.is_outside() && light_level(loc) >= 40 && (weather == WEATHER_CLEAR || weather == WEATHER_SUNNY);
 }
 
-void game::_kill_mon(monster& target, bool u_did_it)
-{
-    assert(!target.dead);
-    target.dead = true;
-    if (u_did_it) u.record_kill(target);
-    for (decltype(auto) it : target.inv) target.GPSpos.add(std::move(it));
-    target.inv.clear();
-    target.die();
-    // z_erase(index);	// highly unsafe, do this compaction at end-of-turn
-}
-
 void game::_explode_mon(monster& target, player* me)
 {
     assert(!target.dead);

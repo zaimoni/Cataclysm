@@ -142,9 +142,9 @@ class game : public reality_bubble
   static unsigned char light_level(const GPS_loc& src);
   unsigned char light_level() const { return light_level(u.GPSpos); }
   // Kill that monster; fixes any pointers etc
-  void kill_mon(monster& target) { if (!target.dead) _kill_mon(target, false); }
-  void kill_mon(monster& target, player* me) { if (!target.dead) _kill_mon(target, me == &u); }
-  void kill_mon(monster& target, monster* z) { if (!target.dead) _kill_mon(target, z->is_friend()); } // not nearly enough detail
+  void kill_mon(monster& target) { if (!target.dead) target.killed(); }
+  void kill_mon(monster& target, player* me) { if (!target.dead) target.killed(dynamic_cast<pc*>(me)); }
+  void kill_mon(monster& target, monster* z) { if (!target.dead) target.killed(z->is_friend() ? &u : nullptr); } // not nearly enough detail
   // Explode a monster; like kill_mon but messier
   void explode_mon(monster& target, player* me = nullptr) { if (!target.dead) _explode_mon(target, me); }
   void plfire(bool burst);	// Player fires a gun (target selection)...
@@ -296,7 +296,6 @@ class game : public reality_bubble
   void replace_stair_monsters();
   void update_stair_monsters();
   void spawn_mon(int shift, int shifty); // Called by update_map, sometimes
-  void _kill_mon(monster& target, bool u_did_it);
   void _explode_mon(monster& target, player* me);
 
 // Routine loop functions, approximately in order of execution
