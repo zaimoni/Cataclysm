@@ -130,7 +130,7 @@ class monster : public mobile {
  int  melee_skill() const override { return type->melee_skill; }
  int min_technique_power() const override { return type->size; }
  int  fall_damage() const;	// How much a fall hurts us
- void die(game *g);
+ void die();
 
 // Other
  int knockback_size() const override { return type->size; }

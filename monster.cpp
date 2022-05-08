@@ -520,7 +520,7 @@ static void leaderless_hive(int id, const std::vector<mongroup*>& m_gr)
     }
 }
 
-void monster::die(game *g)
+void monster::die()
 {
  if (!dead) dead = true;
 // Drop goodies
@@ -548,7 +548,7 @@ void monster::die(game *g)
     selected_item++;
     cur_chance -= item::types[mapit[selected_item]]->rarity;
    }
-   g->m.add_item(pos, item::types[mapit[selected_item]], 0);
+   GPSpos.add(item(item::types[mapit[selected_item]], 0)); // items assumed to be pre-apocalypse
    if (type->item_chance < 0) animal_done = true;	// Only drop ONE item.
   }
  } // Done dropping items
@@ -571,6 +571,8 @@ void monster::die(game *g)
       }
   } else mission_id = -1;	// active reset
  }
+
+ const auto g = game::active();
 // Also, perform our death function
  (type->dies)(g, this);
 // If our species fears seeing one of our own die, process that

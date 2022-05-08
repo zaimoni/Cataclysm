@@ -3149,7 +3149,7 @@ void game::_kill_mon(monster& target, bool u_did_it)
     if (u_did_it) u.record_kill(target);
     for (decltype(auto) it : target.inv) target.GPSpos.add(std::move(it));
     target.inv.clear();
-    target.die(this);
+    target.die();
     // z_erase(index);	// highly unsafe, do this compaction at end-of-turn
 }
 

@@ -144,7 +144,7 @@ class game : public reality_bubble
   // Kill that monster; fixes any pointers etc
   void kill_mon(monster& target) { if (!target.dead) _kill_mon(target, false); }
   void kill_mon(monster& target, player* me) { if (!target.dead) _kill_mon(target, me == &u); }
-  void kill_mon(monster& target, monster* z) { if (!target.dead) _kill_mon(target, (0 != z->friendly)); } // not nearly enough detail
+  void kill_mon(monster& target, monster* z) { if (!target.dead) _kill_mon(target, z->is_friend()); } // not nearly enough detail
   // Explode a monster; like kill_mon but messier
   void explode_mon(monster& target, player* me = nullptr) { if (!target.dead) _explode_mon(target, me); }
   void plfire(bool burst);	// Player fires a gun (target selection)...
