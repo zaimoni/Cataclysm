@@ -3,6 +3,7 @@
 #include "game.h"
 #include "rng.h"
 #include "line.h"
+#include "monattack_spores.hpp"
 #include "recent_msg.h"
 
 void mdeath::normal(game *g, monster *z)
@@ -112,25 +113,11 @@ void mdeath::triffid_heart(game *g, monster *z)
 
 void mdeath::fungus(game *g, monster *z)
 {
- monster spore(mtype::types[mon_spore]);
- g->sound(z->pos, 10, "Pouf!");
- for (int i = -1; i <= 1; i++) {
-  for (int j = -1; j <= 1; j++) {
-   point dest(z->pos.x + i, z->pos.y + j);
-   if (g->m.move_cost(dest) > 0 && one_in(5)) {
-	monster* const m_at = g->mon(dest);
-    if (m_at) {	// Spores hit a monster
-     if (g->u.see(dest)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
-     if (!m_at->make_fungus()) g->kill_mon(*m_at, z);
-    } else if (g->u.pos == dest)	// V 0.2.1 \todo infect npcs
-     g->u.infect(DI_SPORES, bp_mouth, 4, 30);
-    else {
-     spore.spawn(dest);
-     g->z.push_back(spore);
+    z->GPSpos.sound(10, "Pouf!");
+    for (decltype(auto) dir : Direction::vector) {
+        const auto dest(z->GPSpos + dir);
+        if (0 < dest.move_cost() && one_in(5)) spray_spores(dest, z);
     }
-   }
-  }
- }
 }
 
 void mdeath::fungusawake(game *g, monster *z)

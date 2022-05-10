@@ -207,12 +207,6 @@
     <ClInclude Include="file.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Zaimoni.STL\Compiler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Zaimoni.STL\Logging.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Zaimoni.STL\MetaRAM.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -307,6 +301,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="gui.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Zaimoni.STL\Compiler.h">
+      <Filter>Header Files\Zaimoni.STL</Filter>
+    </ClInclude>
+    <ClInclude Include="Zaimoni.STL\Logging.h">
+      <Filter>Header Files\Zaimoni.STL</Filter>
+    </ClInclude>
+    <ClInclude Include="monattack_spores.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

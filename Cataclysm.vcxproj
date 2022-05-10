@@ -201,6 +201,7 @@
     <ClInclude Include="mission.h" />
     <ClInclude Include="mobile.h" />
     <ClInclude Include="monattack.h" />
+    <ClInclude Include="monattack_spores.hpp" />
     <ClInclude Include="mondeath.h" />
     <ClInclude Include="mongroup.h" />
     <ClInclude Include="monster.h" />

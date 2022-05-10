@@ -8,6 +8,7 @@
 #include "stl_typetraits.h"
 #include "stl_limits.h"
 #include "line.h"
+#include "monattack_spores.hpp"
 #include "recent_msg.h"
 #include "saveload.h"
 #include "zero.h"
@@ -597,16 +598,8 @@ void dis_effect(game* g, player& p, disease& dis)
                 p.moves -= 5 * mobile::mp_turn;
                 monster spore(mtype::types[mon_spore]);
                 for (decltype(auto) dir : Direction::vector) {
-                    decltype(auto) dest = p.pos + dir;
-                    if (g->m.move_cost(dest) > 0 && one_in(5)) {
-                        if (monster* const m_at = g->mon(dest)) {	// Spores hit a monster
-                            if (g->u.see(dest)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
-                            if (!m_at->make_fungus()) g->kill_mon(*m_at);
-                        } else {	// \todo infect npcs or players
-                            spore.spawn(dest);
-                            g->z.push_back(spore);
-                        }
-                    }
+                    const auto dest(p.GPSpos + dir);
+                    if (0 < dest.move_cost() && one_in(5)) spray_spores(dest, nullptr);
                 }
             }
             else if (one_in(6000 + bonus * 20)) {

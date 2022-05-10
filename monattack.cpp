@@ -4,6 +4,7 @@
 #include "game.h"
 #include "rng.h"
 #include "line.h"
+#include "monattack_spores.hpp"
 #include "bodypart.h"
 #include "recent_msg.h"
 #include "stl_limits.h"
@@ -521,29 +522,21 @@ void mattack::fungus(game *g, monster *z)
  if (g->z.size() > 100) return; // Prevent crowding the monster list.
  z->moves -= 2 * mobile::mp_turn; // It takes a while
  z->sp_timeout = z->type->sp_freq; // Reset timer
- monster spore(mtype::types[mon_spore]);
+
  int moncount = 0;
- g->sound(z->pos, 10, "Pouf!");
+ int blocked = 0;
+ z->GPSpos.sound(10, "Pouf!");
  if (g->u.see(*z)) messages.add("Spores are released from the %s!", z->name().c_str());
  for (decltype(auto) dir : Direction::vector) {
-     point dest(z->pos + dir);
-     monster* const m_at = g->mon(dest);
-     if (m_at) ++moncount;
-     if (g->m.move_cost(dest) > 0 && one_in(5)) {
-         if (m_at) {	// Spores hit a monster
-             // \todo? Is it correct for spores to affect digging monsters (current behavior)
-             if (g->u.see(*m_at)) messages.add("The %s is covered in tiny spores!", m_at->name().c_str());
-             if (!m_at->make_fungus()) g->kill_mon(*m_at, z);
-             // \todo infect NPCs (both DI_SPORES and DI_FUNGUS have to become NPC-competent)
-         } else if (g->u.pos == dest)
-             g->u.infect(DI_SPORES, bp_mouth, 4, 30); // Spores hit the player
-         else { // Spawn a spore
-             spore.spawn(dest);
-             g->z.push_back(spore);
+     const auto dest(z->GPSpos + dir);
+     if (0 < dest.move_cost()) {
+         if (one_in(5)) {
+             if (spray_spores(dest, z)) ++moncount;
          }
-     }
+     } else ++blocked; // C:Z : if the tile is *blocked*, it might as well have a monster for purposes of dormancy
  }
- if (moncount >= 7) z->poly(mtype::types[mon_fungaloid_dormant]);	// If we're surrounded by monsters, go dormant
+ if (7 <= moncount) z->poly(mtype::types[mon_fungaloid_dormant]);	// If we're surrounded by monsters, go dormant
+ else if (8 <= moncount+blocked) z->poly(mtype::types[mon_fungaloid_dormant]);
 }
 
 void mattack::fungus_sprout(game *g, monster *z)
