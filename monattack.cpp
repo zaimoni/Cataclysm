@@ -1249,8 +1249,7 @@ void mattack::breathe(monster& z)
  }
 
  if (!valid.empty()) {
-  monster spawned(mtype::types[mon_breather]);
-  spawned.spawn(valid[rng(0, valid.size() - 1)]);
+  monster spawned(mtype::types[mon_breather], valid[rng(0, valid.size() - 1)]);
   spawned.sp_timeout = 12;
   game::active()->z.push_back(std::move(spawned));
  }

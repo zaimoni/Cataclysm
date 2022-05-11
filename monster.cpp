@@ -40,6 +40,14 @@ monster::monster(const mtype *t, point origin) noexcept
 {
 }
 
+monster::monster(const mtype* t, GPS_loc origin) noexcept
+    : mobile(origin, t->speed), pos(20, 10), wand(point(-1, -1), 0), spawnmap(-1, -1), spawnpos(-1, -1), speed(t->speed), hp(t->hp),
+    sp_timeout(t->sp_freq), friendly(0), anger(t->agro), morale(t->morale), faction_id(-1), mission_id(-1), type(t), dead(false), made_footstep(false)
+{
+    // inline our _set_screenpos here (we cannot call it from the constructor, as it's a virtual function)
+    if (auto pt = screen_pos()) pos = *pt;
+}
+
 DEFINE_ACID_ASSIGN_W_MOVE(monster)
 
 void monster::screenpos_set(point pt) { GPSpos = overmap::toGPS(pos = pt); }
