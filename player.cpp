@@ -440,6 +440,18 @@ std::vector<item>* player::use_stack_at(const point& pt) const
     return ret;
 }
 
+static void incoming_nether_portal(GPS_loc dest)
+{
+    const auto g = game::active();
+    if (0 >= dest.move_cost()) dest.ter() = t_rubble;
+    g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], dest));
+    // \todo technically should also cancel activities for all NPCs that see it
+    if (g->u.see(dest)) {
+        g->u.cancel_activity_query("A monster appears nearby!");
+        messages.add("A portal opens nearby, and a monster crawls through!");
+    }
+}
+
 void dis_effect(game* g, player& p, disease& dis)
 {
     const auto delta = dis_stat_effects(p, dis);
@@ -448,10 +460,8 @@ void dis_effect(game* g, player& p, disease& dis)
     p.int_cur += delta.Int;
     p.per_cur += delta.Per;
 
-    static std::function<point()> within_four = [&]() { return p.pos + rng(within_rldist<4>); };
-    static std::function<bool(const point&)> ok = [&](const point& test) {
-        return !g->survivor(test) && !g->mon(test);
-    };
+    static std::function<GPS_loc()> within_four = [&]() { return p.GPSpos + rng(within_rldist<4>); };
+    static std::function<bool(const GPS_loc&)> ok = [&](const GPS_loc& test) { return !g->mob_at(test); };
 
     int bonus;
     switch (dis.type) {
@@ -866,12 +876,7 @@ void dis_effect(game* g, player& p, disease& dis)
         if (dis.duration > HOURS(6)) { // 12 teles
             if (one_in(HOURS(6) + MINUTES(40) - (dis.duration - HOURS(6)) / 4)) {
                 if (auto dest = LasVegasChoice(10, within_four, ok)) {
-                    if (0 >= g->m.move_cost(*dest)) g->m.ter(*dest) = t_rubble;
-                    g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], *dest));
-                    if (g->u.see(*dest)) {
-                        g->u.cancel_activity_query("A monster appears nearby!");
-                        messages.add("A portal opens nearby, and a monster crawls through!");
-                    }
+                    incoming_nether_portal(*dest);
                     if (one_in(2)) p.rem_disease(DI_TELEGLOW);
                 }
             }
@@ -908,12 +913,7 @@ void dis_effect(game* g, player& p, disease& dis)
         // C: Whales scale factor 100000 slightly less than one week 2021-06-27 zaimoni
         if (one_in(DAYS(7) / dis.duration) && one_in(DAYS(7) / dis.duration) && one_in(MINUTES(25))) {
             if (auto dest = LasVegasChoice(10, within_four, ok)) {
-                if (0 >= g->m.move_cost(*dest)) g->m.ter(*dest) = t_rubble;
-                g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], *dest));
-                if (g->u.see(*dest)) {
-                    g->u.cancel_activity_query("A monster appears nearby!");
-                    messages.add("A portal opens nearby, and a monster crawls through!");
-                }
+                incoming_nether_portal(*dest);
                 dis.duration /= 4;
             }
         }
