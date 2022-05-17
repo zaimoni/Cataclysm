@@ -2693,6 +2693,37 @@ void game::sound(const point& pt, int vol, std::string description)
  messages.add("From the %s you hear %s", direction_name(direction_from(u.pos, pt)), description.c_str());
 }
 
+struct hit_by_shrapnel
+{
+    int dam;
+
+    hit_by_shrapnel(int dam) noexcept : dam(dam) {}
+    hit_by_shrapnel(const hit_by_shrapnel& src) = delete;
+    hit_by_shrapnel(hit_by_shrapnel&& src) = delete;
+    hit_by_shrapnel& operator=(const hit_by_shrapnel& src) = delete;
+    hit_by_shrapnel& operator=(hit_by_shrapnel&& src) = delete;
+    ~hit_by_shrapnel() = default;
+
+    void operator()(monster* target) {
+        dam -= target->armor_cut();
+        if (target->hurt(dam)) game::active()->kill_mon(*target);
+    }
+    void operator()(npc* target) {
+        body_part hit = random_body_part();
+        if (hit == bp_eyes || hit == bp_mouth || hit == bp_head) dam = rng(2 * dam, 5 * dam);
+        else if (hit == bp_torso) dam = rng(1.5 * dam, 3 * dam);
+        target->hit(game::active(), hit, rng(0, 1), 0, dam);
+        if (target->hp_cur[hp_head] <= 0 || target->hp_cur[hp_torso] <= 0) target->die(game::active());
+    }
+    // XXX players are special \todo fix
+    void operator()(pc* target) {
+        body_part hit = random_body_part();
+        int side = rng(0, 1);
+        messages.add("Shrapnel hits your %s!", body_part_name(hit, side));
+        target->hit(game::active(), hit, side, 0, dam);
+    }
+};
+
 void game::explosion(int x, int y, int power, int shrapnel, bool fire)
 {
  if (0 >= power) return; // no-op if zero power (could happen if vehicle gas tank near-empty
@@ -2786,20 +2817,8 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
     wrefresh(w_terrain);
     nanosleep(&ts, nullptr);
    }
-   if (monster* const m_at = mon(traj[j])) {
-    dam -= m_at->armor_cut();
-    if (m_at->hurt(dam)) kill_mon(*m_at);
-   } else if (npc* const _npc = nPC(traj[j])) {
-    body_part hit = random_body_part();
-    if (hit == bp_eyes || hit == bp_mouth || hit == bp_head) dam = rng(2 * dam, 5 * dam);
-    else if (hit == bp_torso) dam = rng(1.5 * dam, 3 * dam);
-	_npc->hit(this, hit, rng(0, 1), 0, dam);
-    if (_npc->hp_cur[hp_head] <= 0 || _npc->hp_cur[hp_torso] <= 0) _npc->die(this);
-   } else if (traj[j] == u.pos) {
-    body_part hit = random_body_part();
-    int side = rng(0, 1);
-	messages.add("Shrapnel hits your %s!", body_part_name(hit, side));
-    u.hit(this, hit, side, 0, dam);
+   if (auto mob = mob_at(traj[j])) {
+    std::visit(hit_by_shrapnel(dam), *mob);
    } else
     m.shoot(this, traj[j], dam, j == traj.size() - 1, 0);
   }
