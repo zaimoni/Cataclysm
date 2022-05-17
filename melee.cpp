@@ -276,7 +276,7 @@ int player::hit_mon(game *g, monster *z, bool allow_grab) // defaults to true
  const int stuck_penalty = weapon.is_style() ? 0 : roll_stuck_penalty(*this, z, (stab_dam >= cut_dam));
 
 // Pick one or more special attacks
- technique_id technique = pick_technique(g, z, nullptr, critical_hit, allow_grab);
+ technique_id technique = pick_technique(z, nullptr, critical_hit, allow_grab);
 
 // Handles effects as well; not done in melee_affect_*
  perform_technique(technique, g, z, nullptr, bash_dam, cut_dam, stab_dam, pain);
@@ -378,7 +378,7 @@ void player::hit_player(game *g, player &p, bool allow_grab)
  const int stuck_penalty = weapon.is_style() ? 0 : roll_stuck_penalty(*this, nullptr, (stab_dam >= cut_dam));
 
 // Pick one or more special attacks
- technique_id technique = pick_technique(g, nullptr, &p, critical_hit, allow_grab);
+ technique_id technique = pick_technique(nullptr, &p, critical_hit, allow_grab);
 
 // Handles effects as well; not done in melee_affect_*
  perform_technique(technique, g, nullptr, &p, bash_dam, cut_dam, stab_dam, pain);
@@ -686,7 +686,7 @@ int player::roll_stab_damage(const monster *z, bool crit) const
  return ret;
 }
 
-technique_id player::pick_technique(const game *g, const monster *z, const player *p, bool crit, bool allowgrab) const
+technique_id player::pick_technique(const monster *z, const player *p, bool crit, bool allowgrab) const
 {
  if (z == nullptr && p == nullptr) return TEC_NULL; // \todo error condition?
  const mobile* const mob = z ? static_cast<const mobile*>(z) : p;
@@ -712,6 +712,7 @@ technique_id player::pick_technique(const game *g, const monster *z, const playe
 
  }
 
+ const auto g = game::active();
  if (possible.empty()) { // Use non-crits only if any crit-onlies aren't used
 
   if (weapon.has_technique(TEC_DISARM, this) && !z && !p->unarmed_attack() &&
@@ -728,16 +729,10 @@ technique_id player::pick_technique(const game *g, const monster *z, const playe
   if (weapon.has_technique(TEC_WIDE, this)) { // Count monsters
    int enemy_count = 0;
    for (decltype(auto) delta : Direction::vector) {
-       const point pt(pos + delta);
-       // XXX faction-unaware
-       if (const monster* const m_at = g->mon(pt)) {
-           if (m_at->is_enemy(this)) enemy_count++;
+       if (auto mob = g->mob_at(GPSpos + delta)) {
+           if (std::visit(player::is_enemy_of(*this), *mob)) enemy_count++;
            else enemy_count -= 2;
        }
-       if (const npc* const nPC = g->nPC(pt)) {
-           if (nPC->attitude == NPCATT_KILL) enemy_count++;
-           else enemy_count -= 2;
-       } // XXX \todo handle npc wide technique vs player
    }
    if (enemy_count >= (possible.empty() ? 2 : 3)) possible.push_back(TEC_WIDE);
   }

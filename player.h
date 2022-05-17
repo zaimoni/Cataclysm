@@ -416,7 +416,7 @@ private:
  int roll_cut_damage(const monster *z, bool crit) const;
  int roll_stab_damage(const monster *z, bool crit) const;
 
- technique_id pick_technique(const game *g, const monster *z, const player *p, bool crit, bool allowgrab) const;
+ technique_id pick_technique(const monster *z, const player *p, bool crit, bool allowgrab) const;
  void perform_technique(technique_id technique, game *g, monster *z, player *p,
                        int &bash_dam, int &cut_dam, int &pierce_dam, int &pain);
 
