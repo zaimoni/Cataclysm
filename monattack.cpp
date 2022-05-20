@@ -649,30 +649,43 @@ void mattack::plant(game *g, monster *z)
  }
 }
 
-void mattack::disappear(game *g, monster *z)
-{
- z->hp = 0;
-}
+void mattack::disappear(monster& z) { z.hp = 0; }
+
+struct blob_coat {
+    monster& z;
+
+    blob_coat(monster& z) noexcept : z(z) {}
+    blob_coat(const blob_coat& src) = delete;
+    blob_coat(blob_coat&& src) = delete;
+    blob_coat& operator=(const blob_coat& src) = delete;
+    blob_coat& operator=(blob_coat&& src) = delete;
+    ~blob_coat() = default;
+
+    bool operator()(monster* target) {
+        return target->hit_by_blob(&z, rng(0, z.hp) > rng(0, target->hp));
+    };
+
+    bool operator()(player* target) {
+        target->add_disease(DI_SLIMED, rng(0, z.hp));
+        return true;
+    };
+};
 
 void mattack::formblob(game *g, monster *z)
 {
- bool didit = false;
  for (decltype(auto) dir : Direction::vector) {
-     auto test = z->pos + dir;
-     if (const auto whom = g->survivor(test)) {
-         // If we hit the player, cover them with slime
-         didit = true;
-         g->u.add_disease(DI_SLIMED, rng(0, z->hp));
-     } else if (monster* const m_at = g->mon(test)) {
-         didit = m_at->hit_by_blob(z, rng(0, z->hp) > rng(0, m_at->hp));
+     bool didit = false;
+     auto loc = z->GPSpos + dir;
+     if (auto mob = g->mob_at(loc)) {
+         didit = std::visit(blob_coat(*z), *mob);
      } else if (z->speed >= 85 && rng(0, 250) < z->speed) {
          // If we're big enough, spawn a baby blob.
          didit = true;
          z->speed -= 15;
-         monster blob(mtype::types[mon_blob_small], test);
+         monster blob(mtype::types[mon_blob_small], loc);
          blob.speed = z->speed - rng(30, 60);
          blob.hp = blob.speed;
-         g->z.push_back(blob);
+         g->z.push_back(std::move(blob));
      }
      if (didit) {	// We did SOMEthing.
          if (z->type->id == mon_blob && z->speed <= 50) z->poly(mtype::types[mon_blob_small]);	// We shrank!

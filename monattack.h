@@ -25,7 +25,7 @@ class mattack
   static void leap		(game *g, monster *z);
   static void dermatik	(game *g, monster *z);
   static void plant		(game *g, monster *z);
-  static void disappear	(game *g, monster *z);
+  static void disappear(monster& z);
   static void formblob	(game *g, monster *z);
   static void dogthing	(game *g, monster *z);
   static void tentacle	(game *g, monster *z);
