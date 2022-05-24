@@ -3243,6 +3243,7 @@ void game::open()
  }
 }
 
+// XXX \todo NPC version of this
 void game::close()
 {
  bool didit = false;
@@ -3251,11 +3252,18 @@ void game::close()
  int ch = input();
  point close(get_direction(ch));
  if (-2 == close.x) { messages.add("Invalid direction."); return; }
- close += u.pos;
+ auto close_at = u.GPSpos + close;
 
- if (const monster* const m_at = mon(close)) { messages.add("There's a %s in the way!", m_at->name().c_str()); return; }
+ auto _mob = mob_at(close_at);
 
- auto v = m._veh_at(close);
+ if (_mob) {
+     if (auto _mon = std::get_if<monster*>(&(*_mob))) {
+         messages.add("There's a %s in the way!", (*_mon)->name().c_str());
+         return;
+     }
+ }
+
+ auto v = close_at.veh_at();
  vehicle* const veh = v ? v->first : nullptr; // backward compatibility
  int vpart = v ? v->second : 0;
  if (veh && veh->part_flag(vpart, vpf_openable) && veh->parts[vpart].open) {
@@ -3263,13 +3271,16 @@ void game::close()
    veh->insides_dirty = true;
    didit = true;
  } else {
-   const auto& stack = m.i_at(close);
+   const auto& stack = close_at.items_at();
    if (!stack.empty()) {
      messages.add("There's %s in the way!", stack.size() == 1 ? stack[0].tname().c_str() : "some stuff");
 	 return;
    }
-   if (close == u.pos) { messages.add("There's some buffoon in the way!"); return; }
-   didit = m.close_door(close);
+   if (_mob) { // PC or NPC; monster was special-cased above
+       messages.add("There's some buffoon in the way!");
+       return;
+   }
+   didit = close_door(close_at.ter());
  }
  if (didit) u.moves -= (mobile::mp_turn / 10) * 9;
 }

@@ -109,6 +109,8 @@ template<int lb, int ub> constexpr bool any(ter_id src) {
     return lb == src || ub == src;
 }
 
+bool close_door(ter_id& t);
+
 struct ter_t {
 	static const ter_t list[num_terrain_types];
 	static std::map<ter_id, std::string> tiles;

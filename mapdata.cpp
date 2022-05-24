@@ -485,6 +485,22 @@ static const char* JSON_transcode[num_terrain_types] = {
 
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(ter_id, JSON_transcode)
 
+bool close_door(ter_id& t)
+{
+	switch (t) {
+	case t_door_o:
+		t = t_door_c;
+		return true;
+	case t_door_metal_o:
+		t = t_door_metal_c;
+		return true;
+	case t_door_glass_o:
+		t = t_door_glass_c;
+		return true;
+	default: return false;
+	}
+}
+
 using namespace cataclysm;
 
 void ter_t::init()

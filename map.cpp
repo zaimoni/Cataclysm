@@ -1353,23 +1353,6 @@ bool map::open_door(int x, int y, bool inside)
  }
 }
 
-bool map::close_door(const point& pt)
-{
- auto& t = ter(pt);
- switch(t) {
- case t_door_o:
-	 t = t_door_c;
-	 return true;
- case t_door_metal_o:
-	 t = t_door_metal_c;
-	 return true;
- case t_door_glass_o:
-	 t = t_door_glass_c;
-	 return true;
- default: return false;
- }
-}
-
 std::optional<item> map::water_from(const point& pt) const
 {
  // 2021-04-24: technically want to re-implement the toilet
