@@ -501,6 +501,29 @@ bool close_door(ter_id& t)
 	}
 }
 
+bool open_door(ter_id& t, bool inside)
+{
+	switch (t) {
+	case t_door_c:
+		t = t_door_o;
+		return true;
+	case t_door_metal_c:
+		t = t_door_metal_o;
+		return true;
+	case t_door_glass_c:
+		t = t_door_glass_o;
+		return true;
+	case t_door_locked:
+	case t_door_locked_alarm:
+		if (inside) {
+			t = t_door_o;
+			return true;
+		}
+		[[fallthrough]];
+	default: return false;
+	}
+}
+
 using namespace cataclysm;
 
 void ter_t::init()

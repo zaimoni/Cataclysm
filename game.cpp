@@ -3222,7 +3222,7 @@ void game::open()
    return;
   }
 
-  didit = m.open_door(u.pos.x + open.x, u.pos.y + open.y, (t_floor == u.GPSpos.ter()));
+  didit = open_door((u.GPSpos+open).ter(), (t_floor == u.GPSpos.ter()));
  }
  else
   messages.add("Invalid direction.");
@@ -4964,7 +4964,7 @@ void game::plmove(point delta)
 // Only lose movement if we're blind
    messages.add("You bump into a %s!", name_of(m.ter(local_dest)).c_str());
    u.moves -= mobile::mp_turn;
-  } else if (m.open_door(local_dest.x, local_dest.y, t_floor == u.GPSpos.ter()))
+  } else if (decltype(auto) ter = u.GPSpos.ter(); open_door(ter, t_floor == ter))
    u.moves -= mobile::mp_turn;
   else if (m.ter(local_dest) == t_door_locked || m.ter(local_dest) == t_door_locked_alarm) {
    u.moves -= mobile::mp_turn;

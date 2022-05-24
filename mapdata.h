@@ -110,6 +110,7 @@ template<int lb, int ub> constexpr bool any(ter_id src) {
 }
 
 bool close_door(ter_id& t);
+bool open_door(ter_id& t, bool inside);
 
 struct ter_t {
 	static const ter_t list[num_terrain_types];
