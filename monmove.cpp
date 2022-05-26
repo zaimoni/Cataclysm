@@ -340,20 +340,22 @@ void monster::footsteps(game *g, const point& pt)
 void monster::friendly_move(game *g)
 {
  moves -= mobile::mp_turn;
- if (!plans.empty() && plans[0] != g->u.pos && can_enter(g->m, plans[0])){
+ if (plans.empty() || !can_enter(g->m, plans[0])) {
+     stumble(g, false);
+     return;
+ }
   const point next(plans[0]);
   EraseAt(plans, 0);
-  monster* const m_at = g->mon(next);
-  npc* const nPC = g->nPC(next);
-  if (m_at && is_enemy(m_at) && type->melee_dice > 0) {
-      debuglog("should not be executing: monster::friendly_move/m_at && is_enemy(m_at) && type->melee_dice > 0");
+  const auto _mob = g->mob_at(next);
+  if (_mob && std::visit(monster::is_enemy_of(*this), *_mob) && 0 < type->melee_dice) {
+#ifndef NDEBUG
+      throw std::logic_error("should not be executing: _mob && std::visit(monster::is_enemy_of(*this), *_mob) && 0 < type->melee_dice");
+#else
+      debuglog("should not be executing: _mob && std::visit(monster::is_enemy_of(*this), *_mob) && 0 < type->melee_dice");
       return;
+#endif
   }
-  else if (nPC && is_enemy(nPC) && type->melee_dice > 0) {
-      debuglog("should not be executing: monster::friendly_move/nPC && is_enemy(nPC) && type->melee_dice > 0");
-      return;
-  }
-  else if (!m_at && !nPC && can_move_to(g->m, next)) move_to(g, next);
+  if (!_mob && can_move_to(g->m, next)) move_to(g, next);
   else if ((!can_move_to(g->m, next) || one_in(3)) &&
       g->m.has_flag(bashable, next) && has_flag(MF_BASHES)) {
       std::string bashsound = "NOBASH"; // If we hear "NOBASH" it's time to debug!
@@ -365,8 +367,6 @@ void monster::friendly_move(game *g)
       g->m.destroy(g, next.x, next.y, true);
       moves -= (mobile::mp_turn / 2) * 5;
   }
- } else
-  stumble(g, false);
 }
 
 std::optional<point> monster::scent_move(const game *g)
