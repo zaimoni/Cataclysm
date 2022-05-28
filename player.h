@@ -141,6 +141,9 @@ public:
  int dodge_roll() const override; // For comparison to hit_roll()
  int melee_skill() const override { return dex_cur + sklevel[sk_melee]; }
  int min_technique_power() const override { return 1 + (2 + str_cur) / 4; }
+ // V 0.2.1 \todo player variants of these so we can avoid null pointers as signal for player; alternately, unify API
+ int roll_bash_damage(const monster* z, bool crit) const;
+ int roll_cut_damage(const monster* z, bool crit) const;
 
 // ranged.cpp (at some point, historically)
  unsigned int aiming_range(const item& aimed) const;
@@ -412,8 +415,6 @@ private:
  bool scored_crit(int target_dodge = 0) const; // Critical hit?
 
  // V 0.2.1 \todo player variants of these so we can avoid null pointers as signal for player; alternately, unify API
- int roll_bash_damage(const monster *z, bool crit) const;
- int roll_cut_damage(const monster *z, bool crit) const;
  int roll_stab_damage(const monster *z, bool crit) const;
 
  technique_id pick_technique(const monster *z, const player *p, bool crit, bool allowgrab) const;

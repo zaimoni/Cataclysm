@@ -51,6 +51,19 @@ public:
 	virtual int melee_skill() const = 0;
 	virtual int min_technique_power() const = 0;
 
+	// std::visit assistants
+	struct roll_dodge
+	{
+		roll_dodge() = default;
+		roll_dodge(const roll_dodge& src) = delete;
+		roll_dodge(roll_dodge&& src) = delete;
+		roll_dodge& operator=(const roll_dodge& src) = delete;
+		roll_dodge& operator=(roll_dodge&& src) = delete;
+		~roll_dodge() = default;
+
+		auto operator()(const mobile* target) { return target->dodge_roll(); }
+	};
+
 protected:
 	mobile() noexcept : GPSpos(_ref<GPS_loc>::invalid),moves(0) {}
 	mobile(const GPS_loc& origin, int m) noexcept : GPSpos(origin), moves(m) {}

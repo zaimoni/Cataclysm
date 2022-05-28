@@ -746,6 +746,37 @@ technique_id player::pick_technique(const monster *z, const player *p, bool crit
  return possible[rng(0, possible.size() - 1)];
 }
 
+struct tech_wide_secondary_hit
+{
+    player& who;
+    std::optional<std::string> You;
+    std::optional<std::string> hit;
+
+    tech_wide_secondary_hit(player& who) noexcept : who(who) {
+        if (!who.is_npc() || game::active()->u.see(who.GPSpos)) {
+            You = who.desc(grammar::noun::role::subject);
+            hit = who.regular_verb_agreement("hit");
+        }
+    }
+    tech_wide_secondary_hit(const tech_wide_secondary_hit& src) = delete;
+    tech_wide_secondary_hit(tech_wide_secondary_hit&& src) = delete;
+    tech_wide_secondary_hit& operator=(const tech_wide_secondary_hit& src) = delete;
+    tech_wide_secondary_hit& operator=(tech_wide_secondary_hit&& src) = delete;
+    ~tech_wide_secondary_hit() = default;
+
+    void operator()(monster* target) {
+        int dam = who.roll_bash_damage(target, false) + who.roll_cut_damage(target, false);
+        target->hurt(dam);
+        if (You) messages.add("%s %s %s for %d damage!", You->c_str(), hit->c_str(), target->desc(grammar::noun::role::direct_object, grammar::article::definite).c_str(), dam);
+    }
+    void operator()(player* target) {
+        int dam = who.roll_bash_damage(nullptr, false);	// looks like (n)PC armor won't work, but covered in the hit function
+        int cut = who.roll_cut_damage(nullptr, false);
+        target->hit(game::active(), bp_legs, 3, dam, cut);
+        if (You) messages.add("%s %s %s for %d damage!", You->c_str(), hit->c_str(), target->name.c_str(), dam + cut);
+    }
+};
+
 void player::perform_technique(technique_id technique, game *g, monster *z,
                                player *p, int &bash_dam, int &cut_dam,
                                int &stab_dam, int &pain)
@@ -809,24 +840,12 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
   for (int dir = direction::NORTH; dir <= direction::NORTHWEST; ++dir) {
       const auto test = tar + direction_vector((direction)dir);
       if (test == GPSpos) continue; // Don't self-hit
-      if (const auto m_at = g->mon(test)) {
-          if (hit_roll() >= rng(0, 5) + m_at->dodge_roll()) {
+      if (const auto _mob = g->mob_at(test)) {
+          if (hit_roll() >= rng(0, 5) + std::visit(mobile::roll_dodge(), *_mob)) {
               count_hit++;
-              int dam = roll_bash_damage(m_at, false) + roll_cut_damage(m_at, false);
-              m_at->hurt(dam);
-              if (u_see) messages.add("%s %s %s for %d damage!", You.c_str(), regular_verb_agreement("hit").c_str(), m_at->desc(grammar::noun::role::direct_object, grammar::article::definite).c_str(), dam);
+              std::visit(tech_wide_secondary_hit(*this), *_mob);
           }
       }
-      if (const auto nPC = g->nPC(test)) {
-          if (hit_roll() >= rng(0, 5) + nPC->dodge_roll()) {
-              count_hit++;
-              int dam = roll_bash_damage(nullptr, false);	// looks like (n)PC armor won't work, but covered in the hit function
-              int cut = roll_cut_damage(nullptr, false);
-              nPC->hit(g, bp_legs, 3, dam, cut);
-              if (u_see) messages.add("%s %s %s for %d damage!", You.c_str(), regular_verb_agreement("hit").c_str(), nPC->name.c_str(), dam + cut);
-          }
-      }
-      // XXX \todo FIX: genuine players immune to TEC_WIDE multi-attack
   }
 
   if (!is_npc()) messages.add("%d enemies hit!", count_hit);
