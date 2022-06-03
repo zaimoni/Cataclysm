@@ -271,20 +271,21 @@ void monster::move(game *g)
 //  move to (moved = true).
  if (moved) {	// Actual effects of moving to the square we've chosen
   // \todo start C:DDA refactor target monster::attack_at
-  monster* const m_at = g->mon(next);
-  npc* const nPC = g->nPC(next);
-  if (next == g->u.pos && type->melee_dice > 0) {
-      debuglog("should not be executing: monster::move/next == g->u.pos && type->melee_dice > 0");
-      return;
-  } else if (m_at && m_at->type->species == species_hallu) {
-      debuglog("should not be executing: monster::move/m_at && m_at->type->species == species_hallu");
-      return;
-  } else if (m_at && type->melee_dice > 0 && is_enemy(m_at)) {
-      debuglog("should not be executing: monster::move/m_at && type->melee_dice > 0 && is_enemy(m_at)");
-      return;
-  } else if (nPC && type->melee_dice > 0) {
-      debuglog("should not be executing: monster::move/nPC && type->melee_dice > 0");
-      return;
+  if (auto _mob = g->mob_at(next)) {
+      if (auto _mon = std::get_if<monster*>(&(*_mob))) {
+          if (species_hallu == (*_mon)->type->species) {
+              debuglog("should not be executing: monster::move/_mon && species_hallu == (*_mon)->type->species");
+              return;
+          }
+      }
+      if (0 < type->melee_dice) {
+          if (std::visit(monster::is_enemy_of(*this), *_mob)) {
+              debuglog("should not be executing: _mob && 0 < type->melee_dice && std::visit(monster::is_enemy_of(*this), *_mob)");
+              return;
+          }
+          debuglog("should not be executing: _mob && 0 < type->melee_dice");
+          return;
+      }
   }
   // end C:DDA refactor target monster::attack_at
   // \todo C:DDA refactor target monster::bash_at
