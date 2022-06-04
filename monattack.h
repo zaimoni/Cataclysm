@@ -21,7 +21,7 @@ class mattack
   static void spit_sap	(game *g, monster *z);
   static void triffid_heartbeat(game *g, monster *z);
   static void fungus		(game *g, monster *z);
-  static void fungus_sprout	(game *g, monster *z);
+  static void fungus_sprout(monster& z);
   static void leap		(game *g, monster *z);
   static void dermatik	(game *g, monster *z);
   static void plant		(game *g, monster *z);

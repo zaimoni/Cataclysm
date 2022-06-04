@@ -539,19 +539,34 @@ void mattack::fungus(game *g, monster *z)
  else if (8 <= moncount+blocked) z->poly(mtype::types[mon_fungaloid_dormant]);
 }
 
-void mattack::fungus_sprout(game *g, monster *z)
+struct fungus_displace {
+    fungus_displace() = default;
+    fungus_displace(const fungus_displace&) = delete;
+    fungus_displace(fungus_displace&&) = delete;
+    fungus_displace& operator=(const fungus_displace&) = delete;
+    fungus_displace& operator=(fungus_displace&&) = delete;
+    ~fungus_displace() = default;
+
+    void operator()(monster* target) {} // C:Whales: no-op
+    void operator()(npc* target) {
+        const auto g = game::active();
+        if (g->u.see(*target)) messages.add("% is shoved away as a fungal wall grows!", target->name.c_str());
+        g->teleport(target);
+    }
+    void operator()(pc* target) {
+        messages.add("You're shoved away as a fungal wall grows!");
+        game::active()->teleport();
+    }
+};
+
+void mattack::fungus_sprout(monster& z)
 {
- for (decltype(auto) delta : Direction::vector) {
-     const point pt(z->pos + delta);
-     if (pt == g->u.pos) {
-         messages.add("You're shoved away as a fungal wall grows!");
-         g->teleport();
-     } else if (const auto _npc = g->nPC(pt)) {
-         if (g->u.see(pt)) messages.add("% is shoved away as a fungal wall grows!", _npc->name.c_str());
-         g->teleport(_npc);
-     }
-     if (g->is_empty(pt)) g->z.push_back(monster(mtype::types[mon_fungal_wall], pt));
- }
+    const auto g = game::active();
+    for (decltype(auto) delta : Direction::vector) {
+        auto loc(z.GPSpos + delta);
+        if (auto _mob = g->mob_at(loc)) std::visit(fungus_displace(), *_mob);
+        if (loc.is_empty()) g->z.push_back(monster(mtype::types[mon_fungal_wall], loc));
+    }
 }
 
 void mattack::leap(game *g, monster *z)
