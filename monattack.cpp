@@ -283,6 +283,80 @@ void mattack::science(game *g, monster *z)	// I said SCIENCE again!
  }
 }
 
+struct grow_tree
+{
+    game* const g;
+    monster& z;
+
+    grow_tree(monster& z) noexcept : g(game::active()), z(z) {}
+    grow_tree(const grow_tree&) = delete;
+    grow_tree(grow_tree&&) = delete;
+    grow_tree& operator=(const grow_tree&) = delete;
+    grow_tree& operator=(grow_tree&&) = delete;
+    ~grow_tree() = default;
+
+    void operator()(monster* target) {
+        if (g->u.see(*target)) messages.add("A tree bursts forth from the earth and pierces the %s!", target->name().c_str());
+        int rn = rng(10, 30) - target->armor_cut();
+        if (rn < 0) rn = 0;
+        if (target->hurt(rn)) g->kill_mon(*target, &z);
+    }
+    void operator()(npc* target) {
+        body_part hit = bp_legs;
+        int side = rng(1, 2);
+        if (one_in(4)) hit = bp_torso;
+        else if (one_in(2)) hit = bp_feet;
+        if (g->u.see(*target))
+            messages.add("A tree bursts forth from the earth and pierces %s's %s!", target->name.c_str(), body_part_name(hit, side));
+        target->hit(g, hit, side, 0, rng(10, 30));
+    }
+    void operator()(pc* target) {
+        body_part hit = bp_legs;
+        int side = rng(1, 2);
+        if (one_in(4)) hit = bp_torso;
+        else if (one_in(2)) hit = bp_feet;
+        messages.add("A tree bursts forth from the earth and pierces your %s!", body_part_name(hit, side));
+        target->hit(g, hit, side, 0, rng(10, 30));
+    }
+};
+
+struct grow_underbrush
+{
+    game* const g;
+    monster& z;
+
+    grow_underbrush(monster& z) noexcept : g(game::active()), z(z) {}
+    grow_underbrush(const grow_underbrush&) = delete;
+    grow_underbrush(grow_underbrush&&) = delete;
+    grow_underbrush& operator=(const grow_underbrush&) = delete;
+    grow_underbrush& operator=(grow_underbrush&&) = delete;
+    ~grow_underbrush() = default;
+
+    void operator()(monster* target) {
+        if (g->u.see(*target)) messages.add("Underbrush grows, and it pierces the %s!", target->name().c_str());
+        int rn = rng(10, 30) - target->armor_cut();
+        if (rn < 0) rn = 0;
+        if (target->hurt(rn)) g->kill_mon(*target, &z);
+    }
+    void operator()(npc* target) {
+        body_part hit = bp_legs;
+        int side = rng(1, 2);
+        if (one_in(4)) hit = bp_torso;
+        else if (one_in(2)) hit = bp_feet;
+        if (g->u.see(*target))
+            messages.add("Underbrush grows, and it pierces %s's %s!", target->name.c_str(), body_part_name(hit, side));
+        target->hit(g, hit, side, 0, rng(10, 30));
+    }
+    void operator()(pc* target) {
+        body_part hit = bp_legs;
+        int side = rng(1, 2);
+        if (one_in(4)) hit = bp_torso;
+        else if (one_in(2)) hit = bp_feet;
+        messages.add("The underbrush beneath your feet grows and pierces your %s!", body_part_name(hit, side));
+        target->hit(g, hit, side, 0, rng(10, 30));
+    }
+};
+
 void mattack::growplants(game *g, monster *z)
 {
  for (int i = -3; i <= 3; i++) {
@@ -295,31 +369,7 @@ void mattack::growplants(game *g, monster *z)
    else if (one_in(3) && g->m.is_destructable(dest))
     t = t_dirtmound; // Destroy walls, &c
    else if (one_in(4)) {	// 1 in 4 chance to grow a tree
-     if (monster* const m_at = g->mon(dest)) {
-      if (g->u.see(dest))
-       messages.add("A tree bursts forth from the earth and pierces the %s!", m_at->name().c_str());
-      int rn = rng(10, 30) - m_at->armor_cut();
-      if (rn < 0) rn = 0;
-      if (m_at->hurt(rn)) g->kill_mon(*m_at, z);
-     } else if (g->u.pos == dest) {
-// Player is hit by a growing tree
-      body_part hit = bp_legs;
-      int side = rng(1, 2);
-      if (one_in(4)) hit = bp_torso;
-      else if (one_in(2)) hit = bp_feet;
-	  messages.add("A tree bursts forth from the earth and pierces your %s!",
-                 body_part_name(hit, side));
-      g->u.hit(g, hit, side, 0, rng(10, 30));
-     } else if (npc* const nPC = g->nPC(dest)) {	// An NPC got hit
-       body_part hit = bp_legs;
-       int side = rng(1, 2);
-       if (one_in(4)) hit = bp_torso;
-       else if (one_in(2)) hit = bp_feet;
-       if (g->u.see(dest))
-        messages.add("A tree bursts forth from the earth and pierces %s's %s!",
-			nPC->name.c_str(), body_part_name(hit, side));
-	   nPC->hit(g, hit, side, 0, rng(10, 30));
-     }
+     if (auto _mob = g->mob_at(dest)) std::visit(grow_tree(*z), *_mob);
 	 t = t_tree_young;
     } else if (one_in(3)) // If no tree, perhaps underbrush
      t = t_underbrush;
@@ -334,30 +384,8 @@ void mattack::growplants(game *g, monster *z)
 	auto& t = g->m.ter(dest);
      if (t_tree_young == t) t = t_tree; // Young tree => tree
      else if (t_underbrush == t) { // Underbrush => young tree
-         if (monster* const m_at = g->mon(dest)) {
-             if (g->u.see(dest))
-                 messages.add("Underbrush grows, and it pierces the %s!", m_at->name().c_str());
-             int rn = rng(10, 30) - m_at->armor_cut();
-             if (rn < 0) rn = 0;
-             if (m_at->hurt(rn)) g->kill_mon(*m_at, z);
-         } else if (g->u.pos == dest) {
-             body_part hit = bp_legs;
-             int side = rng(1, 2);
-             if (one_in(4)) hit = bp_torso;
-             else if (one_in(2)) hit = bp_feet;
-             messages.add("The underbrush beneath your feet grows and pierces your %s!",
-                 body_part_name(hit, side));
-             g->u.hit(g, hit, side, 0, rng(10, 30));
-         } else if (npc* const nPC = g->nPC(dest)) {
-             body_part hit = bp_legs;
-             int side = rng(1, 2);
-             if (one_in(4)) hit = bp_torso;
-             else if (one_in(2)) hit = bp_feet;
-             if (g->u.see(dest))
-                 messages.add("Underbrush grows, and it pierces %s's %s!",
-                     nPC->name.c_str(), body_part_name(hit, side));
-             nPC->hit(g, hit, side, 0, rng(10, 30));
-         } else t = t_tree_young;
+         if (auto _mob = g->mob_at(dest)) std::visit(grow_underbrush(*z), *_mob);
+         else t = t_tree_young;
      }
    }
   }
