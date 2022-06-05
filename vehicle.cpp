@@ -1658,9 +1658,8 @@ bool vehicle::fire_turret_internal(const vehicle_part& p, it_gun &gun, const it_
     const auto origin_GPS(GPSpos + p.precalc_d[0]);
     player* driving = driver();
     // code copied form mattack::smg, mattack::flamethrower
-    int fire_t;
-    point target_pos;
     monster* target = nullptr;
+    std::optional<std::vector<GPS_loc> > LoF;
     const int range = ammo.type == AT_GAS? 5 : 12;
     int closest = range + 1;
 	auto g = game::active();
@@ -1669,27 +1668,29 @@ bool vehicle::fire_turret_internal(const vehicle_part& p, it_gun &gun, const it_
 	for(auto& _mon : g->z) {
         if (!_mon.is_enemy(driving)) continue;
         if (const int dist = rl_dist(origin_GPS, _mon.GPSpos); dist < closest) {
-            if (const auto pos = _mon.screen_pos()) {
-                if (const auto t = g->m.sees(origin, *pos, range)) {
-                    target = &_mon;
-                    closest = dist;
-                    fire_t = *t;
-                    target_pos = *pos;
+            if (const auto path = origin_GPS.sees(_mon.GPSpos, range)) {
+                // XXX \todo should be "do not fire at friend of driver"
+                bool do_not_fire_at_player = false;
+                for (decltype(auto) loc : *path) {
+                    if (loc == g->u.GPSpos) {
+                        do_not_fire_at_player = true;
+                        break;
+                    }
                 }
+                if (do_not_fire_at_player) continue;
+                LoF = std::move(*path);
+                target = &_mon;
             }
         }
     }
     // \todo allow targeting hostile NPCs https://github.com/zaimoni/Cataclysm/issues/108
     if (!target) return false;
 
-    std::vector<point> traj = line_to(origin, target_pos, fire_t);
-    for (int i = 0; i < traj.size(); i++)
-        if (traj[i] == g->u.pos) return false; // won't shoot at player
     if (g->u.see(origin)) messages.add("The %s fires its %s!", name.c_str(), p.info().name);
     auto tmp(npc::get_proxy(std::string("The ") + p.info().name, origin, gun, abs(velocity) / (4 * mph_1), charges));
-    g->fire(tmp, target_pos, traj, true);
+    g->fire(tmp, *LoF, true);
     if (ammo.type == AT_GAS) {
-		for(const auto& pt : traj) g->m.add_field(g, pt, fd_fire, 1);
+		for(decltype(auto) loc : *LoF) loc.add(field(fd_fire, 1));
     }
 	return true;
 }
