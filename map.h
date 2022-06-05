@@ -198,7 +198,8 @@ class map
  bool bash(const point& pt, int str, std::string& sound, int* res = nullptr) { return bash(pt.x,pt.y,str,sound,res); }
  bool bash(int x, int y, int str, int* res = nullptr);
  bool bash(const point& pt, int str, int* res = nullptr) { return bash(pt.x, pt.y, str, res ); }
- void destroy(game *g, int x, int y, bool makesound);
+ void destroy(game *g, const point& origin, bool makesound);
+ void destroy(game* g, int x, int y, bool makesound) { destroy(g, point(x, y), makesound); }
  void shoot(game *g, const point& pt, int &dam, bool hit_items, unsigned flags);
  bool hit_with_acid(const point& pt);
  void marlossify(int x, int y);

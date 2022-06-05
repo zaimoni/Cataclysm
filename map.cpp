@@ -11,6 +11,7 @@
 #include "om_cache.hpp"
 #include "stl_limits.h"
 #include "inline_stack.hpp"
+#include "fragment.inc/rng_box.hpp"
 #include <fstream>
 #include <iostream>
 #include <cmath>
@@ -1059,26 +1060,44 @@ bool map::bash(int x, int y, int str, std::string &sound, int *res)
 }
 
 // creatures call map::destroy only if the terrain is NOT bashable.  Map generation usually pre-emptively bashes.
-void map::destroy(game *g, int x, int y, bool makesound)
+void map::destroy(game *g, const point& origin, bool makesound)
 {
- auto& terrain = ter(x, y);
+ auto& terrain = ter(origin);
 
  // contrary to what one would expect, vehicle destruction not directly processed here
  if (!is_destructible(terrain)) return;
 
  // \todo V0.3.0 bash bashable terrain (seems to give more detailed results)?
+ static auto gas_pump_debris = [&](const point& delta) {
+     auto dest(origin + delta);
+     if (0 < move_cost(dest)) {
+         if (one_in(3)) add_item(dest, item::types[itm_gasoline], 0);
+         if (one_in(6)) add_item(dest, item::types[itm_steel_chunk], 0);
+     }
+ };
 
+ static auto door_debris = [&](const point& delta) {
+     auto dest(origin + delta);
+     if (0 < move_cost(dest)) {
+         if (one_in(6)) add_item(dest, item::types[itm_2x4], 0);
+     }
+ };
+
+ static auto wall_debris = [&](const point& delta) {
+     auto dest(origin + delta);
+     if (0 < move_cost(dest)) {
+         if (one_in(5)) add_item(dest, item::types[itm_rock], 0);
+         if (one_in(4)) add_item(dest, item::types[itm_2x4], 0);
+     }
+ };
+
+ // 2022-06-05: formally add_item *does* react to the terrain, but none of these transition the trait swimmable
+ // which is what is tested
  switch(terrain) {
  case t_gas_pump:
-  if (makesound && one_in(3)) g->explosion(x, y, 40, 0, true);
-  else {
-   for (int i = x - 2; i <= x + 2; i++) {
-    for (int j = y - 2; j <= y + 2; j++) {
-     if (move_cost(i, j) > 0 && one_in(3)) add_item(i, j, item::types[itm_gasoline], 0);
-     if (move_cost(i, j) > 0 && one_in(6)) add_item(i, j, item::types[itm_steel_chunk], 0);
-    }
-   }
-  }
+  if (makesound && one_in(3)) g->explosion(origin.x, origin.y, 40, 0, true);
+  else forall_do_inclusive(within_rldist<2>, gas_pump_debris);
+
   terrain = t_rubble;
   break;
 
@@ -1087,30 +1106,21 @@ void map::destroy(game *g, int x, int y, bool makesound)
  case t_door_locked:
  case t_door_boarded:
   terrain = t_door_frame;
-  for (int i = x - 2; i <= x + 2; i++) {
-   for (int j = y - 2; j <= y + 2; j++) {
-    if (move_cost(i, j) > 0 && one_in(6)) add_item(i, j, item::types[itm_2x4], 0);
-   }
-  }
+  forall_do_inclusive(within_rldist<2>, door_debris);
   break;
 
  case t_wall_v:
  case t_wall_h:
-  for (int i = x - 2; i <= x + 2; i++) {
-   for (int j = y - 2; j <= y + 2; j++) {
-    if (move_cost(i, j) > 0 && one_in(5)) add_item(i, j, item::types[itm_rock], 0);
-    if (move_cost(i, j) > 0 && one_in(4)) add_item(i, j, item::types[itm_2x4], 0);
-   }
-  }
+  forall_do_inclusive(within_rldist<2>, wall_debris);
   terrain = t_rubble;
   break;
 
  default:
-  if (makesound && has_flag(explodes, x, y) && one_in(2)) g->explosion(x, y, 40, 0, true);
+  if (makesound && has_flag(explodes, origin) && one_in(2)) g->explosion(origin.x, origin.y, 40, 0, true);
   terrain = t_rubble;
  }
 
- if (makesound) g->sound(point(x, y), 40, "SMASH!!");
+ if (makesound) g->sound(origin, 40, "SMASH!!");
 }
 
 void map::shoot(game *g, const point& pt, int &dam, bool hit_items, unsigned flags)

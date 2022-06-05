@@ -296,7 +296,7 @@ void monster::move(game *g)
    g->m.bash(next, bashskill, bashsound);
    g->sound(next, 18, bashsound);
   } else if (g->m.move_cost(next) == 0 && has_flag(MF_DESTROYS)) {
-   g->m.destroy(g, next.x, next.y, true);
+   g->m.destroy(g, next, true);
    moves -= (mobile::mp_turn / 2) * 5;
   // end C:DDA refactor target monster::bash_at
   } else if (can_move_to(g->m, next) && g->is_empty(next))
@@ -365,7 +365,7 @@ void monster::friendly_move(game *g)
       g->sound(next, 18, bashsound);
   }
   else if (g->m.move_cost(next) == 0 && has_flag(MF_DESTROYS)) {
-      g->m.destroy(g, next.x, next.y, true);
+      g->m.destroy(g, next, true);
       moves -= (mobile::mp_turn / 2) * 5;
   }
 }

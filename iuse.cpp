@@ -1191,7 +1191,7 @@ void iuse::jackhammer(pc& p, item& it)
  const auto dest = dir + p.pos;
 
  if (g->m.is_destructable(dest)) {
-  g->m.destroy(g, dest.x, dest.y, false);
+  g->m.destroy(g, dest, false);
   p.moves -= 5 * mobile::mp_turn;
   g->sound(dir, 45, "TATATATATATATAT!");
  } else {
