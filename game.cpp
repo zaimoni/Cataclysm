@@ -2693,6 +2693,49 @@ void game::sound(const point& pt, int vol, std::string description)
  messages.add("From the %s you hear %s", direction_name(direction_from(u.pos, pt)), description.c_str());
 }
 
+struct hit_by_explosion
+{
+    game* const g;
+    int dam;
+    point origin;
+
+    hit_by_explosion(int dam, const point& origin) noexcept : g(game::active()), dam(dam), origin(origin) {}
+    hit_by_explosion(const hit_by_explosion&) = delete;
+    hit_by_explosion(hit_by_explosion&&) = delete;
+    hit_by_explosion& operator=(const hit_by_explosion&) = delete;
+    hit_by_explosion& operator=(hit_by_explosion&&) = delete;
+    ~hit_by_explosion() = default;
+
+    void operator()(monster* target) {
+        if (target->hurt(rng(dam / 2, rational_scaled<3, 2>(dam)))) {
+            if (target->hp < 0 - rational_scaled<3, 2>(target->type->hp))
+                g->explode_mon(*target); // Explode them if it was big overkill
+            else
+                g->kill_mon(*target); // TODO: player's fault?
+
+            if (const auto veh = g->m._veh_at(origin)) veh->first->damage(veh->second, dam, vehicle::damage_type::pierce);
+        }
+    }
+    void operator()(npc* target) {
+        take_blast(target);
+        if (0 >= target->hp_cur[hp_head] || 0 >= target->hp_cur[hp_torso]) target->die(g, true);
+    }
+    void operator()(pc* target) {
+        messages.add("You're caught in the explosion!");
+        take_blast(target);
+    }
+
+private:
+    void take_blast(player* target) {
+        target->hit(g, bp_torso, 0, rng(dam / 2, rational_scaled<3, 2>(dam)), 0);
+        target->hit(g, bp_head, 0, rng(dam / 3, dam), 0);
+        target->hit(g, bp_legs, 0, rng(dam / 3, dam), 0);
+        target->hit(g, bp_legs, 1, rng(dam / 3, dam), 0);
+        target->hit(g, bp_arms, 0, rng(dam / 3, dam), 0);
+        target->hit(g, bp_arms, 1, rng(dam / 3, dam), 0);
+    }
+};
+
 struct hit_by_shrapnel
 {
     int dam;
@@ -2745,34 +2788,8 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
    if (m.has_flag(bashable, i, j)) m.bash(i, j, dam); // Double up for tough doors, etc.
    if (m.is_destructable(i, j) && rng(25, 100) < dam) m.destroy(this, i, j, false);
 
-   monster* const m_hit = mon(i, j);
-   if (m_hit && m_hit->hurt(rng(dam / 2, dam * 1.5))) {
-    if (m_hit->hp < 0 - 1.5 * m_hit->type->hp)
-     explode_mon(*m_hit); // Explode them if it was big overkill
-    else
-     kill_mon(*m_hit); // TODO: player's fault?
+   if (auto _mob = mob_at(point(i, j))) std::visit(hit_by_explosion(dam, point(i,j)), *_mob);
 
-    if (const auto veh = m._veh_at(i, j)) veh->first->damage(veh->second, dam, vehicle::damage_type::pierce);
-   }
-
-   if (npc* const _npc = nPC(i,j)) {
-    _npc->hit(this, bp_torso, 0, rng(dam / 2, dam * 1.5), 0);
-	_npc->hit(this, bp_head,  0, rng(dam / 3, dam),       0);
-	_npc->hit(this, bp_legs,  0, rng(dam / 3, dam),       0);
-	_npc->hit(this, bp_legs,  1, rng(dam / 3, dam),       0);
-	_npc->hit(this, bp_arms,  0, rng(dam / 3, dam),       0);
-	_npc->hit(this, bp_arms,  1, rng(dam / 3, dam),       0);
-    if (_npc->hp_cur[hp_head]  <= 0 || _npc->hp_cur[hp_torso] <= 0) _npc->die(this, true);
-   }
-   if (u.pos.x == i && u.pos.y == j) {
-    messages.add("You're caught in the explosion!");
-    u.hit(this, bp_torso, 0, rng(dam / 2, dam * 1.5), 0);
-    u.hit(this, bp_head,  0, rng(dam / 3, dam),       0);
-    u.hit(this, bp_legs,  0, rng(dam / 3, dam),       0);
-    u.hit(this, bp_legs,  1, rng(dam / 3, dam),       0);
-    u.hit(this, bp_arms,  0, rng(dam / 3, dam),       0);
-    u.hit(this, bp_arms,  1, rng(dam / 3, dam),       0);
-   }
    if (fire) {
 	auto& f = m.field_at(i, j);
     if (f.type == fd_smoke) f = field(fd_fire);
