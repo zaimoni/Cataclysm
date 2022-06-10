@@ -149,7 +149,6 @@ class game : public reality_bubble
   void explode_mon(monster& target, player* me = nullptr) { if (!target.dead) _explode_mon(target, me); }
   void plfire(bool burst);	// Player fires a gun (target selection)...
 // ... a gun is fired, maybe by an NPC (actual damage, etc.).
-  void fire(player &p, point tar, std::vector<point> &trajectory, bool burst);
   void fire(player& p, std::vector<GPS_loc>& trajectory, bool burst);
   void throw_item(player &p, point tar, item&& thrown, std::vector<point> &trajectory);
   void throw_item(player& p, item&& thrown, std::vector<GPS_loc>& trajectory);
