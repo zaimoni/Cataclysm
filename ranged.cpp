@@ -216,6 +216,51 @@ static double calculate_missed_by(player& p, int trange)	// XXX real-world devia
     return (.00325 * deviation * trange);
 }
 
+struct shot_that {
+    game* const g;
+    player& p;
+    const std::vector<GPS_loc>& trajectory;
+    int dam;
+    double missed_by;
+    bool missed;
+    bool on_target;
+
+    shot_that(player& p, const std::vector<GPS_loc>& trajectory, int dam, double missed_by, bool missed, int offset) noexcept : g(game::active()), p(p), trajectory(trajectory), dam(dam), missed_by(missed_by), missed(missed), on_target(trajectory.size() - 1 <= offset) {}
+    shot_that(const shot_that& src) = delete;
+    shot_that(shot_that&& src) = delete;
+    shot_that& operator=(const shot_that& src) = delete;
+    shot_that& operator=(shot_that&& src) = delete;
+    ~shot_that() = default;
+
+    auto operator()(monster* target) {
+        if (   (!target->has_flag(MF_DIGS) || rl_dist(p.GPSpos, target->GPSpos) <= 1)
+            && ((!missed && on_target) || one_in((5 - int(target->type->size))))) {
+
+            double goodhit = missed_by;
+            if (!on_target) goodhit = (rand() / (RAND_MAX + 1.0)) / 2; // Unintentional hit
+
+        // Penalize for the monster's speed
+            if (target->speed > 80) goodhit *= target->speed / 80.;
+
+            auto blood_traj(trajectory);
+            blood_traj.insert(blood_traj.begin(), p.GPSpos);
+            splatter(blood_traj, dam, target);
+            shoot_monster(g, p, *target, dam, goodhit);
+        }
+    }
+    auto operator()(player* target) {
+        if ((!missed || one_in(3))) {
+            double goodhit = missed_by;
+            if (!on_target) goodhit = (rand() / (RAND_MAX + 1.0)) / 2;	 // Unintentional hit
+
+            auto blood_traj(trajectory);
+            blood_traj.insert(blood_traj.begin(), p.GPSpos);
+            splatter(blood_traj, dam);
+            shoot_player(g, p, target, dam, goodhit);
+        }
+    }
+};
+
 void game::fire(player& p, std::vector<GPS_loc>& trajectory, bool burst)
 {
 #ifndef NDEBUG
@@ -395,40 +440,13 @@ retry_new_target:
                 return;
             }
 
-            const auto t(trajectory[i]);
             // If there's a monster in the path of our bullet, and either our aim was true,
             //  OR it's not the monster we were aiming at and we were lucky enough to hit it
-            monster* const m_at = mon(trajectory[i]);
-            player* const h = survivor(trajectory[i]);	// XXX would prefer not to pay CPU here when monster case processes
-         // If we shot us a monster...
-            if (m_at && (!m_at->has_flag(MF_DIGS) || rl_dist(p.GPSpos, m_at->GPSpos) <= 1) &&
-                ((!missed && i == trajectory.size() - 1) ||
-                    one_in((5 - int(m_at->type->size))))) {
-
-                double goodhit = missed_by;
-                if (i < trajectory.size() - 1) goodhit = (rand() / (RAND_MAX + 1.0)) / 2; // Unintentional hit
-
-            // Penalize for the monster's speed
-                if (m_at->speed > 80) goodhit *= m_at->speed / 80.;
-
-                auto blood_traj(trajectory);
-                blood_traj.insert(blood_traj.begin(), p.GPSpos);
-                splatter(blood_traj, dam, m_at);
-                shoot_monster(this, p, *m_at, dam, goodhit);
-
-            }
-            else if ((!missed || one_in(3)) && h) {
-                double goodhit = missed_by;
-                if (i < trajectory.size() - 1) goodhit = (rand() / (RAND_MAX + 1.0)) / 2;	 // Unintentional hit
-
-                auto blood_traj(trajectory);
-                blood_traj.insert(blood_traj.begin(), p.GPSpos);
-                splatter(blood_traj, dam);
-                shoot_player(this, p, h, dam, goodhit);
-
-            }
-            else
+            if (auto _mob = mob_at(trajectory[i])) {
+                std::visit(shot_that(p, trajectory, dam, missed_by, missed, i), *_mob);
+            } else {
                 trajectory[i].shoot(dam, i == trajectory.size() - 1, flags);
+            }
         } // Done with the trajectory!
 
         auto last(trajectory.back());
