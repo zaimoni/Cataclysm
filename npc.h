@@ -417,7 +417,8 @@ public:
 // Helper functions for ranged combat
  int  confident_range(int index = -1) const; // >= 50% chance to hit
  bool wont_hit_friend(game *g, int tarx, int tary, int index = -1) const;
- bool wont_hit_friend(game* g, point tar, int index = -1) const { return wont_hit_friend(g, tar.x, tar.y, index); };
+ bool wont_hit_friend(game* g, point tar, int index = -1) const { return wont_hit_friend(g, tar.x, tar.y, index); }
+ bool wont_hit_friend(const GPS_loc& tar, int index = -1) const;
  int can_reload() const override; // Wielding a gun that is not fully loaded
  bool need_to_reload() const; // Wielding a gun that is empty
  bool enough_time_to_reload(game *g, int target, const item &gun) const;
@@ -427,6 +428,7 @@ public:
  bool path_is_usable(const map& m);
  void update_path	(const map& m, const point& pt);
  bool update_path(const map& m, const point& pt, size_t longer_than);
+ bool update_path(const GPS_loc& dest, size_t longer_than);
  void move_to		(game *g, point pt);
  void move_to_next	(game *g); // Next in <path>
  void avoid_friendly_fire(game *g, int target); // Maneuver so we won't shoot u

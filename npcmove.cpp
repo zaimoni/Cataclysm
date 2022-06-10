@@ -134,15 +134,16 @@ public:
 class fire_weapon_screen : public cataclysm::action
 {
 	npc& _actor;	// \todo would like player here
-	point _tar;
-	mutable std::vector<point> _trajectory;
+	GPS_loc _tar;
+	mutable std::vector<GPS_loc> _trajectory;
 	bool _burst;
 	const char* _desc;
 public:
-	fire_weapon_screen(npc& actor, const point& tar, bool burst, const char* desc=nullptr) : _actor(actor), _tar(tar), _burst(burst), _desc(desc) {
+	fire_weapon_screen(npc& actor, const GPS_loc& tar, bool burst, const char* desc=nullptr) : _actor(actor), _tar(tar), _burst(burst), _desc(desc) {
 		auto g = game::active();
-		if (tar != actor.pos) {	// required for legality/performability
-			_trajectory = line_to(actor.pos, tar, g->m.sees(actor.pos, tar, actor.sight_range()));
+		if (tar != actor.GPSpos) {	// required for legality/performability
+			auto LoF = actor.GPSpos.sees(tar, actor.sight_range());
+			_trajectory = LoF.value();
 		}
 #ifndef NDEBUG
 		if (!IsLegal()) throw std::logic_error("unreasonable targeting");
@@ -150,13 +151,13 @@ public:
 	};
 	~fire_weapon_screen() = default;
 	bool IsLegal() const override {
-		return _actor.weapon.is_gun() && _tar != _actor.pos;
+		return _actor.weapon.is_gun() && _tar != _actor.GPSpos;
 	}
 	bool IsPerformable() const override {
-		return _tar != _actor.pos && _actor.can_fire();
+		return _tar != _actor.GPSpos && _actor.can_fire();
 	}
 	void Perform() const override {
-		game::active()->fire(_actor, _tar, _trajectory, _burst);
+		game::active()->fire(_actor, _trajectory, _burst);
 	}
 	const char* name() const override {
 		if (_desc && *_desc) return _desc;
@@ -588,9 +589,9 @@ bool npc::choose_empty_gun(const std::vector<int>& empty_guns, int& inv_index) c
 	return ammo_found;
 }
 
-static npc::ai_action _melee(const npc& actor, const point& tar)
+static npc::ai_action _melee(const npc& actor, const GPS_loc& tar)
 {
-	if (const_cast<npc&>(actor).update_path(game::active()->m, tar, 0)) {	// \todo want to think of npc::path as mutable here
+	if (const_cast<npc&>(actor).update_path(tar, 0)) {	// \todo want to think of npc::path as mutable here
 		if (1 < actor.path.size()) return npc::ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(const_cast<npc&>(actor), actor.path.front(), "Melee")));
 		return npc::ai_action(npc_melee, std::unique_ptr<cataclysm::action>());
 	}
@@ -601,11 +602,11 @@ static npc::ai_action _melee(const npc& actor, const point& tar)
 
 npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
 {
- point tar((target == TARGET_PLAYER) ? g->u.pos : g->z[target].pos);
+ auto tar((target == TARGET_PLAYER) ? g->u.GPSpos : g->z[target].GPSpos);
 
  const bool can_use_gun = (!is_following() || combat_rules.use_guns);
 
- const int dist = rl_dist(pos, tar);
+ const int dist = rl_dist(GPSpos, tar);
  const int target_HP = (target == TARGET_PLAYER) ? g->u.hp_percentage() * g->u.hp_max[hp_torso] : g->z[target].hp;
 
  if (can_use_gun) {
@@ -624,7 +625,7 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
 	 return _melee(*this, tar);
    }
    const it_gun* const gun = dynamic_cast<const it_gun*>(weapon.type);
-   if (!wont_hit_friend(g, tar)) return ai_action(npc_avoid_friendly_fire, std::unique_ptr<cataclysm::action>());
+   if (!wont_hit_friend(tar)) return ai_action(npc_avoid_friendly_fire, std::unique_ptr<cataclysm::action>());
    const bool want_burst = (dist <= ideal_range / 3 && weapon.charges >= gun->burst && gun->burst > 1 &&
 	   (target_HP >= weapon.curammo->damage * 3 || emergency(danger * 2)));
    return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new fire_weapon_screen(*const_cast<npc*>(this), tar, want_burst)));
@@ -968,6 +969,13 @@ bool npc::wont_hit_friend(game *g, int tarx, int tary, int index) const
  return true;
 }
 
+bool npc::wont_hit_friend(const GPS_loc& tar, int index) const
+{
+	const auto g = game::active();
+	if (auto dest = g->toScreen(tar)) return wont_hit_friend(g, *dest, index);
+	return false;
+}
+
 bool player::can_fire()
 {
 	if (!weapon.is_gun()) return false;
@@ -1160,6 +1168,15 @@ bool npc::update_path(const map& m, const point& pt, const size_t longer_than)
 	if (longer_than >= new_path.size()) return false;
 	path = std::move(new_path);
 	return true;
+}
+
+// thin adapter
+bool npc::update_path(const GPS_loc& dest, size_t longer_than)
+{
+	const auto g = game::active();
+	if (auto pt = g->toScreen(dest))
+		return update_path(g->m, *pt, longer_than);
+	return false;
 }
 
 
