@@ -937,22 +937,10 @@ bool npc::wont_hit_friend(game *g, int tarx, int tary, int index) const
 	 // \todo this is trading CPU for RAM; also unclear why at low confidences we're checking behind us
 	 for (int x = pt.x - deviation; x <= pt.x + deviation; x++) {
 		 for (int y = pt.y - deviation; y <= pt.y + deviation; y++) {
-			 // Hit the player?
-			 if (is_friend() && g->u.pos.x == x && g->u.pos.y == y)
-				 return false;
-#if LEGACY_PROTOTYPE
-			 // Hit a friendly monster?
-			 for (int n = 0; n < g->z.size(); n++) {
-				 if (g->z[n].is_friend(this) && g->z[n].pos.x == x && g->z[n].pos.y == y)
-					 return false;
+			 if (point(x, y) == pos) continue; // don't self-check (until this is fixed properly)
+			 if (auto _mob = g->mob_at(point(x, y))) {
+				 if (!std::visit(player::is_enemy_of(*this), *_mob)) return false;
 			 }
-			 // Hit an NPC that's on our team? (including *myself* [sic])
-			 for (int n = 0; n < g->active_npc.size(); n++) {
-				 npc* guy = &(g->active_npc[n]);
-				 if (guy != this && is_friend(guy) && guy->pos.x == x && guy->pos.y == y)
-					 return false;
-			 }
-#endif
 		 }
 	 }
  }
