@@ -278,6 +278,9 @@ public:
 
  typedef std::pair<npc_action, std::unique_ptr<cataclysm::action> > ai_action;	// transition typedef
 
+ template<class T>
+ using ai_target = std::pair<T, std::variant<monster*, npc*, pc*> >;
+
  npc();
  npc(const cataclysm::JSON& src);
  npc(const npc &rhs) = default;
