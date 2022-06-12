@@ -2,6 +2,7 @@
 #define RNG_H
 
 #include <algorithm>
+#include <vector> // for std::empty(),std::size()
 
 long rng(long low, long high);
 int dice(int number, int sides);
