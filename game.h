@@ -69,6 +69,7 @@ class game : public reality_bubble
 
  public:
   static game* active() { return _active; }
+  static const game* active_const() { return _active; }
 
   game();
   ~game();
@@ -133,6 +134,8 @@ class game : public reality_bubble
   const mobile* mob(const GPS_loc& gps) const { return const_cast<game*>(this)->mob(gps); }
   std::optional<std::variant<monster*, npc*, pc*> > mob_at(const point& pt);
   std::optional<std::variant<monster*, npc*, pc*> > mob_at(const GPS_loc& gps);
+  std::optional<std::variant<const monster*, const npc*, const pc*> > mob_at(const point& pt) const;
+  std::optional<std::variant<const monster*, const npc*, const pc*> > mob_at(const GPS_loc& gps) const;
   std::optional<std::vector<std::variant<monster*, npc*, pc*> > > mobs_in_range(const GPS_loc& gps, int range);
 
   bool is_empty(int x, int y) const;	// True if no PC, no monster, move cost > 0

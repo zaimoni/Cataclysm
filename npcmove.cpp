@@ -334,30 +334,6 @@ void npc::move(game *g)
  execute_action(g, action, target);
 }
 
-typedef std::pair<point, std::variant<monster*, npc*, pc*> > ai_target;	// expect to simplify this
-
-static bool decode_target(int target, ai_target& dest)
-{
-	auto g = game::active();
-	if (0 <= target && g->z.size() > target) {
-		auto& mon = g->z[target];
-		dest = ai_target(mon.pos, &mon);
-		return true;
-	} else if (TARGET_PLAYER == target) {
-		auto& u = g->u;
-		dest = ai_target(u.pos, &u);
-		return true;
-	} else if (TARGET_PLAYER > target && g->active_npc.size()>((TARGET_PLAYER-1) - target)) {	// 2019-11-21: UNTESTED
-		auto npc_index = (TARGET_PLAYER - 1) - target;
-		if (g->active_npc.size() > npc_index) {
-			auto& nPC = g->active_npc[npc_index];
-			dest = ai_target(nPC.pos, &nPC);
-			return true;
-		}
-	}
-	return false;
-}
-
 static std::optional<std::variant<monster*, npc*, pc*> > decode_target(int target)
 {
 	auto g = game::active();
@@ -372,6 +348,20 @@ static std::optional<std::variant<monster*, npc*, pc*> > decode_target(int targe
 	return std::nullopt;
 }
 
+struct to_ai_target
+{
+	to_ai_target() = default;
+	to_ai_target(const to_ai_target& src) = delete;
+	to_ai_target(to_ai_target&& src) = delete;
+	to_ai_target& operator=(const to_ai_target& src) = delete;
+	to_ai_target& operator=(to_ai_target&& src) = delete;
+	~to_ai_target() = default;
+
+	npc::ai_target<point> operator()(monster* target) { return npc::ai_target<point>(target->pos, target); }
+	npc::ai_target<point> operator()(npc* target) { return npc::ai_target<point>(target->pos, target); }
+	npc::ai_target<point> operator()(pc* target) { return npc::ai_target<point>(target->pos, target); }
+};
+
 void npc::execute_action(game *g, const ai_action& action, int target)
 {
  if (action.second && action.second->IsPerformable()) {	// if we have an action object, use that
@@ -380,7 +370,7 @@ void npc::execute_action(game *g, const ai_action& action, int target)
  }
  
  // C:Whales action processing
- ai_target Target;
+ ai_target<point> Target;
  const int oldmoves = moves;
 
  switch (action.first) {
@@ -947,22 +937,10 @@ bool npc::wont_hit_friend(game *g, int tarx, int tary, int index) const
 	 // \todo this is trading CPU for RAM; also unclear why at low confidences we're checking behind us
 	 for (int x = pt.x - deviation; x <= pt.x + deviation; x++) {
 		 for (int y = pt.y - deviation; y <= pt.y + deviation; y++) {
-			 // Hit the player?
-			 if (is_friend() && g->u.pos.x == x && g->u.pos.y == y)
-				 return false;
-#if LEGACY_PROTOTYPE
-			 // Hit a friendly monster?
-			 for (int n = 0; n < g->z.size(); n++) {
-				 if (g->z[n].is_friend(this) && g->z[n].pos.x == x && g->z[n].pos.y == y)
-					 return false;
+			 if (point(x, y) == pos) continue; // don't self-check (until this is fixed properly)
+			 if (auto _mob = g->mob_at(point(x, y))) {
+				 if (!std::visit(player::is_enemy_of(*this), *_mob)) return false;
 			 }
-			 // Hit an NPC that's on our team? (including *myself* [sic])
-			 for (int n = 0; n < g->active_npc.size(); n++) {
-				 npc* guy = &(g->active_npc[n]);
-				 if (guy != this && is_friend(guy) && guy->pos.x == x && guy->pos.y == y)
-					 return false;
-			 }
-#endif
 		 }
 	 }
  }
@@ -1291,18 +1269,10 @@ void npc::move_to_next(game *g)
 // TODO: Rewrite this.  It doesn't work well and is ugly.
 void npc::avoid_friendly_fire(game *g, int target)
 {
- ai_target Target;
- if (!decode_target(target, Target)) {
-#ifndef NDEBUG
-	 throw std::logic_error("npc::avoid_friendly_fire called with invalid target");
-#else
-	 debugmsg("npc::avoid_friendly_fire() called with no target!");
-	 pause();
-	 return;
-#endif
- } else if (auto mon = std::get<0>(Target.second)) {
-	 if (!one_in(3)) say(g, "<move> so I can shoot that %s!", mon->name().c_str());
- }	// \todo similar message when targeting NPC?
+	ai_target<point> Target = std::visit(to_ai_target(), decode_target(target).value());  // XXX throws rather than logs error in release mode
+	if (auto mon = std::get_if<0>(&Target.second)) {
+		if (!one_in(3)) say(g, "<move> so I can shoot that %s!", (*mon)->name().c_str());
+	} // \todo similar message when targeting NPC?
 
  point tar = Target.first;	// backward compatibility
 
@@ -1655,17 +1625,7 @@ bool npc::best_gun(const int target, int& inv_index, std::vector<int>& empty_gun
 
 void npc::alt_attack(game *g, int target)
 {
- ai_target Target;
-
- if (!decode_target(target, Target)) {
-#ifndef NDEBUG
-	 throw std::logic_error("npc::alt_attack called without a valid target");
-#else
-	 debugmsg("npc::alt_attack() called with target = %d", target);
-	 pause();
-	 return;
-#endif
- }
+ ai_target<point> Target = std::visit(to_ai_target(), decode_target(target).value()); // XXX throws rather than logs error in release mode
 
  point tar = Target.first;	// backward compatibility
 
