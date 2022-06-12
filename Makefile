@@ -1,7 +1,7 @@
 # comment these to toggle them as one sees fit.
 # DEBUG is best turned on if you plan to debug in gdb -- please do!
 # PROFILE is for use with gprof or a similar program -- don't bother generally
-WARNINGS = -Wall -Wextra\
+WARNINGS = -Wall -Wextra -Wnon-virtual-dtor\
   -Wno-switch -Wno-sign-compare -Wno-unused-variable -Wno-maybe-uninitialized\
   -Wno-unused-but-set-variable -Wno-unused-function -Wno-unused-parameter
 #DEBUG = -g
