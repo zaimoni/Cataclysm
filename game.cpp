@@ -3147,6 +3147,22 @@ std::optional<std::variant<monster*, npc*, pc*> > game::mob_at(const GPS_loc& gp
     return std::nullopt;
 }
 
+std::optional<std::variant<const monster*, const npc*, const pc*> > game::mob_at(const point& pt) const
+{
+    if (auto _mon = mon(pt)) return _mon;
+    if (auto _npc = nPC(pt)) return _npc;
+    if (pt == u.pos) return &u;
+    return std::nullopt;
+}
+
+std::optional<std::variant<const monster*, const npc*, const pc*> > game::mob_at(const GPS_loc& gps) const
+{
+    if (auto _mon = mon(gps)) return _mon;
+    if (auto _npc = nPC(gps)) return _npc;
+    if (gps == u.GPSpos) return &u;
+    return std::nullopt;
+}
+
 std::optional<std::vector<std::variant<monster*, npc*, pc*> > > game::mobs_in_range(const GPS_loc& gps, int range)
 {
     std::vector<std::variant<monster*, npc*, pc*> > ret;
@@ -3163,14 +3179,12 @@ std::optional<std::vector<std::variant<monster*, npc*, pc*> > > game::mobs_in_ra
 
 bool game::is_empty(int x, int y) const
 {
- return ((m.move_cost(x, y) > 0 || m.has_flag(liquid, x, y)) &&
-         !nPC(x, y) && !mon(x,y) &&
-         (u.pos.x != x || u.pos.y != y));
+    return (m.move_cost(x, y) > 0 || m.has_flag(liquid, x, y)) && !mob_at(point(x,y));
 }
 
 bool GPS_loc::is_empty() const
 {
-    return (0 < move_cost() || is<liquid>(ter())) && !game::active()->mob_at(*this);
+    return (0 < move_cost() || is<liquid>(ter())) && !game::active_const()->mob_at(*this);
 }
 
 bool game::is_in_sunlight(const GPS_loc& loc) const
