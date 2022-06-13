@@ -411,15 +411,6 @@ bool monster::can_sound_move_to(const point& pt) const
     return false;
 }
 
-bool monster::can_sound_move_to(const point& pt, point& dest) const
-{
-	if (can_sound_move_to(pt)) {
-		dest = pt;
-		return true;
-	}
-	return false;
-}
-
 point monster::sound_move()
 {
  plans.clear();
@@ -432,13 +423,21 @@ point monster::sound_move()
  if (wand.x.y < pos.y) { y--; y2++;          }
  else if (wand.x.y > pos.y) { y++; y2++; y3 -= 2; }
 
- if (!can_sound_move_to(point(x, y), next)) {
+ static auto _can_sound_move_to = [&](const auto& pt) {
+     if (can_sound_move_to(pt)) {
+         next = pt;
+         return true;
+     }
+     return false;
+ };
+
+ if (!_can_sound_move_to(point(x, y))) {
 	 if (xbest) {
-		    can_sound_move_to(point(x, y2), next) || can_sound_move_to(point(x2, y), next) 
-	     || can_sound_move_to(point(x, y3), next) || can_sound_move_to(point(x3, y), next);
+		    _can_sound_move_to(point(x, y2)) || _can_sound_move_to(point(x2, y))
+	     || _can_sound_move_to(point(x, y3)) || _can_sound_move_to(point(x3, y));
 	 } else {
-		   can_sound_move_to(point(x2, y), next) || can_sound_move_to(point(x, y2), next)
-	    || can_sound_move_to(point(x3, y), next) || can_sound_move_to(point(x, y3), next);
+           _can_sound_move_to(point(x2, y)) || _can_sound_move_to(point(x, y2))
+	    || _can_sound_move_to(point(x3, y)) || _can_sound_move_to(point(x, y3));
 	 }
  }
 
