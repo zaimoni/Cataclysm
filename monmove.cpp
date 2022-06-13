@@ -252,7 +252,7 @@ void monster::move(game *g)
  } else if (has_flag(MF_SMELLS)) {
 // No sight... or our plans are invalid (e.g. moving through a transparent, but
 //  solid, square of terrain).  Fall back to smell if we have it.
-  if (const auto dest = scent_move(g)) {
+  if (const auto dest = scent_move()) {
    if (update_next_loc(g->toGPS(*dest))) return;
    next = *dest;
    moved = true;
@@ -370,32 +370,33 @@ void monster::friendly_move(game *g)
   }
 }
 
-std::optional<point> monster::scent_move(const game *g)
+std::optional<point> monster::scent_move()
 {
+ const auto g = game::active_const();
+ const bool flee = is_fleeing(g->u);
+ int smell_threshold = flee ? INT_MAX : 1; // Squares with smell 0 are not eligable targets
  plans.clear();
  std::vector<point> smoves;
- int maxsmell = 1; // Squares with smell 0 are not eligable targets
- int minsmell = 9999;
  for (decltype(auto) dir : Direction::vector) {
      point test(pos + dir);
-     const auto m_at = g->mon(test);
-     if ((!m_at || is_enemy(m_at)) && can_sound_move_to(g, test)) {
+     auto _mob = g->mob_at(test);
+     if (  (!_mob || std::visit(monster::is_enemy_of(*this), *_mob))
+         && can_sound_move_to(g, test)) {
          const auto smell = g->scent(test);
-         if (is_fleeing(g->u)) {
-             if (smell < minsmell) {
+         if (flee) {
+             if (smell > smell_threshold) continue;
+             if (smell < smell_threshold) {
                  smoves.clear();
-                 smoves.push_back(test);
-                 maxsmell = smell;
-                 minsmell = smell;
-             } else if (smell == minsmell) smoves.push_back(test);
+                 smell_threshold = smell;
+             }
          } else {
-             if (smell > maxsmell) {
+             if (smell < smell_threshold) continue;
+             if (smell > smell_threshold) {
                  smoves.clear();
-                 smoves.push_back(test);
-                 maxsmell = smell;
-                 minsmell = smell;
-             } else if (smell == maxsmell) smoves.push_back(test);
-         }
+                 smell_threshold = smell;
+             }
+        }
+       smoves.push_back(test);
      }
  }
  if (!smoves.empty()) return smoves[rng(0, smoves.size() - 1)];

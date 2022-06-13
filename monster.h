@@ -108,7 +108,7 @@ class monster : public mobile {
  void footsteps(game *g, const point& pt); // noise made by movement
  void friendly_move(game *g);
 
- std::optional<point> scent_move(const game *g);	// these two don't actually move, they return where to move to
+ std::optional<point> scent_move();	// these two don't actually move, they return where to move to
  point sound_move(const game *g);
  void hit_player(game *g, player &p, bool can_grab = true);
  void move_to(game *g, const point& pt);
