@@ -81,7 +81,7 @@ enum npc_action {
  npc_sleep, npc_drop_items, npc_heal_player,
 #endif
   npc_heal,
- npc_melee, npc_alt_attack,
+ npc_melee,
  npc_talk_to_player,
  npc_goto_destination, npc_avoid_friendly_fire,
  num_npc_actions
@@ -444,7 +444,7 @@ public:
  ai_action scan_new_items(game *g, int target);
 
 // Combat functions and player interaction functions
- void alt_attack	(game *g, int target);
+ void alt_attack(item_spec which, int target);
  void heal_self		(game *g);
 private:
  bool best_melee_weapon(int& inv_index) const;
