@@ -47,12 +47,12 @@ struct coat_in_spores {
 
 /// returns C-true if a monster was explicitly spored.  Return type matches std::get_if due to Waterfall/SSADM software lifecycle.
 template<class T>
-monster** spray_spores(const T& dest, monster* killer) requires requires (game* g) { g->mob_at(dest); }
+monster* spray_spores(const T& dest, monster* killer) requires requires (game* g) { g->mob_at(dest); }
 {
     const auto g = game::active();
     if (auto mob = g->mob_at(dest)) {
         std::visit(coat_in_spores(killer), *mob);
-        return std::get_if<monster*>(&(*mob));
+        return *std::get_if<monster*>(&(*mob));
     } else {
         g->z.push_back(monster(mtype::types[mon_spore], dest));
         return nullptr;

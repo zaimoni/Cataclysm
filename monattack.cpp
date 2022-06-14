@@ -1175,7 +1175,7 @@ void mattack::flamethrower(monster& z)
 
     z.sp_timeout = z.type->sp_freq;	// Reset timer
     z.moves -= 5 * mobile::mp_turn;	// It takes a while
-    for (auto& loc : *z.GPSpos.sees(target.GPSpos, 5)) loc.add(field(fd_fire, 1));
+    for (auto tmp = *z.GPSpos.sees(target.GPSpos, 5); auto& loc : tmp) loc.add(field(fd_fire, 1));
     target.add(mobile::effect::ONFIRE, TURNS(8));
 }
 

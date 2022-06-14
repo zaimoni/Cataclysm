@@ -23,6 +23,7 @@ struct noun
 		possessive
 	};
 
+	virtual ~noun() = default;
 	virtual bool is_proper() const { return false; }
 	virtual unsigned gender() const { return 0; } // 0: neuter; 1 masculine; 2 feminine (English); languages that need more genders use codes higher than 2
 	virtual std::string subject() const = 0;
