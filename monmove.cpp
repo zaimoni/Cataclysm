@@ -245,21 +245,21 @@ void monster::move(game *g)
  monster* const m_plan = plans.empty() ? nullptr : g->mon(plans[0]);
 
  if (!plans.empty() && !is_fleeing(g->u) &&
-     (!m_plan || is_enemy(m_plan)) && can_sound_move_to(g, plans[0])){
+     (!m_plan || is_enemy(m_plan)) && can_sound_move_to(plans[0])){
   // CONCRETE PLANS - Most likely based on sight
   next = plans[0];
   moved = true;
  } else if (has_flag(MF_SMELLS)) {
 // No sight... or our plans are invalid (e.g. moving through a transparent, but
 //  solid, square of terrain).  Fall back to smell if we have it.
-  if (const auto dest = scent_move(g)) {
+  if (const auto dest = scent_move()) {
    if (update_next_loc(g->toGPS(*dest))) return;
    next = *dest;
    moved = true;
   }
  }
  if (wand.live() && !moved) { // No LOS, no scent, so as a fall-back follow sound
-  point tmp = sound_move(g);
+  point tmp = sound_move();
   if (tmp != pos) {
    if (update_next_loc(g->toGPS(tmp))) return;
    next = tmp;
@@ -370,55 +370,48 @@ void monster::friendly_move(game *g)
   }
 }
 
-std::optional<point> monster::scent_move(const game *g)
+std::optional<point> monster::scent_move()
 {
+ const auto g = game::active_const();
+ const bool flee = is_fleeing(g->u);
+ int smell_threshold = flee ? INT_MAX : 1; // Squares with smell 0 are not eligable targets
  plans.clear();
  std::vector<point> smoves;
- int maxsmell = 1; // Squares with smell 0 are not eligable targets
- int minsmell = 9999;
  for (decltype(auto) dir : Direction::vector) {
      point test(pos + dir);
-     const auto m_at = g->mon(test);
-     if ((!m_at || is_enemy(m_at)) && can_sound_move_to(g, test)) {
+     auto _mob = g->mob_at(test);
+     if (  (!_mob || std::visit(is_enemy_of(*this), *_mob))
+         && can_sound_move_to(test)) {
          const auto smell = g->scent(test);
-         if (is_fleeing(g->u)) {
-             if (smell < minsmell) {
+         if (flee) {
+             if (smell > smell_threshold) continue;
+             if (smell < smell_threshold) {
                  smoves.clear();
-                 smoves.push_back(test);
-                 maxsmell = smell;
-                 minsmell = smell;
-             } else if (smell == minsmell) smoves.push_back(test);
+                 smell_threshold = smell;
+             }
          } else {
-             if (smell > maxsmell) {
+             if (smell < smell_threshold) continue;
+             if (smell > smell_threshold) {
                  smoves.clear();
-                 smoves.push_back(test);
-                 maxsmell = smell;
-                 minsmell = smell;
-             } else if (smell == maxsmell) smoves.push_back(test);
-         }
+                 smell_threshold = smell;
+             }
+        }
+       smoves.push_back(test);
      }
  }
  if (!smoves.empty()) return smoves[rng(0, smoves.size() - 1)];
  return std::nullopt;
 }
 
-bool monster::can_sound_move_to(const game* g, const point& pt) const
+bool monster::can_sound_move_to(const point& pt) const
 {
+    const auto g = game::active_const();
     if (can_enter(g->m, pt)) return true;
-    if (const auto _survivor = g->survivor(pt)) return is_enemy(_survivor); // melee attack
+    if (auto _mob = g->mob_at(pt)) return std::visit(is_enemy_of(*this), *_mob); // melee attack
     return false;
 }
 
-bool monster::can_sound_move_to(const game* g, const point& pt, point& dest) const
-{
-	if (can_sound_move_to(g, pt)) {
-		dest = pt;
-		return true;
-	}
-	return false;
-}
-
-point monster::sound_move(const game *g)
+point monster::sound_move()
 {
  plans.clear();
  const bool xbest = (abs(wand.x.y - pos.y) <= abs(wand.x.x - pos.x));	// which is more important
@@ -430,13 +423,21 @@ point monster::sound_move(const game *g)
  if (wand.x.y < pos.y) { y--; y2++;          }
  else if (wand.x.y > pos.y) { y++; y2++; y3 -= 2; }
 
- if (!can_sound_move_to(g, point(x, y), next)) {
+ static auto _can_sound_move_to = [&](const auto& pt) {
+     if (can_sound_move_to(pt)) {
+         next = pt;
+         return true;
+     }
+     return false;
+ };
+
+ if (!_can_sound_move_to(point(x, y))) {
 	 if (xbest) {
-		    can_sound_move_to(g, point(x, y2), next) || can_sound_move_to(g, point(x2, y), next) 
-	     || can_sound_move_to(g, point(x, y3), next) || can_sound_move_to(g, point(x3, y), next);
+		    _can_sound_move_to(point(x, y2)) || _can_sound_move_to(point(x2, y))
+	     || _can_sound_move_to(point(x, y3)) || _can_sound_move_to(point(x3, y));
 	 } else {
-		   can_sound_move_to(g, point(x2, y), next) || can_sound_move_to(g, point(x, y2), next)
-	    || can_sound_move_to(g, point(x3, y), next) || can_sound_move_to(g, point(x, y3), next);
+           _can_sound_move_to(point(x2, y)) || _can_sound_move_to(point(x, y2))
+	    || _can_sound_move_to(point(x3, y)) || _can_sound_move_to(point(x, y3));
 	 }
  }
 

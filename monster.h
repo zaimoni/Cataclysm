@@ -108,8 +108,8 @@ class monster : public mobile {
  void footsteps(game *g, const point& pt); // noise made by movement
  void friendly_move(game *g);
 
- std::optional<point> scent_move(const game *g);	// these two don't actually move, they return where to move to
- point sound_move(const game *g);
+ std::optional<point> scent_move();	// these two don't actually move, they return where to move to
+ point sound_move();
  void hit_player(game *g, player &p, bool can_grab = true);
  void move_to(game *g, const point& pt);
  void stumble(game *g, bool moved);
@@ -211,8 +211,7 @@ class monster : public mobile {
 private:
  std::vector <point> plans;
 
- bool can_sound_move_to(const game* g, const point& pt) const;
- bool can_sound_move_to(const game* g, const point& pt, point& dest) const;
+ bool can_sound_move_to(const point& pt) const;
 
  void _set_screenpos() override { if (auto pt = screen_pos()) pos = *pt; }
  bool handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim) override;

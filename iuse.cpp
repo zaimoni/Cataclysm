@@ -1912,27 +1912,19 @@ std::optional<std::any> iuse::can_use_tazer(const npc& p)
 static constexpr const int tazer_hit_modifier[] = { -2, -1, 0, 2, 4 };
 static_assert(mtype::MS_MAX == std::end(tazer_hit_modifier) - std::begin(tazer_hit_modifier));
 
-void iuse::tazer(pc& p, item& it)
-{
-    const auto g = game::active();
+struct hit_by_tazer {
+    game* const g;
+    pc& p;
+    int numdice;
 
-    g->draw();
-    mvprintw(0, 0, "Shock in which direction?");
-    point dir(get_direction(input()));
-    if (dir.x == -2) throw std::string("Invalid direction.");
+    hit_by_tazer(pc& p) noexcept : g(game::active()), p(p), numdice(3 + (p.dex_cur / 2.5) + p.sklevel[sk_melee] * 2) {}
+    hit_by_tazer(const hit_by_tazer& src) = delete;
+    hit_by_tazer(hit_by_tazer&& src) = delete;
+    hit_by_tazer& operator=(const hit_by_tazer& src) = delete;
+    hit_by_tazer& operator=(hit_by_tazer&& src) = delete;
+    ~hit_by_tazer() = default;
 
-    const auto target(dir + p.GPSpos);
-    monster* const z = g->mon(target);
-    npc* const foe = g->nPC(target);
-    if (!z && !foe) {
-        messages.add("Your tazer crackles in the air."); // XXX no time cost for this?
-        return;
-    }
-
-    int numdice = 3 + (p.dex_cur / 2.5) + p.sklevel[sk_melee] * 2;
-    p.moves -= mobile::mp_turn;
-
-    if (z) {
+    void operator()(monster* z) {
         numdice += tazer_hit_modifier[z->type->size];
         if (dice(numdice, 10) < dice(z->dodge(), 10)) {	// A miss!
             messages.add("You attempt to shock the %s, but miss.", z->name().c_str());
@@ -1945,7 +1937,7 @@ void iuse::tazer(pc& p, item& it)
         return;
     }
 
-    if (foe) {
+    void operator()(npc* foe) {
         if (foe->attitude != NPCATT_FLEE) foe->attitude = NPCATT_KILL;
         if (foe->str_max >= 17) numdice++;	// Minor bonus against huge people
         else if (foe->str_max <= 5) numdice--;	// Minor penalty against tiny people
@@ -1959,6 +1951,40 @@ void iuse::tazer(pc& p, item& it)
         foe->hurtall(shock);
         if (foe->hp_cur[hp_head] <= 0 || foe->hp_cur[hp_torso] <= 0) foe->die(g, true);
     }
+
+    void operator()(pc* foe) {
+        if (foe->str_max >= 17) numdice++;	// Minor bonus against huge people
+        else if (foe->str_max <= 5) numdice--;	// Minor penalty against tiny people
+        if (dice(numdice, 10) <= foe->dodge_roll()) {
+            messages.add("You attempt to shock %s, but miss.", foe->name.c_str());
+            return;
+        }
+        messages.add("You shock %s!", foe->name.c_str());
+        int shock = rng(5, 20);
+        foe->moves -= shock * mobile::mp_turn;
+        foe->hurtall(shock);
+//      if (foe->hp_cur[hp_head] <= 0 || foe->hp_cur[hp_torso] <= 0) foe->die(g, true);
+    }
+};
+
+void iuse::tazer(pc& p, item& it)
+{
+    const auto g = game::active();
+
+    g->draw();
+    mvprintw(0, 0, "Shock in which direction?");
+    point dir(get_direction(input()));
+    if (dir.x == -2) throw std::string("Invalid direction.");
+
+    const auto target(dir + p.GPSpos);
+    auto _mob = g->mob_at(target);
+    if (!_mob) {
+        messages.add("Your tazer crackles in the air."); // XXX no time cost for this?
+        return;
+    }
+
+    p.moves -= mobile::mp_turn;
+    std::visit(hit_by_tazer(p), *_mob);
 }
 
 void iuse::tazer(npc& p, item& it)
