@@ -545,8 +545,8 @@ void pc::use(char let)
             return;
         }
 
-        if (mod->acceptible_ammo_types != 0 &&
-            !(mfb(guntype->ammo) & mod->acceptible_ammo_types)) {
+        if (mod->acceptable_ammo_types != 0 &&
+            !(mfb(guntype->ammo) & mod->acceptable_ammo_types)) {
             messages.add("That %s cannot be used on a %s gun.", used->tname().c_str(), ammo_name(guntype->ammo).c_str());
             return;
         } else if (gun.contents.size() >= 4) {
@@ -780,7 +780,7 @@ std::vector<std::pair<const mtype*, int> > pc::summarize_kills()
 }
 
 void pc::target_dead(int deceased)
-{   // \todo handlle NPC targeting
+{   // \todo handle NPC targeting
     if (target == deceased) target = -1;
     else if (target > deceased) target--;
 }

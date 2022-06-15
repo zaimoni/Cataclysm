@@ -184,7 +184,7 @@ struct mtype {
  cataclysm::bitmap<N_MONSTER_TRIGGERS>::type fear; // What are we afraid of?
 
  unsigned char frequency;	// How often do these show up? 0 (never) to ??
- int difficulty;// Used all over; 30 min + (diff-3)*30 min = earlist appearance
+ int difficulty;// Used all over; 30 min + (diff-3)*30 min = earliest appearance
  int agro;	// How likely to attack; -100 to 100
  int morale;	// Default morale level
 

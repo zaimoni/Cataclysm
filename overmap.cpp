@@ -1018,7 +1018,7 @@ void overmap::generate(game *g, const overmap* north, const overmap* east, const
  }
     
 // Cities, forests, and settlements come next.
-// These're agnostic of adjacent maps, so it's very simple.
+// These are agnostic of adjacent maps, so it's very simple.
  int mincit = 0;
  if (north == nullptr && east == nullptr && west == nullptr && south == nullptr)
   mincit = 1;	// The first map MUST have a city, for the player to start in!
@@ -1031,7 +1031,7 @@ void overmap::generate(game *g, const overmap* north, const overmap* east, const
   int tmp;
 // Populate viable_roads with one point for each neighborless side.
 // Make sure these points don't conflict with rivers. 
-// TODO: In theory this is a potential infinte loop...
+// TODO: In theory this is a potential infinite loop...
   if (north == nullptr) {
    do
     tmp = rng(10, OMAPX - 11);
@@ -1646,7 +1646,7 @@ void overmap::place_forest()
 // forx and fory determine the epicenter of the forest
   forx = rng(0, OMAPX - 1);
   fory = rng(0, OMAPY - 1);
-// fors determinds its basic size
+// fors determines its basic size
   fors = rng(15, 40);
   for (int j = 0; j < cities.size(); j++) {
    while (calc_dist(forx,fory,cities[j].x,cities[j].y) - fors / 2 < cities[j].s ) {
@@ -2125,7 +2125,7 @@ void overmap::make_hiway(int x1, int y1, int x2, int y2, oter_id base)
 	auto& terrain = ter(x, y);
 	if (is_river(terrain)) terrain = ot_bridge_ew;
     else if (!is_road(*ot_range, x, y)) terrain = base;
-   } else {	// More than one eligable route; pick one randomly
+   } else {	// More than one eligible route; pick one randomly
     if (one_in(12) &&
        !is_river(ter(next[(dir + 1) % 2].x, next[(dir + 1) % 2].y)))
      dir = (dir + 1) % 2; // Switch the direction (hori/vert) in which we move

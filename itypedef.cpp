@@ -878,7 +878,7 @@ DRINK("purifier",	12, 6000,c_pink,  itm_bottle_glass,
 A rare stem-cell treatment, which causes mutations and other genetic defects\n\
 to fade away.");
 
-// \todo? this is de-caffienated...maybe allow both decaf and normal versions of both tea and coffee
+// \todo? this is de-caffeinated...maybe allow both decaf and normal versions of both tea and coffee
 DRINK_TYPICAL("tea",		1, 50,	c_green, itm_bottle_plastic,
 //	QUE NUT SPO STM HTH ADD CHG FUN use_func	addiction type
 	40,  3,  0,  0,  0,  0,  1, 6, ADD_NULL, "\
@@ -1061,7 +1061,7 @@ Yuck, not very tasty.  But it is quite filling.");
 
 FOOD_TYPICAL("pineapple",	30, 50,	c_cyan,		VEGGY,	itm_can_food,
     1,  2,  5, 26,  0,  0,  1,  0,  1,  7, ADD_NULL, "\
-Canned pinapple rings in water.  Quite tasty.");
+Canned pineapple rings in water.  Quite tasty.");
 
 FOOD_TYPICAL("coconut milk",	10, 45,	c_cyan,		VEGGY,	itm_can_food,
     1,  2,  5, 30,  0,  0,  0,  0,  1,  0, ADD_NULL, "\
@@ -1105,7 +1105,7 @@ Eating this would be pretty gross.  It causes you to mutate.");
 
 FOOD_TYPICAL("ant egg",		 5, 80,	c_white,	FLESH,	itm_null,
     4,  2, 10, 100, 0,  0, -1,  0,  1, -10, ADD_NULL, "\
-A large ant egg, the size of a softball.  Extremely nutrtious, but gross.");
+A large ant egg, the size of a softball.  Extremely nutritious, but gross.");
 
 FOOD("marloss berry",	 2,600, c_pink,		VEGGY,	itm_null,
     1,  1, 20, 40,  0,  0,-10,  0,  1, 30,	&iuse::marloss,	ADD_NULL, "\
@@ -1158,7 +1158,7 @@ FOOD_TYPICAL("MRE - vegetable",		50,100, c_green,	VEGGY,	itm_null,
 Meal Ready to Eat.  A military ration.  Though not very tasty, it is very\n\
 filling and will not spoil.");
 
-// \todo? this should be caffienated, once we have caffienated tea
+// \todo? this should be caffeinated, once we have caffeinated tea
 FOOD_TYPICAL("tea leaves",	10, 13,	c_green,	VEGGY,	itm_bag_plastic,
     2,  1, 0,  2,  0,  0,  0,  0,  5, -1, ADD_NULL, "\
 Dried leaves of a tropical plant. You cam boil them into tea, or you\n\
@@ -1790,7 +1790,7 @@ A large and very powerful electric motor.  Useful for crafting.");
 MELEE("plasma engine",  1, 900, ':', c_ltcyan,  STEEL,   MNULL,
 //  VOL WGT DAM CUT HIT FLAGS
     12,  350,  7,  0,  -2, 0, "\
-High technology engine, working on hydrgen fuel.");
+High technology engine, working on hydrogen fuel.");
 
 //      NAME           RAR PRC SYM COLOR        MAT1    MAT2
 MELEE("metal tank",  10, 40, '}', c_ltcyan,  STEEL,   MNULL,
@@ -1867,7 +1867,7 @@ ARMOR("winter boots",	60, 140,C_SHOES,	PLASTIC,	WOOL,
     8,  7,  0, -1,  2,  0,  2,  1,  7,  0,	mfb(bp_feet), "\
 Cumbersome boots designed for warmth.");
 
-ARMOR("mocassins",	 5,  80,C_SHOES,	LEATHER,	WOOL,
+ARMOR("moccasins",	 5,  80,C_SHOES,	LEATHER,	WOOL,
     2,  1, -3,  0,  0,  0,  1,  0,  3,  0,	mfb(bp_feet), "\
 Simple shoes made from animal pelts.");
 
@@ -1898,7 +1898,7 @@ A pair of khaki pants.  Slightly warmer than jeans.");
 
 ARMOR("leather pants",	60, 210,C_PANTS,	LEATHER,	MNULL,
     6,  8, -2,  1,  1,  1,  7,  0,  5,  2,	mfb(bp_legs), "\
-A pair of black leather pants.  Very tough, but encumbersome and without much\n\
+A pair of black leather pants.  Very tough, but cumbersome and without much\n\
 storage.");
 
 ARMOR("cargo pants",	70, 280,C_PANTS,	COTTON,		MNULL,
@@ -1986,11 +1986,11 @@ A jacket made from denim.  Provides decent protection from cuts.");
 ARMOR("blazer",		35, 120,C_TORSO,	WOOL,		MNULL,
 // VOL WGT DAM HIT ENC RES CUT ENV WRM STO	COVERS
    10,  6, -4,  0,  2,  0,  3,  0,  3,  2,	mfb(bp_torso), "\
-A professional-looking wool blazer.  Quite encumbersome.");
+A professional-looking wool blazer.  Quite cumbersome.");
 
 ARMOR("leather jacket",	30, 150,C_TORSO,	LEATHER,	MNULL,
    14, 14, -2,  1,  2,  1,  9,  1,  4,  4,	mfb(bp_torso), "\
-A jacket made from thick leather.  Encumbersome, but offers excellent\n\
+A jacket made from thick leather.  Cumbersome, but offers excellent\n\
 protection from cuts.");
 
 ARMOR("kevlar vest",	30, 800,C_TORSO,	KEVLAR,		MNULL,
@@ -2021,7 +2021,7 @@ A fur coat with a couple small pockets.  Extremely warm.");
 
 ARMOR("peacoat",	30, 180,C_TORSO,	COTTON,		MNULL,
    16, 10, -4, -3,  2,  1,  2,  0,  7, 10,	mfb(bp_torso), "\
-A heavy cotton coat.  Encumbersome, but warm and with deep pockets.");
+A heavy cotton coat.  Cumbersome, but warm and with deep pockets.");
 
 ARMOR("utility vest",	15, 200,C_TORSO,	COTTON,		MNULL,
     4,  3, -3,  0,  0,  0,  1,  0,  1, 14,	mfb(bp_torso), "\
@@ -2039,15 +2039,15 @@ A pair of thin cotton gloves.  Often used as a liner beneath other gloves.");
 
 ARMOR("mittens",	30,  40,C_GLOVES,	WOOL,		MNULL,
     0,  0, -5,  1,  8,  0,  1,  0,  5,  0,	mfb(bp_hands), "\
-A pair of warm mittens.  They are extremely encumbersome.");
+A pair of warm mittens.  They are extremely cumbersome.");
 
 ARMOR("wool gloves",	33,  50,C_GLOVES,	WOOL,		MNULL,
     1,  0, -5,  1,  3,  0,  1,  0,  3,  0,	mfb(bp_hands), "\
-A thick pair of wool gloves.  Encumbersome but warm.");
+A thick pair of wool gloves.  Cumbersome but warm.");
 
 ARMOR("winter gloves",	40,  65,C_GLOVES,	COTTON,		MNULL,
     1,  0, -5,  1,  5,  1,  1,  0,  4,  0,	mfb(bp_hands), "\
-A pair of padded gloves.  Encumbersome but warm.");
+A pair of padded gloves.  Cumbersome but warm.");
 
 ARMOR("leather gloves",	45,  85,C_GLOVES,	LEATHER,	MNULL,
     1,  1, -3,  2,  1,  0,  3,  0,  3,  0,	mfb(bp_hands), "\
@@ -2245,11 +2245,11 @@ Provides more storage than any other piece of clothing.");
 ARMOR("purse",		40,  75,C_STORE,	LEATHER,	MNULL,
 // VOL WGT DAM HIT ENC RES CUT ENV WRM STO	COVERS
    10,  3,  2,  2,  3,  0,  0,  0,  0, 20,	mfb(bp_torso), "\
-A bit encumbersome to wear, but provides lots of storage.");
+A bit cumbersome to wear, but provides lots of storage.");
 
 ARMOR("messenger bag",	20, 110,C_STORE,	PLASTIC,	MNULL,
     8,  2,  1,  1,  3,  0,  0,  0,  0, 30,	mfb(bp_torso), "\
-A bit encumbersome to wear, but provides lots of storage.");
+A bit cumbersome to wear, but provides lots of storage.");
 
 ARMOR("fanny pack", 	10, 100,C_STORE,	PLASTIC,	MNULL,
     3,  1,  1,  2,  0,  0,  0,  0,  0,  6,	0, "\
@@ -2284,7 +2284,7 @@ any effects.");
 // AP is a reduction in the armor of the target.
 // Accuracy is in quarter-degrees, and measures the maximum this ammo will
 //   contribute to the angle of difference.  HIGH ACC IS BAD.
-// Recoil is cumulitive between shots.  4 recoil = 1 accuracy.
+// Recoil is cumulative between shots.  4 recoil = 1 accuracy.
 // IMPORTANT: If adding a new AT_*** ammotype, add it to the ammo_name function
 //   at the end of this file.
 #define AMMO(name,rarity,price,ammo_type,color,mat,volume,wgt,dmg,AP,range,\
@@ -2361,7 +2361,7 @@ AMMO("shotgun slug",	 6, 900,AT_SHOT,	c_red,		PLASTIC,
 //	VOL WGT DMG  AP RNG ACC REC COUNT
 	 2, 34, 50,  8, 12, 10, 28,  25, "\
 A heavy metal slug used with shotguns to give them the range capabilities of\n\
-a rifle.  Extremely damaging but rather innaccurate.  Works best in a shotgun\n\
+a rifle.  Extremely damaging but rather inaccurate.  Works best in a shotgun\n\
 with a rifled barrel.",
 0);
 
@@ -2406,7 +2406,7 @@ popular round in sub-machine guns.",
 AMMO("9mm +P",		 8, 380,AT_9MM,		c_ltblue,	STEEL,
 	 1,  7, 20,  4, 14, 15, 14,  25, "\
 Attempts to improve the ballistics of 9mm ammunition lead to high pressure\n\
-rounds.  Increased velocity resullts in superior accuracy and damage.",
+rounds.  Increased velocity results in superior accuracy and damage.",
 0);
 
 //  NAME		RAR PRC TYPE		COLOR		MAT
@@ -2426,8 +2426,8 @@ throughout the 20th century.  It is most commonly used in revolvers.",
 AMMO(".38 Super",	 7, 450,AT_38,		c_ltblue,	STEEL,
 	 1,  9, 25,  4, 16, 14, 14,  25, "\
 The .38 Super is a high-pressure load of the .38 Special caliber.  It is a\n\
-popular choice in pistol competions for its high accuracy, while its stopping\n\
-power keeps it popular for self-defense.",
+popular choice in pistol competitions for its high accuracy, while its\n\
+stopping power keeps it popular for self-defense.",
 0);
 
 AMMO("10mm Auto",	 4, 420,AT_40,		c_blue,		STEEL,
@@ -2744,8 +2744,8 @@ shooting.\" --Smith & Wesson official website",
 
 GUN("Glock 19",		 7,1400,c_dkgray,	STEEL,	PLASTIC,
 	sk_pistol,	AT_9MM,	 2,  5,  8,  1,  0, 24,  6,  6,  0, 15, 300, "\
-Possibly the most popular pistol in existance.  The Glock 19 is often derided\n\
-for its plastic contruction, but it is easy to shoot.",
+Possibly the most popular pistol in existence.  The Glock 19 is often derided\n\
+for its plastic construction, but it is easy to shoot.",
 0);
 
 GUN("USP 9mm",		 6,1450,c_dkgray,	STEEL,	PLASTIC,
@@ -2786,15 +2786,15 @@ GUN("Ruger Redhawk",	 3,1560,c_dkgray,	STEEL,	WOOD,
 //	SKILL		AMMO	VOL WGT MDG HIT DMG ACC REC DUR BST CLIP
 	sk_pistol,	AT_44,	 2, 12, 10,  1,  2, 21,  6,  8,  0,  6, 80, "\
 One of the most powerful handguns in the world when it was released in 1979,\n\
-the Redhawk offers very sturdy contruction, with an appearance that is\n\
+the Redhawk offers very sturdy construction, with an appearance that is\n\
 reminiscent of \"Wild West\" revolvers.",
 mfb(IF_RELOAD_ONE));
 
 GUN("Desert Eagle .44",	 2,1750,c_dkgray,	STEEL,	PLASTIC,
 	sk_pistol,	AT_44,	 4, 17, 14,  1,  4, 35,  3,  7,  0, 10, 400, "\
 One of the most recognizable handguns due to its popularity in movies, the\n\
-\"Deagle\" is better known for its menacing appearance than its performace.\n\
-It's highly innaccurate, but its heavy weight reduces recoil.",
+\"Deagle\" is better known for its menacing appearance than its performance.\n\
+It's highly inaccurate, but its heavy weight reduces recoil.",
 0);
 
 GUN("USP .45",		 6,1600,c_dkgray,	STEEL,	PLASTIC,
@@ -2926,14 +2926,14 @@ GUN("TDI Vector",	 4,4200,c_cyan,	STEEL,	PLASTIC,
 //	SKILL		AMMO	VOL WGT MDG HIT DMG ACC REC DUR BST CLIP
 	sk_smg,		AT_45,	13, 20,  9,  0, -2, 15,-14,  7,  8, 30, 450, "\
 The TDI Vector is a submachine gun with a unique in-line design which makes\n\
-recoil very managable, even in the powerful .45 caliber.",
+recoil very manageable, even in the powerful .45 caliber.",
 0);
 
 GUN("FN P90",		 7,4000,c_cyan,	STEEL,	PLASTIC,
 	sk_smg,		AT_57,	14, 22, 10,  1,  0, 22, -8,  8, 20, 50, 500, "\
 The first in a new genre of guns, termed \"personal defense weapons.\"  FN\n\
 designed the P90 to use their proprietary 5.7x28mm ammunition.  It is made\n\
-for firing bursts managably.",
+for firing bursts manageably.",
 0);
 
 GUN("H&K MP7",		 5,3400,c_cyan,	STEEL,	PLASTIC,
@@ -3074,7 +3074,7 @@ GUN("M249",		 1,7500,c_ltred,STEEL,	PLASTIC,
 //  SKILL       AMMO    VOL WGT MDG HIT DMG ACC REC DUR BST CLIP RELOAD
 	sk_rifle,	AT_223,	32, 68, 27, -4, -6, 20,  6,  7, 30,200, 750, "\
 The M249 is a mountable machine gun used by the US Military and SWAT teams.\n\
-Quite innaccurate and difficult to control, the M249 is designed to fire many\n\
+Quite inaccurate and difficult to control, the M249 is designed to fire many\n\
 rounds very quickly."
 ,
 0);
@@ -3112,7 +3112,7 @@ mfb(IF_FIRE_100));
 
 GUN("flamethrower",	 1,3800,c_pink,	STEEL,	MNULL,
 	sk_shotgun,	AT_GAS,  20, 14, 10, -2,  0,  4,  0,  8,  4,1600, 900, "\
-A large flamethrower with substantial gas reserves.  Very manacing and\n\
+A large flamethrower with substantial gas reserves.  Very menacing and\n\
 deadly.",
 mfb(IF_FIRE_100));
 
@@ -3215,7 +3215,7 @@ GUNMOD("shortened barrel", 6, 320, c_ltgray, STEEL, MNULL,    1,  1, -2,  0, -1,
 	0, "\
 A shortened barrel results in markedly reduced accuracy, and a minor increase\n\
 in noise, but also reduces recoil greatly as a result of the improved\n\
-managability of the firearm.",
+manageability of the firearm.",
 0);
 
 GUNMOD("rifled barrel",    5, 220, c_ltgray, STEEL, MNULL,    2,  1,  3,  0,  1,
@@ -3241,7 +3241,7 @@ Completely doubles the ammunition capacity of your firearm, but the added\n\
 bulk reduces accuracy and increases recoil.",
 0);
 
-GUNMOD("gyroscopic stablizer",4,680,c_blue,  STEEL, PLASTIC,  3,  2,  0,  0, -3,
+GUNMOD("gyroscopic stabilizer",4,680,c_blue,  STEEL, PLASTIC,  3,  2,  0,  0, -3,
 	 2, -2,  0,-10, -8,  0, AT_NULL,	false,	false,	true,	true,
 	0, "\
 An advanced unit which straps onto the side of your firearm and reduces\n\
@@ -3365,7 +3365,7 @@ piercing damage.  The added length increases recoil slightly.",
 mfb(IF_STAB));
 
 // BOOKS
-// Try to keep colors consistant among types of books.
+// Try to keep colors consistent among types of books.
 // TYPE is the skill type required to read, or trained via reading; see skill.h
 // LEV is the skill level you can be brought to by this book; if your skill is
 //  already at LEV or higher, you may enjoy the book but won't learn anything.
@@ -4659,7 +4659,7 @@ it_gunmod::it_gunmod(int pid, unsigned char prarity, unsigned int pprice,
 
 :itype(pid, prarity, pprice, pname, pdes, psym, pcolor, pm1, pm2, pvolume, pweight, pmelee_dam, pmelee_cut, pm_to_hit, pitem_flags),
   accuracy(paccuracy),damage(pdamage),loudness(ploudness),clip(pclip),recoil(precoil),burst(pburst),newtype(pnewtype),
-  acceptible_ammo_types(a_a_t),used_on_pistol(pistol),used_on_shotgun(shotgun),used_on_smg(smg),used_on_rifle(rifle)
+  acceptable_ammo_types(a_a_t),used_on_pistol(pistol),used_on_shotgun(shotgun),used_on_smg(smg),used_on_rifle(rifle)
 {
 }
 

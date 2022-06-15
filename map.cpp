@@ -287,7 +287,7 @@ bool map::displace_vehicle(vehicle* const veh, const point& delta, bool test)
   // and turning: precalc_dx/dy [0] contains previous frame direction,
   // and precalc_dx/dy[1] should contain next direction
   psg->screenpos_add(delta + veh->parts[p].precalc_d[1] - veh->parts[p].precalc_d[0]);
-  if (psg == &g->u) { // if passemger is you, we need to update the map
+  if (psg == &g->u) { // if passenger is you, we need to update the map
    need_update = true;
    upd = psg->pos;
   }
@@ -1059,7 +1059,7 @@ bool map::bash(int x, int y, int str, std::string &sound, int *res)
  return smashed_web;// If we kick empty space, the action is canceled
 }
 
-// creatures call map::destroy only if the terrain is NOT bashable.  Map generation usually pre-emptively bashes.
+// creatures call map::destroy only if the terrain is NOT bashable.  Map generation usually preemptively bashes.
 void map::destroy(game *g, const point& origin, bool makesound)
 {
  auto& terrain = ter(origin);

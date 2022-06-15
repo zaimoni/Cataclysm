@@ -170,7 +170,7 @@ This shouldn't be here!  You have the trait PF_MAX toggled.  Weird." },
 * Positive visibility means that the mutation is prominent.  This will visibly
 *  identify the player as a mutant, resulting in discrimination from mutant-
 *  haters and trust with mutants/mutant-lovers.
-* Poistive ugliness means that the mutation is grotesque.  This will result in
+* Positive ugliness means that the mutation is grotesque.  This will result in
 *  a negative reaction from NPCs, even those who are themselves mutated, unless
 *  the NPC is a mutant-lover.
 */
@@ -285,7 +285,7 @@ will be less likely to attack or flee from you." },
 Your body is simply immune to diseases.  You will never catch an ambient\n\
 disease." },
 { "Poisonous", 8, 0, 0, "\
-Your body produces a potent venom.  Any special attacks from mutatations\n\
+Your body produces a potent venom.  Any special attacks from mutations\n\
 have a chance to poison your target." },
 { "Slime Hands", 4, 5, 4, "\
 The skin on your hands is a mucous membrane and produces a thick, acrid\n\
@@ -343,12 +343,12 @@ scorpion.  It does not improve your balance at all, but allows for a\n\
 powerful piercing attack." },
 { "Club Tail", 2, 7, 2, "\
 You have a long tail that ends in a heavy, bony club.  It does not improve\n\
-your balance at all, but alows for a powerful bashing attack." },
+your balance at all, but allows for a powerful bashing attack." },
 { "Pain Recovery", 3, 0, 0, "\
 You recover from pain slightly faster than normal." },
 { "Quick Pain Recovery", 5, 0, 0, "\
 You recover from pain faster than normal." },
-{ "Very Quick Pain Reovery", 8, 0, 0, "\
+{ "Very Quick Pain Recovery", 8, 0, 0, "\
 You recover from pain much faster than normal." },
 { "Bird Wings", 2, 4, 2, "\
 You have a pair of large, feathered wings.  Your body is too heavy to be able\n\
@@ -368,7 +368,7 @@ wearing mouthwear." },
 Your ears have extended into long, pointed ones, like those of a canine.\n\
 They enhance your hearing, allowing you to hear at greater distances." },
 { "Web Walker", 3, 0, 0, "\
-Your body excretes very fine amounts of a chemcial which prevents you from\n\
+Your body excretes very fine amounts of a chemical which prevents you from\n\
 sticking to webs.  Walking through webs does not affect you at all." },
 { "Web Weaver", 3, 0, 0, "\
 Your body produces webs.  As you move, there is a chance that you will\n\
@@ -384,7 +384,7 @@ Your muscles are stronger.  Strength + 2" },
 { "Extremely Strong", 4, 1, 0, "\
 Your muscles are much stronger.  Strength + 4" },
 { "Insanely Strong", 7, 2, 2, "\
-Your muscles are noticably bulging.  Strength + 7" },
+Your muscles are noticeably bulging.  Strength + 7" },
 { "Dextrous", 1, 0, 0, "\
 You are a little nimbler.  Dexterity + 1" },
 { "Very Dextrous", 2, 0, 0, "\
@@ -400,7 +400,7 @@ You are smarter.  Intelligence + 2" },
 { "Extremely Smart", 3, 1, 1, "\
 You are much smarter, and your skull bulges slightly.  Intelligence + 4" },
 { "Insanely Smart", 4, 3, 3, "\
-Your skull bulges noticably with your impressive brain.  Intelligence + 7" },
+Your skull bulges noticeably with your impressive brain.  Intelligence + 7" },
 { "Perceptive", 1, 0, 0, "\
 Your senses are a little keener.  Perception + 1" },
 { "Very Perceptive", 2, 0, 0, "\

@@ -10,7 +10,7 @@ void player::mutate()
  bool force_bad = one_in(3); // 33% chance!
  if (has_trait(PF_ROBUST) && force_bad && one_in(3)) force_bad = false; // 11% chance!
 
-// First, see if we should ugrade/extend an existing mutation
+// First, see if we should upgrade/extend an existing mutation
  std::vector<pl_flag> upgrades;
  for (int i = 1; i < PF_MAX2; i++) {
   if (has_trait(i)) {

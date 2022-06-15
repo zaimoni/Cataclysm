@@ -240,7 +240,7 @@ public:
 
  int warmth(body_part bp) const;	// Warmth provided by armor &c; \todo cf game::check_warmth which might belong over in player
  void check_warmth(int ambient_F);
- int encumb(body_part bp) const;	// Encumberance from armor &c
+ int encumb(body_part bp) const;	// Encumbrance from armor &c
  int armor_bash(body_part bp) const;	// Bashing resistance
  int armor_cut(body_part bp) const;	// Cutting  resistance
  int resist(body_part bp) const;	// Infection &c resistance

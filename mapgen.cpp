@@ -2056,7 +2056,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     }
    }
   } else { // We're below ground, and no sewers
-// Set up the boudaries of walls (connect to adjacent lab squares)
+// Set up the boundaries of walls (connect to adjacent lab squares)
    tw = (is_between<ot_lab, ot_lab_core>(t_north)) ? 0 : 2;
    rw = (is_between<ot_lab, ot_lab_core>(t_east)) ? 1 : 2;
    bw = (is_between<ot_lab, ot_lab_core>(t_south)) ? 1 : 2;
@@ -2745,7 +2745,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      line(this, t_floor_green, SEEX, 5, SEEX + 1, 5);
      line(this, t_floor_blue,  SEEX, 6, SEEX + 1, 6);
 // Now, randomly choose actions
-// Set up an actions vector so that there's not undue repetion
+// Set up an actions vector so that there's not undue repetition
      std::vector<int> actions;
      actions.push_back(1);	// offset from ter_id values is t_switch_rg-1
      actions.push_back(2);
@@ -4054,7 +4054,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    if (ter(x, y) == t_floor)
     add_spawn(mon_zombie, 1, x, y);
   }
-// Finally, figure out where the road is; contruct our entrance facing that.
+// Finally, figure out where the road is; construct our entrance facing that.
   if (t_east >= ot_road_null && t_east <= ot_bridge_ew) rotate(1);
   else if (t_south >= ot_road_null && t_south <= ot_bridge_ew) rotate(2);
   else if (t_west >= ot_road_null && t_west <= ot_bridge_ew) rotate(3);

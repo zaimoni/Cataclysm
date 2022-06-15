@@ -849,7 +849,7 @@ int item::pick_reload_ammo(const player &u, bool interactive) const
   return -1;
  }
 
- std::vector<int> am;	// List of indicies of valid ammo
+ std::vector<int> am;	// List of indices of valid ammo
 
  if (reload_gun) {
   if (charges > 0) {

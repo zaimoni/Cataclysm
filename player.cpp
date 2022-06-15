@@ -2171,7 +2171,7 @@ void player::disp_info(game *g)
  };
 
 // Next, draw encumberment.
- mvwaddstrz(w_encumb, 0, 6, c_ltgray, "ENCUMBERANCE");
+ mvwaddstrz(w_encumb, 0, 6, c_ltgray, "ENCUMBRANCE");
  mvwaddstrz(w_encumb, 2, 2, c_ltgray, "Head................");
  int enc = encumb(bp_head);    // problematic if this can be negative (need better function)
  mvwprintz(w_encumb, 2, 21 - int_log10(abs(enc)) - (0 > enc), encumb_color(enc), "%d", enc);
@@ -2333,10 +2333,10 @@ detecting traps and other things of interest."
    if (!done) wrefresh(w_stats);
    break;
   case encumbrance:	// Encumberment tab
-   mvwaddstrz(w_encumb, 0, 6, h_ltgray, "ENCUMBERANCE");
+   mvwaddstrz(w_encumb, 0, 6, h_ltgray, "ENCUMBRANCE");
    mvwaddstrz(w_encumb, 2 + line, 2, h_ltgray, enc_labels[line]);
    if (line == 0) {
-    mvwaddstrz(w_info, 0, 0, c_magenta, "Head encumberance has no effect; it simply limits how much you can put on.");
+    mvwaddstrz(w_info, 0, 0, c_magenta, "Head encumbrance has no effect; it simply limits how much you can put on.");
    } else if (line == 1) {
     const int enc_eyes = encumb(bp_eyes);
     mvwprintz(w_info, 0, 0, c_magenta, "Perception -%d when checking traps or firing ranged weapons;\n\
@@ -2381,7 +2381,7 @@ Dodge skill %s%.1f", sign, enc_legs * 3,
      break;
     case '\t':
      mvwaddstrz(w_encumb, 2 + line, 2, c_ltgray, enc_labels[line]);
-     mvwaddstrz(w_encumb, 0, 6, c_ltgray, "ENCUMBERANCE");
+     mvwaddstrz(w_encumb, 0, 6, c_ltgray, "ENCUMBRANCE");
      wrefresh(w_encumb);
      line = 0;
      curtab++;
@@ -2935,7 +2935,7 @@ void player::power_bionics(game *g)
  static constexpr const int header_offset = sizeof("BIONICS -"); // C++20: constexpr strlen?
 
  static auto mode_desc = [&]() {
-     draw_hline(wBio, 0, c_white, ' ', header_offset); // general-case pre-emptive clear
+     draw_hline(wBio, 0, c_white, ' ', header_offset); // general-case preemptive clear
      mvwaddstrz(wBio, 0, header_offset, c_white, activating ? "Activating.  Press '!' to examine your implants."
                                                            : "Examining.  Press '!' to activate your implants.");
  };
@@ -4324,7 +4324,7 @@ void player::process_active_items(game *g)
             }
             if (maintain) {
                 if (one_in(20)) {
-                    // do not think range of this dischage is fundamentally linked to map generation's SEE 2020-09-23 zaimoni
+                    // do not think range of this discharge is fundamentally linked to map generation's SEE 2020-09-23 zaimoni
                     messages.add("Your %s discharges!", weapon.tname().c_str());
 
                     const auto target2(GPSpos + rng(within_rldist<12>));

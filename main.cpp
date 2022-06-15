@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
  flush_tilesheets();	// don't want to pay RAM overhead for tilesheets after we've extracted the tiles from them
   
  rand();  // For some reason a call to rand() seems to be necessary to avoid
-          // repetion.
+          // repetition.
  bool quit_game = false;
  std::unique_ptr<game> g(new game);
 #if 0

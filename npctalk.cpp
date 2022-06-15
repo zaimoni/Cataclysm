@@ -1422,7 +1422,7 @@ talk_topic dialogue::opt(talk_topic topic, game *g)
 #ifdef MID_WIDTH
 #undef MID_WIDTH
 #endif
- const int MID_WIDTH = SCREEN_WIDTH/2;	// historicallly, 40
+ const int MID_WIDTH = SCREEN_WIDTH/2;	// historically, 40
  int hilight_lines = 1;
  size_t split;
  while (challenge.length() > MID_WIDTH) {

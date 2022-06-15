@@ -29,7 +29,7 @@ bool monster::can_enter(const map& m, const point& pt) const
 }
 
 // Resets plans (list of squares to visit) and builds it as a straight line
-// to the destination (x,y). t is used to choose which eligable line to use.
+// to the destination (x,y). t is used to choose which eligible line to use.
 // Currently, this assumes we can see (x,y), so shouldn't be used in any other
 // circumstance (or else the monster will "phase" through solid terrain!)
 void monster::set_dest(const point& pt, int t)
@@ -374,7 +374,7 @@ std::optional<point> monster::scent_move()
 {
  const auto g = game::active_const();
  const bool flee = is_fleeing(g->u);
- int smell_threshold = flee ? INT_MAX : 1; // Squares with smell 0 are not eligable targets
+ int smell_threshold = flee ? INT_MAX : 1; // Squares with smell 0 are not eligible targets
  plans.clear();
  std::vector<point> smoves;
  for (decltype(auto) dir : Direction::vector) {

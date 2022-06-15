@@ -331,7 +331,7 @@ working->flags = mfb(MF_SEES) | mfb(MF_HEARS) | mfb(MF_SMELLS) | mfb(MF_ANIMAL) 
 working->anger = mfb(MTRIG_PLAYER_CLOSE);
 working->placate = mfb(MTRIG_MEAT);
 
-// DOMESICATED ANIMALS
+// DOMESTICATED ANIMALS
 mon("dog",	species_mammal, 'd',	c_white,	MS_SMALL,	FLESH,
 //	frq dif agr mor spd msk mdi m## cut dge bsh cut itm  HP special freq
 	 1,   5,  2, 15,150, 12,  2,  3,  3,  3,  0,  0,  0, 25,  0,
@@ -365,7 +365,7 @@ mon("soldier ant",species_insect, 'a',	c_blue,		MS_MEDIUM,	FLESH,
 	  2, 16, 25,100,115, 12,  2,  4,  6,  2,  5, 10,-50, 80,  0,
 	&mdeath::normal,	&mattack::none, "\
 Darker in color than the other ants, this\n\
-more aggresive variety has even larger\n\
+more aggressive variety has even larger\n\
 mandibles."
 );
 working->flags = mfb(MF_SMELLS);
@@ -846,7 +846,7 @@ mon("sewer rat",species_mammal, 's',	c_dkgray,	MS_SMALL,	FLESH,
 //	frq dif agr mor spd msk mdi m## cut dge bsh cut itm  HP special freq
 	 18,  3, 20, 40,105, 10,  1,  2,  1,  2,  0,  0,  0, 30, 0,
 	&mdeath::normal,	&mattack::none, "\
-A large, mangey rat with red eyes.  It\n\
+A large, mangy rat with red eyes.  It\n\
 scampers quickly across the ground, squeaking\n\
 hungrily."
 );
@@ -940,7 +940,7 @@ mon("wolf spider",species_insect, 's',	c_brown,	MS_MEDIUM,	FLESH,
 	  1, 20, 20,100,110, 7,   1,  1,  8,  6,  2,  8,-70, 40, 0,
 	&mdeath::normal,	&mattack::none, "\
 A large, brown spider, which moves quickly\n\
-and aggresively."
+and aggressively."
 );
 working->flags = mfb(MF_VENOM) | mfb(MF_HEARS) | mfb(MF_SMELLS);
 
@@ -1212,7 +1212,7 @@ mon("eyebot",	species_robot, 'r',	c_ltblue,	MS_SMALL,	STEEL,
 A roughly spherical robot that hovers about\n\
 five feet of the ground.  Its front side is\n\
 dominated by a huge eye and a flash bulb.\n\
-Frequently used for reconaissance."
+Frequently used for reconnaissance."
 );
 working->flags = mfb(MF_NOHEAD) | mfb(MF_ELECTRONIC) | mfb(MF_FLIES) | mfb(MF_SEES);
 

@@ -491,7 +491,7 @@ std::string fac_respect_text(int val)
  if (val >= 10)
   return "Spoken Of";
 
-// Disrepected, laughed at, etc.
+// Disrespected, laughed at, etc.
  if (val <= -100)
   return "Worthless Scum";
  if (val <= -80)
