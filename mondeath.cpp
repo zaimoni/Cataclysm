@@ -138,7 +138,7 @@ void mdeath::worm(game *g, monster *z)
 
  static std::function<std::optional<point>(point)> dest_clear = [&](point delta) {
      decltype(auto) test = z->pos + delta;
-     return g->m.has_flag(diggable, test) && !g->mon(test) && !g->survivor(test) ? std::optional<point>(test) : std::nullopt;
+     return g->m.has_flag(diggable, test) && !g->mob_at(test) ? std::optional<point>(test) : std::nullopt;
  };
 
  auto wormspots(grep(within_rldist<1>, dest_clear));
@@ -193,7 +193,7 @@ void mdeath::blobsplit(game *g, monster *z)
 
  static std::function<std::optional<point>(point)> dest_clear = [&](point delta) {
      decltype(auto) test = z->pos + delta;
-     return g->m.move_cost(test) > 0 && !g->mon(test) && !g->survivor(test) ? std::optional<point>(test) : std::nullopt;
+     return g->m.move_cost(test) > 0 && !g->mob_at(test) ? std::optional<point>(test) : std::nullopt;
  };
 
  auto valid(grep(within_rldist<1>, dest_clear));

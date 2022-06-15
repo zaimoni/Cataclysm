@@ -45,14 +45,16 @@ struct coat_in_spores {
     } // no-op
 };
 
-/// returns C-true if a monster was explicitly spored.  Return type matches std::get_if due to Waterfall/SSADM software lifecycle.
+/// returns C-true if a monster was explicitly spored.  Return type matches std::get due to Waterfall/SSADM software lifecycle.
 template<class T>
 monster* spray_spores(const T& dest, monster* killer) requires requires (game* g) { g->mob_at(dest); }
 {
     const auto g = game::active();
     if (auto mob = g->mob_at(dest)) {
         std::visit(coat_in_spores(killer), *mob);
-        return *std::get_if<monster*>(&(*mob));
+//      return *std::get_if<monster*>(&(*mob)); // fixes GCC 12 warning about returning dangling reference, *BUT* dereferences nullptr!
+        if (auto mon = std::get_if<monster*>(&(*mob))) return *mon;
+        return nullptr;
     } else {
         g->z.push_back(monster(mtype::types[mon_spore], dest));
         return nullptr;

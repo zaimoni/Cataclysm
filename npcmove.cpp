@@ -190,6 +190,29 @@ public:
 	}
 };
 
+class use_alt_attack final : public cataclysm::action
+{
+	npc& actor;
+	npc::item_spec item;
+	int target;
+public:
+	use_alt_attack(npc& actor, const npc::item_spec& item, int target) noexcept : actor(actor), item(item), target(target) {
+#ifndef NDEBUG
+		if (!IsLegal()) throw std::logic_error("illegal use_alt_attack");
+#endif
+	}
+	~use_alt_attack() = default;
+	bool IsLegal() const override {
+		return -1 != target;
+	}
+	void Perform() const override {
+		actor.alt_attack(item, target);
+	}
+	const char* name() const override {
+		return "using alt attack";	// failover
+	}
+};
+
 // 2021-09-08: target_inventory now obsolete, use target_inventory_alt instead
 template<class PC/*=npc */>	// default class works for MSVC++, not MingW64
 class target_inventory : public cataclysm::action
@@ -410,10 +433,6 @@ void npc::execute_action(game *g, const ai_action& action, int target)
   throw std::logic_error("npc_melee invoked w/o target");
 #endif
   
- case npc_alt_attack:
-  alt_attack(g, target);
-  break;
-
 #if DEAD_FUNC
  case npc_heal_player:
   update_path(g->m, g->u.pos);
@@ -604,7 +623,11 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
 	  const auto inv_index = can_reload();
 	  if (0 <= inv_index) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), inv_index, &npc::reload, "Reload")));
   }
-  if (emergency(danger_assessment(g)) && alt_attack_available()) return ai_action(npc_alt_attack, std::unique_ptr<cataclysm::action>());
+  if (emergency(danger_assessment(g))) {
+	  if (auto have_alt = alt_attack_available()) {
+		  return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new use_alt_attack(*const_cast<npc*>(this), *have_alt, target)));
+	  }
+  }
   if (weapon.is_gun() && weapon.charges > 0) {
    const int ideal_range = confident_range();
    if (dist > ideal_range) {
@@ -1623,86 +1646,86 @@ bool npc::best_gun(const int target, int& inv_index, std::vector<int>& empty_gun
 	return ret;
 }
 
-void npc::alt_attack(game *g, int target)
+void npc::alt_attack(item_spec which, int target)
 {
- ai_target<point> Target = std::visit(to_ai_target(), decode_target(target).value()); // XXX throws rather than logs error in release mode
+	const auto g = game::active();
+	int index = which.second; // backward compatibility
+	item* used = which.first; // backward compatibility
 
- point tar = Target.first;	// backward compatibility
+tail_recurse:
+	ai_target<point> Target = std::visit(to_ai_target(), decode_target(target).value()); // XXX throws rather than logs error in release mode
+	point tar = Target.first;	// backward compatibility
 
- const auto which = alt_attack_available();
- DEBUG_FAIL_OR_LEAVE(!which, return);	// We ain't got shit!  Definitely should not happen.
+   // Are we going to throw this item?
+	if (!thrown_item(*used)) activate_item(*used);
+	else { // We are throwing it!
 
- int index = which->second; // backward compatibility
- item *used = which->first; // backward compatibility
+		std::vector<point> trajectory;
+		const int light = g->light_level(GPSpos);
+		const int dist = rl_dist(pos, tar);
+		const bool no_friendly_fire = wont_hit_friend(g, tar, index);
+		const int conf = confident_range(index);
 
-// Are we going to throw this item?
- if (!thrown_item(*used)) activate_item(*used);
- else { // We are throwing it!
-
-  std::vector<point> trajectory;
-  const int light = g->light_level(GPSpos);
-  const int dist = rl_dist(pos, tar);
-  const bool no_friendly_fire = wont_hit_friend(g, tar, index);
-  const int conf = confident_range(index);
-
-  if (dist <= conf && no_friendly_fire) {
-   trajectory = line_to(pos, tar, g->m.sees(pos, tar, light));
-   moves -= (mobile::mp_turn / 4) * 5;
-   if (g->u.see(pos))
-    messages.add("%s throws a %s.", name.c_str(), used->tname().c_str());
-   g->throw_item(*this, tar, std::move(*used), trajectory);
-   i_remn(index);
-  } else if (!no_friendly_fire) {// Danger of friendly fire
-   if (!used->active || used->charges > 2) // Safe to hold on to, for now
-    avoid_friendly_fire(g, target); // Maneuver around player
-   else { // We need to throw this live (grenade, etc) NOW! Pick another target?
-    for (int dist = 2; dist <= conf; dist++) {
-     for (int x = pos.x - dist; x <= pos.x + dist; x++) {
-      for (int y = pos.y - dist; y <= pos.y + dist; y++) {
-       int newtarget = g->mon_at(x, y);
-       int newdist = rl_dist(pos, x, y);
-// TODO: Change "newdist >= 2" to "newdist >= safe_distance(used)"
-// Molotovs are safe at 2 tiles, grenades at 4, mininukes at 8ish
-       if (newdist <= conf && newdist >= 2 && newtarget != -1 &&
-           wont_hit_friend(g, x, y, index)) { // Friendlyfire-safe!
-        alt_attack(g, newtarget);
-        return;
-       }
-      }
-     }
-    }
-/* If we have reached THIS point, there's no acceptible monster to throw our
- * grenade or whatever at.  Since it's about to go off in our hands, better to
- * just chuck it as far away as possible--while being friendly-safe.
- */
-    int best_dist = 0;
-    for (int dist = 2; dist <= conf; dist++) {
-     for (int x = pos.x - dist; x <= pos.x + dist; x++) {
-      for (int y = pos.y - dist; y <= pos.y + dist; y++) {
-       int new_dist = rl_dist(pos, x, y);
-       if (new_dist > best_dist && wont_hit_friend(g, x, y, index)) {
-        best_dist = new_dist;
-		tar = point(x, y);
-       }
-      }
-     }
-    }
-/* Even if tarx/tary didn't get set by the above loop, throw it anyway.  They
- * should be equal to the original location of our target, and risking friendly
- * fire is better than holding on to a live grenade / whatever.
- */
-	trajectory = line_to(pos, tar, g->m.sees(pos, tar, light));
-    moves -= (mobile::mp_turn / 4) * 5;
-    if (g->u.see(pos))
-     messages.add("%s throws a %s.", name.c_str(), used->tname().c_str());
-	g->throw_item(*this, tar, std::move(*used), trajectory);
-    i_remn(index);
-   }
-  } else { // Within this block, our chosen target is outside of our range
-   update_path(g->m, tar);
-   move_to_next(g); // Move towards the target
-  }
- } // Done with throwing-item block
+		if (dist <= conf && no_friendly_fire) {
+			trajectory = line_to(pos, tar, g->m.sees(pos, tar, light));
+			moves -= (mobile::mp_turn / 4) * 5;
+			if (g->u.see(pos))
+				messages.add("%s throws a %s.", name.c_str(), used->tname().c_str());
+			g->throw_item(*this, tar, std::move(*used), trajectory);
+			i_remn(index);
+		}
+		else if (!no_friendly_fire) {// Danger of friendly fire
+			if (!used->active || used->charges > 2) // Safe to hold on to, for now
+				avoid_friendly_fire(g, target); // Maneuver around player
+			else { // We need to throw this live (grenade, etc) NOW! Pick another target?
+				for (int dist = 2; dist <= conf; dist++) {
+					for (int x = pos.x - dist; x <= pos.x + dist; x++) {
+						for (int y = pos.y - dist; y <= pos.y + dist; y++) {
+							int newtarget = g->mon_at(x, y);
+							int newdist = rl_dist(pos, x, y);
+							// TODO: Change "newdist >= 2" to "newdist >= safe_distance(used)"
+							// Molotovs are safe at 2 tiles, grenades at 4, mininukes at 8ish
+							if (newdist <= conf && newdist >= 2 && newtarget != -1 &&
+								wont_hit_friend(g, x, y, index)) { // Friendlyfire-safe!
+								target = newtarget;
+								goto tail_recurse;
+							}
+						}
+					}
+				}
+				/* If we have reached THIS point, there's no acceptible monster to throw our
+				 * grenade or whatever at.  Since it's about to go off in our hands, better to
+				 * just chuck it as far away as possible--while being friendly-safe.
+				 */
+				int best_dist = 0;
+				for (int dist = 2; dist <= conf; dist++) {
+					for (int x = pos.x - dist; x <= pos.x + dist; x++) {
+						for (int y = pos.y - dist; y <= pos.y + dist; y++) {
+							int new_dist = rl_dist(pos, x, y);
+							if (new_dist > best_dist && wont_hit_friend(g, x, y, index)) {
+								best_dist = new_dist;
+								tar = point(x, y);
+							}
+						}
+					}
+				}
+				/* Even if tarx/tary didn't get set by the above loop, throw it anyway.  They
+				 * should be equal to the original location of our target, and risking friendly
+				 * fire is better than holding on to a live grenade / whatever.
+				 */
+				trajectory = line_to(pos, tar, g->m.sees(pos, tar, light));
+				moves -= (mobile::mp_turn / 4) * 5;
+				if (g->u.see(pos))
+					messages.add("%s throws a %s.", name.c_str(), used->tname().c_str());
+				g->throw_item(*this, tar, std::move(*used), trajectory);
+				i_remn(index);
+			}
+		}
+		else { // Within this block, our chosen target is outside of our range
+			update_path(g->m, tar);
+			move_to_next(g); // Move towards the target
+		}
+	} // Done with throwing-item block
 }
 
 void npc::activate_item(item& it)	// unclear whether this "works"; parallel is npc::use_escape_item
@@ -2160,7 +2183,6 @@ std::string npc_action_name(npc_action action)
 #endif
   case npc_heal:		return "Heal self";
   case npc_melee:		return "Melee";
-  case npc_alt_attack:		return "Use alternate attack";
   case npc_talk_to_player:	return "Talk to player";
   case npc_goto_destination:	return "Go to destination";
   case npc_avoid_friendly_fire:	return "Avoid friendly fire";
