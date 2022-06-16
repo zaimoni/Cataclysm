@@ -582,8 +582,7 @@ void player::activate_bionic(int b, game *g)
    power_level += bionic::type[bio_emp].power_cost;
    return;
   }
-  dir += pos;
-  g->emp_blast(dir.x, dir.y);
+  g->emp_blast(pos+dir);
   }
   break;
 

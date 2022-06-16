@@ -108,7 +108,7 @@ class game : public reality_bubble
   void vertical_move(int z, bool force);
   void use_computer(const point& pt);
   void resonance_cascade(const point& pt);
-  void emp_blast(int x, int y);
+  void emp_blast(const point& pt);
   player* survivor(int x, int y);
   player* survivor(const point& pt);
   player* survivor(const GPS_loc& gps);

@@ -1533,7 +1533,7 @@ void iuse::EMPbomb_act_explode(item& it)
     const auto g = game::active();
     const auto pos = g->find_item(&it).value();
 
-    static auto explode = [&](point pt) { g->emp_blast(pt.x, pt.y); };
+    static auto explode = [&](point pt) { g->emp_blast(pt); };
     forall_do_inclusive(pos + within_rldist<4>, explode);
 }
 

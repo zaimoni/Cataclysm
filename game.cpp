@@ -2946,7 +2946,7 @@ void game::resonance_cascade(const point& pt)
    switch (rng(1, 80)) {
    case 1:
    case 2:
-    emp_blast(i, j);
+    emp_blast(point(i, j));
     break;
    case 3:
    case 4:
@@ -2997,11 +2997,11 @@ void game::resonance_cascade(const point& pt)
  }
 }
 
-void game::emp_blast(int x, int y)
+void game::emp_blast(const point& pt)
 {
  int rn;
 
- ter_id& terrain = m.ter(x, y);
+ ter_id& terrain = m.ter(pt);
 
  if (is<console>(terrain)) {
   messages.add("The %s is rendered non-functional!", name_of(terrain).c_str());
@@ -3021,14 +3021,14 @@ void game::emp_blast(int x, int y)
    messages.add("The nearby doors slide open!");
    for (int i = -3; i <= 3; i++) {
     for (int j = -3; j <= 3; j++) {
-	 m.rewrite<t_door_metal_locked, t_floor>(x + i, y + j);
+	 m.rewrite<t_door_metal_locked, t_floor>(pt.x + i, pt.y + j);
     }
    }
   }
   if (rn >= 40 && rn <= 80) messages.add("Nothing happens.");
   break;
  }
- if (monster* const m_at = mon(x, y)) {
+ if (monster* const m_at = mon(pt)) {
   if (m_at->has_flag(MF_ELECTRONIC)) {
    messages.add("The EMP blast fries the %s!", m_at->name().c_str());
    int dam = dice(10, 10);
@@ -3039,7 +3039,7 @@ void game::emp_blast(int x, int y)
   } else
    messages.add("The %s is unaffected by the EMP blast.", m_at->name().c_str());
  }
- if (player* const _pc = survivor(x, y)) {
+ if (player* const _pc = survivor(pt)) {
      if (0 < _pc->power_level) {
          _pc->subjective_message("The EMP blast drains your power.");
          int max_drain = clamped_ub<40>(_pc->power_level);
@@ -3049,7 +3049,7 @@ void game::emp_blast(int x, int y)
  }
 
 // Drain any items of their battery charge
- for(auto& it : m.i_at(x, y)) {
+ for(auto& it : m.i_at(pt)) {
      if (const auto tool = it.is_tool()) {
          if (AT_BATT == tool->ammo) it.charges = 0;
      }
