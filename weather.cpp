@@ -83,7 +83,7 @@ const weather_datum weather_datum::data[NUM_WEATHER_TYPES] = {
 &weather_effect::snowstorm }
 };
 
-// a more complex weather modeling system would undoubtly use functions, so keep these names to make that easier to do.
+// a more complex weather modeling system would undoubtedly use functions, so keep these names to make that easier to do.
 // These are 1 in turn rates (i.e. time scale sensitive)
 static constexpr const int THUNDER_CHANCE = MINUTES(5);
 static constexpr const int LIGHTNING_CHANCE = MINUTES(60);

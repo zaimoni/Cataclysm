@@ -307,7 +307,7 @@ TEC_SWEEP,	// Crits may make your enemy fall & miss a turn
 TEC_PRECISE,	// Crits are painful and stun
 TEC_BRUTAL,	// Crits knock the target back
 TEC_GRAB,	// Hit may allow a second unarmed attack attempt
-TEC_WIDE,	// Attacks adjacent oppoents
+TEC_WIDE,	// Attacks adjacent opponents
 TEC_RAPID,	// Hits faster
 TEC_FEINT,	// Misses take less time
 TEC_THROW,	// Attacks may throw your opponent
@@ -603,7 +603,7 @@ struct it_gunmod final : public itype
 {
  signed char accuracy, damage, loudness, clip, recoil, burst;
  ammotype newtype;
- unsigned acceptible_ammo_types : NUM_AMMO_TYPES;
+ unsigned acceptable_ammo_types : NUM_AMMO_TYPES;
  bool used_on_pistol;
  bool used_on_shotgun;
  bool used_on_smg;

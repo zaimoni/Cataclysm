@@ -747,7 +747,7 @@ retry:
            cur.age = 0;
            cur.density--;
        }
-       if (0 >= cur.density) { // Totally dissapated.
+       if (0 >= cur.density) { // Totally dissipated.
            field_count--;
            cur = field();
        }

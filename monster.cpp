@@ -147,7 +147,7 @@ static std::pair<nc_color, const char*> health_text(int hp, int max_hp)
     if (hp >= cataclysm::rational_scaled<4, 5>(max_hp)) return std::pair(c_ltgreen, "It is lightly injured");
     if (hp >= cataclysm::rational_scaled<3, 5>(max_hp)) return std::pair(c_yellow, "It is moderately injured");
     if (hp >= cataclysm::rational_scaled<3, 10>(max_hp)) return std::pair(c_yellow, "It is heavily injured");
-    if (hp >= max_hp/10) return std::pair(c_ltred, "It is severly injured");
+    if (hp >= max_hp/10) return std::pair(c_ltred, "It is severely injured");
     return std::pair(c_red, "it is nearly dead");
 }
 

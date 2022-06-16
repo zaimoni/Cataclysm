@@ -63,7 +63,7 @@ static const char* addiction_target(add_type cur)
 	case ADD_CIG:		return "Nicotine";
 	case ADD_CAFFEINE:	return "Caffeine";	// technically also includes both theophylline and theobromine
 	case ADD_ALCOHOL:	return "Alcohol";
-	case ADD_SLEEP:	return "Sleeping Pills";	// benzodiazepenes or barbituates (ignore technical differences here)
+	case ADD_SLEEP:	return "Sleeping Pills";	// benzodiazepenes or barbiturates (ignore technical differences here)
 	case ADD_PKILLER:	return "Opiates";
 	case ADD_SPEED:	return "Amphetamine";
 	case ADD_COKE:	return "Cocaine";

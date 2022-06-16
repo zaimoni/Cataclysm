@@ -66,7 +66,7 @@ public:
 		_text.swap(discard2);
 	}
 	decltype(auto) operator[](size_t n) { return _content[n]; }
-	// iterator inteface: just forward to _content
+	// iterator interface: just forward to _content
 	// \todo C++20: these shadow constexpr as well
 	decltype(auto) begin() noexcept { return _content.begin(); }
 	decltype(auto) end() noexcept { return _content.end(); }

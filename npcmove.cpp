@@ -1693,7 +1693,7 @@ tail_recurse:
 						}
 					}
 				}
-				/* If we have reached THIS point, there's no acceptible monster to throw our
+				/* If we have reached THIS point, there's no acceptable monster to throw our
 				 * grenade or whatever at.  Since it's about to go off in our hands, better to
 				 * just chuck it as far away as possible--while being friendly-safe.
 				 */

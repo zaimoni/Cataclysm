@@ -952,7 +952,7 @@ void iuse::two_way_radio(pc& p, item& it)
 //       > Call another player
  static constexpr const char* radio_options[] = {
      "1: Radio a faction for help...",
-     "2: Call Acquaitance...", // not implemented properly
+     "2: Call Acquaintance...", // not implemented properly
      "3: General S.O.S.",
      "0: Cancel"
  };
@@ -1004,7 +1004,7 @@ void iuse::two_way_radio(pc& p, item& it)
    fac->respects_u -= rng(1, 8);
   }
 
- } else if (ch == '2') {	// Call Acquaitance
+ } else if (ch == '2') {	// Call Acquaintance
 // TODO: Implement me!
  } else if (ch == '3') {	// General S.O.S.
   p.moves -= (3 * mobile::mp_turn) / 2;
@@ -1346,7 +1346,7 @@ static const char* rads_to_desc(int rads)
     else if (rads > 25) return "The geiger counter clicks rapidly.";
     else if (rads > 15) return "The geiger counter clicks steadily.";
     else if (rads > 8) return "The geiger counter clicks slowly.";
-    else if (rads > 4) return "The geiger counter clicks intermittantly.";
+    else if (rads > 4) return "The geiger counter clicks intermittently.";
     else return "The geiger counter clicks once.";
 }
 

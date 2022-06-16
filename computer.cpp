@@ -473,7 +473,7 @@ for 50 years, and hasn't even been up for termination despite the fact that\n\
 these mining operations are the backbone of our economy.\n\
 \n\
 ENTRY 52:\n\
-Still waiting on the archaeologists.  We've done a little light insepction of\n\
+Still waiting on the archaeologists.  We've done a little light inspection of\n\
 the faultline; our sounding equipment is insufficient to measure the depth of\n\
 the concavities.  The equipment is rated at 15 miles depth, but it isn't made\n\
 for such narrow tunnels, so it's hard to say exactly how far back they go.\n");
@@ -512,7 +512,7 @@ know that's sort of a big deal, but come on, these guys can't handle it?\n");
    reset_terminal();
    print_line("\
 SITE %d%d%d%d%d\n\
-PERTINANT FOREMAN LOGS WILL BE PREPENDED TO NOTES",
+PERTINENT FOREMAN LOGS WILL BE PREPENDED TO NOTES",
 g->cur_om.pos.x, g->cur_om.pos.y, g->lev.x, g->lev.y, abs(g->lev.z));
    print_line("\n\
 MINE OPERATIONS SUSPENDED; CONTROL TRANSFERRED TO AMIGARA PROJECT UNDER\n\

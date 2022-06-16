@@ -60,7 +60,7 @@ enum vpart_id
     vp_plasmagun,
 
 // plating -- special case. mounted as internal, work as first line
-// of defence and gives color to external part
+// of defense and gives color to external part
     vp_steel_plate,
     vp_superalloy_plate,
     vp_spiked_plate,

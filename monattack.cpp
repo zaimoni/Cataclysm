@@ -163,7 +163,7 @@ void mattack::resurrect(game *g, monster *z)
 {
  if (z->speed < z->type->speed / 2) return;	// We can only resurrect so many times!
 
-// Find all corposes that we can see within 4 tiles.
+// Find all corpses that we can see within 4 tiles.
  static std::function<std::optional<point>(point)> ok = [&](point pt) {
      auto pos(pt + z->pos);
      if (!g->is_empty(pos) || !g->m.sees(z->pos, pos, -1)) return std::optional<point>();
@@ -672,7 +672,7 @@ void mattack::dermatik(game *g, monster *z)
  if (g->u.armor_cut(targeted) >= 2) {
   messages.add("The %s lands on your %s, but can't penetrate your armor.",
              z->name().c_str(), body_part_name(targeted, rng(0, 1)));
-  z->moves -= (mobile::mp_turn / 2) * 3; // Attemped laying takes a while
+  z->moves -= (mobile::mp_turn / 2) * 3; // Attempted laying takes a while
   return;
  }
 

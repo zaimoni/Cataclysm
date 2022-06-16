@@ -76,7 +76,7 @@ game::game()
  mtype::init_items();     // Set up the items monsters carry  (SEE monitemsdef.cpp)
  trap::init();	      // Set up the trap types            (SEE trapdef.cpp)
  map::init();     // Set up which items appear where  (SEE mapitemsdef.cpp)
- recipe::init();      // Set up crafting reciptes         (SEE crafting.cpp)
+ recipe::init();      // Set up crafting recipes         (SEE crafting.cpp)
  mongroup::init();      // Set up monster categories        (SEE mongroupdef.cpp)
  mission_type::init();     // Set up mission templates         (SEE missiondef.cpp)
  constructable::init(); // Set up constructables            (SEE construction.cpp)
@@ -2211,7 +2211,7 @@ unsigned char game::light_level(const GPS_loc& src)
 
  if (_is_pc) {
      // The EVENT_DIM event slowly dims the sky, then relights it
-     // EVENT_DIM has an occurance date of turn + 50, so the first 25 dim it
+     // EVENT_DIM has an occurrence date of turn + 50, so the first 25 dim it
      if (const auto dimming = event::queued(EVENT_DIM)) {
          int turns_left = dimming->turn - int(messages.turn);
          if (turns_left > 25)

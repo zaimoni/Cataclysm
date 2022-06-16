@@ -154,7 +154,7 @@ void recipe::init()
   recipes.back()->components.push_back({ { itm_power_supply, 1 } });
 
 /*
- * We need a some Chemicals which arn't implemented to realistically craft this!
+ * We need a some Chemicals which aren't implemented to realistically craft this!
 recipes.push_back(new recipe(++id, itm_c4, CC_WEAPON, sk_mechanics, sk_electronics, 4, MINUTES(8) * calendar::mp_turn));
  recipes.back()->tools.push_back({ { itm_screwdriver, -1 } });
  recipes.back()->components.push_back({ { itm_can_food, 1 },{ itm_steel_chunk, 1 },{ itm_canister_empty, 1 } });

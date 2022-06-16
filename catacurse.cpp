@@ -21,7 +21,7 @@
 #include "Zaimoni.STL/Logging.h"
 #include "Zaimoni.STL/MetaRAM.hpp"
 #else
-// lower-tech pathway that ectually exists on MingWin
+// lower-tech pathway that actually exists on MingWin
 #include <wingdi.h>
 #include "Zaimoni.STL/cstdio"
 #endif
@@ -1077,10 +1077,10 @@ static LRESULT CALLBACK ProcessMessages(HWND__* hWnd, unsigned int Msg, WPARAM w
 	case WM_CHAR:               //This handles most key presses
 		lastchar = (int)wParam;
 		switch (lastchar) {
-		case 13:            //Reroute ENTER key for compatilbity purposes
+		case 13:            //Reroute ENTER key for compatibility purposes
 			lastchar = 10;
 			break;
-		case 8:             //Reroute BACKSPACE key for compatilbity purposes
+		case 8:             //Reroute BACKSPACE key for compatibility purposes
 			lastchar = 127;
 			break;
 		}
@@ -1198,7 +1198,7 @@ static void DrawWindow(WINDOW *w)
 				if (FG == BG) continue;		// likewise do not waste CPU on foreground=background color (affected by tiles support)
 
                 if ( tmp > 0){
-                //if (tmp==95){//If your font doesnt draw underscores..uncomment
+                //if (tmp==95){//If your font doesn't draw underscores..uncomment
                 //        HorzLineDIB(drawx,drawy+fontheight-2,drawx+fontwidth,1,FG);
                 //    } else { // all the wa to here
 					const auto fg = _win.color(FG);
@@ -1306,7 +1306,7 @@ WINDOW *initscr(void)
  haveCustomFont = (!typeface.empty() ? AddFontResourceExA("data\\termfont", FR_PRIVATE, nullptr) : 0);
  if (!haveCustomFont) MessageBox(_win, "Failed to load default font, using FixedSys.", nullptr, 0);
  {
-	 const char* const t_face = haveCustomFont ? typeface.c_str() : "FixedSys";	//FixedSys will be user-changable at some point in time??
+	 const char* const t_face = haveCustomFont ? typeface.c_str() : "FixedSys";	//FixedSys will be user-changeable at some point in time??
 	 font = CreateFont(fontheight, fontwidth, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
 		 ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
 		 PROOF_QUALITY, FF_MODERN, t_face);

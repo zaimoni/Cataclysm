@@ -314,7 +314,7 @@ protected:
                oter_id t_south, oter_id t_west, oter_id t_above, int turn,
                game *g);
  void add_extra(map_extra type, game *g);
- void rotate(int turns);// Rotates the current map 90*turns degress clockwise
+ void rotate(int turns);// Rotates the current map 90*turns degrees clockwise
 			// Useful for houses, shops, etc
 
  bool inbounds(int x, int y) const;
