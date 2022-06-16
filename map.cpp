@@ -1670,7 +1670,7 @@ bool map::add_field(game *g, int x, int y, field_id t, unsigned char density, un
     if (!pos) return false; // wasn't in bounds
     if (decltype(auto) fd = grid[pos->first]->add(pos->second, field(t, density, age))) {
         if (g && fd->is_dangerous()) {
-            if (const auto _pc = g->survivor(x, y)) _pc->cancel_activity_query("You're in a %s!", field::list[t].name[fd->density - 1].c_str());
+            if (const auto _pc = g->survivor(point(x, y))) _pc->cancel_activity_query("You're in a %s!", field::list[t].name[fd->density - 1].c_str());
         }
         return true;
     }

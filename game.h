@@ -109,16 +109,12 @@ class game : public reality_bubble
   void use_computer(const point& pt);
   void resonance_cascade(const point& pt);
   void emp_blast(const point& pt);
-  player* survivor(int x, int y);
   player* survivor(const point& pt);
   player* survivor(const GPS_loc& gps);
-  const player* survivor(int x, int y) const { return const_cast<game*>(this)->survivor(x, y); }
   const player* survivor(const point& pt) const { return const_cast<game*>(this)->survivor(pt); }
   const player* survivor(const GPS_loc& gps) const { return const_cast<game*>(this)->survivor(gps); }
-  npc* nPC(int x, int y);
   npc* nPC(const point& pt);
   npc* nPC(const GPS_loc& gps);
-  const npc* nPC(int x, int y) const { return const_cast<game*>(this)->nPC(x, y); }
   const npc* nPC(const point& pt) const { return const_cast<game*>(this)->nPC(pt); }
   const npc* nPC(const GPS_loc& gps) const { return const_cast<game*>(this)->nPC(gps); }
   int  mon_at(int x, int y) const;	// Index of the monster at (x, y); -1 for none

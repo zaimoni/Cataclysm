@@ -3063,12 +3063,6 @@ void game::emp_blast(const point& pt)
 // it is much clearer what is obtained from the Creature class than the Character class (cf. visitor pattern template at visitable.h)
 // diagram: Creature -> monster
 //						Character -> player -> npc
-npc* game::nPC(int x, int y)
-{
-	for (auto& m : active_npc) if (m.pos.x == x && m.pos.y == y && !m.dead) return &m;
-	return nullptr;
-}
-
 npc* game::nPC(const point& pt)
 {
 	for (auto& m : active_npc) if (m.pos == pt && !m.dead) return &m;
@@ -3079,12 +3073,6 @@ npc* game::nPC(const GPS_loc& gps)
 {
     for (auto& m : active_npc) if (m.GPSpos == gps && !m.dead) return &m;
     return nullptr;
-}
-
-player* game::survivor(int x, int y)
-{
-    if (x == u.pos.x && y == u.pos.y) return &u;
-    return nPC(x, y);
 }
 
 player* game::survivor(const point& pt)
