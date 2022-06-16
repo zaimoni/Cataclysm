@@ -16,6 +16,8 @@
 
 GPS_loc overmap::toGPS(const point& screen_pos) { return game::active()->toGPS(screen_pos); }
 
+#define BLINK_SPEED 300
+
 OM_loc<1> overmap::toOvermapHires(const GPS_loc& GPSpos)
 {
     OM_loc<1> ret(GPSpos.first, point(0));

@@ -22,8 +22,6 @@ static_assert(mobile::mp_turn == calendar::mp_turn);
 // daylight should view almost the entire reality bubble, at least until Earth's curvature matters
 static_assert(DAYLIGHT_LEVEL == (MAPSIZE / 2) * SEE);
 
-#define LONG_RANGE 10
-#define BLINK_SPEED 300
 #define BULLET_SPEED 10000000
 #define EXPLOSION_SPEED 70000000
 

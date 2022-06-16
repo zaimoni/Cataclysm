@@ -22,6 +22,8 @@ field_id bleeds(const monster& mon)
     return fd_blood;
 }
 
+#define LONG_RANGE 10
+
 void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit);
 void shoot_player(game *g, player &p, player *h, int &dam, double goodhit);
 
