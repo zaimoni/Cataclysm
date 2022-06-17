@@ -7,8 +7,8 @@ class monster;
 class mattack
 {
  public:
-  static void none		(game *g, monster *z) { };
-  static void antqueen	(game *g, monster *z);
+  static void none(monster& z) { };
+  static void antqueen(monster& z);
   static void shriek	(game *g, monster *z);
   static void acid		(game *g, monster *z);
   static void shockstorm	(game *g, monster *z);

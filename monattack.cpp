@@ -13,22 +13,25 @@
 #include "Zaimoni.STL/GDI/box.hpp"
 #include "fragment.inc/rng_box.hpp"
 
-void mattack::antqueen(game *g, monster *z)
+void mattack::antqueen(monster& z)
 {
- std::vector<point> egg_points;
+ const auto g = game::active();
+ std::vector<std::pair<GPS_loc, int> > egg_points;
  std::vector<monster*> ants;
- z->sp_timeout = z->type->sp_freq;	// Reset timer
+ z.sp_timeout = z.type->sp_freq;	// Reset timer
 
  static auto survey = [&](const point& delta) {
-     auto dest = z->pos + delta;
+     auto dest = z.GPSpos + delta;
      if (const auto _mon = g->mon(dest)) {
          if ((mon_ant_larva == _mon->type->id || mon_ant == _mon->type->id)) ants.push_back(_mon);
          return; // not empty so egg hatching check will fail
      }
-     if (!g->is_empty(dest)) return;	// is_empty() because we can't hatch an ant under the player, a monster, etc.
-     for (auto& obj : g->m.i_at(dest)) {
+     if (!dest.is_empty()) return;	// is_empty() because we can't hatch an ant under the player, a monster, etc.
+     int i = -1;
+     for (auto& obj : dest.items_at()) {
+         ++i;
          if (itm_ant_egg == obj.type->id) {
-             egg_points.push_back(dest);
+             egg_points.push_back(std::pair(dest, i));
              break;	// Done looking at this tile
          }
      }
@@ -38,26 +41,19 @@ void mattack::antqueen(game *g, monster *z)
  forall_do_inclusive(within_rldist<2>, survey);
 
  if (!ants.empty()) {
-  z->moves -= mobile::mp_turn; // It takes a while
+  z.moves -= mobile::mp_turn; // It takes a while
   monster *const ant = ants[rng(0, ants.size() - 1)];
-  if (g->u.see(*z) && g->u.see(*ant)) messages.add("The %s feeds an %s and it grows!", z->name().c_str(), ant->name().c_str());
+  if (g->u.see(z) && g->u.see(*ant)) messages.add("The %s feeds an %s and it grows!", z.name().c_str(), ant->name().c_str());
   ant->poly(mtype::types[ant->type->id == mon_ant_larva ? mon_ant : mon_ant_soldier]);
  } else if (egg_points.empty()) {	// There's no eggs nearby--lay one.
-  if (g->u.see(*z)) messages.add("The %s lays an egg!", z->name().c_str());
-  g->m.add_item(z->pos, item::types[itm_ant_egg], messages.turn);
+  if (g->u.see(z)) messages.add("The %s lays an egg!", z.name().c_str());
+  z.GPSpos.add(item(item::types[itm_ant_egg], messages.turn));
  } else { // There are eggs nearby.  Let's hatch some.
-  z->moves -= (mobile::mp_turn/5) * egg_points.size(); // It takes a while
-  if (g->u.see(*z)) messages.add("The %s tends nearby eggs, and they hatch!", z->name().c_str());
-  for (int i = 0; i < egg_points.size(); i++) {
-   int j = -1;
-   for(auto& obj : g->m.i_at(egg_points[i])) {
-	++j;
-    if (obj.type->id == itm_ant_egg) {
-     g->m.i_rem(egg_points[i], j);
-     g->z.push_back(monster(mtype::types[mon_ant_larva], egg_points[i]));
-	 break;	// Max one hatch per tile.
-	}
-   }
+  z.moves -= (mobile::mp_turn/5) * egg_points.size(); // It takes a while
+  if (g->u.see(z)) messages.add("The %s tends nearby eggs, and they hatch!", z.name().c_str());
+  for(decltype(auto) egg_point : egg_points) {
+     EraseAt(egg_point.first.items_at(), egg_point.second);
+     g->z.push_back(monster(mtype::types[mon_ant_larva], egg_point.first));
   }
  }
 }
