@@ -1696,19 +1696,16 @@ void iuse::mininuke_act_off(item& it)
 
 static auto _can_use_pheromone(const player& p)
 {
-    const auto pos(p.pos);
-
     const auto g = game::active();
-
     std::vector<monster*> valid;	// Valid targets
-    for (int x = pos.x - 4; x <= pos.x + 4; x++) {
-        for (int y = pos.y - 4; y <= pos.y + 4; y++) {
-            if (monster* const m_at = g->mon(x, y)) {
-                if ('Z' == m_at->symbol() && m_at->is_enemy(&p)) valid.push_back(m_at);
-            }
-        }
-    }
 
+    static auto z_at = [&](const point& delta) {
+        if (const auto m_at = g->mon(p.GPSpos + delta)) {
+            if ('Z' == m_at->symbol() && m_at->is_enemy(&p)) valid.push_back(m_at);
+        }
+    };
+
+    forall_do_inclusive(within_rldist<4>, z_at);
     return valid;
 }
 
