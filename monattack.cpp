@@ -18,35 +18,36 @@ void mattack::antqueen(game *g, monster *z)
  std::vector<point> egg_points;
  std::vector<monster*> ants;
  z->sp_timeout = z->type->sp_freq;	// Reset timer
+
+ static auto survey = [&](const point& delta) {
+     auto dest = z->pos + delta;
+     if (const auto _mon = g->mon(dest)) {
+         if ((mon_ant_larva == _mon->type->id || mon_ant == _mon->type->id)) ants.push_back(_mon);
+         return; // not empty so egg hatching check will fail
+     }
+     if (!g->is_empty(dest)) return;	// is_empty() because we can't hatch an ant under the player, a monster, etc.
+     for (auto& obj : g->m.i_at(dest)) {
+         if (itm_ant_egg == obj.type->id) {
+             egg_points.push_back(dest);
+             break;	// Done looking at this tile
+         }
+     }
+ };
+
 // Count up all adjacent tiles the contain at least one egg.
- for (int x = z->pos.x - 2; x <= z->pos.x + 2; x++) {
-  for (int y = z->pos.y - 2; y <= z->pos.y + 2; y++) {
-   monster* const _mon = g->mon(x, y);
-   if (_mon)  { 
-	   if ((_mon->type->id == mon_ant_larva || _mon->type->id == mon_ant)) ants.push_back(_mon);
-	   continue;	// not empty so egg hatching check will fail
-   }
-   if (!g->is_empty(x, y)) continue;	// is_empty() because we can't hatch an ant under the player, a monster, etc.
-   for (auto& obj : g->m.i_at(x, y)) {
-    if (obj.type->id == itm_ant_egg) {
-     egg_points.push_back(point(x, y));
-     break;	// Done looking at this tile
-    }
-   }
-  }
- }
+ forall_do_inclusive(within_rldist<2>, survey);
 
  if (!ants.empty()) {
-  z->moves -= 100; // It takes a while
+  z->moves -= mobile::mp_turn; // It takes a while
   monster *const ant = ants[rng(0, ants.size() - 1)];
-  if (g->u.see(z->pos) && g->u.see(ant->pos)) messages.add("The %s feeds an %s and it grows!", z->name().c_str(), ant->name().c_str());
+  if (g->u.see(*z) && g->u.see(*ant)) messages.add("The %s feeds an %s and it grows!", z->name().c_str(), ant->name().c_str());
   ant->poly(mtype::types[ant->type->id == mon_ant_larva ? mon_ant : mon_ant_soldier]);
  } else if (egg_points.empty()) {	// There's no eggs nearby--lay one.
-  if (g->u.see(z->pos)) messages.add("The %s lays an egg!", z->name().c_str());
+  if (g->u.see(*z)) messages.add("The %s lays an egg!", z->name().c_str());
   g->m.add_item(z->pos, item::types[itm_ant_egg], messages.turn);
  } else { // There are eggs nearby.  Let's hatch some.
-  z->moves -= 20 * egg_points.size(); // It takes a while
-  if (g->u.see(z->pos)) messages.add("The %s tends nearby eggs, and they hatch!", z->name().c_str());
+  z->moves -= (mobile::mp_turn/5) * egg_points.size(); // It takes a while
+  if (g->u.see(*z)) messages.add("The %s tends nearby eggs, and they hatch!", z->name().c_str());
   for (int i = 0; i < egg_points.size(); i++) {
    int j = -1;
    for(auto& obj : g->m.i_at(egg_points[i])) {
