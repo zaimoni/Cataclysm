@@ -257,20 +257,23 @@ void computer::activate_function(game *g, computer_action action)
    break;
 
   case COMPACT_TERMINATE:
-   for (int x = 0; x < SEEX * MAPSIZE; x++) {
-    for (int y = 0; y < SEEY * MAPSIZE; y++) {
-	 monster* const z = g->mon(x,y);
-	 if (!z) continue;
-	 const auto terrain = g->m.ter(x, y + 1);
-	 switch(terrain)
-	 {
-	 case t_wall_h:
-	 case t_reinforced_glass_h:
-		 // abuse auto-conversion of enumerations to int and automatic type promotion
-		 if ((t_wall_h + t_reinforced_glass_h)-terrain == g->m.ter(x, y - 1)) g->kill_mon(*z, &g->u);
-	 }
-    }
+   {
+   static auto gone = [&](const point& pt){
+       if (const auto z = g->mon(pt)) {
+           const auto terrain = g->m.ter(pt + Direction::S);
+           switch (terrain)
+           {
+           case t_wall_h:
+           case t_reinforced_glass_h:
+               // abuse auto-conversion of enumerations to int and automatic type promotion
+               if ((t_wall_h + t_reinforced_glass_h) - terrain == g->m.ter(pt + Direction::N)) g->kill_mon(*z, &g->u);
+           }
+       }
+   };
+
+   forall_do_inclusive(map::reality_bubble_extent, gone);
    }
+
    print_line("Subjects terminated.");
    break;
 
