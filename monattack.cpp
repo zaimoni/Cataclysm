@@ -846,10 +846,137 @@ namespace {
 
 }
 
+struct thrown_by_vortex
+{
+    game* const g;
+    const std::vector<point>& from_monster;
+    monster& z;
+
+    thrown_by_vortex(const std::vector<point>& from_monster, monster& z) noexcept : g(game::active()), from_monster(from_monster), z(z) {}
+    thrown_by_vortex(const thrown_by_vortex& src) = delete;
+    thrown_by_vortex(thrown_by_vortex&& src) = delete;
+    thrown_by_vortex& operator=(const thrown_by_vortex& src) = delete;
+    thrown_by_vortex& operator=(thrown_by_vortex&& src) = delete;
+    ~thrown_by_vortex() = default;
+
+    void operator()(monster* thrown) {
+        static const int base_mon_throw_range[mtype::MS_MAX] = { 5, 3, 2, 1, 0 };
+
+        int distance = base_mon_throw_range[thrown->type->size];
+        int damage = distance * 4;
+        switch (thrown->type->mat) {
+        case LIQUID:  distance += 3; damage -= 10; break;
+        case VEGGY:   distance += 1; damage -= 5; break;
+        case POWDER:  distance += 4; damage -= 30; break;
+        case COTTON:
+        case WOOL:    distance += 5; damage -= 40; break;
+        case LEATHER: distance -= 1; damage += 5; break;
+        case KEVLAR:  distance -= 3; damage -= 20; break;
+        case STONE:   distance -= 3; damage += 5; break;
+        case PAPER:   distance += 6; damage -= 10; break;
+        case WOOD:    distance += 1; damage += 5; break;
+        case PLASTIC: distance += 1; damage += 5; break;
+        case GLASS:   distance += 2; damage += 20; break;
+        case IRON:    distance -= 1; [[fallthrough]];
+        case STEEL:
+        case SILVER:  distance -= 3; damage -= 10; break;
+        }
+        if (distance > 0) {
+            {
+            auto msg = grammar::capitalize(thrown->desc(grammar::noun::role::subject, grammar::article::definite)) + " is thrown by winds!";
+            thrown->if_visible_message(msg.c_str());
+            }
+            std::vector<point> traj = continue_line(from_monster, distance);
+            bool hit_wall = false;
+            for (int i = 0; i < traj.size() && !hit_wall; i++) {
+                monster* const m_hit = g->mon(traj[i]);
+                if (i > 0 && is_not<MF_DIGS>(m_hit)) {
+                    auto msg = grammar::SVO_sentence(*thrown, "hit", m_hit->desc(grammar::noun::role::direct_object, grammar::article::indefinite), "!");
+                    if (g->u.see(traj[i])) messages.add(msg);
+                    if (m_hit->hurt(damage)) g->kill_mon(*m_hit, &z);
+                    hit_wall = true;
+                    thrown->screenpos_set(traj[i - 1]);
+                }
+                else if (g->m.move_cost(traj[i]) == 0) {
+                    hit_wall = true;
+                    thrown->screenpos_set(traj[i - 1]);
+                }
+                int damage_copy = damage;
+                g->m.shoot(g, traj[i], damage_copy, false, 0);
+                if (damage_copy < damage) thrown->hurt(damage - damage_copy);
+            }
+            if (hit_wall) damage *= 2;
+            else thrown->screenpos_set(traj.back());
+            if (thrown->hurt(damage)) g->kill_mon(*thrown, &z);
+        } // if (distance > 0)
+    }
+
+    void operator()(npc* target) {
+        std::vector<point> traj = continue_line(from_monster, rng(2, 3));
+        {
+        auto msg = grammar::capitalize(target->desc(grammar::noun::role::subject, grammar::article::definite)) + " is thrown by winds!";
+        target->if_visible_message(msg.c_str());
+        }
+        bool hit_wall = false;
+        int damage = rng(5, 10);
+        for (int i = 0; i < traj.size() && !hit_wall; i++) {
+            monster* const m_hit = g->mon(traj[i]);
+            if (i > 0 && is_not<MF_DIGS>(m_hit)) {
+                auto msg = grammar::SVO_sentence(*target, "hit", m_hit->desc(grammar::noun::role::direct_object, grammar::article::indefinite), "!");
+                if (g->u.see(traj[i])) messages.add(msg);
+                if (m_hit->hurt(damage)) g->kill_mon(*m_hit, target); // We get the kill :)
+                hit_wall = true;
+                target->screenpos_set(traj[i - 1]);
+            }
+            else if (g->m.move_cost(traj[i]) == 0) {
+                messages.add("You slam into a %s", name_of(g->m.ter(traj[i])).c_str());
+                hit_wall = true;
+                target->screenpos_set(traj[i - 1]);
+            }
+            int damage_copy = damage;
+            g->m.shoot(g, traj[i], damage_copy, false, 0);
+            if (damage_copy < damage) target->hit(g, bp_torso, 0, damage - damage_copy, 0);
+        }
+
+        if (hit_wall) damage *= 2;
+        else target->screenpos_set(traj.back());
+
+        target->hit(g, bp_torso, 0, damage, 0);
+    }
+
+    void operator()(pc* target) {
+        std::vector<point> traj = continue_line(from_monster, rng(2, 3));
+        messages.add("You're thrown by winds!");
+        bool hit_wall = false;
+        int damage = rng(5, 10);
+        for (int i = 0; i < traj.size() && !hit_wall; i++) {
+            monster* const m_hit = g->mon(traj[i]);
+            if (i > 0 && is_not<MF_DIGS>(m_hit)) {
+                messages.add("You hit a %s!", m_hit->name().c_str());
+                if (m_hit->hurt(damage)) g->kill_mon(*m_hit, target); // We get the kill :)
+                hit_wall = true;
+                target->screenpos_set(traj[i - 1]);
+            }
+            else if (g->m.move_cost(traj[i]) == 0) {
+                messages.add("You slam into a %s", name_of(g->m.ter(traj[i])).c_str());
+                hit_wall = true;
+                target->screenpos_set(traj[i - 1]);
+            }
+            int damage_copy = damage;
+            g->m.shoot(g, traj[i], damage_copy, false, 0);
+            if (damage_copy < damage) target->hit(g, bp_torso, 0, damage - damage_copy, 0);
+        }
+
+        if (hit_wall) damage *= 2;
+        else target->screenpos_set(traj.back());
+
+        target->hit(g, bp_torso, 0, damage, 0);
+        g->update_map(target->pos.x, target->pos.y);
+    }
+};
+
 void mattack::vortex(game *g, monster *z)
 {
- static const int base_mon_throw_range[mtype::MS_MAX] = {5, 3, 2, 1, 0};
-
 // Make sure that the player's butchering is interrupted!
  if (g->u.activity.type == ACT_BUTCHER && rl_dist(z->GPSpos, g->u.GPSpos) <= 2) {
   messages.add("The buffeting winds interrupt your butchering!");
@@ -897,82 +1024,10 @@ void mattack::vortex(game *g, monster *z)
      }
     } // Done throwing item
    } // Done getting items
-// Throw monsters
-   if (monster* const thrown = g->mon(x, y)) {
-    int distance = base_mon_throw_range[thrown->type->size];
-	int damage = distance * 4;
-    switch (thrown->type->mat) {
-     case LIQUID:  distance += 3; damage -= 10; break;
-     case VEGGY:   distance += 1; damage -=  5; break;
-     case POWDER:  distance += 4; damage -= 30; break;
-     case COTTON:
-     case WOOL:    distance += 5; damage -= 40; break;
-     case LEATHER: distance -= 1; damage +=  5; break;
-     case KEVLAR:  distance -= 3; damage -= 20; break;
-     case STONE:   distance -= 3; damage +=  5; break;
-     case PAPER:   distance += 6; damage -= 10; break;
-     case WOOD:    distance += 1; damage +=  5; break;
-     case PLASTIC: distance += 1; damage +=  5; break;
-     case GLASS:   distance += 2; damage += 20; break;
-     case IRON:    distance -= 1; [[fallthrough]];
-     case STEEL:
-     case SILVER:  distance -= 3; damage -= 10; break;
-    }
-    if (distance > 0) {
-     if (g->u.see(*thrown))
-         messages.add("%s is thrown by winds!",
-                      grammar::capitalize(thrown->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
-     std::vector<point> traj = continue_line(from_monster, distance);
-     bool hit_wall = false;
-     for (int i = 0; i < traj.size() && !hit_wall; i++) {
-      monster* const m_hit = g->mon(traj[i]);
-      if (i > 0 && is_not<MF_DIGS>(m_hit)) {
-       if (g->u.see(traj[i])) messages.add("The %s hits a %s!", thrown->name().c_str(), m_hit->name().c_str());
-       if (m_hit->hurt(damage)) g->kill_mon(*m_hit, z);
-       hit_wall = true;
-       thrown->screenpos_set(traj[i - 1]);
-      } else if (g->m.move_cost(traj[i]) == 0) {
-       hit_wall = true;
-       thrown->screenpos_set(traj[i - 1]);
-      }
-      int damage_copy = damage;
-      g->m.shoot(g, traj[i], damage_copy, false, 0);
-      if (damage_copy < damage) thrown->hurt(damage - damage_copy);
-     }
-     if (hit_wall) damage *= 2;
-     else thrown->screenpos_set(traj.back());
-     if (thrown->hurt(damage)) g->kill_mon(*thrown, z);
-    } // if (distance > 0)
-   } // if (thrown)
 
-   if (g->u.pos.x == x && g->u.pos.y == y) { // Throw... the player?! D:
-    std::vector<point> traj = continue_line(from_monster, rng(2, 3));
-    messages.add("You're thrown by winds!");
-    bool hit_wall = false;
-    int damage = rng(5, 10);
-    for (int i = 0; i < traj.size() && !hit_wall; i++) {
-	 monster* const m_hit = g->mon(traj[i]);
-     if (i > 0 && is_not<MF_DIGS>(m_hit)) {
-      if (g->u.see(traj[i])) messages.add("You hit a %s!", m_hit->name().c_str());
-      if (m_hit->hurt(damage)) g->kill_mon(*m_hit, &g->u); // We get the kill :)
-      hit_wall = true;
-      g->u.screenpos_set(traj[i - 1]);
-     } else if (g->m.move_cost(traj[i]) == 0) {
-      messages.add("You slam into a %s", name_of(g->m.ter(traj[i])).c_str());
-      hit_wall = true;
-      g->u.screenpos_set(traj[i - 1]);
-     }
-     int damage_copy = damage;
-     g->m.shoot(g, traj[i], damage_copy, false, 0);
-     if (damage_copy < damage) g->u.hit(g, bp_torso, 0, damage - damage_copy, 0);
-    }
-    if (hit_wall) damage *= 2;
-    else {
-     g->u.screenpos_set(traj.back());
-    }
-    g->u.hit(g, bp_torso, 0, damage, 0);
-    g->update_map(g->u.pos.x, g->u.pos.y);
-   } // Done with checking for player
+   if (auto _mob = g->mob_at(point(x, y))) {
+       std::visit(thrown_by_vortex(from_monster, *z), *_mob);
+   }
   }
  } // Done with loop!
 }

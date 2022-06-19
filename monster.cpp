@@ -829,3 +829,9 @@ bool monster::if_visible_message(std::function<std::string()> other) const
     }
     return false;
 }
+
+bool monster::if_visible_message(const char* msg) const
+{
+    if (msg) return game::active()->if_visible_message(msg, *this);
+    return false;
+}

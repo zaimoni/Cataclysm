@@ -158,6 +158,7 @@ class monster : public mobile {
  bool is_static_spawn() const { return -1 != spawnmap.x; }
 
  bool if_visible_message(std::function<std::string()> other) const;
+ bool if_visible_message(const char* msg) const;
 
  // grammatical support
  std::string subject() const override;
