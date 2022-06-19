@@ -283,9 +283,9 @@ void mattack::science(game *g, monster *z)	// I said SCIENCE again!
 struct grow_tree
 {
     game* const g;
-    monster& z;
+    const monster& z;
 
-    grow_tree(monster& z) noexcept : g(game::active()), z(z) {}
+    grow_tree(const monster& z) noexcept : g(game::active()), z(z) {}
     grow_tree(const grow_tree&) = delete;
     grow_tree(grow_tree&&) = delete;
     grow_tree& operator=(const grow_tree&) = delete;
@@ -320,9 +320,9 @@ struct grow_tree
 struct grow_underbrush
 {
     game* const g;
-    monster& z;
+    const monster& z;
 
-    grow_underbrush(monster& z) noexcept : g(game::active()), z(z) {}
+    grow_underbrush(const monster& z) noexcept : g(game::active()), z(z) {}
     grow_underbrush(const grow_underbrush&) = delete;
     grow_underbrush(grow_underbrush&&) = delete;
     grow_underbrush& operator=(const grow_underbrush&) = delete;
@@ -811,12 +811,12 @@ namespace {
     struct hit_by_item {
         item& obj;
         int dam;
-        monster* killed_by_mon;
+        const monster* killed_by_mon;
         player* killed_by_player;
 
         // Waterfall/SSADM lifecycle for these constructors
         hit_by_item(item& obj, int dam) noexcept : obj(obj), dam(dam), killed_by_mon(nullptr), killed_by_player(nullptr) {};
-        hit_by_item(item& obj, int dam, monster* killed_by_mon) noexcept : obj(obj), dam(dam), killed_by_mon(killed_by_mon), killed_by_player(nullptr) {};
+        hit_by_item(item& obj, int dam, const monster* killed_by_mon) noexcept : obj(obj), dam(dam), killed_by_mon(killed_by_mon), killed_by_player(nullptr) {};
         hit_by_item(item& obj, int dam, player* killed_by_player) noexcept : obj(obj), dam(dam), killed_by_mon(nullptr), killed_by_player(killed_by_player) {};
         hit_by_item(const hit_by_item& src) = delete;
         hit_by_item(hit_by_item&& src) = delete;
@@ -850,9 +850,9 @@ struct thrown_by_vortex
 {
     game* const g;
     const std::vector<point>& from_monster;
-    monster& z;
+    const monster& z;
 
-    thrown_by_vortex(const std::vector<point>& from_monster, monster& z) noexcept : g(game::active()), from_monster(from_monster), z(z) {}
+    thrown_by_vortex(const std::vector<point>& from_monster, const monster& z) noexcept : g(game::active()), from_monster(from_monster), z(z) {}
     thrown_by_vortex(const thrown_by_vortex& src) = delete;
     thrown_by_vortex(thrown_by_vortex&& src) = delete;
     thrown_by_vortex& operator=(const thrown_by_vortex& src) = delete;

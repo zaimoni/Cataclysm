@@ -6,10 +6,10 @@
 #endif
 
 struct coat_in_spores {
-    monster* killer;
+    const monster* killer;
 
     coat_in_spores() noexcept : killer(nullptr) {};
-    coat_in_spores(monster* killer) noexcept : killer(killer) {};
+    coat_in_spores(const monster* killer) noexcept : killer(killer) {};
 
     coat_in_spores(const coat_in_spores& src) = delete;
     coat_in_spores(coat_in_spores&& src) = delete;

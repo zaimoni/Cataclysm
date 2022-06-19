@@ -388,10 +388,11 @@ int monster::hit(game *g, player &p, body_part &bp_hit)
  return ret;
 }
 
-void monster::hit_monster(game *g, monster& target)
+void monster::hit_monster(monster& target) const
 {
  static const int dodge_bonus[mtype::MS_MAX] = {6, 3, 0, -2, -4};
 
+ const auto g = game::active();
  int numdice = melee_skill();
  int dodgedice = target.dodge() * 2;	// decidedly more agile than a typical dodge roll
  dodgedice += dodge_bonus[target.type->size];
