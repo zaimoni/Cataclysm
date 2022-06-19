@@ -73,6 +73,7 @@ std::string noun::typical_pronoun(role r) const
 
 std::string noun::regular_verb_agreement(const std::string& verb) const
 {	// \todo more precise handling
+	if (verb.ends_with("sh")) return verb + "es";
 	return verb + "s";
 }
 

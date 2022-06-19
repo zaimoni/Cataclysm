@@ -407,36 +407,62 @@ void mattack::grow_vine(game *g, monster *z)
  }
 }
 
-void mattack::vine(game *g, monster *z)
+struct vine_attack {
+    monster& z;
+    game* g;
+    int neighbors;
+    bool hit_anyone;
+
+    vine_attack(monster& z) noexcept : z(z), g(game::active()), neighbors(0), hit_anyone(false) {}
+    vine_attack(const vine_attack& src) = delete;
+    vine_attack(vine_attack&& src) = delete;
+    vine_attack& operator=(const vine_attack& src) = delete;
+    vine_attack& operator=(vine_attack&& src) = delete;
+    ~vine_attack() = default;
+
+    // XXX no attempt to account for enemy status
+    void operator()(player* target) {
+        body_part bphit = random_body_part();
+        int side = rng(0, 1);
+        auto msg = grammar::SVO_sentence(z, "lash", body_part_name(bphit, side), "!");
+        target->if_visible_message(msg.c_str());
+        target->hit(g, bphit, side, 4, 4);
+        hit_anyone = true;
+    }
+
+    void operator()(monster* target) {
+        if (mon_creeper_vine == target->type->id) neighbors++;
+    }
+};
+
+void mattack::vine(monster& z)
 {
- std::vector<point> grow;
+ const auto g = game::active();
+ std::vector<GPS_loc> grow;
  int vine_neighbors = 0;
- z->sp_timeout = z->type->sp_freq;
- z->moves -= mobile::mp_turn;
+ z.sp_timeout = z.type->sp_freq;
+ z.moves -= mobile::mp_turn;
+
+ vine_attack attack(z);
  // Yes, we want to count ourselves as a neighbor.
- for (int x = z->pos.x - 1; x <= z->pos.x + 1; x++) {
-  for (int y = z->pos.y - 1; y <= z->pos.y + 1; y++) {
-   if (g->u.pos.x == x && g->u.pos.y == y) {
-    body_part bphit = random_body_part();
-    int side = rng(0, 1);
-    messages.add("The %s lashes your %s!", z->name().c_str(), body_part_name(bphit, side));
-    g->u.hit(g, bphit, side, 4, 4);
-    z->sp_timeout = z->type->sp_freq;
-    z->moves -= mobile::mp_turn;
-    return;
-   } else if (g->is_empty(x, y)) grow.push_back(point(x, y));
-   else if (monster* const m_at = g->mon(x, y)) {
-    if (m_at->type->id == mon_creeper_vine) vine_neighbors++;
-   }
-  }
- }
+ static auto hit_by_vine = [&](const point& delta) {
+     auto dest = z.GPSpos + delta;
+     if (auto _mob = g->mob_at(dest)) std::visit(attack, *_mob);
+     else if (dest.is_empty()) grow.push_back(dest);
+ };
+
+ // C:Z changes:
+ // * can attack more than one PC/NPC (and can attack NPCs at all)
+ // * do not double-reset the special attack timeout
+ forall_do_inclusive(within_rldist<1>, hit_by_vine);
  // see if we want to grow
+ if (attack.hit_anyone) return;
  if (grow.empty() || vine_neighbors > 5 || one_in(7 - vine_neighbors)) return;
 
 // Calculate distance from nearest hub, then check against that
  int dist_from_hub = INT_MAX;
  for (const auto& v : g->z) {
-  if (mon_creeper_hub == v.type->id) clamp_ub(dist_from_hub, rl_dist(z->GPSpos, v.GPSpos));
+  if (mon_creeper_hub == v.type->id) clamp_ub(dist_from_hub, rl_dist(z.GPSpos, v.GPSpos));
  }
  if (!one_in(dist_from_hub)) return;
 

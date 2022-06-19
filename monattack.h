@@ -17,7 +17,7 @@ class mattack
   static void science		(game *g, monster *z);
   static void growplants	(game *g, monster *z);
   static void grow_vine	(game *g, monster *z);
-  static void vine		(game *g, monster *z);
+  static void vine(monster& z);
   static void spit_sap	(game *g, monster *z);
   static void triffid_heartbeat(game *g, monster *z);
   static void fungus		(game *g, monster *z);
