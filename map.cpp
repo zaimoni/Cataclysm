@@ -703,21 +703,7 @@ bool map::is_destructable(int x, int y) const
          (move_cost(x, y) == 0 && !has_flag(liquid, x, y)));
 }
 
-bool map::is_outside(int x, int y) const
-{
- // with proper z-levels, we would say "outside is when there are no floors above us, and arguably properly enclosed by walls/doors/etc.
- if (any<t_floor, t_floor_wax>(ter(x, y))) return false;
- for(int dir = direction::NORTH; dir <= direction::NORTHWEST; dir++) {
-     point pt = point(x, y) + direction_vector((direction)dir);
-     if (any<t_floor, t_floor_wax>(ter(pt))) return false;
- }
- if (const auto veh = _veh_at(x, y)) {
-     if (veh->first->is_inside(veh->second)) return false;
- }
- return true;
-}
-
-// \todo if map::is_outside goes dead code then relocate (overmap.cpp? new GPS_loc.cpp?)
+// \todo relocate (overmap.cpp? new GPS_loc.cpp?)
 bool GPS_loc::is_outside() const
 {
     // With proper z-levels, we would say "outside is when there are no floors above us, and arguably properly enclosed by walls/doors/etc.".

@@ -183,8 +183,6 @@ class map
  bool has_flag(t_flag flag, const reality_bubble_loc& pos) const;
  bool is_destructable(int x, int y) const;        // checks terrain and vehicles
  bool is_destructable(const point& pt) const { return is_destructable(pt.x, pt.y); }
- bool is_outside(int x, int y) const;
- bool is_outside(const point& pt) const { return is_outside(pt.x, pt.y); };
 
  std::vector<point> grep(const point& tl, const point& br, std::function<bool(point)> test);
 
