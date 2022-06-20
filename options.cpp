@@ -13,7 +13,7 @@ static constexpr bool default_true(option_key opt)
 	switch (opt)
 	{
 	case OPT_FORCE_YN:
-	case OPT_SAFEMODE: 
+	case OPT_SAFEMODE:
 	case OPT_LOAD_TILES:
 	case OPT_NPCS: return true;
 	default: return false;
@@ -146,17 +146,17 @@ option_table& option_table::get()
 	return *x;
 }
 
-void option_table::set(option_key i, double val) 
-{ 
+void option_table::set(option_key i, double val)
+{
 	const auto key = JSON_key(i);
 	if (!key) return;	// invalid in some way
 	switch (type_code(i)) {
 	case OPTTYPE_DOUBLE:
-	case OPTTYPE_INT: 
+	case OPTTYPE_INT:
 		if (min_numeric(i) > val) val = min_numeric(i);	// clamp numeric options; don't worry about CPU, this is UI
 		break;
 	}
-	options[i] = val;
+	if (i < STR_OPTION_ORIGIN) { options[i] = val; }
 	switch (type_code(i)) {
 	case OPTTYPE_DOUBLE:
 		get_JSON_opts().set(key, std::to_string(val));
