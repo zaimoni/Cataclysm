@@ -98,16 +98,18 @@ void weather_effect::wet(game *g)
  if (!g->u.is_wearing(itm_coat_rain) && !g->u.has_trait(PF_FEATHERS) && g->u.GPSpos.is_outside() && one_in(2))
   g->u.add_morale(MORALE_WET, -1, -30);
 // Put out fires and reduce scent
- for (int x = g->u.pos.x - SEEX * 2; x <= g->u.pos.x + SEEX * 2; x++) {
-  for (int y = g->u.pos.y - SEEY * 2; y <= g->u.pos.y + SEEY * 2; y++) {
-   if (g->m.is_outside(x, y)) {
-	auto& fd = g->m.field_at(x, y);
-    if (fd.type == fd_fire) fd.age += 15;
-	auto& sc = g->scent(x, y);
-    if (sc > 0) sc--;
-   }
-  }
- }
+ static auto extinguish = [&](const point& delta) {
+	 auto dest = g->u.GPSpos + delta;
+	 auto dest_pt = g->u.pos + delta;
+	 if (dest.is_outside()) {
+		 auto& fd = dest.field_at();
+		 if (fd.type == fd_fire) fd.age += 15;
+		 auto& sc = g->scent(dest_pt);
+		 if (sc > 0) sc--;
+	 }
+ };
+
+ forall_do_inclusive(within_rldist<2 * SEE>, extinguish);
 }
 
 void weather_effect::very_wet(game *g)
@@ -115,16 +117,18 @@ void weather_effect::very_wet(game *g)
  if (!g->u.is_wearing(itm_coat_rain) && !g->u.has_trait(PF_FEATHERS) && g->u.GPSpos.is_outside())
   g->u.add_morale(MORALE_WET, -1, -60);
 // Put out fires and reduce scent
- for (int x = g->u.pos.x - SEEX * 2; x <= g->u.pos.x + SEEX * 2; x++) {
-  for (int y = g->u.pos.y - SEEY * 2; y <= g->u.pos.y + SEEY * 2; y++) {
-   if (g->m.is_outside(x, y)) {
-    auto& fd = g->m.field_at(x, y);
-    if (fd.type == fd_fire) fd.age += 45;
-	auto& sc = g->scent(x, y);
-    if (sc > 0) sc--;
-   }
-  }
- }
+ static auto extinguish = [&](const point& delta) {
+	 auto dest = g->u.GPSpos + delta;
+	 auto dest_pt = g->u.pos + delta;
+	 if (dest.is_outside()) {
+		 auto& fd = dest.field_at();
+		 if (fd.type == fd_fire) fd.age += 45;
+		 auto& sc = g->scent(dest_pt);
+		 if (sc > 0) sc--;
+	 }
+ };
+
+ forall_do_inclusive(within_rldist<2 * SEE>, extinguish);
 }
 
 void weather_effect::thunder(game *g)
@@ -142,19 +146,17 @@ void weather_effect::lightning(game *g)
 {
  thunder(g);
  if (one_in(LIGHTNING_CHANCE)) {
-  std::vector<point> strike;
-  for (int x = g->u.pos.x - SEEX * 2; x <= g->u.pos.x + SEEX * 2; x++) {
-   for (int y = g->u.pos.y - SEEY * 2; y <= g->u.pos.y + SEEY * 2; y++) {
-    if (g->m.move_cost(x, y) == 0 && g->m.is_outside(x, y))
-     strike.push_back(point(x, y));
-   }
-  }
-  point hit;
-  if (strike.size() > 0) {
-   hit = strike[rng(0, strike.size() - 1)];
-   messages.add("Lightning strikes nearby!");
-   g->explosion(hit, 10, 0, one_in(4));
-  }
+	 static auto ok = [&](point delta) {
+		 const auto dest = g->u.GPSpos + delta;
+		 if (0 == dest.move_cost() && dest.is_outside()) return std::optional<GPS_loc>(dest);
+		 return std::optional<GPS_loc>();
+	 };
+
+	 const auto strike = grep(within_rldist<2 * SEE>, std::function(ok));
+	 if (auto ub = strike.size()) {
+		 messages.add("Lightning strikes nearby!");
+		 strike[rng(0, ub - 1)].explosion(10, 0, one_in(4));
+	 }
  }
 }
 
@@ -175,6 +177,14 @@ void weather_effect::light_acid(game *g)
 // to omit that requirement.)
 void weather_effect::acid(game *g)
 {
+	static auto make_puddle = [&](const point& delta) {
+		auto dest = g->u.GPSpos + delta;
+		auto terrain = dest.ter();
+		if (!is<diggable>(terrain) && !is<noitem>(terrain) &&
+			0 < dest.move_cost() && dest.is_outside() && one_in(MINUTES(40)))
+			dest.add(field(fd_acid, 1));
+	};
+
  if (g->u.GPSpos.is_outside()) {
   messages.add("The acid rain burns!");
   if (one_in(6))
@@ -195,15 +205,8 @@ void weather_effect::acid(game *g)
   }
  }
  // reality-simulator wants damage to trees, if not non-living map objects, here
- if (g->lev.z >= 0) {
-  for (int x = g->u.pos.x - SEEX * 2; x <= g->u.pos.x + SEEX * 2; x++) {
-   for (int y = g->u.pos.y - SEEY * 2; y <= g->u.pos.y + SEEY * 2; y++) {
-    if (!g->m.has_flag(diggable, x, y) && !g->m.has_flag(noitem, x, y) &&
-        g->m.move_cost(x, y) > 0 && g->m.is_outside(x, y) && one_in(MINUTES(40)))
-     g->m.add_field(g, x, y, fd_acid, 1);
-   }
-  }
- }
+ if (g->lev.z >= 0) forall_do_inclusive(within_rldist<2*SEE>, make_puddle);
+
  for (decltype(auto) z : g->z) {
 	 if (z.GPSpos.is_outside() && !z.has_flag(MF_ACIDPROOF)) z.hurt(1);
  }
