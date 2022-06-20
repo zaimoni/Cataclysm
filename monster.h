@@ -122,7 +122,7 @@ class monster : public mobile {
  void process_trigger(monster_trigger trig, int amount);// Single trigger
  int trigger_sum(const game* g, typename cataclysm::bitmap<N_MONSTER_TRIGGERS>::type triggers) const;
  int  hit(game *g, player &p, body_part &bp_hit); // Returns a damage
- void hit_monster(game *g, monster& target);
+ void hit_monster(monster& target) const;
  bool hit_by_blob(monster* origin = nullptr, bool force = true);
  bool hurt(int dam) override; 	// Deals this dam damage; returns true if we dead
  int  armor_cut() const;	// Natural armor, plus any worn armor
@@ -158,6 +158,7 @@ class monster : public mobile {
  bool is_static_spawn() const { return -1 != spawnmap.x; }
 
  bool if_visible_message(std::function<std::string()> other) const;
+ bool if_visible_message(const char* msg) const;
 
  // grammatical support
  std::string subject() const override;

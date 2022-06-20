@@ -3095,12 +3095,6 @@ int game::mon_at(int x, int y) const
  return -1;
 }
 
-monster* game::mon(int x, int y)
-{
-	for (auto& m : z) if (m.pos.x == x && m.pos.y == y && !m.dead) return &m;
-	return nullptr;
-}
-
 monster* game::mon(const point& pt)
 {
 	for (auto& m : z) if (m.pos == pt && !m.dead) return &m;

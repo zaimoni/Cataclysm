@@ -118,10 +118,8 @@ class game : public reality_bubble
   const npc* nPC(const point& pt) const { return const_cast<game*>(this)->nPC(pt); }
   const npc* nPC(const GPS_loc& gps) const { return const_cast<game*>(this)->nPC(gps); }
   int  mon_at(int x, int y) const;	// Index of the monster at (x, y); -1 for none
-  monster* mon(int x, int y);
   monster* mon(const point& pt);
   monster* mon(const GPS_loc& gps);
-  const monster* mon(int x, int y) const { return const_cast<game*>(this)->mon(x, y); }
   const monster* mon(const point& pt) const { return const_cast<game*>(this)->mon(pt); }
   const monster* mon(const GPS_loc& gps) const { return const_cast<game*>(this)->mon(gps); }
   mobile* mob(const GPS_loc& gps);  // does not include vehicles
@@ -141,7 +139,7 @@ class game : public reality_bubble
   // Kill that monster; fixes any pointers etc
   void kill_mon(monster& target) { if (!target.dead) target.killed(); }
   void kill_mon(monster& target, player* me) { if (!target.dead) target.killed(dynamic_cast<pc*>(me)); }
-  void kill_mon(monster& target, monster* z) { if (!target.dead) target.killed(z->is_friend() ? &u : nullptr); } // not nearly enough detail
+  void kill_mon(monster& target, const monster* z) { if (!target.dead) target.killed(z->is_friend() ? &u : nullptr); } // not nearly enough detail
   // Explode a monster; like kill_mon but messier
   void explode_mon(monster& target, player* me = nullptr) { if (!target.dead) _explode_mon(target, me); }
   void plfire(bool burst);	// Player fires a gun (target selection)...

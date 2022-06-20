@@ -155,7 +155,7 @@ public:
             return false;   // *We* did not interact w/the hallucination
         }
         if (viewpoint.is_enemy(target)) {
-            viewpoint.hit_monster(game::active(), *target);
+            viewpoint.hit_monster(*target);
             return true;
         }
         return false;
