@@ -327,7 +327,7 @@ public:
   void groupdebug();      // Get into on monster groups
 
   // data integrity
-  void z_erase(int z_index);	// morally z.erase(z.begin()+z_index), with required side effects
+  void z_erase(std::function<bool(monster&)> reject);
 
 // ########################## DATA ################################
 

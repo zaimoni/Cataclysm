@@ -2478,20 +2478,26 @@ void game::mon_info()
  refresh();
 }
 
-void game::z_erase(int z_index)
+void game::z_erase(std::function<bool(monster&)> reject)
 {
-   EraseAt(z, z_index);
-   u.target_dead(z_index);
+    int i = z.size();
+    while (0 < --i) {
+        if (reject(z[i])) {
+            EraseAt(z, i);
+            u.target_dead(i);
+        }
+    }
 }
 
 void game::cleanup_dead()
 {
- int i = z.size();
- while(0 < i--) {
-   if (z[i].dead || z[i].hp <= 0) z_erase(i);
- }
+    static auto is_dead = [&](const monster& m) {
+        return m.dead || 0 >= m.hp;
+    };
 
- i = active_npc.size();
+    z_erase(is_dead);
+
+ int i = active_npc.size();
  while(0 < i--) {
    if (active_npc[i].dead) EraseAt(active_npc, i);
  }
@@ -3458,18 +3464,20 @@ void game::examine()
  if (t_card_science == exam_t || t_card_military == exam_t) {
   itype_id card_type = (t_card_science == exam_t ? itm_id_science : itm_id_military);
   if (u.has_amount(card_type, 1) && query_yn("Swipe your ID card?")) {
-   u.moves -= 100;
+   u.moves -= mobile::mp_turn;
    for (int i = -3; i <= 3; i++) {
     for (int j = -3; j <= 3; j++) {
 	 m.rewrite<t_door_metal_locked, t_floor>(exam.x + i, exam.y + j);
     }
    }
-   {	// relies on reality bubble size to work
-   int i = z.size();
-   while (0 < i--) {
-     if (mon_turret == z[i].type->id) z_erase(i);
-   }
-   }
+
+   // relies on reality bubble size to work
+   static auto no_turrets = [&](const monster& m) {
+       return mon_turret == m.type->id;
+   };
+
+   z_erase(no_turrets);
+
    messages.add("You insert your ID card.");
    messages.add("The nearby doors slide into the floor.");
    u.use_amount(card_type, 1);
@@ -3480,7 +3488,7 @@ void game::examine()
                            u.power_level > 0 &&
                            query_yn("Use fingerhack on the reader?"));
   if (using_electrohack || using_fingerhack) {
-   u.moves -= 500;
+   u.moves -= 5*mobile::mp_turn;
    u.practice(sk_computer, 20);
    int success = rng(u.sklevel[sk_computer]/4 - 2, u.sklevel[sk_computer] * 2);
    success += rng(-3, 3);
@@ -4876,12 +4884,16 @@ void game::plmove(point delta)
   if (displace) { // We displaced a friendly monster!
 // Immobile monsters can't be displaced.
    if (m_at->has_flag(MF_IMMOBILE)) {
+       static auto gone = [&](const monster& m) {
+           return local_dest == m.pos;
+       };
+
 // ...except that turrets can be picked up.
 // TODO: Make there a flag, instead of hard-coded to mon_turret
     if (m_at->type->id == mon_turret) {
      if (query_yn("Deactivate the turret?")) {
          m_at->GPSpos.add(submap::for_drop(m_at->GPSpos.ter(), item::types[itm_bot_turret], messages.turn).value());
-         z_erase(mon_at(local_dest.x, local_dest.y));
+         z_erase(gone);
          u.moves -= mobile::mp_turn;
      }
      return;
@@ -5247,14 +5259,18 @@ void game::update_map(int &x, int &y)
  // Shift monsters
  if (0 != shift.x || 0 != shift.y) {
  static constexpr const zaimoni::gdi::box<point> extended_reality_bubble(point(-SEE), point(SEE*(MAPSIZE+1)));
- int i = z.size();
- while(0 <= --i) {
-  z[i].shift(shift);
-  if (!extended_reality_bubble.contains(z[i].pos)) {
-   despawn(z[i]); // we're out of bounds
-   z_erase(i);
-  }
- }
+
+ static auto out_of_scope = [&](monster& m) {
+     m.shift(shift);
+     if (!extended_reality_bubble.contains(m.pos)) {
+         despawn(m); // we're out of bounds
+         return true;
+     }
+     return false;
+ };
+
+ z_erase(out_of_scope);
+
 // Shift NPCs
  {
  auto i = active_npc.size();
