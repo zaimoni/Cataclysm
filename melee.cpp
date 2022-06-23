@@ -841,7 +841,7 @@ void player::perform_technique(technique_id technique, game *g, monster *z,
       const auto test = tar + direction_vector((direction)dir);
       if (test == GPSpos) continue; // Don't self-hit
       if (const auto _mob = g->mob_at(test)) {
-          if (hit_roll() >= rng(0, 5) + std::visit(mobile::roll_dodge(), *_mob)) {
+          if (hit_roll() >= rng(0, 5) + std::visit(mobile::cast(), *_mob)->dodge_roll()) {
               count_hit++;
               std::visit(tech_wide_secondary_hit(*this), *_mob);
           }
