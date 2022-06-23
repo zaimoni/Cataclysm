@@ -196,7 +196,7 @@ class use_alt_attack final : public cataclysm::action
 	npc::item_spec item;
 	int target;
 public:
-	use_alt_attack(npc& actor, const npc::item_spec& item, int target) noexcept : actor(actor), item(item), target(target) {
+	use_alt_attack(npc& actor, const npc::item_spec& item, int target) : actor(actor), item(item), target(target) {
 #ifndef NDEBUG
 		if (!IsLegal()) throw std::logic_error("illegal use_alt_attack");
 #endif
@@ -319,7 +319,7 @@ void npc::move(game *g)
 // TODO: Place player-aiding actions here, with a weight
 
  // Bravery check appears to have been disabled due to excessive randomness.
- //if (!bravery_check(danger) || !bravery_check(total_danger) || 
+ //if (!bravery_check(danger) || !bravery_check(total_danger) ||
  if (target == TARGET_PLAYER && attitude == NPCATT_FLEE)
   action = method_of_fleeing(g, target);
  else if (danger > 0 || (target == TARGET_PLAYER && attitude == NPCATT_KILL))
@@ -408,7 +408,7 @@ void npc::execute_action(game *g, const ai_action& action, int target)
 	 action.second->Perform();
 	 return;
  }
- 
+
  // C:Whales action processing
  ai_target<point> Target;
  const int oldmoves = moves;
@@ -449,7 +449,7 @@ void npc::execute_action(game *g, const ai_action& action, int target)
 #ifndef NDEBUG
   throw std::logic_error("npc_melee invoked w/o target");
 #endif
-  
+
 #if DEAD_FUNC
  case npc_heal_player:
   update_path(g->m, g->u.pos);
@@ -1461,13 +1461,13 @@ void npc::pick_up_item()
   if (pickup.size() == 1)
    messages.add("Someone picks up a %s.", items[pickup[0]].tname().c_str());
   else if (pickup.size() == 2)
-   messages.add("Someone picks up a %s and a %s", 
+   messages.add("Someone picks up a %s and a %s",
               items[pickup[0]].tname().c_str(),
               items[pickup[1]].tname().c_str());
   else
    messages.add("Someone picks up several items.");
  }
-  
+
  for (int i = 0; i < pickup.size(); i++) i_add(items[pickup[i]]);
  {	// indexes are added in strictly increasing order.  Doing this separately as we are not guaranteed this does not invalidate our pointer
  int i = pickup.size();
@@ -1490,7 +1490,7 @@ void npc::drop_items(game *g, int weight, int volume)
             inv.size(), inv[i].weight(), inv[i].volume(), wgtTotal, volTotal);
   }
  }
-  
+
  int weight_dropped = 0, volume_dropped = 0;
  std::vector<ratio_index> rWgt, rVol; // Weight/Volume to value ratios
 
@@ -1811,7 +1811,7 @@ std::pair<itype_id, int> player::would_heal(const std::pair<hp_part, int>& injur
 void npc::heal_player(game *g, player &patient)
 {
  int dist = rl_dist(pos, patient.pos);
- 
+
  if (dist > 1) { // We need to move to the player
   update_path(g->m, patient.pos);
   move_to_next(g);
@@ -1838,7 +1838,7 @@ void npc::heal_player(game *g, player &patient)
   use_charges(predicted_heal.first, 1);
   patient.heal(injury.first, predicted_heal.second);
   moves -= 250;
- 
+
   if (!patient.is_npc()) {
  // Test if we want to heal the player further
    if (op_of_u.value * 4 + op_of_u.trust + personality.altruism * 3 +
