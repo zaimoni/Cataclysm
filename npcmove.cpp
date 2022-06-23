@@ -371,6 +371,23 @@ static std::optional<std::variant<monster*, npc*, pc*> > decode_target(int targe
 	return std::nullopt;
 }
 
+struct encode_target_index
+{
+	const game* const g;
+
+	encode_target_index() noexcept : g(game::active_const()) {}
+	encode_target_index(const encode_target_index& src) = delete;
+	encode_target_index(encode_target_index&& src) = delete;
+	encode_target_index& operator=(const encode_target_index& src) = delete;
+	encode_target_index& operator=(encode_target_index&& src) = delete;
+	~encode_target_index() = default;
+
+	// requires game::z and game::active_npc to be std::vector
+	int operator()(const monster* target) { return target - &(g->z.front()); }
+	int operator()(const npc* target) { return (TARGET_PLAYER -1) - (target - &(g->active_npc.front())); }
+	int operator()(const pc* target) { return TARGET_PLAYER; }
+};
+
 struct to_ai_target
 {
 	to_ai_target() = default;
@@ -1659,7 +1676,6 @@ tail_recurse:
    // Are we going to throw this item?
 	if (!thrown_item(*used)) activate_item(*used);
 	else { // We are throwing it!
-
 		std::vector<point> trajectory;
 		const int light = g->light_level(GPSpos);
 		const int dist = rl_dist(pos, tar);
@@ -1678,37 +1694,43 @@ tail_recurse:
 			if (!used->active || used->charges > 2) // Safe to hold on to, for now
 				avoid_friendly_fire(g, target); // Maneuver around player
 			else { // We need to throw this live (grenade, etc) NOW! Pick another target?
-				for (int dist = 2; dist <= conf; dist++) {
-					for (int x = pos.x - dist; x <= pos.x + dist; x++) {
-						for (int y = pos.y - dist; y <= pos.y + dist; y++) {
-							int newtarget = g->mon_at(x, y);
-							int newdist = rl_dist(pos, x, y);
-							// TODO: Change "newdist >= 2" to "newdist >= safe_distance(used)"
-							// Molotovs are safe at 2 tiles, grenades at 4, mininukes at 8ish
-							if (newdist <= conf && newdist >= 2 && newtarget != -1 &&
-								wont_hit_friend(g, x, y, index)) { // Friendlyfire-safe!
-								target = newtarget;
-								goto tail_recurse;
-							}
-						}
-					}
+				// safe range to throw to depends on explosive type; not really hard-coded at 2
+				zaimoni::gdi::box confident(point(-conf), point(conf));
+
+				static auto safe_throw = [&](point delta) {
+					using return_type = decltype(g->mob_at(GPSpos+delta));
+
+					if (2 >= Linf_dist(delta)) return return_type(std::nullopt);
+
+					auto dest = pos + delta;
+					auto _mob = g->mob_at(dest);
+					if (!_mob) return return_type(std::nullopt);
+					if (!std::visit(player::is_enemy_of(*this), *_mob)) return return_type(std::nullopt);
+					if (!wont_hit_friend(std::visit(mobile::cast(), *_mob)->GPSpos, index)) return return_type(std::nullopt);
+					// Friendlyfire-safe!
+					return _mob;
+				};
+
+				if (auto better_target = find_first(confident, std::function(safe_throw))) {
+					target = std::visit(encode_target_index(), *better_target);
+					goto tail_recurse;
 				}
+
 				/* If we have reached THIS point, there's no acceptable monster to throw our
 				 * grenade or whatever at.  Since it's about to go off in our hands, better to
 				 * just chuck it as far away as possible--while being friendly-safe.
 				 */
-				int best_dist = 0;
-				for (int dist = 2; dist <= conf; dist++) {
-					for (int x = pos.x - dist; x <= pos.x + dist; x++) {
-						for (int y = pos.y - dist; y <= pos.y + dist; y++) {
-							int new_dist = rl_dist(pos, x, y);
-							if (new_dist > best_dist && wont_hit_friend(g, x, y, index)) {
-								best_dist = new_dist;
-								tar = point(x, y);
-							}
-						}
+				unsigned int best_dist = 0;
+				static auto waste_throw = [&](const point& delta) {
+					auto new_dist = Linf_dist(delta);
+					if (new_dist > best_dist && wont_hit_friend(GPSpos + delta, index)) {
+						best_dist = new_dist;
+						tar = pos + delta;
 					}
-				}
+				};
+
+				forall_do_inclusive(confident, waste_throw);
+
 				/* Even if tarx/tary didn't get set by the above loop, throw it anyway.  They
 				 * should be equal to the original location of our target, and risking friendly
 				 * fire is better than holding on to a live grenade / whatever.

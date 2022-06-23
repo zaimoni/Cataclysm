@@ -78,6 +78,20 @@ inline std::optional<point> find_first(const zaimoni::gdi::box<point>& src, std:
 	return std::nullopt;
 }
 
+template<class T>
+std::optional<T> find_first(const zaimoni::gdi::box<point>& src, std::function<std::optional<T>(point)> test) {
+	// this will need revision if we want to actually use INT_MAX upper bound
+	const point anchor = src.tl_c();
+	const point nonstrict_ub = src.br_c();
+	point pt;
+	for (pt.x = anchor.x; pt.x <= nonstrict_ub.x; ++pt.x) {
+		for (pt.y = anchor.y; pt.y <= nonstrict_ub.y; ++pt.y) {
+			if (auto ok = test(pt)) return ok;
+		}
+	}
+	return std::nullopt;
+}
+
 inline std::vector<point> grep(const zaimoni::gdi::box<point>& src, std::function<bool(point)> ok) { // Cf. Perl, or *NIX command line utility grep
 	// this will need revision if we want to actually use INT_MAX upper bound
 	std::vector<point> ret;

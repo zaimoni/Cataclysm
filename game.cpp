@@ -3093,14 +3093,6 @@ player* game::survivor(const GPS_loc& gps)
     return nPC(gps);
 }
 
-int game::mon_at(int x, int y) const
-{
- for (int i = 0; i < z.size(); i++) {
-  if (z[i].pos.x == x && z[i].pos.y == y && !z[i].dead) return i;
- }
- return -1;
-}
-
 monster* game::mon(const point& pt)
 {
 	for (auto& m : z) if (m.pos == pt && !m.dead) return &m;

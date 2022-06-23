@@ -117,7 +117,6 @@ class game : public reality_bubble
   npc* nPC(const GPS_loc& gps);
   const npc* nPC(const point& pt) const { return const_cast<game*>(this)->nPC(pt); }
   const npc* nPC(const GPS_loc& gps) const { return const_cast<game*>(this)->nPC(gps); }
-  int  mon_at(int x, int y) const;	// Index of the monster at (x, y); -1 for none
   monster* mon(const point& pt);
   monster* mon(const GPS_loc& gps);
   const monster* mon(const point& pt) const { return const_cast<game*>(this)->mon(pt); }

@@ -52,6 +52,19 @@ public:
 	virtual int min_technique_power() const = 0;
 
 	// std::visit assistants
+	struct cast
+	{
+		cast() = default;
+		cast(const cast& src) = delete;
+		cast(cast&& src) = delete;
+		cast& operator=(const cast& src) = delete;
+		cast& operator=(cast&& src) = delete;
+		~cast() = default;
+
+		auto operator()(mobile* target) { return target; }
+		auto operator()(const mobile* target) { return target; }
+	};
+
 	struct roll_dodge
 	{
 		roll_dodge() = default;
