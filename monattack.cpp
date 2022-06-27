@@ -389,22 +389,30 @@ void mattack::growplants(game *g, monster *z)
  }
 }
 
-void mattack::grow_vine(game *g, monster *z)
+void mattack::grow_vine(monster& z)
 {
- z->sp_timeout = z->type->sp_freq;
- z->moves -= 100;
- int xshift = rng(0, 2), yshift = rng(0, 2);
- for (int x = 0; x < 3; x++) {
-  for (int y = 0; y < 3; y++) {
-   int xvine = z->pos.x + (x + xshift) % 3 - 1,
-       yvine = z->pos.y + (y + yshift) % 3 - 1;
-   if (g->is_empty(xvine, yvine)) {
-    monster vine(mtype::types[mon_creeper_vine], xvine, yvine);
-    vine.sp_timeout = 5;
-    g->z.push_back(vine);
-   }
-  }
- }
+ z.sp_timeout = z.type->sp_freq;
+ z.moves -= mobile::mp_turn;
+
+ point shift = rng(within_rldist<1>);
+
+ static auto grow = [&](const point& delta) {
+     auto delta2(shift + delta);
+
+     if (-1 > delta2.x) delta2.x += 3;
+     else if (1 < delta2.x) delta2.x -= 3;
+     if (-1 > delta2.y) delta2.y += 3;
+     else if (1 < delta2.y) delta2.y -= 3;
+
+     auto dest = z.GPSpos + delta2;
+     if (dest.is_empty()) {
+         monster vine(mtype::types[mon_creeper_vine], dest);
+         vine.sp_timeout = 5;
+         game::active()->z.push_back(std::move(vine));
+     }
+ };
+
+ forall_do_inclusive(within_rldist<1>, grow);
 }
 
 struct vine_attack {
@@ -536,13 +544,15 @@ void mattack::triffid_heartbeat(game *g, monster *z)
   // i.e., this is happening underground; we are immobile and have a hard-coded relative location of 21,21
   // and mapgen gives a hard guarantee the player is approaching from the northwest
   const zaimoni::gdi::box<point> span(g->u.pos, z->pos + 3*Direction::NW);
-  for (int x = span.tl_c().x; x <= span.br_c().x; x++) {
-   for (int y = span.tl_c().y; y <= span.br_c().y; y++) {
-	auto& t = g->m.ter(x, y);
-    if (g->is_empty(x, y) && one_in(4)) t = t_root_wall;
-    else if (t_root_wall == t && one_in(10)) t = t_dirt;
-   }
-  }
+
+  static auto grow_wall = [&](const point& dest) {
+      auto& t = g->m.ter(dest);
+      if (g->is_empty(dest) && one_in(4)) t = t_root_wall;
+      else if (t_root_wall == t && one_in(10)) t = t_dirt;
+  };
+
+  forall_do_inclusive(span, grow_wall);
+
 // Open blank tiles as long as there's no possible route
   int tries = 0;
   while (g->m.route(g->u.pos, z->pos).empty() && tries < 20) {

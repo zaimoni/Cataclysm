@@ -271,7 +271,7 @@ void computer::activate_function(game *g, computer_action action)
        }
    };
 
-   forall_do_inclusive(map::reality_bubble_extent, gone);
+   forall_do(map::reality_bubble_extent, gone);
    }
 
    print_line("Subjects terminated.");

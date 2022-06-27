@@ -129,8 +129,7 @@ class game : public reality_bubble
   std::optional<std::variant<const monster*, const npc*, const pc*> > mob_at(const GPS_loc& gps) const;
   std::optional<std::vector<std::variant<monster*, npc*, pc*> > > mobs_in_range(const GPS_loc& gps, int range);
 
-  bool is_empty(int x, int y) const;	// True if no PC, no monster, move cost > 0
-  bool is_empty(const point& pt) const { return is_empty(pt.x, pt.y); };
+  bool is_empty(const point& pt) const;
   static bool isEmpty(const point& pt) { return game::active()->is_empty(pt); }
   bool is_in_sunlight(const GPS_loc& pt) const; // Checks outdoors + sunny
   static unsigned char light_level(const GPS_loc& src);

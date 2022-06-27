@@ -22,6 +22,7 @@ class map
 {
  public:
  static constexpr const zaimoni::gdi::box<point> reality_bubble_extent = zaimoni::gdi::box<point>(point(0), point(SEE* MAPSIZE));
+ static constexpr const zaimoni::gdi::box<point> reality_bubble_extent_inclusive = zaimoni::gdi::box<point>(point(0), point(SEE * MAPSIZE - 1));
  // \todo? Socrates' Daimon links map.cpp: move definition to map.cpp
  static const zaimoni::gdi::box<point>& view_center_extent() {
 	 static const zaimoni::gdi::box<point> ooao(point(-VIEW_CENTER), point(VIEW_CENTER));

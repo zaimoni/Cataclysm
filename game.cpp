@@ -3157,9 +3157,9 @@ std::optional<std::vector<std::variant<monster*, npc*, pc*> > > game::mobs_in_ra
     return std::nullopt;
 }
 
-bool game::is_empty(int x, int y) const
+bool game::is_empty(const point& pt) const
 {
-    return (m.move_cost(x, y) > 0 || m.has_flag(liquid, x, y)) && !mob_at(point(x,y));
+    return (0 < m.move_cost(pt) || m.has_flag(liquid, pt)) && !mob_at(pt);
 }
 
 bool GPS_loc::is_empty() const
@@ -5331,38 +5331,34 @@ void game::update_stair_monsters()
 {
  if (abs(lev.x - monstair.x) > 1 || abs(lev.y - monstair.y) > 1) return;
 
- for (int i = 0; i < coming_to_stairs.size(); i++) {
-  coming_to_stairs[i].count--;
-  if (coming_to_stairs[i].count <= 0) {
-   int startx = rng(0, SEEX * MAPSIZE - 1), starty = rng(0, SEEY * MAPSIZE - 1);
-   bool found_stairs = false;
-   for (int x = 0; x < SEEX * MAPSIZE && !found_stairs; x++) {
-    for (int y = 0; y < SEEY * MAPSIZE && !found_stairs; y++) {
-     int sx = (startx + x) % (SEEX * MAPSIZE),
-         sy = (starty + y) % (SEEY * MAPSIZE);
-     if (m.has_flag(goes_up, sx, sy) || m.has_flag(goes_down, sx, sy)) {
-      found_stairs = true;
-      int mposx = sx, mposy = sy;
-      int tries = 0;
-      while (!is_empty(mposx, mposy) && tries < 10) {
-       mposx = sx + rng(-2, 2);
-       mposy = sy + rng(-2, 2);
-       tries++;
-      }
-      if (tries < 10) {
-       coming_to_stairs[i].mon.screenpos_set(sx, sy);
-       z.push_back( coming_to_stairs[i].mon );
-       if (u.see(sx, sy))
-        messages.add("A %s comes %s the %s!", coming_to_stairs[i].mon.name().c_str(),
-                (m.has_flag(goes_up, sx, sy) ? "down" : "up"),
-                name_of(m.ter(sx, sy)).c_str());
-      }
+ static auto has_stair = [&](const point& stair) {
+     return m.has_flag(goes_up, stair) || m.has_flag(goes_down, stair);
+ };
+
+ const auto stairs_found = grep(map::reality_bubble_extent_inclusive, has_stair);
+ if (stairs_found.empty()) return;
+
+ int i = coming_to_stairs.size();
+ while(0 <= --i) {
+     if (0 < --coming_to_stairs[i].count) continue;
+     decltype(auto) stair = stairs_found[rng(0, stairs_found.size())];
+
+     point mpos(stair);
+     int tries = 0;
+     while (!is_empty(mpos) && tries < 10) {
+         mpos = stair + rng(within_rldist<2>);
+         tries++;
      }
-    }
-   }
-   EraseAt(coming_to_stairs,i);
-   i--;
-  }
+     if (tries < 10) {
+         coming_to_stairs[i].mon.screenpos_set(stair);
+         if (u.see(stair))
+             messages.add("A %s comes %s the %s!", coming_to_stairs[i].mon.name().c_str(),
+                 (m.has_flag(goes_up, stair) ? "down" : "up"),
+                 name_of(m.ter(stair)).c_str());
+         z.push_back(coming_to_stairs[i].mon);
+     }
+
+     EraseAt(coming_to_stairs, i);
  }
  if (coming_to_stairs.empty()) monstair = tripoint(-1,-1,999);
 }
@@ -5428,6 +5424,25 @@ void game::spawn_mon(int shiftx, int shifty)
   }
  }
 
+ auto spawn_delta = [](int shift) {
+     switch (shift)
+     {
+     case -1: return (SEE * MAPSIZE) / 6;
+     case 1: return (SEE * MAPSIZE * 5) / 6;
+     default: return (int)rng(0, SEE * MAPSIZE - 1);
+     }
+ };
+
+ auto spawn_dest = [&]() {
+     if (shiftx == 0 && shifty == 0) {
+         if (one_in(2)) shiftx = 1 - 2 * rng(0, 1);
+         else shifty = 1 - 2 * rng(0, 1);
+     }
+
+     point stage(spawn_delta(shiftx), spawn_delta(shifty));
+     return stage + rng(within_rldist<5>);
+ };
+
 // Now, spawn monsters (perhaps)
  for (int i = 0; i < cur_om.zg.size(); i++) { // For each valid group...
   int group = 0;
@@ -5453,30 +5468,15 @@ void game::spawn_mon(int shiftx, int shifty)
     mon_id type = valid_monster_from(mongroup::moncats[cur_om.zg[i].type]);
 	if (type == mon_null) break;	// No monsters may be spawned; not soon enough?
     monster zom = monster(mtype::types[type]);
-    int iter = 0;
-	int monx, mony;
-	do {
-      if (shiftx == 0 && shifty == 0) {
-       if (one_in(2)) shiftx = 1 - 2 * rng(0, 1);
-       else shifty = 1 - 2 * rng(0, 1);
-      }
-      if (shiftx == -1) monx = (SEEX * MAPSIZE) / 6;
-      else if (shiftx == 1) monx = (SEEX * MAPSIZE * 5) / 6;
-	  else monx = rng(0, SEEX * MAPSIZE - 1);
-      if (shifty == -1) mony = (SEEY * MAPSIZE) / 6;
-      else if (shifty == 1) mony = (SEEY * MAPSIZE * 5) / 6;
-	  else mony = rng(0, SEEY * MAPSIZE - 1);
-      monx += rng(-5, 5);
-      mony += rng(-5, 5);
-      iter++;
 
-     } while ((!zom.can_move_to(m, monx, mony) || !is_empty(monx, mony) ||
-                m.sees(u.pos, monx, mony, SEEX) ||
-                rl_dist(u.pos, monx, mony) < 8) && iter < 50);
-     if (iter < 50) {
-      zom.spawn(monx, mony);
-      z.push_back(zom);
-     }
+    auto spawn_ok = [&](const point& dest) {
+        return zom.can_move_to(m, dest) && is_empty(dest) && !m.sees(u.pos, dest, SEE) && 8 <= rl_dist(u.pos, dest);
+    };
+
+    if (auto mon_pos = LasVegasChoice(50, std::function(spawn_dest), std::function(spawn_ok))) {
+        zom.spawn(*mon_pos);
+        z.push_back(zom);
+    }
    }	// Placing monsters of this group is done!
    if (cur_om.zg[i].population <= 0) { // Last monster in the group spawned...
     EraseAt(cur_om.zg, i); // ...so remove that group
