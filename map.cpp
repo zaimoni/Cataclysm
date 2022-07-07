@@ -1081,7 +1081,7 @@ void map::destroy(game *g, const point& origin, bool makesound)
  // which is what is tested
  switch(terrain) {
  case t_gas_pump:
-  if (makesound && one_in(3)) g->explosion(origin.x, origin.y, 40, 0, true);
+  if (makesound && one_in(3)) g->explosion(origin, 40, 0, true);
   else forall_do_inclusive(within_rldist<2>, gas_pump_debris);
 
   terrain = t_rubble;
@@ -1102,7 +1102,7 @@ void map::destroy(game *g, const point& origin, bool makesound)
   break;
 
  default:
-  if (makesound && has_flag(explodes, origin) && one_in(2)) g->explosion(origin.x, origin.y, 40, 0, true);
+  if (makesound && has_flag(explodes, origin) && one_in(2)) g->explosion(origin, 40, 0, true);
   terrain = t_rubble;
  }
 

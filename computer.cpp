@@ -610,6 +610,10 @@ void computer::activate_failure(game *g, computer_failure fail)
  // speculate CPU to try to minimize binary file size
  zaimoni::gdi::box<point> robot_spawn_range(g->u.pos - point(3), g->u.pos + point(3));
  auto nominate_robot_spawn_pos = [&]() { return rng(robot_spawn_range); };
+ auto detonate_sewage_pump = [&](const point& dest) {
+     if (g->m.rewrite_test<t_sewage_pump, t_rubble>(dest)) g->explosion(dest, 10, 0, false);
+     return rng(robot_spawn_range);
+ };
 
  switch (fail) {
 
@@ -661,11 +665,8 @@ void computer::activate_failure(game *g, computer_failure fail)
 
   case COMPFAIL_PUMP_EXPLODE:
    messages.add("The pump explodes!");
-   for (int x = 0; x < SEEX * MAPSIZE; x++) {
-    for (int y = 0; y < SEEY * MAPSIZE; y++) {
-	 if (g->m.rewrite_test<t_sewage_pump, t_rubble>(x,y)) g->explosion(x, y, 10, 0, false);
-    }
-   }
+   // \todo likely should just go for the nearest ones, when using a larger reality bubble
+   forall_do(map::reality_bubble_extent, detonate_sewage_pump);
    break;
 
   case COMPFAIL_PUMP_LEAK:

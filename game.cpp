@@ -2773,7 +2773,7 @@ struct hit_by_shrapnel
     }
 };
 
-void game::explosion(int x, int y, int power, int shrapnel, bool fire)
+void game::explosion(const point& pt, int power, int shrapnel, bool fire)
 {
  if (0 >= power) return; // no-op if zero power (could happen if vehicle gas tank near-empty
 
@@ -2781,15 +2781,15 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
  int radius = sqrt(double(power / 4));
  int dam;
  if (power >= 30)
-  sound(point(x, y), power * 10, "a huge explosion!");
+  sound(pt, power * 10, "a huge explosion!");
  else
-  sound(point(x, y), power * 10, "an explosion!");
- for (int i = x - radius; i <= x + radius; i++) {
-  for (int j = y - radius; j <= y + radius; j++) {
-   if (i == x && j == y)
+  sound(pt, power * 10, "an explosion!");
+ for (int i = pt.x - radius; i <= pt.x + radius; i++) {
+  for (int j = pt.y - radius; j <= pt.y + radius; j++) {
+   if (i == pt.x && j == pt.y)
     dam = 3 * power;
    else
-    dam = 3 * power / (rl_dist(x, y, i, j));
+    dam = 3 * power / (rl_dist(pt, i, j));
    if (m.has_flag(bashable, i, j)) m.bash(i, j, dam);
    if (m.has_flag(bashable, i, j)) m.bash(i, j, dam); // Double up for tough doors, etc.
    if (m.is_destructable(i, j) && rng(25, 100) < dam) m.destroy(this, i, j, false);
@@ -2804,7 +2804,7 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
   }
  }
 // Draw the explosion
- const point epicenter(point(x, y) + point(VIEW_CENTER) - u.pos);
+ const point epicenter(pt + point(VIEW_CENTER) - u.pos);
  for (int i = 1; i <= radius; i++) {
   mvwputch(w_terrain, epicenter.y - i, epicenter.x - i, c_red, '/');
   mvwputch(w_terrain, epicenter.y - i, epicenter.x + i, c_red,'\\');
@@ -2827,9 +2827,9 @@ void game::explosion(int x, int y, int power, int shrapnel, bool fire)
  ts.tv_sec = 0;
  ts.tv_nsec = BULLET_SPEED;	// Reset for animation of bullets
  for (int i = 0; i < shrapnel; i++) {
-  sx = rng(x - 2 * radius, x + 2 * radius);
-  sy = rng(y - 2 * radius, y + 2 * radius);
-  traj = line_to(x, y, sx, sy, m.sees(x, y, sx, sy, 50));
+  sx = rng(pt.x - 2 * radius, pt.x + 2 * radius);
+  sy = rng(pt.y - 2 * radius, pt.y + 2 * radius);
+  traj = line_to(pt.x, pt.y, sx, sy, m.sees(pt, sx, sy, 50));
   dam = rng(20, 60);
   for (int j = 0; j < traj.size(); j++) {
    if (j > 0 && u.see(traj[j - 1]))
@@ -2996,7 +2996,7 @@ void game::resonance_cascade(const point& pt)
     m.destroy(this, i, j, true);
     break;
    case 19:
-    explosion(i, j, rng(1, 10), rng(0, 1) * rng(0, 6), one_in(4));
+    explosion(point(i, j), rng(1, 10), rng(0, 1) * rng(0, 6), one_in(4));
     break;
    }
   }
