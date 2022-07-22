@@ -133,6 +133,7 @@ class monster : public mobile {
  int min_technique_power() const override { return type->size; }
  int  fall_damage() const;	// How much a fall hurts us
  void killed(pc* by = nullptr);
+ void fling(int dir, int flvel); // thrown by impact (or something)
 
 // Other
  int knockback_size() const override { return type->size; }

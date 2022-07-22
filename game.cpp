@@ -3395,10 +3395,10 @@ void game::examine()
          bool qexv = (veh->velocity != 0 ? query_yn("Really exit moving vehicle?") : query_yn("Exit vehicle?"));
          if (qexv) {
              veh->unboard(v->second);
-             u.moves -= 200;
+             u.moves -= 2 * mobile::mp_turn;
              if (veh->velocity) {      // TODO: move player out of harms way
                  int dsgn = veh->parts[v->second].mount_d.x > 0 ? 1 : -1;
-                 fling_player_or_monster(&u, nullptr, veh->face.dir() + 90 * dsgn, 35);
+                 u.fling(veh->face.dir() + 90 * dsgn, 35);
              }
              return;
          }
@@ -4988,85 +4988,6 @@ void game::plmove(point delta)
    messages.add("That door is locked!");
   }
  }
-}
-
-void game::fling_player_or_monster(player *p, monster *zz, int dir, int flvel)
-{
-    int steps = 0;
-    bool is_u = p && (p == &u);
-    int dam1, dam2;
-
-    bool is_player;
-    if (p) is_player = true;
-    else if (zz) is_player = false;
-    else {
-        debugmsg ("game::fling neither player nor monster");
-        return;
-    }
-
-    tileray tdir(dir);
-    std::string sname, snd;
-    if (p) {
-        if (is_u) sname = std::string ("You are");
-        else sname = p->name + " is";
-    }
-    else sname = zz->name() + " is";
-    int range = flvel / 10;
-    int vel1 = flvel;
-    decltype(auto) pt = is_player ? p->pos : zz->pos;
-    while (range > 0) {
-        tdir.advance();
-        pt = (is_player ? p->pos : zz->pos) + point(tdir.dx(), tdir.dy());
-        std::string dname;
-        bool thru = true;
-        bool slam = false;
-        dam1 = flvel / 3 + rng(0, flvel * 1 / 3);
-        if (monster* const m_at = mon(pt)) {
-            slam = true;
-            dname = m_at->name();
-            dam2 = flvel / 3 + rng (0, flvel * 1 / 3);
-            if (m_at->hurt(dam2)) kill_mon(*m_at);
-            else thru = false;
-            if (is_player) p->hitall(dam1, 40);
-            else zz->hurt(dam1);
-        } else if (m.move_cost(pt) == 0 && !m.has_flag(swimmable, pt)) {
-            slam = true;
-            const auto veh = m._veh_at(pt);
-            dname = veh ? veh->first->part_info(veh->second).name : name_of(m.ter(pt)).c_str();
-            if (m.has_flag(bashable, pt)) thru = m.bash(pt, flvel, snd);
-            else thru = false;
-            if (snd.length() > 0) messages.add("You hear a %s", snd.c_str());
-            if (is_player) p->hitall(dam1, 40);
-            else zz->hurt (dam1);
-            flvel = flvel / 2;
-        }
-        if (slam) messages.add("%s slammed against the %s for %d damage!", sname.c_str(), dname.c_str(), dam1);
-		if (!thru) break;
-        if (is_player) p->screenpos_set(pt);
-        else zz->screenpos_set(pt);
-        range--;
-        steps++;
-        timespec ts = { 0, 50000000 };   // Timespec for the animation
-        nanosleep(&ts, nullptr);
-    }
-
-    if (!m.has_flag(swimmable, pt)) {
-        // fall on ground
-        dam1 = rng (flvel / 3, flvel * 2 / 3) / 2;
-        if (is_player) {
-            int dex_reduce = p->dex_cur < 4? 4 : p->dex_cur;
-            dam1 = dam1 * 8 / dex_reduce;
-            if (p->has_trait(PF_PARKOUR)) dam1 /= 2;
-            if (dam1 > 0) p->hitall(dam1, 40);
-        } else zz->hurt (dam1);
-
-        if (is_u) {
-            if (dam1 > 0)
-				messages.add("You fall on the ground for %d damage.", dam1);
-            else
-				messages.add("You fall on the ground.");
-        }
-    } else if (is_u) messages.add("You fall into water.");
 }
 
 void game::vertical_move(int movez, bool force)

@@ -12,6 +12,7 @@
 #include "recent_msg.h"
 #include "saveload.h"
 #include "zero.h"
+#include "posix_time.h"
 
 #include <array>
 #include <math.h>
@@ -4132,6 +4133,88 @@ void player::vomit()
     };
 
     rem_disease(purge);
+}
+
+void player::fling(/* player* p, monster* zz, */ int dir, int flvel)
+{
+    const auto g = game::active();
+    int steps = 0;
+    bool is_u = this == &g->u;
+    int dam1;
+
+    tileray tdir(dir);
+    std::string sname;
+
+    if (is_u) sname = std::string("You are");
+    else sname = name + " is";
+
+    int range = flvel / 10;
+    int vel1 = flvel;
+    decltype(auto) loc = GPSpos;
+    while (range > 0) {
+        tdir.advance();
+        loc = GPSpos + point(tdir.dx(), tdir.dy());
+        std::string dname;
+        bool thru = true;
+        bool slam = false;
+        dam1 = flvel / 3 + rng(0, flvel * 1 / 3);
+        if (monster* const m_at = g->mon(loc)) {
+            slam = true;
+            dname = m_at->name();
+            int dam2 = flvel / 3 + rng(0, flvel * 1 / 3);
+            if (m_at->hurt(dam2)) g->kill_mon(*m_at);
+            else thru = false;
+            hitall(dam1, 40);
+        } else if (0 == loc.move_cost() && !is<swimmable>(loc.ter())) {
+            std::string snd;
+            slam = true;
+            const auto veh = loc.veh_at();
+            dname = veh ? veh->first->part_info(veh->second).name : name_of(loc.ter()).c_str();
+            if (loc.is_bashable()) thru = loc.bash(flvel, snd);
+            else thru = false;
+            if (snd.length() > 0) messages.add("You hear a %s", snd.c_str());
+            hitall(dam1, 40);
+            flvel = flvel / 2;
+        }
+        if (slam) messages.add("%s slammed against the %s for %d damage!", sname.c_str(), dname.c_str(), dam1);
+        if (!thru) break;
+        set_screenpos(loc);
+        range--;
+        steps++;
+        timespec ts = { 0, 50000000 };   // Timespec for the animation
+        nanosleep(&ts, nullptr);
+    }
+
+    if (!is<swimmable>(loc.ter())) {
+        // fall on ground
+        dam1 = rng(flvel / 3, flvel * 2 / 3) / 2;
+        {
+            dam1 = dam1 * 8 / clamped_lb<4>(dex_cur);
+            if (has_trait(PF_PARKOUR)) dam1 /= 2;
+            if (dam1 > 0) hitall(dam1, 40);
+        }
+
+        if (is_u) {
+            if (dam1 > 0)
+                messages.add("You fall on the ground for %d damage.", dam1);
+            else
+                messages.add("You fall on the ground.");
+        } else {
+            static auto prone = [&]() {
+                return grammar::capitalize(subject()) + " falls on the ground.";
+            };
+            g->if_visible_message(prone, *this);
+        }
+    }
+    else {
+        if (is_u) messages.add("You fall into water.");
+        else {
+            static auto swimming = [&]() {
+                return grammar::capitalize(subject()) + " falls into water.";
+            };
+            g->if_visible_message(swimming, *this);
+        }
+    }
 }
 
 int player::weight_carried() const

@@ -422,8 +422,7 @@ void map::vehmove(game *g)
 				   messages.add("%s %s hurled from the %s's seat by the power of impact!",
 					   psgname.c_str(), psgverb, veh->name.c_str());
                veh->unboard(ps);
-			   g->fling_player_or_monster(psg, nullptr, mdir.dir() + rng(0, 60) - 30,
-				   (vel2 / 100 - sb_bonus < 10 ? 10 : vel2 / 100 - sb_bonus));
+               psg->fling(mdir.dir() + rng(0, 60) - 30, (vel2 / 100 - sb_bonus < 10 ? 10 : vel2 / 100 - sb_bonus));
 		   } else if (veh->part_with_feature(ps, vpf_controls) >= 0) {
 			   int lose_ctrl_roll = rng(0, imp);
 			   if (lose_ctrl_roll > psg->dex_cur * 2 + psg->sklevel[sk_driving] * 3) {
@@ -695,6 +694,22 @@ bool map::has_flag(t_flag flag, int x, int y) const
      }
  }
  return ter_t::list[ter(x, y)].flags & mfb(flag);
+}
+
+bool GPS_loc::is_bashable() const
+{
+    if (const auto v = veh_at()) {
+        const vehicle* const veh = v->first; // backward compatibility
+        const int vpart = v->second;
+        if (veh->parts[vpart].hp > 0 && // if there's a vehicle part here...
+            veh->part_with_feature(vpart, vpf_obstacle) >= 0) {// & it is obstacle...
+            int p = veh->part_with_feature(vpart, vpf_openable);
+            if (p < 0 || !veh->parts[p].open) // and not open door
+                return true;
+        }
+    }
+
+    return is<bashable>(ter());
 }
 
 bool map::is_destructable(int x, int y) const

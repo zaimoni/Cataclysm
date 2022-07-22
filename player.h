@@ -205,6 +205,7 @@ public:
  void die(map& m);
  void suffer(game *g);	// \todo V 0.2.1 extend fully to NPCs
  void vomit();	// \todo V 0.2.1 extend to NPCs
+ void fling(int dir, int flvel); // thrown by impact (or something)
 
  // 2021-09-08: modernized standard for identifying local items for various sorts of use
  using item_spec = std::pair<item*, int>;

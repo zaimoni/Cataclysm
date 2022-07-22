@@ -39,6 +39,7 @@ struct GPS_loc : public std::pair<tripoint, point>
 	ter_id ter() const;
 	bool is_outside() const;
 	bool is_transparent() const;
+	bool is_bashable() const;
 	std::optional<std::pair<vehicle*, int>> veh_at() const;
 	trap_id& trap_at();
 	trap_id trap_at() const;
