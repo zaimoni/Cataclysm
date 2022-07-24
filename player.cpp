@@ -4135,7 +4135,7 @@ void player::vomit()
     rem_disease(purge);
 }
 
-void player::fling(/* player* p, monster* zz, */ int dir, int flvel)
+void player::fling(int dir, int flvel)
 {
     const auto g = game::active();
     int steps = 0;
@@ -4154,29 +4154,26 @@ void player::fling(/* player* p, monster* zz, */ int dir, int flvel)
     while (range > 0) {
         tdir.advance();
         loc = GPSpos + point(tdir.dx(), tdir.dy());
-        std::string dname;
         bool thru = true;
-        bool slam = false;
         dam1 = flvel / 3 + rng(0, flvel * 1 / 3);
         if (monster* const m_at = g->mon(loc)) {
-            slam = true;
-            dname = m_at->name();
+            std::string dname = m_at->name();
             int dam2 = flvel / 3 + rng(0, flvel * 1 / 3);
             if (m_at->hurt(dam2)) g->kill_mon(*m_at);
             else thru = false;
             hitall(dam1, 40);
+            messages.add("%s slammed against the %s for %d damage!", sname.c_str(), dname.c_str(), dam1);
         } else if (0 == loc.move_cost() && !is<swimmable>(loc.ter())) {
             std::string snd;
-            slam = true;
             const auto veh = loc.veh_at();
-            dname = veh ? veh->first->part_info(veh->second).name : name_of(loc.ter()).c_str();
+            std::string dname = veh ? veh->first->part_info(veh->second).name : name_of(loc.ter()).c_str();
             if (loc.is_bashable()) thru = loc.bash(flvel, snd);
             else thru = false;
             if (snd.length() > 0) messages.add("You hear a %s", snd.c_str());
             hitall(dam1, 40);
+            messages.add("%s slammed against the %s for %d damage!", sname.c_str(), dname.c_str(), dam1);
             flvel = flvel / 2;
         }
-        if (slam) messages.add("%s slammed against the %s for %d damage!", sname.c_str(), dname.c_str(), dam1);
         if (!thru) break;
         set_screenpos(loc);
         range--;
