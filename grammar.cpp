@@ -77,6 +77,11 @@ std::string noun::regular_verb_agreement(const std::string& verb) const
 	return verb + "s";
 }
 
+std::string noun::to_be() const
+{	// default: 3rd person singular (ok to switch on gender but English doesn't need that here)
+	return "is";
+}
+
 void noun::regular_possessive(std::string& src)
 {
 	src += "'s";

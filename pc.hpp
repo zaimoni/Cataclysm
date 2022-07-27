@@ -31,6 +31,7 @@ public:
 
 	// grammatical support
 	std::string regular_verb_agreement(const std::string& verb) const override { return verb; }
+	std::string to_be() const override { return "are"; }
 	std::string subject() const override { return "you"; }
 	std::string direct_object() const override { return "you"; }
 	std::string indirect_object() const override { return "you"; }

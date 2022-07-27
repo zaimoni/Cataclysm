@@ -629,12 +629,13 @@ void monster::fling(int dir, int flvel)
         bool thru = true;
         const int min_dam = flvel / 3;
         dam1 = min_dam + rng(0, min_dam);
+        std::string suffix = std::string("for ") + std::to_string(dam1) + " damage!";
         if (monster* const m_at = g->mon(loc)) {
             std::string dname = m_at->desc(grammar::noun::role::direct_object, grammar::article::definite);
             int dam2 = min_dam + rng(0, min_dam);
             if (m_at->hurt(dam2)) g->kill_mon(*m_at);
             else thru = false;
-            messages.add("%s is slammed against %s for %d damage!", name().c_str(), dname.c_str(), dam1);
+            messages.add(name() + " is slammed against "+dname+" for "+std::to_string(dam1) + " damage!");
             hurt(dam1);
         } else if (0 == loc.move_cost() && !is<swimmable>(loc.ter())) {
             std::string snd;
@@ -643,7 +644,7 @@ void monster::fling(int dir, int flvel)
             if (loc.is_bashable()) thru = loc.bash(flvel, snd);
             else thru = false;
             if (snd.length() > 0) messages.add("You hear a %s", snd.c_str());
-            messages.add("%s is slammed against the %s for %d damage!", name().c_str(), dname.c_str(), dam1);
+            messages.add(name() + " is slammed against the " + dname + " for " + std::to_string(dam1) + " damage!");
             hurt(dam1);
             flvel /= 2;
         }

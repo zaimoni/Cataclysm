@@ -4143,10 +4143,7 @@ void player::fling(int dir, int flvel)
     int dam1;
 
     tileray tdir(dir);
-    std::string sname;
-
-    if (is_u) sname = std::string("You are");
-    else sname = name + " is";
+    std::string sname = grammar::capitalize(subject())+" "+to_be();
 
     int range = flvel / 10;
     int vel1 = flvel;
@@ -4163,16 +4160,16 @@ void player::fling(int dir, int flvel)
             if (m_at->hurt(dam2)) g->kill_mon(*m_at);
             else thru = false;
             hitall(dam1, 40);
-            messages.add("%s slammed against %s for %d damage!", sname.c_str(), dname.c_str(), dam1);
+            messages.add(sname + " slammed against " + dname + " for " + std::to_string(dam1) + " damage!");
         } else if (0 == loc.move_cost() && !is<swimmable>(loc.ter())) {
             std::string snd;
             const auto veh = loc.veh_at();
             std::string dname = veh ? veh->first->part_info(veh->second).name : name_of(loc.ter()).c_str();
             if (loc.is_bashable()) thru = loc.bash(flvel, snd);
             else thru = false;
-            if (snd.length() > 0) messages.add("You hear a %s", snd.c_str());
+            if (!snd.empty()) messages.add("You hear a %s", snd.c_str());
             hitall(dam1, 40);
-            messages.add("%s slammed against the %s for %d damage!", sname.c_str(), dname.c_str(), dam1);
+            messages.add(sname + " slammed against the " + dname + " for " + std::to_string(dam1) + " damage!");
             flvel /= 2;
         }
         if (!thru) break;

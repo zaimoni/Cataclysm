@@ -35,6 +35,7 @@ struct noun
 	virtual std::string pronoun(role r) const { return typical_pronoun(r); }
 	virtual std::string regular_verb_agreement(const std::string& verb) const;
 	std::string VO_phrase(const std::string& verb, const std::string& obj) const;
+	virtual std::string to_be() const; //  The most irregular verb (virtually all languages)
 protected:
 	std::string typical_pronoun(role r) const; // third person singular
 	static void regular_possessive(std::string& src);
