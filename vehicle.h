@@ -156,6 +156,7 @@ public:
     // stub for knockback support
     int knockback_size() const override { return 4; } // motorcycle more like a cow than a tank; cf enum m_size
     bool hurt(int dam) override { return false; } // \todo? implement stub
+    bool hitall(int dam, int vary = 0) override { return false; } // \todo? implement stub
     int dodge_roll() const override { return 0; } // stub; For the purposes of comparing to player::hit_roll()
     int melee_skill() const override { return 0; } // stub
     int min_technique_power() const override { return 4; }  // stub; same issues as knockback_size()

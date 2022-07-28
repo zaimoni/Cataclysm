@@ -171,7 +171,7 @@ public:
  void healall(int dam);
  void hurtall(int dam);
  // checks armor. if vary > 0, then damage to parts are random within 'vary' percent (1-100)
- void hitall(int dam, int vary = 0);
+ bool hitall(int dam, int vary = 0) override;
  // calibration: STR 3 -> 1; STR 20 -> 4; STR 8 -> 2
  int knockback_size() const override { return (str_max - 2) / 5 + 1; /* C:Whales: (str_max - 6) / 4; */ }
 

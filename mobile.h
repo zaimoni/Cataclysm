@@ -47,6 +47,7 @@ public:
 	void knockback_from(const GPS_loc& loc);
 	virtual int knockback_size() const = 0;
 	virtual bool hurt(int dam) = 0; // Deals this dam damage; returns true if we died
+	virtual bool hitall(int dam, int vary = 0) = 0;
 	virtual int dodge_roll() const = 0; // For comparison to hit_roll()
 	virtual int melee_skill() const = 0;
 	virtual int min_technique_power() const = 0;

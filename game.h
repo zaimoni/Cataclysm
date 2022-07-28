@@ -137,6 +137,9 @@ class game : public reality_bubble
   void kill_mon(monster& target) { if (!target.dead) target.killed(); }
   void kill_mon(monster& target, player* me) { if (!target.dead) target.killed(dynamic_cast<pc*>(me)); }
   void kill_mon(monster& target, const monster* z) { if (!target.dead) target.killed(z->is_friend() ? &u : nullptr); } // not nearly enough detail
+  void kill_mon(const std::variant<monster*, npc*, pc*>& target) {
+      if (auto _mon = std::get_if<monster*>(&target)) kill_mon(**_mon);
+  }
   // Explode a monster; like kill_mon but messier
   void explode_mon(monster& target, player* me = nullptr) { if (!target.dead) _explode_mon(target, me); }
   void plfire(bool burst);	// Player fires a gun (target selection)...

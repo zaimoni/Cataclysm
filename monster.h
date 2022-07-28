@@ -125,6 +125,7 @@ class monster : public mobile {
  void hit_monster(monster& target) const;
  bool hit_by_blob(monster* origin = nullptr, bool force = true);
  bool hurt(int dam) override; 	// Deals this dam damage; returns true if we dead
+ bool hitall(int dam, int vary = 0) override { return hurt(dam); } // as required by C:Whales behavior of monster|player::fling
  int  armor_cut() const;	// Natural armor, plus any worn armor
  int  armor_bash() const;	// Natural armor, plus any worn armor
  int  dodge() const;		// Natural dodge, or 0 if we're occupied

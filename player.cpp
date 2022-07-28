@@ -3570,7 +3570,7 @@ void player::hurtall(int dam)
  }
 }
 
-void player::hitall(int dam, int vary)
+bool player::hitall(int dam, int vary)
 {
     if (!rude_awakening()) rem_disease(DI_LYING_DOWN);
 
@@ -3589,6 +3589,8 @@ void player::hitall(int dam, int vary)
    painadd = dam / 2 / 4;
   pain += painadd;
  }
+
+    return 0 >= hp_cur[hp_torso] || 0 >= hp_cur[hp_head];
 }
 
 bool player::handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim)
@@ -4154,13 +4156,15 @@ void player::fling(int dir, int flvel)
         bool thru = true;
         const int min_dam = flvel / 3;
         dam1 = min_dam + rng(0, min_dam);
-        if (monster* const m_at = g->mon(loc)) {
-            std::string dname = m_at->desc(grammar::noun::role::direct_object, grammar::article::definite);
+        std::string suffix = std::string(" for ") + std::to_string(dam1) + " damage!";
+        if (const auto m_at = g->mob_at(loc)) {
+            const auto _mob = std::visit(mobile::cast(), *m_at);
+            std::string dname = _mob->desc(grammar::noun::role::direct_object, grammar::article::definite);
             int dam2 = min_dam + rng(0, min_dam);
-            if (m_at->hurt(dam2)) g->kill_mon(*m_at);
+            if (_mob->hitall(dam2, 40)) g->kill_mon(*m_at);
             else thru = false;
             hitall(dam1, 40);
-            messages.add(sname + " slammed against " + dname + " for " + std::to_string(dam1) + " damage!");
+            messages.add(sname + " slammed against " + dname + suffix);
         } else if (0 == loc.move_cost() && !is<swimmable>(loc.ter())) {
             std::string snd;
             const auto veh = loc.veh_at();
@@ -4169,7 +4173,7 @@ void player::fling(int dir, int flvel)
             else thru = false;
             if (!snd.empty()) messages.add("You hear a %s", snd.c_str());
             hitall(dam1, 40);
-            messages.add(sname + " slammed against the " + dname + " for " + std::to_string(dam1) + " damage!");
+            messages.add(sname + " slammed against the " + dname + suffix);
             flvel /= 2;
         }
         if (!thru) break;
