@@ -81,6 +81,9 @@ protected:
 	void set_screenpos(point pt); // could be public once synchronization with legacy point pos not needed
 	virtual void _set_screenpos() = 0;
 
+	/// <returns>true iff continuing</returns>
+	bool flung(int& flvel, GPS_loc& loc);
+
 private:
 	virtual bool handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim) = 0;
 };

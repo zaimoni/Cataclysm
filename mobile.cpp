@@ -1,6 +1,7 @@
 #include "mobile.h"
 
 #include "game.h" // \todo Just need the reality bubble data structure
+#include "rng.h"
 
 #include <stdexcept>
 
@@ -66,4 +67,50 @@ void mobile::knockback_from(const GPS_loc& loc)
 			if (u_see) messages.add("%s %s off a %s.", You.c_str(), bounce.c_str(), name_of(to.ter()).c_str());
 		}
 	} else set_screenpos(to);	// It's no wall
+}
+
+bool mobile::flung(int& flvel, GPS_loc& loc)
+{
+	const auto g = game::active();
+	const int min_dam = flvel / 3;
+	bool thru = true;
+
+
+	if (const auto m_at = g->mob_at(loc)) {
+		const auto _mob = std::visit(mobile::cast(), *m_at);
+		int dam2 = min_dam + rng(0, min_dam);
+		if (_mob->hitall(dam2, 40)) g->kill_mon(*m_at);
+		else thru = false;
+		int dam1 = min_dam + rng(0, min_dam);
+		hitall(dam1, 40);
+
+		static auto slammed = [&]() {
+			std::string dname = _mob->desc(grammar::noun::role::direct_object, grammar::article::definite);
+			std::string suffix = std::string(" for ") + std::to_string(dam1) + " damage!";
+			std::string sname = grammar::capitalize(subject()) + " " + to_be();
+			return sname + " slammed against " + dname + suffix;
+		};
+
+		g->if_visible_message(slammed, GPSpos);
+	} else if (0 == loc.move_cost() && !is<swimmable>(loc.ter())) {
+		std::string snd;
+		if (loc.is_bashable()) thru = loc.bash(flvel, snd);
+		else thru = false;
+		if (!snd.empty()) messages.add("You hear a %s", snd.c_str());
+		int dam1 = min_dam + rng(0, min_dam);
+		hitall(dam1, 40);
+
+		static auto slammed = [&]() {
+			const auto veh = loc.veh_at();
+			std::string dname = veh ? veh->first->part_info(veh->second).name : name_of(loc.ter()).c_str();
+			std::string suffix = std::string(" for ") + std::to_string(dam1) + " damage!";
+			std::string sname = grammar::capitalize(subject()) + " " + to_be();
+			return sname + " slammed against the " + dname + suffix;
+		};
+
+		g->if_visible_message(slammed, GPSpos);
+		flvel /= 2;
+	}
+
+	return thru;
 }

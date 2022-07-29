@@ -621,35 +621,11 @@ void monster::fling(int dir, int flvel)
     tileray tdir(dir);
 
     int range = flvel / 10;
-    int vel1 = flvel;
     decltype(auto) loc = GPSpos;
     while (range > 0) {
         tdir.advance();
         loc = GPSpos + point(tdir.dx(), tdir.dy());
-        bool thru = true;
-        const int min_dam = flvel / 3;
-        dam1 = min_dam + rng(0, min_dam);
-        std::string suffix = std::string(" for ") + std::to_string(dam1) + " damage!";
-        if (const auto m_at = g->mob_at(loc)) {
-            const auto _mob = std::visit(mobile::cast(), *m_at);
-            std::string dname = _mob->desc(grammar::noun::role::direct_object, grammar::article::definite);
-            int dam2 = min_dam + rng(0, min_dam);
-            if (_mob->hitall(dam2, 40)) g->kill_mon(*m_at);
-            else thru = false;
-            messages.add(name() + " is slammed against " + dname + suffix);
-            hurt(dam1);
-        } else if (0 == loc.move_cost() && !is<swimmable>(loc.ter())) {
-            std::string snd;
-            const auto veh = loc.veh_at();
-            std::string dname = veh ? veh->first->part_info(veh->second).name : name_of(loc.ter()).c_str();
-            if (loc.is_bashable()) thru = loc.bash(flvel, snd);
-            else thru = false;
-            if (snd.length() > 0) messages.add("You hear a %s", snd.c_str());
-            messages.add(name() + " is slammed against the " + dname + suffix);
-            hurt(dam1);
-            flvel /= 2;
-        }
-        if (!thru) break;
+        if (!flung(flvel, loc)) break;
         set_screenpos(loc);
         range--;
         steps++;
