@@ -408,7 +408,7 @@ private:
  std::vector <disease> illness;
 
  void _set_screenpos() override { if (auto pt = screen_pos()) pos = *pt; }
- bool handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim) override;
+ bool handle_knockback_into_impassable(const GPS_loc& dest) override;
  virtual void consume(item& food) = 0;
 
  // melee.cpp

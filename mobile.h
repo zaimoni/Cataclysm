@@ -85,7 +85,7 @@ protected:
 	bool flung(int& flvel, GPS_loc& loc);
 
 private:
-	virtual bool handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim) = 0;
+	virtual bool handle_knockback_into_impassable(const GPS_loc& dest) = 0;
 };
 
 template<class T>

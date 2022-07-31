@@ -60,7 +60,7 @@ void mobile::knockback_from(const GPS_loc& loc)
 
 	// If we're still in the function at this point, we're actually moving a tile!
 	if (0 == to.move_cost()) { // Wait, it's a wall (or water)
-		if (!handle_knockback_into_impassable(to, You)) {
+		if (!handle_knockback_into_impassable(to)) {
 			// It's some kind of wall.
 			hurt(knockback_size());
 			add(effect::STUNNED, TURNS(2));

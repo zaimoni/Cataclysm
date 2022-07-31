@@ -647,6 +647,7 @@ void monster::fling(int dir, int flvel)
         };
         g->if_visible_message(swimming, *this);
     }
+    handle_knockback_into_impassable(GPSpos);
 }
 
 static constexpr monster_effect_type translate(mobile::effect src)
@@ -837,20 +838,31 @@ void monster::add_item(const item& it)
  inv.push_back(it);
 }
 
-bool monster::handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim)
+bool monster::handle_knockback_into_impassable(const GPS_loc& dest)
 {
-    const bool u_see = (bool)game::active()->u.see(dest);
+    const auto code = ([&]() {
+        if (is<liquid>(dest.ter())) {
+            if (!has_flag(MF_SWIMS) && !has_flag(MF_AQUATIC)) return 1; // going to drown
+        } else if (has_flag(MF_AQUATIC)) { // We swim but we're NOT in water
+            return 2;   // going to asphyxiate in air
+        }
+        return 0;
+    })();
 
-    if (is<liquid>(dest.ter())) {
-        if (!has_flag(MF_SWIMS) && !has_flag(MF_AQUATIC)) {
+    if (code) {
+        const std::string victim = (bool)game::active()->u.see(dest) ? grammar::capitalize(desc(grammar::noun::role::subject, grammar::article::definite)) : std::string();
+
+        switch (code)
+        {
+        case 1: // drowning
             hurt(9999);
-            if (u_see) messages.add("%s drowns!", victim.c_str());
+            if (!victim.empty()) messages.add("%s drowns!", victim.c_str());
+            return true;
+        default:    // asphyxiate in air
+            hurt(9999);
+            if (!victim.empty()) messages.add("%s flops around and dies!", victim.c_str());
             return true;
         }
-    } else if (has_flag(MF_AQUATIC)) { // We swim but we're NOT in water
-        hurt(9999);
-        if (u_see) messages.add("%s flops around and dies!", victim.c_str());
-        return true;
     }
     return false;
 }

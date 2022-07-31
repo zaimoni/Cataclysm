@@ -3593,7 +3593,7 @@ bool player::hitall(int dam, int vary)
     return 0 >= hp_cur[hp_torso] || 0 >= hp_cur[hp_head];
 }
 
-bool player::handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim)
+bool player::handle_knockback_into_impassable(const GPS_loc& dest)
 {
     if (is<swimmable>(dest.ter())) {
         swim(dest);
@@ -4189,6 +4189,8 @@ void player::fling(int dir, int flvel)
             };
             g->if_visible_message(swimming, *this);
         }
+        // inline player::handle_knockback_into_impassable
+        swim(GPSpos);
     }
 }
 

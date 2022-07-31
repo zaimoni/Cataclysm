@@ -363,7 +363,7 @@ public:
     int turret_mode;    // turret firing mode: 0 = off, 1 = burst fire	; leave as int in case we want true autofire
 private:
     void _set_screenpos() override {}
-    bool handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim) override { return false; } // stub
+    bool handle_knockback_into_impassable(const GPS_loc& dest) override { return false; } // stub
 
     // direct damage to part (armor protection and internals are not counted)
     // returns damage bypassed

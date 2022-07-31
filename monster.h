@@ -217,7 +217,7 @@ private:
  bool can_sound_move_to(const point& pt) const;
 
  void _set_screenpos() override { if (auto pt = screen_pos()) pos = *pt; }
- bool handle_knockback_into_impassable(const GPS_loc& dest, const std::string& victim) override;
+ bool handle_knockback_into_impassable(const GPS_loc& dest) override;
 
  void make_friendly(int duration);
 
