@@ -615,8 +615,6 @@ void monster::fling(int dir, int flvel)
 {
     const auto g = game::active();
     int steps = 0;
-    constexpr const bool is_u = false;
-    int dam1;
 
     tileray tdir(dir);
 
@@ -635,7 +633,7 @@ void monster::fling(int dir, int flvel)
 
     if (!is<swimmable>(loc.ter())) {
         // fall on ground
-        dam1 = rng(flvel / 3, flvel * 2 / 3) / 2;
+        int dam1 = rng(flvel / 3, flvel * 2 / 3) / 2;
         static auto prone = [&]() {
             return grammar::capitalize(subject()) + " falls on the ground.";
         };

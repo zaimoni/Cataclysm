@@ -4142,7 +4142,6 @@ void player::fling(int dir, int flvel)
     const auto g = game::active();
     int steps = 0;
     bool is_u = this == &g->u;
-    int dam1;
 
     tileray tdir(dir);
     std::string sname = grammar::capitalize(subject())+" "+to_be();
@@ -4162,33 +4161,26 @@ void player::fling(int dir, int flvel)
 
     if (!is<swimmable>(loc.ter())) {
         // fall on ground
-        dam1 = rng(flvel / 3, flvel * 2 / 3) / 2;
+        int dam1 = rng(flvel / 3, flvel * 2 / 3) / 2;
         {
             dam1 = dam1 * 8 / clamped_lb<4>(dex_cur);
             if (has_trait(PF_PARKOUR)) dam1 /= 2;
-            if (dam1 > 0) hitall(dam1, 40);
         }
 
-        if (is_u) {
-            if (dam1 > 0)
-                messages.add("You fall on the ground for %d damage.", dam1);
-            else
-                messages.add("You fall on the ground.");
+        if (is_u && 0 < dam1) {
+            messages.add("You fall on the ground for %d damage.", dam1);
         } else {
             static auto prone = [&]() {
-                return grammar::capitalize(subject()) + " falls on the ground.";
+                return SVO_sentence(*this, "fall", "on the ground");
             };
             g->if_visible_message(prone, *this);
         }
-    }
-    else {
-        if (is_u) messages.add("You fall into water.");
-        else {
-            static auto swimming = [&]() {
-                return grammar::capitalize(subject()) + " falls into water.";
-            };
-            g->if_visible_message(swimming, *this);
-        }
+        if (dam1 > 0) hitall(dam1, 40);
+    } else {
+        static auto swimming = [&]() {
+            return SVO_sentence(*this, "fall", "into water");
+        };
+        g->if_visible_message(swimming, *this);
         // inline player::handle_knockback_into_impassable
         swim(GPSpos);
     }
