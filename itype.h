@@ -649,7 +649,7 @@ struct it_armor : public itype
 	 unsigned char penv_resist, signed char pwarmth,
 	 unsigned char pstorage);
 
- const it_armor* is_armor() const override final { return this; }
+ const it_armor* is_armor() const final { return this; }
 
  void info(std::ostream& dest) const override;
 protected:	// this is not a final type so these aren't public
@@ -841,7 +841,7 @@ public:
 	 ammotype pammo, itype_id prevert_to
  );
 
- const it_tool* is_tool() const override final { return this; }
+ const it_tool* is_tool() const final { return this; }
 
 #ifndef SOCRATES_DAIMON
  void used_by(item& it, npc& u) const;
