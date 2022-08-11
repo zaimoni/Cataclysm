@@ -780,7 +780,11 @@ std::vector<std::pair<const mtype*, int> > pc::summarize_kills()
 }
 
 void pc::target_dead(int deceased)
-{   // \todo handle NPC targeting
+{
     if (target == deceased) target = -1;
-    else if (target > deceased) target--;
+    else if (target > deceased) {
+        if (0 <= deceased) target--;
+    } else {
+        if (-2 > deceased) target++;    // cf. TARGET_PLAYER/npcmove.cpp
+    }
 }
