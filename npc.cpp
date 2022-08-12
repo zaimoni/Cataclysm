@@ -169,7 +169,7 @@ DEFINE_JSON_ENUM_SUPPORT_TYPICAL(npc_need, JSON_transcode_npc_needs)
 DEFINE_JSON_ENUM_SUPPORT_TYPICAL(talk_topic, JSON_transcode_talk)
 
 npc::npc()
-: id(-1),attitude(NPCATT_NULL),myclass(NC_NONE),wand(point(0,0),0),
+: _id(-1),attitude(NPCATT_NULL),myclass(NC_NONE),wand(point(0,0),0),
   pl(point(-1,-1),0),it(-1,-1),goal(_ref<decltype(goal)>::invalid),fetching_item(false),has_new_items(false),
   my_fac(nullptr),mission(NPC_MISSION_NULL),patience(0),marked_for_death(false),dead(false),flags(0)
 {
@@ -187,16 +187,16 @@ std::string npc::possessive() const
 
 npc* npc::find(const int id) {
     auto g = game::active();
-    for (auto& _npc : g->active_npc) if (id == _npc.id) return &_npc;
-    for (auto& _npc : g->cur_om.npcs) if (id == _npc.id) return &_npc;
+    for (auto& _npc : g->active_npc) if (id == _npc._id) return &_npc;
+    for (auto& _npc : g->cur_om.npcs) if (id == _npc._id) return &_npc;
     // \todo check other overmaps...first those already loaded, then those *not* loaded
     return nullptr;
 }
 
 const npc* npc::find_r(const int id) {
     auto g = game::active();
-    for (auto& _npc : g->active_npc) if (id == _npc.id) return &_npc;
-    for (auto& _npc : g->cur_om.npcs) if (id == _npc.id) return &_npc;
+    for (auto& _npc : g->active_npc) if (id == _npc._id) return &_npc;
+    for (auto& _npc : g->cur_om.npcs) if (id == _npc._id) return &_npc;
     // \todo check other overmaps...first those already loaded, then those *not* loaded
     return nullptr;
 }
@@ -213,14 +213,14 @@ void npc::die(const int id)
     int i = -1;
     for (auto& _npc : g->active_npc) {
         ++i;
-        if (id == _npc.id) {
+        if (id == _npc._id) {
             _npc.die(g, false);
             EraseAt(g->active_npc, i);
             return;
         }
     }
     for (auto& _npc : g->cur_om.npcs) {
-        if (id == _npc.id) {
+        if (id == _npc._id) {
             _npc.marked_for_death = true;
             return;
         }
@@ -1874,7 +1874,7 @@ void npc::die(game *g, bool your_fault)
 
  player::die(g->m);
 
- for (auto& miss : g->active_missions) if (id == miss.npc_id) miss.fail();
+ for (auto& miss : g->active_missions) if (_id == miss.npc_id) miss.fail();
 }
 
 npc npc::get_proxy(std::string&& name, const point& origin, const it_gun& gun, unsigned int recoil, int charges)

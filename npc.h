@@ -293,6 +293,7 @@ public:
  friend cataclysm::JSON toJSON(const npc& src);
 
  bool is_npc() const override { return true; }
+ int ID() const { return _id; }	// A unique ID number
 
  static npc* find(int id); // NPC with UID=id; null if non-existent
  static const npc* find_r(int id); // NPC with UID=id; null if non-existent
@@ -510,7 +511,6 @@ public:
 
 // #############   VALUES   ################
 
- int id;	// A unique ID number, assigned by the game class
  npc_attitude attitude;	// What we want to do to the player
  npc_class myclass; // What's our archetype? (seems to be invariant after construction, reasonable)
  // last heard sound: dead data, in savefile but no users (same intended semantics as monster::wand,wandf?)
@@ -545,7 +545,8 @@ public:
  static void global_toJSON(cataclysm::JSON& dest);
 private:
  static int next_id;   // mininum/default next mission id
- void assign_id() { id = next_id++; }
+ int _id;	// A unique ID number
+ void assign_id() { _id = next_id++; }
 
  void consume(item& food) override;
 };

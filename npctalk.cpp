@@ -498,7 +498,7 @@ static std::vector<talk_response> gen_responses(talk_topic topic, game *g, npc& 
     SUCCESS(TALK_NONE);
     FAILURE(TALK_MISSION_FAILURE);
      FAILURE_OPINION(-3, 0, -1, 2, 0);
-  } else if (!miss->is_complete(g->u, p.id)) {
+  } else if (!miss->is_complete(g->u, p.ID())) {
    const mission_type *type = miss->type;
    RESPONSE("Not yet.");
     SUCCESS(TALK_NONE);
@@ -1173,7 +1173,7 @@ void talk_function::assign_mission(game *g, npc& p)
         throw std::string("mission_selected = " + std::to_string(selected) + "; missions.size() = " + std::to_string(p.chatbin.missions.size()) + "!");
     if (auto miss = mission::from_id(p.chatbin.missions[selected])) {
         g->u.accept(miss);
-        miss->npc_id = p.id;
+        miss->npc_id = p.ID();
         p.chatbin.missions_assigned.push_back(p.chatbin.missions[selected]);
         EraseAt(p.chatbin.missions, selected);
     } else {
@@ -1215,7 +1215,7 @@ void talk_function::clear_mission(game *g, npc& p)
 
     if (auto miss = mission::from_id(p.chatbin.missions_assigned[selected])) {
         EraseAt(p.chatbin.missions_assigned, selected);
-        if (miss->follow_up != MISSION_NULL) p.chatbin.missions.push_back(g->reserve_mission(miss->follow_up, p.id));
+        if (miss->follow_up != MISSION_NULL) p.chatbin.missions.push_back(g->reserve_mission(miss->follow_up, p.ID()));
     } else {
         EraseAt(p.chatbin.missions, selected);
         throw std::string("mission was AWOL");

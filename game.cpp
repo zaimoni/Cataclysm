@@ -560,7 +560,7 @@ void game::create_starting_npcs()
     tmp.attitude = NPCATT_NULL;
     tmp.mission = NPC_MISSION_SHELTER;
     tmp.chatbin.first_topic = TALK_SHELTER;
-    tmp.chatbin.missions.push_back(reserve_random_mission(ORIGIN_OPENER_NPC, om_location().second, tmp.id));
+    tmp.chatbin.missions.push_back(reserve_random_mission(ORIGIN_OPENER_NPC, om_location().second, tmp.ID()));
 
     active_npc.push_back(std::move(tmp));
 }
@@ -1602,7 +1602,7 @@ void game::debug()
    temp.form_opinion(&u);
    temp.attitude = NPCATT_TALK;
    temp.mission = NPC_MISSION_NULL;
-   int mission_index = reserve_random_mission(ORIGIN_ANY_NPC, om_location().second, temp.id);
+   int mission_index = reserve_random_mission(ORIGIN_ANY_NPC, om_location().second, temp.ID());
    if (mission_index != -1)
    temp.chatbin.missions.push_back(mission_index);
    active_npc.push_back(std::move(temp));
@@ -5339,7 +5339,7 @@ void game::spawn_mon(int shiftx, int shifty)
       tmp.form_opinion(&u);
       tmp.attitude = NPCATT_TALK;
       tmp.mission = NPC_MISSION_NULL;
-      int mission_index = reserve_random_mission(ORIGIN_ANY_NPC, om_location().second, tmp.id);
+      int mission_index = reserve_random_mission(ORIGIN_ANY_NPC, om_location().second, tmp.ID());
       if (mission_index != -1) tmp.chatbin.missions.push_back(mission_index);
       active_npc.push_back(std::move(tmp));
   }
