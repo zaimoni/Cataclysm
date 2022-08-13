@@ -54,7 +54,6 @@ enum room_type {
  room_split
 };
 
-bool connects_to(oter_id there, int dir_from_here);
 void house_room(map *m, room_type type, int x1, int y1, int x2, int y2);
 void science_room(map *m, int x1, int y1, int x2, int y2, int rotate);
 void set_science_room(map *m, int x1, int y1, bool faces_right, int turn);
@@ -144,6 +143,67 @@ static std::pair<point, point> overmap_delta(int x, int y)
     assert(0 <= over.x && OMAPX > over.x);
     assert(0 <= over.y && OMAPY > over.y);
     return std::pair(over, shift);
+}
+
+// Hideous function, I admit...
+template<int dir>
+static bool connects_to(oter_id there)
+{
+    static_assert(0 <= dir && 3 >= dir);
+
+    // connects to south
+    if constexpr(2 == dir) {
+        if (there == ot_subway_ns || there == ot_subway_es || there == ot_subway_sw ||
+            there == ot_subway_nes || there == ot_subway_nsw || there == ot_subway_esw ||
+            there == ot_subway_nesw ||
+            there == ot_sewer_ns || there == ot_sewer_es || there == ot_sewer_sw ||
+            there == ot_sewer_nes || there == ot_sewer_nsw || there == ot_sewer_esw ||
+            there == ot_sewer_nesw ||
+            there == ot_ants_ns || there == ot_ants_es || there == ot_ants_sw ||
+            there == ot_ants_nes || there == ot_ants_nsw || there == ot_ants_esw ||
+            there == ot_ants_nesw)
+            return true;
+        return false;
+    // connects to west
+    } else if constexpr(3 == dir) {
+        if (there == ot_subway_ew || there == ot_subway_sw || there == ot_subway_wn ||
+            there == ot_subway_new || there == ot_subway_nsw || there == ot_subway_esw ||
+            there == ot_subway_nesw ||
+            there == ot_sewer_ew || there == ot_sewer_sw || there == ot_sewer_wn ||
+            there == ot_sewer_new || there == ot_sewer_nsw || there == ot_sewer_esw ||
+            there == ot_sewer_nesw ||
+            there == ot_ants_ew || there == ot_ants_sw || there == ot_ants_wn ||
+            there == ot_ants_new || there == ot_ants_nsw || there == ot_ants_esw ||
+            there == ot_ants_nesw)
+            return true;
+        return false;
+    // connects to north
+    } else if constexpr(0 == dir) {
+        if (there == ot_subway_ns || there == ot_subway_ne || there == ot_subway_wn ||
+            there == ot_subway_nes || there == ot_subway_new || there == ot_subway_nsw ||
+            there == ot_subway_nesw ||
+            there == ot_sewer_ns || there == ot_sewer_ne || there == ot_sewer_wn ||
+            there == ot_sewer_nes || there == ot_sewer_new || there == ot_sewer_nsw ||
+            there == ot_sewer_nesw ||
+            there == ot_ants_ns || there == ot_ants_ne || there == ot_ants_wn ||
+            there == ot_ants_nes || there == ot_ants_new || there == ot_ants_nsw ||
+            there == ot_ants_nesw)
+            return true;
+        return false;
+        // connects to east
+    } else /* if constexpr (1 == dir) */ {
+        if (there == ot_subway_ew || there == ot_subway_ne || there == ot_subway_es ||
+            there == ot_subway_nes || there == ot_subway_new || there == ot_subway_esw ||
+            there == ot_subway_nesw ||
+            there == ot_sewer_ew || there == ot_sewer_ne || there == ot_sewer_es ||
+            there == ot_sewer_nes || there == ot_sewer_new || there == ot_sewer_esw ||
+            there == ot_sewer_nesw ||
+            there == ot_ants_ew || there == ot_ants_ne || there == ot_ants_es ||
+            there == ot_ants_nes || there == ot_ants_new || there == ot_ants_esw ||
+            there == ot_ants_nesw)
+            return true;
+        return false;
+    }
 }
 
 void map::generate(game *g, overmap *om, int x, int y)
@@ -1997,13 +2057,13 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   rw = 0;
   bw = 0;
   lw = 0;
-  if (t_north>=ot_sewer_ns && t_north<=ot_sewer_nesw && connects_to(t_north,2))
+  if (t_north>=ot_sewer_ns && t_north<=ot_sewer_nesw && connects_to<2>(t_north))
    tw = SEEY * 2;
-  if (t_east >=ot_sewer_ns && t_east <=ot_sewer_nesw && connects_to(t_east, 3))
+  if (t_east >=ot_sewer_ns && t_east <=ot_sewer_nesw && connects_to<3>(t_east))
    rw = SEEX * 2;
-  if (t_south>=ot_sewer_ns && t_south<=ot_sewer_nesw && connects_to(t_south,0))
+  if (t_south>=ot_sewer_ns && t_south<=ot_sewer_nesw && connects_to<0>(t_south))
    bw = SEEY * 2;
-  if (t_west >=ot_sewer_ns && t_west <=ot_sewer_nesw && connects_to(t_west, 1))
+  if (t_west >=ot_sewer_ns && t_west <=ot_sewer_nesw && connects_to<1>(t_west))
    lw = SEEX * 2;
   if (t_above == ot_null) {	// We're on ground level
    for (int i = 0; i < SEEX * 2; i++) {
@@ -2248,10 +2308,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   rw = 0;
   bw = 0;
   lw = 0;
-  if (is_between<ot_ants_ns, ot_ants_nesw>(t_north) && connects_to(t_north,2)) tw = SEEY;
-  if (is_between<ot_ants_ns, ot_ants_nesw>(t_east) && connects_to(t_east, 3)) rw = SEEX;
-  if (is_between<ot_ants_ns, ot_ants_nesw>(t_south) && connects_to(t_south,0)) bw = SEEY + 1;
-  if (is_between<ot_ants_ns, ot_ants_nesw>(t_west) && connects_to(t_west, 1)) lw = SEEX + 1;
+  if (is_between<ot_ants_ns, ot_ants_nesw>(t_north) && connects_to<2>(t_north)) tw = SEEY;
+  if (is_between<ot_ants_ns, ot_ants_nesw>(t_east) && connects_to<3>(t_east)) rw = SEEX;
+  if (is_between<ot_ants_ns, ot_ants_nesw>(t_south) && connects_to<0>(t_south)) bw = SEEY + 1;
+  if (is_between<ot_ants_ns, ot_ants_nesw>(t_west) && connects_to<1>(t_west)) lw = SEEX + 1;
   if (tw != 0 || rw != 0 || bw != 0 || lw != 0) {
    for (int i = 0; i < SEEX * 2; i++) {
     for (int j = 0; j < SEEY * 2; j++) {
@@ -3049,7 +3109,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   square(this, t_floor, point(0), point(2*SEE-1));
 
   if (    any<ot_sewage_treatment_hub, ot_sewage_treatment_under>(t_north)
-      || (is_between<ot_sewer_ns, ot_sewer_nesw>(t_north) && connects_to(t_north, 2))) {
+      || (is_between<ot_sewer_ns, ot_sewer_nesw>(t_north) && connects_to<2>(t_north))) {
    if (any<ot_sewage_treatment_hub, ot_sewage_treatment_under>(t_north)) {
     line(this, t_wall_h,  0,  0, 23,  0);
     ter(3, 0) = t_door_c;
@@ -3059,19 +3119,19 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   }
 
   if (    any<ot_sewage_treatment_hub, ot_sewage_treatment_under>(t_east)
-      || (is_between<ot_sewer_ns, ot_sewer_nesw>(t_east) && connects_to(t_east, 3))) {
+      || (is_between<ot_sewer_ns, ot_sewer_nesw>(t_east) && connects_to<3>(t_east))) {
    e_fac = 1;
    square(this, t_sewage, 10, 10, 23, 13);
   }
 
   if (    any<ot_sewage_treatment_hub, ot_sewage_treatment_under>(t_south)
-      || (is_between<ot_sewer_ns, ot_sewer_nesw>(t_south) && connects_to(t_south, 0))) {
+      || (is_between<ot_sewer_ns, ot_sewer_nesw>(t_south) && connects_to<0>(t_south))) {
    s_fac = 1;
    square(this, t_sewage, 10, 10, 13, 23);
   }
 
   if (    any<ot_sewage_treatment_hub, ot_sewage_treatment_under>(t_west)
-      || (is_between<ot_sewer_ns, ot_sewer_nesw>(t_west) && connects_to(t_west, 1))) {
+      || (is_between<ot_sewer_ns, ot_sewer_nesw>(t_west) && connects_to<1>(t_west))) {
    if (any<ot_sewage_treatment_hub, ot_sewage_treatment_under>(t_west)) {
     line(this, t_wall_v,  0,  1,  0, 23);
     ter(0, 20) = t_door_c;
@@ -4772,25 +4832,25 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 
  case ot_rift:
   if (!any<ot_rift, ot_hellmouth>(t_north)) {
-   if (connects_to(t_north, 2))
+   if (connects_to<2>(t_north))
     n_fac = rng(-6, -2);
    else
     n_fac = rng(2, 6);
   }
   if (!any<ot_rift, ot_hellmouth>(t_east)) {
-   if (connects_to(t_east, 3))
+   if (connects_to<3>(t_east))
     e_fac = rng(-6, -2);
    else
     e_fac = rng(2, 6);
   }
   if (!any<ot_rift, ot_hellmouth>(t_south)) {
-   if (connects_to(t_south, 0))
+   if (connects_to<0>(t_south))
     s_fac = rng(-6, -2);
    else
     s_fac = rng(2, 6);
   }
   if (!any<ot_rift, ot_hellmouth>(t_west)) {
-   if (connects_to(t_west, 1))
+   if (connects_to<1>(t_west))
     w_fac = rng(-6, -2);
    else
     w_fac = rng(2, 6);
@@ -5161,10 +5221,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
  
 // TODO: Maybe subway systems could have broken down trains in them?
  case ot_subway_station:
-  if (is_between<ot_subway_ns, ot_subway_nesw>(t_north) && connects_to(t_north, 2)) n_fac = 1;
-  if (is_between<ot_subway_ns, ot_subway_nesw>(t_east) && connects_to(t_east, 3)) e_fac = 1;
-  if (is_between<ot_subway_ns, ot_subway_nesw>(t_south) && connects_to(t_south, 0)) s_fac = 1;
-  if (is_between<ot_subway_ns, ot_subway_nesw>(t_west) && connects_to(t_west, 1)) w_fac = 1;
+  if (is_between<ot_subway_ns, ot_subway_nesw>(t_north) && connects_to<2>(t_north)) n_fac = 1;
+  if (is_between<ot_subway_ns, ot_subway_nesw>(t_east) && connects_to<3>(t_east)) e_fac = 1;
+  if (is_between<ot_subway_ns, ot_subway_nesw>(t_south) && connects_to<0>(t_south)) s_fac = 1;
+  if (is_between<ot_subway_ns, ot_subway_nesw>(t_west) && connects_to<1>(t_west)) w_fac = 1;
   for (int i = 0; i < SEEX * 2; i++) {
    for (int j = 0; j < SEEY * 2; j++) {
     if ((i < 4 && (w_fac == 0 || j < 4 || j > SEEY * 2 - 5)) ||
@@ -5458,10 +5518,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     }
    }
   }
-  if (connects_to(t_north, 2)) square(this, t_rock_floor, point(SEEX - 2, 0), point(SEEX + 3, SEEY));
-  if (connects_to(t_east, 3)) square(this, t_rock_floor, point(SEEX, SEEY - 2), point(SEEX * 2 - 1, SEEY + 3));
-  if (connects_to(t_south, 0)) square(this, t_rock_floor, point(SEEX - 2, SEEY), point(SEEX + 3, SEEY * 2 - 1));
-  if (connects_to(t_west, 1)) square(this, t_rock_floor, point(0, SEEY - 2), point(SEEX, SEEY + 3));
+  if (connects_to<2>(t_north)) square(this, t_rock_floor, point(SEEX - 2, 0), point(SEEX + 3, SEEY));
+  if (connects_to<3>(t_east)) square(this, t_rock_floor, point(SEEX, SEEY - 2), point(SEEX * 2 - 1, SEEY + 3));
+  if (connects_to<0>(t_south)) square(this, t_rock_floor, point(SEEX - 2, SEEY), point(SEEX + 3, SEEY * 2 - 1));
+  if (connects_to<1>(t_west)) square(this, t_rock_floor, point(0, SEEY - 2), point(SEEX, SEEY + 3));
   if (terrain_type == ot_ants_food)
    place_items(mi_ant_food, 92, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1, true, 0);
   else
@@ -5541,10 +5601,10 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    }
   }
 
-  if (connects_to(t_north, 2)) square(this, t_rock_floor, point(SEEX - 2, 0), point(SEEX + 3, SEEY));
-  if (connects_to(t_east, 3)) square(this, t_rock_floor, point(SEEX, SEEY - 2), point(SEEX * 2 - 1, SEEY + 3));
-  if (connects_to(t_south, 0)) square(this, t_rock_floor, point(SEEX - 2, SEEY), point(SEEX + 3, SEEY * 2 - 1));
-  if (connects_to(t_west, 1)) square(this, t_rock_floor, point(0, SEEY-2), point(SEEX, SEEY+3));
+  if (connects_to<2>(t_north)) square(this, t_rock_floor, point(SEEX - 2, 0), point(SEEX + 3, SEEY));
+  if (connects_to<3>(t_east)) square(this, t_rock_floor, point(SEEX, SEEY - 2), point(SEEX * 2 - 1, SEEY + 3));
+  if (connects_to<0>(t_south)) square(this, t_rock_floor, point(SEEX - 2, SEEY), point(SEEX + 3, SEEY * 2 - 1));
+  if (connects_to<1>(t_west)) square(this, t_rock_floor, point(0, SEEY-2), point(SEEX, SEEY+3));
   place_items(mi_cavern, 60, 0, 0, SEEX * 2 - 1, SEEY * 2 - 1, false, 0);
   if (one_in(6)) {	// Miner remains
       const auto ok = grep(point(0), point(2 * SEE - 1), [&](point pt) {
@@ -5570,8 +5630,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
 // Now, fix sewers and subways so that they interconnect.
 
  if (is_between<ot_subway_ns, ot_subway_nesw>(terrain_type)) {
-  if (is_between<ot_sewer_ns, ot_sewer_nesw>(t_north) && !connects_to(terrain_type, 0)) {
-   if (connects_to(t_north, 2)) {
+  if (is_between<ot_sewer_ns, ot_sewer_nesw>(t_north) && !connects_to<0>(terrain_type)) {
+   if (connects_to<2>(t_north)) {
     for (int i = SEEX - 2; i < SEEX + 2; i++) {
      for (int j = 0; j < SEEY; j++)
       ter(i, j) = t_sewage;
@@ -5585,8 +5645,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     ter(SEEX - 1, 3) = t_door_metal_c;
    }
   }
-  if (is_between<ot_sewer_ns, ot_sewer_nesw>(t_east) && !connects_to(terrain_type, 1)) {
-   if (connects_to(t_east, 3)) {
+  if (is_between<ot_sewer_ns, ot_sewer_nesw>(t_east) && !connects_to<1>(terrain_type)) {
+   if (connects_to<3>(t_east)) {
     for (int i = SEEX; i < SEEX * 2; i++) {
      for (int j = SEEY - 2; j < SEEY + 2; j++)
       ter(i, j) = t_sewage;
@@ -5600,8 +5660,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     ter(SEEX * 2 - 4, SEEY - 1) = t_door_metal_c;
    }
   }
-  if (is_between<ot_sewer_ns, ot_sewer_nesw>(t_south) && !connects_to(terrain_type, 2)) {
-   if (connects_to(t_south, 0)) {
+  if (is_between<ot_sewer_ns, ot_sewer_nesw>(t_south) && !connects_to<2>(terrain_type)) {
+   if (connects_to<0>(t_south)) {
     for (int i = SEEX - 2; i < SEEX + 2; i++) {
      for (int j = SEEY; j < SEEY * 2; j++)
       ter(i, j) = t_sewage;
@@ -5615,8 +5675,8 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
     ter(SEEX - 1, SEEY * 2 - 4) = t_door_metal_c;
    }
   }
-  if (is_between<ot_sewer_ns, ot_sewer_nesw>(t_west) && !connects_to(terrain_type, 3)) {
-   if (connects_to(t_west, 1)) {
+  if (is_between<ot_sewer_ns, ot_sewer_nesw>(t_west) && !connects_to<3>(terrain_type)) {
+   if (connects_to<1>(t_west)) {
     for (int i = 0; i < SEEX; i++) {
      for (int j = SEEY - 2; j < SEEY + 2; j++)
       ter(i, j) = t_sewage;
@@ -5633,7 +5693,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
  } else if (is_between<ot_sewer_ns, ot_sewer_nesw>(terrain_type)) {
   if (t_above == ot_road_nesw_manhole)
    ter(rng(SEEX - 2, SEEX + 1), rng(SEEY - 2, SEEY + 1)) = t_ladder_up;
-  if (is_between<ot_subway_ns, ot_subway_nesw>(t_north) && !connects_to(terrain_type, 0)) {
+  if (is_between<ot_subway_ns, ot_subway_nesw>(t_north) && !connects_to<0>(terrain_type)) {
    for (int j = 0; j < SEEY - 3; j++) {
     ter(SEEX, j) = t_rock_floor;
     ter(SEEX - 1, j) = t_rock_floor;
@@ -5641,7 +5701,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    ter(SEEX, SEEY - 3) = t_door_metal_c;
    ter(SEEX - 1, SEEY - 3) = t_door_metal_c;
   }
-  if (is_between<ot_subway_ns, ot_subway_nesw>(t_east) && !connects_to(terrain_type, 1)) {
+  if (is_between<ot_subway_ns, ot_subway_nesw>(t_east) && !connects_to<1>(terrain_type)) {
    for (int i = SEEX + 3; i < SEEX * 2; i++) {
     ter(i, SEEY) = t_rock_floor;
     ter(i, SEEY - 1) = t_rock_floor;
@@ -5649,7 +5709,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    ter(SEEX + 2, SEEY) = t_door_metal_c;
    ter(SEEX + 2, SEEY - 1) = t_door_metal_c;
   }
-  if (is_between<ot_subway_ns, ot_subway_nesw>(t_south) && !connects_to(terrain_type, 2)) {
+  if (is_between<ot_subway_ns, ot_subway_nesw>(t_south) && !connects_to<2>(terrain_type)) {
    for (int j = SEEY + 3; j < SEEY * 2; j++) {
     ter(SEEX, j) = t_rock_floor;
     ter(SEEX - 1, j) = t_rock_floor;
@@ -5657,7 +5717,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    ter(SEEX, SEEY + 2) = t_door_metal_c;
    ter(SEEX - 1, SEEY + 2) = t_door_metal_c;
   }
-  if (is_between<ot_subway_ns, ot_subway_nesw>(t_west) && !connects_to(terrain_type, 3)) {
+  if (is_between<ot_subway_ns, ot_subway_nesw>(t_west) && !connects_to<3>(terrain_type)) {
    for (int i = 0; i < SEEX - 3; i++) {
     ter(i, SEEY) = t_rock_floor;
     ter(i, SEEY - 1) = t_rock_floor;
@@ -6017,60 +6077,6 @@ void map::rotate(int turns)
      ter(i, j) = t_fence_v;
    }
   }
- }
-}
-
-// Hideous function, I admit...
-bool connects_to(oter_id there, int dir)
-{
- switch (dir) {
- case 2:
-  if (there == ot_subway_ns  || there == ot_subway_es || there == ot_subway_sw||
-      there == ot_subway_nes || there == ot_subway_nsw ||
-      there == ot_subway_esw || there == ot_subway_nesw ||
-      there == ot_sewer_ns   || there == ot_sewer_es || there == ot_sewer_sw || 
-      there == ot_sewer_nes  || there == ot_sewer_nsw || there == ot_sewer_esw||
-      there == ot_sewer_nesw || there == ot_ants_ns || there == ot_ants_es ||
-      there == ot_ants_sw    || there == ot_ants_nes ||  there == ot_ants_nsw ||
-      there == ot_ants_esw   || there == ot_ants_nesw)
-   return true;
-  return false;
- case 3:
-  if (there == ot_subway_ew  || there == ot_subway_sw || there == ot_subway_wn||
-      there == ot_subway_new || there == ot_subway_nsw ||
-      there == ot_subway_esw || there == ot_subway_nesw ||
-      there == ot_sewer_ew   || there == ot_sewer_sw || there == ot_sewer_wn ||
-      there == ot_sewer_new  || there == ot_sewer_nsw || there == ot_sewer_esw||
-      there == ot_sewer_nesw || there == ot_ants_ew || there == ot_ants_sw ||
-      there == ot_ants_wn    || there == ot_ants_new || there == ot_ants_nsw ||
-      there == ot_ants_esw   || there == ot_ants_nesw)
-   return true;
-  return false;
- case 0:
-  if (there == ot_subway_ns  || there == ot_subway_ne || there == ot_subway_wn||
-      there == ot_subway_nes || there == ot_subway_new ||
-      there == ot_subway_nsw || there == ot_subway_nesw ||
-      there == ot_sewer_ns   || there == ot_sewer_ne ||  there == ot_sewer_wn ||
-      there == ot_sewer_nes  || there == ot_sewer_new || there == ot_sewer_nsw||
-      there == ot_sewer_nesw || there == ot_ants_ns || there == ot_ants_ne ||
-      there == ot_ants_wn    || there == ot_ants_nes || there == ot_ants_new ||
-      there == ot_ants_nsw   || there == ot_ants_nesw)
-   return true;
-  return false;
- case 1:
-  if (there == ot_subway_ew  || there == ot_subway_ne || there == ot_subway_es||
-      there == ot_subway_nes || there == ot_subway_new ||
-      there == ot_subway_esw || there == ot_subway_nesw ||
-      there == ot_sewer_ew   || there == ot_sewer_ne || there == ot_sewer_es ||
-      there == ot_sewer_nes  || there == ot_sewer_new || there == ot_sewer_esw||
-      there == ot_sewer_nesw || there == ot_ants_ew || there == ot_ants_ne ||
-      there == ot_ants_es    || there == ot_ants_nes || there == ot_ants_new ||
-      there == ot_ants_esw   || there == ot_ants_nesw)
-   return true;
-  return false;
- default:
-  debugmsg("Connects_to with dir of %d", dir);
-  return false;
  }
 }
 
