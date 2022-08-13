@@ -34,13 +34,12 @@ struct submap {
     trap_id		trp[SEEX][SEEY]; // Trap on each square
     field			fld[SEEX][SEEY]; // Field on each square
     int			rad[SEEX][SEEY]; // Irradiation of each square
-    int active_item_count;
-//  int field_count;
     int turn_last_touched;
     std::vector<spawn_point> spawns;
     std::vector<vehicle> vehicles;
     computer comp;
 private:
+    int active_item_count;
     int field_count;
     tripoint GPS;   // cache field -- GPS_loc first coordinate, where we are
 
@@ -80,6 +79,8 @@ public:
 
     void add_spawn(mon_id type, int count, const point& pt, bool friendly, int faction_id, int mission_id, std::string name); // mapgen.cpp
     void add_spawn(const monster& mon); // mapgen.cpp
+
+    void add(item&& new_item, const point& dest);
 };
 
 #endif

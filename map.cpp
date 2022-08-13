@@ -1431,8 +1431,7 @@ void map::add_item(int x, int y, const item& new_item)
      } // STILL?	\todo decide what gets lost
  }
 
- grid[pos_in->first]->items_at(pos_in->second).push_back(new_item);
- if (new_item.active) grid[pos_in->first]->active_item_count++;
+ grid[pos_in->first]->add(item(new_item), pos_in->second);
 }
 
 // \todo: make these bypass map class
@@ -1448,6 +1447,12 @@ void GPS_loc::add(item&& new_item)
     if (auto pos = g->toScreen(*this)) g->m.add_item(*pos, std::move(new_item));
 }
 
+void submap::add(item&& new_item, const point& dest)
+{
+    if (new_item.active) active_item_count++;
+    items_at(dest).push_back(std::move(new_item));
+}
+
 void map::add_item(int x, int y, item&& new_item)
 {
     if (new_item.is_style()) return;
@@ -1461,8 +1466,7 @@ void map::add_item(int x, int y, item&& new_item)
         } // STILL?	\todo decide what gets lost
     }
 
-    if (new_item.active) grid[pos_in->first]->active_item_count++;
-    grid[pos_in->first]->items_at(pos_in->second).push_back(std::move(new_item));
+    grid[pos_in->first]->add(std::move(new_item), pos_in->second);
 }
 
 bool map::hard_landing(const point& pt, item&& thrown, player* p)
