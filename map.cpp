@@ -2518,16 +2518,13 @@ void map::spawn_monsters(game *g)
  }
 }
 
-void map::clear_spawns()
+void map::post_init(const Badge<defense_game>& auth)
 {
-    for (submap* const gr : grid) gr->spawns.clear();
+    for (submap* const gr : grid) {
+        gr->spawns.clear();
+        memset(gr->trp, 0, sizeof(gr->trp)); // tr_null defined as 0
+    }
 }
-
-void map::clear_traps()
-{
-    for (submap* const gr : grid) memset(gr->trp, 0, sizeof(gr->trp)); // tr_null defined as 0
-}
-
 
 bool map::inbounds(int x, int y) const
 {

@@ -12,6 +12,7 @@
 
 #define MAPSIZE 11
 
+struct defense_game;
 class player;
 class monster;
 class vehicle;
@@ -56,9 +57,9 @@ class map
  void load(const OM_loc<1>& GPS);
  void load(const OM_loc<2>& GPS) { load(OM_loc<1>(GPS.first, 2 * GPS.second)); }
  void shift(game *g, const point& world, const point& delta);
+
  void spawn_monsters(game *g);
- void clear_spawns();
- void clear_traps();
+ void post_init(const Badge<defense_game>& auth);
 
 // Movement and LOS
  std::optional<reality_bubble_loc> to(const point& pt) const;
