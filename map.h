@@ -215,7 +215,7 @@ class map
  template<class...Args>
  std::vector<item>& i_at(Args...params)
  {
-	 if (const auto pos = to(params...)) return grid[pos->first]->itm[pos->second.x][pos->second.y];
+	 if (const auto pos = to(params...)) return grid[pos->first]->items_at(pos->second);
 	 cataclysm::discard<std::vector<item> >::x.clear();
 	 return cataclysm::discard<std::vector<item> >::x;
  }

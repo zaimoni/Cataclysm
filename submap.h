@@ -7,6 +7,7 @@
 #include "mapdata.h"
 #include "mtype.h"
 #include "zero.h"
+#include <iosfwd>
 
 class mapbuffer;
 
@@ -30,20 +31,22 @@ struct spawn_point {
 
 struct submap {
     ter_id			ter[SEEX][SEEY]; // Terrain on each square
-    std::vector<item>	itm[SEEX][SEEY]; // Items on each square
     trap_id		trp[SEEX][SEEY]; // Trap on each square
-    field			fld[SEEX][SEEY]; // Field on each square
     int			rad[SEEX][SEEY]; // Irradiation of each square
     int turn_last_touched;
     std::vector<spawn_point> spawns;
     std::vector<vehicle> vehicles;
     computer comp;
 private:
+    field			fld[SEEX][SEEY]; // Field on each square
+    std::vector<item>	itm[SEEX][SEEY]; // Items on each square
     int active_item_count;
     int field_count;
     tripoint GPS;   // cache field -- GPS_loc first coordinate, where we are
 
 public:
+    friend std::ostream& operator<<(std::ostream& os, const submap& src);
+
     submap();	// mapgen.cpp: sole caller there
     submap(const submap& src) = default;
     submap(submap&& src) = default;
