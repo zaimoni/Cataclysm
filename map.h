@@ -207,7 +207,7 @@ class map
  template<class...Args>
  int& radiation(Args...params)
  {
-	 if (const auto pos = to(params...)) return grid[pos->first]->rad[pos->second.x][pos->second.y];
+	 if (const auto pos = to(params...)) return grid[pos->first]->radiation(pos->second);
 	 return cataclysm::discard<int>::x = 0;
  }
 
