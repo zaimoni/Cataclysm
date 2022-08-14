@@ -30,7 +30,6 @@ struct spawn_point {
 };
 
 struct submap {
-    ter_id			ter[SEEX][SEEY]; // Terrain on each square
     trap_id		trp[SEEX][SEEY]; // Trap on each square
     int turn_last_touched;
     std::vector<spawn_point> spawns;
@@ -40,6 +39,7 @@ private:
     field			fld[SEEX][SEEY]; // Field on each square
     std::vector<item>	itm[SEEX][SEEY]; // Items on each square
     int			rad[SEEX][SEEY]; // Irradiation of each square
+    ter_id			ter[SEEX][SEEY]; // Terrain on each square
     int active_item_count;
     int field_count;
     tripoint GPS;   // cache field -- GPS_loc first coordinate, where we are
@@ -64,6 +64,9 @@ public:
     static std::optional<item> for_drop(ter_id dest, const itype* type, int birthday);
 
     int& radiation(const point& p) { return rad[p.x][p.y]; }
+    int radiation(const point& p) const { return rad[p.x][p.y]; }
+    ter_id& terrain(const point& p) { return ter[p.x][p.y]; }
+    ter_id terrain(const point& p) const { return ter[p.x][p.y]; }
 
     field& field_at(const point& p) { return fld[p.x][p.y]; }
     const field& field_at(const point& p) const { return fld[p.x][p.y]; }

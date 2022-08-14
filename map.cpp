@@ -524,19 +524,19 @@ bool map::displace_water(const point& pt)
 
 ter_id& GPS_loc::ter()
 {
-    if (submap* const sm = game::active()->m.chunk(*this)) return sm->ter[second.x][second.y];
+    if (submap* const sm = game::active()->m.chunk(*this)) return sm->terrain(second);
     return (discard<ter_id>::x = t_null); // Out-of-bounds - null terrain
 }
 
 ter_id GPS_loc::ter() const
 {
-    if (const submap* const sm = game::active()->m.chunk(*this)) return sm->ter[second.x][second.y];
+    if (const submap* const sm = game::active()->m.chunk(*this)) return sm->terrain(second);
     return t_null; // Out-of-bounds - null terrain
 }
 
 ter_id& map::ter(int x, int y)
 {
-    if (const auto pos = to(x, y)) return grid[pos->first]->ter[pos->second.x][pos->second.y];
+    if (const auto pos = to(x, y)) return grid[pos->first]->terrain(pos->second);
     return (discard<ter_id>::x = t_null); // Out-of-bounds - null terrain
 }
 
@@ -724,13 +724,13 @@ bool GPS_loc::is_outside() const
     // With proper z-levels, we would say "outside is when there are no floors above us, and arguably properly enclosed by walls/doors/etc.".
     if (0 > first.z) return false;
     if (const submap* const sm = MAPBUFFER.lookup_submap(first)) {
-        if (any<t_floor, t_floor_wax>(sm->ter[second.x][second.y])) return false;
+        if (any<t_floor, t_floor_wax>(sm->terrain(second))) return false;
         for (decltype(auto) delta : Direction::vector) {
             const GPS_loc loc(*this + delta);
             if (loc.first == first) {
-                if (any<t_floor, t_floor_wax>(sm->ter[loc.second.x][loc.second.y])) return false;
+                if (any<t_floor, t_floor_wax>(sm->terrain(loc.second))) return false;
             } else if (const submap* const sm2 = MAPBUFFER.lookup_submap(loc.first)) {
-                if (any<t_floor, t_floor_wax>(sm2->ter[loc.second.x][loc.second.y])) return false;
+                if (any<t_floor, t_floor_wax>(sm2->terrain(loc.second))) return false;
             }
             // Just discard the test if the submap wasn't generated yet.  We'll still have some context.
         }
@@ -1603,7 +1603,7 @@ void map::use_charges(point origin, int range, const itype_id type, int quantity
 trap_id& GPS_loc::trap_at()
 {
     if (submap* const sm = game::active()->m.chunk(*this)) {
-        if (const auto terrain_trap = ter_t::list[sm->ter[second.x][second.y]].trap) return (discard<trap_id>::x = terrain_trap);
+        if (const auto terrain_trap = ter_t::list[sm->terrain(second)].trap) return (discard<trap_id>::x = terrain_trap);
         return sm->trp[second.x][second.y];
     }
     return (discard<trap_id>::x = tr_null);	// Out-of-bounds, return our null trap
@@ -1612,7 +1612,7 @@ trap_id& GPS_loc::trap_at()
 trap_id GPS_loc::trap_at() const
 {
     if (const submap* const sm = game::active()->m.chunk(*this)) {
-        if (const auto terrain_trap = ter_t::list[sm->ter[second.x][second.y]].trap) return terrain_trap;
+        if (const auto terrain_trap = ter_t::list[sm->terrain(second)].trap) return terrain_trap;
         return sm->trp[second.x][second.y];
     }
     return tr_null;	// Out-of-bounds, return our null trap
@@ -1637,7 +1637,7 @@ std::vector<item>& GPS_loc::items_at()
 trap_id& map::tr_at(int x, int y)
 {
     if (const auto pos = to(x, y)) {
-        if (const auto terrain_trap = ter_t::list[grid[pos->first]->ter[pos->second.x][pos->second.y]].trap) return (discard<trap_id>::x = terrain_trap);
+        if (const auto terrain_trap = ter_t::list[grid[pos->first]->terrain(pos->second)].trap) return (discard<trap_id>::x = terrain_trap);
         return grid[pos->first]->trp[pos->second.x][pos->second.y];
     }
     return (discard<trap_id>::x = tr_null);	// Out-of-bounds, return our null trap
@@ -2421,7 +2421,7 @@ void map::saven(const tripoint& om_pos, unsigned int turn, const point& world, i
 {
  const int n = gridx + gridy * my_MAPSIZE;
 
- if (grid[n]->ter[0][0] == t_null) return;
+ if (t_null == grid[n]->terrain(point(0))) return;
  int abs_x = om_pos.x * OMAPX * 2 + world.x + gridx,
      abs_y = om_pos.y * OMAPY * 2 + world.y + gridy;
 

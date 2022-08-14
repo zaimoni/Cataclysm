@@ -119,8 +119,8 @@ class map
 // Terrain
  ter_id& ter(int x, int y); // Terrain at coord (x, y); {x|y}=(0, SEE{X|Y}*3]
  ter_id& ter(const point& pt) { return ter(pt.x, pt.y); };
- ter_id& ter(const reality_bubble_loc& src) { return grid[src.first]->ter[src.second.x][src.second.y]; };
- ter_id ter(const reality_bubble_loc& src) const { return grid[src.first]->ter[src.second.x][src.second.y]; };
+ ter_id& ter(const reality_bubble_loc& src) { return grid[src.first]->terrain(src.second); };
+ ter_id ter(const reality_bubble_loc& src) const { return grid[src.first]->terrain(src.second); };
  ter_id ter(int x, int y) const { return const_cast<map*>(this)->ter(x, y); };	// \todo specialize this properly
  ter_id ter(const point& pt) const { return const_cast<map*>(this)->ter(pt.x, pt.y); };
 
