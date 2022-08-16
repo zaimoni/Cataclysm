@@ -9,6 +9,7 @@
 #include "zero.h"
 #include <iosfwd>
 
+struct defense_game;
 class mapbuffer;
 
 struct spawn_point {
@@ -30,7 +31,6 @@ struct spawn_point {
 };
 
 struct submap {
-    trap_id		trp[SEEX][SEEY]; // Trap on each square
     int turn_last_touched;
     std::vector<spawn_point> spawns;
     std::vector<vehicle> vehicles;
@@ -40,6 +40,7 @@ private:
     std::vector<item>	itm[SEEX][SEEY]; // Items on each square
     int			rad[SEEX][SEEY]; // Irradiation of each square
     ter_id			ter[SEEX][SEEY]; // Terrain on each square
+    trap_id		trp[SEEX][SEEY]; // Trap on each square
     int active_item_count;
     int field_count;
     tripoint GPS;   // cache field -- GPS_loc first coordinate, where we are
@@ -67,6 +68,8 @@ public:
     int radiation(const point& p) const { return rad[p.x][p.y]; }
     ter_id& terrain(const point& p) { return ter[p.x][p.y]; }
     ter_id terrain(const point& p) const { return ter[p.x][p.y]; }
+    trap_id& trap_at(const point& p) { return trp[p.x][p.y]; }
+    trap_id trap_at(const point& p) const { return trp[p.x][p.y]; }
 
     field& field_at(const point& p) { return fld[p.x][p.y]; }
     const field& field_at(const point& p) const { return fld[p.x][p.y]; }
@@ -89,6 +92,8 @@ public:
     void add_spawn(const monster& mon); // mapgen.cpp
 
     void add(item&& new_item, const point& dest);
+
+    void post_init(const Badge<defense_game>& auth);
 };
 
 #endif

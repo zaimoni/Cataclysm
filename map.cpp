@@ -1604,7 +1604,7 @@ trap_id& GPS_loc::trap_at()
 {
     if (submap* const sm = game::active()->m.chunk(*this)) {
         if (const auto terrain_trap = ter_t::list[sm->terrain(second)].trap) return (discard<trap_id>::x = terrain_trap);
-        return sm->trp[second.x][second.y];
+        return sm->trap_at(second);
     }
     return (discard<trap_id>::x = tr_null);	// Out-of-bounds, return our null trap
 }
@@ -1613,7 +1613,7 @@ trap_id GPS_loc::trap_at() const
 {
     if (const submap* const sm = game::active()->m.chunk(*this)) {
         if (const auto terrain_trap = ter_t::list[sm->terrain(second)].trap) return terrain_trap;
-        return sm->trp[second.x][second.y];
+        return sm->trap_at(second);
     }
     return tr_null;	// Out-of-bounds, return our null trap
 }
@@ -1638,14 +1638,14 @@ trap_id& map::tr_at(int x, int y)
 {
     if (const auto pos = to(x, y)) {
         if (const auto terrain_trap = ter_t::list[grid[pos->first]->terrain(pos->second)].trap) return (discard<trap_id>::x = terrain_trap);
-        return grid[pos->first]->trp[pos->second.x][pos->second.y];
+        return grid[pos->first]->trap_at(pos->second);
     }
     return (discard<trap_id>::x = tr_null);	// Out-of-bounds, return our null trap
 }
 
 void map::add_trap(int x, int y, trap_id t)
 {
-    if (const auto pos = to(x, y)) grid[pos->first]->trp[pos->second.x][pos->second.y] = t;
+    if (const auto pos = to(x, y)) grid[pos->first]->trap_at(pos->second) = t;
 }
 
 std::optional<item> submap::for_drop(ter_id dest, const itype* type, int birthday)
@@ -2518,12 +2518,15 @@ void map::spawn_monsters(game *g)
  }
 }
 
+void submap::post_init(const Badge<defense_game>& auth)
+{
+    spawns.clear();
+    memset(trp, 0, sizeof(trp)); // tr_null defined as 0
+}
+
 void map::post_init(const Badge<defense_game>& auth)
 {
-    for (submap* const gr : grid) {
-        gr->spawns.clear();
-        memset(gr->trp, 0, sizeof(gr->trp)); // tr_null defined as 0
-    }
+    for (submap* const gr : grid) gr->post_init(auth);
 }
 
 bool map::inbounds(int x, int y) const

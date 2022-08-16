@@ -12,7 +12,6 @@
 
 #define MAPSIZE 11
 
-struct defense_game;
 class player;
 class monster;
 class vehicle;
@@ -250,8 +249,8 @@ class map
 // Traps
  trap_id& tr_at(int x, int y);
  trap_id& tr_at(const point& pt) { return tr_at(pt.x, pt.y); };
- trap_id& tr_at(const reality_bubble_loc& src) { return grid[src.first]->trp[src.second.x][src.second.y]; };
- trap_id tr_at(const reality_bubble_loc& src) const { return grid[src.first]->trp[src.second.x][src.second.y]; };
+ trap_id& tr_at(const reality_bubble_loc& src) { return grid[src.first]->trap_at(src.second); };
+ trap_id tr_at(const reality_bubble_loc& src) const { return grid[src.first]->trap_at(src.second); };
  trap_id tr_at(int x, int y) const { return const_cast<map*>(this)->tr_at(x, y); };	// \todo specialize this properly
  trap_id tr_at(const point& pt) const { return const_cast<map*>(this)->tr_at(pt.x, pt.y); };
  void add_trap(int x, int y, trap_id t);
