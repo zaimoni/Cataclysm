@@ -10,6 +10,7 @@
 #include <iosfwd>
 
 struct defense_game;
+class map;
 class mapbuffer;
 
 struct spawn_point {
@@ -94,6 +95,8 @@ public:
     void add(item&& new_item, const point& dest);
 
     void post_init(const Badge<defense_game>& auth);
+    void new_vehicles(decltype(vehicles)&& src, const Badge<map>& auth);
+    void mapgen_swap(submap& dest, const Badge<map>& auth);
 };
 
 #endif

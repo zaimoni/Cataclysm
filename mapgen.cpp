@@ -5917,6 +5917,17 @@ computer* map::add_computer(int x, int y, std::string name, int security)
  return &(grid[nonant]->comp);
 }
 
+// hard-coded for our use case
+template<int x90degrees, int strict_ub = 2 * SEE> requires(1 <= x90degrees && x90degrees <= 3)
+point coord_rotate(int x, int y) {
+    if constexpr (1 == x90degrees) return point(y, strict_ub - 1 - x);
+    else if constexpr (2 == x90degrees) return point(strict_ub - 1 - x, strict_ub - 1 - y);
+    else return point(strict_ub - 1 - y, x);
+}
+
+template<int x90degrees, int strict_ub = 2 * SEE> requires(1 <= x90degrees && x90degrees <= 3)
+static point coord_rotate(const point& pt) { return coord_rotate<x90degrees, strict_ub>(pt.x, pt.y); }
+
 void map::rotate(int turns)
 {
  ter_id rotated         [SEEX*2][SEEY*2];
@@ -5930,20 +5941,24 @@ void map::rotate(int turns)
  case 1:
   for (int i = 0; i < SEEX * 2; i++) {
    for (int j = 0; j < SEEY * 2; j++) {
-    rotated[i][j] = ter  (j, SEEX * 2 - 1 - i);
-    itrot  [i][j] = i_at (j, SEEX * 2 - 1 - i);
-    traprot[i][j] = tr_at(j, SEEX * 2 - 1 - i);
-    i_clear(j, SEEX * 2 - 1 - i);
+    const point src = coord_rotate<1>(i, j);
+    rotated[i][j] = ter(src);
+    traprot[i][j] = tr_at(src);
+    decltype(auto) g_inv = i_at(src);
+    itrot  [i][j] = std::move(g_inv);
+    std::remove_reference_t<decltype(g_inv)>().swap(g_inv);
    }
   }
 // Now, spawn points
   for (int sx = 0; sx < 2; sx++) {
    for (int sy = 0; sy < 2; sy++) {
     decltype(auto) dest = sprot[sx * my_MAPSIZE + 1 - sy];
-    for (spawn_point tmp : grid[sx + sy * my_MAPSIZE]->spawns) { // need value-copy here
-        tmp.pos = point(SEEY - 1 - tmp.pos.y, tmp.pos.x);	// depends on SEEX==SEEY
+    const auto sm = grid[sx + sy * my_MAPSIZE];
+    for (spawn_point tmp : sm->spawns) { // need value-copy here
+        tmp.pos = coord_rotate<1, SEE>(tmp.pos);
         dest.push_back(std::move(tmp));
     }
+    for (decltype(auto) veh : sm->vehicles) veh.GPSpos.second = coord_rotate<1, SEE>(veh.GPSpos.second);
    }
   }
 // Finally, computers
@@ -5954,59 +5969,60 @@ void map::rotate(int turns)
   grid[1]->comp = std::move(tmpcomp);
 // ...and vehicles
   tmpveh = std::move(grid[0]->vehicles);
-  grid[0]->vehicles = std::move(grid[my_MAPSIZE]->vehicles);
-  grid[my_MAPSIZE]->vehicles = std::move(grid[my_MAPSIZE + 1]->vehicles);
-  grid[my_MAPSIZE + 1]->vehicles = std::move(grid[1]->vehicles);
-  grid[1]->vehicles = std::move(tmpveh);
+  grid[0]->new_vehicles(std::move(grid[my_MAPSIZE]->vehicles), Badge<map>());
+  grid[my_MAPSIZE]->new_vehicles(std::move(grid[my_MAPSIZE + 1]->vehicles), Badge<map>());
+  grid[my_MAPSIZE + 1]->new_vehicles(std::move(grid[1]->vehicles), Badge<map>());
+  grid[1]->new_vehicles(std::move(tmpveh), Badge<map>());
   break;
     
  case 2:
   for (int i = 0; i < SEEX * 2; i++) {
    for (int j = 0; j < SEEY * 2; j++) {
-    rotated[i][j] = ter  (SEEX * 2 - 1 - i, SEEY * 2 - 1 - j);
-    itrot  [i][j] = i_at (SEEX * 2 - 1 - i, SEEY * 2 - 1 - j);
-    traprot[i][j] = tr_at(SEEX * 2 - 1 - i, SEEY * 2 - 1 - j);
-    i_clear(SEEX * 2 - 1 - i, SEEY * 2 - 1 - j);
+    const point src = coord_rotate<2>(i, j);
+    rotated[i][j] = ter(src);
+    traprot[i][j] = tr_at(src);
+    decltype(auto) g_inv = i_at(src);
+    itrot  [i][j] = std::move(g_inv);
+    std::remove_reference_t<decltype(g_inv)>().swap(g_inv);
    }
   }
 // Now, spawn points
   for (int sx = 0; sx < 2; sx++) {
    for (int sy = 0; sy < 2; sy++) {
     decltype(auto) dest = sprot[(1 - sy) * my_MAPSIZE + 1 - sx];
-    for (spawn_point tmp : grid[sx + sy * my_MAPSIZE]->spawns) { // need value-copy here
-        tmp.pos = point(SEEX - 1 - tmp.pos.x, SEEY - 1 - tmp.pos.y);	// depends on SEEX==SEEY
+    const auto sm = grid[sx + sy * my_MAPSIZE];
+    for (spawn_point tmp : sm->spawns) { // need value-copy here
+        tmp.pos = coord_rotate<2, SEE>(tmp.pos);
         dest.push_back(std::move(tmp));
     }
+    for (decltype(auto) veh : sm->vehicles) veh.GPSpos.second = coord_rotate<2, SEE>(veh.GPSpos.second);
    }
   }
-  tmpcomp = std::move(grid[0]->comp);
-  grid[0]->comp = std::move(grid[my_MAPSIZE + 1]->comp);
-  grid[my_MAPSIZE + 1]->comp = std::move(tmpcomp);
-  tmpcomp = std::move(grid[1]->comp);
-  grid[1]->comp = std::move(grid[my_MAPSIZE]->comp);
-  grid[my_MAPSIZE]->comp = std::move(tmpcomp);
-// ...and vehicles
-  grid[0]->vehicles.swap(grid[my_MAPSIZE + 1]->vehicles);
-  grid[1]->vehicles.swap(grid[my_MAPSIZE]->vehicles);
+  grid[0]->mapgen_swap(*grid[my_MAPSIZE + 1], Badge<map>());
+  grid[1]->mapgen_swap(*grid[my_MAPSIZE], Badge<map>());
   break;
     
  case 3:
   for (int i = 0; i < SEEX * 2; i++) {
    for (int j = 0; j < SEEY * 2; j++) {
-    rotated[i][j] = ter  (SEEY * 2 - 1 - j, i);
-    itrot  [i][j] = i_at (SEEY * 2 - 1 - j, i);
-    traprot[i][j] = tr_at(SEEY * 2 - 1 - j, i);
-    i_clear(SEEY * 2 - 1 - j, i);
+    const point src = coord_rotate<3>(i, j);
+    rotated[i][j] = ter(src);
+    traprot[i][j] = tr_at(src);
+    decltype(auto) g_inv = i_at(src);
+    itrot  [i][j] = std::move(g_inv);
+    std::remove_reference_t<decltype(g_inv)>().swap(g_inv);
    }
   }
 // Now, spawn points
   for (int sx = 0; sx < 2; sx++) {
    for (int sy = 0; sy < 2; sy++) {
     decltype(auto) dest = sprot[(1 - sx) * my_MAPSIZE + sy];
-    for (spawn_point tmp : grid[sx + sy * my_MAPSIZE]->spawns) { // need value-copy here
-        tmp.pos = point(tmp.pos.y, SEEX - 1 - tmp.pos.x);	// depends on SEEX==SEEY
+    const auto sm = grid[sx + sy * my_MAPSIZE];
+    for (spawn_point tmp : sm->spawns) { // need value-copy here
+        tmp.pos = coord_rotate<3, SEE>(tmp.pos);
         dest.push_back(std::move(tmp));
     }
+    for (decltype(auto) veh : sm->vehicles) veh.GPSpos.second = coord_rotate<3, SEE>(veh.GPSpos.second);
    }
   }
   tmpcomp = std::move(grid[0]->comp);
@@ -6016,10 +6032,10 @@ void map::rotate(int turns)
   grid[my_MAPSIZE]->comp = std::move(tmpcomp);
 // ...and vehicles
   tmpveh = std::move(grid[0]->vehicles);
-  grid[0]->vehicles = std::move(grid[1]->vehicles);
-  grid[1]->vehicles = std::move(grid[my_MAPSIZE + 1]->vehicles);
-  grid[my_MAPSIZE + 1]->vehicles = std::move(grid[my_MAPSIZE]->vehicles);
-  grid[my_MAPSIZE]->vehicles = std::move(tmpveh);
+  grid[0]->new_vehicles(std::move(grid[1]->vehicles), Badge<map>());
+  grid[1]->new_vehicles(std::move(grid[my_MAPSIZE + 1]->vehicles), Badge<map>());
+  grid[my_MAPSIZE + 1]->new_vehicles(std::move(grid[my_MAPSIZE]->vehicles), Badge<map>());
+  grid[my_MAPSIZE]->new_vehicles(std::move(tmpveh), Badge<map>());
   break;
 
  default:
@@ -6042,6 +6058,18 @@ void map::rotate(int turns)
    tr_at(i, j) = traprot[i][j];
   }
  }
+}
+
+void submap::new_vehicles(decltype(vehicles)&& src, const Badge<map>& auth) {
+    vehicles = std::move(src);
+    for (decltype(auto) veh : vehicles) veh.GPSpos.first = GPS;
+}
+
+void submap::mapgen_swap(submap& dest, const Badge<map>& auth) {
+    std::swap(comp, dest.comp);
+    vehicles.swap(dest.vehicles);
+    for (decltype(auto) veh : vehicles) veh.GPSpos.first = GPS;
+    for (decltype(auto) veh : dest.vehicles) veh.GPSpos.first = dest.GPS;
 }
 
 void house_room(map *m, room_type type, int x1, int y1, int x2, int y2)
