@@ -3,7 +3,6 @@
 #include "rng.h"
 #include "recent_msg.h"
 #include "line.h"
-#include <sstream>
 
 std::vector <mission_type> mission_type::types; // The list of mission templates
 
@@ -229,10 +228,7 @@ void mission_start::place_npc_software(game *g, mission *miss)
 	} break;
 	}
 
-	std::ostringstream compname;
-	compname << dev->name << "'s Terminal";
-	compmap.ter(comppoint) = t_console;
-	computer* const tmpcomp = compmap.add_computer(comppoint.x, comppoint.y, compname.str(), 0);
+	computer* const tmpcomp = compmap.add_computer(comppoint.x, comppoint.y, dev->name + "'s Terminal", 0);
 	tmpcomp->mission_id = miss->uid;
 	tmpcomp->add_option("Download Software", COMPACT_DOWNLOAD_SOFTWARE, 0);
 

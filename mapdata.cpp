@@ -524,6 +524,34 @@ bool open_door(ter_id& t, bool inside)
 	}
 }
 
+static ter_id rotate_90(ter_id t)
+{
+	switch (t)
+	{
+	case t_wall_v: return t_wall_h;
+	case t_wall_h: return t_wall_v;
+	case t_wall_metal_v: return t_wall_metal_h;
+	case t_wall_metal_h: return t_wall_metal_v;
+	case t_wall_glass_v: return t_wall_glass_h;
+	case t_wall_glass_h: return t_wall_glass_v;
+	case t_wall_glass_v_alarm: return t_wall_glass_h_alarm;
+	case t_wall_glass_h_alarm: return t_wall_glass_v_alarm;
+	case t_reinforced_glass_v: return t_reinforced_glass_h;
+	case t_reinforced_glass_h: return t_reinforced_glass_v;
+	case t_railing_v: return t_railing_h;
+	case t_railing_h: return t_railing_v;
+	case t_fence_v: return t_fence_h;
+	case t_fence_h: return t_fence_v;
+	default: return t;
+	}
+}
+
+ter_id rotate_(ter_id t, int x90degrees)
+{
+	if (1 == x90degrees % 2) return rotate_90(t);
+	return t;
+}
+
 using namespace cataclysm;
 
 void ter_t::init()

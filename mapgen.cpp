@@ -2457,7 +2457,6 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    line(this, t_reinforced_glass_h, SEEX - 2, SEEY + 1, SEEX + 1, SEEY + 1);
    line(this, t_reinforced_glass_v, SEEX - 2, SEEY - 1, SEEX - 2, SEEY);
    line(this, t_reinforced_glass_v, SEEX + 1, SEEY - 1, SEEX + 1, SEEY);
-   ter(SEEX - 3, SEEY - 3) = t_console;
    tmpcomp = add_computer(SEEX - 3, SEEY - 3, "Bionic access", 3);
    tmpcomp->add_option("Manifest", COMPACT_LIST_BIONICS, 0);
    tmpcomp->add_option("Open Chambers", COMPACT_RELEASE, 5);
@@ -2942,8 +2941,6 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   if (one_in(3)) // back door
    ter(23, rng(19, 22)) = t_door_locked;
   ter(4, 19) = t_door_metal_locked;
-  ter(2, 19) = t_console;
-  ter(6, 19) = t_console;
 // Computers to unlock stair room
   tmpcomp = add_computer(2, 19, "EnviroCom OS v2.03", 1);
   tmpcomp->add_option("Unlock stairs", COMPACT_OPEN, 0);
@@ -3075,7 +3072,6 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    ter(2, 4) = t_counter;
    ter(1, 6) = t_sewage_pump;
    ter(2, 6) = t_counter;
-   ter(1, 2) = t_console;
    tmpcomp = add_computer(1, 2, "EnviroCom OS v2.03", 0);
    tmpcomp->add_option("Download Sewer Maps", COMPACT_MAP_SEWER, 0);
    tmpcomp->add_option("Divert sample", COMPACT_SAMPLE, 3);
@@ -3096,7 +3092,6 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    ter(18, 22) = t_counter;
    ter(20, 23) = t_sewage_pump;
    ter(20, 22) = t_counter;
-   ter(16, 23) = t_console;
    tmpcomp = add_computer(16, 23, "EnviroCom OS v2.03", 0);
    tmpcomp->add_option("Download Sewer Maps", COMPACT_MAP_SEWER, 0);
    tmpcomp->add_option("Divert sample", COMPACT_SAMPLE, 3);
@@ -3482,7 +3477,6 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
       break;
     }
 
-    ter(SEEX, SEEY) = t_console;
     tmpcomp = add_computer(SEEX, SEEY, "NEPowerOS", 0);
     tmpcomp->add_option("Read Logs", COMPACT_AMIGARA_LOG, 0);
     tmpcomp->add_option("Initiate Tremors", COMPACT_AMIGARA_START, 4);
@@ -6043,39 +6037,9 @@ void map::rotate(int turns)
  grid[my_MAPSIZE + 1]->spawns = std::move(sprot[my_MAPSIZE + 1]);
  for (int i = 0; i < SEEX * 2; i++) {
   for (int j = 0; j < SEEY * 2; j++) {
-   ter  (i, j) = rotated[i][j];
-   i_at (i, j) = itrot  [i][j];
+   ter(i, j) = rotate_(rotated[i][j], turns);
+   i_at(i, j) = itrot[i][j];
    tr_at(i, j) = traprot[i][j];
-   if (turns % 2 == 1) { 	// Rotate things like walls 90 degrees
-    if (ter(i, j) == t_wall_v)
-     ter(i, j) = t_wall_h;
-    else if (ter(i, j) == t_wall_h)
-     ter(i, j) = t_wall_v;
-    else if (ter(i, j) == t_wall_metal_v)
-     ter(i, j) = t_wall_metal_h;
-    else if (ter(i, j) == t_wall_metal_h)
-     ter(i, j) = t_wall_metal_v;
-    else if (ter(i, j) == t_railing_v)
-     ter(i, j) = t_railing_h;
-    else if (ter(i, j) == t_railing_h)
-     ter(i, j) = t_railing_v;
-    else if (ter(i, j) == t_wall_glass_h)
-     ter(i, j) = t_wall_glass_v;
-    else if (ter(i, j) == t_wall_glass_v)
-     ter(i, j) = t_wall_glass_h;
-    else if (ter(i, j) == t_wall_glass_h_alarm)
-     ter(i, j) = t_wall_glass_v_alarm;
-    else if (ter(i, j) == t_wall_glass_v_alarm)
-     ter(i, j) = t_wall_glass_h_alarm;
-    else if (ter(i, j) == t_reinforced_glass_h)
-     ter(i, j) = t_reinforced_glass_v;
-    else if (ter(i, j) == t_reinforced_glass_v)
-     ter(i, j) = t_reinforced_glass_h;
-    else if (ter(i, j) == t_fence_v)
-     ter(i, j) = t_fence_h;
-    else if (ter(i, j) == t_fence_h)
-     ter(i, j) = t_fence_v;
-   }
   }
  }
 }
@@ -6354,7 +6318,6 @@ void science_room(map *m, int x1, int y1, int x2, int y2, int rotate)
     m->place_items(mi_bionics_common, 70, biox, bioy, biox, bioy, false, 0);
 
     int compx = int((x1 + x2) / 2), compy = int((y1 + y2) / 2);
-    m->ter(compx, compy) = t_console;
     computer* tmpcomp = m->add_computer(compx, compy, "Bionic access", 2);
     tmpcomp->add_option("Manifest", COMPACT_LIST_BIONICS, 0);
     tmpcomp->add_option("Open Chambers", COMPACT_RELEASE, 3);
@@ -6386,7 +6349,6 @@ void science_room(map *m, int x1, int y1, int x2, int y2, int rotate)
     m->place_items(mi_bionics_common, 70, biox, bioy, biox, bioy, false, 0);
 
     int compx = int((x1 + x2) / 2), compy = int((y1 + y2) / 2);
-    m->ter(compx, compy) = t_console;
     computer* tmpcomp = m->add_computer(compx, compy, "Bionic access", 2);
     tmpcomp->add_option("Manifest", COMPACT_LIST_BIONICS, 0);
     tmpcomp->add_option("Open Chambers", COMPACT_RELEASE, 3);
@@ -6662,7 +6624,6 @@ void build_mine_room(map *m, room_type type, int x1, int y1, int x2, int y2)
 // Main build switch!
  switch (type) {
   case room_mine_shaft: {
-   m->ter(x1 + 1, y1 + 1) = t_console;
    line(m, t_wall_h, x2 - 2, y1 + 2, x2 - 1, y1 + 2);
    m->ter(x2 - 2, y1 + 1) = t_elevator;
    m->ter(x2 - 1, y1 + 1) = t_elevator_control_off;

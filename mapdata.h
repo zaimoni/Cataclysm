@@ -111,6 +111,7 @@ template<int lb, int ub> constexpr bool any(ter_id src) {
 
 bool close_door(ter_id& t);
 bool open_door(ter_id& t, bool inside);
+ter_id rotate_(ter_id t, int x90degrees); // have to avoid name collision w/map::rotate
 
 struct ter_t {
 	static const ter_t list[num_terrain_types];
