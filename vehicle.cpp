@@ -308,13 +308,11 @@ bool vehicle::part_flag(int p, unsigned int f) const
     return part_info(p).flags & mfb(f);
 }
 
-int vehicle::part_at(int dx, int dy) const
+int vehicle::part_at(const point& delta) const
 {
 	for (const auto p : external_parts) {
 		const auto& part = parts[p];
-        if (part.precalc_d[0].x == dx &&
-			part.precalc_d[0].y == dy)
-            return p;
+        if (part.precalc_d[0] == delta) return p;
     }
     return -1;
 }

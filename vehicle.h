@@ -193,7 +193,7 @@ public:
     point coord_translate(point reld) const { return coord_translate(face.dir(), reld); }
 
 // Seek a vehicle part which obstructs tile with given coords relative to vehicle position
-    int part_at(int dx, int dy) const;
+    int part_at(const point& delta) const;
 
 // get symbol for map
     char part_sym (int p) const;

@@ -115,7 +115,7 @@ std::optional<std::pair<const vehicle*, int>> map::veh_at(const reality_bubble_l
                 const auto veh_loc = veh.bubble_pos();
                 assert(veh_loc);
                 assert(veh_loc->first == nonant1);
-                int part = veh.part_at(src.second.x - (veh_loc->second.x + mx * SEEX), src.second.y - (veh_loc->second.y + my * SEEY));
+                int part = veh.part_at(src.second - (veh_loc->second + SEE * point(mx, my)));
                 if (0 <= part) return std::pair(&veh, part);
             }
         }
@@ -136,7 +136,7 @@ std::optional<std::pair<vehicle*, int>> map::veh_at(const reality_bubble_loc& sr
                 const auto veh_loc = veh.bubble_pos();
                 assert(veh_loc);
                 assert(veh_loc->first == nonant1);
-                int part = veh.part_at(src.second.x - (veh_loc->second.x + mx * SEEX), src.second.y - (veh_loc->second.y + my * SEEY));
+                int part = veh.part_at(src.second - (veh_loc->second + SEE*point(mx, my)));
                 if (0 <= part) return std::pair(&veh, part);
             }
         }
@@ -159,7 +159,7 @@ std::optional<std::pair<vehicle*, int>> GPS_loc::veh_at() const
             for (decltype(auto) veh : local_map[mx][my]->vehicles) {
                 const auto delta = *this - veh.GPSpos;
                 if (const point* const pt = std::get_if<point>(&delta)) { // gross invariant failure: vehicles should have GPSpos tripoint of their submap
-                    int part = veh.part_at(pt->x, pt->y);
+                    int part = veh.part_at(*pt);
                     if (part >= 0) return std::pair(&veh, part);
                 }
             }
