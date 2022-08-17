@@ -1365,11 +1365,6 @@ void map::i_rem(int x, int y, int index)
  EraseAt(stack, index);
 }
 
-void map::i_clear(int x, int y)
-{
- i_at(x, y).clear();
-}
-
 std::optional<std::pair<point, int> > map::find_item(item* it) const
 {
     point ret;

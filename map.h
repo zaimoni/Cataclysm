@@ -225,9 +225,10 @@ class map
  template<class...Args>
  const std::vector<item>& i_at(Args...params) const { return const_cast<map*>(this)->i_at(params...); }
 
+ template<class...Args>
+ void i_clear(Args...params) { i_at(params...).clear(); }
+
  std::optional<item> water_from(const point& pt) const;
- void i_clear(int x, int y);
- void i_clear(const point& pt) { return i_clear(pt.x, pt.y); };
  void i_rem(int x, int y, int index);
  void i_rem(const point& pt, int index) { i_rem(pt.x, pt.y, index); };
  std::optional<std::pair<point, int>> find_item(item* it) const;
