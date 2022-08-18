@@ -94,6 +94,8 @@ public:
 
     void add(item&& new_item, const point& dest);
 
+    vehicle* add_vehicle(vhtype_id type, point pos, int deg);
+
     void post_init(const Badge<defense_game>& auth);
     void new_vehicles(decltype(vehicles)&& src, const Badge<map>& auth);
     void mapgen_swap(submap& dest, const Badge<map>& auth);

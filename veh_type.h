@@ -133,7 +133,7 @@ struct vpart_info
 };
 
 
-enum vhtype_id
+enum vhtype_id : int
 {
     veh_null = 0,
     veh_custom,

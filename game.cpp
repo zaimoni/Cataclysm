@@ -1643,10 +1643,10 @@ z.size(), event::are_queued());
    if (u.GPSpos.veh_at()) debugmsg("There's already vehicle here");
    else {
 	for(auto v_type : vehicle::vtypes) opts.push_back(v_type->name);
-    opts.push_back(std::string("Cancel"));
-    int veh_num = menu_vec ("Choose vehicle to spawn", opts) + 1;
+    opts.push_back("Cancel");
+    int veh_num = menu_vec("Choose vehicle to spawn", opts) + 1;
     if (veh_num > 1 && veh_num < num_vehicles)
-     m.add_vehicle((vhtype_id)veh_num, u.pos, -90);
+        u.GPSpos.add_vehicle((vhtype_id)veh_num, -90);
    }
    break;
 

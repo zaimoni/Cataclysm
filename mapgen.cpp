@@ -5892,21 +5892,24 @@ void submap::add_spawn(const monster& mon)
     add_spawn(mon_id(mon.type->id), 1, mon.GPSpos.second, (mon.friendly < 0), mon.faction_id, mon.mission_id, mon.unique_name);
 }
 
+vehicle* submap::add_vehicle(vhtype_id type, point pos, int deg)
+{
+    assert(in_bounds(pos));
+    vehicles.emplace_back(type, deg);
+    vehicles.back().GPSpos = GPS_loc(GPS, pos);
+    return &vehicles.back();
+}
+
+vehicle* GPS_loc::add_vehicle(vhtype_id type, int deg)
+{
+    if (submap* const sm = game::active()->m.chunk(*this)) return sm->add_vehicle(type, second, deg);
+    return nullptr;
+}
+
 vehicle* map::add_vehicle(vhtype_id type, point pos, int deg)
 {
- if (!inbounds(pos.x, pos.y)) {
-  debuglog("Bad add_vehicle t=%d d=%d x=%d y=%d", type, deg, pos.x, pos.y);
-  return nullptr;
- }
- // assume game::lev is valid (wrong for map generation, but that will be fixed up shortly)
- vehicle veh(type, deg);
- veh.GPSpos = game::active()->toGPS(pos);
-
- const point sm = pos / SEE;
- int nonant = sm.x + sm.y * my_MAPSIZE;
-
- grid[nonant]->vehicles.push_back(std::move(veh));
- return &grid[nonant]->vehicles.back();
+    if (auto rb = to(pos)) return grid[rb->first]->add_vehicle(type, rb->second, deg);
+    return nullptr;
 }
 
 computer* map::add_computer(int x, int y, std::string name, int security)

@@ -15,6 +15,7 @@ class player;
 class vehicle;
 enum ter_id : int;
 enum trap_id : int;
+enum vhtype_id : int;
 
 constexpr int OMAP = 180;
 constexpr int OMAPX = OMAP;
@@ -53,6 +54,9 @@ struct GPS_loc : public std::pair<tripoint, point>
 	bool add(field&& src);
 	std::optional<std::vector<GPS_loc> > sees(const GPS_loc& dest, int range) const;
 	bool can_see(const GPS_loc& dest, int range) const;
+
+	// follwing in mapgen.cpp
+	vehicle* add_vehicle(vhtype_id type, int deg);
 
 	// following thin adapters in game.cpp
 	bool is_empty() const;
