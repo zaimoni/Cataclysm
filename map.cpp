@@ -35,6 +35,13 @@ enum astar_list {
  ASL_CLOSED
 };
 
+point map::toScreen(const reality_bubble_loc& origin) const
+{
+    const int sm_x = origin.first % my_MAPSIZE;
+    const int sm_y = origin.first / my_MAPSIZE;
+    return point(SEE * sm_x + origin.second.x, SEE * sm_y + origin.second.y);
+}
+
 std::optional<reality_bubble_loc> map::to(const point& pt) const
 {
     if (!inbounds(pt.x, pt.y)) return std::nullopt;
@@ -234,20 +241,21 @@ bool map::try_board_vehicle(game* g, int x, int y, player& p)
 
 bool map::displace_vehicle(vehicle* const veh, const point& delta, bool test)
 {
- point src = veh->screen_pos().value();
- const point dest = src + delta;
+    auto origin = to(veh->GPSpos);
+    if (!origin) {
+        debuglog("map::displace_vehicle: coords out of bounds");
+        return false;
+    }
+    auto dest_gps = veh->GPSpos + delta;
+    auto dest_rb = to(dest_gps);
+    if (test) return origin != dest_rb;
 
- if (!inbounds(src.x, src.y)) { // possibly dead code
-  debuglog("map::displace_vehicle: coords out of bounds %d,%d->%d,%d", src.x, src.y, dest.x, dest.y);
-  return false;
- }
+// const point dest = src + delta;
 
- int src_na = int(src.x / SEEX) + int(src.y / SEEY) * my_MAPSIZE;
- src %= SEE;
+    int src_na = origin->first; // backward compatibility
+    decltype(auto) src = origin->second;
 
- int dst_na = int(dest.x / SEEX) + int(dest.y / SEEY) * my_MAPSIZE;
-
- if (test) return src_na != dst_na;
+// int dst_na = int(dest.x / SEEX) + int(dest.y / SEEY) * my_MAPSIZE;
 
  // first, let's find our position in current vehicles vector
  int our_i = -1;
@@ -263,15 +271,14 @@ bool map::displace_vehicle(vehicle* const veh, const point& delta, bool test)
  }
  // move the vehicle
  // don't let it go off grid
- if (!inbounds(dest.x, dest.y)) veh->stop();
+ if (!dest_rb) veh->stop();
 
  int rec = abs(veh->velocity) / 5 / 100;
 
  // record every passenger inside
  auto passengers = veh->passengers();
 
- bool need_update = false;
- point upd;
+ std::optional<point> need_update;
  const auto g = game::active();
 
  // move passengers
@@ -279,35 +286,41 @@ bool map::displace_vehicle(vehicle* const veh, const point& delta, bool test)
   assert(pass.second);
   player *psg = pass.second;
   int p = pass.first;
+#if 0
   int trec = rec - psg->sklevel[sk_driving];	// dead compensation \todo how does C:DDA handle this?
   if (trec < 0) trec = 0;
+#endif
   // add recoil
   psg->driving_recoil = rec;
   // displace passenger taking in account vehicle movement (dx, dy)
   // and turning: precalc_dx/dy [0] contains previous frame direction,
   // and precalc_dx/dy[1] should contain next direction
-  psg->screenpos_add(delta + veh->parts[p].precalc_d[1] - veh->parts[p].precalc_d[0]);
-  if (psg == &g->u) { // if passenger is you, we need to update the map
-   need_update = true;
-   upd = psg->pos;
+  if (psg == &g->u) { // if passenger is you, we need to update *after* processing this
+      need_update = psg->pos + delta + veh->parts[p].precalc_d[1] - veh->parts[p].precalc_d[0];
+  } else {
+      psg->screenpos_add(delta + veh->parts[p].precalc_d[1] - veh->parts[p].precalc_d[0]);
   }
  }
  for (auto& part : veh->parts) part.precalc_d[0] = part.precalc_d[1];
 
- veh->GPSpos = g->toGPS(dest);
- if (src_na != dst_na) {
-  grid[dst_na]->vehicles.push_back(std::move(*veh));
-  EraseAt(grid[src_na]->vehicles, our_i);
+ // not going off-grid
+ if (dest_rb) {
+     veh->GPSpos = dest_gps;
+     auto dst_na = dest_rb->first;
+     if (src_na != dst_na) {
+         grid[dst_na]->vehicles.push_back(std::move(*veh));
+         EraseAt(grid[src_na]->vehicles, our_i);
+     }
  }
 
  bool was_update = false;
- if (need_update && game::update_map_would_scroll(upd)) {
+ if (need_update && game::update_map_would_scroll(*need_update)) {
   assert(MAPSIZE == my_MAPSIZE);	// critical fail if this doesn't hold, but map doesn't provide an accessor for testing this
 // map will shift
-  g->update_map(upd.x, upd.y);	// player coords were already updated so don't re-update them
+  g->update_map(need_update->x, need_update->y);	// player coords were already updated so don't re-update them
   was_update = true;
  }
- return (src_na != dst_na) || was_update;
+ return (origin != dest_rb) || was_update;
 }
 
 void map::vehmove(game *g)

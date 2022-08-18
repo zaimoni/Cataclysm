@@ -61,6 +61,7 @@ class map
  void post_init(const Badge<defense_game>& auth);
 
 // Movement and LOS
+ point toScreen(const reality_bubble_loc& origin) const;
  std::optional<reality_bubble_loc> to(const point& pt) const;
  std::optional<reality_bubble_loc> to(int x, int y) const { return to(point(x,y)); };
  static std::optional<reality_bubble_loc> to(const GPS_loc& pt);
