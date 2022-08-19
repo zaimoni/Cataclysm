@@ -47,6 +47,7 @@ private:
     tripoint GPS;   // cache field -- GPS_loc first coordinate, where we are
 
 public:
+    using vehicles_t = decltype(vehicles);
     friend std::ostream& operator<<(std::ostream& os, const submap& src);
 
     submap();	// mapgen.cpp: sole caller there
@@ -95,6 +96,7 @@ public:
     void add(item&& new_item, const point& dest);
 
     vehicle* add_vehicle(vhtype_id type, point pos, int deg);
+    void destroy(vehicle& veh);
 
     void post_init(const Badge<defense_game>& auth);
     void new_vehicles(decltype(vehicles)&& src, const Badge<map>& auth);

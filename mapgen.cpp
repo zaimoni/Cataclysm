@@ -5938,7 +5938,7 @@ void map::rotate(int turns)
  std::vector<item> itrot[SEEX*2][SEEY*2];
  std::vector<std::vector<spawn_point> > sprot(my_MAPSIZE * my_MAPSIZE);
  computer tmpcomp;
- std::vector<vehicle> tmpveh;
+ submap::vehicles_t tmpveh;
 
  switch (turns) {
  case 1:

@@ -100,20 +100,23 @@ vehicle::vehicle(vhtype_id type_id, int deg) : vehicle(type_id)
 
 DEFINE_ACID_ASSIGN_W_MOVE(vehicle)
 
-void vehicle::destroy(vehicle& veh)
+void submap::destroy(vehicle& veh)
 {
-    if (const auto sm = MAPBUFFER.lookup_submap(veh.GPSpos.first)) {
-        int i = -1;
-        for (decltype(auto) v : sm->vehicles) {
-            ++i;
-            if (&v == &veh) {
-                EraseAt(sm->vehicles, i);
-                return;
-            }
+    int i = -1;
+    for (decltype(auto) v : vehicles) {
+        ++i;
+        if (&v == &veh) {
+            EraseAt(vehicles, i);
+            return;
         }
     }
 
-    debuglog("vehicle::destroy can't find it!");
+    debuglog("submap::destroy can't find it!");
+}
+
+void vehicle::destroy(vehicle& veh)
+{
+    if (const auto sm = MAPBUFFER.lookup_submap(veh.GPSpos.first)) sm->destroy(veh);
 }
 
 std::string vehicle::possessive() const
