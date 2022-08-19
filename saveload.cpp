@@ -961,9 +961,10 @@ JSON toJSON(const item& src) {
 }
 
 #ifndef SOCRATES_DAIMON
-submap::submap(std::istream& is) : submap()
+submap::submap(std::istream& is, tripoint& gps) : submap()
 {
 	is >> turn_last_touched;
+	GPS = gps;
 	int turndif = int(messages.turn);
 	if (turndif < 0) turndif = 0;
 
@@ -1016,7 +1017,10 @@ submap::submap(std::istream& is) : submap()
 		} else throw std::runtime_error("radiation data missing");
 
 		if (sm.has_key("spawns")) sm["spawns"].decode(spawns);
-		if (sm.has_key("vehicles")) sm["vehicles"].decode(vehicles);
+		if (sm.has_key("vehicles")) {
+			sm["vehicles"].decode(vehicles);
+			for (decltype(auto) veh : vehicles) veh.GPSpos.first = gps; // V.0.2.4+ auto-repair
+		}
 		if (sm.has_key("computer")) fromJSON(sm["computer"], comp);
 	}
 	// Load items and traps and fields and spawn points and vehicles

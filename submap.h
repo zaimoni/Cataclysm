@@ -57,10 +57,10 @@ public:
     submap& operator=(const submap& src) = default;	// plausibly should make ACID but we don't actually copy submaps frequently
     submap& operator=(submap&& src) = default;
 
-    explicit submap(std::istream& is);
+    submap(std::istream& is, tripoint& gps);
     friend std::ostream& operator<<(std::ostream& os, const submap& src);
 
-    void set(const tripoint src, const Badge<mapbuffer>& auth) { GPS = src; }
+    void set(const tripoint src, const Badge<mapbuffer>& auth); // mapbuffer.cpp
 
     static constexpr bool in_bounds(int x, int y) { return 0 <= x && x < SEE && 0 <= y && y < SEE; }
     static constexpr bool in_bounds(const point& p) { return in_bounds(p.x, p.y); }

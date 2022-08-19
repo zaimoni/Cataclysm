@@ -13,15 +13,19 @@ mapbuffer::~mapbuffer()
  for (auto x : submaps) delete x.second;
 }
 
+void submap::set(const tripoint src, const Badge<mapbuffer>& auth) {
+    GPS = src;
+
+    // Automatic-repair anything with GPSpos fields, here.  Catches mapgen mismatches between game::lev and the global position of the submap chunk.
+    for (decltype(auto) veh : vehicles) veh.GPSpos.first = src;
+}
+
 bool mapbuffer::add_submap(int x, int y, int z, submap *sm)
 {
  tripoint p(x, y, z);
  if (submaps.count(p) != 0) return false;
 
  sm->turn_last_touched = int(messages.turn);
- // Automatic-repair anything with GPSpos fields, here.  Catches mapgen mismatches between game::lev and the global position of the submap chunk.
- for (decltype(auto) veh : sm->vehicles) veh.GPSpos.first = p;
-
  sm->set(p, Badge<mapbuffer>());
  submaps[p] = sm;
  return true;
@@ -70,10 +74,9 @@ void mapbuffer::load()
    popup_nowait("Please wait as the map loads [%s%d/%d]",
                 (percent < 100 ?  percent < 10 ? "  " : " " : ""), percent,
                 num_submaps);
-  tripoint where;
-  fin >> where;
-  submaps[where] = new submap(fin);
-  for (auto& veh : submaps[where]->vehicles) veh.GPSpos.first = where; // V.0.2.4+ auto-repair
+  tripoint gps;
+  fin >> gps;
+  submaps[gps] = new submap(fin, gps);
  }
  fin.close();
 }
