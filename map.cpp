@@ -1455,12 +1455,6 @@ void GPS_loc::add(item&& new_item)
     if (auto pos = g->toScreen(*this)) g->m.add_item(*pos, std::move(new_item));
 }
 
-void submap::add(item&& new_item, const point& dest)
-{
-    if (new_item.active) active_item_count++;
-    items_at(dest).push_back(std::move(new_item));
-}
-
 void map::add_item(int x, int y, item&& new_item)
 {
     if (new_item.is_style()) return;
@@ -1656,27 +1650,6 @@ void map::add_trap(int x, int y, trap_id t)
     if (const auto pos = to(x, y)) grid[pos->first]->trap_at(pos->second) = t;
 }
 
-std::optional<item> submap::for_drop(ter_id dest, const itype* type, int birthday)
-{
-    if (type->is_style()) return std::nullopt;
-    // ignore corpse special case here when inlining item::made_of
-    if ((type->m1 == LIQUID || type->m2 == LIQUID)
-        && is<swimmable>(dest))
-        return std::nullopt;
-    return item(type, birthday).in_its_container();
-}
-
-field* submap::add(const point& p, field&& src)
-{
-    auto& fd = field_at(p);
-    if (fd.type == fd_web && src.type == fd_fire) src.density++;
-    else if (!fd.is_null()) return nullptr; // Blood & bile are null too
-    if (3 < src.density) src.density = 3;
-    if (0 >= src.density) return nullptr;
-    if (fd.type == fd_null) field_count++;
-    return &(fd = std::move(src));
-}
-
 bool map::add_field(game *g, int x, int y, field_id t, unsigned char density, unsigned int age)
 {
     const auto pos = to(x, y);
@@ -1701,12 +1674,6 @@ bool GPS_loc::add(field&& src)
         return true;
     }
     return false;
-}
-
-
-void submap::remove_field(const point& p) {
-    if (fld[p.x][p.y].type != fd_null) field_count--;
-    fld[p.x][p.y] = field();
 }
 
 computer* map::computer_at(const point& pt)
@@ -2524,12 +2491,6 @@ void map::spawn_monsters(game *g)
    grid[n]->spawns.clear();
   }
  }
-}
-
-void submap::post_init(const Badge<defense_game>& auth)
-{
-    spawns.clear();
-    memset(trp, 0, sizeof(trp)); // tr_null defined as 0
 }
 
 void map::post_init(const Badge<defense_game>& auth)

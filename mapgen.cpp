@@ -5863,16 +5863,6 @@ void map::put_items_from(items_location loc, int num, int x, int y, int turn)
  }
 }
 
-void submap::add_spawn(mon_id type, int count, const point& pt, bool friendly, int faction_id, int mission_id, std::string name)
-{
-    if (!in_bounds(pt)) {
-        debugmsg("Bad add_spawn(%d, %d, %d, %d)", type, count, pt.x, pt.y);
-        debuglog("Bad add_spawn(%d, %d, %d, %d)", type, count, pt.x, pt.y);
-        return;
-    }
-    spawns.emplace_back(type, count, pt.x, pt.y, faction_id, mission_id, friendly, name);
-}
-
 void map::add_spawn(mon_id type, int count, int x, int y, bool friendly,
                     int mission_id, std::string name, int faction_id)
 {
@@ -5885,19 +5875,6 @@ void map::add_spawn(mon_id type, int count, int x, int y, bool friendly,
  x %= SEEX;
  y %= SEEY;
  grid[nonant]->spawns.emplace_back(type, count, x, y, faction_id, mission_id, friendly, name);
-}
-
-void submap::add_spawn(const monster& mon)
-{
-    add_spawn(mon_id(mon.type->id), 1, mon.GPSpos.second, (mon.friendly < 0), mon.faction_id, mon.mission_id, mon.unique_name);
-}
-
-vehicle* submap::add_vehicle(vhtype_id type, point pos, int deg)
-{
-    assert(in_bounds(pos));
-    vehicles.emplace_back(type, deg);
-    vehicles.back().GPSpos = GPS_loc(GPS, pos);
-    return &vehicles.back();
 }
 
 vehicle* GPS_loc::add_vehicle(vhtype_id type, int deg)
@@ -6061,18 +6038,6 @@ void map::rotate(int turns)
    tr_at(i, j) = traprot[i][j];
   }
  }
-}
-
-void submap::new_vehicles(decltype(vehicles)&& src, const Badge<map>& auth) {
-    vehicles = std::move(src);
-    for (decltype(auto) veh : vehicles) veh.GPSpos.first = GPS;
-}
-
-void submap::mapgen_swap(submap& dest, const Badge<map>& auth) {
-    std::swap(comp, dest.comp);
-    vehicles.swap(dest.vehicles);
-    for (decltype(auto) veh : vehicles) veh.GPSpos.first = GPS;
-    for (decltype(auto) veh : dest.vehicles) veh.GPSpos.first = dest.GPS;
 }
 
 void house_room(map *m, room_type type, int x1, int y1, int x2, int y2)

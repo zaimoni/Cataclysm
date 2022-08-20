@@ -13,13 +13,6 @@ mapbuffer::~mapbuffer()
  for (auto x : submaps) delete x.second;
 }
 
-void submap::set(const tripoint src, const Badge<mapbuffer>& auth) {
-    GPS = src;
-
-    // Automatic-repair anything with GPSpos fields, here.  Catches mapgen mismatches between game::lev and the global position of the submap chunk.
-    for (decltype(auto) veh : vehicles) veh.GPSpos.first = src;
-}
-
 bool mapbuffer::add_submap(int x, int y, int z, submap *sm)
 {
  tripoint p(x, y, z);
