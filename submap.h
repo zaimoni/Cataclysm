@@ -61,6 +61,7 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const submap& src);
 
     void set(const tripoint src, const Badge<mapbuffer>& auth);
+    GPS_loc toGPS(const point& origin, const Badge<map>& auth) const { return GPS_loc(GPS, origin); }
 
     static constexpr bool in_bounds(int x, int y) { return 0 <= x && x < SEE && 0 <= y && y < SEE; }
     static constexpr bool in_bounds(const point& p) { return in_bounds(p.x, p.y); }
@@ -97,6 +98,8 @@ public:
 
     vehicle* add_vehicle(vhtype_id type, point pos, int deg);
     void destroy(vehicle& veh);
+    std::optional<std::pair<vehicle*, int>> veh_at(const GPS_loc& loc);
+    std::optional<std::pair<const vehicle*, int>> veh_at(const GPS_loc& loc) const;
 
     void post_init(const Badge<defense_game>& auth);
     void new_vehicles(decltype(vehicles)&& src, const Badge<map>& auth);

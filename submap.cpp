@@ -57,6 +57,24 @@ void submap::add_spawn(const monster& mon)
     add_spawn(mon_id(mon.type->id), 1, mon.GPSpos.second, (mon.friendly < 0), mon.faction_id, mon.mission_id, mon.unique_name);
 }
 
+std::optional<std::pair<vehicle*, int>> submap::veh_at(const GPS_loc& loc)
+{
+    for (decltype(auto) veh : vehicles) {
+        const auto delta = loc - veh.GPSpos;
+        if (const point* const pt = std::get_if<point>(&delta)) { // gross invariant failure: vehicles should have GPSpos tripoint of their submap
+            int part = veh.part_at(*pt);
+            if (part >= 0) return std::pair(&veh, part);
+        }
+    }
+    return std::nullopt;
+}
+
+std::optional<std::pair<const vehicle*, int>> submap::veh_at(const GPS_loc& loc) const
+{
+    if (auto ret = const_cast<submap*>(this)->veh_at(loc)) return std::pair(ret->first, ret->second);
+    return std::nullopt;
+}
+
 vehicle* submap::add_vehicle(vhtype_id type, point pos, int deg)
 {
     assert(in_bounds(pos));

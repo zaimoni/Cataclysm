@@ -35,6 +35,11 @@ enum astar_list {
  ASL_CLOSED
 };
 
+GPS_loc map::toGPS(const reality_bubble_loc& origin) const
+{
+    return grid[origin.first]->toGPS(origin.second, Badge<map>());
+}
+
 point map::toScreen(const reality_bubble_loc& origin) const
 {
     const int sm_x = origin.first % my_MAPSIZE;
@@ -111,41 +116,24 @@ std::vector<point> map::grep(const point& tl, const point& br, std::function<boo
 
 std::optional<std::pair<const vehicle*, int>> map::veh_at(const reality_bubble_loc& src) const
 {
-    // must check 3x3 map chunks, as vehicle part may span to neighbour chunk
-    // we presume that vehicles don't intersect (they shouldn't by any means)
-    const auto nonant_ub = my_MAPSIZE * my_MAPSIZE;
-    for (int mx = -1; mx <= 1; mx++) {
-        for (int my = -1; my <= 1; my++) {
-            int nonant1 = src.first + mx + my * my_MAPSIZE;
-            if (nonant1 < 0 || nonant1 >= nonant_ub) continue; // out of grid
-            for (auto& veh : grid[nonant1]->vehicles) { // profiler likes this; burns less CPU than testing for empty std::vector
-                const auto veh_loc = veh.bubble_pos();
-                assert(veh_loc);
-                assert(veh_loc->first == nonant1);
-                int part = veh.part_at(src.second - (veh_loc->second + SEE * point(mx, my)));
-                if (0 <= part) return std::pair(&veh, part);
-            }
-        }
-    }
+    if (auto ret = const_cast<map*>(this)->veh_at(src)) return std::pair(ret->first, ret->second);
     return std::nullopt;
 }
 
 std::optional<std::pair<vehicle*, int>> map::veh_at(const reality_bubble_loc& src)
 {
+    GPS_loc origin = grid[src.first]->toGPS(src.second, Badge<map>());
     // must check 3x3 map chunks, as vehicle part may span to neighbour chunk
     // we presume that vehicles don't intersect (they shouldn't by any means)
     const auto nonant_ub = my_MAPSIZE * my_MAPSIZE;
     for (int mx = -1; mx <= 1; mx++) {
+        // C:Z: disallow wraparound to next row N/S of ours
+        if (-1 == mx && 0 ==  src.first    % my_MAPSIZE) continue;
+        if ( 1 == mx && 0 == (src.first+1) % my_MAPSIZE) continue;
         for (int my = -1; my <= 1; my++) {
             int nonant1 = src.first + mx + my * my_MAPSIZE;
             if (nonant1 < 0 || nonant1 >= nonant_ub) continue; // out of grid
-            for (auto& veh : grid[nonant1]->vehicles) { // profiler likes this; burns less CPU than testing for empty std::vector
-                const auto veh_loc = veh.bubble_pos();
-                assert(veh_loc);
-                assert(veh_loc->first == nonant1);
-                int part = veh.part_at(src.second - (veh_loc->second + SEE*point(mx, my)));
-                if (0 <= part) return std::pair(&veh, part);
-            }
+            if (auto ret = grid[nonant1]->veh_at(origin)) return ret;
         }
     }
     return std::nullopt;
@@ -163,13 +151,7 @@ std::optional<std::pair<vehicle*, int>> GPS_loc::veh_at() const
     for (int mx = 0; mx <= 2; mx++) {
         for (int my = 0; my <= 2; my++) {
             if (!local_map[mx][my]) continue;   // submap not generated yet
-            for (decltype(auto) veh : local_map[mx][my]->vehicles) {
-                const auto delta = *this - veh.GPSpos;
-                if (const point* const pt = std::get_if<point>(&delta)) { // gross invariant failure: vehicles should have GPSpos tripoint of their submap
-                    int part = veh.part_at(*pt);
-                    if (part >= 0) return std::pair(&veh, part);
-                }
-            }
+            if (auto ret = local_map[mx][my]->veh_at(*this)) return ret;
         }
     }
 
