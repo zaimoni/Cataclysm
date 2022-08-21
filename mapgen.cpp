@@ -5936,7 +5936,7 @@ void map::rotate(int turns)
         tmp.pos = coord_rotate<1, SEE>(tmp.pos);
         dest.push_back(std::move(tmp));
     }
-    for (decltype(auto) veh : sm->vehicles) veh.GPSpos.second = coord_rotate<1, SEE>(veh.GPSpos.second);
+    sm->mapgen_xform(coord_rotate<1, SEE>, Badge<map>());
    }
   }
   {
@@ -5965,7 +5965,7 @@ void map::rotate(int turns)
         tmp.pos = coord_rotate<2, SEE>(tmp.pos);
         dest.push_back(std::move(tmp));
     }
-    for (decltype(auto) veh : sm->vehicles) veh.GPSpos.second = coord_rotate<2, SEE>(veh.GPSpos.second);
+    sm->mapgen_xform(coord_rotate<2, SEE>, Badge<map>());
    }
   }
   grid[0]->mapgen_swap(*grid[my_MAPSIZE + 1], Badge<map>());
@@ -5992,7 +5992,7 @@ void map::rotate(int turns)
         tmp.pos = coord_rotate<3, SEE>(tmp.pos);
         dest.push_back(std::move(tmp));
     }
-    for (decltype(auto) veh : sm->vehicles) veh.GPSpos.second = coord_rotate<3, SEE>(veh.GPSpos.second);
+    sm->mapgen_xform(coord_rotate<3, SEE>, Badge<map>());
    }
   }
   {

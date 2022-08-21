@@ -106,6 +106,7 @@ public:
     void rotate_vehicles(int turns, const Badge<map>& auth);
     void mapgen_swap(submap& dest, const Badge<map>& auth);
     static void mapgen_move_cycle(submap* const* cycle, ptrdiff_t len, const Badge<map>& auth);
+    void mapgen_xform(point(*op)(const point&), const Badge<map>& auth);
 };
 
 #endif

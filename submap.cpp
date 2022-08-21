@@ -125,6 +125,11 @@ void submap::mapgen_move_cycle(submap* const* cycle, ptrdiff_t ub, const Badge<m
     cycle[0]->vehicles = std::move(t_vehs);
 }
 
+void submap::mapgen_xform(point(*op)(const point&), const Badge<map>& auth)
+{
+    for (decltype(auto) veh : vehicles) veh.GPSpos.second = op(veh.GPSpos.second);
+}
+
 void submap::post_init(const Badge<defense_game>& auth)
 {
     spawns.clear();
