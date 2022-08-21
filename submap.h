@@ -103,6 +103,7 @@ public:
 
     void post_init(const Badge<defense_game>& auth);
     void new_vehicles(decltype(vehicles)&& src, const Badge<map>& auth);
+    void rotate_vehicles(int turns, const Badge<map>& auth);
     void mapgen_swap(submap& dest, const Badge<map>& auth);
 };
 

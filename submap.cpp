@@ -102,6 +102,10 @@ void submap::new_vehicles(decltype(vehicles) && src, const Badge<map>& auth) {
     for (decltype(auto) veh : vehicles) veh.GPSpos.first = GPS;
 }
 
+void submap::rotate_vehicles(int turns, const Badge<map>& auth) {
+    for (decltype(auto) veh : vehicles) veh.turn(turns * 90);
+}
+
 void submap::mapgen_swap(submap& dest, const Badge<map>& auth) {
     std::swap(comp, dest.comp);
     vehicles.swap(dest.vehicles);

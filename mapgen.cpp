@@ -6024,7 +6024,7 @@ void map::rotate(int turns)
 // assert(turns >= 1 && turns <= 3);    // true due to above switch statement
 
 // change vehicles' directions
- for (submap* const gr : grid) for (auto& veh : gr->vehicles) veh.turn(turns * 90);
+ for (submap* const gr : grid) gr->rotate_vehicles(turns, Badge<map>());
 
 // Set the spawn points
  grid[0]->spawns = std::move(sprot[0]);
