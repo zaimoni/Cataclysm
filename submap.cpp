@@ -97,11 +97,6 @@ void submap::destroy(vehicle& veh)
     debuglog("submap::destroy can't find it!");
 }
 
-void submap::new_vehicles(decltype(vehicles) && src, const Badge<map>& auth) {
-    vehicles = std::move(src);
-    for (decltype(auto) veh : vehicles) veh.GPSpos.first = GPS;
-}
-
 void submap::rotate_vehicles(int turns, const Badge<map>& auth) {
     for (decltype(auto) veh : vehicles) veh.turn(turns * 90);
 }
@@ -111,6 +106,23 @@ void submap::mapgen_swap(submap& dest, const Badge<map>& auth) {
     vehicles.swap(dest.vehicles);
     for (decltype(auto) veh : vehicles) veh.GPSpos.first = GPS;
     for (decltype(auto) veh : dest.vehicles) veh.GPSpos.first = dest.GPS;
+}
+
+void submap::mapgen_move_cycle(submap* const* cycle, ptrdiff_t ub, const Badge<map>& auth)
+{
+    assert(2 <= ub);
+    assert(cycle);
+
+    computer   t_comp(std::move(cycle[--ub]->comp));
+    vehicles_t t_vehs(std::move(cycle[ub]->vehicles));
+
+    while (0 <= --ub) {
+        cycle[ub + 1]->comp     = std::move(cycle[ub]->comp);
+        cycle[ub + 1]->vehicles = std::move(cycle[ub]->vehicles);
+    };
+
+    cycle[0]->comp     = std::move(t_comp);
+    cycle[0]->vehicles = std::move(t_vehs);
 }
 
 void submap::post_init(const Badge<defense_game>& auth)

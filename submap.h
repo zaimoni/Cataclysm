@@ -37,11 +37,11 @@ struct submap {
     std::vector<vehicle> vehicles;
     computer comp;
 private:
-    field			fld[SEEX][SEEY]; // Field on each square
-    std::vector<item>	itm[SEEX][SEEY]; // Items on each square
-    int			rad[SEEX][SEEY]; // Irradiation of each square
-    ter_id			ter[SEEX][SEEY]; // Terrain on each square
-    trap_id		trp[SEEX][SEEY]; // Trap on each square
+    std::vector<item> itm[SEEX][SEEY]; // Items on each square
+    field   fld[SEEX][SEEY]; // Field on each square
+    int     rad[SEEX][SEEY]; // Irradiation of each square
+    ter_id  ter[SEEX][SEEY]; // Terrain on each square
+    trap_id trp[SEEX][SEEY]; // Trap on each square
     int active_item_count;
     int field_count;
     tripoint GPS;   // cache field -- GPS_loc first coordinate, where we are
@@ -102,9 +102,10 @@ public:
     std::optional<std::pair<const vehicle*, int>> veh_at(const GPS_loc& loc) const;
 
     void post_init(const Badge<defense_game>& auth);
-    void new_vehicles(decltype(vehicles)&& src, const Badge<map>& auth);
+    // mapgen.cpp support
     void rotate_vehicles(int turns, const Badge<map>& auth);
     void mapgen_swap(submap& dest, const Badge<map>& auth);
+    static void mapgen_move_cycle(submap* const* cycle, ptrdiff_t len, const Badge<map>& auth);
 };
 
 #endif

@@ -5914,8 +5914,6 @@ void map::rotate(int turns)
  trap_id traprot        [SEEX*2][SEEY*2];
  std::vector<item> itrot[SEEX*2][SEEY*2];
  std::vector<std::vector<spawn_point> > sprot(my_MAPSIZE * my_MAPSIZE);
- computer tmpcomp;
- submap::vehicles_t tmpveh;
 
  switch (turns) {
  case 1:
@@ -5941,18 +5939,10 @@ void map::rotate(int turns)
     for (decltype(auto) veh : sm->vehicles) veh.GPSpos.second = coord_rotate<1, SEE>(veh.GPSpos.second);
    }
   }
-// Finally, computers
-  tmpcomp = std::move(grid[0]->comp);
-  grid[0]->comp = std::move(grid[my_MAPSIZE]->comp);
-  grid[my_MAPSIZE]->comp = std::move(grid[my_MAPSIZE + 1]->comp);
-  grid[my_MAPSIZE + 1]->comp = std::move(grid[1]->comp);
-  grid[1]->comp = std::move(tmpcomp);
-// ...and vehicles
-  tmpveh = std::move(grid[0]->vehicles);
-  grid[0]->new_vehicles(std::move(grid[my_MAPSIZE]->vehicles), Badge<map>());
-  grid[my_MAPSIZE]->new_vehicles(std::move(grid[my_MAPSIZE + 1]->vehicles), Badge<map>());
-  grid[my_MAPSIZE + 1]->new_vehicles(std::move(grid[1]->vehicles), Badge<map>());
-  grid[1]->new_vehicles(std::move(tmpveh), Badge<map>());
+  {
+  submap* const cycle[] = { grid[0], grid[my_MAPSIZE], grid[my_MAPSIZE + 1], grid[1] };
+  submap::mapgen_move_cycle(cycle, std::end(cycle) - std::begin(cycle), Badge<map>());
+  }
   break;
     
  case 2:
@@ -6005,17 +5995,10 @@ void map::rotate(int turns)
     for (decltype(auto) veh : sm->vehicles) veh.GPSpos.second = coord_rotate<3, SEE>(veh.GPSpos.second);
    }
   }
-  tmpcomp = std::move(grid[0]->comp);
-  grid[0]->comp = std::move(grid[1]->comp);
-  grid[1]->comp = std::move(grid[my_MAPSIZE + 1]->comp);
-  grid[my_MAPSIZE + 1]->comp = std::move(grid[my_MAPSIZE]->comp);
-  grid[my_MAPSIZE]->comp = std::move(tmpcomp);
-// ...and vehicles
-  tmpveh = std::move(grid[0]->vehicles);
-  grid[0]->new_vehicles(std::move(grid[1]->vehicles), Badge<map>());
-  grid[1]->new_vehicles(std::move(grid[my_MAPSIZE + 1]->vehicles), Badge<map>());
-  grid[my_MAPSIZE + 1]->new_vehicles(std::move(grid[my_MAPSIZE]->vehicles), Badge<map>());
-  grid[my_MAPSIZE]->new_vehicles(std::move(tmpveh), Badge<map>());
+  {
+  submap* const cycle[] = { grid[0], grid[1], grid[my_MAPSIZE + 1], grid[my_MAPSIZE] };
+  submap::mapgen_move_cycle(cycle, std::end(cycle)-std::begin(cycle), Badge<map>());
+  }
   break;
 
  default:
