@@ -97,6 +97,13 @@ void submap::destroy(vehicle& veh)
     debuglog("submap::destroy can't find it!");
 }
 
+bool submap::veh_gain_moves(const Badge<map>& auth)
+{
+    bool ret = !vehicles.empty();
+    if (ret) for (decltype(auto) veh : vehicles) veh.gain_moves(abs(veh.velocity)); // velocity is ability to make more one-tile steps per turn
+    return ret;
+}
+
 void submap::rotate_vehicles(int turns, const Badge<map>& auth) {
     for (decltype(auto) veh : vehicles) veh.turn(turns * 90);
 }

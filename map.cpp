@@ -314,10 +314,7 @@ void map::vehmove(game *g)
  for (int i = 0; i < my_MAPSIZE; i++) {
      for (int j = 0; j < my_MAPSIZE; j++) {
          int sm = i + j * my_MAPSIZE;
-         if (!grid[sm]->vehicles.empty()) {
-             sm_stack[ub++] = sm;
-             for (auto& veh : grid[sm]->vehicles) veh.gain_moves(abs(veh.velocity)); // velocity is ability to make more one-tile steps per turn
-         }
+         if (grid[sm]->veh_gain_moves(Badge<map>())) sm_stack[ub++] = sm;
      }
  }
  if (0 >= ub) return;
@@ -328,8 +325,6 @@ void map::vehmove(game *g)
   sm_change = false;
   for (int scan = 0; scan < ub; scan++) {
       const int sm = sm_stack[scan];
-      const int i = sm % my_MAPSIZE;
-      const int j = sm / my_MAPSIZE;
 
     for (int v = 0; v < grid[sm]->vehicles.size(); v++) {
      vehicle *veh = &(grid[sm]->vehicles[v]);
@@ -348,9 +343,6 @@ void map::vehmove(game *g)
       veh->moves -= (5 * mobile::mp_turn) * mv_cost_terrain;
 
       auto pt = veh->screen_pos();
-      assert(pt);
-      assert(pt->x == i * SEEX + veh->GPSpos.second.x);
-      assert(pt->y == j * SEEY + veh->GPSpos.second.y);
 
       if (!veh->valid_wheel_config()) { // not enough wheels
        veh->velocity += veh->velocity < 0 ? 20 * vehicle::mph_1 : -20 * vehicle::mph_1;
@@ -402,29 +394,25 @@ void map::vehmove(game *g)
 		   int throw_roll = rng(vel2 / 100, vel2 / 100 * 2);
 		   int psblt = veh->part_with_feature(ps, vpf_seatbelt);
 		   int sb_bonus = psblt >= 0 ? veh->part_info(psblt).bonus : 0;
-		   bool throw_it = throw_roll > (psg->str_cur + sb_bonus) * 3;
-		   std::string psgname;
-		   const char* psgverb;
-		   if (psg == &g->u) {
-			   psgname = "You";
-			   psgverb = "were";
-		   } else {
-			   psgname = psg->name;
-			   psgverb = "was";
-		   }
-		   if (throw_it) {
-			   if (psgname.length())
-				   messages.add("%s %s hurled from the %s's seat by the power of impact!",
-					   psgname.c_str(), psgverb, veh->name.c_str());
+		   if (throw_roll > (psg->str_cur + sb_bonus) * 3) {
+               static auto thrown = [&]() {
+                   return SVO_sentence(*psg, psg->to_be(), std::string("hurled from ") + veh->desc(grammar::noun::role::possessive, grammar::article::definite)+" by the power of impact", "!");
+               };
+
+               g->if_visible_message(thrown, *psg);
+
                veh->unboard(ps);
                psg->fling(mdir.dir() + rng(0, 60) - 30, (vel2 / 100 - sb_bonus < 10 ? 10 : vel2 / 100 - sb_bonus));
 		   } else if (veh->part_with_feature(ps, vpf_controls) >= 0) {
 			   int lose_ctrl_roll = rng(0, imp);
 			   if (lose_ctrl_roll > psg->dex_cur * 2 + psg->sklevel[sk_driving] * 3) {
-				   if (psgname.length())
-					   messages.add("%s lose%s control of the %s.", psgname.c_str(),
-					   (psg == &g->u ? "" : "s"), veh->name.c_str());
-				   int turn_amount = (rng(1, 3) * sqrt(vel2) / 2) / 15;
+                   static auto lost_control = [&]() {
+                       return SVO_sentence(*psg, "lose", std::string("control of ") + veh->desc(grammar::noun::role::direct_object, grammar::article::definite));;
+                   };
+
+                   g->if_visible_message(lost_control, *psg);
+
+                   int turn_amount = (rng(1, 3) * sqrt(vel2) / 2) / 15;
 				   if (turn_amount < 1) turn_amount = 1;
 				   turn_amount *= 15;
 				   if (turn_amount > 120) turn_amount = 120;
