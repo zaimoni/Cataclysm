@@ -221,7 +221,7 @@ bool map::try_board_vehicle(game* g, int x, int y, player& p)
     return true;
 }
 
-bool map::displace_vehicle(vehicle* const veh, const point& delta, bool test)
+bool map::displace_vehicle(std::shared_ptr<vehicle> veh, const point& delta, bool test)
 {
     auto origin = to(veh->GPSpos);
     if (!origin) {
@@ -242,7 +242,7 @@ bool map::displace_vehicle(vehicle* const veh, const point& delta, bool test)
  // first, let's find our position in current vehicles vector
  int our_i = -1;
  for (int i = 0; i < grid[src_na]->vehicles.size(); i++) {
-     if (veh == &(grid[src_na]->vehicles[i])) {
+     if (veh.get() == grid[src_na]->vehicles[i].get()) {
           our_i = i;
           break;
      }
@@ -290,7 +290,7 @@ bool map::displace_vehicle(vehicle* const veh, const point& delta, bool test)
      veh->GPSpos = dest_gps;
      auto dst_na = dest_rb->first;
      if (src_na != dst_na) {
-         grid[dst_na]->vehicles.push_back(std::move(*veh));
+         grid[dst_na]->vehicles.push_back(std::move(veh));
          EraseAt(grid[src_na]->vehicles, our_i);
      }
  }
@@ -327,7 +327,7 @@ void map::vehmove(game *g)
       const int sm = sm_stack[scan];
 
     for (int v = 0; v < grid[sm]->vehicles.size(); v++) {
-     vehicle *veh = &(grid[sm]->vehicles[v]);
+     auto veh = grid[sm]->vehicles[v];
      bool pl_ctrl = veh->player_in_control(g->u);
      while (!sm_change && veh->moves > 0 && veh->velocity != 0) {
       const int mv_cost_terrain = grid[sm]->move_cost_ter_only(veh->GPSpos.second);

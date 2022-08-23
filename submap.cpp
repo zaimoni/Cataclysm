@@ -7,7 +7,7 @@ void submap::set(const tripoint src, const Badge<mapbuffer>& auth) {
     GPS = src;
 
     // Automatic-repair anything with GPSpos fields, here.  Catches mapgen mismatches between game::lev and the global position of the submap chunk.
-    for (decltype(auto) veh : vehicles) veh.GPSpos.first = src;
+    for (decltype(auto) veh : vehicles) veh->GPSpos.first = src;
 }
 
 void submap::add(item&& new_item, const point& dest)
@@ -60,10 +60,10 @@ void submap::add_spawn(const monster& mon)
 std::optional<std::pair<vehicle*, int>> submap::veh_at(const GPS_loc& loc)
 {
     for (decltype(auto) veh : vehicles) {
-        const auto delta = loc - veh.GPSpos;
+        const auto delta = loc - veh->GPSpos;
         if (const point* const pt = std::get_if<point>(&delta)) { // gross invariant failure: vehicles should have GPSpos tripoint of their submap
-            int part = veh.part_at(*pt);
-            if (part >= 0) return std::pair(&veh, part);
+            int part = veh->part_at(*pt);
+            if (part >= 0) return std::pair(veh.get(), part);
         }
     }
     return std::nullopt;
@@ -78,9 +78,9 @@ std::optional<std::pair<const vehicle*, int>> submap::veh_at(const GPS_loc& loc)
 vehicle* submap::add_vehicle(vhtype_id type, point pos, int deg)
 {
     assert(in_bounds(pos));
-    vehicles.emplace_back(type, deg);
-    vehicles.back().GPSpos = GPS_loc(GPS, pos);
-    return &vehicles.back();
+    vehicles.emplace_back(new vehicle(type, deg));
+    vehicles.back()->GPSpos = GPS_loc(GPS, pos);
+    return vehicles.back().get();
 }
 
 void submap::destroy(vehicle& veh)
@@ -88,7 +88,7 @@ void submap::destroy(vehicle& veh)
     int i = -1;
     for (decltype(auto) v : vehicles) {
         ++i;
-        if (&v == &veh) {
+        if (v.get() == &veh) {
             EraseAt(vehicles, i);
             return;
         }
@@ -100,19 +100,19 @@ void submap::destroy(vehicle& veh)
 bool submap::veh_gain_moves(const Badge<map>& auth)
 {
     bool ret = !vehicles.empty();
-    if (ret) for (decltype(auto) veh : vehicles) veh.gain_moves(abs(veh.velocity)); // velocity is ability to make more one-tile steps per turn
+    if (ret) for (decltype(auto) veh : vehicles) veh->gain_moves(abs(veh->velocity)); // velocity is ability to make more one-tile steps per turn
     return ret;
 }
 
 void submap::rotate_vehicles(int turns, const Badge<map>& auth) {
-    for (decltype(auto) veh : vehicles) veh.turn(turns * 90);
+    for (decltype(auto) veh : vehicles) veh->turn(turns * 90);
 }
 
 void submap::mapgen_swap(submap& dest, const Badge<map>& auth) {
     std::swap(comp, dest.comp);
     vehicles.swap(dest.vehicles);
-    for (decltype(auto) veh : vehicles) veh.GPSpos.first = GPS;
-    for (decltype(auto) veh : dest.vehicles) veh.GPSpos.first = dest.GPS;
+    for (decltype(auto) veh : vehicles) veh->GPSpos.first = GPS;
+    for (decltype(auto) veh : dest.vehicles) veh->GPSpos.first = dest.GPS;
 }
 
 void submap::mapgen_move_cycle(submap* const* cycle, ptrdiff_t ub, const Badge<map>& auth)
@@ -134,7 +134,7 @@ void submap::mapgen_move_cycle(submap* const* cycle, ptrdiff_t ub, const Badge<m
 
 void submap::mapgen_xform(point(*op)(const point&), const Badge<map>& auth)
 {
-    for (decltype(auto) veh : vehicles) veh.GPSpos.second = op(veh.GPSpos.second);
+    for (decltype(auto) veh : vehicles) veh->GPSpos.second = op(veh->GPSpos.second);
 }
 
 void submap::post_init(const Badge<defense_game>& auth)

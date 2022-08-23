@@ -1019,7 +1019,7 @@ submap::submap(std::istream& is, tripoint& gps) : submap()
 		if (sm.has_key("spawns")) sm["spawns"].decode(spawns);
 		if (sm.has_key("vehicles")) {
 			sm["vehicles"].decode(vehicles);
-			for (decltype(auto) veh : vehicles) veh.GPSpos.first = gps; // V.0.2.4+ auto-repair
+			for (decltype(auto) veh : vehicles) veh->GPSpos.first = gps; // V.0.2.4+ auto-repair
 		}
 		if (sm.has_key("computer")) fromJSON(sm["computer"], comp);
 	}

@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <iosfwd>
+#include <memory>
 
 // Cf. www.json.org
 // We're not reusing C:DDA's JSON support because of different implementation requirements.
@@ -121,6 +122,17 @@ public:
 
 	bool syntax_ok() const;
 
+	template<class T> static JSON encode(const std::vector<std::shared_ptr<T> >& src) {
+		JSON ret(array);
+		if (!src.empty()) {
+			ret._array = new std::vector<JSON>();
+			for (const auto& x : src) {
+				if (x) ret._array->push_back(toJSON(*x));
+			}
+		}
+		return ret;
+	}
+
 	template<class T> static JSON encode(const std::vector<T>& src) {
 		JSON ret(array);
 		if (!src.empty()) {
@@ -168,6 +180,23 @@ public:
 			} while (++i < n);
 		}
 		return ret;
+	}
+
+	template<class T> bool decode(std::vector<std::shared_ptr<T> >& dest) const {
+		if (array != _mode) return false;
+		if (!_array || _array->empty()) {
+			dest.clear();
+			return true;
+		}
+		bool ok = true;
+		std::vector<std::shared_ptr<T> > working;
+		for (const auto& x : *_array) {
+			std::shared_ptr<T> tmp(new T());
+			if (fromJSON(x, *tmp)) working.push_back(tmp);
+			else ok = false;
+		}
+		if (!working.empty()) dest = std::move(working);
+		return ok;
 	}
 
 	template<class T> bool decode(std::vector<T>& dest) const {

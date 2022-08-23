@@ -14,7 +14,6 @@
 
 class player;
 class monster;
-class vehicle;
 class overmap;
 
 // We do not want to use the Curiously Recurring Template Pattern to deal with the submap grid
@@ -113,7 +112,7 @@ class map
 // Returns true, if there was a submap change.
 // If test is true, function only checks for submap change, no displacement
 // WARNING: not checking collisions!
- bool displace_vehicle(vehicle* veh, const point& delta, bool test=false);
+ bool displace_vehicle(std::shared_ptr<vehicle> veh, const point& delta, bool test=false);
  void vehmove(game* g);          // Vehicle movement
 // move water under wheels. true if moved
  bool displace_water(const point& pt);
