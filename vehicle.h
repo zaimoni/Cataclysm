@@ -286,7 +286,7 @@ public:
 
 // handle given part collision with vehicle, monster/NPC/player or terrain obstacle
 // return impulse (damage) applied on vehicle for that collision
-    int part_collision (int vx, int vy, int part, point dest);
+    int part_collision(int part, point dest);
 
 // Process the trap beneath
     void handle_trap(const point& pt, int part);

@@ -976,7 +976,7 @@ void vehicle::handbrake(player& u)
     u.moves = 0;
 }
 
-int vehicle::part_collision (int vx, int vy, int part, point dest)
+int vehicle::part_collision(int part, point dest)
 {
 	static constexpr const int mass_from_msize[mtype::MS_MAX] = { 15, 40, 80, 200, 800 };
 

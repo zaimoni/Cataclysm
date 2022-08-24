@@ -385,7 +385,7 @@ void map::vehmove(game *g)
          // coords of where part will go due to movement (dx/dy)
          // and turning (precalc_dx/dy [1])
          const point ds(*pt + delta + veh->parts[p].precalc_d[1]);
-         if (can_move) imp += veh->part_collision(pt->x, pt->y, p, ds);
+         if (can_move) imp += veh->part_collision(p, ds);
          if (veh->velocity == 0) can_move = false;
          if (!can_move) break;
      }
@@ -450,7 +450,7 @@ void map::vehmove(game *g)
 // coords of where part will go due to movement (dx/dy)
 // and turning (precalc_dx/dy [1])
 	   const point ds(*pt + delta + veh->parts[p].precalc_d[1]);
-       if (can_move) imp += veh->part_collision(pt->x, pt->y, p, ds);
+       if (can_move) imp += veh->part_collision(p, ds);
        if (veh->velocity == 0) can_move = false;
        if (!can_move) break;
       }
