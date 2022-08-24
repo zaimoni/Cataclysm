@@ -97,10 +97,14 @@ void submap::destroy(vehicle& veh)
     debuglog("submap::destroy can't find it!");
 }
 
-bool submap::veh_gain_moves(const Badge<map>& auth)
+bool submap::veh_gain_moves(proxy_vehicles_t& acc, const Badge<map>& auth)
 {
     bool ret = !vehicles.empty();
-    if (ret) for (decltype(auto) veh : vehicles) veh->gain_moves(abs(veh->velocity)); // velocity is ability to make more one-tile steps per turn
+    if (ret) for (decltype(auto) veh : vehicles) {
+        if (0 == veh->velocity) continue;
+        veh->gain_moves(abs(veh->velocity)); // velocity is ability to make more one-tile steps per turn
+        if (0 < veh->moves) acc.push_back(veh);
+    }
     return ret;
 }
 

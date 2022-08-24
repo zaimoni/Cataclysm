@@ -49,6 +49,8 @@ private:
 
 public:
     using vehicles_t = decltype(vehicles);
+    using proxy_vehicles_t = std::vector<std::weak_ptr<vehicle> >;
+
     friend std::ostream& operator<<(std::ostream& os, const submap& src);
 
     submap();	// mapgen.cpp: sole caller there
@@ -102,7 +104,7 @@ public:
     std::optional<std::pair<vehicle*, int>> veh_at(const GPS_loc& loc);
     std::optional<std::pair<const vehicle*, int>> veh_at(const GPS_loc& loc) const;
 
-    bool veh_gain_moves(const Badge<map>& auth);
+    bool veh_gain_moves(proxy_vehicles_t& acc, const Badge<map>& auth);
 
     void post_init(const Badge<defense_game>& auth);
     // mapgen.cpp support

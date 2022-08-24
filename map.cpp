@@ -310,15 +310,88 @@ void map::vehmove(game *g)
  static int sm_stack[MAPSIZE*MAPSIZE];  // requires single-threaded or locking to be safe
  size_t ub = 0;
 
+ submap::proxy_vehicles_t vehicles_to_move;
+
  // give vehicles movement points
  for (int i = 0; i < my_MAPSIZE; i++) {
      for (int j = 0; j < my_MAPSIZE; j++) {
          int sm = i + j * my_MAPSIZE;
-         if (grid[sm]->veh_gain_moves(Badge<map>())) sm_stack[ub++] = sm;
+         if (grid[sm]->veh_gain_moves(vehicles_to_move, Badge<map>())) sm_stack[ub++] = sm;
      }
  }
  if (0 >= ub) return;
-// move vehicles
+ if (vehicles_to_move.empty()) return;
+
+ // move vehicles
+#if PROTOTYPE
+ while (!vehicles_to_move.empty()) {
+     auto veh = vehicles_to_move.front().lock();
+     EraseAt(vehicles_to_move, 0);
+     if (!veh) continue;
+     const bool pl_ctrl = veh->player_in_control(g->u);
+     submap* const sm = chunk(veh->GPSpos);
+     if (!sm) continue; // \todo probable error condition
+     // \todo look at wheels instead?  following is C:Whales
+     auto terrain = veh->GPSpos.ter();
+     const int mv_cost_terrain = move_cost_of(terrain);
+     if (0 >= mv_cost_terrain) { // deducting from moves will fail
+         if (is<swimmable>(terrain)) { // deep water
+             if (pl_ctrl) messages.add("Your %s sank.", veh->name.c_str());
+             veh->unboard_all();
+             // destroy vehicle (sank to nowhere)
+             sm->destroy(*veh);
+             continue;
+         }
+         // failover
+         veh->moves = 0;
+         continue;
+     }
+     // one-tile step take some of movement
+     veh->moves -= (5 * mobile::mp_turn) * mv_cost_terrain;
+
+     auto pt = veh->screen_pos();
+
+     if (!veh->valid_wheel_config()) { // not enough wheels
+         veh->velocity += veh->velocity < 0 ? 20 * vehicle::mph_1 : -20 * vehicle::mph_1;
+         for (int ep = 0; ep < veh->external_parts.size(); ep++) {
+             int p = veh->external_parts[ep];
+             auto origin = veh->GPSpos + veh->parts[p].precalc_d[0];
+             ter_id& pter = origin.ter();
+             if (pter == t_dirt || pter == t_grass) pter = t_dirtmound;
+         }
+     } // !veh->valid_wheel_config()
+
+     if (veh->skidding && one_in(4)) // might turn uncontrollably while skidding
+         veh->move.init(veh->move.dir() + (one_in(2) ? -15 * rng(1, 3) : 15 * rng(1, 3)));
+     else if (pl_ctrl && rng(0, 4) > g->u.sklevel[sk_driving] && one_in(20)) {
+         messages.add("You fumble with the %s's controls.", veh->name.c_str());
+         veh->turn(one_in(2) ? -15 : 15);
+     }
+
+     // eventually send it skidding if no control
+     if (!veh->any_boarded_parts() && one_in(10))	// XXX \todo should be out of control? check C:DDA
+         veh->skidding = true;
+     tileray mdir(veh->physical_facing());
+     mdir.advance(veh->velocity < 0 ? -1 : 1);
+     const point delta(mdir.dx(), mdir.dy()); // where do we go
+     bool can_move = true;
+     // calculate parts' mount points @ next turn (put them into precalc[1])
+     veh->precalc_mounts(1, veh->skidding ? veh->turn_dir : mdir.dir());
+
+     int imp = 0;
+     // find collisions
+     for (int ep = 0; ep < veh->external_parts.size(); ep++) {
+         int p = veh->external_parts[ep];
+         // coords of where part will go due to movement (dx/dy)
+         // and turning (precalc_dx/dy [1])
+         const point ds(*pt + delta + veh->parts[p].precalc_d[1]);
+         if (can_move) imp += veh->part_collision(pt->x, pt->y, p, ds);
+         if (veh->velocity == 0) can_move = false;
+         if (!can_move) break;
+     }
+ }
+#endif
+
  bool sm_change;
  int count = 0;
  do {
@@ -333,7 +406,7 @@ void map::vehmove(game *g)
       const int mv_cost_terrain = grid[sm]->move_cost_ter_only(veh->GPSpos.second);
       if (grid[sm]->has_flag_ter_only<swimmable>(veh->GPSpos.second) && 0 == mv_cost_terrain) { // deep water
        if (pl_ctrl) messages.add("Your %s sank.", veh->name.c_str());
-       veh->unboard_all ();
+       veh->unboard_all();
 // destroy vehicle (sank to nowhere)
        EraseAt(grid[sm]->vehicles, v);
        v--;
