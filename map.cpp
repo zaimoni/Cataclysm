@@ -349,7 +349,7 @@ void map::vehmove(game *g)
      // one-tile step take some of movement
      veh->moves -= (5 * mobile::mp_turn) * mv_cost_terrain;
 
-     auto pt = veh->screen_pos();
+//   auto pt = veh->screen_pos();
 
      if (!veh->valid_wheel_config()) { // not enough wheels
          veh->velocity += veh->velocity < 0 ? 20 * vehicle::mph_1 : -20 * vehicle::mph_1;
@@ -384,7 +384,7 @@ void map::vehmove(game *g)
          int p = veh->external_parts[ep];
          // coords of where part will go due to movement (dx/dy)
          // and turning (precalc_dx/dy [1])
-         const point ds(*pt + delta + veh->parts[p].precalc_d[1]);
+         auto ds(veh->GPSpos + delta + veh->parts[p].precalc_d[1]);
          if (can_move) imp += veh->part_collision(p, ds);
          if (veh->velocity == 0) can_move = false;
          if (!can_move) break;
@@ -489,8 +489,6 @@ void map::vehmove(game *g)
 				   if (turn_amount < 1) turn_amount = 1;
 				   turn_amount *= 15;
 				   if (turn_amount > 120) turn_amount = 120;
-				   //veh->skidding = true;
-				   //veh->turn (one_in (2)? turn_amount : -turn_amount);
 				   coll_turn = one_in(2) ? turn_amount : -turn_amount;
 			   }
 		   }

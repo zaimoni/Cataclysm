@@ -1155,6 +1155,186 @@ int vehicle::part_collision(int part, point dest)
     return imp2;
 }
 
+int vehicle::part_collision(int part, GPS_loc dest)
+{
+    static constexpr const int mass_from_msize[mtype::MS_MAX] = { 15, 40, 80, 200, 800 };
+
+    auto g = game::active();
+
+    const bool pl_ctrl = player_in_control(g->u);
+    // automatic collision w/NPCs until they can board \todo fix
+    player* ph = g->survivor(dest);
+    monster* const z = g->mon(dest);
+    if (ph->in_vehicle) ph = nullptr;
+    const auto v = dest.veh_at();
+    vehicle* const oveh = v ? v->first : nullptr; // backward compatibility
+    const bool veh_collision = oveh && oveh->GPSpos != GPSpos;
+    bool body_collision = ph || z;
+
+    // 0 - nothing, 1 - monster/player/npc, 2 - vehicle,
+    // 3 - thin_obstacle, 4 - bashable, 5 - destructible, 6 - other
+    int collision_type = 0;
+    std::string obs_name(name_of(dest.ter()));
+
+    int parm = part_with_feature(part, vpf_armor);
+    if (parm < 0) parm = part;
+    int dmg_mod = part_info(parm).dmg_mod;
+    // let's calculate type of collision & mass of object we hit
+    int mass = total_mass() / 8;
+    int mass2;
+    if (veh_collision)
+    { // first, check if we collide with another vehicle (there shouldn't be impassable terrain below)
+        collision_type = 2; // vehicle
+        mass2 = oveh->total_mass() / 8;
+        body_collision = false;
+        obs_name = oveh->name.c_str();
+    } else if (body_collision) { // then, check any monster/NPC/player on the way
+        collision_type = 1; // body
+        mass2 = mass_from_msize[z ? z->type->size : MS_MEDIUM];
+    } else // if all above fails, go for terrain which might obstruct moving
+    {
+        const auto terrain = dest.ter();
+        if (is<thin_obstacle>(terrain)) {
+            collision_type = 3; // some fence
+            mass2 = 20;
+        } else if (is<bashable>(terrain)) {
+            collision_type = 4; // bashable (door, window)
+            mass2 = 50;    // special case: instead of calculating absorb based on mass of obstacle later, we let
+            // map::bash function deside, how much absorb is
+        } else if (0 == move_cost_of(terrain)) {
+            if (is_destructible(terrain)) {
+                collision_type = 5; // destructible (wall)
+                mass2 = 200;
+            } else if (!is<swimmable>(terrain)) {
+                collision_type = 6; // not destructible
+                mass2 = 1000;
+            }
+        }
+    }
+    if (!collision_type) return 0;  // hit nothing
+
+    int degree = rng(70, 100);
+    int imp = abs(velocity) * mass / k_mvel;
+    int imp2 = imp * mass2 / (mass + mass2) * degree / 100;
+    bool smashed = true;
+    std::string snd;
+    if (collision_type == 4 || collision_type == 2) // something bashable -- use map::bash to determine outcome
+    {
+        int absorb = -1;
+        dest.bash(imp * dmg_mod / 100, snd, &absorb);
+        if (absorb != -1) imp2 = absorb;
+        smashed = imp * dmg_mod / 100 > absorb;
+    }
+    else if (collision_type >= 3) // some other terrain
+    {
+        smashed = imp * rng(80, 120) / 100 > mass2;
+        if (smashed)
+            switch (collision_type) // destroy obstacle
+            {
+            case 3:
+                dest.ter() = t_dirt;
+                break;
+            case 5:
+                dest.ter() = t_rubble;
+                snd = "crash!";
+                break;
+            case 6:
+                smashed = false;
+                break;
+            default:;
+            }
+        dest.sound(smashed ? 80 : 50, "");
+    }
+
+    const auto& p_info = part_info(part);
+
+    if (!body_collision) {
+        if (pl_ctrl) {
+            if (snd.length() > 0)
+                messages.add("Your %s's %s rams into %s with a %s", name.c_str(), p_info.name, obs_name.c_str(), snd.c_str());
+            else
+                messages.add("Your %s's %s rams into %s.", name.c_str(), p_info.name, obs_name.c_str());
+        }
+        else if (snd.length() > 0)
+            messages.add("You hear a %s", snd.c_str());
+    }
+    if (p_info.has_flag<vpf_sharp>() && smashed) imp2 /= 2;
+    int imp1 = imp - imp2;
+    int vel1 = imp1 * k_mvel / mass;
+    int vel2 = imp2 * k_mvel / mass2;
+
+    if (collision_type == 1) {
+        int dam = imp1 * dmg_mod / 100;
+        if (z) {
+            int z_armor = p_info.has_flag<vpf_sharp>() ? z->type->armor_cut : z->type->armor_bash;
+            if (z_armor < 0) z_armor = 0;
+            if (z) dam -= z_armor;
+        }
+        if (dam < 0) dam = 0;
+
+        if (p_info.has_flag<vpf_sharp>())
+            parts[part].blood += (20 + dam) * 5;
+        else if (dam > rng(10, 30))
+            parts[part].blood += (10 + dam / 2) * 5;
+
+        int turns_stunned = rng(0, dam) > 10 ? rng(1, 2) + (dam > 40 ? rng(1, 2) : 0) : 0;
+        if (p_info.has_flag<vpf_sharp>()) turns_stunned = 0;
+        if (turns_stunned > 6) turns_stunned = 6;
+        if (turns_stunned > 0 && z) z->add_effect(ME_STUNNED, turns_stunned);
+
+        std::string dname(z ? z->name().c_str() : ph->name);
+        if (pl_ctrl)
+            messages.add("Your %s's %s rams into %s, inflicting %d damage%s!",
+                name.c_str(), p_info.name, dname.c_str(), dam,
+                turns_stunned > 0 && z ? " and stunning it" : "");
+
+        int angle = (100 - degree) * 2 * (one_in(2) ? 1 : -1);
+        if (z) {
+            z->hurt(dam);
+            if (vel2 > rng(5, 30)) z->fling(move.dir() + angle, vel2 / 100);
+            if (z->hp < 1) g->kill_mon(*z, pl_ctrl ? &g->u : nullptr);
+        } else {
+            ph->hitall(dam, 40);
+            if (vel2 > rng(5, 30)) ph->fling(move.dir() + angle, vel2 / 100);
+        }
+
+        if (p_info.has_flag<vpf_sharp>()) {
+            if (const auto blood = bleeds(z)) {
+                auto& f = g->m.field_at(dest);
+                if (f.type == blood) {
+                    if (f.density < 3) f.density++;
+                }
+                dest.add(field(blood, 1));
+            }
+        } else
+            dest.sound(20, "");
+    }
+
+    if (!smashed || collision_type == 2) { // vehicles shouldn't intersect
+        cruise_on = false;
+        stop();
+        imp2 = imp;
+    } else {
+        if (vel1 < 5 * mph_1) stop();
+        else velocity = (velocity < 0) ? -vel1 : vel1;
+
+        int turn_roll = rng(0, 100);
+        int turn_amount = rng(1, 3) * sqrt(imp2);
+        turn_amount /= 15;
+        if (turn_amount < 1) turn_amount = 1;
+        turn_amount *= 15;
+        if (turn_amount > 120) turn_amount = 120;
+        bool turn_veh = turn_roll < (abs(velocity) - vel1) / mph_1;
+        if (turn_veh) {
+            skidding = true;
+            turn(one_in(2) ? turn_amount : -turn_amount);
+        }
+
+    }
+    damage(parm, imp2);
+    return imp2;
+}
+
 void vehicle::handle_trap(const point& pt, int part)
 {
     int pwh = part_with_feature (part, vpf_wheel);
