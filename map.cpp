@@ -445,6 +445,42 @@ void map::vehmove(game *g)
              veh->handle_trap(origin, p);
          }
      }
+
+     if (veh->last_turn < 0) veh->last_turn += 1;
+     else if (veh->last_turn > 0) veh->last_turn -= 1;
+
+     int slowdown = veh->skidding ? 2 * vehicle::mph_1 : 2 * vehicle::mph_1 / 10; // mph lost per tile when coasting
+     float kslw = (0.1 + veh->k_dynamics()) / ((0.1) + veh->k_mass());
+     slowdown = (int)(slowdown * kslw);
+     if (veh->velocity < 0)
+         veh->velocity += slowdown;
+     else
+         veh->velocity -= slowdown;
+     if (abs(veh->velocity) < vehicle::mph_1) veh->stop();
+
+     if (pl_ctrl) {
+         timespec ts = { 0, 50000000 };   // Timespec for the animation
+         nanosleep(&ts, nullptr);
+     }
+
+     if (can_move) {
+         veh->physical_facing(mdir); // accept new direction
+         if (coll_turn) {
+             veh->skidding = true;
+             veh->turn(coll_turn);
+         }
+         // accept new position
+         // historically, if submap changed, we need to process grid from the beginning.
+         displace_vehicle(veh, delta);
+     }
+     else // can_move
+         veh->stop();
+     // redraw scene
+     g->draw();
+
+     // push back into processing, if indicated
+     if (0 == veh->velocity) continue;
+     if (0 < veh->moves) vehicles_to_move.push_back(veh);
  }
 #endif
 
