@@ -440,7 +440,7 @@ void map::vehmove(game *g)
              int p = veh->external_parts[ep];
              auto origin(veh->GPSpos + veh->parts[p].precalc_d[0]);
              if (veh->part_flag(p, vpf_wheel) && one_in(2))
-                 if (displace_water(origin) && pl_ctrl)
+                 if (origin.displace_water() && pl_ctrl)
                      messages.add("You hear a splash!");
              veh->handle_trap(origin, p);
          }
@@ -604,6 +604,32 @@ void map::vehmove(game *g)
   count++;
   if (10 < ++count) break;  // infinite loop interceptor
  } while (sm_change);
+}
+
+bool GPS_loc::displace_water()
+{
+    ter_id& terrain = ter();
+    if (0 < move_cost_of(terrain) && is<swimmable>(terrain)) // shallow water
+    { // displace it
+        inline_stack<GPS_loc, std::end(Direction::vector) - std::begin(Direction::vector)> can_displace_to;
+
+        for (decltype(auto) dir : Direction::vector) {
+            const GPS_loc dest = *this + dir;
+            ter_id ter0 = dest.ter();
+            if (0 >= move_cost_of(ter0)) continue;
+            if (ter0 == t_water_sh || ter0 == t_water_dp) continue;
+            // C:Z water is not acid.  Until we can record the terrain under shallow water, disallow acidic displacement
+            if (ter0 != t_dirt) continue;
+            can_displace_to.push(dest);
+        }
+
+        if (auto ub = can_displace_to.size()) {
+            can_displace_to[rng(0, ub - 1)].ter() = t_water_sh;
+            terrain = t_dirt;
+            return true;
+        }
+    }
+    return false;
 }
 
 bool map::displace_water(const point& pt)
