@@ -12,6 +12,7 @@
 #include <array>
 
 void trap_fully_triggered(map& m, const point& pt, const std::vector<item_drop_spec>& drop_these); // trapfunc.cpp
+void trap_fully_triggered(GPS_loc loc, const std::vector<item_drop_spec>& drop_these); // trapfunc.cpp
 
 static const char* const JSON_transcode_vparts[] = {
 	"seat",
@@ -1430,6 +1431,104 @@ void vehicle::handle_trap(const point& pt, int part)
         g->m.tr_at(pt) = tr_pit;
     }
     if (expl > 0) g->explosion(pt, expl, shrap, false);
+}
+
+
+void vehicle::handle_trap(GPS_loc pt, int part)
+{
+    int pwh = part_with_feature(part, vpf_wheel);
+    if (pwh < 0) return;
+    auto g = game::active();
+    trap_id& tr = pt.trap_at();
+    if (tr_null == tr) return;
+    const std::string& tr_name = trap::traps[tr]->name; // message must refer to before-update trap
+    int noise = 0;
+    int chance = 100;
+    int expl = 0;
+    int shrap = 0;
+    trap_id triggered = tr_null;
+    bool wreckit = false;
+    const char* msg = "The %s's %s runs over %s.";
+    std::string snd;
+    switch (tr)
+    {
+    case tr_bubblewrap:
+        noise = 18;
+        snd = "Pop!";
+        break;
+    case tr_beartrap:
+    case tr_beartrap_buried:
+        noise = 8;
+        snd = "SNAP!";
+        wreckit = true;
+        // the two beartraps have the same configuration
+        trap_fully_triggered(pt, trap::traps[tr_beartrap]->trigger_components);
+        break;
+    case tr_nailboard:
+        wreckit = true;
+        break;
+    case tr_blade:
+        noise = 1;
+        snd = "Swinnng!";
+        wreckit = true;
+        break;
+    case tr_crossbow:
+        chance = 30;
+        noise = 1;
+        snd = "Clank!";
+        wreckit = true;
+        trap_fully_triggered(pt, trap::traps[tr_crossbow]->trigger_components);
+        if (!one_in(10)) pt.add(item(item::types[itm_bolt_steel], 0));
+        break;
+    case tr_shotgun_2:
+    case tr_shotgun_1:
+        noise = 60;
+        snd = "Bang!";
+        chance = 70;
+        wreckit = true;
+        if (tr_shotgun_2 == tr) tr = tr_shotgun_1;
+        else trap_fully_triggered(pt, trap::traps[tr_shotgun_2]->trigger_components); // the two shotguns have the same configuration
+        break;
+    case tr_landmine:
+        expl = 10;
+        shrap = 8;
+        break;
+    case tr_boobytrap:
+        expl = 18;
+        shrap = 12;
+        break;
+    case tr_dissector:
+        noise = 10;
+        snd = "BRZZZAP!";
+        wreckit = true;
+        break;
+    case tr_spike_pit:
+        if (one_in(4)) triggered = tr_spike_pit;
+        [[fallthrough]];
+    case tr_sinkhole:
+    case tr_pit:
+    case tr_ledge:
+        wreckit = true;
+        break;
+    case tr_goo:
+    case tr_portal:
+    case tr_telepad:
+    case tr_temple_flood:
+    case tr_temple_toggle:
+        msg = nullptr;
+    }
+    if (msg && g->u.see(pt))
+        messages.add(msg, name.c_str(), part_info(part).name, tr_name.c_str());
+    if (noise > 0) pt.sound(noise, snd);
+    if (wreckit && chance >= rng(1, 100)) damage(part, 500);
+    if (triggered) {
+        if (g->u.see(pt)) messages.add("The spears break!"); // hard-code the spiked pit trap, for now
+        trap_fully_triggered(pt, trap::traps[triggered]->trigger_components);
+        // hard-code overriding trap_at effects, above
+        pt.ter() = t_pit;
+        pt.trap_at() = tr_pit;
+    }
+    if (expl > 0) pt.explosion(expl, shrap, false);
 }
 
 bool vehicle::add_item (int part, item itm)

@@ -19,6 +19,19 @@ void trap_fully_triggered(map& m, const point& pt, const std::vector<item_drop_s
     }
 }
 
+void trap_fully_triggered(GPS_loc loc, const std::vector<item_drop_spec>& drop_these)
+{
+    loc.trap_at() = tr_null;
+    for (decltype(auto) drop : drop_these) {
+        int n = drop.qty;
+        while (0 <= --n) {
+            // hard-code one_in processing for now
+            if (1 < drop.modifier && !one_in(drop.modifier)) continue;
+            loc.add(item(item::types[drop.what], 0)); // could use messages.turn instead; current representation doesn't track age of components used to build the trap
+        }
+    }
+}
+
 void trap::trigger(monster& mon) const
 {
     if (actm) actm(game::active(), &mon); // legacy adapter

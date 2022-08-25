@@ -389,6 +389,62 @@ void map::vehmove(game *g)
          if (veh->velocity == 0) can_move = false;
          if (!can_move) break;
      }
+
+     int coll_turn = 0;
+     if (imp > 0) {
+         if (imp > 100) veh->damage_all(imp / 20, imp / 10, vehicle::damage_type::bash);// shake veh because of collision
+         int vel2 = imp * vehicle::k_mvel / (veh->total_mass() / 8);
+         auto passengers = veh->passengers();
+         for (const auto& pass : passengers) {
+             assert(pass.second);
+             int ps = pass.first;
+             player* psg = pass.second;
+             int throw_roll = rng(vel2 / 100, vel2 / 100 * 2);
+             int psblt = veh->part_with_feature(ps, vpf_seatbelt);
+             int sb_bonus = psblt >= 0 ? veh->part_info(psblt).bonus : 0;
+             if (throw_roll > (psg->str_cur + sb_bonus) * 3) {
+                 static auto thrown = [&]() {
+                     return SVO_sentence(*psg, psg->to_be(), std::string("hurled from ") + veh->desc(grammar::noun::role::possessive, grammar::article::definite) + " by the power of impact", "!");
+                 };
+
+                 g->if_visible_message(thrown, *psg);
+
+                 veh->unboard(ps);
+                 psg->fling(mdir.dir() + rng(0, 60) - 30, (vel2 / 100 - sb_bonus < 10 ? 10 : vel2 / 100 - sb_bonus));
+             }
+             else if (veh->part_with_feature(ps, vpf_controls) >= 0) {
+                 int lose_ctrl_roll = rng(0, imp);
+                 if (lose_ctrl_roll > psg->dex_cur * 2 + psg->sklevel[sk_driving] * 3) {
+                     static auto lost_control = [&]() {
+                         return SVO_sentence(*psg, "lose", std::string("control of ") + veh->desc(grammar::noun::role::direct_object, grammar::article::definite));;
+                     };
+
+                     g->if_visible_message(lost_control, *psg);
+
+                     int turn_amount = (rng(1, 3) * sqrt(vel2) / 2) / 15;
+                     if (turn_amount < 1) turn_amount = 1;
+                     turn_amount *= 15;
+                     if (turn_amount > 120) turn_amount = 120;
+                     coll_turn = one_in(2) ? turn_amount : -turn_amount;
+                 }
+             }
+         }
+     }
+
+     // now we're gonna handle traps we're standing on (if we're still moving).
+     // (historically) this is done here before displacement because
+     // after displacement veh reference would be invalid.
+     // damn references!
+     if (can_move) {
+         for (int ep = 0; ep < veh->external_parts.size(); ep++) {
+             int p = veh->external_parts[ep];
+             auto origin(veh->GPSpos + veh->parts[p].precalc_d[0]);
+             if (veh->part_flag(p, vpf_wheel) && one_in(2))
+                 if (displace_water(origin) && pl_ctrl)
+                     messages.add("You hear a splash!");
+             veh->handle_trap(origin, p);
+         }
+     }
  }
 #endif
 
