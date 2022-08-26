@@ -223,28 +223,24 @@ bool map::try_board_vehicle(game* g, int x, int y, player& p)
 
 bool map::displace_vehicle(std::shared_ptr<vehicle> veh, const point& delta, bool test)
 {
-    auto origin = to(veh->GPSpos);
-    if (!origin) {
-        debuglog("map::displace_vehicle: coords out of bounds");
+    const auto src_sm = chunk(veh->GPSpos);
+    if (!src_sm) {
+        debuglog("map::displace_vehicle: coords not in a known map chunk");
         return false;
     }
+
     auto dest_gps = veh->GPSpos + delta;
-    auto dest_rb = to(dest_gps);
-    if (test) return origin != dest_rb;
-
-// const point dest = src + delta;
-
-    int src_na = origin->first; // backward compatibility
-    decltype(auto) src = origin->second;
-
-// int dst_na = int(dest.x / SEEX) + int(dest.y / SEEY) * my_MAPSIZE;
+    const auto dest_sm = chunk(dest_gps);
+    if (test) return src_sm == dest_sm;
 
  // first, let's find our position in current vehicles vector
  int our_i = -1;
- for (int i = 0; i < grid[src_na]->vehicles.size(); i++) {
-     if (veh.get() == grid[src_na]->vehicles[i].get()) {
-          our_i = i;
-          break;
+ int i = -1;
+ for (decltype(auto) v : src_sm->vehicles) {
+     ++i;
+     if (veh.get() == v.get()) {
+         our_i = i;
+         break;
      }
  }
  if (our_i < 0) {
@@ -252,8 +248,8 @@ bool map::displace_vehicle(std::shared_ptr<vehicle> veh, const point& delta, boo
   return false;
  }
  // move the vehicle
- // don't let it go off grid
- if (!dest_rb) veh->stop();
+ // don't let it go off generated submaps
+ if (!dest_sm) veh->stop();
 
  int rec = abs(veh->velocity) / 5 / 100;
 
@@ -286,12 +282,11 @@ bool map::displace_vehicle(std::shared_ptr<vehicle> veh, const point& delta, boo
  for (auto& part : veh->parts) part.precalc_d[0] = part.precalc_d[1];
 
  // not going off-grid
- if (dest_rb) {
+ if (dest_sm) {
      veh->GPSpos = dest_gps;
-     auto dst_na = dest_rb->first;
-     if (src_na != dst_na) {
-         grid[dst_na]->vehicles.push_back(std::move(veh));
-         EraseAt(grid[src_na]->vehicles, our_i);
+     if (src_sm != dest_sm) {
+         dest_sm->vehicles.push_back(std::move(veh));
+         EraseAt(src_sm->vehicles, our_i);
      }
  }
 
@@ -302,7 +297,7 @@ bool map::displace_vehicle(std::shared_ptr<vehicle> veh, const point& delta, boo
   g->update_map(need_update->x, need_update->y);	// player coords were already updated so don't re-update them
   was_update = true;
  }
- return (origin != dest_rb) || was_update;
+ return (src_sm != dest_sm) || was_update;
 }
 
 void map::vehmove(game *g)
