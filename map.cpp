@@ -346,8 +346,7 @@ void map::vehmove(game *g)
 
      if (!veh->valid_wheel_config()) { // not enough wheels
          veh->velocity += veh->velocity < 0 ? 20 * vehicle::mph_1 : -20 * vehicle::mph_1;
-         for (int ep = 0; ep < veh->external_parts.size(); ep++) {
-             int p = veh->external_parts[ep];
+         for (const int p : veh->external_parts) {
              auto origin = veh->GPSpos + veh->parts[p].precalc_d[0];
              ter_id& pter = origin.ter();
              if (pter == t_dirt || pter == t_grass) pter = t_dirtmound;
@@ -373,8 +372,7 @@ void map::vehmove(game *g)
 
      int imp = 0;
      // find collisions
-     for (int ep = 0; ep < veh->external_parts.size(); ep++) {
-         int p = veh->external_parts[ep];
+     for (const int p : veh->external_parts) {
          // coords of where part will go due to movement (dx/dy)
          // and turning (precalc_dx/dy [1])
          auto ds(veh->GPSpos + delta + veh->parts[p].precalc_d[1]);
@@ -429,8 +427,7 @@ void map::vehmove(game *g)
      // after displacement veh reference would be invalid.
      // damn references!
      if (can_move) {
-         for (int ep = 0; ep < veh->external_parts.size(); ep++) {
-             int p = veh->external_parts[ep];
+         for (const int p : veh->external_parts) {
              auto origin(veh->GPSpos + veh->parts[p].precalc_d[0]);
              if (veh->part_flag(p, vpf_wheel) && one_in(2))
                  if (origin.displace_water() && pl_ctrl)
