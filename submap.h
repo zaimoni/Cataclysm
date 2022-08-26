@@ -104,7 +104,7 @@ public:
     std::optional<std::pair<vehicle*, int>> veh_at(const GPS_loc& loc);
     std::optional<std::pair<const vehicle*, int>> veh_at(const GPS_loc& loc) const;
 
-    bool veh_gain_moves(proxy_vehicles_t& acc, const Badge<map>& auth);
+    void veh_gain_moves(proxy_vehicles_t& acc, const Badge<map>& auth);
 
     void post_init(const Badge<defense_game>& auth);
     // mapgen.cpp support

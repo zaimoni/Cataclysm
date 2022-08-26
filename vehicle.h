@@ -286,11 +286,9 @@ public:
 
 // handle given part collision with vehicle, monster/NPC/player or terrain obstacle
 // return impulse (damage) applied on vehicle for that collision
-    int part_collision(int part, point dest);
     int part_collision(int part, GPS_loc dest);
 
 // Process the trap beneath
-    void handle_trap(const point& pt, int part);
     void handle_trap(GPS_loc pt, int part);
 
 // add item to part's cargo. if false, then there's no cargo at this part or cargo is full

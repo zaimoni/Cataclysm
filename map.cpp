@@ -307,23 +307,18 @@ bool map::displace_vehicle(std::shared_ptr<vehicle> veh, const point& delta, boo
 
 void map::vehmove(game *g)
 {
- static int sm_stack[MAPSIZE*MAPSIZE];  // requires single-threaded or locking to be safe
- size_t ub = 0;
-
  submap::proxy_vehicles_t vehicles_to_move;
 
  // give vehicles movement points
  for (int i = 0; i < my_MAPSIZE; i++) {
      for (int j = 0; j < my_MAPSIZE; j++) {
          int sm = i + j * my_MAPSIZE;
-         if (grid[sm]->veh_gain_moves(vehicles_to_move, Badge<map>())) sm_stack[ub++] = sm;
+         grid[sm]->veh_gain_moves(vehicles_to_move, Badge<map>()); // \todo retype return value to void
      }
  }
- if (0 >= ub) return;
  if (vehicles_to_move.empty()) return;
 
  // move vehicles
-#if PROTOTYPE
  while (!vehicles_to_move.empty()) {
      auto veh = vehicles_to_move.front().lock();
      EraseAt(vehicles_to_move, 0);
@@ -348,8 +343,6 @@ void map::vehmove(game *g)
      }
      // one-tile step take some of movement
      veh->moves -= (5 * mobile::mp_turn) * mv_cost_terrain;
-
-//   auto pt = veh->screen_pos();
 
      if (!veh->valid_wheel_config()) { // not enough wheels
          veh->velocity += veh->velocity < 0 ? 20 * vehicle::mph_1 : -20 * vehicle::mph_1;
@@ -482,164 +475,6 @@ void map::vehmove(game *g)
      if (0 == veh->velocity) continue;
      if (0 < veh->moves) vehicles_to_move.push_back(veh);
  }
-#endif
-
- bool sm_change;
- int count = 0;
- do {
-  sm_change = false;
-  for (int scan = 0; scan < ub; scan++) {
-      const int sm = sm_stack[scan];
-
-    for (int v = 0; v < grid[sm]->vehicles.size(); v++) {
-     auto veh = grid[sm]->vehicles[v];
-     bool pl_ctrl = veh->player_in_control(g->u);
-     while (!sm_change && veh->moves > 0 && veh->velocity != 0) {
-      const int mv_cost_terrain = grid[sm]->move_cost_ter_only(veh->GPSpos.second);
-      if (grid[sm]->has_flag_ter_only<swimmable>(veh->GPSpos.second) && 0 == mv_cost_terrain) { // deep water
-       if (pl_ctrl) messages.add("Your %s sank.", veh->name.c_str());
-       veh->unboard_all();
-// destroy vehicle (sank to nowhere)
-       EraseAt(grid[sm]->vehicles, v);
-       v--;
-       break;
-      }
-// one-tile step take some of movement
-      veh->moves -= (5 * mobile::mp_turn) * mv_cost_terrain;
-
-      auto pt = veh->screen_pos();
-
-      if (!veh->valid_wheel_config()) { // not enough wheels
-       veh->velocity += veh->velocity < 0 ? 20 * vehicle::mph_1 : -20 * vehicle::mph_1;
-       for (int ep = 0; ep < veh->external_parts.size(); ep++) {
-        int p = veh->external_parts[ep];
-		const point origin(*pt + veh->parts[p].precalc_d[0]);
-        ter_id &pter = ter(origin);
-        if (pter == t_dirt || pter == t_grass) pter = t_dirtmound;
-       }
-      } // !veh->valid_wheel_config()
-
-      if (veh->skidding && one_in(4)) // might turn uncontrollably while skidding
-       veh->move.init (veh->move.dir() + (one_in(2) ? -15 * rng(1, 3) : 15 * rng(1, 3)));
-      else if (pl_ctrl && rng(0, 4) > g->u.sklevel[sk_driving] && one_in(20)) {
-       messages.add("You fumble with the %s's controls.", veh->name.c_str());
-       veh->turn (one_in(2) ? -15 : 15);
-      }
- // eventually send it skidding if no control
-      if (!veh->any_boarded_parts() && one_in (10))	// XXX \todo should be out of control? check C:DDA
-       veh->skidding = true;
-      tileray mdir(veh->physical_facing());
-      mdir.advance (veh->velocity < 0? -1 : 1);
-      const point delta(mdir.dx(), mdir.dy()); // where do we go
-      bool can_move = true;
-// calculate parts' mount points @ next turn (put them into precalc[1])
-      veh->precalc_mounts(1, veh->skidding ? veh->turn_dir : mdir.dir());
-
-      int imp = 0;
-// find collisions
-      for (int ep = 0; ep < veh->external_parts.size(); ep++) {
-       int p = veh->external_parts[ep];
-// coords of where part will go due to movement (dx/dy)
-// and turning (precalc_dx/dy [1])
-	   const point ds(*pt + delta + veh->parts[p].precalc_d[1]);
-       if (can_move) imp += veh->part_collision(p, ds);
-       if (veh->velocity == 0) can_move = false;
-       if (!can_move) break;
-      }
-
-      int coll_turn = 0;
-      if (imp > 0) {
-       if (imp > 100) veh->damage_all(imp / 20, imp / 10, vehicle::damage_type::bash);// shake veh because of collision
-	   int vel2 = imp * vehicle::k_mvel / (veh->total_mass() / 8);
-	   auto passengers = veh->passengers();
-	   for (const auto& pass : passengers) {
-		   assert(pass.second);
-		   int ps = pass.first;
-		   player* psg = pass.second;
-		   int throw_roll = rng(vel2 / 100, vel2 / 100 * 2);
-		   int psblt = veh->part_with_feature(ps, vpf_seatbelt);
-		   int sb_bonus = psblt >= 0 ? veh->part_info(psblt).bonus : 0;
-		   if (throw_roll > (psg->str_cur + sb_bonus) * 3) {
-               static auto thrown = [&]() {
-                   return SVO_sentence(*psg, psg->to_be(), std::string("hurled from ") + veh->desc(grammar::noun::role::possessive, grammar::article::definite)+" by the power of impact", "!");
-               };
-
-               g->if_visible_message(thrown, *psg);
-
-               veh->unboard(ps);
-               psg->fling(mdir.dir() + rng(0, 60) - 30, (vel2 / 100 - sb_bonus < 10 ? 10 : vel2 / 100 - sb_bonus));
-		   } else if (veh->part_with_feature(ps, vpf_controls) >= 0) {
-			   int lose_ctrl_roll = rng(0, imp);
-			   if (lose_ctrl_roll > psg->dex_cur * 2 + psg->sklevel[sk_driving] * 3) {
-                   static auto lost_control = [&]() {
-                       return SVO_sentence(*psg, "lose", std::string("control of ") + veh->desc(grammar::noun::role::direct_object, grammar::article::definite));;
-                   };
-
-                   g->if_visible_message(lost_control, *psg);
-
-                   int turn_amount = (rng(1, 3) * sqrt(vel2) / 2) / 15;
-				   if (turn_amount < 1) turn_amount = 1;
-				   turn_amount *= 15;
-				   if (turn_amount > 120) turn_amount = 120;
-				   coll_turn = one_in(2) ? turn_amount : -turn_amount;
-			   }
-		   }
-	   }
-      }
-// now we're gonna handle traps we're standing on (if we're still moving).
-// this is done here before displacement because
-// after displacement veh reference would be invalid.
-// damn references!
-      if (can_move) {
-       for (int ep = 0; ep < veh->external_parts.size(); ep++) {
-        int p = veh->external_parts[ep];
-		const point origin(*pt + veh->parts[p].precalc_d[0]);
-        if (veh->part_flag(p, vpf_wheel) && one_in(2))
-         if (displace_water(origin) && pl_ctrl)
-          messages.add("You hear a splash!");
-        veh->handle_trap(origin, p);
-       }
-      }
-
-      if (veh->last_turn < 0) veh->last_turn += 1;
-      else if (veh->last_turn > 0) veh->last_turn -= 1;
-
-      int slowdown = veh->skidding? 2*vehicle::mph_1 : 2 * vehicle::mph_1 / 10; // mph lost per tile when coasting
-      float kslw = (0.1 + veh->k_dynamics()) / ((0.1) + veh->k_mass());
-      slowdown = (int) (slowdown * kslw);
-      if (veh->velocity < 0)
-       veh->velocity += slowdown;
-      else
-       veh->velocity -= slowdown;
-      if (abs(veh->velocity) < vehicle::mph_1) veh->stop();
-
-      if (pl_ctrl) {
-       timespec ts = { 0, 50000000 };   // Timespec for the animation
-       nanosleep(&ts, nullptr);
-      }
-
-      if (can_move) {
-       veh->physical_facing(mdir); // accept new direction
-       if (coll_turn) {
-        veh->skidding = true;
-        veh->turn (coll_turn);
-       }
-// accept new position
-// if submap changed, we need to process grid from the beginning.
-       sm_change = displace_vehicle(veh, delta);
-      } else // can_move
-       veh->stop();
-// redraw scene
-      g->draw();
-      if (sm_change) break;
-     } // while (veh->moves
-     if (sm_change) break;
-    } //for v
-    if (sm_change) break;
-  } // for scan
-  count++;
-  if (10 < ++count) break;  // infinite loop interceptor
- } while (sm_change);
 }
 
 bool GPS_loc::displace_water()
