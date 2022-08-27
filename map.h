@@ -301,11 +301,16 @@ class map
                 int faction_id = -1);
  void create_anomaly(int cx, int cy, artifact_natural_property prop);
  vehicle* add_vehicle(vhtype_id type, point pos, int deg);
- computer* add_computer(int x, int y, std::string name, int security);
+
+ template<class...Args>
+ computer* add_computer(std::string&& name, int security, Args...params) {
+	 return add_computer(to(params...).value(), std::move(name), security);
+ }
 
  static constexpr bool in_bounds(int x, int y) { return 0 <= x && x < SEE* MAPSIZE && 0 <= y && y < SEE* MAPSIZE; }
  static constexpr bool in_bounds(const point& p) { return in_bounds(p.x, p.y); }
  static void init();
+
 protected:
  void saven(const tripoint& om_pos, unsigned int turn, const point& world, int gridx, int gridy);
  bool loadn(game *g, const point& world, int gridx, int gridy);
@@ -323,8 +328,10 @@ protected:
 
  int my_MAPSIZE;
  std::vector<submap*> grid;
+
 private:
- void _translate(ter_id from, ter_id to);	// error-checked backend for map::translate
+	computer* add_computer(const reality_bubble_loc& dest, std::string&& name, int security);
+	void _translate(ter_id from, ter_id to);	// error-checked backend for map::translate
 };
 
 class tinymap : public map	// XXX direct subclassing defeats the point of this class \todo fix this

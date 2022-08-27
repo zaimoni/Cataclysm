@@ -99,6 +99,8 @@ public:
 
     void add(item&& new_item, const point& dest);
 
+    computer* add_computer(const point& pt, std::string&& name, int security);
+
     vehicle* add_vehicle(vhtype_id type, point pos, int deg);
     void add(std::shared_ptr<vehicle> veh, const Badge<map>& auth);
     void destroy(vehicle& veh);

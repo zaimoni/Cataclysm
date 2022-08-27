@@ -228,7 +228,7 @@ void mission_start::place_npc_software(game *g, mission *miss)
 	} break;
 	}
 
-	computer* const tmpcomp = compmap.add_computer(comppoint.x, comppoint.y, dev->name + "'s Terminal", 0);
+	computer* const tmpcomp = compmap.add_computer(dev->name + "'s Terminal", 0, comppoint);
 	tmpcomp->mission_id = miss->uid;
 	tmpcomp->add_option("Download Software", COMPACT_DOWNLOAD_SOFTWARE, 0);
 

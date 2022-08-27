@@ -75,6 +75,13 @@ std::optional<std::pair<const vehicle*, int>> submap::veh_at(const GPS_loc& loc)
     return std::nullopt;
 }
 
+computer* submap::add_computer(const point& pt, std::string&& name, int security)
+{
+    terrain(pt) = t_console; // TODO: Turn this off?
+    comp = computer(std::move(name), security);
+    return &comp;
+}
+
 vehicle* submap::add_vehicle(vhtype_id type, point pos, int deg)
 {
     assert(in_bounds(pos));

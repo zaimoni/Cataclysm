@@ -2430,7 +2430,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
      }
     }
    }
-   tmpcomp = add_computer(SEEX, 8, "Sub-prime contact console", 7);
+   tmpcomp = add_computer("Sub-prime contact console", 7, SEEX, 8);
    tmpcomp->add_option("Terminate Specimens", COMPACT_TERMINATE, 2);
    tmpcomp->add_option("Release Specimens", COMPACT_RELEASE, 3);
    tmpcomp->add_option("Toggle Portal", COMPACT_PORTAL, 8);
@@ -2457,7 +2457,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    line(this, t_reinforced_glass_h, SEEX - 2, SEEY + 1, SEEX + 1, SEEY + 1);
    line(this, t_reinforced_glass_v, SEEX - 2, SEEY - 1, SEEX - 2, SEEY);
    line(this, t_reinforced_glass_v, SEEX + 1, SEEY - 1, SEEX + 1, SEEY);
-   tmpcomp = add_computer(SEEX - 3, SEEY - 3, "Bionic access", 3);
+   tmpcomp = add_computer("Bionic access", 3, point(SEE - 3));
    tmpcomp->add_option("Manifest", COMPACT_LIST_BIONICS, 0);
    tmpcomp->add_option("Open Chambers", COMPACT_RELEASE, 5);
    tmpcomp->add_failure(COMPFAIL_MANHACKS);
@@ -2734,7 +2734,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    }
   }
   ter(0, 0) = t_stairs_up;
-  tmpcomp = add_computer(4, 5, "Missile Controls", 8);
+  tmpcomp = add_computer("Missile Controls", 8, 4, 5);
   tmpcomp->add_option("Launch Missile", COMPACT_MISS_LAUNCH, 10);
   tmpcomp->add_option("Disarm Missile", COMPACT_MISS_DISARM,  8);
   tmpcomp->add_failure(COMPFAIL_SECUBOTS);
@@ -2942,11 +2942,11 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    ter(23, rng(19, 22)) = t_door_locked;
   ter(4, 19) = t_door_metal_locked;
 // Computers to unlock stair room
-  tmpcomp = add_computer(2, 19, "EnviroCom OS v2.03", 1);
+  tmpcomp = add_computer("EnviroCom OS v2.03", 1, 2, 19);
   tmpcomp->add_option("Unlock stairs", COMPACT_OPEN, 0);
   tmpcomp->add_failure(COMPFAIL_SHUTDOWN);
 
-  tmpcomp = add_computer(6, 19, "EnviroCom OS v2.03", 1);
+  tmpcomp = add_computer("EnviroCom OS v2.03", 1, 6, 19);
   tmpcomp->add_option("Unlock stairs", COMPACT_OPEN, 0);
   tmpcomp->add_failure(COMPFAIL_SHUTDOWN);
   break;
@@ -3072,7 +3072,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    ter(2, 4) = t_counter;
    ter(1, 6) = t_sewage_pump;
    ter(2, 6) = t_counter;
-   tmpcomp = add_computer(1, 2, "EnviroCom OS v2.03", 0);
+   tmpcomp = add_computer("EnviroCom OS v2.03", 0, 1, 2);
    tmpcomp->add_option("Download Sewer Maps", COMPACT_MAP_SEWER, 0);
    tmpcomp->add_option("Divert sample", COMPACT_SAMPLE, 3);
    tmpcomp->add_failure(COMPFAIL_PUMP_EXPLODE);
@@ -3092,7 +3092,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    ter(18, 22) = t_counter;
    ter(20, 23) = t_sewage_pump;
    ter(20, 22) = t_counter;
-   tmpcomp = add_computer(16, 23, "EnviroCom OS v2.03", 0);
+   tmpcomp = add_computer("EnviroCom OS v2.03", 0, 16, 23);
    tmpcomp->add_option("Download Sewer Maps", COMPACT_MAP_SEWER, 0);
    tmpcomp->add_option("Divert sample", COMPACT_SAMPLE, 3);
    tmpcomp->add_failure(COMPFAIL_PUMP_EXPLODE);
@@ -3477,7 +3477,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
       break;
     }
 
-    tmpcomp = add_computer(SEEX, SEEY, "NEPowerOS", 0);
+    tmpcomp = add_computer("NEPowerOS", 0, point(SEE));
     tmpcomp->add_option("Read Logs", COMPACT_AMIGARA_LOG, 0);
     tmpcomp->add_option("Initiate Tremors", COMPACT_AMIGARA_START, 4);
     tmpcomp->add_failure(COMPFAIL_AMIGARA);
@@ -3761,7 +3761,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   ter(rng( 6,  9), 12) = t_door_c;
   ter(rng(11, 15), 12) = t_door_c;
   ter(21, 12) = t_door_metal_locked;
-  tmpcomp = add_computer(22, 13, "PolCom OS v1.47", 3); // Fix \todo keep this from being overwritten, as part of fixing clairvoyant lockpicking
+  tmpcomp = add_computer("PolCom OS v1.47", 3, 22, 13); // Fix \todo keep this from being overwritten, as part of fixing clairvoyant lockpicking
   tmpcomp->add_option("Open Supply Room", COMPACT_OPEN, 3);
   tmpcomp->add_failure(COMPFAIL_SHUTDOWN);
   tmpcomp->add_failure(COMPFAIL_ALARM);
@@ -3771,7 +3771,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   ter(15, 14) = t_door_c;
   ter(rng(20, 22), 15) = t_door_c;
   ter(2, 17) = t_door_metal_locked;
-  tmpcomp = add_computer(22, 13, "PolCom OS v1.47", 3);
+  tmpcomp = add_computer("PolCom OS v1.47", 3, 22, 13);
   tmpcomp->add_option("Open Evidence Locker", COMPACT_OPEN, 3);
   tmpcomp->add_failure(COMPFAIL_SHUTDOWN);
   tmpcomp->add_failure(COMPFAIL_ALARM);
@@ -3833,7 +3833,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
   line(this, t_counter,  2,  4,  14,  4);
   ter(13, 17) = t_door_metal_locked;
   ter(13, 18) = t_door_metal_locked;
-  tmpcomp = add_computer(14, 16, "First United Bank", 3);
+  tmpcomp = add_computer("First United Bank", 3, 14, 16);
   tmpcomp->add_option("Open Vault", COMPACT_OPEN, 3);
   tmpcomp->add_failure(COMPFAIL_SHUTDOWN);
   tmpcomp->add_failure(COMPFAIL_ALARM);
@@ -4328,7 +4328,7 @@ void map::draw_map(oter_id terrain_type, oter_id t_north, oter_id t_east,
    square(this, t_counter, 4, 17, 6, 19);
    ter(4, 18) = t_centrifuge;
    line(this, t_floor, 5, 18, 6, rng(17, 19)); // Clear path to console
-   tmpcomp = add_computer(5, 18, "Centrifuge", 0);
+   tmpcomp = add_computer("Centrifuge", 0, 5, 18);
    tmpcomp->add_option("Analyze blood", COMPACT_BLOOD_ANAL, 4);
    tmpcomp->add_failure(COMPFAIL_DESTROY_BLOOD);
 // Sample storage
@@ -5889,12 +5889,10 @@ vehicle* map::add_vehicle(vhtype_id type, point pos, int deg)
     return nullptr;
 }
 
-computer* map::add_computer(int x, int y, std::string name, int security)
+
+computer* map::add_computer(const reality_bubble_loc& dest, std::string&& name, int security)
 {
- ter(x, y) = t_console; // TODO: Turn this off?
- int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
- grid[nonant]->comp = computer(name, security);
- return &(grid[nonant]->comp);
+    return grid[dest.first]->add_computer(dest.second, std::move(name), security);
 }
 
 // hard-coded for our use case
@@ -6162,8 +6160,7 @@ void science_room(map *m, int x1, int y1, int x2, int y2, int rotate)
     int desk = y1 + rng(int(height / 2) - int(height / 4), int(height / 2) + 1);
     for (int x = x1 + int(width / 4); x < x2 - int(width / 4); x++)
      m->ter(x, desk) = t_counter;
-    computer* tmpcomp = m->add_computer(x2 - int(width / 4), desk,
-                                        "Log Console", 3);
+    computer* tmpcomp = m->add_computer("Log Console", 3, x2 - int(width / 4), desk);
     tmpcomp->add_option("View Research Logs", COMPACT_RESEARCH, 0);
     tmpcomp->add_option("Download Map Data", COMPACT_MAPS, 0);
     tmpcomp->add_failure(COMPFAIL_SHUTDOWN);
@@ -6174,8 +6171,7 @@ void science_room(map *m, int x1, int y1, int x2, int y2, int rotate)
     int desk = x1 + rng(int(height / 2) - int(height / 4), int(height / 2) + 1);
     for (int y = y1 + int(width / 4); y < y2 - int(width / 4); y++)
      m->ter(desk, y) = t_counter;
-    computer* tmpcomp = m->add_computer(desk, y2 - int(width / 4),
-                                        "Log Console", 3);
+    computer* tmpcomp = m->add_computer("Log Console", 3, desk, y2 - int(width / 4));
     tmpcomp->add_option("View Research Logs", COMPACT_RESEARCH, 0);
     tmpcomp->add_option("Download Map Data", COMPACT_MAPS, 0);
     tmpcomp->add_failure(COMPFAIL_SHUTDOWN);
@@ -6296,8 +6292,7 @@ void science_room(map *m, int x1, int y1, int x2, int y2, int rotate)
     m->ter(biox + 1, bioy    ) = t_wall_v;
     m->place_items(mi_bionics_common, 70, biox, bioy, biox, bioy, false, 0);
 
-    int compx = int((x1 + x2) / 2), compy = int((y1 + y2) / 2);
-    computer* tmpcomp = m->add_computer(compx, compy, "Bionic access", 2);
+    computer* tmpcomp = m->add_computer("Bionic access", 2, point((x1 + x2) / 2, (y1 + y2) / 2));
     tmpcomp->add_option("Manifest", COMPACT_LIST_BIONICS, 0);
     tmpcomp->add_option("Open Chambers", COMPACT_RELEASE, 3);
     tmpcomp->add_failure(COMPFAIL_MANHACKS);
@@ -6327,8 +6322,7 @@ void science_room(map *m, int x1, int y1, int x2, int y2, int rotate)
     m->ter(biox    , bioy + 1) = t_wall_h;
     m->place_items(mi_bionics_common, 70, biox, bioy, biox, bioy, false, 0);
 
-    int compx = int((x1 + x2) / 2), compy = int((y1 + y2) / 2);
-    computer* tmpcomp = m->add_computer(compx, compy, "Bionic access", 2);
+    computer* tmpcomp = m->add_computer("Bionic access", 2, point((x1 + x2) / 2, (y1 + y2) / 2));
     tmpcomp->add_option("Manifest", COMPACT_LIST_BIONICS, 0);
     tmpcomp->add_option("Open Chambers", COMPACT_RELEASE, 3);
     tmpcomp->add_failure(COMPFAIL_MANHACKS);
@@ -6606,7 +6600,7 @@ void build_mine_room(map *m, room_type type, int x1, int y1, int x2, int y2)
    line(m, t_wall_h, x2 - 2, y1 + 2, x2 - 1, y1 + 2);
    m->ter(x2 - 2, y1 + 1) = t_elevator;
    m->ter(x2 - 1, y1 + 1) = t_elevator_control_off;
-   computer* tmpcomp = m->add_computer(x1 + 1, y1 + 1, "NEPowerOS", 2);
+   computer* tmpcomp = m->add_computer("NEPowerOS", 2, x1 + 1, y1 + 1);
    tmpcomp->add_option("Divert power to elevator", COMPACT_ELEVATOR_ON, 0);
    tmpcomp->add_failure(COMPFAIL_ALARM);
   } break;
