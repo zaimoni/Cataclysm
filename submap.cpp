@@ -83,6 +83,14 @@ vehicle* submap::add_vehicle(vhtype_id type, point pos, int deg)
     return vehicles.back().get();
 }
 
+void submap::add(std::shared_ptr<vehicle> veh, const Badge<map>& auth)
+{
+    if (veh) {
+        veh->GPSpos.first = GPS; // enforce invariant
+        vehicles.push_back(veh);
+    };
+}
+
 void submap::destroy(vehicle& veh)
 {
     int i = -1;

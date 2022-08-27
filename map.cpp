@@ -233,22 +233,8 @@ bool map::displace_vehicle(std::shared_ptr<vehicle> veh, const point& delta, boo
     const auto dest_sm = chunk(dest_gps);
     if (test) return src_sm == dest_sm;
 
- // first, let's find our position in current vehicles vector
- int our_i = -1;
- int i = -1;
- for (decltype(auto) v : src_sm->vehicles) {
-     ++i;
-     if (veh.get() == v.get()) {
-         our_i = i;
-         break;
-     }
- }
- if (our_i < 0) {
-  debuglog("displace_vehicle our_i=%d", our_i);
-  return false;
- }
  // move the vehicle
- // don't let it go off generated submaps
+ // don't let it go into an ungenerated submap
  if (!dest_sm) veh->stop();
 
  int rec = abs(veh->velocity) / 5 / 100;
@@ -285,8 +271,8 @@ bool map::displace_vehicle(std::shared_ptr<vehicle> veh, const point& delta, boo
  if (dest_sm) {
      veh->GPSpos = dest_gps;
      if (src_sm != dest_sm) {
-         dest_sm->vehicles.push_back(std::move(veh));
-         EraseAt(src_sm->vehicles, our_i);
+         dest_sm->add(veh, Badge<map>());
+         src_sm->destroy(*veh);
      }
  }
 

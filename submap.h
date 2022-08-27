@@ -35,10 +35,10 @@ struct spawn_point {
 struct submap {
     int turn_last_touched;
     std::vector<spawn_point> spawns;
-    std::vector<std::shared_ptr<vehicle> > vehicles;
     computer comp;
 private:
     std::vector<item> itm[SEEX][SEEY]; // Items on each square
+    std::vector<std::shared_ptr<vehicle> > vehicles;
     field   fld[SEEX][SEEY]; // Field on each square
     int     rad[SEEX][SEEY]; // Irradiation of each square
     ter_id  ter[SEEX][SEEY]; // Terrain on each square
@@ -100,6 +100,7 @@ public:
     void add(item&& new_item, const point& dest);
 
     vehicle* add_vehicle(vhtype_id type, point pos, int deg);
+    void add(std::shared_ptr<vehicle> veh, const Badge<map>& auth);
     void destroy(vehicle& veh);
     std::optional<std::pair<vehicle*, int>> veh_at(const GPS_loc& loc);
     std::optional<std::pair<const vehicle*, int>> veh_at(const GPS_loc& loc) const;
