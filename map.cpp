@@ -1650,11 +1650,8 @@ bool GPS_loc::add(field&& src)
 
 computer* map::computer_at(const point& pt)
 {
- if (auto pos = to(pt)) {
-     auto& c = grid[pos->first]->comp;
-     if (!c.name.empty()) return &c;
- }
- return nullptr;
+    if (auto pos = to(pt)) return grid[pos->first]->computer_at(pos->second, Badge<map>());
+    return nullptr;
 }
 
 void map::debug()

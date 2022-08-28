@@ -2921,20 +2921,15 @@ void game::flashbang(const GPS_loc& loc)
     loc.sound(12, "a huge boom!");
 }
 
-void game::use_computer(const point& pt)
+void game::use(computer& used)
 {
  if (u.has_trait(PF_ILLITERATE)) {
   messages.add("You can not read a computer screen!");
   return;
  }
 
- if (auto used = m.computer_at(pt)) {
-     used->use(this);
-     refresh_all();
-     return;
- }
-
- debugmsg("Tried to use computer at (%d, %d) - none there", pt.x, pt.y);
+ used.use(this); // PC UI specific
+ refresh_all();
 }
 
 void game::resonance_cascade(const point& pt)
@@ -3449,8 +3444,8 @@ void game::examine()
    messages.add("It is empty.");
   else pickup(exam, 0);
  }
- if (m.has_flag(console, exam)) {
-  use_computer(exam);
+ if (auto used = m.computer_at(exam)) {
+  use(*used);
   return;
  }
  if (t_card_science == exam_t || t_card_military == exam_t) {

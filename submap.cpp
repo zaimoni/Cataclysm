@@ -82,6 +82,13 @@ computer* submap::add_computer(const point& pt, std::string&& name, int security
     return &comp;
 }
 
+computer* submap::computer_at(const point& pt, const Badge<map>& auth)
+{   // mainframe-ish as long as only one per submap
+    if (comp.name.empty()) return nullptr;
+    if (!is<console>(terrain(pt))) return nullptr;
+    return &comp;
+}
+
 vehicle* submap::add_vehicle(vhtype_id type, point pos, int deg)
 {
     assert(in_bounds(pos));

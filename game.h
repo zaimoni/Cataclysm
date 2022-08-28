@@ -105,7 +105,6 @@ class game : public reality_bubble
   void flashbang(const GPS_loc& pt);
   // Move the player vertically, if (force) then they fell
   void vertical_move(int z, bool force);
-  void use_computer(const point& pt);
   void resonance_cascade(const point& pt);
   void emp_blast(const point& pt);
   player* survivor(const point& pt);
@@ -240,6 +239,7 @@ class game : public reality_bubble
   void pldrive(direction dir); // drive vehicle; turtle direction
   void plmove(direction dir); // Standard movement; handles attacks, traps, &c; absolute direction
 
+  void use(computer& used);
   void wait();	// Long wait (player action)	'^'
   void open();	// Open a door			'o'
   void close();	// Close a door			'c'
