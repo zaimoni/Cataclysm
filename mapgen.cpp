@@ -5866,15 +5866,12 @@ void map::put_items_from(items_location loc, int num, int x, int y, int turn)
 void map::add_spawn(mon_id type, int count, int x, int y, bool friendly,
                     int mission_id, std::string name, int faction_id)
 {
- if (!inbounds(x, y)) {
-  debugmsg("Bad add_spawn(%d, %d, %d, %d)", type, count, x, y);
-  debuglog("Bad add_spawn(%d, %d, %d, %d)", type, count, x, y);
-  return;
- }
- int nonant = int(x / SEEX) + int(y / SEEY) * my_MAPSIZE;
- x %= SEEX;
- y %= SEEY;
- grid[nonant]->spawns.emplace_back(type, count, x, y, faction_id, mission_id, friendly, name);
+    if (auto dest = to(x, y)) {
+        grid[dest->first]->add_spawn(type, count, dest->second, friendly, faction_id, mission_id, name);
+        return;
+    }
+    debugmsg("Bad add_spawn(%d, %d, %d, %d)", type, count, x, y);
+    debuglog("Bad add_spawn(%d, %d, %d, %d)", type, count, x, y);
 }
 
 vehicle* GPS_loc::add_vehicle(vhtype_id type, int deg)
