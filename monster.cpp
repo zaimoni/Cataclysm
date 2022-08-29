@@ -28,7 +28,7 @@ static const char* const JSON_transcode_meffects[] = {
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(monster_effect_type, JSON_transcode_meffects)
 
 monster::monster() noexcept
-: mobile(overmap::toGPS(point(20, 10)), 0), pos(20, 10), wand(point(-1, -1), 0), spawnmap(-1, -1), spawnpos(-1,-1), speed(0), hp(60),
+: mobile(overmap::toGPS(point(20, 10)), 0), pos(20, 10), wand(point(-1, -1), 0), was_spawned(false), speed(0), hp(60),
   sp_timeout(0), friendly(0), anger(0), morale(2), faction_id(-1), mission_id(-1),type(nullptr),dead(false),made_footstep(false)
 {
 }
@@ -36,13 +36,13 @@ monster::monster() noexcept
 monster::monster(const mtype *t) noexcept : monster(t, point(20, 10)) {}
 
 monster::monster(const mtype *t, point origin) noexcept
-: mobile(overmap::toGPS(origin), t->speed), pos(origin), wand(point(-1, -1),0), spawnmap(-1, -1), spawnpos(-1, -1), speed(t->speed), hp(t->hp),
+: mobile(overmap::toGPS(origin), t->speed), pos(origin), wand(point(-1, -1),0), was_spawned(false), speed(t->speed), hp(t->hp),
   sp_timeout(t->sp_freq), friendly(0), anger(t->agro), morale(t->morale), faction_id(-1), mission_id(-1), type(t), dead(false), made_footstep(false)
 {
 }
 
 monster::monster(const mtype* t, GPS_loc origin) noexcept
-    : mobile(origin, t->speed), pos(20, 10), wand(point(-1, -1), 0), spawnmap(-1, -1), spawnpos(-1, -1), speed(t->speed), hp(t->hp),
+    : mobile(origin, t->speed), pos(20, 10), wand(point(-1, -1), 0), was_spawned(false), speed(t->speed), hp(t->hp),
     sp_timeout(t->sp_freq), friendly(0), anger(t->agro), morale(t->morale), faction_id(-1), mission_id(-1), type(t), dead(false), made_footstep(false)
 {
     // inline our _set_screenpos here (we cannot call it from the constructor, as it's a virtual function)

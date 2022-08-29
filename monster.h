@@ -4,6 +4,7 @@
 #include "mtype.h"
 #include "bodypart.h"
 #include "mobile.h"
+#include "zero.h"
 #include <functional>
 
 class map;
@@ -157,7 +158,8 @@ class monster : public mobile {
  bool is_enemy(const monster* z) const;
  bool is_friend(const monster* z) const;
 
- bool is_static_spawn() const { return -1 != spawnmap.x; }
+ bool is_static_spawn() const { return was_spawned; }
+ void am_static_spawned(const Badge<map>& auth) { was_spawned = true; }
 
  bool if_visible_message(std::function<std::string()> other) const;
  bool if_visible_message(const char* msg) const;
@@ -194,10 +196,6 @@ class monster : public mobile {
  std::vector<item> inv; // Inventory
  std::vector<monster_effect> effects; // Active effects, e.g. on fire
 
-// If we were spawned by the map, store our origin for later use
- point spawnmap;	// game::lev-based source; z coordinate lost; historical signal value is (-1,-1) but we can change this without breaking V0.2.0 saves; \todo retype to OM_loc?
- point spawnpos;  // normal map position
-
 // DEFINING VALUES
  int speed;
  int hp;
@@ -212,6 +210,7 @@ class monster : public mobile {
  std::string unique_name; // If we're unique
 
 private:
+ bool was_spawned; // by map
  std::vector <point> plans;
 
  bool can_sound_move_to(const point& pt) const;

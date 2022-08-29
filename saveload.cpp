@@ -1219,8 +1219,11 @@ bool fromJSON(const JSON& _in, monster& dest)
 	if (_in.has_key("wand")) fromJSON(_in["wand"], dest.wand);
 	if (_in.has_key("inv")) _in["inv"].decode(dest.inv);
 	if (_in.has_key("effects")) _in["effects"].decode(dest.effects);
-	if (_in.has_key("spawnmap")) fromJSON(_in["spawnmap"], dest.spawnmap);
-	if (_in.has_key("spawnpos")) fromJSON(_in["spawnpos"], dest.spawnpos);
+	// C:Z 0.2.11+: was_spawned replaces C:Z 0.2.10- spawnmap/spawnpos
+	// \todo remove read of spawnmap/spawnpos for 0.3.1
+	if (_in.has_key("was_spawned")) dest.was_spawned = true;
+	if (_in.has_key("spawnmap")) dest.was_spawned = true;
+	if (_in.has_key("spawnpos")) dest.was_spawned = true;
 	if (_in.has_key("speed")) fromJSON(_in["speed"], dest.speed);
 	if (_in.has_key("hp")) fromJSON(_in["hp"], dest.hp);
 	if (_in.has_key("sp_timeout")) fromJSON(_in["sp_timeout"], dest.sp_timeout);
@@ -1251,10 +1254,7 @@ JSON toJSON(const monster& src)
 		if (src.wand.live()) _monster.set("wand", toJSON(src.wand));
 		if (!src.inv.empty()) _monster.set("inv", JSON::encode(src.inv));
 		if (!src.effects.empty()) _monster.set("effects", JSON::encode(src.effects));
-		if (src.is_static_spawn()) {
-			_monster.set("spawnmap", toJSON(src.spawnmap));
-			_monster.set("spawnpos", toJSON(src.spawnpos));
-		}
+		if (src.is_static_spawn()) _monster.set("was_spawned", "true");
 		_monster.set("speed", std::to_string(src.speed));
 		_monster.set("hp", std::to_string(src.hp));
 		if (0 < src.sp_timeout) _monster.set("sp_timeout", std::to_string(src.sp_timeout));

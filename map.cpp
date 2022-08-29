@@ -2434,8 +2434,6 @@ void map::spawn_monsters(game *g)
    for (const auto& spawn_pt : grid[n]->spawns) {
     for (int j = 0; j < spawn_pt.count; j++) {
      monster tmp(mtype::types[spawn_pt.type]);
-     tmp.spawnmap.x = g->lev.x + scan.x;
-     tmp.spawnmap.y = g->lev.y + scan.y;
      tmp.faction_id = spawn_pt.faction_id;
      tmp.mission_id = spawn_pt.mission_id;
      if (!spawn_pt._name.empty()) tmp.unique_name = spawn_pt._name;
@@ -2451,7 +2449,7 @@ void map::spawn_monsters(game *g)
      std::function<bool(const point&)> spawn_ok = [&](const point& pt) { return g->is_empty(pt) && tmp.can_move_to(g->m, pt); };
 
      if (decltype(auto) dest = LasVegasChoice(10, nominate_spawn_pos, spawn_ok)) {
-         tmp.spawnpos = *dest;
+         tmp.am_static_spawned(Badge<map>());
          tmp.spawn(*dest);
          g->z.push_back(std::move(tmp));
      }
