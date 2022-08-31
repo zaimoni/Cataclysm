@@ -97,6 +97,7 @@ public:
 
     void add_spawn(mon_id type, int count, const point& pt, bool friendly, int faction_id, int mission_id, std::string name); // mapgen.cpp
     void add_spawn(const monster& mon); // mapgen.cpp
+    void exec_spawns(const Badge<map>& auth);
 
     void add(item&& new_item, const point& dest);
 

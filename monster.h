@@ -8,6 +8,7 @@
 #include <functional>
 
 class map;
+struct submap;
 class game;
 class item;
 class player;
@@ -96,6 +97,7 @@ class monster : public mobile {
  bool wander() const { return plans.empty(); } 		// Returns true if we have no plans
  bool can_move_to(const map &m, int x, int y) const; // Can we move to (x, y)?
  bool can_move_to(const map &m, const point& pt) const { return can_move_to(m, pt.x, pt.y); }
+ bool can_move_to(const GPS_loc& loc) const;
  bool can_enter(const map& m, const point& pt) const;
  bool will_reach(const game *g, const point& pt) const; // Do we have plans to get to (x, y)?
  int  turns_to_reach(const map& m, const point& pt) const; // How long will it take?
@@ -159,7 +161,7 @@ class monster : public mobile {
  bool is_friend(const monster* z) const;
 
  bool is_static_spawn() const { return was_spawned; }
- void am_static_spawned(const Badge<map>& auth) { was_spawned = true; }
+ void am_static_spawned(const Badge<submap>& auth) { was_spawned = true; }
 
  bool if_visible_message(std::function<std::string()> other) const;
  bool if_visible_message(const char* msg) const;

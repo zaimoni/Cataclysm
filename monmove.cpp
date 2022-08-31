@@ -22,6 +22,20 @@ bool monster::can_move_to(const map &m, int x, int y) const
  return true;
 }
 
+bool monster::can_move_to(const GPS_loc& loc) const
+{
+    ter_id terrain = loc.ter();
+    if (0 >= loc.move_cost()) {
+        // sewage is swimmable but not liquid (i.e., destructable)
+        if (is<swimmable>(terrain) && (has_flag(MF_AQUATIC) || has_flag(MF_SWIMS))) return true;
+        if (has_flag(MF_DESTROYS) && loc.is_destructable()) return true;
+        return false;
+    }
+    if (has_flag(MF_DIGS) && !is<diggable>(terrain)) return false;
+    if (has_flag(MF_AQUATIC) && !is<swimmable>(terrain)) return false;
+    return true;
+}
+
 bool monster::can_enter(const map& m, const point& pt) const
 {
     if (can_move_to(m, pt)) return true;

@@ -12,6 +12,7 @@
 
 #define MAPSIZE 11
 
+class game;
 class player;
 class monster;
 class overmap;
@@ -56,7 +57,7 @@ class map
  void load(const OM_loc<2>& GPS) { load(OM_loc<1>(GPS.first, 2 * GPS.second)); }
  void shift(game *g, const point& world, const point& delta);
 
- void spawn_monsters(game *g);
+ void spawn_monsters(const Badge<game>& auth);
  void post_init(const Badge<defense_game>& auth);
 
 // Movement and LOS

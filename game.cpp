@@ -5086,7 +5086,7 @@ void game::vertical_move(int movez, bool force)
 
  if (replace_monsters) replace_stair_monsters();
 
- m.spawn_monsters(this);
+ m.spawn_monsters(Badge<game>());
 
  if (force) {	// Basically, we fell.
   if (u.has_trait(PF_WINGS_BIRD))
@@ -5198,7 +5198,7 @@ void game::update_map(int &x, int &y)
 // Spawn static NPCs?
  activate_npcs();
 // Spawn monsters if appropriate
- m.spawn_monsters(this);	// Static monsters
+ m.spawn_monsters(Badge<game>());	// Static monsters
  if (messages.turn >= nextspawn) spawn_mon(shift.x, shift.y);
 // Shift scent
  if (0 != shift.x || 0 != shift.y) {

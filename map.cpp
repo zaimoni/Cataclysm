@@ -697,6 +697,11 @@ bool GPS_loc::is_bashable() const
     return is<bashable>(ter());
 }
 
+bool GPS_loc::is_destructable() const
+{
+    return is_bashable() || (0 >= move_cost() && !is<liquid>(ter()));
+}
+
 bool map::is_destructable(int x, int y) const
 {
  return (has_flag(bashable, x, y) ||
@@ -2424,40 +2429,44 @@ void map::copy_grid(int to, int from)
  grid[to] = grid[from];
 }
 
-void map::spawn_monsters(game *g)
+void submap::exec_spawns(const Badge<map>& auth)
 {
- point scan;
+    const auto g = game::active();
 
- for (scan.x = 0; scan.x < my_MAPSIZE; scan.x++) {
-  for (scan.y = 0; scan.y < my_MAPSIZE; scan.y++) {
-   int n = scan.x + scan.y * my_MAPSIZE;
-   for (const auto& spawn_pt : grid[n]->spawns) {
-    for (int j = 0; j < spawn_pt.count; j++) {
-     monster tmp(mtype::types[spawn_pt.type]);
-     tmp.faction_id = spawn_pt.faction_id;
-     tmp.mission_id = spawn_pt.mission_id;
-     if (!spawn_pt._name.empty()) tmp.unique_name = spawn_pt._name;
-     if (spawn_pt.friendly) tmp.friendly = -1;
+    for (const auto& spawn_pt : spawns) {
+        for (int j = 0; j < spawn_pt.count; j++) {
+            monster tmp(mtype::types[spawn_pt.type]);
+            tmp.faction_id = spawn_pt.faction_id;
+            tmp.mission_id = spawn_pt.mission_id;
+            if (!spawn_pt._name.empty()) tmp.unique_name = spawn_pt._name;
+            if (spawn_pt.friendly) tmp.friendly = -1;
 
-     std::function<point()> nominate_spawn_pos = [&]() {
-         point m = (spawn_pt.pos + rng(within_rldist<3>)) % SEE;
-         if (m.x < 0) m.x += SEE;
-         if (m.y < 0) m.y += SEE;
-         return m + scan * SEE;
-     };
+            std::function<point()> nominate_spawn_pos = [&]() {
+                point m = (spawn_pt.pos + rng(within_rldist<3>)) % SEE;
+                if (m.x < 0) m.x += SEE;
+                if (m.y < 0) m.y += SEE;
+                return m;
+            };
 
-     std::function<bool(const point&)> spawn_ok = [&](const point& pt) { return g->is_empty(pt) && tmp.can_move_to(g->m, pt); };
+            std::function<bool(const point&)> spawn_ok = [&](const point& pt) {
+                GPS_loc dest(GPS, pt);
+                return dest.is_empty() && tmp.can_move_to(dest);
+            };
 
-     if (decltype(auto) dest = LasVegasChoice(10, nominate_spawn_pos, spawn_ok)) {
-         tmp.am_static_spawned(Badge<map>());
-         tmp.spawn(*dest);
-         g->z.push_back(std::move(tmp));
-     }
+            if (decltype(auto) dest = LasVegasChoice(10, nominate_spawn_pos, spawn_ok)) {
+                tmp.am_static_spawned(Badge<submap>());
+                tmp.spawn(*dest);
+                g->z.push_back(std::move(tmp));
+            }
+        }
     }
-   }
-   grid[n]->spawns.clear();
-  }
- }
+    spawns.clear();
+}
+
+
+void map::spawn_monsters(const Badge<game>& auth)
+{
+    for (submap* sm : grid) sm->exec_spawns(Badge<map>());
 }
 
 void map::post_init(const Badge<defense_game>& auth)
