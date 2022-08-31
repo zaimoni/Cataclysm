@@ -5908,7 +5908,6 @@ void map::rotate(int turns)
  ter_id rotated         [SEEX*2][SEEY*2];
  trap_id traprot        [SEEX*2][SEEY*2];
  std::vector<item> itrot[SEEX*2][SEEY*2];
- std::vector<std::vector<spawn_point> > sprot(my_MAPSIZE * my_MAPSIZE);
 
  switch (turns) {
  case 1:
@@ -5925,13 +5924,7 @@ void map::rotate(int turns)
 // Now, spawn points
   for (int sx = 0; sx < 2; sx++) {
    for (int sy = 0; sy < 2; sy++) {
-    decltype(auto) dest = sprot[sx * my_MAPSIZE + 1 - sy];
-    const auto sm = grid[sx + sy * my_MAPSIZE];
-    for (spawn_point tmp : sm->spawns) { // need value-copy here
-        tmp.pos = coord_rotate<1, SEE>(tmp.pos);
-        dest.push_back(std::move(tmp));
-    }
-    sm->mapgen_xform(coord_rotate<1, SEE>, Badge<map>());
+    grid[sx + sy * my_MAPSIZE]->mapgen_xform(coord_rotate<1, SEE>, Badge<map>());
    }
   }
   {
@@ -5954,13 +5947,7 @@ void map::rotate(int turns)
 // Now, spawn points
   for (int sx = 0; sx < 2; sx++) {
    for (int sy = 0; sy < 2; sy++) {
-    decltype(auto) dest = sprot[(1 - sy) * my_MAPSIZE + 1 - sx];
-    const auto sm = grid[sx + sy * my_MAPSIZE];
-    for (spawn_point tmp : sm->spawns) { // need value-copy here
-        tmp.pos = coord_rotate<2, SEE>(tmp.pos);
-        dest.push_back(std::move(tmp));
-    }
-    sm->mapgen_xform(coord_rotate<2, SEE>, Badge<map>());
+    grid[sx + sy * my_MAPSIZE]->mapgen_xform(coord_rotate<2, SEE>, Badge<map>());
    }
   }
   grid[0]->mapgen_swap(*grid[my_MAPSIZE + 1], Badge<map>());
@@ -5981,13 +5968,7 @@ void map::rotate(int turns)
 // Now, spawn points
   for (int sx = 0; sx < 2; sx++) {
    for (int sy = 0; sy < 2; sy++) {
-    decltype(auto) dest = sprot[(1 - sx) * my_MAPSIZE + sy];
-    const auto sm = grid[sx + sy * my_MAPSIZE];
-    for (spawn_point tmp : sm->spawns) { // need value-copy here
-        tmp.pos = coord_rotate<3, SEE>(tmp.pos);
-        dest.push_back(std::move(tmp));
-    }
-    sm->mapgen_xform(coord_rotate<3, SEE>, Badge<map>());
+    grid[sx + sy * my_MAPSIZE]->mapgen_xform(coord_rotate<3, SEE>, Badge<map>());
    }
   }
   {
@@ -6005,10 +5986,6 @@ void map::rotate(int turns)
  for (submap* const gr : grid) gr->rotate_vehicles(turns, Badge<map>());
 
 // Set the spawn points
- grid[0]->spawns = std::move(sprot[0]);
- grid[1]->spawns = std::move(sprot[1]);
- grid[my_MAPSIZE]->spawns = std::move(sprot[my_MAPSIZE]);
- grid[my_MAPSIZE + 1]->spawns = std::move(sprot[my_MAPSIZE + 1]);
  for (int i = 0; i < SEEX * 2; i++) {
   for (int j = 0; j < SEEY * 2; j++) {
    ter(i, j) = rotate_(rotated[i][j], turns);

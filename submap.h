@@ -34,10 +34,10 @@ struct spawn_point {
 
 struct submap {
     int turn_last_touched;
-    std::vector<spawn_point> spawns;
 
 private:
     std::vector<item> itm[SEEX][SEEY]; // Items on each square
+    std::vector<spawn_point> spawns;
     std::vector<std::shared_ptr<vehicle> > vehicles;
     computer comp;
     field   fld[SEEX][SEEY]; // Field on each square

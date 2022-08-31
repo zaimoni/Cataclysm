@@ -146,19 +146,23 @@ void submap::mapgen_move_cycle(submap* const* cycle, ptrdiff_t ub, const Badge<m
 
     computer   t_comp(std::move(cycle[--ub]->comp));
     vehicles_t t_vehs(std::move(cycle[ub]->vehicles));
+    std::vector<spawn_point> t_spawns(std::move(cycle[ub]->spawns));
 
     while (0 <= --ub) {
         cycle[ub + 1]->comp     = std::move(cycle[ub]->comp);
+        cycle[ub + 1]->spawns = std::move(cycle[ub]->spawns);
         cycle[ub + 1]->vehicles = std::move(cycle[ub]->vehicles);
     };
 
     cycle[0]->comp     = std::move(t_comp);
+    cycle[0]->spawns = std::move(t_spawns);
     cycle[0]->vehicles = std::move(t_vehs);
 }
 
 void submap::mapgen_xform(point(*op)(const point&), const Badge<map>& auth)
 {
     for (decltype(auto) veh : vehicles) veh->GPSpos.second = op(veh->GPSpos.second);
+    for (decltype(auto) sp : spawns) sp.pos = op(sp.pos);
 }
 
 void submap::post_init(const Badge<defense_game>& auth)
