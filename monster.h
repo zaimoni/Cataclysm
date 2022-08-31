@@ -115,7 +115,7 @@ class monster : public mobile {
  point sound_move();
  void hit_player(game *g, player &p, bool can_grab = true);
  void move_to(game *g, const point& pt);
- void stumble(game *g, bool moved);
+ void stumble(game *g, const std::optional<point>& moved = std::nullopt);
 
 // Combat
  bool is_fleeing(const player &u) const;	// True if we're fleeing

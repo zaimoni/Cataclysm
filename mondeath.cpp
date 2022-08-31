@@ -44,7 +44,7 @@ void mdeath::boomer(game *g, monster *z)
    } else g->m.add_field(g, dest, fd_bile, 1);
    }
    if (monster* const m_at = g->mon(dest)) {
-	m_at->stumble(g, false);
+	m_at->stumble(g);
 	m_at->moves -= (mobile::mp_turn / 2) * 5;
    }
   }

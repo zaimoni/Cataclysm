@@ -207,7 +207,7 @@ void monster::move(game *g)
   return;
  }
  if (has_effect(ME_STUNNED)) {
-  stumble(g, false);
+  stumble(g);
   moves = 0;
   return;
  }
@@ -250,11 +250,11 @@ void monster::move(game *g)
 
  if (current_attitude == MATT_IGNORE ||
      (current_attitude == MATT_FOLLOW && plans.size() <= MONSTER_FOLLOW_DIST)) {
-  stumble(g, false);
+  stumble(g);
   return;
  }
 
- bool moved = false;
+ std::optional<point> moved = std::nullopt;
  point next;
  monster* const m_plan = plans.empty() ? nullptr : g->mon(plans[0]);
 
@@ -262,14 +262,14 @@ void monster::move(game *g)
      (!m_plan || is_enemy(m_plan)) && can_sound_move_to(plans[0])){
   // CONCRETE PLANS - Most likely based on sight
   next = plans[0];
-  moved = true;
+  moved = pos;
  } else if (has_flag(MF_SMELLS)) {
 // No sight... or our plans are invalid (e.g. moving through a transparent, but
 //  solid, square of terrain).  Fall back to smell if we have it.
   if (const auto dest = scent_move()) {
    if (update_next_loc(g->toGPS(*dest))) return;
    next = *dest;
-   moved = true;
+   moved = pos;
   }
  }
  if (wand.live() && !moved) { // No LOS, no scent, so as a fall-back follow sound
@@ -277,7 +277,7 @@ void monster::move(game *g)
   if (tmp != pos) {
    if (update_next_loc(g->toGPS(tmp))) return;
    next = tmp;
-   moved = true;
+   moved = pos;
   }
  }
 
@@ -356,7 +356,7 @@ void monster::friendly_move(game *g)
 {
  moves -= mobile::mp_turn;
  if (plans.empty() || !can_enter(g->m, plans[0])) {
-     stumble(g, false);
+     stumble(g);
      return;
  }
   const point next(plans[0]);
@@ -581,23 +581,20 @@ void monster::move_to(game *g, const point& pt)
 
 /* Random walking even when we've moved
  * To simulate zombie stumbling and ineffective movement
- * Note that this is sub-optimal; stumbling may INCREASE a zombie's speed.
- * Most of the time (out in the open) this effect is insignificant compared to
- * the negative effects, but in a hallway it's perfectly even
  */
-// to fix this, we'd need both the previous and current location
-void monster::stumble(game *g, bool moved)
+void monster::stumble(game *g, const std::optional<point>& moved)
 {
- std::vector<point> valid_stumbles;
- for (int i = -1; i <= 1; i++) {
-  for (int j = -1; j <= 1; j++) {
-   const point dest(pos.x + i, pos.y + j);
-   if (can_move_to(g->m, dest) && g->u.pos != dest &&
-       (!g->mon(dest) || (i == 0 && j == 0))) {
-    valid_stumbles.push_back(dest);
-   }
-  }
- }
+ static std::function<std::optional<point>(point)> stumble_ok = [&](point delta) {
+     auto dest = pos + delta;
+     if (point(0) == delta) return std::optional<point>(dest);
+     if (moved && 2 <= rl_dist(dest, *moved)) return std::optional<point>(std::nullopt);
+     if (g->mob_at(dest)) return std::optional<point>(std::nullopt);
+     if (can_move_to(g->m, dest)) return std::optional<point>(dest);
+     return std::optional<point>(std::nullopt);
+ };
+
+ auto valid_stumbles = grep(within_rldist<1>, stumble_ok);
+
  const size_t ub = valid_stumbles.size();
  if (0 < ub && (one_in(8) || (!moved && one_in(3)))) {
   screenpos_set(valid_stumbles[rng(0, ub - 1)]);

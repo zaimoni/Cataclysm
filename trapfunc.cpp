@@ -127,7 +127,7 @@ void trapfuncm::tripwire(game *g, monster *z)
  if (g->u.see(*z))
      messages.add("The %s trips over a tripwire!",
                   grammar::capitalize(z->desc(grammar::noun::role::subject, grammar::article::definite)).c_str());
- z->stumble(g, false);
+ z->stumble(g);
  if (rng(0, 10) > z->type->sk_dodge && z->hurt(rng(1, 4))) g->kill_mon(*z);
 }
 

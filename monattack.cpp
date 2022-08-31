@@ -677,7 +677,7 @@ void mattack::dermatik(game *g, monster *z)
  int attack_roll = dice(z->melee_skill(), 10);
  if (g->u.dodge_roll() > attack_roll) {
   messages.add("The %s tries to land on you, but you dodge.", z->name().c_str());
-  z->stumble(g, false);
+  z->stumble(g);
   return;
  }
 
@@ -688,7 +688,7 @@ void mattack::dermatik(game *g, monster *z)
  if (player_swat > dodge_roll) {
   messages.add("The %s lands on you, but you swat it off.", z->name().c_str());
   if (z->hp >= z->type->hp / 2) z->hurt(1);
-  if (player_swat > dodge_roll * 1.5) z->stumble(g, false);
+  if (player_swat > dodge_roll * 1.5) z->stumble(g);
   return;
  }
 
