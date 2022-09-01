@@ -3,7 +3,8 @@
 #include "output.h"
 #include "Zaimoni.STL/Logging.h"
 
-void submap::set(const tripoint src, const Badge<mapbuffer>& auth) {
+void submap::set(const tripoint src, int t0, const Badge<mapbuffer>& auth) {
+    turn_last_touched = t0;
     GPS = src;
 
     // Automatic-repair anything with GPSpos fields, here.  Catches mapgen mismatches between game::lev and the global position of the submap chunk.

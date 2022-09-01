@@ -1,5 +1,6 @@
 #include "npc.h"
 #include "game.h"
+#include "vehicle.h"
 #include "rng.h"
 #include "skill.h"
 #include "output.h"

@@ -6,6 +6,7 @@
 #include "rng.h"
 #include "line.h"
 #include "monattack.h"
+#include "submap.h"
 #include "recent_msg.h"
 #include "zero.h"
 #include "stl_limits.h"

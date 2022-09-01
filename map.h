@@ -4,18 +4,23 @@
 #include "Zaimoni.STL/GDI/box.hpp" // early, to trigger conditional includes
 #include "mapitems.h"
 #include "overmap.h"
-#include "submap.h"
 #include "options.h"
+#include "mapdata.h"
+#include "ui.h"
+
 #include <functional>
 #include <string>
 #include <optional>
 
 #define MAPSIZE 11
 
+class computer;
+struct defense_game;
 class game;
 class player;
 class monster;
 class overmap;
+struct submap;
 
 // We do not want to use the Curiously Recurring Template Pattern to deal with the submap grid
 class map
@@ -120,11 +125,11 @@ class map
 
 // Terrain
  ter_id& ter(int x, int y); // Terrain at coord (x, y); {x|y}=(0, SEE{X|Y}*3]
- ter_id& ter(const point& pt) { return ter(pt.x, pt.y); };
- ter_id& ter(const reality_bubble_loc& src) { return grid[src.first]->terrain(src.second); };
- ter_id ter(const reality_bubble_loc& src) const { return grid[src.first]->terrain(src.second); };
- ter_id ter(int x, int y) const { return const_cast<map*>(this)->ter(x, y); };	// \todo specialize this properly
- ter_id ter(const point& pt) const { return const_cast<map*>(this)->ter(pt.x, pt.y); };
+ ter_id& ter(const point& pt) { return ter(pt.x, pt.y); }
+ ter_id& ter(const reality_bubble_loc& src);
+ ter_id ter(const reality_bubble_loc& src) const { return const_cast<map*>(this)->ter(src); }
+ ter_id ter(int x, int y) const { return const_cast<map*>(this)->ter(x, y); }	// \todo specialize this properly
+ ter_id ter(const point& pt) const { return const_cast<map*>(this)->ter(pt.x, pt.y); }
 
  template<ter_id src, ter_id dest> void rewrite(int x, int y) {
 	 static_assert(src!=dest);
@@ -209,20 +214,18 @@ class map
  template<class...Args>
  int& radiation(Args...params)
  {
-	 if (const auto pos = to(params...)) return grid[pos->first]->radiation(pos->second);
+	 if (const auto pos = to(params...)) return radiation(*pos);
 	 return cataclysm::discard<int>::x = 0;
  }
 
 // Items
- template<class...Args>
+  template<class...Args>
  std::vector<item>& i_at(Args...params)
  {
-	 if (const auto pos = to(params...)) return grid[pos->first]->items_at(pos->second);
+	 if (const auto pos = to(params...)) return i_at(*pos);
 	 cataclysm::discard<std::vector<item> >::x.clear();
 	 return cataclysm::discard<std::vector<item> >::x;
  }
-
- std::vector<item>& i_at(const reality_bubble_loc& pos) { return grid[pos.first]->items_at(pos.second); }
 
  template<class...Args>
  const std::vector<item>& i_at(Args...params) const { return const_cast<map*>(this)->i_at(params...); }
@@ -252,8 +255,6 @@ class map
 // Traps
  trap_id& tr_at(int x, int y);
  trap_id& tr_at(const point& pt) { return tr_at(pt.x, pt.y); };
- trap_id& tr_at(const reality_bubble_loc& src) { return grid[src.first]->trap_at(src.second); };
- trap_id tr_at(const reality_bubble_loc& src) const { return grid[src.first]->trap_at(src.second); };
  trap_id tr_at(int x, int y) const { return const_cast<map*>(this)->tr_at(x, y); };	// \todo specialize this properly
  trap_id tr_at(const point& pt) const { return const_cast<map*>(this)->tr_at(pt.x, pt.y); };
  void add_trap(int x, int y, trap_id t);
@@ -262,24 +263,18 @@ class map
 // Fields
  template<class...Args>
  field& field_at(Args...params) {
-	 if (const auto pos = to(params...)) return grid[pos->first]->field_at(pos->second);
+	 if (const auto pos = to(params...)) return field_at(*pos);
 	 return (cataclysm::discard<field>::x = field());
  }
 
  template<class...Args>
- const field& field_at(Args...params) const {
-	 if (const auto pos = to(params...)) return grid[pos->first]->field_at(pos->second);
-	 return (cataclysm::discard<field>::x = field());
- }
+ const field& field_at(Args...params) const { return const_cast<map*>(this)->field_at(params...); }
 
  bool add_field(game *g, int x, int y, field_id t, unsigned char density, unsigned int age=0);
  bool add_field(game *g, const point& pt, field_id t, unsigned char density, unsigned int age = 0) { return add_field(g, pt.x, pt.y, t, density, age); };
 
  template<class...Args>
- void remove_field(Args...params)
- {
-	 if (const auto pos = to(params...)) grid[pos->first]->remove_field(pos->second);
- }
+ void remove_field(Args...params) { if (const auto pos = to(params...)) remove_field(*pos); }
 
  bool process_fields();				// See field.cpp
  void step_in_field(game* g, player& u);		// See field.cpp	// V 0.2.5+ break hard-coding to player g->u
@@ -331,6 +326,16 @@ protected:
  std::vector<submap*> grid;
 
 private:
+	field& field_at(const reality_bubble_loc& src);
+	void remove_field(const reality_bubble_loc& src);
+
+	std::vector<item>& i_at(const reality_bubble_loc& pos);
+
+	int& radiation(const reality_bubble_loc& src);
+
+	trap_id& tr_at(const reality_bubble_loc& src);
+	trap_id tr_at(const reality_bubble_loc& src) const { return const_cast<map*>(this)->tr_at(src); }
+
 	computer* add_computer(const reality_bubble_loc& dest, std::string&& name, int security);
 	void _translate(ter_id from, ter_id to);	// error-checked backend for map::translate
 };

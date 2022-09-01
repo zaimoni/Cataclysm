@@ -1,5 +1,4 @@
 #include "mapbuffer.h"
-#include "submap.h"
 #include "output.h"
 #include "recent_msg.h"
 #include "saveload.h"
@@ -18,8 +17,7 @@ bool mapbuffer::add_submap(int x, int y, int z, submap *sm)
  tripoint p(x, y, z);
  if (submaps.count(p) != 0) return false;
 
- sm->turn_last_touched = int(messages.turn);
- sm->set(p, Badge<mapbuffer>());
+ sm->set(p, int(messages.turn), Badge<mapbuffer>());
  submaps[p] = sm;
  return true;
 }

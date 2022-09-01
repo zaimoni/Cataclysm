@@ -1,5 +1,4 @@
 #include "map.h"
-#include "submap.h"
 #include "output.h"
 #include "rng.h"
 #include "game.h"
@@ -524,6 +523,8 @@ ter_id& map::ter(int x, int y)
     if (const auto pos = to(x, y)) return grid[pos->first]->terrain(pos->second);
     return (discard<ter_id>::x = t_null); // Out-of-bounds - null terrain
 }
+
+ter_id& map::ter(const reality_bubble_loc& src) { return grid[src.first]->terrain(src.second); };
 
 void map::_translate(ter_id from, ter_id to)
 {
@@ -1613,6 +1614,9 @@ std::vector<item>& GPS_loc::items_at()
     return (discard<std::vector<item> >::x = std::vector<item>());	// Out-of-bounds, return null field
 }
 
+std::vector<item>& map::i_at(const reality_bubble_loc& pos) { return grid[pos.first]->items_at(pos.second); }
+int& map::radiation(const reality_bubble_loc& pos) { return grid[pos.first]->radiation(pos.second); }
+
 trap_id& map::tr_at(int x, int y)
 {
     if (const auto pos = to(x, y)) {
@@ -1622,10 +1626,15 @@ trap_id& map::tr_at(int x, int y)
     return (discard<trap_id>::x = tr_null);	// Out-of-bounds, return our null trap
 }
 
+trap_id& map::tr_at(const reality_bubble_loc& src) { return grid[src.first]->trap_at(src.second); }
+
 void map::add_trap(int x, int y, trap_id t)
 {
     if (const auto pos = to(x, y)) grid[pos->first]->trap_at(pos->second) = t;
 }
+
+field& map::field_at(const reality_bubble_loc& src) { return grid[src.first]->field_at(src.second); }
+void map::remove_field(const reality_bubble_loc& src) { return grid[src.first]->remove_field(src.second); }
 
 bool map::add_field(game *g, int x, int y, field_id t, unsigned char density, unsigned int age)
 {

@@ -33,8 +33,6 @@ struct spawn_point {
 };
 
 struct submap {
-    int turn_last_touched;
-
 private:
     std::vector<item> itm[SEEX][SEEY]; // Items on each square
     std::vector<spawn_point> spawns;
@@ -46,6 +44,7 @@ private:
     trap_id trp[SEEX][SEEY]; // Trap on each square
     int active_item_count;
     int field_count;
+    int turn_last_touched;
     tripoint GPS;   // cache field -- GPS_loc first coordinate, where we are
 
 public:
@@ -54,7 +53,8 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const submap& src);
 
-    submap();	// mapgen.cpp: sole caller there
+    submap() = delete;
+    submap(int t0);	// mapgen.cpp: sole caller there
     submap(const submap& src) = default;
     submap(submap&& src) = default;
     ~submap() = default;
@@ -64,7 +64,7 @@ public:
     submap(std::istream& is, tripoint& gps);
     friend std::ostream& operator<<(std::ostream& os, const submap& src);
 
-    void set(const tripoint src, const Badge<mapbuffer>& auth);
+    void set(const tripoint src, int t0, const Badge<mapbuffer>& auth);
     GPS_loc toGPS(const point& origin, const Badge<map>& auth) const { return GPS_loc(GPS, origin); }
 
     static constexpr bool in_bounds(int x, int y) { return 0 <= x && x < SEE && 0 <= y && y < SEE; }

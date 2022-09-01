@@ -2,9 +2,9 @@
 #define MAPBUFFER_H
 
 #include "enums.h"
-#include <map>
+#include "submap.h"
 
-struct submap;
+#include <map>
 
 class mapbuffer // \todo natural singleton, but likely needs pre-requisites loaded before it is loaded for that
 {
@@ -19,6 +19,7 @@ class mapbuffer // \todo natural singleton, but likely needs pre-requisites load
   void load();
   void save();
 
+  // anything that calls these will want the full submap.h header
   bool add_submap(int x, int y, int z, submap *sm);
   submap* lookup_submap(const tripoint& src);
   submap* lookup_submap(int x, int y, int z) { return lookup_submap(tripoint(x, y, z)); }

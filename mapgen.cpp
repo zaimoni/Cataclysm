@@ -3,6 +3,7 @@
 #include "game.h"
 #include "rng.h"
 #include "line.h"
+#include "submap.h"
 #include "recent_msg.h"
 #include "om_cache.hpp"
 #include "Zaimoni.STL/Logging.h"
@@ -114,8 +115,8 @@ static map_extra random_map_extra(const map_extras& embellishments)
 	return map_extra(choice);
 }
 
-submap::submap()
-: active_item_count(0), field_count(0)	// turn_last_touched omitted, will be caught later
+submap::submap(int t0)
+: active_item_count(0), field_count(0), turn_last_touched(t0)
 {
 	memset(ter, 0, sizeof(ter));
 	memset(trp, 0, sizeof(trp));
@@ -213,7 +214,7 @@ void map::generate(game *g, overmap *om, int x, int y)
 // We create all the submaps, even if we're not a tinymap, so that map
 //  generation which overflows won't cause a crash.  At the bottom of this
 //  function, we save the upper-left 4 submaps, and delete the rest.
-  for (submap*& gr : grid) (gr = new submap)->turn_last_touched = turn;
+  for (submap*& gr : grid) (gr = new submap(turn));
 
  unsigned zones = 0;
  const auto physical = overmap_delta(x, y);

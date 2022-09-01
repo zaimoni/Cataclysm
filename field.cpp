@@ -1,5 +1,6 @@
 #include "rng.h"
 #include "game.h"
+#include "submap.h"
 #include "line.h"
 #include "stl_limits.h"
 #include "recent_msg.h"

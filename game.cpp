@@ -6,7 +6,7 @@
 #include "output.h"
 #include "skill.h"
 #include "line.h"
-#include "computer.h"
+#include "submap.h"
 #include "veh_interact.h"
 #include "options.h"
 #include "mapbuffer.h"

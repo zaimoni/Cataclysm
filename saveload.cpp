@@ -961,7 +961,7 @@ JSON toJSON(const item& src) {
 }
 
 #ifndef SOCRATES_DAIMON
-submap::submap(std::istream& is, tripoint& gps) : submap()
+submap::submap(std::istream& is, tripoint& gps) : submap(0)
 {
 	is >> turn_last_touched;
 	GPS = gps;

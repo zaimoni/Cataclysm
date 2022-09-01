@@ -1,6 +1,7 @@
 #include "mobile.h"
 
-#include "game.h" // \todo Just need the reality bubble data structure
+#include "game.h"
+#include "vehicle.h"
 #include "rng.h"
 
 #include <stdexcept>

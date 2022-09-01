@@ -1,6 +1,7 @@
 #include "player.h"
 #include "game.h"
 #include "iuse.h"
+#include "vehicle.h"
 #include "skill.h"
 #include "keypress.h"
 #include "options.h"
