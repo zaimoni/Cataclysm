@@ -3822,11 +3822,12 @@ int player::addiction_level(add_type type) const
  return 0;
 }
 
-void player::die(map& m)
+void player::die()
 {
     assert(map::in_bounds(pos));
     item my_body(messages.turn);
     my_body.name = name;
+    // \todo all of these drops are thin-wrapped; would prefer they work outside of reality bubble
     GPSpos.add(std::move(my_body));
     // we want all of these to be value-copy map::add_item so that the post-mortem for the player works
     for (size_t i = 0; i < inv.size(); i++) GPSpos.add(inv[i]);

@@ -1193,7 +1193,7 @@ void game::get_input()
   case ACTION_QUIT:
    if (query_yn("Commit suicide?")) {
     u.moves = 0;
-    u.die(m);
+    u.die();
     //m.save(&cur_om, turn, levx, levy);
     //MAPBUFFER.save();
     uquit = QUIT_SUICIDE;
@@ -1288,7 +1288,7 @@ bool game::is_game_over()
  if (uquit != QUIT_NO) return true;
  for (int i = 0; i <= hp_torso; i++) {
   if (u.hp_cur[i] < 1) {
-   u.die(m);
+   u.die();
    //m.save(&cur_om, turn, levx, levy);
    //MAPBUFFER.save();
    std::ostringstream playerfile;

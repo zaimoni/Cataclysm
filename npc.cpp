@@ -1873,7 +1873,7 @@ void npc::die(game *g, bool your_fault)
   else if (!is_enemy()) g->u.add_morale(MORALE_KILLED_INNOCENT, -100);
  }
 
- player::die(g->m);
+ player::die();
 
  for (auto& miss : g->active_missions) if (_id == miss.npc_id) miss.fail();
 }
