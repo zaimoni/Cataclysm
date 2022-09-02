@@ -215,13 +215,20 @@ void npc::die(const int id)
     for (auto& _npc : g->active_npc) {
         ++i;
         if (id == _npc._id) {
-            _npc.die(g, false);
+            _npc.die(g);
             EraseAt(g->active_npc, i);
             return;
         }
     }
+	i = -1;
     for (auto& _npc : g->cur_om.npcs) {
+		++i;
         if (id == _npc._id) {
+			if (g->m.chunk(_npc.GPSpos)) {
+				_npc.die(g);
+				EraseAt(g->cur_om.npcs, i);
+				return;
+			}
             _npc.marked_for_death = true;
             return;
         }
@@ -1867,7 +1874,7 @@ void npc::die(game *g, bool your_fault)
 {
  if (dead) return;
  dead = true;
- if (g->u.see(pos)) messages.add("%s dies!", name.c_str());
+ if (g->u.see(*this)) messages.add("%s dies!", name.c_str());
  if (your_fault && !g->u.has_trait(PF_HEARTLESS)) {
   if (is_friend()) g->u.add_morale(MORALE_KILLED_FRIEND, -500);
   else if (!is_enemy()) g->u.add_morale(MORALE_KILLED_INNOCENT, -100);

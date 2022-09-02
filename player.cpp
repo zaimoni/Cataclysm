@@ -3824,7 +3824,6 @@ int player::addiction_level(add_type type) const
 
 void player::die()
 {
-    assert(map::in_bounds(pos));
     item my_body(messages.turn);
     my_body.name = name;
     // \todo all of these drops are thin-wrapped; would prefer they work outside of reality bubble
