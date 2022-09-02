@@ -1376,6 +1376,11 @@ void map::add_item(int x, int y, const itype* type, int birthday)
     if (const auto it = submap::for_drop(ter(x, y), type, birthday)) add_item(x, y, std::move(*it));
 }
 
+static bool item_location_ok(GPS_loc& pos)
+{
+    return !is<noitem>(pos.ter()) && 26 > pos.items_at().size();
+}
+
 static bool item_location_ok(const map& m, const reality_bubble_loc& pos)
 {
     return !m.has_flag(noitem, pos) && m.i_at(pos).size() < 26;
@@ -1404,6 +1409,29 @@ static bool item_location_alternate(const map& m, point origin, reality_bubble_l
     return !okay.empty();
 }
 
+static std::optional<GPS_loc> item_location_alternate(GPS_loc origin)
+{
+    std::vector<GPS_loc> okay;
+    for (decltype(auto) delta : Direction::vector) {
+        auto pos = origin+delta;
+        if (0 < pos.move_cost() && item_location_ok(pos)) okay.push_back(pos);
+    }
+    if (okay.empty()) {
+        for (int i = -2; i <= 2; i++) {
+            for (int j = -2; j <= 2; j++) {
+                if (-2 != i && 2 != i && -2 != j && 2 != j) continue;
+                auto pos = origin + point(i, j);
+                if (0 < pos.move_cost() && item_location_ok(pos)) okay.push_back(pos);
+            }
+        }
+    }
+    // do not recurse.
+    if (auto ub = okay.size()) {
+        return okay[rng(0, ub - 1)];
+    }
+    return std::nullopt;
+}
+
 void map::add_item(int x, int y, const item& new_item)
 {
  if (new_item.is_style()) return;
@@ -1423,14 +1451,36 @@ void map::add_item(int x, int y, const item& new_item)
 // \todo: make these bypass map class
 void GPS_loc::add(const item& new_item)
 {
+    if (new_item.is_style()) return;
+
     const auto g = game::active();
-    if (auto pos = g->toScreen(*this)) g->m.add_item(*pos, new_item);
+    const auto sm = g->m.chunk(*this);
+    if (!sm) return; // not yet generated: error?
+
+    if (new_item.made_of(LIQUID) && is<swimmable>(ter())) return;
+    if (!item_location_ok(*this)) {
+        if (auto pos_in = item_location_alternate(*this)) {
+            if (new_item.made_of(LIQUID) && is<swimmable>(pos_in->ter())) return;
+        } // STILL?	\todo decide what gets lost
+    }
+    sm->add(item(new_item), second);
 }
 
 void GPS_loc::add(item&& new_item)
 {
+    if (new_item.is_style()) return;
+
     const auto g = game::active();
-    if (auto pos = g->toScreen(*this)) g->m.add_item(*pos, std::move(new_item));
+    const auto sm = g->m.chunk(*this);
+    if (!sm) return; // not yet generated: error?
+
+    if (new_item.made_of(LIQUID) && is<swimmable>(ter())) return;
+    if (!item_location_ok(*this)) {
+        if (auto pos_in = item_location_alternate(*this)) {
+            if (new_item.made_of(LIQUID) && is<swimmable>(pos_in->ter())) return;
+        } // STILL?	\todo decide what gets lost
+    }
+    sm->add(std::move(new_item), second);
 }
 
 void map::add_item(int x, int y, item&& new_item)
