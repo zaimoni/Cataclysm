@@ -1,4 +1,5 @@
 #include "construction.h"
+#include "submap.h"
 #ifndef SOCRATES_DAIMON
 #include "game.h"
 #include "keypress.h"
