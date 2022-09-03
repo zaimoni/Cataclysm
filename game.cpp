@@ -1404,9 +1404,11 @@ void game::load(std::string name)
 
     // V0.2.2 this is the earliest we can repair the tripoint field for OM_loc-retyped mission::type, npc::goal
     for (auto& _npc : active_npc) {
-        if (_ref<decltype(_npc.goal)>::invalid.second != _npc.goal.second && _ref<decltype(_npc.goal)>::invalid.first == _npc.goal.first) {
-            // V0.2.1- goal is point.  Assume cur_om's location.
-            _npc.goal.first = tripoint(com.x, com.y, lev.z);
+        if (auto dest = _npc.has_destination()) {
+            if (tripoint(INT_MAX) == dest->first) {
+                // V0.2.1- goal is point.  Assume cur_om's location.
+                _npc.goal->first = tripoint(com.x, com.y, lev.z);
+            }
         }
     }
     for (auto& _miss : active_missions) {
@@ -1667,9 +1669,9 @@ z.size(), event::are_queued());
            data << _npc->name << " " << (_npc->male ? "Male" : "Female") << std::endl;
            data << npc_class_name(_npc->myclass) << "; " <<
                npc_attitude_name(_npc->attitude) << std::endl;
-           if (_npc->has_destination())
-               data << "Destination: " << _npc->goal.first << _npc->goal.second << "(" <<
-               oter_t::list[overmap::ter_c(_npc->goal)].name << ")" <<
+           if (auto dest = _npc->has_destination())
+               data << "Destination: " << dest->first << dest->second << "(" <<
+               oter_t::list[overmap::ter_c(*dest)].name << ")" <<
                std::endl;
            else
                data << "No destination." << std::endl;

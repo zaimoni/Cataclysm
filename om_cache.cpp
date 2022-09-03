@@ -28,7 +28,7 @@ overmap* om_cache::get(const tripoint& x)
 	if (auto f = fopen(filename.c_str(), "r")) {	// check whether file exists before triggering loading
 		fclose(f);
 		std::unique_ptr<overmap> ret(new overmap(game::active(), x.x, x.y, x.z));
-		_cache[x] = std::pair(1, ret.get());
+		_cache[x] = std::pair(2, ret.get());
 		return ret.release();
 	}
 	return nullptr;

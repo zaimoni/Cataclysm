@@ -2774,9 +2774,9 @@ overmap::overmap(game* g, int x, int y, int z)
           om["npcs"].decode(npcs);
           // V0.2.2 this is the earliest we can repair the tripoint field for OM_loc-retyped npc::goal
           for (auto& _npc : npcs) {
-              if (_ref<decltype(_npc.goal)>::invalid.second != _npc.goal.second && _ref<decltype(_npc.goal)>::invalid.first == _npc.goal.first) {
+              if (_npc.goal && _npc.goal->first == tripoint(INT_MAX)) {
                   // V0.2.1- goal is point.  Assume our own location.
-                  _npc.goal.first = pos;
+                  _npc.goal->first = pos;
               }
           }
       }

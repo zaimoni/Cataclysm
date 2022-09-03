@@ -1915,7 +1915,7 @@ JSON toJSON(const npc& src)
 	if (tmp.has_key("engagement")) ret.set("combat_rules", tmp);
 	if (src.wand.live()) ret.set("wand", toJSON(src.wand));
 	if (src.pl.live()) ret.set("pl", toJSON(src.pl));
-	if (src.has_destination()) ret.set("goal", toJSON(src.goal));
+	if (src.has_destination()) ret.set("goal", toJSON(*src.goal));
 
 	// JSON::encode
 	if (!src.path.empty()) ret.set("path", JSON::encode(src.path));
@@ -1936,7 +1936,7 @@ bool fromJSON(const JSON& src, npc& dest)
 
 npc::npc(const JSON& src)
 : player(src),_id(-1), attitude(NPCATT_NULL), myclass(NC_NONE), wand(point(0, 0), 0),
-  pl(point(-1, -1), 0), it(-1, -1), goal(_ref<decltype(goal)>::invalid), fetching_item(false), has_new_items(false),
+  pl(point(-1, -1), 0), it(-1, -1), fetching_item(false), has_new_items(false),
   my_fac(nullptr), mission(NPC_MISSION_NULL), patience(0), marked_for_death(false), dead(false), flags(0)
 {
 	if (src.has_key("id")) fromJSON(src["id"], _id);
@@ -1945,10 +1945,18 @@ npc::npc(const JSON& src)
 	if (src.has_key("wand")) fromJSON(src["wand"], wand);
 	if (src.has_key("pl")) fromJSON(src["pl"], pl);
 	if (src.has_key("it")) fromJSON(src["it"], it);
-	if (src.has_key("goal") && !fromJSON(src["goal"], goal)) {
-		// V0.2.1- was point rather than OM_loc
-		point tmp;
-		if (fromJSON(src["goal"], tmp)) goal.second = tmp;
+	if (src.has_key("goal")) {
+		OM_loc<2> tmp2;
+		if (fromJSON(src["goal"], tmp2)) {
+			goal = tmp2;
+		} else {
+			// V0.2.1- was point rather than OM_loc
+			point tmp;
+			if (fromJSON(src["goal"], tmp)) {
+				goal = OM_loc<2>(tripoint(INT_MAX), tmp);
+			}
+		}
+
 	}
 	if (src.has_key("fetching_item")) fromJSON(src["fetching_item"], fetching_item);
 	if (src.has_key("has_new_items")) fromJSON(src["has_new_items"], has_new_items);

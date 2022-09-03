@@ -2074,11 +2074,6 @@ bool npc::saw_player_recently() const
  return map::in_bounds(pl.x) && pl.live();
 }
 
-bool npc::has_destination() const
-{
- return (goal.second.x >= 0 && goal.second.x < OMAPX && goal.second.y >= 0 && goal.second.y < OMAPY);
-}
-
 void npc::set_destination(game *g)
 {
 /* TODO: Make NPCs' movement more intelligent.
@@ -2129,7 +2124,7 @@ void npc::set_destination(game *g)
 
  shuffle_contents(options);
 
- decltype(goal) staging;
+ OM_loc<2> staging = _ref<OM_loc<2>>::invalid;
  int dist = INT_MAX;
  for (auto dest_type : options) {
   if (auto r = g->cur_om.find_closest(om.second, dest_type, 4, staging)) { // cf defaulted parameters
@@ -2154,13 +2149,15 @@ void npc::set_destination(game *g)
 
 void npc::go_to_destination(game *g)
 {
+	if (!goal) return;	// invariant failure
+
   auto om = overmap::toOvermap(GPSpos);
   if (goal == om) {	// We're at our desired map square!
    pause();
    reach_destination();
   }
   // NPCs historically don't go underground/change Z levels much \todo fix as part of long-range pathing
-  point s(goal.first.x==om.first.x && goal.first.y==goal.second.y ? cmp(goal.second, om.second) : cmp(point(om.first.x,om.first.y),point(goal.first.x,goal.first.y)));
+  point s(goal->first.x==om.first.x && goal->first.y==om.second.y ? cmp(goal->second, om.second) : cmp(point(om.first.x,om.first.y),point(goal->first.x,goal->first.y)));
 // sx and sy are now equal to the direction we need to move in
   point d;
   point target(pos + 8 * s);

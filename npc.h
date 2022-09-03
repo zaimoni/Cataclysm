@@ -459,19 +459,21 @@ private:
 #endif
  int pick_best_food(const inventory& _inv) const;
  void mug_player(player& mark);
+
 public:
  int can_look_for(const player& sought) const; /// @returns 0, or positive code indicating algorithm for looking
  ai_action look_for_player(player& sought);
  bool saw_player_recently() const;// Do we have an idea of where u are?
 
 // Movement on the overmap scale
- bool has_destination() const;	// Do we have a long-term destination?
+ auto has_destination() const { return goal; }	// Do we have a long-term destination?
+
 private:
  void set_destination(game *g);	// Pick a place to go
  void go_to_destination(game *g); // Move there; on the micro scale
- void reach_destination() { goal = _ref<decltype(goal)>::invalid; } // We made it!
-public:
+ void reach_destination() { goal = std::nullopt; } // We made it!
 
+public:
 // The preceding are in npcmove.cpp
 
     static npc get_proxy(std::string&& name, const point& origin, const it_gun& gun, unsigned int recoil, int charges);
@@ -519,7 +521,7 @@ public:
  // last seen player data (assumes player is singleton)
  countdown<point> pl;	// last saw player at; legal coordinates 0.. (SEEX/Y * MAPSIZE-1)
  point it;	// The square containing an item we want
- OM_loc<2> goal; // Which mapx:mapy square we want to get to
+ std::optional<OM_loc<2> > goal; // Which mapx:mapy square we want to get to
 
  bool fetching_item;
  bool has_new_items; // If true, we have something new and should re-equip
