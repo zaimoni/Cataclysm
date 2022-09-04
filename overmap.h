@@ -114,13 +114,15 @@ class overmap
   static OM_loc<2> normalize(const OM_loc<2>& OMpos);
   static OM_loc<1> normalize(const OM_loc<1>& OMpos);
 
+  bool exec_first_npc(std::function<std::optional<bool>(npc&) > op);
+
   tripoint pos;
 #if PROTOTYPE
   std::vector<settlement> towns;	// prototyping variable; #include "settlement.h" rather than overmap.cpp when taking live
 #endif
   std::vector<mongroup> zg;
   std::vector<radio_tower> radios;
-  std::vector<npc> npcs;
+  std::vector<npc> npcs; // submap is already bloated, so more efficient to have them here
 
  private:
   oter_id t[OMAPX][OMAPY];

@@ -564,6 +564,19 @@ const overmap_special overmap_special::specials[NUM_OMSPECS] = {
 
 };
 
+bool overmap::exec_first_npc(std::function<std::optional<bool>(npc&) > op)
+{
+    ptrdiff_t i = -1;
+    for (decltype(auto) _npc : npcs) {
+        ++i;
+        if (auto code = op(_npc)) {
+            if (*code) EraseAt(npcs, i);
+            return true;
+        }
+    }
+    return false;
+}
+
 #if PROTOTYPE
 void settlement_building(settlement &set, int x, int y);	// #include "settlement.h" when bringing this up
 #endif

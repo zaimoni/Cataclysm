@@ -220,19 +220,21 @@ void npc::die(const int id)
             return;
         }
     }
-	i = -1;
-    for (auto& _npc : g->cur_om.npcs) {
-		++i;
-        if (id == _npc._id) {
+
+	static auto gone = [&](npc& _npc) {
+		if (id == _npc._id) {
 			if (g->m.chunk(_npc.GPSpos)) {
 				_npc.die(g);
-				EraseAt(g->cur_om.npcs, i);
-				return;
+				return std::optional<bool>(true);
 			}
-            _npc.marked_for_death = true;
-            return;
-        }
-    }
+			_npc.marked_for_death = true;
+			return std::optional<bool>(false);
+		}
+		return std::optional<bool>();
+	};
+
+	g->cur_om.exec_first_npc(gone);
+
     // \todo check other overmaps...first those already loaded, then those *not* loaded
 }
 

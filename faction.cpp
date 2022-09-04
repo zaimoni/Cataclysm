@@ -416,6 +416,7 @@ std::string faction::describe() const
    if (has_value(faction_value(i))) {
     ret << facval_data[i].name;
     if (--count == 0) { break; }
+	// per hirdrac: GCC12 had a false-positive warning with std::string.replace(...) of the last comma
     ret << ((count == 1) ? ", and " : ", ");
    }
   }
