@@ -564,6 +564,19 @@ const overmap_special overmap_special::specials[NUM_OMSPECS] = {
 
 };
 
+bool overmap::activate_npc(const size_t i, std::vector<npc>& active_npc, const Badge<game>& auth)
+{
+    auto& _npc = npcs[i];
+    if (_npc.screen_pos()) {
+        _npc.spawn_at(_npc.GPSpos);
+        if (_npc.marked_for_death) _npc.die(game::active());
+        else active_npc.push_back(std::move(_npc));
+        EraseAt(npcs, i);
+        return true;
+    }
+    return false;
+}
+
 bool overmap::exec_first_npc(std::function<std::optional<bool>(npc&) > op)
 {
     ptrdiff_t i = -1;

@@ -114,6 +114,7 @@ class overmap
   static OM_loc<2> normalize(const OM_loc<2>& OMpos);
   static OM_loc<1> normalize(const OM_loc<1>& OMpos);
 
+  bool activate_npc(size_t i, std::vector<npc>& active_npc, const Badge<game>& auth);
   bool exec_first_npc(std::function<std::optional<bool>(npc&) > op);
 
   tripoint pos;

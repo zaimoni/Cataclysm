@@ -2603,17 +2603,8 @@ void game::om_npcs_move()   // blocked:? Earth coordinates, CPU, hard drive \tod
 
 void game::activate_npcs()   // blocked:? Earth coordinates, CPU, hard drive \todo handle other overmaps
 {
-    const auto reality_anchor = toGPS(point(0, 0));
-    auto i = cur_om.npcs.size();
-    while (0 < i) {
-        auto& _npc = cur_om.npcs[--i];
-        if (_npc.screen_pos()) {
-            _npc.spawn_at(_npc.GPSpos);
-            if (_npc.marked_for_death) _npc.die(this, false);
-            else active_npc.push_back(std::move(_npc));
-            EraseAt(cur_om.npcs, i);
-        }
-    }
+    ptrdiff_t i = cur_om.npcs.size();
+    while (0 <= --i) cur_om.activate_npc(i, active_npc, Badge<game>());
 }
 
 void game::sound(const point& pt, int vol, std::string description)
