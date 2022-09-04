@@ -8,6 +8,7 @@
 #include "line.h"
 #include "stl_limits.h"
 #include "saveload.h"
+#include <sstream>
 
 int faction::next_id = faction::MIN_ID+1;
 
@@ -397,23 +398,31 @@ facval_data[v].name.c_str());
 
 std::string faction::describe() const
 {
- std::string ret = name + " have the ultimate goal of " +
-                   facgoal_data[goal].name + ". Their primary concern is " +
-                   facjob_data[job1].name;
- ret += (job2 == FACJOB_NULL) ? "." : ", but they are also involved in " + facjob_data[job2].name + ".";
+ std::ostringstream ret;
+ ret << name << " have the ultimate goal of " << facgoal_data[goal].name
+     << ". Their primary concern is " << facjob_data[job1].name;
+ if (job2 != FACJOB_NULL) {
+  ret << ", but they are also involved in " << facjob_data[job2].name;
+ }
+
  if (values != 0) {
-  ret += " They are known for ";
+  int count = 0;
   for (int i = 0; i < NUM_FACVALS; i++) {
-   if (has_value(faction_value(i))) ret += facval_data[i].name + ", ";
+   count += has_value(faction_value(i));
+  }
+
+  ret << ". They are known for ";
+  for (int i = 0; i < NUM_FACVALS; i++) {
+   if (has_value(faction_value(i))) {
+    ret << facval_data[i].name;
+    if (--count == 0) { break; }
+    ret << ((count == 1) ? ", and " : ", ");
+   }
   }
  }
- size_t pos = ret.find_last_of(",");
- if (pos != std::string::npos) {
-  ret.replace(pos, 2, ".");
-  pos = ret.find_last_of(",");
-  if (pos != std::string::npos) ret.replace(pos, 2, ", and ");
- }
- return ret;
+
+ ret << '.';
+ return ret.str();
 }
 
 unsigned int faction::response_time(tripoint dest) const
