@@ -1775,6 +1775,7 @@ void game::disp_kills()
  refresh_all();
 }
 
+#if DEAD_FUNC
 void game::disp_NPCs()
 {
  WINDOW* w = newwin(VIEW, SCREEN_WIDTH, 0, 0);
@@ -1812,6 +1813,7 @@ void game::disp_NPCs()
  wrefresh(w);
  delwin(w);
 }
+#endif
 
 faction* game::list_factions(const char* title)
 {

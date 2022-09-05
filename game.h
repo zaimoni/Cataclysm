@@ -315,7 +315,9 @@ class game : public reality_bubble
   void draw_overmap();     // Draws the overmap, allows note-taking etc.
 public:
   void disp_kills();       // Display the player's kill counts
+#if DEAD_FUNC
   void disp_NPCs();        // Currently UNUSED.  Lists global NPCs.
+#endif
   void list_missions();    // Listed current, completed and failed missions.
 
 // Debug functions
