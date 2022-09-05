@@ -187,20 +187,21 @@ std::string npc::possessive() const
 	return ret;
 }
 
+std::function<bool(const npc&)> npc::find_me(const int id)
+{
+	return [=](const npc& _npc) { return id == _npc._id; };
+}
+
 npc* npc::find(const int id) {
     auto g = game::active();
     for (auto& _npc : g->active_npc) if (id == _npc._id) return &_npc;
 
+	auto wanted = find_me(id);
 	npc* ret = nullptr;
 
 	static std::function<std::optional<bool>(overmap&)> look_for = [&](overmap& om) {
-		for (decltype(auto) _npc : om.npcs) {
-			if (id == _npc._id) {
-				ret = &_npc;
-				return std::optional<bool>(true);
-			}
-		}
-
+		ret = om.find(wanted);
+		if (ret) return std::optional<bool>(true);
 		return std::optional<bool>();
 	};
 
@@ -213,16 +214,12 @@ const npc* npc::find_r(const int id) {
     auto g = game::active();
     for (auto& _npc : g->active_npc) if (id == _npc._id) return &_npc;
 
+	auto wanted = find_me(id);
 	const npc* ret = nullptr;
 
 	static std::function<std::optional<bool>(const overmap&)> look_for = [&](const overmap& om) {
-		for (decltype(auto) _npc : om.npcs) {
-			if (id == _npc._id) {
-				ret = &_npc;
-				return std::optional<bool>(true);
-			}
-		}
-
+		ret = om.find_r(wanted);
+		if (ret) return std::optional<bool>(true);
 		return std::optional<bool>();
 	};
 

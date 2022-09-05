@@ -295,6 +295,7 @@ public:
  bool is_npc() const override { return true; }
  int ID() const { return _id; }	// A unique ID number
 
+ static std::function<bool(const npc&)> find_me(int id);
  static npc* find(int id); // NPC with UID=id; null if non-existent
  static const npc* find_r(int id); // NPC with UID=id; null if non-existent
 

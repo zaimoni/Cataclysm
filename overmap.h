@@ -116,6 +116,8 @@ class overmap
 
   bool activate_npc(size_t i, std::vector<npc>& active_npc, const Badge<game>& auth);
   bool exec_first(std::function<std::optional<bool>(npc&) > op);
+  npc* find(std::function<bool(const npc&)> ok);
+  const npc* find_r(std::function<bool(const npc&)> ok) const;
 
   tripoint pos;
 #if PROTOTYPE

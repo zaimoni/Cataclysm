@@ -590,6 +590,23 @@ bool overmap::exec_first(std::function<std::optional<bool>(npc&) > op)
     return false;
 }
 
+npc* overmap::find(std::function<bool(const npc&)> ok) {
+    for (decltype(auto) _npc : npcs) {
+        if (ok(_npc)) return &_npc;
+    }
+
+    return nullptr;
+}
+
+const npc* overmap::find_r(std::function<bool(const npc&)> ok) const {
+    for (decltype(auto) _npc : npcs) {
+        if (ok(_npc)) return &_npc;
+    }
+
+    return nullptr;
+}
+
+
 #if PROTOTYPE
 void settlement_building(settlement &set, int x, int y);	// #include "settlement.h" when bringing this up
 #endif
