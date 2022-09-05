@@ -1,6 +1,7 @@
 #include "npc.h"
 #include "game.h"
 #include "vehicle.h"
+#include "om_cache.hpp"
 #include "rng.h"
 #include "skill.h"
 #include "output.h"
@@ -189,17 +190,45 @@ std::string npc::possessive() const
 npc* npc::find(const int id) {
     auto g = game::active();
     for (auto& _npc : g->active_npc) if (id == _npc._id) return &_npc;
-    for (auto& _npc : g->cur_om.npcs) if (id == _npc._id) return &_npc;
-    // \todo check other overmaps...first those already loaded, then those *not* loaded
-    return nullptr;
+
+	npc* ret = nullptr;
+
+	static std::function<std::optional<bool>(overmap&)> look_for = [&](overmap& om) {
+		for (decltype(auto) _npc : om.npcs) {
+			if (id == _npc._id) {
+				ret = &_npc;
+				return std::optional<bool>(true);
+			}
+		}
+
+		return std::optional<bool>();
+	};
+
+	// \todo check other overmaps...first those already loaded, then those *not* loaded
+	om_cache::get().scan(look_for);
+	return ret;
 }
 
 const npc* npc::find_r(const int id) {
     auto g = game::active();
     for (auto& _npc : g->active_npc) if (id == _npc._id) return &_npc;
-    for (auto& _npc : g->cur_om.npcs) if (id == _npc._id) return &_npc;
-    // \todo check other overmaps...first those already loaded, then those *not* loaded
-    return nullptr;
+
+	const npc* ret = nullptr;
+
+	static std::function<std::optional<bool>(const overmap&)> look_for = [&](const overmap& om) {
+		for (decltype(auto) _npc : om.npcs) {
+			if (id == _npc._id) {
+				ret = &_npc;
+				return std::optional<bool>(true);
+			}
+		}
+
+		return std::optional<bool>();
+	};
+
+	// \todo check other overmaps...first those already loaded, then those *not* loaded
+	om_cache::get().scan_r(look_for);
+	return ret;
 }
 
 // Intentionally thin wrapper to force correct type for handler call.

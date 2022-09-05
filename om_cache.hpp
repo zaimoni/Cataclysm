@@ -2,7 +2,9 @@
 #define OM_CACHE_HPP 1
 
 #include "enums.h"
+#include <functional>
 #include <map>
+#include <optional>
 #include <utility>
 
 class overmap;
@@ -28,6 +30,10 @@ public:
 	void expire();	// all overmaps not used flushed to hard drive; usage flag reset
 	void save();
 	void load(overmap& dest, const tripoint& x);
+
+	// op returns: std::nullopt no material access; true to early-exit
+	void scan(std::function<std::optional<bool>(overmap&)> op);
+	void scan_r(std::function<std::optional<bool>(const overmap&)> op);
 };
 
 #endif

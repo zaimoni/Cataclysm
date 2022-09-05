@@ -131,3 +131,31 @@ void om_cache::load(overmap& dest, const tripoint& x)	// dest is typically game:
 	}
 	dest = overmap(game::active(), x.x, x.y, x.z);
 }
+
+void om_cache::scan(std::function<std::optional<bool>(overmap&)> op)
+{
+	if (op(game::active()->cur_om)) return;
+
+	for (decltype(auto) x : _cache) {
+		if (auto code = op(*x.second.second)) {
+			x.second.first = 2;	// write access
+			if (*code) return;
+		}
+	}
+
+	// \todo check not-loaded overmaps (possibly new function)
+}
+
+void om_cache::scan_r(std::function<std::optional<bool>(const overmap&)> op)
+{
+	if (op(game::active()->cur_om)) return;
+
+	for (decltype(auto) x : _cache) {
+		if (auto code = op(*x.second.second)) {
+			x.second.first = 1;	// read access
+			if (*code) return;
+		}
+	}
+
+	// \todo check not-loaded overmaps (possibly new function)
+}
