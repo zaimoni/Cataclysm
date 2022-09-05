@@ -233,7 +233,7 @@ void npc::die(const int id)
 		return std::optional<bool>();
 	};
 
-	g->cur_om.exec_first_npc(gone);
+	g->cur_om.exec_first(gone);
 
     // \todo check other overmaps...first those already loaded, then those *not* loaded
 }

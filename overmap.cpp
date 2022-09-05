@@ -577,7 +577,7 @@ bool overmap::activate_npc(const size_t i, std::vector<npc>& active_npc, const B
     return false;
 }
 
-bool overmap::exec_first_npc(std::function<std::optional<bool>(npc&) > op)
+bool overmap::exec_first(std::function<std::optional<bool>(npc&) > op)
 {
     ptrdiff_t i = -1;
     for (decltype(auto) _npc : npcs) {
