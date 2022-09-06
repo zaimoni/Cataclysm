@@ -47,6 +47,9 @@ public:
 	std::optional<reality_bubble_loc> toSubmap(const GPS_loc& GPS_pos) const;
 	OM_loc<2> om_location() const; // levx and levy converted to overmap coordinates
 
+	zaimoni::gdi::box<tripoint> extent_activate() const { return zaimoni::gdi::box<tripoint>(lev, lev + point(MAPSIZE)); }
+	zaimoni::gdi::box<tripoint> extent_deactivate() const { return zaimoni::gdi::box<tripoint>(lev + point(-2), lev + point(MAPSIZE + 2)); }
+
 	void despawn(const monster& z, bool mortal = false);
 };
 

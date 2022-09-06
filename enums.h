@@ -137,6 +137,12 @@ inline bool operator<(const tripoint& lhs, const tripoint& rhs)
 	return lhs.z < rhs.z;
 }
 
+template<class T>
+bool pointwise_test(const tripoint& lhs, const tripoint& rhs, T rel)
+{
+	return rel(lhs.x, rhs.x) && rel(lhs.y, rhs.y) && rel(lhs.z, rhs.z);
+}
+
 // coordinate projections
 inline constexpr point project_xy(const tripoint& src) { return point(src.x, src.y); }
 

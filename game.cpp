@@ -2599,14 +2599,24 @@ void game::monmove()
 
 void game::om_npcs_move()   // blocked:? Earth coordinates, CPU, hard drive \todo handle other overmaps
 {
-  for(auto& _npc : cur_om.npcs) _npc.perform_mission(this);
-  activate_npcs();
+    const auto span = extent_activate();
+
+    ptrdiff_t i = cur_om.npcs.size();
+    while (0 <= --i) {
+        auto& _npc = cur_om.npcs[i];
+        _npc.perform_mission(this);
+        if (span.contains(_npc.GPSpos.first)) cur_om.activate_npc(i, active_npc, Badge<game>());
+    }
 }
 
 void game::activate_npcs()   // blocked:? Earth coordinates, CPU, hard drive \todo handle other overmaps
 {
+    const auto span = extent_activate();
+
     ptrdiff_t i = cur_om.npcs.size();
-    while (0 <= --i) cur_om.activate_npc(i, active_npc, Badge<game>());
+    while (0 <= --i) {
+        if (span.contains(cur_om.npcs[i].GPSpos.first)) cur_om.activate_npc(i, active_npc, Badge<game>());
+    }
 }
 
 void game::sound(const point& pt, int vol, std::string description)
