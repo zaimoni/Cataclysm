@@ -1456,21 +1456,20 @@ void game::load(std::string name)
  fin.close();
 
  {  // validate active_npcs (we have lev at this point so can measure who is/isn't in scope)
- auto i = active_npc.size();
- while (0 < i) {
-     auto& _npc = active_npc[--i];
-     auto test = toGPS(_npc.pos);
-     if (test != _npc.GPSpos) {
-         if (point(-1, -1) == _npc.GPSpos.second) {
-             // likely still defaulted: presumably loaded from V0.2.0
-             _npc.GPSpos = test;
-         } else if (!toScreen(_npc.GPSpos, _npc.pos)) {
+     const auto span = extent_deactivate();
+     ptrdiff_t i = active_npc.size();
+     while (0 <= --i) {
+         npc& _npc = active_npc[i];
+
+         if (!submap::in_bounds(_npc.GPSpos.second)) { // defaulted i.e. from V0.2.0?
+             if (map::in_bounds(_npc.pos)) { // presumably loaded from V0.2.0
+                 _npc.GPSpos = toGPS(_npc.pos);
+             }
+         } else if (!span.contains(_npc.GPSpos.first)) {
              // off-screen!
-             cur_om.npcs.push_back(std::move(_npc));
-             EraseAt(active_npc, i);
+             cur_om.deactivate_npc(i, active_npc, Badge<game>());
          }
      }
- }
  }
  activate_npcs();
 
