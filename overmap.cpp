@@ -577,6 +577,14 @@ bool overmap::activate_npc(const size_t i, std::vector<npc>& active_npc, const B
     return false;
 }
 
+void overmap::deactivate_npc(const size_t i, std::vector<npc>& active_npc, const Badge<game>& auth)
+{
+    auto& _npc = active_npc[i];
+    _npc.pos %= SEE;
+    npcs.push_back(std::move(active_npc[i])); // \todo fix this as part of GPS conversion (GPS location could be "just over the overmap border")
+    EraseAt(active_npc, i);
+}
+
 bool overmap::exec_first(std::function<std::optional<bool>(npc&) > op)
 {
     ptrdiff_t i = -1;

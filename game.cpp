@@ -5186,18 +5186,15 @@ void game::update_map(int &x, int &y)
 
 // Shift NPCs
  {
- auto i = active_npc.size();
- static constexpr const zaimoni::gdi::box<point> npc_valid_bubble(point(-2*SEE), point(SEE*(MAPSIZE + 2))); // \todo? SEE*(MAPSIZE + 2)-1?
- while (0 < i) {
-	 auto& _npc = active_npc[--i];
-	 _npc.shift(shift);
-     // don't scope NPCs out *until* any vehicle containing them is outside of the reality bubble as well
-     if (!npc_valid_bubble.contains(_npc.pos)) {
-         _npc.pos %= SEE;
-         cur_om.npcs.push_back(std::move(active_npc[i])); // \todo fix this as part of GPS conversion (GPS location could be "just over the overmap border")
-         EraseAt(active_npc, i);
+     const auto span = extent_deactivate();
+     ptrdiff_t i = active_npc.size();
+     while (0 <= --i) {
+         auto& _npc = active_npc[--i];
+         _npc.shift(shift);
+         // don't scope NPCs out *until* any vehicle containing them is outside of the reality bubble as well
+         // \todo fix this as part of GPS conversion (GPS location could be "just over the overmap border")
+         if (!span.contains(_npc.GPSpos.first)) cur_om.deactivate_npc(i, active_npc, Badge<game>());
      }
- }
  }
  }	// if (0 != shift.x || 0 != shift.y)
 // Spawn static NPCs?
