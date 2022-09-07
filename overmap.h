@@ -119,6 +119,8 @@ class overmap
   void activate(npcs_t& active_npc, const Badge<game>& auth);
   void deactivate_npc(size_t i, npcs_t& active_npc, const Badge<game>& auth);
   void npcs_move(npcs_t& active_npc, const Badge<game>& auth);
+  auto npcs_size() const { return npcs.size(); }
+
   bool exec_first(std::function<std::optional<bool>(npc&) > op);
   npc* find(std::function<bool(const npc&)> ok);
   const npc* find_r(std::function<bool(const npc&)> ok) const;
@@ -130,9 +132,9 @@ class overmap
 #endif
   std::vector<mongroup> zg;
   std::vector<radio_tower> radios;
-  npcs_t npcs; // submap is already bloated, so more efficient to have them here
 
  private:
+  npcs_t npcs; // submap is already bloated, so more efficient to have them here
   oter_id t[OMAPX][OMAPY];
   bool s[OMAPX][OMAPY];
   std::vector<om_note> notes;

@@ -5295,7 +5295,7 @@ void game::spawn_mon(int shiftx, int shifty)
  const int nlevx = lev.x + shiftx;
  const int nlevy = lev.y + shifty;
  // Create a new NPC?
- if (option_table::get()[OPT_NPCS] && one_in(100 + 15 * cur_om.npcs.size())) {	// \todo this rate is a numeric option in C:DDA
+ if (option_table::get()[OPT_NPCS] && one_in(100 + 15 * cur_om.npcs_size())) {	// \todo this rate is a numeric option in C:DDA
   size_t lz_ub = 0;
   GPS_loc lz[4*(MAPSIZE*SEE -1)];
 
