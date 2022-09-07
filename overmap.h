@@ -116,7 +116,7 @@ class overmap
   static OM_loc<2> normalize(const OM_loc<2>& OMpos);
   static OM_loc<1> normalize(const OM_loc<1>& OMpos);
 
-  bool activate_npc(size_t i, npcs_t& active_npc, const Badge<game>& auth);
+  void activate(npcs_t& active_npc, const Badge<game>& auth);
   void deactivate_npc(size_t i, npcs_t& active_npc, const Badge<game>& auth);
   void npcs_move(npcs_t& active_npc, const Badge<game>& auth);
   bool exec_first(std::function<std::optional<bool>(npc&) > op);
@@ -142,6 +142,8 @@ class overmap
   void clear_terrain(oter_id src);
 
   static bool _is_safe(const OM_loc<1>& loc);
+
+  bool activate_npc(size_t i, npcs_t& active_npc, const Badge<game>& auth);
 
   void generate(game* g, const overmap* north, const overmap* east, const overmap* south, const overmap* west);
   void generate_sub(const overmap* above);

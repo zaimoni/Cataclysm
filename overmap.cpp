@@ -564,6 +564,17 @@ const overmap_special overmap_special::specials[NUM_OMSPECS] = {
 
 };
 
+void overmap::activate(npcs_t& active_npc, const Badge<game>& auth)
+{
+    const auto span = game::active()->extent_activate();
+
+    ptrdiff_t i = npcs.size();
+    while (0 <= --i) {
+        if (span.contains(npcs[i].GPSpos.first)) activate_npc(i, active_npc, auth);
+    }
+
+}
+
 bool overmap::activate_npc(const size_t i, npcs_t& active_npc, const Badge<game>& auth)
 {
     auto& _npc = npcs[i];

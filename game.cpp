@@ -2603,12 +2603,7 @@ void game::om_npcs_move()   // blocked:? Earth coordinates, CPU, hard drive \tod
 
 void game::activate_npcs()   // blocked:? Earth coordinates, CPU, hard drive \todo handle other overmaps
 {
-    const auto span = extent_activate();
-
-    ptrdiff_t i = cur_om.npcs.size();
-    while (0 <= --i) {
-        if (span.contains(cur_om.npcs[i].GPSpos.first)) cur_om.activate_npc(i, active_npc, Badge<game>());
-    }
+    cur_om.activate(active_npc, Badge<game>());
 }
 
 void game::sound(const point& pt, int vol, std::string description)
