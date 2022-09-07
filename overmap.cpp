@@ -564,7 +564,7 @@ const overmap_special overmap_special::specials[NUM_OMSPECS] = {
 
 };
 
-bool overmap::activate_npc(const size_t i, std::vector<npc>& active_npc, const Badge<game>& auth)
+bool overmap::activate_npc(const size_t i, npcs_t& active_npc, const Badge<game>& auth)
 {
     auto& _npc = npcs[i];
     if (_npc.screen_pos()) {
@@ -577,12 +577,25 @@ bool overmap::activate_npc(const size_t i, std::vector<npc>& active_npc, const B
     return false;
 }
 
-void overmap::deactivate_npc(const size_t i, std::vector<npc>& active_npc, const Badge<game>& auth)
+void overmap::deactivate_npc(const size_t i, npcs_t& active_npc, const Badge<game>& auth)
 {
     auto& _npc = active_npc[i];
     _npc.pos %= SEE;
     npcs.push_back(std::move(active_npc[i])); // \todo fix this as part of GPS conversion (GPS location could be "just over the overmap border")
     EraseAt(active_npc, i);
+}
+
+void overmap::npcs_move(npcs_t& active_npc, const Badge<game>& auth)
+{
+    const auto g = game::active();
+    const auto span = g->extent_activate();
+
+    ptrdiff_t i = npcs.size();
+    while (0 <= --i) {
+        auto& _npc = npcs[i];
+        _npc.perform_mission(g);
+        if (span.contains(_npc.GPSpos.first)) activate_npc(i, active_npc, auth);
+    }
 }
 
 bool overmap::exec_first(std::function<std::optional<bool>(npc&) > op)

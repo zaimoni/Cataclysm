@@ -49,6 +49,8 @@ struct radio_tower {
 class overmap
 {
  public:
+  using npcs_t = std::vector<npc>;
+
   overmap() noexcept : pos(999, 999, 999) {};	// \todo: use truly impossible coordinates
   overmap(game *g, int x, int y, int z);
   ~overmap() = default;
@@ -114,8 +116,9 @@ class overmap
   static OM_loc<2> normalize(const OM_loc<2>& OMpos);
   static OM_loc<1> normalize(const OM_loc<1>& OMpos);
 
-  bool activate_npc(size_t i, std::vector<npc>& active_npc, const Badge<game>& auth);
-  void deactivate_npc(size_t i, std::vector<npc>& active_npc, const Badge<game>& auth);
+  bool activate_npc(size_t i, npcs_t& active_npc, const Badge<game>& auth);
+  void deactivate_npc(size_t i, npcs_t& active_npc, const Badge<game>& auth);
+  void npcs_move(npcs_t& active_npc, const Badge<game>& auth);
   bool exec_first(std::function<std::optional<bool>(npc&) > op);
   npc* find(std::function<bool(const npc&)> ok);
   const npc* find_r(std::function<bool(const npc&)> ok) const;
@@ -126,7 +129,7 @@ class overmap
 #endif
   std::vector<mongroup> zg;
   std::vector<radio_tower> radios;
-  std::vector<npc> npcs; // submap is already bloated, so more efficient to have them here
+  npcs_t npcs; // submap is already bloated, so more efficient to have them here
 
  private:
   oter_id t[OMAPX][OMAPY];

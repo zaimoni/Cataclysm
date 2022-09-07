@@ -66,6 +66,8 @@ class game : public reality_bubble
   static bool relay_message(const std::string& msg);
 
  public:
+  using npcs_t = overmap::npcs_t;
+
   static game* active() { return _active; }
   static const game* active_const() { return _active; }
 
@@ -193,7 +195,7 @@ class game : public reality_bubble
   std::vector<monster> z;
   std::vector<monster_and_count> coming_to_stairs;
   tripoint monstair;
-  std::vector<npc> active_npc;
+  npcs_t active_npc;
   std::vector<faction> factions;
   std::vector<mission> active_missions; // Missions which may be assigned (globally valid list)
 /*
