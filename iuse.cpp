@@ -1010,11 +1010,12 @@ void iuse::two_way_radio(pc& p, item& it)
  } else if (ch == '3') {	// General S.O.S.
   p.moves -= (3 * mobile::mp_turn) / 2;
   const OM_loc my_om = overmap::toOvermap(g->u.GPSpos);
-  std::vector<npc*> in_range;
-  for (auto& _npc : g->cur_om.npcs) {
-    if (4 > _npc.op_of_u.value) continue;
-	if (30 >= rl_dist(overmap::toOvermap(_npc.GPSpos), my_om)) in_range.push_back(&_npc);
-  }
+  static auto helpful = [&](const npc& _npc) {
+      if (4 > _npc.op_of_u.value) return false;
+      return 30 >= rl_dist(overmap::toOvermap(_npc.GPSpos), my_om);
+  };
+
+  std::vector<npc*> in_range = g->cur_om.grep(helpful);
   const auto ub = in_range.size();
   if (0 < ub) {
    npc* coming = in_range[rng(0, ub - 1)];

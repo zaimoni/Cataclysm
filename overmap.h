@@ -122,6 +122,7 @@ class overmap
   bool exec_first(std::function<std::optional<bool>(npc&) > op);
   npc* find(std::function<bool(const npc&)> ok);
   const npc* find_r(std::function<bool(const npc&)> ok) const;
+  std::vector<npc*> grep(std::function<bool(const npc&)> ok);
 
   tripoint pos;
 #if PROTOTYPE

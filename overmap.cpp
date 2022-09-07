@@ -638,6 +638,12 @@ const npc* overmap::find_r(std::function<bool(const npc&)> ok) const {
     return nullptr;
 }
 
+std::vector<npc*> overmap::grep(std::function<bool(const npc&)> ok)
+{
+    std::vector<npc*> ret;
+    for (auto& _npc : npcs) if (ok(_npc)) ret.push_back(&_npc);
+    return ret;
+}
 
 #if PROTOTYPE
 void settlement_building(settlement &set, int x, int y);	// #include "settlement.h" when bringing this up
