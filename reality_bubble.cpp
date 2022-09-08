@@ -55,15 +55,6 @@ std::optional<point> reality_bubble::toScreen(GPS_loc GPS_pos) const
 	return GPS_pos.second + SEE * delta;
 }
 
-bool reality_bubble::toScreen(const GPS_loc& GPS_pos, point& screen_pos) const
-{
-	if (const auto pos = toScreen(GPS_pos)) {
-		screen_pos = *pos;
-		return true;
-	}
-	return false;
-}
-
 std::optional<reality_bubble_loc> reality_bubble::toSubmap(const GPS_loc& GPS_pos) const
 {
 	if (GPS_pos.first.z != cur_om.pos.z) return std::nullopt;	// \todo? z-level change target

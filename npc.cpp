@@ -956,7 +956,7 @@ void npc::spawn_at(const GPS_loc& _GPSpos)
 {
     GPSpos = _GPSpos;
     landing_zone_ok();
-    game::active()->toScreen(GPSpos, pos);
+	if (auto dest = game::active()->toScreen(GPSpos)) pos = *dest;
 }
 
 skill npc::best_skill() const
