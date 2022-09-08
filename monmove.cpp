@@ -62,36 +62,47 @@ void monster::wander_to(const point& pt, int f)
 void monster::plan(game *g)
 {
  int sightrange = g->light_level();
+ auto could_see = g->mobs_in_range(GPSpos, sightrange);
+
+ is_enemy_of is_hostile(*this);
+ std::optional<std::pair<std::variant<monster*, npc*, pc*>, int> > nearest;
+ std::vector<GPS_loc> los;
+
+ if (is_friend() && !has_effect(ME_DOCILE)) {  // more precise implementation: docile for who?
+     if (could_see) {
+         for (decltype(auto) target : *could_see) {
+             if (std::visit(is_hostile, target)) {
+                 auto target_loc = std::visit(mobile::cast(), target)->GPSpos;
+                 const int test = rl_dist(GPSpos, target_loc);
+                 if (!nearest || test < nearest->second) {
+                     if (const auto tc = GPSpos.sees(target_loc, sightrange)) {
+                         nearest = decltype(nearest)::value_type(target, test);
+                         los = std::move(*tc);
+                     }
+                 }
+             }
+         }
+     }
+
+     if (nearest) {
+         if (auto pt_los = game::active()->toScreen(los)) {
+             plans = std::move(*pt_los);
+         }
+     } else if (0 < friendly) {
+         if (one_in(3)) friendly--;	// Grow restless with no targets
+     } else if (0 > friendly) {
+         if (const auto tc = see(g->u)) {
+             if (rl_dist(GPSpos, g->u.GPSpos) > 2)
+                 set_dest(g->u.pos, *tc);
+             else
+                 plans.clear();
+         }
+     }
+     return; // no enemies in sight
+ }
+
  int dist = INT_MAX;
  int stc;
- if (is_friend()) {	// Target monsters, not the player!
-  const monster* closest_mon = nullptr;
-  if (!has_effect(ME_DOCILE)) {
-   for (const auto& _mon : g->z) {
-    if (!is_enemy(&_mon)) continue;
-    const int test = rl_dist(GPSpos, _mon.GPSpos);
-    if (test < dist) {
-        if (const auto tc = g->m.sees(pos, _mon.pos, sightrange)) {
-            closest_mon = &_mon;
-            dist = test;
-            stc = *tc;
-        }
-    }
-   }
-  }
-
-  if (closest_mon) set_dest(closest_mon->pos, stc);
-  else if (0 < friendly) {
-      if (one_in(3)) friendly--;	// Grow restless with no targets
-  } else if (0 > friendly) {
-      if (const auto tc = see(g->u)) {
-          if (rl_dist(GPSpos, g->u.GPSpos) > 2)
-              set_dest(g->u.pos, *tc);
-          else
-              plans.clear();
-      }
-  }
- }
 
  bool fleeing = false;
  int closest = -1;
