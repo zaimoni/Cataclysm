@@ -660,7 +660,7 @@ void npc::randomize(npc_class type)
  inv.add_stack(starting_inv(this, type));
 }
 
-void npc::randomize_from_faction(game *g, faction *fac)
+void npc::randomize_from_faction(faction *fac)
 {
 // Personality = aggression, bravery, altruism, collector
  my_fac = fac;

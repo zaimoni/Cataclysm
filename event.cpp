@@ -115,7 +115,7 @@ void event::actualize() const
    if (0 <= faction_id && !fac) debugmsg("EVENT_HELP run with invalid faction_id");
    for (int i = 0; i < num; i++) {
     npc tmp;
-    tmp.randomize_from_faction(g, fac);
+    tmp.randomize_from_faction(fac);
     tmp.attitude = NPCATT_DEFEND;
 	tmp.screenpos_set(g->u.pos.x - SEEX * 2 + rng(-5, 5), g->u.pos.y - SEEY * 2 + rng(-5, 5));
     g->active_npc.push_back(std::move(tmp));
