@@ -349,24 +349,26 @@ int monster::trigger_sum(const game* g, typename cataclysm::bitmap<N_MONSTER_TRI
 
     const bool check_terrain = check_meat || check_fire;
     if (check_terrain) {
-        for (int x = pos.x - 3; x <= pos.x + 3; x++) {
-            for (int y = pos.y - 3; y <= pos.y + 3; y++) {
-                if (check_meat) {
-                    for (const auto& obj : g->m.i_at(x, y)) {
-                        if (obj.type->id == itm_corpse ||
-                            obj.type->id == itm_meat ||
-                            obj.type->id == itm_meat_tainted) {
-                            ret += 3;
-                            check_meat = false;
-                        }
+        auto terrain_triggers = [&](point delta) {
+            auto dest = GPSpos + delta;
+            if (check_meat) {
+                for (const auto& obj : dest.items_at()) {
+                    if (obj.type->id == itm_corpse ||
+                        obj.type->id == itm_meat ||
+                        obj.type->id == itm_meat_tainted) {
+                        ret += 3;
+                        check_meat = false;
+                        break;
                     }
                 }
-                if (check_fire) {
-                    const auto& fd = g->m.field_at(x, y);
-                    if (fd.type == fd_fire) ret += 5 * fd.density;
-                }
             }
-        }
+            if (check_fire) {
+                const auto& fd = dest.field_at();
+                if (fd.type == fd_fire) ret += 5 * fd.density;
+            }
+        };
+
+        forall_do_inclusive(within_rldist<3>, terrain_triggers);
     }
 
     return ret;
