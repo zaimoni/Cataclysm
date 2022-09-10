@@ -11,6 +11,7 @@ class map;
 struct submap;
 class game;
 class item;
+class npc;
 class player;
 class pc;
 
@@ -87,6 +88,7 @@ class monster : public mobile {
  bool made_of(material m) const;	// Returns true if it's made of m
  bool ignitable() const;    // legal to apply ME_ONFIRE to
  std::optional<int> see(const player& u) const;
+ std::optional<std::vector<GPS_loc> > see(const std::variant<monster*, npc*, pc*>& whom) const;
 
  void debug(player &u); 	// Gives debug info
 

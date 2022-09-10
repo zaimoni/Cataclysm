@@ -237,6 +237,21 @@ std::optional<int> monster::see(const player& u) const
     return g->m.sees(pos, u.pos, g->light_level());
 }
 
+std::optional<std::vector<GPS_loc> > monster::see(const std::variant<monster*, npc*, pc*>& whom) const
+{
+    struct _is_invisible {
+        constexpr bool operator()(monster*) { return false;  }
+        bool operator()(player* u) { return u->has_active_bionic(bio_cloak) || u->has_artifact_with(AEP_INVISIBLE); }
+    };
+
+    static _is_invisible is_invisible;
+
+    if (std::visit(is_invisible, whom)) return std::nullopt;
+
+    const auto g = game::active();
+    return GPSpos.sees(std::visit(mobile::cast(), whom)->GPSpos, g->light_level());
+}
+
 void monster::debug(player &u)
 {
  char buff[16];

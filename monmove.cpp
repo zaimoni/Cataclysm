@@ -62,28 +62,38 @@ void monster::wander_to(const point& pt, int f)
 void monster::plan(game *g)
 {
  int sightrange = g->light_level();
- auto could_see = g->mobs_in_range(GPSpos, sightrange);
+ auto could_see = g->mobs_in_range(GPSpos, sightrange).value(); // should be non-empty as I, monster, am in range
 
- is_enemy_of is_hostile(*this);
+ // filter out non-enemies
+ {
+     is_enemy_of is_hostile(*this);
+
+     ptrdiff_t i = could_see.size();
+     while (0 <= --i) {
+         if (!std::visit(is_hostile, could_see[i])) {
+             std::swap(could_see[i], could_see.back());
+             could_see.pop_back();
+         }
+     }
+ };
+
  std::optional<std::pair<std::variant<monster*, npc*, pc*>, int> > nearest;
  std::vector<GPS_loc> los;
 
- if (is_friend() && !has_effect(ME_DOCILE)) {  // more precise implementation: docile for who?
-     if (could_see) {
-         for (decltype(auto) target : *could_see) {
-             if (std::visit(is_hostile, target)) {
-                 auto target_loc = std::visit(mobile::cast(), target)->GPSpos;
-                 const int test = rl_dist(GPSpos, target_loc);
-                 if (!nearest || test < nearest->second) {
-                     if (const auto tc = GPSpos.sees(target_loc, sightrange)) {
-                         nearest = decltype(nearest)::value_type(target, test);
-                         los = std::move(*tc);
-                     }
-                 }
+ if (!could_see.empty()) {
+     for (decltype(auto) target : could_see) {
+         auto target_loc = std::visit(mobile::cast(), target)->GPSpos;
+         const int test = rl_dist(GPSpos, target_loc);
+         if (!nearest || test < nearest->second) {
+             if (const auto tc = GPSpos.sees(target_loc, sightrange)) {
+                 nearest = decltype(nearest)::value_type(target, test);
+                 los = std::move(*tc);
              }
          }
      }
+ }
 
+ if (is_friend() && !has_effect(ME_DOCILE)) {  // more precise implementation: docile for who?
      if (nearest) {
          if (auto pt_los = game::active()->toScreen(los)) {
              plans = std::move(*pt_los);
@@ -101,68 +111,35 @@ void monster::plan(game *g)
      return; // no enemies in sight
  }
 
- int dist = INT_MAX;
- int stc;
+ // no longer clairvoyant, unlike guard dogs on job etc.
+ if (!can_see()) return;
+ if (!nearest) return;
 
- bool fleeing = false;
- int closest = -1;
- if (can_see()) {
-     auto tc = see(g->u);
-     if (tc) {
-         if (is_fleeing(g->u)) {
-             fleeing = true;
-             wand.set(2 * pos - g->u.pos, 40);
-             dist = rl_dist(GPSpos, g->u.GPSpos);
-         } else { // If we can see, and we can see a character, start moving towards them
-             dist = rl_dist(GPSpos, g->u.GPSpos);
-             closest = -2;
-             stc = *tc;
-         }
+ struct _is_fleeing {
+     monster& whom;
+
+     _is_fleeing(monster& whom) noexcept : whom(whom) {}
+
+     bool operator()(monster*) { return false; }
+     bool operator()(player* u) { return whom.is_fleeing(*u); }
+ };
+
+ bool fleeing = std::visit(_is_fleeing(*this), nearest->first);
+ // \todo concept of fleeing monsters, etc.
+ if (!fleeing) fleeing = attitude() == MATT_FLEE; // inlining partial definition of is_fleeing(g->u)
+
+ if (!fleeing) {
+     if (auto pt_los = game::active()->toScreen(los)) {
+         plans = std::move(*pt_los);
      }
-	 // check NPCs
-     int i = -1;
-     for (const auto& _npc : g->active_npc) {
-         ++i;
-         int medist = rl_dist(GPSpos, _npc.GPSpos);
-         if ((medist < dist || (!fleeing && is_fleeing(_npc)))) {
-             tc = see(_npc);
-             if (tc) {
-                 dist = medist;
-                 if (is_fleeing(_npc)) {
-                     fleeing = true;
-                     wand.set(2 * pos - _npc.pos, 40);
-                 } else /* if (g->m.sees(pos, _npc.pos, sightrange, tc)) */ {
-                     closest = i;
-                     stc = *tc;
-                 }
-             }
-         }
-     }
+     return;
  }
 
- if (!fleeing) fleeing = attitude() == MATT_FLEE; // inlining partial definition of is_fleeing(g->u)
- if (!fleeing) {
-  const monster* closest_mon = nullptr;
-  for (const auto& _mon : g->z) {
-   int mondist = rl_dist(GPSpos, _mon.GPSpos);
-   if (is_enemy(&_mon) && mondist < dist && can_see()) {
-       if (const auto tc = g->m.sees(pos, _mon.pos, sightrange)) {
-           dist = mondist;
-           if (fleeing) wand.set(2 * pos - _mon.pos, 40);
-           else {
-               closest_mon = &_mon;
-               stc = *tc;
-           }
-       }
-   }
-  }
-
-  if (closest == -2)
-   set_dest(g->u.pos, stc);
-  else if (closest_mon)
-   set_dest(closest_mon->pos, stc);
-  else if (closest >= 0)
-   set_dest(g->active_npc[closest].pos, stc);
+ auto delta = std::visit(mobile::cast(), nearest->first)->GPSpos - GPSpos;
+ if (auto pt_delta = std::get_if<point>(&delta)) {
+     auto flee_to = pos - *pt_delta;
+     wand.set(flee_to, 40);
+     plans.clear();
  }
 }
 
