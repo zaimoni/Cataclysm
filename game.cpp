@@ -3144,6 +3144,13 @@ std::optional<std::vector<std::variant<monster*, npc*, pc*> > > game::mobs_in_ra
     return std::nullopt;
 }
 
+void game::forall_do(std::function<void(const monster&)> op) const { for (decltype(auto) _mon : z) op(_mon); }
+
+void game::forall_do(std::function<void(const player&)> op) const {
+    op(u);
+    for (decltype(auto) _npc : active_npc) op(_npc);
+}
+
 bool game::is_empty(const point& pt) const
 {
     return (0 < m.move_cost(pt) || m.has_flag(liquid, pt)) && !mob_at(pt);

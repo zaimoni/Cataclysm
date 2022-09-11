@@ -66,6 +66,26 @@ class Badge
 	Badge() = default;
 };
 
+
+// for working around std::function requiring copy-constructability
+template<class OP>
+class function_relay {
+	OP* _ptr;
+
+public:
+	constexpr function_relay(OP* src) noexcept : _ptr(src) {}
+	constexpr function_relay(OP& src) noexcept : _ptr(&src) {}
+
+	constexpr function_relay(const function_relay&) = default;
+	constexpr function_relay(function_relay&&) = default;
+	constexpr function_relay& operator=(const function_relay&) = default;
+	constexpr function_relay& operator=(function_relay&&) = default;
+	constexpr ~function_relay() = default;
+
+	template<class...Args>
+	constexpr auto operator()(Args&&...params) { return (*_ptr)(params...); }
+};
+
 namespace cataclysm {
 
 template<class T>

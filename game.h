@@ -128,6 +128,8 @@ class game : public reality_bubble
   std::optional<std::variant<const monster*, const npc*, const pc*> > mob_at(const point& pt) const;
   std::optional<std::variant<const monster*, const npc*, const pc*> > mob_at(const GPS_loc& gps) const;
   std::optional<std::vector<std::variant<monster*, npc*, pc*> > > mobs_in_range(const GPS_loc& gps, int range);
+  void forall_do(std::function<void(const monster&)> op) const;
+  void forall_do(std::function<void(const player&)> op) const;
 
   bool is_empty(const point& pt) const;
   static bool isEmpty(const point& pt) { return game::active()->is_empty(pt); }

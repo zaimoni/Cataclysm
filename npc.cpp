@@ -1581,71 +1581,69 @@ bool npc::is_defending() const
 
 int npc::danger_assessment(game *g) const
 {
- int ret = 0;
- const int sightdist = g->light_level(GPSpos);
- for (decltype(auto) _mon : g->z) {
-	 if (g->m.sees(pos, _mon.pos, sightdist)) ret += _mon.type->difficulty;
- }
- ret /= 10;
- if (ret <= 2) ret = -10 + 5 * ret;	// Low danger if no monsters around
+	struct _danger {
+		const npc& me;
+		int total = 0;
+		const game* g;
+		int sightdist;
 
-// \todo should take range into account https://github.com/zaimoni/Cataclysm/issues/106
-// Mod for the player
- if (is_enemy()) {
-  const int dist = rl_dist(GPSpos, g->u.GPSpos);
-  if (dist < 10) {
-   if (g->u.weapon.is_gun())
-    ret += 10;
-   else 
-    ret += 10 - dist;
-  }
- } else if (is_friend()) {
-  const int dist = rl_dist(GPSpos, g->u.GPSpos);
-  if (dist < 8) {
-   if (g->u.weapon.is_gun())
-    ret -= 8;
-   else 
-    ret -= 8 - dist;
-  }
- }
+		_danger() = delete;
+		_danger(const npc& me, int total) : me(me), total(total), g(game::active()), sightdist(g->light_level(me.GPSpos)) {}
+		_danger(const _danger& src) = default;
+		_danger(_danger&& src) = default;
+		_danger& operator=(const _danger& src) = default;
+		_danger& operator=(_danger&& src) = default;
+		~_danger() = default;
 
- // Mod for other NPCs
- for (const npc& _npc : g->active_npc) {
-	 if (is_enemy(&_npc)) {
-		 const int dist = rl_dist(GPSpos, _npc.GPSpos);
-		 if (dist < 10) {
-			 if (_npc.weapon.is_gun())
-				 ret += 10;
-			 else
-				 ret += 10 - dist;
-		 }
-	 } else if (is_friend(&_npc)) {
-		 const int dist = rl_dist(GPSpos, _npc.GPSpos);
-		 if (dist < 8) {
-			 if (_npc.weapon.is_gun())
-				 ret -= 8;
-			 else
-				 ret -= 8 - dist;
-		 }
-	 }
- }
+		void operator()(const monster& _mon) {
+			if (g->m.sees(me.pos, _mon.pos, sightdist)) total += _mon.type->difficulty;
+		}
+
+		// \todo should take range into account https://github.com/zaimoni/Cataclysm/issues/106
+		void operator()(const player& u) {
+			if (me.is_enemy(&u)) {
+				const int dist = rl_dist(me.GPSpos, u.GPSpos);
+				if (dist < 10) {
+					if (u.weapon.is_gun()) total += 10;
+					else total += 10 - dist;
+				}
+			}
+			else if (me.is_friend(&u)) {
+				const int dist = rl_dist(me.GPSpos, u.GPSpos);
+				if (dist < 8) {
+					if (u.weapon.is_gun()) total -= 8;
+					else total -= 8 - dist;
+				}
+			}
+		}
+	};
+
+	_danger danger = { *this, 0 };
+	auto wrap_danger = function_relay(danger);
+
+	g->forall_do(std::function<void(const monster&)>(wrap_danger));
+
+	danger.total /= 10;
+	if (danger.total <= 2) danger.total = -10 + 5 * danger.total;	// Low danger if no monsters around
+
+	g->forall_do(std::function<void(const player&)>(wrap_danger));
 
  for (int i = 0; i < num_hp_parts; i++) {
-  if (i == hp_head || i == hp_torso) {
-   if (hp_cur[i] < hp_max[i] / 4)
-    ret += 5;
-   else if (hp_cur[i] < hp_max[i] / 2)
-    ret += 3;
-   else if (hp_cur[i] < hp_max[i] * .9)
-    ret += 1;
-  } else {
-   if (hp_cur[i] < hp_max[i] / 4)
-    ret += 2;
-   else if (hp_cur[i] < hp_max[i] / 2)
-    ret += 1;
-  }
+	 if (i == hp_head || i == hp_torso) {
+		 if (hp_cur[i] < hp_max[i] / 4)
+			 danger.total += 5;
+		 else if (hp_cur[i] < hp_max[i] / 2)
+			 danger.total += 3;
+		 else if (hp_cur[i] < hp_max[i] * .9)
+			 danger.total += 1;
+	 } else {
+		 if (hp_cur[i] < hp_max[i] / 4)
+			 danger.total += 2;
+		 else if (hp_cur[i] < hp_max[i] / 2)
+			 danger.total += 1;
+	 }
  }
- return ret;
+ return danger.total;
 }
 
 int npc::average_damage_dealt() const
