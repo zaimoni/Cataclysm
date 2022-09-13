@@ -703,9 +703,8 @@ npc::ai_action npc::address_needs(game *g, int danger) const
  if (   (danger <= NPC_DANGER_VERY_LOW && (hunger > 40 || thirst > 40))
 	 ||  thirst > 80
 	 || hunger > 160) {
-	inv_index = pick_best_food(inv);
-	if (0 <= inv_index)
-	  return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory_alt<player>(*const_cast<npc*>(this), std::pair(const_cast<item*>(&inv[inv_index]), inv_index), &player::eat, "Eat")));
+	 if (auto inv_index = pick_best_food(inv))
+	  return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory_alt<player>(*const_cast<npc*>(this), std::pair(const_cast<item*>(&inv[*inv_index]), *inv_index), &player::eat, "Eat")));
   }
 
 #if DEAD_FUNC
@@ -1888,9 +1887,10 @@ int npc::pick_best_painkiller(const inventory& _inv) const
 	return index;
 }
 
-int npc::pick_best_food(const inventory& _inv) const
+std::optional<int> npc::pick_best_food(const inventory& _inv) const
 {
- int best_hunger = 999, best_thirst = 999, index = -1;
+	std::optional<int> index;
+ int best_hunger = INT_MAX, best_thirst = INT_MAX;
  bool thirst_more_important = (thirst > hunger * 1.5);
  for (size_t i = 0; i < _inv.size(); i++) {
   int eaten_hunger = -1, eaten_thirst = -1;

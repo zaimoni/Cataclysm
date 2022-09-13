@@ -458,7 +458,7 @@ private:
  void drop_items	(game *g, int weight, int volume); // Drop wgt and vol
  void heal_player(game* g, player& patient);
 #endif
- int pick_best_food(const inventory& _inv) const;
+ std::optional<int> pick_best_food(const inventory& _inv) const;
  void mug_player(player& mark);
 
 public:
