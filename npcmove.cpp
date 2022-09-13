@@ -599,20 +599,17 @@ bool npc::reload(int inv_index)
 	return true;
 }
 
-bool npc::choose_empty_gun(const std::vector<int>& empty_guns, int& inv_index) const
+std::optional<int> npc::choose_empty_gun(const std::vector<int>& empty_guns) const
 {
-	inv_index = -1;
+	std::optional<int> inv_index;
 	bool ammo_found = false;	// alias for 0 <= inv_index
 	for (auto gun : empty_guns) {
 		const item& it = inv[gun];
 		assert(it.is_gun());
-		bool am = has_ammo((dynamic_cast<const it_gun*>(it.type))->ammo);
-		if (!ammo_found || am) {
-			inv_index = gun;
-			ammo_found = (ammo_found || am);
-		}
+		if (!has_ammo((dynamic_cast<const it_gun*>(it.type))->ammo)) continue;
+		inv_index = gun;
 	}
-	return ammo_found;
+	return inv_index;
 }
 
 static npc::ai_action _melee(const npc& actor, const GPS_loc& tar)
@@ -673,11 +670,8 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
 	 has_better_melee = can_wield_better_melee();
  }
 
- const bool has_empty_gun = !empty_guns.empty();
- int wield_this;
-
- if (has_empty_gun && choose_empty_gun(empty_guns, wield_this))
-	 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), wield_this, &npc::wield, "Wield empty gun")));
+ if (auto wield_this = choose_empty_gun(empty_guns))
+	 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), *wield_this, &npc::wield, "Wield empty gun")));
  else if (has_better_melee) {
 	 if (auto wield_this = best_melee_weapon()) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), *wield_this, &npc::wield, "Wield melee weapon")));
  }
@@ -1582,11 +1576,8 @@ npc::ai_action npc::scan_new_items(game *g, int target)
   has_better_melee = can_wield_better_melee();
  }
 
- const bool has_empty_gun = !empty_guns.empty();
- int wield_this;
-
- if (has_empty_gun && choose_empty_gun(empty_guns, wield_this))
-	 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), wield_this, &npc::wield, "Wield empty gun")));
+ if (auto wield_this = choose_empty_gun(empty_guns))
+	 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), *wield_this, &npc::wield, "Wield empty gun")));
  else if (has_better_melee) {
 	 if (auto wield_this = best_melee_weapon()) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), *wield_this, &npc::wield, "Wield melee weapon")));
  }

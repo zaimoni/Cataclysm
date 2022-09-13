@@ -452,7 +452,7 @@ private:
  std::optional<int> best_melee_weapon() const;
  bool can_wield_better_melee() const;
  std::optional<int> best_gun(int target, std::vector<int>& empty_guns, bool& has_better_melee) const;
- bool choose_empty_gun(const std::vector<int>& empty_guns, int& inv_index) const;
+ std::optional<int> choose_empty_gun(const std::vector<int>& empty_guns) const;
  bool reload(int inv_index);
 #if PROTOTYPE
  void drop_items	(game *g, int weight, int volume); // Drop wgt and vol
