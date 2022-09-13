@@ -380,7 +380,7 @@ public:
  bool has_healing_item() const;
  bool took_painkiller() const;
 private:
- int pick_best_painkiller(const inventory& _inv) const;
+ std::optional<int> pick_best_painkiller(const inventory& _inv) const;
 public:
  void activate_item(item& it);
 

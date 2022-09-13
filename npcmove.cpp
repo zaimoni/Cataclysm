@@ -691,13 +691,11 @@ npc::ai_action npc::address_needs(game *g, int danger) const
   }
  }
 
- int inv_index;
  if (!took_painkiller() && pain - pkill >= 15) {
-   inv_index = pick_best_painkiller(inv);
-   if (0 <= inv_index) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory_alt<player>(*const_cast<npc*>(this), std::pair(const_cast<item*>(&inv[inv_index]), inv_index), &player::eat, "Use painkillers")));
+   if (auto inv_index = pick_best_painkiller(inv)) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory_alt<player>(*const_cast<npc*>(this), std::pair(const_cast<item*>(&inv[*inv_index]), *inv_index), &player::eat, "Use painkillers")));
  }
 
- inv_index = can_reload();
+ int inv_index = can_reload();
  if (0 <= inv_index) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), inv_index, &npc::reload, "Reload")));
 
  if (   (danger <= NPC_DANGER_VERY_LOW && (hunger > 40 || thirst > 40))
@@ -1852,11 +1850,12 @@ void npc::heal_self(game *g)
 	 messages.add("%s heals %sself.", name.c_str(), (male ? "him" : "her"));
 }
 
-int npc::pick_best_painkiller(const inventory& _inv) const
+std::optional<int> npc::pick_best_painkiller(const inventory& _inv) const
 {
-	int difference = 9999, index = -1;
+	std::optional<int> index;
+	int difference = INT_MAX;
 	for (size_t i = 0; i < _inv.size(); i++) {
-		int diff = 9999;
+		int diff = INT_MAX;
 		switch (_inv[i].type->id)
 		{
 		case itm_aspirin:
