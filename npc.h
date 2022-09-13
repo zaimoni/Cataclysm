@@ -451,7 +451,7 @@ public:
 private:
  bool best_melee_weapon(int& inv_index) const;
  bool can_wield_better_melee() const;
- bool best_gun(int target, int& inv_index, std::vector<int>& empty_guns, bool& has_better_melee) const;
+ std::optional<int> best_gun(int target, std::vector<int>& empty_guns, bool& has_better_melee) const;
  bool choose_empty_gun(const std::vector<int>& empty_guns, int& inv_index) const;
  bool reload(int inv_index);
 #if PROTOTYPE
