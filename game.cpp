@@ -3151,6 +3151,12 @@ void game::forall_do(std::function<void(const player&)> op) const {
     for (decltype(auto) _npc : active_npc) op(_npc);
 }
 
+const npc* game::find_first(std::function<bool(const npc&)> ok) const
+{
+    for (decltype(auto) _npc : active_npc) if (ok(_npc)) return &_npc;
+    return nullptr;
+}
+
 bool game::is_empty(const point& pt) const
 {
     return (0 < m.move_cost(pt) || m.has_flag(liquid, pt)) && !mob_at(pt);

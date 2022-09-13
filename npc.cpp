@@ -193,13 +193,12 @@ std::function<bool(const npc&)> npc::find_me(const int id)
 }
 
 npc* npc::find(const int id) {
-    auto g = game::active();
-    for (auto& _npc : g->active_npc) if (id == _npc._id) return &_npc;
-
 	auto wanted = find_me(id);
-	npc* ret = nullptr;
 
-	static std::function<std::optional<bool>(overmap&)> look_for = [&](overmap& om) {
+	npc* ret = game::active()->find_first(wanted);
+	if (ret) return ret;
+
+	std::function<std::optional<bool>(overmap&)> look_for = [&](overmap& om) {
 		ret = om.find(wanted);
 		if (ret) return std::optional<bool>(true);
 		return std::optional<bool>();
@@ -211,13 +210,12 @@ npc* npc::find(const int id) {
 }
 
 const npc* npc::find_r(const int id) {
-    auto g = game::active();
-    for (auto& _npc : g->active_npc) if (id == _npc._id) return &_npc;
-
 	auto wanted = find_me(id);
-	const npc* ret = nullptr;
 
-	static std::function<std::optional<bool>(const overmap&)> look_for = [&](const overmap& om) {
+	const npc* ret = game::active_const()->find_first(wanted);
+	if (ret) return ret;
+
+	std::function<std::optional<bool>(const overmap&)> look_for = [&](const overmap& om) {
 		ret = om.find_r(wanted);
 		if (ret) return std::optional<bool>(true);
 		return std::optional<bool>();
