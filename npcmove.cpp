@@ -679,7 +679,7 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
  if (has_empty_gun && choose_empty_gun(empty_guns, wield_this))
 	 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), wield_this, &npc::wield, "Wield empty gun")));
  else if (has_better_melee) {
-	 if (best_melee_weapon(wield_this)) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), wield_this, &npc::wield, "Wield melee weapon")));
+	 if (auto wield_this = best_melee_weapon()) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), *wield_this, &npc::wield, "Wield melee weapon")));
  }
 
  return _melee(*this, tar);
@@ -1588,7 +1588,7 @@ npc::ai_action npc::scan_new_items(game *g, int target)
  if (has_empty_gun && choose_empty_gun(empty_guns, wield_this))
 	 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), wield_this, &npc::wield, "Wield empty gun")));
  else if (has_better_melee) {
-	 if (best_melee_weapon(wield_this)) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), wield_this, &npc::wield, "Wield melee weapon")));
+	 if (auto wield_this = best_melee_weapon()) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), *wield_this, &npc::wield, "Wield melee weapon")));
  }
 
  return ai_action(npc_pause, std::unique_ptr<cataclysm::action>());
@@ -1602,14 +1602,15 @@ void npc::melee::operator()(monster* target) const {
 
 void npc::melee::operator()(player* target) const { p.hit_player(game::active(), *target); }
 
-bool npc::best_melee_weapon(int& inv_index) const
+std::optional<int> npc::best_melee_weapon() const
 {
-	int best_score = 0, index = -999;
+	std::optional<int> inv_index;
+	int best_score = 0;
 	for (size_t i = 0; i < inv.size(); i++) {
 		int score = inv[i].melee_value(sklevel);
 		if (score > best_score) {
 			best_score = score;
-			index = i;
+			inv_index = i;
 		}
 	}
 	if (!styles.empty()) { // Wield a style if our skills warrant it
@@ -1620,16 +1621,14 @@ bool npc::best_melee_weapon(int& inv_index) const
 			if (score > best_score) {
 				seen = 1;
 				best_score = score;
-				index = -(i + 1);
+				inv_index = -(i + 1);
 			} else if (score == best_score) {
 				seen++;
-				if (one_in(seen)) index = -(i + 1);
+				if (one_in(seen)) inv_index = -(i + 1);
 			}
 		}
 	}
-	if (index == -999) return false;
-	inv_index = index;
-	return true;
+	return inv_index;
 }
 
 bool npc::can_wield_better_melee() const
