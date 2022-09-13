@@ -339,12 +339,15 @@ int monster::trigger_sum(const game* g, typename cataclysm::bitmap<N_MONSTER_TRI
     }
 
     if (triggers & mfb(MTRIG_PLAYER_CLOSE)) {
-        if (rl_dist(GPSpos, g->u.GPSpos) <= 5) ret += 5;
-        for (const auto& _npc : g->active_npc) if (5 >= rl_dist(GPSpos, _npc.GPSpos)) ret += 5;
+        g->forall_do([=, &ret](const player& u) mutable {
+            if (rl_dist(GPSpos, u.GPSpos) <= 5) ret += 5;
+        });
     }
 
-    if (triggers & mfb(MTRIG_PLAYER_WEAK)) {	// \todo why not NPCs?
-        if (const int hp_percent = g->u.hp_percentage(); 70 >= hp_percent) ret += hp_percent / 10;
+    if (triggers & mfb(MTRIG_PLAYER_WEAK)) {	// C:Whales ignored NPCs here; implicit reality bubble lockdown here
+        g->forall_do([&ret](const player& u) mutable {
+            if (const int hp_percent = u.hp_percentage(); 70 >= hp_percent) ret += hp_percent / 10;
+        });
     }
 
     const bool check_terrain = check_meat || check_fire;
