@@ -51,6 +51,7 @@ public:
 	virtual int dodge_roll() const = 0; // For comparison to hit_roll()
 	virtual int melee_skill() const = 0;
 	virtual int min_technique_power() const = 0;
+	virtual int current_speed() const = 0; // Number of movement points we get a turn
 
 	// std::visit assistants
 	struct cast

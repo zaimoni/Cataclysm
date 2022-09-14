@@ -143,6 +143,7 @@ class monster : public mobile {
 
 // Other
  int knockback_size() const override { return type->size; }
+ int current_speed() const override { return speed; }
 
  void add(effect src, int duration) override;
  bool has(effect src) const override;

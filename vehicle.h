@@ -160,6 +160,7 @@ public:
     int dodge_roll() const override { return 0; } // stub; For the purposes of comparing to player::hit_roll()
     int melee_skill() const override { return 0; } // stub
     int min_technique_power() const override { return 4; }  // stub; same issues as knockback_size()
+    int current_speed() const override { return velocity; } // stub; cross-check this later
 
 // get vpart type info for part number (part at given vector index)
     const vpart_info& part_info(int index) const;

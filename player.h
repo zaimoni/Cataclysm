@@ -64,7 +64,7 @@ public:
 
  void reset(const Badge<game>&);// Resets movement points, stats, applies effects
  void update_morale();	// Ticks down morale counters and removes them
- int  current_speed() const; // Number of movement points we get a turn
+ int  current_speed() const override; // Number of movement points we get a turn
  int  theoretical_speed() const; // ", ignoring some environmental modifiers
  int  run_cost(int base_cost) const; // Adjust base_cost
  int  swim_speed();	// Our speed when swimming
@@ -352,6 +352,21 @@ public:
 
      auto operator()(const monster* target) const { return p.is_enemy(target); }
      auto operator()(const player* target) const { return p.is_enemy(target); }
+ };
+
+ struct cast
+ {
+     cast() = default;
+     cast(const cast& src) = delete;
+     cast(cast&& src) = delete;
+     cast& operator=(const cast& src) = delete;
+     cast& operator=(cast&& src) = delete;
+     ~cast() = default;
+
+     auto operator()(player* target) { return target; }
+     auto operator()(const player* target) { return target; }
+     player* operator()(mobile* target) { return nullptr; }
+     const player* operator()(const mobile* target) { return nullptr; }
  };
 
  // ---------------VALUES-----------------

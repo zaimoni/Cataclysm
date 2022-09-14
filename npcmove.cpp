@@ -626,6 +626,7 @@ static npc::ai_action _melee(const npc& actor, const GPS_loc& tar)
 npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
 {
  auto tar((target == TARGET_PLAYER) ? g->u.GPSpos : g->z[target].GPSpos);
+ auto _target = decode_target(target).value();
 
  const bool can_use_gun = (!is_following() || combat_rules.use_guns);
 
@@ -646,7 +647,7 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
    const int ideal_range = confident_range();
    if (dist > ideal_range) {
 	const auto inv_index = can_reload();
-    if (0 <= inv_index && enough_time_to_reload(g, target, weapon))
+    if (0 <= inv_index && enough_time_to_reload(g, _target, weapon))
      return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), inv_index, &npc::reload, "Reload")));
     else
 	 return _melee(*this, tar);
@@ -1109,25 +1110,22 @@ bool npc::need_to_reload() const
  return (weapon.charges < dynamic_cast<const it_gun*>(weapon.type)->clip * .1);
 }
 
-bool npc::enough_time_to_reload(game *g, int target, const item &gun) const
+bool npc::enough_time_to_reload(game *g, const std::optional<std::variant<monster*, npc*, pc*> >& target, const item &gun) const
 {
+	if (!target) return true; // No target, plenty of time to reload
  int rltime = gun.reload_time(*this);
  double turns_til_reloaded = rltime / current_speed();
- int dist, speed;
 
- if (target == TARGET_PLAYER) {
-  if (see(g->u) && g->u.weapon.is_gun() && rltime > 2 * mobile::mp_turn)
-   return false; // Don't take longer than 2 turns if player has a gun
-  dist = rl_dist(GPSpos, g->u.GPSpos);
-  speed = speed_estimate(g->u.current_speed());
- } else if (target >= 0) {
-  dist = rl_dist(GPSpos, g->z[target].GPSpos);
-  speed = speed_estimate(g->z[target].speed);
- } else
-  return true; // No target, plenty of time to reload
+ if (const auto _u = std::visit(player::cast(), *target)) {
+	 if (see(*_u) && _u->weapon.is_gun() && rltime > 2 * mobile::mp_turn)
+		 return false; // Don't take longer than 2 turns if player has a gun
+ }
+
+ const auto _mob = std::visit(mobile::cast(), *target);
+ int dist = rl_dist(GPSpos, _mob->GPSpos);
+ int speed = speed_estimate(_mob->current_speed());
 
  double turns_til_reached = (dist * mobile::mp_turn) / speed;
-
  return (turns_til_reloaded < turns_til_reached);
 }
 
@@ -1630,6 +1628,7 @@ bool npc::can_wield_better_melee() const
 std::optional<int> npc::best_gun(const int target, std::vector<int>& empty_guns, bool& has_better_melee) const
 {
 	int max = 0;
+	auto _target = decode_target(target);
 	std::optional<int> inv_index;
 	has_better_melee = false;
 	empty_guns.clear();
@@ -1640,7 +1639,7 @@ std::optional<int> npc::best_gun(const int target, std::vector<int>& empty_guns,
 				max = obj.charges;
 				inv_index = i;
 			}
-		} else if (obj.is_gun() && enough_time_to_reload(game::active(), target, obj)) empty_guns.push_back(i);
+		} else if (obj.is_gun() && enough_time_to_reload(game::active(), _target, obj)) empty_guns.push_back(i);
 		else if (obj.melee_value(sklevel) > weapon.melee_value(sklevel) * 1.1) has_better_melee = true;
 	}
 	return inv_index;

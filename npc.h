@@ -426,7 +426,7 @@ public:
  bool wont_hit_friend(const GPS_loc& tar, int index = -1) const;
  int can_reload() const override; // Wielding a gun that is not fully loaded
  bool need_to_reload() const; // Wielding a gun that is empty
- bool enough_time_to_reload(game *g, int target, const item &gun) const;
+ bool enough_time_to_reload(game *g, const std::optional<std::variant<monster*, npc*, pc*> >& target, const item &gun) const;
  bool can_fire() override;
 
 // Physical movement from one tile to the next
