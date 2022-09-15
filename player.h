@@ -356,17 +356,17 @@ public:
 
  struct cast
  {
-     cast() = default;
-     cast(const cast& src) = delete;
-     cast(cast&& src) = delete;
-     cast& operator=(const cast& src) = delete;
-     cast& operator=(cast&& src) = delete;
-     ~cast() = default;
+     constexpr cast() = default;
+     constexpr cast(const cast& src) = delete;
+     constexpr cast(cast&& src) = delete;
+     constexpr cast& operator=(const cast& src) = delete;
+     constexpr cast& operator=(cast&& src) = delete;
+     constexpr ~cast() = default;
 
-     auto operator()(player* target) { return target; }
-     auto operator()(const player* target) { return target; }
-     player* operator()(mobile* target) { return nullptr; }
-     const player* operator()(const mobile* target) { return nullptr; }
+     constexpr auto operator()(player* target) { return target; }
+     constexpr auto operator()(const player* target) { return target; }
+     constexpr player* operator()(mobile* target) { return nullptr; }
+     constexpr const player* operator()(const mobile* target) { return nullptr; }
  };
 
  // ---------------VALUES-----------------

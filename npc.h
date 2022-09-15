@@ -404,15 +404,15 @@ public:
 
 // Movement; the following are defined in npcmove.cpp
  void move(game *g); // Picks an action & a target and calls execute_action
-private:
- void execute_action(game *g, const ai_action& action, int target); // Performs action
-public:
 
+private:
+ void execute_action(game *g, const ai_action& action, std::optional<std::variant<monster*, npc*, pc*> > target); // Performs action
+
+public:
 // Functions which choose an action for a particular goal
- void choose_monster_target(game *g, int &enemy, int &danger,
-                            int &total_danger);
- ai_action method_of_fleeing	(game *g, int enemy) const;
- ai_action method_of_attack	(game *g, int enemy, int danger) const;
+ std::tuple<std::optional<std::variant<monster*, npc*, pc*> >, int, int> choose_monster_target(game *g);
+ ai_action method_of_fleeing(game *g, const std::variant<monster*, npc*, pc*>& enemy) const;
+ ai_action method_of_attack	(game *g, const std::variant<monster*, npc*, pc*>& enemy, int danger) const;
  ai_action address_needs	(game *g, int danger) const;
  ai_action address_player	(game *g);
  ai_action long_term_goal_action(game *g);
@@ -436,22 +436,22 @@ public:
  bool update_path(const GPS_loc& dest, size_t longer_than);
  void move_to		(game *g, point pt);
  void move_to_next	(game *g); // Next in <path>
- void avoid_friendly_fire(game *g, int target); // Maneuver so we won't shoot u
+ void avoid_friendly_fire(game *g, std::variant<monster*, npc*, pc*> target); // Maneuver so we won't shoot u
 
 // Item discovery and fetching
  void find_item		(game *g); // Look around and pick an item
 private:
  void pick_up_item	(); // Move to, or grab, our targeted item
 public:
- ai_action scan_new_items(game *g, int target);
+ ai_action scan_new_items(const std::optional<std::variant<monster*, npc*, pc*> >& target);
 
 // Combat functions and player interaction functions
- void alt_attack(item_spec which, int target);
+ void alt_attack(item_spec which, std::variant<monster*, npc*, pc*> target);
  void heal_self		(game *g);
 private:
  std::optional<int> best_melee_weapon() const;
  bool can_wield_better_melee() const;
- std::optional<int> best_gun(int target, std::vector<int>& empty_guns, bool& has_better_melee) const;
+ std::pair<std::optional<int>, std::vector<int> > best_gun(const std::optional<std::variant<monster*, npc*, pc*> >& target) const;
  std::optional<int> choose_empty_gun(const std::vector<int>& empty_guns) const;
  bool reload(int inv_index);
 #if PROTOTYPE

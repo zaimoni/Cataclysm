@@ -10,7 +10,6 @@
 
 #include <sstream>
 
-#define TARGET_PLAYER -2
 #define NPC_DANGER_LEVEL   10
 #define NPC_DANGER_VERY_LOW 5
 
@@ -194,17 +193,15 @@ class use_alt_attack final : public cataclysm::action
 {
 	npc& actor;
 	npc::item_spec item;
-	int target;
+	std::variant<monster*, npc*, pc*> target;
 public:
-	use_alt_attack(npc& actor, const npc::item_spec& item, int target) : actor(actor), item(item), target(target) {
+	use_alt_attack(npc& actor, const npc::item_spec& item, const std::variant<monster*, npc*, pc*>& target) : actor(actor), item(item), target(target) {
 #ifndef NDEBUG
 		if (!IsLegal()) throw std::logic_error("illegal use_alt_attack");
 #endif
 	}
 	~use_alt_attack() = default;
-	bool IsLegal() const override {
-		return -1 != target;
-	}
+	bool IsLegal() const override { return std::visit(mobile::cast(), target); }
 	void Perform() const override {
 		actor.alt_attack(item, target);
 	}
@@ -286,7 +283,6 @@ struct ratio_index
 };
 
 // class npc functions!
-
 void npc::move(game *g)
 {
  wand.tick();	// countdown timers
@@ -296,17 +292,18 @@ void npc::move(game *g)
  // \todo AI should pathfind in response to drowning
 
  ai_action action(npc_undecided,std::unique_ptr<cataclysm::action>());
- int danger = 0, total_danger = 0, target = -1;
 
- choose_monster_target(g, target, danger, total_danger);
+ auto [target, danger, total_danger] = choose_monster_target(g);
+#if REPAIR
  if (game::debugmon)
   debugmsg("NPC %s: target = %d, danger = %d, range = %d",
            name.c_str(), target, danger, confident_range());
+#endif
 
  if (is_enemy()) {
   int pl_danger = player_danger( &(g->u) );
-  if (pl_danger > danger || target == -1) {
-   target = TARGET_PLAYER;
+  if (pl_danger > danger || !target) {
+   target = &g->u;
    danger = pl_danger;
    if (game::debugmon) debugmsg("NPC %s: Set target to PLAYER, danger = %d", name.c_str(), danger);
   }
@@ -314,16 +311,18 @@ void npc::move(game *g)
 
  // \todo allow targeting npcs https://github.com/zaimoni/Cataclysm/issues/107
 #ifndef NDEBUG
- if (0 < danger && TARGET_PLAYER != target && (0 > target || g->z.size() <= target)) throw std::logic_error("danger without a target");
+ if (0 < danger && !target) throw std::logic_error("danger without a target");
 #endif
 // TODO: Place player-aiding actions here, with a weight
 
+ auto is_player = target ? std::visit(player::cast(), *target) : nullptr;
+
  // Bravery check appears to have been disabled due to excessive randomness.
  //if (!bravery_check(danger) || !bravery_check(total_danger) ||
- if (target == TARGET_PLAYER && attitude == NPCATT_FLEE)
-  action = method_of_fleeing(g, target);
- else if (danger > 0 || (target == TARGET_PLAYER && attitude == NPCATT_KILL))
-  action = method_of_attack(g, target, danger);
+ if (is_player && attitude == NPCATT_FLEE)
+  action = method_of_fleeing(g, *target);
+ else if (danger > 0 || (is_player && attitude == NPCATT_KILL))
+  action = method_of_attack(g, *target, danger);
 
  if (!action.first && !action.second) {	// No present danger
   action = address_needs(g, danger);
@@ -334,7 +333,7 @@ void npc::move(game *g)
    if (mission == NPC_MISSION_SHELTER || has_disease(DI_INFECTION))
     action = ai_action(npc_pause, std::unique_ptr<cataclysm::action>());
    else if (has_new_items)
-    action = scan_new_items(g, target);
+    action = scan_new_items(target);
    else if (!fetching_item)
     find_item(g);
    if (game::debugmon) debugmsg("find_item %s", action.second ? action.second->name() : npc_action_name(action.first).c_str());
@@ -357,37 +356,6 @@ void npc::move(game *g)
  execute_action(g, action, target);
 }
 
-static std::optional<std::variant<monster*, npc*, pc*> > decode_target(int target)
-{
-	auto g = game::active();
-	if (0 <= target && g->z.size() > target) return &g->z[target];
-	else if (TARGET_PLAYER == target) return &g->u;
-	else if (TARGET_PLAYER > target && g->active_npc.size() > ((TARGET_PLAYER - 1) - target)) {	// 2019-11-21: UNTESTED
-		auto npc_index = (TARGET_PLAYER - 1) - target;
-		if (g->active_npc.size() > npc_index) {
-			return &g->active_npc[npc_index];
-		}
-	}
-	return std::nullopt;
-}
-
-struct encode_target_index
-{
-	const game* const g;
-
-	encode_target_index() noexcept : g(game::active_const()) {}
-	encode_target_index(const encode_target_index& src) = delete;
-	encode_target_index(encode_target_index&& src) = delete;
-	encode_target_index& operator=(const encode_target_index& src) = delete;
-	encode_target_index& operator=(encode_target_index&& src) = delete;
-	~encode_target_index() = default;
-
-	// requires game::z and game::active_npc to be std::vector
-	int operator()(const monster* target) { return target - &(g->z.front()); }
-	int operator()(const npc* target) { return (TARGET_PLAYER -1) - (target - &(g->active_npc.front())); }
-	int operator()(const pc* target) { return TARGET_PLAYER; }
-};
-
 struct to_ai_target
 {
 	to_ai_target() = default;
@@ -402,7 +370,7 @@ struct to_ai_target
 	npc::ai_target<point> operator()(pc* target) { return npc::ai_target<point>(target->pos, target); }
 };
 
-void npc::execute_action(game *g, const ai_action& action, int target)
+void npc::execute_action(game *g, const ai_action& action, std::optional<std::variant<monster*, npc*, pc*> > target)
 {
  if (action.second && action.second->IsPerformable()) {	// if we have an action object, use that
 	 action.second->Perform();
@@ -442,13 +410,7 @@ void npc::execute_action(game *g, const ai_action& action, int target)
 #endif
 
  case npc_melee:
-  if (auto mob = decode_target(target)) {
-	  std::visit(npc::melee(*this), *mob);
-	  break;
-  }
-#ifndef NDEBUG
-  throw std::logic_error("npc_melee invoked w/o target");
-#endif
+  std::visit(npc::melee(*this), *target);
 
 #if DEAD_FUNC
  case npc_heal_player:
@@ -472,7 +434,7 @@ void npc::execute_action(game *g, const ai_action& action, int target)
   break;
 
  case npc_avoid_friendly_fire:
-  avoid_friendly_fire(g, target);
+  avoid_friendly_fire(g, *target);
   break;
 
  default:
@@ -485,9 +447,11 @@ void npc::execute_action(game *g, const ai_action& action, int target)
  }
 }
 
-void npc::choose_monster_target(game *g, int &enemy, int &danger,
-                                int &total_danger)
+std::tuple<std::optional<std::variant<monster*, npc*, pc*> >, int, int> npc::choose_monster_target(game *g)
 {
+	std::optional<std::variant<monster*, npc*, pc*> > enemy;
+	int danger = 0;
+	int total_danger = 0;
  const bool defend_u = see(g->u) && is_defending();
  int highest_priority = 0;
  total_danger = 0;
@@ -533,15 +497,15 @@ void npc::choose_monster_target(game *g, int &enemy, int &danger,
 
    if (monster_danger > danger) {
     danger = monster_danger;
-    if (enemy == -1) {
+    if (!enemy) {
      highest_priority = priority;
-     enemy = i;
+     enemy = mon;
     }
    }
 
    if (priority > highest_priority) {
     highest_priority = priority;
-    enemy = i;
+    enemy = mon;
    } else if (defend_u) {
     priority = mon->type->difficulty * (1 + hp_percent);
     distance = (mobile::mp_turn * rl_dist(g->u.GPSpos, mon->GPSpos)) / mon->speed;
@@ -550,22 +514,27 @@ void npc::choose_monster_target(game *g, int &enemy, int &danger,
     priority *= (personality.bravery + personality.altruism + op_of_u.value) / 15;
     if (priority > highest_priority) {
      highest_priority = priority;
-     enemy = i;
+     enemy = mon;
     }
    }
   }
  }
+
+ return std::tuple(enemy, danger, total_danger);
 }
 
-static npc::ai_action _flee(const npc& actor, const point& fear)
+static npc::ai_action _flee(const npc& actor, const GPS_loc& fear)
 {
-	if (const auto escape = actor.move_away_from(game::active()->m, fear)) {
-		return npc::ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(const_cast<npc&>(actor), *escape, "Fleeing")));	// C:Whales failure mode was npc_pause
+	const auto g = game::active_const();
+	if (auto pos = g->toScreen(fear)) {
+		if (const auto escape = actor.move_away_from(g->m, *pos)) {
+			return npc::ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new move_step_screen(const_cast<npc&>(actor), *escape, "Fleeing")));	// C:Whales failure mode was npc_pause
+		}
 	}
 	return npc::ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
 }
 
-npc::ai_action npc::method_of_fleeing(game *g, int enemy) const
+npc::ai_action npc::method_of_fleeing(game *g, const std::variant<monster*, npc*, pc*>& enemy) const
 {
  int it = choose_escape_item();
  if (0 <= it) { // We have an escape item!
@@ -577,9 +546,11 @@ npc::ai_action npc::method_of_fleeing(game *g, int enemy) const
 	 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new use_escape_obj(*const_cast<npc*>(this), it)));	// C:Whales failure mode was npc_pause
  };
 
- int speed = (enemy == TARGET_PLAYER ? g->u.current_speed() : g->z[enemy].speed);
- point enemy_loc = (enemy == TARGET_PLAYER ? g->u.pos : g->z[enemy].pos);
- int distance = rl_dist(pos, enemy_loc);
+ const auto _mob = std::visit(mobile::cast(), enemy);
+ int speed = _mob->current_speed();
+ GPS_loc enemy_loc = _mob->GPSpos;
+
+ int distance = rl_dist(GPSpos, enemy_loc);
 
  if (speed > 0 && (mobile::mp_turn * distance) / speed <= 4 && speed > current_speed())
   return method_of_attack(g, enemy, -1); // Can't outrun, so attack
@@ -623,17 +594,15 @@ static npc::ai_action _melee(const npc& actor, const GPS_loc& tar)
 	return npc::ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
 }
 
-npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
+npc::ai_action npc::method_of_attack(game *g, const std::variant<monster*, npc*, pc*>& target, int danger) const
 {
- auto tar((target == TARGET_PLAYER) ? g->u.GPSpos : g->z[target].GPSpos);
- auto _target = decode_target(target).value();
+	auto tar(std::visit(mobile::cast(), target)->GPSpos);
 
  const bool can_use_gun = (!is_following() || combat_rules.use_guns);
 
- const int dist = rl_dist(GPSpos, tar);
- const int target_HP = (target == TARGET_PLAYER) ? g->u.hp_percentage() * g->u.hp_max[hp_torso] : g->z[target].hp;
-
  if (can_use_gun) {
+	 const int dist = rl_dist(GPSpos, tar);
+
   if (need_to_reload()) {
 	  const auto inv_index = can_reload();
 	  if (0 <= inv_index) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), inv_index, &npc::reload, "Reload")));
@@ -647,13 +616,16 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
    const int ideal_range = confident_range();
    if (dist > ideal_range) {
 	const auto inv_index = can_reload();
-    if (0 <= inv_index && enough_time_to_reload(g, _target, weapon))
+    if (0 <= inv_index && enough_time_to_reload(g, target, weapon))
      return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), inv_index, &npc::reload, "Reload")));
     else
 	 return _melee(*this, tar);
    }
    const it_gun* const gun = dynamic_cast<const it_gun*>(weapon.type);
    if (!wont_hit_friend(tar)) return ai_action(npc_avoid_friendly_fire, std::unique_ptr<cataclysm::action>());
+
+   const auto is_player = std::visit(player::cast(), target);
+   const int target_HP = is_player ? is_player->hp_percentage() * is_player->hp_max[hp_torso] : std::get<monster*>(target)->hp;
    const bool want_burst = (dist <= ideal_range / 3 && weapon.charges >= gun->burst && gun->burst > 1 &&
 	   (target_HP >= weapon.curammo->damage * 3 || emergency(danger * 2)));
    return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new fire_weapon_screen(*const_cast<npc*>(this), tar, want_burst)));
@@ -661,19 +633,15 @@ npc::ai_action npc::method_of_attack(game *g, int target, int danger) const
  }
 
 // Check if there's something better to wield
- bool has_better_melee = false;
  std::vector<int> empty_guns;
  if (can_use_gun) {
-	 if (auto gun = best_gun(target, empty_guns, has_better_melee)) {
-		 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), *gun, &npc::wield, "Wield loaded gun")));
-	 }
- } else {
-	 has_better_melee = can_wield_better_melee();
+	 auto [gun, empty_guns] = best_gun(target);
+	 if (gun) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), *gun, &npc::wield, "Wield loaded gun")));
+	 if (auto wield_this = choose_empty_gun(empty_guns))
+		 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), *wield_this, &npc::wield, "Wield empty gun")));
  }
 
- if (auto wield_this = choose_empty_gun(empty_guns))
-	 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), *wield_this, &npc::wield, "Wield empty gun")));
- else if (has_better_melee) {
+ if (can_wield_better_melee()) {
 	 if (auto wield_this = best_melee_weapon()) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), *wield_this, &npc::wield, "Wield melee weapon")));
  }
 
@@ -748,10 +716,10 @@ npc::ai_action npc::address_player(game *g)
 		if (--patience <= 0) {
 			patience = 0;
 			attitude = NPCATT_KILL;
-			return method_of_attack(g, TARGET_PLAYER, player_danger(&(g->u)));
+			return method_of_attack(g, &g->u, player_danger(&(g->u)));
 		}
 		return ai_action(npc_undecided, std::unique_ptr<cataclysm::action>());
-	case NPCATT_FLEE: return _flee(*this, g->u.pos);
+	case NPCATT_FLEE: return _flee(*this, g->u.GPSpos);
 	case NPCATT_LEAD:
 		if (rl_dist(GPSpos, g->u.GPSpos) >= 12 || !see(g->u)) {
 			int intense = disease_intensity(DI_CATCH_UP);
@@ -1295,9 +1263,9 @@ void npc::move_to_next(game *g)
 }
 
 // TODO: Rewrite this.  It doesn't work well and is ugly.
-void npc::avoid_friendly_fire(game *g, int target)
+void npc::avoid_friendly_fire(game *g, std::variant<monster*, npc*, pc*> target)
 {
-	ai_target<point> Target = std::visit(to_ai_target(), decode_target(target).value());  // XXX throws rather than logs error in release mode
+	ai_target<point> Target = std::visit(to_ai_target(), target);  // XXX throws rather than logs error in release mode
 	if (auto mon = std::get_if<0>(&Target.second)) {
 		if (!one_in(3)) say(g, "<move> so I can shoot that %s!", (*mon)->name().c_str());
 	} // \todo similar message when targeting NPC?
@@ -1557,23 +1525,18 @@ void npc::drop_items(game *g, int weight, int volume)
 }
 #endif
 
-npc::ai_action npc::scan_new_items(game *g, int target)
+npc::ai_action npc::scan_new_items(const std::optional<std::variant<monster*, npc*, pc*> >& target)
 {
  const bool can_use_gun = (!is_following() || combat_rules.use_guns);
 // Check if there's something better to wield
- bool has_better_melee = false;
- std::vector<int> empty_guns;
  if (can_use_gun) {
-  if (auto gun = best_gun(target, empty_guns, has_better_melee)) {
-   return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*this, *gun, &npc::wield, "Wield loaded gun")));
-  }
- } else {
-  has_better_melee = can_wield_better_melee();
+	 auto [gun, empty_guns] = best_gun(target);
+	 if (gun) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*this, *gun, &npc::wield, "Wield loaded gun")));
+	 if (auto wield_this = choose_empty_gun(empty_guns))
+		 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), *wield_this, &npc::wield, "Wield empty gun")));
  }
 
- if (auto wield_this = choose_empty_gun(empty_guns))
-	 return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), *wield_this, &npc::wield, "Wield empty gun")));
- else if (has_better_melee) {
+ if (can_wield_better_melee()) {
 	 if (auto wield_this = best_melee_weapon()) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), *wield_this, &npc::wield, "Wield melee weapon")));
  }
 
@@ -1625,34 +1588,32 @@ bool npc::can_wield_better_melee() const
 	return false;
 }
 
-std::optional<int> npc::best_gun(const int target, std::vector<int>& empty_guns, bool& has_better_melee) const
+std::pair<std::optional<int>, std::vector<int> > npc::best_gun(const std::optional<std::variant<monster*, npc*, pc*> >& target) const
 {
 	int max = 0;
-	auto _target = decode_target(target);
 	std::optional<int> inv_index;
-	has_better_melee = false;
-	empty_guns.clear();
+	std::vector<int> empty_guns;
 	for (size_t i = 0; i < inv.size(); i++) {
 		const auto& obj = inv[i];
-		if (obj.is_gun() && obj.charges > 0) {
+		if (!obj.is_gun()) continue;
+		if (obj.charges > 0) {
 			if (obj.charges > max) {
 				max = obj.charges;
 				inv_index = i;
 			}
-		} else if (obj.is_gun() && enough_time_to_reload(game::active(), _target, obj)) empty_guns.push_back(i);
-		else if (obj.melee_value(sklevel) > weapon.melee_value(sklevel) * 1.1) has_better_melee = true;
+		} else if (enough_time_to_reload(game::active(), target, obj)) empty_guns.push_back(i);
 	}
-	return inv_index;
+	return std::pair(inv_index, empty_guns);
 }
 
-void npc::alt_attack(item_spec which, int target)
+void npc::alt_attack(item_spec which, std::variant<monster*, npc*, pc*> target)
 {
 	const auto g = game::active();
 	int index = which.second; // backward compatibility
 	item* used = which.first; // backward compatibility
 
 tail_recurse:
-	ai_target<point> Target = std::visit(to_ai_target(), decode_target(target).value()); // XXX throws rather than logs error in release mode
+	ai_target<point> Target = std::visit(to_ai_target(), target);
 	point tar = Target.first;	// backward compatibility
 
    // Are we going to throw this item?
@@ -1694,7 +1655,7 @@ tail_recurse:
 				};
 
 				if (auto better_target = find_first(confident, std::function(safe_throw))) {
-					target = std::visit(encode_target_index(), *better_target);
+					target = *better_target;
 					goto tail_recurse;
 				}
 
