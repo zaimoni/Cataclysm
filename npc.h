@@ -392,7 +392,7 @@ public:
  void say(game *g, std::string line, ...);
  void decide_needs();
  static void die(int id);
- void die(game *g, bool your_fault = false);    // only valid to call for npcs in the reality bubble
+ void die(player* your_fault = nullptr);    // only valid to call for npcs in the reality bubble
 /* shift() works much like monster::shift(), and is called when the player moves
  * from one submap to an adjacent submap.  It updates our position (shifting by
  * 12 tiles), as well as our plans.

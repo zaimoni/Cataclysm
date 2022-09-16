@@ -2576,7 +2576,7 @@ void game::monmove()
 
 // Now, do active NPCs.
  for (auto& _npc : active_npc) {
-  if(_npc.hp_cur[hp_head] <= 0 || _npc.hp_cur[hp_torso] <= 0) _npc.die(this);
+  if(_npc.hp_cur[hp_head] <= 0 || _npc.hp_cur[hp_torso] <= 0) _npc.die();
   else {
    int turns = 0;
    _npc.reset(Badge<game>());
@@ -2589,7 +2589,7 @@ void game::monmove()
    }
    if (turns == 10) {
     messages.add("%s's brain explodes!", _npc.name.c_str());
-	_npc.die(this);
+	_npc.die();
    }
   }
  }
@@ -2716,7 +2716,7 @@ struct hit_by_explosion
     }
     void operator()(npc* target) {
         take_blast(target);
-        if (0 >= target->hp_cur[hp_head] || 0 >= target->hp_cur[hp_torso]) target->die(g, true);
+        if (0 >= target->hp_cur[hp_head] || 0 >= target->hp_cur[hp_torso]) target->die(&g->u);
     }
     void operator()(pc* target) {
         messages.add("You're caught in the explosion!");
@@ -2754,7 +2754,7 @@ struct hit_by_shrapnel
         if (hit == bp_eyes || hit == bp_mouth || hit == bp_head) dam = rng(2 * dam, 5 * dam);
         else if (hit == bp_torso) dam = rng(1.5 * dam, 3 * dam);
         target->hit(game::active(), hit, rng(0, 1), 0, dam);
-        if (target->hp_cur[hp_head] <= 0 || target->hp_cur[hp_torso] <= 0) target->die(game::active());
+        if (target->hp_cur[hp_head] <= 0 || target->hp_cur[hp_torso] <= 0) target->die();
     }
     // XXX players are special \todo fix
     void operator()(pc* target) {
@@ -4760,7 +4760,7 @@ void game::plmove(point delta)
   if (!_npc->is_enemy() && !query_yn("Really attack %s?", _npc->name.c_str())) return;	// Cancel the attack
   u.hit_player(this, *_npc);
   _npc->make_angry();
-  if (_npc->hp_cur[hp_head]  <= 0 || _npc->hp_cur[hp_torso] <= 0) _npc->die(this, true);
+  if (_npc->hp_cur[hp_head]  <= 0 || _npc->hp_cur[hp_torso] <= 0) _npc->die(&u);
   return;
  }
 

@@ -1948,7 +1948,7 @@ struct hit_by_tazer {
         int shock = rng(5, 20);
         foe->moves -= shock * mobile::mp_turn;
         foe->hurtall(shock);
-        if (foe->hp_cur[hp_head] <= 0 || foe->hp_cur[hp_torso] <= 0) foe->die(g, true);
+        if (foe->hp_cur[hp_head] <= 0 || foe->hp_cur[hp_torso] <= 0) foe->die(&p);
     }
 
     void operator()(pc* foe) {

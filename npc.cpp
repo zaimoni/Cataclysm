@@ -239,7 +239,7 @@ void npc::die(const int id)
     for (auto& _npc : g->active_npc) {
         ++i;
         if (id == _npc._id) {
-            _npc.die(g);
+            _npc.die();
             EraseAt(g->active_npc, i);
             return;
         }
@@ -248,7 +248,7 @@ void npc::die(const int id)
 	static auto gone = [&](npc& _npc) {
 		if (id == _npc._id) {
 			if (g->m.chunk(_npc.GPSpos)) {
-				_npc.die(g);
+				_npc.die();
 				return std::optional<bool>(true);
 			}
 			_npc.marked_for_death = true;
@@ -1894,14 +1894,20 @@ void npc::shift(const point delta)
  path.clear();
 }
 
-void npc::die(game *g, bool your_fault)
+void npc::die(player* your_fault)
 {
  if (dead) return;
  dead = true;
- if (g->u.see(*this)) messages.add("%s dies!", name.c_str());
- if (your_fault && !g->u.has_trait(PF_HEARTLESS)) {
-  if (is_friend()) g->u.add_morale(MORALE_KILLED_FRIEND, -500);
-  else if (!is_enemy()) g->u.add_morale(MORALE_KILLED_INNOCENT, -100);
+ const auto g = game::active();
+
+ g->if_visible_message(name+" dies!", *this);
+
+ // currently morale is PC-only; typing as player* is to avoid an external declaration
+ if (your_fault) {
+	 if (!your_fault->has_trait(PF_HEARTLESS)) {
+		 if (is_friend(your_fault)) your_fault->add_morale(MORALE_KILLED_FRIEND, -500);
+		 else if (!is_enemy(your_fault)) your_fault->add_morale(MORALE_KILLED_INNOCENT, -100);
+	 }
  }
 
  player::die();

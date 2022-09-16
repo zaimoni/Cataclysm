@@ -510,7 +510,7 @@ void monster::hit_player(game *g, player &p, bool can_grab)
  } // if dam > 0
  if (is_npc) {
   if (p.hp_cur[hp_head] <= 0 || p.hp_cur[hp_torso] <= 0) {
-   dynamic_cast<npc*>(&p)->die(g);
+   dynamic_cast<npc*>(&p)->die();
    plans.clear();
   }
  }
