@@ -62,7 +62,7 @@ void monster::wander_to(const point& pt, int f)
 void monster::plan(game *g)
 {
  int sightrange = g->light_level();
- auto could_see = g->mobs_in_range(GPSpos, sightrange).value(); // should be non-empty as I, monster, am in range
+ auto could_see = g->mobs_with_range(GPSpos, sightrange).value(); // should be non-empty as I, monster, am in range
 
  // filter out non-enemies
  {
@@ -70,7 +70,7 @@ void monster::plan(game *g)
 
      ptrdiff_t i = could_see.size();
      while (0 <= --i) {
-         if (!std::visit(is_hostile, could_see[i])) {
+         if (!std::visit(is_hostile, could_see[i].first)) {
              std::swap(could_see[i], could_see.back());
              could_see.pop_back();
          }
@@ -82,11 +82,10 @@ void monster::plan(game *g)
 
  if (!could_see.empty()) {
      for (decltype(auto) target : could_see) {
-         auto target_loc = std::visit(mobile::cast(), target)->GPSpos;
-         const int test = rl_dist(GPSpos, target_loc);
-         if (!nearest || test < nearest->second) {
+         if (!nearest || target.second < nearest->second) {
+             auto target_loc = std::visit(mobile::cast(), target.first)->GPSpos;
              if (const auto tc = GPSpos.sees(target_loc, sightrange)) {
-                 nearest = decltype(nearest)::value_type(target, test);
+                 nearest = target;
                  los = std::move(*tc);
              }
          }

@@ -2891,25 +2891,36 @@ void game::flashbang(const point& pt)
 
 void game::flashbang(const GPS_loc& loc)
 {
-    // arguably should be separated into guard clause and action body
-    static auto pc_flashbanged = [&](player& pc) {
-        int dist = rl_dist(pc.GPSpos, loc);
-        if (8 >= dist) {
-            if (!pc.has_bionic(bio_ears)) pc.add_disease(DI_DEAF, 40 - dist * 4);
-            if (pc.GPSpos.sees(loc, 8)) pc.infect(DI_BLIND, bp_eyes, (12 - dist) / 2, 10 - dist);
+    struct flashed {
+        const GPS_loc& loc;
+        int dist;
+
+        flashed(const GPS_loc& loc, int dist) noexcept : loc(loc),dist(dist) {}
+        flashed(const flashed&) = delete;
+        flashed(flashed&&) = delete;
+        flashed& operator=(const flashed&) = delete;
+        flashed& operator=(flashed&&) = delete;
+        ~flashed() = default;
+
+        void operator()(player* u) {
+            if (!u->has_bionic(bio_ears)) u->add_disease(DI_DEAF, 40 - dist * 4);
+            if (u->GPSpos.sees(loc, 8)) u->infect(DI_BLIND, bp_eyes, (12 - dist) / 2, 10 - dist);
+        }
+        void operator()(monster* _mon) {
+            if (dist <= 4) _mon->add_effect(ME_STUNNED, 10 - dist);
+            if (_mon->has_flag(MF_SEES) && _mon->GPSpos.sees(loc, 8)) _mon->add_effect(ME_BLIND, 18 - dist);
+            if (_mon->has_flag(MF_HEARS)) _mon->add_effect(ME_DEAF, 60 - dist * 4);
         }
     };
 
-    pc_flashbanged(u);
-    for (auto& _npc : active_npc) pc_flashbanged(_npc);
-
-    for (auto& _mon : z) {
-        int dist = rl_dist(_mon.GPSpos, loc);
-        if (8 < dist) continue;
-        if (dist <= 4) _mon.add_effect(ME_STUNNED, 10 - dist);
-        if (_mon.has_flag(MF_SEES) && _mon.GPSpos.sees(loc, 8)) _mon.add_effect(ME_BLIND, 18 - dist);
-        if (_mon.has_flag(MF_HEARS)) _mon.add_effect(ME_DEAF, 60 - dist * 4);
+    if (auto we_are_hit = mobs_with_range(loc, 8)) {
+        flashed hit(loc, 8);
+        for (decltype(auto) whom : *we_are_hit) {
+            hit.dist = whom.second;
+            std::visit(hit, whom.first);
+        }
     }
+
     loc.sound(12, "a huge boom!");
 }
 
@@ -3139,6 +3150,26 @@ std::optional<std::vector<std::variant<monster*, npc*, pc*> > > game::mobs_in_ra
     }
     for (auto& m : z) {
         if (!m.dead && (0 >= range || range >= rl_dist(gps, m.GPSpos))) ret.push_back(&m);
+    }
+    if (!ret.empty()) return ret;
+    return std::nullopt;
+}
+
+std::optional<std::vector<std::pair<std::variant<monster*, npc*, pc*>, int> > > game::mobs_with_range(const GPS_loc& gps, int range)
+{
+    std::vector<std::pair<std::variant<monster*, npc*, pc*>, int> > ret;
+
+    const int dist = rl_dist(gps, u.GPSpos);
+    if (0 >= range || range >= dist) ret.push_back(std::pair(&u, dist));
+    for (auto& m : active_npc) {
+        if (m.dead) continue;
+        const int dist = rl_dist(gps, m.GPSpos);
+        if (0 >= range || range >= dist) ret.push_back(std::pair(&m, dist));
+    }
+    for (auto& m : z) {
+        if (m.dead) continue;
+        const int dist = rl_dist(gps, m.GPSpos);
+        if (0 >= range || range >= dist) ret.push_back(std::pair(&m, dist));
     }
     if (!ret.empty()) return ret;
     return std::nullopt;
@@ -5360,7 +5391,7 @@ void game::spawn_mon(int shiftx, int shifty)
       tmp.mission = NPC_MISSION_NULL;
       int mission_index = reserve_random_mission(ORIGIN_ANY_NPC, om_location().second, tmp.ID());
       if (mission_index != -1) tmp.chatbin.missions.push_back(mission_index);
-      active_npc.push_back(std::move(tmp));
+      spawn(std::move(tmp));
   }
  }
 
