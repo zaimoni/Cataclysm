@@ -235,17 +235,18 @@ void npc::consume(item& food) {
 void npc::die(const int id)
 {
     auto g = game::active();
-    int i = -1;
-    for (auto& _npc : g->active_npc) {
-        ++i;
-        if (id == _npc._id) {
-            _npc.die();
-            EraseAt(g->active_npc, i);
-            return;
-        }
-    }
 
-	static auto gone = [&](npc& _npc) {
+	static auto local_gone = [&id](npc& _npc) {
+		if (id == _npc._id) {
+			_npc.die();
+			return std::optional<bool>(true);
+		}
+		return std::optional<bool>();
+	};
+
+	g->exec_first(local_gone);
+
+	static auto gone = [&id,&g](npc& _npc) {
 		if (id == _npc._id) {
 			if (g->m.chunk(_npc.GPSpos)) {
 				_npc.die();

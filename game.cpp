@@ -3157,6 +3157,19 @@ const npc* game::find_first(std::function<bool(const npc&)> ok) const
     return nullptr;
 }
 
+bool game::exec_first(std::function<std::optional<bool>(npc&) > op)
+{
+    ptrdiff_t i = -1;
+    for (decltype(auto) _npc : active_npc) {
+        ++i;
+        if (auto code = op(_npc)) {
+            if (*code) EraseAt(active_npc, i);
+            return true;
+        }
+    }
+    return false;
+}
+
 bool game::is_empty(const point& pt) const
 {
     return (0 < m.move_cost(pt) || m.has_flag(liquid, pt)) && !mob_at(pt);
