@@ -3151,6 +3151,10 @@ void game::forall_do(std::function<void(const player&)> op) const {
     for (decltype(auto) _npc : active_npc) op(_npc);
 }
 
+void game::forall_do(std::function<void(const npc&)> op) const {
+    for (decltype(auto) _npc : active_npc) op(_npc);
+}
+
 const npc* game::find_first(std::function<bool(const npc&)> ok) const
 {
     for (decltype(auto) _npc : active_npc) if (ok(_npc)) return &_npc;

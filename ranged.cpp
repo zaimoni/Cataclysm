@@ -729,9 +729,8 @@ std::optional<std::vector<GPS_loc> > game::target(GPS_loc& tar, const zaimoni::g
     mon.draw(w_terrain, center, false);
   }
 // Draw the NPCs
-  for (const auto& NPC : active_npc) {
-   if (u.see(NPC.pos)) NPC.draw(w_terrain, center, false);
-  }
+  forall_do([&](const npc& NPC) { if (u.see(NPC)) NPC.draw(w_terrain, center, false); });
+
   if (tar != u.GPSpos) {
 // Calculate the return vector (and draw it too)
 // Draw the player
