@@ -103,7 +103,6 @@ class game : public reality_bubble
 
 // Explosion at (x, y) of intensity (power), with (shrapnel) chunks of shrapnel
   void explosion(const point& pt, int power, int shrapnel, bool fire);
-  void flashbang(const point& pt);
   void flashbang(const GPS_loc& pt);
   // Move the player vertically, if (force) then they fell
   void vertical_move(int z, bool force);

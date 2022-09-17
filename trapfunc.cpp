@@ -502,7 +502,7 @@ void trapfunc::glow(game *g, int x, int y)
   g->u.radiation += rng(10, 30);
  } else if (one_in(4)) {
   messages.add("A blinding flash strikes you!");
-  g->flashbang(g->u.pos);
+  g->flashbang(g->u.GPSpos);
  } else
   messages.add("Small flashes surround you.");
 }

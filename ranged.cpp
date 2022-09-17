@@ -27,31 +27,6 @@ field_id bleeds(const monster& mon)
 void shoot_monster(game *g, player &p, monster &mon, int &dam, double goodhit);
 void shoot_player(game *g, player &p, player *h, int &dam, double goodhit);
 
-static void ammo_effects(game *g, point pt, long flags)
-{
-	if (flags & mfb(IF_AMMO_EXPLOSIVE)) g->explosion(pt, 24, 0, false);
-	if (flags & mfb(IF_AMMO_FRAG)) g->explosion(pt, 12, 28, false);
-	if (flags & mfb(IF_AMMO_NAPALM)) g->explosion(pt, 18, 0, true);
-	if (flags & mfb(IF_AMMO_EXPLOSIVE_BIG)) g->explosion(pt, 40, 0, false);
-
-	if (flags & mfb(IF_AMMO_TEARGAS)) {
-		for (int i = -2; i <= 2; i++) {
-			for (int j = -2; j <= 2; j++)
-				g->m.add_field(g, pt.x + i, pt.y + j, fd_tear_gas, 3);
-		}
-	}
-
-	if (flags & mfb(IF_AMMO_SMOKE)) {
-		for (int i = -1; i <= 1; i++) {
-			for (int j = -1; j <= 1; j++)
-				g->m.add_field(g, pt.x + i, pt.y + j, fd_smoke, 3);
-		}
-	}
-
-	if (flags & mfb(IF_AMMO_FLASHBANG)) g->flashbang(pt);
-	if (flags & mfb(IF_AMMO_FLAME)) g->m.add_field(g, pt, fd_fire, 1, 800);
-}
-
 static void ammo_effects(game* g, GPS_loc loc, long flags)
 {
     if (flags & mfb(IF_AMMO_EXPLOSIVE)) loc.explosion(24, 0, false);
@@ -71,9 +46,7 @@ static void ammo_effects(game* g, GPS_loc loc, long flags)
 
     if (flags & mfb(IF_AMMO_TEARGAS)) forall_do_inclusive(within_rldist<2>, teargas);
     if (flags & mfb(IF_AMMO_SMOKE)) forall_do_inclusive(within_rldist<1>, smoke);
-    if (flags & mfb(IF_AMMO_FLASHBANG)) {
-        if (auto pos = g->toScreen(loc)) g->flashbang(*pos);
-    }
+    if (flags & mfb(IF_AMMO_FLASHBANG)) g->flashbang(loc);
     if (flags & mfb(IF_AMMO_FLAME)) loc.add(field(fd_fire, 1, 800));
 }
 
