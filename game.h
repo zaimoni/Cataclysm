@@ -133,6 +133,7 @@ class game : public reality_bubble
   const npc* find_first(std::function<bool(const npc&)> ok) const;
   npc* find_first(std::function<bool(const npc&)> ok) { return const_cast<npc*>(const_cast<const game*>(this)->find_first(ok)); }
   bool exec_first(std::function<std::optional<bool>(npc&) > op);
+  void spawn(npc&& whom);
 
   bool is_empty(const point& pt) const;
   static bool isEmpty(const point& pt) { return game::active()->is_empty(pt); }

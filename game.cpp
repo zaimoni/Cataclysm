@@ -3170,6 +3170,11 @@ bool game::exec_first(std::function<std::optional<bool>(npc&) > op)
     return false;
 }
 
+void game::spawn(npc&& whom)
+{
+    active_npc.push_back(std::move(whom));
+}
+
 bool game::is_empty(const point& pt) const
 {
     return (0 < m.move_cost(pt) || m.has_flag(liquid, pt)) && !mob_at(pt);

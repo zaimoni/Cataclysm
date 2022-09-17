@@ -117,8 +117,9 @@ void event::actualize() const
     npc tmp;
     tmp.randomize_from_faction(fac);
     tmp.attitude = NPCATT_DEFEND;
-	tmp.screenpos_set(g->u.pos.x - SEEX * 2 + rng(-5, 5), g->u.pos.y - SEEY * 2 + rng(-5, 5));
-    g->active_npc.push_back(std::move(tmp));
+    point delta = point(2 * SEE) + rng(within_rldist<5>);
+	tmp.screenpos_set(g->u.pos + delta); // XXX nowhere close to reality bubble edge
+    g->spawn(std::move(tmp));
    }
   } break;
 
