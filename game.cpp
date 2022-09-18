@@ -562,9 +562,8 @@ void game::create_starting_npcs()
     tmp.chatbin.first_topic = TALK_SHELTER;
     tmp.chatbin.missions.push_back(reserve_random_mission(ORIGIN_OPENER_NPC, om_location().second, tmp.ID()));
 
-    active_npc.push_back(std::move(tmp));
+    spawn(std::move(tmp));
 }
- 
 
 // MAIN GAME LOOP
 // Returns true if game is over (death, saved, quit, etc)
@@ -1606,7 +1605,7 @@ void game::debug()
    int mission_index = reserve_random_mission(ORIGIN_ANY_NPC, om_location().second, temp.ID());
    if (mission_index != -1)
    temp.chatbin.missions.push_back(mission_index);
-   active_npc.push_back(std::move(temp));
+   spawn(std::move(temp));
   } break;
 
   case 6:
@@ -2027,7 +2026,7 @@ void game::draw_ter(const point& pos)
  for (const auto& _npc : active_npc) {
    const point delta(_npc.pos-pos);
    if (VIEW_CENTER < Linf_dist(delta)) continue;
-   if (u.see(_npc.pos)) _npc.draw(w_terrain, pos, false);
+   if (u.see(_npc)) _npc.draw(w_terrain, pos, false);
  }
  if (u.has_active_bionic(bio_scent_vision)) {	// overwriting normal vision isn't that useful
   forall_do_inclusive(map::view_center_extent(), [&](point offset){
@@ -2055,10 +2054,7 @@ void game::refresh_all()
  refresh();
 }
 
-void pc::refresh_all() const
-{
-    game::active()->refresh_all();
-}
+void pc::refresh_all() const { game::active()->refresh_all(); }
 
 void game::draw_HP()
 {
