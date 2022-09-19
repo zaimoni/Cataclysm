@@ -1403,10 +1403,10 @@ void game::load(std::string name)
 
     // V0.2.2 this is the earliest we can repair the tripoint field for OM_loc-retyped mission::type, npc::goal
     for (auto& _npc : active_npc) {
-        if (auto dest = _npc.has_destination()) {
+        if (auto dest = _npc->has_destination()) {
             if (tripoint(INT_MAX) == dest->first) {
                 // V0.2.1- goal is point.  Assume cur_om's location.
-                _npc.goal->first = tripoint(com.x, com.y, lev.z);
+                _npc->goal->first = tripoint(com.x, com.y, lev.z);
             }
         }
     }
@@ -1458,7 +1458,7 @@ void game::load(std::string name)
      const auto span = extent_deactivate();
      ptrdiff_t i = active_npc.size();
      while (0 <= --i) {
-         npc& _npc = active_npc[i];
+         npc& _npc = *active_npc[i];
 
          if (!submap::in_bounds(_npc.GPSpos.second)) { // defaulted i.e. from V0.2.0?
              if (map::in_bounds(_npc.pos)) { // presumably loaded from V0.2.0
@@ -1624,14 +1624,14 @@ int(messages.turn), int(nextspawn), (option_table::get()[OPT_NPCS] ? "going to" 
 z.size(), event::are_queued());
 
    if (!active_npc.empty())
-    popup_top("%s: %d:%d (you: %d:%d)", active_npc[0].name.c_str(),
-              active_npc[0].pos.x, active_npc[0].pos.y, u.pos.x, u.pos.y);
+    popup_top("%s: %d:%d (you: %d:%d)", active_npc[0]->name.c_str(),
+              active_npc[0]->pos.x, active_npc[0]->pos.y, u.pos.x, u.pos.y);
    break;
 
   case 8:
    for (auto& _npc : active_npc) {
-     messages.add("%s's head implodes!", _npc.name.c_str());
-     _npc.hp_cur[bp_head] = 0;
+     messages.add("%s's head implodes!", _npc->name.c_str());
+     _npc->hp_cur[bp_head] = 0;
    }
    break;
 
@@ -2024,9 +2024,9 @@ void game::draw_ter(const point& pos)
  }
  // Draw NPCs
  for (const auto& _npc : active_npc) {
-   const point delta(_npc.pos-pos);
+   const point delta(_npc->pos - pos);
    if (VIEW_CENTER < Linf_dist(delta)) continue;
-   if (u.see(_npc)) _npc.draw(w_terrain, pos, false);
+   if (u.see(*_npc)) _npc->draw(w_terrain, pos, false);
  }
  if (u.has_active_bionic(bio_scent_vision)) {	// overwriting normal vision isn't that useful
   forall_do_inclusive(map::view_center_extent(), [&](point offset){
@@ -2290,8 +2290,8 @@ std::optional<point> game::find_item(item *it) const
  if (u.has_item(it)) return u.pos;
  if (const auto ret = m.find_item(it)) return ret->first;
  for (const auto& _npc : active_npc) {
-  for (size_t j = 0; j < _npc.inv.size(); j++) {
-   if (it == &(_npc.inv[j])) return _npc.pos;
+  for (size_t j = 0; j < _npc->inv.size(); j++) {
+   if (it == &(_npc->inv[j])) return _npc->pos;
   }
  }
  return std::nullopt;
@@ -2303,7 +2303,7 @@ std::optional<
     std::pair<npc*, int> > > game::find(item& it)
 {
     if (const auto found = u.lookup(&it)) return std::pair(&u, found->second);
-    for (auto& n_pc : active_npc) if (const auto found = n_pc.lookup(&it)) return std::pair(&n_pc, found->second);
+    for (auto& n_pc : active_npc) if (const auto found = n_pc->lookup(&it)) return std::pair(n_pc.get(), found->second);
     // \todo technically should scan all submaps, but the reality bubble ones are in m
     if (const auto ret = m.find_item(&it)) return toGPS(ret->first);
     return std::nullopt;
@@ -2317,7 +2317,7 @@ void game::remove_item(item *it)
      EraseAt(m.i_at(ret->first), ret->second); // inlined m.i_rem(*ret, i);
      return;
  }
- for (auto& n_pc : active_npc) if (n_pc.remove_item(it)) return;
+ for (auto& n_pc : active_npc) if (n_pc->remove_item(it)) return;
 }
 
 static void local_mon_info_display(WINDOW* w_moninfo, const mtype* const type, point& pr, int ws)
@@ -2384,9 +2384,9 @@ void game::mon_info()
  }
  for (int i = 0; i < active_npc.size(); i++) {
   const auto& _npc = active_npc[i];
-  if (u.see(_npc)) {
-   if (_npc.attitude == NPCATT_KILL) newseen++;
-   int index = (rl_dist(u.GPSpos, _npc.GPSpos) <= VIEW_CENTER ? 8 : direction_from(u.GPSpos, _npc.GPSpos));
+  if (u.see(*_npc)) {
+   if (_npc->attitude == NPCATT_KILL) newseen++;
+   int index = (rl_dist(u.GPSpos, _npc->GPSpos) <= VIEW_CENTER ? 8 : direction_from(u.GPSpos, _npc->GPSpos));
    unique_types[index].push_back(-1 - i);
   }
  }
@@ -2434,7 +2434,7 @@ void game::mon_info()
    int buff = unique_types[i][j];
 
    if (buff < 0) { // It's an NPC!
-    mvwputch(w_moninfo, pr.y, pr.x, attitude_color(active_npc[(buff + 1) * -1].attitude), '@');
+    mvwputch(w_moninfo, pr.y, pr.x, attitude_color(active_npc[(buff + 1) * -1]->attitude), '@');
 
    } else // It's a monster!  easier.
     mvwputch(w_moninfo, pr.y, pr.x, mtype::types[buff]->color, mtype::types[buff]->sym);
@@ -2496,9 +2496,9 @@ void game::cleanup_dead()
 
     z_erase(is_dead);
 
- int i = active_npc.size();
+ ptrdiff_t i = active_npc.size();
  while(0 < i--) {
-   if (active_npc[i].dead) EraseAt(active_npc, i);
+   if (active_npc[i]->dead) EraseAt(active_npc, i);
  }
 }
 
@@ -2572,20 +2572,20 @@ void game::monmove()
 
 // Now, do active NPCs.
  for (auto& _npc : active_npc) {
-  if(_npc.hp_cur[hp_head] <= 0 || _npc.hp_cur[hp_torso] <= 0) _npc.die();
+  if(_npc->hp_cur[hp_head] <= 0 || _npc->hp_cur[hp_torso] <= 0) _npc->die();
   else {
    int turns = 0;
-   _npc.reset(Badge<game>());
-   _npc.suffer(this);
+   _npc->reset(Badge<game>());
+   _npc->suffer(this);
    // \todo _npc.check_warmth call
    // \todo _npc.update_skills call
-   while (!_npc.dead && _npc.moves > 0 && turns < 10) {	// 10 moves in one turn is lethal; assuming this is a bug intercept
+   while (!_npc->dead && _npc->moves > 0 && turns < 10) {	// 10 moves in one turn is lethal; assuming this is a bug intercept
     turns++;
-	_npc.move(this);
+	_npc->move(this);
    }
    if (turns == 10) {
-    messages.add("%s's brain explodes!", _npc.name.c_str());
-	_npc.die();
+    messages.add("%s's brain explodes!", _npc->name.c_str());
+	_npc->die();
    }
   }
  }
@@ -2630,24 +2630,24 @@ void game::sound(const point& pt, int vol, std::string description)
  }
 // alert all NPCs
  for (decltype(auto) _npc : active_npc) {
-     if (_npc.has_disease(DI_DEAF)) continue;	// We're deaf, can't hear it
+     if (_npc->has_disease(DI_DEAF)) continue;	// We're deaf, can't hear it
      int volume = vol;
-     if (_npc.has_bionic(bio_ears)) rational_scale<7, 2>(volume);
-     if (_npc.has_trait(PF_BADHEARING)) volume /= 2;
-     if (_npc.has_trait(PF_CANINE_EARS)) rational_scale<3, 2>(volume);
-     int dist = rl_dist(pt, _npc.pos);
+     if (_npc->has_bionic(bio_ears)) rational_scale<7, 2>(volume);
+     if (_npc->has_trait(PF_BADHEARING)) volume /= 2;
+     if (_npc->has_trait(PF_CANINE_EARS)) rational_scale<3, 2>(volume);
+     int dist = rl_dist(pt, _npc->pos);
      if (dist > vol) continue;	// Too far away, we didn't hear it!
      const int damped_vol = vol - dist;
      // unclear what proper level of abstraction is for the heavy sleeper test 2020-12-03 zaimoni
-     if (_npc.has_disease(DI_SLEEP) && (_npc.has_trait(PF_HEAVYSLEEPER) ? dice(3, 20) < damped_vol : dice(2, 20) < damped_vol)) {
-         _npc.rem_disease(DI_SLEEP);
-         if (u.see(_npc)) messages.add("%s is woken up by a noise.", _npc.name.c_str());
+     if (_npc->has_disease(DI_SLEEP) && (_npc->has_trait(PF_HEAVYSLEEPER) ? dice(3, 20) < damped_vol : dice(2, 20) < damped_vol)) {
+         _npc->rem_disease(DI_SLEEP);
+         if (u.see(*_npc)) messages.add("%s is woken up by a noise.", _npc->name.c_str());
      }
-     if (!_npc.has_bionic(bio_ears) && 150 <= rng(damped_vol / 2, damped_vol)) {
-         _npc.add_disease(DI_DEAF, clamped_ub<40>((damped_vol - 130) / 4));
+     if (!_npc->has_bionic(bio_ears) && 150 <= rng(damped_vol / 2, damped_vol)) {
+         _npc->add_disease(DI_DEAF, clamped_ub<40>((damped_vol - 130) / 4));
      }
-     if (pt != _npc.pos)
-         _npc.cancel_activity_query("Heard %s!", (description == "" ? "a noise" : description.c_str())); // C:Whales legacy failsafe
+     if (pt != _npc->pos)
+         _npc->cancel_activity_query("Heard %s!", (description == "" ? "a noise" : description.c_str())); // C:Whales legacy failsafe
      // sound UI is player-specific
 /*     else { // If it came from us, don't print a direction
          if (description[0] >= 'a' && description[0] <= 'z')
@@ -3041,13 +3041,13 @@ void game::emp_blast(const point& pt)
 //						Character -> player -> npc
 npc* game::nPC(const point& pt)
 {
-	for (auto& m : active_npc) if (m.pos == pt && !m.dead) return &m;
+	for (auto& m : active_npc) if (m->pos == pt && !m->dead) return m.get();
 	return nullptr;
 }
 
 npc* game::nPC(const GPS_loc& gps)
 {
-    for (auto& m : active_npc) if (m.GPSpos == gps && !m.dead) return &m;
+    for (auto& m : active_npc) if (m->GPSpos == gps && !m->dead) return m.get();
     return nullptr;
 }
 
@@ -3118,7 +3118,7 @@ std::optional<std::vector<std::variant<monster*, npc*, pc*> > > game::mobs_in_ra
     std::vector<std::variant<monster*, npc*, pc*> > ret;
     if (0 >= range || range >= rl_dist(gps, u.GPSpos)) ret.push_back(&u);
     for (auto& m : active_npc) {
-        if (!m.dead && (0 >= range || range >= rl_dist(gps, m.GPSpos))) ret.push_back(&m);
+        if (!m->dead && (0 >= range || range >= rl_dist(gps, m->GPSpos))) ret.push_back(m.get());
     }
     for (auto& m : z) {
         if (!m.dead && (0 >= range || range >= rl_dist(gps, m.GPSpos))) ret.push_back(&m);
@@ -3134,9 +3134,9 @@ std::optional<std::vector<std::pair<std::variant<monster*, npc*, pc*>, int> > > 
     const int dist = rl_dist(gps, u.GPSpos);
     if (0 >= range || range >= dist) ret.push_back(std::pair(&u, dist));
     for (auto& m : active_npc) {
-        if (m.dead) continue;
-        const int dist = rl_dist(gps, m.GPSpos);
-        if (0 >= range || range >= dist) ret.push_back(std::pair(&m, dist));
+        if (m->dead) continue;
+        const int dist = rl_dist(gps, m->GPSpos);
+        if (0 >= range || range >= dist) ret.push_back(std::pair(m.get(), dist));
     }
     for (auto& m : z) {
         if (m.dead) continue;
@@ -3151,16 +3151,16 @@ void game::forall_do(std::function<void(const monster&)> op) const { for (declty
 
 void game::forall_do(std::function<void(const player&)> op) const {
     op(u);
-    for (decltype(auto) _npc : active_npc) op(_npc);
+    for (decltype(auto) _npc : active_npc) op(*_npc);
 }
 
 void game::forall_do(std::function<void(const npc&)> op) const {
-    for (decltype(auto) _npc : active_npc) op(_npc);
+    for (decltype(auto) _npc : active_npc) op(*_npc);
 }
 
 const npc* game::find_first(std::function<bool(const npc&)> ok) const
 {
-    for (decltype(auto) _npc : active_npc) if (ok(_npc)) return &_npc;
+    for (decltype(auto) _npc : active_npc) if (ok(*_npc)) return _npc.get();
     return nullptr;
 }
 
@@ -3169,7 +3169,7 @@ bool game::exec_first(std::function<std::optional<bool>(npc&) > op)
     ptrdiff_t i = -1;
     for (decltype(auto) _npc : active_npc) {
         ++i;
-        if (auto code = op(_npc)) {
+        if (auto code = op(*_npc)) {
             if (*code) EraseAt(active_npc, i);
             return true;
         }
@@ -3179,7 +3179,7 @@ bool game::exec_first(std::function<std::optional<bool>(npc&) > op)
 
 void game::spawn(npc&& whom)
 {
-    active_npc.push_back(std::move(whom));
+    active_npc.push_back(std::shared_ptr<npc>(new npc(std::move(whom))));
 }
 
 bool game::is_empty(const point& pt) const
@@ -4693,7 +4693,7 @@ void game::chat()
  }
  std::vector<npc*> available;
  for (auto& _npc : active_npc) {
-	 if (u.see(_npc) && 24 >= rl_dist(u.GPSpos, _npc.GPSpos)) available.push_back(&_npc);
+	 if (u.see(*_npc) && 24 >= rl_dist(u.GPSpos, _npc->GPSpos)) available.push_back(_npc.get());
  }
  const size_t ub = available.size();
  if (0 >= ub) {
@@ -5214,7 +5214,7 @@ void game::update_map(int &x, int &y)
      const auto span = extent_deactivate();
      ptrdiff_t i = active_npc.size();
      while (0 <= --i) {
-         auto& _npc = active_npc[--i];
+         decltype(auto) _npc = *active_npc[--i];
          _npc.shift(shift);
          // don't scope NPCs out *until* any vehicle containing them is outside of the reality bubble as well
          // \todo fix this as part of GPS conversion (GPS location could be "just over the overmap border")

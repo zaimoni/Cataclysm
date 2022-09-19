@@ -49,7 +49,7 @@ struct radio_tower {
 class overmap
 {
  public:
-  using npcs_t = std::vector<npc>;
+  using npcs_t = std::vector<std::shared_ptr<npc> >;
 
   overmap() noexcept : pos(999, 999, 999) {};	// \todo: use truly impossible coordinates
   overmap(game *g, int x, int y, int z);

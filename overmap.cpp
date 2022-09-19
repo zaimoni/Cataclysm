@@ -570,17 +570,16 @@ void overmap::activate(npcs_t& active_npc, const Badge<game>& auth)
 
     ptrdiff_t i = npcs.size();
     while (0 <= --i) {
-        if (span.contains(npcs[i].GPSpos.first)) activate_npc(i, active_npc, auth);
+        if (span.contains(npcs[i]->GPSpos.first)) activate_npc(i, active_npc, auth);
     }
-
 }
 
 bool overmap::activate_npc(const size_t i, npcs_t& active_npc, const Badge<game>& auth)
 {
     auto& _npc = npcs[i];
-    if (_npc.screen_pos()) {
-        _npc.spawn_at(_npc.GPSpos);
-        if (_npc.marked_for_death) _npc.die();
+    if (_npc->screen_pos()) {
+        _npc->spawn_at(_npc->GPSpos);
+        if (_npc->marked_for_death) _npc->die();
         else active_npc.push_back(std::move(_npc));
         EraseAt(npcs, i);
         return true;
@@ -591,7 +590,7 @@ bool overmap::activate_npc(const size_t i, npcs_t& active_npc, const Badge<game>
 void overmap::deactivate_npc(const size_t i, npcs_t& active_npc, const Badge<game>& auth)
 {
     auto& _npc = active_npc[i];
-    _npc.pos %= SEE;
+    _npc->pos %= SEE;
     npcs.push_back(std::move(active_npc[i])); // \todo fix this as part of GPS conversion (GPS location could be "just over the overmap border")
     EraseAt(active_npc, i);
 }
@@ -604,8 +603,8 @@ void overmap::npcs_move(npcs_t& active_npc, const Badge<game>& auth)
     ptrdiff_t i = npcs.size();
     while (0 <= --i) {
         auto& _npc = npcs[i];
-        _npc.perform_mission(g);
-        if (span.contains(_npc.GPSpos.first)) activate_npc(i, active_npc, auth);
+        _npc->perform_mission(g);
+        if (span.contains(_npc->GPSpos.first)) activate_npc(i, active_npc, auth);
     }
 }
 
@@ -614,7 +613,7 @@ bool overmap::exec_first(std::function<std::optional<bool>(npc&) > op)
     ptrdiff_t i = -1;
     for (decltype(auto) _npc : npcs) {
         ++i;
-        if (auto code = op(_npc)) {
+        if (auto code = op(*_npc)) {
             if (*code) EraseAt(npcs, i);
             return true;
         }
@@ -624,7 +623,7 @@ bool overmap::exec_first(std::function<std::optional<bool>(npc&) > op)
 
 npc* overmap::find(std::function<bool(const npc&)> ok) {
     for (decltype(auto) _npc : npcs) {
-        if (ok(_npc)) return &_npc;
+        if (ok(*_npc)) return _npc.get();
     }
 
     return nullptr;
@@ -632,7 +631,7 @@ npc* overmap::find(std::function<bool(const npc&)> ok) {
 
 const npc* overmap::find_r(std::function<bool(const npc&)> ok) const {
     for (decltype(auto) _npc : npcs) {
-        if (ok(_npc)) return &_npc;
+        if (ok(*_npc)) return _npc.get();
     }
 
     return nullptr;
@@ -641,7 +640,7 @@ const npc* overmap::find_r(std::function<bool(const npc&)> ok) const {
 std::vector<npc*> overmap::grep(std::function<bool(const npc&)> ok)
 {
     std::vector<npc*> ret;
-    for (auto& _npc : npcs) if (ok(_npc)) ret.push_back(&_npc);
+    for (auto& _npc : npcs) if (ok(*_npc)) ret.push_back(_npc.get());
     return ret;
 }
 
@@ -1483,10 +1482,10 @@ void overmap::draw(WINDOW *w, const player& u, const point& curs, const point& o
     note_here = overmap::has_note(scan, note_text);
     if (omx >= 0 && omx < OMAPX && omy >= 0 && omy < OMAPY) { // It's in-bounds
 	 for (const auto& _npc : npcs) {
-	  const auto om = toOvermap(_npc.GPSpos);
+	  const auto om = toOvermap(_npc->GPSpos);
       if (om.second == scan.second) {
        npc_here = true;
-       npc_name = _npc.name;
+       npc_name = _npc->name;
 	   break;
       }
 	 }
@@ -2855,9 +2854,9 @@ overmap::overmap(game* g, int x, int y, int z)
           om["npcs"].decode(npcs);
           // V0.2.2 this is the earliest we can repair the tripoint field for OM_loc-retyped npc::goal
           for (auto& _npc : npcs) {
-              if (_npc.goal && _npc.goal->first == tripoint(INT_MAX)) {
+              if (_npc->goal && _npc->goal->first == tripoint(INT_MAX)) {
                   // V0.2.1- goal is point.  Assume our own location.
-                  _npc.goal->first = pos;
+                  _npc->goal->first = pos;
               }
           }
       }
