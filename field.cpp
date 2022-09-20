@@ -654,7 +654,7 @@ retry:
                 auto dest = loc + rng(within_rldist<3>);
                 if (auto pt_dest = game::active()->toScreen(dest)) {
                     mon_id type = mon_id(rng(mon_flying_polyp, mon_blank));
-                    g->z.push_back(monster(mtype::types[type], *pt_dest));
+                    g->spawn(monster(mtype::types[type], *pt_dest));
                 }
                 // \todo? handle outside of reality bubble; map generation won't trigger this but the artifact can
             }

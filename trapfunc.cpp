@@ -548,7 +548,7 @@ void trapfunc::shadow(game *g, int x, int y)
         messages.add("A shadow forms nearby.");
         monster spawned(mtype::types[mon_shadow], *pt);
         spawned.sp_timeout = rng(2, 10);
-        g->z.push_back(spawned);
+        g->spawn(spawned);
         g->m.tr_at(x, y) = tr_null;
     }
 }
@@ -581,10 +581,10 @@ void trapfunc::snake(game *g, int x, int y)
 
      static std::function<bool(const point&)> spawn_ok = [&](const point& pt) { return g->is_empty(pt) && g->m.sees(pt, g->u.pos, 10); };
 
-     if (const auto spawn = LasVegasChoice(5, nominate_spawn_pos, spawn_ok)) {
+     if (const auto dest = LasVegasChoice(5, nominate_spawn_pos, spawn_ok)) {
          messages.add("A shadowy snake forms nearby.");
-         g->z.push_back(monster(mtype::types[mon_shadow_snake], *spawn));
-         g->m.tr_at(*spawn) = tr_null;
+         g->spawn(monster(mtype::types[mon_shadow_snake], *dest));
+         g->m.tr_at(*dest) = tr_null;
          return;
      }
  }

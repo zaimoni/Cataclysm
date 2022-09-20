@@ -286,9 +286,9 @@ void game::monster_wish()
  delwin(w_list);
  refresh_all();
  wrefresh(w_terrain);
- if (const auto spawn = look_around()) {
-     tmp.spawn(*spawn);
-     z.push_back(tmp);
+ if (const auto dest = look_around()) {
+     tmp.spawn(*dest);
+     spawn(std::move(tmp));
  }
 }
 

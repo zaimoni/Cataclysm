@@ -53,7 +53,7 @@ void mattack::antqueen(monster& z)
   if (g->u.see(z)) messages.add("The %s tends nearby eggs, and they hatch!", z.name().c_str());
   for(decltype(auto) egg_point : egg_points) {
      EraseAt(egg_point.first.items_at(), egg_point.second);
-     g->z.push_back(monster(mtype::types[mon_ant_larva], egg_point.first));
+     g->spawn(monster(mtype::types[mon_ant_larva], egg_point.first));
   }
  }
 }
@@ -194,7 +194,7 @@ void mattack::resurrect(game *g, monster *z)
              mon.speed = cataclysm::rational_scaled<4, 5>(mon.speed) - burnt_penalty / 2;
              mon.hp = cataclysm::rational_scaled<7, 10>(mon.hp) - burnt_penalty;
              EraseAt(stack, n); // invalidates iterator
-             g->z.push_back(mon);
+             g->spawn(std::move(mon));
              break;
          }
      }
@@ -253,7 +253,7 @@ void mattack::science(game *g, monster *z)	// I said SCIENCE again!
  case 3:	// Spawn a manhack
   messages.add("The %s opens its coat, and a manhack flies out!", z->name().c_str());
   z->moves -= 2 * mobile::mp_turn;
-  g->z.push_back(monster(mtype::types[mon_manhack], free[rng(0, valid.size() - 1)]));
+  g->spawn(monster(mtype::types[mon_manhack], free[rng(0, valid.size() - 1)]));
   break;
  case 4:	// Acid pool
   messages.add("The %s drops a flask of acid!", z->name().c_str());
@@ -408,7 +408,7 @@ void mattack::grow_vine(monster& z)
      if (dest.is_empty()) {
          monster vine(mtype::types[mon_creeper_vine], dest);
          vine.sp_timeout = 5;
-         game::active()->z.push_back(std::move(vine));
+         game::active()->spawn(std::move(vine));
      }
  };
 
@@ -476,7 +476,7 @@ void mattack::vine(monster& z)
 
  monster vine(mtype::types[mon_creeper_vine], grow[rng(0, grow.size() - 1)]);
  vine.sp_timeout = 5;
- g->z.push_back(vine);
+ g->spawn(std::move(vine));
 }
 
 static int route_sap(const std::vector<point>& line)
@@ -564,7 +564,7 @@ void mattack::triffid_heartbeat(game *g, monster *z)
     mon_id montype = mon_triffid;
     if (one_in(4)) montype = mon_creeper_hub;
     else if (one_in(3)) montype = mon_biollante;
-    g->z.push_back(monster(mtype::types[montype], pt));
+    g->spawn(monster(mtype::types[montype], pt));
    }
   }
  } else { // The player is close enough for a fight!
@@ -572,7 +572,7 @@ void mattack::triffid_heartbeat(game *g, monster *z)
   for (decltype(auto) delta : Direction::vector) {
       if (const auto loc(z->GPSpos + delta); loc.is_empty() && one_in(2)) {
           triffid.spawn(loc);
-          g->z.push_back(triffid);
+          g->spawn(triffid);
       }
   }
  }
@@ -626,7 +626,7 @@ void mattack::fungus_sprout(monster& z)
     for (decltype(auto) delta : Direction::vector) {
         auto loc(z.GPSpos + delta);
         if (auto _mob = g->mob_at(loc)) std::visit(fungus_displace(), *_mob);
-        if (loc.is_empty()) g->z.push_back(monster(mtype::types[mon_fungal_wall], loc));
+        if (loc.is_empty()) g->spawn(monster(mtype::types[mon_fungal_wall], loc));
     }
 }
 
@@ -757,11 +757,11 @@ void mattack::formblob(game *g, monster *z)
      } else if (z->speed >= 85 && rng(0, 250) < z->speed) {
          // If we're big enough, spawn a baby blob.
          didit = true;
-         z->speed -= 15;
+         z->speed -= 3 * (mobile::mp_turn / 20);
          monster blob(mtype::types[mon_blob_small], loc);
          blob.speed = z->speed - rng(30, 60);
          blob.hp = blob.speed;
-         g->z.push_back(std::move(blob));
+         g->spawn(std::move(blob));
      }
      if (didit) {	// We did SOMEthing.
          if (z->type->id == mon_blob && z->speed <= 50) z->poly(mtype::types[mon_blob_small]);	// We shrank!
@@ -1395,6 +1395,6 @@ void mattack::breathe(monster& z)
  if (!valid.empty()) {
   monster spawned(mtype::types[mon_breather], valid[rng(0, valid.size() - 1)]);
   spawned.sp_timeout = 12;
-  game::active()->z.push_back(std::move(spawned));
+  game::active()->spawn(std::move(spawned));
  }
 }

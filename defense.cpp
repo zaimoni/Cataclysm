@@ -257,7 +257,7 @@ void defense_game::init_map(game *g)
  }
  if (!valid.empty()) generator.spawn(valid[rng(0, valid.size() - 1)]); // reset starting position to a legal one
  generator.friendly = -1;
- g->z.push_back(generator);
+ g->spawn(std::move(generator));
 }
 
 void defense_game::init_to_style(defense_style new_style)
@@ -1159,7 +1159,7 @@ void defense_game::spawn_wave_monster(game *g, const mtype *type)
 // We wanna kill!
  tmp.anger = 100;
  tmp.morale = 100;
- g->z.push_back(tmp);
+ g->spawn(std::move(tmp));
 }
 
 std::string defense_game::special_wave_message(std::string name)

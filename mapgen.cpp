@@ -7214,7 +7214,7 @@ void map::add_extra(map_extra type, game *g)
     if (rng(0, 9) > trig_dist(x, y, i, j)) {
      marlossify(i, j);
      if (ter(i, j) == t_marloss) add_item(x, y, item::types[itm_marloss_berry], messages.turn);
-     if (one_in(15)) g->z.push_back(monster(mtype::types[mon_id(rng(mon_gelatin, mon_blank))], i, j));
+     if (one_in(15)) g->spawn(monster(mtype::types[mon_id(rng(mon_gelatin, mon_blank))], i, j));
     }
    }
   }

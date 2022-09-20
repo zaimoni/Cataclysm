@@ -2958,7 +2958,7 @@ void game::resonance_cascade(const point& pt)
    case 13:
    case 14:
    case 15:
-    z.push_back(monster(mtype::types[mongroup::moncats[mcat_nether][rng(0, mongroup::moncats[mcat_nether].size() - 1)]], i, j));
+    spawn(monster(mtype::types[mongroup::moncats[mcat_nether][rng(0, mongroup::moncats[mcat_nether].size() - 1)]], i, j));
     break;
    case 16:
    case 17:
@@ -3180,6 +3180,16 @@ bool game::exec_first(std::function<std::optional<bool>(npc&) > op)
 void game::spawn(npc&& whom)
 {
     active_npc.push_back(std::shared_ptr<npc>(new npc(std::move(whom))));
+}
+
+void game::spawn(const monster& whom)
+{
+    z.push_back(whom);
+}
+
+void game::spawn(monster&& whom)
+{
+    z.push_back(std::move(whom));
 }
 
 bool game::is_empty(const point& pt) const
@@ -5265,9 +5275,8 @@ void game::update_overmap_seen()
 
 void game::replace_stair_monsters()
 {
- for (int i = 0; i < coming_to_stairs.size(); i++)
-  z.push_back(coming_to_stairs[i].mon);
- coming_to_stairs.clear();
+    for (decltype(auto) incoming : coming_to_stairs) spawn(std::move(incoming.mon));
+    coming_to_stairs.clear();
 }
 
 void game::update_stair_monsters()
@@ -5298,7 +5307,7 @@ void game::update_stair_monsters()
              messages.add("A %s comes %s the %s!", coming_to_stairs[i].mon.name().c_str(),
                  (m.has_flag(goes_up, stair) ? "down" : "up"),
                  name_of(m.ter(stair)).c_str());
-         z.push_back(coming_to_stairs[i].mon);
+         spawn(std::move(coming_to_stairs[i].mon));
      }
 
      EraseAt(coming_to_stairs, i);
@@ -5418,7 +5427,7 @@ void game::spawn_mon(int shiftx, int shifty)
 
     if (auto mon_pos = LasVegasChoice(50, std::function(spawn_dest), std::function(spawn_ok))) {
         zom.spawn(*mon_pos);
-        z.push_back(zom);
+        spawn(std::move(zom));
     }
    }	// Placing monsters of this group is done!
    if (cur_om.zg[i].population <= 0) { // Last monster in the group spawned...

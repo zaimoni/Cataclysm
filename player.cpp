@@ -418,7 +418,7 @@ bool player::see_phantasm()
     auto g = game::active();
     const point pt(pos + rng(within_rldist<10>));
     if (!g->mon(pt)) {
-        g->z.push_back(monster(mtype::types[mon_hallu_zom + rng(0, 3)], pt));
+        g->spawn(monster(mtype::types[mon_hallu_zom + rng(0, 3)], pt));
         return true;
     }
     return false;
@@ -446,7 +446,7 @@ static void incoming_nether_portal(GPS_loc dest)
 {
     const auto g = game::active();
     if (0 >= dest.move_cost()) dest.ter() = t_rubble;
-    g->z.push_back(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], dest));
+    g->spawn(monster(mtype::types[(mongroup::moncats[mcat_nether])[rng(0, mongroup::moncats[mcat_nether].size() - 1)]], dest));
     // \todo technically should also cancel activities for all NPCs that see it
     if (g->u.see(dest)) {
         g->u.cancel_activity_query("A monster appears nearby!");
@@ -788,7 +788,7 @@ void dis_effect(game* g, player& p, disease& dis)
                     // Sometimes it's a friendly larva!
                     if (one_in(3)) grub.make_ally(p);
                     else grub.make_threat(p);
-                    g->z.push_back(grub);
+                    g->spawn(grub);
                 }
             }
         }
@@ -3391,7 +3391,7 @@ void player::hit(game *g, body_part bphurt, int side, int dam, int cut)
           int index = rng(0, valid.size() - 1);
           snake.spawn(valid[index]);
           valid.erase(valid.begin() + index);
-          g->z.push_back(snake);
+          g->spawn(snake);
       }
   }
  }

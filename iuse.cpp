@@ -574,7 +574,7 @@ void iuse::marloss(pc& p, item& it)
     if (rng(0, 10) > dist && rng(0, 10) > dist) g->m.marlossify(x, y);
     if (one_in(10 + 5 * dist) && (goo_spawned == 0 || one_in(goo_spawned * 2))) {
      goo.spawn(x, y);
-     g->z.push_back(goo);
+     g->spawn(goo);
      goo_spawned++;
     }
    }
@@ -1395,7 +1395,7 @@ void iuse::can_goo(player& p, item& it)
  } else {
   monster goo(mtype::types[mon_blob], *goo_pos);
   goo.make_friendly(p);
-  g->z.push_back(std::move(goo));
+  g->spawn(std::move(goo));
  }
 
  // Unsure whether C:Whales is reasonable behavior (accept: can move through, *or* already has trap)
@@ -1810,7 +1810,7 @@ static void _use_manhack(player& p, item& it, const point& dest)
         p.subjective_message("You misprogram the manhack; it's hostile!");
         manhack.make_threat(p); // misprogrammed, hostile
     }
-    g->z.push_back(manhack);
+    g->spawn(std::move(manhack));
 }
 
 void iuse::manhack(pc& p, item& it)
@@ -1857,7 +1857,7 @@ void iuse::turret(pc& p, item& it)
   messages.add("You misprogram the turret; it's hostile!");
  else
   turret.friendly = -1;
- g->z.push_back(std::move(turret));
+ g->spawn(std::move(turret));
 }
 
 void iuse::UPS_off(player& p, item& it)
@@ -2102,7 +2102,7 @@ void iuse::vortex(pc& p, item& it)
  it.make(item::types[itm_spiral_stone]);
  monster vortex(mtype::types[mon_vortex], spawn[rng(0, spawn.size() - 1)]);
  vortex.friendly = -1;
- g->z.push_back(vortex);
+ g->spawn(std::move(vortex));
 }
 
 void iuse::dog_whistle(player& p, item& it)
@@ -2383,7 +2383,7 @@ void iuse::artifact(pc& p, item& it)
      int index = rng(0, empty.size() - 1);
      spawned.spawn(empty[index]);
 	 empty.erase(empty.begin() + index);
-	 g->z.push_back(spawned);
+	 g->spawn(spawned);
     }
    }
   } break;
@@ -2504,7 +2504,7 @@ void iuse::artifact(pc& p, item& it)
            num_spawned++;
            spawned.sp_timeout = rng(8, 20);
            spawned.spawn(*pt);
-           g->z.push_back(spawned);
+           g->spawn(spawned);
        }
    }
 

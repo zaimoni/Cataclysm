@@ -2515,7 +2515,7 @@ void submap::exec_spawns(const Badge<map>& auth)
             if (decltype(auto) dest = LasVegasChoice(10, nominate_spawn_pos, spawn_ok)) {
                 tmp.am_static_spawned(Badge<submap>());
                 tmp.spawn(*dest);
-                g->z.push_back(std::move(tmp));
+                g->spawn(std::move(tmp));
             }
         }
     }

@@ -56,7 +56,7 @@ monster* spray_spores(const T& dest, monster* killer) requires requires (game* g
         if (auto mon = std::get_if<monster*>(&(*mob))) return *mon;
         return nullptr;
     } else {
-        g->z.push_back(monster(mtype::types[mon_spore], dest));
+        g->spawn(monster(mtype::types[mon_spore], dest));
         return nullptr;
     }
 }

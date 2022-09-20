@@ -640,7 +640,7 @@ void computer::activate_failure(game *g, computer_failure fail)
    for (int i = 0; i < num_robots; i++) {
     if (const auto fail = LasVegasChoice<point>(10, nominate_robot_spawn_pos, game::isEmpty)) {
         msg = "Manhacks drop from compartments in the ceiling.";
-        g->z.push_back(monster(mtype::types[mon_manhack], *fail));
+        g->spawn(monster(mtype::types[mon_manhack], *fail));
     }
    }
    if (msg) messages.add(msg);
@@ -652,7 +652,7 @@ void computer::activate_failure(game *g, computer_failure fail)
    for (int i = 0; i < num_robots; i++) {
     if (const auto fail = LasVegasChoice<point>(10, nominate_robot_spawn_pos, game::isEmpty)) {
         msg = "Secubots emerge from compartments in the floor.";
-        g->z.push_back(monster(mtype::types[mon_secubot], *fail));
+        g->spawn(monster(mtype::types[mon_secubot], *fail));
     }
    }
    if (msg) messages.add(msg);

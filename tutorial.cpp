@@ -118,11 +118,11 @@ void tutorial_game::post_action(game *g, action_id act)
  case ACTION_RELOAD:
   if (g->u.weapon.is_gun() && !tutorials_seen[LESSON_GUN_FIRE]) {
    monster tmp(mtype::types[mon_zombie], g->u.pos + 6 * Direction::N);
-   g->z.push_back(tmp);
+   g->spawn(tmp);
    tmp.spawn(g->u.pos + 2 * Direction::NE + 3 * Direction::N);
-   g->z.push_back(tmp);
+   g->spawn(tmp);
    tmp.spawn(g->u.pos + 2 * Direction::NW + 3 * Direction::N);
-   g->z.push_back(tmp);
+   g->spawn(std::move(tmp));
    add_message(g, LESSON_GUN_FIRE);
   }
   break;

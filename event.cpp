@@ -130,7 +130,7 @@ void event::actualize() const
      robot_type = mtype::types[mon_copbot];
     int robx = (g->lev.x > map_point.x ? 0 - SEEX * 2 : SEEX * 4),
         roby = (g->lev.y > map_point.y ? 0 - SEEY * 2 : SEEY * 4);
-    g->z.push_back(monster(robot_type, robx, roby));
+    g->spawn(monster(robot_type, robx, roby));
    }
   } break;
 
@@ -147,7 +147,7 @@ void event::actualize() const
       int num_wyrms = rng(1, 4);
       for (int i = 0; i < num_wyrms; i++) {
           if (auto pt = LasVegasChoice(10, candidate, ok)) {
-              g->z.push_back(monster(mtype::types[mon_dark_wyrm], *pt));
+              g->spawn(monster(mtype::types[mon_dark_wyrm], *pt));
           }
       }
       if (!one_in(25)) // They just keep coming!
@@ -191,7 +191,7 @@ void event::actualize() const
        const auto mon = LasVegasChoice<point>(10, amigara_position, [&](const point& pt) { return t_rock_floor == g->m.ter(pt) && g->is_empty(pt); });
        if (mon) {
            horror.spawn(*mon);
-           g->z.push_back(horror);
+           g->spawn(horror);
        }
    }
   } break;
@@ -280,7 +280,7 @@ void event::actualize() const
       };
 
       if (auto pt = LasVegasChoice(20, candidate, ok)) {
-          g->z.push_back(monster(mtype::types[temple_spawn[rng(0, (std::end(temple_spawn) - std::begin(temple_spawn)) - 1)]], *pt));
+          g->spawn(monster(mtype::types[temple_spawn[rng(0, (std::end(temple_spawn) - std::begin(temple_spawn)) - 1)]], *pt));
       }
   } break;
 
@@ -316,7 +316,7 @@ bool event::per_turn()
            if (auto pos = g->toScreen(*dest)) { // and within reality bubble
                monster eyebot(mtype::types[mon_eyebot], *pos);
                eyebot.faction_id = faction_id;
-               g->z.push_back(eyebot);
+               g->spawn(std::move(eyebot));
                if (g->u.see(*dest)) messages.add("An eyebot swoops down nearby!");
                // \todo They shouldn't be coming *indefinitely*
                // but this event is up for complete re-implementation anyway

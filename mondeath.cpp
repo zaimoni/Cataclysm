@@ -122,7 +122,7 @@ void mdeath::fungus(game *g, monster *z)
 
 void mdeath::fungusawake(game *g, monster *z)
 {
- g->z.push_back(monster(mtype::types[mon_fungaloid], z->pos));
+ g->spawn(monster(mtype::types[mon_fungaloid], z->pos));
 }
 
 void mdeath::disintegrate(game *g, monster *z)
@@ -147,7 +147,7 @@ void mdeath::worm(game *g, monster *z)
  for (int worms = 0; worms < 2 && wormspots.size() > 0; worms++) {
   const int rn = rng(0, wormspots.size() - 1);
   worm.spawn(wormspots[rn]);
-  g->z.push_back(worm);
+  g->spawn(worm);
   wormspots.erase(wormspots.begin() + rn);
  }
 }
@@ -201,7 +201,7 @@ void mdeath::blobsplit(game *g, monster *z)
  for (int s = 0; s < 2 && valid.size() > 0; s++) {
   const int rn = rng(0, valid.size() - 1);
   blob.spawn(valid[rn]);
-  g->z.push_back(blob);
+  g->spawn(blob);
   valid.erase(valid.begin() + rn);
  }
 }
@@ -231,7 +231,7 @@ void mdeath::amigara(game *g, monster *z)
 
 void mdeath::thing(game *g, monster *z)
 {
- g->z.push_back(monster(mtype::types[mon_thing], z->pos));
+ g->spawn(monster(mtype::types[mon_thing], z->pos));
 }
 
 void mdeath::explode(game *g, monster *z)
