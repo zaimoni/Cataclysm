@@ -86,8 +86,7 @@ bool mission::is_complete(const player& u, const int _npc_id) const
 
     case MGOAL_FIND_MONSTER:
         if (0 < npc_id && npc_id != _npc_id) return false;
-        for (const auto& _mon : game::active()->z) if (_mon.mission_id == uid) return true;
-        return false;
+        return game::active_const()->find_first([=](const monster& _mon) { return _mon.mission_id == uid; });
 
     case MGOAL_FIND_NPC: return (npc_id == _npc_id);
     case MGOAL_KILL_MONSTER: return 1 <= step;
