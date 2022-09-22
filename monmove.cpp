@@ -522,11 +522,12 @@ void monster::hit_player(game *g, player &p, bool can_grab)
 
  // No FOV/hearing/... in-communication check (inherited from C:Whales)
  if (anger_adjust != 0 || morale_adjust != 0) {
-  for(auto& _mon : g->z) {
-   if (type->species != _mon.type->species) continue;
-   _mon.morale += morale_adjust;
-   _mon.anger += anger_adjust;
-  }
+     g->forall_do([=, species = type->species](monster& _mon) {
+         if (_mon.type->species == species) {
+             _mon.morale += morale_adjust;
+             _mon.anger += anger_adjust;
+         }
+     });
  }
 }
 

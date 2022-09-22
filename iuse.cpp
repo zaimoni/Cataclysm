@@ -2111,24 +2111,23 @@ void iuse::dog_whistle(player& p, item& it)
 
     p.if_visible_message(blows);
 
- const auto g = game::active();
+    const auto g = game::active();
+    g->forall_do([&](monster& _dog) {
+        if (mon_dog == _dog.type->id && _dog.is_friend(&p)) {
+            const bool is_docile = _dog.has_effect(ME_DOCILE);
 
- for (decltype(auto) _dog : g->z) {
-     if (mon_dog == _dog.type->id && _dog.is_friend(&p)) {
-         const bool is_docile = _dog.has_effect(ME_DOCILE);
+            static auto dog_reacts = [&]() {
+                const auto d_name = grammar::capitalize(p.desc(grammar::noun::role::possessive)) + " " + _dog.desc(grammar::noun::role::subject);
+                if (is_docile) return d_name + " looks ready to attack.";
+                else return d_name + " goes docile.";
+            };
 
-         static auto dog_reacts = [&]() {
-             const auto d_name = grammar::capitalize(p.desc(grammar::noun::role::possessive)) + " " + _dog.desc(grammar::noun::role::subject);
-             if (is_docile) return d_name + " looks ready to attack.";
-             else return d_name + " goes docile.";
-         };
+            _dog.if_visible_message(dog_reacts);
 
-         _dog.if_visible_message(dog_reacts);
-
-         if (is_docile) _dog.rem_effect(ME_DOCILE); // \todo fix docility effect to be relative to master
-         else _dog.add_effect(ME_DOCILE, -1);
-     }
- }
+            if (is_docile) _dog.rem_effect(ME_DOCILE); // \todo fix docility effect to be relative to master
+            else _dog.add_effect(ME_DOCILE, -1);
+        }
+    });
 }
 
 // layman-usable blood drawing equipment.  No medical skill required.
@@ -2398,14 +2397,13 @@ void iuse::artifact(pc& p, item& it)
    break;
 
   case AEA_GROWTH: {
-   monster tmptriffid(mtype::types[0], p.pos);
+   monster tmptriffid(mtype::types[0], p.GPSpos);
    mattack::growplants(g, &tmptriffid);
   } break;
 
   case AEA_HURTALL:
-   for (int i = 0; i < g->z.size(); i++)
-    g->z[i].hurt(rng(0, 5));
-   break;
+      g->forall_do([](monster& _mon) { _mon.hurt(rng(0, 5)); });
+      break;
 
   case AEA_RADIATION: {
       static auto contaminate = [&](point delta) {

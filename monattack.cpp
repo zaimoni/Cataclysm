@@ -469,9 +469,9 @@ void mattack::vine(monster& z)
 
 // Calculate distance from nearest hub, then check against that
  int dist_from_hub = INT_MAX;
- for (const auto& v : g->z) {
-  if (mon_creeper_hub == v.type->id) clamp_ub(dist_from_hub, rl_dist(z.GPSpos, v.GPSpos));
- }
+ g->forall_do([&, gps=z.GPSpos](const monster& v) {
+     if (mon_creeper_hub == v.type->id) clamp_ub(dist_from_hub, rl_dist(gps, v.GPSpos));
+ });
  if (!one_in(dist_from_hub)) return;
 
  monster vine(mtype::types[mon_creeper_vine], grow[rng(0, grow.size() - 1)]);
@@ -1341,10 +1341,10 @@ void mattack::upgrade(monster& z)
     assert(mon_zombie != z.type->id);
     const auto g = game::active();
     std::vector<monster*> targets;
-    for (decltype(auto) _mon : g->z) {
-        if (mon_zombie == _mon.type->id && 5 >= rl_dist(z.GPSpos, _mon.GPSpos))
-            targets.push_back(&_mon);
-    }
+
+    g->forall_do([&, gps=z.GPSpos](monster& _mon) mutable {
+        if (mon_zombie == _mon.type->id && 5 >= rl_dist(gps, _mon.GPSpos)) targets.push_back(&_mon);
+    });
     if (targets.empty()) return;
 
     z.sp_timeout = z.type->sp_freq; // Reset timer

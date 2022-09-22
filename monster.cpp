@@ -615,13 +615,13 @@ void monster::die()
  if (type->placate & mfb(MTRIG_FRIEND_DIED)) anger_adjust -= 15;
  if (type->fear & mfb(MTRIG_FRIEND_DIED)) morale_adjust -= 15;
  if (anger_adjust != 0 || morale_adjust != 0) {
-  int light = g->light_level();
-  for (auto& critter : g->z) {
-   if (critter.type->species != type->species) continue;
-   if (!g->m.sees(critter.pos, pos, light)) continue;
-   critter.morale += morale_adjust;
-   critter.anger += anger_adjust;
-  }
+     g->forall_do([=, light = g->light_level(), species = type->species](monster& _mon) {
+         if (   _mon.type->species == species
+             && _mon.GPSpos.can_see(GPSpos, light)) {
+             _mon.morale += morale_adjust;
+             _mon.anger += anger_adjust;
+         }
+     });
  }
 }
 

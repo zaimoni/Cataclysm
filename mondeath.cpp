@@ -57,17 +57,18 @@ void mdeath::kill_vines(game *g, monster *z)
 {
  std::vector<monster*> vines;
  std::vector<const monster*> hubs;
- for (decltype(auto) _mon : g->z) {
+
+ g->forall_do([&, gps=z->GPSpos](monster& _mon) mutable {
      switch (_mon.type->id)
      {
      case mon_creeper_hub:
-         if (_mon.GPSpos != z->GPSpos) hubs.push_back(&_mon);
+         if (_mon.GPSpos != gps) hubs.push_back(&_mon);
          break;
      case mon_creeper_vine:
          vines.push_back(&_mon);
          break;
      }
- }
+ });
 
  for (auto vine : vines) {
   int dist = rl_dist(vine->GPSpos, z->GPSpos);
