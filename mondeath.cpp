@@ -216,10 +216,7 @@ void mdeath::melt(game *g, monster *z)
 void mdeath::amigara(game *g, monster *z)
 {
  if (g->u.has_disease(DI_AMIGARA)) {
-  int count = 0;
-  for(const auto& _mon : g->z) {
-   if (_mon.type->id == mon_amigara_horror) count++;
-  }
+     size_t count = g->count([](const monster& _mon) { return mon_amigara_horror == _mon.type->id; });
   if (count <= 1) { // We're the last!
    g->u.rem_disease(DI_AMIGARA);
    messages.add("Your obsession with the fault fades away...");

@@ -3164,6 +3164,13 @@ void game::forall_do(std::function<void(const npc&)> op) const {
     for (decltype(auto) _npc : active_npc) op(*_npc);
 }
 
+size_t game::count(std::function<bool(const monster&)> ok) const
+{
+    size_t ret = 0;
+    for (decltype(auto) _mon : z) if (ok(_mon)) ret++;
+    return ret;
+}
+
 const monster* game::find_first(std::function<bool(const monster&)> ok) const
 {
     for (decltype(auto) _mon : z) if (ok(_mon)) return &_mon;
