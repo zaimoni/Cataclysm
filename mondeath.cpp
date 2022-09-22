@@ -254,8 +254,9 @@ void mdeath::gameover(game *g, monster *z)
 
 void mdeath::kill_breathers(game *g, monster *z)
 {
- for (int i = 0; i < g->z.size(); i++) {
-  if (g->z[i].type->id == mon_breather_hub || g->z[i].type->id == mon_breather)
-   g->z[i].dead = true;
- }
+    static auto execute = [](monster& z) {
+        if (z.type->id == mon_breather_hub || z.type->id == mon_breather) z.dead = true;
+    };
+
+    g->forall_do(execute);
 }
