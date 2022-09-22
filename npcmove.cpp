@@ -607,7 +607,7 @@ npc::ai_action npc::method_of_attack(game *g, const std::variant<monster*, npc*,
 	  const auto inv_index = can_reload();
 	  if (0 <= inv_index) return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new target_inventory<npc>(*const_cast<npc*>(this), inv_index, &npc::reload, "Reload")));
   }
-  if (emergency(danger_assessment(g))) {
+  if (emergency(danger_assessment())) {
 	  if (auto have_alt = alt_attack_available()) {
 		  return ai_action(npc_pause, std::unique_ptr<cataclysm::action>(new use_alt_attack(*const_cast<npc*>(this), *have_alt, target)));
 	  }

@@ -1578,7 +1578,7 @@ bool npc::is_defending() const
  return (attitude == NPCATT_DEFEND);
 }
 
-int npc::danger_assessment(game *g) const
+int npc::danger_assessment() const
 {
 	struct _danger {
 		const npc& me;
@@ -1618,6 +1618,7 @@ int npc::danger_assessment(game *g) const
 	};
 
 	_danger danger = { *this, 0 };
+	const auto g = game::active_const();
 	auto wrap_danger = function_relay(danger);
 
 	g->forall_do(std::function<void(const monster&)>(wrap_danger));
@@ -1671,15 +1672,13 @@ void npc::told_to_help(game *g)
   return;
  }
  if (is_following()) {
-  if (personality.altruism + 4 * op_of_u.value + personality.bravery >
-      danger_assessment(g)) {
+  if (personality.altruism + 4 * op_of_u.value + personality.bravery > danger_assessment()) {
    say(g, "I've got your back!");
    attitude = NPCATT_DEFEND;
   }
   return;
  }
- if (int((personality.altruism + personality.bravery) / 4) >
-     danger_assessment(g)) {
+ if (int((personality.altruism + personality.bravery) / 4) > danger_assessment()) {
   say(g, "Alright, I got you covered!");
   attitude = NPCATT_DEFEND;
  }
@@ -1691,8 +1690,7 @@ void npc::told_to_wait(game *g)
   debugmsg("%s told to wait, but isn't following", name.c_str());
   return;
  }
- if (5 + op_of_u.value + op_of_u.trust + personality.bravery * 2 >
-     danger_assessment(g)) {
+ if (5 + op_of_u.value + op_of_u.trust + personality.bravery * 2 > danger_assessment()) {
   say(g, "Alright, I'll wait here.");
   if (one_in(3))
    op_of_u.trust--;
@@ -1710,7 +1708,7 @@ void npc::told_to_leave(game *g)
   debugmsg("%s told to leave, but isn't following", name.c_str());
   return;
  }
- if (danger_assessment(g) - personality.bravery > op_of_u.value) {
+ if (danger_assessment() - personality.bravery > op_of_u.value) {
   say(g, "No way, I need you!");
   op_of_u.trust -= 2;
  } else {

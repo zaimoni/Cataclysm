@@ -3147,7 +3147,13 @@ std::optional<std::vector<std::pair<std::variant<monster*, npc*, pc*>, int> > > 
     return std::nullopt;
 }
 
+void game::forall_do(std::function<void(monster&)> op) { for (decltype(auto) _mon : z) op(_mon); }
 void game::forall_do(std::function<void(const monster&)> op) const { for (decltype(auto) _mon : z) op(_mon); }
+
+void game::forall_do(std::function<void(player&)> op) {
+    op(u);
+    for (decltype(auto) _npc : active_npc) op(*_npc);
+}
 
 void game::forall_do(std::function<void(const player&)> op) const {
     op(u);

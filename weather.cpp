@@ -185,30 +185,36 @@ void weather_effect::acid(game *g)
 			dest.add(field(fd_acid, 1));
 	};
 
- if (g->u.GPSpos.is_outside()) {
-  messages.add("The acid rain burns!");
-  if (one_in(6))
-   g->u.hit(g, bp_head, 0, 0, 1);
-  if (one_in(10)) {
-   g->u.hit(g, bp_legs, 0, 0, 1);
-   g->u.hit(g, bp_legs, 1, 0, 1);
-  }
-  if (one_in(8)) {
-   g->u.hit(g, bp_feet, 0, 0, 1);
-   g->u.hit(g, bp_feet, 1, 0, 1);
-  }
-  if (one_in(6))
-   g->u.hit(g, bp_torso, 0, 0, 1);
-  if (one_in(8)) {
-   g->u.hit(g, bp_arms, 0, 0, 1);
-   g->u.hit(g, bp_arms, 1, 0, 1);
-  }
- }
+	static auto corrode_player = [](player& u) {
+		const auto g = game::active();
+		u.subjective_message("The acid rain burns!");
+		if (one_in(6))
+			u.hit(g, bp_head, 0, 0, 1);
+		if (one_in(10)) {
+			u.hit(g, bp_legs, 0, 0, 1);
+			u.hit(g, bp_legs, 1, 0, 1);
+		}
+		if (one_in(8)) {
+			u.hit(g, bp_feet, 0, 0, 1);
+			u.hit(g, bp_feet, 1, 0, 1);
+		}
+		if (one_in(6))
+			u.hit(g, bp_torso, 0, 0, 1);
+		if (one_in(8)) {
+			u.hit(g, bp_arms, 0, 0, 1);
+			u.hit(g, bp_arms, 1, 0, 1);
+		}
+	};
+
+ g->forall_do(corrode_player);
+
  // reality-simulator wants damage to trees, if not non-living map objects, here
  if (g->lev.z >= 0) forall_do_inclusive(within_rldist<2*SEE>, make_puddle);
 
- for (decltype(auto) z : g->z) {
+ static auto corrode_monster = [](monster& z) {
 	 if (z.GPSpos.is_outside() && !z.has_flag(MF_ACIDPROOF)) z.hurt(1);
- }
+ };
+
+ g->forall_do(corrode_monster);
  very_wet(g);
 }

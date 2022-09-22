@@ -385,7 +385,7 @@ public:
  void activate_item(item& it);
 
 // Interaction and assessment of the world around us
- int  danger_assessment(game *g) const;
+ int  danger_assessment() const;
  int  average_damage_dealt() const; // Our guess at how much damage we can deal
  bool bravery_check(int diff) const;
  bool emergency(int danger) const;
