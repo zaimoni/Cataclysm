@@ -2012,22 +2012,29 @@ void game::draw_ter(const point& pos)
  m.draw(this, w_terrain, pos);
 
  // Draw monsters
- for(const auto& mon : z) {
-  point delta(mon.pos - pos);
-  if (VIEW_CENTER < Linf_dist(delta)) continue;
-  if (u.see(mon))
-   mon.draw(w_terrain, pos, false);
-  else if (mon.has_flag(MF_WARM) && (u.has_active_bionic(bio_infrared) || u.has_trait(PF_INFRARED))) {
-      const point draw_at(point(VIEW_CENTER) + delta);
-      mvwputch(w_terrain, draw_at.y, draw_at.x, c_red, '?');
-  }
- }
+ auto draw_mon = [=](const monster& mon) {
+     point delta(mon.pos - pos);
+     if (VIEW_CENTER < Linf_dist(delta)) return;
+     if (u.see(mon))
+         mon.draw(w_terrain, pos, false);
+     // XXX heat vision ignores walls?
+     else if (mon.has_flag(MF_WARM) && (u.has_active_bionic(bio_infrared) || u.has_trait(PF_INFRARED))) {
+         const point draw_at(point(VIEW_CENTER) + delta);
+         mvwputch(w_terrain, draw_at.y, draw_at.x, c_red, '?');
+     }
+ };
+
+ forall_do(draw_mon);
+
  // Draw NPCs
- for (const auto& _npc : active_npc) {
-   const point delta(_npc->pos - pos);
-   if (VIEW_CENTER < Linf_dist(delta)) continue;
-   if (u.see(*_npc)) _npc->draw(w_terrain, pos, false);
- }
+ auto draw_npc = [=](const npc& _npc) {
+     const point delta(_npc.pos - pos);
+     if (VIEW_CENTER < Linf_dist(delta)) return;
+     if (u.see(_npc)) _npc.draw(w_terrain, pos, false);
+ };
+
+ forall_do(draw_npc);
+
  if (u.has_active_bionic(bio_scent_vision)) {	// overwriting normal vision isn't that useful
   forall_do_inclusive(map::view_center_extent(), [&](point offset){
           if (2 <= Linf_dist(offset)) {
