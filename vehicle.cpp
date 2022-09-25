@@ -1652,24 +1652,19 @@ bool vehicle::fire_turret_internal(const vehicle_part& p, it_gun &gun, const it_
 	auto g = game::active();
     const point origin(screenPos() + p.precalc_d[0]);
     // use driver (eventually, ai who usually is friendly to driver) as definer of is_enemy status
-	for(auto& _mon : g->z) {
-        if (!_mon.is_enemy(driving)) continue;
+    g->forall_do([&](monster& _mon) mutable {
+        if (!_mon.is_enemy(driving)) return;
         if (const int dist = rl_dist(origin_GPS, _mon.GPSpos); dist < closest) {
             if (const auto path = origin_GPS.sees(_mon.GPSpos, range)) {
                 // XXX \todo should be "do not fire at friend of driver"
-                bool do_not_fire_at_player = false;
                 for (decltype(auto) loc : *path) {
-                    if (loc == g->u.GPSpos) {
-                        do_not_fire_at_player = true;
-                        break;
-                    }
+                    if (loc == g->u.GPSpos) return;
                 }
-                if (do_not_fire_at_player) continue;
                 LoF = std::move(*path);
                 target = &_mon;
             }
         }
-    }
+    });
     // \todo allow targeting hostile NPCs https://github.com/zaimoni/Cataclysm/issues/108
     if (!target) return false;
 
