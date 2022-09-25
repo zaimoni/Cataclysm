@@ -142,6 +142,7 @@ class game : public reality_bubble
   void spawn(npc&& whom);
   void spawn(const monster& whom);
   void spawn(monster&& whom);
+  size_t mon_count() const { return z.size(); }
 
   bool is_empty(const point& pt) const;
   static bool isEmpty(const point& pt) { return game::active()->is_empty(pt); }

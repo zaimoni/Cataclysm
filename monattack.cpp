@@ -559,7 +559,7 @@ void mattack::triffid_heartbeat(game *g, monster *z)
    const point pt = rng(span);
    tries++;
    g->m.ter(pt) = t_dirt;
-   if (rl_dist(pt, g->u.pos) > 3 && g->z.size() < 30 &&
+   if (rl_dist(pt, g->u.pos) > 3 && 30 > g->mon_count() &&
        !g->mon(pt) && one_in(20)) { // Spawn an extra monster
     mon_id montype = mon_triffid;
     if (one_in(4)) montype = mon_creeper_hub;
@@ -580,7 +580,7 @@ void mattack::triffid_heartbeat(game *g, monster *z)
 
 void mattack::fungus(game *g, monster *z)
 {
- if (g->z.size() > 100) return; // Prevent crowding the monster list.
+ if (100 < g->mon_count()) return; // Prevent crowding the monster list.
  z->moves -= 2 * mobile::mp_turn; // It takes a while
  z->sp_timeout = z->type->sp_freq; // Reset timer
 
