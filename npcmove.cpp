@@ -293,7 +293,7 @@ void npc::move(game *g)
 
  ai_action action(npc_undecided,std::unique_ptr<cataclysm::action>());
 
- auto [target, danger, total_danger] = choose_monster_target(g);
+ auto [target, danger, total_danger] = choose_monster_target();
 #if REPAIR
  if (game::debugmon)
   debugmsg("NPC %s: target = %d, danger = %d, range = %d",
@@ -447,15 +447,18 @@ void npc::execute_action(game *g, const ai_action& action, std::optional<std::va
  }
 }
 
-std::tuple<std::optional<std::variant<monster*, npc*, pc*> >, int, int> npc::choose_monster_target(game *g)
+std::tuple<std::optional<std::variant<monster*, npc*, pc*> >, int, int> npc::choose_monster_target()
 {
 	std::optional<std::variant<monster*, npc*, pc*> > enemy;
 	int danger = 0;
 	int total_danger = 0;
-	const bool defend_u = see(g->u) && is_defending();
+	auto defend_u = is_defending();
+	if (defend_u) {
+		if (!std::visit(player::can_see(*this), *defend_u)) defend_u = std::nullopt;
+	}
 	int highest_priority = 0;
 
-	g->forall_do([&](monster& mon) mutable {
+	game::active()->forall_do([&](monster& mon) mutable {
 		if (!see(mon)) return;
 
 		int distance = (mobile::mp_turn * rl_dist(GPSpos, mon.GPSpos)) / mon.speed;
@@ -507,7 +510,7 @@ std::tuple<std::optional<std::variant<monster*, npc*, pc*> >, int, int> npc::cho
 			enemy = &mon;
 		} else if (defend_u) {
 			priority = mon.type->difficulty * (1 + hp_percent);
-			distance = (mobile::mp_turn * rl_dist(g->u.GPSpos, mon.GPSpos)) / mon.speed;
+			distance = (mobile::mp_turn * rl_dist(std::visit(mobile::cast(), *defend_u)->GPSpos, mon.GPSpos)) / mon.speed;
 			priority -= distance;
 			if (mon.speed < current_speed()) priority -= 10;
 			priority *= (personality.bravery + personality.altruism + op_of_u.value) / 15;

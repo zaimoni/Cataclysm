@@ -21,6 +21,7 @@ namespace cataclysm {
  */
 
 // Attitude is how we feel about the player, what we do around them
+// \todo most of these are re-targetable to at least arbitrary PCs/NPCs
 enum npc_attitude {
  NPCATT_NULL = 0,	// Don't care/ignoring player
  NPCATT_TALK,		// Move to and talk to player
@@ -347,7 +348,7 @@ public:
  bool is_following() const; // Traveling w/ player (whether as a friend or a slave)
  bool is_friend(const player* survivor = nullptr) const; // Allies with the player
  bool is_leader() const; // Leading the player
- bool is_defending() const; // Putting the player's safety ahead of ours
+ std::optional<std::variant<monster*, npc*, pc*> > is_defending() const; // Putting the player's safety ahead of ours
 // What happens when the player makes a request
  void told_to_help(game *g);
  void told_to_wait(game *g);
@@ -410,7 +411,7 @@ private:
 
 public:
 // Functions which choose an action for a particular goal
- std::tuple<std::optional<std::variant<monster*, npc*, pc*> >, int, int> choose_monster_target(game *g);
+ std::tuple<std::optional<std::variant<monster*, npc*, pc*> >, int, int> choose_monster_target();
  ai_action method_of_fleeing(game *g, const std::variant<monster*, npc*, pc*>& enemy) const;
  ai_action method_of_attack	(game *g, const std::variant<monster*, npc*, pc*>& enemy, int danger) const;
  ai_action address_needs	(game *g, int danger) const;

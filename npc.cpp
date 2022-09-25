@@ -1573,9 +1573,10 @@ bool npc::is_enemy(const player* survivor) const
  return pc_hostile;
 }
 
-bool npc::is_defending() const
+std::optional<std::variant<monster*, npc*, pc*> > npc::is_defending() const
 {
- return (attitude == NPCATT_DEFEND);
+	if (NPCATT_DEFEND == attitude) return &game::active()->u;
+	return std::nullopt;
 }
 
 int npc::danger_assessment() const

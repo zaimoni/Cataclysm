@@ -340,6 +340,20 @@ public:
  void screenpos_add(point delta);
 
  // adapter for std::visit
+ struct can_see {
+     const player& p;
+
+     can_see(const player& p) noexcept : p(p) {}
+     can_see(const can_see& src) = delete;
+     can_see(can_see&& src) = delete;
+     can_see& operator=(const can_see& src) = delete;
+     can_see& operator=(can_see&& src) = delete;
+     ~can_see() = default;
+
+     bool operator()(const monster* target) const { return p.see(*target); }
+     bool operator()(const player* target) const { return p.see(*target) ? true : false; }
+ };
+
  struct is_enemy_of {
      const player& p;
 
