@@ -38,14 +38,14 @@
  *
  * \param B C string containing fatal error message
  */
-MS_NO_RETURN EXTERN_C void _fatal(const char* const B) NO_RETURN;
+EXTERN_C MS_NO_RETURN void _fatal(const char* const B) NO_RETURN;
 
 /*!
  * reports error, then calls exit(exit_code).
  *
  * \param B C string containing fatal error message
  */
-MS_NO_RETURN EXTERN_C void _fatal_code(const char* const B,int exit_code) NO_RETURN;
+EXTERN_C MS_NO_RETURN void _fatal_code(const char* const B,int exit_code) NO_RETURN;
 
 EXTERN_C void _inform(const char* const B, size_t len);		/* Windows GUI crippled (assumes len := strlen() */
 EXTERN_C void _inc_inform(const char* const B, size_t len);	/* only C stdio */
