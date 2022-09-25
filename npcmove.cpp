@@ -452,75 +452,73 @@ std::tuple<std::optional<std::variant<monster*, npc*, pc*> >, int, int> npc::cho
 	std::optional<std::variant<monster*, npc*, pc*> > enemy;
 	int danger = 0;
 	int total_danger = 0;
- const bool defend_u = see(g->u) && is_defending();
- int highest_priority = 0;
- total_danger = 0;
+	const bool defend_u = see(g->u) && is_defending();
+	int highest_priority = 0;
 
- for (int i = 0; i < g->z.size(); i++) {
-  monster *mon = &(g->z[i]);
-  if (see(*mon)) {
-   int distance = (mobile::mp_turn * rl_dist(GPSpos, mon->GPSpos)) / mon->speed;
-   double hp_percent = double(mon->type->hp - mon->hp) / mon->type->hp;
-   int priority = mon->type->difficulty * (1 + hp_percent) - distance;
-   int monster_danger = (mon->type->difficulty * mon->hp) / mon->type->hp;
-   if (!mon->is_fleeing(*this)) monster_danger++;
+	g->forall_do([&](monster& mon) mutable {
+		if (!see(mon)) return;
 
-   if (mon->is_friend(this)) {
-    priority = -999;
-    monster_danger *= -1;
-   }/* else if (mon->speed < current_speed(g)) {
-    priority -= 10;
-    monster_danger -= 10;
-   } else
-    priority *= 1 + (.1 * distance);
-*/
-   total_danger += monster_danger / (distance == 0 ? 1 : distance);
+		int distance = (mobile::mp_turn * rl_dist(GPSpos, mon.GPSpos)) / mon.speed;
+		double hp_percent = double(mon.type->hp - mon.hp) / mon.type->hp;
+		int priority = mon.type->difficulty * (1 + hp_percent) - distance;
+		int monster_danger = (mon.type->difficulty * mon.hp) / mon.type->hp;
+		if (!mon.is_fleeing(*this)) monster_danger++;
 
-   bool okay_by_rules = true;
-   if (is_following()) {
-    switch (combat_rules.engagement) {
-     case ENGAGE_NONE:
-      okay_by_rules = false;
-      break;
-     case ENGAGE_CLOSE:
-      okay_by_rules = (distance <= 6);
-      break;
-     case ENGAGE_WEAK:
-      okay_by_rules = (mon->hp <= average_damage_dealt());
-      break;
-     case ENGAGE_HIT:
-      okay_by_rules = (mon->has_effect(ME_HIT_BY_PLAYER));
-      break;
-    }
-   }
-   if (!okay_by_rules) continue;
+		if (mon.is_friend(this)) {
+			priority = -999;
+			monster_danger *= -1;
+		}/* else if (mon->speed < current_speed(g)) {
+			 priority -= 10;
+			 monster_danger -= 10;
+			} else
+			 priority *= 1 + (.1 * distance);
+		 */
+		total_danger += monster_danger / (distance == 0 ? 1 : distance);
 
-   if (monster_danger > danger) {
-    danger = monster_danger;
-    if (!enemy) {
-     highest_priority = priority;
-     enemy = mon;
-    }
-   }
+		bool okay_by_rules = true;
+		if (is_following()) {
+			switch (combat_rules.engagement) {
+			case ENGAGE_NONE:
+				okay_by_rules = false;
+				break;
+			case ENGAGE_CLOSE:
+				okay_by_rules = (distance <= 6);
+				break;
+			case ENGAGE_WEAK:
+				okay_by_rules = (mon.hp <= average_damage_dealt());
+				break;
+			case ENGAGE_HIT:
+				okay_by_rules = (mon.has_effect(ME_HIT_BY_PLAYER));
+				break;
+			}
+		}
+		if (!okay_by_rules) return;
 
-   if (priority > highest_priority) {
-    highest_priority = priority;
-    enemy = mon;
-   } else if (defend_u) {
-    priority = mon->type->difficulty * (1 + hp_percent);
-    distance = (mobile::mp_turn * rl_dist(g->u.GPSpos, mon->GPSpos)) / mon->speed;
-    priority -= distance;
-    if (mon->speed < current_speed()) priority -= 10;
-    priority *= (personality.bravery + personality.altruism + op_of_u.value) / 15;
-    if (priority > highest_priority) {
-     highest_priority = priority;
-     enemy = mon;
-    }
-   }
-  }
- }
+		if (monster_danger > danger) {
+			danger = monster_danger;
+			if (!enemy) {
+				highest_priority = priority;
+				enemy = &mon;
+			}
+		}
 
- return std::tuple(enemy, danger, total_danger);
+		if (priority > highest_priority) {
+			highest_priority = priority;
+			enemy = &mon;
+		} else if (defend_u) {
+			priority = mon.type->difficulty * (1 + hp_percent);
+			distance = (mobile::mp_turn * rl_dist(g->u.GPSpos, mon.GPSpos)) / mon.speed;
+			priority -= distance;
+			if (mon.speed < current_speed()) priority -= 10;
+			priority *= (personality.bravery + personality.altruism + op_of_u.value) / 15;
+			if (priority > highest_priority) {
+				highest_priority = priority;
+				enemy = &mon;
+			}
+		}
+	});
+
+	return std::tuple(enemy, danger, total_danger);
 }
 
 static npc::ai_action _flee(const npc& actor, const GPS_loc& fear)
