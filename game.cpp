@@ -2613,18 +2613,18 @@ void game::sound(const point& pt, int vol, std::string description)
 {
  rational_scale<3,2>(vol); // Scale it a little
 // First, alert all monsters (that can hear) to the sound
- for (auto& _mon : z) {
-  if (_mon.can_hear()) {
-   int dist = rl_dist(pt, _mon.pos);
-   int volume = vol - (_mon.has_flag(MF_GOODHEARING) ? int(dist / 2) : dist);
-   if (0 < volume) {
-       _mon.wander_to(pt, volume);
-       _mon.process_trigger(MTRIG_SOUND, volume);
-       // historically if the volume was excessive we still had other monster sound processing effects
-       if (volume >= 150) _mon.add_effect(ME_DEAF, volume - 140);
-   }
-  }
- }
+ forall_do([=](monster& _mon) {
+     if (!_mon.can_hear()) return;
+     int dist = rl_dist(pt, _mon.pos);
+     int volume = vol - (_mon.has_flag(MF_GOODHEARING) ? int(dist / 2) : dist);
+     if (0 < volume) {
+        _mon.wander_to(pt, volume);
+        _mon.process_trigger(MTRIG_SOUND, volume);
+        // historically if the volume was excessive we still had other monster sound processing effects
+        if (volume >= 150) _mon.add_effect(ME_DEAF, volume - 140);
+     }
+ });
+
 // Loud sounds make the next spawn sooner!
  if (int spawn_range = int(MAPSIZE / 2) * SEEX; vol >= spawn_range) {
   int max = (vol - spawn_range);
