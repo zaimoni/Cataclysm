@@ -132,6 +132,7 @@ class game : public reality_bubble
   void forall_do(std::function<void(const monster&)> op) const;
   void forall_do(std::function<void(player&)> op);
   void forall_do(std::function<void(const player&)> op) const;
+  void forall_do(std::function<void(npc&)> op);
   void forall_do(std::function<void(const npc&)> op) const;
   size_t count(std::function<bool(const monster&)> ok) const;
   const monster* find_first(std::function<bool(const monster&)> ok) const;

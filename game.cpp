@@ -2529,73 +2529,76 @@ void game::monmove()
 {
  cleanup_dead();
  static constexpr const zaimoni::gdi::box<point> extended_reality_bubble(point(-(SEE * MAPSIZE) / 6),point((SEE * MAPSIZE * 7) / 6));
- for (int i = 0; i < z.size(); i++) {
-  while (!z[i].dead && !z[i].can_move_to(m, z[i].pos)) {
-// If we can't move to our current position, assign us to a new one (terrain change after map generation?)
-   if (debugmon)
-    debugmsg("%s can't move to its location! (%d:%d), %s", z[i].name().c_str(),
-             z[i].pos.x, z[i].pos.y, name_of(m.ter(z[i].pos)).c_str());
-   decorrupt_monster_pos(z[i], m);
-  }
+ forall_do([this](monster& _mon) {
+     while (!_mon.dead && !_mon.can_move_to(m, _mon.pos)) {
+         // If we can't move to our current position, assign us to a new one (terrain change after map generation?)
+         if (debugmon)
+             debugmsg("%s can't move to its location! (%d:%d), %s", _mon.name().c_str(),
+                 _mon.pos.x, _mon.pos.y, name_of(m.ter(_mon.pos)).c_str());
+         decorrupt_monster_pos(_mon, m);
+     }
 
-  if (!z[i].dead) {
-   z[i].process_effects();
-   if (z[i].hurt(0)) kill_mon(z[i]);
-  }
+     if (!_mon.dead) {
+         _mon.process_effects();
+         if (_mon.hurt(0)) kill_mon(_mon);
+     }
 
-  m.mon_in_field(this, z[i]);
+     m.mon_in_field(this, _mon);
 
-  while (z[i].moves > 0 && !z[i].dead) {
-   z[i].made_footstep = false;
-   z[i].plan(this);	// Formulate a path to follow
-   z[i].move(this);	// Move one square, possibly hit u
-   z[i].process_triggers(this);
-   m.mon_in_field(this, z[i]);
-  }
-  if (z[i].dead) continue;
+     while (_mon.moves > 0 && !_mon.dead) {
+         _mon.made_footstep = false;
+         _mon.plan(this);	// Formulate a path to follow
+         _mon.move(this);	// Move one square, possibly hit u
+         _mon.process_triggers(this);
+         m.mon_in_field(this, _mon);
+     }
+     if (_mon.dead) return;
 
-  // \todo make this work for NPCs
-  if (u.has_active_bionic(bio_alarm) && u.power_level >= 1 && rl_dist(u.GPSpos, z[i].GPSpos) <= 5) {
-    u.power_level--;
-	messages.add("Your motion alarm goes off!");
-    u.cancel_activity_query("Your motion alarm goes off!");
+     // \todo make this work for NPCs
+     if (u.has_active_bionic(bio_alarm) && u.power_level >= 1 && rl_dist(u.GPSpos, _mon.GPSpos) <= 5) {
+         u.power_level--;
+         messages.add("Your motion alarm goes off!");
+         u.cancel_activity_query("Your motion alarm goes off!");
 
-    static const decltype(DI_SLEEP) drowse[] = {
-        DI_SLEEP,
-        DI_LYING_DOWN
-    };
+         static const decltype(DI_SLEEP) drowse[] = {
+             DI_SLEEP,
+             DI_LYING_DOWN
+         };
 
-    static auto decline = [&](disease& ill) { return any(drowse, ill.type); };
-    u.rem_disease(decline);
-  }
-// We might have stumbled out of range of the player; if so, kill us
-  if (!extended_reality_bubble.contains(z[i].pos)) {
-    despawn(z[i]); // Re-absorb into local group, if applicable
-    z[i].dead = true;
-  } else z[i].receive_moves();
- }
+         static auto decline = [&](disease& ill) { return any(drowse, ill.type); };
+         u.rem_disease(decline);
+     }
+     // We might have stumbled out of range of the player; if so, kill us
+     if (!extended_reality_bubble.contains(_mon.pos)) {
+         despawn(_mon); // Re-absorb into local group, if applicable
+         _mon.dead = true;
+     }
+     else _mon.receive_moves();
+ });
 
  cleanup_dead();
 
 // Now, do active NPCs.
- for (auto& _npc : active_npc) {
-  if(_npc->hp_cur[hp_head] <= 0 || _npc->hp_cur[hp_torso] <= 0) _npc->die();
-  else {
-   int turns = 0;
-   _npc->reset(Badge<game>());
-   _npc->suffer(this);
-   // \todo _npc.check_warmth call
-   // \todo _npc.update_skills call
-   while (!_npc->dead && _npc->moves > 0 && turns < 10) {	// 10 moves in one turn is lethal; assuming this is a bug intercept
-    turns++;
-	_npc->move(this);
-   }
-   if (turns == 10) {
-    messages.add("%s's brain explodes!", _npc->name.c_str());
-	_npc->die();
-   }
-  }
- }
+ forall_do([this](npc& _npc) {
+     if (_npc.hp_cur[hp_head] <= 0 || _npc.hp_cur[hp_torso] <= 0) _npc.die();
+     else {
+         int turns = 0;
+         _npc.reset(Badge<game>());
+         _npc.suffer(this);
+         // \todo _npc.check_warmth call
+         // \todo _npc.update_skills call
+         // 10 moves in one turn is lethal; assuming this is a bug intercept for diagnosing fall-through
+         while (!_npc.dead && _npc.moves > 0 && turns < 10) {
+             turns++;
+             _npc.move(this);
+         }
+         if (turns == 10) {
+             messages.add("%s's brain explodes!", _npc.name.c_str());
+             _npc.die();
+         }
+     }
+ });
+
  cleanup_dead();
 }
 
@@ -3164,6 +3167,10 @@ void game::forall_do(std::function<void(player&)> op) {
 
 void game::forall_do(std::function<void(const player&)> op) const {
     op(u);
+    for (decltype(auto) _npc : active_npc) op(*_npc);
+}
+
+void game::forall_do(std::function<void(npc&)> op) {
     for (decltype(auto) _npc : active_npc) op(*_npc);
 }
 

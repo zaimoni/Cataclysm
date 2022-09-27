@@ -185,7 +185,7 @@ void weather_effect::acid(game *g)
 			dest.add(field(fd_acid, 1));
 	};
 
-	static auto corrode_player = [](player& u) {
+	static std::function<void(player&)> corrode_player = [](player& u) {
 		const auto g = game::active();
 		u.subjective_message("The acid rain burns!");
 		if (one_in(6))
