@@ -90,7 +90,7 @@ class monster : public mobile {
  std::optional<int> see(const player& u) const;
  std::optional<std::vector<GPS_loc> > see(const std::variant<monster*, npc*, pc*>& whom) const;
 
- void debug(player &u); 	// Gives debug info
+ void debug(const player &u) const; 	// Gives debug info
 
 // Movement
  void receive_moves() { moves += speed; }		// Gives us movement points

@@ -252,14 +252,14 @@ std::optional<std::vector<GPS_loc> > monster::see(const std::variant<monster*, n
     return GPSpos.sees(std::visit(mobile::cast(), whom)->GPSpos, g->light_level());
 }
 
-void monster::debug(player &u)
+void monster::debug(const player &u) const
 {
  char buff[16];
  debugmsg("%s has %d steps planned.", name().c_str(), plans.size());
  debugmsg("%s Moves %d Speed %d HP %d",name().c_str(), moves, speed, hp);
  for (int i = 0; i < plans.size(); i++) {
   sprintf(buff, "%d", i);
-  const point pt(plans[i] - point(VIEW_CENTER) + u.pos);
+  const point pt((plans[i] - u.pos) + point(VIEW_CENTER));
   mvaddch(pt.y, pt.x, buff[(10 > i) ? 0 : 1]);
  }
  getch();

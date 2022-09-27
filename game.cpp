@@ -1708,15 +1708,15 @@ z.size(), event::are_queued());
  refresh_all();
 }
 
-void game::mondebug()
+void game::mondebug() const
 {
- for (int i = 0; i < z.size(); i++) {
-  z[i].debug(u);
-  if (z[i].has_flag(MF_SEES) && m.sees(z[i].pos, u.pos, -1))
-   debugmsg("The %s can see you.", z[i].name().c_str());
-  else
-   debugmsg("The %s can't see you...", z[i].name().c_str());
- }
+    forall_do(std::function<void(const monster&)>([this](const monster& _mon) {
+        _mon.debug(u);
+        if (_mon.has_flag(MF_SEES) && _mon.GPSpos.can_see(u.GPSpos, -1))
+            debugmsg("The %s can see you.", _mon.name().c_str());
+        else
+            debugmsg("The %s can't see you...", _mon.name().c_str());
+    }));
 }
 
 void game::groupdebug()
