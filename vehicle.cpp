@@ -1240,12 +1240,15 @@ void vehicle::handle_trap(GPS_loc pt, int part)
     case tr_temple_toggle:
         msg = nullptr;
     }
-    if (msg && g->u.see(pt))
-        messages.add(msg, name.c_str(), part_info(part).name, tr_name.c_str());
+    if (msg) {
+        // should look like C:Whales msg which is our signal
+        const auto text = grammar::capitalize(desc(grammar::noun::role::possessive, grammar::article::definite)) + " " + part_info(part).name + " " + VO_phrase("run", std::string(" over ") + tr_name + ".");
+        if (!g->if_visible_message(text, pt)) msg = nullptr;
+    }
     if (noise > 0) pt.sound(noise, snd);
     if (wreckit && chance >= rng(1, 100)) damage(part, 500);
     if (triggered) {
-        if (g->u.see(pt)) messages.add("The spears break!"); // hard-code the spiked pit trap, for now
+        if (msg) messages.add("The spears break!"); // hard-code the spiked pit trap, for now
         trap_fully_triggered(pt, trap::traps[triggered]->trigger_components);
         // hard-code overriding trap_at effects, above
         pt.ter() = t_pit;
