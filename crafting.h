@@ -52,6 +52,6 @@ class map;
 class player;
 
 void consume_items(player& u, const std::vector<component>& components);	// \todo enable NPC construction
-void consume_tools(map& m, player& u, const std::vector<component>& tools);
+void consume_tools(player& u, const std::vector<component>& tools);
 
 #endif

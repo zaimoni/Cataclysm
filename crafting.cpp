@@ -306,7 +306,7 @@ void game::complete_craft()
 	for (auto& comp : wasted) comp.count = rng(0, comp.count);
     consume_items(u, wasted);
   }
-  for(const auto& tools : making->tools) if (!tools.empty()) consume_tools(m, u, tools);
+  for(const auto& tools : making->tools) if (!tools.empty()) consume_tools(u, tools);
   u.activity.type = ACT_NULL;
   return;
   // Messed up slightly; no components wasted.
@@ -318,7 +318,7 @@ void game::complete_craft()
 // If we're here, the craft was a success!
 // Use up the components and tools
  for (const auto& comp : making->components) if (!comp.empty()) consume_items(u, comp);
- for (const auto& tools : making->tools) if (!tools.empty()) consume_tools(m, u, tools);
+ for (const auto& tools : making->tools) if (!tools.empty()) consume_tools(u, tools);
 
   // Set up the new item, and pick an inventory letter
  item newit(item::types[making->result], messages.turn);
@@ -444,7 +444,7 @@ void consume_items(player& u, const std::vector<component>& components)
  }
 }
 
-void consume_tools(map& m, player& u, const std::vector<component>& tools)
+void consume_tools(player& u, const std::vector<component>& tools)
 {
  bool found_nocharge = false;
  inventory map_inv(u.GPSpos, PICKUP_RANGE);
@@ -469,7 +469,7 @@ void consume_tools(map& m, player& u, const std::vector<component>& tools)
   u.use_charges(use.type, use.count);
  } else if (map_has.size() == 1 && player_has.size() == 0) {
   const component& use = map_has[0];
-  m.use_charges(u.pos, PICKUP_RANGE, use.type, use.count);
+  u.GPSpos.use_charges(PICKUP_RANGE, use.type, use.count);
  } else { // Variety of options, list them and pick one
 // Populate the list
   std::vector<std::string> options;
@@ -486,7 +486,7 @@ void consume_tools(map& m, player& u, const std::vector<component>& tools)
   int selection = menu_vec("Use which tool?", options) - 1;
   if (selection < map_has.size()) {
    const component& use = map_has[selection];
-   m.use_charges(u.pos, PICKUP_RANGE, use.type, use.count);
+   u.GPSpos.use_charges(PICKUP_RANGE, use.type, use.count);
   } else {
    const component& use = player_has[selection - map_has.size()];
    u.use_charges(use.type, use.count);
