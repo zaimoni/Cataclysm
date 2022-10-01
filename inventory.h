@@ -79,7 +79,7 @@ class inventory
   int  charges_of(itype_id it) const;
 
   void use_amount (itype_id it, int quantity, bool use_container = false);
-  void use_charges(itype_id it, int quantity);
+  unsigned int use_charges(itype_id it, int quantity);
 
   bool has_amount(itype_id it, int quantity) const { return amount_of(it) >= quantity; }
   bool has_charges(itype_id it, int quantity) const { return charges_of(it) >= quantity; }

@@ -13,6 +13,7 @@ struct field;
 class item;
 class player;
 class vehicle;
+enum itype_id : int;
 enum ter_id : int;
 enum trap_id : int;
 enum vhtype_id : int;
@@ -70,6 +71,9 @@ struct GPS_loc : public std::pair<tripoint, point>
 	void shoot(int& dam, bool hit_items, unsigned flags);
 	bool hard_landing(item&& thrown, player* p = nullptr); // for thrown objects
 	bool displace_water();
+
+	unsigned int use_amount(int range, itype_id type, int quantity, bool use_container = false);
+	unsigned int use_charges(int range, itype_id type, int quantity);
 };
 
 // \todo evaluate whether these should be out-of-line defined (likely a matter of binary size, compile+link time)

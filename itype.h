@@ -38,7 +38,7 @@ namespace cataclysm {
 
 }
 
-enum itype_id {
+enum itype_id : int {
 itm_null = 0,
 itm_corpse,
 // Special pseudoitems

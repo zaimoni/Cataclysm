@@ -295,7 +295,7 @@ public:
 // has_amount works ONLY for quantity.
 // has_charges works ONLY for charges.
  void use_amount(itype_id it, int quantity, bool use_container = false);
- void use_charges(itype_id it, int quantity);// Uses up charges
+ unsigned int use_charges(itype_id it, int quantity);// Uses up charges
  bool has_amount(itype_id it, int quantity) const  { return amount_of(it)  >= quantity; }
  bool has_charges(itype_id it, int quantity) const { return charges_of(it) >= quantity; }
  int  amount_of(itype_id it) const;

@@ -263,7 +263,7 @@ void game::complete_construction()
  construction_stage stage = built->stages[u.activity.values[0]];
 
  u.practice(sk_carpentry, 10 * clamped_lb<1>(built->difficulty));
- for(const auto& comp : stage.components) if (!comp.empty()) consume_items(m, u, comp);
+ for(const auto& comp : stage.components) if (!comp.empty()) consume_items(u, comp);
  
 // Make the terrain change
  if (stage.terrain != t_null) m.ter(u.activity.placement) = stage.terrain;

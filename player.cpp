@@ -4644,21 +4644,24 @@ void player::use_amount(itype_id it, int quantity, bool use_container)
  inv.use_amount(it, quantity, use_container);
 }
 
-void player::use_charges(itype_id it, int quantity)
+unsigned int player::use_charges(itype_id it, int quantity)
 {
+ const int start_qty = quantity;
+
  if (it == itm_toolset) {
   power_level -= quantity;
   if (power_level < 0) power_level = 0;
-  return;
+  return start_qty;
  }
 
  // check weapon first
  if (auto code = weapon.use_charges(it, quantity)) {
      if (0 > code) remove_weapon();
-     if (0 < code || 0 >= quantity) return;
+     if (0 < code || 0 >= quantity) return start_qty;
  }
 
- inv.use_charges(it, quantity);
+ unsigned int delta = start_qty - quantity;
+ return delta + inv.use_charges(it, quantity);
 }
 
 int player::butcher_factor() const

@@ -304,7 +304,7 @@ void game::complete_craft()
   for (const auto& comp : making->components) if (!comp.empty()) {
     std::vector<component> wasted(comp);
 	for (auto& comp : wasted) comp.count = rng(0, comp.count);
-    consume_items(m, u, wasted);
+    consume_items(u, wasted);
   }
   for(const auto& tools : making->tools) if (!tools.empty()) consume_tools(m, u, tools);
   u.activity.type = ACT_NULL;
@@ -317,7 +317,7 @@ void game::complete_craft()
  }
 // If we're here, the craft was a success!
 // Use up the components and tools
- for (const auto& comp : making->components) if (!comp.empty()) consume_items(m, u, comp);
+ for (const auto& comp : making->components) if (!comp.empty()) consume_items(u, comp);
  for (const auto& tools : making->tools) if (!tools.empty()) consume_tools(m, u, tools);
 
   // Set up the new item, and pick an inventory letter
@@ -342,7 +342,7 @@ void game::complete_craft()
  }
 }
 
-void consume_items(map& m, player& u, const std::vector<component>& components)
+void consume_items(player& u, const std::vector<component>& components)
 {
 // For each set of components in the recipe, fill you_have with the list of all
 // matching ingredients the player has.
@@ -426,20 +426,20 @@ void consume_items(map& m, player& u, const std::vector<component>& components)
  }
  for(const component& comp : map_use) {
   if (item::types[comp.type]->count_by_charges() && 0 < comp.count)
-   m.use_charges(u.pos, PICKUP_RANGE, comp.type, comp.count);
+   u.GPSpos.use_charges(PICKUP_RANGE, comp.type, comp.count);
   else
-   m.use_amount(u.pos, PICKUP_RANGE, comp.type, abs(comp.count), (comp.count < 0));
+   u.GPSpos.use_amount(PICKUP_RANGE, comp.type, abs(comp.count), (comp.count < 0));
  }
  for(const component& comp : mixed_use) {
   if (item::types[comp.type]->count_by_charges() && 0 < comp.count) {
-   const int from_map = comp.count - u.charges_of(comp.type);
-   u.use_charges(comp.type, u.charges_of(comp.type));
-   m.use_charges(u.pos, PICKUP_RANGE, comp.type, from_map);
+      if (const unsigned int from_map = comp.count - u.use_charges(comp.type, comp.count)) {
+          u.GPSpos.use_charges(PICKUP_RANGE, comp.type, from_map);
+      }
   } else {
    const bool in_container = (comp.count < 0);
    const int from_map = abs(comp.count) - u.amount_of(comp.type);
    u.use_amount(comp.type, u.amount_of(comp.type), in_container);
-   m.use_amount(u.pos, PICKUP_RANGE, comp.type, from_map, in_container);
+   u.GPSpos.use_amount(PICKUP_RANGE, comp.type, from_map, in_container);
   }
  }
 }

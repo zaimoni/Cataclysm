@@ -1574,6 +1574,42 @@ void map::process_active_items()
     for(submap* const gr : grid) gr->process_active_items();
 }
 
+unsigned int GPS_loc::use_amount(int range, const itype_id type, int quantity, bool use_container)
+{
+    const int start_qty = quantity;
+    for (int radius = 0; radius <= range && quantity > 0; radius++) {
+        const int ub = 8 * radius;
+        int i = 0;
+        do {
+            auto delta = zaimoni::gdi::Linf_border_sweep<point>(radius, i, 0, 0);
+            GPS_loc loc = *this + delta;
+            decltype(auto) items = loc.items_at();
+            ptrdiff_t n = items.size();
+            while (0 <= --n) {
+                auto& curit = items[n];
+                bool used_contents = false;
+                if (use_container) {
+                    ptrdiff_t m = curit.contents.size();
+                    while (0 <= --m) {
+                        if (type != curit.contents[m].type->id) continue;
+                        quantity--;
+                        EraseAt(curit.contents, m);
+                        used_contents = curit.contents.empty();
+                    }
+                }
+                if (used_contents) {
+                    EraseAt(items, n);
+                } else if (curit.type->id == type) {
+                    quantity--;
+                    EraseAt(items, n);
+                }
+                if (0 >= quantity) return start_qty;
+            }
+        } while (ub > ++i);
+    }
+    return start_qty - quantity;
+}
+
 void map::use_amount(point origin, int range, const itype_id type, int quantity, bool use_container)
 {
  for (int radius = 0; radius <= range && quantity > 0; radius++) {
@@ -1628,6 +1664,32 @@ void map::use_charges(point origin, int range, const itype_id type, int quantity
    }
   }
  }
+}
+
+unsigned int GPS_loc::use_charges(int range, const itype_id type, int quantity)
+{
+    const int start_qty = quantity;
+    for (int radius = 0; radius <= range && quantity > 0; radius++) {
+        const int ub = 8 * radius;
+        int i = 0;
+        do {
+            auto delta = zaimoni::gdi::Linf_border_sweep<point>(radius, i, 0, 0);
+            GPS_loc loc = *this + delta;
+            decltype(auto) items = loc.items_at();
+            ptrdiff_t n = items.size();
+            while (0 <= --n) {
+                auto& curit = items[n];
+                if (auto code = curit.use_charges(type, quantity)) {
+                    if (0 > code) {
+                        EraseAt(items, n);
+                        if (0 < quantity) continue;
+                    }
+                    return start_qty;
+                }
+            }
+        } while(ub > ++i);
+    }
+    return start_qty - quantity;
 }
 
 trap_id& GPS_loc::trap_at()

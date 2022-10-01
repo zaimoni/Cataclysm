@@ -596,7 +596,7 @@ vehicle& complete_vehicle(game* g)
     case 'i':
         if (veh->install_part(dx, dy, (vpart_id)part) < 0) throw std::string("complete_vehicle install part fails dx=") + std::to_string(dx) + " dy=" + std::to_string(dy) + " id=" + std::to_string(part);
         comps.push_back(component(vpart_info::list[part].item, 1));
-        consume_items(g->m, g->u, comps);
+        consume_items(g->u, comps);
         tools.push_back(component(itm_welder, welder_charges));
         tools.push_back(component(itm_toolset, welder_charges/5));
         consume_tools(g->m, g->u, tools);
@@ -606,7 +606,7 @@ vehicle& complete_vehicle(game* g)
     case 'r':
         if (veh->parts[part].hp <= 0) {
             comps.push_back(component(veh->part_info(part).item, 1));
-            consume_items(g->m, g->u, comps);
+            consume_items(g->u, comps);
             tools.push_back(component(itm_wrench, 1));
             consume_tools(g->m, g->u, tools);
             tools.clear();

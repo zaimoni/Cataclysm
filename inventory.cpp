@@ -332,27 +332,30 @@ void inventory::use_amount(itype_id it, int quantity, bool use_container)
  }
 }
 
-void inventory::use_charges(itype_id it, int quantity)
+unsigned int inventory::use_charges(itype_id it, int quantity)
 {
-    auto i = items.size();
-    while (0 < i) {
-        auto& outside = items[--i];
-        auto j = outside.size();
-        while (0 < j) {
-            auto& obj = outside[--j];
+    const int start_qty = quantity;
+
+    ptrdiff_t i = items.size();
+    while (0 < --i) {
+        auto& outside = items[i];
+        ptrdiff_t j = outside.size();
+        while (0 < --j) {
+            auto& obj = outside[j];
             if (auto code = obj.use_charges(it, quantity)) {
                 if (0 > code) {
                     EraseAt(outside, j);
                     if (outside.empty()) { // should imply j = 0
                         EraseAt(items, i);
-                        if (items.size() <= i) return;
+                        if (items.size() <= i) return start_qty - quantity;
                     }
                     if (0 < quantity) continue;
                 }
-                return;
+                return start_qty;
             }
         }
     }
+    return start_qty - quantity;
 }
  
 bool inventory::has_item(item *it) const
