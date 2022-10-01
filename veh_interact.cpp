@@ -18,7 +18,7 @@ static bool inv_has_welder(const inventory& src)
 // no UI manipulation in the constructor; leave that in ...::exec
 veh_interact::veh_interact (int cx, int cy, game *gm, vehicle *v)
 : c(cx, cy), dd(0, 0), sel_cmd(' '), cpart(-1), veh(v), _g(gm),
-  crafting_inv(crafting_inventory(_g->m, _g->u)),
+  crafting_inv(crafting_inventory(_g->u)),
   has_wrench(crafting_inv.has_amount(itm_wrench, 1) || crafting_inv.has_amount(itm_toolset, 1)),
   has_hacksaw(crafting_inv.has_amount(itm_hacksaw, 1) || crafting_inv.has_amount(itm_toolset, 1)),
   has_welder(inv_has_welder(crafting_inv))

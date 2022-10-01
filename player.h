@@ -461,6 +461,6 @@ private:
  void absorb(body_part bp, int &dam, int &cut);	// \todo V 0.2.1 enable for NPCs?
 };
 
-inventory crafting_inventory(const map& m, const player& u);
+inventory crafting_inventory(const player& u);
 
 #endif

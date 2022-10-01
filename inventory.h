@@ -9,6 +9,7 @@
 class game;
 class map;
 class player;
+struct GPS_loc;
 
 class inventory
 {
@@ -21,6 +22,8 @@ class inventory
   inventory& operator=(const inventory &rhs);
   inventory& operator=(inventory &&rhs) = default;
   friend cataclysm::JSON toJSON(const inventory& src);
+
+  inventory(const GPS_loc& origin, int range); // map inventory
 
   item& operator[] (int i);
   const item& operator[] (int i) const;
@@ -49,12 +52,10 @@ class inventory
   void push_back(item&& newit) { add_item(std::move(newit)); }
 
 /* Check all items for proper stacking, rearranging as needed
- * game pointer is not necessary, but if supplied, will ensure no overlap with
+ * player pointer is not necessary, but if supplied, will ensure no overlap with
  * the player's worn items / weapon
  */
   void restack(player* p = nullptr);
-
-  void form_from_map(const map& m, point origin, int distance);
 
   void destroy_stack(int index);
 #if DEAD_FUNC

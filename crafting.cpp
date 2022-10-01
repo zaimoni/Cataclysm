@@ -9,10 +9,9 @@
 
 static const int CRAFTING_WIN_HEIGHT = VIEW - TABBED_HEADER_HEIGHT;
 
-inventory crafting_inventory(const map& m, const player& u)  // 2020-05-28 NPC-valid
+inventory crafting_inventory(const player& u)  // 2020-05-28 NPC-valid
 {
-    inventory crafting_inv;
-    crafting_inv.form_from_map(m, u.pos, PICKUP_RANGE);
+    inventory crafting_inv(u.GPSpos, PICKUP_RANGE);
     crafting_inv += u.inv;
     crafting_inv += u.weapon;
     if (u.has_bionic(bio_tools)) {
@@ -41,7 +40,7 @@ void game::craft()
  bool done = false;
  int ch;
 
- inventory crafting_inv(crafting_inventory(m, u));
+ inventory crafting_inv(crafting_inventory(u));
 
  do {
   if (redraw) { // When we switch tabs, redraw the header
@@ -215,7 +214,7 @@ void game::craft()
 void game::pick_recipes(std::vector<const recipe*> &current,
                         std::vector<bool> &available, craft_cat tab)
 {
- const inventory crafting_inv(crafting_inventory(m, u));
+ const inventory crafting_inv(crafting_inventory(u));
 
  current.clear();
  available.clear();
@@ -353,8 +352,7 @@ void consume_items(map& m, player& u, const std::vector<component>& components)
  std::vector<component> player_use;
  std::vector<component> map_use;
  std::vector<component> mixed_use;
- inventory map_inv;
- map_inv.form_from_map(m, u.pos, PICKUP_RANGE);
+ inventory map_inv(u.GPSpos, PICKUP_RANGE);
 
  for(const component& comp : components) {
   const itype_id type = comp.type;
@@ -449,8 +447,7 @@ void consume_items(map& m, player& u, const std::vector<component>& components)
 void consume_tools(map& m, player& u, const std::vector<component>& tools)
 {
  bool found_nocharge = false;
- inventory map_inv;
- map_inv.form_from_map(m, u.pos, PICKUP_RANGE);
+ inventory map_inv(u.GPSpos, PICKUP_RANGE);
  std::vector<component> player_has;
  std::vector<component> map_has;
 // Use charges of any tools that require charges used

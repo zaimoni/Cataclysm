@@ -140,21 +140,19 @@ void inventory::restack(player *p)
   items.push_back(tmp.items[i]);
 }
 
-void inventory::form_from_map(const map& m, point origin, int range)
-{
- items.clear();
- for (int x = origin.x - range; x <= origin.x + range; x++) {
-  for (int y = origin.y - range; y <= origin.y + range; y++) {
-   for(auto& obj : m.i_at(x, y))
-    if (!obj.made_of(LIQUID)) add_item(obj);
-// Kludge for now!
-   if (m.field_at(x, y).type == fd_fire) {
-    item fire(item::types[itm_fire], 0);
-    fire.charges = 1;
-    add_item(std::move(fire));
-   }
-  }
- }
+inventory::inventory(const GPS_loc& origin, int range) {
+    for (int x = -range; x <= range; x++) {
+        for (int y = -range; y <= range; y++) {
+            GPS_loc src = origin + point(x, y);
+            for (auto& obj : src.items_at()) if (!obj.made_of(LIQUID)) add_item(obj);
+            // Kludge for now!
+            if (fd_fire == src.field_at().type) {
+                item fire(item::types[itm_fire], 0);
+                fire.charges = 1;
+                add_item(std::move(fire));
+            }
+        }
+    }
 }
 
 void inventory::destroy_stack(int index)
