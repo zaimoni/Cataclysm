@@ -1610,62 +1610,6 @@ unsigned int GPS_loc::use_amount(int range, const itype_id type, int quantity, b
     return start_qty - quantity;
 }
 
-void map::use_amount(point origin, int range, const itype_id type, int quantity, bool use_container)
-{
- for (int radius = 0; radius <= range && quantity > 0; radius++) {
-  for (int x = origin.x - radius; x <= origin.x + radius; x++) {
-   for (int y = origin.y - radius; y <= origin.y + radius; y++) {
-    if (rl_dist(origin, x, y) <= radius) {
-     for (int n = 0; n < i_at(x, y).size() && quantity > 0; n++) {
-      item* curit = &(i_at(x, y)[n]);
-	  bool used_contents = false;
-	  if (use_container) {
-       for (int m = 0; m < curit->contents.size() && quantity > 0; m++) {
-		if (type != curit->contents[m].type->id) continue;
-		quantity--;
-		EraseAt(curit->contents, m);
-        m--;
-		used_contents = curit->contents.empty();
-       }
-	  }
-      if (used_contents) {
-       i_rem(x, y, n);
-       n--;
-      } else if (curit->type->id == type && quantity > 0) {
-       quantity--;
-       i_rem(x, y, n);
-       n--;
-      }
-     }
-    }
-   }
-  }
- }
-}
-
-void map::use_charges(point origin, int range, const itype_id type, int quantity)
-{
- // XXX cubic rather than quartic \todo fix
- for (int radius = 0; radius <= range && quantity > 0; radius++) {
-  for (int x = origin.x - radius; x <= origin.x + radius; x++) {
-   for (int y = origin.y - radius; y <= origin.y + radius; y++) {
-       if (radius < rl_dist(origin, x, y)) continue;   // invariant?  meaningful for trigonmetric distance
-       auto n = i_at(x, y).size();
-       while (0 < n) {
-           auto& curit = i_at(x, y)[--n];
-           if (auto code = curit.use_charges(type, quantity)) {
-               if (0 > code) {
-                   i_rem(x, y, n);
-                   if (0 < quantity) continue;
-               }
-               return;
-           }
-       }
-   }
-  }
- }
-}
-
 unsigned int GPS_loc::use_charges(int range, const itype_id type, int quantity)
 {
     const int start_qty = quantity;

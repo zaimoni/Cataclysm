@@ -246,11 +246,6 @@ class map
  void add_item(const point& pt, item&& new_item) { return add_item(pt.x, pt.y, std::move(new_item)); }
  bool hard_landing(const point& pt, item&& thrown, player* p = nullptr); // for thrown objects
  void process_active_items();
-// void process_vehicles(game *g);	// undefined function
-
- void use_amount(point origin, int range, itype_id type, int quantity,
-                 bool use_container = false);
- void use_charges(point origin, int range, itype_id type, int quantity);
 
 // Traps
  trap_id& tr_at(int x, int y);
