@@ -13,9 +13,11 @@
 #include <functional>
 
 enum art_effect_passive;
+enum craft_cat : int;
 class game;
 struct mission;
 class monster;
+struct recipe;
 struct trap;
 
 struct special_attack
@@ -314,6 +316,11 @@ public:
  std::pair<int, const item*> have_item(char let) const;
  item* decode_item_index(int n);
  const item* decode_item_index(int n) const;
+
+// crafting.cpp
+ void make_craft(const recipe* making);
+ void pick_recipes(std::vector<const recipe*>& current,
+     std::vector<bool>& available, craft_cat tab);
 
 // abstract ui
  bool is_enemy(const monster* z) const;

@@ -48,7 +48,7 @@ void game::craft()
    line = 0;
    draw_tabs(w_head, tab - 1, labels); // \todo C:Whales colors were c_ltgray, h_ltgray rather than c_white, h_white
 // Set current to all recipes in the current tab; available are possible to make
-   pick_recipes(current, available, tab);
+   u.pick_recipes(current, available, tab);
   }
 
 // Clear the screen of recipe data, and draw it anew
@@ -190,7 +190,7 @@ void game::craft()
             !u.has_watertight_container())
     popup("You don't have anything to store that liquid in!");
    else {
-    make_craft(current[line]);
+    u.make_craft(current[line]);
     done = true;
    }
    break;
@@ -211,18 +211,18 @@ void game::craft()
  refresh_all();
 }
 
-void game::pick_recipes(std::vector<const recipe*> &current,
+void player::pick_recipes(std::vector<const recipe*> &current,
                         std::vector<bool> &available, craft_cat tab)
 {
- const inventory crafting_inv(crafting_inventory(u));
+ const inventory crafting_inv(crafting_inventory(*this));
 
  current.clear();
  available.clear();
  for (const recipe* const tmp : recipe::recipes) {
 // Check if the category matches the tab, and we have the requisite skills
   if (    tmp->category == tab
-      && (sk_null == tmp->sk_primary   || u.sklevel[tmp->sk_primary] >= tmp->difficulty)
-      && (sk_null == tmp->sk_secondary || 0 < u.sklevel[tmp->sk_secondary]))
+      && (sk_null == tmp->sk_primary   || sklevel[tmp->sk_primary] >= tmp->difficulty)
+      && (sk_null == tmp->sk_secondary || 0 < sklevel[tmp->sk_secondary]))
   current.push_back(tmp);
   available.push_back(false);
  }
@@ -273,10 +273,10 @@ void game::pick_recipes(std::vector<const recipe*> &current,
  }
 }
 
-void game::make_craft(const recipe* const making)
+void player::make_craft(const recipe* const making)
 {
- u.assign_activity(ACT_CRAFT, making->time, making->id);
- u.moves = 0;
+ assign_activity(ACT_CRAFT, making->time, making->id);
+ moves = 0;
 }
 
 void game::complete_craft()

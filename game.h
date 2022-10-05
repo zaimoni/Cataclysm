@@ -263,10 +263,7 @@ class game : public reality_bubble
   void close();	// Close a door			'c'
   void smash();	// Smash terrain
   void craft();                    // See crafting.cpp
-  void make_craft(const recipe *making); // See crafting.cpp
   void complete_craft();           // See crafting.cpp
-  void pick_recipes(std::vector<const recipe*> &current,
-                    std::vector<bool> &available, craft_cat tab);// crafting.cpp
   void construction_menu();                   // See construction.cpp
   void place_construction(const constructable *con); // See construction.cpp
   void complete_construction();               // See construction.cpp

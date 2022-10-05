@@ -4,7 +4,7 @@
 #include "itype.h"
 #include "skill.h"
 
-enum craft_cat {
+enum craft_cat : int {
 CC_NULL = 0,
 CC_WEAPON,
 CC_FOOD,
