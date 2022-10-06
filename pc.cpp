@@ -606,6 +606,58 @@ void pc::use(char let)
     messages.add("You can't do anything interesting with your %s.", used->tname().c_str());
 }
 
+void pc::complete_butcher()
+{
+    static const int pelts_from_corpse[mtype::MS_MAX] = { 1, 3, 6, 10, 18 };
+    int index = activity.index;
+
+    decltype(auto) items = GPSpos.items_at();
+    item& it = items[index];
+    const mtype* const corpse = it.corpse;
+    int age = it.bday;
+    EraseAt(items, index);  // reference it dies here
+
+    int factor = butcher_factor();
+    int pelts = pelts_from_corpse[corpse->size];
+    double skill_shift = 0.;
+    int pieces = corpse->chunk_count();
+    if (sklevel[sk_survival] < 3)
+        skill_shift -= rng(0, 8 - sklevel[sk_survival]);
+    else
+        skill_shift += rng(0, sklevel[sk_survival]);
+    if (dex_cur < 8)
+        skill_shift -= rng(0, 8 - dex_cur) / 4;
+    else
+        skill_shift += rng(0, dex_cur - 8) / 4;
+    if (str_cur < 4) skill_shift -= rng(0, 5 * (4 - str_cur)) / 4;
+    if (factor > 0) skill_shift -= rng(0, factor / 5);
+
+    practice(sk_survival, clamped_ub<20>(4 + pieces));
+
+    pieces += int(skill_shift);
+    if (skill_shift < 5) pelts += (skill_shift - 5);	// Lose some pelts
+
+    if ((corpse->has_flag(MF_FUR) || corpse->has_flag(MF_LEATHER)) && 0 < pelts) {
+        messages.add("You manage to skin the %s!", corpse->name.c_str());
+        for (int i = 0; i < pelts; i++) {
+            const itype* pelt;
+            if (corpse->has_flag(MF_FUR) && corpse->has_flag(MF_LEATHER)) {
+                pelt = item::types[one_in(2) ? itm_fur : itm_leather];
+            }
+            else {
+                pelt = item::types[corpse->has_flag(MF_FUR) ? itm_fur : itm_leather];
+            }
+            GPSpos.add(submap::for_drop(GPSpos.ter(), pelt, age).value());
+        }
+    }
+    if (pieces <= 0) messages.add("Your clumsy butchering destroys the meat!");
+    else {
+        const itype* const meat = corpse->chunk_material();	// assumed non-null: precondition
+        for (int i = 0; i < pieces; i++) GPSpos.add(submap::for_drop(GPSpos.ter(), meat, age).value());
+        messages.add("You butcher the corpse.");
+    }
+}
+
 // \todo lift to more logical location when needed
 static std::optional<std::variant<const it_macguffin*, const it_book*> > is_readable(const item& it) {
     if (const auto mac = it.is_macguffin()) {

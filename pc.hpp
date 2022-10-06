@@ -28,6 +28,7 @@ public:
 	bool ask_yn(const std::string& msg, std::function<bool()> ai = nullptr) const { return ask_yn(msg.c_str(), ai); }
 	int use_active(item& it) override;
 	void disarm(GPS_loc loc);
+	void complete_butcher();
 
 	// grammatical support
 	std::string regular_verb_agreement(const std::string& verb) const override { return verb; }

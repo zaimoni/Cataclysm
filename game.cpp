@@ -748,7 +748,7 @@ void game::process_activity()
     break;
 
    case ACT_BUTCHER:
-    complete_butcher(u.activity.index);
+    u.complete_butcher();
     break;
 
    case ACT_BUILD:
@@ -4529,54 +4529,6 @@ void game::butcher()
    u.moves = 0;
    return;
   }
- }
-}
-
-void game::complete_butcher(int index)
-{
- static const int pelts_from_corpse[mtype::MS_MAX] = {1, 3, 6, 10, 18};
-
- auto& it = m.i_at(u.GPSpos)[index];
- const mtype* const corpse = it.corpse;
- int age = it.bday;
- m.i_rem(u.pos.x, u.pos.y, index);	// reference it dies here
- int factor = u.butcher_factor();
- int pelts = pelts_from_corpse[corpse->size];
- double skill_shift = 0.;
- int pieces = corpse->chunk_count();
- if (u.sklevel[sk_survival] < 3)
-  skill_shift -= rng(0, 8 - u.sklevel[sk_survival]);
- else
-  skill_shift += rng(0, u.sklevel[sk_survival]);
- if (u.dex_cur < 8)
-  skill_shift -= rng(0, 8 - u.dex_cur) / 4;
- else
-  skill_shift += rng(0, u.dex_cur - 8) / 4;
- if (u.str_cur < 4) skill_shift -= rng(0, 5 * (4 - u.str_cur)) / 4;
- if (factor > 0) skill_shift -= rng(0, factor / 5);
-
- u.practice(sk_survival, clamped_ub<20>(4 + pieces));
-
- pieces += int(skill_shift);
- if (skill_shift < 5) pelts += (skill_shift - 5);	// Lose some pelts
-
- if ((corpse->has_flag(MF_FUR) || corpse->has_flag(MF_LEATHER)) && 0 < pelts) {
-  messages.add("You manage to skin the %s!", corpse->name.c_str());
-  for (int i = 0; i < pelts; i++) {
-   const itype* pelt;
-   if (corpse->has_flag(MF_FUR) && corpse->has_flag(MF_LEATHER)) {
-	pelt = item::types[one_in(2) ? itm_fur : itm_leather];
-   } else {
-	pelt = item::types[corpse->has_flag(MF_FUR) ? itm_fur : itm_leather];
-   }
-   u.GPSpos.add(submap::for_drop(u.GPSpos.ter(), pelt, age).value());
-  }
- }
- if (pieces <= 0) messages.add("Your clumsy butchering destroys the meat!");
- else {
-  const itype* const meat = corpse->chunk_material();	// assumed non-null: precondition
-  for (int i = 0; i < pieces; i++) u.GPSpos.add(submap::for_drop(u.GPSpos.ter(), meat, age).value());
-  messages.add("You butcher the corpse.");
  }
 }
 
