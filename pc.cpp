@@ -617,7 +617,7 @@ void pc::complete_butcher()
     int age = it.bday;
     EraseAt(items, index);  // reference it dies here
 
-    int factor = butcher_factor();
+    int factor = butcher_factor().value();
     int pelts = pelts_from_corpse[corpse->size];
     double skill_shift = 0.;
     int pieces = corpse->chunk_count();

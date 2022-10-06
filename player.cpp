@@ -4664,23 +4664,23 @@ unsigned int player::use_charges(itype_id it, int quantity)
  return delta + inv.use_charges(it, quantity);
 }
 
-int player::butcher_factor() const
+std::optional<int> player::butcher_factor() const
 {
- int lowest_factor = 999;
+    std::optional<int> lowest_factor;
  for (size_t i = 0; i < inv.size(); i++) {
   for (int j = 0; j < inv.stack_at(i).size(); j++) {
    const item *cur_item = &(inv.stack_at(i)[j]);
    if (cur_item->damage_cut() >= 10 && !cur_item->has_flag(IF_SPEAR)) {
     int factor = cur_item->volume() * 5 - cur_item->weight() * 1.5 - cur_item->damage_cut();
     if (cur_item->damage_cut() <= 20) factor *= 2;
-    if (factor < lowest_factor) lowest_factor = factor;
+    if (!lowest_factor || factor < *lowest_factor) lowest_factor = factor;
    }
   }
  }
  if (weapon.damage_cut() >= 10 && !weapon.has_flag(IF_SPEAR)) {
   int factor = weapon.volume() * 5 - weapon.weight() * 1.5 - weapon.damage_cut();
   if (weapon.damage_cut() <= 20) factor *= 2;
-  if (factor < lowest_factor) lowest_factor = factor;
+  if (!lowest_factor || factor < *lowest_factor) lowest_factor = factor;
  }
  return lowest_factor;
 }

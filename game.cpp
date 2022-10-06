@@ -4503,7 +4503,7 @@ void game::butcher()
  static const int corpse_time_to_cut[mtype::MS_MAX] = {2, 5, 10, 18, 40};	// in turns
 
  std::vector<int> corpses;
- const auto& items = m.i_at(u.GPSpos);
+ const auto& items = u.GPSpos.items_at();
  for (int i = 0; i < items.size(); i++) {
   if (items[i].type->id == itm_corpse) corpses.push_back(i);
  }
@@ -4511,24 +4511,25 @@ void game::butcher()
   messages.add("There are no corpses here to butcher.");
   return;
  }
- int factor = u.butcher_factor();
- if (factor == 999) {
+ const auto factor = u.butcher_factor();
+ if (!factor) {
   messages.add("You don't have a sharp item to butcher with.");
   return;
  }
 // We do it backwards to prevent the deletion of a corpse from corrupting our
 // vector of indices.
- for (int i = corpses.size() - 1; i >= 0; i--) {
-  const mtype* const corpse = items[corpses[i]].corpse;
-  if (query_yn("Butcher the %s corpse?", corpse->name.c_str())) {
-   int time_to_cut = corpse_time_to_cut[corpse->size];
-   time_to_cut *= mobile::mp_turn;	// Convert to movement points
-   time_to_cut += factor * 5;	// Penalty for poor tool
-   clamp_lb<5 * (mobile::mp_turn / 2)>(time_to_cut);
-   u.assign_activity(ACT_BUTCHER, time_to_cut, corpses[i]);
-   u.moves = 0;
-   return;
-  }
+ ptrdiff_t i = corpses.size();
+ while (0 <= --i) {
+     const mtype* const corpse = items[corpses[i]].corpse;
+     if (query_yn("Butcher the %s corpse?", corpse->name.c_str())) {
+         int time_to_cut = corpse_time_to_cut[corpse->size];
+         time_to_cut *= mobile::mp_turn;	// Convert to movement points
+         time_to_cut += *factor * 5;	// Penalty for poor tool
+         clamp_lb<5 * (mobile::mp_turn / 2)>(time_to_cut);
+         u.assign_activity(ACT_BUTCHER, time_to_cut, corpses[i]);
+         u.moves = 0;
+         return;
+     }
  }
 }
 

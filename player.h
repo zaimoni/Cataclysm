@@ -289,7 +289,7 @@ public:
  const item& i_of_type(itype_id type) const { return const_cast<player*>(this)->i_of_type(type); };
  std::vector<item> inv_dump() const; // Inventory + weapon + worn (for death, etc)
  bool remove_item(item* it);
- int  butcher_factor() const;	// Automatically picks our best butchering tool
+ std::optional<int> butcher_factor() const;	// Automatically picks our best butchering tool
  item* pick_usb(); // Pick a usb drive, interactively if it matters
  bool is_wearing(itype_id it) const;	// Are we wearing a specific itype?
  bool has_artifact_with(art_effect_passive effect) const;
