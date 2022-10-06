@@ -1005,41 +1005,44 @@ void mattack::vortex(game *g, monster *z)
 
  forall_do_inclusive(within_rldist<2>, wind_damage);
 
- for (int x = z->pos.x - 2; x <= z->pos.x + 2; x++) {
-  for (int y = z->pos.y - 2; y <= z->pos.y + 2; y++) {
-   if (x == z->pos.x && y == z->pos.y) y++; // Don't throw us!
-   std::vector<point> from_monster = line_to(z->pos, x, y, 0);
-   while (!g->m.i_at(x, y).empty()) {
-    item thrown = g->m.i_at(x, y)[0];
-    g->m.i_rem(x, y, 0);
-    int distance = 5 - (thrown.weight() / 15);
-    if (distance > 0) {
-     int dam = thrown.weight() / double(3 + double(thrown.volume() / 6));
-     std::vector<point> traj = continue_line(from_monster, distance);
-     for (int i = 0; i < traj.size() && dam > 0; i++) {
-      g->m.shoot(g, traj[i], dam, false, 0);
-      if (auto mob = g->mob_at(traj[i])) {
-          std::visit(hit_by_item(thrown, dam, z), *mob);
-          dam = 0;
-      };
+ auto throwing = [&](point delta) {
+     if (point(0) == delta) return;
+     auto dest_loc = z->GPSpos + delta;
+     auto dest = z->pos + delta;
+     std::vector<point> from_monster = line_to(z->pos, dest, 0);
+     decltype(auto) items = dest_loc.items_at();
+     while (!items.empty()) {
+         item thrown(std::move(items[0]));
+         EraseAt(items, 0);
+         int distance = 5 - (thrown.weight() / 15);
+         if (distance > 0) {
+             int dam = thrown.weight() / double(3 + double(thrown.volume() / 6));
+             std::vector<point> traj = continue_line(from_monster, distance);
+             for (int i = 0; i < traj.size() && dam > 0; i++) {
+                 g->m.shoot(g, traj[i], dam, false, 0);
+                 if (auto mob = g->mob_at(traj[i])) {
+                     std::visit(hit_by_item(thrown, dam, z), *mob);
+                     dam = 0;
+                 };
 
-      if (g->m.move_cost(traj[i]) == 0) {
-       dam = 0;
-       i--;
-      }
+                 if (g->m.move_cost(traj[i]) == 0) {
+                     dam = 0;
+                     i--;
+                 }
 
-      if (dam == 0 || i == traj.size() - 1) {
-       g->m.hard_landing(traj[i], std::move(thrown));
-      }
+                 if (dam == 0 || i == traj.size() - 1) {
+                     g->m.hard_landing(traj[i], std::move(thrown));
+                 }
+             }
+         } // Done throwing item
+     } // Done getting items
+
+     if (auto _mob = g->mob_at(dest_loc)) {
+         std::visit(thrown_by_vortex(from_monster, *z), *_mob);
      }
-    } // Done throwing item
-   } // Done getting items
+ };
 
-   if (auto _mob = g->mob_at(point(x, y))) {
-       std::visit(thrown_by_vortex(from_monster, *z), *_mob);
-   }
-  }
- } // Done with loop!
+ forall_do_inclusive(within_rldist<2>, throwing);
 }
 
 void mattack::gene_sting(game *g, monster *z)

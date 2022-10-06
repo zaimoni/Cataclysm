@@ -234,8 +234,7 @@ class map
  void i_clear(Args...params) { i_at(params...).clear(); }
 
  std::optional<item> water_from(const point& pt) const;
- void i_rem(int x, int y, int index);
- void i_rem(const point& pt, int index) { i_rem(pt.x, pt.y, index); };
+ void i_rem(const point& pt, int index);
  std::optional<std::pair<point, int>> find_item(item* it) const;
  // consider GPS_loc::add instead of these
  void add_item(int x, int y, const itype* type, int birthday);

@@ -1349,10 +1349,10 @@ std::optional<item> map::water_from(const point& pt) const
  return std::nullopt;
 }
 
-void map::i_rem(int x, int y, int index)
+void map::i_rem(const point& pt, int index)
 {
- auto& stack = i_at(x, y);
- if (index > stack.size() - 1) return;
+ auto& stack = i_at(pt);
+ if (stack.size() <= index) return;
  EraseAt(stack, index);
 }
 
