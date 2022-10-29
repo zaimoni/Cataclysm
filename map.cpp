@@ -82,16 +82,15 @@ bool map::find_stairs(const point& pt, const int movez, point& pos) const
     return ok;
 }
 
-bool map::find_terrain(const point& pt, const ter_id dest, point& pos) const
+std::optional<point> map::find_terrain(const point& pt, const ter_id dest) const
 {
-    int best = 999;
-    bool ok = false;
+    int best = INT_MAX;
+    std::optional<point> ok;
     for (int x = 0; x < SEEX * MAPSIZE; x++) {
         for (int y = 0; y < SEEY * MAPSIZE; y++) {
             const int dist = rl_dist(pt, x, y);
             if (dist <= best && dest == ter(x, y)) {
-                pos = point(x, y);
-                ok = true;
+                ok = point(x, y);
                 best = dist;
             }
         }

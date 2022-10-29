@@ -3589,10 +3589,8 @@ void game::examine()
   om_cache::get().r_create(tripoint(cur_om.pos.x, cur_om.pos.y, -1));
   om_cache::get().load(cur_om, tripoint(cur_om.pos.x, cur_om.pos.y, cur_om.pos.z + movez));
   m.load(this, project_xy(lev));
-  point test(u.pos);
-  m.find_terrain(u.pos, t_elevator, test);
-  u.screenpos_set(test);
-  update_map(u.pos.x, u.pos.y);
+  if (auto test = m.find_terrain(u.pos, t_elevator)) u.screenpos_set(*test);
+  else u.screenpos_set(u.pos);
   refresh_all();
  } else if (t_gas_pump == exam_t && query_yn("Pump gas?")) {
   item gas(item::types[itm_gasoline], messages.turn);

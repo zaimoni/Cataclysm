@@ -75,7 +75,7 @@ class map
  const submap* chunk(const GPS_loc& pt) const { return const_cast<map*>(this)->chunk(pt); }
 
  bool find_stairs(const point& pt, int movez, point& pos) const;
- bool find_terrain(const point& pt, ter_id dest, point& pos) const;
+ std::optional<point> find_terrain(const point& pt, ter_id dest) const;
 
  int move_cost(int x, int y) const; // Cost to move through; 0 = impassible
  int move_cost(const point& pt) const { return move_cost(pt.x, pt.y); };
