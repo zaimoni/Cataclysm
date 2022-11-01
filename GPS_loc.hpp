@@ -68,6 +68,7 @@ struct GPS_loc : public std::pair<tripoint, point>
 	bool bash(int str, std::string& sound, int* res = nullptr) const;
 
 	// following thin adapters in map.cpp
+	void destroy(bool makesound);
 	void shoot(int& dam, bool hit_items, unsigned flags);
 	bool hard_landing(item&& thrown, player* p = nullptr); // for thrown objects
 	bool displace_water();

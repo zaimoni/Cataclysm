@@ -264,7 +264,7 @@ void construct::done_tree(game *g, point p)
  mvprintz(0, 0, c_red, "Press a direction for the tree to fall in:");
  point dest(-2, -2);
  while (-2 == dest.x) dest = get_direction(input());
- ((dest *= 3) += p) += point(rng(-1, 1), rng(-1, 1));
+ ((dest *= 3) += p) += rng(within_rldist<1>);
  for (const auto& pt : line_to(p, dest, rng(1, 8))) { // rng values not necessarily "legal" from map::sees
 	 g->m.destroy(g, pt, true);
 	 g->m.ter(pt) = t_log;

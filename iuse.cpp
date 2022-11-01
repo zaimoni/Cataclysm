@@ -1190,12 +1190,12 @@ void iuse::jackhammer(pc& p, item& it)
   messages.add("Invalid direction.");
   return;
  }
- const auto dest = dir + p.pos;
+ auto dest = dir + p.GPSpos;
 
- if (g->m.is_destructable(dest)) {
-  g->m.destroy(g, dest, false);
+ if (dest.is_destructable()) {
+  dest.destroy(false);
   p.moves -= 5 * mobile::mp_turn;
-  g->sound(dir, 45, "TATATATATATATAT!");
+  dest.sound(45, "TATATATATATATAT!");
  } else {
   messages.add("You can't drill there.");
   it.charges += it.is_tool()->charges_per_use;

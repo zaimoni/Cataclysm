@@ -1114,6 +1114,69 @@ void map::destroy(game *g, const point& origin, bool makesound)
  if (makesound) g->sound(origin, 40, "SMASH!!");
 }
 
+void GPS_loc::destroy(bool makesound)
+{
+    auto& terrain = ter();
+
+    // contrary to what one would expect, vehicle destruction not directly processed here
+    if (!is_destructible(terrain)) return;
+
+    // \todo V0.3.0 bash bashable terrain (seems to give more detailed results)?
+    auto gas_pump_debris = [=](const point& delta) {
+        auto dest(*this + delta);
+        if (0 < dest.move_cost()) {
+            if (one_in(3)) dest.add(item(item::types[itm_gasoline], 0));
+            if (one_in(6)) dest.add(item(item::types[itm_steel_chunk], 0));
+        }
+    };
+
+    auto door_debris = [=](const point& delta) {
+        auto dest(*this + delta);
+        if (0 < dest.move_cost()) {
+            if (one_in(6)) dest.add(item(item::types[itm_2x4], 0));
+        }
+    };
+
+    auto wall_debris = [&](const point& delta) {
+        auto dest(*this + delta);
+        if (0 < dest.move_cost()) {
+            if (one_in(5)) dest.add(item(item::types[itm_rock], 0));
+            if (one_in(4)) dest.add(item(item::types[itm_2x4], 0));
+        }
+    };
+
+    // 2022-06-05: formally add_item *does* react to the terrain, but none of these transition the trait swimmable
+    // which is what is tested
+    switch (terrain) {
+    case t_gas_pump:
+        if (makesound && one_in(3)) explosion(40, 0, true);
+        else forall_do_inclusive(within_rldist<2>, gas_pump_debris);
+
+        terrain = t_rubble;
+        break;
+
+    case t_door_c:
+    case t_door_b:
+    case t_door_locked:
+    case t_door_boarded:
+        terrain = t_door_frame;
+        forall_do_inclusive(within_rldist<2>, door_debris);
+        break;
+
+    case t_wall_v:
+    case t_wall_h:
+        forall_do_inclusive(within_rldist<2>, wall_debris);
+        terrain = t_rubble;
+        break;
+
+    default:
+        if (makesound && is<explodes>(terrain) && one_in(2)) explosion(40, 0, true);
+        terrain = t_rubble;
+    }
+
+    if (makesound) sound(40, "SMASH!!");
+}
+
 void map::shoot(game *g, const point& pt, int &dam, bool hit_items, unsigned flags)
 {
  if (dam < 0) return;
