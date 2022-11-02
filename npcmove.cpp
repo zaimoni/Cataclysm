@@ -365,9 +365,9 @@ struct to_ai_target
 	to_ai_target& operator=(to_ai_target&& src) = delete;
 	~to_ai_target() = default;
 
-	npc::ai_target<point> operator()(monster* target) { return npc::ai_target<point>(target->pos, target); }
-	npc::ai_target<point> operator()(npc* target) { return npc::ai_target<point>(target->pos, target); }
-	npc::ai_target<point> operator()(pc* target) { return npc::ai_target<point>(target->pos, target); }
+	npc::ai_target<GPS_loc> operator()(monster* target) { return npc::ai_target<GPS_loc>(target->GPSpos, target); }
+	npc::ai_target<GPS_loc> operator()(npc* target) { return npc::ai_target<GPS_loc>(target->GPSpos, target); }
+	npc::ai_target<GPS_loc> operator()(pc* target) { return npc::ai_target<GPS_loc>(target->GPSpos, target); }
 };
 
 void npc::execute_action(game *g, const ai_action& action, std::optional<std::variant<monster*, npc*, pc*> > target)
@@ -1266,14 +1266,18 @@ void npc::move_to_next(game *g)
 // TODO: Rewrite this.  It doesn't work well and is ugly.
 void npc::avoid_friendly_fire(game *g, std::variant<monster*, npc*, pc*> target)
 {
-	ai_target<point> Target = std::visit(to_ai_target(), target);  // XXX throws rather than logs error in release mode
+	ai_target<GPS_loc> Target = std::visit(to_ai_target(), target);  // XXX throws rather than logs error in release mode
 	if (auto mon = std::get_if<0>(&Target.second)) {
 		if (!one_in(3)) say(g, "<move> so I can shoot that %s!", (*mon)->name().c_str());
 	} // \todo similar message when targeting NPC?
 
- point tar = Target.first;	// backward compatibility
+	GPS_loc tar = Target.first;	// backward compatibility
 
- direction dir_to_target = direction_from(pos, tar);
+	auto GPS_delta = tar - GPSpos;
+	if (std::get_if<tripoint>(&GPS_delta)) return; // need to handle general case
+	const point pt_delta = std::get<point>(GPS_delta);
+
+ direction dir_to_target = direction_from(pt_delta.x, pt_delta.y);
  std::vector<point> valid_moves;
 
  // 2019-02-16: re-implemented along Angband lines
@@ -1614,24 +1618,23 @@ void npc::alt_attack(item_spec which, std::variant<monster*, npc*, pc*> target)
 	item* used = which.first; // backward compatibility
 
 tail_recurse:
-	ai_target<point> Target = std::visit(to_ai_target(), target);
-	point tar = Target.first;	// backward compatibility
+	ai_target<GPS_loc> Target = std::visit(to_ai_target(), target);
+	GPS_loc tar = Target.first;	// backward compatibility
 
    // Are we going to throw this item?
 	if (!thrown_item(*used)) activate_item(*used);
 	else { // We are throwing it!
-		std::vector<point> trajectory;
 		const int light = g->light_level(GPSpos);
-		const int dist = rl_dist(pos, tar);
-		const bool no_friendly_fire = wont_hit_friend(g, tar, index);
+		const int dist = rl_dist(GPSpos, tar);
+		const bool no_friendly_fire = wont_hit_friend(tar, index);
 		const int conf = confident_range(index);
 
 		if (dist <= conf && no_friendly_fire) {
-			trajectory = line_to(pos, tar, g->m.sees(pos, tar, light));
+			decltype(auto) trajectory = GPSpos.sees(tar, light).value();
 			moves -= (mobile::mp_turn / 4) * 5;
 			if (g->u.see(pos))
 				messages.add("%s throws a %s.", name.c_str(), used->tname().c_str());
-			g->throw_item(*this, tar, std::move(*used), trajectory);
+			g->throw_item(*this, std::move(*used), trajectory);
 			i_remn(index);
 		}
 		else if (!no_friendly_fire) {// Danger of friendly fire
@@ -1669,7 +1672,7 @@ tail_recurse:
 					auto new_dist = Linf_dist(delta);
 					if (new_dist > best_dist && wont_hit_friend(GPSpos + delta, index)) {
 						best_dist = new_dist;
-						tar = pos + delta;
+						tar = GPSpos + delta;
 					}
 				};
 
@@ -1679,16 +1682,16 @@ tail_recurse:
 				 * should be equal to the original location of our target, and risking friendly
 				 * fire is better than holding on to a live grenade / whatever.
 				 */
-				trajectory = line_to(pos, tar, g->m.sees(pos, tar, light));
+				decltype(auto) trajectory = GPSpos.sees(tar, light).value();
 				moves -= (mobile::mp_turn / 4) * 5;
 				if (g->u.see(pos))
 					messages.add("%s throws a %s.", name.c_str(), used->tname().c_str());
-				g->throw_item(*this, tar, std::move(*used), trajectory);
+				g->throw_item(*this, std::move(*used), trajectory);
 				i_remn(index);
 			}
 		}
 		else { // Within this block, our chosen target is outside of our range
-			update_path(g->m, tar);
+			update_path(tar, 0);
 			move_to_next(g); // Move towards the target
 		}
 	} // Done with throwing-item block
