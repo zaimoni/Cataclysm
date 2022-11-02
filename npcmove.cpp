@@ -912,9 +912,9 @@ int npc::confident_range(int index) const
 }
 
 // Index defaults to -1, i.e., wielded weapon
-bool npc::wont_hit_friend(game *g, int tarx, int tary, int index) const
+bool npc::wont_hit_friend(game *g, const point& tar, int index) const
 {
- if (rl_dist(pos, tarx, tary) == 1) return true; // If we're *really* sure that our aim is dead-on
+ if (1 == rl_dist(pos, tar)) return true; // If we're *really* sure that our aim is dead-on
 
  int dist = sight_range();
  int confident = confident_range(index);
@@ -928,8 +928,8 @@ bool npc::wont_hit_friend(game *g, int tarx, int tary, int index) const
 
  */
 
- const auto linet = g->m.sees(pos, tarx, tary, dist);
- const std::vector<point> traj = line_to(pos, tarx, tary, (linet ? *linet : 0));
+ const auto linet = g->m.sees(pos, tar, dist);
+ const std::vector<point> traj = line_to(pos, tar, (linet ? *linet : 0));
 
  for (decltype(auto) pt : traj) {
 	 int dist = rl_dist(pos, pt);

@@ -53,7 +53,6 @@ static_assert(Direction::SE == -Direction::NW);
 
 // The "t" value decides WHICH Bresenham line is used.
 std::vector<point> line_to(int x1, int y1, int x2, int y2, int t);
-inline std::vector<point> line_to(const point& pt, int x2, int y2, int t) { return line_to(pt.x, pt.y, x2, y2, t); };
 inline std::vector<point> line_to(const point& pt, const point& pt2, int t) { return line_to(pt.x, pt.y, pt2.x, pt2.y, t); };
 inline std::vector<point> line_to(int x1, int y1, const point& pt2, int t) { return line_to(x1, y1, pt2.x, pt2.y, t); };
 
