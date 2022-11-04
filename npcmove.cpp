@@ -912,46 +912,42 @@ int npc::confident_range(int index) const
 }
 
 // Index defaults to -1, i.e., wielded weapon
-bool npc::wont_hit_friend(game *g, const point& tar, int index) const
-{
- if (1 == rl_dist(pos, tar)) return true; // If we're *really* sure that our aim is dead-on
-
- int dist = sight_range();
- int confident = confident_range(index);
-
- /*
- *  how a miss actually works, game::fire @ ranged.cpp
-	const int delta = int(sqrt(missed_by));
-	tar.x += rng(-delta, delta);
-	tar.y += rng(-delta, delta);
-	trajectory = line_to(p.pos, tar, m.sees(p.pos, tar, -1));
-
- */
-
- const auto linet = g->m.sees(pos, tar, dist);
- const std::vector<point> traj = line_to(pos, tar, (linet ? *linet : 0));
-
- for (decltype(auto) pt : traj) {
-	 int dist = rl_dist(pos, pt);
-	 int deviation = 1 + int(dist / confident);
-	 // \todo this is trading CPU for RAM; also unclear why at low confidences we're checking behind us
-	 for (int x = pt.x - deviation; x <= pt.x + deviation; x++) {
-		 for (int y = pt.y - deviation; y <= pt.y + deviation; y++) {
-			 if (point(x, y) == pos) continue; // don't self-check (until this is fixed properly)
-			 if (auto _mob = g->mob_at(point(x, y))) {
-				 if (!std::visit(player::is_enemy_of(*this), *_mob)) return false;
-			 }
-		 }
-	 }
- }
- return true;
-}
-
 bool npc::wont_hit_friend(const GPS_loc& tar, int index) const
 {
+	if (1 == rl_dist(GPSpos, tar)) return true; // If we're *really* sure that our aim is dead-on
+
+	int dist = sight_range();
+	int confident = confident_range(index);
+
+	/*
+	*  how a miss actually works, game::fire @ ranged.cpp
+	   const int delta = int(sqrt(missed_by));
+	   tar.x += rng(-delta, delta);
+	   tar.y += rng(-delta, delta);
+	   trajectory = line_to(p.pos, tar, m.sees(p.pos, tar, -1));
+
+	*/
+
+	decltype(auto) traj = GPSpos.sees(tar, dist);
+	if (!traj) return true;  // invariant failure; vacuously true?
+
 	const auto g = game::active();
-	if (auto dest = g->toScreen(tar)) return wont_hit_friend(g, *dest, index);
-	return false;
+	for (const auto& pt : *traj) {
+		int dist = rl_dist(GPSpos, pt);
+		int deviation = 1 + int(dist / confident);
+		point delta;
+		// \todo this is trading CPU for RAM; also unclear why at low confidences we're checking behind us
+		for (delta.x = -deviation; delta.x <= deviation; delta.x++) {
+			for (delta.y = -deviation; delta.y <= deviation; delta.y++) {
+				const GPS_loc loc = pt + delta;
+				if (loc == GPSpos) continue; // don't self-check (until this is fixed properly)
+				if (auto _mob = g->mob_at(loc)) {
+					if (!std::visit(player::is_enemy_of(*this), *_mob)) return false;
+				}
+			}
+		}
+	}
+	return true;
 }
 
 bool player::can_fire()
