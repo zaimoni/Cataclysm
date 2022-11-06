@@ -71,28 +71,30 @@ void mattack::acid(game *g, monster *z)
  if (rl_dist(z->GPSpos, g->u.GPSpos) > 10) return; // Out of range
  const auto j = z->see(g->u);
  if (!j) return; // Unseen
+ auto hit(g->u.GPSpos + rng(within_rldist<2>));
+ decltype(auto) LoF = z->GPSpos.sees(hit, 12);
+ if (!LoF) return;  // deviation has no path at all
+
  z->moves -= 3*mobile::mp_turn; // It takes a while
  z->sp_timeout = z->type->sp_freq; // Reset timer
- g->sound(z->pos, 4, "a spitting noise.");
+ z->GPSpos.sound(4, "a spitting noise.");
 
- point hit(g->u.pos + rng(within_rldist<2>));
- for (const auto& pt : line_to(z->pos, hit, *j)) {
-     if (g->m.hit_with_acid(pt)) {
-         if (g->u.see(pt)) messages.add("A glob of acid hits the %s!", name_of(g->m.ter(pt)).c_str());
+ for (decltype(auto) pt : *LoF) {
+     ter_id terrain = pt.ter();
+     if (pt.hit_with_acid()) {
+         if (g->u.see(pt)) messages.add("A glob of acid hits the %s!", name_of(terrain).c_str());
          return;
      }
  }
  for (int i = -3; i <= 3; i++) {
-  for (int j = -3; j <= 3; j++) {
-   point dest(hit.x + i, hit.y + j);
-   if (g->m.move_cost(dest) > 0 &&
-       g->m.sees(dest, hit, 6) &&
-       one_in(abs(j)) && one_in(abs(i))) {
-	 auto& f = g->m.field_at(dest);
-     if (f.type == fd_acid && f.density < 3) f.density++;
-     else g->m.add_field(g, dest, fd_acid, 2);
-   }
-  }
+    for (int j = -3; j <= 3; j++) {
+        auto dest(hit + point(i, j));
+        if (0 < dest.move_cost() && dest.can_see(hit, 6) && one_in(abs(j)) && one_in(abs(i))) {
+	        auto& f = dest.field_at();
+            if (f.type == fd_acid && f.density < 3) f.density++;
+            else dest.add(field(fd_acid, 2));
+        }
+    }
  }
 }
 

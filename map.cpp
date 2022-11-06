@@ -1330,51 +1330,51 @@ void GPS_loc::shoot(int& dam, bool hit_items, unsigned flags)
     if (auto pos = g->toScreen(*this)) g->m.shoot(g,*pos, dam, hit_items, flags);
 }
 
-bool map::hit_with_acid(const point& pt)
+bool GPS_loc::hit_with_acid()
 {
- if (0 != move_cost(pt)) return false; // Didn't hit the tile!
+    if (0 != move_cost()) return false; // Didn't hit the tile!
 
- switch(auto& t = ter(pt)) {
-  case t_wall_glass_v:
-  case t_wall_glass_h:
-  case t_wall_glass_v_alarm:
-  case t_wall_glass_h_alarm:
-  case t_vat:
-   t = t_floor;
-   return true;
+    switch (auto& t = ter()) {
+    case t_wall_glass_v:
+    case t_wall_glass_h:
+    case t_wall_glass_v_alarm:
+    case t_wall_glass_h_alarm:
+    case t_vat:
+        t = t_floor;
+        return true;
 
-  case t_door_c:
-  case t_door_locked:
-  case t_door_locked_alarm:
-   if (one_in(3)) t = t_door_b;
-   return true;
+    case t_door_c:
+    case t_door_locked:
+    case t_door_locked_alarm:
+        if (one_in(3)) t = t_door_b;
+        return true;
 
-  case t_door_b:
-   if (one_in(4)) t = t_door_frame;
-   else return false;
-   return true;
+    case t_door_b:
+        if (one_in(4)) t = t_door_frame;
+        else return false;
+        return true;
 
-  case t_window:
-  case t_window_alarm:
-   t = t_window_empty;
-   return true;
+    case t_window:
+    case t_window_alarm:
+        t = t_window_empty;
+        return true;
 
-  case t_wax:
-   t = t_floor_wax;
-   return true;
+    case t_wax:
+        t = t_floor_wax;
+        return true;
 
-  case t_toilet:
-  case t_gas_pump:
-  case t_gas_pump_smashed:
-   return false;
+    case t_toilet:
+    case t_gas_pump:
+    case t_gas_pump_smashed:
+        return false;
 
-  case t_card_science:
-  case t_card_military:
-   t = t_card_reader_broken;
-   return true;
+    case t_card_science:
+    case t_card_military:
+        t = t_card_reader_broken;
+        return true;
 
-  default: return true;	 // would like to assert but the uploads are debug builds as of 2019-02-18
- }
+    default: return true;	 // would like to assert but the uploads are debug builds as of 2019-02-18
+    }
 }
 
 void map::marlossify(int x, int y)

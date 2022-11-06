@@ -207,7 +207,6 @@ class map
  void destroy(game *g, const point& origin, bool makesound);
  void destroy(game* g, int x, int y, bool makesound) { destroy(g, point(x, y), makesound); }
  void shoot(game *g, const point& pt, int &dam, bool hit_items, unsigned flags);
- bool hit_with_acid(const point& pt);
  void marlossify(int x, int y);
 
 // Radiation
