@@ -481,14 +481,15 @@ bool GPS_loc::displace_water()
 
 bool map::displace_water(const point& pt)
 {
-    if (0 < move_cost_ter_only(pt.x, pt.y) && has_flag(swimmable, pt)) // shallow water
+    ter_id& origin_terrain = ter(pt);
+    if (0 < move_cost_of(origin_terrain) && is<swimmable>(origin_terrain)) // shallow water
     { // displace it
         inline_stack<point, std::end(Direction::vector) - std::begin(Direction::vector)> can_displace_to;
 
         for (decltype(auto) dir : Direction::vector) {
             auto dest = pt + dir;
-            if (0 == move_cost_ter_only(dest.x, dest.y)) continue;
             ter_id ter0 = ter(dest);
+            if (0 == move_cost_of(ter0)) continue;
             if (ter0 == t_water_sh || ter0 == t_water_dp) continue;
             // C:Z water is not acid.  Until we can record the terrain under shallow water, disallow acidic displacement
             if (ter0 != t_dirt) continue;
@@ -497,7 +498,7 @@ bool map::displace_water(const point& pt)
 
         if (auto ub = can_displace_to.size()) {
             ter(can_displace_to[rng(0, ub-1)]) = t_water_sh;
-            ter(pt) = t_dirt;
+            origin_terrain = t_dirt;
             return true;
         }
 
@@ -592,12 +593,6 @@ int GPS_loc::move_cost() const
             return 8;
     }
     return ter_t::list[ter()].movecost;
-}
-
-
-int map::move_cost_ter_only(int x, int y) const
-{
- return ter_t::list[ter(x, y)].movecost;
 }
 
 bool GPS_loc::is_transparent() const

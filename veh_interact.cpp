@@ -410,7 +410,7 @@ void veh_interact::move_cursor (int dx, int dy)
     cpart = part_at (c);
 	const point vd(-dd.x - c.y, c.x - dd.y);
 	const point vpos(veh->screenPos() + veh->coord_translate(vd));
-    bool obstruct = _g->m.move_cost_ter_only (vpos.x, vpos.y) == 0;
+    bool obstruct = 0 == move_cost_of(_g->m.ter(vpos));
     const auto v = _g->m._veh_at(vpos);
     vehicle* const oveh = v ? v->first : nullptr; // backward compatibility
     if (oveh && oveh != veh) obstruct = true;
