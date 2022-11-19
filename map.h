@@ -46,7 +46,7 @@ class map
  map& operator=(map&& src) = default;
 
 // Visual Output
- void draw(game *g, WINDOW* w, point center);
+ void draw(WINDOW* w, const player& u, point center);
  void debug();
  void drawsq(WINDOW* w, const player& u, int x, int y, bool invert, bool show_items, std::optional<point> viewpoint = std::nullopt) const;
  static void drawsq(WINDOW* w, const player& u, GPS_loc dest, bool invert, bool show_items, std::optional<GPS_loc> viewpoint = std::nullopt);

@@ -1798,23 +1798,23 @@ void map::debug()
  getch();
 }
 
-void map::draw(game *g, WINDOW* w, point center)
+void map::draw(WINDOW* w, const player& u, point center)
 {
- int light = g->u.sight_range();
+ int light = u.sight_range();
  forall_do_inclusive(view_center_extent(), [&](point offset) {
         const point real(center + offset);
-        const int dist = rl_dist(g->u.pos, real);
+        const int dist = rl_dist(u.pos, real);
         const point draw_at(offset + point(VIEW_CENTER));
         if (dist > light) {
-            mvwputch(w, draw_at.y, draw_at.x, (g->u.has_disease(DI_BOOMERED) ? c_magenta : c_dkgray), '#');
-        } else if (dist <= g->u.clairvoyance() || sees(g->u.pos, real, light))
-            drawsq(w, g->u, real.x, real.y, false, true, center);
+            mvwputch(w, draw_at.y, draw_at.x, (u.has_disease(DI_BOOMERED) ? c_magenta : c_dkgray), '#');
+        } else if (dist <= u.clairvoyance() || sees(u.pos, real, light))
+            drawsq(w, u, real.x, real.y, false, true, center);
         else
             mvwputch(w, draw_at.y, draw_at.x, c_black, '#');
      });
- const point at(g->u.pos - center + point(VIEW_CENTER));
+ const point at(u.pos - center + point(VIEW_CENTER));
  if (at.x >= 0 && at.x < VIEW && at.y >= 0 && at.y < VIEW)
-  mvwputch(w, at.y, at.x, g->u.color(), '@');
+  mvwputch(w, at.y, at.x, u.color(), '@');
 }
 
 void map::drawsq(WINDOW* w, const player& u, int x, int y, bool invert, bool show_items, std::optional<point> viewpoint) const

@@ -2009,7 +2009,7 @@ void game::draw()
 
 void game::draw_ter(const point& pos)
 {
- m.draw(this, w_terrain, pos);
+ m.draw(w_terrain, u, pos);
 
  // Draw monsters
  auto draw_mon = [=](const monster& mon) {

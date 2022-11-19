@@ -589,7 +589,7 @@ std::optional<std::vector<GPS_loc> > game::target(GPS_loc& tar, const zaimoni::g
    for (int j = 1; j < PANELX - MINIMAP_WIDTH_HEIGHT - 2; j++)
     mvwputch(w_target, i, j, c_white, ' ');
   }
-  m.draw(this, w_terrain, center);
+  m.draw(w_terrain, u, center);
 // Draw the Monsters
   for(const auto& mon : z) {
    if (bounds.contains(mon.pos) && u.see(mon))
