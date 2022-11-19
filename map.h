@@ -36,7 +36,6 @@ class map
  static std::vector <itype_id> items[num_itloc]; // Items at various map types
  static map_extra _force_map_extra; // debugging assistant
  static point _force_map_extra_pos; // debugging assistant
- typedef std::pair<short,point> localPos; // nonant, x, y
 
 // Constructors & Initialization
  map(int map_size = MAPSIZE) : my_MAPSIZE(map_size), grid(map_size*map_size, nullptr) {}
