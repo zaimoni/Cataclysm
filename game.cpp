@@ -2701,9 +2701,10 @@ struct hit_by_explosion
 {
     game* const g;
     int dam;
-    point origin;
+    GPS_loc origin;
 
-    hit_by_explosion(int dam, const point& origin) noexcept : g(game::active()), dam(dam), origin(origin) {}
+    hit_by_explosion(int dam, const point& origin) noexcept : g(game::active()), dam(dam), origin(g->toGPS(origin)) {}
+    hit_by_explosion(int dam, const GPS_loc& origin) noexcept : g(game::active()), dam(dam), origin(origin) {}
     hit_by_explosion(const hit_by_explosion&) = delete;
     hit_by_explosion(hit_by_explosion&&) = delete;
     hit_by_explosion& operator=(const hit_by_explosion&) = delete;
@@ -2717,7 +2718,7 @@ struct hit_by_explosion
             else
                 g->kill_mon(*target); // TODO: player's fault?
 
-            if (const auto veh = g->m._veh_at(origin)) veh->first->damage(veh->second, dam, vehicle::damage_type::pierce);
+            if (const auto veh = origin.veh_at()) veh->first->damage(veh->second, dam, vehicle::damage_type::pierce);
         }
     }
     void operator()(npc* target) {
@@ -2848,8 +2849,80 @@ void game::explosion(const point& pt, int power, int shrapnel, bool fire)
 
 void GPS_loc::explosion(int power, int shrapnel, bool fire) const
 {
+    if (0 >= power) return; // no-op if zero power (could happen if vehicle gas tank near-empty
+
     const auto g = game::active();
-    if (auto pos = g->toScreen(*this)) g->explosion(*pos, power, shrapnel, fire);
+    int radius = sqrt(double(power / 4));
+    if (power >= 30)
+        sound(power * 10, "a huge explosion!");
+    else
+        sound(power * 10, "an explosion!");
+
+    forall_do_inclusive(zaimoni::gdi::box<point>(point(-radius), point(radius)), [=](point delta) {
+        int dam = (point(0) == delta) ? 3 * power : 3 * power / Linf_dist(delta);
+        auto loc = *this + delta;
+        std::string discard;
+        if (loc.is_bashable()) loc.bash(dam, discard);
+        if (loc.is_bashable()) loc.bash(dam, discard); // Double up for tough doors, etc.
+        if (loc.is_destructable() && rng(25, 100) < dam) loc.destroy(false);
+
+        if (auto _mob = game::active()->mob_at(loc)) std::visit(hit_by_explosion(dam, loc), *_mob);
+
+        if (fire) {
+            auto& f = loc.field_at();
+            if (fd_smoke == f.type) f = field(fd_fire);
+            loc.add(field(fd_fire, dam / 10));
+        }
+    });
+
+    // Draw the explosion
+    auto full_epicenter = *this - g->u.GPSpos;
+    if (std::get_if<tripoint>(&full_epicenter)) return; // \todo build out multi-level display
+    auto epicenter = std::get<point>(full_epicenter) + point(VIEW_CENTER);
+    timespec ts = { 0, EXPLOSION_SPEED };	// Timespec for the animation of the explosion
+    for (int i = 1; i <= radius; i++) {
+        mvwputch(g->w_terrain, epicenter.y - i, epicenter.x - i, c_red, '/');
+        mvwputch(g->w_terrain, epicenter.y - i, epicenter.x + i, c_red, '\\');
+        mvwputch(g->w_terrain, epicenter.y + i, epicenter.x - i, c_red, '\\');
+        mvwputch(g->w_terrain, epicenter.y + i, epicenter.x + i, c_red, '/');
+        for (int j = 1 - i; j < 0 + i; j++) {
+            mvwputch(g->w_terrain, epicenter.y - i, epicenter.x + j, c_red, '-');
+            mvwputch(g->w_terrain, epicenter.y + i, epicenter.x + j, c_red, '-');
+            mvwputch(g->w_terrain, epicenter.y + j, epicenter.x - i, c_red, '|');
+            mvwputch(g->w_terrain, epicenter.y + j, epicenter.x + i, c_red, '|');
+        }
+        wrefresh(g->w_terrain);
+        nanosleep(&ts, nullptr);
+    }
+
+    // The rest of the function is shrapnel
+    if (shrapnel <= 0) return;
+    const zaimoni::gdi::box<point> shrapnel_aoe(point(-2 * radius), point(2 * radius));
+    ts = { 0, BULLET_SPEED };	// Timespec for the animation of bullets
+    for (int i = 0; i < shrapnel; i++) {
+        auto dest = *this + rng(shrapnel_aoe);
+        auto traj = this->sees(dest, 50);
+        if (!traj) continue;
+        int dam = rng(20, 60);
+        std::optional<GPS_loc> prev;
+        ptrdiff_t j = traj->size();
+        for (decltype(auto) loc : *traj) {
+            if (prev && g->u.see(*prev))
+                g->m.drawsq(g->w_terrain, g->u, *prev, false, true);
+            prev = loc;
+            --j;
+            if (g->u.see(loc)) {
+                const point draw_at = std::get<point>(loc - g->u.GPSpos) + point(VIEW_CENTER);
+                mvwputch(g->w_terrain, draw_at.y, draw_at.x, c_red, '`');
+                wrefresh(g->w_terrain);
+                nanosleep(&ts, nullptr);
+            }
+            if (auto mob = g->mob_at(loc)) {
+                std::visit(hit_by_shrapnel(dam), *mob);
+            } else
+                loc.shoot(dam, 0 == j, 0);
+        }
+    }
 }
 
 void GPS_loc::sound(int vol, const char* description) const
