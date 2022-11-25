@@ -196,6 +196,7 @@
     <ClInclude Include="is_between.hpp" />
     <ClInclude Include="item.h" />
     <ClInclude Include="itype.h" />
+    <ClInclude Include="itype_enum.h" />
     <ClInclude Include="json.h" />
     <ClInclude Include="keypress.h" />
     <ClInclude Include="mapdata.h" />
