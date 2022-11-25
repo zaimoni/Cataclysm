@@ -20,6 +20,11 @@ struct component
  int count;
 
  constexpr component(itype_id TYPE = itm_null, int COUNT = 0) noexcept : type (TYPE), count (COUNT) {}
+ component(const component& src) = default;
+ component(component&& src) = default;
+ component& operator=(const component& src) = default;
+ component& operator=(component&& src) = default;
+ ~component() = default;
 };
 
 struct recipe

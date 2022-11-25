@@ -14,6 +14,11 @@ struct construction_stage
  std::vector<std::vector<component> > components;
 
  construction_stage(ter_id Terrain, int Time) noexcept : terrain (Terrain), time (Time) { };
+ construction_stage(const construction_stage& src) = default;
+ construction_stage(construction_stage&& src) = default;
+ construction_stage& operator=(const construction_stage& src) = default;
+ construction_stage& operator=(construction_stage&& src) = default;
+ ~construction_stage() = default;
 };
 
 struct constructable
