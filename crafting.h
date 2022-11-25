@@ -1,8 +1,10 @@
 #ifndef _CRAFTING_H_
 #define _CRAFTING_H_
 
-#include "itype.h"
+#include "itype_enum.h"
 #include "skill.h"
+
+#include <vector>
 
 enum craft_cat : int {
 CC_NULL = 0,

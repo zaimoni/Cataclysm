@@ -2,8 +2,14 @@
 #define _ARTIFACTDATA_H_
 
 #include "artifact.h"
-#include "itype.h"
-#include "bodypart.h"
+#include "c_bitmap.h"
+#include "material_enum.h"
+
+#include "color.h"
+#include "bodypart_enum.h"
+#include "itype_enum.h"
+
+#include <string>
 #include <vector>
 
 int passive_effect_cost[NUM_AEPS] = {

@@ -2,7 +2,6 @@
 #define _GAMEMODE_H_
 
 #include "action.h"
-#include "itype.h"
 #include "mtype.h"
 
 class game;

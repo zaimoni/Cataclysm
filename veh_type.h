@@ -2,7 +2,9 @@
 #define _VEH_TYPE_H_
 
 #include "color.h"
-#include "itype.h"
+#include "itype_enum.h"
+#include "enum_json.h"
+#include "c_bitmap.h"
 
 enum vpart_id
 {

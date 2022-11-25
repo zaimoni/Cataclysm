@@ -2,8 +2,6 @@
 #include "game.h"
 #include "construction.h"
 #include "keypress.h"
-#include "itype.h"
-#include "mtype.h"
 #include "rng.h"
 #include "recent_msg.h"
 #include <sstream>

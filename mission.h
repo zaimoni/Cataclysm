@@ -1,7 +1,6 @@
 #ifndef _MISSION_H_
 #define _MISSION_H_
 
-#include "itype.h"
 #include "npc.h"
 
 enum mission_id {

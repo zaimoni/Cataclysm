@@ -312,6 +312,9 @@
     <ClInclude Include="monattack_spores.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="itype_enum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
