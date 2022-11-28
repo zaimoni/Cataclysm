@@ -3317,36 +3317,40 @@ void game::_explode_mon(monster& target, player* me)
 {
     assert(!target.dead);
     target.dead = true;
-    me->record_kill(target);
+    if (me) me->record_kill(target);
     // Send body parts and blood all over!
     const mtype* const corpse = target.type;
     if (const itype* const meat = corpse->chunk_material()) {
-        const int num_chunks = corpse->chunk_count();
+        int num_chunks = corpse->chunk_count();
 
-        point pos(target.pos);
-        for (int i = 0; i < num_chunks; i++) {
-            point tar(pos.x + rng(-3, 3), pos.y + rng(-3, 3));
-            std::vector<point> traj = line_to(pos, tar, 0);
+        while (0 <= --num_chunks) {
+            point delta = rng(within_rldist<3>);
+            GPS_loc tar = target.GPSpos + delta;
+            if (point(0, 0) != delta) {
+                if (decltype(auto) traj = target.GPSpos.sees(tar, 3)) {
+                    std::optional<GPS_loc> last;
+                    for (decltype(auto) loc : *traj) {
+                        tar = loc;
+                        // Choose a blood type and place it
+                        if (auto blood_type = bleeds(target)) {
+                            auto& f = loc.field_at();
+                            if (f.type == blood_type && f.density < 3) f.density++;
+                            else loc.add(field(blood_type, 1));
+                        }
 
-            for (int j = 0; j < traj.size(); j++) {
-                tar = traj[j];
-                // Choose a blood type and place it
-                if (auto blood_type = bleeds(target)) {
-                    auto& f = m.field_at(tar);
-                    if (f.type == blood_type && f.density < 3) f.density++;
-                    else m.add_field(this, tar, blood_type, 1);
-                }
-
-                if (m.move_cost(tar) == 0) {
-                    std::string tmp;
-                    if (m.bash(tar, 3, tmp)) sound(tar, 18, tmp);
-                    else {
-                        if (j > 0) tar = traj[j - 1];
-                        break;
+                        if (0 == loc.move_cost()) {
+                            std::string tmp;
+                            if (loc.bash(3, tmp)) loc.sound(18, tmp);
+                            else {
+                                if (last) tar = *last;
+                                break;
+                            }
+                        }
+                        last = loc;
                     }
                 }
             }
-            m.add_item(tar, meat, messages.turn);
+            tar.add(item(meat, messages.turn));
         }
     }
 }
