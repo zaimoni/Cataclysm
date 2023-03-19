@@ -39,7 +39,7 @@ void iuse::royal_jelly(player& p)
  p.pkill += 5;
  if (p.rem_disease(DI_FUNGUS))
      p.subjective_message("You feel cleansed inside!");
- if (p.rem_disease(DI_FUNGUS))
+ if (p.rem_disease(DI_BLIND))
      p.subjective_message("Your sight returns!");
 
  static const decltype(DI_POISON) toxic[] = {

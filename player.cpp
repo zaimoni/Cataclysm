@@ -724,7 +724,7 @@ void dis_effect(game* g, player& p, disease& dis)
         break;
 
     case DI_POISON:
-        if (one_in(p.has_trait(PF_POISRESIST) ? 900 : 150)) {
+        if (one_in(p.has_trait(PF_POISRESIST) ? MINUTES(90) : MINUTES(15))) {
             if (!p.is_npc()) messages.add("You're suddenly wracked with pain!");
             p.pain++;
             p.hurt(bp_torso, 0, rng(0, 2) * rng(0, 1));
@@ -732,7 +732,7 @@ void dis_effect(game* g, player& p, disease& dis)
         break;
 
     case DI_BADPOISON:
-        if (one_in(p.has_trait(PF_POISRESIST) ? 500 : 100)) {
+        if (one_in(p.has_trait(PF_POISRESIST) ? MINUTES(50) : MINUTES(10))) {
             if (!p.is_npc()) messages.add("You're suddenly wracked with pain!");
             p.pain += 2;
             p.hurt(bp_torso, 0, rng(0, 2));
