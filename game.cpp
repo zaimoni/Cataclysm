@@ -4377,23 +4377,22 @@ void game::reassign_item()
   messages.add("Never mind.");
   return;
  }
- auto change_from = u.have_item(ch);
- if (!change_from.second) {
+ auto change_from = u.from_invlet(ch);
+ if (!change_from) {
   messages.add("You do not have that item.");
   return;
  }
- char newch = popup_getkey("%c - %s; enter new letter.", ch, change_from.second->tname().c_str());
+ char newch = popup_getkey("%c - %s; enter new letter.", ch, change_from->first->tname().c_str());
  if ((newch < 'A' || (newch > 'Z' && newch < 'a') || newch > 'z')) {
   messages.add("%c is not a valid inventory letter.", newch);
   return;
  }
- auto change_to = u.have_item(newch);	// if new letter already exists, swap it
- if (change_to.second) {
-  change_to.second->invlet = ch;
-  messages.add("%c - %s", ch, change_to.second->tname().c_str());
+ if (const auto change_to = u.from_invlet(newch)) { // if new letter already exists, swap it
+  change_to->first->invlet = ch;
+  messages.add("%c - %s", ch, change_to->first->tname().c_str());
  }
- change_from.second->invlet = newch;
- messages.add("%c - %s", newch, change_from.second->tname().c_str());
+ change_from->first->invlet = newch;
+ messages.add("%c - %s", newch, change_from->first->tname().c_str());
 }
 
 void game::pl_draw(const zaimoni::gdi::box<point>& bounds) const
