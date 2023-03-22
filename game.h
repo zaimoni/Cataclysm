@@ -275,7 +275,6 @@ class game : public reality_bubble
   bool handle_liquid(item &liquid, bool from_ground, bool infinite);
   void drop();	  // Drop an item		'd'
   void drop_in_direction(); // Drop w/ direction 'D'
-  void reassign_item(); // Reassign the letter of an item   '='
   void butcher(); // Butcher a corpse		'B'
   void eat();	  // Eat food or fuel		'E' (or 'a')
   void use_item();// Use item; also tries E,R,W	'a'

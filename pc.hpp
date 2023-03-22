@@ -47,6 +47,7 @@ public:
 	static char dec_invlet(char src);
 	bool assign_invlet(item& it) const;
 	bool assign_invlet_stacking_ok(item& it) const;
+	void reassign_item(); // Reassign the letter of an item   '='
 
 	// invlet UI
 	void use(char let);

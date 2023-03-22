@@ -189,6 +189,30 @@ bool pc::assign_invlet_stacking_ok(item& it) const
     return true;
 }
 
+void pc::reassign_item()
+{
+    char ch = get_invlet("Reassign item:");
+    if (ch == KEY_ESCAPE) {
+        messages.add("Never mind.");
+        return;
+    }
+    auto change_from = from_invlet(ch);
+    if (!change_from) {
+        messages.add("You do not have that item.");
+        return;
+    }
+    char newch = popup_getkey("%c - %s; enter new letter.", ch, change_from->first->tname().c_str());
+    if ((newch < 'A' || (newch > 'Z' && newch < 'a') || newch > 'z')) {
+        messages.add("%c is not a valid inventory letter.", newch);
+        return;
+    }
+    if (const auto change_to = from_invlet(newch)) { // if new letter already exists, swap it
+        change_to->first->invlet = ch;
+        messages.add("%c - %s", ch, change_to->first->tname().c_str());
+    }
+    change_from->first->invlet = newch;
+    messages.add("%c - %s", newch, change_from->first->tname().c_str());
+}
 
 static const std::string CATEGORIES[8] =
 { "FIREARMS:", "AMMUNITION:", "CLOTHING:", "COMESTIBLES:",

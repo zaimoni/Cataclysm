@@ -1074,7 +1074,7 @@ void game::get_input()
   } break;
 
   case ACTION_ORGANIZE:
-   reassign_item();
+   u.reassign_item();
    break;
 
   case ACTION_USE:
@@ -4368,31 +4368,6 @@ void game::drop_in_direction()
  if (!to_veh || vh_overflow) {
      while (i < dropped.size()) u.GPSpos.add(std::move(dropped[i++]));
  }
-}
-
-void game::reassign_item()
-{
- char ch = u.get_invlet("Reassign item:");
- if (ch == KEY_ESCAPE) {
-  messages.add("Never mind.");
-  return;
- }
- auto change_from = u.from_invlet(ch);
- if (!change_from) {
-  messages.add("You do not have that item.");
-  return;
- }
- char newch = popup_getkey("%c - %s; enter new letter.", ch, change_from->first->tname().c_str());
- if ((newch < 'A' || (newch > 'Z' && newch < 'a') || newch > 'z')) {
-  messages.add("%c is not a valid inventory letter.", newch);
-  return;
- }
- if (const auto change_to = u.from_invlet(newch)) { // if new letter already exists, swap it
-  change_to->first->invlet = ch;
-  messages.add("%c - %s", ch, change_to->first->tname().c_str());
- }
- change_from->first->invlet = newch;
- messages.add("%c - %s", newch, change_from->first->tname().c_str());
 }
 
 void game::pl_draw(const zaimoni::gdi::box<point>& bounds) const
