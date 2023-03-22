@@ -1602,7 +1602,7 @@ void submap::process_active_items()
     for (int i = 0; i < SEEX; i++) {
         for (int j = 0; j < SEEY; j++) {
             std::vector<item>& items = itm[i][j];
-            int n = items.size();
+            size_t n = items.size();
             while (0 < n) {
                 if (decltype(auto) it = items[--n]; it.active) {
                     switch (int code = g->u.use_active(it))   // XXX \todo allow modeling active item effects w/o player
