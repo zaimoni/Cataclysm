@@ -4828,31 +4828,7 @@ std::pair<int, item*> player::have_item(char let)
 	return decltype(ret)(-1, nullptr);
 }
 
-std::pair<int, const item*> player::have_item(char let) const
-{
-	auto ret = inv.by_letter(let);
-	if (ret.second) return ret;
-	if (weapon.invlet == let) return decltype(ret)(-2, &weapon);
-	int i = -2;
-	for (auto& it : worn) {
-		--i;
-		if (it.invlet == let) return decltype(ret)(i, &it);
-	}
-	return decltype(ret)(-1, nullptr);
-}
-
 item* player::decode_item_index(const int n)
-{
-    if (0 <= n) return inv.size() > n ? &inv[n] : nullptr;
-    else if (-2 == n) return &weapon;
-    else if (-3 >= n) {
-        const auto armor_n = -3 - n;
-        return worn.size() > armor_n ? &worn[n] : nullptr;
-    }
-    return nullptr;
-}
-
-const item* player::decode_item_index(const int n) const
 {
     if (0 <= n) return inv.size() > n ? &inv[n] : nullptr;
     else if (-2 == n) return &weapon;

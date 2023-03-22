@@ -675,16 +675,16 @@ void pc::read(char ch)
     }
 
     // Find the object
-    auto used = have_item(ch);
+    auto used = from_invlet(ch);
 
-    if (!used.second) {
+    if (!used) {
         messages.add("You do not have that item.");
         return;
     }
 
-    const auto read_this = is_readable(*used.second);
+    const auto read_this = is_readable(*used->first);
     if (!read_this) {
-        messages.add("Your %s is not good reading material.", used.second->tname().c_str());
+        messages.add("Your %s is not good reading material.", used->first->tname().c_str());
         return;
     }
 
@@ -695,13 +695,13 @@ void pc::read(char ch)
 
     static auto read_macguffin = [&](const it_macguffin* mac) {
         // Some macguffins can be read, but they aren't treated like books.
-        mac->used_by(*used.second, *this);
+        mac->used_by(*used->first, *this);
     };
 
     static auto read_book = [&](const it_book* book) {
         // Base read_speed() is 1000 move points (1 minute per tmp->time)
         int time = book->time * read_speed();
-        activity = player_activity(ACT_READ, time, used.first);
+        activity = player_activity(ACT_READ, time, used->second);
         moves = 0;
     };
 
