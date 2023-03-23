@@ -13,9 +13,11 @@ DECLARE_JSON_ENUM_SUPPORT(add_type)
 struct stat_delta {
     int Str;
     int Dex;
-    int Per;
     int Int;
+    int Per;
 };
+
+static_assert(sizeof(stat_delta) == sizeof(int[4])); // for reinterpret_cast in player::disp_info
 
 struct disease
 {
