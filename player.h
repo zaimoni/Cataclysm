@@ -311,11 +311,7 @@ public:
  bool has_ammo(ammotype at) const;// Returns a list of indices of the ammo
  std::vector<int> have_ammo(ammotype at) const;// Returns a list of indices of the ammo
 
- // these four compete with from_invlet; use from_invlet for new code (no decoding from index; slightly different index convention)
- std::pair<int, item*> have_item(char let);
- // std::pair<int, const item*> have_item(char let) const; // for const correctness, but this API is obsolete
  item* decode_item_index(int n);
- // const item* decode_item_index(int n) const; // for const correctness, but this is obsolete
 
 // crafting.cpp
  void make_craft(const recipe* making);

@@ -4815,19 +4815,6 @@ int player::lookup_item(char let) const
  return -2; // -2 is for "item not found"
 }
 
-std::pair<int, item*> player::have_item(char let)
-{
-	auto ret = inv.by_letter(let);
-	if (ret.second) return ret;
-	if (weapon.invlet == let) return decltype(ret)(-2, &weapon);
-	int i = -2;
-	for (auto& it : worn) {
-		--i;
-		if (it.invlet == let) return decltype(ret)(i, &it);
-	}
-	return decltype(ret)(-1, nullptr);
-}
-
 item* player::decode_item_index(const int n)
 {
     if (0 <= n) return inv.size() > n ? &inv[n] : nullptr;

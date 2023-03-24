@@ -1065,10 +1065,10 @@ void game::get_input()
    break;
 
   case ACTION_INVENTORY: {
-   auto has = u.have_item(u.get_invlet());
-   while (has.second) {
-	   full_screen_popup(has.second->info(true).c_str());
-	   has = u.have_item(u.get_invlet());
+   auto has = u.from_invlet(u.get_invlet());
+   while (has) {
+	   full_screen_popup(has->first->info(true).c_str());
+	   has = u.from_invlet(u.get_invlet());
    }
    refresh_all();
   } break;
