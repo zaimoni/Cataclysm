@@ -929,17 +929,17 @@ void iuse::light_on_off(item& it)
 
 void iuse::water_purifier(pc& p, item& it)
 {
- const auto purify = p.have_item(p.get_invlet("Purify what?"));
- if (!purify.second) {
+ const auto purify = p.from_invlet(p.get_invlet("Purify what?"));
+ if (!purify) {
 	 messages.add("You do not have that idea!");
 	 return;
  }
- if (purify.second->contents.empty()) {
+ if (purify->first->contents.empty()) {
 only_water:
 	 messages.add("You can only purify water.");
 	 return;
  }
- auto& pure = purify.second->contents[0];
+ auto& pure = purify->first->contents[0];
  if (pure.type->id != itm_water && pure.type->id != itm_salt_water) goto only_water;
  pure.make(item::types[itm_water]);
  pure.poison = 0;
