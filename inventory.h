@@ -58,13 +58,9 @@ class inventory
   void restack(player* p = nullptr);
 
   void destroy_stack(int index);
-#if DEAD_FUNC
-  std::vector<item> remove_stack(int index);
-#endif
   item  remove_item(int index);
   item  remove_item(int stack, int index);
   item  remove_item_by_letter(char ch);
-  item& item_by_letter(char ch);
   int   index_by_letter(char ch) const;
   std::pair<int, item*> by_letter(char ch);
   std::pair<int, const item*> by_letter(char ch) const;

@@ -161,20 +161,6 @@ void inventory::destroy_stack(int index)
     EraseAt(items, index);
 }
 
-#if DEAD_FUNC
-std::vector<item> inventory::remove_stack(int index)
-{
- if (index < 0 || index >= items.size()) {
-  debugmsg("Tried to remove_stack(%d) from an inventory (size %d)",
-           index, items.size());
-  return nullstack;
- }
- std::vector<item> ret(std::move(items[index]));
- EraseAt(items, index);
- return ret;
-}
-#endif
-
 item inventory::remove_item(int index)
 {
  assert(0 <= index && items.size() > index);
@@ -209,15 +195,6 @@ item inventory::remove_item_by_letter(char ch)
  }
 
  return item::null;
-}
-
-item& inventory::item_by_letter(char ch)
-{
- for(auto& stack : items) { 
-  auto& it = stack[0];
-  if (it.invlet == ch) return it;
- }
- return (discard<item>::x = item::null);
 }
 
 int inventory::index_by_letter(char ch) const
