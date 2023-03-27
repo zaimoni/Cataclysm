@@ -4577,28 +4577,6 @@ item player::i_remn(int index)
  return inv.remove_item(index);
 }
 
-bool player::remove_item(item* it)
-{
-	assert(it);
-	if (it == &weapon) {
-		remove_weapon();
-		return true;
-	}
-	for (size_t i = 0; i < inv.size(); i++) {
-		if (it == &inv[i]) {
-			i_remn(i);
-			return true;
-		}
-	}
-	for (int i = 0; i < worn.size(); i++) {
-		if (it == &worn[i]) {
-			EraseAt(worn, i);
-			return true;
-		}
-	}
-	return false;
-}
-
 bool player::remove_discard(const item_spec& it)
 {
     assert(it.first);

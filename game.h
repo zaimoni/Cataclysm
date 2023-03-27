@@ -202,8 +202,6 @@ class game : public reality_bubble
         std::pair<pc*, int>,
         std::pair<npc*, int> > > find(item& it);
 
-  void remove_item(item *it);
-
   signed char temperature;              // The air temperature
   weather_type weather;			// Weather pattern--SEE weather.h
   pc u;

@@ -2316,17 +2316,6 @@ std::optional<
     return std::nullopt;
 }
 
-
-void game::remove_item(item *it)
-{
- if (u.remove_item(it)) return;
- if (const auto ret = m.find_item(it)) {
-     EraseAt(m.i_at(ret->first), ret->second); // inlined m.i_rem(*ret, i);
-     return;
- }
- for (auto& n_pc : active_npc) if (n_pc->remove_item(it)) return;
-}
-
 static void local_mon_info_display(WINDOW* w_moninfo, const mtype* const type, point& pr, int ws)
 {
     const std::string& name = type->name;
