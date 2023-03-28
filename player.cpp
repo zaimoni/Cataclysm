@@ -4535,6 +4535,20 @@ std::optional<player::item_spec> player::from_invlet(char let)
     return std::pair(&inv[index], index);
 }
 
+std::optional<player::item_spec_const> player::from_invlet(char let) const
+{
+    if (KEY_ESCAPE == let) return std::nullopt;
+    if (let == weapon.invlet) return std::pair(&weapon, -1);
+    int worn_index = -2;
+    for (decltype(auto) it : worn) {
+        if (let == it.invlet) return std::pair(&it, worn_index);
+        worn_index--;
+    }
+    int index = inv.index_by_letter(let);
+    if (0 > index) return std::nullopt;
+    return std::pair(&inv[index], index);
+}
+
 std::optional<player::item_spec> player::lookup(item* it)
 {
     if (!it) return std::nullopt;
@@ -4756,11 +4770,6 @@ bool player::has_weapon_or_armor(char let) const
  if (weapon.invlet == let) return true;
  for (const auto& it : worn) if (it.invlet == let) return true;
  return false;
-}
-
-bool player::has_item(char let) const
-{
- return (has_weapon_or_armor(let) || inv.index_by_letter(let) != -1);
 }
 
 bool player::has_item(item *it) const

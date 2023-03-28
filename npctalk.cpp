@@ -1762,7 +1762,7 @@ Tab key to switch lists, letters to pick items, Enter to finalize, Esc to quit\n
    if (getting_theirs[i]) {
     practice += 2;
     tmp.invlet = 'a';
-    while (u.has_item(tmp.invlet)) {
+    while (u.from_invlet(tmp.invlet)) {
      tmp.invlet = pc::inc_invlet(tmp.invlet);
      if ('Z' == tmp.invlet) return false; // \todo Do something else with these.
     }

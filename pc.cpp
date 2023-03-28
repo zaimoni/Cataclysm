@@ -168,7 +168,7 @@ bool pc::assign_invlet(item& it) const
     // This while loop guarantees the inventory letter won't be a repeat. If it
     // tries all 52 letters, it fails.
     int iter = 0;
-    while (has_item(next_inv)) {
+    while (from_invlet(next_inv)) {
         next_inv = inc_invlet(next_inv);
         if (52 <= ++iter) return false;
     }
@@ -181,8 +181,10 @@ bool pc::assign_invlet_stacking_ok(item& it) const
     // This while loop guarantees the inventory letter won't be a repeat. If it
     // tries all 52 letters, it fails.
     int iter = 0;
-    while (has_item(next_inv) && !i_at(next_inv).stacks_with(it)) {
+    auto dest = from_invlet(next_inv);
+    while (dest && !dest->first->stacks_with(it)) {
         next_inv = inc_invlet(next_inv);
+        dest = from_invlet(next_inv);
         if (52 <= ++iter) return false;
     }
     it.invlet = next_inv;

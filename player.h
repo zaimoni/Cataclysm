@@ -211,6 +211,7 @@ public:
 
  // 2021-09-08: modernized standard for identifying local items for various sorts of use
  using item_spec = std::pair<item*, int>;
+ using item_spec_const = std::pair<const item*, int>;
  /// <summary>
  /// legacy analog: item& i_at(char let)
  /// legacy analog: bool has_item(char let) const;
@@ -218,6 +219,7 @@ public:
  /// </summary>
  /// <param name="let">invlet from player UI</param>
  std::optional<item_spec> from_invlet(char let);
+ std::optional<item_spec_const> from_invlet(char let) const;
  std::optional<item_spec> lookup(item* it);
  /// <summary>
  /// legacy analog: bool remove_item(item* it);
@@ -304,7 +306,6 @@ public:
 
  bool has_watertight_container() const;
  bool has_weapon_or_armor(char let) const;	// Has an item with invlet let
- bool has_item(char let) const;		// Has an item with invlet let
  bool has_item(item *it) const;		// Has a specific item
  bool has_mission_item(int mission_id) const;	// Has item with mission_id
  bool has_ammo(ammotype at) const;// Returns a list of indices of the ammo
