@@ -163,12 +163,21 @@ char pc::dec_invlet(char src)
     };
 }
 
+// cf. ...::from_invlet; ignores weapon and worn armors
+std::optional<player::item_spec_const> pc::has_in_inventory(char let) const
+{
+    if (KEY_ESCAPE == let) return std::nullopt;
+    int index = inv.index_by_letter(let);
+    if (0 > index) return std::nullopt;
+    return std::pair(&inv[index], index);
+}
+
 bool pc::assign_invlet(item& it) const
 {
     // This while loop guarantees the inventory letter won't be a repeat. If it
     // tries all 52 letters, it fails.
     int iter = 0;
-    while (from_invlet(next_inv)) {
+    while (has_in_inventory(next_inv)) {
         next_inv = inc_invlet(next_inv);
         if (52 <= ++iter) return false;
     }
@@ -181,10 +190,10 @@ bool pc::assign_invlet_stacking_ok(item& it) const
     // This while loop guarantees the inventory letter won't be a repeat. If it
     // tries all 52 letters, it fails.
     int iter = 0;
-    auto dest = from_invlet(next_inv);
+    auto dest = has_in_inventory(next_inv);
     while (dest && !dest->first->stacks_with(it)) {
         next_inv = inc_invlet(next_inv);
-        dest = from_invlet(next_inv);
+        dest = has_in_inventory(next_inv);
         if (52 <= ++iter) return false;
     }
     it.invlet = next_inv;
