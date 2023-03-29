@@ -62,8 +62,6 @@ class inventory
   item  remove_item(int stack, int index);
   item  remove_item_by_letter(char ch);
   int   index_by_letter(char ch) const;
-  std::pair<int, item*> by_letter(char ch);
-  std::pair<int, const item*> by_letter(char ch) const;
 
   /// <summary>Inverts operator[]</summary>
   /// <returns>-1 on failure, or valid index for operator[]</returns>

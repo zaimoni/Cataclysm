@@ -206,32 +206,6 @@ int inventory::index_by_letter(char ch) const
  return -1;
 }
 
-std::pair<int, item*> inventory::by_letter(const char ch)
-{
-  if (KEY_ESCAPE != ch) {
-	  int i = -1;
-	  for (auto& stack : items) {
-		  ++i;
-		  auto& it = stack[0];
-		  if (it.invlet == ch) return std::pair<int, item*>(i, &it);
-	  }
-  }
-  return std::pair<int, item*>(-1, nullptr);
-}
-
-std::pair<int, const item*> inventory::by_letter(const char ch) const
-{
-	if (KEY_ESCAPE != ch) {
-		int i = -1;
-		for (auto& stack : items) {
-			++i;
-			auto& it = stack[0];
-			if (it.invlet == ch) return std::pair<int, const item*>(i, &it);
-		}
-	}
-	return std::pair<int, const item*>(-1, nullptr);
-}
-
 int inventory::index_of(const item& it) const
 {
     int i = -1;

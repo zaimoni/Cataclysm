@@ -4496,8 +4496,7 @@ item player::i_rem(char let)
    return tmp;
   }
  }
- if (inv.index_by_letter(let) != -1) return inv.remove_item_by_letter(let);
- return item::null;
+ return inv.remove_item_by_letter(let);
 }
 
 item player::i_rem(itype_id type)
