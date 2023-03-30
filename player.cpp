@@ -4398,18 +4398,6 @@ item player::i_rem(itype_id type)
  return item::null;
 }
 
-item& player::i_at(char let)
-{
- if (let == KEY_ESCAPE) return (discard<item>::x = item::null);
- if (weapon.invlet == let) return weapon;
- for (auto& it : worn) {
-  if (it.invlet == let) return it;
- }
- int index = inv.index_by_letter(let);
- if (index == -1) return (discard<item>::x = item::null);
- return inv[index];
-}
-
 std::optional<player::item_spec> player::from_invlet(char let)
 {
     if (KEY_ESCAPE == let) return std::nullopt;

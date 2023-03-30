@@ -609,26 +609,25 @@ void player::activate_bionic(int b)
 	 messages.add("You can't finish it all!");
 	 thirst = min_thirst;
    }
+  } else if (const auto holds_water = g->u.from_invlet(g->u.get_invlet("Choose a container:"))) {
+	  if (const auto cont = holds_water->first->is_container()) {
+		  if (holds_water->first->volume_contained() + 1 > cont->contains) {
+			  messages.add("There's no space left in your %s.", holds_water->first->tname().c_str());
+			  power_level += bionic::type[bio_evap].power_cost;
+		  } else if (!(cont->flags & con_wtight)) {
+			  messages.add("Your %s isn't watertight!", holds_water->first->tname().c_str());
+			  power_level += bionic::type[bio_evap].power_cost;
+		  } else {
+			  messages.add("You pour water into your %s.", holds_water->first->tname().c_str());
+			  holds_water->first->put_in(item(item::types[itm_water], 0)); // XXX \todo should this be the correct origin time?
+		  }
+	  } else {
+		  messages.add("That %s isn't a container!", holds_water->first->tname().c_str());
+		  power_level += bionic::type[bio_evap].power_cost;
+	  }
   } else {
-   auto& it = i_at(g->u.get_invlet("Choose a container:"));
-   if (it.type == nullptr) {
-    messages.add("You don't have that item!");
-    power_level += bionic::type[bio_evap].power_cost;
-   } else if (const auto cont = it.is_container()) {
-	   if (it.volume_contained() + 1 > cont->contains) {
-		   messages.add("There's no space left in your %s.", it.tname().c_str());
-		   power_level += bionic::type[bio_evap].power_cost;
-	   } else if (!(cont->flags & con_wtight)) {
-		   messages.add("Your %s isn't watertight!", it.tname().c_str());
-		   power_level += bionic::type[bio_evap].power_cost;
-	   } else {
-		   messages.add("You pour water into your %s.", it.tname().c_str());
-		   it.put_in(item(item::types[itm_water], 0)); // XXX \todo should this be the correct origin time?
-	   }
-   } else {
-    messages.add("That %s isn't a container!", it.tname().c_str());
-    power_level += bionic::type[bio_evap].power_cost;
-   }
+	  messages.add("You don't have that item!");
+	  power_level += bionic::type[bio_evap].power_cost;
   }
   break;
 
@@ -710,28 +709,25 @@ void player::activate_bionic(int b)
    for (const auto& tmp : g->m.i_at(GPSpos)) {
 	   if (tmp.type->id == itm_corpse && query_yn("Extract water from the %s", tmp.tname().c_str())) {
 		   have_extracted = true;
-		   auto& it = i_at(g->u.get_invlet("Choose a container:"));
-		   if (nullptr == it.type) {
-			   messages.add("You don't have that item!");
-			   power_level += bionic::type[bio_water_extractor].power_cost;
-		   } else if (const auto cont = it.is_container()) {
-			   if (it.volume_contained() + 1 > cont->contains) {
-				   messages.add("There's no space left in your %s.", it.tname().c_str());
+		   if (const auto holds_water = g->u.from_invlet(g->u.get_invlet("Choose a container:"))) {
+			   if (const auto cont = holds_water->first->is_container()) {
+				   if (holds_water->first->volume_contained() + 1 > cont->contains) {
+					   messages.add("There's no space left in your %s.", holds_water->first->tname().c_str());
+					   power_level += bionic::type[bio_water_extractor].power_cost;
+				   } else {
+					   messages.add("You pour water into your %s.", holds_water->first->tname().c_str());
+					   holds_water->first->put_in(item(item::types[itm_water], 0));
+				   }
+			   } else {
+				   messages.add("You don't have that item!");
 				   power_level += bionic::type[bio_water_extractor].power_cost;
 			   }
-			   else {
-				   messages.add("You pour water into your %s.", it.tname().c_str());
-				   it.put_in(item(item::types[itm_water], 0));
-			   }
-		   } else {
-			   messages.add("That %s isn't a container!", it.tname().c_str());
-			   power_level += bionic::type[bio_water_extractor].power_cost;
+			   break;
 		   }
-		   break;
+		   if (!have_extracted) power_level += bionic::type[bio_water_extractor].power_cost;	// We never chose a corpse
 	   }
-	   if (!have_extracted) power_level += bionic::type[bio_water_extractor].power_cost;	// We never chose a corpse
    }
-  }
+   }
   break;
 
  case bio_magnet:
