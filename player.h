@@ -85,12 +85,12 @@ public:
  // \todo once MSVC++ has std::ranges support, consider cutting over to that
  const char* interpret_trait(const std::pair<pl_flag, const char*>* origin, ptrdiff_t ub) const;
 
+ // bionics
  bool has_bionic(bionic_id b) const;
  bool has_active_bionic(bionic_id b) const;
  void add_bionic(bionic_id b);
  void charge_power(int amount);
- void power_bionics(game *g);
- void activate_bionic(int b, game *g);	// \todo V 0.2.1 extend to NPCs
+ void activate_bionic(int b); // V 0.2.1 extend to NPCs
 
  void mutate();
  void mutate_towards(pl_flag mut);

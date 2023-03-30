@@ -1139,7 +1139,7 @@ void game::get_input()
    break;
 
   case ACTION_BIONICS:
-   u.power_bionics(this);
+   u.power_bionics();
    refresh_all();
    break;
 

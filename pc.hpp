@@ -54,6 +54,9 @@ public:
 	void use(char let);
 	void read(char let); // Read a book	V 0.2.8+ \todo enable for NPCs
 
+	// bionics
+	void power_bionics(); // V 0.2.1 extend to NPCs
+
 	// footstep UI
 	void add_footstep(const point& orig, int volume);
 	void draw_footsteps(/* WINDOW* */ void* w);

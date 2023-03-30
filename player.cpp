@@ -2925,116 +2925,6 @@ void player::charge_power(int amount)
   power_level = 0;
 }
 
-void player::power_bionics(game *g)
-{
- WINDOW *wBio = newwin(VIEW, SCREEN_WIDTH, 0, 0);
- werase(wBio);
- std::vector<bionic*> passive;	// \todo should these two be std::vector<bionic*>?
- std::vector<bionic*> active;
- mvwaddstrz(wBio, 0, 0, c_blue, "BIONICS -");
-
- bool activating = true;
- static constexpr const int header_offset = sizeof("BIONICS -"); // C++20: constexpr strlen?
-
- static auto mode_desc = [&]() {
-     draw_hline(wBio, 0, c_white, ' ', header_offset); // general-case preemptive clear
-     mvwaddstrz(wBio, 0, header_offset, c_white, activating ? "Activating.  Press '!' to examine your implants."
-                                                           : "Examining.  Press '!' to activate your implants.");
- };
-
- mode_desc();
-
- draw_hline(wBio, 1, c_ltgray, LINE_OXOX);
- draw_hline(wBio, VIEW - 4, c_ltgray, LINE_OXOX);
- for (decltype(auto) bio : my_bionics) {
-     const auto& bio_type = bionic::type[bio.id];
-     if (bio_type.power_source || !bio_type.activated)
-         passive.push_back(&bio);
-     else
-         active.push_back(&bio);
- }
-
- nc_color type;
- if (!passive.empty()) {
-  mvwaddstrz(wBio, 2, 0, c_ltblue, "Passive:");
-  int i = passive.size();
-  while (0 <= --i) {
-      const auto& bio_type = bionic::type[passive[i]->id];
-      type = (bio_type.power_source ? c_ltcyan : c_cyan);
-      mvwputch(wBio, 3 + i, 0, type, passive[i]->invlet);
-      mvwaddstrz(wBio, 3 + i, 2, type, bio_type.name.c_str());
-  }
- }
- if (!active.empty()) {
-  // unclear where this magic constant 32 comes from.  De-facto bionic name length limit?
-  mvwaddstrz(wBio, 2, 32, c_ltblue, "Active:");
-  int i = active.size();
-  while (0 <= --i) {
-      type = (active[i]->powered ? c_red : c_ltred);
-      const auto& bio_type = bionic::type[active[i]->id];
-      mvwputch(wBio, 3 + i, 32, type, active[i]->invlet);
-      mvwprintz(wBio, 3 + i, 34, type,
-          (active[i]->powered ? "%s - ON" : "%s - %d PU / %d trns"),
-          bio_type.name.c_str(),
-          bio_type.power_cost,
-          bio_type.charge_time);
-  }
- }
-
- wrefresh(wBio);
- int ch;
- do {
-  ch = getch();
-  if (ch == '!') {
-   activating = !activating;
-   mode_desc();
-  } else if (ch == ' ')
-   ch = KEY_ESCAPE;
-  else if (ch != KEY_ESCAPE) {
-   bionic *tmp = nullptr;
-   int b;
-   for (int i = 0; i < my_bionics.size(); i++) {
-    if (ch == my_bionics[i].invlet) {
-     tmp = &my_bionics[i];
-     b = i;
-     ch = KEY_ESCAPE;
-    }
-   }
-   if (tmp) {
-	const auto& bio_type = bionic::type[tmp->id];
-    if (activating) {
-     if (bio_type.activated) {
-      if (tmp->powered) {
-       tmp->powered = false;
-       messages.add("%s powered off.", bio_type.name.c_str());
-      } else if (power_level >= bio_type.power_cost || (weapon.type->id == itm_bio_claws && tmp->id == bio_claws))
-       activate_bionic(b, g);
-     } else {
-       draw_hline(wBio, VIEW - 3, c_ltgray, ' ');
-       draw_hline(wBio, VIEW - 2, c_ltgray, ' ');
-       draw_hline(wBio, VIEW - 1, c_ltgray, ' ');
-       mvwprintz(wBio, VIEW - 3, 0, c_ltred, "\
-You can not activate %s!  To read a description of \
-%s, press '!', then '%c'.", bio_type.name.c_str(), bio_type.name.c_str(), tmp->invlet);
-     }
-    } else {	// Describing bionics, not activating them!
-// Clear the lines first
-     ch = 0;
-     draw_hline(wBio, VIEW - 3, c_ltgray, ' ');
-     draw_hline(wBio, VIEW - 2, c_ltgray, ' ');
-     draw_hline(wBio, VIEW - 1, c_ltgray, ' ');
-     mvwaddstrz(wBio, VIEW - 3, 0, c_ltblue, bio_type.description.c_str());
-    }
-   }
-  }
-  wrefresh(wBio);
- } while (ch != KEY_ESCAPE);
- werase(wBio);
- wrefresh(wBio);
- delwin(wBio);
- erase();
-}
-
 unsigned int player::sight_range(int light_level) const
 {
  // critical vision impairments.
@@ -3837,7 +3727,7 @@ void player::die()
 void player::suffer(game *g)
 {
  for (int i = 0; i < my_bionics.size(); i++) {
-  if (my_bionics[i].powered) activate_bionic(i, g);
+  if (my_bionics[i].powered) activate_bionic(i);
  }
  if (underwater) { // player::is_drowning must agree with this
   if (!has_trait(PF_GILLS)) oxygen--;
