@@ -4389,15 +4389,6 @@ item player::i_rem(char let)
  return inv.remove_item_by_letter(let);
 }
 
-item player::i_rem(itype_id type)
-{
- if (weapon.type->id == type) return unwield();
- for (size_t i = 0; i < inv.size(); i++) {
-  if (inv[i].type->id == type) return inv.remove_item(i);
- }
- return item::null;
-}
-
 std::optional<player::item_spec> player::from_invlet(char let)
 {
     if (KEY_ESCAPE == let) return std::nullopt;
