@@ -51,6 +51,7 @@ public:
 	void reassign_item(); // Reassign the letter of an item   '='
 
 	// invlet UI
+	item i_rem(char let);	// Remove item from inventory; returns ret_null on fail
 	void use(char let);
 	void read(char let); // Read a book	V 0.2.8+ \todo enable for NPCs
 

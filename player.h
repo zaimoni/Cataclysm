@@ -279,7 +279,6 @@ public:
  bool has_active_item(itype_id id) const;
  int  active_item_charges(itype_id id) const;
  void process_active_items(game *g);
- item i_rem(char let);	// Remove item from inventory; returns ret_null on fail
  void remove_weapon();
  item unwield();    // like remove_weapon, but returns what was unwielded
  void remove_mission_items(int mission_id);

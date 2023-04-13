@@ -63,6 +63,25 @@ bool pc::if_visible_message(const char* msg) const
 
 bool pc::ask_yn(const char* msg, std::function<bool()> ai) const { return query_yn(msg); }
 
+item pc::i_rem(char let)
+{
+    item tmp;
+    if (weapon.invlet == let) {
+        if (weapon.type->id > num_items && weapon.type->id < num_all_items) return item::null;
+        tmp = std::move(weapon);
+        weapon = item::null;
+        return tmp;
+    }
+    for (int i = 0; i < worn.size(); i++) {
+        if (worn[i].invlet == let) {
+            tmp = std::move(worn[i]);
+            EraseAt(worn, i);
+            return tmp;
+        }
+    }
+    return inv.remove_item_by_letter(let);
+}
+
 /// <returns>0: no-op; -1 charger gun; -2 artifact; 1 now null item</returns>
 int pc::use_active(item& it) {
     const auto tool = it.is_tool();

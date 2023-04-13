@@ -4370,25 +4370,6 @@ void player::remove_mission_items(int mission_id)
  }
 }
 
-item player::i_rem(char let)
-{
- item tmp;
- if (weapon.invlet == let) {
-  if (weapon.type->id > num_items && weapon.type->id < num_all_items) return item::null;
-  tmp = std::move(weapon);
-  weapon = item::null;
-  return tmp;
- }
- for (int i = 0; i < worn.size(); i++) {
-  if (worn[i].invlet == let) {
-   tmp = std::move(worn[i]);
-   EraseAt(worn, i);
-   return tmp;
-  }
- }
- return inv.remove_item_by_letter(let);
-}
-
 std::optional<player::item_spec> player::from_invlet(char let)
 {
     if (KEY_ESCAPE == let) return std::nullopt;
