@@ -411,6 +411,7 @@ void npc::execute_action(game *g, const ai_action& action, std::optional<std::va
 
  case npc_melee:
   std::visit(npc::melee(*this), *target);
+  break;
 
 #if DEAD_FUNC
  case npc_heal_player:
