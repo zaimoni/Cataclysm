@@ -5026,7 +5026,7 @@ bool player::wear_item(const item& to_wear)
  return true;
 }
 
-bool player::takeoff(map& m, char let)
+bool player::takeoff(char let)
 {
  for (int i = 0; i < worn.size(); i++) {
   auto& it = worn[i];

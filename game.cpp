@@ -4611,8 +4611,8 @@ void game::wear()
 
 void game::takeoff()
 {
- if (u.takeoff(m, u.get_invlet("Take off item:")))
-  u.moves -= 250; // TODO: Make this variable
+ if (u.takeoff(u.get_invlet("Take off item:")))
+  u.moves -= 5 * (mobile::mp_turn / 2); // TODO: Make this variable
  else
   messages.add("Invalid selection.");
 }
