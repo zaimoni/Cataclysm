@@ -762,6 +762,16 @@ void pc::read(char ch)
     std::visit(zaimoni::handler<void, const it_macguffin*, const it_book*>(read_macguffin, read_book), *read_this);
 }
 
+bool pc::takeoff(char let)
+{
+    for (int i = 0; i < worn.size(); i++) {
+        auto& it = worn[i];
+        if (it.invlet == let) return take_off(i);
+    }
+    subjective_message("You are not wearing that item.");
+    return false;
+}
+
 // add_footstep will create a list of locations to draw monster
 // footsteps. these will be more or less accurate depending on the
 // characters hearing and how close they are

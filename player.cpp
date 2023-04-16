@@ -5026,25 +5026,29 @@ bool player::wear_item(const item& to_wear)
  return true;
 }
 
-bool player::takeoff(char let)
+int player::can_take_off_armor(const item& it) const
 {
- for (int i = 0; i < worn.size(); i++) {
-  auto& it = worn[i];
-  if (it.invlet == let) {
-   if (volume_capacity() - (dynamic_cast<const it_armor*>(it.type))->storage > volume_carried() + it.type->volume) {
-    inv.push_back(std::move(it));
-    EraseAt(worn, i);
-    inv_sorted = false;
-    return true;
-   } else if (ask_yn("No room in inventory for your " + worn[i].tname() + ".  Drop it?")) {
-    GPSpos.add(std::move(it));
-    EraseAt(worn, i);
-    return true;
-   } else return false;
-  }
- }
- messages.add("You are not wearing that item.");
- return false;
+    if (volume_capacity() - (dynamic_cast<const it_armor*>(it.type))->storage > volume_carried() + it.type->volume) return 1;
+    if (ask_yn("No room in inventory for your " + it.tname() + ".  Drop it?")) return -1;
+    return 0;
+}
+
+bool player::take_off(int i)
+{
+    auto& it = worn[i];
+    switch (const auto code = can_take_off_armor(it))
+    {
+    case 1:
+        inv.push_back(std::move(it));
+        inv_sorted = false;
+        EraseAt(worn, i);
+        return true;
+    case -1:
+        GPSpos.add(std::move(it));
+        EraseAt(worn, i);
+        return true;
+    default: return false;
+    }
 }
 
 std::optional<std::string> player::cannot_read() const

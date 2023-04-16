@@ -54,6 +54,7 @@ public:
 	item i_rem(char let);	// Remove item from inventory; returns ret_null on fail
 	void use(char let);
 	void read(char let); // Read a book	V 0.2.8+ \todo enable for NPCs
+	bool takeoff(char let);// Take off item; returns false on fail
 
 	// bionics
 	void power_bionics(); // V 0.2.1 extend to NPCs
