@@ -4915,23 +4915,14 @@ void player::pick_style() // Style selection menu
  style_selected = (2 <= selection) ? styles[selection - 2] : itm_null;
 }
 
-bool player::wear(char let)
+bool player::wear(const item_spec& wear_this)
 {
- auto wear_this = from_invlet(let);
- if (!wear_this) {
-     messages.add("You don't have item '%c'.", let);
-     return false;
- } else if (-2 > wear_this->second) {
-     messages.add("You are already wearing item '%c'.", let);
-     return false;
- }
+    if (!wear_item(*wear_this.first)) return false;
 
- if (!wear_item(*wear_this->first)) return false;
+    if (-2 == wear_this.second) weapon = item::null;
+    else inv.remove_item(wear_this.second);
 
- if (-2 == wear_this->second) weapon = item::null;
- else inv.remove_item(wear_this->second);
-
- return true;
+    return true;
 }
 
 const it_armor* player::wear_is_performable(const item& to_wear) const

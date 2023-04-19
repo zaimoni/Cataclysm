@@ -43,6 +43,7 @@ public:
 	char get_invlet(std::string title = "Inventory:");
 	std::vector<item> multidrop();
 	std::optional<item_spec_const> has_in_inventory(char let) const;
+	bool wear(char let);	// Wear item; returns false on fail
 
 	static char inc_invlet(char src);
 	static char dec_invlet(char src);

@@ -191,6 +191,21 @@ std::optional<player::item_spec_const> pc::has_in_inventory(char let) const
     return std::pair(&inv[index], index);
 }
 
+bool pc::wear(char let)
+{
+    auto wear_this = from_invlet(let);
+    if (!wear_this) {
+        messages.add("You don't have item '%c'.", let);
+        return false;
+    }
+    else if (-2 > wear_this->second) {
+        messages.add("You are already wearing item '%c'.", let);
+        return false;
+    }
+
+    return player::wear(*wear_this);
+}
+
 bool pc::assign_invlet(item& it) const
 {
     // This while loop guarantees the inventory letter won't be a repeat. If it

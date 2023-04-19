@@ -234,7 +234,7 @@ public:
  bool eat(const item_spec& src);	// Eat item; returns false on fail
  virtual bool wield(int index);// Wield item; returns false on fail
  void pick_style(); // Pick a style
- bool wear(char let);	// Wear item; returns false on fail
+ bool wear(const item_spec& wear_this);	// Wear item; returns false on fail
  bool wear_item(const item& to_wear);
  const it_armor* wear_is_performable(const item& to_wear) const;
  std::optional<std::string> cannot_read() const;  // can read at all (environment check, etc.)
