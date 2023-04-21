@@ -401,6 +401,18 @@ char pc::get_invlet(std::string title)
     return ch;
 }
 
+std::optional<player::item_spec> pc::choose(const char* prompt, std::function<std::optional<std::string>(const item_spec&)> fail)
+{
+    if (auto ret = from_invlet(get_invlet(prompt))) {
+        if (auto err = fail(*ret)) {
+            messages.add(*err);
+            return std::nullopt;
+        }
+        return ret;
+    }
+    return std::nullopt;
+}
+
 // C:Whales: game::multidrop
 std::vector<item> pc::multidrop()
 {

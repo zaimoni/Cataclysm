@@ -1991,6 +1991,16 @@ std::vector<item>* npc::use_stack_at(const point& pt) const
 	return ret;
 }
 
+
+std::optional<player::item_spec> npc::choose(const char* prompt, std::function<std::optional<std::string>(const item_spec&)> fail)
+{
+	auto candidates = reject(fail);
+	// \todo we want to eliminate dominated candidates
+	auto ub = candidates.size();
+	if (0 >= ub) return std::nullopt;
+	return candidates[rng(0, ub - 1)];
+}
+
 // NPCs don't use the text UI, so override the player version
 void npc::cancel_activity_query(const char* message, ...)
 {

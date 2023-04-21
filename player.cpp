@@ -4384,6 +4384,30 @@ std::optional<player::item_spec> player::from_invlet(char let)
     return std::pair(&inv[index], index);
 }
 
+std::vector<player::item_spec> player::reject(std::function<std::optional<std::string>(const item_spec&)> fail)
+{
+    std::vector<player::item_spec> ret;
+    player::item_spec stage;
+
+    int i = inv.size();
+    while (0 <= --i) {
+        stage = player::item_spec(&inv[i], i);
+        if (!fail(stage)) ret.push_back(stage);
+    }
+
+    stage = player::item_spec(&weapon, -1);
+    if (!fail(stage)) ret.push_back(stage);
+
+    i = -2;
+    for (decltype(auto) it : worn) {
+        stage = player::item_spec(&it, i);
+        if (!fail(stage)) ret.push_back(stage);
+        i--;
+    }
+
+    return ret;
+}
+
 std::optional<player::item_spec_const> player::from_invlet(char let) const
 {
     if (KEY_ESCAPE == let) return std::nullopt;

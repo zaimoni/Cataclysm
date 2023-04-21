@@ -488,6 +488,7 @@ public:
     bool ask_yn(const char* msg, std::function<bool()> ai = nullptr) const override { return ai ? ai() : false; }
     bool see_phantasm() override { return false; } // unclear how to implement this even for multi-PC case, let alone NPCs
     std::vector<item>* use_stack_at(const point& pt) const override;
+    std::optional<item_spec> choose(const char* prompt, std::function<std::optional<std::string>(const item_spec&)> fail);
     constexpr int use_active(item& it) override { return 0; } // stub
 
 // grammatical support

@@ -221,6 +221,8 @@ public:
  std::optional<item_spec> from_invlet(char let);
  std::optional<item_spec_const> from_invlet(char let) const;
  std::optional<item_spec> lookup(item* it);
+ std::vector<item_spec> reject(std::function<std::optional<std::string>(const item_spec&)> fail);
+
  /// <summary>
  /// legacy analog: bool remove_item(item* it);
  /// legacy analog: item i_rem(char let); when return value unused
@@ -327,6 +329,7 @@ public:
  virtual std::vector<item>* use_stack_at(const point& pt) const;
  virtual int use_active(item& it) = 0;
  virtual void record_kill(const monster& m) {}
+ virtual std::optional<item_spec> choose(const char* prompt, std::function<std::optional<std::string>(const item_spec&)> fail) = 0;
 
  // grammatical support
  bool is_proper() const final { return true; }
