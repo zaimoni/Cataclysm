@@ -1117,7 +1117,7 @@ void GPS_loc::destroy(bool makesound)
     if (!is_destructible(terrain)) return;
 
     // \todo V0.3.0 bash bashable terrain (seems to give more detailed results)?
-    auto gas_pump_debris = [=](const point& delta) {
+    auto gas_pump_debris = [=,this](const point& delta) {
         auto dest(*this + delta);
         if (0 < dest.move_cost()) {
             if (one_in(3)) dest.add(item(item::types[itm_gasoline], 0));
@@ -1125,7 +1125,7 @@ void GPS_loc::destroy(bool makesound)
         }
     };
 
-    auto door_debris = [=](const point& delta) {
+    auto door_debris = [=,this](const point& delta) {
         auto dest(*this + delta);
         if (0 < dest.move_cost()) {
             if (one_in(6)) dest.add(item(item::types[itm_2x4], 0));
@@ -1789,7 +1789,7 @@ void map::debug()
   for (int j = 0; j <= SEEY * 2; j++) {
    const auto& stack = i_at(i, j);
    if (!stack.empty()) {
-    mvprintw(1, 0, "%d, %d: %d items", i, j, stack.size());
+    mvprintw(1, 0, "%d, %d: %ld items", i, j, stack.size());
     mvprintw(2, 0, "%c, %d", stack.back().symbol(), stack.back().color());
     getch();
    }

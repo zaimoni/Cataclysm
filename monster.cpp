@@ -339,7 +339,7 @@ int monster::trigger_sum(const game* g, typename cataclysm::bitmap<N_MONSTER_TRI
     }
 
     if (triggers & mfb(MTRIG_PLAYER_CLOSE)) {
-        g->forall_do(std::function<void(const player&)>([=, &ret](const player& u) mutable {
+        g->forall_do(std::function<void(const player&)>([=,this,&ret](const player& u) mutable {
             if (rl_dist(GPSpos, u.GPSpos) <= 5) ret += 5;
         }));
     }
@@ -615,7 +615,7 @@ void monster::die()
  if (type->placate & mfb(MTRIG_FRIEND_DIED)) anger_adjust -= 15;
  if (type->fear & mfb(MTRIG_FRIEND_DIED)) morale_adjust -= 15;
  if (anger_adjust != 0 || morale_adjust != 0) {
-     g->forall_do([=, light = g->light_level(), species = type->species](monster& _mon) {
+     g->forall_do([=, this, light = g->light_level(), species = type->species](monster& _mon) {
          if (   _mon.type->species == species
              && _mon.GPSpos.can_see(GPSpos, light)) {
              _mon.morale += morale_adjust;
