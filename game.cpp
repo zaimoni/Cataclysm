@@ -2012,7 +2012,7 @@ void game::draw_ter(const point& pos)
  m.draw(w_terrain, u, pos);
 
  // Draw monsters
- auto draw_mon = [=](const monster& mon) {
+ auto draw_mon = [=,this](const monster& mon) {
      point delta(mon.pos - pos);
      if (VIEW_CENTER < Linf_dist(delta)) return;
      if (u.see(mon))
@@ -2027,7 +2027,7 @@ void game::draw_ter(const point& pos)
  forall_do(draw_mon);
 
  // Draw NPCs
- auto draw_npc = [=](const npc& _npc) {
+ auto draw_npc = [=,this](const npc& _npc) {
      const point delta(_npc.pos - pos);
      if (VIEW_CENTER < Linf_dist(delta)) return;
      if (u.see(_npc)) _npc.draw(w_terrain, pos, false);
@@ -2847,7 +2847,7 @@ void GPS_loc::explosion(int power, int shrapnel, bool fire) const
     else
         sound(power * 10, "an explosion!");
 
-    forall_do_inclusive(zaimoni::gdi::box<point>(point(-radius), point(radius)), [=](point delta) {
+    forall_do_inclusive(zaimoni::gdi::box<point>(point(-radius), point(radius)), [=,this](point delta) {
         int dam = (point(0) == delta) ? 3 * power : 3 * power / Linf_dist(delta);
         auto loc = *this + delta;
         std::string discard;
