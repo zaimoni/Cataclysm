@@ -203,24 +203,24 @@ void game::place_construction(const constructable * const con)
  inventory total_inv(u.GPSpos, PICKUP_RANGE);
  total_inv.add_stack(u.inv_dump());
 
- std::vector<point> valid;
+ std::vector<std::pair<point,std::pair<int,int>>> valid_delta;
+
  for (decltype(auto) delta : Direction::vector) {
    const point pt(u.pos + delta);
-   bool place_okay = (*(con->able))(m, pt);
-   for (int i = 0; i < con->stages.size() && !place_okay; i++) {
-    if (m.ter(pt) == con->stages[i].terrain) place_okay = true;
+   int starting_stage = (*(con->able))(m, pt) ? 0 : -1;
+   for (int i = 0; i < con->stages.size() && 0>starting_stage; i++) {
+    if (m.ter(pt) == con->stages[i].terrain) starting_stage = i + 1;
    }
 
-   if (place_okay) {
+   if (0 <= starting_stage) {
 // Make sure we're not trying to continue a construction that we can't finish
-    int starting_stage = 0, max_stage = 0;
-    for (int i = 0; i < con->stages.size(); i++) {
-     if (m.ter(pt) == con->stages[i].terrain) starting_stage = i + 1;
+    int max_stage = -1;
+    for (int i = starting_stage; i < con->stages.size(); i++) {
      if (player_can_build(u, total_inv, con, i, true)) max_stage = i;
     }
 
     if (max_stage >= starting_stage) {
-     valid.push_back(pt);
+     valid_delta.push_back(std::pair(delta,std::pair(starting_stage, max_stage)));
      m.drawsq(w_terrain, u, pt.x, pt.y, true, false);
      wrefresh(w_terrain);
     }
@@ -232,20 +232,23 @@ void game::place_construction(const constructable * const con)
   messages.add("Invalid direction.");
   return;
  }
- dir += u.pos;
- if (!cataclysm::any(valid, dir)) {
-  messages.add("You cannot build there!");
-  return;
+
+ std::optional<std::pair<int, int>> stage_origin;
+ for (const auto& x : valid_delta) {
+     if (x.first == dir) {
+         stage_origin = x.second;
+         break;
+     }
+ }
+ if (!stage_origin) {
+     messages.add("You cannot build there!");
+     return;
  }
 
-// Figure out what stage to start at, and what stage is the maximum
- int starting_stage = 0, max_stage = 0;
- for (int i = 0; i < con->stages.size(); i++) {
-  if (m.ter(dir) == con->stages[i].terrain)
-   starting_stage = i + 1;
-  if (player_can_build(u, total_inv, con, i, true))
-   max_stage = i;
- }
+ dir += u.pos;
+
+ const int starting_stage = stage_origin->first;
+ const int max_stage = stage_origin->second;
 
  u.assign_activity(ACT_BUILD, con->stages[starting_stage].time * 1000, dir, con->id);
 
