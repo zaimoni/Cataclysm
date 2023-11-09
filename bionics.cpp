@@ -84,7 +84,7 @@ static const char* JSON_transcode[] = {
 
 DEFINE_JSON_ENUM_SUPPORT_HARDCODED_NONZERO(bionic_id, JSON_transcode)
 
-const bionic_data bionic::type[] = {
+const bionic_data bionic::types[] = {
 {"NULL bionics", false, false, 0, 0, "\
 If you're seeing this, it's a bug."},
 // NAME          ,PW_SRC, ACT ,COST, TIME,
@@ -367,7 +367,7 @@ void pc::power_bionics()
 	draw_hline(wBio, 1, c_ltgray, LINE_OXOX);
 	draw_hline(wBio, VIEW - 4, c_ltgray, LINE_OXOX);
 	for (decltype(auto) bio : my_bionics) {
-		const auto& bio_type = bionic::type[bio.id];
+		const auto& bio_type = bionic::types[bio.id];
 		if (bio_type.power_source || !bio_type.activated)
 			passive.push_back(&bio);
 		else
@@ -379,7 +379,7 @@ void pc::power_bionics()
 		mvwaddstrz(wBio, 2, 0, c_ltblue, "Passive:");
 		int i = passive.size();
 		while (0 <= --i) {
-			const auto& bio_type = bionic::type[passive[i]->id];
+			const auto& bio_type = bionic::types[passive[i]->id];
 			type = (bio_type.power_source ? c_ltcyan : c_cyan);
 			mvwputch(wBio, 3 + i, 0, type, passive[i]->invlet);
 			mvwaddstrz(wBio, 3 + i, 2, type, bio_type.name.c_str());
@@ -391,7 +391,7 @@ void pc::power_bionics()
 		int i = active.size();
 		while (0 <= --i) {
 			type = (active[i]->powered ? c_red : c_ltred);
-			const auto& bio_type = bionic::type[active[i]->id];
+			const auto& bio_type = bionic::types[active[i]->id];
 			mvwputch(wBio, 3 + i, 32, type, active[i]->invlet);
 			mvwprintz(wBio, 3 + i, 34, type,
 				(active[i]->powered ? "%s - ON" : "%s - %d PU / %d trns"),
@@ -422,7 +422,7 @@ void pc::power_bionics()
 				}
 			}
 			if (tmp) {
-				const auto& bio_type = bionic::type[tmp->id];
+				const auto& bio_type = bionic::types[tmp->id];
 				if (activating) {
 					if (bio_type.activated) {
 						if (tmp->powered) {
@@ -468,8 +468,8 @@ void player::activate_bionic(int b)
 {
  const auto g = game::active();
  bionic& bio = my_bionics[b];
- const auto& bio_type = bionic::type[bio.id];
- int power_cost = bionic::type[bio.id].power_cost;
+ const auto& bio_type = bionic::types[bio.id];
+ int power_cost = bio_type.power_cost;
  if (weapon.type->id == itm_bio_claws && bio.id == bio_claws) power_cost = 0;
  if (power_level < power_cost) {
   if (bio.powered) {
@@ -626,7 +626,7 @@ void player::activate_bionic(int b)
 	  messages.add("You pour water into your %s.", holds_water->first->tname().c_str());
 	  holds_water->first->put_in(item(item::types[itm_water], 0)); // XXX \todo should this be the correct origin time?
   } else {
-	  power_level += bionic::type[bio_evap].power_cost;
+	  power_level += bionic::types[bio_evap].power_cost;
   }
   break;
 
@@ -637,7 +637,7 @@ void player::activate_bionic(int b)
   point dir(get_direction(input()));
   if (dir.x == -2) {
    messages.add("Invalid direction.");
-   power_level += bionic::type[bio_lighter].power_cost;
+   power_level += bionic::types[bio_lighter].power_cost;
    return;
   }
   dir += pos;
@@ -691,7 +691,7 @@ void player::activate_bionic(int b)
   point dir(get_direction(input()));
   if (dir.x == -2) {
    messages.add("Invalid direction.");
-   power_level += bionic::type[bio_emp].power_cost;
+   power_level += bionic::types[bio_emp].power_cost;
    return;
   }
   g->emp_blast(pos+dir);
@@ -713,11 +713,11 @@ void player::activate_bionic(int b)
 			   holds_water->first->put_in(item(item::types[itm_water], 0));
 			   break;
 		   } else {
-			   power_level += bionic::type[bio_water_extractor].power_cost;
+			   power_level += bionic::types[bio_water_extractor].power_cost;
 		   }
 	   }
    }
-   if (!have_extracted) power_level += bionic::type[bio_water_extractor].power_cost;	// We never chose a corpse
+   if (!have_extracted) power_level += bionic::types[bio_water_extractor].power_cost;	// We never chose a corpse
    }
   break;
 
@@ -770,7 +770,7 @@ void player::activate_bionic(int b)
   point dir(get_direction(input()));
   if (dir.x == -2) {
    messages.add("Invalid direction.");
-   power_level += bionic::type[bio_lockpick].power_cost;
+   power_level += bionic::types[bio_lockpick].power_cost;
    return;
   }
   dir += pos;
@@ -901,7 +901,7 @@ bool pc::install_bionics(const it_bionic* type)
 	// Init the list of bionics
 	for (int i = 1; i < type->options.size(); i++) {
 		bionic_id id = type->options[i];
-		mvwaddstrz(w.get(), i + 2, 0, (has_bionic(id) ? c_ltred : c_ltblue), bionic::type[id].name.c_str());
+		mvwaddstrz(w.get(), i + 2, 0, (has_bionic(id) ? c_ltred : c_ltblue), bionic::types[id].name.c_str());
 	}
 	// Helper text
 	mvwprintz(w.get(), 2, 40, c_white, "Difficulty of this module: %d", type->difficulty);
@@ -937,7 +937,7 @@ bool pc::install_bionics(const it_bionic* type)
 
 	if (type->id == itm_bionics_battery) {	// No selection list; just confirm
 		mvwprintz(w.get(), 2, 0, h_ltblue, "Battery Level +%d", BATTERY_AMOUNT);
-		mvwaddstrz(w.get(), 22, 0, c_ltblue, bionic::type[bio_batteries].description.c_str());
+		mvwaddstrz(w.get(), 22, 0, c_ltblue, bionic::types[bio_batteries].description.c_str());
 		int ch;
 		wrefresh(w.get());
 		do ch = getch();
@@ -964,7 +964,7 @@ bool pc::install_bionics(const it_bionic* type)
 
 	do {
 		bionic_id id = type->options[selection];
-		const auto& bio = bionic::type[id];
+		const auto& bio = bionic::types[id];
 		mvwaddstrz(w.get(), 2 + selection, 0, (has_bionic(id) ? h_ltred : h_ltblue), bio.name.c_str());
 
 		// Clear the bottom three lines...
@@ -1005,7 +1005,7 @@ bool pc::install_bionics(const it_bionic* type)
 		bionic_id id = type->options[selection];
 		int success = chance_of_success - rng(1, 100);
 		if (success > 0) {
-			messages.add("Successfully installed %s.", bionic::type[id].name.c_str());
+			messages.add("Successfully installed %s.", bionic::types[id].name.c_str());
 			add_bionic(id);
 		}
 		else

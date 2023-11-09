@@ -173,14 +173,14 @@ bool pc::create(game *g, character_type type, std::string tempname)
  // bionics were inherited as PC-only \todo catch this when NPC bionics go up
  if (has_trait(PF_ANDROID)) {
   add_bionic(bionic_id(rng(bio_memory, max_bio_start - 1)));// Other
-  if (bionic::type[my_bionics[0].id].power_cost > 0) {
+  if (bionic::types[my_bionics[0].id].power_cost > 0) {
    add_bionic(bionic_id(rng(1, bio_ethanol)));	// Power Source
    max_power_level = 10;
    power_level = 10;
   } else {
    bionic_id tmpbio;
    do tmpbio = bionic_id(rng(bio_ethanol + 1, bio_armor_legs));
-   while (bionic::type[tmpbio].power_cost > 0);
+   while (bionic::types[tmpbio].power_cost > 0);
    add_bionic(tmpbio);
    max_power_level = 0;
    power_level = 0;

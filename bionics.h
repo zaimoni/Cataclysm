@@ -19,7 +19,7 @@ struct bionic_data {
 };
 
 struct bionic {
- static const bionic_data type[];
+ static const bionic_data types[];
 
  bionic_id id;
  char invlet;
