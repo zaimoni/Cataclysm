@@ -34,6 +34,7 @@ struct constructable
  void (*done)  (game *, point);
 #endif
 
+private:
  constructable(int Id, std::string Name, int Diff
 #ifndef SOCRATES_DAIMON
      , bool (*Able) (map&, point),
@@ -46,6 +47,7 @@ struct constructable
 #endif
  {};
 
+public:
  static void init();
 };
 
