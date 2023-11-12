@@ -47,6 +47,17 @@ private:
 #endif
  {};
 
+#ifndef SOCRATES_DAIMON
+ constructable(int Id, std::string Name, int Diff
+     , bool (*Able) (map&, point)
+ ) :
+     id(Id), name(Name), difficulty(Diff)
+#ifndef SOCRATES_DAIMON
+     , able(Able), done(nullptr)
+#endif
+ {};
+#endif
+
 public:
  static void init();
 };

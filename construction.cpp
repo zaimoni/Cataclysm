@@ -285,5 +285,5 @@ void player::complete_construction()
 
     // This comes after clearing the activity, in case the function interrupts
     // activities
-    (*(built->done))(g, activity.placement);
+    if (built->done) (*(built->done))(g, activity.placement);
 }
