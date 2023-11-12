@@ -315,6 +315,9 @@ public:
  void pick_recipes(std::vector<const recipe*>& current,
      std::vector<bool>& available, craft_cat tab);
 
+// construction.cpp
+ void complete_construction();
+
 // abstract ui
  bool is_enemy(const monster* z) const;
  virtual bool is_enemy(const player* survivor = nullptr) const = 0;

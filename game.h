@@ -263,7 +263,6 @@ class game : public reality_bubble
   void complete_craft();           // See crafting.cpp
   void construction_menu();                   // See construction.cpp
   void place_construction(const constructable *con); // See construction.cpp
-  void complete_construction();               // See construction.cpp
   std::optional<std::pair<point, vehicle*>> pl_choose_vehicle();
   void examine();// Examine nearby terrain	'e'
   // open vehicle interaction screen

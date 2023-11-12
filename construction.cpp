@@ -259,28 +259,31 @@ void game::place_construction(const constructable * const con)
  u.activity.values = std::move(stages);
 }
 
-void game::complete_construction()
+void player::complete_construction()
 {
- inventory map_inv(u.GPSpos, PICKUP_RANGE);
- const constructable* const built = constructable::constructions[u.activity.index];
- construction_stage stage = built->stages[u.activity.values[0]];
+    inventory map_inv(GPSpos, PICKUP_RANGE);
+    const constructable* const built = constructable::constructions[activity.index];
+    construction_stage stage = built->stages[activity.values[0]];
 
- u.practice(sk_carpentry, 10 * clamped_lb<1>(built->difficulty));
- for(const auto& comp : stage.components) if (!comp.empty()) consume_items(u, comp);
- 
-// Make the terrain change
- if (stage.terrain != t_null) m.ter(u.activity.placement) = stage.terrain;
+    practice(sk_carpentry, 10 * clamped_lb<1>(built->difficulty));
+    for (const auto& comp : stage.components) if (!comp.empty()) consume_items(*this, comp);
 
-// Strip off the first stage in our list...
- EraseAt(u.activity.values, 0);
-// ...and start the next one, if it exists
- if (!u.activity.values.empty()) {
-  construction_stage next = built->stages[u.activity.values[0]];
-  u.activity.moves_left = next.time * 1000;
- } else // We're finished!
-  u.activity.type = ACT_NULL;
+    const auto g = game::active();
 
-// This comes after clearing the activity, in case the function interrupts
-// activities
- (*(built->done))(this, u.activity.placement);
+    // Make the terrain change
+    if (stage.terrain != t_null) g->m.ter(activity.placement) = stage.terrain;
+
+    // Strip off the first stage in our list...
+    EraseAt(activity.values, 0);
+    // ...and start the next one, if it exists
+    if (!activity.values.empty()) {
+        construction_stage next = built->stages[activity.values[0]];
+        activity.moves_left = next.time * 1000;
+    }
+    else // We're finished!
+        activity.type = ACT_NULL;
+
+    // This comes after clearing the activity, in case the function interrupts
+    // activities
+    (*(built->done))(g, activity.placement);
 }

@@ -752,7 +752,7 @@ void game::process_activity()
     break;
 
    case ACT_BUILD:
-    complete_construction();
+    u.complete_construction();
     break;
 
    case ACT_TRAIN:
