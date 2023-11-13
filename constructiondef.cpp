@@ -34,7 +34,7 @@ struct construct // Construction functions.
 	static bool able_log(map&, point); // Able on logs
 
 	// Does anything special happen when we're finished?
-	static void done_window_pane(game *, point);
+	static void done_window_pane(player& u);
 	static void done_vehicle(game *, point);
 	static void done_tree(game *, point);
 	static void done_log(game *, point);
@@ -253,9 +253,9 @@ bool construct::able_pit(map& m, point p)
  return (m.ter(p) == t_pit);//|| m.ter(p) == t_pit_shallow);
 }
 
-void construct::done_window_pane(game *g, point p)
+void construct::done_window_pane(player& u)
 {
-	g->u.GPSpos.add(submap::for_drop(g->u.GPSpos.ter(), item::types[itm_glass_sheet], 0).value());
+	u.GPSpos.add(submap::for_drop(u.GPSpos.ter(), item::types[itm_glass_sheet], 0).value());
 }
 
 void construct::done_tree(game *g, point p)
