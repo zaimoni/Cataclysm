@@ -78,7 +78,7 @@ void constructable::init()
 #ifndef SOCRATES_DAIMON
 #define HANDLERS(...) , __VA_ARGS__
 #else
-#define HANDLERS(A,B)
+#define HANDLERS(...)
 #endif
 
  constructions.push_back(new constructable(++id, "Dig Pit", 0 HANDLERS(&construct::able_dig)));

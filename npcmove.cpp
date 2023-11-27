@@ -1627,7 +1627,7 @@ tail_recurse:
 		const int conf = confident_range(index);
 
 		if (dist <= conf && no_friendly_fire) {
-			decltype(auto) trajectory = GPSpos.sees(tar, light).value();
+			auto trajectory = GPSpos.sees(tar, light).value();
 			moves -= (mobile::mp_turn / 4) * 5;
 			if (g->u.see(pos))
 				messages.add("%s throws a %s.", name.c_str(), used->tname().c_str());
@@ -1679,7 +1679,7 @@ tail_recurse:
 				 * should be equal to the original location of our target, and risking friendly
 				 * fire is better than holding on to a live grenade / whatever.
 				 */
-				decltype(auto) trajectory = GPSpos.sees(tar, light).value();
+				auto trajectory = GPSpos.sees(tar, light).value();
 				moves -= (mobile::mp_turn / 4) * 5;
 				if (g->u.see(pos))
 					messages.add("%s throws a %s.", name.c_str(), used->tname().c_str());

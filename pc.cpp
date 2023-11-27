@@ -381,7 +381,7 @@ char pc::get_invlet(std::string title)
                 mvwputch(w_inv.get(), cur_line, 0, c_white, it.invlet);
                 mvwaddstrz(w_inv.get(), cur_line, 1, it.color_in_inventory(*this), it.tname().c_str());
                 if (inv.stack_at(cur_it).size() > 1)
-                    wprintw(w_inv.get(), " [%d]", inv.stack_at(cur_it).size());
+                    wprintw(w_inv.get(), " [%ld]", inv.stack_at(cur_it).size());
                 if (it.charges > 0)
                     wprintw(w_inv.get(), " (%d)", it.charges);
                 else if (it.contents.size() == 1 && it.contents[0].charges > 0)

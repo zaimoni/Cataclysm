@@ -3950,7 +3950,7 @@ void game::pickup(const point& pt, int min)
   }
   if (ch >= 'a' && ch <= 'a' + here.size() - 1) {
    ch -= 'a';
-   if (getitem[ch] = !getitem[ch]) {
+   if ((getitem[ch] = !getitem[ch])) {
        if (const auto err = cant_pick_up(here[ch]); !err.empty()) {
            popup(err);
            getitem[ch] = false;
