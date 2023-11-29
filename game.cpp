@@ -3502,7 +3502,7 @@ std::optional<std::pair<point, vehicle*>> game::pl_choose_vehicle()
 
 void game::exam_vehicle(vehicle &veh, int cx, int cy)
 {
-    veh_interact vehint(cx, cy, this, &veh);	// if this breaks try 0,0 instead
+    veh_interact vehint(cx, cy, &veh, u);	// if this breaks try 0,0 instead
     vehint.exec();
     if (vehint.sel_cmd != ' ')
     {   // TODO: different activity times

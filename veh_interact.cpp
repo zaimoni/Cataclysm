@@ -16,9 +16,9 @@ static bool inv_has_welder(const inventory& src)
 }
 
 // no UI manipulation in the constructor; leave that in ...::exec
-veh_interact::veh_interact (int cx, int cy, game *gm, vehicle *v)
-: c(cx, cy), dd(0, 0), sel_cmd(' '), cpart(-1), veh(v), _g(gm),
-  crafting_inv(crafting_inventory(_g->u)),
+veh_interact::veh_interact(int cx, int cy, vehicle *v, player& u)
+: c(cx, cy), dd(0, 0), sel_cmd(' '), cpart(-1), veh(v), u(u),
+  crafting_inv(crafting_inventory(u)),
   has_wrench(crafting_inv.has_amount(itm_wrench, 1) || crafting_inv.has_amount(itm_toolset, 1)),
   has_hacksaw(crafting_inv.has_amount(itm_hacksaw, 1) || crafting_inv.has_amount(itm_toolset, 1)),
   has_welder(inv_has_welder(crafting_inv))
@@ -131,7 +131,7 @@ int veh_interact::cant_do (char mode)
         return cpart < 0? 1 : 
                (parts_here.size() < 2 && !veh->can_unmount(cpart)? 2 : 
                (!has_wrench || !has_hacksaw? 3 :
-               (_g->u.sklevel[sk_mechanics] < 2 ? 4 : 0)));
+               (u.sklevel[sk_mechanics] < 2 ? 4 : 0)));
     default:
         return -1;
     }
@@ -174,7 +174,7 @@ void veh_interact::do_install(int reason)
 		const auto& p_info = vpart_info::list[sel_part];
 		const itype_id itm = p_info.item;
 		const bool has_comps = crafting_inv.has_amount(itm, 1);
-		const bool has_skill = _g->u.sklevel[sk_mechanics] >= p_info.difficulty;
+		const bool has_skill = u.sklevel[sk_mechanics] >= p_info.difficulty;
         werase (w_msg);
 		const int slen = item::types[itm]->name.length();
         mvwprintz(w_msg, 0, 1, c_ltgray, "Needs %s and level %d skill in mechanics.", 
@@ -182,7 +182,7 @@ void veh_interact::do_install(int reason)
         mvwaddstrz(w_msg, 0, 7, has_comps? c_ltgreen : c_red, item::types[itm]->name.c_str());
         mvwprintz(w_msg, 0, 18+slen, has_skill? c_ltgreen : c_red, "%d", p_info.difficulty);
 		const bool eng = p_info.flags & mfb (vpf_engine);
-        const bool has_skill2 = !eng || (_g->u.sklevel[sk_mechanics] >= dif_eng);
+        const bool has_skill2 = !eng || (u.sklevel[sk_mechanics] >= dif_eng);
         if (engines && eng) // already has engine
         {
             mvwprintz(w_msg, 1, 1, c_ltgray, 
@@ -223,7 +223,7 @@ void veh_interact::do_install(int reason)
 
 bool veh_interact::morale_failed() const
 {
-    if (_g->u.morale_level() < MIN_MORALE_CRAFT) { // See morale.h
+    if (u.morale_level() < MIN_MORALE_CRAFT) { // See morale.h
         mvwaddstrz(w_msg, 0, 1, c_ltred, "Your morale is too low to construct...");
         wrefresh(w_msg);
         return false;
@@ -261,7 +261,7 @@ void veh_interact::do_repair(int reason)
         werase (w_msg);
         bool has_comps = true;
         int dif = veh->part_info(sel_part).difficulty + (veh->parts[sel_part].hp <= 0? 0 : 2);
-        bool has_skill = dif <= _g->u.sklevel[sk_mechanics];
+        bool has_skill = dif <= u.sklevel[sk_mechanics];
         mvwprintz(w_msg, 0, 1, c_ltgray, "You need level %d skill in mechanics.", dif);
         mvwprintz(w_msg, 0, sizeof("You need level "), has_skill? c_ltgreen : c_red, "%d", dif);
         if (veh->parts[sel_part].hp <= 0) {
@@ -404,14 +404,15 @@ int veh_interact::part_at (point d)
 
 void veh_interact::move_cursor (int dx, int dy)
 {
+    map& m = game::active()->m;
     mvwputch (w_disp, c.y+6, c.x+6, cpart >= 0? veh->part_color (cpart) : c_black, special_symbol(cpart >= 0? veh->part_sym (cpart) : ' '));
     c.x += dx;
     c.y += dy;
     cpart = part_at (c);
 	const point vd(-dd.x - c.y, c.x - dd.y);
 	const point vpos(veh->screenPos() + veh->coord_translate(vd));
-    bool obstruct = 0 == move_cost_of(_g->m.ter(vpos));
-    const auto v = _g->m._veh_at(vpos);
+    bool obstruct = 0 == move_cost_of(m.ter(vpos));
+    const auto v = m._veh_at(vpos);
     vehicle* const oveh = v ? v->first : nullptr; // backward compatibility
     if (oveh && oveh != veh) obstruct = true;
     nc_color col = cpart >= 0? veh->part_color (cpart) : c_black;
@@ -441,7 +442,7 @@ void veh_interact::move_cursor (int dx, int dy)
             if (p_info.has_flag<vpf_fuel_tank>() && part.amount < p_info._size) ptank = p;
         }
     }
-    has_fuel = (ptank >= 0) ? veh->refill(_g->u, ptank, true) : false;
+    has_fuel = (ptank >= 0) ? veh->refill(u, ptank, true) : false;
     werase (w_msg);
     wrefresh (w_msg);
     display_mode (' ');
@@ -567,7 +568,7 @@ void veh_interact::display_list (int pos)
 		const auto& p_info = vpart_info::list[can_mount[i]];
         const itype_id itm = p_info.item;
         const bool has_comps = crafting_inv.has_amount(itm, 1);
-        const bool has_skill = _g->u.sklevel[sk_mechanics] >= p_info.difficulty;
+        const bool has_skill = u.sklevel[sk_mechanics] >= p_info.difficulty;
         const nc_color col = (has_comps && has_skill) ? c_white : c_dkgray;
         mvwaddstrz(w_list, y, 3, pos == i ? hilite (col) : col, p_info.name);
         mvwputch(w_list, y, 1,  p_info.color, special_symbol (p_info.sym));

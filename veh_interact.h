@@ -4,7 +4,7 @@
 #include "inventory.h"
 
 class vehicle;
-class game;
+class player;
 
 class veh_interact
 {
@@ -15,7 +15,7 @@ public:
     char sel_cmd;
 
     // as a UI we're completely non-copyable
-    veh_interact(int cx, int cy, game* gm, vehicle* v);
+    veh_interact(int cx, int cy, vehicle* v, player& u);
     veh_interact() = delete;
     veh_interact(const veh_interact& src) = delete;
     veh_interact(veh_interact&& src) = delete;
@@ -34,7 +34,7 @@ private:
     WINDOW *w_list;
 
     vehicle* const veh;
-    game* const _g;
+    player& u;
     const inventory crafting_inv;
     const bool has_wrench;
     const bool has_hacksaw;
