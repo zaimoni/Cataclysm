@@ -245,6 +245,7 @@ void game::place_construction(const constructable * const con)
      return;
  }
 
+ const auto dest = u.GPSpos + dir;
  dir += u.pos;
 
  const int starting_stage = stage_origin->first;
@@ -257,6 +258,8 @@ void game::place_construction(const constructable * const con)
  for (int i = starting_stage; i <= max_stage; i++)
   stages.push_back(i);
  u.activity.values = std::move(stages);
+ u.activity.placement = dir;
+ u.activity.gps_placement = dest;
 }
 
 void player::complete_construction()
@@ -271,7 +274,7 @@ void player::complete_construction()
     const auto g = game::active();
 
     // Make the terrain change
-    if (stage.terrain != t_null) g->m.ter(activity.placement) = stage.terrain;
+    if (stage.terrain != t_null) (_ref<GPS_loc>::invalid != activity.gps_placement ? activity.gps_placement.ter() : g->m.ter(activity.placement)) = stage.terrain;
 
     // Strip off the first stage in our list...
     EraseAt(activity.values, 0);

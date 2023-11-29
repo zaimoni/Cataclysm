@@ -690,7 +690,7 @@ void game::process_activity()
    u.activity.moves_left -= mobile::mp_turn;
    u.pause();
   } else if (u.activity.type == ACT_REFILL_VEHICLE) {
-   if (const auto veh = m._veh_at(u.activity.placement)) {
+   if (const auto veh = (_ref<GPS_loc>::invalid != u.activity.gps_placement) ? u.activity.gps_placement.veh_at() : m._veh_at(u.activity.placement)) {
     veh->first->refill(AT_GAS, 200);
     u.pause();
     u.activity.moves_left -= mobile::mp_turn;
@@ -3516,6 +3516,8 @@ void game::exam_vehicle(vehicle &veh, int cx, int cy)
         u.activity.values.push_back (vehint.c.x - vehint.dd.y);   // values[5]
         u.activity.values.push_back (vehint.sel_part); // values[6]
         assert(7 <= u.activity.values.size());
+        u.activity.placement = o;
+        u.activity.gps_placement = veh.GPSpos;
         u.moves = 0;
     }
     refresh_all();

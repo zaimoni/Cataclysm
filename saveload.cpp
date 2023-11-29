@@ -777,6 +777,7 @@ bool fromJSON(const JSON& src, player_activity& dest)
 	if (src.has_key("index")) fromJSON(src["index"], dest.index);
 	if (src.has_key("values")) src["values"].decode(dest.values);
 	if (src.has_key("placement")) fromJSON(src["placement"], dest.placement);
+	if (src.has_key("GPS_placement")) fromJSON(src["GPS_placement"], dest.gps_placement);
 	return true;
 }
 
@@ -788,6 +789,7 @@ JSON toJSON(const player_activity& src)
 		if (0 != src.moves_left) _act.set("moves_left", std::to_string(src.moves_left));
 		if (-1 != src.index) _act.set("index", std::to_string(src.index));
 		if (point(-1, -1) != src.placement) _act.set("placement", toJSON(src.placement));
+		if (_ref<GPS_loc>::invalid != src.gps_placement) _act.set("placement", toJSON(src.gps_placement));
 		if (!src.values.empty()) _act.set("values", JSON::encode(src.values));
 	}
 	return _act;

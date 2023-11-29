@@ -26,11 +26,12 @@ struct player_activity
     activity_type type;
     int moves_left;
     int index;
-    std::vector<int> values;
+    std::vector<int> values; // used by ACT_BUILD, ACT_VEHICLE
     point placement; // low priority to convert to GPS coordinates (needed for NPC activities outside of reality bubble) 2020-08-13 zaimoni
+    GPS_loc gps_placement;
 
     player_activity(activity_type t = ACT_NULL, int turns = 0, int Index = -1) noexcept
-        : type(t), moves_left(turns), index(Index), placement(-1, -1) {}
+        : type(t), moves_left(turns), index(Index), placement(-1, -1), gps_placement(_ref<GPS_loc>::invalid) {}
     player_activity(const player_activity& copy) = default;
     player_activity(player_activity&& copy) = default;
     player_activity& operator=(const player_activity& copy) = default;

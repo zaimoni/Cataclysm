@@ -5491,12 +5491,14 @@ void player::assign_activity(activity_type type, int moves, const point& pt, int
 {
     assert(map::in_bounds(pt));
     assert(1 >= rl_dist(pos, pt));
-    if (backlog.type == type && backlog.index == index && pt == backlog.placement && query_yn("Resume task?")) {
+    GPS_loc dest = game::active()->toGPS(pt);
+    if (backlog.type == type && backlog.index == index && (dest == backlog.gps_placement || pt == backlog.placement) && query_yn("Resume task?")) {
         activity = std::move(backlog);
         backlog.clear();
     } else {
         activity = player_activity(type, moves, index);
         activity.placement = pt;
+        activity.gps_placement = dest;
     }
 }
 
