@@ -32,7 +32,8 @@ struct constructable
 #ifndef SOCRATES_DAIMON
  bool (*able)  (map&, point);
  void (*done)  (game *, point);
- void (*done_pl)  (player&);
+ void (*done_gps)(GPS_loc dest);
+ void (*done_pl) (player&);
 #endif
 
 private:
@@ -44,7 +45,7 @@ private:
  ) :
   id (Id), name (Name), difficulty (Diff)
 #ifndef SOCRATES_DAIMON
-     , able (Able), done (Done), done_pl(nullptr)
+     , able (Able), done (Done), done_gps(nullptr), done_pl(nullptr)
 #endif
  {};
 
@@ -53,7 +54,7 @@ private:
      , bool (*Able) (map&, point)
  ) :
      id(Id), name(Name), difficulty(Diff)
-     , able(Able), done(nullptr), done_pl(nullptr)
+     , able(Able), done(nullptr), done_gps(nullptr), done_pl(nullptr)
  {};
 
  constructable(int Id, std::string Name, int Diff
@@ -61,7 +62,15 @@ private:
      void (*Done) (player&)
  ) :
      id(Id), name(Name), difficulty(Diff)
-     , able(Able), done(nullptr), done_pl(Done)
+     , able(Able), done(nullptr), done_gps(nullptr), done_pl(Done)
+ {};
+
+ constructable(int Id, std::string Name, int Diff
+     , bool (*Able) (map&, point),
+     void (*Done)(GPS_loc)
+ ) :
+     id(Id), name(Name), difficulty(Diff)
+     , able(Able), done(nullptr), done_gps(Done), done_pl(nullptr)
  {};
 #endif
 

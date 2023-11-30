@@ -10,7 +10,7 @@
 std::vector<constructable*> constructable::constructions; // The list of constructions
 
 #ifndef SOCRATES_DAIMON
-struct construct // Construction functions.
+namespace construct // Construction functions.
 {
 	// Bools - able to build at the given point?
 	static bool able_empty(map&, point); // Able if tile is empty
@@ -34,11 +34,31 @@ struct construct // Construction functions.
 	static bool able_log(map&, point); // Able on logs
 
 	// Does anything special happen when we're finished?
-	static void done_window_pane(player& u);
-	static void done_vehicle(game *, point);
-	static void done_tree(game *, point);
-	static void done_log(game *, point);
 
+	static void done_window_pane(player& u)
+	{
+		u.GPSpos.add(submap::for_drop(u.GPSpos.ter(), item::types[itm_glass_sheet], 0).value());
+	}
+
+	static void done_tree(game *, point);
+
+	static void done_vehicle(GPS_loc dest)
+	{
+		std::string name = string_input_popup(20, "Enter new vehicle name");
+		if (auto veh = dest.add_vehicle(veh_custom, 270)) {
+			veh->name = std::move(name);
+			veh->install_part(0, 0, vp_frame_v2);
+			return;
+		}
+		debugmsg("error constructing vehicle");
+	}
+
+	static void done_log(GPS_loc dest)
+	{
+		int num_sticks = rng(10, 20);
+		for (int i = 0; i < num_sticks; i++)
+			dest.add(item(item::types[itm_2x4], int(messages.turn)));
+	}
 };
 
 static bool will_flood_stop(map *m, bool (&fill)[SEEX * MAPSIZE][SEEY * MAPSIZE],
@@ -253,11 +273,6 @@ bool construct::able_pit(map& m, point p)
  return (m.ter(p) == t_pit);//|| m.ter(p) == t_pit_shallow);
 }
 
-void construct::done_window_pane(player& u)
-{
-	u.GPSpos.add(submap::for_drop(u.GPSpos.ter(), item::types[itm_glass_sheet], 0).value());
-}
-
 void construct::done_tree(game *g, point p)
 {
  mvprintz(0, 0, c_red, "Press a direction for the tree to fall in:");
@@ -268,32 +283,5 @@ void construct::done_tree(game *g, point p)
 	 g->m.destroy(g, pt, true);
 	 g->m.ter(pt) = t_log;
  }
-}
-
-void construct::done_log(game *g, point p)
-{
- int num_sticks = rng(10, 20);
- for (int i = 0; i < num_sticks; i++)
-  g->m.add_item(p, item::types[itm_2x4], int(messages.turn));
-}
-
-void construct::done_vehicle(game *g, point p)
-{
-    if (!map::in_bounds(p)) {
-#ifndef NDEBUG
-        throw std::logic_error("tried to construct vehicle outside of reality bubble");
-#else
-        debuglog("tried to construct vehicle outside of reality bubble");
-#endif
-        return;
-    }
-
-    std::string name = string_input_popup(20, "Enter new vehicle name");
-	if (auto veh = g->m.add_vehicle(veh_custom, p, 270)) {
-		veh->name = std::move(name);
-		veh->install_part(0, 0, vp_frame_v2);
-		return;
-	}
-    debugmsg("error constructing vehicle");
 }
 #endif
