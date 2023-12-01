@@ -207,9 +207,19 @@ void game::place_construction(const constructable * const con)
 
  for (decltype(auto) delta : Direction::vector) {
    const point pt(u.pos + delta);
-   int starting_stage = (*(con->able))(m, pt) ? 0 : -1;
-   for (int i = 0; i < con->stages.size() && 0>starting_stage; i++) {
-    if (m.ter(pt) == con->stages[i].terrain) starting_stage = i + 1;
+   const auto loc(u.GPSpos + delta);
+   int starting_stage = (con->able_gps) ? ((*(con->able_gps))(loc) ? 0 : -1)
+                                        : ((*(con->able))(m, pt) ? 0 : -1);
+   if (0 > starting_stage) {
+       const ter_id ter = loc.ter();
+       int n = -1;
+       for (decltype(auto) stage : con->stages) {
+           n++;
+           if (ter == stage.terrain) {
+               starting_stage = n;
+               break;
+           }
+       }
    }
 
    if (0 <= starting_stage) {

@@ -30,8 +30,9 @@ struct constructable
  int difficulty; // Carpentry skill level required
  std::vector<construction_stage> stages;
 #ifndef SOCRATES_DAIMON
- bool (*able)  (map&, point);
- void (*done)  (game *, point);
+ bool (*able)    (map&, point);
+ bool (*able_gps)(const GPS_loc& dest);
+ void (*done)    (game *, point);
  void (*done_gps)(GPS_loc dest);
  void (*done_pl) (player&);
 #endif
@@ -45,7 +46,7 @@ private:
  ) :
   id (Id), name (Name), difficulty (Diff)
 #ifndef SOCRATES_DAIMON
-     , able (Able), done (Done), done_gps(nullptr), done_pl(nullptr)
+     , able (Able), able_gps(nullptr), done(Done), done_gps(nullptr), done_pl(nullptr)
 #endif
  {};
 
@@ -54,7 +55,7 @@ private:
      , bool (*Able) (map&, point)
  ) :
      id(Id), name(Name), difficulty(Diff)
-     , able(Able), done(nullptr), done_gps(nullptr), done_pl(nullptr)
+     , able(Able), able_gps(nullptr), done(nullptr), done_gps(nullptr), done_pl(nullptr)
  {};
 
  constructable(int Id, std::string Name, int Diff
@@ -62,7 +63,7 @@ private:
      void (*Done) (player&)
  ) :
      id(Id), name(Name), difficulty(Diff)
-     , able(Able), done(nullptr), done_gps(nullptr), done_pl(Done)
+     , able(Able), able_gps(nullptr), done(nullptr), done_gps(nullptr), done_pl(Done)
  {};
 
  constructable(int Id, std::string Name, int Diff
@@ -70,7 +71,15 @@ private:
      void (*Done)(GPS_loc)
  ) :
      id(Id), name(Name), difficulty(Diff)
-     , able(Able), done(nullptr), done_gps(Done), done_pl(nullptr)
+     , able(Able), able_gps(nullptr), done(nullptr), done_gps(Done), done_pl(nullptr)
+ {};
+
+ constructable(int Id, std::string Name, int Diff
+     , bool (*Able)(const GPS_loc&),
+     void (*Done)(GPS_loc)
+ ) :
+     id(Id), name(Name), difficulty(Diff)
+     , able(nullptr), able_gps(Able), done(nullptr), done_gps(Done), done_pl(nullptr)
  {};
 #endif
 

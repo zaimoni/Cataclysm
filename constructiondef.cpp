@@ -31,7 +31,24 @@ namespace construct // Construction functions.
 	static bool able_pit(map&, point); // Able only on pits
 
 	static bool able_tree(map&, point); // Able on trees
-	static bool able_log(map&, point); // Able on logs
+
+	static bool able_log(const GPS_loc& loc) // Able on logs
+	{
+		return t_log == loc.ter();
+	}
+
+	// does not work as expected: type not recognized when passing to constructor in MSVC++
+/*
+	template<class... terrains> bool able(const GPS_loc& loc) {
+		static_assert(0 < sizeof...(terrains));
+		const ter_id ter = loc.ter();
+		const std::array scan({ terrains... });
+		for(decltype(auto) x : scan) {
+			if (ter == x) return true;
+		}
+		return false;
+	}
+*/
 
 	// Does anything special happen when we're finished?
 
@@ -121,7 +138,7 @@ void constructable::init()
   constructions.back()->stages.push_back(construction_stage(t_dirt, 10));
    constructions.back()->stages.back().tools.push_back({ itm_ax, itm_chainsaw_on});
 
- constructions.push_back(new constructable(++id, "Chop Up Log", 0 HANDLERS(&construct::able_log)));
+ constructions.push_back(new constructable(++id, "Chop Up Log", 0 HANDLERS(&construct::able_log, &construct::done_log)));
   constructions.back()->stages.push_back(construction_stage(t_dirt, 20));
    constructions.back()->stages.back().tools.push_back({ itm_ax, itm_chainsaw_on});
 
@@ -207,11 +224,6 @@ bool construct::able_empty(map& m, point p)
 bool construct::able_tree(map& m, point p)
 {
  return m.ter(p) == t_tree;
-}
-
-bool construct::able_log(map& m, point p)
-{
- return m.ter(p) == t_log;
 }
 
 bool construct::able_window(map& m, point p)
