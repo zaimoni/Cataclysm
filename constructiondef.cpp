@@ -85,7 +85,22 @@ namespace construct // Construction functions.
 		u.GPSpos.add(submap::for_drop(u.GPSpos.ter(), item::types[itm_glass_sheet], 0).value());
 	}
 
-	static void done_tree(game *, point);
+	static void done_tree(GPS_loc p)
+	{
+		mvprintz(0, 0, c_red, "Press a direction for the tree to fall in:");
+		point delta(-2, -2);
+		do {
+			delta = get_direction(input());
+		} while (-2 == delta.x);
+		(delta *= 3) += rng(within_rldist<1>);
+
+		auto lines = lines_to(point(0, 0), delta);
+		for (const auto& pt : lines[rng(0, lines.size() - 1)]) {
+			auto dest = p + pt;
+			dest.destroy(true);
+			dest.ter() = t_log;
+		}
+	}
 
 	static void done_vehicle(GPS_loc dest)
 	{
@@ -253,17 +268,5 @@ bool construct::able_between_walls(map& m, point p)
  }
 
  return will_flood_stop(&m, fill, p.x, p.y);
-}
-
-void construct::done_tree(game *g, point p)
-{
- mvprintz(0, 0, c_red, "Press a direction for the tree to fall in:");
- point dest(-2, -2);
- while (-2 == dest.x) dest = get_direction(input());
- ((dest *= 3) += p) += rng(within_rldist<1>);
- for (const auto& pt : line_to(p, dest, rng(1, 8))) { // rng values not necessarily "legal" from map::sees
-	 g->m.destroy(g, pt, true);
-	 g->m.ter(pt) = t_log;
- }
 }
 #endif

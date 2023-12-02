@@ -3,6 +3,89 @@
 #include "Zaimoni.STL/Logging.h"
 #include <math.h>
 
+// \todo consider lifting this to enum.h
+template<size_t m, size_t n>
+point transpose(const point& src) = delete;
+
+template<>
+constexpr point transpose<0, 1>(const point& src) { return point(src.y, src.x); }
+
+template<>
+constexpr point transpose<1, 0>(const point& src) { return transpose<0, 1>(src); }
+
+static_assert(point(1, 0) == transpose<0, 1>(point(0, 1)));
+
+static std::vector<std::vector<point>> _lines_to(const point origin, const point abs_delta, const point s)
+{
+	assert(abs_delta.x>abs_delta.y);
+	assert(1 <= abs_delta.y);
+
+	std::vector<std::vector<point>> lines;
+	lines.emplace_back();
+	lines.emplace_back();
+
+	const point cardinal_s(s.x, 0);
+	point cur(origin);
+	int numerator = 0;
+	bool have_forked = false;
+
+	int ub = abs_delta.x;
+
+	while (0 <= --ub) {
+		numerator += 2 * abs_delta.y;
+		if (numerator < abs_delta.x) {
+			lines.front().push_back(cur += cardinal_s);
+			lines.back().push_back(cur);
+		} else if (numerator > abs_delta.x) {
+			lines.front().push_back(cur += s);
+			lines.back().push_back(cur);
+			numerator -= 2 * abs_delta.x;
+		} else {
+			have_forked = true;
+			lines.front().push_back(cur + cardinal_s);
+			lines.back().push_back(cur += s);
+			numerator = -abs_delta.x;
+		}
+	}
+
+	if (!have_forked) lines.pop_back();
+	return lines;
+}
+
+std::vector<std::vector<point>> lines_to(const point origin, const point dest)
+{
+	std::vector<std::vector<point>> lines;
+
+	auto delta = dest - origin;
+	if (point(0) == delta) return lines;
+
+	auto s = point(cataclysm::signum(delta.x), cataclysm::signum(delta.y));
+	auto abs_delta = point(abs(delta.x), abs(delta.y));
+	point cur(origin);
+
+	if (abs_delta.x == abs_delta.y || 0 == abs_delta.x || 0 == abs_delta.y) {
+		// only one line
+		lines.emplace_back();
+		do lines.front().emplace_back(cur += s);
+		while(cur != dest);
+		return lines;
+	}
+
+	if (abs_delta.x > abs_delta.y) {
+		// normal form
+		lines = _lines_to(origin, abs_delta, s);
+	} else {
+		// transposed
+		lines = _lines_to(transpose<0,1>(origin), transpose<0,1>(abs_delta), transpose<0,1>(s));
+		for (decltype(auto) line : lines) {
+			for (decltype(auto) pt : line) {
+				pt = transpose<1,0>(pt); // for template coverage
+			}
+		}
+	}
+	return lines;
+}
+
 std::vector <point> line_to(int x1, int y1, int x2, int y2, int t)
 {
  std::vector<point> ret;

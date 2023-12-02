@@ -59,6 +59,8 @@ inline std::vector<point> line_to(int x1, int y1, const point& pt2, int t) { ret
 inline std::vector<point> line_to(int x1, int y1, int x2, int y2, std::optional<int> t) { return line_to(x1, y1, x2, y2, t ? *t : 0); };
 inline std::vector<point> line_to(const point& pt, const point& pt2, std::optional<int> t) { return line_to(pt.x, pt.y, pt2.x, pt2.y, t ? *t : 0); };
 
+std::vector<std::vector<point>> lines_to(const point origin, const point dest);
+
 // sqrt(dX^2 + dY^2)
 template<class T>
 struct dist
