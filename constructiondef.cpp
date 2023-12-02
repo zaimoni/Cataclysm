@@ -22,23 +22,34 @@ namespace construct // Construction functions.
 	static bool able_door(map&, point); // Any door tile
 	static bool able_door_broken(map&, point); // Broken door
 
-	static bool able_wall(map&, point); // Able if tile is wall
-	static bool able_wall_wood(map&, point); // Only player-built walls
-
-	static bool able_between_walls(map&, point); // Flood-fill contained by walls
-
-	static bool able_dig(map&, point); // Able if diggable terrain
-	static bool able_pit(map&, point); // Able only on pits
-
-	static bool able_tree(map&, point); // Able on trees
-
-	static bool able_log(const GPS_loc& loc) // Able on logs
+	// Able if tile is wall
+	static bool able_wall(const GPS_loc& loc)
 	{
-		return t_log == loc.ter();
+		const auto t = loc.ter();
+		return t_wall_h == t || t_wall_v == t || t_wall_wood == t;
 	}
 
+	// Only player-built walls
+	static bool able_wall_wood(const GPS_loc& loc) { return t_wall_wood == loc.ter(); }
+
+	// Flood-fill contained by walls
+	static bool able_between_walls(map&, point);
+
+	static bool able_dig(map&, point); // Able if diggable terrain
+
+	// Able only on pits
+	static bool able_pit(const GPS_loc& loc) {
+		return t_pit == loc.ter() /* || t_pit_shallow == loc.ter() */;
+	}
+
+	// Able on trees
+	static bool able_tree(const GPS_loc& loc) { return t_tree == loc.ter(); }
+
+	// Able on logs
+	static bool able_log(const GPS_loc& loc) { return t_log == loc.ter(); }
+
+#if FAIL
 	// does not work as expected: type not recognized when passing to constructor in MSVC++
-/*
 	template<class... terrains> bool able(const GPS_loc& loc) {
 		static_assert(0 < sizeof...(terrains));
 		const ter_id ter = loc.ter();
@@ -48,7 +59,7 @@ namespace construct // Construction functions.
 		}
 		return false;
 	}
-*/
+#endif
 
 	// Does anything special happen when we're finished?
 
@@ -221,11 +232,6 @@ bool construct::able_empty(map& m, point p)
  return m.move_cost(p) == 2;
 }
 
-bool construct::able_tree(map& m, point p)
-{
- return m.ter(p) == t_tree;
-}
-
 bool construct::able_window(map& m, point p)
 {
  const auto t = m.ter(p);
@@ -253,17 +259,6 @@ bool construct::able_door_broken(map& m, point p)
  return m.ter(p) == t_door_b;
 }
 
-bool construct::able_wall(map& m, point p)
-{
- const auto t = m.ter(p);
- return t_wall_h == t || t_wall_v == t || t_wall_wood == t;
-}
-
-bool construct::able_wall_wood(map& m, point p)
-{
- return m.ter(p) == t_wall_wood;
-}
-
 bool construct::able_between_walls(map& m, point p)
 {
  bool fill[SEEX * MAPSIZE][SEEY * MAPSIZE];
@@ -278,11 +273,6 @@ bool construct::able_between_walls(map& m, point p)
 bool construct::able_dig(map& m, point p)
 {
  return m.has_flag(diggable, p);
-}
-
-bool construct::able_pit(map& m, point p)
-{
- return (m.ter(p) == t_pit);//|| m.ter(p) == t_pit_shallow);
 }
 
 void construct::done_tree(game *g, point p)

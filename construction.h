@@ -31,17 +31,16 @@ struct constructable
  std::vector<construction_stage> stages;
 #ifndef SOCRATES_DAIMON
  bool (*able)    (map&, point);
- bool (*able_gps)(const GPS_loc& dest);
+ bool (*able_gps)(const GPS_loc&);
  void (*done)    (game *, point);
- void (*done_gps)(GPS_loc dest);
+ void (*done_gps)(GPS_loc);
  void (*done_pl) (player&);
 #endif
 
 private:
  constructable(int Id, std::string Name, int Diff
 #ifndef SOCRATES_DAIMON
-     , bool (*Able) (map&, point),
-       void (*Done) (game *, point)
+     , decltype(able) Able, decltype(done) Done
 #endif
  ) :
   id (Id), name (Name), difficulty (Diff)
@@ -52,31 +51,35 @@ private:
 
 #ifndef SOCRATES_DAIMON
  constructable(int Id, std::string Name, int Diff
-     , bool (*Able) (map&, point)
+     , decltype(able) Able
  ) :
      id(Id), name(Name), difficulty(Diff)
      , able(Able), able_gps(nullptr), done(nullptr), done_gps(nullptr), done_pl(nullptr)
  {};
 
  constructable(int Id, std::string Name, int Diff
-     , bool (*Able) (map&, point),
-     void (*Done) (player&)
+     , decltype(able_gps) Able
+ ) :
+     id(Id), name(Name), difficulty(Diff)
+     , able(nullptr), able_gps(Able), done(nullptr), done_gps(nullptr), done_pl(nullptr)
+ {};
+
+ constructable(int Id, std::string Name, int Diff
+     , decltype(able) Able, decltype(done_pl) Done
  ) :
      id(Id), name(Name), difficulty(Diff)
      , able(Able), able_gps(nullptr), done(nullptr), done_gps(nullptr), done_pl(Done)
  {};
 
  constructable(int Id, std::string Name, int Diff
-     , bool (*Able) (map&, point),
-     void (*Done)(GPS_loc)
+     , decltype(able) Able, decltype(done_gps) Done
  ) :
      id(Id), name(Name), difficulty(Diff)
      , able(Able), able_gps(nullptr), done(nullptr), done_gps(Done), done_pl(nullptr)
  {};
 
  constructable(int Id, std::string Name, int Diff
-     , bool (*Able)(const GPS_loc&),
-     void (*Done)(GPS_loc)
+     , decltype(able_gps) Able, decltype(done_gps) Done
  ) :
      id(Id), name(Name), difficulty(Diff)
      , able(nullptr), able_gps(Able), done(nullptr), done_gps(Done), done_pl(nullptr)
