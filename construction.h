@@ -41,36 +41,32 @@ private:
 #if SOCRATES_DAIMON
     constructable(int Id, std::string Name, int Diff) : id(Id), name(Name), difficulty(Diff) {};
 #else
-    constructable(int Id, std::string Name, int Diff , decltype(able) Able, decltype(done) Done )
-    : id (Id), name (Name), difficulty (Diff),
-      able (Able), able_gps(nullptr), done(Done), done_gps(nullptr), done_pl(nullptr) {};
-
  constructable(int Id, std::string Name, int Diff, decltype(able) Able)
     : id(Id), name(Name), difficulty(Diff),
-      able(Able), able_gps(nullptr), done(nullptr), done_gps(nullptr), done_pl(nullptr) {};
+      able(Able), able_gps(nullptr), done_gps(nullptr), done_pl(nullptr) {};
 
  constructable(int Id, std::string Name, int Diff, decltype(able_gps) Able)
     : id(Id), name(Name), difficulty(Diff),
-      able(nullptr), able_gps(Able), done(nullptr), done_gps(nullptr), done_pl(nullptr)
+      able(nullptr), able_gps(Able), done_gps(nullptr), done_pl(nullptr)
  {};
 
  constructable(int Id, std::string Name, int Diff, decltype(able) Able, decltype(done_pl) Done)
     : id(Id), name(Name), difficulty(Diff),
-      able(Able), able_gps(nullptr), done(nullptr), done_gps(nullptr), done_pl(Done)
+      able(Able), able_gps(nullptr), done_gps(nullptr), done_pl(Done)
  {};
 
  constructable(int Id, std::string Name, int Diff, decltype(able_gps) Able, decltype(done_pl) Done)
     : id(Id), name(Name), difficulty(Diff),
-      able(nullptr), able_gps(Able), done(nullptr), done_gps(nullptr), done_pl(Done) {};
+      able(nullptr), able_gps(Able), done_gps(nullptr), done_pl(Done) {};
 
  constructable(int Id, std::string Name, int Diff, decltype(able) Able, decltype(done_gps) Done)
     : id(Id), name(Name), difficulty(Diff),
-      able(Able), able_gps(nullptr), done(nullptr), done_gps(Done), done_pl(nullptr)
+      able(Able), able_gps(nullptr), done_gps(Done), done_pl(nullptr)
  {};
 
  constructable(int Id, std::string Name, int Diff, decltype(able_gps) Able, decltype(done_gps) Done)
     : id(Id), name(Name), difficulty(Diff),
-      able(nullptr), able_gps(Able), done(nullptr), done_gps(Done), done_pl(nullptr) {};
+      able(nullptr), able_gps(Able), done_gps(Done), done_pl(nullptr) {};
 #endif
 
 public:

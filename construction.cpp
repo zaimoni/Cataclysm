@@ -300,5 +300,4 @@ void player::complete_construction()
     // activities
     if (built->done_gps && _ref<GPS_loc>::invalid != activity.gps_placement) (*(built->done_gps))(activity.gps_placement);
     else if (built->done_pl) (*(built->done_pl))(*this);
-    else if (built->done)    (*(built->done))(g, activity.placement);
 }
