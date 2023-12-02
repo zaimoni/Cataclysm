@@ -12,15 +12,31 @@ std::vector<constructable*> constructable::constructions; // The list of constru
 #ifndef SOCRATES_DAIMON
 namespace construct // Construction functions.
 {
-	// Bools - able to build at the given point?
-	static bool able_empty(map&, point); // Able if tile is empty
+	// Able if tile is empty
+	static bool able_empty(const GPS_loc& loc) { return 2 == loc.move_cost(); }
 
-	static bool able_window(map&, point); // Any window tile
-	static bool able_window_pane(map&, point); // Only intact windows
-	static bool able_broken_window(map&, point); // Able if tile is broken window
+	// Any window tile
+	static bool able_window(const GPS_loc& loc)
+	{
+		const auto t = loc.ter();
+		return t_window_frame == t || t_window_empty == t || t_window == t;
+	}
 
-	static bool able_door(map&, point); // Any door tile
-	static bool able_door_broken(map&, point); // Broken door
+	// Only intact windows
+	static bool able_window_pane(const GPS_loc& loc) { return t_window == loc.ter(); }
+
+	// Able if tile is broken window
+	static bool able_broken_window(const GPS_loc& loc) { return t_window_frame == loc.ter(); }
+
+	// Any door tile
+	static bool able_door(const GPS_loc& loc)
+	{
+		const auto t = loc.ter();
+		return t_door_c == t || t_door_b == t || t_door_o == t || t_door_locked == t;
+	}
+
+	// Broken door
+	static bool able_door_broken(const GPS_loc& loc) { return t_door_b == loc.ter(); }
 
 	// Able if tile is wall
 	static bool able_wall(const GPS_loc& loc)
@@ -35,7 +51,8 @@ namespace construct // Construction functions.
 	// Flood-fill contained by walls
 	static bool able_between_walls(map&, point);
 
-	static bool able_dig(map&, point); // Able if diggable terrain
+	// Able if diggable terrain
+	static bool able_dig(const GPS_loc& loc) { return is<diggable>(loc.ter()); }
 
 	// Able only on pits
 	static bool able_pit(const GPS_loc& loc) {
@@ -227,38 +244,6 @@ void constructable::init()
 }
 
 #ifndef SOCRATES_DAIMON
-bool construct::able_empty(map& m, point p)
-{
- return m.move_cost(p) == 2;
-}
-
-bool construct::able_window(map& m, point p)
-{
- const auto t = m.ter(p);
- return t_window_frame == t || t_window_empty == t || t_window == t;
-}
-
-bool construct::able_window_pane(map& m, point p)
-{
- return m.ter(p) == t_window;
-}
-
-bool construct::able_broken_window(map& m, point p)
-{
- return m.ter(p) == t_window_frame;
-}
-
-bool construct::able_door(map& m, point p)
-{
- const auto t = m.ter(p);
- return t_door_c == t || t_door_b == t || t_door_o == t || t_door_locked == t;
-}
-
-bool construct::able_door_broken(map& m, point p)
-{
- return m.ter(p) == t_door_b;
-}
-
 bool construct::able_between_walls(map& m, point p)
 {
  bool fill[SEEX * MAPSIZE][SEEY * MAPSIZE];
@@ -268,11 +253,6 @@ bool construct::able_between_walls(map& m, point p)
  }
 
  return will_flood_stop(&m, fill, p.x, p.y);
-}
-
-bool construct::able_dig(map& m, point p)
-{
- return m.has_flag(diggable, p);
 }
 
 void construct::done_tree(game *g, point p)

@@ -72,6 +72,13 @@ private:
  {};
 
  constructable(int Id, std::string Name, int Diff
+     , decltype(able_gps) Able, decltype(done_pl) Done
+ ) :
+     id(Id), name(Name), difficulty(Diff)
+     , able(nullptr), able_gps(Able), done(nullptr), done_gps(nullptr), done_pl(Done)
+ {};
+
+ constructable(int Id, std::string Name, int Diff
      , decltype(able) Able, decltype(done_gps) Done
  ) :
      id(Id), name(Name), difficulty(Diff)
