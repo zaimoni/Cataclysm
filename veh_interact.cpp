@@ -72,16 +72,14 @@ void veh_interact::exec ()
     display_veh   ();
     move_cursor (0, 0);
     bool finish = false;
+    static constexpr const zaimoni::gdi::box<point> cursor_bounds(point(-6), point(5));
     while (!finish)
     {
         int ch = input(); // See keypress.h
         if (KEY_ESCAPE == ch) break;
-        int dx, dy;
-        get_direction (dx, dy, ch);
-        if (dx != -2 && (dx || dy) &&
-            c.x + dx >= -6 && c.x + dx < 6 &&
-            c.y + dy >= -6 && c.y + dy < 6)
-            move_cursor(dx, dy);
+        point dir = get_direction(ch);
+        if (-2 != dir.x && (dir.x || dir.y) && cursor_bounds.contains(c+dir))
+            move_cursor(dir.x, dir.y);
         else
         {
             int mval = cant_do(ch);
@@ -208,10 +206,9 @@ void veh_interact::do_install(int reason)
             break;
         default:
             {
-            int dx, dy;
-            get_direction(dx, dy, ch);
-            if (dy == -1 || dy == 1) {
-                pos += dy;
+            point dir = get_direction(ch);
+            if (-1 == dir.y || 1 == dir.y) {
+                pos += dir.y;
                 const size_t ub = can_mount.size();
                 if (ub <= pos) pos = 0;
                 else if (0 > pos) pos = ub - 1;
@@ -291,10 +288,9 @@ void veh_interact::do_repair(int reason)
             break;
         default:
             {
-            int dx, dy;
-            get_direction(dx, dy, ch);
-            if (dy == -1 || dy == 1) {
-                pos += dy;
+            point dir = get_direction(ch);
+            if (-1 == dir.y || 1 == dir.y) {
+                pos += dir.y;
                 const size_t ub = need_repair.size();
                 if (pos >= ub) pos = 0;
                 else if (0 > pos) pos = ub - 1;
@@ -380,10 +376,9 @@ void veh_interact::do_remove(int reason)
             }
         default:
             {
-            int dx, dy;
-            get_direction(dx, dy, ch);
-            if (dy == -1 || dy == 1) {
-                pos += dy;
+            point dir = get_direction(ch);
+            if (-1 == dir.y || 1 == dir.y) {
+                pos += dir.y;
                 const size_t ub = parts_here.size();
                 if (pos >= ub) pos = first;
                 else if (pos < first) pos = ub - 1;
