@@ -10,10 +10,10 @@ void mdeath::normal(game *g, monster *z)
 {
  if (g->u.see(*z)) messages.add("It dies!");
  if (z->made_of(FLESH) && z->has_flag(MF_WARM)) {
-  auto& f = g->m.field_at(z->pos);
+  auto& f = z->GPSpos.field_at();
   if (f.type == fd_blood) {
 	  if (f.density < 3) f.density++;
-  } else g->m.add_field(g, z->pos, fd_blood, 1);
+  } else z->GPSpos.add(field(fd_blood, 1));
  }
 // Drop a dang ol' corpse
 // If their hp is less than -50, we destroyed them so badly no corpse was left
@@ -27,7 +27,7 @@ void mdeath::acid(game *g, monster *z)
  if (g->u.see(*z))
      messages.add("%s corpse melts into a pool of acid.",
                    grammar::capitalize(z->desc(grammar::noun::role::possessive, grammar::article::definite)).c_str());
- g->m.add_field(g, z->pos, fd_acid, 3);
+ z->GPSpos.add(field(fd_acid, 3));
 }
 
 void mdeath::boomer(game *g, monster *z)

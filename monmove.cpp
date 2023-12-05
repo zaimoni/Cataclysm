@@ -564,7 +564,7 @@ void monster::move_to(game *g, const point& pt)
     // Diggers turn the dirt into dirtmound
     if (1 == not_landbound % 2) GPSpos.ter() = t_dirtmound;
     // Acid trail monsters leave... a trail of acid
-    if (has_flag(MF_ACIDTRAIL)) g->m.add_field(g, pos, fd_acid, 1);
+    if (has_flag(MF_ACIDTRAIL)) GPSpos.add(field(fd_acid, 1));
 }
 
 /* Random walking even when we've moved
