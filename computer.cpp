@@ -393,6 +393,7 @@ void computer::activate_function(game *g, computer_action action)
     print_line("Launch canceled.");
     return;
    }
+   const OM_loc<2> gone = OM_loc<2>(targ_om.pos, *target);
 // Figure out where the glass wall is...
    int wall_spot = 0;
    for (int i = g->u.pos.x; i < g->u.pos.x + SEEX * 2 && wall_spot == 0; i++) {
@@ -414,10 +415,7 @@ void computer::activate_function(game *g, computer_action action)
     tmpmap.save(g->cur_om.pos, messages.turn, project_xy(g->lev));
    }
    om_cache::get().load(g->cur_om, revert_pos);
-   for (int x = target->x - 2; x <= target->x + 2; x++) {
-    for (int y = target->y -  2; y <= target->y + 2; y++)
-     g->nuke(point(x, y));  // \todo should be re-specified to take a rectangle; also needs to be cross-overmap aware
-   }
+   forall_do_inclusive(within_rldist<2>, [&](point delta) {g->nuke(OM_loc<2>(gone.first, gone.second+delta)); });
   } break;
 
   case COMPACT_MISS_DISARM: // TODO: This!

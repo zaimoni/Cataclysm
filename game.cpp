@@ -5550,12 +5550,14 @@ void game::teleport_to(monster& z, const point& dest) {
     z.screenpos_set(dest);
 }
 
-void game::nuke(const point& world_div_2)   // \todo parameter should be OM_loc
+void game::nuke(OM_loc<2> target)
 {
- if (world_div_2.x < 0 || world_div_2.y < 0 || world_div_2.x >= OMAPX || world_div_2.y >= OMAPY) return;	// precondition
+    if (0 != target.first.z) return; // pre-condition
+    target.self_normalize();
+    if (!target.in_bounds()) return; // pre-condition
  const tripoint revert_om_pos(cur_om.pos);
- om_cache::get().load(cur_om, tripoint(cur_om.pos.x, cur_om.pos.y, 0));
- point dest(2 * world_div_2);
+ om_cache::get().load(cur_om, target.first);
+ point dest(2 * target.second);
  map tmpmap;
  tmpmap.load(this, dest);
  for (int i = 0; i < SEEX * 2; i++) {
@@ -5566,7 +5568,7 @@ void game::nuke(const point& world_div_2)   // \todo parameter should be OM_loc
   }
  }
  tmpmap.save(cur_om.pos, messages.turn, dest);
- cur_om.ter(world_div_2.x, world_div_2.y) = ot_crater;
+ cur_om.ter(target.second) = ot_crater;
  om_cache::get().load(cur_om, revert_om_pos);
 }
 

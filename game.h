@@ -179,7 +179,7 @@ class game : public reality_bubble
   void teleport(player* p = nullptr);
   void teleport_to(monster& z, const point& dest);
 
-  void nuke(const point& world_div_2);
+  void nuke(OM_loc<2> target);
   faction* faction_by_id(int it);
   faction* random_good_faction();
   faction* random_evil_faction();
