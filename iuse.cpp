@@ -1593,18 +1593,14 @@ void iuse::acidbomb(player& p, item& it)
  
 void iuse::acidbomb_act(item& it)
 {
-    const auto g = game::active();
-    const auto where_is = g->find(it).value(); // invariant violation if this fails
+    const auto where_is = game::active()->find(it).value(); // invariant violation if this fails
 
     if (auto loc = std::get_if<GPS_loc>(&where_is)) { // not held by anyone
-        if (const auto pos = g->toScreen(*loc)) {
-            it.charges = 0;
-            static auto contaminate = [&](point pt) {
-                g->m.add_field(g, pt, fd_acid, 3);
-            };
-
-            forall_do_inclusive(*pos + within_rldist<1>, contaminate);
-        }
+        it.charges = 0;
+        static auto contaminate2 = [&](point delta) {
+            (*loc + delta).add(field(fd_acid, 3));
+        };
+        forall_do_inclusive(within_rldist<1>, contaminate2);
     }
 }
 
