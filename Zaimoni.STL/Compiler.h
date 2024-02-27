@@ -55,10 +55,6 @@
 #define NO_RETURN
 #define MS_NO_RETURN
 
-#ifdef __cpp_attributes
-#undef MS_NO_RETURN
-#define MS_NO_RETURN [[noreturn]]
-#else
 /* GCC */
 #ifdef __GNUC__
 #undef NO_RETURN
@@ -68,6 +64,10 @@
 #undef MS_NO_RETURN
 #define MS_NO_RETURN __declspec(noreturn)
 #endif
+
+#ifdef __cplusplus
+#	undef NO_RETURN
+#	define NO_RETURN [[noreturn]]
 #endif
 
 #endif	/* ZAIMONI_COMPILER_HPP */

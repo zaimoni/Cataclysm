@@ -38,14 +38,14 @@
  *
  * \param B C string containing fatal error message
  */
-EXTERN_C MS_NO_RETURN void _fatal(const char* const B) NO_RETURN;
+EXTERN_C NO_RETURN void _fatal(const char* const B);
 
 /*!
  * reports error, then calls exit(exit_code).
  *
  * \param B C string containing fatal error message
  */
-EXTERN_C MS_NO_RETURN void _fatal_code(const char* const B,int exit_code) NO_RETURN;
+EXTERN_C NO_RETURN void _fatal_code(const char* const B,int exit_code);
 
 EXTERN_C void _inform(const char* const B, size_t len);		/* Windows GUI crippled (assumes len := strlen() */
 EXTERN_C void _inc_inform(const char* const B, size_t len);	/* only C stdio */
@@ -58,10 +58,10 @@ EXTERN_C void _log(const char* const B, size_t len);		/* Windows GUI crippled (a
 #ifdef __cplusplus
 /* overloadable adapters for C++ and debug-mode code */
 /* all-uppercased because we may use macro wrappers on these */
-MS_NO_RETURN void FATAL(const char* const B) NO_RETURN;
+NO_RETURN void FATAL(const char* const B);
 inline void FATAL(const char* const B) {_fatal(B);}
 
-MS_NO_RETURN void FATAL_CODE(const char* const B,int exit_code) NO_RETURN;
+NO_RETURN void FATAL_CODE(const char* const B,int exit_code);
 inline void FATAL_CODE(const char* const B,int exit_code) {_fatal_code(B,exit_code);}
 
 /* SEVERE_WARNING, WARNING, INFORM, and LOG are distinct in behavior only for the custom console */
