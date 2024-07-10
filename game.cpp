@@ -357,9 +357,15 @@ http://github.com/zaimoni/Cataclysm .");
      }
     }
    } else if (sel1 == 2) {	// Load Character
-    if (savegames.size() == 0)
+    if (savegames.empty()) {
      mvwaddstrz(w_open, 6, 12, c_red, "No save games found!");
-    else {
+     wrefresh(w_open);
+     refresh();
+     // simulate ESC handling
+     ch = KEY_ESCAPE;
+     layer = 1;
+     continue;
+    } else {
      int savestart = (sel2 < 7 ?  0 : sel2 - 7),
          saveend   = (sel2 < 7 ? 14 : sel2 + 7);
      for (int i = savestart; i < saveend; i++) {
@@ -437,9 +443,16 @@ http://github.com/zaimoni/Cataclysm .");
     }
    }
   } else if (layer == 3) {	// Character Templates
-   if (templates.size() == 0)
-    mvwaddstrz(w_open, 6, 12, c_red, "No templates found!");
-   else {
+   if (templates.empty()) {
+     mvwaddstrz(w_open, 6, 12, c_red, "No templates found!");
+     wrefresh(w_open);
+     refresh();
+     // simulate ESC handling
+     ch = KEY_ESCAPE;
+     sel1 = 1;
+     layer = 2;
+     continue;
+   } else {
     int tempstart = (sel1 < 6 ?  0 : sel1 - 6),
         tempend   = (sel1 < 6 ? 14 : sel1 + 6);
     for (int i = tempstart; i < tempend; i++) {
